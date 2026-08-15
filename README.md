@@ -14,6 +14,13 @@ without losing every page they have built.
 
 ---
 
+## Why it is built this way
+
+See [DECISIONS.md](DECISIONS.md). Twelve entries, each recording what a decision
+replaces and why. Read it before proposing an architectural change.
+
+---
+
 ## Requirements
 
 PHP 8.1+ · WordPress 6.5+ · WooCommerce 8.0+ · Node 20 · Composer 2
