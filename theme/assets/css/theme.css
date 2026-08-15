@@ -1011,3 +1011,42 @@ body:not(.oc-no-lightbox) .woocommerce-product-gallery__image a { cursor: none; 
 .oc-drawer .woocommerce-mini-cart__total { padding-block: 12px; font-weight: 700; }
 .oc-drawer .woocommerce-mini-cart__buttons { display: flex; gap: 8px; }
 .oc-drawer .woocommerce-mini-cart__buttons a { flex: 1; text-align: center; }
+
+/* ---------- QA round-3 browser findings ---------- */
+
+/* flexslider computes slide offsets in LTR; in an RTL page the viewport
+ * shows the strip's empty right edge instead of the first slide. The strip
+ * runs LTR internally; the page around it stays RTL. */
+.woocommerce-product-gallery .flex-viewport,
+.woocommerce-product-gallery .woocommerce-product-gallery__wrapper {
+	direction: ltr;
+}
+
+/* Woo's .alt button (single product add-to-cart) outranked the brand rules —
+ * match it at its own specificity, purple be gone. */
+.woocommerce a.button.alt,
+.woocommerce button.button.alt,
+.woocommerce input.button.alt,
+.woocommerce #respond input#submit.alt,
+.woocommerce div.product form.cart .button {
+	background: var(--oc-primary);
+	color: #fff;
+	border: 1.5px solid var(--oc-primary);
+	border-radius: var(--oc-radius, 8px);
+	font-weight: 600;
+}
+
+.woocommerce a.button.alt:hover,
+.woocommerce button.button.alt:hover,
+.woocommerce div.product form.cart .button:hover {
+	background: var(--oc-primary);
+	color: #fff;
+	filter: brightness(1.08);
+}
+
+.oc-btn-outline .woocommerce a.button.alt,
+.oc-btn-outline .woocommerce button.button.alt,
+.oc-btn-outline .woocommerce div.product form.cart .button {
+	background: transparent;
+	color: var(--oc-primary);
+}
