@@ -146,7 +146,27 @@ loaded — which is why Hebrew ended up hardcoded across the PHP, and why a
 
 ---
 
-## 12. Two reference sites
+## 12. Login lives at a private path
+
+**Decision.** `oc-login` moves the login screen off `wp-login.php` to `/ocadmin`,
+configurable per site with `OC_LOGIN_SLUG` and switchable off entirely with
+`OC_LOGIN_DISABLE` in `wp-config.php`.
+
+**What it is.** Noise reduction. Automated scanners hammer `wp-login.php`
+constantly and almost all of them stop when it answers 404.
+
+**What it is not.** Protection against a targeted attacker, who will find the
+path. Real protection is strong passwords, two-factor and rate limiting, and
+those are still owed.
+
+**Why a plugin.** Access to a site must not depend on which theme is active.
+
+**Lockout escape.** Define `OC_LOGIN_DISABLE` and `wp-login.php` works again
+immediately, without file access.
+
+---
+
+## 13. Two reference sites
 
 | Site | Purpose |
 | --- | --- |

@@ -24,10 +24,14 @@ jobs:
         run: |
           v="${{ steps.v.outputs.version }}"
           theme=$(grep -m1 '^ \* Version:' theme/style.css | tr -d ' ' | cut -d: -f2)
-          blocks=$(grep -m1 '^ \* Version:' plugins/oc-blocks/oc-blocks.php | tr -d ' ' | cut -d: -f2)
-          echo "tag=$v theme=$theme blocks=$blocks"
+          echo "tag=$v theme=$theme"
           test "$theme" = "$v"
-          test "$blocks" = "$v"
+          for dir in plugins/*/; do
+            name=$(basename "$dir")
+            got=$(grep -m1 '^ \* Version:' "$dir$name.php" | tr -d ' ' | cut -d: -f2)
+            echo "  $name=$got"
+            test "$got" = "$v"
+          done
 
       - uses: shivammathur/setup-php@v2
         with:
@@ -48,16 +52,16 @@ jobs:
           mkdir -p dist
           # Theme: source only, no dev tooling.
           rsync -a --exclude-from=.distignore theme/ "dist/oc-theme/"
-          rsync -a --exclude-from=.distignore plugins/oc-blocks/ "dist/oc-blocks/"
+          for dir in plugins/*/; do
+            name=$(basename "$dir")
+            rsync -a --exclude-from=.distignore "$dir" "dist/$name/"
+          done
           cd dist
-          zip -rq oc-theme.zip  oc-theme
-          zip -rq oc-blocks.zip oc-blocks
+          for d in */; do zip -rq "${d%/}.zip" "${d%/}"; done
           ls -la
 
       - name: Publish release
         uses: softprops/action-gh-release@v2
         with:
-          files: |
-            dist/oc-theme.zip
-            dist/oc-blocks.zip
+          files: dist/*.zip
           generate_release_notes: true
