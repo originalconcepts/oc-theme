@@ -438,17 +438,17 @@ a { color: inherit; }
 	filter: brightness(1.08);
 }
 
-.oc-btn-outline .woocommerce a.button,
-.oc-btn-outline .woocommerce button.button,
-.oc-btn-outline .woocommerce input.button,
-.oc-btn-outline .woocommerce .single_add_to_cart_button {
+.woocommerce.oc-btn-outline a.button,
+.woocommerce.oc-btn-outline button.button,
+.woocommerce.oc-btn-outline input.button,
+.woocommerce.oc-btn-outline .single_add_to_cart_button {
 	background: transparent;
 	color: var(--oc-primary);
 }
 
-.oc-btn-outline .woocommerce a.button:hover,
-.oc-btn-outline .woocommerce button.button:hover,
-.oc-btn-outline .woocommerce .single_add_to_cart_button:hover {
+.woocommerce.oc-btn-outline a.button:hover,
+.woocommerce.oc-btn-outline button.button:hover,
+.woocommerce.oc-btn-outline .single_add_to_cart_button:hover {
 	background: var(--oc-primary);
 	color: #fff;
 }
@@ -1085,9 +1085,9 @@ body:not(.oc-no-lightbox) .woocommerce-product-gallery__image a { cursor: none; 
 	filter: brightness(1.08);
 }
 
-.oc-btn-outline .woocommerce a.button.alt,
-.oc-btn-outline .woocommerce button.button.alt,
-.oc-btn-outline .woocommerce div.product form.cart .button {
+.woocommerce.oc-btn-outline a.button.alt,
+.woocommerce.oc-btn-outline button.button.alt,
+.woocommerce.oc-btn-outline div.product form.cart .button {
 	background: transparent;
 	color: var(--oc-primary);
 }
