@@ -655,72 +655,67 @@ li.product:focus-within .oc-card-atc,
 	}
 }
 
-/* WooCommerce floats gallery thumbs at 25% — the "tiny side thumbs" and
- * "huge under thumbs" bug. Matched at its own specificity. */
-.woocommerce div.product div.images .flex-control-thumbs li {
+/* ---------- native gallery (no flexslider) ---------- */
+
+/* thumbnail presets: one active image; the rest hide until picked */
+.oc-gallery-thumbs-side .woocommerce-product-gallery__wrapper > .woocommerce-product-gallery__image:not(.is-active),
+.oc-gallery-thumbs-under .woocommerce-product-gallery__wrapper > .woocommerce-product-gallery__image:not(.is-active) {
+	display: none;
+}
+
+.woocommerce.oc-gallery-thumbs-side div.product div.images .woocommerce-product-gallery__image,
+.woocommerce.oc-gallery-thumbs-under div.product div.images .woocommerce-product-gallery__image {
 	float: none;
-	width: auto;
+	width: 100%;
+	margin: 0;
+}
+
+.oc-thumbs {
+	display: flex;
+	gap: 10px;
 	margin: 0;
 	padding: 0;
 	list-style: none;
 }
 
-.woocommerce div.product div.images .flex-control-thumbs { margin-block-start: 12px; }
-
-/* thumbs-side: flexslider thumbnails become a side rail */
-.oc-gallery-thumbs-side .woocommerce-product-gallery {
-	display: grid;
-	grid-template-columns: var(--oc-thumbs-w, 80px) minmax(0, 1fr);
-	gap: 10px;
-	align-items: start;
-}
-.oc-gallery-thumbs-side .woocommerce-product-gallery .flex-viewport,
-.oc-gallery-thumbs-side .woocommerce-product-gallery > .woocommerce-product-gallery__wrapper {
-	grid-column: 2;
-	grid-row: 1;
-}
-.oc-gallery-thumbs-side .flex-control-thumbs {
-	grid-column: 1;
-	grid-row: 1;
-	display: flex;
-	flex-direction: column;
-	gap: 8px;
-	margin: 0;
-	padding: 0;
-}
-.oc-gallery-thumbs-side .flex-control-thumbs li {
-	inline-size: 100%;
-	margin: 0;
-	padding: 0;
-	list-style: none;
-}
-
-/* thumbs-under: Woo default, just tidied */
-.oc-gallery-thumbs-under .flex-control-thumbs {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 10px;
-	margin-block-start: 14px;
-	padding: 0;
-}
-.woocommerce.oc-gallery-thumbs-under div.product div.images .flex-control-thumbs li {
+.oc-thumbs button {
+	display: block;
 	inline-size: var(--oc-thumbs-w, 80px);
+	padding: 0;
+	border: 2px solid transparent;
+	border-radius: 8px;
+	background: none;
+	cursor: pointer;
+	overflow: hidden;
 }
 
-.flex-control-thumbs img {
+.oc-thumbs button img {
+	display: block;
 	inline-size: 100%;
 	aspect-ratio: 1 / 1;
 	object-fit: cover;
 	border-radius: 6px;
-	opacity: .6;
+	opacity: .65;
 	transition: opacity .15s ease;
-	cursor: pointer;
 }
-.oc-gallery-thumbs-under .flex-control-thumbs li { inline-size: var(--oc-thumbs-w, 80px); }
-.flex-control-thumbs img.flex-active,
-.flex-control-thumbs img:hover { opacity: 1; }
 
-/* grid + mosaic: no slider — all images laid out flat */
+.oc-thumbs button:hover img { opacity: 1; }
+.oc-thumbs button[aria-current="true"] { border-color: var(--oc-primary); }
+.oc-thumbs button[aria-current="true"] img { opacity: 1; }
+
+/* side rail */
+.oc-gallery-thumbs-side .woocommerce-product-gallery {
+	display: grid;
+	grid-template-columns: var(--oc-thumbs-w, 80px) minmax(0, 1fr);
+	gap: 12px;
+	align-items: start;
+}
+.oc-gallery-thumbs-side .woocommerce-product-gallery__wrapper { grid-column: 2; grid-row: 1; }
+.oc-gallery-thumbs-side .oc-thumbs { grid-column: 1; grid-row: 1; flex-direction: column; }
+
+/* under: rail below the main image, with breathing room */
+.oc-gallery-thumbs-under .oc-thumbs { margin-block-start: 14px; flex-wrap: wrap; }
+
 .oc-gallery-grid .woocommerce-product-gallery__wrapper,
 .oc-gallery-mosaic .woocommerce-product-gallery__wrapper {
 	display: grid;

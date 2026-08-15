@@ -61,6 +61,7 @@ final class WooCommerce {
 		// Cart drawer shell — WooCommerce's fragments fill it after an
 		// ajax add, so it needs no bespoke endpoint.
 		add_action( 'wp_footer', array( $this, 'cart_drawer' ) );
+		add_action( 'wp_footer', array( $this, 'thumbs_max_attribute' ), 5 );
 
 		// Breadcrumb: the position is read inside the renderer, so one hook per
 		// location is enough and the preview always matches.
@@ -81,14 +82,10 @@ final class WooCommerce {
 	 * live.
 	 */
 	public function runtime_hooks(): void {
-		// Gallery machinery follows the preset: the thumbnail presets ride
-		// WooCommerce's slider, grid and mosaic lay images out flat.
-		$gallery = (string) get_theme_mod( 'oc_gallery_preset', 'thumbs-side' );
-		if ( in_array( $gallery, array( 'thumbs-side', 'thumbs-under' ), true ) ) {
-			add_theme_support( 'wc-product-gallery-slider' );
-		} else {
-			remove_theme_support( 'wc-product-gallery-slider' );
-		}
+		// No flexslider, ever: it is jQuery-era machinery whose LTR offset
+		// maths fights the RTL stylesheet. All four gallery presets render the
+		// flat image list; the thumbnail presets get a native vanilla-JS rail.
+		remove_theme_support( 'wc-product-gallery-slider' );
 
 		if ( get_theme_mod( 'oc_gallery_lightbox', true ) ) {
 			add_theme_support( 'wc-product-gallery-lightbox' );
@@ -193,6 +190,20 @@ final class WooCommerce {
 	 */
 	public function gallery_columns(): int {
 		return max( 1, (int) get_theme_mod( 'oc_gallery_thumbs_max', 5 ) );
+	}
+
+	/**
+	 * Hand the thumbs cap to the native gallery script.
+	 */
+	public function thumbs_max_attribute(): void {
+		if ( ! is_product() ) {
+			return;
+		}
+
+		printf(
+			'<script>document.body.dataset.ocThumbsMax=%d;</script>',
+			absint( get_theme_mod( 'oc_gallery_thumbs_max', 5 ) )
+		);
 	}
 
 	/**
