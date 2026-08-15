@@ -1050,3 +1050,12 @@ body:not(.oc-no-lightbox) .woocommerce-product-gallery__image a { cursor: none; 
 	background: transparent;
 	color: var(--oc-primary);
 }
+
+/* The auto-RTL-flipped stylesheet floats flexslider slides right while the
+ * script positions them with LTR math — the active slide ends up outside the
+ * viewport. Inside the (LTR) strip the slides float left again. Grid and
+ * mosaic keep their own float:none rules, which are more specific. */
+.woocommerce.oc-gallery-thumbs-side div.product div.images .woocommerce-product-gallery__image,
+.woocommerce.oc-gallery-thumbs-under div.product div.images .woocommerce-product-gallery__image {
+	float: left;
+}
