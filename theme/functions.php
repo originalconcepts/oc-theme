@@ -18,8 +18,23 @@ define( 'OC_THEME_DIR', get_template_directory() );
 define( 'OC_THEME_URI', get_template_directory_uri() );
 define( 'OC_THEME_REPO', 'originalconcepts/oc-theme' );
 
+/**
+ * Private login path.
+ *
+ * Override per site in wp-config.php — give each client site its own, so that
+ * learning one does not reveal them all:
+ *     define( 'OC_LOGIN_SLUG', 'my-private-door' );
+ *
+ * Emergency escape, restores wp-login.php without touching files:
+ *     define( 'OC_LOGIN_DISABLE', true );
+ */
+if ( ! defined( 'OC_LOGIN_SLUG' ) ) {
+	define( 'OC_LOGIN_SLUG', 'ocadmin' );
+}
+
 require_once OC_THEME_DIR . '/inc/class-oc-updater.php';
 require_once OC_THEME_DIR . '/inc/class-oc-assets.php';
+require_once OC_THEME_DIR . '/inc/class-oc-login.php';
 
 /**
  * Cache-busting version for a theme-relative asset.
@@ -86,3 +101,11 @@ add_action( 'admin_notices', 'oc_dependency_notice' );
 
 ( new OC\Theme\Assets() )->register();
 ( new OC\Theme\Updater( get_template(), OC_THEME_VERSION, OC_THEME_REPO ) )->register();
+
+if ( ! defined( 'OC_LOGIN_DISABLE' ) || ! OC_LOGIN_DISABLE ) {
+	$oc_login_slug = trim( sanitize_title( (string) apply_filters( 'oc_login_slug', OC_LOGIN_SLUG ) ), '/' );
+
+	if ( '' !== $oc_login_slug ) {
+		( new OC\Theme\Gate( $oc_login_slug ) )->register();
+	}
+}

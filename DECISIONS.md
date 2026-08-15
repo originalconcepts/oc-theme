@@ -146,7 +146,7 @@ loaded — which is why Hebrew ended up hardcoded across the PHP, and why a
 
 ---
 
-## 12. Login lives at a private path
+## 12. Login lives at a private path, inside the theme
 
 **Decision.** `oc-login` moves the login screen off `wp-login.php` to `/ocadmin`,
 configurable per site with `OC_LOGIN_SLUG` and switchable off entirely with
@@ -159,10 +159,19 @@ constantly and almost all of them stop when it answers 404.
 path. Real protection is strong passwords, two-factor and rate limiting, and
 those are still owed.
 
-**Why a plugin.** Access to a site must not depend on which theme is active.
+**Where it lives.** In the theme, not a separate plugin. One artefact to
+install rather than two, and every site we build runs this theme anyway.
+
+**The consequence, stated plainly.** The private path is only in force while OC
+Theme is active. Switching themes restores `wp-login.php`. That direction fails
+safe — nobody is ever locked out — but it does mean a theme switch quietly
+un-hides the login.
 
 **Lockout escape.** Define `OC_LOGIN_DISABLE` and `wp-login.php` works again
 immediately, without file access.
+
+**Per site.** Give each client its own `OC_LOGIN_SLUG`. If every site shares
+`ocadmin`, learning one reveals all of them.
 
 ---
 

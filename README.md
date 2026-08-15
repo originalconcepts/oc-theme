@@ -116,6 +116,7 @@ theme/
   inc/
     class-oc-assets.php  enqueues + design tokens
     class-oc-updater.php GitHub releases updater
+    class-oc-login.php   private login path (/ocadmin)
   theme.json             palette, spacing scale, layout widths
 plugins/oc-blocks/
   src/                   block sources (one folder per block)

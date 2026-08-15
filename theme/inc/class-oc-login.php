@@ -8,12 +8,16 @@
  * legitimately post to wp-login.php — logout, password reset, protected-post
  * passwords and the interim login iframe.
  *
- * @package OC_Login
+ * Lives in the theme, so it is only in force while the theme is active.
+ * Switching themes restores wp-login.php, which fails safe rather than locking
+ * anyone out.
+ *
+ * @package OC_Theme
  */
 
 declare( strict_types = 1 );
 
-namespace OC\Login;
+namespace OC\Theme;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -46,14 +50,16 @@ final class Gate {
 	/**
 	 * Hook everything up.
 	 *
-	 * Ordering matters and is the reason this is split in two. At
-	 * `plugins_loaded` we only *mark* the request and neutralise the URI, so
-	 * WordPress does not try to route /ocadmin as a page and 404 it. The login
-	 * screen itself is loaded at `wp_loaded`, once WordPress is fully booted —
-	 * requiring wp-login.php any earlier makes it error.
+	 * Ordering matters and is the reason this is split in two. Marking happens
+	 * at `after_setup_theme` — a theme's functions.php is loaded after
+	 * `plugins_loaded` has already fired, so that hook would never run here —
+	 * and it only *marks* the request and neutralises the URI so WordPress does
+	 * not route /ocadmin as a page and 404 it. The login screen itself loads at
+	 * `wp_loaded`, once WordPress is fully booted; requiring wp-login.php any
+	 * earlier makes it error. Both still run long before the request is routed.
 	 */
 	public function register(): void {
-		add_action( 'plugins_loaded', array( $this, 'mark_request' ), 9 );
+		add_action( 'after_setup_theme', array( $this, 'mark_request' ), 1 );
 		add_action( 'wp_loaded', array( $this, 'handle' ) );
 
 		// Anything WordPress prints, mails or redirects to must use the new path.
