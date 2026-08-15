@@ -515,8 +515,8 @@ final class Customizer {
 	 * @param string                   $label   Label.
 	 * @param array<int|string,string> $choices Choices. Numeric keys arrive as
 	 *                                          ints because PHP coerces them.
-	 * @param string        $def    Default value.
-	 * @param callable|null $active Optional visibility callback.
+	 * @param string                   $def     Default value.
+	 * @param callable|null            $active  Optional visibility callback.
 	 */
 	private function choice( \WP_Customize_Manager $c, string $id, string $section, string $label, array $choices, string $def, ?callable $active = null ): void {
 		$keys = array_map( 'strval', array_keys( $choices ) );
