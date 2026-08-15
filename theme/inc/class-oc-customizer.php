@@ -50,9 +50,9 @@ final class Customizer {
 		$this->product_section( $wp_customize, $shop_panel );
 	}
 
-	/* ---------------------------------------------------------------------
-	 * Panels and sections
-	 * ------------------------------------------------------------------- */
+	/*
+	 * Panels and sections.
+	 */
 
 	/**
 	 * Global design: fonts, radius, density, widths.
@@ -100,12 +100,12 @@ final class Customizer {
 		$this->color( $c, 'oc_color_secondary', 'oc_design', __( 'Secondary colour', 'oc-theme' ) );
 
 		$fonts = array(
-			''              => __( 'System', 'oc-theme' ),
-			'Assistant'     => 'Assistant',
-			'Heebo'         => 'Heebo',
-			'Rubik'         => 'Rubik',
-			'Varela Round'  => 'Varela Round',
-			'Secular One'   => 'Secular One',
+			''             => __( 'System', 'oc-theme' ),
+			'Assistant'    => 'Assistant',
+			'Heebo'        => 'Heebo',
+			'Rubik'        => 'Rubik',
+			'Varela Round' => 'Varela Round',
+			'Secular One'  => 'Secular One',
 		);
 
 		$this->select( $c, 'oc_font_display', 'oc_design', __( 'Heading font', 'oc-theme' ), $fonts );
@@ -456,9 +456,9 @@ final class Customizer {
 		);
 	}
 
-	/* ---------------------------------------------------------------------
-	 * Setting helpers — every setting gets a sanitiser
-	 * ------------------------------------------------------------------- */
+	/*
+	 * Setting helpers — every setting gets a sanitiser.
+	 */
 
 	/**
 	 * Radio/select setting with a whitelist sanitiser.
@@ -468,16 +468,16 @@ final class Customizer {
 	 * @param string                $section Section id.
 	 * @param string                $label   Label.
 	 * @param array<string,string>  $choices Choices.
-	 * @param string                $default Default value.
+	 * @param string                $def Default value.
 	 * @param callable|null         $active  Optional visibility callback.
 	 */
-	private function choice( \WP_Customize_Manager $c, string $id, string $section, string $label, array $choices, string $default, ?callable $active = null ): void {
+	private function choice( \WP_Customize_Manager $c, string $id, string $section, string $label, array $choices, string $def, ?callable $active = null ): void {
 		$c->add_setting(
 			$id,
 			array(
-				'default'           => $default,
-				'sanitize_callback' => static function ( $value ) use ( $choices, $default ): string {
-					return array_key_exists( (string) $value, $choices ) ? (string) $value : $default;
+				'default'           => $def,
+				'sanitize_callback' => static function ( $value ) use ( $choices, $def ): string {
+					return array_key_exists( (string) $value, $choices ) ? (string) $value : $def;
 				},
 			)
 		);
@@ -589,16 +589,16 @@ final class Customizer {
 	 * @param string                              $section Section id.
 	 * @param string                              $label   Label.
 	 * @param array<string,array<string,string>>  $presets Presets.
-	 * @param string                              $default Default value.
+	 * @param string                              $def Default value.
 	 * @param string                              $width   Item width.
 	 */
-	private function preset( \WP_Customize_Manager $c, string $id, string $section, string $label, array $presets, string $default, string $width ): void {
+	private function preset( \WP_Customize_Manager $c, string $id, string $section, string $label, array $presets, string $def, string $width ): void {
 		$c->add_setting(
 			$id,
 			array(
-				'default'           => $default,
-				'sanitize_callback' => static function ( $value ) use ( $presets, $default ): string {
-					return array_key_exists( (string) $value, $presets ) ? (string) $value : $default;
+				'default'           => $def,
+				'sanitize_callback' => static function ( $value ) use ( $presets, $def ): string {
+					return array_key_exists( (string) $value, $presets ) ? (string) $value : $def;
 				},
 			)
 		);
@@ -624,13 +624,13 @@ final class Customizer {
 	 * @param string                $id      Setting id.
 	 * @param string                $section Section id.
 	 * @param string                $label   Label.
-	 * @param bool                  $default Default.
+	 * @param bool                  $def Default.
 	 */
-	private function toggle( \WP_Customize_Manager $c, string $id, string $section, string $label, bool $default ): void {
+	private function toggle( \WP_Customize_Manager $c, string $id, string $section, string $label, bool $def ): void {
 		$c->add_setting(
 			$id,
 			array(
-				'default'           => $default,
+				'default'           => $def,
 				'sanitize_callback' => static function ( $value ): bool {
 					return (bool) $value;
 				},
@@ -656,19 +656,19 @@ final class Customizer {
 	 * @param string                $id      Setting id.
 	 * @param string                $section Section id.
 	 * @param string                $label   Label.
-	 * @param int                   $default Default.
+	 * @param int                   $def Default.
 	 * @param int                   $min     Minimum.
 	 * @param int                   $max     Maximum.
 	 * @param callable|null         $active  Optional visibility callback.
 	 */
-	private function number( \WP_Customize_Manager $c, string $id, string $section, string $label, int $default, int $min, int $max, ?callable $active = null ): void {
+	private function number( \WP_Customize_Manager $c, string $id, string $section, string $label, int $def, int $min, int $max, ?callable $active = null ): void {
 		$c->add_setting(
 			$id,
 			array(
-				'default'           => $default,
-				'sanitize_callback' => static function ( $value ) use ( $default, $min, $max ): int {
+				'default'           => $def,
+				'sanitize_callback' => static function ( $value ) use ( $def, $min, $max ): int {
 					$value = (int) $value;
-					return ( $value >= $min && $value <= $max ) ? $value : $default;
+					return ( $value >= $min && $value <= $max ) ? $value : $def;
 				},
 			)
 		);
@@ -689,9 +689,9 @@ final class Customizer {
 		$c->add_control( $id, $args );
 	}
 
-	/* ---------------------------------------------------------------------
-	 * Wireframe vocabulary for preset drawings
-	 * ------------------------------------------------------------------- */
+	/*
+	 * Wireframe vocabulary for preset drawings.
+	 */
 
 	/**
 	 * Wrap shapes in an SVG.
