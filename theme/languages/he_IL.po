@@ -374,3 +374,6 @@ msgstr "עגלת קניות"
 
 msgid "Close"
 msgstr "סגירה"
+
+msgid "Sale!"
+msgstr "מבצע!"

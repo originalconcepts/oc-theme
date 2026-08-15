@@ -223,7 +223,7 @@ final class WooCommerce {
 			return;
 		}
 
-		$text = __( 'Sale!', 'woocommerce' );
+		$text = __( 'Sale!', 'oc-theme' );
 
 		if ( 'percent' === $mode ) {
 			$percent = $this->discount_percent( $product );

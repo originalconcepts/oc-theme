@@ -248,12 +248,12 @@ final class Customizer {
 			'oc_card',
 			__( 'Card preset', 'oc-theme' ),
 			array(
-				'classic' => array(
+				'classic'        => array(
 					'label' => __( 'Classic', 'oc-theme' ),
 					'hint'  => __( 'Border, centred info', 'oc-theme' ),
 					'svg'   => self::wf( '0 0 80 100', self::rect( 1, 1, 78, 98, 'bd', 3 ) . self::rect( 7, 7, 66, 58, 'im', 2 ) . self::rect( 24, 72, 32, 3.4, 'ln' ) . self::rect( 31, 80, 18, 3.4, 'ac' ) ),
 				),
-				'minimal' => array(
+				'minimal'        => array(
 					'label' => __( 'Minimal', 'oc-theme' ),
 					'hint'  => __( 'No border, start-aligned', 'oc-theme' ),
 					'svg'   => self::wf( '0 0 80 100', self::rect( 3, 3, 74, 62, 'im', 2 ) . self::rect( 45, 72, 32, 3.4, 'ln' ) . self::rect( 59, 80, 18, 3.4, 'ac' ) ),
@@ -263,7 +263,7 @@ final class Customizer {
 					'hint'  => __( 'No border, centred', 'oc-theme' ),
 					'svg'   => self::wf( '0 0 80 100', self::rect( 3, 3, 74, 62, 'im', 2 ) . self::rect( 24, 72, 32, 3.4, 'ln' ) . self::rect( 31, 80, 18, 3.4, 'ac' ) ),
 				),
-				'card'    => array(
+				'card'           => array(
 					'label' => __( 'Card', 'oc-theme' ),
 					'hint'  => __( 'Background, shadow, button', 'oc-theme' ),
 					'svg'   => self::wf( '0 0 80 100', self::rect( 3, 3, 74, 94, 'bd', 7 ) . self::rect( 9, 9, 62, 52, 'im', 3 ) . self::rect( 24, 68, 32, 3.4, 'ln' ) . self::rect( 18, 84, 44, 9, 'ac', 4 ) ),
