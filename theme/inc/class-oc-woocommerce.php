@@ -61,6 +61,20 @@ final class WooCommerce {
 
 		add_filter( 'woocommerce_sale_flash', array( $this, 'sale_badge' ), 10, 3 );
 		add_action( 'woocommerce_after_shop_loop_item_title', array( $this, 'card_excerpt' ), 8 );
+
+		// Card image behaviour (single / hover swap / scrollable gallery).
+		if ( 'single' !== get_theme_mod( 'oc_card_image_mode', 'single' ) ) {
+			remove_action( 'woocommerce_before_shop_loop_item_title', 'woocommerce_template_loop_product_thumbnail', 10 );
+			add_action( 'woocommerce_before_shop_loop_item_title', array( $this, 'card_media' ), 10 );
+		}
+
+		if ( ! get_theme_mod( 'oc_product_related', true ) ) {
+			remove_action( 'woocommerce_after_single_product_summary', 'woocommerce_output_related_products', 20 );
+		}
+
+		if ( get_theme_mod( 'oc_product_sticky_atc', true ) ) {
+			add_action( 'woocommerce_after_single_product', array( $this, 'sticky_bar' ) );
+		}
 	}
 
 	/**
@@ -160,7 +174,94 @@ final class WooCommerce {
 			$classes[] = 'oc-title-center';
 		}
 
+		if ( is_product() ) {
+			$classes[] = 'oc-gallery-' . sanitize_html_class( (string) get_theme_mod( 'oc_gallery_preset', 'thumbs-side' ) );
+			$classes[] = 'oc-side-' . sanitize_html_class( (string) get_theme_mod( 'oc_product_layout_side', 'gallery-start' ) );
+			$classes[] = 'oc-tabs-' . sanitize_html_class( (string) get_theme_mod( 'oc_product_tabs', 'accordion' ) );
+			$classes[] = 'oc-wide-' . sanitize_html_class( (string) get_theme_mod( 'oc_gallery_mosaic_wide_pos', 'end' ) );
+		}
+
 		return $classes;
+	}
+
+	/**
+	 * Card media: featured image plus gallery images, as a hover pair or a
+	 * scroll-snap strip. Replaces the old plugin's Slick-based card slider
+	 * with no JavaScript library at all.
+	 */
+	public function card_media(): void {
+		global $product;
+
+		if ( ! $product instanceof \WC_Product ) {
+			return;
+		}
+
+		$mode = (string) get_theme_mod( 'oc_card_image_mode', 'single' );
+		$max  = 'hover' === $mode ? 2 : max( 2, (int) get_theme_mod( 'oc_card_gallery_max', 4 ) );
+
+		$ids = array_merge(
+			array( (int) $product->get_image_id() ),
+			array_map( 'intval', $product->get_gallery_image_ids() )
+		);
+		$ids = array_values( array_unique( array_filter( $ids ) ) );
+		$ids = array_slice( $ids, 0, $max );
+
+		if ( count( $ids ) < 2 ) {
+			// Nothing to swap or scroll — fall back to the standard image.
+			woocommerce_template_loop_product_thumbnail();
+			return;
+		}
+
+		printf( '<div class="oc-card-media oc-card-media--%s">', esc_attr( $mode ) );
+		echo '<div class="oc-card-media__strip" aria-label="' . esc_attr__( 'Product images', 'oc-theme' ) . '">';
+
+		foreach ( $ids as $i => $id ) {
+			printf( '<figure class="oc-card-media__item%s">', 0 === $i ? ' is-first' : '' );
+			echo wp_get_attachment_image( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- core-generated markup.
+				$id,
+				'woocommerce_thumbnail',
+				false,
+				array( 'loading' => 0 === $i ? 'eager' : 'lazy' )
+			);
+			echo '</figure>';
+		}
+
+		echo '</div>';
+
+		if ( 'gallery' === $mode ) {
+			echo '<span class="oc-card-media__dots" aria-hidden="true">';
+			foreach ( $ids as $i => $id ) {
+				printf( '<i%s></i>', 0 === $i ? ' class="is-on"' : '' );
+			}
+			echo '</span>';
+		}
+
+		echo '</div>';
+	}
+
+	/**
+	 * Sticky add-to-cart bar markup. Shown by JS once the buy form scrolls
+	 * out of view; the button proxies a click to the real form.
+	 */
+	public function sticky_bar(): void {
+		global $product;
+
+		if ( ! $product instanceof \WC_Product ) {
+			return;
+		}
+
+		?>
+		<div class="oc-sticky-atc" data-oc-sticky-atc hidden>
+			<div class="oc-sticky-atc__inner">
+				<?php echo wp_get_attachment_image( (int) $product->get_image_id(), 'thumbnail', false, array( 'class' => 'oc-sticky-atc__thumb' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- core-generated markup. ?>
+				<span class="oc-sticky-atc__title"><?php echo esc_html( $product->get_name() ); ?></span>
+				<span class="oc-sticky-atc__price"><?php echo wp_kses_post( $product->get_price_html() ); ?></span>
+				<button type="button" class="button oc-sticky-atc__btn">
+					<?php echo esc_html( $product->single_add_to_cart_text() ); ?>
+				</button>
+			</div>
+		</div>
+		<?php
 	}
 
 	/**

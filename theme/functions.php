@@ -79,9 +79,18 @@ function oc_setup(): void {
 
 	if ( class_exists( 'WooCommerce' ) ) {
 		add_theme_support( 'woocommerce' );
-		add_theme_support( 'wc-product-gallery-zoom' );
-		add_theme_support( 'wc-product-gallery-lightbox' );
-		add_theme_support( 'wc-product-gallery-slider' );
+
+		// The gallery preset decides the machinery: the two thumbnail presets
+		// ride WooCommerce's slider; grid and mosaic lay all images out flat.
+		$gallery = (string) get_theme_mod( 'oc_gallery_preset', 'thumbs-side' );
+		if ( in_array( $gallery, array( 'thumbs-side', 'thumbs-under' ), true ) ) {
+			add_theme_support( 'wc-product-gallery-slider' );
+		}
+
+		if ( get_theme_mod( 'oc_gallery_lightbox', true ) ) {
+			add_theme_support( 'wc-product-gallery-zoom' );
+			add_theme_support( 'wc-product-gallery-lightbox' );
+		}
 	}
 }
 add_action( 'after_setup_theme', 'oc_setup' );

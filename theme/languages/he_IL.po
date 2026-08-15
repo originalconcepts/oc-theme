@@ -248,3 +248,6 @@ msgstr "אקורדיון"
 
 msgid "Show related products"
 msgstr "הצג מוצרים קשורים"
+
+msgid "Product images"
+msgstr "תמונות המוצר"
