@@ -463,10 +463,10 @@ final class Customizer {
 	/**
 	 * Radio/select setting with a whitelist sanitiser.
 	 *
-	 * @param \WP_Customize_Manager $c       Manager.
-	 * @param string                $id      Setting id.
-	 * @param string                $section Section id.
-	 * @param string                $label   Label.
+	 * @param \WP_Customize_Manager    $c       Manager.
+	 * @param string                   $id      Setting id.
+	 * @param string                   $section Section id.
+	 * @param string                   $label   Label.
 	 * @param array<int|string,string> $choices Choices. Numeric keys arrive as
 	 *                                          ints because PHP coerces them.
 	 * @param string                   $def     Default value.
@@ -627,7 +627,7 @@ final class Customizer {
 	 * @param string                $id      Setting id.
 	 * @param string                $section Section id.
 	 * @param string                $label   Label.
-	 * @param bool                  $def Default.
+	 * @param bool                  $def     Default.
 	 */
 	private function toggle( \WP_Customize_Manager $c, string $id, string $section, string $label, bool $def ): void {
 		$c->add_setting(
@@ -659,7 +659,7 @@ final class Customizer {
 	 * @param string                $id      Setting id.
 	 * @param string                $section Section id.
 	 * @param string                $label   Label.
-	 * @param int                   $def Default.
+	 * @param int                   $def     Default.
 	 * @param int                   $min     Minimum.
 	 * @param int                   $max     Maximum.
 	 * @param callable|null         $active  Optional visibility callback.
