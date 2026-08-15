@@ -52,8 +52,11 @@ final class WooCommerce {
 		if ( 'above' === $crumbs ) {
 			add_action( 'oc_before_page_title', 'woocommerce_breadcrumb', 10 );
 		} elseif ( 'below' === $crumbs ) {
-			// Inside the products header, right under the page title.
+			// Under the page title. Archives put the title in the products
+			// header; product pages put it in the summary — one hook each,
+			// because archive_description never fires on a single product.
 			add_action( 'woocommerce_archive_description', 'woocommerce_breadcrumb', 5 );
+			add_action( 'woocommerce_single_product_summary', 'woocommerce_breadcrumb', 6 );
 		}
 
 		add_filter( 'woocommerce_breadcrumb_defaults', array( $this, 'breadcrumb_defaults' ) );
