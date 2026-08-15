@@ -1,0 +1,48 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/theme.json",
+	"version": 3,
+	"settings": {
+		"appearanceTools": true,
+		"useRootPaddingAwareAlignments": true,
+		"layout": { "contentSize": "1280px", "wideSize": "1500px" },
+		"color": {
+			"defaultPalette": false,
+			"defaultGradients": false,
+			"custom": false,
+			"palette": [
+				{ "slug": "primary",    "name": "Primary",    "color": "#2F4E7A" },
+				{ "slug": "secondary",  "name": "Secondary",  "color": "#D9A441" },
+				{ "slug": "success",    "name": "Success",    "color": "#22876B" },
+				{ "slug": "sale",       "name": "Sale",       "color": "#B4453C" },
+				{ "slug": "text",       "name": "Text",       "color": "#151A21" },
+				{ "slug": "text-muted", "name": "Muted text", "color": "#6B7482" },
+				{ "slug": "surface",    "name": "Surface",    "color": "#FFFFFF" },
+				{ "slug": "background", "name": "Background", "color": "#F2F4F7" }
+			]
+		},
+		"spacing": {
+			"units": [ "px", "rem", "%", "vw" ],
+			"spacingScale": { "steps": 7 }
+		},
+		"typography": {
+			"fluid": true,
+			"customFontSize": false,
+			"fontFamilies": [
+				{
+					"slug": "body",
+					"name": "Body",
+					"fontFamily": "var(--oc-font-body, system-ui, sans-serif)"
+				},
+				{
+					"slug": "display",
+					"name": "Display",
+					"fontFamily": "var(--oc-font-display, system-ui, sans-serif)"
+				}
+			]
+		}
+	},
+	"styles": {
+		"color": { "background": "var(--wp--preset--color--background)", "text": "var(--wp--preset--color--text)" },
+		"typography": { "fontFamily": "var(--wp--preset--font-family--body)" }
+	}
+}

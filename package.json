@@ -1,0 +1,20 @@
+{
+  "name": "oc-theme",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Blocks and front-end assets for the OC theme.",
+  "license": "GPL-2.0-or-later",
+  "scripts": {
+    "start": "wp-scripts start --webpack-src-dir=plugins/oc-blocks/src --output-path=plugins/oc-blocks/build",
+    "build": "wp-scripts build --webpack-src-dir=plugins/oc-blocks/src --output-path=plugins/oc-blocks/build",
+    "lint:js": "wp-scripts lint-js plugins/*/src",
+    "lint:css": "wp-scripts lint-style 'plugins/*/src/**/*.css'",
+    "format": "wp-scripts format plugins/*/src"
+  },
+  "devDependencies": {
+    "@wordpress/scripts": "^30.0.0"
+  },
+  "browserslist": [
+    "extends @wordpress/browserslist-config"
+  ]
+}

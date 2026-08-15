@@ -1,0 +1,24 @@
+# Dependencies — restored by composer/npm, never committed
+/vendor/
+node_modules/
+
+# Build output — produced by CI, never committed.
+# The old repo shipped three stale React bundles at once because of this.
+/plugins/*/build/
+/theme/assets/dist/
+
+# Tooling caches
+.phpcs.xml.dist.cache
+.phpunit.result.cache
+/.phpstan/
+
+# Local + editor
+.DS_Store
+.idea/
+.vscode/
+*.log
+*.sql
+*.zip
+.env
+.env.*
+!.env.example

@@ -1,0 +1,81 @@
+<?xml version="1.0"?>
+<ruleset name="OC Theme">
+	<description>Coding standard for the OC theme and blocks. CI fails on any error.</description>
+
+	<file>theme</file>
+	<file>plugins</file>
+
+	<exclude-pattern>*/vendor/*</exclude-pattern>
+	<exclude-pattern>*/node_modules/*</exclude-pattern>
+	<exclude-pattern>*/build/*</exclude-pattern>
+	<exclude-pattern>*/languages/*</exclude-pattern>
+
+	<arg name="extensions" value="php"/>
+	<arg name="basepath" value="."/>
+	<arg name="colors"/>
+	<arg name="parallel" value="8"/>
+	<arg value="sp"/>
+
+	<!-- Minimum supported versions. -->
+	<config name="minimum_wp_version" value="6.5"/>
+	<config name="testVersion" value="8.1-"/>
+
+	<rule ref="WordPress">
+		<!--
+			Deliberate deviations. Everything else stays on.
+		-->
+		<!-- We ship PSR-4-ish class files, not WP's class-*.php convention, inside src/. -->
+		<exclude name="WordPress.Files.FileName.InvalidClassFileName"/>
+		<!-- Yoda conditions add no safety on a codebase that is linted anyway. -->
+		<exclude name="WordPress.PHP.YodaConditions.NotYoda"/>
+		<!-- Short array syntax is required by our own rule below. -->
+		<exclude name="Generic.Arrays.DisallowShortArraySyntax"/>
+	</rule>
+
+	<rule ref="Universal.Arrays.DisallowLongArraySyntax"/>
+	<rule ref="PHPCompatibilityWP"/>
+
+	<!--
+		The five rules that exist because of the previous theme.
+		Each was a real, shipped defect. None of them may be a warning.
+	-->
+
+	<!-- Unescaped output → stored XSS in the header slider. -->
+	<rule ref="WordPress.Security.EscapeOutput">
+		<type>error</type>
+	</rule>
+
+	<!-- Missing nonce → zero nonce checks across 3,242 lines of AJAX. -->
+	<rule ref="WordPress.Security.NonceVerification">
+		<type>error</type>
+	</rule>
+
+	<!-- Raw SQL → unauthenticated injection through the search box. -->
+	<rule ref="WordPress.DB.PreparedSQL">
+		<type>error</type>
+	</rule>
+	<rule ref="WordPress.DB.PreparedSQLPlaceholders">
+		<type>error</type>
+	</rule>
+
+	<!-- Unsanitised input. -->
+	<rule ref="WordPress.Security.ValidatedSanitizedInput">
+		<type>error</type>
+	</rule>
+
+	<!-- Translations must be real. Hardcoded Hebrew is what we are leaving behind. -->
+	<rule ref="WordPress.WP.I18n">
+		<type>error</type>
+		<properties>
+			<property name="text_domain" type="array">
+				<element value="oc-theme"/>
+				<element value="oc-blocks"/>
+			</property>
+		</properties>
+	</rule>
+
+	<!-- Anything that hits the database on every request should be deliberate. -->
+	<rule ref="WordPress.DB.DirectDatabaseQuery">
+		<type>warning</type>
+	</rule>
+</ruleset>
