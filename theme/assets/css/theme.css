@@ -1137,14 +1137,15 @@ body:not(.oc-no-lightbox) .woocommerce-product-gallery__image a { cursor: none; 
  * sticky to both picks the short one by itself; the grid row ends where the
  * tabs/related begin, so the pin releases before the next section. */
 @media (min-width: 901px) {
-	.single-product div.product div.images,
-	.single-product div.product div.summary {
+	/* the extra .woocommerce class outranks woo's own div.images position */
+	.woocommerce.single-product div.product div.images,
+	.woocommerce.single-product div.product div.summary {
 		position: sticky;
 		inset-block-start: 24px;
 	}
 
-	.single-product:has(.oc-header.is-sticky) div.product div.images,
-	.single-product:has(.oc-header.is-sticky) div.product div.summary {
+	.woocommerce.single-product:has(.oc-header.is-sticky) div.product div.images,
+	.woocommerce.single-product:has(.oc-header.is-sticky) div.product div.summary {
 		inset-block-start: calc(var(--oc-header-h) + 20px);
 	}
 }
