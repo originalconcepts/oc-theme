@@ -70,7 +70,8 @@ final class Assets {
 				'--oc-font-display'  => get_theme_mod( 'oc_font_display', 'system-ui, sans-serif' ),
 				'--oc-radius'        => get_theme_mod( 'oc_radius', '8px' ),
 				'--oc-density'       => get_theme_mod( 'oc_density', '1' ),
-				'--oc-content-width' => get_theme_mod( 'oc_content_width', '1280px' ),
+				'--oc-content-width' => absint( get_theme_mod( 'oc_content_width_px', 1280 ) ) . 'px',
+				'--oc-card-ratio'    => (string) get_theme_mod( 'oc_card_ratio', '1/1' ),
 			)
 		);
 

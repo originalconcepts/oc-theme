@@ -50,6 +50,9 @@ final class WooCommerce {
 
 		add_filter( 'woocommerce_breadcrumb_defaults', array( $this, 'breadcrumb_defaults' ) );
 		add_filter( 'body_class', array( $this, 'body_class' ) );
+
+		add_filter( 'woocommerce_sale_flash', array( $this, 'sale_badge' ), 10, 3 );
+		add_action( 'woocommerce_after_shop_loop_item_title', array( $this, 'card_excerpt' ), 8 );
 	}
 
 	/**
@@ -142,7 +145,68 @@ final class WooCommerce {
 		$classes[] = 'oc-cols-' . $this->columns();
 		$classes[] = 'oc-cols-m-' . max( 1, (int) get_theme_mod( 'oc_catalog_cols_mobile', 2 ) );
 		$classes[] = 'oc-card-' . sanitize_html_class( (string) get_theme_mod( 'oc_card_preset', 'classic' ) );
+		$classes[] = 'oc-atc-' . sanitize_html_class( (string) get_theme_mod( 'oc_card_atc', 'always' ) );
+		$classes[] = 'oc-crumbs-' . sanitize_html_class( (string) get_theme_mod( 'oc_breadcrumbs_pos', 'above' ) );
+
+		if ( 'center' === get_theme_mod( 'oc_catalog_title_align', 'start' ) ) {
+			$classes[] = 'oc-title-center';
+		}
 
 		return $classes;
+	}
+
+	/**
+	 * Sale badge: none, percent off, or WooCommerce's text.
+	 *
+	 * @param string      $html    Badge markup.
+	 * @param \WP_Post    $post    Product post.
+	 * @param \WC_Product $product Product.
+	 * @return string
+	 */
+	public function sale_badge( $html, $post, $product ): string {
+		$mode = (string) get_theme_mod( 'oc_card_sale_badge', 'percent' );
+
+		if ( 'none' === $mode ) {
+			return '';
+		}
+
+		if ( 'percent' === $mode && $product instanceof \WC_Product ) {
+			$regular = (float) $product->get_regular_price();
+			$sale    = (float) $product->get_sale_price();
+
+			if ( $regular > 0 && $sale > 0 && $sale < $regular ) {
+				$percent = round( ( 1 - $sale / $regular ) * 100 );
+
+				return sprintf(
+					'<span class="onsale oc-sale-percent">‎-%s%%</span>',
+					esc_html( (string) $percent )
+				);
+			}
+		}
+
+		return (string) $html;
+	}
+
+	/**
+	 * Optional short description on the card.
+	 */
+	public function card_excerpt(): void {
+		if ( ! get_theme_mod( 'oc_card_excerpt', false ) ) {
+			return;
+		}
+
+		global $product;
+
+		if ( ! $product instanceof \WC_Product ) {
+			return;
+		}
+
+		$text = wp_strip_all_tags( (string) $product->get_short_description() );
+
+		if ( '' === $text ) {
+			return;
+		}
+
+		printf( '<p class="oc-card-excerpt">%s</p>', esc_html( wp_trim_words( $text, 14 ) ) );
 	}
 }

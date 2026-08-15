@@ -283,3 +283,73 @@ a { color: inherit; }
 @media (prefers-reduced-motion: reduce) {
 	*, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
 }
+
+/* ---------- product card presets ---------- */
+
+.woocommerce ul.products li.product img.wp-post-image {
+	aspect-ratio: var(--oc-card-ratio, 1 / 1);
+	object-fit: cover;
+	border-radius: var(--oc-radius, 8px);
+}
+
+/* classic: bordered box, centred info (default rules above already centre) */
+.oc-card-classic ul.products li.product {
+	border: 1px solid var(--oc-line);
+	border-radius: var(--oc-radius, 8px);
+	padding: 10px;
+}
+
+/* minimal: no chrome, start-aligned text */
+.oc-card-minimal ul.products li.product { text-align: start; }
+
+/* card: surface + shadow */
+.oc-card-card ul.products li.product {
+	background: var(--oc-surface);
+	border-radius: var(--oc-radius, 8px);
+	box-shadow: 0 1px 3px rgb(0 0 0 / 7%), 0 6px 18px rgb(0 0 0 / 6%);
+	padding: 12px;
+}
+
+/* add-to-cart behaviour */
+.oc-atc-none ul.products li.product .button { display: none; }
+
+@media (hover: hover) {
+	.oc-atc-hover ul.products li.product .button {
+		opacity: 0;
+		transition: opacity .15s ease;
+	}
+	.oc-atc-hover ul.products li.product:hover .button,
+	.oc-atc-hover ul.products li.product:focus-within .button {
+		opacity: 1;
+	}
+}
+
+/* sale badge */
+.woocommerce ul.products li.product .onsale,
+.woocommerce span.onsale {
+	position: absolute;
+	inset-block-start: 8px;
+	inset-inline-start: 8px;
+	margin: 0;
+	min-block-size: auto;
+	min-inline-size: auto;
+	padding: 3px 9px;
+	border-radius: 999px;
+	background: var(--oc-sale, #b4453c);
+	color: #fff;
+	font-size: .8rem;
+	font-weight: 700;
+	line-height: 1.6;
+}
+.woocommerce ul.products li.product { position: relative; }
+
+.oc-card-excerpt {
+	margin-block: 4px 0;
+	font-size: .85rem;
+	color: var(--oc-ink-2);
+}
+
+/* catalogue header options */
+.oc-title-center .oc-page-title,
+.oc-title-center .woocommerce-products-header { text-align: center; }
+.oc-crumbs-hidden .oc-breadcrumb { display: none; }
