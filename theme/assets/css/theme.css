@@ -353,3 +353,46 @@ a { color: inherit; }
 .oc-title-center .oc-page-title,
 .oc-title-center .woocommerce-products-header { text-align: center; }
 .oc-crumbs-hidden .oc-breadcrumb { display: none; }
+
+/* ---------- neutralise WooCommerce's float-era layout ----------
+ * woocommerce.css gives li.product width:22.05% and floats, which shrinks
+ * every card inside our grid cells. Same specificity, theme loads later. */
+
+.woocommerce ul.products li.product,
+.woocommerce-page ul.products li.product {
+	float: none;
+	inline-size: 100%;
+	margin: 0;
+}
+
+.woocommerce ul.products::before,
+.woocommerce ul.products::after { content: none; }
+
+/* result count + ordering sit on one line above the grid */
+.woocommerce .woocommerce-result-count { margin-block: 0 14px; color: var(--oc-ink-2); font-size: .875rem; }
+.woocommerce .woocommerce-ordering { margin-block: 0 14px; }
+.woocommerce .woocommerce-ordering select {
+	padding: 7px 10px;
+	border: 1px solid var(--oc-line);
+	border-radius: var(--oc-radius, 8px);
+	font: inherit;
+	background: var(--oc-surface);
+}
+
+/* card buttons inherit the brand, not Woo grey */
+.woocommerce ul.products li.product .button {
+	background: var(--oc-primary);
+	color: #fff;
+	border-radius: var(--oc-radius, 8px);
+	padding: 9px 16px;
+	font-weight: 600;
+	margin-block-start: 8px;
+}
+.woocommerce ul.products li.product .button:hover { filter: brightness(1.08); }
+
+.woocommerce ul.products li.product .price {
+	display: block;
+	margin-block: 6px 0;
+}
+.woocommerce ul.products li.product .price del { color: var(--oc-ink-2); opacity: .8; }
+.woocommerce ul.products li.product .price ins { text-decoration: none; }

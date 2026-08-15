@@ -44,9 +44,17 @@ final class WooCommerce {
 		add_filter( 'loop_shop_per_page', array( $this, 'per_page' ) );
 		add_filter( 'woocommerce_product_thumbnails_columns', array( $this, 'gallery_columns' ) );
 
-		// Breadcrumb position is a setting, so we place it ourselves.
+		// Breadcrumb position is a setting, so we place it ourselves. WooCommerce
+		// ships its own breadcrumb trail — no SEO plugin needed for this.
 		remove_action( 'woocommerce_before_main_content', 'woocommerce_breadcrumb', 20 );
-		add_action( 'oc_before_page_title', 'woocommerce_breadcrumb', 10 );
+
+		$crumbs = (string) get_theme_mod( 'oc_breadcrumbs_pos', 'above' );
+		if ( 'above' === $crumbs ) {
+			add_action( 'oc_before_page_title', 'woocommerce_breadcrumb', 10 );
+		} elseif ( 'below' === $crumbs ) {
+			// Inside the products header, right under the page title.
+			add_action( 'woocommerce_archive_description', 'woocommerce_breadcrumb', 5 );
+		}
 
 		add_filter( 'woocommerce_breadcrumb_defaults', array( $this, 'breadcrumb_defaults' ) );
 		add_filter( 'body_class', array( $this, 'body_class' ) );
