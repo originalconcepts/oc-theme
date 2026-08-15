@@ -209,15 +209,6 @@ final class Gate {
 	}
 
 	/**
-	 * Does this request path match the private slug?
-	 *
-	 * @return bool
-	 */
-	private function matches_slug(): bool {
-		return $this->request_path() === $this->slug;
-	}
-
-	/**
 	 * First path segment of the current request, without query string.
 	 *
 	 * @return string

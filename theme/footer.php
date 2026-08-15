@@ -16,7 +16,7 @@ defined( 'ABSPATH' ) || exit;
 				wp_nav_menu(
 					array(
 						'theme_location' => 'footer',
-						'container'      => false,
+						'container'      => '',
 						'menu_class'     => 'oc-footer__list',
 						'depth'          => 1,
 					)

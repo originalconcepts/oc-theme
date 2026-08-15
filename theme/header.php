@@ -59,7 +59,7 @@ $oc_sticky = (bool) get_theme_mod( 'oc_header_sticky', true );
 				wp_nav_menu(
 					array(
 						'theme_location' => 'primary',
-						'container'      => false,
+						'container'      => '',
 						'menu_class'     => 'oc-nav__list',
 						'depth'          => 3,
 					)
@@ -81,7 +81,7 @@ $oc_sticky = (bool) get_theme_mod( 'oc_header_sticky', true );
 		wp_nav_menu(
 			array(
 				'theme_location' => 'primary',
-				'container'      => false,
+				'container'      => '',
 				'menu_class'     => 'oc-mobile-menu__list',
 				'depth'          => 3,
 			)

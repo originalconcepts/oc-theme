@@ -11,4 +11,5 @@ parameters:
         - */node_modules/*
         - */build/*
     bootstrapFiles:
+        - tools/phpstan-bootstrap.php
         - vendor/php-stubs/woocommerce-stubs/woocommerce-stubs.php
