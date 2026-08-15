@@ -219,6 +219,71 @@
 		}
 	}
 
+	/* ---------- mobile gallery: swipe strip with dots / optional arrows ---------- */
+
+	var mgWrap = document.querySelector( '.woocommerce-product-gallery__wrapper' );
+
+	if ( mgWrap && document.body.classList.contains( 'oc-gm-dots' ) ) {
+		var mgSlides = mgWrap.querySelectorAll( '.woocommerce-product-gallery__image' );
+		var mgCount = mgSlides.length;
+
+		if ( mgCount > 1 ) {
+			var mgGallery = mgWrap.parentElement;
+
+			function mgIndex() {
+				return mgWrap.clientWidth === 0 ? 0 :
+					Math.round( Math.abs( mgWrap.scrollLeft ) / mgWrap.clientWidth );
+			}
+
+			function mgGoTo( index ) {
+				var rtl = getComputedStyle( mgWrap ).direction === 'rtl';
+				mgWrap.scrollLeft = ( rtl ? -1 : 1 ) * index * mgWrap.clientWidth;
+			}
+
+			var mgDots = document.createElement( 'ol' );
+			mgDots.className = 'oc-gdots';
+
+			mgSlides.forEach( function ( _, i ) {
+				var li = document.createElement( 'li' );
+				var b = document.createElement( 'button' );
+				b.type = 'button';
+				b.setAttribute( 'aria-label', String( i + 1 ) );
+				b.setAttribute( 'aria-current', 0 === i ? 'true' : 'false' );
+				b.addEventListener( 'click', function () {
+					mgGoTo( i );
+				} );
+				li.appendChild( b );
+				mgDots.appendChild( li );
+			} );
+
+			mgGallery.appendChild( mgDots );
+
+			mgWrap.addEventListener( 'scroll', function () {
+				var idx = mgIndex();
+				mgDots.querySelectorAll( 'button' ).forEach( function ( b, i ) {
+					b.setAttribute( 'aria-current', i === idx ? 'true' : 'false' );
+				} );
+			}, { passive: true } );
+
+			if ( document.body.classList.contains( 'oc-gm-arrows' ) ) {
+				var mgLeft = '<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M 70,0 L 20,50 L 70,100 L 80,90 L 40,50 L 80,10 Z"/></svg>';
+				var mgRight = '<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M 30,0 L 80,50 L 30,100 L 20,90 L 60,50 L 20,10 Z"/></svg>';
+
+				[ [ 'prev', mgLeft, -1 ], [ 'next', mgRight, 1 ] ].forEach( function ( def ) {
+					var btn = document.createElement( 'button' );
+					btn.type = 'button';
+					btn.className = 'oc-gnav oc-gnav--' + def[ 0 ];
+					btn.setAttribute( 'aria-label', def[ 0 ] );
+					btn.innerHTML = def[ 1 ];
+					btn.addEventListener( 'click', function () {
+						mgGoTo( ( mgIndex() + def[ 2 ] + mgCount ) % mgCount );
+					} );
+					mgGallery.appendChild( btn );
+				} );
+			}
+		}
+	}
+
 	/* ---------- native gallery zoom ----------
 	 * Woo's own zoom binds $images.first() only, so with the slider removed
 	 * every image after the first stayed static. This binds them all. */

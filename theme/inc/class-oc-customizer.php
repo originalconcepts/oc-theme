@@ -421,29 +421,41 @@ final class Customizer {
 					'label' => __( 'Two-column grid', 'oc-theme' ),
 					'svg'   => self::wf( '0 0 132 84', self::rect( 6, 4, 58, 37, 'im', 3 ) . self::rect( 68, 4, 58, 37, 'im', 3 ) . self::rect( 6, 45, 58, 35, 'im', 3 ) . self::rect( 68, 45, 58, 35, 'im', 3 ) ),
 				),
-				'mosaic'       => array(
-					'label' => __( 'Mosaic', 'oc-theme' ),
-					'hint'  => __( 'Pairs, one wide image', 'oc-theme' ),
-					'svg'   => self::wf( '0 0 132 84', self::rect( 6, 4, 58, 34, 'im', 3 ) . self::rect( 68, 4, 58, 34, 'im', 3 ) . self::rect( 6, 42, 120, 38, 'ac', 3 ) ),
+				'stacked'      => array(
+					'label' => __( 'Stacked', 'oc-theme' ),
+					'hint'  => __( 'Full width, one under another', 'oc-theme' ),
+					'svg'   => self::wf( '0 0 132 84', self::rect( 6, 4, 120, 37, 'im', 3 ) . self::rect( 6, 45, 120, 35, 'im', 3 ) ),
 				),
 			),
 			'thumbs-side',
 			'200px'
 		);
 
-		$this->choice(
+		$this->preset(
 			$c,
-			'oc_gallery_mosaic_wide_pos',
+			'oc_gallery_mobile',
 			'oc_product',
-			__( 'Mosaic: wide image position', 'oc-theme' ),
+			__( 'Gallery — mobile', 'oc-theme' ),
 			array(
-				'start' => __( 'First', 'oc-theme' ),
-				'end'   => __( 'Last', 'oc-theme' ),
+				'dots' => array(
+					'label' => __( 'Full width with dots', 'oc-theme' ),
+					'svg'   => self::wf( '0 0 132 84', self::rect( 0, 4, 132, 66, 'im', 0 ) . self::dots( 66, 78, 4 ) ),
+				),
+				'peek' => array(
+					'label' => __( 'Peek at the next image', 'oc-theme' ),
+					'svg'   => self::wf( '0 0 132 84', self::rect( 6, 4, 96, 76, 'im', 3 ) . self::rect( 108, 4, 24, 76, 'bd', 3 ) ),
+				),
 			),
-			'end',
-			static function (): bool {
-				return 'mosaic' === get_theme_mod( 'oc_gallery_preset', 'thumbs-side' );
-			}
+			'dots',
+			'200px'
+		);
+
+		$this->toggle(
+			$c,
+			'oc_gallery_mobile_arrows',
+			'oc_product',
+			__( 'Arrows on the mobile gallery', 'oc-theme' ),
+			false
 		);
 
 		$thumbs_active = static function (): bool {

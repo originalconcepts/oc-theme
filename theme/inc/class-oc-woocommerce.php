@@ -293,8 +293,12 @@ final class WooCommerce {
 			$classes[] = 'oc-side-' . sanitize_html_class( (string) get_theme_mod( 'oc_product_layout_side', 'gallery-start' ) );
 			$classes[] = 'oc-tabs-' . sanitize_html_class( (string) get_theme_mod( 'oc_product_tabs', 'accordion' ) );
 			$classes[] = 'oc-tabspos-' . sanitize_html_class( (string) get_theme_mod( 'oc_product_tabs_pos', 'below' ) );
-			$classes[] = 'oc-wide-' . sanitize_html_class( (string) get_theme_mod( 'oc_gallery_mosaic_wide_pos', 'end' ) );
 			$classes[] = 'oc-ratio-' . sanitize_html_class( (string) get_theme_mod( 'oc_product_cols_ratio', '50-50' ) );
+			$classes[] = 'oc-gm-' . sanitize_html_class( (string) get_theme_mod( 'oc_gallery_mobile', 'dots' ) );
+
+			if ( get_theme_mod( 'oc_gallery_mobile_arrows', false ) ) {
+				$classes[] = 'oc-gm-arrows';
+			}
 
 			if ( ! get_theme_mod( 'oc_gallery_lightbox', true ) ) {
 				$classes[] = 'oc-no-lightbox';

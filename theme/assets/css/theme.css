@@ -504,7 +504,7 @@ textarea { border-radius: var(--oc-radius, 8px); }
  * sliding up as the card is hovered; spinner while adding, check when added */
 .oc-card-atc {
 	position: absolute;
-	inset-inline-end: 12px;
+	inset-inline-start: 12px;
 	inset-block-end: 12px;
 	inline-size: 42px;
 	block-size: 42px;
@@ -689,16 +689,19 @@ li.product:focus-within .oc-card-atc,
 /* ---------- native gallery (no flexslider) ---------- */
 
 /* thumbnail presets: one active image; the rest hide until picked.
- * Specificity matched against woo's nth-child(n+2){display:inline-block}. */
-.woocommerce.oc-gallery-thumbs-side div.product div.images .woocommerce-product-gallery__image:not(.is-active),
-.woocommerce.oc-gallery-thumbs-under div.product div.images .woocommerce-product-gallery__image:not(.is-active) {
-	display: none;
-}
+ * Specificity matched against woo's nth-child(n+2){display:inline-block}.
+ * Desktop only — on mobile the gallery becomes a swipe strip. */
+@media (min-width: 901px) {
+	.woocommerce.oc-gallery-thumbs-side div.product div.images .woocommerce-product-gallery__image:not(.is-active),
+	.woocommerce.oc-gallery-thumbs-under div.product div.images .woocommerce-product-gallery__image:not(.is-active) {
+		display: none;
+	}
 
-.woocommerce.oc-gallery-thumbs-side div.product div.images .woocommerce-product-gallery__image.is-active,
-.woocommerce.oc-gallery-thumbs-under div.product div.images .woocommerce-product-gallery__image.is-active {
-	display: block;
-	width: 100%;
+	.woocommerce.oc-gallery-thumbs-side div.product div.images .woocommerce-product-gallery__image.is-active,
+	.woocommerce.oc-gallery-thumbs-under div.product div.images .woocommerce-product-gallery__image.is-active {
+		display: block;
+		width: 100%;
+	}
 }
 
 .woocommerce.oc-gallery-thumbs-side div.product div.images .woocommerce-product-gallery__image,
@@ -741,29 +744,37 @@ li.product:focus-within .oc-card-atc,
 .oc-thumbs button[aria-current="true"] { border-color: var(--oc-primary); }
 .oc-thumbs button[aria-current="true"] img { opacity: 1; }
 
-/* side rail */
-.oc-gallery-thumbs-side .woocommerce-product-gallery {
-	display: grid;
-	grid-template-columns: var(--oc-thumbs-w, 80px) minmax(0, 1fr);
-	gap: 12px;
-	align-items: start;
-}
-.oc-gallery-thumbs-side .woocommerce-product-gallery__wrapper { grid-column: 2; grid-row: 1; }
-.oc-gallery-thumbs-side .oc-thumbs { grid-column: 1; grid-row: 1; flex-direction: column; }
+/* side rail (desktop layouts; the rail hides on mobile) */
+@media (min-width: 901px) {
+	.oc-gallery-thumbs-side .woocommerce-product-gallery {
+		display: grid;
+		grid-template-columns: var(--oc-thumbs-w, 80px) minmax(0, 1fr);
+		gap: 12px;
+		align-items: start;
+	}
+	.oc-gallery-thumbs-side .woocommerce-product-gallery__wrapper { grid-column: 2; grid-row: 1; }
+	.oc-gallery-thumbs-side .oc-thumbs { grid-column: 1; grid-row: 1; flex-direction: column; }
 
-/* under: rail below the main image, with breathing room */
-.oc-gallery-thumbs-under .oc-thumbs { margin-block-start: 14px; flex-wrap: wrap; }
+	/* under: rail below the main image, with breathing room */
+	.oc-gallery-thumbs-under .oc-thumbs { margin-block-start: 14px; flex-wrap: wrap; }
 
-.oc-gallery-grid .woocommerce-product-gallery__wrapper,
-.oc-gallery-mosaic .woocommerce-product-gallery__wrapper {
-	display: grid;
-	grid-template-columns: repeat(2, minmax(0, 1fr));
-	gap: 10px;
+	.oc-gallery-grid .woocommerce-product-gallery__wrapper {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 10px;
+	}
+
+	/* stacked: full-width images, one under another, scrolling with the page */
+	.oc-gallery-stacked .woocommerce-product-gallery__wrapper {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		gap: 10px;
+	}
 }
 
 /* beat woocommerce.css's 25%/33% float widths on gallery images */
 .woocommerce.oc-gallery-grid div.product div.images .woocommerce-product-gallery__image,
-.woocommerce.oc-gallery-mosaic div.product div.images .woocommerce-product-gallery__image {
+.woocommerce.oc-gallery-stacked div.product div.images .woocommerce-product-gallery__image {
 	float: none;
 	width: 100%;
 	margin: 0;
@@ -785,23 +796,20 @@ li.product:focus-within .oc-card-atc,
 }
 
 .oc-gallery-grid .woocommerce-product-gallery__image img,
-.oc-gallery-mosaic .woocommerce-product-gallery__image img {
+.oc-gallery-stacked .woocommerce-product-gallery__image img {
 	inline-size: 100%;
 	border-radius: var(--oc-radius, 8px);
 }
 
-/* uniform gallery image height (optional): centre-crop before the lightbox */
-.oc-gimg-fixed .woocommerce-product-gallery__wrapper .woocommerce-product-gallery__image img:not(.zoomImg) {
-	block-size: var(--oc-gimg-h, 600px);
-	inline-size: 100%;
-	object-fit: cover;
-	object-position: center;
-}
-
-/* mosaic: one wide image, first or last per the setting */
-.oc-wide-end.oc-gallery-mosaic .woocommerce-product-gallery__wrapper > .woocommerce-product-gallery__image:last-child,
-.oc-wide-start.oc-gallery-mosaic .woocommerce-product-gallery__wrapper > .woocommerce-product-gallery__image:first-child {
-	grid-column: 1 / -1;
+/* uniform gallery image height (optional): centre-crop before the lightbox.
+ * Desktop only — the mobile swipe strip keeps natural ratios. */
+@media (min-width: 901px) {
+	.oc-gimg-fixed .woocommerce-product-gallery__wrapper .woocommerce-product-gallery__image img:not(.zoomImg) {
+		block-size: var(--oc-gimg-h, 600px);
+		inline-size: 100%;
+		object-fit: cover;
+		object-position: center;
+	}
 }
 
 /* lightbox affordance: the plus follows the cursor (asceno-style) */
@@ -1120,4 +1128,115 @@ body:not(.oc-no-lightbox) .woocommerce-product-gallery__image a { cursor: none; 
 	font-size: .78rem;
 	font-weight: 600;
 	vertical-align: middle;
+}
+
+/* ---------- QA round-5 ---------- */
+
+/* sticky product columns: whichever column is shorter pins while the other
+ * scrolls. A column taller than the viewport simply cannot pin, so applying
+ * sticky to both picks the short one by itself; the grid row ends where the
+ * tabs/related begin, so the pin releases before the next section. */
+@media (min-width: 901px) {
+	.single-product div.product div.images,
+	.single-product div.product div.summary {
+		position: sticky;
+		inset-block-start: 24px;
+	}
+
+	.single-product:has(.oc-header.is-sticky) div.product div.images,
+	.single-product:has(.oc-header.is-sticky) div.product div.summary {
+		inset-block-start: calc(var(--oc-header-h) + 20px);
+	}
+}
+
+/* mobile gallery: a swipe strip instead of the desktop presets */
+.oc-gdots,
+.oc-gnav { display: none; }
+
+@media (max-width: 900px) {
+	.oc-thumbs { display: none; }
+
+	.oc-gm-dots .woocommerce-product-gallery__wrapper,
+	.oc-gm-peek .woocommerce-product-gallery__wrapper {
+		display: flex;
+		overflow-x: auto;
+		scroll-snap-type: x mandatory;
+		scrollbar-width: none;
+	}
+
+	.oc-gm-dots .woocommerce-product-gallery__wrapper::-webkit-scrollbar,
+	.oc-gm-peek .woocommerce-product-gallery__wrapper::-webkit-scrollbar { display: none; }
+
+	.woocommerce.oc-gm-dots div.product div.images .woocommerce-product-gallery__image,
+	.woocommerce.oc-gm-peek div.product div.images .woocommerce-product-gallery__image {
+		display: block;
+		float: none;
+		margin: 0;
+		flex: 0 0 100%;
+		scroll-snap-align: start;
+	}
+
+	/* peek: ~75% wide slides, the next one showing at the edge */
+	.woocommerce.oc-gm-peek div.product div.images .woocommerce-product-gallery__image {
+		flex-basis: 78%;
+	}
+	.oc-gm-peek .woocommerce-product-gallery__wrapper { gap: 8px; }
+
+	/* the classic mobile gallery runs edge to edge, no gaps, square corners */
+	.oc-gm-dots.single-product div.product div.images {
+		margin-inline: calc(-1 * var(--oc-gap));
+	}
+	.oc-gm-dots .woocommerce-product-gallery__image img { border-radius: 0; }
+
+	/* pager dots */
+	.oc-gm-dots .oc-gdots {
+		display: flex;
+		justify-content: center;
+		gap: 7px;
+		margin: 0;
+		padding: 10px 0 0;
+		list-style: none;
+	}
+
+	.oc-gdots button {
+		inline-size: 7px;
+		block-size: 7px;
+		padding: 0;
+		border: 0;
+		border-radius: 50%;
+		background: color-mix(in srgb, var(--oc-ink) 25%, transparent);
+		cursor: pointer;
+	}
+
+	.oc-gdots button[aria-current="true"] { background: var(--oc-ink); }
+
+	/* optional arrows, same bare chevrons as the cards */
+	.oc-gm-arrows .woocommerce-product-gallery { position: relative; }
+
+	.oc-gm-arrows .oc-gnav {
+		display: grid;
+		place-items: center;
+		position: absolute;
+		inset-block-start: 50%;
+		translate: 0 -50%;
+		inline-size: 38px;
+		block-size: 48px;
+		padding: 0;
+		border: 0;
+		background: none;
+		color: var(--oc-ink);
+		z-index: 3;
+	}
+
+	.oc-gnav svg {
+		inline-size: 16px;
+		block-size: 16px;
+		fill: currentColor;
+		filter: drop-shadow(0 0 2px rgb(255 255 255 / 85%));
+	}
+
+	[dir="rtl"] .oc-gnav svg { transform: scaleX(-1); }
+
+	.oc-gnav--prev { inset-inline-start: 6px; }
+	.oc-gnav--next { inset-inline-end: 6px; }
 }

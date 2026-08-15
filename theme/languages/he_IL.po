@@ -377,3 +377,21 @@ msgstr "סגירה"
 
 msgid "Sale!"
 msgstr "מבצע!"
+
+msgid "Stacked"
+msgstr "אחת מתחת לשנייה"
+
+msgid "Full width, one under another"
+msgstr "רוחב מלא · נגלל עם העמוד"
+
+msgid "Gallery — mobile"
+msgstr "גלריה — מובייל"
+
+msgid "Full width with dots"
+msgstr "מקצה לקצה עם נקודות"
+
+msgid "Peek at the next image"
+msgstr "הצצה לתמונה הבאה"
+
+msgid "Arrows on the mobile gallery"
+msgstr "חצים בגלריית המובייל"
