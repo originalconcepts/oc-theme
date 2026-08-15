@@ -28,11 +28,8 @@
 		<exclude name="WordPress.Files.FileName.InvalidClassFileName"/>
 		<!-- Yoda conditions add no safety on a codebase that is linted anyway. -->
 		<exclude name="WordPress.PHP.YodaConditions.NotYoda"/>
-		<!-- Short array syntax is required by our own rule below. -->
-		<exclude name="Generic.Arrays.DisallowShortArraySyntax"/>
 	</rule>
 
-	<rule ref="Universal.Arrays.DisallowLongArraySyntax"/>
 	<rule ref="PHPCompatibilityWP"/>
 
 	<!--

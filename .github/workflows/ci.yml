@@ -59,21 +59,43 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Check whether any block sources exist yet
+        id: src
+        run: |
+          if compgen -G "plugins/*/src/*/block.json" > /dev/null; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "No block sources yet — nothing to build."
+          fi
+
       - uses: actions/setup-node@v4
+        if: steps.src.outputs.exists == 'true'
         with:
           node-version: 20
-          cache: npm
+          # cache:npm returns once package-lock.json is committed with the first block
 
-      - run: npm ci
+      - name: Install
+        if: steps.src.outputs.exists == 'true'
+        run: |
+          if [ -f package-lock.json ]; then npm ci; else npm install; fi
+
       - name: Lint
+        if: steps.src.outputs.exists == 'true'
         run: npm run lint:js
+
       - name: Build
+        if: steps.src.outputs.exists == 'true'
         run: npm run build
 
-      - name: Fail if the build left more than one bundle
-        # oc-main-theme shipped main.ae95360e.js and main.eb0bbfcc.js side by side,
-        # and the enqueue loaded both into the same React root. Never again.
+      - name: Every source block must build to exactly one entrypoint
+        # The old plugin shipped main.ae95360e.js and main.eb0bbfcc.js side by
+        # side and loaded both into the same React root. With wp-scripts each
+        # block builds one unhashed index.js, so src and build must match 1:1.
+        if: steps.src.outputs.exists == 'true'
         run: |
-          count=$(find plugins/*/build -name 'index.js' | wc -l)
-          echo "built entrypoints: $count"
-          test "$count" -eq 1
+          src=$(ls -d plugins/*/src/*/ | wc -l)
+          built=$(find plugins/*/build -name index.js | wc -l)
+          echo "source blocks: $src   built entrypoints: $built"
+          test "$src" -eq "$built"
