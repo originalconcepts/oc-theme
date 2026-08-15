@@ -467,17 +467,20 @@ final class Customizer {
 	 * @param string                $id      Setting id.
 	 * @param string                $section Section id.
 	 * @param string                $label   Label.
-	 * @param array<string,string>  $choices Choices.
-	 * @param string                $def Default value.
-	 * @param callable|null         $active  Optional visibility callback.
+	 * @param array<int|string,string> $choices Choices. Numeric keys arrive as
+	 *                                          ints because PHP coerces them.
+	 * @param string                   $def     Default value.
+	 * @param callable|null            $active  Optional visibility callback.
 	 */
 	private function choice( \WP_Customize_Manager $c, string $id, string $section, string $label, array $choices, string $def, ?callable $active = null ): void {
+		$keys = array_map( 'strval', array_keys( $choices ) );
+
 		$c->add_setting(
 			$id,
 			array(
 				'default'           => $def,
-				'sanitize_callback' => static function ( $value ) use ( $choices, $def ): string {
-					return array_key_exists( (string) $value, $choices ) ? (string) $value : $def;
+				'sanitize_callback' => static function ( $value ) use ( $keys, $def ): string {
+					return in_array( (string) $value, $keys, true ) ? (string) $value : $def;
 				},
 			)
 		);
@@ -630,7 +633,7 @@ final class Customizer {
 		$c->add_setting(
 			$id,
 			array(
-				'default'           => $def,
+				'default'           => $def ? '1' : '',
 				'sanitize_callback' => static function ( $value ): bool {
 					return (bool) $value;
 				},
@@ -665,7 +668,7 @@ final class Customizer {
 		$c->add_setting(
 			$id,
 			array(
-				'default'           => $def,
+				'default'           => (string) $def,
 				'sanitize_callback' => static function ( $value ) use ( $def, $min, $max ): int {
 					$value = (int) $value;
 					return ( $value >= $min && $value <= $max ) ? $value : $def;
