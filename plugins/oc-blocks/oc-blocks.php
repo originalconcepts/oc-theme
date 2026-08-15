@@ -26,8 +26,8 @@ define( 'OC_BLOCKS_DIR', plugin_dir_path( __FILE__ ) );
 /**
  * Register every built block.
  *
- * wp_register_block_types_from_metadata_collection() reads build/blocks-manifest.php,
- * so adding a block means adding a folder — never editing a registration list.
+ * The manifest in build/blocks-manifest.php drives registration, so adding a
+ * block means adding a folder — never editing a registration list.
  */
 function oc_blocks_register(): void {
 	$build = OC_BLOCKS_DIR . 'build';

@@ -40,7 +40,7 @@ require_once OC_THEME_DIR . '/inc/class-oc-woocommerce.php';
 /**
  * Cache-busting version for a theme-relative asset.
  *
- * filemtime(), never time(). The old theme used time() on ~30 files, which
+ * Uses filemtime(), never time(). The old theme used time() on ~30 files, which
  * gave every asset a new version on every page load and disabled browser and
  * CDN caching site-wide.
  *
@@ -55,7 +55,7 @@ function oc_asset_version( string $relative ): string {
 /**
  * Theme supports and translations.
  *
- * load_theme_textdomain() belongs on after_setup_theme. The old theme called
+ * The textdomain load belongs on after_setup_theme. The old theme called
  * it at file scope, before init, so translations silently never loaded — which
  * is why Hebrew ended up hardcoded throughout the PHP.
  */

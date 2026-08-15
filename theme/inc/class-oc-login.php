@@ -41,6 +41,8 @@ final class Gate {
 	private bool $is_login_request = false;
 
 	/**
+	 * Store the private slug.
+	 *
 	 * @param string $slug Private login slug.
 	 */
 	public function __construct( string $slug ) {
@@ -127,7 +129,7 @@ final class Gate {
 	 */
 	private function is_permitted_login_action(): bool {
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reading a routing flag, not acting on it.
-		$action = isset( $_REQUEST['action'] ) ? sanitize_key( wp_unslash( $_REQUEST['action'] ) ) : '';
+		$action  = isset( $_REQUEST['action'] ) ? sanitize_key( wp_unslash( $_REQUEST['action'] ) ) : '';
 		$interim = isset( $_REQUEST['interim-login'] );
 		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 

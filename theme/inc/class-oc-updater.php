@@ -50,6 +50,8 @@ final class Updater {
 	private string $repo;
 
 	/**
+	 * Store the update source.
+	 *
 	 * @param string $slug    Theme directory name.
 	 * @param string $version Installed version.
 	 * @param string $repo    GitHub owner/repo.
