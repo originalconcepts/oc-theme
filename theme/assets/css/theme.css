@@ -657,10 +657,17 @@ li.product:focus-within .oc-card-atc,
 
 /* ---------- native gallery (no flexslider) ---------- */
 
-/* thumbnail presets: one active image; the rest hide until picked */
-.oc-gallery-thumbs-side .woocommerce-product-gallery__wrapper > .woocommerce-product-gallery__image:not(.is-active),
-.oc-gallery-thumbs-under .woocommerce-product-gallery__wrapper > .woocommerce-product-gallery__image:not(.is-active) {
+/* thumbnail presets: one active image; the rest hide until picked.
+ * Specificity matched against woo's nth-child(n+2){display:inline-block}. */
+.woocommerce.oc-gallery-thumbs-side div.product div.images .woocommerce-product-gallery__image:not(.is-active),
+.woocommerce.oc-gallery-thumbs-under div.product div.images .woocommerce-product-gallery__image:not(.is-active) {
 	display: none;
+}
+
+.woocommerce.oc-gallery-thumbs-side div.product div.images .woocommerce-product-gallery__image.is-active,
+.woocommerce.oc-gallery-thumbs-under div.product div.images .woocommerce-product-gallery__image.is-active {
+	display: block;
+	width: 100%;
 }
 
 .woocommerce.oc-gallery-thumbs-side div.product div.images .woocommerce-product-gallery__image,
