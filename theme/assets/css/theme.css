@@ -597,6 +597,7 @@ li.product:focus-within .oc-card-atc,
 .oc-card-media--gallery .oc-card-media__strip {
 	display: flex;
 	overflow-x: auto;
+	scroll-behavior: smooth;
 	scroll-snap-type: x mandatory;
 	scrollbar-width: none;
 	border-radius: var(--oc-radius, 8px);

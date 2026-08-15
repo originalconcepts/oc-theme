@@ -43,13 +43,12 @@
 			return;
 		}
 
-		// In RTL scrollLeft runs negative; scrollBy handles both directions.
+		// In RTL scrollLeft runs negative. Direct assignment + CSS
+		// scroll-behavior:smooth animates in real browsers and still moves in
+		// environments with a frozen animation pipeline.
 		function step( dir ) {
 			var rtl = getComputedStyle( strip ).direction === 'rtl';
-			strip.scrollBy( {
-				left: ( rtl ? -dir : dir ) * strip.clientWidth,
-				behavior: 'smooth'
-			} );
+			strip.scrollLeft += ( rtl ? -dir : dir ) * strip.clientWidth;
 		}
 
 		media.querySelectorAll( '.oc-card-media__nav' ).forEach( function ( btn ) {
