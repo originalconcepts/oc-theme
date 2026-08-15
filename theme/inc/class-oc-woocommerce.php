@@ -53,6 +53,15 @@ final class WooCommerce {
 		remove_action( 'woocommerce_before_shop_loop_item_title', 'woocommerce_template_loop_product_thumbnail', 10 );
 		add_action( 'woocommerce_before_shop_loop_item_title', array( $this, 'card_media' ), 10 );
 
+		// The loop add-to-cart becomes a round icon over the image; the text
+		// button goes away. Rendered inside card_media() so it can sit on the
+		// image.
+		remove_action( 'woocommerce_after_shop_loop_item', 'woocommerce_template_loop_add_to_cart', 10 );
+
+		// Cart drawer shell — WooCommerce's fragments fill it after an
+		// ajax add, so it needs no bespoke endpoint.
+		add_action( 'wp_footer', array( $this, 'cart_drawer' ) );
+
 		// Breadcrumb: the position is read inside the renderer, so one hook per
 		// location is enough and the preview always matches.
 		remove_action( 'woocommerce_before_main_content', 'woocommerce_breadcrumb', 20 );
@@ -103,6 +112,13 @@ final class WooCommerce {
 
 		if ( get_theme_mod( 'oc_product_sticky_atc', true ) ) {
 			add_action( 'woocommerce_after_single_product', array( $this, 'sticky_bar' ) );
+		}
+
+		// "Beside the gallery": the tabs physically move into the summary
+		// column, after add-to-cart, instead of the full-width row below.
+		if ( 'side' === get_theme_mod( 'oc_product_tabs_pos', 'below' ) ) {
+			remove_action( 'woocommerce_after_single_product_summary', 'woocommerce_output_product_data_tabs', 10 );
+			add_action( 'woocommerce_single_product_summary', 'woocommerce_output_product_data_tabs', 35 );
 		}
 	}
 
@@ -220,6 +236,11 @@ final class WooCommerce {
 			$classes[] = 'oc-tabs-' . sanitize_html_class( (string) get_theme_mod( 'oc_product_tabs', 'accordion' ) );
 			$classes[] = 'oc-tabspos-' . sanitize_html_class( (string) get_theme_mod( 'oc_product_tabs_pos', 'below' ) );
 			$classes[] = 'oc-wide-' . sanitize_html_class( (string) get_theme_mod( 'oc_gallery_mosaic_wide_pos', 'end' ) );
+			$classes[] = 'oc-ratio-' . sanitize_html_class( (string) get_theme_mod( 'oc_product_cols_ratio', '50-50' ) );
+
+			if ( ! get_theme_mod( 'oc_gallery_lightbox', true ) ) {
+				$classes[] = 'oc-no-lightbox';
+			}
 		}
 
 		return $classes;
@@ -265,9 +286,12 @@ final class WooCommerce {
 			printf( '<figure class="oc-card-media__item%s">', 0 === $i ? ' is-first' : '' );
 			echo wp_get_attachment_image( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- core-generated markup.
 				$id,
-				'woocommerce_thumbnail',
+				'large',
 				false,
-				array( 'loading' => 0 === $i ? 'eager' : 'lazy' )
+				array(
+					'loading' => 0 === $i ? 'eager' : 'lazy',
+					'sizes'   => '(max-width: 900px) 50vw, 25vw',
+				)
 			);
 			echo '</figure>';
 		}
@@ -275,14 +299,63 @@ final class WooCommerce {
 		echo '</div>';
 
 		if ( 'gallery' === $mode ) {
-			echo '<span class="oc-card-media__dots" aria-hidden="true">';
-			foreach ( $ids as $i => $id ) {
-				printf( '<i%s></i>', 0 === $i ? ' class="is-on"' : '' );
-			}
-			echo '</span>';
+			printf(
+				'<button type="button" class="oc-card-media__nav oc-card-media__nav--prev" aria-label="%s"></button>' .
+				'<button type="button" class="oc-card-media__nav oc-card-media__nav--next" aria-label="%s"></button>',
+				esc_attr__( 'Previous image', 'oc-theme' ),
+				esc_attr__( 'Next image', 'oc-theme' )
+			);
 		}
 
+		$this->card_atc_icon();
+
 		echo '</div>';
+	}
+
+	/**
+	 * Round add-to-cart icon over the card image. Simple products add via
+	 * WooCommerce's own ajax handler; anything needing options links through
+	 * to the product page.
+	 */
+	private function card_atc_icon(): void {
+		global $product;
+
+		if ( 'none' === get_theme_mod( 'oc_card_atc', 'always' ) || ! $product->is_purchasable() || ! $product->is_in_stock() ) {
+			return;
+		}
+
+		$simple = $product->is_type( 'simple' );
+		$class  = 'oc-card-atc' . ( $simple ? ' add_to_cart_button ajax_add_to_cart' : '' );
+
+		printf(
+			'<a href="%s" data-quantity="1" data-product_id="%d" class="%s" aria-label="%s" rel="nofollow">%s</a>',
+			esc_url( $simple ? '?add-to-cart=' . $product->get_id() : $product->get_permalink() ),
+			absint( $product->get_id() ),
+			esc_attr( $class ),
+			esc_attr( $product->add_to_cart_text() ),
+			// Cart icon, inline so it inherits colour.
+			'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.6"/><circle cx="17" cy="20" r="1.6"/><path d="M3 3h2.5l2.2 11.2a1.6 1.6 0 0 0 1.6 1.3h7.6a1.6 1.6 0 0 0 1.6-1.3L20 7H6"/></svg>'
+		);
+	}
+
+	/**
+	 * Cart drawer shell. WooCommerce's cart-fragments script populates
+	 * .widget_shopping_cart_content on every ajax add, so the drawer stays in
+	 * sync with no custom endpoint.
+	 */
+	public function cart_drawer(): void {
+		?>
+		<div class="oc-drawer" data-oc-cart-drawer hidden>
+			<div class="oc-drawer__overlay" data-oc-drawer-close tabindex="-1"></div>
+			<aside class="oc-drawer__panel" role="dialog" aria-modal="true" aria-label="<?php esc_attr_e( 'Cart', 'oc-theme' ); ?>">
+				<header class="oc-drawer__head">
+					<h2><?php esc_html_e( 'Cart', 'oc-theme' ); ?></h2>
+					<button type="button" class="oc-drawer__close" data-oc-drawer-close aria-label="<?php esc_attr_e( 'Close', 'oc-theme' ); ?>">&times;</button>
+				</header>
+				<div class="widget_shopping_cart_content"></div>
+			</aside>
+		</div>
+		<?php
 	}
 
 	/**

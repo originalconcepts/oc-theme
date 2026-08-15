@@ -34,37 +34,88 @@
 		} );
 	}
 
-	/* ---------- card gallery: active dot follows the scroll ---------- */
+	/* ---------- card gallery: hover arrows drive the scroll-snap strip ---------- */
 
 	document.querySelectorAll( '.oc-card-media--gallery' ).forEach( function ( media ) {
 		var strip = media.querySelector( '.oc-card-media__strip' );
-		var dots = media.querySelectorAll( '.oc-card-media__dots i' );
 
-		if ( ! strip || ! dots.length ) {
+		if ( ! strip ) {
 			return;
 		}
 
-		var ticking = false;
+		// In RTL scrollLeft runs negative; scrollBy handles both directions.
+		function step( dir ) {
+			var rtl = getComputedStyle( strip ).direction === 'rtl';
+			strip.scrollBy( {
+				left: ( rtl ? -dir : dir ) * strip.clientWidth,
+				behavior: 'smooth'
+			} );
+		}
 
-		strip.addEventListener( 'scroll', function () {
-			if ( ticking ) {
+		media.querySelectorAll( '.oc-card-media__nav' ).forEach( function ( btn ) {
+			btn.addEventListener( 'click', function ( event ) {
+				event.preventDefault();
+				event.stopPropagation();
+				step( btn.classList.contains( 'oc-card-media__nav--next' ) ? 1 : -1 );
+			} );
+		} );
+	} );
+
+	/* ---------- card add-to-cart icon → cart drawer ---------- */
+
+	var drawer = document.querySelector( '[data-oc-cart-drawer]' );
+
+	function openDrawer() {
+		if ( ! drawer ) {
+			return;
+		}
+		drawer.hidden = false;
+		requestAnimationFrame( function () {
+			drawer.classList.add( 'is-open' );
+		} );
+		document.documentElement.style.overflow = 'hidden';
+	}
+
+	function closeDrawer() {
+		if ( ! drawer ) {
+			return;
+		}
+		drawer.classList.remove( 'is-open' );
+		document.documentElement.style.overflow = '';
+		setTimeout( function () {
+			drawer.hidden = true;
+		}, 220 );
+	}
+
+	if ( drawer ) {
+		drawer.addEventListener( 'click', function ( event ) {
+			if ( event.target.closest( '[data-oc-drawer-close]' ) ) {
+				closeDrawer();
+			}
+		} );
+
+		document.addEventListener( 'keydown', function ( event ) {
+			if ( event.key === 'Escape' && ! drawer.hidden ) {
+				closeDrawer();
+			}
+		} );
+
+		// Simple products add through Woo's own ajax handler; open the drawer
+		// right away and let cart fragments fill it when the add completes.
+		document.addEventListener( 'click', function ( event ) {
+			var btn = event.target.closest( '.oc-card-atc.ajax_add_to_cart' );
+			if ( ! btn ) {
 				return;
 			}
-			ticking = true;
-
-			requestAnimationFrame( function () {
-				ticking = false;
-
-				var index = Math.round(
-					Math.abs( strip.scrollLeft ) / strip.clientWidth
-				);
-
-				dots.forEach( function ( dot, i ) {
-					dot.classList.toggle( 'is-on', i === index );
-				} );
-			} );
-		}, { passive: true } );
-	} );
+			btn.classList.add( 'loading' );
+			openDrawer();
+			// Woo's add-to-cart JS handles the request itself.
+			setTimeout( function () {
+				btn.classList.remove( 'loading' );
+				btn.classList.add( 'added' );
+			}, 900 );
+		} );
+	}
 
 	/* ---------- product tabs → accordion ---------- */
 
@@ -100,31 +151,34 @@
 		} );
 	}
 
-	/* ---------- lightbox: add-to-cart under the image ---------- */
+	/* ---------- gallery: plus circle follows the cursor (asceno-style) ---------- */
 
-	var pswpRoot = document.querySelector( '.pswp' );
-	var cartForm = document.querySelector( 'form.cart' );
+	var gallery = document.querySelector( '.woocommerce-product-gallery' );
 
-	if ( pswpRoot && cartForm && window.ocL10n ) {
-		var cta = document.createElement( 'div' );
-		cta.className = 'oc-pswp-atc';
-		cta.innerHTML = '<button type="button">' + window.ocL10n.addToCart + '</button>';
-		pswpRoot.appendChild( cta );
+	if ( gallery && ! document.body.classList.contains( 'oc-no-lightbox' ) &&
+		window.matchMedia( '(hover: hover)' ).matches ) {
 
-		cta.querySelector( 'button' ).addEventListener( 'click', function () {
-			var submit = cartForm.querySelector( '[type="submit"]' );
-			var pswpUi = window.pswp || null;
+		var plus = document.createElement( 'span' );
+		plus.className = 'oc-cursor-plus';
+		plus.setAttribute( 'aria-hidden', 'true' );
+		document.body.appendChild( plus );
 
-			if ( pswpUi && pswpUi.close ) {
-				pswpUi.close();
-			}
-
-			if ( submit && ! submit.disabled && ! cartForm.classList.contains( 'variations_form' ) ) {
-				submit.click();
+		gallery.addEventListener( 'mousemove', function ( event ) {
+			if ( event.target.closest( '.flex-control-thumbs' ) ) {
+				plus.classList.remove( 'is-on' );
 				return;
 			}
+			if ( event.target.closest( '.woocommerce-product-gallery__image' ) ) {
+				plus.classList.add( 'is-on' );
+				plus.style.insetBlockStart = event.clientY + 'px';
+				plus.style.insetInlineStart = event.clientX + 'px';
+			} else {
+				plus.classList.remove( 'is-on' );
+			}
+		} );
 
-			cartForm.scrollIntoView( { behavior: 'smooth', block: 'center' } );
+		gallery.addEventListener( 'mouseleave', function () {
+			plus.classList.remove( 'is-on' );
 		} );
 	}
 

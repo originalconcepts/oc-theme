@@ -308,3 +308,48 @@ msgstr "יישור כותרות הסקשנים"
 
 msgid "Add to cart"
 msgstr "הוספה לסל"
+
+msgid "Site background colour"
+msgstr "צבע רקע כללי"
+
+msgid "Button style"
+msgstr "סגנון כפתורים"
+
+msgid "Filled"
+msgstr "מלא"
+
+msgid "Outline"
+msgstr "קווי"
+
+msgid "Space between products"
+msgstr "ריווח בין מוצרים"
+
+msgid "Page width override (0 = inherit)"
+msgstr "רוחב עמוד (0 = יורש מהראשי)"
+
+msgid "Page background override"
+msgstr "צבע רקע לעמוד (דורס את הראשי)"
+
+msgid "Gallery / content width"
+msgstr "רוחב גלריה / תוכן"
+
+msgid "Equal"
+msgstr "שווה"
+
+msgid "Wide gallery"
+msgstr "גלריה רחבה"
+
+msgid "Wide content"
+msgstr "תוכן רחב"
+
+msgid "Previous image"
+msgstr "התמונה הקודמת"
+
+msgid "Next image"
+msgstr "התמונה הבאה"
+
+msgid "Cart"
+msgstr "עגלת קניות"
+
+msgid "Close"
+msgstr "סגירה"

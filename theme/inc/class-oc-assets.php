@@ -88,6 +88,8 @@ final class Assets {
 				'--oc-thumbs-w'       => absint( get_theme_mod( 'oc_gallery_thumb_size', 80 ) ) . 'px',
 				'--oc-primary-user'   => (string) get_theme_mod( 'oc_color_primary', '' ),
 				'--oc-secondary-user' => (string) get_theme_mod( 'oc_color_secondary', '' ),
+				'--oc-bg-user'        => (string) get_theme_mod( 'oc_bg_color', '' ),
+				'--oc-grid-gap'       => (string) get_theme_mod( 'oc_card_gap', '' ),
 			)
 		);
 
@@ -99,14 +101,48 @@ final class Assets {
 			$css .= sprintf( '%s:%s;', $this->safe_property( $name ), $this->safe_value( $value ) );
 		}
 
+		$css .= $this->context_overrides();
+
 		if ( '' === $css ) {
 			return;
 		}
 
-		printf(
-			"<style id='oc-tokens'>:root{%s}</style>\n",
-			esc_html( $css )
-		);
+		// Values passed through safe_property()/safe_value(), which strip
+		// anything that could escape the declaration. esc_html() here would
+		// turn font-name quotes into &quot; and void the declarations — the
+		// bug that made the font settings appear dead.
+		echo "<style id='oc-tokens'>:root{" . $css . "}</style>\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+	}
+
+	/**
+	 * Page-scoped overrides: catalogue, product and checkout pages may carry
+	 * their own width and background, beating the global values.
+	 *
+	 * @return string Extra declarations, possibly empty.
+	 */
+	private function context_overrides(): string {
+		$width = 0;
+		$bg    = '';
+
+		if ( function_exists( 'is_product' ) && is_product() ) {
+			$width = absint( get_theme_mod( 'oc_product_width_px', 0 ) );
+			$bg    = (string) get_theme_mod( 'oc_product_bg', '' );
+		} elseif ( function_exists( 'is_shop' ) && ( is_shop() || is_product_taxonomy() ) ) {
+			$width = absint( get_theme_mod( 'oc_catalog_width_px', 0 ) );
+			$bg    = (string) get_theme_mod( 'oc_catalog_bg', '' );
+		} elseif ( function_exists( 'is_checkout' ) && ( is_checkout() || is_cart() ) ) {
+			$bg = (string) get_theme_mod( 'oc_checkout_bg', '' );
+		}
+
+		$out = '';
+		if ( $width > 0 ) {
+			$out .= '--oc-content-width:' . $width . 'px;';
+		}
+		if ( '' !== $bg ) {
+			$out .= '--oc-bg-user:' . $this->safe_value( $bg ) . ';';
+		}
+
+		return $out;
 	}
 
 	/**

@@ -98,6 +98,19 @@ final class Customizer {
 
 		$this->color( $c, 'oc_color_primary', 'oc_design', __( 'Primary colour', 'oc-theme' ) );
 		$this->color( $c, 'oc_color_secondary', 'oc_design', __( 'Secondary colour', 'oc-theme' ) );
+		$this->color( $c, 'oc_bg_color', 'oc_design', __( 'Site background colour', 'oc-theme' ) );
+
+		$this->choice(
+			$c,
+			'oc_button_style',
+			'oc_design',
+			__( 'Button style', 'oc-theme' ),
+			array(
+				'filled'  => __( 'Filled', 'oc-theme' ),
+				'outline' => __( 'Outline', 'oc-theme' ),
+			),
+			'filled'
+		);
 
 		$fonts = array(
 			''             => __( 'System', 'oc-theme' ),
@@ -189,6 +202,23 @@ final class Customizer {
 		);
 
 		$this->number( $c, 'oc_catalog_per_page', $section, __( 'Products per page (-1 shows all)', 'oc-theme' ), 24, -1, 200 );
+
+		$this->choice(
+			$c,
+			'oc_card_gap',
+			$section,
+			__( 'Space between products', 'oc-theme' ),
+			array(
+				'0px'  => __( 'None', 'oc-theme' ),
+				'8px'  => __( 'Small', 'oc-theme' ),
+				'20px' => __( 'Regular', 'oc-theme' ),
+				'32px' => __( 'Large', 'oc-theme' ),
+			),
+			'20px'
+		);
+
+		$this->number( $c, 'oc_catalog_width_px', $section, __( 'Page width override (0 = inherit)', 'oc-theme' ), 0, 0, 1920 );
+		$this->color( $c, 'oc_catalog_bg', $section, __( 'Page background override', 'oc-theme' ) );
 	}
 
 	/**
@@ -347,6 +377,22 @@ final class Customizer {
 			'212px'
 		);
 
+		$this->choice(
+			$c,
+			'oc_product_cols_ratio',
+			'oc_product',
+			__( 'Gallery / content width', 'oc-theme' ),
+			array(
+				'50-50' => __( 'Equal', 'oc-theme' ),
+				'60-40' => __( 'Wide gallery', 'oc-theme' ),
+				'40-60' => __( 'Wide content', 'oc-theme' ),
+			),
+			'50-50'
+		);
+
+		$this->number( $c, 'oc_product_width_px', 'oc_product', __( 'Page width override (0 = inherit)', 'oc-theme' ), 0, 0, 1920 );
+		$this->color( $c, 'oc_product_bg', 'oc_product', __( 'Page background override', 'oc-theme' ) );
+
 		$this->preset(
 			$c,
 			'oc_gallery_preset',
@@ -469,8 +515,8 @@ final class Customizer {
 	 * @param string                   $label   Label.
 	 * @param array<int|string,string> $choices Choices. Numeric keys arrive as
 	 *                                          ints because PHP coerces them.
-	 * @param string                   $def     Default value.
-	 * @param callable|null            $active  Optional visibility callback.
+	 * @param string        $def    Default value.
+	 * @param callable|null $active Optional visibility callback.
 	 */
 	private function choice( \WP_Customize_Manager $c, string $id, string $section, string $label, array $choices, string $def, ?callable $active = null ): void {
 		$keys = array_map( 'strval', array_keys( $choices ) );

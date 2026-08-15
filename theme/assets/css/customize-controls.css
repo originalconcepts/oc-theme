@@ -220,3 +220,16 @@
 	.oc-toggle__track,
 	.oc-toggle__track::after { transition: none; }
 }
+
+/* ---------- RTL: core Customizer arrows point the wrong way ---------- */
+
+.rtl .customize-panel-back .dashicons-arrow-left::before,
+.rtl .customize-section-back .dashicons-arrow-left::before {
+	content: "\f345"; /* arrow-right: "back" points toward the panel list in RTL */
+}
+
+.rtl .accordion-section-title::after,
+.rtl .customize-pane-parent .accordion-section-title::after,
+.rtl .customize-pane-child .accordion-section-title::after {
+	content: "\f341"; /* arrow-left: "enter" points into the section in RTL */
+}
