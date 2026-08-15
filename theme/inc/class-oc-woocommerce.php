@@ -103,11 +103,10 @@ final class WooCommerce {
 			remove_theme_support( 'wc-product-gallery-lightbox' );
 		}
 
-		if ( get_theme_mod( 'oc_gallery_zoom', true ) ) {
-			add_theme_support( 'wc-product-gallery-zoom' );
-		} else {
-			remove_theme_support( 'wc-product-gallery-zoom' );
-		}
+		// Woo's zoom binds $images.first() only — with the slider gone, images
+		// after the first never zoom. The theme ships its own hover zoom that
+		// binds every image (see theme.js), so core zoom stays off.
+		remove_theme_support( 'wc-product-gallery-zoom' );
 
 		if ( ! get_theme_mod( 'oc_product_related', true ) ) {
 			remove_action( 'woocommerce_after_single_product_summary', 'woocommerce_output_related_products', 20 );
@@ -303,6 +302,10 @@ final class WooCommerce {
 
 			if ( 'fixed' === get_theme_mod( 'oc_gallery_img_height', 'auto' ) ) {
 				$classes[] = 'oc-gimg-fixed';
+			}
+
+			if ( get_theme_mod( 'oc_gallery_zoom', true ) ) {
+				$classes[] = 'oc-zoom';
 			}
 		}
 

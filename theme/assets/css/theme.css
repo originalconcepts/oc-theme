@@ -773,6 +773,17 @@ li.product:focus-within .oc-card-atc,
 	border-radius: var(--oc-radius, 8px);
 }
 
+/* native hover zoom: the image scales inside its clipped, rounded box */
+.oc-zoom .woocommerce-product-gallery__image {
+	overflow: hidden;
+	border-radius: var(--oc-radius, 8px);
+}
+
+.oc-zoom .woocommerce-product-gallery__image img:not(.zoomImg) {
+	transition: transform .12s ease-out;
+	will-change: transform;
+}
+
 .oc-gallery-grid .woocommerce-product-gallery__image img,
 .oc-gallery-mosaic .woocommerce-product-gallery__image img {
 	inline-size: 100%;

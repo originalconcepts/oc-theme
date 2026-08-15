@@ -212,18 +212,54 @@
 						other.setAttribute( 'aria-current', 'false' );
 					} );
 					btn.setAttribute( 'aria-current', 'true' );
-
-					// Zoom binds to visible images at init; rebind for the
-					// newly revealed one. Woo's gallery listens (via jQuery,
-					// which registers native listeners) for this event.
-					galleryWrap.parentElement.dispatchEvent(
-						new Event( 'woocommerce_gallery_init_zoom', { bubbles: true } )
-					);
 				} );
 			} );
 
 			galleryWrap.parentElement.appendChild( rail );
 		}
+	}
+
+	/* ---------- native gallery zoom ----------
+	 * Woo's own zoom binds $images.first() only, so with the slider removed
+	 * every image after the first stayed static. This binds them all. */
+
+	var zoomGallery = document.querySelector( '.woocommerce-product-gallery' );
+
+	if ( zoomGallery && document.body.classList.contains( 'oc-zoom' ) &&
+		window.matchMedia( '(hover: hover)' ).matches ) {
+
+		zoomGallery.addEventListener( 'mousemove', function ( event ) {
+			var box = event.target.closest( '.woocommerce-product-gallery__image' );
+			if ( ! box || event.target.closest( '.oc-thumbs' ) ) {
+				return;
+			}
+
+			var img = box.querySelector( 'img' );
+			if ( ! img ) {
+				return;
+			}
+
+			var rect = box.getBoundingClientRect();
+			// Zoom to roughly natural size, clamped so small and huge
+			// originals both stay usable.
+			var scale = img.naturalWidth > 0 ?
+				Math.max( 1.6, Math.min( 2.5, img.naturalWidth / rect.width ) ) : 2;
+
+			img.style.transformOrigin =
+				( ( event.clientX - rect.left ) / rect.width * 100 ) + '% ' +
+				( ( event.clientY - rect.top ) / rect.height * 100 ) + '%';
+			img.style.transform = 'scale(' + scale + ')';
+		} );
+
+		zoomGallery.addEventListener( 'mouseout', function ( event ) {
+			var box = event.target.closest( '.woocommerce-product-gallery__image' );
+			if ( box && ! ( event.relatedTarget && box.contains( event.relatedTarget ) ) ) {
+				var img = box.querySelector( 'img' );
+				if ( img ) {
+					img.style.transform = '';
+				}
+			}
+		} );
 	}
 
 	/* ---------- gallery: plus circle follows the cursor (asceno-style) ---------- */
