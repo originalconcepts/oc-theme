@@ -94,6 +94,11 @@ final class Customizer {
 			'1'
 		);
 
+		$density_control = $c->get_control( 'oc_density' );
+		if ( null !== $density_control ) {
+			$density_control->description = __( 'Page margins, grid gaps and card padding. Text size is not affected.', 'oc-theme' );
+		}
+
 		$this->number( $c, 'oc_content_width_px', 'oc_design', __( 'Content width (px)', 'oc-theme' ), 1280, 960, 1600 );
 
 		$this->color( $c, 'oc_color_primary', 'oc_design', __( 'Primary colour', 'oc-theme' ) );
@@ -252,6 +257,11 @@ final class Customizer {
 					'label' => __( 'Minimal', 'oc-theme' ),
 					'hint'  => __( 'No border, start-aligned', 'oc-theme' ),
 					'svg'   => self::wf( '0 0 80 100', self::rect( 3, 3, 74, 62, 'im', 2 ) . self::rect( 45, 72, 32, 3.4, 'ln' ) . self::rect( 59, 80, 18, 3.4, 'ac' ) ),
+				),
+				'minimal-center' => array(
+					'label' => __( 'Minimal centred', 'oc-theme' ),
+					'hint'  => __( 'No border, centred', 'oc-theme' ),
+					'svg'   => self::wf( '0 0 80 100', self::rect( 3, 3, 74, 62, 'im', 2 ) . self::rect( 24, 72, 32, 3.4, 'ln' ) . self::rect( 31, 80, 18, 3.4, 'ac' ) ),
 				),
 				'card'    => array(
 					'label' => __( 'Card', 'oc-theme' ),
@@ -454,6 +464,31 @@ final class Customizer {
 			),
 			'80',
 			$thumbs_active
+		);
+
+		$this->choice(
+			$c,
+			'oc_gallery_img_height',
+			'oc_product',
+			__( 'Gallery image height', 'oc-theme' ),
+			array(
+				'auto'  => __( 'Original', 'oc-theme' ),
+				'fixed' => __( 'Uniform', 'oc-theme' ),
+			),
+			'auto'
+		);
+
+		$this->number(
+			$c,
+			'oc_gallery_img_height_px',
+			'oc_product',
+			__( 'Uniform height (px)', 'oc-theme' ),
+			600,
+			240,
+			1000,
+			static function (): bool {
+				return 'fixed' === get_theme_mod( 'oc_gallery_img_height', 'auto' );
+			}
 		);
 
 		$this->toggle( $c, 'oc_gallery_lightbox', 'oc_product', __( 'Open images in a lightbox', 'oc-theme' ), true );

@@ -44,6 +44,16 @@ final class WooCommerce {
 		add_filter( 'loop_shop_columns', array( $this, 'columns' ) );
 		add_filter( 'loop_shop_per_page', array( $this, 'per_page' ) );
 		add_filter( 'woocommerce_product_thumbnails_columns', array( $this, 'gallery_columns' ) );
+
+		// Without the flexslider support flag WooCommerce falls back to the
+		// 100px gallery_thumbnail size for every image after the first — which
+		// rendered them pixelated and killed zoom on them (QA round 4). Every
+		// gallery image is a real single-product image.
+		add_filter( 'woocommerce_gallery_image_size', array( $this, 'gallery_image_size' ) );
+
+		// Sale mark on the product page sits next to the price, not on the
+		// image; the price prints at priority 10.
+		add_action( 'woocommerce_single_product_summary', array( $this, 'price_badge' ), 11 );
 		add_filter( 'woocommerce_breadcrumb_defaults', array( $this, 'breadcrumb_defaults' ) );
 		add_filter( 'body_class', array( $this, 'body_class' ) );
 		add_filter( 'woocommerce_sale_flash', array( $this, 'sale_badge' ), 10, 3 );
@@ -193,6 +203,43 @@ final class WooCommerce {
 	}
 
 	/**
+	 * Full-quality size for every gallery image, not just the first.
+	 *
+	 * @return string
+	 */
+	public function gallery_image_size(): string {
+		return 'woocommerce_single';
+	}
+
+	/**
+	 * Sale mark beside the price on the product page. Follows the same badge
+	 * setting as the cards.
+	 */
+	public function price_badge(): void {
+		global $product;
+
+		$mode = (string) get_theme_mod( 'oc_card_sale_badge', 'percent' );
+
+		if ( 'none' === $mode || ! $product instanceof \WC_Product || ! $product->is_on_sale() ) {
+			return;
+		}
+
+		$text = __( 'Sale!', 'woocommerce' );
+
+		if ( 'percent' === $mode ) {
+			$percent = $this->discount_percent( $product );
+
+			if ( 0 === $percent ) {
+				return;
+			}
+
+			$text = sprintf( '‎-%s%%', $percent );
+		}
+
+		printf( '<span class="oc-price-badge">%s</span>', esc_html( $text ) );
+	}
+
+	/**
 	 * Hand the thumbs cap to the native gallery script.
 	 */
 	public function thumbs_max_attribute(): void {
@@ -232,6 +279,7 @@ final class WooCommerce {
 		$classes[] = 'oc-cols-m-' . max( 1, (int) get_theme_mod( 'oc_catalog_cols_mobile', 2 ) );
 		$classes[] = 'oc-card-' . sanitize_html_class( (string) get_theme_mod( 'oc_card_preset', 'classic' ) );
 		$classes[] = 'oc-atc-' . sanitize_html_class( (string) get_theme_mod( 'oc_card_atc', 'always' ) );
+		$classes[] = 'oc-btn-' . sanitize_html_class( (string) get_theme_mod( 'oc_button_style', 'filled' ) );
 
 		if ( 'center' === get_theme_mod( 'oc_catalog_title_align', 'start' ) ) {
 			$classes[] = 'oc-title-center';
@@ -251,6 +299,10 @@ final class WooCommerce {
 
 			if ( ! get_theme_mod( 'oc_gallery_lightbox', true ) ) {
 				$classes[] = 'oc-no-lightbox';
+			}
+
+			if ( 'fixed' === get_theme_mod( 'oc_gallery_img_height', 'auto' ) ) {
+				$classes[] = 'oc-gimg-fixed';
 			}
 		}
 
@@ -310,11 +362,18 @@ final class WooCommerce {
 		echo '</div>';
 
 		if ( 'gallery' === $mode ) {
+			// Thin bare chevrons, the furniture reference look. Drawn physically
+			// (left/right); the stylesheet flips both together for RTL.
+			$left  = '<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M 70,0 L 20,50 L 70,100 L 80,90 L 40,50 L 80,10 Z"/></svg>';
+			$right = '<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M 30,0 L 80,50 L 30,100 L 20,90 L 60,50 L 20,10 Z"/></svg>';
+
 			printf(
-				'<button type="button" class="oc-card-media__nav oc-card-media__nav--prev" aria-label="%s"></button>' .
-				'<button type="button" class="oc-card-media__nav oc-card-media__nav--next" aria-label="%s"></button>',
+				'<button type="button" class="oc-card-media__nav oc-card-media__nav--prev" aria-label="%s">%s</button>' .
+				'<button type="button" class="oc-card-media__nav oc-card-media__nav--next" aria-label="%s">%s</button>',
 				esc_attr__( 'Previous image', 'oc-theme' ),
-				esc_attr__( 'Next image', 'oc-theme' )
+				$left, // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static SVG.
+				esc_attr__( 'Next image', 'oc-theme' ),
+				$right // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static SVG.
 			);
 		}
 
@@ -344,8 +403,10 @@ final class WooCommerce {
 			absint( $product->get_id() ),
 			esc_attr( $class ),
 			esc_attr( $product->add_to_cart_text() ),
-			// Cart icon, inline so it inherits colour.
-			'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.6"/><circle cx="17" cy="20" r="1.6"/><path d="M3 3h2.5l2.2 11.2a1.6 1.6 0 0 0 1.6 1.3h7.6a1.6 1.6 0 0 0 1.6-1.3L20 7H6"/></svg>'
+			// Cart icon plus a check for the "added" state, inline so both
+			// inherit colour.
+			'<svg class="oc-card-atc__cart" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.6"/><circle cx="17" cy="20" r="1.6"/><path d="M3 3h2.5l2.2 11.2a1.6 1.6 0 0 0 1.6 1.3h7.6a1.6 1.6 0 0 0 1.6-1.3L20 7H6"/></svg>' .
+			'<svg class="oc-card-atc__check" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 12.5l5 5 10-11"/></svg>'
 		);
 	}
 

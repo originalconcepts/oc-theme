@@ -86,6 +86,7 @@ final class Assets {
 				'--oc-content-width'  => absint( get_theme_mod( 'oc_content_width_px', 1280 ) ) . 'px',
 				'--oc-card-ratio'     => (string) get_theme_mod( 'oc_card_ratio', '1/1' ),
 				'--oc-thumbs-w'       => absint( get_theme_mod( 'oc_gallery_thumb_size', 80 ) ) . 'px',
+				'--oc-gimg-h'         => absint( get_theme_mod( 'oc_gallery_img_height_px', 600 ) ) . 'px',
 				'--oc-primary-user'   => (string) get_theme_mod( 'oc_color_primary', '' ),
 				'--oc-secondary-user' => (string) get_theme_mod( 'oc_color_secondary', '' ),
 				'--oc-bg-user'        => (string) get_theme_mod( 'oc_bg_color', '' ),

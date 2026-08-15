@@ -30,7 +30,7 @@ body {
 	background: var(--oc-bg-user, var(--oc-surface));
 	color: var(--oc-ink);
 	font-family: var(--oc-font-body, system-ui, sans-serif);
-	font-size: calc(1rem * clamp(0.94, var(--oc-density, 1), 1.06));
+	/* Density scales spacing only — typography stays put (QA round 4). */
 	line-height: 1.55;
 	-webkit-font-smoothing: antialiased;
 }
@@ -212,7 +212,7 @@ a { color: inherit; }
 .woocommerce ul.products {
 	display: grid;
 	grid-template-columns: repeat(var(--oc-grid-cols, 4), minmax(0, 1fr));
-	gap: var(--oc-grid-gap, 20px);
+	gap: calc(var(--oc-grid-gap, 20px) * var(--oc-density, 1));
 	margin: 0;
 	padding: 0;
 	list-style: none;
@@ -307,18 +307,21 @@ a { color: inherit; }
 .oc-card-classic ul.products li.product {
 	border: 1px solid var(--oc-line);
 	border-radius: var(--oc-radius, 8px);
-	padding: 10px;
+	padding: calc(10px * var(--oc-density, 1));
 }
 
 /* minimal: no chrome, start-aligned text */
 .oc-card-minimal ul.products li.product { text-align: start; }
+
+/* minimal centred: no chrome, centred text (the loop default already centres) */
+.oc-card-minimal-center ul.products li.product { text-align: center; }
 
 /* card: surface + shadow */
 .oc-card-card ul.products li.product {
 	background: var(--oc-surface);
 	border-radius: var(--oc-radius, 8px);
 	box-shadow: 0 1px 3px rgb(0 0 0 / 7%), 0 6px 18px rgb(0 0 0 / 6%);
-	padding: 12px;
+	padding: calc(12px * var(--oc-density, 1));
 }
 
 /* add-to-cart behaviour */
@@ -458,14 +461,20 @@ input[type="search"],
 select,
 textarea { border-radius: var(--oc-radius, 8px); }
 
-/* the secondary colour carries prices and small accents */
+/* prices keep the text colour; only the sale price carries the sale colour
+ * (QA round 4: prices must not follow the secondary colour) */
 .woocommerce ul.products li.product .price,
 .woocommerce div.product p.price,
-.woocommerce div.product span.price { color: var(--oc-secondary); }
-.oc-tabs-tabs .woocommerce-tabs ul.tabs li.active a {
-	color: var(--oc-secondary);
-	border-block-end-color: var(--oc-secondary);
+.woocommerce div.product span.price { color: var(--oc-ink); }
+
+.woocommerce ul.products li.product .price ins,
+.woocommerce div.product p.price ins,
+.woocommerce div.product span.price ins {
+	color: var(--oc-sale, #b4453c);
+	text-decoration: none;
 }
+
+/* the secondary colour carries small accents */
 .star-rating,
 .woocommerce p.stars a { color: var(--oc-secondary); }
 
@@ -491,10 +500,12 @@ textarea { border-radius: var(--oc-radius, 8px); }
 
 .oc-card-media { position: relative; }
 
+/* snocks-style: a round white button fully on the image, bottom corner,
+ * sliding up as the card is hovered; spinner while adding, check when added */
 .oc-card-atc {
 	position: absolute;
-	inset-inline-start: 10px;
-	inset-block-end: 10px;
+	inset-inline-end: 12px;
+	inset-block-end: 12px;
 	inline-size: 42px;
 	block-size: 42px;
 	display: grid;
@@ -510,8 +521,28 @@ textarea { border-radius: var(--oc-radius, 8px); }
 }
 
 .oc-card-atc:hover { background: var(--oc-primary); color: #fff; }
+
+.oc-card-atc svg { grid-area: 1 / 1; }
+.oc-card-atc .oc-card-atc__check { display: none; }
+
+.oc-card-atc.loading { pointer-events: none; }
+.oc-card-atc.loading .oc-card-atc__cart { visibility: hidden; }
+.oc-card-atc.loading::after {
+	content: "";
+	grid-area: 1 / 1;
+	inline-size: 18px;
+	block-size: 18px;
+	border: 2px solid currentColor;
+	border-block-start-color: transparent;
+	border-radius: 50%;
+	animation: oc-spin .6s linear infinite;
+}
+
+@keyframes oc-spin { to { transform: rotate(360deg); } }
+
 .oc-card-atc.added { background: var(--oc-primary); color: #fff; }
-.oc-card-atc.loading { pointer-events: none; opacity: .6 !important; }
+.oc-card-atc.added .oc-card-atc__cart { display: none; }
+.oc-card-atc.added .oc-card-atc__check { display: block; }
 
 li.product:hover .oc-card-atc,
 li.product:focus-within .oc-card-atc,
@@ -526,17 +557,19 @@ li.product:focus-within .oc-card-atc,
 	.oc-card-atc { opacity: 1; transform: none; }
 }
 
-/* card gallery arrows (desktop hover) */
+/* card gallery arrows: furniture-style — bare thin chevron SVG, no disc,
+ * fading in with the card hover. The SVGs are drawn pointing left/right in
+ * the markup (physical), so RTL flips both together to match their sides. */
 .oc-card-media__nav {
 	position: absolute;
 	inset-block-start: 50%;
 	translate: 0 -50%;
-	inline-size: 32px;
-	block-size: 32px;
+	inline-size: 34px;
+	block-size: 44px;
+	padding: 0;
 	border: 0;
-	border-radius: 50%;
-	background: rgb(255 255 255 / 92%);
-	box-shadow: 0 1px 6px rgb(0 0 0 / 15%);
+	background: none;
+	color: var(--oc-ink);
 	cursor: pointer;
 	z-index: 3;
 	opacity: 0;
@@ -545,24 +578,21 @@ li.product:focus-within .oc-card-atc,
 	place-items: center;
 }
 
-.oc-card-media__nav::before {
-	content: "";
-	inline-size: 8px;
-	block-size: 8px;
-	border-block-start: 2px solid var(--oc-ink);
-	border-inline-end: 2px solid var(--oc-ink);
+.oc-card-media__nav svg {
+	inline-size: 15px;
+	block-size: 15px;
+	fill: currentColor;
+	filter: drop-shadow(0 0 2px rgb(255 255 255 / 85%));
 }
 
-.oc-card-media__nav--prev { inset-inline-start: 8px; }
-.oc-card-media__nav--prev::before { transform: rotate(225deg); margin-inline-start: 3px; }
-.oc-card-media__nav--next { inset-inline-end: 8px; }
-.oc-card-media__nav--next::before { transform: rotate(45deg); margin-inline-end: 3px; }
+[dir="rtl"] .oc-card-media__nav svg { transform: scaleX(-1); }
 
-[dir="rtl"] .oc-card-media__nav--prev::before { transform: rotate(45deg); margin: 0 0 0 3px; }
-[dir="rtl"] .oc-card-media__nav--next::before { transform: rotate(225deg); margin: 0 3px 0 0; }
+.oc-card-media__nav--prev { inset-inline-start: 2px; }
+.oc-card-media__nav--next { inset-inline-end: 2px; }
 
 @media (hover: hover) {
-	li.product:hover .oc-card-media--gallery .oc-card-media__nav { opacity: 1; }
+	li.product:hover .oc-card-media--gallery .oc-card-media__nav { opacity: .75; }
+	.oc-card-media--gallery .oc-card-media__nav:hover { opacity: 1; }
 }
 
 .oc-card-media__strip { display: grid; }
@@ -691,7 +721,7 @@ li.product:focus-within .oc-card-atc,
 	inline-size: var(--oc-thumbs-w, 80px);
 	padding: 0;
 	border: 2px solid transparent;
-	border-radius: 8px;
+	border-radius: calc(var(--oc-radius, 8px) * 0.75 + 2px);
 	background: none;
 	cursor: pointer;
 	overflow: hidden;
@@ -702,7 +732,7 @@ li.product:focus-within .oc-card-atc,
 	inline-size: 100%;
 	aspect-ratio: 1 / 1;
 	object-fit: cover;
-	border-radius: 6px;
+	border-radius: calc(var(--oc-radius, 8px) * 0.75);
 	opacity: .65;
 	transition: opacity .15s ease;
 }
@@ -738,10 +768,23 @@ li.product:focus-within .oc-card-atc,
 	width: 100%;
 	margin: 0;
 }
+/* the corner-rounding token reaches every gallery image, in every preset */
+.woocommerce div.product div.images .woocommerce-product-gallery__image img:not(.zoomImg) {
+	border-radius: var(--oc-radius, 8px);
+}
+
 .oc-gallery-grid .woocommerce-product-gallery__image img,
 .oc-gallery-mosaic .woocommerce-product-gallery__image img {
 	inline-size: 100%;
 	border-radius: var(--oc-radius, 8px);
+}
+
+/* uniform gallery image height (optional): centre-crop before the lightbox */
+.oc-gimg-fixed .woocommerce-product-gallery__wrapper .woocommerce-product-gallery__image img:not(.zoomImg) {
+	block-size: var(--oc-gimg-h, 600px);
+	inline-size: 100%;
+	object-fit: cover;
+	object-position: center;
 }
 
 /* mosaic: one wide image, first or last per the setting */
@@ -755,10 +798,13 @@ li.product:focus-within .oc-card-atc,
 
 body:not(.oc-no-lightbox) .woocommerce-product-gallery__image a { cursor: none; }
 
+/* Physical left/top on purpose: the element follows clientX/clientY, which
+ * are physical coordinates. Logical insets mirrored it away from the cursor
+ * in RTL, and mis-centred the plus bars (QA round 4). */
 .oc-cursor-plus {
 	position: fixed;
-	inset-block-start: 0;
-	inset-inline-start: 0;
+	top: 0;
+	left: 0;
 	inline-size: 44px;
 	block-size: 44px;
 	border-radius: 50%;
@@ -767,17 +813,17 @@ body:not(.oc-no-lightbox) .woocommerce-product-gallery__image a { cursor: none; 
 	z-index: 90;
 	pointer-events: none;
 	display: none;
-	translate: -50% -50%;
+	transform: translate(-50%, -50%);
 }
 
 .oc-cursor-plus::before,
 .oc-cursor-plus::after {
 	content: "";
 	position: absolute;
-	inset-block-start: 50%;
-	inset-inline-start: 50%;
+	top: 50%;
+	left: 50%;
 	background: var(--oc-ink);
-	translate: -50% -50%;
+	transform: translate(-50%, -50%);
 }
 
 .oc-cursor-plus::before { inline-size: 16px; block-size: 1.6px; }
@@ -878,8 +924,8 @@ body:not(.oc-no-lightbox) .woocommerce-product-gallery__image a { cursor: none; 
 	border-block-end: 2px solid transparent;
 }
 .oc-tabs-tabs .woocommerce-tabs ul.tabs li.active a {
-	color: var(--oc-primary);
-	border-block-end-color: var(--oc-primary);
+	color: var(--oc-secondary);
+	border-block-end-color: var(--oc-secondary);
 }
 
 /* ---------- sticky add-to-cart bar ---------- */
@@ -1044,4 +1090,23 @@ body:not(.oc-no-lightbox) .woocommerce-product-gallery__image a { cursor: none; 
 .oc-btn-outline .woocommerce div.product form.cart .button {
 	background: transparent;
 	color: var(--oc-primary);
+}
+
+/* ---------- QA round-4 ---------- */
+
+/* single product: the sale mark moves off the image, next to the price */
+.single-product div.product > span.onsale { display: none; }
+
+.woocommerce div.product p.price { display: inline-block; }
+
+.oc-price-badge {
+	display: inline-block;
+	margin-inline-start: 10px;
+	padding: 3px 10px;
+	border-radius: 6px;
+	background: var(--oc-sale, #b4453c);
+	color: #fff;
+	font-size: .78rem;
+	font-weight: 600;
+	vertical-align: middle;
 }

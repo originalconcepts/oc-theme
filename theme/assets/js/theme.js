@@ -43,19 +43,28 @@
 			return;
 		}
 
-		// In RTL scrollLeft runs negative. Direct assignment + CSS
-		// scroll-behavior:smooth animates in real browsers and still moves in
-		// environments with a frozen animation pipeline.
-		function step( dir ) {
+		var count = strip.children.length;
+
+		// Index-based with wrap-around: both arrows always page, whichever the
+		// visitor reaches for first (QA round 4). In RTL scrollLeft runs
+		// negative; direct assignment + CSS scroll-behavior:smooth animates in
+		// real browsers and still moves where the animation pipeline freezes.
+		function currentIndex() {
+			return count < 2 ? 0 : Math.round( Math.abs( strip.scrollLeft ) / strip.clientWidth );
+		}
+
+		function goTo( index ) {
 			var rtl = getComputedStyle( strip ).direction === 'rtl';
-			strip.scrollLeft += ( rtl ? -dir : dir ) * strip.clientWidth;
+			strip.scrollLeft = ( rtl ? -1 : 1 ) * index * strip.clientWidth;
 		}
 
 		media.querySelectorAll( '.oc-card-media__nav' ).forEach( function ( btn ) {
 			btn.addEventListener( 'click', function ( event ) {
 				event.preventDefault();
 				event.stopPropagation();
-				step( btn.classList.contains( 'oc-card-media__nav--next' ) ? 1 : -1 );
+
+				var dir = btn.classList.contains( 'oc-card-media__nav--next' ) ? 1 : -1;
+				goTo( ( currentIndex() + dir + count ) % count );
 			} );
 		} );
 	} );
@@ -113,6 +122,9 @@
 				btn.classList.remove( 'loading' );
 				btn.classList.add( 'added' );
 			}, 900 );
+			setTimeout( function () {
+				btn.classList.remove( 'added' );
+			}, 2600 );
 		} );
 	}
 
@@ -181,7 +193,9 @@
 				btn.setAttribute( 'aria-current', 0 === i ? 'true' : 'false' );
 
 				var thumb = document.createElement( 'img' );
-				thumb.src = src.currentSrc || src.src;
+				// Woo puts the real thumbnail-size URL on data-thumb; the slide
+				// itself now carries the full-size image (gallery_image_size).
+				thumb.src = slide.dataset.thumb || src.currentSrc || src.src;
 				thumb.alt = '';
 				thumb.loading = 'lazy';
 
@@ -198,6 +212,13 @@
 						other.setAttribute( 'aria-current', 'false' );
 					} );
 					btn.setAttribute( 'aria-current', 'true' );
+
+					// Zoom binds to visible images at init; rebind for the
+					// newly revealed one. Woo's gallery listens (via jQuery,
+					// which registers native listeners) for this event.
+					galleryWrap.parentElement.dispatchEvent(
+						new Event( 'woocommerce_gallery_init_zoom', { bubbles: true } )
+					);
 				} );
 			} );
 
@@ -218,14 +239,16 @@
 		document.body.appendChild( plus );
 
 		gallery.addEventListener( 'mousemove', function ( event ) {
-			if ( event.target.closest( '.flex-control-thumbs' ) ) {
+			if ( event.target.closest( '.oc-thumbs' ) ) {
 				plus.classList.remove( 'is-on' );
 				return;
 			}
 			if ( event.target.closest( '.woocommerce-product-gallery__image' ) ) {
 				plus.classList.add( 'is-on' );
-				plus.style.insetBlockStart = event.clientY + 'px';
-				plus.style.insetInlineStart = event.clientX + 'px';
+				// Physical top/left: clientX/Y are physical, and inline-start
+				// mirrored the badge away from the cursor in RTL (QA round 4).
+				plus.style.top = event.clientY + 'px';
+				plus.style.left = event.clientX + 'px';
 			} else {
 				plus.classList.remove( 'is-on' );
 			}

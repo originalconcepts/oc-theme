@@ -138,6 +138,27 @@ msgstr "מינימלי"
 msgid "No border, start-aligned"
 msgstr "ללא מסגרת · יישור להתחלה"
 
+msgid "Minimal centred"
+msgstr "מינימלי ממורכז"
+
+msgid "No border, centred"
+msgstr "ללא מסגרת · ממורכז"
+
+msgid "Gallery image height"
+msgstr "גובה תמונות הגלריה"
+
+msgid "Original"
+msgstr "מקורי"
+
+msgid "Uniform"
+msgstr "אחיד (חיתוך מהמרכז)"
+
+msgid "Uniform height (px)"
+msgstr "גובה אחיד (px)"
+
+msgid "Page margins, grid gaps and card padding. Text size is not affected."
+msgstr "שוליים, מרווחי רשת וריפוד כרטיסים. גודל הטקסט לא מושפע."
+
 msgid "Card"
 msgstr "כרטיס"
 

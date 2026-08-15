@@ -221,15 +221,18 @@
 	.oc-toggle__track::after { transition: none; }
 }
 
-/* ---------- RTL: core Customizer arrows point the wrong way ---------- */
+/* ---------- RTL: core Customizer arrows point the wrong way ----------
+ * Core draws these via :before/:after on the buttons themselves, from rules
+ * anchored to #customize-theme-controls — an id outranks any class chain, so
+ * the earlier .dashicons-based override never applied (QA round 4). Forward
+ * in RTL is leftward: "enter a section" points left, "back" points right. */
 
-.rtl .customize-panel-back .dashicons-arrow-left::before,
-.rtl .customize-section-back .dashicons-arrow-left::before {
-	content: "\f345"; /* arrow-right: "back" points toward the panel list in RTL */
+body.rtl #customize-theme-controls .accordion-section-title::after,
+body.rtl #customize-outer-theme-controls .accordion-section-title::after {
+	content: "\f341" !important; /* arrow-left-alt2: into the section */
 }
 
-.rtl .accordion-section-title::after,
-.rtl .customize-pane-parent .accordion-section-title::after,
-.rtl .customize-pane-child .accordion-section-title::after {
-	content: "\f341"; /* arrow-left: "enter" points into the section in RTL */
+body.rtl .customize-panel-back::before,
+body.rtl .customize-section-back::before {
+	content: "\f345" !important; /* arrow-right-alt2: back to the list */
 }
