@@ -13,10 +13,11 @@
 	--oc-ink-2: var(--wp--preset--color--text-muted, #6b7482);
 	--oc-bg: var(--wp--preset--color--background, #f2f4f7);
 	--oc-surface: var(--wp--preset--color--surface, #fff);
-	--oc-primary: var(--wp--preset--color--primary, #2f4e7a);
+	--oc-primary: var(--oc-primary-user, var(--wp--preset--color--primary, #2f4e7a));
+	--oc-secondary: var(--oc-secondary-user, var(--wp--preset--color--secondary, #d9a441));
 	--oc-sale: var(--wp--preset--color--sale, #b4453c);
 	--oc-line: color-mix(in srgb, var(--oc-ink) 12%, transparent);
-	--oc-gap: clamp(12px, 2vw, 24px);
+	--oc-gap: calc(clamp(12px, 2vw, 24px) * var(--oc-density, 1));
 	--oc-header-h: 72px;
 }
 
@@ -29,6 +30,7 @@ body {
 	background: var(--oc-surface);
 	color: var(--oc-ink);
 	font-family: var(--oc-font-body, system-ui, sans-serif);
+	font-size: calc(1rem * clamp(0.94, var(--oc-density, 1), 1.06));
 	line-height: 1.55;
 	-webkit-font-smoothing: antialiased;
 }
@@ -286,7 +288,9 @@ a { color: inherit; }
 
 /* ---------- product card presets ---------- */
 
+.woocommerce ul.products li.product .oc-card-media__item img,
 .woocommerce ul.products li.product img.wp-post-image {
+	inline-size: 100%;
 	aspect-ratio: var(--oc-card-ratio, 1 / 1);
 	object-fit: cover;
 	border-radius: var(--oc-radius, 8px);
@@ -328,18 +332,23 @@ a { color: inherit; }
 .woocommerce ul.products li.product .onsale,
 .woocommerce span.onsale {
 	position: absolute;
-	inset-block-start: 8px;
-	inset-inline-start: 8px;
+	inset-block-start: 10px;
+	inset-inline-start: 10px;
+	inset-inline-end: auto;
 	margin: 0;
-	min-block-size: auto;
-	min-inline-size: auto;
-	padding: 3px 9px;
-	border-radius: 999px;
+	min-block-size: 0;
+	min-inline-size: 0;
+	inline-size: fit-content;
+	padding: 3px 10px;
+	border-radius: 6px;
 	background: var(--oc-sale, #b4453c);
 	color: #fff;
-	font-size: .8rem;
-	font-weight: 700;
-	line-height: 1.6;
+	font-size: .72rem;
+	font-weight: 600;
+	letter-spacing: .01em;
+	line-height: 1.5;
+	box-shadow: 0 1px 4px rgb(0 0 0 / 12%);
+	z-index: 2;
 }
 .woocommerce ul.products li.product { position: relative; }
 
@@ -359,10 +368,25 @@ a { color: inherit; }
  * every card inside our grid cells. Same specificity, theme loads later. */
 
 .woocommerce ul.products li.product,
-.woocommerce-page ul.products li.product {
+.woocommerce-page ul.products li.product,
+.woocommerce ul.products[class*="columns-"] li.product,
+.woocommerce-page ul.products[class*="columns-"] li.product {
 	float: none;
 	inline-size: 100%;
+	max-inline-size: none;
 	margin: 0;
+	clear: none;
+}
+
+/* woocommerce-smallscreen.css sets 48% under 768px — the "half width on
+ * mobile" bug. Same selectors, later in the cascade. */
+@media (max-width: 768px) {
+	.woocommerce ul.products[class*="columns-"] li.product,
+	.woocommerce-page ul.products[class*="columns-"] li.product {
+		inline-size: 100%;
+		float: none;
+		margin: 0;
+	}
 }
 
 .woocommerce ul.products::before,
@@ -508,7 +532,7 @@ a { color: inherit; }
 /* thumbs-side: flexslider thumbnails become a side rail */
 .oc-gallery-thumbs-side .woocommerce-product-gallery {
 	display: grid;
-	grid-template-columns: 72px minmax(0, 1fr);
+	grid-template-columns: var(--oc-thumbs-w, 80px) minmax(0, 1fr);
 	gap: 10px;
 	align-items: start;
 }
@@ -543,11 +567,15 @@ a { color: inherit; }
 .oc-gallery-thumbs-under .flex-control-thumbs li { list-style: none; margin: 0; }
 
 .flex-control-thumbs img {
-	border-radius: calc(var(--oc-radius, 8px) / 2);
+	inline-size: 100%;
+	aspect-ratio: 1 / 1;
+	object-fit: cover;
+	border-radius: 6px;
 	opacity: .6;
 	transition: opacity .15s ease;
 	cursor: pointer;
 }
+.oc-gallery-thumbs-under .flex-control-thumbs li { inline-size: var(--oc-thumbs-w, 80px); }
 .flex-control-thumbs img.flex-active,
 .flex-control-thumbs img:hover { opacity: 1; }
 
@@ -569,6 +597,69 @@ a { color: inherit; }
 .oc-wide-start.oc-gallery-mosaic .woocommerce-product-gallery__wrapper > .woocommerce-product-gallery__image:first-child {
 	grid-column: 1 / -1;
 }
+
+/* lightbox affordance: no magnifier button; a soft plus circle on hover */
+.woocommerce-product-gallery__trigger { display: none !important; }
+
+.woocommerce-product-gallery__image { position: relative; }
+
+.woocommerce-product-gallery__image::after {
+	content: "+";
+	position: absolute;
+	inset-block-start: 10px;
+	inset-inline-end: 10px;
+	inline-size: 34px;
+	block-size: 34px;
+	display: grid;
+	place-items: center;
+	border-radius: 50%;
+	background: rgb(255 255 255 / 88%);
+	color: var(--oc-ink);
+	font-size: 22px;
+	font-weight: 300;
+	line-height: 1;
+	box-shadow: 0 1px 6px rgb(0 0 0 / 15%);
+	opacity: 0;
+	transition: opacity .15s ease;
+	pointer-events: none;
+}
+
+body:not(.oc-no-lightbox) .woocommerce-product-gallery__image:hover::after { opacity: 1; }
+
+/* add-to-cart inside the lightbox */
+.pswp .oc-pswp-atc {
+	position: absolute;
+	inset-block-end: 24px;
+	inset-inline: 0;
+	display: flex;
+	justify-content: center;
+	z-index: 1600;
+}
+.pswp .oc-pswp-atc button {
+	background: var(--oc-primary, #2f4e7a);
+	color: #fff;
+	border: 0;
+	border-radius: 8px;
+	padding: 11px 26px;
+	font: inherit;
+	font-weight: 600;
+	cursor: pointer;
+	box-shadow: 0 2px 10px rgb(0 0 0 / 30%);
+}
+
+/* product info beside the gallery instead of full width */
+@media (min-width: 901px) {
+	.oc-tabspos-side.single-product div.product .woocommerce-tabs { grid-column: 2; }
+	.oc-side-gallery-end.oc-tabspos-side.single-product div.product .woocommerce-tabs { grid-column: 1; }
+}
+
+/* similar/complementary headings alignment */
+.related.products > h2,
+.up-sells.products > h2,
+.upsells.products > h2 { text-align: start; }
+.oc-headings-center .related.products > h2,
+.oc-headings-center .up-sells.products > h2,
+.oc-headings-center .upsells.products > h2 { text-align: center; }
 
 /* ---------- tabs / accordion ---------- */
 

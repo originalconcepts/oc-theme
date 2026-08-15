@@ -121,7 +121,7 @@ msgid "Products per page (-1 shows all)"
 msgstr "מוצרים בעמוד (‎-1 מציג הכל)"
 
 msgid "Product card"
-msgstr "קופסת מוצר"
+msgstr "כרטיס מוצר"
 
 msgid "Card preset"
 msgstr "פריסט קופסה"
@@ -251,3 +251,60 @@ msgstr "הצג מוצרים קשורים"
 
 msgid "Product images"
 msgstr "תמונות המוצר"
+
+msgid "Primary colour"
+msgstr "צבע ראשי"
+
+msgid "Secondary colour"
+msgstr "צבע משני"
+
+msgid "Heading font"
+msgstr "פונט כותרות"
+
+msgid "Body font"
+msgstr "פונט טקסט רץ"
+
+msgid "System"
+msgstr "מערכת"
+
+msgid "Thumbnail size"
+msgstr "גודל תמונות ממוזערות"
+
+msgid "Small"
+msgstr "קטן"
+
+msgid "Medium"
+msgstr "בינוני"
+
+msgid "Large"
+msgstr "גדול"
+
+msgid "Zoom on hover"
+msgstr "זום בריחוף"
+
+msgid "Product info position — desktop"
+msgstr "מיקום מידע המוצר — דסקטופ"
+
+msgid "Full width below"
+msgstr "רוחב מלא מתחת"
+
+msgid "Beside the gallery"
+msgstr "לצד הגלריה"
+
+msgid "Show similar products"
+msgstr "הצג מוצרים דומים"
+
+msgid "Similar products title"
+msgstr "כותרת מוצרים דומים"
+
+msgid "Show complementary products"
+msgstr "הצג מוצרים משלימים"
+
+msgid "Complementary products title"
+msgstr "כותרת מוצרים משלימים"
+
+msgid "Section headings alignment"
+msgstr "יישור כותרות הסקשנים"
+
+msgid "Add to cart"
+msgstr "הוספה לסל"

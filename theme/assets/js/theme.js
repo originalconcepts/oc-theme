@@ -100,6 +100,34 @@
 		} );
 	}
 
+	/* ---------- lightbox: add-to-cart under the image ---------- */
+
+	var pswpRoot = document.querySelector( '.pswp' );
+	var cartForm = document.querySelector( 'form.cart' );
+
+	if ( pswpRoot && cartForm && window.ocL10n ) {
+		var cta = document.createElement( 'div' );
+		cta.className = 'oc-pswp-atc';
+		cta.innerHTML = '<button type="button">' + window.ocL10n.addToCart + '</button>';
+		pswpRoot.appendChild( cta );
+
+		cta.querySelector( 'button' ).addEventListener( 'click', function () {
+			var submit = cartForm.querySelector( '[type="submit"]' );
+			var pswpUi = window.pswp || null;
+
+			if ( pswpUi && pswpUi.close ) {
+				pswpUi.close();
+			}
+
+			if ( submit && ! submit.disabled && ! cartForm.classList.contains( 'variations_form' ) ) {
+				submit.click();
+				return;
+			}
+
+			cartForm.scrollIntoView( { behavior: 'smooth', block: 'center' } );
+		} );
+	}
+
 	/* ---------- sticky add-to-cart ---------- */
 
 	var bar = document.querySelector( '[data-oc-sticky-atc]' );

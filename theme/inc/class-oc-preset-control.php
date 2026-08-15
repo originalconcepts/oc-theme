@@ -68,7 +68,6 @@ final class Preset_Control extends \WP_Customize_Control {
 		$name    = '_customize-oc-preset-' . $this->id;
 		$current = (string) $this->value();
 		?>
-		<# /* markup is printed server-side; this control does not use JS templates */ #>
 		<?php if ( $this->label ) : ?>
 			<span class="customize-control-title"><?php echo esc_html( $this->label ); ?></span>
 		<?php endif; ?>

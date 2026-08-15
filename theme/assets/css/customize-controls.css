@@ -27,9 +27,16 @@
 
 .oc-preset:hover { border-color: #2271b1; }
 
-.oc-preset.is-selected {
+.oc-preset.is-selected,
+.oc-preset:has(input:checked) {
 	border-color: #2271b1;
 	background: #f0f6fc;
+}
+
+/* server-rendered highlight must not linger after the user picks another */
+.oc-presets:has(input:checked) .oc-preset.is-selected:not(:has(input:checked)) {
+	border-color: #dcdcde;
+	background: #fff;
 }
 
 .oc-preset input {

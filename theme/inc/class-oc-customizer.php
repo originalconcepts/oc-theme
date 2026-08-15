@@ -95,6 +95,21 @@ final class Customizer {
 		);
 
 		$this->number( $c, 'oc_content_width_px', 'oc_design', __( 'Content width (px)', 'oc-theme' ), 1280, 960, 1600 );
+
+		$this->color( $c, 'oc_color_primary', 'oc_design', __( 'Primary colour', 'oc-theme' ) );
+		$this->color( $c, 'oc_color_secondary', 'oc_design', __( 'Secondary colour', 'oc-theme' ) );
+
+		$fonts = array(
+			''              => __( 'System', 'oc-theme' ),
+			'Assistant'     => 'Assistant',
+			'Heebo'         => 'Heebo',
+			'Rubik'         => 'Rubik',
+			'Varela Round'  => 'Varela Round',
+			'Secular One'   => 'Secular One',
+		);
+
+		$this->select( $c, 'oc_font_display', 'oc_design', __( 'Heading font', 'oc-theme' ), $fonts );
+		$this->select( $c, 'oc_font_body', 'oc_design', __( 'Body font', 'oc-theme' ), $fonts );
 	}
 
 	/**
@@ -104,19 +119,27 @@ final class Customizer {
 	 * @param string                $panel Parent panel id.
 	 */
 	private function catalog_panel( \WP_Customize_Manager $c, string $panel ): void {
-		$c->add_section(
-			'oc_catalog',
-			array(
-				'title'    => __( 'Catalogue & archive', 'oc-theme' ),
-				'panel'    => $panel,
-				'priority' => 8,
-			)
-		);
+		// WooCommerce already has a "Product Catalog" section — our catalogue
+		// controls join it under the plugin's own, rather than a second
+		// near-identical section. Falls back to our own section without Woo.
+		if ( $c->get_section( 'woocommerce_product_catalog' ) ) {
+			$section = 'woocommerce_product_catalog';
+		} else {
+			$section = 'oc_catalog';
+			$c->add_section(
+				'oc_catalog',
+				array(
+					'title'    => __( 'Catalogue & archive', 'oc-theme' ),
+					'panel'    => $panel,
+					'priority' => 8,
+				)
+			);
+		}
 
 		$this->choice(
 			$c,
 			'oc_breadcrumbs_pos',
-			'oc_catalog',
+			$section,
 			__( 'Breadcrumbs position', 'oc-theme' ),
 			array(
 				'above'  => __( 'Above the title', 'oc-theme' ),
@@ -129,7 +152,7 @@ final class Customizer {
 		$this->choice(
 			$c,
 			'oc_catalog_title_align',
-			'oc_catalog',
+			$section,
 			__( 'Title alignment', 'oc-theme' ),
 			array(
 				'start'  => __( 'Start', 'oc-theme' ),
@@ -141,7 +164,7 @@ final class Customizer {
 		$this->choice(
 			$c,
 			'oc_catalog_cols',
-			'oc_catalog',
+			$section,
 			__( 'Products per row — desktop', 'oc-theme' ),
 			array(
 				'2' => '2',
@@ -155,7 +178,7 @@ final class Customizer {
 		$this->choice(
 			$c,
 			'oc_catalog_cols_mobile',
-			'oc_catalog',
+			$section,
 			__( 'Products per row — mobile', 'oc-theme' ),
 			array(
 				'1' => '1',
@@ -165,7 +188,7 @@ final class Customizer {
 			'2'
 		);
 
-		$this->number( $c, 'oc_catalog_per_page', 'oc_catalog', __( 'Products per page (-1 shows all)', 'oc-theme' ), 24, -1, 200 );
+		$this->number( $c, 'oc_catalog_per_page', $section, __( 'Products per page (-1 shows all)', 'oc-theme' ), 24, -1, 200 );
 	}
 
 	/**
@@ -234,7 +257,18 @@ final class Customizer {
 			'162px'
 		);
 
-		$this->number( $c, 'oc_card_gallery_max', 'oc_card', __( 'Gallery: max images', 'oc-theme' ), 4, 2, 8 );
+		$this->number(
+			$c,
+			'oc_card_gallery_max',
+			'oc_card',
+			__( 'Gallery: max images', 'oc-theme' ),
+			4,
+			2,
+			8,
+			static function (): bool {
+				return 'gallery' === get_theme_mod( 'oc_card_image_mode', 'single' );
+			}
+		);
 
 		$this->choice(
 			$c,
@@ -350,11 +384,34 @@ final class Customizer {
 				'start' => __( 'First', 'oc-theme' ),
 				'end'   => __( 'Last', 'oc-theme' ),
 			),
-			'end'
+			'end',
+			static function (): bool {
+				return 'mosaic' === get_theme_mod( 'oc_gallery_preset', 'thumbs-side' );
+			}
 		);
 
-		$this->number( $c, 'oc_gallery_thumbs_max', 'oc_product', __( 'Max thumbnails', 'oc-theme' ), 5, 3, 10 );
+		$thumbs_active = static function (): bool {
+			return in_array( (string) get_theme_mod( 'oc_gallery_preset', 'thumbs-side' ), array( 'thumbs-side', 'thumbs-under' ), true );
+		};
+
+		$this->number( $c, 'oc_gallery_thumbs_max', 'oc_product', __( 'Max thumbnails', 'oc-theme' ), 5, 3, 10, $thumbs_active );
+
+		$this->choice(
+			$c,
+			'oc_gallery_thumb_size',
+			'oc_product',
+			__( 'Thumbnail size', 'oc-theme' ),
+			array(
+				'56'  => __( 'Small', 'oc-theme' ),
+				'80'  => __( 'Medium', 'oc-theme' ),
+				'104' => __( 'Large', 'oc-theme' ),
+			),
+			'80',
+			$thumbs_active
+		);
+
 		$this->toggle( $c, 'oc_gallery_lightbox', 'oc_product', __( 'Open images in a lightbox', 'oc-theme' ), true );
+		$this->toggle( $c, 'oc_gallery_zoom', 'oc_product', __( 'Zoom on hover', 'oc-theme' ), true );
 		$this->toggle( $c, 'oc_product_sticky_atc', 'oc_product', __( 'Sticky add-to-cart bar', 'oc-theme' ), true );
 
 		$this->choice(
@@ -369,7 +426,34 @@ final class Customizer {
 			'accordion'
 		);
 
-		$this->toggle( $c, 'oc_product_related', 'oc_product', __( 'Show related products', 'oc-theme' ), true );
+		$this->choice(
+			$c,
+			'oc_product_tabs_pos',
+			'oc_product',
+			__( 'Product info position — desktop', 'oc-theme' ),
+			array(
+				'below' => __( 'Full width below', 'oc-theme' ),
+				'side'  => __( 'Beside the gallery', 'oc-theme' ),
+			),
+			'below'
+		);
+
+		$this->toggle( $c, 'oc_product_related', 'oc_product', __( 'Show similar products', 'oc-theme' ), true );
+		$this->text( $c, 'oc_related_title', 'oc_product', __( 'Similar products title', 'oc-theme' ) );
+		$this->toggle( $c, 'oc_product_upsells', 'oc_product', __( 'Show complementary products', 'oc-theme' ), true );
+		$this->text( $c, 'oc_upsells_title', 'oc_product', __( 'Complementary products title', 'oc-theme' ) );
+
+		$this->choice(
+			$c,
+			'oc_products_heading_align',
+			'oc_product',
+			__( 'Section headings alignment', 'oc-theme' ),
+			array(
+				'start'  => __( 'Start', 'oc-theme' ),
+				'center' => __( 'Centre', 'oc-theme' ),
+			),
+			'start'
+		);
 	}
 
 	/* ---------------------------------------------------------------------
@@ -385,8 +469,9 @@ final class Customizer {
 	 * @param string                $label   Label.
 	 * @param array<string,string>  $choices Choices.
 	 * @param string                $default Default value.
+	 * @param callable|null         $active  Optional visibility callback.
 	 */
-	private function choice( \WP_Customize_Manager $c, string $id, string $section, string $label, array $choices, string $default ): void {
+	private function choice( \WP_Customize_Manager $c, string $id, string $section, string $label, array $choices, string $default, ?callable $active = null ): void {
 		$c->add_setting(
 			$id,
 			array(
@@ -397,15 +482,101 @@ final class Customizer {
 			)
 		);
 
+		$args = array(
+			'section' => $section,
+			'label'   => $label,
+			'choices' => $choices,
+		);
+		if ( null !== $active ) {
+			$args['active_callback'] = $active;
+		}
+
+		$c->add_control( new Customize\Segmented_Control( $c, $id, $args ) );
+	}
+
+	/**
+	 * Native colour picker.
+	 *
+	 * @param \WP_Customize_Manager $c       Manager.
+	 * @param string                $id      Setting id.
+	 * @param string                $section Section id.
+	 * @param string                $label   Label.
+	 */
+	private function color( \WP_Customize_Manager $c, string $id, string $section, string $label ): void {
+		$c->add_setting(
+			$id,
+			array(
+				'default'           => '',
+				'sanitize_callback' => 'sanitize_hex_color',
+			)
+		);
+
 		$c->add_control(
-			new Customize\Segmented_Control(
+			new \WP_Customize_Color_Control(
 				$c,
 				$id,
 				array(
 					'section' => $section,
 					'label'   => $label,
-					'choices' => $choices,
 				)
+			)
+		);
+	}
+
+	/**
+	 * Native select, for lists too long for segmented buttons.
+	 *
+	 * @param \WP_Customize_Manager $c       Manager.
+	 * @param string                $id      Setting id.
+	 * @param string                $section Section id.
+	 * @param string                $label   Label.
+	 * @param array<string,string>  $choices Choices.
+	 */
+	private function select( \WP_Customize_Manager $c, string $id, string $section, string $label, array $choices ): void {
+		$c->add_setting(
+			$id,
+			array(
+				'default'           => '',
+				'sanitize_callback' => static function ( $value ) use ( $choices ): string {
+					return array_key_exists( (string) $value, $choices ) ? (string) $value : '';
+				},
+			)
+		);
+
+		$c->add_control(
+			$id,
+			array(
+				'type'    => 'select',
+				'section' => $section,
+				'label'   => $label,
+				'choices' => $choices,
+			)
+		);
+	}
+
+	/**
+	 * Plain text setting.
+	 *
+	 * @param \WP_Customize_Manager $c       Manager.
+	 * @param string                $id      Setting id.
+	 * @param string                $section Section id.
+	 * @param string                $label   Label.
+	 */
+	private function text( \WP_Customize_Manager $c, string $id, string $section, string $label ): void {
+		$c->add_setting(
+			$id,
+			array(
+				'default'           => '',
+				'sanitize_callback' => 'sanitize_text_field',
+			)
+		);
+
+		$c->add_control(
+			$id,
+			array(
+				'type'    => 'text',
+				'section' => $section,
+				'label'   => $label,
 			)
 		);
 	}
@@ -488,8 +659,9 @@ final class Customizer {
 	 * @param int                   $default Default.
 	 * @param int                   $min     Minimum.
 	 * @param int                   $max     Maximum.
+	 * @param callable|null         $active  Optional visibility callback.
 	 */
-	private function number( \WP_Customize_Manager $c, string $id, string $section, string $label, int $default, int $min, int $max ): void {
+	private function number( \WP_Customize_Manager $c, string $id, string $section, string $label, int $default, int $min, int $max, ?callable $active = null ): void {
 		$c->add_setting(
 			$id,
 			array(
@@ -501,18 +673,20 @@ final class Customizer {
 			)
 		);
 
-		$c->add_control(
-			$id,
-			array(
-				'type'        => 'number',
-				'section'     => $section,
-				'label'       => $label,
-				'input_attrs' => array(
-					'min' => $min,
-					'max' => $max,
-				),
-			)
+		$args = array(
+			'type'        => 'number',
+			'section'     => $section,
+			'label'       => $label,
+			'input_attrs' => array(
+				'min' => $min,
+				'max' => $max,
+			),
 		);
+		if ( null !== $active ) {
+			$args['active_callback'] = $active;
+		}
+
+		$c->add_control( $id, $args );
 	}
 
 	/* ---------------------------------------------------------------------

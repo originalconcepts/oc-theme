@@ -36,6 +36,8 @@ final class Assets {
 	 * Enqueue the front-end bundle.
 	 */
 	public function front_end(): void {
+		$this->fonts();
+
 		wp_enqueue_style(
 			'oc-theme',
 			OC_THEME_URI . '/assets/css/theme.css',
@@ -53,6 +55,14 @@ final class Assets {
 				'in_footer' => true,
 			)
 		);
+
+		wp_localize_script(
+			'oc-theme',
+			'ocL10n',
+			array(
+				'addToCart' => __( 'Add to cart', 'oc-theme' ),
+			)
+		);
 	}
 
 	/**
@@ -63,15 +73,21 @@ final class Assets {
 	 * 613 get_theme_mod() calls.
 	 */
 	public function design_tokens(): void {
+		$display = (string) get_theme_mod( 'oc_font_display', '' );
+		$body    = (string) get_theme_mod( 'oc_font_body', '' );
+
 		$tokens = apply_filters(
 			'oc_design_tokens',
 			array(
-				'--oc-font-body'     => get_theme_mod( 'oc_font_body', 'system-ui, sans-serif' ),
-				'--oc-font-display'  => get_theme_mod( 'oc_font_display', 'system-ui, sans-serif' ),
-				'--oc-radius'        => get_theme_mod( 'oc_radius', '8px' ),
-				'--oc-density'       => get_theme_mod( 'oc_density', '1' ),
-				'--oc-content-width' => absint( get_theme_mod( 'oc_content_width_px', 1280 ) ) . 'px',
-				'--oc-card-ratio'    => (string) get_theme_mod( 'oc_card_ratio', '1/1' ),
+				'--oc-font-body'      => '' !== $body ? '"' . $body . '", system-ui, sans-serif' : 'system-ui, sans-serif',
+				'--oc-font-display'   => '' !== $display ? '"' . $display . '", system-ui, sans-serif' : 'inherit',
+				'--oc-radius'         => get_theme_mod( 'oc_radius', '8px' ),
+				'--oc-density'        => get_theme_mod( 'oc_density', '1' ),
+				'--oc-content-width'  => absint( get_theme_mod( 'oc_content_width_px', 1280 ) ) . 'px',
+				'--oc-card-ratio'     => (string) get_theme_mod( 'oc_card_ratio', '1/1' ),
+				'--oc-thumbs-w'       => absint( get_theme_mod( 'oc_gallery_thumb_size', 80 ) ) . 'px',
+				'--oc-primary-user'   => (string) get_theme_mod( 'oc_color_primary', '' ),
+				'--oc-secondary-user' => (string) get_theme_mod( 'oc_color_secondary', '' ),
 			)
 		);
 
@@ -90,6 +106,36 @@ final class Assets {
 		printf(
 			"<style id='oc-tokens'>:root{%s}</style>\n",
 			esc_html( $css )
+		);
+	}
+
+	/**
+	 * Load the chosen Google fonts in one request. Hebrew subsets included.
+	 */
+	private function fonts(): void {
+		$families = array_filter(
+			array_unique(
+				array(
+					(string) get_theme_mod( 'oc_font_display', '' ),
+					(string) get_theme_mod( 'oc_font_body', '' ),
+				)
+			)
+		);
+
+		if ( empty( $families ) ) {
+			return;
+		}
+
+		$parts = array();
+		foreach ( $families as $family ) {
+			$parts[] = 'family=' . rawurlencode( $family ) . ':wght@400;600;700';
+		}
+
+		wp_enqueue_style(
+			'oc-fonts',
+			'https://fonts.googleapis.com/css2?' . implode( '&', $parts ) . '&display=swap',
+			array(),
+			null // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion -- the URL is the version.
 		);
 	}
 
