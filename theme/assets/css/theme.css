@@ -1014,14 +1014,6 @@ body:not(.oc-no-lightbox) .woocommerce-product-gallery__image a { cursor: none; 
 
 /* ---------- QA round-3 browser findings ---------- */
 
-/* flexslider computes slide offsets in LTR; in an RTL page the viewport
- * shows the strip's empty right edge instead of the first slide. The strip
- * runs LTR internally; the page around it stays RTL. */
-.woocommerce-product-gallery .flex-viewport,
-.woocommerce-product-gallery .woocommerce-product-gallery__wrapper {
-	direction: ltr;
-}
-
 /* Woo's .alt button (single product add-to-cart) outranked the brand rules —
  * match it at its own specificity, purple be gone. */
 .woocommerce a.button.alt,
@@ -1049,13 +1041,4 @@ body:not(.oc-no-lightbox) .woocommerce-product-gallery__image a { cursor: none; 
 .oc-btn-outline .woocommerce div.product form.cart .button {
 	background: transparent;
 	color: var(--oc-primary);
-}
-
-/* The auto-RTL-flipped stylesheet floats flexslider slides right while the
- * script positions them with LTR math — the active slide ends up outside the
- * viewport. Inside the (LTR) strip the slides float left again. Grid and
- * mosaic keep their own float:none rules, which are more specific. */
-.woocommerce.oc-gallery-thumbs-side div.product div.images .woocommerce-product-gallery__image,
-.woocommerce.oc-gallery-thumbs-under div.product div.images .woocommerce-product-gallery__image {
-	float: left;
 }
