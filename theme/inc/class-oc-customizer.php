@@ -36,11 +36,18 @@ final class Customizer {
 	 */
 	public function build( \WP_Customize_Manager $wp_customize ): void {
 		require_once OC_THEME_DIR . '/inc/class-oc-preset-control.php';
+		require_once OC_THEME_DIR . '/inc/class-oc-segmented-control.php';
+		require_once OC_THEME_DIR . '/inc/class-oc-toggle-control.php';
+
+		// Shop sections live inside WooCommerce's own Customizer panel, which
+		// is where a shop owner looks for them. Global design stays top-level
+		// because it applies to the whole site, not just the shop.
+		$shop_panel = $wp_customize->get_panel( 'woocommerce' ) ? 'woocommerce' : '';
 
 		$this->design_panel( $wp_customize );
-		$this->catalog_panel( $wp_customize );
-		$this->card_section( $wp_customize );
-		$this->product_section( $wp_customize );
+		$this->catalog_panel( $wp_customize, $shop_panel );
+		$this->card_section( $wp_customize, $shop_panel );
+		$this->product_section( $wp_customize, $shop_panel );
 	}
 
 	/* ---------------------------------------------------------------------
@@ -93,14 +100,16 @@ final class Customizer {
 	/**
 	 * Catalogue: grid, ordering, page header.
 	 *
-	 * @param \WP_Customize_Manager $c Customizer manager.
+	 * @param \WP_Customize_Manager $c     Customizer manager.
+	 * @param string                $panel Parent panel id.
 	 */
-	private function catalog_panel( \WP_Customize_Manager $c ): void {
+	private function catalog_panel( \WP_Customize_Manager $c, string $panel ): void {
 		$c->add_section(
 			'oc_catalog',
 			array(
 				'title'    => __( 'Catalogue & archive', 'oc-theme' ),
-				'priority' => 11,
+				'panel'    => $panel,
+				'priority' => 8,
 			)
 		);
 
@@ -162,14 +171,16 @@ final class Customizer {
 	/**
 	 * Product card: preset, image behaviour, contents.
 	 *
-	 * @param \WP_Customize_Manager $c Customizer manager.
+	 * @param \WP_Customize_Manager $c     Customizer manager.
+	 * @param string                $panel Parent panel id.
 	 */
-	private function card_section( \WP_Customize_Manager $c ): void {
+	private function card_section( \WP_Customize_Manager $c, string $panel ): void {
 		$c->add_section(
 			'oc_card',
 			array(
 				'title'    => __( 'Product card', 'oc-theme' ),
-				'priority' => 12,
+				'panel'    => $panel,
+				'priority' => 9,
 			)
 		);
 
@@ -270,14 +281,16 @@ final class Customizer {
 	/**
 	 * Product page: layout, gallery, buy area.
 	 *
-	 * @param \WP_Customize_Manager $c Customizer manager.
+	 * @param \WP_Customize_Manager $c     Customizer manager.
+	 * @param string                $panel Parent panel id.
 	 */
-	private function product_section( \WP_Customize_Manager $c ): void {
+	private function product_section( \WP_Customize_Manager $c, string $panel ): void {
 		$c->add_section(
 			'oc_product',
 			array(
 				'title'    => __( 'Product page', 'oc-theme' ),
-				'priority' => 13,
+				'panel'    => $panel,
+				'priority' => 10,
 			)
 		);
 
@@ -385,12 +398,14 @@ final class Customizer {
 		);
 
 		$c->add_control(
-			$id,
-			array(
-				'type'    => 'radio',
-				'section' => $section,
-				'label'   => $label,
-				'choices' => $choices,
+			new Customize\Segmented_Control(
+				$c,
+				$id,
+				array(
+					'section' => $section,
+					'label'   => $label,
+					'choices' => $choices,
+				)
 			)
 		);
 	}
@@ -452,11 +467,13 @@ final class Customizer {
 		);
 
 		$c->add_control(
-			$id,
-			array(
-				'type'    => 'checkbox',
-				'section' => $section,
-				'label'   => $label,
+			new Customize\Toggle_Control(
+				$c,
+				$id,
+				array(
+					'section' => $section,
+					'label'   => $label,
+				)
 			)
 		);
 	}

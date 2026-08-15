@@ -56,3 +56,195 @@ msgstr "תבנית OC זקוקה ל-WooCommerce. יכולות החנות מוס�
 
 msgid "Could not prepare the downloaded theme folder."
 msgstr "לא ניתן היה להכין את תיקיית התבנית שהורדה."
+
+msgid "Global design"
+msgstr "עיצוב גלובלי"
+
+msgid "Corner rounding"
+msgstr "עיגול פינות"
+
+msgid "Sharp"
+msgstr "חד"
+
+msgid "Soft"
+msgstr "רך"
+
+msgid "Round"
+msgstr "מעוגל"
+
+msgid "Spacing density"
+msgstr "צפיפות מרווחים"
+
+msgid "Compact"
+msgstr "צפוף"
+
+msgid "Regular"
+msgstr "רגיל"
+
+msgid "Airy"
+msgstr "אוורירי"
+
+msgid "Content width (px)"
+msgstr "רוחב תוכן (פיקסלים)"
+
+msgid "Catalogue & archive"
+msgstr "קטלוג וארכיון"
+
+msgid "Breadcrumbs position"
+msgstr "מיקום פירורי לחם"
+
+msgid "Above the title"
+msgstr "מעל הכותרת"
+
+msgid "Below the title"
+msgstr "מתחת לכותרת"
+
+msgid "Hidden"
+msgstr "מוסתר"
+
+msgid "Title alignment"
+msgstr "יישור כותרת"
+
+msgid "Start"
+msgstr "התחלה"
+
+msgid "Centre"
+msgstr "מרכז"
+
+msgid "Products per row — desktop"
+msgstr "מוצרים בשורה — דסקטופ"
+
+msgid "Products per row — mobile"
+msgstr "מוצרים בשורה — מובייל"
+
+msgid "Products per page (-1 shows all)"
+msgstr "מוצרים בעמוד (‎-1 מציג הכל)"
+
+msgid "Product card"
+msgstr "קופסת מוצר"
+
+msgid "Card preset"
+msgstr "פריסט קופסה"
+
+msgid "Classic"
+msgstr "קלאסי"
+
+msgid "Border, centred info"
+msgstr "מסגרת · מידע ממורכז"
+
+msgid "Minimal"
+msgstr "מינימלי"
+
+msgid "No border, start-aligned"
+msgstr "ללא מסגרת · יישור להתחלה"
+
+msgid "Card"
+msgstr "כרטיס"
+
+msgid "Background, shadow, button"
+msgstr "רקע · צל · כפתור"
+
+msgid "Image behaviour"
+msgstr "התנהגות תמונה"
+
+msgid "Single image"
+msgstr "תמונה בודדת"
+
+msgid "Swap on hover"
+msgstr "החלפה בריחוף"
+
+msgid "Scrollable gallery"
+msgstr "גלריה נגללת"
+
+msgid "Browse product images on the card"
+msgstr "דפדוף בתמונות המוצר בכרטיס"
+
+msgid "Gallery: max images"
+msgstr "גלריה: מקסימום תמונות"
+
+msgid "Image ratio"
+msgstr "יחס תמונה"
+
+msgid "Add to cart button"
+msgstr "כפתור הוספה לסל"
+
+msgid "Always visible"
+msgstr "תמיד מוצג"
+
+msgid "On hover"
+msgstr "בריחוף"
+
+msgid "Sale badge"
+msgstr "תג מבצע"
+
+msgid "None"
+msgstr "ללא"
+
+msgid "Percent off"
+msgstr "אחוז הנחה"
+
+msgid "Text"
+msgstr "טקסט"
+
+msgid "Show short description"
+msgstr "הצג תיאור קצר"
+
+msgid "Product page"
+msgstr "עמוד מוצר"
+
+msgid "Gallery and content sides"
+msgstr "מיקום גלריה ותוכן"
+
+msgid "Gallery at the start"
+msgstr "גלריה בהתחלה"
+
+msgid "Gallery at the end"
+msgstr "גלריה בסוף"
+
+msgid "Gallery — desktop"
+msgstr "גלריה — דסקטופ"
+
+msgid "Thumbnails beside"
+msgstr "ממוזערות בצד"
+
+msgid "Thumbnails under"
+msgstr "ממוזערות מתחת"
+
+msgid "Two-column grid"
+msgstr "רשת דו-טורית"
+
+msgid "Mosaic"
+msgstr "מוזאיקה"
+
+msgid "Pairs, one wide image"
+msgstr "זוגות · תמונה אחת רחבה"
+
+msgid "Mosaic: wide image position"
+msgstr "מוזאיקה: מיקום התמונה הרחבה"
+
+msgid "First"
+msgstr "ראשונה"
+
+msgid "Last"
+msgstr "אחרונה"
+
+msgid "Max thumbnails"
+msgstr "מקסימום ממוזערות"
+
+msgid "Open images in a lightbox"
+msgstr "פתיחת תמונות בלייטבוקס"
+
+msgid "Sticky add-to-cart bar"
+msgstr "פס הוספה לסל דביק"
+
+msgid "Product information style"
+msgstr "סגנון מידע המוצר"
+
+msgid "Tabs"
+msgstr "טאבים"
+
+msgid "Accordion"
+msgstr "אקורדיון"
+
+msgid "Show related products"
+msgstr "הצג מוצרים קשורים"
