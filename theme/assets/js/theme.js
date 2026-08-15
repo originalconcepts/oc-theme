@@ -242,19 +242,25 @@
 	var bar = document.querySelector( '[data-oc-sticky-atc]' );
 	var form = document.querySelector( 'form.cart' );
 
-	if ( bar && form && 'IntersectionObserver' in window ) {
+	if ( bar && form ) {
 		bar.hidden = false;
 
-		new IntersectionObserver(
-			function ( entries ) {
-				bar.classList.toggle(
-					'is-visible',
-					! entries[ 0 ].isIntersecting &&
-						entries[ 0 ].boundingClientRect.top < 0
-				);
-			},
-			{ threshold: 0 }
-		).observe( form );
+		var ticking = false;
+
+		function updateBar() {
+			ticking = false;
+			// Show once the buy form has scrolled above the viewport.
+			bar.classList.toggle( 'is-visible', form.getBoundingClientRect().bottom < 0 );
+		}
+
+		window.addEventListener( 'scroll', function () {
+			if ( ! ticking ) {
+				ticking = true;
+				requestAnimationFrame( updateBar );
+			}
+		}, { passive: true } );
+
+		updateBar();
 
 		var proxy = bar.querySelector( '.oc-sticky-atc__btn' );
 		var submit = form.querySelector( '[type="submit"]' );
