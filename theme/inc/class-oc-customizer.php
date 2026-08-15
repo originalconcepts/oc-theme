@@ -584,13 +584,13 @@ final class Customizer {
 	/**
 	 * Drawn preset picker with a whitelist sanitiser.
 	 *
-	 * @param \WP_Customize_Manager               $c       Manager.
-	 * @param string                              $id      Setting id.
-	 * @param string                              $section Section id.
-	 * @param string                              $label   Label.
-	 * @param array<string,array<string,string>>  $presets Presets.
-	 * @param string                              $def Default value.
-	 * @param string                              $width   Item width.
+	 * @param \WP_Customize_Manager              $c       Manager.
+	 * @param string                             $id      Setting id.
+	 * @param string                             $section Section id.
+	 * @param string                             $label   Label.
+	 * @param array<string,array<string,string>> $presets Presets.
+	 * @param string                             $def     Default value.
+	 * @param string                             $width   Item width.
 	 */
 	private function preset( \WP_Customize_Manager $c, string $id, string $section, string $label, array $presets, string $def, string $width ): void {
 		$c->add_setting(
