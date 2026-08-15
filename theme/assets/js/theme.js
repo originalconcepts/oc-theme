@@ -235,13 +235,22 @@
 					Math.round( Math.abs( mgWrap.scrollLeft ) / mgWrap.clientWidth );
 			}
 
+			var mgDots = document.createElement( 'ol' );
+			mgDots.className = 'oc-gdots';
+
+			function mgUpdateDots( idx ) {
+				mgDots.querySelectorAll( 'button' ).forEach( function ( b, i ) {
+					b.setAttribute( 'aria-current', i === idx ? 'true' : 'false' );
+				} );
+			}
+
 			function mgGoTo( index ) {
 				var rtl = getComputedStyle( mgWrap ).direction === 'rtl';
 				mgWrap.scrollLeft = ( rtl ? -1 : 1 ) * index * mgWrap.clientWidth;
+				// Direct update as well — scroll events lag (or never fire in
+				// frozen pipelines) on programmatic scrolls.
+				mgUpdateDots( index );
 			}
-
-			var mgDots = document.createElement( 'ol' );
-			mgDots.className = 'oc-gdots';
 
 			mgSlides.forEach( function ( _, i ) {
 				var li = document.createElement( 'li' );
@@ -259,10 +268,7 @@
 			mgGallery.appendChild( mgDots );
 
 			mgWrap.addEventListener( 'scroll', function () {
-				var idx = mgIndex();
-				mgDots.querySelectorAll( 'button' ).forEach( function ( b, i ) {
-					b.setAttribute( 'aria-current', i === idx ? 'true' : 'false' );
-				} );
+				mgUpdateDots( mgIndex() );
 			}, { passive: true } );
 
 			if ( document.body.classList.contains( 'oc-gm-arrows' ) ) {

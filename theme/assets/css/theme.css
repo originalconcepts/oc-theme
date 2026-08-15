@@ -1183,8 +1183,11 @@ body:not(.oc-no-lightbox) .woocommerce-product-gallery__image a { cursor: none; 
 	}
 	.oc-gm-peek .woocommerce-product-gallery__wrapper { gap: 8px; }
 
-	/* the classic mobile gallery runs edge to edge, no gaps, square corners */
+	/* the classic mobile gallery runs edge to edge, no gaps, square corners.
+	 * inline-size:auto lets the negative margins actually widen the box —
+	 * with the inherited 100% it only shifted sideways. */
 	.oc-gm-dots.single-product div.product div.images {
+		inline-size: auto;
 		margin-inline: calc(-1 * var(--oc-gap));
 	}
 	.oc-gm-dots .woocommerce-product-gallery__image img { border-radius: 0; }
