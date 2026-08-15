@@ -70,9 +70,9 @@
 			return;
 		}
 		drawer.hidden = false;
-		requestAnimationFrame( function () {
+		setTimeout( function () {
 			drawer.classList.add( 'is-open' );
-		} );
+		}, 10 );
 		document.documentElement.style.overflow = 'hidden';
 	}
 
@@ -245,21 +245,13 @@
 	if ( bar && form ) {
 		bar.hidden = false;
 
-		var ticking = false;
-
 		function updateBar() {
-			ticking = false;
-			// Show once the buy form has scrolled above the viewport.
+			// Show once the buy form has scrolled above the viewport. One rect
+			// read and a class toggle — cheap enough to run unthrottled.
 			bar.classList.toggle( 'is-visible', form.getBoundingClientRect().bottom < 0 );
 		}
 
-		window.addEventListener( 'scroll', function () {
-			if ( ! ticking ) {
-				ticking = true;
-				requestAnimationFrame( updateBar );
-			}
-		}, { passive: true } );
-
+		window.addEventListener( 'scroll', updateBar, { passive: true } );
 		updateBar();
 
 		var proxy = bar.querySelector( '.oc-sticky-atc__btn' );
