@@ -45,11 +45,16 @@ final class Gate {
 
 	/**
 	 * Hook everything up.
+	 *
+	 * Ordering matters and is the reason this is split in two. At
+	 * `plugins_loaded` we only *mark* the request and neutralise the URI, so
+	 * WordPress does not try to route /ocadmin as a page and 404 it. The login
+	 * screen itself is loaded at `wp_loaded`, once WordPress is fully booted —
+	 * requiring wp-login.php any earlier makes it error.
 	 */
 	public function register(): void {
-		$this->is_login_request = $this->matches_slug();
-
-		add_action( 'plugins_loaded', array( $this, 'handle' ), 9 );
+		add_action( 'plugins_loaded', array( $this, 'mark_request' ), 9 );
+		add_action( 'wp_loaded', array( $this, 'handle' ) );
 
 		// Anything WordPress prints, mails or redirects to must use the new path.
 		add_filter( 'site_url', array( $this, 'filter_url' ), 10, 2 );
@@ -59,20 +64,24 @@ final class Gate {
 		add_filter( 'login_url', array( $this, 'swap' ), 10, 1 );
 		add_filter( 'logout_url', array( $this, 'swap' ), 10, 1 );
 		add_filter( 'register_url', array( $this, 'swap' ), 10, 1 );
-
-		// Do not send a logged-out visitor from /wp-admin to a login screen that
-		// would reveal the site runs WordPress with a reachable login.
-		add_action( 'admin_init', array( $this, 'guard_admin' ), 1 );
 	}
 
 	/**
-	 * Serve or block, depending on the request.
+	 * Classify the request before WordPress routes it.
 	 */
-	public function handle(): void {
+	public function mark_request(): void {
+		global $pagenow;
+
 		$path = $this->request_path();
 
-		if ( $this->is_login_request ) {
-			$this->serve_login();
+		if ( $path === $this->slug ) {
+			$this->is_login_request = true;
+
+			// Stop WordPress resolving /ocadmin as a page and 404ing it before
+			// we get a chance to serve the login screen.
+			$_SERVER['REQUEST_URI'] = '/' . str_repeat( '-/', 8 );
+			$pagenow                = 'wp-login.php'; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- required to serve the login screen from another path.
+
 			return;
 		}
 
@@ -82,16 +91,23 @@ final class Gate {
 	}
 
 	/**
-	 * Load the real login screen for the private path.
+	 * Serve the login screen, or keep logged-out visitors out of the admin.
+	 *
+	 * Runs at `wp_loaded`, which is late enough for wp-login.php to behave.
 	 */
-	private function serve_login(): void {
-		global $pagenow;
+	public function handle(): void {
+		if ( $this->is_login_request ) {
+			require_once ABSPATH . 'wp-login.php';
+			exit;
+		}
 
-		// Make WordPress believe this is wp-login.php, then hand over to it.
-		$pagenow = 'wp-login.php'; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- required to serve the login screen from another path.
-
-		require_once ABSPATH . 'wp-login.php';
-		exit;
+		// A logged-out visitor asking for /wp-admin gets a 404 rather than a
+		// redirect that would point straight at the private path.
+		if ( is_admin() && ! is_user_logged_in() && ! wp_doing_ajax() && ! wp_doing_cron() ) {
+			if ( ! ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ) {
+				$this->not_found();
+			}
+		}
 	}
 
 	/**
@@ -141,23 +157,6 @@ final class Gate {
 		}
 
 		exit;
-	}
-
-	/**
-	 * Keep logged-out visitors out of /wp-admin without exposing the login.
-	 *
-	 * admin-ajax.php is excluded: the front end calls it while logged out.
-	 */
-	public function guard_admin(): void {
-		if ( is_user_logged_in() || wp_doing_ajax() || wp_doing_cron() ) {
-			return;
-		}
-
-		if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
-			return;
-		}
-
-		$this->not_found();
 	}
 
 	/**
