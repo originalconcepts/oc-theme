@@ -1,0 +1,285 @@
+/*
+ * OC Theme — front end.
+ *
+ * Logical properties only (inset-inline, margin-inline, padding-inline) so RTL
+ * and LTR come from this one file (DECISIONS.md #11). No physical left/right.
+ *
+ * Colours, spacing and type come from theme.json presets and from the tokens
+ * printed by class-oc-assets.php, never hardcoded here.
+ */
+
+:root {
+	--oc-ink: var(--wp--preset--color--text, #151a21);
+	--oc-ink-2: var(--wp--preset--color--text-muted, #6b7482);
+	--oc-bg: var(--wp--preset--color--background, #f2f4f7);
+	--oc-surface: var(--wp--preset--color--surface, #fff);
+	--oc-primary: var(--wp--preset--color--primary, #2f4e7a);
+	--oc-sale: var(--wp--preset--color--sale, #b4453c);
+	--oc-line: color-mix(in srgb, var(--oc-ink) 12%, transparent);
+	--oc-gap: clamp(12px, 2vw, 24px);
+	--oc-header-h: 72px;
+}
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+body {
+	margin: 0;
+	background: var(--oc-surface);
+	color: var(--oc-ink);
+	font-family: var(--oc-font-body, system-ui, sans-serif);
+	line-height: 1.55;
+	-webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4 {
+	font-family: var(--oc-font-display, inherit);
+	line-height: 1.2;
+	text-wrap: balance;
+	margin-block: 0 0.5em;
+}
+
+img { max-inline-size: 100%; block-size: auto; }
+a { color: inherit; }
+
+.oc-container {
+	inline-size: 100%;
+	max-inline-size: var(--oc-content-width, 1280px);
+	margin-inline: auto;
+	padding-inline: var(--oc-gap);
+}
+
+.oc-container--narrow { max-inline-size: 760px; }
+
+/* Keyboard users get to the content without tabbing the whole menu. */
+.oc-skip {
+	position: absolute;
+	inset-block-start: -100px;
+	inset-inline-start: var(--oc-gap);
+	z-index: 100;
+	padding: 10px 16px;
+	background: var(--oc-primary);
+	color: #fff;
+	border-radius: 0 0 6px 6px;
+	text-decoration: none;
+}
+.oc-skip:focus { inset-block-start: 0; }
+
+.screen-reader-text {
+	position: absolute;
+	inline-size: 1px;
+	block-size: 1px;
+	margin: -1px;
+	padding: 0;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
+}
+
+/* ---------- header ---------- */
+
+.oc-header {
+	background: var(--oc-surface);
+	border-block-end: 1px solid var(--oc-line);
+}
+
+.oc-header.is-sticky {
+	position: sticky;
+	inset-block-start: 0;
+	z-index: 50;
+}
+
+.oc-header__inner {
+	max-inline-size: var(--oc-content-width, 1280px);
+	margin-inline: auto;
+	padding-inline: var(--oc-gap);
+	min-block-size: var(--oc-header-h);
+	display: flex;
+	align-items: center;
+	gap: var(--oc-gap);
+}
+
+.oc-header__start { display: flex; align-items: center; gap: 12px; }
+.oc-header__end { margin-inline-start: auto; display: flex; align-items: center; gap: 14px; }
+
+.oc-header--centred .oc-header__inner { flex-wrap: wrap; justify-content: center; }
+.oc-header--centred .oc-nav { flex-basis: 100%; display: flex; justify-content: center; }
+
+.oc-logo--text { font-weight: 700; font-size: 1.2rem; text-decoration: none; }
+.custom-logo { max-block-size: 48px; inline-size: auto; }
+
+.oc-burger {
+	display: none;
+	inline-size: 40px;
+	block-size: 40px;
+	padding: 0;
+	border: 0;
+	background: none;
+	cursor: pointer;
+	position: relative;
+}
+.oc-burger span,
+.oc-burger span::before,
+.oc-burger span::after {
+	content: "";
+	position: absolute;
+	inset-inline: 8px;
+	block-size: 2px;
+	background: var(--oc-ink);
+}
+.oc-burger span { inset-block-start: 19px; }
+.oc-burger span::before { inset-block-start: -7px; inset-inline: 0; }
+.oc-burger span::after { inset-block-start: 7px; inset-inline: 0; }
+
+/* ---------- navigation ---------- */
+
+.oc-nav__list,
+.oc-mobile-menu__list,
+.oc-footer__list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.oc-nav__list { display: flex; gap: clamp(10px, 1.6vw, 22px); }
+.oc-nav__list li { position: relative; }
+
+.oc-nav__list a {
+	display: block;
+	padding-block: 10px;
+	text-decoration: none;
+	font-weight: 500;
+	white-space: nowrap;
+}
+
+.oc-nav__list a:hover { color: var(--oc-primary); }
+
+/* Sub-menus open on hover and on keyboard focus. */
+.oc-nav__list .sub-menu {
+	position: absolute;
+	inset-block-start: 100%;
+	inset-inline-start: 0;
+	min-inline-size: 200px;
+	margin: 0;
+	padding: 8px 0;
+	list-style: none;
+	background: var(--oc-surface);
+	border: 1px solid var(--oc-line);
+	border-radius: var(--oc-radius, 8px);
+	box-shadow: 0 8px 28px rgb(0 0 0 / 10%);
+	opacity: 0;
+	visibility: hidden;
+	transition: opacity .14s ease;
+	z-index: 20;
+}
+
+.oc-nav__list .sub-menu .sub-menu {
+	inset-block-start: 0;
+	inset-inline-start: 100%;
+}
+
+.oc-nav__list li:hover > .sub-menu,
+.oc-nav__list li:focus-within > .sub-menu {
+	opacity: 1;
+	visibility: visible;
+}
+
+.oc-nav__list .sub-menu a { padding: 8px 16px; }
+
+.oc-mobile-menu {
+	display: none;
+	padding: var(--oc-gap);
+	border-block-end: 1px solid var(--oc-line);
+}
+.oc-mobile-menu__list a { display: block; padding-block: 10px; text-decoration: none; }
+.oc-mobile-menu .sub-menu { list-style: none; padding-inline-start: 16px; }
+
+/* ---------- shop ---------- */
+
+.shop-main,
+.site-main { min-block-size: 40vh; padding-block: var(--oc-gap); }
+
+.woocommerce ul.products {
+	display: grid;
+	grid-template-columns: repeat(var(--oc-grid-cols, 4), minmax(0, 1fr));
+	gap: var(--oc-gap);
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.oc-cols-2 { --oc-grid-cols: 2; }
+.oc-cols-3 { --oc-grid-cols: 3; }
+.oc-cols-4 { --oc-grid-cols: 4; }
+.oc-cols-5 { --oc-grid-cols: 5; }
+
+.woocommerce ul.products li.product { margin: 0; text-align: center; }
+.woocommerce ul.products li.product img { inline-size: 100%; }
+.woocommerce ul.products li.product .price { color: var(--oc-ink); font-weight: 600; }
+.woocommerce ul.products li.product .woocommerce-loop-product__title { font-size: 1rem; }
+
+.oc-breadcrumb { color: var(--oc-ink-2); font-size: .875rem; margin-block-end: 12px; }
+.oc-breadcrumb .sep { margin-inline: 6px; }
+
+.oc-page-title { margin-block-start: 0; }
+
+/* ---------- footer ---------- */
+
+.oc-footer {
+	margin-block-start: calc(var(--oc-gap) * 2);
+	border-block-start: 1px solid var(--oc-line);
+	background: var(--oc-bg);
+}
+
+.oc-footer__inner {
+	max-inline-size: var(--oc-content-width, 1280px);
+	margin-inline: auto;
+	padding: calc(var(--oc-gap) * 1.5) var(--oc-gap);
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--oc-gap);
+	align-items: center;
+	justify-content: space-between;
+}
+
+.oc-footer__list { display: flex; gap: 18px; flex-wrap: wrap; }
+.oc-footer__list a { text-decoration: none; }
+.oc-footer__credit { margin: 0; color: var(--oc-ink-2); font-size: .875rem; }
+
+/* ---------- search ---------- */
+
+.oc-search { display: flex; gap: 8px; }
+.oc-search input {
+	flex: 1;
+	padding: 10px 12px;
+	border: 1px solid var(--oc-line);
+	border-radius: var(--oc-radius, 8px);
+	font: inherit;
+}
+.oc-search button {
+	padding: 10px 18px;
+	border: 0;
+	border-radius: var(--oc-radius, 8px);
+	background: var(--oc-primary);
+	color: #fff;
+	font: inherit;
+	cursor: pointer;
+}
+
+/* ---------- mobile ---------- */
+
+@media (max-width: 900px) {
+	.oc-burger { display: block; }
+	.oc-nav { display: none; }
+	.oc-mobile-menu[data-open="true"] { display: block; }
+
+	.woocommerce ul.products { grid-template-columns: repeat(var(--oc-grid-cols-m, 2), minmax(0, 1fr)); }
+	.oc-cols-m-1 { --oc-grid-cols-m: 1; }
+	.oc-cols-m-2 { --oc-grid-cols-m: 2; }
+	.oc-cols-m-3 { --oc-grid-cols-m: 3; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
+}
