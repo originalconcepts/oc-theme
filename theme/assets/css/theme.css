@@ -18,7 +18,8 @@
 	--oc-sale: var(--wp--preset--color--sale, #b4453c);
 	--oc-line: color-mix(in srgb, var(--oc-ink) 12%, transparent);
 	--oc-gap: calc(clamp(12px, 2vw, 24px) * var(--oc-density, 1));
-	--oc-header-h: 72px;
+	/* --oc-header-h comes from the settings tokens; theme.css must not
+	 * redefine it — stylesheets print after the token block and would win. */
 }
 
 *,
@@ -83,6 +84,7 @@ a { color: inherit; }
 
 .oc-header {
 	background: var(--oc-header-bg, var(--oc-surface));
+	color: var(--oc-header-tx, var(--oc-ink));
 	border-block-end: 1px solid var(--oc-line);
 }
 
@@ -99,14 +101,39 @@ a { color: inherit; }
 	padding: 6px;
 	border: 0;
 	background: none;
-	color: var(--oc-ink);
+	color: inherit;
 	cursor: pointer;
 	position: relative;
 	text-decoration: none;
 	transition: color .12s ease;
 }
 
+.oc-hicon svg { inline-size: var(--oc-hicon, 20px); block-size: var(--oc-hicon, 20px); }
+
 .oc-hicon:hover { color: var(--oc-primary); }
+
+/* burger inherits the header text colour too */
+.oc-burger span,
+.oc-burger span::before,
+.oc-burger span::after { background: currentColor; }
+.oc-burger { color: var(--oc-header-tx, var(--oc-ink)); }
+
+/* secondary menu beside the icons (desktop) */
+.oc-nav2__list {
+	display: flex;
+	gap: 16px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.oc-nav2__list a {
+	text-decoration: none;
+	font-size: .9rem;
+	font-weight: 500;
+	white-space: nowrap;
+}
+.oc-nav2__list a:hover { color: var(--oc-primary); }
+@media (max-width: 900px) { .oc-nav2 { display: none; } }
 
 .oc-cart-count {
 	position: absolute;
@@ -145,7 +172,7 @@ a { color: inherit; }
 	max-inline-size: var(--oc-content-width, 1280px);
 	margin-inline: auto;
 	padding-inline: var(--oc-gap);
-	min-block-size: var(--oc-header-h);
+	min-block-size: var(--oc-header-h, 72px);
 	display: flex;
 	align-items: center;
 	gap: var(--oc-gap);
@@ -154,8 +181,54 @@ a { color: inherit; }
 .oc-header__start { display: flex; align-items: center; gap: 12px; }
 .oc-header__end { margin-inline-start: auto; display: flex; align-items: center; gap: 14px; }
 
-.oc-header--centred .oc-header__inner { flex-wrap: wrap; justify-content: center; }
-.oc-header--centred .oc-nav { flex-basis: 100%; display: flex; justify-content: center; }
+/* centred: logo on top row (icons stay beside it), menu on its own row */
+.oc-header--centred .oc-header__inner {
+	display: grid;
+	grid-template-columns: 1fr auto 1fr;
+	align-items: center;
+}
+.oc-header--centred .oc-header__start { display: contents; }
+.oc-header--centred .oc-burger { grid-column: 1; grid-row: 1; justify-self: start; }
+.oc-header--centred .oc-logo,
+.oc-header--centred .custom-logo { grid-column: 2; grid-row: 1; }
+.oc-header--centred .oc-header__end { grid-column: 3; grid-row: 1; justify-self: end; margin-inline-start: 0; }
+.oc-header--centred .oc-nav {
+	grid-column: 1 / -1;
+	grid-row: 2;
+	display: flex;
+	justify-content: center;
+	padding-block-end: 6px;
+}
+
+/* split: menu at the start, logo centred, icons at the end */
+.oc-header--split .oc-header__inner {
+	display: grid;
+	grid-template-columns: 1fr auto 1fr;
+	align-items: center;
+}
+.oc-header--split .oc-header__start { display: contents; }
+.oc-header--split .oc-nav { grid-column: 1; grid-row: 1; justify-self: start; }
+.oc-header--split .oc-burger { grid-column: 1; grid-row: 1; justify-self: start; }
+.oc-header--split .oc-logo,
+.oc-header--split .custom-logo { grid-column: 2; grid-row: 1; }
+.oc-header--split .oc-header__end { grid-column: 3; grid-row: 1; justify-self: end; margin-inline-start: 0; }
+
+/* burger: hamburger replaces the open menu at every width */
+.oc-header--burger .oc-header__inner {
+	display: grid;
+	grid-template-columns: 1fr auto 1fr;
+	align-items: center;
+}
+.oc-header--burger .oc-header__start { display: contents; }
+.oc-header--burger .oc-burger { display: block; grid-column: 1; grid-row: 1; justify-self: start; }
+.oc-header--burger .oc-nav { display: none; }
+.oc-header--burger .oc-logo,
+.oc-header--burger .custom-logo { grid-column: 2; grid-row: 1; }
+.oc-header--burger .oc-header__end { grid-column: 3; grid-row: 1; justify-self: end; margin-inline-start: 0; }
+
+@media (min-width: 901px) {
+	.oc-header--burger ~ .oc-mobile-menu[data-open="true"] { display: block; }
+}
 
 .oc-logo--text { font-weight: 700; font-size: 1.2rem; text-decoration: none; }
 .custom-logo { max-block-size: 48px; inline-size: auto; }
@@ -358,6 +431,19 @@ a { color: inherit; }
 	.oc-burger { display: block; }
 	.oc-nav { display: none; }
 	.oc-mobile-menu[data-open="true"] { display: block; }
+
+	/* mobile centred: hamburger at the start with search beside it, logo in
+	 * the centre, the remaining icons at the end */
+	.oc-header--m-centered .oc-header__start,
+	.oc-header--m-centered .oc-header__end { display: contents; }
+	.oc-header--m-centered .oc-header__inner { display: flex; }
+	.oc-header--m-centered .oc-burger { order: 1; }
+	.oc-header--m-centered .oc-search-toggle { order: 2; }
+	.oc-header--m-centered .oc-logo,
+	.oc-header--m-centered .custom-logo { order: 3; margin-inline: auto; }
+	.oc-header--m-centered .oc-nav2 { order: 4; }
+	.oc-header--m-centered .oc-account-link { order: 5; }
+	.oc-header--m-centered .oc-cart-link { order: 6; }
 
 	.woocommerce ul.products { grid-template-columns: repeat(var(--oc-grid-cols-m, 2), minmax(0, 1fr)); }
 	.oc-cols-m-1 { --oc-grid-cols-m: 1; }
@@ -730,8 +816,11 @@ li.product:focus-within .oc-card-atc,
 	display: grid;
 	grid-template-columns: var(--oc-col-a, minmax(0, 1fr)) var(--oc-col-b, minmax(0, 1fr));
 	gap: calc(var(--oc-gap) * 1.5);
-	align-items: start;
+	/* columns stretch to the full row so the sticky inner wrapper is clamped
+	 * by its column box, which ends exactly where the row does */
 }
+
+.oc-stick-inner { position: relative; }
 
 .oc-ratio-60-40.single-product div.product { --oc-col-a: minmax(0, 1.5fr); --oc-col-b: minmax(0, 1fr); }
 .oc-ratio-40-60.single-product div.product { --oc-col-a: minmax(0, 1fr); --oc-col-b: minmax(0, 1.5fr); }
@@ -829,7 +918,7 @@ li.product:focus-within .oc-card-atc,
 
 /* side rail (desktop layouts; the rail hides on mobile) */
 @media (min-width: 901px) {
-	.oc-gallery-thumbs-side .woocommerce-product-gallery {
+	.oc-gallery-thumbs-side .woocommerce-product-gallery .oc-stick-inner {
 		display: grid;
 		grid-template-columns: var(--oc-thumbs-w, 80px) minmax(0, 1fr);
 		gap: 12px;
@@ -1213,6 +1302,113 @@ body:not(.oc-no-lightbox) .woocommerce-product-gallery__image a { cursor: none; 
 	vertical-align: middle;
 }
 
+/* ---------- top bar ---------- */
+
+.oc-topbar {
+	background: var(--oc-topbar-bg, var(--oc-ink));
+	color: var(--oc-topbar-tx, #fff);
+	font-size: .85rem;
+}
+
+.oc-topbar__inner {
+	max-inline-size: var(--oc-content-width, 1280px);
+	margin-inline: auto;
+	padding: 7px var(--oc-gap);
+	display: grid;
+	grid-template-columns: 1fr auto 1fr;
+	align-items: center;
+	gap: 12px;
+}
+
+.oc-topbar__menu { grid-column: 1; justify-self: start; }
+.oc-topbar__rotator { grid-column: 2; display: flex; align-items: center; gap: 10px; }
+.oc-topbar__spacer { grid-column: 3; }
+
+@media (max-width: 900px) {
+	.oc-topbar__menu { display: none; }
+}
+
+.oc-topbar__list {
+	display: flex;
+	gap: 14px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.oc-topbar__list a { text-decoration: none; opacity: .85; }
+.oc-topbar__list a:hover { opacity: 1; }
+
+.oc-topbar__msgs {
+	position: relative;
+	min-inline-size: 200px;
+	text-align: center;
+	overflow: hidden;
+	block-size: 1.5em;
+}
+
+.oc-topbar__msg {
+	position: absolute;
+	inset-inline: 0;
+	inset-block-start: 0;
+	opacity: 0;
+	pointer-events: none;
+}
+
+.oc-topbar--fade .oc-topbar__msg { transition: opacity .35s ease; }
+
+.oc-topbar--slide .oc-topbar__msg {
+	transition: opacity .3s ease, translate .3s ease;
+	translate: 0 100%;
+}
+
+.oc-topbar__msg.is-current { opacity: 1; pointer-events: auto; translate: 0 0; }
+
+.oc-topbar__nav {
+	inline-size: 22px;
+	block-size: 22px;
+	padding: 0;
+	border: 0;
+	background: none;
+	color: inherit;
+	cursor: pointer;
+	display: grid;
+	place-items: center;
+	opacity: .8;
+}
+.oc-topbar__nav:hover { opacity: 1; }
+.oc-topbar__nav svg { inline-size: 10px; block-size: 10px; fill: currentColor; }
+[dir="rtl"] .oc-topbar__nav svg { transform: scaleX(-1); }
+
+/* ---------- transparent header ---------- */
+
+.oc-htrans .oc-header {
+	position: fixed;
+	inset-inline: 0;
+	inset-block-start: 0;
+	z-index: 60;
+	background: transparent;
+	border-block-end-color: transparent;
+	transition: background-color .2s ease, border-color .2s ease;
+}
+
+.oc-htrans .oc-header.is-scrolled {
+	background: var(--oc-header-bg, var(--oc-surface));
+	border-block-end-color: var(--oc-line);
+}
+
+.oc-htrans.admin-bar .oc-header { inset-block-start: 32px; }
+
+/* ---------- load more / infinite ---------- */
+
+.oc-load-more {
+	display: block;
+	margin: 28px auto 0;
+	padding: 11px 34px;
+	cursor: pointer;
+}
+
+.oc-load-more.loading { opacity: .6; pointer-events: none; }
+
 /* ---------- QA round-5 ---------- */
 
 /* sticky product columns: whichever column is shorter pins while the other
@@ -1222,17 +1418,16 @@ body:not(.oc-no-lightbox) .woocommerce-product-gallery__image a { cursor: none; 
 @media (min-width: 901px) {
 	/* Only a column that fits the viewport pins (theme.js sets the class) —
 	 * a taller-than-viewport sticky column froze the page scroll until its
-	 * slack ran out. The extra .woocommerce class outranks woo's own
-	 * div.images position. */
-	.woocommerce.single-product div.product div.images.oc-col-stick,
-	.woocommerce.single-product div.product div.summary.oc-col-stick {
+	 * slack ran out. The pin sits on the inner wrapper: Chromium clamps a
+	 * sticky grid item to the whole grid, letting it slide over the related
+	 * products; the wrapper is clamped by its column, which ends at the row. */
+	.woocommerce.single-product div.product .oc-col-stick > .oc-stick-inner {
 		position: sticky;
 		inset-block-start: 24px;
 	}
 
-	.woocommerce.single-product:has(.oc-header.is-sticky) div.product div.images.oc-col-stick,
-	.woocommerce.single-product:has(.oc-header.is-sticky) div.product div.summary.oc-col-stick {
-		inset-block-start: calc(var(--oc-header-h) + 20px);
+	.woocommerce.single-product:has(.oc-header.is-sticky) div.product .oc-col-stick > .oc-stick-inner {
+		inset-block-start: calc(var(--oc-header-h, 72px) + 20px);
 	}
 }
 

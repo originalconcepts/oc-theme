@@ -129,6 +129,7 @@ final class Assets {
 			'ocL10n',
 			array(
 				'addToCart' => __( 'Add to cart', 'oc-theme' ),
+				'loadMore'  => __( 'Show more', 'oc-theme' ),
 			)
 		);
 	}
@@ -157,6 +158,10 @@ final class Assets {
 				'--oc-gimg-h'         => absint( get_theme_mod( 'oc_gallery_img_height_px', 600 ) ) . 'px',
 				'--oc-header-h'       => absint( get_theme_mod( 'oc_header_height', 72 ) ) . 'px',
 				'--oc-header-bg'      => (string) get_theme_mod( 'oc_header_bg', '' ),
+				'--oc-header-tx'      => (string) get_theme_mod( 'oc_header_tx', '' ),
+				'--oc-hicon'          => absint( get_theme_mod( 'oc_header_icon_size', 20 ) ) . 'px',
+				'--oc-topbar-bg'      => (string) get_theme_mod( 'oc_topbar_bg', '' ),
+				'--oc-topbar-tx'      => (string) get_theme_mod( 'oc_topbar_tx', '' ),
 				'--oc-footer-bg'      => (string) get_theme_mod( 'oc_footer_bg', '' ),
 				'--oc-primary-user'   => (string) get_theme_mod( 'oc_color_primary', '' ),
 				'--oc-secondary-user' => (string) get_theme_mod( 'oc_color_secondary', '' ),

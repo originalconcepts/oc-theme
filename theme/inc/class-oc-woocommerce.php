@@ -305,6 +305,18 @@ final class WooCommerce {
 			$classes[] = 'oc-headings-center';
 		}
 
+		$transparent = (string) get_theme_mod( 'oc_header_transparent', 'none' );
+		if ( 'all' === $transparent || ( 'home' === $transparent && is_front_page() ) ) {
+			$classes[] = 'oc-htrans';
+		}
+
+		if ( is_shop() || is_product_taxonomy() ) {
+			$paging = (string) get_theme_mod( 'oc_catalog_paging', 'numbers' );
+			if ( 'numbers' !== $paging ) {
+				$classes[] = 'oc-paging-' . sanitize_html_class( $paging );
+			}
+		}
+
 		if ( is_product() ) {
 			$classes[] = 'oc-gallery-' . sanitize_html_class( (string) get_theme_mod( 'oc_gallery_preset', 'thumbs-side' ) );
 			$classes[] = 'oc-side-' . sanitize_html_class( (string) get_theme_mod( 'oc_product_layout_side', 'gallery-start' ) );

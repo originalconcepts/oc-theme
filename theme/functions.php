@@ -72,8 +72,10 @@ function oc_setup(): void {
 
 	register_nav_menus(
 		array(
-			'primary' => __( 'Primary menu', 'oc-theme' ),
-			'footer'  => __( 'Footer menu', 'oc-theme' ),
+			'primary'   => __( 'Primary menu', 'oc-theme' ),
+			'secondary' => __( 'Header side menu', 'oc-theme' ),
+			'topbar'    => __( 'Top bar menu', 'oc-theme' ),
+			'footer'    => __( 'Footer menu', 'oc-theme' ),
 		)
 	);
 
@@ -130,11 +132,19 @@ function oc_header_icons_render(): void {
 	if ( class_exists( 'WooCommerce' ) && get_theme_mod( 'oc_header_cart', true ) ) {
 		$oc_count = WC()->cart->get_cart_contents_count();
 
+		$oc_cart_icons = array(
+			'cart'   => '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.6"/><circle cx="17" cy="20" r="1.6"/><path d="M3 3h2.5l2.2 11.2a1.6 1.6 0 0 0 1.6 1.3h7.6a1.6 1.6 0 0 0 1.6-1.3L20 7H6"/></svg>',
+			'bag'    => '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8h14l-1.2 12.2a1.8 1.8 0 0 1-1.8 1.6H8a1.8 1.8 0 0 1-1.8-1.6Z"/><path d="M8.5 10V6.5a3.5 3.5 0 0 1 7 0V10"/></svg>',
+			'basket' => '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 10h17l-1.6 9a2 2 0 0 1-2 1.6H7.1a2 2 0 0 1-2-1.6Z"/><path d="m8 10 3-6.5M16 10l-3-6.5"/><path d="M9.5 13.5v3.5M14.5 13.5v3.5"/></svg>',
+		);
+
+		$oc_style = (string) get_theme_mod( 'oc_header_cart_icon', 'cart' );
+
 		printf(
 			'<a class="oc-hicon oc-cart-link" href="%s" aria-label="%s">%s<span class="oc-cart-count">%d</span></a>',
 			esc_url( wc_get_cart_url() ),
 			esc_attr__( 'Cart', 'oc-theme' ),
-			'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.6"/><circle cx="17" cy="20" r="1.6"/><path d="M3 3h2.5l2.2 11.2a1.6 1.6 0 0 0 1.6 1.3h7.6a1.6 1.6 0 0 0 1.6-1.3L20 7H6"/></svg>',
+			$oc_cart_icons[ $oc_style ] ?? $oc_cart_icons['cart'], // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static SVG.
 			absint( $oc_count )
 		);
 	}

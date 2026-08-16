@@ -461,3 +461,108 @@ msgstr "עמודת פוטר %d"
 
 msgid "My account"
 msgstr "החשבון שלי"
+
+msgid "Header side menu"
+msgstr "תפריט צד בהדר"
+
+msgid "Top bar menu"
+msgstr "תפריט הדר עליון"
+
+msgid "Menu, logo in the centre, icons"
+msgstr "תפריט · לוגו במרכז · אייקונים"
+
+msgid "Hamburger, logo in the centre"
+msgstr "המבורגר · לוגו במרכז"
+
+msgid "Header layout — mobile"
+msgstr "פריסת הדר — מובייל"
+
+msgid "Hamburger and logo together"
+msgstr "המבורגר ולוגו צמודים"
+
+msgid "Logo in the centre"
+msgstr "לוגו במרכז"
+
+msgid "Header text and icons colour"
+msgstr "צבע טקסט ואייקונים בהדר"
+
+msgid "Transparent header over the content"
+msgstr "הדר שקוף מעל התוכן"
+
+msgid "Off"
+msgstr "כבוי"
+
+msgid "Homepage only"
+msgstr "עמוד הבית בלבד"
+
+msgid "Whole site"
+msgstr "כל האתר"
+
+msgid "Cart icon style"
+msgstr "סגנון אייקון הסל"
+
+msgid "Bag"
+msgstr "תיק קניות"
+
+msgid "Basket"
+msgstr "סלסלה"
+
+msgid "Icon size"
+msgstr "גודל אייקונים"
+
+msgid "Top bar"
+msgstr "הדר עליון"
+
+msgid "A strip above the header: rotating messages in the centre, an optional side menu (assign it in the Menus screen)."
+msgstr "פס מעל ההדר: מסרים מתחלפים במרכז, ותפריט צד אופציונלי (משייכים במסך התפריטים)."
+
+msgid "Show the top bar"
+msgstr "הצג הדר עליון"
+
+msgid "Message 1"
+msgstr "מסר 1"
+
+msgid "Message 2"
+msgstr "מסר 2"
+
+msgid "Message 3"
+msgstr "מסר 3"
+
+msgid "Message transition"
+msgstr "אפקט החלפת מסרים"
+
+msgid "Fade"
+msgstr "עמעום"
+
+msgid "Slide"
+msgstr "גלילה"
+
+msgid "Top bar background"
+msgstr "צבע רקע הדר עליון"
+
+msgid "Top bar text colour"
+msgstr "צבע טקסט הדר עליון"
+
+msgid "Previous message"
+msgstr "המסר הקודם"
+
+msgid "Next message"
+msgstr "המסר הבא"
+
+msgid "Secondary"
+msgstr "משני"
+
+msgid "Loading more products"
+msgstr "טעינת מוצרים נוספים"
+
+msgid "Page numbers"
+msgstr "מספרי עמודים"
+
+msgid "\"Show more\" button"
+msgstr "כפתור \"הצג עוד\""
+
+msgid "Automatic on scroll"
+msgstr "אוטומטי בגלילה"
+
+msgid "Show more"
+msgstr "הצג עוד"

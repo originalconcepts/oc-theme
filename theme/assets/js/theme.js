@@ -10,6 +10,24 @@
 
 	document.documentElement.classList.add( 'oc-ready' );
 
+	/* ---------- product columns: inner sticky wrapper ----------
+	 * Chromium clamps a sticky GRID ITEM to the whole grid, not to its own
+	 * grid area — so a pinned column slid past its row into the related
+	 * products. Wrapping each column's content and pinning the wrapper
+	 * instead clamps it to the column box, which spans exactly row one.
+	 * Runs before any other gallery code so parentElement chains hold. */
+
+	document.querySelectorAll(
+		'.single-product div.product > div.images, .single-product div.product > div.summary'
+	).forEach( function ( col ) {
+		var inner = document.createElement( 'div' );
+		inner.className = 'oc-stick-inner';
+		while ( col.firstChild ) {
+			inner.appendChild( col.firstChild );
+		}
+		col.appendChild( inner );
+	} );
+
 	/* ---------- mobile menu ---------- */
 
 	var burger = document.querySelector( '.oc-burger' );
@@ -32,6 +50,124 @@
 				burger.focus();
 			}
 		} );
+	}
+
+	/* ---------- top bar: rotating messages ---------- */
+
+	var topbar = document.querySelector( '.oc-topbar' );
+
+	if ( topbar ) {
+		var tbMsgs = topbar.querySelectorAll( '.oc-topbar__msg' );
+		var tbIdx = 0;
+		var tbTimer = null;
+
+		function tbShow( i ) {
+			tbIdx = ( i + tbMsgs.length ) % tbMsgs.length;
+			tbMsgs.forEach( function ( m, j ) {
+				m.classList.toggle( 'is-current', j === tbIdx );
+			} );
+		}
+
+		function tbAuto() {
+			clearInterval( tbTimer );
+			if ( tbMsgs.length > 1 ) {
+				tbTimer = setInterval( function () {
+					tbShow( tbIdx + 1 );
+				}, 5000 );
+			}
+		}
+
+		if ( tbMsgs.length > 1 ) {
+			topbar.querySelectorAll( '.oc-topbar__nav' ).forEach( function ( btn ) {
+				btn.addEventListener( 'click', function () {
+					tbShow( tbIdx + ( btn.classList.contains( 'oc-topbar__nav--next' ) ? 1 : -1 ) );
+					tbAuto();
+				} );
+			} );
+			tbAuto();
+		}
+	}
+
+	/* ---------- transparent header: solid once scrolled ---------- */
+
+	var siteHeader = document.querySelector( '.oc-header' );
+
+	if ( siteHeader && document.body.classList.contains( 'oc-htrans' ) ) {
+		var updateHeaderScroll = function () {
+			siteHeader.classList.toggle( 'is-scrolled', window.scrollY > 12 );
+		};
+		window.addEventListener( 'scroll', updateHeaderScroll, { passive: true } );
+		updateHeaderScroll();
+	}
+
+	/* ---------- catalogue: load-more / infinite paging ---------- */
+
+	var pagingMode = document.body.classList.contains( 'oc-paging-load-more' ) ? 'more' :
+		document.body.classList.contains( 'oc-paging-infinite' ) ? 'auto' : null;
+
+	if ( pagingMode ) {
+		var pagingUl = document.querySelector( 'ul.products' );
+		var pagingNav = document.querySelector( '.woocommerce-pagination' );
+		var pagingNext = pagingNav ? pagingNav.querySelector( 'a.next' ) : null;
+		var pagingBtn = null;
+		var pagingBusy = false;
+
+		if ( pagingUl && pagingNext ) {
+			pagingNav.style.display = 'none';
+
+			var loadNextPage = function () {
+				if ( pagingBusy || ! pagingNext ) {
+					return;
+				}
+				pagingBusy = true;
+				if ( pagingBtn ) {
+					pagingBtn.classList.add( 'loading' );
+				}
+
+				fetch( pagingNext.href )
+					.then( function ( r ) {
+						return r.text();
+					} )
+					.then( function ( html ) {
+						var doc = new DOMParser().parseFromString( html, 'text/html' );
+
+						doc.querySelectorAll( 'ul.products > li.product' ).forEach( function ( li ) {
+							var node = document.importNode( li, true );
+							pagingUl.appendChild( node );
+							node.querySelectorAll( '.oc-card-media--gallery' ).forEach( bindCardGallery );
+						} );
+
+						pagingNext = doc.querySelector( '.woocommerce-pagination a.next' );
+
+						if ( ! pagingNext && pagingBtn ) {
+							pagingBtn.remove();
+						}
+
+						pagingBusy = false;
+						if ( pagingBtn ) {
+							pagingBtn.classList.remove( 'loading' );
+						}
+					} )
+					.catch( function () {
+						pagingBusy = false;
+					} );
+			};
+
+			if ( 'more' === pagingMode ) {
+				pagingBtn = document.createElement( 'button' );
+				pagingBtn.type = 'button';
+				pagingBtn.className = 'button oc-load-more';
+				pagingBtn.textContent = ( window.ocL10n && window.ocL10n.loadMore ) || 'Show more';
+				pagingUl.parentElement.insertBefore( pagingBtn, pagingUl.nextSibling );
+				pagingBtn.addEventListener( 'click', loadNextPage );
+			} else {
+				window.addEventListener( 'scroll', function () {
+					if ( pagingNext && pagingUl.getBoundingClientRect().bottom < window.innerHeight + 600 ) {
+						loadNextPage();
+					}
+				}, { passive: true } );
+			}
+		}
 	}
 
 	/* ---------- header: search toggle ---------- */
@@ -62,7 +198,7 @@
 
 	/* ---------- card gallery: hover arrows drive the scroll-snap strip ---------- */
 
-	document.querySelectorAll( '.oc-card-media--gallery' ).forEach( function ( media ) {
+	function bindCardGallery( media ) {
 		var strip = media.querySelector( '.oc-card-media__strip' );
 
 		if ( ! strip ) {
@@ -98,7 +234,9 @@
 				goTo( target, Math.abs( target - currentIndex() ) > 1 );
 			} );
 		} );
-	} );
+	}
+
+	document.querySelectorAll( '.oc-card-media--gallery' ).forEach( bindCardGallery );
 
 	/* ---------- card add-to-cart icon → cart drawer ---------- */
 
@@ -418,9 +556,10 @@
 	if ( stickCols.length ) {
 		var updateStickCols = function () {
 			stickCols.forEach( function ( col ) {
+				var inner = col.querySelector( ':scope > .oc-stick-inner' ) || col;
 				col.classList.toggle(
 					'oc-col-stick',
-					col.offsetHeight < window.innerHeight - 140
+					inner.offsetHeight < window.innerHeight - 140
 				);
 			} );
 		};
