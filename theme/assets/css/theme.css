@@ -1521,16 +1521,17 @@ body:not(.oc-no-lightbox) .woocommerce-product-gallery__image a { cursor: none; 
 	opacity: .85;
 }
 
-/* the badge stretches to exactly the sale price's height */
+/* the badge box rides the price line's height; the text inside stays
+ * proportional to the sale price rather than shrinking away */
 .oc-price-badge {
 	display: inline-flex;
 	align-items: center;
 	align-self: stretch;
-	padding-inline: 10px;
+	padding-inline: .8em;
 	border-radius: 6px;
 	background: var(--oc-sale, #b4453c);
 	color: #fff;
-	font-size: .55em;
+	font-size: .74em;
 	font-weight: 600;
 	line-height: 1;
 }
