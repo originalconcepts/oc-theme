@@ -686,3 +686,36 @@ msgstr "גודל טקסט רץ (px)"
 
 msgid "Sale colour"
 msgstr "צבע מבצע/הנחה"
+
+msgid "Buttons"
+msgstr "כפתורים"
+
+msgid "Swatch (colour / image)"
+msgstr "Swatch (צבע / תמונה)"
+
+msgid "Swatch colour"
+msgstr "צבע ה-Swatch"
+
+msgid "Swatch image URL (overrides the colour)"
+msgstr "כתובת תמונת Swatch (דורסת את הצבע)"
+
+msgid "Colour siblings"
+msgstr "צבעים מקושרים"
+
+msgid "Search for a product…"
+msgstr "חיפוש מוצר…"
+
+msgid "The same product in other colours. Links sync both ways: connect black and grey here and each of them links back automatically."
+msgstr "אותו מוצר בצבעים אחרים. הקישור מסתנכרן לשני הכיוונים: קשרו כאן שחור ואפור — וכל אחד מהם יקושר חזרה אוטומטית."
+
+msgid "Colours"
+msgstr "צבעים"
+
+msgid "Swatch size — product page (px)"
+msgstr "גודל Swatch — דף מוצר (px)"
+
+msgid "Swatch size — catalogue (px)"
+msgstr "גודל Swatch — קטלוג (px)"
+
+msgid "Check mark on the selected swatch"
+msgstr "סימון V על ה-Swatch הנבחר"

@@ -507,6 +507,7 @@ final class Customizer {
 		);
 
 		$this->number( $c, 'oc_catalog_fs', $section, __( 'Body text size (px)', 'oc-theme' ), 16, 12, 20 );
+		$this->number( $c, 'oc_swatch_size_cat', $section, __( 'Swatch size — catalogue (px)', 'oc-theme' ), 22, 14, 40 );
 
 		$this->choice(
 			$c,
@@ -797,6 +798,8 @@ final class Customizer {
 		);
 
 		$this->number( $c, 'oc_product_fs', 'oc_product', __( 'Body text size (px)', 'oc-theme' ), 16, 12, 20 );
+		$this->number( $c, 'oc_swatch_size', 'oc_product', __( 'Swatch size — product page (px)', 'oc-theme' ), 32, 20, 56 );
+		$this->toggle( $c, 'oc_swatch_check', 'oc_product', __( 'Check mark on the selected swatch', 'oc-theme' ), true );
 
 		$this->choice(
 			$c,

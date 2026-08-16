@@ -738,6 +738,57 @@
 		}
 	}
 
+	/* ---------- variation buttons and swatches ----------
+	 * The rendered UI drives Woo's own hidden selects, so stock, prices and
+	 * variation images keep working untouched. A MutationObserver mirrors
+	 * Woo's option pruning back onto the buttons. */
+
+	document.querySelectorAll( '.oc-var' ).forEach( function ( box ) {
+		var select = document.getElementById( box.dataset.for );
+
+		if ( ! select ) {
+			select = box.parentElement.querySelector( 'select' );
+		}
+
+		if ( ! select ) {
+			return;
+		}
+
+		var buttons = box.querySelectorAll( 'button' );
+
+		function sync() {
+			var options = Array.prototype.slice.call( select.options );
+
+			buttons.forEach( function ( btn ) {
+				var opt = null;
+				options.forEach( function ( o ) {
+					if ( o.value === btn.dataset.value ) {
+						opt = o;
+					}
+				} );
+
+				btn.classList.toggle( 'is-selected', select.value === btn.dataset.value && '' !== select.value );
+				btn.disabled = ! opt || opt.disabled;
+				btn.classList.toggle( 'is-off', btn.disabled );
+			} );
+		}
+
+		buttons.forEach( function ( btn ) {
+			btn.addEventListener( 'click', function () {
+				if ( btn.disabled ) {
+					return;
+				}
+				select.value = select.value === btn.dataset.value ? '' : btn.dataset.value;
+				select.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+				sync();
+			} );
+		} );
+
+		select.addEventListener( 'change', sync );
+		new MutationObserver( sync ).observe( select, { childList: true, subtree: true, attributes: true } );
+		sync();
+	} );
+
 	/* ---------- native gallery zoom ----------
 	 * Woo's own zoom binds $images.first() only, so with the slider removed
 	 * every image after the first stayed static. This binds them all. */

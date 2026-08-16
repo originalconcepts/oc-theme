@@ -1753,6 +1753,133 @@ main + .term-description {
 	margin-inline: calc((100% - 100vw) / 2);
 }
 
+/* ---------- variation buttons, swatches, colour siblings ---------- */
+
+/* the native select hides once our UI sits beside it */
+table.variations td.value select:has(+ .oc-var) {
+	position: absolute;
+	inline-size: 1px;
+	block-size: 1px;
+	overflow: hidden;
+	clip-path: inset(50%);
+	border: 0;
+	padding: 0;
+	margin: -1px;
+}
+
+.oc-var {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	align-items: center;
+}
+
+.oc-var__btn {
+	padding: 8px 16px;
+	border: 1.5px solid var(--oc-line);
+	border-radius: var(--oc-radius, 8px);
+	background: var(--oc-surface);
+	color: var(--oc-ink);
+	font: inherit;
+	font-size: .92rem;
+	font-weight: 500;
+	cursor: pointer;
+	transition: border-color .12s ease, background-color .12s ease, color .12s ease;
+}
+
+.oc-var__btn:hover { border-color: var(--oc-ink); }
+
+.oc-var__btn.is-selected {
+	border-color: var(--oc-ink);
+	background: var(--oc-ink);
+	color: var(--oc-surface);
+}
+
+.oc-var__swatch {
+	inline-size: var(--oc-swatch, 32px);
+	block-size: var(--oc-swatch, 32px);
+	padding: 0;
+	border: 1.5px solid var(--oc-line);
+	border-radius: 50%;
+	cursor: pointer;
+	position: relative;
+	transition: border-color .12s ease, box-shadow .12s ease;
+}
+
+.oc-var__swatch:hover { border-color: var(--oc-ink); }
+
+.oc-var__swatch.is-selected {
+	border-color: var(--oc-ink);
+	box-shadow: 0 0 0 2px var(--oc-surface) inset;
+}
+
+/* optional check mark on the selected swatch */
+.oc-swatch-check .oc-var__swatch.is-selected::after {
+	content: "";
+	position: absolute;
+	inset-block-start: 50%;
+	inset-inline-start: 50%;
+	inline-size: 38%;
+	block-size: 20%;
+	border-inline-start: 2px solid #fff;
+	border-block-end: 2px solid #fff;
+	translate: -50% -65%;
+	rotate: -45deg;
+	filter: drop-shadow(0 0 2px rgb(0 0 0 / 45%));
+}
+
+.oc-var__btn.is-off,
+.oc-var__swatch.is-off {
+	opacity: .35;
+	cursor: not-allowed;
+	text-decoration: line-through;
+}
+
+/* colour sibling thumbs */
+.oc-colors {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	align-items: center;
+}
+
+.oc-colors__item {
+	display: block;
+	inline-size: var(--oc-swatch, 32px);
+	block-size: var(--oc-swatch, 32px);
+	border: 1.5px solid var(--oc-line);
+	border-radius: 50%;
+	overflow: hidden;
+	transition: border-color .12s ease;
+}
+
+.oc-colors__item img {
+	inline-size: 100%;
+	block-size: 100%;
+	object-fit: cover;
+	display: block;
+}
+
+.oc-colors__item:hover { border-color: var(--oc-ink); }
+.oc-colors__item.is-current { border-color: var(--oc-ink); pointer-events: none; }
+
+.oc-colors--loop { justify-content: center; margin-block-start: 6px; }
+.oc-colors--loop .oc-colors__item {
+	inline-size: var(--oc-swatch-cat, 22px);
+	block-size: var(--oc-swatch-cat, 22px);
+}
+
+.oc-card-minimal .oc-colors--loop { justify-content: flex-start; }
+
+.oc-colors-wrap {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	margin-block: 4px 14px;
+}
+
+.oc-colors-label { font-weight: 600; font-size: .92rem; }
+
 /* ---------- QA round-5 ---------- */
 
 /* sticky product columns: whichever column is shorter pins while the other
