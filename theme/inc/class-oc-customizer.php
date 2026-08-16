@@ -357,7 +357,7 @@ final class Customizer {
 			$density_control->description = __( 'Page margins, grid gaps and card padding. Text size is not affected.', 'oc-theme' );
 		}
 
-		$this->number( $c, 'oc_content_width_px', 'oc_design', __( 'Content width (px)', 'oc-theme' ), 1280, 960, 1600 );
+		$this->number( $c, 'oc_content_width_px', 'oc_design', __( 'Content width (px)', 'oc-theme' ), 1280, 960, 1920 );
 
 		$this->color( $c, 'oc_color_primary', 'oc_design', __( 'Primary colour', 'oc-theme' ) );
 		$this->color( $c, 'oc_color_secondary', 'oc_design', __( 'Secondary colour', 'oc-theme' ) );
@@ -1119,9 +1119,8 @@ final class Customizer {
 			$id,
 			array(
 				'default'           => (string) $def,
-				'sanitize_callback' => static function ( $value ) use ( $def, $min, $max ): int {
-					$value = (int) $value;
-					return ( $value >= $min && $value <= $max ) ? $value : $def;
+				'sanitize_callback' => static function ( $value ) use ( $min, $max ): int {
+					return (int) min( max( (int) $value, $min ), $max );
 				},
 			)
 		);
