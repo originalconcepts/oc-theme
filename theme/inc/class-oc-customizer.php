@@ -74,7 +74,7 @@ final class Customizer {
 			'oc_header',
 			__( 'Header layout', 'oc-theme' ),
 			array(
-				'classic' => array(
+				'classic'     => array(
 					'label' => __( 'Logo and menu together', 'oc-theme' ),
 					'svg'   => self::wf( '0 0 132 36', self::rect( 4, 12, 26, 12, 'ac', 2 ) . self::rect( 36, 15, 14, 5, 'ln' ) . self::rect( 54, 15, 14, 5, 'ln' ) . self::rect( 72, 15, 14, 5, 'ln' ) . self::rect( 112, 14, 7, 7, 'dt', 3.5 ) . self::rect( 122, 14, 7, 7, 'dt', 3.5 ) ),
 				),
@@ -82,15 +82,15 @@ final class Customizer {
 					'label' => __( 'Menu in the centre', 'oc-theme' ),
 					'svg'   => self::wf( '0 0 132 36', self::rect( 4, 12, 26, 12, 'ac', 2 ) . self::rect( 48, 15, 12, 5, 'ln' ) . self::rect( 64, 15, 12, 5, 'ln' ) . self::rect( 80, 15, 12, 5, 'ln' ) . self::rect( 112, 14, 7, 7, 'dt', 3.5 ) . self::rect( 122, 14, 7, 7, 'dt', 3.5 ) ),
 				),
-				'centred' => array(
+				'centred'     => array(
 					'label' => __( 'Logo above the menu', 'oc-theme' ),
 					'svg'   => self::wf( '0 0 132 36', self::rect( 53, 3, 26, 11, 'ac', 2 ) . self::rect( 36, 22, 14, 5, 'ln' ) . self::rect( 54, 22, 14, 5, 'ln' ) . self::rect( 72, 22, 14, 5, 'ln' ) . self::rect( 92, 22, 14, 5, 'ln' ) ),
 				),
-				'split' => array(
+				'split'       => array(
 					'label' => __( 'Menu, logo in the centre, icons', 'oc-theme' ),
 					'svg'   => self::wf( '0 0 132 36', self::rect( 4, 15, 12, 5, 'ln' ) . self::rect( 20, 15, 12, 5, 'ln' ) . self::rect( 36, 15, 12, 5, 'ln' ) . self::rect( 53, 12, 26, 12, 'ac', 2 ) . self::rect( 112, 14, 7, 7, 'dt', 3.5 ) . self::rect( 122, 14, 7, 7, 'dt', 3.5 ) ),
 				),
-				'burger' => array(
+				'burger'      => array(
 					'label' => __( 'Hamburger, logo in the centre', 'oc-theme' ),
 					'svg'   => self::wf( '0 0 132 36', self::rect( 5, 12, 12, 2.4, 'ln' ) . self::rect( 5, 17, 12, 2.4, 'ln' ) . self::rect( 5, 22, 12, 2.4, 'ln' ) . self::rect( 53, 12, 26, 12, 'ac', 2 ) . self::rect( 112, 14, 7, 7, 'dt', 3.5 ) . self::rect( 122, 14, 7, 7, 'dt', 3.5 ) ),
 				),
@@ -105,7 +105,7 @@ final class Customizer {
 			'oc_header',
 			__( 'Header layout — mobile', 'oc-theme' ),
 			array(
-				'plain' => array(
+				'plain'    => array(
 					'label' => __( 'Hamburger and logo together', 'oc-theme' ),
 					'svg'   => self::wf( '0 0 132 36', self::rect( 118, 12, 9, 2.2, 'ln' ) . self::rect( 118, 16.5, 9, 2.2, 'ln' ) . self::rect( 118, 21, 9, 2.2, 'ln' ) . self::rect( 88, 12, 24, 11, 'ac', 2 ) . self::rect( 6, 14, 7, 7, 'dt', 3.5 ) . self::rect( 16, 14, 7, 7, 'dt', 3.5 ) ),
 				),
@@ -160,11 +160,11 @@ final class Customizer {
 			'oc_header',
 			__( 'Cart icon style', 'oc-theme' ),
 			array(
-				'cart' => array(
+				'cart'   => array(
 					'label' => __( 'Cart', 'oc-theme' ),
 					'svg'   => '<svg class="oc-wf" viewBox="0 0 48 34" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><g fill="none" stroke="#2271b1" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="20" cy="27" r="1.7"/><circle cx="29" cy="27" r="1.7"/><path d="M13 7h3l2.4 12.4a1.8 1.8 0 0 0 1.8 1.4h8.4a1.8 1.8 0 0 0 1.8-1.4L32.5 11H17"/></g></svg>',
 				),
-				'bag' => array(
+				'bag'    => array(
 					'label' => __( 'Bag', 'oc-theme' ),
 					'svg'   => '<svg class="oc-wf" viewBox="0 0 48 34" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><g fill="none" stroke="#2271b1" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 11h18l-1.3 15.4a2 2 0 0 1-2 1.8H18.3a2 2 0 0 1-2-1.8Z"/><path d="M19.5 13.5V9.6a4.5 4.5 0 0 1 9 0v3.9"/></g></svg>',
 				),
@@ -470,12 +470,12 @@ final class Customizer {
 			'oc_card',
 			__( 'Card preset', 'oc-theme' ),
 			array(
-				'classic' => array(
+				'classic'        => array(
 					'label' => __( 'Classic', 'oc-theme' ),
 					'hint'  => __( 'Border, centred info', 'oc-theme' ),
 					'svg'   => self::wf( '0 0 80 100', self::rect( 1, 1, 78, 98, 'bd', 3 ) . self::rect( 7, 7, 66, 58, 'im', 2 ) . self::rect( 24, 72, 32, 3.4, 'ln' ) . self::rect( 31, 80, 18, 3.4, 'ac' ) ),
 				),
-				'minimal' => array(
+				'minimal'        => array(
 					'label' => __( 'Minimal', 'oc-theme' ),
 					'hint'  => __( 'No border, start-aligned', 'oc-theme' ),
 					'svg'   => self::wf( '0 0 80 100', self::rect( 3, 3, 74, 62, 'im', 2 ) . self::rect( 45, 72, 32, 3.4, 'ln' ) . self::rect( 59, 80, 18, 3.4, 'ac' ) ),
@@ -485,7 +485,7 @@ final class Customizer {
 					'hint'  => __( 'No border, centred', 'oc-theme' ),
 					'svg'   => self::wf( '0 0 80 100', self::rect( 3, 3, 74, 62, 'im', 2 ) . self::rect( 24, 72, 32, 3.4, 'ln' ) . self::rect( 31, 80, 18, 3.4, 'ac' ) ),
 				),
-				'card' => array(
+				'card'           => array(
 					'label' => __( 'Card', 'oc-theme' ),
 					'hint'  => __( 'Background, shadow, button', 'oc-theme' ),
 					'svg'   => self::wf( '0 0 80 100', self::rect( 3, 3, 74, 94, 'bd', 7 ) . self::rect( 9, 9, 62, 52, 'im', 3 ) . self::rect( 24, 68, 32, 3.4, 'ln' ) . self::rect( 18, 84, 44, 9, 'ac', 4 ) ),
@@ -501,11 +501,11 @@ final class Customizer {
 			'oc_card',
 			__( 'Image behaviour', 'oc-theme' ),
 			array(
-				'single' => array(
+				'single'  => array(
 					'label' => __( 'Single image', 'oc-theme' ),
 					'svg'   => self::wf( '0 0 80 62', self::rect( 6, 5, 68, 52, 'im', 3 ) ),
 				),
-				'hover' => array(
+				'hover'   => array(
 					'label' => __( 'Swap on hover', 'oc-theme' ),
 					'svg'   => self::wf( '0 0 80 62', self::rect( 12, 3, 64, 50, 'bd', 3 ) . self::rect( 4, 9, 64, 50, 'im', 3 ) ),
 				),
@@ -600,7 +600,7 @@ final class Customizer {
 					'label' => __( 'Gallery at the start', 'oc-theme' ),
 					'svg'   => self::wf( '0 0 136 74', self::rect( 72, 4, 60, 66, 'im', 3 ) . self::rect( 8, 12, 52, 3, 'ln' ) . self::rect( 8, 20, 52, 3, 'ln' ) . self::rect( 8, 42, 34, 7, 'ac', 2 ) ),
 				),
-				'gallery-end' => array(
+				'gallery-end'   => array(
 					'label' => __( 'Gallery at the end', 'oc-theme' ),
 					'svg'   => self::wf( '0 0 136 74', self::rect( 4, 4, 60, 66, 'im', 3 ) . self::rect( 76, 12, 52, 3, 'ln' ) . self::rect( 76, 20, 52, 3, 'ln' ) . self::rect( 94, 42, 34, 7, 'ac', 2 ) ),
 				),
@@ -631,7 +631,7 @@ final class Customizer {
 			'oc_product',
 			__( 'Gallery — desktop', 'oc-theme' ),
 			array(
-				'thumbs-side' => array(
+				'thumbs-side'  => array(
 					'label' => __( 'Thumbnails beside', 'oc-theme' ),
 					'svg'   => self::wf( '0 0 132 84', self::rect( 34, 4, 94, 76, 'im', 3 ) . self::rect( 6, 4, 24, 17, 'bd', 2 ) . self::rect( 6, 24, 24, 17, 'bd', 2 ) . self::rect( 6, 44, 24, 17, 'bd', 2 ) . self::rect( 6, 64, 24, 16, 'bd', 2 ) ),
 				),
@@ -639,11 +639,11 @@ final class Customizer {
 					'label' => __( 'Thumbnails under', 'oc-theme' ),
 					'svg'   => self::wf( '0 0 132 84', self::rect( 6, 4, 120, 56, 'im', 3 ) . self::rect( 6, 64, 27, 16, 'bd', 2 ) . self::rect( 37, 64, 27, 16, 'bd', 2 ) . self::rect( 68, 64, 27, 16, 'bd', 2 ) . self::rect( 99, 64, 27, 16, 'bd', 2 ) ),
 				),
-				'grid' => array(
+				'grid'         => array(
 					'label' => __( 'Two-column grid', 'oc-theme' ),
 					'svg'   => self::wf( '0 0 132 84', self::rect( 6, 4, 58, 37, 'im', 3 ) . self::rect( 68, 4, 58, 37, 'im', 3 ) . self::rect( 6, 45, 58, 35, 'im', 3 ) . self::rect( 68, 45, 58, 35, 'im', 3 ) ),
 				),
-				'stacked' => array(
+				'stacked'      => array(
 					'label' => __( 'Stacked', 'oc-theme' ),
 					'hint'  => __( 'Full width, one under another', 'oc-theme' ),
 					'svg'   => self::wf( '0 0 132 84', self::rect( 6, 4, 120, 37, 'im', 3 ) . self::rect( 6, 45, 120, 35, 'im', 3 ) ),
