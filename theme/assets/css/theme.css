@@ -1507,9 +1507,10 @@ body:not(.oc-no-lightbox) .woocommerce-product-gallery__image a { cursor: none; 
 /* single product: the sale mark moves off the image, into the price line */
 .single-product div.product > span.onsale { display: none; }
 
+/* baseline keeps both prices on one text line; the badge still stretches */
 .woocommerce div.product p.price {
 	display: inline-flex;
-	align-items: center;
+	align-items: baseline;
 	gap: 10px;
 	margin-block: 6px 14px;
 }
