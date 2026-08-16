@@ -175,6 +175,46 @@
 				} catch ( e ) {}
 			} );
 
+			// Landing mid-catalogue (back from a product on page N): quietly
+			// pull every earlier page in above the grid, keeping the view
+			// anchored, so scrolling up reaches the whole catalogue.
+			var prevChain = pagingNav.querySelector( 'a.prev' );
+
+			function loadPrevChain() {
+				if ( ! prevChain ) {
+					return;
+				}
+				var prevUrl = prevChain.href;
+
+				fetch( prevUrl )
+					.then( function ( r ) {
+						return r.text();
+					} )
+					.then( function ( html ) {
+						var doc = new DOMParser().parseFromString( html, 'text/html' );
+						var anchor = pagingUl.querySelector( 'li.product' );
+						var beforeTop = anchor ? anchor.getBoundingClientRect().top : 0;
+						var firstExisting = pagingUl.firstChild;
+
+						doc.querySelectorAll( 'ul.products > li.product' ).forEach( function ( li ) {
+							var node = document.importNode( li, true );
+							node.dataset.ocpg = prevUrl;
+							pagingUl.insertBefore( node, firstExisting );
+							node.querySelectorAll( '.oc-card-media--gallery' ).forEach( bindCardGallery );
+						} );
+
+						if ( anchor ) {
+							window.scrollBy( 0, anchor.getBoundingClientRect().top - beforeTop );
+						}
+
+						prevChain = doc.querySelector( '.woocommerce-pagination a.prev' );
+						loadPrevChain();
+					} )
+					.catch( function () {} );
+			}
+
+			setTimeout( loadPrevChain, 700 );
+
 			var loadNextPage = function () {
 				if ( pagingBusy || ! pagingNext ) {
 					return;

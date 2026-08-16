@@ -210,6 +210,59 @@ function oc_header_icons_render(): void {
 add_action( 'oc_header_icons', 'oc_header_icons_render' );
 
 /**
+ * SVG media: preview in the media modal (core shows a blank file icon) and
+ * uploads for administrators.
+ *
+ * @param array    $response   Attachment data for the JS media views.
+ * @param \WP_Post $attachment Attachment post.
+ * @return array
+ */
+function oc_svg_media_preview( array $response, $attachment ): array {
+	if ( 'image/svg+xml' === ( $response['mime'] ?? '' ) && empty( $response['sizes'] ) ) {
+		$url = (string) wp_get_attachment_url( $attachment->ID );
+
+		$response['image'] = array(
+			'src'    => $url,
+			'width'  => 300,
+			'height' => 150,
+		);
+		$response['thumb'] = $response['image'];
+		$response['sizes'] = array(
+			'full'      => array(
+				'url'         => $url,
+				'width'       => 300,
+				'height'      => 150,
+				'orientation' => 'landscape',
+			),
+			'thumbnail' => array(
+				'url'         => $url,
+				'width'       => 150,
+				'height'      => 150,
+				'orientation' => 'portrait',
+			),
+		);
+	}
+
+	return $response;
+}
+add_filter( 'wp_prepare_attachment_for_js', 'oc_svg_media_preview', 10, 2 );
+
+/**
+ * Let administrators upload SVG logos.
+ *
+ * @param array $mimes Allowed mime types.
+ * @return array
+ */
+function oc_svg_mimes( array $mimes ): array {
+	if ( current_user_can( 'manage_options' ) ) {
+		$mimes['svg'] = 'image/svg+xml';
+	}
+
+	return $mimes;
+}
+add_filter( 'upload_mimes', 'oc_svg_mimes' );
+
+/**
  * Tell the shop owner what is missing instead of dying silently.
  */
 function oc_dependency_notice(): void {
