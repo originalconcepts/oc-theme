@@ -568,18 +568,23 @@
 
 	if ( stickCols.length ) {
 		var updateStickCols = function () {
-			// Available room = viewport minus the actual pin offset (the sticky
-			// header's height when there is one). A fixed 140px margin missed
-			// columns by a hair — 886px of content on a 1000px screen must pin.
+			// Pin offset = the sticky header's real height (a two-row layout is
+			// taller than the height token) plus breathing room.
 			var stickyHeader = document.querySelector( '.oc-header.is-sticky' );
-			var pinOffset = stickyHeader ? stickyHeader.offsetHeight + 20 : 24;
+			var pinTop = stickyHeader ? stickyHeader.offsetHeight + 20 : 24;
 
 			stickCols.forEach( function ( col ) {
 				var inner = col.querySelector( ':scope > .oc-stick-inner' ) || col;
-				col.classList.toggle(
-					'oc-col-stick',
-					inner.offsetHeight <= window.innerHeight - pinOffset
-				);
+
+				// A column that fits pins below the header. A taller one pins by
+				// its bottom edge instead (negative top): it scrolls naturally
+				// until its end is visible, then holds — never the page-freeze
+				// that top-pinning a tall column caused.
+				var fits = inner.offsetHeight <= window.innerHeight - pinTop;
+				inner.style.insetBlockStart = fits
+					? pinTop + 'px'
+					: ( window.innerHeight - inner.offsetHeight - 16 ) + 'px';
+				col.classList.add( 'oc-col-stick' );
 			} );
 		};
 
@@ -593,6 +598,7 @@
 			}
 		} );
 		updateStickCols();
+	}
 	}
 
 	/* ---------- sticky add-to-cart ---------- */

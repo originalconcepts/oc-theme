@@ -1502,18 +1502,14 @@ body:not(.oc-no-lightbox) .woocommerce-product-gallery__image a { cursor: none; 
  * sticky to both picks the short one by itself; the grid row ends where the
  * tabs/related begin, so the pin releases before the next section. */
 @media (min-width: 901px) {
-	/* Only a column that fits the viewport pins (theme.js sets the class) —
-	 * a taller-than-viewport sticky column froze the page scroll until its
-	 * slack ran out. The pin sits on the inner wrapper: Chromium clamps a
-	 * sticky grid item to the whole grid, letting it slide over the related
-	 * products; the wrapper is clamped by its column, which ends at the row. */
+	/* The pin sits on the inner wrapper: Chromium clamps a sticky grid item
+	 * to the whole grid, letting it slide over the related products; the
+	 * wrapper is clamped by its column, which ends at the row. theme.js sets
+	 * the per-column inset — a column that fits pins under the header, a
+	 * taller one pins by its bottom edge. */
 	.woocommerce.single-product div.product .oc-col-stick > .oc-stick-inner {
 		position: sticky;
 		inset-block-start: 24px;
-	}
-
-	.woocommerce.single-product:has(.oc-header.is-sticky) div.product .oc-col-stick > .oc-stick-inner {
-		inset-block-start: calc(var(--oc-header-h, 72px) + 20px);
 	}
 }
 
