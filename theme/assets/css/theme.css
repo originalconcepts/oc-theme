@@ -90,182 +90,182 @@ a { color: inherit; }
 
 .oc-header--noline { border-block-end: 0; }
 
+/* header end icons */
+.oc-hicon {
+	display: grid;
+	place-items: center;
+	padding: 6px;
+	border: 0;
+	background: none;
+	color: inherit;
+	cursor: pointer;
+	position: relative;
+	text-decoration: none;
+	transition: color .12s ease;
+}
+
+.oc-hicon svg {
+	inline-size: var(--oc-hicon, 20px);
+	block-size: var(--oc-hicon, 20px);
+	stroke-width: var(--oc-hicon-sw, 1.8);
+}
+
+.oc-hicon:hover { color: var(--oc-primary); }
+
+/* burger inherits the header text colour too */
+.oc-burger span,
+.oc-burger span::before,
+.oc-burger span::after { background: currentColor; }
+.oc-burger { color: var(--oc-header-tx, var(--oc-ink)); }
+
+/* lanvin-style text links replacing the icons on desktop */
+.oc-htext { display: flex; align-items: center; gap: 20px; }
+
+.oc-htext__link {
+	padding: 0;
+	border: 0;
+	background: none;
+	font: inherit;
+	font-size: .9rem;
+	font-weight: 500;
+	color: inherit;
+	cursor: pointer;
+	text-decoration: none;
+	white-space: nowrap;
+}
+
+.oc-htext__link:hover { color: var(--oc-primary); }
+
+.oc-htext .oc-cart-count {
+	position: static;
+	padding: 0;
+	background: none;
+	color: inherit;
+	font-size: inherit;
+	font-weight: inherit;
+	min-inline-size: 0;
+}
+
+.oc-htext .oc-cart-count::before { content: "("; }
+.oc-htext .oc-cart-count::after { content: ")"; }
+
+@media (min-width: 901px) {
+	.oc-icons-text .oc-hicon { display: none; }
+}
+
+@media (max-width: 900px) {
+	.oc-htext { display: none; }
+}
+
+/* secondary menu beside the icons (desktop) */
+.oc-nav2__list {
+	display: flex;
+	gap: 16px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.oc-nav2__list a {
+	text-decoration: none;
+	font-size: .9rem;
+	font-weight: 500;
+	white-space: nowrap;
+}
+.oc-nav2__list a:hover { color: var(--oc-primary); }
+@media (max-width: 900px) { .oc-nav2 { display: none; } }
+
+.oc-cart-count {
+	position: absolute;
+	inset-block-start: -2px;
+	inset-inline-end: -4px;
+	min-inline-size: 17px;
+	padding: 1px 5px;
+	border-radius: 10px;
+	background: var(--oc-primary);
+	color: #fff;
+	font-size: 10.5px;
+	font-weight: 700;
+	line-height: 1.35;
+	text-align: center;
+}
+
+/* inline search field in the header (snocks-style) */
+.oc-hsearch {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 6px 14px;
+	border: 1px solid var(--oc-line);
+	border-radius: 999px;
+	background: transparent;
+}
+
+.oc-hsearch input[type="search"] {
+	inline-size: clamp(120px, 14vw, 190px);
+	border: 0;
+	background: none;
+	font: inherit;
+	font-size: .9rem;
+	color: inherit;
+	outline: none;
+}
+
+.oc-hsearch button {
+	display: grid;
+	place-items: center;
+	padding: 0;
+	border: 0;
+	background: none;
+	color: inherit;
+	cursor: pointer;
+}
+
+@media (min-width: 901px) {
+	.oc-search-field .oc-hicon.oc-search-toggle,
+	.oc-search-field .oc-htext .oc-search-toggle { display: none; }
+}
+
+@media (max-width: 900px) {
+	.oc-hsearch { display: none; }
+}
+
+/* expanding search bar under the header */
+.oc-header-search {
+	padding: 12px var(--oc-gap);
+	background: var(--oc-header-bg, var(--oc-surface));
+	border-block-end: 1px solid var(--oc-line);
+}
+
+.oc-header-search .oc-search {
+	max-inline-size: 560px;
+	margin-inline: auto;
+}
+
+.oc-header.is-sticky {
+	position: sticky;
+	inset-block-start: 0;
+	z-index: 50;
+}
+
+.oc-header__inner {
+	max-inline-size: var(--oc-content-width, 1280px);
+	margin-inline: auto;
+	padding-inline: var(--oc-gap);
+	min-block-size: var(--oc-header-h, 72px);
+	display: flex;
+	align-items: center;
+	gap: var(--oc-gap);
+}
+
+.oc-header__start { display: flex; align-items: center; gap: 12px; }
+.oc-header__end { margin-inline-start: auto; display: flex; align-items: center; gap: 14px; }
+
 /* Desktop header presets — scoped so they never leak into the mobile
  * layouts (the centred preset's open menu was showing on phones). */
 @media (min-width: 901px) {
 	/* menu-center preset: the nav floats to the middle of the bar */
 	.oc-header--menu-center .oc-nav { margin-inline: auto; }
 	.oc-header--menu-center .oc-header__end { margin-inline-start: 0; }
-
-	/* header end icons */
-	.oc-hicon {
-		display: grid;
-		place-items: center;
-		padding: 6px;
-		border: 0;
-		background: none;
-		color: inherit;
-		cursor: pointer;
-		position: relative;
-		text-decoration: none;
-		transition: color .12s ease;
-	}
-
-	.oc-hicon svg {
-		inline-size: var(--oc-hicon, 20px);
-		block-size: var(--oc-hicon, 20px);
-		stroke-width: var(--oc-hicon-sw, 1.8);
-	}
-
-	.oc-hicon:hover { color: var(--oc-primary); }
-
-	/* burger inherits the header text colour too */
-	.oc-burger span,
-	.oc-burger span::before,
-	.oc-burger span::after { background: currentColor; }
-	.oc-burger { color: var(--oc-header-tx, var(--oc-ink)); }
-
-	/* lanvin-style text links replacing the icons on desktop */
-	.oc-htext { display: flex; align-items: center; gap: 20px; }
-
-	.oc-htext__link {
-		padding: 0;
-		border: 0;
-		background: none;
-		font: inherit;
-		font-size: .9rem;
-		font-weight: 500;
-		color: inherit;
-		cursor: pointer;
-		text-decoration: none;
-		white-space: nowrap;
-	}
-
-	.oc-htext__link:hover { color: var(--oc-primary); }
-
-	.oc-htext .oc-cart-count {
-		position: static;
-		padding: 0;
-		background: none;
-		color: inherit;
-		font-size: inherit;
-		font-weight: inherit;
-		min-inline-size: 0;
-	}
-
-	.oc-htext .oc-cart-count::before { content: "("; }
-	.oc-htext .oc-cart-count::after { content: ")"; }
-
-	@media (min-width: 901px) {
-		.oc-icons-text .oc-hicon { display: none; }
-	}
-
-	@media (max-width: 900px) {
-		.oc-htext { display: none; }
-	}
-
-	/* secondary menu beside the icons (desktop) */
-	.oc-nav2__list {
-		display: flex;
-		gap: 16px;
-		margin: 0;
-		padding: 0;
-		list-style: none;
-	}
-	.oc-nav2__list a {
-		text-decoration: none;
-		font-size: .9rem;
-		font-weight: 500;
-		white-space: nowrap;
-	}
-	.oc-nav2__list a:hover { color: var(--oc-primary); }
-	@media (max-width: 900px) { .oc-nav2 { display: none; } }
-
-	.oc-cart-count {
-		position: absolute;
-		inset-block-start: -2px;
-		inset-inline-end: -4px;
-		min-inline-size: 17px;
-		padding: 1px 5px;
-		border-radius: 10px;
-		background: var(--oc-primary);
-		color: #fff;
-		font-size: 10.5px;
-		font-weight: 700;
-		line-height: 1.35;
-		text-align: center;
-	}
-
-	/* inline search field in the header (snocks-style) */
-	.oc-hsearch {
-		display: flex;
-		align-items: center;
-		gap: 6px;
-		padding: 6px 14px;
-		border: 1px solid var(--oc-line);
-		border-radius: 999px;
-		background: transparent;
-	}
-
-	.oc-hsearch input[type="search"] {
-		inline-size: clamp(120px, 14vw, 190px);
-		border: 0;
-		background: none;
-		font: inherit;
-		font-size: .9rem;
-		color: inherit;
-		outline: none;
-	}
-
-	.oc-hsearch button {
-		display: grid;
-		place-items: center;
-		padding: 0;
-		border: 0;
-		background: none;
-		color: inherit;
-		cursor: pointer;
-	}
-
-	@media (min-width: 901px) {
-		.oc-search-field .oc-hicon.oc-search-toggle,
-		.oc-search-field .oc-htext .oc-search-toggle { display: none; }
-	}
-
-	@media (max-width: 900px) {
-		.oc-hsearch { display: none; }
-	}
-
-	/* expanding search bar under the header */
-	.oc-header-search {
-		padding: 12px var(--oc-gap);
-		background: var(--oc-header-bg, var(--oc-surface));
-		border-block-end: 1px solid var(--oc-line);
-	}
-
-	.oc-header-search .oc-search {
-		max-inline-size: 560px;
-		margin-inline: auto;
-	}
-
-	.oc-header.is-sticky {
-		position: sticky;
-		inset-block-start: 0;
-		z-index: 50;
-	}
-
-	.oc-header__inner {
-		max-inline-size: var(--oc-content-width, 1280px);
-		margin-inline: auto;
-		padding-inline: var(--oc-gap);
-		min-block-size: var(--oc-header-h, 72px);
-		display: flex;
-		align-items: center;
-		gap: var(--oc-gap);
-	}
-
-	.oc-header__start { display: flex; align-items: center; gap: 12px; }
-	.oc-header__end { margin-inline-start: auto; display: flex; align-items: center; gap: 14px; }
 
 	/* centred: logo on top row (icons stay beside it), menu on its own row */
 	/* minmax: a tall logo grows the row instead of being clipped; the block
@@ -317,6 +317,7 @@ a { color: inherit; }
 	.oc-header--burger .custom-logo-link { grid-column: 2; grid-row: 1; }
 	.oc-header--burger .oc-header__end { grid-column: 3; grid-row: 1; justify-self: end; margin-inline-start: 0; }
 }
+
 
 @media (min-width: 901px) {
 	.oc-header--burger ~ .oc-mobile-menu[data-open="true"] { display: block; }
