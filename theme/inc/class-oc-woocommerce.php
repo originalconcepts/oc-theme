@@ -220,7 +220,7 @@ final class WooCommerce {
 	 * @return array
 	 */
 	public function cart_count_fragment( array $fragments ): array {
-		$count = is_object( WC()->cart ) ? WC()->cart->get_cart_contents_count() : 0;
+		$count = WC()->cart->get_cart_contents_count();
 
 		$fragments['span.oc-cart-count'] = '<span class="oc-cart-count">' . absint( $count ) . '</span>';
 

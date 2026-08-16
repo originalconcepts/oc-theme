@@ -128,7 +128,7 @@ function oc_header_icons_render(): void {
 	}
 
 	if ( class_exists( 'WooCommerce' ) && get_theme_mod( 'oc_header_cart', true ) ) {
-		$oc_count = is_object( WC()->cart ) ? WC()->cart->get_cart_contents_count() : 0;
+		$oc_count = WC()->cart->get_cart_contents_count();
 
 		printf(
 			'<a class="oc-hicon oc-cart-link" href="%s" aria-label="%s">%s<span class="oc-cart-count">%d</span></a>',
