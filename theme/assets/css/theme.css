@@ -321,14 +321,17 @@ a { color: inherit; }
 .oc-logo--text { font-weight: 700; font-size: 1.2rem; text-decoration: none; }
 .custom-logo-link { display: inline-flex; align-items: center; }
 
-.custom-logo {
+/* .oc-header prefix outranks woocommerce.css's ".woocommerce-page img
+ * { height:auto }" — without it the logo held its intrinsic size on shop
+ * pages and the set size only on the rest. */
+.oc-header .custom-logo {
 	block-size: var(--oc-logo-h, 48px);
 	max-block-size: none;
 	inline-size: auto;
 }
 
 @media (max-width: 900px) {
-	.custom-logo { block-size: var(--oc-logo-h-m, 40px); }
+	.oc-header .custom-logo { block-size: var(--oc-logo-h-m, 40px); }
 }
 
 .oc-burger {
