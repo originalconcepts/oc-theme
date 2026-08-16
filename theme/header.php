@@ -7,8 +7,9 @@
 
 defined( 'ABSPATH' ) || exit;
 
-$oc_preset = sanitize_html_class( (string) get_theme_mod( 'oc_header_preset', 'classic' ) );
-$oc_sticky = (bool) get_theme_mod( 'oc_header_sticky', true );
+$oc_preset  = sanitize_html_class( (string) get_theme_mod( 'oc_header_preset', 'classic' ) );
+$oc_sticky  = (bool) get_theme_mod( 'oc_header_sticky', true );
+$oc_hborder = (bool) get_theme_mod( 'oc_header_border', true );
 ?>
 <!doctype html>
 <html <?php language_attributes(); ?>>
@@ -25,7 +26,7 @@ $oc_sticky = (bool) get_theme_mod( 'oc_header_sticky', true );
 
 <header
 	id="main-header"
-	class="oc-header oc-header--<?php echo esc_attr( $oc_preset ); ?><?php echo $oc_sticky ? ' is-sticky' : ''; ?>"
+	class="oc-header oc-header--<?php echo esc_attr( $oc_preset ); ?><?php echo $oc_sticky ? ' is-sticky' : ''; ?><?php echo $oc_hborder ? '' : ' oc-header--noline'; ?>"
 >
 	<div class="oc-header__inner">
 
@@ -74,6 +75,12 @@ $oc_sticky = (bool) get_theme_mod( 'oc_header_sticky', true );
 
 	</div>
 </header>
+
+<?php if ( get_theme_mod( 'oc_header_search', true ) ) : ?>
+	<div id="oc-header-search" class="oc-header-search" hidden>
+		<?php get_search_form(); ?>
+	</div>
+<?php endif; ?>
 
 <?php if ( has_nav_menu( 'primary' ) ) : ?>
 	<div id="oc-mobile-menu" class="oc-mobile-menu" hidden>

@@ -45,9 +45,102 @@ final class Customizer {
 		$shop_panel = $wp_customize->get_panel( 'woocommerce' ) ? 'woocommerce' : '';
 
 		$this->design_panel( $wp_customize );
+		$this->header_section( $wp_customize );
+		$this->footer_section( $wp_customize );
 		$this->catalog_panel( $wp_customize, $shop_panel );
 		$this->card_section( $wp_customize, $shop_panel );
 		$this->product_section( $wp_customize, $shop_panel );
+	}
+
+	/**
+	 * Header: preset, behaviour, icons.
+	 *
+	 * @param \WP_Customize_Manager $c Customizer manager.
+	 */
+	private function header_section( \WP_Customize_Manager $c ): void {
+		$c->add_section(
+			'oc_header',
+			array(
+				'title'       => __( 'Header', 'oc-theme' ),
+				'description' => __( 'The logo comes from Site Identity; menus from the Menus screen.', 'oc-theme' ),
+				'priority'    => 11,
+			)
+		);
+
+		$this->preset(
+			$c,
+			'oc_header_preset',
+			'oc_header',
+			__( 'Header layout', 'oc-theme' ),
+			array(
+				'classic'     => array(
+					'label' => __( 'Logo and menu together', 'oc-theme' ),
+					'svg'   => self::wf( '0 0 132 36', self::rect( 4, 12, 26, 12, 'ac', 2 ) . self::rect( 36, 15, 14, 5, 'ln' ) . self::rect( 54, 15, 14, 5, 'ln' ) . self::rect( 72, 15, 14, 5, 'ln' ) . self::rect( 112, 14, 7, 7, 'dt', 3.5 ) . self::rect( 122, 14, 7, 7, 'dt', 3.5 ) ),
+				),
+				'menu-center' => array(
+					'label' => __( 'Menu in the centre', 'oc-theme' ),
+					'svg'   => self::wf( '0 0 132 36', self::rect( 4, 12, 26, 12, 'ac', 2 ) . self::rect( 48, 15, 12, 5, 'ln' ) . self::rect( 64, 15, 12, 5, 'ln' ) . self::rect( 80, 15, 12, 5, 'ln' ) . self::rect( 112, 14, 7, 7, 'dt', 3.5 ) . self::rect( 122, 14, 7, 7, 'dt', 3.5 ) ),
+				),
+				'centred'     => array(
+					'label' => __( 'Logo above the menu', 'oc-theme' ),
+					'svg'   => self::wf( '0 0 132 36', self::rect( 53, 3, 26, 11, 'ac', 2 ) . self::rect( 36, 22, 14, 5, 'ln' ) . self::rect( 54, 22, 14, 5, 'ln' ) . self::rect( 72, 22, 14, 5, 'ln' ) . self::rect( 92, 22, 14, 5, 'ln' ) ),
+				),
+			),
+			'classic',
+			'200px'
+		);
+
+		$this->toggle( $c, 'oc_header_sticky', 'oc_header', __( 'Sticky header', 'oc-theme' ), true );
+
+		$this->choice(
+			$c,
+			'oc_header_height',
+			'oc_header',
+			__( 'Header height', 'oc-theme' ),
+			array(
+				'60' => __( 'Compact', 'oc-theme' ),
+				'72' => __( 'Regular', 'oc-theme' ),
+				'88' => __( 'Tall', 'oc-theme' ),
+			),
+			'72'
+		);
+
+		$this->color( $c, 'oc_header_bg', 'oc_header', __( 'Header background', 'oc-theme' ) );
+		$this->toggle( $c, 'oc_header_border', 'oc_header', __( 'Bottom border line', 'oc-theme' ), true );
+		$this->toggle( $c, 'oc_header_search', 'oc_header', __( 'Search icon', 'oc-theme' ), true );
+		$this->toggle( $c, 'oc_header_account', 'oc_header', __( 'Account icon', 'oc-theme' ), true );
+		$this->toggle( $c, 'oc_header_cart', 'oc_header', __( 'Cart icon with counter', 'oc-theme' ), true );
+	}
+
+	/**
+	 * Footer: layout, colours, credit line.
+	 *
+	 * @param \WP_Customize_Manager $c Customizer manager.
+	 */
+	private function footer_section( \WP_Customize_Manager $c ): void {
+		$c->add_section(
+			'oc_footer',
+			array(
+				'title'       => __( 'Footer', 'oc-theme' ),
+				'description' => __( 'Content columns are widget areas — fill them under Appearance → Widgets.', 'oc-theme' ),
+				'priority'    => 12,
+			)
+		);
+
+		$this->choice(
+			$c,
+			'oc_footer_layout',
+			'oc_footer',
+			__( 'Bottom bar layout', 'oc-theme' ),
+			array(
+				'inline'   => __( 'Menu and credit on one line', 'oc-theme' ),
+				'centered' => __( 'Centred, stacked', 'oc-theme' ),
+			),
+			'inline'
+		);
+
+		$this->color( $c, 'oc_footer_bg', 'oc_footer', __( 'Footer background', 'oc-theme' ) );
+		$this->text( $c, 'oc_footer_credit', 'oc_footer', __( 'Credit line (empty = © year and site name)', 'oc-theme' ) );
 	}
 
 	/*

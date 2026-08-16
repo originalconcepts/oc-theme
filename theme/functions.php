@@ -87,6 +87,61 @@ function oc_setup(): void {
 add_action( 'after_setup_theme', 'oc_setup' );
 
 /**
+ * Footer widget columns.
+ */
+function oc_widgets(): void {
+	for ( $i = 1; $i <= 3; $i++ ) {
+		register_sidebar(
+			array(
+				'id'            => 'oc-footer-' . $i,
+				/* translators: %d: column number. */
+				'name'          => sprintf( __( 'Footer column %d', 'oc-theme' ), $i ),
+				'before_widget' => '<div id="%1$s" class="oc-footer__widget %2$s">',
+				'after_widget'  => '</div>',
+				'before_title'  => '<h2 class="oc-footer__widget-title">',
+				'after_title'   => '</h2>',
+			)
+		);
+	}
+}
+add_action( 'widgets_init', 'oc_widgets' );
+
+/**
+ * Header end icons: search, account, cart — each behind its own setting.
+ */
+function oc_header_icons_render(): void {
+	if ( get_theme_mod( 'oc_header_search', true ) ) {
+		printf(
+			'<button type="button" class="oc-hicon oc-search-toggle" aria-expanded="false" aria-controls="oc-header-search" aria-label="%s">%s</button>',
+			esc_attr__( 'Search', 'oc-theme' ),
+			'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.8-3.8"/></svg>'
+		);
+	}
+
+	if ( class_exists( 'WooCommerce' ) && get_theme_mod( 'oc_header_account', true ) ) {
+		printf(
+			'<a class="oc-hicon oc-account-link" href="%s" aria-label="%s">%s</a>',
+			esc_url( wc_get_page_permalink( 'myaccount' ) ),
+			esc_attr__( 'My account', 'oc-theme' ),
+			'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c1.8-3.4 4.6-5 8-5s6.2 1.6 8 5"/></svg>'
+		);
+	}
+
+	if ( class_exists( 'WooCommerce' ) && get_theme_mod( 'oc_header_cart', true ) ) {
+		$oc_count = is_object( WC()->cart ) ? WC()->cart->get_cart_contents_count() : 0;
+
+		printf(
+			'<a class="oc-hicon oc-cart-link" href="%s" aria-label="%s">%s<span class="oc-cart-count">%d</span></a>',
+			esc_url( wc_get_cart_url() ),
+			esc_attr__( 'Cart', 'oc-theme' ),
+			'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.6"/><circle cx="17" cy="20" r="1.6"/><path d="M3 3h2.5l2.2 11.2a1.6 1.6 0 0 0 1.6 1.3h7.6a1.6 1.6 0 0 0 1.6-1.3L20 7H6"/></svg>',
+			absint( $oc_count )
+		);
+	}
+}
+add_action( 'oc_header_icons', 'oc_header_icons_render' );
+
+/**
  * Tell the shop owner what is missing instead of dying silently.
  */
 function oc_dependency_notice(): void {

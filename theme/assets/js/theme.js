@@ -34,6 +34,32 @@
 		} );
 	}
 
+	/* ---------- header: search toggle ---------- */
+
+	var searchToggle = document.querySelector( '.oc-search-toggle' );
+	var searchPanel = document.getElementById( 'oc-header-search' );
+
+	if ( searchToggle && searchPanel ) {
+		searchToggle.addEventListener( 'click', function () {
+			var open = searchPanel.hidden;
+			searchPanel.hidden = ! open;
+			searchToggle.setAttribute( 'aria-expanded', open ? 'true' : 'false' );
+			if ( open ) {
+				var field = searchPanel.querySelector( 'input[type="search"], input[type="text"]' );
+				if ( field ) {
+					field.focus();
+				}
+			}
+		} );
+
+		document.addEventListener( 'keydown', function ( event ) {
+			if ( event.key === 'Escape' && ! searchPanel.hidden ) {
+				searchPanel.hidden = true;
+				searchToggle.setAttribute( 'aria-expanded', 'false' );
+			}
+		} );
+	}
+
 	/* ---------- card gallery: hover arrows drive the scroll-snap strip ---------- */
 
 	document.querySelectorAll( '.oc-card-media--gallery' ).forEach( function ( media ) {
@@ -104,6 +130,15 @@
 		drawer.addEventListener( 'click', function ( event ) {
 			if ( event.target.closest( '[data-oc-drawer-close]' ) ) {
 				closeDrawer();
+			}
+		} );
+
+		// The header cart icon opens the drawer instead of leaving the page.
+		document.addEventListener( 'click', function ( event ) {
+			var link = event.target.closest( '.oc-cart-link' );
+			if ( link ) {
+				event.preventDefault();
+				openDrawer();
 			}
 		} );
 

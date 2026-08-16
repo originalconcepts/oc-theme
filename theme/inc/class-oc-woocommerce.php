@@ -80,6 +80,9 @@ final class WooCommerce {
 		add_action( 'woocommerce_archive_description', array( $this, 'crumbs_below' ), 5 );
 		add_action( 'woocommerce_single_product_summary', array( $this, 'crumbs_below' ), 6 );
 
+		// The header cart counter stays fresh after every ajax add.
+		add_filter( 'woocommerce_add_to_cart_fragments', array( $this, 'cart_count_fragment' ) );
+
 		// Section headings follow their title settings.
 		add_filter( 'woocommerce_product_related_products_heading', array( $this, 'related_heading' ) );
 		add_filter( 'woocommerce_product_upsells_products_heading', array( $this, 'upsells_heading' ) );
@@ -208,6 +211,20 @@ final class WooCommerce {
 	 */
 	public function gallery_image_size(): string {
 		return 'woocommerce_single';
+	}
+
+	/**
+	 * Header cart counter, replaced by cart fragments on every ajax add.
+	 *
+	 * @param array $fragments Fragment map.
+	 * @return array
+	 */
+	public function cart_count_fragment( array $fragments ): array {
+		$count = is_object( WC()->cart ) ? WC()->cart->get_cart_contents_count() : 0;
+
+		$fragments['span.oc-cart-count'] = '<span class="oc-cart-count">' . absint( $count ) . '</span>';
+
+		return $fragments;
 	}
 
 	/**

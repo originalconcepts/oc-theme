@@ -82,8 +82,57 @@ a { color: inherit; }
 /* ---------- header ---------- */
 
 .oc-header {
-	background: var(--oc-surface);
+	background: var(--oc-header-bg, var(--oc-surface));
 	border-block-end: 1px solid var(--oc-line);
+}
+
+.oc-header--noline { border-block-end: 0; }
+
+/* menu-center preset: the nav floats to the middle of the bar */
+.oc-header--menu-center .oc-nav { margin-inline: auto; }
+.oc-header--menu-center .oc-header__end { margin-inline-start: 0; }
+
+/* header end icons */
+.oc-hicon {
+	display: grid;
+	place-items: center;
+	padding: 6px;
+	border: 0;
+	background: none;
+	color: var(--oc-ink);
+	cursor: pointer;
+	position: relative;
+	text-decoration: none;
+	transition: color .12s ease;
+}
+
+.oc-hicon:hover { color: var(--oc-primary); }
+
+.oc-cart-count {
+	position: absolute;
+	inset-block-start: -2px;
+	inset-inline-end: -4px;
+	min-inline-size: 17px;
+	padding: 1px 5px;
+	border-radius: 10px;
+	background: var(--oc-primary);
+	color: #fff;
+	font-size: 10.5px;
+	font-weight: 700;
+	line-height: 1.35;
+	text-align: center;
+}
+
+/* expanding search bar under the header */
+.oc-header-search {
+	padding: 12px var(--oc-gap);
+	background: var(--oc-header-bg, var(--oc-surface));
+	border-block-end: 1px solid var(--oc-line);
+}
+
+.oc-header-search .oc-search {
+	max-inline-size: 560px;
+	margin-inline: auto;
 }
 
 .oc-header.is-sticky {
@@ -238,8 +287,35 @@ a { color: inherit; }
 .oc-footer {
 	margin-block-start: calc(var(--oc-gap) * 2);
 	border-block-start: 1px solid var(--oc-line);
-	background: var(--oc-bg);
+	background: var(--oc-footer-bg, var(--oc-bg));
 }
+
+/* widget columns above the bottom bar */
+.oc-footer__widgets {
+	max-inline-size: var(--oc-content-width, 1280px);
+	margin-inline: auto;
+	padding: calc(var(--oc-gap) * 1.5) var(--oc-gap) 0;
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+	gap: calc(var(--oc-gap) * 1.5);
+}
+
+.oc-footer__widget-title {
+	margin-block: 0 10px;
+	font-size: 1rem;
+}
+
+.oc-footer__widget { font-size: .92rem; color: var(--oc-ink-2); }
+.oc-footer__widget a { color: var(--oc-ink); }
+
+/* centred footer bar */
+.oc-footer--centered .oc-footer__inner {
+	flex-direction: column;
+	justify-content: center;
+	text-align: center;
+	gap: 10px;
+}
+.oc-footer--centered .oc-footer__list { justify-content: center; }
 
 .oc-footer__inner {
 	max-inline-size: var(--oc-content-width, 1280px);

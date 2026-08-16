@@ -395,3 +395,69 @@ msgstr "הצצה לתמונה הבאה"
 
 msgid "Arrows on the mobile gallery"
 msgstr "חצים בגלריית המובייל"
+
+msgid "Header"
+msgstr "הדר (ראש האתר)"
+
+msgid "The logo comes from Site Identity; menus from the Menus screen."
+msgstr "הלוגו מוגדר בזהות האתר; התפריטים במסך התפריטים."
+
+msgid "Header layout"
+msgstr "פריסת הדר"
+
+msgid "Logo and menu together"
+msgstr "לוגו ותפריט צמודים"
+
+msgid "Menu in the centre"
+msgstr "תפריט במרכז"
+
+msgid "Logo above the menu"
+msgstr "לוגו מעל התפריט"
+
+msgid "Sticky header"
+msgstr "הדר דביק"
+
+msgid "Header height"
+msgstr "גובה ההדר"
+
+msgid "Header background"
+msgstr "צבע רקע להדר"
+
+msgid "Bottom border line"
+msgstr "קו תחתון"
+
+msgid "Search icon"
+msgstr "אייקון חיפוש"
+
+msgid "Account icon"
+msgstr "אייקון חשבון"
+
+msgid "Cart icon with counter"
+msgstr "אייקון סל עם מונה"
+
+msgid "Footer"
+msgstr "פוטר (תחתית האתר)"
+
+msgid "Content columns are widget areas — fill them under Appearance → Widgets."
+msgstr "עמודות התוכן הן אזורי ווידג׳טים — ממלאים אותן בעיצוב ← ווידג׳טים."
+
+msgid "Bottom bar layout"
+msgstr "פריסת השורה התחתונה"
+
+msgid "Menu and credit on one line"
+msgstr "תפריט וקרדיט בשורה אחת"
+
+msgid "Centred, stacked"
+msgstr "ממורכז, בטורים"
+
+msgid "Footer background"
+msgstr "צבע רקע לפוטר"
+
+msgid "Credit line (empty = © year and site name)"
+msgstr "שורת קרדיט (ריק = © שנה ושם האתר)"
+
+msgid "Footer column %d"
+msgstr "עמודת פוטר %d"
+
+msgid "My account"
+msgstr "החשבון שלי"
