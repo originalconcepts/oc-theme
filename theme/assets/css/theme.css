@@ -1747,7 +1747,7 @@ main + .term-description {
 	.oc-thumbscol { display: none; }
 
 	/* breathing room between the pager dots and the title */
-	.oc-gdots { margin-block-end: 10px; }
+	.oc-gm-dots .oc-gdots { margin-block-end: 12px; }
 
 	.oc-gm-dots .woocommerce-product-gallery__wrapper,
 	.oc-gm-peek .woocommerce-product-gallery__wrapper {
