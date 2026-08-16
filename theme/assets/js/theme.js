@@ -439,22 +439,40 @@
 			head.textContent = title || '';
 			head.setAttribute( 'aria-expanded', open ? 'true' : 'false' );
 
-			panel.prepend( head );
+			// The panel content moves into a wrapper so opening and closing can
+			// animate its height.
+			var body = document.createElement( 'div' );
+			body.className = 'oc-acc-body';
+			while ( panel.firstChild ) {
+				body.appendChild( panel.firstChild );
+			}
+			panel.appendChild( head );
+			panel.appendChild( body );
 
 			if ( ! open ) {
-				panel.setAttribute( 'data-oc-closed', '' );
+				body.style.maxBlockSize = '0px';
 			}
 
 			head.addEventListener( 'click', function () {
-				var closed = panel.hasAttribute( 'data-oc-closed' );
+				var isOpen = head.getAttribute( 'aria-expanded' ) === 'true';
 
-				if ( closed ) {
-					panel.removeAttribute( 'data-oc-closed' );
+				if ( isOpen ) {
+					// From auto to 0: fix the current height first so the
+					// transition has a starting point.
+					body.style.maxBlockSize = body.scrollHeight + 'px';
+					body.offsetHeight;
+					body.style.maxBlockSize = '0px';
 				} else {
-					panel.setAttribute( 'data-oc-closed', '' );
+					body.style.maxBlockSize = body.scrollHeight + 'px';
+					setTimeout( function () {
+						// Release the clamp so nested content can grow later.
+						if ( head.getAttribute( 'aria-expanded' ) === 'true' ) {
+							body.style.maxBlockSize = '';
+						}
+					}, 320 );
 				}
 
-				head.setAttribute( 'aria-expanded', closed ? 'true' : 'false' );
+				head.setAttribute( 'aria-expanded', isOpen ? 'false' : 'true' );
 			} );
 		} );
 	}

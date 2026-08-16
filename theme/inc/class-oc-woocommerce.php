@@ -51,9 +51,9 @@ final class WooCommerce {
 		// gallery image is a real single-product image.
 		add_filter( 'woocommerce_gallery_image_size', array( $this, 'gallery_image_size' ) );
 
-		// Sale mark on the product page sits next to the price, not on the
-		// image; the price prints at priority 10.
-		add_action( 'woocommerce_single_product_summary', array( $this, 'price_badge' ), 11 );
+		// Sale mark on the product page lives inside the price line, so the
+		// flex row can stretch it to exactly the sale price's height.
+		add_filter( 'woocommerce_get_price_html', array( $this, 'price_badge_html' ), 20, 2 );
 		add_filter( 'woocommerce_breadcrumb_defaults', array( $this, 'breadcrumb_defaults' ) );
 		add_filter( 'body_class', array( $this, 'body_class' ) );
 		add_filter( 'woocommerce_sale_flash', array( $this, 'sale_badge' ), 10, 3 );
@@ -236,16 +236,23 @@ final class WooCommerce {
 	}
 
 	/**
-	 * Sale mark beside the price on the product page. Follows the same badge
-	 * setting as the cards.
+	 * Sale mark inside the product-page price line. Follows the same badge
+	 * setting as the cards; loop contexts (related, upsells) keep the plain
+	 * price.
+	 *
+	 * @param string      $price   Price html.
+	 * @param \WC_Product $product Product.
+	 * @return string
 	 */
-	public function price_badge(): void {
-		global $product;
+	public function price_badge_html( $price, $product ): string {
+		if ( ! is_product() || ! is_main_query() || '' !== wc_get_loop_prop( 'name', '' ) ) {
+			return (string) $price;
+		}
 
 		$mode = (string) get_theme_mod( 'oc_card_sale_badge', 'percent' );
 
 		if ( 'none' === $mode || ! $product instanceof \WC_Product || ! $product->is_on_sale() ) {
-			return;
+			return (string) $price;
 		}
 
 		$text = __( 'Sale!', 'oc-theme' );
@@ -254,13 +261,13 @@ final class WooCommerce {
 			$percent = $this->discount_percent( $product );
 
 			if ( 0 === $percent ) {
-				return;
+				return (string) $price;
 			}
 
 			$text = sprintf( '‎-%s%%', $percent );
 		}
 
-		printf( '<span class="oc-price-badge">%s</span>', esc_html( $text ) );
+		return $price . ' <span class="oc-price-badge">' . esc_html( $text ) . '</span>';
 	}
 
 	/**

@@ -15,7 +15,7 @@
 	--oc-surface: var(--wp--preset--color--surface, #fff);
 	--oc-primary: var(--oc-primary-user, var(--wp--preset--color--primary, #2f4e7a));
 	--oc-secondary: var(--oc-secondary-user, var(--wp--preset--color--secondary, #d9a441));
-	--oc-sale: var(--wp--preset--color--sale, #b4453c);
+	--oc-sale: var(--oc-sale-user, var(--wp--preset--color--sale, #b4453c));
 	--oc-line: color-mix(in srgb, var(--oc-ink) 12%, transparent);
 	--oc-gap: calc(clamp(12px, 2vw, 24px) * var(--oc-density, 1));
 	/* --oc-header-h comes from the settings tokens; theme.css must not
@@ -1277,21 +1277,38 @@ body:not(.oc-no-lightbox) .woocommerce-product-gallery__image a { cursor: none; 
 	cursor: pointer;
 }
 
+/* a fine plus that folds into a minus */
+.oc-tabs-accordion .oc-acc-head { position: relative; padding-inline-end: 28px; }
+
+.oc-tabs-accordion .oc-acc-head::before,
 .oc-tabs-accordion .oc-acc-head::after {
 	content: "";
-	inline-size: 9px;
-	block-size: 9px;
-	border-block-end: 2px solid currentColor;
-	border-inline-end: 2px solid currentColor;
-	transform: rotate(45deg);
-	transition: transform .15s ease;
-	flex: none;
+	position: absolute;
+	inset-inline-end: 8px;
+	inset-block-start: 50%;
+	inline-size: 13px;
+	block-size: 1.5px;
+	background: currentColor;
+	translate: 0 -50%;
+	transition: rotate .28s ease, opacity .22s ease;
 }
 
-.oc-tabs-accordion .oc-acc-head[aria-expanded="true"]::after { transform: rotate(225deg); }
+.oc-tabs-accordion .oc-acc-head::after { rotate: 90deg; }
 
-.oc-tabs-accordion .woocommerce-Tabs-panel > h2:first-child { display: none; }
-.oc-tabs-accordion .woocommerce-Tabs-panel[data-oc-closed] > *:not(.oc-acc-head) { display: none; }
+.oc-tabs-accordion .oc-acc-head[aria-expanded="true"]::after {
+	rotate: 0deg;
+	opacity: 0;
+}
+
+.woocommerce-tabs .woocommerce-Tabs-panel > h2:first-child,
+.oc-tabs-accordion .oc-acc-head + h2,
+.oc-tabs-accordion .oc-acc-body > h2:first-child { display: none; }
+
+/* the body collapses with a soft height transition */
+.oc-acc-body {
+	overflow: hidden;
+	transition: max-block-size .3s ease;
+}
 
 /* tabs mode: brand styling over Woo defaults */
 .oc-tabs-tabs .woocommerce-tabs ul.tabs {
@@ -1486,22 +1503,39 @@ body:not(.oc-no-lightbox) .woocommerce-product-gallery__image a { cursor: none; 
 
 /* ---------- QA round-4 ---------- */
 
-/* single product: the sale mark moves off the image, next to the price */
+/* single product: the sale mark moves off the image, into the price line */
 .single-product div.product > span.onsale { display: none; }
 
-.woocommerce div.product p.price { display: inline-block; }
+.woocommerce div.product p.price {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	margin-block: 6px 14px;
+}
 
+/* the crossed-out price steps down a couple of sizes */
+.woocommerce div.product p.price del {
+	font-size: .72em;
+	color: var(--oc-ink-2);
+	opacity: .85;
+}
+
+/* the badge stretches to exactly the sale price's height */
 .oc-price-badge {
-	display: inline-block;
-	margin-inline-start: 10px;
-	padding: 3px 10px;
+	display: inline-flex;
+	align-items: center;
+	align-self: stretch;
+	padding-inline: 10px;
 	border-radius: 6px;
 	background: var(--oc-sale, #b4453c);
 	color: #fff;
-	font-size: .78rem;
+	font-size: .55em;
 	font-weight: 600;
-	vertical-align: middle;
+	line-height: 1;
 }
+
+/* tighter title-to-price rhythm */
+.woocommerce div.product .product_title { margin-block-end: 4px; }
 
 /* ---------- top bar ---------- */
 

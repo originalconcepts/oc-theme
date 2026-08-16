@@ -361,6 +361,7 @@ final class Customizer {
 
 		$this->color( $c, 'oc_color_primary', 'oc_design', __( 'Primary colour', 'oc-theme' ) );
 		$this->color( $c, 'oc_color_secondary', 'oc_design', __( 'Secondary colour', 'oc-theme' ) );
+		$this->color( $c, 'oc_color_sale', 'oc_design', __( 'Sale colour', 'oc-theme' ) );
 		$this->color( $c, 'oc_bg_color', 'oc_design', __( 'Site background colour', 'oc-theme' ) );
 
 		$this->choice(

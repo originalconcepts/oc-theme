@@ -172,6 +172,7 @@ final class Assets {
 				'--oc-footer-bg'      => (string) get_theme_mod( 'oc_footer_bg', '' ),
 				'--oc-primary-user'   => (string) get_theme_mod( 'oc_color_primary', '' ),
 				'--oc-secondary-user' => (string) get_theme_mod( 'oc_color_secondary', '' ),
+				'--oc-sale-user'      => (string) get_theme_mod( 'oc_color_sale', '' ),
 				'--oc-bg-user'        => (string) get_theme_mod( 'oc_bg_color', '' ),
 				'--oc-grid-gap'       => (string) get_theme_mod( 'oc_card_gap', '' ),
 			)

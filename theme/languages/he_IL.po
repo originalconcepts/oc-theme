@@ -683,3 +683,6 @@ msgstr "הצג פחות"
 
 msgid "Body text size (px)"
 msgstr "גודל טקסט רץ (px)"
+
+msgid "Sale colour"
+msgstr "צבע מבצע/הנחה"
