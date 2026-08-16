@@ -209,15 +209,18 @@ final class Assets {
 		$bg    = '';
 
 		$lh = '';
+		$fs = 0;
 
 		if ( function_exists( 'is_product' ) && is_product() ) {
 			$width = absint( get_theme_mod( 'oc_product_width_px', 0 ) );
 			$bg    = (string) get_theme_mod( 'oc_product_bg', '' );
 			$lh    = (string) get_theme_mod( 'oc_product_lh', '' );
+			$fs    = absint( get_theme_mod( 'oc_product_fs', 0 ) );
 		} elseif ( function_exists( 'is_shop' ) && ( is_shop() || is_product_taxonomy() ) ) {
 			$width = absint( get_theme_mod( 'oc_catalog_width_px', 0 ) );
 			$bg    = (string) get_theme_mod( 'oc_catalog_bg', '' );
 			$lh    = (string) get_theme_mod( 'oc_catalog_lh', '' );
+			$fs    = absint( get_theme_mod( 'oc_catalog_fs', 0 ) );
 		} elseif ( function_exists( 'is_checkout' ) && ( is_checkout() || is_cart() ) ) {
 			$bg = (string) get_theme_mod( 'oc_checkout_bg', '' );
 		}
@@ -225,6 +228,9 @@ final class Assets {
 		$out = '';
 		if ( '' !== $lh ) {
 			$out .= '--oc-lh:' . $this->safe_value( $lh ) . ';';
+		}
+		if ( $fs > 0 ) {
+			$out .= '--oc-fs:' . $fs . 'px;';
 		}
 		if ( $width > 0 ) {
 			$out .= '--oc-content-width:' . $width . 'px;';

@@ -505,6 +505,8 @@ final class Customizer {
 			'top'
 		);
 
+		$this->number( $c, 'oc_catalog_fs', $section, __( 'Body text size (px)', 'oc-theme' ), 16, 12, 20 );
+
 		$this->choice(
 			$c,
 			'oc_catalog_lh',
@@ -792,6 +794,8 @@ final class Customizer {
 				return 'dots' === get_theme_mod( 'oc_gallery_mobile', 'dots' );
 			}
 		);
+
+		$this->number( $c, 'oc_product_fs', 'oc_product', __( 'Body text size (px)', 'oc-theme' ), 16, 12, 20 );
 
 		$this->choice(
 			$c,

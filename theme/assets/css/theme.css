@@ -436,6 +436,7 @@ a { color: inherit; }
 	max-inline-size: var(--oc-content-width, 1280px);
 	margin-inline: auto;
 	padding-inline: var(--oc-gap);
+	font-size: var(--oc-fs, 1rem);
 	line-height: var(--oc-lh, 1.55);
 }
 

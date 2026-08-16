@@ -680,3 +680,6 @@ msgstr "קרא עוד"
 
 msgid "Read less"
 msgstr "הצג פחות"
+
+msgid "Body text size (px)"
+msgstr "גודל טקסט רץ (px)"
