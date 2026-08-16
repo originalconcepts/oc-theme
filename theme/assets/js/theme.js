@@ -124,7 +124,9 @@
 					pagingBtn.classList.add( 'loading' );
 				}
 
-				fetch( pagingNext.href )
+				var loadedUrl = pagingNext.href;
+
+				fetch( loadedUrl )
 					.then( function ( r ) {
 						return r.text();
 					} )
@@ -136,6 +138,11 @@
 							pagingUl.appendChild( node );
 							node.querySelectorAll( '.oc-card-media--gallery' ).forEach( bindCardGallery );
 						} );
+
+						// The address bar follows the page just loaded — back,
+						// refresh or a shared link land near the visitor's spot
+						// instead of page one.
+						window.history.replaceState( null, '', loadedUrl );
 
 						pagingNext = doc.querySelector( '.woocommerce-pagination a.next' );
 
@@ -561,18 +568,30 @@
 
 	if ( stickCols.length ) {
 		var updateStickCols = function () {
+			// Available room = viewport minus the actual pin offset (the sticky
+			// header's height when there is one). A fixed 140px margin missed
+			// columns by a hair — 886px of content on a 1000px screen must pin.
+			var stickyHeader = document.querySelector( '.oc-header.is-sticky' );
+			var pinOffset = stickyHeader ? stickyHeader.offsetHeight + 20 : 24;
+
 			stickCols.forEach( function ( col ) {
 				var inner = col.querySelector( ':scope > .oc-stick-inner' ) || col;
 				col.classList.toggle(
 					'oc-col-stick',
-					inner.offsetHeight < window.innerHeight - 140
+					inner.offsetHeight <= window.innerHeight - pinOffset
 				);
 			} );
 		};
 
 		window.addEventListener( 'resize', updateStickCols );
-		// Image loads change column heights after DOMContentLoaded.
+		// Image loads change column heights after DOMContentLoaded, and the
+		// accordion panels change the summary height on every toggle.
 		window.addEventListener( 'load', updateStickCols );
+		document.addEventListener( 'click', function ( event ) {
+			if ( event.target.closest( '.oc-acc-head' ) ) {
+				setTimeout( updateStickCols, 60 );
+			}
+		} );
 		updateStickCols();
 	}
 

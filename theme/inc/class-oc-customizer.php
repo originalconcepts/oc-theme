@@ -200,6 +200,31 @@ final class Customizer {
 
 		$this->choice(
 			$c,
+			'oc_header_icon_weight',
+			'oc_header',
+			__( 'Icon stroke weight', 'oc-theme' ),
+			array(
+				'1.4' => __( 'Thin', 'oc-theme' ),
+				'1.8' => __( 'Regular', 'oc-theme' ),
+				'2.2' => __( 'Bold', 'oc-theme' ),
+			),
+			'1.8'
+		);
+
+		$this->choice(
+			$c,
+			'oc_header_search_style',
+			'oc_header',
+			__( 'Search — desktop', 'oc-theme' ),
+			array(
+				'icon'  => __( 'Icon that opens a bar', 'oc-theme' ),
+				'field' => __( 'Inline search field', 'oc-theme' ),
+			),
+			'icon'
+		);
+
+		$this->choice(
+			$c,
 			'oc_header_icons_style',
 			'oc_header',
 			__( 'Account, search and cart — desktop', 'oc-theme' ),

@@ -160,6 +160,7 @@ final class Assets {
 				'--oc-header-bg'      => (string) get_theme_mod( 'oc_header_bg', '' ),
 				'--oc-header-tx'      => (string) get_theme_mod( 'oc_header_tx', '' ),
 				'--oc-hicon'          => absint( get_theme_mod( 'oc_header_icon_size', 20 ) ) . 'px',
+				'--oc-hicon-sw'       => (string) (float) get_theme_mod( 'oc_header_icon_weight', 1.8 ),
 				'--oc-topbar-bg'      => (string) get_theme_mod( 'oc_topbar_bg', '' ),
 				'--oc-topbar-tx'      => (string) get_theme_mod( 'oc_topbar_tx', '' ),
 				'--oc-footer-bg'      => (string) get_theme_mod( 'oc_footer_bg', '' ),

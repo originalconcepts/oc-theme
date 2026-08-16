@@ -590,3 +590,21 @@ msgstr "סל קניה"
 
 msgid "Account and cart"
 msgstr "חשבון וסל"
+
+msgid "Icon stroke weight"
+msgstr "עובי קו האייקונים"
+
+msgid "Thin"
+msgstr "דק"
+
+msgid "Bold"
+msgstr "עבה"
+
+msgid "Search — desktop"
+msgstr "חיפוש — דסקטופ"
+
+msgid "Icon that opens a bar"
+msgstr "אייקון שפותח פס חיפוש"
+
+msgid "Inline search field"
+msgstr "שדה חיפוש בהדר"

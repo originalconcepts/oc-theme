@@ -144,6 +144,17 @@ function oc_header_icons_render(): void {
 		echo '</nav>';
 	}
 
+	if ( get_theme_mod( 'oc_header_search', true ) && 'field' === get_theme_mod( 'oc_header_search_style', 'icon' ) ) {
+		printf(
+			'<form role="search" method="get" class="oc-hsearch" action="%s"><input type="search" name="s" placeholder="%s" />%s<button type="submit" aria-label="%s">%s</button></form>',
+			esc_url( home_url( '/' ) ),
+			esc_attr__( 'Search…', 'oc-theme' ),
+			class_exists( 'WooCommerce' ) ? '<input type="hidden" name="post_type" value="product" />' : '',
+			esc_attr__( 'Search', 'oc-theme' ),
+			'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.8-3.8"/></svg>'
+		);
+	}
+
 	if ( get_theme_mod( 'oc_header_search', true ) ) {
 		printf(
 			'<button type="button" class="oc-hicon oc-search-toggle" aria-expanded="false" aria-controls="oc-header-search" aria-label="%s">%s</button>',
@@ -168,12 +179,12 @@ function oc_header_icons_render(): void {
 			'cart'   => '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.6"/><circle cx="17" cy="20" r="1.6"/><path d="M3 3h2.5l2.2 11.2a1.6 1.6 0 0 0 1.6 1.3h7.6a1.6 1.6 0 0 0 1.6-1.3L20 7H6"/></svg>',
 			'bag'    => '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8h14l-1.2 12.2a1.8 1.8 0 0 1-1.8 1.6H8a1.8 1.8 0 0 1-1.8-1.6Z"/><path d="M8.5 10V6.5a3.5 3.5 0 0 1 7 0V10"/></svg>',
 			'basket' => '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 10h17l-1.6 9a2 2 0 0 1-2 1.6H7.1a2 2 0 0 1-2-1.6Z"/><path d="m8 10 3-6.5M16 10l-3-6.5"/><path d="M9.5 13.5v3.5M14.5 13.5v3.5"/></svg>',
-			// The exact icon bonibrand's header uploads (bonicart.svg), inlined
-			// with currentColor so the header colour settings reach it.
-			'boni'   => '<svg viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="currentColor" aria-hidden="true"><path d="M19 19H1V5H19V19Z" stroke-miterlimit="10" stroke-linecap="round"/><path d="M6 5V4.71746C6 2.66435 7.79085 0.999999 10 0.999999C12.2091 0.999999 14 2.66435 14 4.71746L14 5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/></svg>',
-			// The previous theme\'s default header cart (cart-icon.svg) — what
-			// amox shows, as the site itself is behind bot protection.
-			'amox'   => '<svg viewBox="0 0 20 20" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M7.90874 19.2748C6.81061 19.2748 5.91718 18.3814 5.91718 17.2832C5.91718 16.1851 6.81061 15.292 7.90874 15.292C9.00686 15.292 9.9003 16.1851 9.9003 17.2832C9.9003 18.3814 9.00686 19.2748 7.90874 19.2748ZM7.90874 16.542C7.49999 16.542 7.16718 16.8745 7.16718 17.2832C7.16718 17.6923 7.49968 18.0248 7.90874 18.0248C8.3178 18.0248 8.6503 17.6923 8.6503 17.2832C8.6503 16.8745 8.3178 16.542 7.90874 16.542Z"/><path d="M14.8319 19.2748C13.7338 19.2748 12.8406 18.3814 12.8406 17.2832C12.8406 16.1851 13.7338 15.292 14.8319 15.292C15.93 15.292 16.8234 16.1851 16.8234 17.2832C16.8234 18.3814 15.9297 19.2748 14.8319 19.2748ZM14.8319 16.542C14.4231 16.542 14.0906 16.8745 14.0906 17.2832C14.0906 17.6923 14.4231 18.0248 14.8319 18.0248C15.241 18.0248 15.5734 17.6923 15.5734 17.2832C15.5734 16.8745 15.2406 16.542 14.8319 16.542Z"/><path d="M16.29 13.7482H6.47156C5.51624 13.7482 4.70031 13.0978 4.48718 12.1666L2.44937 3.26753C2.42249 3.15003 2.34124 3.0494 2.23187 2.99878L0.541557 2.21534C0.150307 2.03409 -0.020006 1.56972 0.161244 1.17815C0.342494 0.786903 0.807182 0.616591 1.19843 0.797841L2.88874 1.58128C3.43343 1.83347 3.83874 2.33347 3.97249 2.91878L6.01031 11.8185C6.05968 12.0347 6.24937 12.186 6.47156 12.186H16.29C16.5112 12.186 16.7006 12.0357 16.7512 11.82L18.3356 5.00347C18.3809 4.80972 18.2984 4.66878 18.2456 4.60222C18.1925 4.53534 18.0737 4.42347 17.875 4.42347H6.31249C5.88093 4.42347 5.53124 4.07378 5.53124 3.64222C5.53124 3.21065 5.88093 2.86097 6.31249 2.86097H17.875C18.4997 2.86097 19.0803 3.14128 19.4691 3.63034C19.8578 4.1194 19.9991 4.74878 19.8578 5.35722L18.2731 12.1741C18.0572 13.1007 17.2419 13.7482 16.29 13.7482Z"/></svg>',
+			// bonibrand's square bag (bonicart.svg), redrawn at the set's stroke
+			// weight so all five icons match.
+			'boni'   => '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 20.5h-17V7h17Z"/><path d="M8.6 7v-.4a3.4 3.4 0 0 1 6.8 0V7"/></svg>',
+			// amox's dome-handle bag (from the live header, via the site archive),
+			// redrawn at the set's stroke weight.
+			'amox'   => '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.8 8.6h18.4l-1.6 11.7a2 2 0 0 1-2 1.7H6.4a2 2 0 0 1-2-1.7Z"/><path d="M6.9 8.6a5.1 5.1 0 0 1 10.2 0"/></svg>',
 		);
 
 		$oc_style = (string) get_theme_mod( 'oc_header_cart_icon', 'cart' );
