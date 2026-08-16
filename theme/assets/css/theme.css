@@ -907,6 +907,9 @@ li.product:focus-within .oc-card-atc,
  * the cart icon half off the image). */
 .oc-card-media--gallery .oc-card-media__strip {
 	display: flex;
+	/* the small gap keeps the neighbouring slide fully past the edge — with
+	 * none, fractional widths let one of its pixels bleed in at rest */
+	gap: 2px;
 	overflow-x: auto;
 	scroll-behavior: smooth;
 	scroll-snap-type: x mandatory;
@@ -922,10 +925,7 @@ li.product:focus-within .oc-card-atc,
 	scroll-snap-align: start;
 }
 
-/* fractional widths left a 1px sliver of the next slide at the edge */
-.oc-card-media--gallery .oc-card-media__item:not(:last-child) {
-	margin-inline-end: -1px;
-}
+
 
 .oc-card-media--gallery .oc-card-media__item img { block-size: 100%; }
 
@@ -1738,6 +1738,9 @@ main + .term-description {
 .oc-gnav { display: none; }
 
 @media (max-width: 900px) {
+	/* the gallery opens the page — no gap between it and the header */
+	.single-product .shop-main { padding-block-start: 0; }
+
 	.oc-thumbs { display: none; }
 
 	.oc-gm-dots .woocommerce-product-gallery__wrapper,
