@@ -599,7 +599,6 @@
 		} );
 		updateStickCols();
 	}
-	}
 
 	/* ---------- sticky add-to-cart ---------- */
 
