@@ -1302,7 +1302,8 @@ body:not(.oc-no-lightbox) .woocommerce-product-gallery__image a { cursor: none; 
 
 .woocommerce-tabs .woocommerce-Tabs-panel > h2:first-child,
 .oc-tabs-accordion .oc-acc-head + h2,
-.oc-tabs-accordion .oc-acc-body > h2:first-child { display: none; }
+.oc-tabs-accordion .oc-acc-body > h2:first-child,
+.oc-tabs-accordion .oc-acc-body .woocommerce-Reviews-title { display: none; }
 
 /* the body collapses with a soft height transition */
 .oc-acc-body {
