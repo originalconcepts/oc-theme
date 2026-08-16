@@ -109,11 +109,47 @@
 		var pagingUl = document.querySelector( 'ul.products' );
 		var pagingNav = document.querySelector( '.woocommerce-pagination' );
 		var pagingNext = pagingNav ? pagingNav.querySelector( 'a.next' ) : null;
+		var pagingPrev = pagingNav ? pagingNav.querySelector( 'a.prev' ) : null;
 		var pagingBtn = null;
 		var pagingBusy = false;
 
-		if ( pagingUl && pagingNext ) {
+		if ( pagingUl && pagingNav ) {
+			// Numbers never show in these modes — including on the last page,
+			// where there is no next link at all.
 			pagingNav.style.display = 'none';
+
+			// Returning from a product: jump back to the card that was clicked.
+			try {
+				var ocReturn = JSON.parse( sessionStorage.getItem( 'ocReturn' ) || 'null' );
+				if ( ocReturn && ocReturn.url === window.location.href && ocReturn.postClass ) {
+					var backTarget = pagingUl.querySelector( 'li.' + ocReturn.postClass );
+					if ( backTarget ) {
+						setTimeout( function () {
+							backTarget.scrollIntoView( { block: 'center' } );
+						}, 150 );
+					}
+					sessionStorage.removeItem( 'ocReturn' );
+				}
+			} catch ( e ) {}
+
+			pagingUl.addEventListener( 'click', function ( event ) {
+				var li = event.target.closest( 'li.product' );
+				if ( ! li ) {
+					return;
+				}
+				var postClass = '';
+				li.classList.forEach( function ( c ) {
+					if ( 0 === c.indexOf( 'post-' ) ) {
+						postClass = c;
+					}
+				} );
+				try {
+					sessionStorage.setItem( 'ocReturn', JSON.stringify( {
+						url: window.location.href,
+						postClass: postClass
+					} ) );
+				} catch ( e ) {}
+			} );
 
 			var loadNextPage = function () {
 				if ( pagingBusy || ! pagingNext ) {
@@ -160,19 +196,73 @@
 					} );
 			};
 
-			if ( 'more' === pagingMode ) {
-				pagingBtn = document.createElement( 'button' );
-				pagingBtn.type = 'button';
-				pagingBtn.className = 'button oc-load-more';
-				pagingBtn.textContent = ( window.ocL10n && window.ocL10n.loadMore ) || 'Show more';
-				pagingUl.parentElement.insertBefore( pagingBtn, pagingUl.nextSibling );
-				pagingBtn.addEventListener( 'click', loadNextPage );
-			} else {
-				window.addEventListener( 'scroll', function () {
-					if ( pagingNext && pagingUl.getBoundingClientRect().bottom < window.innerHeight + 600 ) {
-						loadNextPage();
+			if ( pagingNext ) {
+				if ( 'more' === pagingMode ) {
+					pagingBtn = document.createElement( 'button' );
+					pagingBtn.type = 'button';
+					pagingBtn.className = 'button oc-load-more';
+					pagingBtn.textContent = ( window.ocL10n && window.ocL10n.loadMore ) || 'Show more';
+					pagingUl.parentElement.insertBefore( pagingBtn, pagingUl.nextSibling );
+					pagingBtn.addEventListener( 'click', loadNextPage );
+				} else {
+					window.addEventListener( 'scroll', function () {
+						if ( pagingNext && pagingUl.getBoundingClientRect().bottom < window.innerHeight + 600 ) {
+							loadNextPage();
+						}
+					}, { passive: true } );
+				}
+			}
+
+			// Landing mid-catalogue (back from a product on page N): a button
+			// above the grid pulls the earlier products in, keeping the view
+			// anchored while they prepend.
+			if ( pagingPrev ) {
+				var prevBtn = document.createElement( 'button' );
+				prevBtn.type = 'button';
+				prevBtn.className = 'button oc-load-more oc-load-prev';
+				prevBtn.textContent = ( window.ocL10n && window.ocL10n.loadPrev ) || 'Show previous';
+				pagingUl.parentElement.insertBefore( prevBtn, pagingUl );
+
+				prevBtn.addEventListener( 'click', function () {
+					if ( pagingBusy || ! pagingPrev ) {
+						return;
 					}
-				}, { passive: true } );
+					pagingBusy = true;
+					prevBtn.classList.add( 'loading' );
+
+					fetch( pagingPrev.href )
+						.then( function ( r ) {
+							return r.text();
+						} )
+						.then( function ( html ) {
+							var doc = new DOMParser().parseFromString( html, 'text/html' );
+							var anchor = pagingUl.querySelector( 'li.product' );
+							var beforeTop = anchor ? anchor.getBoundingClientRect().top : 0;
+							var firstExisting = pagingUl.firstChild;
+
+							doc.querySelectorAll( 'ul.products > li.product' ).forEach( function ( li ) {
+								var node = document.importNode( li, true );
+								pagingUl.insertBefore( node, firstExisting );
+								node.querySelectorAll( '.oc-card-media--gallery' ).forEach( bindCardGallery );
+							} );
+
+							if ( anchor ) {
+								window.scrollBy( 0, anchor.getBoundingClientRect().top - beforeTop );
+							}
+
+							pagingPrev = doc.querySelector( '.woocommerce-pagination a.prev' );
+							if ( ! pagingPrev ) {
+								prevBtn.remove();
+							}
+
+							pagingBusy = false;
+							prevBtn.classList.remove( 'loading' );
+						} )
+						.catch( function () {
+							pagingBusy = false;
+							prevBtn.classList.remove( 'loading' );
+						} );
+				} );
 			}
 		}
 	}

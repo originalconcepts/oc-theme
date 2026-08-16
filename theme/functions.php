@@ -184,7 +184,7 @@ function oc_header_icons_render(): void {
 			'boni'   => '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 20.5h-17V7h17Z"/><path d="M8.6 7v-.4a3.4 3.4 0 0 1 6.8 0V7"/></svg>',
 			// amox's dome-handle bag (from the live header, via the site archive),
 			// redrawn at the set's stroke weight.
-			'amox'   => '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.8 8.6h18.4l-1.6 11.7a2 2 0 0 1-2 1.7H6.4a2 2 0 0 1-2-1.7Z"/><path d="M6.9 8.6a5.1 5.1 0 0 1 10.2 0"/></svg>',
+			'amox'   => '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.4 8.2h15.2l-1.4 10.9a2 2 0 0 1-2 1.7H7.8a2 2 0 0 1-2-1.7Z"/><path d="M7.5 8.2a4.5 4.5 0 0 1 9 0"/></svg>',
 		);
 
 		$oc_style = (string) get_theme_mod( 'oc_header_cart_icon', 'cart' );

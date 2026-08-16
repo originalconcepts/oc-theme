@@ -130,6 +130,7 @@ final class Assets {
 			array(
 				'addToCart' => __( 'Add to cart', 'oc-theme' ),
 				'loadMore'  => __( 'Show more', 'oc-theme' ),
+				'loadPrev'  => __( 'Show previous products', 'oc-theme' ),
 			)
 		);
 	}
@@ -161,6 +162,8 @@ final class Assets {
 				'--oc-header-tx'      => (string) get_theme_mod( 'oc_header_tx', '' ),
 				'--oc-hicon'          => absint( get_theme_mod( 'oc_header_icon_size', 20 ) ) . 'px',
 				'--oc-hicon-sw'       => (string) (float) get_theme_mod( 'oc_header_icon_weight', 1.8 ),
+				'--oc-logo-h'         => absint( get_theme_mod( 'oc_logo_h', 48 ) ) . 'px',
+				'--oc-logo-h-m'       => absint( get_theme_mod( 'oc_logo_h_mobile', 40 ) ) . 'px',
 				'--oc-topbar-bg'      => (string) get_theme_mod( 'oc_topbar_bg', '' ),
 				'--oc-topbar-tx'      => (string) get_theme_mod( 'oc_topbar_tx', '' ),
 				'--oc-footer-bg'      => (string) get_theme_mod( 'oc_footer_bg', '' ),

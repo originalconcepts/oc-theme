@@ -608,3 +608,18 @@ msgstr "אייקון שפותח פס חיפוש"
 
 msgid "Inline search field"
 msgstr "שדה חיפוש בהדר"
+
+msgid "Square bag"
+msgstr "תיק מרובע"
+
+msgid "Rounded bag"
+msgstr "תיק מעוגל"
+
+msgid "Logo height — desktop (px)"
+msgstr "גובה לוגו — דסקטופ (px)"
+
+msgid "Logo height — mobile (px)"
+msgstr "גובה לוגו — מובייל (px)"
+
+msgid "Show previous products"
+msgstr "הצג מוצרים קודמים"
