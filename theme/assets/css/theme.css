@@ -1880,6 +1880,14 @@ table.variations td.value select:has(+ .oc-var) {
 
 .oc-colors-label { font-weight: 600; font-size: .92rem; }
 
+/* Colour-linked products: the solo colour value is auto-selected and its row
+ * hidden — the "Colours" thumbs are the only colour UI. When every attribute
+ * row is auto, the whole table and Woo's clear link go too. */
+.variations tr.oc-row-auto { display: none; }
+
+.oc-vars-allauto table.variations,
+.oc-vars-allauto .reset_variations { display: none; }
+
 /* ---------- QA round-5 ---------- */
 
 /* sticky product columns: whichever column is shorter pins while the other

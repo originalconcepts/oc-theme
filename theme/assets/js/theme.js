@@ -316,15 +316,20 @@
 			return;
 		}
 
-		var count = strip.children.length;
 		var slideGap = parseFloat( getComputedStyle( strip ).columnGap ) || 0;
+
+		// Read live, not at bind time — a colour-sibling swap replaces the
+		// slides under the same listeners.
+		function count() {
+			return strip.children.length;
+		}
 
 		// Index-based with wrap-around: both arrows always page, whichever the
 		// visitor reaches for first. The step includes the inter-slide gap —
 		// bare clientWidth drifted 2px per slide and the mandatory snap
 		// corrected it with a visible jump on the way back.
 		function currentIndex() {
-			return count < 2 ? 0 :
+			return count() < 2 ? 0 :
 				Math.round( Math.abs( strip.scrollLeft ) / ( strip.clientWidth + slideGap ) );
 		}
 
@@ -349,13 +354,82 @@
 				event.stopPropagation();
 
 				var dir = btn.classList.contains( 'oc-card-media__nav--next' ) ? 1 : -1;
-				var target = ( currentIndex() + dir + count ) % count;
+				var target = ( currentIndex() + dir + count() ) % count();
 				goTo( target, Math.abs( target - currentIndex() ) > 1 );
 			} );
 		} );
 	}
 
 	document.querySelectorAll( '.oc-card-media--gallery' ).forEach( bindCardGallery );
+
+	/* ---------- colour siblings on catalogue cards ----------
+	 * A click swaps the card in place — gallery, links, title and price become
+	 * the sibling's — so the visitor flips through colours without leaving the
+	 * catalogue. Delegated, so cards loaded by the infinite scroll join in. */
+
+	document.addEventListener( 'click', function ( event ) {
+		var item = event.target.closest( '.oc-colors--loop .oc-colors__item' );
+
+		if ( ! item || ! item.dataset.url ) {
+			return;
+		}
+
+		event.preventDefault();
+
+		var li = item.closest( 'li.product' );
+		if ( ! li || item.classList.contains( 'is-current' ) ) {
+			return;
+		}
+
+		var imgs = [];
+		try {
+			imgs = JSON.parse( item.dataset.imgs || '[]' );
+		} catch ( err ) {
+			imgs = [];
+		}
+
+		var strip = li.querySelector( '.oc-card-media__strip' );
+		if ( strip && imgs.length ) {
+			strip.innerHTML = imgs.map( function ( src, i ) {
+				return '<figure class="oc-card-media__item' + ( 0 === i ? ' is-first' : '' ) + '">' +
+					'<img src="' + src + '" alt="" loading="' + ( 0 === i ? 'eager' : 'lazy' ) + '" sizes="(max-width: 900px) 50vw, 25vw"></figure>';
+			} ).join( '' );
+			strip.scrollLeft = 0;
+		}
+
+		li.querySelectorAll( 'a[href]' ).forEach( function ( a ) {
+			if ( a.closest( '.oc-colors' ) ) {
+				return;
+			}
+			if ( a.classList.contains( 'oc-card-atc' ) ) {
+				a.href = a.href.indexOf( 'add-to-cart=' ) > -1
+					? '?add-to-cart=' + item.dataset.pid
+					: item.dataset.url;
+				a.dataset.product_id = item.dataset.pid;
+				return;
+			}
+			if ( a.href.indexOf( '/product/' ) > -1 ) {
+				a.href = item.dataset.url;
+			}
+		} );
+
+		var title = li.querySelector( '.woocommerce-loop-product__title' );
+		if ( title && item.dataset.name ) {
+			title.textContent = item.dataset.name;
+		}
+
+		var price = li.querySelector( '.price' );
+		if ( price && item.dataset.price ) {
+			price.innerHTML = item.dataset.price;
+		}
+
+		li.querySelectorAll( '.oc-colors__item' ).forEach( function ( sib ) {
+			sib.classList.remove( 'is-current' );
+			sib.removeAttribute( 'aria-current' );
+		} );
+		item.classList.add( 'is-current' );
+		item.setAttribute( 'aria-current', 'true' );
+	} );
 
 	/* ---------- card add-to-cart icon → cart drawer ---------- */
 
@@ -751,6 +825,42 @@
 		}
 
 		if ( ! select ) {
+			return;
+		}
+
+		// A product whose colours are linked sibling products: its own solo
+		// colour value is chosen for the visitor and the row disappears — the
+		// "Colours" thumbs are the only colour UI on the page.
+		if ( box.dataset.auto ) {
+			var autoRow = box.closest( 'tr' );
+			if ( autoRow ) {
+				autoRow.classList.add( 'oc-row-auto' );
+			}
+
+			select.value = box.dataset.auto;
+			select.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+
+			// Woo's "clear" link would empty the hidden row and strand the
+			// form, so re-apply after it runs.
+			select.addEventListener( 'change', function () {
+				if ( '' === select.value ) {
+					setTimeout( function () {
+						select.value = box.dataset.auto;
+						// Dispatch only if the option took — a missing option
+						// re-firing would loop.
+						if ( select.value === box.dataset.auto ) {
+							select.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+						}
+					}, 0 );
+				}
+			} );
+
+			var form = box.closest( 'form.variations_form' );
+			if ( form &&
+				form.querySelectorAll( 'table.variations tr' ).length ===
+				form.querySelectorAll( 'table.variations tr.oc-row-auto' ).length ) {
+				form.classList.add( 'oc-vars-allauto' );
+			}
 			return;
 		}
 

@@ -690,14 +690,26 @@ msgstr "צבע מבצע/הנחה"
 msgid "Buttons"
 msgstr "כפתורים"
 
-msgid "Swatch (colour / image)"
-msgstr "Swatch (צבע / תמונה)"
+msgid "Swatch — colour"
+msgstr "Swatch — צבע"
+
+msgid "Swatch — image"
+msgstr "Swatch — תמונה"
 
 msgid "Swatch colour"
 msgstr "צבע ה-Swatch"
 
-msgid "Swatch image URL (overrides the colour)"
-msgstr "כתובת תמונת Swatch (דורסת את הצבע)"
+msgid "Swatch image"
+msgstr "תמונת ה-Swatch"
+
+msgid "The attribute type decides which one leads; the other is the fallback."
+msgstr "סוג התכונה קובע מה מוצג כברירת מחדל; השני משמש כגיבוי."
+
+msgid "Choose image"
+msgstr "בחירת תמונה"
+
+msgid "Remove"
+msgstr "הסרה"
 
 msgid "Colour siblings"
 msgstr "צבעים מקושרים"
