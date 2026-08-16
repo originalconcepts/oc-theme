@@ -623,3 +623,60 @@ msgstr "גובה לוגו — מובייל (px)"
 
 msgid "Show previous products"
 msgstr "הצג מוצרים קודמים"
+
+msgid "Menu text size (px)"
+msgstr "גודל טקסט התפריט (px)"
+
+msgid "Add to cart button — mobile"
+msgstr "כפתור הוספה לסל — מובייל"
+
+msgid "Category description position"
+msgstr "מיקום תיאור הקטגוריה"
+
+msgid "Under the title"
+msgstr "מתחת לכותרת"
+
+msgid "Under the products"
+msgstr "מתחת למוצרים"
+
+msgid "Body text line height"
+msgstr "גובה שורה לטקסט רץ"
+
+msgid "Tight"
+msgstr "צפוף"
+
+msgid "Loose"
+msgstr "מרווח"
+
+msgid "Page numbers shape"
+msgstr "צורת מספרי העמודים"
+
+msgid "Circles"
+msgstr "עיגולים"
+
+msgid "Squares"
+msgstr "ריבועים"
+
+msgid "Products area width"
+msgstr "רוחב אזור המוצרים"
+
+msgid "Page width"
+msgstr "רוחב העמוד"
+
+msgid "Edge to edge"
+msgstr "מקצה לקצה"
+
+msgid "Visible thumbnails (arrows page the rest)"
+msgstr "ממוזערות מוצגות (חצים מדפדפים בשאר)"
+
+msgid "Arrows on the main image — desktop"
+msgstr "חצים על התמונה הראשית — דסקטופ"
+
+msgid "Full width, thumbnails beside"
+msgstr "רוחב מלא · ממוזערות בצד"
+
+msgid "Read more"
+msgstr "קרא עוד"
+
+msgid "Read less"
+msgstr "הצג פחות"

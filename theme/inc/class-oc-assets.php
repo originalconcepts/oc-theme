@@ -131,6 +131,8 @@ final class Assets {
 				'addToCart' => __( 'Add to cart', 'oc-theme' ),
 				'loadMore'  => __( 'Show more', 'oc-theme' ),
 				'loadPrev'  => __( 'Show previous products', 'oc-theme' ),
+				'readMore'  => __( 'Read more', 'oc-theme' ),
+				'readLess'  => __( 'Read less', 'oc-theme' ),
 			)
 		);
 	}
@@ -163,6 +165,7 @@ final class Assets {
 				'--oc-hicon'          => absint( get_theme_mod( 'oc_header_icon_size', 20 ) ) . 'px',
 				'--oc-hicon-sw'       => (string) (float) get_theme_mod( 'oc_header_icon_weight', 1.8 ),
 				'--oc-logo-h'         => absint( get_theme_mod( 'oc_logo_h', 48 ) ) . 'px',
+				'--oc-menu-fs'        => absint( get_theme_mod( 'oc_menu_font_px', 16 ) ) . 'px',
 				'--oc-logo-h-m'       => absint( get_theme_mod( 'oc_logo_h_mobile', 40 ) ) . 'px',
 				'--oc-topbar-bg'      => (string) get_theme_mod( 'oc_topbar_bg', '' ),
 				'--oc-topbar-tx'      => (string) get_theme_mod( 'oc_topbar_tx', '' ),
@@ -205,17 +208,24 @@ final class Assets {
 		$width = 0;
 		$bg    = '';
 
+		$lh = '';
+
 		if ( function_exists( 'is_product' ) && is_product() ) {
 			$width = absint( get_theme_mod( 'oc_product_width_px', 0 ) );
 			$bg    = (string) get_theme_mod( 'oc_product_bg', '' );
+			$lh    = (string) get_theme_mod( 'oc_product_lh', '' );
 		} elseif ( function_exists( 'is_shop' ) && ( is_shop() || is_product_taxonomy() ) ) {
 			$width = absint( get_theme_mod( 'oc_catalog_width_px', 0 ) );
 			$bg    = (string) get_theme_mod( 'oc_catalog_bg', '' );
+			$lh    = (string) get_theme_mod( 'oc_catalog_lh', '' );
 		} elseif ( function_exists( 'is_checkout' ) && ( is_checkout() || is_cart() ) ) {
 			$bg = (string) get_theme_mod( 'oc_checkout_bg', '' );
 		}
 
 		$out = '';
+		if ( '' !== $lh ) {
+			$out .= '--oc-lh:' . $this->safe_value( $lh ) . ';';
+		}
 		if ( $width > 0 ) {
 			$out .= '--oc-content-width:' . $width . 'px;';
 		}

@@ -135,6 +135,7 @@ final class Customizer {
 
 		$this->number( $c, 'oc_logo_h', 'oc_header', __( 'Logo height — desktop (px)', 'oc-theme' ), 48, 20, 120 );
 		$this->number( $c, 'oc_logo_h_mobile', 'oc_header', __( 'Logo height — mobile (px)', 'oc-theme' ), 40, 16, 100 );
+		$this->number( $c, 'oc_menu_font_px', 'oc_header', __( 'Menu text size (px)', 'oc-theme' ), 16, 12, 24 );
 
 		$this->color( $c, 'oc_header_bg', 'oc_header', __( 'Header background', 'oc-theme' ) );
 		$this->color( $c, 'oc_header_tx', 'oc_header', __( 'Header text and icons colour', 'oc-theme' ) );
@@ -165,23 +166,23 @@ final class Customizer {
 			array(
 				'cart'   => array(
 					'label' => __( 'Cart', 'oc-theme' ),
-					'svg'   => '<svg class="oc-wf" viewBox="0 0 48 34" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><g fill="none" stroke="#2271b1" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" transform="translate(12 5)"><circle cx="9" cy="20" r="1.6"/><circle cx="17" cy="20" r="1.6"/><path d="M3 3h2.5l2.2 11.2a1.6 1.6 0 0 0 1.6 1.3h7.6a1.6 1.6 0 0 0 1.6-1.3L20 7H6"/></g></svg>',
+					'svg'   => '<svg class="oc-wf" width="96" height="68" viewBox="0 0 48 34" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><g fill="none" stroke="#2271b1" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" transform="translate(12 5)"><circle cx="9" cy="20" r="1.6"/><circle cx="17" cy="20" r="1.6"/><path d="M3 3h2.5l2.2 11.2a1.6 1.6 0 0 0 1.6 1.3h7.6a1.6 1.6 0 0 0 1.6-1.3L20 7H6"/></g></svg>',
 				),
 				'bag'    => array(
 					'label' => __( 'Bag', 'oc-theme' ),
-					'svg'   => '<svg class="oc-wf" viewBox="0 0 48 34" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><g fill="none" stroke="#2271b1" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" transform="translate(12 5)"><path d="M5 8h14l-1.2 12.2a1.8 1.8 0 0 1-1.8 1.6H8a1.8 1.8 0 0 1-1.8-1.6Z"/><path d="M8.5 10V6.5a3.5 3.5 0 0 1 7 0V10"/></g></svg>',
+					'svg'   => '<svg class="oc-wf" width="96" height="68" viewBox="0 0 48 34" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><g fill="none" stroke="#2271b1" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" transform="translate(12 5)"><path d="M5 8h14l-1.2 12.2a1.8 1.8 0 0 1-1.8 1.6H8a1.8 1.8 0 0 1-1.8-1.6Z"/><path d="M8.5 10V6.5a3.5 3.5 0 0 1 7 0V10"/></g></svg>',
 				),
 				'basket' => array(
 					'label' => __( 'Basket', 'oc-theme' ),
-					'svg'   => '<svg class="oc-wf" viewBox="0 0 48 34" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><g fill="none" stroke="#2271b1" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" transform="translate(12 5)"><path d="M3.5 10h17l-1.6 9a2 2 0 0 1-2 1.6H7.1a2 2 0 0 1-2-1.6Z"/><path d="m8 10 3-6.5M16 10l-3-6.5"/><path d="M9.5 13.5v3.5M14.5 13.5v3.5"/></g></svg>',
+					'svg'   => '<svg class="oc-wf" width="96" height="68" viewBox="0 0 48 34" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><g fill="none" stroke="#2271b1" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" transform="translate(12 5)"><path d="M3.5 10h17l-1.6 9a2 2 0 0 1-2 1.6H7.1a2 2 0 0 1-2-1.6Z"/><path d="m8 10 3-6.5M16 10l-3-6.5"/><path d="M9.5 13.5v3.5M14.5 13.5v3.5"/></g></svg>',
 				),
 				'boni'   => array(
 					'label' => __( 'Square bag', 'oc-theme' ),
-					'svg'   => '<svg class="oc-wf" viewBox="0 0 48 34" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><g fill="none" stroke="#2271b1" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" transform="translate(12 5)"><path d="M20.5 20.5h-17V7h17Z"/><path d="M8.6 7v-.4a3.4 3.4 0 0 1 6.8 0V7"/></g></svg>',
+					'svg'   => '<svg class="oc-wf" width="96" height="68" viewBox="0 0 48 34" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><g fill="none" stroke="#2271b1" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" transform="translate(12 5)"><path d="M20.5 20.5h-17V7h17Z"/><path d="M8.6 7v-.4a3.4 3.4 0 0 1 6.8 0V7"/></g></svg>',
 				),
 				'amox'   => array(
 					'label' => __( 'Rounded bag', 'oc-theme' ),
-					'svg'   => '<svg class="oc-wf" viewBox="0 0 48 34" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><g fill="none" stroke="#2271b1" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" transform="translate(12 5)"><path d="M4.4 8.2h15.2l-1.4 10.9a2 2 0 0 1-2 1.7H7.8a2 2 0 0 1-2-1.7Z"/><path d="M7.5 8.2a4.5 4.5 0 0 1 9 0"/></g></svg>',
+					'svg'   => '<svg class="oc-wf" width="96" height="68" viewBox="0 0 48 34" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><g fill="none" stroke="#2271b1" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" transform="translate(12 5)"><path d="M4.4 8.2h15.2l-1.4 10.9a2 2 0 0 1-2 1.7H7.8a2 2 0 0 1-2-1.7Z"/><path d="M7.5 8.2a4.5 4.5 0 0 1 9 0"/></g></svg>',
 				),
 			),
 			'cart',
@@ -492,6 +493,55 @@ final class Customizer {
 			'20px'
 		);
 
+		$this->choice(
+			$c,
+			'oc_catalog_desc_pos',
+			$section,
+			__( 'Category description position', 'oc-theme' ),
+			array(
+				'top'    => __( 'Under the title', 'oc-theme' ),
+				'bottom' => __( 'Under the products', 'oc-theme' ),
+			),
+			'top'
+		);
+
+		$this->choice(
+			$c,
+			'oc_catalog_lh',
+			$section,
+			__( 'Body text line height', 'oc-theme' ),
+			array(
+				'1.4'  => __( 'Tight', 'oc-theme' ),
+				'1.55' => __( 'Regular', 'oc-theme' ),
+				'1.75' => __( 'Loose', 'oc-theme' ),
+			),
+			'1.55'
+		);
+
+		$this->choice(
+			$c,
+			'oc_paging_shape',
+			$section,
+			__( 'Page numbers shape', 'oc-theme' ),
+			array(
+				'circle' => __( 'Circles', 'oc-theme' ),
+				'square' => __( 'Squares', 'oc-theme' ),
+			),
+			'circle'
+		);
+
+		$this->choice(
+			$c,
+			'oc_catalog_products_width',
+			$section,
+			__( 'Products area width', 'oc-theme' ),
+			array(
+				'page' => __( 'Page width', 'oc-theme' ),
+				'full' => __( 'Edge to edge', 'oc-theme' ),
+			),
+			'page'
+		);
+
 		$this->number( $c, 'oc_catalog_width_px', $section, __( 'Page width override (0 = inherit)', 'oc-theme' ), 0, 0, 1920 );
 		$this->color( $c, 'oc_catalog_bg', $section, __( 'Page background override', 'oc-theme' ) );
 	}
@@ -518,11 +568,6 @@ final class Customizer {
 			'oc_card',
 			__( 'Card preset', 'oc-theme' ),
 			array(
-				'classic'        => array(
-					'label' => __( 'Classic', 'oc-theme' ),
-					'hint'  => __( 'Border, centred info', 'oc-theme' ),
-					'svg'   => self::wf( '0 0 80 100', self::rect( 1, 1, 78, 98, 'bd', 3 ) . self::rect( 7, 7, 66, 58, 'im', 2 ) . self::rect( 24, 72, 32, 3.4, 'ln' ) . self::rect( 31, 80, 18, 3.4, 'ac' ) ),
-				),
 				'minimal'        => array(
 					'label' => __( 'Minimal', 'oc-theme' ),
 					'hint'  => __( 'No border, start-aligned', 'oc-theme' ),
@@ -532,6 +577,11 @@ final class Customizer {
 					'label' => __( 'Minimal centred', 'oc-theme' ),
 					'hint'  => __( 'No border, centred', 'oc-theme' ),
 					'svg'   => self::wf( '0 0 80 100', self::rect( 3, 3, 74, 62, 'im', 2 ) . self::rect( 24, 72, 32, 3.4, 'ln' ) . self::rect( 31, 80, 18, 3.4, 'ac' ) ),
+				),
+				'classic'        => array(
+					'label' => __( 'Classic', 'oc-theme' ),
+					'hint'  => __( 'Border, centred info', 'oc-theme' ),
+					'svg'   => self::wf( '0 0 80 100', self::rect( 1, 1, 78, 98, 'bd', 3 ) . self::rect( 7, 7, 66, 58, 'im', 2 ) . self::rect( 24, 72, 32, 3.4, 'ln' ) . self::rect( 31, 80, 18, 3.4, 'ac' ) ),
 				),
 				'card'           => array(
 					'label' => __( 'Card', 'oc-theme' ),
@@ -604,6 +654,18 @@ final class Customizer {
 				'none'   => __( 'Hidden', 'oc-theme' ),
 			),
 			'always'
+		);
+
+		$this->choice(
+			$c,
+			'oc_card_atc_mobile',
+			'oc_card',
+			__( 'Add to cart button — mobile', 'oc-theme' ),
+			array(
+				'none'   => __( 'Hidden', 'oc-theme' ),
+				'always' => __( 'Always visible', 'oc-theme' ),
+			),
+			'none'
 		);
 
 		$this->choice(
@@ -693,8 +755,8 @@ final class Customizer {
 				),
 				'stacked'      => array(
 					'label' => __( 'Stacked', 'oc-theme' ),
-					'hint'  => __( 'Full width, one under another', 'oc-theme' ),
-					'svg'   => self::wf( '0 0 132 84', self::rect( 6, 4, 120, 37, 'im', 3 ) . self::rect( 6, 45, 120, 35, 'im', 3 ) ),
+					'hint'  => __( 'Full width, thumbnails beside', 'oc-theme' ),
+					'svg'   => self::wf( '0 0 132 84', self::rect( 34, 4, 94, 37, 'im', 3 ) . self::rect( 34, 45, 94, 35, 'im', 3 ) . self::rect( 6, 4, 24, 17, 'bd', 2 ) . self::rect( 6, 24, 24, 17, 'bd', 2 ) . self::rect( 6, 44, 24, 17, 'bd', 2 ) ),
 				),
 			),
 			'thumbs-side',
@@ -725,14 +787,39 @@ final class Customizer {
 			'oc_gallery_mobile_arrows',
 			'oc_product',
 			__( 'Arrows on the mobile gallery', 'oc-theme' ),
-			false
+			false,
+			static function (): bool {
+				return 'dots' === get_theme_mod( 'oc_gallery_mobile', 'dots' );
+			}
+		);
+
+		$this->choice(
+			$c,
+			'oc_product_lh',
+			'oc_product',
+			__( 'Body text line height', 'oc-theme' ),
+			array(
+				'1.4'  => __( 'Tight', 'oc-theme' ),
+				'1.55' => __( 'Regular', 'oc-theme' ),
+				'1.75' => __( 'Loose', 'oc-theme' ),
+			),
+			'1.55'
 		);
 
 		$thumbs_active = static function (): bool {
 			return in_array( (string) get_theme_mod( 'oc_gallery_preset', 'thumbs-side' ), array( 'thumbs-side', 'thumbs-under' ), true );
 		};
 
-		$this->number( $c, 'oc_gallery_thumbs_max', 'oc_product', __( 'Max thumbnails', 'oc-theme' ), 5, 3, 10, $thumbs_active );
+		$this->number( $c, 'oc_gallery_thumbs_max', 'oc_product', __( 'Visible thumbnails (arrows page the rest)', 'oc-theme' ), 5, 2, 10, $thumbs_active );
+
+		$this->toggle(
+			$c,
+			'oc_gallery_desktop_arrows',
+			'oc_product',
+			__( 'Arrows on the main image — desktop', 'oc-theme' ),
+			false,
+			$thumbs_active
+		);
 
 		$this->choice(
 			$c,
@@ -991,8 +1078,9 @@ final class Customizer {
 	 * @param string                $section Section id.
 	 * @param string                $label   Label.
 	 * @param bool                  $def     Default.
+	 * @param callable|null         $active  Optional visibility callback.
 	 */
-	private function toggle( \WP_Customize_Manager $c, string $id, string $section, string $label, bool $def ): void {
+	private function toggle( \WP_Customize_Manager $c, string $id, string $section, string $label, bool $def, ?callable $active = null ): void {
 		$c->add_setting(
 			$id,
 			array(
@@ -1003,16 +1091,15 @@ final class Customizer {
 			)
 		);
 
-		$c->add_control(
-			new Customize\Toggle_Control(
-				$c,
-				$id,
-				array(
-					'section' => $section,
-					'label'   => $label,
-				)
-			)
+		$args = array(
+			'section' => $section,
+			'label'   => $label,
 		);
+		if ( null !== $active ) {
+			$args['active_callback'] = $active;
+		}
+
+		$c->add_control( new Customize\Toggle_Control( $c, $id, $args ) );
 	}
 
 	/**

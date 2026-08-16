@@ -451,26 +451,63 @@
 		} );
 	}
 
-	/* ---------- native product gallery thumbs (no flexslider) ---------- */
+	/* ---------- native product gallery thumbs (no flexslider) ----------
+	 * Thumbs presets: rail switches the active slide; "max thumbnails" caps
+	 * how many are visible and arrows page the rest. Stacked preset: rail
+	 * scrolls to the image (asceno-style) and tracks the one in view. */
 
 	var galleryWrap = document.querySelector( '.woocommerce-product-gallery__wrapper' );
 	var galleryBody = document.body;
+	var railChevrons = {
+		left: '<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M 70,0 L 20,50 L 70,100 L 80,90 L 40,50 L 80,10 Z"/></svg>',
+		right: '<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M 30,0 L 80,50 L 30,100 L 20,90 L 60,50 L 20,10 Z"/></svg>',
+		up: '<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M 0,70 L 50,20 L 100,70 L 90,80 L 50,40 L 10,80 Z"/></svg>',
+		down: '<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M 0,30 L 50,80 L 100,30 L 90,20 L 50,60 L 10,20 Z"/></svg>'
+	};
 
-	if ( galleryWrap && ( galleryBody.classList.contains( 'oc-gallery-thumbs-side' ) ||
-		galleryBody.classList.contains( 'oc-gallery-thumbs-under' ) ) ) {
+	var galleryMode = galleryBody.classList.contains( 'oc-gallery-thumbs-side' ) ? 'side' :
+		galleryBody.classList.contains( 'oc-gallery-thumbs-under' ) ? 'under' :
+		galleryBody.classList.contains( 'oc-gallery-stacked' ) ? 'stacked' : null;
 
+	if ( galleryWrap && galleryMode ) {
 		var slides = Array.prototype.slice.call(
 			galleryWrap.querySelectorAll( '.woocommerce-product-gallery__image' )
 		);
 
 		if ( slides.length > 1 ) {
 			var maxThumbs = parseInt( galleryBody.dataset.ocThumbsMax || '10', 10 );
+			var vertical = 'side' === galleryMode || 'stacked' === galleryMode;
+
+			var railCol = document.createElement( 'div' );
+			railCol.className = 'oc-thumbscol';
+
 			var rail = document.createElement( 'ol' );
 			rail.className = 'oc-thumbs';
+			railCol.appendChild( rail );
 
-			slides[ 0 ].classList.add( 'is-active' );
+			function setActiveThumb( index ) {
+				rail.querySelectorAll( 'button' ).forEach( function ( other, j ) {
+					other.setAttribute( 'aria-current', j === index ? 'true' : 'false' );
+				} );
+			}
 
-			slides.slice( 0, maxThumbs ).forEach( function ( slide, i ) {
+			function activateSlide( index ) {
+				if ( 'stacked' === galleryMode ) {
+					slides[ index ].scrollIntoView( { behavior: 'smooth', block: 'start' } );
+				} else {
+					slides.forEach( function ( other ) {
+						other.classList.remove( 'is-active' );
+					} );
+					slides[ index ].classList.add( 'is-active' );
+				}
+				setActiveThumb( index );
+			}
+
+			if ( 'stacked' !== galleryMode ) {
+				slides[ 0 ].classList.add( 'is-active' );
+			}
+
+			slides.forEach( function ( slide, i ) {
 				var src = slide.querySelector( 'img' );
 				if ( ! src ) {
 					return;
@@ -482,8 +519,6 @@
 				btn.setAttribute( 'aria-current', 0 === i ? 'true' : 'false' );
 
 				var thumb = document.createElement( 'img' );
-				// Woo puts the real thumbnail-size URL on data-thumb; the slide
-				// itself now carries the full-size image (gallery_image_size).
 				thumb.src = slide.dataset.thumb || src.currentSrc || src.src;
 				thumb.alt = '';
 				thumb.loading = 'lazy';
@@ -493,20 +528,118 @@
 				rail.appendChild( li );
 
 				btn.addEventListener( 'click', function () {
-					slides.forEach( function ( other ) {
-						other.classList.remove( 'is-active' );
-					} );
-					slide.classList.add( 'is-active' );
-					rail.querySelectorAll( 'button' ).forEach( function ( other ) {
-						other.setAttribute( 'aria-current', 'false' );
-					} );
-					btn.setAttribute( 'aria-current', 'true' );
+					activateSlide( i );
 				} );
 			} );
 
-			galleryWrap.parentElement.appendChild( rail );
+			galleryWrap.parentElement.appendChild( railCol );
+
+			// Cap the visible thumbs; arrows page the rail when there are more.
+			function sizeRail() {
+				var first = rail.querySelector( 'li' );
+				if ( ! first || slides.length <= maxThumbs ) {
+					return;
+				}
+				var step = ( vertical ? first.offsetHeight : first.offsetWidth ) + 10;
+				if ( vertical ) {
+					rail.style.maxBlockSize = ( step * maxThumbs - 10 ) + 'px';
+				} else {
+					rail.style.maxInlineSize = ( step * maxThumbs - 10 ) + 'px';
+				}
+				rail.classList.add( 'is-capped' );
+			}
+
+			if ( slides.length > maxThumbs ) {
+				var nav = document.createElement( 'div' );
+				nav.className = 'oc-thumbnav' + ( vertical ? ' oc-thumbnav--v' : '' );
+
+				[ [ 'prev', vertical ? 'up' : 'right', -1 ], [ 'next', vertical ? 'down' : 'left', 1 ] ].forEach( function ( def ) {
+					var b = document.createElement( 'button' );
+					b.type = 'button';
+					b.className = 'oc-thumbnav__btn oc-thumbnav__' + def[ 0 ];
+					b.setAttribute( 'aria-label', def[ 0 ] );
+					b.innerHTML = railChevrons[ def[ 1 ] ];
+					b.addEventListener( 'click', function () {
+						var first = rail.querySelector( 'li' );
+						var step = ( ( vertical ? first.offsetHeight : first.offsetWidth ) + 10 ) * def[ 2 ];
+						if ( vertical ) {
+							rail.scrollTop += step;
+						} else {
+							var rtl = 'rtl' === getComputedStyle( rail ).direction;
+							rail.scrollLeft += rtl ? -step : step;
+						}
+					} );
+					nav.appendChild( b );
+				} );
+
+				railCol.appendChild( nav );
+				window.addEventListener( 'load', sizeRail );
+				sizeRail();
+			}
+
+			// Stacked: highlight the thumb of the image currently in view.
+			if ( 'stacked' === galleryMode ) {
+				window.addEventListener( 'scroll', function () {
+					for ( var i = 0; i < slides.length; i++ ) {
+						var r = slides[ i ].getBoundingClientRect();
+						if ( r.bottom > window.innerHeight * 0.35 ) {
+							setActiveThumb( i );
+							return;
+						}
+					}
+				}, { passive: true } );
+			}
+
+			// Desktop arrows on the main image, for the thumbs presets.
+			if ( 'stacked' !== galleryMode && galleryBody.classList.contains( 'oc-gdesk-arrows' ) ) {
+				var currentSlide = 0;
+
+				[ [ 'prev', 'right', -1 ], [ 'next', 'left', 1 ] ].forEach( function ( def ) {
+					var b = document.createElement( 'button' );
+					b.type = 'button';
+					b.className = 'oc-gnav oc-gnav--desktop oc-gnav--' + def[ 0 ];
+					b.setAttribute( 'aria-label', def[ 0 ] );
+					b.innerHTML = 'prev' === def[ 0 ] ? railChevrons.left : railChevrons.right;
+					b.addEventListener( 'click', function () {
+						rail.querySelectorAll( 'button' ).forEach( function ( other, j ) {
+							if ( 'true' === other.getAttribute( 'aria-current' ) ) {
+								currentSlide = j;
+							}
+						} );
+						activateSlide( ( currentSlide + def[ 2 ] + slides.length ) % slides.length );
+					} );
+					galleryWrap.parentElement.appendChild( b );
+				} );
+			}
 		}
 	}
+
+	/* ---------- category description: clamp with read-more ---------- */
+
+	document.querySelectorAll( '.term-description, .oc-archive-desc' ).forEach( function ( box ) {
+		if ( box.scrollHeight <= box.clientHeight + 12 && box.scrollHeight < 130 ) {
+			return;
+		}
+		box.classList.add( 'oc-clamped' );
+		if ( box.scrollHeight <= box.clientHeight + 8 ) {
+			box.classList.remove( 'oc-clamped' );
+			return;
+		}
+
+		var toggle = document.createElement( 'button' );
+		toggle.type = 'button';
+		toggle.className = 'oc-readmore';
+		toggle.textContent = ( window.ocL10n && window.ocL10n.readMore ) || 'Read more';
+		box.after( toggle );
+
+		toggle.addEventListener( 'click', function () {
+			var open = box.classList.toggle( 'is-open' );
+			box.style.maxBlockSize = open ? box.scrollHeight + 'px' : '';
+			toggle.textContent = open
+				? ( ( window.ocL10n && window.ocL10n.readLess ) || 'Read less' )
+				: ( ( window.ocL10n && window.ocL10n.readMore ) || 'Read more' );
+		} );
+	} );
 
 	/* ---------- mobile gallery: swipe strip with dots / optional arrows ---------- */
 

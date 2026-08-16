@@ -56,14 +56,20 @@
 	outline-offset: 2px;
 }
 
+.oc-preset__art {
+	display: grid;
+	place-items: center;
+	border-radius: 4px;
+	background: #f6f7f7;
+	border: 1px solid #f0f0f1;
+}
+
 .oc-preset__art svg {
 	display: block;
 	inline-size: 100%;
 	block-size: auto;
 	max-block-size: 58px;
 	border-radius: 4px;
-	background: #f6f7f7;
-	border: 1px solid #f0f0f1;
 }
 
 .oc-preset__name {

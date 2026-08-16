@@ -123,6 +123,14 @@ final class WooCommerce {
 			add_action( 'woocommerce_after_single_product', array( $this, 'sticky_bar' ) );
 		}
 
+		// Category description below the products instead of under the title.
+		if ( 'bottom' === get_theme_mod( 'oc_catalog_desc_pos', 'top' ) ) {
+			remove_action( 'woocommerce_archive_description', 'woocommerce_taxonomy_archive_description', 10 );
+			remove_action( 'woocommerce_archive_description', 'woocommerce_product_archive_description', 10 );
+			add_action( 'woocommerce_after_main_content', 'woocommerce_taxonomy_archive_description', 5 );
+			add_action( 'woocommerce_after_main_content', 'woocommerce_product_archive_description', 5 );
+		}
+
 		// "Beside the gallery": the tabs physically move into the summary
 		// column, after add-to-cart, instead of the full-width row below.
 		if ( 'side' === get_theme_mod( 'oc_product_tabs_pos', 'below' ) ) {
@@ -315,7 +323,15 @@ final class WooCommerce {
 			if ( 'numbers' !== $paging ) {
 				$classes[] = 'oc-paging-' . sanitize_html_class( $paging );
 			}
+
+			$classes[] = 'oc-pagshape-' . sanitize_html_class( (string) get_theme_mod( 'oc_paging_shape', 'circle' ) );
+
+			if ( 'full' === get_theme_mod( 'oc_catalog_products_width', 'page' ) ) {
+				$classes[] = 'oc-prodfull';
+			}
 		}
+
+		$classes[] = 'oc-matc-' . sanitize_html_class( (string) get_theme_mod( 'oc_card_atc_mobile', 'none' ) );
 
 		if ( is_product() ) {
 			$classes[] = 'oc-gallery-' . sanitize_html_class( (string) get_theme_mod( 'oc_gallery_preset', 'thumbs-side' ) );
@@ -339,6 +355,10 @@ final class WooCommerce {
 
 			if ( get_theme_mod( 'oc_gallery_zoom', true ) ) {
 				$classes[] = 'oc-zoom';
+			}
+
+			if ( get_theme_mod( 'oc_gallery_desktop_arrows', false ) ) {
+				$classes[] = 'oc-gdesk-arrows';
 			}
 		}
 
