@@ -30,6 +30,74 @@ final class Assets {
 	public function register(): void {
 		add_action( 'wp_enqueue_scripts', array( $this, 'front_end' ) );
 		add_action( 'wp_head', array( $this, 'design_tokens' ), 1 );
+		add_action( 'wp_head', array( $this, 'seo_fallback' ), 2 );
+	}
+
+	/**
+	 * Meta description and Open Graph tags — only while no SEO plugin runs.
+	 * Search and AI crawlers both read these; WooCommerce already prints the
+	 * Product JSON-LD.
+	 */
+	public function seo_fallback(): void {
+		if ( defined( 'WPSEO_VERSION' ) || class_exists( 'RankMath\Helper' ) || defined( 'AIOSEO_VERSION' ) || defined( 'SEOPRESS_VERSION' ) ) {
+			return;
+		}
+
+		$desc = '';
+		$url  = home_url( '/' );
+		$img  = '';
+		$type = 'website';
+
+		if ( is_singular() ) {
+			$post_obj = get_queried_object();
+
+			if ( $post_obj instanceof \WP_Post ) {
+				$desc = '' !== $post_obj->post_excerpt
+					? $post_obj->post_excerpt
+					: wp_trim_words( wp_strip_all_tags( $post_obj->post_content ), 28, '…' );
+				$url  = (string) get_permalink( $post_obj );
+				$img  = (string) get_the_post_thumbnail_url( $post_obj, 'large' );
+				$type = 'article';
+
+				if ( function_exists( 'is_product' ) && is_product() ) {
+					$type    = 'product';
+					$product = wc_get_product( $post_obj->ID );
+
+					if ( $product && '' !== $product->get_short_description() ) {
+						$desc = wp_trim_words( wp_strip_all_tags( $product->get_short_description() ), 28, '…' );
+					}
+				}
+			}
+		} elseif ( is_tax() || is_category() || is_tag() ) {
+			$desc = wp_strip_all_tags( term_description() );
+			$term = get_queried_object();
+			if ( $term instanceof \WP_Term ) {
+				$link = get_term_link( $term );
+				$url  = is_wp_error( $link ) ? $url : $link;
+			}
+		} elseif ( function_exists( 'is_shop' ) && is_shop() ) {
+			$url = (string) wc_get_page_permalink( 'shop' );
+		}
+
+		if ( '' === trim( $desc ) ) {
+			$desc = (string) get_bloginfo( 'description' );
+		}
+
+		if ( '' !== trim( $desc ) ) {
+			printf( '<meta name="description" content="%s">' . "\n", esc_attr( $desc ) );
+			printf( '<meta property="og:description" content="%s">' . "\n", esc_attr( $desc ) );
+		}
+
+		printf( '<meta property="og:title" content="%s">' . "\n", esc_attr( wp_get_document_title() ) );
+		printf( '<meta property="og:type" content="%s">' . "\n", esc_attr( $type ) );
+		printf( '<meta property="og:url" content="%s">' . "\n", esc_url( $url ) );
+		printf( '<meta property="og:site_name" content="%s">' . "\n", esc_attr( get_bloginfo( 'name' ) ) );
+		printf( '<meta property="og:locale" content="%s">' . "\n", esc_attr( get_locale() ) );
+
+		if ( '' !== $img ) {
+			printf( '<meta property="og:image" content="%s">' . "\n", esc_url( $img ) );
+			echo '<meta name="twitter:card" content="summary_large_image">' . "\n";
+		}
 	}
 
 	/**
