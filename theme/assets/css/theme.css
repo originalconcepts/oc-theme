@@ -1738,8 +1738,10 @@ main + .term-description {
 .oc-gnav { display: none; }
 
 @media (max-width: 900px) {
-	/* the gallery opens the page — no gap between it and the header */
+	/* the gallery opens the page — no gap between it and the header. The
+	 * above-title breadcrumb is that gap: a 34px strip over the image. */
 	.single-product .shop-main { padding-block-start: 0; }
+	.single-product .shop-main > .oc-breadcrumb { display: none; }
 
 	.oc-thumbs { display: none; }
 
