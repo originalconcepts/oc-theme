@@ -623,21 +623,28 @@ li.product:focus-within .oc-card-atc,
 	}
 }
 
-/* gallery: native scroll-snap strip — no carousel library */
+/* gallery: native scroll-snap strip — no carousel library.
+ * aspect-ratio locks the strip to the image box, so an OS that reserves
+ * scrollbar space cannot make the strip taller than the image (which pushed
+ * the cart icon half off the image). */
 .oc-card-media--gallery .oc-card-media__strip {
 	display: flex;
 	overflow-x: auto;
 	scroll-behavior: smooth;
 	scroll-snap-type: x mandatory;
 	scrollbar-width: none;
+	aspect-ratio: var(--oc-card-ratio, 1 / 1);
 	border-radius: var(--oc-radius, 8px);
 }
 .oc-card-media--gallery .oc-card-media__strip::-webkit-scrollbar { display: none; }
 
 .oc-card-media--gallery .oc-card-media__item {
 	flex: 0 0 100%;
+	block-size: 100%;
 	scroll-snap-align: start;
 }
+
+.oc-card-media--gallery .oc-card-media__item img { block-size: 100%; }
 
 
 
@@ -1137,15 +1144,18 @@ body:not(.oc-no-lightbox) .woocommerce-product-gallery__image a { cursor: none; 
  * sticky to both picks the short one by itself; the grid row ends where the
  * tabs/related begin, so the pin releases before the next section. */
 @media (min-width: 901px) {
-	/* the extra .woocommerce class outranks woo's own div.images position */
-	.woocommerce.single-product div.product div.images,
-	.woocommerce.single-product div.product div.summary {
+	/* Only a column that fits the viewport pins (theme.js sets the class) —
+	 * a taller-than-viewport sticky column froze the page scroll until its
+	 * slack ran out. The extra .woocommerce class outranks woo's own
+	 * div.images position. */
+	.woocommerce.single-product div.product div.images.oc-col-stick,
+	.woocommerce.single-product div.product div.summary.oc-col-stick {
 		position: sticky;
 		inset-block-start: 24px;
 	}
 
-	.woocommerce.single-product:has(.oc-header.is-sticky) div.product div.images,
-	.woocommerce.single-product:has(.oc-header.is-sticky) div.product div.summary {
+	.woocommerce.single-product:has(.oc-header.is-sticky) div.product div.images.oc-col-stick,
+	.woocommerce.single-product:has(.oc-header.is-sticky) div.product div.summary.oc-col-stick {
 		inset-block-start: calc(var(--oc-header-h) + 20px);
 	}
 }
@@ -1190,7 +1200,9 @@ body:not(.oc-no-lightbox) .woocommerce-product-gallery__image a { cursor: none; 
 		inline-size: auto;
 		margin-inline: calc(-1 * var(--oc-gap));
 	}
-	.oc-gm-dots .woocommerce-product-gallery__image img { border-radius: 0; }
+	.woocommerce.oc-gm-dots div.product div.images .woocommerce-product-gallery__image img:not(.zoomImg) {
+		border-radius: 0;
+	}
 
 	/* pager dots */
 	.oc-gm-dots .oc-gdots {

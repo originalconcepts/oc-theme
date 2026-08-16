@@ -53,9 +53,13 @@
 			return count < 2 ? 0 : Math.round( Math.abs( strip.scrollLeft ) / strip.clientWidth );
 		}
 
-		function goTo( index ) {
+		function goTo( index, jump ) {
 			var rtl = getComputedStyle( strip ).direction === 'rtl';
+			// A wrap-around switches instantly (like the lightbox loop) — a
+			// smooth scroll would visibly travel back across every slide.
+			strip.style.scrollBehavior = jump ? 'auto' : '';
 			strip.scrollLeft = ( rtl ? -1 : 1 ) * index * strip.clientWidth;
+			strip.style.scrollBehavior = '';
 		}
 
 		media.querySelectorAll( '.oc-card-media__nav' ).forEach( function ( btn ) {
@@ -64,7 +68,8 @@
 				event.stopPropagation();
 
 				var dir = btn.classList.contains( 'oc-card-media__nav--next' ) ? 1 : -1;
-				goTo( ( currentIndex() + dir + count ) % count );
+				var target = ( currentIndex() + dir + count ) % count;
+				goTo( target, Math.abs( target - currentIndex() ) > 1 );
 			} );
 		} );
 	} );
@@ -364,6 +369,31 @@
 		gallery.addEventListener( 'mouseleave', function () {
 			plus.classList.remove( 'is-on' );
 		} );
+	}
+
+	/* ---------- sticky product columns ----------
+	 * Pin only a column that fits inside the viewport. A taller-than-viewport
+	 * sticky column pins immediately and freezes on screen while the page
+	 * scrolls past it — the "page refuses to scroll" bug. */
+
+	var stickCols = document.querySelectorAll(
+		'.single-product div.product > div.images, .single-product div.product > div.summary'
+	);
+
+	if ( stickCols.length ) {
+		var updateStickCols = function () {
+			stickCols.forEach( function ( col ) {
+				col.classList.toggle(
+					'oc-col-stick',
+					col.offsetHeight < window.innerHeight - 140
+				);
+			} );
+		};
+
+		window.addEventListener( 'resize', updateStickCols );
+		// Image loads change column heights after DOMContentLoaded.
+		window.addEventListener( 'load', updateStickCols );
+		updateStickCols();
 	}
 
 	/* ---------- sticky add-to-cart ---------- */
