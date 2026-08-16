@@ -566,3 +566,27 @@ msgstr "אוטומטי בגלילה"
 
 msgid "Show more"
 msgstr "הצג עוד"
+
+msgid "Square bag (bonibrand)"
+msgstr "תיק מרובע (bonibrand)"
+
+msgid "Classic cart (amox)"
+msgstr "עגלה קלאסית (amox)"
+
+msgid "Account, search and cart — desktop"
+msgstr "חשבון, חיפוש וסל — דסקטופ"
+
+msgid "Icons"
+msgstr "אייקונים"
+
+msgid "Text links"
+msgstr "קישורי טקסט"
+
+msgid "Account"
+msgstr "חשבון"
+
+msgid "Shopping cart"
+msgstr "סל קניה"
+
+msgid "Account and cart"
+msgstr "חשבון וסל"

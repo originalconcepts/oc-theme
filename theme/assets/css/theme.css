@@ -118,6 +118,45 @@ a { color: inherit; }
 .oc-burger span::after { background: currentColor; }
 .oc-burger { color: var(--oc-header-tx, var(--oc-ink)); }
 
+/* lanvin-style text links replacing the icons on desktop */
+.oc-htext { display: flex; align-items: center; gap: 20px; }
+
+.oc-htext__link {
+	padding: 0;
+	border: 0;
+	background: none;
+	font: inherit;
+	font-size: .9rem;
+	font-weight: 500;
+	color: inherit;
+	cursor: pointer;
+	text-decoration: none;
+	white-space: nowrap;
+}
+
+.oc-htext__link:hover { color: var(--oc-primary); }
+
+.oc-htext .oc-cart-count {
+	position: static;
+	padding: 0;
+	background: none;
+	color: inherit;
+	font-size: inherit;
+	font-weight: inherit;
+	min-inline-size: 0;
+}
+
+.oc-htext .oc-cart-count::before { content: "("; }
+.oc-htext .oc-cart-count::after { content: ")"; }
+
+@media (min-width: 901px) {
+	.oc-icons-text .oc-hicon { display: none; }
+}
+
+@media (max-width: 900px) {
+	.oc-htext { display: none; }
+}
+
 /* secondary menu beside the icons (desktop) */
 .oc-nav2__list {
 	display: flex;
@@ -185,7 +224,9 @@ a { color: inherit; }
 .oc-header--centred .oc-header__inner {
 	display: grid;
 	grid-template-columns: 1fr auto 1fr;
+	grid-template-rows: var(--oc-header-h, 72px) auto;
 	align-items: center;
+	min-block-size: 0;
 }
 .oc-header--centred .oc-header__start { display: contents; }
 .oc-header--centred .oc-burger { grid-column: 1; grid-row: 1; justify-self: start; }

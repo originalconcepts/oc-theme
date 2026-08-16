@@ -79,7 +79,7 @@ $oc_topbar_on   = (bool) get_theme_mod( 'oc_topbar', false ) && ( ! empty( $oc_t
 
 <header
 	id="main-header"
-	class="oc-header oc-header--<?php echo esc_attr( $oc_preset ); ?> oc-header--m-<?php echo esc_attr( $oc_mobile ); ?><?php echo $oc_sticky ? ' is-sticky' : ''; ?><?php echo $oc_hborder ? '' : ' oc-header--noline'; ?>"
+	class="oc-header oc-header--<?php echo esc_attr( $oc_preset ); ?> oc-header--m-<?php echo esc_attr( $oc_mobile ); ?><?php echo $oc_sticky ? ' is-sticky' : ''; ?><?php echo $oc_hborder ? '' : ' oc-header--noline'; ?><?php echo 'text' === get_theme_mod( 'oc_header_icons_style', 'icons' ) ? ' oc-icons-text' : ''; ?>"
 >
 	<div class="oc-header__inner">
 

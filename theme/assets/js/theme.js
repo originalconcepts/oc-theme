@@ -172,26 +172,32 @@
 
 	/* ---------- header: search toggle ---------- */
 
-	var searchToggle = document.querySelector( '.oc-search-toggle' );
+	var searchToggles = document.querySelectorAll( '.oc-search-toggle' );
 	var searchPanel = document.getElementById( 'oc-header-search' );
 
-	if ( searchToggle && searchPanel ) {
-		searchToggle.addEventListener( 'click', function () {
-			var open = searchPanel.hidden;
+	if ( searchToggles.length && searchPanel ) {
+		function setSearchOpen( open ) {
 			searchPanel.hidden = ! open;
-			searchToggle.setAttribute( 'aria-expanded', open ? 'true' : 'false' );
+			searchToggles.forEach( function ( t ) {
+				t.setAttribute( 'aria-expanded', open ? 'true' : 'false' );
+			} );
 			if ( open ) {
 				var field = searchPanel.querySelector( 'input[type="search"], input[type="text"]' );
 				if ( field ) {
 					field.focus();
 				}
 			}
+		}
+
+		searchToggles.forEach( function ( toggle ) {
+			toggle.addEventListener( 'click', function () {
+				setSearchOpen( searchPanel.hidden );
+			} );
 		} );
 
 		document.addEventListener( 'keydown', function ( event ) {
 			if ( event.key === 'Escape' && ! searchPanel.hidden ) {
-				searchPanel.hidden = true;
-				searchToggle.setAttribute( 'aria-expanded', 'false' );
+				setSearchOpen( false );
 			}
 		} );
 	}
