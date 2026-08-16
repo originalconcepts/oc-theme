@@ -317,22 +317,30 @@
 		}
 
 		var count = strip.children.length;
+		var slideGap = parseFloat( getComputedStyle( strip ).columnGap ) || 0;
 
 		// Index-based with wrap-around: both arrows always page, whichever the
-		// visitor reaches for first (QA round 4). In RTL scrollLeft runs
-		// negative; direct assignment + CSS scroll-behavior:smooth animates in
-		// real browsers and still moves where the animation pipeline freezes.
+		// visitor reaches for first. The step includes the inter-slide gap —
+		// bare clientWidth drifted 2px per slide and the mandatory snap
+		// corrected it with a visible jump on the way back.
 		function currentIndex() {
-			return count < 2 ? 0 : Math.round( Math.abs( strip.scrollLeft ) / strip.clientWidth );
+			return count < 2 ? 0 :
+				Math.round( Math.abs( strip.scrollLeft ) / ( strip.clientWidth + slideGap ) );
 		}
 
 		function goTo( index, jump ) {
-			var rtl = getComputedStyle( strip ).direction === 'rtl';
-			// A wrap-around switches instantly (like the lightbox loop) — a
-			// smooth scroll would visibly travel back across every slide.
-			strip.style.scrollBehavior = jump ? 'auto' : '';
-			strip.scrollLeft = ( rtl ? -1 : 1 ) * index * strip.clientWidth;
-			strip.style.scrollBehavior = '';
+			var slide = strip.children[ index ];
+			if ( ! slide ) {
+				return;
+			}
+			// Scroll to the slide itself — exact in RTL and gap-proof. A
+			// wrap-around switches instantly (like the lightbox loop); block
+			// "nearest" keeps the page from scrolling vertically.
+			slide.scrollIntoView( {
+				behavior: jump ? 'auto' : 'smooth',
+				block: 'nearest',
+				inline: 'start'
+			} );
 		}
 
 		media.querySelectorAll( '.oc-card-media__nav' ).forEach( function ( btn ) {
