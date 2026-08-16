@@ -799,6 +799,19 @@
 
 	if ( stickCols.length ) {
 		var updateStickCols = function () {
+			// Mobile columns are position:relative — an inline inset there is a
+			// plain downward shift (it pushed the gallery 93px under the header
+			// and over the title). Sticky pinning is desktop-only.
+			if ( window.innerWidth <= 900 ) {
+				stickCols.forEach( function ( col ) {
+					var inner = col.querySelector( ':scope > .oc-stick-inner' );
+					if ( inner ) {
+						inner.style.insetBlockStart = '';
+					}
+				} );
+				return;
+			}
+
 			// Pin offset = the sticky header's real height (a two-row layout is
 			// taller than the height token) plus breathing room.
 			var stickyHeader = document.querySelector( '.oc-header.is-sticky' );

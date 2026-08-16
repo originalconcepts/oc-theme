@@ -1743,7 +1743,11 @@ main + .term-description {
 	.single-product .shop-main { padding-block-start: 0; }
 	.single-product .shop-main > .oc-breadcrumb { display: none; }
 
-	.oc-thumbs { display: none; }
+	/* the thumbnail rail and its paging arrows are desktop machinery */
+	.oc-thumbscol { display: none; }
+
+	/* breathing room between the pager dots and the title */
+	.oc-gdots { margin-block-end: 10px; }
 
 	.oc-gm-dots .woocommerce-product-gallery__wrapper,
 	.oc-gm-peek .woocommerce-product-gallery__wrapper {
