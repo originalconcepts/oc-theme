@@ -2197,12 +2197,13 @@ table.variations td.value select:has(+ .oc-var) {
 	pointer-events: none;
 }
 
-/* Full-screen overlay with a clear close. */
+/* Full-screen lightbox on the gallery's white ground: the video plays among
+ * the images and the arrows page through everything. */
 .oc-voverlay {
 	position: fixed;
 	inset: 0;
 	z-index: 10000;
-	background: rgb(0 0 0 / 88%);
+	background: var(--oc-surface, #fff);
 	display: grid;
 	place-items: center;
 }
@@ -2211,15 +2212,17 @@ table.variations td.value select:has(+ .oc-var) {
 
 .oc-voverlay__media { display: grid; place-items: center; }
 
-.oc-voverlay__media video {
-	max-inline-size: 92vw;
+.oc-voverlay__media video,
+.oc-voverlay__media img {
+	max-inline-size: 88vw;
 	max-block-size: 85vh;
 	display: block;
-	background: #000;
 }
 
+.oc-voverlay__media video { background: #000; }
+
 .oc-voverlay__media iframe {
-	inline-size: min(92vw, 1100px);
+	inline-size: min(88vw, 1100px);
 	aspect-ratio: 16 / 9;
 	border: 0;
 	display: block;
@@ -2234,8 +2237,32 @@ table.variations td.value select:has(+ .oc-var) {
 	block-size: 48px;
 	border: 0;
 	background: transparent;
-	color: #fff;
+	color: var(--oc-ink, #111);
 	font-size: 40px;
 	line-height: 1;
 	cursor: pointer;
 }
+
+.oc-voverlay__nav {
+	position: fixed;
+	inset-block-start: 50%;
+	translate: 0 -50%;
+	inline-size: 46px;
+	block-size: 46px;
+	border: 0;
+	background: transparent;
+	cursor: pointer;
+	padding: 10px;
+	display: none;
+}
+
+.oc-voverlay.has-nav .oc-voverlay__nav { display: block; }
+
+.oc-voverlay__nav svg {
+	inline-size: 100%;
+	block-size: 100%;
+	fill: var(--oc-ink, #111);
+}
+
+.oc-voverlay__nav--prev { left: 14px; }
+.oc-voverlay__nav--next { right: 14px; }

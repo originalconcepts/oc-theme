@@ -430,9 +430,11 @@ final class WooCommerce {
 		echo '<div class="oc-card-media__strip" aria-label="' . esc_attr__( 'Product images', 'oc-theme' ) . '">';
 
 		if ( '' !== $card_video ) {
-			// No play badge on the card — the loop speaks for itself.
+			// No play badge on the card — the loop speaks for itself. Lazy:
+			// the video only loads and plays as its card nears the viewport,
+			// so a catalogue full of videos stays light.
 			echo '<figure class="oc-card-media__item oc-card-media__item--video is-first">';
-			echo Video::loop_html( $card_video, 'oc-card-video' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
+			echo Video::loop_html( $card_video, 'oc-card-video', true ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
 			echo '</figure>';
 		}
 

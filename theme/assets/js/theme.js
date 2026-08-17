@@ -201,6 +201,7 @@
 							node.dataset.ocpg = prevUrl;
 							pagingUl.insertBefore( node, firstExisting );
 							node.querySelectorAll( '.oc-card-media--gallery' ).forEach( bindCardGallery );
+							ocLazyVideos( node );
 						} );
 
 						if ( anchor ) {
@@ -238,6 +239,7 @@
 							node.dataset.ocpg = loadedUrl;
 							pagingUl.appendChild( node );
 							node.querySelectorAll( '.oc-card-media--gallery' ).forEach( bindCardGallery );
+							ocLazyVideos( node );
 						} );
 
 						pagingNext = doc.querySelector( '.woocommerce-pagination a.next' );
@@ -921,6 +923,53 @@
 		}
 	}
 
+	/* ---------- lazy card videos ----------
+	 * Catalogue videos carry data-oc-vsrc and no source: each one loads and
+	 * plays only as its card nears the viewport, and pauses off screen — a
+	 * catalogue full of videos costs nothing up front. */
+
+	var ocVideoObserver = null;
+
+	function ocLazyVideos( root ) {
+		var targets = ( root || document ).querySelectorAll( '[data-oc-vsrc]' );
+
+		if ( ! targets.length ) {
+			return;
+		}
+
+		if ( ! ( 'IntersectionObserver' in window ) ) {
+			targets.forEach( function ( el ) {
+				el.src = el.dataset.ocVsrc;
+			} );
+			return;
+		}
+
+		if ( ! ocVideoObserver ) {
+			ocVideoObserver = new IntersectionObserver( function ( entries ) {
+				entries.forEach( function ( entry ) {
+					var el = entry.target;
+					if ( entry.isIntersecting ) {
+						if ( ! el.dataset.ocLoaded ) {
+							el.src = el.dataset.ocVsrc;
+							el.dataset.ocLoaded = '1';
+						}
+						if ( el.play ) {
+							el.play().catch( function () {} );
+						}
+					} else if ( el.pause ) {
+						el.pause();
+					}
+				} );
+			}, { rootMargin: '200px' } );
+		}
+
+		targets.forEach( function ( el ) {
+			ocVideoObserver.observe( el );
+		} );
+	}
+
+	ocLazyVideos( document );
+
 	/* ---------- product video ----------
 	 * One video per product — an uploaded file or a controls-free YouTube /
 	 * Vimeo embed. Lives as a slide inside the gallery or as a small muted
@@ -943,10 +992,55 @@
 			var ocVideoLoopHtml = function () {
 				return 'file' === ocVideo.kind
 					? '<video src="' + ocVideo.loopSrc + '" autoplay muted loop playsinline preload="metadata"></video>'
-					: '<iframe src="' + ocVideo.loopSrc + '" allow="autoplay; fullscreen" tabindex="-1" title="video"></iframe>';
+					: '<iframe src="' + ocVideo.loopSrc + '" loading="lazy" allow="autoplay; fullscreen" tabindex="-1" title="video"></iframe>';
 			};
 
 			var ocOverlay = null;
+			var ocOverlayItems = [];
+			var ocOverlayIndex = 0;
+
+			var ocVideoFullHtml = function () {
+				return 'file' === ocVideo.kind
+					? '<video src="' + ocVideo.fullSrc + '" autoplay loop playsinline controls></video>'
+					: '<iframe src="' + ocVideo.fullSrc + '" allow="autoplay; fullscreen" title="video"></iframe>';
+			};
+
+			// The overlay is a small white lightbox over the whole gallery:
+			// the video plays in place among the images, and the arrows page
+			// through everything.
+			var ocOverlayList = function () {
+				var items = [];
+				galleryWrap.querySelectorAll( '.woocommerce-product-gallery__image' ).forEach( function ( slide ) {
+					if ( slide.classList.contains( 'oc-vslide' ) ) {
+						items.push( { type: 'video' } );
+						return;
+					}
+					var link = slide.querySelector( 'a' );
+					var img = slide.querySelector( 'img' );
+					var src = ( link && link.href ) || ( img && ( img.currentSrc || img.src ) );
+					if ( src ) {
+						items.push( { type: 'image', src: src } );
+					}
+				} );
+
+				return items.length ? items : [ { type: 'video' } ];
+			};
+
+			var ocRenderOverlay = function () {
+				var item = ocOverlayItems[ ocOverlayIndex ];
+				var media = ocOverlay.querySelector( '.oc-voverlay__media' );
+
+				media.innerHTML = 'video' === item.type
+					? ocVideoFullHtml()
+					: '<img src="' + item.src + '" alt="" />';
+
+				ocOverlay.classList.toggle( 'has-nav', ocOverlayItems.length > 1 );
+			};
+
+			var ocStepOverlay = function ( dir ) {
+				ocOverlayIndex = ( ocOverlayIndex + dir + ocOverlayItems.length ) % ocOverlayItems.length;
+				ocRenderOverlay();
+			};
 
 			var ocCloseOverlay = function () {
 				ocOverlay.hidden = true;
@@ -959,25 +1053,50 @@
 					ocOverlay = document.createElement( 'div' );
 					ocOverlay.className = 'oc-voverlay';
 					ocOverlay.hidden = true;
-					ocOverlay.innerHTML = '<button type="button" class="oc-voverlay__close" aria-label="close">&times;</button><div class="oc-voverlay__media"></div>';
+					ocOverlay.innerHTML =
+						'<button type="button" class="oc-voverlay__close" aria-label="close">&times;</button>' +
+						'<button type="button" class="oc-voverlay__nav oc-voverlay__nav--prev" aria-label="prev">' + railChevrons.left + '</button>' +
+						'<div class="oc-voverlay__media"></div>' +
+						'<button type="button" class="oc-voverlay__nav oc-voverlay__nav--next" aria-label="next">' + railChevrons.right + '</button>';
 					document.body.appendChild( ocOverlay );
 
 					ocOverlay.addEventListener( 'click', function ( event ) {
+						if ( event.target.closest( '.oc-voverlay__nav--prev' ) ) {
+							ocStepOverlay( -1 );
+							return;
+						}
+						if ( event.target.closest( '.oc-voverlay__nav--next' ) ) {
+							ocStepOverlay( 1 );
+							return;
+						}
 						if ( event.target === ocOverlay || event.target.closest( '.oc-voverlay__close' ) ) {
 							ocCloseOverlay();
 						}
 					} );
 
 					document.addEventListener( 'keydown', function ( event ) {
-						if ( 'Escape' === event.key && ! ocOverlay.hidden ) {
+						if ( ocOverlay.hidden ) {
+							return;
+						}
+						if ( 'Escape' === event.key ) {
 							ocCloseOverlay();
+						} else if ( 'ArrowLeft' === event.key ) {
+							ocStepOverlay( -1 );
+						} else if ( 'ArrowRight' === event.key ) {
+							ocStepOverlay( 1 );
 						}
 					} );
 				}
 
-				ocOverlay.querySelector( '.oc-voverlay__media' ).innerHTML = 'file' === ocVideo.kind
-					? '<video src="' + ocVideo.fullSrc + '" autoplay loop playsinline controls></video>'
-					: '<iframe src="' + ocVideo.fullSrc + '" allow="autoplay; fullscreen" title="video"></iframe>';
+				ocOverlayItems = 'gallery' === ocVideo.placement ? ocOverlayList() : [ { type: 'video' } ];
+				ocOverlayIndex = 0;
+				ocOverlayItems.forEach( function ( item, i ) {
+					if ( 'video' === item.type ) {
+						ocOverlayIndex = i;
+					}
+				} );
+
+				ocRenderOverlay();
 				ocOverlay.hidden = false;
 				document.body.style.overflow = 'hidden';
 			};
@@ -1203,7 +1322,9 @@
 		document.body.appendChild( plus );
 
 		gallery.addEventListener( 'mousemove', function ( event ) {
-			if ( event.target.closest( '.oc-thumbs' ) ) {
+			// Over the video the play badge is the signal — a zoom-plus there
+			// promises the wrong thing, so it steps aside.
+			if ( event.target.closest( '.oc-thumbs, .oc-vslide, .oc-vfab' ) ) {
 				plus.classList.remove( 'is-on' );
 				return;
 			}
