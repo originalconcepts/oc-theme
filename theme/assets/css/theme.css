@@ -2159,8 +2159,9 @@ table.variations td.value select:has(+ .oc-var) {
 	border-left-width: 9px;
 }
 
-/* Floating loop over the main gallery; physical right/left per the setting. */
-.woocommerce-product-gallery { position: relative; }
+/* Floating loop, anchored to the first gallery image; physical right/left
+ * per the setting. */
+.oc-has-vfab { position: relative; }
 
 .oc-vfab {
 	position: absolute;

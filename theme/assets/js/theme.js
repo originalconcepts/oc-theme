@@ -1007,12 +1007,21 @@
 				fab.className = 'oc-vfab oc-vfab--' + ( 'float-start' === ocVideo.placement ? 'start' : 'end' );
 				fab.setAttribute( 'aria-label', 'video' );
 				fab.innerHTML = ocVideoLoopHtml() + '<span class="oc-vplay oc-vplay--sm" aria-hidden="true"></span>';
+				fab.addEventListener( 'click', ocOpenOverlay );
 
-				var galleryBox = document.querySelector( '.woocommerce-product-gallery' );
-				if ( galleryBox ) {
-					galleryBox.appendChild( fab );
-					fab.addEventListener( 'click', ocOpenOverlay );
-				}
+				// Anchored to the FIRST image — in the grid and stacked
+				// presets the gallery is a tall column, so pinning to the
+				// container bottom would drop it out of sight.
+				var ocAttachFab = function () {
+					var host = galleryWrap.querySelector( '.woocommerce-product-gallery__image' );
+					if ( host && ! galleryWrap.querySelector( '.oc-vfab' ) ) {
+						host.classList.add( 'oc-has-vfab' );
+						host.appendChild( fab );
+					}
+				};
+
+				ocReinsertVideo = ocAttachFab;
+				ocAttachFab();
 			}
 		}
 	}
