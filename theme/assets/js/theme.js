@@ -970,6 +970,24 @@
 
 	ocLazyVideos( document );
 
+	// Insurance: if the observer never fires (frozen pipelines, odd
+	// embedded browsers), anything already on screen loads after a beat.
+	setTimeout( function () {
+		document.querySelectorAll( '[data-oc-vsrc]' ).forEach( function ( el ) {
+			if ( el.dataset.ocLoaded ) {
+				return;
+			}
+			var rect = el.getBoundingClientRect();
+			if ( rect.width && rect.top < window.innerHeight + 200 && rect.bottom > -200 ) {
+				el.src = el.dataset.ocVsrc;
+				el.dataset.ocLoaded = '1';
+				if ( el.play ) {
+					el.play().catch( function () {} );
+				}
+			}
+		} );
+	}, 2500 );
+
 	/* ---------- product video ----------
 	 * One video per product — an uploaded file or a controls-free YouTube /
 	 * Vimeo embed. Lives as a slide inside the gallery or as a small muted
