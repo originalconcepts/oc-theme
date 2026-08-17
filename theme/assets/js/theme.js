@@ -745,10 +745,30 @@
 		parent.appendChild( railCol );
 
 		// Cap the visible thumbs; arrows page the rail when there are more.
-		// The under preset skips the below-rail arrows — its arrows ride the
-		// main image's edges instead (built just below).
+		// In the under preset they are small white circles straddling the
+		// THUMBS strip's edges; the other presets keep their bare arrows.
 		if ( gSlides.length > maxThumbs ) {
-			if ( 'under' !== galleryMode ) {
+			if ( 'under' === galleryMode ) {
+				var railBox = document.createElement( 'span' );
+				railBox.className = 'oc-railbox';
+				railCol.appendChild( railBox );
+				railBox.appendChild( rail );
+
+				[ [ 'prev', 'thinLeft', -1 ], [ 'next', 'thinRight', 1 ] ].forEach( function ( def ) {
+					var b = document.createElement( 'button' );
+					b.type = 'button';
+					b.className = 'oc-tnav oc-tnav--' + def[ 0 ];
+					b.setAttribute( 'aria-label', def[ 0 ] );
+					b.innerHTML = railChevrons[ def[ 1 ] ];
+					b.addEventListener( 'click', function () {
+						var first = rail.querySelector( 'li' );
+						var step = ( first.offsetWidth + 10 ) * def[ 2 ];
+						var rtl = 'rtl' === getComputedStyle( rail ).direction;
+						rail.scrollLeft += rtl ? -step : step;
+					} );
+					railBox.appendChild( b );
+				} );
+			} else {
 				var nav = document.createElement( 'div' );
 				nav.className = 'oc-thumbnav' + ( vertical ? ' oc-thumbnav--v' : '' );
 
@@ -776,32 +796,8 @@
 			sizeRail();
 		}
 
-		// Under preset: white circles straddling the main image's edges —
-		// half on the image, half on the page — paging the slides; the rail
-		// follows through the active-thumb sync.
-		if ( 'under' === galleryMode &&
-			( gSlides.length > maxThumbs || galleryBody.classList.contains( 'oc-gdesk-arrows' ) ) ) {
-			[ [ 'prev', 'thinLeft', -1 ], [ 'next', 'thinRight', 1 ] ].forEach( function ( def ) {
-				var b = document.createElement( 'button' );
-				b.type = 'button';
-				b.className = 'oc-enav oc-enav--' + def[ 0 ];
-				b.setAttribute( 'aria-label', def[ 0 ] );
-				b.innerHTML = railChevrons[ def[ 1 ] ];
-				b.addEventListener( 'click', function () {
-					var current = 0;
-					rail.querySelectorAll( 'button' ).forEach( function ( other, j ) {
-						if ( 'true' === other.getAttribute( 'aria-current' ) ) {
-							current = j;
-						}
-					} );
-					activateSlide( ( current + def[ 2 ] + gSlides.length ) % gSlides.length );
-				} );
-				galleryWrap.appendChild( b );
-			} );
-		}
-
-		// Desktop arrows on the main image, for the side-rail preset.
-		if ( 'side' === galleryMode && galleryBody.classList.contains( 'oc-gdesk-arrows' ) ) {
+		// Desktop arrows on the main image, for the thumbs presets.
+		if ( 'stacked' !== galleryMode && galleryBody.classList.contains( 'oc-gdesk-arrows' ) ) {
 			[ [ 'prev', 'right', -1 ], [ 'next', 'left', 1 ] ].forEach( function ( def ) {
 				var b = document.createElement( 'button' );
 				b.type = 'button';
@@ -1169,9 +1165,105 @@
 				}
 			}
 
+			var zoomTarget = media.querySelector( 'img' );
+			if ( zoomTarget ) {
+				ocBindZoomPan( zoomTarget );
+			}
+
 			ocOverlay.classList.toggle( 'has-nav', ocOverlayItems.length > 1 );
 			ocOverlay.querySelector( '.oc-voverlay__count' ).textContent =
 				ocOverlayItems.length > 1 ? ( ocOverlayIndex + 1 ) + ' / ' + ocOverlayItems.length : '';
+		};
+
+		// In-lightbox zoom, rebuilt for silk: origin stays centred and the
+		// zoom travels via translate+scale — so zooming in, out, and
+		// re-zooming elsewhere all glide (a moving transform-origin snapped).
+		// While zoomed, the image pans by drag, clamped to its own edges.
+		var ocBindZoomPan = function ( img ) {
+			var SCALE = 1.9;
+			var zoomed = false;
+			var tx = 0;
+			var ty = 0;
+			var dragging = false;
+			var movedFar = false;
+			var startX = 0;
+			var startY = 0;
+			var baseX = 0;
+			var baseY = 0;
+
+			img.draggable = false;
+
+			var apply = function ( animate ) {
+				img.style.transition = animate ? 'transform .45s ' + ocLbEase : 'none';
+				img.style.transform = zoomed ? 'translate(' + tx + 'px,' + ty + 'px) scale(' + SCALE + ')' : 'none';
+			};
+
+			var clampPan = function () {
+				var maxX = Math.max( 0, ( img.offsetWidth * SCALE - window.innerWidth ) / 2 + 40 );
+				var maxY = Math.max( 0, ( img.offsetHeight * SCALE - window.innerHeight ) / 2 + 40 );
+				tx = Math.min( maxX, Math.max( -maxX, tx ) );
+				ty = Math.min( maxY, Math.max( -maxY, ty ) );
+			};
+
+			img.addEventListener( 'pointerdown', function ( event ) {
+				if ( ! zoomed ) {
+					return;
+				}
+				dragging = true;
+				movedFar = false;
+				startX = event.clientX;
+				startY = event.clientY;
+				baseX = tx;
+				baseY = ty;
+				if ( img.setPointerCapture ) {
+					img.setPointerCapture( event.pointerId );
+				}
+				event.preventDefault();
+			} );
+
+			img.addEventListener( 'pointermove', function ( event ) {
+				if ( ! dragging ) {
+					return;
+				}
+				tx = baseX + ( event.clientX - startX );
+				ty = baseY + ( event.clientY - startY );
+				if ( Math.abs( event.clientX - startX ) + Math.abs( event.clientY - startY ) > 6 ) {
+					movedFar = true;
+				}
+				clampPan();
+				apply( false );
+			} );
+
+			img.addEventListener( 'pointerup', function () {
+				dragging = false;
+			} );
+
+			img.addEventListener( 'click', function ( event ) {
+				event.stopPropagation();
+
+				// A drag is not a toggle.
+				if ( movedFar ) {
+					movedFar = false;
+					return;
+				}
+
+				if ( zoomed ) {
+					zoomed = false;
+					tx = 0;
+					ty = 0;
+					apply( true );
+					img.classList.remove( 'is-zoomed' );
+					return;
+				}
+
+				zoomed = true;
+				var box = img.getBoundingClientRect();
+				tx = ( ( box.left + box.width / 2 ) - event.clientX ) * ( SCALE - 1 );
+				ty = ( ( box.top + box.height / 2 ) - event.clientY ) * ( SCALE - 1 );
+				clampPan();
+				apply( true );
+				img.classList.add( 'is-zoomed' );
+			} );
 		};
 
 		// Paging: the current piece slips out toward the direction of travel
@@ -1237,21 +1329,6 @@
 					}
 					if ( event.target.closest( '.oc-voverlay__nav--next' ) ) {
 						ocStepOverlay( 1 );
-						return;
-					}
-					// Click on the image zooms in around the point; a second
-					// click zooms back out.
-					var zoomImg = event.target.closest( '.oc-voverlay__media img' );
-					if ( zoomImg ) {
-						if ( zoomImg.classList.contains( 'is-zoomed' ) ) {
-							zoomImg.classList.remove( 'is-zoomed' );
-						} else {
-							var box = zoomImg.getBoundingClientRect();
-							zoomImg.style.transformOrigin =
-								( ( event.clientX - box.left ) / box.width * 100 ) + '% ' +
-								( ( event.clientY - box.top ) / box.height * 100 ) + '%';
-							zoomImg.classList.add( 'is-zoomed' );
-						}
 						return;
 					}
 					if ( event.target === ocOverlay || event.target.closest( '.oc-voverlay__close' ) ) {

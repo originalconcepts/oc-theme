@@ -2222,21 +2222,25 @@ body:not(.oc-no-lightbox) .oc-vslide.is-playing {
 	place-items: center;
 }
 
-/* Under-preset gallery arrows: white circles straddling the main image's
- * edges — half on the image, half on the page ground. */
-.oc-gallery-thumbs-under .woocommerce-product-gallery__wrapper { position: relative; }
+/* Under-preset rail arrows: small white circles straddling the THUMBS
+ * strip's edges — half on the thumbs, half on the page ground —
+ * proportional to the strip. */
+.oc-railbox {
+	position: relative;
+	display: inline-block;
+}
 
-.oc-enav {
+.oc-tnav {
 	position: absolute;
 	top: 50%;
 	translate: 0 -50%;
-	inline-size: 44px;
-	block-size: 44px;
+	inline-size: 30px;
+	block-size: 30px;
 	border: 0;
 	border-radius: 50%;
 	background: #fff;
 	color: var(--oc-ink, #111);
-	box-shadow: 0 2px 12px rgb(0 0 0 / 16%);
+	box-shadow: 0 2px 10px rgb(0 0 0 / 16%);
 	display: grid;
 	place-items: center;
 	cursor: pointer;
@@ -2245,22 +2249,18 @@ body:not(.oc-no-lightbox) .oc-vslide.is-playing {
 	transition: scale .15s ease, box-shadow .15s ease;
 }
 
-.oc-enav:hover {
+.oc-tnav:hover {
 	scale: 1.08;
-	box-shadow: 0 4px 16px rgb(0 0 0 / 24%);
+	box-shadow: 0 4px 14px rgb(0 0 0 / 24%);
 }
 
-.oc-enav svg {
-	inline-size: 15px;
-	block-size: 15px;
+.oc-tnav svg {
+	inline-size: 11px;
+	block-size: 11px;
 }
 
-.oc-enav--prev { left: -22px; }
-.oc-enav--next { right: -22px; }
-
-@media (max-width: 900px) {
-	.oc-enav { display: none; }
-}
+.oc-tnav--prev { left: -15px; }
+.oc-tnav--next { right: -15px; }
 
 /* Rail-thumb badge: always on the video's thumbnail, whatever the autoplay
  * setting — the shopper should know it is a video before choosing it. */
@@ -2336,10 +2336,9 @@ body:not(.oc-no-lightbox) .oc-vslide.is-playing {
 	max-inline-size: 92vw;
 	max-block-size: 100vh;
 	display: block;
-	transition: transform .4s cubic-bezier(.2, .7, .2, 1);
 }
 
-.oc-voverlay__media img.is-zoomed { transform: scale(1.9); }
+.oc-voverlay__media img.is-zoomed { touch-action: none; }
 
 .oc-voverlay__media video {
 	max-inline-size: 92vw;
