@@ -2197,8 +2197,9 @@ table.variations td.value select:has(+ .oc-var) {
 	pointer-events: none;
 }
 
-/* Full-screen lightbox on the gallery's white ground: the video plays among
- * the images and the arrows page through everything. */
+/* The ONE lightbox, reference style: white ground, a soft fade-and-settle
+ * on open, bottom-centre circle buttons — prev, close in the middle, next —
+ * that lift gently on hover, and a counter up top. */
 .oc-voverlay {
 	position: fixed;
 	inset: 0;
@@ -2206,16 +2207,29 @@ table.variations td.value select:has(+ .oc-var) {
 	background: var(--oc-surface, #fff);
 	display: grid;
 	place-items: center;
+	opacity: 0;
+	transition: opacity .22s ease;
 }
+
+.oc-voverlay.is-open { opacity: 1; }
 
 .oc-voverlay[hidden] { display: none; }
 
 .oc-voverlay__media { display: grid; place-items: center; }
 
+.oc-voverlay__media > * { animation: oc-lb-in .28s ease; }
+
+@keyframes oc-lb-in {
+	from {
+		opacity: 0;
+		scale: .97;
+	}
+}
+
 .oc-voverlay__media video,
 .oc-voverlay__media img {
 	max-inline-size: 88vw;
-	max-block-size: 85vh;
+	max-block-size: 82vh;
 	display: block;
 }
 
@@ -2229,40 +2243,55 @@ table.variations td.value select:has(+ .oc-var) {
 	background: #000;
 }
 
-.oc-voverlay__close {
+.oc-voverlay__count {
 	position: fixed;
-	inset-block-start: 14px;
-	inset-inline-end: 20px;
-	inline-size: 48px;
-	block-size: 48px;
-	border: 0;
-	background: transparent;
+	inset-block-start: 18px;
+	inset-inline-start: 22px;
+	font-size: .92rem;
 	color: var(--oc-ink, #111);
-	font-size: 40px;
-	line-height: 1;
-	cursor: pointer;
+	letter-spacing: .04em;
 }
 
-.oc-voverlay__nav {
+.oc-voverlay__bar {
 	position: fixed;
-	inset-block-start: 50%;
-	translate: 0 -50%;
+	inset-block-end: 26px;
+	left: 50%;
+	translate: -50% 0;
+	display: flex;
+	align-items: center;
+	gap: 14px;
+}
+
+.oc-voverlay__btn {
 	inline-size: 46px;
 	block-size: 46px;
 	border: 0;
-	background: transparent;
+	border-radius: 50%;
+	background: #fff;
+	color: var(--oc-ink, #111);
+	box-shadow: 0 2px 12px rgb(0 0 0 / 14%);
+	display: grid;
+	place-items: center;
 	cursor: pointer;
-	padding: 10px;
-	display: none;
+	padding: 0;
+	transition: scale .18s ease, box-shadow .18s ease;
 }
 
-.oc-voverlay.has-nav .oc-voverlay__nav { display: block; }
-
-.oc-voverlay__nav svg {
-	inline-size: 100%;
-	block-size: 100%;
-	fill: var(--oc-ink, #111);
+.oc-voverlay__btn:hover {
+	scale: 1.09;
+	box-shadow: 0 5px 18px rgb(0 0 0 / 22%);
 }
 
-.oc-voverlay__nav--prev { left: 14px; }
-.oc-voverlay__nav--next { right: 14px; }
+.oc-voverlay__btn svg {
+	inline-size: 13px;
+	block-size: 13px;
+	fill: currentColor;
+}
+
+.oc-voverlay__close { font-size: 22px; line-height: 1; }
+
+.oc-voverlay__nav--prev,
+.oc-voverlay__nav--next { display: none; }
+
+.oc-voverlay.has-nav .oc-voverlay__nav--prev,
+.oc-voverlay.has-nav .oc-voverlay__nav--next { display: grid; }

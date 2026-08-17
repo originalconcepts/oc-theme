@@ -988,21 +988,176 @@
 		} );
 	}, 2500 );
 
-	/* ---------- product video ----------
-	 * One video per product — an uploaded file or a controls-free YouTube /
-	 * Vimeo embed. Lives as a slide inside the gallery or as a small muted
-	 * loop floating over it; a click opens a full-screen overlay. */
+	/* ---------- product video + the ONE lightbox ----------
+	 * A single white lightbox serves the whole gallery — images and the
+	 * product video alike — in the reference style: bottom-centre circle
+	 * buttons (prev, close, next), a counter, a soft open animation. */
 
 	var ocVideoTag = document.getElementById( 'oc-video' );
+	var ocVideo = null;
 
-	if ( ocVideoTag && galleryWrap ) {
-		var ocVideo = null;
-
+	if ( ocVideoTag ) {
 		try {
 			ocVideo = JSON.parse( ocVideoTag.textContent );
 		} catch ( err ) {
 			ocVideo = null;
 		}
+	}
+
+	if ( galleryWrap ) {
+		var ocOverlay = null;
+		var ocOverlayItems = [];
+		var ocOverlayIndex = 0;
+
+		var ocVideoFullHtml = function () {
+			return 'file' === ocVideo.kind
+				? '<video src="' + ocVideo.fullSrc + '" autoplay loop playsinline controls></video>'
+				: '<iframe src="' + ocVideo.fullSrc + '" allow="autoplay; fullscreen" title="video"></iframe>';
+		};
+
+		var ocOverlayList = function () {
+			var items = [];
+			galleryWrap.querySelectorAll( '.woocommerce-product-gallery__image' ).forEach( function ( slide ) {
+				if ( slide.classList.contains( 'oc-vslide' ) ) {
+					if ( ocVideo ) {
+						items.push( { type: 'video', slide: slide } );
+					}
+					return;
+				}
+				var link = slide.querySelector( 'a' );
+				var img = slide.querySelector( 'img' );
+				var src = ( link && link.href ) || ( img && ( img.currentSrc || img.src ) );
+				if ( src ) {
+					items.push( { type: 'image', src: src, slide: slide } );
+				}
+			} );
+
+			return items;
+		};
+
+		var ocRenderOverlay = function () {
+			var item = ocOverlayItems[ ocOverlayIndex ];
+
+			if ( ! item ) {
+				return;
+			}
+
+			ocOverlay.querySelector( '.oc-voverlay__media' ).innerHTML = 'video' === item.type
+				? ocVideoFullHtml()
+				: '<img src="' + item.src + '" alt="" />';
+
+			ocOverlay.classList.toggle( 'has-nav', ocOverlayItems.length > 1 );
+			ocOverlay.querySelector( '.oc-voverlay__count' ).textContent =
+				ocOverlayItems.length > 1 ? ( ocOverlayIndex + 1 ) + ' / ' + ocOverlayItems.length : '';
+		};
+
+		var ocStepOverlay = function ( dir ) {
+			ocOverlayIndex = ( ocOverlayIndex + dir + ocOverlayItems.length ) % ocOverlayItems.length;
+			ocRenderOverlay();
+		};
+
+		var ocCloseOverlay = function () {
+			ocOverlay.classList.remove( 'is-open' );
+			setTimeout( function () {
+				ocOverlay.hidden = true;
+				ocOverlay.querySelector( '.oc-voverlay__media' ).innerHTML = '';
+			}, 220 );
+			document.body.style.overflow = '';
+		};
+
+		var ocOpenOverlayWith = function ( items, index ) {
+			if ( ! items.length ) {
+				return;
+			}
+
+			if ( ! ocOverlay ) {
+				ocOverlay = document.createElement( 'div' );
+				ocOverlay.className = 'oc-voverlay';
+				ocOverlay.hidden = true;
+				ocOverlay.innerHTML =
+					'<span class="oc-voverlay__count"></span>' +
+					'<div class="oc-voverlay__media"></div>' +
+					'<div class="oc-voverlay__bar">' +
+					'<button type="button" class="oc-voverlay__btn oc-voverlay__nav--prev" aria-label="prev">' + railChevrons.left + '</button>' +
+					'<button type="button" class="oc-voverlay__btn oc-voverlay__close" aria-label="close">&times;</button>' +
+					'<button type="button" class="oc-voverlay__btn oc-voverlay__nav--next" aria-label="next">' + railChevrons.right + '</button>' +
+					'</div>';
+				document.body.appendChild( ocOverlay );
+
+				ocOverlay.addEventListener( 'click', function ( event ) {
+					if ( event.target.closest( '.oc-voverlay__nav--prev' ) ) {
+						ocStepOverlay( -1 );
+						return;
+					}
+					if ( event.target.closest( '.oc-voverlay__nav--next' ) ) {
+						ocStepOverlay( 1 );
+						return;
+					}
+					if ( event.target === ocOverlay || event.target.closest( '.oc-voverlay__close' ) ) {
+						ocCloseOverlay();
+					}
+				} );
+
+				document.addEventListener( 'keydown', function ( event ) {
+					if ( ocOverlay.hidden ) {
+						return;
+					}
+					if ( 'Escape' === event.key ) {
+						ocCloseOverlay();
+					} else if ( 'ArrowLeft' === event.key ) {
+						ocStepOverlay( -1 );
+					} else if ( 'ArrowRight' === event.key ) {
+						ocStepOverlay( 1 );
+					}
+				} );
+			}
+
+			ocOverlayItems = items;
+			ocOverlayIndex = Math.max( 0, index );
+			ocRenderOverlay();
+			ocOverlay.hidden = false;
+			// Two frames so the fade transition has a starting state.
+			requestAnimationFrame( function () {
+				requestAnimationFrame( function () {
+					ocOverlay.classList.add( 'is-open' );
+				} );
+			} );
+			document.body.style.overflow = 'hidden';
+		};
+
+		var ocOpenAtSlide = function ( slide ) {
+			var items = ocOverlayList();
+			var index = 0;
+			items.forEach( function ( item, i ) {
+				if ( item.slide === slide ) {
+					index = i;
+				}
+			} );
+			ocOpenOverlayWith( items, index );
+		};
+
+		// One delegated click serves every slide: the video always opens the
+		// lightbox; images open it unless the lightbox is switched off.
+		galleryWrap.addEventListener( 'click', function ( event ) {
+			var slide = event.target.closest( '.woocommerce-product-gallery__image' );
+
+			if ( ! slide || ! galleryWrap.contains( slide ) || event.target.closest( '.oc-vfab' ) ) {
+				return;
+			}
+
+			if ( slide.classList.contains( 'oc-vslide' ) ) {
+				event.preventDefault();
+				ocOpenAtSlide( slide );
+				return;
+			}
+
+			if ( document.body.classList.contains( 'oc-no-lightbox' ) ) {
+				return;
+			}
+
+			event.preventDefault();
+			ocOpenAtSlide( slide );
+		} );
 
 		if ( ocVideo ) {
 			var ocVideoFallbackThumb = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 80 80%22%3E%3Crect width=%2280%22 height=%2280%22 fill=%22%231c1c1c%22/%3E%3Ccircle cx=%2240%22 cy=%2240%22 r=%2215%22 fill=%22none%22 stroke=%22%23fff%22 stroke-width=%222%22/%3E%3Cpath d=%22M36 33l12 7-12 7z%22 fill=%22%23fff%22/%3E%3C/svg%3E';
@@ -1011,112 +1166,6 @@
 				return 'file' === ocVideo.kind
 					? '<video src="' + ocVideo.loopSrc + '" autoplay muted loop playsinline preload="metadata"></video>'
 					: '<iframe src="' + ocVideo.loopSrc + '" loading="lazy" allow="autoplay; fullscreen" tabindex="-1" title="video"></iframe>';
-			};
-
-			var ocOverlay = null;
-			var ocOverlayItems = [];
-			var ocOverlayIndex = 0;
-
-			var ocVideoFullHtml = function () {
-				return 'file' === ocVideo.kind
-					? '<video src="' + ocVideo.fullSrc + '" autoplay loop playsinline controls></video>'
-					: '<iframe src="' + ocVideo.fullSrc + '" allow="autoplay; fullscreen" title="video"></iframe>';
-			};
-
-			// The overlay is a small white lightbox over the whole gallery:
-			// the video plays in place among the images, and the arrows page
-			// through everything.
-			var ocOverlayList = function () {
-				var items = [];
-				galleryWrap.querySelectorAll( '.woocommerce-product-gallery__image' ).forEach( function ( slide ) {
-					if ( slide.classList.contains( 'oc-vslide' ) ) {
-						items.push( { type: 'video' } );
-						return;
-					}
-					var link = slide.querySelector( 'a' );
-					var img = slide.querySelector( 'img' );
-					var src = ( link && link.href ) || ( img && ( img.currentSrc || img.src ) );
-					if ( src ) {
-						items.push( { type: 'image', src: src } );
-					}
-				} );
-
-				return items.length ? items : [ { type: 'video' } ];
-			};
-
-			var ocRenderOverlay = function () {
-				var item = ocOverlayItems[ ocOverlayIndex ];
-				var media = ocOverlay.querySelector( '.oc-voverlay__media' );
-
-				media.innerHTML = 'video' === item.type
-					? ocVideoFullHtml()
-					: '<img src="' + item.src + '" alt="" />';
-
-				ocOverlay.classList.toggle( 'has-nav', ocOverlayItems.length > 1 );
-			};
-
-			var ocStepOverlay = function ( dir ) {
-				ocOverlayIndex = ( ocOverlayIndex + dir + ocOverlayItems.length ) % ocOverlayItems.length;
-				ocRenderOverlay();
-			};
-
-			var ocCloseOverlay = function () {
-				ocOverlay.hidden = true;
-				ocOverlay.querySelector( '.oc-voverlay__media' ).innerHTML = '';
-				document.body.style.overflow = '';
-			};
-
-			var ocOpenOverlay = function () {
-				if ( ! ocOverlay ) {
-					ocOverlay = document.createElement( 'div' );
-					ocOverlay.className = 'oc-voverlay';
-					ocOverlay.hidden = true;
-					ocOverlay.innerHTML =
-						'<button type="button" class="oc-voverlay__close" aria-label="close">&times;</button>' +
-						'<button type="button" class="oc-voverlay__nav oc-voverlay__nav--prev" aria-label="prev">' + railChevrons.left + '</button>' +
-						'<div class="oc-voverlay__media"></div>' +
-						'<button type="button" class="oc-voverlay__nav oc-voverlay__nav--next" aria-label="next">' + railChevrons.right + '</button>';
-					document.body.appendChild( ocOverlay );
-
-					ocOverlay.addEventListener( 'click', function ( event ) {
-						if ( event.target.closest( '.oc-voverlay__nav--prev' ) ) {
-							ocStepOverlay( -1 );
-							return;
-						}
-						if ( event.target.closest( '.oc-voverlay__nav--next' ) ) {
-							ocStepOverlay( 1 );
-							return;
-						}
-						if ( event.target === ocOverlay || event.target.closest( '.oc-voverlay__close' ) ) {
-							ocCloseOverlay();
-						}
-					} );
-
-					document.addEventListener( 'keydown', function ( event ) {
-						if ( ocOverlay.hidden ) {
-							return;
-						}
-						if ( 'Escape' === event.key ) {
-							ocCloseOverlay();
-						} else if ( 'ArrowLeft' === event.key ) {
-							ocStepOverlay( -1 );
-						} else if ( 'ArrowRight' === event.key ) {
-							ocStepOverlay( 1 );
-						}
-					} );
-				}
-
-				ocOverlayItems = 'gallery' === ocVideo.placement ? ocOverlayList() : [ { type: 'video' } ];
-				ocOverlayIndex = 0;
-				ocOverlayItems.forEach( function ( item, i ) {
-					if ( 'video' === item.type ) {
-						ocOverlayIndex = i;
-					}
-				} );
-
-				ocRenderOverlay();
-				ocOverlay.hidden = false;
-				document.body.style.overflow = 'hidden';
 			};
 
 			if ( 'gallery' === ocVideo.placement ) {
@@ -1130,7 +1179,6 @@
 					slide.innerHTML = ocVideoLoopHtml() + '<span class="oc-vplay" aria-hidden="true"></span>';
 					var at = Math.min( Math.max( ocVideo.position, 1 ), galleryWrap.children.length + 1 ) - 1;
 					galleryWrap.insertBefore( slide, galleryWrap.children[ at ] || null );
-					slide.addEventListener( 'click', ocOpenOverlay );
 				};
 
 				ocReinsertVideo = ocInsertSlide;
@@ -1144,7 +1192,11 @@
 				fab.className = 'oc-vfab oc-vfab--' + ( 'float-start' === ocVideo.placement ? 'start' : 'end' );
 				fab.setAttribute( 'aria-label', 'video' );
 				fab.innerHTML = ocVideoLoopHtml() + '<span class="oc-vplay oc-vplay--sm" aria-hidden="true"></span>';
-				fab.addEventListener( 'click', ocOpenOverlay );
+				fab.addEventListener( 'click', function ( event ) {
+					event.stopPropagation();
+					// A floating video is not part of the gallery — it opens alone.
+					ocOpenOverlayWith( [ { type: 'video' } ], 0 );
+				} );
 
 				// Anchored to the FIRST image — in the grid and stacked
 				// presets the gallery is a tall column, so pinning to the

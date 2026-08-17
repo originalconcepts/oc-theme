@@ -100,11 +100,11 @@ final class WooCommerce {
 		// flat image list; the thumbnail presets get a native vanilla-JS rail.
 		remove_theme_support( 'wc-product-gallery-slider' );
 
-		if ( get_theme_mod( 'oc_gallery_lightbox', true ) ) {
-			add_theme_support( 'wc-product-gallery-lightbox' );
-		} else {
-			remove_theme_support( 'wc-product-gallery-lightbox' );
-		}
+		// The theme ships ONE lightbox for images and video alike (theme.js) —
+		// Woo's PhotoSwipe would be a second, differently-styled gallery on
+		// top of it, so core lightbox support stays off; the customizer
+		// toggle drives the oc-no-lightbox body class instead.
+		remove_theme_support( 'wc-product-gallery-lightbox' );
 
 		// Woo's zoom binds $images.first() only — with the slider gone, images
 		// after the first never zoom. The theme ships its own hover zoom that
