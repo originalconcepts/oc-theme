@@ -2158,6 +2158,22 @@ body:not(.oc-no-lightbox) .oc-vslide.is-playing {
 	border-left-width: 9px;
 }
 
+/* Rail-thumb badge: always on the video's thumbnail, whatever the autoplay
+ * setting — the shopper should know it is a video before choosing it. */
+.oc-thumbs button { position: relative; }
+
+.oc-vplay--xs {
+	inline-size: 20px;
+	block-size: 20px;
+	border-width: 1.5px;
+}
+
+.oc-vplay--xs::after {
+	border-top-width: 4px;
+	border-bottom-width: 4px;
+	border-left-width: 6px;
+}
+
 /* Floating loop, anchored to the first gallery image; physical right/left
  * per the setting. */
 .oc-has-vfab { position: relative; }

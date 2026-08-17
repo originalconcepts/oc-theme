@@ -595,6 +595,13 @@
 		gRail.querySelectorAll( 'button' ).forEach( function ( other, j ) {
 			other.setAttribute( 'aria-current', j === index ? 'true' : 'false' );
 		} );
+
+		// Keep the active thumb in view: paging the main image scrolls the
+		// rail along with it, in every rail flavour.
+		var li = gRail.children[ index ];
+		if ( li && li.scrollIntoView ) {
+			li.scrollIntoView( { block: 'nearest', inline: 'nearest', behavior: 'smooth' } );
+		}
 	}
 
 	function activateSlide( index ) {
@@ -695,6 +702,16 @@
 			}
 
 			btn.appendChild( thumb );
+
+			// The video's rail thumb always wears a small play badge — the
+			// shopper should know it is a video before choosing it —
+			// whatever the autoplay setting does on the big one.
+			if ( slide.classList.contains( 'oc-vslide' ) ) {
+				var vbadge = document.createElement( 'span' );
+				vbadge.className = 'oc-vplay oc-vplay--xs';
+				vbadge.setAttribute( 'aria-hidden', 'true' );
+				btn.appendChild( vbadge );
+			}
 			li.appendChild( btn );
 			rail.appendChild( li );
 
