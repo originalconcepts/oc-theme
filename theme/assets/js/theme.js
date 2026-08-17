@@ -936,6 +936,8 @@
 
 			select.value = box.dataset.auto;
 			select.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+			// The auto-picked colour shows its own gallery too.
+			ocMaybeSwapGallery( select.value );
 
 			// Woo's "clear" link would empty the hidden row and strand the
 			// form, so re-apply after it runs.

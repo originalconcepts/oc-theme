@@ -1813,20 +1813,24 @@ table.variations td.value select:has(+ .oc-var) {
 	box-shadow: 0 0 0 2px var(--oc-surface) inset;
 }
 
-/* optional check mark on the selected swatch */
-.oc-swatch-check .oc-var__swatch.is-selected::after {
+/* Optional check mark on the selected swatch — and on the current colour
+ * sibling. Drawn with physical sides: logical ones flip in RTL and turned
+ * the check into a mirrored, off-centre bar. */
+.oc-swatch-check .oc-var__swatch.is-selected::after,
+.oc-swatch-check .oc-colors__item.is-current::after {
 	content: "";
 	position: absolute;
-	inset-block-start: 50%;
-	inset-inline-start: 50%;
-	inline-size: 38%;
-	block-size: 20%;
-	border-inline-start: 2px solid #fff;
-	border-block-end: 2px solid #fff;
-	translate: -50% -65%;
-	rotate: -45deg;
+	top: 50%;
+	left: 50%;
+	width: 38%;
+	height: 20%;
+	border-left: 2px solid #fff;
+	border-bottom: 2px solid #fff;
+	transform: translate(-50%, -65%) rotate(-45deg);
 	filter: drop-shadow(0 0 2px rgb(0 0 0 / 45%));
 }
+
+.oc-colors__item { position: relative; }
 
 .oc-var__btn.is-off,
 .oc-var__swatch.is-off {

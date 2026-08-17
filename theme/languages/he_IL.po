@@ -720,8 +720,8 @@ msgstr "גלריות צבע"
 msgid "Give the product a swatch-type attribute (for example: colour) and its values appear here."
 msgstr "שייך למוצר תכונה מסוג Swatch (למשל: צבע) והערכים שלה יופיעו כאן."
 
-msgid "Choose gallery images"
-msgstr "בחירת תמונות גלריה"
+msgid "Add images"
+msgstr "הוספת תמונות"
 
 msgid "Swatch image (this product only)"
 msgstr "תמונת Swatch (למוצר הזה בלבד)"

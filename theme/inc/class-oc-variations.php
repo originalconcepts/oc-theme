@@ -587,25 +587,25 @@ final class Variations {
 			echo '<div class="oc-cgal" data-slug="' . esc_attr( $term->slug ) . '" style="border-block-end:1px solid #eee;padding:12px;">';
 			echo '<strong style="display:block;margin-block-end:8px;">' . esc_html( $term->name ) . '</strong>';
 
-			// Gallery ids + previews.
+			// Gallery ids + sortable previews: drag to reorder, × removes one.
 			echo '<input type="hidden" name="oc_cgal[' . esc_attr( $term->slug ) . '][imgs]" value="' . esc_attr( implode( ',', $entry['imgs'] ) ) . '" class="oc-cgal__ids" />';
-			echo '<span class="oc-cgal__thumbs">';
+			echo '<span class="oc-cgal__thumbs" style="display:inline-flex;flex-wrap:wrap;gap:6px;vertical-align:middle;margin-inline-end:8px;">';
 			foreach ( $entry['imgs'] as $img_id ) {
 				$url = wp_get_attachment_image_url( $img_id, 'thumbnail' );
 				if ( $url ) {
-					echo '<img src="' . esc_url( $url ) . '" alt="" style="inline-size:40px;block-size:40px;object-fit:cover;border-radius:4px;margin-inline-end:4px;vertical-align:middle;" />';
+					echo $this->gallery_chip( $img_id, $url ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
 				}
 			}
-			echo '</span> ';
-			echo '<button type="button" class="button oc-cgal__pick">' . esc_html__( 'Choose gallery images', 'oc-theme' ) . '</button> ';
-			echo '<button type="button" class="button oc-cgal__clear"' . ( empty( $entry['imgs'] ) ? ' style="display:none;"' : '' ) . '>' . esc_html__( 'Remove', 'oc-theme' ) . '</button>';
+			echo '</span>';
+			echo '<button type="button" class="button oc-cgal__pick">' . esc_html__( 'Add images', 'oc-theme' ) . '</button>';
 
 			// Optional swatch override for this product only.
 			echo '<p class="form-field" style="margin-block-start:10px;padding:0;">';
 			echo '<label style="display:inline;margin-inline-end:8px;">' . esc_html__( 'Swatch image (this product only)', 'oc-theme' ) . '</label>';
 			echo '<input type="hidden" name="oc_cgal[' . esc_attr( $term->slug ) . '][swatch]" value="' . esc_url( $swatch ) . '" class="oc-cgal__sw" />';
 			echo '<img class="oc-cgal__swprev" src="' . esc_url( $swatch ) . '" alt="" style="inline-size:28px;block-size:28px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-inline-end:6px;border:1px solid #ccd0d4;' . ( '' === $swatch ? 'display:none;' : '' ) . '" /> ';
-			echo '<button type="button" class="button oc-cgal__swpick">' . esc_html__( 'Choose image', 'oc-theme' ) . '</button>';
+			echo '<button type="button" class="button oc-cgal__swpick">' . esc_html__( 'Choose image', 'oc-theme' ) . '</button> ';
+			echo '<button type="button" class="button oc-cgal__swclear"' . ( '' === $swatch ? ' style="display:none;"' : '' ) . '>' . esc_html__( 'Remove', 'oc-theme' ) . '</button>';
 			echo '</p>';
 
 			echo '</div>';
@@ -616,55 +616,140 @@ final class Variations {
 	}
 
 	/**
-	 * One shared script for the galleries panel pickers.
+	 * One sortable preview chip: drag to reorder, × removes just this image.
+	 *
+	 * @param int    $img_id Attachment id.
+	 * @param string $url    Thumbnail URL.
+	 * @return string
+	 */
+	private function gallery_chip( int $img_id, string $url ): string {
+		return sprintf(
+			'<span class="oc-cgal__chip" draggable="true" data-id="%d" style="position:relative;display:inline-block;cursor:grab;">' .
+			'<img src="%s" alt="" style="inline-size:48px;block-size:48px;object-fit:cover;border-radius:4px;display:block;border:1px solid #ccd0d4;" />' .
+			'<button type="button" class="oc-cgal__x" aria-label="%s" style="position:absolute;inset-block-start:-6px;inset-inline-end:-6px;inline-size:18px;block-size:18px;border-radius:50%%;border:none;background:#d63638;color:#fff;font-size:12px;line-height:1;cursor:pointer;padding:0;">&times;</button>' .
+			'</span>',
+			absint( $img_id ),
+			esc_url( $url ),
+			esc_attr__( 'Remove', 'oc-theme' )
+		);
+	}
+
+	/**
+	 * One shared script for the galleries panel: pickers, per-image removal
+	 * and drag-to-reorder, all synced into the hidden ids field.
 	 */
 	private function galleries_panel_script(): void {
 		?>
 		<script>
-		document.addEventListener( 'click', function ( event ) {
-			var row = event.target.closest( '.oc-cgal' );
-			if ( ! row || ! window.wp || ! wp.media ) {
-				return;
+		( function () {
+			function chipHtml( id, url ) {
+				return '<span class="oc-cgal__chip" draggable="true" data-id="' + id + '" style="position:relative;display:inline-block;cursor:grab;">' +
+					'<img src="' + url + '" alt="" style="inline-size:48px;block-size:48px;object-fit:cover;border-radius:4px;display:block;border:1px solid #ccd0d4;" />' +
+					'<button type="button" class="oc-cgal__x" aria-label="x" style="position:absolute;inset-block-start:-6px;inset-inline-end:-6px;inline-size:18px;block-size:18px;border-radius:50%;border:none;background:#d63638;color:#fff;font-size:12px;line-height:1;cursor:pointer;padding:0;">&times;</button>' +
+					'</span>';
 			}
 
-			if ( event.target.closest( '.oc-cgal__clear' ) ) {
-				row.querySelector( '.oc-cgal__ids' ).value = '';
-				row.querySelector( '.oc-cgal__thumbs' ).innerHTML = '';
-				event.target.closest( '.oc-cgal__clear' ).style.display = 'none';
-				return;
+			function syncIds( row ) {
+				var ids = [];
+				row.querySelectorAll( '.oc-cgal__chip' ).forEach( function ( chip ) {
+					ids.push( chip.dataset.id );
+				} );
+				row.querySelector( '.oc-cgal__ids' ).value = ids.join( ',' );
 			}
 
-			if ( event.target.closest( '.oc-cgal__pick' ) ) {
-				var frame = wp.media( { multiple: 'add', library: { type: 'image' } } );
-				frame.on( 'select', function () {
-					var ids = [], thumbs = '';
-					frame.state().get( 'selection' ).forEach( function ( att ) {
-						var a = att.toJSON();
-						ids.push( a.id );
-						var u = a.sizes && a.sizes.thumbnail ? a.sizes.thumbnail.url : a.url;
-						thumbs += '<img src="' + u + '" alt="" style="inline-size:40px;block-size:40px;object-fit:cover;border-radius:4px;margin-inline-end:4px;vertical-align:middle;" />';
+			var dragChip = null;
+
+			document.addEventListener( 'dragstart', function ( event ) {
+				var chip = event.target.closest ? event.target.closest( '.oc-cgal__chip' ) : null;
+				if ( chip ) {
+					dragChip = chip;
+					event.dataTransfer.effectAllowed = 'move';
+				}
+			} );
+
+			document.addEventListener( 'dragover', function ( event ) {
+				if ( ! dragChip ) {
+					return;
+				}
+				var over = event.target.closest ? event.target.closest( '.oc-cgal__chip' ) : null;
+				if ( ! over || over === dragChip || over.parentElement !== dragChip.parentElement ) {
+					return;
+				}
+				event.preventDefault();
+				var rect = over.getBoundingClientRect();
+				var rtl = 'rtl' === getComputedStyle( over ).direction;
+				var firstHalf = ( event.clientX - rect.left ) / rect.width < 0.5;
+				var before = rtl ? ! firstHalf : firstHalf;
+				over.parentElement.insertBefore( dragChip, before ? over : over.nextSibling );
+			} );
+
+			document.addEventListener( 'dragend', function () {
+				if ( dragChip ) {
+					syncIds( dragChip.closest( '.oc-cgal' ) );
+					dragChip = null;
+				}
+			} );
+
+			document.addEventListener( 'click', function ( event ) {
+				var row = event.target.closest( '.oc-cgal' );
+				if ( ! row ) {
+					return;
+				}
+
+				if ( event.target.closest( '.oc-cgal__x' ) ) {
+					event.target.closest( '.oc-cgal__chip' ).remove();
+					syncIds( row );
+					return;
+				}
+
+				if ( ! window.wp || ! wp.media ) {
+					return;
+				}
+
+				if ( event.target.closest( '.oc-cgal__pick' ) ) {
+					var frame = wp.media( { multiple: 'add', library: { type: 'image' } } );
+					frame.on( 'select', function () {
+						var box = row.querySelector( '.oc-cgal__thumbs' );
+						var have = [];
+						box.querySelectorAll( '.oc-cgal__chip' ).forEach( function ( chip ) {
+							have.push( chip.dataset.id );
+						} );
+						frame.state().get( 'selection' ).forEach( function ( att ) {
+							var a = att.toJSON();
+							if ( have.indexOf( String( a.id ) ) > -1 ) {
+								return;
+							}
+							var u = a.sizes && a.sizes.thumbnail ? a.sizes.thumbnail.url : a.url;
+							box.insertAdjacentHTML( 'beforeend', chipHtml( a.id, u ) );
+						} );
+						syncIds( row );
 					} );
-					row.querySelector( '.oc-cgal__ids' ).value = ids.join( ',' );
-					row.querySelector( '.oc-cgal__thumbs' ).innerHTML = thumbs;
-					row.querySelector( '.oc-cgal__clear' ).style.display = '';
-				} );
-				frame.open();
-				return;
-			}
+					frame.open();
+					return;
+				}
 
-			if ( event.target.closest( '.oc-cgal__swpick' ) ) {
-				var swFrame = wp.media( { multiple: false, library: { type: 'image' } } );
-				swFrame.on( 'select', function () {
-					var a = swFrame.state().get( 'selection' ).first().toJSON();
-					var u = a.sizes && a.sizes.thumbnail ? a.sizes.thumbnail.url : a.url;
-					row.querySelector( '.oc-cgal__sw' ).value = u;
-					var prev = row.querySelector( '.oc-cgal__swprev' );
-					prev.src = u;
-					prev.style.display = '';
-				} );
-				swFrame.open();
-			}
-		} );
+				if ( event.target.closest( '.oc-cgal__swpick' ) ) {
+					var swFrame = wp.media( { multiple: false, library: { type: 'image' } } );
+					swFrame.on( 'select', function () {
+						var a = swFrame.state().get( 'selection' ).first().toJSON();
+						var u = a.sizes && a.sizes.thumbnail ? a.sizes.thumbnail.url : a.url;
+						row.querySelector( '.oc-cgal__sw' ).value = u;
+						var prev = row.querySelector( '.oc-cgal__swprev' );
+						prev.src = u;
+						prev.style.display = '';
+						row.querySelector( '.oc-cgal__swclear' ).style.display = '';
+					} );
+					swFrame.open();
+					return;
+				}
+
+				if ( event.target.closest( '.oc-cgal__swclear' ) ) {
+					row.querySelector( '.oc-cgal__sw' ).value = '';
+					row.querySelector( '.oc-cgal__swprev' ).style.display = 'none';
+					event.target.closest( '.oc-cgal__swclear' ).style.display = 'none';
+				}
+			} );
+		}() );
 		</script>
 		<?php
 	}
