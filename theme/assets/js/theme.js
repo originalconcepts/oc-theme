@@ -1008,6 +1008,7 @@
 		var ocOverlay = null;
 		var ocOverlayItems = [];
 		var ocOverlayIndex = 0;
+		var ocLbEase = 'cubic-bezier(.2,.7,.2,1)';
 
 		var ocVideoFullHtml = function () {
 			return 'file' === ocVideo.kind
@@ -1026,9 +1027,10 @@
 				}
 				var link = slide.querySelector( 'a' );
 				var img = slide.querySelector( 'img' );
-				var src = ( link && link.href ) || ( img && ( img.currentSrc || img.src ) );
+				var preview = img ? ( img.currentSrc || img.src ) : '';
+				var src = ( link && link.href ) || preview;
 				if ( src ) {
-					items.push( { type: 'image', src: src, slide: slide } );
+					items.push( { type: 'image', src: src, preview: preview || src, slide: slide } );
 				}
 			} );
 
@@ -1042,18 +1044,49 @@
 				return;
 			}
 
-			ocOverlay.querySelector( '.oc-voverlay__media' ).innerHTML = 'video' === item.type
-				? ocVideoFullHtml()
-				: '<img src="' + item.src + '" alt="" />';
+			var media = ocOverlay.querySelector( '.oc-voverlay__media' );
+
+			if ( 'video' === item.type ) {
+				media.innerHTML = ocVideoFullHtml();
+			} else {
+				// The preview paints instantly with the right geometry; the
+				// full-size file replaces it in place once it has loaded.
+				media.innerHTML = '<img src="' + item.preview + '" alt="" />';
+				if ( item.src !== item.preview ) {
+					var full = new Image();
+					var target = media.querySelector( 'img' );
+					full.onload = function () {
+						if ( target.isConnected ) {
+							target.src = item.src;
+						}
+					};
+					full.src = item.src;
+				}
+			}
 
 			ocOverlay.classList.toggle( 'has-nav', ocOverlayItems.length > 1 );
 			ocOverlay.querySelector( '.oc-voverlay__count' ).textContent =
 				ocOverlayItems.length > 1 ? ( ocOverlayIndex + 1 ) + ' / ' + ocOverlayItems.length : '';
 		};
 
+		// Paging: the current piece slips out toward the direction of travel
+		// while the next settles in from the other side.
 		var ocStepOverlay = function ( dir ) {
-			ocOverlayIndex = ( ocOverlayIndex + dir + ocOverlayItems.length ) % ocOverlayItems.length;
-			ocRenderOverlay();
+			var media = ocOverlay.querySelector( '.oc-voverlay__media' );
+			media.style.transition = 'opacity .15s ease, transform .15s ease';
+			media.style.opacity = '0';
+			media.style.transform = 'translateX(' + ( -dir * 22 ) + 'px)';
+
+			setTimeout( function () {
+				ocOverlayIndex = ( ocOverlayIndex + dir + ocOverlayItems.length ) % ocOverlayItems.length;
+				ocRenderOverlay();
+				media.style.transition = 'none';
+				media.style.transform = 'translateX(' + ( dir * 26 ) + 'px)';
+				void media.offsetWidth;
+				media.style.transition = 'opacity .3s ' + ocLbEase + ', transform .3s ' + ocLbEase;
+				media.style.opacity = '1';
+				media.style.transform = 'translateX(0)';
+			}, 150 );
 		};
 
 		var ocCloseOverlay = function () {
@@ -1065,7 +1098,14 @@
 			document.body.style.overflow = '';
 		};
 
-		var ocOpenOverlayWith = function ( items, index ) {
+		// Thin, fine icons — 1.5px strokes, like the reference.
+		var ocLbIcons = {
+			left: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 5l-7 7 7 7"/></svg>',
+			right: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 5l7 7-7 7"/></svg>',
+			close: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg>'
+		};
+
+		var ocOpenOverlayWith = function ( items, index, originSlide ) {
 			if ( ! items.length ) {
 				return;
 			}
@@ -1078,9 +1118,9 @@
 					'<span class="oc-voverlay__count"></span>' +
 					'<div class="oc-voverlay__media"></div>' +
 					'<div class="oc-voverlay__bar">' +
-					'<button type="button" class="oc-voverlay__btn oc-voverlay__nav--prev" aria-label="prev">' + railChevrons.left + '</button>' +
-					'<button type="button" class="oc-voverlay__btn oc-voverlay__close" aria-label="close">&times;</button>' +
-					'<button type="button" class="oc-voverlay__btn oc-voverlay__nav--next" aria-label="next">' + railChevrons.right + '</button>' +
+					'<button type="button" class="oc-voverlay__btn oc-voverlay__nav--prev" aria-label="prev">' + ocLbIcons.left + '</button>' +
+					'<button type="button" class="oc-voverlay__btn oc-voverlay__btn--lg oc-voverlay__close" aria-label="close">' + ocLbIcons.close + '</button>' +
+					'<button type="button" class="oc-voverlay__btn oc-voverlay__nav--next" aria-label="next">' + ocLbIcons.right + '</button>' +
 					'</div>';
 				document.body.appendChild( ocOverlay );
 
@@ -1091,6 +1131,21 @@
 					}
 					if ( event.target.closest( '.oc-voverlay__nav--next' ) ) {
 						ocStepOverlay( 1 );
+						return;
+					}
+					// Click on the image zooms in around the point; a second
+					// click zooms back out.
+					var zoomImg = event.target.closest( '.oc-voverlay__media img' );
+					if ( zoomImg ) {
+						if ( zoomImg.classList.contains( 'is-zoomed' ) ) {
+							zoomImg.classList.remove( 'is-zoomed' );
+						} else {
+							var box = zoomImg.getBoundingClientRect();
+							zoomImg.style.transformOrigin =
+								( ( event.clientX - box.left ) / box.width * 100 ) + '% ' +
+								( ( event.clientY - box.top ) / box.height * 100 ) + '%';
+							zoomImg.classList.add( 'is-zoomed' );
+						}
 						return;
 					}
 					if ( event.target === ocOverlay || event.target.closest( '.oc-voverlay__close' ) ) {
@@ -1114,13 +1169,55 @@
 
 			ocOverlayItems = items;
 			ocOverlayIndex = Math.max( 0, index );
+
+			var media = ocOverlay.querySelector( '.oc-voverlay__media' );
+			media.style.transition = 'none';
+			media.style.opacity = '1';
+			media.style.transform = 'none';
+
 			ocRenderOverlay();
 			ocOverlay.hidden = false;
-			// A beat later, so the fade transition has a starting state.
 			setTimeout( function () {
 				ocOverlay.classList.add( 'is-open' );
-			}, 30 );
+			}, 20 );
 			document.body.style.overflow = 'hidden';
+
+			// The signature open: the clicked image swells from its spot on
+			// the page into the lightbox while the white ground fades in.
+			var originImg = originSlide && ! originSlide.classList.contains( 'oc-vslide' )
+				? originSlide.querySelector( 'img' )
+				: null;
+
+			if ( originImg && originImg.getBoundingClientRect().width ) {
+				var from = originImg.getBoundingClientRect();
+				var ratio = ( originImg.naturalWidth || from.width ) / ( originImg.naturalHeight || from.height );
+				var toH = Math.min( window.innerHeight, ( window.innerWidth * 0.92 ) / ratio );
+				var toW = toH * ratio;
+
+				var ghost = document.createElement( 'img' );
+				ghost.src = originImg.currentSrc || originImg.src;
+				ghost.className = 'oc-lb-ghost';
+				ghost.style.top = from.top + 'px';
+				ghost.style.left = from.left + 'px';
+				ghost.style.width = from.width + 'px';
+				ghost.style.height = from.height + 'px';
+				document.body.appendChild( ghost );
+
+				media.style.opacity = '0';
+
+				setTimeout( function () {
+					ghost.style.top = ( ( window.innerHeight - toH ) / 2 ) + 'px';
+					ghost.style.left = ( ( window.innerWidth - toW ) / 2 ) + 'px';
+					ghost.style.width = toW + 'px';
+					ghost.style.height = toH + 'px';
+				}, 30 );
+
+				setTimeout( function () {
+					media.style.transition = 'none';
+					media.style.opacity = '1';
+					ghost.remove();
+				}, 500 );
+			}
 		};
 
 		var ocOpenAtSlide = function ( slide ) {
@@ -1131,7 +1228,7 @@
 					index = i;
 				}
 			} );
-			ocOpenOverlayWith( items, index );
+			ocOpenOverlayWith( items, index, slide );
 		};
 
 		// One delegated click serves every slide: the video always opens the

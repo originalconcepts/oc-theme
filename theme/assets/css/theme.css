@@ -2217,23 +2217,26 @@ table.variations td.value select:has(+ .oc-var) {
 
 .oc-voverlay__media { display: grid; place-items: center; }
 
-.oc-voverlay__media > * { animation: oc-lb-in .28s ease; }
-
-@keyframes oc-lb-in {
-	from {
-		opacity: 0;
-		scale: .97;
-	}
-}
-
-.oc-voverlay__media video,
+/* A tall image runs edge to edge vertically; a small one simply centres. */
 .oc-voverlay__media img {
-	max-inline-size: 88vw;
-	max-block-size: 82vh;
+	max-inline-size: 92vw;
+	max-block-size: 100vh;
 	display: block;
+	cursor: zoom-in;
+	transition: transform .4s cubic-bezier(.2, .7, .2, 1);
 }
 
-.oc-voverlay__media video { background: #000; }
+.oc-voverlay__media img.is-zoomed {
+	transform: scale(1.9);
+	cursor: zoom-out;
+}
+
+.oc-voverlay__media video {
+	max-inline-size: 92vw;
+	max-block-size: 92vh;
+	display: block;
+	background: #000;
+}
 
 .oc-voverlay__media iframe {
 	inline-size: min(88vw, 1100px);
@@ -2241,6 +2244,16 @@ table.variations td.value select:has(+ .oc-var) {
 	border: 0;
 	display: block;
 	background: #000;
+}
+
+/* The open effect's travelling image. */
+.oc-lb-ghost {
+	position: fixed;
+	z-index: 10001;
+	margin: 0;
+	object-fit: cover;
+	transition: all .45s cubic-bezier(.2, .7, .2, 1);
+	pointer-events: none;
 }
 
 .oc-voverlay__count {
@@ -2252,14 +2265,19 @@ table.variations td.value select:has(+ .oc-var) {
 	letter-spacing: .04em;
 }
 
+/* Fixed bottom-centre controls, riding OVER the image: fine-stroke icons on
+ * white circles, the close a size up in the middle. LTR order, so the right
+ * button always points right. */
 .oc-voverlay__bar {
 	position: fixed;
-	inset-block-end: 26px;
+	inset-block-end: 24px;
 	left: 50%;
 	translate: -50% 0;
 	display: flex;
+	direction: ltr;
 	align-items: center;
-	gap: 14px;
+	gap: 12px;
+	z-index: 2;
 }
 
 .oc-voverlay__btn {
@@ -2277,18 +2295,25 @@ table.variations td.value select:has(+ .oc-var) {
 	transition: scale .18s ease, box-shadow .18s ease;
 }
 
+.oc-voverlay__btn--lg {
+	inline-size: 56px;
+	block-size: 56px;
+}
+
 .oc-voverlay__btn:hover {
-	scale: 1.09;
+	scale: 1.08;
 	box-shadow: 0 5px 18px rgb(0 0 0 / 22%);
 }
 
 .oc-voverlay__btn svg {
-	inline-size: 13px;
-	block-size: 13px;
-	fill: currentColor;
+	inline-size: 18px;
+	block-size: 18px;
 }
 
-.oc-voverlay__close { font-size: 22px; line-height: 1; }
+.oc-voverlay__btn--lg svg {
+	inline-size: 21px;
+	block-size: 21px;
+}
 
 .oc-voverlay__nav--prev,
 .oc-voverlay__nav--next { display: none; }
