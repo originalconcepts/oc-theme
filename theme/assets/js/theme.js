@@ -1346,6 +1346,9 @@
 						frozen.muted = true;
 						frozen.loop = true;
 						frozen.play().catch( function () {} );
+						if ( 'function' === typeof ocAttachSound ) {
+							ocAttachSound( slide );
+						}
 					} else if ( ocVideo ) {
 						var poster = slide.querySelector( '.oc-vposter' );
 						if ( poster ) {
@@ -1385,10 +1388,83 @@
 					: '<img class="oc-vposter" src="' + ( ocVideo.thumb || ocVideoFallbackThumb ) + '" alt="" />';
 			};
 
+			// A file video that carries an audio track gets a small speaker
+			// chip at its bottom-right: the loop starts muted (autoplay
+			// demands it) and the chip switches the sound on and off.
+			var ocSoundIcons =
+				'<svg class="off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 9.5l5 5M21.5 9.5l-5 5"/></svg>' +
+				'<svg class="on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>';
+
+			var ocVideoHasAudio = function ( vid ) {
+				return !! ( vid.mozHasAudio ||
+					( 'number' === typeof vid.webkitAudioDecodedByteCount && vid.webkitAudioDecodedByteCount > 0 ) ||
+					( vid.audioTracks && vid.audioTracks.length > 0 ) );
+			};
+
+			var ocAttachSound = function ( slide ) {
+				if ( 'file' !== ocVideo.kind ) {
+					return;
+				}
+
+				var vid = slide.querySelector( 'video' );
+
+				if ( ! vid || slide.querySelector( '.oc-vsound' ) ) {
+					return;
+				}
+
+				var tries = 0;
+
+				var addChip = function () {
+					if ( slide.querySelector( '.oc-vsound' ) ) {
+						return;
+					}
+					var chip = document.createElement( 'button' );
+					chip.type = 'button';
+					chip.className = 'oc-vsound';
+					chip.setAttribute( 'aria-label', 'sound' );
+					chip.innerHTML = ocSoundIcons;
+					chip.addEventListener( 'click', function ( event ) {
+						event.stopPropagation();
+						event.preventDefault();
+						vid.muted = ! vid.muted;
+						chip.classList.toggle( 'is-on', ! vid.muted );
+					} );
+					slide.appendChild( chip );
+				};
+
+				var check = function () {
+					if ( ocVideoHasAudio( vid ) ) {
+						addChip();
+						vid.removeEventListener( 'timeupdate', check );
+						vid.removeEventListener( 'loadeddata', check );
+					} else if ( ++tries > 10 ) {
+						vid.removeEventListener( 'timeupdate', check );
+						vid.removeEventListener( 'loadeddata', check );
+					}
+				};
+
+				vid.addEventListener( 'loadeddata', check );
+				vid.addEventListener( 'timeupdate', check );
+				check();
+			};
+
 			// Paging away pauses a manually-started video and returns its
 			// play badge; files hold their frame, embeds fold back to the
-			// poster (an iframe cannot be paused from outside).
+			// poster (an iframe cannot be paused from outside). An unmuted
+			// video also falls silent — sound must never keep playing under
+			// another image.
 			ocPauseManualVideo = function ( currentSlide ) {
+				galleryWrap.querySelectorAll( '.oc-vslide video' ).forEach( function ( vid ) {
+					var host = vid.closest( '.oc-vslide' );
+					if ( host !== currentSlide && ! vid.muted ) {
+						vid.muted = true;
+						var chip = host.querySelector( '.oc-vsound' );
+						if ( chip ) {
+							chip.classList.remove( 'is-on' );
+						}
+					}
+				} );
+
 				var playing = galleryWrap.querySelector( '.oc-vslide--manual.is-playing' );
 
 				if ( ! playing || playing === currentSlide ) {
@@ -1422,6 +1498,7 @@
 						'<span class="oc-vplay" aria-hidden="true"></span>';
 					var at = Math.min( Math.max( ocVideo.position, 1 ), galleryWrap.children.length + 1 ) - 1;
 					galleryWrap.insertBefore( slide, galleryWrap.children[ at ] || null );
+					ocAttachSound( slide );
 				};
 
 				ocReinsertVideo = ocInsertSlide;

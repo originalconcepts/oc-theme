@@ -2158,6 +2158,40 @@ body:not(.oc-no-lightbox) .oc-vslide.is-playing {
 	border-left-width: 9px;
 }
 
+/* Sound chip: bottom-right of a video that carries audio — the loop starts
+ * muted, the speaker switches the sound on and off. */
+.oc-vsound {
+	position: absolute;
+	bottom: 10px;
+	right: 10px;
+	z-index: 3;
+	inline-size: 34px;
+	block-size: 34px;
+	border: 0;
+	border-radius: 50%;
+	background: rgb(0 0 0 / 45%);
+	color: #fff;
+	display: grid;
+	place-items: center;
+	cursor: pointer;
+	padding: 0;
+	transition: scale .15s ease, background-color .15s ease;
+}
+
+.oc-vsound:hover {
+	scale: 1.08;
+	background: rgb(0 0 0 / 62%);
+}
+
+.oc-vsound svg {
+	inline-size: 17px;
+	block-size: 17px;
+}
+
+.oc-vsound .on { display: none; }
+.oc-vsound.is-on .on { display: block; }
+.oc-vsound.is-on .off { display: none; }
+
 /* Rail-thumb badge: always on the video's thumbnail, whatever the autoplay
  * setting — the shopper should know it is a video before choosing it. */
 .oc-thumbs button { position: relative; }
