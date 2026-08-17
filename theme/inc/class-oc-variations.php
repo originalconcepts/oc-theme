@@ -46,6 +46,11 @@ final class Variations {
 		add_action( 'woocommerce_product_options_related', array( $this, 'links_field' ) );
 		add_action( 'woocommerce_process_product_meta', array( $this, 'save_links' ) );
 
+		// A save whose form lost the attribute fields would silently strip a
+		// variable product of its attributes (and orphan every variation).
+		// Restore them from the database instead, and log the event.
+		add_action( 'woocommerce_admin_process_product_object', array( $this, 'guard_attributes' ), 5 );
+
 		// Per-colour galleries on regular variable products: pick a colour,
 		// attach its images; a swatch click swaps the gallery immediately.
 		add_filter( 'woocommerce_product_data_tabs', array( $this, 'galleries_tab' ) );
@@ -552,6 +557,60 @@ final class Variations {
 			<?php echo wc_help_tip( esc_html__( 'The same product in other colours. Links sync both ways: connect black and grey here and each of them links back automatically.', 'oc-theme' ) ); ?>
 		</p>
 		<?php
+	}
+
+	/**
+	 * Keep a variable product's attributes when a save posts none.
+	 *
+	 * WooCommerce reads the attribute fields from the submitted form and
+	 * treats their absence as "remove everything" — so a form that lost
+	 * those fields (a broken edit screen, a script error, a truncated
+	 * request) silently wipes the attributes and orphans every variation.
+	 * When that shape appears, restore the stored attributes and note the
+	 * request's vitals in a log so the cause can be traced.
+	 *
+	 * @param \WC_Product $product Product being saved.
+	 */
+	public function guard_attributes( $product ): void {
+		if ( ! $product instanceof \WC_Product || ! $product->is_type( 'variable' ) ) {
+			return;
+		}
+
+		$posted = isset( $_POST['attribute_names'] ) ? count( (array) wp_unslash( $_POST['attribute_names'] ) ) : -1; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+
+		$this->save_log(
+			sprintf(
+				'save product=%d attribute_names=%s post_keys=%d oc_cgal=%s',
+				$product->get_id(),
+				-1 === $posted ? 'ABSENT' : (string) $posted,
+				count( $_POST ), // phpcs:ignore WordPress.Security.NonceVerification.Missing
+				isset( $_POST['oc_cgal'] ) ? 'yes' : 'no' // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			)
+		);
+
+		if ( $posted > 0 || ! empty( $product->get_attributes() ) ) {
+			return;
+		}
+
+		// The database still holds the pre-save state here.
+		$stored = wc_get_product( $product->get_id() );
+
+		if ( $stored && ! empty( $stored->get_attributes() ) ) {
+			$product->set_attributes( $stored->get_attributes() );
+			$this->save_log( sprintf( 'GUARD restored %d attributes on product=%d', count( $stored->get_attributes() ), $product->get_id() ) );
+		}
+	}
+
+	/**
+	 * Append a line to the save-forensics log.
+	 *
+	 * @param string $line Log line.
+	 */
+	private function save_log( string $line ): void {
+		$uploads = wp_get_upload_dir();
+		$file    = trailingslashit( $uploads['basedir'] ) . 'oc-save-debug.log';
+
+		file_put_contents( $file, gmdate( 'c' ) . ' ' . $line . "\n", FILE_APPEND ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- append-only debug trace.
 	}
 
 	/**
