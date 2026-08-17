@@ -511,6 +511,18 @@ final class Customizer {
 
 		$this->choice(
 			$c,
+			'oc_colors_loop_pos',
+			$section,
+			__( 'Colour swatches on the card', 'oc-theme' ),
+			array(
+				'above' => __( 'Above the title', 'oc-theme' ),
+				'below' => __( 'Below the content', 'oc-theme' ),
+			),
+			'below'
+		);
+
+		$this->choice(
+			$c,
 			'oc_catalog_lh',
 			$section,
 			__( 'Body text line height', 'oc-theme' ),
@@ -800,6 +812,18 @@ final class Customizer {
 		$this->number( $c, 'oc_product_fs', 'oc_product', __( 'Body text size (px)', 'oc-theme' ), 16, 12, 20 );
 		$this->number( $c, 'oc_swatch_size', 'oc_product', __( 'Swatch size — product page (px)', 'oc-theme' ), 32, 20, 56 );
 		$this->toggle( $c, 'oc_swatch_check', 'oc_product', __( 'Check mark on the selected swatch', 'oc-theme' ), true );
+
+		$this->choice(
+			$c,
+			'oc_swatch_shape',
+			'oc_product',
+			__( 'Swatch shape', 'oc-theme' ),
+			array(
+				'circle' => __( 'Round', 'oc-theme' ),
+				'square' => __( 'Square', 'oc-theme' ),
+			),
+			'circle'
+		);
 
 		$this->choice(
 			$c,

@@ -46,8 +46,21 @@ final class Variations {
 		add_action( 'woocommerce_product_options_related', array( $this, 'links_field' ) );
 		add_action( 'woocommerce_process_product_meta', array( $this, 'save_links' ) );
 
-		add_action( 'woocommerce_single_product_summary', array( $this, 'product_colors' ), 12 );
-		add_action( 'woocommerce_after_shop_loop_item_title', array( $this, 'loop_colors' ), 7 );
+		// Per-colour galleries on regular variable products: pick a colour,
+		// attach its images; a swatch click swaps the gallery immediately.
+		add_filter( 'woocommerce_product_data_tabs', array( $this, 'galleries_tab' ) );
+		add_action( 'woocommerce_product_data_panels', array( $this, 'galleries_panel' ) );
+		add_action( 'woocommerce_process_product_meta', array( $this, 'save_galleries' ) );
+		add_action( 'woocommerce_before_add_to_cart_form', array( $this, 'galleries_json' ) );
+
+		// Colour siblings sit in the variations area, like every attribute row.
+		add_action( 'woocommerce_before_add_to_cart_form', array( $this, 'product_colors' ) );
+
+		if ( 'above' === get_theme_mod( 'oc_colors_loop_pos', 'below' ) ) {
+			add_action( 'woocommerce_before_shop_loop_item_title', array( $this, 'loop_colors' ), 20 );
+		} else {
+			add_action( 'woocommerce_after_shop_loop_item_title', array( $this, 'loop_colors' ), 30 );
+		}
 	}
 
 	/**
@@ -98,7 +111,57 @@ final class Variations {
 			$taxonomy = 'pa_' . $attribute->attribute_name;
 			add_action( $taxonomy . '_add_form_fields', array( $this, 'term_fields_add' ) );
 			add_action( $taxonomy . '_edit_form_fields', array( $this, 'term_fields_edit' ) );
+
+			// A swatch preview column in the terms table — see every value at
+			// a glance without opening it.
+			add_filter( 'manage_edit-' . $taxonomy . '_columns', array( $this, 'term_column' ) );
+			add_filter( 'manage_' . $taxonomy . '_custom_column', array( $this, 'term_column_value' ), 10, 3 );
 		}
+	}
+
+	/**
+	 * Swatch column header, right after the checkbox.
+	 *
+	 * @param array $columns Terms table columns.
+	 * @return array
+	 */
+	public function term_column( array $columns ): array {
+		$out = array();
+
+		foreach ( $columns as $key => $label ) {
+			$out[ $key ] = $label;
+			if ( 'cb' === $key ) {
+				$out['oc_swatch'] = __( 'Swatch', 'oc-theme' );
+			}
+		}
+
+		return $out;
+	}
+
+	/**
+	 * Swatch column value: the term's circle, colour or image.
+	 *
+	 * @param string $output  Column output.
+	 * @param string $column  Column key.
+	 * @param int    $term_id Term id.
+	 * @return string
+	 */
+	public function term_column_value( $output, $column, $term_id ): string {
+		if ( 'oc_swatch' !== $column ) {
+			return (string) $output;
+		}
+
+		$image = (string) get_term_meta( $term_id, 'oc_swatch_image', true );
+		$color = (string) get_term_meta( $term_id, 'oc_swatch_color', true );
+		$style = 'display:inline-block;inline-size:24px;block-size:24px;border-radius:50%;border:1px solid #ccd0d4;vertical-align:middle;';
+
+		if ( '' !== $image ) {
+			$style .= 'background-image:url(' . esc_url( $image ) . ');background-size:cover;';
+		} else {
+			$style .= 'background-color:' . ( '' !== $color ? $color : '#f0f0f1' ) . ';';
+		}
+
+		return sprintf( '<span style="%s"></span>', esc_attr( $style ) );
 	}
 
 	/**
@@ -280,24 +343,29 @@ final class Variations {
 			$label  = esc_html( $term->name );
 
 			if ( in_array( $type, array( 'swatch', 'swatch_image' ), true ) ) {
-				$image = (string) get_term_meta( $term->term_id, 'oc_swatch_image', true );
-				$color = (string) get_term_meta( $term->term_id, 'oc_swatch_color', true );
+				$style = $this->swatch_style( $args['product'], $taxonomy, $term, $type );
 
-				// The attribute type picks the leading medium; the other is the
-				// fallback so a half-filled term still renders something.
-				$use_image = 'swatch_image' === $type ? '' !== $image : '' !== $image && '' === $color;
-				$style     = $use_image
-					? 'background-image:url(' . esc_url( $image ) . ');background-size:cover;'
-					: 'background-color:' . esc_attr( '' !== $color ? $color : '#ddd' ) . ';';
-
-				$items .= sprintf(
-					'<button type="button" class="oc-var__swatch%s" data-value="%s" style="%s" title="%s" aria-label="%s"></button>',
-					$is_sel,
-					esc_attr( $slug ),
-					$style,
-					esc_attr( $term->name ),
-					esc_attr( $term->name )
-				);
+				if ( '' === $style ) {
+					// Nothing to draw — the term's initial stands in, so an
+					// unfilled value is still clickable, never a grey mystery.
+					$items .= sprintf(
+						'<button type="button" class="oc-var__swatch oc-var__swatch--txt%s" data-value="%s" title="%s" aria-label="%s">%s</button>',
+						$is_sel,
+						esc_attr( $slug ),
+						esc_attr( $term->name ),
+						esc_attr( $term->name ),
+						esc_html( mb_substr( $term->name, 0, 1 ) )
+					);
+				} else {
+					$items .= sprintf(
+						'<button type="button" class="oc-var__swatch%s" data-value="%s" style="%s" title="%s" aria-label="%s"></button>',
+						$is_sel,
+						esc_attr( $slug ),
+						$style,
+						esc_attr( $term->name ),
+						esc_attr( $term->name )
+					);
+				}
 			} else {
 				$items .= sprintf(
 					'<button type="button" class="oc-var__btn%s" data-value="%s">%s</button>',
@@ -321,6 +389,117 @@ final class Variations {
 	}
 
 	/**
+	 * Inline style for a swatch button, resolved in confidence order:
+	 * per-product override, then the term's leading medium (by attribute
+	 * type), the other medium, and finally the variation's own image.
+	 *
+	 * @param mixed    $product  Product, when the dropdown args carried one.
+	 * @param string   $taxonomy Attribute taxonomy.
+	 * @param \WP_Term $term     Term.
+	 * @param string   $type     swatch|swatch_image.
+	 * @return string Empty when nothing is available.
+	 */
+	private function swatch_style( $product, string $taxonomy, \WP_Term $term, string $type ): string {
+		$image = '';
+		$color = (string) get_term_meta( $term->term_id, 'oc_swatch_color', true );
+
+		if ( $product instanceof \WC_Product ) {
+			$galleries = $this->galleries_meta( $product->get_id() );
+			$image     = (string) ( $galleries[ $term->slug ]['swatch'] ?? '' );
+		}
+
+		if ( '' === $image ) {
+			$image = (string) get_term_meta( $term->term_id, 'oc_swatch_image', true );
+		}
+
+		$use_image = 'swatch_image' === $type ? '' !== $image : '' !== $image && '' === $color;
+
+		if ( ! $use_image && '' === $color && '' === $image && $product instanceof \WC_Product ) {
+			$image     = $this->variation_image( $product, $taxonomy, $term->slug );
+			$use_image = '' !== $image;
+		}
+
+		if ( $use_image || ( '' === $color && '' !== $image ) ) {
+			return 'background-image:url(' . esc_url( $image ) . ');background-size:cover;';
+		}
+
+		if ( '' !== $color ) {
+			return 'background-color:' . esc_attr( $color ) . ';';
+		}
+
+		return '';
+	}
+
+	/**
+	 * The image of a variation carrying this attribute value — saves the
+	 * admin a duplicate upload when the variation photos already exist.
+	 * One pass over the children per product, memoised for the request.
+	 *
+	 * @param \WC_Product $product  Variable product.
+	 * @param string      $taxonomy Attribute taxonomy.
+	 * @param string      $slug     Term slug.
+	 * @return string Thumbnail URL or ''.
+	 */
+	private function variation_image( \WC_Product $product, string $taxonomy, string $slug ): string {
+		static $maps = array();
+
+		$pid = $product->get_id();
+
+		if ( ! isset( $maps[ $pid ] ) ) {
+			$maps[ $pid ] = array();
+
+			if ( $product->is_type( 'variable' ) ) {
+				foreach ( $product->get_children() as $child_id ) {
+					$variation = wc_get_product( $child_id );
+
+					if ( ! $variation || ! $variation->get_image_id() ) {
+						continue;
+					}
+
+					foreach ( $variation->get_attributes() as $attr_tax => $attr_slug ) {
+						$key = $attr_tax . ':' . $attr_slug;
+						if ( '' !== (string) $attr_slug && ! isset( $maps[ $pid ][ $key ] ) ) {
+							$maps[ $pid ][ $key ] = (string) wp_get_attachment_image_url( (int) $variation->get_image_id(), 'thumbnail' );
+						}
+					}
+				}
+			}
+		}
+
+		return (string) ( $maps[ $pid ][ $taxonomy . ':' . $slug ] ?? '' );
+	}
+
+	/**
+	 * Per-product colour galleries meta, normalised.
+	 *
+	 * @param int $product_id Product id.
+	 * @return array slug => { imgs: int[], swatch: string }
+	 */
+	private function galleries_meta( int $product_id ): array {
+		$raw = get_post_meta( $product_id, '_oc_color_galleries', true );
+
+		if ( ! is_array( $raw ) ) {
+			return array();
+		}
+
+		$out = array();
+
+		foreach ( $raw as $slug => $entry ) {
+			$imgs   = array_filter( array_map( 'absint', (array) ( $entry['imgs'] ?? array() ) ) );
+			$swatch = (string) ( $entry['swatch'] ?? '' );
+
+			if ( ! empty( $imgs ) || '' !== $swatch ) {
+				$out[ (string) $slug ] = array(
+					'imgs'   => array_values( $imgs ),
+					'swatch' => $swatch,
+				);
+			}
+		}
+
+		return $out;
+	}
+
+	/**
 	 * Linked colour products field, in the Linked Products panel.
 	 */
 	public function links_field(): void {
@@ -341,6 +520,216 @@ final class Variations {
 			<?php echo wc_help_tip( esc_html__( 'The same product in other colours. Links sync both ways: connect black and grey here and each of them links back automatically.', 'oc-theme' ) ); ?>
 		</p>
 		<?php
+	}
+
+	/**
+	 * "Colour galleries" tab in the Product Data box.
+	 *
+	 * @param array $tabs Product data tabs.
+	 * @return array
+	 */
+	public function galleries_tab( array $tabs ): array {
+		$tabs['oc_color_galleries'] = array(
+			'label'    => __( 'Colour galleries', 'oc-theme' ),
+			'target'   => 'oc_color_galleries_panel',
+			'class'    => array( 'show_if_variable' ),
+			'priority' => 65,
+		);
+
+		return $tabs;
+	}
+
+	/**
+	 * The panel: one block per colour value the product uses — a gallery to
+	 * show when that colour is picked, and an optional swatch override.
+	 */
+	public function galleries_panel(): void {
+		global $post;
+
+		$product = wc_get_product( $post->ID );
+		$terms   = array();
+
+		if ( $product instanceof \WC_Product ) {
+			foreach ( array_keys( $product->get_attributes() ) as $attr_tax ) {
+				if ( ! in_array( $this->attr_type( (string) $attr_tax ), array( 'swatch', 'swatch_image' ), true ) ) {
+					continue;
+				}
+
+				$product_terms = wc_get_product_terms( $post->ID, (string) $attr_tax, array( 'fields' => 'all' ) );
+				foreach ( $product_terms as $term ) {
+					$terms[] = $term;
+				}
+			}
+		}
+
+		$saved = $this->galleries_meta( $post->ID );
+
+		wp_enqueue_media();
+		echo '<div id="oc_color_galleries_panel" class="panel woocommerce_options_panel">';
+
+		if ( empty( $terms ) ) {
+			echo '<p class="form-field">' . esc_html__( 'Give the product a swatch-type attribute (for example: colour) and its values appear here.', 'oc-theme' ) . '</p>';
+		}
+
+		foreach ( $terms as $term ) {
+			$entry  = $saved[ $term->slug ] ?? array(
+				'imgs'   => array(),
+				'swatch' => '',
+			);
+			$swatch = (string) $entry['swatch'];
+
+			echo '<div class="oc-cgal" data-slug="' . esc_attr( $term->slug ) . '" style="border-block-end:1px solid #eee;padding:12px;">';
+			echo '<strong style="display:block;margin-block-end:8px;">' . esc_html( $term->name ) . '</strong>';
+
+			// Gallery ids + previews.
+			echo '<input type="hidden" name="oc_cgal[' . esc_attr( $term->slug ) . '][imgs]" value="' . esc_attr( implode( ',', $entry['imgs'] ) ) . '" class="oc-cgal__ids" />';
+			echo '<span class="oc-cgal__thumbs">';
+			foreach ( $entry['imgs'] as $img_id ) {
+				$url = wp_get_attachment_image_url( $img_id, 'thumbnail' );
+				if ( $url ) {
+					echo '<img src="' . esc_url( $url ) . '" alt="" style="inline-size:40px;block-size:40px;object-fit:cover;border-radius:4px;margin-inline-end:4px;vertical-align:middle;" />';
+				}
+			}
+			echo '</span> ';
+			echo '<button type="button" class="button oc-cgal__pick">' . esc_html__( 'Choose gallery images', 'oc-theme' ) . '</button> ';
+			echo '<button type="button" class="button oc-cgal__clear"' . ( empty( $entry['imgs'] ) ? ' style="display:none;"' : '' ) . '>' . esc_html__( 'Remove', 'oc-theme' ) . '</button>';
+
+			// Optional swatch override for this product only.
+			echo '<p class="form-field" style="margin-block-start:10px;padding:0;">';
+			echo '<label style="display:inline;margin-inline-end:8px;">' . esc_html__( 'Swatch image (this product only)', 'oc-theme' ) . '</label>';
+			echo '<input type="hidden" name="oc_cgal[' . esc_attr( $term->slug ) . '][swatch]" value="' . esc_url( $swatch ) . '" class="oc-cgal__sw" />';
+			echo '<img class="oc-cgal__swprev" src="' . esc_url( $swatch ) . '" alt="" style="inline-size:28px;block-size:28px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-inline-end:6px;border:1px solid #ccd0d4;' . ( '' === $swatch ? 'display:none;' : '' ) . '" /> ';
+			echo '<button type="button" class="button oc-cgal__swpick">' . esc_html__( 'Choose image', 'oc-theme' ) . '</button>';
+			echo '</p>';
+
+			echo '</div>';
+		}
+
+		$this->galleries_panel_script();
+		echo '</div>';
+	}
+
+	/**
+	 * One shared script for the galleries panel pickers.
+	 */
+	private function galleries_panel_script(): void {
+		?>
+		<script>
+		document.addEventListener( 'click', function ( event ) {
+			var row = event.target.closest( '.oc-cgal' );
+			if ( ! row || ! window.wp || ! wp.media ) {
+				return;
+			}
+
+			if ( event.target.closest( '.oc-cgal__clear' ) ) {
+				row.querySelector( '.oc-cgal__ids' ).value = '';
+				row.querySelector( '.oc-cgal__thumbs' ).innerHTML = '';
+				event.target.closest( '.oc-cgal__clear' ).style.display = 'none';
+				return;
+			}
+
+			if ( event.target.closest( '.oc-cgal__pick' ) ) {
+				var frame = wp.media( { multiple: 'add', library: { type: 'image' } } );
+				frame.on( 'select', function () {
+					var ids = [], thumbs = '';
+					frame.state().get( 'selection' ).forEach( function ( att ) {
+						var a = att.toJSON();
+						ids.push( a.id );
+						var u = a.sizes && a.sizes.thumbnail ? a.sizes.thumbnail.url : a.url;
+						thumbs += '<img src="' + u + '" alt="" style="inline-size:40px;block-size:40px;object-fit:cover;border-radius:4px;margin-inline-end:4px;vertical-align:middle;" />';
+					} );
+					row.querySelector( '.oc-cgal__ids' ).value = ids.join( ',' );
+					row.querySelector( '.oc-cgal__thumbs' ).innerHTML = thumbs;
+					row.querySelector( '.oc-cgal__clear' ).style.display = '';
+				} );
+				frame.open();
+				return;
+			}
+
+			if ( event.target.closest( '.oc-cgal__swpick' ) ) {
+				var swFrame = wp.media( { multiple: false, library: { type: 'image' } } );
+				swFrame.on( 'select', function () {
+					var a = swFrame.state().get( 'selection' ).first().toJSON();
+					var u = a.sizes && a.sizes.thumbnail ? a.sizes.thumbnail.url : a.url;
+					row.querySelector( '.oc-cgal__sw' ).value = u;
+					var prev = row.querySelector( '.oc-cgal__swprev' );
+					prev.src = u;
+					prev.style.display = '';
+				} );
+				swFrame.open();
+			}
+		} );
+		</script>
+		<?php
+	}
+
+	/**
+	 * Persist the colour galleries.
+	 *
+	 * @param int $post_id Product id.
+	 */
+	public function save_galleries( $post_id ): void {
+		// Woo verified its own nonce before this hook fires.
+		if ( ! isset( $_POST['oc_cgal'] ) || ! is_array( $_POST['oc_cgal'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			return;
+		}
+
+		$clean = array();
+
+		foreach ( wp_unslash( (array) $_POST['oc_cgal'] ) as $slug => $entry ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			$imgs   = array_filter( array_map( 'absint', explode( ',', (string) ( $entry['imgs'] ?? '' ) ) ) );
+			$swatch = esc_url_raw( (string) ( $entry['swatch'] ?? '' ) );
+
+			if ( ! empty( $imgs ) || '' !== $swatch ) {
+				$clean[ sanitize_title( (string) $slug ) ] = array(
+					'imgs'   => array_values( $imgs ),
+					'swatch' => $swatch,
+				);
+			}
+		}
+
+		if ( empty( $clean ) ) {
+			delete_post_meta( $post_id, '_oc_color_galleries' );
+		} else {
+			update_post_meta( $post_id, '_oc_color_galleries', $clean );
+		}
+	}
+
+	/**
+	 * The colour → gallery map for the front end: ready-made slide markup per
+	 * colour, so a swatch click swaps the gallery with zero requests.
+	 */
+	public function galleries_json(): void {
+		global $product;
+
+		if ( ! $product instanceof \WC_Product || ! function_exists( 'wc_get_gallery_image_html' ) ) {
+			return;
+		}
+
+		$galleries = $this->galleries_meta( $product->get_id() );
+		$map       = array();
+
+		foreach ( $galleries as $slug => $entry ) {
+			if ( empty( $entry['imgs'] ) ) {
+				continue;
+			}
+
+			$slides = array();
+			foreach ( $entry['imgs'] as $i => $img_id ) {
+				$slides[] = wc_get_gallery_image_html( $img_id, 0 === $i );
+			}
+
+			$map[ $slug ] = $slides;
+		}
+
+		if ( empty( $map ) ) {
+			return;
+		}
+
+		printf(
+			'<script type="application/json" id="oc-color-galleries">%s</script>',
+			wp_json_encode( $map ) // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- JSON in a non-executed script tag.
+		);
 	}
 
 	/**
@@ -371,7 +760,10 @@ final class Variations {
 	}
 
 	/**
-	 * Colour sibling thumbs on the product page — a click navigates.
+	 * Colour sibling thumbs on the product page — a click navigates. Renders
+	 * in the variations area, in the same "Label: value" format as every
+	 * attribute row: the label comes from the product's swatch attribute and
+	 * the value is this product's own colour.
 	 */
 	public function product_colors(): void {
 		global $product;
@@ -382,9 +774,33 @@ final class Variations {
 
 		$row = $this->colors_row( $product->get_id(), 'oc-colors--product' );
 
-		if ( '' !== $row ) {
-			echo '<div class="oc-colors-wrap"><span class="oc-colors-label">' . esc_html__( 'Colours', 'oc-theme' ) . '</span>' . $row . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
+		if ( '' === $row ) {
+			return;
 		}
+
+		$label = __( 'Colours', 'oc-theme' );
+		$value = '';
+
+		foreach ( array_keys( $product->get_attributes() ) as $attr_tax ) {
+			if ( ! in_array( $this->attr_type( (string) $attr_tax ), array( 'swatch', 'swatch_image' ), true ) ) {
+				continue;
+			}
+
+			$terms = wc_get_product_terms( $product->get_id(), (string) $attr_tax, array( 'fields' => 'names' ) );
+
+			if ( 1 === count( $terms ) ) {
+				$label = wc_attribute_label( (string) $attr_tax );
+				$value = (string) $terms[0];
+			}
+			break;
+		}
+
+		printf(
+			'<div class="oc-colors-wrap"><span class="oc-colors-label">%s%s</span>%s</div>',
+			esc_html( $label ),
+			'' !== $value ? '<span class="oc-choice">' . esc_html( $value ) . '</span>' : '',
+			$row // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
+		);
 	}
 
 	/**
@@ -442,12 +858,17 @@ final class Variations {
 			$data    = '';
 
 			if ( $with_data ) {
+				$badge = $sibling->is_on_sale()
+					? (string) apply_filters( 'woocommerce_sale_flash', '<span class="onsale">' . esc_html__( 'Sale!', 'woocommerce' ) . '</span>', get_post( $id ), $sibling )
+					: '';
+
 				$data = sprintf(
-					' data-url="%s" data-pid="%d" data-name="%s" data-price="%s" data-imgs="%s"',
+					' data-url="%s" data-pid="%d" data-name="%s" data-price="%s" data-badge="%s" data-imgs="%s"',
 					esc_url( get_permalink( $id ) ),
 					absint( $id ),
 					esc_attr( $sibling->get_name() ),
 					esc_attr( $sibling->get_price_html() ),
+					esc_attr( $badge ),
 					esc_attr( (string) wp_json_encode( $this->card_image_urls( $sibling ) ) )
 				);
 			}

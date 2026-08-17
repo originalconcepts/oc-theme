@@ -423,6 +423,14 @@
 			price.innerHTML = item.dataset.price;
 		}
 
+		var badge = li.querySelector( '.onsale' );
+		if ( badge ) {
+			badge.remove();
+		}
+		if ( item.dataset.badge ) {
+			li.insertAdjacentHTML( 'afterbegin', item.dataset.badge );
+		}
+
 		li.querySelectorAll( '.oc-colors__item' ).forEach( function ( sib ) {
 			sib.classList.remove( 'is-current' );
 			sib.removeAttribute( 'aria-current' );
@@ -569,148 +577,181 @@
 		galleryBody.classList.contains( 'oc-gallery-thumbs-under' ) ? 'under' :
 		galleryBody.classList.contains( 'oc-gallery-stacked' ) ? 'stacked' : null;
 
-	if ( galleryWrap && galleryMode ) {
-		var slides = Array.prototype.slice.call(
+	// Rebuildable: a colour-gallery swap replaces the slides and calls
+	// buildGalleryRail() again, so everything derives from the live DOM and
+	// window-level listeners attach once, reading the current rail/slides.
+	var gSlides = [];
+	var gRail = null;
+
+	function setActiveThumb( index ) {
+		if ( ! gRail ) {
+			return;
+		}
+		gRail.querySelectorAll( 'button' ).forEach( function ( other, j ) {
+			other.setAttribute( 'aria-current', j === index ? 'true' : 'false' );
+		} );
+	}
+
+	function activateSlide( index ) {
+		if ( 'stacked' === galleryMode ) {
+			gSlides[ index ].scrollIntoView( { behavior: 'smooth', block: 'start' } );
+		} else {
+			gSlides.forEach( function ( other ) {
+				other.classList.remove( 'is-active' );
+			} );
+			gSlides[ index ].classList.add( 'is-active' );
+		}
+		setActiveThumb( index );
+	}
+
+	function sizeRail() {
+		if ( ! gRail ) {
+			return;
+		}
+		var maxThumbs = parseInt( galleryBody.dataset.ocThumbsMax || '10', 10 );
+		var vertical = 'side' === galleryMode || 'stacked' === galleryMode;
+		var first = gRail.querySelector( 'li' );
+		if ( ! first || gSlides.length <= maxThumbs ) {
+			return;
+		}
+		var step = ( vertical ? first.offsetHeight : first.offsetWidth ) + 10;
+		if ( vertical ) {
+			gRail.style.maxBlockSize = ( step * maxThumbs - 10 ) + 'px';
+		} else {
+			gRail.style.maxInlineSize = ( step * maxThumbs - 10 ) + 'px';
+		}
+		gRail.classList.add( 'is-capped' );
+	}
+
+	function buildGalleryRail() {
+		if ( ! galleryWrap || ! galleryMode ) {
+			return;
+		}
+
+		var parent = galleryWrap.parentElement;
+		parent.querySelectorAll( '.oc-thumbscol, .oc-gnav--desktop' ).forEach( function ( node ) {
+			node.remove();
+		} );
+		gRail = null;
+
+		gSlides = Array.prototype.slice.call(
 			galleryWrap.querySelectorAll( '.woocommerce-product-gallery__image' )
 		);
 
-		if ( slides.length > 1 ) {
-			var maxThumbs = parseInt( galleryBody.dataset.ocThumbsMax || '10', 10 );
-			var vertical = 'side' === galleryMode || 'stacked' === galleryMode;
+		if ( gSlides.length < 2 ) {
+			return;
+		}
 
-			var railCol = document.createElement( 'div' );
-			railCol.className = 'oc-thumbscol';
+		var maxThumbs = parseInt( galleryBody.dataset.ocThumbsMax || '10', 10 );
+		var vertical = 'side' === galleryMode || 'stacked' === galleryMode;
 
-			var rail = document.createElement( 'ol' );
-			rail.className = 'oc-thumbs';
-			railCol.appendChild( rail );
+		var railCol = document.createElement( 'div' );
+		railCol.className = 'oc-thumbscol';
 
-			function setActiveThumb( index ) {
-				rail.querySelectorAll( 'button' ).forEach( function ( other, j ) {
-					other.setAttribute( 'aria-current', j === index ? 'true' : 'false' );
+		var rail = document.createElement( 'ol' );
+		rail.className = 'oc-thumbs';
+		railCol.appendChild( rail );
+		gRail = rail;
+
+		if ( 'stacked' !== galleryMode ) {
+			gSlides.forEach( function ( other ) {
+				other.classList.remove( 'is-active' );
+			} );
+			gSlides[ 0 ].classList.add( 'is-active' );
+		}
+
+		gSlides.forEach( function ( slide, i ) {
+			var src = slide.querySelector( 'img' );
+			if ( ! src ) {
+				return;
+			}
+
+			var li = document.createElement( 'li' );
+			var btn = document.createElement( 'button' );
+			btn.type = 'button';
+			btn.setAttribute( 'aria-current', 0 === i ? 'true' : 'false' );
+
+			var thumb = document.createElement( 'img' );
+			thumb.src = slide.dataset.thumb || src.currentSrc || src.src;
+			thumb.alt = '';
+			thumb.loading = 'lazy';
+
+			btn.appendChild( thumb );
+			li.appendChild( btn );
+			rail.appendChild( li );
+
+			btn.addEventListener( 'click', function () {
+				activateSlide( i );
+			} );
+		} );
+
+		parent.appendChild( railCol );
+
+		// Cap the visible thumbs; arrows page the rail when there are more.
+		if ( gSlides.length > maxThumbs ) {
+			var nav = document.createElement( 'div' );
+			nav.className = 'oc-thumbnav' + ( vertical ? ' oc-thumbnav--v' : '' );
+
+			[ [ 'prev', vertical ? 'up' : 'right', -1 ], [ 'next', vertical ? 'down' : 'left', 1 ] ].forEach( function ( def ) {
+				var b = document.createElement( 'button' );
+				b.type = 'button';
+				b.className = 'oc-thumbnav__btn oc-thumbnav__' + def[ 0 ];
+				b.setAttribute( 'aria-label', def[ 0 ] );
+				b.innerHTML = railChevrons[ def[ 1 ] ];
+				b.addEventListener( 'click', function () {
+					var first = rail.querySelector( 'li' );
+					var step = ( ( vertical ? first.offsetHeight : first.offsetWidth ) + 10 ) * def[ 2 ];
+					if ( vertical ) {
+						rail.scrollTop += step;
+					} else {
+						var rtl = 'rtl' === getComputedStyle( rail ).direction;
+						rail.scrollLeft += rtl ? -step : step;
+					}
 				} );
-			}
-
-			function activateSlide( index ) {
-				if ( 'stacked' === galleryMode ) {
-					slides[ index ].scrollIntoView( { behavior: 'smooth', block: 'start' } );
-				} else {
-					slides.forEach( function ( other ) {
-						other.classList.remove( 'is-active' );
-					} );
-					slides[ index ].classList.add( 'is-active' );
-				}
-				setActiveThumb( index );
-			}
-
-			if ( 'stacked' !== galleryMode ) {
-				slides[ 0 ].classList.add( 'is-active' );
-			}
-
-			slides.forEach( function ( slide, i ) {
-				var src = slide.querySelector( 'img' );
-				if ( ! src ) {
-					return;
-				}
-
-				var li = document.createElement( 'li' );
-				var btn = document.createElement( 'button' );
-				btn.type = 'button';
-				btn.setAttribute( 'aria-current', 0 === i ? 'true' : 'false' );
-
-				var thumb = document.createElement( 'img' );
-				thumb.src = slide.dataset.thumb || src.currentSrc || src.src;
-				thumb.alt = '';
-				thumb.loading = 'lazy';
-
-				btn.appendChild( thumb );
-				li.appendChild( btn );
-				rail.appendChild( li );
-
-				btn.addEventListener( 'click', function () {
-					activateSlide( i );
-				} );
+				nav.appendChild( b );
 			} );
 
-			galleryWrap.parentElement.appendChild( railCol );
+			railCol.appendChild( nav );
+			sizeRail();
+		}
 
-			// Cap the visible thumbs; arrows page the rail when there are more.
-			function sizeRail() {
-				var first = rail.querySelector( 'li' );
-				if ( ! first || slides.length <= maxThumbs ) {
-					return;
-				}
-				var step = ( vertical ? first.offsetHeight : first.offsetWidth ) + 10;
-				if ( vertical ) {
-					rail.style.maxBlockSize = ( step * maxThumbs - 10 ) + 'px';
-				} else {
-					rail.style.maxInlineSize = ( step * maxThumbs - 10 ) + 'px';
-				}
-				rail.classList.add( 'is-capped' );
-			}
-
-			if ( slides.length > maxThumbs ) {
-				var nav = document.createElement( 'div' );
-				nav.className = 'oc-thumbnav' + ( vertical ? ' oc-thumbnav--v' : '' );
-
-				[ [ 'prev', vertical ? 'up' : 'right', -1 ], [ 'next', vertical ? 'down' : 'left', 1 ] ].forEach( function ( def ) {
-					var b = document.createElement( 'button' );
-					b.type = 'button';
-					b.className = 'oc-thumbnav__btn oc-thumbnav__' + def[ 0 ];
-					b.setAttribute( 'aria-label', def[ 0 ] );
-					b.innerHTML = railChevrons[ def[ 1 ] ];
-					b.addEventListener( 'click', function () {
-						var first = rail.querySelector( 'li' );
-						var step = ( ( vertical ? first.offsetHeight : first.offsetWidth ) + 10 ) * def[ 2 ];
-						if ( vertical ) {
-							rail.scrollTop += step;
-						} else {
-							var rtl = 'rtl' === getComputedStyle( rail ).direction;
-							rail.scrollLeft += rtl ? -step : step;
+		// Desktop arrows on the main image, for the thumbs presets.
+		if ( 'stacked' !== galleryMode && galleryBody.classList.contains( 'oc-gdesk-arrows' ) ) {
+			[ [ 'prev', 'right', -1 ], [ 'next', 'left', 1 ] ].forEach( function ( def ) {
+				var b = document.createElement( 'button' );
+				b.type = 'button';
+				b.className = 'oc-gnav oc-gnav--desktop oc-gnav--' + def[ 0 ];
+				b.setAttribute( 'aria-label', def[ 0 ] );
+				b.innerHTML = 'prev' === def[ 0 ] ? railChevrons.left : railChevrons.right;
+				b.addEventListener( 'click', function () {
+					var currentSlide = 0;
+					rail.querySelectorAll( 'button' ).forEach( function ( other, j ) {
+						if ( 'true' === other.getAttribute( 'aria-current' ) ) {
+							currentSlide = j;
 						}
 					} );
-					nav.appendChild( b );
+					activateSlide( ( currentSlide + def[ 2 ] + gSlides.length ) % gSlides.length );
 				} );
+				parent.appendChild( b );
+			} );
+		}
+	}
 
-				railCol.appendChild( nav );
-				window.addEventListener( 'load', sizeRail );
-				sizeRail();
-			}
+	if ( galleryWrap && galleryMode ) {
+		buildGalleryRail();
+		window.addEventListener( 'load', sizeRail );
 
-			// Stacked: highlight the thumb of the image currently in view.
-			if ( 'stacked' === galleryMode ) {
-				window.addEventListener( 'scroll', function () {
-					for ( var i = 0; i < slides.length; i++ ) {
-						var r = slides[ i ].getBoundingClientRect();
-						if ( r.bottom > window.innerHeight * 0.35 ) {
-							setActiveThumb( i );
-							return;
-						}
+		// Stacked: highlight the thumb of the image currently in view.
+		if ( 'stacked' === galleryMode ) {
+			window.addEventListener( 'scroll', function () {
+				for ( var i = 0; i < gSlides.length; i++ ) {
+					var r = gSlides[ i ].getBoundingClientRect();
+					if ( r.bottom > window.innerHeight * 0.35 ) {
+						setActiveThumb( i );
+						return;
 					}
-				}, { passive: true } );
-			}
-
-			// Desktop arrows on the main image, for the thumbs presets.
-			if ( 'stacked' !== galleryMode && galleryBody.classList.contains( 'oc-gdesk-arrows' ) ) {
-				var currentSlide = 0;
-
-				[ [ 'prev', 'right', -1 ], [ 'next', 'left', 1 ] ].forEach( function ( def ) {
-					var b = document.createElement( 'button' );
-					b.type = 'button';
-					b.className = 'oc-gnav oc-gnav--desktop oc-gnav--' + def[ 0 ];
-					b.setAttribute( 'aria-label', def[ 0 ] );
-					b.innerHTML = 'prev' === def[ 0 ] ? railChevrons.left : railChevrons.right;
-					b.addEventListener( 'click', function () {
-						rail.querySelectorAll( 'button' ).forEach( function ( other, j ) {
-							if ( 'true' === other.getAttribute( 'aria-current' ) ) {
-								currentSlide = j;
-							}
-						} );
-						activateSlide( ( currentSlide + def[ 2 ] + slides.length ) % slides.length );
-					} );
-					galleryWrap.parentElement.appendChild( b );
-				} );
-			}
+				}
+			}, { passive: true } );
 		}
 	}
 
@@ -743,72 +784,128 @@
 
 	/* ---------- mobile gallery: swipe strip with dots / optional arrows ---------- */
 
-	var mgWrap = document.querySelector( '.woocommerce-product-gallery__wrapper' );
+	var mgWrap = galleryWrap;
+	var mgDots = null;
 
-	if ( mgWrap && document.body.classList.contains( 'oc-gm-dots' ) ) {
+	function mgIndex() {
+		return ! mgWrap || mgWrap.clientWidth === 0 ? 0 :
+			Math.round( Math.abs( mgWrap.scrollLeft ) / mgWrap.clientWidth );
+	}
+
+	function mgUpdateDots( idx ) {
+		if ( ! mgDots ) {
+			return;
+		}
+		mgDots.querySelectorAll( 'button' ).forEach( function ( b, i ) {
+			b.setAttribute( 'aria-current', i === idx ? 'true' : 'false' );
+		} );
+	}
+
+	function mgGoTo( index ) {
+		var rtl = getComputedStyle( mgWrap ).direction === 'rtl';
+		mgWrap.scrollLeft = ( rtl ? -1 : 1 ) * index * mgWrap.clientWidth;
+		// Direct update as well — scroll events lag (or never fire in
+		// frozen pipelines) on programmatic scrolls.
+		mgUpdateDots( index );
+	}
+
+	function buildMobileDots() {
+		if ( ! mgWrap || ! document.body.classList.contains( 'oc-gm-dots' ) ) {
+			return;
+		}
+
+		var mgGallery = mgWrap.parentElement;
+		mgGallery.querySelectorAll( '.oc-gdots, .oc-gnav:not(.oc-gnav--desktop)' ).forEach( function ( node ) {
+			node.remove();
+		} );
+		mgDots = null;
+
 		var mgSlides = mgWrap.querySelectorAll( '.woocommerce-product-gallery__image' );
 		var mgCount = mgSlides.length;
 
-		if ( mgCount > 1 ) {
-			var mgGallery = mgWrap.parentElement;
+		if ( mgCount < 2 ) {
+			return;
+		}
 
-			function mgIndex() {
-				return mgWrap.clientWidth === 0 ? 0 :
-					Math.round( Math.abs( mgWrap.scrollLeft ) / mgWrap.clientWidth );
-			}
+		mgDots = document.createElement( 'ol' );
+		mgDots.className = 'oc-gdots';
 
-			var mgDots = document.createElement( 'ol' );
-			mgDots.className = 'oc-gdots';
-
-			function mgUpdateDots( idx ) {
-				mgDots.querySelectorAll( 'button' ).forEach( function ( b, i ) {
-					b.setAttribute( 'aria-current', i === idx ? 'true' : 'false' );
-				} );
-			}
-
-			function mgGoTo( index ) {
-				var rtl = getComputedStyle( mgWrap ).direction === 'rtl';
-				mgWrap.scrollLeft = ( rtl ? -1 : 1 ) * index * mgWrap.clientWidth;
-				// Direct update as well — scroll events lag (or never fire in
-				// frozen pipelines) on programmatic scrolls.
-				mgUpdateDots( index );
-			}
-
-			mgSlides.forEach( function ( _, i ) {
-				var li = document.createElement( 'li' );
-				var b = document.createElement( 'button' );
-				b.type = 'button';
-				b.setAttribute( 'aria-label', String( i + 1 ) );
-				b.setAttribute( 'aria-current', 0 === i ? 'true' : 'false' );
-				b.addEventListener( 'click', function () {
-					mgGoTo( i );
-				} );
-				li.appendChild( b );
-				mgDots.appendChild( li );
+		mgSlides.forEach( function ( _, i ) {
+			var li = document.createElement( 'li' );
+			var b = document.createElement( 'button' );
+			b.type = 'button';
+			b.setAttribute( 'aria-label', String( i + 1 ) );
+			b.setAttribute( 'aria-current', 0 === i ? 'true' : 'false' );
+			b.addEventListener( 'click', function () {
+				mgGoTo( i );
 			} );
+			li.appendChild( b );
+			mgDots.appendChild( li );
+		} );
 
-			mgGallery.appendChild( mgDots );
+		mgGallery.appendChild( mgDots );
 
-			mgWrap.addEventListener( 'scroll', function () {
-				mgUpdateDots( mgIndex() );
-			}, { passive: true } );
+		if ( document.body.classList.contains( 'oc-gm-arrows' ) ) {
+			var mgLeft = '<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M 70,0 L 20,50 L 70,100 L 80,90 L 40,50 L 80,10 Z"/></svg>';
+			var mgRight = '<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M 30,0 L 80,50 L 30,100 L 20,90 L 60,50 L 20,10 Z"/></svg>';
 
-			if ( document.body.classList.contains( 'oc-gm-arrows' ) ) {
-				var mgLeft = '<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M 70,0 L 20,50 L 70,100 L 80,90 L 40,50 L 80,10 Z"/></svg>';
-				var mgRight = '<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M 30,0 L 80,50 L 30,100 L 20,90 L 60,50 L 20,10 Z"/></svg>';
-
-				[ [ 'prev', mgLeft, -1 ], [ 'next', mgRight, 1 ] ].forEach( function ( def ) {
-					var btn = document.createElement( 'button' );
-					btn.type = 'button';
-					btn.className = 'oc-gnav oc-gnav--' + def[ 0 ];
-					btn.setAttribute( 'aria-label', def[ 0 ] );
-					btn.innerHTML = def[ 1 ];
-					btn.addEventListener( 'click', function () {
-						mgGoTo( ( mgIndex() + def[ 2 ] + mgCount ) % mgCount );
-					} );
-					mgGallery.appendChild( btn );
+			[ [ 'prev', mgLeft, -1 ], [ 'next', mgRight, 1 ] ].forEach( function ( def ) {
+				var btn = document.createElement( 'button' );
+				btn.type = 'button';
+				btn.className = 'oc-gnav oc-gnav--' + def[ 0 ];
+				btn.setAttribute( 'aria-label', def[ 0 ] );
+				btn.innerHTML = def[ 1 ];
+				btn.addEventListener( 'click', function () {
+					mgGoTo( ( mgIndex() + def[ 2 ] + mgCount ) % mgCount );
 				} );
-			}
+				mgGallery.appendChild( btn );
+			} );
+		}
+	}
+
+	if ( mgWrap && document.body.classList.contains( 'oc-gm-dots' ) ) {
+		buildMobileDots();
+
+		mgWrap.addEventListener( 'scroll', function () {
+			mgUpdateDots( mgIndex() );
+		}, { passive: true } );
+	}
+
+	/* ---------- colour galleries: a swatch click swaps the whole gallery ----------
+	 * The map is printed server-side as ready-made slide markup, so the swap is
+	 * instant and request-free. Rail, dots and sticky columns rebuild after. */
+
+	var ocColorGalleries = null;
+	var ocGalleryOriginal = galleryWrap ? galleryWrap.innerHTML : '';
+	var ocGalleriesTag = document.getElementById( 'oc-color-galleries' );
+
+	if ( ocGalleriesTag ) {
+		try {
+			ocColorGalleries = JSON.parse( ocGalleriesTag.textContent );
+		} catch ( err ) {
+			ocColorGalleries = null;
+		}
+	}
+
+	function ocSwapGallery( slidesHtml ) {
+		if ( ! galleryWrap ) {
+			return;
+		}
+		galleryWrap.innerHTML = slidesHtml ? slidesHtml.join( '' ) : ocGalleryOriginal;
+		galleryWrap.scrollLeft = 0;
+		buildGalleryRail();
+		buildMobileDots();
+		window.dispatchEvent( new Event( 'resize' ) );
+	}
+
+	function ocMaybeSwapGallery( value ) {
+		if ( ! ocColorGalleries ) {
+			return;
+		}
+		if ( value && ocColorGalleries[ value ] ) {
+			ocSwapGallery( ocColorGalleries[ value ] );
+		} else if ( ! value ) {
+			ocSwapGallery( null );
 		}
 	}
 
@@ -891,12 +988,44 @@
 				select.value = select.value === btn.dataset.value ? '' : btn.dataset.value;
 				select.dispatchEvent( new Event( 'change', { bubbles: true } ) );
 				sync();
+				ocMaybeSwapGallery( select.value );
 			} );
 		} );
 
 		select.addEventListener( 'change', sync );
 		new MutationObserver( sync ).observe( select, { childList: true, subtree: true, attributes: true } );
 		sync();
+
+		// A default-selected colour shows its own gallery from the start.
+		if ( select.value ) {
+			ocMaybeSwapGallery( select.value );
+		}
+	} );
+
+	/* ---------- variation rows: "Label: value" ----------
+	 * Every attribute row reads like the reference sites — the label carries
+	 * the chosen value ("Colour: Black") and updates live. */
+
+	document.querySelectorAll( 'form.variations_form table.variations tr' ).forEach( function ( tr ) {
+		var select = tr.querySelector( 'td.value select' );
+		var label = tr.querySelector( 'th.label label' ) || tr.querySelector( 'th.label' );
+
+		if ( ! select || ! label ) {
+			return;
+		}
+
+		var choice = document.createElement( 'span' );
+		choice.className = 'oc-choice';
+		label.appendChild( choice );
+
+		function updateChoice() {
+			var opt = select.selectedOptions[ 0 ];
+			choice.textContent = select.value && opt ? opt.textContent : '';
+		}
+
+		select.addEventListener( 'change', updateChoice );
+		new MutationObserver( updateChoice ).observe( select, { childList: true, subtree: true, attributes: true } );
+		updateChoice();
 	} );
 
 	/* ---------- native gallery zoom ----------

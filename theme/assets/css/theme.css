@@ -1871,14 +1871,16 @@ table.variations td.value select:has(+ .oc-var) {
 
 .oc-card-minimal .oc-colors--loop { justify-content: flex-start; }
 
-.oc-colors-wrap {
-	display: flex;
-	align-items: center;
-	gap: 12px;
-	margin-block: 4px 14px;
-}
+/* Sits in the variations area, matching the attribute rows: label line
+ * ("Colour: Black") above the thumbs. */
+.oc-colors-wrap { margin-block: 0 14px; }
 
-.oc-colors-label { font-weight: 600; font-size: .92rem; }
+.oc-colors-label {
+	display: block;
+	font-weight: 600;
+	font-size: .92rem;
+	margin-block-end: 8px;
+}
 
 /* Colour-linked products: the solo colour value is auto-selected and its row
  * hidden — the "Colours" thumbs are the only colour UI. When every attribute
@@ -1887,6 +1889,47 @@ table.variations td.value select:has(+ .oc-var) {
 
 .oc-vars-allauto table.variations,
 .oc-vars-allauto .reset_variations { display: none; }
+
+/* Variation rows read like the reference sites: the label line ("Colour:
+ * Black") above the control, full width, the value updating live. */
+.single-product table.variations,
+.single-product table.variations tbody,
+.single-product table.variations tr:not(.oc-row-auto),
+.single-product table.variations th.label,
+.single-product table.variations td.value {
+	display: block;
+	padding: 0;
+	text-align: start;
+	border: 0;
+}
+
+.single-product table.variations tr:not(.oc-row-auto) { margin-block-end: 14px; }
+
+.single-product table.variations th.label { margin-block-end: 8px; }
+
+.single-product table.variations th.label label {
+	font-weight: 600;
+	margin: 0;
+}
+
+.oc-choice { font-weight: 400; }
+
+.oc-choice:not(:empty)::before { content: ': '; }
+
+/* Swatch shape: square variant keeps a soft corner. */
+.oc-swatch-square .oc-var__swatch,
+.oc-swatch-square .oc-colors__item,
+.oc-swatch-square .oc-colors__item img { border-radius: 6px; }
+
+/* No colour and no image: the term's initial stands in. */
+.oc-var__swatch--txt {
+	background: var(--oc-bg, #fff);
+	font-size: .78em;
+	font-weight: 600;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}
 
 /* ---------- QA round-5 ---------- */
 
