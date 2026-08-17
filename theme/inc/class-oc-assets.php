@@ -246,7 +246,9 @@ final class Assets {
 			$out .= '--oc-fs:' . $fs . 'px;';
 		}
 		if ( $width > 0 ) {
-			$out .= '--oc-content-width:' . $width . 'px;';
+			// The per-page width narrows the CONTENT containers only — the
+			// header, top bar and footer hold the global width.
+			$out .= '--oc-main-width:' . $width . 'px;';
 		}
 		if ( '' !== $bg ) {
 			$out .= '--oc-bg-user:' . $this->safe_value( $bg ) . ';';

@@ -48,7 +48,7 @@ a { color: inherit; }
 
 .oc-container {
 	inline-size: 100%;
-	max-inline-size: var(--oc-content-width, 1280px);
+	max-inline-size: var(--oc-main-width, var(--oc-content-width, 1280px));
 	margin-inline: auto;
 	padding-inline: var(--oc-gap);
 }
@@ -433,7 +433,7 @@ a { color: inherit; }
 
 .shop-main {
 	inline-size: 100%;
-	max-inline-size: var(--oc-content-width, 1280px);
+	max-inline-size: var(--oc-main-width, var(--oc-content-width, 1280px));
 	margin-inline: auto;
 	padding-inline: var(--oc-gap);
 	font-size: var(--oc-fs, 1rem);
@@ -1346,7 +1346,7 @@ body:not(.oc-no-lightbox) .woocommerce-product-gallery__image:not(.oc-vslide) im
 .oc-sticky-atc.is-visible { transform: translateY(0); }
 
 .oc-sticky-atc__inner {
-	max-inline-size: var(--oc-content-width, 1280px);
+	max-inline-size: var(--oc-main-width, var(--oc-content-width, 1280px));
 	margin-inline: auto;
 	padding: 10px var(--oc-gap);
 	display: flex;
@@ -1680,7 +1680,7 @@ body:not(.oc-no-lightbox) .woocommerce-product-gallery__image:not(.oc-vslide) im
 .shop-main + .term-description,
 .shop-main + .oc-archive-desc,
 main + .term-description {
-	max-inline-size: var(--oc-content-width, 1280px);
+	max-inline-size: var(--oc-main-width, var(--oc-content-width, 1280px));
 	margin-inline: auto;
 	padding-inline: var(--oc-gap);
 }
