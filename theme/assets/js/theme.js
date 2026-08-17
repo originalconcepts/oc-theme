@@ -1396,9 +1396,24 @@
 				'<svg class="on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>';
 
 			var ocVideoHasAudio = function ( vid ) {
-				return !! ( vid.mozHasAudio ||
+				if ( vid.mozHasAudio ||
 					( 'number' === typeof vid.webkitAudioDecodedByteCount && vid.webkitAudioDecodedByteCount > 0 ) ||
-					( vid.audioTracks && vid.audioTracks.length > 0 ) );
+					( vid.audioTracks && vid.audioTracks.length > 0 ) ) {
+					return true;
+				}
+
+				// The dependable route: the element's captured stream reports
+				// its audio tracks without needing any playback.
+				try {
+					var grab = vid.captureStream || vid.mozCaptureStream || vid.webkitCaptureStream;
+					if ( grab && vid.readyState >= 2 ) {
+						return grab.call( vid ).getAudioTracks().length > 0;
+					}
+				} catch ( err ) {
+					return false;
+				}
+
+				return false;
 			};
 
 			var ocAttachSound = function ( slide ) {
