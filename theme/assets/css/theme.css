@@ -2076,3 +2076,160 @@ table.variations td.value select:has(+ .oc-var) {
 	.oc-gnav--prev { inset-inline-start: 6px; }
 	.oc-gnav--next { inset-inline-end: 6px; }
 }
+
+/* ---------- product video ---------- */
+
+/* Card video: fills the same box as the card image, always muted. */
+.oc-card-media__item--video {
+	position: relative;
+	aspect-ratio: var(--oc-card-ratio, 1 / 1);
+	overflow: hidden;
+	border-radius: var(--oc-radius, 8px);
+}
+
+.oc-card-media__item--video video,
+.oc-card-media__item--video iframe {
+	position: absolute;
+	inset: 0;
+	inline-size: 100%;
+	block-size: 100%;
+	object-fit: cover;
+	border: 0;
+	pointer-events: none;
+}
+
+/* Gallery video slide. */
+.oc-vslide {
+	position: relative;
+	aspect-ratio: 4 / 5;
+	overflow: hidden;
+	cursor: pointer;
+}
+
+.oc-gimg-fixed .oc-vslide {
+	aspect-ratio: auto;
+	block-size: var(--oc-gimg-h, 600px);
+}
+
+.oc-vslide video,
+.oc-vslide iframe {
+	position: absolute;
+	inset: 0;
+	inline-size: 100%;
+	block-size: 100%;
+	object-fit: cover;
+	border: 0;
+	pointer-events: none;
+}
+
+/* Play badge — thin white circle, triangle always pointing right. */
+.oc-vplay {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	translate: -50% -50%;
+	inline-size: 54px;
+	block-size: 54px;
+	border: 2px solid #fff;
+	border-radius: 50%;
+	filter: drop-shadow(0 1px 6px rgb(0 0 0 / 35%));
+	pointer-events: none;
+}
+
+.oc-vplay::after {
+	content: "";
+	position: absolute;
+	top: 50%;
+	left: 55%;
+	translate: -50% -50%;
+	border-top: 9px solid transparent;
+	border-bottom: 9px solid transparent;
+	border-left: 14px solid #fff;
+}
+
+.oc-vplay--sm {
+	inline-size: 34px;
+	block-size: 34px;
+	border-width: 1.5px;
+}
+
+.oc-vplay--sm::after {
+	border-top-width: 6px;
+	border-bottom-width: 6px;
+	border-left-width: 9px;
+}
+
+/* Floating loop over the main gallery; physical right/left per the setting. */
+.woocommerce-product-gallery { position: relative; }
+
+.oc-vfab {
+	position: absolute;
+	bottom: 16px;
+	z-index: 5;
+	inline-size: 104px;
+	aspect-ratio: 9 / 16;
+	border: 0;
+	border-radius: 10px;
+	overflow: hidden;
+	padding: 0;
+	cursor: pointer;
+	background: #000;
+	box-shadow: 0 4px 18px rgb(0 0 0 / 25%);
+}
+
+.oc-vfab--end { right: 16px; }
+.oc-vfab--start { left: 16px; }
+
+.oc-vfab video,
+.oc-vfab iframe {
+	position: absolute;
+	inset: 0;
+	inline-size: 100%;
+	block-size: 100%;
+	object-fit: cover;
+	border: 0;
+	pointer-events: none;
+}
+
+/* Full-screen overlay with a clear close. */
+.oc-voverlay {
+	position: fixed;
+	inset: 0;
+	z-index: 10000;
+	background: rgb(0 0 0 / 88%);
+	display: grid;
+	place-items: center;
+}
+
+.oc-voverlay[hidden] { display: none; }
+
+.oc-voverlay__media { display: grid; place-items: center; }
+
+.oc-voverlay__media video {
+	max-inline-size: 92vw;
+	max-block-size: 85vh;
+	display: block;
+	background: #000;
+}
+
+.oc-voverlay__media iframe {
+	inline-size: min(92vw, 1100px);
+	aspect-ratio: 16 / 9;
+	border: 0;
+	display: block;
+	background: #000;
+}
+
+.oc-voverlay__close {
+	position: fixed;
+	inset-block-start: 14px;
+	inset-inline-end: 20px;
+	inline-size: 48px;
+	block-size: 48px;
+	border: 0;
+	background: transparent;
+	color: #fff;
+	font-size: 40px;
+	line-height: 1;
+	cursor: pointer;
+}

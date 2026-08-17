@@ -417,11 +417,27 @@ final class WooCommerce {
 			return;
 		}
 
-		printf( '<div class="oc-card-media oc-card-media--%s">', esc_attr( $mode ) );
+		// A video marked for the catalogue leads the card, always muted.
+		$video      = Video::meta( $product->get_id() );
+		$card_video = null !== $video && $video['catalog'] ? $video['url'] : '';
+
+		if ( '' !== $card_video && 'single' === $mode ) {
+			// Single-image mode shows the video alone.
+			$ids = array();
+		}
+
+		printf( '<div class="oc-card-media oc-card-media--%s">', esc_attr( '' !== $card_video && empty( $ids ) ? 'single' : $mode ) );
 		echo '<div class="oc-card-media__strip" aria-label="' . esc_attr__( 'Product images', 'oc-theme' ) . '">';
 
+		if ( '' !== $card_video ) {
+			echo '<figure class="oc-card-media__item oc-card-media__item--video is-first">';
+			echo Video::loop_html( $card_video, 'oc-card-video' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
+			echo '<span class="oc-vplay oc-vplay--sm" aria-hidden="true"></span>';
+			echo '</figure>';
+		}
+
 		foreach ( $ids as $i => $id ) {
-			printf( '<figure class="oc-card-media__item%s">', 0 === $i ? ' is-first' : '' );
+			printf( '<figure class="oc-card-media__item%s">', 0 === $i && '' === $card_video ? ' is-first' : '' );
 			echo wp_get_attachment_image( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- core-generated markup.
 				$id,
 				'large',

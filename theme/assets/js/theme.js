@@ -664,8 +664,10 @@
 		}
 
 		gSlides.forEach( function ( slide, i ) {
+			// A video slide carries its thumb in data-thumb instead of an img.
 			var src = slide.querySelector( 'img' );
-			if ( ! src ) {
+			var thumbSrc = slide.dataset.thumb || ( src && ( src.currentSrc || src.src ) );
+			if ( ! thumbSrc ) {
 				return;
 			}
 
@@ -675,7 +677,7 @@
 			btn.setAttribute( 'aria-current', 0 === i ? 'true' : 'false' );
 
 			var thumb = document.createElement( 'img' );
-			thumb.src = slide.dataset.thumb || src.currentSrc || src.src;
+			thumb.src = thumbSrc;
 			thumb.alt = '';
 			thumb.loading = 'lazy';
 
@@ -890,12 +892,19 @@
 		}
 	}
 
+	// Assigned by the video module: re-inserts the gallery video slide after
+	// a colour-gallery swap replaces the slides.
+	var ocReinsertVideo = null;
+
 	function ocSwapGallery( slidesHtml ) {
 		if ( ! galleryWrap ) {
 			return;
 		}
 		galleryWrap.innerHTML = slidesHtml ? slidesHtml.join( '' ) : ocGalleryOriginal;
 		galleryWrap.scrollLeft = 0;
+		if ( ocReinsertVideo ) {
+			ocReinsertVideo();
+		}
 		buildGalleryRail();
 		buildMobileDots();
 		window.dispatchEvent( new Event( 'resize' ) );
@@ -909,6 +918,102 @@
 			ocSwapGallery( ocColorGalleries[ value ] );
 		} else if ( ! value ) {
 			ocSwapGallery( null );
+		}
+	}
+
+	/* ---------- product video ----------
+	 * One video per product — an uploaded file or a controls-free YouTube /
+	 * Vimeo embed. Lives as a slide inside the gallery or as a small muted
+	 * loop floating over it; a click opens a full-screen overlay. */
+
+	var ocVideoTag = document.getElementById( 'oc-video' );
+
+	if ( ocVideoTag && galleryWrap ) {
+		var ocVideo = null;
+
+		try {
+			ocVideo = JSON.parse( ocVideoTag.textContent );
+		} catch ( err ) {
+			ocVideo = null;
+		}
+
+		if ( ocVideo ) {
+			var ocVideoFallbackThumb = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 80 80%22%3E%3Crect width=%2280%22 height=%2280%22 fill=%22%231c1c1c%22/%3E%3Ccircle cx=%2240%22 cy=%2240%22 r=%2215%22 fill=%22none%22 stroke=%22%23fff%22 stroke-width=%222%22/%3E%3Cpath d=%22M36 33l12 7-12 7z%22 fill=%22%23fff%22/%3E%3C/svg%3E';
+
+			var ocVideoLoopHtml = function () {
+				return 'file' === ocVideo.kind
+					? '<video src="' + ocVideo.loopSrc + '" autoplay muted loop playsinline preload="metadata"></video>'
+					: '<iframe src="' + ocVideo.loopSrc + '" allow="autoplay; fullscreen" tabindex="-1" title="video"></iframe>';
+			};
+
+			var ocOverlay = null;
+
+			var ocCloseOverlay = function () {
+				ocOverlay.hidden = true;
+				ocOverlay.querySelector( '.oc-voverlay__media' ).innerHTML = '';
+				document.body.style.overflow = '';
+			};
+
+			var ocOpenOverlay = function () {
+				if ( ! ocOverlay ) {
+					ocOverlay = document.createElement( 'div' );
+					ocOverlay.className = 'oc-voverlay';
+					ocOverlay.hidden = true;
+					ocOverlay.innerHTML = '<button type="button" class="oc-voverlay__close" aria-label="close">&times;</button><div class="oc-voverlay__media"></div>';
+					document.body.appendChild( ocOverlay );
+
+					ocOverlay.addEventListener( 'click', function ( event ) {
+						if ( event.target === ocOverlay || event.target.closest( '.oc-voverlay__close' ) ) {
+							ocCloseOverlay();
+						}
+					} );
+
+					document.addEventListener( 'keydown', function ( event ) {
+						if ( 'Escape' === event.key && ! ocOverlay.hidden ) {
+							ocCloseOverlay();
+						}
+					} );
+				}
+
+				ocOverlay.querySelector( '.oc-voverlay__media' ).innerHTML = 'file' === ocVideo.kind
+					? '<video src="' + ocVideo.fullSrc + '" autoplay loop playsinline controls></video>'
+					: '<iframe src="' + ocVideo.fullSrc + '" allow="autoplay; fullscreen" title="video"></iframe>';
+				ocOverlay.hidden = false;
+				document.body.style.overflow = 'hidden';
+			};
+
+			if ( 'gallery' === ocVideo.placement ) {
+				var ocInsertSlide = function () {
+					if ( galleryWrap.querySelector( '.oc-vslide' ) ) {
+						return;
+					}
+					var slide = document.createElement( 'div' );
+					slide.className = 'woocommerce-product-gallery__image oc-vslide';
+					slide.dataset.thumb = ocVideo.thumb || ocVideoFallbackThumb;
+					slide.innerHTML = ocVideoLoopHtml() + '<span class="oc-vplay" aria-hidden="true"></span>';
+					var at = Math.min( Math.max( ocVideo.position, 1 ), galleryWrap.children.length + 1 ) - 1;
+					galleryWrap.insertBefore( slide, galleryWrap.children[ at ] || null );
+					slide.addEventListener( 'click', ocOpenOverlay );
+				};
+
+				ocReinsertVideo = ocInsertSlide;
+				ocInsertSlide();
+				buildGalleryRail();
+				buildMobileDots();
+				window.dispatchEvent( new Event( 'resize' ) );
+			} else {
+				var fab = document.createElement( 'button' );
+				fab.type = 'button';
+				fab.className = 'oc-vfab oc-vfab--' + ( 'float-start' === ocVideo.placement ? 'start' : 'end' );
+				fab.setAttribute( 'aria-label', 'video' );
+				fab.innerHTML = ocVideoLoopHtml() + '<span class="oc-vplay oc-vplay--sm" aria-hidden="true"></span>';
+
+				var galleryBox = document.querySelector( '.woocommerce-product-gallery' );
+				if ( galleryBox ) {
+					galleryBox.appendChild( fab );
+					fab.addEventListener( 'click', ocOpenOverlay );
+				}
+			}
 		}
 	}
 

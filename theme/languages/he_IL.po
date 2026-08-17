@@ -765,6 +765,39 @@ msgstr "צורת ה-Swatch — קטלוג"
 msgid "Catalogue"
 msgstr "קטלוג"
 
+msgid "Video"
+msgstr "וידאו"
+
+msgid "Product video"
+msgstr "וידאו מוצר"
+
+msgid "Choose from library"
+msgstr "בחירה מהספרייה"
+
+msgid "A YouTube or Vimeo link, or a video file from the media library. Embeds play without controls."
+msgstr "קישור YouTube או Vimeo, או קובץ וידאו מספריית המדיה. הטמעות מתנגנות ללא כפתורים."
+
+msgid "Show the video on the catalogue card (primary, always muted)"
+msgstr "הצגת הווידאו בכרטיס בקטלוג (ראשי, תמיד ללא סאונד)"
+
+msgid "Product page placement"
+msgstr "מיקום בדף המוצר"
+
+msgid "Inside the gallery"
+msgstr "בתוך הגלריה"
+
+msgid "Floating — bottom right"
+msgstr "צף — ימין למטה"
+
+msgid "Floating — bottom left"
+msgstr "צף — שמאל למטה"
+
+msgid "Position in the gallery"
+msgstr "מיקום בגלריה"
+
+msgid "The floating video loops quietly over the main image; a click opens it full screen."
+msgstr "הווידאו הצף רץ בלופ שקט מעל התמונה הראשית; לחיצה פותחת אותו על כל המסך."
+
 msgid "Layout"
 msgstr "פריסה"
 
