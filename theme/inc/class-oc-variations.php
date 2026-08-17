@@ -644,14 +644,17 @@ final class Variations {
 			echo '<button type="button" class="button oc-cgal__colreset"' . ( '' === $color ? ' style="display:none;"' : '' ) . '>' . esc_html__( 'Reset', 'oc-theme' ) . '</button>';
 			echo '</span>';
 
-			// Optional swatch override for this product only — one compact row,
-			// unhooked from Woo's floated form-field label layout.
+			// Optional swatch override for this product only — the chosen image
+			// becomes a chip with the same red x as the gallery ones, and the
+			// choose button hides while an override is set.
 			echo '<span style="display:flex;align-items:center;gap:8px;margin-block-start:8px;">';
 			echo '<label style="float:none;inline-size:auto;margin:0;display:inline-block;">' . esc_html__( 'Swatch image (this product only)', 'oc-theme' ) . '</label>';
 			echo '<input type="hidden" name="oc_cgal[' . esc_attr( $term->slug ) . '][swatch]" value="' . esc_url( $swatch ) . '" class="oc-cgal__sw" />';
-			echo '<img class="oc-cgal__swprev" src="' . esc_url( $swatch ) . '" alt="" style="inline-size:28px;block-size:28px;border-radius:50%;object-fit:cover;border:1px solid #ccd0d4;' . ( '' === $swatch ? 'display:none;' : '' ) . '" />';
-			echo '<button type="button" class="button oc-cgal__swpick">' . esc_html__( 'Choose image', 'oc-theme' ) . '</button>';
-			echo '<button type="button" class="button oc-cgal__swclear"' . ( '' === $swatch ? ' style="display:none;"' : '' ) . '>' . esc_html__( 'Remove', 'oc-theme' ) . '</button>';
+			echo '<span class="oc-cgal__swchip" style="position:relative;display:' . ( '' === $swatch ? 'none' : 'inline-block' ) . ';">';
+			echo '<img class="oc-cgal__swprev" src="' . esc_url( $swatch ) . '" alt="" style="inline-size:28px;block-size:28px;border-radius:50%;object-fit:cover;border:1px solid #ccd0d4;display:block;" />';
+			echo '<button type="button" class="oc-cgal__swx" aria-label="' . esc_attr__( 'Remove', 'oc-theme' ) . '" style="position:absolute;inset-block-start:-6px;inset-inline-end:-6px;inline-size:18px;block-size:18px;border-radius:50%;border:none;background:#d63638;color:#fff;font-size:12px;line-height:1;cursor:pointer;padding:0;">&times;</button>';
+			echo '</span>';
+			echo '<button type="button" class="button oc-cgal__swpick"' . ( '' === $swatch ? '' : ' style="display:none;"' ) . '>' . esc_html__( 'Choose image', 'oc-theme' ) . '</button>';
 			echo '</span>';
 
 			echo '</div>';
@@ -768,6 +771,13 @@ final class Variations {
 					return;
 				}
 
+				if ( event.target.closest( '.oc-cgal__swx' ) ) {
+					row.querySelector( '.oc-cgal__sw' ).value = '';
+					row.querySelector( '.oc-cgal__swchip' ).style.display = 'none';
+					row.querySelector( '.oc-cgal__swpick' ).style.display = '';
+					return;
+				}
+
 				if ( ! window.wp || ! wp.media ) {
 					return;
 				}
@@ -800,19 +810,12 @@ final class Variations {
 						var a = swFrame.state().get( 'selection' ).first().toJSON();
 						var u = a.sizes && a.sizes.thumbnail ? a.sizes.thumbnail.url : a.url;
 						row.querySelector( '.oc-cgal__sw' ).value = u;
-						var prev = row.querySelector( '.oc-cgal__swprev' );
-						prev.src = u;
-						prev.style.display = '';
-						row.querySelector( '.oc-cgal__swclear' ).style.display = '';
+						row.querySelector( '.oc-cgal__swprev' ).src = u;
+						row.querySelector( '.oc-cgal__swchip' ).style.display = 'inline-block';
+						row.querySelector( '.oc-cgal__swpick' ).style.display = 'none';
 					} );
 					swFrame.open();
 					return;
-				}
-
-				if ( event.target.closest( '.oc-cgal__swclear' ) ) {
-					row.querySelector( '.oc-cgal__sw' ).value = '';
-					row.querySelector( '.oc-cgal__swprev' ).style.display = 'none';
-					event.target.closest( '.oc-cgal__swclear' ).style.display = 'none';
 				}
 			} );
 		}() );
