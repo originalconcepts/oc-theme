@@ -1185,47 +1185,25 @@ li.product:focus-within .oc-card-atc,
 /* the sticky-inner is the positioning context for the desktop arrows */
 .oc-stick-inner { position: relative; }
 
-/* lightbox affordance: the plus follows the cursor (asceno-style) */
+/* Lightbox affordance — the asceno cursor, verbatim: a NATIVE svg cursor
+ * (zero lag, no follower element), a 36px solid white disc with a hairline
+ * 1px black plus. Hotspot at its centre. */
 .woocommerce-product-gallery__trigger { display: none !important; }
 
-body:not(.oc-no-lightbox) .woocommerce-product-gallery__image a { cursor: none; }
-
-/* Physical left/top on purpose: the element follows clientX/clientY, which
- * are physical coordinates. Logical insets mirrored it away from the cursor
- * in RTL, and mis-centred the plus bars (QA round 4). */
-.oc-cursor-plus {
-	position: fixed;
-	top: 0;
-	left: 0;
-	inline-size: 44px;
-	block-size: 44px;
-	border-radius: 50%;
-	background: rgb(255 255 255 / 92%);
-	box-shadow: 0 2px 10px rgb(0 0 0 / 18%);
-	z-index: 90;
-	pointer-events: none;
-	display: none;
-	transform: translate(-50%, -50%);
+body:not(.oc-no-lightbox) .woocommerce-product-gallery__image:not(.oc-vslide),
+body:not(.oc-no-lightbox) .woocommerce-product-gallery__image:not(.oc-vslide) a,
+body:not(.oc-no-lightbox) .woocommerce-product-gallery__image:not(.oc-vslide) img {
+	cursor: url("data:image/svg+xml,%3Csvg width='36' height='36' viewBox='0 0 36 36' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='18' cy='18' r='18' fill='%23ffffff'/%3E%3Cpath d='M24.688 18.516h-6.172v6.172h-1.032v-6.172h-6.172v-1.032h6.172v-6.172h1.032v6.172h6.172' fill='%23000000'/%3E%3C/svg%3E") 18 18, zoom-in;
 }
 
-.oc-cursor-plus::before,
-.oc-cursor-plus::after {
-	content: "";
-	position: absolute;
-	top: 50%;
-	left: 50%;
-	background: var(--oc-ink);
-	transform: translate(-50%, -50%);
+/* The same disc inside the open lightbox: plus to zoom in, minus to release. */
+.oc-voverlay__media img {
+	cursor: url("data:image/svg+xml,%3Csvg width='36' height='36' viewBox='0 0 36 36' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='18' cy='18' r='18' fill='%23ffffff'/%3E%3Cpath d='M24.688 18.516h-6.172v6.172h-1.032v-6.172h-6.172v-1.032h6.172v-6.172h1.032v6.172h6.172' fill='%23000000'/%3E%3C/svg%3E") 18 18, zoom-in;
 }
 
-.oc-cursor-plus::before { inline-size: 16px; block-size: 1.6px; }
-.oc-cursor-plus::after { inline-size: 1.6px; block-size: 16px; }
-
-.oc-cursor-plus.is-on { display: block; }
-
-/* white lightbox, like furniture: light backdrop, dark UI, arrows at the bottom */
-.pswp__bg { background: #fff !important; }
-.pswp__button { filter: invert(1); }
+.oc-voverlay__media img.is-zoomed {
+	cursor: url("data:image/svg+xml,%3Csvg width='36' height='36' viewBox='0 0 36 36' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='18' cy='18' r='18' fill='%23ffffff'/%3E%3Cpath d='M24.688 18.516h-13.376v-1.032h13.376' fill='%23000000'/%3E%3C/svg%3E") 18 18, zoom-out;
+}
 .pswp__counter { color: #333; filter: none; }
 .pswp__button--arrow--left,
 .pswp__button--arrow--right {
@@ -2222,14 +2200,10 @@ table.variations td.value select:has(+ .oc-var) {
 	max-inline-size: 92vw;
 	max-block-size: 100vh;
 	display: block;
-	cursor: zoom-in;
 	transition: transform .4s cubic-bezier(.2, .7, .2, 1);
 }
 
-.oc-voverlay__media img.is-zoomed {
-	transform: scale(1.9);
-	cursor: zoom-out;
-}
+.oc-voverlay__media img.is-zoomed { transform: scale(1.9); }
 
 .oc-voverlay__media video {
 	max-inline-size: 92vw;

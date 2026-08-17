@@ -1474,40 +1474,9 @@
 		} );
 	}
 
-	/* ---------- gallery: plus circle follows the cursor (asceno-style) ---------- */
-
-	var gallery = document.querySelector( '.woocommerce-product-gallery' );
-
-	if ( gallery && ! document.body.classList.contains( 'oc-no-lightbox' ) &&
-		window.matchMedia( '(hover: hover)' ).matches ) {
-
-		var plus = document.createElement( 'span' );
-		plus.className = 'oc-cursor-plus';
-		plus.setAttribute( 'aria-hidden', 'true' );
-		document.body.appendChild( plus );
-
-		gallery.addEventListener( 'mousemove', function ( event ) {
-			// Over the video the play badge is the signal — a zoom-plus there
-			// promises the wrong thing, so it steps aside.
-			if ( event.target.closest( '.oc-thumbs, .oc-vslide, .oc-vfab' ) ) {
-				plus.classList.remove( 'is-on' );
-				return;
-			}
-			if ( event.target.closest( '.woocommerce-product-gallery__image' ) ) {
-				plus.classList.add( 'is-on' );
-				// Physical top/left: clientX/Y are physical, and inline-start
-				// mirrored the badge away from the cursor in RTL (QA round 4).
-				plus.style.top = event.clientY + 'px';
-				plus.style.left = event.clientX + 'px';
-			} else {
-				plus.classList.remove( 'is-on' );
-			}
-		} );
-
-		gallery.addEventListener( 'mouseleave', function () {
-			plus.classList.remove( 'is-on' );
-		} );
-	}
+	/* The gallery's zoom-plus affordance is a NATIVE svg cursor now (see the
+	 * stylesheet) — no follower element, no mousemove work, zero lag. Video
+	 * slides keep their own pointer + play badge. */
 
 	/* ---------- sticky product columns ----------
 	 * Pin only a column that fits inside the viewport. A taller-than-viewport
