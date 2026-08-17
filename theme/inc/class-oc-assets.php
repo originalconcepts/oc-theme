@@ -219,6 +219,16 @@ final class Assets {
 			$bg    = (string) get_theme_mod( 'oc_product_bg', '' );
 			$lh    = (string) get_theme_mod( 'oc_product_lh', '' );
 			$fs    = absint( get_theme_mod( 'oc_product_fs', 0 ) );
+
+			$colgap = absint( get_theme_mod( 'oc_product_colgap_px', 0 ) );
+			if ( $colgap > 0 ) {
+				$out_extra = '--oc-prod-colgap:' . $colgap . 'px;';
+			}
+
+			$gimg_m = absint( get_theme_mod( 'oc_gallery_img_height_mobile_px', 0 ) );
+			if ( $gimg_m > 0 ) {
+				$out_extra = ( $out_extra ?? '' ) . '--oc-gimg-h-m:' . $gimg_m . 'px;';
+			}
 		} elseif ( function_exists( 'is_shop' ) && ( is_shop() || is_product_taxonomy() ) ) {
 			$width = absint( get_theme_mod( 'oc_catalog_width_px', 0 ) );
 			$bg    = (string) get_theme_mod( 'oc_catalog_bg', '' );
@@ -228,7 +238,7 @@ final class Assets {
 			$bg = (string) get_theme_mod( 'oc_checkout_bg', '' );
 		}
 
-		$out = '';
+		$out = $out_extra ?? '';
 		if ( '' !== $lh ) {
 			$out .= '--oc-lh:' . $this->safe_value( $lh ) . ';';
 		}

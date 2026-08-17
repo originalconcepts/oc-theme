@@ -779,6 +779,7 @@ final class Customizer {
 
 		$this->number( $c, 'oc_product_width_px', 'oc_product', __( 'Page width override (0 = inherit)', 'oc-theme' ), 0, 0, 1920 );
 		$this->color( $c, 'oc_product_bg', 'oc_product', __( 'Page background override', 'oc-theme' ) );
+		$this->number( $c, 'oc_product_colgap_px', 'oc_product', __( 'Gallery-to-content gap (px, 0 = default)', 'oc-theme' ), 0, 0, 220 );
 
 		$this->preset(
 			$c,
@@ -930,6 +931,8 @@ final class Customizer {
 				return 'dots' === get_theme_mod( 'oc_gallery_mobile', 'dots' );
 			}
 		);
+
+		$this->number( $c, 'oc_gallery_img_height_mobile_px', 'oc_product', __( 'Uniform height — mobile (px, 0 = auto)', 'oc-theme' ), 0, 0, 900 );
 
 		$this->heading( $c, 'oc_h_prod_text', 'oc_product', __( 'Text', 'oc-theme' ) );
 

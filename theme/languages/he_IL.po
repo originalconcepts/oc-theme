@@ -813,6 +813,12 @@ msgstr "הווידאו הצף רץ בלופ שקט מעל התמונה הראש�
 msgid "Autoplay on the product page — no play button, hover shows the zoom plus. Off: a frozen frame with a play button; a click plays it in place."
 msgstr "ניגון אוטומטי בדף המוצר — בלי כפתור פליי, ריחוף מציג את הפלוס להגדלה. כבוי: פריים קפוא עם כפתור פליי; לחיצה מנגנת אותו במקום."
 
+msgid "Uniform height — mobile (px, 0 = auto)"
+msgstr "גובה אחיד — מובייל (px, ‏0 = אוטומטי)"
+
+msgid "Gallery-to-content gap (px, 0 = default)"
+msgstr "מרווח בין הגלריה לתוכן (px, ‏0 = ברירת מחדל)"
+
 msgid "Layout"
 msgstr "פריסה"
 

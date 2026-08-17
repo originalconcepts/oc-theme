@@ -937,7 +937,9 @@ li.product:focus-within .oc-card-atc,
 .single-product div.product {
 	display: grid;
 	grid-template-columns: var(--oc-col-a, minmax(0, 1fr)) var(--oc-col-b, minmax(0, 1fr));
-	gap: calc(var(--oc-gap) * 1.5);
+	/* The gallery-to-content breathing room is a setting; the density-scaled
+	 * default holds until one is chosen. */
+	gap: var(--oc-prod-colgap, calc(var(--oc-gap) * 1.5));
 	/* columns stretch to the full row so the sticky inner wrapper is clamped
 	 * by its column box, which ends exactly where the row does */
 }
@@ -2264,6 +2266,31 @@ body:not(.oc-no-lightbox) .oc-vslide.is-playing {
 
 .oc-tnav--prev { left: -15px; }
 .oc-tnav--next { right: -15px; }
+
+/* Mobile gallery height: its own setting. When set, every mobile slide —
+ * image and video — takes the same height; otherwise the desktop uniform
+ * height (when on) carries over, or heights stay natural. */
+@media (max-width: 900px) {
+	.oc-gimg-fixed .woocommerce-product-gallery__wrapper .woocommerce-product-gallery__image img:not(.zoomImg) {
+		block-size: var(--oc-gimg-h-m, var(--oc-gimg-h, 600px));
+		object-fit: cover;
+	}
+
+	.oc-gimg-fixed .oc-vslide {
+		aspect-ratio: auto;
+		block-size: var(--oc-gimg-h-m, var(--oc-gimg-h, 600px));
+	}
+
+	.oc-gimg-m-fixed .woocommerce-product-gallery__wrapper .woocommerce-product-gallery__image img:not(.zoomImg) {
+		block-size: var(--oc-gimg-h-m, auto);
+		object-fit: cover;
+	}
+
+	.oc-gimg-m-fixed .oc-vslide {
+		aspect-ratio: auto;
+		block-size: var(--oc-gimg-h-m, auto);
+	}
+}
 
 /* Rail-thumb badge: always on the video's thumbnail, whatever the autoplay
  * setting — the shopper should know it is a video before choosing it. */

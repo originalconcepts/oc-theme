@@ -372,6 +372,10 @@ final class WooCommerce {
 				$classes[] = 'oc-gimg-fixed';
 			}
 
+			if ( absint( get_theme_mod( 'oc_gallery_img_height_mobile_px', 0 ) ) > 0 ) {
+				$classes[] = 'oc-gimg-m-fixed';
+			}
+
 			if ( get_theme_mod( 'oc_gallery_zoom', true ) ) {
 				$classes[] = 'oc-zoom';
 			}
