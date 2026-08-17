@@ -2197,7 +2197,7 @@ body:not(.oc-no-lightbox) .oc-vslide.is-playing {
 }
 
 .oc-vpause { right: 10px; }
-.oc-vsound { left: 10px; }
+.oc-vsound { right: 54px; }
 
 .oc-vsound .on { display: none; }
 .oc-vsound.is-on .on { display: block; }
@@ -2212,6 +2212,46 @@ body:not(.oc-no-lightbox) .oc-vslide.is-playing {
 	position: relative;
 	display: grid;
 	place-items: center;
+}
+
+/* Under-preset gallery arrows: white circles straddling the main image's
+ * edges — half on the image, half on the page ground. */
+.oc-gallery-thumbs-under .woocommerce-product-gallery__wrapper { position: relative; }
+
+.oc-enav {
+	position: absolute;
+	top: 50%;
+	translate: 0 -50%;
+	inline-size: 44px;
+	block-size: 44px;
+	border: 0;
+	border-radius: 50%;
+	background: #fff;
+	color: var(--oc-ink, #111);
+	box-shadow: 0 2px 12px rgb(0 0 0 / 16%);
+	display: grid;
+	place-items: center;
+	cursor: pointer;
+	padding: 0;
+	z-index: 4;
+	transition: scale .15s ease, box-shadow .15s ease;
+}
+
+.oc-enav:hover {
+	scale: 1.08;
+	box-shadow: 0 4px 16px rgb(0 0 0 / 24%);
+}
+
+.oc-enav svg {
+	inline-size: 15px;
+	block-size: 15px;
+}
+
+.oc-enav--prev { left: -22px; }
+.oc-enav--next { right: -22px; }
+
+@media (max-width: 900px) {
+	.oc-enav { display: none; }
 }
 
 /* Rail-thumb badge: always on the video's thumbnail, whatever the autoplay

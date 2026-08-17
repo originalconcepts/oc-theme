@@ -575,7 +575,9 @@
 		left: '<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M 70,0 L 20,50 L 70,100 L 80,90 L 40,50 L 80,10 Z"/></svg>',
 		right: '<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M 30,0 L 80,50 L 30,100 L 20,90 L 60,50 L 20,10 Z"/></svg>',
 		up: '<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M 0,70 L 50,20 L 100,70 L 90,80 L 50,40 L 10,80 Z"/></svg>',
-		down: '<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M 0,30 L 50,80 L 100,30 L 90,20 L 50,60 L 10,20 Z"/></svg>'
+		down: '<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M 0,30 L 50,80 L 100,30 L 90,20 L 50,60 L 10,20 Z"/></svg>',
+		thinLeft: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 5l-7 7 7 7"/></svg>',
+		thinRight: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 5l7 7-7 7"/></svg>'
 	};
 
 	var galleryMode = galleryBody.classList.contains( 'oc-gallery-thumbs-side' ) ? 'side' :
@@ -661,6 +663,9 @@
 		parent.querySelectorAll( '.oc-thumbscol, .oc-gnav--desktop' ).forEach( function ( node ) {
 			node.remove();
 		} );
+		galleryWrap.querySelectorAll( '.oc-enav' ).forEach( function ( node ) {
+			node.remove();
+		} );
 		gRail = null;
 
 		gSlides = Array.prototype.slice.call(
@@ -740,35 +745,63 @@
 		parent.appendChild( railCol );
 
 		// Cap the visible thumbs; arrows page the rail when there are more.
+		// The under preset skips the below-rail arrows — its arrows ride the
+		// main image's edges instead (built just below).
 		if ( gSlides.length > maxThumbs ) {
-			var nav = document.createElement( 'div' );
-			nav.className = 'oc-thumbnav' + ( vertical ? ' oc-thumbnav--v' : '' );
+			if ( 'under' !== galleryMode ) {
+				var nav = document.createElement( 'div' );
+				nav.className = 'oc-thumbnav' + ( vertical ? ' oc-thumbnav--v' : '' );
 
-			[ [ 'prev', vertical ? 'up' : 'right', -1 ], [ 'next', vertical ? 'down' : 'left', 1 ] ].forEach( function ( def ) {
-				var b = document.createElement( 'button' );
-				b.type = 'button';
-				b.className = 'oc-thumbnav__btn oc-thumbnav__' + def[ 0 ];
-				b.setAttribute( 'aria-label', def[ 0 ] );
-				b.innerHTML = railChevrons[ def[ 1 ] ];
-				b.addEventListener( 'click', function () {
-					var first = rail.querySelector( 'li' );
-					var step = ( ( vertical ? first.offsetHeight : first.offsetWidth ) + 10 ) * def[ 2 ];
-					if ( vertical ) {
-						rail.scrollTop += step;
-					} else {
-						var rtl = 'rtl' === getComputedStyle( rail ).direction;
-						rail.scrollLeft += rtl ? -step : step;
-					}
+				[ [ 'prev', vertical ? 'up' : 'right', -1 ], [ 'next', vertical ? 'down' : 'left', 1 ] ].forEach( function ( def ) {
+					var b = document.createElement( 'button' );
+					b.type = 'button';
+					b.className = 'oc-thumbnav__btn oc-thumbnav__' + def[ 0 ];
+					b.setAttribute( 'aria-label', def[ 0 ] );
+					b.innerHTML = railChevrons[ def[ 1 ] ];
+					b.addEventListener( 'click', function () {
+						var first = rail.querySelector( 'li' );
+						var step = ( ( vertical ? first.offsetHeight : first.offsetWidth ) + 10 ) * def[ 2 ];
+						if ( vertical ) {
+							rail.scrollTop += step;
+						} else {
+							var rtl = 'rtl' === getComputedStyle( rail ).direction;
+							rail.scrollLeft += rtl ? -step : step;
+						}
+					} );
+					nav.appendChild( b );
 				} );
-				nav.appendChild( b );
-			} );
 
-			railCol.appendChild( nav );
+				railCol.appendChild( nav );
+			}
 			sizeRail();
 		}
 
-		// Desktop arrows on the main image, for the thumbs presets.
-		if ( 'stacked' !== galleryMode && galleryBody.classList.contains( 'oc-gdesk-arrows' ) ) {
+		// Under preset: white circles straddling the main image's edges —
+		// half on the image, half on the page — paging the slides; the rail
+		// follows through the active-thumb sync.
+		if ( 'under' === galleryMode &&
+			( gSlides.length > maxThumbs || galleryBody.classList.contains( 'oc-gdesk-arrows' ) ) ) {
+			[ [ 'prev', 'thinLeft', -1 ], [ 'next', 'thinRight', 1 ] ].forEach( function ( def ) {
+				var b = document.createElement( 'button' );
+				b.type = 'button';
+				b.className = 'oc-enav oc-enav--' + def[ 0 ];
+				b.setAttribute( 'aria-label', def[ 0 ] );
+				b.innerHTML = railChevrons[ def[ 1 ] ];
+				b.addEventListener( 'click', function () {
+					var current = 0;
+					rail.querySelectorAll( 'button' ).forEach( function ( other, j ) {
+						if ( 'true' === other.getAttribute( 'aria-current' ) ) {
+							current = j;
+						}
+					} );
+					activateSlide( ( current + def[ 2 ] + gSlides.length ) % gSlides.length );
+				} );
+				galleryWrap.appendChild( b );
+			} );
+		}
+
+		// Desktop arrows on the main image, for the side-rail preset.
+		if ( 'side' === galleryMode && galleryBody.classList.contains( 'oc-gdesk-arrows' ) ) {
 			[ [ 'prev', 'right', -1 ], [ 'next', 'left', 1 ] ].forEach( function ( def ) {
 				var b = document.createElement( 'button' );
 				b.type = 'button';
