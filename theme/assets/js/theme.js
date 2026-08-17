@@ -666,10 +666,12 @@
 		}
 
 		gSlides.forEach( function ( slide, i ) {
-			// A video slide carries its thumb in data-thumb instead of an img.
+			// A video slide shows a frozen first frame in the rail (a muted
+			// metadata-only video element); embeds fall back to their poster.
 			var src = slide.querySelector( 'img' );
 			var thumbSrc = slide.dataset.thumb || ( src && ( src.currentSrc || src.src ) );
-			if ( ! thumbSrc ) {
+
+			if ( ! thumbSrc && ! slide.dataset.vsrc ) {
 				return;
 			}
 
@@ -678,10 +680,19 @@
 			btn.type = 'button';
 			btn.setAttribute( 'aria-current', 0 === i ? 'true' : 'false' );
 
-			var thumb = document.createElement( 'img' );
-			thumb.src = thumbSrc;
-			thumb.alt = '';
-			thumb.loading = 'lazy';
+			var thumb;
+			if ( slide.dataset.vsrc ) {
+				thumb = document.createElement( 'video' );
+				thumb.src = slide.dataset.vsrc;
+				thumb.muted = true;
+				thumb.playsInline = true;
+				thumb.preload = 'metadata';
+			} else {
+				thumb = document.createElement( 'img' );
+				thumb.src = thumbSrc;
+				thumb.alt = '';
+				thumb.loading = 'lazy';
+			}
 
 			btn.appendChild( thumb );
 			li.appendChild( btn );
@@ -1182,20 +1193,60 @@
 			}, 20 );
 			document.body.style.overflow = 'hidden';
 
-			// The signature open: the clicked image swells from its spot on
-			// the page into the lightbox while the white ground fades in.
-			var originImg = originSlide && ! originSlide.classList.contains( 'oc-vslide' )
-				? originSlide.querySelector( 'img' )
-				: null;
+			// The signature open: whatever was clicked — image or video —
+			// swells from its spot on the page into the lightbox while the
+			// white ground fades in. Videos travel as a snapshot of their
+			// current frame; embeds as their poster.
+			var ghostSpec = null;
 
-			if ( originImg && originImg.getBoundingClientRect().width ) {
-				var from = originImg.getBoundingClientRect();
-				var ratio = ( originImg.naturalWidth || from.width ) / ( originImg.naturalHeight || from.height );
-				var toH = Math.min( window.innerHeight, ( window.innerWidth * 0.92 ) / ratio );
-				var toW = toH * ratio;
+			if ( originSlide ) {
+				if ( originSlide.classList.contains( 'oc-vslide' ) ) {
+					var vid = originSlide.querySelector( 'video' );
+					var ghostSrc = null;
+					var vRatio = 16 / 9;
 
+					if ( vid && vid.videoWidth ) {
+						vRatio = vid.videoWidth / vid.videoHeight;
+						try {
+							var cv = document.createElement( 'canvas' );
+							cv.width = vid.videoWidth;
+							cv.height = vid.videoHeight;
+							cv.getContext( '2d' ).drawImage( vid, 0, 0 );
+							ghostSrc = cv.toDataURL( 'image/jpeg', 0.72 );
+						} catch ( snapErr ) {
+							ghostSrc = null;
+						}
+					}
+					if ( ! ghostSrc && ocVideo && ocVideo.thumb ) {
+						ghostSrc = ocVideo.thumb;
+					}
+
+					if ( ghostSrc ) {
+						var vToW;
+						var vToH;
+						if ( ocVideo && 'file' === ocVideo.kind ) {
+							vToH = Math.min( window.innerHeight * 0.92, ( window.innerWidth * 0.92 ) / vRatio );
+							vToW = vToH * vRatio;
+						} else {
+							vToW = Math.min( window.innerWidth * 0.88, 1100 );
+							vToH = vToW / ( 16 / 9 );
+						}
+						ghostSpec = { src: ghostSrc, el: originSlide, toW: vToW, toH: vToH };
+					}
+				} else {
+					var originImg = originSlide.querySelector( 'img' );
+					if ( originImg && originImg.getBoundingClientRect().width ) {
+						var ratio = ( originImg.naturalWidth || 1 ) / ( originImg.naturalHeight || 1 );
+						var toH = Math.min( window.innerHeight, ( window.innerWidth * 0.92 ) / ratio );
+						ghostSpec = { src: originImg.currentSrc || originImg.src, el: originImg, toW: toH * ratio, toH: toH };
+					}
+				}
+			}
+
+			if ( ghostSpec ) {
+				var from = ghostSpec.el.getBoundingClientRect();
 				var ghost = document.createElement( 'img' );
-				ghost.src = originImg.currentSrc || originImg.src;
+				ghost.src = ghostSpec.src;
 				ghost.className = 'oc-lb-ghost';
 				ghost.style.top = from.top + 'px';
 				ghost.style.left = from.left + 'px';
@@ -1206,10 +1257,10 @@
 				media.style.opacity = '0';
 
 				setTimeout( function () {
-					ghost.style.top = ( ( window.innerHeight - toH ) / 2 ) + 'px';
-					ghost.style.left = ( ( window.innerWidth - toW ) / 2 ) + 'px';
-					ghost.style.width = toW + 'px';
-					ghost.style.height = toH + 'px';
+					ghost.style.top = ( ( window.innerHeight - ghostSpec.toH ) / 2 ) + 'px';
+					ghost.style.left = ( ( window.innerWidth - ghostSpec.toW ) / 2 ) + 'px';
+					ghost.style.width = ghostSpec.toW + 'px';
+					ghost.style.height = ghostSpec.toH + 'px';
 				}, 30 );
 
 				setTimeout( function () {
@@ -1242,6 +1293,27 @@
 
 			if ( slide.classList.contains( 'oc-vslide' ) ) {
 				event.preventDefault();
+
+				// Manual mode: the first click starts the loop in place; the
+				// play badge yields to the zoom plus, and the next click
+				// opens the lightbox.
+				if ( slide.classList.contains( 'oc-vslide--manual' ) && ! slide.classList.contains( 'is-playing' ) ) {
+					slide.classList.add( 'is-playing' );
+					var frozen = slide.querySelector( 'video' );
+					if ( frozen ) {
+						frozen.muted = true;
+						frozen.loop = true;
+						frozen.play().catch( function () {} );
+					} else if ( ocVideo ) {
+						var poster = slide.querySelector( '.oc-vposter' );
+						if ( poster ) {
+							poster.remove();
+						}
+						slide.insertAdjacentHTML( 'afterbegin', ocVideoLoopHtml() );
+					}
+					return;
+				}
+
 				ocOpenAtSlide( slide );
 				return;
 			}
@@ -1263,15 +1335,29 @@
 					: '<iframe src="' + ocVideo.loopSrc + '" loading="lazy" allow="autoplay; fullscreen" tabindex="-1" title="video"></iframe>';
 			};
 
+			// Manual mode starts frozen: a first frame for files, the poster
+			// for embeds — the click brings it to life.
+			var ocVideoFrozenHtml = function () {
+				return 'file' === ocVideo.kind
+					? '<video src="' + ocVideo.loopSrc + '" muted playsinline preload="metadata"></video>'
+					: '<img class="oc-vposter" src="' + ( ocVideo.thumb || ocVideoFallbackThumb ) + '" alt="" />';
+			};
+
 			if ( 'gallery' === ocVideo.placement ) {
 				var ocInsertSlide = function () {
 					if ( galleryWrap.querySelector( '.oc-vslide' ) ) {
 						return;
 					}
 					var slide = document.createElement( 'div' );
-					slide.className = 'woocommerce-product-gallery__image oc-vslide';
+					slide.className = 'woocommerce-product-gallery__image oc-vslide ' +
+						( ocVideo.autoplay ? 'oc-vslide--auto' : 'oc-vslide--manual' );
 					slide.dataset.thumb = ocVideo.thumb || ocVideoFallbackThumb;
-					slide.innerHTML = ocVideoLoopHtml() + '<span class="oc-vplay" aria-hidden="true"></span>';
+					if ( 'file' === ocVideo.kind ) {
+						// The rail freezes this into a first-frame thumbnail.
+						slide.dataset.vsrc = ocVideo.loopSrc;
+					}
+					slide.innerHTML = ( ocVideo.autoplay ? ocVideoLoopHtml() : ocVideoFrozenHtml() ) +
+						'<span class="oc-vplay" aria-hidden="true"></span>';
 					var at = Math.min( Math.max( ocVideo.position, 1 ), galleryWrap.children.length + 1 ) - 1;
 					galleryWrap.insertBefore( slide, galleryWrap.children[ at ] || null );
 				};

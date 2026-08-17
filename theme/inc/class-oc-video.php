@@ -36,7 +36,7 @@ final class Video {
 	 * The stored video config for a product.
 	 *
 	 * @param int $product_id Product id.
-	 * @return array{url:string,catalog:bool,placement:string,position:int}|null
+	 * @return array{url:string,catalog:bool,placement:string,position:int,autoplay:bool}|null
 	 */
 	public static function meta( int $product_id ): ?array {
 		$raw = get_post_meta( $product_id, '_oc_video', true );
@@ -50,6 +50,8 @@ final class Video {
 			'catalog'   => ! empty( $raw['catalog'] ),
 			'placement' => in_array( $raw['placement'] ?? '', array( 'gallery', 'float-end', 'float-start' ), true ) ? (string) $raw['placement'] : 'gallery',
 			'position'  => max( 1, (int) ( $raw['position'] ?? 1 ) ),
+			// Pre-existing configs never saved the key — they keep autoplaying.
+			'autoplay'  => ! array_key_exists( 'autoplay', $raw ) || ! empty( $raw['autoplay'] ),
 		);
 	}
 
@@ -168,6 +170,7 @@ final class Video {
 			'catalog'   => false,
 			'placement' => 'gallery',
 			'position'  => 1,
+			'autoplay'  => true,
 		);
 
 		wp_enqueue_media();
@@ -185,6 +188,13 @@ final class Video {
 					<label style="float:none;inline-size:auto;margin:0;display:inline;">
 						<input type="checkbox" name="oc_video_catalog" value="1" <?php checked( $meta['catalog'] ); ?> />
 						<?php esc_html_e( 'Show the video on the catalogue card (primary, always muted)', 'oc-theme' ); ?>
+					</label>
+				</p>
+
+				<p class="form-field" style="padding:0;margin-block-start:8px;">
+					<label style="float:none;inline-size:auto;margin:0;display:inline;">
+						<input type="checkbox" name="oc_video_autoplay" value="1" <?php checked( $meta['autoplay'] ); ?> />
+						<?php esc_html_e( 'Autoplay on the product page — no play button, hover shows the zoom plus. Off: a frozen frame with a play button; a click plays it in place.', 'oc-theme' ); ?>
 					</label>
 				</p>
 
@@ -249,6 +259,7 @@ final class Video {
 				'catalog'   => isset( $_POST['oc_video_catalog'] ), // phpcs:ignore WordPress.Security.NonceVerification.Missing
 				'placement' => in_array( $_POST['oc_video_placement'] ?? '', array( 'gallery', 'float-end', 'float-start' ), true ) ? sanitize_text_field( wp_unslash( (string) $_POST['oc_video_placement'] ) ) : 'gallery', // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 				'position'  => max( 1, absint( $_POST['oc_video_position'] ?? 1 ) ), // phpcs:ignore WordPress.Security.NonceVerification.Missing
+				'autoplay'  => isset( $_POST['oc_video_autoplay'] ), // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			)
 		);
 	}
@@ -282,6 +293,7 @@ final class Video {
 				array(
 					'placement' => $meta['placement'],
 					'position'  => $meta['position'],
+					'autoplay'  => $meta['autoplay'],
 					'kind'      => $loop['kind'],
 					'loopSrc'   => $loop['src'],
 					'fullSrc'   => $full['src'],

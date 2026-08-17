@@ -810,6 +810,9 @@ msgstr "מיקום בגלריה"
 msgid "The floating video loops quietly over the main image; a click opens it full screen."
 msgstr "הווידאו הצף רץ בלופ שקט מעל התמונה הראשית; לחיצה פותחת אותו על כל המסך."
 
+msgid "Autoplay on the product page — no play button, hover shows the zoom plus. Off: a frozen frame with a play button; a click plays it in place."
+msgstr "ניגון אוטומטי בדף המוצר — בלי כפתור פליי, ריחוף מציג את הפלוס להגדלה. כבוי: פריים קפוא עם כפתור פליי; לחיצה מנגנת אותו במקום."
+
 msgid "Layout"
 msgstr "פריסה"
 
