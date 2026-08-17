@@ -1116,12 +1116,10 @@
 			ocOverlayIndex = Math.max( 0, index );
 			ocRenderOverlay();
 			ocOverlay.hidden = false;
-			// Two frames so the fade transition has a starting state.
-			requestAnimationFrame( function () {
-				requestAnimationFrame( function () {
-					ocOverlay.classList.add( 'is-open' );
-				} );
-			} );
+			// A beat later, so the fade transition has a starting state.
+			setTimeout( function () {
+				ocOverlay.classList.add( 'is-open' );
+			}, 30 );
 			document.body.style.overflow = 'hidden';
 		};
 
