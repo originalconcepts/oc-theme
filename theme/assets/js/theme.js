@@ -587,6 +587,8 @@
 	// window-level listeners attach once, reading the current rail/slides.
 	var gSlides = [];
 	var gRail = null;
+	var gRailLastScrolled = -1;
+	var gRailLock = 0;
 
 	function setActiveThumb( index ) {
 		if ( ! gRail ) {
@@ -597,10 +599,16 @@
 		} );
 
 		// Keep the active thumb in view: paging the main image scrolls the
-		// rail along with it, in every rail flavour.
-		var li = gRail.children[ index ];
-		if ( li && li.scrollIntoView ) {
-			li.scrollIntoView( { block: 'nearest', inline: 'nearest', behavior: 'smooth' } );
+		// rail along with it, in every rail flavour. Deduplicated and
+		// lockable — the stacked preset's scroll tracker passes through
+		// every intermediate slide during a smooth page glide, and syncing
+		// the rail on each one made it bob up and down.
+		if ( index !== gRailLastScrolled && Date.now() >= gRailLock ) {
+			gRailLastScrolled = index;
+			var li = gRail.children[ index ];
+			if ( li && li.scrollIntoView ) {
+				li.scrollIntoView( { block: 'nearest', inline: 'nearest', behavior: 'smooth' } );
+			}
 		}
 
 		if ( ocPauseManualVideo ) {
@@ -611,12 +619,17 @@
 	function activateSlide( index ) {
 		if ( 'stacked' === galleryMode ) {
 			gSlides[ index ].scrollIntoView( { behavior: 'smooth', block: 'start' } );
-		} else {
-			gSlides.forEach( function ( other ) {
-				other.classList.remove( 'is-active' );
-			} );
-			gSlides[ index ].classList.add( 'is-active' );
+			// One rail sync now, then hold it still while the page glides —
+			// the scroll tracker would drag it through every slide en route.
+			setActiveThumb( index );
+			gRailLock = Date.now() + 900;
+			return;
 		}
+
+		gSlides.forEach( function ( other ) {
+			other.classList.remove( 'is-active' );
+		} );
+		gSlides[ index ].classList.add( 'is-active' );
 		setActiveThumb( index );
 	}
 

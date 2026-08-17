@@ -1083,8 +1083,15 @@ li.product:focus-within .oc-card-atc,
 	.oc-gallery-thumbs-side .oc-thumbscol { grid-column: 1; grid-row: 1; }
 	.oc-gallery-thumbs-side .oc-thumbs { flex-direction: column; }
 
-	/* under: rail below the main image, with breathing room */
-	.oc-gallery-thumbs-under .oc-thumbscol { margin-block-start: 14px; }
+	/* under: rail below the main image, with breathing room — rail and its
+	 * paging arrows stay centred together, so a capped rail never leaves
+	 * the arrows stranded at the far side. */
+	.oc-gallery-thumbs-under .oc-thumbscol {
+		margin-block-start: 14px;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+	}
 
 	/* stacked: images in a full column with the rail beside, asceno-style */
 	.oc-gallery-stacked .woocommerce-product-gallery .oc-stick-inner {
