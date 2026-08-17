@@ -2158,39 +2158,54 @@ body:not(.oc-no-lightbox) .oc-vslide.is-playing {
 	border-left-width: 9px;
 }
 
-/* Sound chip: bottom-right of a video that carries audio — the loop starts
- * muted, the speaker switches the sound on and off. */
-.oc-vsound {
+/* Video chips — white circles like the lightbox buttons: pause/play at the
+ * bottom-RIGHT, the speaker (when the file has audio) at the bottom-LEFT.
+ * Same chips on the product page and inside the lightbox. */
+.oc-vchip {
 	position: absolute;
 	bottom: 10px;
-	right: 10px;
 	z-index: 3;
-	inline-size: 34px;
-	block-size: 34px;
+	inline-size: 36px;
+	block-size: 36px;
 	border: 0;
 	border-radius: 50%;
-	background: rgb(0 0 0 / 45%);
-	color: #fff;
+	background: #fff;
+	color: var(--oc-ink, #111);
+	box-shadow: 0 2px 12px rgb(0 0 0 / 16%);
 	display: grid;
 	place-items: center;
 	cursor: pointer;
 	padding: 0;
-	transition: scale .15s ease, background-color .15s ease;
+	transition: scale .15s ease, box-shadow .15s ease;
 }
 
-.oc-vsound:hover {
+.oc-vchip:hover {
 	scale: 1.08;
-	background: rgb(0 0 0 / 62%);
+	box-shadow: 0 4px 16px rgb(0 0 0 / 24%);
 }
 
-.oc-vsound svg {
+.oc-vchip svg {
 	inline-size: 17px;
 	block-size: 17px;
 }
 
+.oc-vpause { right: 10px; }
+.oc-vsound { left: 10px; }
+
 .oc-vsound .on { display: none; }
 .oc-vsound.is-on .on { display: block; }
 .oc-vsound.is-on .off { display: none; }
+
+.oc-vpause .pp-play { display: none; }
+.oc-vpause.is-paused .pp-play { display: block; }
+.oc-vpause.is-paused .pp-pause { display: none; }
+
+/* The lightbox video's chip host. */
+.oc-vwrap {
+	position: relative;
+	display: grid;
+	place-items: center;
+}
 
 /* Rail-thumb badge: always on the video's thumbnail, whatever the autoplay
  * setting — the shopper should know it is a video before choosing it. */

@@ -1050,9 +1050,17 @@
 		var ocOverlayIndex = 0;
 		var ocLbEase = 'cubic-bezier(.2,.7,.2,1)';
 
+		// Assigned by the video section below.
+		var ocAttachVideoChips = null;
+		var ocTrySoundOn = function () {};
+		var ocResetPageVideos = function () {};
+		var ocResumePageVideos = function () {};
+
+		// No native controls anywhere — the theme's own chips (pause at the
+		// right, sound at the left) are the video UI.
 		var ocVideoFullHtml = function () {
 			return 'file' === ocVideo.kind
-				? '<video src="' + ocVideo.fullSrc + '" autoplay loop playsinline controls></video>'
+				? '<div class="oc-vwrap"><video src="' + ocVideo.fullSrc + '" autoplay loop playsinline></video></div>'
 				: '<iframe src="' + ocVideo.fullSrc + '" allow="autoplay; fullscreen" title="video"></iframe>';
 		};
 
@@ -1088,15 +1096,26 @@
 
 			if ( 'video' === item.type ) {
 				media.innerHTML = ocVideoFullHtml();
+				var lbVid = media.querySelector( 'video' );
+				if ( lbVid && ocAttachVideoChips ) {
+					ocAttachVideoChips( media.querySelector( '.oc-vwrap' ), lbVid );
+					ocTrySoundOn( lbVid );
+				}
 			} else {
 				// The preview paints instantly with the right geometry; the
-				// full-size file replaces it in place once it has loaded.
+				// full-size file replaces it in place once it has loaded —
+				// with the rendered box frozen first, so nothing jumps.
 				media.innerHTML = '<img src="' + item.preview + '" alt="" />';
 				if ( item.src !== item.preview ) {
 					var full = new Image();
 					var target = media.querySelector( 'img' );
 					full.onload = function () {
 						if ( target.isConnected ) {
+							var box = target.getBoundingClientRect();
+							if ( box.width ) {
+								target.style.width = box.width + 'px';
+								target.style.height = box.height + 'px';
+							}
 							target.src = item.src;
 						}
 					};
@@ -1136,6 +1155,7 @@
 				ocOverlay.querySelector( '.oc-voverlay__media' ).innerHTML = '';
 			}, 220 );
 			document.body.style.overflow = '';
+			ocResumePageVideos();
 		};
 
 		// Thin, fine icons — 1.5px strokes, like the reference.
@@ -1209,6 +1229,10 @@
 
 			ocOverlayItems = items;
 			ocOverlayIndex = Math.max( 0, index );
+
+			// One stage at a time: the page's own video stops and rewinds
+			// while the lightbox is up.
+			ocResetPageVideos();
 
 			var media = ocOverlay.querySelector( '.oc-voverlay__media' );
 			media.style.transition = 'none';
@@ -1343,9 +1367,13 @@
 					slide.classList.add( 'is-playing' );
 					var frozen = slide.querySelector( 'video' );
 					if ( frozen ) {
-						frozen.muted = true;
 						frozen.loop = true;
-						frozen.play().catch( function () {} );
+						// The click is a gesture — sound may start on.
+						frozen.muted = false;
+						frozen.play().catch( function () {
+							frozen.muted = true;
+							frozen.play().catch( function () {} );
+						} );
 						if ( 'function' === typeof ocAttachSound ) {
 							ocAttachSound( slide );
 						}
@@ -1388,12 +1416,17 @@
 					: '<img class="oc-vposter" src="' + ( ocVideo.thumb || ocVideoFallbackThumb ) + '" alt="" />';
 			};
 
-			// A file video that carries an audio track gets a small speaker
-			// chip at its bottom-right: the loop starts muted (autoplay
-			// demands it) and the chip switches the sound on and off.
+			// The video chips: pause/play at the bottom-RIGHT, and — when the
+			// file carries audio — a speaker at the bottom-LEFT. White
+			// circles, matching the lightbox buttons. Same chips on the
+			// product page and inside the lightbox.
 			var ocSoundIcons =
 				'<svg class="off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 9.5l5 5M21.5 9.5l-5 5"/></svg>' +
 				'<svg class="on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>';
+
+			var ocPauseIcons =
+				'<svg class="pp-pause" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M9 6v12M15 6v12"/></svg>' +
+				'<svg class="pp-play" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><path d="M8.5 5.5l10 6.5-10 6.5z"/></svg>';
 
 			var ocVideoHasAudio = function ( vid ) {
 				if ( vid.mozHasAudio ||
@@ -1416,40 +1449,82 @@
 				return false;
 			};
 
-			var ocAttachSound = function ( slide ) {
-				if ( 'file' !== ocVideo.kind ) {
+			// Sound on by default; when the browser refuses unmuted playback
+			// (no gesture yet), fall back to muted without missing a frame.
+			ocTrySoundOn = function ( vid ) {
+				vid.muted = false;
+				var attempt = vid.paused ? vid.play() : null;
+				if ( attempt && attempt.catch ) {
+					attempt.catch( function () {
+						vid.muted = true;
+						vid.play().catch( function () {} );
+					} );
+				}
+				setTimeout( function () {
+					if ( vid.paused && ! vid.muted ) {
+						vid.muted = true;
+						vid.play().catch( function () {} );
+					}
+				}, 250 );
+			};
+
+			ocAttachVideoChips = function ( host, vid ) {
+				if ( ! host || host.querySelector( '.oc-vpause' ) ) {
 					return;
 				}
 
-				var vid = slide.querySelector( 'video' );
+				var pauseChip = document.createElement( 'button' );
+				pauseChip.type = 'button';
+				pauseChip.className = 'oc-vchip oc-vpause';
+				pauseChip.setAttribute( 'aria-label', 'pause' );
+				pauseChip.innerHTML = ocPauseIcons;
+				pauseChip.addEventListener( 'click', function ( event ) {
+					event.stopPropagation();
+					event.preventDefault();
+					if ( vid.paused ) {
+						vid.play().catch( function () {} );
+					} else {
+						vid.pause();
+					}
+				} );
+				host.appendChild( pauseChip );
 
-				if ( ! vid || slide.querySelector( '.oc-vsound' ) ) {
-					return;
-				}
+				vid.addEventListener( 'play', function () {
+					pauseChip.classList.remove( 'is-paused' );
+				} );
+				vid.addEventListener( 'pause', function () {
+					pauseChip.classList.add( 'is-paused' );
+				} );
+				pauseChip.classList.toggle( 'is-paused', vid.paused );
 
+				// The speaker joins only when the file actually has audio.
 				var tries = 0;
 
-				var addChip = function () {
-					if ( slide.querySelector( '.oc-vsound' ) ) {
+				var addSound = function () {
+					if ( host.querySelector( '.oc-vsound' ) ) {
 						return;
 					}
 					var chip = document.createElement( 'button' );
 					chip.type = 'button';
-					chip.className = 'oc-vsound';
+					chip.className = 'oc-vchip oc-vsound';
 					chip.setAttribute( 'aria-label', 'sound' );
 					chip.innerHTML = ocSoundIcons;
 					chip.addEventListener( 'click', function ( event ) {
 						event.stopPropagation();
 						event.preventDefault();
 						vid.muted = ! vid.muted;
+					} );
+					host.appendChild( chip );
+
+					vid.addEventListener( 'volumechange', function () {
 						chip.classList.toggle( 'is-on', ! vid.muted );
 					} );
-					slide.appendChild( chip );
+					chip.classList.toggle( 'is-on', ! vid.muted );
 				};
 
 				var check = function () {
 					if ( ocVideoHasAudio( vid ) ) {
-						addChip();
+						addSound();
 						vid.removeEventListener( 'timeupdate', check );
 						vid.removeEventListener( 'loadeddata', check );
 					} else if ( ++tries > 10 ) {
@@ -1461,6 +1536,43 @@
 				vid.addEventListener( 'loadeddata', check );
 				vid.addEventListener( 'timeupdate', check );
 				check();
+			};
+
+			var ocAttachSound = function ( slide ) {
+				if ( 'file' !== ocVideo.kind ) {
+					return;
+				}
+				var vid = slide.querySelector( 'video' );
+				if ( vid ) {
+					ocAttachVideoChips( slide, vid );
+					if ( slide.classList.contains( 'oc-vslide--auto' ) ) {
+						ocTrySoundOn( vid );
+					}
+				}
+			};
+
+			// The lightbox is the only stage while it is up: the page video
+			// stops, rewinds and falls silent — and comes back (muted) for
+			// the autoplay mode once the lightbox closes.
+			ocResetPageVideos = function () {
+				document.querySelectorAll( '.oc-vslide video, .oc-vfab video' ).forEach( function ( vid ) {
+					vid.pause();
+					try {
+						vid.currentTime = 0;
+					} catch ( err ) { /* not seekable yet */ }
+					vid.muted = true;
+				} );
+				var manual = galleryWrap.querySelector( '.oc-vslide--manual.is-playing' );
+				if ( manual ) {
+					manual.classList.remove( 'is-playing' );
+				}
+			};
+
+			ocResumePageVideos = function () {
+				document.querySelectorAll( '.oc-vslide--auto video, .oc-vfab video' ).forEach( function ( vid ) {
+					vid.muted = true;
+					vid.play().catch( function () {} );
+				} );
 			};
 
 			// Paging away pauses a manually-started video and returns its
