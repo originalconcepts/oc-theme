@@ -1537,11 +1537,15 @@
 
 				vid.addEventListener( 'play', function () {
 					pauseChip.classList.remove( 'is-paused' );
+					// The chip only joins once the video has started — until
+					// then the big play badge is the affordance.
+					pauseChip.classList.add( 'is-revealed' );
 				} );
 				vid.addEventListener( 'pause', function () {
 					pauseChip.classList.add( 'is-paused' );
 				} );
 				pauseChip.classList.toggle( 'is-paused', vid.paused );
+				pauseChip.classList.toggle( 'is-revealed', ! vid.paused );
 
 				// The speaker joins only when the file actually has audio.
 				var tries = 0;
@@ -1608,6 +1612,10 @@
 					} catch ( err ) { /* not seekable yet */ }
 					vid.muted = true;
 				} );
+				// Back to the resting look: big play badge, no pause chip.
+				document.querySelectorAll( '.oc-vslide .oc-vpause' ).forEach( function ( chip ) {
+					chip.classList.remove( 'is-revealed' );
+				} );
 				var manual = galleryWrap.querySelector( '.oc-vslide--manual.is-playing' );
 				if ( manual ) {
 					manual.classList.remove( 'is-playing' );
@@ -1649,6 +1657,11 @@
 				var vid = playing.querySelector( 'video' );
 				if ( vid ) {
 					vid.pause();
+					// The big play badge is back — the chip steps aside.
+					var chip = playing.querySelector( '.oc-vpause' );
+					if ( chip ) {
+						chip.classList.remove( 'is-revealed' );
+					}
 				} else {
 					playing.innerHTML = ocVideoFrozenHtml() + '<span class="oc-vplay" aria-hidden="true"></span>';
 				}
