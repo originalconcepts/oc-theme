@@ -431,7 +431,13 @@ final class Variations {
 
 		if ( $product instanceof \WC_Product ) {
 			$galleries = $this->galleries_meta( $product->get_id() );
-			$image     = (string) ( $galleries[ $term->slug ]['swatch'] ?? '' );
+
+			// A per-product swatch image is an explicit choice for this very
+			// product — it wins over everything, whatever the attribute type.
+			$override = (string) ( $galleries[ $term->slug ]['swatch'] ?? '' );
+			if ( '' !== $override ) {
+				return 'background-image:url(' . esc_url( $override ) . ');background-size:cover;';
+			}
 
 			// A per-product shade replaces the value's store-wide colour.
 			$shade = (string) ( $galleries[ $term->slug ]['color'] ?? '' );
@@ -440,9 +446,7 @@ final class Variations {
 			}
 		}
 
-		if ( '' === $image ) {
-			$image = (string) get_term_meta( $term->term_id, 'oc_swatch_image', true );
-		}
+		$image = (string) get_term_meta( $term->term_id, 'oc_swatch_image', true );
 
 		$use_image = 'swatch_image' === $type ? '' !== $image : '' !== $image && '' === $color;
 
