@@ -768,6 +768,18 @@ msgstr "קטלוג"
 msgid "Video"
 msgstr "וידאו"
 
+msgid "Select values"
+msgstr "בחירת ערכים"
+
+msgid "Select all"
+msgstr "בחר הכל"
+
+msgid "Select none"
+msgstr "נקה בחירה"
+
+msgid "Create value"
+msgstr "הוספת ערך"
+
 msgid "Product video"
 msgstr "וידאו מוצר"
 

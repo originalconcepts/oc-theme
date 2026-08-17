@@ -430,9 +430,9 @@ final class WooCommerce {
 		echo '<div class="oc-card-media__strip" aria-label="' . esc_attr__( 'Product images', 'oc-theme' ) . '">';
 
 		if ( '' !== $card_video ) {
+			// No play badge on the card — the loop speaks for itself.
 			echo '<figure class="oc-card-media__item oc-card-media__item--video is-first">';
 			echo Video::loop_html( $card_video, 'oc-card-video' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
-			echo '<span class="oc-vplay oc-vplay--sm" aria-hidden="true"></span>';
 			echo '</figure>';
 		}
 

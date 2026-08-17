@@ -2122,7 +2122,8 @@ table.variations td.value select:has(+ .oc-var) {
 	pointer-events: none;
 }
 
-/* Play badge — thin white circle, triangle always pointing right. */
+/* Play badge — thin white circle, triangle always pointing right. A hover
+ * anywhere on the video grows it gently, signalling it is clickable. */
 .oc-vplay {
 	position: absolute;
 	top: 50%;
@@ -2134,7 +2135,11 @@ table.variations td.value select:has(+ .oc-var) {
 	border-radius: 50%;
 	filter: drop-shadow(0 1px 6px rgb(0 0 0 / 35%));
 	pointer-events: none;
+	transition: scale .25s ease;
 }
+
+.oc-vslide:hover .oc-vplay,
+.oc-vfab:hover .oc-vplay { scale: 1.12; }
 
 .oc-vplay::after {
 	content: "";

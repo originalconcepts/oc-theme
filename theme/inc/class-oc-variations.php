@@ -33,6 +33,13 @@ final class Variations {
 		// "Buttons" and "Swatch" join Woo's own attribute-type dropdown.
 		add_filter( 'product_attributes_type_selector', array( $this, 'attribute_types' ) );
 
+		// WooCommerce renders the term picker on the product's attribute row
+		// ONLY for the built-in 'select' type; custom types must draw their
+		// own via this hook. Without it the row has no values control, every
+		// save posts the attribute empty, and Woo strips it — which is
+		// exactly the vanishing-attributes bug this restores.
+		add_action( 'woocommerce_product_option_terms', array( $this, 'option_terms' ), 10, 3 );
+
 		// Swatch attributes get colour/image fields on their term screens.
 		add_action( 'admin_init', array( $this, 'term_field_hooks' ) );
 		add_action( 'created_term', array( $this, 'save_term_swatch' ), 10, 3 );
@@ -560,6 +567,46 @@ final class Variations {
 			</select>
 			<?php echo wc_help_tip( esc_html__( 'The same product in other colours. Links sync both ways: connect black and grey here and each of them links back automatically.', 'oc-theme' ) ); ?>
 		</p>
+		<?php
+	}
+
+	/**
+	 * The term picker for our attribute types on the product's attribute
+	 * row — the same multiselect WooCommerce draws for its 'select' type,
+	 * so search, "select all" and term creation keep working.
+	 *
+	 * @param object               $attribute_taxonomy Attribute taxonomy row.
+	 * @param int                  $i                  Row index.
+	 * @param \WC_Product_Attribute|null $attribute   Attribute being rendered.
+	 */
+	public function option_terms( $attribute_taxonomy, $i, $attribute = null ): void {
+		if ( ! in_array( $attribute_taxonomy->attribute_type, array( 'button', 'swatch', 'swatch_image' ), true ) ) {
+			return;
+		}
+
+		$taxonomy = wc_attribute_taxonomy_name( (string) $attribute_taxonomy->attribute_name );
+		?>
+		<select multiple="multiple" data-minimum_input_length="0" data-limit="50" data-return_id="id"
+			data-placeholder="<?php esc_attr_e( 'Select values', 'oc-theme' ); ?>"
+			data-orderby="<?php echo esc_attr( $attribute_taxonomy->attribute_orderby ?? 'name' ); ?>"
+			class="multiselect attribute_values wc-taxonomy-term-search"
+			name="attribute_values[<?php echo esc_attr( (string) $i ); ?>][]"
+			data-taxonomy="<?php echo esc_attr( $taxonomy ); ?>">
+			<?php
+			$selected_terms = $attribute instanceof \WC_Product_Attribute ? $attribute->get_terms() : array();
+
+			if ( $selected_terms ) {
+				foreach ( $selected_terms as $selected_term ) {
+					echo '<option value="' . esc_attr( (string) $selected_term->term_id ) . '" selected="selected">'
+						. esc_html( apply_filters( 'woocommerce_product_attribute_term_name', $selected_term->name, $selected_term ) )
+						. '</option>';
+				}
+			}
+			?>
+		</select>
+		<button class="button plus select_all_attributes"><?php esc_html_e( 'Select all', 'oc-theme' ); ?></button>
+		<button class="button minus select_no_attributes"><?php esc_html_e( 'Select none', 'oc-theme' ); ?></button>
+		<button class="button fr plus add_new_attribute"><?php esc_html_e( 'Create value', 'oc-theme' ); ?></button>
 		<?php
 	}
 
