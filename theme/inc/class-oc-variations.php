@@ -441,9 +441,10 @@ final class Variations {
 	 * @param \WC_Product $product  Variable product.
 	 * @param string      $taxonomy Attribute taxonomy.
 	 * @param string      $slug     Term slug.
-	 * @return string Thumbnail URL or ''.
+	 * @param string      $size     Image size to resolve.
+	 * @return string Image URL or ''.
 	 */
-	private function variation_image( \WC_Product $product, string $taxonomy, string $slug ): string {
+	private function variation_image( \WC_Product $product, string $taxonomy, string $slug, string $size = 'thumbnail' ): string {
 		static $maps = array();
 
 		$pid = $product->get_id();
@@ -462,14 +463,16 @@ final class Variations {
 					foreach ( $variation->get_attributes() as $attr_tax => $attr_slug ) {
 						$key = $attr_tax . ':' . $attr_slug;
 						if ( '' !== (string) $attr_slug && ! isset( $maps[ $pid ][ $key ] ) ) {
-							$maps[ $pid ][ $key ] = (string) wp_get_attachment_image_url( (int) $variation->get_image_id(), 'thumbnail' );
+							$maps[ $pid ][ $key ] = (int) $variation->get_image_id();
 						}
 					}
 				}
 			}
 		}
 
-		return (string) ( $maps[ $pid ][ $taxonomy . ':' . $slug ] ?? '' );
+		$image_id = (int) ( $maps[ $pid ][ $taxonomy . ':' . $slug ] ?? 0 );
+
+		return $image_id > 0 ? (string) wp_get_attachment_image_url( $image_id, $size ) : '';
 	}
 
 	/**
@@ -900,9 +903,11 @@ final class Variations {
 	}
 
 	/**
-	 * Colour sibling thumbs under the card. Here a click swaps the card in
-	 * place — gallery, links, title and price — instead of navigating, so the
-	 * visitor browses colours without leaving the catalogue.
+	 * Colour swatches under the card. Linked siblings when the product has
+	 * them; otherwise the colour variation terms of a regular variable
+	 * product — the exact same behaviour: a click swaps the card's gallery
+	 * in place, and the card links carry the colour so the product page
+	 * opens with it selected.
 	 */
 	public function loop_colors(): void {
 		global $product;
@@ -911,7 +916,90 @@ final class Variations {
 			return;
 		}
 
-		echo $this->colors_row( $product->get_id(), 'oc-colors--loop', true ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
+		$row = $this->colors_row( $product->get_id(), 'oc-colors--loop', true );
+
+		if ( '' === $row ) {
+			$row = $this->loop_term_colors( $product );
+		}
+
+		echo $row; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
+	}
+
+	/**
+	 * Term swatches for a variable product's colour attribute on the card.
+	 *
+	 * @param \WC_Product $product Product.
+	 * @return string Empty when there is no swatch attribute with 2+ values.
+	 */
+	private function loop_term_colors( \WC_Product $product ): string {
+		if ( ! $product->is_type( 'variable' ) ) {
+			return '';
+		}
+
+		foreach ( array_keys( $product->get_attributes() ) as $attr_tax ) {
+			// Keys arrive percent-encoded for Hebrew taxonomies.
+			$attr_tax = rawurldecode( (string) $attr_tax );
+			$type     = $this->attr_type( $attr_tax );
+
+			if ( ! in_array( $type, array( 'swatch', 'swatch_image' ), true ) ) {
+				continue;
+			}
+
+			$terms = wc_get_product_terms( $product->get_id(), $attr_tax, array( 'fields' => 'all' ) );
+
+			if ( count( $terms ) < 2 ) {
+				return '';
+			}
+
+			$galleries = $this->galleries_meta( $product->get_id() );
+			$max       = 'gallery' === get_theme_mod( 'oc_card_image_mode', 'single' ) ? max( 2, (int) get_theme_mod( 'oc_card_gallery_max', 4 ) ) : 1;
+			$permalink = get_permalink( $product->get_id() );
+			$items     = '';
+
+			foreach ( $terms as $term ) {
+				$style = $this->swatch_style( $product, $attr_tax, $term, $type );
+
+				if ( '' === $style ) {
+					continue;
+				}
+
+				// The colour's own gallery drives the card; a variation image
+				// stands in when no gallery was attached.
+				$imgs = array();
+				foreach ( array_slice( $galleries[ $term->slug ]['imgs'] ?? array(), 0, $max ) as $img_id ) {
+					$img_url = wp_get_attachment_image_url( $img_id, 'large' );
+					if ( $img_url ) {
+						$imgs[] = $img_url;
+					}
+				}
+
+				if ( empty( $imgs ) ) {
+					$var_img = $this->variation_image( $product, $attr_tax, $term->slug, 'large' );
+					if ( '' !== $var_img ) {
+						$imgs[] = $var_img;
+					}
+				}
+
+				$items .= sprintf(
+					'<a class="oc-colors__item oc-colors__item--term" href="%s" style="%s" title="%s" aria-label="%s" data-url="%s" data-pid="%d" data-imgs="%s"></a>',
+					esc_url( add_query_arg( 'attribute_' . $attr_tax, $term->slug, $permalink ) ),
+					$style, // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
+					esc_attr( $term->name ),
+					esc_attr( $term->name ),
+					esc_url( add_query_arg( 'attribute_' . $attr_tax, $term->slug, $permalink ) ),
+					absint( $product->get_id() ),
+					esc_attr( (string) wp_json_encode( $imgs ) )
+				);
+			}
+
+			if ( '' === $items ) {
+				return '';
+			}
+
+			return '<div class="oc-colors oc-colors--loop">' . $items . '</div>';
+		}
+
+		return '';
 	}
 
 	/**

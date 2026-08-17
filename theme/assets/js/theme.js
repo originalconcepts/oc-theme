@@ -423,12 +423,15 @@
 			price.innerHTML = item.dataset.price;
 		}
 
-		var badge = li.querySelector( '.onsale' );
-		if ( badge ) {
-			badge.remove();
-		}
-		if ( item.dataset.badge ) {
-			li.insertAdjacentHTML( 'afterbegin', item.dataset.badge );
+		// Term swatches carry no badge data — the card keeps its own badge.
+		if ( undefined !== item.dataset.badge ) {
+			var badge = li.querySelector( '.onsale' );
+			if ( badge ) {
+				badge.remove();
+			}
+			if ( item.dataset.badge ) {
+				li.insertAdjacentHTML( 'afterbegin', item.dataset.badge );
+			}
 		}
 
 		li.querySelectorAll( '.oc-colors__item' ).forEach( function ( sib ) {

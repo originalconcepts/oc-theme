@@ -1808,10 +1808,9 @@ table.variations td.value select:has(+ .oc-var) {
 
 .oc-var__swatch:hover { border-color: var(--oc-ink); }
 
-.oc-var__swatch.is-selected {
-	border-color: var(--oc-ink);
-	box-shadow: 0 0 0 2px var(--oc-surface) inset;
-}
+/* Selection reads from the ink border and the corner check — no white
+ * inset ring between the border and the colour. */
+.oc-var__swatch.is-selected { border-color: var(--oc-ink); }
 
 /* Optional check on the chosen swatch, snocks-style: a small ink circle with
  * a white check riding the top corner of the swatch — never centred over it.
@@ -1826,7 +1825,6 @@ table.variations td.value select:has(+ .oc-var) {
 	height: 16px;
 	border-radius: 50%;
 	background: var(--oc-ink, #1c1c1c) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 12.5l4.5 4.5 9.5-10' fill='none' stroke='%23fff' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 62% no-repeat;
-	box-shadow: 0 0 0 2px var(--oc-surface, #fff);
 }
 
 .oc-colors__item { position: relative; }
