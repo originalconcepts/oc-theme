@@ -1813,21 +1813,20 @@ table.variations td.value select:has(+ .oc-var) {
 	box-shadow: 0 0 0 2px var(--oc-surface) inset;
 }
 
-/* Optional check mark on the selected swatch — and on the current colour
- * sibling. Drawn with physical sides: logical ones flip in RTL and turned
- * the check into a mirrored, off-centre bar. */
+/* Optional check on the chosen swatch, snocks-style: a small ink circle with
+ * a white check riding the top corner of the swatch — never centred over it.
+ * Product page only; catalogue swatches stay clean. */
 .oc-swatch-check .oc-var__swatch.is-selected::after,
-.oc-swatch-check .oc-colors__item.is-current::after {
+.oc-swatch-check .oc-colors--product .oc-colors__item.is-current::after {
 	content: "";
 	position: absolute;
-	top: 50%;
-	left: 50%;
-	width: 38%;
-	height: 20%;
-	border-left: 2px solid #fff;
-	border-bottom: 2px solid #fff;
-	transform: translate(-50%, -65%) rotate(-45deg);
-	filter: drop-shadow(0 0 2px rgb(0 0 0 / 45%));
+	top: -5px;
+	right: -5px;
+	width: 16px;
+	height: 16px;
+	border-radius: 50%;
+	background: var(--oc-ink, #1c1c1c) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 12.5l4.5 4.5 9.5-10' fill='none' stroke='%23fff' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 62% no-repeat;
+	box-shadow: 0 0 0 2px var(--oc-surface, #fff);
 }
 
 .oc-colors__item { position: relative; }
@@ -1853,7 +1852,8 @@ table.variations td.value select:has(+ .oc-var) {
 	block-size: var(--oc-swatch, 32px);
 	border: 1.5px solid var(--oc-line);
 	border-radius: 50%;
-	overflow: hidden;
+	/* The image rounds itself — overflow stays visible so the corner check
+	 * badge can ride the edge without being clipped. */
 	transition: border-color .12s ease;
 }
 
@@ -1862,7 +1862,10 @@ table.variations td.value select:has(+ .oc-var) {
 	block-size: 100%;
 	object-fit: cover;
 	display: block;
+	border-radius: 50%;
 }
+
+.oc-swatch-square .oc-colors__item img { border-radius: 6px; }
 
 .oc-colors__item:hover { border-color: var(--oc-ink); }
 .oc-colors__item.is-current { border-color: var(--oc-ink); pointer-events: none; }

@@ -587,9 +587,10 @@ final class Variations {
 			echo '<div class="oc-cgal" data-slug="' . esc_attr( $term->slug ) . '" style="border-block-end:1px solid #eee;padding:12px;">';
 			echo '<strong style="display:block;margin-block-end:8px;">' . esc_html( $term->name ) . '</strong>';
 
-			// Gallery ids + sortable previews: drag to reorder, × removes one.
+			// Gallery ids + sortable previews: drag to reorder, × removes one,
+			// and the add button sits on its own line under the images.
 			echo '<input type="hidden" name="oc_cgal[' . esc_attr( $term->slug ) . '][imgs]" value="' . esc_attr( implode( ',', $entry['imgs'] ) ) . '" class="oc-cgal__ids" />';
-			echo '<span class="oc-cgal__thumbs" style="display:inline-flex;flex-wrap:wrap;gap:6px;vertical-align:middle;margin-inline-end:8px;">';
+			echo '<span class="oc-cgal__thumbs" style="display:flex;flex-wrap:wrap;gap:6px;' . ( empty( $entry['imgs'] ) ? '' : 'margin-block-end:8px;' ) . '">';
 			foreach ( $entry['imgs'] as $img_id ) {
 				$url = wp_get_attachment_image_url( $img_id, 'thumbnail' );
 				if ( $url ) {
@@ -599,14 +600,15 @@ final class Variations {
 			echo '</span>';
 			echo '<button type="button" class="button oc-cgal__pick">' . esc_html__( 'Add images', 'oc-theme' ) . '</button>';
 
-			// Optional swatch override for this product only.
-			echo '<p class="form-field" style="margin-block-start:10px;padding:0;">';
-			echo '<label style="display:inline;margin-inline-end:8px;">' . esc_html__( 'Swatch image (this product only)', 'oc-theme' ) . '</label>';
+			// Optional swatch override for this product only — one compact row,
+			// unhooked from Woo's floated form-field label layout.
+			echo '<span style="display:flex;align-items:center;gap:8px;margin-block-start:8px;">';
+			echo '<label style="float:none;inline-size:auto;margin:0;display:inline-block;">' . esc_html__( 'Swatch image (this product only)', 'oc-theme' ) . '</label>';
 			echo '<input type="hidden" name="oc_cgal[' . esc_attr( $term->slug ) . '][swatch]" value="' . esc_url( $swatch ) . '" class="oc-cgal__sw" />';
-			echo '<img class="oc-cgal__swprev" src="' . esc_url( $swatch ) . '" alt="" style="inline-size:28px;block-size:28px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-inline-end:6px;border:1px solid #ccd0d4;' . ( '' === $swatch ? 'display:none;' : '' ) . '" /> ';
-			echo '<button type="button" class="button oc-cgal__swpick">' . esc_html__( 'Choose image', 'oc-theme' ) . '</button> ';
+			echo '<img class="oc-cgal__swprev" src="' . esc_url( $swatch ) . '" alt="" style="inline-size:28px;block-size:28px;border-radius:50%;object-fit:cover;border:1px solid #ccd0d4;' . ( '' === $swatch ? 'display:none;' : '' ) . '" />';
+			echo '<button type="button" class="button oc-cgal__swpick">' . esc_html__( 'Choose image', 'oc-theme' ) . '</button>';
 			echo '<button type="button" class="button oc-cgal__swclear"' . ( '' === $swatch ? ' style="display:none;"' : '' ) . '>' . esc_html__( 'Remove', 'oc-theme' ) . '</button>';
-			echo '</p>';
+			echo '</span>';
 
 			echo '</div>';
 		}
