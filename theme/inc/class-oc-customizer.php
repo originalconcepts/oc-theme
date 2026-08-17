@@ -51,6 +51,7 @@ final class Customizer {
 		$this->catalog_panel( $wp_customize, $shop_panel );
 		$this->card_section( $wp_customize, $shop_panel );
 		$this->product_section( $wp_customize, $shop_panel );
+		$this->swatches_section( $wp_customize, $shop_panel );
 	}
 
 	/**
@@ -415,6 +416,9 @@ final class Customizer {
 
 		$this->heading( $c, 'oc_h_cat_structure', $section, __( 'Page structure', 'oc-theme' ) );
 
+		$this->number( $c, 'oc_catalog_width_px', $section, __( 'Page width override (0 = inherit)', 'oc-theme' ), 0, 0, 1920 );
+		$this->color( $c, 'oc_catalog_bg', $section, __( 'Page background override', 'oc-theme' ) );
+
 		$this->choice(
 			$c,
 			'oc_breadcrumbs_pos',
@@ -450,6 +454,21 @@ final class Customizer {
 				'bottom' => __( 'Under the products', 'oc-theme' ),
 			),
 			'top'
+		);
+
+		$this->number( $c, 'oc_catalog_fs', $section, __( 'Body text size (px)', 'oc-theme' ), 16, 12, 20 );
+
+		$this->choice(
+			$c,
+			'oc_catalog_lh',
+			$section,
+			__( 'Body text line height', 'oc-theme' ),
+			array(
+				'1.4'  => __( 'Tight', 'oc-theme' ),
+				'1.55' => __( 'Regular', 'oc-theme' ),
+				'1.75' => __( 'Loose', 'oc-theme' ),
+			),
+			'1.55'
 		);
 
 		$this->heading( $c, 'oc_h_cat_grid', $section, __( 'Product grid', 'oc-theme' ) );
@@ -507,9 +526,6 @@ final class Customizer {
 			'page'
 		);
 
-		$this->number( $c, 'oc_catalog_width_px', $section, __( 'Page width override (0 = inherit)', 'oc-theme' ), 0, 0, 1920 );
-		$this->color( $c, 'oc_catalog_bg', $section, __( 'Page background override', 'oc-theme' ) );
-
 		$this->heading( $c, 'oc_h_cat_paging', $section, __( 'Loading & paging', 'oc-theme' ) );
 
 		$this->number( $c, 'oc_catalog_per_page', $section, __( 'Products per page (-1 shows all)', 'oc-theme' ), 24, -1, 200 );
@@ -539,31 +555,51 @@ final class Customizer {
 			'circle'
 		);
 
-		$this->heading( $c, 'oc_h_cat_text', $section, __( 'Text', 'oc-theme' ) );
+	}
 
-		$this->number( $c, 'oc_catalog_fs', $section, __( 'Body text size (px)', 'oc-theme' ), 16, 12, 20 );
+	/**
+	 * All swatch settings in one dedicated section — product page and
+	 * catalogue side by side.
+	 *
+	 * @param \WP_Customize_Manager $c     Customizer manager.
+	 * @param string                $panel Parent panel id.
+	 */
+	private function swatches_section( \WP_Customize_Manager $c, string $panel ): void {
+		$c->add_section(
+			'oc_swatches',
+			array(
+				'title'    => __( 'Colour swatches', 'oc-theme' ),
+				'panel'    => $panel,
+				'priority' => 11,
+			)
+		);
+
+		$this->heading( $c, 'oc_h_sw_product', 'oc_swatches', __( 'Product page', 'oc-theme' ) );
+
+		$this->number( $c, 'oc_swatch_size', 'oc_swatches', __( 'Swatch size — product page (px)', 'oc-theme' ), 32, 20, 56 );
 
 		$this->choice(
 			$c,
-			'oc_catalog_lh',
-			$section,
-			__( 'Body text line height', 'oc-theme' ),
+			'oc_swatch_shape',
+			'oc_swatches',
+			__( 'Swatch shape', 'oc-theme' ),
 			array(
-				'1.4'  => __( 'Tight', 'oc-theme' ),
-				'1.55' => __( 'Regular', 'oc-theme' ),
-				'1.75' => __( 'Loose', 'oc-theme' ),
+				'circle' => __( 'Round', 'oc-theme' ),
+				'square' => __( 'Square', 'oc-theme' ),
 			),
-			'1.55'
+			'circle'
 		);
 
-		$this->heading( $c, 'oc_h_cat_swatches', $section, __( 'Colour swatches', 'oc-theme' ) );
+		$this->toggle( $c, 'oc_swatch_check', 'oc_swatches', __( 'Check mark on the selected swatch', 'oc-theme' ), true );
 
-		$this->number( $c, 'oc_swatch_size_cat', $section, __( 'Swatch size — catalogue (px)', 'oc-theme' ), 22, 14, 40 );
+		$this->heading( $c, 'oc_h_sw_cat', 'oc_swatches', __( 'Catalogue', 'oc-theme' ) );
+
+		$this->number( $c, 'oc_swatch_size_cat', 'oc_swatches', __( 'Swatch size — catalogue (px)', 'oc-theme' ), 22, 14, 40 );
 
 		$this->choice(
 			$c,
 			'oc_swatch_shape_cat',
-			$section,
+			'oc_swatches',
 			__( 'Swatch shape — catalogue', 'oc-theme' ),
 			array(
 				'circle' => __( 'Round', 'oc-theme' ),
@@ -575,7 +611,7 @@ final class Customizer {
 		$this->choice(
 			$c,
 			'oc_colors_loop_pos',
-			$section,
+			'oc_swatches',
 			__( 'Colour swatches on the card', 'oc-theme' ),
 			array(
 				'above' => __( 'Above the title', 'oc-theme' ),
@@ -894,24 +930,6 @@ final class Customizer {
 				return 'dots' === get_theme_mod( 'oc_gallery_mobile', 'dots' );
 			}
 		);
-
-		$this->heading( $c, 'oc_h_prod_swatches', 'oc_product', __( 'Colour swatches', 'oc-theme' ) );
-
-		$this->number( $c, 'oc_swatch_size', 'oc_product', __( 'Swatch size — product page (px)', 'oc-theme' ), 32, 20, 56 );
-
-		$this->choice(
-			$c,
-			'oc_swatch_shape',
-			'oc_product',
-			__( 'Swatch shape', 'oc-theme' ),
-			array(
-				'circle' => __( 'Round', 'oc-theme' ),
-				'square' => __( 'Square', 'oc-theme' ),
-			),
-			'circle'
-		);
-
-		$this->toggle( $c, 'oc_swatch_check', 'oc_product', __( 'Check mark on the selected swatch', 'oc-theme' ), true );
 
 		$this->heading( $c, 'oc_h_prod_text', 'oc_product', __( 'Text', 'oc-theme' ) );
 

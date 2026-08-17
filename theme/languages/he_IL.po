@@ -756,6 +756,9 @@ msgstr "עיגולי צבע (Swatches)"
 msgid "Swatch shape — catalogue"
 msgstr "צורת ה-Swatch — קטלוג"
 
+msgid "Catalogue"
+msgstr "קטלוג"
+
 msgid "Layout"
 msgstr "פריסה"
 

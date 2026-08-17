@@ -1795,12 +1795,16 @@ table.variations td.value select:has(+ .oc-var) {
 	color: var(--oc-surface);
 }
 
+/* One-to-one with the reference: the ring is the swatch's own 1px border
+ * and the colour fill sits 2px inside it — selection just inks the ring,
+ * nothing grows outward. */
 .oc-var__swatch {
 	inline-size: var(--oc-swatch, 32px);
 	block-size: var(--oc-swatch, 32px);
-	padding: 0;
-	border: 1.5px solid var(--oc-line);
+	padding: 2px;
+	border: 1px solid var(--oc-line);
 	border-radius: 50%;
+	background-clip: content-box;
 	cursor: pointer;
 	position: relative;
 	transition: border-color .12s ease, box-shadow .12s ease;
@@ -1848,8 +1852,10 @@ table.variations td.value select:has(+ .oc-var) {
 	display: block;
 	inline-size: var(--oc-swatch, 32px);
 	block-size: var(--oc-swatch, 32px);
-	border: 1.5px solid var(--oc-line);
+	padding: 2px;
+	border: 1px solid var(--oc-line);
 	border-radius: 50%;
+	background-clip: content-box;
 	/* The image rounds itself — overflow stays visible so the corner check
 	 * badge can ride the edge without being clipped. */
 	transition: border-color .12s ease;
@@ -1865,16 +1871,11 @@ table.variations td.value select:has(+ .oc-var) {
 
 .oc-colors__item:hover { border-color: var(--oc-ink); }
 
-/* The chosen swatch reads from a thin ring with a breathing gap — clear on
- * any colour, in the catalogue and on the product page alike. The outline
- * follows the border-radius, so it stays true in square mode too. */
-.oc-colors__item.is-current,
-.oc-var__swatch.is-selected {
-	outline: 1px solid var(--oc-ink);
-	outline-offset: 1px;
+/* Selection inks the ring — the gap is already inside. */
+.oc-colors__item.is-current {
+	border-color: var(--oc-ink);
+	pointer-events: none;
 }
-
-.oc-colors__item.is-current { pointer-events: none; }
 
 .oc-colors--loop { justify-content: center; margin-block-start: 6px; }
 .oc-colors--loop .oc-colors__item {
