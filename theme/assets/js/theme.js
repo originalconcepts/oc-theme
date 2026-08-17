@@ -1153,10 +1153,13 @@
 					var target = media.querySelector( 'img' );
 					full.onload = function () {
 						if ( target.isConnected ) {
-							var box = target.getBoundingClientRect();
-							if ( box.width ) {
-								target.style.width = box.width + 'px';
-								target.style.height = box.height + 'px';
+							// Layout size, NOT getBoundingClientRect — the
+							// rect is measured AFTER the zoom transform, and
+							// freezing that ballooned the image 1.9x the
+							// moment the zoom settled.
+							if ( target.offsetWidth ) {
+								target.style.width = target.offsetWidth + 'px';
+								target.style.height = target.offsetHeight + 'px';
 							}
 							target.src = item.src;
 						}
@@ -1642,6 +1645,8 @@
 						vid.muted = ! vid.muted;
 					} );
 					host.appendChild( chip );
+					// With a speaker present, pause slides one spot left.
+					host.classList.add( 'oc-has-sound' );
 
 					vid.addEventListener( 'volumechange', function () {
 						chip.classList.toggle( 'is-on', ! vid.muted );

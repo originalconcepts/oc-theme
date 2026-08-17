@@ -2196,14 +2196,17 @@ body:not(.oc-no-lightbox) .oc-vslide.is-playing {
 	block-size: 17px;
 }
 
-/* Sound holds the corner; pause sits to its left — and only shows up once
- * the video has started (the big play badge covers the frozen state). */
+/* Sound holds the corner and pause sits to its left; with no audio track
+ * the pause takes the corner itself. Pause only shows up once the video
+ * has started (the big play badge covers the frozen state). */
 .oc-vsound { right: 10px; }
 
 .oc-vpause {
-	right: 54px;
+	right: 10px;
 	display: none;
 }
+
+.oc-has-sound .oc-vpause { right: 54px; }
 
 .oc-vpause.is-revealed { display: grid; }
 
