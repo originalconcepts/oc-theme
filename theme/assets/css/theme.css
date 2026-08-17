@@ -1863,10 +1863,18 @@ table.variations td.value select:has(+ .oc-var) {
 	border-radius: 50%;
 }
 
-.oc-swatch-square .oc-colors__item img { border-radius: 6px; }
-
 .oc-colors__item:hover { border-color: var(--oc-ink); }
-.oc-colors__item.is-current { border-color: var(--oc-ink); pointer-events: none; }
+
+/* The chosen swatch reads from a thin ring with a breathing gap — clear on
+ * any colour, in the catalogue and on the product page alike. The outline
+ * follows the border-radius, so it stays true in square mode too. */
+.oc-colors__item.is-current,
+.oc-var__swatch.is-selected {
+	outline: 1.5px solid var(--oc-ink);
+	outline-offset: 2px;
+}
+
+.oc-colors__item.is-current { pointer-events: none; }
 
 .oc-colors--loop { justify-content: center; margin-block-start: 6px; }
 .oc-colors--loop .oc-colors__item {
@@ -1924,10 +1932,12 @@ table.variations td.value select:has(+ .oc-var) {
 
 .oc-choice:not(:empty)::before { content: ': '; }
 
-/* Swatch shape: square variant keeps a soft corner. */
+/* Swatch shape: the square variant leans on the global corner-rounding
+ * setting — "sharp" gives a true square, "soft" a gentle corner — capped so
+ * "round" (16px) cannot turn the square back into a circle. */
 .oc-swatch-square .oc-var__swatch,
 .oc-swatch-square .oc-colors__item,
-.oc-swatch-square .oc-colors__item img { border-radius: 6px; }
+.oc-swatch-square .oc-colors__item img { border-radius: min(var(--oc-radius, 6px), 6px); }
 
 /* No colour and no image: the term's initial stands in. */
 .oc-var__swatch--txt {
