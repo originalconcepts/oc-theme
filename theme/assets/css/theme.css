@@ -1870,8 +1870,8 @@ table.variations td.value select:has(+ .oc-var) {
  * follows the border-radius, so it stays true in square mode too. */
 .oc-colors__item.is-current,
 .oc-var__swatch.is-selected {
-	outline: 1.5px solid var(--oc-ink);
-	outline-offset: 2px;
+	outline: 1px solid var(--oc-ink);
+	outline-offset: 1px;
 }
 
 .oc-colors__item.is-current { pointer-events: none; }
@@ -1932,12 +1932,15 @@ table.variations td.value select:has(+ .oc-var) {
 
 .oc-choice:not(:empty)::before { content: ': '; }
 
-/* Swatch shape: the square variant leans on the global corner-rounding
- * setting — "sharp" gives a true square, "soft" a gentle corner — capped so
- * "round" (16px) cannot turn the square back into a circle. */
+/* Swatch shape: chosen separately for the product page and the catalogue.
+ * The square variant leans on the global corner-rounding setting — "sharp"
+ * gives a true square, "soft" a gentle corner — capped so "round" (16px)
+ * cannot turn the square back into a circle. */
 .oc-swatch-square .oc-var__swatch,
-.oc-swatch-square .oc-colors__item,
-.oc-swatch-square .oc-colors__item img { border-radius: min(var(--oc-radius, 6px), 6px); }
+.oc-swatch-square .oc-colors--product .oc-colors__item,
+.oc-swatch-square .oc-colors--product .oc-colors__item img,
+.oc-swatch-square-cat .oc-colors--loop .oc-colors__item,
+.oc-swatch-square-cat .oc-colors--loop .oc-colors__item img { border-radius: min(var(--oc-radius, 6px), 6px); }
 
 /* No colour and no image: the term's initial stands in. */
 .oc-var__swatch--txt {

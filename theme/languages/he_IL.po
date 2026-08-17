@@ -736,7 +736,31 @@ msgid "Square"
 msgstr "מרובע"
 
 msgid "Colour swatches on the card"
-msgstr "עיגולי צבע בכרטיס המוצר"
+msgstr "מיקום בכרטיס המוצר"
+
+msgid "Page structure"
+msgstr "מבנה העמוד"
+
+msgid "Product grid"
+msgstr "רשת המוצרים"
+
+msgid "Loading & paging"
+msgstr "טעינה ועימוד"
+
+msgid "Text"
+msgstr "טקסט"
+
+msgid "Colour swatches"
+msgstr "עיגולי צבע (Swatches)"
+
+msgid "Swatch shape — catalogue"
+msgstr "צורת ה-Swatch — קטלוג"
+
+msgid "Layout"
+msgstr "פריסה"
+
+msgid "Information & content"
+msgstr "מידע ותוכן"
 
 msgid "Above the title"
 msgstr "מעל הכותרת"

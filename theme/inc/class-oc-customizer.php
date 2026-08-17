@@ -413,6 +413,8 @@ final class Customizer {
 			);
 		}
 
+		$this->heading( $c, 'oc_h_cat_structure', $section, __( 'Page structure', 'oc-theme' ) );
+
 		$this->choice(
 			$c,
 			'oc_breadcrumbs_pos',
@@ -437,6 +439,20 @@ final class Customizer {
 			),
 			'start'
 		);
+
+		$this->choice(
+			$c,
+			'oc_catalog_desc_pos',
+			$section,
+			__( 'Category description position', 'oc-theme' ),
+			array(
+				'top'    => __( 'Under the title', 'oc-theme' ),
+				'bottom' => __( 'Under the products', 'oc-theme' ),
+			),
+			'top'
+		);
+
+		$this->heading( $c, 'oc_h_cat_grid', $section, __( 'Product grid', 'oc-theme' ) );
 
 		$this->choice(
 			$c,
@@ -465,6 +481,37 @@ final class Customizer {
 			'2'
 		);
 
+		$this->choice(
+			$c,
+			'oc_card_gap',
+			$section,
+			__( 'Space between products', 'oc-theme' ),
+			array(
+				'0px'  => __( 'None', 'oc-theme' ),
+				'8px'  => __( 'Small', 'oc-theme' ),
+				'20px' => __( 'Regular', 'oc-theme' ),
+				'32px' => __( 'Large', 'oc-theme' ),
+			),
+			'20px'
+		);
+
+		$this->choice(
+			$c,
+			'oc_catalog_products_width',
+			$section,
+			__( 'Products area width', 'oc-theme' ),
+			array(
+				'page' => __( 'Page width', 'oc-theme' ),
+				'full' => __( 'Edge to edge', 'oc-theme' ),
+			),
+			'page'
+		);
+
+		$this->number( $c, 'oc_catalog_width_px', $section, __( 'Page width override (0 = inherit)', 'oc-theme' ), 0, 0, 1920 );
+		$this->color( $c, 'oc_catalog_bg', $section, __( 'Page background override', 'oc-theme' ) );
+
+		$this->heading( $c, 'oc_h_cat_paging', $section, __( 'Loading & paging', 'oc-theme' ) );
+
 		$this->number( $c, 'oc_catalog_per_page', $section, __( 'Products per page (-1 shows all)', 'oc-theme' ), 24, -1, 200 );
 
 		$this->choice(
@@ -482,44 +529,19 @@ final class Customizer {
 
 		$this->choice(
 			$c,
-			'oc_card_gap',
+			'oc_paging_shape',
 			$section,
-			__( 'Space between products', 'oc-theme' ),
+			__( 'Page numbers shape', 'oc-theme' ),
 			array(
-				'0px'  => __( 'None', 'oc-theme' ),
-				'8px'  => __( 'Small', 'oc-theme' ),
-				'20px' => __( 'Regular', 'oc-theme' ),
-				'32px' => __( 'Large', 'oc-theme' ),
+				'circle' => __( 'Circles', 'oc-theme' ),
+				'square' => __( 'Squares', 'oc-theme' ),
 			),
-			'20px'
+			'circle'
 		);
 
-		$this->choice(
-			$c,
-			'oc_catalog_desc_pos',
-			$section,
-			__( 'Category description position', 'oc-theme' ),
-			array(
-				'top'    => __( 'Under the title', 'oc-theme' ),
-				'bottom' => __( 'Under the products', 'oc-theme' ),
-			),
-			'top'
-		);
+		$this->heading( $c, 'oc_h_cat_text', $section, __( 'Text', 'oc-theme' ) );
 
 		$this->number( $c, 'oc_catalog_fs', $section, __( 'Body text size (px)', 'oc-theme' ), 16, 12, 20 );
-		$this->number( $c, 'oc_swatch_size_cat', $section, __( 'Swatch size — catalogue (px)', 'oc-theme' ), 22, 14, 40 );
-
-		$this->choice(
-			$c,
-			'oc_colors_loop_pos',
-			$section,
-			__( 'Colour swatches on the card', 'oc-theme' ),
-			array(
-				'above' => __( 'Above the title', 'oc-theme' ),
-				'below' => __( 'Below the content', 'oc-theme' ),
-			),
-			'below'
-		);
 
 		$this->choice(
 			$c,
@@ -534,32 +556,33 @@ final class Customizer {
 			'1.55'
 		);
 
+		$this->heading( $c, 'oc_h_cat_swatches', $section, __( 'Colour swatches', 'oc-theme' ) );
+
+		$this->number( $c, 'oc_swatch_size_cat', $section, __( 'Swatch size — catalogue (px)', 'oc-theme' ), 22, 14, 40 );
+
 		$this->choice(
 			$c,
-			'oc_paging_shape',
+			'oc_swatch_shape_cat',
 			$section,
-			__( 'Page numbers shape', 'oc-theme' ),
+			__( 'Swatch shape — catalogue', 'oc-theme' ),
 			array(
-				'circle' => __( 'Circles', 'oc-theme' ),
-				'square' => __( 'Squares', 'oc-theme' ),
+				'circle' => __( 'Round', 'oc-theme' ),
+				'square' => __( 'Square', 'oc-theme' ),
 			),
 			'circle'
 		);
 
 		$this->choice(
 			$c,
-			'oc_catalog_products_width',
+			'oc_colors_loop_pos',
 			$section,
-			__( 'Products area width', 'oc-theme' ),
+			__( 'Colour swatches on the card', 'oc-theme' ),
 			array(
-				'page' => __( 'Page width', 'oc-theme' ),
-				'full' => __( 'Edge to edge', 'oc-theme' ),
+				'above' => __( 'Above the title', 'oc-theme' ),
+				'below' => __( 'Below the content', 'oc-theme' ),
 			),
-			'page'
+			'below'
 		);
-
-		$this->number( $c, 'oc_catalog_width_px', $section, __( 'Page width override (0 = inherit)', 'oc-theme' ), 0, 0, 1920 );
-		$this->color( $c, 'oc_catalog_bg', $section, __( 'Page background override', 'oc-theme' ) );
 	}
 
 	/**
@@ -716,6 +739,8 @@ final class Customizer {
 			)
 		);
 
+		$this->heading( $c, 'oc_h_prod_layout', 'oc_product', __( 'Layout', 'oc-theme' ) );
+
 		$this->preset(
 			$c,
 			'oc_product_layout_side',
@@ -751,6 +776,8 @@ final class Customizer {
 		$this->number( $c, 'oc_product_width_px', 'oc_product', __( 'Page width override (0 = inherit)', 'oc-theme' ), 0, 0, 1920 );
 		$this->color( $c, 'oc_product_bg', 'oc_product', __( 'Page background override', 'oc-theme' ) );
 
+		$this->heading( $c, 'oc_h_prod_gallery', 'oc_product', __( 'Gallery — desktop', 'oc-theme' ) );
+
 		$this->preset(
 			$c,
 			'oc_gallery_preset',
@@ -777,65 +804,6 @@ final class Customizer {
 			),
 			'thumbs-side',
 			'200px'
-		);
-
-		$this->preset(
-			$c,
-			'oc_gallery_mobile',
-			'oc_product',
-			__( 'Gallery — mobile', 'oc-theme' ),
-			array(
-				'dots' => array(
-					'label' => __( 'Full width with dots', 'oc-theme' ),
-					'svg'   => self::wf( '0 0 132 84', self::rect( 0, 4, 132, 66, 'im', 0 ) . self::dots( 66, 78, 4 ) ),
-				),
-				'peek' => array(
-					'label' => __( 'Peek at the next image', 'oc-theme' ),
-					'svg'   => self::wf( '0 0 132 84', self::rect( 6, 4, 96, 76, 'im', 3 ) . self::rect( 108, 4, 24, 76, 'bd', 3 ) ),
-				),
-			),
-			'dots',
-			'200px'
-		);
-
-		$this->toggle(
-			$c,
-			'oc_gallery_mobile_arrows',
-			'oc_product',
-			__( 'Arrows on the mobile gallery', 'oc-theme' ),
-			false,
-			static function (): bool {
-				return 'dots' === get_theme_mod( 'oc_gallery_mobile', 'dots' );
-			}
-		);
-
-		$this->number( $c, 'oc_product_fs', 'oc_product', __( 'Body text size (px)', 'oc-theme' ), 16, 12, 20 );
-		$this->number( $c, 'oc_swatch_size', 'oc_product', __( 'Swatch size — product page (px)', 'oc-theme' ), 32, 20, 56 );
-		$this->toggle( $c, 'oc_swatch_check', 'oc_product', __( 'Check mark on the selected swatch', 'oc-theme' ), true );
-
-		$this->choice(
-			$c,
-			'oc_swatch_shape',
-			'oc_product',
-			__( 'Swatch shape', 'oc-theme' ),
-			array(
-				'circle' => __( 'Round', 'oc-theme' ),
-				'square' => __( 'Square', 'oc-theme' ),
-			),
-			'circle'
-		);
-
-		$this->choice(
-			$c,
-			'oc_product_lh',
-			'oc_product',
-			__( 'Body text line height', 'oc-theme' ),
-			array(
-				'1.4'  => __( 'Tight', 'oc-theme' ),
-				'1.55' => __( 'Regular', 'oc-theme' ),
-				'1.75' => __( 'Loose', 'oc-theme' ),
-			),
-			'1.55'
 		);
 
 		$thumbs_active = static function (): bool {
@@ -894,6 +862,76 @@ final class Customizer {
 
 		$this->toggle( $c, 'oc_gallery_lightbox', 'oc_product', __( 'Open images in a lightbox', 'oc-theme' ), true );
 		$this->toggle( $c, 'oc_gallery_zoom', 'oc_product', __( 'Zoom on hover', 'oc-theme' ), true );
+
+		$this->heading( $c, 'oc_h_prod_mobile', 'oc_product', __( 'Gallery — mobile', 'oc-theme' ) );
+
+		$this->preset(
+			$c,
+			'oc_gallery_mobile',
+			'oc_product',
+			__( 'Gallery — mobile', 'oc-theme' ),
+			array(
+				'dots' => array(
+					'label' => __( 'Full width with dots', 'oc-theme' ),
+					'svg'   => self::wf( '0 0 132 84', self::rect( 0, 4, 132, 66, 'im', 0 ) . self::dots( 66, 78, 4 ) ),
+				),
+				'peek' => array(
+					'label' => __( 'Peek at the next image', 'oc-theme' ),
+					'svg'   => self::wf( '0 0 132 84', self::rect( 6, 4, 96, 76, 'im', 3 ) . self::rect( 108, 4, 24, 76, 'bd', 3 ) ),
+				),
+			),
+			'dots',
+			'200px'
+		);
+
+		$this->toggle(
+			$c,
+			'oc_gallery_mobile_arrows',
+			'oc_product',
+			__( 'Arrows on the mobile gallery', 'oc-theme' ),
+			false,
+			static function (): bool {
+				return 'dots' === get_theme_mod( 'oc_gallery_mobile', 'dots' );
+			}
+		);
+
+		$this->heading( $c, 'oc_h_prod_swatches', 'oc_product', __( 'Colour swatches', 'oc-theme' ) );
+
+		$this->number( $c, 'oc_swatch_size', 'oc_product', __( 'Swatch size — product page (px)', 'oc-theme' ), 32, 20, 56 );
+
+		$this->choice(
+			$c,
+			'oc_swatch_shape',
+			'oc_product',
+			__( 'Swatch shape', 'oc-theme' ),
+			array(
+				'circle' => __( 'Round', 'oc-theme' ),
+				'square' => __( 'Square', 'oc-theme' ),
+			),
+			'circle'
+		);
+
+		$this->toggle( $c, 'oc_swatch_check', 'oc_product', __( 'Check mark on the selected swatch', 'oc-theme' ), true );
+
+		$this->heading( $c, 'oc_h_prod_text', 'oc_product', __( 'Text', 'oc-theme' ) );
+
+		$this->number( $c, 'oc_product_fs', 'oc_product', __( 'Body text size (px)', 'oc-theme' ), 16, 12, 20 );
+
+		$this->choice(
+			$c,
+			'oc_product_lh',
+			'oc_product',
+			__( 'Body text line height', 'oc-theme' ),
+			array(
+				'1.4'  => __( 'Tight', 'oc-theme' ),
+				'1.55' => __( 'Regular', 'oc-theme' ),
+				'1.75' => __( 'Loose', 'oc-theme' ),
+			),
+			'1.55'
+		);
+
+		$this->heading( $c, 'oc_h_prod_content', 'oc_product', __( 'Information & content', 'oc-theme' ) );
+
 		$this->toggle( $c, 'oc_product_sticky_atc', 'oc_product', __( 'Sticky add-to-cart bar', 'oc-theme' ), true );
 
 		$this->choice(
@@ -935,6 +973,31 @@ final class Customizer {
 				'center' => __( 'Centre', 'oc-theme' ),
 			),
 			'start'
+		);
+	}
+
+	/**
+	 * A styled group heading between controls — sections stay scannable as
+	 * they grow.
+	 *
+	 * @param \WP_Customize_Manager $c       Manager.
+	 * @param string                $id      Heading id.
+	 * @param string                $section Section id.
+	 * @param string                $label   Heading text.
+	 */
+	private function heading( \WP_Customize_Manager $c, string $id, string $section, string $label ): void {
+		require_once __DIR__ . '/class-oc-heading-control.php';
+
+		$c->add_setting( $id, array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		$c->add_control(
+			new Heading_Control(
+				$c,
+				$id,
+				array(
+					'section' => $section,
+					'label'   => $label,
+				)
+			)
 		);
 	}
 

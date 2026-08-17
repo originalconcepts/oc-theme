@@ -56,10 +56,28 @@ final class Variations {
 		// Colour siblings sit in the variations area, like every attribute row.
 		add_action( 'woocommerce_before_add_to_cart_form', array( $this, 'product_colors' ) );
 
+		// Both positions hook in; the choice is read at render time, so the
+		// customizer preview reflects it immediately — a hook picked when the
+		// theme loads would only see the saved value.
+		add_action( 'woocommerce_before_shop_loop_item_title', array( $this, 'loop_colors_above' ), 20 );
+		add_action( 'woocommerce_after_shop_loop_item_title', array( $this, 'loop_colors_below' ), 30 );
+	}
+
+	/**
+	 * Card swatches above the title, when so configured.
+	 */
+	public function loop_colors_above(): void {
 		if ( 'above' === get_theme_mod( 'oc_colors_loop_pos', 'below' ) ) {
-			add_action( 'woocommerce_before_shop_loop_item_title', array( $this, 'loop_colors' ), 20 );
-		} else {
-			add_action( 'woocommerce_after_shop_loop_item_title', array( $this, 'loop_colors' ), 30 );
+			$this->loop_colors();
+		}
+	}
+
+	/**
+	 * Card swatches below the content, when so configured.
+	 */
+	public function loop_colors_below(): void {
+		if ( 'above' !== get_theme_mod( 'oc_colors_loop_pos', 'below' ) ) {
+			$this->loop_colors();
 		}
 	}
 
