@@ -726,6 +726,12 @@ msgstr "הוספת תמונות"
 msgid "Swatch image (this product only)"
 msgstr "תמונת Swatch (למוצר הזה בלבד)"
 
+msgid "Colour shade (this product only)"
+msgstr "גוון הצבע (למוצר הזה בלבד)"
+
+msgid "Reset"
+msgstr "איפוס"
+
 msgid "Swatch shape"
 msgstr "צורת ה-Swatch"
 

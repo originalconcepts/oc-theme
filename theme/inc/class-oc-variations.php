@@ -427,6 +427,12 @@ final class Variations {
 		if ( $product instanceof \WC_Product ) {
 			$galleries = $this->galleries_meta( $product->get_id() );
 			$image     = (string) ( $galleries[ $term->slug ]['swatch'] ?? '' );
+
+			// A per-product shade replaces the value's store-wide colour.
+			$shade = (string) ( $galleries[ $term->slug ]['color'] ?? '' );
+			if ( '' !== $shade ) {
+				$color = $shade;
+			}
 		}
 
 		if ( '' === $image ) {
@@ -511,11 +517,13 @@ final class Variations {
 		foreach ( $raw as $slug => $entry ) {
 			$imgs   = array_filter( array_map( 'absint', (array) ( $entry['imgs'] ?? array() ) ) );
 			$swatch = (string) ( $entry['swatch'] ?? '' );
+			$color  = (string) ( $entry['color'] ?? '' );
 
-			if ( ! empty( $imgs ) || '' !== $swatch ) {
+			if ( ! empty( $imgs ) || '' !== $swatch || '' !== $color ) {
 				$out[ (string) $slug ] = array(
 					'imgs'   => array_values( $imgs ),
 					'swatch' => $swatch,
+					'color'  => $color,
 				);
 			}
 		}
@@ -602,8 +610,13 @@ final class Variations {
 			$entry  = $saved[ $term->slug ] ?? array(
 				'imgs'   => array(),
 				'swatch' => '',
+				'color'  => '',
 			);
 			$swatch = (string) $entry['swatch'];
+			$color  = (string) ( $entry['color'] ?? '' );
+
+			$term_color = (string) get_term_meta( $term->term_id, 'oc_swatch_color', true );
+			$term_color = '' !== $term_color ? $term_color : '#cccccc';
 
 			echo '<div class="oc-cgal" data-slug="' . esc_attr( $term->slug ) . '" style="border-block-end:1px solid #eee;padding:12px;">';
 			echo '<strong style="display:block;margin-block-end:8px;">' . esc_html( $term->name ) . '</strong>';
@@ -619,7 +632,17 @@ final class Variations {
 				}
 			}
 			echo '</span>';
-			echo '<button type="button" class="button oc-cgal__pick">' . esc_html__( 'Add images', 'oc-theme' ) . '</button>';
+			echo '<span style="display:block;margin-block-start:10px;"><button type="button" class="button oc-cgal__pick">' . esc_html__( 'Add images', 'oc-theme' ) . '</button></span>';
+
+			// Optional colour-shade override for this product only: the value
+			// keeps its store-wide colour; this product may fine-tune it, and
+			// reset returns to the value's own colour.
+			echo '<span style="display:flex;align-items:center;gap:8px;margin-block-start:8px;">';
+			echo '<label style="float:none;inline-size:auto;margin:0;display:inline-block;">' . esc_html__( 'Colour shade (this product only)', 'oc-theme' ) . '</label>';
+			echo '<input type="hidden" name="oc_cgal[' . esc_attr( $term->slug ) . '][color]" value="' . esc_attr( $color ) . '" class="oc-cgal__colval" />';
+			echo '<input type="color" class="oc-cgal__color" value="' . esc_attr( '' !== $color ? $color : $term_color ) . '" data-def="' . esc_attr( $term_color ) . '" />';
+			echo '<button type="button" class="button oc-cgal__colreset"' . ( '' === $color ? ' style="display:none;"' : '' ) . '>' . esc_html__( 'Reset', 'oc-theme' ) . '</button>';
+			echo '</span>';
 
 			// Optional swatch override for this product only — one compact row,
 			// unhooked from Woo's floated form-field label layout.
@@ -713,6 +736,18 @@ final class Variations {
 				}
 			} );
 
+			// A picked shade lands in the hidden field; reset returns to the
+			// value's own colour.
+			document.addEventListener( 'input', function ( event ) {
+				var picker = event.target.closest ? event.target.closest( '.oc-cgal__color' ) : null;
+				if ( ! picker ) {
+					return;
+				}
+				var row = picker.closest( '.oc-cgal' );
+				row.querySelector( '.oc-cgal__colval' ).value = picker.value;
+				row.querySelector( '.oc-cgal__colreset' ).style.display = '';
+			} );
+
 			document.addEventListener( 'click', function ( event ) {
 				var row = event.target.closest( '.oc-cgal' );
 				if ( ! row ) {
@@ -722,6 +757,14 @@ final class Variations {
 				if ( event.target.closest( '.oc-cgal__x' ) ) {
 					event.target.closest( '.oc-cgal__chip' ).remove();
 					syncIds( row );
+					return;
+				}
+
+				if ( event.target.closest( '.oc-cgal__colreset' ) ) {
+					var shade = row.querySelector( '.oc-cgal__color' );
+					shade.value = shade.dataset.def;
+					row.querySelector( '.oc-cgal__colval' ).value = '';
+					event.target.closest( '.oc-cgal__colreset' ).style.display = 'none';
 					return;
 				}
 
@@ -793,11 +836,13 @@ final class Variations {
 		foreach ( wp_unslash( (array) $_POST['oc_cgal'] ) as $slug => $entry ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 			$imgs   = array_filter( array_map( 'absint', explode( ',', (string) ( $entry['imgs'] ?? '' ) ) ) );
 			$swatch = esc_url_raw( (string) ( $entry['swatch'] ?? '' ) );
+			$color  = (string) sanitize_hex_color( (string) ( $entry['color'] ?? '' ) );
 
-			if ( ! empty( $imgs ) || '' !== $swatch ) {
+			if ( ! empty( $imgs ) || '' !== $swatch || '' !== $color ) {
 				$clean[ sanitize_title( (string) $slug ) ] = array(
 					'imgs'   => array_values( $imgs ),
 					'swatch' => $swatch,
+					'color'  => $color,
 				);
 			}
 		}

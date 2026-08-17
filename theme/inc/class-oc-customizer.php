@@ -777,6 +777,9 @@ final class Customizer {
 
 		$this->heading( $c, 'oc_h_prod_layout', 'oc_product', __( 'Layout', 'oc-theme' ) );
 
+		$this->number( $c, 'oc_product_width_px', 'oc_product', __( 'Page width override (0 = inherit)', 'oc-theme' ), 0, 0, 1920 );
+		$this->color( $c, 'oc_product_bg', 'oc_product', __( 'Page background override', 'oc-theme' ) );
+
 		$this->preset(
 			$c,
 			'oc_product_layout_side',
@@ -808,9 +811,6 @@ final class Customizer {
 			),
 			'50-50'
 		);
-
-		$this->number( $c, 'oc_product_width_px', 'oc_product', __( 'Page width override (0 = inherit)', 'oc-theme' ), 0, 0, 1920 );
-		$this->color( $c, 'oc_product_bg', 'oc_product', __( 'Page background override', 'oc-theme' ) );
 
 		$this->heading( $c, 'oc_h_prod_gallery', 'oc_product', __( 'Gallery — desktop', 'oc-theme' ) );
 
