@@ -602,6 +602,10 @@
 		if ( li && li.scrollIntoView ) {
 			li.scrollIntoView( { block: 'nearest', inline: 'nearest', behavior: 'smooth' } );
 		}
+
+		if ( ocPauseManualVideo ) {
+			ocPauseManualVideo( gSlides[ index ] );
+		}
 	}
 
 	function activateSlide( index ) {
@@ -834,6 +838,10 @@
 		mgDots.querySelectorAll( 'button' ).forEach( function ( b, i ) {
 			b.setAttribute( 'aria-current', i === idx ? 'true' : 'false' );
 		} );
+
+		if ( ocPauseManualVideo && mgWrap ) {
+			ocPauseManualVideo( mgWrap.querySelectorAll( '.woocommerce-product-gallery__image' )[ idx ] );
+		}
 	}
 
 	function mgGoTo( index ) {
@@ -925,6 +933,10 @@
 	// Assigned by the video module: re-inserts the gallery video slide after
 	// a colour-gallery swap replaces the slides.
 	var ocReinsertVideo = null;
+
+	// Assigned by the video module: paging away from a manually-started
+	// video pauses it and hands the play badge back.
+	var ocPauseManualVideo = null;
 
 	function ocSwapGallery( slidesHtml ) {
 		if ( ! galleryWrap ) {
@@ -1242,7 +1254,14 @@
 						var vToW;
 						var vToH;
 						if ( ocVideo && 'file' === ocVideo.kind ) {
-							vToH = Math.min( window.innerHeight * 0.92, ( window.innerWidth * 0.92 ) / vRatio );
+							// Never past the file's native size — a small video
+							// blown to full height would snap back down when
+							// the real element takes over.
+							vToH = Math.min(
+								window.innerHeight * 0.92,
+								( window.innerWidth * 0.92 ) / vRatio,
+								( vid && vid.videoHeight ) || Infinity
+							);
 							vToW = vToH * vRatio;
 						} else {
 							vToW = Math.min( window.innerWidth * 0.88, 1100 );
@@ -1254,7 +1273,13 @@
 					var originImg = originSlide.querySelector( 'img' );
 					if ( originImg && originImg.getBoundingClientRect().width ) {
 						var ratio = ( originImg.naturalWidth || 1 ) / ( originImg.naturalHeight || 1 );
-						var toH = Math.min( window.innerHeight, ( window.innerWidth * 0.92 ) / ratio );
+						// Capped at the image's own size: the lightbox never
+						// upscales, so the ghost must not either.
+						var toH = Math.min(
+							window.innerHeight,
+							( window.innerWidth * 0.92 ) / ratio,
+							originImg.naturalHeight || Infinity
+						);
 						ghostSpec = { src: originImg.currentSrc || originImg.src, el: originImg, toW: toH * ratio, toH: toH };
 					}
 				}
@@ -1358,6 +1383,26 @@
 				return 'file' === ocVideo.kind
 					? '<video src="' + ocVideo.loopSrc + '" muted playsinline preload="metadata"></video>'
 					: '<img class="oc-vposter" src="' + ( ocVideo.thumb || ocVideoFallbackThumb ) + '" alt="" />';
+			};
+
+			// Paging away pauses a manually-started video and returns its
+			// play badge; files hold their frame, embeds fold back to the
+			// poster (an iframe cannot be paused from outside).
+			ocPauseManualVideo = function ( currentSlide ) {
+				var playing = galleryWrap.querySelector( '.oc-vslide--manual.is-playing' );
+
+				if ( ! playing || playing === currentSlide ) {
+					return;
+				}
+
+				playing.classList.remove( 'is-playing' );
+
+				var vid = playing.querySelector( 'video' );
+				if ( vid ) {
+					vid.pause();
+				} else {
+					playing.innerHTML = ocVideoFrozenHtml() + '<span class="oc-vplay" aria-hidden="true"></span>';
+				}
 			};
 
 			if ( 'gallery' === ocVideo.placement ) {
