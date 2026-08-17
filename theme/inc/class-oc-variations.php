@@ -1032,9 +1032,14 @@ final class Variations {
 				continue;
 			}
 
-			$thumb = wp_get_attachment_image_url( (int) $sibling->get_image_id(), 'thumbnail' );
+			// The sibling's own colour value decides the circle, through the
+			// same chain as every swatch — attribute type first, product
+			// thumbnail only as the last fallback. So a colour-led attribute
+			// shows colours here too, not product photos.
+			$style = $this->sibling_style( $sibling );
+			$thumb = '' !== $style ? '' : wp_get_attachment_image_url( (int) $sibling->get_image_id(), 'thumbnail' );
 
-			if ( ! $thumb ) {
+			if ( '' === $style && ! $thumb ) {
 				continue;
 			}
 
@@ -1058,14 +1063,15 @@ final class Variations {
 			}
 
 			$items .= sprintf(
-				'<a class="oc-colors__item%s" href="%s" title="%s" aria-label="%s"%s%s><img src="%s" alt="" loading="lazy" /></a>',
+				'<a class="oc-colors__item%s" href="%s" title="%s" aria-label="%s"%s%s%s>%s</a>',
 				$current ? ' is-current' : '',
 				esc_url( $current ? '#' : get_permalink( $id ) ),
 				esc_attr( $sibling->get_name() ),
 				esc_attr( $sibling->get_name() ),
 				$current ? ' aria-current="true"' : '',
 				$data, // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
-				esc_url( $thumb )
+				'' !== $style ? ' style="' . $style . '"' : '', // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
+				'' !== $style ? '' : '<img src="' . esc_url( (string) $thumb ) . '" alt="" loading="lazy" />'
 			);
 		}
 
@@ -1074,6 +1080,36 @@ final class Variations {
 		}
 
 		return '<div class="oc-colors ' . esc_attr( $class ) . '">' . $items . '</div>';
+	}
+
+	/**
+	 * Swatch style for a colour-sibling product, resolved from its own solo
+	 * colour value through the standard chain. Empty when the product has no
+	 * swatch attribute or nothing to draw — the caller falls back to the
+	 * product thumbnail.
+	 *
+	 * @param \WC_Product $sibling Sibling product.
+	 * @return string
+	 */
+	private function sibling_style( \WC_Product $sibling ): string {
+		foreach ( array_keys( $sibling->get_attributes() ) as $attr_tax ) {
+			// Keys arrive percent-encoded for Hebrew taxonomies.
+			$attr_tax = rawurldecode( (string) $attr_tax );
+			$type     = $this->attr_type( $attr_tax );
+
+			if ( ! in_array( $type, array( 'swatch', 'swatch_image' ), true ) ) {
+				continue;
+			}
+
+			$terms = wc_get_product_terms( $sibling->get_id(), $attr_tax, array( 'fields' => 'all' ) );
+
+			if ( 1 === count( $terms ) ) {
+				return $this->swatch_style( $sibling, $attr_tax, $terms[0], $type );
+			}
+			break;
+		}
+
+		return '';
 	}
 
 	/**
