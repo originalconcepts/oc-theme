@@ -1713,6 +1713,9 @@
 				check();
 			};
 
+			// No sound attempt here: a page-load unmute once played AUDIO from
+			// a video whose slide was hidden — sound starts only from a real
+			// gesture (the chip, a manual play click, or the lightbox).
 			var ocAttachSound = function ( slide ) {
 				if ( 'file' !== ocVideo.kind ) {
 					return;
@@ -1720,9 +1723,6 @@
 				var vid = slide.querySelector( 'video' );
 				if ( vid ) {
 					ocAttachVideoChips( slide, vid );
-					if ( slide.classList.contains( 'oc-vslide--auto' ) ) {
-						ocTrySoundOn( vid );
-					}
 				}
 			};
 
@@ -1748,26 +1748,46 @@
 			};
 
 			ocResumePageVideos = function () {
-				document.querySelectorAll( '.oc-vslide--auto video, .oc-vfab video' ).forEach( function ( vid ) {
-					vid.muted = true;
-					vid.play().catch( function () {} );
-				} );
+				// The visible-slide rule decides who may run again: with an
+				// is-active system, only the slide on show; without one
+				// (stacked, mobile strip) the video itself may loop, muted.
+				var active = galleryWrap.querySelector( '.woocommerce-product-gallery__image.is-active' ) ||
+					galleryWrap.querySelector( '.oc-vslide--auto' );
+				ocPauseManualVideo( active );
+
+				var fab = document.querySelector( '.oc-vfab video' );
+				if ( fab ) {
+					fab.muted = true;
+					fab.play().catch( function () {} );
+				}
 			};
 
-			// Paging away pauses a manually-started video and returns its
-			// play badge; files hold their frame, embeds fold back to the
-			// poster (an iframe cannot be paused from outside). An unmuted
-			// video also falls silent — sound must never keep playing under
-			// another image.
+			// One rule: a gallery video runs ONLY while its own slide is the
+			// one on show — anything else pauses, falls silent, and (manual
+			// mode) takes its play badge back. A hidden slide must never
+			// play, and must never make a sound.
 			ocPauseManualVideo = function ( currentSlide ) {
 				galleryWrap.querySelectorAll( '.oc-vslide video' ).forEach( function ( vid ) {
 					var host = vid.closest( '.oc-vslide' );
-					if ( host !== currentSlide && ! vid.muted ) {
+
+					if ( host === currentSlide ) {
+						// The video's turn: the auto loop runs (muted until
+						// the visitor asks for sound).
+						if ( host.classList.contains( 'oc-vslide--auto' ) && vid.paused ) {
+							vid.play().catch( function () {} );
+						}
+						return;
+					}
+
+					if ( ! vid.muted ) {
 						vid.muted = true;
 						var chip = host.querySelector( '.oc-vsound' );
 						if ( chip ) {
 							chip.classList.remove( 'is-on' );
 						}
+					}
+					if ( ! vid.paused ) {
+						vid.pause();
 					}
 				} );
 
@@ -1781,7 +1801,6 @@
 
 				var vid = playing.querySelector( 'video' );
 				if ( vid ) {
-					vid.pause();
 					// The big play badge is back — the chip steps aside.
 					var chip = playing.querySelector( '.oc-vpause' );
 					if ( chip ) {
@@ -1810,6 +1829,19 @@
 					var at = Math.min( Math.max( ocVideo.position, 1 ), galleryWrap.children.length + 1 ) - 1;
 					galleryWrap.insertBefore( slide, galleryWrap.children[ at ] || null );
 					ocAttachSound( slide );
+
+					// Autoplay lands whenever the file is ready — if another
+					// slide holds the stage at that moment, stop it cold. A
+					// hidden slide never plays.
+					var slideVid = slide.querySelector( 'video' );
+					if ( slideVid ) {
+						slideVid.addEventListener( 'play', function () {
+							var act = galleryWrap.querySelector( '.woocommerce-product-gallery__image.is-active' );
+							if ( act && act !== slide ) {
+								slideVid.pause();
+							}
+						} );
+					}
 				};
 
 				ocReinsertVideo = ocInsertSlide;
@@ -1817,6 +1849,13 @@
 				buildGalleryRail();
 				buildMobileDots();
 				window.dispatchEvent( new Event( 'resize' ) );
+
+				// If another slide holds the stage right now, the video must
+				// not start behind it — autoplay would run it hidden.
+				var activeNow = galleryWrap.querySelector( '.woocommerce-product-gallery__image.is-active' );
+				if ( activeNow && ! activeNow.classList.contains( 'oc-vslide' ) ) {
+					ocPauseManualVideo( activeNow );
+				}
 			} else {
 				var fab = document.createElement( 'button' );
 				fab.type = 'button';
