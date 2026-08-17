@@ -580,23 +580,41 @@ final class Variations {
 			return;
 		}
 
-		$posted = isset( $_POST['attribute_names'] ) ? count( (array) wp_unslash( $_POST['attribute_names'] ) ) : -1; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		// phpcs:disable WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash -- forensic read-only trace; Woo verified its nonce.
+		$names  = isset( $_POST['attribute_names'] ) ? array_map( 'sanitize_text_field', (array) wp_unslash( $_POST['attribute_names'] ) ) : array();
+		$values = isset( $_POST['attribute_values'] ) ? (array) $_POST['attribute_values'] : array();
+
+		$detail = array();
+		foreach ( $names as $i => $name ) {
+			$val      = $values[ $i ] ?? null;
+			$detail[] = sprintf(
+				'[%s] name=%s values=%s',
+				(string) $i,
+				rawurlencode( $name ),
+				null === $val ? 'MISSING' : ( is_array( $val ) ? 'array:' . count( $val ) : 'str:' . strlen( (string) $val ) )
+			);
+		}
 
 		$this->save_log(
 			sprintf(
-				'save product=%d attribute_names=%s post_keys=%d oc_cgal=%s',
+				'save product=%d attribute_names=%d resulting_attrs=%d oc_cgal=%s %s',
 				$product->get_id(),
-				-1 === $posted ? 'ABSENT' : (string) $posted,
-				count( $_POST ), // phpcs:ignore WordPress.Security.NonceVerification.Missing
-				isset( $_POST['oc_cgal'] ) ? 'yes' : 'no' // phpcs:ignore WordPress.Security.NonceVerification.Missing
+				count( $names ),
+				count( $product->get_attributes() ),
+				isset( $_POST['oc_cgal'] ) ? 'yes' : 'no',
+				implode( ' ', $detail )
 			)
 		);
+		// phpcs:enable
 
-		if ( $posted > 0 || ! empty( $product->get_attributes() ) ) {
+		if ( ! empty( $product->get_attributes() ) ) {
 			return;
 		}
 
-		// The database still holds the pre-save state here.
+		// The save is about to leave a variable product with zero attributes —
+		// whatever emptied them (unposted fields, values Woo discarded), that
+		// is never what an edit intends. The database still holds the
+		// pre-save state here; put it back.
 		$stored = wc_get_product( $product->get_id() );
 
 		if ( $stored && ! empty( $stored->get_attributes() ) ) {
