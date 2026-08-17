@@ -88,6 +88,9 @@ final class Variations {
 	 * @return string select|button|swatch|swatch_image
 	 */
 	private function attr_type( string $taxonomy ): string {
+		// Product-attribute keys arrive percent-encoded for Hebrew taxonomies.
+		$taxonomy = rawurldecode( $taxonomy );
+
 		foreach ( wc_get_attribute_taxonomies() as $attribute ) {
 			if ( 'pa_' . $attribute->attribute_name === $taxonomy ) {
 				return in_array( $attribute->attribute_type, array( 'button', 'swatch', 'swatch_image' ), true )
@@ -551,11 +554,14 @@ final class Variations {
 
 		if ( $product instanceof \WC_Product ) {
 			foreach ( array_keys( $product->get_attributes() ) as $attr_tax ) {
-				if ( ! in_array( $this->attr_type( (string) $attr_tax ), array( 'swatch', 'swatch_image' ), true ) ) {
+				// Keys arrive percent-encoded for Hebrew taxonomies.
+				$attr_tax = rawurldecode( (string) $attr_tax );
+
+				if ( ! in_array( $this->attr_type( $attr_tax ), array( 'swatch', 'swatch_image' ), true ) ) {
 					continue;
 				}
 
-				$product_terms = wc_get_product_terms( $post->ID, (string) $attr_tax, array( 'fields' => 'all' ) );
+				$product_terms = wc_get_product_terms( $post->ID, $attr_tax, array( 'fields' => 'all' ) );
 				foreach ( $product_terms as $term ) {
 					$terms[] = $term;
 				}
@@ -782,14 +788,17 @@ final class Variations {
 		$value = '';
 
 		foreach ( array_keys( $product->get_attributes() ) as $attr_tax ) {
-			if ( ! in_array( $this->attr_type( (string) $attr_tax ), array( 'swatch', 'swatch_image' ), true ) ) {
+			// Keys arrive percent-encoded for Hebrew taxonomies.
+			$attr_tax = rawurldecode( (string) $attr_tax );
+
+			if ( ! in_array( $this->attr_type( $attr_tax ), array( 'swatch', 'swatch_image' ), true ) ) {
 				continue;
 			}
 
-			$terms = wc_get_product_terms( $product->get_id(), (string) $attr_tax, array( 'fields' => 'names' ) );
+			$terms = wc_get_product_terms( $product->get_id(), $attr_tax, array( 'fields' => 'names' ) );
 
 			if ( 1 === count( $terms ) ) {
-				$label = wc_attribute_label( (string) $attr_tax );
+				$label = wc_attribute_label( $attr_tax );
 				$value = (string) $terms[0];
 			}
 			break;

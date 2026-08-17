@@ -1887,6 +1887,9 @@ table.variations td.value select:has(+ .oc-var) {
  * row is auto, the whole table and Woo's clear link go too. */
 .variations tr.oc-row-auto { display: none; }
 
+/* Specific enough to beat the block-display layout rules below. */
+.single-product .oc-vars-allauto table.variations,
+.single-product .oc-vars-allauto .reset_variations,
 .oc-vars-allauto table.variations,
 .oc-vars-allauto .reset_variations { display: none; }
 
