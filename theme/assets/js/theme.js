@@ -712,7 +712,7 @@
 			var thumb;
 			if ( slide.dataset.vsrc ) {
 				thumb = document.createElement( 'video' );
-				thumb.src = slide.dataset.vsrc;
+				thumb.src = slide.dataset.vsrc + '#t=0.001';
 				thumb.muted = true;
 				thumb.playsInline = true;
 				thumb.preload = 'metadata';
@@ -1032,7 +1032,13 @@
 					var el = entry.target;
 					if ( entry.isIntersecting ) {
 						if ( ! el.dataset.ocLoaded ) {
-							el.src = el.dataset.ocVsrc;
+							// The #t fragment seeks to the first frame, so a
+							// phone that refuses autoplay (low power mode)
+							// still paints the video instead of a blank box.
+							el.src = 'VIDEO' === el.tagName ? el.dataset.ocVsrc + '#t=0.001' : el.dataset.ocVsrc;
+							if ( 'VIDEO' === el.tagName ) {
+								el.preload = 'metadata';
+							}
 							el.dataset.ocLoaded = '1';
 						}
 						if ( el.play ) {
@@ -1061,7 +1067,10 @@
 			}
 			var rect = el.getBoundingClientRect();
 			if ( rect.width && rect.top < window.innerHeight + 200 && rect.bottom > -200 ) {
-				el.src = el.dataset.ocVsrc;
+				el.src = 'VIDEO' === el.tagName ? el.dataset.ocVsrc + '#t=0.001' : el.dataset.ocVsrc;
+				if ( 'VIDEO' === el.tagName ) {
+					el.preload = 'metadata';
+				}
 				el.dataset.ocLoaded = '1';
 				if ( el.play ) {
 					el.play().catch( function () {} );
@@ -1178,10 +1187,13 @@
 				ocOverlayItems.length > 1 ? ( ocOverlayIndex + 1 ) + ' / ' + ocOverlayItems.length : '';
 		};
 
+		var ocPanHandler = null;
+
 		// In-lightbox zoom, rebuilt for silk: origin stays centred and the
 		// zoom travels via translate+scale — so zooming in, out, and
 		// re-zooming elsewhere all glide (a moving transform-origin snapped).
-		// While zoomed, the image pans by drag, clamped to its own edges.
+		// While zoomed: on desktop the image pans by following the MOUSE;
+		// on touch it pans by drag, clamped to its own edges.
 		var ocBindZoomPan = function ( img ) {
 			var SCALE = 1.9;
 			var zoomed = false;
@@ -1196,6 +1208,8 @@
 
 			img.draggable = false;
 
+			var finePointer = window.matchMedia( '(hover: hover) and (pointer: fine)' ).matches;
+
 			var apply = function ( animate ) {
 				img.style.transition = animate ? 'transform .45s ' + ocLbEase : 'none';
 				img.style.transform = zoomed ? 'translate(' + tx + 'px,' + ty + 'px) scale(' + SCALE + ')' : 'none';
@@ -1208,8 +1222,31 @@
 				ty = Math.min( maxY, Math.max( -maxY, ty ) );
 			};
 
+			// Desktop: the cursor steers the pan — the viewport maps onto the
+			// zoomed image, edge to edge.
+			var hoverPan = function ( mx, my ) {
+				var maxX = Math.max( 0, ( img.offsetWidth * SCALE - window.innerWidth ) / 2 );
+				var maxY = Math.max( 0, ( img.offsetHeight * SCALE - window.innerHeight ) / 2 );
+				tx = ( 0.5 - mx / window.innerWidth ) * 2 * maxX;
+				ty = ( 0.5 - my / window.innerHeight ) * 2 * maxY;
+			};
+
+			if ( finePointer ) {
+				if ( ocPanHandler ) {
+					ocOverlay.removeEventListener( 'mousemove', ocPanHandler );
+				}
+				ocPanHandler = function ( event ) {
+					if ( ! zoomed || ! img.isConnected ) {
+						return;
+					}
+					hoverPan( event.clientX, event.clientY );
+					apply( false );
+				};
+				ocOverlay.addEventListener( 'mousemove', ocPanHandler );
+			}
+
 			img.addEventListener( 'pointerdown', function ( event ) {
-				if ( ! zoomed ) {
+				if ( ! zoomed || 'mouse' === event.pointerType ) {
 					return;
 				}
 				dragging = true;
@@ -1260,10 +1297,16 @@
 				}
 
 				zoomed = true;
-				var box = img.getBoundingClientRect();
-				tx = ( ( box.left + box.width / 2 ) - event.clientX ) * ( SCALE - 1 );
-				ty = ( ( box.top + box.height / 2 ) - event.clientY ) * ( SCALE - 1 );
-				clampPan();
+				if ( finePointer ) {
+					// Same map the mouse-follow uses — so the hand-off from
+					// the zoom-in to the first mouse move is seamless.
+					hoverPan( event.clientX, event.clientY );
+				} else {
+					var box = img.getBoundingClientRect();
+					tx = ( ( box.left + box.width / 2 ) - event.clientX ) * ( SCALE - 1 );
+					ty = ( ( box.top + box.height / 2 ) - event.clientY ) * ( SCALE - 1 );
+					clampPan();
+				}
 				apply( true );
 				img.classList.add( 'is-zoomed' );
 			} );
@@ -1538,7 +1581,7 @@
 			// for embeds — the click brings it to life.
 			var ocVideoFrozenHtml = function () {
 				return 'file' === ocVideo.kind
-					? '<video src="' + ocVideo.loopSrc + '" muted playsinline preload="metadata"></video>'
+					? '<video src="' + ocVideo.loopSrc + '#t=0.001" muted playsinline preload="metadata"></video>'
 					: '<img class="oc-vposter" src="' + ( ocVideo.thumb || ocVideoFallbackThumb ) + '" alt="" />';
 			};
 
