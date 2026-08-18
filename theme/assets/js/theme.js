@@ -955,14 +955,20 @@
 					updateFacets( res.data.facets || {} );
 					manageMore();
 
-					// Native pagination belongs to the unfiltered page.
+					document.querySelectorAll( '[data-flt-rescount]' ).forEach( function ( el ) {
+						el.textContent = ( L.fltResults || '%s results' ).replace( '%s', res.data.found );
+					} );
+
+					// Native pagination belongs to the unfiltered page; the result
+					// count stays and follows the filtered total.
 					document.querySelectorAll( '.woocommerce-pagination' ).forEach( function ( nav ) {
 						nav.hidden = true;
 					} );
 
 					var count = document.querySelector( '.woocommerce-result-count' );
 					if ( count ) {
-						count.hidden = true;
+						count.hidden = false;
+						count.textContent = ( L.fltResults || '%s results' ).replace( '%s', res.data.found );
 					}
 				} )
 				.catch( function () {
@@ -1351,6 +1357,56 @@
 			slider.__ocDraw = draw;
 			draw();
 		} );
+
+		/* -- sort bottom sheet: the native select's options, app-style -- */
+
+		( function () {
+			var sheet = document.querySelector( '[data-oc-sortsheet]' );
+			var overlay = document.querySelector( '[data-oc-sort-overlay]' );
+			var listEl = sheet ? sheet.querySelector( '[data-oc-sortlist]' ) : null;
+
+			if ( ! sheet || ! listEl ) {
+				return;
+			}
+
+			function nativeSelect() {
+				return document.querySelector( '.woocommerce-ordering select.orderby, form.woocommerce-ordering select' );
+			}
+
+			function closeSheet() {
+				document.body.classList.remove( 'oc-sort-open' );
+			}
+
+			document.addEventListener( 'click', function ( event ) {
+				if ( event.target.closest( '[data-oc-sort-open]' ) ) {
+					var sel = nativeSelect();
+					if ( ! sel ) {
+						return;
+					}
+					listEl.innerHTML = '';
+					[].forEach.call( sel.options, function ( opt ) {
+						var b = document.createElement( 'button' );
+						b.type = 'button';
+						b.className = 'oc-sortsheet__opt' + ( opt.selected ? ' is-active' : '' );
+						b.textContent = opt.textContent;
+						b.addEventListener( 'click', function () {
+							sel.value = opt.value;
+							closeSheet();
+							if ( sel.form ) {
+								sel.form.submit();
+							}
+						} );
+						listEl.appendChild( b );
+					} );
+					document.body.classList.add( 'oc-sort-open' );
+					return;
+				}
+
+				if ( event.target.closest( '[data-oc-sort-close]' ) || event.target.closest( '[data-oc-sort-overlay]' ) ) {
+					closeSheet();
+				}
+			} );
+		} )();
 
 		syncUi();
 	} )();

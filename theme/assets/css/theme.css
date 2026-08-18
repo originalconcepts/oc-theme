@@ -3519,8 +3519,8 @@ body.oc-flt-m-open .oc-flt--drawer[hidden] { visibility: visible; }
 	border-radius: var(--oc-cta-r, 8px);
 	background: var(--oc-ink, #111);
 	color: #fff;
-	font-weight: 600;
-	font-size: 1rem;
+	font-weight: 400;
+	font-size: calc(1rem - 2px);
 	cursor: pointer;
 }
 
@@ -3706,3 +3706,147 @@ li.oc-flt-none p {
 
 .oc-flt__chips[hidden],
 .oc-flt__foot[hidden] { display: none !important; }
+
+/* iOS paints unstyled <button>s in its system blue — every filter control
+ * states its ink colour explicitly. */
+.oc-flt__title,
+.oc-flt__close,
+.oc-flt__close--m,
+.oc-flt__open,
+.oc-flt__mbtn,
+.oc-flt__toggle,
+.oc-sortsheet__close,
+.oc-sortsheet__opt,
+.oc-flt__chip {
+	color: var(--oc-ink, #111);
+	-webkit-tap-highlight-color: transparent;
+}
+
+.oc-flt__title svg,
+.oc-flt__mbtn svg { color: var(--oc-ink, #111); }
+
+/* mobile toolbar: filter · sort · count */
+.oc-flt__mbar {
+	display: none;
+	align-items: center;
+	gap: 20px;
+	border-block: 1px solid var(--oc-line, #e5e5e5);
+	padding-block: 12px;
+	margin-block-end: 12px;
+}
+
+.oc-flt__mbtn {
+	display: inline-flex;
+	align-items: center;
+	gap: 7px;
+	border: 0;
+	background: none;
+	font: inherit;
+	font-weight: 600;
+	cursor: pointer;
+	padding: 0;
+}
+
+.oc-flt__mbtn svg { inline-size: 19px; block-size: 19px; }
+
+.oc-flt__rescount {
+	margin-inline-start: auto;
+	color: var(--oc-ink, #333);
+	font-size: .95rem;
+	border-inline-start: 1px solid var(--oc-line, #e5e5e5);
+	padding-inline-start: 18px;
+}
+
+/* sort bottom sheet */
+.oc-sortsheet {
+	position: fixed;
+	inset-inline: 0;
+	inset-block-end: 0;
+	z-index: 1001;
+	background: #fff;
+	border-radius: 14px 14px 0 0;
+	padding: 0 22px calc(22px + env(safe-area-inset-bottom, 0px));
+	transform: translateY(104%);
+	transition: transform .25s ease;
+	display: block !important;
+}
+
+body.oc-sort-open .oc-sortsheet { transform: none; }
+
+.oc-sortsheet__overlay { z-index: 1000; }
+body.oc-sort-open .oc-sortsheet__overlay[hidden] { display: block; }
+
+.oc-sortsheet__head {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	position: relative;
+	padding-block: 18px;
+	border-block-end: 1px solid var(--oc-line, #eee);
+	font-weight: 600;
+}
+
+.oc-sortsheet__close {
+	position: absolute;
+	inset-inline-start: 0;
+	border: 0;
+	background: none;
+	font-size: 24px;
+	line-height: 1;
+	cursor: pointer;
+}
+
+.oc-sortsheet__list {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 4px;
+	padding-block-start: 12px;
+}
+
+.oc-sortsheet__opt {
+	border: 0;
+	background: none;
+	font: inherit;
+	font-size: 1.02rem;
+	padding: 9px 12px;
+	cursor: pointer;
+}
+
+.oc-sortsheet__opt.is-active { font-weight: 700; }
+.oc-sortsheet__opt.is-active::after { content: " ✓"; }
+
+/* mobile: the toolbar replaces the loose trigger, Woo's ordering and count */
+@media (max-width: 900px) {
+	.oc-flt__mbar { display: flex; }
+	.oc-flt__open { display: none; }
+	body.oc-flt-sidebar .woocommerce-ordering,
+	body.oc-flt-topbar .woocommerce-ordering,
+	body.oc-flt-drawer .woocommerce-ordering,
+	body.oc-flt-sidebar .woocommerce-result-count,
+	body.oc-flt-topbar .woocommerce-result-count,
+	body.oc-flt-drawer .woocommerce-result-count { display: none; }
+}
+
+@media (min-width: 901px) {
+	.oc-sortsheet { display: none !important; }
+}
+
+/* Mobile panels: a column whose foot pins to the bottom. */
+@media (max-width: 900px) {
+	.oc-flt--side,
+	.oc-flt--top,
+	.oc-flt--drawer {
+		display: flex;
+		flex-direction: column;
+	}
+
+	.oc-flt__foot,
+	.oc-flt__foot--m {
+		margin-block-start: auto;
+		position: sticky;
+		inset-block-end: 0;
+		background: #fff;
+		padding-block: 14px;
+	}
+}

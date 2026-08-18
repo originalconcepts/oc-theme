@@ -57,6 +57,7 @@ final class Filters {
 		add_action( 'wp_ajax_oc_filter', array( $this, 'ajax' ) );
 		add_action( 'wp_ajax_nopriv_oc_filter', array( $this, 'ajax' ) );
 		add_action( 'template_redirect', array( $this, 'rescue_paged_404' ) );
+		add_filter( 'woocommerce_catalog_orderby', array( $this, 'orderby_labels' ) );
 	}
 
 	/* ---------------------------------------------------------------- setup */
@@ -855,10 +856,12 @@ final class Filters {
 			echo '</aside>';
 		}
 
-		// The drawer layout's own trigger already serves mobile; the others
-		// need the mobile-only trigger (and the sidebar its outside chips).
+		// Every layout gets the mobile toolbar; the drawer brings its own
+		// overlay and outside chips.
 		if ( 'topbar' === $layout ) {
 			$this->mobile_trigger( true, false );
+		} elseif ( 'drawer' === $layout ) {
+			$this->mobile_trigger( false, false );
 		}
 	}
 
@@ -870,10 +873,30 @@ final class Filters {
 	 * @param bool $with_chips   Print a mobile-only chips row by the trigger.
 	 */
 	private function mobile_trigger( bool $with_overlay = true, bool $with_chips = false ): void {
-		echo '<button type="button" class="oc-flt__open oc-flt__open--m" data-flt-open>';
+		global $wp_query;
+
+		$found = isset( $wp_query->found_posts ) ? (int) $wp_query->found_posts : 0;
+
+		// The mobile toolbar: filter · sort · live result count.
+		echo '<div class="oc-flt__mbar">';
+		echo '<button type="button" class="oc-flt__mbtn" data-flt-open>';
 		echo '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M7 12h10M10 17h4"/></svg>';
 		echo '<span>' . esc_html__( 'Filter', 'oc-theme' ) . '</span><em class="oc-flt__badge" data-flt-badge hidden></em>';
 		echo '</button>';
+		echo '<button type="button" class="oc-flt__mbtn" data-oc-sort-open>';
+		echo '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16l-6.2 7.2V19l-3.6-2v-4.8z"/></svg>';
+		echo '<span>' . esc_html__( 'Sort', 'oc-theme' ) . '</span>';
+		echo '</button>';
+		/* translators: %s: number of products. */
+		echo '<span class="oc-flt__rescount" data-flt-rescount>' . esc_html( sprintf( __( '%s results', 'oc-theme' ), number_format_i18n( $found ) ) ) . '</span>';
+		echo '</div>';
+
+		// The sort bottom sheet — options arrive from the native select.
+		echo '<div class="oc-sortsheet" data-oc-sortsheet hidden>';
+		echo '<div class="oc-sortsheet__head"><button type="button" class="oc-sortsheet__close" data-oc-sort-close aria-label="' . esc_attr__( 'Close', 'oc-theme' ) . '">&times;</button><span>' . esc_html__( 'Sort by', 'oc-theme' ) . '</span></div>';
+		echo '<div class="oc-sortsheet__list" data-oc-sortlist></div>';
+		echo '</div>';
+		echo '<div class="oc-flt__overlay oc-sortsheet__overlay" data-oc-sort-overlay hidden></div>';
 
 		if ( $with_chips ) {
 			echo '<div class="oc-flt__chips oc-flt__chips--m" data-flt-chips hidden></div>';
@@ -882,6 +905,30 @@ final class Filters {
 		if ( $with_overlay ) {
 			echo '<div class="oc-flt__overlay" data-flt-overlay hidden></div>';
 		}
+	}
+
+	/**
+	 * Friendlier ordering labels, everywhere the catalogue sorts.
+	 *
+	 * @param array<string,string> $options Woo orderby options.
+	 * @return array<string,string>
+	 */
+	public function orderby_labels( array $options ): array {
+		$labels = array(
+			'menu_order' => __( 'Recommended', 'oc-theme' ),
+			'popularity' => __( 'Best sellers', 'oc-theme' ),
+			'date'       => __( 'Newest', 'oc-theme' ),
+			'price'      => __( 'Price: low to high', 'oc-theme' ),
+			'price-desc' => __( 'Price: high to low', 'oc-theme' ),
+		);
+
+		foreach ( $labels as $key => $label ) {
+			if ( isset( $options[ $key ] ) ) {
+				$options[ $key ] = $label;
+			}
+		}
+
+		return $options;
 	}
 
 	/**

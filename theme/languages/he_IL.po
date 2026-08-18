@@ -1485,3 +1485,27 @@ msgstr "למשל: מגדר"
 
 msgid "No products match this combination — try removing one of the filters."
 msgstr "אין מוצרים שתואמים את השילוב — נסו להסיר אחד מהסינונים."
+
+msgid "Sort"
+msgstr "מיון"
+
+msgid "Sort by"
+msgstr "מיין לפי"
+
+msgid "%s results"
+msgstr "%s תוצאות"
+
+msgid "Recommended"
+msgstr "מומלצים"
+
+msgid "Best sellers"
+msgstr "הכי נמכר"
+
+msgid "Newest"
+msgstr "הכי חדש"
+
+msgid "Price: low to high"
+msgstr "מהזול ליקר"
+
+msgid "Price: high to low"
+msgstr "מהיקר לזול"

@@ -173,6 +173,8 @@ final class Assets {
 				'fltInstock' => __( 'In stock only', 'oc-theme' ),
 				'fltNone'    => __( 'No products match this combination — try removing one of the filters.', 'oc-theme' ),
 				'fltClear'   => __( 'Clear all', 'oc-theme' ),
+				/* translators: %s: number of products. */
+				'fltResults' => __( '%s results', 'oc-theme' ),
 				// The colour-sibling card swap rebuilds the sold-out pieces.
 				'oosFlagText'  => get_theme_mod( 'oc_label_stock', false ) ? (string) get_theme_mod( 'oc_label_stock_out', __( 'Out of stock', 'oc-theme' ) ) : '',
 				'oosFlagStyle' => WooCommerce::flag_colors( 'oc_label_stock_bg', 'oc_label_stock_tx' ),
