@@ -4303,7 +4303,28 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 }
 
 /* ---------- swatch values without names ----------
- * Same layout as named swatches — the grid of each panel style stays —
- * only the name and count go; the name stays as aria-label and tooltip. */
+ * Only the name and count go (the name stays as aria-label and tooltip);
+ * bare circles pack tighter: seven per row in the full sheet, four in
+ * the dropdown. Named swatch dropdowns widen a touch instead, so the
+ * value names hold one line. */
 .oc-flt__values--noname .oc-flt__val span,
 .oc-flt__values--noname .oc-flt__val [data-flt-count] { display: none; }
+
+@media (min-width: 901px) {
+	.oc-flt--top-full .oc-flt__body .oc-flt__values--swatch.oc-flt__values--noname {
+		grid-template-columns: repeat(7, minmax(0, 1fr));
+	}
+
+	.oc-flt--top-drop .oc-flt__body:has(.oc-flt__values--swatch) {
+		min-inline-size: 320px;
+	}
+
+	.oc-flt--top-drop .oc-flt__body:has(.oc-flt__values--noname) {
+		min-inline-size: 260px;
+	}
+
+	.oc-flt--top-drop .oc-flt__body .oc-flt__values--swatch.oc-flt__values--noname {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+		gap: 12px 14px;
+	}
+}
