@@ -4008,3 +4008,9 @@ body.oc-sort-open .oc-sortsheet__overlay[hidden] { display: block; }
 }
 
 .oc-headings-center .oc-desc-below__title { text-align: center; }
+
+/* Woo gives every panel margin-bottom:2em — the invisible gap under each
+ * accordion row. Gone. */
+.oc-tabs-accordion .woocommerce-tabs .woocommerce-Tabs-panel {
+	margin: 0 !important;
+}
