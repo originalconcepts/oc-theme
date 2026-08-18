@@ -192,6 +192,78 @@ final class Filters {
 	}
 
 	/**
+	 * Products targeted by a live Promotion King promotion, as SQL — one
+	 * OR'ed condition per promotion, mirroring the engine's own targeting
+	 * (all / chosen products / chosen categories incl. descendants, minus
+	 * per-promotion exclusions; channel and customer-type respected).
+	 * Empty string when the engine is absent or nothing is live.
+	 */
+	private function engine_sale_sql(): string {
+		if ( ! class_exists( '\PromoEngine\Repository' ) ) {
+			return '';
+		}
+
+		global $wpdb;
+
+		$conds = array();
+
+		foreach ( \PromoEngine\Repository::active() as $promotion ) {
+			if ( ! $promotion->is_live() ) {
+				continue;
+			}
+			if ( class_exists( '\PromoEngine\App' ) && method_exists( '\PromoEngine\App', 'promotion_runs_here' ) && ! \PromoEngine\App::promotion_runs_here( $promotion ) ) {
+				continue;
+			}
+			if ( method_exists( $promotion, 'customer_type_allowed' ) && ! $promotion->customer_type_allowed( is_user_logged_in() ) ) {
+				continue;
+			}
+
+			$applies = (string) $promotion->get( 'applies_to', 'all' );
+
+			if ( 'cart' === $applies ) {
+				continue;
+			}
+
+			$excluded = array_filter( array_map( 'absint', (array) $promotion->get( 'excluded_product_ids', array() ) ) );
+			$not      = $excluded ? " AND {$wpdb->posts}.ID NOT IN ( " . implode( ',', $excluded ) . ' )' : '';
+
+			if ( 'all' === $applies ) {
+				$conds[] = '( 1=1' . $not . ' )';
+			} elseif ( 'products' === $applies ) {
+				$ids = array_filter( array_map( 'absint', (array) $promotion->get( 'product_ids', array() ) ) );
+				if ( $ids ) {
+					$conds[] = "( {$wpdb->posts}.ID IN ( " . implode( ',', $ids ) . ' )' . $not . ' )';
+				}
+			} elseif ( 'categories' === $applies ) {
+				$cat_ids = array_filter( array_map( 'absint', (array) $promotion->get( 'category_ids', array() ) ) );
+				$family  = array();
+				foreach ( $cat_ids as $cat_id ) {
+					$family = array_merge( $family, array( $cat_id ), array_map( 'intval', get_term_children( $cat_id, 'product_cat' ) ) );
+				}
+				$family = array_unique( array_filter( $family ) );
+
+				if ( $family ) {
+					$tt_ids = get_terms(
+						array(
+							'taxonomy'   => 'product_cat',
+							'include'    => $family,
+							'fields'     => 'tt_ids',
+							'hide_empty' => false,
+						)
+					);
+
+					if ( is_array( $tt_ids ) && $tt_ids ) {
+						$in      = implode( ',', array_map( 'absint', $tt_ids ) );
+						$conds[] = "( EXISTS ( SELECT 1 FROM {$wpdb->term_relationships} oc_pk_tr WHERE oc_pk_tr.object_id = {$wpdb->posts}.ID AND oc_pk_tr.term_taxonomy_id IN ( $in ) )" . $not . ' )';
+					}
+				}
+			}
+		}
+
+		return $conds ? '( ' . implode( ' OR ', $conds ) . ' )' : '';
+	}
+
+	/**
 	 * Does a group limited to $show belong on the $category archive?
 	 * An empty list means everywhere (the shop page included); a set list
 	 * matches the categories themselves and their descendants.
@@ -373,7 +445,11 @@ final class Filters {
 			}
 
 			if ( 'sale' === $meta['mode'] ) {
-				$clauses['where'] .= ' AND oc_smart_lookup.onsale = 1';
+				// WooCommerce sale prices OR a live Promotion King promotion.
+				$engine            = $this->engine_sale_sql();
+				$clauses['where'] .= '' !== $engine
+					? " AND ( oc_smart_lookup.onsale = 1 OR $engine )"
+					: ' AND oc_smart_lookup.onsale = 1';
 			} elseif ( $meta['price'] > 0 ) {
 				$clauses['where'] .= $wpdb->prepare( ' AND oc_smart_lookup.min_price <= %f AND oc_smart_lookup.min_price > 0', $meta['price'] );
 			}
