@@ -130,6 +130,7 @@
 		var ocCatReturned = false;
 		try {
 			var ocReturn = JSON.parse( sessionStorage.getItem( 'ocReturn' ) || 'null' );
+			try { sessionStorage.setItem( 'ocDbg', JSON.stringify( { back: ocBackNav, ret: !! ocReturn, path: ocReturn ? new URL( ocReturn.url ).pathname === window.location.pathname : null, tgt: ocReturn ? !! ocCatGrid.querySelector( 'li.' + ocReturn.postClass ) : null } ) ); } catch ( e2 ) {}
 			if ( ocBackNav && ocReturn && ocReturn.postClass &&
 				new URL( ocReturn.url ).pathname === window.location.pathname ) {
 				var backTarget = ocCatGrid.querySelector( 'li.' + ocReturn.postClass );
