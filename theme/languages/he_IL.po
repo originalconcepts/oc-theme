@@ -1203,3 +1203,33 @@ msgstr "מדיניות הפרטיות"
 
 msgid "Please confirm the privacy policy to sign up."
 msgstr "יש לאשר את מדיניות הפרטיות כדי להירשם."
+
+msgid "Test email sent — check the inbox."
+msgstr "מייל הבדיקה נשלח — בדקו בתיבה."
+
+msgid "The test email could not be sent."
+msgstr "לא ניתן היה לשלוח את מייל הבדיקה."
+
+msgid "Send a test email"
+msgstr "שליחת מייל בדיקה"
+
+msgid "GOOD NEWS"
+msgstr "חדשות טובות"
+
+msgid "It is back in stock!"
+msgstr "המוצר חזר למלאי!"
+
+msgid "Order the product ›"
+msgstr "להזמנת המוצר ‹"
+
+msgid "Variation"
+msgstr "וריאציה"
+
+msgid "Choose the variation you are waiting for"
+msgstr "בחרו את הוריאציה שאתם מחכים לה"
+
+msgid "Choose a variation first."
+msgstr "יש לבחור וריאציה קודם."
+
+msgid "Closes automatically in %d seconds"
+msgstr "נסגר אוטומטית בעוד %d שניות"

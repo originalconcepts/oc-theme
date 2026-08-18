@@ -155,6 +155,10 @@ final class Assets {
 				'notifyConsentPre'     => __( 'I agree to the ', 'oc-theme' ),
 				'notifyConsentLink'    => __( 'privacy policy', 'oc-theme' ),
 				'notifyConsentMissing' => __( 'Please confirm the privacy policy to sign up.', 'oc-theme' ),
+				'notifyVarPick'        => __( 'Choose the variation you are waiting for', 'oc-theme' ),
+				'notifyVarMissing'     => __( 'Choose a variation first.', 'oc-theme' ),
+				/* translators: %d: seconds until the popup closes itself. */
+				'notifyClosing'        => __( 'Closes automatically in %d seconds', 'oc-theme' ),
 			)
 		);
 	}

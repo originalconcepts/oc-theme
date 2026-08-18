@@ -3044,6 +3044,43 @@ body:not(.oc-no-lightbox) .oc-vslide.is-playing {
 .oc-nmodal__done {
 	margin: 14px 0 0;
 	font-weight: 600;
-	color: #2e9e5b;
+	color: var(--oc-ink, #111);
 	text-align: center;
+}
+
+/* The Lane-style confirmation: a big check, the message, a counted self-close. */
+.oc-nmodal__success {
+	padding: 26px 0 10px;
+	text-align: center;
+}
+
+.oc-nmodal__success svg {
+	inline-size: 64px;
+	block-size: 64px;
+	color: var(--oc-ink, #111);
+}
+
+.oc-nmodal__count {
+	margin: 10px 0 0;
+	font-size: .8rem;
+	color: var(--oc-muted, #999);
+}
+
+.oc-nmodal__vars select {
+	inline-size: 100%;
+	block-size: var(--oc-cta-h, 48px);
+	border: 1.5px solid var(--oc-line);
+	border-radius: var(--oc-cta-r, 8px);
+	padding-inline: 10px;
+	background: #fff;
+	font-size: .95rem;
+}
+
+/* A sold-out variable product keeps its swatches for browsing but sells the
+ * signup: the picked-variation panel with quantity and add-to-cart goes. */
+.oc-prod-oos .variations_form .single_variation_wrap,
+.oc-prod-oos .variations_form .woocommerce-variation-add-to-cart,
+.oc-prod-oos .oc-stockline,
+.oc-prod-oos .oc-qty {
+	display: none !important;
 }

@@ -1090,8 +1090,64 @@
 	 * of the two is enough. */
 
 	var ocNotifyModal = null;
+	var ocNotifyVarsCache = {};
+	var ocNotifyTimer = null;
 
-	function ocOpenNotify( productId, productName ) {
+	function ocCloseNotify() {
+		if ( ocNotifyTimer ) {
+			clearInterval( ocNotifyTimer );
+			ocNotifyTimer = null;
+		}
+		if ( ocNotifyModal ) {
+			ocNotifyModal.hidden = true;
+		}
+	}
+
+	/* The variation list arrives lazily, only when a variable product's
+	 * trigger is clicked — catalogue cards stay cheap. */
+	function ocLoadNotifyVars( productId, box ) {
+		var L = window.ocL10n || {};
+
+		function build( list ) {
+			var select = document.createElement( 'select' );
+			select.name = 'variation';
+
+			var first = document.createElement( 'option' );
+			first.value = '';
+			first.textContent = L.notifyVarPick || 'Choose the variation';
+			select.appendChild( first );
+
+			list.forEach( function ( v ) {
+				var opt = document.createElement( 'option' );
+				opt.value = v.id;
+				opt.textContent = v.label;
+				select.appendChild( opt );
+			} );
+
+			box.innerHTML = '';
+			box.appendChild( select );
+			box.hidden = false;
+		}
+
+		if ( ocNotifyVarsCache[ productId ] ) {
+			build( ocNotifyVarsCache[ productId ] );
+			return;
+		}
+
+		fetch( ( L.ajaxUrl || '/wp-admin/admin-ajax.php' ) + '?action=oc_notify_vars&product=' + encodeURIComponent( productId ) )
+			.then( function ( r ) {
+				return r.json();
+			} )
+			.then( function ( res ) {
+				if ( res && res.success && res.data.length ) {
+					ocNotifyVarsCache[ productId ] = res.data;
+					build( res.data );
+				}
+			} )
+			.catch( function () {} );
+	}
+
+	function ocOpenNotify( productId, productName, isVariable ) {
 		var L = window.ocL10n || {};
 
 		if ( ! ocNotifyModal ) {
@@ -1113,6 +1169,7 @@
 				'<p class="oc-nmodal__intro">' + ( L.notifyIntro || '' ) + '</p>' +
 				'<p class="oc-nmodal__product"></p>' +
 				'<form class="oc-nmodal__form">' +
+				'<div class="oc-nmodal__vars" hidden></div>' +
 				( 'email' === channel ? '' : '<input type="tel" name="phone" placeholder="' + ( L.notifyPhone || 'Phone' ) + '" />' ) +
 				( 'whatsapp' === channel ? '' : '<input type="email" name="email" placeholder="' + ( L.notifyEmail || 'Email' ) + '" />' ) +
 				'<label class="oc-nmodal__consent"><input type="checkbox" name="consent" /><span>' + consentText + '</span></label>' +
@@ -1120,19 +1177,23 @@
 				'<button type="submit">' + ( L.notifyButton || 'Notify me' ) + '</button>' +
 				'</form>' +
 				'<p class="oc-nmodal__foot">' + ( L.notifyFoot || '' ) + '</p>' +
-				'<p class="oc-nmodal__done" hidden>' + ( L.notifyDone || '' ) + '</p>' +
+				'<div class="oc-nmodal__success" hidden>' +
+				'<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="21" fill="none" stroke="currentColor" stroke-width="3"/><path d="M15 24.5l6.5 6.5L33 18.5" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+				'<p class="oc-nmodal__done">' + ( L.notifyDone || '' ) + '</p>' +
+				'<p class="oc-nmodal__count"></p>' +
+				'</div>' +
 				'</div>';
 			document.body.appendChild( ocNotifyModal );
 
 			ocNotifyModal.addEventListener( 'click', function ( event ) {
 				if ( event.target === ocNotifyModal || event.target.closest( '.oc-nmodal__close' ) ) {
-					ocNotifyModal.hidden = true;
+					ocCloseNotify();
 				}
 			} );
 
 			document.addEventListener( 'keydown', function ( event ) {
 				if ( 'Escape' === event.key && ! ocNotifyModal.hidden ) {
-					ocNotifyModal.hidden = true;
+					ocCloseNotify();
 				}
 			} );
 
@@ -1142,11 +1203,17 @@
 				var form = event.target;
 				var phoneEl = form.querySelector( '[name="phone"]' );
 				var emailEl = form.querySelector( '[name="email"]' );
+				var varsEl = form.querySelector( '.oc-nmodal__vars select' );
 				var phone = phoneEl ? phoneEl.value.trim() : '';
 				var email = emailEl ? emailEl.value.trim() : '';
 				var consent = form.querySelector( '[name="consent"]' );
 				var error = ocNotifyModal.querySelector( '.oc-nmodal__error' );
 
+				if ( varsEl && ! varsEl.value ) {
+					error.textContent = L.notifyVarMissing || '';
+					error.hidden = false;
+					return;
+				}
 				if ( consent && ! consent.checked ) {
 					error.textContent = L.notifyConsentMissing || '';
 					error.hidden = false;
@@ -1166,6 +1233,9 @@
 				data.append( 'phone', phone );
 				data.append( 'email', email );
 				data.append( 'consent', '1' );
+				if ( varsEl ) {
+					data.append( 'variation', varsEl.value );
+				}
 
 				var submit = form.querySelector( 'button' );
 				submit.disabled = true;
@@ -1177,9 +1247,28 @@
 					.then( function ( res ) {
 						submit.disabled = false;
 						if ( res && res.success ) {
+							// The whole card becomes the confirmation: a big
+							// check, the message, and a 5s self-close.
+							ocNotifyModal.querySelector( '.oc-nmodal__title' ).hidden = true;
+							ocNotifyModal.querySelector( '.oc-nmodal__intro' ).hidden = true;
+							ocNotifyModal.querySelector( '.oc-nmodal__product' ).hidden = true;
 							form.hidden = true;
 							ocNotifyModal.querySelector( '.oc-nmodal__foot' ).hidden = true;
-							ocNotifyModal.querySelector( '.oc-nmodal__done' ).hidden = false;
+							ocNotifyModal.querySelector( '.oc-nmodal__success' ).hidden = false;
+
+							var count = ocNotifyModal.querySelector( '.oc-nmodal__count' );
+							var left = 5;
+							var tick = function () {
+								count.textContent = ( L.notifyClosing || 'Closes in %d' ).replace( '%d', left );
+								if ( left <= 0 ) {
+									ocCloseNotify();
+									return;
+								}
+								left--;
+							};
+							tick();
+							ocNotifyTimer = setInterval( tick, 1000 );
+
 							// From now on the consent box opens pre-checked
 							// for this browsing session.
 							try {
@@ -1193,12 +1282,27 @@
 			} );
 		}
 
+		if ( ocNotifyTimer ) {
+			clearInterval( ocNotifyTimer );
+			ocNotifyTimer = null;
+		}
+
 		ocNotifyModal.dataset.product = productId;
+		ocNotifyModal.querySelector( '.oc-nmodal__title' ).hidden = false;
+		ocNotifyModal.querySelector( '.oc-nmodal__intro' ).hidden = false;
+		ocNotifyModal.querySelector( '.oc-nmodal__product' ).hidden = false;
 		ocNotifyModal.querySelector( '.oc-nmodal__product' ).textContent = productName || '';
 		ocNotifyModal.querySelector( '.oc-nmodal__form' ).hidden = false;
 		ocNotifyModal.querySelector( '.oc-nmodal__foot' ).hidden = false;
-		ocNotifyModal.querySelector( '.oc-nmodal__done' ).hidden = true;
+		ocNotifyModal.querySelector( '.oc-nmodal__success' ).hidden = true;
 		ocNotifyModal.querySelector( '.oc-nmodal__error' ).hidden = true;
+
+		var varsBox = ocNotifyModal.querySelector( '.oc-nmodal__vars' );
+		varsBox.hidden = true;
+		varsBox.innerHTML = '';
+		if ( isVariable ) {
+			ocLoadNotifyVars( productId, varsBox );
+		}
 
 		// Unchecked only on the very first signup of the session.
 		var consentBox = ocNotifyModal.querySelector( '[name="consent"]' );
@@ -1222,7 +1326,7 @@
 		if ( trigger ) {
 			event.preventDefault();
 			event.stopPropagation();
-			ocOpenNotify( trigger.dataset.product, trigger.dataset.name );
+			ocOpenNotify( trigger.dataset.product, trigger.dataset.name, '1' === trigger.dataset.variable );
 		}
 	} );
 

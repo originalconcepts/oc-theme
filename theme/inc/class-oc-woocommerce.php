@@ -68,6 +68,8 @@ final class WooCommerce {
 		add_action( 'woocommerce_single_product_summary', array( $this, 'oos_block' ), 30 );
 		add_action( 'wp_ajax_oc_notify', array( $this, 'notify_signup' ) );
 		add_action( 'wp_ajax_nopriv_oc_notify', array( $this, 'notify_signup' ) );
+		add_action( 'wp_ajax_oc_notify_vars', array( $this, 'notify_variations' ) );
+		add_action( 'wp_ajax_nopriv_oc_notify_vars', array( $this, 'notify_variations' ) );
 
 		// Card labels render inside the media box (card_media) — Woo's own
 		// loop sale flash would double them.
@@ -429,6 +431,13 @@ final class WooCommerce {
 
 			if ( get_theme_mod( 'oc_gallery_zoom', true ) ) {
 				$classes[] = 'oc-zoom';
+			}
+
+			// A sold-out product page sells the signup, not the cart — the
+			// variations form drops its quantity and add-to-cart.
+			$oos_product = wc_get_product( get_queried_object_id() );
+			if ( $oos_product && ! $oos_product->is_in_stock() ) {
+				$classes[] = 'oc-prod-oos';
 			}
 
 			if ( get_theme_mod( 'oc_gallery_desktop_arrows', false ) ) {
@@ -814,7 +823,7 @@ final class WooCommerce {
 		?>
 		<div class="oc-oos">
 			<button type="button" class="oc-oos__soldout" disabled><?php esc_html_e( 'Out of stock', 'oc-theme' ); ?></button>
-			<button type="button" class="oc-oos__notify oc-notify-open" data-product="<?php echo absint( $product->get_id() ); ?>" data-name="<?php echo esc_attr( $product->get_name() ); ?>"><?php esc_html_e( 'Notify me when it is back', 'oc-theme' ); ?></button>
+			<button type="button" class="oc-oos__notify oc-notify-open" data-product="<?php echo absint( $product->get_id() ); ?>" data-name="<?php echo esc_attr( $product->get_name() ); ?>"<?php echo $product->is_type( 'variable' ) ? ' data-variable="1"' : ''; ?>><?php esc_html_e( 'Notify me when it is back', 'oc-theme' ); ?></button>
 		</div>
 		<?php
 	}
@@ -827,11 +836,42 @@ final class WooCommerce {
 		global $product;
 
 		printf(
-			'<button type="button" class="oc-notify-bar oc-notify-open" data-product="%d" data-name="%s">%s</button>',
+			'<button type="button" class="oc-notify-bar oc-notify-open" data-product="%d" data-name="%s"%s>%s</button>',
 			absint( $product->get_id() ),
 			esc_attr( $product->get_name() ),
+			$product->is_type( 'variable' ) ? ' data-variable="1"' : '',
 			esc_html__( 'Notify me when it is back', 'oc-theme' )
 		);
+	}
+
+	/**
+	 * The popup's variation picker, fetched only when a variable product's
+	 * trigger is clicked — cards stay cheap to render.
+	 */
+	public function notify_variations(): void {
+		$product_id = absint( $_GET['product'] ?? 0 ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- public read-only list.
+		$product    = wc_get_product( $product_id );
+
+		if ( ! $product || ! $product->is_type( 'variable' ) ) {
+			wp_send_json_error();
+		}
+
+		$options = array();
+
+		foreach ( $product->get_children() as $child_id ) {
+			$variation = wc_get_product( $child_id );
+
+			if ( ! $variation instanceof \WC_Product_Variation ) {
+				continue;
+			}
+
+			$options[] = array(
+				'id'    => $child_id,
+				'label' => wc_get_formatted_variation( $variation, true, false, false ),
+			);
+		}
+
+		wp_send_json_success( $options );
 	}
 
 	/**
@@ -858,15 +898,38 @@ final class WooCommerce {
 			wp_send_json_error();
 		}
 
+		// A variable product's signup is for one specific variation.
+		$variation_id = absint( $_POST['variation'] ?? 0 );
+		$vname        = '';
+		$product      = wc_get_product( $product_id );
+
+		if ( $product && $product->is_type( 'variable' ) ) {
+			$variation = $variation_id ? wc_get_product( $variation_id ) : null;
+
+			if ( ! $variation instanceof \WC_Product_Variation || $variation->get_parent_id() !== $product_id ) {
+				wp_send_json_error();
+			}
+
+			$vname = wc_get_formatted_variation( $variation, true, false, false );
+		} else {
+			$variation_id = 0;
+		}
+
 		$list = get_post_meta( $product_id, '_oc_notify_list', true );
 		$list = is_array( $list ) ? $list : array();
 		$key  = ( 'whatsapp' === $channel || ! $valid_email ) ? $phone : $email;
 
+		if ( $variation_id ) {
+			$key .= '|' . $variation_id;
+		}
+
 		$list[ $key ] = array(
-			'email'   => $valid_email ? $email : '',
-			'phone'   => $valid_phone ? $phone : '',
-			'time'    => time(),
-			'consent' => time(),
+			'email'     => $valid_email ? $email : '',
+			'phone'     => $valid_phone ? $phone : '',
+			'variation' => $variation_id,
+			'vname'     => $vname,
+			'time'      => time(),
+			'consent'   => time(),
 		);
 		update_post_meta( $product_id, '_oc_notify_list', $list );
 

@@ -25,7 +25,9 @@ final class Waitlist {
 		add_action( 'admin_post_oc_waitlist_export', array( $this, 'export' ) );
 		add_action( 'admin_post_oc_waitlist_settings', array( $this, 'save_settings' ) );
 		add_action( 'admin_post_oc_waitlist_test', array( $this, 'test_send' ) );
+		add_action( 'admin_post_oc_waitlist_test_email', array( $this, 'test_email' ) );
 		add_action( 'woocommerce_product_set_stock_status', array( $this, 'restocked' ), 10, 3 );
+		add_action( 'woocommerce_variation_set_stock_status', array( $this, 'variation_restocked' ), 10, 3 );
 	}
 
 	/**
@@ -87,9 +89,68 @@ final class Waitlist {
 	 * @param \WC_Product $product    The product.
 	 */
 	public function restocked( int $product_id, string $status, $product ): void {
+		if ( 'instock' !== $status ) {
+			return;
+		}
+
+		if ( ! $product instanceof \WC_Product ) {
+			$product = wc_get_product( $product_id );
+		}
+
+		// Entries tied to a variation wait for that variation's own event.
+		$this->notify_list(
+			$product_id,
+			$product,
+			static function ( array $entry ): bool {
+				return empty( $entry['variation'] );
+			}
+		);
+	}
+
+	/**
+	 * A single variation came back: reach only the entries waiting for it.
+	 *
+	 * @param int         $variation_id Variation id.
+	 * @param string      $status       New stock status.
+	 * @param \WC_Product $variation    The variation.
+	 */
+	public function variation_restocked( int $variation_id, string $status, $variation ): void {
+		if ( 'instock' !== $status ) {
+			return;
+		}
+
+		if ( ! $variation instanceof \WC_Product ) {
+			$variation = wc_get_product( $variation_id );
+		}
+
+		$parent_id = $variation ? $variation->get_parent_id() : 0;
+
+		if ( ! $parent_id ) {
+			return;
+		}
+
+		$this->notify_list(
+			$parent_id,
+			$variation,
+			static function ( array $entry ) use ( $variation_id ): bool {
+				return (int) ( $entry['variation'] ?? 0 ) === $variation_id;
+			}
+		);
+	}
+
+	/**
+	 * Reach every matching entry on a product's list and clear the ones that
+	 * were delivered to. $target is what came back — the product itself or one
+	 * variation — and supplies the message's name, link and image.
+	 *
+	 * @param int         $product_id Product holding the list.
+	 * @param \WC_Product $target     Product or variation that returned.
+	 * @param callable    $matches    Which entries this event covers.
+	 */
+	private function notify_list( int $product_id, $target, callable $matches ): void {
 		$settings = self::settings();
 
-		if ( 'instock' !== $status || empty( $settings['auto'] ) ) {
+		if ( empty( $settings['auto'] ) || ! $target instanceof \WC_Product ) {
 			return;
 		}
 
@@ -99,26 +160,34 @@ final class Waitlist {
 			return;
 		}
 
-		$name = $product ? $product->get_name() : get_the_title( $product_id );
-		$url  = (string) get_permalink( $product_id );
+		$changed = false;
 
 		foreach ( $list as $key => $entry ) {
 			if ( ! is_array( $entry ) ) {
 				$entry = array( 'email' => (string) $key, 'phone' => '' );
 			}
 
+			if ( ! $matches( $entry ) ) {
+				continue;
+			}
+
 			$sent = false;
 
 			if ( 'email' !== $settings['channel'] && ! empty( $entry['phone'] ) ) {
-				$sent = $this->send_whatsapp( (string) $entry['phone'], $name, $url ) || $sent;
+				$sent = $this->send_whatsapp( (string) $entry['phone'], $target->get_name(), (string) $target->get_permalink() ) || $sent;
 			}
 			if ( 'whatsapp' !== $settings['channel'] && ! empty( $entry['email'] ) ) {
-				$sent = $this->send_email( (string) $entry['email'], $name, $url ) || $sent;
+				$sent = $this->send_email( (string) $entry['email'], $target ) || $sent;
 			}
 
 			if ( $sent ) {
 				unset( $list[ $key ] );
+				$changed = true;
 			}
+		}
+
+		if ( ! $changed ) {
+			return;
 		}
 
 		if ( empty( $list ) ) {
@@ -197,21 +266,63 @@ final class Waitlist {
 	}
 
 	/**
-	 * The email counterpart, wrapped in WooCommerce's branded mail template.
+	 * The email counterpart: a branded card in the site's direction — store
+	 * logo, product image, and a single call-to-action.
 	 *
-	 * @param string $email Subscriber address.
-	 * @param string $name  Product name.
-	 * @param string $url   Product URL.
+	 * @param string      $email  Subscriber address.
+	 * @param \WC_Product $target Product or variation that returned.
 	 */
-	private function send_email( string $email, string $name, string $url ): bool {
+	private function send_email( string $email, \WC_Product $target ): bool {
+		$name = $target->get_name();
+		$url  = (string) $target->get_permalink();
+
+		$image_id = (int) $target->get_image_id();
+		if ( ! $image_id && $target->get_parent_id() ) {
+			$image_id = (int) get_post_thumbnail_id( $target->get_parent_id() );
+		}
+		$image = $image_id ? (string) wp_get_attachment_image_url( $image_id, 'woocommerce_single' ) : (string) wc_placeholder_img_src();
+
+		$logo_id = (int) get_theme_mod( 'custom_logo' );
+		$logo    = $logo_id ? (string) wp_get_attachment_image_url( $logo_id, 'medium' ) : '';
+		$store   = (string) get_bloginfo( 'name' );
+		$home    = (string) home_url( '/' );
+
+		$cta    = (string) get_theme_mod( 'oc_cta_color', '' );
+		$cta    = '' !== $cta ? $cta : ( (string) get_theme_mod( 'oc_color_primary', '' ) ?: '#1f2937' );
+		$radius = (string) get_theme_mod( 'oc_cta_radius', '8px' );
+
 		/* translators: %s: product name. */
 		$subject = sprintf( __( 'Good news — %s is back in stock!', 'oc-theme' ), $name );
-		$body    = '<p>' . esc_html__( 'The product you asked to follow is available again. Quantities may be limited — first come, first served.', 'oc-theme' ) . '</p>' .
-			'<p><a href="' . esc_url( $url ) . '" style="display:inline-block;padding:12px 28px;background:#111;color:#fff;text-decoration:none;border-radius:8px;">' . esc_html__( 'To the product', 'oc-theme' ) . '</a></p>';
 
-		$mailer = WC()->mailer();
+		$brand = $logo
+			? '<a href="' . esc_url( $home ) . '"><img src="' . esc_url( $logo ) . '" alt="' . esc_attr( $store ) . '" style="max-height:52px;max-width:200px;border:0;" /></a>'
+			: '<a href="' . esc_url( $home ) . '" style="font-size:20px;font-weight:bold;color:#111111;text-decoration:none;letter-spacing:.08em;">' . esc_html( $store ) . '</a>';
 
-		return (bool) $mailer->send( $email, $subject, $mailer->wrap_message( $subject, $body ) );
+		$body =
+			'<div dir="' . ( is_rtl() ? 'rtl' : 'ltr' ) . '" style="background:#f6f6f4;margin:0;padding:36px 16px;">' .
+			'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;margin:0 auto;background:#ffffff;border-radius:16px;font-family:Arial,Helvetica,sans-serif;">' .
+			'<tr><td style="padding:32px 36px 4px;text-align:center;">' . $brand . '</td></tr>' .
+			'<tr><td style="padding:22px 36px 0;text-align:center;">' .
+			'<p style="margin:0 0 8px;font-size:12px;letter-spacing:.18em;color:#9a9a94;">' . esc_html__( 'GOOD NEWS', 'oc-theme' ) . '</p>' .
+			'<h1 style="margin:0;font-size:24px;color:#111111;">' . esc_html__( 'It is back in stock!', 'oc-theme' ) . '</h1>' .
+			'</td></tr>' .
+			'<tr><td style="padding:24px 36px 0;text-align:center;">' .
+			'<a href="' . esc_url( $url ) . '"><img src="' . esc_url( $image ) . '" alt="' . esc_attr( $name ) . '" width="360" style="width:100%;max-width:360px;border-radius:12px;border:0;" /></a>' .
+			'</td></tr>' .
+			'<tr><td style="padding:18px 36px 0;text-align:center;font-size:17px;font-weight:bold;color:#111111;">' . esc_html( $name ) . '</td></tr>' .
+			'<tr><td style="padding:10px 36px 0;text-align:center;font-size:14px;line-height:1.7;color:#5a5a55;">' .
+			esc_html__( 'The product you asked to follow is available again. Quantities may be limited — first come, first served.', 'oc-theme' ) .
+			'</td></tr>' .
+			'<tr><td style="padding:26px 36px 34px;text-align:center;">' .
+			'<a href="' . esc_url( $url ) . '" style="display:inline-block;background:' . esc_attr( $cta ) . ';color:#ffffff;text-decoration:none;font-weight:bold;font-size:15px;padding:15px 44px;border-radius:' . esc_attr( $radius ) . ';">' .
+			esc_html__( 'Order the product ›', 'oc-theme' ) .
+			'</a></td></tr>' .
+			'</table>' .
+			'<p style="max-width:560px;margin:18px auto 0;text-align:center;font-size:12px;color:#9a9a94;">' .
+			'<a href="' . esc_url( $home ) . '" style="color:#9a9a94;text-decoration:underline;">' . esc_html( $store ) . '</a></p>' .
+			'</div>';
+
+		return (bool) WC()->mailer()->send( $email, $subject, $body );
 	}
 
 	/**
@@ -227,6 +338,32 @@ final class Waitlist {
 		$ok    = '' !== $phone && $this->send_whatsapp( $phone, __( 'Test product', 'oc-theme' ), home_url( '/' ) );
 
 		wp_safe_redirect( add_query_arg( array( 'page' => 'oc-waitlist', 'oc_test' => $ok ? 1 : 0 ), admin_url( 'admin.php' ) ) );
+		exit;
+	}
+
+	/**
+	 * Admin test button: the real restock email, using the newest product as
+	 * the sample.
+	 */
+	public function test_email(): void {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			wp_die();
+		}
+		check_admin_referer( 'oc_waitlist_test_email' );
+
+		$to       = sanitize_email( wp_unslash( (string) ( $_POST['test_email'] ?? '' ) ) );
+		$products = wc_get_products(
+			array(
+				'limit'   => 1,
+				'status'  => 'publish',
+				'orderby' => 'date',
+				'order'   => 'DESC',
+			)
+		);
+
+		$ok = is_email( $to ) && $products && $this->send_email( $to, $products[0] );
+
+		wp_safe_redirect( add_query_arg( array( 'page' => 'oc-waitlist', 'oc_test_email' => $ok ? 1 : 0 ), admin_url( 'admin.php' ) ) );
 		exit;
 	}
 
@@ -281,11 +418,13 @@ final class Waitlist {
 				}
 
 				$rows[] = array(
-					'product' => (int) $meta->post_id,
-					'key'     => (string) $key,
-					'email'   => (string) ( $entry['email'] ?? '' ),
-					'phone'   => (string) ( $entry['phone'] ?? '' ),
-					'time'    => (int) ( $entry['time'] ?? 0 ),
+					'product'   => (int) $meta->post_id,
+					'key'       => (string) $key,
+					'email'     => (string) ( $entry['email'] ?? '' ),
+					'phone'     => (string) ( $entry['phone'] ?? '' ),
+					'variation' => (int) ( $entry['variation'] ?? 0 ),
+					'vname'     => (string) ( $entry['vname'] ?? '' ),
+					'time'      => (int) ( $entry['time'] ?? 0 ),
 				);
 			}
 		}
@@ -332,6 +471,11 @@ final class Waitlist {
 			echo absint( $_GET['oc_test'] )
 				? '<div class="notice notice-success"><p>' . esc_html__( 'Test message sent — check WhatsApp.', 'oc-theme' ) . '</p></div>'
 				: '<div class="notice notice-error"><p>' . esc_html__( 'Sending failed — check the Twilio details below.', 'oc-theme' ) . '</p></div>';
+		}
+		if ( isset( $_GET['oc_test_email'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- notice only.
+			echo absint( $_GET['oc_test_email'] )
+				? '<div class="notice notice-success"><p>' . esc_html__( 'Test email sent — check the inbox.', 'oc-theme' ) . '</p></div>'
+				: '<div class="notice notice-error"><p>' . esc_html__( 'The test email could not be sent.', 'oc-theme' ) . '</p></div>';
 		}
 
 		$rows     = $this->rows();
@@ -402,6 +546,12 @@ final class Waitlist {
 					<input type="tel" name="test_phone" placeholder="05XXXXXXXX" dir="ltr" />
 					<button class="button"><?php esc_html_e( 'Send a test WhatsApp message', 'oc-theme' ); ?></button>
 				</form>
+				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display:flex;gap:8px;align-items:center;padding-block-start:12px;">
+					<input type="hidden" name="action" value="oc_waitlist_test_email" />
+					<?php wp_nonce_field( 'oc_waitlist_test_email' ); ?>
+					<input type="email" name="test_email" placeholder="name@example.com" dir="ltr" />
+					<button class="button"><?php esc_html_e( 'Send a test email', 'oc-theme' ); ?></button>
+				</form>
 			</div>
 
 			<?php if ( $rows ) : ?>
@@ -425,8 +575,9 @@ final class Waitlist {
 					<tbody>
 						<?php foreach ( $rows as $row ) : ?>
 							<?php
-							$product = wc_get_product( $row['product'] );
-							$remove  = wp_nonce_url(
+							$product  = wc_get_product( $row['product'] );
+							$stock_of = $row['variation'] ? ( wc_get_product( $row['variation'] ) ?: $product ) : $product;
+							$remove   = wp_nonce_url(
 								add_query_arg(
 									array(
 										'page'       => 'oc-waitlist',
@@ -445,12 +596,15 @@ final class Waitlist {
 									<?php else : ?>
 										#<?php echo absint( $row['product'] ); ?>
 									<?php endif; ?>
+									<?php if ( $row['vname'] ) : ?>
+										<br /><span style="color:#777;"><?php echo esc_html( $row['vname'] ); ?></span>
+									<?php endif; ?>
 								</td>
 								<td dir="ltr"><?php echo esc_html( $row['phone'] ); ?></td>
 								<td><?php echo esc_html( $row['email'] ); ?></td>
 								<td><?php echo esc_html( $row['time'] ? wp_date( 'j.n.Y H:i', $row['time'] ) : '—' ); ?></td>
 								<td>
-									<?php if ( $product && $product->is_in_stock() ) : ?>
+									<?php if ( $stock_of && $stock_of->is_in_stock() ) : ?>
 										<span style="color:#2e9e5b;font-weight:600;"><?php esc_html_e( 'Back in stock', 'oc-theme' ); ?></span>
 									<?php else : ?>
 										<span style="color:#c4342c;"><?php esc_html_e( 'Still out', 'oc-theme' ); ?></span>
@@ -482,7 +636,7 @@ final class Waitlist {
 
 		$out = fopen( 'php://output', 'w' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- streamed CSV download.
 		fwrite( $out, "\xEF\xBB\xBF" ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fwrite -- BOM keeps Hebrew intact in Excel.
-		fputcsv( $out, array( __( 'Product', 'oc-theme' ), __( 'Phone', 'oc-theme' ), __( 'Email', 'oc-theme' ), __( 'Signed up', 'oc-theme' ) ) );
+		fputcsv( $out, array( __( 'Product', 'oc-theme' ), __( 'Variation', 'oc-theme' ), __( 'Phone', 'oc-theme' ), __( 'Email', 'oc-theme' ), __( 'Signed up', 'oc-theme' ) ) );
 
 		foreach ( $this->rows() as $row ) {
 			$product = wc_get_product( $row['product'] );
@@ -490,6 +644,7 @@ final class Waitlist {
 				$out,
 				array(
 					$product ? $product->get_name() : ( '#' . $row['product'] ),
+					$row['vname'],
 					$row['phone'],
 					$row['email'],
 					$row['time'] ? wp_date( 'Y-m-d H:i', $row['time'] ) : '',
