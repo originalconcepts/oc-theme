@@ -100,6 +100,89 @@
 		updateHeaderScroll();
 	}
 
+	/* ---------- catalogue: remember & restore the clicked card ----------
+	 * Independent of the paging mode and of pagination existing — a filtered
+	 * single-page view restores just the same. */
+
+	var ocCatGrid = document.querySelector( 'body.archive ul.products, body.post-type-archive ul.products, body.tax-product_cat ul.products' ) || ( document.body.classList.contains( 'woocommerce' ) ? document.querySelector( 'ul.products' ) : null );
+
+	if ( ocCatGrid ) {
+		// A deliberate click on the category link must open it from the top.
+		// The browser's automatic restoration drops the visitor back
+		// mid-scroll on any same-URL navigation (and our replaceState page
+		// tracking makes that common) — so restoration is ours alone.
+		if ( 'scrollRestoration' in window.history ) {
+			window.history.scrollRestoration = 'manual';
+		}
+
+		ocCatGrid.querySelectorAll( 'li.product' ).forEach( function ( li ) {
+			li.dataset.ocpg = window.location.href;
+		} );
+
+		var ocBackNav = false;
+		try {
+			var navEntries = performance.getEntriesByType( 'navigation' );
+			ocBackNav = navEntries && navEntries[ 0 ]
+				? 'back_forward' === navEntries[ 0 ].type
+				: !! ( performance.navigation && 2 === performance.navigation.type );
+		} catch ( e ) {}
+
+		var ocCatReturned = false;
+		try {
+			var ocReturn = JSON.parse( sessionStorage.getItem( 'ocReturn' ) || 'null' );
+			if ( ocBackNav && ocReturn && ocReturn.postClass &&
+				new URL( ocReturn.url ).pathname === window.location.pathname ) {
+				var backTarget = ocCatGrid.querySelector( 'li.' + ocReturn.postClass );
+				if ( backTarget ) {
+					ocCatReturned = true;
+
+					// Images loading in above the card shift the layout after
+					// the first jump — especially on mobile — so the anchor
+					// re-asserts a few times, backing off the moment the
+					// visitor moves on their own.
+					var anchorDone = false;
+					[ 'touchstart', 'wheel', 'keydown' ].forEach( function ( evt ) {
+						window.addEventListener( evt, function () {
+							anchorDone = true;
+						}, { once: true, passive: true } );
+					} );
+
+					[ 150, 500, 1100, 2000 ].forEach( function ( delay ) {
+						setTimeout( function () {
+							if ( ! anchorDone ) {
+								backTarget.scrollIntoView( { block: 'center' } );
+							}
+						}, delay );
+					} );
+				}
+			}
+			sessionStorage.removeItem( 'ocReturn' );
+		} catch ( e ) {}
+
+		if ( ! ocCatReturned ) {
+			window.scrollTo( 0, 0 );
+		}
+
+		ocCatGrid.addEventListener( 'click', function ( event ) {
+			var li = event.target.closest( 'li.product' );
+			if ( ! li ) {
+				return;
+			}
+			var postClass = '';
+			li.classList.forEach( function ( c ) {
+				if ( 0 === c.indexOf( 'post-' ) ) {
+					postClass = c;
+				}
+			} );
+			try {
+				sessionStorage.setItem( 'ocReturn', JSON.stringify( {
+					url: li.dataset.ocpg || window.location.href,
+					postClass: postClass
+				} ) );
+			} catch ( e ) {}
+		} );
+	}
+
 	/* ---------- catalogue: load-more / infinite paging ---------- */
 
 	var pagingMode = document.body.classList.contains( 'oc-paging-load-more' ) ? 'more' :
@@ -118,22 +201,8 @@
 			// where there is no next link at all.
 			pagingNav.style.display = 'none';
 
-			// A deliberate click on the category link must open it from the
-			// top. The browser's automatic restoration drops the visitor back
-			// mid-scroll on any same-URL navigation (and our replaceState page
-			// tracking makes that common) — so restoration is ours alone: the
-			// return-to-card flow below, and the top for everything else.
-			if ( 'scrollRestoration' in window.history ) {
-				window.history.scrollRestoration = 'manual';
-			}
-
-			// Every card remembers which page URL it belongs to; the address
-			// bar follows the page currently in view, so a click, a back, a
-			// refresh or analytics all see the right page.
-			pagingUl.querySelectorAll( 'li.product' ).forEach( function ( li ) {
-				li.dataset.ocpg = window.location.href;
-			} );
-
+			// The address bar follows the page currently in view (cards carry
+			// their page URL from the restore module above).
 			function updatePagingState() {
 				var lis = pagingUl.querySelectorAll( 'li.product' );
 				for ( var i = 0; i < lis.length; i++ ) {
@@ -149,73 +218,6 @@
 			}
 
 			window.addEventListener( 'scroll', updatePagingState, { passive: true } );
-
-			// Returning from a product: jump back to the card that was clicked.
-			// Only a real back/forward counts — a deliberate menu click on the
-			// same category is a fresh visit and starts at the top. Any other
-			// load starts at the top too.
-			var ocBackNav = false;
-			try {
-				var navEntries = performance.getEntriesByType( 'navigation' );
-				ocBackNav = navEntries && navEntries[ 0 ]
-					? 'back_forward' === navEntries[ 0 ].type
-					: !! ( performance.navigation && 2 === performance.navigation.type );
-			} catch ( e ) {}
-
-			var ocReturned = false;
-			try {
-				var ocReturn = JSON.parse( sessionStorage.getItem( 'ocReturn' ) || 'null' );
-				if ( ocBackNav && ocReturn && ocReturn.postClass &&
-					new URL( ocReturn.url ).pathname === window.location.pathname ) {
-					var backTarget = pagingUl.querySelector( 'li.' + ocReturn.postClass );
-					if ( backTarget ) {
-						ocReturned = true;
-
-						// Images loading in above the card shift the layout
-						// after the first jump — especially on mobile — so the
-						// anchor re-asserts a few times, backing off the moment
-						// the visitor moves on their own.
-						var anchorDone = false;
-						[ 'touchstart', 'wheel', 'keydown' ].forEach( function ( evt ) {
-							window.addEventListener( evt, function () {
-								anchorDone = true;
-							}, { once: true, passive: true } );
-						} );
-
-						[ 150, 500, 1100, 2000 ].forEach( function ( delay ) {
-							setTimeout( function () {
-								if ( ! anchorDone ) {
-									backTarget.scrollIntoView( { block: 'center' } );
-								}
-							}, delay );
-						} );
-					}
-				}
-				sessionStorage.removeItem( 'ocReturn' );
-			} catch ( e ) {}
-
-			if ( ! ocReturned ) {
-				window.scrollTo( 0, 0 );
-			}
-
-			pagingUl.addEventListener( 'click', function ( event ) {
-				var li = event.target.closest( 'li.product' );
-				if ( ! li ) {
-					return;
-				}
-				var postClass = '';
-				li.classList.forEach( function ( c ) {
-					if ( 0 === c.indexOf( 'post-' ) ) {
-						postClass = c;
-					}
-				} );
-				try {
-					sessionStorage.setItem( 'ocReturn', JSON.stringify( {
-						url: li.dataset.ocpg || window.location.href,
-						postClass: postClass
-					} ) );
-				} catch ( e ) {}
-			} );
 
 			// Landing mid-catalogue (back from a product on page N): quietly
 			// pull every earlier page in above the grid, keeping the view
@@ -713,6 +715,11 @@
 		} );
 
 		grid.addEventListener( 'click', function ( event ) {
+			// The filters' colour sync clicks card dots programmatically —
+			// that is not the visitor showing interest.
+			if ( window.__ocDotSync ) {
+				return;
+			}
 			var li = event.target.closest( 'li.product' );
 			if ( li ) {
 				interest( li );
@@ -1043,6 +1050,10 @@
 				return;
 			}
 
+			// These synthetic dot clicks must not read as "the visitor
+			// clicked outside the filter bar" (or as product interest).
+			window.__ocDotSync = true;
+
 			grid.querySelectorAll( 'li.product' ).forEach( function ( li ) {
 				var dots = li.querySelectorAll( '.oc-colors__item--term[data-slug]' );
 
@@ -1055,6 +1066,8 @@
 					}
 				}
 			} );
+
+			window.__ocDotSync = false;
 		}
 
 		/* -- facet ui sync -- */
@@ -1304,8 +1317,9 @@
 
 			// A click outside the top bar closes its open dropdown — desktop
 			// only: on mobile the bar is an accordion panel and outside
-			// clicks close the panel, never its groups.
-			if ( window.matchMedia( '(min-width: 901px)' ).matches && ! event.target.closest( '.oc-flt--top' ) ) {
+			// clicks close the panel, never its groups. Synthetic card-dot
+			// clicks from the colour sync do not count as outside clicks.
+			if ( ! window.__ocDotSync && window.matchMedia( '(min-width: 901px)' ).matches && ! event.target.closest( '.oc-flt--top' ) ) {
 				document.querySelectorAll( '.oc-flt--top .is-open' ).forEach( function ( other ) {
 					other.classList.remove( 'is-open' );
 				} );
