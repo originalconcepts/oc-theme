@@ -1521,8 +1521,8 @@ body:not(.oc-no-lightbox) .woocommerce-product-gallery__image:not(.oc-vslide) im
 	align-self: stretch;
 	padding-inline: .8em;
 	border-radius: 6px;
-	background: var(--oc-sale, #b4453c);
-	color: #fff;
+	background: var(--flag-bg, var(--oc-sale, #b4453c));
+	color: var(--flag-tx, #fff);
 	font-size: .74em;
 	font-weight: 600;
 	line-height: 1;
@@ -2724,8 +2724,13 @@ body:not(.oc-no-lightbox) .oc-vslide.is-playing {
 	pointer-events: none;
 }
 
-.oc-flags--left { left: 10px; align-items: flex-start; }
-.oc-flags--right { right: 10px; align-items: flex-end; }
+/* Physical alignment via auto margins: flex-start/end flip in RTL and
+ * left-pinned columns ended up with right-hugging labels. */
+.oc-flags--left { left: 10px; }
+.oc-flags--right { right: 10px; }
+
+.oc-flags--left > * { margin-right: auto; }
+.oc-flags--right > * { margin-left: auto; }
 
 .woocommerce ul.products li.product .oc-flags .onsale,
 .oc-flags .onsale {
@@ -2828,4 +2833,15 @@ body:not(.oc-no-lightbox) .oc-vslide.is-playing {
 	.oc-cta-hover-sweep-rtl .single_add_to_cart_button:hover::before {
 		transform: translateX(102%);
 	}
+}
+
+/* Plain sale style on the product page: bare text at the sale-price size. */
+.woocommerce div.product p.price .oc-price-badge--plain {
+	background: var(--flag-bg, transparent);
+	color: var(--flag-tx, var(--oc-sale, #b4453c));
+	padding-inline: 0;
+	border-radius: 0;
+	font-size: 1em;
+	font-weight: 400;
+	align-self: baseline;
 }

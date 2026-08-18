@@ -450,7 +450,7 @@
 				badge.remove();
 			}
 			if ( item.dataset.badge ) {
-				var flags = li.querySelector( '.oc-flags' );
+				var flags = li.querySelector( '.oc-flags[data-sale]' ) || li.querySelector( '.oc-flags' );
 				if ( flags ) {
 					flags.insertAdjacentHTML( 'afterbegin', item.dataset.badge );
 				} else {

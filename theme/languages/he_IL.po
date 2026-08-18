@@ -852,6 +852,15 @@ msgstr "תוויות"
 msgid "Labels side"
 msgstr "צד התוויות"
 
+msgid "Sale badge side"
+msgstr "צד תווית המבצע"
+
+msgid "Stock labels side"
+msgstr "צד תוויות המלאי"
+
+msgid "\"New\" label side"
+msgstr "צד תווית \"חדש\""
+
 msgid "Left"
 msgstr "שמאל"
 

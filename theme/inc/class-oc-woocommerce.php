@@ -292,7 +292,17 @@ final class WooCommerce {
 			$text = sprintf( '‎-%s%%', $percent );
 		}
 
-		return $price . ' <span class="oc-price-badge">' . esc_html( $text ) . '</span>';
+		// The same label settings dress the product-page badge: plain style
+		// and the sale colours carry over from the Labels section.
+		$plain = 'plain' === get_theme_mod( 'oc_sale_badge_style', 'badge' );
+
+		return sprintf(
+			'%s <span class="oc-price-badge%s" style="%s">%s</span>',
+			$price,
+			$plain ? ' oc-price-badge--plain' : '',
+			esc_attr( self::flag_colors( 'oc_sale_badge_bg', 'oc_sale_badge_tx' ) ),
+			esc_html( $text )
+		);
 	}
 
 	/**
@@ -524,11 +534,17 @@ final class WooCommerce {
 	private function card_flags(): void {
 		global $product;
 
-		$side  = 'right' === get_theme_mod( 'oc_labels_pos', 'left' ) ? 'right' : 'left';
-		$flags = '';
+		// Each label group picks its own side; both columns render so the
+		// colour-sibling swap always has the sale column to dock into.
+		$sides = array(
+			'left'  => '',
+			'right' => '',
+		);
+
+		$sale_side = 'right' === get_theme_mod( 'oc_label_sale_pos', 'left' ) ? 'right' : 'left';
 
 		if ( $product->is_on_sale() ) {
-			$flags .= apply_filters( 'woocommerce_sale_flash', '<span class="onsale">' . esc_html__( 'Sale!', 'woocommerce' ) . '</span>', $product->get_id() ? get_post( $product->get_id() ) : null, $product );
+			$sides[ $sale_side ] .= apply_filters( 'woocommerce_sale_flash', '<span class="onsale">' . esc_html__( 'Sale!', 'woocommerce' ) . '</span>', $product->get_id() ? get_post( $product->get_id() ) : null, $product );
 		}
 
 		if ( get_theme_mod( 'oc_label_stock', false ) ) {
@@ -548,7 +564,8 @@ final class WooCommerce {
 			}
 
 			if ( '' !== $text ) {
-				$flags .= sprintf(
+				$stock_side            = 'right' === get_theme_mod( 'oc_label_stock_pos', 'left' ) ? 'right' : 'left';
+				$sides[ $stock_side ] .= sprintf(
 					'<span class="oc-flag" style="%s">%s</span>',
 					esc_attr( self::flag_colors( 'oc_label_stock_bg', 'oc_label_stock_tx' ) ),
 					esc_html( $text )
@@ -561,7 +578,8 @@ final class WooCommerce {
 			$since = get_post_time( 'U', true, $product->get_id() );
 
 			if ( $since && ( time() - (int) $since ) < $days * DAY_IN_SECONDS ) {
-				$flags .= sprintf(
+				$new_side            = 'right' === get_theme_mod( 'oc_label_new_pos', 'left' ) ? 'right' : 'left';
+				$sides[ $new_side ] .= sprintf(
 					'<span class="oc-flag" style="%s">%s</span>',
 					esc_attr( self::flag_colors( 'oc_label_new_bg', 'oc_label_new_tx' ) ),
 					esc_html( (string) get_theme_mod( 'oc_label_new_text', __( 'New', 'oc-theme' ) ) )
@@ -569,7 +587,14 @@ final class WooCommerce {
 			}
 		}
 
-		echo '<div class="oc-flags oc-flags--' . esc_attr( $side ) . '">' . $flags . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
+		foreach ( $sides as $side => $flags ) {
+			printf(
+				'<div class="oc-flags oc-flags--%s"%s>%s</div>',
+				esc_attr( $side ),
+				$side === $sale_side ? ' data-sale' : '',
+				$flags // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
+			);
+		}
 	}
 
 	/**

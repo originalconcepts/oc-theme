@@ -800,19 +800,19 @@ final class Customizer {
 			)
 		);
 
+		$this->heading( $c, 'oc_h_lbl_sale', 'oc_labels', __( 'Sale badge', 'oc-theme' ) );
+
 		$this->choice(
 			$c,
-			'oc_labels_pos',
+			'oc_label_sale_pos',
 			'oc_labels',
-			__( 'Labels side', 'oc-theme' ),
+			__( 'Sale badge side', 'oc-theme' ),
 			array(
 				'left'  => __( 'Left', 'oc-theme' ),
 				'right' => __( 'Right', 'oc-theme' ),
 			),
 			'left'
 		);
-
-		$this->heading( $c, 'oc_h_lbl_sale', 'oc_labels', __( 'Sale badge', 'oc-theme' ) );
 
 		$this->choice(
 			$c,
@@ -845,6 +845,18 @@ final class Customizer {
 		$this->heading( $c, 'oc_h_lbl_stock', 'oc_labels', __( 'Stock labels', 'oc-theme' ) );
 
 		$this->toggle( $c, 'oc_label_stock', 'oc_labels', __( 'Show stock labels', 'oc-theme' ), false );
+
+		$this->choice(
+			$c,
+			'oc_label_stock_pos',
+			'oc_labels',
+			__( 'Stock labels side', 'oc-theme' ),
+			array(
+				'left'  => __( 'Left', 'oc-theme' ),
+				'right' => __( 'Right', 'oc-theme' ),
+			),
+			'left'
+		);
 		$this->text( $c, 'oc_label_stock_last', 'oc_labels', __( 'Last-one text', 'oc-theme' ) );
 		$this->text( $c, 'oc_label_stock_low', 'oc_labels', __( 'Last-items text', 'oc-theme' ) );
 		$this->text( $c, 'oc_label_stock_out', 'oc_labels', __( 'Out-of-stock text', 'oc-theme' ) );
@@ -854,6 +866,18 @@ final class Customizer {
 		$this->heading( $c, 'oc_h_lbl_new', 'oc_labels', __( '"New" label', 'oc-theme' ) );
 
 		$this->toggle( $c, 'oc_label_new', 'oc_labels', __( 'Show the "new" label', 'oc-theme' ), false );
+
+		$this->choice(
+			$c,
+			'oc_label_new_pos',
+			'oc_labels',
+			__( '"New" label side', 'oc-theme' ),
+			array(
+				'left'  => __( 'Left', 'oc-theme' ),
+				'right' => __( 'Right', 'oc-theme' ),
+			),
+			'left'
+		);
 		$this->number( $c, 'oc_label_new_days', 'oc_labels', __( 'How long a product counts as new (days)', 'oc-theme' ), 30, 1, 365 );
 		$this->text( $c, 'oc_label_new_text', 'oc_labels', __( '"New" text', 'oc-theme' ) );
 		$this->color( $c, 'oc_label_new_bg', 'oc_labels', __( '"New" background', 'oc-theme' ) );
