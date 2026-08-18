@@ -3553,6 +3553,12 @@ html[dir="rtl"] { --oc-dir: -1; }
 		grid-template-columns: repeat(4, minmax(0, 1fr));
 		gap: 16px 34px;
 	}
+
+	/* the price slider keeps the sidebar's width instead of stretching
+	 * across the whole sheet */
+	.oc-flt--top-full .oc-flt__body .oc-flt__price {
+		max-inline-size: 260px;
+	}
 }
 
 /* drawer + mobile panel */
