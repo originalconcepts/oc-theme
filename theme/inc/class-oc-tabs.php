@@ -410,6 +410,39 @@ final class Tabs {
 				.oc-tgl input[type=checkbox]:checked { background: #1c1c1c !important; }
 				.oc-tgl input[type=checkbox]:checked::before { translate: 16px 0; }
 				body.rtl .oc-tgl input[type=checkbox]:checked::before { translate: -16px 0; }
+
+				/* custom-tab rows: the same framed cards as the per-product
+				 * panel — title alone, position, toggle, remove at the end,
+				 * the editor filling the frame. */
+				.oc-tab-row {
+					display: flow-root;
+					border: 1px solid #dcdcde;
+					border-radius: 6px;
+					background: #fff;
+					padding: 14px 16px;
+					margin: 0 0 12px;
+					max-width: 880px;
+				}
+				.oc-ct-head {
+					display: flex;
+					gap: 14px;
+					align-items: center;
+					flex-wrap: wrap;
+					margin: 0 0 12px;
+				}
+				.oc-ct-head input[type=text] { width: 320px; max-width: 100%; }
+				.oc-ct-head input[type=number] { width: 70px; }
+				.oc-tab-row .wp-editor-wrap,
+				.oc-tab-row textarea.oc-ct-editor { width: 100%; }
+				.oc-tab-remove { margin-inline-start: auto; }
+				.oc-ct-scope {
+					display: flex;
+					gap: 14px;
+					flex-wrap: wrap;
+					align-items: flex-start;
+					margin: 12px 0 0;
+				}
+				#oc-tabs-add { margin: 2px 0 14px; }
 				</style>
 
 				<h2><?php esc_html_e( 'Built-in tabs', 'oc-theme' ); ?></h2>
@@ -432,7 +465,7 @@ final class Tabs {
 								<option value="below" <?php selected( 'below', $settings['desc_place'] ); ?>><?php esc_html_e( 'Outside — below the tabs', 'oc-theme' ); ?></option>
 							</select>
 							<input type="text" name="desc_title" value="<?php echo esc_attr( (string) $settings['desc_title'] ); ?>" placeholder="<?php esc_attr_e( 'Tab title (empty = default)', 'oc-theme' ); ?>" style="margin-inline-start:10px;" />
-							<label style="margin-inline-start:12px;"><?php esc_html_e( 'Order', 'oc-theme' ); ?> <input type="number" name="desc_order" value="<?php echo esc_attr( (string) $settings['desc_order'] ); ?>" style="width:60px;" /></label>
+							<label style="margin-inline-start:12px;"><?php esc_html_e( 'Position', 'oc-theme' ); ?> <input type="number" name="desc_order" value="<?php echo esc_attr( (string) $settings['desc_order'] ); ?>" style="width:60px;" /></label>
 							<p id="oc-desc-open" style="margin:10px 0 0;display:<?php echo 'tab' === $settings['desc_place'] ? 'block' : 'none'; ?>;"><label class="oc-tgl"><input type="checkbox" name="desc_open" value="1" <?php checked( 1, (int) $settings['desc_open'] ); ?> /> <?php esc_html_e( 'Open by default', 'oc-theme' ); ?></label></p>
 						</td>
 					</tr>
@@ -440,7 +473,7 @@ final class Tabs {
 						<th scope="row"><?php esc_html_e( 'Additional information', 'oc-theme' ); ?></th>
 						<td>
 							<label class="oc-tgl"><input type="checkbox" name="additional" value="1" <?php checked( 1, (int) $settings['additional'] ); ?> /> <?php esc_html_e( 'Show the attributes table', 'oc-theme' ); ?></label>
-							<label style="margin-inline-start:12px;"><?php esc_html_e( 'Order', 'oc-theme' ); ?> <input type="number" name="add_order" value="<?php echo esc_attr( (string) $settings['add_order'] ); ?>" style="width:60px;" /></label>
+							<label style="margin-inline-start:12px;"><?php esc_html_e( 'Position', 'oc-theme' ); ?> <input type="number" name="add_order" value="<?php echo esc_attr( (string) $settings['add_order'] ); ?>" style="width:60px;" /></label>
 						</td>
 					</tr>
 					<tr>
@@ -543,15 +576,15 @@ final class Tabs {
 	private function custom_row( $i, array $row, array $all_cats, array $attr_terms ): void {
 		$scope = (string) ( $row['scope'] ?? 'all' );
 		?>
-		<div class="oc-tab-row card" style="max-width:880px;padding:12px 20px 16px;margin-block-end:14px;">
-			<p style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;">
+		<div class="oc-tab-row">
+			<div class="oc-ct-head">
+				<input type="text" name="ct_title[<?php echo esc_attr( (string) $i ); ?>]" value="<?php echo esc_attr( (string) ( $row['title'] ?? '' ) ); ?>" placeholder="<?php esc_attr_e( 'Tab title', 'oc-theme' ); ?>" />
+				<label><?php esc_html_e( 'Position', 'oc-theme' ); ?> <input type="number" name="ct_order[<?php echo esc_attr( (string) $i ); ?>]" value="<?php echo esc_attr( (string) ( $row['order'] ?? 30 ) ); ?>" /></label>
 				<label class="oc-tgl"><input type="checkbox" name="ct_on[<?php echo esc_attr( (string) $i ); ?>]" value="1" <?php checked( 1, (int) ( $row['on'] ?? 1 ) ); ?> /> <?php esc_html_e( 'Active', 'oc-theme' ); ?></label>
-				<label><?php esc_html_e( 'Order', 'oc-theme' ); ?> <input type="number" name="ct_order[<?php echo esc_attr( (string) $i ); ?>]" value="<?php echo esc_attr( (string) ( $row['order'] ?? 30 ) ); ?>" style="width:60px;" /></label>
-				<input type="text" name="ct_title[<?php echo esc_attr( (string) $i ); ?>]" value="<?php echo esc_attr( (string) ( $row['title'] ?? '' ) ); ?>" placeholder="<?php esc_attr_e( 'Tab title', 'oc-theme' ); ?>" class="regular-text" />
-				<button type="button" class="button-link-delete oc-tab-remove" style="margin-inline-start:auto;"><?php esc_html_e( 'Remove', 'oc-theme' ); ?></button>
-			</p>
-			<textarea name="ct_content[<?php echo esc_attr( (string) $i ); ?>]" id="oc-ct-content-<?php echo esc_attr( (string) $i ); ?>" class="oc-ct-editor" rows="6" style="width:100%;" placeholder="<?php esc_attr_e( 'Tab content — text, HTML and shortcodes', 'oc-theme' ); ?>"><?php echo esc_textarea( (string) ( $row['content'] ?? '' ) ); ?></textarea>
-			<p style="display:flex;gap:14px;flex-wrap:wrap;align-items:flex-start;margin-block-end:0;">
+				<button type="button" class="button-link-delete oc-tab-remove"><?php esc_html_e( 'Remove', 'oc-theme' ); ?></button>
+			</div>
+			<textarea name="ct_content[<?php echo esc_attr( (string) $i ); ?>]" id="oc-ct-content-<?php echo esc_attr( (string) $i ); ?>" class="oc-ct-editor" rows="6" placeholder="<?php esc_attr_e( 'Tab content — text, HTML and shortcodes', 'oc-theme' ); ?>"><?php echo esc_textarea( (string) ( $row['content'] ?? '' ) ); ?></textarea>
+			<div class="oc-ct-scope">
 				<label><?php esc_html_e( 'Shown on', 'oc-theme' ); ?><br />
 					<select name="ct_scope[<?php echo esc_attr( (string) $i ); ?>]">
 						<option value="all" <?php selected( 'all', $scope ); ?>><?php esc_html_e( 'All products', 'oc-theme' ); ?></option>
@@ -601,7 +634,7 @@ final class Tabs {
 						<?php endforeach; ?>
 					</select>
 				</label>
-			</p>
+			</div>
 		</div>
 		<?php
 	}
