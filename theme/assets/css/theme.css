@@ -3646,3 +3646,5 @@ ul.products.oc-flt-loading { opacity: .45; pointer-events: none; transition: opa
 	.oc-flt__close--m { display: block; position: sticky; inset-block-start: 0; margin-inline-start: auto; }
 	.oc-flt__head .oc-flt__close--m { position: static; }
 }
+
+.oc-load-more--flt[hidden] { display: none !important; }
