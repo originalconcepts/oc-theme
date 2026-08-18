@@ -1550,7 +1550,8 @@
 				return;
 			}
 
-			var open = 0 === i && 0 !== ( ( window.ocL10n || {} ).accOpenFirst );
+			// localize stringifies scalars — compare numerically.
+			var open = 0 === i && 1 === Number( ( window.ocL10n || {} ).accOpenFirst );
 
 			var head = document.createElement( 'button' );
 			head.type = 'button';
