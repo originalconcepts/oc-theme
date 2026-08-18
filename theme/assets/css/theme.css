@@ -3512,7 +3512,21 @@ html[dir="rtl"] { --oc-dir: -1; }
 	border-radius: 0 0 10px 10px;
 }
 
-.oc-flt--top-full .oc-flt__body .oc-flt__values { flex-direction: row; flex-wrap: wrap; gap: 6px 28px; }
+/* Full-width panel: values in four tidy columns across the whole width
+ * (Monday-style) — swatches and text alike; desktop only, the mobile
+ * panel keeps its own single-column flow. */
+@media (min-width: 901px) {
+	.oc-flt--top-full .oc-flt__body {
+		padding: 22px 26px;
+	}
+
+	.oc-flt--top-full .oc-flt__body .oc-flt__values,
+	.oc-flt--top-full .oc-flt__body .oc-flt__values--swatch {
+		display: grid;
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+		gap: 16px 34px;
+	}
+}
 
 /* drawer + mobile panel */
 .oc-flt__open {
