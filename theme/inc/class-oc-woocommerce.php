@@ -843,23 +843,30 @@ final class WooCommerce {
 		$product_id = absint( $_POST['product'] ?? 0 );
 		$email      = sanitize_email( wp_unslash( (string) ( $_POST['email'] ?? '' ) ) );
 		$phone      = preg_replace( '/[^0-9+\-]/', '', wp_unslash( (string) ( $_POST['phone'] ?? '' ) ) );
+		$channel    = Waitlist::settings()['channel'];
 
-		// One channel is enough — email or a WhatsApp number.
 		$valid_email = is_email( $email );
 		$valid_phone = strlen( $phone ) >= 9;
 
-		if ( ! $product_id || 'product' !== get_post_type( $product_id ) || ( ! $valid_email && ! $valid_phone ) ) {
+		// The admin-chosen channel decides what counts as a valid signup; on
+		// 'both' either one is enough. Consent is never optional.
+		$valid = ( 'whatsapp' === $channel && $valid_phone )
+			|| ( 'email' === $channel && $valid_email )
+			|| ( 'both' === $channel && ( $valid_email || $valid_phone ) );
+
+		if ( ! $product_id || 'product' !== get_post_type( $product_id ) || ! $valid || empty( $_POST['consent'] ) ) {
 			wp_send_json_error();
 		}
 
 		$list = get_post_meta( $product_id, '_oc_notify_list', true );
 		$list = is_array( $list ) ? $list : array();
-		$key  = $valid_email ? $email : $phone;
+		$key  = ( 'whatsapp' === $channel || ! $valid_email ) ? $phone : $email;
 
 		$list[ $key ] = array(
-			'email' => $valid_email ? $email : '',
-			'phone' => $valid_phone ? $phone : '',
-			'time'  => time(),
+			'email'   => $valid_email ? $email : '',
+			'phone'   => $valid_phone ? $phone : '',
+			'time'    => time(),
+			'consent' => time(),
 		);
 		update_post_meta( $product_id, '_oc_notify_list', $list );
 

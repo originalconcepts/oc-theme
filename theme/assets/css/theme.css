@@ -3006,6 +3006,28 @@ body:not(.oc-no-lightbox) .oc-vslide.is-playing {
 	cursor: pointer;
 }
 
+.oc-nmodal__consent {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin: 0;
+	font-size: .84rem;
+	color: var(--oc-muted, #666);
+	cursor: pointer;
+}
+
+.oc-nmodal__form .oc-nmodal__consent input {
+	inline-size: auto;
+	block-size: auto;
+	margin: 0;
+	accent-color: var(--oc-cta, #111);
+}
+
+.oc-nmodal__consent a {
+	color: inherit;
+	text-decoration: underline;
+}
+
 .oc-nmodal__error {
 	margin: 0;
 	color: #c4342c;

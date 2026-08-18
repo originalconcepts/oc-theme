@@ -1131,3 +1131,75 @@ msgstr "גודל Swatch — קטלוג (px)"
 
 msgid "Check mark on the selected swatch"
 msgstr "סימון V על ה-Swatch הנבחר"
+
+msgid "Settings saved."
+msgstr "ההגדרות נשמרו."
+
+msgid "Test message sent — check WhatsApp."
+msgstr "הודעת הבדיקה נשלחה — בדקו בוואטסאפ."
+
+msgid "Sending failed — check the Twilio details below."
+msgstr "השליחה נכשלה — בדקו את פרטי Twilio למטה."
+
+msgid "Sending settings"
+msgstr "הגדרות שליחה"
+
+msgid "Notification channel"
+msgstr "ערוץ שליחת ההתראות"
+
+msgid "WhatsApp"
+msgstr "וואטסאפ"
+
+msgid "WhatsApp and email"
+msgstr "וואטסאפ וגם אימייל"
+
+msgid "Also controls which fields the signup popup shows on the site."
+msgstr "קובע גם אילו שדות יוצגו בחלון ההרשמה באתר."
+
+msgid "Automatic sending"
+msgstr "שליחה אוטומטית"
+
+msgid "Send automatically the moment a product returns to stock"
+msgstr "לשלוח אוטומטית ברגע שמוצר חוזר למלאי"
+
+msgid "WhatsApp sender number"
+msgstr "מספר השולח בוואטסאפ"
+
+msgid "Message template SID"
+msgstr "מזהה תבנית ההודעה (SID)"
+
+msgid "An approved Twilio content template with {{1}} for the product name and {{2}} for the product link."
+msgstr "תבנית תוכן מאושרת ב-Twilio שכוללת {{1}} עבור שם המוצר ו-{{2}} עבור הקישור למוצר."
+
+msgid "Save settings"
+msgstr "שמירת הגדרות"
+
+msgid "Send a test WhatsApp message"
+msgstr "שליחת הודעת בדיקה לוואטסאפ"
+
+msgid "Good news — %s is back in stock!"
+msgstr "חדשות טובות — %s חזר למלאי!"
+
+msgid "The product you asked to follow is available again. Quantities may be limited — first come, first served."
+msgstr "המוצר שביקשתם לעקוב אחריו זמין שוב. הכמויות עשויות להיות מוגבלות — כל הקודם זוכה."
+
+msgid "To the product"
+msgstr "למוצר"
+
+msgid "Test product"
+msgstr "מוצר בדיקה"
+
+msgid "Fill in a phone number."
+msgstr "יש למלא מספר טלפון."
+
+msgid "Fill in an email address."
+msgstr "יש למלא כתובת אימייל."
+
+msgid "I agree to the "
+msgstr "אני מסכים/ה ל"
+
+msgid "privacy policy"
+msgstr "מדיניות הפרטיות"
+
+msgid "Please confirm the privacy policy to sign up."
+msgstr "יש לאשר את מדיניות הפרטיות כדי להירשם."

@@ -1095,6 +1095,12 @@
 		var L = window.ocL10n || {};
 
 		if ( ! ocNotifyModal ) {
+			var channel = L.notifyChannel || 'both';
+			var consentText = ( L.notifyConsentPre || 'I agree to the ' ) +
+				( L.privacyUrl
+					? '<a href="' + L.privacyUrl + '" target="_blank" rel="noopener">' + ( L.notifyConsentLink || 'privacy policy' ) + '</a>'
+					: ( L.notifyConsentLink || 'privacy policy' ) );
+
 			ocNotifyModal = document.createElement( 'div' );
 			ocNotifyModal.className = 'oc-nmodal';
 			ocNotifyModal.hidden = true;
@@ -1107,8 +1113,9 @@
 				'<p class="oc-nmodal__intro">' + ( L.notifyIntro || '' ) + '</p>' +
 				'<p class="oc-nmodal__product"></p>' +
 				'<form class="oc-nmodal__form">' +
-				'<input type="tel" name="phone" placeholder="' + ( L.notifyPhone || 'Phone' ) + '" />' +
-				'<input type="email" name="email" placeholder="' + ( L.notifyEmail || 'Email' ) + '" />' +
+				( 'email' === channel ? '' : '<input type="tel" name="phone" placeholder="' + ( L.notifyPhone || 'Phone' ) + '" />' ) +
+				( 'whatsapp' === channel ? '' : '<input type="email" name="email" placeholder="' + ( L.notifyEmail || 'Email' ) + '" />' ) +
+				'<label class="oc-nmodal__consent"><input type="checkbox" name="consent" /><span>' + consentText + '</span></label>' +
 				'<p class="oc-nmodal__error" hidden>' + ( L.notifyMissing || '' ) + '</p>' +
 				'<button type="submit">' + ( L.notifyButton || 'Notify me' ) + '</button>' +
 				'</form>' +
@@ -1133,11 +1140,20 @@
 				event.preventDefault();
 
 				var form = event.target;
-				var phone = form.querySelector( '[name="phone"]' ).value.trim();
-				var email = form.querySelector( '[name="email"]' ).value.trim();
+				var phoneEl = form.querySelector( '[name="phone"]' );
+				var emailEl = form.querySelector( '[name="email"]' );
+				var phone = phoneEl ? phoneEl.value.trim() : '';
+				var email = emailEl ? emailEl.value.trim() : '';
+				var consent = form.querySelector( '[name="consent"]' );
 				var error = ocNotifyModal.querySelector( '.oc-nmodal__error' );
 
+				if ( consent && ! consent.checked ) {
+					error.textContent = L.notifyConsentMissing || '';
+					error.hidden = false;
+					return;
+				}
 				if ( ! phone && ! email ) {
+					error.textContent = L.notifyMissing || '';
 					error.hidden = false;
 					return;
 				}
@@ -1149,6 +1165,7 @@
 				data.append( 'product', ocNotifyModal.dataset.product );
 				data.append( 'phone', phone );
 				data.append( 'email', email );
+				data.append( 'consent', '1' );
 
 				var submit = form.querySelector( 'button' );
 				submit.disabled = true;
@@ -1163,6 +1180,11 @@
 							form.hidden = true;
 							ocNotifyModal.querySelector( '.oc-nmodal__foot' ).hidden = true;
 							ocNotifyModal.querySelector( '.oc-nmodal__done' ).hidden = false;
+							// From now on the consent box opens pre-checked
+							// for this browsing session.
+							try {
+								sessionStorage.setItem( 'ocNotifyOk', '1' );
+							} catch ( e ) {}
 						}
 					} )
 					.catch( function () {
@@ -1177,8 +1199,22 @@
 		ocNotifyModal.querySelector( '.oc-nmodal__foot' ).hidden = false;
 		ocNotifyModal.querySelector( '.oc-nmodal__done' ).hidden = true;
 		ocNotifyModal.querySelector( '.oc-nmodal__error' ).hidden = true;
+
+		// Unchecked only on the very first signup of the session.
+		var consentBox = ocNotifyModal.querySelector( '[name="consent"]' );
+		if ( consentBox ) {
+			try {
+				consentBox.checked = '1' === sessionStorage.getItem( 'ocNotifyOk' );
+			} catch ( e ) {
+				consentBox.checked = false;
+			}
+		}
+
 		ocNotifyModal.hidden = false;
-		ocNotifyModal.querySelector( '[name="phone"]' ).focus();
+		var firstField = ocNotifyModal.querySelector( '.oc-nmodal__form input:not([type="checkbox"])' );
+		if ( firstField ) {
+			firstField.focus();
+		}
 	}
 
 	document.addEventListener( 'click', function ( event ) {

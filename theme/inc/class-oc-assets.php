@@ -124,6 +124,13 @@ final class Assets {
 			)
 		);
 
+		$notify_channel = Waitlist::settings()['channel'];
+		$notify_missing = array(
+			'whatsapp' => __( 'Fill in a phone number.', 'oc-theme' ),
+			'email'    => __( 'Fill in an email address.', 'oc-theme' ),
+			'both'     => __( 'Fill in a phone number or an email address.', 'oc-theme' ),
+		);
+
 		wp_localize_script(
 			'oc-theme',
 			'ocL10n',
@@ -142,7 +149,12 @@ final class Assets {
 				'notifyButton'  => __( 'Notify me when it is back', 'oc-theme' ),
 				'notifyFoot'    => __( 'No spam — a single update about this product only.', 'oc-theme' ),
 				'notifyDone'    => __( 'You are on the list — we will let you know the moment it is back.', 'oc-theme' ),
-				'notifyMissing' => __( 'Fill in a phone number or an email address.', 'oc-theme' ),
+				'notifyMissing' => $notify_missing[ $notify_channel ] ?? $notify_missing['both'],
+				'notifyChannel' => $notify_channel,
+				'privacyUrl'    => (string) get_privacy_policy_url(),
+				'notifyConsentPre'     => __( 'I agree to the ', 'oc-theme' ),
+				'notifyConsentLink'    => __( 'privacy policy', 'oc-theme' ),
+				'notifyConsentMissing' => __( 'Please confirm the privacy policy to sign up.', 'oc-theme' ),
 			)
 		);
 	}
