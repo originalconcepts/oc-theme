@@ -4172,3 +4172,57 @@ body.oc-flt-topbar .woocommerce-result-count { display: none; }
 }
 
 .oc-flt__chip--dot { padding: 5px 10px; }
+
+/* ---------- sort opener: "Sort: <active>" with a flipping chevron ----------
+ * Desktop drops the funnel icon for the labelled form; mobile keeps the
+ * compact icon button (no room for the active label there). */
+.oc-flt__sortcur { font-style: normal; font-weight: 400; }
+
+.oc-flt__sortchev {
+	inline-size: 16px;
+	block-size: 16px;
+	transition: rotate .22s ease;
+}
+
+body.oc-sort-open .oc-flt__sortchev { rotate: 180deg; }
+
+@media (min-width: 901px) {
+	.oc-flt__sortbtn .oc-flt__sorticon { display: none; }
+}
+
+@media (max-width: 900px) {
+	.oc-flt__sortcur,
+	.oc-flt__sortchev { display: none; }
+}
+
+/* ---------- chips inside the topbar ----------
+ * "inline": one chips row right after the groups (Monday-style).
+ * "group": each group's chips beside it (SNOCKS-style); the general
+ * inline container then holds just the clear-all. */
+.oc-flt--top .oc-flt__chips--inline {
+	display: inline-flex;
+	margin-block: 0;
+}
+
+.oc-flt--top .oc-flt__chips--inline[hidden] { display: none !important; }
+
+.oc-flt__chips--g {
+	display: inline-flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	margin-block: 0;
+}
+
+.oc-flt__chips--g[hidden] { display: none !important; }
+
+@media (max-width: 900px) {
+	/* the mobile panel folds groups vertically — inline chips step aside,
+	 * the toolbar chips row serves there */
+	.oc-flt--top .oc-flt__chips--inline,
+	.oc-flt__chips--g { display: none !important; }
+}
+
+@media (max-width: 900px) {
+	/* the mobile toolbar's chips row serves the topbar there */
+	body.oc-flt-topbar .oc-flt__chips--below { display: none !important; }
+}

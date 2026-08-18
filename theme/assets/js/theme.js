@@ -1200,6 +1200,11 @@
 
 		function renderChips() {
 			var wraps = [].slice.call( document.querySelectorAll( '[data-flt-chips]' ) );
+			var groupWraps = {};
+			[].forEach.call( document.querySelectorAll( '[data-flt-chips-group]' ), function ( w ) {
+				groupWraps[ w.dataset.fltChipsGroup ] = w;
+				w.innerHTML = '';
+			} );
 			if ( ! wraps.length ) {
 				return;
 			}
@@ -1209,11 +1214,14 @@
 			} );
 			var any = false;
 
-			function chip( label, remove, swatchStyle ) {
+			function chip( label, remove, swatchStyle, groupKey ) {
 				var mode = cfg.chipSwatch || 'off';
 				var only = swatchStyle && 'only' === mode;
+				// A chip whose group has its own slot renders only there;
+				// everything else lands in every general container.
+				var targets = groupKey && groupWraps[ groupKey ] ? [ groupWraps[ groupKey ] ] : wraps;
 				any = true;
-				wraps.forEach( function ( w ) {
+				targets.forEach( function ( w ) {
 					var b = document.createElement( 'button' );
 					b.type = 'button';
 					b.className = 'oc-flt__chip' + ( only ? ' oc-flt__chip--dot' : '' );
@@ -1254,7 +1262,7 @@
 							list.splice( idx, 1 );
 						}
 						apply();
-					}, swatch ? swatch.getAttribute( 'style' ) : null );
+					}, swatch ? swatch.getAttribute( 'style' ) : null, key );
 				} );
 			} );
 
@@ -1264,7 +1272,7 @@
 					state.min = null;
 					state.max = null;
 					apply();
-				} );
+				}, null, 'price' );
 			}
 
 			// No chip for the in-stock toggle: it is a visible switch already,
@@ -1280,6 +1288,10 @@
 					w.appendChild( clear );
 				}
 				w.hidden = ! any;
+			} );
+
+			Object.keys( groupWraps ).forEach( function ( k ) {
+				groupWraps[ k ].hidden = ! groupWraps[ k ].childElementCount;
 			} );
 		}
 
@@ -1441,6 +1453,17 @@
 			function closeSheet() {
 				document.body.classList.remove( 'oc-sort-open' );
 			}
+
+			// "Sort: <active>" on the desktop bars — from the native select.
+			( function () {
+				var sel = nativeSelect();
+				var opt = sel && sel.options[ sel.selectedIndex ];
+				if ( opt ) {
+					[].forEach.call( document.querySelectorAll( '[data-oc-sortcur]' ), function ( el ) {
+						el.textContent = ': ' + opt.textContent;
+					} );
+				}
+			} )();
 
 			document.addEventListener( 'click', function ( event ) {
 				if ( event.target.closest( '[data-oc-sort-open]' ) ) {

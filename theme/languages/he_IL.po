@@ -1674,3 +1674,18 @@ msgstr "דוגמית בלבד"
 
 msgid "How a chosen value of a swatch attribute (colour, material) shows in the chips row."
 msgstr "איך ערך נבחר של תכונת דוגמית (צבע, חומר) מוצג בשורת הצ׳יפים."
+
+msgid "Chips placement"
+msgstr "מיקום הצ׳יפים"
+
+msgid "Below the bar, at the start"
+msgstr "מתחת לבר, בתחילת השורה"
+
+msgid "Below the bar, centred"
+msgstr "מתחת לבר, במרכז"
+
+msgid "Inside the bar, after the groups"
+msgstr "בתוך הבר, אחרי הסינונים"
+
+msgid "Inside the bar, beside each group"
+msgstr "בתוך הבר, ליד כל סינון"

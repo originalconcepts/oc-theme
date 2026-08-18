@@ -81,6 +81,7 @@ final class Filters {
 				'topbar_style' => 'drop',      // drop | full.
 				'choice'       => 'check',     // check | dot.
 				'chip_swatch'  => 'off',       // off | both | only.
+				'chips_pos'    => 'start',     // start | center | inline | group.
 				'counts'       => 1,
 				'empty'        => 'gray',      // gray | hide.
 				'instock'      => 1,
@@ -1163,6 +1164,7 @@ final class Filters {
 			'choice'   => (string) $settings['choice'],
 			'counts'   => (int) $settings['counts'],
 			'chipSwatch' => (string) $settings['chip_swatch'],
+			'chipsPos'   => (string) $settings['chips_pos'],
 			'empty'    => (string) $settings['empty'],
 			'currency' => html_entity_decode( get_woocommerce_currency_symbol(), ENT_QUOTES, 'UTF-8' ),
 		);
@@ -1170,7 +1172,6 @@ final class Filters {
 		echo '<script type="application/json" id="oc-flt-config">' . wp_json_encode( $config ) . '</script>';
 
 		$groups_html = $this->groups_html( $facets, $settings, $layout );
-		$chips       = '<div class="oc-flt__chips" data-flt-chips hidden></div>';
 
 		$foot = '<div class="oc-flt__foot oc-flt__foot--m" data-flt-foot' . ( $state['any'] ? '' : ' hidden' ) . '><button type="button" class="oc-flt__apply" data-flt-close-apply>' . esc_html__( 'View results', 'oc-theme' ) . '</button></div>';
 
@@ -1196,27 +1197,35 @@ final class Filters {
 
 		if ( 'topbar' === $layout ) {
 			global $wp_query;
-			$found = isset( $wp_query->found_posts ) ? (int) $wp_query->found_posts : 0;
+			$found     = isset( $wp_query->found_posts ) ? (int) $wp_query->found_posts : 0;
+			$chips_pos = (string) $settings['chips_pos'];
 
 			echo '<div class="oc-flt oc-flt--top oc-flt--top-' . esc_attr( (string) $settings['topbar_style'] ) . '" data-flt-panel>';
 			echo '<button type="button" class="oc-flt__close oc-flt__close--m" data-flt-close aria-label="' . esc_attr__( 'Close', 'oc-theme' ) . '">&times;</button>';
 			echo $groups_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-			echo '<button type="button" class="oc-flt__clear" data-flt-clear hidden>' . esc_html__( 'Clear all', 'oc-theme' ) . '</button>';
+
+			// The chips row carries its own clear-all, so the bar keeps no
+			// separate one. "Inline" puts the row right after the groups
+			// (Monday-style); "group" mode slots chips beside each group and
+			// leaves this container to hold just the clear-all.
+			if ( 'inline' === $chips_pos || 'group' === $chips_pos ) {
+				echo '<span class="oc-flt__chips oc-flt__chips--inline" data-flt-chips hidden></span>';
+			}
 
 			// Sort and the live result count share the bar's far end — one
 			// row does everything, Woo's own ordering line steps aside.
 			echo '<span class="oc-flt__bar-tail">';
-			echo '<button type="button" class="oc-flt__mbtn" data-oc-sort-open>';
-			echo '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16l-6.2 7.2V19l-3.6-2v-4.8z"/></svg>';
-			echo '<span>' . esc_html__( 'Sort', 'oc-theme' ) . '</span>';
-			echo '</button>';
+			$this->sort_button();
 			/* translators: %s: number of products. */
 			echo '<span class="oc-flt__rescount" data-flt-rescount>' . esc_html( sprintf( __( '%s results', 'oc-theme' ), number_format_i18n( $found ) ) ) . '</span>';
 			echo '</span>';
 
 			echo $foot; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			echo '</div>';
-			echo $chips; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+
+			if ( 'inline' !== $chips_pos && 'group' !== $chips_pos ) {
+				echo '<div class="oc-flt__chips oc-flt__chips--below' . ( 'center' === $chips_pos ? ' oc-flt__chips--center' : '' ) . '" data-flt-chips hidden></div>';
+			}
 		} else {
 			// Drawer: one toolbar for every viewport — filter, sort, result
 			// count at the far end (Lanvin-style) — with the chosen values
@@ -1234,8 +1243,23 @@ final class Filters {
 
 		// Topbar keeps a mobile-only toolbar; the drawer's serves all sizes.
 		if ( 'topbar' === $layout ) {
-			$this->mobile_trigger( true, false );
+			$this->mobile_trigger( true, true );
 		}
+	}
+
+	/**
+	 * The sort opener, one shape everywhere: on desktop "Sort: <active>" with
+	 * a chevron that flips while the dropdown is open; on mobile a compact
+	 * icon-and-label button (CSS swaps the pieces). theme.js fills the
+	 * active-sort label from the native select.
+	 */
+	private function sort_button(): void {
+		echo '<button type="button" class="oc-flt__mbtn oc-flt__sortbtn" data-oc-sort-open>';
+		echo '<svg class="oc-flt__sorticon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16l-6.2 7.2V19l-3.6-2v-4.8z"/></svg>';
+		echo '<span>' . esc_html__( 'Sort', 'oc-theme' ) . '</span>';
+		echo '<em class="oc-flt__sortcur" data-oc-sortcur></em>';
+		echo '<svg class="oc-flt__sortchev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
+		echo '</button>';
 	}
 
 	/**
@@ -1256,10 +1280,7 @@ final class Filters {
 		echo '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M7 12h10M10 17h4"/></svg>';
 		echo '<span>' . esc_html__( 'Filter', 'oc-theme' ) . '</span><em class="oc-flt__badge" data-flt-badge hidden></em>';
 		echo '</button>';
-		echo '<button type="button" class="oc-flt__mbtn" data-oc-sort-open>';
-		echo '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16l-6.2 7.2V19l-3.6-2v-4.8z"/></svg>';
-		echo '<span>' . esc_html__( 'Sort', 'oc-theme' ) . '</span>';
-		echo '</button>';
+		$this->sort_button();
 		/* translators: %s: number of products. */
 		echo '<span class="oc-flt__rescount" data-flt-rescount>' . esc_html( sprintf( __( '%s results', 'oc-theme' ), number_format_i18n( $found ) ) ) . '</span>';
 		echo '</div>';
@@ -1330,6 +1351,10 @@ final class Filters {
 		$html       = '';
 		$allow_open = 'topbar' !== $layout;
 
+		// "After each group": every group gets its own chips slot right
+		// beside it (SNOCKS-style); renderChips routes chips by group key.
+		$group_chips = 'topbar' === $layout && 'group' === (string) ( $settings['chips_pos'] ?? 'start' );
+
 		foreach ( $facets as $group ) {
 			if ( 'instock' === $group['type'] ) {
 				$html .= '<div class="oc-flt__group oc-flt__group--stock" data-flt-group="fin">';
@@ -1340,6 +1365,9 @@ final class Filters {
 
 			if ( 'price' === $group['type'] ) {
 				$html .= $this->price_html( $group );
+				if ( $group_chips ) {
+					$html .= '<span class="oc-flt__chips oc-flt__chips--g" data-flt-chips-group="price" hidden></span>';
+				}
 				continue;
 			}
 
@@ -1385,6 +1413,10 @@ final class Filters {
 			}
 
 			$html .= '</div></div></div>';
+
+			if ( $group_chips ) {
+				$html .= '<span class="oc-flt__chips oc-flt__chips--g" data-flt-chips-group="' . esc_attr( (string) $group['key'] ) . '" hidden></span>';
+			}
 		}
 
 		return $html;
@@ -1769,7 +1801,7 @@ final class Filters {
 							<p class="description"><?php esc_html_e( 'Each category can pick its own layout on its edit screen. Mobile always uses the panel.', 'oc-theme' ); ?></p>
 						</td>
 					</tr>
-					<tr id="oc-flt-topbar-row" <?php echo 'topbar' === $settings['layout'] ? '' : 'style="display:none;"'; ?>>
+					<tr class="oc-flt-topbar-only" <?php echo 'topbar' === $settings['layout'] ? '' : 'style="display:none;"'; ?>>
 						<th scope="row"><label for="oc-flt-topbar"><?php esc_html_e( 'Bar dropdown style', 'oc-theme' ); ?></label></th>
 						<td>
 							<select name="topbar_style" id="oc-flt-topbar">
@@ -1778,17 +1810,30 @@ final class Filters {
 							</select>
 						</td>
 					</tr>
+					<tr class="oc-flt-topbar-only" <?php echo 'topbar' === $settings['layout'] ? '' : 'style="display:none;"'; ?>>
+						<th scope="row"><label for="oc-flt-chipspos"><?php esc_html_e( 'Chips placement', 'oc-theme' ); ?></label></th>
+						<td>
+							<select name="chips_pos" id="oc-flt-chipspos">
+								<option value="start" <?php selected( 'start', $settings['chips_pos'] ); ?>><?php esc_html_e( 'Below the bar, at the start', 'oc-theme' ); ?></option>
+								<option value="center" <?php selected( 'center', $settings['chips_pos'] ); ?>><?php esc_html_e( 'Below the bar, centred', 'oc-theme' ); ?></option>
+								<option value="inline" <?php selected( 'inline', $settings['chips_pos'] ); ?>><?php esc_html_e( 'Inside the bar, after the groups', 'oc-theme' ); ?></option>
+								<option value="group" <?php selected( 'group', $settings['chips_pos'] ); ?>><?php esc_html_e( 'Inside the bar, beside each group', 'oc-theme' ); ?></option>
+							</select>
+						</td>
+					</tr>
 					<script>
 					( function () {
 						var pick = document.getElementById( 'oc-flt-layout-pick' );
-						var topbarRow = document.getElementById( 'oc-flt-topbar-row' );
+						var topbarRows = document.querySelectorAll( '.oc-flt-topbar-only' );
 
 						pick.addEventListener( 'change', function () {
 							var chosen = pick.querySelector( 'input[name=layout]:checked' );
 							var value = chosen ? chosen.value : '';
 
 							// Layout-specific rows show only for their layout.
-							topbarRow.style.display = 'topbar' === value ? '' : 'none';
+							topbarRows.forEach( function ( row ) {
+								row.style.display = 'topbar' === value ? '' : 'none';
+							} );
 
 							pick.querySelectorAll( 'label' ).forEach( function ( card ) {
 								var on = card.querySelector( 'input' ).checked;
@@ -2006,6 +2051,7 @@ final class Filters {
 				'topbar_style' => 'full' === ( $_POST['topbar_style'] ?? '' ) ? 'full' : 'drop',
 				'choice'       => 'dot' === ( $_POST['choice'] ?? '' ) ? 'dot' : 'check',
 				'chip_swatch'  => in_array( $_POST['chip_swatch'] ?? '', array( 'both', 'only' ), true ) ? sanitize_key( $_POST['chip_swatch'] ) : 'off',
+				'chips_pos'    => in_array( $_POST['chips_pos'] ?? '', array( 'center', 'inline', 'group' ), true ) ? sanitize_key( $_POST['chips_pos'] ) : 'start',
 				'counts'       => empty( $_POST['counts'] ) ? 0 : 1,
 				'empty'        => 'hide' === ( $_POST['empty'] ?? '' ) ? 'hide' : 'gray',
 				'instock'      => empty( $_POST['instock'] ) ? 0 : 1,
