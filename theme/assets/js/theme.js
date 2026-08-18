@@ -930,6 +930,7 @@
 					} );
 
 					ocRefreshSigned();
+					syncCardColors();
 					updateFacets( res.data.facets || {} );
 					manageMore();
 
@@ -981,6 +982,36 @@
 			try {
 				window.history.replaceState( null, '', path + ( qs ? '?' + qs : '' ) );
 			} catch ( e ) {}
+		}
+
+		/* -- filtered colour carries into the cards ----
+		 * Filtering by a colour should SHOW that colour: every card whose
+		 * colour dots include an active filter value flips its gallery to
+		 * that colour, exactly as a click on the dot would. Cards without
+		 * the colour keep their own look. */
+
+		function syncCardColors() {
+			var active = [];
+			Object.keys( state.attrs ).forEach( function ( id ) {
+				active = active.concat( state.attrs[ id ] );
+			} );
+
+			if ( ! active.length ) {
+				return;
+			}
+
+			grid.querySelectorAll( 'li.product' ).forEach( function ( li ) {
+				var dots = li.querySelectorAll( '.oc-colors__item--term[data-slug]' );
+
+				for ( var i = 0; i < dots.length; i++ ) {
+					if ( active.indexOf( dots[ i ].dataset.slug ) > -1 ) {
+						if ( ! dots[ i ].classList.contains( 'is-current' ) ) {
+							dots[ i ].click();
+						}
+						return;
+					}
+				}
+			} );
 		}
 
 		/* -- facet ui sync -- */

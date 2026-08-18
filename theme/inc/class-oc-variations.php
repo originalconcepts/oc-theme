@@ -1175,14 +1175,15 @@ final class Variations {
 				}
 
 				$items .= sprintf(
-					'<a class="oc-colors__item oc-colors__item--term" href="%s" style="%s" title="%s" aria-label="%s" data-url="%s" data-pid="%d" data-imgs="%s"></a>',
+					'<a class="oc-colors__item oc-colors__item--term" href="%s" style="%s" title="%s" aria-label="%s" data-url="%s" data-pid="%d" data-imgs="%s" data-slug="%s"></a>',
 					esc_url( add_query_arg( 'attribute_' . $attr_tax, $term->slug, $permalink ) ),
 					$style, // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
 					esc_attr( $term->name ),
 					esc_attr( $term->name ),
 					esc_url( add_query_arg( 'attribute_' . $attr_tax, $term->slug, $permalink ) ),
 					absint( $product->get_id() ),
-					esc_attr( (string) wp_json_encode( $imgs ) )
+					esc_attr( (string) wp_json_encode( $imgs ) ),
+					esc_attr( $term->slug )
 				);
 			}
 

@@ -806,7 +806,7 @@ final class Filters {
 			'choice'   => (string) $settings['choice'],
 			'counts'   => (int) $settings['counts'],
 			'empty'    => (string) $settings['empty'],
-			'currency' => get_woocommerce_currency_symbol(),
+			'currency' => html_entity_decode( get_woocommerce_currency_symbol(), ENT_QUOTES, 'UTF-8' ),
 		);
 
 		echo '<script type="application/json" id="oc-flt-config">' . wp_json_encode( $config ) . '</script>';
@@ -957,7 +957,7 @@ final class Filters {
 	 * @param array<string,mixed> $group Price group data.
 	 */
 	private function price_html( array $group ): string {
-		$symbol = get_woocommerce_currency_symbol();
+		$symbol = html_entity_decode( get_woocommerce_currency_symbol(), ENT_QUOTES, 'UTF-8' );
 		$lo     = (float) $group['bounds']['min'];
 		$hi     = (float) $group['bounds']['max'];
 		$cur_lo = null !== $group['min'] ? (float) $group['min'] : $lo;
