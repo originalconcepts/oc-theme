@@ -2669,3 +2669,6 @@ body:not(.oc-no-lightbox) .oc-vslide.is-playing {
 	border-color: var(--oc-cta);
 	block-size: var(--oc-cta-h, 48px);
 }
+
+/* Our stock line replaces Woo's availability text — no double stock talk. */
+.oc-stockline-on.single-product div.product p.stock { display: none; }

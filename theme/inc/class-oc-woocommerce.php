@@ -363,6 +363,10 @@ final class WooCommerce {
 			$classes[] = 'oc-no-qty';
 		}
 
+		if ( get_theme_mod( 'oc_stock_indicator', true ) ) {
+			$classes[] = 'oc-stockline-on';
+		}
+
 		if ( is_product() ) {
 			$classes[] = 'oc-gallery-' . sanitize_html_class( (string) get_theme_mod( 'oc_gallery_preset', 'thumbs-side' ) );
 			$classes[] = 'oc-side-' . sanitize_html_class( (string) get_theme_mod( 'oc_product_layout_side', 'gallery-start' ) );
