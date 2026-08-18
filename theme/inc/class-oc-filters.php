@@ -1175,7 +1175,9 @@ final class Filters {
 		if ( 'sidebar' === $layout ) {
 			echo '<div class="oc-flt-wrap">';
 			echo '<aside class="oc-flt oc-flt--side" data-flt-panel aria-label="' . esc_attr__( 'Filters', 'oc-theme' ) . '">';
-			echo '<div class="oc-flt__head"><span>' . esc_html__( 'Filters', 'oc-theme' ) . '</span><button type="button" class="oc-flt__clear" data-flt-clear hidden>' . esc_html__( 'Clear all', 'oc-theme' ) . '</button><button type="button" class="oc-flt__close oc-flt__close--m" data-flt-close aria-label="' . esc_attr__( 'Close', 'oc-theme' ) . '">&times;</button></div>';
+			// No clear-all in the panel head — the chips row above the grid
+			// already carries one; two of them read as a bug.
+			echo '<div class="oc-flt__head"><span>' . esc_html__( 'Filters', 'oc-theme' ) . '</span><button type="button" class="oc-flt__close oc-flt__close--m" data-flt-close aria-label="' . esc_attr__( 'Close', 'oc-theme' ) . '">&times;</button></div>';
 			echo $groups_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			echo $foot; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			echo '</aside>';
@@ -1724,17 +1726,34 @@ final class Filters {
 						<td><label><input type="checkbox" name="enabled" value="1" <?php checked( 1, (int) $settings['enabled'] ); ?> /> <?php esc_html_e( 'Enable catalogue filtering', 'oc-theme' ); ?></label></td>
 					</tr>
 					<tr>
-						<th scope="row"><label for="oc-flt-layout"><?php esc_html_e( 'Default layout (desktop)', 'oc-theme' ); ?></label></th>
+						<th scope="row"><?php esc_html_e( 'Default layout (desktop)', 'oc-theme' ); ?></th>
 						<td>
-							<select name="layout" id="oc-flt-layout">
-								<option value="sidebar" <?php selected( 'sidebar', $settings['layout'] ); ?>><?php esc_html_e( 'Side column', 'oc-theme' ); ?></option>
-								<option value="topbar" <?php selected( 'topbar', $settings['layout'] ); ?>><?php esc_html_e( 'Bar above the products', 'oc-theme' ); ?></option>
-								<option value="drawer" <?php selected( 'drawer', $settings['layout'] ); ?>><?php esc_html_e( 'Filter button opening a panel', 'oc-theme' ); ?></option>
-							</select>
+							<?php
+							$layout_options = array(
+								'sidebar' => __( 'Side column', 'oc-theme' ),
+								'topbar'  => __( 'Bar above the products', 'oc-theme' ),
+								'drawer'  => __( 'Filter button opening a panel', 'oc-theme' ),
+							);
+
+							$layout_icons = array(
+								'sidebar' => '<rect x="34" y="2" width="12" height="28" rx="2"/><rect x="2" y="2" width="28" height="8" rx="2" opacity=".35"/><rect x="2" y="14" width="28" height="16" rx="2" opacity=".35"/>',
+								'topbar'  => '<rect x="2" y="2" width="44" height="7" rx="2"/><rect x="2" y="13" width="44" height="17" rx="2" opacity=".35"/>',
+								'drawer'  => '<rect x="36" y="2" width="10" height="6" rx="2"/><rect x="2" y="12" width="44" height="18" rx="2" opacity=".35"/>',
+							);
+							?>
+							<div class="oc-flt-pick" id="oc-flt-layout-pick" style="display:flex;gap:10px;flex-wrap:wrap;">
+								<?php foreach ( $layout_options as $value => $label ) : ?>
+									<label style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px;border:1.5px solid <?php echo $settings['layout'] === $value ? '#2271b1' : '#ddd'; ?>;border-radius:8px;cursor:pointer;min-width:110px;text-align:center;">
+										<svg viewBox="0 0 48 32" width="48" height="32" fill="currentColor" aria-hidden="true"><?php echo $layout_icons[ $value ]; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static SVG. ?></svg>
+										<input type="radio" name="layout" value="<?php echo esc_attr( $value ); ?>" <?php checked( $settings['layout'], $value ); ?> style="margin:0;" />
+										<span style="font-size:12px;"><?php echo esc_html( $label ); ?></span>
+									</label>
+								<?php endforeach; ?>
+							</div>
 							<p class="description"><?php esc_html_e( 'Each category can pick its own layout on its edit screen. Mobile always uses the panel.', 'oc-theme' ); ?></p>
 						</td>
 					</tr>
-					<tr>
+					<tr id="oc-flt-topbar-row" <?php echo 'topbar' === $settings['layout'] ? '' : 'style="display:none;"'; ?>>
 						<th scope="row"><label for="oc-flt-topbar"><?php esc_html_e( 'Bar dropdown style', 'oc-theme' ); ?></label></th>
 						<td>
 							<select name="topbar_style" id="oc-flt-topbar">
@@ -1743,6 +1762,25 @@ final class Filters {
 							</select>
 						</td>
 					</tr>
+					<script>
+					( function () {
+						var pick = document.getElementById( 'oc-flt-layout-pick' );
+						var topbarRow = document.getElementById( 'oc-flt-topbar-row' );
+
+						pick.addEventListener( 'change', function () {
+							var chosen = pick.querySelector( 'input[name=layout]:checked' );
+							var value = chosen ? chosen.value : '';
+
+							// Layout-specific rows show only for their layout.
+							topbarRow.style.display = 'topbar' === value ? '' : 'none';
+
+							pick.querySelectorAll( 'label' ).forEach( function ( card ) {
+								var on = card.querySelector( 'input' ).checked;
+								card.style.borderColor = on ? '#2271b1' : '#ddd';
+							} );
+						} );
+					} )();
+					</script>
 					<tr>
 						<th scope="row"><label for="oc-flt-choice"><?php esc_html_e( 'Choice style', 'oc-theme' ); ?></label></th>
 						<td>
