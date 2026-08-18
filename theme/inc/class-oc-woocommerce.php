@@ -62,6 +62,26 @@ final class WooCommerce {
 		// below the form.
 		add_action( 'woocommerce_before_add_to_cart_button', array( $this, 'stock_line' ) );
 		add_action( 'woocommerce_after_add_to_cart_form', array( $this, 'atc_icons' ) );
+
+		// Card labels render inside the media box (card_media) — Woo's own
+		// loop sale flash would double them.
+		add_action(
+			'init',
+			static function (): void {
+				remove_action( 'woocommerce_before_shop_loop_item_title', 'woocommerce_show_product_loop_sale_flash', 10 );
+			},
+			20
+		);
+
+		// Every add feeds the "added to cart recently" strip counter.
+		add_action(
+			'woocommerce_add_to_cart',
+			static function ( $cart_item_key, $product_id ): void {
+				update_post_meta( $product_id, '_oc_atc_count', absint( get_post_meta( $product_id, '_oc_atc_count', true ) ) + 1 );
+			},
+			10,
+			2
+		);
 		add_action( 'woocommerce_after_shop_loop_item_title', array( $this, 'card_excerpt' ), 8 );
 
 		// One markup path for every card image mode, including 'single'.
@@ -490,8 +510,112 @@ final class WooCommerce {
 		}
 
 		$this->card_atc_icon();
+		$this->card_flags();
+		$this->card_strip();
 
 		echo '</div>';
+	}
+
+	/**
+	 * Corner labels on the card: the sale badge first, then stock and "new",
+	 * stacked on the configured side. The container always renders so the
+	 * colour-sibling swap has a stable home for the badge.
+	 */
+	private function card_flags(): void {
+		global $product;
+
+		$side  = 'right' === get_theme_mod( 'oc_labels_pos', 'left' ) ? 'right' : 'left';
+		$flags = '';
+
+		if ( $product->is_on_sale() ) {
+			$flags .= apply_filters( 'woocommerce_sale_flash', '<span class="onsale">' . esc_html__( 'Sale!', 'woocommerce' ) . '</span>', $product->get_id() ? get_post( $product->get_id() ) : null, $product );
+		}
+
+		if ( get_theme_mod( 'oc_label_stock', false ) ) {
+			$text = '';
+
+			if ( ! $product->is_in_stock() ) {
+				$text = (string) get_theme_mod( 'oc_label_stock_out', __( 'Out of stock', 'oc-theme' ) );
+			} elseif ( $product->managing_stock() && null !== $product->get_stock_quantity() ) {
+				$qty = (int) $product->get_stock_quantity();
+				$low = (int) wc_get_low_stock_amount( $product );
+
+				if ( 1 === $qty ) {
+					$text = (string) get_theme_mod( 'oc_label_stock_last', __( 'Last one in stock', 'oc-theme' ) );
+				} elseif ( $qty <= $low * 2 ) {
+					$text = (string) get_theme_mod( 'oc_label_stock_low', __( 'Last items in stock', 'oc-theme' ) );
+				}
+			}
+
+			if ( '' !== $text ) {
+				$flags .= sprintf(
+					'<span class="oc-flag" style="%s">%s</span>',
+					esc_attr( self::flag_colors( 'oc_label_stock_bg', 'oc_label_stock_tx' ) ),
+					esc_html( $text )
+				);
+			}
+		}
+
+		if ( get_theme_mod( 'oc_label_new', false ) ) {
+			$days  = max( 1, absint( get_theme_mod( 'oc_label_new_days', 30 ) ) );
+			$since = get_post_time( 'U', true, $product->get_id() );
+
+			if ( $since && ( time() - (int) $since ) < $days * DAY_IN_SECONDS ) {
+				$flags .= sprintf(
+					'<span class="oc-flag" style="%s">%s</span>',
+					esc_attr( self::flag_colors( 'oc_label_new_bg', 'oc_label_new_tx' ) ),
+					esc_html( (string) get_theme_mod( 'oc_label_new_text', __( 'New', 'oc-theme' ) ) )
+				);
+			}
+		}
+
+		echo '<div class="oc-flags oc-flags--' . esc_attr( $side ) . '">' . $flags . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
+	}
+
+	/**
+	 * The full-width strip at the card's bottom: high demand / great choice,
+	 * fed by real sales and add-to-cart counters.
+	 */
+	private function card_strip(): void {
+		global $product;
+
+		if ( ! get_theme_mod( 'oc_label_strip', false ) ) {
+			return;
+		}
+
+		$sales = (int) $product->get_total_sales();
+		$adds  = absint( get_post_meta( $product->get_id(), '_oc_atc_count', true ) );
+		$text  = '';
+
+		if ( $sales >= max( 1, absint( get_theme_mod( 'oc_label_strip_buy_min', 10 ) ) ) ) {
+			$text = str_replace( '%d', (string) $sales, (string) get_theme_mod( 'oc_label_strip_buy_text', __( 'In demand! %d bought recently', 'oc-theme' ) ) );
+		} elseif ( $adds >= max( 1, absint( get_theme_mod( 'oc_label_strip_cart_min', 50 ) ) ) ) {
+			$text = str_replace( '%d', (string) $adds, (string) get_theme_mod( 'oc_label_strip_cart_text', __( 'Great choice! %d added to cart recently', 'oc-theme' ) ) );
+		}
+
+		if ( '' === $text ) {
+			return;
+		}
+
+		printf(
+			'<div class="oc-strip" style="%s">%s</div>',
+			esc_attr( self::flag_colors( 'oc_label_strip_bg', 'oc_label_strip_tx' ) ),
+			esc_html( $text )
+		);
+	}
+
+	/**
+	 * Inline colour declarations for a label, from a bg/tx setting pair.
+	 *
+	 * @param string $bg_key Background setting id.
+	 * @param string $tx_key Text-colour setting id.
+	 * @return string
+	 */
+	private static function flag_colors( string $bg_key, string $tx_key ): string {
+		$bg = (string) get_theme_mod( $bg_key, '' );
+		$tx = (string) get_theme_mod( $tx_key, '' );
+
+		return ( '' !== $bg ? '--flag-bg:' . $bg . ';' : '' ) . ( '' !== $tx ? '--flag-tx:' . $tx . ';' : '' );
 	}
 
 	/**
@@ -667,15 +791,32 @@ final class WooCommerce {
 			return '';
 		}
 
+		// Plain style: bare text at the sale-price size, no pill; colours
+		// from the label settings either way.
+		$plain = 'plain' === get_theme_mod( 'oc_sale_badge_style', 'badge' );
+		$class = 'onsale' . ( $plain ? ' oc-flag--plain' : '' );
+		$style = self::flag_colors( 'oc_sale_badge_bg', 'oc_sale_badge_tx' );
+
 		if ( 'percent' === $mode && $product instanceof \WC_Product ) {
 			$percent = $this->discount_percent( $product );
 
 			if ( $percent > 0 ) {
 				return sprintf(
-					'<span class="onsale oc-sale-percent">‎-%s%%</span>',
+					'<span class="%s oc-sale-percent" style="%s">‎-%s%%</span>',
+					esc_attr( $class ),
+					esc_attr( $style ),
 					esc_html( (string) $percent )
 				);
 			}
+		}
+
+		if ( '' !== $style || $plain ) {
+			return sprintf(
+				'<span class="%s" style="%s">%s</span>',
+				esc_attr( $class ),
+				esc_attr( $style ),
+				esc_html( wp_strip_all_tags( (string) $html ) )
+			);
 		}
 
 		return (string) $html;

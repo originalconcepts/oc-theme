@@ -52,6 +52,7 @@ final class Customizer {
 		$this->card_section( $wp_customize, $shop_panel );
 		$this->product_section( $wp_customize, $shop_panel );
 		$this->swatches_section( $wp_customize, $shop_panel );
+		$this->labels_section( $wp_customize, $shop_panel );
 	}
 
 	/**
@@ -779,10 +780,44 @@ final class Customizer {
 			'none'
 		);
 
+		$this->toggle( $c, 'oc_card_excerpt', 'oc_card', __( 'Show short description', 'oc-theme' ), false );
+	}
+
+	/**
+	 * Labels: everything that rides the catalogue card — sale badge, stock
+	 * labels, "new", and the bottom strip — in one place.
+	 *
+	 * @param \WP_Customize_Manager $c     Customizer manager.
+	 * @param string                $panel Parent panel id.
+	 */
+	private function labels_section( \WP_Customize_Manager $c, string $panel ): void {
+		$c->add_section(
+			'oc_labels',
+			array(
+				'title'    => __( 'Labels', 'oc-theme' ),
+				'panel'    => $panel,
+				'priority' => 12,
+			)
+		);
+
+		$this->choice(
+			$c,
+			'oc_labels_pos',
+			'oc_labels',
+			__( 'Labels side', 'oc-theme' ),
+			array(
+				'left'  => __( 'Left', 'oc-theme' ),
+				'right' => __( 'Right', 'oc-theme' ),
+			),
+			'left'
+		);
+
+		$this->heading( $c, 'oc_h_lbl_sale', 'oc_labels', __( 'Sale badge', 'oc-theme' ) );
+
 		$this->choice(
 			$c,
 			'oc_card_sale_badge',
-			'oc_card',
+			'oc_labels',
 			__( 'Sale badge', 'oc-theme' ),
 			array(
 				'none'    => __( 'None', 'oc-theme' ),
@@ -792,7 +827,47 @@ final class Customizer {
 			'percent'
 		);
 
-		$this->toggle( $c, 'oc_card_excerpt', 'oc_card', __( 'Show short description', 'oc-theme' ), false );
+		$this->choice(
+			$c,
+			'oc_sale_badge_style',
+			'oc_labels',
+			__( 'Sale badge style', 'oc-theme' ),
+			array(
+				'badge' => __( 'Badge', 'oc-theme' ),
+				'plain' => __( 'Text only, no background', 'oc-theme' ),
+			),
+			'badge'
+		);
+
+		$this->color( $c, 'oc_sale_badge_bg', 'oc_labels', __( 'Sale badge background', 'oc-theme' ) );
+		$this->color( $c, 'oc_sale_badge_tx', 'oc_labels', __( 'Sale badge text colour', 'oc-theme' ) );
+
+		$this->heading( $c, 'oc_h_lbl_stock', 'oc_labels', __( 'Stock labels', 'oc-theme' ) );
+
+		$this->toggle( $c, 'oc_label_stock', 'oc_labels', __( 'Show stock labels', 'oc-theme' ), false );
+		$this->text( $c, 'oc_label_stock_last', 'oc_labels', __( 'Last-one text', 'oc-theme' ) );
+		$this->text( $c, 'oc_label_stock_low', 'oc_labels', __( 'Last-items text', 'oc-theme' ) );
+		$this->text( $c, 'oc_label_stock_out', 'oc_labels', __( 'Out-of-stock text', 'oc-theme' ) );
+		$this->color( $c, 'oc_label_stock_bg', 'oc_labels', __( 'Stock label background', 'oc-theme' ) );
+		$this->color( $c, 'oc_label_stock_tx', 'oc_labels', __( 'Stock label text colour', 'oc-theme' ) );
+
+		$this->heading( $c, 'oc_h_lbl_new', 'oc_labels', __( '"New" label', 'oc-theme' ) );
+
+		$this->toggle( $c, 'oc_label_new', 'oc_labels', __( 'Show the "new" label', 'oc-theme' ), false );
+		$this->number( $c, 'oc_label_new_days', 'oc_labels', __( 'How long a product counts as new (days)', 'oc-theme' ), 30, 1, 365 );
+		$this->text( $c, 'oc_label_new_text', 'oc_labels', __( '"New" text', 'oc-theme' ) );
+		$this->color( $c, 'oc_label_new_bg', 'oc_labels', __( '"New" background', 'oc-theme' ) );
+		$this->color( $c, 'oc_label_new_tx', 'oc_labels', __( '"New" text colour', 'oc-theme' ) );
+
+		$this->heading( $c, 'oc_h_lbl_strip', 'oc_labels', __( 'Bottom strip', 'oc-theme' ) );
+
+		$this->toggle( $c, 'oc_label_strip', 'oc_labels', __( 'Show the bottom strip', 'oc-theme' ), false );
+		$this->number( $c, 'oc_label_strip_buy_min', 'oc_labels', __( 'Show "in demand" from this many purchases', 'oc-theme' ), 10, 1, 10000 );
+		$this->text( $c, 'oc_label_strip_buy_text', 'oc_labels', __( '"In demand" text (%d = the number)', 'oc-theme' ) );
+		$this->number( $c, 'oc_label_strip_cart_min', 'oc_labels', __( 'Show "great choice" from this many cart adds', 'oc-theme' ), 50, 1, 10000 );
+		$this->text( $c, 'oc_label_strip_cart_text', 'oc_labels', __( '"Great choice" text (%d = the number)', 'oc-theme' ) );
+		$this->color( $c, 'oc_label_strip_bg', 'oc_labels', __( 'Strip background', 'oc-theme' ) );
+		$this->color( $c, 'oc_label_strip_tx', 'oc_labels', __( 'Strip text colour', 'oc-theme' ) );
 	}
 
 	/**

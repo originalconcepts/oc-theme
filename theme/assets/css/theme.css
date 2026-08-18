@@ -2698,3 +2698,121 @@ body:not(.oc-no-lightbox) .oc-vslide.is-playing {
 
 /* Our stock line replaces Woo's availability text — no double stock talk. */
 .oc-stockline-on.single-product div.product p.stock { display: none; }
+
+/* ---------- card labels ---------- */
+
+/* The labels column rides the configured corner; the sale badge docks
+ * inside it, above the stock and "new" labels. */
+.oc-flags {
+	position: absolute;
+	top: 10px;
+	z-index: 3;
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	pointer-events: none;
+}
+
+.oc-flags--left { left: 10px; align-items: flex-start; }
+.oc-flags--right { right: 10px; align-items: flex-end; }
+
+.woocommerce ul.products li.product .oc-flags .onsale,
+.oc-flags .onsale {
+	position: static;
+	margin: 0;
+	inset: auto;
+}
+
+.oc-flag {
+	background: var(--flag-bg, #fff);
+	color: var(--flag-tx, #111);
+	font-size: .76rem;
+	font-weight: 600;
+	line-height: 1;
+	padding: .5em .8em;
+	border-radius: calc(var(--oc-radius, 8px) * .5);
+	box-shadow: 0 1px 6px rgb(0 0 0 / 8%);
+}
+
+/* Plain sale style: bare text at the sale-price size, not bold. */
+.oc-flags .onsale.oc-flag--plain,
+.woocommerce ul.products li.product .oc-flags .onsale.oc-flag--plain {
+	background: var(--flag-bg, transparent) !important;
+	color: var(--flag-tx, var(--oc-sale));
+	font-size: .92rem;
+	font-weight: 400;
+	padding: 0;
+	box-shadow: none;
+	border-radius: 0;
+	min-block-size: 0;
+	min-inline-size: 0;
+}
+
+/* Bottom strip: full card width, sitting on the image's lower edge. */
+.oc-strip {
+	position: absolute;
+	inset-inline: 0;
+	bottom: 0;
+	z-index: 3;
+	text-align: center;
+	font-size: .78rem;
+	line-height: 1.35;
+	padding: .55em .7em;
+	background: var(--flag-bg, #ede4da);
+	color: var(--flag-tx, #111);
+	pointer-events: none;
+}
+
+/* ---------- add-to-cart loader + quantity edge cases ---------- */
+
+/* Max-one products: Woo hands over a hidden input — no pill at all. */
+.woocommerce div.product form.cart div.quantity.hidden,
+.woocommerce div.product form.cart div.quantity.oc-qty-hidden { display: none; }
+
+/* The loader takes the button label until the add lands. */
+.woocommerce div.product form.cart .single_add_to_cart_button.is-loading {
+	color: transparent;
+	pointer-events: none;
+	position: relative;
+}
+
+.woocommerce div.product form.cart .single_add_to_cart_button.is-loading::after {
+	content: "";
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	inline-size: 20px;
+	block-size: 20px;
+	margin: -10px 0 0 -10px;
+	border: 2px solid rgb(255 255 255 / 35%);
+	border-top-color: #fff;
+	border-radius: 50%;
+	animation: oc-spin .7s linear infinite;
+}
+
+@keyframes oc-spin {
+	to { transform: rotate(360deg); }
+}
+
+/* Desktop only: the icon row tucks a touch closer to the button. */
+@media (min-width: 901px) {
+	.oc-atc-icons { margin-block-start: 6px; }
+}
+
+/* Touch devices: no CTA hover theatrics — a tap goes straight to the loader. */
+@media (hover: none) {
+	.woocommerce.oc-cta-hover-invert div.product form.cart .single_add_to_cart_button:hover,
+	.woocommerce.oc-cta-hover-sweep-ltr div.product form.cart .single_add_to_cart_button:hover,
+	.woocommerce.oc-cta-hover-sweep-rtl div.product form.cart .single_add_to_cart_button:hover {
+		background: var(--oc-cta);
+		color: #fff;
+	}
+
+	.oc-cta-hover-sweep-ltr .single_add_to_cart_button:hover::before {
+		transform: translateX(-102%);
+	}
+
+	.oc-cta-hover-sweep-rtl .single_add_to_cart_button:hover::before {
+		transform: translateX(102%);
+	}
+}

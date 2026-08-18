@@ -846,6 +846,108 @@ msgstr "פינות הכפתור"
 msgid "Round (pill)"
 msgstr "עגול (גלולה)"
 
+msgid "Labels"
+msgstr "תוויות"
+
+msgid "Labels side"
+msgstr "צד התוויות"
+
+msgid "Left"
+msgstr "שמאל"
+
+msgid "Right"
+msgstr "ימין"
+
+msgid "Sale badge style"
+msgstr "סגנון תווית המבצע"
+
+msgid "Badge"
+msgstr "תווית"
+
+msgid "Text only, no background"
+msgstr "טקסט בלבד, ללא רקע"
+
+msgid "Sale badge background"
+msgstr "רקע תווית המבצע"
+
+msgid "Sale badge text colour"
+msgstr "צבע טקסט תווית המבצע"
+
+msgid "Stock labels"
+msgstr "תוויות מלאי"
+
+msgid "Show stock labels"
+msgstr "הצגת תוויות מלאי"
+
+msgid "Last-one text"
+msgstr "טקסט \"אחרון במלאי\""
+
+msgid "Last-items text"
+msgstr "טקסט \"אחרונים במלאי\""
+
+msgid "Out-of-stock text"
+msgstr "טקסט \"אזל מהמלאי\""
+
+msgid "Stock label background"
+msgstr "רקע תווית מלאי"
+
+msgid "Stock label text colour"
+msgstr "צבע טקסט תווית מלאי"
+
+msgid "Last one in stock"
+msgstr "אחרון במלאי"
+
+msgid "\"New\" label"
+msgstr "תווית \"חדש\""
+
+msgid "Show the \"new\" label"
+msgstr "הצגת תווית \"חדש\""
+
+msgid "How long a product counts as new (days)"
+msgstr "כמה זמן מוצר נחשב חדש (ימים)"
+
+msgid "\"New\" text"
+msgstr "טקסט \"חדש\""
+
+msgid "\"New\" background"
+msgstr "רקע \"חדש\""
+
+msgid "\"New\" text colour"
+msgstr "צבע טקסט \"חדש\""
+
+msgid "New"
+msgstr "חדש"
+
+msgid "Bottom strip"
+msgstr "רצועה תחתונה"
+
+msgid "Show the bottom strip"
+msgstr "הצגת הרצועה התחתונה"
+
+msgid "Show \"in demand\" from this many purchases"
+msgstr "הצגת \"ביקוש גבוה\" החל מכמות רכישות"
+
+msgid "\"In demand\" text (%d = the number)"
+msgstr "טקסט \"ביקוש גבוה\" (‏%d = המספר)"
+
+msgid "Show \"great choice\" from this many cart adds"
+msgstr "הצגת \"בחירה מעולה\" החל מכמות הוספות לסל"
+
+msgid "\"Great choice\" text (%d = the number)"
+msgstr "טקסט \"בחירה מעולה\" (‏%d = המספר)"
+
+msgid "Strip background"
+msgstr "רקע הרצועה"
+
+msgid "Strip text colour"
+msgstr "צבע טקסט הרצועה"
+
+msgid "In demand! %d bought recently"
+msgstr "ביקוש גבוה! %d רכשו לאחרונה"
+
+msgid "Great choice! %d added to cart recently"
+msgstr "בחירה מעולה! %d הוסיפו לסל לאחרונה"
+
 msgid "Add-to-cart area"
 msgstr "אזור ההוספה לסל"
 

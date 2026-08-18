@@ -426,13 +426,19 @@
 		}
 
 		// Term swatches carry no badge data — the card keeps its own badge.
+		// The sale badge lives inside the card's labels container now.
 		if ( undefined !== item.dataset.badge ) {
 			var badge = li.querySelector( '.onsale' );
 			if ( badge ) {
 				badge.remove();
 			}
 			if ( item.dataset.badge ) {
-				li.insertAdjacentHTML( 'afterbegin', item.dataset.badge );
+				var flags = li.querySelector( '.oc-flags' );
+				if ( flags ) {
+					flags.insertAdjacentHTML( 'afterbegin', item.dataset.badge );
+				} else {
+					li.insertAdjacentHTML( 'afterbegin', item.dataset.badge );
+				}
 			}
 		}
 
@@ -1008,9 +1014,18 @@
 	/* ---------- quantity pill: minus / value / plus ---------- */
 
 	document.querySelectorAll( 'form.cart div.quantity' ).forEach( function ( box ) {
-		var input = box.querySelector( 'input.qty' );
+		var input = box.querySelector( 'input.qty, input[name="quantity"]' );
 
-		if ( ! input || box.querySelector( '.oc-qty-btn' ) ) {
+		// Max-one products get a HIDDEN quantity input from Woo — no pill,
+		// no phantom box squeezing the button off its line.
+		if ( ! input || 'hidden' === input.type ) {
+			if ( input && 'hidden' === input.type ) {
+				box.classList.add( 'oc-qty-hidden' );
+			}
+			return;
+		}
+
+		if ( box.querySelector( '.oc-qty-btn' ) ) {
 			return;
 		}
 
@@ -1041,6 +1056,17 @@
 
 		box.insertBefore( mk( 'minus', -1 ), input );
 		box.appendChild( mk( 'plus', 1 ) );
+	} );
+
+	/* ---------- add-to-cart: a loader takes the label until the add lands ---------- */
+
+	document.querySelectorAll( 'form.cart' ).forEach( function ( cartForm ) {
+		cartForm.addEventListener( 'submit', function () {
+			var btn = cartForm.querySelector( '.single_add_to_cart_button' );
+			if ( btn && ! btn.classList.contains( 'disabled' ) ) {
+				btn.classList.add( 'is-loading' );
+			}
+		} );
 	} );
 
 	/* ---------- lazy card videos ----------
