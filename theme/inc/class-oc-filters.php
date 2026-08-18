@@ -839,7 +839,7 @@ final class Filters {
 
 		echo '<script type="application/json" id="oc-flt-config">' . wp_json_encode( $config ) . '</script>';
 
-		$groups_html = $this->groups_html( $facets, $settings );
+		$groups_html = $this->groups_html( $facets, $settings, $layout );
 		$chips       = '<div class="oc-flt__chips" data-flt-chips hidden></div>';
 
 		$foot = '<div class="oc-flt__foot oc-flt__foot--m" data-flt-foot' . ( $state['any'] ? '' : ' hidden' ) . '><button type="button" class="oc-flt__apply" data-flt-close-apply>' . esc_html__( 'View results', 'oc-theme' ) . '</button></div>';
@@ -974,9 +974,13 @@ final class Filters {
 	 *
 	 * @param array<int,array<string,mixed>> $facets   Facet groups.
 	 * @param array<string,mixed>            $settings Settings.
+	 * @param string                         $layout   Active layout — the top
+	 *                                                 bar's dropdowns never
+	 *                                                 open by themselves.
 	 */
-	private function groups_html( array $facets, array $settings ): string {
-		$html = '';
+	private function groups_html( array $facets, array $settings, string $layout = 'sidebar' ): string {
+		$html       = '';
+		$allow_open = 'topbar' !== $layout;
 
 		foreach ( $facets as $group ) {
 			if ( 'instock' === $group['type'] ) {
@@ -1000,7 +1004,7 @@ final class Filters {
 				)
 			);
 
-			$html .= '<div class="oc-flt__group' . ( ! empty( $group['open'] ) ? ' is-open' : '' ) . '" data-flt-group="' . esc_attr( (string) $group['key'] ) . '">';
+			$html .= '<div class="oc-flt__group' . ( $allow_open && ! empty( $group['open'] ) ? ' is-open' : '' ) . '" data-flt-group="' . esc_attr( (string) $group['key'] ) . '">';
 			$html .= '<button type="button" class="oc-flt__title" data-flt-toggle>';
 			$html .= '<span>' . esc_html( (string) $group['title'] ) . '</span>';
 			$html .= '<em class="oc-flt__num" data-flt-num' . ( $active_count ? '' : ' hidden' ) . '>(' . absint( $active_count ) . ')</em>';
