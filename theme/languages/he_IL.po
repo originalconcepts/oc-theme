@@ -1300,5 +1300,11 @@ msgstr "צבע טקסט \"עדכנו אותי\" (ריק = לבן)"
 msgid "Sold-out products drop to the end"
 msgstr "מוצרים שאזלו מהמלאי יורדים לסוף הקטלוג"
 
-msgid "Rotate lead images — a daily quarter of the catalogue leads with a gallery shot"
-msgstr "תמונה ראשית מתחלפת — בכל יום רבע מהקטלוג מוצג עם תמונה אחרת מהגלריה"
+msgid "Lead image refresh"
+msgstr "רענון תמונה ראשית"
+
+msgid "Daily wave — a quarter of the catalogue rotates each day"
+msgstr "גל יומי — רבע מהקטלוג מתחלף בכל יום"
+
+msgid "Smart — products a visitor skipped return from a new angle"
+msgstr "חכם — מוצרים שהגולש דילג עליהם יחזרו מזווית אחרת"

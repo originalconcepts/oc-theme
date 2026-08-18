@@ -467,7 +467,7 @@ final class WooCommerce {
 	 * @return array<int,int>
 	 */
 	private function fresh_lead( array $ids, int $product_id ): array {
-		if ( count( $ids ) < 2 || ! get_theme_mod( 'oc_catalog_fresh', false ) ) {
+		if ( count( $ids ) < 2 || 'daily' !== (string) get_theme_mod( 'oc_catalog_fresh', 'off' ) ) {
 			return $ids;
 		}
 

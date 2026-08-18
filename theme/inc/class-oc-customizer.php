@@ -564,7 +564,19 @@ final class Customizer {
 		);
 
 		$this->toggle( $c, 'oc_catalog_oos_last', $section, __( 'Sold-out products drop to the end', 'oc-theme' ), false );
-		$this->toggle( $c, 'oc_catalog_fresh', $section, __( 'Rotate lead images — a daily quarter of the catalogue leads with a gallery shot', 'oc-theme' ), false );
+
+		$this->choice(
+			$c,
+			'oc_catalog_fresh',
+			$section,
+			__( 'Lead image refresh', 'oc-theme' ),
+			array(
+				'off'   => __( 'Off', 'oc-theme' ),
+				'daily' => __( 'Daily wave — a quarter of the catalogue rotates each day', 'oc-theme' ),
+				'smart' => __( 'Smart — products a visitor skipped return from a new angle', 'oc-theme' ),
+			),
+			'off'
+		);
 
 		$this->heading( $c, 'oc_h_cat_paging', $section, __( 'Loading & paging', 'oc-theme' ) );
 

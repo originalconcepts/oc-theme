@@ -530,6 +530,210 @@
 		item.setAttribute( 'aria-current', 'true' );
 	} );
 
+	/* ---------- smart lead-image refresh ----------
+	 * Never while the visitor is looking: each fresh render of the catalogue
+	 * gives ~20% of the products this browser saw-but-skipped a different
+	 * gallery shot as their lead. "Skipped" = the card sat in view for a
+	 * second and drew no gallery paging and no click. An alternate face that
+	 * is itself skipped twice gives way to the next shot; once every shot has
+	 * had its chance, the product returns to its own lead and rests.
+	 * Everything lives in this browser's localStorage — no server writes. */
+
+	( function () {
+		var Lf = window.ocL10n || {};
+		var grid = document.querySelector( 'ul.products' );
+
+		if ( 'smart' !== Lf.freshMode || ! grid ) {
+			return;
+		}
+
+		var ledger = {};
+		try {
+			ledger = JSON.parse( localStorage.getItem( 'ocFresh' ) || '{}' );
+			if ( ! ledger || 'object' !== typeof ledger ) {
+				ledger = {};
+			}
+		} catch ( e ) {
+			ledger = {};
+		}
+
+		// The on-show flag is per view, never carried over.
+		Object.keys( ledger ).forEach( function ( k ) {
+			delete ledger[ k ].sw;
+		} );
+
+		function saveLedger() {
+			var keys = Object.keys( ledger );
+			if ( keys.length > 300 ) {
+				keys.sort( function ( a, b ) {
+					return ( ledger[ a ].ts || 0 ) - ( ledger[ b ].ts || 0 );
+				} );
+				keys.slice( 0, keys.length - 300 ).forEach( function ( k ) {
+					delete ledger[ k ];
+				} );
+			}
+			try {
+				localStorage.setItem( 'ocFresh', JSON.stringify( ledger ) );
+			} catch ( e ) {}
+		}
+
+		function rec( pid ) {
+			if ( ! ledger[ pid ] ) {
+				ledger[ pid ] = { m: 0, i: 0, t: 0, sm: 0 };
+			}
+			ledger[ pid ].ts = Date.now();
+			return ledger[ pid ];
+		}
+
+		function cardPid( li ) {
+			return ( li.className.match( /post-(\d+)/ ) || [] )[ 1 ] || '';
+		}
+
+		function cardImgs( li ) {
+			return li.querySelectorAll( '.oc-card-media__item img' );
+		}
+
+		var cards = [].slice.call( grid.querySelectorAll( 'li.product' ) );
+
+		/* -- swap phase: a different face for ~20% of the skipped -- */
+		var candidates = cards.filter( function ( li ) {
+			var pid = cardPid( li );
+			var r = pid && ledger[ pid ];
+			var imgs = cardImgs( li );
+			return r && ! r.i && r.m >= 1 &&
+				imgs.length >= 2 && r.t < imgs.length - 1 &&
+				! li.querySelector( '.oc-card-media__item--video' );
+		} );
+
+		candidates.sort( function () {
+			return Math.random() - 0.5;
+		} );
+
+		candidates.slice( 0, Math.max( 2, Math.round( candidates.length * 0.2 ) ) ).forEach( function ( li ) {
+			var r = ledger[ cardPid( li ) ];
+			var imgs = cardImgs( li );
+			var alt = 1 + ( r.t % ( imgs.length - 1 ) );
+
+			// Swap the faces, not the DOM — arrows, swipe and the sibling
+			// colour swap keep working untouched.
+			[ 'src', 'srcset', 'alt' ].forEach( function ( attr ) {
+				var tmp = imgs[ 0 ].getAttribute( attr ) || '';
+				imgs[ 0 ].setAttribute( attr, imgs[ alt ].getAttribute( attr ) || '' );
+				imgs[ alt ].setAttribute( attr, tmp );
+			} );
+
+			r.sw = 1;
+		} );
+
+		/* -- seen: half the card, one full second -- */
+		var seen = {};
+		var judged = {};
+		var timers = {};
+
+		var freshIO = new IntersectionObserver( function ( entries ) {
+			entries.forEach( function ( entry ) {
+				var pid = cardPid( entry.target );
+				if ( ! pid ) {
+					return;
+				}
+				if ( entry.isIntersecting ) {
+					if ( ! timers[ pid ] ) {
+						timers[ pid ] = setTimeout( function () {
+							seen[ pid ] = 1;
+						}, 1000 );
+					}
+				} else if ( timers[ pid ] ) {
+					clearTimeout( timers[ pid ] );
+					delete timers[ pid ];
+				}
+			} );
+		}, { threshold: 0.5 } );
+
+		cards.forEach( function ( li ) {
+			freshIO.observe( li );
+		} );
+
+		/* -- interest: paging the card's gallery by any means, or a click.
+		 * A bare hover doesn't change the image in this card design, so per
+		 * the spec it counts for nothing. -- */
+		function interest( li ) {
+			var pid = cardPid( li );
+			if ( pid ) {
+				rec( pid ).i = 1;
+			}
+		}
+
+		cards.forEach( function ( li ) {
+			var strip = li.querySelector( '.oc-card-media__strip' );
+			if ( strip ) {
+				strip.addEventListener( 'scroll', function () {
+					interest( li );
+				}, { passive: true, once: true } );
+			}
+		} );
+
+		grid.addEventListener( 'click', function ( event ) {
+			var li = event.target.closest( 'li.product' );
+			if ( li ) {
+				interest( li );
+				flush();
+			}
+		} );
+
+		/* -- the verdict, once per card per view -- */
+		function flush() {
+			Object.keys( seen ).forEach( function ( pid ) {
+				if ( judged[ pid ] ) {
+					return;
+				}
+				judged[ pid ] = 1;
+
+				var r = rec( pid );
+				if ( r.i ) {
+					return;
+				}
+
+				r.m++;
+				if ( r.sw ) {
+					r.sm++;
+					// Two skipped showings for this alternate: next one.
+					if ( r.sm >= 2 ) {
+						r.t++;
+						r.sm = 0;
+					}
+				}
+			} );
+			saveLedger();
+		}
+
+		window.addEventListener( 'pagehide', flush );
+		document.addEventListener( 'visibilitychange', function () {
+			if ( 'hidden' === document.visibilityState ) {
+				flush();
+			}
+		} );
+
+		// Cards the infinite scroll appends later join the tracking (their
+		// swap chance comes on the next render, like everyone else's).
+		new MutationObserver( function ( muts ) {
+			muts.forEach( function ( mut ) {
+				[].forEach.call( mut.addedNodes, function ( node ) {
+					if ( 1 !== node.nodeType || ! node.matches || ! node.matches( 'li.product' ) ) {
+						return;
+					}
+					cards.push( node );
+					freshIO.observe( node );
+					var strip = node.querySelector( '.oc-card-media__strip' );
+					if ( strip ) {
+						strip.addEventListener( 'scroll', function () {
+							interest( node );
+						}, { passive: true, once: true } );
+					}
+				} );
+			} );
+		} ).observe( grid, { childList: true } );
+	} )();
+
 	/* ---------- card add-to-cart icon → cart drawer ---------- */
 
 	var drawer = document.querySelector( '[data-oc-cart-drawer]' );
