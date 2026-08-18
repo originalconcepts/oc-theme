@@ -1233,3 +1233,18 @@ msgstr "יש לבחור וריאציה קודם."
 
 msgid "Closes automatically in %d seconds"
 msgstr "נסגר אוטומטית בעוד %d שניות"
+
+msgid "Hi %s, we have good news!"
+msgstr "היי %s, יש לנו חדשות טובות!"
+
+msgid "Hi, we have good news!"
+msgstr "היי, יש לנו חדשות טובות!"
+
+msgid "You asked us to let you know when %s returns to stock."
+msgstr "ביקשת שנעדכן אותך כשהמוצר %s יחזור למלאי."
+
+msgid "It is back — available to order right now."
+msgstr "המוצר חזר והוא זמין לרכישה עכשיו."
+
+msgid "It sells fast, so it is worth hurrying."
+msgstr "המוצר נמכר מהר ולכן כדאי להזדרז."

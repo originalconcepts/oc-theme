@@ -271,8 +271,10 @@ final class Waitlist {
 	 *
 	 * @param string      $email  Subscriber address.
 	 * @param \WC_Product $target Product or variation that returned.
+	 * @param string      $person Recipient name when known — signups do not
+	 *                            collect one yet, so usually empty.
 	 */
-	private function send_email( string $email, \WC_Product $target ): bool {
+	private function send_email( string $email, \WC_Product $target, string $person = '' ): bool {
 		$name = $target->get_name();
 		$url  = (string) $target->get_permalink();
 
@@ -298,20 +300,28 @@ final class Waitlist {
 			? '<a href="' . esc_url( $home ) . '"><img src="' . esc_url( $logo ) . '" alt="' . esc_attr( $store ) . '" style="max-height:52px;max-width:200px;border:0;" /></a>'
 			: '<a href="' . esc_url( $home ) . '" style="font-size:20px;font-weight:bold;color:#111111;text-decoration:none;letter-spacing:.08em;">' . esc_html( $store ) . '</a>';
 
+		$greeting = '' !== $person
+			/* translators: %s: recipient name. */
+			? sprintf( __( 'Hi %s, we have good news!', 'oc-theme' ), $person )
+			: __( 'Hi, we have good news!', 'oc-theme' );
+
+		/* translators: %s: product name. */
+		$asked = sprintf( esc_html__( 'You asked us to let you know when %s returns to stock.', 'oc-theme' ), '<strong style="color:#111111;">' . esc_html( $name ) . '</strong>' );
+
 		$body =
 			'<div dir="' . ( is_rtl() ? 'rtl' : 'ltr' ) . '" style="background:#f6f6f4;margin:0;padding:36px 16px;">' .
 			'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;margin:0 auto;background:#ffffff;border-radius:16px;font-family:Arial,Helvetica,sans-serif;">' .
 			'<tr><td style="padding:32px 36px 4px;text-align:center;">' . $brand . '</td></tr>' .
 			'<tr><td style="padding:22px 36px 0;text-align:center;">' .
-			'<p style="margin:0 0 8px;font-size:12px;letter-spacing:.18em;color:#9a9a94;">' . esc_html__( 'GOOD NEWS', 'oc-theme' ) . '</p>' .
-			'<h1 style="margin:0;font-size:24px;color:#111111;">' . esc_html__( 'It is back in stock!', 'oc-theme' ) . '</h1>' .
+			'<h1 style="margin:0;font-size:24px;color:#111111;">' . esc_html( $greeting ) . '</h1>' .
+			'</td></tr>' .
+			'<tr><td style="padding:14px 36px 0;text-align:center;font-size:15px;line-height:1.9;color:#5a5a55;">' .
+			$asked . '<br />' .
+			esc_html__( 'It is back — available to order right now.', 'oc-theme' ) . '<br />' .
+			'<strong style="color:#111111;">' . esc_html__( 'It sells fast, so it is worth hurrying.', 'oc-theme' ) . '</strong>' .
 			'</td></tr>' .
 			'<tr><td style="padding:24px 36px 0;text-align:center;">' .
 			'<a href="' . esc_url( $url ) . '"><img src="' . esc_url( $image ) . '" alt="' . esc_attr( $name ) . '" width="360" style="width:100%;max-width:360px;border-radius:12px;border:0;" /></a>' .
-			'</td></tr>' .
-			'<tr><td style="padding:18px 36px 0;text-align:center;font-size:17px;font-weight:bold;color:#111111;">' . esc_html( $name ) . '</td></tr>' .
-			'<tr><td style="padding:10px 36px 0;text-align:center;font-size:14px;line-height:1.7;color:#5a5a55;">' .
-			esc_html__( 'The product you asked to follow is available again. Quantities may be limited — first come, first served.', 'oc-theme' ) .
 			'</td></tr>' .
 			'<tr><td style="padding:26px 36px 34px;text-align:center;">' .
 			'<a href="' . esc_url( $url ) . '" style="display:inline-block;background:' . esc_attr( $cta ) . ';color:#ffffff;text-decoration:none;font-weight:bold;font-size:15px;padding:15px 44px;border-radius:' . esc_attr( $radius ) . ';">' .
