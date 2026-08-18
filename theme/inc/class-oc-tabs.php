@@ -104,10 +104,13 @@ final class Tabs {
 		}
 
 		if ( ! empty( $settings['short_tab'] ) && $product instanceof \WC_Product && '' !== $product->get_short_description() ) {
+			$short_title       = __( 'Overview', 'oc-theme' );
 			$tabs['oc_short'] = array(
-				'title'    => __( 'Overview', 'oc-theme' ),
+				'title'    => $short_title,
 				'priority' => 1,
-				'callback' => static function () use ( $product ) {
+				'callback' => static function () use ( $product, $short_title ) {
+					// The heading feeds the accordion's title (CSS hides it).
+					echo '<h2>' . esc_html( $short_title ) . '</h2>';
 					echo '<div class="oc-tab-short">' . wp_kses_post( wpautop( do_shortcode( $product->get_short_description() ) ) ) . '</div>';
 				},
 			);
@@ -123,11 +126,14 @@ final class Tabs {
 				}
 
 				$content = (string) ( $tab['content'] ?? '' );
+				$title   = (string) $tab['title'];
 
 				$tabs[ 'oc_custom_' . $index ] = array(
-					'title'    => (string) $tab['title'],
+					'title'    => $title,
 					'priority' => (int) ( $tab['order'] ?? 30 ),
-					'callback' => static function () use ( $content ) {
+					'callback' => static function () use ( $content, $title ) {
+						// The heading feeds the accordion's title (CSS hides it).
+						echo '<h2>' . esc_html( $title ) . '</h2>';
 						echo '<div class="oc-tab-custom">' . wp_kses_post( wpautop( do_shortcode( $content ) ) ) . '</div>';
 					},
 				);
