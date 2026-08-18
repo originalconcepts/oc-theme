@@ -170,6 +170,7 @@ final class Assets {
 				'accountAlertsUrl' => is_user_logged_in() ? wc_get_endpoint_url( 'stock-alerts', '', wc_get_page_permalink( 'myaccount' ) ) : '',
 				'isLoggedIn'       => is_user_logged_in() ? 1 : 0,
 				'freshMode' => in_array( $fresh_mode, array( 'daily', 'smart' ), true ) ? $fresh_mode : 'off',
+				'fltInstock' => __( 'In stock only', 'oc-theme' ),
 				// The colour-sibling card swap rebuilds the sold-out pieces.
 				'oosFlagText'  => get_theme_mod( 'oc_label_stock', false ) ? (string) get_theme_mod( 'oc_label_stock_out', __( 'Out of stock', 'oc-theme' ) ) : '',
 				'oosFlagStyle' => WooCommerce::flag_colors( 'oc_label_stock_bg', 'oc_label_stock_tx' ),
