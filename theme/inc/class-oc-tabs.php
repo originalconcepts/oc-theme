@@ -695,7 +695,11 @@ final class Tabs {
 				var tpl = document.getElementById( 'oc-ptabs-template' );
 
 				function initRows() {
-					if ( ! window.wp || ! wp.editor || ! window.tinymce ) { return; }
+					// The editor scripts may still be loading — wait for them.
+					if ( ! window.wp || ! wp.editor || ! window.tinymce ) {
+						setTimeout( initRows, 200 );
+						return;
+					}
 					wrap.querySelectorAll( '.oc-pt-editor' ).forEach( function ( area ) {
 						if ( area.dataset.ready ) { return; }
 						area.dataset.ready = '1';
