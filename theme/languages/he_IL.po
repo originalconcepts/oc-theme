@@ -1623,3 +1623,18 @@ msgstr "החרגת מזהי מוצרים"
 
 msgid "Under the gallery"
 msgstr "מתחת לגלריה"
+
+msgid "About this item"
+msgstr "על הפריט"
+
+msgid "Tab title (empty = default)"
+msgstr "כותרת הטאב (ריק = ברירת מחדל)"
+
+msgid "Products"
+msgstr "מוצרים"
+
+msgid "Search products…"
+msgstr "חיפוש מוצרים…"
+
+msgid "Exclude products"
+msgstr "החרגת מוצרים"

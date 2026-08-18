@@ -1260,7 +1260,12 @@ body:not(.oc-no-lightbox) .woocommerce-product-gallery__image:not(.oc-vslide) im
 .oc-tabs-accordion .woocommerce-tabs .woocommerce-Tabs-panel {
 	display: block !important;
 	border-block-start: 1px solid var(--oc-line);
-	padding-block: 2px 10px;
+	padding-block: 0 6px;
+}
+
+/* No flash of open panels: everything hides until the accordion is built. */
+.oc-tabs-accordion .woocommerce-tabs:not(.oc-acc-init) .woocommerce-Tabs-panel {
+	display: none !important;
 }
 
 .oc-tabs-accordion .oc-acc-body > :first-child,
@@ -1273,12 +1278,12 @@ body:not(.oc-no-lightbox) .woocommerce-product-gallery__image:not(.oc-vslide) im
 	align-items: center;
 	justify-content: space-between;
 	inline-size: 100%;
-	padding-block: 14px;
+	padding-block: 12px;
 	background: none;
 	border: 0;
 	font: inherit;
 	font-weight: 500;
-	font-size: .98rem;
+	font-size: .95rem;
 	letter-spacing: .01em;
 	color: var(--oc-ink);
 	cursor: pointer;

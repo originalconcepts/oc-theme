@@ -1541,6 +1541,7 @@
 		// sites can carry .woocommerce-Tabs-panel markup of its own (it once
 		// produced an accordion head named "ui-id-1").
 		document.querySelectorAll( '.woocommerce-tabs .woocommerce-Tabs-panel' ).forEach( function ( panel, i ) {
+			panel.closest( '.woocommerce-tabs' ).classList.add( 'oc-acc-init' );
 			var heading = panel.querySelector( 'h2' );
 			var title = heading ? heading.textContent : '';
 

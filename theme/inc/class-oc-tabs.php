@@ -25,6 +25,7 @@ final class Tabs {
 	public function register(): void {
 		add_action( 'admin_menu', array( $this, 'menu' ), 55 );
 		add_action( 'admin_post_oc_tabs_save', array( $this, 'save_settings' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'admin_assets' ) );
 
 		add_filter( 'woocommerce_product_tabs', array( $this, 'tabs' ), 40 );
 		add_action( 'init', array( $this, 'placement' ) );
@@ -41,13 +42,15 @@ final class Tabs {
 		return wp_parse_args(
 			is_array( $saved ) ? $saved : array(),
 			array(
-				'short_tab'  => 0,
-				'short_open' => 0,
-				'desc_place' => 'tab',   // tab | below.
-				'desc_order' => 10,
-				'additional' => 1,
-				'add_order'  => 20,
-				'custom'     => array(),
+				'short_tab'   => 0,
+				'short_open'  => 0,
+				'short_title' => '',
+				'desc_place'  => 'tab',   // tab | below.
+				'desc_order'  => 10,
+				'desc_title'  => '',
+				'additional'  => 1,
+				'add_order'   => 20,
+				'custom'      => array(),
 			)
 		);
 	}
@@ -73,6 +76,31 @@ final class Tabs {
 		if ( 'below' === $settings['desc_place'] ) {
 			add_action( 'woocommerce_after_single_product_summary', array( $this, 'description_below' ), 12 );
 		}
+
+		if ( '' !== (string) $settings['desc_title'] ) {
+			add_filter(
+				'woocommerce_product_description_heading',
+				static function () use ( $settings ) {
+					return (string) $settings['desc_title'];
+				}
+			);
+		}
+	}
+
+	/**
+	 * Editor, media and product-search assets for the tabs screen only.
+	 *
+	 * @param string $hook Current admin page hook.
+	 */
+	public function admin_assets( $hook ): void {
+		if ( false === strpos( (string) $hook, self::MENU ) ) {
+			return;
+		}
+
+		wp_enqueue_editor();
+		wp_enqueue_media();
+		wp_enqueue_script( 'wc-enhanced-select' );
+		wp_enqueue_style( 'woocommerce_admin_styles' );
 	}
 
 	/**
@@ -101,10 +129,13 @@ final class Tabs {
 			unset( $tabs['description'] );
 		} elseif ( isset( $tabs['description'] ) ) {
 			$tabs['description']['priority'] = (int) $settings['desc_order'];
+			if ( '' !== (string) $settings['desc_title'] ) {
+				$tabs['description']['title'] = (string) $settings['desc_title'];
+			}
 		}
 
 		if ( ! empty( $settings['short_tab'] ) && $product instanceof \WC_Product && '' !== $product->get_short_description() ) {
-			$short_title       = __( 'Overview', 'oc-theme' );
+			$short_title       = '' !== (string) $settings['short_title'] ? (string) $settings['short_title'] : __( 'About this item', 'oc-theme' );
 			$tabs['oc_short'] = array(
 				'title'    => $short_title,
 				'priority' => 1,
@@ -296,13 +327,26 @@ final class Tabs {
 				<input type="hidden" name="action" value="oc_tabs_save" />
 				<?php wp_nonce_field( 'oc_tabs_save' ); ?>
 
+				<style>
+				/* checkbox → modern toggle, everywhere on this screen */
+				.oc-tgl { position: relative; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+				.oc-tgl input { appearance: none; -webkit-appearance: none; width: 36px; height: 20px; border-radius: 999px; background: #d0d0d0; margin: 0; position: relative; cursor: pointer; transition: background .18s ease; outline-offset: 2px; }
+				.oc-tgl input::before { content: ""; position: absolute; top: 2px; inset-inline-start: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgb(0 0 0 / .3); transition: translate .18s ease; }
+				.oc-tgl input:checked { background: #1c1c1c; }
+				.oc-tgl input:checked::before { translate: 16px 0; }
+				body.rtl .oc-tgl input:checked::before { translate: -16px 0; }
+				</style>
+
 				<h2><?php esc_html_e( 'Built-in tabs', 'oc-theme' ); ?></h2>
 				<table class="form-table" role="presentation">
 					<tr>
 						<th scope="row"><?php esc_html_e( 'Short description', 'oc-theme' ); ?></th>
 						<td>
-							<label><input type="checkbox" name="short_tab" value="1" <?php checked( 1, (int) $settings['short_tab'] ); ?> /> <?php esc_html_e( 'Show as the first tab (instead of in the summary)', 'oc-theme' ); ?></label><br />
-							<label style="margin-block-start:6px;display:inline-block;"><input type="checkbox" name="short_open" value="1" <?php checked( 1, (int) $settings['short_open'] ); ?> /> <?php esc_html_e( 'Open by default', 'oc-theme' ); ?></label>
+							<label class="oc-tgl"><input type="checkbox" name="short_tab" id="oc-short-tab" value="1" <?php checked( 1, (int) $settings['short_tab'] ); ?> /> <?php esc_html_e( 'Show as the first tab (instead of in the summary)', 'oc-theme' ); ?></label>
+							<span id="oc-short-extra" style="display:<?php echo $settings['short_tab'] ? 'inline-flex' : 'none'; ?>;gap:16px;align-items:center;margin-inline-start:18px;">
+								<label class="oc-tgl"><input type="checkbox" name="short_open" value="1" <?php checked( 1, (int) $settings['short_open'] ); ?> /> <?php esc_html_e( 'Open by default', 'oc-theme' ); ?></label>
+								<input type="text" name="short_title" value="<?php echo esc_attr( (string) $settings['short_title'] ); ?>" placeholder="<?php esc_attr_e( 'About this item', 'oc-theme' ); ?>" />
+							</span>
 						</td>
 					</tr>
 					<tr>
@@ -312,13 +356,14 @@ final class Tabs {
 								<option value="tab" <?php selected( 'tab', $settings['desc_place'] ); ?>><?php esc_html_e( 'Inside a tab', 'oc-theme' ); ?></option>
 								<option value="below" <?php selected( 'below', $settings['desc_place'] ); ?>><?php esc_html_e( 'Outside — below the tabs', 'oc-theme' ); ?></option>
 							</select>
+							<input type="text" name="desc_title" value="<?php echo esc_attr( (string) $settings['desc_title'] ); ?>" placeholder="<?php esc_attr_e( 'Tab title (empty = default)', 'oc-theme' ); ?>" style="margin-inline-start:10px;" />
 							<label style="margin-inline-start:12px;"><?php esc_html_e( 'Order', 'oc-theme' ); ?> <input type="number" name="desc_order" value="<?php echo esc_attr( (string) $settings['desc_order'] ); ?>" style="width:60px;" /></label>
 						</td>
 					</tr>
 					<tr>
 						<th scope="row"><?php esc_html_e( 'Additional information', 'oc-theme' ); ?></th>
 						<td>
-							<label><input type="checkbox" name="additional" value="1" <?php checked( 1, (int) $settings['additional'] ); ?> /> <?php esc_html_e( 'Show the attributes table', 'oc-theme' ); ?></label>
+							<label class="oc-tgl"><input type="checkbox" name="additional" value="1" <?php checked( 1, (int) $settings['additional'] ); ?> /> <?php esc_html_e( 'Show the attributes table', 'oc-theme' ); ?></label>
 							<label style="margin-inline-start:12px;"><?php esc_html_e( 'Order', 'oc-theme' ); ?> <input type="number" name="add_order" value="<?php echo esc_attr( (string) $settings['add_order'] ); ?>" style="width:60px;" /></label>
 						</td>
 					</tr>
@@ -347,16 +392,45 @@ final class Tabs {
 				( function () {
 					var wrap = document.getElementById( 'oc-tabs-rows' );
 					var tpl = document.getElementById( 'oc-tabs-template' );
+
+					function initRow( scope ) {
+						scope.querySelectorAll( '.oc-ct-editor' ).forEach( function ( area ) {
+							if ( area.dataset.ready || ! window.wp || ! wp.editor ) { return; }
+							area.dataset.ready = '1';
+							wp.editor.initialize( area.id, {
+								tinymce: { toolbar1: 'formatselect,bold,italic,underline,link,unlink,bullist,numlist,alignleft,aligncenter,alignright,image', height: 180 },
+								quicktags: true,
+								mediaButtons: true
+							} );
+						} );
+						if ( window.jQuery ) { jQuery( document.body ).trigger( 'wc-enhanced-select-init' ); }
+					}
+
+					initRow( wrap );
+
 					document.getElementById( 'oc-tabs-add' ).addEventListener( 'click', function () {
 						var index = Date.now();
 						var html = tpl.innerHTML.split( '__i__' ).join( index );
 						var box = document.createElement( 'div' );
 						box.innerHTML = html;
 						while ( box.firstChild ) { wrap.appendChild( box.firstChild ); }
+						initRow( wrap );
 					} );
+
 					wrap.addEventListener( 'click', function ( e ) {
 						var del = e.target.closest( '.oc-tab-remove' );
 						if ( del ) { del.closest( '.oc-tab-row' ).remove(); }
+					} );
+
+					// TinyMCE keeps content in its iframe — sync back on submit.
+					document.querySelector( 'form input[name=action][value=oc_tabs_save]' ).closest( 'form' ).addEventListener( 'submit', function () {
+						if ( window.tinymce ) { tinymce.triggerSave(); }
+					} );
+
+					var shortTab = document.getElementById( 'oc-short-tab' );
+					var shortExtra = document.getElementById( 'oc-short-extra' );
+					shortTab.addEventListener( 'change', function () {
+						shortExtra.style.display = shortTab.checked ? 'inline-flex' : 'none';
 					} );
 				} )();
 				</script>
@@ -380,12 +454,12 @@ final class Tabs {
 		?>
 		<div class="oc-tab-row card" style="max-width:880px;padding:12px 20px 16px;margin-block-end:14px;">
 			<p style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;">
-				<label><input type="checkbox" name="ct_on[<?php echo esc_attr( (string) $i ); ?>]" value="1" <?php checked( 1, (int) ( $row['on'] ?? 1 ) ); ?> /> <?php esc_html_e( 'Active', 'oc-theme' ); ?></label>
+				<label class="oc-tgl"><input type="checkbox" name="ct_on[<?php echo esc_attr( (string) $i ); ?>]" value="1" <?php checked( 1, (int) ( $row['on'] ?? 1 ) ); ?> /> <?php esc_html_e( 'Active', 'oc-theme' ); ?></label>
 				<label><?php esc_html_e( 'Order', 'oc-theme' ); ?> <input type="number" name="ct_order[<?php echo esc_attr( (string) $i ); ?>]" value="<?php echo esc_attr( (string) ( $row['order'] ?? 30 ) ); ?>" style="width:60px;" /></label>
 				<input type="text" name="ct_title[<?php echo esc_attr( (string) $i ); ?>]" value="<?php echo esc_attr( (string) ( $row['title'] ?? '' ) ); ?>" placeholder="<?php esc_attr_e( 'Tab title', 'oc-theme' ); ?>" class="regular-text" />
 				<button type="button" class="button-link-delete oc-tab-remove" style="margin-inline-start:auto;"><?php esc_html_e( 'Remove', 'oc-theme' ); ?></button>
 			</p>
-			<textarea name="ct_content[<?php echo esc_attr( (string) $i ); ?>]" rows="4" style="width:100%;" placeholder="<?php esc_attr_e( 'Tab content — text, HTML and shortcodes', 'oc-theme' ); ?>"><?php echo esc_textarea( (string) ( $row['content'] ?? '' ) ); ?></textarea>
+			<textarea name="ct_content[<?php echo esc_attr( (string) $i ); ?>]" id="oc-ct-content-<?php echo esc_attr( (string) $i ); ?>" class="oc-ct-editor" rows="6" style="width:100%;" placeholder="<?php esc_attr_e( 'Tab content — text, HTML and shortcodes', 'oc-theme' ); ?>"><?php echo esc_textarea( (string) ( $row['content'] ?? '' ) ); ?></textarea>
 			<p style="display:flex;gap:14px;flex-wrap:wrap;align-items:flex-start;margin-block-end:0;">
 				<label><?php esc_html_e( 'Shown on', 'oc-theme' ); ?><br />
 					<select name="ct_scope[<?php echo esc_attr( (string) $i ); ?>]">
@@ -395,8 +469,15 @@ final class Tabs {
 						<option value="attributes" <?php selected( 'attributes', $scope ); ?>><?php esc_html_e( 'Specific attributes', 'oc-theme' ); ?></option>
 					</select>
 				</label>
-				<label><?php esc_html_e( 'Product IDs (comma-separated)', 'oc-theme' ); ?><br />
-					<input type="text" name="ct_ids[<?php echo esc_attr( (string) $i ); ?>]" value="<?php echo esc_attr( (string) ( $row['ids'] ?? '' ) ); ?>" dir="ltr" />
+				<label style="min-width:230px;"><?php esc_html_e( 'Products', 'oc-theme' ); ?><br />
+					<select class="wc-product-search" multiple style="width:230px;" name="ct_ids[<?php echo esc_attr( (string) $i ); ?>][]" data-placeholder="<?php esc_attr_e( 'Search products…', 'oc-theme' ); ?>" data-action="woocommerce_json_search_products_and_variations">
+						<?php foreach ( array_filter( array_map( 'absint', explode( ',', (string) ( $row['ids'] ?? '' ) ) ) ) as $pid ) : ?>
+							<?php $p_obj = wc_get_product( $pid ); ?>
+							<?php if ( $p_obj ) : ?>
+								<option value="<?php echo absint( $pid ); ?>" selected><?php echo esc_html( $p_obj->get_name() . ' (#' . $pid . ')' ); ?></option>
+							<?php endif; ?>
+						<?php endforeach; ?>
+					</select>
 				</label>
 				<label><?php esc_html_e( 'Categories', 'oc-theme' ); ?><br />
 					<select name="ct_cats[<?php echo esc_attr( (string) $i ); ?>][]" multiple size="4">
@@ -419,8 +500,15 @@ final class Tabs {
 						<?php endforeach; ?>
 					</select>
 				</label>
-				<label><?php esc_html_e( 'Exclude product IDs', 'oc-theme' ); ?><br />
-					<input type="text" name="ct_ex_ids[<?php echo esc_attr( (string) $i ); ?>]" value="<?php echo esc_attr( (string) ( $row['ex_ids'] ?? '' ) ); ?>" dir="ltr" />
+				<label style="min-width:230px;"><?php esc_html_e( 'Exclude products', 'oc-theme' ); ?><br />
+					<select class="wc-product-search" multiple style="width:230px;" name="ct_ex_ids[<?php echo esc_attr( (string) $i ); ?>][]" data-placeholder="<?php esc_attr_e( 'Search products…', 'oc-theme' ); ?>" data-action="woocommerce_json_search_products_and_variations">
+						<?php foreach ( array_filter( array_map( 'absint', explode( ',', (string) ( $row['ex_ids'] ?? '' ) ) ) ) as $pid ) : ?>
+							<?php $p_obj = wc_get_product( $pid ); ?>
+							<?php if ( $p_obj ) : ?>
+								<option value="<?php echo absint( $pid ); ?>" selected><?php echo esc_html( $p_obj->get_name() . ' (#' . $pid . ')' ); ?></option>
+							<?php endif; ?>
+						<?php endforeach; ?>
+					</select>
 				</label>
 			</p>
 		</div>
@@ -453,24 +541,26 @@ final class Tabs {
 				'title'   => $title,
 				'content' => $body,
 				'scope'   => in_array( $_POST['ct_scope'][ $i ] ?? 'all', array( 'all', 'products', 'categories', 'attributes' ), true ) ? sanitize_key( $_POST['ct_scope'][ $i ] ) : 'all',
-				'ids'     => sanitize_text_field( wp_unslash( (string) ( $_POST['ct_ids'][ $i ] ?? '' ) ) ),
+				'ids'     => implode( ',', array_filter( array_map( 'absint', (array) ( $_POST['ct_ids'][ $i ] ?? array() ) ) ) ),
 				'cats'    => array_values( array_filter( array_map( 'absint', (array) ( $_POST['ct_cats'][ $i ] ?? array() ) ) ) ),
 				'attrs'   => array_values( array_filter( array_map( 'absint', (array) ( $_POST['ct_attrs'][ $i ] ?? array() ) ) ) ),
 				'ex_cats' => array_values( array_filter( array_map( 'absint', (array) ( $_POST['ct_ex_cats'][ $i ] ?? array() ) ) ) ),
-				'ex_ids'  => sanitize_text_field( wp_unslash( (string) ( $_POST['ct_ex_ids'][ $i ] ?? '' ) ) ),
+				'ex_ids'  => implode( ',', array_filter( array_map( 'absint', (array) ( $_POST['ct_ex_ids'][ $i ] ?? array() ) ) ) ),
 			);
 		}
 
 		update_option(
 			'oc_tabs',
 			array(
-				'short_tab'  => empty( $_POST['short_tab'] ) ? 0 : 1,
-				'short_open' => empty( $_POST['short_open'] ) ? 0 : 1,
-				'desc_place' => 'below' === ( $_POST['desc_place'] ?? 'tab' ) ? 'below' : 'tab',
-				'desc_order' => (int) ( $_POST['desc_order'] ?? 10 ),
-				'additional' => empty( $_POST['additional'] ) ? 0 : 1,
-				'add_order'  => (int) ( $_POST['add_order'] ?? 20 ),
-				'custom'     => $custom,
+				'short_tab'   => empty( $_POST['short_tab'] ) ? 0 : 1,
+				'short_open'  => empty( $_POST['short_open'] ) ? 0 : 1,
+				'short_title' => sanitize_text_field( wp_unslash( (string) ( $_POST['short_title'] ?? '' ) ) ),
+				'desc_place'  => 'below' === ( $_POST['desc_place'] ?? 'tab' ) ? 'below' : 'tab',
+				'desc_order'  => (int) ( $_POST['desc_order'] ?? 10 ),
+				'desc_title'  => sanitize_text_field( wp_unslash( (string) ( $_POST['desc_title'] ?? '' ) ) ),
+				'additional'  => empty( $_POST['additional'] ) ? 0 : 1,
+				'add_order'   => (int) ( $_POST['add_order'] ?? 20 ),
+				'custom'      => $custom,
 			),
 			false
 		);
