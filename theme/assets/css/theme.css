@@ -3489,7 +3489,7 @@ html[dir="rtl"] { --oc-dir: -1; }
 }
 
 body.oc-flt-m-open .oc-flt--drawer { transform: none; }
-body.oc-flt-m-open .oc-flt__overlay[hidden] { display: block; }
+body.oc-flt-m-open .oc-flt__overlay[hidden]:not(.oc-sortsheet__overlay) { display: block; }
 .oc-flt--drawer[hidden] { display: block; visibility: hidden; }
 body.oc-flt-m-open .oc-flt--drawer[hidden] { visibility: visible; }
 
@@ -3849,4 +3849,16 @@ body.oc-sort-open .oc-sortsheet__overlay[hidden] { display: block; }
 		background: #fff;
 		padding-block: 14px;
 	}
+}
+
+/* The badge hides honestly at zero; mobile panel rows span full width. */
+.oc-flt__badge[hidden] { display: none !important; }
+
+@media (max-width: 900px) {
+	.oc-flt--side,
+	.oc-flt--top,
+	.oc-flt--drawer { align-items: stretch; }
+
+	.oc-flt--top .oc-flt__group,
+	.oc-flt--top .oc-flt__group--stock { inline-size: 100%; }
 }
