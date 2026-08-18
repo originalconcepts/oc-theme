@@ -176,7 +176,11 @@ final class Tabs {
 			}
 
 			// This product's own tabs, saved on its edit screen.
-			foreach ( (array) $product->get_meta( '_oc_product_tabs' ) as $index => $tab ) {
+			$own = $product->get_meta( '_oc_product_tabs' );
+			foreach ( ( is_array( $own ) ? $own : array() ) as $index => $tab ) {
+				if ( ! is_array( $tab ) ) {
+					continue;
+				}
 				$title   = (string) ( $tab['title'] ?? '' );
 				$content = (string) ( $tab['content'] ?? '' );
 
@@ -665,7 +669,8 @@ final class Tabs {
 	public function product_data_panel(): void {
 		global $post;
 
-		$rows = array_values( (array) get_post_meta( (int) $post->ID, '_oc_product_tabs', true ) );
+		$saved = get_post_meta( (int) $post->ID, '_oc_product_tabs', true );
+		$rows  = is_array( $saved ) ? array_values( array_filter( $saved, 'is_array' ) ) : array();
 		?>
 		<div id="oc_product_tabs_data" class="panel woocommerce_options_panel hidden">
 			<div style="padding:12px 14px 4px;">
