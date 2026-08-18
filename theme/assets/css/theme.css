@@ -2465,6 +2465,16 @@ body:not(.oc-no-lightbox) .oc-vslide.is-playing {
 /* CTA colour derives from its own setting, falling back to the primary. */
 :root { --oc-cta: var(--oc-cta-user, var(--oc-primary)); }
 
+/* Woo's clearfix pseudos become phantom flex items (a 0-width ::before
+ * plus the row gap shifted the button 10px off the stock line). Gone. */
+.woocommerce div.product form.cart::before,
+.woocommerce div.product form.cart::after,
+.woocommerce div.product form.cart .woocommerce-variation-add-to-cart::before,
+.woocommerce div.product form.cart .woocommerce-variation-add-to-cart::after {
+	content: none;
+	display: none;
+}
+
 /* One row: quantity pill at the start, the button filling the rest. The
  * stock line and variation bits span their own full lines. */
 .woocommerce div.product form.cart {
