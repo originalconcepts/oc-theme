@@ -4135,3 +4135,12 @@ body.oc-flt-drawer .woocommerce-result-count { display: none; }
 		z-index: 89;
 	}
 }
+
+/* chips can carry the value's swatch — with the name, or the dot alone */
+.oc-flt__chip .oc-flt__swatch {
+	inline-size: 18px;
+	block-size: 18px;
+	padding: 1px;
+}
+
+.oc-flt__chip--dot { padding: 5px 10px; }

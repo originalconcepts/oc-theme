@@ -1659,3 +1659,18 @@ msgstr "מיקום"
 
 msgid "Tabs for this product only — they join the global tabs. A lower position number appears earlier: description 10, additional information 20."
 msgstr "טאבים למוצר הזה בלבד — הם מצטרפים לטאבים הכלליים. מספר מיקום נמוך יותר מופיע מוקדם יותר: תיאור 10, מידע נוסף 20."
+
+msgid "Chips of swatch values"
+msgstr "צ׳יפים של ערכי דוגמית"
+
+msgid "Name only"
+msgstr "שם בלבד"
+
+msgid "Swatch and name"
+msgstr "דוגמית עם השם"
+
+msgid "Swatch only"
+msgstr "דוגמית בלבד"
+
+msgid "How a chosen value of a swatch attribute (colour, material) shows in the chips row."
+msgstr "איך ערך נבחר של תכונת דוגמית (צבע, חומר) מוצג בשורת הצ׳יפים."

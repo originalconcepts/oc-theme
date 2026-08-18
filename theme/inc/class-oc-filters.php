@@ -80,6 +80,7 @@ final class Filters {
 				'layout'       => 'sidebar',   // sidebar | topbar | drawer.
 				'topbar_style' => 'drop',      // drop | full.
 				'choice'       => 'check',     // check | dot.
+				'chip_swatch'  => 'off',       // off | both | only.
 				'counts'       => 1,
 				'empty'        => 'gray',      // gray | hide.
 				'instock'      => 1,
@@ -1161,6 +1162,7 @@ final class Filters {
 			'topbar'   => (string) $settings['topbar_style'],
 			'choice'   => (string) $settings['choice'],
 			'counts'   => (int) $settings['counts'],
+			'chipSwatch' => (string) $settings['chip_swatch'],
 			'empty'    => (string) $settings['empty'],
 			'currency' => html_entity_decode( get_woocommerce_currency_symbol(), ENT_QUOTES, 'UTF-8' ),
 		);
@@ -1790,6 +1792,17 @@ final class Filters {
 						</td>
 					</tr>
 					<tr>
+						<th scope="row"><label for="oc-flt-chipsw"><?php esc_html_e( 'Chips of swatch values', 'oc-theme' ); ?></label></th>
+						<td>
+							<select name="chip_swatch" id="oc-flt-chipsw">
+								<option value="off" <?php selected( 'off', $settings['chip_swatch'] ); ?>><?php esc_html_e( 'Name only', 'oc-theme' ); ?></option>
+								<option value="both" <?php selected( 'both', $settings['chip_swatch'] ); ?>><?php esc_html_e( 'Swatch and name', 'oc-theme' ); ?></option>
+								<option value="only" <?php selected( 'only', $settings['chip_swatch'] ); ?>><?php esc_html_e( 'Swatch only', 'oc-theme' ); ?></option>
+							</select>
+							<p class="description"><?php esc_html_e( 'How a chosen value of a swatch attribute (colour, material) shows in the chips row.', 'oc-theme' ); ?></p>
+						</td>
+					</tr>
+					<tr>
 						<th scope="row"><?php esc_html_e( 'Counts', 'oc-theme' ); ?></th>
 						<td><label><input type="checkbox" name="counts" value="1" <?php checked( 1, (int) $settings['counts'] ); ?> /> <?php esc_html_e( 'Show the number of items next to each value', 'oc-theme' ); ?></label></td>
 					</tr>
@@ -1977,6 +1990,7 @@ final class Filters {
 				'layout'       => in_array( $_POST['layout'] ?? '', array( 'sidebar', 'topbar', 'drawer' ), true ) ? sanitize_key( $_POST['layout'] ) : 'sidebar',
 				'topbar_style' => 'full' === ( $_POST['topbar_style'] ?? '' ) ? 'full' : 'drop',
 				'choice'       => 'dot' === ( $_POST['choice'] ?? '' ) ? 'dot' : 'check',
+				'chip_swatch'  => in_array( $_POST['chip_swatch'] ?? '', array( 'both', 'only' ), true ) ? sanitize_key( $_POST['chip_swatch'] ) : 'off',
 				'counts'       => empty( $_POST['counts'] ) ? 0 : 1,
 				'empty'        => 'hide' === ( $_POST['empty'] ?? '' ) ? 'hide' : 'gray',
 				'instock'      => empty( $_POST['instock'] ) ? 0 : 1,

@@ -1209,14 +1209,31 @@
 			} );
 			var any = false;
 
-			function chip( label, remove ) {
+			function chip( label, remove, swatchStyle ) {
+				var mode = cfg.chipSwatch || 'off';
+				var only = swatchStyle && 'only' === mode;
 				any = true;
 				wraps.forEach( function ( w ) {
 					var b = document.createElement( 'button' );
 					b.type = 'button';
-					b.className = 'oc-flt__chip';
-					b.innerHTML = '<span></span><i aria-hidden="true">&times;</i>';
-					b.querySelector( 'span' ).textContent = label;
+					b.className = 'oc-flt__chip' + ( only ? ' oc-flt__chip--dot' : '' );
+					if ( swatchStyle ) {
+						var dot = document.createElement( 'i' );
+						dot.className = 'oc-flt__swatch';
+						dot.setAttribute( 'style', swatchStyle );
+						b.appendChild( dot );
+					}
+					if ( ! only ) {
+						var text = document.createElement( 'span' );
+						text.textContent = label;
+						b.appendChild( text );
+					}
+					b.setAttribute( 'aria-label', label );
+					var x = document.createElement( 'i' );
+					x.className = 'oc-flt__x';
+					x.setAttribute( 'aria-hidden', 'true' );
+					x.innerHTML = '&times;';
+					b.appendChild( x );
 					b.addEventListener( 'click', remove );
 					w.appendChild( b );
 				} );
@@ -1230,13 +1247,14 @@
 				}
 				list.slice().forEach( function ( v ) {
 					var btn = groupEl.querySelector( '[data-flt-val="' + v + '"]' );
+					var swatch = 'off' !== ( cfg.chipSwatch || 'off' ) && btn ? btn.querySelector( '.oc-flt__swatch' ) : null;
 					chip( btn ? btn.dataset.label : v, function () {
 						var idx = list.indexOf( v );
 						if ( idx > -1 ) {
 							list.splice( idx, 1 );
 						}
 						apply();
-					} );
+					}, swatch ? swatch.getAttribute( 'style' ) : null );
 				} );
 			} );
 
