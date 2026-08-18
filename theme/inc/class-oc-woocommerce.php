@@ -57,6 +57,11 @@ final class WooCommerce {
 		add_filter( 'woocommerce_breadcrumb_defaults', array( $this, 'breadcrumb_defaults' ) );
 		add_filter( 'body_class', array( $this, 'body_class' ) );
 		add_filter( 'woocommerce_sale_flash', array( $this, 'sale_badge' ), 10, 3 );
+
+		// The add-to-cart area: a stock line above the button, icon rows
+		// below the form.
+		add_action( 'woocommerce_before_add_to_cart_button', array( $this, 'stock_line' ) );
+		add_action( 'woocommerce_after_add_to_cart_form', array( $this, 'atc_icons' ) );
 		add_action( 'woocommerce_after_shop_loop_item_title', array( $this, 'card_excerpt' ), 8 );
 
 		// One markup path for every card image mode, including 'single'.
@@ -352,6 +357,12 @@ final class WooCommerce {
 			$classes[] = 'oc-swatch-square-cat';
 		}
 
+		$classes[] = 'oc-cta-hover-' . sanitize_html_class( (string) get_theme_mod( 'oc_cta_hover', 'none' ) );
+
+		if ( ! get_theme_mod( 'oc_atc_qty', true ) ) {
+			$classes[] = 'oc-no-qty';
+		}
+
 		if ( is_product() ) {
 			$classes[] = 'oc-gallery-' . sanitize_html_class( (string) get_theme_mod( 'oc_gallery_preset', 'thumbs-side' ) );
 			$classes[] = 'oc-side-' . sanitize_html_class( (string) get_theme_mod( 'oc_product_layout_side', 'gallery-start' ) );
@@ -505,6 +516,115 @@ final class WooCommerce {
 			'<svg class="oc-card-atc__cart" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.6"/><circle cx="17" cy="20" r="1.6"/><path d="M3 3h2.5l2.2 11.2a1.6 1.6 0 0 0 1.6 1.3h7.6a1.6 1.6 0 0 0 1.6-1.3L20 7H6"/></svg>' .
 			'<svg class="oc-card-atc__check" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 12.5l5 5 10-11"/></svg>'
 		);
+	}
+
+	/**
+	 * The stock line above the add-to-cart button: a note at the start, the
+	 * status with its colour dot at the far end.
+	 */
+	public function stock_line(): void {
+		if ( ! get_theme_mod( 'oc_stock_indicator', true ) ) {
+			return;
+		}
+
+		global $product;
+
+		if ( ! $product instanceof \WC_Product ) {
+			return;
+		}
+
+		$note   = '';
+		$status = __( 'In stock', 'oc-theme' );
+		$tone   = 'green';
+
+		if ( ! $product->is_in_stock() ) {
+			$status = __( 'Out of stock', 'oc-theme' );
+			$tone   = 'red';
+		} elseif ( $product->is_on_backorder( 1 ) ) {
+			$availability = $product->get_availability();
+			$note         = (string) ( $availability['availability'] ?? '' );
+			$status       = __( 'Made to order', 'oc-theme' );
+			$tone         = 'orange';
+		} elseif ( $product->managing_stock() && null !== $product->get_stock_quantity() ) {
+			$qty = (int) $product->get_stock_quantity();
+			$low = (int) wc_get_low_stock_amount( $product );
+
+			if ( $qty <= $low ) {
+				/* translators: %d: units left in stock. */
+				$note   = sprintf( __( 'Only %d left in stock', 'oc-theme' ), $qty );
+				$status = __( 'Low stock', 'oc-theme' );
+			} elseif ( $qty <= $low * 2 ) {
+				$note = __( 'Last items in stock', 'oc-theme' );
+			}
+		}
+
+		printf(
+			'<div class="oc-stockline"><span class="oc-stockline__note">%s</span><span class="oc-stockline__status oc-stockline__status--%s"><i aria-hidden="true"></i>%s</span></div>',
+			esc_html( $note ),
+			esc_attr( $tone ),
+			esc_html( $status )
+		);
+	}
+
+	/**
+	 * Icon rows under the add-to-cart form — shipping, returns, warranty
+	 * and friends, picked from the built-in set.
+	 */
+	public function atc_icons(): void {
+		$layout = 'stack' === get_theme_mod( 'oc_atc_icons_layout', 'row' ) ? 'stack' : 'row';
+		$items  = '';
+
+		for ( $i = 1; $i <= 4; $i++ ) {
+			$icon = (string) get_theme_mod( 'oc_atc_icon_' . $i, '' );
+			$text = (string) get_theme_mod( 'oc_atc_icon_text_' . $i, '' );
+
+			if ( '' === $icon || '' === $text ) {
+				continue;
+			}
+
+			$svg = self::atc_icon_svg( $icon );
+
+			if ( '' === $svg ) {
+				continue;
+			}
+
+			$items .= sprintf(
+				'<span class="oc-atc-icons__item">%s<span>%s</span></span>',
+				$svg, // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static SVG.
+				esc_html( $text )
+			);
+		}
+
+		if ( '' === $items ) {
+			return;
+		}
+
+		echo '<div class="oc-atc-icons oc-atc-icons--' . esc_attr( $layout ) . '">' . $items . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
+	}
+
+	/**
+	 * The built-in icon set for the add-to-cart rows. Thin 1.6 strokes, the
+	 * header-icon family.
+	 *
+	 * @param string $key Icon key.
+	 * @return string SVG or ''.
+	 */
+	private static function atc_icon_svg( string $key ): string {
+		$w     = ' width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"';
+		$icons = array(
+			'truck'    => '<svg' . $w . '><path d="M1.5 6h13v11h-13z"/><path d="M14.5 10h4l3 3v4h-7"/><circle cx="6" cy="17.5" r="1.8"/><circle cx="17.5" cy="17.5" r="1.8"/></svg>',
+			'plane'    => '<svg' . $w . '><path d="M21.5 3.5l-9 18-2.5-7.5L2.5 11.5z"/><path d="M21.5 3.5L10 14"/></svg>',
+			'scooter'  => '<svg' . $w . '><circle cx="5.5" cy="17.5" r="2.3"/><circle cx="18.5" cy="17.5" r="2.3"/><path d="M5.5 17.5h8l2-8h3"/><path d="M12 6.5h3l1.5 3"/></svg>',
+			'box'      => '<svg' . $w . '><path d="M3.5 7.5l8.5-4 8.5 4v9l-8.5 4-8.5-4z"/><path d="M3.5 7.5L12 11.5l8.5-4M12 11.5v9"/></svg>',
+			'returns'  => '<svg' . $w . '><path d="M9 5H16a5.5 5.5 0 0 1 0 11H5"/><path d="M8 12.5L4.5 16 8 19.5"/></svg>',
+			'warranty' => '<svg' . $w . '><path d="M12 2.8l7.5 3v6c0 5-3.2 8.3-7.5 9.4-4.3-1.1-7.5-4.4-7.5-9.4v-6z"/><path d="M8.5 12l2.4 2.4 4.6-5"/></svg>',
+			'question' => '<svg' . $w . '><path d="M3.5 4.5h17v12h-9l-4.5 3.5v-3.5h-3.5z"/><path d="M10 8.7a2.2 2.2 0 1 1 3 2.05c-.7.3-1 .75-1 1.45"/><path d="M12 14.4v.1"/></svg>',
+			'gift'     => '<svg' . $w . '><path d="M3.5 8h17v4h-17zM5 12h14v8.5H5z"/><path d="M12 8v12.5M12 8s-1-4-4-4a2 2 0 0 0 0 4M12 8s1-4 4-4a2 2 0 0 1 0 4"/></svg>',
+			'secure'   => '<svg' . $w . '><rect x="4.5" y="10" width="15" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/><path d="M12 14v2.5"/></svg>',
+			'discount' => '<svg' . $w . '><path d="M3.5 12l8.5-8.5 8.5.1.1 8.4L12 20.5z"/><circle cx="15.2" cy="8.8" r="1.4"/></svg>',
+		);
+
+		return $icons[ $key ] ?? '';
 	}
 
 	/**

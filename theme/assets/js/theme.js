@@ -1005,6 +1005,44 @@
 		}
 	}
 
+	/* ---------- quantity pill: minus / value / plus ---------- */
+
+	document.querySelectorAll( 'form.cart div.quantity' ).forEach( function ( box ) {
+		var input = box.querySelector( 'input.qty' );
+
+		if ( ! input || box.querySelector( '.oc-qty-btn' ) ) {
+			return;
+		}
+
+		var step = parseFloat( input.step ) || 1;
+
+		var mk = function ( label, dir ) {
+			var b = document.createElement( 'button' );
+			b.type = 'button';
+			b.className = 'oc-qty-btn oc-qty-btn--' + ( dir > 0 ? 'plus' : 'minus' );
+			b.setAttribute( 'aria-label', label );
+			b.textContent = dir > 0 ? '+' : '−';
+			b.addEventListener( 'click', function () {
+				var val = parseFloat( input.value ) || 0;
+				var min = parseFloat( input.min );
+				var max = parseFloat( input.max );
+				val += dir * step;
+				if ( ! isNaN( min ) && val < min ) {
+					val = min;
+				}
+				if ( ! isNaN( max ) && max > 0 && val > max ) {
+					val = max;
+				}
+				input.value = val;
+				input.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+			} );
+			return b;
+		};
+
+		box.insertBefore( mk( 'minus', -1 ), input );
+		box.appendChild( mk( 'plus', 1 ) );
+	} );
+
 	/* ---------- lazy card videos ----------
 	 * Catalogue videos carry data-oc-vsrc and no source: each one loads and
 	 * plays only as its card nears the viewport, and pauses off screen — a

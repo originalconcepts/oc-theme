@@ -2459,3 +2459,213 @@ body:not(.oc-no-lightbox) .oc-vslide.is-playing {
 
 .oc-voverlay.has-nav .oc-voverlay__nav--prev,
 .oc-voverlay.has-nav .oc-voverlay__nav--next { display: grid; }
+
+/* ---------- the add-to-cart area ---------- */
+
+/* CTA colour derives from its own setting, falling back to the primary. */
+:root { --oc-cta: var(--oc-cta-user, var(--oc-primary)); }
+
+/* One row: quantity pill at the start, the button filling the rest. The
+ * stock line and variation bits span their own full lines. */
+.woocommerce div.product form.cart {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: stretch;
+	gap: 10px;
+}
+
+.woocommerce div.product form.cart .variations,
+.woocommerce div.product form.cart .single_variation_wrap,
+.woocommerce div.product form.cart .woocommerce-variation,
+.woocommerce div.product form.cart .oc-colors-wrap,
+.oc-stockline {
+	flex: 1 1 100%;
+}
+
+.woocommerce div.product form.cart .woocommerce-variation-add-to-cart {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: stretch;
+	gap: 10px;
+	inline-size: 100%;
+}
+
+/* Quantity: a bordered pill — minus, value, plus — LTR so the glyph order
+ * never flips. */
+.woocommerce div.product form.cart div.quantity {
+	display: flex;
+	direction: ltr;
+	align-items: center;
+	margin: 0;
+	border: 1.5px solid var(--oc-line);
+	border-radius: var(--oc-radius, 8px);
+	block-size: var(--oc-cta-h, 48px);
+	overflow: hidden;
+}
+
+.woocommerce div.product form.cart div.quantity input.qty {
+	border: 0;
+	inline-size: 44px;
+	block-size: 100%;
+	text-align: center;
+	font-weight: 600;
+	background: transparent;
+	-moz-appearance: textfield;
+	appearance: textfield;
+}
+
+.woocommerce div.product form.cart div.quantity input.qty::-webkit-outer-spin-button,
+.woocommerce div.product form.cart div.quantity input.qty::-webkit-inner-spin-button {
+	-webkit-appearance: none;
+	margin: 0;
+}
+
+.oc-qty-btn {
+	inline-size: 38px;
+	block-size: 100%;
+	border: 0;
+	background: transparent;
+	color: var(--oc-ink);
+	font-size: 1.15rem;
+	cursor: pointer;
+	padding: 0;
+}
+
+.oc-no-qty.single-product div.product form.cart div.quantity { display: none; }
+
+/* The button itself: CTA colour, the set height, filling the row. */
+.woocommerce div.product form.cart .single_add_to_cart_button {
+	flex: 1 1 auto;
+	block-size: var(--oc-cta-h, 48px);
+	background: var(--oc-cta);
+	border-color: var(--oc-cta);
+}
+
+/* ---------- stock line ---------- */
+
+.oc-stockline {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	font-size: .92rem;
+	margin-block-end: 2px;
+}
+
+.oc-stockline__status {
+	display: inline-flex;
+	align-items: center;
+	gap: 7px;
+	font-weight: 600;
+	white-space: nowrap;
+}
+
+.oc-stockline__status i {
+	inline-size: 9px;
+	block-size: 9px;
+	border-radius: 50%;
+	background: #2e9e5b;
+}
+
+.oc-stockline__status--red i { background: #c4342c; }
+.oc-stockline__status--orange i { background: #e08a00; }
+
+/* ---------- icon rows under the button ---------- */
+
+.oc-atc-icons {
+	display: flex;
+	gap: 10px 22px;
+	margin-block-start: 16px;
+	font-size: .88rem;
+}
+
+.oc-atc-icons--row {
+	flex-wrap: wrap;
+	justify-content: space-between;
+}
+
+.oc-atc-icons--stack { flex-direction: column; }
+
+.oc-atc-icons__item {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.oc-atc-icons__item svg { flex: 0 0 auto; }
+
+/* ---------- CTA hover effects ---------- */
+
+/* The effect family targets the funnel buttons everywhere. */
+.oc-cta-hover-none .single_add_to_cart_button:hover,
+.oc-cta-hover-invert .single_add_to_cart_button:hover,
+.oc-cta-hover-sweep-ltr .single_add_to_cart_button:hover,
+.oc-cta-hover-sweep-rtl .single_add_to_cart_button:hover {
+	filter: none;
+}
+
+.oc-cta-hover-invert .single_add_to_cart_button:hover,
+.oc-cta-hover-invert .checkout-button:hover,
+.oc-cta-hover-invert #place_order:hover {
+	background: var(--oc-surface, #fff);
+	color: var(--oc-cta);
+}
+
+.oc-cta-hover-sweep-ltr .single_add_to_cart_button,
+.oc-cta-hover-sweep-rtl .single_add_to_cart_button,
+.oc-cta-hover-sweep-ltr .checkout-button,
+.oc-cta-hover-sweep-rtl .checkout-button,
+.oc-cta-hover-sweep-ltr #place_order,
+.oc-cta-hover-sweep-rtl #place_order {
+	position: relative;
+	overflow: hidden;
+	z-index: 0;
+}
+
+.oc-cta-hover-sweep-ltr .single_add_to_cart_button::before,
+.oc-cta-hover-sweep-rtl .single_add_to_cart_button::before,
+.oc-cta-hover-sweep-ltr .checkout-button::before,
+.oc-cta-hover-sweep-rtl .checkout-button::before,
+.oc-cta-hover-sweep-ltr #place_order::before,
+.oc-cta-hover-sweep-rtl #place_order::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: var(--oc-surface, #fff);
+	transform: translateX(-101%);
+	transition: transform .35s ease;
+	z-index: -1;
+}
+
+.oc-cta-hover-sweep-rtl .single_add_to_cart_button::before,
+.oc-cta-hover-sweep-rtl .checkout-button::before,
+.oc-cta-hover-sweep-rtl #place_order::before {
+	transform: translateX(101%);
+}
+
+.oc-cta-hover-sweep-ltr .single_add_to_cart_button:hover::before,
+.oc-cta-hover-sweep-rtl .single_add_to_cart_button:hover::before,
+.oc-cta-hover-sweep-ltr .checkout-button:hover::before,
+.oc-cta-hover-sweep-rtl .checkout-button:hover::before,
+.oc-cta-hover-sweep-ltr #place_order:hover::before,
+.oc-cta-hover-sweep-rtl #place_order:hover::before {
+	transform: translateX(0);
+}
+
+.oc-cta-hover-sweep-ltr .single_add_to_cart_button:hover,
+.oc-cta-hover-sweep-rtl .single_add_to_cart_button:hover,
+.oc-cta-hover-sweep-ltr .checkout-button:hover,
+.oc-cta-hover-sweep-rtl .checkout-button:hover,
+.oc-cta-hover-sweep-ltr #place_order:hover,
+.oc-cta-hover-sweep-rtl #place_order:hover {
+	color: var(--oc-cta);
+	background: var(--oc-cta);
+}
+
+/* Checkout-funnel buttons share the CTA colour and height. */
+.woocommerce .checkout-button,
+.woocommerce #place_order {
+	background: var(--oc-cta);
+	border-color: var(--oc-cta);
+	block-size: var(--oc-cta-h, 48px);
+}

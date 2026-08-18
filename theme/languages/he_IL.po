@@ -819,6 +819,102 @@ msgstr "גובה אחיד — מובייל (px, ‏0 = אוטומטי)"
 msgid "Gallery-to-content gap (px, 0 = default)"
 msgstr "מרווח בין הגלריה לתוכן (px, ‏0 = ברירת מחדל)"
 
+msgid "Call-to-action buttons"
+msgstr "כפתורי הנעה לפעולה"
+
+msgid "Call-to-action colour (empty = primary)"
+msgstr "צבע הנעה לפעולה (ריק = הצבע הראשי)"
+
+msgid "Hover effect"
+msgstr "אפקט ריחוף"
+
+msgid "Negative"
+msgstr "נגטיב"
+
+msgid "Negative, left to right"
+msgstr "נגטיב משמאל לימין"
+
+msgid "Negative, right to left"
+msgstr "נגטיב מימין לשמאל"
+
+msgid "Button height (px)"
+msgstr "גובה הכפתור (px)"
+
+msgid "Add-to-cart area"
+msgstr "אזור ההוספה לסל"
+
+msgid "Show the quantity beside the button"
+msgstr "הצגת כמות לצד הכפתור"
+
+msgid "Stock line above the button"
+msgstr "שורת מלאי מעל הכפתור"
+
+msgid "Icons under the button"
+msgstr "אייקונים מתחת לכפתור"
+
+msgid "In one row"
+msgstr "בשורה אחת"
+
+msgid "One under another"
+msgstr "אחד מתחת לשני"
+
+msgid "Shipping — truck"
+msgstr "משלוח — משאית"
+
+msgid "Shipping — plane"
+msgstr "משלוח — מטוס"
+
+msgid "Shipping — scooter"
+msgstr "משלוח — קטנוע"
+
+msgid "Shipping — box"
+msgstr "משלוח — קופסה"
+
+msgid "Returns"
+msgstr "החזרות"
+
+msgid "Warranty"
+msgstr "אחריות"
+
+msgid "Product question"
+msgstr "שאלה על המוצר"
+
+msgid "Gift wrap"
+msgstr "אריזת מתנה"
+
+msgid "Secure order"
+msgstr "הזמנה מאובטחת"
+
+msgid "Newsletter discount"
+msgstr "הנחה בהרשמה לניוזלטר"
+
+#. translators: %d: icon slot number.
+msgid "Icon %d"
+msgstr "אייקון %d"
+
+#. translators: %d: icon slot number.
+msgid "Icon %d text"
+msgstr "טקסט אייקון %d"
+
+msgid "In stock"
+msgstr "במלאי"
+
+msgid "Out of stock"
+msgstr "אזל מהמלאי"
+
+msgid "Made to order"
+msgstr "הזמנה אישית"
+
+#. translators: %d: units left in stock.
+msgid "Only %d left in stock"
+msgstr "נותרו %d במלאי"
+
+msgid "Low stock"
+msgstr "מלאי נמוך"
+
+msgid "Last items in stock"
+msgstr "אחרונים במלאי"
+
 msgid "Layout"
 msgstr "פריסה"
 

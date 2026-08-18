@@ -173,6 +173,8 @@ final class Assets {
 				'--oc-primary-user'   => (string) get_theme_mod( 'oc_color_primary', '' ),
 				'--oc-secondary-user' => (string) get_theme_mod( 'oc_color_secondary', '' ),
 				'--oc-sale-user'      => (string) get_theme_mod( 'oc_color_sale', '' ),
+				'--oc-cta-user'       => (string) get_theme_mod( 'oc_cta_color', '' ),
+				'--oc-cta-h'          => absint( get_theme_mod( 'oc_cta_height', 48 ) ) . 'px',
 				'--oc-swatch'         => absint( get_theme_mod( 'oc_swatch_size', 32 ) ) . 'px',
 				'--oc-swatch-cat'     => absint( get_theme_mod( 'oc_swatch_size_cat', 22 ) ) . 'px',
 				'--oc-bg-user'        => (string) get_theme_mod( 'oc_bg_color', '' ),

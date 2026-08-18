@@ -377,6 +377,29 @@ final class Customizer {
 			'filled'
 		);
 
+		// Call-to-action buttons: add to cart, proceed to checkout, place
+		// order — one look for the whole funnel. Their corners follow the
+		// global corner-rounding above.
+		$this->heading( $c, 'oc_h_design_cta', 'oc_design', __( 'Call-to-action buttons', 'oc-theme' ) );
+
+		$this->color( $c, 'oc_cta_color', 'oc_design', __( 'Call-to-action colour (empty = primary)', 'oc-theme' ) );
+
+		$this->choice(
+			$c,
+			'oc_cta_hover',
+			'oc_design',
+			__( 'Hover effect', 'oc-theme' ),
+			array(
+				'none'        => __( 'None', 'oc-theme' ),
+				'invert'      => __( 'Negative', 'oc-theme' ),
+				'sweep-ltr'   => __( 'Negative, left to right', 'oc-theme' ),
+				'sweep-rtl'   => __( 'Negative, right to left', 'oc-theme' ),
+			),
+			'none'
+		);
+
+		$this->number( $c, 'oc_cta_height', 'oc_design', __( 'Button height (px)', 'oc-theme' ), 48, 40, 64 );
+
 		$fonts = array(
 			''             => __( 'System', 'oc-theme' ),
 			'Assistant'    => 'Assistant',
@@ -950,6 +973,44 @@ final class Customizer {
 			),
 			'1.55'
 		);
+
+		$this->heading( $c, 'oc_h_prod_atc', 'oc_product', __( 'Add-to-cart area', 'oc-theme' ) );
+
+		$this->toggle( $c, 'oc_atc_qty', 'oc_product', __( 'Show the quantity beside the button', 'oc-theme' ), true );
+		$this->toggle( $c, 'oc_stock_indicator', 'oc_product', __( 'Stock line above the button', 'oc-theme' ), true );
+
+		$this->choice(
+			$c,
+			'oc_atc_icons_layout',
+			'oc_product',
+			__( 'Icons under the button', 'oc-theme' ),
+			array(
+				'row'   => __( 'In one row', 'oc-theme' ),
+				'stack' => __( 'One under another', 'oc-theme' ),
+			),
+			'row'
+		);
+
+		$icon_choices = array(
+			''         => __( 'None', 'oc-theme' ),
+			'truck'    => __( 'Shipping — truck', 'oc-theme' ),
+			'plane'    => __( 'Shipping — plane', 'oc-theme' ),
+			'scooter'  => __( 'Shipping — scooter', 'oc-theme' ),
+			'box'      => __( 'Shipping — box', 'oc-theme' ),
+			'returns'  => __( 'Returns', 'oc-theme' ),
+			'warranty' => __( 'Warranty', 'oc-theme' ),
+			'question' => __( 'Product question', 'oc-theme' ),
+			'gift'     => __( 'Gift wrap', 'oc-theme' ),
+			'secure'   => __( 'Secure order', 'oc-theme' ),
+			'discount' => __( 'Newsletter discount', 'oc-theme' ),
+		);
+
+		for ( $i = 1; $i <= 4; $i++ ) {
+			/* translators: %d: icon slot number. */
+			$this->select( $c, 'oc_atc_icon_' . $i, 'oc_product', sprintf( __( 'Icon %d', 'oc-theme' ), $i ), $icon_choices );
+			/* translators: %d: icon slot number. */
+			$this->text( $c, 'oc_atc_icon_text_' . $i, 'oc_product', sprintf( __( 'Icon %d text', 'oc-theme' ), $i ) );
+		}
 
 		$this->heading( $c, 'oc_h_prod_content', 'oc_product', __( 'Information & content', 'oc-theme' ) );
 
