@@ -4014,3 +4014,63 @@ body.oc-sort-open .oc-sortsheet__overlay[hidden] { display: block; }
 .oc-tabs-accordion .woocommerce-tabs .woocommerce-Tabs-panel {
 	margin: 0 !important;
 }
+
+/* ---------- price line: SKU at the far end ----------
+ * The summary price becomes a full-width flex row so margin-inline-start:auto
+ * can push the SKU to the opposite edge; del/ins/badge stay grouped at the
+ * start by the gap. */
+.single-product div.product .summary p.price {
+	display: flex;
+	flex-wrap: wrap;
+}
+
+.oc-sku {
+	margin-inline-start: auto;
+	align-self: center;
+	font-size: .76rem;
+	font-weight: 400;
+	letter-spacing: .05em;
+	color: var(--oc-ink-2);
+}
+
+.oc-sku[hidden] { display: none !important; }
+
+/* ---------- product meta: quiet chip row ----------
+ * Categories as hairline pills, tags as dashed ghosts — visibly present,
+ * deliberately unassertive. The +N pill reveals the overflow. */
+.oc-pmeta {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 7px;
+	margin-block-start: 22px;
+}
+
+.oc-pmeta__chip,
+.oc-pmeta__more {
+	display: inline-flex;
+	align-items: center;
+	padding: 4px 13px;
+	border: 1px solid var(--oc-line);
+	border-radius: 999px;
+	background: transparent;
+	font-size: .74rem;
+	font-weight: 400;
+	letter-spacing: .03em;
+	line-height: 1.4;
+	color: var(--oc-ink-2);
+	text-decoration: none;
+	cursor: pointer;
+	transition: color .18s ease, border-color .18s ease;
+}
+
+.oc-pmeta__chip--tag { border-style: dashed; }
+
+.oc-pmeta__chip:hover,
+.oc-pmeta__more:hover {
+	color: var(--oc-ink);
+	border-color: color-mix(in srgb, var(--oc-ink) 45%, transparent);
+}
+
+.oc-pmeta__chip[hidden],
+.oc-pmeta__more[hidden] { display: none !important; }

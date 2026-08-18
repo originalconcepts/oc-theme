@@ -1638,3 +1638,18 @@ msgstr "חיפוש מוצרים…"
 
 msgid "Exclude products"
 msgstr "החרגת מוצרים"
+
+msgid "SKU:"
+msgstr "מק״ט:"
+
+msgid "Hide SKU"
+msgstr "הסתרת מק״ט"
+
+msgid "Do not show the SKU on the product page."
+msgstr "לא להציג את המק״ט בדף המוצר."
+
+msgid "Product categories and tags"
+msgstr "קטגוריות ותגיות של המוצר"
+
+msgid "Show all"
+msgstr "הצגת הכל"

@@ -2628,6 +2628,81 @@
 		applyWatch();
 	} )();
 
+	/* ---------- price-line SKU follows the chosen variation ----------
+	 * Woo already resolves a variation's empty SKU to the parent's, so the
+	 * inline JSON's sku field is always the right answer; no selection means
+	 * back to the parent SKU, and an empty value hides the span entirely. */
+
+	( function () {
+		var sku = document.querySelector( '.summary .oc-sku' );
+		var vForm = document.querySelector( 'form.variations_form' );
+
+		if ( ! sku || ! vForm ) {
+			return;
+		}
+
+		var val = sku.querySelector( '.oc-sku__v' );
+		var parentSku = val ? val.textContent : '';
+		var list = null;
+
+		var variations = function () {
+			if ( null === list ) {
+				try {
+					list = JSON.parse( vForm.dataset.product_variations || 'false' ) || [];
+				} catch ( e ) {
+					list = [];
+				}
+			}
+			return list;
+		};
+
+		var applySku = function () {
+			var idInput = vForm.querySelector( 'input[name="variation_id"]' );
+			var vid = idInput ? parseInt( idInput.value, 10 ) || 0 : 0;
+			var shown = parentSku;
+
+			if ( vid ) {
+				variations().some( function ( v ) {
+					if ( Number( v.variation_id ) === vid ) {
+						shown = v.sku || parentSku;
+						return true;
+					}
+					return false;
+				} );
+			}
+
+			if ( val ) {
+				val.textContent = shown;
+			}
+			sku.hidden = '' === String( shown || '' );
+		};
+
+		new MutationObserver( applySku ).observe( vForm, {
+			subtree: true,
+			childList: true,
+			attributes: true,
+			attributeFilter: [ 'class', 'style' ],
+		} );
+		vForm.addEventListener( 'change', function () {
+			setTimeout( applySku, 80 );
+		} );
+		applySku();
+	} )();
+
+	/* ---------- product meta chips: the +N pill reveals the rest ---------- */
+
+	document.querySelectorAll( '.oc-pmeta__more' ).forEach( function ( btn ) {
+		btn.addEventListener( 'click', function () {
+			var wrap = btn.closest( '.oc-pmeta' );
+			if ( wrap ) {
+				wrap.querySelectorAll( '.oc-pmeta__chip[hidden]' ).forEach( function ( chip ) {
+					chip.hidden = false;
+				} );
+			}
+			btn.hidden = true;
+		} );
+	} );
+
 	/* ---------- add-to-cart: a loader takes the label until the add lands ---------- */
 
 	document.querySelectorAll( 'form.cart' ).forEach( function ( cartForm ) {

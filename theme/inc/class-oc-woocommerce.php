@@ -54,6 +54,12 @@ final class WooCommerce {
 		// Sale mark on the product page lives inside the price line, so the
 		// flex row can stretch it to exactly the sale price's height.
 		add_filter( 'woocommerce_get_price_html', array( $this, 'price_badge_html' ), 20, 2 );
+
+		// SKU rides the price line's far end; a per-product checkbox next to
+		// the SKU field can hide it.
+		add_filter( 'woocommerce_get_price_html', array( $this, 'price_sku_html' ), 30, 2 );
+		add_action( 'woocommerce_product_options_sku', array( $this, 'sku_toggle_field' ) );
+		add_action( 'woocommerce_admin_process_product_object', array( $this, 'sku_toggle_save' ) );
 		add_filter( 'woocommerce_breadcrumb_defaults', array( $this, 'breadcrumb_defaults' ) );
 		add_filter( 'body_class', array( $this, 'body_class' ) );
 		add_filter( 'posts_clauses', array( $this, 'oos_last' ), 20, 2 );
@@ -166,6 +172,12 @@ final class WooCommerce {
 			add_action( 'woocommerce_after_main_content', 'woocommerce_taxonomy_archive_description', 5 );
 			add_action( 'woocommerce_after_main_content', 'woocommerce_product_archive_description', 5 );
 		}
+
+		// Woo's meta block ("SKU: N/A", comma lists) is replaced wholesale:
+		// the SKU moved into the price line and categories/tags render as a
+		// quiet chip row.
+		remove_action( 'woocommerce_single_product_summary', 'woocommerce_template_single_meta', 40 );
+		add_action( 'woocommerce_single_product_summary', array( $this, 'meta_chips' ), 40 );
 
 		// "Beside the gallery": the tabs physically move into the summary
 		// column, after add-to-cart, instead of the full-width row below.
@@ -314,6 +326,142 @@ final class WooCommerce {
 			esc_attr( self::flag_colors( 'oc_sale_badge_bg', 'oc_sale_badge_tx' ) ),
 			esc_html( $text )
 		);
+	}
+
+	/**
+	 * SKU at the far end of the price line — only when one exists, and only
+	 * on the page's own product. Variable products render the span even with
+	 * an empty parent SKU (hidden) so theme.js can surface the chosen
+	 * variation's SKU; variations resolve the parent SKU as a fallback on
+	 * their own, so the swap logic stays trivial.
+	 *
+	 * @param string      $price   Price html.
+	 * @param \WC_Product $product Product.
+	 * @return string
+	 */
+	public function price_sku_html( $price, $product ): string {
+		if ( is_admin() || ! is_product() || ! is_main_query() || '' !== wc_get_loop_prop( 'name', '' ) ) {
+			return (string) $price;
+		}
+
+		if ( ! $product instanceof \WC_Product || $product->is_type( 'variation' ) ) {
+			return (string) $price;
+		}
+
+		if ( (int) $product->get_id() !== (int) get_queried_object_id() ) {
+			return (string) $price;
+		}
+
+		if ( ! wc_product_sku_enabled() || 'yes' === $product->get_meta( '_oc_sku_hide' ) ) {
+			return (string) $price;
+		}
+
+		$sku = (string) $product->get_sku();
+
+		if ( '' === $sku && ! $product->is_type( 'variable' ) ) {
+			return (string) $price;
+		}
+
+		return sprintf(
+			'%s<span class="oc-sku"%s>%s <bdi class="oc-sku__v">%s</bdi></span>',
+			$price,
+			'' === $sku ? ' hidden' : '',
+			esc_html__( 'SKU:', 'oc-theme' ),
+			esc_html( $sku )
+		);
+	}
+
+	/**
+	 * Per-product "hide the SKU" checkbox, right under the SKU field.
+	 */
+	public function sku_toggle_field(): void {
+		woocommerce_wp_checkbox(
+			array(
+				'id'          => '_oc_sku_hide',
+				'label'       => __( 'Hide SKU', 'oc-theme' ),
+				'description' => __( 'Do not show the SKU on the product page.', 'oc-theme' ),
+			)
+		);
+	}
+
+	/**
+	 * Persist the hide-SKU flag.
+	 *
+	 * @param \WC_Product $product Product being saved.
+	 */
+	public function sku_toggle_save( $product ): void {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Woo verified the product-save nonce already.
+		$product->update_meta_data( '_oc_sku_hide', isset( $_POST['_oc_sku_hide'] ) ? 'yes' : 'no' );
+	}
+
+	/**
+	 * Categories and tags as a quiet chip row under the tabs: outlined pills
+	 * for categories, dashed ghosts for tags, capped at five with a "+N"
+	 * pill revealing the rest. Replaces Woo's comma-list meta block.
+	 */
+	public function meta_chips(): void {
+		global $product;
+
+		if ( ! $product instanceof \WC_Product ) {
+			return;
+		}
+
+		$chips = array();
+
+		foreach ( array( 'product_cat', 'product_tag' ) as $tax ) {
+			$terms = get_the_terms( $product->get_id(), $tax );
+
+			if ( ! is_array( $terms ) ) {
+				continue;
+			}
+
+			foreach ( $terms as $term ) {
+				if ( 'uncategorized' === $term->slug ) {
+					continue;
+				}
+
+				$link = get_term_link( $term );
+
+				if ( is_wp_error( $link ) ) {
+					continue;
+				}
+
+				$chips[] = array(
+					'name' => $term->name,
+					'url'  => $link,
+					'tag'  => 'product_tag' === $tax,
+				);
+			}
+		}
+
+		if ( ! $chips ) {
+			return;
+		}
+
+		$limit  = 5;
+		$hidden = count( $chips ) - $limit;
+
+		echo '<nav class="oc-pmeta" aria-label="' . esc_attr__( 'Product categories and tags', 'oc-theme' ) . '">';
+
+		foreach ( $chips as $i => $chip ) {
+			printf(
+				'<a class="oc-pmeta__chip%s" href="%s"%s>%s</a>',
+				$chip['tag'] ? ' oc-pmeta__chip--tag' : '',
+				esc_url( $chip['url'] ),
+				$i >= $limit ? ' hidden' : '',
+				esc_html( $chip['name'] )
+			);
+		}
+
+		if ( $hidden > 0 ) {
+			printf(
+				'<button type="button" class="oc-pmeta__more" aria-label="%s">+%d</button>',
+				esc_attr__( 'Show all', 'oc-theme' ),
+				(int) $hidden
+			);
+		}
+
+		echo '</nav>';
 	}
 
 	/**
