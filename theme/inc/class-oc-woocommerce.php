@@ -628,6 +628,17 @@ final class WooCommerce {
 
 		if ( $product->is_on_sale() ) {
 			$sides[ $sale_side ] .= apply_filters( 'woocommerce_sale_flash', '<span class="onsale">' . esc_html__( 'Sale!', 'woocommerce' ) . '</span>', $product->get_id() ? get_post( $product->get_id() ) : null, $product );
+		} else {
+			// Promotion King promotions live outside WooCommerce sale prices;
+			// their label rides the same badge slot, in the sale colours.
+			$promo_label = (string) apply_filters( 'promeng_product_label', '', $product->get_id() );
+			if ( '' !== $promo_label ) {
+				$sides[ $sale_side ] .= sprintf(
+					'<span class="onsale" style="%s">%s</span>',
+					esc_attr( self::flag_colors( 'oc_label_sale_bg', 'oc_label_sale_tx' ) ),
+					esc_html( $promo_label )
+				);
+			}
 		}
 
 		if ( get_theme_mod( 'oc_label_stock', false ) ) {

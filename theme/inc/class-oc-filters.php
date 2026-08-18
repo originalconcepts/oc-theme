@@ -192,6 +192,104 @@ final class Filters {
 	}
 
 	/**
+	 * Set while the ajax endpoint renders cards for a smart sale category —
+	 * template code (colour siblings) cannot see is_tax() there.
+	 *
+	 * @var bool
+	 */
+	public static $sale_render = false;
+
+	/**
+	 * Is the current render a smart "on sale" category?
+	 */
+	public static function sale_context(): bool {
+		if ( self::$sale_render ) {
+			return true;
+		}
+
+		if ( ! is_tax( 'product_cat' ) ) {
+			return false;
+		}
+
+		$term = get_queried_object();
+
+		return $term instanceof \WP_Term && 'sale' === (string) get_term_meta( $term->term_id, 'oc_smart', true );
+	}
+
+	/**
+	 * Is this product "on promotion" — a WooCommerce sale price or a live
+	 * Promotion King promotion targeting it (the engine's own rules:
+	 * all / chosen products / chosen categories with ancestors, minus
+	 * exclusions; channel and customer type respected)?
+	 *
+	 * @param \WC_Product $product The product.
+	 */
+	public static function product_promoted( \WC_Product $product ): bool {
+		if ( $product->is_on_sale() ) {
+			return true;
+		}
+
+		if ( ! class_exists( '\PromoEngine\Repository' ) ) {
+			return false;
+		}
+
+		static $promos = null;
+
+		if ( null === $promos ) {
+			$promos    = array();
+			$logged_in = is_user_logged_in();
+
+			foreach ( \PromoEngine\Repository::active() as $promotion ) {
+				if ( ! $promotion->is_live() ) {
+					continue;
+				}
+				if ( class_exists( '\PromoEngine\App' ) && method_exists( '\PromoEngine\App', 'promotion_runs_here' ) && ! \PromoEngine\App::promotion_runs_here( $promotion ) ) {
+					continue;
+				}
+				if ( method_exists( $promotion, 'customer_type_allowed' ) && ! $promotion->customer_type_allowed( $logged_in ) ) {
+					continue;
+				}
+				if ( 'cart' === (string) $promotion->get( 'applies_to', 'all' ) ) {
+					continue;
+				}
+				$promos[] = $promotion;
+			}
+		}
+
+		if ( empty( $promos ) ) {
+			return false;
+		}
+
+		$product_id = (int) $product->get_id();
+		$cats       = wc_get_product_term_ids( $product_id, 'product_cat' );
+		foreach ( $cats as $cat_id ) {
+			$cats = array_merge( $cats, get_ancestors( (int) $cat_id, 'product_cat' ) );
+		}
+		$cats = array_map( 'intval', array_unique( $cats ) );
+
+		foreach ( $promos as $promotion ) {
+			$excluded = array_map( 'intval', (array) $promotion->get( 'excluded_product_ids', array() ) );
+			if ( in_array( $product_id, $excluded, true ) ) {
+				continue;
+			}
+
+			$applies = (string) $promotion->get( 'applies_to', 'all' );
+
+			if ( 'all' === $applies ) {
+				return true;
+			}
+			if ( 'products' === $applies && in_array( $product_id, array_map( 'intval', (array) $promotion->get( 'product_ids', array() ) ), true ) ) {
+				return true;
+			}
+			if ( 'categories' === $applies && array_intersect( array_map( 'intval', (array) $promotion->get( 'category_ids', array() ) ), $cats ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * Products targeted by a live Promotion King promotion, as SQL — one
 	 * OR'ed condition per promotion, mirroring the engine's own targeting
 	 * (all / chosen products / chosen categories incl. descendants, minus
@@ -1379,6 +1477,10 @@ final class Filters {
 			'terms'    => array( 'exclude-from-catalog' ),
 			'operator' => 'NOT IN',
 		);
+
+		if ( $category && 'sale' === $this->smart_meta( $category )['mode'] ) {
+			self::$sale_render = true;
+		}
 
 		$query = new \WP_Query( $args );
 

@@ -1218,13 +1218,27 @@ final class Variations {
 		$ids = array_unique( array_merge( array( $product_id ), $links ) );
 		sort( $ids );
 
-		$items = '';
+		// In a smart "on sale" category, a colour that is NOT on promotion
+		// must not be offered — a shopper switching to it would land on a
+		// full-price product inside the sale section.
+		$sale_context = $with_data && Filters::sale_context();
+
+		$items         = '';
+		$sale_siblings = 0;
 
 		foreach ( $ids as $id ) {
 			$sibling = wc_get_product( $id );
 
 			if ( ! $sibling || 'publish' !== $sibling->get_status() ) {
 				continue;
+			}
+
+			if ( $sale_context && ! Filters::product_promoted( $sibling ) ) {
+				continue;
+			}
+
+			if ( $sale_context && $id !== $product_id ) {
+				$sale_siblings++;
 			}
 
 			// The sibling's own colour value decides the circle, through the
@@ -1273,6 +1287,11 @@ final class Variations {
 		}
 
 		if ( '' === $items ) {
+			return '';
+		}
+
+		// Only its own colour survived the sale filter: no row at all.
+		if ( $sale_context && 0 === $sale_siblings ) {
 			return '';
 		}
 
