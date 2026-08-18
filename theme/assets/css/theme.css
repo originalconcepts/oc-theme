@@ -1289,7 +1289,9 @@ body:not(.oc-no-lightbox) .woocommerce-product-gallery__image:not(.oc-vslide) im
 	align-items: center;
 	justify-content: space-between;
 	inline-size: 100%;
-	padding-block: 12px;
+	margin: 0;
+	padding-block: 13px;
+	line-height: 1.2;
 	background: none;
 	border: 0;
 	font: inherit;
@@ -1326,6 +1328,7 @@ body:not(.oc-no-lightbox) .woocommerce-product-gallery__image:not(.oc-vslide) im
 .woocommerce-tabs .woocommerce-Tabs-panel > h2:first-child,
 .oc-tabs-accordion .oc-acc-head + h2,
 .oc-tabs-accordion .oc-acc-body > h2:first-child,
+.oc-tabs-accordion .oc-acc-in > h2:first-child,
 .oc-tabs-accordion .oc-acc-body .woocommerce-Reviews-title { display: none; }
 
 /* the body collapses on animated grid rows — smooth at any height */
