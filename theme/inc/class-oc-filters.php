@@ -45,7 +45,7 @@ final class Filters {
 		add_action( 'edited_product_cat', array( $this, 'save_category_field' ) );
 
 		add_action( 'pre_get_posts', array( $this, 'apply_to_query' ) );
-		add_action( 'pre_get_posts', array( $this, 'smart_main_query' ), 9 );
+		add_action( 'pre_get_posts', array( $this, 'smart_main_query' ), 11 );
 		add_filter( 'posts_clauses', array( $this, 'price_stock_clauses' ), 15, 2 );
 		add_filter( 'posts_clauses', array( $this, 'smart_clauses' ), 16, 2 );
 
