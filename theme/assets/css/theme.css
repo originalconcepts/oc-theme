@@ -4301,3 +4301,17 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 	/* the mobile toolbar carries filter, sort, count and chips there */
 	.oc-flt__sidebar-row { display: none; }
 }
+
+/* ---------- swatch values without names ----------
+ * Bare circles in a wrapping row (name + count hidden; the name stays as
+ * aria-label and tooltip). Outranks the grid rules of every panel style. */
+.oc-flt__values--swatch.oc-flt__values--noname,
+.oc-flt--top-drop .oc-flt__body .oc-flt__values--noname,
+.oc-flt--top-full .oc-flt__body .oc-flt__values.oc-flt__values--noname {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px 14px;
+}
+
+.oc-flt__values--noname .oc-flt__val span,
+.oc-flt__values--noname .oc-flt__val [data-flt-count] { display: none; }

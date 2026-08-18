@@ -82,6 +82,7 @@ final class Filters {
 				'choice'       => 'check',     // check | dot.
 				'chip_swatch'  => 'off',       // off | both | only.
 				'chips_pos'    => 'start',     // start | center | inline | group.
+				'swatch_names' => 1,
 				'counts'       => 1,
 				'empty'        => 'gray',      // gray | hide.
 				'instock'      => 1,
@@ -1398,8 +1399,10 @@ final class Filters {
 			$html .= '<em class="oc-flt__num" data-flt-num' . ( $active_count ? '' : ' hidden' ) . '>(' . absint( $active_count ) . ')</em>';
 			$html .= '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
 			$html .= '</button>';
+			$noname = 'swatch' === $group['type'] && empty( $settings['swatch_names'] );
+
 			/* translators: %s: filter group title. */
-			$html .= '<div class="oc-flt__body"><span class="oc-flt__panel-label">' . esc_html( sprintf( __( 'By %s', 'oc-theme' ), (string) $group['title'] ) ) . '</span><div class="oc-flt__values oc-flt__values--' . esc_attr( (string) $group['type'] ) . ' oc-flt__values--' . esc_attr( (string) $settings['choice'] ) . '">';
+			$html .= '<div class="oc-flt__body"><span class="oc-flt__panel-label">' . esc_html( sprintf( __( 'By %s', 'oc-theme' ), (string) $group['title'] ) ) . '</span><div class="oc-flt__values oc-flt__values--' . esc_attr( (string) $group['type'] ) . ' oc-flt__values--' . esc_attr( (string) $settings['choice'] ) . ( $noname ? ' oc-flt__values--noname' : '' ) . '">';
 
 			foreach ( $group['values'] as $value ) {
 				$disabled = 0 === (int) $value['count'] && empty( $value['active'] );
@@ -1408,7 +1411,13 @@ final class Filters {
 				}
 
 				$html .= '<button type="button" class="oc-flt__val' . ( $value['active'] ? ' is-active' : '' ) . ( $disabled ? ' is-off' : '' ) . '"';
-				$html .= ' data-flt-val="' . esc_attr( (string) $value['v'] ) . '" data-label="' . esc_attr( (string) $value['label'] ) . '"' . ( $disabled ? ' disabled' : '' ) . '>';
+				$html .= ' data-flt-val="' . esc_attr( (string) $value['v'] ) . '" data-label="' . esc_attr( (string) $value['label'] ) . '"';
+				if ( 'swatch' === $group['type'] ) {
+					// Bare swatches keep their name for screen readers and
+					// as a hover tooltip.
+					$html .= ' aria-label="' . esc_attr( (string) $value['label'] ) . '" title="' . esc_attr( (string) $value['label'] ) . '"';
+				}
+				$html .= ( $disabled ? ' disabled' : '' ) . '>';
 
 				if ( 'swatch' === $group['type'] && '' !== $value['style'] ) {
 					$html .= '<i class="oc-flt__swatch" style="' . $value['style'] . '"></i>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built escaped.
@@ -1877,6 +1886,10 @@ final class Filters {
 						</td>
 					</tr>
 					<tr>
+						<th scope="row"><?php esc_html_e( 'Swatch values', 'oc-theme' ); ?></th>
+						<td><label><input type="checkbox" name="swatch_names" value="1" <?php checked( 1, (int) $settings['swatch_names'] ); ?> /> <?php esc_html_e( 'Show the value name next to the swatch', 'oc-theme' ); ?></label></td>
+					</tr>
+					<tr>
 						<th scope="row"><?php esc_html_e( 'Counts', 'oc-theme' ); ?></th>
 						<td><label><input type="checkbox" name="counts" value="1" <?php checked( 1, (int) $settings['counts'] ); ?> /> <?php esc_html_e( 'Show the number of items next to each value', 'oc-theme' ); ?></label></td>
 					</tr>
@@ -2066,6 +2079,7 @@ final class Filters {
 				'choice'       => 'dot' === ( $_POST['choice'] ?? '' ) ? 'dot' : 'check',
 				'chip_swatch'  => in_array( $_POST['chip_swatch'] ?? '', array( 'both', 'only' ), true ) ? sanitize_key( $_POST['chip_swatch'] ) : 'off',
 				'chips_pos'    => in_array( $_POST['chips_pos'] ?? '', array( 'center', 'inline', 'group' ), true ) ? sanitize_key( $_POST['chips_pos'] ) : 'start',
+				'swatch_names' => empty( $_POST['swatch_names'] ) ? 0 : 1,
 				'counts'       => empty( $_POST['counts'] ) ? 0 : 1,
 				'empty'        => 'hide' === ( $_POST['empty'] ?? '' ) ? 'hide' : 'gray',
 				'instock'      => empty( $_POST['instock'] ) ? 0 : 1,

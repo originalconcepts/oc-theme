@@ -1692,3 +1692,9 @@ msgstr "בתוך הבר, ליד כל סינון"
 
 msgid "By %s"
 msgstr "לפי %s"
+
+msgid "Swatch values"
+msgstr "ערכי דוגמית"
+
+msgid "Show the value name next to the swatch"
+msgstr "הצגת שם הערך לצד הדוגמית"
