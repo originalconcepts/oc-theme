@@ -175,6 +175,9 @@ final class Assets {
 				'fltClear'   => __( 'Clear all', 'oc-theme' ),
 				/* translators: %s: number of products. */
 				'fltResults' => __( '%s results', 'oc-theme' ),
+				// First accordion panel: open unless a short-description tab
+				// exists and was configured closed.
+				'accOpenFirst' => ( ! Tabs::settings()['short_tab'] || Tabs::settings()['short_open'] ) ? 1 : 0,
 				// The colour-sibling card swap rebuilds the sold-out pieces.
 				'oosFlagText'  => get_theme_mod( 'oc_label_stock', false ) ? (string) get_theme_mod( 'oc_label_stock_out', __( 'Out of stock', 'oc-theme' ) ) : '',
 				'oosFlagStyle' => WooCommerce::flag_colors( 'oc_label_stock_bg', 'oc_label_stock_tx' ),

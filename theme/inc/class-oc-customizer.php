@@ -1166,8 +1166,9 @@ final class Customizer {
 			'oc_product',
 			__( 'Product info position — desktop', 'oc-theme' ),
 			array(
-				'below' => __( 'Full width below', 'oc-theme' ),
-				'side'  => __( 'Beside the gallery', 'oc-theme' ),
+				'below'   => __( 'Full width below', 'oc-theme' ),
+				'side'    => __( 'Beside the gallery', 'oc-theme' ),
+				'gallery' => __( 'Under the gallery', 'oc-theme' ),
 			),
 			'below'
 		);

@@ -41,6 +41,7 @@ require_once OC_THEME_DIR . '/inc/class-oc-variations.php';
 require_once OC_THEME_DIR . '/inc/class-oc-video.php';
 require_once OC_THEME_DIR . '/inc/class-oc-waitlist.php';
 require_once OC_THEME_DIR . '/inc/class-oc-filters.php';
+require_once OC_THEME_DIR . '/inc/class-oc-tabs.php';
 
 /**
  * Cache-busting version for a theme-relative asset.
@@ -288,6 +289,7 @@ add_action( 'admin_notices', 'oc_dependency_notice' );
 ( new OC\Theme\Video() )->register();
 ( new OC\Theme\Waitlist() )->register();
 ( new OC\Theme\Filters() )->register();
+( new OC\Theme\Tabs() )->register();
 ( new OC\Theme\Updater( get_template(), OC_THEME_VERSION, OC_THEME_REPO ) )->register();
 
 if ( ! defined( 'OC_LOGIN_DISABLE' ) || ! OC_LOGIN_DISABLE ) {

@@ -1549,7 +1549,7 @@
 				return;
 			}
 
-			var open = 0 === i;
+			var open = 0 === i && 0 !== ( ( window.ocL10n || {} ).accOpenFirst );
 
 			var head = document.createElement( 'button' );
 			head.type = 'button';

@@ -1667,7 +1667,7 @@ final class Filters {
 	 */
 	public function menu(): void {
 		add_submenu_page(
-			'woocommerce',
+			Tabs::MENU,
 			__( 'Catalogue filters', 'oc-theme' ),
 			__( 'Catalogue filters', 'oc-theme' ),
 			'manage_woocommerce',

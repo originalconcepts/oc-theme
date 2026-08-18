@@ -1466,7 +1466,7 @@ msgid "By its type"
 msgstr "לפי הסוג שלה"
 
 msgid "Open by default"
-msgstr "פתוחה כברירת מחדל"
+msgstr "פתיחה כברירת מחדל"
 
 msgid "Category groups"
 msgstr "קבוצות קטגוריה"
@@ -1536,3 +1536,90 @@ msgstr "הגבלה לקטגוריות מקור אלה (אופציונלי)"
 
 msgid "Only in these categories (empty = everywhere)"
 msgstr "רק בקטגוריות אלה (ריק = בכל האתר)"
+
+msgid "Theme settings"
+msgstr "הגדרות תבנית"
+
+msgid "Product tabs"
+msgstr "טאבים בדף מוצר"
+
+msgid "Overview"
+msgstr "סקירה"
+
+msgid "Built-in tabs"
+msgstr "טאבים מובנים"
+
+msgid "Short description"
+msgstr "תיאור קצר"
+
+msgid "Show as the first tab (instead of in the summary)"
+msgstr "הצגה כטאב ראשון (במקום באזור התקציר)"
+
+msgid "Full description"
+msgstr "תיאור מלא"
+
+msgid "Inside a tab"
+msgstr "בתוך טאב"
+
+msgid "Outside — below the tabs"
+msgstr "מחוץ לטאבים — מתחתיהם"
+
+msgid "Additional information"
+msgstr "מידע נוסף"
+
+msgid "Show the attributes table"
+msgstr "הצגת טבלת התכונות"
+
+msgid "Reviews"
+msgstr "חוות דעת"
+
+msgid "WordPress reviews never render as a tab — a dedicated mechanism replaces them."
+msgstr "חוות הדעת של וורדפרס לא מוצגות כטאב — מנגנון ייעודי יחליף אותן."
+
+msgid "Custom tabs"
+msgstr "טאבים מותאמים אישית"
+
+msgid "Add a tab"
+msgstr "הוספת טאב"
+
+msgid "Active"
+msgstr "פעיל"
+
+msgid "Tab title"
+msgstr "כותרת הטאב"
+
+msgid "Tab content — text, HTML and shortcodes"
+msgstr "תוכן הטאב — טקסט, HTML ושורטקודים"
+
+msgid "Shown on"
+msgstr "מוצג עבור"
+
+msgid "All products"
+msgstr "כל המוצרים"
+
+msgid "Specific products"
+msgstr "מוצרים ספציפיים"
+
+msgid "Specific categories"
+msgstr "קטגוריות ספציפיות"
+
+msgid "Specific attributes"
+msgstr "תכונות ספציפיות"
+
+msgid "Product IDs (comma-separated)"
+msgstr "מזהי מוצרים (מופרדים בפסיק)"
+
+msgid "Categories"
+msgstr "קטגוריות"
+
+msgid "Attribute values"
+msgstr "ערכי תכונות"
+
+msgid "Exclude categories"
+msgstr "החרגת קטגוריות"
+
+msgid "Exclude product IDs"
+msgstr "החרגת מזהי מוצרים"
+
+msgid "Under the gallery"
+msgstr "מתחת לגלריה"

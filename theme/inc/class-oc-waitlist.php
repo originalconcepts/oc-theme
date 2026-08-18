@@ -541,7 +541,7 @@ final class Waitlist {
 	 */
 	public function menu(): void {
 		add_submenu_page(
-			'woocommerce',
+			Tabs::MENU,
 			__( 'Back-in-stock waitlist', 'oc-theme' ),
 			__( 'Back-in-stock waitlist', 'oc-theme' ),
 			'manage_woocommerce',
