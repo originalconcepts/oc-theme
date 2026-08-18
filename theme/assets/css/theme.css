@@ -2915,7 +2915,7 @@ body:not(.oc-no-lightbox) .oc-vslide.is-playing {
 	z-index: 3;
 	border: 0;
 	padding: .8em .7em;
-	background: var(--oc-ink, #1c1c1c);
+	background: var(--oc-cta, #1c1c1c);
 	color: #fff;
 	font-size: .82rem;
 	font-weight: 600;
@@ -3061,7 +3061,7 @@ body:not(.oc-no-lightbox) .oc-vslide.is-playing {
 .oc-nmodal__success svg {
 	inline-size: 64px;
 	block-size: 64px;
-	color: var(--oc-ink, #111);
+	color: var(--oc-cta, #111);
 }
 
 .oc-nmodal__count {
@@ -3121,7 +3121,7 @@ body:not(.oc-no-lightbox) .oc-vslide.is-playing {
 .oc-nmodal__signedview svg {
 	inline-size: 56px;
 	block-size: 56px;
-	color: var(--oc-ink, #111);
+	color: var(--oc-cta, #111);
 }
 
 .oc-nmodal__signedmsg {
