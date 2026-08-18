@@ -1354,7 +1354,12 @@ body:not(.oc-no-lightbox) .woocommerce-product-gallery__image:not(.oc-vslide) im
 	margin: 0 !important;
 	padding: 0 !important;
 	box-shadow: none !important;
+	color: var(--oc-muted, #77746f);
 }
+
+.oc-tabs-tabs .woocommerce-tabs ul.tabs li:hover { color: var(--oc-ink, #111); }
+
+.oc-tabs-tabs .woocommerce-tabs ul.tabs li.active { color: var(--oc-ink, #111); }
 
 body.oc-tabs-tabs.woocommerce div.product .woocommerce-tabs ul.tabs li a,
 .oc-tabs-tabs .woocommerce-tabs ul.tabs li a {
@@ -1363,7 +1368,7 @@ body.oc-tabs-tabs.woocommerce div.product .woocommerce-tabs ul.tabs li a,
 	font-weight: var(--oc-tab-w, 400) !important;
 	font-size: .95rem;
 	letter-spacing: .02em;
-	color: var(--oc-tab-c, #77746f) !important;
+	color: inherit !important;
 	text-decoration: none;
 	box-shadow: none;
 	transition: color .15s ease, box-shadow .15s ease;
@@ -1372,7 +1377,6 @@ body.oc-tabs-tabs.woocommerce div.product .woocommerce-tabs ul.tabs li a,
 
 body.oc-tabs-tabs.woocommerce div.product .woocommerce-tabs ul.tabs li a:hover,
 .oc-tabs-tabs .woocommerce-tabs ul.tabs li a:hover {
-	color: var(--oc-ink, #111) !important;
 	background: none !important;
 }
 
