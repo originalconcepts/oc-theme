@@ -217,6 +217,8 @@ final class Assets {
 				'--oc-cta-user'       => (string) get_theme_mod( 'oc_cta_color', '' ),
 				'--oc-cta-h'          => absint( get_theme_mod( 'oc_cta_height', 48 ) ) . 'px',
 				'--oc-cta-r'          => (string) get_theme_mod( 'oc_cta_radius', '8px' ),
+				'--oc-notify-user'    => (string) get_theme_mod( 'oc_notify_bg', '' ),
+				'--oc-notify-tx-user' => (string) get_theme_mod( 'oc_notify_tx', '' ),
 				'--oc-swatch'         => absint( get_theme_mod( 'oc_swatch_size', 32 ) ) . 'px',
 				'--oc-swatch-cat'     => absint( get_theme_mod( 'oc_swatch_size_cat', 22 ) ) . 'px',
 				'--oc-bg-user'        => (string) get_theme_mod( 'oc_bg_color', '' ),

@@ -1287,3 +1287,12 @@ msgstr "הרשמה לוריאציה נוספת"
 
 msgid "Manage all your alerts in your account"
 msgstr "ניהול כל ההתראות באזור האישי"
+
+msgid "Back-in-stock buttons"
+msgstr "כפתורי עדכון מלאי"
+
+msgid "Notify colour (empty = CTA colour)"
+msgstr "צבע כפתורי \"עדכנו אותי\" (ריק = צבע CTA)"
+
+msgid "Notify text colour (empty = white)"
+msgstr "צבע טקסט \"עדכנו אותי\" (ריק = לבן)"

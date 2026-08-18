@@ -892,6 +892,11 @@ final class Customizer {
 		$this->text( $c, 'oc_label_strip_cart_text', 'oc_labels', __( '"Great choice" text (%d = the number)', 'oc-theme' ) );
 		$this->color( $c, 'oc_label_strip_bg', 'oc_labels', __( 'Strip background', 'oc-theme' ) );
 		$this->color( $c, 'oc_label_strip_tx', 'oc_labels', __( 'Strip text colour', 'oc-theme' ) );
+
+		$this->heading( $c, 'oc_h_lbl_notify', 'oc_labels', __( 'Back-in-stock buttons', 'oc-theme' ) );
+
+		$this->color( $c, 'oc_notify_bg', 'oc_labels', __( 'Notify colour (empty = CTA colour)', 'oc-theme' ) );
+		$this->color( $c, 'oc_notify_tx', 'oc_labels', __( 'Notify text colour (empty = white)', 'oc-theme' ) );
 	}
 
 	/**
