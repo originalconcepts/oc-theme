@@ -190,6 +190,23 @@ final class Filters {
 	}
 
 	/**
+	 * A state with nothing active — the base for zeroed-group enumeration.
+	 *
+	 * @return array<string,mixed>
+	 */
+	private function empty_state(): array {
+		return array(
+			'attrs'   => array(),
+			'cats'    => array(),
+			'brands'  => array(),
+			'min'     => null,
+			'max'     => null,
+			'instock' => false,
+			'any'     => false,
+		);
+	}
+
+	/**
 	 * Attribute taxonomy name from its numeric id.
 	 */
 	private function attr_taxonomy( int $attribute_id ): string {
@@ -415,7 +432,17 @@ final class Filters {
 
 				$counts = $this->term_counts( $category, $state, 'a' . $attribute_id, $taxonomy );
 				if ( empty( $counts ) ) {
-					continue;
+					if ( ! $state['any'] ) {
+						continue;
+					}
+
+					// Other filters left this group with nothing: its terms
+					// still render, greyed to zero, instead of vanishing.
+					$all = $this->term_counts( $category, $this->empty_state(), '', $taxonomy );
+					if ( empty( $all ) ) {
+						continue;
+					}
+					$counts = array_fill_keys( array_keys( $all ), 0 );
 				}
 
 				$display = ( $row['display'] ?? 'auto' );

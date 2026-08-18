@@ -1077,10 +1077,12 @@
 			panels.forEach( function ( panel ) {
 				panel.querySelectorAll( '[data-flt-group]' ).forEach( function ( groupEl ) {
 					var key = groupEl.dataset.fltGroup;
-					var counts = facets[ key ];
-					if ( ! counts || 'price' === key || 'fin' === key ) {
+					if ( 'price' === key || 'fin' === key ) {
 						return;
 					}
+					// A group absent from the payload has no products at all
+					// under the other filters — every value goes grey.
+					var counts = facets[ key ] || {};
 
 					groupEl.querySelectorAll( '[data-flt-val]' ).forEach( function ( btn ) {
 						var v = btn.dataset.fltVal;
