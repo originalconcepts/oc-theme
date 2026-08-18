@@ -1482,3 +1482,6 @@ msgstr "קטגוריות ראשיות"
 
 msgid "e.g. Gender"
 msgstr "למשל: מגדר"
+
+msgid "No products match this combination — try removing one of the filters."
+msgstr "אין מוצרים שתואמים את השילוב — נסו להסיר אחד מהסינונים."

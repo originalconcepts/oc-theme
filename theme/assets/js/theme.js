@@ -926,6 +926,24 @@
 						grid.innerHTML = '';
 					}
 
+					// A combination can still bottom out (a price range set
+					// earlier, narrowed away later) — never a blank grid.
+					if ( 0 === res.data.found && ! append ) {
+						var emptyLi = document.createElement( 'li' );
+						emptyLi.className = 'oc-flt-none';
+						var msg = document.createElement( 'p' );
+						msg.textContent = L.fltNone || 'No products match this combination.';
+						var clearBtn = document.createElement( 'button' );
+						clearBtn.type = 'button';
+						clearBtn.className = 'oc-flt__clear';
+						clearBtn.setAttribute( 'data-flt-clear', '' );
+						clearBtn.textContent = L.fltClear || 'Clear all';
+						clearBtn.hidden = false;
+						emptyLi.appendChild( msg );
+						emptyLi.appendChild( clearBtn );
+						grid.appendChild( emptyLi );
+					}
+
 					[].slice.call( tmp.children ).forEach( function ( li ) {
 						grid.appendChild( li );
 						li.querySelectorAll( '.oc-card-media--gallery' ).forEach( bindCardGallery );
@@ -1045,12 +1063,29 @@
 					} );
 				} );
 
-				// Price bounds may narrow.
+				// Price bounds narrow with the other filters. While the price
+				// filter itself is untouched, the slider follows the fresh
+				// bounds — so it can never offer a range with nothing in it.
 				if ( facets.price ) {
 					var priceGroup = panel.querySelector( '[data-flt-group="price"]' );
 					if ( priceGroup ) {
 						priceGroup.dataset.lo = facets.price.lo;
 						priceGroup.dataset.hi = facets.price.hi;
+
+						var slider = priceGroup.querySelector( '[data-flt-slider]' );
+						if ( slider && null === state.min && null === state.max ) {
+							var rlo = slider.querySelector( '[data-flt-rlo]' );
+							var rhi = slider.querySelector( '[data-flt-rhi]' );
+							[ rlo, rhi ].forEach( function ( input ) {
+								input.min = facets.price.lo;
+								input.max = facets.price.hi;
+							} );
+							rlo.value = facets.price.lo;
+							rhi.value = facets.price.hi;
+							if ( slider.__ocDraw ) {
+								slider.__ocDraw();
+							}
+						}
 					}
 				}
 			} );
@@ -1294,6 +1329,7 @@
 				} );
 			} );
 
+			slider.__ocDraw = draw;
 			draw();
 		} );
 

@@ -3649,27 +3649,45 @@ ul.products.oc-flt-loading { opacity: .45; pointer-events: none; transition: opa
 
 .oc-load-more--flt[hidden] { display: none !important; }
 
-/* Swatch values always sit on an aligned grid — no ragged wrapping. In the
- * top bar's dropdown: exactly two per row. */
+/* Swatch values always sit on an aligned grid — no ragged wrapping. The
+ * label rides beside the circle (inline-end: left in Hebrew). In the top
+ * bar's dropdown: exactly two per row. */
 .oc-flt__values--swatch {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
-	gap: 14px 10px;
-	justify-items: center;
+	grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+	gap: 10px 14px;
 }
 
 .oc-flt__values--swatch .oc-flt__val {
-	inline-size: 100%;
+	flex-direction: row;
 	align-items: center;
-	text-align: center;
+	gap: 9px;
+	inline-size: 100%;
+	padding: 0;
+	font-size: .88rem;
+	text-align: start;
 }
 
 .oc-flt__values--swatch .oc-flt__val span {
-	max-inline-size: 100%;
+	min-inline-size: 0;
 	overflow-wrap: break-word;
 }
 
 .oc-flt--top-drop .oc-flt__body .oc-flt__values--swatch {
 	grid-template-columns: repeat(2, minmax(0, 1fr));
-	gap: 16px 20px;
+	gap: 12px 22px;
+}
+
+/* Nothing matched: a clear message instead of a blank grid. */
+li.oc-flt-none {
+	grid-column: 1 / -1;
+	text-align: center;
+	padding-block: 46px;
+	list-style: none;
+}
+
+li.oc-flt-none p {
+	margin: 0 0 12px;
+	font-weight: 600;
+	color: var(--oc-ink, #333);
 }
