@@ -2773,6 +2773,11 @@ body:not(.oc-no-lightbox) .oc-vslide.is-playing {
 }
 
 /* Bottom strip: full card width, sitting on the image's lower edge. */
+.oc-strip b {
+	font-weight: 700;
+	margin-inline-end: .4em;
+}
+
 .oc-strip {
 	position: absolute;
 	inset-inline: 0;

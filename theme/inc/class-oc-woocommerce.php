@@ -622,10 +622,17 @@ final class WooCommerce {
 			return;
 		}
 
+		// The headline is bold: everything up to the first exclamation mark
+		// ("In demand! 11 sold recently") — one text field, no extra knobs.
+		$bang = mb_strpos( $text, '!' );
+		$html = false !== $bang
+			? '<b>' . esc_html( mb_substr( $text, 0, $bang + 1 ) ) . '</b>' . esc_html( mb_substr( $text, $bang + 1 ) )
+			: esc_html( $text );
+
 		printf(
 			'<div class="oc-strip" style="%s">%s</div>',
 			esc_attr( self::flag_colors( 'oc_label_strip_bg', 'oc_label_strip_tx' ) ),
-			esc_html( $text )
+			$html // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
 		);
 	}
 
