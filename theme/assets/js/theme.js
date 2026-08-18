@@ -207,7 +207,7 @@
 			var prevChain = pagingNav.querySelector( 'a.prev' );
 
 			function loadPrevChain() {
-				if ( ! prevChain ) {
+				if ( ! prevChain || document.documentElement.dataset.ocFlt ) {
 					return;
 				}
 				var prevUrl = prevChain.href;
@@ -243,7 +243,9 @@
 			setTimeout( loadPrevChain, 700 );
 
 			var loadNextPage = function () {
-				if ( pagingBusy || ! pagingNext ) {
+				// Once the filter module owns the grid, the legacy paging
+				// must not append unfiltered pages under it.
+				if ( document.documentElement.dataset.ocFlt || pagingBusy || ! pagingNext ) {
 					return;
 				}
 				pagingBusy = true;
@@ -890,6 +892,7 @@
 			}
 			busy = true;
 			engaged = true;
+			document.documentElement.dataset.ocFlt = '1';
 			grid.classList.add( 'oc-flt-loading' );
 
 			var params = stateParams();
