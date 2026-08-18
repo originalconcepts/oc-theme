@@ -118,6 +118,15 @@
 			// where there is no next link at all.
 			pagingNav.style.display = 'none';
 
+			// A deliberate click on the category link must open it from the
+			// top. The browser's automatic restoration drops the visitor back
+			// mid-scroll on any same-URL navigation (and our replaceState page
+			// tracking makes that common) — so restoration is ours alone: the
+			// return-to-card flow below, and the top for everything else.
+			if ( 'scrollRestoration' in window.history ) {
+				window.history.scrollRestoration = 'manual';
+			}
+
 			// Every card remembers which page URL it belongs to; the address
 			// bar follows the page currently in view, so a click, a back, a
 			// refresh or analytics all see the right page.
@@ -142,12 +151,16 @@
 			window.addEventListener( 'scroll', updatePagingState, { passive: true } );
 
 			// Returning from a product: jump back to the card that was clicked.
+			// Any other load starts at the top — with restoration set to
+			// manual above, nothing else may move the page.
+			var ocReturned = false;
 			try {
 				var ocReturn = JSON.parse( sessionStorage.getItem( 'ocReturn' ) || 'null' );
 				if ( ocReturn && ocReturn.postClass &&
 					new URL( ocReturn.url ).pathname === window.location.pathname ) {
 					var backTarget = pagingUl.querySelector( 'li.' + ocReturn.postClass );
 					if ( backTarget ) {
+						ocReturned = true;
 						setTimeout( function () {
 							backTarget.scrollIntoView( { block: 'center' } );
 						}, 150 );
@@ -155,6 +168,10 @@
 				}
 				sessionStorage.removeItem( 'ocReturn' );
 			} catch ( e ) {}
+
+			if ( ! ocReturned ) {
+				window.scrollTo( 0, 0 );
+			}
 
 			pagingUl.addEventListener( 'click', function ( event ) {
 				var li = event.target.closest( 'li.product' );
