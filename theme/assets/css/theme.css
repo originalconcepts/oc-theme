@@ -1263,7 +1263,13 @@ body:not(.oc-no-lightbox) .woocommerce-product-gallery__image:not(.oc-vslide) im
 	padding-block: 0;
 }
 
-.oc-tabs-accordion .oc-acc-in { padding-block-end: 16px; }
+/* bottom spacing as clipped content — padding would keep the closed track
+ * from reaching zero */
+.oc-tabs-accordion .oc-acc-in::after {
+	content: "";
+	display: block;
+	block-size: 16px;
+}
 
 /* No flash of open panels: everything hides until the accordion is built. */
 .oc-tabs-accordion .woocommerce-tabs:not(.oc-acc-init) .woocommerce-Tabs-panel {
