@@ -1062,6 +1062,43 @@ msgstr "נרשמת! נעדכן אותך ברגע שהמוצר חוזר למלא�
 msgid "Fill in a phone number or an email address."
 msgstr "יש למלא מספר טלפון או כתובת אימייל."
 
+msgid "Back-in-stock waitlist"
+msgstr "ממתינים למלאי"
+
+#. translators: %d: number of signups.
+msgid "%d signups are waiting for products to return."
+msgstr "%d נרשמו וממתינים שמוצרים יחזרו למלאי."
+
+msgid "Export CSV"
+msgstr "ייצוא CSV"
+
+msgid "Product"
+msgstr "מוצר"
+
+msgid "Phone"
+msgstr "טלפון"
+
+msgid "Email"
+msgstr "אימייל"
+
+msgid "Signed up"
+msgstr "נרשמו בתאריך"
+
+msgid "Stock status"
+msgstr "מצב מלאי"
+
+msgid "Back in stock"
+msgstr "חזר למלאי"
+
+msgid "Still out"
+msgstr "עדיין אזל"
+
+msgid "Removed."
+msgstr "הוסר."
+
+msgid "No signups yet — they collect from the notify popup on sold-out products."
+msgstr "אין הרשמות עדיין — הן נאספות מהפופ-אפ במוצרים שאזלו מהמלאי."
+
 msgid "Layout"
 msgstr "פריסה"
 
