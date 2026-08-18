@@ -2739,6 +2739,14 @@ body:not(.oc-no-lightbox) .oc-vslide.is-playing {
 	inset: auto;
 }
 
+/* The old badge margins outrank the generic child alignment — pin the
+ * sale badge to its column's physical edge at the same weight. */
+.woocommerce ul.products li.product .oc-flags--left .onsale,
+.oc-flags--left .onsale { margin: 0 auto 0 0; }
+
+.woocommerce ul.products li.product .oc-flags--right .onsale,
+.oc-flags--right .onsale { margin: 0 0 0 auto; }
+
 .oc-flag {
 	background: var(--flag-bg, #fff);
 	color: var(--flag-tx, #111);
