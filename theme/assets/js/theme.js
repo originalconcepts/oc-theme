@@ -653,6 +653,28 @@
 			freshIO.observe( li );
 		} );
 
+		// Belt and braces: a slow direct measure marks visible cards too, for
+		// engines whose observer pipeline stalls (same fallback as the lazy
+		// card videos).
+		var freshTick = setInterval( function () {
+			var vh = window.innerHeight;
+			cards.forEach( function ( li ) {
+				var pid = cardPid( li );
+				if ( ! pid || seen[ pid ] ) {
+					return;
+				}
+				var rect = li.getBoundingClientRect();
+				var visible = Math.min( rect.bottom, vh ) - Math.max( rect.top, 0 );
+				if ( rect.height > 0 && visible >= rect.height * 0.5 ) {
+					seen[ pid ] = 1;
+				}
+			} );
+		}, 1200 );
+
+		window.addEventListener( 'pagehide', function () {
+			clearInterval( freshTick );
+		} );
+
 		/* -- interest: paging the card's gallery by any means, or a click.
 		 * A bare hover doesn't change the image in this card design, so per
 		 * the spec it counts for nothing. -- */
