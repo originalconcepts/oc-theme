@@ -1201,12 +1201,12 @@ final class Filters {
 			echo '</div>';
 			echo $chips; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		} else {
-			// Drawer trigger; the panel itself renders once, hidden.
-			echo '<button type="button" class="oc-flt__open" data-flt-open>';
-			echo '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M7 12h10M10 17h4"/></svg>';
-			echo '<span>' . esc_html__( 'Filter', 'oc-theme' ) . '</span><em class="oc-flt__badge" data-flt-badge hidden></em>';
-			echo '</button>';
-			echo $chips; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			// Drawer: one toolbar for every viewport — filter, sort, result
+			// count at the far end (Lanvin-style) — with the chosen values
+			// centred beneath it. The toolbar's own sort sheet becomes a
+			// dropdown on desktop.
+			$this->mobile_trigger( false, false );
+			echo '<div class="oc-flt__chips oc-flt__chips--main oc-flt__chips--center" data-flt-chips hidden></div>';
 			echo '<div class="oc-flt__overlay" data-flt-overlay hidden></div>';
 			echo '<aside class="oc-flt oc-flt--drawer" data-flt-panel data-flt-drawer hidden aria-label="' . esc_attr__( 'Filters', 'oc-theme' ) . '">';
 			echo '<div class="oc-flt__head"><span>' . esc_html__( 'Filters', 'oc-theme' ) . '</span><button type="button" class="oc-flt__close" data-flt-close aria-label="' . esc_attr__( 'Close', 'oc-theme' ) . '">&times;</button></div>';
@@ -1215,12 +1215,9 @@ final class Filters {
 			echo '</aside>';
 		}
 
-		// Every layout gets the mobile toolbar; the drawer brings its own
-		// overlay and outside chips.
+		// Topbar keeps a mobile-only toolbar; the drawer's serves all sizes.
 		if ( 'topbar' === $layout ) {
 			$this->mobile_trigger( true, false );
-		} elseif ( 'drawer' === $layout ) {
-			$this->mobile_trigger( false, false );
 		}
 	}
 
@@ -1248,14 +1245,16 @@ final class Filters {
 		echo '</button>';
 		/* translators: %s: number of products. */
 		echo '<span class="oc-flt__rescount" data-flt-rescount>' . esc_html( sprintf( __( '%s results', 'oc-theme' ), number_format_i18n( $found ) ) ) . '</span>';
-		echo '</div>';
 
-		// The sort bottom sheet — options arrive from the native select.
+		// The sort sheet — options arrive from the native select. It lives
+		// inside the bar so the desktop dropdown can anchor to it; on mobile
+		// its fixed positioning ignores the parent anyway.
 		echo '<div class="oc-sortsheet" data-oc-sortsheet hidden>';
 		echo '<div class="oc-sortsheet__head"><button type="button" class="oc-sortsheet__close" data-oc-sort-close aria-label="' . esc_attr__( 'Close', 'oc-theme' ) . '">&times;</button><span>' . esc_html__( 'Sort by', 'oc-theme' ) . '</span></div>';
 		echo '<div class="oc-sortsheet__list" data-oc-sortlist></div>';
 		echo '</div>';
 		echo '<div class="oc-flt__overlay oc-sortsheet__overlay" data-oc-sort-overlay hidden></div>';
+		echo '</div>';
 
 		if ( $with_chips ) {
 			echo '<div class="oc-flt__chips oc-flt__chips--m" data-flt-chips hidden></div>';

@@ -3787,11 +3787,12 @@ li.oc-flt-none p {
 .oc-flt__foot[hidden] { display: none !important; }
 
 /* Sidebar layout: the chosen values sit above the product grid. On mobile
- * the toolbar's own chips row takes over. */
+ * the sidebar's toolbar has its own chips row, so only there the main row
+ * steps aside; the drawer's single row serves every viewport. */
 .oc-flt-main > .oc-flt__chips--main { margin-block: 2px 18px; }
 
 @media (max-width: 900px) {
-	.oc-flt__chips--main { display: none !important; }
+	body.oc-flt-sidebar .oc-flt__chips--main { display: none !important; }
 }
 
 /* iOS paints unstyled <button>s in its system blue — every filter control
@@ -4091,3 +4092,46 @@ body.oc-sort-open .oc-sortsheet__overlay[hidden] { display: block; }
 
 .oc-pmeta__chip[hidden],
 .oc-pmeta__more[hidden] { display: none !important; }
+
+/* ---------- drawer layout: the toolbar serves every viewport ----------
+ * Lanvin-style: filter · sort at the start, the live result count at the
+ * far end; the chosen values centred beneath; the sort sheet opens as a
+ * dropdown under the bar on desktop. */
+body.oc-flt-drawer .oc-flt__mbar {
+	display: flex;
+	position: relative;
+}
+
+body.oc-flt-drawer .woocommerce-ordering,
+body.oc-flt-drawer .woocommerce-result-count { display: none; }
+
+.oc-flt__chips--center { justify-content: center; }
+
+@media (min-width: 901px) {
+	body.oc-flt-drawer.oc-sort-open .oc-sortsheet {
+		display: block !important;
+		position: absolute;
+		inset-block-start: calc(100% + 1px);
+		inset-block-end: auto;
+		inset-inline-start: 0;
+		inset-inline-end: auto;
+		inline-size: 300px;
+		max-inline-size: 90vw;
+		transform: none;
+		border: 1px solid var(--oc-line, #e5e5e5);
+		border-radius: 0 0 12px 12px;
+		box-shadow: 0 16px 34px rgb(0 0 0 / 10%);
+		padding: 0 18px 14px;
+		z-index: 90;
+	}
+
+	body.oc-flt-drawer.oc-sort-open .oc-sortsheet__head { padding-block: 12px; }
+	body.oc-flt-drawer.oc-sort-open .oc-sortsheet__list { align-items: flex-start; padding-block-start: 8px; }
+	body.oc-flt-drawer.oc-sort-open .oc-sortsheet__opt { padding: 7px 0; font-size: .95rem; }
+
+	/* click-away still works; no dimming for a small dropdown */
+	body.oc-flt-drawer.oc-sort-open .oc-sortsheet__overlay {
+		background: transparent;
+		z-index: 89;
+	}
+}
