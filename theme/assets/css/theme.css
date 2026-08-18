@@ -2498,7 +2498,7 @@ body:not(.oc-no-lightbox) .oc-vslide.is-playing {
 	align-items: center;
 	margin: 0;
 	border: 1.5px solid var(--oc-line);
-	border-radius: var(--oc-radius, 8px);
+	border-radius: var(--oc-cta-r, 8px);
 	block-size: var(--oc-cta-h, 48px);
 	overflow: hidden;
 }
@@ -2539,6 +2539,8 @@ body:not(.oc-no-lightbox) .oc-vslide.is-playing {
 	block-size: var(--oc-cta-h, 48px);
 	background: var(--oc-cta);
 	border-color: var(--oc-cta);
+	border-radius: var(--oc-cta-r, 8px);
+	padding-inline: 28px;
 }
 
 /* ---------- stock line ---------- */
@@ -2575,38 +2577,52 @@ body:not(.oc-no-lightbox) .oc-vslide.is-playing {
 .oc-atc-icons {
 	display: flex;
 	gap: 10px 22px;
-	margin-block-start: 16px;
+	margin-block: 12px 30px;
 	font-size: .88rem;
 }
 
+/* Row mode never wraps — on tight screens the items share the width and
+ * the TEXT breaks to two lines instead (the reference behaviour). */
 .oc-atc-icons--row {
-	flex-wrap: wrap;
+	flex-wrap: nowrap;
 	justify-content: space-between;
+}
+
+.oc-atc-icons--row .oc-atc-icons__item {
+	flex: 1 1 0;
+	min-inline-size: 0;
 }
 
 .oc-atc-icons--stack { flex-direction: column; }
 
 .oc-atc-icons__item {
 	display: inline-flex;
-	align-items: center;
+	align-items: flex-start;
 	gap: 8px;
 }
 
-.oc-atc-icons__item svg { flex: 0 0 auto; }
+.oc-atc-icons__item svg { flex: 0 0 auto; margin-block-start: 1px; }
 
-/* ---------- CTA hover effects ---------- */
+.oc-atc-icons__item span { min-inline-size: 0; }
 
-/* The effect family targets the funnel buttons everywhere. */
-.oc-cta-hover-none .single_add_to_cart_button:hover,
-.oc-cta-hover-invert .single_add_to_cart_button:hover,
-.oc-cta-hover-sweep-ltr .single_add_to_cart_button:hover,
-.oc-cta-hover-sweep-rtl .single_add_to_cart_button:hover {
+/* ---------- CTA hover effects ----------
+ * Specificity note: Woo-era hover rules (.woocommerce div.product form.cart
+ * .button:hover) sit at (0,3,1) — every effect rule here chains the body
+ * classes to outrank them, or the effects never show. */
+.woocommerce.oc-cta-hover-none div.product form.cart .single_add_to_cart_button:hover,
+.woocommerce.oc-cta-hover-invert div.product form.cart .single_add_to_cart_button:hover,
+.woocommerce.oc-cta-hover-sweep-ltr div.product form.cart .single_add_to_cart_button:hover,
+.woocommerce.oc-cta-hover-sweep-rtl div.product form.cart .single_add_to_cart_button:hover {
 	filter: none;
+	background: var(--oc-cta);
+	color: #fff;
 }
 
-.oc-cta-hover-invert .single_add_to_cart_button:hover,
-.oc-cta-hover-invert .checkout-button:hover,
-.oc-cta-hover-invert #place_order:hover {
+.woocommerce.oc-cta-hover-invert div.product form.cart .single_add_to_cart_button:hover,
+.oc-cta-hover-invert .woocommerce .checkout-button:hover,
+.oc-cta-hover-invert .woocommerce #place_order:hover,
+.woocommerce.oc-cta-hover-invert .checkout-button:hover,
+.woocommerce.oc-cta-hover-invert #place_order:hover {
 	background: var(--oc-surface, #fff);
 	color: var(--oc-cta);
 }
@@ -2630,9 +2646,9 @@ body:not(.oc-no-lightbox) .oc-vslide.is-playing {
 .oc-cta-hover-sweep-rtl #place_order::before {
 	content: "";
 	position: absolute;
-	inset: 0;
+	inset: -1px;
 	background: var(--oc-surface, #fff);
-	transform: translateX(-101%);
+	transform: translateX(-102%);
 	transition: transform .35s ease;
 	z-index: -1;
 }
@@ -2640,7 +2656,7 @@ body:not(.oc-no-lightbox) .oc-vslide.is-playing {
 .oc-cta-hover-sweep-rtl .single_add_to_cart_button::before,
 .oc-cta-hover-sweep-rtl .checkout-button::before,
 .oc-cta-hover-sweep-rtl #place_order::before {
-	transform: translateX(101%);
+	transform: translateX(102%);
 }
 
 .oc-cta-hover-sweep-ltr .single_add_to_cart_button:hover::before,
@@ -2652,14 +2668,18 @@ body:not(.oc-no-lightbox) .oc-vslide.is-playing {
 	transform: translateX(0);
 }
 
-.oc-cta-hover-sweep-ltr .single_add_to_cart_button:hover,
-.oc-cta-hover-sweep-rtl .single_add_to_cart_button:hover,
-.oc-cta-hover-sweep-ltr .checkout-button:hover,
-.oc-cta-hover-sweep-rtl .checkout-button:hover,
-.oc-cta-hover-sweep-ltr #place_order:hover,
-.oc-cta-hover-sweep-rtl #place_order:hover {
+.woocommerce.oc-cta-hover-sweep-ltr div.product form.cart .single_add_to_cart_button:hover,
+.woocommerce.oc-cta-hover-sweep-rtl div.product form.cart .single_add_to_cart_button:hover,
+.woocommerce.oc-cta-hover-sweep-ltr .checkout-button:hover,
+.woocommerce.oc-cta-hover-sweep-rtl .checkout-button:hover,
+.woocommerce.oc-cta-hover-sweep-ltr #place_order:hover,
+.woocommerce.oc-cta-hover-sweep-rtl #place_order:hover,
+.oc-cta-hover-sweep-ltr .woocommerce .checkout-button:hover,
+.oc-cta-hover-sweep-rtl .woocommerce .checkout-button:hover,
+.oc-cta-hover-sweep-ltr .woocommerce #place_order:hover,
+.oc-cta-hover-sweep-rtl .woocommerce #place_order:hover {
 	color: var(--oc-cta);
-	background: var(--oc-cta);
+	transition: color .35s ease;
 }
 
 /* Checkout-funnel buttons share the CTA colour and height. */
@@ -2668,6 +2688,7 @@ body:not(.oc-no-lightbox) .oc-vslide.is-playing {
 	background: var(--oc-cta);
 	border-color: var(--oc-cta);
 	block-size: var(--oc-cta-h, 48px);
+	border-radius: var(--oc-cta-r, 8px);
 }
 
 /* Our stock line replaces Woo's availability text — no double stock talk. */

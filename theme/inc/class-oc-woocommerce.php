@@ -616,9 +616,9 @@ final class WooCommerce {
 	private static function atc_icon_svg( string $key ): string {
 		$w     = ' width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"';
 		$icons = array(
-			'truck'    => '<svg' . $w . '><path d="M1.5 6h13v11h-13z"/><path d="M14.5 10h4l3 3v4h-7"/><circle cx="6" cy="17.5" r="1.8"/><circle cx="17.5" cy="17.5" r="1.8"/></svg>',
-			'plane'    => '<svg' . $w . '><path d="M21.5 3.5l-9 18-2.5-7.5L2.5 11.5z"/><path d="M21.5 3.5L10 14"/></svg>',
-			'scooter'  => '<svg' . $w . '><circle cx="5.5" cy="17.5" r="2.3"/><circle cx="18.5" cy="17.5" r="2.3"/><path d="M5.5 17.5h8l2-8h3"/><path d="M12 6.5h3l1.5 3"/></svg>',
+			'truck'    => '<svg' . $w . '><path d="M2.5 7.2A1.2 1.2 0 0 1 3.7 6h9.1A1.2 1.2 0 0 1 14 7.2v7.8H2.5z"/><path d="M14 9.5h3.3a1 1 0 0 1 .77.36l2.2 2.64a1 1 0 0 1 .23.64V15h-2.1"/><path d="M2.5 15h2.3M9.3 15H14"/><circle cx="7" cy="16.6" r="1.7"/><circle cx="16.3" cy="16.6" r="1.7"/></svg>',
+			'plane'    => '<svg' . $w . '><path d="M3 19.5h18"/><path d="M3.4 13.2l4.9 1.3L18.6 8.2a1.8 1.8 0 0 1 2.4.8c.4.9 0 1.9-.9 2.3L9 16.2l-5.6-.7z"/><path d="M8.5 9.2l3.2.9"/></svg>',
+			'scooter'  => '<svg' . $w . '><circle cx="5.4" cy="16.9" r="2.1"/><circle cx="18.6" cy="16.9" r="2.1"/><path d="M7.5 16.9h6.6l1.7-6.6h2.7"/><path d="M14.1 10.3l-.9-3h-2.6"/><rect x="8.9" y="3.6" width="4.6" height="3.7" rx=".7"/></svg>',
 			'box'      => '<svg' . $w . '><path d="M3.5 7.5l8.5-4 8.5 4v9l-8.5 4-8.5-4z"/><path d="M3.5 7.5L12 11.5l8.5-4M12 11.5v9"/></svg>',
 			'returns'  => '<svg' . $w . '><path d="M9 5H16a5.5 5.5 0 0 1 0 11H5"/><path d="M8 12.5L4.5 16 8 19.5"/></svg>',
 			'warranty' => '<svg' . $w . '><path d="M12 2.8l7.5 3v6c0 5-3.2 8.3-7.5 9.4-4.3-1.1-7.5-4.4-7.5-9.4v-6z"/><path d="M8.5 12l2.4 2.4 4.6-5"/></svg>',

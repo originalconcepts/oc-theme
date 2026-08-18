@@ -398,6 +398,19 @@ final class Customizer {
 			'none'
 		);
 
+		$this->choice(
+			$c,
+			'oc_cta_radius',
+			'oc_design',
+			__( 'Button corners', 'oc-theme' ),
+			array(
+				'0px'   => __( 'Sharp', 'oc-theme' ),
+				'8px'   => __( 'Soft', 'oc-theme' ),
+				'999px' => __( 'Round (pill)', 'oc-theme' ),
+			),
+			'8px'
+		);
+
 		$this->number( $c, 'oc_cta_height', 'oc_design', __( 'Button height (px)', 'oc-theme' ), 48, 40, 64 );
 
 		$fonts = array(

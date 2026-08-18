@@ -840,6 +840,12 @@ msgstr "נגטיב מימין לשמאל"
 msgid "Button height (px)"
 msgstr "גובה הכפתור (px)"
 
+msgid "Button corners"
+msgstr "פינות הכפתור"
+
+msgid "Round (pill)"
+msgstr "עגול (גלולה)"
+
 msgid "Add-to-cart area"
 msgstr "אזור ההוספה לסל"
 
