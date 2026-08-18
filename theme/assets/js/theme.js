@@ -1480,9 +1480,16 @@
 						b.addEventListener( 'click', function () {
 							sel.value = opt.value;
 							closeSheet();
-							if ( sel.form ) {
-								sel.form.submit();
-							}
+							// Woo's ordering form re-posts the query string
+							// from hidden fields snapshotted at page load —
+							// stale the moment filters change without a
+							// reload (cleared filters came back). Navigate
+							// from the LIVE url instead, back to page 1.
+							var url = new URL( window.location.href );
+							url.searchParams.set( 'orderby', opt.value );
+							url.searchParams.delete( 'paged' );
+							url.pathname = url.pathname.replace( /\/page\/\d+\/?$/, '/' );
+							window.location.assign( url.toString() );
 						} );
 						listEl.appendChild( b );
 					} );
