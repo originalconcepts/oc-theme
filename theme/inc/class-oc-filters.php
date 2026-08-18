@@ -1398,7 +1398,8 @@ final class Filters {
 			$html .= '<em class="oc-flt__num" data-flt-num' . ( $active_count ? '' : ' hidden' ) . '>(' . absint( $active_count ) . ')</em>';
 			$html .= '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
 			$html .= '</button>';
-			$html .= '<div class="oc-flt__body"><div class="oc-flt__values oc-flt__values--' . esc_attr( (string) $group['type'] ) . ' oc-flt__values--' . esc_attr( (string) $settings['choice'] ) . '">';
+			/* translators: %s: filter group title. */
+			$html .= '<div class="oc-flt__body"><span class="oc-flt__panel-label">' . esc_html( sprintf( __( 'By %s', 'oc-theme' ), (string) $group['title'] ) ) . '</span><div class="oc-flt__values oc-flt__values--' . esc_attr( (string) $group['type'] ) . ' oc-flt__values--' . esc_attr( (string) $settings['choice'] ) . '">';
 
 			foreach ( $group['values'] as $value ) {
 				$disabled = 0 === (int) $value['count'] && empty( $value['active'] );
@@ -1451,7 +1452,8 @@ final class Filters {
 		$html .= '<span>' . esc_html( (string) $group['title'] ) . '</span>';
 		$html .= '<em class="oc-flt__num" data-flt-num' . ( null !== $group['min'] || null !== $group['max'] ? '' : ' hidden' ) . '>(1)</em>';
 		$html .= '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
-		$html .= '</button><div class="oc-flt__body">';
+		/* translators: %s: filter group title. */
+		$html .= '</button><div class="oc-flt__body"><span class="oc-flt__panel-label">' . esc_html( sprintf( __( 'By %s', 'oc-theme' ), (string) $group['title'] ) ) . '</span>';
 
 		if ( 'tiers' === $group['mode'] && ! empty( $group['tiers'] ) ) {
 			$html .= '<div class="oc-flt__values oc-flt__values--text oc-flt__values--tiers">';

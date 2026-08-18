@@ -1689,3 +1689,6 @@ msgstr "בתוך הבר, אחרי הסינונים"
 
 msgid "Inside the bar, beside each group"
 msgstr "בתוך הבר, ליד כל סינון"
+
+msgid "By %s"
+msgstr "לפי %s"

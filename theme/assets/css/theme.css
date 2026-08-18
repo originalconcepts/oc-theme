@@ -3512,12 +3512,39 @@ html[dir="rtl"] { --oc-dir: -1; }
 	border-radius: 0 0 10px 10px;
 }
 
-/* Full-width panel: values in four tidy columns across the whole width
- * (Monday-style) — swatches and text alike; desktop only, the mobile
- * panel keeps its own single-column flow. */
+/* Full-width panel, Monday-style: not a floating card but a seamless
+ * white sheet — full-bleed to the viewport edges, flat corners, no
+ * border, just a soft shadow falling on the products below. The content
+ * inside stays aligned with the page column, under a quiet "By <group>"
+ * label, in four tidy columns. Desktop only. */
+.oc-flt__panel-label { display: none; }
+
 @media (min-width: 901px) {
 	.oc-flt--top-full .oc-flt__body {
-		padding: 22px 26px;
+		inset-inline-start: 50%;
+		inset-inline-end: auto;
+		margin-inline-start: -50vw;
+		inline-size: 100vw;
+		border: 0;
+		border-radius: 0;
+		box-shadow: 0 30px 34px -16px rgb(0 0 0 / .16);
+		padding: 26px 0 34px;
+	}
+
+	.oc-flt--top-full .oc-flt__body > * {
+		max-inline-size: var(--oc-main-width, var(--oc-content-width, 1280px));
+		margin-inline: auto;
+		padding-inline: var(--oc-gap, 24px);
+	}
+
+	.oc-flt--top-full .oc-flt__body .oc-flt__panel-label {
+		display: block;
+		font-size: .72rem;
+		font-weight: 500;
+		letter-spacing: .14em;
+		text-transform: uppercase;
+		color: var(--oc-ink-2, #8a8a86);
+		margin-block-end: 20px;
 	}
 
 	.oc-flt--top-full .oc-flt__body .oc-flt__values,
