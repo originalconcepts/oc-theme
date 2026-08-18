@@ -1360,10 +1360,10 @@ body.oc-tabs-tabs.woocommerce div.product .woocommerce-tabs ul.tabs li a,
 .oc-tabs-tabs .woocommerce-tabs ul.tabs li a {
 	display: block;
 	padding: 10px 2px 12px;
-	font-weight: 400 !important;
+	font-weight: var(--oc-tab-w, 400) !important;
 	font-size: .95rem;
 	letter-spacing: .02em;
-	color: var(--oc-muted, #77746f) !important;
+	color: var(--oc-tab-c, var(--oc-muted, #77746f)) !important;
 	text-decoration: none;
 	box-shadow: none;
 	transition: color .15s ease, box-shadow .15s ease;
@@ -1378,8 +1378,8 @@ body.oc-tabs-tabs.woocommerce div.product .woocommerce-tabs ul.tabs li a:hover,
 
 body.oc-tabs-tabs.woocommerce div.product .woocommerce-tabs ul.tabs li.active a,
 .oc-tabs-tabs .woocommerce-tabs ul.tabs li.active a {
-	color: var(--oc-ink, #111) !important;
-	font-weight: 500 !important;
+	--oc-tab-c: var(--oc-ink, #111);
+	--oc-tab-w: 500;
 	box-shadow: inset 0 -1.5px 0 var(--oc-ink, #111);
 }
 
