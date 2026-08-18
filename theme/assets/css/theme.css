@@ -3555,8 +3555,10 @@ html[dir="rtl"] { --oc-dir: -1; }
 	}
 
 	/* the price slider keeps the sidebar's width instead of stretching
-	 * across the whole sheet */
-	.oc-flt--top-full .oc-flt__body .oc-flt__price {
+	 * across the whole sheet — capped on the inner blocks so the wrapper
+	 * keeps the page-column alignment and the slider sits at the start
+	 * (right in RTL), under the label, not centred */
+	.oc-flt--top-full .oc-flt__body .oc-flt__price > div {
 		max-inline-size: 260px;
 	}
 }
