@@ -247,7 +247,14 @@ final class Tabs {
 			return;
 		}
 
-		echo '<div class="oc-desc-below">' . wp_kses_post( wpautop( do_shortcode( (string) $content ) ) ) . '</div>';
+		$heading = (string) apply_filters( 'woocommerce_product_description_heading', __( 'Description', 'woocommerce' ) );
+
+		echo '<div class="oc-desc-below">';
+		if ( '' !== $heading ) {
+			echo '<h2 class="oc-desc-below__title">' . esc_html( $heading ) . '</h2>';
+		}
+		echo wp_kses_post( wpautop( do_shortcode( (string) $content ) ) );
+		echo '</div>';
 	}
 
 	/* --------------------------------------------------------------- admin */
@@ -328,13 +335,43 @@ final class Tabs {
 				<?php wp_nonce_field( 'oc_tabs_save' ); ?>
 
 				<style>
-				/* checkbox → modern toggle, everywhere on this screen */
+				/* checkbox → modern toggle; WP admin's own checkbox styling
+				 * (border, tick ::before, 1rem sizing) is fully overridden. */
 				.oc-tgl { position: relative; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
-				.oc-tgl input { appearance: none; -webkit-appearance: none; width: 36px; height: 20px; border-radius: 999px; background: #d0d0d0; margin: 0; position: relative; cursor: pointer; transition: background .18s ease; outline-offset: 2px; }
-				.oc-tgl input::before { content: ""; position: absolute; top: 2px; inset-inline-start: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgb(0 0 0 / .3); transition: translate .18s ease; }
-				.oc-tgl input:checked { background: #1c1c1c; }
-				.oc-tgl input:checked::before { translate: 16px 0; }
-				body.rtl .oc-tgl input:checked::before { translate: -16px 0; }
+				.oc-tgl input[type=checkbox] {
+					appearance: none !important;
+					-webkit-appearance: none !important;
+					width: 36px !important;
+					height: 20px !important;
+					min-width: 36px;
+					border: 0 !important;
+					border-radius: 999px !important;
+					background: #cfcfcf !important;
+					box-shadow: none !important;
+					margin: 0 !important;
+					position: relative;
+					cursor: pointer;
+					transition: background .18s ease;
+					vertical-align: middle;
+				}
+				.oc-tgl input[type=checkbox]::before,
+				.oc-tgl input[type=checkbox]:checked::before {
+					content: "" !important;
+					position: absolute;
+					top: 2px;
+					inset-inline-start: 2px;
+					width: 16px !important;
+					height: 16px !important;
+					margin: 0 !important;
+					float: none !important;
+					border-radius: 50%;
+					background: #fff;
+					box-shadow: 0 1px 3px rgb(0 0 0 / .3);
+					transition: translate .18s ease;
+				}
+				.oc-tgl input[type=checkbox]:checked { background: #1c1c1c !important; }
+				.oc-tgl input[type=checkbox]:checked::before { translate: 16px 0; }
+				body.rtl .oc-tgl input[type=checkbox]:checked::before { translate: -16px 0; }
 				</style>
 
 				<h2><?php esc_html_e( 'Built-in tabs', 'oc-theme' ); ?></h2>
@@ -343,10 +380,10 @@ final class Tabs {
 						<th scope="row"><?php esc_html_e( 'Short description', 'oc-theme' ); ?></th>
 						<td>
 							<label class="oc-tgl"><input type="checkbox" name="short_tab" id="oc-short-tab" value="1" <?php checked( 1, (int) $settings['short_tab'] ); ?> /> <?php esc_html_e( 'Show as the first tab (instead of in the summary)', 'oc-theme' ); ?></label>
-							<span id="oc-short-extra" style="display:<?php echo $settings['short_tab'] ? 'inline-flex' : 'none'; ?>;gap:16px;align-items:center;margin-inline-start:18px;">
+							<div id="oc-short-extra" style="display:<?php echo $settings['short_tab'] ? 'block' : 'none'; ?>;margin-block-start:12px;">
 								<label class="oc-tgl"><input type="checkbox" name="short_open" value="1" <?php checked( 1, (int) $settings['short_open'] ); ?> /> <?php esc_html_e( 'Open by default', 'oc-theme' ); ?></label>
-								<input type="text" name="short_title" value="<?php echo esc_attr( (string) $settings['short_title'] ); ?>" placeholder="<?php esc_attr_e( 'About this item', 'oc-theme' ); ?>" />
-							</span>
+								<p style="margin:10px 0 0;"><input type="text" name="short_title" value="<?php echo esc_attr( (string) $settings['short_title'] ); ?>" placeholder="<?php esc_attr_e( 'About this item', 'oc-theme' ); ?>" class="regular-text" /></p>
+							</div>
 						</td>
 					</tr>
 					<tr>
@@ -430,7 +467,7 @@ final class Tabs {
 					var shortTab = document.getElementById( 'oc-short-tab' );
 					var shortExtra = document.getElementById( 'oc-short-extra' );
 					shortTab.addEventListener( 'change', function () {
-						shortExtra.style.display = shortTab.checked ? 'inline-flex' : 'none';
+						shortExtra.style.display = shortTab.checked ? 'block' : 'none';
 					} );
 				} )();
 				</script>

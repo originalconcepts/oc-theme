@@ -3963,3 +3963,11 @@ body.oc-sort-open .oc-sortsheet__overlay[hidden] { display: block; }
 .woocommerce-tabs table.woocommerce-product-attributes tr:last-child td { border-block-end: 0 !important; }
 
 .woocommerce-tabs table.woocommerce-product-attributes td p { margin: 0; }
+
+.oc-desc-below__title {
+	margin: 0 0 12px;
+	font-weight: 500;
+	font-size: .95rem;
+	letter-spacing: .01em;
+	color: var(--oc-ink, #111);
+}
