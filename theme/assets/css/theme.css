@@ -3088,3 +3088,31 @@ body:not(.oc-no-lightbox) .oc-vslide.is-playing {
 .oc-prod-oos .oc-qty {
 	display: none !important;
 }
+
+/* The hidden watcher copy on in-stock variable products stays truly hidden
+ * until an out-of-stock variation is picked; while it shows, Woo's dead
+ * add-to-cart row and availability line step aside. */
+.oc-oos[hidden] {
+	display: none !important;
+}
+
+.oc-var-oos .woocommerce-variation-add-to-cart,
+.oc-var-oos .woocommerce-variation-availability {
+	display: none !important;
+}
+
+/* Already signed up: the trigger says so and rests. */
+.oc-notify-open.oc-signed,
+.oc-notify-open:disabled {
+	opacity: .7;
+	cursor: default;
+	pointer-events: none;
+}
+
+.oc-oos__hint {
+	display: block;
+	margin-block-start: 2px;
+	font-size: .85rem;
+	color: #2e9e5b;
+	text-align: center;
+}

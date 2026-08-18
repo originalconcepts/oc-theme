@@ -1248,3 +1248,21 @@ msgstr "המוצר חזר והוא זמין לרכישה עכשיו."
 
 msgid "It sells fast, so it is worth hurrying."
 msgstr "המוצר נמכר מהר ולכן כדאי להזדרז."
+
+msgid "Stock alerts"
+msgstr "התראות מלאי"
+
+msgid "You are signed up for an update"
+msgstr "נרשמת לקבלת עדכון"
+
+msgid "You are already signed up for one of the options"
+msgstr "נרשמת כבר לאחת מהאפשרויות"
+
+msgid "signed up"
+msgstr "נרשמת"
+
+msgid "No stock alerts yet — sign up from any sold-out product."
+msgstr "אין התראות מלאי כרגע — אפשר להירשם מכל מוצר שאזל."
+
+msgid "The alert was removed."
+msgstr "ההתראה הוסרה."

@@ -157,6 +157,9 @@ final class Assets {
 				'notifyConsentMissing' => __( 'Please confirm the privacy policy to sign up.', 'oc-theme' ),
 				'notifyVarPick'        => __( 'Choose the variation you are waiting for', 'oc-theme' ),
 				'notifyVarMissing'     => __( 'Choose a variation first.', 'oc-theme' ),
+				'notifySigned'         => __( 'You are signed up for an update', 'oc-theme' ),
+				'notifySignedSome'     => __( 'You are already signed up for one of the options', 'oc-theme' ),
+				'notifySignedOpt'      => __( 'signed up', 'oc-theme' ),
 				/* translators: %d: seconds until the popup closes itself. */
 				'notifyClosing'        => __( 'Closes automatically in %d seconds', 'oc-theme' ),
 			)

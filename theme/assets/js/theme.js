@@ -1103,12 +1103,69 @@
 		}
 	}
 
+	/* Which signups this browser already made — powers the "you are signed
+	 * up" button state and the marked options in the picker. */
+	function ocSignedMap() {
+		try {
+			return JSON.parse( localStorage.getItem( 'ocNotifySigned' ) || '{}' );
+		} catch ( e ) {
+			return {};
+		}
+	}
+
+	function ocMarkSigned( productId, variationId ) {
+		var map = ocSignedMap();
+		map[ productId + '|' + ( variationId || 0 ) ] = 1;
+		try {
+			localStorage.setItem( 'ocNotifySigned', JSON.stringify( map ) );
+		} catch ( e ) {}
+	}
+
+	function ocSignedCount( productId ) {
+		var map = ocSignedMap();
+		var count = 0;
+		Object.keys( map ).forEach( function ( k ) {
+			if ( 0 === k.indexOf( productId + '|' ) ) {
+				count++;
+			}
+		} );
+		return count;
+	}
+
 	/* The variation list arrives lazily, only when a variable product's
 	 * trigger is clicked — catalogue cards stay cheap. */
-	function ocLoadNotifyVars( productId, box ) {
+	function ocFetchNotifyVars( productId ) {
 		var L = window.ocL10n || {};
 
-		function build( list ) {
+		if ( ocNotifyVarsCache[ productId ] ) {
+			return Promise.resolve( ocNotifyVarsCache[ productId ] );
+		}
+
+		return fetch( ( L.ajaxUrl || '/wp-admin/admin-ajax.php' ) + '?action=oc_notify_vars&product=' + encodeURIComponent( productId ) )
+			.then( function ( r ) {
+				return r.json();
+			} )
+			.then( function ( res ) {
+				if ( res && res.success && res.data.length ) {
+					ocNotifyVarsCache[ productId ] = res.data;
+					return res.data;
+				}
+				return null;
+			} )
+			.catch( function () {
+				return null;
+			} );
+	}
+
+	function ocLoadNotifyVars( productId, box, selected ) {
+		var L = window.ocL10n || {};
+
+		ocFetchNotifyVars( productId ).then( function ( list ) {
+			if ( ! list ) {
+				return;
+			}
+
+			var map = ocSignedMap();
 			var select = document.createElement( 'select' );
 			select.name = 'variation';
 
@@ -1120,34 +1177,78 @@
 			list.forEach( function ( v ) {
 				var opt = document.createElement( 'option' );
 				opt.value = v.id;
-				opt.textContent = v.label;
+				opt.textContent = map[ productId + '|' + v.id ]
+					? v.label + ' — ' + ( L.notifySignedOpt || 'signed up' )
+					: v.label;
+				opt.disabled = !! map[ productId + '|' + v.id ];
 				select.appendChild( opt );
 			} );
 
 			box.innerHTML = '';
 			box.appendChild( select );
 			box.hidden = false;
-		}
 
-		if ( ocNotifyVarsCache[ productId ] ) {
-			build( ocNotifyVarsCache[ productId ] );
-			return;
-		}
-
-		fetch( ( L.ajaxUrl || '/wp-admin/admin-ajax.php' ) + '?action=oc_notify_vars&product=' + encodeURIComponent( productId ) )
-			.then( function ( r ) {
-				return r.json();
-			} )
-			.then( function ( res ) {
-				if ( res && res.success && res.data.length ) {
-					ocNotifyVarsCache[ productId ] = res.data;
-					build( res.data );
-				}
-			} )
-			.catch( function () {} );
+			// The variation the shopper picked on the page arrives pre-chosen.
+			if ( selected && ! map[ productId + '|' + selected ] &&
+				select.querySelector( 'option[value="' + selected + '"]' ) ) {
+				select.value = String( selected );
+			}
+		} );
 	}
 
-	function ocOpenNotify( productId, productName, isVariable ) {
+	/* A trigger whose signup already happened tells the shopper so. */
+	function ocSwapSignedTrigger( trigger ) {
+		var L = window.ocL10n || {};
+		trigger.textContent = '✓ ' + ( L.notifySigned || 'Signed up for updates' );
+		trigger.classList.add( 'oc-signed' );
+		trigger.disabled = true;
+	}
+
+	function ocRefreshSigned() {
+		var map = ocSignedMap();
+
+		document.querySelectorAll( '.oc-notify-open' ).forEach( function ( trigger ) {
+			if ( trigger.disabled ) {
+				return;
+			}
+
+			var pid = trigger.dataset.product;
+
+			if ( '1' !== trigger.dataset.variable ) {
+				if ( map[ pid + '|0' ] ) {
+					ocSwapSignedTrigger( trigger );
+				}
+				return;
+			}
+
+			// Variable, on its own product page: with every variation signed
+			// the button flips; with some signed it hints below.
+			if ( trigger.classList.contains( 'oc-oos__notify' ) && ocSignedCount( pid ) > 0 ) {
+				ocFetchNotifyVars( pid ).then( function ( list ) {
+					if ( ! list ) {
+						return;
+					}
+					var m = ocSignedMap();
+					var all = list.every( function ( v ) {
+						return m[ pid + '|' + v.id ];
+					} );
+
+					if ( all ) {
+						ocSwapSignedTrigger( trigger );
+						return;
+					}
+					if ( ! trigger.parentNode.querySelector( '.oc-oos__hint' ) ) {
+						var hint = document.createElement( 'span' );
+						hint.className = 'oc-oos__hint';
+						hint.textContent = '✓ ' + ( ( window.ocL10n || {} ).notifySignedSome || '' );
+						trigger.insertAdjacentElement( 'afterend', hint );
+					}
+				} );
+			}
+		} );
+	}
+
+	function ocOpenNotify( productId, productName, isVariable, selectedVar ) {
 		var L = window.ocL10n || {};
 
 		if ( ! ocNotifyModal ) {
@@ -1274,6 +1375,9 @@
 							try {
 								sessionStorage.setItem( 'ocNotifyOk', '1' );
 							} catch ( e ) {}
+
+							ocMarkSigned( ocNotifyModal.dataset.product, varsEl ? varsEl.value : 0 );
+							ocRefreshSigned();
 						}
 					} )
 					.catch( function () {
@@ -1301,7 +1405,7 @@
 		varsBox.hidden = true;
 		varsBox.innerHTML = '';
 		if ( isVariable ) {
-			ocLoadNotifyVars( productId, varsBox );
+			ocLoadNotifyVars( productId, varsBox, selectedVar || '' );
 		}
 
 		// Unchecked only on the very first signup of the session.
@@ -1326,9 +1430,49 @@
 		if ( trigger ) {
 			event.preventDefault();
 			event.stopPropagation();
-			ocOpenNotify( trigger.dataset.product, trigger.dataset.name, '1' === trigger.dataset.variable );
+			ocOpenNotify( trigger.dataset.product, trigger.dataset.name, '1' === trigger.dataset.variable, trigger.dataset.selected || '' );
 		}
 	} );
+
+	ocRefreshSigned();
+
+	/* ---------- partial sold-out: watch the variation picker ----------
+	 * An in-stock variable product carries a hidden sold-out block; the
+	 * moment the shopper lands on an out-of-stock variation it surfaces,
+	 * remembers that variation for the popup, and swaps out Woo's dead
+	 * add-to-cart row. */
+
+	( function () {
+		var watch = document.querySelector( '.oc-oos--watch' );
+		var vForm = document.querySelector( 'form.variations_form' );
+
+		if ( ! watch || ! vForm ) {
+			return;
+		}
+
+		var applyWatch = function () {
+			var idInput = vForm.querySelector( 'input[name="variation_id"]' );
+			var vid = idInput ? String( idInput.value || '' ) : '';
+			var oos = !! vForm.querySelector( '.single_variation .stock.out-of-stock, .woocommerce-variation-availability .out-of-stock' );
+			var show = '' !== vid && '0' !== vid && oos;
+
+			watch.hidden = ! show;
+			vForm.classList.toggle( 'oc-var-oos', show );
+
+			var btn = watch.querySelector( '.oc-notify-open' );
+			if ( btn ) {
+				btn.dataset.selected = show ? vid : '';
+			}
+		};
+
+		new MutationObserver( applyWatch ).observe( vForm, {
+			subtree: true,
+			childList: true,
+			attributes: true,
+			attributeFilter: [ 'class', 'style' ],
+		} );
+		applyWatch();
+	} )();
 
 	/* ---------- add-to-cart: a loader takes the label until the add lands ---------- */
 

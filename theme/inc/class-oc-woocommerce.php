@@ -817,11 +817,19 @@ final class WooCommerce {
 	public function oos_block(): void {
 		global $product;
 
-		if ( ! $product instanceof \WC_Product || $product->is_in_stock() ) {
+		if ( ! $product instanceof \WC_Product ) {
+			return;
+		}
+
+		$in_stock = $product->is_in_stock();
+
+		// In-stock variable products carry a hidden copy: it surfaces the
+		// moment the shopper picks a variation that happens to be sold out.
+		if ( $in_stock && ! $product->is_type( 'variable' ) ) {
 			return;
 		}
 		?>
-		<div class="oc-oos">
+		<div class="oc-oos<?php echo $in_stock ? ' oc-oos--watch' : ''; ?>"<?php echo $in_stock ? ' hidden' : ''; ?>>
 			<button type="button" class="oc-oos__soldout" disabled><?php esc_html_e( 'Out of stock', 'oc-theme' ); ?></button>
 			<button type="button" class="oc-oos__notify oc-notify-open" data-product="<?php echo absint( $product->get_id() ); ?>" data-name="<?php echo esc_attr( $product->get_name() ); ?>"<?php echo $product->is_type( 'variable' ) ? ' data-variable="1"' : ''; ?>><?php esc_html_e( 'Notify me when it is back', 'oc-theme' ); ?></button>
 		</div>
@@ -923,9 +931,13 @@ final class WooCommerce {
 			$key .= '|' . $variation_id;
 		}
 
+		// A logged-in customer brings a name — the restock email greets with it.
+		$person = is_user_logged_in() ? wp_get_current_user()->first_name : '';
+
 		$list[ $key ] = array(
 			'email'     => $valid_email ? $email : '',
 			'phone'     => $valid_phone ? $phone : '',
+			'name'      => sanitize_text_field( (string) $person ),
 			'variation' => $variation_id,
 			'vname'     => $vname,
 			'time'      => time(),
