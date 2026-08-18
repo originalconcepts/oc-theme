@@ -192,6 +192,36 @@ final class Filters {
 	}
 
 	/**
+	 * Does a group limited to $show belong on the $category archive?
+	 * An empty list means everywhere (the shop page included); a set list
+	 * matches the categories themselves and their descendants.
+	 *
+	 * @param array<int,int> $show     Chosen category ids.
+	 * @param int            $category Current archive category (0 = shop).
+	 */
+	private function group_applies( array $show, int $category ): bool {
+		if ( empty( $show ) ) {
+			return true;
+		}
+
+		if ( ! $category ) {
+			return false;
+		}
+
+		if ( in_array( $category, $show, true ) ) {
+			return true;
+		}
+
+		foreach ( $show as $chosen ) {
+			if ( in_array( $category, array_map( 'intval', get_term_children( (int) $chosen, 'product_cat' ) ), true ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * A state with nothing active — the base for zeroed-group enumeration.
 	 *
 	 * @return array<string,mixed>
@@ -595,6 +625,12 @@ final class Filters {
 					continue;
 				}
 
+				// The group may be limited to chosen categories; empty = everywhere.
+				$show = array_filter( array_map( 'absint', (array) ( $row['show'] ?? array() ) ) );
+				if ( ! $this->group_applies( $show, $category ) ) {
+					continue;
+				}
+
 				$counts = $this->category_counts( $category, $state, 'c' . $index, $parents );
 				$values = array();
 
@@ -604,7 +640,9 @@ final class Filters {
 						continue;
 					}
 					$count = (int) ( $counts[ $parent_id ] ?? 0 );
-					if ( 0 === $count && ! in_array( $parent_id, $state['cats'][ $index ] ?? array(), true ) && 'hide' === $settings['empty'] ) {
+					// A department with nothing here does not appear at all —
+					// never greyed.
+					if ( 0 === $count && ! in_array( $parent_id, $state['cats'][ $index ] ?? array(), true ) ) {
 						continue;
 					}
 					$values[] = array(
@@ -1627,6 +1665,7 @@ final class Filters {
 							<th style="width:70px;"><?php esc_html_e( 'Order', 'oc-theme' ); ?></th>
 							<th><?php esc_html_e( 'Group title', 'oc-theme' ); ?></th>
 							<th><?php esc_html_e( 'Main categories', 'oc-theme' ); ?></th>
+							<th><?php esc_html_e( 'Only in these categories (empty = everywhere)', 'oc-theme' ); ?></th>
 							<th><?php esc_html_e( 'Open by default', 'oc-theme' ); ?></th>
 						</tr>
 					</thead>
@@ -1641,6 +1680,13 @@ final class Filters {
 									<select name="cat_terms[<?php echo absint( $i ); ?>][]" multiple size="4" style="min-width:220px;">
 										<?php foreach ( $top_cats as $cat ) : ?>
 											<option value="<?php echo absint( $cat->term_id ); ?>" <?php echo in_array( $cat->term_id, array_map( 'intval', (array) ( $row['cats'] ?? array() ) ), true ) ? 'selected' : ''; ?>><?php echo esc_html( $cat->name ); ?></option>
+										<?php endforeach; ?>
+									</select>
+								</td>
+								<td>
+									<select name="cat_show[<?php echo absint( $i ); ?>][]" multiple size="4" style="min-width:180px;">
+										<?php foreach ( $top_cats as $cat ) : ?>
+											<option value="<?php echo absint( $cat->term_id ); ?>" <?php echo in_array( $cat->term_id, array_map( 'intval', (array) ( $row['show'] ?? array() ) ), true ) ? 'selected' : ''; ?>><?php echo esc_html( $cat->name ); ?></option>
 										<?php endforeach; ?>
 									</select>
 								</td>
@@ -1695,6 +1741,7 @@ final class Filters {
 				'order' => (int) ( $_POST['cat_order'][ $i ] ?? 20 ),
 				'title' => $title,
 				'cats'  => array_values( $cats ),
+				'show'  => array_values( array_filter( array_map( 'absint', (array) ( $_POST['cat_show'][ $i ] ?? array() ) ) ) ),
 				'open'  => empty( $_POST['cat_open'][ $i ] ) ? 0 : 1,
 			);
 		}

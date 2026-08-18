@@ -1533,3 +1533,6 @@ msgstr "המוצרים מותאמים בזמן אמת לפי התנאי — אי
 
 msgid "Limit to these source categories (optional)"
 msgstr "הגבלה לקטגוריות מקור אלה (אופציונלי)"
+
+msgid "Only in these categories (empty = everywhere)"
+msgstr "רק בקטגוריות אלה (ריק = בכל האתר)"

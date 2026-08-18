@@ -1098,10 +1098,27 @@
 						}
 
 						var off = 0 === n && ! active;
-						btn.classList.toggle( 'is-off', off && 'gray' === cfg.empty );
-						btn.disabled = off && 'gray' === cfg.empty;
-						btn.hidden = off && 'hide' === cfg.empty;
+
+						// Category groups never grey out — an empty department
+						// simply is not offered.
+						if ( 0 === key.indexOf( 'fc_' ) ) {
+							btn.hidden = off;
+							btn.disabled = false;
+							btn.classList.remove( 'is-off' );
+						} else {
+							btn.classList.toggle( 'is-off', off && 'gray' === cfg.empty );
+							btn.disabled = off && 'gray' === cfg.empty;
+							btn.hidden = off && 'hide' === cfg.empty;
+						}
 					} );
+
+					// A category group with nothing left steps aside entirely.
+					if ( 0 === key.indexOf( 'fc_' ) ) {
+						var anyVisible = [].some.call( groupEl.querySelectorAll( '[data-flt-val]' ), function ( b ) {
+							return ! b.hidden;
+						} );
+						groupEl.hidden = ! anyVisible;
+					}
 				} );
 
 				// Price bounds narrow with the other filters. While the price

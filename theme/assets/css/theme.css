@@ -3873,3 +3873,5 @@ body.oc-sort-open .oc-sortsheet__overlay[hidden] { display: block; }
 	.oc-flt--top .oc-flt__group,
 	.oc-flt--top .oc-flt__group--stock { inline-size: 100%; }
 }
+
+.oc-flt__group[hidden] { display: none !important; }
