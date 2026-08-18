@@ -99,6 +99,14 @@ final class Tabs {
 	 * @param string $hook Current admin page hook.
 	 */
 	public function admin_assets( $hook ): void {
+		// Product edit screens render editors server-side, which never defines
+		// wp.editor.getDefaultSettings — and without it wp.editor.initialize
+		// is a silent no-op. The per-product tab editors need the full kit.
+		if ( in_array( (string) $hook, array( 'post.php', 'post-new.php' ), true ) && 'product' === get_post_type() ) {
+			wp_enqueue_editor();
+			return;
+		}
+
 		if ( false === strpos( (string) $hook, self::MENU ) ) {
 			return;
 		}
@@ -663,11 +671,12 @@ final class Tabs {
 	 * @return array<string,array<string,mixed>>
 	 */
 	public function product_data_tab( array $tabs ): array {
+		// 67: right below the Video tab (66).
 		$tabs['oc_tabs'] = array(
 			'label'    => __( 'Tabs', 'oc-theme' ),
 			'target'   => 'oc_product_tabs_data',
 			'class'    => array(),
-			'priority' => 65,
+			'priority' => 67,
 		);
 
 		return $tabs;
@@ -684,8 +693,54 @@ final class Tabs {
 		$rows  = is_array( $saved ) ? array_values( array_filter( $saved, 'is_array' ) ) : array();
 		?>
 		<div id="oc_product_tabs_data" class="panel woocommerce_options_panel hidden">
+			<style>
+			/* Woo's options-panel floats labels and half-widths textareas —
+			 * inside a tab row that collapsed the frame around the content.
+			 * Everything here lays out on its own terms. */
+			#oc_product_tabs_data .oc-pt-row {
+				display: flow-root;
+				border: 1px solid #dcdcde;
+				border-radius: 6px;
+				background: #fff;
+				padding: 14px 16px;
+				margin: 0 0 12px;
+			}
+			#oc_product_tabs_data .oc-pt-head {
+				display: flex;
+				gap: 14px;
+				align-items: center;
+				flex-wrap: wrap;
+				margin: 0 0 12px;
+				padding: 0;
+			}
+			#oc_product_tabs_data .oc-pt-row label {
+				float: none;
+				width: auto;
+				margin: 0;
+				padding: 0;
+				display: inline-flex;
+				align-items: center;
+				gap: 7px;
+			}
+			#oc_product_tabs_data .oc-pt-row input[type=text] {
+				width: 320px;
+				max-width: 100%;
+				float: none;
+			}
+			#oc_product_tabs_data .oc-pt-row input[type=number] {
+				width: 70px;
+				float: none;
+			}
+			#oc_product_tabs_data .oc-pt-row textarea.oc-pt-editor,
+			#oc_product_tabs_data .oc-pt-row .wp-editor-wrap {
+				float: none;
+				width: 100%;
+			}
+			#oc_product_tabs_data .oc-pt-remove { margin-inline-start: auto; }
+			#oc_product_tabs_data .oc-pt-add { margin: 2px 0 14px; }
+			</style>
 			<div style="padding:12px 14px 4px;">
-				<p class="description" style="margin-block-start:0;"><?php esc_html_e( 'Tabs for this product only — they join the global tabs. A lower position number appears earlier: description 10, additional information 20.', 'oc-theme' ); ?></p>
+				<p class="description" style="margin-block-start:0;margin-block-end:12px;"><?php esc_html_e( 'Tabs for this product only — they join the global tabs. A lower position number appears earlier: description 10, additional information 20.', 'oc-theme' ); ?></p>
 				<div id="oc-ptabs-rows">
 					<?php
 					foreach ( $rows as $i => $row ) {
@@ -693,7 +748,7 @@ final class Tabs {
 					}
 					?>
 				</div>
-				<p><button type="button" class="button" id="oc-ptabs-add">+ <?php esc_html_e( 'Add a tab', 'oc-theme' ); ?></button></p>
+				<button type="button" class="button oc-pt-add" id="oc-ptabs-add">+ <?php esc_html_e( 'Add a tab', 'oc-theme' ); ?></button>
 			</div>
 
 			<template id="oc-ptabs-template">
@@ -766,13 +821,13 @@ final class Tabs {
 	 */
 	private function product_tab_row( $i, array $row ): void {
 		?>
-		<div class="oc-pt-row card" style="max-width:100%;padding:12px 16px 14px;margin:0 0 14px;">
-			<p style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-block-start:0;">
-				<input type="text" name="pt_title[<?php echo esc_attr( (string) $i ); ?>]" value="<?php echo esc_attr( (string) ( $row['title'] ?? '' ) ); ?>" placeholder="<?php esc_attr_e( 'Tab title', 'oc-theme' ); ?>" class="regular-text" />
-				<label><?php esc_html_e( 'Position', 'oc-theme' ); ?> <input type="number" name="pt_order[<?php echo esc_attr( (string) $i ); ?>]" value="<?php echo esc_attr( (string) ( $row['order'] ?? 30 ) ); ?>" style="width:60px;" /></label>
-				<button type="button" class="button-link-delete oc-pt-remove" style="margin-inline-start:auto;"><?php esc_html_e( 'Remove', 'oc-theme' ); ?></button>
-			</p>
-			<textarea name="pt_content[<?php echo esc_attr( (string) $i ); ?>]" id="oc-pt-content-<?php echo esc_attr( (string) $i ); ?>" class="oc-pt-editor" rows="6" style="width:100%;" placeholder="<?php esc_attr_e( 'Tab content — text, HTML and shortcodes', 'oc-theme' ); ?>"><?php echo esc_textarea( (string) ( $row['content'] ?? '' ) ); ?></textarea>
+		<div class="oc-pt-row">
+			<div class="oc-pt-head">
+				<input type="text" name="pt_title[<?php echo esc_attr( (string) $i ); ?>]" value="<?php echo esc_attr( (string) ( $row['title'] ?? '' ) ); ?>" placeholder="<?php esc_attr_e( 'Tab title', 'oc-theme' ); ?>" />
+				<label><?php esc_html_e( 'Position', 'oc-theme' ); ?> <input type="number" name="pt_order[<?php echo esc_attr( (string) $i ); ?>]" value="<?php echo esc_attr( (string) ( $row['order'] ?? 30 ) ); ?>" /></label>
+				<button type="button" class="button-link-delete oc-pt-remove"><?php esc_html_e( 'Remove', 'oc-theme' ); ?></button>
+			</div>
+			<textarea name="pt_content[<?php echo esc_attr( (string) $i ); ?>]" id="oc-pt-content-<?php echo esc_attr( (string) $i ); ?>" class="oc-pt-editor" rows="6" placeholder="<?php esc_attr_e( 'Tab content — text, HTML and shortcodes', 'oc-theme' ); ?>"><?php echo esc_textarea( (string) ( $row['content'] ?? '' ) ); ?></textarea>
 		</div>
 		<?php
 	}
