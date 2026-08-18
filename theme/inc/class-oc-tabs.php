@@ -443,7 +443,14 @@ final class Tabs {
 						if ( window.jQuery ) { jQuery( document.body ).trigger( 'wc-enhanced-select-init' ); }
 					}
 
-					initRow( wrap );
+					// The editor scripts load in the footer — wait for them.
+					( function whenReady() {
+						if ( window.wp && wp.editor && window.tinymce ) {
+							initRow( wrap );
+						} else {
+							setTimeout( whenReady, 200 );
+						}
+					} )();
 
 					document.getElementById( 'oc-tabs-add' ).addEventListener( 'click', function () {
 						var index = Date.now();
