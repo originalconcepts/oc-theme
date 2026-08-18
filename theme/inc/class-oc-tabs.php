@@ -29,6 +29,11 @@ final class Tabs {
 
 		add_filter( 'woocommerce_product_tabs', array( $this, 'tabs' ), 40 );
 		add_action( 'init', array( $this, 'placement' ) );
+
+		// Per-product tabs, managed straight from the product edit screen.
+		add_filter( 'woocommerce_product_data_tabs', array( $this, 'product_data_tab' ) );
+		add_action( 'woocommerce_product_data_panels', array( $this, 'product_data_panel' ) );
+		add_action( 'woocommerce_admin_process_product_object', array( $this, 'product_tabs_save' ) );
 	}
 
 	/**
@@ -160,6 +165,26 @@ final class Tabs {
 				$title   = (string) $tab['title'];
 
 				$tabs[ 'oc_custom_' . $index ] = array(
+					'title'    => $title,
+					'priority' => (int) ( $tab['order'] ?? 30 ),
+					'callback' => static function () use ( $content, $title ) {
+						// The heading feeds the accordion's title (CSS hides it).
+						echo '<h2>' . esc_html( $title ) . '</h2>';
+						echo '<div class="oc-tab-custom">' . wp_kses_post( wpautop( do_shortcode( $content ) ) ) . '</div>';
+					},
+				);
+			}
+
+			// This product's own tabs, saved on its edit screen.
+			foreach ( (array) $product->get_meta( '_oc_product_tabs' ) as $index => $tab ) {
+				$title   = (string) ( $tab['title'] ?? '' );
+				$content = (string) ( $tab['content'] ?? '' );
+
+				if ( '' === $title ) {
+					continue;
+				}
+
+				$tabs[ 'oc_ptab_' . $index ] = array(
 					'title'    => $title,
 					'priority' => (int) ( $tab['order'] ?? 30 ),
 					'callback' => static function () use ( $content, $title ) {
@@ -612,5 +637,159 @@ final class Tabs {
 
 		wp_safe_redirect( add_query_arg( array( 'page' => self::MENU, 'oc_saved' => 1 ), admin_url( 'admin.php' ) ) );
 		exit;
+	}
+
+	/* -------------------------------------------- per-product tabs (admin) */
+
+	/**
+	 * "Tabs" tab in the product-data metabox.
+	 *
+	 * @param array<string,array<string,mixed>> $tabs Product-data tabs.
+	 * @return array<string,array<string,mixed>>
+	 */
+	public function product_data_tab( array $tabs ): array {
+		$tabs['oc_tabs'] = array(
+			'label'    => __( 'Tabs', 'oc-theme' ),
+			'target'   => 'oc_product_tabs_data',
+			'class'    => array(),
+			'priority' => 65,
+		);
+
+		return $tabs;
+	}
+
+	/**
+	 * The panel: this product's own tabs — title, content, position — that
+	 * join the global set on its page.
+	 */
+	public function product_data_panel(): void {
+		global $post;
+
+		$rows = array_values( (array) get_post_meta( (int) $post->ID, '_oc_product_tabs', true ) );
+		?>
+		<div id="oc_product_tabs_data" class="panel woocommerce_options_panel hidden">
+			<div style="padding:12px 14px 4px;">
+				<p class="description" style="margin-block-start:0;"><?php esc_html_e( 'Tabs for this product only — they join the global tabs. A lower position number appears earlier: description 10, additional information 20.', 'oc-theme' ); ?></p>
+				<div id="oc-ptabs-rows">
+					<?php
+					foreach ( $rows as $i => $row ) {
+						$this->product_tab_row( $i, $row );
+					}
+					?>
+				</div>
+				<p><button type="button" class="button" id="oc-ptabs-add">+ <?php esc_html_e( 'Add a tab', 'oc-theme' ); ?></button></p>
+			</div>
+
+			<template id="oc-ptabs-template">
+				<?php $this->product_tab_row( '__i__', array() ); ?>
+			</template>
+
+			<script>
+			( function () {
+				var wrap = document.getElementById( 'oc-ptabs-rows' );
+				var tpl = document.getElementById( 'oc-ptabs-template' );
+
+				function initRows() {
+					if ( ! window.wp || ! wp.editor || ! window.tinymce ) { return; }
+					wrap.querySelectorAll( '.oc-pt-editor' ).forEach( function ( area ) {
+						if ( area.dataset.ready ) { return; }
+						area.dataset.ready = '1';
+						wp.editor.initialize( area.id, {
+							tinymce: { toolbar1: 'formatselect,bold,italic,underline,link,unlink,bullist,numlist,alignleft,aligncenter,alignright,image', height: 180 },
+							quicktags: true,
+							mediaButtons: true
+						} );
+					} );
+				}
+
+				// TinyMCE inside a hidden panel renders broken — initialize
+				// only once the panel is actually shown (and for rows added
+				// later, right away, since the panel is visible by then).
+				document.querySelectorAll( '.oc_tabs_options a, a[href="#oc_product_tabs_data"]' ).forEach( function ( link ) {
+					link.addEventListener( 'click', function () {
+						setTimeout( initRows, 60 );
+					} );
+				} );
+
+				document.getElementById( 'oc-ptabs-add' ).addEventListener( 'click', function () {
+					var index = Date.now();
+					var html = tpl.innerHTML.split( '__i__' ).join( index );
+					var box = document.createElement( 'div' );
+					box.innerHTML = html;
+					while ( box.firstChild ) { wrap.appendChild( box.firstChild ); }
+					initRows();
+				} );
+
+				wrap.addEventListener( 'click', function ( e ) {
+					var del = e.target.closest( '.oc-pt-remove' );
+					if ( del ) { del.closest( '.oc-pt-row' ).remove(); }
+				} );
+
+				// TinyMCE keeps content in its iframe — sync back on save.
+				var form = document.getElementById( 'post' );
+				if ( form ) {
+					form.addEventListener( 'submit', function () {
+						if ( window.tinymce ) { tinymce.triggerSave(); }
+					} );
+				}
+			} )();
+			</script>
+		</div>
+		<?php
+	}
+
+	/**
+	 * One per-product tab row.
+	 *
+	 * @param int|string          $i   Row index (or template placeholder).
+	 * @param array<string,mixed> $row Row data.
+	 */
+	private function product_tab_row( $i, array $row ): void {
+		?>
+		<div class="oc-pt-row card" style="max-width:100%;padding:12px 16px 14px;margin:0 0 14px;">
+			<p style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-block-start:0;">
+				<input type="text" name="pt_title[<?php echo esc_attr( (string) $i ); ?>]" value="<?php echo esc_attr( (string) ( $row['title'] ?? '' ) ); ?>" placeholder="<?php esc_attr_e( 'Tab title', 'oc-theme' ); ?>" class="regular-text" />
+				<label><?php esc_html_e( 'Position', 'oc-theme' ); ?> <input type="number" name="pt_order[<?php echo esc_attr( (string) $i ); ?>]" value="<?php echo esc_attr( (string) ( $row['order'] ?? 30 ) ); ?>" style="width:60px;" /></label>
+				<button type="button" class="button-link-delete oc-pt-remove" style="margin-inline-start:auto;"><?php esc_html_e( 'Remove', 'oc-theme' ); ?></button>
+			</p>
+			<textarea name="pt_content[<?php echo esc_attr( (string) $i ); ?>]" id="oc-pt-content-<?php echo esc_attr( (string) $i ); ?>" class="oc-pt-editor" rows="6" style="width:100%;" placeholder="<?php esc_attr_e( 'Tab content — text, HTML and shortcodes', 'oc-theme' ); ?>"><?php echo esc_textarea( (string) ( $row['content'] ?? '' ) ); ?></textarea>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Persist this product's tabs with the product itself.
+	 *
+	 * @param \WC_Product $product Product being saved.
+	 */
+	public function product_tabs_save( $product ): void {
+		// phpcs:disable WordPress.Security.NonceVerification.Missing -- Woo verified the product-save nonce already.
+		if ( ! isset( $_POST['pt_title'] ) && ! isset( $_POST['pt_content'] ) ) {
+			return; // Quick-edit and API saves never touch the rows.
+		}
+
+		$rows = array();
+
+		foreach ( (array) ( $_POST['pt_title'] ?? array() ) as $i => $title ) {
+			$title = sanitize_text_field( wp_unslash( (string) $title ) );
+			$body  = wp_kses_post( wp_unslash( (string) ( $_POST['pt_content'][ $i ] ?? '' ) ) );
+
+			if ( '' === $title && '' === trim( $body ) ) {
+				continue;
+			}
+
+			$rows[] = array(
+				'title'   => $title,
+				'order'   => (int) ( $_POST['pt_order'][ $i ] ?? 30 ),
+				'content' => $body,
+			);
+		}
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
+
+		if ( $rows ) {
+			$product->update_meta_data( '_oc_product_tabs', $rows );
+		} else {
+			$product->delete_meta_data( '_oc_product_tabs' );
+		}
 	}
 }

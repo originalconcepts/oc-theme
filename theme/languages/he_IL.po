@@ -1653,3 +1653,9 @@ msgstr "קטגוריות ותגיות של המוצר"
 
 msgid "Show all"
 msgstr "הצגת הכל"
+
+msgid "Position"
+msgstr "מיקום"
+
+msgid "Tabs for this product only — they join the global tabs. A lower position number appears earlier: description 10, additional information 20."
+msgstr "טאבים למוצר הזה בלבד — הם מצטרפים לטאבים הכלליים. מספר מיקום נמוך יותר מופיע מוקדם יותר: תיאור 10, מידע נוסף 20."
