@@ -1290,7 +1290,7 @@ body:not(.oc-no-lightbox) .woocommerce-product-gallery__image:not(.oc-vslide) im
 	justify-content: space-between;
 	inline-size: 100%;
 	margin: 0;
-	padding-block: 13px;
+	padding-block: 16px;
 	line-height: 1.2;
 	background: none;
 	border: 0;
@@ -3992,6 +3992,15 @@ body.oc-sort-open .oc-sortsheet__overlay[hidden] { display: block; }
 
 .woocommerce-tabs table.woocommerce-product-attributes tr:last-child th,
 .woocommerce-tabs table.woocommerce-product-attributes tr:last-child td { border-block-end: 0 !important; }
+
+/* The first row's top padding made the table's text start lower than the
+ * other tabs' text — every panel's content now begins at the same line. */
+.woocommerce-tabs table.woocommerce-product-attributes tr:first-child th,
+.woocommerce-tabs table.woocommerce-product-attributes tr:first-child td,
+.oc-desc-below table.woocommerce-product-attributes tr:first-child th,
+.oc-desc-below table.woocommerce-product-attributes tr:first-child td {
+	padding-block-start: 0 !important;
+}
 
 .woocommerce-tabs table.woocommerce-product-attributes td p { margin: 0; }
 
