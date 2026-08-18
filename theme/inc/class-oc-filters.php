@@ -1186,9 +1186,21 @@ final class Filters {
 			echo '</aside>';
 			echo '<div class="oc-flt-main">';
 			$this->mobile_trigger( true, true );
-			// The chosen values live above the products (vqfit-style), not
-			// inside the sidebar; mobile keeps the toolbar's own chips row.
+
+			// One desktop row above the products: the chosen values at the
+			// start, sort and the live count at the far end — the same tail
+			// as the other layouts. Mobile keeps the toolbar's chips row.
+			global $wp_query;
+			$found = isset( $wp_query->found_posts ) ? (int) $wp_query->found_posts : 0;
+
+			echo '<div class="oc-flt__sidebar-row">';
 			echo '<div class="oc-flt__chips oc-flt__chips--main" data-flt-chips hidden></div>';
+			echo '<span class="oc-flt__bar-tail">';
+			$this->sort_button();
+			/* translators: %s: number of products. */
+			echo '<span class="oc-flt__rescount" data-flt-rescount>' . esc_html( sprintf( __( '%s results', 'oc-theme' ), number_format_i18n( $found ) ) ) . '</span>';
+			echo '</span>';
+			echo '</div>';
 			return;
 		}
 

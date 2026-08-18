@@ -1498,10 +1498,10 @@
 					// bar holds the opener; mobile keeps the bottom sheet.
 					if ( sheet && window.matchMedia && window.matchMedia( '(min-width: 901px)' ).matches ) {
 						var opener = event.target.closest( '[data-oc-sort-open]' );
-						var bar = opener.closest( '.oc-flt__mbar, .oc-flt--top' );
+						var bar = opener.closest( '.oc-flt__mbar, .oc-flt--top, .oc-flt__sidebar-row' );
 						if ( bar ) {
 							sheet.classList.add( 'oc-sortsheet--drop' );
-							sheet.classList.toggle( 'oc-sortsheet--end', ! ! opener.closest( '.oc-flt--top' ) );
+							sheet.classList.toggle( 'oc-sortsheet--end', ! ! opener.closest( '.oc-flt--top, .oc-flt__sidebar-row' ) );
 							sheet.style.insetBlockStart = ( bar.offsetTop + bar.offsetHeight + 1 ) + 'px';
 						}
 					}

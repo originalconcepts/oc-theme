@@ -4226,3 +4226,26 @@ body.oc-sort-open .oc-flt__sortchev { rotate: 180deg; }
 	/* the mobile toolbar's chips row serves the topbar there */
 	body.oc-flt-topbar .oc-flt__chips--below { display: none !important; }
 }
+
+/* ---------- sidebar layout: one row above the products ----------
+ * Chosen values at the start, sort + live count at the far end — the
+ * same tail as the other layouts. Woo's own ordering line steps aside. */
+.oc-flt__sidebar-row {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 14px 18px;
+	margin-block-end: 16px;
+}
+
+.oc-flt__sidebar-row .oc-flt__bar-tail { margin-inline-start: auto; }
+
+.oc-flt__sidebar-row .oc-flt__chips--main { margin-block: 0; }
+
+body.oc-flt-sidebar .woocommerce-ordering,
+body.oc-flt-sidebar .woocommerce-result-count { display: none; }
+
+@media (max-width: 900px) {
+	/* the mobile toolbar carries filter, sort, count and chips there */
+	.oc-flt__sidebar-row { display: none; }
+}
