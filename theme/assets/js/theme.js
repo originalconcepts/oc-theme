@@ -975,8 +975,11 @@
 			if ( ob ) {
 				qs += ( qs ? '&' : '' ) + 'orderby=' + encodeURIComponent( ob );
 			}
+			// Filtered results restart at page one — a lingering /page/N/
+			// from the scroll tracking would 404 on the way back.
+			var path = window.location.pathname.replace( /\/page\/\d+\/?$/, '/' );
 			try {
-				window.history.replaceState( null, '', window.location.pathname + ( qs ? '?' + qs : '' ) );
+				window.history.replaceState( null, '', path + ( qs ? '?' + qs : '' ) );
 			} catch ( e ) {}
 		}
 

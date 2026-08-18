@@ -56,6 +56,7 @@ final class Filters {
 
 		add_action( 'wp_ajax_oc_filter', array( $this, 'ajax' ) );
 		add_action( 'wp_ajax_nopriv_oc_filter', array( $this, 'ajax' ) );
+		add_action( 'template_redirect', array( $this, 'rescue_paged_404' ) );
 	}
 
 	/* ---------------------------------------------------------------- setup */
@@ -321,6 +322,28 @@ final class Filters {
 		}
 
 		return $clauses;
+	}
+
+	/**
+	 * A filtered result set is smaller than the unfiltered one — a stale
+	 * /page/N/ URL carrying filter params can overflow into a 404. Send it
+	 * to page one of the same filtered view instead.
+	 */
+	public function rescue_paged_404(): void {
+		if ( ! is_404() || ! $this->state()['any'] ) {
+			return;
+		}
+
+		$request = (string) ( $_SERVER['REQUEST_URI'] ?? '' ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- path-only use, re-escaped below.
+
+		if ( ! preg_match( '#/page/\d+/?#', $request ) ) {
+			return;
+		}
+
+		$target = preg_replace( '#/page/\d+/?#', '/', $request );
+
+		wp_safe_redirect( esc_url_raw( home_url( $target ) ), 302 );
+		exit;
 	}
 
 	/* ----------------------------------------------------------------- SEO */
