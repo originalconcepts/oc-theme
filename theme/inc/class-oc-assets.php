@@ -175,9 +175,15 @@ final class Assets {
 				'fltClear'   => __( 'Clear all', 'oc-theme' ),
 				/* translators: %s: number of products. */
 				'fltResults' => __( '%s results', 'oc-theme' ),
-				// Panels start closed; only the short-description tab may open
-				// by default, and only when configured to.
-				'accOpenFirst' => ( Tabs::settings()['short_tab'] && Tabs::settings()['short_open'] ) ? 1 : 0,
+				// Panels start closed; tabs configured to open by default are
+				// listed by key (panel ids are tab-{key}).
+				'accOpen' => implode(
+					',',
+					array_merge(
+						( Tabs::settings()['short_tab'] && Tabs::settings()['short_open'] ) ? array( 'oc_short' ) : array(),
+						( 'tab' === Tabs::settings()['desc_place'] && ! empty( Tabs::settings()['desc_open'] ) ) ? array( 'description' ) : array()
+					)
+				),
 				// The colour-sibling card swap rebuilds the sold-out pieces.
 				'oosFlagText'  => get_theme_mod( 'oc_label_stock', false ) ? (string) get_theme_mod( 'oc_label_stock_out', __( 'Out of stock', 'oc-theme' ) ) : '',
 				'oosFlagStyle' => WooCommerce::flag_colors( 'oc_label_stock_bg', 'oc_label_stock_tx' ),

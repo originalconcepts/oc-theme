@@ -51,6 +51,7 @@ final class Tabs {
 				'short_open'  => 0,
 				'short_title' => '',
 				'desc_place'  => 'tab',   // tab | below.
+				'desc_open'   => 0,
 				'desc_order'  => 10,
 				'desc_title'  => '',
 				'additional'  => 1,
@@ -418,12 +419,13 @@ final class Tabs {
 					<tr>
 						<th scope="row"><?php esc_html_e( 'Full description', 'oc-theme' ); ?></th>
 						<td>
-							<select name="desc_place">
+							<select name="desc_place" id="oc-desc-place">
 								<option value="tab" <?php selected( 'tab', $settings['desc_place'] ); ?>><?php esc_html_e( 'Inside a tab', 'oc-theme' ); ?></option>
 								<option value="below" <?php selected( 'below', $settings['desc_place'] ); ?>><?php esc_html_e( 'Outside — below the tabs', 'oc-theme' ); ?></option>
 							</select>
 							<input type="text" name="desc_title" value="<?php echo esc_attr( (string) $settings['desc_title'] ); ?>" placeholder="<?php esc_attr_e( 'Tab title (empty = default)', 'oc-theme' ); ?>" style="margin-inline-start:10px;" />
 							<label style="margin-inline-start:12px;"><?php esc_html_e( 'Order', 'oc-theme' ); ?> <input type="number" name="desc_order" value="<?php echo esc_attr( (string) $settings['desc_order'] ); ?>" style="width:60px;" /></label>
+							<p id="oc-desc-open" style="margin:10px 0 0;display:<?php echo 'tab' === $settings['desc_place'] ? 'block' : 'none'; ?>;"><label class="oc-tgl"><input type="checkbox" name="desc_open" value="1" <?php checked( 1, (int) $settings['desc_open'] ); ?> /> <?php esc_html_e( 'Open by default', 'oc-theme' ); ?></label></p>
 						</td>
 					</tr>
 					<tr>
@@ -504,6 +506,14 @@ final class Tabs {
 					var shortExtra = document.getElementById( 'oc-short-extra' );
 					shortTab.addEventListener( 'change', function () {
 						shortExtra.style.display = shortTab.checked ? 'block' : 'none';
+					} );
+
+					// Open-by-default only makes sense while the description
+					// actually is a tab.
+					var descPlace = document.getElementById( 'oc-desc-place' );
+					var descOpen = document.getElementById( 'oc-desc-open' );
+					descPlace.addEventListener( 'change', function () {
+						descOpen.style.display = 'tab' === descPlace.value ? 'block' : 'none';
 					} );
 				} )();
 				</script>
@@ -629,6 +639,7 @@ final class Tabs {
 				'short_open'  => empty( $_POST['short_open'] ) ? 0 : 1,
 				'short_title' => sanitize_text_field( wp_unslash( (string) ( $_POST['short_title'] ?? '' ) ) ),
 				'desc_place'  => 'below' === ( $_POST['desc_place'] ?? 'tab' ) ? 'below' : 'tab',
+				'desc_open'   => empty( $_POST['desc_open'] ) ? 0 : 1,
 				'desc_order'  => (int) ( $_POST['desc_order'] ?? 10 ),
 				'desc_title'  => sanitize_text_field( wp_unslash( (string) ( $_POST['desc_title'] ?? '' ) ) ),
 				'additional'  => empty( $_POST['additional'] ) ? 0 : 1,
