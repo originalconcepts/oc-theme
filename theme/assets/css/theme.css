@@ -3905,15 +3905,10 @@ body.oc-sort-open .oc-sortsheet__overlay[hidden] { display: block; }
 	margin: 0;
 }
 
-.woocommerce-tabs table.woocommerce-product-attributes tr {
-	border-block-end: 1px solid var(--oc-line, #ececec);
-}
-
-.woocommerce-tabs table.woocommerce-product-attributes tr:last-child { border-block-end: 0; }
-
 .woocommerce-tabs table.woocommerce-product-attributes th,
 .woocommerce-tabs table.woocommerce-product-attributes td {
 	border: 0;
+	border-block-end: 1px solid var(--oc-line, #ececec);
 	background: none !important;
 	padding: 11px 0;
 	font-size: .93rem;
@@ -3932,5 +3927,8 @@ body.oc-sort-open .oc-sortsheet__overlay[hidden] { display: block; }
 .woocommerce-tabs table.woocommerce-product-attributes td {
 	color: var(--oc-ink, #1c1c1c);
 }
+
+.woocommerce-tabs table.woocommerce-product-attributes tr:last-child th,
+.woocommerce-tabs table.woocommerce-product-attributes tr:last-child td { border-block-end: 0; }
 
 .woocommerce-tabs table.woocommerce-product-attributes td p { margin: 0; }
