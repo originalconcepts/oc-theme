@@ -2627,12 +2627,17 @@ body:not(.oc-no-lightbox) .oc-vslide.is-playing {
 	color: var(--oc-cta);
 }
 
-.oc-cta-hover-sweep-ltr .single_add_to_cart_button,
-.oc-cta-hover-sweep-rtl .single_add_to_cart_button,
-.oc-cta-hover-sweep-ltr .checkout-button,
-.oc-cta-hover-sweep-rtl .checkout-button,
-.oc-cta-hover-sweep-ltr #place_order,
-.oc-cta-hover-sweep-rtl #place_order {
+/* Chained past Woo's own overflow:visible on buttons. */
+.woocommerce.oc-cta-hover-sweep-ltr .single_add_to_cart_button,
+.woocommerce.oc-cta-hover-sweep-rtl .single_add_to_cart_button,
+.oc-cta-hover-sweep-ltr .woocommerce .checkout-button,
+.oc-cta-hover-sweep-rtl .woocommerce .checkout-button,
+.woocommerce.oc-cta-hover-sweep-ltr .checkout-button,
+.woocommerce.oc-cta-hover-sweep-rtl .checkout-button,
+.oc-cta-hover-sweep-ltr .woocommerce #place_order,
+.oc-cta-hover-sweep-rtl .woocommerce #place_order,
+.woocommerce.oc-cta-hover-sweep-ltr #place_order,
+.woocommerce.oc-cta-hover-sweep-rtl #place_order {
 	position: relative;
 	overflow: hidden;
 	z-index: 0;
