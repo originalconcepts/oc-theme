@@ -1269,3 +1269,21 @@ msgstr "ההתראה הוסרה."
 
 msgid "Manage your stock alerts"
 msgstr "לניהול התראות המלאי שלך"
+
+msgid "You are signed up for an update on this product."
+msgstr "נרשמת לקבלת עדכון על המוצר הזה."
+
+msgid "Signed up for:"
+msgstr "נרשמת עבור:"
+
+msgid "Remove me from the list"
+msgstr "הסירו אותי מהרשימה"
+
+msgid "Removed — we will not send an update."
+msgstr "הוסרת מהרשימה — לא יישלח עדכון."
+
+msgid "Sign up for another variation"
+msgstr "הרשמה לוריאציה נוספת"
+
+msgid "Manage all your alerts in your account"
+msgstr "ניהול כל ההתראות באזור האישי"

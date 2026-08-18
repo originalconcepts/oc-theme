@@ -1167,12 +1167,42 @@
 		}
 	}
 
-	function ocMarkSigned( productId, variationId ) {
-		var map = ocSignedMap();
-		map[ productId + '|' + ( variationId || 0 ) ] = 1;
+	function ocSaveSignedMap( map ) {
 		try {
 			localStorage.setItem( 'ocNotifySigned', JSON.stringify( map ) );
 		} catch ( e ) {}
+	}
+
+	// Entries store the server-issued signup key so the shopper can remove
+	// themselves later; records from before that existed are dropped.
+	( function () {
+		var map = ocSignedMap();
+		var changed = false;
+		Object.keys( map ).forEach( function ( k ) {
+			if ( 'object' !== typeof map[ k ] ) {
+				delete map[ k ];
+				changed = true;
+			}
+		} );
+		if ( changed ) {
+			ocSaveSignedMap( map );
+		}
+	} )();
+
+	function ocMarkSigned( productId, variationId, key ) {
+		var map = ocSignedMap();
+		map[ productId + '|' + ( variationId || 0 ) ] = { k: key || '' };
+		ocSaveSignedMap( map );
+	}
+
+	function ocUnmarkProduct( productId ) {
+		var map = ocSignedMap();
+		Object.keys( map ).forEach( function ( k ) {
+			if ( 0 === k.indexOf( productId + '|' ) ) {
+				delete map[ k ];
+			}
+		} );
+		ocSaveSignedMap( map );
 	}
 
 	function ocSignedCount( productId ) {
@@ -1253,19 +1283,33 @@
 		} );
 	}
 
-	/* A trigger whose signup already happened tells the shopper so. */
+	/* A trigger whose signup already happened tells the shopper so — and stays
+	 * clickable: it opens the popup's signed view (details, another variation,
+	 * self-removal). */
 	function ocSwapSignedTrigger( trigger ) {
 		var L = window.ocL10n || {};
 		trigger.textContent = '✓ ' + ( L.notifySigned || 'Signed up for updates' );
 		trigger.classList.add( 'oc-signed' );
-		trigger.disabled = true;
+	}
+
+	function ocUnswapTriggers( productId ) {
+		var L = window.ocL10n || {};
+		document.querySelectorAll( '.oc-notify-open[data-product="' + productId + '"]' ).forEach( function ( trigger ) {
+			trigger.classList.remove( 'oc-signed' );
+			trigger.disabled = false;
+			trigger.textContent = L.notifyButton || 'Notify me when it is back';
+			var hint = trigger.parentNode.querySelector( '.oc-oos__hint' );
+			if ( hint ) {
+				hint.remove();
+			}
+		} );
 	}
 
 	function ocRefreshSigned() {
 		var map = ocSignedMap();
 
 		document.querySelectorAll( '.oc-notify-open' ).forEach( function ( trigger ) {
-			if ( trigger.disabled ) {
+			if ( trigger.classList.contains( 'oc-signed' ) ) {
 				return;
 			}
 
@@ -1343,6 +1387,16 @@
 				'<p class="oc-nmodal__done">' + ( L.notifyDone || '' ) + '</p>' +
 				'<p class="oc-nmodal__count"></p>' +
 				'</div>' +
+				'<div class="oc-nmodal__signedview" hidden>' +
+				'<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="21" fill="none" stroke="currentColor" stroke-width="3"/><path d="M15 24.5l6.5 6.5L33 18.5" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+				'<p class="oc-nmodal__signedmsg">' + ( L.notifySignedMsg || '' ) + '</p>' +
+				'<p class="oc-nmodal__signedvars"></p>' +
+				'<button type="button" class="oc-nmodal__more" hidden>' + ( L.notifyMore || '' ) + '</button>' +
+				'<button type="button" class="oc-nmodal__unsub">' + ( L.notifyUnsub || '' ) + '</button>' +
+				( L.isLoggedIn && L.accountAlertsUrl
+					? '<p class="oc-nmodal__manage"><a href="' + L.accountAlertsUrl + '">' + ( L.notifyManage || '' ) + '</a></p>'
+					: '' ) +
+				'</div>' +
 				'</div>';
 			document.body.appendChild( ocNotifyModal );
 
@@ -1410,6 +1464,7 @@
 						if ( res && res.success ) {
 							// The whole card becomes the confirmation: a big
 							// check, the message, and a 5s self-close.
+							ocNotifyModal.querySelector( '.oc-nmodal__done' ).textContent = L.notifyDone || '';
 							ocNotifyModal.querySelector( '.oc-nmodal__title' ).hidden = true;
 							ocNotifyModal.querySelector( '.oc-nmodal__intro' ).hidden = true;
 							ocNotifyModal.querySelector( '.oc-nmodal__product' ).hidden = true;
@@ -1436,12 +1491,60 @@
 								sessionStorage.setItem( 'ocNotifyOk', '1' );
 							} catch ( e ) {}
 
-							ocMarkSigned( ocNotifyModal.dataset.product, varsEl ? varsEl.value : 0 );
+							ocMarkSigned( ocNotifyModal.dataset.product, varsEl ? varsEl.value : 0, res.data && res.data.key ? res.data.key : '' );
 							ocRefreshSigned();
 						}
 					} )
 					.catch( function () {
 						submit.disabled = false;
+					} );
+			} );
+
+			// Signed view: another variation reopens the form; removal asks the
+			// server to drop this browser's signups for the product.
+			ocNotifyModal.querySelector( '.oc-nmodal__more' ).addEventListener( 'click', function () {
+				ocOpenNotify( ocNotifyModal.dataset.product, ocNotifyModal.dataset.name || '', true, '' );
+			} );
+
+			ocNotifyModal.querySelector( '.oc-nmodal__unsub' ).addEventListener( 'click', function () {
+				var unsub = this;
+				var pid = ocNotifyModal.dataset.product;
+				var map = ocSignedMap();
+				var keys = [];
+
+				Object.keys( map ).forEach( function ( k ) {
+					if ( 0 === k.indexOf( pid + '|' ) && map[ k ] && map[ k ].k ) {
+						keys.push( map[ k ].k );
+					}
+				} );
+
+				unsub.disabled = true;
+
+				var data = new FormData();
+				data.append( 'action', 'oc_notify_remove' );
+				data.append( 'nonce', L.notifyNonce || '' );
+				data.append( 'product', pid );
+				data.append( 'entries', JSON.stringify( keys ) );
+
+				fetch( L.ajaxUrl || '/wp-admin/admin-ajax.php', { method: 'POST', body: data } )
+					.then( function ( r ) {
+						return r.json();
+					} )
+					.then( function ( res ) {
+						unsub.disabled = false;
+						if ( res && res.success ) {
+							ocUnmarkProduct( pid );
+							ocUnswapTriggers( pid );
+							ocNotifyModal.querySelector( '.oc-nmodal__signedview' ).hidden = true;
+							var done = ocNotifyModal.querySelector( '.oc-nmodal__success' );
+							done.querySelector( '.oc-nmodal__done' ).textContent = L.notifyUnsubDone || '';
+							done.querySelector( '.oc-nmodal__count' ).textContent = '';
+							done.hidden = false;
+							ocNotifyTimer = setInterval( ocCloseNotify, 1800 );
+						}
+					} )
+					.catch( function () {
+						unsub.disabled = false;
 					} );
 			} );
 		}
@@ -1452,6 +1555,7 @@
 		}
 
 		ocNotifyModal.dataset.product = productId;
+		ocNotifyModal.dataset.name = productName || '';
 		ocNotifyModal.querySelector( '.oc-nmodal__title' ).hidden = false;
 		ocNotifyModal.querySelector( '.oc-nmodal__intro' ).hidden = false;
 		ocNotifyModal.querySelector( '.oc-nmodal__product' ).hidden = false;
@@ -1459,6 +1563,7 @@
 		ocNotifyModal.querySelector( '.oc-nmodal__form' ).hidden = false;
 		ocNotifyModal.querySelector( '.oc-nmodal__foot' ).hidden = false;
 		ocNotifyModal.querySelector( '.oc-nmodal__success' ).hidden = true;
+		ocNotifyModal.querySelector( '.oc-nmodal__signedview' ).hidden = true;
 		ocNotifyModal.querySelector( '.oc-nmodal__error' ).hidden = true;
 
 		var varsBox = ocNotifyModal.querySelector( '.oc-nmodal__vars' );
@@ -1485,12 +1590,56 @@
 		}
 	}
 
+	/* The signed view: what this browser signed up for, a way out, and — for
+	 * variable products with uncovered variations — a way to add one. */
+	function ocOpenNotifySigned( productId, productName, isVariable ) {
+		var L = window.ocL10n || {};
+
+		ocOpenNotify( productId, productName, isVariable, '' );
+
+		ocNotifyModal.querySelector( '.oc-nmodal__intro' ).hidden = true;
+		ocNotifyModal.querySelector( '.oc-nmodal__form' ).hidden = true;
+		ocNotifyModal.querySelector( '.oc-nmodal__foot' ).hidden = true;
+
+		var view = ocNotifyModal.querySelector( '.oc-nmodal__signedview' );
+		var vars = view.querySelector( '.oc-nmodal__signedvars' );
+		var more = view.querySelector( '.oc-nmodal__more' );
+
+		vars.textContent = '';
+		more.hidden = true;
+		view.querySelector( '.oc-nmodal__unsub' ).disabled = false;
+		view.hidden = false;
+
+		if ( isVariable ) {
+			ocFetchNotifyVars( productId ).then( function ( list ) {
+				if ( ! list ) {
+					return;
+				}
+				var map = ocSignedMap();
+				var mine = list.filter( function ( v ) {
+					return map[ productId + '|' + v.id ];
+				} );
+
+				if ( mine.length ) {
+					vars.textContent = ( L.notifySignedVars || '' ) + ' ' + mine.map( function ( v ) {
+						return v.label;
+					} ).join( ', ' );
+				}
+				more.hidden = mine.length >= list.length;
+			} );
+		}
+	}
+
 	document.addEventListener( 'click', function ( event ) {
 		var trigger = event.target.closest( '.oc-notify-open' );
 		if ( trigger ) {
 			event.preventDefault();
 			event.stopPropagation();
-			ocOpenNotify( trigger.dataset.product, trigger.dataset.name, '1' === trigger.dataset.variable, trigger.dataset.selected || '' );
+			if ( trigger.classList.contains( 'oc-signed' ) ) {
+				ocOpenNotifySigned( trigger.dataset.product, trigger.dataset.name, '1' === trigger.dataset.variable );
+			} else {
+				ocOpenNotify( trigger.dataset.product, trigger.dataset.name, '1' === trigger.dataset.variable, trigger.dataset.selected || '' );
+			}
 		}
 	} );
 

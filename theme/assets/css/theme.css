@@ -3101,12 +3101,77 @@ body:not(.oc-no-lightbox) .oc-vslide.is-playing {
 	display: none !important;
 }
 
-/* Already signed up: the trigger says so and rests. */
-.oc-notify-open.oc-signed,
-.oc-notify-open:disabled {
+/* Already signed up: the trigger says so — and stays clickable, opening the
+ * signed view (details, removal, another variation). */
+.oc-notify-open.oc-signed {
+	opacity: .85;
+}
+
+.oc-notify-open:disabled:not(.oc-signed) {
 	opacity: .7;
 	cursor: default;
 	pointer-events: none;
+}
+
+.oc-nmodal__signedview {
+	padding: 20px 0 6px;
+	text-align: center;
+}
+
+.oc-nmodal__signedview svg {
+	inline-size: 56px;
+	block-size: 56px;
+	color: var(--oc-ink, #111);
+}
+
+.oc-nmodal__signedmsg {
+	margin: 10px 0 0;
+	font-weight: 600;
+	color: var(--oc-ink, #111);
+}
+
+.oc-nmodal__signedvars {
+	margin: 6px 0 0;
+	font-size: .88rem;
+	color: var(--oc-muted, #777);
+}
+
+.oc-nmodal__signedvars:empty {
+	display: none;
+}
+
+.oc-nmodal__more {
+	display: block;
+	inline-size: 100%;
+	margin-block-start: 16px;
+	block-size: var(--oc-cta-h, 48px);
+	border: 1.5px solid var(--oc-cta);
+	border-radius: var(--oc-cta-r, 8px);
+	background: transparent;
+	color: var(--oc-cta);
+	font-weight: 600;
+	cursor: pointer;
+}
+
+.oc-nmodal__unsub {
+	display: block;
+	margin: 14px auto 0;
+	border: 0;
+	background: none;
+	color: #c4342c;
+	font-size: .88rem;
+	text-decoration: underline;
+	cursor: pointer;
+}
+
+.oc-nmodal__manage {
+	margin: 14px 0 0;
+	font-size: .8rem;
+}
+
+.oc-nmodal__manage a {
+	color: var(--oc-muted, #777);
+	text-decoration: underline;
 }
 
 .oc-oos__hint {

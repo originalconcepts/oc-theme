@@ -70,6 +70,8 @@ final class WooCommerce {
 		add_action( 'wp_ajax_nopriv_oc_notify', array( $this, 'notify_signup' ) );
 		add_action( 'wp_ajax_oc_notify_vars', array( $this, 'notify_variations' ) );
 		add_action( 'wp_ajax_nopriv_oc_notify_vars', array( $this, 'notify_variations' ) );
+		add_action( 'wp_ajax_oc_notify_remove', array( $this, 'notify_remove' ) );
+		add_action( 'wp_ajax_nopriv_oc_notify_remove', array( $this, 'notify_remove' ) );
 
 		// Card labels render inside the media box (card_media) — Woo's own
 		// loop sale flash would double them.
@@ -983,6 +985,40 @@ final class WooCommerce {
 			'consent'   => time(),
 		);
 		update_post_meta( $product_id, '_oc_notify_list', $list );
+
+		// The browser keeps the key — self-service removal presents it back.
+		wp_send_json_success( array( 'key' => $key ) );
+	}
+
+	/**
+	 * Self-service unsubscribe from the popup: the browser presents the exact
+	 * signup keys it was handed at signup time.
+	 */
+	public function notify_remove(): void {
+		check_ajax_referer( 'oc_notify', 'nonce' );
+
+		$product_id = absint( $_POST['product'] ?? 0 );
+		$keys       = json_decode( wp_unslash( (string) ( $_POST['entries'] ?? '[]' ) ), true );
+
+		if ( ! $product_id || ! is_array( $keys ) ) {
+			wp_send_json_error();
+		}
+
+		$list = get_post_meta( $product_id, '_oc_notify_list', true );
+
+		if ( is_array( $list ) ) {
+			foreach ( $keys as $key ) {
+				if ( is_string( $key ) ) {
+					unset( $list[ sanitize_text_field( wp_unslash( $key ) ) ] );
+				}
+			}
+
+			if ( empty( $list ) ) {
+				delete_post_meta( $product_id, '_oc_notify_list' );
+			} else {
+				update_post_meta( $product_id, '_oc_notify_list', $list );
+			}
+		}
 
 		wp_send_json_success();
 	}
