@@ -3362,7 +3362,7 @@ body.oc-swatch-square-cat .oc-flt__swatch { border-radius: min(var(--oc-radius, 
 	box-shadow: 0 1px 3px rgb(0 0 0 / .25);
 }
 
-.oc-flt__toggle input:checked + i { background: var(--oc-cta, #111); }
+.oc-flt__toggle input:checked + i { background: var(--oc-ink, #111); }
 .oc-flt__toggle input:checked + i::after { transform: translateX(calc(16px * var(--oc-dir, 1))); }
 
 html[dir="rtl"] { --oc-dir: -1; }
@@ -3457,7 +3457,7 @@ html[dir="rtl"] { --oc-dir: -1; }
 	min-inline-size: 20px;
 	block-size: 20px;
 	border-radius: 999px;
-	background: var(--oc-cta, #111);
+	background: var(--oc-ink, #111);
 	color: #fff;
 	font-size: .75rem;
 	display: inline-flex;
@@ -3517,7 +3517,7 @@ body.oc-flt-m-open .oc-flt--drawer[hidden] { visibility: visible; }
 	block-size: var(--oc-cta-h, 48px);
 	border: 0;
 	border-radius: var(--oc-cta-r, 8px);
-	background: var(--oc-cta, #111);
+	background: var(--oc-ink, #111);
 	color: #fff;
 	font-weight: 600;
 	font-size: 1rem;
@@ -3541,7 +3541,7 @@ body.oc-flt-m-open .oc-flt--drawer[hidden] { visibility: visible; }
 .oc-flt__fill {
 	position: absolute;
 	inset-block: 0;
-	background: var(--oc-cta, #111);
+	background: var(--oc-ink, #111);
 	border-radius: 4px;
 }
 
@@ -3565,7 +3565,7 @@ body.oc-flt-m-open .oc-flt--drawer[hidden] { visibility: visible; }
 	block-size: 18px;
 	border-radius: 50%;
 	background: #fff;
-	border: 2px solid var(--oc-cta, #111);
+	border: 2px solid var(--oc-ink, #111);
 	cursor: grab;
 }
 
@@ -3575,7 +3575,7 @@ body.oc-flt-m-open .oc-flt--drawer[hidden] { visibility: visible; }
 	block-size: 16px;
 	border-radius: 50%;
 	background: #fff;
-	border: 2px solid var(--oc-cta, #111);
+	border: 2px solid var(--oc-ink, #111);
 	cursor: grab;
 }
 
@@ -3691,3 +3691,18 @@ li.oc-flt-none p {
 	font-weight: 600;
 	color: var(--oc-ink, #333);
 }
+
+/* Mobile-only pieces: the chips row by the trigger, and the "view results"
+ * foot inside sidebar/topbar panels. */
+.oc-flt__chips--m { display: none; }
+.oc-flt__foot--m { display: none; }
+
+@media (max-width: 900px) {
+	.oc-flt__chips--m { display: flex; }
+	.oc-flt__foot--m { display: flex; }
+	.oc-flt__foot--m[hidden],
+	.oc-flt__chips--m[hidden] { display: none; }
+}
+
+.oc-flt__chips[hidden],
+.oc-flt__foot[hidden] { display: none !important; }

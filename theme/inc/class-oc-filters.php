@@ -814,15 +814,18 @@ final class Filters {
 		$groups_html = $this->groups_html( $facets, $settings );
 		$chips       = '<div class="oc-flt__chips" data-flt-chips hidden></div>';
 
+		$foot = '<div class="oc-flt__foot oc-flt__foot--m" data-flt-foot' . ( $state['any'] ? '' : ' hidden' ) . '><button type="button" class="oc-flt__apply" data-flt-close-apply>' . esc_html__( 'View results', 'oc-theme' ) . '</button></div>';
+
 		if ( 'sidebar' === $layout ) {
 			echo '<div class="oc-flt-wrap">';
 			echo '<aside class="oc-flt oc-flt--side" data-flt-panel aria-label="' . esc_attr__( 'Filters', 'oc-theme' ) . '">';
 			echo '<div class="oc-flt__head"><span>' . esc_html__( 'Filters', 'oc-theme' ) . '</span><button type="button" class="oc-flt__clear" data-flt-clear hidden>' . esc_html__( 'Clear all', 'oc-theme' ) . '</button><button type="button" class="oc-flt__close oc-flt__close--m" data-flt-close aria-label="' . esc_attr__( 'Close', 'oc-theme' ) . '">&times;</button></div>';
 			echo $chips; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			echo $groups_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			echo $foot; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			echo '</aside>';
 			echo '<div class="oc-flt-main">';
-			$this->mobile_trigger();
+			$this->mobile_trigger( true, true );
 			return;
 		}
 
@@ -834,6 +837,7 @@ final class Filters {
 			echo '<button type="button" class="oc-flt__close oc-flt__close--m" data-flt-close aria-label="' . esc_attr__( 'Close', 'oc-theme' ) . '">&times;</button>';
 			echo $groups_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			echo '<button type="button" class="oc-flt__clear" data-flt-clear hidden>' . esc_html__( 'Clear all', 'oc-theme' ) . '</button>';
+			echo $foot; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			echo '</div>';
 			echo $chips; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		} else {
@@ -847,11 +851,15 @@ final class Filters {
 			echo '<aside class="oc-flt oc-flt--drawer" data-flt-panel data-flt-drawer hidden aria-label="' . esc_attr__( 'Filters', 'oc-theme' ) . '">';
 			echo '<div class="oc-flt__head"><span>' . esc_html__( 'Filters', 'oc-theme' ) . '</span><button type="button" class="oc-flt__close" data-flt-close aria-label="' . esc_attr__( 'Close', 'oc-theme' ) . '">&times;</button></div>';
 			echo $groups_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-			echo '<div class="oc-flt__foot"><button type="button" class="oc-flt__apply" data-flt-close-apply>' . esc_html__( 'View results', 'oc-theme' ) . '</button><button type="button" class="oc-flt__clear" data-flt-clear hidden>' . esc_html__( 'Clear all', 'oc-theme' ) . '</button></div>';
+			echo '<div class="oc-flt__foot" data-flt-foot' . ( $state['any'] ? '' : ' hidden' ) . '><button type="button" class="oc-flt__apply" data-flt-close-apply>' . esc_html__( 'View results', 'oc-theme' ) . '</button><button type="button" class="oc-flt__clear" data-flt-clear hidden>' . esc_html__( 'Clear all', 'oc-theme' ) . '</button></div>';
 			echo '</aside>';
 		}
 
-		$this->mobile_trigger( 'topbar' === $layout );
+		// The drawer layout's own trigger already serves mobile; the others
+		// need the mobile-only trigger (and the sidebar its outside chips).
+		if ( 'topbar' === $layout ) {
+			$this->mobile_trigger( true, false );
+		}
 	}
 
 	/**
@@ -859,12 +867,17 @@ final class Filters {
 	 * an overlay for the layouts that lack one of their own.
 	 *
 	 * @param bool $with_overlay Print the click-to-close overlay too.
+	 * @param bool $with_chips   Print a mobile-only chips row by the trigger.
 	 */
-	private function mobile_trigger( bool $with_overlay = true ): void {
+	private function mobile_trigger( bool $with_overlay = true, bool $with_chips = false ): void {
 		echo '<button type="button" class="oc-flt__open oc-flt__open--m" data-flt-open>';
 		echo '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M7 12h10M10 17h4"/></svg>';
 		echo '<span>' . esc_html__( 'Filter', 'oc-theme' ) . '</span><em class="oc-flt__badge" data-flt-badge hidden></em>';
 		echo '</button>';
+
+		if ( $with_chips ) {
+			echo '<div class="oc-flt__chips oc-flt__chips--m" data-flt-chips hidden></div>';
+		}
 
 		if ( $with_overlay ) {
 			echo '<div class="oc-flt__overlay" data-flt-overlay hidden></div>';

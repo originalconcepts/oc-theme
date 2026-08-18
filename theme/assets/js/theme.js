@@ -1132,27 +1132,36 @@
 				btn.hidden = 0 === total;
 			} );
 
+			// The "view results" foot earns its place once something is filtered.
+			document.querySelectorAll( '[data-flt-foot]' ).forEach( function ( foot ) {
+				foot.hidden = 0 === total;
+			} );
+
 			renderChips();
 		}
 
 		function renderChips() {
-			var wrap = document.querySelector( '[data-flt-chips]' );
-			if ( ! wrap ) {
+			var wraps = [].slice.call( document.querySelectorAll( '[data-flt-chips]' ) );
+			if ( ! wraps.length ) {
 				return;
 			}
 
-			wrap.innerHTML = '';
+			wraps.forEach( function ( w ) {
+				w.innerHTML = '';
+			} );
 			var any = false;
 
 			function chip( label, remove ) {
 				any = true;
-				var b = document.createElement( 'button' );
-				b.type = 'button';
-				b.className = 'oc-flt__chip';
-				b.innerHTML = '<span></span><i aria-hidden="true">&times;</i>';
-				b.querySelector( 'span' ).textContent = label;
-				b.addEventListener( 'click', remove );
-				wrap.appendChild( b );
+				wraps.forEach( function ( w ) {
+					var b = document.createElement( 'button' );
+					b.type = 'button';
+					b.className = 'oc-flt__chip';
+					b.innerHTML = '<span></span><i aria-hidden="true">&times;</i>';
+					b.querySelector( 'span' ).textContent = label;
+					b.addEventListener( 'click', remove );
+					w.appendChild( b );
+				} );
 			}
 
 			panels[ 0 ].querySelectorAll( '[data-flt-group]' ).forEach( function ( groupEl ) {
@@ -1193,7 +1202,17 @@
 				} );
 			}
 
-			wrap.hidden = ! any;
+			wraps.forEach( function ( w ) {
+				if ( any ) {
+					var clear = document.createElement( 'button' );
+					clear.type = 'button';
+					clear.className = 'oc-flt__clear';
+					clear.setAttribute( 'data-flt-clear', '' );
+					clear.textContent = L.fltClear || 'Clear all';
+					w.appendChild( clear );
+				}
+				w.hidden = ! any;
+			} );
 		}
 
 		/* -- events -- */
