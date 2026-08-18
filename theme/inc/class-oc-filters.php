@@ -1268,7 +1268,7 @@ final class Filters {
 	 */
 	private function sort_button(): void {
 		echo '<button type="button" class="oc-flt__mbtn oc-flt__sortbtn" data-oc-sort-open>';
-		echo '<svg class="oc-flt__sorticon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16l-6.2 7.2V19l-3.6-2v-4.8z"/></svg>';
+		echo '<svg class="oc-flt__sorticon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M7 12h10M10 17h4"/></svg>';
 		echo '<span>' . esc_html__( 'Sort', 'oc-theme' ) . '</span>';
 		echo '<em class="oc-flt__sortcur" data-oc-sortcur></em>';
 		echo '<svg class="oc-flt__sortchev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
@@ -1290,7 +1290,7 @@ final class Filters {
 		// The mobile toolbar: filter · sort · live result count.
 		echo '<div class="oc-flt__mbar">';
 		echo '<button type="button" class="oc-flt__mbtn" data-flt-open>';
-		echo '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M7 12h10M10 17h4"/></svg>';
+		echo '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 6.5h8.4M17.6 6.5H20M4 12h2.4M11.6 12H20M4 17.5h6.4M15.6 17.5H20"/><circle cx="15" cy="6.5" r="2.3"/><circle cx="9" cy="12" r="2.3"/><circle cx="13" cy="17.5" r="2.3"/></svg>';
 		echo '<span>' . esc_html__( 'Filter', 'oc-theme' ) . '</span><em class="oc-flt__badge" data-flt-badge hidden></em>';
 		echo '</button>';
 		$this->sort_button();
