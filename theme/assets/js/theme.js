@@ -170,9 +170,25 @@
 					var backTarget = pagingUl.querySelector( 'li.' + ocReturn.postClass );
 					if ( backTarget ) {
 						ocReturned = true;
-						setTimeout( function () {
-							backTarget.scrollIntoView( { block: 'center' } );
-						}, 150 );
+
+						// Images loading in above the card shift the layout
+						// after the first jump — especially on mobile — so the
+						// anchor re-asserts a few times, backing off the moment
+						// the visitor moves on their own.
+						var anchorDone = false;
+						[ 'touchstart', 'wheel', 'keydown' ].forEach( function ( evt ) {
+							window.addEventListener( evt, function () {
+								anchorDone = true;
+							}, { once: true, passive: true } );
+						} );
+
+						[ 150, 500, 1100, 2000 ].forEach( function ( delay ) {
+							setTimeout( function () {
+								if ( ! anchorDone ) {
+									backTarget.scrollIntoView( { block: 'center' } );
+								}
+							}, delay );
+						} );
 					}
 				}
 				sessionStorage.removeItem( 'ocReturn' );
@@ -1286,8 +1302,10 @@
 				return;
 			}
 
-			// A click outside the top bar closes its open dropdown.
-			if ( ! event.target.closest( '.oc-flt--top' ) ) {
+			// A click outside the top bar closes its open dropdown — desktop
+			// only: on mobile the bar is an accordion panel and outside
+			// clicks close the panel, never its groups.
+			if ( window.matchMedia( '(min-width: 901px)' ).matches && ! event.target.closest( '.oc-flt--top' ) ) {
 				document.querySelectorAll( '.oc-flt--top .is-open' ).forEach( function ( other ) {
 					other.classList.remove( 'is-open' );
 				} );
