@@ -2937,6 +2937,10 @@ body:not(.oc-no-lightbox) .oc-vslide.is-playing {
 
 .oc-nmodal[hidden] { display: none; }
 
+/* Display rules on the card's parts (flex form, flex title) must not beat
+ * the hidden attribute when the success view takes over. */
+.oc-nmodal__card [hidden] { display: none !important; }
+
 .oc-nmodal__card {
 	position: relative;
 	inline-size: min(430px, 100%);
