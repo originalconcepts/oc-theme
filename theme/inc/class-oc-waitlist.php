@@ -486,6 +486,8 @@ final class Waitlist {
 			'</a></td></tr>' .
 			'</table>' .
 			'<p style="max-width:560px;margin:18px auto 0;text-align:center;font-size:12px;color:#9a9a94;">' .
+			'<a href="' . esc_url( wc_get_endpoint_url( 'stock-alerts', '', wc_get_page_permalink( 'myaccount' ) ) ) . '" style="color:#9a9a94;text-decoration:underline;">' . esc_html__( 'Manage your stock alerts', 'oc-theme' ) . '</a>' .
+			' &nbsp;·&nbsp; ' .
 			'<a href="' . esc_url( $home ) . '" style="color:#9a9a94;text-decoration:underline;">' . esc_html( $store ) . '</a></p>' .
 			'</div>';
 

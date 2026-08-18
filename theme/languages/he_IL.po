@@ -1220,7 +1220,7 @@ msgid "It is back in stock!"
 msgstr "המוצר חזר למלאי!"
 
 msgid "Order the product ›"
-msgstr "להזמנת המוצר ‹"
+msgstr "להזמנת המוצר ›"
 
 msgid "Variation"
 msgstr "וריאציה"
@@ -1266,3 +1266,6 @@ msgstr "אין התראות מלאי כרגע — אפשר להירשם מכל �
 
 msgid "The alert was removed."
 msgstr "ההתראה הוסרה."
+
+msgid "Manage your stock alerts"
+msgstr "לניהול התראות המלאי שלך"
