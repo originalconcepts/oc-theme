@@ -1363,7 +1363,7 @@ body.oc-tabs-tabs.woocommerce div.product .woocommerce-tabs ul.tabs li a,
 	font-weight: var(--oc-tab-w, 400) !important;
 	font-size: .95rem;
 	letter-spacing: .02em;
-	color: var(--oc-tab-c, var(--oc-muted, #77746f)) !important;
+	color: var(--oc-tab-c, #77746f) !important;
 	text-decoration: none;
 	box-shadow: none;
 	transition: color .15s ease, box-shadow .15s ease;
