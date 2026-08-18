@@ -1176,12 +1176,14 @@ final class Filters {
 			echo '<div class="oc-flt-wrap">';
 			echo '<aside class="oc-flt oc-flt--side" data-flt-panel aria-label="' . esc_attr__( 'Filters', 'oc-theme' ) . '">';
 			echo '<div class="oc-flt__head"><span>' . esc_html__( 'Filters', 'oc-theme' ) . '</span><button type="button" class="oc-flt__clear" data-flt-clear hidden>' . esc_html__( 'Clear all', 'oc-theme' ) . '</button><button type="button" class="oc-flt__close oc-flt__close--m" data-flt-close aria-label="' . esc_attr__( 'Close', 'oc-theme' ) . '">&times;</button></div>';
-			echo $chips; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			echo $groups_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			echo $foot; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			echo '</aside>';
 			echo '<div class="oc-flt-main">';
 			$this->mobile_trigger( true, true );
+			// The chosen values live above the products (vqfit-style), not
+			// inside the sidebar; mobile keeps the toolbar's own chips row.
+			echo '<div class="oc-flt__chips oc-flt__chips--main" data-flt-chips hidden></div>';
 			return;
 		}
 

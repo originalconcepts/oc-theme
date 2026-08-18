@@ -3786,6 +3786,14 @@ li.oc-flt-none p {
 .oc-flt__chips[hidden],
 .oc-flt__foot[hidden] { display: none !important; }
 
+/* Sidebar layout: the chosen values sit above the product grid. On mobile
+ * the toolbar's own chips row takes over. */
+.oc-flt-main > .oc-flt__chips--main { margin-block: 2px 18px; }
+
+@media (max-width: 900px) {
+	.oc-flt__chips--main { display: none !important; }
+}
+
 /* iOS paints unstyled <button>s in its system blue — every filter control
  * states its ink colour explicitly. */
 .oc-flt__title,

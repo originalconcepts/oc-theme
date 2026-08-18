@@ -1249,16 +1249,8 @@
 				} );
 			}
 
-			if ( state.instock ) {
-				chip( L.fltInstock || 'In stock only', function () {
-					state.instock = false;
-					var toggles = document.querySelectorAll( '[data-flt-instock]' );
-					toggles.forEach( function ( t ) {
-						t.checked = false;
-					} );
-					apply();
-				} );
-			}
+			// No chip for the in-stock toggle: it is a visible switch already,
+			// flipping it off is self-explanatory.
 
 			wraps.forEach( function ( w ) {
 				if ( any ) {
