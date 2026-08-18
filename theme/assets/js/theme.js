@@ -1853,11 +1853,10 @@
 	/* ---------- category description: clamp with read-more ---------- */
 
 	document.querySelectorAll( '.term-description, .oc-archive-desc' ).forEach( function ( box ) {
-		if ( box.scrollHeight <= box.clientHeight + 12 && box.scrollHeight < 130 ) {
-			return;
-		}
+		// Clamp to two lines, then keep the clamp only if something was
+		// actually cut off.
 		box.classList.add( 'oc-clamped' );
-		if ( box.scrollHeight <= box.clientHeight + 8 ) {
+		if ( box.scrollHeight <= box.clientHeight + 4 ) {
 			box.classList.remove( 'oc-clamped' );
 			return;
 		}
@@ -1870,7 +1869,6 @@
 
 		toggle.addEventListener( 'click', function () {
 			var open = box.classList.toggle( 'is-open' );
-			box.style.maxBlockSize = open ? box.scrollHeight + 'px' : '';
 			toggle.textContent = open
 				? ( ( window.ocL10n && window.ocL10n.readLess ) || 'Read less' )
 				: ( ( window.ocL10n && window.ocL10n.readMore ) || 'Read more' );

@@ -45,7 +45,9 @@ final class Filters {
 		add_action( 'edited_product_cat', array( $this, 'save_category_field' ) );
 
 		add_action( 'pre_get_posts', array( $this, 'apply_to_query' ) );
+		add_action( 'pre_get_posts', array( $this, 'smart_main_query' ), 9 );
 		add_filter( 'posts_clauses', array( $this, 'price_stock_clauses' ), 15, 2 );
+		add_filter( 'posts_clauses', array( $this, 'smart_clauses' ), 16, 2 );
 
 		add_action( 'woocommerce_before_shop_loop', array( $this, 'render' ), 5 );
 		add_action( 'woocommerce_after_shop_loop', array( $this, 'close_wrap' ), 90 );
@@ -268,6 +270,116 @@ final class Filters {
 		}
 
 		return $tax_query;
+	}
+
+	/* ----------------------------------------------------- smart categories */
+
+	/**
+	 * A smart category holds no products of its own — membership is a live,
+	 * indexed condition: on sale, up to a price, or new. Zero assignment,
+	 * zero syncing, always current.
+	 *
+	 * @param int $term_id Category id.
+	 * @return array{mode:string,price:float,cats:array<int,int>}
+	 */
+	private function smart_meta( int $term_id ): array {
+		$mode = (string) get_term_meta( $term_id, 'oc_smart', true );
+
+		return array(
+			'mode'  => in_array( $mode, array( 'sale', 'price', 'new' ), true ) ? $mode : '',
+			'price' => (float) get_term_meta( $term_id, 'oc_smart_price', true ),
+			'cats'  => array_filter( array_map( 'absint', (array) get_term_meta( $term_id, 'oc_smart_cats', true ) ) ),
+		);
+	}
+
+	/**
+	 * The smart category's archive: drop the (empty) term restriction and
+	 * flag the query — the clauses below take it from there.
+	 *
+	 * @param \WP_Query $query Running query.
+	 */
+	public function smart_main_query( $query ): void {
+		if ( is_admin() || ! $query->is_main_query() || 'product_query' !== $query->get( 'wc_query' ) || ! $query->is_tax( 'product_cat' ) ) {
+			return;
+		}
+
+		$term = get_queried_object();
+
+		if ( ! $term instanceof \WP_Term || '' === $this->smart_meta( (int) $term->term_id )['mode'] ) {
+			return;
+		}
+
+		$query->set( 'oc_smart_cat', (int) $term->term_id );
+		$query->set( 'product_cat', '' );
+		$query->query_vars['term']     = '';
+		$query->query_vars['taxonomy'] = '';
+	}
+
+	/**
+	 * The condition itself, on indexed columns only.
+	 *
+	 * @param array<string,string> $clauses SQL clauses.
+	 * @param \WP_Query            $query   Running query.
+	 * @return array<string,string>
+	 */
+	public function smart_clauses( array $clauses, $query ): array {
+		$term_id = (int) $query->get( 'oc_smart_cat' );
+
+		if ( ! $term_id ) {
+			return $clauses;
+		}
+
+		$meta = $this->smart_meta( $term_id );
+
+		if ( '' === $meta['mode'] ) {
+			return $clauses;
+		}
+
+		global $wpdb;
+
+		if ( in_array( $meta['mode'], array( 'sale', 'price' ), true ) ) {
+			if ( false === strpos( (string) $clauses['join'], 'oc_smart_lookup' ) ) {
+				$clauses['join'] .= " INNER JOIN {$wpdb->wc_product_meta_lookup} oc_smart_lookup ON {$wpdb->posts}.ID = oc_smart_lookup.product_id ";
+			}
+
+			if ( 'sale' === $meta['mode'] ) {
+				$clauses['where'] .= ' AND oc_smart_lookup.onsale = 1';
+			} elseif ( $meta['price'] > 0 ) {
+				$clauses['where'] .= $wpdb->prepare( ' AND oc_smart_lookup.min_price <= %f AND oc_smart_lookup.min_price > 0', $meta['price'] );
+			}
+		} elseif ( 'new' === $meta['mode'] ) {
+			// The same definition the "New" label uses.
+			$days              = max( 1, absint( get_theme_mod( 'oc_label_new_days', 30 ) ) );
+			$clauses['where'] .= $wpdb->prepare( " AND {$wpdb->posts}.post_date_gmt >= DATE_SUB( UTC_TIMESTAMP(), INTERVAL %d DAY )", $days );
+		}
+
+		// Optional source restriction (a gifts category fed from chosen
+		// departments only).
+		if ( ! empty( $meta['cats'] ) ) {
+			$family = array();
+			foreach ( $meta['cats'] as $parent_id ) {
+				$family = array_merge( $family, array( $parent_id ), array_map( 'intval', get_term_children( $parent_id, 'product_cat' ) ) );
+			}
+			$family = array_unique( array_filter( $family ) );
+
+			if ( $family ) {
+				$tt_ids = get_terms(
+					array(
+						'taxonomy'   => 'product_cat',
+						'include'    => $family,
+						'fields'     => 'tt_ids',
+						'hide_empty' => false,
+					)
+				);
+
+				if ( is_array( $tt_ids ) && $tt_ids ) {
+					$placeholders      = implode( ',', array_map( 'absint', $tt_ids ) );
+					$clauses['where'] .= " AND EXISTS ( SELECT 1 FROM {$wpdb->term_relationships} oc_smart_tr WHERE oc_smart_tr.object_id = {$wpdb->posts}.ID AND oc_smart_tr.term_taxonomy_id IN ( $placeholders ) )";
+				}
+			}
+		}
+
+		return $clauses;
 	}
 
 	/* ------------------------------------------------------ main query path */
@@ -600,12 +712,16 @@ final class Filters {
 		);
 
 		if ( $category ) {
-			$args['tax_query'][] = array(
-				'taxonomy'         => 'product_cat',
-				'field'            => 'term_id',
-				'terms'            => array( $category ),
-				'include_children' => true,
-			);
+			if ( '' !== $this->smart_meta( $category )['mode'] ) {
+				$args['oc_smart_cat'] = $category;
+			} else {
+				$args['tax_query'][] = array(
+					'taxonomy'         => 'product_cat',
+					'field'            => 'term_id',
+					'terms'            => array( $category ),
+					'include_children' => true,
+				);
+			}
 		}
 
 		// Visibility: exclude hidden products the way the catalogue does.
@@ -1131,12 +1247,16 @@ final class Filters {
 		}
 
 		if ( $category ) {
-			$args['tax_query'][] = array(
-				'taxonomy'         => 'product_cat',
-				'field'            => 'term_id',
-				'terms'            => array( $category ),
-				'include_children' => true,
-			);
+			if ( '' !== $this->smart_meta( $category )['mode'] ) {
+				$args['oc_smart_cat'] = $category;
+			} else {
+				$args['tax_query'][] = array(
+					'taxonomy'         => 'product_cat',
+					'field'            => 'term_id',
+					'terms'            => array( $category ),
+					'include_children' => true,
+				);
+			}
 		}
 
 		$args['tax_query'][] = array(
@@ -1232,6 +1352,38 @@ final class Filters {
 			'none'    => '<rect x="2" y="2" width="44" height="28" rx="3" opacity=".35"/><path d="M8 8l32 16M40 8L8 24" stroke="currentColor" stroke-width="2" fill="none"/>',
 		);
 		?>
+		<?php
+		$smart    = $this->smart_meta( (int) $term->term_id );
+		$top_cats = get_terms(
+			array(
+				'taxonomy'   => 'product_cat',
+				'parent'     => 0,
+				'hide_empty' => false,
+				'exclude'    => array( (int) $term->term_id ),
+			)
+		);
+		?>
+		<tr class="form-field">
+			<th scope="row"><?php esc_html_e( 'Automatic product assignment', 'oc-theme' ); ?></th>
+			<td>
+				<select name="oc_smart">
+					<option value="" <?php selected( '', $smart['mode'] ); ?>><?php esc_html_e( 'Off — regular category', 'oc-theme' ); ?></option>
+					<option value="sale" <?php selected( 'sale', $smart['mode'] ); ?>><?php esc_html_e( 'On-sale products', 'oc-theme' ); ?></option>
+					<option value="new" <?php selected( 'new', $smart['mode'] ); ?>><?php esc_html_e( 'New products (per the "New" label setting)', 'oc-theme' ); ?></option>
+					<option value="price" <?php selected( 'price', $smart['mode'] ); ?>><?php esc_html_e( 'Products up to a price', 'oc-theme' ); ?></option>
+				</select>
+				<input type="number" name="oc_smart_price" value="<?php echo esc_attr( $smart['price'] > 0 ? (string) $smart['price'] : '' ); ?>" placeholder="<?php esc_attr_e( 'Up to price', 'oc-theme' ); ?>" min="0" step="1" style="width:110px;" />
+				<p class="description"><?php esc_html_e( 'Products are matched live by the condition — nothing to assign or maintain, and they keep their real categories (so a "category" filter group works here).', 'oc-theme' ); ?></p>
+				<p style="margin-block-start:10px;">
+					<label style="display:block;margin-block-end:4px;"><?php esc_html_e( 'Limit to these source categories (optional)', 'oc-theme' ); ?></label>
+					<select name="oc_smart_cats[]" multiple size="5" style="min-width:240px;">
+						<?php foreach ( $top_cats as $cat ) : ?>
+							<option value="<?php echo absint( $cat->term_id ); ?>" <?php echo in_array( (int) $cat->term_id, $smart['cats'], true ) ? 'selected' : ''; ?>><?php echo esc_html( $cat->name ); ?></option>
+						<?php endforeach; ?>
+					</select>
+				</p>
+			</td>
+		</tr>
 		<tr class="form-field">
 			<th scope="row"><?php esc_html_e( 'Filters layout', 'oc-theme' ); ?></th>
 			<td>
@@ -1255,17 +1407,41 @@ final class Filters {
 	 * @param int $term_id Category id.
 	 */
 	public function save_category_field( $term_id ): void {
-		if ( ! isset( $_POST['oc_filter_layout'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing -- core term save flow.
-			return;
+		// phpcs:disable WordPress.Security.NonceVerification.Missing -- core term save flow.
+		if ( isset( $_POST['oc_filter_layout'] ) ) {
+			$value = sanitize_key( wp_unslash( (string) $_POST['oc_filter_layout'] ) );
+
+			if ( '' === $value ) {
+				delete_term_meta( (int) $term_id, 'oc_filter_layout' );
+			} elseif ( in_array( $value, array( 'sidebar', 'topbar', 'drawer', 'none' ), true ) ) {
+				update_term_meta( (int) $term_id, 'oc_filter_layout', $value );
+			}
 		}
 
-		$value = sanitize_key( wp_unslash( (string) $_POST['oc_filter_layout'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		if ( isset( $_POST['oc_smart'] ) ) {
+			$mode = sanitize_key( wp_unslash( (string) $_POST['oc_smart'] ) );
 
-		if ( '' === $value ) {
-			delete_term_meta( (int) $term_id, 'oc_filter_layout' );
-		} elseif ( in_array( $value, array( 'sidebar', 'topbar', 'drawer', 'none' ), true ) ) {
-			update_term_meta( (int) $term_id, 'oc_filter_layout', $value );
+			if ( in_array( $mode, array( 'sale', 'price', 'new' ), true ) ) {
+				update_term_meta( (int) $term_id, 'oc_smart', $mode );
+			} else {
+				delete_term_meta( (int) $term_id, 'oc_smart' );
+			}
+
+			$price = (float) ( $_POST['oc_smart_price'] ?? 0 );
+			if ( $price > 0 ) {
+				update_term_meta( (int) $term_id, 'oc_smart_price', $price );
+			} else {
+				delete_term_meta( (int) $term_id, 'oc_smart_price' );
+			}
+
+			$cats = array_filter( array_map( 'absint', (array) ( $_POST['oc_smart_cats'] ?? array() ) ) );
+			if ( $cats ) {
+				update_term_meta( (int) $term_id, 'oc_smart_cats', array_values( $cats ) );
+			} else {
+				delete_term_meta( (int) $term_id, 'oc_smart_cats' );
+			}
 		}
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
 	}
 
 	/* --------------------------------------------------------------- admin */

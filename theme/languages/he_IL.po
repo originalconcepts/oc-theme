@@ -1509,3 +1509,27 @@ msgstr "מהזול ליקר"
 
 msgid "Price: high to low"
 msgstr "מהיקר לזול"
+
+msgid "Automatic product assignment"
+msgstr "שיוך מוצרים אוטומטי"
+
+msgid "Off — regular category"
+msgstr "כבוי — קטגוריה רגילה"
+
+msgid "On-sale products"
+msgstr "מוצרים במבצע"
+
+msgid "New products (per the \"New\" label setting)"
+msgstr "מוצרים חדשים (לפי הגדרת תווית \"חדש\")"
+
+msgid "Products up to a price"
+msgstr "מוצרים עד מחיר"
+
+msgid "Up to price"
+msgstr "עד מחיר"
+
+msgid "Products are matched live by the condition — nothing to assign or maintain, and they keep their real categories (so a \"category\" filter group works here)."
+msgstr "המוצרים מותאמים בזמן אמת לפי התנאי — אין מה לשייך או לתחזק, והם שומרים על הקטגוריות האמיתיות שלהם (כך שקבוצת סינון \"קטגוריה\" עובדת כאן)."
+
+msgid "Limit to these source categories (optional)"
+msgstr "הגבלה לקטגוריות מקור אלה (אופציונלי)"

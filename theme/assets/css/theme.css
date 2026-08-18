@@ -1663,13 +1663,24 @@ body:not(.oc-no-lightbox) .woocommerce-product-gallery__image:not(.oc-vslide) im
 	.oc-title-center .oc-archive-desc { margin-inline: auto; }
 }
 
-/* three lines, then a soft-expanding read-more */
+/* exactly two lines — the browser's own line clamp, desktop and mobile —
+ * then a read-more */
 .term-description.oc-clamped,
 .oc-archive-desc.oc-clamped {
-	max-block-size: calc(var(--oc-lh, 1.55) * 3em);
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
+	line-clamp: 2;
 	overflow: hidden;
-	transition: max-block-size .35s ease;
 	position: relative;
+}
+
+.term-description.oc-clamped.is-open,
+.oc-archive-desc.oc-clamped.is-open {
+	display: block;
+	-webkit-line-clamp: unset;
+	line-clamp: unset;
+	overflow: visible;
 }
 
 .oc-readmore {
