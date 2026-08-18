@@ -1263,16 +1263,19 @@ body:not(.oc-no-lightbox) .woocommerce-product-gallery__image:not(.oc-vslide) im
 	padding-block: 0;
 }
 
-.oc-tabs-accordion .oc-acc-body { padding-block-end: 14px; }
+.oc-tabs-accordion .oc-acc-in { padding-block-end: 16px; }
 
 /* No flash of open panels: everything hides until the accordion is built. */
 .oc-tabs-accordion .woocommerce-tabs:not(.oc-acc-init) .woocommerce-Tabs-panel {
 	display: none !important;
 }
 
-.oc-tabs-accordion .oc-acc-body > :first-child,
-.oc-tabs-accordion .oc-acc-body > div > :first-child {
+.oc-tabs-accordion .oc-acc-in > :first-child {
 	margin-block-start: 0;
+}
+
+.oc-tabs-accordion .oc-acc-in > :last-child {
+	margin-block-end: 0;
 }
 
 .oc-tabs-accordion .oc-acc-head {
@@ -1319,10 +1322,18 @@ body:not(.oc-no-lightbox) .woocommerce-product-gallery__image:not(.oc-vslide) im
 .oc-tabs-accordion .oc-acc-body > h2:first-child,
 .oc-tabs-accordion .oc-acc-body .woocommerce-Reviews-title { display: none; }
 
-/* the body collapses with a soft height transition */
+/* the body collapses on animated grid rows — smooth at any height */
 .oc-acc-body {
+	display: grid;
+	grid-template-rows: 0fr;
+	transition: grid-template-rows .32s ease;
+}
+
+.oc-acc-body.is-open { grid-template-rows: 1fr; }
+
+.oc-acc-in {
 	overflow: hidden;
-	transition: max-block-size .3s ease;
+	min-block-size: 0;
 }
 
 /* tabs mode: quiet text tabs, the active one inked with a fine underline —

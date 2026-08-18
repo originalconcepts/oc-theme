@@ -1559,40 +1559,22 @@
 			head.textContent = title || '';
 			head.setAttribute( 'aria-expanded', open ? 'true' : 'false' );
 
-			// The panel content moves into a wrapper so opening and closing can
-			// animate its height.
+			// Grid-rows animation: the browser interpolates 0fr↔1fr — no
+			// measuring, no timers, smooth at any content height.
 			var body = document.createElement( 'div' );
-			body.className = 'oc-acc-body';
+			body.className = 'oc-acc-body' + ( open ? ' is-open' : '' );
+			var inner = document.createElement( 'div' );
+			inner.className = 'oc-acc-in';
 			while ( panel.firstChild ) {
-				body.appendChild( panel.firstChild );
+				inner.appendChild( panel.firstChild );
 			}
+			body.appendChild( inner );
 			panel.appendChild( head );
 			panel.appendChild( body );
 
-			if ( ! open ) {
-				body.style.maxBlockSize = '0px';
-			}
-
 			head.addEventListener( 'click', function () {
-				var isOpen = head.getAttribute( 'aria-expanded' ) === 'true';
-
-				if ( isOpen ) {
-					// From auto to 0: fix the current height first so the
-					// transition has a starting point.
-					body.style.maxBlockSize = body.scrollHeight + 'px';
-					body.offsetHeight;
-					body.style.maxBlockSize = '0px';
-				} else {
-					body.style.maxBlockSize = body.scrollHeight + 'px';
-					setTimeout( function () {
-						// Release the clamp so nested content can grow later.
-						if ( head.getAttribute( 'aria-expanded' ) === 'true' ) {
-							body.style.maxBlockSize = '';
-						}
-					}, 320 );
-				}
-
-				head.setAttribute( 'aria-expanded', isOpen ? 'false' : 'true' );
+				var isOpen = body.classList.toggle( 'is-open' );
+				head.setAttribute( 'aria-expanded', isOpen ? 'true' : 'false' );
 			} );
 		} );
 	}
