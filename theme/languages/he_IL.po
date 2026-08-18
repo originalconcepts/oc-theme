@@ -1032,6 +1032,18 @@ msgstr "מלאי נמוך"
 msgid "Last items in stock"
 msgstr "אחרונים במלאי"
 
+msgid "Notify me when it is back"
+msgstr "עדכנו אותי כשהמוצר חוזר"
+
+msgid "Email address"
+msgstr "כתובת אימייל"
+
+msgid "Sign up"
+msgstr "הרשמה"
+
+msgid "You are on the list — we will email you the moment it is back."
+msgstr "נרשמת! נשלח לך מייל ברגע שהמוצר יחזור למלאי."
+
 msgid "Layout"
 msgstr "פריסה"
 

@@ -63,6 +63,12 @@ final class WooCommerce {
 		add_action( 'woocommerce_before_add_to_cart_button', array( $this, 'stock_line' ) );
 		add_action( 'woocommerce_after_add_to_cart_form', array( $this, 'atc_icons' ) );
 
+		// Sold-out products show a proper block instead of a bare summary:
+		// a disabled sold-out button and a back-in-stock signup.
+		add_action( 'woocommerce_single_product_summary', array( $this, 'oos_block' ), 30 );
+		add_action( 'wp_ajax_oc_notify', array( $this, 'notify_signup' ) );
+		add_action( 'wp_ajax_nopriv_oc_notify', array( $this, 'notify_signup' ) );
+
 		// Card labels render inside the media box (card_media) — Woo's own
 		// loop sale flash would double them.
 		add_action(
@@ -785,6 +791,54 @@ final class WooCommerce {
 		);
 
 		return $icons[ $key ] ?? '';
+	}
+
+	/**
+	 * The sold-out block: a disabled sold-out button where add-to-cart
+	 * would be, and a back-in-stock signup that stores the email on the
+	 * product.
+	 */
+	public function oos_block(): void {
+		global $product;
+
+		if ( ! $product instanceof \WC_Product || $product->is_in_stock() ) {
+			return;
+		}
+		?>
+		<div class="oc-oos" data-product="<?php echo absint( $product->get_id() ); ?>" data-nonce="<?php echo esc_attr( wp_create_nonce( 'oc_notify' ) ); ?>">
+			<button type="button" class="oc-oos__soldout" disabled><?php esc_html_e( 'Out of stock', 'oc-theme' ); ?></button>
+			<button type="button" class="oc-oos__notify"><?php esc_html_e( 'Notify me when it is back', 'oc-theme' ); ?></button>
+			<form class="oc-oos__form" hidden>
+				<input type="email" required placeholder="<?php esc_attr_e( 'Email address', 'oc-theme' ); ?>" />
+				<button type="submit"><?php esc_html_e( 'Sign up', 'oc-theme' ); ?></button>
+			</form>
+			<p class="oc-oos__done" hidden><?php esc_html_e( 'You are on the list — we will email you the moment it is back.', 'oc-theme' ); ?></p>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Store a back-in-stock request on the product.
+	 */
+	public function notify_signup(): void {
+		check_ajax_referer( 'oc_notify', 'nonce' );
+
+		$product_id = absint( $_POST['product'] ?? 0 );
+		$email      = sanitize_email( wp_unslash( (string) ( $_POST['email'] ?? '' ) ) );
+
+		if ( ! $product_id || ! is_email( $email ) || 'product' !== get_post_type( $product_id ) ) {
+			wp_send_json_error();
+		}
+
+		$list = get_post_meta( $product_id, '_oc_notify_list', true );
+		$list = is_array( $list ) ? $list : array();
+
+		if ( ! isset( $list[ $email ] ) ) {
+			$list[ $email ] = time();
+			update_post_meta( $product_id, '_oc_notify_list', $list );
+		}
+
+		wp_send_json_success();
 	}
 
 	/**

@@ -2858,3 +2858,65 @@ body:not(.oc-no-lightbox) .oc-vslide.is-playing {
 	font-weight: 400;
 	align-self: baseline;
 }
+
+/* ---------- sold-out block ---------- */
+
+.oc-oos {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	margin-block: 6px 14px;
+}
+
+.oc-oos__soldout,
+.oc-oos__notify,
+.oc-oos__form button {
+	block-size: var(--oc-cta-h, 48px);
+	border-radius: var(--oc-cta-r, 8px);
+	font-weight: 600;
+	font-size: 1rem;
+	cursor: pointer;
+}
+
+/* Sold out: quiet outline, clearly not clickable. */
+.oc-oos__soldout {
+	border: 1.5px solid var(--oc-line);
+	background: transparent;
+	color: var(--oc-ink);
+	letter-spacing: .06em;
+	cursor: default;
+	opacity: .75;
+}
+
+/* Notify: the CTA of this page. */
+.oc-oos__notify {
+	border: 1.5px solid var(--oc-cta);
+	background: var(--oc-cta);
+	color: #fff;
+}
+
+.oc-oos__form {
+	display: flex;
+	gap: 10px;
+}
+
+.oc-oos__form input {
+	flex: 1 1 auto;
+	block-size: var(--oc-cta-h, 48px);
+	border: 1.5px solid var(--oc-line);
+	border-radius: var(--oc-cta-r, 8px);
+	padding-inline: 14px;
+}
+
+.oc-oos__form button {
+	border: 1.5px solid var(--oc-cta);
+	background: var(--oc-cta);
+	color: #fff;
+	padding-inline: 26px;
+}
+
+.oc-oos__done {
+	margin: 0;
+	font-weight: 600;
+	color: #2e9e5b;
+}

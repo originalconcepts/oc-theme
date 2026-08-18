@@ -1084,6 +1084,49 @@
 		box.appendChild( mk( 'plus', 1 ) );
 	} );
 
+	/* ---------- sold out: back-in-stock signup ---------- */
+
+	document.querySelectorAll( '.oc-oos' ).forEach( function ( box ) {
+		var notify = box.querySelector( '.oc-oos__notify' );
+		var form = box.querySelector( '.oc-oos__form' );
+		var done = box.querySelector( '.oc-oos__done' );
+
+		notify.addEventListener( 'click', function () {
+			form.hidden = false;
+			notify.hidden = true;
+			form.querySelector( 'input' ).focus();
+		} );
+
+		form.addEventListener( 'submit', function ( event ) {
+			event.preventDefault();
+
+			var data = new FormData();
+			data.append( 'action', 'oc_notify' );
+			data.append( 'nonce', box.dataset.nonce );
+			data.append( 'product', box.dataset.product );
+			data.append( 'email', form.querySelector( 'input' ).value );
+
+			var submit = form.querySelector( 'button' );
+			submit.disabled = true;
+
+			fetch( ( window.ocL10n && window.ocL10n.ajaxUrl ) || '/wp-admin/admin-ajax.php', { method: 'POST', body: data } )
+				.then( function ( r ) {
+					return r.json();
+				} )
+				.then( function ( res ) {
+					if ( res && res.success ) {
+						form.hidden = true;
+						done.hidden = false;
+					} else {
+						submit.disabled = false;
+					}
+				} )
+				.catch( function () {
+					submit.disabled = false;
+				} );
+		} );
+	} );
+
 	/* ---------- add-to-cart: a loader takes the label until the add lands ---------- */
 
 	document.querySelectorAll( 'form.cart' ).forEach( function ( cartForm ) {

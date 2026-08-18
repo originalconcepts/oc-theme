@@ -133,6 +133,7 @@ final class Assets {
 				'loadPrev'  => __( 'Show previous products', 'oc-theme' ),
 				'readMore'  => __( 'Read more', 'oc-theme' ),
 				'readLess'  => __( 'Read less', 'oc-theme' ),
+				'ajaxUrl'   => admin_url( 'admin-ajax.php' ),
 			)
 		);
 	}
