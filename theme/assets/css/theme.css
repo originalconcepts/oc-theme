@@ -3648,3 +3648,28 @@ ul.products.oc-flt-loading { opacity: .45; pointer-events: none; transition: opa
 }
 
 .oc-load-more--flt[hidden] { display: none !important; }
+
+/* Swatch values always sit on an aligned grid — no ragged wrapping. In the
+ * top bar's dropdown: exactly two per row. */
+.oc-flt__values--swatch {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+	gap: 14px 10px;
+	justify-items: center;
+}
+
+.oc-flt__values--swatch .oc-flt__val {
+	inline-size: 100%;
+	align-items: center;
+	text-align: center;
+}
+
+.oc-flt__values--swatch .oc-flt__val span {
+	max-inline-size: 100%;
+	overflow-wrap: break-word;
+}
+
+.oc-flt--top-drop .oc-flt__body .oc-flt__values--swatch {
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 16px 20px;
+}
