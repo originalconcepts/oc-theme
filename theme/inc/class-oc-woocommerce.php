@@ -527,7 +527,14 @@ final class WooCommerce {
 
 		$this->card_atc_icon();
 		$this->card_flags();
-		$this->card_strip();
+
+		// Sold out: the notify bar takes the bottom edge; demand strips only
+		// make sense for products one can actually buy.
+		if ( ! $product->is_in_stock() ) {
+			$this->card_notify_bar();
+		} else {
+			$this->card_strip();
+		}
 
 		echo '</div>';
 	}
@@ -805,16 +812,26 @@ final class WooCommerce {
 			return;
 		}
 		?>
-		<div class="oc-oos" data-product="<?php echo absint( $product->get_id() ); ?>" data-nonce="<?php echo esc_attr( wp_create_nonce( 'oc_notify' ) ); ?>">
+		<div class="oc-oos">
 			<button type="button" class="oc-oos__soldout" disabled><?php esc_html_e( 'Out of stock', 'oc-theme' ); ?></button>
-			<button type="button" class="oc-oos__notify"><?php esc_html_e( 'Notify me when it is back', 'oc-theme' ); ?></button>
-			<form class="oc-oos__form" hidden>
-				<input type="email" required placeholder="<?php esc_attr_e( 'Email address', 'oc-theme' ); ?>" />
-				<button type="submit"><?php esc_html_e( 'Sign up', 'oc-theme' ); ?></button>
-			</form>
-			<p class="oc-oos__done" hidden><?php esc_html_e( 'You are on the list — we will email you the moment it is back.', 'oc-theme' ); ?></p>
+			<button type="button" class="oc-oos__notify oc-notify-open" data-product="<?php echo absint( $product->get_id() ); ?>" data-name="<?php echo esc_attr( $product->get_name() ); ?>"><?php esc_html_e( 'Notify me when it is back', 'oc-theme' ); ?></button>
 		</div>
 		<?php
+	}
+
+	/**
+	 * Sold-out card in the catalogue: a full-width notify bar on the image's
+	 * lower edge, opening the same signup popup as the product page.
+	 */
+	private function card_notify_bar(): void {
+		global $product;
+
+		printf(
+			'<button type="button" class="oc-notify-bar oc-notify-open" data-product="%d" data-name="%s">%s</button>',
+			absint( $product->get_id() ),
+			esc_attr( $product->get_name() ),
+			esc_html__( 'Notify me when it is back', 'oc-theme' )
+		);
 	}
 
 	/**
@@ -825,18 +842,26 @@ final class WooCommerce {
 
 		$product_id = absint( $_POST['product'] ?? 0 );
 		$email      = sanitize_email( wp_unslash( (string) ( $_POST['email'] ?? '' ) ) );
+		$phone      = preg_replace( '/[^0-9+\-]/', '', wp_unslash( (string) ( $_POST['phone'] ?? '' ) ) );
 
-		if ( ! $product_id || ! is_email( $email ) || 'product' !== get_post_type( $product_id ) ) {
+		// One channel is enough — email or a WhatsApp number.
+		$valid_email = is_email( $email );
+		$valid_phone = strlen( $phone ) >= 9;
+
+		if ( ! $product_id || 'product' !== get_post_type( $product_id ) || ( ! $valid_email && ! $valid_phone ) ) {
 			wp_send_json_error();
 		}
 
 		$list = get_post_meta( $product_id, '_oc_notify_list', true );
 		$list = is_array( $list ) ? $list : array();
+		$key  = $valid_email ? $email : $phone;
 
-		if ( ! isset( $list[ $email ] ) ) {
-			$list[ $email ] = time();
-			update_post_meta( $product_id, '_oc_notify_list', $list );
-		}
+		$list[ $key ] = array(
+			'email' => $valid_email ? $email : '',
+			'phone' => $valid_phone ? $phone : '',
+			'time'  => time(),
+		);
+		update_post_meta( $product_id, '_oc_notify_list', $list );
 
 		wp_send_json_success();
 	}

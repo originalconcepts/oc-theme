@@ -134,6 +134,15 @@ final class Assets {
 				'readMore'  => __( 'Read more', 'oc-theme' ),
 				'readLess'  => __( 'Read less', 'oc-theme' ),
 				'ajaxUrl'   => admin_url( 'admin-ajax.php' ),
+				'notifyNonce'   => wp_create_nonce( 'oc_notify' ),
+				'notifyTitle'   => __( 'Notify me', 'oc-theme' ),
+				'notifyIntro'   => __( 'Sign up and we will let you know the moment this product is back in stock.', 'oc-theme' ),
+				'notifyPhone'   => __( 'Phone (WhatsApp)', 'oc-theme' ),
+				'notifyEmail'   => __( 'Email address', 'oc-theme' ),
+				'notifyButton'  => __( 'Notify me when it is back', 'oc-theme' ),
+				'notifyFoot'    => __( 'No spam — a single update about this product only.', 'oc-theme' ),
+				'notifyDone'    => __( 'You are on the list — we will let you know the moment it is back.', 'oc-theme' ),
+				'notifyMissing' => __( 'Fill in a phone number or an email address.', 'oc-theme' ),
 			)
 		);
 	}

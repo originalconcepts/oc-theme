@@ -1044,6 +1044,24 @@ msgstr "הרשמה"
 msgid "You are on the list — we will email you the moment it is back."
 msgstr "נרשמת! נשלח לך מייל ברגע שהמוצר יחזור למלאי."
 
+msgid "Notify me"
+msgstr "עדכנו אותי"
+
+msgid "Sign up and we will let you know the moment this product is back in stock."
+msgstr "השאירו פרטים ונעדכן אתכם ברגע שהמוצר חוזר למלאי."
+
+msgid "Phone (WhatsApp)"
+msgstr "טלפון (וואטסאפ)"
+
+msgid "No spam — a single update about this product only."
+msgstr "בלי ספאם — עדכון אחד בלבד, רק על המוצר הזה."
+
+msgid "You are on the list — we will let you know the moment it is back."
+msgstr "נרשמת! נעדכן אותך ברגע שהמוצר חוזר למלאי."
+
+msgid "Fill in a phone number or an email address."
+msgstr "יש למלא מספר טלפון או כתובת אימייל."
+
 msgid "Layout"
 msgstr "פריסה"
 

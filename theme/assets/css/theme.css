@@ -2879,8 +2879,7 @@ body:not(.oc-no-lightbox) .oc-vslide.is-playing {
 }
 
 .oc-oos__soldout,
-.oc-oos__notify,
-.oc-oos__form button {
+.oc-oos__notify {
 	block-size: var(--oc-cta-h, 48px);
 	border-radius: var(--oc-cta-r, 8px);
 	font-weight: 600;
@@ -2905,28 +2904,124 @@ body:not(.oc-no-lightbox) .oc-vslide.is-playing {
 	color: #fff;
 }
 
-.oc-oos__form {
+
+
+/* ---------- back-in-stock popup + catalogue notify bar ---------- */
+
+.oc-notify-bar {
+	position: absolute;
+	inset-inline: 0;
+	bottom: 0;
+	z-index: 3;
+	border: 0;
+	padding: .8em .7em;
+	background: var(--oc-ink, #1c1c1c);
+	color: #fff;
+	font-size: .82rem;
+	font-weight: 600;
+	cursor: pointer;
+	transition: opacity .15s ease;
+}
+
+.oc-notify-bar:hover { opacity: .9; }
+
+.oc-nmodal {
+	position: fixed;
+	inset: 0;
+	z-index: 10001;
+	background: rgb(0 0 0 / 45%);
+	display: grid;
+	place-items: center;
+	padding: 18px;
+}
+
+.oc-nmodal[hidden] { display: none; }
+
+.oc-nmodal__card {
+	position: relative;
+	inline-size: min(430px, 100%);
+	background: var(--oc-surface, #fff);
+	border-radius: calc(var(--oc-radius, 8px) * 1.2);
+	padding: 26px 26px 20px;
+	box-shadow: 0 18px 60px rgb(0 0 0 / 22%);
+}
+
+.oc-nmodal__close {
+	position: absolute;
+	inset-block-start: 12px;
+	inset-inline-end: 14px;
+	border: 0;
+	background: none;
+	font-size: 26px;
+	line-height: 1;
+	cursor: pointer;
+	color: var(--oc-ink);
+}
+
+.oc-nmodal__title {
 	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin: 0 0 6px;
+	font-size: 1.2rem;
+}
+
+.oc-nmodal__title svg {
+	inline-size: 21px;
+	block-size: 21px;
+}
+
+.oc-nmodal__intro {
+	margin: 0 0 12px;
+	font-size: .92rem;
+}
+
+.oc-nmodal__product {
+	margin: 0 0 14px;
+	font-weight: 700;
+}
+
+.oc-nmodal__form {
+	display: flex;
+	flex-direction: column;
 	gap: 10px;
 }
 
-.oc-oos__form input {
-	flex: 1 1 auto;
+.oc-nmodal__form input {
 	block-size: var(--oc-cta-h, 48px);
 	border: 1.5px solid var(--oc-line);
 	border-radius: var(--oc-cta-r, 8px);
 	padding-inline: 14px;
+	inline-size: 100%;
 }
 
-.oc-oos__form button {
+.oc-nmodal__form button {
+	block-size: var(--oc-cta-h, 48px);
 	border: 1.5px solid var(--oc-cta);
+	border-radius: var(--oc-cta-r, 8px);
 	background: var(--oc-cta);
 	color: #fff;
-	padding-inline: 26px;
+	font-weight: 600;
+	font-size: 1rem;
+	cursor: pointer;
 }
 
-.oc-oos__done {
+.oc-nmodal__error {
 	margin: 0;
+	color: #c4342c;
+	font-size: .88rem;
+}
+
+.oc-nmodal__foot {
+	margin: 12px 0 0;
+	font-size: .8rem;
+	color: var(--oc-muted, #777);
+	text-align: center;
+}
+
+.oc-nmodal__done {
+	margin: 14px 0 0;
 	font-weight: 600;
 	color: #2e9e5b;
+	text-align: center;
 }

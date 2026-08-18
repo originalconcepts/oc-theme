@@ -1084,47 +1084,110 @@
 		box.appendChild( mk( 'plus', 1 ) );
 	} );
 
-	/* ---------- sold out: back-in-stock signup ---------- */
+	/* ---------- back-in-stock popup ----------
+	 * One popup for every trigger — product page and catalogue cards. The
+	 * details only appear after the click; phone (WhatsApp) or email, one
+	 * of the two is enough. */
 
-	document.querySelectorAll( '.oc-oos' ).forEach( function ( box ) {
-		var notify = box.querySelector( '.oc-oos__notify' );
-		var form = box.querySelector( '.oc-oos__form' );
-		var done = box.querySelector( '.oc-oos__done' );
+	var ocNotifyModal = null;
 
-		notify.addEventListener( 'click', function () {
-			form.hidden = false;
-			notify.hidden = true;
-			form.querySelector( 'input' ).focus();
-		} );
+	function ocOpenNotify( productId, productName ) {
+		var L = window.ocL10n || {};
 
-		form.addEventListener( 'submit', function ( event ) {
-			event.preventDefault();
+		if ( ! ocNotifyModal ) {
+			ocNotifyModal = document.createElement( 'div' );
+			ocNotifyModal.className = 'oc-nmodal';
+			ocNotifyModal.hidden = true;
+			ocNotifyModal.innerHTML =
+				'<div class="oc-nmodal__card">' +
+				'<button type="button" class="oc-nmodal__close" aria-label="close">&times;</button>' +
+				'<h3 class="oc-nmodal__title">' +
+				'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 9a6 6 0 1 0-12 0c0 6-2.5 7-2.5 7h17S18 15 18 9z"/><path d="M10 19.5a2.2 2.2 0 0 0 4 0"/></svg>' +
+				( L.notifyTitle || 'Notify me' ) + '</h3>' +
+				'<p class="oc-nmodal__intro">' + ( L.notifyIntro || '' ) + '</p>' +
+				'<p class="oc-nmodal__product"></p>' +
+				'<form class="oc-nmodal__form">' +
+				'<input type="tel" name="phone" placeholder="' + ( L.notifyPhone || 'Phone' ) + '" />' +
+				'<input type="email" name="email" placeholder="' + ( L.notifyEmail || 'Email' ) + '" />' +
+				'<p class="oc-nmodal__error" hidden>' + ( L.notifyMissing || '' ) + '</p>' +
+				'<button type="submit">' + ( L.notifyButton || 'Notify me' ) + '</button>' +
+				'</form>' +
+				'<p class="oc-nmodal__foot">' + ( L.notifyFoot || '' ) + '</p>' +
+				'<p class="oc-nmodal__done" hidden>' + ( L.notifyDone || '' ) + '</p>' +
+				'</div>';
+			document.body.appendChild( ocNotifyModal );
 
-			var data = new FormData();
-			data.append( 'action', 'oc_notify' );
-			data.append( 'nonce', box.dataset.nonce );
-			data.append( 'product', box.dataset.product );
-			data.append( 'email', form.querySelector( 'input' ).value );
+			ocNotifyModal.addEventListener( 'click', function ( event ) {
+				if ( event.target === ocNotifyModal || event.target.closest( '.oc-nmodal__close' ) ) {
+					ocNotifyModal.hidden = true;
+				}
+			} );
 
-			var submit = form.querySelector( 'button' );
-			submit.disabled = true;
+			document.addEventListener( 'keydown', function ( event ) {
+				if ( 'Escape' === event.key && ! ocNotifyModal.hidden ) {
+					ocNotifyModal.hidden = true;
+				}
+			} );
 
-			fetch( ( window.ocL10n && window.ocL10n.ajaxUrl ) || '/wp-admin/admin-ajax.php', { method: 'POST', body: data } )
-				.then( function ( r ) {
-					return r.json();
-				} )
-				.then( function ( res ) {
-					if ( res && res.success ) {
-						form.hidden = true;
-						done.hidden = false;
-					} else {
+			ocNotifyModal.querySelector( '.oc-nmodal__form' ).addEventListener( 'submit', function ( event ) {
+				event.preventDefault();
+
+				var form = event.target;
+				var phone = form.querySelector( '[name="phone"]' ).value.trim();
+				var email = form.querySelector( '[name="email"]' ).value.trim();
+				var error = ocNotifyModal.querySelector( '.oc-nmodal__error' );
+
+				if ( ! phone && ! email ) {
+					error.hidden = false;
+					return;
+				}
+				error.hidden = true;
+
+				var data = new FormData();
+				data.append( 'action', 'oc_notify' );
+				data.append( 'nonce', L.notifyNonce || '' );
+				data.append( 'product', ocNotifyModal.dataset.product );
+				data.append( 'phone', phone );
+				data.append( 'email', email );
+
+				var submit = form.querySelector( 'button' );
+				submit.disabled = true;
+
+				fetch( L.ajaxUrl || '/wp-admin/admin-ajax.php', { method: 'POST', body: data } )
+					.then( function ( r ) {
+						return r.json();
+					} )
+					.then( function ( res ) {
 						submit.disabled = false;
-					}
-				} )
-				.catch( function () {
-					submit.disabled = false;
-				} );
-		} );
+						if ( res && res.success ) {
+							form.hidden = true;
+							ocNotifyModal.querySelector( '.oc-nmodal__foot' ).hidden = true;
+							ocNotifyModal.querySelector( '.oc-nmodal__done' ).hidden = false;
+						}
+					} )
+					.catch( function () {
+						submit.disabled = false;
+					} );
+			} );
+		}
+
+		ocNotifyModal.dataset.product = productId;
+		ocNotifyModal.querySelector( '.oc-nmodal__product' ).textContent = productName || '';
+		ocNotifyModal.querySelector( '.oc-nmodal__form' ).hidden = false;
+		ocNotifyModal.querySelector( '.oc-nmodal__foot' ).hidden = false;
+		ocNotifyModal.querySelector( '.oc-nmodal__done' ).hidden = true;
+		ocNotifyModal.querySelector( '.oc-nmodal__error' ).hidden = true;
+		ocNotifyModal.hidden = false;
+		ocNotifyModal.querySelector( '[name="phone"]' ).focus();
+	}
+
+	document.addEventListener( 'click', function ( event ) {
+		var trigger = event.target.closest( '.oc-notify-open' );
+		if ( trigger ) {
+			event.preventDefault();
+			event.stopPropagation();
+			ocOpenNotify( trigger.dataset.product, trigger.dataset.name );
+		}
 	} );
 
 	/* ---------- add-to-cart: a loader takes the label until the add lands ---------- */
