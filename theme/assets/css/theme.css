@@ -1260,8 +1260,10 @@ body:not(.oc-no-lightbox) .woocommerce-product-gallery__image:not(.oc-vslide) im
 .oc-tabs-accordion .woocommerce-tabs .woocommerce-Tabs-panel {
 	display: block !important;
 	border-block-start: 1px solid var(--oc-line);
-	padding-block: 0 6px;
+	padding-block: 0;
 }
+
+.oc-tabs-accordion .oc-acc-body { padding-block-end: 14px; }
 
 /* No flash of open panels: everything hides until the accordion is built. */
 .oc-tabs-accordion .woocommerce-tabs:not(.oc-acc-init) .woocommerce-Tabs-panel {
@@ -1354,26 +1356,31 @@ body:not(.oc-no-lightbox) .woocommerce-product-gallery__image:not(.oc-vslide) im
 	box-shadow: none !important;
 }
 
+body.oc-tabs-tabs.woocommerce div.product .woocommerce-tabs ul.tabs li a,
 .oc-tabs-tabs .woocommerce-tabs ul.tabs li a {
 	display: block;
 	padding: 10px 2px 12px;
-	font-weight: 400;
+	font-weight: 400 !important;
 	font-size: .95rem;
 	letter-spacing: .02em;
-	color: var(--oc-muted, #8a8a86);
+	color: var(--oc-muted, #77746f) !important;
 	text-decoration: none;
-	border-block-end: 1.5px solid transparent;
-	margin-block-end: -1px;
-	transition: color .15s ease, border-color .15s ease;
+	box-shadow: none;
+	transition: color .15s ease, box-shadow .15s ease;
 	white-space: nowrap;
 }
 
-.oc-tabs-tabs .woocommerce-tabs ul.tabs li a:hover { color: var(--oc-ink, #111); }
+body.oc-tabs-tabs.woocommerce div.product .woocommerce-tabs ul.tabs li a:hover,
+.oc-tabs-tabs .woocommerce-tabs ul.tabs li a:hover {
+	color: var(--oc-ink, #111) !important;
+	background: none !important;
+}
 
+body.oc-tabs-tabs.woocommerce div.product .woocommerce-tabs ul.tabs li.active a,
 .oc-tabs-tabs .woocommerce-tabs ul.tabs li.active a {
-	color: var(--oc-ink, #111);
-	font-weight: 500;
-	border-block-end-color: var(--oc-ink, #111);
+	color: var(--oc-ink, #111) !important;
+	font-weight: 500 !important;
+	box-shadow: inset 0 -1.5px 0 var(--oc-ink, #111);
 }
 
 /* ---------- sticky add-to-cart bar ---------- */
