@@ -1246,13 +1246,15 @@ final class Variations {
 					: '';
 
 				$data = sprintf(
-					' data-url="%s" data-pid="%d" data-name="%s" data-price="%s" data-badge="%s" data-imgs="%s"',
+					' data-url="%s" data-pid="%d" data-name="%s" data-price="%s" data-badge="%s" data-imgs="%s" data-oos="%s" data-var="%s"',
 					esc_url( get_permalink( $id ) ),
 					absint( $id ),
 					esc_attr( $sibling->get_name() ),
 					esc_attr( $sibling->get_price_html() ),
 					esc_attr( $badge ),
-					esc_attr( (string) wp_json_encode( $this->card_image_urls( $sibling ) ) )
+					esc_attr( (string) wp_json_encode( $this->card_image_urls( $sibling ) ) ),
+					$sibling->is_in_stock() ? '0' : '1',
+					$sibling->is_type( 'variable' ) ? '1' : '0'
 				);
 			}
 

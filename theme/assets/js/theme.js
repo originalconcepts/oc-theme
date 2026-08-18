@@ -459,6 +459,60 @@
 			}
 		}
 
+		// The sibling's stock state travels with the swap: the notify bar and
+		// the sold-out corner label appear or leave with it.
+		if ( undefined !== item.dataset.oos ) {
+			var L2 = window.ocL10n || {};
+			var isOos = '1' === item.dataset.oos;
+			var media = li.querySelector( '.oc-card-media' ) || li;
+			var nbar = li.querySelector( '.oc-notify-bar' );
+			var cstrip = li.querySelector( '.oc-strip' );
+			var oflag = li.querySelector( '.oc-flag--oos' );
+
+			if ( isOos ) {
+				if ( ! nbar ) {
+					nbar = document.createElement( 'button' );
+					nbar.type = 'button';
+					nbar.className = 'oc-notify-bar oc-notify-open';
+					media.appendChild( nbar );
+				}
+				nbar.disabled = false;
+				nbar.classList.remove( 'oc-signed' );
+				nbar.textContent = L2.notifyButton || 'Notify me when it is back';
+				nbar.dataset.product = item.dataset.pid;
+				nbar.dataset.name = item.dataset.name || '';
+				if ( '1' === item.dataset.var ) {
+					nbar.dataset.variable = '1';
+				} else {
+					delete nbar.dataset.variable;
+				}
+				if ( cstrip ) {
+					cstrip.hidden = true;
+				}
+				if ( ! oflag && L2.oosFlagText ) {
+					var fcol = li.querySelector( '.oc-flags--' + ( L2.oosFlagSide || 'left' ) ) || li.querySelector( '.oc-flags' );
+					if ( fcol ) {
+						var fl = document.createElement( 'span' );
+						fl.className = 'oc-flag oc-flag--oos';
+						fl.setAttribute( 'style', L2.oosFlagStyle || '' );
+						fl.textContent = L2.oosFlagText;
+						fcol.appendChild( fl );
+					}
+				}
+				ocRefreshSigned();
+			} else {
+				if ( nbar ) {
+					nbar.remove();
+				}
+				if ( oflag ) {
+					oflag.remove();
+				}
+				if ( cstrip ) {
+					cstrip.hidden = false;
+				}
+			}
+		}
+
 		li.querySelectorAll( '.oc-colors__item' ).forEach( function ( sib ) {
 			sib.classList.remove( 'is-current' );
 			sib.removeAttribute( 'aria-current' );
@@ -1188,10 +1242,13 @@
 			box.appendChild( select );
 			box.hidden = false;
 
-			// The variation the shopper picked on the page arrives pre-chosen.
+			// The variation the shopper picked on the page arrives pre-chosen;
+			// a single-variation product needs no choosing at all.
 			if ( selected && ! map[ productId + '|' + selected ] &&
 				select.querySelector( 'option[value="' + selected + '"]' ) ) {
 				select.value = String( selected );
+			} else if ( 1 === list.length && ! map[ productId + '|' + list[ 0 ].id ] ) {
+				select.value = String( list[ 0 ].id );
 			}
 		} );
 	}
@@ -1221,9 +1278,11 @@
 				return;
 			}
 
-			// Variable, on its own product page: with every variation signed
-			// the button flips; with some signed it hints below.
-			if ( trigger.classList.contains( 'oc-oos__notify' ) && ocSignedCount( pid ) > 0 ) {
+			// Variable: with every variation signed the button flips — on the
+			// product page and on catalogue cards alike; a partial signup
+			// hints below the product-page button only. Only products this
+			// browser signed up for ever trigger the (cached) lookup.
+			if ( ocSignedCount( pid ) > 0 ) {
 				ocFetchNotifyVars( pid ).then( function ( list ) {
 					if ( ! list ) {
 						return;
@@ -1237,7 +1296,8 @@
 						ocSwapSignedTrigger( trigger );
 						return;
 					}
-					if ( ! trigger.parentNode.querySelector( '.oc-oos__hint' ) ) {
+					if ( trigger.classList.contains( 'oc-oos__notify' ) &&
+						! trigger.parentNode.querySelector( '.oc-oos__hint' ) ) {
 						var hint = document.createElement( 'span' );
 						hint.className = 'oc-oos__hint';
 						hint.textContent = '✓ ' + ( ( window.ocL10n || {} ).notifySignedSome || '' );
@@ -1443,25 +1503,43 @@
 	 * add-to-cart row. */
 
 	( function () {
-		var watch = document.querySelector( '.oc-oos--watch' );
+		var blocks = document.querySelectorAll( '.oc-oos' );
 		var vForm = document.querySelector( 'form.variations_form' );
 
-		if ( ! watch || ! vForm ) {
+		if ( ! blocks.length || ! vForm ) {
 			return;
 		}
+
+		var watch = document.querySelector( '.oc-oos--watch' );
 
 		var applyWatch = function () {
 			var idInput = vForm.querySelector( 'input[name="variation_id"]' );
 			var vid = idInput ? String( idInput.value || '' ) : '';
-			var oos = !! vForm.querySelector( '.single_variation .stock.out-of-stock, .woocommerce-variation-availability .out-of-stock' );
-			var show = '' !== vid && '0' !== vid && oos;
+			var valid = '' !== vid && '0' !== vid;
 
-			watch.hidden = ! show;
-			vForm.classList.toggle( 'oc-var-oos', show );
+			// On a fully sold-out product any resolved variation is the one
+			// the shopper means — the popup opens with it chosen.
+			blocks.forEach( function ( block ) {
+				if ( block === watch ) {
+					return;
+				}
+				var btn = block.querySelector( '.oc-notify-open' );
+				if ( btn ) {
+					btn.dataset.selected = valid ? vid : '';
+				}
+			} );
 
-			var btn = watch.querySelector( '.oc-notify-open' );
-			if ( btn ) {
-				btn.dataset.selected = show ? vid : '';
+			if ( watch ) {
+				var oos = !! vForm.querySelector( '.single_variation .stock.out-of-stock, .woocommerce-variation-availability .out-of-stock' );
+				var show = valid && oos;
+
+				watch.hidden = ! show;
+				vForm.classList.toggle( 'oc-var-oos', show );
+
+				var wbtn = watch.querySelector( '.oc-notify-open' );
+				if ( wbtn ) {
+					wbtn.dataset.selected = show ? vid : '';
+				}
 			}
 		};
 

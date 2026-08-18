@@ -160,6 +160,10 @@ final class Assets {
 				'notifySigned'         => __( 'You are signed up for an update', 'oc-theme' ),
 				'notifySignedSome'     => __( 'You are already signed up for one of the options', 'oc-theme' ),
 				'notifySignedOpt'      => __( 'signed up', 'oc-theme' ),
+				// The colour-sibling card swap rebuilds the sold-out pieces.
+				'oosFlagText'  => get_theme_mod( 'oc_label_stock', false ) ? (string) get_theme_mod( 'oc_label_stock_out', __( 'Out of stock', 'oc-theme' ) ) : '',
+				'oosFlagStyle' => WooCommerce::flag_colors( 'oc_label_stock_bg', 'oc_label_stock_tx' ),
+				'oosFlagSide'  => 'right' === get_theme_mod( 'oc_label_stock_pos', 'left' ) ? 'right' : 'left',
 				/* translators: %d: seconds until the popup closes itself. */
 				'notifyClosing'        => __( 'Closes automatically in %d seconds', 'oc-theme' ),
 			)

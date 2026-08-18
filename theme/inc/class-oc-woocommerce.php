@@ -572,8 +572,11 @@ final class WooCommerce {
 		if ( get_theme_mod( 'oc_label_stock', false ) ) {
 			$text = '';
 
+			$is_oos = false;
+
 			if ( ! $product->is_in_stock() ) {
-				$text = (string) get_theme_mod( 'oc_label_stock_out', __( 'Out of stock', 'oc-theme' ) );
+				$text   = (string) get_theme_mod( 'oc_label_stock_out', __( 'Out of stock', 'oc-theme' ) );
+				$is_oos = true;
 			} elseif ( $product->managing_stock() && null !== $product->get_stock_quantity() ) {
 				$qty = (int) $product->get_stock_quantity();
 				$low = (int) wc_get_low_stock_amount( $product );
@@ -588,7 +591,8 @@ final class WooCommerce {
 			if ( '' !== $text ) {
 				$stock_side            = 'right' === get_theme_mod( 'oc_label_stock_pos', 'left' ) ? 'right' : 'left';
 				$sides[ $stock_side ] .= sprintf(
-					'<span class="oc-flag" style="%s">%s</span>',
+					'<span class="oc-flag%s" style="%s">%s</span>',
+					$is_oos ? ' oc-flag--oos' : '',
 					esc_attr( self::flag_colors( 'oc_label_stock_bg', 'oc_label_stock_tx' ) ),
 					esc_html( $text )
 				);
@@ -665,7 +669,7 @@ final class WooCommerce {
 	 * @param string $tx_key Text-colour setting id.
 	 * @return string
 	 */
-	private static function flag_colors( string $bg_key, string $tx_key ): string {
+	public static function flag_colors( string $bg_key, string $tx_key ): string {
 		$bg = (string) get_theme_mod( $bg_key, '' );
 		$tx = (string) get_theme_mod( $tx_key, '' );
 
