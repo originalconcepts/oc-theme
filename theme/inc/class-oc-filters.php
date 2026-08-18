@@ -147,11 +147,12 @@ final class Filters {
 		$brands = array();
 
 		foreach ( $_GET as $key => $value ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- public read-only filters.
-			$value = sanitize_text_field( wp_unslash( (string) $value ) );
+			// No sanitize_text_field here: it strips percent-encoded octets,
+			// and Hebrew term slugs ARE percent-encoded. Each param type gets
+			// its own strict whitelist instead.
+			$value = wp_unslash( (string) $value );
 
 			if ( preg_match( '/^fa_(\d+)$/', (string) $key, $m ) && '' !== $value ) {
-				// Hebrew term slugs live percent-encoded — sanitize_title would
-				// strip the octets, so clean by whitelist instead.
 				$attrs[ (int) $m[1] ] = array_filter(
 					array_map(
 						static function ( string $slug ): string {
