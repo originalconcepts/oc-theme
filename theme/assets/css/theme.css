@@ -1323,31 +1323,57 @@ body:not(.oc-no-lightbox) .woocommerce-product-gallery__image:not(.oc-vslide) im
 	transition: max-block-size .3s ease;
 }
 
-/* tabs mode: brand styling over Woo defaults */
+/* tabs mode: quiet text tabs, the active one inked with a fine underline —
+ * no boxes, no Woo chrome. */
 .oc-tabs-tabs .woocommerce-tabs ul.tabs {
 	display: flex;
-	gap: 4px;
-	margin: 0 0 16px;
+	gap: 28px;
+	margin: 0 0 20px;
 	padding: 0;
-	border-block-end: 1px solid var(--oc-line);
-	list-style: none;
-}
-.oc-tabs-tabs .woocommerce-tabs ul.tabs li {
 	border: 0;
+	border-block-end: 1px solid var(--oc-line);
 	background: none;
-	margin: 0;
-	padding: 0;
+	list-style: none;
+	overflow-x: auto;
 }
+
+.oc-tabs-tabs .woocommerce-tabs ul.tabs::before,
+.oc-tabs-tabs .woocommerce-tabs ul.tabs::after,
+.oc-tabs-tabs .woocommerce-tabs ul.tabs li::before,
+.oc-tabs-tabs .woocommerce-tabs ul.tabs li::after {
+	content: none !important;
+	display: none !important;
+}
+
+.oc-tabs-tabs .woocommerce-tabs ul.tabs li {
+	border: 0 !important;
+	background: none !important;
+	border-radius: 0 !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	box-shadow: none !important;
+}
+
 .oc-tabs-tabs .woocommerce-tabs ul.tabs li a {
 	display: block;
-	padding: 10px 16px;
-	font-weight: 600;
+	padding: 10px 2px 12px;
+	font-weight: 400;
+	font-size: .95rem;
+	letter-spacing: .02em;
+	color: var(--oc-muted, #8a8a86);
 	text-decoration: none;
-	border-block-end: 2px solid transparent;
+	border-block-end: 1.5px solid transparent;
+	margin-block-end: -1px;
+	transition: color .15s ease, border-color .15s ease;
+	white-space: nowrap;
 }
+
+.oc-tabs-tabs .woocommerce-tabs ul.tabs li a:hover { color: var(--oc-ink, #111); }
+
 .oc-tabs-tabs .woocommerce-tabs ul.tabs li.active a {
-	color: var(--oc-secondary);
-	border-block-end-color: var(--oc-secondary);
+	color: var(--oc-ink, #111);
+	font-weight: 500;
+	border-block-end-color: var(--oc-ink, #111);
 }
 
 /* ---------- sticky add-to-cart bar ---------- */
