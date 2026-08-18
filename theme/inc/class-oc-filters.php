@@ -1195,10 +1195,25 @@ final class Filters {
 		echo '<div class="oc-flt-main">';
 
 		if ( 'topbar' === $layout ) {
+			global $wp_query;
+			$found = isset( $wp_query->found_posts ) ? (int) $wp_query->found_posts : 0;
+
 			echo '<div class="oc-flt oc-flt--top oc-flt--top-' . esc_attr( (string) $settings['topbar_style'] ) . '" data-flt-panel>';
 			echo '<button type="button" class="oc-flt__close oc-flt__close--m" data-flt-close aria-label="' . esc_attr__( 'Close', 'oc-theme' ) . '">&times;</button>';
 			echo $groups_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			echo '<button type="button" class="oc-flt__clear" data-flt-clear hidden>' . esc_html__( 'Clear all', 'oc-theme' ) . '</button>';
+
+			// Sort and the live result count share the bar's far end — one
+			// row does everything, Woo's own ordering line steps aside.
+			echo '<span class="oc-flt__bar-tail">';
+			echo '<button type="button" class="oc-flt__mbtn" data-oc-sort-open>';
+			echo '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16l-6.2 7.2V19l-3.6-2v-4.8z"/></svg>';
+			echo '<span>' . esc_html__( 'Sort', 'oc-theme' ) . '</span>';
+			echo '</button>';
+			/* translators: %s: number of products. */
+			echo '<span class="oc-flt__rescount" data-flt-rescount>' . esc_html( sprintf( __( '%s results', 'oc-theme' ), number_format_i18n( $found ) ) ) . '</span>';
+			echo '</span>';
+
 			echo $foot; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			echo '</div>';
 			echo $chips; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
@@ -1247,16 +1262,16 @@ final class Filters {
 		echo '</button>';
 		/* translators: %s: number of products. */
 		echo '<span class="oc-flt__rescount" data-flt-rescount>' . esc_html( sprintf( __( '%s results', 'oc-theme' ), number_format_i18n( $found ) ) ) . '</span>';
+		echo '</div>';
 
-		// The sort sheet — options arrive from the native select. It lives
-		// inside the bar so the desktop dropdown can anchor to it; on mobile
-		// its fixed positioning ignores the parent anyway.
+		// The sort sheet — options arrive from the native select. A sibling
+		// of the bars inside .oc-flt-main: on desktop theme.js drops it right
+		// under whichever bar opened it; on mobile it is a fixed bottom sheet.
 		echo '<div class="oc-sortsheet" data-oc-sortsheet hidden>';
 		echo '<div class="oc-sortsheet__head"><button type="button" class="oc-sortsheet__close" data-oc-sort-close aria-label="' . esc_attr__( 'Close', 'oc-theme' ) . '">&times;</button><span>' . esc_html__( 'Sort by', 'oc-theme' ) . '</span></div>';
 		echo '<div class="oc-sortsheet__list" data-oc-sortlist></div>';
 		echo '</div>';
 		echo '<div class="oc-flt__overlay oc-sortsheet__overlay" data-oc-sort-overlay hidden></div>';
-		echo '</div>';
 
 		if ( $with_chips ) {
 			echo '<div class="oc-flt__chips oc-flt__chips--m" data-flt-chips hidden></div>';

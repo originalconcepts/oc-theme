@@ -4107,11 +4107,33 @@ body.oc-flt-drawer .woocommerce-result-count { display: none; }
 
 .oc-flt__chips--center { justify-content: center; }
 
+/* topbar layout: sort + count live at the bar's far end — one row for
+ * everything, Woo's own ordering line steps aside. */
+body.oc-flt-topbar .woocommerce-ordering,
+body.oc-flt-topbar .woocommerce-result-count { display: none; }
+
+.oc-flt__bar-tail {
+	display: inline-flex;
+	align-items: center;
+	gap: 18px;
+	margin-inline-start: auto;
+}
+
+.oc-flt__bar-tail .oc-flt__rescount { margin-inline-start: 0; }
+
+@media (max-width: 900px) {
+	/* the mobile toolbar carries sort and count there */
+	.oc-flt__bar-tail { display: none; }
+}
+
+/* Desktop: the sheet becomes a dropdown pinned under whichever bar opened
+ * it — theme.js sets the exact block offset and the end-alignment class. */
 @media (min-width: 901px) {
-	body.oc-flt-drawer.oc-sort-open .oc-sortsheet {
+	.oc-flt-main { position: relative; }
+
+	body.oc-sort-open .oc-sortsheet.oc-sortsheet--drop {
 		display: block !important;
 		position: absolute;
-		inset-block-start: calc(100% + 1px);
 		inset-block-end: auto;
 		inset-inline-start: 0;
 		inset-inline-end: auto;
@@ -4122,15 +4144,21 @@ body.oc-flt-drawer .woocommerce-result-count { display: none; }
 		border-radius: 0 0 12px 12px;
 		box-shadow: 0 16px 34px rgb(0 0 0 / 10%);
 		padding: 0 18px 14px;
+		background: var(--oc-surface, #fff);
 		z-index: 90;
 	}
 
-	body.oc-flt-drawer.oc-sort-open .oc-sortsheet__head { padding-block: 12px; }
-	body.oc-flt-drawer.oc-sort-open .oc-sortsheet__list { align-items: flex-start; padding-block-start: 8px; }
-	body.oc-flt-drawer.oc-sort-open .oc-sortsheet__opt { padding: 7px 0; font-size: .95rem; }
+	body.oc-sort-open .oc-sortsheet--drop.oc-sortsheet--end {
+		inset-inline-start: auto;
+		inset-inline-end: 0;
+	}
+
+	body.oc-sort-open .oc-sortsheet--drop .oc-sortsheet__head { padding-block: 12px; }
+	body.oc-sort-open .oc-sortsheet--drop .oc-sortsheet__list { align-items: flex-start; padding-block-start: 8px; }
+	body.oc-sort-open .oc-sortsheet--drop .oc-sortsheet__opt { padding: 7px 0; font-size: .95rem; }
 
 	/* click-away still works; no dimming for a small dropdown */
-	body.oc-flt-drawer.oc-sort-open .oc-sortsheet__overlay {
+	body.oc-sort-open .oc-sortsheet__overlay {
 		background: transparent;
 		z-index: 89;
 	}

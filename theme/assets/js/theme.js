@@ -1463,6 +1463,19 @@
 						} );
 						listEl.appendChild( b );
 					} );
+
+					// Desktop: pin the sheet as a dropdown under whichever
+					// bar holds the opener; mobile keeps the bottom sheet.
+					if ( sheet && window.matchMedia && window.matchMedia( '(min-width: 901px)' ).matches ) {
+						var opener = event.target.closest( '[data-oc-sort-open]' );
+						var bar = opener.closest( '.oc-flt__mbar, .oc-flt--top' );
+						if ( bar ) {
+							sheet.classList.add( 'oc-sortsheet--drop' );
+							sheet.classList.toggle( 'oc-sortsheet--end', ! ! opener.closest( '.oc-flt--top' ) );
+							sheet.style.insetBlockStart = ( bar.offsetTop + bar.offsetHeight + 1 ) + 'px';
+						}
+					}
+
 					document.body.classList.add( 'oc-sort-open' );
 					return;
 				}
