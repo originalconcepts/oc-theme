@@ -104,7 +104,11 @@
 	 * Independent of the paging mode and of pagination existing — a filtered
 	 * single-page view restores just the same. */
 
-	var ocCatGrid = document.querySelector( 'body.archive ul.products, body.post-type-archive ul.products, body.tax-product_cat ul.products' ) || ( document.body.classList.contains( 'woocommerce' ) ? document.querySelector( 'ul.products' ) : null );
+	// Archive pages only — a product page's related-products grid must not
+	// swallow the saved return point.
+	var ocCatGrid = ( document.body.classList.contains( 'archive' ) || document.body.classList.contains( 'woocommerce-shop' ) )
+		? document.querySelector( 'ul.products' )
+		: null;
 
 	if ( ocCatGrid ) {
 		// A deliberate click on the category link must open it from the top.
