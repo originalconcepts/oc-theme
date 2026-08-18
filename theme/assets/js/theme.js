@@ -151,12 +151,21 @@
 			window.addEventListener( 'scroll', updatePagingState, { passive: true } );
 
 			// Returning from a product: jump back to the card that was clicked.
-			// Any other load starts at the top — with restoration set to
-			// manual above, nothing else may move the page.
+			// Only a real back/forward counts — a deliberate menu click on the
+			// same category is a fresh visit and starts at the top. Any other
+			// load starts at the top too.
+			var ocBackNav = false;
+			try {
+				var navEntries = performance.getEntriesByType( 'navigation' );
+				ocBackNav = navEntries && navEntries[ 0 ]
+					? 'back_forward' === navEntries[ 0 ].type
+					: !! ( performance.navigation && 2 === performance.navigation.type );
+			} catch ( e ) {}
+
 			var ocReturned = false;
 			try {
 				var ocReturn = JSON.parse( sessionStorage.getItem( 'ocReturn' ) || 'null' );
-				if ( ocReturn && ocReturn.postClass &&
+				if ( ocBackNav && ocReturn && ocReturn.postClass &&
 					new URL( ocReturn.url ).pathname === window.location.pathname ) {
 					var backTarget = pagingUl.querySelector( 'li.' + ocReturn.postClass );
 					if ( backTarget ) {

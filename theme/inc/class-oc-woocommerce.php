@@ -56,6 +56,7 @@ final class WooCommerce {
 		add_filter( 'woocommerce_get_price_html', array( $this, 'price_badge_html' ), 20, 2 );
 		add_filter( 'woocommerce_breadcrumb_defaults', array( $this, 'breadcrumb_defaults' ) );
 		add_filter( 'body_class', array( $this, 'body_class' ) );
+		add_filter( 'posts_clauses', array( $this, 'oos_last' ), 20, 2 );
 		add_filter( 'woocommerce_sale_flash', array( $this, 'sale_badge' ), 10, 3 );
 
 		// The add-to-cart area: a stock line above the button, icon rows
@@ -454,6 +455,63 @@ final class WooCommerce {
 	 * Card media for every image mode. One markup path — so the ratio, radius
 	 * and behaviour styles always have the same target.
 	 */
+	/**
+	 * The daily wave: with the "rotate lead images" setting on, a quarter of
+	 * the catalogue — a different, deterministic quarter every day — leads
+	 * with one of its gallery shots instead of the featured image. Returning
+	 * visitors meet familiar products from a new angle; no cron, no writes,
+	 * and every visitor (and cache) sees the same face that day.
+	 *
+	 * @param array<int,int> $ids        Featured-first image ids.
+	 * @param int            $product_id Product id (the shuffle seed).
+	 * @return array<int,int>
+	 */
+	private function fresh_lead( array $ids, int $product_id ): array {
+		if ( count( $ids ) < 2 || ! get_theme_mod( 'oc_catalog_fresh', false ) ) {
+			return $ids;
+		}
+
+		$day = gmdate( 'Y-z' );
+
+		// Today's wave: roughly one product in four.
+		if ( 0 !== crc32( $product_id . '|' . $day ) % 4 ) {
+			return $ids;
+		}
+
+		// Which gallery shot leads is just as deterministic.
+		$pick = 1 + ( crc32( $day . '#' . $product_id ) % ( count( $ids ) - 1 ) );
+		$lead = $ids[ $pick ];
+		unset( $ids[ $pick ] );
+		array_unshift( $ids, $lead );
+
+		return array_values( $ids );
+	}
+
+	/**
+	 * With the setting on, sold-out products sink to the end of the catalogue
+	 * — one indexed lookup-table join, ahead of whatever ordering is active.
+	 *
+	 * @param array<string,string> $clauses SQL clauses.
+	 * @param \WP_Query            $query   Running query.
+	 * @return array<string,string>
+	 */
+	public function oos_last( array $clauses, \WP_Query $query ): array {
+		if ( is_admin() || 'product_query' !== $query->get( 'wc_query' ) || ! get_theme_mod( 'oc_catalog_oos_last', false ) ) {
+			return $clauses;
+		}
+
+		global $wpdb;
+
+		if ( false === strpos( (string) $clauses['join'], 'oc_stock_lookup' ) ) {
+			$clauses['join'] .= " LEFT JOIN {$wpdb->wc_product_meta_lookup} oc_stock_lookup ON {$wpdb->posts}.ID = oc_stock_lookup.product_id ";
+		}
+
+		$order              = "( oc_stock_lookup.stock_status = 'outofstock' ) ASC";
+		$clauses['orderby'] = '' !== (string) $clauses['orderby'] ? $order . ', ' . $clauses['orderby'] : $order;
+
+		return $clauses;
+	}
+
 	public function card_media(): void {
 		global $product;
 
@@ -469,6 +527,7 @@ final class WooCommerce {
 			array_map( 'intval', $product->get_gallery_image_ids() )
 		);
 		$ids = array_values( array_unique( array_filter( $ids ) ) );
+		$ids = $this->fresh_lead( $ids, $product->get_id() );
 
 		if ( 'single' === $mode || count( $ids ) < 2 ) {
 			$ids  = array_slice( $ids, 0, 1 );

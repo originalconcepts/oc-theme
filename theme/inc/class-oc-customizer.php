@@ -563,6 +563,9 @@ final class Customizer {
 			'page'
 		);
 
+		$this->toggle( $c, 'oc_catalog_oos_last', $section, __( 'Sold-out products drop to the end', 'oc-theme' ), false );
+		$this->toggle( $c, 'oc_catalog_fresh', $section, __( 'Rotate lead images — a daily quarter of the catalogue leads with a gallery shot', 'oc-theme' ), false );
+
 		$this->heading( $c, 'oc_h_cat_paging', $section, __( 'Loading & paging', 'oc-theme' ) );
 
 		$this->number( $c, 'oc_catalog_per_page', $section, __( 'Products per page (-1 shows all)', 'oc-theme' ), 24, -1, 200 );
