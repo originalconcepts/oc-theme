@@ -853,6 +853,41 @@ final class WooCommerce {
 	}
 
 	/**
+	 * Human variation label — term names resolved by hand because Hebrew
+	 * attribute taxonomies arrive percent-encoded and defeat
+	 * wc_get_formatted_variation's own lookup.
+	 *
+	 * @param \WC_Product_Variation $variation The variation.
+	 */
+	private function variation_label( \WC_Product_Variation $variation ): string {
+		$parts = array();
+
+		foreach ( $variation->get_attributes() as $tax => $slug ) {
+			$slug = (string) $slug;
+
+			if ( '' === $slug ) {
+				continue;
+			}
+
+			$name = rawurldecode( $slug );
+
+			foreach ( array( (string) $tax, rawurldecode( (string) $tax ) ) as $taxonomy ) {
+				if ( taxonomy_exists( $taxonomy ) ) {
+					$term = get_term_by( 'slug', $slug, $taxonomy );
+					if ( $term instanceof \WP_Term ) {
+						$name = $term->name;
+						break;
+					}
+				}
+			}
+
+			$parts[] = $name;
+		}
+
+		return $parts ? implode( ', ', $parts ) : $variation->get_name();
+	}
+
+	/**
 	 * The popup's variation picker, fetched only when a variable product's
 	 * trigger is clicked — cards stay cheap to render.
 	 */
@@ -875,7 +910,7 @@ final class WooCommerce {
 
 			$options[] = array(
 				'id'    => $child_id,
-				'label' => wc_get_formatted_variation( $variation, true, false, false ),
+				'label' => $this->variation_label( $variation ),
 			);
 		}
 
@@ -918,7 +953,7 @@ final class WooCommerce {
 				wp_send_json_error();
 			}
 
-			$vname = wc_get_formatted_variation( $variation, true, false, false );
+			$vname = $this->variation_label( $variation );
 		} else {
 			$variation_id = 0;
 		}
