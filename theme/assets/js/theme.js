@@ -521,9 +521,18 @@
 	/* ---------- product tabs → accordion ---------- */
 
 	if ( document.body.classList.contains( 'oc-tabs-accordion' ) ) {
-		document.querySelectorAll( '.woocommerce-Tabs-panel' ).forEach( function ( panel, i ) {
+		// Scoped to the real tabs wrapper: product content pasted from other
+		// sites can carry .woocommerce-Tabs-panel markup of its own (it once
+		// produced an accordion head named "ui-id-1").
+		document.querySelectorAll( '.woocommerce-tabs .woocommerce-Tabs-panel' ).forEach( function ( panel, i ) {
 			var heading = panel.querySelector( 'h2' );
-			var title = heading ? heading.textContent : panel.getAttribute( 'aria-labelledby' );
+			var title = heading ? heading.textContent : '';
+
+			// No heading, no accordion — never fall back to element ids.
+			if ( ! title.trim() ) {
+				return;
+			}
+
 			var open = 0 === i;
 
 			var head = document.createElement( 'button' );
