@@ -1308,3 +1308,177 @@ msgstr "גל יומי — רבע מהקטלוג מתחלף בכל יום"
 
 msgid "Smart — products a visitor skipped return from a new angle"
 msgstr "חכם — מוצרים שהגולש דילג עליהם יחזרו מזווית אחרת"
+
+msgid "Catalogue filters"
+msgstr "סינון קטלוג"
+
+msgid "Filters"
+msgstr "סינון"
+
+msgid "Filter"
+msgstr "סינון"
+
+msgid "Clear all"
+msgstr "נקו הכל"
+
+msgid "In stock only"
+msgstr "הצג במלאי בלבד"
+
+msgid "Brand"
+msgstr "מותג"
+
+msgid "Price"
+msgstr "מחיר"
+
+msgid "Up to %s"
+msgstr "עד %s"
+
+msgid "From"
+msgstr "ממחיר"
+
+msgid "To"
+msgstr "עד מחיר"
+
+msgid "Apply"
+msgstr "החלה"
+
+msgid "View results"
+msgstr "הצגת תוצאות"
+
+msgid "Filters layout"
+msgstr "פריסת הסינון"
+
+msgid "Site default"
+msgstr "ברירת המחדל של האתר"
+
+msgid "Side column"
+msgstr "עמודה צדדית"
+
+msgid "Bar above the products"
+msgstr "פס מעל המוצרים"
+
+msgid "Filter button opening a panel"
+msgstr "כפתור סינון שפותח פאנל"
+
+msgid "No filters here"
+msgstr "ללא סינון בקטגוריה זו"
+
+msgid "General"
+msgstr "כללי"
+
+msgid "Filtering"
+msgstr "סינון"
+
+msgid "Enable catalogue filtering"
+msgstr "הפעלת סינון בקטלוג"
+
+msgid "Default layout (desktop)"
+msgstr "פריסת ברירת מחדל (דסקטופ)"
+
+msgid "Each category can pick its own layout on its edit screen. Mobile always uses the panel."
+msgstr "כל קטגוריה יכולה לבחור פריסה משלה במסך העריכה שלה. במובייל תמיד מוצג פאנל."
+
+msgid "Bar dropdown style"
+msgstr "סגנון פתיחה בפס העליון"
+
+msgid "Opens under the value"
+msgstr "נפתח מתחת לערך"
+
+msgid "Opens full width"
+msgstr "נפתח לכל הרוחב"
+
+msgid "Choice style"
+msgstr "סגנון בחירה"
+
+msgid "Checkboxes"
+msgstr "צ'ק-בוקס"
+
+msgid "Dot marks"
+msgstr "נקודות סימון"
+
+msgid "Counts"
+msgstr "ספירות"
+
+msgid "Show the number of items next to each value"
+msgstr "הצגת מספר הפריטים ליד כל ערך"
+
+msgid "Values with no results"
+msgstr "ערכים בלי תוצאות"
+
+msgid "Grey and unclickable"
+msgstr "אפורים ולא לחיצים"
+
+msgid "Hidden entirely"
+msgstr "מוסתרים לגמרי"
+
+msgid "Stock"
+msgstr "מלאי"
+
+msgid "Show the \"In stock only\" toggle"
+msgstr "הצגת המתג \"הצג במלאי בלבד\""
+
+msgid "Brands"
+msgstr "מותגים"
+
+msgid "Filter by brand"
+msgstr "סינון לפי מותג"
+
+msgid "Price filter"
+msgstr "סינון מחיר"
+
+msgid "From price to price"
+msgstr "ממחיר עד מחיר"
+
+msgid "Preset \"up to\" steps"
+msgstr "מדרגות \"עד מחיר\" קבועות"
+
+msgid "Slider"
+msgstr "סליידר"
+
+msgid "Input fields"
+msgstr "שדות הזנה"
+
+msgid "Steps apply to the \"up to\" mode — comma-separated prices."
+msgstr "המדרגות חלות על מצב \"עד מחיר\" — מחירים מופרדים בפסיק."
+
+msgid "Attributes"
+msgstr "תכונות"
+
+msgid "Order sets the display order. Swatch attributes show as swatches unless switched to text."
+msgstr "הסדר קובע את סדר התצוגה. תכונות Swatch מוצגות כעיגולי צבע אלא אם הוחלפו לטקסט."
+
+msgid "Show"
+msgstr "הצגה"
+
+msgid "Order"
+msgstr "סדר"
+
+msgid "Attribute"
+msgstr "תכונה"
+
+msgid "Title override"
+msgstr "כותרת מותאמת"
+
+msgid "Display"
+msgstr "תצוגה"
+
+msgid "By its type"
+msgstr "לפי הסוג שלה"
+
+msgid "Open by default"
+msgstr "פתוחה כברירת מחדל"
+
+msgid "Category groups"
+msgstr "קבוצות קטגוריה"
+
+msgid "A facet built from main categories — e.g. a \"Gender\" group holding the Women and Men categories. Filtering shows the current category's products that also belong to the chosen one."
+msgstr "פילטר שנבנה מקטגוריות ראשיות — למשל קבוצת \"מגדר\" שמכילה את הקטגוריות נשים וגברים. הסינון מציג את מוצרי הקטגוריה הנוכחית שמשויכים גם לקטגוריה שנבחרה."
+
+msgid "Group title"
+msgstr "כותרת הקבוצה"
+
+msgid "Main categories"
+msgstr "קטגוריות ראשיות"
+
+msgid "e.g. Gender"
+msgstr "למשל: מגדר"
