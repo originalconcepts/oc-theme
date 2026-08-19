@@ -1923,3 +1923,6 @@ msgstr "סה״כ"
 
 msgid "Order summary"
 msgstr "סיכום הזמנה"
+
+msgid "Added to cart"
+msgstr "נוסף לסל"

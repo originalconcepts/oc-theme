@@ -965,23 +965,37 @@ final class Cart {
 		// phpcs:disable WordPress.Security.NonceVerification.Missing -- same surface as Woo's own add.
 		$product_id   = isset( $_POST['product_id'] ) ? absint( $_POST['product_id'] ) : 0;
 		$variation_id = isset( $_POST['variation_id'] ) ? absint( $_POST['variation_id'] ) : 0;
+		$quantity     = isset( $_POST['quantity'] ) ? max( 1, (int) $_POST['quantity'] ) : 1;
+
+		// The product form posts its chosen attributes as attribute_* fields.
+		$attributes = array();
+		foreach ( wp_unslash( $_POST ) as $field => $value ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+			if ( 0 === strpos( (string) $field, 'attribute_' ) && is_scalar( $value ) ) {
+				$attributes[ sanitize_text_field( $field ) ] = sanitize_text_field( (string) $value );
+			}
+		}
 		// phpcs:enable WordPress.Security.NonceVerification.Missing
 
-		$attributes = array();
-
-		if ( $variation_id ) {
+		if ( ! $attributes && $variation_id ) {
 			$variation = wc_get_product( $variation_id );
 			if ( $variation instanceof \WC_Product_Variation ) {
 				$attributes = $variation->get_variation_attributes();
 			}
 		}
 
-		$added = WC()->cart->add_to_cart( $product_id, 1, $variation_id, $attributes );
+		$added = WC()->cart->add_to_cart( $product_id, $quantity, $variation_id, $attributes );
 
 		if ( ! $added ) {
-			wp_send_json_error();
+			$notices = wc_get_notices( 'error' );
+			wc_clear_notices();
+			wp_send_json_error(
+				array(
+					'message' => $notices ? html_entity_decode( wp_strip_all_tags( (string) $notices[0]['notice'] ), ENT_QUOTES, 'UTF-8' ) : '',
+				)
+			);
 		}
 
+		wc_clear_notices();
 		WC()->cart->calculate_totals();
 		\WC_AJAX::get_refreshed_fragments();
 	}

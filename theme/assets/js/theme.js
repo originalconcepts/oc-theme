@@ -1586,6 +1586,17 @@
 			btn.classList.add( 'loading' );
 			if ( openOnAdd && ! btn.closest( '[data-oc-cart-drawer]' ) ) {
 				openDrawer();
+			} else if ( ! openOnAdd ) {
+				// No drawer: the toast under the header carries the news.
+				var card = btn.closest( 'li.product, .oc-cartup__item' );
+				var cardTitle = card && card.querySelector( '.woocommerce-loop-product__title, .oc-cartup__name' );
+				var cardImg = card && card.querySelector( 'img' );
+				setTimeout( function () {
+					cartToast(
+						cardTitle ? cardTitle.textContent.trim() : '',
+						cardImg ? cardImg.currentSrc || cardImg.src : ''
+					);
+				}, 900 );
 			}
 			// Woo's add-to-cart JS handles the request itself.
 			setTimeout( function () {
@@ -1597,11 +1608,136 @@
 			}, 2600 );
 		} );
 
-		// A non-ajax add (the single product form) lands back with
-		// ?add-to-cart / added-to-cart in the url — open the drawer then too.
+		// A non-ajax add (a no-js fallback) lands back with ?add-to-cart /
+		// added-to-cart in the url — open the drawer then too.
 		if ( openOnAdd && /(?:^|[?&])(?:add|added)-to-cart=/.test( window.location.search ) ) {
 			setTimeout( openDrawer, 350 );
 		}
+
+		/* -- "added to cart" toast, under the header's cart icon --
+		 * Shows when the drawer is configured NOT to open: the product's
+		 * image and name, gone after a few seconds with a quick fade. */
+
+		function cartToast( name, imgSrc ) {
+			var old = document.querySelector( '.oc-toast' );
+			if ( old ) {
+				old.remove();
+			}
+
+			var toast = document.createElement( 'div' );
+			toast.className = 'oc-toast';
+			toast.setAttribute( 'role', 'status' );
+			toast.innerHTML =
+				( imgSrc ? '<img alt="" />' : '' ) +
+				'<div class="oc-toast__txt"><strong>' + ( ( window.ocL10n || {} ).addedToCart || 'Added to cart' ) + '</strong><span></span></div>';
+			if ( imgSrc ) {
+				toast.querySelector( 'img' ).src = imgSrc;
+			}
+			toast.querySelector( 'span' ).textContent = name || '';
+
+			// Dock under the header, aligned with the cart icon when found.
+			var link = document.querySelector( '.oc-cart-link' );
+			if ( link ) {
+				var rect = link.getBoundingClientRect();
+				if ( rect.width ) {
+					if ( rect.left < window.innerWidth / 2 ) {
+						toast.style.left = Math.max( 10, rect.left ) + 'px';
+					} else {
+						toast.style.right = Math.max( 10, window.innerWidth - rect.right ) + 'px';
+					}
+					toast.style.top = ( rect.bottom + 10 ) + 'px';
+				}
+			}
+
+			document.body.appendChild( toast );
+			requestAnimationFrame( function () {
+				toast.classList.add( 'is-in' );
+			} );
+			setTimeout( function () {
+				toast.classList.remove( 'is-in' );
+				setTimeout( function () {
+					toast.remove();
+				}, 280 );
+			}, 3500 );
+		}
+
+		/* -- product page add-to-cart goes over ajax: no page reload -- */
+
+		document.addEventListener( 'submit', function ( event ) {
+			var form = event.target.closest( '.single-product form.cart' );
+			if ( ! form || form.dataset.ocNative ) {
+				return;
+			}
+
+			// The product id lives on the button (simple) or a hidden field
+			// (variable); a form without one is not an add-to-cart form.
+			var btn = form.querySelector( '[name="add-to-cart"]' );
+			var pidInput = form.querySelector( 'input[name="product_id"], input[name="add-to-cart"]' );
+			var productId = ( btn && btn.value ) || ( pidInput && pidInput.value ) || '';
+			if ( ! productId ) {
+				return;
+			}
+
+			// A variable product with nothing chosen keeps Woo's own flow
+			// (it explains what is missing).
+			var varInput = form.querySelector( 'input[name="variation_id"]' );
+			if ( varInput && ( ! varInput.value || '0' === varInput.value ) ) {
+				return;
+			}
+
+			event.preventDefault();
+
+			var data = new FormData( form );
+			data.append( 'action', 'oc_cart_add' );
+			data.append( 'product_id', productId );
+
+			var submitBtn = form.querySelector( '.single_add_to_cart_button' );
+
+			fetch( ( window.ocL10n || {} ).ajaxUrl || '/wp-admin/admin-ajax.php', {
+				method: 'POST',
+				credentials: 'same-origin',
+				body: data
+			} )
+				.then( function ( r ) { return r.json(); } )
+				.then( function ( res ) {
+					if ( submitBtn ) {
+						submitBtn.classList.remove( 'is-loading' );
+					}
+
+					if ( ! res || ! res.fragments ) {
+						// Validation refused it (stock caps and friends) —
+						// the classic flow explains why.
+						form.dataset.ocNative = '1';
+						form.submit();
+						return;
+					}
+
+					Object.keys( res.fragments ).forEach( function ( selector ) {
+						document.querySelectorAll( selector ).forEach( function ( el ) {
+							var box = document.createElement( 'div' );
+							box.innerHTML = res.fragments[ selector ];
+							if ( box.firstElementChild ) {
+								el.replaceWith( box.firstElementChild );
+							}
+						} );
+					} );
+
+					if ( openOnAdd ) {
+						openDrawer();
+					} else {
+						var title = document.querySelector( '.product_title' );
+						var img = document.querySelector( '.woocommerce-product-gallery img' );
+						cartToast( title ? title.textContent.trim() : '', img ? img.currentSrc || img.src : '' );
+					}
+				} )
+				.catch( function () {
+					if ( submitBtn ) {
+						submitBtn.classList.remove( 'is-loading' );
+					}
+					form.dataset.ocNative = '1';
+					form.submit();
+				} );
+		} );
 
 		/* -- live quantity: steppers post the new count, the answer is the
 		 *    same fragment payload Woo's own add uses -- */
