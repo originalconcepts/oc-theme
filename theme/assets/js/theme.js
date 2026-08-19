@@ -4821,6 +4821,18 @@
 				}
 				paintDot( sel );
 				updatePrice();
+
+				// The form's swatch UI may veto the change (e.g. snap back to
+				// a default) without an event — adopt whatever it settled on.
+				if ( main ) {
+					setTimeout( function () {
+						if ( sel.value !== main.value ) {
+							sel.value = main.value;
+							paintDot( sel );
+							updatePrice();
+						}
+					}, 150 );
+				}
 			} );
 
 			if ( main ) {
