@@ -23,9 +23,55 @@ defined( 'ABSPATH' ) || exit;
 final class Variations {
 
 	/**
+	 * Registered instance, for the sticky bar's colour-sibling row.
+	 *
+	 * @var Variations|null
+	 */
+	private static $me = null;
+
+	/**
+	 * Colour-sibling row for the sticky add-to-cart bar, with the same label
+	 * resolution as the summary row. Empty 'row' when the product has no
+	 * linked colour products.
+	 *
+	 * @return array{row: string, label: string}
+	 */
+	public static function sticky_colors( \WC_Product $product ): array {
+		$out = array(
+			'row'   => '',
+			'label' => __( 'Colours', 'oc-theme' ),
+		);
+
+		if ( ! self::$me instanceof self ) {
+			return $out;
+		}
+
+		$out['row'] = self::$me->colors_row( $product->get_id(), 'oc-colors--sticky' );
+
+		if ( '' === $out['row'] ) {
+			return $out;
+		}
+
+		foreach ( array_keys( $product->get_attributes() ) as $attr_tax ) {
+			$attr_tax = rawurldecode( (string) $attr_tax );
+
+			if ( ! in_array( self::$me->attr_type( $attr_tax ), array( 'swatch', 'swatch_image' ), true ) ) {
+				continue;
+			}
+
+			$out['label'] = wc_attribute_label( $attr_tax );
+			break;
+		}
+
+		return $out;
+	}
+
+	/**
 	 * Hook in.
 	 */
 	public function register(): void {
+		self::$me = $this;
+
 		if ( ! class_exists( 'WooCommerce' ) ) {
 			return;
 		}

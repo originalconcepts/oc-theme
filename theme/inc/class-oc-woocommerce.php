@@ -1358,20 +1358,31 @@ final class WooCommerce {
 
 		$is_variable = $product->is_type( 'variable' );
 		$attributes  = $is_variable ? $product->get_variation_attributes() : array();
+		$colors      = Variations::sticky_colors( $product );
 		?>
 		<div class="oc-sticky-atc" data-oc-sticky-atc data-product="<?php echo absint( $product->get_id() ); ?>" data-variable="<?php echo $is_variable ? '1' : '0'; ?>" hidden>
 			<div class="oc-sticky-atc__inner">
+				<?php echo wp_get_attachment_image( (int) $product->get_image_id(), 'thumbnail', false, array( 'class' => 'oc-sticky-atc__thumb' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- core-generated markup. ?>
 				<span class="oc-sticky-atc__title"><?php echo esc_html( $product->get_name() ); ?></span>
 
-				<?php if ( $attributes ) : ?>
+				<?php if ( $attributes || '' !== $colors['row'] ) : ?>
 					<div class="oc-sticky-atc__opts">
+						<?php if ( '' !== $colors['row'] ) : ?>
+							<div class="oc-sticky-atc__opt oc-sticky-atc__opt--colors">
+								<span class="oc-sticky-atc__optlabel"><?php echo esc_html( $colors['label'] ); ?></span>
+								<?php echo $colors['row']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts. ?>
+							</div>
+						<?php endif; ?>
+
 						<?php foreach ( $attributes as $attribute => $options ) : ?>
 							<?php
+							$options  = array_values( (array) $options );
+							$single   = 1 === count( $options );
 							$field    = 'attribute_' . sanitize_title( $attribute );
 							$swatches = array();
 							$labels   = array();
 
-							foreach ( (array) $options as $slug ) {
+							foreach ( $options as $slug ) {
 								$term = get_term_by( 'slug', $slug, $attribute );
 								$labels[ $slug ] = $term instanceof \WP_Term ? $term->name : rawurldecode( (string) $slug );
 
@@ -1385,14 +1396,22 @@ final class WooCommerce {
 									}
 								}
 							}
+
+							// With a colour-sibling row the product's own single
+							// colour is implicit — the row IS the colour UI, so
+							// this cell only feeds the add (hidden), exactly
+							// like the auto-selected row in the buy form.
+							$hidden_cell = $single && '' !== $colors['row'];
 							?>
-							<label class="oc-sticky-atc__opt">
+							<label class="oc-sticky-atc__opt<?php echo $single ? ' oc-sticky-atc__opt--single' : ''; ?>"<?php echo $hidden_cell ? ' style="display:none"' : ''; ?>>
 								<span class="oc-sticky-atc__optlabel"><?php echo esc_html( wc_attribute_label( rawurldecode( (string) $attribute ) ) ); ?></span>
 								<i class="oc-sticky-atc__dot" hidden></i>
-								<select data-oc-sticky-attr="<?php echo esc_attr( $field ); ?>" data-swatches="<?php echo esc_attr( (string) wp_json_encode( $swatches ) ); ?>">
-									<option value=""><?php esc_html_e( 'Choose', 'oc-theme' ); ?></option>
-									<?php foreach ( (array) $options as $slug ) : ?>
-										<option value="<?php echo esc_attr( (string) $slug ); ?>"><?php echo esc_html( $labels[ $slug ] ); ?></option>
+								<select data-oc-sticky-attr="<?php echo esc_attr( $field ); ?>" data-swatches="<?php echo esc_attr( (string) wp_json_encode( $swatches ) ); ?>"<?php echo $single ? ' tabindex="-1"' : ''; ?>>
+									<?php if ( ! $single ) : ?>
+										<option value=""><?php esc_html_e( 'Choose', 'oc-theme' ); ?></option>
+									<?php endif; ?>
+									<?php foreach ( $options as $slug ) : ?>
+										<option value="<?php echo esc_attr( (string) $slug ); ?>"<?php selected( $single ); ?>><?php echo esc_html( $labels[ $slug ] ); ?></option>
 									<?php endforeach; ?>
 								</select>
 							</label>

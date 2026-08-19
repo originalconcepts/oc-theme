@@ -1701,6 +1701,14 @@
 			data.append( 'product_id', productId );
 
 			var submitBtn = form.querySelector( '.single_add_to_cart_button' );
+			var stickyBuy = document.querySelector( '[data-oc-sticky-add]' );
+
+			if ( submitBtn ) {
+				submitBtn.classList.add( 'is-loading' );
+			}
+			if ( stickyBuy ) {
+				stickyBuy.classList.add( 'is-loading' );
+			}
 
 			fetch( ( window.ocL10n || {} ).ajaxUrl || '/wp-admin/admin-ajax.php', {
 				method: 'POST',
@@ -1711,6 +1719,9 @@
 				.then( function ( res ) {
 					if ( submitBtn ) {
 						submitBtn.classList.remove( 'is-loading' );
+					}
+					if ( stickyBuy ) {
+						stickyBuy.classList.remove( 'is-loading' );
 					}
 
 					if ( ! res || ! res.fragments ) {
@@ -1742,6 +1753,9 @@
 				.catch( function () {
 					if ( submitBtn ) {
 						submitBtn.classList.remove( 'is-loading' );
+					}
+					if ( stickyBuy ) {
+						stickyBuy.classList.remove( 'is-loading' );
 					}
 					form.dataset.ocNative = '1';
 					form.submit();
@@ -2310,7 +2324,7 @@
 			}
 		} );
 
-		function openVarPicker( productId, productName ) {
+		function openVarPicker( productId, productName, productImg ) {
 			if ( ! varModal ) {
 				varModal = document.createElement( 'div' );
 				varModal.className = 'oc-nmodal oc-vmodal';
@@ -2390,7 +2404,7 @@
 										if ( openOnAdd ) {
 											openDrawer();
 										} else {
-											cartToast( ( productName ? productName + ' — ' : '' ) + v.label, '' );
+											cartToast( ( productName ? productName + ' — ' : '' ) + v.label, productImg || '' );
 										}
 									}
 								} );
@@ -2413,7 +2427,9 @@
 
 			var opener = event.target.closest( '[data-oc-up-var]' );
 			if ( opener ) {
-				openVarPicker( opener.dataset.ocUpVar, opener.dataset.name || '' );
+				var card = opener.closest( '.oc-cartup__item' );
+				var cardImg = card ? card.querySelector( 'img' ) : null;
+				openVarPicker( opener.dataset.ocUpVar, opener.dataset.name || '', cardImg ? cardImg.currentSrc || cardImg.src : '' );
 			}
 		} );
 	}
@@ -4740,6 +4756,11 @@
 			return form.querySelector( 'select[name="' + field + '"]' );
 		}
 
+		function pageImage() {
+			var img = document.querySelector( '.woocommerce-product-gallery img' );
+			return img ? img.currentSrc || img.src : '';
+		}
+
 		function paintDot( sel ) {
 			var dot = sel.parentElement.querySelector( '.oc-sticky-atc__dot' );
 			if ( ! dot ) {
@@ -4866,7 +4887,7 @@
 				// preselected default is how wrong sizes get ordered.
 				if ( mobile || ! v ) {
 					if ( window.__ocOpenVarPicker ) {
-						window.__ocOpenVarPicker( bar.dataset.product, buy.dataset.name || '' );
+						window.__ocOpenVarPicker( bar.dataset.product, buy.dataset.name || '', pageImage() );
 					} else {
 						form.scrollIntoView( { behavior: 'smooth', block: 'center' } );
 					}
@@ -4883,7 +4904,7 @@
 					if ( submit && ! submit.disabled ) {
 						submit.click();
 					} else if ( window.__ocOpenVarPicker ) {
-						window.__ocOpenVarPicker( bar.dataset.product, buy.dataset.name || '' );
+						window.__ocOpenVarPicker( bar.dataset.product, buy.dataset.name || '', pageImage() );
 					}
 				}, 60 );
 			} );

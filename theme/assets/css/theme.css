@@ -1434,6 +1434,15 @@ body.oc-tabs-tabs.woocommerce div.product .woocommerce-tabs ul.tabs li.active a,
 	min-block-size: 58px;
 }
 
+.oc-sticky-atc__thumb {
+	inline-size: 40px;
+	block-size: 40px;
+	object-fit: cover;
+	border-radius: calc(var(--oc-radius, 8px) / 2);
+	flex: none;
+	align-self: center;
+}
+
 .oc-sticky-atc__title {
 	font-weight: 600;
 	overflow: hidden;
@@ -1502,6 +1511,28 @@ body.oc-tabs-tabs.woocommerce div.product .woocommerce-tabs ul.tabs li.active a,
 
 .oc-sticky-atc__opt select:focus { outline: none; }
 
+/* One real option: the value is a fact, not a choice — no arrow, no cursor. */
+.oc-sticky-atc__opt--single { cursor: default; }
+
+.oc-sticky-atc__opt--single select {
+	background-image: none;
+	padding-inline-end: 0;
+	pointer-events: none;
+}
+
+/* Colour-sibling products ride the bar as a compact dot row. */
+.oc-sticky-atc__opt--colors .oc-colors {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin: 0;
+}
+
+.oc-colors--sticky .oc-colors__item {
+	inline-size: 24px;
+	block-size: 24px;
+}
+
 /* The buy block: tinted panel riding the bar's far end, text + live price. */
 .oc-sticky-atc__buy {
 	flex: none;
@@ -1541,9 +1572,39 @@ body.oc-tabs-tabs.woocommerce div.product .woocommerce-tabs ul.tabs li.active a,
 .oc-sticky-atc__buy del { opacity: .6; margin-inline-end: 6px; }
 .oc-sticky-atc__buy ins { text-decoration: none; }
 
+/* Both add buttons show a spinner while the ajax add is in flight. */
+.single_add_to_cart_button.is-loading,
+.oc-sticky-atc__buy.is-loading {
+	pointer-events: none;
+	opacity: .85;
+}
+
+.single_add_to_cart_button.is-loading::after,
+.oc-sticky-atc__buy.is-loading::after {
+	content: "";
+	inline-size: 15px;
+	block-size: 15px;
+	border: 2px solid currentColor;
+	border-block-start-color: transparent;
+	border-radius: 50%;
+	animation: oc-spin .6s linear infinite;
+	display: inline-block;
+	vertical-align: middle;
+	margin-inline-start: 9px;
+	flex: none;
+}
+
 @media (max-width: 782px) {
 	.oc-sticky-atc__title,
+	.oc-sticky-atc__thumb,
 	.oc-sticky-atc__opts { display: none; }
+
+	/* The bar IS the button on phones: same fill edge to edge, and the
+	 * safe-area strip under it is painted too — no dead gap below. */
+	.oc-sticky-atc {
+		background: var(--oc-cta, var(--oc-primary));
+		border-block-start: 0;
+	}
 
 	.oc-sticky-atc__inner {
 		padding-inline: 0;
@@ -1554,6 +1615,8 @@ body.oc-tabs-tabs.woocommerce div.product .woocommerce-tabs ul.tabs li.active a,
 		flex: 1;
 		justify-content: center;
 		margin-inline-start: 0;
+		min-block-size: 54px;
+		padding-block-end: env(safe-area-inset-bottom, 0px);
 	}
 }
 
