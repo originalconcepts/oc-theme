@@ -5412,3 +5412,31 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 .oc-cartup--collapse .oc-cartup__item .oc-cartup__add:hover { background: var(--oc-ink); color: #fff; }
 .oc-cartup--collapse .oc-cartup__item .oc-cartup__add span { display: none; }
 .oc-cartup--collapse .oc-cartup__item .oc-cartup__add svg { inline-size: 14px; block-size: 14px; }
+
+/* ---------- above-total block: arrows live in the head row ----------
+ * Floating at the track edges they sat on the peeking card — beside the
+ * minimize chevron they overlap nothing. */
+.oc-cartup--collapse { position: relative; }
+
+.oc-cartup--collapse .oc-cartup__arrow {
+	inset-block-start: 9px;
+	translate: none;
+	inline-size: 24px;
+	block-size: 24px;
+	box-shadow: none;
+}
+
+.oc-cartup--collapse .oc-cartup__arrow svg { inline-size: 13px; block-size: 13px; }
+
+.oc-cartup--collapse .oc-cartup__arrow--prev {
+	inset-inline-start: auto;
+	inset-inline-end: 62px;
+}
+
+.oc-cartup--collapse .oc-cartup__arrow--next {
+	inset-inline-end: 32px;
+}
+
+/* room for the trio at the head's end */
+.oc-cartup--collapse .oc-cartup__head { padding-inline-end: 88px; }
+.oc-cartup--collapse .oc-cartup__toggle { position: absolute; inset-inline-end: var(--oc-gap); inset-block-start: 11px; }
