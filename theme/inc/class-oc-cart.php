@@ -571,7 +571,9 @@ final class Cart {
 
 		$html = '<div class="oc-mcart__promo' . ( $msg['applied'] ? ' oc-mcart__promo--applied' : '' ) . '">' . $icon . '<span>' . esc_html( $name ) . '</span>';
 
-		if ( 'group' === (string) ( $msg['pool'] ?? '' ) && ! empty( $msg['promo_id'] ) ) {
+		// The participating-products link matters while the deal is still
+		// within reach — once earned, it just adds noise.
+		if ( ! $msg['applied'] && 'group' === (string) ( $msg['pool'] ?? '' ) && ! empty( $msg['promo_id'] ) ) {
 			if ( 'categories' === (string) ( $msg['pool_type'] ?? '' ) && '' !== (string) ( $msg['cat_url'] ?? '' ) ) {
 				// A category deal sends the shopper straight to the category.
 				$html .= '<a class="oc-mcart__promo-link" href="' . esc_url( (string) $msg['cat_url'] ) . '">' . esc_html__( 'Participating products', 'oc-theme' ) . '</a>';
