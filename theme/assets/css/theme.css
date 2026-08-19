@@ -1513,6 +1513,9 @@ body.oc-tabs-tabs.woocommerce div.product .woocommerce-tabs ul.tabs li.active a,
 
 .oc-drawer__head h2 { margin: 0; font-size: 1.1rem; }
 
+.oc-drawer__count { font-weight: 400; font-size: .9rem; color: var(--oc-ink-2); }
+.oc-drawer__count[hidden] { display: none; }
+
 .oc-drawer__close {
 	border: 0;
 	background: none;
@@ -1567,7 +1570,6 @@ body.oc-tabs-tabs.woocommerce div.product .woocommerce-tabs ul.tabs li.active a,
 	font-weight: 500;
 	font-size: .92rem;
 	line-height: 1.35;
-	padding-inline-end: 20px;
 }
 
 .oc-mcart__info .variation {
@@ -1576,16 +1578,28 @@ body.oc-tabs-tabs.woocommerce div.product .woocommerce-tabs ul.tabs li.active a,
 	color: var(--oc-ink-2);
 	display: flex;
 	flex-wrap: wrap;
-	gap: 2px 6px;
+	gap: 2px 4px;
 }
+
+.oc-mcart__info .variation dt,
+.oc-mcart__info .variation dd { margin: 0; padding: 0; font-weight: 400; }
 
 .oc-mcart__info .variation p { margin: 0; display: inline; }
 
-.oc-mcart__line { font-size: .92rem; color: var(--oc-ink); }
+.oc-mcart__prices {
+	flex: none;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	gap: 3px;
+	text-align: end;
+}
+
+.oc-mcart__line { font-size: .92rem; color: var(--oc-ink); white-space: nowrap; }
 .oc-mcart__line del { color: var(--oc-ink-2); font-size: .85em; }
 .oc-mcart__line ins { text-decoration: none; color: var(--oc-sale, #b4453c); }
 
-.oc-mcart__each { font-size: .76rem; color: var(--oc-ink-2); }
+.oc-mcart__each { font-size: .74rem; color: var(--oc-ink-2); white-space: nowrap; }
 
 .oc-mcart__oos {
 	font-size: .78rem;
@@ -1616,7 +1630,18 @@ body.oc-tabs-tabs.woocommerce div.product .woocommerce-tabs ul.tabs li.active a,
 	block-size: 28px;
 	cursor: pointer;
 	color: var(--oc-ink);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
 }
+
+.oc-mcart__qty [data-oc-qty-trash] svg {
+	inline-size: 14px;
+	block-size: 14px;
+	color: var(--oc-ink-2);
+}
+
+.oc-mcart__qty [data-oc-qty-trash]:hover svg { color: var(--oc-sale, #b4453c); }
 
 .oc-mcart__qty input {
 	border: 0;
@@ -1631,20 +1656,60 @@ body.oc-tabs-tabs.woocommerce div.product .woocommerce-tabs ul.tabs li.active a,
 
 .oc-mcart__qty.is-busy { opacity: .5; pointer-events: none; }
 
-.oc-mcart__remove {
+/* the removal question covers the row until answered */
+.oc-mcart__confirm {
 	position: absolute;
-	inset-inline-end: 0;
-	inset-block-start: 14px;
-	border: 0;
-	background: none;
-	font-size: 20px;
-	line-height: 1;
-	color: var(--oc-ink-2);
-	cursor: pointer;
-	padding: 2px 6px;
+	inset: 0;
+	background: var(--oc-surface, #fff);
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 14px;
+	padding-inline: 4px;
 }
 
-.oc-mcart__remove:hover { color: var(--oc-sale, #b4453c); }
+.oc-mcart__confirm[hidden] { display: none; }
+
+.oc-mcart__confirm-q { font-size: .9rem; font-weight: 500; color: var(--oc-ink); }
+
+.oc-mcart__confirm-btns { display: inline-flex; gap: 8px; }
+
+.oc-mcart__yes,
+.oc-mcart__no {
+	font: inherit;
+	font-size: .88rem;
+	padding: 8px 22px;
+	border-radius: var(--oc-cta-r, 8px);
+	cursor: pointer;
+}
+
+.oc-mcart__yes {
+	border: 1px solid var(--oc-cta, var(--oc-ink));
+	background: var(--oc-cta, var(--oc-ink));
+	color: var(--oc-cta-tx, #fff);
+}
+
+.oc-mcart__no {
+	border: 1px solid var(--oc-line);
+	background: var(--oc-surface, #fff);
+	color: var(--oc-ink);
+}
+
+/* the quiet clear-all beneath the items */
+.oc-mcart__clearall {
+	display: block;
+	margin: 14px auto 0;
+	border: 0;
+	background: none;
+	font: inherit;
+	font-size: .76rem;
+	color: var(--oc-ink-2);
+	text-decoration: underline;
+	cursor: pointer;
+}
+
+.oc-mcart__clearall:hover { color: var(--oc-sale, #b4453c); }
+.oc-mcart__clearall.is-busy { opacity: .5; pointer-events: none; }
 
 .oc-mcart__empty {
 	text-align: center;
@@ -1890,24 +1955,40 @@ body.oc-tabs-tabs.woocommerce div.product .woocommerce-tabs ul.tabs li.active a,
 	color: var(--oc-ink);
 }
 
+/* Carries the checkout-button class, so the global CTA hover effects and
+ * design settings (height, corners, colours) apply like everywhere else. */
 .oc-drawer__checkout {
-	display: block;
-	text-align: center;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	block-size: var(--oc-cta-h, 48px);
 	background: var(--oc-cta, var(--oc-ink));
 	color: var(--oc-cta-tx, #fff);
-	border-radius: var(--oc-radius, 8px);
-	padding: 13px 18px;
+	border-radius: var(--oc-cta-r, 8px);
+	padding-inline: 18px;
 	font-weight: 600;
 	text-decoration: none;
-	transition: opacity .15s ease;
 }
-
-.oc-drawer__checkout:hover { opacity: .9; }
 
 .oc-drawer__checkout.is-disabled {
 	opacity: .45;
 	pointer-events: none;
 }
+
+/* quiet way back to the catalogue: bare dark text, no frame */
+.oc-drawer__continue {
+	border: 0;
+	background: none;
+	font: inherit;
+	font-size: .88rem;
+	font-weight: 500;
+	color: var(--oc-ink);
+	cursor: pointer;
+	padding: 4px;
+	text-align: center;
+}
+
+.oc-drawer__continue:hover { color: var(--oc-ink-2); }
 
 .oc-drawer__cartlink {
 	text-align: center;
@@ -4729,4 +4810,25 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 		grid-template-columns: repeat(4, minmax(0, 1fr));
 		gap: 14px 10px;
 	}
+}
+
+/* The drawer renders on every page, including ones without the
+ * .woocommerce body class the CTA effect rules chain through — these keep
+ * the checkout button's hover effect working everywhere. */
+.oc-cta-hover-sweep-ltr .oc-drawer__checkout,
+.oc-cta-hover-sweep-rtl .oc-drawer__checkout {
+	position: relative;
+	overflow: hidden;
+	z-index: 0;
+}
+
+.oc-cta-hover-invert .oc-drawer__checkout:hover {
+	background: var(--oc-surface, #fff);
+	color: var(--oc-cta);
+	box-shadow: inset 0 0 0 1px var(--oc-cta);
+}
+
+.oc-cta-hover-sweep-ltr .oc-drawer__checkout:hover,
+.oc-cta-hover-sweep-rtl .oc-drawer__checkout:hover {
+	color: var(--oc-cta);
 }

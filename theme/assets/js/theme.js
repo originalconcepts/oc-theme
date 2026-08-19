@@ -1639,13 +1639,36 @@
 				} );
 		}
 
+		function showConfirm( item ) {
+			var confirm = item && item.querySelector( '[data-oc-confirm]' );
+			if ( confirm ) {
+				confirm.hidden = false;
+			}
+		}
+
+		var minusBursts = [];
+
 		document.addEventListener( 'click', function ( event ) {
 			var minus = event.target.closest( '[data-oc-qty-minus]' );
 			var plus = event.target.closest( '[data-oc-qty-plus]' );
-			var remove = event.target.closest( '[data-oc-qty-remove]' );
+			var trash = event.target.closest( '[data-oc-qty-trash]' );
+			var yes = event.target.closest( '[data-oc-confirm-yes]' );
+			var no = event.target.closest( '[data-oc-confirm-no]' );
 
-			if ( remove ) {
-				sendQty( remove, 0 );
+			// One unit left: the trash can asks before removing.
+			if ( trash ) {
+				showConfirm( trash.closest( '.oc-mcart__item' ) );
+				return;
+			}
+
+			if ( yes ) {
+				clearTimeout( qtyTimer );
+				sendQty( yes, 0 );
+				return;
+			}
+
+			if ( no ) {
+				no.closest( '[data-oc-confirm]' ).hidden = true;
 				return;
 			}
 
@@ -1655,13 +1678,74 @@
 
 			var wrap = ( minus || plus ).closest( '[data-oc-qty]' );
 			var input = wrap.querySelector( 'input' );
-			var next = Math.max( 0, ( parseInt( input.value, 10 ) || 1 ) + ( plus ? 1 : -1 ) );
+			var next = Math.max( 1, ( parseInt( input.value, 10 ) || 1 ) + ( plus ? 1 : -1 ) );
 			input.value = String( next );
+
+			// Mashing minus reads as "I want this gone" — surface the removal
+			// question instead of making them count all the way down.
+			if ( minus ) {
+				var now = Date.now();
+				minusBursts = minusBursts.filter( function ( t ) {
+					return now - t < 1300;
+				} );
+				minusBursts.push( now );
+				if ( minusBursts.length >= 3 ) {
+					minusBursts = [];
+					showConfirm( wrap.closest( '.oc-mcart__item' ) );
+				}
+			}
 
 			clearTimeout( qtyTimer );
 			qtyTimer = setTimeout( function () {
 				sendQty( wrap, next );
 			}, 350 );
+		} );
+
+		/* -- the quiet clear-all link asks for a second tap -- */
+
+		document.addEventListener( 'click', function ( event ) {
+			var clear = event.target.closest( '[data-oc-cart-clear]' );
+			if ( ! clear ) {
+				return;
+			}
+
+			if ( ! clear.dataset.armed ) {
+				clear.dataset.armed = '1';
+				clear.dataset.label = clear.textContent;
+				clear.textContent = clear.dataset.arm || clear.textContent;
+				setTimeout( function () {
+					if ( clear.isConnected && clear.dataset.armed ) {
+						delete clear.dataset.armed;
+						clear.textContent = clear.dataset.label;
+					}
+				}, 3500 );
+				return;
+			}
+
+			var data = new FormData();
+			data.append( 'action', 'oc_cart_qty' );
+			data.append( 'clear', '1' );
+			clear.classList.add( 'is-busy' );
+
+			fetch( ( window.ocL10n || {} ).ajaxUrl || '/wp-admin/admin-ajax.php', {
+				method: 'POST',
+				credentials: 'same-origin',
+				body: data
+			} )
+				.then( function ( r ) { return r.json(); } )
+				.then( function ( res ) {
+					if ( res && res.fragments ) {
+						Object.keys( res.fragments ).forEach( function ( selector ) {
+							document.querySelectorAll( selector ).forEach( function ( el ) {
+								var box = document.createElement( 'div' );
+								box.innerHTML = res.fragments[ selector ];
+								if ( box.firstElementChild ) {
+									el.replaceWith( box.firstElementChild );
+								}
+							} );
+						} );
+					}
+				} );
 		} );
 
 		document.addEventListener( 'change', function ( event ) {

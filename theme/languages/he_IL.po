@@ -1842,3 +1842,30 @@ msgstr "הגדלת כמות"
 
 msgid "Quantity"
 msgstr "כמות"
+
+msgid "My cart"
+msgstr "הסל שלי"
+
+msgid "Remove %s?"
+msgstr "האם להסיר את %s?"
+
+msgid "Yes"
+msgstr "כן"
+
+msgid "No"
+msgstr "לא"
+
+msgid "Tap again to confirm"
+msgstr "לחיצה נוספת לאישור"
+
+msgid "Remove all items from the cart"
+msgstr "מחיקת כל המוצרים מהסל"
+
+msgid "Continue to checkout"
+msgstr "המשך לקופה"
+
+msgid "Continue shopping"
+msgstr "המשך בקניות"
+
+msgid "Show a \"Continue shopping\" button beneath"
+msgstr "הצגת כפתור ״המשך בקניות״ מתחת"

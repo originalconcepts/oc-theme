@@ -60,6 +60,8 @@ final class Cart {
 				'up_style'     => 'side',    // side | list | collapse.
 				'coupon'       => 0,
 				'btn_total'    => 0,
+				'btn_text'     => '',
+				'continue'     => 0,
 				'cart_link'    => 0,
 			)
 		);
@@ -77,7 +79,7 @@ final class Cart {
 		}
 
 		$s     = self::settings();
-		$title = '' !== (string) $s['title'] ? (string) $s['title'] : __( 'Cart', 'oc-theme' );
+		$title = '' !== (string) $s['title'] ? (string) $s['title'] : __( 'My cart', 'oc-theme' );
 		$side  = 'right' === $s['side'] ? 'right' : 'left';
 		?>
 		<div class="oc-drawer oc-drawer--<?php echo esc_attr( $side ); ?><?php echo 'side' === $s['up_style'] && $s['up_show'] ? ' oc-drawer--upside' : ''; ?>" data-oc-cart-drawer hidden style="--oc-drawer-w:<?php echo absint( $s['width'] ); ?>px">
@@ -85,7 +87,7 @@ final class Cart {
 			<aside class="oc-drawer__panel" role="dialog" aria-modal="true" aria-label="<?php echo esc_attr( $title ); ?>">
 				<div class="oc-drawer__main">
 					<header class="oc-drawer__head">
-						<h2><?php echo esc_html( $title ); ?></h2>
+						<h2><?php echo esc_html( $title ); ?> <?php echo $this->head_count_html(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></h2>
 						<button type="button" class="oc-drawer__close" data-oc-drawer-close aria-label="<?php esc_attr_e( 'Close', 'oc-theme' ); ?>">&times;</button>
 					</header>
 					<?php echo $this->ship_bar_html(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built escaped. ?>
@@ -128,8 +130,20 @@ final class Cart {
 			: WC()->cart->get_cart_contents_count();
 
 		$fragments['span.oc-cart-count'] = '<span class="oc-cart-count">' . absint( $count ) . '</span>';
+		$fragments['[data-oc-head-count]'] = $this->head_count_html();
 
 		return $fragments;
+	}
+
+	/**
+	 * The live item count beside the panel title.
+	 */
+	private function head_count_html(): string {
+		$count = 'rows' === self::settings()['count_method']
+			? count( WC()->cart->get_cart() )
+			: WC()->cart->get_cart_contents_count();
+
+		return '<span class="oc-drawer__count" data-oc-head-count' . ( $count ? '' : ' hidden' ) . '>(' . absint( $count ) . ')</span>';
 	}
 
 	/**
@@ -179,15 +193,15 @@ final class Cart {
 				? '<span class="oc-mcart__name">' . wp_kses_post( $name ) . '</span>'
 				: '<a class="oc-mcart__name" href="' . esc_url( $link ) . '">' . wp_kses_post( $name ) . '</a>';
 			$html .= wc_get_formatted_cart_item_data( $item );
-			$html .= '<span class="oc-mcart__line">' . $line . '</span>';
-
-			if ( $qty > 1 ) {
-				$html .= '<span class="oc-mcart__each">' . WC()->cart->get_product_price( $product ) . '</span>';
-			}
 
 			if ( $in_stock ) {
+				// One unit: the minus becomes a delicate trash can that asks
+				// before removing.
+				$trash = '<button type="button" data-oc-qty-trash aria-label="' . esc_attr__( 'Remove', 'oc-theme' ) . '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m3 0-1 12a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 7M10 11v6M14 11v6"/></svg></button>';
+				$minus = '<button type="button" data-oc-qty-minus aria-label="' . esc_attr__( 'Decrease quantity', 'oc-theme' ) . '">&minus;</button>';
+
 				$html .= '<span class="oc-mcart__qty" data-oc-qty data-key="' . esc_attr( $key ) . '">';
-				$html .= '<button type="button" data-oc-qty-minus aria-label="' . esc_attr__( 'Decrease quantity', 'oc-theme' ) . '">&minus;</button>';
+				$html .= 1 === $qty ? $trash : $minus;
 				$html .= '<input type="text" inputmode="numeric" value="' . esc_attr( (string) $qty ) . '" aria-label="' . esc_attr__( 'Quantity', 'oc-theme' ) . '" />';
 				$html .= '<button type="button" data-oc-qty-plus aria-label="' . esc_attr__( 'Increase quantity', 'oc-theme' ) . '">+</button>';
 				$html .= '</span>';
@@ -197,11 +211,31 @@ final class Cart {
 
 			$html .= '</div>';
 
-			$html .= '<button type="button" class="oc-mcart__remove" data-oc-qty-remove data-key="' . esc_attr( $key ) . '" aria-label="' . esc_attr__( 'Remove', 'oc-theme' ) . '">&times;</button>';
+			// Line total at the row's far end, the per-unit price beneath it.
+			$html .= '<div class="oc-mcart__prices">';
+			$html .= '<span class="oc-mcart__line">' . $line . '</span>';
+			if ( $qty > 1 ) {
+				$html .= '<span class="oc-mcart__each">' . WC()->cart->get_product_price( $product ) . '</span>';
+			}
+			$html .= '</div>';
+
+			// The removal question covers the row until answered.
+			$html .= '<div class="oc-mcart__confirm" data-oc-confirm hidden>';
+			/* translators: %s: product name. */
+			$html .= '<span class="oc-mcart__confirm-q">' . esc_html( sprintf( __( 'Remove %s?', 'oc-theme' ), wp_strip_all_tags( (string) $name ) ) ) . '</span>';
+			$html .= '<span class="oc-mcart__confirm-btns">';
+			$html .= '<button type="button" class="oc-mcart__yes" data-oc-confirm-yes data-key="' . esc_attr( $key ) . '">' . esc_html__( 'Yes', 'oc-theme' ) . '</button>';
+			$html .= '<button type="button" class="oc-mcart__no" data-oc-confirm-no>' . esc_html__( 'No', 'oc-theme' ) . '</button>';
+			$html .= '</span>';
+			$html .= '</div>';
+
 			$html .= '</li>';
 		}
 
 		$html .= '</ul>';
+
+		// A quiet way out for whoever wants a fresh start.
+		$html .= '<button type="button" class="oc-mcart__clearall" data-oc-cart-clear data-arm="' . esc_attr__( 'Tap again to confirm', 'oc-theme' ) . '">' . esc_html__( 'Remove all items from the cart', 'oc-theme' ) . '</button>';
 
 		return $html;
 	}
@@ -279,7 +313,7 @@ final class Cart {
 		}
 
 		$total = WC()->cart->get_cart_subtotal();
-		$label = __( 'Checkout', 'oc-theme' );
+		$label = '' !== (string) $s['btn_text'] ? (string) $s['btn_text'] : __( 'Continue to checkout', 'oc-theme' );
 
 		if ( ! empty( $s['btn_total'] ) ) {
 			$label .= ' · ' . wp_strip_all_tags( $total );
@@ -300,7 +334,13 @@ final class Cart {
 			$html .= '</form>';
 		}
 
-		$html .= '<a class="oc-drawer__checkout' . ( $oos ? ' is-disabled' : '' ) . '" href="' . esc_url( wc_get_checkout_url() ) . '"' . ( $oos ? ' aria-disabled="true" tabindex="-1"' : '' ) . '>' . esc_html( $label ) . '</a>';
+		// checkout-button: the class the global CTA hover effects target, so
+		// the button follows the design settings like every other CTA.
+		$html .= '<a class="oc-drawer__checkout checkout-button' . ( $oos ? ' is-disabled' : '' ) . '" href="' . esc_url( wc_get_checkout_url() ) . '"' . ( $oos ? ' aria-disabled="true" tabindex="-1"' : '' ) . '><span>' . esc_html( $label ) . '</span></a>';
+
+		if ( ! empty( $s['continue'] ) ) {
+			$html .= '<button type="button" class="oc-drawer__continue" data-oc-drawer-close>' . esc_html__( 'Continue shopping', 'oc-theme' ) . '</button>';
+		}
 
 		if ( ! empty( $s['cart_link'] ) ) {
 			$html .= '<a class="oc-drawer__cartlink" href="' . esc_url( wc_get_cart_url() ) . '">' . esc_html__( 'View cart', 'oc-theme' ) . '</a>';
@@ -442,9 +482,16 @@ final class Cart {
 	 */
 	public function ajax_qty(): void {
 		// phpcs:disable WordPress.Security.NonceVerification.Missing -- same public surface as Woo's own cart ajax.
-		$key = isset( $_POST['key'] ) ? sanitize_text_field( wp_unslash( (string) $_POST['key'] ) ) : '';
-		$qty = isset( $_POST['qty'] ) ? max( 0, (int) $_POST['qty'] ) : 1;
+		$key   = isset( $_POST['key'] ) ? sanitize_text_field( wp_unslash( (string) $_POST['key'] ) ) : '';
+		$qty   = isset( $_POST['qty'] ) ? max( 0, (int) $_POST['qty'] ) : 1;
+		$clear = ! empty( $_POST['clear'] );
 		// phpcs:enable WordPress.Security.NonceVerification.Missing
+
+		if ( $clear ) {
+			WC()->cart->empty_cart();
+			WC()->cart->calculate_totals();
+			\WC_AJAX::get_refreshed_fragments();
+		}
 
 		if ( '' === $key || ! WC()->cart->get_cart_item( $key ) ) {
 			wp_send_json_error();
@@ -518,7 +565,7 @@ final class Cart {
 					</tr>
 					<tr>
 						<th scope="row"><?php esc_html_e( 'Title', 'oc-theme' ); ?></th>
-						<td><input type="text" name="title" value="<?php echo esc_attr( (string) $s['title'] ); ?>" placeholder="<?php esc_attr_e( 'Cart', 'oc-theme' ); ?>" class="regular-text" /></td>
+						<td><input type="text" name="title" value="<?php echo esc_attr( (string) $s['title'] ); ?>" placeholder="<?php esc_attr_e( 'My cart', 'oc-theme' ); ?>" class="regular-text" /></td>
 					</tr>
 					<tr>
 						<th scope="row"><?php esc_html_e( 'Empty-cart text', 'oc-theme' ); ?></th>
@@ -596,7 +643,9 @@ final class Cart {
 					<tr>
 						<th scope="row"><?php esc_html_e( 'Checkout button', 'oc-theme' ); ?></th>
 						<td>
-							<label><input type="checkbox" name="btn_total" value="1" <?php checked( 1, (int) $s['btn_total'] ); ?> /> <?php esc_html_e( 'Show the total on the button', 'oc-theme' ); ?></label>
+							<input type="text" name="btn_text" value="<?php echo esc_attr( (string) $s['btn_text'] ); ?>" placeholder="<?php esc_attr_e( 'Continue to checkout', 'oc-theme' ); ?>" class="regular-text" />
+							<p style="margin:8px 0 0;"><label><input type="checkbox" name="btn_total" value="1" <?php checked( 1, (int) $s['btn_total'] ); ?> /> <?php esc_html_e( 'Show the total on the button', 'oc-theme' ); ?></label></p>
+							<p style="margin:8px 0 0;"><label><input type="checkbox" name="continue" value="1" <?php checked( 1, (int) $s['continue'] ); ?> /> <?php esc_html_e( 'Show a "Continue shopping" button beneath', 'oc-theme' ); ?></label></p>
 							<p style="margin:8px 0 0;"><label><input type="checkbox" name="coupon" value="1" <?php checked( 1, (int) $s['coupon'] ); ?> /> <?php esc_html_e( 'Show a coupon field', 'oc-theme' ); ?></label></p>
 							<p style="margin:8px 0 0;"><label><input type="checkbox" name="cart_link" value="1" <?php checked( 1, (int) $s['cart_link'] ); ?> /> <?php esc_html_e( 'Link to the cart page', 'oc-theme' ); ?></label></p>
 						</td>
@@ -640,6 +689,8 @@ final class Cart {
 				'up_style'     => in_array( $_POST['up_style'] ?? '', array( 'list', 'collapse' ), true ) ? sanitize_key( $_POST['up_style'] ) : 'side',
 				'coupon'       => empty( $_POST['coupon'] ) ? 0 : 1,
 				'btn_total'    => empty( $_POST['btn_total'] ) ? 0 : 1,
+				'btn_text'     => sanitize_text_field( wp_unslash( (string) ( $_POST['btn_text'] ?? '' ) ) ),
+				'continue'     => empty( $_POST['continue'] ) ? 0 : 1,
 				'cart_link'    => empty( $_POST['cart_link'] ) ? 0 : 1,
 			),
 			false
