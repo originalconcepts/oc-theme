@@ -1426,18 +1426,12 @@ body.oc-tabs-tabs.woocommerce div.product .woocommerce-tabs ul.tabs li.active a,
 .oc-sticky-atc__inner {
 	max-inline-size: var(--oc-main-width, var(--oc-content-width, 1280px));
 	margin-inline: auto;
-	padding: 10px var(--oc-gap);
+	padding-block: 0;
+	padding-inline: var(--oc-gap) 0;
 	display: flex;
-	align-items: center;
-	gap: 14px;
-}
-
-.oc-sticky-atc__thumb {
-	inline-size: 44px;
-	block-size: 44px;
-	object-fit: cover;
-	border-radius: calc(var(--oc-radius, 8px) / 2);
-	flex: none;
+	align-items: stretch;
+	gap: 22px;
+	min-block-size: 58px;
 }
 
 .oc-sticky-atc__title {
@@ -1445,25 +1439,155 @@ body.oc-tabs-tabs.woocommerce div.product .woocommerce-tabs ul.tabs li.active a,
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+	align-self: center;
+	flex: 0 1 auto;
+	min-inline-size: 0;
 }
 
-.oc-sticky-atc__price { flex: none; font-weight: 700; }
-
-.oc-sticky-atc__btn {
-	flex: none;
+/* Inline attribute pickers — label, swatch dot, borderless select. */
+.oc-sticky-atc__opts {
+	display: flex;
+	align-items: stretch;
+	gap: 0;
 	margin-inline-start: auto;
-	background: var(--oc-primary);
-	color: #fff;
-	border: 0;
-	border-radius: var(--oc-radius, 8px);
-	padding: 10px 22px;
-	font: inherit;
-	font-weight: 600;
+	min-inline-size: 0;
+}
+
+.oc-sticky-atc__opt {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding-inline: 18px;
+	border-inline-start: 1px solid var(--oc-line);
 	cursor: pointer;
 }
 
-@media (max-width: 640px) {
-	.oc-sticky-atc__title { display: none; }
+.oc-sticky-atc__optlabel {
+	font-size: .72rem;
+	font-weight: 600;
+	letter-spacing: .08em;
+	text-transform: uppercase;
+	color: var(--oc-ink-2, #777);
+	white-space: nowrap;
+}
+
+.oc-sticky-atc__dot {
+	inline-size: 16px;
+	block-size: 16px;
+	border-radius: 50%;
+	border: 1px solid var(--oc-line);
+	flex: none;
+}
+
+.oc-sticky-atc__opt select {
+	appearance: none;
+	-webkit-appearance: none;
+	border: 0;
+	background: transparent;
+	font: inherit;
+	font-weight: 500;
+	color: var(--oc-ink, #111);
+	padding-block: 0;
+	padding-inline: 0 20px;
+	cursor: pointer;
+	max-inline-size: 150px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23111' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+	background-repeat: no-repeat;
+	background-position: left 4px center;
+}
+
+[dir="ltr"] .oc-sticky-atc__opt select { background-position: right 4px center; }
+
+.oc-sticky-atc__opt select:focus { outline: none; }
+
+/* The buy block: tinted panel riding the bar's far end, text + live price. */
+.oc-sticky-atc__buy {
+	flex: none;
+	margin-inline-start: auto;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	align-self: stretch;
+	background: var(--oc-cta, var(--oc-primary));
+	color: var(--oc-cta-tx, #fff);
+	border: 0;
+	border-radius: 0;
+	padding-block: 0;
+	padding-inline: 34px;
+	font: inherit;
+	font-weight: 600;
+	cursor: pointer;
+	touch-action: manipulation;
+}
+
+.oc-sticky-atc__opts + .oc-sticky-atc__buy { margin-inline-start: 0; }
+
+.oc-sticky-atc__buy em {
+	font-style: normal;
+	font-weight: 600;
+	display: flex;
+	align-items: center;
+	gap: 4px;
+}
+
+.oc-sticky-atc__buy em::before {
+	content: "·";
+	font-weight: 700;
+	margin-inline-end: 4px;
+}
+
+.oc-sticky-atc__buy del { opacity: .6; margin-inline-end: 6px; }
+.oc-sticky-atc__buy ins { text-decoration: none; }
+
+@media (max-width: 782px) {
+	.oc-sticky-atc__title,
+	.oc-sticky-atc__opts { display: none; }
+
+	.oc-sticky-atc__inner {
+		padding-inline: 0;
+		min-block-size: 54px;
+	}
+
+	.oc-sticky-atc__buy {
+		flex: 1;
+		justify-content: center;
+		margin-inline-start: 0;
+	}
+}
+
+/* On phones the variation picker becomes a bottom sheet. */
+@media (max-width: 782px) {
+	.oc-vmodal.oc-nmodal {
+		place-items: end stretch;
+		padding: 0;
+	}
+
+	.oc-vmodal .oc-nmodal__card {
+		inline-size: 100%;
+		border-radius: calc(var(--oc-radius, 8px) * 1.6) calc(var(--oc-radius, 8px) * 1.6) 0 0;
+		max-block-size: 78vh;
+		overflow: auto;
+		animation: oc-sheet-up .28s cubic-bezier(.32, .72, .35, 1);
+		padding-block-end: max(18px, env(safe-area-inset-bottom));
+		box-shadow: 0 -12px 40px rgb(0 0 0 / 25%);
+	}
+
+	.oc-vmodal .oc-nmodal__card::before {
+		content: "";
+		display: block;
+		inline-size: 42px;
+		block-size: 4px;
+		border-radius: 2px;
+		background: var(--oc-line);
+		margin: -8px auto 14px;
+	}
+}
+
+@keyframes oc-sheet-up {
+	from { transform: translateY(100%); }
+	to { transform: translateY(0); }
 }
 
 /* ---------- cart drawer ---------- */

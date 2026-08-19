@@ -1352,18 +1352,57 @@ final class WooCommerce {
 	public function sticky_bar(): void {
 		global $product;
 
-		if ( ! $product instanceof \WC_Product ) {
+		if ( ! $product instanceof \WC_Product || ! $product->is_purchasable() || ! $product->is_in_stock() ) {
 			return;
 		}
 
+		$is_variable = $product->is_type( 'variable' );
+		$attributes  = $is_variable ? $product->get_variation_attributes() : array();
 		?>
-		<div class="oc-sticky-atc" data-oc-sticky-atc hidden>
+		<div class="oc-sticky-atc" data-oc-sticky-atc data-product="<?php echo absint( $product->get_id() ); ?>" data-variable="<?php echo $is_variable ? '1' : '0'; ?>" hidden>
 			<div class="oc-sticky-atc__inner">
-				<?php echo wp_get_attachment_image( (int) $product->get_image_id(), 'thumbnail', false, array( 'class' => 'oc-sticky-atc__thumb' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- core-generated markup. ?>
 				<span class="oc-sticky-atc__title"><?php echo esc_html( $product->get_name() ); ?></span>
-				<span class="oc-sticky-atc__price"><?php echo wp_kses_post( $product->get_price_html() ); ?></span>
-				<button type="button" class="button oc-sticky-atc__btn">
-					<?php echo esc_html( $product->single_add_to_cart_text() ); ?>
+
+				<?php if ( $attributes ) : ?>
+					<div class="oc-sticky-atc__opts">
+						<?php foreach ( $attributes as $attribute => $options ) : ?>
+							<?php
+							$field    = 'attribute_' . sanitize_title( $attribute );
+							$swatches = array();
+							$labels   = array();
+
+							foreach ( (array) $options as $slug ) {
+								$term = get_term_by( 'slug', $slug, $attribute );
+								$labels[ $slug ] = $term instanceof \WP_Term ? $term->name : rawurldecode( (string) $slug );
+
+								if ( $term instanceof \WP_Term ) {
+									$image = (string) get_term_meta( $term->term_id, 'oc_swatch_image', true );
+									$color = (string) get_term_meta( $term->term_id, 'oc_swatch_color', true );
+									if ( '' !== $image ) {
+										$swatches[ $slug ] = 'background-image:url(' . esc_url( $image ) . ');background-size:cover;';
+									} elseif ( '' !== $color ) {
+										$swatches[ $slug ] = 'background-color:' . sanitize_hex_color( $color ) . ';';
+									}
+								}
+							}
+							?>
+							<label class="oc-sticky-atc__opt">
+								<span class="oc-sticky-atc__optlabel"><?php echo esc_html( wc_attribute_label( rawurldecode( (string) $attribute ) ) ); ?></span>
+								<i class="oc-sticky-atc__dot" hidden></i>
+								<select data-oc-sticky-attr="<?php echo esc_attr( $field ); ?>" data-swatches="<?php echo esc_attr( (string) wp_json_encode( $swatches ) ); ?>">
+									<option value=""><?php esc_html_e( 'Choose', 'oc-theme' ); ?></option>
+									<?php foreach ( (array) $options as $slug ) : ?>
+										<option value="<?php echo esc_attr( (string) $slug ); ?>"><?php echo esc_html( $labels[ $slug ] ); ?></option>
+									<?php endforeach; ?>
+								</select>
+							</label>
+						<?php endforeach; ?>
+					</div>
+				<?php endif; ?>
+
+				<button type="button" class="oc-sticky-atc__buy checkout-button" data-oc-sticky-add data-name="<?php echo esc_attr( $product->get_name() ); ?>">
+					<span><?php echo esc_html( $product->single_add_to_cart_text() ); ?></span>
+					<em data-oc-sticky-price><?php echo wp_kses_post( $product->get_price_html() ); ?></em>
 				</button>
 			</div>
 		</div>

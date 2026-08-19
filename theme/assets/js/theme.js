@@ -2307,18 +2307,7 @@
 			}
 		} );
 
-		document.addEventListener( 'click', function ( event ) {
-			var opener = event.target.closest( '[data-oc-up-var]' );
-
-			if ( varModal && ! varModal.hidden && ( event.target.closest( '.oc-nmodal__close' ) || event.target === varModal ) && event.target.closest( '.oc-vmodal' ) ) {
-				closeVarModal();
-				return;
-			}
-
-			if ( ! opener ) {
-				return;
-			}
-
+		function openVarPicker( productId, productName ) {
 			if ( ! varModal ) {
 				varModal = document.createElement( 'div' );
 				varModal.className = 'oc-nmodal oc-vmodal';
@@ -2333,14 +2322,14 @@
 				document.body.appendChild( varModal );
 			}
 
-			varModal.querySelector( '.oc-nmodal__title' ).textContent = opener.dataset.name || '';
+			varModal.querySelector( '.oc-nmodal__title' ).textContent = productName || '';
 			var list = varModal.querySelector( '.oc-vmodal__list' );
 			list.innerHTML = '<span class="oc-vmodal__loading">…</span>';
 			varModal.hidden = false;
 
 			var data = new FormData();
 			data.append( 'action', 'oc_cart_vars' );
-			data.append( 'product_id', opener.dataset.ocUpVar );
+			data.append( 'product_id', productId );
 
 			fetch( ( window.ocL10n || {} ).ajaxUrl || '/wp-admin/admin-ajax.php', {
 				method: 'POST',
@@ -2371,7 +2360,7 @@
 							row.classList.add( 'is-busy' );
 							var add = new FormData();
 							add.append( 'action', 'oc_cart_add' );
-							add.append( 'product_id', opener.dataset.ocUpVar );
+							add.append( 'product_id', productId );
 							add.append( 'variation_id', String( v.id ) );
 							fetch( ( window.ocL10n || {} ).ajaxUrl || '/wp-admin/admin-ajax.php', {
 								method: 'POST',
@@ -2392,11 +2381,37 @@
 										} );
 									}
 									closeVarModal();
+									// Picked from inside the open drawer: it
+									// already shows the new line — stay quiet.
+									if ( out && out.fragments && ! ( drawer && drawer.classList.contains( 'is-open' ) ) ) {
+										if ( openOnAdd ) {
+											openDrawer();
+										} else {
+											cartToast( ( productName ? productName + ' — ' : '' ) + v.label, '' );
+										}
+									}
 								} );
 						} );
 						list.appendChild( row );
 					} );
 				} );
+		}
+
+		// The sticky bar (outside this closure) opens the picker too.
+		window.__ocOpenVarPicker = openVarPicker;
+		window.__ocCartToast = cartToast;
+		window.__ocOpenDrawer = openOnAdd ? openDrawer : null;
+
+		document.addEventListener( 'click', function ( event ) {
+			if ( varModal && ! varModal.hidden && ( event.target.closest( '.oc-nmodal__close' ) || event.target === varModal ) && event.target.closest( '.oc-vmodal' ) ) {
+				closeVarModal();
+				return;
+			}
+
+			var opener = event.target.closest( '[data-oc-up-var]' );
+			if ( opener ) {
+				openVarPicker( opener.dataset.ocUpVar, opener.dataset.name || '' );
+			}
 		} );
 	}
 
@@ -4702,19 +4717,160 @@
 		window.addEventListener( 'scroll', updateBar, { passive: true } );
 		updateBar();
 
-		var proxy = bar.querySelector( '.oc-sticky-atc__btn' );
+		var isVariable = '1' === bar.dataset.variable;
+		var buy = bar.querySelector( '[data-oc-sticky-add]' );
+		var priceEl = bar.querySelector( '[data-oc-sticky-price]' );
+		var basePrice = priceEl ? priceEl.innerHTML : '';
+		var stickySelects = Array.prototype.slice.call( bar.querySelectorAll( '[data-oc-sticky-attr]' ) );
 		var submit = form.querySelector( '[type="submit"]' );
 
-		if ( proxy ) {
-			proxy.addEventListener( 'click', function () {
-				// Simple products buy straight away; variable products need the
-				// visitor to pick options first, so scroll them to the form.
-				if ( submit && ! submit.disabled && ! form.classList.contains( 'variations_form' ) ) {
-					submit.click();
+		var variations = null;
+		if ( isVariable ) {
+			try {
+				variations = JSON.parse( form.dataset.product_variations || 'null' );
+			} catch ( err ) {
+				variations = null;
+			}
+		}
+
+		function formSelect( field ) {
+			return form.querySelector( 'select[name="' + field + '"]' );
+		}
+
+		function paintDot( sel ) {
+			var dot = sel.parentElement.querySelector( '.oc-sticky-atc__dot' );
+			if ( ! dot ) {
+				return;
+			}
+			var map = {};
+			try {
+				map = JSON.parse( sel.dataset.swatches || '{}' );
+			} catch ( err ) {
+				map = {};
+			}
+			var style = sel.value && map[ sel.value ] ? map[ sel.value ] : '';
+			dot.hidden = ! style;
+			dot.setAttribute( 'style', style );
+		}
+
+		// The bar's selects mirror the form's — a fully chosen combination is
+		// resolved locally against Woo's variations JSON.
+		function resolveVariation() {
+			if ( ! variations || ! stickySelects.length ) {
+				return null;
+			}
+			var chosen = {};
+			var complete = true;
+			stickySelects.forEach( function ( sel ) {
+				if ( ! sel.value ) {
+					complete = false;
+				}
+				chosen[ sel.dataset.ocStickyAttr ] = sel.value;
+			} );
+			if ( ! complete ) {
+				return null;
+			}
+			return variations.find( function ( v ) {
+				return Object.keys( v.attributes ).every( function ( key ) {
+					return '' === v.attributes[ key ] || v.attributes[ key ] === chosen[ key ];
+				} );
+			} ) || null;
+		}
+
+		function cleanPrice( html ) {
+			// The product-page price filters ride sale badge and SKU along —
+			// the sticky bar wants the bare amount.
+			var box = document.createElement( 'div' );
+			box.innerHTML = html;
+			box.querySelectorAll( '.oc-price-badge, .oc-sku' ).forEach( function ( el ) {
+				el.remove();
+			} );
+			return box.innerHTML;
+		}
+
+		function updatePrice() {
+			if ( ! priceEl ) {
+				return;
+			}
+			var v = resolveVariation();
+			priceEl.innerHTML = cleanPrice( v && v.price_html ? v.price_html : basePrice );
+		}
+
+		if ( priceEl ) {
+			priceEl.innerHTML = cleanPrice( basePrice );
+		}
+
+		stickySelects.forEach( function ( sel ) {
+			var main = formSelect( sel.dataset.ocStickyAttr );
+
+			// Adopt whatever the form already chose (per-product defaults).
+			if ( main && main.value ) {
+				sel.value = main.value;
+			}
+			paintDot( sel );
+
+			sel.addEventListener( 'change', function () {
+				if ( main && main.value !== sel.value ) {
+					main.value = sel.value;
+					// Woo's variation script listens for this and resolves
+					// variation_id / gallery / stock on the main form.
+					main.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+				}
+				paintDot( sel );
+				updatePrice();
+			} );
+
+			if ( main ) {
+				main.addEventListener( 'change', function () {
+					if ( sel.value !== main.value ) {
+						sel.value = main.value;
+					}
+					paintDot( sel );
+					updatePrice();
+				} );
+			}
+		} );
+
+		updatePrice();
+
+		if ( buy ) {
+			buy.addEventListener( 'click', function () {
+				if ( ! isVariable ) {
+					// The form's own submit path already adds over ajax and
+					// shows the toast / opens the drawer.
+					if ( submit && ! submit.disabled ) {
+						submit.click();
+					}
 					return;
 				}
 
-				form.scrollIntoView( { behavior: 'smooth', block: 'center' } );
+				var v = resolveVariation();
+				var mobile = window.matchMedia( '(max-width: 782px)' ).matches;
+
+				// Mobile always gets the picker sheet — silently buying a
+				// preselected default is how wrong sizes get ordered.
+				if ( mobile || ! v ) {
+					if ( window.__ocOpenVarPicker ) {
+						window.__ocOpenVarPicker( bar.dataset.product, buy.dataset.name || '' );
+					} else {
+						form.scrollIntoView( { behavior: 'smooth', block: 'center' } );
+					}
+					return;
+				}
+
+				// Desktop with everything chosen: let Woo's form state settle,
+				// then go through the form's ajax submit.
+				setTimeout( function () {
+					var varInput = form.querySelector( 'input[name="variation_id"]' );
+					if ( varInput && ( ! varInput.value || '0' === varInput.value ) ) {
+						varInput.value = String( v.variation_id );
+					}
+					if ( submit && ! submit.disabled ) {
+						submit.click();
+					} else if ( window.__ocOpenVarPicker ) {
+						window.__ocOpenVarPicker( bar.dataset.product, buy.dataset.name || '' );
+					}
+				}, 60 );
 			} );
 		}
 	}

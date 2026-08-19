@@ -1926,3 +1926,6 @@ msgstr "סיכום הזמנה"
 
 msgid "Added to cart"
 msgstr "נוסף לסל"
+
+msgid "Choose"
+msgstr "בחירה"
