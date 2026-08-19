@@ -1768,6 +1768,93 @@
 			sendQty( wrap, Math.max( 0, parseInt( input.value, 10 ) || 1 ) );
 		} );
 
+		/* -- coupon field opens behind its quiet trigger -- */
+
+		document.addEventListener( 'click', function ( event ) {
+			var couponToggle = event.target.closest( '[data-oc-coupon-toggle]' );
+			if ( ! couponToggle ) {
+				return;
+			}
+			var couponWrap = couponToggle.closest( '.oc-drawer__coupon-wrap' );
+			var open = couponWrap.classList.toggle( 'is-open' );
+			if ( open ) {
+				var field = couponWrap.querySelector( 'input[name="coupon_code"]' );
+				setTimeout( function () {
+					if ( field ) {
+						field.focus();
+					}
+				}, 260 );
+			}
+		} );
+
+		/* -- horizontal upsell scrollers: arrows, and drag with the mouse
+		 *    (fingers scroll natively) -- */
+
+		document.addEventListener( 'click', function ( event ) {
+			var arrow = event.target.closest( '[data-oc-up-prev], [data-oc-up-next]' );
+			if ( ! arrow ) {
+				return;
+			}
+			var track = arrow.closest( '.oc-cartup__body' ).querySelector( '[data-oc-up-track]' );
+			var item = track.querySelector( '.oc-cartup__item' );
+			var step = item ? item.getBoundingClientRect().width + 12 : 200;
+			var dir = arrow.hasAttribute( 'data-oc-up-next' ) ? 1 : -1;
+			// RTL: visual next means scrolling further negative.
+			if ( 'rtl' === getComputedStyle( track ).direction ) {
+				dir = -dir;
+			}
+			track.scrollBy( { left: dir * step * 2, behavior: 'smooth' } );
+		} );
+
+		( function () {
+			var dragTrack = null;
+			var dragStartX = 0;
+			var dragStartScroll = 0;
+			var dragged = false;
+
+			document.addEventListener( 'pointerdown', function ( event ) {
+				if ( 'mouse' !== event.pointerType ) {
+					return;
+				}
+				var track = event.target.closest( '[data-oc-up-track].oc-cartup__items--h' );
+				if ( ! track ) {
+					return;
+				}
+				dragTrack = track;
+				dragStartX = event.clientX;
+				dragStartScroll = track.scrollLeft;
+				dragged = false;
+			} );
+
+			document.addEventListener( 'pointermove', function ( event ) {
+				if ( ! dragTrack ) {
+					return;
+				}
+				var dx = event.clientX - dragStartX;
+				if ( Math.abs( dx ) > 4 ) {
+					dragged = true;
+					dragTrack.classList.add( 'is-dragging' );
+				}
+				dragTrack.scrollLeft = dragStartScroll - dx;
+			} );
+
+			document.addEventListener( 'pointerup', function () {
+				if ( dragTrack ) {
+					dragTrack.classList.remove( 'is-dragging' );
+					dragTrack = null;
+				}
+			} );
+
+			// A drag must not count as a click on a card inside.
+			document.addEventListener( 'click', function ( event ) {
+				if ( dragged && event.target.closest( '[data-oc-up-track]' ) ) {
+					event.preventDefault();
+					event.stopPropagation();
+					dragged = false;
+				}
+			}, true );
+		} )();
+
 		/* -- the minimizable upsell block remembers its state -- */
 
 		document.addEventListener( 'click', function ( event ) {

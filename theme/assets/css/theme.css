@@ -1863,6 +1863,62 @@ body.oc-tabs-tabs.woocommerce div.product .woocommerce-tabs ul.tabs li.active a,
 	margin-block-start: 12px;
 }
 
+/* horizontal tracks (slider + minimizable): finger-scroll on touch,
+ * mouse-drag on desktop, arrows for the precise */
+.oc-cartup__items--h {
+	display: flex;
+	gap: 12px;
+	overflow-x: auto;
+	scrollbar-width: none;
+	cursor: grab;
+}
+
+.oc-cartup__items--h::-webkit-scrollbar { display: none; }
+.oc-cartup__items--h.is-dragging { cursor: grabbing; scroll-behavior: auto; }
+.oc-cartup__items--h .oc-cartup__item { flex: none; inline-size: 190px; }
+
+.oc-cartup__body { position: relative; }
+
+.oc-cartup__arrow {
+	position: absolute;
+	inset-block-start: 50%;
+	translate: 0 -50%;
+	z-index: 2;
+	inline-size: 28px;
+	block-size: 28px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border: 1px solid var(--oc-line);
+	border-radius: 50%;
+	background: var(--oc-surface, #fff);
+	color: var(--oc-ink);
+	cursor: pointer;
+	box-shadow: 0 2px 10px rgb(0 0 0 / 10%);
+}
+
+.oc-cartup__arrow svg { inline-size: 15px; block-size: 15px; }
+.oc-cartup__arrow--prev { inset-inline-start: -6px; }
+.oc-cartup__arrow--next { inset-inline-end: -6px; }
+
+@media (hover: none) {
+	/* fingers scroll — the arrows just get in the way */
+	.oc-cartup__arrow { display: none; }
+}
+
+/* the standalone horizontal slider after the items */
+.oc-cartup--slider { margin-block-start: 20px; }
+.oc-cartup--slider .oc-cartup__body { margin-block-start: 12px; }
+.oc-cartup--slider .oc-cartup__item { flex-direction: column; align-items: stretch; text-align: center; }
+.oc-cartup--slider .oc-cartup__media img { inline-size: 100%; block-size: 130px; }
+.oc-cartup--slider .oc-cartup__add {
+	position: absolute;
+	inset-block-start: calc(130px - 36px);
+	inset-inline-start: 6px;
+	inset-inline-end: auto;
+	box-shadow: 0 2px 8px rgb(0 0 0 / 12%);
+}
+
 /* side strip (the old site's look) */
 .oc-drawer--upside .oc-drawer__panel { inline-size: min(calc(var(--oc-drawer-w, 480px) + 190px), 96vw); }
 
@@ -1945,15 +2001,13 @@ body.oc-tabs-tabs.woocommerce div.product .woocommerce-tabs ul.tabs li.active a,
 }
 
 .oc-cartup--collapse .oc-cartup__body > .oc-cartup__items {
-	overflow: hidden;
 	min-block-size: 0;
-	display: flex;
-	gap: 12px;
-	overflow-x: auto;
 	padding-block-start: 12px;
 }
 
 .oc-cartup--collapse .oc-cartup__item { flex: none; inline-size: 190px; }
+
+.oc-cartup--collapse .oc-cartup__arrow { inset-block-start: calc(50% + 6px); }
 
 .oc-cartup--collapse.is-min .oc-cartup__body { grid-template-rows: 0fr; }
 .oc-cartup--collapse.is-min .oc-cartup__toggle svg { rotate: 180deg; }
@@ -1982,13 +2036,53 @@ body.oc-tabs-tabs.woocommerce div.product .woocommerce-tabs ul.tabs li.active a,
 	color: var(--oc-sale, #b4453c);
 }
 
-.oc-drawer__coupon { display: flex; gap: 8px; }
+/* the coupon hides behind a quiet question; the field slides open */
+.oc-drawer__coupon-t {
+	border: 0;
+	background: none;
+	font: inherit;
+	font-size: .82rem;
+	color: var(--oc-ink-2);
+	cursor: pointer;
+	padding: 0;
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	inline-size: fit-content;
+}
+
+.oc-drawer__coupon-t:hover { color: var(--oc-ink); }
+
+.oc-drawer__coupon-t svg {
+	inline-size: 14px;
+	block-size: 14px;
+	transition: rotate .2s ease;
+}
+
+.oc-drawer__coupon-wrap.is-open .oc-drawer__coupon-t svg { rotate: 180deg; }
+
+.oc-drawer__coupon-body {
+	display: grid;
+	grid-template-rows: 0fr;
+	transition: grid-template-rows .25s ease;
+}
+
+.oc-drawer__coupon-wrap.is-open .oc-drawer__coupon-body { grid-template-rows: 1fr; }
+
+.oc-drawer__coupon {
+	display: flex;
+	gap: 8px;
+	overflow: hidden;
+	min-block-size: 0;
+}
+
+.oc-drawer__coupon-wrap.is-open .oc-drawer__coupon { padding-block-start: 10px; }
 
 .oc-drawer__coupon input {
 	flex: 1;
 	min-inline-size: 0;
 	border: 1px solid var(--oc-line);
-	border-radius: 8px;
+	border-radius: var(--oc-cta-r, 8px);
 	padding: 8px 12px;
 	font: inherit;
 	font-size: .88rem;
@@ -1997,7 +2091,7 @@ body.oc-tabs-tabs.woocommerce div.product .woocommerce-tabs ul.tabs li.active a,
 .oc-drawer__coupon button {
 	border: 1px solid var(--oc-ink);
 	background: none;
-	border-radius: 8px;
+	border-radius: var(--oc-cta-r, 8px);
 	padding: 8px 16px;
 	font: inherit;
 	font-size: .88rem;

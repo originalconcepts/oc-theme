@@ -1875,3 +1875,15 @@ msgstr "מחק הכל"
 
 msgid "Choose an option"
 msgstr "בחירת וריאציה"
+
+msgid "Have a coupon code?"
+msgstr "יש לך קוד קופון?"
+
+msgid "Horizontal slider"
+msgstr "סליידר לרוחב"
+
+msgid "Previous"
+msgstr "הקודם"
+
+msgid "Next"
+msgstr "הבא"

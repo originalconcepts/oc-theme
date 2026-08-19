@@ -69,7 +69,7 @@ final class Cart {
 				'up_source'    => 'items',   // items | category.
 				'up_cat'       => 0,
 				'up_max'       => 5,
-				'up_style'     => 'side',    // side | list | collapse.
+				'up_style'     => 'side',    // side | list | slider | collapse.
 				'coupon'       => 0,
 				'btn_total'    => 0,
 				'btn_text'     => '',
@@ -348,19 +348,26 @@ final class Cart {
 			$label .= ' · ' . wp_strip_all_tags( $total );
 		}
 
-		$html  = '<footer class="oc-drawer__foot" data-oc-cart-foot>';
-		$html .= '<div class="oc-drawer__subtotal"><span>' . esc_html__( 'Subtotal', 'oc-theme' ) . '</span><strong>' . $total . '</strong></div>';
+		$html = '<footer class="oc-drawer__foot" data-oc-cart-foot>';
+
+		// The button already says the number — no need to say it twice.
+		if ( empty( $s['btn_total'] ) ) {
+			$html .= '<div class="oc-drawer__subtotal"><span>' . esc_html__( 'Subtotal', 'oc-theme' ) . '</span><strong>' . $total . '</strong></div>';
+		}
 
 		if ( $oos ) {
 			$html .= '<p class="oc-drawer__oos-note">' . esc_html__( 'Some items in the cart are out of stock — remove them to check out.', 'oc-theme' ) . '</p>';
 		}
 
 		if ( ! empty( $s['coupon'] ) ) {
-			$html .= '<form class="oc-drawer__coupon" method="post" action="' . esc_url( wc_get_cart_url() ) . '">';
+			$html .= '<div class="oc-drawer__coupon-wrap">';
+			$html .= '<button type="button" class="oc-drawer__coupon-t" data-oc-coupon-toggle>' . esc_html__( 'Have a coupon code?', 'oc-theme' ) . ' <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>';
+			$html .= '<div class="oc-drawer__coupon-body"><form class="oc-drawer__coupon" method="post" action="' . esc_url( wc_get_cart_url() ) . '">';
 			$html .= '<input type="text" name="coupon_code" placeholder="' . esc_attr__( 'Coupon code', 'oc-theme' ) . '" />';
 			$html .= '<button type="submit" name="apply_coupon" value="1">' . esc_html__( 'Apply', 'oc-theme' ) . '</button>';
 			$html .= wp_nonce_field( 'woocommerce-cart', 'woocommerce-cart-nonce', true, false );
-			$html .= '</form>';
+			$html .= '</form></div>';
+			$html .= '</div>';
 		}
 
 		// checkout-button: the class the global CTA hover effects target, so
@@ -424,7 +431,8 @@ final class Cart {
 			return '<div ' . $attr . ' hidden></div>';
 		}
 
-		$style = null !== $force_style ? $force_style : (string) $s['up_style'];
+		$style      = null !== $force_style ? $force_style : (string) $s['up_style'];
+		$horizontal = in_array( $style, array( 'slider', 'collapse' ), true );
 		$title = '' !== (string) $s['up_title'] ? (string) $s['up_title'] : __( 'You may also like', 'oc-theme' );
 
 		$html = '<div class="oc-cartup oc-cartup--' . esc_attr( $style ) . ( $mobile ? ' oc-cartup--m' : '' ) . '" ' . $attr . '>';
@@ -438,7 +446,14 @@ final class Cart {
 		}
 		$html .= '</div>';
 
-		$html .= '<div class="oc-cartup__body"><div class="oc-cartup__items">';
+		$html .= '<div class="oc-cartup__body">';
+
+		if ( $horizontal ) {
+			$html .= '<button type="button" class="oc-cartup__arrow oc-cartup__arrow--prev" data-oc-up-prev aria-label="' . esc_attr__( 'Previous', 'oc-theme' ) . '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>';
+			$html .= '<button type="button" class="oc-cartup__arrow oc-cartup__arrow--next" data-oc-up-next aria-label="' . esc_attr__( 'Next', 'oc-theme' ) . '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>';
+		}
+
+		$html .= '<div class="oc-cartup__items' . ( $horizontal ? ' oc-cartup__items--h' : '' ) . '" data-oc-up-track>';
 
 		foreach ( $products as $product ) {
 			$link = get_permalink( $product->get_id() );
@@ -734,11 +749,40 @@ final class Cart {
 					<tr>
 						<th scope="row"><?php esc_html_e( 'Display', 'oc-theme' ); ?></th>
 						<td>
-							<select name="up_style">
-								<option value="side" <?php selected( 'side', $s['up_style'] ); ?>><?php esc_html_e( 'Side strip inside the panel', 'oc-theme' ); ?></option>
-								<option value="list" <?php selected( 'list', $s['up_style'] ); ?>><?php esc_html_e( 'After the cart items', 'oc-theme' ); ?></option>
-								<option value="collapse" <?php selected( 'collapse', $s['up_style'] ); ?>><?php esc_html_e( 'Above the total — minimizable', 'oc-theme' ); ?></option>
-							</select>
+							<?php
+							$up_styles = array(
+								'side'     => __( 'Side strip inside the panel', 'oc-theme' ),
+								'list'     => __( 'After the cart items', 'oc-theme' ),
+								'slider'   => __( 'Horizontal slider', 'oc-theme' ),
+								'collapse' => __( 'Above the total — minimizable', 'oc-theme' ),
+							);
+
+							$up_icons = array(
+								'side'     => '<rect x="2" y="2" width="10" height="28" rx="2"/><rect x="16" y="2" width="30" height="8" rx="2" opacity=".35"/><rect x="16" y="14" width="30" height="8" rx="2" opacity=".35"/><rect x="16" y="26" width="30" height="4" rx="2" opacity=".35"/>',
+								'list'     => '<rect x="2" y="2" width="44" height="7" rx="2" opacity=".35"/><rect x="2" y="12" width="44" height="7" rx="2" opacity=".35"/><rect x="2" y="23" width="13" height="7" rx="2"/><rect x="18" y="23" width="13" height="7" rx="2"/><rect x="33" y="23" width="13" height="7" rx="2"/>',
+								'slider'   => '<rect x="2" y="2" width="44" height="7" rx="2" opacity=".35"/><rect x="8" y="14" width="12" height="14" rx="2"/><rect x="23" y="14" width="12" height="14" rx="2"/><rect x="38" y="14" width="8" height="14" rx="2" opacity=".55"/><path d="M2 21l3-2.5L2 16z"/>',
+								'collapse' => '<rect x="2" y="2" width="44" height="14" rx="2" opacity=".35"/><rect x="2" y="20" width="44" height="10" rx="2"/><path d="M40 23.5h4M42 21.5v4" stroke="#fff" stroke-width="1.6" fill="none"/>',
+							);
+							?>
+							<div class="oc-flt-pick" id="oc-up-style-pick" style="display:flex;gap:10px;flex-wrap:wrap;">
+								<?php foreach ( $up_styles as $value => $label ) : ?>
+									<label style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px;border:1.5px solid <?php echo $s['up_style'] === $value ? '#2271b1' : '#ddd'; ?>;border-radius:8px;cursor:pointer;min-width:110px;text-align:center;">
+										<svg viewBox="0 0 48 32" width="48" height="32" fill="currentColor" aria-hidden="true"><?php echo $up_icons[ $value ]; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static SVG. ?></svg>
+										<input type="radio" name="up_style" value="<?php echo esc_attr( $value ); ?>" <?php checked( $s['up_style'], $value ); ?> style="margin:0;" />
+										<span style="font-size:12px;"><?php echo esc_html( $label ); ?></span>
+									</label>
+								<?php endforeach; ?>
+							</div>
+							<script>
+							( function () {
+								var pick = document.getElementById( 'oc-up-style-pick' );
+								pick.addEventListener( 'change', function () {
+									pick.querySelectorAll( 'label' ).forEach( function ( card ) {
+										card.style.borderColor = card.querySelector( 'input' ).checked ? '#2271b1' : '#ddd';
+									} );
+								} );
+							} )();
+							</script>
 						</td>
 					</tr>
 					<tr>
@@ -808,7 +852,7 @@ final class Cart {
 				'up_source'    => 'category' === ( $_POST['up_source'] ?? '' ) ? 'category' : 'items',
 				'up_cat'       => (int) ( $_POST['up_cat'] ?? 0 ),
 				'up_max'       => min( 12, max( 1, (int) ( $_POST['up_max'] ?? 5 ) ) ),
-				'up_style'     => in_array( $_POST['up_style'] ?? '', array( 'list', 'collapse' ), true ) ? sanitize_key( $_POST['up_style'] ) : 'side',
+				'up_style'     => in_array( $_POST['up_style'] ?? '', array( 'list', 'slider', 'collapse' ), true ) ? sanitize_key( $_POST['up_style'] ) : 'side',
 				'coupon'       => empty( $_POST['coupon'] ) ? 0 : 1,
 				'btn_total'    => empty( $_POST['btn_total'] ) ? 0 : 1,
 				'btn_text'     => sanitize_text_field( wp_unslash( (string) ( $_POST['btn_text'] ?? '' ) ) ),
