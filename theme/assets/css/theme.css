@@ -2100,7 +2100,7 @@ html:not([dir]) .oc-cartup__items--h.oc-fade-end {
 
 .oc-cartup--collapse .oc-cartup__body > .oc-cartup__items {
 	min-block-size: 0;
-	padding-block-start: 12px;
+	padding-block-start: 14px;
 }
 
 .oc-cartup--collapse .oc-cartup__arrow { inset-block-start: calc(50% + 6px); }
@@ -5402,7 +5402,18 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 
 .oc-cartup--collapse .oc-cartup__media { inline-size: 48px; flex: none; }
 .oc-cartup--collapse .oc-cartup__media img { inline-size: 48px; block-size: 58px; }
-.oc-cartup--collapse .oc-cartup__flag { display: none; }
+
+/* the image is too small to carry the label — it straddles the card's
+ * top border instead, aligned with the text column */
+.oc-cartup--collapse .oc-cartup__flag {
+	display: inline-block;
+	inset-block-start: -17px;
+	inset-inline-start: 56px;
+	font-size: .58rem;
+	padding: 1px 7px;
+	white-space: nowrap;
+	z-index: 2;
+}
 .oc-cartup--collapse .oc-cartup__name { font-size: .78rem; }
 .oc-cartup--collapse .oc-cartup__price { font-size: .76rem; }
 
