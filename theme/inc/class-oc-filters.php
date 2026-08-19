@@ -82,7 +82,8 @@ final class Filters {
 				'choice'       => 'check',     // check | dot.
 				'chip_swatch'  => 'off',       // off | both | only.
 				'chips_pos'    => 'start',     // start | center | inline | group.
-				'swatch_names' => 1,
+				'swatch_names' => 1,           // desktop.
+				'swatch_names_m' => 1,         // mobile.
 				'counts'       => 1,
 				'empty'        => 'gray',      // gray | hide.
 				'instock'      => 1,
@@ -1399,10 +1400,11 @@ final class Filters {
 			$html .= '<em class="oc-flt__num" data-flt-num' . ( $active_count ? '' : ' hidden' ) . '>(' . absint( $active_count ) . ')</em>';
 			$html .= '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
 			$html .= '</button>';
-			$noname = 'swatch' === $group['type'] && empty( $settings['swatch_names'] );
+			$noname_d = 'swatch' === $group['type'] && empty( $settings['swatch_names'] );
+			$noname_m = 'swatch' === $group['type'] && empty( $settings['swatch_names_m'] );
 
 			/* translators: %s: filter group title. */
-			$html .= '<div class="oc-flt__body"><span class="oc-flt__panel-label">' . esc_html( sprintf( __( 'By %s', 'oc-theme' ), (string) $group['title'] ) ) . '</span><div class="oc-flt__values oc-flt__values--' . esc_attr( (string) $group['type'] ) . ' oc-flt__values--' . esc_attr( (string) $settings['choice'] ) . ( $noname ? ' oc-flt__values--noname' : '' ) . '">';
+			$html .= '<div class="oc-flt__body"><span class="oc-flt__panel-label">' . esc_html( sprintf( __( 'By %s', 'oc-theme' ), (string) $group['title'] ) ) . '</span><div class="oc-flt__values oc-flt__values--' . esc_attr( (string) $group['type'] ) . ' oc-flt__values--' . esc_attr( (string) $settings['choice'] ) . ( $noname_d ? ' oc-flt__values--noname-d' : '' ) . ( $noname_m ? ' oc-flt__values--noname-m' : '' ) . '">';
 
 			foreach ( $group['values'] as $value ) {
 				$disabled = 0 === (int) $value['count'] && empty( $value['active'] );
@@ -1887,7 +1889,10 @@ final class Filters {
 					</tr>
 					<tr>
 						<th scope="row"><?php esc_html_e( 'Swatch values', 'oc-theme' ); ?></th>
-						<td><label><input type="checkbox" name="swatch_names" value="1" <?php checked( 1, (int) $settings['swatch_names'] ); ?> /> <?php esc_html_e( 'Show the value name next to the swatch', 'oc-theme' ); ?></label></td>
+						<td>
+							<label><input type="checkbox" name="swatch_names" value="1" <?php checked( 1, (int) $settings['swatch_names'] ); ?> /> <?php esc_html_e( 'Show the value name next to the swatch', 'oc-theme' ); ?></label>
+							<p style="margin:8px 0 0;"><label><input type="checkbox" name="swatch_names_m" value="1" <?php checked( 1, (int) $settings['swatch_names_m'] ); ?> /> <?php esc_html_e( 'Show the value name next to the swatch on mobile', 'oc-theme' ); ?></label></p>
+						</td>
 					</tr>
 					<tr>
 						<th scope="row"><?php esc_html_e( 'Counts', 'oc-theme' ); ?></th>
@@ -2080,6 +2085,7 @@ final class Filters {
 				'chip_swatch'  => in_array( $_POST['chip_swatch'] ?? '', array( 'both', 'only' ), true ) ? sanitize_key( $_POST['chip_swatch'] ) : 'off',
 				'chips_pos'    => in_array( $_POST['chips_pos'] ?? '', array( 'center', 'inline', 'group' ), true ) ? sanitize_key( $_POST['chips_pos'] ) : 'start',
 				'swatch_names' => empty( $_POST['swatch_names'] ) ? 0 : 1,
+				'swatch_names_m' => empty( $_POST['swatch_names_m'] ) ? 0 : 1,
 				'counts'       => empty( $_POST['counts'] ) ? 0 : 1,
 				'empty'        => 'hide' === ( $_POST['empty'] ?? '' ) ? 'hide' : 'gray',
 				'instock'      => empty( $_POST['instock'] ) ? 0 : 1,

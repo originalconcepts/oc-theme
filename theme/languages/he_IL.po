@@ -1698,3 +1698,6 @@ msgstr "ערכי דוגמית"
 
 msgid "Show the value name next to the swatch"
 msgstr "הצגת שם הערך לצד הדוגמית"
+
+msgid "Show the value name next to the swatch on mobile"
+msgstr "הצגת שם הערך לצד הדוגמית במובייל"

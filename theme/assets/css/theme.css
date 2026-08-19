@@ -4303,15 +4303,16 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 }
 
 /* ---------- swatch values without names ----------
- * Only the name and count go (the name stays as aria-label and tooltip);
- * bare circles pack tighter: seven per row in the full sheet, four in
- * the dropdown. Named swatch dropdowns widen a touch instead, so the
- * value names hold one line. */
-.oc-flt__values--noname .oc-flt__val span,
-.oc-flt__values--noname .oc-flt__val [data-flt-count] { display: none; }
-
+ * Desktop (-d) and mobile (-m) are separate toggles. Only the name and
+ * count go (the name stays as aria-label and tooltip); bare circles pack
+ * tighter: seven per row in the full sheet, four in the dropdown, four
+ * on mobile. Named swatch dropdowns widen a touch instead, so the value
+ * names hold one line. */
 @media (min-width: 901px) {
-	.oc-flt--top-full .oc-flt__body .oc-flt__values--swatch.oc-flt__values--noname {
+	.oc-flt__values--noname-d .oc-flt__val span,
+	.oc-flt__values--noname-d .oc-flt__val [data-flt-count] { display: none; }
+
+	.oc-flt--top-full .oc-flt__body .oc-flt__values--swatch.oc-flt__values--noname-d {
 		grid-template-columns: repeat(7, minmax(0, 1fr));
 	}
 
@@ -4319,14 +4320,19 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 		min-inline-size: 320px;
 	}
 
-	.oc-flt--top-drop .oc-flt__body:has(.oc-flt__values--noname) {
+	.oc-flt--top-drop .oc-flt__body:has(.oc-flt__values--noname-d) {
 		min-inline-size: 260px;
 	}
 
-	.oc-flt--top-drop .oc-flt__body .oc-flt__values--swatch.oc-flt__values--noname {
+	.oc-flt--top-drop .oc-flt__body .oc-flt__values--swatch.oc-flt__values--noname-d {
 		grid-template-columns: repeat(4, minmax(0, 1fr));
 		gap: 12px 14px;
 	}
+}
+
+@media (max-width: 900px) {
+	.oc-flt__values--noname-m .oc-flt__val span,
+	.oc-flt__values--noname-m .oc-flt__val [data-flt-count] { display: none; }
 }
 
 /* mobile panel: swatches with names keep two columns (room for the
@@ -4337,7 +4343,7 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 		gap: 14px 16px;
 	}
 
-	.oc-flt .oc-flt__values--swatch.oc-flt__values--noname {
+	.oc-flt .oc-flt__values--swatch.oc-flt__values--noname-m {
 		grid-template-columns: repeat(4, minmax(0, 1fr));
 		gap: 14px 10px;
 	}
