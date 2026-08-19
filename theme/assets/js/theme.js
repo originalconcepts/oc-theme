@@ -1545,27 +1545,33 @@
 		}, 220 );
 	}
 
-	if ( drawer ) {
-		drawer.addEventListener( 'click', function ( event ) {
-			if ( event.target.closest( '[data-oc-drawer-close]' ) ) {
-				closeDrawer();
-			}
-		} );
+	// The same machinery serves the drawer AND the full cart page — the
+	// page reuses every component, it just has no sliding panel around it.
+	var cartRoot = drawer || document.querySelector( '.oc-cartpage' );
 
-		// The header cart icon opens the drawer instead of leaving the page.
-		document.addEventListener( 'click', function ( event ) {
-			var link = event.target.closest( '.oc-cart-link' );
-			if ( link ) {
-				event.preventDefault();
-				openDrawer();
-			}
-		} );
+	if ( cartRoot ) {
+		if ( drawer ) {
+			drawer.addEventListener( 'click', function ( event ) {
+				if ( event.target.closest( '[data-oc-drawer-close]' ) ) {
+					closeDrawer();
+				}
+			} );
 
-		document.addEventListener( 'keydown', function ( event ) {
-			if ( event.key === 'Escape' && ! drawer.hidden ) {
-				closeDrawer();
-			}
-		} );
+			// The header cart icon opens the drawer instead of leaving the page.
+			document.addEventListener( 'click', function ( event ) {
+				var link = event.target.closest( '.oc-cart-link' );
+				if ( link ) {
+					event.preventDefault();
+					openDrawer();
+				}
+			} );
+
+			document.addEventListener( 'keydown', function ( event ) {
+				if ( event.key === 'Escape' && ! drawer.hidden ) {
+					closeDrawer();
+				}
+			} );
+		}
 
 		// Simple products add through Woo's own ajax handler; open the drawer
 		// right away (when configured to) and let cart fragments fill it
@@ -1980,7 +1986,7 @@
 
 				var bar = document.querySelector( '.oc-shipbar' );
 				var done = ! ! ( bar && bar.classList.contains( 'is-done' ) );
-				if ( done && ! shipWasDone && ! drawer.hidden ) {
+				if ( done && ! shipWasDone && ( ! drawer || ! drawer.hidden ) ) {
 					confettiBurst( bar );
 				}
 				shipWasDone = done;
@@ -1991,8 +1997,8 @@
 		// notice the free-shipping moment. Two narrow observers: subtree
 		// CONTENT changes, and open/close flips on the drawer root only —
 		// never subtree attributes, which watchDrawer itself writes.
-		new MutationObserver( watchDrawer ).observe( drawer, { subtree: true, childList: true } );
-		new MutationObserver( watchDrawer ).observe( drawer, { attributes: true, attributeFilter: [ 'class', 'hidden' ] } );
+		new MutationObserver( watchDrawer ).observe( cartRoot, { subtree: true, childList: true } );
+		new MutationObserver( watchDrawer ).observe( cartRoot, { attributes: true, attributeFilter: [ 'class', 'hidden' ] } );
 
 		/* -- upsell plus on a variable product: a small picker asks which -- */
 
