@@ -1611,27 +1611,26 @@ body.oc-tabs-tabs.woocommerce div.product .woocommerce-tabs ul.tabs li.active a,
 	.oc-sticky-atc__thumb,
 	.oc-sticky-atc__opts { display: none; }
 
-	/* The bar IS the button on phones: same fill edge to edge. The
-	 * safe-area strip is the BAR's padding, never the button's — iOS
-	 * re-evaluates env() every time Safari's toolbar slides in and out,
-	 * and padding on the button itself eats its content box and pins the
-	 * label to the top mid-transition. */
+	/* The bar IS the button on phones: same fill edge to edge. No
+	 * safe-area padding anywhere — the button's height simply includes
+	 * the inset and the label centres across ALL of it, so the blue mass
+	 * always reads balanced. iOS re-evaluates env() as Safari's toolbar
+	 * slides in and out; with plain flex centring the label just eases
+	 * a few pixels instead of pinning to an edge. */
 	.oc-sticky-atc {
 		background: var(--oc-cta, var(--oc-primary));
 		border-block-start: 0;
-		padding-block-end: env(safe-area-inset-bottom, 0px);
 	}
 
 	.oc-sticky-atc__inner {
 		padding-inline: 0;
-		min-block-size: 68px;
+		min-block-size: calc(68px + env(safe-area-inset-bottom, 0px));
 	}
 
 	.oc-sticky-atc__buy {
 		flex: 1;
 		justify-content: center;
 		margin-inline-start: 0;
-		min-block-size: 68px;
 		font-size: 1.05rem;
 	}
 }
