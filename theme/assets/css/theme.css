@@ -4329,9 +4329,15 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 	}
 }
 
-/* mobile panel: swatch values in four columns — two felt sparse */
+/* mobile panel: swatches with names keep two columns (room for the
+ * text); bare circles pack into four */
 @media (max-width: 900px) {
 	.oc-flt .oc-flt__values--swatch {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 14px 16px;
+	}
+
+	.oc-flt .oc-flt__values--swatch.oc-flt__values--noname {
 		grid-template-columns: repeat(4, minmax(0, 1fr));
 		gap: 14px 10px;
 	}
