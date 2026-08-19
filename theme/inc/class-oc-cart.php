@@ -33,6 +33,7 @@ final class Cart {
 		add_action( 'admin_post_oc_cart_save', array( $this, 'save_settings' ) );
 
 		add_action( 'wp_footer', array( $this, 'drawer' ) );
+		add_shortcode( 'oc_cart_page', array( $this, 'cart_page' ) );
 		add_filter( 'woocommerce_add_to_cart_fragments', array( $this, 'fragments' ) );
 
 		add_action( 'wp_ajax_oc_cart_qty', array( $this, 'ajax_qty' ) );
@@ -133,6 +134,59 @@ final class Cart {
 			</aside>
 		</div>
 		<?php
+	}
+
+	/**
+	 * The full cart page — the same components as the drawer (rows, promo
+	 * messages, shipping bar, discounts, coupon, checkout), laid out as a
+	 * page: items on one side, an order summary card on the other. The
+	 * drawer skips cart pages, so the shared fragment anchors stay unique
+	 * and every ajax behaviour (quantity, remove, coupon) works here too.
+	 */
+	public function cart_page(): string {
+		$s = self::settings();
+
+		ob_start();
+		woocommerce_output_all_notices();
+		$notices = ob_get_clean();
+
+		$html = '<div class="oc-cartpage">' . $notices;
+
+		if ( WC()->cart->is_empty() ) {
+			$empty = (string) $s['empty_text'];
+
+			$html .= '<div class="oc-cartpage__empty">';
+			$html .= '<p>' . esc_html( '' !== $empty ? $empty : __( 'Your cart is empty', 'oc-theme' ) ) . '</p>';
+			$html .= '<a class="oc-drawer__checkout checkout-button oc-cartpage__shopbtn" href="' . esc_url( wc_get_page_permalink( 'shop' ) ) . '"><span>' . esc_html__( 'Continue shopping', 'oc-theme' ) . '</span></a>';
+			$html .= '</div></div>';
+
+			return $html;
+		}
+
+		$html .= '<div class="oc-cartpage__grid">';
+
+		$html .= '<div class="oc-cartpage__main">';
+		$html .= $this->ship_bar_html();
+		$html .= '<div data-oc-mcart>' . $this->items_html() . '</div>';
+		$html .= $this->promo_msgs_html();
+
+		if ( $s['up_show'] ) {
+			// The side strip belongs to the drawer — the page gets the
+			// horizontal slider instead.
+			$style = in_array( (string) $s['up_style'], array( 'side', 'collapse' ), true ) ? 'slider' : (string) $s['up_style'];
+			$html .= $this->upsells_html( $style );
+		}
+
+		$html .= '</div>';
+
+		$html .= '<aside class="oc-cartpage__side">';
+		$html .= '<h2 class="oc-cartpage__sidetitle">' . esc_html__( 'Order summary', 'oc-theme' ) . '</h2>';
+		$html .= $this->foot_html();
+		$html .= '</aside>';
+
+		$html .= '</div></div>';
+
+		return $html;
 	}
 
 	/**
@@ -537,7 +591,7 @@ final class Cart {
 			$html .= '<button type="button" class="oc-drawer__continue" data-oc-drawer-close>' . esc_html__( 'Continue shopping', 'oc-theme' ) . '</button>';
 		}
 
-		if ( ! empty( $s['cart_link'] ) ) {
+		if ( ! empty( $s['cart_link'] ) && ! is_cart() ) {
 			$html .= '<a class="oc-drawer__cartlink" href="' . esc_url( wc_get_cart_url() ) . '">' . esc_html__( 'View cart', 'oc-theme' ) . '</a>';
 		}
 

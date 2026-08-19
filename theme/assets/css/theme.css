@@ -5517,3 +5517,64 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
  * the theme's tones, not the plugin's inline grays */
 .oc-mcart__line .promeng-was { font-size: .85em; }
 .oc-mcart__line .promeng-now { font-weight: 500; }
+
+/* ==================== full cart page ====================
+ * The drawer's components, laid out as a page: items on one side, a
+ * sticky order-summary card on the other. */
+.oc-cartpage {
+	max-inline-size: 1100px;
+	margin-inline: auto;
+	padding-block: 10px 60px;
+}
+
+.oc-cartpage__grid {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) 360px;
+	gap: 44px;
+	align-items: start;
+}
+
+.oc-cartpage__main .oc-shipbar {
+	border: 1px solid var(--oc-line);
+	border-radius: var(--oc-radius, 8px);
+	margin-block-end: 16px;
+}
+
+.oc-cartpage__main .oc-mcart__item:first-child { padding-block-start: 0; }
+
+.oc-cartpage__side {
+	position: sticky;
+	top: calc(var(--oc-header-h, 72px) + 20px);
+	border: 1px solid var(--oc-line);
+	border-radius: var(--oc-radius, 8px);
+	padding: 6px 0 0;
+}
+
+.oc-cartpage__sidetitle {
+	margin: 0;
+	font-size: 1.05rem;
+	padding: 14px var(--oc-gap) 12px;
+	border-block-end: 1px solid var(--oc-line);
+}
+
+.oc-cartpage__side .oc-drawer__foot { border-block-start: 0; }
+
+.oc-cartpage__empty {
+	text-align: center;
+	padding-block: 90px 60px;
+	color: var(--oc-ink-2);
+}
+
+.oc-cartpage__shopbtn {
+	display: inline-flex;
+	margin-block-start: 18px;
+	padding-inline: 40px;
+}
+
+/* the page upsell slider gets a little air */
+.oc-cartpage__main .oc-cartup--slider { margin-block-start: 34px; }
+
+@media (max-width: 900px) {
+	.oc-cartpage__grid { grid-template-columns: 1fr; gap: 24px; }
+	.oc-cartpage__side { position: static; }
+}
