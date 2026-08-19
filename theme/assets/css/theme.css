@@ -1611,12 +1611,10 @@ body.oc-tabs-tabs.woocommerce div.product .woocommerce-tabs ul.tabs li.active a,
 	.oc-sticky-atc__thumb,
 	.oc-sticky-atc__opts { display: none; }
 
-	/* The bar IS the button on phones: same fill edge to edge. No
-	 * safe-area padding anywhere — the button's height simply includes
-	 * the inset and the label centres across ALL of it, so the blue mass
-	 * always reads balanced. iOS re-evaluates env() as Safari's toolbar
-	 * slides in and out; with plain flex centring the label just eases
-	 * a few pixels instead of pinning to an edge. */
+	/* The bar IS the button on phones: same fill edge to edge, one fixed
+	 * height, glued to the viewport bottom. No env() maths — as Safari's
+	 * toolbar slides away the bar simply rides down with the edge; the
+	 * home indicator floats over the navy like in a native tab bar. */
 	.oc-sticky-atc {
 		background: var(--oc-cta, var(--oc-primary));
 		border-block-start: 0;
@@ -1624,7 +1622,7 @@ body.oc-tabs-tabs.woocommerce div.product .woocommerce-tabs ul.tabs li.active a,
 
 	.oc-sticky-atc__inner {
 		padding-inline: 0;
-		min-block-size: calc(68px + env(safe-area-inset-bottom, 0px));
+		min-block-size: 68px;
 	}
 
 	.oc-sticky-atc__buy {
