@@ -1105,7 +1105,7 @@ final class Cart {
 								'side'     => '<rect x="2" y="2" width="10" height="28" rx="2"/><rect x="16" y="2" width="30" height="8" rx="2" opacity=".35"/><rect x="16" y="14" width="30" height="8" rx="2" opacity=".35"/><rect x="16" y="26" width="30" height="4" rx="2" opacity=".35"/>',
 								'list'     => '<rect x="2" y="2" width="44" height="6" rx="2" opacity=".35"/><rect x="2" y="12" width="8" height="6" rx="1.5"/><rect x="13" y="13.5" width="33" height="3" rx="1.5" opacity=".55"/><rect x="2" y="21" width="8" height="6" rx="1.5"/><rect x="13" y="22.5" width="33" height="3" rx="1.5" opacity=".55"/>',
 								'slider'   => '<rect x="2" y="2" width="44" height="7" rx="2" opacity=".35"/><rect x="8" y="14" width="12" height="14" rx="2"/><rect x="23" y="14" width="12" height="14" rx="2"/><rect x="38" y="14" width="8" height="14" rx="2" opacity=".55"/><path d="M2 21l3-2.5L2 16z"/>',
-								'collapse' => '<rect x="2" y="2" width="44" height="14" rx="2" opacity=".35"/><rect x="2" y="20" width="44" height="10" rx="2"/><path d="M40 23.5h4M42 21.5v4" stroke="#fff" stroke-width="1.6" fill="none"/>',
+								'collapse' => '<rect x="2" y="2" width="44" height="12" rx="2" opacity=".35"/><rect x="2" y="18" width="21" height="12" rx="2"/><circle cx="19" cy="24" r="2.6" fill="#fff"/><rect x="26" y="18" width="20" height="12" rx="2" opacity=".55"/><circle cx="42" cy="24" r="2.6" fill="#fff"/>',
 							);
 							?>
 							<div class="oc-flt-pick" id="oc-up-style-pick" style="display:flex;gap:10px;flex-wrap:wrap;">

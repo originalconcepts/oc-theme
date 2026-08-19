@@ -1835,6 +1835,8 @@ body.oc-swatch-square-cat .oc-mcart__attr-swatch { border-radius: 4px; }
 	padding: 2px 7px;
 	border-radius: 999px;
 	line-height: 1.4;
+	background: var(--flag-bg, var(--oc-sale, #b4453c));
+	color: var(--flag-tx, #fff);
 }
 
 .oc-cartup__media img {
@@ -5371,59 +5373,42 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 	.oc-pmodal__list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
-/* ---------- above-total upsells: compact ----------
- * Desktop: smaller cards. Mobile: horizontal rows — image, content and a
- * round plus — sized so the next product peeks in from the edge. */
-@media (min-width: 641px) {
-	.oc-cartup--collapse .oc-cartup__item { inline-size: 114px; padding: 6px 6px 0; }
-	.oc-cartup--collapse .oc-cartup__media img { block-size: 72px; }
-	.oc-cartup--collapse .oc-cartup__name { font-size: .72rem; -webkit-line-clamp: 1; }
-	.oc-cartup--collapse .oc-cartup__price { font-size: .7rem; }
-	.oc-cartup--collapse .oc-cartup__flag { font-size: .54rem; padding: 1px 5px; }
-	.oc-cartup--collapse .oc-cartup__item .oc-cartup__add {
-		font-size: .66rem;
-		padding-block: 4px;
-		margin-inline: -6px;
-		margin-block-start: 5px;
-		gap: 4px;
-	}
-	.oc-cartup--collapse .oc-cartup__item .oc-cartup__add svg { inline-size: 11px; block-size: 11px; }
+/* ---------- above-total upsells: low horizontal rows ----------
+ * Every width: image, content and a round plus in one slim row, sized so
+ * the next product peeks in from the edge. */
+.oc-cartup--collapse .oc-cartup__item {
+	inline-size: 240px;
+	flex-direction: row;
+	align-items: center;
+	text-align: start;
+	gap: 10px;
+	padding: 8px;
 }
 
-@media (max-width: 640px) {
-	.oc-cartup--collapse .oc-cartup__item {
-		inline-size: 240px;
-		flex-direction: row;
-		align-items: center;
-		text-align: start;
-		gap: 10px;
-		padding: 8px;
-	}
+.oc-cartup--collapse .oc-cartup__media { inline-size: 48px; flex: none; }
+.oc-cartup--collapse .oc-cartup__media img { inline-size: 48px; block-size: 58px; }
+.oc-cartup--collapse .oc-cartup__flag { display: none; }
+.oc-cartup--collapse .oc-cartup__name { font-size: .78rem; }
+.oc-cartup--collapse .oc-cartup__price { font-size: .76rem; }
 
-	.oc-cartup--collapse .oc-cartup__media { inline-size: 48px; flex: none; }
-	.oc-cartup--collapse .oc-cartup__media img { inline-size: 48px; block-size: 58px; }
-	.oc-cartup--collapse .oc-cartup__flag { display: none; }
-	.oc-cartup--collapse .oc-cartup__name { font-size: .78rem; }
-	.oc-cartup--collapse .oc-cartup__price { font-size: .76rem; }
-
-	/* the strip becomes a round plus at the row's end again */
-	.oc-cartup--collapse .oc-cartup__item .oc-cartup__add {
-		position: static;
-		flex: none;
-		inline-size: 30px;
-		block-size: 30px;
-		margin: 0;
-		padding: 0;
-		border: 1px solid var(--oc-line);
-		border-block-start: 1px solid var(--oc-line);
-		border-radius: 50%;
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		background: var(--oc-surface, #fff);
-		color: var(--oc-ink);
-	}
-
-	.oc-cartup--collapse .oc-cartup__item .oc-cartup__add span { display: none; }
-	.oc-cartup--collapse .oc-cartup__item .oc-cartup__add svg { inline-size: 14px; block-size: 14px; }
+/* a round plus at the row's end, not the bottom strip */
+.oc-cartup--collapse .oc-cartup__item .oc-cartup__add {
+	position: static;
+	flex: none;
+	inline-size: 30px;
+	block-size: 30px;
+	margin: 0;
+	padding: 0;
+	border: 1px solid var(--oc-line);
+	border-block-start: 1px solid var(--oc-line);
+	border-radius: 50%;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	background: var(--oc-surface, #fff);
+	color: var(--oc-ink);
 }
+
+.oc-cartup--collapse .oc-cartup__item .oc-cartup__add:hover { background: var(--oc-ink); color: #fff; }
+.oc-cartup--collapse .oc-cartup__item .oc-cartup__add span { display: none; }
+.oc-cartup--collapse .oc-cartup__item .oc-cartup__add svg { inline-size: 14px; block-size: 14px; }
