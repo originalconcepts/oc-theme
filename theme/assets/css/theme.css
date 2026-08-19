@@ -1557,6 +1557,14 @@ body.oc-tabs-tabs.woocommerce div.product .woocommerce-tabs ul.tabs li.active a,
 
 .oc-sticky-atc__opts + .oc-sticky-atc__buy { margin-inline-start: 0; }
 
+/* The checkout-funnel sizing rule (.woocommerce .checkout-button) pins CTA
+ * height and corners; here the panel must fill the bar, square. */
+.woocommerce .oc-sticky-atc__buy.checkout-button {
+	block-size: auto;
+	min-block-size: 100%;
+	border-radius: 0;
+}
+
 .oc-sticky-atc__buy em {
 	font-style: normal;
 	font-weight: 600;
