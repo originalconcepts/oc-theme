@@ -1869,3 +1869,9 @@ msgstr "המשך בקניות"
 
 msgid "Show a \"Continue shopping\" button beneath"
 msgstr "הצגת כפתור ״המשך בקניות״ מתחת"
+
+msgid "Delete all"
+msgstr "מחק הכל"
+
+msgid "Choose an option"
+msgstr "בחירת וריאציה"

@@ -143,6 +143,7 @@ final class Assets {
 				'readLess'  => __( 'Read less', 'oc-theme' ),
 				'ajaxUrl'   => admin_url( 'admin-ajax.php' ),
 				'cartOpenOnAdd' => (int) Cart::settings()['open_on_add'],
+				'cartVarPick'   => __( 'Choose an option', 'oc-theme' ),
 				'notifyNonce'   => wp_create_nonce( 'oc_notify' ),
 				'notifyTitle'   => __( 'Notify me', 'oc-theme' ),
 				'notifyIntro'   => __( 'Sign up and we will let you know the moment this product is back in stock.', 'oc-theme' ),

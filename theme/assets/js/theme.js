@@ -1668,7 +1668,14 @@
 			}
 
 			if ( no ) {
-				no.closest( '[data-oc-confirm]' ).hidden = true;
+				var confirmBox = no.closest( '[data-oc-confirm]' );
+				confirmBox.hidden = true;
+				// A paused quantity change (mash path) resumes now.
+				var pausedWrap = confirmBox.closest( '.oc-mcart__item' ).querySelector( '[data-oc-qty]' );
+				if ( pausedWrap ) {
+					var pausedInput = pausedWrap.querySelector( 'input' );
+					sendQty( pausedWrap, Math.max( 1, parseInt( pausedInput.value, 10 ) || 1 ) );
+				}
 				return;
 			}
 
@@ -1682,7 +1689,9 @@
 			input.value = String( next );
 
 			// Mashing minus reads as "I want this gone" — surface the removal
-			// question instead of making them count all the way down.
+			// question instead of making them count all the way down. The
+			// pending quantity update pauses so its refresh cannot wipe the
+			// question away; answering "No" resumes it.
 			if ( minus ) {
 				var now = Date.now();
 				minusBursts = minusBursts.filter( function ( t ) {
@@ -1691,7 +1700,9 @@
 				minusBursts.push( now );
 				if ( minusBursts.length >= 3 ) {
 					minusBursts = [];
+					clearTimeout( qtyTimer );
 					showConfirm( wrap.closest( '.oc-mcart__item' ) );
+					return;
 				}
 			}
 
@@ -1783,8 +1794,142 @@
 
 		restoreUpsellState();
 
-		// Fragments replace the upsell block — re-apply the remembered state.
-		new MutationObserver( restoreUpsellState ).observe( drawer, { subtree: true, childList: true } );
+		/* -- reaching free shipping deserves a small, tasteful celebration -- */
+
+		var shipWasDone = ! ! document.querySelector( '.oc-shipbar.is-done' );
+
+		function confettiBurst( host ) {
+			var colors = [ '#e6b84c', '#b4453c', '#2f7d4f', '#3b6ea5', '#8a5ab5' ];
+			for ( var i = 0; i < 26; i++ ) {
+				var bit = document.createElement( 'i' );
+				bit.className = 'oc-confetti';
+				bit.style.setProperty( '--cx', ( Math.random() * 100 ) + '%' );
+				bit.style.setProperty( '--cdx', ( ( Math.random() - 0.5 ) * 90 ) + 'px' );
+				bit.style.setProperty( '--crot', ( Math.random() * 540 - 270 ) + 'deg' );
+				bit.style.setProperty( '--cdur', ( 0.9 + Math.random() * 0.8 ) + 's' );
+				bit.style.background = colors[ i % colors.length ];
+				if ( Math.random() > 0.5 ) {
+					bit.style.borderRadius = '50%';
+				}
+				host.appendChild( bit );
+			}
+			setTimeout( function () {
+				host.querySelectorAll( '.oc-confetti' ).forEach( function ( b ) {
+					b.remove();
+				} );
+			}, 2100 );
+		}
+
+		function watchDrawer() {
+			restoreUpsellState();
+
+			var bar = document.querySelector( '.oc-shipbar' );
+			var done = ! ! ( bar && bar.classList.contains( 'is-done' ) );
+			if ( done && ! shipWasDone && ! drawer.hidden ) {
+				confettiBurst( bar );
+			}
+			shipWasDone = done;
+		}
+
+		// Fragments replace drawer pieces — re-apply remembered state and
+		// notice the free-shipping moment.
+		new MutationObserver( watchDrawer ).observe( drawer, { subtree: true, childList: true } );
+
+		/* -- upsell plus on a variable product: a small picker asks which -- */
+
+		var varModal = null;
+
+		function closeVarModal() {
+			if ( varModal ) {
+				varModal.hidden = true;
+			}
+		}
+
+		document.addEventListener( 'click', function ( event ) {
+			var opener = event.target.closest( '[data-oc-up-var]' );
+
+			if ( varModal && ! varModal.hidden && ( event.target.closest( '.oc-nmodal__close' ) || event.target === varModal ) && event.target.closest( '.oc-vmodal' ) ) {
+				closeVarModal();
+				return;
+			}
+
+			if ( ! opener ) {
+				return;
+			}
+
+			if ( ! varModal ) {
+				varModal = document.createElement( 'div' );
+				varModal.className = 'oc-nmodal oc-vmodal';
+				varModal.hidden = true;
+				varModal.innerHTML =
+					'<div class="oc-nmodal__card">' +
+					'<button type="button" class="oc-nmodal__close" aria-label="close">&times;</button>' +
+					'<h3 class="oc-nmodal__title"></h3>' +
+					'<p class="oc-nmodal__intro">' + ( ( window.ocL10n || {} ).cartVarPick || 'Choose an option' ) + '</p>' +
+					'<div class="oc-vmodal__list"></div>' +
+					'</div>';
+				document.body.appendChild( varModal );
+			}
+
+			varModal.querySelector( '.oc-nmodal__title' ).textContent = opener.dataset.name || '';
+			var list = varModal.querySelector( '.oc-vmodal__list' );
+			list.innerHTML = '<span class="oc-vmodal__loading">…</span>';
+			varModal.hidden = false;
+
+			var data = new FormData();
+			data.append( 'action', 'oc_cart_vars' );
+			data.append( 'product_id', opener.dataset.ocUpVar );
+
+			fetch( ( window.ocL10n || {} ).ajaxUrl || '/wp-admin/admin-ajax.php', {
+				method: 'POST',
+				credentials: 'same-origin',
+				body: data
+			} )
+				.then( function ( r ) { return r.json(); } )
+				.then( function ( res ) {
+					list.innerHTML = '';
+					if ( ! res || ! res.success || ! res.data.variations.length ) {
+						closeVarModal();
+						return;
+					}
+					res.data.variations.forEach( function ( v ) {
+						var row = document.createElement( 'button' );
+						row.type = 'button';
+						row.className = 'oc-vmodal__opt';
+						row.innerHTML = '<span></span><em></em>';
+						row.querySelector( 'span' ).textContent = v.label;
+						row.querySelector( 'em' ).textContent = v.price;
+						row.addEventListener( 'click', function () {
+							row.classList.add( 'is-busy' );
+							var add = new FormData();
+							add.append( 'action', 'oc_cart_add' );
+							add.append( 'product_id', opener.dataset.ocUpVar );
+							add.append( 'variation_id', String( v.id ) );
+							fetch( ( window.ocL10n || {} ).ajaxUrl || '/wp-admin/admin-ajax.php', {
+								method: 'POST',
+								credentials: 'same-origin',
+								body: add
+							} )
+								.then( function ( r ) { return r.json(); } )
+								.then( function ( out ) {
+									if ( out && out.fragments ) {
+										Object.keys( out.fragments ).forEach( function ( selector ) {
+											document.querySelectorAll( selector ).forEach( function ( el ) {
+												var box = document.createElement( 'div' );
+												box.innerHTML = out.fragments[ selector ];
+												if ( box.firstElementChild ) {
+													el.replaceWith( box.firstElementChild );
+												}
+											} );
+										} );
+									}
+									closeVarModal();
+								} );
+						} );
+						list.appendChild( row );
+					} );
+				} );
+		} );
 	}
 
 	/* ---------- product tabs → accordion ---------- */

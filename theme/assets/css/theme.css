@@ -1516,6 +1516,24 @@ body.oc-tabs-tabs.woocommerce div.product .woocommerce-tabs ul.tabs li.active a,
 .oc-drawer__count { font-weight: 400; font-size: .9rem; color: var(--oc-ink-2); }
 .oc-drawer__count[hidden] { display: none; }
 
+.oc-drawer__headcol { display: flex; flex-direction: column; gap: 3px; }
+
+.oc-drawer__clearall {
+	border: 0;
+	background: none;
+	font: inherit;
+	font-size: .74rem;
+	color: var(--oc-ink-2);
+	text-decoration: underline;
+	cursor: pointer;
+	padding: 0;
+	text-align: start;
+	inline-size: fit-content;
+}
+
+.oc-drawer__clearall:hover { color: var(--oc-sale, #b4453c); }
+.oc-drawer__clearall[hidden] { display: none; }
+
 .oc-drawer__close {
 	border: 0;
 	background: none;
@@ -1613,11 +1631,12 @@ body.oc-tabs-tabs.woocommerce div.product .woocommerce-tabs ul.tabs li.active a,
 .oc-mcart__qty {
 	display: inline-flex;
 	align-items: center;
-	border: 1px solid var(--oc-line);
-	border-radius: 999px;
+	border: 1.5px solid var(--oc-line);
+	border-radius: var(--oc-cta-r, 8px);
 	inline-size: fit-content;
 	margin-block-start: 3px;
 	direction: ltr;
+	overflow: hidden;
 }
 
 .oc-mcart__qty button {
@@ -1695,21 +1714,7 @@ body.oc-tabs-tabs.woocommerce div.product .woocommerce-tabs ul.tabs li.active a,
 	color: var(--oc-ink);
 }
 
-/* the quiet clear-all beneath the items */
-.oc-mcart__clearall {
-	display: block;
-	margin: 14px auto 0;
-	border: 0;
-	background: none;
-	font: inherit;
-	font-size: .76rem;
-	color: var(--oc-ink-2);
-	text-decoration: underline;
-	cursor: pointer;
-}
 
-.oc-mcart__clearall:hover { color: var(--oc-sale, #b4453c); }
-.oc-mcart__clearall.is-busy { opacity: .5; pointer-events: none; }
 
 .oc-mcart__empty {
 	text-align: center;
@@ -1727,7 +1732,38 @@ body.oc-tabs-tabs.woocommerce div.product .woocommerce-tabs ul.tabs li.active a,
 
 .oc-shipbar[hidden] { display: none; }
 
-.oc-shipbar__text { display: block; margin-block-end: 8px; }
+.oc-shipbar__row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-block-end: 8px;
+}
+
+.oc-shipbar__icon { inline-size: 20px; block-size: 20px; flex: none; }
+
+.oc-shipbar { position: relative; overflow: hidden; }
+
+.oc-shipbar__text { display: block; }
+
+/* a short, delicate confetti drop when free shipping lands */
+.oc-confetti {
+	position: absolute;
+	inset-block-start: -8px;
+	inset-inline-start: var(--cx, 50%);
+	inline-size: 6px;
+	block-size: 9px;
+	pointer-events: none;
+	opacity: .9;
+	animation: oc-confetti-fall var(--cdur, 1.2s) ease-in forwards;
+}
+
+@keyframes oc-confetti-fall {
+	to {
+		translate: var(--cdx, 0) 74px;
+		rotate: var(--crot, 180deg);
+		opacity: 0;
+	}
+}
 
 .oc-shipbar__track {
 	display: block;
@@ -1846,7 +1882,8 @@ body.oc-tabs-tabs.woocommerce div.product .woocommerce-tabs ul.tabs li.active a,
 	border-inline-end: 1px solid var(--oc-line);
 }
 
-.oc-drawer--right .oc-cartup--side { order: -1; border-inline-end: 0; border-inline-start: 1px solid var(--oc-line); }
+/* the strip hugs the panel's inner edge — the side facing the page */
+.oc-drawer--left .oc-cartup--side { order: -1; border-inline-end: 0; border-inline-start: 1px solid var(--oc-line); }
 
 .oc-cartup--side .oc-cartup__items {
 	display: flex;
@@ -4832,3 +4869,34 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 .oc-cta-hover-sweep-rtl .oc-drawer__checkout:hover {
 	color: var(--oc-cta);
 }
+
+
+/* ---------- in-panel variation picker (rides the notify modal card) ---------- */
+.oc-vmodal__list {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	margin-block-start: 14px;
+}
+
+.oc-vmodal__opt {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	border: 1px solid var(--oc-line);
+	border-radius: var(--oc-cta-r, 8px);
+	background: var(--oc-surface, #fff);
+	font: inherit;
+	font-size: .9rem;
+	padding: 11px 14px;
+	cursor: pointer;
+	color: var(--oc-ink);
+	transition: border-color .15s ease;
+}
+
+.oc-vmodal__opt:hover { border-color: var(--oc-ink); }
+.oc-vmodal__opt em { font-style: normal; color: var(--oc-ink-2); white-space: nowrap; }
+.oc-vmodal__opt.is-busy { opacity: .5; pointer-events: none; }
+
+.oc-vmodal__loading { text-align: center; color: var(--oc-ink-2); padding-block: 20px; }

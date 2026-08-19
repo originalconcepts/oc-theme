@@ -29,6 +29,10 @@ final class Cart {
 
 		add_action( 'wp_ajax_oc_cart_qty', array( $this, 'ajax_qty' ) );
 		add_action( 'wp_ajax_nopriv_oc_cart_qty', array( $this, 'ajax_qty' ) );
+		add_action( 'wp_ajax_oc_cart_vars', array( $this, 'ajax_vars' ) );
+		add_action( 'wp_ajax_nopriv_oc_cart_vars', array( $this, 'ajax_vars' ) );
+		add_action( 'wp_ajax_oc_cart_add', array( $this, 'ajax_add' ) );
+		add_action( 'wp_ajax_nopriv_oc_cart_add', array( $this, 'ajax_add' ) );
 	}
 
 	/**
@@ -87,7 +91,10 @@ final class Cart {
 			<aside class="oc-drawer__panel" role="dialog" aria-modal="true" aria-label="<?php echo esc_attr( $title ); ?>">
 				<div class="oc-drawer__main">
 					<header class="oc-drawer__head">
-						<h2><?php echo esc_html( $title ); ?> <?php echo $this->head_count_html(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></h2>
+						<div class="oc-drawer__headcol">
+							<h2><?php echo esc_html( $title ); ?> <?php echo $this->head_count_html(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></h2>
+							<?php echo $this->clear_html(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+						</div>
 						<button type="button" class="oc-drawer__close" data-oc-drawer-close aria-label="<?php esc_attr_e( 'Close', 'oc-theme' ); ?>">&times;</button>
 					</header>
 					<?php echo $this->ship_bar_html(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built escaped. ?>
@@ -131,8 +138,16 @@ final class Cart {
 
 		$fragments['span.oc-cart-count'] = '<span class="oc-cart-count">' . absint( $count ) . '</span>';
 		$fragments['[data-oc-head-count]'] = $this->head_count_html();
+		$fragments['[data-oc-clear]']      = $this->clear_html();
 
 		return $fragments;
+	}
+
+	/**
+	 * The quiet clear-all link beneath the title — hidden while empty.
+	 */
+	private function clear_html(): string {
+		return '<button type="button" class="oc-drawer__clearall" data-oc-clear data-oc-cart-clear data-arm="' . esc_attr__( 'Tap again to confirm', 'oc-theme' ) . '"' . ( WC()->cart->is_empty() ? ' hidden' : '' ) . '>' . esc_html__( 'Delete all', 'oc-theme' ) . '</button>';
 	}
 
 	/**
@@ -234,9 +249,6 @@ final class Cart {
 
 		$html .= '</ul>';
 
-		// A quiet way out for whoever wants a fresh start.
-		$html .= '<button type="button" class="oc-mcart__clearall" data-oc-cart-clear data-arm="' . esc_attr__( 'Tap again to confirm', 'oc-theme' ) . '">' . esc_html__( 'Remove all items from the cart', 'oc-theme' ) . '</button>';
-
 		return $html;
 	}
 
@@ -273,7 +285,10 @@ final class Cart {
 		}
 
 		return '<div class="oc-shipbar' . ( 0.0 === $left ? ' is-done' : '' ) . '" data-oc-ship-bar>'
+			. '<span class="oc-shipbar__row">'
+			. '<svg class="oc-shipbar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6h13v11H1zM14 9h4l4 4v4h-8z"/><circle cx="6" cy="19" r="1.8"/><circle cx="18" cy="19" r="1.8"/></svg>'
 			. '<span class="oc-shipbar__text">' . esc_html( $text ) . '</span>'
+			. '</span>'
 			. '<span class="oc-shipbar__track"><i class="oc-shipbar__fill" style="inline-size:' . absint( $percent ) . '%"></i></span>'
 			. '</div>';
 	}
@@ -395,10 +410,15 @@ final class Cart {
 			$html .= '<span class="oc-cartup__price">' . $product->get_price_html() . '</span>';
 			$html .= '</div>';
 
+			$plus_svg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>';
+
 			if ( $product->is_type( 'simple' ) && $product->is_purchasable() && $product->is_in_stock() ) {
 				// Woo's own ajax add-to-cart JS picks this up; the fragment
 				// refresh then drops the product from this list.
-				$html .= '<a class="oc-cartup__add add_to_cart_button ajax_add_to_cart" href="' . esc_url( '?add-to-cart=' . $product->get_id() ) . '" data-product_id="' . absint( $product->get_id() ) . '" data-quantity="1" aria-label="' . esc_attr__( 'Add to cart', 'oc-theme' ) . '" rel="nofollow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></a>';
+				$html .= '<a class="oc-cartup__add add_to_cart_button ajax_add_to_cart" href="' . esc_url( '?add-to-cart=' . $product->get_id() ) . '" data-product_id="' . absint( $product->get_id() ) . '" data-quantity="1" aria-label="' . esc_attr__( 'Add to cart', 'oc-theme' ) . '" rel="nofollow">' . $plus_svg . '</a>';
+			} elseif ( $product->is_type( 'variable' ) && $product->is_in_stock() ) {
+				// The plus opens a small picker asking which variation.
+				$html .= '<button type="button" class="oc-cartup__add" data-oc-up-var="' . absint( $product->get_id() ) . '" data-name="' . esc_attr( $product->get_name() ) . '" aria-label="' . esc_attr__( 'Add to cart', 'oc-theme' ) . '">' . $plus_svg . '</button>';
 			} else {
 				$html .= '<a class="oc-cartup__add oc-cartup__add--view" href="' . esc_url( $link ) . '" aria-label="' . esc_attr__( 'View product', 'oc-theme' ) . '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>';
 			}
@@ -505,6 +525,72 @@ final class Cart {
 
 		WC()->cart->calculate_totals();
 
+		\WC_AJAX::get_refreshed_fragments();
+	}
+
+	/**
+	 * The purchasable variations of a product, for the in-panel picker.
+	 */
+	public function ajax_vars(): void {
+		// phpcs:disable WordPress.Security.NonceVerification.Missing -- public read-only.
+		$product_id = isset( $_POST['product_id'] ) ? absint( $_POST['product_id'] ) : 0;
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
+
+		$product = wc_get_product( $product_id );
+
+		if ( ! $product || ! $product->is_type( 'variable' ) ) {
+			wp_send_json_error();
+		}
+
+		$out = array();
+
+		foreach ( $product->get_available_variations( 'objects' ) as $variation ) {
+			if ( ! $variation->is_purchasable() || ! $variation->is_in_stock() ) {
+				continue;
+			}
+
+			$bits = array();
+			foreach ( $variation->get_variation_attributes( false ) as $attribute => $value ) {
+				$term = get_term_by( 'slug', $value, $attribute );
+				$bits[] = $term instanceof \WP_Term ? $term->name : $value;
+			}
+
+			$out[] = array(
+				'id'    => $variation->get_id(),
+				'label' => implode( ' · ', $bits ),
+				'price' => wp_strip_all_tags( wc_price( (float) $variation->get_price() ) ),
+			);
+		}
+
+		wp_send_json_success( array( 'variations' => $out ) );
+	}
+
+	/**
+	 * Add a chosen variation (or a simple product) from the panel picker,
+	 * answering with the usual fragment payload.
+	 */
+	public function ajax_add(): void {
+		// phpcs:disable WordPress.Security.NonceVerification.Missing -- same surface as Woo's own add.
+		$product_id   = isset( $_POST['product_id'] ) ? absint( $_POST['product_id'] ) : 0;
+		$variation_id = isset( $_POST['variation_id'] ) ? absint( $_POST['variation_id'] ) : 0;
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
+
+		$attributes = array();
+
+		if ( $variation_id ) {
+			$variation = wc_get_product( $variation_id );
+			if ( $variation instanceof \WC_Product_Variation ) {
+				$attributes = $variation->get_variation_attributes();
+			}
+		}
+
+		$added = WC()->cart->add_to_cart( $product_id, 1, $variation_id, $attributes );
+
+		if ( ! $added ) {
+			wp_send_json_error();
+		}
+
+		WC()->cart->calculate_totals();
 		\WC_AJAX::get_refreshed_fragments();
 	}
 
