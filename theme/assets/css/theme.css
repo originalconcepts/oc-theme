@@ -1424,19 +1424,19 @@ body.oc-tabs-tabs.woocommerce div.product .woocommerce-tabs ul.tabs li.active a,
 .oc-sticky-atc.is-visible { transform: translateY(0); }
 
 .oc-sticky-atc__inner {
-	max-inline-size: var(--oc-main-width, var(--oc-content-width, 1280px));
-	margin-inline: auto;
+	/* Edge to edge, like the reference: the name hugs one screen edge and
+	 * the buy panel the other — no content-width cage. */
 	padding-block: 0;
 	padding-inline: var(--oc-gap) 0;
 	display: flex;
 	align-items: stretch;
 	gap: 22px;
-	min-block-size: 58px;
+	min-block-size: 68px;
 }
 
 .oc-sticky-atc__thumb {
-	inline-size: 40px;
-	block-size: 40px;
+	inline-size: 48px;
+	block-size: 48px;
 	object-fit: cover;
 	border-radius: calc(var(--oc-radius, 8px) / 2);
 	flex: none;
@@ -1536,17 +1536,19 @@ body.oc-tabs-tabs.woocommerce div.product .woocommerce-tabs ul.tabs li.active a,
 /* The buy block: tinted panel riding the bar's far end, text + live price. */
 .oc-sticky-atc__buy {
 	flex: none;
-	margin-inline-start: auto;
+	margin-block: 0;
+	margin-inline: auto 0;
+	align-self: stretch;
+	block-size: auto;
 	display: flex;
 	align-items: center;
 	gap: 10px;
-	align-self: stretch;
 	background: var(--oc-cta, var(--oc-primary));
 	color: var(--oc-cta-tx, #fff);
 	border: 0;
 	border-radius: 0;
 	padding-block: 0;
-	padding-inline: 34px;
+	padding-inline: 40px;
 	font: inherit;
 	font-weight: 600;
 	cursor: pointer;
@@ -1608,14 +1610,15 @@ body.oc-tabs-tabs.woocommerce div.product .woocommerce-tabs ul.tabs li.active a,
 
 	.oc-sticky-atc__inner {
 		padding-inline: 0;
-		min-block-size: 54px;
+		min-block-size: 68px;
 	}
 
 	.oc-sticky-atc__buy {
 		flex: 1;
 		justify-content: center;
 		margin-inline-start: 0;
-		min-block-size: 54px;
+		min-block-size: 68px;
+		font-size: 1.05rem;
 		padding-block-end: env(safe-area-inset-bottom, 0px);
 	}
 }
