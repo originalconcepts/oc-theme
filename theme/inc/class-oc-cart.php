@@ -226,8 +226,16 @@ final class Cart {
 				continue;
 			}
 
-			$name     = apply_filters( 'woocommerce_cart_item_name', $product->get_name(), $item, $key );
-			$thumb    = apply_filters( 'woocommerce_cart_item_thumbnail', $product->get_image( 'woocommerce_thumbnail' ), $item, $key );
+			$name = apply_filters( 'woocommerce_cart_item_name', $product->get_name(), $item, $key );
+
+			// The raw attachment image, not $product->get_image(): the promo
+			// engine wraps that one with its catalogue label, and a product
+			// already in the cart needs no label (the upsells keep theirs).
+			$image_id = (int) $product->get_image_id();
+			$thumb    = $image_id
+				? wp_get_attachment_image( $image_id, 'woocommerce_thumbnail' )
+				: wc_placeholder_img( 'woocommerce_thumbnail' );
+			$thumb    = apply_filters( 'woocommerce_cart_item_thumbnail', $thumb, $item, $key );
 			$link     = apply_filters( 'woocommerce_cart_item_permalink', $product->is_visible() ? $product->get_permalink( $item ) : '', $item, $key );
 			$in_stock = $product->is_in_stock();
 			$qty      = (int) $item['quantity'];
