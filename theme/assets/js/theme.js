@@ -2333,7 +2333,62 @@
 			}
 		} );
 
-		function openVarPicker( productId, productName, productImg ) {
+		function sheetDragClose( card ) {
+			// Pull the sheet down by its handle zone (or from a fully
+			// scrolled-up list) to dismiss — the native bottom-sheet gesture.
+			var startY = 0;
+			var delta = 0;
+			var dragging = false;
+
+			card.addEventListener( 'touchstart', function ( e ) {
+				if ( ! window.matchMedia( '(max-width: 782px)' ).matches ) {
+					return;
+				}
+				startY = e.touches[ 0 ].clientY;
+				delta = 0;
+				// From the handle strip always; from the body only when the
+				// list is scrolled to its top.
+				dragging = ( startY - card.getBoundingClientRect().top ) < 36 || card.scrollTop <= 0;
+			}, { passive: true } );
+
+			card.addEventListener( 'touchmove', function ( e ) {
+				if ( ! dragging ) {
+					return;
+				}
+				delta = e.touches[ 0 ].clientY - startY;
+				if ( delta > 0 && card.scrollTop <= 0 ) {
+					card.style.transform = 'translateY(' + delta + 'px)';
+					card.style.transition = 'none';
+					e.preventDefault();
+				} else {
+					delta = 0;
+					card.style.transform = '';
+				}
+			}, { passive: false } );
+
+			card.addEventListener( 'touchend', function () {
+				if ( ! dragging ) {
+					return;
+				}
+				dragging = false;
+				card.style.transition = 'transform .22s ease';
+				if ( delta > 90 ) {
+					card.style.transform = 'translateY(110%)';
+					setTimeout( function () {
+						closeVarModal();
+						card.style.transform = '';
+						card.style.transition = '';
+					}, 220 );
+				} else {
+					card.style.transform = '';
+					setTimeout( function () {
+						card.style.transition = '';
+					}, 240 );
+				}
+			} );
+		}
+
+		function openVarPicker( productId, productName, productImg, preloaded ) {
 			if ( ! varModal ) {
 				varModal = document.createElement( 'div' );
 				varModal.className = 'oc-nmodal oc-vmodal';
@@ -2346,12 +2401,24 @@
 					'<div class="oc-vmodal__list"></div>' +
 					'</div>';
 				document.body.appendChild( varModal );
+				sheetDragClose( varModal.querySelector( '.oc-nmodal__card' ) );
 			}
 
 			varModal.querySelector( '.oc-nmodal__title' ).textContent = productName || '';
 			var list = varModal.querySelector( '.oc-vmodal__list' );
-			list.innerHTML = '<span class="oc-vmodal__loading">…</span>';
 			varModal.hidden = false;
+
+			// The product page already carries the variations JSON — render
+			// instantly instead of waiting a round-trip.
+			if ( preloaded && preloaded.length ) {
+				list.innerHTML = '';
+				preloaded.forEach( function ( v ) {
+					varRow( list, productId, productName, productImg, v );
+				} );
+				return;
+			}
+
+			list.innerHTML = '<span class="oc-vmodal__loading">…</span>';
 
 			var data = new FormData();
 			data.append( 'action', 'oc_cart_vars' );
@@ -2370,6 +2437,13 @@
 						return;
 					}
 					res.data.variations.forEach( function ( v ) {
+						varRow( list, productId, productName, productImg, v );
+					} );
+				} );
+		}
+
+		function varRow( list, productId, productName, productImg, v ) {
+			( function () {
 						var row = document.createElement( 'button' );
 						row.type = 'button';
 						row.className = 'oc-vmodal__opt';
@@ -2418,9 +2492,8 @@
 									}
 								} );
 						} );
-						list.appendChild( row );
-					} );
-				} );
+				list.appendChild( row );
+			}() );
 		}
 
 		// The sticky bar (outside this closure) opens the picker too.
@@ -4770,6 +4843,67 @@
 			return img ? img.currentSrc || img.src : '';
 		}
 
+		// The picker rows, built from the form's own variations JSON — the
+		// sheet renders instantly, no round-trip. Labels come from the sticky
+		// selects' option text, swatches from their slug→style maps.
+		function preloadedVariations() {
+			if ( ! variations || ! variations.length ) {
+				return null;
+			}
+
+			var names = {};
+			var maps = {};
+			stickySelects.forEach( function ( sel ) {
+				var m = {};
+				Array.prototype.forEach.call( sel.options, function ( o ) {
+					if ( o.value ) {
+						m[ o.value ] = o.text;
+					}
+				} );
+				names[ sel.dataset.ocStickyAttr ] = m;
+				try {
+					maps[ sel.dataset.ocStickyAttr ] = JSON.parse( sel.dataset.swatches || '{}' );
+				} catch ( err ) {
+					maps[ sel.dataset.ocStickyAttr ] = {};
+				}
+			} );
+
+			var out = [];
+			variations.forEach( function ( v ) {
+				if ( false === v.is_in_stock || false === v.is_purchasable ) {
+					return;
+				}
+				var parts = [];
+				var swatch = '';
+				Object.keys( v.attributes || {} ).forEach( function ( key ) {
+					var slug = v.attributes[ key ];
+					if ( ! slug ) {
+						return;
+					}
+					parts.push( ( names[ key ] || {} )[ slug ] || slug );
+					if ( ! swatch && maps[ key ] && maps[ key ][ slug ] ) {
+						swatch = maps[ key ][ slug ];
+					}
+				} );
+
+				var box = document.createElement( 'div' );
+				box.innerHTML = v.price_html || '';
+				box.querySelectorAll( '.oc-price-badge, .oc-sku' ).forEach( function ( el ) {
+					el.remove();
+				} );
+				var ins = box.querySelector( 'ins' );
+
+				out.push( {
+					id: v.variation_id,
+					label: parts.join( ' / ' ),
+					price: ( ins || box ).textContent.trim(),
+					swatch: swatch
+				} );
+			} );
+
+			return out.length ? out : null;
+		}
+
 		function paintDot( sel ) {
 			var dot = sel.parentElement.querySelector( '.oc-sticky-atc__dot' );
 			if ( ! dot ) {
@@ -4896,7 +5030,7 @@
 				// preselected default is how wrong sizes get ordered.
 				if ( mobile || ! v ) {
 					if ( window.__ocOpenVarPicker ) {
-						window.__ocOpenVarPicker( bar.dataset.product, buy.dataset.name || '', pageImage() );
+						window.__ocOpenVarPicker( bar.dataset.product, buy.dataset.name || '', pageImage(), preloadedVariations() );
 					} else {
 						form.scrollIntoView( { behavior: 'smooth', block: 'center' } );
 					}
@@ -4913,7 +5047,7 @@
 					if ( submit && ! submit.disabled ) {
 						submit.click();
 					} else if ( window.__ocOpenVarPicker ) {
-						window.__ocOpenVarPicker( bar.dataset.product, buy.dataset.name || '', pageImage() );
+						window.__ocOpenVarPicker( bar.dataset.product, buy.dataset.name || '', pageImage(), preloadedVariations() );
 					}
 				}, 60 );
 			} );
