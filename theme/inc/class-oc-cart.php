@@ -59,7 +59,7 @@ final class Cart {
 			is_array( $saved ) ? $saved : array(),
 			array(
 				'side'         => 'left',    // left | right.
-				'width'        => 520,
+				'width'        => 560,
 				'title'        => '',
 				'empty_text'   => '',
 				'open_on_add'  => 1,
@@ -635,11 +635,14 @@ final class Cart {
 
 		self::$in_upsells = true;
 
+		if ( 'collapse' === $style ) {
+			// The fold handle: a little tab riding above the block's edge —
+			// chevron down folds, and folded it flips up to reopen.
+			$html .= '<button type="button" class="oc-cartup__tab" data-oc-up-toggle aria-label="' . esc_attr__( 'Minimize', 'oc-theme' ) . '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>';
+		}
+
 		$html .= '<div class="oc-cartup__head">';
 		$html .= '<span class="oc-cartup__title">' . esc_html( $title ) . '</span>';
-		if ( 'collapse' === $style ) {
-			$html .= '<button type="button" class="oc-cartup__toggle" data-oc-up-toggle aria-label="' . esc_attr__( 'Minimize', 'oc-theme' ) . '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>';
-		}
 		$html .= '</div>';
 
 		$html .= '<div class="oc-cartup__body">';

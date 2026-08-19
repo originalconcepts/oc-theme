@@ -5443,8 +5443,7 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 	inset-inline-end: 32px;
 }
 
-/* the minimize chevron rides right after the title; arrows keep the far
- * corner to themselves */
+/* the head keeps the title; arrows own the far corner */
 .oc-cartup--collapse .oc-cartup__head {
 	justify-content: flex-start;
 	gap: 6px;
@@ -5457,3 +5456,36 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 /* the whole title row invites the tap; minimized, the whole block does */
 .oc-cartup--collapse .oc-cartup__title { cursor: pointer; }
 .oc-cartup--collapse.is-min { cursor: pointer; }
+
+/* the external fold tab, riding the block's upper corner */
+.oc-cartup__tab {
+	position: absolute;
+	inset-block-start: -23px;
+	inset-inline-end: var(--oc-gap);
+	inline-size: 42px;
+	block-size: 23px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border: 1px solid var(--oc-line);
+	border-block-end: 0;
+	border-start-start-radius: 8px;
+	border-start-end-radius: 8px;
+	background: var(--oc-surface, #fff);
+	color: var(--oc-ink-2);
+	cursor: pointer;
+	z-index: 2;
+}
+
+.oc-cartup__tab svg {
+	inline-size: 15px;
+	block-size: 15px;
+	transition: rotate .2s ease;
+}
+
+.oc-cartup__tab:hover { color: var(--oc-ink); }
+
+/* folded: only the tab remains, chevron flipped up */
+.oc-cartup--collapse.is-min .oc-cartup__head { display: none; }
+.oc-cartup--collapse.is-min { padding-block: 0; }
+.oc-cartup--collapse.is-min .oc-cartup__tab svg { rotate: 180deg; }
