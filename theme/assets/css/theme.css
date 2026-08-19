@@ -4328,6 +4328,12 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 		grid-template-columns: repeat(4, minmax(0, 1fr));
 		gap: 12px 14px;
 	}
+
+	/* the side column packs bare circles into four as well */
+	.oc-flt--side .oc-flt__values--swatch.oc-flt__values--noname-d {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+		gap: 12px 10px;
+	}
 }
 
 @media (max-width: 900px) {
