@@ -549,16 +549,10 @@ final class Cart {
 				continue;
 			}
 
-			$bits = array();
-			foreach ( $variation->get_variation_attributes( false ) as $attribute => $value ) {
-				$term = get_term_by( 'slug', $value, $attribute );
-				$bits[] = $term instanceof \WP_Term ? $term->name : $value;
-			}
-
 			$out[] = array(
 				'id'    => $variation->get_id(),
-				'label' => implode( ' · ', $bits ),
-				'price' => wp_strip_all_tags( wc_price( (float) $variation->get_price() ) ),
+				'label' => WooCommerce::variation_label( $variation ),
+				'price' => html_entity_decode( wp_strip_all_tags( wc_price( (float) $variation->get_price() ) ), ENT_QUOTES, 'UTF-8' ),
 			);
 		}
 

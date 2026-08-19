@@ -1067,7 +1067,7 @@ final class WooCommerce {
 	 *
 	 * @param \WC_Product_Variation $variation The variation.
 	 */
-	private function variation_label( \WC_Product_Variation $variation ): string {
+	public static function variation_label( \WC_Product_Variation $variation ): string {
 		$parts = array();
 
 		foreach ( $variation->get_attributes() as $tax => $slug ) {
@@ -1118,7 +1118,7 @@ final class WooCommerce {
 
 			$options[] = array(
 				'id'    => $child_id,
-				'label' => $this->variation_label( $variation ),
+				'label' => self::variation_label( $variation ),
 			);
 		}
 
@@ -1161,7 +1161,7 @@ final class WooCommerce {
 				wp_send_json_error();
 			}
 
-			$vname = $this->variation_label( $variation );
+			$vname = self::variation_label( $variation );
 		} else {
 			$variation_id = 0;
 		}
