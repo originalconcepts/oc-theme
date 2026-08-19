@@ -72,6 +72,7 @@ final class Cart {
 				'up_cat'       => 0,
 				'up_max'       => 5,
 				'up_style'     => 'side',    // side | list | slider | collapse.
+				'up_bg'        => '',
 				'coupon'       => 0,
 				'btn_total'    => 0,
 				'btn_text'     => '',
@@ -108,9 +109,9 @@ final class Cart {
 						<button type="button" class="oc-drawer__close" data-oc-drawer-close aria-label="<?php esc_attr_e( 'Close', 'oc-theme' ); ?>">&times;</button>
 					</header>
 					<?php echo $this->ship_bar_html(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built escaped. ?>
-					<?php echo $this->promo_msgs_html(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 					<div class="oc-drawer__scroll">
 						<div data-oc-mcart><?php echo $this->items_html(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
+						<?php echo $this->promo_msgs_html(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 						<?php if ( $s['up_show'] && in_array( (string) $s['up_style'], array( 'list', 'slider' ), true ) ) : ?>
 							<?php echo $this->upsells_html(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 						<?php endif; ?>
@@ -224,7 +225,7 @@ final class Cart {
 			$html .= '' === $link
 				? '<span class="oc-mcart__name">' . wp_kses_post( $name ) . '</span>'
 				: '<a class="oc-mcart__name" href="' . esc_url( $link ) . '">' . wp_kses_post( $name ) . '</a>';
-			$html .= wc_get_formatted_cart_item_data( $item );
+			$html .= $this->item_attributes_html( $item );
 
 			if ( $in_stock ) {
 				// One unit: the minus becomes a delicate trash can that asks
@@ -265,6 +266,64 @@ final class Cart {
 		}
 
 		$html .= '</ul>';
+
+		return $html;
+	}
+
+	/**
+	 * The item's variation attributes: name, then the value in a heavier
+	 * weight — with the term's swatch dot ahead of it when it has one.
+	 *
+	 * @param array<string,mixed> $item Cart item.
+	 */
+	private function item_attributes_html( array $item ): string {
+		if ( empty( $item['variation'] ) || ! is_array( $item['variation'] ) ) {
+			return wc_get_formatted_cart_item_data( $item );
+		}
+
+		$html = '<span class="oc-mcart__attrs">';
+
+		foreach ( $item['variation'] as $raw_tax => $slug ) {
+			$slug = (string) $slug;
+			if ( '' === $slug ) {
+				continue;
+			}
+
+			$taxonomy = str_replace( 'attribute_', '', (string) $raw_tax );
+			$label    = wc_attribute_label( $taxonomy );
+			$value    = rawurldecode( $slug );
+			$swatch   = '';
+
+			foreach ( array( $taxonomy, rawurldecode( $taxonomy ) ) as $tax_try ) {
+				if ( ! taxonomy_exists( $tax_try ) ) {
+					continue;
+				}
+				$term = get_term_by( 'slug', $slug, $tax_try );
+				if ( ! $term instanceof \WP_Term ) {
+					continue;
+				}
+				$value = $term->name;
+
+				$image = (string) get_term_meta( $term->term_id, 'oc_swatch_image', true );
+				$color = (string) get_term_meta( $term->term_id, 'oc_swatch_color', true );
+				if ( '' !== $image ) {
+					$swatch = 'background-image:url(' . esc_url( $image ) . ');background-size:cover;';
+				} elseif ( '' !== $color ) {
+					$swatch = 'background-color:' . sanitize_hex_color( $color ) . ';';
+				}
+				break;
+			}
+
+			$html .= '<span class="oc-mcart__attr">';
+			if ( '' !== $swatch ) {
+				$html .= '<i class="oc-mcart__attr-swatch" style="' . $swatch . '"></i>';
+			}
+			$html .= '<span class="oc-mcart__attr-name">' . esc_html( $label ) . ':</span> ';
+			$html .= '<strong>' . esc_html( $value ) . '</strong>';
+			$html .= '</span>';
+		}
+
+		$html .= '</span>';
 
 		return $html;
 	}
@@ -447,7 +506,8 @@ final class Cart {
 		$horizontal = in_array( $style, array( 'slider', 'collapse' ), true );
 		$title = '' !== (string) $s['up_title'] ? (string) $s['up_title'] : __( 'You may also like', 'oc-theme' );
 
-		$html = '<div class="oc-cartup oc-cartup--' . esc_attr( $style ) . ( $mobile ? ' oc-cartup--m' : '' ) . '" ' . $attr . '>';
+		$bg   = (string) $s['up_bg'];
+		$html = '<div class="oc-cartup oc-cartup--' . esc_attr( $style ) . ( $mobile ? ' oc-cartup--m' : '' ) . '" ' . $attr . ( '' !== $bg ? ' style="--oc-up-bg:' . esc_attr( $bg ) . '"' : '' ) . '>';
 
 		self::$in_upsells = true;
 
@@ -478,6 +538,8 @@ final class Cart {
 			$html .= '</div>';
 
 			$plus_svg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>';
+			$add_text = $horizontal ? '<span>' . esc_html__( 'Add', 'oc-theme' ) . '</span>' : '';
+			$plus_svg = $plus_svg . $add_text;
 
 			if ( $product->is_type( 'simple' ) && $product->is_purchasable() && $product->is_in_stock() ) {
 				// Woo's own ajax add-to-cart JS picks this up; the fragment
@@ -904,6 +966,7 @@ final class Cart {
 								<?php endforeach; ?>
 							</select>
 							<label style="margin-inline-start:12px;"><?php esc_html_e( 'Max products', 'oc-theme' ); ?> <input type="number" name="up_max" value="<?php echo esc_attr( (string) $s['up_max'] ); ?>" min="1" max="12" style="width:60px;" /></label>
+							<label style="margin-inline-start:12px;"><?php esc_html_e( 'Background colour', 'oc-theme' ); ?> <input type="text" name="up_bg" value="<?php echo esc_attr( (string) $s['up_bg'] ); ?>" placeholder="<?php esc_attr_e( 'Default', 'oc-theme' ); ?>" style="width:90px;" dir="ltr" /></label>
 							<p class="description"><?php esc_html_e( 'Products already in the cart are never offered; adding one removes it from the list.', 'oc-theme' ); ?></p>
 						</td>
 					</tr>
@@ -958,6 +1021,7 @@ final class Cart {
 				'up_cat'       => (int) ( $_POST['up_cat'] ?? 0 ),
 				'up_max'       => min( 12, max( 1, (int) ( $_POST['up_max'] ?? 5 ) ) ),
 				'up_style'     => in_array( $_POST['up_style'] ?? '', array( 'list', 'slider', 'collapse' ), true ) ? sanitize_key( $_POST['up_style'] ) : 'side',
+				'up_bg'        => (string) sanitize_hex_color( wp_unslash( (string) ( $_POST['up_bg'] ?? '' ) ) ),
 				'coupon'       => empty( $_POST['coupon'] ) ? 0 : 1,
 				'btn_total'    => empty( $_POST['btn_total'] ) ? 0 : 1,
 				'btn_text'     => sanitize_text_field( wp_unslash( (string) ( $_POST['btn_text'] ?? '' ) ) ),

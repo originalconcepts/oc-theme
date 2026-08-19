@@ -1831,6 +1831,19 @@
 			}
 		}, true );
 
+		// The mouse wheel scrolls the horizontal track too.
+		document.addEventListener( 'wheel', function ( event ) {
+			var track = event.target instanceof Element && event.target.closest( '[data-oc-up-track].oc-cartup__items--h' );
+			if ( ! track || Math.abs( event.deltaY ) <= Math.abs( event.deltaX ) ) {
+				return;
+			}
+			if ( track.scrollWidth <= track.clientWidth ) {
+				return;
+			}
+			event.preventDefault();
+			track.scrollLeft += ( 'rtl' === getComputedStyle( track ).direction ? -1 : 1 ) * event.deltaY;
+		}, { passive: false } );
+
 		updateUpArrows();
 
 		( function () {

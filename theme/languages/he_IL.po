@@ -1887,3 +1887,12 @@ msgstr "הקודם"
 
 msgid "Next"
 msgstr "הבא"
+
+msgid "Add"
+msgstr "הוספה"
+
+msgid "Background colour"
+msgstr "צבע רקע"
+
+msgid "Default"
+msgstr "ברירת מחדל"
