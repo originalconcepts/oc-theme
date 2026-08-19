@@ -1694,6 +1694,9 @@
 			event.preventDefault();
 
 			var data = new FormData( form );
+			// Woo's own form handler runs on every request (wp_loaded) and
+			// would add once for this field before oc_cart_add adds again.
+			data.delete( 'add-to-cart' );
 			data.append( 'action', 'oc_cart_add' );
 			data.append( 'product_id', productId );
 
