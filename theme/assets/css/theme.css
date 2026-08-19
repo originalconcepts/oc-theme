@@ -5581,7 +5581,8 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 .oc-toast {
 	position: fixed;
 	top: calc(var(--oc-header-h, 72px) + 12px);
-	inset-inline-start: var(--oc-gap, 24px);
+	/* fallback: the icons' side of the header (JS pins to the exact icon) */
+	inset-inline-end: var(--oc-gap, 24px);
 	z-index: 130;
 	display: flex;
 	align-items: center;

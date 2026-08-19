@@ -1635,18 +1635,24 @@
 			}
 			toast.querySelector( 'span' ).textContent = name || '';
 
-			// Dock under the header, aligned with the cart icon when found.
-			var link = document.querySelector( '.oc-cart-link' );
+			// Dock under the VISIBLE cart icon (headers carry several cart
+			// links — text, icon, mobile — and hidden ones report no box).
+			var link = null;
+			document.querySelectorAll( '.oc-cart-link' ).forEach( function ( c ) {
+				if ( ! link && c.offsetParent && c.getBoundingClientRect().width > 0 ) {
+					link = c;
+				}
+			} );
 			if ( link ) {
 				var rect = link.getBoundingClientRect();
-				if ( rect.width ) {
-					if ( rect.left < window.innerWidth / 2 ) {
-						toast.style.left = Math.max( 10, rect.left ) + 'px';
-					} else {
-						toast.style.right = Math.max( 10, window.innerWidth - rect.right ) + 'px';
-					}
-					toast.style.top = ( rect.bottom + 10 ) + 'px';
+				if ( rect.left + rect.width / 2 < window.innerWidth / 2 ) {
+					toast.style.left = Math.max( 10, rect.left ) + 'px';
+					toast.style.right = 'auto';
+				} else {
+					toast.style.right = Math.max( 10, window.innerWidth - rect.right ) + 'px';
+					toast.style.left = 'auto';
 				}
+				toast.style.top = ( rect.bottom + 10 ) + 'px';
 			}
 
 			document.body.appendChild( toast );
