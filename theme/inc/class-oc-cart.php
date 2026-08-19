@@ -279,16 +279,15 @@ final class Cart {
 
 		if ( $left > 0 ) {
 			$template = '' !== (string) $s['ship_text'] ? (string) $s['ship_text'] : __( '[sum] left for free shipping', 'oc-theme' );
-			$text     = str_replace( '[sum]', wp_strip_all_tags( wc_price( $left ) ), $template );
+			// The remaining amount carries the line — bold it.
+			$sum  = html_entity_decode( wp_strip_all_tags( wc_price( $left ) ), ENT_QUOTES, 'UTF-8' );
+			$text = str_replace( '[sum]', '<strong>' . esc_html( $sum ) . '</strong>', esc_html( $template ) );
 		} else {
-			$text = '' !== (string) $s['ship_done'] ? (string) $s['ship_done'] : __( 'You earned free shipping!', 'oc-theme' );
+			$text = esc_html( '' !== (string) $s['ship_done'] ? (string) $s['ship_done'] : __( 'You earned free shipping!', 'oc-theme' ) );
 		}
 
 		return '<div class="oc-shipbar' . ( 0.0 === $left ? ' is-done' : '' ) . '" data-oc-ship-bar>'
-			. '<span class="oc-shipbar__row">'
-			. '<svg class="oc-shipbar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6h13v11H1zM14 9h4l4 4v4h-8z"/><circle cx="6" cy="19" r="1.8"/><circle cx="18" cy="19" r="1.8"/></svg>'
-			. '<span class="oc-shipbar__text">' . esc_html( $text ) . '</span>'
-			. '</span>'
+			. '<span class="oc-shipbar__text">' . $text . '</span>'
 			. '<span class="oc-shipbar__track"><i class="oc-shipbar__fill" style="inline-size:' . absint( $percent ) . '%"></i></span>'
 			. '</div>';
 	}

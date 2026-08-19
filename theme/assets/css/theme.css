@@ -1732,18 +1732,11 @@ body.oc-tabs-tabs.woocommerce div.product .woocommerce-tabs ul.tabs li.active a,
 
 .oc-shipbar[hidden] { display: none; }
 
-.oc-shipbar__row {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	margin-block-end: 8px;
-}
-
-.oc-shipbar__icon { inline-size: 20px; block-size: 20px; flex: none; }
-
 .oc-shipbar { position: relative; overflow: hidden; }
 
-.oc-shipbar__text { display: block; }
+.oc-shipbar__text { display: block; margin-block-end: 8px; }
+
+.oc-shipbar__text strong { font-weight: 600; }
 
 /* a short, delicate confetti drop when free shipping lands */
 .oc-confetti {
@@ -1880,6 +1873,19 @@ body.oc-tabs-tabs.woocommerce div.product .woocommerce-tabs ul.tabs li.active a,
 	padding: 18px 14px;
 	overflow-y: auto;
 	border-inline-end: 1px solid var(--oc-line);
+	scrollbar-width: thin;
+	scrollbar-color: color-mix(in srgb, var(--oc-ink) 25%, transparent) transparent;
+}
+
+/* a hairline scroller in the theme's own tones */
+.oc-cartup--side::-webkit-scrollbar { inline-size: 4px; }
+.oc-cartup--side::-webkit-scrollbar-track { background: transparent; }
+.oc-cartup--side::-webkit-scrollbar-thumb {
+	background: color-mix(in srgb, var(--oc-ink) 25%, transparent);
+	border-radius: 999px;
+}
+.oc-cartup--side::-webkit-scrollbar-thumb:hover {
+	background: color-mix(in srgb, var(--oc-ink) 45%, transparent);
 }
 
 /* the strip hugs the panel's inner edge — the side facing the page */
