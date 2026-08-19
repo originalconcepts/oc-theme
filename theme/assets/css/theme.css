@@ -1611,11 +1611,15 @@ body.oc-tabs-tabs.woocommerce div.product .woocommerce-tabs ul.tabs li.active a,
 	.oc-sticky-atc__thumb,
 	.oc-sticky-atc__opts { display: none; }
 
-	/* The bar IS the button on phones: same fill edge to edge, and the
-	 * safe-area strip under it is painted too — no dead gap below. */
+	/* The bar IS the button on phones: same fill edge to edge. The
+	 * safe-area strip is the BAR's padding, never the button's — iOS
+	 * re-evaluates env() every time Safari's toolbar slides in and out,
+	 * and padding on the button itself eats its content box and pins the
+	 * label to the top mid-transition. */
 	.oc-sticky-atc {
 		background: var(--oc-cta, var(--oc-primary));
 		border-block-start: 0;
+		padding-block-end: env(safe-area-inset-bottom, 0px);
 	}
 
 	.oc-sticky-atc__inner {
@@ -1629,7 +1633,6 @@ body.oc-tabs-tabs.woocommerce div.product .woocommerce-tabs ul.tabs li.active a,
 		margin-inline-start: 0;
 		min-block-size: 68px;
 		font-size: 1.05rem;
-		padding-block-end: env(safe-area-inset-bottom, 0px);
 	}
 }
 
