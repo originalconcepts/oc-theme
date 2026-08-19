@@ -1824,6 +1824,8 @@
 				if ( next && next.hidden !== hideNext ) {
 					next.hidden = hideNext;
 				}
+				// A soft fade on the far edge whispers "there is more".
+				track.classList.toggle( 'oc-fade-end', ! hideNext );
 			} );
 		}
 

@@ -1915,6 +1915,18 @@ body.oc-swatch-square-cat .oc-mcart__attr-swatch { border-radius: 4px; }
 
 /* inline-end padding vanishes in scrollable flex — this doesn't */
 .oc-cartup__items--h::after { content: ""; flex: none; inline-size: 2px; }
+
+/* while more waits beyond the edge, the last visible card fades softly */
+[dir="rtl"] .oc-cartup__items--h.oc-fade-end {
+	-webkit-mask-image: linear-gradient(to left, #000 86%, transparent);
+	mask-image: linear-gradient(to left, #000 86%, transparent);
+}
+
+[dir="ltr"] .oc-cartup__items--h.oc-fade-end,
+html:not([dir]) .oc-cartup__items--h.oc-fade-end {
+	-webkit-mask-image: linear-gradient(to right, #000 86%, transparent);
+	mask-image: linear-gradient(to right, #000 86%, transparent);
+}
 .oc-cartup__items--h.is-dragging { cursor: grabbing; scroll-behavior: auto; }
 .oc-cartup__items--h .oc-cartup__item {
 	flex: none;
