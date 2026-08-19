@@ -290,7 +290,9 @@ final class Cart {
 			}
 
 			$taxonomy = str_replace( 'attribute_', '', (string) $raw_tax );
-			$label    = wc_attribute_label( $taxonomy );
+			// Hebrew attribute taxonomies arrive percent-encoded — decode
+			// before asking for the human label.
+			$label = wc_attribute_label( rawurldecode( $taxonomy ) );
 			$value    = rawurldecode( $slug );
 			$swatch   = '';
 
