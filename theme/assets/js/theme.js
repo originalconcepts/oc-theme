@@ -1900,12 +1900,24 @@
 		/* -- the minimizable upsell block remembers its state -- */
 
 		document.addEventListener( 'click', function ( event ) {
-			var toggle = event.target.closest( '[data-oc-up-toggle]' );
-			if ( ! toggle ) {
+			var block = event.target.closest( '.oc-cartup--collapse' );
+			if ( ! block ) {
 				return;
 			}
-			var block = toggle.closest( '.oc-cartup--collapse' );
-			var min = block.classList.toggle( 'is-min' );
+
+			var min;
+
+			if ( block.classList.contains( 'is-min' ) ) {
+				// Minimized: the whole block is the open button.
+				min = false;
+			} else if ( event.target.closest( '[data-oc-up-toggle]' ) || event.target.closest( '.oc-cartup__title' ) ) {
+				// Open: the title or the chevron folds it away.
+				min = true;
+			} else {
+				return;
+			}
+
+			block.classList.toggle( 'is-min', min );
 			try {
 				localStorage.setItem( 'oc-cartup-min', min ? '1' : '0' );
 			} catch ( e ) { /* private mode */ }

@@ -1912,6 +1912,9 @@ body.oc-swatch-square-cat .oc-mcart__attr-swatch { border-radius: 4px; }
 }
 
 .oc-cartup__items--h::-webkit-scrollbar { display: none; }
+
+/* inline-end padding vanishes in scrollable flex — this doesn't */
+.oc-cartup__items--h::after { content: ""; flex: none; inline-size: 2px; }
 .oc-cartup__items--h.is-dragging { cursor: grabbing; scroll-behavior: auto; }
 .oc-cartup__items--h .oc-cartup__item {
 	flex: none;
@@ -5440,6 +5443,17 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 	inset-inline-end: 32px;
 }
 
-/* room for the trio at the head's end */
-.oc-cartup--collapse .oc-cartup__head { padding-inline-end: 88px; }
-.oc-cartup--collapse .oc-cartup__toggle { position: absolute; inset-inline-end: var(--oc-gap); inset-block-start: 11px; }
+/* the minimize chevron rides right after the title; arrows keep the far
+ * corner to themselves */
+.oc-cartup--collapse .oc-cartup__head {
+	justify-content: flex-start;
+	gap: 6px;
+	padding-inline-end: 70px;
+}
+
+.oc-cartup--collapse .oc-cartup__arrow--prev { inset-inline-end: 42px; }
+.oc-cartup--collapse .oc-cartup__arrow--next { inset-inline-end: 12px; }
+
+/* the whole title row invites the tap; minimized, the whole block does */
+.oc-cartup--collapse .oc-cartup__title { cursor: pointer; }
+.oc-cartup--collapse.is-min { cursor: pointer; }
