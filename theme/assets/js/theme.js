@@ -1990,6 +1990,67 @@
 			}
 		}
 
+		/* -- "participating products" popup for a group promotion -- */
+
+		var promoModal = null;
+
+		document.addEventListener( 'click', function ( event ) {
+			if ( promoModal && ! promoModal.hidden && ( event.target.closest( '.oc-pmodal .oc-nmodal__close' ) || ( event.target === promoModal ) ) ) {
+				promoModal.hidden = true;
+				return;
+			}
+
+			var promoLink = event.target.closest( '[data-oc-promo-list]' );
+			if ( ! promoLink ) {
+				return;
+			}
+
+			if ( ! promoModal ) {
+				promoModal = document.createElement( 'div' );
+				promoModal.className = 'oc-nmodal oc-pmodal';
+				promoModal.hidden = true;
+				promoModal.innerHTML =
+					'<div class="oc-nmodal__card">' +
+					'<button type="button" class="oc-nmodal__close" aria-label="close">&times;</button>' +
+					'<h3 class="oc-nmodal__title"></h3>' +
+					'<div class="oc-pmodal__list"></div>' +
+					'</div>';
+				document.body.appendChild( promoModal );
+			}
+
+			promoModal.querySelector( '.oc-nmodal__title' ).textContent = promoLink.dataset.name || '';
+			var plist = promoModal.querySelector( '.oc-pmodal__list' );
+			plist.innerHTML = '<span class="oc-vmodal__loading">…</span>';
+			promoModal.hidden = false;
+
+			var data = new FormData();
+			data.append( 'action', 'oc_cart_promo_products' );
+			data.append( 'promo_id', promoLink.dataset.ocPromoList );
+
+			fetch( ( window.ocL10n || {} ).ajaxUrl || '/wp-admin/admin-ajax.php', {
+				method: 'POST',
+				credentials: 'same-origin',
+				body: data
+			} )
+				.then( function ( r ) { return r.json(); } )
+				.then( function ( res ) {
+					plist.innerHTML = '';
+					if ( ! res || ! res.success || ! res.data.products.length ) {
+						promoModal.hidden = true;
+						return;
+					}
+					res.data.products.forEach( function ( pr ) {
+						var row = document.createElement( 'a' );
+						row.className = 'oc-pmodal__row';
+						row.href = pr.url;
+						row.innerHTML = ( pr.img ? '<img src="' + pr.img + '" alt="" loading="lazy" />' : '' ) + '<span class="oc-pmodal__name"></span><em></em>';
+						row.querySelector( '.oc-pmodal__name' ).textContent = pr.name;
+						row.querySelector( 'em' ).textContent = pr.price;
+						plist.appendChild( row );
+					} );
+				} );
+		} );
+
 		/* -- a single-variation product adds straight away, no questions -- */
 
 		document.addEventListener( 'click', function ( event ) {

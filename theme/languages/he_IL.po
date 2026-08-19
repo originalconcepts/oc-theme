@@ -1902,3 +1902,9 @@ msgstr "%s ליח׳"
 
 msgid "Active coupons"
 msgstr "קופונים פעילים"
+
+msgid "Participating products"
+msgstr "למוצרים המשתתפים"
+
+msgid "Coupon discount"
+msgstr "הנחת קופון"

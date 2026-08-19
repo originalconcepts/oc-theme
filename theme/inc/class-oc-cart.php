@@ -43,6 +43,8 @@ final class Cart {
 		add_action( 'wp_ajax_nopriv_oc_cart_add', array( $this, 'ajax_add' ) );
 		add_action( 'wp_ajax_oc_cart_coupon', array( $this, 'ajax_coupon' ) );
 		add_action( 'wp_ajax_nopriv_oc_cart_coupon', array( $this, 'ajax_coupon' ) );
+		add_action( 'wp_ajax_oc_cart_promo_products', array( $this, 'ajax_promo_products' ) );
+		add_action( 'wp_ajax_nopriv_oc_cart_promo_products', array( $this, 'ajax_promo_products' ) );
 	}
 
 	/**
@@ -57,7 +59,7 @@ final class Cart {
 			is_array( $saved ) ? $saved : array(),
 			array(
 				'side'         => 'left',    // left | right.
-				'width'        => 480,
+				'width'        => 520,
 				'title'        => '',
 				'empty_text'   => '',
 				'open_on_add'  => 1,
@@ -236,6 +238,13 @@ final class Cart {
 				: '<a class="oc-mcart__name" href="' . esc_url( $link ) . '">' . wp_kses_post( $name ) . '</a>';
 			$html .= $this->item_attributes_html( $item );
 
+			$item_promos = '';
+			if ( isset( $by_key[ (string) $key ] ) ) {
+				foreach ( $by_key[ (string) $key ] as $msg ) {
+					$item_promos .= $this->promo_msg_row( $msg );
+				}
+			}
+
 			if ( $in_stock ) {
 				// One unit: the minus becomes a delicate trash can that asks
 				// before removing.
@@ -250,6 +259,8 @@ final class Cart {
 			} else {
 				$html .= '<span class="oc-mcart__oos">' . esc_html__( 'Out of stock', 'oc-theme' ) . '</span>';
 			}
+
+			$html .= $item_promos;
 
 			$html .= '</div>';
 
@@ -273,12 +284,6 @@ final class Cart {
 			$html .= '</div>';
 
 			$html .= '</li>';
-
-			if ( isset( $by_key[ (string) $key ] ) ) {
-				foreach ( $by_key[ (string) $key ] as $msg ) {
-					$html .= '<li class="oc-mcart__promoli">' . $this->promo_msg_row( $msg ) . '</li>';
-				}
-			}
 		}
 
 		$html .= '</ul>';
@@ -420,11 +425,14 @@ final class Cart {
 			}
 		}
 
-		$total = WC()->cart->get_cart_subtotal();
-		$label = '' !== (string) $s['btn_text'] ? (string) $s['btn_text'] : __( 'Continue to checkout', 'oc-theme' );
+		$discount = (float) WC()->cart->get_discount_total() + (float) WC()->cart->get_discount_tax();
+		$subtotal = (float) WC()->cart->get_displayed_subtotal();
+		$payable  = wc_price( max( 0, $subtotal - $discount ) );
+		$total    = $discount > 0 ? $payable : WC()->cart->get_cart_subtotal();
+		$label    = '' !== (string) $s['btn_text'] ? (string) $s['btn_text'] : __( 'Continue to checkout', 'oc-theme' );
 
 		if ( ! empty( $s['btn_total'] ) ) {
-			$label .= ' · ' . wp_strip_all_tags( $total );
+			$label .= ' · ' . html_entity_decode( wp_strip_all_tags( $total ), ENT_QUOTES, 'UTF-8' );
 		}
 
 		$html = '<footer class="oc-drawer__foot" data-oc-cart-foot>';
@@ -432,6 +440,10 @@ final class Cart {
 		// The button already says the number — no need to say it twice.
 		if ( empty( $s['btn_total'] ) ) {
 			$html .= '<div class="oc-drawer__subtotal"><span>' . esc_html__( 'Subtotal', 'oc-theme' ) . '</span><strong>' . $total . '</strong></div>';
+		}
+
+		if ( $discount > 0 ) {
+			$html .= '<div class="oc-drawer__discount"><span>' . esc_html__( 'Coupon discount', 'oc-theme' ) . '</span><strong>&minus;' . wc_price( $discount ) . '</strong></div>';
 		}
 
 		if ( $oos ) {
@@ -446,7 +458,12 @@ final class Cart {
 			if ( $applied ) {
 				$html .= '<span class="oc-drawer__coupon-head">' . esc_html__( 'Active coupons', 'oc-theme' ) . '</span>';
 				foreach ( $applied as $code ) {
-					$html .= '<span class="oc-drawer__coupon-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 12.5l5 5L19.5 7"/></svg> ' . esc_html( $code ) . '<button type="button" data-oc-coupon-remove data-code="' . esc_attr( $code ) . '" aria-label="' . esc_attr__( 'Remove', 'oc-theme' ) . '">&times;</button></span>';
+					$saved = (float) WC()->cart->get_coupon_discount_amount( $code, false );
+					$html .= '<span class="oc-drawer__coupon-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 12.5l5 5L19.5 7"/></svg> ' . esc_html( $code );
+					if ( $saved > 0 ) {
+						$html .= '<em>&minus;' . wc_price( $saved ) . '</em>';
+					}
+					$html .= '<button type="button" data-oc-coupon-remove data-code="' . esc_attr( $code ) . '" aria-label="' . esc_attr__( 'Remove', 'oc-theme' ) . '">&times;</button></span>';
 				}
 			} else {
 				$html .= '<button type="button" class="oc-drawer__coupon-t" data-oc-coupon-toggle>' . esc_html__( 'Have a coupon code?', 'oc-theme' ) . ' <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>';
@@ -493,17 +510,27 @@ final class Cart {
 	}
 
 	/**
-	 * One promotion message row — a flat strip, check for an applied one,
-	 * a percent tag for a nudge.
+	 * One promotion row — the promotion's NAME with an icon; a group deal
+	 * gains a link opening the participating-products popup.
 	 *
-	 * @param array{text:string,applied:bool} $msg Message.
+	 * @param array{text:string,name?:string,promo_id?:int,pool?:string,applied:bool} $msg Message.
 	 */
 	private function promo_msg_row( array $msg ): string {
 		$icon = $msg['applied']
 			? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 12.5l5 5L19.5 7"/></svg>'
 			: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 5L5 19M7.5 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM16.5 18a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/></svg>';
 
-		return '<div class="oc-mcart__promo' . ( $msg['applied'] ? ' oc-mcart__promo--applied' : '' ) . '">' . $icon . '<span>' . esc_html( (string) $msg['text'] ) . '</span></div>';
+		$name = '' !== (string) ( $msg['name'] ?? '' ) ? (string) $msg['name'] : (string) $msg['text'];
+
+		$html = '<div class="oc-mcart__promo' . ( $msg['applied'] ? ' oc-mcart__promo--applied' : '' ) . '">' . $icon . '<span>' . esc_html( $name ) . '</span>';
+
+		if ( 'group' === (string) ( $msg['pool'] ?? '' ) && ! empty( $msg['promo_id'] ) ) {
+			$html .= '<button type="button" class="oc-mcart__promo-link" data-oc-promo-list="' . absint( $msg['promo_id'] ) . '" data-name="' . esc_attr( $name ) . '">' . esc_html__( 'Participating products', 'oc-theme' ) . '</button>';
+		}
+
+		$html .= '</div>';
+
+		return $html;
 	}
 
 	/**
@@ -860,6 +887,44 @@ final class Cart {
 		wc_clear_notices();
 		WC()->cart->calculate_totals();
 		\WC_AJAX::get_refreshed_fragments();
+	}
+
+	/**
+	 * The products participating in a promotion — rows for the popup.
+	 */
+	public function ajax_promo_products(): void {
+		// phpcs:disable WordPress.Security.NonceVerification.Missing -- public read-only.
+		$promo_id = isset( $_POST['promo_id'] ) ? absint( $_POST['promo_id'] ) : 0;
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
+
+		if ( ! $promo_id || ! class_exists( '\\PromoEngine\\Cart' ) ) {
+			wp_send_json_error();
+		}
+
+		$pcart = \PromoEngine\Cart::instance();
+
+		if ( ! $pcart || ! method_exists( $pcart, 'promotion_products' ) ) {
+			wp_send_json_error();
+		}
+
+		$out = array();
+
+		foreach ( (array) $pcart->promotion_products( $promo_id, 12 ) as $id ) {
+			$product = wc_get_product( $id );
+
+			if ( ! $product || ! $product->is_visible() || ! $product->is_in_stock() ) {
+				continue;
+			}
+
+			$out[] = array(
+				'name'  => $product->get_name(),
+				'url'   => get_permalink( $product->get_id() ),
+				'img'   => (string) wp_get_attachment_image_url( (int) $product->get_image_id(), 'woocommerce_thumbnail' ),
+				'price' => html_entity_decode( wp_strip_all_tags( $product->get_price_html() ), ENT_QUOTES, 'UTF-8' ),
+			);
+		}
+
+		wp_send_json_success( array( 'products' => $out ) );
 	}
 
 	/* -------------------------------------------------------------- admin */
