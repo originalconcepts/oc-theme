@@ -1875,7 +1875,14 @@ body.oc-tabs-tabs.woocommerce div.product .woocommerce-tabs ul.tabs li.active a,
 
 .oc-cartup__items--h::-webkit-scrollbar { display: none; }
 .oc-cartup__items--h.is-dragging { cursor: grabbing; scroll-behavior: auto; }
-.oc-cartup__items--h .oc-cartup__item { flex: none; inline-size: 190px; }
+.oc-cartup__items--h .oc-cartup__item {
+	flex: none;
+	inline-size: 190px;
+	border: 1px solid var(--oc-line);
+	border-radius: var(--oc-radius, 8px);
+	background: var(--oc-surface, #fff);
+	padding: 8px;
+}
 
 .oc-cartup__body { position: relative; }
 
@@ -1900,6 +1907,10 @@ body.oc-tabs-tabs.woocommerce div.product .woocommerce-tabs ul.tabs li.active a,
 .oc-cartup__arrow svg { inline-size: 15px; block-size: 15px; }
 .oc-cartup__arrow--prev { inset-inline-start: -6px; }
 .oc-cartup__arrow--next { inset-inline-end: -6px; }
+.oc-cartup__arrow[hidden] { display: none; }
+
+/* RTL: the chevrons must point outward on their own side */
+[dir="rtl"] .oc-cartup__arrow svg { scale: -1 1; }
 
 @media (hover: none) {
 	/* fingers scroll — the arrows just get in the way */
@@ -1909,15 +1920,16 @@ body.oc-tabs-tabs.woocommerce div.product .woocommerce-tabs ul.tabs li.active a,
 /* the standalone horizontal slider after the items */
 .oc-cartup--slider { margin-block-start: 20px; }
 .oc-cartup--slider .oc-cartup__body { margin-block-start: 12px; }
-.oc-cartup--slider .oc-cartup__item { flex-direction: column; align-items: stretch; text-align: center; }
-.oc-cartup--slider .oc-cartup__media img { inline-size: 100%; block-size: 130px; }
-.oc-cartup--slider .oc-cartup__add {
+.oc-cartup__items--h .oc-cartup__item .oc-cartup__add {
 	position: absolute;
-	inset-block-start: calc(130px - 36px);
-	inset-inline-start: 6px;
+	inset-block-start: calc(8px + 130px - 36px);
+	inset-inline-start: 14px;
 	inset-inline-end: auto;
 	box-shadow: 0 2px 8px rgb(0 0 0 / 12%);
 }
+
+.oc-cartup__items--h .oc-cartup__item { flex-direction: column; align-items: stretch; text-align: center; }
+.oc-cartup__items--h .oc-cartup__media img { inline-size: 100%; block-size: 130px; }
 
 /* side strip (the old site's look) */
 .oc-drawer--upside .oc-drawer__panel { inline-size: min(calc(var(--oc-drawer-w, 480px) + 190px), 96vw); }
@@ -2005,11 +2017,9 @@ body.oc-tabs-tabs.woocommerce div.product .woocommerce-tabs ul.tabs li.active a,
 	padding-block-start: 12px;
 }
 
-.oc-cartup--collapse .oc-cartup__item { flex: none; inline-size: 190px; }
-
 .oc-cartup--collapse .oc-cartup__arrow { inset-block-start: calc(50% + 6px); }
 
-.oc-cartup--collapse.is-min .oc-cartup__body { grid-template-rows: 0fr; }
+.oc-cartup--collapse.is-min .oc-cartup__body { display: none; }
 .oc-cartup--collapse.is-min .oc-cartup__toggle svg { rotate: 180deg; }
 
 /* ---------- panel footer ---------- */
@@ -2078,6 +2088,8 @@ body.oc-tabs-tabs.woocommerce div.product .woocommerce-tabs ul.tabs li.active a,
 
 .oc-drawer__coupon-wrap.is-open .oc-drawer__coupon { padding-block-start: 10px; }
 
+.oc-drawer__coupon { flex-wrap: wrap; }
+
 .oc-drawer__coupon input {
 	flex: 1;
 	min-inline-size: 0;
@@ -2088,16 +2100,69 @@ body.oc-tabs-tabs.woocommerce div.product .woocommerce-tabs ul.tabs li.active a,
 	font-size: .88rem;
 }
 
+/* focusing must not slam a bold ring on — just a quiet ink border */
+.oc-drawer__coupon input:focus,
+.oc-drawer__coupon input:focus-visible {
+	outline: none;
+	border-color: var(--oc-ink);
+}
+
 .oc-drawer__coupon button {
-	border: 1px solid var(--oc-ink);
+	flex: none;
+	inline-size: 38px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border: 1px solid var(--oc-line);
 	background: none;
 	border-radius: var(--oc-cta-r, 8px);
-	padding: 8px 16px;
-	font: inherit;
-	font-size: .88rem;
 	cursor: pointer;
 	color: var(--oc-ink);
+	transition: background .15s ease, color .15s ease, border-color .15s ease;
 }
+
+.oc-drawer__coupon button svg { inline-size: 17px; block-size: 17px; }
+
+.oc-drawer__coupon button:hover {
+	background: var(--oc-ink);
+	border-color: var(--oc-ink);
+	color: #fff;
+}
+
+.oc-drawer__coupon.is-busy { opacity: .55; pointer-events: none; }
+
+.oc-drawer__coupon-msg {
+	flex-basis: 100%;
+	margin: 4px 0 0;
+	font-size: .78rem;
+	color: var(--oc-sale, #b4453c);
+}
+
+.oc-drawer__coupon-msg[hidden] { display: none; }
+
+/* an applied coupon shows as a quiet chip */
+.oc-drawer__coupon-chip {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	font-size: .82rem;
+	color: var(--oc-success, #2f7d4f);
+	inline-size: fit-content;
+}
+
+.oc-drawer__coupon-chip svg { inline-size: 14px; block-size: 14px; }
+
+.oc-drawer__coupon-chip button {
+	border: 0;
+	background: none;
+	font-size: 15px;
+	line-height: 1;
+	color: var(--oc-ink-2);
+	cursor: pointer;
+	padding: 0 2px;
+}
+
+.oc-drawer__coupon-chip button:hover { color: var(--oc-sale, #b4453c); }
 
 /* Carries the checkout-button class, so the global CTA hover effects and
  * design settings (height, corners, colours) apply like everywhere else. */
@@ -5066,3 +5131,13 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 }
 
 .oc-drawer__promos .promeng-cart-message-icon { color: var(--oc-sale, #b4453c); display: inline-flex; }
+
+
+.oc-vmodal__swatch {
+	inline-size: 22px;
+	block-size: 22px;
+	padding: 1px;
+	flex: none;
+}
+
+.oc-vmodal__optname { flex: 1; text-align: start; }

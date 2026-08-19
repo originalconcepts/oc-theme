@@ -1806,6 +1806,33 @@
 			track.scrollBy( { left: dir * step * 2, behavior: 'smooth' } );
 		} );
 
+		function updateUpArrows() {
+			document.querySelectorAll( '[data-oc-up-track].oc-cartup__items--h' ).forEach( function ( track ) {
+				var body = track.closest( '.oc-cartup__body' );
+				if ( ! body ) {
+					return;
+				}
+				var prev = body.querySelector( '[data-oc-up-prev]' );
+				var next = body.querySelector( '[data-oc-up-next]' );
+				var max = track.scrollWidth - track.clientWidth;
+				var pos = Math.abs( track.scrollLeft );
+				if ( prev ) {
+					prev.hidden = pos <= 2;
+				}
+				if ( next ) {
+					next.hidden = pos >= max - 2;
+				}
+			} );
+		}
+
+		document.addEventListener( 'scroll', function ( event ) {
+			if ( event.target instanceof Element && event.target.matches( '[data-oc-up-track]' ) ) {
+				updateUpArrows();
+			}
+		}, true );
+
+		updateUpArrows();
+
 		( function () {
 			var dragTrack = null;
 			var dragStartX = 0;
@@ -1909,6 +1936,7 @@
 
 		function watchDrawer() {
 			restoreUpsellState();
+			updateUpArrows();
 
 			var bar = document.querySelector( '.oc-shipbar' );
 			var done = ! ! ( bar && bar.classList.contains( 'is-done' ) );
@@ -1931,6 +1959,100 @@
 				varModal.hidden = true;
 			}
 		}
+
+		/* -- a single-variation product adds straight away, no questions -- */
+
+		document.addEventListener( 'click', function ( event ) {
+			var single = event.target.closest( '[data-oc-up-single]' );
+			if ( ! single ) {
+				return;
+			}
+			single.classList.add( 'loading' );
+			var data = new FormData();
+			data.append( 'action', 'oc_cart_add' );
+			data.append( 'product_id', single.dataset.ocUpSingle );
+			data.append( 'variation_id', single.dataset.variation );
+			fetch( ( window.ocL10n || {} ).ajaxUrl || '/wp-admin/admin-ajax.php', {
+				method: 'POST',
+				credentials: 'same-origin',
+				body: data
+			} )
+				.then( function ( r ) { return r.json(); } )
+				.then( function ( out ) {
+					if ( out && out.fragments ) {
+						Object.keys( out.fragments ).forEach( function ( selector ) {
+							document.querySelectorAll( selector ).forEach( function ( el ) {
+								var box = document.createElement( 'div' );
+								box.innerHTML = out.fragments[ selector ];
+								if ( box.firstElementChild ) {
+									el.replaceWith( box.firstElementChild );
+								}
+							} );
+						} );
+					}
+				} );
+		} );
+
+		/* -- coupon: applies inside the panel, no page leaves -- */
+
+		function couponRequest( code, remove, onError ) {
+			var data = new FormData();
+			data.append( 'action', 'oc_cart_coupon' );
+			data.append( 'code', code );
+			if ( remove ) {
+				data.append( 'remove', '1' );
+			}
+			return fetch( ( window.ocL10n || {} ).ajaxUrl || '/wp-admin/admin-ajax.php', {
+				method: 'POST',
+				credentials: 'same-origin',
+				body: data
+			} )
+				.then( function ( r ) { return r.json(); } )
+				.then( function ( out ) {
+					if ( out && out.fragments ) {
+						Object.keys( out.fragments ).forEach( function ( selector ) {
+							document.querySelectorAll( selector ).forEach( function ( el ) {
+								var box = document.createElement( 'div' );
+								box.innerHTML = out.fragments[ selector ];
+								if ( box.firstElementChild ) {
+									el.replaceWith( box.firstElementChild );
+								}
+							} );
+						} );
+					} else if ( out && ! out.success && onError ) {
+						onError( out.data && out.data.message ? out.data.message : '' );
+					}
+				} );
+		}
+
+		document.addEventListener( 'submit', function ( event ) {
+			var form = event.target.closest( '[data-oc-coupon-form]' );
+			if ( ! form ) {
+				return;
+			}
+			event.preventDefault();
+			var input = form.querySelector( 'input[name="coupon_code"]' );
+			var msg = form.querySelector( '[data-oc-coupon-msg]' );
+			var code = ( input.value || '' ).trim();
+			if ( ! code ) {
+				return;
+			}
+			form.classList.add( 'is-busy' );
+			couponRequest( code, false, function ( text ) {
+				form.classList.remove( 'is-busy' );
+				if ( msg ) {
+					msg.textContent = text;
+					msg.hidden = ! text;
+				}
+			} );
+		} );
+
+		document.addEventListener( 'click', function ( event ) {
+			var removeCoupon = event.target.closest( '[data-oc-coupon-remove]' );
+			if ( removeCoupon ) {
+				couponRequest( removeCoupon.dataset.code, true );
+			}
+		} );
 
 		document.addEventListener( 'click', function ( event ) {
 			var opener = event.target.closest( '[data-oc-up-var]' );
@@ -1983,7 +2105,13 @@
 						var row = document.createElement( 'button' );
 						row.type = 'button';
 						row.className = 'oc-vmodal__opt';
-						row.innerHTML = '<span></span><em></em>';
+						row.innerHTML = '<span class="oc-vmodal__optname"></span><em></em>';
+						if ( v.swatch ) {
+							var dot = document.createElement( 'i' );
+							dot.className = 'oc-flt__swatch oc-vmodal__swatch';
+							dot.setAttribute( 'style', v.swatch );
+							row.insertBefore( dot, row.firstChild );
+						}
 						row.querySelector( 'span' ).textContent = v.label;
 						row.querySelector( 'em' ).textContent = v.price;
 						row.addEventListener( 'click', function () {

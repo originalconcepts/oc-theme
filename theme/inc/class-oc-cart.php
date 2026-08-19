@@ -41,6 +41,8 @@ final class Cart {
 		add_action( 'wp_ajax_nopriv_oc_cart_vars', array( $this, 'ajax_vars' ) );
 		add_action( 'wp_ajax_oc_cart_add', array( $this, 'ajax_add' ) );
 		add_action( 'wp_ajax_nopriv_oc_cart_add', array( $this, 'ajax_add' ) );
+		add_action( 'wp_ajax_oc_cart_coupon', array( $this, 'ajax_coupon' ) );
+		add_action( 'wp_ajax_nopriv_oc_cart_coupon', array( $this, 'ajax_coupon' ) );
 	}
 
 	/**
@@ -109,7 +111,7 @@ final class Cart {
 					<?php echo $this->promo_msgs_html(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 					<div class="oc-drawer__scroll">
 						<div data-oc-mcart><?php echo $this->items_html(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
-						<?php if ( $s['up_show'] && 'list' === $s['up_style'] ) : ?>
+						<?php if ( $s['up_show'] && in_array( (string) $s['up_style'], array( 'list', 'slider' ), true ) ) : ?>
 							<?php echo $this->upsells_html(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 						<?php endif; ?>
 					</div>
@@ -360,13 +362,23 @@ final class Cart {
 		}
 
 		if ( ! empty( $s['coupon'] ) ) {
+			$applied = WC()->cart->get_applied_coupons();
+
 			$html .= '<div class="oc-drawer__coupon-wrap">';
-			$html .= '<button type="button" class="oc-drawer__coupon-t" data-oc-coupon-toggle>' . esc_html__( 'Have a coupon code?', 'oc-theme' ) . ' <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>';
-			$html .= '<div class="oc-drawer__coupon-body"><form class="oc-drawer__coupon" method="post" action="' . esc_url( wc_get_cart_url() ) . '">';
-			$html .= '<input type="text" name="coupon_code" placeholder="' . esc_attr__( 'Coupon code', 'oc-theme' ) . '" />';
-			$html .= '<button type="submit" name="apply_coupon" value="1">' . esc_html__( 'Apply', 'oc-theme' ) . '</button>';
-			$html .= wp_nonce_field( 'woocommerce-cart', 'woocommerce-cart-nonce', true, false );
-			$html .= '</form></div>';
+
+			if ( $applied ) {
+				foreach ( $applied as $code ) {
+					$html .= '<span class="oc-drawer__coupon-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 12.5l5 5L19.5 7"/></svg> ' . esc_html( $code ) . '<button type="button" data-oc-coupon-remove data-code="' . esc_attr( $code ) . '" aria-label="' . esc_attr__( 'Remove', 'oc-theme' ) . '">&times;</button></span>';
+				}
+			} else {
+				$html .= '<button type="button" class="oc-drawer__coupon-t" data-oc-coupon-toggle>' . esc_html__( 'Have a coupon code?', 'oc-theme' ) . ' <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>';
+				$html .= '<div class="oc-drawer__coupon-body"><form class="oc-drawer__coupon" data-oc-coupon-form>';
+				$html .= '<input type="text" name="coupon_code" placeholder="' . esc_attr__( 'Coupon code', 'oc-theme' ) . '" />';
+				$html .= '<button type="submit" aria-label="' . esc_attr__( 'Apply', 'oc-theme' ) . '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 12.5l5 5L19.5 7"/></svg></button>';
+				$html .= '<p class="oc-drawer__coupon-msg" data-oc-coupon-msg hidden></p>';
+				$html .= '</form></div>';
+			}
+
 			$html .= '</div>';
 		}
 
@@ -472,8 +484,15 @@ final class Cart {
 				// refresh then drops the product from this list.
 				$html .= '<a class="oc-cartup__add add_to_cart_button ajax_add_to_cart" href="' . esc_url( '?add-to-cart=' . $product->get_id() ) . '" data-product_id="' . absint( $product->get_id() ) . '" data-quantity="1" aria-label="' . esc_attr__( 'Add to cart', 'oc-theme' ) . '" rel="nofollow">' . $plus_svg . '</a>';
 			} elseif ( $product->is_type( 'variable' ) && $product->is_in_stock() ) {
-				// The plus opens a small picker asking which variation.
-				$html .= '<button type="button" class="oc-cartup__add" data-oc-up-var="' . absint( $product->get_id() ) . '" data-name="' . esc_attr( $product->get_name() ) . '" aria-label="' . esc_attr__( 'Add to cart', 'oc-theme' ) . '">' . $plus_svg . '</button>';
+				$live = $this->live_variations( $product );
+
+				if ( 1 === count( $live ) ) {
+					// A single real option: no question, add it straight away.
+					$html .= '<button type="button" class="oc-cartup__add" data-oc-up-single="' . absint( $product->get_id() ) . '" data-variation="' . absint( $live[0]->get_id() ) . '" aria-label="' . esc_attr__( 'Add to cart', 'oc-theme' ) . '">' . $plus_svg . '</button>';
+				} else {
+					// The plus opens a small picker asking which variation.
+					$html .= '<button type="button" class="oc-cartup__add" data-oc-up-var="' . absint( $product->get_id() ) . '" data-name="' . esc_attr( $product->get_name() ) . '" aria-label="' . esc_attr__( 'Add to cart', 'oc-theme' ) . '">' . $plus_svg . '</button>';
+				}
 			} else {
 				$html .= '<a class="oc-cartup__add oc-cartup__add--view" href="' . esc_url( $link ) . '" aria-label="' . esc_attr__( 'View product', 'oc-theme' ) . '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>';
 			}
@@ -586,6 +605,61 @@ final class Cart {
 	}
 
 	/**
+	 * The purchasable, in-stock variations of a variable product.
+	 *
+	 * @param \WC_Product $product Variable product.
+	 * @return array<int,\WC_Product_Variation>
+	 */
+	private function live_variations( \WC_Product $product ): array {
+		$live = array();
+
+		foreach ( $product->get_available_variations( 'objects' ) as $variation ) {
+			if ( $variation->is_purchasable() && $variation->is_in_stock() ) {
+				$live[] = $variation;
+			}
+		}
+
+		return $live;
+	}
+
+	/**
+	 * The variation's swatch style (its first attribute term carrying one) —
+	 * the same colour/image the filters show.
+	 *
+	 * @param \WC_Product_Variation $variation The variation.
+	 */
+	private function variation_swatch( \WC_Product_Variation $variation ): string {
+		foreach ( $variation->get_attributes() as $tax => $slug ) {
+			$slug = (string) $slug;
+			if ( '' === $slug ) {
+				continue;
+			}
+
+			foreach ( array( (string) $tax, rawurldecode( (string) $tax ) ) as $taxonomy ) {
+				if ( ! taxonomy_exists( $taxonomy ) ) {
+					continue;
+				}
+				$term = get_term_by( 'slug', $slug, $taxonomy );
+				if ( ! $term instanceof \WP_Term ) {
+					continue;
+				}
+
+				$image = (string) get_term_meta( $term->term_id, 'oc_swatch_image', true );
+				if ( '' !== $image ) {
+					return 'background-image:url(' . esc_url( $image ) . ');background-size:cover;';
+				}
+
+				$color = (string) get_term_meta( $term->term_id, 'oc_swatch_color', true );
+				if ( '' !== $color ) {
+					return 'background-color:' . sanitize_hex_color( $color ) . ';';
+				}
+			}
+		}
+
+		return '';
+	}
+
+	/**
 	 * The purchasable variations of a product, for the in-panel picker.
 	 */
 	public function ajax_vars(): void {
@@ -601,15 +675,12 @@ final class Cart {
 
 		$out = array();
 
-		foreach ( $product->get_available_variations( 'objects' ) as $variation ) {
-			if ( ! $variation->is_purchasable() || ! $variation->is_in_stock() ) {
-				continue;
-			}
-
+		foreach ( $this->live_variations( $product ) as $variation ) {
 			$out[] = array(
-				'id'    => $variation->get_id(),
-				'label' => WooCommerce::variation_label( $variation ),
-				'price' => html_entity_decode( wp_strip_all_tags( wc_price( (float) $variation->get_price() ) ), ENT_QUOTES, 'UTF-8' ),
+				'id'     => $variation->get_id(),
+				'label'  => WooCommerce::variation_label( $variation ),
+				'price'  => html_entity_decode( wp_strip_all_tags( wc_price( (float) $variation->get_price() ) ), ENT_QUOTES, 'UTF-8' ),
+				'swatch' => $this->variation_swatch( $variation ),
 			);
 		}
 
@@ -641,6 +712,40 @@ final class Cart {
 			wp_send_json_error();
 		}
 
+		WC()->cart->calculate_totals();
+		\WC_AJAX::get_refreshed_fragments();
+	}
+
+	/**
+	 * Apply or remove a coupon from inside the panel — no page leaves.
+	 */
+	public function ajax_coupon(): void {
+		// phpcs:disable WordPress.Security.NonceVerification.Missing -- same surface as Woo's own cart ajax.
+		$code   = isset( $_POST['code'] ) ? wc_format_coupon_code( wp_unslash( (string) $_POST['code'] ) ) : '';
+		$remove = ! empty( $_POST['remove'] );
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
+
+		if ( '' === $code ) {
+			wp_send_json_error( array( 'message' => __( 'Coupon code', 'oc-theme' ) ) );
+		}
+
+		if ( $remove ) {
+			WC()->cart->remove_coupon( $code );
+			WC()->cart->calculate_totals();
+			wc_clear_notices();
+			\WC_AJAX::get_refreshed_fragments();
+		}
+
+		$ok = WC()->cart->apply_coupon( $code );
+
+		if ( ! $ok ) {
+			$notices = wc_get_notices( 'error' );
+			wc_clear_notices();
+			$message = $notices ? wp_strip_all_tags( (string) $notices[0]['notice'] ) : __( 'This coupon cannot be applied.', 'oc-theme' );
+			wp_send_json_error( array( 'message' => $message ) );
+		}
+
+		wc_clear_notices();
 		WC()->cart->calculate_totals();
 		\WC_AJAX::get_refreshed_fragments();
 	}
@@ -759,7 +864,7 @@ final class Cart {
 
 							$up_icons = array(
 								'side'     => '<rect x="2" y="2" width="10" height="28" rx="2"/><rect x="16" y="2" width="30" height="8" rx="2" opacity=".35"/><rect x="16" y="14" width="30" height="8" rx="2" opacity=".35"/><rect x="16" y="26" width="30" height="4" rx="2" opacity=".35"/>',
-								'list'     => '<rect x="2" y="2" width="44" height="7" rx="2" opacity=".35"/><rect x="2" y="12" width="44" height="7" rx="2" opacity=".35"/><rect x="2" y="23" width="13" height="7" rx="2"/><rect x="18" y="23" width="13" height="7" rx="2"/><rect x="33" y="23" width="13" height="7" rx="2"/>',
+								'list'     => '<rect x="2" y="2" width="44" height="6" rx="2" opacity=".35"/><rect x="2" y="12" width="8" height="6" rx="1.5"/><rect x="13" y="13.5" width="33" height="3" rx="1.5" opacity=".55"/><rect x="2" y="21" width="8" height="6" rx="1.5"/><rect x="13" y="22.5" width="33" height="3" rx="1.5" opacity=".55"/>',
 								'slider'   => '<rect x="2" y="2" width="44" height="7" rx="2" opacity=".35"/><rect x="8" y="14" width="12" height="14" rx="2"/><rect x="23" y="14" width="12" height="14" rx="2"/><rect x="38" y="14" width="8" height="14" rx="2" opacity=".55"/><path d="M2 21l3-2.5L2 16z"/>',
 								'collapse' => '<rect x="2" y="2" width="44" height="14" rx="2" opacity=".35"/><rect x="2" y="20" width="44" height="10" rx="2"/><path d="M40 23.5h4M42 21.5v4" stroke="#fff" stroke-width="1.6" fill="none"/>',
 							);
