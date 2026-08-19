@@ -1896,3 +1896,9 @@ msgstr "צבע רקע"
 
 msgid "Default"
 msgstr "ברירת מחדל"
+
+msgid "%s per unit"
+msgstr "%s ליח׳"
+
+msgid "Active coupons"
+msgstr "קופונים פעילים"

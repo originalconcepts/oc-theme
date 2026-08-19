@@ -1961,7 +1961,7 @@
 
 		// Fragments replace drawer pieces — re-apply remembered state and
 		// notice the free-shipping moment.
-		new MutationObserver( watchDrawer ).observe( drawer, { subtree: true, childList: true } );
+		new MutationObserver( watchDrawer ).observe( drawer, { subtree: true, childList: true, attributes: true, attributeFilter: [ 'class', 'hidden' ] } );
 
 		/* -- upsell plus on a variable product: a small picker asks which -- */
 

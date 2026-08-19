@@ -191,6 +191,15 @@ final class Cart {
 			return '<div class="oc-mcart__empty"><p>' . esc_html( '' !== $empty ? $empty : __( 'Your cart is empty', 'oc-theme' ) ) . '</p></div>';
 		}
 
+		// Product-specific promotion messages, pinned beneath the row of the
+		// last cart line each one refers to.
+		$by_key = array();
+		foreach ( $this->promo_messages() as $msg ) {
+			if ( ! empty( $msg['keys'] ) ) {
+				$by_key[ (string) end( $msg['keys'] ) ][] = $msg;
+			}
+		}
+
 		$html = '<ul class="oc-mcart">';
 
 		foreach ( array_reverse( WC()->cart->get_cart(), true ) as $key => $item ) {
@@ -248,7 +257,8 @@ final class Cart {
 			$html .= '<div class="oc-mcart__prices">';
 			$html .= '<span class="oc-mcart__line">' . $line . '</span>';
 			if ( $qty > 1 ) {
-				$html .= '<span class="oc-mcart__each">' . WC()->cart->get_product_price( $product ) . '</span>';
+				/* translators: %s: single unit price. */
+				$html .= '<span class="oc-mcart__each">' . sprintf( esc_html__( '%s per unit', 'oc-theme' ), WC()->cart->get_product_price( $product ) ) . '</span>';
 			}
 			$html .= '</div>';
 
@@ -263,6 +273,12 @@ final class Cart {
 			$html .= '</div>';
 
 			$html .= '</li>';
+
+			if ( isset( $by_key[ (string) $key ] ) ) {
+				foreach ( $by_key[ (string) $key ] as $msg ) {
+					$html .= '<li class="oc-mcart__promoli">' . $this->promo_msg_row( $msg ) . '</li>';
+				}
+			}
 		}
 
 		$html .= '</ul>';
@@ -317,10 +333,10 @@ final class Cart {
 			}
 
 			$html .= '<span class="oc-mcart__attr">';
+			$html .= '<span class="oc-mcart__attr-name">' . esc_html( $label ) . ':</span> ';
 			if ( '' !== $swatch ) {
 				$html .= '<i class="oc-mcart__attr-swatch" style="' . $swatch . '"></i>';
 			}
-			$html .= '<span class="oc-mcart__attr-name">' . esc_html( $label ) . ':</span> ';
 			$html .= '<strong>' . esc_html( $value ) . '</strong>';
 			$html .= '</span>';
 		}
@@ -428,6 +444,7 @@ final class Cart {
 			$html .= '<div class="oc-drawer__coupon-wrap">';
 
 			if ( $applied ) {
+				$html .= '<span class="oc-drawer__coupon-head">' . esc_html__( 'Active coupons', 'oc-theme' ) . '</span>';
 				foreach ( $applied as $code ) {
 					$html .= '<span class="oc-drawer__coupon-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 12.5l5 5L19.5 7"/></svg> ' . esc_html( $code ) . '<button type="button" data-oc-coupon-remove data-code="' . esc_attr( $code ) . '" aria-label="' . esc_attr__( 'Remove', 'oc-theme' ) . '">&times;</button></span>';
 				}
@@ -461,21 +478,52 @@ final class Cart {
 	}
 
 	/**
-	 * Promotion King's cart nudges ("second item 20% off"), when the plugin
-	 * is around — its own shortcode builds the markup.
+	 * Promotion King's structured messages, when its panel API is around.
+	 *
+	 * @return array<int,array{text:string,keys:array<int,string>,applied:bool}>
+	 */
+	private function promo_messages(): array {
+		if ( ! class_exists( '\\PromoEngine\\Cart' ) || ! method_exists( '\\PromoEngine\\Cart', 'instance' ) ) {
+			return array();
+		}
+
+		$cart = \PromoEngine\Cart::instance();
+
+		return $cart && method_exists( $cart, 'panel_messages' ) ? (array) $cart->panel_messages() : array();
+	}
+
+	/**
+	 * One promotion message row — a flat strip, check for an applied one,
+	 * a percent tag for a nudge.
+	 *
+	 * @param array{text:string,applied:bool} $msg Message.
+	 */
+	private function promo_msg_row( array $msg ): string {
+		$icon = $msg['applied']
+			? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 12.5l5 5L19.5 7"/></svg>'
+			: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 5L5 19M7.5 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM16.5 18a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/></svg>';
+
+		return '<div class="oc-mcart__promo' . ( $msg['applied'] ? ' oc-mcart__promo--applied' : '' ) . '">' . $icon . '<span>' . esc_html( (string) $msg['text'] ) . '</span></div>';
+	}
+
+	/**
+	 * Messages that belong to no single product — a quiet block after the
+	 * items; product-specific ones render inside items_html instead.
 	 */
 	private function promo_msgs_html(): string {
-		if ( ! shortcode_exists( 'promeng_cart_messages' ) ) {
+		$rows = '';
+
+		foreach ( $this->promo_messages() as $msg ) {
+			if ( empty( $msg['keys'] ) ) {
+				$rows .= $this->promo_msg_row( $msg );
+			}
+		}
+
+		if ( '' === $rows ) {
 			return '<div data-oc-promo-msgs hidden></div>';
 		}
 
-		$html = do_shortcode( '[promeng_cart_messages]' );
-
-		if ( '' === trim( $html ) ) {
-			return '<div data-oc-promo-msgs hidden></div>';
-		}
-
-		return '<div class="oc-drawer__promos" data-oc-promo-msgs>' . $html . '</div>';
+		return '<div class="oc-drawer__promos" data-oc-promo-msgs>' . $rows . '</div>';
 	}
 
 	/* ------------------------------------------------------------ upsells */
@@ -805,7 +853,7 @@ final class Cart {
 		if ( ! $ok ) {
 			$notices = wc_get_notices( 'error' );
 			wc_clear_notices();
-			$message = $notices ? wp_strip_all_tags( (string) $notices[0]['notice'] ) : __( 'This coupon cannot be applied.', 'oc-theme' );
+			$message = $notices ? html_entity_decode( wp_strip_all_tags( (string) $notices[0]['notice'] ), ENT_QUOTES, 'UTF-8' ) : __( 'This coupon cannot be applied.', 'oc-theme' );
 			wp_send_json_error( array( 'message' => $message ) );
 		}
 
@@ -968,7 +1016,26 @@ final class Cart {
 								<?php endforeach; ?>
 							</select>
 							<label style="margin-inline-start:12px;"><?php esc_html_e( 'Max products', 'oc-theme' ); ?> <input type="number" name="up_max" value="<?php echo esc_attr( (string) $s['up_max'] ); ?>" min="1" max="12" style="width:60px;" /></label>
-							<label style="margin-inline-start:12px;"><?php esc_html_e( 'Background colour', 'oc-theme' ); ?> <input type="text" name="up_bg" value="<?php echo esc_attr( (string) $s['up_bg'] ); ?>" placeholder="<?php esc_attr_e( 'Default', 'oc-theme' ); ?>" style="width:90px;" dir="ltr" /></label>
+							<label style="margin-inline-start:12px;"><?php esc_html_e( 'Background colour', 'oc-theme' ); ?>
+								<input type="color" id="oc-up-bg-pick" value="<?php echo esc_attr( '' !== (string) $s['up_bg'] ? (string) $s['up_bg'] : '#f5f5f3' ); ?>" style="vertical-align:middle;inline-size:34px;block-size:26px;padding:0;border:1px solid #ccc;" />
+								<input type="hidden" name="up_bg" id="oc-up-bg" value="<?php echo esc_attr( (string) $s['up_bg'] ); ?>" />
+								<button type="button" class="button-link" id="oc-up-bg-clear" style="margin-inline-start:6px;<?php echo '' === (string) $s['up_bg'] ? 'display:none;' : ''; ?>"><?php esc_html_e( 'Default', 'oc-theme' ); ?></button>
+							</label>
+							<script>
+							( function () {
+								var pick = document.getElementById( 'oc-up-bg-pick' );
+								var real = document.getElementById( 'oc-up-bg' );
+								var clear = document.getElementById( 'oc-up-bg-clear' );
+								pick.addEventListener( 'input', function () {
+									real.value = pick.value;
+									clear.style.display = '';
+								} );
+								clear.addEventListener( 'click', function () {
+									real.value = '';
+									clear.style.display = 'none';
+								} );
+							} )();
+							</script>
 							<p class="description"><?php esc_html_e( 'Products already in the cart are never offered; adding one removes it from the list.', 'oc-theme' ); ?></p>
 						</td>
 					</tr>
