@@ -5418,6 +5418,9 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
  * minimize chevron they overlap nothing. */
 .oc-cartup--collapse { position: relative; }
 
+/* the arrows must anchor to the block (head included), not the body */
+.oc-cartup--collapse .oc-cartup__body { position: static; }
+
 .oc-cartup--collapse .oc-cartup__arrow {
 	inset-block-start: 9px;
 	translate: none;
