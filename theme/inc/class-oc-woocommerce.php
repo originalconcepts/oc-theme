@@ -112,7 +112,7 @@ final class WooCommerce {
 
 		// Cart drawer shell — WooCommerce's fragments fill it after an
 		// ajax add, so it needs no bespoke endpoint.
-		add_action( 'wp_footer', array( $this, 'cart_drawer' ) );
+		// The cart drawer itself lives in the Cart class now.
 		add_action( 'wp_footer', array( $this, 'thumbs_max_attribute' ), 5 );
 
 		// Breadcrumb: the position is read inside the renderer, so one hook per
@@ -122,8 +122,6 @@ final class WooCommerce {
 		add_action( 'woocommerce_archive_description', array( $this, 'crumbs_below' ), 5 );
 		add_action( 'woocommerce_single_product_summary', array( $this, 'crumbs_below' ), 6 );
 
-		// The header cart counter stays fresh after every ajax add.
-		add_filter( 'woocommerce_add_to_cart_fragments', array( $this, 'cart_count_fragment' ) );
 
 		// Section headings follow their title settings.
 		add_filter( 'woocommerce_product_related_products_heading', array( $this, 'related_heading' ) );
@@ -267,20 +265,6 @@ final class WooCommerce {
 	 */
 	public function gallery_image_size(): string {
 		return 'woocommerce_single';
-	}
-
-	/**
-	 * Header cart counter, replaced by cart fragments on every ajax add.
-	 *
-	 * @param array $fragments Fragment map.
-	 * @return array
-	 */
-	public function cart_count_fragment( array $fragments ): array {
-		$count = WC()->cart->get_cart_contents_count();
-
-		$fragments['span.oc-cart-count'] = '<span class="oc-cart-count">' . absint( $count ) . '</span>';
-
-		return $fragments;
 	}
 
 	/**
@@ -1239,26 +1223,6 @@ final class WooCommerce {
 		}
 
 		wp_send_json_success();
-	}
-
-	/**
-	 * Cart drawer shell. WooCommerce's cart-fragments script populates
-	 * .widget_shopping_cart_content on every ajax add, so the drawer stays in
-	 * sync with no custom endpoint.
-	 */
-	public function cart_drawer(): void {
-		?>
-		<div class="oc-drawer" data-oc-cart-drawer hidden>
-			<div class="oc-drawer__overlay" data-oc-drawer-close tabindex="-1"></div>
-			<aside class="oc-drawer__panel" role="dialog" aria-modal="true" aria-label="<?php esc_attr_e( 'Cart', 'oc-theme' ); ?>">
-				<header class="oc-drawer__head">
-					<h2><?php esc_html_e( 'Cart', 'oc-theme' ); ?></h2>
-					<button type="button" class="oc-drawer__close" data-oc-drawer-close aria-label="<?php esc_attr_e( 'Close', 'oc-theme' ); ?>">&times;</button>
-				</header>
-				<div class="widget_shopping_cart_content"></div>
-			</aside>
-		</div>
-		<?php
 	}
 
 	/**

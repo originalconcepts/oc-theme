@@ -1568,14 +1568,19 @@
 		} );
 
 		// Simple products add through Woo's own ajax handler; open the drawer
-		// right away and let cart fragments fill it when the add completes.
+		// right away (when configured to) and let cart fragments fill it
+		// when the add completes.
+		var openOnAdd = 1 === Number( ( window.ocL10n || {} ).cartOpenOnAdd );
+
 		document.addEventListener( 'click', function ( event ) {
-			var btn = event.target.closest( '.oc-card-atc.ajax_add_to_cart' );
+			var btn = event.target.closest( '.oc-card-atc.ajax_add_to_cart, .oc-cartup__add.ajax_add_to_cart' );
 			if ( ! btn ) {
 				return;
 			}
 			btn.classList.add( 'loading' );
-			openDrawer();
+			if ( openOnAdd && ! btn.closest( '[data-oc-cart-drawer]' ) ) {
+				openDrawer();
+			}
 			// Woo's add-to-cart JS handles the request itself.
 			setTimeout( function () {
 				btn.classList.remove( 'loading' );
@@ -1585,6 +1590,117 @@
 				btn.classList.remove( 'added' );
 			}, 2600 );
 		} );
+
+		// A non-ajax add (the single product form) lands back with
+		// ?add-to-cart / added-to-cart in the url — open the drawer then too.
+		if ( openOnAdd && /(?:^|[?&])(?:add|added)-to-cart=/.test( window.location.search ) ) {
+			setTimeout( openDrawer, 350 );
+		}
+
+		/* -- live quantity: steppers post the new count, the answer is the
+		 *    same fragment payload Woo's own add uses -- */
+
+		var qtyTimer = null;
+
+		function sendQty( wrap, qty ) {
+			wrap.classList.add( 'is-busy' );
+			var data = new FormData();
+			data.append( 'action', 'oc_cart_qty' );
+			data.append( 'key', wrap.dataset.key );
+			data.append( 'qty', String( qty ) );
+
+			fetch( ( window.ocL10n || {} ).ajaxUrl || '/wp-admin/admin-ajax.php', {
+				method: 'POST',
+				credentials: 'same-origin',
+				body: data
+			} )
+				.then( function ( r ) { return r.json(); } )
+				.then( function ( res ) {
+					if ( res && res.fragments ) {
+						Object.keys( res.fragments ).forEach( function ( selector ) {
+							document.querySelectorAll( selector ).forEach( function ( el ) {
+								var box = document.createElement( 'div' );
+								box.innerHTML = res.fragments[ selector ];
+								if ( box.firstElementChild ) {
+									el.replaceWith( box.firstElementChild );
+								}
+							} );
+						} );
+						// Let Woo's fragments cache pick the change up too.
+						if ( window.sessionStorage && window.wc_cart_fragments_params ) {
+							try {
+								sessionStorage.setItem( wc_cart_fragments_params.fragment_name, JSON.stringify( res.fragments ) );
+							} catch ( e ) { /* storage full — cosmetic only */ }
+						}
+					}
+				} )
+				.catch( function () {
+					wrap.classList.remove( 'is-busy' );
+				} );
+		}
+
+		document.addEventListener( 'click', function ( event ) {
+			var minus = event.target.closest( '[data-oc-qty-minus]' );
+			var plus = event.target.closest( '[data-oc-qty-plus]' );
+			var remove = event.target.closest( '[data-oc-qty-remove]' );
+
+			if ( remove ) {
+				sendQty( remove, 0 );
+				return;
+			}
+
+			if ( ! minus && ! plus ) {
+				return;
+			}
+
+			var wrap = ( minus || plus ).closest( '[data-oc-qty]' );
+			var input = wrap.querySelector( 'input' );
+			var next = Math.max( 0, ( parseInt( input.value, 10 ) || 1 ) + ( plus ? 1 : -1 ) );
+			input.value = String( next );
+
+			clearTimeout( qtyTimer );
+			qtyTimer = setTimeout( function () {
+				sendQty( wrap, next );
+			}, 350 );
+		} );
+
+		document.addEventListener( 'change', function ( event ) {
+			var input = event.target.closest( '[data-oc-qty] input' );
+			if ( ! input ) {
+				return;
+			}
+			var wrap = input.closest( '[data-oc-qty]' );
+			sendQty( wrap, Math.max( 0, parseInt( input.value, 10 ) || 1 ) );
+		} );
+
+		/* -- the minimizable upsell block remembers its state -- */
+
+		document.addEventListener( 'click', function ( event ) {
+			var toggle = event.target.closest( '[data-oc-up-toggle]' );
+			if ( ! toggle ) {
+				return;
+			}
+			var block = toggle.closest( '.oc-cartup--collapse' );
+			var min = block.classList.toggle( 'is-min' );
+			try {
+				localStorage.setItem( 'oc-cartup-min', min ? '1' : '0' );
+			} catch ( e ) { /* private mode */ }
+		} );
+
+		function restoreUpsellState() {
+			try {
+				if ( '1' === localStorage.getItem( 'oc-cartup-min' ) ) {
+					document.querySelectorAll( '.oc-cartup--collapse' ).forEach( function ( el ) {
+						el.classList.add( 'is-min' );
+					} );
+				}
+			} catch ( e ) { /* private mode */ }
+		}
+
+		restoreUpsellState();
+
+		// Fragments replace the upsell block — re-apply the remembered state.
+		new MutationObserver( restoreUpsellState ).observe( drawer, { subtree: true, childList: true } );
 	}
 
 	/* ---------- product tabs → accordion ---------- */

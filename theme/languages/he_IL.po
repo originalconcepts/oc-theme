@@ -1701,3 +1701,144 @@ msgstr "הצגת שם הערך לצד הדוגמית"
 
 msgid "Show the value name next to the swatch on mobile"
 msgstr "הצגת שם הערך לצד הדוגמית במובייל"
+
+msgid "Cart & mini-cart"
+msgstr "עגלה ומיני-קארט"
+
+msgid "Panel"
+msgstr "פאנל"
+
+msgid "Opens from"
+msgstr "נפתח מצד"
+
+msgid "Width"
+msgstr "רוחב"
+
+msgid "Empty-cart text"
+msgstr "טקסט סל ריק"
+
+msgid "Your cart is empty"
+msgstr "סל הקניות שלך ריק"
+
+msgid "After adding to cart"
+msgstr "אחרי הוספה לסל"
+
+msgid "Open the panel automatically"
+msgstr "פתיחת הפאנל אוטומטית"
+
+msgid "Header counter"
+msgstr "מונה בכותרת"
+
+msgid "Total units"
+msgstr "סך כל היחידות"
+
+msgid "Distinct products"
+msgstr "מוצרים שונים"
+
+msgid "Free-shipping bar"
+msgstr "פס משלוח חינם"
+
+msgid "Progress bar"
+msgstr "פס התקדמות"
+
+msgid "Show progress toward free shipping"
+msgstr "הצגת התקדמות לקבלת משלוח חינם"
+
+msgid "Threshold override"
+msgstr "דריסת סף ידנית"
+
+msgid "Auto"
+msgstr "אוטומטי"
+
+msgid "Empty = taken automatically from the free-shipping minimum in the shipping zones."
+msgstr "ריק = נלקח אוטומטית מהמינימום למשלוח חינם שבאזורי המשלוח."
+
+msgid "[sum] left for free shipping"
+msgstr "נשארו [sum] למשלוח חינם"
+
+msgid "You earned free shipping!"
+msgstr "מגיע לך משלוח חינם!"
+
+msgid "Upsells in the panel"
+msgstr "מוצרים מוצעים בפאנל"
+
+msgid "Upsells"
+msgstr "מוצרים מוצעים"
+
+msgid "Show recommended products in the panel"
+msgstr "הצגת מוצרים מומלצים בפאנל"
+
+msgid "You may also like"
+msgstr "אולי יעניין אותך גם"
+
+msgid "Side strip inside the panel"
+msgstr "רצועת צד בתוך הפאנל"
+
+msgid "After the cart items"
+msgstr "אחרי המוצרים שבסל"
+
+msgid "Above the total — minimizable"
+msgstr "מעל הסיכום — ניתן למזעור"
+
+msgid "Source"
+msgstr "מקור"
+
+msgid "The cart items' own upsells"
+msgstr "המוצרים המוצעים שהוגדרו למוצרים שבסל"
+
+msgid "A chosen category"
+msgstr "קטגוריה נבחרת"
+
+msgid "— Category —"
+msgstr "— קטגוריה —"
+
+msgid "Max products"
+msgstr "מקסימום מוצרים"
+
+msgid "Products already in the cart are never offered; adding one removes it from the list."
+msgstr "מוצר שכבר בסל לעולם לא יוצע; הוספת מוצר מוצעת מסירה אותו מהרשימה."
+
+msgid "Panel footer"
+msgstr "תחתית הפאנל"
+
+msgid "Checkout button"
+msgstr "כפתור תשלום"
+
+msgid "Show the total on the button"
+msgstr "הצגת הסכום על הכפתור"
+
+msgid "Show a coupon field"
+msgstr "הצגת שדה קופון"
+
+msgid "Link to the cart page"
+msgstr "קישור לעמוד העגלה"
+
+msgid "Checkout"
+msgstr "לתשלום"
+
+msgid "Subtotal"
+msgstr "סכום ביניים"
+
+msgid "Some items in the cart are out of stock — remove them to check out."
+msgstr "חלק מהמוצרים בסל אזלו מהמלאי — יש להסיר אותם כדי להמשיך לתשלום."
+
+msgid "Coupon code"
+msgstr "קוד קופון"
+
+msgid "View cart"
+msgstr "לצפייה בעגלה"
+
+msgid "Minimize"
+msgstr "מזעור"
+
+msgid "View product"
+msgstr "לצפייה במוצר"
+
+msgid "Decrease quantity"
+msgstr "הפחתת כמות"
+
+msgid "Increase quantity"
+msgstr "הגדלת כמות"
+
+msgid "Quantity"
+msgstr "כמות"

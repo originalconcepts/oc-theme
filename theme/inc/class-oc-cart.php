@@ -1,0 +1,652 @@
+<?php
+/**
+ * Cart & mini-cart: the sliding cart panel — item rows with live quantity,
+ * a free-shipping progress bar, in-panel upsells and a settings screen.
+ *
+ * @package OC_Theme
+ */
+
+declare( strict_types = 1 );
+
+namespace OC\Theme;
+
+defined( 'ABSPATH' ) || exit;
+
+/**
+ * Mini-cart engine + admin.
+ */
+final class Cart {
+
+	/**
+	 * Hook in.
+	 */
+	public function register(): void {
+		add_action( 'admin_menu', array( $this, 'menu' ), 56 );
+		add_action( 'admin_post_oc_cart_save', array( $this, 'save_settings' ) );
+
+		add_action( 'wp_footer', array( $this, 'drawer' ) );
+		add_filter( 'woocommerce_add_to_cart_fragments', array( $this, 'fragments' ) );
+
+		add_action( 'wp_ajax_oc_cart_qty', array( $this, 'ajax_qty' ) );
+		add_action( 'wp_ajax_nopriv_oc_cart_qty', array( $this, 'ajax_qty' ) );
+	}
+
+	/**
+	 * Settings with defaults.
+	 *
+	 * @return array<string,mixed>
+	 */
+	public static function settings(): array {
+		$saved = get_option( 'oc_cart' );
+
+		return wp_parse_args(
+			is_array( $saved ) ? $saved : array(),
+			array(
+				'side'         => 'left',    // left | right.
+				'width'        => 480,
+				'title'        => '',
+				'empty_text'   => '',
+				'open_on_add'  => 1,
+				'count_method' => 'total',   // total | rows.
+				'ship_bar'     => 1,
+				'ship_goal'    => '',        // empty = auto from shipping zones.
+				'ship_text'    => '',
+				'ship_done'    => '',
+				'up_show'      => 0,
+				'up_title'     => '',
+				'up_source'    => 'items',   // items | category.
+				'up_cat'       => 0,
+				'up_max'       => 5,
+				'up_style'     => 'side',    // side | list | collapse.
+				'coupon'       => 0,
+				'btn_total'    => 0,
+				'cart_link'    => 0,
+			)
+		);
+	}
+
+	/* -------------------------------------------------------------- front */
+
+	/**
+	 * The drawer shell. Everything dynamic inside is a cart fragment, so
+	 * every add/remove/quantity change refreshes it without a reload.
+	 */
+	public function drawer(): void {
+		if ( is_admin() || is_cart() || is_checkout() ) {
+			return;
+		}
+
+		$s     = self::settings();
+		$title = '' !== (string) $s['title'] ? (string) $s['title'] : __( 'Cart', 'oc-theme' );
+		$side  = 'right' === $s['side'] ? 'right' : 'left';
+		?>
+		<div class="oc-drawer oc-drawer--<?php echo esc_attr( $side ); ?><?php echo 'side' === $s['up_style'] && $s['up_show'] ? ' oc-drawer--upside' : ''; ?>" data-oc-cart-drawer hidden style="--oc-drawer-w:<?php echo absint( $s['width'] ); ?>px">
+			<div class="oc-drawer__overlay" data-oc-drawer-close tabindex="-1"></div>
+			<aside class="oc-drawer__panel" role="dialog" aria-modal="true" aria-label="<?php echo esc_attr( $title ); ?>">
+				<div class="oc-drawer__main">
+					<header class="oc-drawer__head">
+						<h2><?php echo esc_html( $title ); ?></h2>
+						<button type="button" class="oc-drawer__close" data-oc-drawer-close aria-label="<?php esc_attr_e( 'Close', 'oc-theme' ); ?>">&times;</button>
+					</header>
+					<?php echo $this->ship_bar_html(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built escaped. ?>
+					<div class="oc-drawer__scroll">
+						<div data-oc-mcart><?php echo $this->items_html(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
+						<?php if ( $s['up_show'] && 'list' === $s['up_style'] ) : ?>
+							<?php echo $this->upsells_html(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+						<?php endif; ?>
+					</div>
+					<?php if ( $s['up_show'] && 'collapse' === $s['up_style'] ) : ?>
+						<?php echo $this->upsells_html(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+					<?php endif; ?>
+					<?php echo $this->foot_html(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+				</div>
+				<?php if ( $s['up_show'] && 'side' === $s['up_style'] ) : ?>
+					<?php echo $this->upsells_html(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+				<?php endif; ?>
+			</aside>
+		</div>
+		<?php
+	}
+
+	/**
+	 * All the drawer's dynamic pieces ride the cart-fragments channel.
+	 *
+	 * @param array<string,string> $fragments Fragment map.
+	 * @return array<string,string>
+	 */
+	public function fragments( array $fragments ): array {
+		$s = self::settings();
+
+		$fragments['[data-oc-mcart]']    = '<div data-oc-mcart>' . $this->items_html() . '</div>';
+		$fragments['[data-oc-ship-bar]'] = $this->ship_bar_html();
+		$fragments['[data-oc-cart-up]']  = $this->upsells_html();
+		$fragments['[data-oc-cart-foot]'] = $this->foot_html();
+
+		// The header badge follows the configured counting method.
+		$count = 'rows' === $s['count_method']
+			? count( WC()->cart->get_cart() )
+			: WC()->cart->get_cart_contents_count();
+
+		$fragments['span.oc-cart-count'] = '<span class="oc-cart-count">' . absint( $count ) . '</span>';
+
+		return $fragments;
+	}
+
+	/**
+	 * The item rows: thumbnail, linked title, variation data, sale-aware
+	 * prices, a live quantity stepper and a remove control — newest first.
+	 * Out-of-stock items are marked and lose their stepper.
+	 */
+	private function items_html(): string {
+		if ( WC()->cart->is_empty() ) {
+			$empty = (string) self::settings()['empty_text'];
+
+			return '<div class="oc-mcart__empty"><p>' . esc_html( '' !== $empty ? $empty : __( 'Your cart is empty', 'oc-theme' ) ) . '</p></div>';
+		}
+
+		$html = '<ul class="oc-mcart">';
+
+		foreach ( array_reverse( WC()->cart->get_cart(), true ) as $key => $item ) {
+			$product = apply_filters( 'woocommerce_cart_item_product', $item['data'], $item, $key );
+
+			if ( ! $product instanceof \WC_Product || ! $product->exists() || $item['quantity'] <= 0 ) {
+				continue;
+			}
+
+			$name     = apply_filters( 'woocommerce_cart_item_name', $product->get_name(), $item, $key );
+			$thumb    = apply_filters( 'woocommerce_cart_item_thumbnail', $product->get_image( 'woocommerce_thumbnail' ), $item, $key );
+			$link     = apply_filters( 'woocommerce_cart_item_permalink', $product->is_visible() ? $product->get_permalink( $item ) : '', $item, $key );
+			$in_stock = $product->is_in_stock();
+			$qty      = (int) $item['quantity'];
+
+			// Sale items show the crossed-out original next to the sale total.
+			$regular = (float) $product->get_regular_price();
+
+			if ( $product->is_on_sale() && $regular > 0 ) {
+				$line = '<del>' . wc_price( $regular * $qty ) . '</del> <ins>' . wc_price( (float) $product->get_price() * $qty ) . '</ins>';
+			} else {
+				$line = WC()->cart->get_product_subtotal( $product, $qty );
+			}
+
+			$html .= '<li class="oc-mcart__item' . ( $in_stock ? '' : ' oc-mcart__item--oos' ) . '">';
+
+			$html .= '' === $link
+				? '<span class="oc-mcart__media">' . $thumb . '</span>'
+				: '<a class="oc-mcart__media" href="' . esc_url( $link ) . '">' . $thumb . '</a>';
+
+			$html .= '<div class="oc-mcart__info">';
+			$html .= '' === $link
+				? '<span class="oc-mcart__name">' . wp_kses_post( $name ) . '</span>'
+				: '<a class="oc-mcart__name" href="' . esc_url( $link ) . '">' . wp_kses_post( $name ) . '</a>';
+			$html .= wc_get_formatted_cart_item_data( $item );
+			$html .= '<span class="oc-mcart__line">' . $line . '</span>';
+
+			if ( $qty > 1 ) {
+				$html .= '<span class="oc-mcart__each">' . WC()->cart->get_product_price( $product ) . '</span>';
+			}
+
+			if ( $in_stock ) {
+				$html .= '<span class="oc-mcart__qty" data-oc-qty data-key="' . esc_attr( $key ) . '">';
+				$html .= '<button type="button" data-oc-qty-minus aria-label="' . esc_attr__( 'Decrease quantity', 'oc-theme' ) . '">&minus;</button>';
+				$html .= '<input type="text" inputmode="numeric" value="' . esc_attr( (string) $qty ) . '" aria-label="' . esc_attr__( 'Quantity', 'oc-theme' ) . '" />';
+				$html .= '<button type="button" data-oc-qty-plus aria-label="' . esc_attr__( 'Increase quantity', 'oc-theme' ) . '">+</button>';
+				$html .= '</span>';
+			} else {
+				$html .= '<span class="oc-mcart__oos">' . esc_html__( 'Out of stock', 'oc-theme' ) . '</span>';
+			}
+
+			$html .= '</div>';
+
+			$html .= '<button type="button" class="oc-mcart__remove" data-oc-qty-remove data-key="' . esc_attr( $key ) . '" aria-label="' . esc_attr__( 'Remove', 'oc-theme' ) . '">&times;</button>';
+			$html .= '</li>';
+		}
+
+		$html .= '</ul>';
+
+		return $html;
+	}
+
+	/**
+	 * Free-shipping progress bar. The goal comes from the shipping zones'
+	 * free-shipping minimum unless overridden in the settings.
+	 */
+	private function ship_bar_html(): string {
+		$s = self::settings();
+
+		if ( empty( $s['ship_bar'] ) || WC()->cart->is_empty() ) {
+			return '<div data-oc-ship-bar hidden></div>';
+		}
+
+		$goal = (float) $s['ship_goal'];
+
+		if ( $goal <= 0 ) {
+			$goal = $this->free_shipping_minimum();
+		}
+
+		if ( $goal <= 0 ) {
+			return '<div data-oc-ship-bar hidden></div>';
+		}
+
+		$subtotal = (float) WC()->cart->get_displayed_subtotal();
+		$left     = max( 0.0, $goal - $subtotal );
+		$percent  = min( 100, (int) round( $subtotal / $goal * 100 ) );
+
+		if ( $left > 0 ) {
+			$template = '' !== (string) $s['ship_text'] ? (string) $s['ship_text'] : __( '[sum] left for free shipping', 'oc-theme' );
+			$text     = str_replace( '[sum]', wp_strip_all_tags( wc_price( $left ) ), $template );
+		} else {
+			$text = '' !== (string) $s['ship_done'] ? (string) $s['ship_done'] : __( 'You earned free shipping!', 'oc-theme' );
+		}
+
+		return '<div class="oc-shipbar' . ( 0.0 === $left ? ' is-done' : '' ) . '" data-oc-ship-bar>'
+			. '<span class="oc-shipbar__text">' . esc_html( $text ) . '</span>'
+			. '<span class="oc-shipbar__track"><i class="oc-shipbar__fill" style="inline-size:' . absint( $percent ) . '%"></i></span>'
+			. '</div>';
+	}
+
+	/**
+	 * The first free-shipping minimum found across the shipping zones.
+	 */
+	private function free_shipping_minimum(): float {
+		foreach ( \WC_Shipping_Zones::get_zones() as $zone ) {
+			foreach ( $zone['shipping_methods'] as $method ) {
+				if ( 'free_shipping' === $method->id && 'yes' === $method->enabled && (float) $method->min_amount > 0 ) {
+					return (float) $method->min_amount;
+				}
+			}
+		}
+
+		return 0.0;
+	}
+
+	/**
+	 * Panel footer: subtotal, checkout (disabled while an item is out of
+	 * stock), optional coupon form and cart-page link.
+	 */
+	private function foot_html(): string {
+		$s = self::settings();
+
+		if ( WC()->cart->is_empty() ) {
+			return '<footer class="oc-drawer__foot" data-oc-cart-foot hidden></footer>';
+		}
+
+		$oos = false;
+		foreach ( WC()->cart->get_cart() as $item ) {
+			if ( $item['data'] instanceof \WC_Product && ! $item['data']->is_in_stock() ) {
+				$oos = true;
+				break;
+			}
+		}
+
+		$total = WC()->cart->get_cart_subtotal();
+		$label = __( 'Checkout', 'oc-theme' );
+
+		if ( ! empty( $s['btn_total'] ) ) {
+			$label .= ' · ' . wp_strip_all_tags( $total );
+		}
+
+		$html  = '<footer class="oc-drawer__foot" data-oc-cart-foot>';
+		$html .= '<div class="oc-drawer__subtotal"><span>' . esc_html__( 'Subtotal', 'oc-theme' ) . '</span><strong>' . $total . '</strong></div>';
+
+		if ( $oos ) {
+			$html .= '<p class="oc-drawer__oos-note">' . esc_html__( 'Some items in the cart are out of stock — remove them to check out.', 'oc-theme' ) . '</p>';
+		}
+
+		if ( ! empty( $s['coupon'] ) ) {
+			$html .= '<form class="oc-drawer__coupon" method="post" action="' . esc_url( wc_get_cart_url() ) . '">';
+			$html .= '<input type="text" name="coupon_code" placeholder="' . esc_attr__( 'Coupon code', 'oc-theme' ) . '" />';
+			$html .= '<button type="submit" name="apply_coupon" value="1">' . esc_html__( 'Apply', 'oc-theme' ) . '</button>';
+			$html .= wp_nonce_field( 'woocommerce-cart', 'woocommerce-cart-nonce', true, false );
+			$html .= '</form>';
+		}
+
+		$html .= '<a class="oc-drawer__checkout' . ( $oos ? ' is-disabled' : '' ) . '" href="' . esc_url( wc_get_checkout_url() ) . '"' . ( $oos ? ' aria-disabled="true" tabindex="-1"' : '' ) . '>' . esc_html( $label ) . '</a>';
+
+		if ( ! empty( $s['cart_link'] ) ) {
+			$html .= '<a class="oc-drawer__cartlink" href="' . esc_url( wc_get_cart_url() ) . '">' . esc_html__( 'View cart', 'oc-theme' ) . '</a>';
+		}
+
+		$html .= '</footer>';
+
+		return $html;
+	}
+
+	/* ------------------------------------------------------------ upsells */
+
+	/**
+	 * The in-panel upsells block, in the configured style. Products already
+	 * in the cart never show — adding one removes it on the next fragment
+	 * refresh automatically.
+	 */
+	private function upsells_html(): string {
+		$s = self::settings();
+
+		if ( empty( $s['up_show'] ) || WC()->cart->is_empty() ) {
+			return '<div data-oc-cart-up hidden></div>';
+		}
+
+		$products = $this->upsell_products();
+
+		if ( ! $products ) {
+			return '<div data-oc-cart-up hidden></div>';
+		}
+
+		$style = (string) $s['up_style'];
+		$title = '' !== (string) $s['up_title'] ? (string) $s['up_title'] : __( 'You may also like', 'oc-theme' );
+
+		$html = '<div class="oc-cartup oc-cartup--' . esc_attr( $style ) . '" data-oc-cart-up>';
+
+		$html .= '<div class="oc-cartup__head">';
+		$html .= '<span class="oc-cartup__title">' . esc_html( $title ) . '</span>';
+		if ( 'collapse' === $style ) {
+			$html .= '<button type="button" class="oc-cartup__toggle" data-oc-up-toggle aria-label="' . esc_attr__( 'Minimize', 'oc-theme' ) . '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>';
+		}
+		$html .= '</div>';
+
+		$html .= '<div class="oc-cartup__body"><div class="oc-cartup__items">';
+
+		foreach ( $products as $product ) {
+			$link = get_permalink( $product->get_id() );
+
+			$html .= '<div class="oc-cartup__item">';
+			$html .= '<a class="oc-cartup__media" href="' . esc_url( $link ) . '">' . $product->get_image( 'woocommerce_thumbnail' ) . '</a>';
+			$html .= '<div class="oc-cartup__info">';
+			$html .= '<a class="oc-cartup__name" href="' . esc_url( $link ) . '">' . esc_html( $product->get_name() ) . '</a>';
+			$html .= '<span class="oc-cartup__price">' . $product->get_price_html() . '</span>';
+			$html .= '</div>';
+
+			if ( $product->is_type( 'simple' ) && $product->is_purchasable() && $product->is_in_stock() ) {
+				// Woo's own ajax add-to-cart JS picks this up; the fragment
+				// refresh then drops the product from this list.
+				$html .= '<a class="oc-cartup__add add_to_cart_button ajax_add_to_cart" href="' . esc_url( '?add-to-cart=' . $product->get_id() ) . '" data-product_id="' . absint( $product->get_id() ) . '" data-quantity="1" aria-label="' . esc_attr__( 'Add to cart', 'oc-theme' ) . '" rel="nofollow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></a>';
+			} else {
+				$html .= '<a class="oc-cartup__add oc-cartup__add--view" href="' . esc_url( $link ) . '" aria-label="' . esc_attr__( 'View product', 'oc-theme' ) . '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>';
+			}
+
+			$html .= '</div>';
+		}
+
+		$html .= '</div></div></div>';
+
+		return $html;
+	}
+
+	/**
+	 * Candidate upsell products: the cart items' own upsells, or a category
+	 * — minus anything already in the cart, hidden or out of stock.
+	 *
+	 * @return array<int,\WC_Product>
+	 */
+	private function upsell_products(): array {
+		$s = self::settings();
+
+		$in_cart = array();
+		foreach ( WC()->cart->get_cart() as $item ) {
+			$in_cart[] = (int) $item['product_id'];
+			if ( ! empty( $item['variation_id'] ) ) {
+				$in_cart[] = (int) $item['variation_id'];
+			}
+		}
+
+		$ids = array();
+
+		if ( 'category' === $s['up_source'] && (int) $s['up_cat'] > 0 ) {
+			$ids = wc_get_products(
+				array(
+					'status'   => 'publish',
+					'limit'    => (int) $s['up_max'] + count( $in_cart ),
+					'category' => array( get_term_field( 'slug', (int) $s['up_cat'], 'product_cat' ) ),
+					'orderby'  => 'date',
+					'order'    => 'DESC',
+					'return'   => 'ids',
+				)
+			);
+		} else {
+			foreach ( WC()->cart->get_cart() as $item ) {
+				$product = $item['data'] instanceof \WC_Product ? $item['data'] : null;
+				if ( ! $product ) {
+					continue;
+				}
+				$parent = $product->get_parent_id() ? wc_get_product( $product->get_parent_id() ) : $product;
+				if ( $parent ) {
+					$ids = array_merge( $ids, array_map( 'intval', $parent->get_upsell_ids() ) );
+				}
+			}
+		}
+
+		$ids      = array_values( array_unique( array_diff( $ids, $in_cart ) ) );
+		$products = array();
+
+		foreach ( $ids as $id ) {
+			$product = wc_get_product( $id );
+
+			if ( ! $product || ! $product->is_visible() || ! $product->is_in_stock() ) {
+				continue;
+			}
+
+			$products[] = $product;
+
+			if ( count( $products ) >= (int) $s['up_max'] ) {
+				break;
+			}
+		}
+
+		return $products;
+	}
+
+	/* --------------------------------------------------------------- ajax */
+
+	/**
+	 * Live quantity change from the panel: set, then answer with the same
+	 * fragment payload Woo's own add-to-cart uses.
+	 */
+	public function ajax_qty(): void {
+		// phpcs:disable WordPress.Security.NonceVerification.Missing -- same public surface as Woo's own cart ajax.
+		$key = isset( $_POST['key'] ) ? sanitize_text_field( wp_unslash( (string) $_POST['key'] ) ) : '';
+		$qty = isset( $_POST['qty'] ) ? max( 0, (int) $_POST['qty'] ) : 1;
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
+
+		if ( '' === $key || ! WC()->cart->get_cart_item( $key ) ) {
+			wp_send_json_error();
+		}
+
+		if ( 0 === $qty ) {
+			WC()->cart->remove_cart_item( $key );
+		} else {
+			WC()->cart->set_quantity( $key, $qty );
+		}
+
+		WC()->cart->calculate_totals();
+
+		\WC_AJAX::get_refreshed_fragments();
+	}
+
+	/* -------------------------------------------------------------- admin */
+
+	/**
+	 * Submenu under Theme settings.
+	 */
+	public function menu(): void {
+		add_submenu_page(
+			Tabs::MENU,
+			__( 'Cart & mini-cart', 'oc-theme' ),
+			__( 'Cart & mini-cart', 'oc-theme' ),
+			'manage_woocommerce',
+			'oc-cart',
+			array( $this, 'admin_screen' )
+		);
+	}
+
+	/**
+	 * The settings screen.
+	 */
+	public function admin_screen(): void {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			return;
+		}
+
+		if ( isset( $_GET['oc_saved'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- notice only.
+			echo '<div class="notice notice-success"><p>' . esc_html__( 'Settings saved.', 'oc-theme' ) . '</p></div>';
+		}
+
+		$s = self::settings();
+
+		$cats = get_terms(
+			array(
+				'taxonomy'   => 'product_cat',
+				'hide_empty' => false,
+			)
+		);
+		?>
+		<div class="wrap">
+			<h1><?php esc_html_e( 'Cart & mini-cart', 'oc-theme' ); ?></h1>
+			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+				<input type="hidden" name="action" value="oc_cart_save" />
+				<?php wp_nonce_field( 'oc_cart_save' ); ?>
+
+				<h2><?php esc_html_e( 'Panel', 'oc-theme' ); ?></h2>
+				<table class="form-table" role="presentation">
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Opens from', 'oc-theme' ); ?></th>
+						<td>
+							<select name="side">
+								<option value="left" <?php selected( 'left', $s['side'] ); ?>><?php esc_html_e( 'Left', 'oc-theme' ); ?></option>
+								<option value="right" <?php selected( 'right', $s['side'] ); ?>><?php esc_html_e( 'Right', 'oc-theme' ); ?></option>
+							</select>
+							<label style="margin-inline-start:14px;"><?php esc_html_e( 'Width', 'oc-theme' ); ?> <input type="number" name="width" value="<?php echo esc_attr( (string) $s['width'] ); ?>" min="320" max="800" style="width:80px;" /> px</label>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Title', 'oc-theme' ); ?></th>
+						<td><input type="text" name="title" value="<?php echo esc_attr( (string) $s['title'] ); ?>" placeholder="<?php esc_attr_e( 'Cart', 'oc-theme' ); ?>" class="regular-text" /></td>
+					</tr>
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Empty-cart text', 'oc-theme' ); ?></th>
+						<td><input type="text" name="empty_text" value="<?php echo esc_attr( (string) $s['empty_text'] ); ?>" placeholder="<?php esc_attr_e( 'Your cart is empty', 'oc-theme' ); ?>" class="regular-text" /></td>
+					</tr>
+					<tr>
+						<th scope="row"><?php esc_html_e( 'After adding to cart', 'oc-theme' ); ?></th>
+						<td><label><input type="checkbox" name="open_on_add" value="1" <?php checked( 1, (int) $s['open_on_add'] ); ?> /> <?php esc_html_e( 'Open the panel automatically', 'oc-theme' ); ?></label></td>
+					</tr>
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Header counter', 'oc-theme' ); ?></th>
+						<td>
+							<select name="count_method">
+								<option value="total" <?php selected( 'total', $s['count_method'] ); ?>><?php esc_html_e( 'Total units', 'oc-theme' ); ?></option>
+								<option value="rows" <?php selected( 'rows', $s['count_method'] ); ?>><?php esc_html_e( 'Distinct products', 'oc-theme' ); ?></option>
+							</select>
+						</td>
+					</tr>
+				</table>
+
+				<h2><?php esc_html_e( 'Free-shipping bar', 'oc-theme' ); ?></h2>
+				<table class="form-table" role="presentation">
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Progress bar', 'oc-theme' ); ?></th>
+						<td>
+							<label><input type="checkbox" name="ship_bar" value="1" <?php checked( 1, (int) $s['ship_bar'] ); ?> /> <?php esc_html_e( 'Show progress toward free shipping', 'oc-theme' ); ?></label>
+							<p style="margin:10px 0 0;"><label><?php esc_html_e( 'Threshold override', 'oc-theme' ); ?> <input type="number" name="ship_goal" value="<?php echo esc_attr( (string) $s['ship_goal'] ); ?>" min="0" style="width:110px;" placeholder="<?php esc_attr_e( 'Auto', 'oc-theme' ); ?>" /></label></p>
+							<p class="description"><?php esc_html_e( 'Empty = taken automatically from the free-shipping minimum in the shipping zones.', 'oc-theme' ); ?></p>
+							<p style="margin:10px 0 0;"><input type="text" name="ship_text" value="<?php echo esc_attr( (string) $s['ship_text'] ); ?>" placeholder="<?php esc_attr_e( '[sum] left for free shipping', 'oc-theme' ); ?>" class="regular-text" /></p>
+							<p style="margin:6px 0 0;"><input type="text" name="ship_done" value="<?php echo esc_attr( (string) $s['ship_done'] ); ?>" placeholder="<?php esc_attr_e( 'You earned free shipping!', 'oc-theme' ); ?>" class="regular-text" /></p>
+						</td>
+					</tr>
+				</table>
+
+				<h2><?php esc_html_e( 'Upsells in the panel', 'oc-theme' ); ?></h2>
+				<table class="form-table" role="presentation">
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Upsells', 'oc-theme' ); ?></th>
+						<td>
+							<label><input type="checkbox" name="up_show" value="1" <?php checked( 1, (int) $s['up_show'] ); ?> /> <?php esc_html_e( 'Show recommended products in the panel', 'oc-theme' ); ?></label>
+							<p style="margin:10px 0 0;"><input type="text" name="up_title" value="<?php echo esc_attr( (string) $s['up_title'] ); ?>" placeholder="<?php esc_attr_e( 'You may also like', 'oc-theme' ); ?>" class="regular-text" /></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Display', 'oc-theme' ); ?></th>
+						<td>
+							<select name="up_style">
+								<option value="side" <?php selected( 'side', $s['up_style'] ); ?>><?php esc_html_e( 'Side strip inside the panel', 'oc-theme' ); ?></option>
+								<option value="list" <?php selected( 'list', $s['up_style'] ); ?>><?php esc_html_e( 'After the cart items', 'oc-theme' ); ?></option>
+								<option value="collapse" <?php selected( 'collapse', $s['up_style'] ); ?>><?php esc_html_e( 'Above the total — minimizable', 'oc-theme' ); ?></option>
+							</select>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Source', 'oc-theme' ); ?></th>
+						<td>
+							<select name="up_source">
+								<option value="items" <?php selected( 'items', $s['up_source'] ); ?>><?php esc_html_e( 'The cart items\' own upsells', 'oc-theme' ); ?></option>
+								<option value="category" <?php selected( 'category', $s['up_source'] ); ?>><?php esc_html_e( 'A chosen category', 'oc-theme' ); ?></option>
+							</select>
+							<select name="up_cat">
+								<option value="0"><?php esc_html_e( '— Category —', 'oc-theme' ); ?></option>
+								<?php foreach ( $cats as $cat ) : ?>
+									<option value="<?php echo absint( $cat->term_id ); ?>" <?php selected( (int) $s['up_cat'], (int) $cat->term_id ); ?>><?php echo esc_html( $cat->name ); ?></option>
+								<?php endforeach; ?>
+							</select>
+							<label style="margin-inline-start:12px;"><?php esc_html_e( 'Max products', 'oc-theme' ); ?> <input type="number" name="up_max" value="<?php echo esc_attr( (string) $s['up_max'] ); ?>" min="1" max="12" style="width:60px;" /></label>
+							<p class="description"><?php esc_html_e( 'Products already in the cart are never offered; adding one removes it from the list.', 'oc-theme' ); ?></p>
+						</td>
+					</tr>
+				</table>
+
+				<h2><?php esc_html_e( 'Panel footer', 'oc-theme' ); ?></h2>
+				<table class="form-table" role="presentation">
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Checkout button', 'oc-theme' ); ?></th>
+						<td>
+							<label><input type="checkbox" name="btn_total" value="1" <?php checked( 1, (int) $s['btn_total'] ); ?> /> <?php esc_html_e( 'Show the total on the button', 'oc-theme' ); ?></label>
+							<p style="margin:8px 0 0;"><label><input type="checkbox" name="coupon" value="1" <?php checked( 1, (int) $s['coupon'] ); ?> /> <?php esc_html_e( 'Show a coupon field', 'oc-theme' ); ?></label></p>
+							<p style="margin:8px 0 0;"><label><input type="checkbox" name="cart_link" value="1" <?php checked( 1, (int) $s['cart_link'] ); ?> /> <?php esc_html_e( 'Link to the cart page', 'oc-theme' ); ?></label></p>
+						</td>
+					</tr>
+				</table>
+
+				<p style="margin-block-start:18px;"><button class="button button-primary"><?php esc_html_e( 'Save settings', 'oc-theme' ); ?></button></p>
+			</form>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Persist the screen.
+	 */
+	public function save_settings(): void {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			wp_die();
+		}
+		check_admin_referer( 'oc_cart_save' );
+
+		// phpcs:disable WordPress.Security.NonceVerification.Missing -- verified above.
+		update_option(
+			'oc_cart',
+			array(
+				'side'         => 'right' === ( $_POST['side'] ?? '' ) ? 'right' : 'left',
+				'width'        => min( 800, max( 320, (int) ( $_POST['width'] ?? 480 ) ) ),
+				'title'        => sanitize_text_field( wp_unslash( (string) ( $_POST['title'] ?? '' ) ) ),
+				'empty_text'   => sanitize_text_field( wp_unslash( (string) ( $_POST['empty_text'] ?? '' ) ) ),
+				'open_on_add'  => empty( $_POST['open_on_add'] ) ? 0 : 1,
+				'count_method' => 'rows' === ( $_POST['count_method'] ?? '' ) ? 'rows' : 'total',
+				'ship_bar'     => empty( $_POST['ship_bar'] ) ? 0 : 1,
+				'ship_goal'    => '' === trim( (string) ( $_POST['ship_goal'] ?? '' ) ) ? '' : (string) max( 0, (int) $_POST['ship_goal'] ),
+				'ship_text'    => sanitize_text_field( wp_unslash( (string) ( $_POST['ship_text'] ?? '' ) ) ),
+				'ship_done'    => sanitize_text_field( wp_unslash( (string) ( $_POST['ship_done'] ?? '' ) ) ),
+				'up_show'      => empty( $_POST['up_show'] ) ? 0 : 1,
+				'up_title'     => sanitize_text_field( wp_unslash( (string) ( $_POST['up_title'] ?? '' ) ) ),
+				'up_source'    => 'category' === ( $_POST['up_source'] ?? '' ) ? 'category' : 'items',
+				'up_cat'       => (int) ( $_POST['up_cat'] ?? 0 ),
+				'up_max'       => min( 12, max( 1, (int) ( $_POST['up_max'] ?? 5 ) ) ),
+				'up_style'     => in_array( $_POST['up_style'] ?? '', array( 'list', 'collapse' ), true ) ? sanitize_key( $_POST['up_style'] ) : 'side',
+				'coupon'       => empty( $_POST['coupon'] ) ? 0 : 1,
+				'btn_total'    => empty( $_POST['btn_total'] ) ? 0 : 1,
+				'cart_link'    => empty( $_POST['cart_link'] ) ? 0 : 1,
+			),
+			false
+		);
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
+
+		wp_safe_redirect( add_query_arg( array( 'page' => 'oc-cart', 'oc_saved' => 1 ), admin_url( 'admin.php' ) ) );
+		exit;
+	}
+}
