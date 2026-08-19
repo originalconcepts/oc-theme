@@ -1911,3 +1911,12 @@ msgstr "הנחת קופון"
 
 msgid "Discount"
 msgstr "הנחה"
+
+msgid "Discounts"
+msgstr "הנחות"
+
+msgid "Coupon"
+msgstr "קופון"
+
+msgid "Total"
+msgstr "סה״כ"

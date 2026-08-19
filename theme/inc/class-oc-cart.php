@@ -440,11 +440,38 @@ final class Cart {
 			}
 		}
 
-		$discount = (float) WC()->cart->get_discount_total() + (float) WC()->cart->get_discount_tax();
-		$subtotal = (float) WC()->cart->get_displayed_subtotal();
-		$payable  = wc_price( max( 0, $subtotal - $discount ) );
-		$total    = $discount > 0 ? $payable : WC()->cart->get_cart_subtotal();
-		$label    = '' !== (string) $s['btn_text'] ? (string) $s['btn_text'] : __( 'Continue to checkout', 'oc-theme' );
+		// The discounts breakdown: the promotion engine's per-deal savings,
+		// then each coupon (with its removal control).
+		$rows          = array();
+		$promo_saved   = 0.0;
+		$coupon_saved  = 0.0;
+
+		if ( class_exists( '\\PromoEngine\\Cart' ) && method_exists( '\\PromoEngine\\Cart', 'instance' ) ) {
+			$pcart   = \PromoEngine\Cart::instance();
+			$summary = $pcart && method_exists( $pcart, 'savings_summary' ) ? $pcart->savings_summary() : null;
+			if ( is_array( $summary ) ) {
+				foreach ( (array) ( $summary['items'] ?? array() ) as $row ) {
+					$promo_saved += (float) $row['saved'];
+					$rows[]       = '<div class="oc-drawer__discount"><span>' . esc_html( (string) $row['name'] ) . '</span><strong>&minus;' . wc_price( (float) $row['saved'] ) . '</strong></div>';
+				}
+			}
+		}
+
+		foreach ( WC()->cart->get_applied_coupons() as $code ) {
+			$saved         = (float) WC()->cart->get_coupon_discount_amount( $code, false );
+			$coupon_saved += $saved;
+			$rows[]        = '<div class="oc-drawer__discount"><span>' . esc_html__( 'Coupon', 'oc-theme' ) . ' ' . esc_html( $code ) . ' <button type="button" class="oc-drawer__discount-x" data-oc-coupon-remove data-code="' . esc_attr( $code ) . '" aria-label="' . esc_attr__( 'Remove', 'oc-theme' ) . '">&times;</button></span><strong>&minus;' . wc_price( $saved ) . '</strong></div>';
+		}
+
+		// What the customer actually pays before shipping: the cart contents
+		// (already carrying line-price promos and coupons) plus fees (how
+		// cart-level promos land).
+		$payable_amount = (float) WC()->cart->get_cart_contents_total() + (float) WC()->cart->get_cart_contents_tax()
+			+ (float) WC()->cart->get_fee_total() + (float) WC()->cart->get_fee_tax();
+		$payable_amount = max( 0.0, $payable_amount );
+		$subtotal_row   = wc_price( $payable_amount + $promo_saved + $coupon_saved );
+		$total          = wc_price( $payable_amount );
+		$label          = '' !== (string) $s['btn_text'] ? (string) $s['btn_text'] : __( 'Continue to checkout', 'oc-theme' );
 
 		if ( ! empty( $s['btn_total'] ) ) {
 			$label .= ' · ' . html_entity_decode( wp_strip_all_tags( $total ), ENT_QUOTES, 'UTF-8' );
@@ -452,13 +479,17 @@ final class Cart {
 
 		$html = '<footer class="oc-drawer__foot" data-oc-cart-foot>';
 
-		// The button already says the number — no need to say it twice.
-		if ( empty( $s['btn_total'] ) ) {
+		if ( $rows ) {
+			// With discounts in play: the pre-discount line, the breakdown
+			// under a small "Discounts" heading, then what is actually due.
+			$html .= '<div class="oc-drawer__subtotal oc-drawer__subtotal--pre"><span>' . esc_html__( 'Subtotal', 'oc-theme' ) . '</span><strong>' . $subtotal_row . '</strong></div>';
+			$html .= '<div class="oc-drawer__discounts"><span class="oc-drawer__discounts-head">' . esc_html__( 'Discounts', 'oc-theme' ) . '</span>' . implode( '', $rows ) . '</div>';
+			if ( empty( $s['btn_total'] ) ) {
+				$html .= '<div class="oc-drawer__subtotal"><span>' . esc_html__( 'Total', 'oc-theme' ) . '</span><strong>' . $total . '</strong></div>';
+			}
+		} elseif ( empty( $s['btn_total'] ) ) {
+			// The button already says the number — no need to say it twice.
 			$html .= '<div class="oc-drawer__subtotal"><span>' . esc_html__( 'Subtotal', 'oc-theme' ) . '</span><strong>' . $total . '</strong></div>';
-		}
-
-		if ( $discount > 0 ) {
-			$html .= '<div class="oc-drawer__discount"><span>' . esc_html__( 'Discount', 'oc-theme' ) . '</span><strong>&minus;' . wc_price( $discount ) . '</strong></div>';
 		}
 
 		if ( $oos ) {
@@ -540,7 +571,12 @@ final class Cart {
 		$html = '<div class="oc-mcart__promo' . ( $msg['applied'] ? ' oc-mcart__promo--applied' : '' ) . '">' . $icon . '<span>' . esc_html( $name ) . '</span>';
 
 		if ( 'group' === (string) ( $msg['pool'] ?? '' ) && ! empty( $msg['promo_id'] ) ) {
-			$html .= '<button type="button" class="oc-mcart__promo-link" data-oc-promo-list="' . absint( $msg['promo_id'] ) . '" data-name="' . esc_attr( $name ) . '">' . esc_html__( 'Participating products', 'oc-theme' ) . '</button>';
+			if ( 'categories' === (string) ( $msg['pool_type'] ?? '' ) && '' !== (string) ( $msg['cat_url'] ?? '' ) ) {
+				// A category deal sends the shopper straight to the category.
+				$html .= '<a class="oc-mcart__promo-link" href="' . esc_url( (string) $msg['cat_url'] ) . '">' . esc_html__( 'Participating products', 'oc-theme' ) . '</a>';
+			} else {
+				$html .= '<button type="button" class="oc-mcart__promo-link" data-oc-promo-list="' . absint( $msg['promo_id'] ) . '" data-name="' . esc_attr( $name ) . '">' . esc_html__( 'Participating products', 'oc-theme' ) . '</button>';
+			}
 		}
 
 		$html .= '</div>';
@@ -622,8 +658,23 @@ final class Cart {
 		foreach ( $products as $product ) {
 			$link = get_permalink( $product->get_id() );
 
+			// A small flag on the image: the promotion label when one runs,
+			// otherwise the sale percent — same colours as the catalogue.
+			$flag  = (string) apply_filters( 'promeng_product_label', '', $product->get_id() );
+			if ( '' === $flag && $product->is_on_sale() ) {
+				$regular_f = (float) $product->get_regular_price();
+				$price_f   = (float) $product->get_price();
+				if ( $regular_f > 0 && $price_f < $regular_f ) {
+					$flag = sprintf( '‎-%d%%', (int) round( ( 1 - $price_f / $regular_f ) * 100 ) );
+				}
+			}
+
 			$html .= '<div class="oc-cartup__item">';
-			$html .= '<a class="oc-cartup__media" href="' . esc_url( $link ) . '">' . $product->get_image( 'woocommerce_thumbnail' ) . '</a>';
+			$html .= '<a class="oc-cartup__media" href="' . esc_url( $link ) . '">' . $product->get_image( 'woocommerce_thumbnail' );
+			if ( '' !== $flag ) {
+				$html .= '<span class="oc-cartup__flag" style="' . esc_attr( WooCommerce::flag_colors( 'oc_sale_badge_bg', 'oc_sale_badge_tx' ) ) . '">' . esc_html( $flag ) . '</span>';
+			}
+			$html .= '</a>';
 			$html .= '<div class="oc-cartup__info">';
 			$html .= '<a class="oc-cartup__name" href="' . esc_url( $link ) . '">' . esc_html( $product->get_name() ) . '</a>';
 			$html .= '<span class="oc-cartup__price">' . $product->get_price_html() . '</span>';
