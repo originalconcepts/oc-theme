@@ -1816,11 +1816,13 @@
 				var next = body.querySelector( '[data-oc-up-next]' );
 				var max = track.scrollWidth - track.clientWidth;
 				var pos = Math.abs( track.scrollLeft );
-				if ( prev ) {
-					prev.hidden = pos <= 2;
+				var hidePrev = pos <= 2;
+				var hideNext = pos >= max - 2;
+				if ( prev && prev.hidden !== hidePrev ) {
+					prev.hidden = hidePrev;
 				}
-				if ( next ) {
-					next.hidden = pos >= max - 2;
+				if ( next && next.hidden !== hideNext ) {
+					next.hidden = hideNext;
 				}
 			} );
 		}
@@ -1912,7 +1914,7 @@
 		function restoreUpsellState() {
 			try {
 				if ( '1' === localStorage.getItem( 'oc-cartup-min' ) ) {
-					document.querySelectorAll( '.oc-cartup--collapse' ).forEach( function ( el ) {
+					document.querySelectorAll( '.oc-cartup--collapse:not(.is-min)' ).forEach( function ( el ) {
 						el.classList.add( 'is-min' );
 					} );
 				}
@@ -1947,21 +1949,36 @@
 			}, 2100 );
 		}
 
-		function watchDrawer() {
-			restoreUpsellState();
-			updateUpArrows();
+		var drawerTickQueued = false;
 
-			var bar = document.querySelector( '.oc-shipbar' );
-			var done = ! ! ( bar && bar.classList.contains( 'is-done' ) );
-			if ( done && ! shipWasDone && ! drawer.hidden ) {
-				confettiBurst( bar );
+		function watchDrawer() {
+			// One pass per frame, however many mutations arrive — the pass
+			// itself mutates (arrow visibility, is-min, confetti), so running
+			// it synchronously per mutation can feed back into a freeze.
+			if ( drawerTickQueued ) {
+				return;
 			}
-			shipWasDone = done;
+			drawerTickQueued = true;
+			requestAnimationFrame( function () {
+				drawerTickQueued = false;
+				restoreUpsellState();
+				updateUpArrows();
+
+				var bar = document.querySelector( '.oc-shipbar' );
+				var done = ! ! ( bar && bar.classList.contains( 'is-done' ) );
+				if ( done && ! shipWasDone && ! drawer.hidden ) {
+					confettiBurst( bar );
+				}
+				shipWasDone = done;
+			} );
 		}
 
 		// Fragments replace drawer pieces — re-apply remembered state and
-		// notice the free-shipping moment.
-		new MutationObserver( watchDrawer ).observe( drawer, { subtree: true, childList: true, attributes: true, attributeFilter: [ 'class', 'hidden' ] } );
+		// notice the free-shipping moment. Two narrow observers: subtree
+		// CONTENT changes, and open/close flips on the drawer root only —
+		// never subtree attributes, which watchDrawer itself writes.
+		new MutationObserver( watchDrawer ).observe( drawer, { subtree: true, childList: true } );
+		new MutationObserver( watchDrawer ).observe( drawer, { attributes: true, attributeFilter: [ 'class', 'hidden' ] } );
 
 		/* -- upsell plus on a variable product: a small picker asks which -- */
 
