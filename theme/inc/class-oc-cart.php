@@ -479,16 +479,18 @@ final class Cart {
 
 		$html = '<footer class="oc-drawer__foot" data-oc-cart-foot>';
 
+		// With the total on the button, no subtotal lines at all — just the
+		// discounts breakdown. Otherwise: pre-discount subtotal, breakdown,
+		// and what is actually due.
 		if ( $rows ) {
-			// With discounts in play: the pre-discount line, the breakdown
-			// under a small "Discounts" heading, then what is actually due.
-			$html .= '<div class="oc-drawer__subtotal oc-drawer__subtotal--pre"><span>' . esc_html__( 'Subtotal', 'oc-theme' ) . '</span><strong>' . $subtotal_row . '</strong></div>';
+			if ( empty( $s['btn_total'] ) ) {
+				$html .= '<div class="oc-drawer__subtotal oc-drawer__subtotal--pre"><span>' . esc_html__( 'Subtotal', 'oc-theme' ) . '</span><strong>' . $subtotal_row . '</strong></div>';
+			}
 			$html .= '<div class="oc-drawer__discounts"><span class="oc-drawer__discounts-head">' . esc_html__( 'Discounts', 'oc-theme' ) . '</span>' . implode( '', $rows ) . '</div>';
 			if ( empty( $s['btn_total'] ) ) {
 				$html .= '<div class="oc-drawer__subtotal"><span>' . esc_html__( 'Total', 'oc-theme' ) . '</span><strong>' . $total . '</strong></div>';
 			}
 		} elseif ( empty( $s['btn_total'] ) ) {
-			// The button already says the number — no need to say it twice.
 			$html .= '<div class="oc-drawer__subtotal"><span>' . esc_html__( 'Subtotal', 'oc-theme' ) . '</span><strong>' . $total . '</strong></div>';
 		}
 
@@ -497,29 +499,15 @@ final class Cart {
 		}
 
 		if ( ! empty( $s['coupon'] ) ) {
-			$applied = WC()->cart->get_applied_coupons();
-
+			// Applied coupons live in the discounts summary above — here
+			// only the quiet entry point for adding one.
 			$html .= '<div class="oc-drawer__coupon-wrap">';
-
-			if ( $applied ) {
-				$html .= '<span class="oc-drawer__coupon-head">' . esc_html__( 'Active coupons', 'oc-theme' ) . '</span>';
-				foreach ( $applied as $code ) {
-					$saved = (float) WC()->cart->get_coupon_discount_amount( $code, false );
-					$html .= '<span class="oc-drawer__coupon-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 12.5l5 5L19.5 7"/></svg> ' . esc_html( $code );
-					if ( $saved > 0 ) {
-						$html .= '<em>&minus;' . wc_price( $saved ) . '</em>';
-					}
-					$html .= '<button type="button" data-oc-coupon-remove data-code="' . esc_attr( $code ) . '" aria-label="' . esc_attr__( 'Remove', 'oc-theme' ) . '">&times;</button></span>';
-				}
-			} else {
-				$html .= '<button type="button" class="oc-drawer__coupon-t" data-oc-coupon-toggle>' . esc_html__( 'Have a coupon code?', 'oc-theme' ) . ' <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>';
-				$html .= '<div class="oc-drawer__coupon-body"><form class="oc-drawer__coupon" data-oc-coupon-form>';
-				$html .= '<input type="text" name="coupon_code" placeholder="' . esc_attr__( 'Coupon code', 'oc-theme' ) . '" />';
-				$html .= '<button type="submit" aria-label="' . esc_attr__( 'Apply', 'oc-theme' ) . '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 12.5l5 5L19.5 7"/></svg></button>';
-				$html .= '<p class="oc-drawer__coupon-msg" data-oc-coupon-msg hidden></p>';
-				$html .= '</form></div>';
-			}
-
+			$html .= '<button type="button" class="oc-drawer__coupon-t" data-oc-coupon-toggle>' . esc_html__( 'Have a coupon code?', 'oc-theme' ) . ' <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>';
+			$html .= '<div class="oc-drawer__coupon-body"><form class="oc-drawer__coupon" data-oc-coupon-form>';
+			$html .= '<input type="text" name="coupon_code" placeholder="' . esc_attr__( 'Coupon code', 'oc-theme' ) . '" />';
+			$html .= '<button type="submit" aria-label="' . esc_attr__( 'Apply', 'oc-theme' ) . '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 12.5l5 5L19.5 7"/></svg></button>';
+			$html .= '<p class="oc-drawer__coupon-msg" data-oc-coupon-msg hidden></p>';
+			$html .= '</form></div>';
 			$html .= '</div>';
 		}
 
