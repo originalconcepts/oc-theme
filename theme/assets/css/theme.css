@@ -5512,3 +5512,8 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 .oc-cartup--collapse.is-min .oc-cartup__head { display: none; }
 .oc-cartup--collapse.is-min { padding-block: 0; }
 .oc-cartup--collapse.is-min .oc-cartup__tab svg { rotate: 180deg; }
+
+/* Promotion King's before/after price bits inside the cart lines follow
+ * the theme's tones, not the plugin's inline grays */
+.oc-mcart__line .promeng-was { font-size: .85em; }
+.oc-mcart__line .promeng-now { font-weight: 500; }

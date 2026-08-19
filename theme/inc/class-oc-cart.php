@@ -249,6 +249,10 @@ final class Cart {
 				$line = WC()->cart->get_product_subtotal( $product, $qty );
 			}
 
+			// Promotion King replaces this with its own before/after when its
+			// discount lands on the line ("second at 20%" and friends).
+			$line = apply_filters( 'woocommerce_cart_item_subtotal', $line, $item, $key );
+
 			$html .= '<li class="oc-mcart__item' . ( $in_stock ? '' : ' oc-mcart__item--oos' ) . '">';
 
 			$html .= '' === $link
@@ -291,8 +295,9 @@ final class Cart {
 			$html .= '<div class="oc-mcart__prices">';
 			$html .= '<span class="oc-mcart__line">' . $line . '</span>';
 			if ( $qty > 1 ) {
+				$unit_price = apply_filters( 'woocommerce_cart_item_price', WC()->cart->get_product_price( $product ), $item, $key );
 				/* translators: %s: single unit price. */
-				$html .= '<span class="oc-mcart__each">' . sprintf( esc_html__( '%s per unit', 'oc-theme' ), WC()->cart->get_product_price( $product ) ) . '</span>';
+				$html .= '<span class="oc-mcart__each">' . sprintf( esc_html__( '%s per unit', 'oc-theme' ), $unit_price ) . '</span>';
 			}
 			$html .= '</div>';
 
