@@ -200,21 +200,26 @@ final class Cart {
 			if ( empty( $msg['keys'] ) ) {
 				continue;
 			}
-			$slot = (string) end( $msg['keys'] );
-			$name = (string) ( $msg['name'] ?? $msg['text'] );
 
-			// Showing names only, an applied promotion and its "next set"
-			// nudge read identically — the applied row wins.
-			foreach ( $by_key[ $slot ] ?? array() as $i => $existing ) {
-				if ( (string) ( $existing['name'] ?? $existing['text'] ) === $name ) {
-					if ( $msg['applied'] && ! $existing['applied'] ) {
-						$by_key[ $slot ][ $i ] = $msg;
+			// An applied message shows on EVERY line its discount touched;
+			// a nudge stays on one line (the last still-waiting one).
+			$slots = $msg['applied'] ? array_map( 'strval', (array) $msg['keys'] ) : array( (string) end( $msg['keys'] ) );
+			$name  = (string) ( $msg['name'] ?? $msg['text'] );
+
+			foreach ( array_unique( $slots ) as $slot ) {
+				// Showing names only, an applied promotion and its "next set"
+				// nudge read identically — the applied row wins per line.
+				foreach ( $by_key[ $slot ] ?? array() as $i => $existing ) {
+					if ( (string) ( $existing['name'] ?? $existing['text'] ) === $name ) {
+						if ( $msg['applied'] && ! $existing['applied'] ) {
+							$by_key[ $slot ][ $i ] = $msg;
+						}
+						continue 2;
 					}
-					continue 2;
 				}
-			}
 
-			$by_key[ $slot ][] = $msg;
+				$by_key[ $slot ][] = $msg;
+			}
 		}
 
 		$html = '<ul class="oc-mcart">';
