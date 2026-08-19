@@ -197,9 +197,24 @@ final class Cart {
 		// last cart line each one refers to.
 		$by_key = array();
 		foreach ( $this->promo_messages() as $msg ) {
-			if ( ! empty( $msg['keys'] ) ) {
-				$by_key[ (string) end( $msg['keys'] ) ][] = $msg;
+			if ( empty( $msg['keys'] ) ) {
+				continue;
 			}
+			$slot = (string) end( $msg['keys'] );
+			$name = (string) ( $msg['name'] ?? $msg['text'] );
+
+			// Showing names only, an applied promotion and its "next set"
+			// nudge read identically — the applied row wins.
+			foreach ( $by_key[ $slot ] ?? array() as $i => $existing ) {
+				if ( (string) ( $existing['name'] ?? $existing['text'] ) === $name ) {
+					if ( $msg['applied'] && ! $existing['applied'] ) {
+						$by_key[ $slot ][ $i ] = $msg;
+					}
+					continue 2;
+				}
+			}
+
+			$by_key[ $slot ][] = $msg;
 		}
 
 		$html = '<ul class="oc-mcart">';
@@ -443,7 +458,7 @@ final class Cart {
 		}
 
 		if ( $discount > 0 ) {
-			$html .= '<div class="oc-drawer__discount"><span>' . esc_html__( 'Coupon discount', 'oc-theme' ) . '</span><strong>&minus;' . wc_price( $discount ) . '</strong></div>';
+			$html .= '<div class="oc-drawer__discount"><span>' . esc_html__( 'Discount', 'oc-theme' ) . '</span><strong>&minus;' . wc_price( $discount ) . '</strong></div>';
 		}
 
 		if ( $oos ) {

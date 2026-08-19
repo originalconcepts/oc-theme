@@ -1908,3 +1908,6 @@ msgstr "למוצרים המשתתפים"
 
 msgid "Coupon discount"
 msgstr "הנחת קופון"
+
+msgid "Discount"
+msgstr "הנחה"
