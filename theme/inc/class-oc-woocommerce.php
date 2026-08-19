@@ -277,7 +277,7 @@ final class WooCommerce {
 	 * @return string
 	 */
 	public function price_badge_html( $price, $product ): string {
-		if ( ! is_product() || ! is_main_query() || '' !== wc_get_loop_prop( 'name', '' ) ) {
+		if ( Cart::$in_upsells || ! is_product() || ! is_main_query() || '' !== wc_get_loop_prop( 'name', '' ) ) {
 			return (string) $price;
 		}
 
@@ -324,7 +324,7 @@ final class WooCommerce {
 	 * @return string
 	 */
 	public function price_sku_html( $price, $product ): string {
-		if ( is_admin() || ! is_product() || ! is_main_query() || '' !== wc_get_loop_prop( 'name', '' ) ) {
+		if ( Cart::$in_upsells || is_admin() || ! is_product() || ! is_main_query() || '' !== wc_get_loop_prop( 'name', '' ) ) {
 			return (string) $price;
 		}
 

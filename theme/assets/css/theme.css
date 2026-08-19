@@ -1900,15 +1900,22 @@ body.oc-tabs-tabs.woocommerce div.product .woocommerce-tabs ul.tabs li.active a,
 
 .oc-cartup--side .oc-cartup__item { flex-direction: column; align-items: stretch; text-align: center; }
 .oc-cartup--side .oc-cartup__media img { inline-size: 100%; block-size: 130px; }
+
+/* the plus rides the image's bottom corner, catalogue-style */
 .oc-cartup--side .oc-cartup__add {
 	position: absolute;
-	inset-block-start: 4px;
-	inset-inline-end: 4px;
+	inset-block-start: calc(130px - 36px);
+	inset-inline-start: 6px;
+	inset-inline-end: auto;
+	box-shadow: 0 2px 8px rgb(0 0 0 / 12%);
 }
+
+.oc-cartup--m { display: none; }
 
 @media (max-width: 640px) {
 	.oc-drawer--upside .oc-drawer__panel { inline-size: min(var(--oc-drawer-w, 480px), 94vw); }
 	.oc-cartup--side { display: none; }
+	.oc-cartup--m:not([hidden]) { display: block; }
 }
 
 /* minimizable block above the footer */
@@ -4945,3 +4952,23 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 	touch-action: manipulation;
 	-webkit-tap-highlight-color: transparent;
 }
+
+
+/* ---------- Promotion King nudges inside the drawer ---------- */
+[data-oc-promo-msgs][hidden] { display: none; }
+
+.oc-drawer__promos {
+	padding: 10px var(--oc-gap);
+	border-block-end: 1px solid var(--oc-line);
+}
+
+.oc-drawer__promos .promeng-cart-message {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-size: .82rem;
+	color: var(--oc-ink);
+	padding-block: 3px;
+}
+
+.oc-drawer__promos .promeng-cart-message-icon { color: var(--oc-sale, #b4453c); display: inline-flex; }

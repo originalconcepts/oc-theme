@@ -18,6 +18,14 @@ defined( 'ABSPATH' ) || exit;
 final class Cart {
 
 	/**
+	 * True while upsell cards render — price filters (sale badge, SKU) check
+	 * it and stay out of the small prices there.
+	 *
+	 * @var bool
+	 */
+	public static $in_upsells = false;
+
+	/**
 	 * Hook in.
 	 */
 	public function register(): void {
@@ -98,6 +106,7 @@ final class Cart {
 						<button type="button" class="oc-drawer__close" data-oc-drawer-close aria-label="<?php esc_attr_e( 'Close', 'oc-theme' ); ?>">&times;</button>
 					</header>
 					<?php echo $this->ship_bar_html(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built escaped. ?>
+					<?php echo $this->promo_msgs_html(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 					<div class="oc-drawer__scroll">
 						<div data-oc-mcart><?php echo $this->items_html(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
 						<?php if ( $s['up_show'] && 'list' === $s['up_style'] ) : ?>
@@ -106,6 +115,10 @@ final class Cart {
 					</div>
 					<?php if ( $s['up_show'] && 'collapse' === $s['up_style'] ) : ?>
 						<?php echo $this->upsells_html(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+					<?php endif; ?>
+					<?php if ( $s['up_show'] && 'side' === $s['up_style'] ) : ?>
+						<?php // The side strip has no room on mobile — there the same products fold into a minimizable block above the footer. ?>
+						<?php echo $this->upsells_html( 'collapse', true ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 					<?php endif; ?>
 					<?php echo $this->foot_html(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				</div>
@@ -128,7 +141,9 @@ final class Cart {
 
 		$fragments['[data-oc-mcart]']    = '<div data-oc-mcart>' . $this->items_html() . '</div>';
 		$fragments['[data-oc-ship-bar]'] = $this->ship_bar_html();
-		$fragments['[data-oc-cart-up]']  = $this->upsells_html();
+		$fragments['[data-oc-cart-up]']   = $this->upsells_html();
+		$fragments['[data-oc-cart-up-m]'] = $this->upsells_html( 'collapse', true );
+		$fragments['[data-oc-promo-msgs]'] = $this->promo_msgs_html();
 		$fragments['[data-oc-cart-foot]'] = $this->foot_html();
 
 		// The header badge follows the configured counting method.
@@ -365,6 +380,24 @@ final class Cart {
 		return $html;
 	}
 
+	/**
+	 * Promotion King's cart nudges ("second item 20% off"), when the plugin
+	 * is around — its own shortcode builds the markup.
+	 */
+	private function promo_msgs_html(): string {
+		if ( ! shortcode_exists( 'promeng_cart_messages' ) ) {
+			return '<div data-oc-promo-msgs hidden></div>';
+		}
+
+		$html = do_shortcode( '[promeng_cart_messages]' );
+
+		if ( '' === trim( $html ) ) {
+			return '<div data-oc-promo-msgs hidden></div>';
+		}
+
+		return '<div class="oc-drawer__promos" data-oc-promo-msgs>' . $html . '</div>';
+	}
+
 	/* ------------------------------------------------------------ upsells */
 
 	/**
@@ -372,23 +405,31 @@ final class Cart {
 	 * in the cart never show — adding one removes it on the next fragment
 	 * refresh automatically.
 	 */
-	private function upsells_html(): string {
-		$s = self::settings();
+	private function upsells_html( ?string $force_style = null, bool $mobile = false ): string {
+		$s    = self::settings();
+		$attr = $mobile ? 'data-oc-cart-up-m' : 'data-oc-cart-up';
+
+		// The mobile twin exists only to stand in for the side strip.
+		if ( $mobile && 'side' !== (string) $s['up_style'] ) {
+			return '<div ' . $attr . ' hidden></div>';
+		}
 
 		if ( empty( $s['up_show'] ) || WC()->cart->is_empty() ) {
-			return '<div data-oc-cart-up hidden></div>';
+			return '<div ' . $attr . ' hidden></div>';
 		}
 
 		$products = $this->upsell_products();
 
 		if ( ! $products ) {
-			return '<div data-oc-cart-up hidden></div>';
+			return '<div ' . $attr . ' hidden></div>';
 		}
 
-		$style = (string) $s['up_style'];
+		$style = null !== $force_style ? $force_style : (string) $s['up_style'];
 		$title = '' !== (string) $s['up_title'] ? (string) $s['up_title'] : __( 'You may also like', 'oc-theme' );
 
-		$html = '<div class="oc-cartup oc-cartup--' . esc_attr( $style ) . '" data-oc-cart-up>';
+		$html = '<div class="oc-cartup oc-cartup--' . esc_attr( $style ) . ( $mobile ? ' oc-cartup--m' : '' ) . '" ' . $attr . '>';
+
+		self::$in_upsells = true;
 
 		$html .= '<div class="oc-cartup__head">';
 		$html .= '<span class="oc-cartup__title">' . esc_html( $title ) . '</span>';
@@ -426,6 +467,8 @@ final class Cart {
 		}
 
 		$html .= '</div></div></div>';
+
+		self::$in_upsells = false;
 
 		return $html;
 	}
