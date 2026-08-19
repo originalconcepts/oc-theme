@@ -2371,6 +2371,66 @@ html:not([dir]) .oc-cartup__items--h.oc-fade-end {
 	color: var(--oc-sale, #b4453c);
 }
 
+/* one slim line owns the discounts: "you saved X" (breakdown folded
+ * behind it) at one end, the coupon entry link at the other */
+.oc-drawer__saveline {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 10px;
+	min-block-size: 24px;
+}
+
+.oc-drawer__save-t {
+	border: 0;
+	background: none;
+	font: inherit;
+	font-size: .88rem;
+	color: var(--oc-success, #2f7d4f);
+	cursor: pointer;
+	padding: 0;
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.oc-drawer__save-t strong { font-weight: 600; }
+
+.oc-drawer__save-t svg {
+	inline-size: 14px;
+	block-size: 14px;
+	flex: none;
+}
+
+.oc-drawer__save-t .oc-drawer__save-c {
+	inline-size: 13px;
+	block-size: 13px;
+	color: var(--oc-ink-2);
+	transition: rotate .2s ease;
+}
+
+.oc-drawer__savewrap.is-save-open .oc-drawer__save-c { rotate: 180deg; }
+
+.oc-drawer__save-body {
+	display: grid;
+	grid-template-rows: 0fr;
+	transition: grid-template-rows .25s ease;
+}
+
+.oc-drawer__savewrap.is-save-open .oc-drawer__save-body { grid-template-rows: 1fr; }
+
+.oc-drawer__save-body .oc-drawer__discounts {
+	overflow: hidden;
+	min-block-size: 0;
+	border-block-end: 0;
+	margin-block-end: 0;
+	padding-block: 0;
+}
+
+.oc-drawer__savewrap.is-save-open .oc-drawer__save-body .oc-drawer__discounts {
+	padding-block-start: 8px;
+}
+
 /* the coupon hides behind a quiet question; the field slides open */
 .oc-drawer__coupon-t {
 	border: 0;

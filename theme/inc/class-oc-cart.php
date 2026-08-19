@@ -551,36 +551,57 @@ final class Cart {
 
 		$html = '<footer class="oc-drawer__foot" data-oc-cart-foot>';
 
-		// With the total on the button, no subtotal lines at all — just the
-		// discounts breakdown. Otherwise: pre-discount subtotal, breakdown,
-		// and what is actually due.
-		if ( $rows ) {
-			if ( empty( $s['btn_total'] ) ) {
-				$html .= '<div class="oc-drawer__subtotal oc-drawer__subtotal--pre"><span>' . esc_html__( 'Subtotal', 'oc-theme' ) . '</span><strong>' . $subtotal_row . '</strong></div>';
+		// With the total on the button, no subtotal lines at all. Otherwise:
+		// pre-discount subtotal, the savings line, and what is actually due.
+		if ( $rows && empty( $s['btn_total'] ) ) {
+			$html .= '<div class="oc-drawer__subtotal oc-drawer__subtotal--pre"><span>' . esc_html__( 'Subtotal', 'oc-theme' ) . '</span><strong>' . $subtotal_row . '</strong></div>';
+		}
+
+		// One slim line owns the whole discounts world: "you saved X" with
+		// the breakdown folded behind it (always closed by default), and the
+		// coupon entry point as a quiet link at the other end.
+		if ( $rows || ! empty( $s['coupon'] ) ) {
+			$html .= '<div class="oc-drawer__savewrap oc-drawer__coupon-wrap">';
+			$html .= '<div class="oc-drawer__saveline">';
+
+			if ( $rows ) {
+				$total_saved = $promo_saved + $coupon_saved;
+				$html       .= '<button type="button" class="oc-drawer__save-t" data-oc-save-toggle>'
+					. '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 12.5l5 5L19.5 7"/></svg>'
+					. sprintf( esc_html__( 'You saved %s', 'oc-theme' ), '<strong>' . wc_price( $total_saved ) . '</strong>' )
+					. '<svg class="oc-drawer__save-c" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>'
+					. '</button>';
 			}
-			$html .= '<div class="oc-drawer__discounts"><span class="oc-drawer__discounts-head">' . esc_html__( 'Discounts', 'oc-theme' ) . '</span>' . implode( '', $rows ) . '</div>';
-			if ( empty( $s['btn_total'] ) ) {
-				$html .= '<div class="oc-drawer__subtotal"><span>' . esc_html__( 'Total', 'oc-theme' ) . '</span><strong>' . $total . '</strong></div>';
+
+			if ( ! empty( $s['coupon'] ) ) {
+				$html .= '<button type="button" class="oc-drawer__coupon-t" data-oc-coupon-toggle>' . esc_html__( 'Have a coupon?', 'oc-theme' ) . '</button>';
 			}
-		} elseif ( empty( $s['btn_total'] ) ) {
+
+			$html .= '</div>';
+
+			if ( $rows ) {
+				$html .= '<div class="oc-drawer__save-body"><div class="oc-drawer__discounts">' . implode( '', $rows ) . '</div></div>';
+			}
+
+			if ( ! empty( $s['coupon'] ) ) {
+				$html .= '<div class="oc-drawer__coupon-body"><form class="oc-drawer__coupon" data-oc-coupon-form>';
+				$html .= '<input type="text" name="coupon_code" placeholder="' . esc_attr__( 'Coupon code', 'oc-theme' ) . '" />';
+				$html .= '<button type="submit" aria-label="' . esc_attr__( 'Apply', 'oc-theme' ) . '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 12.5l5 5L19.5 7"/></svg></button>';
+				$html .= '<p class="oc-drawer__coupon-msg" data-oc-coupon-msg hidden></p>';
+				$html .= '</form></div>';
+			}
+
+			$html .= '</div>';
+		}
+
+		if ( $rows && empty( $s['btn_total'] ) ) {
+			$html .= '<div class="oc-drawer__subtotal"><span>' . esc_html__( 'Total', 'oc-theme' ) . '</span><strong>' . $total . '</strong></div>';
+		} elseif ( ! $rows && empty( $s['btn_total'] ) ) {
 			$html .= '<div class="oc-drawer__subtotal"><span>' . esc_html__( 'Subtotal', 'oc-theme' ) . '</span><strong>' . $total . '</strong></div>';
 		}
 
 		if ( $oos ) {
 			$html .= '<p class="oc-drawer__oos-note">' . esc_html__( 'Some items in the cart are out of stock — remove them to check out.', 'oc-theme' ) . '</p>';
-		}
-
-		if ( ! empty( $s['coupon'] ) ) {
-			// Applied coupons live in the discounts summary above — here
-			// only the quiet entry point for adding one.
-			$html .= '<div class="oc-drawer__coupon-wrap">';
-			$html .= '<button type="button" class="oc-drawer__coupon-t" data-oc-coupon-toggle>' . esc_html__( 'Have a coupon code?', 'oc-theme' ) . ' <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>';
-			$html .= '<div class="oc-drawer__coupon-body"><form class="oc-drawer__coupon" data-oc-coupon-form>';
-			$html .= '<input type="text" name="coupon_code" placeholder="' . esc_attr__( 'Coupon code', 'oc-theme' ) . '" />';
-			$html .= '<button type="submit" aria-label="' . esc_attr__( 'Apply', 'oc-theme' ) . '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 12.5l5 5L19.5 7"/></svg></button>';
-			$html .= '<p class="oc-drawer__coupon-msg" data-oc-coupon-msg hidden></p>';
-			$html .= '</form></div>';
-			$html .= '</div>';
 		}
 
 		// checkout-button: the class the global CTA hover effects target, so

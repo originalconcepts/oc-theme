@@ -1933,6 +1933,15 @@
 			sendQty( wrap, Math.max( 0, parseInt( input.value, 10 ) || 1 ) );
 		} );
 
+		/* -- the savings breakdown folds behind the "you saved" line -- */
+
+		document.addEventListener( 'click', function ( event ) {
+			var saveToggle = event.target.closest( '[data-oc-save-toggle]' );
+			if ( saveToggle ) {
+				saveToggle.closest( '.oc-drawer__savewrap' ).classList.toggle( 'is-save-open' );
+			}
+		} );
+
 		/* -- coupon field opens behind its quiet trigger -- */
 
 		document.addEventListener( 'click', function ( event ) {

@@ -1929,3 +1929,9 @@ msgstr "נוסף לסל"
 
 msgid "Choose"
 msgstr "בחירה"
+
+msgid "You saved %s"
+msgstr "חסכת %s"
+
+msgid "Have a coupon?"
+msgstr "יש קופון?"
