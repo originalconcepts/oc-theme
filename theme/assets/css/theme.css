@@ -2931,6 +2931,16 @@ main + .term-description {
 
 /* ---------- custom variation dropdown (select display type) ---------- */
 
+/* The native select must never paint — the custom dropdown replaces it
+ * right after parse. Its slot keeps the trigger's height meanwhile, so
+ * the swap causes neither a flash nor a layout shift. */
+.single-product table.variations td.value > select:not(:has(+ .oc-var)):not(:has(+ .oc-dd)) {
+	display: block;
+	inline-size: 100%;
+	block-size: var(--oc-cta-h, 48px);
+	opacity: 0;
+}
+
 .oc-dd { position: relative; }
 
 .oc-dd__t {
@@ -3048,19 +3058,21 @@ main + .term-description {
 
 tr.oc-tr-need .oc-dd__t { border-color: var(--oc-sale, #b4453c); }
 
-/* design settings: single-dropdown width, and two dropdowns sharing a row */
-.oc-dd-half .single-product table.variations:not(.oc-dd-2) .oc-dd { inline-size: 50%; }
+/* design settings: single-dropdown width, and two dropdowns sharing a row.
+ * Both classes ride the body element itself, so they chain — a descendant
+ * combinator between them would never match. */
+.oc-dd-half.single-product table.variations:not(.oc-dd-2) .oc-dd { inline-size: 50%; }
 
 @media (min-width: 641px) {
-	.oc-dd-pair .single-product table.variations.oc-dd-2 tbody {
+	.oc-dd-pair.single-product table.variations.oc-dd-2 tbody {
 		display: flex;
 		flex-wrap: wrap;
 		column-gap: 14px;
 	}
 
-	.oc-dd-pair .single-product table.variations.oc-dd-2 tr:not(.oc-row-auto) { flex: 1 1 100%; }
+	.oc-dd-pair.single-product table.variations.oc-dd-2 tr:not(.oc-row-auto) { flex: 1 1 100%; }
 
-	.oc-dd-pair .single-product table.variations.oc-dd-2 tr.oc-tr-dd:not(.oc-row-auto) {
+	.oc-dd-pair.single-product table.variations.oc-dd-2 tr.oc-tr-dd:not(.oc-row-auto) {
 		flex: 1 1 calc(50% - 7px);
 		max-inline-size: calc(50% - 7px);
 	}
