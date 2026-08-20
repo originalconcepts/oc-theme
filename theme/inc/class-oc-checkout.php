@@ -80,6 +80,9 @@ final class Checkout {
 		add_action( 'woocommerce_admin_order_data_after_billing_address', array( $this, 'admin_meta' ) );
 		add_action( 'woocommerce_email_order_meta', array( $this, 'email_meta' ), 10, 3 );
 
+		add_filter( 'woocommerce_cart_item_name', array( $this, 'review_item_name' ), 10, 3 );
+		add_filter( 'woocommerce_checkout_cart_item_quantity', array( $this, 'review_item_qty' ), 10, 3 );
+
 		add_action( 'wp_footer', array( $this, 'legal_footer' ) );
 		add_action( 'wp_body_open', array( $this, 'help_line' ) );
 
@@ -633,6 +636,49 @@ final class Checkout {
 		}
 
 		return $rows;
+	}
+
+	/**
+	 * Summary rows carry the product image (checkout only).
+	 *
+	 * @param string $name      Item name html.
+	 * @param array  $cart_item Cart item.
+	 * @param string $key       Cart item key.
+	 * @return string
+	 */
+	public function review_item_name( $name, $cart_item, $key = '' ): string {
+		if ( ! is_checkout() || is_cart() || ! isset( $cart_item['data'] ) ) {
+			return (string) $name;
+		}
+
+		$product = $cart_item['data'];
+		if ( ! $product instanceof \WC_Product ) {
+			return (string) $name;
+		}
+
+		$image = wp_get_attachment_image( (int) $product->get_image_id(), 'woocommerce_gallery_thumbnail', false, array( 'class' => 'oc-co-item__img' ) );
+
+		return '<span class="oc-co-item">' . $image . '<span class="oc-co-item__name">' . $name . '</span></span>';
+	}
+
+	/**
+	 * Quantity stepper on the summary rows — same ajax the mini-cart uses.
+	 *
+	 * @param string $html      Woo's "× 2" html.
+	 * @param array  $cart_item Cart item.
+	 * @param string $key       Cart item key.
+	 * @return string
+	 */
+	public function review_item_qty( $html, $cart_item, $key ): string {
+		$qty = (int) ( $cart_item['quantity'] ?? 1 );
+
+		$trash = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>';
+
+		return '<span class="oc-co-qty" data-oc-co-qty data-key="' . esc_attr( $key ) . '">'
+			. '<button type="button" class="oc-co-qty__b" data-d="-1" aria-label="' . esc_attr__( 'Decrease', 'oc-theme' ) . '">' . ( 1 === $qty ? $trash : '&minus;' ) . '</button>'
+			. '<span class="oc-co-qty__n">' . absint( $qty ) . '</span>'
+			. '<button type="button" class="oc-co-qty__b" data-d="1" aria-label="' . esc_attr__( 'Increase', 'oc-theme' ) . '">+</button>'
+			. '</span>';
 	}
 
 	/* -------------------------------------------------------------- shell */

@@ -6139,7 +6139,24 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 	padding-block: 26px 10px;
 }
 
-.oc-checkout form.checkout #customer_details { grid-column: 1; }
+/* the reference split: form side white, summary side softly grey, the
+ * band running the full viewport height behind the summary column */
+@media (min-width: 901px) {
+	body.oc-checkout { position: relative; }
+
+	body.oc-checkout::before {
+		content: "";
+		position: fixed;
+		inset-block: 0;
+		inset-inline-end: 0;
+		inline-size: max(452px, calc((100% - 1160px) / 2 + 452px));
+		background: var(--oc-up-bg, #f7f6f4);
+		border-inline-start: 1px solid var(--oc-line, #eee);
+		z-index: -1;
+	}
+}
+
+.oc-checkout form.checkout #customer_details { grid-column: 1; grid-row: 1 / span 2; }
 
 .oc-checkout form.checkout #order_review_heading,
 .oc-checkout form.checkout #order_review {
@@ -6156,9 +6173,15 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 	grid-row: 2;
 	position: sticky;
 	inset-block-start: calc(var(--oc-header-h, 64px) + 18px);
-	background: var(--oc-up-bg, #f7f6f4);
-	border-radius: var(--oc-radius, 10px);
-	padding: 22px;
+	padding: 4px 0 22px;
+}
+
+@media (max-width: 900px) {
+	.oc-checkout #order_review {
+		background: var(--oc-up-bg, #f7f6f4);
+		border-radius: var(--oc-radius, 10px);
+		padding: 18px;
+	}
 }
 
 @media (max-width: 900px) {
@@ -6266,33 +6289,50 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 
 .oc-checkout .woocommerce-billing-fields__field-wrapper .form-row:first-of-type { margin-block-start: 0; }
 
-/* Floating-label fields. */
+/* Floating labels the reference way: the label rests INSIDE the field
+ * like a placeholder, and glides up small (still inside) on focus/fill. */
 .oc-checkout form.checkout .form-row { position: relative; }
 
 .oc-checkout form.checkout .form-row > label {
 	position: absolute;
-	inset-block-start: -8px;
-	inset-inline-start: 12px;
-	background: var(--oc-surface, #fff);
-	padding-inline: 5px;
-	font-size: .74rem;
-	color: var(--oc-ink-2, #777);
+	inset-block-start: 17px;
+	inset-inline-start: 14px;
+	font-size: .95rem;
+	color: var(--oc-ink-2, #999);
 	line-height: 1.2;
 	z-index: 2;
-	border-radius: 4px;
+	pointer-events: none;
+	transition: all .14s ease;
+	max-inline-size: calc(100% - 28px);
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+.oc-checkout form.checkout .form-row:focus-within > label,
+.oc-checkout form.checkout .form-row.is-filled > label {
+	inset-block-start: 7px;
+	font-size: .68rem;
 }
 
 .oc-checkout form.checkout .form-row .input-text,
 .oc-checkout form.checkout .form-row select,
 .oc-checkout form.checkout .form-row textarea {
 	inline-size: 100%;
-	min-block-size: 50px;
+	min-block-size: 56px;
 	border: 1.5px solid var(--oc-line, #dcdcdc);
 	border-radius: var(--oc-cta-r, 8px);
 	background: var(--oc-surface, #fff);
-	padding: 12px 14px;
+	padding: 24px 14px 8px;
 	font: inherit;
 	transition: border-color .15s ease;
+}
+
+/* selects always hold a value — label rides high from the start */
+.oc-checkout form.checkout .form-row select ~ label,
+.oc-checkout form.checkout .form-row:has(select) > label {
+	inset-block-start: 7px;
+	font-size: .68rem;
 }
 
 .oc-checkout form.checkout .form-row textarea { min-block-size: 90px; }
@@ -6348,11 +6388,13 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 
 /* the client sorter also rewrites classes — pin the half-width pairs */
 .oc-checkout #billing_email_field,
-.oc-checkout #billing_phone_field,
-.oc-checkout #billing_address_1_field,
+.oc-checkout #billing_phone_field { flex: 1 1 calc(50% - 7px) !important; }
+
+.oc-checkout #billing_address_1_field { flex: 1 1 100% !important; }
+
 .oc-checkout #billing_address_2_field,
 .oc-checkout #billing_oc_floor_field,
-.oc-checkout #billing_oc_entry_field { flex: 1 1 calc(50% - 7px) !important; }
+.oc-checkout #billing_oc_entry_field { flex: 1 1 calc(33.333% - 10px) !important; }
 
 .oc-checkout #billing_city_field,
 .oc-checkout #billing_country_field,
@@ -6505,24 +6547,29 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 
 .oc-co-rrow > label {
 	position: absolute;
-	inset-block-start: -8px;
-	inset-inline-start: 12px;
-	background: var(--oc-surface, #fff);
-	padding-inline: 5px;
-	font-size: .74rem;
-	color: var(--oc-ink-2, #777);
+	inset-block-start: 17px;
+	inset-inline-start: 14px;
+	font-size: .95rem;
+	color: var(--oc-ink-2, #999);
 	line-height: 1.2;
 	z-index: 2;
-	border-radius: 4px;
+	pointer-events: none;
+	transition: all .14s ease;
+}
+
+.oc-co-rrow:focus-within > label,
+.oc-co-rrow.is-filled > label {
+	inset-block-start: 7px;
+	font-size: .68rem;
 }
 
 .oc-co-rrow .input-text {
 	inline-size: 100%;
-	min-block-size: 50px;
+	min-block-size: 56px;
 	border: 1.5px solid var(--oc-line, #dcdcdc);
 	border-radius: var(--oc-cta-r, 8px);
 	background: var(--oc-surface, #fff);
-	padding: 12px 14px;
+	padding: 24px 14px 8px;
 	font: inherit;
 	transition: border-color .15s ease;
 }
@@ -6557,6 +6604,58 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 	font-size: 1.05rem;
 	font-weight: 700;
 }
+
+/* summary rows: image, name, quantity stepper, line total */
+.oc-co-item {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.oc-co-item__img {
+	inline-size: 56px;
+	block-size: 56px;
+	object-fit: cover;
+	border-radius: calc(var(--oc-radius, 8px) / 1.4);
+	flex: none;
+	border: 1px solid var(--oc-line, #eee);
+}
+
+.oc-co-item__name { font-weight: 500; font-size: .9rem; }
+
+.oc-co-item__name .variation { margin: 2px 0 0; font-size: .78rem; color: var(--oc-ink-2); }
+
+.oc-co-qty {
+	display: inline-flex;
+	align-items: center;
+	gap: 2px;
+	border: 1px solid var(--oc-line, #ddd);
+	border-radius: 999px;
+	padding: 2px 4px;
+	margin-block-start: 6px;
+	background: var(--oc-surface, #fff);
+}
+
+.oc-co-qty__b {
+	border: 0;
+	background: none;
+	inline-size: 24px;
+	block-size: 24px;
+	display: grid;
+	place-items: center;
+	font: inherit;
+	cursor: pointer;
+	color: var(--oc-ink, #111);
+	touch-action: manipulation;
+}
+
+.oc-co-qty__b svg { inline-size: 13px; block-size: 13px; }
+
+.oc-co-qty__n { min-inline-size: 20px; text-align: center; font-size: .85rem; font-weight: 600; }
+
+.oc-co-qty.is-busy { opacity: .5; pointer-events: none; }
+
+.oc-checkout #order_review table.shop_table tbody tr td { border-block-end: 1px solid var(--oc-line, #eee); padding-block: 12px; }
 
 /* our own method cards drive the choice — the totals row just states it */
 .oc-checkout #order_review ul#shipping_method li input { display: none; }

@@ -5269,9 +5269,28 @@
 			return false !== ok;
 		}
 
+		/* -- inner floating labels: is-filled keeps the label up -- */
+		function coFillState( input ) {
+			var row = input.closest( '.form-row, .oc-co-rrow' );
+			if ( row ) {
+				row.classList.toggle( 'is-filled', '' !== input.value.trim() );
+			}
+		}
+
+		function coFillAll() {
+			coForm.querySelectorAll( '.input-text, select, textarea' ).forEach( coFillState );
+		}
+
+		coFillAll();
+		// Browser autofill lands a beat after load.
+		setTimeout( coFillAll, 600 );
+
 		coForm.addEventListener( 'focusout', function ( e ) {
 			if ( e.target.matches( '.input-text, select' ) && e.target.offsetParent ) {
 				coPaint( e.target, true );
+			}
+			if ( e.target.matches( '.input-text, select, textarea' ) ) {
+				coFillState( e.target );
 			}
 		} );
 
@@ -5279,6 +5298,7 @@
 			if ( ! e.target.matches( '.input-text, select' ) ) {
 				return;
 			}
+			coFillState( e.target );
 			// While typing: promote to green the moment it turns valid; a
 			// field already flagged red clears as soon as it is fixed.
 			var row = e.target.closest( '.form-row' );
@@ -5365,6 +5385,54 @@
 
 		coPaintButton();
 		coTrustLine();
+
+		/* -- summary quantity steppers: the mini-cart's ajax + Woo refresh -- */
+		var coQtyTimer = null;
+
+		document.addEventListener( 'click', function ( e ) {
+			var b = e.target.closest( '[data-oc-co-qty] .oc-co-qty__b' );
+			if ( ! b ) {
+				return;
+			}
+
+			var wrap = b.closest( '[data-oc-co-qty]' );
+			var num = wrap.querySelector( '.oc-co-qty__n' );
+			var next = Math.max( 0, parseInt( num.textContent, 10 ) + parseInt( b.dataset.d, 10 ) );
+			num.textContent = String( next );
+
+			clearTimeout( coQtyTimer );
+			coQtyTimer = setTimeout( function () {
+				wrap.classList.add( 'is-busy' );
+				var data = new FormData();
+				data.append( 'action', 'oc_cart_qty' );
+				data.append( 'key', wrap.dataset.key );
+				data.append( 'qty', String( next ) );
+				fetch( ( window.ocL10n || {} ).ajaxUrl || '/wp-admin/admin-ajax.php', {
+					method: 'POST',
+					credentials: 'same-origin',
+					body: data
+				} )
+					.then( function ( r ) { return r.json(); } )
+					.then( function ( res ) {
+						if ( res && res.fragments ) {
+							Object.keys( res.fragments ).forEach( function ( selector ) {
+								document.querySelectorAll( selector ).forEach( function ( el ) {
+									var box = document.createElement( 'div' );
+									box.innerHTML = res.fragments[ selector ];
+									if ( box.firstElementChild ) {
+										el.replaceWith( box.firstElementChild );
+									}
+								} );
+							} );
+						}
+						// Woo re-renders the review table (and with it our
+						// steppers) with fresh totals.
+						if ( window.jQuery ) {
+							window.jQuery( document.body ).trigger( 'update_checkout' );
+						}
+					} );
+			}, 450 );
+		} );
 
 		/* -- mobile: the product list folds behind the total line -- */
 		var sumHead = document.getElementById( 'order_review_heading' );
