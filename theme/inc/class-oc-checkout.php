@@ -34,6 +34,7 @@ final class Checkout {
 			is_array( $saved ) ? $saved : array(),
 			array(
 				'summary'         => 1,       // Product list in the order summary.
+				'coupon_mode'     => 'open',  // open | button | hide.
 				'country_mode'    => 'auto',  // auto | hide.
 				'send_other'      => 1,       // "I'm sending to someone else" toggle.
 				'phone2_required' => 0,       // Recipient's second phone required.
@@ -483,7 +484,6 @@ final class Checkout {
 
 		echo '<a class="oc-co-brand__cart" href="' . esc_url( wc_get_cart_url() ) . '" aria-label="' . esc_attr__( 'Back to cart', 'oc-theme' ) . '">';
 		echo oc_cart_icon_svg(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static SVG.
-		echo '<span class="oc-cart-count">' . absint( WC()->cart ? WC()->cart->get_cart_contents_count() : 0 ) . '</span>';
 		echo '</a>';
 
 		echo '<div class="oc-co-brand__logo">';
@@ -510,13 +510,20 @@ final class Checkout {
 	 * Coupon line in the summary: after the items, before the totals.
 	 */
 	public function summary_coupon_row(): void {
-		if ( ! wc_coupons_enabled() ) {
+		$s = self::settings();
+
+		if ( ! wc_coupons_enabled() || 'hide' === $s['coupon_mode'] ) {
 			return;
 		}
+
+		$folded = 'button' === $s['coupon_mode'];
 		?>
 		<tr class="oc-co-couponrow">
 			<td colspan="2">
-				<div class="oc-co-coupon" data-oc-co-coupon>
+				<?php if ( $folded ) : ?>
+					<button type="button" class="oc-co-coupon__t" data-oc-co-coupon-t><?php esc_html_e( 'Have a coupon?', 'oc-theme' ); ?> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+				<?php endif; ?>
+				<div class="oc-co-coupon" data-oc-co-coupon <?php echo $folded ? 'hidden' : ''; ?>>
 					<input type="text" placeholder="<?php esc_attr_e( 'Coupon code', 'oc-theme' ); ?>" />
 					<button type="button"><?php esc_html_e( 'Apply coupon', 'oc-theme' ); ?></button>
 				</div>
@@ -552,9 +559,13 @@ final class Checkout {
 			$cost = (float) $rate->get_cost() + array_sum( array_map( 'floatval', $rate->get_taxes() ) );
 
 			echo '<tr class="oc-co-shiprow2"><th>' . esc_html__( 'Shipping', 'woocommerce' ) . '</th><td>';
-			echo '<span class="oc-co-shiprow2__in"><span>' . esc_html( $rate->get_label() ) . '</span><strong>';
-			echo $cost > 0 ? wp_kses_post( wc_price( $cost ) ) : esc_html__( 'Free', 'oc-theme' );
-			echo '</strong></span>';
+			echo '<span class="oc-co-shiprow2__in"><span>' . esc_html( $rate->get_label() ) . '</span>';
+			if ( $cost > 0 ) {
+				echo '<strong>' . wp_kses_post( wc_price( $cost ) ) . '</strong>';
+			} elseif ( 'free_shipping' !== $rate->get_method_id() ) {
+				echo '<strong>' . esc_html__( 'Free', 'oc-theme' ) . '</strong>';
+			}
+			echo '</span>';
 			echo '</td></tr>';
 		}
 	}
@@ -589,18 +600,9 @@ final class Checkout {
 			return;
 		}
 
-		echo '<tr class="oc-co-save"><td colspan="2">';
-		echo '<button type="button" class="oc-co-save__t" data-oc-co-save>';
-		echo '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 12.5l5 5L19.5 7"/></svg>';
-		echo sprintf( esc_html__( 'You saved %s', 'oc-theme' ), '<strong>' . wp_kses_post( wc_price( $saved ) ) . '</strong>' );
-		echo '<svg class="oc-co-save__c" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
-		echo '</button>';
-		echo '<span class="oc-co-save__rows" hidden>';
 		foreach ( $rows as $row ) {
-			echo '<span class="oc-co-save__row"><span>' . esc_html( $row[0] ) . '</span><strong>&minus;' . wp_kses_post( wc_price( $row[1] ) ) . '</strong></span>';
+			echo '<tr class="oc-co-disc"><th>' . esc_html( $row[0] ) . '</th><td>&minus;' . wp_kses_post( wc_price( $row[1] ) ) . '</td></tr>';
 		}
-		echo '</span>';
-		echo '</td></tr>';
 	}
 
 	/**
@@ -939,6 +941,8 @@ final class Checkout {
 
 		$trash = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>';
 
+		// The mini-cart's anatomy exactly: LTR box, minus (or trash) at the
+		// left, plus at the right.
 		return '<span class="oc-co-qty" data-oc-co-qty data-key="' . esc_attr( $key ) . '">'
 			. '<button type="button" class="oc-co-qty__b" data-d="-1" aria-label="' . esc_attr__( 'Decrease', 'oc-theme' ) . '">' . ( 1 === $qty ? $trash : '&minus;' ) . '</button>'
 			. '<span class="oc-co-qty__n">' . absint( $qty ) . '</span>'
@@ -1050,6 +1054,16 @@ final class Checkout {
 						<td><label><input type="checkbox" name="summary" value="1" <?php checked( 1, (int) $s['summary'] ); ?> /> <?php esc_html_e( 'Show the product list (totals always show)', 'oc-theme' ); ?></label></td>
 					</tr>
 					<tr>
+						<th scope="row"><?php esc_html_e( 'Coupon field', 'oc-theme' ); ?></th>
+						<td>
+							<select name="coupon_mode">
+								<option value="open" <?php selected( 'open', $s['coupon_mode'] ); ?>><?php esc_html_e( 'Open field', 'oc-theme' ); ?></option>
+								<option value="button" <?php selected( 'button', $s['coupon_mode'] ); ?>><?php esc_html_e( '"Have a coupon?" opens the field', 'oc-theme' ); ?></option>
+								<option value="hide" <?php selected( 'hide', $s['coupon_mode'] ); ?>><?php esc_html_e( 'Hidden', 'oc-theme' ); ?></option>
+							</select>
+						</td>
+					</tr>
+					<tr>
 						<th scope="row"><?php esc_html_e( 'Country field', 'oc-theme' ); ?></th>
 						<td>
 							<select name="country_mode">
@@ -1141,6 +1155,7 @@ final class Checkout {
 		// phpcs:disable WordPress.Security.NonceVerification.Missing -- verified above.
 		$s = array(
 			'summary'         => empty( $_POST['summary'] ) ? 0 : 1,
+			'coupon_mode'     => in_array( $_POST['coupon_mode'] ?? 'open', array( 'open', 'button', 'hide' ), true ) ? sanitize_key( $_POST['coupon_mode'] ?? 'open' ) : 'open',
 			'country_mode'    => 'hide' === ( $_POST['country_mode'] ?? 'auto' ) ? 'hide' : 'auto',
 			'send_other'      => empty( $_POST['send_other'] ) ? 0 : 1,
 			'phone2_required' => empty( $_POST['phone2_required'] ) ? 0 : 1,

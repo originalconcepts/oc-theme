@@ -6291,7 +6291,12 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 	margin: 10px 0 12px;
 }
 
-.oc-checkout #order_review_heading { margin-block-end: 4px; }
+.oc-co-addrhead > .oc-co-h { margin-block-start: 22px; }
+.oc-co-methods > .oc-co-h { margin-block-start: 22px; }
+
+.oc-checkout #order_review_heading { margin-block-end: 0; }
+
+.oc-checkout #order_review { padding-block-start: 0; }
 
 .oc-checkout .woocommerce-billing-fields__field-wrapper {
 	display: flex;
@@ -6342,8 +6347,8 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 }
 
 .oc-checkout form.checkout .form-row select {
-	block-size: 58px;
-	padding-block: 26px 6px;
+	block-size: 64px;
+	padding-block: 30px 8px;
 }
 
 .oc-checkout form.checkout .form-row .input-text,
@@ -6641,6 +6646,10 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 
 .oc-checkout #order_review table.shop_table thead { display: none; }
 
+.oc-checkout #order_review table.shop_table tbody td { vertical-align: top; }
+
+.oc-checkout #order_review table.shop_table tbody td.product-total { padding-block-start: 12px; }
+
 .oc-checkout #order_review table.shop_table td,
 .oc-checkout #order_review table.shop_table th {
 	border: 0;
@@ -6721,43 +6730,53 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 /* Woo's own coupon totals rows — the savings line covers them */
 .oc-checkout #order_review tr.cart-discount { display: none; }
 
-/* the savings line, straight from the mini-cart */
-.oc-checkout tr.oc-co-save td { border: 0 !important; padding-block: 4px !important; }
-
-.oc-co-save__t {
-	border: 0;
-	background: none;
-	font: inherit;
+/* discount rows, open, in the discount colour */
+.oc-checkout tr.oc-co-disc th,
+.oc-checkout tr.oc-co-disc td {
+	color: var(--oc-success, #2f7d4f) !important;
 	font-size: .88rem;
-	color: var(--oc-success, #2f7d4f);
-	cursor: pointer;
-	padding: 0;
-	display: inline-flex;
-	align-items: center;
-	gap: 6px;
+	font-weight: 500 !important;
+	border: 0;
 }
 
-.oc-co-save__t svg { inline-size: 14px; block-size: 14px; flex: none; }
-
-.oc-co-save__t .oc-co-save__c { inline-size: 13px; block-size: 13px; color: var(--oc-ink-2); transition: rotate .2s ease; }
-
-.oc-co-save__t.is-open .oc-co-save__c { rotate: 180deg; }
-
-.oc-co-save__rows { display: block; padding-block-start: 6px; }
-.oc-co-save__rows[hidden] { display: none; }
-
-.oc-co-save__row {
-	display: flex;
-	justify-content: space-between;
-	gap: 10px;
-	font-size: .84rem;
-	color: var(--oc-success, #2f7d4f);
-	padding-block: 2px;
-}
-
-/* payment area: rtl flow, aligned with the rows above, subtle loader */
+/* payment area: rtl flow, identical checkbox rows, subtle loader */
 .oc-checkout #payment,
 .oc-checkout #payment .place-order { direction: rtl; }
+
+.oc-checkout #payment .place-order .form-row,
+.oc-checkout #payment .place-order p,
+.oc-checkout .woocommerce-terms-and-conditions-wrapper {
+	margin: 0 0 10px;
+	padding: 0;
+	float: none;
+	inline-size: 100%;
+	text-align: start;
+}
+
+.oc-checkout #payment .place-order label {
+	display: flex !important;
+	flex-direction: row;
+	align-items: flex-start;
+	justify-content: flex-start;
+	gap: 8px;
+	margin: 0;
+	text-align: start;
+}
+
+.oc-checkout #payment .place-order input[type="checkbox"] {
+	flex: none;
+	margin: 3px 0 0;
+	float: none;
+}
+
+.oc-checkout #place_order {
+	inline-size: 100% !important;
+	float: none !important;
+	display: block;
+}
+
+/* nothing pans sideways */
+body.oc-checkout { overflow-x: clip; }
 
 .oc-checkout #payment ul.payment_methods li label { display: inline-flex; align-items: center; gap: 8px; margin: 0; }
 
@@ -6782,30 +6801,34 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 .oc-co-qty {
 	display: inline-flex;
 	align-items: center;
-	gap: 2px;
-	border: 1px solid var(--oc-line, #ddd);
-	border-radius: 999px;
-	padding: 1px 3px;
-	margin-block-start: 3px;
+	border: 1.5px solid var(--oc-line);
+	border-radius: var(--oc-cta-r, 8px);
+	inline-size: fit-content;
+	margin-block-start: 1px;
+	direction: ltr;
+	overflow: hidden;
 	background: var(--oc-surface, #fff);
 }
 
 .oc-co-qty__b {
 	border: 0;
 	background: none;
-	inline-size: 24px;
-	block-size: 24px;
-	display: grid;
-	place-items: center;
+	inline-size: 28px;
+	block-size: 26px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
 	font: inherit;
+	font-size: 15px;
+	line-height: 1;
 	cursor: pointer;
 	color: var(--oc-ink, #111);
 	touch-action: manipulation;
 }
 
-.oc-co-qty__b svg { inline-size: 13px; block-size: 13px; }
+.oc-co-qty__b svg { inline-size: 13px; block-size: 13px; color: var(--oc-ink-2); }
 
-.oc-co-qty__n { min-inline-size: 20px; text-align: center; font-size: .85rem; font-weight: 600; }
+.oc-co-qty__n { min-inline-size: 18px; text-align: center; font-size: .85rem; font-weight: 600; }
 
 .oc-co-qty.is-busy { opacity: .5; pointer-events: none; }
 
@@ -6840,6 +6863,24 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 	cursor: pointer;
 	flex: none;
 }
+
+.oc-co-coupon__t {
+	border: 0;
+	background: none;
+	font: inherit;
+	font-size: .88rem;
+	color: var(--oc-ink-2, #777);
+	cursor: pointer;
+	padding: 0 0 6px;
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+}
+
+.oc-co-coupon__t svg { inline-size: 13px; block-size: 13px; transition: rotate .2s ease; }
+.oc-co-coupon__t.is-open svg { rotate: 180deg; }
+
+.oc-co-coupon[hidden] { display: none; }
 
 .oc-co-coupon__msg {
 	margin: 8px 0 0;

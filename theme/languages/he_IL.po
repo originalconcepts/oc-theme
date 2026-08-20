@@ -2124,3 +2124,15 @@ msgstr "שדות חובה"
 
 msgid "Coupon %s"
 msgstr "קופון %s"
+
+msgid "Coupon field"
+msgstr "שדה קופון"
+
+msgid "Open field"
+msgstr "שדה פתוח"
+
+msgid "\"Have a coupon?\" opens the field"
+msgstr "״יש לך קופון?״ שפותח את השדה"
+
+msgid "Hidden"
+msgstr "מוסתר"

@@ -5442,16 +5442,19 @@
 			}, 450 );
 		} );
 
-		/* -- savings breakdown folds behind the "you saved" line -- */
+		/* -- "have a coupon?" unfolds the field -- */
 		document.addEventListener( 'click', function ( e ) {
-			var t = e.target.closest( '[data-oc-co-save]' );
+			var t = e.target.closest( '[data-oc-co-coupon-t]' );
 			if ( ! t ) {
 				return;
 			}
-			var rows = t.parentElement.querySelector( '.oc-co-save__rows' );
-			if ( rows ) {
-				rows.hidden = ! rows.hidden;
-				t.classList.toggle( 'is-open', ! rows.hidden );
+			var box = t.parentElement.querySelector( '[data-oc-co-coupon]' );
+			if ( box ) {
+				box.hidden = ! box.hidden;
+				t.classList.toggle( 'is-open', ! box.hidden );
+				if ( ! box.hidden ) {
+					box.querySelector( 'input' ).focus();
+				}
 			}
 		} );
 
