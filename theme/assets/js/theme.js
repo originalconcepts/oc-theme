@@ -5356,6 +5356,13 @@
 			var rtl = 'rtl' === getComputedStyle( document.documentElement ).direction;
 			var seq = [];
 
+			// Anything hidden since the last pass would otherwise keep a
+			// stale index and collide with a live one.
+			document.querySelectorAll( '[data-oc-tab]' ).forEach( function ( el ) {
+				el.removeAttribute( 'tabindex' );
+				el.removeAttribute( 'data-oc-tab' );
+			} );
+
 			function collect( root ) {
 				if ( ! root ) {
 					return;
@@ -5396,6 +5403,7 @@
 
 			seq.forEach( function ( el, i ) {
 				el.setAttribute( 'tabindex', String( i + 1 ) );
+				el.setAttribute( 'data-oc-tab', '1' );
 			} );
 		}
 

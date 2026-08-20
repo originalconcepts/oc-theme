@@ -583,16 +583,21 @@ final class Checkout {
 	 * Section heading above the contact fields.
 	 */
 	public function orderer_heading(): void {
+		// Shop managers can preview the guest header with ?oc_guest=1.
+		$as_guest = ! is_user_logged_in()
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display-only preview flag.
+			|| ( isset( $_GET['oc_guest'] ) && current_user_can( 'manage_woocommerce' ) );
+
 		echo '<div class="oc-co-headrow">';
 		echo '<h3 class="oc-co-h oc-co-h--first">' . esc_html__( 'Your details', 'oc-theme' ) . '</h3>';
 
-		if ( ! is_user_logged_in() ) {
+		if ( $as_guest ) {
 			echo '<button type="button" class="oc-co-login__t" data-oc-co-login-t>' . esc_html__( 'Log in to your account', 'oc-theme' ) . '</button>';
 		}
 
 		echo '</div>';
 
-		if ( ! is_user_logged_in() ) {
+		if ( $as_guest ) {
 			echo '<div class="oc-co-login" data-oc-co-login><div class="oc-co-login__body" hidden>';
 			woocommerce_login_form( array( 'redirect' => wc_get_checkout_url() ) );
 			echo '</div></div>';
