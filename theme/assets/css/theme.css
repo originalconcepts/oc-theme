@@ -6118,6 +6118,12 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 	.oc-co-brand { display: block; }
 }
 
+/* explicit columns: with the help line hidden on phones, auto-placement
+ * would slide the logo into the first column instead of the middle */
+.oc-co-brand__help { grid-column: 1; }
+.oc-co-brand__logo { grid-column: 2; }
+.oc-co-brand__cart { grid-column: 3; }
+
 .oc-co-brand__cart {
 	order: 3;
 	justify-self: end;
