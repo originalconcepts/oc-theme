@@ -2106,3 +2106,6 @@ msgstr "מדיניות הפרטיות"
 
 msgid "The details you provide will be used to process and deliver your order, for billing and customer service, in line with our %s. Providing them is not required by law, but without them the order cannot be completed."
 msgstr "הפרטים שמסרת ישמשו לטיפול בהזמנה ולאספקתה, לחיוב ולשירות לקוחות, בהתאם ל%s. מסירת המידע אינה חובה על פי חוק, אך בלעדיה לא ניתן להשלים את ההזמנה."
+
+msgid "Please confirm the privacy policy notice."
+msgstr "נא לאשר את הצהרת מדיניות הפרטיות."

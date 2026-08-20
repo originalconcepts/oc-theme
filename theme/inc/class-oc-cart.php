@@ -384,7 +384,7 @@ final class Cart {
 	 *
 	 * @param array<string,mixed> $item Cart item.
 	 */
-	private function item_attributes_html( array $item ): string {
+	public static function item_attributes_html( array $item ): string {
 		if ( empty( $item['variation'] ) || ! is_array( $item['variation'] ) ) {
 			return wc_get_formatted_cart_item_data( $item );
 		}
