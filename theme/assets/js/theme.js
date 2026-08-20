@@ -5434,6 +5434,51 @@
 			}, 450 );
 		} );
 
+		/* -- summary coupon: the drawer's endpoint + Woo refresh -- */
+		document.addEventListener( 'click', function ( e ) {
+			var apply = e.target.closest( '[data-oc-co-coupon] button' );
+			if ( ! apply ) {
+				return;
+			}
+
+			var box = apply.closest( '[data-oc-co-coupon]' );
+			var input = box.querySelector( 'input' );
+			var msg = box.parentElement.querySelector( '[data-oc-co-coupon-msg]' );
+			var code = input.value.trim();
+
+			if ( '' === code ) {
+				input.focus();
+				return;
+			}
+
+			apply.disabled = true;
+
+			var data = new FormData();
+			data.append( 'action', 'oc_cart_coupon' );
+			data.append( 'code', code );
+
+			fetch( ( window.ocL10n || {} ).ajaxUrl || '/wp-admin/admin-ajax.php', {
+				method: 'POST',
+				credentials: 'same-origin',
+				body: data
+			} )
+				.then( function ( r ) { return r.json(); } )
+				.then( function ( res ) {
+					apply.disabled = false;
+					if ( res && res.success ) {
+						if ( msg ) {
+							msg.hidden = true;
+						}
+						if ( window.jQuery ) {
+							window.jQuery( document.body ).trigger( 'update_checkout' );
+						}
+					} else if ( msg ) {
+						msg.textContent = ( res && res.data && res.data.message ) ? res.data.message : 'Error';
+						msg.hidden = false;
+					}
+				} );
+		} );
+
 		/* -- mobile: the product list folds behind the total line -- */
 		var sumHead = document.getElementById( 'order_review_heading' );
 		if ( sumHead ) {

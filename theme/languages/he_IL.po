@@ -2085,3 +2085,24 @@ msgstr "תשלום מאובטח ומוצפן"
 
 msgid "Checkout"
 msgstr "קופה"
+
+msgid "Your details"
+msgstr "פרטי המזמין"
+
+msgid "Back to cart"
+msgstr "חזרה לסל"
+
+msgid "Apply coupon"
+msgstr "החלת קופון"
+
+msgid "Coupon code"
+msgstr "קוד קופון"
+
+msgid "Including VAT"
+msgstr "כולל מע\"מ"
+
+msgid "privacy policy"
+msgstr "מדיניות הפרטיות"
+
+msgid "The details you provide will be used to process and deliver your order, for billing and customer service, in line with our %s. Providing them is not required by law, but without them the order cannot be completed."
+msgstr "הפרטים שמסרת ישמשו לטיפול בהזמנה ולאספקתה, לחיוב ולשירות לקוחות, בהתאם ל%s. מסירת המידע אינה חובה על פי חוק, אך בלעדיה לא ניתן להשלים את ההזמנה."

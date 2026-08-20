@@ -72,7 +72,19 @@ final class Checkout {
 			},
 			20
 		);
+		add_action(
+			'init',
+			static function (): void {
+				remove_action( 'woocommerce_before_checkout_form', 'woocommerce_checkout_coupon_form', 10 );
+			},
+			20
+		);
+		add_action( 'woocommerce_before_checkout_form', array( $this, 'brand_row' ), 3 );
 		add_action( 'woocommerce_before_checkout_form', array( $this, 'login_block' ), 5 );
+		add_action( 'woocommerce_before_checkout_billing_form', array( $this, 'orderer_heading' ) );
+		add_action( 'woocommerce_review_order_after_cart_contents', array( $this, 'summary_coupon_row' ) );
+		add_action( 'woocommerce_review_order_after_order_total', array( $this, 'vat_note_row' ) );
+		add_action( 'woocommerce_review_order_before_submit', array( $this, 'privacy_note' ), 12 );
 
 		add_action( 'woocommerce_review_order_before_submit', array( $this, 'consent_checkbox' ), 15 );
 		add_filter( 'woocommerce_order_button_text', array( $this, 'button_text' ) );
@@ -85,8 +97,7 @@ final class Checkout {
 		add_filter( 'woocommerce_cart_item_name', array( $this, 'review_item_name' ), 10, 3 );
 		add_filter( 'woocommerce_checkout_cart_item_quantity', array( $this, 'review_item_qty' ), 10, 3 );
 
-		add_action( 'wp_footer', array( $this, 'legal_footer' ) );
-		add_action( 'wp_body_open', array( $this, 'help_line' ) );
+
 
 		add_action( 'admin_menu', array( $this, 'menu' ), 60 );
 		add_action( 'admin_post_oc_checkout_save', array( $this, 'save_settings' ) );
@@ -218,11 +229,11 @@ final class Checkout {
 		$b['billing_state']['priority']   = 52;
 
 		$b['billing_city']['priority'] = 55;
-		$b['billing_city']['class']    = array( 'form-row-wide' );
+		$b['billing_city']['class']    = array( 'form-row-first' );
 		$b['billing_city']['label']    = __( 'City', 'oc-theme' );
 
 		$b['billing_address_1']['priority']    = 60;
-		$b['billing_address_1']['class']       = array( 'form-row-first' );
+		$b['billing_address_1']['class']       = array( 'form-row-last' );
 		$b['billing_address_1']['label']       = __( 'Street and house number', 'oc-theme' );
 		$b['billing_address_1']['placeholder'] = '';
 
@@ -439,6 +450,83 @@ final class Checkout {
 	}
 
 	/* -------------------------------------------------------------- extra */
+
+	/**
+	 * Shopify-style brand row inside the form column: cart at one end, the
+	 * logo centred — the site header itself never renders here.
+	 */
+	public function brand_row(): void {
+		$s = self::settings();
+
+		echo '<div class="oc-co-brand">';
+
+		echo '<a class="oc-co-brand__cart" href="' . esc_url( wc_get_cart_url() ) . '" aria-label="' . esc_attr__( 'Back to cart', 'oc-theme' ) . '">';
+		echo '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7h12l1.2 13H4.8L6 7zM9 10V6a3 3 0 0 1 6 0v4"/></svg>';
+		echo '</a>';
+
+		echo '<div class="oc-co-brand__logo">';
+		if ( has_custom_logo() ) {
+			the_custom_logo();
+		} else {
+			echo '<a href="' . esc_url( home_url( '/' ) ) . '">' . esc_html( get_bloginfo( 'name' ) ) . '</a>';
+		}
+		echo '</div>';
+
+		echo '<span class="oc-co-brand__help">' . esc_html( trim( (string) $s['help_text'] ) ) . '</span>';
+
+		echo '</div>';
+	}
+
+	/**
+	 * Section heading above the contact fields.
+	 */
+	public function orderer_heading(): void {
+		echo '<h3 class="oc-co-h oc-co-h--first">' . esc_html__( 'Your details', 'oc-theme' ) . '</h3>';
+	}
+
+	/**
+	 * Coupon line in the summary: after the items, before the totals.
+	 */
+	public function summary_coupon_row(): void {
+		if ( ! wc_coupons_enabled() ) {
+			return;
+		}
+		?>
+		<tr class="oc-co-couponrow">
+			<td colspan="2">
+				<div class="oc-co-coupon" data-oc-co-coupon>
+					<input type="text" placeholder="<?php esc_attr_e( 'Coupon code', 'oc-theme' ); ?>" />
+					<button type="button"><?php esc_html_e( 'Apply coupon', 'oc-theme' ); ?></button>
+				</div>
+				<p class="oc-co-coupon__msg" data-oc-co-coupon-msg hidden></p>
+			</td>
+		</tr>
+		<?php
+	}
+
+	/**
+	 * Quiet VAT note under the total.
+	 */
+	public function vat_note_row(): void {
+		echo '<tr class="oc-co-vat"><td colspan="2">' . esc_html__( 'Including VAT', 'oc-theme' ) . '</td></tr>';
+	}
+
+	/**
+	 * Short privacy note with the policy link, above the button.
+	 */
+	public function privacy_note(): void {
+		$url = get_privacy_policy_url();
+
+		$link = $url
+			? '<a href="' . esc_url( $url ) . '" target="_blank" rel="noopener">' . esc_html__( 'privacy policy', 'oc-theme' ) . '</a>'
+			: esc_html__( 'privacy policy', 'oc-theme' );
+
+		echo '<p class="oc-co-privacy">' . sprintf(
+			/* translators: %s: privacy policy link. */
+			esc_html__( 'The details you provide will be used to process and deliver your order, for billing and customer service, in line with our %s. Providing them is not required by law, but without them the order cannot be completed.', 'oc-theme' ),
+			$link // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped above.
+		) . '</p>';
+	}
 
 	/**
 	 * Prominent login block for guests, above the form.
