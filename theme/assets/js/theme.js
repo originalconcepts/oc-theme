@@ -5017,6 +5017,12 @@
 			return;
 		}
 
+		// Only swatch rows echo the chosen value by the label — a dot says
+		// nothing by itself. Buttons and dropdowns already show their text.
+		if ( ! tr.querySelector( '.oc-var--swatch, .oc-var--swatch_image' ) ) {
+			return;
+		}
+
 		var choice = document.createElement( 'span' );
 		choice.className = 'oc-choice';
 		label.appendChild( choice );

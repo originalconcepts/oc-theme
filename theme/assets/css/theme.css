@@ -3257,7 +3257,7 @@ table.variations td.value select:has(+ .oc-dd) {
 
 .oc-colors-label {
 	display: block;
-	font-weight: 600;
+	font-weight: 400;
 	font-size: .92rem;
 	margin-block-end: 8px;
 }
@@ -3291,7 +3291,7 @@ table.variations td.value select:has(+ .oc-dd) {
 .single-product table.variations th.label { margin-block-end: 8px; }
 
 .single-product table.variations th.label label {
-	font-weight: 600;
+	font-weight: 400;
 	margin: 0;
 }
 
