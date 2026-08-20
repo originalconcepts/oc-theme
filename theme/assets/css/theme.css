@@ -3128,23 +3128,12 @@ table.variations td.value select:has(+ .oc-dd) {
 
 .oc-var__btn:hover { border-color: var(--oc-ink); }
 
+/* Selection is the strong border, never a fill — one language for every
+ * button, in or out of stock, exactly like the reference. */
 .oc-var__btn.is-selected {
 	border-color: var(--oc-ink);
-	background: var(--oc-ink);
-	color: var(--oc-surface);
-}
-
-/* Selected AND out of stock — the reference look: no fill, just the strong
- * border, with the slash darkening to match. A filled button would hide
- * the out-of-stock state the moment it is chosen. */
-.oc-var__btn.is-selected.is-oos {
-	background-color: var(--oc-surface, #fff);
-	color: var(--oc-ink, #111);
-	background-image: linear-gradient(to top left,
-		transparent calc(50% - .75px),
-		var(--oc-ink, #111) calc(50% - .75px),
-		var(--oc-ink, #111) calc(50% + .75px),
-		transparent calc(50% + .75px));
+	background-color: var(--oc-surface);
+	color: var(--oc-ink);
 }
 
 /* One-to-one with the reference: the ring is the swatch's own 1px border
@@ -3192,15 +3181,19 @@ table.variations td.value select:has(+ .oc-dd) {
 	text-decoration: line-through;
 }
 
-/* Certainly out of stock — the reference's diagonal slash. Clickable
- * still: choosing it opens the back-in-stock signup. */
+/* Certainly out of stock — the reference's diagonal slash, drawn as an
+ * SVG line (non-scaling stroke) so it runs corner to corner razor-sharp
+ * at any button size. Clickable still: choosing it opens the
+ * back-in-stock signup. */
 .oc-var__btn.is-oos {
 	color: var(--oc-ink-2, #999);
-	background-image: linear-gradient(to top left,
-		transparent calc(50% - .75px),
-		var(--oc-line, #d4d4d4) calc(50% - .75px),
-		var(--oc-line, #d4d4d4) calc(50% + .75px),
-		transparent calc(50% + .75px));
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cline x1='0' y1='100' x2='100' y2='0' stroke='%23c2c2c2' stroke-width='1.2' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
+	background-size: 100% 100%;
+	background-repeat: no-repeat;
+}
+
+.oc-var__btn.is-selected.is-oos {
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cline x1='0' y1='100' x2='100' y2='0' stroke='%23141414' stroke-width='1.2' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
 }
 
 .oc-var__swatch.is-oos { position: relative; }
@@ -3210,11 +3203,7 @@ table.variations td.value select:has(+ .oc-dd) {
 	position: absolute;
 	inset: -1px;
 	border-radius: inherit;
-	background: linear-gradient(to top left,
-		transparent calc(50% - .75px),
-		rgb(255 255 255 / 85%) calc(50% - .75px),
-		rgb(255 255 255 / 85%) calc(50% + .75px),
-		transparent calc(50% + .75px));
+	background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cline x1='0' y1='100' x2='100' y2='0' stroke='%23ffffff' stroke-opacity='.9' stroke-width='1.6' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
 }
 
 /* colour sibling thumbs */
