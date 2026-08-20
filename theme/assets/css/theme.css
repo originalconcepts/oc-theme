@@ -3029,8 +3029,9 @@ main + .term-description {
 	cursor: pointer;
 }
 
-/* Woo's "clear" link under the variations — swapping a value covers it */
-.single-product .reset_variations { display: none; }
+/* Woo's "clear" link under the variations — swapping a value covers it.
+ * !important: Woo re-shows it with an inline style after each selection. */
+.single-product .reset_variations { display: none !important; }
 
 /* missing-choice guidance: red note under the row, control frame flags too */
 .oc-var-need {
