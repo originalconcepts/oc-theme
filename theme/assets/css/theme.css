@@ -6429,16 +6429,29 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 	border-color: var(--oc-ink, #111);
 }
 
-/* Field states: green when touched & valid, red when left wrong. */
+/* Field states: ours alone. Woo paints .woocommerce-validated rows green
+ * on its own schedule — including fields nobody has touched, like the
+ * recipient block the moment it unfolds — so the neutral line is forced
+ * first and only our two states override it. */
+.oc-checkout form.checkout .input-text,
+.oc-checkout form.checkout select,
+.oc-checkout form.checkout textarea { border-color: rgb(228 230 234) !important; }
+
 .oc-checkout form.checkout .form-row.oc-f-ok .input-text,
-.oc-checkout form.checkout .form-row.oc-f-ok select {
-	border-color: var(--oc-success, #2f7d4f);
+.oc-checkout form.checkout .form-row.oc-f-ok select,
+.oc-checkout form.checkout .oc-co-rrow.oc-f-ok .input-text {
+	border-color: var(--oc-success, #2f7d4f) !important;
 }
 
 .oc-checkout form.checkout .form-row.oc-f-bad .input-text,
-.oc-checkout form.checkout .form-row.oc-f-bad select {
-	border-color: var(--oc-sale, #b4453c);
+.oc-checkout form.checkout .form-row.oc-f-bad select,
+.oc-checkout form.checkout .oc-co-rrow.oc-f-bad .input-text {
+	border-color: var(--oc-sale, #b4453c) !important;
 }
+
+.oc-checkout form.checkout .input-text:focus,
+.oc-checkout form.checkout select:focus,
+.oc-checkout form.checkout textarea:focus { border-color: var(--oc-ink, #111) !important; }
 
 .oc-f-msg {
 	display: block;
@@ -6675,11 +6688,6 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 .oc-co-rrow .input-text:focus { outline: none; border-color: var(--oc-ink, #111); }
 .oc-co-rrow.oc-f-ok .input-text { border-color: var(--oc-success, #2f7d4f); }
 
-/* freshly revealed recipient fields start neutral — no green until the
- * visitor has actually touched them */
-.oc-co-recipient[hidden] ~ * .oc-f-ok,
-.oc-co-recipient .oc-co-rrow:not(.is-touched).oc-f-ok .input-text { border-color: rgb(228 230 234); }
-.oc-co-rrow.oc-f-bad .input-text { border-color: var(--oc-sale, #b4453c); }
 
 /* ---------- summary ---------- */
 
@@ -7064,10 +7072,73 @@ body.oc-checkout { overflow-x: clip; }
 }
 
 .oc-checkout #payment ul.payment_methods {
-	border: 0;
-	padding: 0 0 6px;
-	margin: 0;
+	border: 1px solid rgb(228 230 234);
+	border-radius: 5px;
+	overflow: hidden;
+	padding: 0;
+	margin: 0 0 16px;
 	list-style: none;
+}
+
+/* the gateway list wears the delivery group's clothes */
+.oc-checkout #payment ul.payment_methods > li {
+	border-block-start: 1px solid rgb(228 230 234);
+	padding: 9px 15px;
+	min-block-size: 43px;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 10px;
+}
+
+.oc-checkout #payment ul.payment_methods > li:first-child { border-block-start: 0; }
+
+.oc-checkout #payment ul.payment_methods > li label {
+	display: inline-flex !important;
+	align-items: center;
+	gap: 10px;
+	margin: 0;
+	font-weight: 500;
+	font-size: .92rem;
+	cursor: pointer;
+	flex: 1;
+}
+
+.oc-checkout #payment ul.payment_methods > li label img {
+	margin-inline-end: auto;
+	max-block-size: 22px;
+	inline-size: auto;
+}
+
+.oc-checkout #payment ul.payment_methods > li input[type="radio"] {
+	appearance: none;
+	-webkit-appearance: none;
+	inline-size: 18px;
+	block-size: 18px;
+	border: 1.5px solid var(--oc-line, #c9c9c9);
+	border-radius: 50%;
+	margin: 0;
+	flex: none;
+	display: grid;
+	place-items: center;
+	cursor: pointer;
+	background: var(--oc-surface, #fff);
+}
+
+.oc-checkout #payment ul.payment_methods > li input[type="radio"]:checked { border-color: var(--oc-ink, #111); }
+
+.oc-checkout #payment ul.payment_methods > li input[type="radio"]:checked::after {
+	content: "";
+	inline-size: 9px;
+	block-size: 9px;
+	border-radius: 50%;
+	background: var(--oc-ink, #111);
+}
+
+.oc-checkout #payment ul.payment_methods > li .payment_box {
+	flex: 1 1 100%;
+	margin: 0;
+	padding: 10px 0 2px;
 }
 
 .oc-checkout #payment div.payment_box {
