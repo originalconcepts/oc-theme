@@ -5450,6 +5450,44 @@
 			}, 450 );
 		} );
 
+		/* -- Select2 places its list from a box it measures itself, and with
+		 *    our taller field that lands ~33px off. Pin it to the field's
+		 *    real rect instead, on open and while scrolling. -- */
+		if ( window.jQuery ) {
+			var coPinList = function () {
+				var open = document.querySelector( 'body > .select2-container--open' );
+				var inline = coForm.querySelector( '.select2-container--open .select2-selection' );
+				if ( ! open || ! inline ) {
+					return;
+				}
+
+				var list = open.querySelector( '.select2-dropdown' );
+				if ( ! list ) {
+					return;
+				}
+
+				var rect = inline.getBoundingClientRect();
+				var above = list.classList.contains( 'select2-dropdown--above' );
+
+				open.style.inlineSize = rect.width + 'px';
+				open.style.insetInlineStart = 'auto';
+				open.style.left = ( rect.left + window.scrollX ) + 'px';
+				open.style.top = ( above
+					? rect.top + window.scrollY - list.offsetHeight
+					: rect.bottom + window.scrollY ) + 'px';
+			};
+
+			window.jQuery( document ).on( 'select2:open', function () {
+				setTimeout( coPinList, 0 );
+			} );
+
+			window.addEventListener( 'scroll', function () {
+				if ( document.querySelector( 'body > .select2-container--open' ) ) {
+					coPinList();
+				}
+			}, { passive: true } );
+		}
+
 		/* -- "have a coupon?" unfolds the field -- */
 		document.addEventListener( 'click', function ( e ) {
 			var t = e.target.closest( '[data-oc-co-coupon-t]' );
