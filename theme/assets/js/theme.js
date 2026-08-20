@@ -4770,6 +4770,77 @@
 		syncVal();
 	} );
 
+	/* ---------- missing-choice guidance instead of the browser alert ----------
+	 * Add-to-cart with an unchosen attribute: glide to the first empty row
+	 * and say what is missing under it, in place of Woo's window.alert. */
+
+	document.addEventListener( 'click', function ( event ) {
+		var btn = event.target.closest( '.single_add_to_cart_button' );
+		if ( ! btn ) {
+			return;
+		}
+
+		var vForm = btn.closest( 'form.variations_form' );
+		if ( ! vForm ) {
+			return;
+		}
+
+		var missing = null;
+		Array.prototype.forEach.call( vForm.querySelectorAll( 'table.variations tr:not(.oc-row-auto) td.value > select' ), function ( sel ) {
+			if ( ! missing && '' === sel.value ) {
+				missing = sel;
+			}
+		} );
+
+		if ( ! missing ) {
+			return;
+		}
+
+		// Ours now — Woo's handler (and its alert) never runs.
+		event.preventDefault();
+		event.stopPropagation();
+
+		var row = missing.closest( 'tr' );
+		var cell = missing.closest( 'td.value' );
+		var labelEl = row ? row.querySelector( 'th.label label' ) : null;
+		var label = labelEl ? labelEl.textContent.trim() : '';
+
+		vForm.querySelectorAll( '.oc-var-need' ).forEach( function ( el ) {
+			el.remove();
+		} );
+		vForm.querySelectorAll( 'tr.oc-tr-need' ).forEach( function ( el ) {
+			el.classList.remove( 'oc-tr-need' );
+		} );
+
+		if ( row ) {
+			row.classList.add( 'oc-tr-need' );
+		}
+
+		var msg = document.createElement( 'p' );
+		msg.className = 'oc-var-need';
+		msg.textContent = ( ( window.ocL10n || {} ).varNeed || 'Please choose %s' ).replace( '%s', label );
+		if ( cell ) {
+			cell.appendChild( msg );
+		}
+
+		( row || vForm ).scrollIntoView( { behavior: 'smooth', block: 'center' } );
+	}, true );
+
+	// The moment the visitor picks something, the guidance goes away.
+	document.addEventListener( 'change', function ( event ) {
+		var sel = event.target.closest( 'form.variations_form table.variations select' );
+		if ( ! sel || '' === sel.value ) {
+			return;
+		}
+		var row = sel.closest( 'tr' );
+		if ( row && row.classList.contains( 'oc-tr-need' ) ) {
+			row.classList.remove( 'oc-tr-need' );
+			row.querySelectorAll( '.oc-var-need' ).forEach( function ( el ) {
+				el.remove();
+			} );
+		}
+	} );
+
 	// Two-per-row layout (a design setting) only makes sense when there
 	// actually are two dropdown rows.
 	document.querySelectorAll( '.single-product form.variations_form table.variations' ).forEach( function ( t ) {

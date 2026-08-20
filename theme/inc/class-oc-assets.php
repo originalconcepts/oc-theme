@@ -146,6 +146,7 @@ final class Assets {
 				'cartVarPick'   => __( 'Choose an option', 'oc-theme' ),
 				'inStock'       => __( 'In stock', 'oc-theme' ),
 				'outStock'      => __( 'Out of stock', 'oc-theme' ),
+				'varNeed'       => __( 'Please choose %s', 'oc-theme' ),
 				'addedToCart'   => __( 'Added to cart', 'oc-theme' ),
 				'notifyNonce'   => wp_create_nonce( 'oc_notify' ),
 				'notifyTitle'   => __( 'Notify me', 'oc-theme' ),

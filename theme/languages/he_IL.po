@@ -1956,3 +1956,6 @@ msgstr "חצי רוחב"
 
 msgid "Two dropdowns side by side"
 msgstr "שני דרופ-דאונים זה לצד זה"
+
+msgid "Please choose %s"
+msgstr "נא לבחור %s"
