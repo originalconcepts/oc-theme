@@ -3290,7 +3290,9 @@ table.variations td.value select:has(+ .oc-dd) {
 
 .single-product table.variations th.label { margin-block-end: 8px; }
 
-.single-product table.variations th.label label {
+/* Out-ranks Woo's own .woocommerce div.product form.cart .variations
+ * label { font-weight:700 }. */
+.woocommerce.single-product div.product form.cart .variations th.label label {
 	font-weight: 400;
 	margin: 0;
 }
