@@ -6258,22 +6258,6 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 
 	.oc-co-sumopen .oc-co-sumchev { rotate: 180deg; }
 
-	/* field pairs that survive a narrow screen */
-	.oc-checkout .woocommerce-billing-fields__field-wrapper .form-row,
-	.oc-checkout #billing_email_field,
-	.oc-checkout #billing_phone_field,
-	.oc-checkout #billing_address_1_field,
-	.oc-checkout #billing_city_field { flex: 1 1 100% !important; }
-
-	.oc-checkout #billing_first_name_field,
-	.oc-checkout #billing_last_name_field { flex: 1 1 calc(50% - 7px) !important; }
-
-	.oc-checkout #billing_address_2_field,
-	.oc-checkout #billing_oc_floor_field,
-	.oc-checkout #billing_oc_entry_field { flex: 1 1 calc(33.333% - 7px) !important; }
-
-	.oc-co-recipient__grid .oc-co-rrow { flex: 1 1 100%; }
-
 	/* the brand row keeps its three slots but hugs the edges */
 	.oc-co-brand { display: block; padding: 16px 0 2px; }
 	.oc-co-brand__help { display: none; }
@@ -7271,4 +7255,32 @@ body.oc-checkout { overflow-x: clip; }
 	margin-block-start: 12px;
 	font-size: .8rem;
 	color: var(--oc-ink-2, #777);
+}
+
+
+/* ---------- checkout field widths on phones ----------
+ * Last word in the file on purpose: the desktop width rules carry the same
+ * weight, so these have to come after them to win. */
+@media (max-width: 900px) {
+	.oc-checkout .woocommerce-billing-fields__field-wrapper .form-row,
+	.oc-checkout #billing_email_field,
+	.oc-checkout #billing_phone_field,
+	.oc-checkout #billing_address_1_field,
+	.oc-checkout #billing_city_field,
+	.oc-checkout #billing_country_field,
+	.oc-checkout #billing_state_field { flex: 1 1 100% !important; }
+
+	.oc-checkout #billing_first_name_field,
+	.oc-checkout #billing_last_name_field { flex: 1 1 calc(50% - 7px) !important; }
+
+	.oc-checkout #billing_address_2_field,
+	.oc-checkout #billing_oc_floor_field,
+	.oc-checkout #billing_oc_entry_field { flex: 1 1 calc(33.333% - 7px) !important; }
+
+	.oc-co-recipient__grid .oc-co-rrow { flex: 1 1 100%; }
+
+	/* the summary column cap belongs to the desktop split only */
+	.oc-checkout #order_review_heading,
+	.oc-checkout .woocommerce-checkout-review-order-table,
+	.oc-checkout #payment { max-inline-size: none; inline-size: 100%; }
 }
