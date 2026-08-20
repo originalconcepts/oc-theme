@@ -7076,6 +7076,32 @@ body.oc-checkout { overflow-x: clip; }
 	border: 0;
 }
 
+/* any checkbox row — ours, Woo's, a plugin's — reads as one line: box,
+ * then text, flush to the start */
+.oc-checkout form.checkout label.checkbox,
+.oc-checkout form.checkout .woocommerce-input-wrapper > label.checkbox {
+	display: flex !important;
+	position: static !important;
+	align-items: flex-start;
+	gap: 8px;
+	margin: 0;
+	font-size: .88rem !important;
+	color: var(--oc-ink, #111) !important;
+	line-height: 1.5;
+	text-align: start;
+	white-space: normal;
+	max-inline-size: none;
+	overflow: visible;
+	pointer-events: auto !important;
+	cursor: pointer;
+}
+
+.oc-checkout form.checkout label.checkbox input[type="checkbox"] {
+	flex: none;
+	margin: 3px 0 0;
+	float: none;
+}
+
 /* checkbox rows are NOT floating-label fields — their labels stay put */
 .oc-checkout form.checkout .form-row:has(input[type="checkbox"]) > label,
 .oc-checkout .oc-co-consent label,
