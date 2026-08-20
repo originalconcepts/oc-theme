@@ -7168,13 +7168,13 @@ body.oc-checkout { overflow-x: clip; }
  * products, coupon and the totals alike. The heading itself states the
  * total, so a collapsed summary still answers the only urgent question. */
 @media (max-width: 900px) {
-	.oc-co-fold .woocommerce-checkout-review-order-table { margin: 0; }
+	/* folded: the table leaves the flow entirely, so it costs no grid gap */
+	.oc-co-fold .woocommerce-checkout-review-order-table { display: none; }
 
-	.oc-co-fold .woocommerce-checkout-review-order-table tbody,
-	.oc-co-fold .woocommerce-checkout-review-order-table tfoot { display: none; }
-
-	.oc-co-fold.oc-co-sumopen .woocommerce-checkout-review-order-table tbody { display: table-row-group; }
-	.oc-co-fold.oc-co-sumopen .woocommerce-checkout-review-order-table tfoot { display: table-footer-group; }
+	.oc-co-fold.oc-co-sumopen .woocommerce-checkout-review-order-table {
+		display: table;
+		margin: 0;
+	}
 
 	/* the heading: label and item count on one side, total on the other */
 	.oc-checkout #order_review_heading { align-items: center; }
