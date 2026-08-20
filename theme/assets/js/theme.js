@@ -5159,7 +5159,11 @@
 			if ( ! t ) {
 				return;
 			}
-			var body = t.closest( '[data-oc-co-login]' ).querySelector( '.oc-co-login__body' );
+			var box = t.closest( '[data-oc-co-login]' ) || t.parentElement.parentElement;
+			var body = box.querySelector( '.oc-co-login__body' );
+			if ( ! body ) {
+				return;
+			}
 			body.hidden = ! body.hidden;
 			if ( ! body.hidden ) {
 				var u = body.querySelector( 'input[name="username"]' );

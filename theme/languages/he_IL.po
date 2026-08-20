@@ -2136,3 +2136,6 @@ msgstr "״יש לך קופון?״ שפותח את השדה"
 
 msgid "Hidden"
 msgstr "מוסתר"
+
+msgid "Log in to your account"
+msgstr "התחבר/י לחשבונך"

@@ -503,7 +503,20 @@ final class Checkout {
 	 * Section heading above the contact fields.
 	 */
 	public function orderer_heading(): void {
+		echo '<div class="oc-co-headrow">';
 		echo '<h3 class="oc-co-h oc-co-h--first">' . esc_html__( 'Your details', 'oc-theme' ) . '</h3>';
+
+		if ( ! is_user_logged_in() ) {
+			echo '<button type="button" class="oc-co-login__t" data-oc-co-login-t>' . esc_html__( 'Log in to your account', 'oc-theme' ) . '</button>';
+		}
+
+		echo '</div>';
+
+		if ( ! is_user_logged_in() ) {
+			echo '<div class="oc-co-login" data-oc-co-login><div class="oc-co-login__body" hidden>';
+			woocommerce_login_form( array( 'redirect' => wc_get_checkout_url() ) );
+			echo '</div></div>';
+		}
 	}
 
 	/**
@@ -637,23 +650,7 @@ final class Checkout {
 	 * Prominent login block for guests, above the form.
 	 */
 	public function login_block(): void {
-		if ( is_user_logged_in() ) {
-			return;
-		}
-
-		?>
-		<div class="oc-co-login" data-oc-co-login>
-			<div class="oc-co-login__bar">
-				<span><?php esc_html_e( 'Already have an account?', 'oc-theme' ); ?></span>
-				<button type="button" class="oc-co-login__t" data-oc-co-login-t>
-					<?php esc_html_e( 'Log in — your details will fill in automatically', 'oc-theme' ); ?>
-				</button>
-			</div>
-			<div class="oc-co-login__body" hidden>
-				<?php woocommerce_login_form( array( 'redirect' => wc_get_checkout_url() ) ); ?>
-			</div>
-		</div>
-		<?php
+		// The trigger lives in the section heading now (orderer_heading).
 	}
 
 	/**

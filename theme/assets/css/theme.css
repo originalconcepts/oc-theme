@@ -6152,7 +6152,7 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 .oc-checkout form.checkout {
 	display: grid;
 	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-	gap: 56px;
+	gap: 0 56px;
 	align-items: start;
 	max-inline-size: 1160px;
 	margin-inline: auto;
@@ -6244,24 +6244,14 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 	padding: 16px;
 }
 
-/* ---------- login bar ---------- */
+/* ---------- section heading + login link ---------- */
 
-.oc-co-login {
-	max-inline-size: 1160px;
-	margin-inline: auto;
-	margin-block-start: 10px;
-	border: 1.5px solid var(--oc-line, #e3e3e3);
-	border-radius: var(--oc-radius, 10px);
-	padding: 14px 18px;
-	background: var(--oc-surface, #fff);
-}
-
-.oc-co-login__bar {
+.oc-co-headrow {
 	display: flex;
-	align-items: center;
-	gap: 8px;
-	flex-wrap: wrap;
-	font-size: .95rem;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 12px;
+	flex: 1 1 100%;
 }
 
 .oc-co-login__t {
@@ -6274,10 +6264,13 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 	text-underline-offset: 3px;
 	cursor: pointer;
 	padding: 0;
+	font-size: .9rem;
+	font-weight: 500;
 }
 
-.oc-co-login__body { padding-block-start: 14px; }
-.oc-co-login__body form { margin: 0; max-inline-size: 460px; }
+.oc-co-login { flex: 1 1 100%; }
+.oc-co-login__body { padding-block-end: 10px; }
+.oc-co-login__body form { margin: 0; }
 
 /* ---------- sections & fields ---------- */
 
@@ -6347,15 +6340,17 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 }
 
 .oc-checkout form.checkout .form-row select {
-	block-size: 68px;
-	padding-block: 34px 10px;
+	block-size: 60px;
+	padding-block: 28px 8px;
 	line-height: 1.2;
 }
 
 /* Woo swaps country/state selects for a Select2 widget — the visible box
- * is .select2-selection, so it carries the field metrics. */
+ * is .select2-selection, so it carries the field metrics. The container
+ * matches its height exactly, otherwise Select2 measures a taller box and
+ * drops its list far below the field. */
 .oc-checkout .select2-container--default .select2-selection--single {
-	block-size: 68px;
+	block-size: 60px;
 	border: 1px solid rgb(228 230 234);
 	border-radius: 5px;
 	background: var(--oc-surface, #fff);
@@ -6363,18 +6358,33 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 
 .oc-checkout .select2-container--default .select2-selection--single .select2-selection__rendered {
 	line-height: 1.2;
-	padding-block: 34px 10px;
+	padding-block: 28px 8px;
 	padding-inline: 13px 30px;
 	font-size: .875rem;
 	color: var(--oc-ink, #111);
 }
 
 .oc-checkout .select2-container--default .select2-selection--single .select2-selection__arrow {
-	block-size: 68px;
+	block-size: 60px;
 	inset-inline-end: 8px;
 }
 
-.oc-checkout .select2-container { inline-size: 100% !important; }
+.oc-checkout .select2-container {
+	inline-size: 100% !important;
+	block-size: 60px;
+	display: block;
+}
+
+/* the list hugs the field and sits above the rows below it */
+.select2-container--open .select2-dropdown {
+	border-color: var(--oc-ink, #111);
+	border-radius: 5px;
+	box-shadow: 0 12px 34px rgb(0 0 0 / 14%);
+	z-index: 60;
+}
+
+.select2-container--open .select2-dropdown--below { margin-block-start: -6px; }
+.select2-container--open .select2-dropdown--above { margin-block-start: 6px; }
 
 /* the label rides above the value inside the box */
 .oc-checkout form.checkout .form-row:has(select) > label { inset-block-start: 9px !important; }
@@ -6706,6 +6716,7 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 .oc-checkout td.product-name {
 	display: grid;
 	grid-template-columns: auto 1fr;
+	grid-template-rows: min-content 1fr;
 	column-gap: 12px;
 	align-items: start;
 }
@@ -6739,7 +6750,12 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 	display: inline-block;
 }
 
-.oc-checkout td.product-name .oc-co-qty { grid-column: 2; justify-self: start; margin-block-start: 4px; }
+.oc-checkout td.product-name .oc-co-qty {
+	grid-column: 2;
+	justify-self: start;
+	align-self: start;
+	margin-block-start: 4px;
+}
 
 .oc-checkout #order_review table.shop_table tbody td.product-name { padding-block: 10px; }
 
@@ -6763,6 +6779,9 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 .oc-checkout tr.oc-co-shiprow2 td { text-align: left; }
 .oc-co-shiprow2__in > span { font-weight: 400; }
 
+/* a method with no price: its name takes the price column */
+.oc-co-shiprow2__in > span:only-child { margin-inline-start: auto; }
+
 /* the promotion engine's nudge panel belongs to the cart, not here */
 .oc-checkout .promeng-cart-messages { display: none; }
 
@@ -6771,11 +6790,14 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 
 /* discount rows read like any other summary row */
 .oc-checkout tr.oc-co-disc th,
-.oc-checkout tr.oc-co-disc td {
+.oc-checkout tr.oc-co-disc td,
+.oc-checkout tr.oc-co-shiprow2 th,
+.oc-checkout tr.oc-co-shiprow2 td {
 	color: var(--oc-ink, #111);
 	font-size: .95rem;
 	font-weight: 400 !important;
 	border: 0;
+	padding-block: 7px;
 }
 
 .oc-checkout tr.oc-co-disc td { text-align: left; }
@@ -6885,8 +6907,7 @@ body.oc-checkout { overflow-x: clip; }
 /* coupon between the items and the totals */
 .oc-co-couponrow td { padding-block: 14px !important; }
 
-/* the V sits at the summary's edge like every other price */
-.oc-co-coupon { flex-direction: row-reverse; }
+
 
 .oc-co-coupon { display: flex; gap: 8px; }
 
@@ -7014,7 +7035,13 @@ body.oc-checkout { overflow-x: clip; }
 .oc-checkout #payment {
 	background: none;
 	border-radius: 0;
+	padding: 0;
+	margin: 0;
 }
+
+.oc-checkout #payment .place-order,
+.oc-checkout #payment ul.payment_methods,
+.oc-checkout #payment ul.payment_methods li { padding-inline: 0; }
 
 .oc-checkout #payment ul.payment_methods {
 	border: 0;
