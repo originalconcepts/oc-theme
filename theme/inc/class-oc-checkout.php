@@ -61,6 +61,7 @@ final class Checkout {
 		add_filter( 'woocommerce_package_rates', array( $this, 'free_hides_paid' ), 20 );
 		add_filter( 'woocommerce_get_country_locale', array( $this, 'country_locale' ), 20 );
 		add_filter( 'woocommerce_form_field_oc_co_shipping', array( $this, 'shipping_section' ), 10, 2 );
+		add_filter( 'woocommerce_update_order_review_fragments', array( $this, 'rates_fragment' ) );
 		add_filter( 'body_class', array( $this, 'body_class' ) );
 
 		// Our login block replaces the quiet default notice.
@@ -336,41 +337,12 @@ final class Checkout {
 			return '';
 		}
 
-		$packages = WC()->shipping()->get_packages();
-		$chosen   = WC()->session ? (array) WC()->session->get( 'chosen_shipping_methods' ) : array();
-
 		ob_start();
 		?>
 		<div class="form-row oc-co-shipwrap" data-priority="45">
 		<div class="oc-co-section oc-co-methods">
 			<h3 class="oc-co-h"><?php esc_html_e( 'Delivery method', 'oc-theme' ); ?></h3>
-			<?php foreach ( $packages as $i => $package ) : ?>
-				<?php
-				$rates   = (array) ( $package['rates'] ?? array() );
-				$current = (string) ( $chosen[ $i ] ?? '' );
-				if ( '' === $current && $rates ) {
-					$first   = reset( $rates );
-					$current = $first->get_id();
-				}
-				?>
-				<div class="oc-co-rates" data-oc-co-rates>
-					<?php foreach ( $rates as $rate ) : ?>
-						<label class="oc-co-rate<?php echo $rate->get_id() === $current ? ' is-on' : ''; ?>">
-							<input type="radio" name="shipping_method[<?php echo absint( $i ); ?>]" value="<?php echo esc_attr( $rate->get_id() ); ?>" class="shipping_method" <?php checked( $rate->get_id(), $current ); ?> />
-							<?php if ( 'local_pickup' === $rate->get_method_id() ) : ?>
-								<svg class="oc-co-rate__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9l1.2-4h13.6L20 9M4 9v11h16V9M4 9h16M9 20v-6h6v6"/></svg>
-							<?php else : ?>
-								<svg class="oc-co-rate__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 7h14v10H1zM15 10h4l3 3v4h-7M5.5 20a1.8 1.8 0 1 0 0-3.6 1.8 1.8 0 0 0 0 3.6zM18.5 20a1.8 1.8 0 1 0 0-3.6 1.8 1.8 0 0 0 0 3.6z"/></svg>
-							<?php endif; ?>
-							<span class="oc-co-rate__name"><?php echo esc_html( $rate->get_label() ); ?></span>
-							<?php $cost = (float) $rate->get_cost() + array_sum( array_map( 'floatval', $rate->get_taxes() ) ); ?>
-							<?php if ( $cost > 0 ) : ?>
-								<span class="oc-co-rate__cost"><?php echo wp_kses_post( wc_price( $cost ) ); ?></span>
-							<?php endif; ?>
-						</label>
-					<?php endforeach; ?>
-				</div>
-			<?php endforeach; ?>
+			<?php echo $this->rates_html(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts. ?>
 		</div>
 
 		<div class="oc-co-section oc-co-addrhead" data-oc-co-address-head>
@@ -409,6 +381,61 @@ final class Checkout {
 		<?php
 
 		return (string) ob_get_clean();
+	}
+
+	/**
+	 * The method cards — also served as an update_order_review fragment, so
+	 * a threshold crossing (free shipping appearing mid-checkout) re-renders
+	 * them live.
+	 */
+	private function rates_html(): string {
+		$packages = WC()->shipping()->get_packages();
+		$chosen   = WC()->session ? (array) WC()->session->get( 'chosen_shipping_methods' ) : array();
+
+		ob_start();
+		?>
+		<div class="oc-co-rates" data-oc-co-rates>
+			<?php foreach ( $packages as $i => $package ) : ?>
+				<?php
+				$rates   = (array) ( $package['rates'] ?? array() );
+				$current = (string) ( $chosen[ $i ] ?? '' );
+				if ( ( '' === $current || ! isset( $rates[ $current ] ) ) && $rates ) {
+					$first   = reset( $rates );
+					$current = $first->get_id();
+				}
+				?>
+				<?php foreach ( $rates as $rate ) : ?>
+					<label class="oc-co-rate<?php echo $rate->get_id() === $current ? ' is-on' : ''; ?>">
+						<input type="radio" name="shipping_method[<?php echo absint( $i ); ?>]" value="<?php echo esc_attr( $rate->get_id() ); ?>" class="shipping_method" <?php checked( $rate->get_id(), $current ); ?> />
+						<?php if ( 'local_pickup' === $rate->get_method_id() ) : ?>
+							<svg class="oc-co-rate__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9l1.2-4h13.6L20 9M4 9v11h16V9M4 9h16M9 20v-6h6v6"/></svg>
+						<?php else : ?>
+							<svg class="oc-co-rate__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 7h14v10H1zM15 10h4l3 3v4h-7M5.5 20a1.8 1.8 0 1 0 0-3.6 1.8 1.8 0 0 0 0 3.6zM18.5 20a1.8 1.8 0 1 0 0-3.6 1.8 1.8 0 0 0 0 3.6z"/></svg>
+						<?php endif; ?>
+						<span class="oc-co-rate__name"><?php echo esc_html( $rate->get_label() ); ?></span>
+						<?php $cost = (float) $rate->get_cost() + array_sum( array_map( 'floatval', $rate->get_taxes() ) ); ?>
+						<?php if ( $cost > 0 ) : ?>
+							<span class="oc-co-rate__cost"><?php echo wp_kses_post( wc_price( $cost ) ); ?></span>
+						<?php endif; ?>
+					</label>
+				<?php endforeach; ?>
+			<?php endforeach; ?>
+		</div>
+		<?php
+
+		return (string) ob_get_clean();
+	}
+
+	/**
+	 * Fresh method cards on every review refresh.
+	 *
+	 * @param array $fragments Fragments.
+	 * @return array
+	 */
+	public function rates_fragment( array $fragments ): array {
+		$fragments['[data-oc-co-rates]'] = $this->rates_html();
+
+		return $fragments;
 	}
 
 	/* -------------------------------------------------------------- extra */
