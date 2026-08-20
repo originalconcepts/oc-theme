@@ -3112,14 +3112,16 @@ table.variations td.value select:has(+ .oc-dd) {
 }
 
 .oc-var__btn {
-	padding: 8px 16px;
+	padding: 6px 12px;
+	min-inline-size: 42px;
 	border: 1.5px solid var(--oc-line);
 	border-radius: var(--oc-radius, 8px);
 	background: var(--oc-surface);
 	color: var(--oc-ink);
 	font: inherit;
-	font-size: .92rem;
+	font-size: .82rem;
 	font-weight: 500;
+	line-height: 1.5;
 	cursor: pointer;
 	transition: border-color .12s ease, background-color .12s ease, color .12s ease;
 }
