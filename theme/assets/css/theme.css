@@ -6885,6 +6885,9 @@ body.oc-checkout { overflow-x: clip; }
 /* coupon between the items and the totals */
 .oc-co-couponrow td { padding-block: 14px !important; }
 
+/* the V sits at the summary's edge like every other price */
+.oc-co-coupon { flex-direction: row-reverse; }
+
 .oc-co-coupon { display: flex; gap: 8px; }
 
 .oc-co-coupon input {
