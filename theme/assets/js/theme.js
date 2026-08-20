@@ -5353,12 +5353,14 @@
 			if ( coTick ) {
 				return;
 			}
-			coTick = requestAnimationFrame( function () {
+			// setTimeout, not rAF: rAF never fires in a background tab, and
+			// Woo's ajax refresh may finish exactly there.
+			coTick = setTimeout( function () {
 				coTick = null;
 				coPaintButton();
 				coTrustLine();
 				coSyncMethod();
-			} );
+			}, 60 );
 		} ).observe( coForm, { childList: true, subtree: true } );
 
 		coPaintButton();
