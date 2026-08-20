@@ -458,7 +458,7 @@ final class Checkout {
 	public function brand_row(): void {
 		$s = self::settings();
 
-		echo '<div class="oc-co-brand">';
+		echo '<div class="oc-co-brand"><div class="oc-co-brand__in">';
 
 		echo '<a class="oc-co-brand__cart" href="' . esc_url( wc_get_cart_url() ) . '" aria-label="' . esc_attr__( 'Back to cart', 'oc-theme' ) . '">';
 		echo '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7h12l1.2 13H4.8L6 7zM9 10V6a3 3 0 0 1 6 0v4"/></svg>';
@@ -474,7 +474,7 @@ final class Checkout {
 
 		echo '<span class="oc-co-brand__help">' . esc_html( trim( (string) $s['help_text'] ) ) . '</span>';
 
-		echo '</div>';
+		echo '</div></div>';
 	}
 
 	/**

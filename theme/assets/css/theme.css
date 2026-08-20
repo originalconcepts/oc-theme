@@ -6096,13 +6096,26 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 .oc-checkout .oc-header,
 .oc-checkout .oc-footer { display: none !important; }
 
+/* the brand row spans the container but its content lives in the FORM
+ * column half, like the reference */
 .oc-co-brand {
 	display: grid;
-	grid-template-columns: 1fr auto 1fr;
-	align-items: center;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 56px;
 	max-inline-size: 1160px;
 	margin-inline: auto;
 	padding: 26px 0 4px;
+}
+
+.oc-co-brand__in {
+	grid-column: 1;
+	display: grid;
+	grid-template-columns: 1fr auto 1fr;
+	align-items: center;
+}
+
+@media (max-width: 900px) {
+	.oc-co-brand { display: block; }
 }
 
 .oc-co-brand__cart {
@@ -6436,10 +6449,13 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 	overflow: hidden;
 }
 
-.oc-co-rate {
+/* specificity: Woo's `.woocommerce form .form-row label { display:block }`
+ * reaches every label inside the pseudo-field — out-rank it. */
+.oc-checkout .oc-co-rates .oc-co-rate {
 	display: flex;
 	align-items: center;
 	gap: 11px;
+	margin: 0;
 	padding: 15px 16px;
 	cursor: pointer;
 	transition: background-color .15s ease;
@@ -6492,13 +6508,13 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 
 /* ---------- sending to someone else ---------- */
 
-.oc-co-toggle {
+.oc-checkout .oc-co-addrhead .oc-co-toggle {
 	display: flex;
 	align-items: center;
 	justify-content: flex-start;
 	inline-size: fit-content;
 	gap: 9px;
-	margin-block-start: 8px;
+	margin: 8px 0 0;
 	cursor: pointer;
 	font-size: .95rem;
 	flex-direction: row-reverse;
