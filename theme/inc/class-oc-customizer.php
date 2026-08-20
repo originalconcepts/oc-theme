@@ -644,6 +644,22 @@ final class Customizer {
 
 		$this->toggle( $c, 'oc_swatch_check', 'oc_swatches', __( 'Check mark on the selected swatch', 'oc-theme' ), true );
 
+		$this->heading( $c, 'oc_h_sw_dd', 'oc_swatches', __( 'Dropdowns', 'oc-theme' ) );
+
+		$this->choice(
+			$c,
+			'oc_dd_width',
+			'oc_swatches',
+			__( 'Single dropdown width', 'oc-theme' ),
+			array(
+				'full' => __( 'Full width', 'oc-theme' ),
+				'half' => __( 'Half width', 'oc-theme' ),
+			),
+			'full'
+		);
+
+		$this->toggle( $c, 'oc_dd_pair', 'oc_swatches', __( 'Two dropdowns side by side', 'oc-theme' ), false );
+
 		$this->heading( $c, 'oc_h_sw_cat', 'oc_swatches', __( 'Catalogue', 'oc-theme' ) );
 
 		$this->number( $c, 'oc_swatch_size_cat', 'oc_swatches', __( 'Swatch size — catalogue (px)', 'oc-theme' ), 22, 14, 40 );

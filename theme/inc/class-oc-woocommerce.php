@@ -526,6 +526,14 @@ final class WooCommerce {
 			$classes[] = 'oc-swatch-square';
 		}
 
+		if ( 'half' === get_theme_mod( 'oc_dd_width', 'full' ) ) {
+			$classes[] = 'oc-dd-half';
+		}
+
+		if ( get_theme_mod( 'oc_dd_pair', false ) ) {
+			$classes[] = 'oc-dd-pair';
+		}
+
 		if ( 'square' === get_theme_mod( 'oc_swatch_shape_cat', 'circle' ) ) {
 			$classes[] = 'oc-swatch-square-cat';
 		}

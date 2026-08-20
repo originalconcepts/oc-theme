@@ -2929,8 +2929,119 @@ main + .term-description {
 
 /* ---------- variation buttons, swatches, colour siblings ---------- */
 
+/* ---------- custom variation dropdown (select display type) ---------- */
+
+.oc-dd { position: relative; }
+
+.oc-dd__t {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 10px;
+	inline-size: 100%;
+	min-block-size: var(--oc-cta-h, 48px);
+	border: 1.5px solid var(--oc-line);
+	border-radius: var(--oc-cta-r, 8px);
+	background: var(--oc-surface, #fff);
+	color: var(--oc-ink, #111);
+	font: inherit;
+	padding-block: 0;
+	padding-inline: 14px;
+	cursor: pointer;
+	text-align: start;
+	transition: border-color .15s ease;
+}
+
+.oc-dd__t:hover,
+.oc-dd.is-open .oc-dd__t { border-color: var(--oc-ink, #111); }
+
+.oc-dd__t svg {
+	inline-size: 16px;
+	block-size: 16px;
+	flex: none;
+	transition: rotate .2s ease;
+}
+
+.oc-dd.is-open .oc-dd__t svg { rotate: 180deg; }
+
+.oc-dd.is-empty .oc-dd__val { color: var(--oc-ink-2, #777); }
+
+.oc-dd__val {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.oc-dd__panel {
+	position: absolute;
+	inset-inline: 0;
+	inset-block-start: calc(100% + 6px);
+	z-index: 40;
+	background: var(--oc-surface, #fff);
+	border: 1.5px solid var(--oc-ink, #111);
+	border-radius: var(--oc-cta-r, 8px);
+	box-shadow: 0 12px 34px rgb(0 0 0 / 14%);
+	max-block-size: 280px;
+	overflow: auto;
+	overscroll-behavior: contain;
+}
+
+.oc-dd__opt {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 12px;
+	inline-size: 100%;
+	padding: 13px 14px;
+	background: none;
+	border: 0;
+	border-block-start: 1px solid var(--oc-line);
+	font: inherit;
+	color: var(--oc-ink, #111);
+	cursor: pointer;
+	text-align: start;
+}
+
+.oc-dd__opt:first-child { border-block-start: 0; }
+.oc-dd__opt:hover { background: rgb(0 0 0 / 4%); }
+.oc-dd__opt.is-selected { font-weight: 600; }
+
+.oc-dd__opt.is-off {
+	color: var(--oc-ink-2, #999);
+	cursor: default;
+	background: none;
+}
+
+.oc-dd__stock {
+	font-style: normal;
+	font-size: .8rem;
+	color: var(--oc-ink-2, #777);
+	flex: none;
+}
+
+.oc-dd__stock.is-out { color: var(--oc-sale, #b4453c); }
+
+/* design settings: single-dropdown width, and two dropdowns sharing a row */
+.oc-dd-half .single-product table.variations:not(.oc-dd-2) .oc-dd { inline-size: 50%; }
+
+@media (min-width: 641px) {
+	.oc-dd-pair .single-product table.variations.oc-dd-2 tbody {
+		display: flex;
+		flex-wrap: wrap;
+		column-gap: 14px;
+	}
+
+	.oc-dd-pair .single-product table.variations.oc-dd-2 tr:not(.oc-row-auto) { flex: 1 1 100%; }
+
+	.oc-dd-pair .single-product table.variations.oc-dd-2 tr.oc-tr-dd:not(.oc-row-auto) {
+		flex: 1 1 calc(50% - 7px);
+		max-inline-size: calc(50% - 7px);
+	}
+}
+
 /* the native select hides once our UI sits beside it */
-table.variations td.value select:has(+ .oc-var) {
+table.variations td.value select:has(+ .oc-var),
+table.variations td.value select:has(+ .oc-dd) {
 	position: absolute;
 	inline-size: 1px;
 	block-size: 1px;

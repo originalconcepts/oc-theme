@@ -1935,3 +1935,24 @@ msgstr "חסכת %s"
 
 msgid "Have a coupon?"
 msgstr "יש קופון?"
+
+msgid "In stock"
+msgstr "במלאי"
+
+msgid "Out of stock"
+msgstr "אזל"
+
+msgid "Dropdowns"
+msgstr "דרופ-דאונים"
+
+msgid "Single dropdown width"
+msgstr "רוחב דרופ-דאון בודד"
+
+msgid "Full width"
+msgstr "רוחב מלא"
+
+msgid "Half width"
+msgstr "חצי רוחב"
+
+msgid "Two dropdowns side by side"
+msgstr "שני דרופ-דאונים זה לצד זה"

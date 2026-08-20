@@ -4582,6 +4582,202 @@
 	 * variation images keep working untouched. A MutationObserver mirrors
 	 * Woo's option pruning back onto the buttons. */
 
+	/* ---------- custom dropdown for select-type variation attributes ----------
+	 * The native select stays in the DOM (Woo's variation logic reads and
+	 * rebuilds it); the visible UI is a listbox styled like the reference —
+	 * value + chevron in a framed trigger, option rows with the stock status
+	 * riding the row's far end. */
+
+	document.querySelectorAll( '.single-product form.variations_form table.variations td.value > select' ).forEach( function ( select ) {
+		var sib = select.nextElementSibling;
+		if ( sib && ( sib.classList.contains( 'oc-var' ) || sib.classList.contains( 'oc-dd' ) ) ) {
+			return;
+		}
+
+		var ddForm = select.closest( 'form.variations_form' );
+		var ddVars = null;
+		try {
+			ddVars = JSON.parse( ddForm.dataset.product_variations || 'null' ) || null;
+		} catch ( err ) {
+			ddVars = null;
+		}
+
+		var L = window.ocL10n || {};
+		var attrName = select.getAttribute( 'name' );
+		var placeholder = select.options.length && ! select.options[ 0 ].value ? select.options[ 0 ].text : '';
+
+		// Full option snapshot before Woo starts filtering the select down
+		// to the currently possible combinations.
+		var opts = Array.prototype.filter.call( select.options, function ( o ) {
+			return '' !== o.value;
+		} ).map( function ( o ) {
+			return { value: o.value, label: o.text };
+		} );
+
+		if ( ! opts.length ) {
+			return;
+		}
+
+		var dd = document.createElement( 'div' );
+		dd.className = 'oc-dd';
+		dd.innerHTML =
+			'<button type="button" class="oc-dd__t" aria-haspopup="listbox" aria-expanded="false">' +
+			'<span class="oc-dd__val"></span>' +
+			'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>' +
+			'</button>' +
+			'<div class="oc-dd__panel" role="listbox" hidden></div>';
+		select.insertAdjacentElement( 'afterend', dd );
+
+		var ddRow = select.closest( 'tr' );
+		if ( ddRow ) {
+			ddRow.classList.add( 'oc-tr-dd' );
+		}
+
+		var trig = dd.querySelector( '.oc-dd__t' );
+		var valEl = dd.querySelector( '.oc-dd__val' );
+		var panel = dd.querySelector( '.oc-dd__panel' );
+
+		// Stock verdict for one option value against the current choices in
+		// the form's OTHER attributes. Honest only: a definite yes when the
+		// combination is fully determined (or provably in stock), a definite
+		// no when every candidate combination is out — silence otherwise.
+		function stockFor( value ) {
+			if ( ! ddVars || ! ddVars.length ) {
+				return null;
+			}
+
+			var chosen = {};
+			Array.prototype.forEach.call( ddForm.querySelectorAll( 'table.variations select' ), function ( s ) {
+				if ( s !== select ) {
+					chosen[ s.getAttribute( 'name' ) ] = s.value;
+				}
+			} );
+
+			var cands = ddVars.filter( function ( v ) {
+				var a = v.attributes || {};
+				if ( '' !== ( a[ attrName ] || '' ) && a[ attrName ] !== value ) {
+					return false;
+				}
+				return Object.keys( chosen ).every( function ( k ) {
+					return ! chosen[ k ] || '' === ( a[ k ] || '' ) || a[ k ] === chosen[ k ];
+				} );
+			} );
+
+			if ( ! cands.length ) {
+				return { txt: L.outStock || 'Out of stock', off: true };
+			}
+
+			var anyIn = cands.some( function ( v ) {
+				return false !== v.is_in_stock;
+			} );
+
+			if ( ! anyIn ) {
+				return { txt: L.outStock || 'Out of stock', off: true };
+			}
+
+			var complete = Object.keys( chosen ).every( function ( k ) {
+				return '' !== chosen[ k ];
+			} );
+
+			return complete ? { txt: L.inStock || 'In stock', off: false } : null;
+		}
+
+		function render() {
+			panel.innerHTML = '';
+
+			// Values Woo currently allows (it prunes the select's options as
+			// the other attributes get chosen).
+			var avail = {};
+			Array.prototype.forEach.call( select.options, function ( o ) {
+				if ( o.value ) {
+					avail[ o.value ] = true;
+				}
+			} );
+
+			opts.forEach( function ( o ) {
+				var st = stockFor( o.value );
+				var off = ! avail[ o.value ] || ( st && st.off );
+
+				var row = document.createElement( 'button' );
+				row.type = 'button';
+				row.className = 'oc-dd__opt' + ( off ? ' is-off' : '' ) + ( select.value === o.value ? ' is-selected' : '' );
+				row.setAttribute( 'role', 'option' );
+				row.innerHTML = '<span></span>' + ( st ? '<em class="oc-dd__stock' + ( st.off ? ' is-out' : '' ) + '"></em>' : '' );
+				row.firstChild.textContent = o.label;
+				if ( st ) {
+					row.lastChild.textContent = st.txt;
+				}
+
+				if ( off ) {
+					row.disabled = true;
+				} else {
+					row.addEventListener( 'click', function () {
+						select.value = select.value === o.value ? '' : o.value;
+						select.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+						closeDd();
+					} );
+				}
+
+				panel.appendChild( row );
+			} );
+		}
+
+		function syncVal() {
+			var current = null;
+			opts.forEach( function ( o ) {
+				if ( o.value === select.value ) {
+					current = o;
+				}
+			} );
+			valEl.textContent = current ? current.label : placeholder;
+			dd.classList.toggle( 'is-empty', ! current );
+		}
+
+		function openDd() {
+			render();
+			panel.hidden = false;
+			dd.classList.add( 'is-open' );
+			trig.setAttribute( 'aria-expanded', 'true' );
+		}
+
+		function closeDd() {
+			panel.hidden = true;
+			dd.classList.remove( 'is-open' );
+			trig.setAttribute( 'aria-expanded', 'false' );
+		}
+
+		trig.addEventListener( 'click', function () {
+			if ( panel.hidden ) {
+				openDd();
+			} else {
+				closeDd();
+			}
+		} );
+
+		document.addEventListener( 'click', function ( e ) {
+			if ( ! dd.contains( e.target ) ) {
+				closeDd();
+			}
+		} );
+
+		document.addEventListener( 'keydown', function ( e ) {
+			if ( 'Escape' === e.key ) {
+				closeDd();
+			}
+		} );
+
+		select.addEventListener( 'change', syncVal );
+		syncVal();
+	} );
+
+	// Two-per-row layout (a design setting) only makes sense when there
+	// actually are two dropdown rows.
+	document.querySelectorAll( '.single-product form.variations_form table.variations' ).forEach( function ( t ) {
+		if ( t.querySelectorAll( 'tr.oc-tr-dd' ).length >= 2 ) {
+			t.classList.add( 'oc-dd-2' );
+		}
+	} );
+
 	document.querySelectorAll( '.oc-var' ).forEach( function ( box ) {
 		var select = document.getElementById( box.dataset.for );
 
