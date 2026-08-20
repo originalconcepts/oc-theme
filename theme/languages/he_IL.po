@@ -2139,3 +2139,6 @@ msgstr "מוסתר"
 
 msgid "Log in to your account"
 msgstr "התחבר/י לחשבונך"
+
+msgid "Payment method"
+msgstr "שיטת תשלום"

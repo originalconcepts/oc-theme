@@ -91,6 +91,7 @@ final class Checkout {
 		add_action( 'woocommerce_review_order_after_shipping', array( $this, 'shipping_row' ) );
 		add_action( 'woocommerce_review_order_before_order_total', array( $this, 'savings_row' ) );
 		add_action( 'woocommerce_review_order_after_order_total', array( $this, 'vat_note_row' ) );
+		add_action( 'woocommerce_review_order_before_payment', array( $this, 'payment_heading' ) );
 		add_action( 'woocommerce_review_order_before_submit', array( $this, 'privacy_note' ), 12 );
 
 		add_action( 'woocommerce_review_order_before_submit', array( $this, 'consent_checkbox' ), 15 );
@@ -623,6 +624,13 @@ final class Checkout {
 	 */
 	public function vat_note_row(): void {
 		echo '<tr class="oc-co-vat"><td colspan="2">' . esc_html__( 'Including VAT', 'oc-theme' ) . '</td></tr>';
+	}
+
+	/**
+	 * Section heading above the gateway list.
+	 */
+	public function payment_heading(): void {
+		echo '<h3 class="oc-co-h oc-co-h--pay">' . esc_html__( 'Payment method', 'oc-theme' ) . '</h3>';
 	}
 
 	/**
