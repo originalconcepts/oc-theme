@@ -6142,7 +6142,8 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 .oc-checkout .page-title,
 .oc-checkout h1.oc-page-title,
 .oc-checkout .oc-crumbs,
-.oc-checkout .woocommerce-breadcrumb { display: none; }
+.oc-checkout .oc-breadcrumb,
+.oc-checkout .woocommerce-breadcrumb { display: none !important; }
 
 .oc-checkout form.checkout {
 	display: grid;
@@ -6326,7 +6327,10 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 	font-size: .68rem;
 }
 
-.oc-checkout form.checkout .form-row select { block-size: 56px; }
+.oc-checkout form.checkout .form-row select {
+	block-size: 56px;
+	padding-block: 20px 4px;
+}
 
 .oc-checkout form.checkout .form-row .input-text,
 .oc-checkout form.checkout .form-row select,
