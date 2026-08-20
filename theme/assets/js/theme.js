@@ -5846,7 +5846,8 @@
 
 		if ( sumHead ) {
 			sumHead.addEventListener( 'click', function () {
-				if ( window.matchMedia( '(max-width: 900px)' ).matches ) {
+				// Phones always fold; desktop only when the setting says so.
+				if ( window.matchMedia( '(max-width: 900px)' ).matches || document.body.classList.contains( 'oc-co-dfold' ) ) {
 					document.body.classList.toggle( 'oc-co-sumopen' );
 				}
 			} );
@@ -5854,6 +5855,134 @@
 			coSumHead();
 			window.addEventListener( 'resize', coSumHead );
 		}
+
+		/* -- terms and privacy open in a panel, never a new tab -- */
+		var legalPanel = null;
+
+		function coLegal( which ) {
+			if ( ! legalPanel ) {
+				legalPanel = document.createElement( 'div' );
+				legalPanel.className = 'oc-legal';
+				legalPanel.hidden = true;
+				legalPanel.innerHTML =
+					'<div class="oc-legal__overlay" data-oc-legal-close></div>' +
+					'<div class="oc-legal__panel" role="dialog" aria-modal="true">' +
+					'<div class="oc-legal__head"><h3></h3>' +
+					'<button type="button" class="oc-legal__x" data-oc-legal-close aria-label="close">&times;</button></div>' +
+					'<div class="oc-legal__body"></div>' +
+					'</div>';
+				document.body.appendChild( legalPanel );
+				sheetDragCloseLegal( legalPanel.querySelector( '.oc-legal__panel' ) );
+			}
+
+			var body = legalPanel.querySelector( '.oc-legal__body' );
+			legalPanel.querySelector( 'h3' ).textContent = '';
+			body.innerHTML = '<p class="oc-legal__loading">…</p>';
+			legalPanel.hidden = false;
+			document.documentElement.style.overflow = 'hidden';
+			setTimeout( function () {
+				legalPanel.classList.add( 'is-open' );
+			}, 10 );
+
+			var data = new FormData();
+			data.append( 'action', 'oc_co_legal' );
+			data.append( 'which', which );
+
+			fetch( ( window.ocL10n || {} ).ajaxUrl || '/wp-admin/admin-ajax.php', {
+				method: 'POST',
+				credentials: 'same-origin',
+				body: data
+			} )
+				.then( function ( r ) { return r.json(); } )
+				.then( function ( res ) {
+					if ( ! res || ! res.success ) {
+						body.innerHTML = '';
+						return;
+					}
+					legalPanel.querySelector( 'h3' ).textContent = res.data.title;
+					body.innerHTML = res.data.content;
+				} );
+		}
+
+		function coLegalClose() {
+			if ( ! legalPanel ) {
+				return;
+			}
+			legalPanel.classList.remove( 'is-open' );
+			document.documentElement.style.overflow = '';
+			setTimeout( function () {
+				legalPanel.hidden = true;
+			}, 260 );
+		}
+
+		// Pull-down dismiss for the phone sheet.
+		function sheetDragCloseLegal( panel ) {
+			var startY = 0;
+			var delta = 0;
+			var dragging = false;
+
+			panel.addEventListener( 'touchstart', function ( e ) {
+				if ( ! window.matchMedia( '(max-width: 782px)' ).matches ) {
+					return;
+				}
+				startY = e.touches[ 0 ].clientY;
+				delta = 0;
+				dragging = ( startY - panel.getBoundingClientRect().top ) < 60 || panel.scrollTop <= 0;
+			}, { passive: true } );
+
+			panel.addEventListener( 'touchmove', function ( e ) {
+				if ( ! dragging ) {
+					return;
+				}
+				delta = e.touches[ 0 ].clientY - startY;
+				if ( delta > 0 && panel.scrollTop <= 0 ) {
+					panel.style.transform = 'translateY(' + delta + 'px)';
+					panel.style.transition = 'none';
+					e.preventDefault();
+				}
+			}, { passive: false } );
+
+			panel.addEventListener( 'touchend', function () {
+				if ( ! dragging ) {
+					return;
+				}
+				dragging = false;
+				panel.style.transition = '';
+				panel.style.transform = '';
+				if ( delta > 90 ) {
+					coLegalClose();
+				}
+			} );
+		}
+
+		document.addEventListener( 'click', function ( e ) {
+			if ( e.target.closest( '[data-oc-legal-close]' ) ) {
+				coLegalClose();
+				return;
+			}
+
+			var link = e.target.closest( '#payment a[href], .oc-co-privacy a[href]' );
+			if ( ! link ) {
+				return;
+			}
+
+			var privacy = !! link.closest( '.oc-co-privacy' );
+			var terms = !! link.closest( '.woocommerce-terms-and-conditions-wrapper, .woocommerce-terms-and-conditions-link' )
+				|| link.classList.contains( 'woocommerce-terms-and-conditions-link' );
+
+			if ( ! privacy && ! terms ) {
+				return;
+			}
+
+			e.preventDefault();
+			coLegal( privacy ? 'privacy' : 'terms' );
+		} );
+
+		document.addEventListener( 'keydown', function ( e ) {
+			if ( 'Escape' === e.key ) {
+				coLegalClose();
+			}
+		} );
 	}
 
 	/* ---------- sticky add-to-cart ---------- */

@@ -6629,15 +6629,18 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 	background: var(--oc-surface, #fff);
 }
 
-.oc-co-rate input:checked { border-color: var(--oc-ink, #111); }
+.oc-co-rate input:checked { border-color: var(--oc-cta, var(--oc-ink, #111)); }
 
 .oc-co-rate input:checked::after {
 	content: "";
 	inline-size: 9px;
 	block-size: 9px;
 	border-radius: 50%;
-	background: var(--oc-ink, #111);
+	background: var(--oc-cta, var(--oc-ink, #111));
 }
+
+/* the chosen row is marked by its radio and a hairline, never a fill */
+.oc-checkout .oc-co-rates .oc-co-rate.is-on { background: none; }
 
 .oc-co-rate__icon {
 	inline-size: 20px;
@@ -6798,9 +6801,10 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 
 .oc-co-item { display: contents; }
 
+.oc-checkout td.product-name .oc-co-item__img,
 .oc-co-item__img {
 	inline-size: 56px;
-	block-size: 68px;
+	block-size: 68px !important;
 	object-fit: cover;
 	border-radius: 6px;
 	flex: none;
@@ -7164,6 +7168,48 @@ body.oc-checkout { overflow-x: clip; }
 .oc-co-nosummary #order_review table.shop_table thead,
 .oc-co-nosummary #order_review table.shop_table tbody { display: none; }
 
+/* the same fold on desktop when the setting asks for it */
+@media (min-width: 901px) {
+	.oc-co-dfold #order_review_heading {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		cursor: pointer;
+		border: 1px solid rgb(228 230 234);
+		border-radius: 5px;
+		padding: 13px 15px;
+		background: var(--oc-surface, #fff);
+	}
+
+	.oc-co-dfold .woocommerce-checkout-review-order-table { display: none; }
+
+	.oc-co-dfold.oc-co-sumopen .woocommerce-checkout-review-order-table {
+		display: table;
+		margin-block-start: 14px;
+	}
+
+	.oc-co-dfold .oc-co-sumchev {
+		inline-size: 14px;
+		block-size: 14px;
+		flex: none;
+		transition: rotate .2s ease;
+	}
+
+	.oc-co-dfold.oc-co-sumopen .oc-co-sumchev { rotate: 180deg; }
+
+	.oc-co-dfold .oc-co-sumhead { display: flex; flex-direction: column; gap: 1px; line-height: 1.25; }
+	.oc-co-dfold .oc-co-sumhead strong { font-size: 1.05rem; }
+
+	.oc-co-dfold .oc-co-sumhead em {
+		font-style: normal;
+		font-size: .78rem;
+		font-weight: 400;
+		color: var(--oc-ink-2, #777);
+	}
+
+	.oc-co-dfold .oc-co-sumtotal { margin-inline-start: auto; font-size: 1.05rem; font-weight: 700; }
+}
+
 /* mobile: everything about the order folds behind the summary heading —
  * products, coupon and the totals alike. The heading itself states the
  * total, so a collapsed summary still answers the only urgent question. */
@@ -7269,15 +7315,19 @@ body.oc-checkout { overflow-x: clip; }
 	background: var(--oc-surface, #fff);
 }
 
-.oc-checkout #payment ul.payment_methods > li input[type="radio"]:checked { border-color: var(--oc-ink, #111); }
+.oc-checkout #payment ul.payment_methods > li input[type="radio"]:checked { border-color: var(--oc-cta, var(--oc-ink, #111)); }
 
 .oc-checkout #payment ul.payment_methods > li input[type="radio"]:checked::after {
 	content: "";
 	inline-size: 9px;
 	block-size: 9px;
 	border-radius: 50%;
-	background: var(--oc-ink, #111);
+	background: var(--oc-cta, var(--oc-ink, #111));
 }
+
+/* Woo tints the chosen gateway row — the radio says it instead */
+.oc-checkout #payment ul.payment_methods > li.woocommerce-PaymentMethod,
+.oc-checkout #payment ul.payment_methods > li { background: none; }
 
 .oc-checkout #payment ul.payment_methods > li .payment_box {
 	flex: 1 1 100%;
@@ -7344,7 +7394,7 @@ body.oc-checkout { overflow-x: clip; }
 	.oc-checkout #billing_oc_floor_field,
 	.oc-checkout #billing_oc_entry_field { flex: 1 1 calc(33.333% - 10px) !important; }
 
-	.oc-co-recipient__grid .oc-co-rrow { flex: 1 1 100%; }
+	.oc-co-recipient__grid .oc-co-rrow { flex: 1 1 calc(50% - 7px); }
 
 	/* 16px or iOS zooms the page in the moment a field takes focus */
 	.oc-checkout form.checkout .input-text,
@@ -7359,4 +7409,106 @@ body.oc-checkout { overflow-x: clip; }
 	.oc-checkout #order_review_heading,
 	.oc-checkout .woocommerce-checkout-review-order-table,
 	.oc-checkout #payment { max-inline-size: none; inline-size: 100%; }
+}
+
+
+/* ---------- terms / privacy panel ----------
+ * Desktop: a panel on the inline-end edge (left in RTL, right in LTR).
+ * Phones: the bottom sheet the variation picker uses. */
+.oc-legal { position: fixed; inset: 0; z-index: 130; }
+.oc-legal[hidden] { display: none; }
+
+.oc-legal__overlay {
+	position: absolute;
+	inset: 0;
+	background: rgb(0 0 0 / 40%);
+	opacity: 0;
+	transition: opacity .25s ease;
+}
+
+.oc-legal.is-open .oc-legal__overlay { opacity: 1; }
+
+.oc-legal__panel {
+	position: absolute;
+	inset-block: 0;
+	inset-inline-end: 0;
+	inline-size: min(520px, 92vw);
+	background: var(--oc-surface, #fff);
+	box-shadow: -8px 0 40px rgb(0 0 0 / 18%);
+	display: flex;
+	flex-direction: column;
+	transform: translateX(var(--oc-legal-out, 100%));
+	transition: transform .28s ease;
+	overflow: auto;
+	overscroll-behavior: contain;
+}
+
+[dir="rtl"] .oc-legal__panel { --oc-legal-out: -100%; }
+
+.oc-legal.is-open .oc-legal__panel { transform: translateX(0); }
+
+.oc-legal__head {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 18px 22px;
+	border-block-end: 1px solid var(--oc-line, #eee);
+	position: sticky;
+	inset-block-start: 0;
+	background: var(--oc-surface, #fff);
+	z-index: 1;
+}
+
+.oc-legal__head h3 { margin: 0; font-size: 1.05rem; }
+
+.oc-legal__x {
+	margin-inline-start: auto;
+	border: 0;
+	background: none;
+	font-size: 26px;
+	line-height: 1;
+	color: var(--oc-ink, #111);
+	cursor: pointer;
+	padding: 0 4px;
+}
+
+.oc-legal__body {
+	padding: 20px 22px 40px;
+	font-size: .92rem;
+	line-height: 1.7;
+}
+
+.oc-legal__body h2,
+.oc-legal__body h3 { font-size: 1rem; margin: 20px 0 8px; }
+
+.oc-legal__loading { text-align: center; color: var(--oc-ink-2, #999); }
+
+@media (max-width: 782px) {
+	.oc-legal__panel {
+		inset-block: auto 0;
+		inset-inline: 0;
+		inline-size: auto;
+		max-block-size: 84vh;
+		border-radius: calc(var(--oc-radius, 8px) * 1.6) calc(var(--oc-radius, 8px) * 1.6) 0 0;
+		transform: translateY(100%);
+		box-shadow: 0 -12px 40px rgb(0 0 0 / 25%);
+	}
+
+	[dir="rtl"] .oc-legal__panel { --oc-legal-out: 0; }
+
+	.oc-legal.is-open .oc-legal__panel { transform: translateY(0); }
+
+	.oc-legal__head::before {
+		content: "";
+		position: absolute;
+		inset-block-start: 7px;
+		inset-inline: 0;
+		margin-inline: auto;
+		inline-size: 42px;
+		block-size: 4px;
+		border-radius: 2px;
+		background: var(--oc-line, #ddd);
+	}
+
+	.oc-legal__head { padding-block: 20px 14px; }
 }

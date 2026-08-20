@@ -2151,3 +2151,9 @@ msgstr "לא ניתן להחיל את הקופון הזה."
 
 msgid "%d items"
 msgstr "%d פריטים"
+
+msgid "Summary on desktop"
+msgstr "סיכום בדסקטופ"
+
+msgid "Start folded — the visitor opens it"
+msgstr "מוצג מקופל — הלקוח פותח אותו"

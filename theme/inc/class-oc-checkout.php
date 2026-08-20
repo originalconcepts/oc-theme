@@ -34,6 +34,7 @@ final class Checkout {
 			is_array( $saved ) ? $saved : array(),
 			array(
 				'summary'         => 1,       // Product list in the order summary.
+				'summary_fold'    => 1,       // Desktop summary starts folded.
 				'coupon_mode'     => 'open',  // open | button | hide.
 				'country_mode'    => 'auto',  // auto | hide.
 				'send_other'      => 1,       // "I'm sending to someone else" toggle.
@@ -107,6 +108,9 @@ final class Checkout {
 
 
 
+		add_action( 'wp_ajax_oc_co_legal', array( $this, 'ajax_legal' ) );
+		add_action( 'wp_ajax_nopriv_oc_co_legal', array( $this, 'ajax_legal' ) );
+
 		add_action( 'wp_ajax_oc_co_stash', array( $this, 'ajax_stash' ) );
 		add_action( 'wp_ajax_nopriv_oc_co_stash', array( $this, 'ajax_stash' ) );
 		add_filter( 'woocommerce_checkout_get_value', array( $this, 'stashed_value' ), 10, 2 );
@@ -114,6 +118,29 @@ final class Checkout {
 
 		add_action( 'admin_menu', array( $this, 'menu' ), 60 );
 		add_action( 'admin_post_oc_checkout_save', array( $this, 'save_settings' ) );
+	}
+
+	/**
+	 * Terms or privacy, rendered into the side panel instead of a new tab.
+	 */
+	public function ajax_legal(): void {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- public page content, no privileges.
+		$which = isset( $_POST['which'] ) ? sanitize_key( wp_unslash( (string) $_POST['which'] ) ) : '';
+
+		$page_id = 'privacy' === $which ? (int) get_option( 'wp_page_for_privacy_policy' ) : wc_terms_and_conditions_page_id();
+
+		$page = $page_id ? get_post( $page_id ) : null;
+
+		if ( ! $page instanceof \WP_Post || 'publish' !== $page->post_status ) {
+			wp_send_json_error();
+		}
+
+		wp_send_json_success(
+			array(
+				'title'   => get_the_title( $page ),
+				'content' => apply_filters( 'the_content', $page->post_content ),
+			)
+		);
 	}
 
 	/* ------------------------------------------------------------- stash */
@@ -1054,6 +1081,11 @@ final class Checkout {
 	public function body_class( array $classes ): array {
 		if ( is_checkout() && ! is_wc_endpoint_url( 'order-received' ) ) {
 			$classes[] = 'oc-checkout';
+
+			$s = self::settings();
+			if ( ! empty( $s['summary'] ) && ! empty( $s['summary_fold'] ) ) {
+				$classes[] = 'oc-co-dfold';
+			}
 		}
 
 		return $classes;
@@ -1145,6 +1177,10 @@ final class Checkout {
 					<tr>
 						<th scope="row"><?php esc_html_e( 'Order summary', 'oc-theme' ); ?></th>
 						<td><label><input type="checkbox" name="summary" value="1" <?php checked( 1, (int) $s['summary'] ); ?> /> <?php esc_html_e( 'Show the product list (totals always show)', 'oc-theme' ); ?></label></td>
+					</tr>
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Summary on desktop', 'oc-theme' ); ?></th>
+						<td><label><input type="checkbox" name="summary_fold" value="1" <?php checked( 1, (int) $s['summary_fold'] ); ?> /> <?php esc_html_e( 'Start folded — the visitor opens it', 'oc-theme' ); ?></label></td>
 					</tr>
 					<tr>
 						<th scope="row"><?php esc_html_e( 'Coupon field', 'oc-theme' ); ?></th>
@@ -1248,6 +1284,7 @@ final class Checkout {
 		// phpcs:disable WordPress.Security.NonceVerification.Missing -- verified above.
 		$s = array(
 			'summary'         => empty( $_POST['summary'] ) ? 0 : 1,
+			'summary_fold'    => empty( $_POST['summary_fold'] ) ? 0 : 1,
 			'coupon_mode'     => in_array( $_POST['coupon_mode'] ?? 'open', array( 'open', 'button', 'hide' ), true ) ? sanitize_key( $_POST['coupon_mode'] ?? 'open' ) : 'open',
 			'country_mode'    => 'hide' === ( $_POST['country_mode'] ?? 'auto' ) ? 'hide' : 'auto',
 			'send_other'      => empty( $_POST['send_other'] ) ? 0 : 1,
