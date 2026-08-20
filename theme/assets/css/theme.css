@@ -6369,12 +6369,15 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 	inset-inline-end: 8px;
 }
 
-/* scoped to the field — the open dropdown's container is appended to
- * <body> (which carries .oc-checkout too) and must keep its own size */
+/* Scoped to the field: the open dropdown's container is appended to <body>
+ * (which carries .oc-checkout too) and must keep its own size. No explicit
+ * height either — Select2 measures this box to place the list, so it has to
+ * wrap the selection naturally; display:block kills the inline descender
+ * gap that otherwise offsets the list. */
 .oc-checkout .woocommerce-billing-fields__field-wrapper .select2-container {
 	inline-size: 100% !important;
-	block-size: 60px;
 	display: block;
+	line-height: 0;
 }
 
 /* the list hugs the field and sits above the rows below it */
