@@ -7273,9 +7273,11 @@ body.oc-checkout { overflow-x: clip; }
 	.oc-checkout #billing_first_name_field,
 	.oc-checkout #billing_last_name_field { flex: 1 1 calc(50% - 7px) !important; }
 
+	/* three across: the 14px gaps have to come out of the basis or the
+	 * trio wraps 2 + 1 */
 	.oc-checkout #billing_address_2_field,
 	.oc-checkout #billing_oc_floor_field,
-	.oc-checkout #billing_oc_entry_field { flex: 1 1 calc(33.333% - 7px) !important; }
+	.oc-checkout #billing_oc_entry_field { flex: 1 1 calc(33.333% - 10px) !important; }
 
 	.oc-co-recipient__grid .oc-co-rrow { flex: 1 1 100%; }
 
