@@ -6369,7 +6369,9 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 	inset-inline-end: 8px;
 }
 
-.oc-checkout .select2-container {
+/* scoped to the field — the open dropdown's container is appended to
+ * <body> (which carries .oc-checkout too) and must keep its own size */
+.oc-checkout .woocommerce-billing-fields__field-wrapper .select2-container {
 	inline-size: 100% !important;
 	block-size: 60px;
 	display: block;
@@ -6383,8 +6385,8 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 	z-index: 60;
 }
 
-.select2-container--open .select2-dropdown--below { margin-block-start: -6px; }
-.select2-container--open .select2-dropdown--above { margin-block-start: 6px; }
+.select2-container--open .select2-dropdown--below { margin-block-start: -1px; }
+.select2-container--open .select2-dropdown--above { margin-block-start: 1px; }
 
 /* the label rides above the value inside the box */
 .oc-checkout form.checkout .form-row:has(select) > label { inset-block-start: 9px !important; }
@@ -6473,8 +6475,8 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 .oc-checkout #billing_email_field,
 .oc-checkout #billing_phone_field { flex: 1 1 calc(50% - 7px) !important; }
 
-.oc-checkout #billing_city_field,
-.oc-checkout #billing_address_1_field { flex: 1 1 calc(50% - 7px) !important; }
+.oc-checkout #billing_address_1_field { flex: 1 1 calc(66.666% - 5px) !important; }
+.oc-checkout #billing_city_field { flex: 1 1 calc(33.333% - 10px) !important; }
 
 .oc-checkout #billing_address_2_field,
 .oc-checkout #billing_oc_floor_field,
@@ -6767,7 +6769,7 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 	margin-block-start: 4px;
 }
 
-.oc-checkout #order_review table.shop_table tbody td.product-name { padding-block: 10px; }
+.oc-checkout #order_review table.shop_table tbody td.product-name { padding-block: 8px 6px; }
 
 /* Woo's own variation list yields to ours */
 .oc-checkout td.product-name .variation { display: none; }
@@ -6912,7 +6914,7 @@ body.oc-checkout { overflow-x: clip; }
 
 .oc-co-qty.is-busy { opacity: .5; pointer-events: none; }
 
-.oc-checkout #order_review table.shop_table tbody tr td { border-block-end: 1px solid var(--oc-line, #eee); padding-block: 8px; }
+.oc-checkout #order_review table.shop_table tbody tr td { border-block-end: 1px solid var(--oc-line, #eee); padding-block: 8px 6px; }
 
 /* coupon between the items and the totals */
 .oc-co-couponrow td { padding-block: 14px !important; }
