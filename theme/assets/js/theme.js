@@ -5779,7 +5779,10 @@
 				return;
 			}
 
-			var phone = window.matchMedia( '(max-width: 900px)' ).matches;
+			// The compact heading belongs to any folded summary — phones
+			// always, desktop when the setting asks for it.
+			var phone = window.matchMedia( '(max-width: 900px)' ).matches
+				|| document.body.classList.contains( 'oc-co-dfold' );
 			var chev = sumHead.querySelector( '.oc-co-sumchev' );
 			var tot = sumHead.querySelector( '.oc-co-sumtotal' );
 
