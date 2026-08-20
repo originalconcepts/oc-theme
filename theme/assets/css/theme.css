@@ -7049,9 +7049,13 @@ body.oc-checkout { overflow-x: clip; }
 	margin: 0;
 }
 
-.oc-checkout #payment .place-order,
+/* out-ranks Woo's `.woocommerce-checkout #payment div.form-row { padding:1em }` */
+.oc-checkout.woocommerce-checkout #payment div.form-row.place-order,
 .oc-checkout #payment ul.payment_methods,
-.oc-checkout #payment ul.payment_methods li { padding-inline: 0; }
+.oc-checkout #payment ul.payment_methods li {
+	padding: 0;
+	margin: 0;
+}
 
 .oc-checkout #payment ul.payment_methods {
 	border: 0;
