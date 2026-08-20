@@ -262,6 +262,7 @@ final class Checkout {
 		// very locale data — so the layout order must live HERE, not only on
 		// the server fields.
 		$layout = array(
+			'phone'     => array( 'required' => true, 'priority' => 40 ),
 			'city'      => array(
 				'priority' => 55,
 				'label'    => __( 'City', 'oc-theme' ),
@@ -324,12 +325,10 @@ final class Checkout {
 						<label class="oc-co-rate<?php echo $rate->get_id() === $current ? ' is-on' : ''; ?>">
 							<input type="radio" name="shipping_method[<?php echo absint( $i ); ?>]" value="<?php echo esc_attr( $rate->get_id() ); ?>" class="shipping_method" <?php checked( $rate->get_id(), $current ); ?> />
 							<span class="oc-co-rate__name"><?php echo esc_html( $rate->get_label() ); ?></span>
-							<span class="oc-co-rate__cost">
-								<?php
-								$cost = (float) $rate->get_cost() + array_sum( array_map( 'floatval', $rate->get_taxes() ) );
-								echo $cost > 0 ? wp_kses_post( wc_price( $cost ) ) : esc_html__( 'Free', 'oc-theme' );
-								?>
-							</span>
+							<?php $cost = (float) $rate->get_cost() + array_sum( array_map( 'floatval', $rate->get_taxes() ) ); ?>
+							<?php if ( $cost > 0 ) : ?>
+								<span class="oc-co-rate__cost"><?php echo wp_kses_post( wc_price( $cost ) ); ?></span>
+							<?php endif; ?>
 						</label>
 					<?php endforeach; ?>
 				</div>
