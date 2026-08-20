@@ -6303,6 +6303,35 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 /* the pseudo-field wrapper participates in the flex grid full-width */
 .oc-co-shipwrap { flex: 1 1 100% !important; }
 
+/* Visual order is pinned here — Woo's address-i18n keeps re-sorting the
+ * DOM from its locale data, and flex order simply does not care. */
+.oc-checkout #billing_first_name_field { order: 1; }
+.oc-checkout #billing_last_name_field { order: 2; }
+.oc-checkout #billing_email_field { order: 3; }
+.oc-checkout #billing_phone_field { order: 4; }
+.oc-checkout .oc-co-shipwrap { order: 5; }
+.oc-checkout #billing_country_field { order: 6; }
+.oc-checkout #billing_state_field { order: 7; }
+.oc-checkout #billing_city_field { order: 8; }
+.oc-checkout #billing_postcode_field { order: 9; }
+.oc-checkout #billing_address_1_field { order: 10; }
+.oc-checkout #billing_address_2_field { order: 11; }
+.oc-checkout #billing_oc_floor_field { order: 12; }
+.oc-checkout #billing_oc_entry_field { order: 13; }
+
+/* the client sorter also rewrites classes — pin the half-width pairs */
+.oc-checkout #billing_email_field,
+.oc-checkout #billing_phone_field,
+.oc-checkout #billing_address_1_field,
+.oc-checkout #billing_address_2_field,
+.oc-checkout #billing_oc_floor_field,
+.oc-checkout #billing_oc_entry_field { flex: 1 1 calc(50% - 7px) !important; }
+
+.oc-checkout #billing_city_field,
+.oc-checkout #billing_country_field,
+.oc-checkout #billing_state_field,
+.oc-checkout #billing_postcode_field { flex: 1 1 100%; }
+
 /* Woo's empty ship-to-different-address block: gone */
 .oc-checkout .woocommerce-shipping-fields { display: none; }
 
