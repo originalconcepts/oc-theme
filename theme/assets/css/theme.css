@@ -6173,6 +6173,33 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 	.oc-checkout #order_review { position: static; }
 }
 
+/* stories bar and other page furniture stay off the checkout */
+.oc-checkout .ocs-bar { display: none !important; }
+
+/* Woo's coupon banner becomes the quiet line we use everywhere */
+.oc-checkout .woocommerce-form-coupon-toggle .woocommerce-info {
+	background: none;
+	border: 0;
+	padding: 10px 0 0;
+	margin: 0;
+	color: var(--oc-ink-2, #777);
+	font-size: .9rem;
+	max-inline-size: 1160px;
+	margin-inline: auto;
+}
+
+.oc-checkout .woocommerce-form-coupon-toggle .woocommerce-info::before { display: none; }
+
+.oc-checkout .woocommerce-form-coupon-toggle a { color: var(--oc-ink, #111); }
+
+.oc-checkout form.checkout_coupon {
+	max-inline-size: 1160px;
+	margin: 10px auto;
+	border: 1.5px solid var(--oc-line, #e3e3e3);
+	border-radius: var(--oc-radius, 10px);
+	padding: 16px;
+}
+
 /* ---------- login bar ---------- */
 
 .oc-co-login {
@@ -6397,8 +6424,8 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 	background: var(--oc-ink, #111);
 }
 
-.oc-co-rate__name { font-weight: 500; }
-.oc-co-rate__cost { margin-inline-start: auto; font-weight: 600; }
+.oc-co-rate__name { font-weight: 500; margin-inline-end: auto; }
+.oc-co-rate__cost { font-weight: 600; flex: none; }
 
 /* pickup: the address block vanishes */
 .oc-co-pickup [data-oc-co-address-head],

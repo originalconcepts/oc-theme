@@ -160,6 +160,7 @@ final class Checkout {
 		$b['billing_email']['class']         = array( 'form-row-first' );
 		$b['billing_phone']['priority']      = 40;
 		$b['billing_phone']['class']         = array( 'form-row-last' );
+		$b['billing_phone']['required']      = true;
 
 		$b['billing_first_name']['autocomplete'] = 'given-name';
 		$b['billing_last_name']['autocomplete']  = 'family-name';
