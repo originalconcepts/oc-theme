@@ -5434,6 +5434,19 @@
 			}, 450 );
 		} );
 
+		/* -- savings breakdown folds behind the "you saved" line -- */
+		document.addEventListener( 'click', function ( e ) {
+			var t = e.target.closest( '[data-oc-co-save]' );
+			if ( ! t ) {
+				return;
+			}
+			var rows = t.parentElement.querySelector( '.oc-co-save__rows' );
+			if ( rows ) {
+				rows.hidden = ! rows.hidden;
+				t.classList.toggle( 'is-open', ! rows.hidden );
+			}
+		} );
+
 		/* -- summary coupon: the drawer's endpoint + Woo refresh -- */
 		document.addEventListener( 'click', function ( e ) {
 			var apply = e.target.closest( '[data-oc-co-coupon] button' );

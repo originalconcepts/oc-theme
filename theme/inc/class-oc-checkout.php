@@ -37,6 +37,9 @@ final class Checkout {
 				'country_mode'    => 'auto',  // auto | hide.
 				'send_other'      => 1,       // "I'm sending to someone else" toggle.
 				'phone2_required' => 0,       // Recipient's second phone required.
+				'apt_required'    => 0,       // Apartment number required.
+				'floor_required'  => 0,       // Floor required.
+				'entry_required'  => 0,       // Entry code required.
 				'phone_min'       => 9,       // 0 = no minimum.
 				'phone_max'       => 10,      // 0 = no maximum.
 				'btn_total'       => 1,       // Total on the place-order button.
@@ -84,6 +87,7 @@ final class Checkout {
 		add_action( 'woocommerce_before_checkout_form', array( $this, 'login_block' ), 5 );
 		add_action( 'woocommerce_before_checkout_billing_form', array( $this, 'orderer_heading' ) );
 		add_action( 'woocommerce_review_order_after_cart_contents', array( $this, 'summary_coupon_row' ) );
+		add_action( 'woocommerce_review_order_before_order_total', array( $this, 'savings_row' ) );
 		add_action( 'woocommerce_review_order_after_order_total', array( $this, 'vat_note_row' ) );
 		add_action( 'woocommerce_review_order_before_submit', array( $this, 'privacy_note' ), 12 );
 
@@ -262,18 +266,20 @@ final class Checkout {
 		$b['billing_address_2']['required'] = false;
 		$b['billing_address_2']['placeholder'] = '';
 
+		$b['billing_address_2']['required'] = ! empty( $s['apt_required'] ) && ! $pickup;
+
 		$b['billing_oc_floor'] = array(
 			'type'     => 'text',
-			'label'    => __( 'Floor (optional)', 'oc-theme' ),
-			'required' => false,
+			'label'    => __( 'Floor', 'oc-theme' ),
+			'required' => ! empty( $s['floor_required'] ) && ! $pickup,
 			'priority' => 70,
 			'class'    => array( 'form-row-first' ),
 		);
 
 		$b['billing_oc_entry'] = array(
 			'type'     => 'text',
-			'label'    => __( 'Entry code (optional)', 'oc-theme' ),
-			'required' => false,
+			'label'    => __( 'Entry code', 'oc-theme' ),
+			'required' => ! empty( $s['entry_required'] ) && ! $pickup,
 			'priority' => 75,
 			'class'    => array( 'form-row-last' ),
 		);
@@ -475,7 +481,8 @@ final class Checkout {
 		echo '<div class="oc-co-brand"><div class="oc-co-brand__in">';
 
 		echo '<a class="oc-co-brand__cart" href="' . esc_url( wc_get_cart_url() ) . '" aria-label="' . esc_attr__( 'Back to cart', 'oc-theme' ) . '">';
-		echo '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7h12l1.2 13H4.8L6 7zM9 10V6a3 3 0 0 1 6 0v4"/></svg>';
+		echo oc_cart_icon_svg(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static SVG.
+		echo '<span class="oc-cart-count">' . absint( WC()->cart ? WC()->cart->get_cart_contents_count() : 0 ) . '</span>';
 		echo '</a>';
 
 		echo '<div class="oc-co-brand__logo">';
@@ -516,6 +523,50 @@ final class Checkout {
 			</td>
 		</tr>
 		<?php
+	}
+
+	/**
+	 * The mini-cart's savings line: "you saved X" with the breakdown folded
+	 * behind it, promos and coupons summed.
+	 */
+	public function savings_row(): void {
+		$rows  = array();
+		$saved = 0.0;
+
+		if ( class_exists( '\\PromoEngine\\Cart' ) && method_exists( '\\PromoEngine\\Cart', 'instance' ) ) {
+			$pcart   = \PromoEngine\Cart::instance();
+			$summary = $pcart && method_exists( $pcart, 'savings_summary' ) ? $pcart->savings_summary() : null;
+			if ( is_array( $summary ) ) {
+				foreach ( (array) ( $summary['items'] ?? array() ) as $row ) {
+					$saved += (float) $row['saved'];
+					$rows[] = array( (string) $row['name'], (float) $row['saved'] );
+				}
+			}
+		}
+
+		foreach ( WC()->cart->get_applied_coupons() as $code ) {
+			$amount = (float) WC()->cart->get_coupon_discount_amount( $code, false );
+			$saved += $amount;
+			/* translators: %s: coupon code. */
+			$rows[] = array( sprintf( __( 'Coupon %s', 'oc-theme' ), $code ), $amount );
+		}
+
+		if ( $saved <= 0 ) {
+			return;
+		}
+
+		echo '<tr class="oc-co-save"><td colspan="2">';
+		echo '<button type="button" class="oc-co-save__t" data-oc-co-save>';
+		echo '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 12.5l5 5L19.5 7"/></svg>';
+		echo sprintf( esc_html__( 'You saved %s', 'oc-theme' ), '<strong>' . wp_kses_post( wc_price( $saved ) ) . '</strong>' );
+		echo '<svg class="oc-co-save__c" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
+		echo '</button>';
+		echo '<span class="oc-co-save__rows" hidden>';
+		foreach ( $rows as $row ) {
+			echo '<span class="oc-co-save__row"><span>' . esc_html( $row[0] ) . '</span><strong>&minus;' . wp_kses_post( wc_price( $row[1] ) ) . '</strong></span>';
+		}
+		echo '</span>';
+		echo '</td></tr>';
 	}
 
 	/**
@@ -991,6 +1042,18 @@ final class Checkout {
 					</tr>
 				</table>
 
+				<h2><?php esc_html_e( 'Address fields', 'oc-theme' ); ?></h2>
+				<table class="form-table" role="presentation">
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Required fields', 'oc-theme' ); ?></th>
+						<td>
+							<label><input type="checkbox" name="apt_required" value="1" <?php checked( 1, (int) $s['apt_required'] ); ?> /> <?php esc_html_e( 'Apartment', 'oc-theme' ); ?></label><br />
+							<label><input type="checkbox" name="floor_required" value="1" <?php checked( 1, (int) $s['floor_required'] ); ?> /> <?php esc_html_e( 'Floor', 'oc-theme' ); ?></label><br />
+							<label><input type="checkbox" name="entry_required" value="1" <?php checked( 1, (int) $s['entry_required'] ); ?> /> <?php esc_html_e( 'Entry code', 'oc-theme' ); ?></label>
+						</td>
+					</tr>
+				</table>
+
 				<h2><?php esc_html_e( 'Phone validation', 'oc-theme' ); ?></h2>
 				<table class="form-table" role="presentation">
 					<tr>
@@ -1047,6 +1110,9 @@ final class Checkout {
 			'country_mode'    => 'hide' === ( $_POST['country_mode'] ?? 'auto' ) ? 'hide' : 'auto',
 			'send_other'      => empty( $_POST['send_other'] ) ? 0 : 1,
 			'phone2_required' => empty( $_POST['phone2_required'] ) ? 0 : 1,
+			'apt_required'    => empty( $_POST['apt_required'] ) ? 0 : 1,
+			'floor_required'  => empty( $_POST['floor_required'] ) ? 0 : 1,
+			'entry_required'  => empty( $_POST['entry_required'] ) ? 0 : 1,
 			'phone_min'       => absint( $_POST['phone_min'] ?? 9 ),
 			'phone_max'       => absint( $_POST['phone_max'] ?? 10 ),
 			'btn_total'       => empty( $_POST['btn_total'] ) ? 0 : 1,

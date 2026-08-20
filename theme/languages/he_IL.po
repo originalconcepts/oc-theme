@@ -2109,3 +2109,18 @@ msgstr "הפרטים שמסרת ישמשו לטיפול בהזמנה ולאספ�
 
 msgid "Please confirm the privacy policy notice."
 msgstr "נא לאשר את הצהרת מדיניות הפרטיות."
+
+msgid "Floor"
+msgstr "קומה"
+
+msgid "Entry code"
+msgstr "קוד כניסה"
+
+msgid "Address fields"
+msgstr "שדות כתובת"
+
+msgid "Required fields"
+msgstr "שדות חובה"
+
+msgid "Coupon %s"
+msgstr "קופון %s"

@@ -6194,7 +6194,12 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 	position: sticky;
 	inset-block-start: 18px;
 	padding: 4px 0 22px;
+	max-inline-size: 430px;
+	inline-size: 100%;
+	justify-self: start;
 }
+
+.oc-checkout #order_review_heading { justify-self: start; }
 
 @media (max-width: 900px) {
 	.oc-checkout #order_review { position: static; padding: 0 0 22px; }
@@ -6281,10 +6286,12 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 
 .oc-checkout #order_review_heading,
 .oc-co-h {
-	font-size: 1.05rem;
+	font-size: calc(1.05rem + 2px);
 	font-weight: 700;
-	margin: 10px 0 2px;
+	margin: 10px 0 12px;
 }
+
+.oc-checkout #order_review_heading { margin-block-end: 4px; }
 
 .oc-checkout .woocommerce-billing-fields__field-wrapper {
 	display: flex;
@@ -6335,8 +6342,8 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 }
 
 .oc-checkout form.checkout .form-row select {
-	block-size: 50px;
-	padding-block: 18px 4px;
+	block-size: 58px;
+	padding-block: 26px 6px;
 }
 
 .oc-checkout form.checkout .form-row .input-text,
@@ -6352,6 +6359,10 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 	font-size: .875rem;
 	transition: border-color .15s ease;
 }
+
+/* no "(optional)" chatter — required fields carry the star, the rest are
+ * simply unmarked */
+.oc-checkout form.checkout .optional { display: none; }
 
 /* the inner label IS the placeholder — Woo's own placeholder text hides */
 .oc-checkout form.checkout .form-row .input-text::placeholder,
@@ -6408,9 +6419,9 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 .oc-checkout .oc-co-shipwrap { order: 5; }
 .oc-checkout #billing_country_field { order: 6; }
 .oc-checkout #billing_state_field { order: 7; }
-.oc-checkout #billing_city_field { order: 8; }
-.oc-checkout #billing_postcode_field { order: 9; }
-.oc-checkout #billing_address_1_field { order: 10; }
+.oc-checkout #billing_address_1_field { order: 8; }
+.oc-checkout #billing_city_field { order: 9; }
+.oc-checkout #billing_postcode_field { order: 10; }
 .oc-checkout #billing_address_2_field { order: 11; }
 .oc-checkout #billing_oc_floor_field { order: 12; }
 .oc-checkout #billing_oc_entry_field { order: 13; }
@@ -6530,7 +6541,6 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 	margin: 8px 0 0;
 	cursor: pointer;
 	font-size: .95rem;
-	flex-direction: row-reverse;
 }
 
 .oc-co-toggle input {
@@ -6629,6 +6639,8 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 	margin: 0 0 10px;
 }
 
+.oc-checkout #order_review table.shop_table thead { display: none; }
+
 .oc-checkout #order_review table.shop_table td,
 .oc-checkout #order_review table.shop_table th {
 	border: 0;
@@ -6669,7 +6681,7 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 	grid-row: 1 / span 2;
 }
 
-.oc-co-item__body { grid-column: 2; display: flex; flex-direction: column; gap: 3px; }
+.oc-co-item__body { grid-column: 2; display: flex; flex-direction: column; gap: 2px; }
 
 .oc-co-item__name { font-weight: 500; font-size: .9rem; }
 
@@ -6694,7 +6706,76 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 .oc-checkout #order_review table.shop_table td.product-total,
 .oc-checkout #order_review table.shop_table tfoot td { text-align: left; }
 
-.oc-co-freetag { float: left; font-weight: 600; }
+.oc-checkout #order_review ul#shipping_method li label {
+	display: flex;
+	align-items: center;
+	margin: 0;
+}
+
+.oc-co-freetag { margin-inline-start: auto; font-weight: 600; }
+
+/* the promotion engine's nudge panel belongs to the cart, not here */
+.oc-checkout .promeng-cart-messages { display: none; }
+
+/* Woo's own coupon totals rows — the savings line covers them */
+.oc-checkout #order_review tr.cart-discount { display: none; }
+
+/* the savings line, straight from the mini-cart */
+.oc-checkout tr.oc-co-save td { border: 0 !important; padding-block: 4px !important; }
+
+.oc-co-save__t {
+	border: 0;
+	background: none;
+	font: inherit;
+	font-size: .88rem;
+	color: var(--oc-success, #2f7d4f);
+	cursor: pointer;
+	padding: 0;
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.oc-co-save__t svg { inline-size: 14px; block-size: 14px; flex: none; }
+
+.oc-co-save__t .oc-co-save__c { inline-size: 13px; block-size: 13px; color: var(--oc-ink-2); transition: rotate .2s ease; }
+
+.oc-co-save__t.is-open .oc-co-save__c { rotate: 180deg; }
+
+.oc-co-save__rows { display: block; padding-block-start: 6px; }
+
+.oc-co-save__row {
+	display: flex;
+	justify-content: space-between;
+	gap: 10px;
+	font-size: .84rem;
+	color: var(--oc-success, #2f7d4f);
+	padding-block: 2px;
+}
+
+/* payment area: rtl flow, aligned with the rows above, subtle loader */
+.oc-checkout #payment,
+.oc-checkout #payment .place-order { direction: rtl; }
+
+.oc-checkout #payment ul.payment_methods li label { display: inline-flex; align-items: center; gap: 8px; margin: 0; }
+
+.oc-checkout .blockUI.blockOverlay {
+	background: rgb(255 255 255 / 55%) !important;
+	opacity: 1 !important;
+}
+
+.oc-checkout .blockUI.blockOverlay::after {
+	content: "";
+	position: absolute;
+	inset-block-start: calc(50% - 11px);
+	inset-inline-start: calc(50% - 11px);
+	inline-size: 22px;
+	block-size: 22px;
+	border: 2px solid var(--oc-ink, #111);
+	border-block-start-color: transparent;
+	border-radius: 50%;
+	animation: oc-spin .6s linear infinite;
+}
 
 .oc-co-qty {
 	display: inline-flex;
@@ -6702,8 +6783,8 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 	gap: 2px;
 	border: 1px solid var(--oc-line, #ddd);
 	border-radius: 999px;
-	padding: 2px 4px;
-	margin-block-start: 6px;
+	padding: 1px 3px;
+	margin-block-start: 3px;
 	background: var(--oc-surface, #fff);
 }
 
@@ -6726,7 +6807,7 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 
 .oc-co-qty.is-busy { opacity: .5; pointer-events: none; }
 
-.oc-checkout #order_review table.shop_table tbody tr td { border-block-end: 1px solid var(--oc-line, #eee); padding-block: 12px; }
+.oc-checkout #order_review table.shop_table tbody tr td { border-block-end: 1px solid var(--oc-line, #eee); padding-block: 8px; }
 
 /* coupon between the items and the totals */
 .oc-co-couponrow td { padding-block: 14px !important; }
