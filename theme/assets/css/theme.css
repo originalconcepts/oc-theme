@@ -6397,8 +6397,8 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 }
 
 .oc-checkout form.checkout .form-row select {
-	block-size: 60px;
-	padding-block: 28px 8px;
+	block-size: 50px;
+	padding-block: 21px 6px;
 	line-height: 1.2;
 }
 
@@ -6407,7 +6407,7 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
  * matches its height exactly, otherwise Select2 measures a taller box and
  * drops its list far below the field. */
 .oc-checkout .select2-container--default .select2-selection--single {
-	block-size: 60px;
+	block-size: 50px;
 	border: 1px solid rgb(228 230 234);
 	border-radius: 5px;
 	background: var(--oc-surface, #fff);
@@ -6415,14 +6415,14 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 
 .oc-checkout .select2-container--default .select2-selection--single .select2-selection__rendered {
 	line-height: 1.2;
-	padding-block: 28px 8px;
+	padding-block: 21px 6px;
 	padding-inline: 13px 30px;
 	font-size: .875rem;
 	color: var(--oc-ink, #111);
 }
 
 .oc-checkout .select2-container--default .select2-selection--single .select2-selection__arrow {
-	block-size: 60px;
+	block-size: 50px;
 	inset-inline-end: 8px;
 }
 
@@ -6449,7 +6449,10 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 .select2-container--open .select2-dropdown--above { margin-block-start: 1px; }
 
 /* the label rides above the value inside the box */
-.oc-checkout form.checkout .form-row:has(select) > label { inset-block-start: 9px !important; }
+.oc-checkout form.checkout .form-row:has(select) > label {
+	inset-block-start: 5px !important;
+	font-size: .66rem !important;
+}
 
 .oc-checkout form.checkout .form-row .input-text,
 .oc-checkout form.checkout .form-row select,
@@ -6522,8 +6525,10 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 
 .oc-co-hidden { display: none !important; }
 
-/* required asterisk: quieter */
-.oc-checkout form.checkout .required { color: var(--oc-sale, #b4453c); text-decoration: none; }
+/* No required asterisks: the fields that matter announce themselves when
+ * left empty, and a page full of stars reads as noise. */
+.oc-checkout form.checkout .required,
+.oc-checkout form.checkout abbr.required { display: none !important; }
 
 /* the pseudo-field wrapper participates in the flex grid full-width */
 .oc-co-shipwrap { flex: 1 1 100% !important; }
@@ -7159,10 +7164,38 @@ body.oc-checkout { overflow-x: clip; }
 .oc-co-nosummary #order_review table.shop_table thead,
 .oc-co-nosummary #order_review table.shop_table tbody { display: none; }
 
-/* mobile: the product list folds behind the summary heading */
+/* mobile: everything about the order folds behind the summary heading —
+ * products, coupon and the totals alike. The heading itself states the
+ * total, so a collapsed summary still answers the only urgent question. */
 @media (max-width: 900px) {
-	.oc-co-fold .woocommerce-checkout-review-order-table tbody { display: none; }
+	.oc-co-fold .woocommerce-checkout-review-order-table { margin: 0; }
+
+	.oc-co-fold .woocommerce-checkout-review-order-table tbody,
+	.oc-co-fold .woocommerce-checkout-review-order-table tfoot { display: none; }
+
 	.oc-co-fold.oc-co-sumopen .woocommerce-checkout-review-order-table tbody { display: table-row-group; }
+	.oc-co-fold.oc-co-sumopen .woocommerce-checkout-review-order-table tfoot { display: table-footer-group; }
+
+	/* the heading: label and item count on one side, total on the other */
+	.oc-checkout #order_review_heading { align-items: center; }
+
+	.oc-co-sumhead {
+		display: flex;
+		flex-direction: column;
+		gap: 1px;
+		line-height: 1.25;
+	}
+
+	.oc-co-sumhead strong { font-size: 1.05rem; }
+
+	.oc-co-sumhead em {
+		font-style: normal;
+		font-size: .78rem;
+		font-weight: 400;
+		color: var(--oc-ink-2, #777);
+	}
+
+	.oc-co-sumtotal { font-size: 1.05rem; }
 }
 
 /* ---------- payment ---------- */
@@ -7312,6 +7345,15 @@ body.oc-checkout { overflow-x: clip; }
 	.oc-checkout #billing_oc_entry_field { flex: 1 1 calc(33.333% - 10px) !important; }
 
 	.oc-co-recipient__grid .oc-co-rrow { flex: 1 1 100%; }
+
+	/* 16px or iOS zooms the page in the moment a field takes focus */
+	.oc-checkout form.checkout .input-text,
+	.oc-checkout form.checkout select,
+	.oc-checkout form.checkout textarea,
+	.oc-co-rrow .input-text,
+	.oc-co-coupon input,
+	.oc-checkout .select2-container--default .select2-selection--single .select2-selection__rendered,
+	.oc-checkout .select2-search__field { font-size: 16px !important; }
 
 	/* the summary column cap belongs to the desktop split only */
 	.oc-checkout #order_review_heading,

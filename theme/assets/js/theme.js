@@ -5783,6 +5783,8 @@
 			var chev = sumHead.querySelector( '.oc-co-sumchev' );
 			var tot = sumHead.querySelector( '.oc-co-sumtotal' );
 
+			var head = sumHead.querySelector( '.oc-co-sumhead' );
+
 			if ( ! phone ) {
 				if ( chev ) {
 					chev.remove();
@@ -5790,8 +5792,34 @@
 				if ( tot ) {
 					tot.remove();
 				}
+				if ( head ) {
+					sumHead.textContent = sumHead.dataset.ocLabel || head.querySelector( 'strong' ).textContent;
+				}
 				return;
 			}
+
+			// "Total · N items" on one side, the amount on the other.
+			if ( ! head ) {
+				sumHead.dataset.ocLabel = sumHead.textContent.trim();
+				sumHead.textContent = '';
+				head = document.createElement( 'span' );
+				head.className = 'oc-co-sumhead';
+				head.innerHTML = '<strong></strong><em></em>';
+				sumHead.appendChild( head );
+				chev = null;
+				tot = null;
+			}
+
+			head.querySelector( 'strong' ).textContent = coL.coTotal || 'Total';
+
+			var units = 0;
+			document.querySelectorAll( '#order_review .oc-co-qty__n' ).forEach( function ( n ) {
+				units += parseInt( n.textContent, 10 ) || 0;
+			} );
+
+			head.querySelector( 'em' ).textContent = units
+				? ( coL.coItems || '%d items' ).replace( '%d', units )
+				: '';
 
 			if ( ! tot ) {
 				tot = document.createElement( 'span' );

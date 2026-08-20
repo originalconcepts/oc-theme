@@ -2148,3 +2148,6 @@ msgstr "יש לסמן את התיבה כדי להמשיך"
 
 msgid "This coupon cannot be applied."
 msgstr "לא ניתן להחיל את הקופון הזה."
+
+msgid "%d items"
+msgstr "%d פריטים"
