@@ -5353,31 +5353,48 @@
 		 *    `order`, so the DOM sequence the browser would tab through is
 		 *    not the sequence anyone sees -- */
 		function coTabOrder() {
-			var focusable = [];
+			var rtl = 'rtl' === getComputedStyle( document.documentElement ).direction;
+			var seq = [];
 
-			coForm.querySelectorAll( 'input:not([type="hidden"]), select:not(.select2-hidden-accessible), textarea, button, a[href], .select2-selection' ).forEach( function ( el ) {
-				if ( ! el.offsetParent || el.disabled ) {
+			function collect( root ) {
+				if ( ! root ) {
 					return;
 				}
-				focusable.push( el );
-			} );
 
-			var rtl = 'rtl' === getComputedStyle( document.documentElement ).direction;
+				var found = [];
 
-			focusable.sort( function ( a, b ) {
-				var ra = a.getBoundingClientRect();
-				var rb = b.getBoundingClientRect();
-				var rowA = Math.round( ra.top / 10 );
-				var rowB = Math.round( rb.top / 10 );
+				root.querySelectorAll( 'input:not([type="hidden"]), select:not(.select2-hidden-accessible), textarea, button, a[href], .select2-selection' ).forEach( function ( el ) {
+					if ( ! el.offsetParent || el.disabled ) {
+						return;
+					}
+					found.push( el );
+				} );
 
-				if ( rowA !== rowB ) {
-					return rowA - rowB;
-				}
+				// Within a region, the eye reads top to bottom and then along
+				// the reading direction.
+				found.sort( function ( a, b ) {
+					var ra = a.getBoundingClientRect();
+					var rb = b.getBoundingClientRect();
+					var rowA = Math.round( ra.top / 10 );
+					var rowB = Math.round( rb.top / 10 );
 
-				return rtl ? rb.right - ra.right : ra.left - rb.left;
-			} );
+					if ( rowA !== rowB ) {
+						return rowA - rowB;
+					}
 
-			focusable.forEach( function ( el, i ) {
+					return rtl ? rb.right - ra.right : ra.left - rb.left;
+				} );
+
+				seq = seq.concat( found );
+			}
+
+			// The details column is walked whole before the summary — they
+			// sit side by side, so a purely geometric sort would zig-zag
+			// between the two.
+			collect( coForm.querySelector( '#customer_details' ) );
+			collect( document.getElementById( 'order_review' ) );
+
+			seq.forEach( function ( el, i ) {
 				el.setAttribute( 'tabindex', String( i + 1 ) );
 			} );
 		}
