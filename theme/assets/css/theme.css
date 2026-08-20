@@ -3134,6 +3134,19 @@ table.variations td.value select:has(+ .oc-dd) {
 	color: var(--oc-surface);
 }
 
+/* Selected AND out of stock — the reference look: no fill, just the strong
+ * border, with the slash darkening to match. A filled button would hide
+ * the out-of-stock state the moment it is chosen. */
+.oc-var__btn.is-selected.is-oos {
+	background-color: var(--oc-surface, #fff);
+	color: var(--oc-ink, #111);
+	background-image: linear-gradient(to top left,
+		transparent calc(50% - .75px),
+		var(--oc-ink, #111) calc(50% - .75px),
+		var(--oc-ink, #111) calc(50% + .75px),
+		transparent calc(50% + .75px));
+}
+
 /* One-to-one with the reference: the ring is the swatch's own 1px border
  * and the colour fill sits 2px inside it — selection just inks the ring,
  * nothing grows outward. */
