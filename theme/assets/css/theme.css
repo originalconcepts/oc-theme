@@ -6352,7 +6352,31 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 	line-height: 1.2;
 }
 
-/* its label sits a touch higher than a text field's, clear of the value */
+/* Woo swaps country/state selects for a Select2 widget — the visible box
+ * is .select2-selection, so it carries the field metrics. */
+.oc-checkout .select2-container--default .select2-selection--single {
+	block-size: 68px;
+	border: 1px solid rgb(228 230 234);
+	border-radius: 5px;
+	background: var(--oc-surface, #fff);
+}
+
+.oc-checkout .select2-container--default .select2-selection--single .select2-selection__rendered {
+	line-height: 1.2;
+	padding-block: 34px 10px;
+	padding-inline: 13px 30px;
+	font-size: .875rem;
+	color: var(--oc-ink, #111);
+}
+
+.oc-checkout .select2-container--default .select2-selection--single .select2-selection__arrow {
+	block-size: 68px;
+	inset-inline-end: 8px;
+}
+
+.oc-checkout .select2-container { inline-size: 100% !important; }
+
+/* the label rides above the value inside the box */
 .oc-checkout form.checkout .form-row:has(select) > label { inset-block-start: 9px !important; }
 
 .oc-checkout form.checkout .form-row .input-text,
