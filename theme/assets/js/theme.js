@@ -4785,25 +4785,20 @@
 			return;
 		}
 
-		var missing = null;
+		var missing = [];
 		Array.prototype.forEach.call( vForm.querySelectorAll( 'table.variations tr:not(.oc-row-auto) td.value > select' ), function ( sel ) {
-			if ( ! missing && '' === sel.value ) {
-				missing = sel;
+			if ( '' === sel.value ) {
+				missing.push( sel );
 			}
 		} );
 
-		if ( ! missing ) {
+		if ( ! missing.length ) {
 			return;
 		}
 
 		// Ours now — Woo's handler (and its alert) never runs.
 		event.preventDefault();
 		event.stopPropagation();
-
-		var row = missing.closest( 'tr' );
-		var cell = missing.closest( 'td.value' );
-		var labelEl = row ? row.querySelector( 'th.label label' ) : null;
-		var label = labelEl ? labelEl.textContent.trim() : '';
 
 		vForm.querySelectorAll( '.oc-var-need' ).forEach( function ( el ) {
 			el.remove();
@@ -4812,18 +4807,32 @@
 			el.classList.remove( 'oc-tr-need' );
 		} );
 
-		if ( row ) {
-			row.classList.add( 'oc-tr-need' );
-		}
+		// Every unfilled attribute gets its note at once; the page glides
+		// to the first of them.
+		var firstRow = null;
 
-		var msg = document.createElement( 'p' );
-		msg.className = 'oc-var-need';
-		msg.textContent = ( ( window.ocL10n || {} ).varNeed || 'Please choose %s' ).replace( '%s', label );
-		if ( cell ) {
-			cell.appendChild( msg );
-		}
+		missing.forEach( function ( sel ) {
+			var row = sel.closest( 'tr' );
+			var cell = sel.closest( 'td.value' );
+			var labelEl = row ? row.querySelector( 'th.label label' ) : null;
+			var label = labelEl ? labelEl.textContent.trim() : '';
 
-		( row || vForm ).scrollIntoView( { behavior: 'smooth', block: 'center' } );
+			if ( row ) {
+				row.classList.add( 'oc-tr-need' );
+				if ( ! firstRow ) {
+					firstRow = row;
+				}
+			}
+
+			var msg = document.createElement( 'p' );
+			msg.className = 'oc-var-need';
+			msg.textContent = ( ( window.ocL10n || {} ).varNeed || 'Please choose %s' ).replace( '%s', label );
+			if ( cell ) {
+				cell.appendChild( msg );
+			}
+		} );
+
+		( firstRow || vForm ).scrollIntoView( { behavior: 'smooth', block: 'center' } );
 	}, true );
 
 	// The moment the visitor picks something, the guidance goes away.

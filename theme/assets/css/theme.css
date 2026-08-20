@@ -3021,6 +3021,14 @@ main + .term-description {
 
 .oc-dd__stock.is-out { color: var(--oc-sale, #b4453c); }
 
+/* Design setting: the add-to-cart button keeps its full colour even while
+ * options are still unchosen — the inline guidance does the explaining. */
+.oc-cta-full-incomplete.woocommerce div.product form.cart .single_add_to_cart_button.disabled,
+.oc-cta-full-incomplete.woocommerce div.product form.cart .single_add_to_cart_button.wc-variation-selection-needed {
+	opacity: 1;
+	cursor: pointer;
+}
+
 /* missing-choice guidance: red note under the row, control frame flags too */
 .oc-var-need {
 	margin: 8px 0 0;

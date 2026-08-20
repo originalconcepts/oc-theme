@@ -534,6 +534,10 @@ final class WooCommerce {
 			$classes[] = 'oc-dd-pair';
 		}
 
+		if ( 'full' === get_theme_mod( 'oc_cta_incomplete', 'faded' ) ) {
+			$classes[] = 'oc-cta-full-incomplete';
+		}
+
 		if ( 'square' === get_theme_mod( 'oc_swatch_shape_cat', 'circle' ) ) {
 			$classes[] = 'oc-swatch-square-cat';
 		}

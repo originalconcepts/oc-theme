@@ -414,6 +414,18 @@ final class Customizer {
 
 		$this->number( $c, 'oc_cta_height', 'oc_design', __( 'Button height (px)', 'oc-theme' ), 48, 40, 64 );
 
+		$this->choice(
+			$c,
+			'oc_cta_incomplete',
+			'oc_design',
+			__( 'Button colour before options are chosen', 'oc-theme' ),
+			array(
+				'faded' => __( 'Faded', 'oc-theme' ),
+				'full'  => __( 'Full colour', 'oc-theme' ),
+			),
+			'faded'
+		);
+
 		$fonts = array(
 			''             => __( 'System', 'oc-theme' ),
 			'Assistant'    => 'Assistant',

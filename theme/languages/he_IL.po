@@ -1959,3 +1959,12 @@ msgstr "שני דרופ-דאונים זה לצד זה"
 
 msgid "Please choose %s"
 msgstr "נא לבחור %s"
+
+msgid "Button colour before options are chosen"
+msgstr "צבע הכפתור לפני בחירת אפשרויות"
+
+msgid "Faded"
+msgstr "דהוי"
+
+msgid "Full colour"
+msgstr "צבע מלא"
