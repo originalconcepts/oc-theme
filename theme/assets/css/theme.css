@@ -6158,6 +6158,10 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 .oc-checkout form.checkout {
 	display: grid;
 	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+	/* row 1 hugs the summary heading; without this the tall details column
+	 * (which spans both rows) splits its height evenly and strands the
+	 * summary halfway down the page. */
+	grid-template-rows: min-content 1fr;
 	gap: 0 56px;
 	align-items: start;
 	max-inline-size: 1160px;
@@ -7171,6 +7175,8 @@ body.oc-checkout { overflow-x: clip; }
 /* the same fold on desktop when the setting asks for it */
 @media (min-width: 901px) {
 	.oc-co-dfold #order_review_heading {
+		justify-self: stretch;
+		max-inline-size: 430px;
 		display: flex;
 		align-items: center;
 		gap: 8px;
