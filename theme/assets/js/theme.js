@@ -5140,6 +5140,243 @@
 		updateStickCols();
 	}
 
+	/* ---------- checkout ---------- */
+
+	var coForm = document.querySelector( 'body.oc-checkout form.checkout' );
+
+	if ( coForm ) {
+		var coL = window.ocL10n || {};
+
+		if ( '0' === coL.coSummary ) {
+			document.body.classList.add( 'oc-co-nosummary' );
+		} else {
+			document.body.classList.add( 'oc-co-fold' );
+		}
+
+		/* -- login fold -- */
+		document.addEventListener( 'click', function ( e ) {
+			var t = e.target.closest( '[data-oc-co-login-t]' );
+			if ( ! t ) {
+				return;
+			}
+			var body = t.closest( '[data-oc-co-login]' ).querySelector( '.oc-co-login__body' );
+			body.hidden = ! body.hidden;
+			if ( ! body.hidden ) {
+				var u = body.querySelector( 'input[name="username"]' );
+				if ( u ) {
+					u.focus();
+				}
+			}
+		} );
+
+		/* -- pickup hides the address; method cards mark their state -- */
+		function coSyncMethod() {
+			var checked = coForm.querySelector( 'input[name^="shipping_method"]:checked' );
+			document.body.classList.toggle( 'oc-co-pickup', !! ( checked && /local_pickup/.test( checked.value ) ) );
+			coForm.querySelectorAll( '.oc-co-rate' ).forEach( function ( card ) {
+				var input = card.querySelector( 'input' );
+				card.classList.toggle( 'is-on', !! ( input && input.checked ) );
+			} );
+		}
+
+		coForm.addEventListener( 'change', function ( e ) {
+			if ( e.target.matches( 'input[name^="shipping_method"]' ) ) {
+				coSyncMethod();
+			}
+			if ( 'oc_send_other' === e.target.id ) {
+				var block = coForm.querySelector( '[data-oc-co-recipient]' );
+				if ( block ) {
+					block.hidden = ! e.target.checked;
+				}
+			}
+		} );
+
+		coSyncMethod();
+
+		/* -- live field validation: green when good, red when left bad -- */
+		function coFieldRule( input ) {
+			var id = input.id || '';
+			if ( 'email' === input.type ) {
+				return 'email';
+			}
+			if ( 'tel' === input.type || 'billing_phone' === id ) {
+				return 'phone';
+			}
+			return 'text';
+		}
+
+		function coValidValue( input ) {
+			var v = input.value.trim();
+			var row = input.closest( '.form-row' );
+			var required = row && row.classList.contains( 'validate-required' );
+
+			if ( '' === v ) {
+				return required ? false : null;
+			}
+
+			var rule = coFieldRule( input );
+
+			if ( 'email' === rule ) {
+				return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test( v );
+			}
+
+			if ( 'phone' === rule ) {
+				var digits = v.replace( /\D/g, '' ).length;
+				var min = parseInt( coL.coPhoneMin || '0', 10 );
+				var max = parseInt( coL.coPhoneMax || '0', 10 );
+				if ( min && digits < min ) {
+					return false;
+				}
+				if ( max && digits > max ) {
+					return false;
+				}
+			}
+
+			return true;
+		}
+
+		function coMsgFor( input ) {
+			var v = input.value.trim();
+			if ( '' === v ) {
+				return coL.coRequired || 'Required field';
+			}
+			return 'email' === coFieldRule( input ) ? ( coL.coEmail || 'Invalid email' ) : ( coL.coPhone || 'Invalid phone' );
+		}
+
+		function coPaint( input, showError ) {
+			var row = input.closest( '.form-row' );
+			if ( ! row ) {
+				return true;
+			}
+
+			var ok = coValidValue( input );
+			var msg = row.querySelector( '.oc-f-msg' );
+
+			row.classList.toggle( 'oc-f-ok', true === ok );
+			row.classList.toggle( 'oc-f-bad', false === ok && showError );
+
+			if ( false === ok && showError ) {
+				if ( ! msg ) {
+					msg = document.createElement( 'span' );
+					msg.className = 'oc-f-msg';
+					row.appendChild( msg );
+				}
+				msg.textContent = coMsgFor( input );
+			} else if ( msg ) {
+				msg.remove();
+			}
+
+			return false !== ok;
+		}
+
+		coForm.addEventListener( 'focusout', function ( e ) {
+			if ( e.target.matches( '.input-text, select' ) && e.target.offsetParent ) {
+				coPaint( e.target, true );
+			}
+		} );
+
+		coForm.addEventListener( 'input', function ( e ) {
+			if ( ! e.target.matches( '.input-text, select' ) ) {
+				return;
+			}
+			// While typing: promote to green the moment it turns valid; a
+			// field already flagged red clears as soon as it is fixed.
+			var row = e.target.closest( '.form-row' );
+			coPaint( e.target, !! ( row && row.classList.contains( 'oc-f-bad' ) ) );
+		} );
+
+		/* -- place order: validate visible fields first, glide to the bad one -- */
+		document.addEventListener( 'click', function ( e ) {
+			var btn = e.target.closest( '#place_order' );
+			if ( ! btn ) {
+				return;
+			}
+
+			var firstBad = null;
+
+			coForm.querySelectorAll( '.form-row.validate-required .input-text, .form-row.validate-required select, input[type="email"].input-text, input[type="tel"].input-text' ).forEach( function ( input ) {
+				if ( ! input.offsetParent ) {
+					return; // Hidden (pickup address, folded recipient).
+				}
+				if ( ! coPaint( input, true ) && ! firstBad ) {
+					firstBad = input;
+				}
+			} );
+
+			if ( firstBad ) {
+				e.preventDefault();
+				e.stopPropagation();
+				firstBad.closest( '.form-row' ).scrollIntoView( { behavior: 'smooth', block: 'center' } );
+				firstBad.focus( { preventScroll: true } );
+			}
+		}, true );
+
+		/* -- the total rides the button; re-applied on every review refresh -- */
+		var coReview = document.getElementById( 'order_review' );
+
+		function coPaintButton() {
+			var btn = document.getElementById( 'place_order' );
+			if ( ! btn ) {
+				return;
+			}
+
+			if ( '1' !== coL.coBtnTotal ) {
+				return;
+			}
+
+			if ( ! btn.dataset.ocBase ) {
+				btn.dataset.ocBase = btn.textContent.trim();
+			}
+
+			var amount = coReview ? coReview.querySelector( 'tr.order-total .woocommerce-Price-amount' ) : null;
+			var label = btn.dataset.ocBase + ( amount ? ' · ' + amount.textContent.trim() : '' );
+
+			if ( btn.textContent.trim() !== label ) {
+				btn.textContent = label;
+			}
+		}
+
+		function coTrustLine() {
+			var btn = document.getElementById( 'place_order' );
+			if ( ! btn || coReview.querySelector( '.oc-co-trust' ) ) {
+				return;
+			}
+			var trust = document.createElement( 'div' );
+			trust.className = 'oc-co-trust';
+			trust.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><span></span>';
+			trust.querySelector( 'span' ).textContent = coL.coSecure || 'Secure encrypted payment';
+			btn.closest( '.place-order' ).appendChild( trust );
+		}
+
+		if ( coReview ) {
+			var coTick = null;
+			new MutationObserver( function () {
+				if ( coTick ) {
+					return;
+				}
+				coTick = requestAnimationFrame( function () {
+					coTick = null;
+					coPaintButton();
+					coTrustLine();
+					coSyncMethod();
+				} );
+			} ).observe( coReview, { childList: true, subtree: true } );
+
+			coPaintButton();
+			coTrustLine();
+		}
+
+		/* -- mobile: the product list folds behind the total line -- */
+		var sumHead = document.getElementById( 'order_review_heading' );
+		if ( sumHead ) {
+			sumHead.addEventListener( 'click', function () {
+				if ( window.matchMedia( '(max-width: 900px)' ).matches ) {
+					document.body.classList.toggle( 'oc-co-sumopen' );
+				}
+			} );
+		}
+	}
+
 	/* ---------- sticky add-to-cart ---------- */
 
 	var bar = document.querySelector( '[data-oc-sticky-atc]' );

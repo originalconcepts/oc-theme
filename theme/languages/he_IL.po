@@ -1968,3 +1968,120 @@ msgstr "דהוי"
 
 msgid "Full colour"
 msgstr "צבע מלא"
+
+msgid "City"
+msgstr "עיר"
+
+msgid "Street and house number"
+msgstr "רחוב ומספר בית"
+
+msgid "Apartment"
+msgstr "מספר דירה"
+
+msgid "Floor (optional)"
+msgstr "קומה (אופציונלי)"
+
+msgid "Entry code (optional)"
+msgstr "קוד כניסה (אופציונלי)"
+
+msgid "Delivery method"
+msgstr "שיטת משלוח"
+
+msgid "Delivery address"
+msgstr "כתובת למשלוח"
+
+msgid "Free"
+msgstr "חינם"
+
+msgid "I'm sending to someone else"
+msgstr "אני שולח למישהו אחר"
+
+msgid "Recipient details"
+msgstr "פרטי המקבל"
+
+msgid "First name"
+msgstr "שם פרטי"
+
+msgid "Last name"
+msgstr "שם משפחה"
+
+msgid "Phone"
+msgstr "טלפון"
+
+msgid "Additional phone"
+msgstr "טלפון נוסף"
+
+msgid "Additional phone (optional)"
+msgstr "טלפון נוסף (אופציונלי)"
+
+msgid "Already have an account?"
+msgstr "כבר יש לך חשבון?"
+
+msgid "Log in — your details will fill in automatically"
+msgstr "התחברות — הפרטים ימולאו אוטומטית"
+
+msgid "I agree to receive updates and offers by email and SMS"
+msgstr "אני מאשר/ת קבלת עדכונים ומבצעים במייל וב-SMS"
+
+msgid "Please fill in the recipient details."
+msgstr "נא למלא את פרטי המקבל."
+
+msgid "Recipient's phone"
+msgstr "טלפון המקבל"
+
+msgid "Please fill in the recipient's additional phone."
+msgstr "נא למלא את הטלפון הנוסף של המקבל."
+
+msgid "Recipient's additional phone"
+msgstr "הטלפון הנוסף של המקבל"
+
+msgid "%1$s must have %2$d–%3$d digits."
+msgstr "%1$s חייב להכיל %2$d–%3$d ספרות."
+
+msgid "%1$s must have %2$d digits."
+msgstr "%1$s חייב להכיל %2$d ספרות."
+
+msgid "%1$s must have at least %2$d digits."
+msgstr "%1$s חייב להכיל לפחות %2$d ספרות."
+
+msgid "%1$s must have at most %2$d digits."
+msgstr "%1$s חייב להכיל עד %2$d ספרות."
+
+msgid "Delivery details"
+msgstr "פרטי משלוח"
+
+msgid "Recipient"
+msgstr "מקבל ההזמנה"
+
+msgid "Floor"
+msgstr "קומה"
+
+msgid "Entry code"
+msgstr "קוד כניסה"
+
+msgid "Marketing consent"
+msgstr "אישור פרסומים"
+
+msgid "Yes"
+msgstr "כן"
+
+msgid "Terms & conditions"
+msgstr "תקנון"
+
+msgid "Privacy policy"
+msgstr "מדיניות פרטיות"
+
+msgid "Required field"
+msgstr "שדה חובה"
+
+msgid "Please enter a valid email address"
+msgstr "נא להזין כתובת אימייל תקינה"
+
+msgid "Please enter a valid phone number"
+msgstr "נא להזין מספר טלפון תקין"
+
+msgid "Secure encrypted payment"
+msgstr "תשלום מאובטח ומוצפן"
+
+msgid "Checkout"
+msgstr "קופה"
