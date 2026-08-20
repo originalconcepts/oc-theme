@@ -7006,7 +7006,11 @@ body.oc-checkout { overflow-x: clip; }
 	display: flex;
 	flex-direction: column;
 	float: none;
-	padding: 0;
+	/* !important: Woo's own `.woocommerce-checkout #payment div.form-row`
+	 * carries a 1em padding that squeezed the button inside the column. */
+	padding: 0 !important;
+	margin: 0 !important;
+	inline-size: 100%;
 }
 
 .oc-checkout #payment .place-order > * { float: none; }
