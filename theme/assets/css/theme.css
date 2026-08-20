@@ -6347,9 +6347,13 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 }
 
 .oc-checkout form.checkout .form-row select {
-	block-size: 64px;
-	padding-block: 30px 8px;
+	block-size: 68px;
+	padding-block: 34px 10px;
+	line-height: 1.2;
 }
+
+/* its label sits a touch higher than a text field's, clear of the value */
+.oc-checkout form.checkout .form-row:has(select) > label { inset-block-start: 9px !important; }
 
 .oc-checkout form.checkout .form-row .input-text,
 .oc-checkout form.checkout .form-row select,
@@ -6634,6 +6638,11 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 
 .oc-co-rrow .input-text:focus { outline: none; border-color: var(--oc-ink, #111); }
 .oc-co-rrow.oc-f-ok .input-text { border-color: var(--oc-success, #2f7d4f); }
+
+/* freshly revealed recipient fields start neutral — no green until the
+ * visitor has actually touched them */
+.oc-co-recipient[hidden] ~ * .oc-f-ok,
+.oc-co-recipient .oc-co-rrow:not(.is-touched).oc-f-ok .input-text { border-color: rgb(228 230 234); }
 .oc-co-rrow.oc-f-bad .input-text { border-color: var(--oc-sale, #b4453c); }
 
 /* ---------- summary ---------- */
@@ -6706,7 +6715,9 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 	display: inline-block;
 }
 
-.oc-checkout td.product-name .oc-co-qty { grid-column: 2; justify-self: start; }
+.oc-checkout td.product-name .oc-co-qty { grid-column: 2; justify-self: start; margin-block-start: 4px; }
+
+.oc-checkout #order_review table.shop_table tbody td.product-name { padding-block: 10px; }
 
 /* Woo's own variation list yields to ours */
 .oc-checkout td.product-name .variation { display: none; }
@@ -6722,7 +6733,11 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 	justify-content: space-between;
 	gap: 10px;
 	align-items: baseline;
+	font-size: .95rem;
 }
+
+.oc-checkout tr.oc-co-shiprow2 td { text-align: left; }
+.oc-co-shiprow2__in > span { font-weight: 400; }
 
 /* the promotion engine's nudge panel belongs to the cart, not here */
 .oc-checkout .promeng-cart-messages { display: none; }
@@ -6730,18 +6745,27 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 /* Woo's own coupon totals rows — the savings line covers them */
 .oc-checkout #order_review tr.cart-discount { display: none; }
 
-/* discount rows, open, in the discount colour */
+/* discount rows read like any other summary row */
 .oc-checkout tr.oc-co-disc th,
 .oc-checkout tr.oc-co-disc td {
-	color: var(--oc-success, #2f7d4f) !important;
-	font-size: .88rem;
-	font-weight: 500 !important;
+	color: var(--oc-ink, #111);
+	font-size: .95rem;
+	font-weight: 400 !important;
 	border: 0;
 }
 
-/* payment area: rtl flow, identical checkbox rows, subtle loader */
+.oc-checkout tr.oc-co-disc td { text-align: left; }
+
+/* payment area: rtl flow, full column width, identical checkbox rows */
 .oc-checkout #payment,
-.oc-checkout #payment .place-order { direction: rtl; }
+.oc-checkout #payment .place-order {
+	direction: rtl;
+	inline-size: 100%;
+	max-inline-size: none;
+	margin: 0;
+}
+
+.oc-checkout #order_review .woocommerce-checkout-payment { inline-size: 100%; }
 
 .oc-checkout #payment .place-order .form-row,
 .oc-checkout #payment .place-order p,
@@ -6853,16 +6877,19 @@ body.oc-checkout { overflow-x: clip; }
 .oc-co-coupon input:focus { outline: none; border-color: var(--oc-ink, #111); }
 
 .oc-co-coupon button {
-	border: 0;
-	background: var(--oc-ink, #1c1c1c);
-	color: #fff;
-	border-radius: var(--oc-cta-r, 8px);
-	padding-inline: 18px;
-	font: inherit;
-	font-size: .9rem;
-	cursor: pointer;
 	flex: none;
+	inline-size: 64px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border: 1.5px solid var(--oc-cta, var(--oc-ink));
+	background: var(--oc-cta, var(--oc-ink));
+	border-radius: var(--oc-cta-r, 8px);
+	cursor: pointer;
+	color: var(--oc-cta-tx, #fff);
 }
+
+.oc-co-coupon button svg { inline-size: 17px; block-size: 17px; }
 
 .oc-co-coupon__t {
 	border: 0;

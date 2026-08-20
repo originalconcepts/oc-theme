@@ -407,7 +407,7 @@ final class Checkout {
 							<input type="tel" inputmode="tel" class="input-text" name="oc_recip_phone" id="oc_recip_phone" autocomplete="off" />
 						</p>
 						<p class="oc-co-rrow oc-co-rrow--last<?php echo ! empty( $s['phone2_required'] ) ? ' validate-required' : ''; ?>">
-							<label for="oc_recip_phone2"><?php echo esc_html( ! empty( $s['phone2_required'] ) ? __( 'Additional phone', 'oc-theme' ) : __( 'Additional phone (optional)', 'oc-theme' ) ); ?></label>
+							<label for="oc_recip_phone2"><?php esc_html_e( 'Additional phone', 'oc-theme' ); ?></label>
 							<input type="tel" inputmode="tel" class="input-text" name="oc_recip_phone2" id="oc_recip_phone2" autocomplete="off" />
 						</p>
 					</div>
@@ -525,7 +525,7 @@ final class Checkout {
 				<?php endif; ?>
 				<div class="oc-co-coupon" data-oc-co-coupon <?php echo $folded ? 'hidden' : ''; ?>>
 					<input type="text" placeholder="<?php esc_attr_e( 'Coupon code', 'oc-theme' ); ?>" />
-					<button type="button"><?php esc_html_e( 'Apply coupon', 'oc-theme' ); ?></button>
+					<button type="button" aria-label="<?php esc_attr_e( 'Apply', 'oc-theme' ); ?>"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 12.5l5 5L19.5 7"/></svg></button>
 				</div>
 				<p class="oc-co-coupon__msg" data-oc-co-coupon-msg hidden></p>
 			</td>

@@ -5295,6 +5295,10 @@
 
 		coForm.addEventListener( 'focusout', function ( e ) {
 			if ( e.target.matches( '.input-text, select' ) && e.target.offsetParent ) {
+				var touched = e.target.closest( '.form-row, .oc-co-rrow' );
+				if ( touched ) {
+					touched.classList.add( 'is-touched' );
+				}
 				coPaint( e.target, true );
 			}
 			if ( e.target.matches( '.input-text, select, textarea' ) ) {
