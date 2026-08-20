@@ -6127,6 +6127,9 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 /* ---------- layout: form | summary ---------- */
 
 .oc-checkout .entry-title,
+.oc-checkout .page-title,
+.oc-checkout h1.oc-page-title,
+.oc-checkout .oc-crumbs,
 .oc-checkout .woocommerce-breadcrumb { display: none; }
 
 .oc-checkout form.checkout {
