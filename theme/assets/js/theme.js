@@ -5566,6 +5566,7 @@
 				coPaintButton();
 				coTrustLine();
 				coSyncMethod();
+				coSumHead();
 				coTabOrder();
 			}, 60 );
 		} ).observe( coForm, { childList: true, subtree: true } );
@@ -5769,14 +5770,61 @@
 				} );
 		}
 
-		/* -- mobile: the product list folds behind the total line -- */
+		/* -- mobile: the summary heading is the fold handle and carries the
+		 *    running total, so a collapsed summary still says what it costs -- */
 		var sumHead = document.getElementById( 'order_review_heading' );
+
+		function coSumHead() {
+			if ( ! sumHead ) {
+				return;
+			}
+
+			var phone = window.matchMedia( '(max-width: 900px)' ).matches;
+			var chev = sumHead.querySelector( '.oc-co-sumchev' );
+			var tot = sumHead.querySelector( '.oc-co-sumtotal' );
+
+			if ( ! phone ) {
+				if ( chev ) {
+					chev.remove();
+				}
+				if ( tot ) {
+					tot.remove();
+				}
+				return;
+			}
+
+			if ( ! tot ) {
+				tot = document.createElement( 'span' );
+				tot.className = 'oc-co-sumtotal';
+				sumHead.appendChild( tot );
+			}
+
+			if ( ! chev ) {
+				chev = document.createElementNS( 'http://www.w3.org/2000/svg', 'svg' );
+				chev.setAttribute( 'class', 'oc-co-sumchev' );
+				chev.setAttribute( 'viewBox', '0 0 24 24' );
+				chev.setAttribute( 'fill', 'none' );
+				chev.setAttribute( 'stroke', 'currentColor' );
+				chev.setAttribute( 'stroke-width', '1.8' );
+				chev.setAttribute( 'stroke-linecap', 'round' );
+				chev.innerHTML = '<path d="M6 9l6 6 6-6"/>';
+				sumHead.appendChild( chev );
+			}
+
+			var review = document.getElementById( 'order_review' );
+			var amount = review ? review.querySelector( 'tr.order-total .woocommerce-Price-amount' ) : null;
+			tot.textContent = amount ? amount.textContent.trim() : '';
+		}
+
 		if ( sumHead ) {
 			sumHead.addEventListener( 'click', function () {
 				if ( window.matchMedia( '(max-width: 900px)' ).matches ) {
 					document.body.classList.toggle( 'oc-co-sumopen' );
 				}
 			} );
+
+			coSumHead();
+			window.addEventListener( 'resize', coSumHead );
 		}
 	}
 

@@ -6201,18 +6201,85 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 
 .oc-checkout #order_review_heading { justify-self: start; }
 
-@media (max-width: 900px) {
-	.oc-checkout #order_review { position: static; padding: 0 0 22px; }
-}
-
+/* ---------- checkout on phones ----------
+ * One column, all white. #order_review dissolves (display:contents) so its
+ * table and the payment block become grid items in their own right — that
+ * is what lets the summary sit at the top while the pay button stays at
+ * the very bottom, under the form. */
 @media (max-width: 900px) {
 	.oc-checkout form.checkout {
 		grid-template-columns: 1fr;
-		gap: 20px;
+		gap: 16px;
+		padding-inline: var(--oc-gap, 16px);
 	}
 
+	.oc-checkout form.checkout > *,
+	.oc-checkout form.checkout #customer_details,
 	.oc-checkout form.checkout #order_review_heading,
-	.oc-checkout form.checkout #order_review { grid-column: 1; }
+	.oc-checkout form.checkout #order_review {
+		grid-column: 1;
+		grid-row: auto;
+	}
+
+	.oc-checkout #order_review {
+		display: contents;
+		position: static;
+		max-inline-size: none;
+		padding: 0;
+	}
+
+	/* reading order: summary, form, payment, button */
+	.oc-checkout #order_review_heading { order: 1; margin: 4px 0 8px; }
+	.oc-checkout .woocommerce-checkout-review-order-table { order: 2; }
+	.oc-checkout #customer_details { order: 3; }
+	.oc-checkout .oc-co-h--pay { order: 4; }
+	.oc-checkout #payment { order: 5; }
+
+	/* the summary heading doubles as the fold handle */
+	.oc-checkout #order_review_heading {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		cursor: pointer;
+		border: 1px solid rgb(228 230 234);
+		border-radius: 5px;
+		padding: 13px 15px;
+		background: var(--oc-up-bg, #f7f6f4);
+	}
+
+	.oc-co-sumtotal { margin-inline-start: auto; font-weight: 700; }
+
+	.oc-co-sumchev {
+		inline-size: 14px;
+		block-size: 14px;
+		flex: none;
+		transition: rotate .2s ease;
+	}
+
+	.oc-co-sumopen .oc-co-sumchev { rotate: 180deg; }
+
+	/* field pairs that survive a narrow screen */
+	.oc-checkout .woocommerce-billing-fields__field-wrapper .form-row,
+	.oc-checkout #billing_email_field,
+	.oc-checkout #billing_phone_field,
+	.oc-checkout #billing_address_1_field,
+	.oc-checkout #billing_city_field { flex: 1 1 100% !important; }
+
+	.oc-checkout #billing_first_name_field,
+	.oc-checkout #billing_last_name_field { flex: 1 1 calc(50% - 7px) !important; }
+
+	.oc-checkout #billing_address_2_field,
+	.oc-checkout #billing_oc_floor_field,
+	.oc-checkout #billing_oc_entry_field { flex: 1 1 calc(33.333% - 7px) !important; }
+
+	.oc-co-recipient__grid .oc-co-rrow { flex: 1 1 100%; }
+
+	/* the brand row keeps its three slots but hugs the edges */
+	.oc-co-brand { display: block; padding: 16px 0 2px; }
+	.oc-co-brand__help { display: none; }
+	.oc-co-brand__logo img { max-block-size: 34px; }
+
+	.oc-co-login { order: 0; }
 
 	.oc-checkout #order_review { position: static; }
 }
@@ -7076,10 +7143,10 @@ body.oc-checkout { overflow-x: clip; }
 .oc-co-nosummary #order_review table.shop_table thead,
 .oc-co-nosummary #order_review table.shop_table tbody { display: none; }
 
-/* mobile: the product list folds behind a total line */
+/* mobile: the product list folds behind the summary heading */
 @media (max-width: 900px) {
-	.oc-co-fold #order_review table.shop_table tbody { display: none; }
-	.oc-co-fold.oc-co-sumopen #order_review table.shop_table tbody { display: table-row-group; }
+	.oc-co-fold .woocommerce-checkout-review-order-table tbody { display: none; }
+	.oc-co-fold.oc-co-sumopen .woocommerce-checkout-review-order-table tbody { display: table-row-group; }
 }
 
 /* ---------- payment ---------- */
