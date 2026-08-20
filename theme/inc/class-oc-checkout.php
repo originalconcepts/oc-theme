@@ -58,6 +58,7 @@ final class Checkout {
 		}
 
 		add_filter( 'woocommerce_checkout_fields', array( $this, 'fields' ), 20 );
+		add_filter( 'woocommerce_package_rates', array( $this, 'free_hides_paid' ), 20 );
 		add_filter( 'woocommerce_get_country_locale', array( $this, 'country_locale' ), 20 );
 		add_filter( 'woocommerce_form_field_oc_co_shipping', array( $this, 'shipping_section' ), 10, 2 );
 		add_filter( 'body_class', array( $this, 'body_class' ) );
@@ -137,6 +138,35 @@ final class Checkout {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Once free shipping qualifies, paid delivery disappears — pickup stays.
+	 *
+	 * @param array $rates Package rates.
+	 * @return array
+	 */
+	public function free_hides_paid( array $rates ): array {
+		$has_free = false;
+
+		foreach ( $rates as $rate ) {
+			if ( 'free_shipping' === $rate->get_method_id() ) {
+				$has_free = true;
+				break;
+			}
+		}
+
+		if ( ! $has_free ) {
+			return $rates;
+		}
+
+		foreach ( $rates as $key => $rate ) {
+			if ( ! in_array( $rate->get_method_id(), array( 'free_shipping', 'local_pickup' ), true ) ) {
+				unset( $rates[ $key ] );
+			}
+		}
+
+		return $rates;
 	}
 
 	/* ------------------------------------------------------------- fields */
@@ -327,6 +357,11 @@ final class Checkout {
 					<?php foreach ( $rates as $rate ) : ?>
 						<label class="oc-co-rate<?php echo $rate->get_id() === $current ? ' is-on' : ''; ?>">
 							<input type="radio" name="shipping_method[<?php echo absint( $i ); ?>]" value="<?php echo esc_attr( $rate->get_id() ); ?>" class="shipping_method" <?php checked( $rate->get_id(), $current ); ?> />
+							<?php if ( 'local_pickup' === $rate->get_method_id() ) : ?>
+								<svg class="oc-co-rate__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9l1.2-4h13.6L20 9M4 9v11h16V9M4 9h16M9 20v-6h6v6"/></svg>
+							<?php else : ?>
+								<svg class="oc-co-rate__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 7h14v10H1zM15 10h4l3 3v4h-7M5.5 20a1.8 1.8 0 1 0 0-3.6 1.8 1.8 0 0 0 0 3.6zM18.5 20a1.8 1.8 0 1 0 0-3.6 1.8 1.8 0 0 0 0 3.6z"/></svg>
+							<?php endif; ?>
 							<span class="oc-co-rate__name"><?php echo esc_html( $rate->get_label() ); ?></span>
 							<?php $cost = (float) $rate->get_cost() + array_sum( array_map( 'floatval', $rate->get_taxes() ) ); ?>
 							<?php if ( $cost > 0 ) : ?>
