@@ -6300,6 +6300,25 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 /* required asterisk: quieter */
 .oc-checkout form.checkout .required { color: var(--oc-sale, #b4453c); text-decoration: none; }
 
+/* the pseudo-field wrapper participates in the flex grid full-width */
+.oc-co-shipwrap { flex: 1 1 100% !important; }
+
+/* Woo's empty ship-to-different-address block: gone */
+.oc-checkout .woocommerce-shipping-fields { display: none; }
+
+/* one column: billing full width, notes below it */
+.oc-checkout .col2-set { display: block; inline-size: auto; }
+
+.oc-checkout .col2-set .col-1,
+.oc-checkout .col2-set .col-2 {
+	float: none;
+	inline-size: 100%;
+	max-inline-size: none;
+	padding: 0;
+}
+
+.oc-checkout .col2-set .col-2 { margin-block-start: 6px; }
+
 /* ---------- delivery method cards ---------- */
 
 .oc-co-section { margin-block: 8px; flex: 1 1 100%; }
@@ -6419,7 +6438,40 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 	gap: 14px;
 }
 
-.oc-co-recipient__grid .form-row { flex: 1 1 calc(50% - 7px); margin: 0; padding: 0; }
+.oc-co-rrow {
+	flex: 1 1 calc(50% - 7px);
+	margin: 0;
+	padding: 0;
+	position: relative;
+}
+
+.oc-co-rrow > label {
+	position: absolute;
+	inset-block-start: -8px;
+	inset-inline-start: 12px;
+	background: var(--oc-surface, #fff);
+	padding-inline: 5px;
+	font-size: .74rem;
+	color: var(--oc-ink-2, #777);
+	line-height: 1.2;
+	z-index: 2;
+	border-radius: 4px;
+}
+
+.oc-co-rrow .input-text {
+	inline-size: 100%;
+	min-block-size: 50px;
+	border: 1.5px solid var(--oc-line, #dcdcdc);
+	border-radius: var(--oc-cta-r, 8px);
+	background: var(--oc-surface, #fff);
+	padding: 12px 14px;
+	font: inherit;
+	transition: border-color .15s ease;
+}
+
+.oc-co-rrow .input-text:focus { outline: none; border-color: var(--oc-ink, #111); }
+.oc-co-rrow.oc-f-ok .input-text { border-color: var(--oc-success, #2f7d4f); }
+.oc-co-rrow.oc-f-bad .input-text { border-color: var(--oc-sale, #b4453c); }
 
 /* ---------- summary ---------- */
 

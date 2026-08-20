@@ -5207,7 +5207,7 @@
 
 		function coValidValue( input ) {
 			var v = input.value.trim();
-			var row = input.closest( '.form-row' );
+			var row = input.closest( '.form-row, .oc-co-rrow' );
 			var required = row && row.classList.contains( 'validate-required' );
 
 			if ( '' === v ) {
@@ -5244,7 +5244,7 @@
 		}
 
 		function coPaint( input, showError ) {
-			var row = input.closest( '.form-row' );
+			var row = input.closest( '.form-row, .oc-co-rrow' );
 			if ( ! row ) {
 				return true;
 			}
@@ -5294,7 +5294,7 @@
 
 			var firstBad = null;
 
-			coForm.querySelectorAll( '.form-row.validate-required .input-text, .form-row.validate-required select, input[type="email"].input-text, input[type="tel"].input-text' ).forEach( function ( input ) {
+			coForm.querySelectorAll( '.form-row.validate-required .input-text, .oc-co-rrow.validate-required .input-text, .form-row.validate-required select, input[type="email"].input-text, input[type="tel"].input-text' ).forEach( function ( input ) {
 				if ( ! input.offsetParent ) {
 					return; // Hidden (pickup address, folded recipient).
 				}
@@ -5306,7 +5306,7 @@
 			if ( firstBad ) {
 				e.preventDefault();
 				e.stopPropagation();
-				firstBad.closest( '.form-row' ).scrollIntoView( { behavior: 'smooth', block: 'center' } );
+				firstBad.closest( '.form-row, .oc-co-rrow' ).scrollIntoView( { behavior: 'smooth', block: 'center' } );
 				firstBad.focus( { preventScroll: true } );
 			}
 		}, true );

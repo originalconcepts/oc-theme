@@ -257,6 +257,29 @@ final class Checkout {
 	 * @return array
 	 */
 	public function country_locale( array $locale ): array {
+		// Woo's address-i18n re-sorts the address rows client-side from this
+		// very locale data — so the layout order must live HERE, not only on
+		// the server fields.
+		$layout = array(
+			'city'      => array(
+				'priority' => 55,
+				'label'    => __( 'City', 'oc-theme' ),
+			),
+			'address_1' => array(
+				'priority' => 60,
+				'label'    => __( 'Street and house number', 'oc-theme' ),
+			),
+			'address_2' => array(
+				'priority' => 65,
+				'label'    => __( 'Apartment', 'oc-theme' ),
+			),
+			'postcode'  => array( 'priority' => 57 ),
+			'state'     => array( 'priority' => 52 ),
+		);
+
+		$locale['default'] = array_replace_recursive( (array) ( $locale['default'] ?? array() ), $layout );
+		$locale['IL']      = array_replace_recursive( (array) ( $locale['IL'] ?? array() ), $layout );
+
 		$locale['IL']['postcode']['required'] = false;
 		$locale['IL']['postcode']['hidden']   = true;
 
@@ -283,6 +306,7 @@ final class Checkout {
 
 		ob_start();
 		?>
+		<div class="form-row oc-co-shipwrap" data-priority="45">
 		<div class="oc-co-section oc-co-methods">
 			<h3 class="oc-co-h"><?php esc_html_e( 'Delivery method', 'oc-theme' ); ?></h3>
 			<?php foreach ( $packages as $i => $package ) : ?>
@@ -323,25 +347,26 @@ final class Checkout {
 				<div class="oc-co-recipient" data-oc-co-recipient hidden>
 					<p class="oc-co-recipient__intro"><?php esc_html_e( 'Recipient details', 'oc-theme' ); ?></p>
 					<div class="oc-co-recipient__grid">
-						<p class="form-row form-row-first validate-required oc-co-recip-row">
+						<p class="oc-co-rrow oc-co-rrow--first validate-required">
 							<label for="oc_recip_first"><?php esc_html_e( 'First name', 'oc-theme' ); ?></label>
 							<input type="text" class="input-text" name="oc_recip_first" id="oc_recip_first" autocomplete="off" />
 						</p>
-						<p class="form-row form-row-last validate-required oc-co-recip-row">
+						<p class="oc-co-rrow oc-co-rrow--last validate-required">
 							<label for="oc_recip_last"><?php esc_html_e( 'Last name', 'oc-theme' ); ?></label>
 							<input type="text" class="input-text" name="oc_recip_last" id="oc_recip_last" autocomplete="off" />
 						</p>
-						<p class="form-row form-row-first validate-required oc-co-recip-row">
+						<p class="oc-co-rrow oc-co-rrow--first validate-required">
 							<label for="oc_recip_phone"><?php esc_html_e( 'Phone', 'oc-theme' ); ?></label>
 							<input type="tel" inputmode="tel" class="input-text" name="oc_recip_phone" id="oc_recip_phone" autocomplete="off" />
 						</p>
-						<p class="form-row form-row-last<?php echo ! empty( $s['phone2_required'] ) ? ' validate-required' : ''; ?> oc-co-recip-row">
+						<p class="oc-co-rrow oc-co-rrow--last<?php echo ! empty( $s['phone2_required'] ) ? ' validate-required' : ''; ?>">
 							<label for="oc_recip_phone2"><?php echo esc_html( ! empty( $s['phone2_required'] ) ? __( 'Additional phone', 'oc-theme' ) : __( 'Additional phone (optional)', 'oc-theme' ) ); ?></label>
 							<input type="tel" inputmode="tel" class="input-text" name="oc_recip_phone2" id="oc_recip_phone2" autocomplete="off" />
 						</p>
 					</div>
 				</div>
 			<?php endif; ?>
+		</div>
 		</div>
 		<?php
 
