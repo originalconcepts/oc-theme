@@ -5311,16 +5311,14 @@
 			}
 		}, true );
 
-		/* -- the total rides the button; re-applied on every review refresh -- */
-		var coReview = document.getElementById( 'order_review' );
+		/* -- the total rides the button; re-applied on every review refresh.
+		 * Woo swaps the review/payment nodes wholesale on update_checkout, so
+		 * the observer sits on the FORM (stable) and everything is re-queried
+		 * fresh on each pass. -- */
 
 		function coPaintButton() {
 			var btn = document.getElementById( 'place_order' );
-			if ( ! btn ) {
-				return;
-			}
-
-			if ( '1' !== coL.coBtnTotal ) {
+			if ( ! btn || '1' !== coL.coBtnTotal ) {
 				return;
 			}
 
@@ -5328,7 +5326,8 @@
 				btn.dataset.ocBase = btn.textContent.trim();
 			}
 
-			var amount = coReview ? coReview.querySelector( 'tr.order-total .woocommerce-Price-amount' ) : null;
+			var review = document.getElementById( 'order_review' );
+			var amount = review ? review.querySelector( 'tr.order-total .woocommerce-Price-amount' ) : null;
 			var label = btn.dataset.ocBase + ( amount ? ' · ' + amount.textContent.trim() : '' );
 
 			if ( btn.textContent.trim() !== label ) {
@@ -5338,33 +5337,32 @@
 
 		function coTrustLine() {
 			var btn = document.getElementById( 'place_order' );
-			if ( ! btn || coReview.querySelector( '.oc-co-trust' ) ) {
+			var wrap = btn ? btn.closest( '.place-order' ) : null;
+			if ( ! wrap || wrap.querySelector( '.oc-co-trust' ) ) {
 				return;
 			}
 			var trust = document.createElement( 'div' );
 			trust.className = 'oc-co-trust';
 			trust.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><span></span>';
 			trust.querySelector( 'span' ).textContent = coL.coSecure || 'Secure encrypted payment';
-			btn.closest( '.place-order' ).appendChild( trust );
+			wrap.appendChild( trust );
 		}
 
-		if ( coReview ) {
-			var coTick = null;
-			new MutationObserver( function () {
-				if ( coTick ) {
-					return;
-				}
-				coTick = requestAnimationFrame( function () {
-					coTick = null;
-					coPaintButton();
-					coTrustLine();
-					coSyncMethod();
-				} );
-			} ).observe( coReview, { childList: true, subtree: true } );
+		var coTick = null;
+		new MutationObserver( function () {
+			if ( coTick ) {
+				return;
+			}
+			coTick = requestAnimationFrame( function () {
+				coTick = null;
+				coPaintButton();
+				coTrustLine();
+				coSyncMethod();
+			} );
+		} ).observe( coForm, { childList: true, subtree: true } );
 
-			coPaintButton();
-			coTrustLine();
-		}
+		coPaintButton();
+		coTrustLine();
 
 		/* -- mobile: the product list folds behind the total line -- */
 		var sumHead = document.getElementById( 'order_review_heading' );
