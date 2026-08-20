@@ -2142,3 +2142,9 @@ msgstr "התחבר/י לחשבונך"
 
 msgid "Payment method"
 msgstr "שיטת תשלום"
+
+msgid "Please tick this box to continue"
+msgstr "יש לסמן את התיבה כדי להמשיך"
+
+msgid "This coupon cannot be applied."
+msgstr "לא ניתן להחיל את הקופון הזה."

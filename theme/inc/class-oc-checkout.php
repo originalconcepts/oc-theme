@@ -107,8 +107,87 @@ final class Checkout {
 
 
 
+		add_action( 'wp_ajax_oc_co_stash', array( $this, 'ajax_stash' ) );
+		add_action( 'wp_ajax_nopriv_oc_co_stash', array( $this, 'ajax_stash' ) );
+		add_filter( 'woocommerce_checkout_get_value', array( $this, 'stashed_value' ), 10, 2 );
+		add_action( 'woocommerce_before_checkout_form', array( $this, 'stash_script' ), 4 );
+
 		add_action( 'admin_menu', array( $this, 'menu' ), 60 );
 		add_action( 'admin_post_oc_checkout_save', array( $this, 'save_settings' ) );
+	}
+
+	/* ------------------------------------------------------------- stash */
+
+	/**
+	 * Everything the visitor typed, kept in the session so a trip back to
+	 * the cart (or a reload) never empties the form. Woo only persists the
+	 * address fields it needs for shipping — name, email, phone and our own
+	 * fields would otherwise be gone.
+	 */
+	public function ajax_stash(): void {
+		if ( ! WC()->session ) {
+			wp_send_json_success();
+		}
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- session-scoped scratch data, no privileges.
+		$raw = isset( $_POST['fields'] ) ? (array) wp_unslash( $_POST['fields'] ) : array();
+		$out = array();
+
+		foreach ( $raw as $key => $value ) {
+			if ( ! is_scalar( $value ) ) {
+				continue;
+			}
+			$out[ sanitize_key( $key ) ] = sanitize_text_field( (string) $value );
+		}
+
+		WC()->session->set( 'oc_co_stash', $out );
+
+		wp_send_json_success();
+	}
+
+	/**
+	 * The stash, or an empty array.
+	 *
+	 * @return array<string,string>
+	 */
+	private function stash(): array {
+		$stash = WC()->session ? WC()->session->get( 'oc_co_stash' ) : array();
+
+		return is_array( $stash ) ? $stash : array();
+	}
+
+	/**
+	 * Prefill Woo's own fields from the stash.
+	 *
+	 * @param mixed  $value Woo's value.
+	 * @param string $key   Field key.
+	 * @return mixed
+	 */
+	public function stashed_value( $value, $key ) {
+		if ( '' !== (string) $value && null !== $value ) {
+			return $value;
+		}
+
+		$stash = $this->stash();
+
+		return isset( $stash[ $key ] ) ? $stash[ $key ] : $value;
+	}
+
+	/**
+	 * The stash for fields that are ours, not Woo's (recipient block, the
+	 * toggle) — restored client-side.
+	 */
+	public function stash_script(): void {
+		$stash = $this->stash();
+
+		$mine = array();
+		foreach ( array( 'oc_send_other', 'oc_recip_first', 'oc_recip_last', 'oc_recip_phone', 'oc_recip_phone2' ) as $key ) {
+			if ( isset( $stash[ $key ] ) ) {
+				$mine[ $key ] = $stash[ $key ];
+			}
+		}
+
+		echo '<script id="oc-co-stash" type="application/json">' . wp_json_encode( $mine ) . '</script>';
 	}
 
 	/* ------------------------------------------------------------ helpers */
@@ -607,7 +686,7 @@ final class Checkout {
 			$amount = (float) WC()->cart->get_coupon_discount_amount( $code, false );
 			$saved += $amount;
 			/* translators: %s: coupon code. */
-			$rows[] = array( sprintf( __( 'Coupon %s', 'oc-theme' ), $code ), $amount );
+			$rows[] = array( sprintf( __( 'Coupon %s', 'oc-theme' ), $code ), $amount, $code );
 		}
 
 		if ( $saved <= 0 ) {
@@ -615,7 +694,11 @@ final class Checkout {
 		}
 
 		foreach ( $rows as $row ) {
-			echo '<tr class="oc-co-disc"><th>' . esc_html( $row[0] ) . '</th><td>&minus;' . wp_kses_post( wc_price( $row[1] ) ) . '</td></tr>';
+			$remove = isset( $row[2] )
+				? ' <button type="button" class="oc-co-disc__x" data-oc-co-coupon-x data-code="' . esc_attr( $row[2] ) . '" aria-label="' . esc_attr__( 'Remove', 'oc-theme' ) . '">&times;</button>'
+				: '';
+
+			echo '<tr class="oc-co-disc"><th>' . esc_html( $row[0] ) . $remove . '</th><td>&minus;' . wp_kses_post( wc_price( $row[1] ) ) . '</td></tr>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
 		}
 	}
 

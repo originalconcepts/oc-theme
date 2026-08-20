@@ -155,6 +155,8 @@ final class Assets {
 				'coBtnTotal'    => empty( \OC\Theme\Checkout::settings()['btn_total'] ) ? '0' : '1',
 				'coSummary'     => empty( \OC\Theme\Checkout::settings()['summary'] ) ? '0' : '1',
 				'coSecure'      => __( 'Secure encrypted payment', 'oc-theme' ),
+				'coTick'        => __( 'Please tick this box to continue', 'oc-theme' ),
+				'coCouponBad'   => __( 'This coupon cannot be applied.', 'oc-theme' ),
 				'addedToCart'   => __( 'Added to cart', 'oc-theme' ),
 				'notifyNonce'   => wp_create_nonce( 'oc_notify' ),
 				'notifyTitle'   => __( 'Notify me', 'oc-theme' ),

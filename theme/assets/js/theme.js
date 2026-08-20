@@ -5281,6 +5281,110 @@
 			return false !== ok;
 		}
 
+		/* -- the form remembers itself: every change is stashed in the
+		 *    session, so a trip back to the cart returns to a filled form -- */
+		var coStashTimer = null;
+
+		function coStashNow() {
+			var data = new FormData();
+			data.append( 'action', 'oc_co_stash' );
+
+			coForm.querySelectorAll( 'input[name], select[name], textarea[name]' ).forEach( function ( el ) {
+				if ( ! el.name || 'hidden' === el.type || 'password' === el.type ) {
+					return;
+				}
+				if ( 'checkbox' === el.type || 'radio' === el.type ) {
+					if ( 'oc_send_other' === el.name ) {
+						data.append( 'fields[oc_send_other]', el.checked ? '1' : '' );
+					}
+					return;
+				}
+				data.append( 'fields[' + el.name + ']', el.value );
+			} );
+
+			fetch( ( window.ocL10n || {} ).ajaxUrl || '/wp-admin/admin-ajax.php', {
+				method: 'POST',
+				credentials: 'same-origin',
+				body: data
+			} );
+		}
+
+		coForm.addEventListener( 'input', function () {
+			clearTimeout( coStashTimer );
+			coStashTimer = setTimeout( coStashNow, 700 );
+		} );
+
+		coForm.addEventListener( 'change', function () {
+			clearTimeout( coStashTimer );
+			coStashTimer = setTimeout( coStashNow, 250 );
+		} );
+
+		// Fields that are ours, not Woo's, come back from the same stash.
+		( function () {
+			var tag = document.getElementById( 'oc-co-stash' );
+			if ( ! tag ) {
+				return;
+			}
+
+			var mine = {};
+			try {
+				mine = JSON.parse( tag.textContent || '{}' );
+			} catch ( err ) {
+				return;
+			}
+
+			if ( mine.oc_send_other ) {
+				var toggle = document.getElementById( 'oc_send_other' );
+				if ( toggle && ! toggle.checked ) {
+					toggle.checked = true;
+					toggle.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+				}
+			}
+
+			[ 'oc_recip_first', 'oc_recip_last', 'oc_recip_phone', 'oc_recip_phone2' ].forEach( function ( id ) {
+				var el = document.getElementById( id );
+				if ( el && mine[ id ] ) {
+					el.value = mine[ id ];
+				}
+			} );
+		}() );
+
+		/* -- tab order follows the eye: the visual layout is driven by flex
+		 *    `order`, so the DOM sequence the browser would tab through is
+		 *    not the sequence anyone sees -- */
+		function coTabOrder() {
+			var focusable = [];
+
+			coForm.querySelectorAll( 'input:not([type="hidden"]), select:not(.select2-hidden-accessible), textarea, button, a[href], .select2-selection' ).forEach( function ( el ) {
+				if ( ! el.offsetParent || el.disabled ) {
+					return;
+				}
+				focusable.push( el );
+			} );
+
+			var rtl = 'rtl' === getComputedStyle( document.documentElement ).direction;
+
+			focusable.sort( function ( a, b ) {
+				var ra = a.getBoundingClientRect();
+				var rb = b.getBoundingClientRect();
+				var rowA = Math.round( ra.top / 10 );
+				var rowB = Math.round( rb.top / 10 );
+
+				if ( rowA !== rowB ) {
+					return rowA - rowB;
+				}
+
+				return rtl ? rb.right - ra.right : ra.left - rb.left;
+			} );
+
+			focusable.forEach( function ( el, i ) {
+				el.setAttribute( 'tabindex', String( i + 1 ) );
+			} );
+		}
+
+		coTabOrder();
+		window.addEventListener( 'load', coTabOrder );
+
 		/* -- inner floating labels: is-filled keeps the label up -- */
 		function coFillState( input ) {
 			var row = input.closest( '.form-row, .oc-co-rrow' );
@@ -5321,6 +5425,38 @@
 			coPaint( e.target, !! ( row && row.classList.contains( 'oc-f-bad' ) ) );
 		} );
 
+		/* -- required checkboxes (terms, privacy) speak inline too -- */
+		function coCheckBox( input, showError ) {
+			var row = input.closest( '.form-row, p' );
+			if ( ! row ) {
+				return true;
+			}
+
+			var ok = input.checked;
+			var msg = row.querySelector( '.oc-f-msg' );
+
+			row.classList.toggle( 'oc-f-bad', ! ok && showError );
+
+			if ( ! ok && showError ) {
+				if ( ! msg ) {
+					msg = document.createElement( 'span' );
+					msg.className = 'oc-f-msg';
+					row.appendChild( msg );
+				}
+				msg.textContent = coL.coTick || 'Please tick this box to continue';
+			} else if ( msg ) {
+				msg.remove();
+			}
+
+			return ok;
+		}
+
+		document.addEventListener( 'change', function ( e ) {
+			if ( e.target.matches( '#terms, [name="oc_privacy_consent"]' ) ) {
+				coCheckBox( e.target, true );
+			}
+		} );
+
 		/* -- place order: validate visible fields first, glide to the bad one -- */
 		document.addEventListener( 'click', function ( e ) {
 			var btn = e.target.closest( '#place_order' );
@@ -5339,10 +5475,19 @@
 				}
 			} );
 
+			document.querySelectorAll( '#terms, [name="oc_privacy_consent"]' ).forEach( function ( box ) {
+				if ( ! box.offsetParent ) {
+					return;
+				}
+				if ( ! coCheckBox( box, true ) && ! firstBad ) {
+					firstBad = box;
+				}
+			} );
+
 			if ( firstBad ) {
 				e.preventDefault();
 				e.stopPropagation();
-				firstBad.closest( '.form-row, .oc-co-rrow' ).scrollIntoView( { behavior: 'smooth', block: 'center' } );
+				( firstBad.closest( '.form-row, .oc-co-rrow, p' ) || firstBad ).scrollIntoView( { behavior: 'smooth', block: 'center' } );
 				firstBad.focus( { preventScroll: true } );
 			}
 		}, true );
@@ -5396,6 +5541,7 @@
 				coPaintButton();
 				coTrustLine();
 				coSyncMethod();
+				coTabOrder();
 			}, 60 );
 		} ).observe( coForm, { childList: true, subtree: true } );
 
@@ -5537,6 +5683,27 @@
 			data.append( 'action', 'oc_cart_coupon' );
 			data.append( 'code', code );
 
+			coCouponRequest( data, apply, msg, input );
+		} );
+
+		/* -- removing an applied coupon, straight from the summary row -- */
+		document.addEventListener( 'click', function ( e ) {
+			var x = e.target.closest( '[data-oc-co-coupon-x]' );
+			if ( ! x ) {
+				return;
+			}
+
+			var gone = new FormData();
+			gone.append( 'action', 'oc_cart_coupon' );
+			gone.append( 'code', x.dataset.code );
+			gone.append( 'remove', '1' );
+			x.disabled = true;
+			coCouponRequest( gone, x, null, null );
+		} );
+
+		// The endpoint answers with Woo's fragment payload on success and
+		// {success:false, data:{message}} on refusal — never a bare error.
+		function coCouponRequest( data, btn, msg, input ) {
 			fetch( ( window.ocL10n || {} ).ajaxUrl || '/wp-admin/admin-ajax.php', {
 				method: 'POST',
 				credentials: 'same-origin',
@@ -5544,20 +5711,38 @@
 			} )
 				.then( function ( r ) { return r.json(); } )
 				.then( function ( res ) {
-					apply.disabled = false;
-					if ( res && res.success ) {
+					btn.disabled = false;
+
+					var ok = !! ( res && ( res.fragments || res.success ) );
+
+					if ( ok ) {
 						if ( msg ) {
 							msg.hidden = true;
+						}
+						if ( input ) {
+							input.value = '';
 						}
 						if ( window.jQuery ) {
 							window.jQuery( document.body ).trigger( 'update_checkout' );
 						}
-					} else if ( msg ) {
-						msg.textContent = ( res && res.data && res.data.message ) ? res.data.message : 'Error';
+						return;
+					}
+
+					if ( msg ) {
+						msg.textContent = ( res && res.data && res.data.message )
+							? res.data.message
+							: ( coL.coCouponBad || 'This coupon cannot be applied.' );
+						msg.hidden = false;
+					}
+				} )
+				.catch( function () {
+					btn.disabled = false;
+					if ( msg ) {
+						msg.textContent = coL.coCouponBad || 'This coupon cannot be applied.';
 						msg.hidden = false;
 					}
 				} );
-		} );
+		}
 
 		/* -- mobile: the product list folds behind the total line -- */
 		var sumHead = document.getElementById( 'order_review_heading' );

@@ -6287,7 +6287,7 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 .oc-co-addrhead > .oc-co-h { margin-block-start: 22px; }
 .oc-co-methods > .oc-co-h { margin-block-start: 22px; }
 
-.oc-checkout #order_review_heading { margin-block-end: 0; }
+.oc-checkout #order_review_heading { margin-block-end: 12px; }
 
 .oc-checkout #order_review { padding-block-start: 0; }
 
@@ -6825,6 +6825,29 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 
 .oc-checkout tr.oc-co-disc td { text-align: left; }
 
+.oc-co-disc__x {
+	border: 0;
+	background: none;
+	font-size: 15px;
+	line-height: 1;
+	color: var(--oc-ink-2, #999);
+	cursor: pointer;
+	padding: 0 4px;
+	vertical-align: middle;
+}
+
+.oc-co-disc__x:hover { color: var(--oc-sale, #b4453c); }
+
+/* a required box left unticked says so right there */
+.oc-checkout #payment .place-order .oc-f-bad { color: var(--oc-sale, #b4453c); }
+
+.oc-checkout #payment .place-order .oc-f-bad input[type="checkbox"] {
+	outline: 1.5px solid var(--oc-sale, #b4453c);
+	outline-offset: 2px;
+}
+
+.oc-checkout #payment .place-order .oc-f-msg { margin-block-start: 4px; }
+
 /* payment area: rtl flow, full column width, identical checkbox rows */
 .oc-checkout #payment,
 .oc-checkout #payment .place-order {
@@ -6987,7 +7010,8 @@ body.oc-checkout { overflow-x: clip; }
 }
 
 .oc-checkout #order_review table.shop_table tr.oc-co-vat td {
-	padding-block-start: 0 !important;
+	padding-block: 0 !important;
+	margin-block-start: -4px;
 	font-size: .8rem;
 	font-weight: 400 !important;
 	color: var(--oc-ink-2, #777);
@@ -7028,10 +7052,11 @@ body.oc-checkout { overflow-x: clip; }
 
 .oc-checkout #payment .place-order > * { float: none; }
 
-.oc-checkout .oc-co-consent { order: 1; }
+.oc-checkout .oc-co-privacy { order: 1; }
 .oc-checkout .woocommerce-terms-and-conditions-wrapper { order: 2; }
-.oc-checkout #place_order { order: 3; margin-block-start: 8px; }
-.oc-checkout .oc-co-trust { order: 4; }
+.oc-checkout .oc-co-consent { order: 3; }
+.oc-checkout #place_order { order: 4; margin-block-start: 8px; }
+.oc-checkout .oc-co-trust { order: 5; }
 
 .oc-co-privacy {
 	margin: 10px 0;
