@@ -6735,6 +6735,22 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 	border: 0;
 }
 
+/* checkbox rows are NOT floating-label fields — their labels stay put */
+.oc-checkout form.checkout .form-row:has(input[type="checkbox"]) > label,
+.oc-checkout .oc-co-consent label,
+.oc-checkout .woocommerce-terms-and-conditions-wrapper label {
+	position: static !important;
+	font-size: .88rem !important;
+	color: var(--oc-ink, #111) !important;
+	pointer-events: auto !important;
+	display: flex !important;
+	align-items: flex-start;
+	gap: 8px;
+	white-space: normal;
+	max-inline-size: none;
+	overflow: visible;
+}
+
 /* Woo's stock privacy paragraph yields to ours */
 .oc-checkout .woocommerce-privacy-policy-text { display: none; }
 
