@@ -4675,11 +4675,19 @@
 				return { txt: L.outStock || 'Out of stock', off: true };
 			}
 
+			var allIn = cands.every( function ( v ) {
+				return false !== v.is_in_stock;
+			} );
+
 			var complete = Object.keys( chosen ).every( function ( k ) {
 				return '' !== chosen[ k ];
 			} );
 
-			return complete ? { txt: L.inStock || 'In stock', off: false } : null;
+			// Honest either way: with the other attributes pinned the exact
+			// combination answers; unpinned, a value whose every existing
+			// combination is in stock is safely "in stock" too. Only a
+			// mixed, undetermined case stays quiet.
+			return ( complete || allIn ) ? { txt: L.inStock || 'In stock', off: false } : null;
 		}
 
 		function render() {
