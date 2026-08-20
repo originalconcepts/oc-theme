@@ -6331,6 +6331,10 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 	transition: border-color .15s ease;
 }
 
+/* the inner label IS the placeholder — Woo's own placeholder text hides */
+.oc-checkout form.checkout .form-row .input-text::placeholder,
+.oc-co-rrow .input-text::placeholder { color: transparent; }
+
 /* selects always hold a value — label rides high from the start */
 .oc-checkout form.checkout .form-row select ~ label,
 .oc-checkout form.checkout .form-row:has(select) > label {
