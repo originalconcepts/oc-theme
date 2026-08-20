@@ -3031,6 +3031,19 @@ main + .term-description {
 
 .oc-dd__stock.is-out { color: var(--oc-sale, #b4453c); }
 
+/* an out-of-stock (but existing) option: muted label, red status, choosable */
+.oc-dd__opt.is-oos span { color: var(--oc-ink-2, #999); }
+
+/* the trigger says so when the chosen value is out of stock */
+.oc-dd__t-stock {
+	font-style: normal;
+	font-size: .78rem;
+	color: var(--oc-sale, #b4453c);
+	margin-inline-start: 8px;
+	margin-inline-end: auto;
+	flex: none;
+}
+
 /* Design setting: the add-to-cart button keeps its full colour even while
  * options are still unchosen — the inline guidance does the explaining. */
 .oc-cta-full-incomplete.woocommerce div.product form.cart .single_add_to_cart_button.disabled,
@@ -3162,6 +3175,31 @@ table.variations td.value select:has(+ .oc-dd) {
 	opacity: .35;
 	cursor: not-allowed;
 	text-decoration: line-through;
+}
+
+/* Certainly out of stock — the reference's diagonal slash. Clickable
+ * still: choosing it opens the back-in-stock signup. */
+.oc-var__btn.is-oos {
+	color: var(--oc-ink-2, #999);
+	background-image: linear-gradient(to top left,
+		transparent calc(50% - .75px),
+		var(--oc-line, #d4d4d4) calc(50% - .75px),
+		var(--oc-line, #d4d4d4) calc(50% + .75px),
+		transparent calc(50% + .75px));
+}
+
+.oc-var__swatch.is-oos { position: relative; }
+
+.oc-var__swatch.is-oos::after {
+	content: "";
+	position: absolute;
+	inset: -1px;
+	border-radius: inherit;
+	background: linear-gradient(to top left,
+		transparent calc(50% - .75px),
+		rgb(255 255 255 / 85%) calc(50% - .75px),
+		rgb(255 255 255 / 85%) calc(50% + .75px),
+		transparent calc(50% + .75px));
 }
 
 /* colour sibling thumbs */

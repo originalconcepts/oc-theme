@@ -4582,6 +4582,66 @@
 	 * variation images keep working untouched. A MutationObserver mirrors
 	 * Woo's option pruning back onto the buttons. */
 
+	/* Stock verdict for one value of one variation attribute, against the
+	 * form's other current choices. 'in' / 'out' only when the answer is
+	 * certain; null when it genuinely depends on unchosen attributes (or
+	 * the variations JSON is not inlined). Shared by the custom dropdowns
+	 * and the button/swatch rows. */
+	function ocVarStock( vForm, select, value ) {
+		if ( ! vForm.__ocVars ) {
+			try {
+				vForm.__ocVars = JSON.parse( vForm.dataset.product_variations || 'null' ) || false;
+			} catch ( err ) {
+				vForm.__ocVars = false;
+			}
+		}
+
+		var vars = vForm.__ocVars;
+		if ( ! vars || ! vars.length ) {
+			return null;
+		}
+
+		var attrName = select.getAttribute( 'name' );
+		var chosen = {};
+		Array.prototype.forEach.call( vForm.querySelectorAll( 'table.variations select' ), function ( s ) {
+			if ( s !== select ) {
+				chosen[ s.getAttribute( 'name' ) ] = s.value;
+			}
+		} );
+
+		var cands = vars.filter( function ( v ) {
+			var a = v.attributes || {};
+			if ( '' !== ( a[ attrName ] || '' ) && a[ attrName ] !== value ) {
+				return false;
+			}
+			return Object.keys( chosen ).every( function ( k ) {
+				return ! chosen[ k ] || '' === ( a[ k ] || '' ) || a[ k ] === chosen[ k ];
+			} );
+		} );
+
+		if ( ! cands.length ) {
+			return 'out';
+		}
+
+		var anyIn = cands.some( function ( v ) {
+			return false !== v.is_in_stock;
+		} );
+
+		if ( ! anyIn ) {
+			return 'out';
+		}
+
+		var allIn = cands.every( function ( v ) {
+			return false !== v.is_in_stock;
+		} );
+
+		var complete = Object.keys( chosen ).every( function ( k ) {
+			return '' !== chosen[ k ];
+		} );
+
+		return ( complete || allIn ) ? 'in' : null;
+	}
+
 	/* ---------- custom dropdown for select-type variation attributes ----------
 	 * The native select stays in the DOM (Woo's variation logic reads and
 	 * rebuilds it); the visible UI is a listbox styled like the reference —
@@ -4637,57 +4697,15 @@
 		var valEl = dd.querySelector( '.oc-dd__val' );
 		var panel = dd.querySelector( '.oc-dd__panel' );
 
-		// Stock verdict for one option value against the current choices in
-		// the form's OTHER attributes. Honest only: a definite yes when the
-		// combination is fully determined (or provably in stock), a definite
-		// no when every candidate combination is out — silence otherwise.
 		function stockFor( value ) {
-			if ( ! ddVars || ! ddVars.length ) {
-				return null;
-			}
-
-			var chosen = {};
-			Array.prototype.forEach.call( ddForm.querySelectorAll( 'table.variations select' ), function ( s ) {
-				if ( s !== select ) {
-					chosen[ s.getAttribute( 'name' ) ] = s.value;
-				}
-			} );
-
-			var cands = ddVars.filter( function ( v ) {
-				var a = v.attributes || {};
-				if ( '' !== ( a[ attrName ] || '' ) && a[ attrName ] !== value ) {
-					return false;
-				}
-				return Object.keys( chosen ).every( function ( k ) {
-					return ! chosen[ k ] || '' === ( a[ k ] || '' ) || a[ k ] === chosen[ k ];
-				} );
-			} );
-
-			if ( ! cands.length ) {
+			var verdict = ocVarStock( ddForm, select, value );
+			if ( 'out' === verdict ) {
 				return { txt: L.outStock || 'Out of stock', off: true };
 			}
-
-			var anyIn = cands.some( function ( v ) {
-				return false !== v.is_in_stock;
-			} );
-
-			if ( ! anyIn ) {
-				return { txt: L.outStock || 'Out of stock', off: true };
+			if ( 'in' === verdict ) {
+				return { txt: L.inStock || 'In stock', off: false };
 			}
-
-			var allIn = cands.every( function ( v ) {
-				return false !== v.is_in_stock;
-			} );
-
-			var complete = Object.keys( chosen ).every( function ( k ) {
-				return '' !== chosen[ k ];
-			} );
-
-			// Honest either way: with the other attributes pinned the exact
-			// combination answers; unpinned, a value whose every existing
-			// combination is in stock is safely "in stock" too. Only a
-			// mixed, undetermined case stays quiet.
-			return ( complete || allIn ) ? { txt: L.inStock || 'In stock', off: false } : null;
+			return null;
 		}
 
 		function render() {
@@ -4704,11 +4722,14 @@
 
 			opts.forEach( function ( o ) {
 				var st = stockFor( o.value );
-				var off = ! avail[ o.value ] || ( st && st.off );
+				// Only a value Woo pruned (impossible combination) locks; an
+				// out-of-stock one stays choosable — that is how the visitor
+				// reaches the back-in-stock signup.
+				var off = ! avail[ o.value ];
 
 				var row = document.createElement( 'button' );
 				row.type = 'button';
-				row.className = 'oc-dd__opt' + ( off ? ' is-off' : '' ) + ( select.value === o.value ? ' is-selected' : '' );
+				row.className = 'oc-dd__opt' + ( off ? ' is-off' : '' ) + ( st && st.off ? ' is-oos' : '' ) + ( select.value === o.value ? ' is-selected' : '' );
 				row.setAttribute( 'role', 'option' );
 				row.innerHTML = '<span></span>' + ( st ? '<em class="oc-dd__stock' + ( st.off ? ' is-out' : '' ) + '"></em>' : '' );
 				row.firstChild.textContent = o.label;
@@ -4739,6 +4760,19 @@
 			} );
 			valEl.textContent = current ? current.label : placeholder;
 			dd.classList.toggle( 'is-empty', ! current );
+
+			// A chosen value that is out of stock says so right on the
+			// trigger, quietly.
+			var oos = current && 'out' === ocVarStock( ddForm, select, current.value );
+			var tag = trig.querySelector( '.oc-dd__t-stock' );
+			if ( oos && ! tag ) {
+				tag = document.createElement( 'em' );
+				tag.className = 'oc-dd__t-stock';
+				tag.textContent = L.outStock || 'Out of stock';
+				valEl.insertAdjacentElement( 'afterend', tag );
+			} else if ( ! oos && tag ) {
+				tag.remove();
+			}
 		}
 
 		function openDd() {
@@ -4774,7 +4808,9 @@
 			}
 		} );
 
-		select.addEventListener( 'change', syncVal );
+		// The verdict depends on the OTHER attributes too, so any change in
+		// the form refreshes the trigger.
+		ddForm.addEventListener( 'change', syncVal );
 		syncVal();
 	} );
 
@@ -4919,6 +4955,7 @@
 
 		function sync() {
 			var options = Array.prototype.slice.call( select.options );
+			var syncForm = box.closest( 'form.variations_form' );
 
 			buttons.forEach( function ( btn ) {
 				var opt = null;
@@ -4931,6 +4968,18 @@
 				btn.classList.toggle( 'is-selected', select.value === btn.dataset.value && '' !== select.value );
 				btn.disabled = ! opt || opt.disabled;
 				btn.classList.toggle( 'is-off', btn.disabled );
+
+				// Certainly out of stock: the Lanvin slash. Still clickable —
+				// choosing it is the road to the back-in-stock signup.
+				btn.classList.toggle( 'is-oos', ! btn.disabled && syncForm && 'out' === ocVarStock( syncForm, select, btn.dataset.value ) );
+			} );
+		}
+
+		// Verdicts shift with the form's other choices too.
+		var oosForm = box.closest( 'form.variations_form' );
+		if ( oosForm ) {
+			oosForm.addEventListener( 'change', function () {
+				setTimeout( sync, 0 );
 			} );
 		}
 
