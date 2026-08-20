@@ -5169,9 +5169,12 @@
 			}
 		} );
 
-		/* -- pickup hides the address; method cards mark their state -- */
+		/* -- pickup hides the address; method cards mark their state. The
+		 * cards are proxies: Woo's real (hidden) shipping_method radios in
+		 * the review get checked programmatically, so the two groups never
+		 * fight over the checked state. -- */
 		function coSyncMethod() {
-			var checked = coForm.querySelector( 'input[name^="shipping_method"]:checked' );
+			var checked = coForm.querySelector( '.oc-co-rate input:checked' );
 			document.body.classList.toggle( 'oc-co-pickup', !! ( checked && /local_pickup/.test( checked.value ) ) );
 			coForm.querySelectorAll( '.oc-co-rate' ).forEach( function ( card ) {
 				var input = card.querySelector( 'input' );
@@ -5180,8 +5183,13 @@
 		}
 
 		coForm.addEventListener( 'change', function ( e ) {
-			if ( e.target.matches( 'input[name^="shipping_method"]' ) ) {
+			if ( e.target.matches( '.oc-co-rate input' ) ) {
 				coSyncMethod();
+				var real = document.querySelector( '#order_review input.shipping_method[value="' + ( window.CSS && CSS.escape ? CSS.escape( e.target.value ) : e.target.value ) + '"]' );
+				if ( real && ! real.checked ) {
+					real.checked = true;
+					real.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+				}
 			}
 			if ( 'oc_send_other' === e.target.id ) {
 				var block = coForm.querySelector( '[data-oc-co-recipient]' );

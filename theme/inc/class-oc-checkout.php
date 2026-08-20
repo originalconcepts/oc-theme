@@ -87,6 +87,7 @@ final class Checkout {
 		add_action( 'woocommerce_before_checkout_form', array( $this, 'login_block' ), 5 );
 		add_action( 'woocommerce_before_checkout_billing_form', array( $this, 'orderer_heading' ) );
 		add_action( 'woocommerce_review_order_after_cart_contents', array( $this, 'summary_coupon_row' ) );
+		add_action( 'woocommerce_review_order_after_shipping', array( $this, 'shipping_row' ) );
 		add_action( 'woocommerce_review_order_before_order_total', array( $this, 'savings_row' ) );
 		add_action( 'woocommerce_review_order_after_order_total', array( $this, 'vat_note_row' ) );
 		add_action( 'woocommerce_review_order_before_submit', array( $this, 'privacy_note' ), 12 );
@@ -441,7 +442,7 @@ final class Checkout {
 				?>
 				<?php foreach ( $rates as $rate ) : ?>
 					<label class="oc-co-rate<?php echo $rate->get_id() === $current ? ' is-on' : ''; ?>">
-						<input type="radio" name="shipping_method[<?php echo absint( $i ); ?>]" value="<?php echo esc_attr( $rate->get_id() ); ?>" class="shipping_method" <?php checked( $rate->get_id(), $current ); ?> />
+						<input type="radio" name="oc_ship_pick[<?php echo absint( $i ); ?>]" value="<?php echo esc_attr( $rate->get_id() ); ?>" <?php checked( $rate->get_id(), $current ); ?> />
 						<?php echo 'local_pickup' === $rate->get_method_id() ? '<svg class="oc-co-rate__icon" xmlns="http://www.w3.org/2000/svg" width="19" height="16" viewBox="0 0 18.197 15.729" aria-hidden="true"><path d="M70.769,133.684H53.2a.312.312,0,0,1-.271-.461l2.674-4.788a1.845,1.845,0,0,1,1.608-.935h9.55a1.845,1.845,0,0,1,1.608.935l2.674,4.788a.312.312,0,0,1-.271.461Zm-17.041-.623h16.52l-2.428-4.32a1.219,1.219,0,0,0-1.063-.623h-9.55a1.219,1.219,0,0,0-1.063.623Z" transform="translate(-52.883 -127.49)" fill="currentColor"/><path d="M411.221,133.131h-5.86a.31.31,0,0,1-.305-.368l1.054-5.57a.312.312,0,0,1,.312-.256h3.762a.312.312,0,0,1,.312.256l1.038,5.57a.31.31,0,0,1-.312.368Zm-5.483-.623h5.105l-.919-4.947h-3.267Z" transform="translate(-399.193 -126.937)" fill="currentColor"/><path d="M55.934,464.805a3.245,3.245,0,0,1-3.242-3.242.312.312,0,0,1,.312-.312H58.86a.312.312,0,0,1,.312.312,3.242,3.242,0,0,1-3.239,3.242Zm-2.6-2.93a2.615,2.615,0,0,0,5.194,0Z" transform="translate(-52.692 -455.694)" fill="currentColor"/><path d="M760.737,465.537a3.242,3.242,0,0,1-3.239-3.229.312.312,0,0,1,.312-.312h5.857a.312.312,0,0,1,.312.312,3.245,3.245,0,0,1-3.242,3.229Zm-2.6-2.93a2.615,2.615,0,0,0,5.2,0Z" transform="translate(-745.782 -456.426)" fill="currentColor"/><path d="M177.477,644.782h-13.9a.312.312,0,0,1-.312-.312v-6.617a.312.312,0,1,1,.623,0v6.305h13.272v-6.305a.312.312,0,1,1,.623,0v6.617a.312.312,0,0,1-.312.312Z" transform="translate(-161.432 -629.053)" fill="currentColor"/><path d="M388.572,752.011H383.66a1.163,1.163,0,0,1-1.16-1.153v-.82a1.163,1.163,0,0,1,1.16-1.163h4.912a1.163,1.163,0,0,1,1.16,1.163v.82a1.163,1.163,0,0,1-1.16,1.153ZM383.66,749.5a.536.536,0,0,0-.536.539v.82a.539.539,0,0,0,.536.53h4.912a.539.539,0,0,0,.536-.53v-.82a.536.536,0,0,0-.536-.539Z" transform="translate(-377.017 -738.536)" fill="currentColor"/></svg>' : '<svg class="oc-co-rate__icon" xmlns="http://www.w3.org/2000/svg" width="20" height="16" viewBox="0 0 19.78 15.729" aria-hidden="true"><path d="M869.642,396.84a.362.362,0,0,0-.362.362v3a.362.362,0,0,0,.362.362h2.273a.362.362,0,0,0,.362-.362v-.722a2.639,2.639,0,0,0-2.635-2.635Zm1.911,3H870V397.6a1.915,1.915,0,0,1,1.551,1.877Z" transform="translate(-854.342 -392.782)" fill="currentColor"/><path d="M91.734,190.254v-2.849a5.235,5.235,0,0,0-5.234-5.234H84.661a1.063,1.063,0,0,0-.317.049v-.495a1.49,1.49,0,0,0-1.488-1.488H73.444a1.49,1.49,0,0,0-1.488,1.488v11.165a1,1,0,0,0,.994.994h.668a2.444,2.444,0,0,0,4.834,0h6.7a2.444,2.444,0,0,0,4.834,0h.76a1,1,0,0,0,.994-.994v-2.527a.593.593,0,0,0-.007-.11Zm-7.388-7.044a.317.317,0,0,1,.317-.317H86.5a4.513,4.513,0,0,1,4.51,4.51v2a1.035,1.035,0,0,0-.265-.036h-6.4ZM72.68,181.726a.765.765,0,0,1,.764-.764h9.413a.765.765,0,0,1,.764.764v7.642H72.95a.993.993,0,0,0-.272.038v-7.68Zm3.357,13.519a1.72,1.72,0,1,1,1.72-1.72A1.721,1.721,0,0,1,76.037,195.245Zm11.531,0a1.72,1.72,0,1,1,1.72-1.72A1.721,1.721,0,0,1,87.568,195.245Zm3.449-2.354a.272.272,0,0,1-.272.272h-.76a2.444,2.444,0,0,0-4.834,0h-6.7a2.444,2.444,0,0,0-4.834,0h-.668a.272.272,0,0,1-.272-.272v-2.527a.272.272,0,0,1,.272-.272h17.8a.272.272,0,0,1,.265.214v1.927a.308.308,0,0,0,.007.065v.591Z" transform="translate(-71.956 -180.238)" fill="currentColor"/></svg>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static svg. ?>
 						<span class="oc-co-rate__name"><?php echo esc_html( $rate->get_label() ); ?></span>
 						<?php $cost = (float) $rate->get_cost() + array_sum( array_map( 'floatval', $rate->get_taxes() ) ); ?>
@@ -523,6 +524,39 @@ final class Checkout {
 			</td>
 		</tr>
 		<?php
+	}
+
+	/**
+	 * Our own quiet shipping row: chosen method at the start, its price (or
+	 * "Free") at the price side. The native row — whose hidden radios fight
+	 * the form's cards over the checked state — hides entirely.
+	 */
+	public function shipping_row(): void {
+		$packages = WC()->shipping()->get_packages();
+		$chosen   = WC()->session ? (array) WC()->session->get( 'chosen_shipping_methods' ) : array();
+
+		foreach ( $packages as $i => $package ) {
+			$rates   = (array) ( $package['rates'] ?? array() );
+			$current = (string) ( $chosen[ $i ] ?? '' );
+
+			if ( ( '' === $current || ! isset( $rates[ $current ] ) ) && $rates ) {
+				$first   = reset( $rates );
+				$current = $first->get_id();
+			}
+
+			if ( ! isset( $rates[ $current ] ) ) {
+				continue;
+			}
+
+			$rate = $rates[ $current ];
+			$cost = (float) $rate->get_cost() + array_sum( array_map( 'floatval', $rate->get_taxes() ) );
+
+			echo '<tr class="oc-co-shiprow2"><th>' . esc_html__( 'Shipping', 'woocommerce' ) . '</th><td>';
+			echo '<span class="oc-co-shiprow2__in"><span>' . esc_html( $rate->get_label() ) . '</span><strong>';
+			echo $cost > 0 ? wp_kses_post( wc_price( $cost ) ) : esc_html__( 'Free', 'oc-theme' );
+			echo '</strong></span>';
+			echo '</td></tr>';
+		}
 	}
 
 	/**

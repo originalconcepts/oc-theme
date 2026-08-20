@@ -6706,13 +6706,14 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 .oc-checkout #order_review table.shop_table td.product-total,
 .oc-checkout #order_review table.shop_table tfoot td { text-align: left; }
 
-.oc-checkout #order_review ul#shipping_method li label {
-	display: flex;
-	align-items: center;
-	margin: 0;
-}
+.oc-checkout #order_review tr.woocommerce-shipping-totals { display: none; }
 
-.oc-co-freetag { margin-inline-start: auto; font-weight: 600; }
+.oc-co-shiprow2__in {
+	display: flex;
+	justify-content: space-between;
+	gap: 10px;
+	align-items: baseline;
+}
 
 /* the promotion engine's nudge panel belongs to the cart, not here */
 .oc-checkout .promeng-cart-messages { display: none; }
@@ -6743,6 +6744,7 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 .oc-co-save__t.is-open .oc-co-save__c { rotate: 180deg; }
 
 .oc-co-save__rows { display: block; padding-block-start: 6px; }
+.oc-co-save__rows[hidden] { display: none; }
 
 .oc-co-save__row {
 	display: flex;
@@ -6900,10 +6902,7 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 
 .oc-co-privacy a { color: var(--oc-ink, #111); text-decoration: underline; text-underline-offset: 2px; }
 
-/* our own method cards drive the choice — the totals row just states it */
-.oc-checkout #order_review ul#shipping_method li input { display: none; }
-.oc-checkout #order_review ul#shipping_method li:not(:has(input:checked)) { display: none; }
-.oc-checkout #order_review ul#shipping_method { list-style: none; margin: 0; padding: 0; }
+
 
 /* hide the product list when the setting says so */
 .oc-co-nosummary #order_review table.shop_table thead,
