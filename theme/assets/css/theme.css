@@ -7489,6 +7489,9 @@ body.oc-checkout { overflow-x: clip; }
 
 .oc-legal__loading { text-align: center; color: var(--oc-ink-2, #999); }
 
+/* Woo's inline terms accordion never opens now — the panel replaces it */
+.oc-checkout .woocommerce-terms-and-conditions { display: none !important; }
+
 @media (max-width: 782px) {
 	.oc-legal__panel {
 		inset-block: auto 0;

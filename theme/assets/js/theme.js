@@ -5958,6 +5958,8 @@
 			} );
 		}
 
+		// Capture phase: Woo's own handler for the terms link sits on
+		// document.body and swallows the event before it reaches us.
 		document.addEventListener( 'click', function ( e ) {
 			if ( e.target.closest( '[data-oc-legal-close]' ) ) {
 				coLegalClose();
@@ -5969,17 +5971,18 @@
 				return;
 			}
 
-			var privacy = !! link.closest( '.oc-co-privacy' );
-			var terms = !! link.closest( '.woocommerce-terms-and-conditions-wrapper, .woocommerce-terms-and-conditions-link' )
-				|| link.classList.contains( 'woocommerce-terms-and-conditions-link' );
+			var privacy = link.classList.contains( 'woocommerce-privacy-policy-link' )
+				|| !! link.closest( '.oc-co-privacy' );
+			var terms = link.classList.contains( 'woocommerce-terms-and-conditions-link' );
 
 			if ( ! privacy && ! terms ) {
 				return;
 			}
 
 			e.preventDefault();
+			e.stopPropagation();
 			coLegal( privacy ? 'privacy' : 'terms' );
-		} );
+		}, true );
 
 		document.addEventListener( 'keydown', function ( e ) {
 			if ( 'Escape' === e.key ) {
