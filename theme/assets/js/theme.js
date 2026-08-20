@@ -5475,6 +5475,16 @@
 				open.style.top = ( above
 					? rect.top + window.scrollY - list.offsetHeight
 					: rect.bottom + window.scrollY ) + 'px';
+
+				// The list carries its own inner offset, so the first pass
+				// still lands a couple of dozen pixels out. Measure what
+				// actually rendered and close the remaining gap.
+				var seen = list.getBoundingClientRect();
+				var delta = above ? ( rect.top - seen.bottom ) : ( rect.bottom - seen.top );
+
+				if ( delta ) {
+					open.style.top = ( ( parseFloat( open.style.top ) || 0 ) + delta ) + 'px';
+				}
 			};
 
 			window.jQuery( document ).on( 'select2:open', function () {
