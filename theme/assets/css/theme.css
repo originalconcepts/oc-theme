@@ -6735,6 +6735,24 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 	border: 0;
 }
 
+/* Woo's stock privacy paragraph yields to ours */
+.oc-checkout .woocommerce-privacy-policy-text { display: none; }
+
+/* Woo floats inside place-order — a clean column instead */
+.oc-checkout #payment .place-order {
+	display: flex;
+	flex-direction: column;
+	float: none;
+	padding: 0;
+}
+
+.oc-checkout #payment .place-order > * { float: none; }
+
+.oc-checkout .oc-co-consent { order: 1; }
+.oc-checkout .woocommerce-terms-and-conditions-wrapper { order: 2; }
+.oc-checkout #place_order { order: 3; margin-block-start: 8px; }
+.oc-checkout .oc-co-trust { order: 4; }
+
 .oc-co-privacy {
 	margin: 10px 0;
 	font-size: .78rem;
