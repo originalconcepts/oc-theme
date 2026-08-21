@@ -1792,151 +1792,29 @@ final class Filters {
 				<input type="hidden" name="action" value="oc_filters_save" />
 				<?php wp_nonce_field( 'oc_filters_save' ); ?>
 
-				<h2><?php esc_html_e( 'General', 'oc-theme' ); ?></h2>
+				<p class="description" style="margin-block-start:0;">
+					<?php
+					printf(
+						/* translators: %s: link to the Customizer section. */
+						esc_html__( 'Whether filtering is on, its layout and how values are presented are set in %s.', 'oc-theme' ),
+						'<a href="' . esc_url( admin_url( 'customize.php?autofocus[section]=oc_filters_cfg' ) ) . '">' . esc_html__( 'Customize → Catalogue filters', 'oc-theme' ) . '</a>'
+					);
+					?>
+				</p>
+
+				<h2><?php esc_html_e( 'Brands & price steps', 'oc-theme' ); ?></h2>
 				<table class="form-table" role="presentation">
 					<tr>
-						<th scope="row"><?php esc_html_e( 'Filtering', 'oc-theme' ); ?></th>
-						<td><label><input type="checkbox" name="enabled" value="1" <?php checked( 1, (int) $settings['enabled'] ); ?> /> <?php esc_html_e( 'Enable catalogue filtering', 'oc-theme' ); ?></label></td>
-					</tr>
-					<tr>
-						<th scope="row"><?php esc_html_e( 'Default layout (desktop)', 'oc-theme' ); ?></th>
-						<td>
-							<?php
-							$layout_options = array(
-								'sidebar' => __( 'Side column', 'oc-theme' ),
-								'topbar'  => __( 'Bar above the products', 'oc-theme' ),
-								'drawer'  => __( 'Filter button opening a panel', 'oc-theme' ),
-							);
-
-							$layout_icons = array(
-								'sidebar' => '<rect x="34" y="2" width="12" height="28" rx="2"/><rect x="2" y="2" width="28" height="8" rx="2" opacity=".35"/><rect x="2" y="14" width="28" height="16" rx="2" opacity=".35"/>',
-								'topbar'  => '<rect x="2" y="2" width="44" height="7" rx="2"/><rect x="2" y="13" width="44" height="17" rx="2" opacity=".35"/>',
-								'drawer'  => '<rect x="36" y="2" width="10" height="6" rx="2"/><rect x="2" y="12" width="44" height="18" rx="2" opacity=".35"/>',
-							);
-							?>
-							<div class="oc-flt-pick" id="oc-flt-layout-pick" style="display:flex;gap:10px;flex-wrap:wrap;">
-								<?php foreach ( $layout_options as $value => $label ) : ?>
-									<label style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px;border:1.5px solid <?php echo $settings['layout'] === $value ? '#2271b1' : '#ddd'; ?>;border-radius:8px;cursor:pointer;min-width:110px;text-align:center;">
-										<svg viewBox="0 0 48 32" width="48" height="32" fill="currentColor" aria-hidden="true"><?php echo $layout_icons[ $value ]; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static SVG. ?></svg>
-										<input type="radio" name="layout" value="<?php echo esc_attr( $value ); ?>" <?php checked( $settings['layout'], $value ); ?> style="margin:0;" />
-										<span style="font-size:12px;"><?php echo esc_html( $label ); ?></span>
-									</label>
-								<?php endforeach; ?>
-							</div>
-							<p class="description"><?php esc_html_e( 'Each category can pick its own layout on its edit screen. Mobile always uses the panel.', 'oc-theme' ); ?></p>
-						</td>
-					</tr>
-					<tr class="oc-flt-topbar-only" <?php echo 'topbar' === $settings['layout'] ? '' : 'style="display:none;"'; ?>>
-						<th scope="row"><label for="oc-flt-topbar"><?php esc_html_e( 'Bar dropdown style', 'oc-theme' ); ?></label></th>
-						<td>
-							<select name="topbar_style" id="oc-flt-topbar">
-								<option value="drop" <?php selected( 'drop', $settings['topbar_style'] ); ?>><?php esc_html_e( 'Opens under the value', 'oc-theme' ); ?></option>
-								<option value="full" <?php selected( 'full', $settings['topbar_style'] ); ?>><?php esc_html_e( 'Opens full width', 'oc-theme' ); ?></option>
-							</select>
-						</td>
-					</tr>
-					<tr class="oc-flt-topbar-only" <?php echo 'topbar' === $settings['layout'] ? '' : 'style="display:none;"'; ?>>
-						<th scope="row"><label for="oc-flt-chipspos"><?php esc_html_e( 'Chips placement', 'oc-theme' ); ?></label></th>
-						<td>
-							<select name="chips_pos" id="oc-flt-chipspos">
-								<option value="start" <?php selected( 'start', $settings['chips_pos'] ); ?>><?php esc_html_e( 'Below the bar, at the start', 'oc-theme' ); ?></option>
-								<option value="center" <?php selected( 'center', $settings['chips_pos'] ); ?>><?php esc_html_e( 'Below the bar, centred', 'oc-theme' ); ?></option>
-								<option value="inline" <?php selected( 'inline', $settings['chips_pos'] ); ?>><?php esc_html_e( 'Inside the bar, after the groups', 'oc-theme' ); ?></option>
-								<option value="group" <?php selected( 'group', $settings['chips_pos'] ); ?>><?php esc_html_e( 'Inside the bar, beside each group', 'oc-theme' ); ?></option>
-							</select>
-						</td>
-					</tr>
-					<script>
-					( function () {
-						var pick = document.getElementById( 'oc-flt-layout-pick' );
-						var topbarRows = document.querySelectorAll( '.oc-flt-topbar-only' );
-
-						pick.addEventListener( 'change', function () {
-							var chosen = pick.querySelector( 'input[name=layout]:checked' );
-							var value = chosen ? chosen.value : '';
-
-							// Layout-specific rows show only for their layout.
-							topbarRows.forEach( function ( row ) {
-								row.style.display = 'topbar' === value ? '' : 'none';
-							} );
-
-							pick.querySelectorAll( 'label' ).forEach( function ( card ) {
-								var on = card.querySelector( 'input' ).checked;
-								card.style.borderColor = on ? '#2271b1' : '#ddd';
-							} );
-						} );
-					} )();
-					</script>
-					<tr>
-						<th scope="row"><label for="oc-flt-choice"><?php esc_html_e( 'Choice style', 'oc-theme' ); ?></label></th>
-						<td>
-							<select name="choice" id="oc-flt-choice">
-								<option value="check" <?php selected( 'check', $settings['choice'] ); ?>><?php esc_html_e( 'Checkboxes', 'oc-theme' ); ?></option>
-								<option value="dot" <?php selected( 'dot', $settings['choice'] ); ?>><?php esc_html_e( 'Dot marks', 'oc-theme' ); ?></option>
-							</select>
-						</td>
-					</tr>
-					<tr>
-						<th scope="row"><label for="oc-flt-chipsw"><?php esc_html_e( 'Chips of swatch values', 'oc-theme' ); ?></label></th>
-						<td>
-							<select name="chip_swatch" id="oc-flt-chipsw">
-								<option value="off" <?php selected( 'off', $settings['chip_swatch'] ); ?>><?php esc_html_e( 'Name only', 'oc-theme' ); ?></option>
-								<option value="both" <?php selected( 'both', $settings['chip_swatch'] ); ?>><?php esc_html_e( 'Swatch and name', 'oc-theme' ); ?></option>
-								<option value="only" <?php selected( 'only', $settings['chip_swatch'] ); ?>><?php esc_html_e( 'Swatch only', 'oc-theme' ); ?></option>
-							</select>
-							<p class="description"><?php esc_html_e( 'How a chosen value of a swatch attribute (colour, material) shows in the chips row.', 'oc-theme' ); ?></p>
-						</td>
-					</tr>
-					<tr>
-						<th scope="row"><?php esc_html_e( 'Swatch values', 'oc-theme' ); ?></th>
-						<td>
-							<label><input type="checkbox" name="swatch_names" value="1" <?php checked( 1, (int) $settings['swatch_names'] ); ?> /> <?php esc_html_e( 'Show the value name next to the swatch', 'oc-theme' ); ?></label>
-							<p style="margin:8px 0 0;"><label><input type="checkbox" name="swatch_names_m" value="1" <?php checked( 1, (int) $settings['swatch_names_m'] ); ?> /> <?php esc_html_e( 'Show the value name next to the swatch on mobile', 'oc-theme' ); ?></label></p>
-						</td>
-					</tr>
-					<tr>
-						<th scope="row"><?php esc_html_e( 'Counts', 'oc-theme' ); ?></th>
-						<td><label><input type="checkbox" name="counts" value="1" <?php checked( 1, (int) $settings['counts'] ); ?> /> <?php esc_html_e( 'Show the number of items next to each value', 'oc-theme' ); ?></label></td>
-					</tr>
-					<tr>
-						<th scope="row"><label for="oc-flt-empty"><?php esc_html_e( 'Values with no results', 'oc-theme' ); ?></label></th>
-						<td>
-							<select name="empty" id="oc-flt-empty">
-								<option value="gray" <?php selected( 'gray', $settings['empty'] ); ?>><?php esc_html_e( 'Grey and unclickable', 'oc-theme' ); ?></option>
-								<option value="hide" <?php selected( 'hide', $settings['empty'] ); ?>><?php esc_html_e( 'Hidden entirely', 'oc-theme' ); ?></option>
-							</select>
-						</td>
-					</tr>
-					<tr>
-						<th scope="row"><?php esc_html_e( 'Stock', 'oc-theme' ); ?></th>
-						<td><label><input type="checkbox" name="instock" value="1" <?php checked( 1, (int) $settings['instock'] ); ?> /> <?php esc_html_e( 'Show the "In stock only" toggle', 'oc-theme' ); ?></label></td>
-					</tr>
-					<?php if ( '' !== $this->brand_tax() ) : ?>
-						<tr>
 							<th scope="row"><?php esc_html_e( 'Brands', 'oc-theme' ); ?></th>
 							<td>
 								<label><input type="checkbox" name="brands" value="1" <?php checked( 1, (int) $settings['brands'] ); ?> /> <?php esc_html_e( 'Filter by brand', 'oc-theme' ); ?></label>
 								<input type="text" name="brands_title" value="<?php echo esc_attr( (string) $settings['brands_title'] ); ?>" placeholder="<?php esc_attr_e( 'Brand', 'oc-theme' ); ?>" style="margin-inline-start:10px;" />
 							</td>
 						</tr>
-					<?php endif; ?>
-				</table>
-
-				<h2><?php esc_html_e( 'Price', 'oc-theme' ); ?></h2>
-				<table class="form-table" role="presentation">
 					<tr>
-						<th scope="row"><label for="oc-flt-pmode"><?php esc_html_e( 'Price filter', 'oc-theme' ); ?></label></th>
+						<th scope="row"><?php esc_html_e( 'Price steps', 'oc-theme' ); ?></th>
 						<td>
-							<select name="price_mode" id="oc-flt-pmode">
-								<option value="range" <?php selected( 'range', $settings['price_mode'] ); ?>><?php esc_html_e( 'From price to price', 'oc-theme' ); ?></option>
-								<option value="tiers" <?php selected( 'tiers', $settings['price_mode'] ); ?>><?php esc_html_e( 'Preset "up to" steps', 'oc-theme' ); ?></option>
-								<option value="off" <?php selected( 'off', $settings['price_mode'] ); ?>><?php esc_html_e( 'Off', 'oc-theme' ); ?></option>
-							</select>
-							<select name="price_ui">
-								<option value="slider" <?php selected( 'slider', $settings['price_ui'] ); ?>><?php esc_html_e( 'Slider', 'oc-theme' ); ?></option>
-								<option value="inputs" <?php selected( 'inputs', $settings['price_ui'] ); ?>><?php esc_html_e( 'Input fields', 'oc-theme' ); ?></option>
-							</select>
-							<input type="text" name="price_tiers" value="<?php echo esc_attr( (string) $settings['price_tiers'] ); ?>" placeholder="100,300,500,1000" dir="ltr" />
+							<input type="text" name="price_tiers" value="<?php echo esc_attr( (string) $settings['price_tiers'] ); ?>" placeholder="100,300,500,1000" dir="ltr" class="regular-text" />
 							<p class="description"><?php esc_html_e( 'Steps apply to the "up to" mode — comma-separated prices.', 'oc-theme' ); ?></p>
 						</td>
 					</tr>
@@ -2075,27 +1953,19 @@ final class Filters {
 			}
 		);
 
+		// Only the keys this form still shows are written; the Customizer
+		// owns the rest of the array and it must survive untouched.
 		update_option(
 			'oc_filters',
-			array(
-				'enabled'      => empty( $_POST['enabled'] ) ? 0 : 1,
-				'layout'       => in_array( $_POST['layout'] ?? '', array( 'sidebar', 'topbar', 'drawer' ), true ) ? sanitize_key( $_POST['layout'] ) : 'sidebar',
-				'topbar_style' => 'full' === ( $_POST['topbar_style'] ?? '' ) ? 'full' : 'drop',
-				'choice'       => 'dot' === ( $_POST['choice'] ?? '' ) ? 'dot' : 'check',
-				'chip_swatch'  => in_array( $_POST['chip_swatch'] ?? '', array( 'both', 'only' ), true ) ? sanitize_key( $_POST['chip_swatch'] ) : 'off',
-				'chips_pos'    => in_array( $_POST['chips_pos'] ?? '', array( 'center', 'inline', 'group' ), true ) ? sanitize_key( $_POST['chips_pos'] ) : 'start',
-				'swatch_names' => empty( $_POST['swatch_names'] ) ? 0 : 1,
-				'swatch_names_m' => empty( $_POST['swatch_names_m'] ) ? 0 : 1,
-				'counts'       => empty( $_POST['counts'] ) ? 0 : 1,
-				'empty'        => 'hide' === ( $_POST['empty'] ?? '' ) ? 'hide' : 'gray',
-				'instock'      => empty( $_POST['instock'] ) ? 0 : 1,
-				'brands'       => empty( $_POST['brands'] ) ? 0 : 1,
-				'brands_title' => sanitize_text_field( wp_unslash( (string) ( $_POST['brands_title'] ?? '' ) ) ),
-				'price_mode'   => in_array( $_POST['price_mode'] ?? '', array( 'range', 'tiers', 'off' ), true ) ? sanitize_key( $_POST['price_mode'] ) : 'range',
-				'price_ui'     => 'inputs' === ( $_POST['price_ui'] ?? '' ) ? 'inputs' : 'slider',
-				'price_tiers'  => sanitize_text_field( wp_unslash( (string) ( $_POST['price_tiers'] ?? '' ) ) ),
-				'groups'       => $groups,
-			),
+			array_merge(
+				self::settings(),
+				array(
+					'brands'       => empty( $_POST['brands'] ) ? 0 : 1,
+					'brands_title' => sanitize_text_field( wp_unslash( (string) ( $_POST['brands_title'] ?? '' ) ) ),
+					'price_tiers'  => sanitize_text_field( wp_unslash( (string) ( $_POST['price_tiers'] ?? '' ) ) ),
+					'groups'       => $groups,
+				)
+						),
 			false
 		);
 		// phpcs:enable WordPress.Security.NonceVerification.Missing

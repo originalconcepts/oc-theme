@@ -56,6 +56,8 @@ final class Customizer {
 		$this->checkout_section( $wp_customize, $shop_panel );
 		$this->tabs_section( $wp_customize, $shop_panel );
 		$this->thankyou_section( $wp_customize, $shop_panel );
+		$this->cart_section( $wp_customize, $shop_panel );
+		$this->filters_section( $wp_customize, $shop_panel );
 	}
 
 	/**
@@ -1709,7 +1711,7 @@ final class Customizer {
 	 * @param array                 $choices Choices.
 	 * @param string                $def     Default.
 	 */
-	private function opt_select( \WP_Customize_Manager $c, string $option, string $key, string $section, string $label, array $choices, string $def ): void {
+	private function opt_select( \WP_Customize_Manager $c, string $option, string $key, string $section, string $label, array $choices, string $def, ?callable $active = null ): void {
 		list( $id, $args ) = $this->opt_args(
 			$option,
 			$key,
@@ -1720,15 +1722,18 @@ final class Customizer {
 		);
 
 		$c->add_setting( $id, $args );
-		$c->add_control(
-			$id,
-			array(
-				'type'    => 'select',
-				'section' => $section,
-				'label'   => $label,
-				'choices' => $choices,
-			)
+
+		$control = array(
+			'type'    => 'select',
+			'section' => $section,
+			'label'   => $label,
+			'choices' => $choices,
 		);
+		if ( null !== $active ) {
+			$control['active_callback'] = $active;
+		}
+
+		$c->add_control( $id, $control );
 	}
 
 	/**
@@ -1938,6 +1943,277 @@ final class Customizer {
 		);
 		$this->opt_toggle( $c, $o, 'contact', 'oc_thankyou_cfg', __( 'Show phone, email and WhatsApp under the text', 'oc-theme' ), true );
 		$this->opt_toggle( $c, $o, 'summary', 'oc_thankyou_cfg', __( 'Show the products (with images) and totals', 'oc-theme' ), true );
+	}
+
+
+	/**
+	 * Cart drawer: where it sits and what it carries. Copy and the upsell
+	 * merchandising rules stay under Theme settings.
+	 *
+	 * @param \WP_Customize_Manager $c     Customizer manager.
+	 * @param string                $panel Panel to nest under.
+	 */
+	private function cart_section( \WP_Customize_Manager $c, string $panel ): void {
+		$c->add_section(
+			'oc_cart_cfg',
+			array(
+				'title'       => __( 'Cart & mini-cart', 'oc-theme' ),
+				'description' => __( 'The drawer\'s shape. Titles, free-shipping threshold and upsell rules stay under Theme settings.', 'oc-theme' ),
+				'priority'    => 16,
+				'panel'       => $panel,
+			)
+		);
+
+		$o = 'oc_cart';
+
+		$this->heading( $c, 'oc_h_ct_panel', 'oc_cart_cfg', __( 'Panel', 'oc-theme' ) );
+		$this->opt_select(
+			$c,
+			$o,
+			'side',
+			'oc_cart_cfg',
+			__( 'Opens from', 'oc-theme' ),
+			array(
+				'left'  => __( 'Left', 'oc-theme' ),
+				'right' => __( 'Right', 'oc-theme' ),
+			),
+			'left'
+		);
+		$this->opt_number( $c, $o, 'width', 'oc_cart_cfg', __( 'Width (px)', 'oc-theme' ), 560, 320, 800 );
+		$this->opt_toggle( $c, $o, 'open_on_add', 'oc_cart_cfg', __( 'Open the panel automatically', 'oc-theme' ), true );
+		$this->opt_select(
+			$c,
+			$o,
+			'count_method',
+			'oc_cart_cfg',
+			__( 'Header counter', 'oc-theme' ),
+			array(
+				'total' => __( 'Total units', 'oc-theme' ),
+				'rows'  => __( 'Distinct products', 'oc-theme' ),
+			),
+			'total'
+		);
+
+		$this->heading( $c, 'oc_h_ct_ship', 'oc_cart_cfg', __( 'Free shipping', 'oc-theme' ) );
+		$this->opt_toggle( $c, $o, 'ship_bar', 'oc_cart_cfg', __( 'Show progress toward free shipping', 'oc-theme' ), true );
+
+		$this->heading( $c, 'oc_h_ct_up', 'oc_cart_cfg', __( 'Upsells', 'oc-theme' ) );
+		$this->opt_preset(
+			$c,
+			$o,
+			'up_style',
+			'oc_cart_cfg',
+			__( 'Where they appear', 'oc-theme' ),
+			array(
+				'side'     => array(
+					'label' => __( 'Side strip inside the panel', 'oc-theme' ),
+					'svg'   => '<rect x="2" y="2" width="10" height="28" rx="2"/><rect x="16" y="2" width="30" height="8" rx="2" opacity=".35"/><rect x="16" y="14" width="30" height="8" rx="2" opacity=".35"/><rect x="16" y="26" width="30" height="4" rx="2" opacity=".35"/>',
+				),
+				'list'     => array(
+					'label' => __( 'After the cart items', 'oc-theme' ),
+					'svg'   => '<rect x="2" y="2" width="44" height="6" rx="2" opacity=".35"/><rect x="2" y="12" width="8" height="6" rx="1.5"/><rect x="13" y="13.5" width="33" height="3" rx="1.5" opacity=".55"/><rect x="2" y="21" width="8" height="6" rx="1.5"/><rect x="13" y="22.5" width="33" height="3" rx="1.5" opacity=".55"/>',
+				),
+				'slider'   => array(
+					'label' => __( 'Horizontal slider', 'oc-theme' ),
+					'svg'   => '<rect x="2" y="2" width="44" height="7" rx="2" opacity=".35"/><rect x="8" y="14" width="12" height="14" rx="2"/><rect x="23" y="14" width="12" height="14" rx="2"/><rect x="38" y="14" width="8" height="14" rx="2" opacity=".55"/><path d="M2 21l3-2.5L2 16z"/>',
+				),
+				'collapse' => array(
+					'label' => __( 'Above the total — minimizable', 'oc-theme' ),
+					'svg'   => '<rect x="2" y="2" width="44" height="12" rx="2" opacity=".35"/><rect x="2" y="18" width="21" height="12" rx="2"/><circle cx="19" cy="24" r="2.6" fill="#fff"/><rect x="26" y="18" width="20" height="12" rx="2" opacity=".55"/><circle cx="42" cy="24" r="2.6" fill="#fff"/>',
+				),
+			),
+			'side',
+			'110px'
+		);
+		$this->opt_color( $c, $o, 'up_bg', 'oc_cart_cfg', __( 'Upsell background', 'oc-theme' ) );
+
+		$this->heading( $c, 'oc_h_ct_foot', 'oc_cart_cfg', __( 'Panel footer', 'oc-theme' ) );
+		$this->opt_toggle( $c, $o, 'btn_total', 'oc_cart_cfg', __( 'Show the total on the button', 'oc-theme' ), false );
+		$this->opt_toggle( $c, $o, 'continue', 'oc_cart_cfg', __( 'Show a "Continue shopping" button beneath', 'oc-theme' ), false );
+		$this->opt_toggle( $c, $o, 'coupon', 'oc_cart_cfg', __( 'Show a coupon field', 'oc-theme' ), false );
+		$this->opt_toggle( $c, $o, 'cart_link', 'oc_cart_cfg', __( 'Link to the cart page', 'oc-theme' ), false );
+	}
+
+	/**
+	 * Catalogue filtering: how the filter UI looks and behaves. Which
+	 * attributes are offered stays under Theme settings — that is
+	 * merchandising, and it changes with the catalogue.
+	 *
+	 * @param \WP_Customize_Manager $c     Customizer manager.
+	 * @param string                $panel Panel to nest under.
+	 */
+	private function filters_section( \WP_Customize_Manager $c, string $panel ): void {
+		$c->add_section(
+			'oc_filters_cfg',
+			array(
+				'title'       => __( 'Catalogue filters', 'oc-theme' ),
+				'description' => __( 'How filtering looks. The filter groups themselves stay under Theme settings.', 'oc-theme' ),
+				'priority'    => 17,
+				'panel'       => $panel,
+			)
+		);
+
+		$o = 'oc_filters';
+
+		$this->opt_toggle( $c, $o, 'enabled', 'oc_filters_cfg', __( 'Enable filtering', 'oc-theme' ), false );
+		$this->opt_preset(
+			$c,
+			$o,
+			'layout',
+			'oc_filters_cfg',
+			__( 'Layout', 'oc-theme' ),
+			array(
+				'sidebar' => array(
+					'label' => __( 'Side column', 'oc-theme' ),
+					'svg'   => '<rect x="34" y="2" width="12" height="28" rx="2"/><rect x="2" y="2" width="28" height="8" rx="2" opacity=".35"/><rect x="2" y="14" width="28" height="16" rx="2" opacity=".35"/>',
+				),
+				'topbar'  => array(
+					'label' => __( 'Bar above the products', 'oc-theme' ),
+					'svg'   => '<rect x="2" y="2" width="44" height="7" rx="2"/><rect x="2" y="13" width="44" height="17" rx="2" opacity=".35"/>',
+				),
+				'drawer'  => array(
+					'label' => __( 'Filter button opening a panel', 'oc-theme' ),
+					'svg'   => '<rect x="36" y="2" width="10" height="6" rx="2"/><rect x="2" y="12" width="44" height="18" rx="2" opacity=".35"/>',
+				),
+			),
+			'sidebar',
+			'110px'
+		);
+		$this->opt_select(
+			$c,
+			$o,
+			'topbar_style',
+			'oc_filters_cfg',
+			__( 'Bar group opens', 'oc-theme' ),
+			array(
+				'drop' => __( 'Opens under the value', 'oc-theme' ),
+				'full' => __( 'Opens full width', 'oc-theme' ),
+			),
+			'drop'
+		);
+		$this->opt_select(
+			$c,
+			$o,
+			'chips_pos',
+			'oc_filters_cfg',
+			__( 'Chosen values row', 'oc-theme' ),
+			array(
+				'start'  => __( 'Below the bar, at the start', 'oc-theme' ),
+				'center' => __( 'Below the bar, centred', 'oc-theme' ),
+				'inline' => __( 'Inside the bar, after the groups', 'oc-theme' ),
+				'group'  => __( 'Inside the bar, beside each group', 'oc-theme' ),
+			),
+			'start'
+		);
+		$this->opt_select(
+			$c,
+			$o,
+			'choice',
+			'oc_filters_cfg',
+			__( 'Choice mark', 'oc-theme' ),
+			array(
+				'check' => __( 'Checkboxes', 'oc-theme' ),
+				'dot'   => __( 'Dot marks', 'oc-theme' ),
+			),
+			'check'
+		);
+		$this->opt_select(
+			$c,
+			$o,
+			'chip_swatch',
+			'oc_filters_cfg',
+			__( 'Swatch value in the chips row', 'oc-theme' ),
+			array(
+				'off'  => __( 'Name only', 'oc-theme' ),
+				'both' => __( 'Swatch and name', 'oc-theme' ),
+				'only' => __( 'Swatch only', 'oc-theme' ),
+			),
+			'off'
+		);
+		$this->opt_toggle( $c, $o, 'swatch_names', 'oc_filters_cfg', __( 'Value names beside swatches', 'oc-theme' ), true );
+		$this->opt_toggle( $c, $o, 'swatch_names_m', 'oc_filters_cfg', __( 'Value names beside swatches on mobile', 'oc-theme' ), true );
+		$this->opt_toggle( $c, $o, 'counts', 'oc_filters_cfg', __( 'Show how many products match', 'oc-theme' ), true );
+		$this->opt_select(
+			$c,
+			$o,
+			'empty',
+			'oc_filters_cfg',
+			__( 'Values with no products', 'oc-theme' ),
+			array(
+				'gray' => __( 'Grey and unclickable', 'oc-theme' ),
+				'hide' => __( 'Hidden entirely', 'oc-theme' ),
+			),
+			'gray'
+		);
+		$this->opt_toggle( $c, $o, 'instock', 'oc_filters_cfg', __( 'Offer an "in stock only" filter', 'oc-theme' ), true );
+
+		$this->heading( $c, 'oc_h_fl_price', 'oc_filters_cfg', __( 'Price', 'oc-theme' ) );
+		$this->opt_select(
+			$c,
+			$o,
+			'price_mode',
+			'oc_filters_cfg',
+			__( 'Price filter', 'oc-theme' ),
+			array(
+				'range' => __( 'From price to price', 'oc-theme' ),
+				'tiers' => __( 'Preset "up to" steps', 'oc-theme' ),
+				'off'   => __( 'Off', 'oc-theme' ),
+			),
+			'range'
+		);
+		$this->opt_select(
+			$c,
+			$o,
+			'price_ui',
+			'oc_filters_cfg',
+			__( 'Range control', 'oc-theme' ),
+			array(
+				'slider' => __( 'Slider', 'oc-theme' ),
+				'inputs' => __( 'Input fields', 'oc-theme' ),
+			),
+			'slider',
+			static function () {
+				$s = \OC\Theme\Filters::settings();
+				return 'range' === $s['price_mode'];
+			}
+		);
+	}
+
+	/**
+	 * Option-backed picture picker, same control the design presets use.
+	 *
+	 * @param \WP_Customize_Manager $c       Manager.
+	 * @param string                $option  Option name.
+	 * @param string                $key     Key.
+	 * @param string                $section Section.
+	 * @param string                $label   Label.
+	 * @param array                 $presets value => array{label,svg}.
+	 * @param string                $def     Default.
+	 * @param string                $width   Item width.
+	 */
+	private function opt_preset( \WP_Customize_Manager $c, string $option, string $key, string $section, string $label, array $presets, string $def, string $width ): void {
+		list( $id, $args ) = $this->opt_args(
+			$option,
+			$key,
+			$def,
+			static function ( $value ) use ( $presets, $def ): string {
+				return array_key_exists( (string) $value, $presets ) ? (string) $value : $def;
+			}
+		);
+
+		$c->add_setting( $id, $args );
+		$c->add_control(
+			new Customize\Preset_Control(
+				$c,
+				$id,
+				array(
+					'section'    => $section,
+					'label'      => $label,
+					'presets'    => $presets,
+					'item_width' => $width,
+				)
+			)
+		);
 	}
 
 }

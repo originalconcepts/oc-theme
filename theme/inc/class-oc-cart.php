@@ -1157,18 +1157,18 @@ final class Cart {
 				<input type="hidden" name="action" value="oc_cart_save" />
 				<?php wp_nonce_field( 'oc_cart_save' ); ?>
 
-				<h2><?php esc_html_e( 'Panel', 'oc-theme' ); ?></h2>
+				<p class="description" style="margin-block-start:0;">
+					<?php
+					printf(
+						/* translators: %s: link to the Customizer section. */
+						esc_html__( 'Where the panel opens from, its width, the footer buttons and the upsell placement are set in %s.', 'oc-theme' ),
+						'<a href="' . esc_url( admin_url( 'customize.php?autofocus[section]=oc_cart_cfg' ) ) . '">' . esc_html__( 'Customize → Cart & mini-cart', 'oc-theme' ) . '</a>'
+					);
+					?>
+				</p>
+
+				<h2><?php esc_html_e( 'Wording', 'oc-theme' ); ?></h2>
 				<table class="form-table" role="presentation">
-					<tr>
-						<th scope="row"><?php esc_html_e( 'Opens from', 'oc-theme' ); ?></th>
-						<td>
-							<select name="side">
-								<option value="left" <?php selected( 'left', $s['side'] ); ?>><?php esc_html_e( 'Left', 'oc-theme' ); ?></option>
-								<option value="right" <?php selected( 'right', $s['side'] ); ?>><?php esc_html_e( 'Right', 'oc-theme' ); ?></option>
-							</select>
-							<label style="margin-inline-start:14px;"><?php esc_html_e( 'Width', 'oc-theme' ); ?> <input type="number" name="width" value="<?php echo esc_attr( (string) $s['width'] ); ?>" min="320" max="800" style="width:80px;" /> px</label>
-						</td>
-					</tr>
 					<tr>
 						<th scope="row"><?php esc_html_e( 'Title', 'oc-theme' ); ?></th>
 						<td><input type="text" name="title" value="<?php echo esc_attr( (string) $s['title'] ); ?>" placeholder="<?php esc_attr_e( 'My cart', 'oc-theme' ); ?>" class="regular-text" /></td>
@@ -1177,19 +1177,6 @@ final class Cart {
 						<th scope="row"><?php esc_html_e( 'Empty-cart text', 'oc-theme' ); ?></th>
 						<td><input type="text" name="empty_text" value="<?php echo esc_attr( (string) $s['empty_text'] ); ?>" placeholder="<?php esc_attr_e( 'Your cart is empty', 'oc-theme' ); ?>" class="regular-text" /></td>
 					</tr>
-					<tr>
-						<th scope="row"><?php esc_html_e( 'After adding to cart', 'oc-theme' ); ?></th>
-						<td><label><input type="checkbox" name="open_on_add" value="1" <?php checked( 1, (int) $s['open_on_add'] ); ?> /> <?php esc_html_e( 'Open the panel automatically', 'oc-theme' ); ?></label></td>
-					</tr>
-					<tr>
-						<th scope="row"><?php esc_html_e( 'Header counter', 'oc-theme' ); ?></th>
-						<td>
-							<select name="count_method">
-								<option value="total" <?php selected( 'total', $s['count_method'] ); ?>><?php esc_html_e( 'Total units', 'oc-theme' ); ?></option>
-								<option value="rows" <?php selected( 'rows', $s['count_method'] ); ?>><?php esc_html_e( 'Distinct products', 'oc-theme' ); ?></option>
-							</select>
-						</td>
-					</tr>
 				</table>
 
 				<h2><?php esc_html_e( 'Free-shipping bar', 'oc-theme' ); ?></h2>
@@ -1197,8 +1184,7 @@ final class Cart {
 					<tr>
 						<th scope="row"><?php esc_html_e( 'Progress bar', 'oc-theme' ); ?></th>
 						<td>
-							<label><input type="checkbox" name="ship_bar" value="1" <?php checked( 1, (int) $s['ship_bar'] ); ?> /> <?php esc_html_e( 'Show progress toward free shipping', 'oc-theme' ); ?></label>
-							<p style="margin:10px 0 0;"><label><?php esc_html_e( 'Threshold override', 'oc-theme' ); ?> <input type="number" name="ship_goal" value="<?php echo esc_attr( (string) $s['ship_goal'] ); ?>" min="0" style="width:110px;" placeholder="<?php esc_attr_e( 'Auto', 'oc-theme' ); ?>" /></label></p>
+							<p style="margin:0;"><label><?php esc_html_e( 'Threshold override', 'oc-theme' ); ?> <input type="number" name="ship_goal" value="<?php echo esc_attr( (string) $s['ship_goal'] ); ?>" min="0" style="width:110px;" placeholder="<?php esc_attr_e( 'Auto', 'oc-theme' ); ?>" /></label></p>
 							<p class="description"><?php esc_html_e( 'Empty = taken automatically from the free-shipping minimum in the shipping zones.', 'oc-theme' ); ?></p>
 							<p style="margin:10px 0 0;"><input type="text" name="ship_text" value="<?php echo esc_attr( (string) $s['ship_text'] ); ?>" placeholder="<?php esc_attr_e( '[sum] left for free shipping', 'oc-theme' ); ?>" class="regular-text" /></p>
 							<p style="margin:6px 0 0;"><input type="text" name="ship_done" value="<?php echo esc_attr( (string) $s['ship_done'] ); ?>" placeholder="<?php esc_attr_e( 'You earned free shipping!', 'oc-theme' ); ?>" class="regular-text" /></p>
@@ -1216,45 +1202,6 @@ final class Cart {
 						</td>
 					</tr>
 					<tr>
-						<th scope="row"><?php esc_html_e( 'Display', 'oc-theme' ); ?></th>
-						<td>
-							<?php
-							$up_styles = array(
-								'side'     => __( 'Side strip inside the panel', 'oc-theme' ),
-								'list'     => __( 'After the cart items', 'oc-theme' ),
-								'slider'   => __( 'Horizontal slider', 'oc-theme' ),
-								'collapse' => __( 'Above the total — minimizable', 'oc-theme' ),
-							);
-
-							$up_icons = array(
-								'side'     => '<rect x="2" y="2" width="10" height="28" rx="2"/><rect x="16" y="2" width="30" height="8" rx="2" opacity=".35"/><rect x="16" y="14" width="30" height="8" rx="2" opacity=".35"/><rect x="16" y="26" width="30" height="4" rx="2" opacity=".35"/>',
-								'list'     => '<rect x="2" y="2" width="44" height="6" rx="2" opacity=".35"/><rect x="2" y="12" width="8" height="6" rx="1.5"/><rect x="13" y="13.5" width="33" height="3" rx="1.5" opacity=".55"/><rect x="2" y="21" width="8" height="6" rx="1.5"/><rect x="13" y="22.5" width="33" height="3" rx="1.5" opacity=".55"/>',
-								'slider'   => '<rect x="2" y="2" width="44" height="7" rx="2" opacity=".35"/><rect x="8" y="14" width="12" height="14" rx="2"/><rect x="23" y="14" width="12" height="14" rx="2"/><rect x="38" y="14" width="8" height="14" rx="2" opacity=".55"/><path d="M2 21l3-2.5L2 16z"/>',
-								'collapse' => '<rect x="2" y="2" width="44" height="12" rx="2" opacity=".35"/><rect x="2" y="18" width="21" height="12" rx="2"/><circle cx="19" cy="24" r="2.6" fill="#fff"/><rect x="26" y="18" width="20" height="12" rx="2" opacity=".55"/><circle cx="42" cy="24" r="2.6" fill="#fff"/>',
-							);
-							?>
-							<div class="oc-flt-pick" id="oc-up-style-pick" style="display:flex;gap:10px;flex-wrap:wrap;">
-								<?php foreach ( $up_styles as $value => $label ) : ?>
-									<label style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px;border:1.5px solid <?php echo $s['up_style'] === $value ? '#2271b1' : '#ddd'; ?>;border-radius:8px;cursor:pointer;min-width:110px;text-align:center;">
-										<svg viewBox="0 0 48 32" width="48" height="32" fill="currentColor" aria-hidden="true"><?php echo $up_icons[ $value ]; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static SVG. ?></svg>
-										<input type="radio" name="up_style" value="<?php echo esc_attr( $value ); ?>" <?php checked( $s['up_style'], $value ); ?> style="margin:0;" />
-										<span style="font-size:12px;"><?php echo esc_html( $label ); ?></span>
-									</label>
-								<?php endforeach; ?>
-							</div>
-							<script>
-							( function () {
-								var pick = document.getElementById( 'oc-up-style-pick' );
-								pick.addEventListener( 'change', function () {
-									pick.querySelectorAll( 'label' ).forEach( function ( card ) {
-										card.style.borderColor = card.querySelector( 'input' ).checked ? '#2271b1' : '#ddd';
-									} );
-								} );
-							} )();
-							</script>
-						</td>
-					</tr>
-					<tr>
 						<th scope="row"><?php esc_html_e( 'Source', 'oc-theme' ); ?></th>
 						<td>
 							<select name="up_source">
@@ -1268,26 +1215,6 @@ final class Cart {
 								<?php endforeach; ?>
 							</select>
 							<label style="margin-inline-start:12px;"><?php esc_html_e( 'Max products', 'oc-theme' ); ?> <input type="number" name="up_max" value="<?php echo esc_attr( (string) $s['up_max'] ); ?>" min="1" max="12" style="width:60px;" /></label>
-							<label style="margin-inline-start:12px;"><?php esc_html_e( 'Background colour', 'oc-theme' ); ?>
-								<input type="color" id="oc-up-bg-pick" value="<?php echo esc_attr( '' !== (string) $s['up_bg'] ? (string) $s['up_bg'] : '#f5f5f3' ); ?>" style="vertical-align:middle;inline-size:34px;block-size:26px;padding:0;border:1px solid #ccc;" />
-								<input type="hidden" name="up_bg" id="oc-up-bg" value="<?php echo esc_attr( (string) $s['up_bg'] ); ?>" />
-								<button type="button" class="button-link" id="oc-up-bg-clear" style="margin-inline-start:6px;<?php echo '' === (string) $s['up_bg'] ? 'display:none;' : ''; ?>"><?php esc_html_e( 'Default', 'oc-theme' ); ?></button>
-							</label>
-							<script>
-							( function () {
-								var pick = document.getElementById( 'oc-up-bg-pick' );
-								var real = document.getElementById( 'oc-up-bg' );
-								var clear = document.getElementById( 'oc-up-bg-clear' );
-								pick.addEventListener( 'input', function () {
-									real.value = pick.value;
-									clear.style.display = '';
-								} );
-								clear.addEventListener( 'click', function () {
-									real.value = '';
-									clear.style.display = 'none';
-								} );
-							} )();
-							</script>
 							<p class="description"><?php esc_html_e( 'Products already in the cart are never offered; adding one removes it from the list.', 'oc-theme' ); ?></p>
 						</td>
 					</tr>
@@ -1297,13 +1224,7 @@ final class Cart {
 				<table class="form-table" role="presentation">
 					<tr>
 						<th scope="row"><?php esc_html_e( 'Checkout button', 'oc-theme' ); ?></th>
-						<td>
-							<input type="text" name="btn_text" value="<?php echo esc_attr( (string) $s['btn_text'] ); ?>" placeholder="<?php esc_attr_e( 'Continue to checkout', 'oc-theme' ); ?>" class="regular-text" />
-							<p style="margin:8px 0 0;"><label><input type="checkbox" name="btn_total" value="1" <?php checked( 1, (int) $s['btn_total'] ); ?> /> <?php esc_html_e( 'Show the total on the button', 'oc-theme' ); ?></label></p>
-							<p style="margin:8px 0 0;"><label><input type="checkbox" name="continue" value="1" <?php checked( 1, (int) $s['continue'] ); ?> /> <?php esc_html_e( 'Show a "Continue shopping" button beneath', 'oc-theme' ); ?></label></p>
-							<p style="margin:8px 0 0;"><label><input type="checkbox" name="coupon" value="1" <?php checked( 1, (int) $s['coupon'] ); ?> /> <?php esc_html_e( 'Show a coupon field', 'oc-theme' ); ?></label></p>
-							<p style="margin:8px 0 0;"><label><input type="checkbox" name="cart_link" value="1" <?php checked( 1, (int) $s['cart_link'] ); ?> /> <?php esc_html_e( 'Link to the cart page', 'oc-theme' ); ?></label></p>
-						</td>
+						<td><input type="text" name="btn_text" value="<?php echo esc_attr( (string) $s['btn_text'] ); ?>" placeholder="<?php esc_attr_e( 'Continue to checkout', 'oc-theme' ); ?>" class="regular-text" /></td>
 					</tr>
 				</table>
 
@@ -1323,31 +1244,25 @@ final class Cart {
 		check_admin_referer( 'oc_cart_save' );
 
 		// phpcs:disable WordPress.Security.NonceVerification.Missing -- verified above.
+		// Only the keys this form still shows are written; the Customizer
+		// owns the rest of the array and it must survive untouched.
 		update_option(
 			'oc_cart',
-			array(
-				'side'         => 'right' === ( $_POST['side'] ?? '' ) ? 'right' : 'left',
-				'width'        => min( 800, max( 320, (int) ( $_POST['width'] ?? 480 ) ) ),
-				'title'        => sanitize_text_field( wp_unslash( (string) ( $_POST['title'] ?? '' ) ) ),
-				'empty_text'   => sanitize_text_field( wp_unslash( (string) ( $_POST['empty_text'] ?? '' ) ) ),
-				'open_on_add'  => empty( $_POST['open_on_add'] ) ? 0 : 1,
-				'count_method' => 'rows' === ( $_POST['count_method'] ?? '' ) ? 'rows' : 'total',
-				'ship_bar'     => empty( $_POST['ship_bar'] ) ? 0 : 1,
-				'ship_goal'    => '' === trim( (string) ( $_POST['ship_goal'] ?? '' ) ) ? '' : (string) max( 0, (int) $_POST['ship_goal'] ),
-				'ship_text'    => sanitize_text_field( wp_unslash( (string) ( $_POST['ship_text'] ?? '' ) ) ),
-				'ship_done'    => sanitize_text_field( wp_unslash( (string) ( $_POST['ship_done'] ?? '' ) ) ),
-				'up_show'      => empty( $_POST['up_show'] ) ? 0 : 1,
-				'up_title'     => sanitize_text_field( wp_unslash( (string) ( $_POST['up_title'] ?? '' ) ) ),
-				'up_source'    => 'category' === ( $_POST['up_source'] ?? '' ) ? 'category' : 'items',
-				'up_cat'       => (int) ( $_POST['up_cat'] ?? 0 ),
-				'up_max'       => min( 12, max( 1, (int) ( $_POST['up_max'] ?? 5 ) ) ),
-				'up_style'     => in_array( $_POST['up_style'] ?? '', array( 'list', 'slider', 'collapse' ), true ) ? sanitize_key( $_POST['up_style'] ) : 'side',
-				'up_bg'        => (string) sanitize_hex_color( wp_unslash( (string) ( $_POST['up_bg'] ?? '' ) ) ),
-				'coupon'       => empty( $_POST['coupon'] ) ? 0 : 1,
-				'btn_total'    => empty( $_POST['btn_total'] ) ? 0 : 1,
-				'btn_text'     => sanitize_text_field( wp_unslash( (string) ( $_POST['btn_text'] ?? '' ) ) ),
-				'continue'     => empty( $_POST['continue'] ) ? 0 : 1,
-				'cart_link'    => empty( $_POST['cart_link'] ) ? 0 : 1,
+			array_merge(
+				self::settings(),
+				array(
+					'title'        => sanitize_text_field( wp_unslash( (string) ( $_POST['title'] ?? '' ) ) ),
+					'empty_text'   => sanitize_text_field( wp_unslash( (string) ( $_POST['empty_text'] ?? '' ) ) ),
+					'ship_goal'    => '' === trim( (string) ( $_POST['ship_goal'] ?? '' ) ) ? '' : (string) max( 0, (int) $_POST['ship_goal'] ),
+					'ship_text'    => sanitize_text_field( wp_unslash( (string) ( $_POST['ship_text'] ?? '' ) ) ),
+					'ship_done'    => sanitize_text_field( wp_unslash( (string) ( $_POST['ship_done'] ?? '' ) ) ),
+					'up_show'      => empty( $_POST['up_show'] ) ? 0 : 1,
+					'up_title'     => sanitize_text_field( wp_unslash( (string) ( $_POST['up_title'] ?? '' ) ) ),
+					'up_source'    => 'category' === ( $_POST['up_source'] ?? '' ) ? 'category' : 'items',
+					'up_cat'       => (int) ( $_POST['up_cat'] ?? 0 ),
+					'up_max'       => min( 12, max( 1, (int) ( $_POST['up_max'] ?? 5 ) ) ),
+					'btn_text'     => sanitize_text_field( wp_unslash( (string) ( $_POST['btn_text'] ?? '' ) ) ),
+				)
 			),
 			false
 		);
