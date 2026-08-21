@@ -445,36 +445,24 @@ final class Tabs {
 				#oc-tabs-add { margin: 2px 0 14px; }
 				</style>
 
-				<h2><?php esc_html_e( 'Built-in tabs', 'oc-theme' ); ?></h2>
+				<h2><?php esc_html_e( 'Tab titles', 'oc-theme' ); ?></h2>
+				<p class="description" style="margin-block-start:0;">
+					<?php
+					printf(
+						/* translators: %s: link to the Customizer section. */
+						esc_html__( 'Which built-in tabs appear, and in what order, is set in %s.', 'oc-theme' ),
+						'<a href="' . esc_url( admin_url( 'customize.php?autofocus[section]=oc_tabs_cfg' ) ) . '">' . esc_html__( 'Customize → Product tabs', 'oc-theme' ) . '</a>'
+					);
+					?>
+				</p>
 				<table class="form-table" role="presentation">
 					<tr>
 						<th scope="row"><?php esc_html_e( 'Short description', 'oc-theme' ); ?></th>
-						<td>
-							<label class="oc-tgl"><input type="checkbox" name="short_tab" id="oc-short-tab" value="1" <?php checked( 1, (int) $settings['short_tab'] ); ?> /> <?php esc_html_e( 'Show as the first tab (instead of in the summary)', 'oc-theme' ); ?></label>
-							<div id="oc-short-extra" style="display:<?php echo $settings['short_tab'] ? 'block' : 'none'; ?>;margin-block-start:12px;">
-								<label class="oc-tgl"><input type="checkbox" name="short_open" value="1" <?php checked( 1, (int) $settings['short_open'] ); ?> /> <?php esc_html_e( 'Open by default', 'oc-theme' ); ?></label>
-								<p style="margin:10px 0 0;"><input type="text" name="short_title" value="<?php echo esc_attr( (string) $settings['short_title'] ); ?>" placeholder="<?php esc_attr_e( 'About this item', 'oc-theme' ); ?>" class="regular-text" /></p>
-							</div>
-						</td>
+						<td><input type="text" name="short_title" value="<?php echo esc_attr( (string) $settings['short_title'] ); ?>" placeholder="<?php esc_attr_e( 'About this item', 'oc-theme' ); ?>" class="regular-text" /></td>
 					</tr>
 					<tr>
 						<th scope="row"><?php esc_html_e( 'Full description', 'oc-theme' ); ?></th>
-						<td>
-							<select name="desc_place" id="oc-desc-place">
-								<option value="tab" <?php selected( 'tab', $settings['desc_place'] ); ?>><?php esc_html_e( 'Inside a tab', 'oc-theme' ); ?></option>
-								<option value="below" <?php selected( 'below', $settings['desc_place'] ); ?>><?php esc_html_e( 'Outside — below the tabs', 'oc-theme' ); ?></option>
-							</select>
-							<input type="text" name="desc_title" value="<?php echo esc_attr( (string) $settings['desc_title'] ); ?>" placeholder="<?php esc_attr_e( 'Tab title (empty = default)', 'oc-theme' ); ?>" style="margin-inline-start:10px;" />
-							<label style="margin-inline-start:12px;"><?php esc_html_e( 'Position', 'oc-theme' ); ?> <input type="number" name="desc_order" value="<?php echo esc_attr( (string) $settings['desc_order'] ); ?>" style="width:60px;" /></label>
-							<p id="oc-desc-open" style="margin:10px 0 0;display:<?php echo 'tab' === $settings['desc_place'] ? 'block' : 'none'; ?>;"><label class="oc-tgl"><input type="checkbox" name="desc_open" value="1" <?php checked( 1, (int) $settings['desc_open'] ); ?> /> <?php esc_html_e( 'Open by default', 'oc-theme' ); ?></label></p>
-						</td>
-					</tr>
-					<tr>
-						<th scope="row"><?php esc_html_e( 'Additional information', 'oc-theme' ); ?></th>
-						<td>
-							<label class="oc-tgl"><input type="checkbox" name="additional" value="1" <?php checked( 1, (int) $settings['additional'] ); ?> /> <?php esc_html_e( 'Show the attributes table', 'oc-theme' ); ?></label>
-							<label style="margin-inline-start:12px;"><?php esc_html_e( 'Position', 'oc-theme' ); ?> <input type="number" name="add_order" value="<?php echo esc_attr( (string) $settings['add_order'] ); ?>" style="width:60px;" /></label>
-						</td>
+						<td><input type="text" name="desc_title" value="<?php echo esc_attr( (string) $settings['desc_title'] ); ?>" placeholder="<?php esc_attr_e( 'Tab title (empty = default)', 'oc-theme' ); ?>" class="regular-text" /></td>
 					</tr>
 					<tr>
 						<th scope="row"><?php esc_html_e( 'Reviews', 'oc-theme' ); ?></th>
@@ -673,19 +661,17 @@ final class Tabs {
 			);
 		}
 
+		// Only the keys this form still owns are written; the rest of the
+		// array belongs to the Customizer and must survive untouched.
 		update_option(
 			'oc_tabs',
-			array(
-				'short_tab'   => empty( $_POST['short_tab'] ) ? 0 : 1,
-				'short_open'  => empty( $_POST['short_open'] ) ? 0 : 1,
-				'short_title' => sanitize_text_field( wp_unslash( (string) ( $_POST['short_title'] ?? '' ) ) ),
-				'desc_place'  => 'below' === ( $_POST['desc_place'] ?? 'tab' ) ? 'below' : 'tab',
-				'desc_open'   => empty( $_POST['desc_open'] ) ? 0 : 1,
-				'desc_order'  => (int) ( $_POST['desc_order'] ?? 10 ),
-				'desc_title'  => sanitize_text_field( wp_unslash( (string) ( $_POST['desc_title'] ?? '' ) ) ),
-				'additional'  => empty( $_POST['additional'] ) ? 0 : 1,
-				'add_order'   => (int) ( $_POST['add_order'] ?? 20 ),
-				'custom'      => $custom,
+			array_merge(
+				self::settings(),
+				array(
+					'short_title' => sanitize_text_field( wp_unslash( (string) ( $_POST['short_title'] ?? '' ) ) ),
+					'desc_title'  => sanitize_text_field( wp_unslash( (string) ( $_POST['desc_title'] ?? '' ) ) ),
+					'custom'      => $custom,
+				)
 			),
 			false
 		);

@@ -814,29 +814,15 @@ final class Thankyou {
 			);
 			?>
 
-			<table class="form-table" role="presentation">
-				<tr>
-					<th scope="row"><?php esc_html_e( 'Layout', 'oc-theme' ); ?></th>
-					<td>
-						<select name="layout">
-							<option value="stack" <?php selected( 'stack', $s['layout'] ); ?>><?php esc_html_e( 'One column — everything under the greeting', 'oc-theme' ); ?></option>
-							<option value="split" <?php selected( 'split', $s['layout'] ); ?>><?php esc_html_e( 'Two columns — greeting and summary on one side, the rest beside them', 'oc-theme' ); ?></option>
-						</select>
-						<p class="description"><?php esc_html_e( 'Two columns fold back into one on a phone.', 'oc-theme' ); ?></p>
-					</td>
-				</tr>
-				<tr>
-					<th scope="row"><?php esc_html_e( 'Contact channels', 'oc-theme' ); ?></th>
-					<td>
-						<label><input type="checkbox" name="contact" value="1" <?php checked( 1, (int) $s['contact'] ); ?> /> <?php esc_html_e( 'Show phone, email and WhatsApp under the text', 'oc-theme' ); ?></label>
-						<p class="description"><a href="<?php echo esc_url( $assets ); ?>"><?php esc_html_e( 'Set them in Store details', 'oc-theme' ); ?></a></p>
-					</td>
-				</tr>
-				<tr>
-					<th scope="row"><?php esc_html_e( 'Order summary', 'oc-theme' ); ?></th>
-					<td><label><input type="checkbox" name="summary" value="1" <?php checked( 1, (int) $s['summary'] ); ?> /> <?php esc_html_e( 'Show the products (with images) and totals', 'oc-theme' ); ?></label></td>
-				</tr>
-			</table>
+			<p class="description">
+				<?php
+				printf(
+					/* translators: %s: link to the Customizer section. */
+					esc_html__( 'The page layout, the contact strip and the order summary are set in %s.', 'oc-theme' ),
+					'<a href="' . esc_url( admin_url( 'customize.php?autofocus[section]=oc_thankyou_cfg' ) ) . '">' . esc_html__( 'Customize → Thank-you page', 'oc-theme' ) . '</a>'
+				);
+				?>
+			</p>
 
 			<h2><?php esc_html_e( 'Blocks', 'oc-theme' ); ?></h2>
 			<table class="form-table" role="presentation">
@@ -1000,11 +986,10 @@ final class Thankyou {
 			$content = '';
 		}
 
+		// Layout, contact strip and summary live in the Customizer now; this
+		// form must not write over them.
 		$s = array(
 			'content'        => $content,
-			'layout'         => 'split' === ( $_POST['layout'] ?? 'stack' ) ? 'split' : 'stack',
-			'contact'        => empty( $_POST['contact'] ) ? 0 : 1,
-			'summary'        => empty( $_POST['summary'] ) ? 0 : 1,
 			'wa_group'       => empty( $_POST['wa_group'] ) ? 0 : 1,
 			'social'         => empty( $_POST['social'] ) ? 0 : 1,
 			'social_title'   => sanitize_text_field( wp_unslash( $_POST['social_title'] ?? '' ) ),
@@ -1018,7 +1003,7 @@ final class Thankyou {
 		);
 		// phpcs:enable WordPress.Security.NonceVerification.Missing
 
-		update_option( 'oc_thankyou', $s );
+		update_option( 'oc_thankyou', array_merge( self::settings(), $s ) );
 
 		wp_safe_redirect( add_query_arg( 'oc_saved', '1', admin_url( 'admin.php?page=oc-thankyou' ) ) );
 		exit;

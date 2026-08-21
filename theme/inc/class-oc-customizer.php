@@ -54,6 +54,8 @@ final class Customizer {
 		$this->swatches_section( $wp_customize, $shop_panel );
 		$this->labels_section( $wp_customize, $shop_panel );
 		$this->checkout_section( $wp_customize, $shop_panel );
+		$this->tabs_section( $wp_customize, $shop_panel );
+		$this->thankyou_section( $wp_customize, $shop_panel );
 	}
 
 	/**
@@ -1741,7 +1743,7 @@ final class Customizer {
 	 * @param int                   $min     Minimum.
 	 * @param int                   $max     Maximum.
 	 */
-	private function opt_number( \WP_Customize_Manager $c, string $option, string $key, string $section, string $label, int $def, int $min, int $max ): void {
+	private function opt_number( \WP_Customize_Manager $c, string $option, string $key, string $section, string $label, int $def, int $min, int $max, ?callable $active = null ): void {
 		list( $id, $args ) = $this->opt_args(
 			$option,
 			$key,
@@ -1752,18 +1754,21 @@ final class Customizer {
 		);
 
 		$c->add_setting( $id, $args );
-		$c->add_control(
-			$id,
-			array(
-				'type'        => 'number',
-				'section'     => $section,
-				'label'       => $label,
-				'input_attrs' => array(
-					'min' => $min,
-					'max' => $max,
-				),
-			)
+
+		$control = array(
+			'type'        => 'number',
+			'section'     => $section,
+			'label'       => $label,
+			'input_attrs' => array(
+				'min' => $min,
+				'max' => $max,
+			),
 		);
+		if ( null !== $active ) {
+			$control['active_callback'] = $active;
+		}
+
+		$c->add_control( $id, $control );
 	}
 
 	/**
@@ -1816,6 +1821,123 @@ final class Customizer {
 				)
 			)
 		);
+	}
+
+
+	/**
+	 * Product tabs: which built-in tabs appear and in what order. The tab
+	 * builder itself stays under Theme settings — it is content.
+	 *
+	 * @param \WP_Customize_Manager $c     Customizer manager.
+	 * @param string                $panel Panel to nest under.
+	 */
+	private function tabs_section( \WP_Customize_Manager $c, string $panel ): void {
+		$c->add_section(
+			'oc_tabs_cfg',
+			array(
+				'title'       => __( 'Product tabs', 'oc-theme' ),
+				'description' => __( 'The built-in tabs. Tab titles and the custom tabs stay under Theme settings.', 'oc-theme' ),
+				'priority'    => 14,
+				'panel'       => $panel,
+			)
+		);
+
+		$o = 'oc_tabs';
+
+		$this->heading( $c, 'oc_h_tb_short', 'oc_tabs_cfg', __( 'Short description', 'oc-theme' ) );
+		$this->opt_toggle( $c, $o, 'short_tab', 'oc_tabs_cfg', __( 'Show as the first tab (instead of in the summary)', 'oc-theme' ), false );
+		$this->opt_toggle(
+			$c,
+			$o,
+			'short_open',
+			'oc_tabs_cfg',
+			__( 'Open by default', 'oc-theme' ),
+			false,
+			static function () {
+				$s = \OC\Theme\Tabs::settings();
+				return ! empty( $s['short_tab'] );
+			}
+		);
+
+		$this->heading( $c, 'oc_h_tb_desc', 'oc_tabs_cfg', __( 'Full description', 'oc-theme' ) );
+		$this->opt_select(
+			$c,
+			$o,
+			'desc_place',
+			'oc_tabs_cfg',
+			__( 'Placement', 'oc-theme' ),
+			array(
+				'tab'   => __( 'Inside a tab', 'oc-theme' ),
+				'below' => __( 'Outside — below the tabs', 'oc-theme' ),
+			),
+			'tab'
+		);
+		$this->opt_number( $c, $o, 'desc_order', 'oc_tabs_cfg', __( 'Position', 'oc-theme' ), 10, 0, 99 );
+		$this->opt_toggle(
+			$c,
+			$o,
+			'desc_open',
+			'oc_tabs_cfg',
+			__( 'Open by default', 'oc-theme' ),
+			false,
+			static function () {
+				$s = \OC\Theme\Tabs::settings();
+				return 'tab' === $s['desc_place'];
+			}
+		);
+
+		$this->heading( $c, 'oc_h_tb_add', 'oc_tabs_cfg', __( 'Additional information', 'oc-theme' ) );
+		$this->opt_toggle( $c, $o, 'additional', 'oc_tabs_cfg', __( 'Show the attributes table', 'oc-theme' ), true );
+		$this->opt_number(
+			$c,
+			$o,
+			'add_order',
+			'oc_tabs_cfg',
+			__( 'Position', 'oc-theme' ),
+			20,
+			0,
+			99,
+			static function () {
+				$s = \OC\Theme\Tabs::settings();
+				return ! empty( $s['additional'] );
+			}
+		);
+	}
+
+	/**
+	 * Thank-you page: its shape. The words on it, the survey and the referral
+	 * terms are the shop's own and stay under Theme settings.
+	 *
+	 * @param \WP_Customize_Manager $c     Customizer manager.
+	 * @param string                $panel Panel to nest under.
+	 */
+	private function thankyou_section( \WP_Customize_Manager $c, string $panel ): void {
+		$c->add_section(
+			'oc_thankyou_cfg',
+			array(
+				'title'       => __( 'Thank-you page', 'oc-theme' ),
+				'description' => __( 'How the order-received page is laid out.', 'oc-theme' ),
+				'priority'    => 15,
+				'panel'       => $panel,
+			)
+		);
+
+		$o = 'oc_thankyou';
+
+		$this->opt_select(
+			$c,
+			$o,
+			'layout',
+			'oc_thankyou_cfg',
+			__( 'Layout', 'oc-theme' ),
+			array(
+				'stack' => __( 'One column — everything under the greeting', 'oc-theme' ),
+				'split' => __( 'Two columns — greeting and summary on one side, the rest beside them', 'oc-theme' ),
+			),
+			'stack'
+		);
+		$this->opt_toggle( $c, $o, 'contact', 'oc_thankyou_cfg', __( 'Show phone, email and WhatsApp under the text', 'oc-theme' ), true );
+		$this->opt_toggle( $c, $o, 'summary', 'oc_thankyou_cfg', __( 'Show the products (with images) and totals', 'oc-theme' ), true );
 	}
 
 }
