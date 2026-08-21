@@ -53,6 +53,7 @@ final class Customizer {
 		$this->product_section( $wp_customize, $shop_panel );
 		$this->swatches_section( $wp_customize, $shop_panel );
 		$this->labels_section( $wp_customize, $shop_panel );
+		$this->checkout_section( $wp_customize, $shop_panel );
 	}
 
 	/**
@@ -1525,4 +1526,296 @@ final class Customizer {
 		}
 		return $out;
 	}
+
+	/**
+	 * Checkout: the flow's shape, which is decided when the shop is built.
+	 *
+	 * Every control here binds straight into the existing `oc_checkout`
+	 * option — the same array the Checkout admin screen reads and writes. The
+	 * storage does not move, so nothing needs migrating and no saved value is
+	 * at risk; only where the knobs live changes.
+	 *
+	 * @param \WP_Customize_Manager $c     Customizer manager.
+	 * @param string                $panel Panel to nest under.
+	 */
+	private function checkout_section( \WP_Customize_Manager $c, string $panel ): void {
+		$c->add_section(
+			'oc_checkout',
+			array(
+				'title'       => __( 'Checkout', 'oc-theme' ),
+				'description' => __( 'How the checkout is laid out. Texts the shop edits day to day stay under Theme settings.', 'oc-theme' ),
+				'priority'    => 13,
+				'panel'       => $panel,
+			)
+		);
+
+		$o = 'oc_checkout';
+
+		$this->heading( $c, 'oc_h_ck_layout', 'oc_checkout', __( 'Layout', 'oc-theme' ) );
+		$this->opt_toggle( $c, $o, 'summary', 'oc_checkout', __( 'Show the product list', 'oc-theme' ), true );
+		$this->opt_toggle(
+			$c,
+			$o,
+			'summary_fold',
+			'oc_checkout',
+			__( 'Start the summary folded on desktop', 'oc-theme' ),
+			true,
+			static function () {
+				$s = \OC\Theme\Checkout::settings();
+				return ! empty( $s['summary'] );
+			}
+		);
+		$this->opt_color( $c, $o, 'side_bg', 'oc_checkout', __( 'Summary column colour', 'oc-theme' ) );
+		$this->opt_select(
+			$c,
+			$o,
+			'coupon_mode',
+			'oc_checkout',
+			__( 'Coupon field', 'oc-theme' ),
+			array(
+				'open'   => __( 'Open field', 'oc-theme' ),
+				'button' => __( '"Have a coupon?" opens the field', 'oc-theme' ),
+				'hide'   => __( 'Hidden', 'oc-theme' ),
+			),
+			'open'
+		);
+		$this->opt_select(
+			$c,
+			$o,
+			'country_mode',
+			'oc_checkout',
+			__( 'Country field', 'oc-theme' ),
+			array(
+				'auto' => __( 'Automatic — hidden when the store ships to one country', 'oc-theme' ),
+				'hide' => __( 'Always hidden', 'oc-theme' ),
+			),
+			'auto'
+		);
+
+		$this->heading( $c, 'oc_h_ck_other', 'oc_checkout', __( 'Sending to someone else', 'oc-theme' ) );
+		$this->opt_toggle( $c, $o, 'send_other', 'oc_checkout', __( 'Show "I\'m sending to someone else"', 'oc-theme' ), true );
+		$this->opt_toggle(
+			$c,
+			$o,
+			'phone2_required',
+			'oc_checkout',
+			__( "Recipient's additional phone is required", 'oc-theme' ),
+			false,
+			static function () {
+				$s = \OC\Theme\Checkout::settings();
+				return ! empty( $s['send_other'] );
+			}
+		);
+
+		$this->heading( $c, 'oc_h_ck_addr', 'oc_checkout', __( 'Address fields', 'oc-theme' ) );
+		$this->opt_toggle( $c, $o, 'apt_required', 'oc_checkout', __( 'Apartment is required', 'oc-theme' ), false );
+		$this->opt_toggle( $c, $o, 'floor_required', 'oc_checkout', __( 'Floor is required', 'oc-theme' ), false );
+		$this->opt_toggle( $c, $o, 'entry_required', 'oc_checkout', __( 'Entry code is required', 'oc-theme' ), false );
+
+		$this->heading( $c, 'oc_h_ck_phone', 'oc_checkout', __( 'Phone validation', 'oc-theme' ) );
+		$this->opt_number( $c, $o, 'phone_min', 'oc_checkout', __( 'Digits from', 'oc-theme' ), 9, 0, 20 );
+		$this->opt_number( $c, $o, 'phone_max', 'oc_checkout', __( 'Digits to', 'oc-theme' ), 10, 0, 20 );
+
+		$this->heading( $c, 'oc_h_ck_fields', 'oc_checkout', __( 'Fields & extras', 'oc-theme' ) );
+		$this->opt_toggle( $c, $o, 'notes', 'oc_checkout', __( 'Order notes', 'oc-theme' ), true );
+		$this->opt_toggle( $c, $o, 'consent', 'oc_checkout', __( 'Marketing consent checkbox', 'oc-theme' ), true );
+		$this->opt_text(
+			$c,
+			$o,
+			'consent_text',
+			'oc_checkout',
+			__( 'Consent wording', 'oc-theme' ),
+			static function () {
+				$s = \OC\Theme\Checkout::settings();
+				return ! empty( $s['consent'] );
+			}
+		);
+		$this->opt_toggle( $c, $o, 'btn_total', 'oc_checkout', __( 'Show the total on the place-order button', 'oc-theme' ), true );
+		$this->opt_text( $c, $o, 'btn_text', 'oc_checkout', __( 'Place-order button label', 'oc-theme' ) );
+		$this->opt_text( $c, $o, 'help_text', 'oc_checkout', __( 'Help line in the header', 'oc-theme' ) );
+	}
+
+	/* ---------- controls bound to a key inside an existing option ----------
+	 * WordPress can address one key of a serialized option directly, so a
+	 * control can move into the Customizer while its value stays exactly
+	 * where the rest of the theme already reads it from. */
+
+	/**
+	 * Shared arguments for an option-backed setting.
+	 *
+	 * @param string   $option Option name.
+	 * @param string   $key    Key inside it.
+	 * @param mixed    $def    Default.
+	 * @param callable $san    Sanitizer.
+	 * @return array{0:string,1:array}
+	 */
+	private function opt_args( string $option, string $key, $def, callable $san ): array {
+		return array(
+			$option . '[' . $key . ']',
+			array(
+				'type'              => 'option',
+				'default'           => $def,
+				'sanitize_callback' => $san,
+			),
+		);
+	}
+
+	/**
+	 * Option-backed on/off.
+	 *
+	 * @param \WP_Customize_Manager $c       Manager.
+	 * @param string                $option  Option name.
+	 * @param string                $key     Key.
+	 * @param string                $section Section.
+	 * @param string                $label   Label.
+	 * @param bool                  $def     Default.
+	 * @param callable|null         $active  Visibility test.
+	 */
+	private function opt_toggle( \WP_Customize_Manager $c, string $option, string $key, string $section, string $label, bool $def, ?callable $active = null ): void {
+		list( $id, $args ) = $this->opt_args(
+			$option,
+			$key,
+			$def ? 1 : 0,
+			// Stored as 1/0 so the value is byte-identical to what the admin
+			// screen writes.
+			static function ( $value ): int {
+				return $value ? 1 : 0;
+			}
+		);
+
+		$c->add_setting( $id, $args );
+
+		$control = array(
+			'section' => $section,
+			'label'   => $label,
+		);
+		if ( null !== $active ) {
+			$control['active_callback'] = $active;
+		}
+
+		$c->add_control( new Customize\Toggle_Control( $c, $id, $control ) );
+	}
+
+	/**
+	 * Option-backed select.
+	 *
+	 * @param \WP_Customize_Manager $c       Manager.
+	 * @param string                $option  Option name.
+	 * @param string                $key     Key.
+	 * @param string                $section Section.
+	 * @param string                $label   Label.
+	 * @param array                 $choices Choices.
+	 * @param string                $def     Default.
+	 */
+	private function opt_select( \WP_Customize_Manager $c, string $option, string $key, string $section, string $label, array $choices, string $def ): void {
+		list( $id, $args ) = $this->opt_args(
+			$option,
+			$key,
+			$def,
+			static function ( $value ) use ( $choices, $def ): string {
+				return array_key_exists( (string) $value, $choices ) ? (string) $value : $def;
+			}
+		);
+
+		$c->add_setting( $id, $args );
+		$c->add_control(
+			$id,
+			array(
+				'type'    => 'select',
+				'section' => $section,
+				'label'   => $label,
+				'choices' => $choices,
+			)
+		);
+	}
+
+	/**
+	 * Option-backed number.
+	 *
+	 * @param \WP_Customize_Manager $c       Manager.
+	 * @param string                $option  Option name.
+	 * @param string                $key     Key.
+	 * @param string                $section Section.
+	 * @param string                $label   Label.
+	 * @param int                   $def     Default.
+	 * @param int                   $min     Minimum.
+	 * @param int                   $max     Maximum.
+	 */
+	private function opt_number( \WP_Customize_Manager $c, string $option, string $key, string $section, string $label, int $def, int $min, int $max ): void {
+		list( $id, $args ) = $this->opt_args(
+			$option,
+			$key,
+			$def,
+			static function ( $value ) use ( $min, $max ): int {
+				return (int) min( max( (int) $value, $min ), $max );
+			}
+		);
+
+		$c->add_setting( $id, $args );
+		$c->add_control(
+			$id,
+			array(
+				'type'        => 'number',
+				'section'     => $section,
+				'label'       => $label,
+				'input_attrs' => array(
+					'min' => $min,
+					'max' => $max,
+				),
+			)
+		);
+	}
+
+	/**
+	 * Option-backed single line of text.
+	 *
+	 * @param \WP_Customize_Manager $c       Manager.
+	 * @param string                $option  Option name.
+	 * @param string                $key     Key.
+	 * @param string                $section Section.
+	 * @param string                $label   Label.
+	 * @param callable|null         $active  Visibility test.
+	 */
+	private function opt_text( \WP_Customize_Manager $c, string $option, string $key, string $section, string $label, ?callable $active = null ): void {
+		list( $id, $args ) = $this->opt_args( $option, $key, '', 'sanitize_text_field' );
+
+		$c->add_setting( $id, $args );
+
+		$control = array(
+			'type'    => 'text',
+			'section' => $section,
+			'label'   => $label,
+		);
+		if ( null !== $active ) {
+			$control['active_callback'] = $active;
+		}
+
+		$c->add_control( $id, $control );
+	}
+
+	/**
+	 * Option-backed colour.
+	 *
+	 * @param \WP_Customize_Manager $c       Manager.
+	 * @param string                $option  Option name.
+	 * @param string                $key     Key.
+	 * @param string                $section Section.
+	 * @param string                $label   Label.
+	 */
+	private function opt_color( \WP_Customize_Manager $c, string $option, string $key, string $section, string $label ): void {
+		list( $id, $args ) = $this->opt_args( $option, $key, '', 'sanitize_hex_color' );
+
+		$c->add_setting( $id, $args );
+		$c->add_control(
+			new \WP_Customize_Color_Control(
+				$c,
+				$id,
+				array(
+					'section' => $section,
+					'label'   => $label,
+				)
+			)
+		);
+	}
+
 }
