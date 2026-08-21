@@ -2004,19 +2004,19 @@ final class Customizer {
 			array(
 				'side'     => array(
 					'label' => __( 'Side strip inside the panel', 'oc-theme' ),
-					'svg'   => '<rect x="2" y="2" width="10" height="28" rx="2"/><rect x="16" y="2" width="30" height="8" rx="2" opacity=".35"/><rect x="16" y="14" width="30" height="8" rx="2" opacity=".35"/><rect x="16" y="26" width="30" height="4" rx="2" opacity=".35"/>',
+					'svg'   => '<svg class="oc-wf" width="96" height="64" viewBox="0 0 48 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="2" y="2" width="10" height="28" rx="2"/><rect x="16" y="2" width="30" height="8" rx="2" opacity=".35"/><rect x="16" y="14" width="30" height="8" rx="2" opacity=".35"/><rect x="16" y="26" width="30" height="4" rx="2" opacity=".35"/></svg>',
 				),
 				'list'     => array(
 					'label' => __( 'After the cart items', 'oc-theme' ),
-					'svg'   => '<rect x="2" y="2" width="44" height="6" rx="2" opacity=".35"/><rect x="2" y="12" width="8" height="6" rx="1.5"/><rect x="13" y="13.5" width="33" height="3" rx="1.5" opacity=".55"/><rect x="2" y="21" width="8" height="6" rx="1.5"/><rect x="13" y="22.5" width="33" height="3" rx="1.5" opacity=".55"/>',
+					'svg'   => '<svg class="oc-wf" width="96" height="64" viewBox="0 0 48 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="2" y="2" width="44" height="6" rx="2" opacity=".35"/><rect x="2" y="12" width="8" height="6" rx="1.5"/><rect x="13" y="13.5" width="33" height="3" rx="1.5" opacity=".55"/><rect x="2" y="21" width="8" height="6" rx="1.5"/><rect x="13" y="22.5" width="33" height="3" rx="1.5" opacity=".55"/></svg>',
 				),
 				'slider'   => array(
 					'label' => __( 'Horizontal slider', 'oc-theme' ),
-					'svg'   => '<rect x="2" y="2" width="44" height="7" rx="2" opacity=".35"/><rect x="8" y="14" width="12" height="14" rx="2"/><rect x="23" y="14" width="12" height="14" rx="2"/><rect x="38" y="14" width="8" height="14" rx="2" opacity=".55"/><path d="M2 21l3-2.5L2 16z"/>',
+					'svg'   => '<svg class="oc-wf" width="96" height="64" viewBox="0 0 48 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="2" y="2" width="44" height="7" rx="2" opacity=".35"/><rect x="8" y="14" width="12" height="14" rx="2"/><rect x="23" y="14" width="12" height="14" rx="2"/><rect x="38" y="14" width="8" height="14" rx="2" opacity=".55"/><path d="M2 21l3-2.5L2 16z"/></svg>',
 				),
 				'collapse' => array(
 					'label' => __( 'Above the total — minimizable', 'oc-theme' ),
-					'svg'   => '<rect x="2" y="2" width="44" height="12" rx="2" opacity=".35"/><rect x="2" y="18" width="21" height="12" rx="2"/><circle cx="19" cy="24" r="2.6" fill="#fff"/><rect x="26" y="18" width="20" height="12" rx="2" opacity=".55"/><circle cx="42" cy="24" r="2.6" fill="#fff"/>',
+					'svg'   => '<svg class="oc-wf" width="96" height="64" viewBox="0 0 48 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="2" y="2" width="44" height="12" rx="2" opacity=".35"/><rect x="2" y="18" width="21" height="12" rx="2"/><circle cx="19" cy="24" r="2.6" fill="#fff"/><rect x="26" y="18" width="20" height="12" rx="2" opacity=".55"/><circle cx="42" cy="24" r="2.6" fill="#fff"/></svg>',
 				),
 			),
 			'side',
@@ -2062,15 +2062,15 @@ final class Customizer {
 			array(
 				'sidebar' => array(
 					'label' => __( 'Side column', 'oc-theme' ),
-					'svg'   => '<rect x="34" y="2" width="12" height="28" rx="2"/><rect x="2" y="2" width="28" height="8" rx="2" opacity=".35"/><rect x="2" y="14" width="28" height="16" rx="2" opacity=".35"/>',
+					'svg'   => '<svg class="oc-wf" width="96" height="64" viewBox="0 0 48 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="34" y="2" width="12" height="28" rx="2"/><rect x="2" y="2" width="28" height="8" rx="2" opacity=".35"/><rect x="2" y="14" width="28" height="16" rx="2" opacity=".35"/></svg>',
 				),
 				'topbar'  => array(
 					'label' => __( 'Bar above the products', 'oc-theme' ),
-					'svg'   => '<rect x="2" y="2" width="44" height="7" rx="2"/><rect x="2" y="13" width="44" height="17" rx="2" opacity=".35"/>',
+					'svg'   => '<svg class="oc-wf" width="96" height="64" viewBox="0 0 48 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="2" y="2" width="44" height="7" rx="2"/><rect x="2" y="13" width="44" height="17" rx="2" opacity=".35"/></svg>',
 				),
 				'drawer'  => array(
 					'label' => __( 'Filter button opening a panel', 'oc-theme' ),
-					'svg'   => '<rect x="36" y="2" width="10" height="6" rx="2"/><rect x="2" y="12" width="44" height="18" rx="2" opacity=".35"/>',
+					'svg'   => '<svg class="oc-wf" width="96" height="64" viewBox="0 0 48 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="36" y="2" width="10" height="6" rx="2"/><rect x="2" y="12" width="44" height="18" rx="2" opacity=".35"/></svg>',
 				),
 			),
 			'sidebar',
