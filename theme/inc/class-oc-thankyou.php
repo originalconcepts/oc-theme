@@ -95,6 +95,7 @@ final class Thankyou {
 		add_action( 'woocommerce_add_to_cart', array( $this, 'apply_referral' ), 20 );
 		add_filter( 'woocommerce_coupon_is_valid', array( $this, 'coupon_is_valid' ), 20, 2 );
 		add_action( 'woocommerce_after_checkout_validation', array( $this, 'validate_referral' ), 20, 2 );
+		add_action( 'woocommerce_checkout_order_processed', array( $this, 'forget_referral' ) );
 
 		add_action( 'admin_menu', array( $this, 'menu' ), 61 );
 		add_action( 'admin_post_oc_thankyou_save', array( $this, 'save_settings' ) );
@@ -387,7 +388,22 @@ final class Thankyou {
 			return;
 		}
 
-		WC()->cart->apply_coupon( $code );
+		// A code that will not apply — spent, expired, or the referrer's own —
+		// is forgotten here. Keeping it would re-raise the same refusal on
+		// every future add to cart.
+		if ( ! WC()->cart->apply_coupon( $code ) ) {
+			WC()->session->set( 'oc_ref_code', null );
+		}
+	}
+
+	/**
+	 * The gift is spent once the order is in; it does not follow the visitor
+	 * into their next basket.
+	 */
+	public function forget_referral(): void {
+		if ( function_exists( 'WC' ) && WC()->session ) {
+			WC()->session->set( 'oc_ref_code', null );
+		}
 	}
 
 	/**
