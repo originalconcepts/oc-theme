@@ -116,7 +116,9 @@ final class Assets {
 			oc_asset_version( $css )
 		);
 
-		if ( function_exists( 'is_checkout' ) && is_checkout() && ! is_wc_endpoint_url( 'order-received' ) ) {
+		// The order-received page shares the bundle: its thank-you module
+		// (stars, copy button) guards on its own DOM, like the checkout does.
+		if ( function_exists( 'is_checkout' ) && is_checkout() ) {
 			$co = oc_asset_min( '/assets/js/checkout.js' );
 
 			wp_enqueue_script(

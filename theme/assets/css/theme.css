@@ -6180,7 +6180,7 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 		inset-block: 0;
 		inset-inline-end: 0;
 		inline-size: 50%;
-		background: var(--oc-up-bg, #f7f6f4);
+		background: var(--oc-co-side, var(--oc-up-bg, #f7f6f4));
 		border-inline-start: 1px solid var(--oc-line, #eee);
 		z-index: -1;
 	}
@@ -6201,13 +6201,14 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 
 .oc-checkout #order_review {
 	grid-row: 2;
-	position: sticky;
-	inset-block-start: 18px;
 	padding: 4px 0 22px;
 	max-inline-size: 430px;
 	inline-size: 100%;
 	justify-self: start;
 }
+
+/* JS pins whichever column is shorter (inset comes inline, measured). */
+.oc-checkout form.checkout .oc-co-stick { position: sticky; }
 
 .oc-checkout #order_review_heading { justify-self: start; }
 
@@ -7520,4 +7521,255 @@ body.oc-checkout { overflow-x: clip; }
 	}
 
 	.oc-legal__head { padding-block: 20px 14px; }
+}
+
+/* =====================================================================
+   Thank-you page (order received)
+   ===================================================================== */
+
+/* Woo's dry defaults give way to our sections. */
+.oc-ty-page .woocommerce-order-overview,
+.oc-ty-page .woocommerce-thankyou-order-received { display: none !important; }
+
+.oc-ty {
+	max-inline-size: 660px;
+	margin-inline: auto;
+	padding: 26px 16px 44px;
+}
+
+/* ---------- hero: animated check + greeting ---------- */
+
+.oc-ty__hero { text-align: center; margin-block-end: 22px; }
+
+.oc-ty__check {
+	display: inline-flex;
+	inline-size: 76px;
+	block-size: 76px;
+	border-radius: 50%;
+	background: color-mix(in srgb, var(--oc-success, #1e9e5a) 12%, #fff);
+	animation: oc-ty-pop .5s cubic-bezier(.34, 1.56, .64, 1) both;
+}
+
+.oc-ty__check svg { inline-size: 100%; block-size: 100%; }
+
+.oc-ty__ring {
+	fill: none;
+	stroke: var(--oc-success, #1e9e5a);
+	stroke-width: 2.6;
+	stroke-linecap: round;
+	stroke-dasharray: 183;
+	stroke-dashoffset: 183;
+	transform: rotate(-90deg);
+	transform-origin: 50% 50%;
+	animation: oc-ty-draw .7s ease-out .15s forwards;
+}
+
+.oc-ty__tick {
+	fill: none;
+	stroke: var(--oc-success, #1e9e5a);
+	stroke-width: 4;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+	stroke-dasharray: 38;
+	stroke-dashoffset: 38;
+	animation: oc-ty-draw .35s ease-out .65s forwards;
+}
+
+@keyframes oc-ty-draw { to { stroke-dashoffset: 0; } }
+
+@keyframes oc-ty-pop {
+	0% { transform: scale(.5); opacity: 0; }
+	100% { transform: scale(1); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.oc-ty__check { animation: none; }
+	.oc-ty__ring,
+	.oc-ty__tick { animation: none; stroke-dashoffset: 0; }
+}
+
+.oc-ty__title { margin: 14px 0 6px; font-size: 1.55rem; font-weight: 700; color: var(--oc-ink, #111); }
+.oc-ty__sub { margin: 0 0 14px; font-size: 1rem; color: var(--oc-ink-2, #555); }
+.oc-ty__num { margin: 0 0 4px; font-size: .98rem; color: var(--oc-ink, #111); }
+.oc-ty__mailnote { margin: 0; font-size: .88rem; color: var(--oc-ink-2, #777); }
+
+/* ---------- section boxes ---------- */
+
+.oc-ty__box {
+	background: #fff;
+	border: 1px solid var(--oc-line, #e7e7ea);
+	border-radius: 12px;
+	padding: 20px 22px;
+	margin-block-end: 14px;
+}
+
+.oc-ty__h { margin: 0 0 12px; font-size: 1.02rem; font-weight: 700; color: var(--oc-ink, #111); }
+
+.oc-ty__content { text-align: center; font-size: .95rem; color: var(--oc-ink, #222); }
+.oc-ty__content p { margin: 0 0 8px; }
+.oc-ty__content p:last-child { margin-block-end: 0; }
+.oc-ty__content img { max-inline-size: 100%; block-size: auto; border-radius: 8px; }
+
+/* ---------- order summary ---------- */
+
+.oc-ty__item {
+	display: flex;
+	align-items: flex-start;
+	gap: 12px;
+	padding-block: 10px;
+	border-block-start: 1px solid var(--oc-line, #f0f0f2);
+}
+
+.oc-ty__item:first-of-type { border-block-start: 0; padding-block-start: 0; }
+
+.oc-ty__item-img { flex: 0 0 56px; }
+
+.oc-ty__item-img img {
+	inline-size: 56px;
+	block-size: 56px;
+	object-fit: contain;
+	background: #fff;
+	border: 1px solid var(--oc-line, #eee);
+	border-radius: 8px;
+}
+
+.oc-ty__item-body { flex: 1 1 auto; min-inline-size: 0; display: flex; flex-direction: column; gap: 2px; }
+.oc-ty__item-name { font-size: .93rem; font-weight: 600; color: var(--oc-ink, #111); }
+.oc-ty__item-meta { font-size: .8rem; color: var(--oc-ink-2, #777); }
+.oc-ty__item-meta dl,
+.oc-ty__item-meta dt,
+.oc-ty__item-meta dd,
+.oc-ty__item-meta p { display: inline; margin: 0; font-weight: 400; }
+.oc-ty__item-qty { font-size: .8rem; color: var(--oc-ink-2, #777); }
+.oc-ty__item-total { margin-inline-start: auto; font-size: .93rem; font-weight: 600; color: var(--oc-ink, #111); white-space: nowrap; }
+
+.oc-ty__totals { margin-block-start: 12px; border-block-start: 1px solid var(--oc-line, #e7e7ea); padding-block-start: 10px; }
+
+.oc-ty__trow {
+	display: flex;
+	justify-content: space-between;
+	gap: 12px;
+	font-size: .9rem;
+	color: var(--oc-ink-2, #555);
+	padding-block: 3px;
+}
+
+.oc-ty__trow--total {
+	margin-block-start: 6px;
+	padding-block-start: 9px;
+	border-block-start: 1px solid var(--oc-line, #e7e7ea);
+	font-size: 1rem;
+	font-weight: 700;
+	color: var(--oc-ink, #111);
+}
+
+/* ---------- refer a friend ---------- */
+
+.oc-ty__ref { text-align: center; }
+.oc-ty__ref-txt { margin: 0 0 14px; font-size: .92rem; color: var(--oc-ink-2, #555); }
+
+.oc-ty__code-row {
+	display: flex;
+	align-items: stretch;
+	justify-content: center;
+	gap: 10px;
+	margin-block-end: 12px;
+	flex-wrap: wrap;
+}
+
+.oc-ty__code {
+	display: inline-flex;
+	align-items: center;
+	padding: 10px 20px;
+	border: 1.5px dashed var(--oc-ink, #111);
+	border-radius: 8px;
+	font-size: 1.05rem;
+	font-weight: 700;
+	letter-spacing: .12em;
+	direction: ltr;
+	user-select: all;
+}
+
+.oc-ty__copy {
+	border: 0;
+	border-radius: var(--oc-cta-r, 8px);
+	background: var(--oc-cta, #111);
+	color: var(--oc-cta-tx, #fff);
+	font-size: .88rem;
+	font-weight: 600;
+	padding: 10px 18px;
+	cursor: pointer;
+	transition: background .15s ease;
+}
+
+.oc-ty__copy:hover { background: var(--oc-cta-h, #333); }
+.oc-ty__copy.is-done { background: var(--oc-success, #1e9e5a); color: #fff; }
+
+.oc-ty__wa {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	font-size: .88rem;
+	font-weight: 600;
+	color: var(--oc-ink, #111);
+	text-decoration: underline;
+	text-underline-offset: 3px;
+}
+
+/* ---------- survey ---------- */
+
+.oc-ty__survey { text-align: center; }
+
+.oc-ty__stars { display: inline-flex; flex-direction: row-reverse; gap: 4px; direction: ltr; }
+
+.oc-ty__star {
+	border: 0;
+	background: none;
+	padding: 3px;
+	cursor: pointer;
+	color: #d9d9de;
+	transition: color .12s ease, transform .12s ease;
+}
+
+.oc-ty__star svg { inline-size: 30px; block-size: 30px; fill: currentColor; display: block; }
+.oc-ty__star.is-on { color: #f5b301; }
+.oc-ty__star:not(:disabled):hover { transform: scale(1.12); }
+.oc-ty__star:disabled { cursor: default; }
+
+/* With row-reverse + ltr the DOM order 1..5 paints right-to-left, so the
+ * hover fill grows from the right — natural in an RTL page. */
+
+.oc-ty__thanks { margin: 10px 0 0; font-size: .9rem; color: var(--oc-success, #1e9e5a); font-weight: 600; }
+
+/* ---------- social ---------- */
+
+.oc-ty__social { text-align: center; }
+
+.oc-ty__soc-row { display: flex; justify-content: center; gap: 12px; }
+
+.oc-ty__soc {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	inline-size: 46px;
+	block-size: 46px;
+	border: 1px solid var(--oc-line, #ddd);
+	border-radius: 50%;
+	color: var(--oc-ink, #222);
+	transition: background .15s ease, color .15s ease, border-color .15s ease;
+}
+
+.oc-ty__soc svg { inline-size: 22px; block-size: 22px; }
+
+.oc-ty__soc:hover {
+	background: var(--oc-ink, #111);
+	border-color: var(--oc-ink, #111);
+	color: #fff;
+}
+
+@media (max-width: 640px) {
+	.oc-ty { padding-block-start: 16px; }
+	.oc-ty__box { padding: 16px; }
+	.oc-ty__check { inline-size: 66px; block-size: 66px; }
+	.oc-ty__title { font-size: 1.35rem; }
 }

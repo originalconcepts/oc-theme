@@ -44,6 +44,8 @@ require_once OC_THEME_DIR . '/inc/class-oc-filters.php';
 require_once OC_THEME_DIR . '/inc/class-oc-tabs.php';
 require_once OC_THEME_DIR . '/inc/class-oc-cart.php';
 require_once OC_THEME_DIR . '/inc/class-oc-checkout.php';
+require_once OC_THEME_DIR . '/inc/class-oc-contact.php';
+require_once OC_THEME_DIR . '/inc/class-oc-thankyou.php';
 require_once OC_THEME_DIR . '/inc/class-oc-performance.php';
 
 /**
@@ -324,6 +326,8 @@ add_action( 'admin_notices', 'oc_dependency_notice' );
 ( new OC\Theme\Tabs() )->register();
 ( new OC\Theme\Cart() )->register();
 ( new OC\Theme\Checkout() )->register();
+( new OC\Theme\Contact() )->register();
+( new OC\Theme\Thankyou() )->register();
 ( new OC\Theme\Performance() )->register();
 ( new OC\Theme\Updater( get_template(), OC_THEME_VERSION, OC_THEME_REPO ) )->register();
 

@@ -2157,3 +2157,129 @@ msgstr "סיכום בדסקטופ"
 
 msgid "Start folded — the visitor opens it"
 msgstr "מוצג מקופל — הלקוח פותח אותו"
+
+msgid "Contact details"
+msgstr "פרטי התקשרות"
+
+msgid "The main phone and email of the store. Anywhere a phone or email shows — the checkout help line, the thank-you page, editable texts — you can write {phone} or {email} and the value set here appears."
+msgstr "הטלפון והאימייל הראשיים של החנות. בכל מקום שמוצג טלפון או אימייל — שורת העזרה בקופה, דף התודה, טקסטים לעריכה — אפשר לכתוב ‎{phone}‎ או ‎{email}‎ ויופיע הערך שמוגדר כאן."
+
+msgid "Empty = the WooCommerce sender address."
+msgstr "ריק = כתובת השולח של ווקומרס."
+
+msgid "Summary column color"
+msgstr "צבע עמודת הסיכום"
+
+msgid "The band behind the summary and payment column on desktop. Empty = the theme default grey."
+msgstr "הרקע מאחורי עמודת הסיכום והתשלום בדסקטופ. ריק = האפור של ברירת המחדל."
+
+msgid "Our customer service team is here for you with any question:"
+msgstr "מוקד שירות הלקוחות שלנו זמין עבורך לכל שאלה:"
+
+msgid "Thank you %s"
+msgstr "תודה רבה %s"
+
+msgid "Thank you!"
+msgstr "תודה רבה!"
+
+msgid "Your order has been received and will be handled shortly."
+msgstr "הזמנתך התקבלה והיא תטופל בהקדם."
+
+msgid "Your order number is:"
+msgstr "מספר הזמנתך הוא:"
+
+msgid "A confirmation with the order details was sent to your email."
+msgstr "אישור ופרטי ההזמנה נשלחו אליך במייל."
+
+msgid "Qty: %s"
+msgstr "כמות: %s"
+
+msgid "I have a gift for you: %1$s%% off at %3$s with the code %2$s"
+msgstr "יש לי מתנה בשבילך: %1$s%% הנחה ב-%3$s עם הקוד %2$s"
+
+msgid "A gift for a friend"
+msgstr "מתנה לחבר"
+
+msgid "Share this code with a friend — they get %1$s%% off their first order, and once they buy you get a %2$s%% coupon of your own."
+msgstr "שתפו את הקוד עם חבר — הוא יקבל %1$s%% הנחה בהזמנה הראשונה שלו, ואחרי שירכוש תקבלו קופון של %2$s%% לעצמכם."
+
+msgid "Copy"
+msgstr "העתקה"
+
+msgid "Copied"
+msgstr "הועתק ✓"
+
+msgid "Share on WhatsApp"
+msgstr "שיתוף בוואטסאפ"
+
+msgid "Your friend just ordered — here is your %s%% coupon"
+msgstr "החבר שלך ביצע הזמנה — הנה קופון של %s%% בשבילך"
+
+msgid "The friend you shared your code with has placed an order. As promised, a coupon of your own:"
+msgstr "החבר ששיתפת איתו את הקוד ביצע הזמנה. כמו שהבטחנו — קופון משלך:"
+
+msgid "Valid for %s days. See you soon!"
+msgstr "בתוקף ל-%s ימים. נתראה בקרוב!"
+
+msgid "Rate your purchase experience"
+msgstr "דרגו את חווית הרכישה שלכם"
+
+msgid "Thanks for the feedback!"
+msgstr "תודה על הדירוג!"
+
+msgid "Follow us"
+msgstr "עקבו אחרינו"
+
+msgid "Thank-you page"
+msgstr "דף תודה"
+
+msgid "Page content"
+msgstr "תוכן העמוד"
+
+msgid "Shown under the greeting. Placeholders: {phone} {email} {first_name} {order_number} — phone and email come from Contact details."
+msgstr "מוצג מתחת לברכה. משתנים: ‎{phone}‎ ‎{email}‎ ‎{first_name}‎ ‎{order_number}‎ — הטלפון והאימייל נמשכים מ״פרטי התקשרות״."
+
+msgid "Show the products (with images) and totals"
+msgstr "הצגת המוצרים (עם תמונות) והסכומים"
+
+msgid "Social buttons"
+msgstr "כפתורי סושיאל"
+
+msgid "Invite customers to follow the store"
+msgstr "הזמנת לקוחות לעקוב אחרי החנות"
+
+msgid "Purchase survey"
+msgstr "סקר רכישה"
+
+msgid "Ask for a 1–5 star rating"
+msgstr "בקשת דירוג של 1–5 כוכבים"
+
+msgid "Results"
+msgstr "תוצאות"
+
+msgid "No ratings yet."
+msgstr "אין דירוגים עדיין."
+
+msgid "Average %1$s of 5, from %2$s ratings."
+msgstr "ממוצע %1$s מתוך 5, מ-%2$s דירוגים."
+
+msgid "Refer a friend"
+msgstr "חבר מביא חבר"
+
+msgid "Offer a shareable coupon; the referrer earns one back when the friend buys"
+msgstr "הצעת קופון לשיתוף; המשתף מקבל קופון משלו כשהחבר רוכש"
+
+msgid "Percentages"
+msgstr "אחוזים"
+
+msgid "Friend's discount"
+msgstr "ההנחה לחבר"
+
+msgid "Referrer's reward"
+msgstr "התגמול למשתף"
+
+msgid "Valid for"
+msgstr "בתוקף ל"
+
+msgid "days"
+msgstr "ימים"

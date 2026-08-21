@@ -35,6 +35,7 @@ final class Checkout {
 			array(
 				'summary'         => 1,       // Product list in the order summary.
 				'summary_fold'    => 1,       // Desktop summary starts folded.
+				'side_bg'         => '',      // Summary-column band color; '' = theme default.
 				'coupon_mode'     => 'open',  // open | button | hide.
 				'country_mode'    => 'auto',  // auto | hide.
 				'send_other'      => 1,       // "I'm sending to someone else" toggle.
@@ -115,6 +116,8 @@ final class Checkout {
 		add_action( 'wp_ajax_nopriv_oc_co_stash', array( $this, 'ajax_stash' ) );
 		add_filter( 'woocommerce_checkout_get_value', array( $this, 'stashed_value' ), 10, 2 );
 		add_action( 'woocommerce_before_checkout_form', array( $this, 'stash_script' ), 4 );
+
+		add_action( 'wp_enqueue_scripts', array( $this, 'side_bg_css' ), 40 );
 
 		add_action( 'admin_menu', array( $this, 'menu' ), 60 );
 		add_action( 'admin_post_oc_checkout_save', array( $this, 'save_settings' ) );
@@ -601,7 +604,7 @@ final class Checkout {
 		}
 		echo '</div>';
 
-		echo '<span class="oc-co-brand__help">' . esc_html( trim( (string) $s['help_text'] ) ) . '</span>';
+		echo '<span class="oc-co-brand__help">' . esc_html( Contact::fill( trim( (string) $s['help_text'] ) ) ) . '</span>';
 
 		echo '</div></div>';
 	}
@@ -1133,7 +1136,22 @@ final class Checkout {
 			return;
 		}
 
-		echo '<div class="oc-co-help">' . esc_html( $text ) . '</div>';
+		echo '<div class="oc-co-help">' . esc_html( Contact::fill( $text ) ) . '</div>';
+	}
+
+	/**
+	 * The summary-column band color, when the default grey was overridden.
+	 */
+	public function side_bg_css(): void {
+		if ( ! is_checkout() || is_wc_endpoint_url( 'order-received' ) ) {
+			return;
+		}
+
+		$bg = sanitize_hex_color( (string) self::settings()['side_bg'] );
+
+		if ( $bg ) {
+			wp_add_inline_style( 'oc-theme', 'body.oc-checkout{--oc-co-side:' . $bg . '}' );
+		}
 	}
 
 	/* -------------------------------------------------------------- admin */
@@ -1181,6 +1199,14 @@ final class Checkout {
 					<tr>
 						<th scope="row"><?php esc_html_e( 'Summary on desktop', 'oc-theme' ); ?></th>
 						<td><label><input type="checkbox" name="summary_fold" value="1" <?php checked( 1, (int) $s['summary_fold'] ); ?> /> <?php esc_html_e( 'Start folded — the visitor opens it', 'oc-theme' ); ?></label></td>
+					</tr>
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Summary column color', 'oc-theme' ); ?></th>
+						<td>
+							<input type="text" name="side_bg" dir="ltr" value="<?php echo esc_attr( (string) $s['side_bg'] ); ?>" placeholder="#f7f6f4" pattern="#?[0-9a-fA-F]{3,6}" style="width:100px;" oninput="this.nextElementSibling.value = /^#[0-9a-fA-F]{6}$/.test(this.value) ? this.value : this.nextElementSibling.value" />
+							<input type="color" value="<?php echo esc_attr( sanitize_hex_color( (string) $s['side_bg'] ) ? (string) $s['side_bg'] : '#f7f6f4' ); ?>" oninput="this.previousElementSibling.value = this.value" />
+							<p class="description"><?php esc_html_e( 'The band behind the summary and payment column on desktop. Empty = the theme default grey.', 'oc-theme' ); ?></p>
+						</td>
 					</tr>
 					<tr>
 						<th scope="row"><?php esc_html_e( 'Coupon field', 'oc-theme' ); ?></th>
@@ -1285,6 +1311,7 @@ final class Checkout {
 		$s = array(
 			'summary'         => empty( $_POST['summary'] ) ? 0 : 1,
 			'summary_fold'    => empty( $_POST['summary_fold'] ) ? 0 : 1,
+			'side_bg'         => (string) sanitize_hex_color( wp_unslash( $_POST['side_bg'] ?? '' ) ),
 			'coupon_mode'     => in_array( $_POST['coupon_mode'] ?? 'open', array( 'open', 'button', 'hide' ), true ) ? sanitize_key( $_POST['coupon_mode'] ?? 'open' ) : 'open',
 			'country_mode'    => 'hide' === ( $_POST['country_mode'] ?? 'auto' ) ? 'hide' : 'auto',
 			'send_other'      => empty( $_POST['send_other'] ) ? 0 : 1,

@@ -420,6 +420,48 @@
 			wrap.appendChild( trust );
 		}
 
+		/* -- desktop: the shorter column pins while the longer scrolls --
+		 * Same idea as the product page columns: whichever side ends first
+		 * holds on screen while the taller one keeps scrolling. A column
+		 * taller than the viewport pins by its bottom edge instead, so the
+		 * page never freezes behind it. */
+		var coDetails = coForm.querySelector( '#customer_details' );
+		var coReview = coForm.querySelector( '#order_review' );
+
+		function coStickCols() {
+			if ( ! coDetails || ! coReview ) {
+				return;
+			}
+
+			[ coDetails, coReview ].forEach( function ( col ) {
+				col.classList.remove( 'oc-co-stick' );
+				col.style.insetBlockStart = '';
+			} );
+
+			if ( window.innerWidth <= 900 ) {
+				return;
+			}
+
+			var shorter = coDetails.offsetHeight <= coReview.offsetHeight ? coDetails : coReview;
+			var pinTop = 18;
+			var fits = shorter.offsetHeight <= window.innerHeight - pinTop;
+
+			shorter.style.insetBlockStart = fits
+				? pinTop + 'px'
+				: ( window.innerHeight - shorter.offsetHeight - 16 ) + 'px';
+			shorter.classList.add( 'oc-co-stick' );
+		}
+
+		window.addEventListener( 'resize', coStickCols );
+		window.addEventListener( 'load', coStickCols );
+
+		// The fold heading toggles column heights without mutating the form.
+		document.addEventListener( 'click', function ( e ) {
+			if ( e.target.closest( '.oc-co-sumhead' ) ) {
+				setTimeout( coStickCols, 80 );
+			}
+		} );
+
 		var coTick = null;
 		new MutationObserver( function () {
 			if ( coTick ) {
@@ -434,8 +476,11 @@
 				coSyncMethod();
 				coSumHead();
 				coTabOrder();
+				coStickCols();
 			}, 60 );
 		} ).observe( coForm, { childList: true, subtree: true } );
+
+		coStickCols();
 
 		coPaintButton();
 		coTrustLine();
@@ -855,6 +900,96 @@
 				coLegalClose();
 			}
 		} );
+	}
+
+	/* ---------- thank-you page ---------- */
+
+	var ty = document.querySelector( '.oc-ty' );
+
+	if ( ty ) {
+		/* -- survey stars -- */
+		var tySurvey = ty.querySelector( '[data-oc-ty-survey]' );
+
+		if ( tySurvey && ! tySurvey.dataset.rated ) {
+			var tyStars = Array.prototype.slice.call( tySurvey.querySelectorAll( '.oc-ty__star' ) );
+
+			var tyPaint = function ( n ) {
+				tyStars.forEach( function ( s, i ) {
+					s.classList.toggle( 'is-on', i < n );
+				} );
+			};
+
+			tyStars.forEach( function ( star, i ) {
+				star.addEventListener( 'mouseenter', function () {
+					if ( ! tySurvey.dataset.rated ) {
+						tyPaint( i + 1 );
+					}
+				} );
+				star.addEventListener( 'mouseleave', function () {
+					if ( ! tySurvey.dataset.rated ) {
+						tyPaint( 0 );
+					}
+				} );
+				star.addEventListener( 'click', function () {
+					if ( tySurvey.dataset.rated ) {
+						return;
+					}
+
+					var n = i + 1;
+					tySurvey.dataset.rated = String( n );
+					tyPaint( n );
+					tyStars.forEach( function ( b ) {
+						b.disabled = true;
+					} );
+
+					var thanks = tySurvey.querySelector( '.oc-ty__thanks' );
+					if ( thanks ) {
+						thanks.hidden = false;
+					}
+
+					var body = new FormData();
+					body.append( 'action', 'oc_ty_rate' );
+					body.append( 'order', tySurvey.dataset.order || '' );
+					body.append( 'key', tySurvey.dataset.key || '' );
+					body.append( 'rating', String( n ) );
+					fetch( tySurvey.dataset.ajax, { method: 'POST', credentials: 'same-origin', body: body } );
+				} );
+			} );
+		}
+
+		/* -- referral code: copy -- */
+		var tyCopy = ty.querySelector( '[data-oc-ty-copy]' );
+
+		if ( tyCopy ) {
+			tyCopy.addEventListener( 'click', function () {
+				var codeEl = ty.querySelector( '[data-oc-ty-code]' );
+				var text = codeEl ? codeEl.textContent.trim() : '';
+
+				var done = function () {
+					var was = tyCopy.textContent;
+					tyCopy.classList.add( 'is-done' );
+					tyCopy.textContent = tyCopy.dataset.done || was;
+					setTimeout( function () {
+						tyCopy.classList.remove( 'is-done' );
+						tyCopy.textContent = was;
+					}, 1600 );
+				};
+
+				if ( navigator.clipboard && navigator.clipboard.writeText ) {
+					navigator.clipboard.writeText( text ).then( done, done );
+				} else {
+					var t = document.createElement( 'textarea' );
+					t.value = text;
+					document.body.appendChild( t );
+					t.select();
+					try {
+						document.execCommand( 'copy' );
+					} catch ( err ) { /* best effort */ }
+					document.body.removeChild( t );
+					done();
+				}
+			} );
+		}
 	}
 
 }() );
