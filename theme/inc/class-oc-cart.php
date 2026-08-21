@@ -389,9 +389,20 @@ final class Cart {
 			return wc_get_formatted_cart_item_data( $item );
 		}
 
+		return self::attributes_html( (array) $item['variation'] );
+	}
+
+	/**
+	 * The same rows from bare taxonomy => slug pairs, so a surface holding an
+	 * order item (the thank-you page) shows attributes exactly as the cart
+	 * does — swatch dot included.
+	 *
+	 * @param array<string,mixed> $pairs Taxonomy (or attribute_ key) => term slug.
+	 */
+	public static function attributes_html( array $pairs ): string {
 		$html = '<span class="oc-mcart__attrs">';
 
-		foreach ( $item['variation'] as $raw_tax => $slug ) {
+		foreach ( $pairs as $raw_tax => $slug ) {
 			$slug = (string) $slug;
 			if ( '' === $slug ) {
 				continue;

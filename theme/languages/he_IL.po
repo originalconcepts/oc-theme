@@ -36,7 +36,7 @@ msgid "Page not found"
 msgstr "העמוד לא נמצא"
 
 msgid "The page you asked for is not here. Try a search instead."
-msgstr "העמוד שחיפשתם אינו כאן. נסו לחפש במקום."
+msgstr "העמוד המבוקש לא נמצא. אפשר לנסות חיפוש במקום."
 
 msgid "Nothing found."
 msgstr "לא נמצאו תוצאות."
@@ -676,7 +676,7 @@ msgid "Full width, thumbnails beside"
 msgstr "רוחב מלא · ממוזערות בצד"
 
 msgid "Read more"
-msgstr "קרא עוד"
+msgstr "להמשך קריאה"
 
 msgid "Read less"
 msgstr "הצג פחות"
@@ -772,7 +772,7 @@ msgid "Select values"
 msgstr "בחירת ערכים"
 
 msgid "Select all"
-msgstr "בחר הכל"
+msgstr "בחירת הכל"
 
 msgid "Select none"
 msgstr "נקה בחירה"
@@ -1226,7 +1226,7 @@ msgid "Variation"
 msgstr "וריאציה"
 
 msgid "Choose the variation you are waiting for"
-msgstr "בחרו את הוריאציה שאתם מחכים לה"
+msgstr "איזו וריאציה מעניינת אותך?"
 
 msgid "Choose a variation first."
 msgstr "יש לבחור וריאציה קודם."
@@ -1484,7 +1484,7 @@ msgid "e.g. Gender"
 msgstr "למשל: מגדר"
 
 msgid "No products match this combination — try removing one of the filters."
-msgstr "אין מוצרים שתואמים את השילוב — נסו להסיר אחד מהסינונים."
+msgstr "אין מוצרים שתואמים את השילוב — אפשר להסיר אחד מהסינונים."
 
 msgid "Sort"
 msgstr "מיון"
@@ -1862,10 +1862,10 @@ msgid "Remove all items from the cart"
 msgstr "מחיקת כל המוצרים מהסל"
 
 msgid "Continue to checkout"
-msgstr "המשך לקופה"
+msgstr "מעבר לקופה"
 
 msgid "Continue shopping"
-msgstr "המשך בקניות"
+msgstr "המשך קניות"
 
 msgid "Show a \"Continue shopping\" button beneath"
 msgstr "הצגת כפתור ״המשך בקניות״ מתחת"
@@ -2158,12 +2158,6 @@ msgstr "סיכום בדסקטופ"
 msgid "Start folded — the visitor opens it"
 msgstr "מוצג מקופל — הלקוח פותח אותו"
 
-msgid "Contact details"
-msgstr "פרטי התקשרות"
-
-msgid "The main phone and email of the store. Anywhere a phone or email shows — the checkout help line, the thank-you page, editable texts — you can write {phone} or {email} and the value set here appears."
-msgstr "הטלפון והאימייל הראשיים של החנות. בכל מקום שמוצג טלפון או אימייל — שורת העזרה בקופה, דף התודה, טקסטים לעריכה — אפשר לכתוב ‎{phone}‎ או ‎{email}‎ ויופיע הערך שמוגדר כאן."
-
 msgid "Empty = the WooCommerce sender address."
 msgstr "ריק = כתובת השולח של ווקומרס."
 
@@ -2188,20 +2182,11 @@ msgstr "הזמנתך התקבלה והיא תטופל בהקדם."
 msgid "Your order number is:"
 msgstr "מספר הזמנתך הוא:"
 
-msgid "A confirmation with the order details was sent to your email."
-msgstr "אישור ופרטי ההזמנה נשלחו אליך במייל."
-
-msgid "Qty: %s"
-msgstr "כמות: %s"
-
 msgid "I have a gift for you: %1$s%% off at %3$s with the code %2$s"
 msgstr "יש לי מתנה בשבילך: %1$s%% הנחה ב-%3$s עם הקוד %2$s"
 
 msgid "A gift for a friend"
 msgstr "מתנה לחבר"
-
-msgid "Share this code with a friend — they get %1$s%% off their first order, and once they buy you get a %2$s%% coupon of your own."
-msgstr "שתפו את הקוד עם חבר — הוא יקבל %1$s%% הנחה בהזמנה הראשונה שלו, ואחרי שירכוש תקבלו קופון של %2$s%% לעצמכם."
 
 msgid "Copy"
 msgstr "העתקה"
@@ -2221,47 +2206,17 @@ msgstr "החבר ששיתפת איתו את הקוד ביצע הזמנה. כמו
 msgid "Valid for %s days. See you soon!"
 msgstr "בתוקף ל-%s ימים. נתראה בקרוב!"
 
-msgid "Rate your purchase experience"
-msgstr "דרגו את חווית הרכישה שלכם"
-
 msgid "Thanks for the feedback!"
 msgstr "תודה על הדירוג!"
-
-msgid "Follow us"
-msgstr "עקבו אחרינו"
-
-msgid "Thank-you page"
-msgstr "דף תודה"
-
-msgid "Page content"
-msgstr "תוכן העמוד"
-
-msgid "Shown under the greeting. Placeholders: {phone} {email} {first_name} {order_number} — phone and email come from Contact details."
-msgstr "מוצג מתחת לברכה. משתנים: ‎{phone}‎ ‎{email}‎ ‎{first_name}‎ ‎{order_number}‎ — הטלפון והאימייל נמשכים מ״פרטי התקשרות״."
 
 msgid "Show the products (with images) and totals"
 msgstr "הצגת המוצרים (עם תמונות) והסכומים"
 
-msgid "Social buttons"
-msgstr "כפתורי סושיאל"
-
 msgid "Invite customers to follow the store"
 msgstr "הזמנת לקוחות לעקוב אחרי החנות"
 
-msgid "Purchase survey"
-msgstr "סקר רכישה"
-
-msgid "Ask for a 1–5 star rating"
-msgstr "בקשת דירוג של 1–5 כוכבים"
-
-msgid "Results"
-msgstr "תוצאות"
-
 msgid "No ratings yet."
 msgstr "אין דירוגים עדיין."
-
-msgid "Average %1$s of 5, from %2$s ratings."
-msgstr "ממוצע %1$s מתוך 5, מ-%2$s דירוגים."
 
 msgid "Refer a friend"
 msgstr "חבר מביא חבר"
@@ -2283,3 +2238,108 @@ msgstr "בתוקף ל"
 
 msgid "days"
 msgstr "ימים"
+
+msgid "Store details"
+msgstr "פרטי החנות"
+
+msgid "The store's own channels, entered once. Every page that shows them reads from here — the checkout help line, the thank-you page, and any text where you write {phone}, {email} or {whatsapp}. An empty field simply does not appear."
+msgstr "ערוצי הקשר של החנות, במקום אחד. כל עמוד שמציג אותם מושך מכאן — שורת העזרה בקופה, דף התודה, וכל טקסט שכתוב בו ‎{phone}‎, ‎{email}‎ או ‎{whatsapp}‎. שדה ריק פשוט לא מוצג."
+
+msgid "Contact"
+msgstr "יצירת קשר"
+
+msgid "WhatsApp number"
+msgstr "מספר וואטסאפ"
+
+msgid "For a direct chat with the store."
+msgstr "לשיחה ישירה עם החנות."
+
+msgid "WhatsApp group"
+msgstr "קבוצת וואטסאפ"
+
+msgid "An invite link to the store's group, for the join widget."
+msgstr "קישור הזמנה לקבוצה של החנות, עבור ווידג׳ט ההצטרפות."
+
+msgid "Social profiles"
+msgstr "פרופילים ברשתות"
+
+msgid "The confirmation and order details were sent by email."
+msgstr "האישור ופרטי ההזמנה נשלחו במייל."
+
+msgid "How was your purchase experience?"
+msgstr "איך היתה חוויית הרכישה?"
+
+msgid "A few words about the experience?"
+msgstr "כמה מילים על החוויה?"
+
+msgid "Send"
+msgstr "שליחה"
+
+msgid "Want to follow us?"
+msgstr "רוצה לעקוב אחרינו?"
+
+msgid "Join our WhatsApp group"
+msgstr "להצטרפות לקבוצת הוואטסאפ שלנו"
+
+msgid "News and offers first"
+msgstr "עדכונים ומבצעים לפני כולם"
+
+msgid "This code is yours to share: a friend gets %1$s%% off a first order, and once they buy, a %2$s%% coupon is waiting for you."
+msgstr "הקוד הזה שלך לשיתוף: חבר יקבל %1$s%% הנחה בהזמנה ראשונה, ואחרי שירכוש יחכה לך קופון של %2$s%%."
+
+msgid "Thank-you page"
+msgstr "דף תודה"
+
+msgid "Settings"
+msgstr "הגדרות"
+
+msgid "Ratings"
+msgstr "דירוגים"
+
+msgid "Page content"
+msgstr "תוכן העמוד"
+
+msgid "Shown under the greeting. Placeholders: {phone} {email} {whatsapp} {first_name} {order_number} — the channels come from Store details."
+msgstr "מוצג מתחת לברכה. משתנים: ‎{phone}‎ ‎{email}‎ ‎{whatsapp}‎ ‎{first_name}‎ ‎{order_number}‎ — ערוצי הקשר נמשכים מ״פרטי החנות״."
+
+msgid "Contact channels"
+msgstr "ערוצי קשר"
+
+msgid "Show phone, email and WhatsApp under the text"
+msgstr "הצגת טלפון, אימייל ווואטסאפ מתחת לטקסט"
+
+msgid "Set them in Store details"
+msgstr "להגדרה ב״פרטי החנות״"
+
+msgid "add it in Store details"
+msgstr "יש להוסיף ב״פרטי החנות״"
+
+msgid "Blocks"
+msgstr "מקטעים"
+
+msgid "Invite to join the group"
+msgstr "הזמנה להצטרף לקבוצה"
+
+msgid "Social buttons"
+msgstr "כפתורי סושיאל"
+
+msgid "Purchase survey"
+msgstr "סקר רכישה"
+
+msgid "Ask for a 1–5 star rating, then a few words"
+msgstr "בקשת דירוג 1–5 כוכבים, ואחריו כמה מילים"
+
+msgid "Average %1$s of 5, from %2$s ratings."
+msgstr "ממוצע %1$s מתוך 5, מ-%2$s דירוגים."
+
+msgid "Customer"
+msgstr "לקוח"
+
+msgid "Rating"
+msgstr "דירוג"
+
+msgid "In their words"
+msgstr "במילים שלהם"
+
+msgid "Date"
+msgstr "תאריך"

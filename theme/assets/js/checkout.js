@@ -907,11 +907,26 @@
 	var ty = document.querySelector( '.oc-ty' );
 
 	if ( ty ) {
-		/* -- survey stars -- */
+		/* -- survey: stars, then room for a few words -- */
 		var tySurvey = ty.querySelector( '[data-oc-ty-survey]' );
 
-		if ( tySurvey && ! tySurvey.dataset.rated ) {
+		if ( tySurvey ) {
 			var tyStars = Array.prototype.slice.call( tySurvey.querySelectorAll( '.oc-ty__star' ) );
+			var tySay = tySurvey.querySelector( '[data-oc-ty-say]' );
+			var tyText = tySurvey.querySelector( '[data-oc-ty-text]' );
+			var tySend = tySurvey.querySelector( '[data-oc-ty-send]' );
+			var tyThanks = tySurvey.querySelector( '.oc-ty__thanks' );
+
+			var tyPost = function ( fields ) {
+				var body = new FormData();
+				body.append( 'action', 'oc_ty_rate' );
+				body.append( 'order', tySurvey.dataset.order || '' );
+				body.append( 'key', tySurvey.dataset.key || '' );
+				Object.keys( fields ).forEach( function ( k ) {
+					body.append( k, fields[ k ] );
+				} );
+				return fetch( tySurvey.dataset.ajax, { method: 'POST', credentials: 'same-origin', body: body } );
+			};
 
 			var tyPaint = function ( n ) {
 				tyStars.forEach( function ( s, i ) {
@@ -919,42 +934,67 @@
 				} );
 			};
 
-			tyStars.forEach( function ( star, i ) {
-				star.addEventListener( 'mouseenter', function () {
-					if ( ! tySurvey.dataset.rated ) {
-						tyPaint( i + 1 );
-					}
+			if ( ! tySurvey.dataset.rated ) {
+				tyStars.forEach( function ( star, i ) {
+					star.addEventListener( 'mouseenter', function () {
+						if ( ! tySurvey.dataset.rated ) {
+							tyPaint( i + 1 );
+						}
+					} );
+					star.addEventListener( 'mouseleave', function () {
+						if ( ! tySurvey.dataset.rated ) {
+							tyPaint( 0 );
+						}
+					} );
+					star.addEventListener( 'click', function () {
+						if ( tySurvey.dataset.rated ) {
+							return;
+						}
+
+						var n = i + 1;
+						tySurvey.dataset.rated = String( n );
+						tyPaint( n );
+						tyStars.forEach( function ( b ) {
+							b.disabled = true;
+						} );
+
+						// The rating is in; the words are a bonus, never a gate.
+						if ( tyThanks ) {
+							tyThanks.hidden = false;
+						}
+						if ( tySay && ! tySurvey.dataset.said ) {
+							tySay.hidden = false;
+							if ( tyText ) {
+								tyText.focus();
+							}
+						}
+
+						tyPost( { rating: String( n ) } );
+					} );
 				} );
-				star.addEventListener( 'mouseleave', function () {
-					if ( ! tySurvey.dataset.rated ) {
-						tyPaint( 0 );
-					}
-				} );
-				star.addEventListener( 'click', function () {
-					if ( tySurvey.dataset.rated ) {
+			}
+
+			if ( tySend && tyText ) {
+				tySend.addEventListener( 'click', function () {
+					var said = tyText.value.trim();
+
+					if ( ! said ) {
+						tyText.focus();
 						return;
 					}
 
-					var n = i + 1;
-					tySurvey.dataset.rated = String( n );
-					tyPaint( n );
-					tyStars.forEach( function ( b ) {
-						b.disabled = true;
-					} );
+					tySend.disabled = true;
+					tySurvey.dataset.said = '1';
 
-					var thanks = tySurvey.querySelector( '.oc-ty__thanks' );
-					if ( thanks ) {
-						thanks.hidden = false;
-					}
+					var quote = document.createElement( 'p' );
+					quote.className = 'oc-ty__said';
+					quote.textContent = said;
+					tySay.parentNode.insertBefore( quote, tySay );
+					tySay.hidden = true;
 
-					var body = new FormData();
-					body.append( 'action', 'oc_ty_rate' );
-					body.append( 'order', tySurvey.dataset.order || '' );
-					body.append( 'key', tySurvey.dataset.key || '' );
-					body.append( 'rating', String( n ) );
-					fetch( tySurvey.dataset.ajax, { method: 'POST', credentials: 'same-origin', body: body } );
+					tyPost( { comment: said } );
 				} );
-			} );
+			}
 		}
 
 		/* -- referral code: copy -- */

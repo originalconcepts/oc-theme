@@ -7609,10 +7609,48 @@ body.oc-checkout { overflow-x: clip; }
 
 .oc-ty__h { margin: 0 0 12px; font-size: 1.02rem; font-weight: 700; color: var(--oc-ink, #111); }
 
-.oc-ty__content { text-align: center; font-size: .95rem; color: var(--oc-ink, #222); }
-.oc-ty__content p { margin: 0 0 8px; }
-.oc-ty__content p:last-child { margin-block-end: 0; }
-.oc-ty__content img { max-inline-size: 100%; block-size: auto; border-radius: 8px; }
+/* The service note continues the greeting — no frame around it. */
+.oc-ty__intro {
+	text-align: center;
+	font-size: .95rem;
+	color: var(--oc-ink, #222);
+	margin-block-end: 24px;
+}
+
+.oc-ty__intro p { margin: 0 0 8px; }
+.oc-ty__intro p:last-of-type { margin-block-end: 0; }
+.oc-ty__intro img { max-inline-size: 100%; block-size: auto; border-radius: 8px; }
+
+/* ---------- contact channels (shared component) ---------- */
+
+.oc-contact-row {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 6px 26px;
+	margin-block-start: 12px;
+}
+
+.oc-contact-row__item {
+	display: inline-flex;
+	align-items: center;
+	gap: 7px;
+	font-size: .93rem;
+	color: var(--oc-ink, #111);
+	text-decoration: none;
+}
+
+.oc-contact-row__item:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+.oc-contact-row__i {
+	display: inline-flex;
+	inline-size: 17px;
+	block-size: 17px;
+	color: var(--oc-ink-2, #666);
+	flex: none;
+}
+
+.oc-contact-row__i svg { inline-size: 100%; block-size: 100%; }
 
 /* ---------- order summary ---------- */
 
@@ -7626,7 +7664,7 @@ body.oc-checkout { overflow-x: clip; }
 
 .oc-ty__item:first-of-type { border-block-start: 0; padding-block-start: 0; }
 
-.oc-ty__item-img { flex: 0 0 56px; }
+.oc-ty__item-img { flex: 0 0 56px; position: relative; }
 
 .oc-ty__item-img img {
 	inline-size: 56px;
@@ -7635,16 +7673,38 @@ body.oc-checkout { overflow-x: clip; }
 	background: #fff;
 	border: 1px solid var(--oc-line, #eee);
 	border-radius: 8px;
+	display: block;
 }
 
-.oc-ty__item-body { flex: 1 1 auto; min-inline-size: 0; display: flex; flex-direction: column; gap: 2px; }
+/* Quantity rides the corner of the thumbnail — physical left on purpose,
+ * so it sits away from the text column in an RTL row. */
+.oc-ty__item-badge {
+	position: absolute;
+	top: -7px;
+	left: -7px;
+	min-inline-size: 20px;
+	block-size: 20px;
+	padding-inline: 5px;
+	border-radius: 10px;
+	background: var(--oc-ink, #111);
+	color: #fff;
+	font-size: .72rem;
+	font-weight: 600;
+	line-height: 20px;
+	text-align: center;
+	box-shadow: 0 0 0 2px #fff;
+}
+
+.oc-ty__item-body { flex: 1 1 auto; min-inline-size: 0; display: flex; flex-direction: column; gap: 3px; }
 .oc-ty__item-name { font-size: .93rem; font-weight: 600; color: var(--oc-ink, #111); }
 .oc-ty__item-meta { font-size: .8rem; color: var(--oc-ink-2, #777); }
 .oc-ty__item-meta dl,
 .oc-ty__item-meta dt,
 .oc-ty__item-meta dd,
 .oc-ty__item-meta p { display: inline; margin: 0; font-weight: 400; }
-.oc-ty__item-qty { font-size: .8rem; color: var(--oc-ink-2, #777); }
+
+/* Same swatch rows as the cart, without the cart's emphasis. */
+.oc-ty__item-meta .oc-mcart__attr strong { font-weight: 400; color: var(--oc-ink-2, #777); }
 .oc-ty__item-total { margin-inline-start: auto; font-size: .93rem; font-weight: 600; color: var(--oc-ink, #111); white-space: nowrap; }
 
 .oc-ty__totals { margin-block-start: 12px; border-block-start: 1px solid var(--oc-line, #e7e7ea); padding-block-start: 10px; }
@@ -7745,13 +7805,112 @@ body.oc-checkout { overflow-x: clip; }
 
 .oc-ty__thanks { margin: 10px 0 0; font-size: .9rem; color: var(--oc-success, #1e9e5a); font-weight: 600; }
 
+/* The words are optional, so the box opens quietly under the stars. */
+.oc-ty__say {
+	display: flex;
+	gap: 8px;
+	align-items: flex-end;
+	margin-block-start: 14px;
+	text-align: start;
+}
+
+.oc-ty__saybox {
+	flex: 1 1 auto;
+	min-inline-size: 0;
+	border: 1px solid var(--oc-line, #e4e6ea);
+	border-radius: 8px;
+	padding: 10px 12px;
+	font: inherit;
+	font-size: 16px; /* iOS zooms anything smaller on focus. */
+	line-height: 1.45;
+	resize: vertical;
+	background: #fff;
+	color: var(--oc-ink, #111);
+}
+
+.oc-ty__saybox:focus { outline: none; border-color: var(--oc-ink, #111); }
+
+.oc-ty__saybtn {
+	flex: none;
+	border: 0;
+	border-radius: var(--oc-cta-r, 8px);
+	background: var(--oc-cta, #111);
+	color: var(--oc-cta-tx, #fff);
+	font-size: .88rem;
+	font-weight: 600;
+	padding: 11px 20px;
+	cursor: pointer;
+	transition: background .15s ease;
+}
+
+.oc-ty__saybtn:hover { background: var(--oc-cta-h, #333); }
+.oc-ty__saybtn:disabled { opacity: .55; cursor: default; }
+
+.oc-ty__said {
+	margin: 14px 0 0;
+	padding: 10px 14px;
+	border-radius: 8px;
+	background: var(--oc-up-bg, #f7f6f4);
+	font-size: .9rem;
+	color: var(--oc-ink-2, #555);
+	font-style: italic;
+	text-align: start;
+}
+
+/* ---------- WhatsApp group ---------- */
+
+.oc-ty__wagroup {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	text-decoration: none;
+	color: var(--oc-ink, #111);
+	transition: border-color .15s ease, box-shadow .15s ease;
+}
+
+.oc-ty__wagroup:hover {
+	border-color: #25d366;
+	box-shadow: 0 2px 14px rgba(37, 211, 102, .16);
+}
+
+.oc-ty__wagroup-i {
+	flex: none;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	inline-size: 44px;
+	block-size: 44px;
+	border-radius: 50%;
+	background: #25d366;
+	color: #fff;
+}
+
+.oc-ty__wagroup-i svg { inline-size: 26px; block-size: 26px; }
+
+.oc-ty__wagroup-t { display: flex; flex-direction: column; gap: 2px; min-inline-size: 0; }
+.oc-ty__wagroup-t b { font-size: .96rem; font-weight: 600; }
+.oc-ty__wagroup-t em { font-size: .83rem; font-style: normal; color: var(--oc-ink-2, #777); }
+
+.oc-ty__wagroup-go {
+	margin-inline-start: auto;
+	flex: none;
+	inline-size: 20px;
+	block-size: 20px;
+	color: var(--oc-ink-2, #999);
+}
+
+.oc-ty__wagroup-go svg { inline-size: 100%; block-size: 100%; }
+
+/* The arrow points the way the page reads. */
+[dir="rtl"] .oc-ty__wagroup-go { transform: scaleX(-1); }
+
 /* ---------- social ---------- */
 
 .oc-ty__social { text-align: center; }
 
-.oc-ty__soc-row { display: flex; justify-content: center; gap: 12px; }
+.oc-soc-row { display: flex; justify-content: center; gap: 12px; }
 
-.oc-ty__soc {
+.oc-soc {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -7763,9 +7922,9 @@ body.oc-checkout { overflow-x: clip; }
 	transition: background .15s ease, color .15s ease, border-color .15s ease;
 }
 
-.oc-ty__soc svg { inline-size: 22px; block-size: 22px; }
+.oc-soc svg { inline-size: 22px; block-size: 22px; }
 
-.oc-ty__soc:hover {
+.oc-soc:hover {
 	background: var(--oc-ink, #111);
 	border-color: var(--oc-ink, #111);
 	color: #fff;
@@ -7776,4 +7935,7 @@ body.oc-checkout { overflow-x: clip; }
 	.oc-ty__box { padding: 16px; }
 	.oc-ty__check { inline-size: 66px; block-size: 66px; }
 	.oc-ty__title { font-size: 1.35rem; }
+	.oc-contact-row { gap: 4px 18px; }
+	.oc-ty__say { flex-direction: column; align-items: stretch; }
+	.oc-ty__wagroup { gap: 11px; }
 }

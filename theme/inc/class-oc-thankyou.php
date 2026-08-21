@@ -6,7 +6,10 @@
  * native thankyou endpoint keeps running — gateway hooks included — and this
  * class hides Woo's dry defaults and renders its own sections through
  * woocommerce_before_thankyou: animated check, editable content, order
- * summary, and the optional social / survey / referral blocks.
+ * summary, and the optional WhatsApp / survey / referral / social blocks.
+ *
+ * What the shop's channels ARE lives in Store details (class Contact); this
+ * screen only decides which of them this page shows.
  *
  * @package OC_Theme
  */
@@ -33,32 +36,27 @@ final class Thankyou {
 		return wp_parse_args(
 			is_array( $saved ) ? $saved : array(),
 			array(
-				'content'          => '',   // Editor HTML; empty = the default service block.
-				'summary'          => 1,    // Order summary with images.
-				'social'           => 0,
-				'social_title'     => '',
-				'social_instagram' => '',
-				'social_facebook'  => '',
-				'social_tiktok'    => '',
-				'social_whatsapp'  => '',
-				'social_youtube'   => '',
-				'survey'           => 0,
-				'survey_q'         => '',
-				'referral'         => 0,
-				'ref_friend_pct'   => 10,   // The friend's discount.
-				'ref_reward_pct'   => 10,   // The referrer's reward coupon.
-				'ref_days'         => 30,   // Both coupons' lifetime.
+				'content'        => '',   // Editor HTML; empty = the default service line.
+				'contact'        => 1,    // Phone / email / WhatsApp icon links.
+				'summary'        => 1,    // Order summary with images.
+				'wa_group'       => 0,    // "Join our WhatsApp group" widget.
+				'social'         => 0,    // Follow buttons.
+				'social_title'   => '',
+				'survey'         => 0,
+				'survey_q'       => '',
+				'referral'       => 0,
+				'ref_friend_pct' => 10,   // The friend's discount.
+				'ref_reward_pct' => 10,   // The referrer's reward coupon.
+				'ref_days'       => 30,   // Both coupons' lifetime.
 			)
 		);
 	}
 
 	/**
-	 * The default editable content — the service block.
+	 * The default editable content: the line above the contact channels.
 	 */
 	public static function default_content(): string {
-		return '<p>' . __( 'Our customer service team is here for you with any question:', 'oc-theme' ) . '</p>'
-			. '<p>' . __( 'Phone', 'oc-theme' ) . ' - {phone}<br />'
-			. __( 'Email', 'oc-theme' ) . ' - {email}</p>';
+		return '<p>' . __( 'Our customer service team is here for you with any question:', 'oc-theme' ) . '</p>';
 	}
 
 	/**
@@ -178,6 +176,10 @@ final class Thankyou {
 			$this->survey_block( $order, $s );
 		}
 
+		if ( ! empty( $s['wa_group'] ) ) {
+			$this->wa_group_block();
+		}
+
 		if ( ! empty( $s['social'] ) ) {
 			$this->social_block( $s );
 		}
@@ -205,15 +207,16 @@ final class Thankyou {
 
 		echo '<p class="oc-ty__sub">' . esc_html__( 'Your order has been received and will be handled shortly.', 'oc-theme' ) . '</p>';
 		echo '<p class="oc-ty__num">' . esc_html__( 'Your order number is:', 'oc-theme' ) . ' <b>' . esc_html( $order->get_order_number() ) . '</b></p>';
-		echo '<p class="oc-ty__mailnote">' . esc_html__( 'A confirmation with the order details was sent to your email.', 'oc-theme' ) . '</p>';
+		echo '<p class="oc-ty__mailnote">' . esc_html__( 'The confirmation and order details were sent by email.', 'oc-theme' ) . '</p>';
 		echo '</div>';
 	}
 
 	/**
-	 * The editable content, placeholders filled.
+	 * The editable text, then the contact channels as icon links. Both sit
+	 * in the open, continuing the greeting rather than boxed away from it.
 	 *
-	 * @param \WC_Order            $order Order.
-	 * @param array<string,mixed>  $s     Settings.
+	 * @param \WC_Order           $order Order.
+	 * @param array<string,mixed> $s     Settings.
 	 */
 	private function content_block( \WC_Order $order, array $s ): void {
 		$html = trim( (string) $s['content'] );
@@ -228,7 +231,16 @@ final class Thankyou {
 			Contact::fill( $html )
 		);
 
-		echo '<div class="oc-ty__box oc-ty__content">' . do_shortcode( wpautop( wp_kses_post( $html ) ) ) . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- kses above.
+		$contact = empty( $s['contact'] ) ? '' : Contact::contact_row_html();
+
+		if ( '' === trim( wp_strip_all_tags( $html ) ) && '' === $contact ) {
+			return;
+		}
+
+		echo '<div class="oc-ty__intro">';
+		echo do_shortcode( wpautop( wp_kses_post( $html ) ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- kses above.
+		echo $contact; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
+		echo '</div>';
 	}
 
 	/**
@@ -243,10 +255,23 @@ final class Thankyou {
 		foreach ( $order->get_items() as $item ) {
 			$product = is_callable( array( $item, 'get_product' ) ) ? $item->get_product() : null;
 			$thumb   = $product ? $product->get_image( array( 68, 68 ) ) : '';
-			$meta    = wc_display_item_meta( $item, array( 'echo' => false ) );
+			$qty     = (int) $item->get_quantity();
+
+			// A variation's attributes get the cart's treatment — swatch dot
+			// and all. Anything else falls back to Woo's own meta list.
+			$pairs = ( $product && $product->is_type( 'variation' ) ) ? (array) $product->get_attributes() : array();
+			$meta  = $pairs ? Cart::attributes_html( $pairs ) : wc_display_item_meta( $item, array( 'echo' => false ) );
 
 			echo '<div class="oc-ty__item">';
-			echo '<span class="oc-ty__item-img">' . wp_kses_post( $thumb ) . '</span>';
+			echo '<span class="oc-ty__item-img">' . wp_kses_post( $thumb );
+
+			// Quantity rides the image as a corner badge; a single unit needs
+			// no announcement.
+			if ( $qty > 1 ) {
+				echo '<span class="oc-ty__item-badge">' . esc_html( (string) $qty ) . '</span>';
+			}
+
+			echo '</span>';
 			echo '<span class="oc-ty__item-body">';
 			echo '<span class="oc-ty__item-name">' . esc_html( $item->get_name() ) . '</span>';
 
@@ -254,7 +279,6 @@ final class Thankyou {
 				echo '<span class="oc-ty__item-meta">' . wp_kses_post( $meta ) . '</span>';
 			}
 
-			echo '<span class="oc-ty__item-qty">' . esc_html( sprintf( /* translators: %s: quantity. */ __( 'Qty: %s', 'oc-theme' ), $item->get_quantity() ) ) . '</span>';
 			echo '</span>';
 			echo '<span class="oc-ty__item-total">' . wp_kses_post( $order->get_formatted_line_subtotal( $item ) ) . '</span>';
 			echo '</div>';
@@ -305,7 +329,7 @@ final class Thankyou {
 		echo '<p class="oc-ty__ref-txt">' . esc_html(
 			sprintf(
 				/* translators: 1: friend discount percent, 2: reward percent. */
-				__( 'Share this code with a friend — they get %1$s%% off their first order, and once they buy you get a %2$s%% coupon of your own.', 'oc-theme' ),
+				__( 'This code is yours to share: a friend gets %1$s%% off a first order, and once they buy, a %2$s%% coupon is waiting for you.', 'oc-theme' ),
 				$friend,
 				$reward
 			)
@@ -434,16 +458,17 @@ final class Thankyou {
 	}
 
 	/**
-	 * Survey: five stars, one vote per order.
+	 * Survey: five stars, then room for a few words.
 	 *
 	 * @param \WC_Order           $order Order.
 	 * @param array<string,mixed> $s     Settings.
 	 */
 	private function survey_block( \WC_Order $order, array $s ): void {
-		$q     = '' !== trim( (string) $s['survey_q'] ) ? (string) $s['survey_q'] : __( 'Rate your purchase experience', 'oc-theme' );
-		$rated = (int) $order->get_meta( '_oc_ty_rating' );
+		$q       = '' !== trim( (string) $s['survey_q'] ) ? (string) $s['survey_q'] : __( 'How was your purchase experience?', 'oc-theme' );
+		$rated   = (int) $order->get_meta( '_oc_ty_rating' );
+		$comment = (string) $order->get_meta( '_oc_ty_comment' );
 
-		echo '<div class="oc-ty__box oc-ty__survey" data-oc-ty-survey data-order="' . esc_attr( (string) $order->get_id() ) . '" data-key="' . esc_attr( $order->get_order_key() ) . '" data-ajax="' . esc_url( admin_url( 'admin-ajax.php' ) ) . '"' . ( $rated ? ' data-rated="' . esc_attr( (string) $rated ) . '"' : '' ) . '>';
+		echo '<div class="oc-ty__box oc-ty__survey" data-oc-ty-survey data-order="' . esc_attr( (string) $order->get_id() ) . '" data-key="' . esc_attr( $order->get_order_key() ) . '" data-ajax="' . esc_url( admin_url( 'admin-ajax.php' ) ) . '"' . ( $rated ? ' data-rated="' . esc_attr( (string) $rated ) . '"' : '' ) . ( '' !== $comment ? ' data-said="1"' : '' ) . '>';
 		echo '<h2 class="oc-ty__h">' . esc_html( $q ) . '</h2>';
 		echo '<div class="oc-ty__stars" role="radiogroup" aria-label="' . esc_attr( $q ) . '">';
 
@@ -452,53 +477,90 @@ final class Thankyou {
 		}
 
 		echo '</div>';
+
+		// The box opens once a rating lands, and stays closed for a visitor
+		// who already said their piece.
+		echo '<div class="oc-ty__say" data-oc-ty-say' . ( $rated && '' === $comment ? '' : ' hidden' ) . '>';
+		echo '<textarea class="oc-ty__saybox" data-oc-ty-text rows="3" maxlength="600" placeholder="' . esc_attr__( 'A few words about the experience?', 'oc-theme' ) . '"></textarea>';
+		echo '<button type="button" class="oc-ty__saybtn" data-oc-ty-send>' . esc_html__( 'Send', 'oc-theme' ) . '</button>';
+		echo '</div>';
+
+		if ( '' !== $comment ) {
+			echo '<p class="oc-ty__said">' . esc_html( $comment ) . '</p>';
+		}
+
 		echo '<p class="oc-ty__thanks"' . ( $rated ? '' : ' hidden' ) . '>' . esc_html__( 'Thanks for the feedback!', 'oc-theme' ) . '</p>';
 		echo '</div>';
 	}
 
 	/**
-	 * Store a rating: verified by the order key, once per order.
+	 * Store a rating and/or a comment: verified by the order key, once each.
 	 */
 	public function ajax_rate(): void {
-		$order_id = absint( $_POST['order'] ?? 0 ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- order key verified below.
-		$key      = wc_clean( wp_unslash( $_POST['key'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
-		$rating   = absint( $_POST['rating'] ?? 0 ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		// phpcs:disable WordPress.Security.NonceVerification.Missing -- the order key below is the proof.
+		$order_id = absint( $_POST['order'] ?? 0 );
+		$key      = wc_clean( wp_unslash( $_POST['key'] ?? '' ) );
+		$rating   = absint( $_POST['rating'] ?? 0 );
+		$comment  = sanitize_textarea_field( wp_unslash( $_POST['comment'] ?? '' ) );
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
 
 		$order = $order_id ? wc_get_order( $order_id ) : null;
 
-		if ( ! $order || ! hash_equals( $order->get_order_key(), (string) $key ) || $rating < 1 || $rating > 5 ) {
+		if ( ! $order || ! hash_equals( $order->get_order_key(), (string) $key ) ) {
 			wp_send_json_error();
 		}
 
-		if ( (int) $order->get_meta( '_oc_ty_rating' ) ) {
-			wp_send_json_success(); // Already voted — silently fine.
+		$had     = (int) $order->get_meta( '_oc_ty_rating' );
+		$changed = false;
+
+		if ( $rating >= 1 && $rating <= 5 && ! $had ) {
+			$order->update_meta_data( '_oc_ty_rating', $rating );
+			$changed = true;
+
+			$agg = get_option( 'oc_ty_survey' );
+			$agg = is_array( $agg ) ? $agg : array(
+				'count' => 0,
+				'sum'   => 0,
+			);
+
+			$agg['count'] = (int) ( $agg['count'] ?? 0 ) + 1;
+			$agg['sum']   = (int) ( $agg['sum'] ?? 0 ) + $rating;
+			unset( $agg['recent'] ); // The list comes from the orders themselves.
+
+			update_option( 'oc_ty_survey', $agg, false );
 		}
 
-		$order->update_meta_data( '_oc_ty_rating', $rating );
-		$order->save();
+		// A comment only counts alongside a rating, and only the first time.
+		if ( '' !== $comment && ( $had || $changed ) && '' === (string) $order->get_meta( '_oc_ty_comment' ) ) {
+			$order->update_meta_data( '_oc_ty_comment', mb_substr( $comment, 0, 600 ) );
+			$changed = true;
+		}
 
-		$agg = get_option( 'oc_ty_survey' );
-		$agg = is_array( $agg ) ? $agg : array(
-			'count'  => 0,
-			'sum'    => 0,
-			'recent' => array(),
-		);
-
-		$agg['count']++;
-		$agg['sum'] += $rating;
-		array_unshift(
-			$agg['recent'],
-			array(
-				'order'  => $order_id,
-				'rating' => $rating,
-				't'      => time(),
-			)
-		);
-		$agg['recent'] = array_slice( $agg['recent'], 0, 20 );
-
-		update_option( 'oc_ty_survey', $agg, false );
+		if ( $changed ) {
+			$order->save();
+		}
 
 		wp_send_json_success();
+	}
+
+	/**
+	 * The WhatsApp group invitation, on its own.
+	 */
+	private function wa_group_block(): void {
+		$url = Contact::get( 'wa_group' );
+
+		if ( ! $url ) {
+			return;
+		}
+
+		echo '<a class="oc-ty__box oc-ty__wagroup" href="' . esc_url( $url ) . '" target="_blank" rel="noopener">';
+		echo '<span class="oc-ty__wagroup-i" aria-hidden="true">' . Contact::icon( 'whatsapp' ) . '</span>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static svg.
+		echo '<span class="oc-ty__wagroup-t">';
+		echo '<b>' . esc_html__( 'Join our WhatsApp group', 'oc-theme' ) . '</b>';
+		echo '<em>' . esc_html__( 'News and offers first', 'oc-theme' ) . '</em>';
+		echo '</span>';
+		echo '<span class="oc-ty__wagroup-go" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 6l6 6-6 6"/><path d="M20 12H4"/></svg></span>';
+		echo '</a>';
 	}
 
 	/**
@@ -507,39 +569,18 @@ final class Thankyou {
 	 * @param array<string,mixed> $s Settings.
 	 */
 	private function social_block( array $s ): void {
-		$nets = array(
-			'instagram' => '<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5.4" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="17.2" cy="6.8" r="1.3" fill="currentColor"/></svg>',
-			'facebook'  => '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M13.5 21v-7h2.4l.4-2.9h-2.8V9.2c0-.8.3-1.4 1.5-1.4h1.4V5.2c-.3 0-1.1-.1-2-.1-2 0-3.4 1.2-3.4 3.5v2.5H8.5V14H11v7Z"/></svg>',
-			'tiktok'    => '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M16.6 3c.3 1.7 1.4 3 3.4 3.3v2.7c-1.3 0-2.5-.4-3.4-1v6.4c0 3.2-2.2 5.6-5.4 5.6A5.3 5.3 0 0 1 5.8 14.6c0-3 2.4-5.3 5.5-5.1v2.8c-1.5-.3-2.8.7-2.8 2.2 0 1.4 1 2.5 2.5 2.5s2.6-1.1 2.6-2.7V3Z"/></svg>',
-			'whatsapp'  => '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 3a9 9 0 0 0-7.8 13.5L3 21l4.6-1.2A9 9 0 1 0 12 3Zm0 1.8a7.2 7.2 0 1 1-3.7 13.4l-.4-.2-2.5.7.7-2.5-.3-.4A7.2 7.2 0 0 1 12 4.8Zm-2.6 3.5c-.2 0-.5 0-.7.3-.2.3-.9.9-.9 2.1s.9 2.5 1 2.6c.1.2 1.8 2.8 4.4 3.8 2.1.9 2.6.7 3 .7.5 0 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2l-.5-.3-1.9-.9c-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a5.9 5.9 0 0 1-3-2.6c-.1-.2 0-.4.1-.5l.6-.7c.2-.2.2-.4.1-.6l-.8-2c-.2-.4-.4-.5-.6-.5Z"/></svg>',
-			'youtube'   => '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M21.6 7.4a2.5 2.5 0 0 0-1.8-1.8C18.2 5.2 12 5.2 12 5.2s-6.2 0-7.8.4A2.5 2.5 0 0 0 2.4 7.4 26.5 26.5 0 0 0 2 12c0 1.6.1 3.1.4 4.6a2.5 2.5 0 0 0 1.8 1.8c1.6.4 7.8.4 7.8.4s6.2 0 7.8-.4a2.5 2.5 0 0 0 1.8-1.8c.3-1.5.4-3 .4-4.6s-.1-3.1-.4-4.6ZM10.2 15V9l5.2 3Z"/></svg>',
-		);
+		$row = Contact::social_row_html();
 
-		$links = array();
-
-		foreach ( array_keys( $nets ) as $net ) {
-			$url = trim( (string) $s[ 'social_' . $net ] );
-
-			if ( $url ) {
-				$links[ $net ] = $url;
-			}
-		}
-
-		if ( ! $links ) {
+		if ( '' === $row ) {
 			return;
 		}
 
-		$title = '' !== trim( (string) $s['social_title'] ) ? (string) $s['social_title'] : __( 'Follow us', 'oc-theme' );
+		$title = '' !== trim( (string) $s['social_title'] ) ? (string) $s['social_title'] : __( 'Want to follow us?', 'oc-theme' );
 
 		echo '<div class="oc-ty__box oc-ty__social">';
 		echo '<h2 class="oc-ty__h">' . esc_html( $title ) . '</h2>';
-		echo '<div class="oc-ty__soc-row">';
-
-		foreach ( $links as $net => $url ) {
-			echo '<a class="oc-ty__soc" href="' . esc_url( $url ) . '" target="_blank" rel="noopener" aria-label="' . esc_attr( $net ) . '">' . $nets[ $net ] . '</a>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static svg.
-		}
-
-		echo '</div></div>';
+		echo $row; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
+		echo '</div>';
 	}
 
 	/* ---------------------------------------------------------------- admin */
@@ -559,137 +600,219 @@ final class Thankyou {
 	}
 
 	/**
-	 * The settings screen.
+	 * The settings screen, with its ratings tab.
 	 */
 	public function admin_screen(): void {
 		if ( ! current_user_can( 'manage_woocommerce' ) ) {
 			return;
 		}
 
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- tab switch only.
+		$tab = isset( $_GET['tab'] ) && 'ratings' === $_GET['tab'] ? 'ratings' : 'settings';
+
+		echo '<div class="wrap">';
+		echo '<h1>' . esc_html__( 'Thank-you page', 'oc-theme' ) . '</h1>';
+
+		echo '<h2 class="nav-tab-wrapper">';
+		echo '<a href="' . esc_url( admin_url( 'admin.php?page=oc-thankyou' ) ) . '" class="nav-tab' . ( 'settings' === $tab ? ' nav-tab-active' : '' ) . '">' . esc_html__( 'Settings', 'oc-theme' ) . '</a>';
+		echo '<a href="' . esc_url( admin_url( 'admin.php?page=oc-thankyou&tab=ratings' ) ) . '" class="nav-tab' . ( 'ratings' === $tab ? ' nav-tab-active' : '' ) . '">' . esc_html__( 'Ratings', 'oc-theme' ) . '</a>';
+		echo '</h2>';
+
+		if ( 'ratings' === $tab ) {
+			$this->ratings_tab();
+		} else {
+			$this->settings_tab();
+		}
+
+		echo '</div>';
+	}
+
+	/**
+	 * The settings form.
+	 */
+	private function settings_tab(): void {
 		if ( isset( $_GET['oc_saved'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- notice only.
 			echo '<div class="notice notice-success"><p>' . esc_html__( 'Settings saved.', 'oc-theme' ) . '</p></div>';
 		}
 
-		$s       = self::settings();
-		$content = '' !== trim( (string) $s['content'] ) ? (string) $s['content'] : self::default_content();
+		$s        = self::settings();
+		$content  = '' !== trim( (string) $s['content'] ) ? (string) $s['content'] : self::default_content();
+		$assets   = admin_url( 'admin.php?page=oc-contact' );
+		$has_wa   = '' !== Contact::get( 'wa_group' );
+		$has_soc  = (bool) Contact::social_links();
+		$missing  = '<em> — <a href="' . esc_url( $assets ) . '">' . esc_html__( 'add it in Store details', 'oc-theme' ) . '</a></em>';
 		?>
-		<div class="wrap">
-			<h1><?php esc_html_e( 'Thank-you page', 'oc-theme' ); ?></h1>
-			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
-				<input type="hidden" name="action" value="oc_thankyou_save" />
-				<?php wp_nonce_field( 'oc_thankyou_save' ); ?>
+		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+			<input type="hidden" name="action" value="oc_thankyou_save" />
+			<?php wp_nonce_field( 'oc_thankyou_save' ); ?>
 
-				<h2><?php esc_html_e( 'Page content', 'oc-theme' ); ?></h2>
-				<p class="description"><?php esc_html_e( 'Shown under the greeting. Placeholders: {phone} {email} {first_name} {order_number} — phone and email come from Contact details.', 'oc-theme' ); ?></p>
-				<?php
-				wp_editor(
-					$content,
-					'oc_ty_content',
-					array(
-						'textarea_name' => 'content',
-						'textarea_rows' => 8,
-						'media_buttons' => true,
-					)
-				);
-				?>
+			<h2><?php esc_html_e( 'Page content', 'oc-theme' ); ?></h2>
+			<p class="description"><?php esc_html_e( 'Shown under the greeting. Placeholders: {phone} {email} {whatsapp} {first_name} {order_number} — the channels come from Store details.', 'oc-theme' ); ?></p>
+			<?php
+			wp_editor(
+				$content,
+				'oc_ty_content',
+				array(
+					'textarea_name' => 'content',
+					'textarea_rows' => 8,
+					'media_buttons' => true,
+				)
+			);
+			?>
 
-				<h2><?php esc_html_e( 'Order summary', 'oc-theme' ); ?></h2>
-				<table class="form-table" role="presentation">
-					<tr>
-						<th scope="row"><?php esc_html_e( 'Order summary', 'oc-theme' ); ?></th>
-						<td><label><input type="checkbox" name="summary" value="1" <?php checked( 1, (int) $s['summary'] ); ?> /> <?php esc_html_e( 'Show the products (with images) and totals', 'oc-theme' ); ?></label></td>
-					</tr>
-				</table>
+			<table class="form-table" role="presentation">
+				<tr>
+					<th scope="row"><?php esc_html_e( 'Contact channels', 'oc-theme' ); ?></th>
+					<td>
+						<label><input type="checkbox" name="contact" value="1" <?php checked( 1, (int) $s['contact'] ); ?> /> <?php esc_html_e( 'Show phone, email and WhatsApp under the text', 'oc-theme' ); ?></label>
+						<p class="description"><a href="<?php echo esc_url( $assets ); ?>"><?php esc_html_e( 'Set them in Store details', 'oc-theme' ); ?></a></p>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><?php esc_html_e( 'Order summary', 'oc-theme' ); ?></th>
+					<td><label><input type="checkbox" name="summary" value="1" <?php checked( 1, (int) $s['summary'] ); ?> /> <?php esc_html_e( 'Show the products (with images) and totals', 'oc-theme' ); ?></label></td>
+				</tr>
+			</table>
 
-				<h2><?php esc_html_e( 'Social buttons', 'oc-theme' ); ?></h2>
-				<table class="form-table" role="presentation">
-					<tr>
-						<th scope="row"><?php esc_html_e( 'Show', 'oc-theme' ); ?></th>
-						<td>
-							<label><input type="checkbox" name="social" value="1" <?php checked( 1, (int) $s['social'] ); ?> /> <?php esc_html_e( 'Invite customers to follow the store', 'oc-theme' ); ?></label>
-							<p style="margin:10px 0 0;"><input type="text" name="social_title" value="<?php echo esc_attr( (string) $s['social_title'] ); ?>" placeholder="<?php esc_attr_e( 'Follow us', 'oc-theme' ); ?>" class="regular-text" /></p>
-						</td>
-					</tr>
-					<?php
-					foreach ( array(
-						'social_instagram' => 'Instagram',
-						'social_facebook'  => 'Facebook',
-						'social_tiktok'    => 'TikTok',
-						'social_whatsapp'  => 'WhatsApp',
-						'social_youtube'   => 'YouTube',
-					) as $field => $label ) :
+			<h2><?php esc_html_e( 'Blocks', 'oc-theme' ); ?></h2>
+			<table class="form-table" role="presentation">
+				<tr>
+					<th scope="row"><?php esc_html_e( 'WhatsApp group', 'oc-theme' ); ?></th>
+					<td>
+						<label><input type="checkbox" name="wa_group" value="1" <?php checked( 1, (int) $s['wa_group'] ); ?> /> <?php esc_html_e( 'Invite to join the group', 'oc-theme' ); ?></label>
+						<?php
+						if ( ! $has_wa ) {
+							echo wp_kses_post( $missing );
+						}
 						?>
-						<tr>
-							<th scope="row"><?php echo esc_html( $label ); ?></th>
-							<td><input type="url" name="<?php echo esc_attr( $field ); ?>" dir="ltr" value="<?php echo esc_attr( (string) $s[ $field ] ); ?>" class="regular-text" placeholder="https://" /></td>
-						</tr>
-					<?php endforeach; ?>
-				</table>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><?php esc_html_e( 'Social buttons', 'oc-theme' ); ?></th>
+					<td>
+						<label><input type="checkbox" name="social" value="1" <?php checked( 1, (int) $s['social'] ); ?> /> <?php esc_html_e( 'Invite customers to follow the store', 'oc-theme' ); ?></label>
+						<?php
+						if ( ! $has_soc ) {
+							echo wp_kses_post( $missing );
+						}
+						?>
+						<p style="margin:10px 0 0;"><input type="text" name="social_title" value="<?php echo esc_attr( (string) $s['social_title'] ); ?>" placeholder="<?php esc_attr_e( 'Want to follow us?', 'oc-theme' ); ?>" class="regular-text" /></p>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><?php esc_html_e( 'Purchase survey', 'oc-theme' ); ?></th>
+					<td>
+						<label><input type="checkbox" name="survey" value="1" <?php checked( 1, (int) $s['survey'] ); ?> /> <?php esc_html_e( 'Ask for a 1–5 star rating, then a few words', 'oc-theme' ); ?></label>
+						<p style="margin:10px 0 0;"><input type="text" name="survey_q" value="<?php echo esc_attr( (string) $s['survey_q'] ); ?>" placeholder="<?php esc_attr_e( 'How was your purchase experience?', 'oc-theme' ); ?>" class="large-text" /></p>
+					</td>
+				</tr>
+			</table>
 
-				<h2><?php esc_html_e( 'Purchase survey', 'oc-theme' ); ?></h2>
-				<table class="form-table" role="presentation">
-					<tr>
-						<th scope="row"><?php esc_html_e( 'Show', 'oc-theme' ); ?></th>
-						<td>
-							<label><input type="checkbox" name="survey" value="1" <?php checked( 1, (int) $s['survey'] ); ?> /> <?php esc_html_e( 'Ask for a 1–5 star rating', 'oc-theme' ); ?></label>
-							<p style="margin:10px 0 0;"><input type="text" name="survey_q" value="<?php echo esc_attr( (string) $s['survey_q'] ); ?>" placeholder="<?php esc_attr_e( 'Rate your purchase experience', 'oc-theme' ); ?>" class="large-text" /></p>
-						</td>
-					</tr>
-					<tr>
-						<th scope="row"><?php esc_html_e( 'Results', 'oc-theme' ); ?></th>
-						<td><?php $this->survey_results(); ?></td>
-					</tr>
-				</table>
+			<h2><?php esc_html_e( 'Refer a friend', 'oc-theme' ); ?></h2>
+			<table class="form-table" role="presentation">
+				<tr>
+					<th scope="row"><?php esc_html_e( 'Show', 'oc-theme' ); ?></th>
+					<td><label><input type="checkbox" name="referral" value="1" <?php checked( 1, (int) $s['referral'] ); ?> /> <?php esc_html_e( 'Offer a shareable coupon; the referrer earns one back when the friend buys', 'oc-theme' ); ?></label></td>
+				</tr>
+				<tr>
+					<th scope="row"><?php esc_html_e( 'Percentages', 'oc-theme' ); ?></th>
+					<td>
+						<label><?php esc_html_e( "Friend's discount", 'oc-theme' ); ?> <input type="number" name="ref_friend_pct" value="<?php echo esc_attr( (string) $s['ref_friend_pct'] ); ?>" min="1" max="100" style="width:70px;" />%</label>
+						<label style="margin-inline-start:16px;"><?php esc_html_e( "Referrer's reward", 'oc-theme' ); ?> <input type="number" name="ref_reward_pct" value="<?php echo esc_attr( (string) $s['ref_reward_pct'] ); ?>" min="1" max="100" style="width:70px;" />%</label>
+						<label style="margin-inline-start:16px;"><?php esc_html_e( 'Valid for', 'oc-theme' ); ?> <input type="number" name="ref_days" value="<?php echo esc_attr( (string) $s['ref_days'] ); ?>" min="1" max="365" style="width:70px;" /> <?php esc_html_e( 'days', 'oc-theme' ); ?></label>
+					</td>
+				</tr>
+			</table>
 
-				<h2><?php esc_html_e( 'Refer a friend', 'oc-theme' ); ?></h2>
-				<table class="form-table" role="presentation">
-					<tr>
-						<th scope="row"><?php esc_html_e( 'Show', 'oc-theme' ); ?></th>
-						<td><label><input type="checkbox" name="referral" value="1" <?php checked( 1, (int) $s['referral'] ); ?> /> <?php esc_html_e( 'Offer a shareable coupon; the referrer earns one back when the friend buys', 'oc-theme' ); ?></label></td>
-					</tr>
-					<tr>
-						<th scope="row"><?php esc_html_e( 'Percentages', 'oc-theme' ); ?></th>
-						<td>
-							<label><?php esc_html_e( "Friend's discount", 'oc-theme' ); ?> <input type="number" name="ref_friend_pct" value="<?php echo esc_attr( (string) $s['ref_friend_pct'] ); ?>" min="1" max="100" style="width:70px;" />%</label>
-							<label style="margin-inline-start:16px;"><?php esc_html_e( "Referrer's reward", 'oc-theme' ); ?> <input type="number" name="ref_reward_pct" value="<?php echo esc_attr( (string) $s['ref_reward_pct'] ); ?>" min="1" max="100" style="width:70px;" />%</label>
-							<label style="margin-inline-start:16px;"><?php esc_html_e( 'Valid for', 'oc-theme' ); ?> <input type="number" name="ref_days" value="<?php echo esc_attr( (string) $s['ref_days'] ); ?>" min="1" max="365" style="width:70px;" /> <?php esc_html_e( 'days', 'oc-theme' ); ?></label>
-						</td>
-					</tr>
-				</table>
-
-				<?php submit_button( __( 'Save settings', 'oc-theme' ) ); ?>
-			</form>
-		</div>
+			<?php submit_button( __( 'Save settings', 'oc-theme' ) ); ?>
+		</form>
 		<?php
 	}
 
 	/**
-	 * Aggregate survey results, inline in the settings screen.
+	 * Every rating a customer left, newest first.
 	 */
-	private function survey_results(): void {
+	private function ratings_tab(): void {
 		$agg = get_option( 'oc_ty_survey' );
 
-		if ( ! is_array( $agg ) || empty( $agg['count'] ) ) {
-			echo '<em>' . esc_html__( 'No ratings yet.', 'oc-theme' ) . '</em>';
+		if ( is_array( $agg ) && ! empty( $agg['count'] ) ) {
+			$avg = round( (int) $agg['sum'] / (int) $agg['count'], 1 );
+
+			echo '<p style="font-size:15px;margin:16px 0;"><b>' . esc_html(
+				sprintf(
+					/* translators: 1: average rating, 2: number of ratings. */
+					__( 'Average %1$s of 5, from %2$s ratings.', 'oc-theme' ),
+					number_format_i18n( $avg, 1 ),
+					number_format_i18n( (int) $agg['count'] )
+				)
+			) . '</b></p>';
+		}
+
+		$per   = 30;
+		$page  = max( 1, absint( $_GET['paged'] ?? 1 ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- pagination only.
+		$found = wc_get_orders(
+			array(
+				'limit'      => $per,
+				'page'       => $page,
+				'orderby'    => 'date',
+				'order'      => 'DESC',
+				'paginate'   => true,
+				'meta_query' => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- an admin screen.
+					array(
+						'key'     => '_oc_ty_rating',
+						'compare' => 'EXISTS',
+					),
+				),
+			)
+		);
+
+		$orders = is_object( $found ) ? $found->orders : (array) $found;
+
+		if ( ! $orders ) {
+			echo '<p><em>' . esc_html__( 'No ratings yet.', 'oc-theme' ) . '</em></p>';
 			return;
 		}
 
-		$avg = round( $agg['sum'] / $agg['count'], 1 );
+		echo '<table class="wp-list-table widefat striped">';
+		echo '<thead><tr>';
+		echo '<th style="width:90px;">' . esc_html__( 'Order', 'oc-theme' ) . '</th>';
+		echo '<th style="width:190px;">' . esc_html__( 'Customer', 'oc-theme' ) . '</th>';
+		echo '<th style="width:110px;">' . esc_html__( 'Rating', 'oc-theme' ) . '</th>';
+		echo '<th>' . esc_html__( 'In their words', 'oc-theme' ) . '</th>';
+		echo '<th style="width:130px;">' . esc_html__( 'Date', 'oc-theme' ) . '</th>';
+		echo '</tr></thead><tbody>';
 
-		/* translators: 1: average rating, 2: number of ratings. */
-		echo '<p style="margin:0 0 8px;"><b>' . esc_html( sprintf( __( 'Average %1$s of 5, from %2$s ratings.', 'oc-theme' ), number_format_i18n( $avg, 1 ), number_format_i18n( (int) $agg['count'] ) ) ) . '</b></p>';
+		foreach ( $orders as $order ) {
+			$rating  = (int) $order->get_meta( '_oc_ty_rating' );
+			$comment = (string) $order->get_meta( '_oc_ty_comment' );
+			$name    = trim( $order->get_billing_first_name() . ' ' . $order->get_billing_last_name() );
+			$created = $order->get_date_created();
 
-		if ( ! empty( $agg['recent'] ) ) {
-			echo '<ul style="margin:0;">';
+			echo '<tr>';
+			echo '<td><a href="' . esc_url( $order->get_edit_order_url() ) . '">#' . esc_html( $order->get_order_number() ) . '</a></td>';
+			echo '<td>' . esc_html( $name ) . '<br /><span style="color:#777;">' . esc_html( $order->get_billing_email() ) . '</span></td>';
+			echo '<td style="color:#f5b301;font-size:15px;letter-spacing:2px;" title="' . esc_attr( (string) $rating ) . '/5">'
+				. esc_html( str_repeat( '★', $rating ) . str_repeat( '☆', 5 - $rating ) ) . '</td>';
+			echo '<td>' . ( '' !== $comment ? esc_html( $comment ) : '<span style="color:#bbb;">—</span>' ) . '</td>';
+			echo '<td>' . esc_html( $created ? $created->date_i18n( get_option( 'date_format' ) ) : '' ) . '</td>';
+			echo '</tr>';
+		}
 
-			foreach ( array_slice( (array) $agg['recent'], 0, 10 ) as $row ) {
-				$link = admin_url( 'post.php?post=' . absint( $row['order'] ) . '&action=edit' );
-				echo '<li>' . esc_html( str_repeat( '★', (int) $row['rating'] ) . str_repeat( '☆', 5 - (int) $row['rating'] ) )
-					. ' — <a href="' . esc_url( $link ) . '">#' . esc_html( (string) $row['order'] ) . '</a>'
-					. ' <span style="color:#777;">' . esc_html( date_i18n( get_option( 'date_format' ), (int) $row['t'] ) ) . '</span></li>';
-			}
+		echo '</tbody></table>';
 
-			echo '</ul>';
+		$pages = is_object( $found ) ? (int) $found->max_num_pages : 1;
+
+		if ( $pages > 1 ) {
+			echo '<p style="margin-top:14px;">' . wp_kses_post(
+				paginate_links(
+					array(
+						'base'    => admin_url( 'admin.php?page=oc-thankyou&tab=ratings&paged=%#%' ),
+						'format'  => '',
+						'current' => $page,
+						'total'   => $pages,
+					)
+				)
+			) . '</p>';
 		}
 	}
 
@@ -713,21 +836,18 @@ final class Thankyou {
 		}
 
 		$s = array(
-			'content'          => $content,
-			'summary'          => empty( $_POST['summary'] ) ? 0 : 1,
-			'social'           => empty( $_POST['social'] ) ? 0 : 1,
-			'social_title'     => sanitize_text_field( wp_unslash( $_POST['social_title'] ?? '' ) ),
-			'social_instagram' => esc_url_raw( wp_unslash( $_POST['social_instagram'] ?? '' ) ),
-			'social_facebook'  => esc_url_raw( wp_unslash( $_POST['social_facebook'] ?? '' ) ),
-			'social_tiktok'    => esc_url_raw( wp_unslash( $_POST['social_tiktok'] ?? '' ) ),
-			'social_whatsapp'  => esc_url_raw( wp_unslash( $_POST['social_whatsapp'] ?? '' ) ),
-			'social_youtube'   => esc_url_raw( wp_unslash( $_POST['social_youtube'] ?? '' ) ),
-			'survey'           => empty( $_POST['survey'] ) ? 0 : 1,
-			'survey_q'         => sanitize_text_field( wp_unslash( $_POST['survey_q'] ?? '' ) ),
-			'referral'         => empty( $_POST['referral'] ) ? 0 : 1,
-			'ref_friend_pct'   => min( 100, max( 1, absint( $_POST['ref_friend_pct'] ?? 10 ) ) ),
-			'ref_reward_pct'   => min( 100, max( 1, absint( $_POST['ref_reward_pct'] ?? 10 ) ) ),
-			'ref_days'         => min( 365, max( 1, absint( $_POST['ref_days'] ?? 30 ) ) ),
+			'content'        => $content,
+			'contact'        => empty( $_POST['contact'] ) ? 0 : 1,
+			'summary'        => empty( $_POST['summary'] ) ? 0 : 1,
+			'wa_group'       => empty( $_POST['wa_group'] ) ? 0 : 1,
+			'social'         => empty( $_POST['social'] ) ? 0 : 1,
+			'social_title'   => sanitize_text_field( wp_unslash( $_POST['social_title'] ?? '' ) ),
+			'survey'         => empty( $_POST['survey'] ) ? 0 : 1,
+			'survey_q'       => sanitize_text_field( wp_unslash( $_POST['survey_q'] ?? '' ) ),
+			'referral'       => empty( $_POST['referral'] ) ? 0 : 1,
+			'ref_friend_pct' => min( 100, max( 1, absint( $_POST['ref_friend_pct'] ?? 10 ) ) ),
+			'ref_reward_pct' => min( 100, max( 1, absint( $_POST['ref_reward_pct'] ?? 10 ) ) ),
+			'ref_days'       => min( 365, max( 1, absint( $_POST['ref_days'] ?? 30 ) ) ),
 		);
 		// phpcs:enable WordPress.Security.NonceVerification.Missing
 
