@@ -1099,9 +1099,6 @@ msgstr "הוסר."
 msgid "No signups yet — they collect from the notify popup on sold-out products."
 msgstr "אין הרשמות עדיין — הן נאספות מהפופ-אפ במוצרים שאזלו מהמלאי."
 
-msgid "Layout"
-msgstr "פריסה"
-
 msgid "Information & content"
 msgstr "מידע ותוכן"
 
@@ -2370,3 +2367,72 @@ msgstr "שתי עמודות — הברכה והסיכום בצד אחד, השא�
 
 msgid "Two columns fold back into one on a phone."
 msgstr "במובייל שתי העמודות מתקפלות לאחת."
+
+msgid "How the checkout is laid out. Texts the shop edits day to day stay under Theme settings."
+msgstr "המבנה של הקופה. טקסטים שהחנות עורכת בשוטף נשארים תחת ״הגדרות תבנית״."
+
+msgid "Show the product list"
+msgstr "הצגת רשימת המוצרים"
+
+msgid "Start the summary folded on desktop"
+msgstr "הסיכום מוצג מקופל בדסקטופ"
+
+msgid "Summary column colour"
+msgstr "צבע עמודת הסיכום"
+
+msgid "Country field"
+msgstr "שדה מדינה"
+
+msgid "Always hidden"
+msgstr "מוסתר תמיד"
+
+msgid "Automatic — hidden when the store ships to one country"
+msgstr "אוטומטי — מוסתר כשהחנות שולחת למדינה אחת"
+
+msgid "Sending to someone else"
+msgstr "משלוח למישהו אחר"
+
+msgid "Show \"I'm sending to someone else\""
+msgstr "הצגת ״אני שולח/ת למישהו אחר״"
+
+msgid "Recipient's additional phone is required"
+msgstr "טלפון נוסף של המקבל — שדה חובה"
+
+msgid "Apartment is required"
+msgstr "דירה — שדה חובה"
+
+msgid "Floor is required"
+msgstr "קומה — שדה חובה"
+
+msgid "Entry code is required"
+msgstr "קוד כניסה — שדה חובה"
+
+msgid "Phone validation"
+msgstr "ולידציית טלפון"
+
+msgid "Digits from"
+msgstr "ספרות — מ"
+
+msgid "Digits to"
+msgstr "ספרות — עד"
+
+msgid "Fields & extras"
+msgstr "שדות ותוספות"
+
+msgid "Order notes"
+msgstr "הערות להזמנה"
+
+msgid "Marketing consent checkbox"
+msgstr "צ׳ק בוקס אישור דיוור"
+
+msgid "Consent wording"
+msgstr "נוסח אישור הדיוור"
+
+msgid "Show the total on the place-order button"
+msgstr "הצגת הסכום על כפתור שליחת ההזמנה"
+
+msgid "Place-order button label"
+msgstr "טקסט כפתור שליחת ההזמנה"
+
+msgid "Help line in the header"
+msgstr "שורת עזרה בהדר"
