@@ -1032,6 +1032,19 @@ final class Variations {
 	}
 
 	/**
+	 * Drop the data-thumb / data-thumb-srcset attributes Woo prints for its
+	 * flexslider thumbnails. The slider is removed here and nothing reads
+	 * them — but data-thumb-srcset repeats the whole srcset string per
+	 * slide, which alone was a third of the colour-gallery payload.
+	 *
+	 * @param string $html Gallery image html.
+	 * @return string
+	 */
+	public static function strip_thumb_data( string $html ): string {
+		return (string) preg_replace( '/\sdata-thumb(?:-alt|-srcset)?="[^"]*"/', '', $html );
+	}
+
+	/**
 	 * The colour → gallery map for the front end: ready-made slide markup per
 	 * colour, so a swatch click swaps the gallery with zero requests.
 	 */
@@ -1052,7 +1065,7 @@ final class Variations {
 
 			$slides = array();
 			foreach ( $entry['imgs'] as $i => $img_id ) {
-				$slides[] = wc_get_gallery_image_html( $img_id, 0 === $i );
+				$slides[] = self::strip_thumb_data( wc_get_gallery_image_html( $img_id, 0 === $i ) );
 			}
 
 			$map[ $slug ] = $slides;

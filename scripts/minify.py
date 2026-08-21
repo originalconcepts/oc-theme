@@ -15,6 +15,7 @@ root = pathlib.Path(__file__).resolve().parent.parent / "theme" / "assets"
 
 for src, minifier in (
     (root / "js" / "theme.js", rjsmin.jsmin),
+    (root / "js" / "checkout.js", rjsmin.jsmin),
     (root / "css" / "theme.css", rcssmin.cssmin),
 ):
     out = src.with_suffix(".min" + src.suffix)

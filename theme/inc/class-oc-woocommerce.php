@@ -50,6 +50,7 @@ final class WooCommerce {
 		// rendered them pixelated and killed zoom on them (QA round 4). Every
 		// gallery image is a real single-product image.
 		add_filter( 'woocommerce_gallery_image_size', array( $this, 'gallery_image_size' ) );
+		add_filter( 'woocommerce_single_product_image_thumbnail_html', array( '\\OC\\Theme\\Variations', 'strip_thumb_data' ) );
 
 		// Sale mark on the product page lives inside the price line, so the
 		// flex row can stretch it to exactly the sale price's height.

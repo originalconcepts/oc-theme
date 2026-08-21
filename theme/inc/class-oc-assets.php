@@ -116,6 +116,21 @@ final class Assets {
 			oc_asset_version( $css )
 		);
 
+		if ( function_exists( 'is_checkout' ) && is_checkout() && ! is_wc_endpoint_url( 'order-received' ) ) {
+			$co = oc_asset_min( '/assets/js/checkout.js' );
+
+			wp_enqueue_script(
+				'oc-checkout',
+				OC_THEME_URI . $co,
+				array( 'oc-theme' ),
+				oc_asset_version( $co ),
+				array(
+					'strategy'  => 'defer',
+					'in_footer' => true,
+				)
+			);
+		}
+
 		wp_enqueue_script(
 			'oc-theme',
 			OC_THEME_URI . $js,
@@ -357,17 +372,33 @@ final class Assets {
 			return;
 		}
 
-		$parts = array();
-		foreach ( $families as $family ) {
-			$parts[] = 'family=' . rawurlencode( $family ) . ':wght@400;600;700';
-		}
+		// Self-hosted: no third-party origin, no connection setup, and the
+		// hebrew regular of the body font is preloaded so text paints with
+		// the right face on the first frame.
+		$preloaded = false;
 
-		wp_enqueue_style(
-			'oc-fonts',
-			'https://fonts.googleapis.com/css2?' . implode( '&', $parts ) . '&display=swap',
-			array(),
-			null // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion -- the URL is the version.
-		);
+		foreach ( $families as $family ) {
+			$slug = strtolower( str_replace( ' ', '-', $family ) );
+			$rel  = '/assets/fonts/' . $slug . '.css';
+
+			if ( ! file_exists( OC_THEME_DIR . $rel ) ) {
+				continue;
+			}
+
+			wp_enqueue_style( 'oc-font-' . $slug, OC_THEME_URI . $rel, array(), oc_asset_version( $rel ) );
+
+			if ( ! $preloaded && file_exists( OC_THEME_DIR . '/assets/fonts/' . $slug . '-400-hebrew.woff2' ) ) {
+				$preloaded = true;
+				$woff      = OC_THEME_URI . '/assets/fonts/' . $slug . '-400-hebrew.woff2';
+				add_action(
+					'wp_head',
+					static function () use ( $woff ): void {
+						echo '<link rel="preload" href="' . esc_url( $woff ) . '" as="font" type="font/woff2" crossorigin>' . "\n";
+					},
+					2
+				);
+			}
+		}
 	}
 
 	/**
