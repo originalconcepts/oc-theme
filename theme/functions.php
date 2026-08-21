@@ -44,6 +44,7 @@ require_once OC_THEME_DIR . '/inc/class-oc-filters.php';
 require_once OC_THEME_DIR . '/inc/class-oc-tabs.php';
 require_once OC_THEME_DIR . '/inc/class-oc-cart.php';
 require_once OC_THEME_DIR . '/inc/class-oc-checkout.php';
+require_once OC_THEME_DIR . '/inc/class-oc-performance.php';
 
 /**
  * Cache-busting version for a theme-relative asset.
@@ -58,6 +59,27 @@ require_once OC_THEME_DIR . '/inc/class-oc-checkout.php';
 function oc_asset_version( string $relative ): string {
 	$path = OC_THEME_DIR . $relative;
 	return file_exists( $path ) ? (string) filemtime( $path ) : OC_THEME_VERSION;
+}
+
+/**
+ * Prefer the minified build of an asset — but only when it is at least as
+ * new as its source. A stale .min (someone edited the source and skipped
+ * scripts/minify.py) must never ship: slower is acceptable, broken is not.
+ *
+ * @param string $relative Source path relative to the theme root.
+ * @return string The path to enqueue.
+ */
+function oc_asset_min( string $relative ): string {
+	$min = preg_replace( '/\.(js|css)$/', '.min.$1', $relative );
+
+	$src_path = OC_THEME_DIR . $relative;
+	$min_path = OC_THEME_DIR . $min;
+
+	if ( file_exists( $min_path ) && file_exists( $src_path ) && filemtime( $min_path ) >= filemtime( $src_path ) ) {
+		return $min;
+	}
+
+	return $relative;
 }
 
 /**
@@ -302,6 +324,7 @@ add_action( 'admin_notices', 'oc_dependency_notice' );
 ( new OC\Theme\Tabs() )->register();
 ( new OC\Theme\Cart() )->register();
 ( new OC\Theme\Checkout() )->register();
+( new OC\Theme\Performance() )->register();
 ( new OC\Theme\Updater( get_template(), OC_THEME_VERSION, OC_THEME_REPO ) )->register();
 
 if ( ! defined( 'OC_LOGIN_DISABLE' ) || ! OC_LOGIN_DISABLE ) {

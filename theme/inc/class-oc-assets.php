@@ -106,18 +106,21 @@ final class Assets {
 	public function front_end(): void {
 		$this->fonts();
 
+		$css = oc_asset_min( '/assets/css/theme.css' );
+		$js  = oc_asset_min( '/assets/js/theme.js' );
+
 		wp_enqueue_style(
 			'oc-theme',
-			OC_THEME_URI . '/assets/css/theme.css',
+			OC_THEME_URI . $css,
 			array(),
-			oc_asset_version( '/assets/css/theme.css' )
+			oc_asset_version( $css )
 		);
 
 		wp_enqueue_script(
 			'oc-theme',
-			OC_THEME_URI . '/assets/js/theme.js',
+			OC_THEME_URI . $js,
 			array(),
-			oc_asset_version( '/assets/js/theme.js' ),
+			oc_asset_version( $js ),
 			array(
 				'strategy'  => 'defer',
 				'in_footer' => true,
