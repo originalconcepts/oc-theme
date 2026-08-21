@@ -35,15 +35,27 @@ final class Performance {
 		add_action( 'wp_default_scripts', array( $this, 'drop_migrate' ) );
 
 		// Classic theme: no theme.json styling, no block-editor front CSS.
-		add_action( 'wp_enqueue_scripts', array( $this, 'drop_block_css' ), 100 );
+		// Global styles need their enqueue actions removed — a dequeue is
+		// re-done by core; the rest are swept at print time, which also
+		// catches anything enqueued through the block-assets pipeline.
+		add_action(
+			'init',
+			static function (): void {
+				remove_action( 'wp_enqueue_scripts', 'wp_enqueue_global_styles' );
+				remove_action( 'wp_footer', 'wp_enqueue_global_styles', 1 );
+			},
+			20
+		);
+		add_action( 'wp_print_styles', array( $this, 'drop_block_css' ), 999 );
 
 		// Woo's origin tracker (sourcebuster.js + inline config).
 		add_filter( 'wc_order_attribution_allow_tracking', '__return_false' );
 
 		// Payment gateways belong to the checkout. PayPlus (and friends)
 		// enqueue their alert/UI kits sitewide; strip them anywhere a
-		// visitor cannot pay. Late priority: after the gateways enqueue.
-		add_action( 'wp_enqueue_scripts', array( $this, 'gateway_assets_checkout_only' ), 999 );
+		// visitor cannot pay. Print time: after every enqueue path ran.
+		add_action( 'wp_print_styles', array( $this, 'gateway_assets_checkout_only' ), 999 );
+		add_action( 'wp_print_scripts', array( $this, 'gateway_assets_checkout_only' ), 999 );
 	}
 
 	/**
@@ -80,10 +92,10 @@ final class Performance {
 	 * Block-editor styling a classic theme never reads.
 	 */
 	public function drop_block_css(): void {
-		wp_dequeue_style( 'global-styles' );
-		wp_dequeue_style( 'classic-theme-styles' );
-		wp_dequeue_style( 'wc-blocks-style' );
-		wp_dequeue_style( 'wc-blocks-style-rtl' );
+		foreach ( array( 'global-styles', 'classic-theme-styles', 'wc-blocks-style', 'wc-blocks-style-rtl', 'wc-blocks-vendors-style' ) as $handle ) {
+			wp_dequeue_style( $handle );
+			wp_deregister_style( $handle );
+		}
 	}
 
 	/**
@@ -96,6 +108,12 @@ final class Performance {
 		}
 
 		$needles = array( 'payplus', 'alertify' );
+
+		// Woo's order-attribution pair rides along here: same rule (only
+		// meaningful where an order can start), same print-time sweep.
+		foreach ( array( 'sourcebuster-js', 'wc-order-attribution' ) as $handle ) {
+			wp_dequeue_script( $handle );
+		}
 
 		foreach ( array( wp_styles(), wp_scripts() ) as $registry ) {
 			foreach ( $registry->queue as $handle ) {
