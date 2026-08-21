@@ -2330,7 +2330,7 @@ msgid "Ask for a 1–5 star rating, then a few words"
 msgstr "בקשת דירוג 1–5 כוכבים, ואחריו כמה מילים"
 
 msgid "Average %1$s of 5, from %2$s ratings."
-msgstr "ממוצע %1$s מתוך 5, מ-%2$s דירוגים."
+msgstr "ממוצע %1$s מתוך 5 · סה״כ דירוגים: %2$s"
 
 msgid "Customer"
 msgstr "לקוח"
@@ -2339,7 +2339,7 @@ msgid "Rating"
 msgstr "דירוג"
 
 msgid "In their words"
-msgstr "במילים שלהם"
+msgstr "תגובה"
 
 msgid "Date"
 msgstr "תאריך"
