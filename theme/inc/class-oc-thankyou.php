@@ -37,6 +37,7 @@ final class Thankyou {
 			is_array( $saved ) ? $saved : array(),
 			array(
 				'content'        => '',   // Editor HTML; empty = the default service line.
+				'layout'         => 'stack', // stack | split (thanks+summary beside the rest).
 				'contact'        => 1,    // Phone / email / WhatsApp icon links.
 				'summary'        => 1,    // Order summary with images.
 				'wa_group'       => 0,    // "Join our WhatsApp group" widget.
@@ -44,6 +45,7 @@ final class Thankyou {
 				'social_title'   => '',
 				'survey'         => 0,
 				'survey_q'       => '',
+				'survey_sub'     => '',
 				'referral'       => 0,
 				'ref_friend_pct' => 10,   // The friend's discount.
 				'ref_reward_pct' => 10,   // The referrer's reward coupon.
@@ -87,6 +89,12 @@ final class Thankyou {
 
 		add_action( 'woocommerce_order_status_processing', array( $this, 'maybe_reward_referrer' ) );
 		add_action( 'woocommerce_order_status_completed', array( $this, 'maybe_reward_referrer' ) );
+
+		// A referral arrives as a link, and the gift is for the friend only.
+		add_action( 'wp', array( $this, 'catch_referral' ), 5 );
+		add_action( 'woocommerce_add_to_cart', array( $this, 'apply_referral' ), 20 );
+		add_filter( 'woocommerce_coupon_is_valid', array( $this, 'coupon_is_valid' ), 20, 2 );
+		add_action( 'woocommerce_after_checkout_validation', array( $this, 'validate_referral' ), 20, 2 );
 
 		add_action( 'admin_menu', array( $this, 'menu' ), 61 );
 		add_action( 'admin_post_oc_thankyou_save', array( $this, 'save_settings' ) );
@@ -157,16 +165,22 @@ final class Thankyou {
 			return;
 		}
 
-		$s = self::settings();
+		$s     = self::settings();
+		$split = 'split' === $s['layout'];
 
-		echo '<div class="oc-ty">';
+		// Both layouts render the same two groups; only the CSS decides
+		// whether they sit side by side or one under the other.
+		echo '<div class="oc-ty' . ( $split ? ' oc-ty--split' : '' ) . '">';
 
+		echo '<div class="oc-ty__col oc-ty__col--main">';
 		$this->hero( $order );
 		$this->content_block( $order, $s );
 
 		if ( ! empty( $s['summary'] ) ) {
 			$this->summary( $order );
 		}
+
+		echo '</div><div class="oc-ty__col oc-ty__col--side">';
 
 		if ( ! empty( $s['referral'] ) ) {
 			$this->referral_block( $order, $s );
@@ -184,7 +198,7 @@ final class Thankyou {
 			$this->social_block( $s );
 		}
 
-		echo '</div>';
+		echo '</div></div>';
 	}
 
 	/**
@@ -264,13 +278,7 @@ final class Thankyou {
 
 			echo '<div class="oc-ty__item">';
 			echo '<span class="oc-ty__item-img">' . wp_kses_post( $thumb );
-
-			// Quantity rides the image as a corner badge; a single unit needs
-			// no announcement.
-			if ( $qty > 1 ) {
-				echo '<span class="oc-ty__item-badge">' . esc_html( (string) $qty ) . '</span>';
-			}
-
+			echo '<span class="oc-ty__item-badge">' . esc_html( (string) $qty ) . '</span>';
 			echo '</span>';
 			echo '<span class="oc-ty__item-body">';
 			echo '<span class="oc-ty__item-name">' . esc_html( $item->get_name() ) . '</span>';
@@ -316,12 +324,16 @@ final class Thankyou {
 		$friend = (int) $s['ref_friend_pct'];
 		$reward = (int) $s['ref_reward_pct'];
 
+		// A link, not a bare code: the discount belongs to whoever the link
+		// is sent to, and arrives applied. A code sitting on the screen is
+		// mostly an invitation to use it on your own next order.
+		$link = add_query_arg( 'oc_ref', rawurlencode( $code ), home_url( '/' ) );
+
 		$share_text = sprintf(
-			/* translators: 1: discount percent, 2: coupon code, 3: shop url. */
-			__( 'I have a gift for you: %1$s%% off at %3$s with the code %2$s', 'oc-theme' ),
+			/* translators: 1: discount percent, 2: share link. */
+			__( 'I have a gift for you — %1$s%% off your first order here: %2$s', 'oc-theme' ),
 			$friend,
-			$code,
-			home_url( '/' )
+			$link
 		);
 
 		echo '<div class="oc-ty__box oc-ty__ref">';
@@ -329,17 +341,132 @@ final class Thankyou {
 		echo '<p class="oc-ty__ref-txt">' . esc_html(
 			sprintf(
 				/* translators: 1: friend discount percent, 2: reward percent. */
-				__( 'This code is yours to share: a friend gets %1$s%% off a first order, and once they buy, a %2$s%% coupon is waiting for you.', 'oc-theme' ),
+				__( 'Send this link to a friend: the discount of %1$s%% waits for them on their first order, and once they buy, a %2$s%% coupon arrives for you by email.', 'oc-theme' ),
 				$friend,
 				$reward
 			)
 		) . '</p>';
 		echo '<div class="oc-ty__code-row">';
-		echo '<span class="oc-ty__code" data-oc-ty-code>' . esc_html( $code ) . '</span>';
-		echo '<button type="button" class="oc-ty__copy" data-oc-ty-copy data-done="' . esc_attr__( 'Copied', 'oc-theme' ) . '">' . esc_html__( 'Copy', 'oc-theme' ) . '</button>';
+		echo '<span class="oc-ty__code" data-oc-ty-code dir="ltr">' . esc_html( $link ) . '</span>';
+		echo '<button type="button" class="oc-ty__copy" data-oc-ty-copy data-done="' . esc_attr__( 'Copied', 'oc-theme' ) . '">' . esc_html__( 'Copy link', 'oc-theme' ) . '</button>';
 		echo '</div>';
-		echo '<a class="oc-ty__wa" target="_blank" rel="noopener" href="https://wa.me/?text=' . rawurlencode( $share_text ) . '">' . esc_html__( 'Share on WhatsApp', 'oc-theme' ) . '</a>';
+		echo '<a class="oc-ty__wa" target="_blank" rel="noopener" href="https://wa.me/?text=' . rawurlencode( $share_text ) . '">'
+			. '<span class="oc-ty__wa-i" aria-hidden="true">' . Contact::icon( 'whatsapp' ) . '</span>'
+			. esc_html__( 'Send on WhatsApp', 'oc-theme' ) . '</a>';
+		echo '<p class="oc-ty__ref-fine">' . esc_html__( 'The gift is for a new customer — it will not apply to your own next order.', 'oc-theme' ) . '</p>';
 		echo '</div>';
+	}
+
+	/**
+	 * A referral link was followed: remember it for this visitor.
+	 */
+	public function catch_referral(): void {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- a share link, not a form.
+		$code = isset( $_GET['oc_ref'] ) ? wc_format_coupon_code( wc_clean( wp_unslash( $_GET['oc_ref'] ) ) ) : '';
+
+		if ( ! $code || is_admin() || ! function_exists( 'WC' ) || ! WC()->session ) {
+			return;
+		}
+
+		WC()->session->set( 'oc_ref_code', $code );
+
+		$this->apply_referral();
+	}
+
+	/**
+	 * Put the remembered referral on the cart, once there is a cart.
+	 */
+	public function apply_referral(): void {
+		if ( ! function_exists( 'WC' ) || ! WC()->session || ! WC()->cart ) {
+			return;
+		}
+
+		$code = (string) WC()->session->get( 'oc_ref_code' );
+
+		if ( ! $code || WC()->cart->is_empty() || WC()->cart->has_discount( $code ) ) {
+			return;
+		}
+
+		WC()->cart->apply_coupon( $code );
+	}
+
+	/**
+	 * The referrer cannot spend their own gift.
+	 *
+	 * @param bool        $valid  Whether the coupon is valid so far.
+	 * @param \WC_Coupon  $coupon Coupon.
+	 */
+	public function coupon_is_valid( $valid, $coupon ) {
+		if ( ! $valid || ! $coupon instanceof \WC_Coupon ) {
+			return $valid;
+		}
+
+		$ref = strtolower( (string) $coupon->get_meta( '_oc_ref_referrer_email' ) );
+
+		if ( ! $ref ) {
+			return $valid;
+		}
+
+		if ( $ref === strtolower( $this->shopper_email() ) ) {
+			throw new \Exception( esc_html__( 'This gift is meant for a friend — it cannot be used on your own order.', 'oc-theme' ) );
+		}
+
+		return $valid;
+	}
+
+	/**
+	 * The email we believe belongs to the shopper right now.
+	 */
+	private function shopper_email(): string {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- reading, not trusting.
+		$posted = isset( $_POST['billing_email'] ) ? sanitize_email( wp_unslash( $_POST['billing_email'] ) ) : '';
+
+		if ( $posted ) {
+			return $posted;
+		}
+
+		if ( is_user_logged_in() ) {
+			$user = wp_get_current_user();
+
+			if ( $user && $user->user_email ) {
+				return (string) $user->user_email;
+			}
+		}
+
+		if ( function_exists( 'WC' ) && WC()->customer ) {
+			return (string) WC()->customer->get_billing_email();
+		}
+
+		return '';
+	}
+
+	/**
+	 * Last gate: the email typed at checkout decides, whatever the session
+	 * believed earlier.
+	 *
+	 * @param array     $data   Posted checkout data.
+	 * @param \WP_Error $errors Error bag.
+	 */
+	public function validate_referral( $data, $errors ): void {
+		if ( ! function_exists( 'WC' ) || ! WC()->cart ) {
+			return;
+		}
+
+		$email = strtolower( (string) ( $data['billing_email'] ?? '' ) );
+
+		if ( ! $email ) {
+			return;
+		}
+
+		foreach ( WC()->cart->get_applied_coupons() as $code ) {
+			$coupon = new \WC_Coupon( $code );
+			$ref    = strtolower( (string) $coupon->get_meta( '_oc_ref_referrer_email' ) );
+
+			if ( $ref && $ref === $email ) {
+				WC()->cart->remove_coupon( $code );
+				$errors->add( 'oc_ref', __( 'This gift is meant for a friend — it cannot be used on your own order.', 'oc-theme' ) );
+			}
+		}
 	}
 
 	/**
@@ -465,29 +592,33 @@ final class Thankyou {
 	 */
 	private function survey_block( \WC_Order $order, array $s ): void {
 		$q       = '' !== trim( (string) $s['survey_q'] ) ? (string) $s['survey_q'] : __( 'How was your purchase experience?', 'oc-theme' );
+		$sub     = '' !== trim( (string) $s['survey_sub'] ) ? (string) $s['survey_sub'] : __( 'If you feel like giving a compliment — or helping us improve', 'oc-theme' );
 		$rated   = (int) $order->get_meta( '_oc_ty_rating' );
 		$comment = (string) $order->get_meta( '_oc_ty_comment' );
 
-		echo '<div class="oc-ty__box oc-ty__survey" data-oc-ty-survey data-order="' . esc_attr( (string) $order->get_id() ) . '" data-key="' . esc_attr( $order->get_order_key() ) . '" data-ajax="' . esc_url( admin_url( 'admin-ajax.php' ) ) . '"' . ( $rated ? ' data-rated="' . esc_attr( (string) $rated ) . '"' : '' ) . ( '' !== $comment ? ' data-said="1"' : '' ) . '>';
+		echo '<div class="oc-ty__box oc-ty__survey" data-oc-ty-survey data-order="' . esc_attr( (string) $order->get_id() ) . '" data-key="' . esc_attr( $order->get_order_key() ) . '" data-ajax="' . esc_url( admin_url( 'admin-ajax.php' ) ) . '"' . ( $rated ? ' data-rated="' . esc_attr( (string) $rated ) . '"' : '' ) . '>';
 		echo '<h2 class="oc-ty__h">' . esc_html( $q ) . '</h2>';
+
+		if ( '' !== $sub ) {
+			echo '<p class="oc-ty__sursub">' . esc_html( $sub ) . '</p>';
+		}
+
 		echo '<div class="oc-ty__stars" role="radiogroup" aria-label="' . esc_attr( $q ) . '">';
 
+		// The stars stay live: a rating is a first impression, and changing
+		// your mind about it should not need a support ticket.
 		for ( $i = 1; $i <= 5; $i++ ) {
-			echo '<button type="button" class="oc-ty__star' . ( $rated && $i <= $rated ? ' is-on' : '' ) . '" data-star="' . esc_attr( (string) $i ) . '"' . ( $rated ? ' disabled' : '' ) . ' aria-label="' . esc_attr( (string) $i ) . '"><svg viewBox="0 0 24 24"><path d="M12 2.6 15 9l7 .7-5.3 4.7 1.6 6.9L12 17.6 5.7 21.3l1.6-6.9L2 9.7 9 9Z"/></svg></button>';
+			echo '<button type="button" class="oc-ty__star' . ( $rated && $i <= $rated ? ' is-on' : '' ) . '" data-star="' . esc_attr( (string) $i ) . '" aria-label="' . esc_attr( (string) $i ) . '"><svg viewBox="0 0 24 24"><path d="M12 2.6 15 9l7 .7-5.3 4.7 1.6 6.9L12 17.6 5.7 21.3l1.6-6.9L2 9.7 9 9Z"/></svg></button>';
 		}
 
 		echo '</div>';
 
-		// The box opens once a rating lands, and stays closed for a visitor
-		// who already said their piece.
-		echo '<div class="oc-ty__say" data-oc-ty-say' . ( $rated && '' === $comment ? '' : ' hidden' ) . '>';
-		echo '<textarea class="oc-ty__saybox" data-oc-ty-text rows="3" maxlength="600" placeholder="' . esc_attr__( 'A few words about the experience?', 'oc-theme' ) . '"></textarea>';
-		echo '<button type="button" class="oc-ty__saybtn" data-oc-ty-send>' . esc_html__( 'Send', 'oc-theme' ) . '</button>';
+		// The rating counts on its own; the words are an open invitation that
+		// appears once there is a rating to attach them to.
+		echo '<div class="oc-ty__say" data-oc-ty-say' . ( $rated ? '' : ' hidden' ) . '>';
+		echo '<textarea class="oc-ty__saybox" data-oc-ty-text rows="3" maxlength="600" placeholder="' . esc_attr__( 'A few words about the experience?', 'oc-theme' ) . '">' . esc_textarea( $comment ) . '</textarea>';
+		echo '<button type="button" class="oc-ty__saybtn" data-oc-ty-send data-done="' . esc_attr__( 'Saved', 'oc-theme' ) . '">' . esc_html__( 'Send', 'oc-theme' ) . '</button>';
 		echo '</div>';
-
-		if ( '' !== $comment ) {
-			echo '<p class="oc-ty__said">' . esc_html( $comment ) . '</p>';
-		}
 
 		echo '<p class="oc-ty__thanks"' . ( $rated ? '' : ' hidden' ) . '>' . esc_html__( 'Thanks for the feedback!', 'oc-theme' ) . '</p>';
 		echo '</div>';
@@ -513,7 +644,9 @@ final class Thankyou {
 		$had     = (int) $order->get_meta( '_oc_ty_rating' );
 		$changed = false;
 
-		if ( $rating >= 1 && $rating <= 5 && ! $had ) {
+		// A rating can be revised. The running total follows the change so
+		// the average stays honest without recounting every order.
+		if ( $rating >= 1 && $rating <= 5 && $rating !== $had ) {
 			$order->update_meta_data( '_oc_ty_rating', $rating );
 			$changed = true;
 
@@ -523,17 +656,22 @@ final class Thankyou {
 				'sum'   => 0,
 			);
 
-			$agg['count'] = (int) ( $agg['count'] ?? 0 ) + 1;
-			$agg['sum']   = (int) ( $agg['sum'] ?? 0 ) + $rating;
+			$agg['count'] = (int) ( $agg['count'] ?? 0 ) + ( $had ? 0 : 1 );
+			$agg['sum']   = max( 0, (int) ( $agg['sum'] ?? 0 ) + $rating - $had );
 			unset( $agg['recent'] ); // The list comes from the orders themselves.
 
 			update_option( 'oc_ty_survey', $agg, false );
 		}
 
-		// A comment only counts alongside a rating, and only the first time.
-		if ( '' !== $comment && ( $had || $changed ) && '' === (string) $order->get_meta( '_oc_ty_comment' ) ) {
-			$order->update_meta_data( '_oc_ty_comment', mb_substr( $comment, 0, 600 ) );
-			$changed = true;
+		// Words belong to a rating, and stay editable while the page is open.
+		if ( $had || $changed ) {
+			$stored = (string) $order->get_meta( '_oc_ty_comment' );
+			$next   = mb_substr( $comment, 0, 600 );
+
+			if ( isset( $_POST['comment'] ) && $next !== $stored ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing -- order key verified above.
+				$order->update_meta_data( '_oc_ty_comment', $next );
+				$changed = true;
+			}
 		}
 
 		if ( $changed ) {
@@ -662,6 +800,16 @@ final class Thankyou {
 
 			<table class="form-table" role="presentation">
 				<tr>
+					<th scope="row"><?php esc_html_e( 'Layout', 'oc-theme' ); ?></th>
+					<td>
+						<select name="layout">
+							<option value="stack" <?php selected( 'stack', $s['layout'] ); ?>><?php esc_html_e( 'One column — everything under the greeting', 'oc-theme' ); ?></option>
+							<option value="split" <?php selected( 'split', $s['layout'] ); ?>><?php esc_html_e( 'Two columns — greeting and summary on one side, the rest beside them', 'oc-theme' ); ?></option>
+						</select>
+						<p class="description"><?php esc_html_e( 'Two columns fold back into one on a phone.', 'oc-theme' ); ?></p>
+					</td>
+				</tr>
+				<tr>
 					<th scope="row"><?php esc_html_e( 'Contact channels', 'oc-theme' ); ?></th>
 					<td>
 						<label><input type="checkbox" name="contact" value="1" <?php checked( 1, (int) $s['contact'] ); ?> /> <?php esc_html_e( 'Show phone, email and WhatsApp under the text', 'oc-theme' ); ?></label>
@@ -704,6 +852,7 @@ final class Thankyou {
 					<td>
 						<label><input type="checkbox" name="survey" value="1" <?php checked( 1, (int) $s['survey'] ); ?> /> <?php esc_html_e( 'Ask for a 1–5 star rating, then a few words', 'oc-theme' ); ?></label>
 						<p style="margin:10px 0 0;"><input type="text" name="survey_q" value="<?php echo esc_attr( (string) $s['survey_q'] ); ?>" placeholder="<?php esc_attr_e( 'How was your purchase experience?', 'oc-theme' ); ?>" class="large-text" /></p>
+						<p style="margin:8px 0 0;"><input type="text" name="survey_sub" value="<?php echo esc_attr( (string) $s['survey_sub'] ); ?>" placeholder="<?php esc_attr_e( 'If you feel like giving a compliment — or helping us improve', 'oc-theme' ); ?>" class="large-text" /></p>
 					</td>
 				</tr>
 			</table>
@@ -837,6 +986,7 @@ final class Thankyou {
 
 		$s = array(
 			'content'        => $content,
+			'layout'         => 'split' === ( $_POST['layout'] ?? 'stack' ) ? 'split' : 'stack',
 			'contact'        => empty( $_POST['contact'] ) ? 0 : 1,
 			'summary'        => empty( $_POST['summary'] ) ? 0 : 1,
 			'wa_group'       => empty( $_POST['wa_group'] ) ? 0 : 1,
@@ -844,6 +994,7 @@ final class Thankyou {
 			'social_title'   => sanitize_text_field( wp_unslash( $_POST['social_title'] ?? '' ) ),
 			'survey'         => empty( $_POST['survey'] ) ? 0 : 1,
 			'survey_q'       => sanitize_text_field( wp_unslash( $_POST['survey_q'] ?? '' ) ),
+			'survey_sub'     => sanitize_text_field( wp_unslash( $_POST['survey_sub'] ?? '' ) ),
 			'referral'       => empty( $_POST['referral'] ) ? 0 : 1,
 			'ref_friend_pct' => min( 100, max( 1, absint( $_POST['ref_friend_pct'] ?? 10 ) ) ),
 			'ref_reward_pct' => min( 100, max( 1, absint( $_POST['ref_reward_pct'] ?? 10 ) ) ),

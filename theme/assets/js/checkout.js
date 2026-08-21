@@ -934,65 +934,57 @@
 				} );
 			};
 
-			if ( ! tySurvey.dataset.rated ) {
-				tyStars.forEach( function ( star, i ) {
-					star.addEventListener( 'mouseenter', function () {
-						if ( ! tySurvey.dataset.rated ) {
-							tyPaint( i + 1 );
-						}
-					} );
-					star.addEventListener( 'mouseleave', function () {
-						if ( ! tySurvey.dataset.rated ) {
-							tyPaint( 0 );
-						}
-					} );
-					star.addEventListener( 'click', function () {
-						if ( tySurvey.dataset.rated ) {
-							return;
-						}
-
-						var n = i + 1;
-						tySurvey.dataset.rated = String( n );
-						tyPaint( n );
-						tyStars.forEach( function ( b ) {
-							b.disabled = true;
-						} );
-
-						// The rating is in; the words are a bonus, never a gate.
-						if ( tyThanks ) {
-							tyThanks.hidden = false;
-						}
-						if ( tySay && ! tySurvey.dataset.said ) {
-							tySay.hidden = false;
-							if ( tyText ) {
-								tyText.focus();
-							}
-						}
-
-						tyPost( { rating: String( n ) } );
-					} );
+			// The stars stay live after the first click: changing your mind
+			// saves like any other answer.
+			tyStars.forEach( function ( star, i ) {
+				star.addEventListener( 'mouseenter', function () {
+					tyPaint( i + 1 );
 				} );
-			}
+				star.addEventListener( 'mouseleave', function () {
+					tyPaint( parseInt( tySurvey.dataset.rated || '0', 10 ) );
+				} );
+				star.addEventListener( 'click', function () {
+					var n = i + 1;
+
+					if ( String( n ) === tySurvey.dataset.rated ) {
+						return;
+					}
+
+					tySurvey.dataset.rated = String( n );
+					tyPaint( n );
+
+					// The rating counts on its own; the words are a bonus.
+					if ( tyThanks ) {
+						tyThanks.hidden = false;
+					}
+					if ( tySay && tySay.hidden ) {
+						tySay.hidden = false;
+						if ( tyText ) {
+							tyText.focus();
+						}
+					}
+
+					tyPost( { rating: String( n ) } );
+				} );
+			} );
 
 			if ( tySend && tyText ) {
-				tySend.addEventListener( 'click', function () {
-					var said = tyText.value.trim();
+				var tyLabel = tySend.textContent;
 
-					if ( ! said ) {
+				tySend.addEventListener( 'click', function () {
+					if ( ! tyText.value.trim() ) {
 						tyText.focus();
 						return;
 					}
 
-					tySend.disabled = true;
-					tySurvey.dataset.said = '1';
+					tySend.classList.add( 'is-done' );
+					tySend.textContent = tySend.dataset.done || tyLabel;
+					setTimeout( function () {
+						tySend.classList.remove( 'is-done' );
+						tySend.textContent = tyLabel;
+					}, 1800 );
 
-					var quote = document.createElement( 'p' );
-					quote.className = 'oc-ty__said';
-					quote.textContent = said;
-					tySay.parentNode.insertBefore( quote, tySay );
-					tySay.hidden = true;
-
-					tyPost( { comment: said } );
+					tyPost( { comment: tyText.value.trim() } );
 				} );
 			}
 		}
