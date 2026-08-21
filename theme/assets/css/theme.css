@@ -7805,7 +7805,12 @@ body.oc-checkout { overflow-x: clip; }
 
 .oc-ty__thanks { margin: 10px 0 0; font-size: .9rem; color: var(--oc-success, #1e9e5a); font-weight: 600; }
 
-/* The words are optional, so the box opens quietly under the stars. */
+/* The words are optional, so the box opens quietly under the stars.
+ * The [hidden] guard is not optional: an author-level `display` beats the
+ * browser's own rule for the attribute, and the box would sit open before
+ * anyone had rated anything. */
+.oc-ty__say[hidden] { display: none; }
+
 .oc-ty__say {
 	display: flex;
 	gap: 8px;
