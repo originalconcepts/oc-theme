@@ -4264,10 +4264,34 @@
 			var ocVideoFallbackThumb = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 80 80%22%3E%3Crect width=%2280%22 height=%2280%22 fill=%22%231c1c1c%22/%3E%3Ccircle cx=%2240%22 cy=%2240%22 r=%2215%22 fill=%22none%22 stroke=%22%23fff%22 stroke-width=%222%22/%3E%3Cpath d=%22M36 33l12 7-12 7z%22 fill=%22%23fff%22/%3E%3C/svg%3E';
 
 			var ocVideoLoopHtml = function () {
-				return 'file' === ocVideo.kind
-					? '<video src="' + ocVideo.loopSrc + '" autoplay muted loop playsinline preload="metadata"></video>'
-					: '<iframe src="' + ocVideo.loopSrc + '" loading="lazy" allow="autoplay; fullscreen" tabindex="-1" title="video"></iframe>';
+				if ( 'file' === ocVideo.kind ) {
+					return '<video src="' + ocVideo.loopSrc + '" autoplay muted loop playsinline preload="metadata"></video>';
+				}
+
+				// A third-party iframe on first paint costs a connection and
+				// drags the load event for seconds. The poster stands in and
+				// the real embed swaps in right after the page settles.
+				return '<img class="oc-vposter" data-oc-vdefer="' + ocVideo.loopSrc + '" src="' + ( ocVideo.thumb || ocVideoFallbackThumb ) + '" alt="" />';
 			};
+
+			var ocVideoDeferSwap = function () {
+				document.querySelectorAll( '[data-oc-vdefer]' ).forEach( function ( poster ) {
+					var frame = document.createElement( 'iframe' );
+					frame.src = poster.dataset.ocVdefer;
+					frame.setAttribute( 'allow', 'autoplay; fullscreen' );
+					frame.setAttribute( 'tabindex', '-1' );
+					frame.setAttribute( 'title', 'video' );
+					poster.replaceWith( frame );
+				} );
+			};
+
+			if ( 'complete' === document.readyState ) {
+				setTimeout( ocVideoDeferSwap, 400 );
+			} else {
+				window.addEventListener( 'load', function () {
+					setTimeout( ocVideoDeferSwap, 400 );
+				} );
+			}
 
 			// Manual mode starts frozen: a first frame for files, the poster
 			// for embeds — the click brings it to life.
