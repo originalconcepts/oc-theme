@@ -2182,20 +2182,11 @@ msgstr "הזמנתך התקבלה והיא תטופל בהקדם."
 msgid "Your order number is:"
 msgstr "מספר הזמנתך הוא:"
 
-msgid "I have a gift for you: %1$s%% off at %3$s with the code %2$s"
-msgstr "יש לי מתנה בשבילך: %1$s%% הנחה ב-%3$s עם הקוד %2$s"
-
 msgid "A gift for a friend"
 msgstr "מתנה לחבר"
 
-msgid "Copy"
-msgstr "העתקה"
-
 msgid "Copied"
 msgstr "הועתק ✓"
-
-msgid "Share on WhatsApp"
-msgstr "שיתוף בוואטסאפ"
 
 msgid "Your friend just ordered — here is your %s%% coupon"
 msgstr "החבר שלך ביצע הזמנה — הנה קופון של %s%% בשבילך"
@@ -2284,9 +2275,6 @@ msgstr "להצטרפות לקבוצת הוואטסאפ שלנו"
 msgid "News and offers first"
 msgstr "עדכונים ומבצעים לפני כולם"
 
-msgid "This code is yours to share: a friend gets %1$s%% off a first order, and once they buy, a %2$s%% coupon is waiting for you."
-msgstr "הקוד הזה שלך לשיתוף: חבר יקבל %1$s%% הנחה בהזמנה ראשונה, ואחרי שירכוש יחכה לך קופון של %2$s%%."
-
 msgid "Thank-you page"
 msgstr "דף תודה"
 
@@ -2343,3 +2331,42 @@ msgstr "תגובה"
 
 msgid "Date"
 msgstr "תאריך"
+
+msgid "Send this link to a friend: the discount of %1$s%% waits for them on their first order, and once they buy, a %2$s%% coupon arrives for you by email."
+msgstr "אפשר לשלוח את הקישור לחבר: הנחה של %1$s%% מחכה לו בהזמנה הראשונה, ואחרי שירכוש יגיע אליך במייל קופון של %2$s%%."
+
+msgid "Copy link"
+msgstr "העתקת קישור"
+
+msgid "Copied"
+msgstr "הועתק ✓"
+
+msgid "Send on WhatsApp"
+msgstr "שליחה בוואטסאפ"
+
+msgid "I have a gift for you — %1$s%% off your first order here: %2$s"
+msgstr "יש לי מתנה בשבילך — %1$s%% הנחה בהזמנה הראשונה שלך כאן: %2$s"
+
+msgid "The gift is for a new customer — it will not apply to your own next order."
+msgstr "המתנה מיועדת ללקוח חדש — היא לא תחול על ההזמנה הבאה שלך."
+
+msgid "This gift is meant for a friend — it cannot be used on your own order."
+msgstr "המתנה הזו מיועדת לחבר — לא ניתן להשתמש בה בהזמנה שלך."
+
+msgid "If you feel like giving a compliment — or helping us improve"
+msgstr "אם בא לך לפרגן, או לעזור לנו להשתפר"
+
+msgid "Saved"
+msgstr "נשמר ✓"
+
+msgid "Layout"
+msgstr "מבנה"
+
+msgid "One column — everything under the greeting"
+msgstr "עמודה אחת — הכל מתחת לברכה"
+
+msgid "Two columns — greeting and summary on one side, the rest beside them"
+msgstr "שתי עמודות — הברכה והסיכום בצד אחד, השאר לצידם"
+
+msgid "Two columns fold back into one on a phone."
+msgstr "במובייל שתי העמודות מתקפלות לאחת."
