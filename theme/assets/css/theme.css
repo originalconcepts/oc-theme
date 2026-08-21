@@ -7527,9 +7527,13 @@ body.oc-checkout { overflow-x: clip; }
    Thank-you page (order received)
    ===================================================================== */
 
-/* Woo's dry defaults give way to our sections. */
+/* Woo's dry defaults give way to our sections — and so do the page
+ * title + breadcrumb: the hero is the greeting. */
 .oc-ty-page .woocommerce-order-overview,
-.oc-ty-page .woocommerce-thankyou-order-received { display: none !important; }
+.oc-ty-page .woocommerce-thankyou-order-received,
+.oc-ty-page .oc-page-title,
+.oc-ty-page .oc-breadcrumb,
+.oc-ty-page .woocommerce-breadcrumb { display: none !important; }
 
 .oc-ty {
 	max-inline-size: 660px;
