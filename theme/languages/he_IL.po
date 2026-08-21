@@ -2436,3 +2436,114 @@ msgstr "טקסט כפתור שליחת ההזמנה"
 
 msgid "Help line in the header"
 msgstr "שורת עזרה בהדר"
+
+msgid "A strip above the header: how it looks and behaves. The messages themselves are written under Theme settings → Announcement bar."
+msgstr "רצועה מעל ההדר: איך היא נראית ומתנהגת. את ההודעות עצמן כותבים תחת ״הגדרות תבנית ← בר הודעות״."
+
+msgid "The built-in tabs. Tab titles and the custom tabs stay under Theme settings."
+msgstr "הטאבים המובנים. כותרות הטאבים והטאבים המותאמים נשארים תחת ״הגדרות תבנית״."
+
+msgid "Placement"
+msgstr "מיקום"
+
+msgid "How the order-received page is laid out."
+msgstr "המבנה של עמוד ״ההזמנה התקבלה״."
+
+msgid "The drawer's shape. Titles, free-shipping threshold and upsell rules stay under Theme settings."
+msgstr "המבנה של המגירה. כותרות, סף המשלוח חינם וכללי ההמלצות נשארים תחת ״הגדרות תבנית״."
+
+msgid "Width (px)"
+msgstr "רוחב (פיקסלים)"
+
+msgid "Free shipping"
+msgstr "משלוח חינם"
+
+msgid "Where they appear"
+msgstr "היכן מוצגות"
+
+msgid "Upsell background"
+msgstr "רקע ההמלצות"
+
+msgid "How filtering looks. The filter groups themselves stay under Theme settings."
+msgstr "איך הסינון נראה. קבוצות הסינון עצמן נשארות תחת ״הגדרות תבנית״."
+
+msgid "Enable filtering"
+msgstr "הפעלת סינון"
+
+msgid "Bar group opens"
+msgstr "פתיחת קבוצה בבר"
+
+msgid "Chosen values row"
+msgstr "שורת הערכים שנבחרו"
+
+msgid "Choice mark"
+msgstr "סימון הבחירה"
+
+msgid "Swatch value in the chips row"
+msgstr "ערך סוואטש בשורת הצ׳יפים"
+
+msgid "Value names beside swatches"
+msgstr "שמות הערכים ליד הסוואטשים"
+
+msgid "Value names beside swatches on mobile"
+msgstr "שמות הערכים ליד הסוואטשים במובייל"
+
+msgid "Show how many products match"
+msgstr "הצגת מספר המוצרים התואמים"
+
+msgid "Values with no products"
+msgstr "ערכים ללא מוצרים"
+
+msgid "Offer an \"in stock only\" filter"
+msgstr "הצעת סינון ״במלאי בלבד״"
+
+msgid "Range control"
+msgstr "ממשק הטווח"
+
+msgid "Announcement bar"
+msgstr "בר הודעות"
+
+msgid "The lines that rotate above the header. Leave a slot empty to skip it."
+msgstr "השורות שמתחלפות מעל ההדר. שדה ריק פשוט מדולג."
+
+msgid "Colours, rotation speed and whether the bar shows at all are in the Customizer."
+msgstr "הצבעים, מהירות ההחלפה והאם הבר מוצג בכלל — בהתאמה אישית."
+
+msgid "The bar is currently switched off, so these messages are not showing."
+msgstr "הבר כבוי כרגע, ולכן ההודעות האלה לא מוצגות."
+
+msgid "Message %d"
+msgstr "הודעה %d"
+
+msgid "Where the panel opens from, its width, the footer buttons and the upsell placement are set in %s."
+msgstr "מהיכן המגירה נפתחת, רוחבה, כפתורי התחתית ומיקום ההמלצות — נקבעים ב%s."
+
+msgid "Customize → Cart & mini-cart"
+msgstr "התאמה אישית ← עגלה ומיני-קארט"
+
+msgid "Whether filtering is on, its layout and how values are presented are set in %s."
+msgstr "הפעלת הסינון, הפריסה שלו ואופן הצגת הערכים — נקבעים ב%s."
+
+msgid "Customize → Catalogue filters"
+msgstr "התאמה אישית ← סינון קטלוג"
+
+msgid "Which built-in tabs appear, and in what order, is set in %s."
+msgstr "אילו טאבים מובנים מוצגים ובאיזה סדר — נקבע ב%s."
+
+msgid "Customize → Product tabs"
+msgstr "התאמה אישית ← טאבים בדף מוצר"
+
+msgid "The page layout, the contact strip and the order summary are set in %s."
+msgstr "מבנה העמוד, שורת ערוצי הקשר וסיכום ההזמנה — נקבעים ב%s."
+
+msgid "Customize → Thank-you page"
+msgstr "התאמה אישית ← דף תודה"
+
+msgid "Wording"
+msgstr "נוסח"
+
+msgid "Brands & price steps"
+msgstr "מותגים ומדרגות מחיר"
+
+msgid "Price steps"
+msgstr "מדרגות מחיר"
