@@ -257,16 +257,13 @@ final class Customizer {
 			'oc_topbar',
 			array(
 				'title'       => __( 'Top bar', 'oc-theme' ),
-				'description' => __( 'A strip above the header: rotating messages in the centre, an optional side menu (assign it in the Menus screen).', 'oc-theme' ),
+				'description' => __( 'A strip above the header: how it looks and behaves. The messages themselves are written under Theme settings → Announcement bar.', 'oc-theme' ),
 				'priority'    => 11,
 			)
 		);
 
 		$this->toggle( $c, 'oc_topbar', 'oc_topbar', __( 'Show the top bar', 'oc-theme' ), false );
 
-		$this->text( $c, 'oc_topbar_msg1', 'oc_topbar', __( 'Message 1', 'oc-theme' ) );
-		$this->text( $c, 'oc_topbar_msg2', 'oc_topbar', __( 'Message 2', 'oc-theme' ) );
-		$this->text( $c, 'oc_topbar_msg3', 'oc_topbar', __( 'Message 3', 'oc-theme' ) );
 
 		$this->choice(
 			$c,
