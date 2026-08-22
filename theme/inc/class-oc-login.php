@@ -157,7 +157,15 @@ final class Gate {
 			$wp_query->set_404();
 		}
 
-		$template = get_404_template();
+		// The gate can fire as early as `after_setup_theme`, long before
+		// WooCommerce has booted. The theme's 404 draws the header, which asks
+		// WooCommerce for the cart — on an early request that call lands on a
+		// cart that does not exist yet and the request dies with a fatal. A
+		// scanner gets the bare page instead; a visitor, who always arrives
+		// after WooCommerce is up, still gets the designed one.
+		$ready    = ! class_exists( 'WooCommerce' ) || did_action( 'woocommerce_init' );
+		$template = $ready ? get_404_template() : '';
+
 		if ( $template && file_exists( $template ) ) {
 			require $template;
 		} else {

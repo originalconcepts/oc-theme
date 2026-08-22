@@ -216,7 +216,10 @@ function oc_header_icons_render(): void {
 	}
 
 	if ( class_exists( 'WooCommerce' ) && get_theme_mod( 'oc_header_cart', true ) ) {
-		$oc_count = WC()->cart->get_cart_contents_count();
+		// The cart is missing on any request that renders the theme before
+		// WooCommerce has booted; the header must not die over a counter.
+		$oc_cart  = function_exists( 'WC' ) && WC()->cart ? WC()->cart : null;
+		$oc_count = $oc_cart ? $oc_cart->get_cart_contents_count() : 0;
 
 		printf(
 			'<a class="oc-hicon oc-cart-link" href="%s" aria-label="%s">%s<span class="oc-cart-count">%d</span></a>',
