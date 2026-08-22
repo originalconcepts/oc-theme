@@ -2761,3 +2761,354 @@ msgstr "רחב"
 
 msgid "0% keeps the top of the picture, 100% keeps the bottom. The previews show each banner size."
 msgstr "0% שומר על החלק העליון של התמונה, 100% על החלק התחתון. התצוגות המקדימות מראות כל אחד מגדלי הבאנר."
+
+msgid "Search products"
+msgstr "חיפוש מוצרים"
+
+msgid "Close search"
+msgstr "סגירת החיפוש"
+
+msgid "Popular searches"
+msgstr "חיפושים פופולריים"
+
+msgid "Your searches"
+msgstr "החיפושים שלך"
+
+msgid "Popular products"
+msgstr "מוצרים פופולריים"
+
+msgid "All %d results"
+msgstr "כל %d התוצאות"
+
+msgid "From the site"
+msgstr "מהאתר"
+
+msgid "Article"
+msgstr "מאמר"
+
+msgid "Nothing found for “%s”"
+msgstr "לא נמצאו תוצאות עבור ״%s״"
+
+msgid "Try a shorter word, or one of these:"
+msgstr "נסו מילה קצרה יותר, או אחד מאלה:"
+
+msgid "Showing results for %s"
+msgstr "מציג תוצאות עבור %s"
+
+msgid "Add %s to the cart"
+msgstr "הוספת %s לסל"
+
+msgid "Added"
+msgstr "נוסף"
+
+msgid "Remove from your searches"
+msgstr "הסרה מהחיפושים שלך"
+
+msgid "Search results for %s"
+msgstr "תוצאות חיפוש עבור %s"
+
+msgid "Best match"
+msgstr "הכי מתאים"
+
+msgid "Also answers to"
+msgstr "מילים נרדפות"
+
+msgid "Words separated by commas. A shopper who types any of them finds everything carrying this one — so on the colour red, write: אדומה, אדומים, אדומות."
+msgstr "מילים מופרדות בפסיקים. מי שיקליד אחת מהן ימצא את כל מה שנושא את הערך הזה — למשל על הצבע אדום, כתבו: אדומה, אדומים, אדומות."
+
+msgid "Words separated by commas — a nickname, a former name, the English spelling."
+msgstr "מילים מופרדות בפסיקים — כינוי, שם קודם, או הכתיב הלועזי."
+
+msgid "Position in results"
+msgstr "מיקום בתוצאות"
+
+msgid "Above zero pushes this product up in every search; below zero holds it back. 0 leaves it to the ranking."
+msgstr "מעל אפס דוחף את המוצר למעלה בכל חיפוש; מתחת לאפס מרסן אותו. 0 משאיר את זה לדירוג."
+
+msgid "Keep this product out of search results"
+msgstr "אל תציג את המוצר הזה בתוצאות החיפוש"
+
+msgid "Where to look"
+msgstr "איפה מחפשים"
+
+msgid "Popular"
+msgstr "פופולריים"
+
+msgid "Promotion"
+msgstr "קידום"
+
+msgid "Synonyms"
+msgstr "מילים נרדפות"
+
+msgid "Reports"
+msgstr "דוחות"
+
+msgid "Index"
+msgstr "אינדקס"
+
+msgid "Fields"
+msgstr "שדות"
+
+msgid "Product name"
+msgstr "שם המוצר"
+
+msgid "always searched, always weighted highest"
+msgstr "תמיד נכלל בחיפוש, תמיד במשקל הגבוה ביותר"
+
+msgid "Product code"
+msgstr "מק״ט"
+
+msgid "The number beside each field is what a match there is worth. A word found in the product name outranks the same word found in a description."
+msgstr "המספר ליד כל שדה הוא כמה שווה התאמה בו. מילה שנמצאה בשם המוצר גוברת על אותה מילה בתיאור."
+
+msgid "Also search"
+msgstr "לחפש גם ב"
+
+msgid "Blog articles"
+msgstr "מאמרים בבלוג"
+
+msgid "Pages — delivery, returns, about"
+msgstr "עמודים — משלוחים, החזרות, אודות"
+
+msgid "They appear under the products, never mixed into them."
+msgstr "הם מוצגים מתחת למוצרים, אף פעם לא מעורבבים בהם."
+
+msgid "Relevance or popularity"
+msgstr "רלוונטיות או פופולריות"
+
+msgid "At zero the best match always wins. Higher, and what sells well is allowed to climb."
+msgstr "באפס ההתאמה הטובה ביותר תמיד מנצחת. ככל שעולים, מה שנמכר טוב יותר מקבל אפשרות לטפס."
+
+msgid "Sold out"
+msgstr "אזל מהמלאי"
+
+msgid "Show them last"
+msgstr "להציג בסוף"
+
+msgid "Leave them out"
+msgstr "לא להציג בכלל"
+
+msgid "Treat them like any other product"
+msgstr "להתייחס אליהם כמו לכל מוצר אחר"
+
+msgid "When nothing matches"
+msgstr "כשאין תוצאות"
+
+msgid "Read the words again on the other keyboard layout"
+msgstr "לקרוא את המילים שוב בפריסת המקלדת השנייה"
+
+msgid "Try the closest word the shop actually has"
+msgstr "לנסות את המילה הקרובה ביותר שקיימת בחנות"
+
+msgid "Both run only after a search came back empty, so a search that worked never pays for them."
+msgstr "שניהם רצים רק אחרי שחיפוש חזר ריק, כך שחיפוש שעבד לא משלם עליהם."
+
+msgid "Counted over the last"
+msgstr "נספר ב"
+
+msgid "days, showing"
+msgstr "הימים האחרונים, ומוצגים"
+
+msgid "of them"
+msgstr "מהם"
+
+msgid "Never show these words"
+msgstr "לעולם לא להציג את המילים האלה"
+
+msgid "Only the word and the day are kept. Nothing identifies who searched."
+msgstr "נשמרת רק המילה והיום. שום דבר לא מזהה מי חיפש."
+
+msgid "The best sellers"
+msgstr "הנמכרים ביותר"
+
+msgid "What people search for most"
+msgstr "מה שהכי מחפשים"
+
+msgid "The ones I choose"
+msgstr "אלה שאני בוחר"
+
+msgid "A different handful each time"
+msgstr "קומץ אחר בכל פעם"
+
+msgid "Product ids, in the order you want them"
+msgstr "מזהי מוצרים, בסדר שתרצו"
+
+msgid "How many to show"
+msgstr "כמה להציג"
+
+msgid "Nothing sold yet and nothing chosen? The newest products stand in, so the panel is never empty."
+msgstr "עוד לא נמכר כלום ולא נבחר כלום? המוצרים החדשים ביותר יוצגו במקום, כדי שהפאנל אף פעם לא יהיה ריק."
+
+msgid "Pinned results"
+msgstr "תוצאות מקודמות"
+
+msgid "One rule per line, written as: the search = product ids. Those products come first, in the order written, and the rest of the ranking follows."
+msgstr "כלל אחד בכל שורה, בצורה: החיפוש = מזהי מוצרים. המוצרים האלה יופיעו ראשונים, בסדר שנכתב, ואחריהם שאר הדירוג."
+
+msgid "The rule also fires while the word is still being typed, so a shopper sees the pin from the third letter on."
+msgstr "הכלל פועל גם בזמן שהמילה עדיין מוקלדת, כך שהגולש רואה את הקידום כבר מהאות השלישית."
+
+msgid "One product at a time"
+msgstr "מוצר בודד"
+
+msgid "To push a single product up in every search, or to keep it out of search entirely, use the Search tab on the product itself."
+msgstr "כדי לדחוף מוצר בודד למעלה בכל חיפוש, או להוציא אותו לגמרי מהחיפוש, השתמשו בלשונית ״חיפוש״ במוצר עצמו."
+
+msgid "Words that mean the same thing"
+msgstr "מילים שמשמעותן זהה"
+
+msgid "One group per line, separated by commas. Every word in a line finds everything the others find."
+msgstr "קבוצה אחת בכל שורה, מופרדת בפסיקים. כל מילה בשורה מוצאת את כל מה שהאחרות מוצאות."
+
+msgid "For a colour, a size or a category, write the words on the term itself"
+msgstr "לצבע, למידה או לקטגוריה — כתבו את המילים על הערך עצמו"
+
+msgid "on the colour red, write אדומה, אדומים, אדומות, and every red product answers to all of them. That is what makes \"שמלה אדומה\" find a dress whose title never says red."
+msgstr "על הצבע אדום כתבו אדומה, אדומים, אדומות, וכל מוצר אדום יענה לכולן. זה מה שגורם ל״שמלה אדומה״ למצוא שמלה שהכותרת שלה בכלל לא אומרת אדום."
+
+msgid "Saving here rebuilds the index in the background."
+msgstr "שמירה כאן בונה מחדש את האינדקס ברקע."
+
+msgid "Searched and found nothing"
+msgstr "חיפשו ולא מצאו כלום"
+
+msgid "The most useful list on this screen. Every line is a shopper who wanted something and left with an empty panel — and almost every one of them is a missing synonym."
+msgstr "הרשימה הכי שימושית במסך הזה. כל שורה היא גולש שרצה משהו ויצא עם פאנל ריק — וכמעט כל אחת מהן היא מילה נרדפת חסרה."
+
+msgid "Searched for"
+msgstr "חיפשו"
+
+msgid "Times"
+msgstr "פעמים"
+
+msgid "Add it as a synonym"
+msgstr "הוספה כמילה נרדפת"
+
+msgid "Nothing yet — either the search is answering everyone, or it has not been used much."
+msgstr "עוד כלום — או שהחיפוש עונה לכולם, או שעדיין לא השתמשו בו הרבה."
+
+msgid "What people search for"
+msgstr "מה מחפשים"
+
+msgid "Clicked"
+msgstr "נלחצו"
+
+msgid "Results"
+msgstr "תוצאות"
+
+msgid "No searches recorded yet."
+msgstr "עדיין לא נרשמו חיפושים."
+
+msgid "The panel shows the last %d days; this screen shows the last 30."
+msgstr "הפאנל מציג את %d הימים האחרונים; המסך הזה מציג את 30 האחרונים."
+
+msgid "Products and pages indexed"
+msgstr "מוצרים ועמודים באינדקס"
+
+msgid "Words held"
+msgstr "מילים שמורות"
+
+msgid "Last built"
+msgstr "נבנה לאחרונה"
+
+msgid "never"
+msgstr "מעולם"
+
+msgid "Rebuild the index"
+msgstr "בנייה מחדש של האינדקס"
+
+msgid "A rebuild runs in batches, so a shop of any size finishes without a timeout. Search keeps working from the words already held while it runs."
+msgstr "הבנייה רצה במנות, כך שחנות בכל גודל מסיימת בלי תקיעה. החיפוש ממשיך לעבוד מהמילים הקיימות בזמן שהיא רצה."
+
+msgid "Indexing — %1$s of %2$s"
+msgstr "מאנדקס — %1$s מתוך %2$s"
+
+msgid "Stop"
+msgstr "עצירה"
+
+msgid "The index is up to date."
+msgstr "האינדקס מעודכן."
+
+msgid "Add a brand"
+msgstr "הוספת מותג"
+
+msgid "Edit brand"
+msgstr "עריכת מותג"
+
+msgid "Search brands"
+msgstr "חיפוש מותגים"
+
+msgid "No brands yet."
+msgstr "אין עדיין מותגים."
+
+msgid "When the search opens"
+msgstr "כשהחיפוש נפתח"
+
+msgid "A panel with suggestions"
+msgstr "פאנל עם הצעות"
+
+msgid "Popular searches and products, before a word is typed"
+msgstr "חיפושים ומוצרים פופולריים, לפני שהוקלדה מילה"
+
+msgid "Only the search box"
+msgstr "רק תיבת החיפוש"
+
+msgid "Results appear as soon as typing starts"
+msgstr "התוצאות מופיעות ברגע שמתחילים להקליד"
+
+msgid "A result looks like"
+msgstr "תוצאה נראית כמו"
+
+msgid "A row — picture beside the words"
+msgstr "שורה — תמונה לצד הטקסט"
+
+msgid "A card — picture above the words"
+msgstr "כרטיס — תמונה מעל הטקסט"
+
+msgid "Results in the panel"
+msgstr "תוצאות בפאנל"
+
+msgid "Start searching after this many letters"
+msgstr "להתחיל לחפש אחרי כמה אותיות"
+
+msgid "Beside the products"
+msgstr "לצד המוצרים"
+
+msgid "Matching categories"
+msgstr "קטגוריות תואמות"
+
+msgid "Matching brands"
+msgstr "מותגים תואמים"
+
+msgid "Brands appear as"
+msgstr "מותגים מוצגים כ"
+
+msgid "Their name"
+msgstr "השם שלהם"
+
+msgid "Their logo"
+msgstr "הלוגו שלהם"
+
+msgid "Matching tags"
+msgstr "תגיות תואמות"
+
+msgid "Articles and pages"
+msgstr "מאמרים ועמודים"
+
+msgid "An add button on each result"
+msgstr "כפתור הוספה על כל תוצאה"
+
+msgid "Remember this visitor's own searches"
+msgstr "לזכור את החיפושים של הגולש"
+
+msgid "How many of them to keep"
+msgstr "כמה מהם לשמור"
+
+msgid "That product needs a choice made first."
+msgstr "המוצר הזה דורש בחירה קודם."
+
+msgid "It could not be added."
+msgstr "לא ניתן היה להוסיף."
+
+msgid "How the search panel presents itself. What it searches, and the words it answers to, live under Theme settings."
+msgstr "איך פאנל החיפוש מוצג. איפה הוא מחפש ולאילו מילים הוא עונה — בהגדרות התבנית."

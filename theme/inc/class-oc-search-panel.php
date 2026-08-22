@@ -38,7 +38,7 @@ final class Search_Panel {
 
 		ob_start();
 		?>
-		<div id="oc-header-search" class="oc-search" data-oc-search data-mode="<?php echo esc_attr( $mode ); ?>" data-min="<?php echo esc_attr( (string) $min ); ?>" data-action="<?php echo esc_url( home_url( '/' ) ); ?>" data-cart="<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>" hidden>
+		<div id="oc-header-search" class="oc-searchbox" data-oc-search data-mode="<?php echo esc_attr( $mode ); ?>" data-min="<?php echo esc_attr( (string) $min ); ?>" data-action="<?php echo esc_url( home_url( '/' ) ); ?>" data-cart="<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>" hidden>
 			<div class="oc-search__inner">
 				<form class="oc-search__bar" role="search" method="get" action="<?php echo esc_url( home_url( '/' ) ); ?>">
 					<button type="submit" class="oc-search__go" aria-label="<?php esc_attr_e( 'Search', 'oc-theme' ); ?>"><?php echo self::glass(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></button>
