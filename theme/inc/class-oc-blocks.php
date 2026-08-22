@@ -223,7 +223,23 @@ final class Blocks {
 			'ink'     => 'dark' === get_post_meta( $id, '_oc_block_ink', true ) ? 'dark' : 'light',
 			'from'    => (string) get_post_meta( $id, '_oc_block_from', true ),
 			'to'      => (string) get_post_meta( $id, '_oc_block_to', true ),
+			'focus'   => self::read_focus( $id ),
 		);
+	}
+
+	/**
+	 * How far down the picture the interesting part sits, as a percentage.
+	 *
+	 * A banner is cropped harder than anything else in the grid — a full row
+	 * asks a picture to be four times as wide as it is tall — so the block
+	 * says which band of it to keep.
+	 *
+	 * @param int $id Block id.
+	 */
+	private static function read_focus( int $id ): int {
+		$focus = get_post_meta( $id, '_oc_block_focus', true );
+
+		return '' === $focus ? 50 : max( 0, min( 100, (int) $focus ) );
 	}
 
 	/**
@@ -275,6 +291,40 @@ final class Blocks {
 			<?php endforeach; ?>
 		</div>
 
+		<?php
+		$focus_src = $b['img'] ? (string) wp_get_attachment_image_url( $b['img'], 'large' ) : '';
+		?>
+		<div class="oc-bf">
+			<div style="flex-basis:100%;">
+				<label for="oc_block_focus"><?php esc_html_e( 'Picture position', 'oc-theme' ); ?></label>
+				<p style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 6px;">
+					<input type="range" id="oc_block_focus" name="oc_block_focus" min="0" max="100" step="1" value="<?php echo esc_attr( (string) $b['focus'] ); ?>" style="inline-size:260px;" />
+					<output id="oc_block_focus_out" style="min-inline-size:44px;"><?php echo esc_html( (string) $b['focus'] ); ?>%</output>
+					<button type="button" class="button-link" id="oc_block_focus_reset"><?php esc_html_e( 'Centre', 'oc-theme' ); ?></button>
+				</p>
+				<p class="description" style="margin:0 0 8px;"><?php esc_html_e( '0% keeps the top of the picture, 100% keeps the bottom. The previews show each banner size.', 'oc-theme' ); ?></p>
+
+				<?php if ( $focus_src ) : ?>
+					<div style="display:flex;gap:14px;flex-wrap:wrap;align-items:flex-start;">
+						<?php
+						foreach ( array(
+							array( __( 'Normal — one cell', 'oc-theme' ), '140px', '140px' ),
+							array( __( 'Wide — 2 columns', 'oc-theme' ), '280px', '140px' ),
+							array( __( 'Full row', 'oc-theme' ), '400px', '100px' ),
+						) as $box ) :
+							?>
+							<div>
+								<div class="oc-bfocus" style="inline-size:<?php echo esc_attr( $box[1] ); ?>;block-size:<?php echo esc_attr( $box[2] ); ?>;border-radius:6px;overflow:hidden;background:#f1f1f1;">
+									<img src="<?php echo esc_url( $focus_src ); ?>" alt="" style="inline-size:100%;block-size:100%;object-fit:cover;object-position:50% <?php echo esc_attr( (string) $b['focus'] ); ?>%;" />
+								</div>
+								<p class="description" style="margin:4px 0 0;text-align:center;"><?php echo esc_html( $box[0] ); ?></p>
+							</div>
+						<?php endforeach; ?>
+					</div>
+				<?php endif; ?>
+			</div>
+		</div>
+
 		<div class="oc-bf">
 			<div>
 				<label for="oc_block_link"><?php esc_html_e( 'Link', 'oc-theme' ); ?></label>
@@ -317,6 +367,31 @@ final class Blocks {
 				<p class="description"><?php esc_html_e( 'Both empty = always shown.', 'oc-theme' ); ?></p>
 			</div>
 		</div>
+		<script>
+		( function () {
+			var focus = document.getElementById( 'oc_block_focus' ),
+				out = document.getElementById( 'oc_block_focus_out' ),
+				reset = document.getElementById( 'oc_block_focus_reset' );
+
+			if ( ! focus ) {
+				return;
+			}
+
+			function paint() {
+				out.textContent = focus.value + '%';
+
+				document.querySelectorAll( '.oc-bfocus img' ).forEach( function ( img ) {
+					img.style.objectPosition = '50% ' + focus.value + '%';
+				} );
+			}
+
+			focus.addEventListener( 'input', paint );
+			reset.addEventListener( 'click', function () {
+				focus.value = 50;
+				paint();
+			} );
+		}() );
+		</script>
 		<script>
 		( function () {
 			document.querySelectorAll( '[data-oc-bimg]' ).forEach( function ( box ) {
@@ -374,6 +449,9 @@ final class Blocks {
 		update_post_meta( $id, '_oc_block_ink', 'dark' === ( $_POST['oc_block_ink'] ?? '' ) ? 'dark' : 'light' );
 		update_post_meta( $id, '_oc_block_from', sanitize_text_field( wp_unslash( $_POST['oc_block_from'] ?? '' ) ) );
 		update_post_meta( $id, '_oc_block_to', sanitize_text_field( wp_unslash( $_POST['oc_block_to'] ?? '' ) ) );
+
+		$focus = max( 0, min( 100, absint( $_POST['oc_block_focus'] ?? 50 ) ) );
+		update_post_meta( $id, '_oc_block_focus', 50 === $focus ? '' : $focus );
 		// phpcs:enable WordPress.Security.NonceVerification.Missing
 	}
 
@@ -630,7 +708,9 @@ final class Blocks {
 			$body .= '</span>';
 		}
 
-		$inner = '<span class="oc-block__media">' . $img . '</span>' . $body;
+		$inner = '<span class="oc-block__media"'
+			. ( 50 === $b['focus'] ? '' : ' style="--oc-block-focus:' . esc_attr( (string) $b['focus'] ) . '%"' )
+			. '>' . $img . '</span>' . $body;
 
 		if ( '' !== $b['link'] ) {
 			$inner = '<a class="oc-block__link" href="' . esc_url( $b['link'] ) . '"'

@@ -2758,3 +2758,6 @@ msgstr "רגיל / 2×2"
 
 msgid "Wide"
 msgstr "רחב"
+
+msgid "0% keeps the top of the picture, 100% keeps the bottom. The previews show each banner size."
+msgstr "0% שומר על החלק העליון של התמונה, 100% על החלק התחתון. התצוגות המקדימות מראות כל אחד מגדלי הבאנר."

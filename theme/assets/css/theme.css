@@ -8242,6 +8242,8 @@ body.oc-checkout { overflow-x: clip; }
 	inline-size: 100%;
 	block-size: 100%;
 	object-fit: cover;
+	/* a banner is cropped hardest of all, so it may name the band to keep */
+	object-position: 50% var(--oc-block-focus, 50%);
 	display: block;
 	border-radius: var(--oc-radius, 8px);
 }
