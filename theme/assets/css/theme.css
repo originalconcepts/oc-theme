@@ -8156,9 +8156,33 @@ body.oc-checkout { overflow-x: clip; }
 
 	.woocommerce ul.products li.product.oc-tile--m-wide { grid-column: span 2; }
 
+	/* Two columns IS the full width on a phone, so a 2x2 there is one
+	 * full-width card with a square picture — there is no product beside it
+	 * to make a second row mean anything. */
 	.woocommerce ul.products li.product.oc-tile--m-big {
 		grid-column: span 2;
-		grid-row: span 2;
+		grid-row: auto;
+	}
+
+	.woocommerce ul.products li.product.oc-tile--big:not(.oc-tile--m-plain):not(.oc-tile--m-wide) {
+		grid-row: auto;
+	}
+
+	.woocommerce ul.products li.product.oc-tile--m-big .oc-card-media,
+	.woocommerce ul.products li.product.oc-tile--m-big .oc-card-media__strip,
+	.woocommerce ul.products li.product.oc-tile--m-big .oc-card-media__item,
+	.woocommerce ul.products li.product.oc-tile--big:not(.oc-tile--m-plain):not(.oc-tile--m-wide) .oc-card-media,
+	.woocommerce ul.products li.product.oc-tile--big:not(.oc-tile--m-plain):not(.oc-tile--m-wide) .oc-card-media__strip,
+	.woocommerce ul.products li.product.oc-tile--big:not(.oc-tile--m-plain):not(.oc-tile--m-wide) .oc-card-media__item {
+		aspect-ratio: auto;
+		block-size: auto;
+	}
+
+	.woocommerce ul.products li.product.oc-tile--m-big .oc-card-media__item img,
+	.woocommerce ul.products li.product.oc-tile--big:not(.oc-tile--m-plain):not(.oc-tile--m-wide) .oc-card-media__item img {
+		position: static;
+		aspect-ratio: var(--oc-card-ratio-n, 1);
+		block-size: auto;
 	}
 
 	/* Two columns wide on a phone is the full width, so the picture doubles. */
@@ -8572,25 +8596,33 @@ body.oc-checkout { overflow-x: clip; }
 			padding-block-start: calc((100% - var(--oc-gap-eff, 20px)) / 2 / var(--oc-card-ratio-n, 1));
 		}
 
-		/* Two by two on a phone. */
-		.woocommerce ul.products li.product.oc-tile--m-big {
-			grid-row: span 8;
+		/* Two by two on a phone: two columns is already the full width, so the
+		 * tile is one full-width card with a square picture. It states that
+		 * height itself — nothing sits beside it to set the row. */
+		.woocommerce ul.products li.product.oc-tile--m-big,
+		.woocommerce ul.products li.product.oc-tile--big:not(.oc-tile--m-plain):not(.oc-tile--m-wide) {
+			grid-row: span 4;
 			display: grid;
 			grid-template-columns: minmax(0, 1fr);
 			align-content: start;
 		}
 
-		.woocommerce ul.products li.product.oc-tile--m-big > .oc-card-media { grid-row: 1 / 6; }
-		.woocommerce ul.products li.product.oc-tile--m-big > .oc-colors { grid-row: 6; }
-		.woocommerce ul.products li.product.oc-tile--m-big > .oc-card-text { grid-row: 7; }
-		.woocommerce ul.products li.product.oc-tile--m-big::after { grid-row: 8; }
+		.woocommerce ul.products li.product.oc-tile--m-big > .oc-card-media,
+		.woocommerce ul.products li.product.oc-tile--big:not(.oc-tile--m-plain):not(.oc-tile--m-wide) > .oc-card-media { grid-row: 1; }
+		.woocommerce ul.products li.product.oc-tile--m-big > .oc-colors,
+		.woocommerce ul.products li.product.oc-tile--big:not(.oc-tile--m-plain):not(.oc-tile--m-wide) > .oc-colors { grid-row: 2; }
+		.woocommerce ul.products li.product.oc-tile--m-big > .oc-card-text,
+		.woocommerce ul.products li.product.oc-tile--big:not(.oc-tile--m-plain):not(.oc-tile--m-wide) > .oc-card-text { grid-row: 3; }
+		.woocommerce ul.products li.product.oc-tile--m-big::after,
+		.woocommerce ul.products li.product.oc-tile--big:not(.oc-tile--m-plain):not(.oc-tile--m-wide)::after { grid-row: 4; }
 
-		.woocommerce ul.products li.product.oc-tile--m-big > .oc-card-media {
-			align-self: stretch;
+		.woocommerce ul.products li.product.oc-tile--m-big > .oc-card-media,
+		.woocommerce ul.products li.product.oc-tile--big:not(.oc-tile--m-plain):not(.oc-tile--m-wide) > .oc-card-media {
+			align-self: start;
 			block-size: auto;
 			min-block-size: 0;
 			padding-block-start: 0;
-			aspect-ratio: auto;
+			aspect-ratio: var(--oc-card-ratio-n, 1);
 		}
 
 		/* A phone gives every block the whole row, with no product beside it
