@@ -321,31 +321,31 @@ final class Search_Index {
 	 * @return string[]
 	 */
 	public static function expand( string $phrase ): array {
-		$flat = self::normalise( $phrase );
+		$words = self::tokens( $phrase );
 
-		if ( '' === $flat ) {
+		if ( ! $words ) {
 			return array();
 		}
 
 		$out = array();
 
 		foreach ( self::global_synonyms() as $head => $variants ) {
-			$head_flat = self::normalise( (string) $head );
+			$group = array_merge( array( (string) $head ), $variants );
+			$flat  = array();
 
-			if ( '' === $head_flat ) {
-				continue;
+			foreach ( $group as $word ) {
+				$flat = array_merge( $flat, self::tokens( (string) $word ) );
 			}
 
-			$all = array_merge( array( $head_flat ), array_map( array( self::class, 'normalise' ), $variants ) );
-
-			if ( ! in_array( $flat, $all, true ) && false === mb_strpos( ' ' . $flat . ' ', ' ' . $head_flat . ' ' ) ) {
-				continue;
+			// A line fires when any of its words is one of the phrase's own —
+			// compared word by word, so "ספות וכורסאות" answers to "ספה" only
+			// because the line says so, not by accident of substrings.
+			if ( array_intersect( $flat, $words ) ) {
+				$out = array_merge( $out, $flat );
 			}
-
-			$out = array_merge( $out, $all );
 		}
 
-		return $out;
+		return array_values( array_unique( $out ) );
 	}
 
 	/**
