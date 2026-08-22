@@ -724,8 +724,18 @@ final class WooCommerce {
 		}
 
 		if ( empty( $ids ) ) {
-			// No image at all — let WooCommerce print its placeholder.
+			// No image at all — WooCommerce prints its placeholder, inside the
+			// same media box so the card keeps its shape and its link.
+			echo '<div class="oc-card-media oc-card-media--single">';
+			echo '<div class="oc-card-media__strip">';
 			woocommerce_template_loop_product_thumbnail();
+			echo '</div>';
+			printf(
+				'<a class="oc-card-media__link woocommerce-LoopProduct-link" href="%s" aria-label="%s"></a>',
+				esc_url( (string) get_permalink( $product->get_id() ) ),
+				esc_attr( $product->get_name() )
+			);
+			echo '</div>';
 			return;
 		}
 
