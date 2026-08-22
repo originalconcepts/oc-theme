@@ -36,6 +36,17 @@ final class Catalog {
 	}
 
 	/**
+	 * A real admin screen, as opposed to admin-ajax.
+	 *
+	 * is_admin() is true during admin-ajax too, and the filter endpoint
+	 * renders the very same product cards — so the plain check would strip
+	 * tile sizes out of every ajax page.
+	 */
+	public static function back_office(): bool {
+		return is_admin() && ! wp_doing_ajax();
+	}
+
+	/**
 	 * A product's tile settings.
 	 *
 	 * @param int $product_id Product id.
@@ -196,7 +207,7 @@ final class Catalog {
 	 * @param \WP_Query $query Query.
 	 */
 	public function prime_images( $posts, $query ) {
-		if ( is_admin() || empty( $posts ) || ! is_object( $posts[0] ) || 'product' !== get_post_type( $posts[0] ) ) {
+		if ( self::back_office() || empty( $posts ) || ! is_object( $posts[0] ) || 'product' !== get_post_type( $posts[0] ) ) {
 			return $posts;
 		}
 
@@ -227,7 +238,7 @@ final class Catalog {
 	 * @param \WC_Product $product Product.
 	 */
 	public function tile_class( $classes, $product ) {
-		if ( is_admin() || ! $product instanceof \WC_Product ) {
+		if ( self::back_office() || ! $product instanceof \WC_Product ) {
 			return $classes;
 		}
 

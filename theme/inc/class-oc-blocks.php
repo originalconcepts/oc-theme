@@ -501,7 +501,7 @@ final class Blocks {
 	 * @param \WC_Product $product Product.
 	 */
 	public function rhythm_class( $classes, $product ) {
-		if ( is_admin() || ! $product instanceof \WC_Product || ! $this->plain() ) {
+		if ( Catalog::back_office() || ! $product instanceof \WC_Product || ! $this->plain() ) {
 			return $classes;
 		}
 
