@@ -108,7 +108,7 @@ final class WooCommerce {
 		// close to its text instead of pushing it down to match a busier
 		// neighbour.
 		add_action( 'woocommerce_shop_loop_item_title', array( $this, 'card_text_open' ), 1 );
-		add_action( 'woocommerce_after_shop_loop_item_title', array( $this, 'card_text_close' ), 11 );
+		add_action( 'woocommerce_after_shop_loop_item', array( $this, 'card_text_close' ), 999 );
 
 		// One markup path for every card image mode, including 'single'.
 		remove_action( 'woocommerce_before_shop_loop_item_title', 'woocommerce_template_loop_product_thumbnail', 10 );
@@ -684,6 +684,17 @@ final class WooCommerce {
 	}
 
 	/**
+	 * Where a catalogue card points.
+	 *
+	 * WooCommerce runs its own link through `woocommerce_loop_product_link`;
+	 * plugins that rewrite catalogue destinations hook there, so the theme's
+	 * links go through it too.
+	 */
+	private static function card_link( \WC_Product $product ): string {
+		return (string) apply_filters( 'woocommerce_loop_product_link', get_permalink( $product->get_id() ), $product );
+	}
+
+	/**
 	 * Opens the card's text box.
 	 */
 	public function card_text_open(): void {
@@ -713,8 +724,8 @@ final class WooCommerce {
 		printf(
 			'<h2 class="%s"><a class="oc-card-title-link" href="%s">%s</a></h2>',
 			esc_attr( (string) apply_filters( 'woocommerce_product_loop_title_classes', 'woocommerce-loop-product__title' ) ),
-			esc_url( (string) get_permalink( $product->get_id() ) ),
-			esc_html( $product->get_name() )
+			esc_url( self::card_link( $product ) ),
+			get_the_title() // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- as WooCommerce prints it: the_title filters may return markup.
 		);
 	}
 
@@ -753,9 +764,8 @@ final class WooCommerce {
 			woocommerce_template_loop_product_thumbnail();
 			echo '</div>';
 			printf(
-				'<a class="oc-card-media__link woocommerce-LoopProduct-link" href="%s" aria-label="%s"></a>',
-				esc_url( (string) get_permalink( $product->get_id() ) ),
-				esc_attr( $product->get_name() )
+				'<a class="oc-card-media__link woocommerce-LoopProduct-link" href="%s" aria-hidden="true" tabindex="-1"></a>',
+				esc_url( self::card_link( $product ) )
 			);
 			echo '</div>';
 			return;
@@ -817,9 +827,8 @@ final class WooCommerce {
 		// The whole picture is the link. It sits under every control the card
 		// paints on top, so the cart chip and the gallery arrows keep working.
 		printf(
-			'<a class="oc-card-media__link woocommerce-LoopProduct-link" href="%s" aria-label="%s"></a>',
-			esc_url( (string) get_permalink( $product->get_id() ) ),
-			esc_attr( $product->get_name() )
+			'<a class="oc-card-media__link woocommerce-LoopProduct-link" href="%s" aria-hidden="true" tabindex="-1"></a>',
+			esc_url( self::card_link( $product ) )
 		);
 
 		$this->card_atc_icon();
