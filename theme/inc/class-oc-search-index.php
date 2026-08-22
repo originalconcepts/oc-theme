@@ -86,15 +86,17 @@ final class Search_Index {
 	public static function install(): void {
 		global $wpdb;
 
-		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
-
+		// Not dbDelta: it parses the statement itself and is exacting about
+		// whitespace in ways that fail silently. These tables are the theme's
+		// own and are created once, so the plain statement is both clearer
+		// and certain.
 		$charset = $wpdb->get_charset_collate();
 		$t       = self::table();
 		$w       = self::words();
 		$l       = self::log();
 
-		dbDelta(
-			"CREATE TABLE {$t} (
+		$wpdb->query( // phpcs:ignore WordPress.DB
+			"CREATE TABLE IF NOT EXISTS {$t} (
 				object_id BIGINT UNSIGNED NOT NULL,
 				kind VARCHAR(12) NOT NULL DEFAULT 'product',
 				title TEXT NOT NULL,
@@ -110,11 +112,11 @@ final class Search_Index {
 				PRIMARY KEY (object_id),
 				KEY kind_stock (kind, hidden, in_stock),
 				KEY title_n (title_n(48))
-			) {$charset};"
+			) {$charset}"
 		);
 
-		dbDelta(
-			"CREATE TABLE {$w} (
+		$wpdb->query( // phpcs:ignore WordPress.DB
+			"CREATE TABLE IF NOT EXISTS {$w} (
 				id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
 				token VARCHAR(48) NOT NULL,
 				object_id BIGINT UNSIGNED NOT NULL,
@@ -124,11 +126,11 @@ final class Search_Index {
 				PRIMARY KEY (id),
 				KEY token_obj (token(24), object_id),
 				KEY obj (object_id)
-			) {$charset};"
+			) {$charset}"
 		);
 
-		dbDelta(
-			"CREATE TABLE {$l} (
+		$wpdb->query( // phpcs:ignore WordPress.DB
+			"CREATE TABLE IF NOT EXISTS {$l} (
 				id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
 				day DATE NOT NULL,
 				term VARCHAR(120) NOT NULL,
@@ -138,7 +140,7 @@ final class Search_Index {
 				PRIMARY KEY (id),
 				UNIQUE KEY day_term (day, term),
 				KEY term (term)
-			) {$charset};"
+			) {$charset}"
 		);
 
 		update_option( 'oc_search_schema', 3, false );
