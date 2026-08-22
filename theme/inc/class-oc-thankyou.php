@@ -93,7 +93,7 @@ final class Thankyou {
 		// A referral arrives as a link, and the gift is for the friend only.
 		add_action( 'wp', array( $this, 'catch_referral' ), 5 );
 		add_action( 'woocommerce_add_to_cart', array( $this, 'apply_referral' ), 20 );
-		add_filter( 'woocommerce_coupon_is_valid', array( $this, 'coupon_is_valid' ), 20, 2 );
+		add_filter( 'woocommerce_coupon_is_valid', array( $this, 'coupon_is_valid' ), 20, 3 );
 		add_action( 'woocommerce_after_checkout_validation', array( $this, 'validate_referral' ), 20, 2 );
 		add_action( 'woocommerce_checkout_order_processed', array( $this, 'forget_referral' ) );
 
@@ -409,10 +409,11 @@ final class Thankyou {
 	/**
 	 * The referrer cannot spend their own gift.
 	 *
-	 * @param bool        $valid  Whether the coupon is valid so far.
-	 * @param \WC_Coupon  $coupon Coupon.
+	 * @param bool           $valid     Whether the coupon is valid so far.
+	 * @param \WC_Coupon     $coupon    Coupon.
+	 * @param \WC_Discounts  $discounts What the coupon is being applied to.
 	 */
-	public function coupon_is_valid( $valid, $coupon ) {
+	public function coupon_is_valid( $valid, $coupon, $discounts = null ) {
 		if ( ! $valid || ! $coupon instanceof \WC_Coupon ) {
 			return $valid;
 		}
@@ -423,11 +424,32 @@ final class Thankyou {
 			return $valid;
 		}
 
-		if ( $ref === strtolower( $this->shopper_email() ) ) {
+		if ( $ref === strtolower( $this->buyer_email( $discounts ) ) ) {
 			throw new \Exception( esc_html__( 'This gift is meant for a friend — it cannot be used on your own order.', 'oc-theme' ) );
 		}
 
 		return $valid;
+	}
+
+	/**
+	 * Whose order this coupon is going on.
+	 *
+	 * When a coupon is applied to an order — a shop manager doing it by hand,
+	 * for instance — the order's own address decides, not whoever happens to
+	 * be signed in. Anywhere else it is the shopper in front of us.
+	 *
+	 * @param mixed $discounts What the coupon is being applied to.
+	 */
+	private function buyer_email( $discounts = null ): string {
+		if ( $discounts instanceof \WC_Discounts ) {
+			$object = $discounts->get_object();
+
+			if ( $object instanceof \WC_Order ) {
+				return (string) $object->get_billing_email();
+			}
+		}
+
+		return $this->shopper_email();
 	}
 
 	/**
