@@ -8431,7 +8431,14 @@ body.oc-checkout { overflow-x: clip; }
 		grid-row: span 4;
 	}
 
-	.woocommerce ul.products li.oc-block > * { grid-column: 1; grid-row: 1 / 4; }
+	.woocommerce ul.products li.oc-block > * {
+		grid-column: 1;
+		grid-row: 1 / 4;
+		/* the caption anchors to the picture, not to the card: the card also
+		 * owns the spacer track, and the caption's gradient was spilling into
+		 * it as a grey band under the banner */
+		position: relative;
+	}
 
 	.woocommerce ul.products li.oc-block::after {
 		content: '';
