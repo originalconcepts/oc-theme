@@ -90,6 +90,45 @@ final class Blocks {
 	}
 
 	/**
+	 * The rhythm in force for the listing being rendered.
+	 *
+	 * A category may set its own pace, or leave a field empty to keep the
+	 * shop-wide one. Empty means inherit; 0 means off.
+	 *
+	 * @return array{wide_every:int,big_every:int}
+	 */
+	public static function rhythm(): array {
+		static $cache = null;
+
+		if ( null !== $cache ) {
+			return $cache;
+		}
+
+		$layout = self::layout();
+		$out    = array(
+			'wide_every' => (int) $layout['wide_every'],
+			'big_every'  => (int) $layout['big_every'],
+		);
+
+		if ( is_tax( 'product_cat' ) ) {
+			$term = get_queried_object();
+			$own  = $term instanceof \WP_Term ? get_term_meta( $term->term_id, '_oc_rhythm', true ) : '';
+
+			if ( is_array( $own ) ) {
+				foreach ( array( 'wide_every', 'big_every' ) as $key ) {
+					if ( isset( $own[ $key ] ) && '' !== $own[ $key ] ) {
+						$out[ $key ] = (int) $own[ $key ];
+					}
+				}
+			}
+		}
+
+		$cache = $out;
+
+		return $cache;
+	}
+
+	/**
 	 * Hook in.
 	 */
 	/**
@@ -512,9 +551,9 @@ final class Blocks {
 			}
 		}
 
-		$layout = self::layout();
-		$big    = (int) $layout['big_every'];
-		$wide   = (int) $layout['wide_every'];
+		$rhythm = self::rhythm();
+		$big    = $rhythm['big_every'];
+		$wide   = $rhythm['wide_every'];
 		$at     = $this->index; // the counter already points at this product.
 
 		if ( $big > 0 && 0 === $at % $big ) {
@@ -701,7 +740,44 @@ final class Blocks {
 	public function term_fields( $term ): void {
 		$own = get_term_meta( $term->term_id, '_oc_layout', true );
 		$own = is_array( $own ) ? $own : array();
+
+		$pace   = get_term_meta( $term->term_id, '_oc_rhythm', true );
+		$pace   = is_array( $pace ) ? $pace : array();
+		$global = self::layout();
 		?>
+		<tr class="form-field">
+			<th scope="row"><label><?php esc_html_e( 'Rhythm', 'oc-theme' ); ?></label></th>
+			<td>
+				<?php
+				foreach ( array(
+					'wide_every' => __( 'Wide tile — every', 'oc-theme' ),
+					'big_every'  => __( 'Large tile — every', 'oc-theme' ),
+				) as $key => $label ) :
+					$inherited = (int) $global[ $key ];
+					?>
+					<p style="margin:0 0 6px;">
+						<label style="display:inline-block;min-inline-size:150px;"><?php echo esc_html( $label ); ?></label>
+						<input
+							type="number" min="0" max="99"
+							name="oc_rhythm[<?php echo esc_attr( $key ); ?>]"
+							value="<?php echo esc_attr( (string) ( $pace[ $key ] ?? '' ) ); ?>"
+							placeholder="<?php echo esc_attr( $inherited > 0 ? (string) $inherited : '0' ); ?>"
+							style="inline-size:70px;" />
+						<?php esc_html_e( 'products', 'oc-theme' ); ?>
+					</p>
+				<?php endforeach; ?>
+				<p class="description" style="max-inline-size:760px;">
+					<?php
+					printf(
+						/* translators: 1: wide-tile pace, 2: large-tile pace. */
+						esc_html__( 'Leave a field empty to keep the shop-wide pace (wide: %1$s, large: %2$s). 0 turns it off for this category alone.', 'oc-theme' ),
+						esc_html( (int) $global['wide_every'] > 0 ? sprintf( /* translators: %d: a number of products. */ __( 'every %d', 'oc-theme' ), (int) $global['wide_every'] ) : __( 'off', 'oc-theme' ) ),
+						esc_html( (int) $global['big_every'] > 0 ? sprintf( /* translators: %d: a number of products. */ __( 'every %d', 'oc-theme' ), (int) $global['big_every'] ) : __( 'off', 'oc-theme' ) )
+					);
+					?>
+				</p>
+			</td>
+		</tr>
 		<tr class="form-field">
 			<th scope="row"><label><?php esc_html_e( 'Catalogue blocks', 'oc-theme' ); ?></label></th>
 			<td>
@@ -715,6 +791,31 @@ final class Blocks {
 					);
 					?>
 				</p>
+				<?php if ( ! $own && ! empty( $global['places'] ) ) : ?>
+					<p class="description" style="max-inline-size:760px;">
+						<strong><?php esc_html_e( 'Inherited now:', 'oc-theme' ); ?></strong>
+						<?php
+						$lines = array();
+
+						foreach ( $global['places'] as $place ) {
+							$id = (int) ( $place['block'] ?? 0 );
+
+							if ( ! $id || 'publish' !== get_post_status( $id ) ) {
+								continue;
+							}
+
+							$lines[] = sprintf(
+								/* translators: 1: a position number, 2: a block title. */
+								__( 'position %1$s — %2$s', 'oc-theme' ),
+								(string) ( $place['index'] ?? '' ),
+								get_the_title( $id )
+							);
+						}
+
+						echo esc_html( $lines ? implode( ' · ', $lines ) : __( 'nothing', 'oc-theme' ) );
+						?>
+					</p>
+				<?php endif; ?>
 			</td>
 		</tr>
 		<?php
@@ -739,6 +840,24 @@ final class Blocks {
 			update_term_meta( $term_id, '_oc_layout', $places );
 		} else {
 			delete_term_meta( $term_id, '_oc_layout' );
+		}
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- core verifies the term-edit nonce first.
+		$pace_raw = isset( $_POST['oc_rhythm'] ) ? (array) wp_unslash( $_POST['oc_rhythm'] ) : array();
+		$pace     = array();
+
+		foreach ( array( 'wide_every', 'big_every' ) as $key ) {
+			$value = isset( $pace_raw[ $key ] ) ? trim( (string) $pace_raw[ $key ] ) : '';
+
+			if ( '' !== $value ) {
+				$pace[ $key ] = (string) min( 99, absint( $value ) );
+			}
+		}
+
+		if ( $pace ) {
+			update_term_meta( $term_id, '_oc_rhythm', $pace );
+		} else {
+			delete_term_meta( $term_id, '_oc_rhythm' );
 		}
 	}
 
