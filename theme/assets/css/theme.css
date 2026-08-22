@@ -8049,7 +8049,42 @@ body.oc-checkout { overflow-x: clip; }
 .woocommerce ul.products li.product.oc-tile--big {
 	grid-column: span 2;
 	grid-row: span 2;
-	align-self: start;
+	display: flex;
+	flex-direction: column;
+}
+
+/* The media takes every pixel the two rows leave over the card's text, and
+ * the image covers it — so the rectangle is never part picture, part gap. */
+.woocommerce ul.products li.product.oc-tile--big .oc-card-media {
+	flex: 1 1 auto;
+	min-block-size: 0;
+}
+
+.woocommerce ul.products li.product.oc-tile--big .oc-card-media,
+.woocommerce ul.products li.product.oc-tile--big .oc-card-media__strip,
+.woocommerce ul.products li.product.oc-tile--big .oc-card-media__item,
+.woocommerce ul.products li.product.oc-tile--big .oc-card-media__item img,
+.woocommerce ul.products li.product.oc-tile--big img.wp-post-image {
+	aspect-ratio: auto;
+	block-size: 100%;
+}
+
+.woocommerce ul.products li.product.oc-tile--big .oc-card-media__item img,
+.woocommerce ul.products li.product.oc-tile--big img.wp-post-image {
+	inline-size: 100%;
+	object-fit: cover;
+}
+
+.woocommerce ul.products li.oc-block--big { display: flex; }
+
+.woocommerce ul.products li.oc-block--big .oc-block__link,
+.woocommerce ul.products li.oc-block--big .oc-block__media {
+	inline-size: 100%;
+}
+
+.woocommerce ul.products li.oc-block--big .oc-block__img {
+	aspect-ratio: auto;
+	block-size: 100%;
 }
 
 /* A wide tile is twice as wide at the same height, so its image crops
@@ -8127,8 +8162,10 @@ body.oc-checkout { overflow-x: clip; }
 }
 
 /* A one-cell block matches the cards beside it; a wider one keeps a normal
- * row height, exactly like a wide product tile. */
-.woocommerce ul.products li.oc-block:not(.oc-block--row) .oc-block__img {
+ * row height, exactly like a wide product tile. Every size is named here so
+ * none of these rules outranks another by accident. */
+.woocommerce ul.products li.oc-block:not(.oc-block--wide):not(.oc-block--big):not(.oc-block--row) .oc-block__img,
+.woocommerce ul.products li.oc-block--big .oc-block__img {
 	aspect-ratio: var(--oc-card-ratio, 1 / 1);
 }
 
