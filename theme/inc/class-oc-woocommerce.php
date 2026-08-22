@@ -106,6 +106,24 @@ final class WooCommerce {
 		remove_action( 'woocommerce_before_shop_loop_item_title', 'woocommerce_template_loop_product_thumbnail', 10 );
 		add_action( 'woocommerce_before_shop_loop_item_title', array( $this, 'card_media' ), 10 );
 
+		// WooCommerce wraps the whole card in a single link. The card needs
+		// anchors of its own inside it — add to cart above all — and an anchor
+		// inside an anchor is not valid HTML, so the parser closes the wrapper
+		// at the first one. Cards that carry a cart link came out flat, cards
+		// without one came out wrapped, and no two products shared a shape.
+		// The card links itself instead: the picture carries an overlay link,
+		// the title carries its own.
+		add_action(
+			'init',
+			function (): void {
+				remove_action( 'woocommerce_before_shop_loop_item', 'woocommerce_template_loop_product_link_open', 10 );
+				remove_action( 'woocommerce_after_shop_loop_item', 'woocommerce_template_loop_product_link_close', 5 );
+				remove_action( 'woocommerce_shop_loop_item_title', 'woocommerce_template_loop_product_title', 10 );
+				add_action( 'woocommerce_shop_loop_item_title', array( $this, 'card_title' ), 10 );
+			},
+			20
+		);
+
 		// The loop add-to-cart becomes a round icon over the image; the text
 		// button goes away. Rendered inside card_media() so it can sit on the
 		// image.
@@ -657,6 +675,27 @@ final class WooCommerce {
 		return $clauses;
 	}
 
+	/**
+	 * The catalogue title, carrying its own link.
+	 *
+	 * WooCommerce prints the title bare and relies on the wrapper anchor this
+	 * theme removes, so the link moves here.
+	 */
+	public function card_title(): void {
+		global $product;
+
+		if ( ! $product instanceof \WC_Product ) {
+			return;
+		}
+
+		printf(
+			'<h2 class="%s"><a class="oc-card-title-link" href="%s">%s</a></h2>',
+			esc_attr( (string) apply_filters( 'woocommerce_product_loop_title_classes', 'woocommerce-loop-product__title' ) ),
+			esc_url( (string) get_permalink( $product->get_id() ) ),
+			esc_html( $product->get_name() )
+		);
+	}
+
 	public function card_media(): void {
 		global $product;
 
@@ -742,6 +781,14 @@ final class WooCommerce {
 				$right // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static SVG.
 			);
 		}
+
+		// The whole picture is the link. It sits under every control the card
+		// paints on top, so the cart chip and the gallery arrows keep working.
+		printf(
+			'<a class="oc-card-media__link woocommerce-LoopProduct-link" href="%s" aria-label="%s"></a>',
+			esc_url( (string) get_permalink( $product->get_id() ) ),
+			esc_attr( $product->get_name() )
+		);
 
 		$this->card_atc_icon();
 		$this->card_flags();

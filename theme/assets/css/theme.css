@@ -8336,3 +8336,147 @@ body.oc-checkout { overflow-x: clip; }
 	line-clamp: var(--oc-card-excerpt-lines, 2);
 }
 
+
+/* =====================================================================
+   Catalogue cards share their rows (subgrid)
+   =====================================================================
+   Each card used to size its own parts, so a two-line title beside a
+   one-line title pushed one price lower than the other, and an enlarged
+   tile could never land on the line its neighbours used.
+
+   With subgrid the row owns the tracks — picture, swatches, title, rating,
+   description, price, and a spacer that carries the gap — and every track
+   is exactly as tall as the tallest card in THAT row. A track nobody in the
+   row uses collapses to nothing, so no card reserves space for a swatch
+   strip or a rating it does not have.
+
+   A browser without subgrid keeps the layout it renders today. */
+
+.woocommerce ul.products li.product .woocommerce-loop-product__title,
+.woocommerce ul.products li.product .oc-card-excerpt {
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+/* A cap, so one outlier cannot stretch a whole row. Past it the browser
+ * adds the ellipsis itself. */
+.woocommerce ul.products li.product .woocommerce-loop-product__title {
+	-webkit-line-clamp: var(--oc-card-title-lines, 2);
+	line-clamp: var(--oc-card-title-lines, 2);
+}
+
+.woocommerce ul.products li.product .oc-card-excerpt {
+	-webkit-line-clamp: var(--oc-card-excerpt-lines, 2);
+	line-clamp: var(--oc-card-excerpt-lines, 2);
+}
+
+/* The picture is the link. It stays under the controls the card paints on
+ * top of the image. */
+.oc-card-media__link {
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+	display: block;
+}
+
+.oc-card-media__nav { z-index: 4; }
+
+@supports (grid-template-rows: subgrid) {
+	.woocommerce ul.products { row-gap: 0; }
+
+	.woocommerce ul.products li.product {
+		display: grid;
+		grid-template-rows: subgrid;
+		grid-template-columns: minmax(0, 1fr);
+		grid-row: span 7;
+		align-content: start;
+	}
+
+	/* Everything stacks in the one column; the row decides the height. */
+	.woocommerce ul.products li.product > * { grid-column: 1; }
+
+	/* Fixed slots, so a card without swatches or without a rating leaves that
+	 * track to its neighbours rather than sliding everything up a line. */
+	.woocommerce ul.products li.product > .oc-card-media { grid-row: 1; }
+	.woocommerce ul.products li.product > .oc-colors { grid-row: 2; }
+	.woocommerce ul.products li.product > .woocommerce-loop-product__title { grid-row: 3; }
+	.woocommerce ul.products li.product > .ocr-rating-row { grid-row: 4; }
+	.woocommerce ul.products li.product > .oc-card-excerpt { grid-row: 5; }
+	.woocommerce ul.products li.product > .price { grid-row: 6; }
+
+	/* The gap between rows rides on the card, because a row gap on the grid
+	 * would open between every track inside one. */
+	.woocommerce ul.products li.product::after {
+		content: '';
+		grid-column: 1;
+		grid-row: 7;
+		block-size: var(--oc-gap-eff, 20px);
+	}
+
+	.woocommerce ul.products li.oc-block { grid-row: span 7; }
+	.woocommerce ul.products li.oc-block--big { grid-row: span 14; }
+
+	/* Two rows tall: the picture takes the first row entire plus the second
+	 * row's picture track, which drops the text onto the second row's text
+	 * tracks. */
+	.woocommerce ul.products li.product.oc-tile--big {
+		grid-row: span 14;
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.woocommerce ul.products li.product.oc-tile--big > .oc-card-media { grid-row: 1 / 9; }
+	.woocommerce ul.products li.product.oc-tile--big > .oc-colors { grid-row: 9; }
+	.woocommerce ul.products li.product.oc-tile--big > .woocommerce-loop-product__title { grid-row: 10; }
+	.woocommerce ul.products li.product.oc-tile--big > .ocr-rating-row { grid-row: 11; }
+	.woocommerce ul.products li.product.oc-tile--big > .oc-card-excerpt { grid-row: 12; }
+	.woocommerce ul.products li.product.oc-tile--big > .price { grid-row: 13; }
+	.woocommerce ul.products li.product.oc-tile--big::after { grid-row: 14; }
+
+	/* The ordinary card states its ratio outright and does not stretch: the
+	 * height comes from the column width, and that is what pins the picture
+	 * track. Were it to stretch, height and width would chase each other. */
+	.woocommerce ul.products li.product:not(.oc-tile--wide):not(.oc-tile--big) > .oc-card-media {
+		aspect-ratio: var(--oc-card-ratio-n, 1);
+		inline-size: 100%;
+		block-size: auto;
+		padding-block-start: 0;
+		align-self: start;
+	}
+
+	/* Wide states a height too, worked out from its own width, so it pins the
+	 * picture track to exactly what an ordinary card beside it uses. */
+	.woocommerce ul.products li.product.oc-tile--wide > .oc-card-media {
+		align-self: start;
+		block-size: 0;
+		min-block-size: 0;
+		aspect-ratio: auto;
+		padding-block-start: calc((100% - var(--oc-gap-eff, 20px)) / 2 / var(--oc-card-ratio-n, 1));
+	}
+
+	/* Big asks for nothing and fills the two rows it was given. */
+	.woocommerce ul.products li.product.oc-tile--big > .oc-card-media {
+		align-self: stretch;
+		block-size: auto;
+		min-block-size: 0;
+		padding-block-start: 0;
+		aspect-ratio: auto;
+	}
+
+	.woocommerce ul.products li.product.oc-tile--big > .oc-card-media > * { min-block-size: 0; }
+
+	/* Whatever rectangle a card is handed, the picture fills it. */
+	.woocommerce ul.products li.product .oc-card-media__strip {
+		position: absolute;
+		inset: 0;
+		aspect-ratio: auto;
+		block-size: auto;
+	}
+
+	.woocommerce ul.products li.product .oc-card-media img {
+		inline-size: 100%;
+		block-size: 100%;
+		object-fit: cover;
+	}
+}
