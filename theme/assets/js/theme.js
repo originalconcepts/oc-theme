@@ -345,6 +345,7 @@
 		var sLive = searchPanel.querySelector( '[data-oc-search-live]' );
 		var sMin = parseInt( searchPanel.dataset.min, 10 ) || 2;
 		var sAction = searchPanel.dataset.action;
+		var sCart = searchPanel.dataset.cart || sAction;
 		var sCache = new Map();
 		var sTimer = null;
 		var sIdleTimer = null;
@@ -542,7 +543,7 @@
 
 			sAbort = new AbortController();
 
-			return fetch( sAction + '?action=oc_search&q=' + encodeURIComponent( term ) + ( log ? '&log=1' : '' ), {
+			return fetch( sAction + '?oc_search=1&q=' + encodeURIComponent( term ) + ( log ? '&log=1' : '' ), {
 				credentials: 'same-origin',
 				signal: sAbort.signal
 			} )
@@ -590,7 +591,7 @@
 			clearTimeout( sIdleTimer );
 			sIdleTimer = setTimeout( function () {
 				if ( sTerm === term && term.length >= sMin ) {
-					fetch( sAction + '?action=oc_search&q=' + encodeURIComponent( term ) + '&log=1&quiet=1', {
+					fetch( sAction + '?oc_search=1&q=' + encodeURIComponent( term ) + '&log=1&quiet=1', {
 						credentials: 'same-origin'
 					} ).catch( function () {} );
 					histAdd( term );
@@ -674,7 +675,7 @@
 
 					try {
 						navigator.sendBeacon(
-							sAction + '?action=oc_search&click=1&q=' + encodeURIComponent( sTerm )
+							sAction + '?oc_search=1&click=1&q=' + encodeURIComponent( sTerm )
 						);
 					} catch ( e ) {}
 				} );
@@ -697,7 +698,7 @@
 						quantity: '1'
 					} );
 
-					fetch( sAction, {
+					fetch( sCart, {
 						method: 'POST',
 						credentials: 'same-origin',
 						body: body

@@ -111,6 +111,11 @@ final class Search {
 	public function register(): void {
 		add_action( 'wp_ajax_oc_search', array( $this, 'ajax' ) );
 		add_action( 'wp_ajax_nopriv_oc_search', array( $this, 'ajax' ) );
+
+		// The panel asks through the front door rather than admin-ajax: the
+		// answer is the same and the admin half of WordPress never loads,
+		// which is most of the wait.
+		add_action( 'parse_request', array( $this, 'endpoint' ), 1 );
 		add_action( 'wp_ajax_oc_add_to_cart', array( $this, 'ajax_add' ) );
 		add_action( 'wp_ajax_nopriv_oc_add_to_cart', array( $this, 'ajax_add' ) );
 
@@ -897,6 +902,21 @@ final class Search {
 		$term = self::current_term();
 
 		return '' === $term ? $ids : self::product_ids( $term );
+	}
+
+	/* --------------------------------------------------------- endpoint */
+
+	/**
+	 * Answer a panel request as early as the request is understood.
+	 */
+	public function endpoint(): void {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- a public search.
+		if ( ! isset( $_GET['oc_search'] ) ) {
+			return;
+		}
+
+		nocache_headers();
+		$this->ajax();
 	}
 
 	/* ------------------------------------------------------------- ajax */
