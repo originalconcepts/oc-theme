@@ -2736,3 +2736,13 @@ msgstr "מיקום %1$s — %2$s"
 
 msgid "nothing"
 msgstr "כלום"
+
+msgid "Add a placement"
+msgstr "הוספת מיקום"
+
+msgid "Position 1 places the block before the first product. Set the block to \"None\" to remove a row."
+msgstr "מיקום 1 מציב את הבלוק לפני המוצר הראשון. בחירת ״ללא״ מסירה שורה."
+
+msgctxt "catalogue layout tab"
+msgid "Layout"
+msgstr "פריסה"

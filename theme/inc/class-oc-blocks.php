@@ -169,6 +169,11 @@ final class Blocks {
 
 		add_action( 'admin_menu', array( $this, 'menu' ), 57 );
 		add_action( 'admin_post_oc_layout_save', array( $this, 'save_layout' ) );
+
+		// The block screens live under the theme menu, on the layout tab.
+		add_filter( 'parent_file', array( $this, 'menu_parent' ) );
+		add_filter( 'submenu_file', array( $this, 'menu_child' ) );
+		add_action( 'all_admin_notices', array( $this, 'block_screen_tabs' ) );
 	}
 
 	/* ----------------------------------------------------------- the type */
@@ -190,7 +195,9 @@ final class Blocks {
 				),
 				'public'          => false,
 				'show_ui'         => true,
-				'show_in_menu'    => Tabs::MENU,
+				// Reached through the layout screen's own tab rather than a
+				// second menu entry: a block and its placement are one job.
+				'show_in_menu'    => false,
 				'supports'        => array( 'title' ),
 				'capability_type' => 'page',
 				'map_meta_cap'    => true,
@@ -696,9 +703,45 @@ final class Blocks {
 			<?php endforeach; ?>
 			</tbody>
 		</table>
-		<p class="description" style="max-inline-size:760px;">
-			<?php esc_html_e( 'Position 1 places the block before the first product. Set the block to "None" to remove a row. A new empty row appears after every save.', 'oc-theme' ); ?>
+		<p style="margin:8px 0 4px;">
+			<button type="button" class="button" id="oc-places-add"><?php esc_html_e( 'Add a placement', 'oc-theme' ); ?></button>
 		</p>
+		<p class="description" style="max-inline-size:760px;">
+			<?php esc_html_e( 'Position 1 places the block before the first product. Set the block to "None" to remove a row.', 'oc-theme' ); ?>
+		</p>
+		<script>
+		( function () {
+			var table = document.getElementById( 'oc-places' ),
+				add = document.getElementById( 'oc-places-add' );
+
+			if ( ! table || ! add || add.dataset.ready ) {
+				return;
+			}
+
+			add.dataset.ready = '1';
+
+			add.addEventListener( 'click', function () {
+				var body = table.tBodies[ 0 ],
+					last = body.rows[ body.rows.length - 1 ],
+					row = last.cloneNode( true ),
+					next = body.rows.length;
+
+				// Re-key the clone, so the browser posts it as its own row.
+				row.querySelectorAll( '[name]' ).forEach( function ( field ) {
+					field.name = field.name.replace( /\[(\d+)\]/, '[' + next + ']' );
+
+					if ( 'SELECT' === field.tagName ) {
+						field.selectedIndex = 0;
+					} else {
+						field.value = '';
+					}
+				} );
+
+				body.appendChild( row );
+				row.querySelector( 'select, input' ).focus();
+			} );
+		}() );
+		</script>
 		<?php
 	}
 
@@ -884,6 +927,74 @@ final class Blocks {
 	}
 
 	/**
+	 * Keep the theme menu open while a block screen is showing.
+	 *
+	 * @param string $parent Parent file.
+	 * @return string
+	 */
+	public function menu_parent( $parent ) {
+		return $this->on_block_screen() ? Tabs::MENU : $parent;
+	}
+
+	/**
+	 * And highlight the layout entry, which owns the tab.
+	 *
+	 * @param string|null $submenu Submenu file.
+	 * @return string|null
+	 */
+	public function menu_child( $submenu ) {
+		return $this->on_block_screen() ? 'oc-layout' : $submenu;
+	}
+
+	/**
+	 * Is a block list or editor on screen?
+	 */
+	private function on_block_screen(): bool {
+		global $typenow;
+
+		return self::TYPE === $typenow;
+	}
+
+	/**
+	 * The two tabs, drawn on both screens so they read as one.
+	 *
+	 * @param string $current Which tab is open: 'layout' or 'blocks'.
+	 */
+	private function tabs( string $current ): void {
+		$tabs = array(
+			'layout' => array( _x( 'Layout', 'catalogue layout tab', 'oc-theme' ), admin_url( 'admin.php?page=oc-layout' ) ),
+			'blocks' => array( __( 'Blocks', 'oc-theme' ), admin_url( 'edit.php?post_type=' . self::TYPE ) ),
+		);
+
+		echo '<h2 class="nav-tab-wrapper" style="margin-block-end:16px;">';
+
+		foreach ( $tabs as $key => $tab ) {
+			printf(
+				'<a href="%s" class="nav-tab%s">%s</a>',
+				esc_url( $tab[1] ),
+				$key === $current ? ' nav-tab-active' : '',
+				esc_html( $tab[0] )
+			);
+		}
+
+		echo '</h2>';
+	}
+
+	/**
+	 * The same tabs above the block list and editor.
+	 */
+	public function block_screen_tabs(): void {
+		if ( ! $this->on_block_screen() || ! current_user_can( 'manage_woocommerce' ) ) {
+			return;
+		}
+
+		echo '<div class="wrap" style="margin-block-end:0;padding-block-start:8px;">';
+		echo '<h1 style="margin-block-end:8px;">' . esc_html__( 'Catalogue layout', 'oc-theme' ) . '</h1>';
+		$this->tabs( 'blocks' );
+		echo '</div>';
+	}
+
+	/**
 	 * Its form.
 	 */
 	public function screen(): void {
@@ -899,6 +1010,7 @@ final class Blocks {
 		?>
 		<div class="wrap">
 			<h1><?php esc_html_e( 'Catalogue layout', 'oc-theme' ); ?></h1>
+			<?php $this->tabs( 'layout' ); ?>
 			<p><?php esc_html_e( 'A listing where every card is the same size reads as a spreadsheet. These rules apply to the shop and to every category that has not set its own.', 'oc-theme' ); ?></p>
 
 			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">

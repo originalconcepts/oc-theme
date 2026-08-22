@@ -13,14 +13,21 @@ import sys
 
 
 def parse(path):
-    """Read a .po into {msgid: msgstr}, skipping empties and fuzzies."""
+    """Read a .po into {key: msgstr}.
+
+    A context entry is keyed the way gettext stores it: context, \x04, msgid.
+    """
     entries = {}
-    msgid = msgstr = None
-    target = None
+    state = {'ctxt': None, 'id': None, 'str': None, 'target': None}
 
     def flush():
-        if msgid is not None and msgstr:
-            entries[msgid] = msgstr
+        if state['id'] is not None and state['str']:
+            key = state['id']
+
+            if state['ctxt']:
+                key = state['ctxt'] + '\x04' + key
+
+            entries[key] = state['str']
 
     with open(path, encoding='utf-8') as handle:
         for raw in handle:
@@ -29,20 +36,26 @@ def parse(path):
             if not line or line.startswith('#'):
                 continue
 
-            if line.startswith('msgid "'):
+            if line.startswith('msgctxt "'):
                 flush()
-                msgid, msgstr, target = unquote(line[6:]), '', 'id'
+                state.update(ctxt=unquote(line[8:]), id=None, str=None, target='ctxt')
+                continue
+
+            if line.startswith('msgid "'):
+                if state['target'] != 'ctxt':
+                    flush()
+                    state['ctxt'] = None
+
+                state.update(id=unquote(line[6:]), str='', target='id')
                 continue
 
             if line.startswith('msgstr "'):
-                msgstr, target = unquote(line[7:]), 'str'
+                state.update(str=unquote(line[7:]), target='str')
                 continue
 
-            if line.startswith('"') and target:
-                if target == 'id':
-                    msgid += unquote(line)
-                else:
-                    msgstr += unquote(line)
+            if line.startswith('"') and state['target']:
+                key = state['target'] if state['target'] != 'ctxt' else 'ctxt'
+                state[key] = (state[key] or '') + unquote(line)
 
     flush()
 
