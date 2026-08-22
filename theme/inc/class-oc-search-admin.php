@@ -31,6 +31,7 @@ final class Search_Admin {
 		add_action( 'admin_menu', array( $this, 'menu' ), 58 );
 		add_action( 'admin_post_oc_search_save', array( $this, 'save' ) );
 		add_action( 'wp_ajax_oc_search_build', array( $this, 'ajax_build' ) );
+		add_action( 'admin_post_oc_search_build_step', array( $this, 'build_step' ) );
 
 		// A word list on every kind of term the search reads.
 		foreach ( array( 'product_cat', 'product_tag', 'oc_brand' ) as $tax ) {
@@ -605,70 +606,83 @@ final class Search_Admin {
 	 */
 	private function index_tab(): void {
 		$status = Search_Index::status();
+
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reading progress, not acting.
+		$running = isset( $_GET['building'] );
+		$left    = isset( $_GET['left'] ) ? absint( $_GET['left'] ) : 0;
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+		$done = $status['total'] > 0 ? $status['total'] - $left : 0;
 		?>
 		<table class="widefat striped" style="max-inline-size:520px;margin-block-end:20px;">
 			<tbody>
-				<tr><td><?php esc_html_e( 'Products and pages indexed', 'oc-theme' ); ?></td><td><strong id="oc-idx-objects"><?php echo esc_html( number_format_i18n( $status['objects'] ) ); ?></strong></td></tr>
-				<tr><td><?php esc_html_e( 'Words held', 'oc-theme' ); ?></td><td><strong id="oc-idx-words"><?php echo esc_html( number_format_i18n( $status['words'] ) ); ?></strong></td></tr>
+				<tr><td><?php esc_html_e( 'Products and pages indexed', 'oc-theme' ); ?></td><td><strong><?php echo esc_html( number_format_i18n( $status['objects'] ) ); ?></strong></td></tr>
+				<tr><td><?php esc_html_e( 'Words held', 'oc-theme' ); ?></td><td><strong><?php echo esc_html( number_format_i18n( $status['words'] ) ); ?></strong></td></tr>
 				<tr><td><?php esc_html_e( 'Last built', 'oc-theme' ); ?></td><td><strong><?php echo esc_html( $status['built'] ? wp_date( 'j.n.Y H:i', $status['built'] ) : __( 'never', 'oc-theme' ) ); ?></strong></td></tr>
 			</tbody>
 		</table>
 
-		<p>
-			<button type="button" class="button button-primary" id="oc-idx-go"><?php esc_html_e( 'Rebuild the index', 'oc-theme' ); ?></button>
-			<span id="oc-idx-state" style="margin-inline-start:12px;"></span>
+		<?php if ( $running && $left > 0 ) : ?>
+			<?php
+			// Each batch redirects back here, so a shop of any size finishes
+			// without one long request and without needing scripts to work.
+			$next = admin_url( 'admin-post.php?action=oc_search_build_step&_wpnonce=' . rawurlencode( wp_create_nonce( 'oc_search_build_step' ) ) );
+			?>
+			<meta http-equiv="refresh" content="0;url=<?php echo esc_url( $next ); ?>" />
+			<p style="font-size:15px;">
+				<span class="spinner is-active" style="float:none;margin:0 6px 0 0;"></span>
+				<?php
+				printf(
+					/* translators: 1: how many are done, 2: how many in total. */
+					esc_html__( 'Indexing — %1$s of %2$s', 'oc-theme' ),
+					esc_html( number_format_i18n( max( 0, $done ) ) ),
+					esc_html( number_format_i18n( $status['total'] ) )
+				);
+				?>
+			</p>
+			<p><a class="button" href="<?php echo esc_url( admin_url( 'admin.php?page=' . self::PAGE . '&tab=index' ) ); ?>"><?php esc_html_e( 'Stop', 'oc-theme' ); ?></a></p>
+		<?php else : ?>
+			<?php if ( $running ) : ?>
+				<div class="notice notice-success"><p><?php esc_html_e( 'The index is up to date.', 'oc-theme' ); ?></p></div>
+			<?php endif; ?>
+
+			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+				<?php wp_nonce_field( 'oc_search_build_step' ); ?>
+				<input type="hidden" name="action" value="oc_search_build_step" />
+				<input type="hidden" name="start" value="1" />
+				<?php submit_button( __( 'Rebuild the index', 'oc-theme' ), 'primary', 'submit', false ); ?>
+			</form>
+		<?php endif; ?>
+
+		<p class="description" style="max-inline-size:700px;margin-block-start:14px;">
+			<?php esc_html_e( 'A rebuild runs in batches, so a shop of any size finishes without a timeout. Search keeps working from the words already held while it runs.', 'oc-theme' ); ?>
 		</p>
-		<p class="description" style="max-inline-size:700px;">
-			<?php esc_html_e( 'A rebuild runs in batches, so a shop of any size finishes without a timeout. Search keeps working from the old words until each batch replaces them.', 'oc-theme' ); ?>
-		</p>
-
-		<script>
-		( function () {
-			var go = document.getElementById( 'oc-idx-go' ),
-				state = document.getElementById( 'oc-idx-state' );
-
-			if ( ! go ) {
-				return;
-			}
-
-			function step( first ) {
-				var body = new URLSearchParams( {
-					action: 'oc_search_build',
-					nonce: '<?php echo esc_js( wp_create_nonce( 'oc_search_build' ) ); ?>',
-					start: first ? '1' : '0'
-				} );
-
-				return fetch( ajaxurl, { method: 'POST', credentials: 'same-origin', body: body } )
-					.then( function ( r ) { return r.json(); } )
-					.then( function ( j ) {
-						if ( ! j || ! j.success ) {
-							state.textContent = '<?php echo esc_js( __( 'Something went wrong.', 'oc-theme' ) ); ?>';
-							go.disabled = false;
-							return;
-						}
-
-						var d = j.data;
-						document.getElementById( 'oc-idx-objects' ).textContent = d.objects;
-						document.getElementById( 'oc-idx-words' ).textContent = d.words;
-
-						if ( d.left > 0 ) {
-							state.textContent = d.left + ' <?php echo esc_js( __( 'left', 'oc-theme' ) ); ?>';
-							return step( false );
-						}
-
-						state.textContent = '<?php echo esc_js( __( 'Done.', 'oc-theme' ) ); ?>';
-						go.disabled = false;
-					} );
-			}
-
-			go.addEventListener( 'click', function () {
-				go.disabled = true;
-				state.textContent = '<?php echo esc_js( __( 'Working…', 'oc-theme' ) ); ?>';
-				step( true );
-			} );
-		}() );
-		</script>
 		<?php
+	}
+
+	/**
+	 * One batch, then straight back to the screen.
+	 */
+	public function build_step(): void {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			wp_die( esc_html__( 'Not allowed.', 'oc-theme' ) );
+		}
+
+		check_admin_referer( 'oc_search_build_step' );
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- checked above.
+		if ( ! empty( $_POST['start'] ) ) {
+			Search_Index::rebuild_start();
+		}
+
+		$state = Search_Index::rebuild_batch( 40 );
+
+		wp_safe_redirect(
+			admin_url(
+				'admin.php?page=' . self::PAGE . '&tab=index&building=1&left=' . (int) $state['left']
+			)
+		);
+		exit;
 	}
 
 	/**
