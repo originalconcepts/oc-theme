@@ -64,6 +64,25 @@ final class Catalog {
 	}
 
 	/**
+	 * Is this the catalogue itself?
+	 *
+	 * Enlarged tiles and placed blocks belong to the shop and its categories.
+	 * WooCommerce names every other loop it runs — related, up-sells,
+	 * cross-sells, a [products] shortcode — and the catalogue carries no name,
+	 * which is also true of the filter's ajax renderer. So the name is the
+	 * test, and everywhere else keeps the plain grid it always had.
+	 */
+	public static function catalogue_loop(): bool {
+		if ( self::back_office() ) {
+			return false;
+		}
+
+		$name = function_exists( 'wc_get_loop_prop' ) ? (string) wc_get_loop_prop( 'name', '' ) : '';
+
+		return '' === $name;
+	}
+
+	/**
 	 * A product's tile settings.
 	 *
 	 * @param int $product_id Product id.
@@ -264,7 +283,7 @@ final class Catalog {
 	 * @param \WC_Product $product Product.
 	 */
 	public function tile_class( $classes, $product ) {
-		if ( self::back_office() || ! $product instanceof \WC_Product ) {
+		if ( ! self::catalogue_loop() || ! $product instanceof \WC_Product ) {
 			return $classes;
 		}
 

@@ -503,6 +503,10 @@ final class Blocks {
 	 * Before each product: emit anything pinned to this position.
 	 */
 	public function before_product(): void {
+		if ( ! Catalog::catalogue_loop() ) {
+			return;
+		}
+
 		++$this->index;
 
 		foreach ( $this->plan()[ $this->index ] ?? array() as $place ) {
@@ -523,6 +527,10 @@ final class Blocks {
 	 * Blocks pinned just past the last product on this page.
 	 */
 	public function tail_html(): string {
+		if ( ! Catalog::catalogue_loop() ) {
+			return '';
+		}
+
 		$out = '';
 
 		foreach ( $this->plan()[ $this->index + 1 ] ?? array() as $place ) {
@@ -540,7 +548,7 @@ final class Blocks {
 	 * @param \WC_Product $product Product.
 	 */
 	public function rhythm_class( $classes, $product ) {
-		if ( Catalog::back_office() || ! $product instanceof \WC_Product || ! $this->plain() ) {
+		if ( ! Catalog::catalogue_loop() || ! $product instanceof \WC_Product || ! $this->plain() ) {
 			return $classes;
 		}
 
