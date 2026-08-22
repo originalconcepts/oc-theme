@@ -237,14 +237,14 @@ final class Search {
 		$kinds_in = implode( ',', array_fill( 0, count( $args['kinds'] ), '%s' ) );
 
 		$parts  = array();
-		$values = array();
+		$union_values = array();
 
 		foreach ( $tokens as $i => $token ) {
-			$parts[]  = "SELECT object_id, %d AS grp, MAX(({$weights}) + IF(pos = 1, 3, 0)) AS score"
+			$parts[]        = "SELECT object_id, %d AS grp, MAX(({$weights}) + IF(pos = 1, 3, 0)) AS score"
 				. " FROM {$words} WHERE kind IN ({$kinds_in}) AND token LIKE %s GROUP BY object_id";
-			$values[] = $i;
-			$values   = array_merge( $values, $args['kinds'] );
-			$values[] = $wpdb->esc_like( $token ) . '%';
+			$union_values[] = $i;
+			$union_values   = array_merge( $union_values, $args['kinds'] );
+			$union_values[] = $wpdb->esc_like( $token ) . '%';
 		}
 
 		$union = implode( ' UNION ALL ', $parts );
@@ -269,8 +269,10 @@ final class Search {
 			INNER JOIN {$table} x ON x.object_id = m.object_id
 			WHERE x.hidden = 0";
 
-		$head   = array( $rel, $pop, $flat, $wpdb->esc_like( $flat ) . '%' );
-		$values = array_merge( $values, $head );
+		// The order here is the order the placeholders appear in the statement:
+		// the ranking sits in the SELECT clause, so its values bind first.
+		$values = array( $rel, $pop, $flat, $wpdb->esc_like( $flat ) . '%' );
+		$values = array_merge( $values, $union_values );
 
 		if ( 'hide' === $s['oos'] ) {
 			$sql .= ' AND x.in_stock = 1';
@@ -286,8 +288,7 @@ final class Search {
 		$values[] = max( 1, (int) $args['limit'] ) + 1;
 		$values[] = max( 0, (int) $args['offset'] );
 
-		// The union has to be rebuilt with the head values in the right order.
-		$prepared = self::assemble( $sql, $values, count( $tokens ), $args['kinds'] );
+		$prepared = $wpdb->prepare( $sql, $values ); // phpcs:ignore WordPress.DB.PreparedSQL
 
 		$rows = $wpdb->get_results( $prepared ); // phpcs:ignore WordPress.DB
 
@@ -300,23 +301,6 @@ final class Search {
 			'more'  => $more,
 			'total' => 0,
 		);
-	}
-
-	/**
-	 * Bind the values in the order the statement expects them.
-	 *
-	 * The union is built first and the ranking values come after it, which is
-	 * exactly the order they were pushed, so this is a straight prepare.
-	 *
-	 * @param string $sql    Statement.
-	 * @param array  $values Values.
-	 * @param int    $tokens Token count.
-	 * @param array  $kinds  Kinds.
-	 */
-	private static function assemble( string $sql, array $values, int $tokens, array $kinds ): string {
-		global $wpdb;
-
-		return $wpdb->prepare( $sql, $values ); // phpcs:ignore WordPress.DB.PreparedSQL
 	}
 
 	/**
