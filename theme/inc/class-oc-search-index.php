@@ -143,15 +143,28 @@ final class Search_Index {
 			) {$charset}"
 		);
 
-		update_option( 'oc_search_schema', 3, false );
+		update_option( 'oc_search_schema', 4, false );
 	}
 
 	/**
 	 * Create the tables the first time they are needed.
 	 */
 	public static function maybe_install(): void {
-		if ( 3 !== (int) get_option( 'oc_search_schema' ) ) {
-			self::install();
+		global $wpdb;
+
+		if ( 4 === (int) get_option( 'oc_search_schema' ) ) {
+			return;
+		}
+
+		self::install();
+
+		// The version marker is only worth anything if the table it stands
+		// for is really there, so it is written from what the database says.
+		$table = self::table();
+		$found = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table ) ); // phpcs:ignore WordPress.DB
+
+		if ( $found !== $table ) {
+			delete_option( 'oc_search_schema' );
 		}
 	}
 
