@@ -915,7 +915,10 @@ final class Search {
 			return;
 		}
 
-		nocache_headers();
+		// A repeat of the same question inside a minute is answered by the
+		// browser itself, which is the only truly free answer there is.
+		header( 'Cache-Control: private, max-age=60' );
+
 		$this->ajax();
 	}
 
