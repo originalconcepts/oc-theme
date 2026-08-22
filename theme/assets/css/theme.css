@@ -8546,12 +8546,28 @@ body.oc-checkout { overflow-x: clip; }
 		.woocommerce ul.products li.product.oc-tile--big > .oc-card-text { grid-row: 3; }
 		.woocommerce ul.products li.product.oc-tile--big::after { grid-row: 4; }
 
+		/* A phone gives every block the whole row, with no product beside it
+		 * to set the height, so the block states its own again and keeps to
+		 * the picture track. */
 		.woocommerce ul.products li.oc-block--wide,
 		.woocommerce ul.products li.oc-block--big,
 		.woocommerce ul.products li.oc-block--row { grid-row: span 4; }
 
-		.woocommerce ul.products li.oc-block--big > * { grid-row: 1 / 4; }
+		.woocommerce ul.products li.oc-block > * { grid-row: 1; }
+		.woocommerce ul.products li.oc-block--big > * { grid-row: 1; }
 		.woocommerce ul.products li.oc-block--big::after { grid-row: 4; }
+
+		.woocommerce ul.products li.oc-block:not(.oc-block--row) .oc-block__media {
+			position: relative;
+			block-size: auto;
+			padding-block-start: 0;
+		}
+
+		.woocommerce ul.products li.oc-block:not(.oc-block--row) .oc-block__img {
+			position: static;
+			block-size: auto;
+			aspect-ratio: calc(var(--oc-card-ratio-n, 1) * 2);
+		}
 
 		.woocommerce ul.products li.product.oc-tile--wide:not(.oc-tile--m-plain) > .oc-card-media,
 		.woocommerce ul.products li.product.oc-tile--big:not(.oc-tile--m-plain) > .oc-card-media {
