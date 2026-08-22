@@ -25,8 +25,96 @@ final class Customizer {
 	/**
 	 * Hook in.
 	 */
+	/**
+	 * Controls that only apply when another setting holds a given value.
+	 *
+	 * @var array<string,array{setting:string,values:string[]}>
+	 */
+	private $deps = array();
+
+	/**
+	 * Hook in.
+	 */
 	public function register(): void {
 		add_action( 'customize_register', array( $this, 'build' ) );
+		add_action( 'customize_controls_enqueue_scripts', array( $this, 'controls_js' ) );
+	}
+
+	/**
+	 * The dependency rules, bound to the live setting values.
+	 */
+	public function controls_js(): void {
+		$rel = '/assets/js/customizer-controls.js';
+
+		wp_enqueue_script(
+			'oc-customize-controls',
+			OC_THEME_URI . $rel,
+			array( 'customize-controls' ),
+			oc_asset_version( $rel ),
+			true
+		);
+
+		// build() has already run by now, so every rule is collected.
+		wp_add_inline_script(
+			'oc-customize-controls',
+			'window.ocCustomizeDeps=' . wp_json_encode( (object) $this->deps ) . ';',
+			'before'
+		);
+	}
+
+	/**
+	 * Record a rule and hand back the matching server-side test, so the
+	 * first paint and every later change agree.
+	 *
+	 * @param string $id  Control id.
+	 * @param array  $dep array{setting:string,values:array}.
+	 */
+	private function depend( string $id, array $dep ): callable {
+		$setting = (string) $dep['setting'];
+		$values  = array_map( 'strval', (array) $dep['values'] );
+
+		$this->deps[ $id ] = array(
+			'setting' => $setting,
+			'values'  => $values,
+		);
+
+		return static function () use ( $setting, $values ): bool {
+			return in_array( (string) self::setting_value( $setting ), $values, true );
+		};
+	}
+
+	/**
+	 * The stored value of a setting, defaults included.
+	 *
+	 * @param string $id Setting id, either a theme mod or option[key].
+	 * @return mixed
+	 */
+	private static function setting_value( string $id ) {
+		if ( ! preg_match( '/^([a-z_]+)\[([a-z0-9_]+)\]$/', $id, $m ) ) {
+			return get_theme_mod( $id, '' );
+		}
+
+		switch ( $m[1] ) {
+			case 'oc_checkout':
+				$all = Checkout::settings();
+				break;
+			case 'oc_tabs':
+				$all = Tabs::settings();
+				break;
+			case 'oc_cart':
+				$all = Cart::settings();
+				break;
+			case 'oc_filters':
+				$all = Filters::settings();
+				break;
+			case 'oc_thankyou':
+				$all = Thankyou::settings();
+				break;
+			default:
+				$all = (array) get_option( $m[1], array() );
+		}
+
+		return $all[ $m[2] ] ?? '';
 	}
 
 	/**
@@ -1561,10 +1649,10 @@ final class Customizer {
 			'oc_checkout',
 			__( 'Start the summary folded on desktop', 'oc-theme' ),
 			true,
-			static function () {
-				$s = \OC\Theme\Checkout::settings();
-				return ! empty( $s['summary'] );
-			}
+			array(
+				'setting' => 'oc_checkout[summary]',
+				'values'  => array( '1', 'true' ),
+			)
 		);
 		$this->opt_color( $c, $o, 'side_bg', 'oc_checkout', __( 'Summary column colour', 'oc-theme' ) );
 		$this->opt_select(
@@ -1602,10 +1690,10 @@ final class Customizer {
 			'oc_checkout',
 			__( "Recipient's additional phone is required", 'oc-theme' ),
 			false,
-			static function () {
-				$s = \OC\Theme\Checkout::settings();
-				return ! empty( $s['send_other'] );
-			}
+			array(
+				'setting' => 'oc_checkout[send_other]',
+				'values'  => array( '1', 'true' ),
+			)
 		);
 
 		$this->heading( $c, 'oc_h_ck_addr', 'oc_checkout', __( 'Address fields', 'oc-theme' ) );
@@ -1626,10 +1714,10 @@ final class Customizer {
 			'consent_text',
 			'oc_checkout',
 			__( 'Consent wording', 'oc-theme' ),
-			static function () {
-				$s = \OC\Theme\Checkout::settings();
-				return ! empty( $s['consent'] );
-			}
+			array(
+				'setting' => 'oc_checkout[consent]',
+				'values'  => array( '1', 'true' ),
+			)
 		);
 		$this->opt_toggle( $c, $o, 'btn_total', 'oc_checkout', __( 'Show the total on the place-order button', 'oc-theme' ), true );
 		$this->opt_text( $c, $o, 'btn_text', 'oc_checkout', __( 'Place-order button label', 'oc-theme' ) );
@@ -1672,7 +1760,7 @@ final class Customizer {
 	 * @param bool                  $def     Default.
 	 * @param callable|null         $active  Visibility test.
 	 */
-	private function opt_toggle( \WP_Customize_Manager $c, string $option, string $key, string $section, string $label, bool $def, ?callable $active = null ): void {
+	private function opt_toggle( \WP_Customize_Manager $c, string $option, string $key, string $section, string $label, bool $def, ?array $dep = null ): void {
 		list( $id, $args ) = $this->opt_args(
 			$option,
 			$key,
@@ -1690,8 +1778,8 @@ final class Customizer {
 			'section' => $section,
 			'label'   => $label,
 		);
-		if ( null !== $active ) {
-			$control['active_callback'] = $active;
+		if ( null !== $dep ) {
+			$control['active_callback'] = $this->depend( $id, $dep );
 		}
 
 		$c->add_control( new Customize\Toggle_Control( $c, $id, $control ) );
@@ -1708,7 +1796,7 @@ final class Customizer {
 	 * @param array                 $choices Choices.
 	 * @param string                $def     Default.
 	 */
-	private function opt_select( \WP_Customize_Manager $c, string $option, string $key, string $section, string $label, array $choices, string $def, ?callable $active = null ): void {
+	private function opt_select( \WP_Customize_Manager $c, string $option, string $key, string $section, string $label, array $choices, string $def, ?array $dep = null ): void {
 		list( $id, $args ) = $this->opt_args(
 			$option,
 			$key,
@@ -1726,8 +1814,8 @@ final class Customizer {
 			'label'   => $label,
 			'choices' => $choices,
 		);
-		if ( null !== $active ) {
-			$control['active_callback'] = $active;
+		if ( null !== $dep ) {
+			$control['active_callback'] = $this->depend( $id, $dep );
 		}
 
 		$c->add_control( $id, $control );
@@ -1745,7 +1833,7 @@ final class Customizer {
 	 * @param int                   $min     Minimum.
 	 * @param int                   $max     Maximum.
 	 */
-	private function opt_number( \WP_Customize_Manager $c, string $option, string $key, string $section, string $label, int $def, int $min, int $max, ?callable $active = null ): void {
+	private function opt_number( \WP_Customize_Manager $c, string $option, string $key, string $section, string $label, int $def, int $min, int $max, ?array $dep = null ): void {
 		list( $id, $args ) = $this->opt_args(
 			$option,
 			$key,
@@ -1766,8 +1854,8 @@ final class Customizer {
 				'max' => $max,
 			),
 		);
-		if ( null !== $active ) {
-			$control['active_callback'] = $active;
+		if ( null !== $dep ) {
+			$control['active_callback'] = $this->depend( $id, $dep );
 		}
 
 		$c->add_control( $id, $control );
@@ -1783,7 +1871,7 @@ final class Customizer {
 	 * @param string                $label   Label.
 	 * @param callable|null         $active  Visibility test.
 	 */
-	private function opt_text( \WP_Customize_Manager $c, string $option, string $key, string $section, string $label, ?callable $active = null ): void {
+	private function opt_text( \WP_Customize_Manager $c, string $option, string $key, string $section, string $label, ?array $dep = null ): void {
 		list( $id, $args ) = $this->opt_args( $option, $key, '', 'sanitize_text_field' );
 
 		$c->add_setting( $id, $args );
@@ -1793,8 +1881,8 @@ final class Customizer {
 			'section' => $section,
 			'label'   => $label,
 		);
-		if ( null !== $active ) {
-			$control['active_callback'] = $active;
+		if ( null !== $dep ) {
+			$control['active_callback'] = $this->depend( $id, $dep );
 		}
 
 		$c->add_control( $id, $control );
@@ -1855,10 +1943,10 @@ final class Customizer {
 			'oc_tabs_cfg',
 			__( 'Open by default', 'oc-theme' ),
 			false,
-			static function () {
-				$s = \OC\Theme\Tabs::settings();
-				return ! empty( $s['short_tab'] );
-			}
+			array(
+				'setting' => 'oc_tabs[short_tab]',
+				'values'  => array( '1', 'true' ),
+			)
 		);
 
 		$this->heading( $c, 'oc_h_tb_desc', 'oc_tabs_cfg', __( 'Full description', 'oc-theme' ) );
@@ -1882,10 +1970,10 @@ final class Customizer {
 			'oc_tabs_cfg',
 			__( 'Open by default', 'oc-theme' ),
 			false,
-			static function () {
-				$s = \OC\Theme\Tabs::settings();
-				return 'tab' === $s['desc_place'];
-			}
+			array(
+				'setting' => 'oc_tabs[desc_place]',
+				'values'  => array( 'tab' ),
+			)
 		);
 
 		$this->heading( $c, 'oc_h_tb_add', 'oc_tabs_cfg', __( 'Additional information', 'oc-theme' ) );
@@ -1899,10 +1987,10 @@ final class Customizer {
 			20,
 			0,
 			99,
-			static function () {
-				$s = \OC\Theme\Tabs::settings();
-				return ! empty( $s['additional'] );
-			}
+			array(
+				'setting' => 'oc_tabs[additional]',
+				'values'  => array( '1', 'true' ),
+			)
 		);
 	}
 
@@ -2045,7 +2133,9 @@ final class Customizer {
 			array(
 				'title'       => __( 'Catalogue filters', 'oc-theme' ),
 				'description' => __( 'How filtering looks. The filter groups themselves stay under Theme settings.', 'oc-theme' ),
-				'priority'    => 17,
+				// Right behind Catalogue & archive, which is where someone
+				// arranging the shop is already looking.
+				'priority'    => 8,
 				'panel'       => $panel,
 			)
 		);
@@ -2086,7 +2176,11 @@ final class Customizer {
 				'drop' => __( 'Opens under the value', 'oc-theme' ),
 				'full' => __( 'Opens full width', 'oc-theme' ),
 			),
-			'drop'
+			'drop',
+			array(
+				'setting' => 'oc_filters[layout]',
+				'values'  => array( 'topbar' ),
+			)
 		);
 		$this->opt_select(
 			$c,
@@ -2100,7 +2194,11 @@ final class Customizer {
 				'inline' => __( 'Inside the bar, after the groups', 'oc-theme' ),
 				'group'  => __( 'Inside the bar, beside each group', 'oc-theme' ),
 			),
-			'start'
+			'start',
+			array(
+				'setting' => 'oc_filters[layout]',
+				'values'  => array( 'topbar' ),
+			)
 		);
 		$this->opt_select(
 			$c,
@@ -2169,10 +2267,10 @@ final class Customizer {
 				'inputs' => __( 'Input fields', 'oc-theme' ),
 			),
 			'slider',
-			static function () {
-				$s = \OC\Theme\Filters::settings();
-				return 'range' === $s['price_mode'];
-			}
+			array(
+				'setting' => 'oc_filters[price_mode]',
+				'values'  => array( 'range' ),
+			)
 		);
 	}
 
