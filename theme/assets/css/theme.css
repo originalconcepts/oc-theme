@@ -447,6 +447,10 @@ a { color: inherit; }
 	display: flex;
 	flex-direction: column;
 	gap: 2px;
+	/* A row of text has a comfortable reading width; letting it stretch to
+	 * the whole panel would leave the add button stranded far from the
+	 * product it belongs to. */
+	max-inline-size: 620px;
 }
 
 .oc-search__prods.is-cards {
