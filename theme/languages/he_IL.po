@@ -2700,3 +2700,39 @@ msgstr "בלוקים"
 
 msgid "Page sections"
 msgstr "מקטעים"
+
+msgid "Same as desktop"
+msgstr "כמו בדסקטופ"
+
+msgid "On a phone"
+msgstr "במובייל"
+
+msgid "A phone follows the desktop size unless you choose otherwise. A phone shows two columns, so \"2 columns\" fills its width."
+msgstr "במובייל האריח מוצג לפי הגדרת הדסקטופ, אלא אם בוחרים אחרת. במובייל יש שתי עמודות, ולכן \"2 עמודות\" ממלא את כל הרוחב."
+
+msgid "Phone: %s"
+msgstr "מובייל: %s"
+
+msgid "Wide tile — every"
+msgstr "אריח רחב — כל"
+
+msgid "Large tile — every"
+msgstr "אריח גדול — כל"
+
+msgid "Leave a field empty to keep the shop-wide pace (wide: %1$s, large: %2$s). 0 turns it off for this category alone."
+msgstr "שדה ריק שומר על הקצב של כל החנות (רחב: %1$s, גדול: %2$s). 0 מכבה את הקצב בקטגוריה הזו בלבד."
+
+msgid "every %d"
+msgstr "כל %d"
+
+msgid "off"
+msgstr "כבוי"
+
+msgid "Inherited now:"
+msgstr "יורש כרגע:"
+
+msgid "position %1$s — %2$s"
+msgstr "מיקום %1$s — %2$s"
+
+msgid "nothing"
+msgstr "כלום"
