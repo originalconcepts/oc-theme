@@ -8423,7 +8423,10 @@ body.oc-checkout { overflow-x: clip; }
 	 * tracks. */
 	.woocommerce ul.products li.product.oc-tile--big {
 		grid-row: span 14;
+		/* outside this layer the tile is a flex column; here the row owns it */
+		display: grid;
 		grid-template-columns: minmax(0, 1fr);
+		align-content: start;
 	}
 
 	.woocommerce ul.products li.product.oc-tile--big > .oc-card-media { grid-row: 1 / 9; }
@@ -8484,9 +8487,14 @@ body.oc-checkout { overflow-x: clip; }
 		/* On a phone an enlarged tile is an ordinary card that happens to take
 		 * the whole row, so it goes back to one row's worth of tracks and its
 		 * picture states the wide ratio outright. */
-		.woocommerce ul.products li.product.oc-tile--wide,
-		.woocommerce ul.products li.product.oc-tile--big {
+		.woocommerce ul.products li.product.oc-tile--wide:not(.oc-tile--m-plain),
+		.woocommerce ul.products li.product.oc-tile--big:not(.oc-tile--m-plain),
+		.woocommerce ul.products li.product.oc-tile--wide.oc-tile--m-plain,
+		.woocommerce ul.products li.product.oc-tile--big.oc-tile--m-plain {
 			grid-row: span 7;
+			display: grid;
+			grid-template-columns: minmax(0, 1fr);
+			align-content: start;
 		}
 
 		.woocommerce ul.products li.product.oc-tile--big > .oc-card-media { grid-row: 1; }
