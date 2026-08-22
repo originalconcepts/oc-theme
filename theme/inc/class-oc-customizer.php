@@ -137,6 +137,7 @@ final class Customizer {
 		$this->topbar_section( $wp_customize );
 		$this->footer_section( $wp_customize );
 		$this->catalog_panel( $wp_customize, $shop_panel );
+		$this->filters_section( $wp_customize, $shop_panel );
 		$this->card_section( $wp_customize, $shop_panel );
 		$this->product_section( $wp_customize, $shop_panel );
 		$this->swatches_section( $wp_customize, $shop_panel );
@@ -145,7 +146,6 @@ final class Customizer {
 		$this->tabs_section( $wp_customize, $shop_panel );
 		$this->thankyou_section( $wp_customize, $shop_panel );
 		$this->cart_section( $wp_customize, $shop_panel );
-		$this->filters_section( $wp_customize, $shop_panel );
 	}
 
 	/**
@@ -2133,9 +2133,10 @@ final class Customizer {
 			array(
 				'title'       => __( 'Catalogue filters', 'oc-theme' ),
 				'description' => __( 'How filtering looks. The filter groups themselves stay under Theme settings.', 'oc-theme' ),
-				// Right behind Catalogue & archive, which is where someone
-				// arranging the shop is already looking.
-				'priority'    => 8,
+				// Right behind the catalogue section — which, when WooCommerce
+				// is active, is WooCommerce's own at priority 10. Same
+				// priority plus a later registration puts this just after it.
+				'priority'    => 10,
 				'panel'       => $panel,
 			)
 		);
