@@ -334,6 +334,7 @@
 	 * shopper has moved past.
 	 */
 
+	var ocSL = window.ocL10n || {};
 	var searchToggles = document.querySelectorAll( '.oc-search-toggle' );
 	var searchPanel = document.querySelector( '[data-oc-search]' );
 
@@ -353,7 +354,7 @@
 		var sTerm = '';
 
 		var HIST_KEY = 'ocSearchHist';
-		var HIST_MAX = parseInt( ( Lf && Lf.searchHistMax ) || 8, 10 );
+		var HIST_MAX = parseInt( ocSL.searchHistMax || 8, 10 );
 
 		/* -- the visitor's own searches, kept in their browser and nowhere else -- */
 
@@ -413,7 +414,7 @@
 				var del = document.createElement( 'button' );
 				del.type = 'button';
 				del.className = 'oc-search__histdel';
-				del.setAttribute( 'aria-label', ( Lf && Lf.searchForget ) || 'Remove' );
+				del.setAttribute( 'aria-label', ocSL.searchForget || 'Remove' );
 				del.textContent = '×';
 				del.addEventListener( 'click', function ( e ) {
 					e.stopPropagation();
@@ -523,7 +524,7 @@
 			}
 
 			if ( sLive ) {
-				sLive.textContent = ( ( Lf && Lf.searchFound ) || '%s results' ).replace( '%s', data.total || 0 );
+				sLive.textContent = ( ocSL.searchFound || '%s results' ).replace( '%s', data.total || 0 );
 			}
 
 			bindResults();
@@ -711,7 +712,7 @@
 
 							if ( j && j.success ) {
 								button.classList.add( 'is-done' );
-								button.textContent = ( Lf && Lf.searchAdded ) || 'Added';
+								button.textContent = ocSL.searchAdded || 'Added';
 								document.body.dispatchEvent( new CustomEvent( 'oc:cart-changed' ) );
 
 								if ( j.data && 'undefined' !== typeof j.data.count ) {
