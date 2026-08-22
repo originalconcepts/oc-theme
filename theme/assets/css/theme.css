@@ -8042,7 +8042,12 @@ body.oc-checkout { overflow-x: clip; }
 
 /* Dense flow backfills the cells an enlarged tile leaves behind. It
  * reorders visually, never in the DOM — keyboard order stays true. */
-.woocommerce ul.products { grid-auto-flow: dense; }
+.woocommerce ul.products {
+	grid-auto-flow: dense;
+	/* the gap as actually rendered, so a tile spanning two columns can take
+	 * it out of its own width and land on one column's exact height */
+	--oc-gap-eff: calc(var(--oc-grid-gap, 20px) * var(--oc-density, 1));
+}
 
 .woocommerce ul.products li.product.oc-tile--wide { grid-column: span 2; }
 
@@ -8106,18 +8111,37 @@ body.oc-checkout { overflow-x: clip; }
 
 /* A wide tile is twice as wide at the same height, so its image crops
  * rather than growing and dragging the whole row down with it. */
-.woocommerce ul.products li.product.oc-tile--wide .oc-card-media,
-.woocommerce ul.products li.product.oc-tile--wide .oc-card-media__strip,
-.woocommerce ul.products li.product.oc-tile--wide .oc-card-media__item {
+/* Two columns wide, one column tall — to the pixel. A percentage padding
+ * resolves against width (unlike a percentage height), so the gap can be
+ * taken out of the span before halving it. Guessing the ratio at exactly
+ * two left the picture 3px proud of its neighbours, and the scroll strip
+ * behind it another 15px on top of that. */
+.woocommerce ul.products li.product.oc-tile--wide .oc-card-media {
+	position: relative;
+	aspect-ratio: auto;
+	block-size: 0;
+	padding-block-start: calc((100% - var(--oc-gap-eff, 6px)) / 2 / var(--oc-card-ratio-n, 1));
+}
+
+.woocommerce ul.products li.product.oc-tile--wide .oc-card-media__strip {
+	position: absolute;
+	inset: 0;
 	aspect-ratio: auto;
 	block-size: auto;
 }
 
+.woocommerce ul.products li.product.oc-tile--wide .oc-card-media__item {
+	position: relative;
+	block-size: 100%;
+}
+
 .woocommerce ul.products li.product.oc-tile--wide .oc-card-media__item img,
 .woocommerce ul.products li.product.oc-tile--wide img.wp-post-image {
-	aspect-ratio: calc(var(--oc-card-ratio-n, 1) * 2);
-	block-size: auto;
+	position: absolute;
+	inset: 0;
+	aspect-ratio: auto;
 	inline-size: 100%;
+	block-size: 100%;
 	object-fit: cover;
 }
 
@@ -8198,8 +8222,18 @@ body.oc-checkout { overflow-x: clip; }
 	aspect-ratio: var(--oc-card-ratio, 1 / 1);
 }
 
+.woocommerce ul.products li.oc-block--wide .oc-block__media {
+	position: relative;
+	display: block;
+	block-size: 0;
+	padding-block-start: calc((100% - var(--oc-gap-eff, 6px)) / 2 / var(--oc-card-ratio-n, 1));
+}
+
 .woocommerce ul.products li.oc-block--wide .oc-block__img {
-	aspect-ratio: calc(var(--oc-card-ratio-n, 1) * 2);
+	position: absolute;
+	inset: 0;
+	aspect-ratio: auto;
+	block-size: 100%;
 }
 
 /* A full row is as wide as the grid, so it stretches by the column count
