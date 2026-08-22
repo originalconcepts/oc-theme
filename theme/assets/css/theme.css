@@ -8302,3 +8302,93 @@ body.oc-checkout { overflow-x: clip; }
 
 	.oc-block__h { font-size: 1rem; }
 }
+
+/* =====================================================================
+   Catalogue cards share their rows (subgrid)
+   =====================================================================
+   Every card sizes its own parts, so a two-line title next to a one-line
+   title pushed one price lower than the other, and a 2x2 tile could never
+   land on the line its neighbours used. With subgrid the row itself owns
+   the tracks — picture, swatches, title, rating, description, price — and
+   each track is as tall as the tallest card in THAT row. Nothing is cut,
+   nothing is reserved that no one needs, and the big tile simply drops its
+   text onto the second row's tracks.
+
+   A browser without subgrid keeps exactly the layout it renders today. */
+
+.woocommerce ul.products li.product .woocommerce-loop-product__title,
+.woocommerce ul.products li.product .oc-card-excerpt {
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+/* A cap, so one outlier title cannot stretch a whole row. Past it the
+ * browser adds the ellipsis itself. */
+.woocommerce ul.products li.product .woocommerce-loop-product__title {
+	-webkit-line-clamp: var(--oc-card-title-lines, 2);
+	line-clamp: var(--oc-card-title-lines, 2);
+}
+
+.woocommerce ul.products li.product .oc-card-excerpt {
+	-webkit-line-clamp: var(--oc-card-excerpt-lines, 2);
+	line-clamp: var(--oc-card-excerpt-lines, 2);
+}
+
+@supports (grid-template-rows: subgrid) {
+	.woocommerce ul.products {
+		/* the space between cards moves onto the card, because a row gap
+		 * here would open between every track inside one */
+		row-gap: 0;
+	}
+
+	.woocommerce ul.products li.product,
+	.woocommerce ul.products li.oc-block {
+		margin-block-end: calc(var(--oc-gap-eff, 6px) + 16px);
+	}
+
+	.woocommerce ul.products li.product {
+		display: grid;
+		grid-template-rows: subgrid;
+		grid-row: span 6;
+		align-content: start;
+	}
+
+	/* Fixed slots, so a card missing its swatches or its rating leaves that
+	 * track empty rather than sliding everything up a line. */
+	.woocommerce ul.products li.product > .woocommerce-LoopProduct-link,
+	.woocommerce ul.products li.product > .oc-card-media { grid-row: 1; }
+	.woocommerce ul.products li.product > .oc-colors { grid-row: 2; }
+	.woocommerce ul.products li.product > .woocommerce-loop-product__title { grid-row: 3; }
+	.woocommerce ul.products li.product > .ocr-rating-row { grid-row: 4; }
+	.woocommerce ul.products li.product > .oc-card-excerpt { grid-row: 5; }
+	.woocommerce ul.products li.product > .price { grid-row: 6; }
+
+	.woocommerce ul.products li.oc-block { grid-row: span 6; }
+
+	/* Two bands tall: the picture takes the first band plus the second
+	 * band's picture track, which puts the text exactly on the second
+	 * row's text tracks. */
+	.woocommerce ul.products li.product.oc-tile--big {
+		grid-row: span 12;
+		display: grid;
+		grid-template-rows: subgrid;
+	}
+
+	.woocommerce ul.products li.product.oc-tile--big > .woocommerce-LoopProduct-link,
+	.woocommerce ul.products li.product.oc-tile--big > .oc-card-media { grid-row: 1 / 8; }
+	.woocommerce ul.products li.product.oc-tile--big > .oc-colors { grid-row: 8; }
+	.woocommerce ul.products li.product.oc-tile--big > .woocommerce-loop-product__title { grid-row: 9; }
+	.woocommerce ul.products li.product.oc-tile--big > .ocr-rating-row { grid-row: 10; }
+	.woocommerce ul.products li.product.oc-tile--big > .oc-card-excerpt { grid-row: 11; }
+	.woocommerce ul.products li.product.oc-tile--big > .price { grid-row: 12; }
+
+	.woocommerce ul.products li.oc-block--big { grid-row: span 12; }
+
+	/* The picture fills its slot rather than sizing it. */
+	.woocommerce ul.products li.product.oc-tile--big .oc-card-media {
+		block-size: 100%;
+		flex: none;
+	}
+}

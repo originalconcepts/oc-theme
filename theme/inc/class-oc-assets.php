@@ -255,6 +255,8 @@ final class Assets {
 				// The same ratio as a bare number, so a tile that spans two
 				// columns can be given the height of a one-column tile.
 				'--oc-card-ratio-n'   => self::ratio_number( (string) get_theme_mod( 'oc_card_ratio', '1/1' ) ),
+				'--oc-card-title-lines'   => (string) max( 1, (int) get_theme_mod( 'oc_card_title_lines', 2 ) ),
+				'--oc-card-excerpt-lines' => (string) max( 1, (int) get_theme_mod( 'oc_card_excerpt_lines', 2 ) ),
 				'--oc-thumbs-w'       => absint( get_theme_mod( 'oc_gallery_thumb_size', 80 ) ) . 'px',
 				'--oc-gimg-h'         => absint( get_theme_mod( 'oc_gallery_img_height_px', 600 ) ) . 'px',
 				'--oc-header-h'       => absint( get_theme_mod( 'oc_header_height', 72 ) ) . 'px',

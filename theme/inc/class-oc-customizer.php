@@ -914,6 +914,22 @@ final class Customizer {
 		);
 
 		$this->toggle( $c, 'oc_card_excerpt', 'oc_card', __( 'Show short description', 'oc-theme' ), false );
+
+		$this->heading( $c, 'oc_h_card_lines', 'oc_card', __( 'Text lines', 'oc-theme' ) );
+		$this->number( $c, 'oc_card_title_lines', 'oc_card', __( 'Title — maximum lines', 'oc-theme' ), 2, 1, 5 );
+		$this->number(
+			$c,
+			'oc_card_excerpt_lines',
+			'oc_card',
+			__( 'Short description — maximum lines', 'oc-theme' ),
+			2,
+			1,
+			5,
+			array(
+				'setting' => 'oc_card_excerpt',
+				'values'  => array( '1', 'true' ),
+			)
+		);
 	}
 
 	/**
@@ -1368,8 +1384,8 @@ final class Customizer {
 			'label'   => $label,
 			'choices' => $choices,
 		);
-		if ( null !== $active ) {
-			$args['active_callback'] = $active;
+		if ( null !== $dep ) {
+			$args['active_callback'] = $this->depend( $id, $dep );
 		}
 
 		$c->add_control( new Customize\Segmented_Control( $c, $id, $args ) );
@@ -1506,9 +1522,9 @@ final class Customizer {
 	 * @param string                $section Section id.
 	 * @param string                $label   Label.
 	 * @param bool                  $def     Default.
-	 * @param callable|null         $active  Optional visibility callback.
+	 * @param array|null            $dep     Optional visibility rule.
 	 */
-	private function toggle( \WP_Customize_Manager $c, string $id, string $section, string $label, bool $def, ?callable $active = null ): void {
+	private function toggle( \WP_Customize_Manager $c, string $id, string $section, string $label, bool $def, ?array $dep = null ): void {
 		$c->add_setting(
 			$id,
 			array(
@@ -1523,8 +1539,8 @@ final class Customizer {
 			'section' => $section,
 			'label'   => $label,
 		);
-		if ( null !== $active ) {
-			$args['active_callback'] = $active;
+		if ( null !== $dep ) {
+			$args['active_callback'] = $this->depend( $id, $dep );
 		}
 
 		$c->add_control( new Customize\Toggle_Control( $c, $id, $args ) );
@@ -1540,9 +1556,9 @@ final class Customizer {
 	 * @param int                   $def     Default.
 	 * @param int                   $min     Minimum.
 	 * @param int                   $max     Maximum.
-	 * @param callable|null         $active  Optional visibility callback.
+	 * @param array|null            $dep     Optional visibility rule.
 	 */
-	private function number( \WP_Customize_Manager $c, string $id, string $section, string $label, int $def, int $min, int $max, ?callable $active = null ): void {
+	private function number( \WP_Customize_Manager $c, string $id, string $section, string $label, int $def, int $min, int $max, ?array $dep = null ): void {
 		$c->add_setting(
 			$id,
 			array(
@@ -1562,8 +1578,8 @@ final class Customizer {
 				'max' => $max,
 			),
 		);
-		if ( null !== $active ) {
-			$args['active_callback'] = $active;
+		if ( null !== $dep ) {
+			$args['active_callback'] = $this->depend( $id, $dep );
 		}
 
 		$c->add_control( $id, $args );
@@ -1758,7 +1774,7 @@ final class Customizer {
 	 * @param string                $section Section.
 	 * @param string                $label   Label.
 	 * @param bool                  $def     Default.
-	 * @param callable|null         $active  Visibility test.
+	 * @param array|null            $dep     Visibility rule.
 	 */
 	private function opt_toggle( \WP_Customize_Manager $c, string $option, string $key, string $section, string $label, bool $def, ?array $dep = null ): void {
 		list( $id, $args ) = $this->opt_args(
@@ -1869,7 +1885,7 @@ final class Customizer {
 	 * @param string                $key     Key.
 	 * @param string                $section Section.
 	 * @param string                $label   Label.
-	 * @param callable|null         $active  Visibility test.
+	 * @param array|null            $dep     Visibility rule.
 	 */
 	private function opt_text( \WP_Customize_Manager $c, string $option, string $key, string $section, string $label, ?array $dep = null ): void {
 		list( $id, $args ) = $this->opt_args( $option, $key, '', 'sanitize_text_field' );
