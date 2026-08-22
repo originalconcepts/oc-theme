@@ -8390,23 +8390,22 @@ body.oc-checkout { overflow-x: clip; }
 		display: grid;
 		grid-template-rows: subgrid;
 		grid-template-columns: minmax(0, 1fr);
-		grid-row: span 5;
+		grid-row: span 4;
 		align-content: start;
 	}
 
 	/* Everything stacks in the one column; the row decides the heights. */
 	.woocommerce ul.products li.product > * { grid-column: 1; }
 
-	/* Four slots and a spacer. A row whose cards carry no swatches collapses
+	/* Three slots and a spacer. A row whose cards carry no swatches collapses
 	 * that track to nothing, so no card reserves room it does not use. */
 	.woocommerce ul.products li.product > .oc-card-media { grid-row: 1; }
 	.woocommerce ul.products li.product > .oc-colors { grid-row: 2; }
 	.woocommerce ul.products li.product > .oc-card-text { grid-row: 3; }
-	.woocommerce ul.products li.product > .price { grid-row: 4; }
 
-	/* The text box packs its own contents from the top, so any slack in the
-	 * row shows up once, above the price — never between a title and a
-	 * description, and never where a neighbour's stars happen to sit. */
+	/* The text box packs its own contents from the top, so a card with a
+	 * short description keeps its price right under it rather than holding it
+	 * down to match a neighbour that has stars and two lines to say. */
 	.woocommerce ul.products li.product > .oc-card-text {
 		display: flex;
 		flex-direction: column;
@@ -8419,7 +8418,7 @@ body.oc-checkout { overflow-x: clip; }
 	.woocommerce ul.products li.product::after {
 		content: '';
 		grid-column: 1;
-		grid-row: 5;
+		grid-row: 4;
 		block-size: calc(var(--oc-gap-eff, 20px) + 16px);
 	}
 
@@ -8429,38 +8428,58 @@ body.oc-checkout { overflow-x: clip; }
 		display: grid;
 		grid-template-rows: subgrid;
 		grid-template-columns: minmax(0, 1fr);
-		grid-row: span 5;
+		grid-row: span 4;
 	}
 
-	.woocommerce ul.products li.oc-block > * { grid-column: 1; grid-row: 1 / 5; }
+	.woocommerce ul.products li.oc-block > * { grid-column: 1; grid-row: 1 / 4; }
 
 	.woocommerce ul.products li.oc-block::after {
 		content: '';
 		grid-column: 1;
-		grid-row: 5;
+		grid-row: 4;
 		block-size: calc(var(--oc-gap-eff, 20px) + 16px);
 	}
 
-	.woocommerce ul.products li.oc-block--big { grid-row: span 10; }
-	.woocommerce ul.products li.oc-block--big > * { grid-row: 1 / 10; }
-	.woocommerce ul.products li.oc-block--big::after { grid-row: 10; }
+	/* A banner that shares its row with products takes the row's full height
+	 * and the picture covers it — no strip of bare background under the
+	 * image. */
+	.woocommerce ul.products li.oc-block:not(.oc-block--row) .oc-block__media {
+		position: relative;
+		block-size: 100%;
+		padding-block-start: 0;
+	}
+
+	.woocommerce ul.products li.oc-block:not(.oc-block--row) .oc-block__img {
+		position: absolute;
+		inset: 0;
+		aspect-ratio: auto;
+		block-size: 100%;
+		object-fit: cover;
+	}
+
+	/* A full-row banner has no product beside it to set the height, so it
+	 * keeps stating its own and takes the picture track alone. */
+	.woocommerce ul.products li.oc-block--row > * { grid-row: 1; }
+
+	.woocommerce ul.products li.oc-block--big { grid-row: span 8; }
+	.woocommerce ul.products li.oc-block--big > * { grid-row: 1 / 8; }
+	.woocommerce ul.products li.oc-block--big::after { grid-row: 8; }
 
 	/* Two rows tall: the picture takes the first row entire plus the second
 	 * row's picture track, which drops the text onto the second row's text
 	 * tracks. */
 	.woocommerce ul.products li.product.oc-tile--big {
-		grid-row: span 10;
+		grid-row: span 8;
 		/* outside this layer the tile is a flex column; here the row owns it */
 		display: grid;
 		grid-template-columns: minmax(0, 1fr);
 		align-content: start;
 	}
 
-	.woocommerce ul.products li.product.oc-tile--big > .oc-card-media { grid-row: 1 / 7; }
-	.woocommerce ul.products li.product.oc-tile--big > .oc-colors { grid-row: 7; }
-	.woocommerce ul.products li.product.oc-tile--big > .oc-card-text { grid-row: 8; }
-	.woocommerce ul.products li.product.oc-tile--big > .price { grid-row: 9; }
-	.woocommerce ul.products li.product.oc-tile--big::after { grid-row: 10; }
+	.woocommerce ul.products li.product.oc-tile--big > .oc-card-media { grid-row: 1 / 6; }
+	.woocommerce ul.products li.product.oc-tile--big > .oc-colors { grid-row: 6; }
+	.woocommerce ul.products li.product.oc-tile--big > .oc-card-text { grid-row: 7; }
+	.woocommerce ul.products li.product.oc-tile--big::after { grid-row: 8; }
 
 	/* The ordinary card states its ratio outright and does not stretch: the
 	 * height comes from the column width, and that is what pins the picture
@@ -8516,7 +8535,7 @@ body.oc-checkout { overflow-x: clip; }
 		.woocommerce ul.products li.product.oc-tile--big:not(.oc-tile--m-plain),
 		.woocommerce ul.products li.product.oc-tile--wide.oc-tile--m-plain,
 		.woocommerce ul.products li.product.oc-tile--big.oc-tile--m-plain {
-			grid-row: span 5;
+			grid-row: span 4;
 			display: grid;
 			grid-template-columns: minmax(0, 1fr);
 			align-content: start;
@@ -8525,8 +8544,14 @@ body.oc-checkout { overflow-x: clip; }
 		.woocommerce ul.products li.product.oc-tile--big > .oc-card-media { grid-row: 1; }
 		.woocommerce ul.products li.product.oc-tile--big > .oc-colors { grid-row: 2; }
 		.woocommerce ul.products li.product.oc-tile--big > .oc-card-text { grid-row: 3; }
-		.woocommerce ul.products li.product.oc-tile--big > .price { grid-row: 4; }
-		.woocommerce ul.products li.product.oc-tile--big::after { grid-row: 5; }
+		.woocommerce ul.products li.product.oc-tile--big::after { grid-row: 4; }
+
+		.woocommerce ul.products li.oc-block--wide,
+		.woocommerce ul.products li.oc-block--big,
+		.woocommerce ul.products li.oc-block--row { grid-row: span 4; }
+
+		.woocommerce ul.products li.oc-block--big > * { grid-row: 1 / 4; }
+		.woocommerce ul.products li.oc-block--big::after { grid-row: 4; }
 
 		.woocommerce ul.products li.product.oc-tile--wide:not(.oc-tile--m-plain) > .oc-card-media,
 		.woocommerce ul.products li.product.oc-tile--big:not(.oc-tile--m-plain) > .oc-card-media {

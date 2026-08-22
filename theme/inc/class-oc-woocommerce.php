@@ -102,12 +102,13 @@ final class WooCommerce {
 		);
 		add_action( 'woocommerce_after_shop_loop_item_title', array( $this, 'card_excerpt' ), 8 );
 
-		// Title, rating and description travel together in one box. The row
-		// gives every card the same height for that box, and the box packs its
-		// own contents tight — so a card without a rating does not carry a hole
-		// where someone else's stars are.
+		// Title, rating, description and price travel together in one box. The
+		// row gives every card the same height for that box, and the box packs
+		// its own contents tight — so a card with less to say keeps its price
+		// close to its text instead of pushing it down to match a busier
+		// neighbour.
 		add_action( 'woocommerce_shop_loop_item_title', array( $this, 'card_text_open' ), 1 );
-		add_action( 'woocommerce_after_shop_loop_item_title', array( $this, 'card_text_close' ), 9 );
+		add_action( 'woocommerce_after_shop_loop_item_title', array( $this, 'card_text_close' ), 11 );
 
 		// One markup path for every card image mode, including 'single'.
 		remove_action( 'woocommerce_before_shop_loop_item_title', 'woocommerce_template_loop_product_thumbnail', 10 );
