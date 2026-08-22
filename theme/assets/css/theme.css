@@ -8054,32 +8054,49 @@ body.oc-checkout { overflow-x: clip; }
 }
 
 /* The media takes every pixel the two rows leave over the card's text, and
- * the image covers it — so the rectangle is never part picture, part gap. */
+ * the image covers it — so the rectangle is never part picture, part gap.
+ *
+ * The picture is positioned out of flow on purpose. Left in flow with a
+ * percentage height it has no definite parent to measure against, falls
+ * back to its own proportions, and drags both spanned rows up to its
+ * natural height — which is how a 2x2 tile ended up 1,594px tall. Out of
+ * flow it contributes no height at all, so the rows stay the size the
+ * cards beside it ask for and the image simply fills what is left. */
 .woocommerce ul.products li.product.oc-tile--big .oc-card-media {
 	flex: 1 1 auto;
 	min-block-size: 0;
+	position: relative;
+	aspect-ratio: auto;
 }
 
-.woocommerce ul.products li.product.oc-tile--big .oc-card-media,
-.woocommerce ul.products li.product.oc-tile--big .oc-card-media__strip,
-.woocommerce ul.products li.product.oc-tile--big .oc-card-media__item,
-.woocommerce ul.products li.product.oc-tile--big .oc-card-media__item img,
-.woocommerce ul.products li.product.oc-tile--big img.wp-post-image {
+.woocommerce ul.products li.product.oc-tile--big .oc-card-media__strip {
+	position: absolute;
+	inset: 0;
 	aspect-ratio: auto;
+}
+
+.woocommerce ul.products li.product.oc-tile--big .oc-card-media__item {
+	position: relative;
 	block-size: 100%;
 }
 
 .woocommerce ul.products li.product.oc-tile--big .oc-card-media__item img,
 .woocommerce ul.products li.product.oc-tile--big img.wp-post-image {
+	position: absolute;
+	inset: 0;
 	inline-size: 100%;
+	block-size: 100%;
+	aspect-ratio: auto;
 	object-fit: cover;
 }
 
-.woocommerce ul.products li.oc-block--big { display: flex; }
+/* A 2x2 banner is all picture, so it fills the same way. */
+.woocommerce ul.products li.oc-block--big { position: relative; }
 
 .woocommerce ul.products li.oc-block--big .oc-block__link,
 .woocommerce ul.products li.oc-block--big .oc-block__media {
-	inline-size: 100%;
+	position: absolute;
+	inset: 0;
 }
 
 .woocommerce ul.products li.oc-block--big .oc-block__img {
