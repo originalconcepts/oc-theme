@@ -86,11 +86,12 @@ final class Catalog {
 	 * A product's tile settings.
 	 *
 	 * @param int $product_id Product id.
-	 * @return array{size:string,size_m:string,image:int}
+	 * @return array{size:string,size_m:string,image:int,focus:int}
 	 */
 	public static function tile( int $product_id ): array {
 		$size   = (string) get_post_meta( $product_id, '_oc_tile_size', true );
 		$size_m = (string) get_post_meta( $product_id, '_oc_tile_size_m', true );
+		$focus  = get_post_meta( $product_id, '_oc_tile_focus', true );
 
 		// Products saved before the phone gained its own list of sizes carry a
 		// tick-box that meant one thing only: stay ordinary.
@@ -102,7 +103,21 @@ final class Catalog {
 			'size'   => array_key_exists( $size, self::sizes() ) ? $size : '',
 			'size_m' => array_key_exists( $size_m, self::sizes_m() ) ? $size_m : '',
 			'image'  => (int) get_post_meta( $product_id, '_oc_tile_image', true ),
+			'focus'  => '' === $focus ? 50 : max( 0, min( 100, (int) $focus ) ),
 		);
+	}
+
+	/**
+	 * How far down the picture the interesting part sits, as a percentage.
+	 *
+	 * A listing crops every picture to one shape, and the crop takes from the
+	 * top and bottom equally. A sofa photographed low, or a lamp shot with
+	 * headroom, loses the wrong half — so the product may say where to look.
+	 *
+	 * @param int $product_id Product id.
+	 */
+	public static function focus( int $product_id ): int {
+		return self::tile( $product_id )['focus'];
 	}
 
 	/**
@@ -191,9 +206,65 @@ final class Catalog {
 					?>
 				</div>
 				<p class="description" style="margin-block-start:6px;"><?php esc_html_e( 'Shown in listings instead of the product image. Empty = the product image.', 'oc-theme' ); ?></p>
+
+				<?php
+				$focus_id  = $tile['image'] ?: (int) get_post_thumbnail_id( (int) $post->ID );
+				$focus_src = $focus_id ? (string) wp_get_attachment_image_url( $focus_id, 'large' ) : '';
+				?>
+				<p style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:18px 0 4px;">
+					<label style="float:none;inline-size:auto;margin:0;" for="oc_tile_focus"><?php esc_html_e( 'Picture position', 'oc-theme' ); ?></label>
+					<input type="range" id="oc_tile_focus" name="oc_tile_focus" min="0" max="100" step="1" value="<?php echo esc_attr( (string) $tile['focus'] ); ?>" style="inline-size:220px;" />
+					<output id="oc_tile_focus_out" style="min-inline-size:44px;"><?php echo esc_html( (string) $tile['focus'] ); ?>%</output>
+					<button type="button" class="button-link" id="oc_tile_focus_reset"><?php esc_html_e( 'Centre', 'oc-theme' ); ?></button>
+				</p>
+				<p class="description" style="margin:0 0 8px;"><?php esc_html_e( '0% keeps the top of the picture, 100% keeps the bottom. The previews show exactly what a listing cuts.', 'oc-theme' ); ?></p>
+
+				<?php if ( $focus_src ) : ?>
+					<div style="display:flex;gap:14px;flex-wrap:wrap;">
+						<?php
+						foreach ( array(
+							'ordinary' => array( __( 'Normal / 2×2', 'oc-theme' ), '150px', '150px' ),
+							'wide'     => array( __( 'Wide', 'oc-theme' ), '300px', '150px' ),
+						) as $key => $box ) :
+							?>
+							<div>
+								<div
+									class="oc-focus-prev"
+									style="inline-size:<?php echo esc_attr( $box[1] ); ?>;block-size:<?php echo esc_attr( $box[2] ); ?>;border-radius:6px;overflow:hidden;background:#f1f1f1;">
+									<img
+										src="<?php echo esc_url( $focus_src ); ?>"
+										alt=""
+										style="inline-size:100%;block-size:100%;object-fit:cover;object-position:50% <?php echo esc_attr( (string) $tile['focus'] ); ?>%;" />
+								</div>
+								<p class="description" style="margin:4px 0 0;text-align:center;"><?php echo esc_html( $box[0] ); ?></p>
+							</div>
+						<?php endforeach; ?>
+					</div>
+				<?php endif; ?>
 			</div>
 		</div>
 		<script>
+		( function () {
+			var focus = document.getElementById( 'oc_tile_focus' ),
+				out = document.getElementById( 'oc_tile_focus_out' ),
+				reset = document.getElementById( 'oc_tile_focus_reset' );
+
+			function paint() {
+				out.textContent = focus.value + '%';
+
+				document.querySelectorAll( '.oc-focus-prev img' ).forEach( function ( img ) {
+					img.style.objectPosition = '50% ' + focus.value + '%';
+				} );
+			}
+
+			if ( focus ) {
+				focus.addEventListener( 'input', paint );
+				reset.addEventListener( 'click', function () {
+					focus.value = 50;
+					paint();
+				} );
+			}
+		}() );
 		( function () {
 			var pick = document.getElementById( 'oc_tile_pick' ),
 				clear = document.getElementById( 'oc_tile_clear' ),
@@ -236,6 +307,9 @@ final class Catalog {
 		update_post_meta( $product_id, '_oc_tile_size', array_key_exists( $size, self::sizes() ) ? $size : '' );
 		self::save_mobile_size( $product_id );
 		update_post_meta( $product_id, '_oc_tile_image', absint( $_POST['oc_tile_image'] ?? 0 ) );
+
+		$focus = max( 0, min( 100, absint( $_POST['oc_tile_focus'] ?? 50 ) ) );
+		update_post_meta( $product_id, '_oc_tile_focus', 50 === $focus ? '' : $focus );
 		// phpcs:enable WordPress.Security.NonceVerification.Missing
 	}
 

@@ -898,6 +898,8 @@ li.product:focus-within .oc-card-atc,
 	inline-size: 100%;
 	aspect-ratio: var(--oc-card-ratio, 1 / 1);
 	object-fit: cover;
+	/* the product may name the half of the picture worth keeping */
+	object-position: 50% var(--oc-card-focus, 50%);
 	border-radius: var(--oc-radius, 8px);
 	display: block;
 }
@@ -8528,6 +8530,7 @@ body.oc-checkout { overflow-x: clip; }
 		inline-size: 100%;
 		block-size: 100%;
 		object-fit: cover;
+		object-position: 50% var(--oc-card-focus, 50%);
 	}
 
 	@media (max-width: 900px) {

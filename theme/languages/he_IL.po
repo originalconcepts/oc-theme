@@ -2746,3 +2746,15 @@ msgstr "מיקום 1 מציב את הבלוק לפני המוצר הראשון. 
 msgctxt "catalogue layout tab"
 msgid "Layout"
 msgstr "פריסה"
+
+msgid "Picture position"
+msgstr "מיקום התמונה"
+
+msgid "0% keeps the top of the picture, 100% keeps the bottom. The previews show exactly what a listing cuts."
+msgstr "0% שומר על החלק העליון של התמונה, 100% על החלק התחתון. התצוגות המקדימות מראות בדיוק מה נחתך ברשימה."
+
+msgid "Normal / 2×2"
+msgstr "רגיל / 2×2"
+
+msgid "Wide"
+msgstr "רחב"

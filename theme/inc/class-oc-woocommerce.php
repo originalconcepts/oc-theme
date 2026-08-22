@@ -780,7 +780,14 @@ final class WooCommerce {
 			$ids = array();
 		}
 
-		printf( '<div class="oc-card-media oc-card-media--%s">', esc_attr( '' !== $card_video && empty( $ids ) ? 'single' : $mode ) );
+		// A picture may say where its interesting half is, so the crop keeps it.
+		$focus = Catalog::focus( $product->get_id() );
+
+		printf(
+			'<div class="oc-card-media oc-card-media--%s"%s>',
+			esc_attr( '' !== $card_video && empty( $ids ) ? 'single' : $mode ),
+			50 === $focus ? '' : ' style="--oc-card-focus:' . esc_attr( (string) $focus ) . '%"'
+		);
 		echo '<div class="oc-card-media__strip" aria-label="' . esc_attr__( 'Product images', 'oc-theme' ) . '">';
 
 		if ( '' !== $card_video ) {
