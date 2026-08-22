@@ -327,21 +327,132 @@
 		}
 	}
 
-	/* ---------- header: search toggle ---------- */
+	/* ---------- header search ----------
+	 * Everything the panel needs is already in the page when it opens, so the
+	 * first frame costs nothing. From the first keystroke it asks the server,
+	 * but never for a question it has already asked and never for one the
+	 * shopper has moved past.
+	 */
 
 	var searchToggles = document.querySelectorAll( '.oc-search-toggle' );
-	var searchPanel = document.getElementById( 'oc-header-search' );
+	var searchPanel = document.querySelector( '[data-oc-search]' );
 
-	if ( searchToggles.length && searchPanel ) {
+	if ( searchPanel ) {
+		var sField = searchPanel.querySelector( '[data-oc-search-field]' );
+		var sOut = searchPanel.querySelector( '[data-oc-search-out]' );
+		var sIdle = searchPanel.querySelector( '[data-oc-search-idle]' );
+		var sClear = searchPanel.querySelector( '[data-oc-search-clear]' );
+		var sLive = searchPanel.querySelector( '[data-oc-search-live]' );
+		var sMin = parseInt( searchPanel.dataset.min, 10 ) || 2;
+		var sAction = searchPanel.dataset.action;
+		var sCache = new Map();
+		var sTimer = null;
+		var sIdleTimer = null;
+		var sAbort = null;
+		var sTerm = '';
+
+		var HIST_KEY = 'ocSearchHist';
+		var HIST_MAX = parseInt( ( Lf && Lf.searchHistMax ) || 8, 10 );
+
+		/* -- the visitor's own searches, kept in their browser and nowhere else -- */
+
+		function histRead() {
+			try {
+				var raw = JSON.parse( localStorage.getItem( HIST_KEY ) || '[]' );
+				return Array.isArray( raw ) ? raw.slice( 0, HIST_MAX ) : [];
+			} catch ( e ) {
+				return [];
+			}
+		}
+
+		function histWrite( list ) {
+			try {
+				localStorage.setItem( HIST_KEY, JSON.stringify( list.slice( 0, HIST_MAX ) ) );
+			} catch ( e ) {}
+		}
+
+		function histAdd( term ) {
+			term = ( term || '' ).trim();
+
+			if ( ! term ) {
+				return;
+			}
+
+			var list = histRead().filter( function ( x ) {
+				return x !== term;
+			} );
+
+			list.unshift( term );
+			histWrite( list );
+			histPaint();
+		}
+
+		function histPaint() {
+			var box = searchPanel.querySelector( '[data-oc-search-history]' );
+			var list = searchPanel.querySelector( '[data-oc-search-history-list]' );
+
+			if ( ! box || ! list ) {
+				return;
+			}
+
+			var items = histRead();
+
+			box.hidden = ! items.length;
+			list.innerHTML = '';
+
+			items.forEach( function ( term ) {
+				var li = document.createElement( 'li' );
+
+				var go = document.createElement( 'button' );
+				go.type = 'button';
+				go.className = 'oc-search__histterm';
+				go.textContent = term;
+				go.setAttribute( 'data-oc-search-term', term );
+
+				var del = document.createElement( 'button' );
+				del.type = 'button';
+				del.className = 'oc-search__histdel';
+				del.setAttribute( 'aria-label', ( Lf && Lf.searchForget ) || 'Remove' );
+				del.textContent = '×';
+				del.addEventListener( 'click', function ( e ) {
+					e.stopPropagation();
+					histWrite( histRead().filter( function ( x ) {
+						return x !== term;
+					} ) );
+					histPaint();
+				} );
+
+				li.appendChild( go );
+				li.appendChild( del );
+				list.appendChild( li );
+			} );
+		}
+
+		var histClear = searchPanel.querySelector( '[data-oc-search-history-clear]' );
+
+		if ( histClear ) {
+			histClear.addEventListener( 'click', function () {
+				histWrite( [] );
+				histPaint();
+			} );
+		}
+
+		/* -- opening and closing -- */
+
 		function setSearchOpen( open ) {
 			searchPanel.hidden = ! open;
+			document.documentElement.classList.toggle( 'oc-search-open', open );
+
 			searchToggles.forEach( function ( t ) {
 				t.setAttribute( 'aria-expanded', open ? 'true' : 'false' );
 			} );
+
 			if ( open ) {
-				var field = searchPanel.querySelector( 'input[type="search"], input[type="text"]' );
-				if ( field ) {
-					field.focus();
+				histPaint();
+
+				if ( sField ) {
+					sField.focus();
+					sField.select();
 				}
 			}
 		}
@@ -352,11 +463,274 @@
 			} );
 		} );
 
+		var sClose = searchPanel.querySelector( '[data-oc-search-close]' );
+
+		if ( sClose ) {
+			sClose.addEventListener( 'click', function () {
+				setSearchOpen( false );
+			} );
+		}
+
 		document.addEventListener( 'keydown', function ( event ) {
-			if ( event.key === 'Escape' && ! searchPanel.hidden ) {
+			if ( 'Escape' === event.key && ! searchPanel.hidden ) {
 				setSearchOpen( false );
 			}
 		} );
+
+		// A click outside the panel closes it, a click inside never does.
+		document.addEventListener( 'click', function ( event ) {
+			if ( searchPanel.hidden || searchPanel.contains( event.target ) ) {
+				return;
+			}
+
+			for ( var i = 0; i < searchToggles.length; i++ ) {
+				if ( searchToggles[ i ].contains( event.target ) ) {
+					return;
+				}
+			}
+
+			setSearchOpen( false );
+		} );
+
+		/* -- asking -- */
+
+		function paint( data, term ) {
+			if ( ! sOut ) {
+				return;
+			}
+
+			if ( ! data || ! data.html ) {
+				sOut.hidden = true;
+				sOut.innerHTML = '';
+
+				if ( sIdle ) {
+					sIdle.hidden = false;
+				}
+
+				return;
+			}
+
+			sOut.innerHTML = data.html;
+			sOut.hidden = false;
+
+			if ( sIdle ) {
+				sIdle.hidden = true;
+			}
+
+			if ( sField ) {
+				sField.setAttribute( 'aria-expanded', 'true' );
+			}
+
+			if ( sLive ) {
+				sLive.textContent = ( ( Lf && Lf.searchFound ) || '%s results' ).replace( '%s', data.total || 0 );
+			}
+
+			bindResults();
+		}
+
+		function ask( term, log ) {
+			var key = term + ( log ? '|log' : '' );
+
+			if ( ! log && sCache.has( term ) ) {
+				paint( sCache.get( term ), term );
+				return Promise.resolve();
+			}
+
+			if ( sAbort ) {
+				sAbort.abort();
+			}
+
+			sAbort = new AbortController();
+
+			return fetch( sAction + '?action=oc_search&q=' + encodeURIComponent( term ) + ( log ? '&log=1' : '' ), {
+				credentials: 'same-origin',
+				signal: sAbort.signal
+			} )
+				.then( function ( r ) {
+					return r.json();
+				} )
+				.then( function ( j ) {
+					if ( ! j || ! j.success ) {
+						return;
+					}
+
+					// The shopper may have typed on while this was in flight.
+					if ( term !== sTerm ) {
+						return;
+					}
+
+					sCache.set( term, j.data );
+					paint( j.data, term );
+				} )
+				.catch( function () {} );
+		}
+
+		function run() {
+			var term = ( sField.value || '' ).trim();
+
+			sTerm = term;
+
+			if ( sClear ) {
+				sClear.hidden = ! term;
+			}
+
+			if ( term.length < sMin ) {
+				paint( null, term );
+
+				if ( sField ) {
+					sField.setAttribute( 'aria-expanded', 'false' );
+				}
+
+				return;
+			}
+
+			ask( term, false );
+
+			// Once the typing stops, the word is worth recording.
+			clearTimeout( sIdleTimer );
+			sIdleTimer = setTimeout( function () {
+				if ( sTerm === term && term.length >= sMin ) {
+					fetch( sAction + '?action=oc_search&q=' + encodeURIComponent( term ) + '&log=1&quiet=1', {
+						credentials: 'same-origin'
+					} ).catch( function () {} );
+					histAdd( term );
+				}
+			}, 1100 );
+		}
+
+		if ( sField ) {
+			sField.addEventListener( 'input', function () {
+				clearTimeout( sTimer );
+				sTimer = setTimeout( run, 120 );
+			} );
+
+			sField.addEventListener( 'focus', function () {
+				if ( ( sField.value || '' ).trim().length >= sMin ) {
+					run();
+				}
+			} );
+		}
+
+		if ( sClear ) {
+			sClear.addEventListener( 'click', function () {
+				sField.value = '';
+				sField.focus();
+				run();
+			} );
+		}
+
+		/* -- a suggestion, a pill or a past search fills the box -- */
+
+		searchPanel.addEventListener( 'click', function ( event ) {
+			var pill = event.target.closest( '[data-oc-search-term]' );
+
+			if ( ! pill ) {
+				return;
+			}
+
+			sField.value = pill.getAttribute( 'data-oc-search-term' ) || '';
+			sField.focus();
+			run();
+		} );
+
+		/* -- moving through results from the keyboard -- */
+
+		function items() {
+			return Array.prototype.slice.call(
+				searchPanel.querySelectorAll( '[data-oc-search-hit], .oc-search__pill, .oc-search__histterm' )
+			);
+		}
+
+		searchPanel.addEventListener( 'keydown', function ( event ) {
+			if ( 'ArrowDown' !== event.key && 'ArrowUp' !== event.key ) {
+				return;
+			}
+
+			var list = items();
+
+			if ( ! list.length ) {
+				return;
+			}
+
+			event.preventDefault();
+
+			var at = list.indexOf( document.activeElement );
+			var next = 'ArrowDown' === event.key ? at + 1 : at - 1;
+
+			if ( next < 0 ) {
+				sField.focus();
+				return;
+			}
+
+			( list[ next ] || list[ 0 ] ).focus();
+		} );
+
+		/* -- what a result click teaches us -- */
+
+		function bindResults() {
+			sOut.querySelectorAll( '[data-oc-search-hit]' ).forEach( function ( link ) {
+				link.addEventListener( 'click', function () {
+					histAdd( sTerm );
+
+					try {
+						navigator.sendBeacon(
+							sAction + '?action=oc_search&click=1&q=' + encodeURIComponent( sTerm )
+						);
+					} catch ( e ) {}
+				} );
+			} );
+
+			sOut.querySelectorAll( '[data-oc-search-add]' ).forEach( function ( button ) {
+				button.addEventListener( 'click', function () {
+					var id = button.getAttribute( 'data-oc-search-add' );
+
+					if ( ! id || button.disabled ) {
+						return;
+					}
+
+					button.disabled = true;
+					button.classList.add( 'is-busy' );
+
+					var body = new URLSearchParams( {
+						action: 'oc_add_to_cart',
+						product_id: id,
+						quantity: '1'
+					} );
+
+					fetch( sAction, {
+						method: 'POST',
+						credentials: 'same-origin',
+						body: body
+					} )
+						.then( function ( r ) {
+							return r.json();
+						} )
+						.then( function ( j ) {
+							button.classList.remove( 'is-busy' );
+
+							if ( j && j.success ) {
+								button.classList.add( 'is-done' );
+								button.textContent = ( Lf && Lf.searchAdded ) || 'Added';
+								document.body.dispatchEvent( new CustomEvent( 'oc:cart-changed' ) );
+
+								if ( j.data && 'undefined' !== typeof j.data.count ) {
+									document.querySelectorAll( '.oc-cart-count' ).forEach( function ( el ) {
+										el.textContent = j.data.count;
+									} );
+								}
+							} else {
+								button.disabled = false;
+							}
+						} )
+						.catch( function () {
+							button.classList.remove( 'is-busy' );
+							button.disabled = false;
+						} );
+				} );
+			} );
+		}
+
+		histPaint();
 	}
 
 	/* ---------- card gallery: hover arrows drive the scroll-snap strip ---------- */

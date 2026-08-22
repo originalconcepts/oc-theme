@@ -208,6 +208,11 @@ final class Assets {
 				'accountAlertsUrl' => is_user_logged_in() ? wc_get_endpoint_url( 'stock-alerts', '', wc_get_page_permalink( 'myaccount' ) ) : '',
 				'isLoggedIn'       => is_user_logged_in() ? 1 : 0,
 				'freshMode' => in_array( $fresh_mode, array( 'daily', 'smart' ), true ) ? $fresh_mode : 'off',
+				'searchHistMax' => (int) get_theme_mod( 'oc_search_history_max', 8 ),
+				/* translators: %s: number of results. */
+				'searchFound'   => __( '%s results', 'oc-theme' ),
+				'searchAdded'   => __( 'Added', 'oc-theme' ),
+				'searchForget'  => __( 'Remove from your searches', 'oc-theme' ),
 				'fltInstock' => __( 'In stock only', 'oc-theme' ),
 				'fltNone'    => __( 'No products match this combination — try removing one of the filters.', 'oc-theme' ),
 				'fltClear'   => __( 'Clear all', 'oc-theme' ),

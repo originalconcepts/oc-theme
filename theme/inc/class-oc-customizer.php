@@ -146,6 +146,87 @@ final class Customizer {
 		$this->tabs_section( $wp_customize, $shop_panel );
 		$this->thankyou_section( $wp_customize, $shop_panel );
 		$this->cart_section( $wp_customize, $shop_panel );
+		$this->search_section( $wp_customize, $shop_panel );
+	}
+
+	/**
+	 * Search: how the panel looks and what it offers.
+	 *
+	 * @param \WP_Customize_Manager $c     Customizer manager.
+	 * @param string                $panel Panel id.
+	 */
+	private function search_section( \WP_Customize_Manager $c, string $panel ): void {
+		$c->add_section(
+			'oc_search_look',
+			array(
+				'title'       => __( 'Search', 'oc-theme' ),
+				'description' => __( 'How the search panel presents itself. What it searches, and the words it answers to, live under Theme settings.', 'oc-theme' ),
+				'priority'    => 55,
+				'panel'       => $panel,
+			)
+		);
+
+		$this->preset(
+			$c,
+			'oc_search_panel',
+			'oc_search_look',
+			__( 'When the search opens', 'oc-theme' ),
+			array(
+				'full' => array(
+					'label' => __( 'A panel with suggestions', 'oc-theme' ),
+					'hint'  => __( 'Popular searches and products, before a word is typed', 'oc-theme' ),
+					'svg'   => '<svg class="oc-wf" width="120" height="76" viewBox="0 0 60 38" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="4" y="3" width="52" height="7" rx="3.5"/><rect x="40" y="14" width="16" height="3" rx="1.5" opacity=".35"/><rect x="40" y="20" width="12" height="3" rx="1.5" opacity=".35"/><rect x="40" y="26" width="14" height="3" rx="1.5" opacity=".35"/><rect x="4" y="14" width="15" height="15" rx="2" opacity=".55"/><rect x="21" y="14" width="15" height="15" rx="2" opacity=".55"/></svg>',
+				),
+				'min'  => array(
+					'label' => __( 'Only the search box', 'oc-theme' ),
+					'hint'  => __( 'Results appear as soon as typing starts', 'oc-theme' ),
+					'svg'   => '<svg class="oc-wf" width="120" height="76" viewBox="0 0 60 38" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="4" y="3" width="52" height="7" rx="3.5"/></svg>',
+				),
+			),
+			'full',
+			'150px'
+		);
+
+		$this->choice(
+			$c,
+			'oc_search_layout',
+			'oc_search_look',
+			__( 'A result looks like', 'oc-theme' ),
+			array(
+				'list' => __( 'A row — picture beside the words', 'oc-theme' ),
+				'card' => __( 'A card — picture above the words', 'oc-theme' ),
+			),
+			'list',
+			array( 'setting' => 'oc_search_panel', 'values' => array( 'full' ) )
+		);
+
+		$this->number( $c, 'oc_search_limit', 'oc_search_look', __( 'Results in the panel', 'oc-theme' ), 6, 2, 16 );
+		$this->number( $c, 'oc_search_min', 'oc_search_look', __( 'Start searching after this many letters', 'oc-theme' ), 2, 1, 4 );
+
+		$this->heading( $c, 'oc_h_search_more', 'oc_search_look', __( 'Beside the products', 'oc-theme' ) );
+
+		$this->toggle( $c, 'oc_search_show_cat', 'oc_search_look', __( 'Matching categories', 'oc-theme' ), true );
+		$this->toggle( $c, 'oc_search_show_brand', 'oc_search_look', __( 'Matching brands', 'oc-theme' ), true );
+		$this->choice(
+			$c,
+			'oc_search_brand_style',
+			'oc_search_look',
+			__( 'Brands appear as', 'oc-theme' ),
+			array(
+				'text' => __( 'Their name', 'oc-theme' ),
+				'logo' => __( 'Their logo', 'oc-theme' ),
+			),
+			'text',
+			array( 'setting' => 'oc_search_show_brand', 'values' => array( '1', 'true' ) )
+		);
+		$this->toggle( $c, 'oc_search_show_tag', 'oc_search_look', __( 'Matching tags', 'oc-theme' ), false );
+		$this->toggle( $c, 'oc_search_show_post', 'oc_search_look', __( 'Articles and pages', 'oc-theme' ), true );
+
+		$this->heading( $c, 'oc_h_search_shop', 'oc_search_look', __( 'Behaviour', 'oc-theme' ) );
+
+		$this->toggle( $c, 'oc_search_quickadd', 'oc_search_look', __( 'An add button on each result', 'oc-theme' ), true );
+		$this->toggle( $c, 'oc_search_history', 'oc_search_look', __( 'Remember this visitor\'s own searches', 'oc-theme' ), true );
+		$this->number( $c, 'oc_search_history_max', 'oc_search_look', __( 'How many of them to keep', 'oc-theme' ), 8, 3, 12, array( 'setting' => 'oc_search_history', 'values' => array( '1', 'true' ) ) );
 	}
 
 	/**

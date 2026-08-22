@@ -143,11 +143,11 @@ $oc_topbar_on   = (bool) get_theme_mod( 'oc_topbar', false ) && ( ! empty( $oc_t
 	</div>
 </header>
 
-<?php if ( get_theme_mod( 'oc_header_search', true ) ) : ?>
-	<div id="oc-header-search" class="oc-header-search" hidden>
-		<?php get_search_form(); ?>
-	</div>
-<?php endif; ?>
+<?php
+if ( get_theme_mod( 'oc_header_search', true ) ) {
+	echo OC\Theme\Search_Panel::panel_html(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
+}
+?>
 
 <?php if ( has_nav_menu( 'primary' ) ) : ?>
 	<div id="oc-mobile-menu" class="oc-mobile-menu" hidden>

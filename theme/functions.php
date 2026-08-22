@@ -50,6 +50,10 @@ require_once OC_THEME_DIR . '/inc/class-oc-announce.php';
 require_once OC_THEME_DIR . '/inc/class-oc-contact.php';
 require_once OC_THEME_DIR . '/inc/class-oc-thankyou.php';
 require_once OC_THEME_DIR . '/inc/class-oc-performance.php';
+require_once OC_THEME_DIR . '/inc/class-oc-search-index.php';
+require_once OC_THEME_DIR . '/inc/class-oc-search.php';
+require_once OC_THEME_DIR . '/inc/class-oc-search-panel.php';
+require_once OC_THEME_DIR . '/inc/class-oc-search-admin.php';
 
 /**
  * Cache-busting version for a theme-relative asset.
@@ -338,6 +342,8 @@ add_action( 'admin_notices', 'oc_dependency_notice' );
 ( new OC\Theme\Contact() )->register();
 ( new OC\Theme\Thankyou() )->register();
 ( new OC\Theme\Performance() )->register();
+( new OC\Theme\Search() )->register();
+( new OC\Theme\Search_Admin() )->register();
 ( new OC\Theme\Updater( get_template(), OC_THEME_VERSION, OC_THEME_REPO ) )->register();
 
 if ( ! defined( 'OC_LOGIN_DISABLE' ) || ! OC_LOGIN_DISABLE ) {
