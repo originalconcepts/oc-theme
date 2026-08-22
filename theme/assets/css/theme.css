@@ -643,6 +643,9 @@ a { color: inherit; }
 .oc-card-excerpt {
 	margin-block: 2px 0;
 	font-size: .85rem;
+	/* tighter than body copy: two short lines under a title read better close
+	 * together than at the page's reading rhythm */
+	line-height: 1.5;
 	color: var(--oc-ink-2);
 }
 
@@ -8329,40 +8332,6 @@ body.oc-checkout { overflow-x: clip; }
 
 	.oc-block__h { font-size: 1rem; }
 }
-
-/* =====================================================================
-   Catalogue cards share their rows (subgrid)
-   =====================================================================
-   Every card sizes its own parts, so a two-line title next to a one-line
-   title pushed one price lower than the other, and a 2x2 tile could never
-   land on the line its neighbours used. With subgrid the row itself owns
-   the tracks — picture, swatches, title, rating, description, price — and
-   each track is as tall as the tallest card in THAT row. Nothing is cut,
-   nothing is reserved that no one needs, and the big tile simply drops its
-   text onto the second row's tracks.
-
-   A browser without subgrid keeps exactly the layout it renders today. */
-
-.woocommerce ul.products li.product .woocommerce-loop-product__title,
-.woocommerce ul.products li.product .oc-card-excerpt {
-	display: -webkit-box;
-	-webkit-box-orient: vertical;
-	overflow: hidden;
-	text-overflow: ellipsis;
-}
-
-/* A cap, so one outlier title cannot stretch a whole row. Past it the
- * browser adds the ellipsis itself. */
-.woocommerce ul.products li.product .woocommerce-loop-product__title {
-	-webkit-line-clamp: var(--oc-card-title-lines, 2);
-	line-clamp: var(--oc-card-title-lines, 2);
-}
-
-.woocommerce ul.products li.product .oc-card-excerpt {
-	-webkit-line-clamp: var(--oc-card-excerpt-lines, 2);
-	line-clamp: var(--oc-card-excerpt-lines, 2);
-}
-
 
 /* =====================================================================
    Catalogue cards share their rows (subgrid)
