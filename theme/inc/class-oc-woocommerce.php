@@ -102,6 +102,13 @@ final class WooCommerce {
 		);
 		add_action( 'woocommerce_after_shop_loop_item_title', array( $this, 'card_excerpt' ), 8 );
 
+		// Title, rating and description travel together in one box. The row
+		// gives every card the same height for that box, and the box packs its
+		// own contents tight — so a card without a rating does not carry a hole
+		// where someone else's stars are.
+		add_action( 'woocommerce_shop_loop_item_title', array( $this, 'card_text_open' ), 1 );
+		add_action( 'woocommerce_after_shop_loop_item_title', array( $this, 'card_text_close' ), 9 );
+
 		// One markup path for every card image mode, including 'single'.
 		remove_action( 'woocommerce_before_shop_loop_item_title', 'woocommerce_template_loop_product_thumbnail', 10 );
 		add_action( 'woocommerce_before_shop_loop_item_title', array( $this, 'card_media' ), 10 );
@@ -673,6 +680,20 @@ final class WooCommerce {
 		$clauses['orderby'] = '' !== (string) $clauses['orderby'] ? $order . ', ' . $clauses['orderby'] : $order;
 
 		return $clauses;
+	}
+
+	/**
+	 * Opens the card's text box.
+	 */
+	public function card_text_open(): void {
+		echo '<div class="oc-card-text">';
+	}
+
+	/**
+	 * Closes the card's text box.
+	 */
+	public function card_text_close(): void {
+		echo '</div>';
 	}
 
 	/**

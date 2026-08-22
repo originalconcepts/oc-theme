@@ -8390,52 +8390,77 @@ body.oc-checkout { overflow-x: clip; }
 		display: grid;
 		grid-template-rows: subgrid;
 		grid-template-columns: minmax(0, 1fr);
-		grid-row: span 7;
+		grid-row: span 5;
 		align-content: start;
 	}
 
-	/* Everything stacks in the one column; the row decides the height. */
+	/* Everything stacks in the one column; the row decides the heights. */
 	.woocommerce ul.products li.product > * { grid-column: 1; }
 
-	/* Fixed slots, so a card without swatches or without a rating leaves that
-	 * track to its neighbours rather than sliding everything up a line. */
+	/* Four slots and a spacer. A row whose cards carry no swatches collapses
+	 * that track to nothing, so no card reserves room it does not use. */
 	.woocommerce ul.products li.product > .oc-card-media { grid-row: 1; }
 	.woocommerce ul.products li.product > .oc-colors { grid-row: 2; }
-	.woocommerce ul.products li.product > .woocommerce-loop-product__title { grid-row: 3; }
-	.woocommerce ul.products li.product > .ocr-rating-row { grid-row: 4; }
-	.woocommerce ul.products li.product > .oc-card-excerpt { grid-row: 5; }
-	.woocommerce ul.products li.product > .price { grid-row: 6; }
+	.woocommerce ul.products li.product > .oc-card-text { grid-row: 3; }
+	.woocommerce ul.products li.product > .price { grid-row: 4; }
+
+	/* The text box packs its own contents from the top, so any slack in the
+	 * row shows up once, above the price — never between a title and a
+	 * description, and never where a neighbour's stars happen to sit. */
+	.woocommerce ul.products li.product > .oc-card-text {
+		display: flex;
+		flex-direction: column;
+		align-items: inherit;
+		min-block-size: 0;
+	}
 
 	/* The gap between rows rides on the card, because a row gap on the grid
 	 * would open between every track inside one. */
 	.woocommerce ul.products li.product::after {
 		content: '';
 		grid-column: 1;
-		grid-row: 7;
-		block-size: var(--oc-gap-eff, 20px);
+		grid-row: 5;
+		block-size: calc(var(--oc-gap-eff, 20px) + 16px);
 	}
 
-	.woocommerce ul.products li.oc-block { grid-row: span 7; }
-	.woocommerce ul.products li.oc-block--big { grid-row: span 14; }
+	/* A block sits on the same rows and leaves the spacer clear, so the gap
+	 * below a banner matches the gap below a product. */
+	.woocommerce ul.products li.oc-block {
+		display: grid;
+		grid-template-rows: subgrid;
+		grid-template-columns: minmax(0, 1fr);
+		grid-row: span 5;
+	}
+
+	.woocommerce ul.products li.oc-block > * { grid-column: 1; grid-row: 1 / 5; }
+
+	.woocommerce ul.products li.oc-block::after {
+		content: '';
+		grid-column: 1;
+		grid-row: 5;
+		block-size: calc(var(--oc-gap-eff, 20px) + 16px);
+	}
+
+	.woocommerce ul.products li.oc-block--big { grid-row: span 10; }
+	.woocommerce ul.products li.oc-block--big > * { grid-row: 1 / 10; }
+	.woocommerce ul.products li.oc-block--big::after { grid-row: 10; }
 
 	/* Two rows tall: the picture takes the first row entire plus the second
 	 * row's picture track, which drops the text onto the second row's text
 	 * tracks. */
 	.woocommerce ul.products li.product.oc-tile--big {
-		grid-row: span 14;
+		grid-row: span 10;
 		/* outside this layer the tile is a flex column; here the row owns it */
 		display: grid;
 		grid-template-columns: minmax(0, 1fr);
 		align-content: start;
 	}
 
-	.woocommerce ul.products li.product.oc-tile--big > .oc-card-media { grid-row: 1 / 9; }
-	.woocommerce ul.products li.product.oc-tile--big > .oc-colors { grid-row: 9; }
-	.woocommerce ul.products li.product.oc-tile--big > .woocommerce-loop-product__title { grid-row: 10; }
-	.woocommerce ul.products li.product.oc-tile--big > .ocr-rating-row { grid-row: 11; }
-	.woocommerce ul.products li.product.oc-tile--big > .oc-card-excerpt { grid-row: 12; }
-	.woocommerce ul.products li.product.oc-tile--big > .price { grid-row: 13; }
-	.woocommerce ul.products li.product.oc-tile--big::after { grid-row: 14; }
+	.woocommerce ul.products li.product.oc-tile--big > .oc-card-media { grid-row: 1 / 7; }
+	.woocommerce ul.products li.product.oc-tile--big > .oc-colors { grid-row: 7; }
+	.woocommerce ul.products li.product.oc-tile--big > .oc-card-text { grid-row: 8; }
+	.woocommerce ul.products li.product.oc-tile--big > .price { grid-row: 9; }
+	.woocommerce ul.products li.product.oc-tile--big::after { grid-row: 10; }
 
 	/* The ordinary card states its ratio outright and does not stretch: the
 	 * height comes from the column width, and that is what pins the picture
@@ -8491,7 +8516,7 @@ body.oc-checkout { overflow-x: clip; }
 		.woocommerce ul.products li.product.oc-tile--big:not(.oc-tile--m-plain),
 		.woocommerce ul.products li.product.oc-tile--wide.oc-tile--m-plain,
 		.woocommerce ul.products li.product.oc-tile--big.oc-tile--m-plain {
-			grid-row: span 7;
+			grid-row: span 5;
 			display: grid;
 			grid-template-columns: minmax(0, 1fr);
 			align-content: start;
@@ -8499,11 +8524,9 @@ body.oc-checkout { overflow-x: clip; }
 
 		.woocommerce ul.products li.product.oc-tile--big > .oc-card-media { grid-row: 1; }
 		.woocommerce ul.products li.product.oc-tile--big > .oc-colors { grid-row: 2; }
-		.woocommerce ul.products li.product.oc-tile--big > .woocommerce-loop-product__title { grid-row: 3; }
-		.woocommerce ul.products li.product.oc-tile--big > .ocr-rating-row { grid-row: 4; }
-		.woocommerce ul.products li.product.oc-tile--big > .oc-card-excerpt { grid-row: 5; }
-		.woocommerce ul.products li.product.oc-tile--big > .price { grid-row: 6; }
-		.woocommerce ul.products li.product.oc-tile--big::after { grid-row: 7; }
+		.woocommerce ul.products li.product.oc-tile--big > .oc-card-text { grid-row: 3; }
+		.woocommerce ul.products li.product.oc-tile--big > .price { grid-row: 4; }
+		.woocommerce ul.products li.product.oc-tile--big::after { grid-row: 5; }
 
 		.woocommerce ul.products li.product.oc-tile--wide:not(.oc-tile--m-plain) > .oc-card-media,
 		.woocommerce ul.products li.product.oc-tile--big:not(.oc-tile--m-plain) > .oc-card-media {
