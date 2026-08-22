@@ -824,7 +824,7 @@ final class Thankyou {
 				?>
 			</p>
 
-			<h2><?php esc_html_e( 'Blocks', 'oc-theme' ); ?></h2>
+			<h2><?php esc_html_e( 'Page sections', 'oc-theme' ); ?></h2>
 			<table class="form-table" role="presentation">
 				<tr>
 					<th scope="row"><?php esc_html_e( 'WhatsApp group', 'oc-theme' ); ?></th>

@@ -2299,9 +2299,6 @@ msgstr "להגדרה ב״פרטי החנות״"
 msgid "add it in Store details"
 msgstr "יש להוסיף ב״פרטי החנות״"
 
-msgid "Blocks"
-msgstr "מקטעים"
-
 msgid "Invite to join the group"
 msgstr "הזמנה להצטרף לקבוצה"
 
@@ -2547,3 +2544,159 @@ msgstr "מותגים ומדרגות מחיר"
 
 msgid "Price steps"
 msgstr "מדרגות מחיר"
+
+msgid "Normal — one cell"
+msgstr "רגיל — תא אחד"
+
+msgid "Wide — 2 columns"
+msgstr "רחב — 2 עמודות"
+
+msgid "Large — 2×2"
+msgstr "גדול — 2×2"
+
+msgid "Catalogue display"
+msgstr "תצוגה בקטלוג"
+
+msgid "Tile size"
+msgstr "גודל האריח"
+
+msgid "Normal size on a phone"
+msgstr "גודל רגיל במובייל"
+
+msgid "An enlarged tile fills the width on a phone unless you tick the box."
+msgstr "אריח מוגדל תופס את כל הרוחב במובייל, אלא אם מסמנים את התיבה."
+
+msgid "Catalogue image"
+msgstr "תמונה לקטלוג"
+
+msgid "Choose image"
+msgstr "בחירת תמונה"
+
+msgid "Shown in listings instead of the product image. Empty = the product image."
+msgstr "מוצגת ברשימות במקום תמונת המוצר. ריק = תמונת המוצר."
+
+msgid "Display"
+msgstr "תצוגה"
+
+msgid "— No change —"
+msgstr "— ללא שינוי —"
+
+msgid "Full row"
+msgstr "שורה מלאה"
+
+msgid "Desktop and mobile"
+msgstr "דסקטופ ומובייל"
+
+msgid "Desktop only"
+msgstr "דסקטופ בלבד"
+
+msgid "Mobile only"
+msgstr "מובייל בלבד"
+
+msgid "Catalogue blocks"
+msgstr "בלוקים לקטלוג"
+
+msgid "Block"
+msgstr "בלוק"
+
+msgid "Add a block"
+msgstr "הוספת בלוק"
+
+msgid "Edit block"
+msgstr "עריכת בלוק"
+
+msgid "Search blocks"
+msgstr "חיפוש בלוקים"
+
+msgid "No blocks yet."
+msgstr "אין בלוקים עדיין."
+
+msgid "Image — desktop"
+msgstr "תמונה — דסקטופ"
+
+msgid "Image — mobile"
+msgstr "תמונה — מובייל"
+
+msgid "Empty = the desktop image."
+msgstr "ריק = תמונת הדסקטופ."
+
+msgid "Open in a new tab"
+msgstr "פתיחה בטאב חדש"
+
+msgid "Text alternative"
+msgstr "טקסט חלופי"
+
+msgid "What the image says, for screen readers."
+msgstr "מה שהתמונה אומרת, עבור קוראי מסך."
+
+msgid "Heading over the image"
+msgstr "כותרת על התמונה"
+
+msgid "Button text"
+msgstr "טקסט הכפתור"
+
+msgid "Text colour"
+msgstr "צבע הטקסט"
+
+msgid "Light — for a dark image"
+msgstr "בהיר — לתמונה כהה"
+
+msgid "Dark — for a light image"
+msgstr "כהה — לתמונה בהירה"
+
+msgid "Shown from"
+msgstr "מוצג מתאריך"
+
+msgid "Shown until"
+msgstr "מוצג עד תאריך"
+
+msgid "Both empty = always shown."
+msgstr "שניהם ריקים = מוצג תמיד."
+
+msgid "Position"
+msgstr "מיקום"
+
+msgid "Size"
+msgstr "גודל"
+
+msgid "Shows on"
+msgstr "מוצג ב"
+
+msgid "— None —"
+msgstr "— ללא —"
+
+msgid "Position 1 places the block before the first product. Set the block to \"None\" to remove a row. A new empty row appears after every save."
+msgstr "מיקום 1 מציב את הבלוק לפני המוצר הראשון. בחירת ״ללא״ מסירה שורה. שורה ריקה חדשה נוספת אחרי כל שמירה."
+
+msgid "Leave the table empty to use the shop-wide layout set in %s."
+msgstr "טבלה ריקה = הפריסה הכללית של החנות, שנקבעת ב%s."
+
+msgid "Catalogue layout"
+msgstr "פריסת קטלוג"
+
+msgid "A listing where every card is the same size reads as a spreadsheet. These rules apply to the shop and to every category that has not set its own."
+msgstr "רשימה שבה כל הכרטיסים באותו גודל נקראת כמו גיליון אקסל. הכללים האלה חלים על החנות ועל כל קטגוריה שלא הגדירה לעצמה."
+
+msgid "Rhythm"
+msgstr "קצב"
+
+msgid "Enlarges products automatically, so a catalogue of any size looks varied without placing anything by hand. A size chosen on the product itself always wins. 0 = off."
+msgstr "מגדיל מוצרים אוטומטית, כך שקטלוג בכל גודל נראה מגוון בלי הצבה ידנית. גודל שנבחר על המוצר עצמו תמיד גובר. 0 = כבוי."
+
+msgid "Wide tile"
+msgstr "אריח רחב"
+
+msgid "Large tile"
+msgstr "אריח גדול"
+
+msgid "Every"
+msgstr "כל"
+
+msgid "products"
+msgstr "מוצרים"
+
+msgid "Blocks"
+msgstr "בלוקים"
+
+msgid "Page sections"
+msgstr "מקטעים"

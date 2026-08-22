@@ -8107,3 +8107,110 @@ body.oc-checkout { overflow-x: clip; }
 		block-size: auto;
 	}
 }
+
+/* ---------- catalogue blocks (banner, and later slider / carousel) ---------- */
+
+.woocommerce ul.products li.oc-block {
+	margin: 0;
+	list-style: none;
+	position: relative;
+	border-radius: var(--oc-radius, 8px);
+	overflow: hidden;
+}
+
+.woocommerce ul.products li.oc-block--wide { grid-column: span 2; }
+
+.woocommerce ul.products li.oc-block--big {
+	grid-column: span 2;
+	grid-row: span 2;
+}
+
+.woocommerce ul.products li.oc-block--row { grid-column: 1 / -1; }
+
+.oc-block__link { display: block; block-size: 100%; color: inherit; text-decoration: none; }
+.oc-block__media { display: block; block-size: 100%; }
+
+.oc-block__img {
+	inline-size: 100%;
+	block-size: 100%;
+	object-fit: cover;
+	display: block;
+	border-radius: var(--oc-radius, 8px);
+}
+
+/* A one-cell block matches the cards beside it; a wider one keeps a normal
+ * row height, exactly like a wide product tile. */
+.woocommerce ul.products li.oc-block:not(.oc-block--row) .oc-block__img {
+	aspect-ratio: var(--oc-card-ratio, 1 / 1);
+}
+
+.woocommerce ul.products li.oc-block--wide .oc-block__img {
+	aspect-ratio: auto;
+	block-size: calc(var(--oc-col-w) / var(--oc-card-ratio-n, 1));
+}
+
+.woocommerce ul.products li.oc-block--row .oc-block__img {
+	aspect-ratio: auto;
+	block-size: calc(var(--oc-col-w) / var(--oc-card-ratio-n, 1));
+}
+
+.oc-block__img--m { display: none; }
+
+.oc-block__body {
+	position: absolute;
+	inset-block-end: 0;
+	inset-inline: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 10px;
+	padding: 18px 20px 20px;
+}
+
+.oc-block--light .oc-block__body {
+	color: #fff;
+	background: linear-gradient(to top, rgba(0, 0, 0, .55), rgba(0, 0, 0, 0));
+}
+
+.oc-block--dark .oc-block__body { color: var(--oc-ink, #111); }
+
+.oc-block__h { font-size: 1.15rem; font-weight: 600; line-height: 1.3; }
+
+.oc-block__cta {
+	display: inline-flex;
+	align-items: center;
+	border-radius: var(--oc-cta-r, 8px);
+	padding: 8px 18px;
+	font-size: .86rem;
+	font-weight: 600;
+	background: var(--oc-cta, var(--oc-ink, #111));
+	color: var(--oc-cta-tx, #fff);
+}
+
+.oc-block--dark .oc-block__cta { background: var(--oc-ink, #111); color: #fff; }
+
+.oc-block--mob { display: none; }
+
+@media (max-width: 900px) {
+	.woocommerce ul.products li.oc-block--wide,
+	.woocommerce ul.products li.oc-block--big,
+	.woocommerce ul.products li.oc-block--row {
+		grid-column: 1 / -1;
+		grid-row: auto;
+	}
+
+	.woocommerce ul.products li.oc-block--big .oc-block__img,
+	.woocommerce ul.products li.oc-block--wide .oc-block__img,
+	.woocommerce ul.products li.oc-block--row .oc-block__img {
+		block-size: calc(var(--oc-col-w) / var(--oc-card-ratio-n, 1));
+	}
+
+	/* The mobile image takes over only when one was supplied. */
+	.oc-block__img--m { display: block; }
+	.oc-block__media:has(.oc-block__img--m) .oc-block__img--d { display: none; }
+
+	.oc-block--desk { display: none; }
+	.oc-block--mob { display: block; }
+
+	.oc-block__h { font-size: 1rem; }
+}

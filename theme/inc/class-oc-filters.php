@@ -1651,14 +1651,29 @@ final class Filters {
 
 		global $post;
 
+		// Catalogue blocks count positions across pages; hand this page's
+		// number over so an ajax page 2 lands them where a full load would.
+		$blocks = Blocks::instance();
+
+		if ( $blocks ) {
+			$blocks->page_start( $paged );
+		}
+
 		while ( $query->have_posts() ) {
 			$query->the_post();
 			$GLOBALS['product'] = wc_get_product( $post->ID ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- template contract.
+			// The same per-product hook the normal loop fires, so catalogue
+			// blocks land in the ajax render too (paging is not filtering).
+			do_action( 'woocommerce_shop_loop' );
 			wc_get_template_part( 'content', 'product' );
 		}
 		wp_reset_postdata();
 
 		$cards = ob_get_clean();
+
+		if ( $blocks ) {
+			$cards .= $blocks->tail_html();
+		}
 
 		wp_send_json_success(
 			array(
