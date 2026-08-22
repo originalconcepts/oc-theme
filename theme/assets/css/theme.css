@@ -8479,4 +8479,40 @@ body.oc-checkout { overflow-x: clip; }
 		block-size: 100%;
 		object-fit: cover;
 	}
+
+	@media (max-width: 900px) {
+		/* On a phone an enlarged tile is an ordinary card that happens to take
+		 * the whole row, so it goes back to one row's worth of tracks and its
+		 * picture states the wide ratio outright. */
+		.woocommerce ul.products li.product.oc-tile--wide,
+		.woocommerce ul.products li.product.oc-tile--big {
+			grid-row: span 7;
+		}
+
+		.woocommerce ul.products li.product.oc-tile--big > .oc-card-media { grid-row: 1; }
+		.woocommerce ul.products li.product.oc-tile--big > .oc-colors { grid-row: 2; }
+		.woocommerce ul.products li.product.oc-tile--big > .woocommerce-loop-product__title { grid-row: 3; }
+		.woocommerce ul.products li.product.oc-tile--big > .ocr-rating-row { grid-row: 4; }
+		.woocommerce ul.products li.product.oc-tile--big > .oc-card-excerpt { grid-row: 5; }
+		.woocommerce ul.products li.product.oc-tile--big > .price { grid-row: 6; }
+		.woocommerce ul.products li.product.oc-tile--big::after { grid-row: 7; }
+
+		.woocommerce ul.products li.product.oc-tile--wide:not(.oc-tile--m-plain) > .oc-card-media,
+		.woocommerce ul.products li.product.oc-tile--big:not(.oc-tile--m-plain) > .oc-card-media {
+			align-self: start;
+			block-size: auto;
+			min-block-size: 0;
+			padding-block-start: 0;
+			aspect-ratio: calc(var(--oc-card-ratio-n, 1) * 2);
+		}
+
+		/* A tile told to stay ordinary on a phone is exactly that. */
+		.woocommerce ul.products li.product.oc-tile--m-plain > .oc-card-media {
+			align-self: start;
+			block-size: auto;
+			min-block-size: 0;
+			padding-block-start: 0;
+			aspect-ratio: var(--oc-card-ratio-n, 1);
+		}
+	}
 }
