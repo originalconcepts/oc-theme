@@ -1121,6 +1121,26 @@
 					}
 				} );
 
+				// Preset steps recount like any other value: a step with
+				// nothing under it in this category goes grey (or away).
+				if ( facets.price && facets.price.tiers ) {
+					panel.querySelectorAll( '[data-flt-tier]' ).forEach( function ( btn ) {
+						var n = facets.price.tiers[ btn.dataset.fltTier ] || 0;
+						var active = btn.classList.contains( 'is-active' );
+						var em = btn.querySelector( '[data-flt-count]' );
+
+						if ( em ) {
+							em.textContent = n;
+						}
+
+						var off = 0 === n && ! active;
+
+						btn.classList.toggle( 'is-off', off && 'gray' === cfg.empty );
+						btn.disabled = off && 'gray' === cfg.empty;
+						btn.hidden = off && 'hide' === cfg.empty;
+					} );
+				}
+
 				// Price bounds narrow with the other filters. While the price
 				// filter itself is untouched, the slider follows the fresh
 				// bounds — so it can never offer a range with nothing in it.

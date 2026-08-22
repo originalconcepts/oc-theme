@@ -885,6 +885,7 @@ final class Filters {
 		// Price.
 		if ( 'off' !== $settings['price_mode'] ) {
 			$bounds = $this->price_bounds( $category, $state );
+			$tiers  = array_values( array_filter( array_map( 'floatval', explode( ',', (string) $settings['price_tiers'] ) ) ) );
 
 			if ( $bounds['max'] > 0 ) {
 				$groups[] = array(
@@ -894,7 +895,8 @@ final class Filters {
 					'open'   => 0,
 					'mode'   => (string) $settings['price_mode'],
 					'ui'     => (string) $settings['price_ui'],
-					'tiers'  => array_filter( array_map( 'floatval', explode( ',', (string) $settings['price_tiers'] ) ) ),
+					'tiers'  => $tiers,
+					'counts' => 'tiers' === $settings['price_mode'] ? $this->tier_counts( $category, $state, $tiers ) : array(),
 					'bounds' => $bounds,
 					'min'    => $state['min'],
 					'max'    => $state['max'],
@@ -1057,6 +1059,71 @@ final class Filters {
 	 * @param array<string,mixed> $state    Parsed state.
 	 * @return array{min:float,max:float}
 	 */
+	/**
+	 * How many products sit under each preset step.
+	 *
+	 * Counted against the same pool the bounds use — every other filter
+	 * applied, price itself excluded — and with the same rule a tier click
+	 * applies (min_price <= tier), so the number a shopper reads is the
+	 * number they get.
+	 *
+	 * @param int                 $category Category being viewed.
+	 * @param array<string,mixed> $state    Current filter state.
+	 * @param array<int,float>    $tiers    Step values.
+	 * @return array<string,int>
+	 */
+	private function tier_counts( int $category, array $state, array $tiers ): array {
+		$out = array();
+		foreach ( $tiers as $tier ) {
+			$out[ (string) $tier ] = 0;
+		}
+
+		if ( ! $tiers ) {
+			return $out;
+		}
+
+		$ids = $this->base_ids( $category, $state, 'price', false );
+
+		if ( empty( $ids ) ) {
+			return $out;
+		}
+
+		global $wpdb;
+
+		$cases = array();
+		$args  = array();
+		$i     = 0;
+
+		foreach ( $tiers as $tier ) {
+			$cases[] = 'SUM( min_price <= %f AND min_price > 0 ) AS t' . $i;
+			$args[]  = (float) $tier;
+			++$i;
+		}
+
+		$placeholders = implode( ',', array_fill( 0, count( $ids ), '%d' ) );
+		$args         = array_merge( $args, $ids );
+
+		$row = $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
+			$wpdb->prepare(
+				'SELECT ' . implode( ', ', $cases ) . " FROM {$wpdb->wc_product_meta_lookup} WHERE product_id IN ( $placeholders )",
+				$args
+			),
+			ARRAY_A
+		);
+
+		if ( ! $row ) {
+			return $out;
+		}
+
+		$i = 0;
+		foreach ( $tiers as $tier ) {
+			$out[ (string) $tier ] = (int) ( $row[ 't' . $i ] ?? 0 );
+			++$i;
+		}
+
+		return $out;
+	}
+
 	private function price_bounds( int $category, array $state ): array {
 		$ids = $this->base_ids( $category, $state, 'price', false );
 
@@ -1378,7 +1445,7 @@ final class Filters {
 			}
 
 			if ( 'price' === $group['type'] ) {
-				$html .= $this->price_html( $group );
+				$html .= $this->price_html( $group, $settings );
 				if ( $group_chips ) {
 					$html .= '<span class="oc-flt__chips oc-flt__chips--g" data-flt-chips-group="price" hidden></span>';
 				}
@@ -1449,9 +1516,10 @@ final class Filters {
 	/**
 	 * The price group: range (slider or inputs) or preset tiers.
 	 *
-	 * @param array<string,mixed> $group Price group data.
+	 * @param array<string,mixed> $group    Price group data.
+	 * @param array<string,mixed> $settings Filter settings.
 	 */
-	private function price_html( array $group ): string {
+	private function price_html( array $group, array $settings ): string {
 		$symbol = html_entity_decode( get_woocommerce_currency_symbol(), ENT_QUOTES, 'UTF-8' );
 		$lo     = (float) $group['bounds']['min'];
 		$hi     = (float) $group['bounds']['max'];
@@ -1467,12 +1535,30 @@ final class Filters {
 		$html .= '</button><div class="oc-flt__body"><span class="oc-flt__panel-label">' . esc_html( sprintf( __( 'By %s', 'oc-theme' ), (string) $group['title'] ) ) . '</span>';
 
 		if ( 'tiers' === $group['mode'] && ! empty( $group['tiers'] ) ) {
+			$counts = isset( $group['counts'] ) ? (array) $group['counts'] : array();
+
 			$html .= '<div class="oc-flt__values oc-flt__values--text oc-flt__values--tiers">';
 			foreach ( $group['tiers'] as $tier ) {
 				$active = null !== $group['max'] && (float) $group['max'] === (float) $tier && null === $group['min'];
-				$html  .= '<button type="button" class="oc-flt__val' . ( $active ? ' is-active' : '' ) . '" data-flt-tier="' . esc_attr( (string) $tier ) . '">';
+				$n      = (int) ( $counts[ (string) $tier ] ?? 0 );
+
+				// A step with nothing under it behaves like any other empty
+				// value: greyed and unclickable, or gone.
+				$off = 0 === $n && ! $active;
+
+				if ( $off && 'hide' === $settings['empty'] ) {
+					continue;
+				}
+
+				$html .= '<button type="button" class="oc-flt__val' . ( $active ? ' is-active' : '' ) . ( $off ? ' is-off' : '' ) . '" data-flt-tier="' . esc_attr( (string) $tier ) . '"' . ( $off ? ' disabled' : '' ) . '>';
 				/* translators: %s: price. */
-				$html .= '<i class="oc-flt__mark"></i><span>' . esc_html( sprintf( __( 'Up to %s', 'oc-theme' ), $symbol . number_format_i18n( (float) $tier ) ) ) . '</span></button>';
+				$html .= '<i class="oc-flt__mark"></i><span>' . esc_html( sprintf( __( 'Up to %s', 'oc-theme' ), $symbol . number_format_i18n( (float) $tier ) ) ) . '</span>';
+
+				if ( ! empty( $settings['counts'] ) ) {
+					$html .= '<em data-flt-count>' . absint( $n ) . '</em>';
+				}
+
+				$html .= '</button>';
 			}
 			$html .= '</div>';
 		} else {
@@ -1602,8 +1688,9 @@ final class Filters {
 
 			if ( 'price' === $group['type'] ) {
 				$payload['price'] = array(
-					'lo' => $group['bounds']['min'],
-					'hi' => $group['bounds']['max'],
+					'lo'    => $group['bounds']['min'],
+					'hi'    => $group['bounds']['max'],
+					'tiers' => isset( $group['counts'] ) ? (array) $group['counts'] : array(),
 				);
 				continue;
 			}
