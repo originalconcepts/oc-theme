@@ -674,6 +674,9 @@ final class WooCommerce {
 		$ids = array_values( array_unique( array_filter( $ids ) ) );
 		$ids = $this->fresh_lead( $ids, $product->get_id() );
 
+		// A product may nominate its own image for listings (class Catalog).
+		$ids = array_values( array_filter( array_map( 'intval', (array) apply_filters( 'oc_card_image_ids', $ids, $product ) ) ) );
+
 		if ( 'single' === $mode || count( $ids ) < 2 ) {
 			$ids  = array_slice( $ids, 0, 1 );
 			$mode = 'single';

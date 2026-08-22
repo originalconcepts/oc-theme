@@ -252,6 +252,9 @@ final class Assets {
 				'--oc-density'        => get_theme_mod( 'oc_density', '1' ),
 				'--oc-content-width'  => absint( get_theme_mod( 'oc_content_width_px', 1280 ) ) . 'px',
 				'--oc-card-ratio'     => (string) get_theme_mod( 'oc_card_ratio', '1/1' ),
+				// The same ratio as a bare number, so a tile that spans two
+				// columns can be given the height of a one-column tile.
+				'--oc-card-ratio-n'   => self::ratio_number( (string) get_theme_mod( 'oc_card_ratio', '1/1' ) ),
 				'--oc-thumbs-w'       => absint( get_theme_mod( 'oc_gallery_thumb_size', 80 ) ) . 'px',
 				'--oc-gimg-h'         => absint( get_theme_mod( 'oc_gallery_img_height_px', 600 ) ) . 'px',
 				'--oc-header-h'       => absint( get_theme_mod( 'oc_header_height', 72 ) ) . 'px',
@@ -422,4 +425,22 @@ final class Assets {
 	private function safe_value( string $value ): string {
 		return trim( (string) preg_replace( '/[<>{};]/', '', $value ) );
 	}
+
+	/**
+	 * A CSS ratio token ("3/4") as the number CSS calc() can divide by.
+	 *
+	 * @param string $ratio Ratio token.
+	 */
+	private static function ratio_number( string $ratio ): string {
+		$parts = array_map( 'trim', explode( '/', str_replace( ' ', '', $ratio ) ) );
+		$w     = (float) ( $parts[0] ?? 1 );
+		$h     = (float) ( $parts[1] ?? 1 );
+
+		if ( $w <= 0 || $h <= 0 ) {
+			return '1';
+		}
+
+		return rtrim( rtrim( number_format( $w / $h, 4, '.', '' ), '0' ), '.' );
+	}
+
 }

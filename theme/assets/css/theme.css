@@ -8035,3 +8035,75 @@ body.oc-checkout { overflow-x: clip; }
 	.oc-ty__say { flex-direction: column; align-items: stretch; }
 	.oc-ty__wagroup { gap: 11px; }
 }
+
+/* =====================================================================
+   Catalogue tiles — a listing that is not a spreadsheet
+   ===================================================================== */
+
+/* Dense flow backfills the cells an enlarged tile leaves behind. It
+ * reorders visually, never in the DOM — keyboard order stays true. */
+.woocommerce ul.products {
+	grid-auto-flow: dense;
+	/* one column's width, used to hold a wide tile to a normal row height */
+	--oc-col-w: calc(
+		(100% - (var(--oc-grid-cols, 4) - 1) * calc(var(--oc-grid-gap, 20px) * var(--oc-density, 1)))
+		/ var(--oc-grid-cols, 4)
+	);
+}
+
+.woocommerce ul.products li.product.oc-tile--wide { grid-column: span 2; }
+
+.woocommerce ul.products li.product.oc-tile--big {
+	grid-column: span 2;
+	grid-row: span 2;
+	align-self: start;
+}
+
+/* A wide tile is twice as wide at the same height, so its image crops
+ * rather than growing and dragging the whole row down with it. */
+.woocommerce ul.products li.product.oc-tile--wide .oc-card-media,
+.woocommerce ul.products li.product.oc-tile--wide .oc-card-media__item,
+.woocommerce ul.products li.product.oc-tile--wide .oc-card-media__item img,
+.woocommerce ul.products li.product.oc-tile--wide img.wp-post-image {
+	aspect-ratio: auto;
+	block-size: calc(var(--oc-col-w) / var(--oc-card-ratio-n, 1));
+}
+
+.woocommerce ul.products li.product.oc-tile--wide .oc-card-media__item img,
+.woocommerce ul.products li.product.oc-tile--wide img.wp-post-image {
+	inline-size: 100%;
+	object-fit: cover;
+}
+
+@media (max-width: 900px) {
+	/* On a phone an enlarged tile simply takes the row — unless the product
+	 * asked to stay ordinary. */
+	.woocommerce ul.products li.product.oc-tile--wide:not(.oc-tile--m-plain),
+	.woocommerce ul.products li.product.oc-tile--big:not(.oc-tile--m-plain) {
+		grid-column: 1 / -1;
+		grid-row: auto;
+	}
+
+	.woocommerce ul.products li.product.oc-tile--m-plain {
+		grid-column: auto;
+		grid-row: auto;
+	}
+
+	.woocommerce ul.products li.product.oc-tile--big:not(.oc-tile--m-plain) .oc-card-media,
+	.woocommerce ul.products li.product.oc-tile--big:not(.oc-tile--m-plain) .oc-card-media__item img {
+		aspect-ratio: var(--oc-card-ratio, 1 / 1);
+		block-size: auto;
+	}
+
+	.woocommerce ul.products li.product.oc-tile--wide:not(.oc-tile--m-plain) .oc-card-media,
+	.woocommerce ul.products li.product.oc-tile--wide:not(.oc-tile--m-plain) .oc-card-media__item,
+	.woocommerce ul.products li.product.oc-tile--wide:not(.oc-tile--m-plain) .oc-card-media__item img {
+		block-size: calc(var(--oc-col-w) / var(--oc-card-ratio-n, 1));
+	}
+
+	.woocommerce ul.products li.product.oc-tile--m-plain .oc-card-media,
+	.woocommerce ul.products li.product.oc-tile--m-plain .oc-card-media__item img {
+		aspect-ratio: var(--oc-card-ratio, 1 / 1);
+		block-size: auto;
+	}
+}
