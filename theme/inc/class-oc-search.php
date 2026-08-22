@@ -776,8 +776,12 @@ final class Search {
 		$ids = self::product_ids( $term );
 
 		$query->set( 'post__in', $ids ?: array( 0 ) );
-		$query->set( 's', '' );
 		$query->set( 'oc_search_term', $term );
+
+		// The word stays on the query — it is the page's title and its
+		// breadcrumb — but WordPress's own LIKE clause is dropped, because
+		// the ranking already decided which products these are.
+		add_filter( 'posts_search', array( $this, 'drop_like' ), 20, 2 );
 		$query->set( 'orderby', 'post__in' );
 		$query->set( 'ignore_sticky_posts', true );
 
@@ -786,6 +790,21 @@ final class Search {
 		if ( empty( $_GET['orderby'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			add_filter( 'woocommerce_get_catalog_ordering_args', array( $this, 'keep_rank' ), 20 );
 		}
+	}
+
+	/**
+	 * Replace WordPress's own search clause with nothing.
+	 *
+	 * @param string    $search Search SQL.
+	 * @param \WP_Query $query  Query.
+	 * @return string
+	 */
+	public function drop_like( $search, $query ) {
+		if ( $query->is_main_query() && $query->is_search() ) {
+			return '';
+		}
+
+		return $search;
 	}
 
 	/**
