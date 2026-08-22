@@ -870,9 +870,7 @@ final class Customizer {
 			4,
 			2,
 			8,
-			static function (): bool {
-				return 'gallery' === get_theme_mod( 'oc_card_image_mode', 'single' );
-			}
+			array( 'setting' => 'oc_card_image_mode', 'values' => array( 'gallery' ) )
 		);
 
 		$this->choice(
@@ -1132,9 +1130,7 @@ final class Customizer {
 			'200px'
 		);
 
-		$thumbs_active = static function (): bool {
-			return in_array( (string) get_theme_mod( 'oc_gallery_preset', 'thumbs-side' ), array( 'thumbs-side', 'thumbs-under' ), true );
-		};
+		$thumbs_active = array( 'setting' => 'oc_gallery_preset', 'values' => array( 'thumbs-side', 'thumbs-under' ) );
 
 		$this->number( $c, 'oc_gallery_thumbs_max', 'oc_product', __( 'Visible thumbnails (arrows page the rest)', 'oc-theme' ), 5, 2, 10, $thumbs_active );
 
@@ -1181,9 +1177,7 @@ final class Customizer {
 			600,
 			240,
 			1000,
-			static function (): bool {
-				return 'fixed' === get_theme_mod( 'oc_gallery_img_height', 'auto' );
-			}
+			array( 'setting' => 'oc_gallery_img_height', 'values' => array( 'fixed' ) )
 		);
 
 		$this->toggle( $c, 'oc_gallery_lightbox', 'oc_product', __( 'Open images in a lightbox', 'oc-theme' ), true );
@@ -1216,9 +1210,7 @@ final class Customizer {
 			'oc_product',
 			__( 'Arrows on the mobile gallery', 'oc-theme' ),
 			false,
-			static function (): bool {
-				return 'dots' === get_theme_mod( 'oc_gallery_mobile', 'dots' );
-			}
+			array( 'setting' => 'oc_gallery_mobile', 'values' => array( 'dots' ) )
 		);
 
 		$this->number( $c, 'oc_gallery_img_height_mobile_px', 'oc_product', __( 'Uniform height — mobile (px, 0 = auto)', 'oc-theme' ), 0, 0, 900 );
@@ -1364,9 +1356,9 @@ final class Customizer {
 	 * @param array<int|string,string> $choices Choices. Numeric keys arrive as
 	 *                                          ints because PHP coerces them.
 	 * @param string                   $def     Default value.
-	 * @param callable|null            $active  Optional visibility callback.
+	 * @param array|null               $dep     Optional visibility rule.
 	 */
-	private function choice( \WP_Customize_Manager $c, string $id, string $section, string $label, array $choices, string $def, ?callable $active = null ): void {
+	private function choice( \WP_Customize_Manager $c, string $id, string $section, string $label, array $choices, string $def, ?array $dep = null ): void {
 		$keys = array_map( 'strval', array_keys( $choices ) );
 
 		$c->add_setting(
