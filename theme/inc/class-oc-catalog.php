@@ -36,6 +36,23 @@ final class Catalog {
 	}
 
 	/**
+	 * Tile sizes for a phone.
+	 *
+	 * An empty choice means the phone follows whatever the tile does on a
+	 * desktop; a two-column phone simply reads "2 columns" as the full width.
+	 *
+	 * @return array<string,string>
+	 */
+	public static function sizes_m(): array {
+		return array(
+			''      => __( 'Same as desktop', 'oc-theme' ),
+			'plain' => __( 'Normal — one cell', 'oc-theme' ),
+			'wide'  => __( 'Wide — 2 columns', 'oc-theme' ),
+			'big'   => __( 'Large — 2×2', 'oc-theme' ),
+		);
+	}
+
+	/**
 	 * A real admin screen, as opposed to admin-ajax.
 	 *
 	 * is_admin() is true during admin-ajax too, and the filter endpoint
@@ -50,14 +67,21 @@ final class Catalog {
 	 * A product's tile settings.
 	 *
 	 * @param int $product_id Product id.
-	 * @return array{size:string,flat_m:bool,image:int}
+	 * @return array{size:string,size_m:string,image:int}
 	 */
 	public static function tile( int $product_id ): array {
-		$size = (string) get_post_meta( $product_id, '_oc_tile_size', true );
+		$size   = (string) get_post_meta( $product_id, '_oc_tile_size', true );
+		$size_m = (string) get_post_meta( $product_id, '_oc_tile_size_m', true );
+
+		// Products saved before the phone gained its own list of sizes carry a
+		// tick-box that meant one thing only: stay ordinary.
+		if ( '' === $size_m && get_post_meta( $product_id, '_oc_tile_flat_m', true ) ) {
+			$size_m = 'plain';
+		}
 
 		return array(
 			'size'   => array_key_exists( $size, self::sizes() ) ? $size : '',
-			'flat_m' => (bool) get_post_meta( $product_id, '_oc_tile_flat_m', true ),
+			'size_m' => array_key_exists( $size_m, self::sizes_m() ) ? $size_m : '',
 			'image'  => (int) get_post_meta( $product_id, '_oc_tile_image', true ),
 		);
 	}
@@ -125,12 +149,14 @@ final class Catalog {
 							<option value="<?php echo esc_attr( $value ); ?>" <?php selected( $tile['size'], $value ); ?>><?php echo esc_html( $label ); ?></option>
 						<?php endforeach; ?>
 					</select>
-					<label style="float:none;inline-size:auto;margin:0 12px 0 0;">
-						<input type="checkbox" name="oc_tile_flat_m" value="1" <?php checked( true, $tile['flat_m'] ); ?> />
-						<?php esc_html_e( 'Normal size on a phone', 'oc-theme' ); ?>
-					</label>
+					<label style="float:none;inline-size:auto;margin:0 12px 0 0;"><?php esc_html_e( 'On a phone', 'oc-theme' ); ?></label>
+					<select name="oc_tile_size_m" style="inline-size:200px;">
+						<?php foreach ( self::sizes_m() as $value => $label ) : ?>
+							<option value="<?php echo esc_attr( $value ); ?>" <?php selected( $tile['size_m'], $value ); ?>><?php echo esc_html( $label ); ?></option>
+						<?php endforeach; ?>
+					</select>
 				</p>
-				<p class="description" style="margin:0 0 16px;"><?php esc_html_e( 'An enlarged tile fills the width on a phone unless you tick the box.', 'oc-theme' ); ?></p>
+				<p class="description" style="margin:0 0 16px;"><?php esc_html_e( 'A phone follows the desktop size unless you choose otherwise. A phone shows two columns, so "2 columns" fills its width.', 'oc-theme' ); ?></p>
 
 				<p style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 4px;">
 					<label style="float:none;inline-size:auto;margin:0;"><?php esc_html_e( 'Catalogue image', 'oc-theme' ); ?></label>
@@ -189,7 +215,7 @@ final class Catalog {
 		$size = sanitize_key( wp_unslash( $_POST['oc_tile_size'] ?? '' ) );
 
 		update_post_meta( $product_id, '_oc_tile_size', array_key_exists( $size, self::sizes() ) ? $size : '' );
-		update_post_meta( $product_id, '_oc_tile_flat_m', empty( $_POST['oc_tile_flat_m'] ) ? '' : 1 );
+		self::save_mobile_size( $product_id );
 		update_post_meta( $product_id, '_oc_tile_image', absint( $_POST['oc_tile_image'] ?? 0 ) );
 		// phpcs:enable WordPress.Security.NonceVerification.Missing
 	}
@@ -244,14 +270,12 @@ final class Catalog {
 
 		$tile = self::tile( $product->get_id() );
 
-		if ( '' === $tile['size'] ) {
-			return $classes;
+		if ( '' !== $tile['size'] ) {
+			$classes[] = 'oc-tile--' . $tile['size'];
 		}
 
-		$classes[] = 'oc-tile--' . $tile['size'];
-
-		if ( $tile['flat_m'] ) {
-			$classes[] = 'oc-tile--m-plain';
+		if ( '' !== $tile['size_m'] ) {
+			$classes[] = 'oc-tile--m-' . $tile['size_m'];
 		}
 
 		return $classes;
@@ -313,10 +337,17 @@ final class Catalog {
 		$tile  = self::tile( (int) $product_id );
 		$sizes = self::sizes();
 
-		echo '<span class="oc-tile-cell" data-size="' . esc_attr( $tile['size'] ) . '" data-flat="' . esc_attr( $tile['flat_m'] ? '1' : '' ) . '">';
-		echo '' === $tile['size']
-			? '<span style="color:#a7aaad;">—</span>'
-			: esc_html( $sizes[ $tile['size'] ] );
+		echo '<span class="oc-tile-cell" data-size="' . esc_attr( $tile['size'] ) . '" data-size-m="' . esc_attr( $tile['size_m'] ) . '">';
+		echo esc_html( $sizes[ $tile['size'] ] );
+
+		if ( '' !== $tile['size_m'] ) {
+			$mobile = self::sizes_m();
+			printf(
+				'<br /><small style="color:#646970;">%s</small>',
+				esc_html( sprintf( /* translators: %s: a tile size. */ __( 'Phone: %s', 'oc-theme' ), $mobile[ $tile['size_m'] ] ) )
+			);
+		}
+
 		echo '</span>';
 	}
 
@@ -346,9 +377,16 @@ final class Catalog {
 						<?php endforeach; ?>
 					</select>
 				</label>
-				<label>
-					<input type="checkbox" name="oc_tile_flat_m" value="1" />
-					<span class="checkbox-title"><?php esc_html_e( 'Normal size on a phone', 'oc-theme' ); ?></span>
+				<label style="display:block;">
+					<span class="title" style="inline-size:auto;"><?php esc_html_e( 'On a phone', 'oc-theme' ); ?></span>
+					<select name="oc_tile_size_m">
+						<?php if ( $bulk ) : ?>
+							<option value="-1"><?php esc_html_e( '— No change —', 'oc-theme' ); ?></option>
+						<?php endif; ?>
+						<?php foreach ( self::sizes_m() as $value => $label ) : ?>
+							<option value="<?php echo esc_attr( $value ); ?>"><?php echo esc_html( $label ); ?></option>
+						<?php endforeach; ?>
+					</select>
 				</label>
 			</div>
 		</fieldset>
@@ -390,18 +428,36 @@ final class Catalog {
 				}
 
 				var size = form.querySelector( '[name="oc_tile_size"]' ),
-					flat = form.querySelector( '[name="oc_tile_flat_m"]' );
+					mob = form.querySelector( '[name="oc_tile_size_m"]' );
 
 				if ( size ) {
 					size.value = cell.dataset.size || '';
 				}
-				if ( flat ) {
-					flat.checked = '1' === cell.dataset.flat;
+				if ( mob ) {
+					mob.value = cell.dataset.sizeM || '';
 				}
 			};
 		}() );
 		</script>
 		<?php
+	}
+
+	/**
+	 * Store the phone size, and retire the tick-box it replaced.
+	 *
+	 * @param int $product_id Product id.
+	 */
+	private static function save_mobile_size( int $product_id ): void {
+		// phpcs:disable WordPress.Security.NonceVerification.Missing -- the caller verified.
+		$size_m = sanitize_key( wp_unslash( $_POST['oc_tile_size_m'] ?? '' ) );
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
+
+		if ( '-1' === $size_m ) {
+			return;
+		}
+
+		update_post_meta( $product_id, '_oc_tile_size_m', array_key_exists( $size_m, self::sizes_m() ) ? $size_m : '' );
+		delete_post_meta( $product_id, '_oc_tile_flat_m' );
 	}
 
 	/**
@@ -422,7 +478,7 @@ final class Catalog {
 		$size = sanitize_key( wp_unslash( $_POST['oc_tile_size'] ?? '' ) );
 
 		update_post_meta( $product_id, '_oc_tile_size', array_key_exists( $size, self::sizes() ) ? $size : '' );
-		update_post_meta( $product_id, '_oc_tile_flat_m', empty( $_POST['oc_tile_flat_m'] ) ? '' : 1 );
+		self::save_mobile_size( $product_id );
 		// phpcs:enable WordPress.Security.NonceVerification.Missing
 	}
 
@@ -440,7 +496,7 @@ final class Catalog {
 		}
 
 		update_post_meta( $product->get_id(), '_oc_tile_size', array_key_exists( $size, self::sizes() ) ? $size : '' );
-		update_post_meta( $product->get_id(), '_oc_tile_flat_m', empty( $_POST['oc_tile_flat_m'] ) ? '' : 1 );
+		self::save_mobile_size( $product->get_id() );
 		// phpcs:enable WordPress.Security.NonceVerification.Missing
 	}
 }

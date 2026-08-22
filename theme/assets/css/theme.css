@@ -8146,37 +8146,40 @@ body.oc-checkout { overflow-x: clip; }
 }
 
 @media (max-width: 900px) {
-	/* On a phone an enlarged tile simply takes the row — unless the product
-	 * asked to stay ordinary. */
-	.woocommerce ul.products li.product.oc-tile--wide:not(.oc-tile--m-plain),
-	.woocommerce ul.products li.product.oc-tile--big:not(.oc-tile--m-plain) {
-		grid-column: 1 / -1;
-		grid-row: auto;
-	}
-
+	/* A phone keeps whatever size the tile has on a desktop, and a phone shows
+	 * two columns — so "2 columns" is simply the full width there. A product
+	 * may name a different size for the phone, and that wins. */
 	.woocommerce ul.products li.product.oc-tile--m-plain {
 		grid-column: auto;
 		grid-row: auto;
 	}
 
-	/* Full width on a phone is two columns, so the same doubling applies. */
-	.woocommerce ul.products li.product.oc-tile--big:not(.oc-tile--m-plain) .oc-card-media,
-	.woocommerce ul.products li.product.oc-tile--big:not(.oc-tile--m-plain) .oc-card-media__strip,
-	.woocommerce ul.products li.product.oc-tile--big:not(.oc-tile--m-plain) .oc-card-media__item,
-	.woocommerce ul.products li.product.oc-tile--wide:not(.oc-tile--m-plain) .oc-card-media,
-	.woocommerce ul.products li.product.oc-tile--wide:not(.oc-tile--m-plain) .oc-card-media__strip,
-	.woocommerce ul.products li.product.oc-tile--wide:not(.oc-tile--m-plain) .oc-card-media__item {
+	.woocommerce ul.products li.product.oc-tile--m-wide { grid-column: span 2; }
+
+	.woocommerce ul.products li.product.oc-tile--m-big {
+		grid-column: span 2;
+		grid-row: span 2;
+	}
+
+	/* Two columns wide on a phone is the full width, so the picture doubles. */
+	.woocommerce ul.products li.product.oc-tile--wide:not(.oc-tile--m-plain):not(.oc-tile--m-big) .oc-card-media,
+	.woocommerce ul.products li.product.oc-tile--wide:not(.oc-tile--m-plain):not(.oc-tile--m-big) .oc-card-media__strip,
+	.woocommerce ul.products li.product.oc-tile--wide:not(.oc-tile--m-plain):not(.oc-tile--m-big) .oc-card-media__item,
+	.woocommerce ul.products li.product.oc-tile--m-wide .oc-card-media,
+	.woocommerce ul.products li.product.oc-tile--m-wide .oc-card-media__strip,
+	.woocommerce ul.products li.product.oc-tile--m-wide .oc-card-media__item {
 		aspect-ratio: auto;
 		block-size: auto;
 	}
 
-	.woocommerce ul.products li.product.oc-tile--big:not(.oc-tile--m-plain) .oc-card-media__item img,
-	.woocommerce ul.products li.product.oc-tile--wide:not(.oc-tile--m-plain) .oc-card-media__item img {
+	.woocommerce ul.products li.product.oc-tile--wide:not(.oc-tile--m-plain):not(.oc-tile--m-big) .oc-card-media__item img,
+	.woocommerce ul.products li.product.oc-tile--m-wide .oc-card-media__item img {
 		position: static;
 		aspect-ratio: calc(var(--oc-card-ratio-n, 1) * 2);
 		block-size: auto;
 	}
 
+	/* Told to stay ordinary, it is ordinary. */
 	.woocommerce ul.products li.product.oc-tile--m-plain .oc-card-media,
 	.woocommerce ul.products li.product.oc-tile--m-plain .oc-card-media__item img {
 		aspect-ratio: var(--oc-card-ratio, 1 / 1);
@@ -8535,23 +8538,60 @@ body.oc-checkout { overflow-x: clip; }
 	}
 
 	@media (max-width: 900px) {
-		/* On a phone an enlarged tile is an ordinary card that happens to take
-		 * the whole row, so it goes back to one row's worth of tracks and its
-		 * picture states the wide ratio outright. */
-		.woocommerce ul.products li.product.oc-tile--wide:not(.oc-tile--m-plain),
-		.woocommerce ul.products li.product.oc-tile--big:not(.oc-tile--m-plain),
-		.woocommerce ul.products li.product.oc-tile--wide.oc-tile--m-plain,
-		.woocommerce ul.products li.product.oc-tile--big.oc-tile--m-plain {
-			grid-row: span 4;
+		/* A phone keeps the desktop size — two columns there is the full width,
+		 * and a 2x2 is two columns by two rows exactly as it is on a desktop.
+		 * A product that names a size for the phone overrides all of it. */
+
+		/* Ordinary on a phone. */
+		.woocommerce ul.products li.product.oc-tile--m-plain { grid-row: span 4; }
+		.woocommerce ul.products li.product.oc-tile--m-plain > .oc-card-media { grid-row: 1; }
+		.woocommerce ul.products li.product.oc-tile--m-plain > .oc-colors { grid-row: 2; }
+		.woocommerce ul.products li.product.oc-tile--m-plain > .oc-card-text { grid-row: 3; }
+		.woocommerce ul.products li.product.oc-tile--m-plain::after { grid-row: 4; }
+
+		.woocommerce ul.products li.product.oc-tile--m-plain > .oc-card-media {
+			align-self: start;
+			block-size: auto;
+			min-block-size: 0;
+			padding-block-start: 0;
+			aspect-ratio: var(--oc-card-ratio-n, 1);
+		}
+
+		/* Two columns on a phone. */
+		.woocommerce ul.products li.product.oc-tile--m-wide { grid-row: span 4; }
+		.woocommerce ul.products li.product.oc-tile--m-wide > .oc-card-media { grid-row: 1; }
+		.woocommerce ul.products li.product.oc-tile--m-wide > .oc-colors { grid-row: 2; }
+		.woocommerce ul.products li.product.oc-tile--m-wide > .oc-card-text { grid-row: 3; }
+		.woocommerce ul.products li.product.oc-tile--m-wide::after { grid-row: 4; }
+
+		.woocommerce ul.products li.product.oc-tile--m-wide > .oc-card-media {
+			align-self: start;
+			block-size: 0;
+			min-block-size: 0;
+			aspect-ratio: auto;
+			padding-block-start: calc((100% - var(--oc-gap-eff, 20px)) / 2 / var(--oc-card-ratio-n, 1));
+		}
+
+		/* Two by two on a phone. */
+		.woocommerce ul.products li.product.oc-tile--m-big {
+			grid-row: span 8;
 			display: grid;
 			grid-template-columns: minmax(0, 1fr);
 			align-content: start;
 		}
 
-		.woocommerce ul.products li.product.oc-tile--big > .oc-card-media { grid-row: 1; }
-		.woocommerce ul.products li.product.oc-tile--big > .oc-colors { grid-row: 2; }
-		.woocommerce ul.products li.product.oc-tile--big > .oc-card-text { grid-row: 3; }
-		.woocommerce ul.products li.product.oc-tile--big::after { grid-row: 4; }
+		.woocommerce ul.products li.product.oc-tile--m-big > .oc-card-media { grid-row: 1 / 6; }
+		.woocommerce ul.products li.product.oc-tile--m-big > .oc-colors { grid-row: 6; }
+		.woocommerce ul.products li.product.oc-tile--m-big > .oc-card-text { grid-row: 7; }
+		.woocommerce ul.products li.product.oc-tile--m-big::after { grid-row: 8; }
+
+		.woocommerce ul.products li.product.oc-tile--m-big > .oc-card-media {
+			align-self: stretch;
+			block-size: auto;
+			min-block-size: 0;
+			padding-block-start: 0;
+			aspect-ratio: auto;
+		}
 
 		/* A phone gives every block the whole row, with no product beside it
 		 * to set the height, so the block states its own again and keeps to
@@ -8574,24 +8614,6 @@ body.oc-checkout { overflow-x: clip; }
 			position: static;
 			block-size: auto;
 			aspect-ratio: calc(var(--oc-card-ratio-n, 1) * 2);
-		}
-
-		.woocommerce ul.products li.product.oc-tile--wide:not(.oc-tile--m-plain) > .oc-card-media,
-		.woocommerce ul.products li.product.oc-tile--big:not(.oc-tile--m-plain) > .oc-card-media {
-			align-self: start;
-			block-size: auto;
-			min-block-size: 0;
-			padding-block-start: 0;
-			aspect-ratio: calc(var(--oc-card-ratio-n, 1) * 2);
-		}
-
-		/* A tile told to stay ordinary on a phone is exactly that. */
-		.woocommerce ul.products li.product.oc-tile--m-plain > .oc-card-media {
-			align-self: start;
-			block-size: auto;
-			min-block-size: 0;
-			padding-block-start: 0;
-			aspect-ratio: var(--oc-card-ratio-n, 1);
 		}
 	}
 }
