@@ -128,6 +128,8 @@ final class Search {
 		}
 
 		add_action( 'pre_get_posts', array( $this, 'results_query' ) );
+		add_filter( 'woocommerce_page_title', array( $this, 'results_title' ) );
+		add_filter( 'woocommerce_show_page_title', array( $this, 'show_title' ) );
 		add_filter( 'oc_page_title', array( $this, 'results_title' ) );
 		add_action( 'template_redirect', array( $this, 'log_results_page' ) );
 		add_filter( 'woocommerce_catalog_orderby', array( $this, 'orderby_labels' ) );
@@ -833,6 +835,16 @@ final class Search {
 
 		/* translators: %s: what the shopper searched for. */
 		return sprintf( __( 'Search results for %s', 'oc-theme' ), $term );
+	}
+
+	/**
+	 * A results page always names what was searched for.
+	 *
+	 * @param bool $show Current answer.
+	 * @return bool
+	 */
+	public function show_title( $show ) {
+		return is_search() ? true : $show;
 	}
 
 	/**

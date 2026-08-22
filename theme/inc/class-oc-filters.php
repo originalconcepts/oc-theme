@@ -955,6 +955,18 @@ final class Filters {
 			$args['oc_filtering'] = $state['instock'];
 		}
 
+		// On a search results page the filters count against what the search
+		// returned, not against the whole shop — "blue (3)", not "blue (40)".
+		$found = apply_filters( 'oc_filters_base_ids', null );
+
+		if ( is_array( $found ) ) {
+			if ( ! $found ) {
+				return array();
+			}
+
+			$args['post__in'] = $found;
+		}
+
 		$query = new \WP_Query( $args );
 
 		return array_map( 'intval', $query->posts );
