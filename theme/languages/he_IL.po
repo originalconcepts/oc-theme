@@ -3228,3 +3228,36 @@ msgstr "שלוש — כולל רמה שלישית"
 
 msgid "Dim the page behind an open panel"
 msgstr "הכהיית העמוד מאחורי חלון פתוח"
+
+msgid "Inherited"
+msgstr "כמו השאר"
+
+msgid "Badge background"
+msgstr "רקע התג"
+
+msgid "Badge text"
+msgstr "צבע טקסט התג"
+
+msgid "Show from"
+msgstr "הצג מתאריך"
+
+msgid "Show until"
+msgstr "הצג עד תאריך"
+
+msgid "Picture beside the link"
+msgstr "תמונה לצד הקישור"
+
+msgid "Shown in the drawer, not in the open desktop menu."
+msgstr "מוצגת במגירה, לא בתפריט הפתוח בדסקטופ."
+
+msgid "Where this link appears"
+msgstr "היכן הקישור מופיע"
+
+msgid "Everywhere"
+msgstr "בכל מקום"
+
+msgid "Drawer only"
+msgstr "במגירה בלבד"
+
+msgid "Nowhere — hidden"
+msgstr "בשום מקום — מוסתר"

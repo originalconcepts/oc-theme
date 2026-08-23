@@ -1171,12 +1171,69 @@ html.oc-menu-open .oc-menu-dim::before {
 	.oc-nav--mo-stagger .oc-nav__list .sub-menu > li { opacity: 1; transform: none; animation: none; }
 }
 
+/* --- what one link may carry --- */
+
+/* A badge rides beside the word, not on top of it: a "New" that overlaps the
+ * last letter is read as a rendering fault. */
+.oc-mbadge {
+	display: inline-block;
+	vertical-align: middle;
+	margin-inline-start: 6px;
+	padding: 1px 6px;
+	border-radius: 999px;
+	font-size: max(9px, .62em);
+	font-weight: 700;
+	line-height: 1.6;
+	letter-spacing: .02em;
+	text-transform: none;
+	white-space: nowrap;
+	background: var(--oc-badge-bg, var(--oc-primary));
+	color: var(--oc-badge-tx, #fff);
+}
+
+/* The picture belongs to the drawer, where a row is tall enough to hold one.
+ * In an open desktop menu it would double the header's height. */
+.oc-nav__list .oc-mi__pic { display: none; }
+
+.oc-mi__pic img {
+	display: block;
+	inline-size: var(--oc-mi-pic, 34px);
+	block-size: var(--oc-mi-pic, 34px);
+	object-fit: cover;
+	border-radius: var(--oc-mi-pic-r, 8px);
+}
+
+/* Hidden on one side or the other. 900px is where the header swaps the open
+ * menu for the drawer, so the same breakpoint decides this. */
+@media (min-width: 901px) {
+	.oc-mi--no-desktop { display: none !important; }
+}
+
+@media (max-width: 900px) {
+	.oc-mi--no-mobile { display: none !important; }
+}
+
+/* The desktop hamburger shows the drawer at full width, so an item hidden
+ * from the drawer must stay hidden there too. */
+.oc-header--burger ~ .oc-mobile-menu .oc-mi--no-mobile { display: none !important; }
+
+.oc-mi--off { display: none !important; }
+
 .oc-mobile-menu {
 	display: none;
 	padding: var(--oc-gap);
 	border-block-end: 1px solid var(--oc-line);
 }
-.oc-mobile-menu__list a { display: block; padding-block: 10px; text-decoration: none; font-size: var(--oc-menu-fs, 1rem); }
+.oc-mobile-menu__list a {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding-block: 10px;
+	text-decoration: none;
+	font-size: var(--oc-menu-fs, 1rem);
+	color: var(--oc-link-c, inherit);
+}
+.oc-mobile-menu__list .oc-mi__t { flex: 1 1 auto; }
 .oc-mobile-menu .sub-menu { list-style: none; padding-inline-start: 16px; }
 
 /* ---------- shop ---------- */
