@@ -1615,37 +1615,60 @@ html.oc-drw-open body { overflow: hidden; }
 
 /* --- opening over the top --- */
 
-.oc-drw--slide .oc-drw__sub {
-	position: fixed;
-	inset-block: 0;
-	inline-size: min(var(--oc-drw-w, 360px), 92vw);
-	padding: calc(58px + var(--oc-abar, 0px)) var(--oc-gap, 16px) var(--oc-gap, 16px);
+/* The screen is an absolutely positioned child of the drawer's body, not a
+ * fixed one. A fixed element inside a panel that carries a transform is
+ * measured against that panel rather than the window, so it lands somewhere
+ * in the middle of the list instead of over it — which is what it did.
+ * Absolute against a box we control cannot be captured that way. */
+.oc-drw--slide .oc-drw__body { position: relative; overflow: hidden; }
+
+.oc-drw--slide .oc-drw__body > .oc-drw__list {
+	block-size: 100%;
 	overflow-y: auto;
 	overscroll-behavior: contain;
+}
+
+.oc-drw--slide .oc-drw__sub {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	flex-direction: column;
 	background: var(--oc-drw-bg2, var(--oc-drw-bg, var(--oc-surface)));
 	transition: transform .28s cubic-bezier(.32, .72, 0, 1);
 	z-index: 2;
 }
 
-.oc-drw--slide.oc-drw--right .oc-drw__sub { right: 0; transform: translateX(100%); }
-.oc-drw--slide.oc-drw--left .oc-drw__sub { left: 0; transform: translateX(-100%); }
+.oc-drw--slide.oc-drw--right .oc-drw__sub { transform: translateX(100%); }
+.oc-drw--slide.oc-drw--left .oc-drw__sub { transform: translateX(-100%); }
 .oc-drw--slide .oc-drw__i.is-open > .oc-drw__sub { transform: none; }
 .oc-drw--slide .oc-drw__sub .oc-drw__sub { z-index: 3; }
 
+/* The way back stays put while the list under it scrolls. */
+.oc-drw--slide .oc-drw__back {
+	flex: none;
+	padding-block: calc(14px + var(--oc-abar, 0px)) 12px;
+}
+
+.oc-drw--slide .oc-drw__subin {
+	flex: 1 1 auto;
+	overflow-y: auto;
+	overscroll-behavior: contain;
+	padding-inline: var(--oc-gap, 16px);
+	padding-block-end: var(--oc-gap, 16px);
+}
+
 .oc-drw__back {
-	position: absolute;
-	inset-block-start: calc(12px + var(--oc-abar, 0px));
-	inset-inline: var(--oc-gap, 16px) auto;
 	display: flex;
 	align-items: center;
 	gap: 8px;
-	padding: 6px 4px;
+	padding: 6px var(--oc-gap, 16px);
 	border: 0;
 	background: none;
 	color: inherit;
 	font: inherit;
 	font-weight: 600;
 	cursor: pointer;
+	text-align: inherit;
 }
 
 .oc-drw__back::before {
