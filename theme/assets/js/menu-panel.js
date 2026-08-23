@@ -12,7 +12,16 @@
  * repainting a field while somebody is typing in it takes their cursor away,
  * and that is the single fastest way to make an editor feel hostile.
  */
-( function () {
+/* The dialog is printed by the Menus screen's own footer, which lands after
+ * this file in the document. Trusting that order once cost an evening; the
+ * document telling us it is ready costs nothing. */
+( function ( boot ) {
+	if ( 'loading' === document.readyState ) {
+		document.addEventListener( 'DOMContentLoaded', boot );
+	} else {
+		boot();
+	}
+}( function () {
 	'use strict';
 
 	var modal = document.getElementById( 'oc-mp-modal' );
@@ -849,4 +858,4 @@
 			close();
 		}
 	} );
-}() );
+} ) );
