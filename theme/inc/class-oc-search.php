@@ -210,18 +210,17 @@ final class Search {
 			)
 		);
 
-		$tokens = Search_Index::tokens( $query );
+		// Each entry is one word the shopper typed, with the spellings it may
+		// appear as. Every word must be found; any of its spellings will do.
+		$groups = array_slice( Search_Index::query_groups( $query ), 0, 6 );
 
-		if ( ! $tokens ) {
+		if ( ! $groups ) {
 			return array(
 				'ids'   => array(),
 				'rows'  => array(),
 				'total' => 0,
 			);
 		}
-
-		// A word already seen as another word's stem would demand itself twice.
-		$tokens = array_slice( array_values( array_unique( $tokens ) ), 0, 6 );
 
 		$s     = self::settings();
 		$table = Search_Index::table();
@@ -244,12 +243,17 @@ final class Search {
 		$parts  = array();
 		$union_values = array();
 
-		foreach ( $tokens as $i => $token ) {
+		foreach ( $groups as $i => $spellings ) {
+			$likes = implode( ' OR ', array_fill( 0, count( $spellings ), 'token LIKE %s' ) );
+
 			$parts[]        = "SELECT object_id, %d AS grp, MAX(({$weights}) + IF(pos = 1, 3, 0)) AS score"
-				. " FROM {$words} WHERE kind IN ({$kinds_in}) AND token LIKE %s GROUP BY object_id";
+				. " FROM {$words} WHERE kind IN ({$kinds_in}) AND ({$likes}) GROUP BY object_id";
 			$union_values[] = $i;
 			$union_values   = array_merge( $union_values, $args['kinds'] );
-			$union_values[] = $wpdb->esc_like( $token ) . '%';
+
+			foreach ( $spellings as $spelling ) {
+				$union_values[] = $wpdb->esc_like( $spelling ) . '%';
+			}
 		}
 
 		$union = implode( ' UNION ALL ', $parts );
@@ -284,7 +288,7 @@ final class Search {
 		}
 
 		$sql .= ' GROUP BY m.object_id HAVING COUNT(DISTINCT m.grp) = %d';
-		$values[] = count( $tokens );
+		$values[] = count( $groups );
 
 		$sql .= " ORDER BY {$sink}rank_score DESC, x.sales DESC, m.object_id ASC";
 

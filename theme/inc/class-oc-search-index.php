@@ -280,6 +280,36 @@ final class Search_Index {
 		return $out;
 	}
 
+	/**
+	 * The words of a query, each with the spellings it may appear as.
+	 *
+	 * A word and its prefix-stripped stem are the SAME word asked for once —
+	 * alternatives, not two demands. Indexing stores both; a query has to
+	 * accept either.
+	 *
+	 * @param string $text What was typed.
+	 * @return array<int,string[]>
+	 */
+	public static function query_groups( string $text ): array {
+		$flat = self::normalise( $text );
+
+		if ( '' === $flat ) {
+			return array();
+		}
+
+		$groups = array();
+
+		foreach ( explode( ' ', $flat ) as $word ) {
+			if ( mb_strlen( $word, 'UTF-8' ) < 2 || in_array( $word, self::STOP, true ) ) {
+				continue;
+			}
+
+			$groups[] = array_values( array_unique( self::stems( mb_substr( $word, 0, 48, 'UTF-8' ) ) ) );
+		}
+
+		return $groups;
+	}
+
 	/* ---------------------------------------------------------- synonyms */
 
 	/**
