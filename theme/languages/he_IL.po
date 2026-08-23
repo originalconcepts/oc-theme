@@ -3233,10 +3233,10 @@ msgid "Inherited"
 msgstr "כמו השאר"
 
 msgid "Badge background"
-msgstr "רקע התג"
+msgstr "רקע התווית"
 
 msgid "Badge text"
-msgstr "צבע טקסט התג"
+msgstr "צבע הטקסט בתווית"
 
 msgid "Show from"
 msgstr "הצג מתאריך"
