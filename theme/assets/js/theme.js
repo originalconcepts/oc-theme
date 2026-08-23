@@ -568,13 +568,10 @@
 		function setBarState( term ) {
 			var empty = ! term;
 
-			// The clear and the magnifier stay in place and go quiet rather
-			// than disappearing: a control that vanishes moves everything
-			// beside it.
+			// The eraser only exists while there is something to erase; the
+			// glass stays put and goes quiet, because it anchors the line.
 			if ( sClear ) {
-				sClear.hidden = false;
-				sClear.disabled = empty;
-				sClear.classList.toggle( 'is-off', empty );
+				sClear.hidden = empty;
 			}
 
 			if ( sGo ) {

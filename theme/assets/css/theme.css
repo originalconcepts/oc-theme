@@ -330,7 +330,7 @@ a { color: inherit; }
 .oc-search__field::-webkit-search-cancel-button { display: none; }
 
 .oc-searchbox .oc-search__go,
-.oc-searchbox .oc-search__clear,
+.oc-searchbox .oc-search__wipe,
 .oc-searchbox .oc-search__close {
 	border: 0;
 	background: none;
@@ -345,16 +345,35 @@ a { color: inherit; }
 }
 
 .oc-searchbox .oc-search__go:hover,
-.oc-searchbox .oc-search__clear:hover,
 .oc-searchbox .oc-search__close:hover { background: var(--oc-surface-2, rgba(0, 0, 0, .05)); }
 
-.oc-searchbox .oc-search__go.is-off,
-.oc-searchbox .oc-search__clear.is-off {
+/* Nothing typed, nothing to search for: the glass says so and does not
+ * pretend to be pressable. */
+.oc-searchbox .oc-search__go.is-off {
 	color: var(--oc-ink-3, #9aa0a8);
-	opacity: .5;
+	opacity: .55;
 	cursor: default;
 	pointer-events: none;
 }
+
+/* The small mark that erases what was typed. It sits where the line begins,
+ * beside the text, and only exists while there is text to erase. */
+.oc-searchbox .oc-search__wipe {
+	inline-size: 20px;
+	block-size: 20px;
+	padding: 0;
+	flex: none;
+	border-radius: 999px;
+	background: var(--oc-surface-2, rgba(0, 0, 0, .07));
+	color: var(--oc-ink-2);
+}
+
+.oc-searchbox .oc-search__wipe:hover {
+	background: var(--oc-line);
+	color: var(--oc-ink);
+}
+
+.oc-searchbox .oc-search__wipe[hidden] { display: none; }
 
 .oc-search__sep {
 	inline-size: 1px;
@@ -362,8 +381,6 @@ a { color: inherit; }
 	background: var(--oc-line);
 }
 
-/* The arrow points the way back reads in this writing direction: left in a
- * right-to-left shop, which is where the eye leaves the line. */
 .oc-search__close svg { transform: none; }
 
 /* the two columns */

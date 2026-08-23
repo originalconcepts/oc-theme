@@ -1040,16 +1040,44 @@ final class Search {
 	 * @param string $slug     Term slug.
 	 */
 	public static function narrowed_url( string $query, string $taxonomy, string $slug ): string {
-		$object = get_taxonomy( $taxonomy );
-		$var    = $object && $object->query_var ? $object->query_var : $taxonomy;
-
+		// Deliberately not the taxonomy's own query var: that would turn the
+		// page into a brand archive that happens to carry a search word, and
+		// the shopper would land somewhere they did not ask for. This one is
+		// read by the theme and applied on top of the search.
 		return add_query_arg(
 			array(
 				's'         => rawurlencode( $query ),
 				'post_type' => 'product',
-				$var        => $slug,
+				'oc_in'     => $taxonomy . ':' . $slug,
 			),
 			home_url( '/' )
+		);
+	}
+
+	/**
+	 * The category or brand a results page has been narrowed to.
+	 *
+	 * @return array{taxonomy:string,slug:string}|null
+	 */
+	public static function narrowed_to(): ?array {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- a public listing.
+		$raw = isset( $_GET['oc_in'] ) ? sanitize_text_field( wp_unslash( $_GET['oc_in'] ) ) : '';
+
+		if ( '' === $raw || false === strpos( $raw, ':' ) ) {
+			return null;
+		}
+
+		list( $taxonomy, $slug ) = explode( ':', $raw, 2 );
+
+		$taxonomy = sanitize_key( $taxonomy );
+
+		if ( ! $taxonomy || ! taxonomy_exists( $taxonomy ) || '' === $slug ) {
+			return null;
+		}
+
+		return array(
+			'taxonomy' => $taxonomy,
+			'slug'     => $slug,
 		);
 	}
 
@@ -1081,6 +1109,20 @@ final class Search {
 
 		$query->set( 'post__in', $ids ?: array( 0 ) );
 		$query->set( 'oc_search_term', $term );
+
+		$narrow = self::narrowed_to();
+
+		if ( $narrow ) {
+			$tax = (array) $query->get( 'tax_query' );
+
+			$tax[] = array(
+				'taxonomy' => $narrow['taxonomy'],
+				'field'    => 'slug',
+				'terms'    => array( $narrow['slug'] ),
+			);
+
+			$query->set( 'tax_query', $tax ); // phpcs:ignore WordPress.DB.SlowDBQuery
+		}
 
 		// The word stays on the query — it is the page's title and its
 		// breadcrumb — but WordPress's own LIKE clause is dropped, because
@@ -1154,6 +1196,21 @@ final class Search {
 
 		if ( '' === $term ) {
 			return $title;
+		}
+
+		$narrow = self::narrowed_to();
+
+		if ( $narrow ) {
+			$named = get_term_by( 'slug', $narrow['slug'], $narrow['taxonomy'] );
+
+			if ( $named instanceof \WP_Term ) {
+				return sprintf(
+					/* translators: 1: what was searched for, 2: the category or brand it was narrowed to. */
+					__( 'Search results for %1$s in %2$s', 'oc-theme' ),
+					$term,
+					$named->name
+				);
+			}
 		}
 
 		/* translators: %s: what the shopper searched for. */

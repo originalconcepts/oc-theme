@@ -3133,3 +3133,12 @@ msgstr "התחילו להקליד שם מוצר…"
 
 msgid "Drag to reorder is not available here; the order you add them in is the order they appear."
 msgstr "אין כאן גרירה לסידור; הסדר שבו מוסיפים הוא הסדר שבו הם מוצגים."
+
+msgid "Search results for %1$s in %2$s"
+msgstr "תוצאות חיפוש עבור %1$s ב%2$s"
+
+msgid "Clear the text"
+msgstr "מחיקת הטקסט"
+
+msgid "Show all results"
+msgstr "הצגת כל התוצאות"

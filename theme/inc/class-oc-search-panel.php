@@ -41,7 +41,9 @@ final class Search_Panel {
 		<div id="oc-header-search" class="oc-searchbox" data-oc-search data-mode="<?php echo esc_attr( $mode ); ?>" data-min="<?php echo esc_attr( (string) $min ); ?>" data-action="<?php echo esc_url( home_url( '/' ) ); ?>" data-cart="<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>" hidden>
 			<div class="oc-search__inner oc-searchbox__stage">
 				<form class="oc-search__bar" role="search" method="get" action="<?php echo esc_url( home_url( '/' ) ); ?>">
-					<button type="submit" class="oc-search__go" aria-label="<?php esc_attr_e( 'Search', 'oc-theme' ); ?>"><?php echo self::glass(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></button>
+					<button type="button" class="oc-search__wipe" hidden data-oc-search-clear aria-label="<?php esc_attr_e( 'Clear the text', 'oc-theme' ); ?>">
+						<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+					</button>
 					<input
 						type="search"
 						name="s"
@@ -57,12 +59,10 @@ final class Search_Panel {
 						placeholder="<?php esc_attr_e( 'Search products', 'oc-theme' ); ?>"
 						data-oc-search-field />
 					<input type="hidden" name="post_type" value="product" />
-					<button type="button" class="oc-search__clear" hidden data-oc-search-clear aria-label="<?php esc_attr_e( 'Clear', 'oc-theme' ); ?>">
-						<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
-					</button>
+					<button type="submit" class="oc-search__go" aria-label="<?php esc_attr_e( 'Show all results', 'oc-theme' ); ?>"><?php echo self::glass(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></button>
 					<span class="oc-search__sep" aria-hidden="true"></span>
 					<button type="button" class="oc-search__close" data-oc-search-close aria-label="<?php esc_attr_e( 'Close search', 'oc-theme' ); ?>">
-						<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M14 6l-6 6 6 6"/><path d="M20 12H9"/></svg>
+						<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
 					</button>
 				</form>
 
