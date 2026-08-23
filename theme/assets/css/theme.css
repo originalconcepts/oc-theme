@@ -1016,7 +1016,7 @@ html.oc-search-open { overflow: hidden; }
  * strip between the link and the panel it opens. The space settings still
  * nudge the word up or down inside that height — equal on both sides means
  * centred, which is where it started. */
-.oc-nav { align-self: stretch; }
+.oc-nav { display: flex; align-self: stretch; }
 .oc-nav__list { display: flex; align-items: stretch; gap: var(--oc-menu-gap, clamp(10px, 1.6vw, 22px)); }
 .oc-nav__list li { position: relative; }
 .oc-nav__list > li { display: flex; }
