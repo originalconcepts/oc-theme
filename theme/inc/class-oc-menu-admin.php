@@ -217,6 +217,7 @@ final class Menu_Admin {
 				'addLink'  => __( 'Add a link', 'oc-theme' ),
 				'linkText' => __( 'Words', 'oc-theme' ),
 				'linkUrl'  => __( 'Address', 'oc-theme' ),
+				'notAnAddress' => __( 'This is not an address yet — pick one from the list, or paste a link.', 'oc-theme' ),
 				'linkTag'  => __( 'Badge', 'oc-theme' ),
 				'choose'   => __( 'Choose', 'oc-theme' ),
 				'clear'    => __( 'Remove', 'oc-theme' ),

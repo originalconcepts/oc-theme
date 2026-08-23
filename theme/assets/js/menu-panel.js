@@ -540,8 +540,27 @@
 			}, 240 );
 		} );
 
+		/* Typing a category name and walking away leaves the name sitting in
+		 * an address field, where it is not an address — the row then renders
+		 * as plain text and the link silently is not one. Say so, right where
+		 * it happened. */
 		input.addEventListener( 'blur', function () {
 			setTimeout( close, 180 );
+
+			var value = input.value.trim();
+			var looksLikeOne = value === '' ||
+				value.indexOf( 'http' ) === 0 ||
+				value.indexOf( '/' ) === 0 ||
+				value.indexOf( '#' ) === 0 ||
+				value.indexOf( 'mailto:' ) === 0 ||
+				value.indexOf( 'tel:' ) === 0;
+
+			input.classList.toggle( 'is-bad', ! looksLikeOne );
+			input.title = looksLikeOne ? '' : T.notAnAddress;
+		} );
+
+		input.addEventListener( 'focus', function () {
+			input.classList.remove( 'is-bad' );
 		} );
 
 		return box;

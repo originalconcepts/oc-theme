@@ -311,3 +311,11 @@
 }
 
 .oc-mi__state { color: #646970; font-size: 12px; }
+
+/* An address field holding something that is not an address. The row would
+ * still save — it would just quietly stop being a link. */
+.oc-mp__f input[type="text"].is-bad,
+.oc-mp__row input[type="text"].is-bad {
+	border-color: #b32d2e;
+	box-shadow: 0 0 0 1px #b32d2e;
+}
