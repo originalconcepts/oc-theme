@@ -580,20 +580,24 @@ final class Menu_Panel {
 	 */
 
 	/**
-	 * A number that changes whenever any panel does. Keying the transients by
+	 * A token that changes whenever any panel does. Keying the transients by
 	 * it turns invalidation into one option write, rather than a hunt for
 	 * every key that might now be wrong.
 	 *
-	 * @return int
+	 * @return string
 	 */
-	public static function version(): int {
-		return (int) get_option( 'oc_menu_panel_ver', 1 );
+	public static function version(): string {
+		// The stored number covers content changes. The file's own timestamp
+		// covers the other kind: a deploy that changes how a panel is drawn
+		// leaves every cached panel drawn the old way, and nothing about
+		// saving a menu would ever notice.
+		return (int) get_option( 'oc_menu_panel_ver', 1 ) . '.' . (int) filemtime( __FILE__ );
 	}
 
 	/**
 	 * Retire every cached panel.
 	 */
 	public static function flush(): void {
-		update_option( 'oc_menu_panel_ver', self::version() + 1, false );
+		update_option( 'oc_menu_panel_ver', (int) get_option( 'oc_menu_panel_ver', 1 ) + 1, false );
 	}
 }
