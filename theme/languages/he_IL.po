@@ -3521,5 +3521,6 @@ msgstr "פתיחת %s"
 
 msgid "Close menu"
 msgstr "סגירת התפריט"
+
 msgid "This is not an address yet — pick one from the list, or paste a link."
 msgstr "זו עדיין לא כתובת — בחרו מהרשימה, או הדביקו קישור."
