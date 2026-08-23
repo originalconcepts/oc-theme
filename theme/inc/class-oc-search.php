@@ -654,7 +654,13 @@ final class Search {
 		);
 
 		if ( $empty ) {
-			return array_slice( self::without_blocked( $rows ), 0, $limit );
+			$rows = self::without_blocked( $rows );
+
+			foreach ( $rows as $row ) {
+				$row->term = Search_Index::pretty( (string) $row->term );
+			}
+
+			return array_slice( $rows, 0, $limit );
 		}
 
 		return array_slice( self::worth_showing( $rows ), 0, $limit );
@@ -712,13 +718,24 @@ final class Search {
 		foreach ( $rows as $row ) {
 			$folded = false;
 
+			$best = null;
+
 			foreach ( $kept as $longer ) {
-				if ( 0 === mb_strpos( $longer->term, $row->term ) ) {
-					$longer->searches += $row->searches;
-					$longer->clicks   += $row->clicks;
-					$folded            = true;
-					break;
+				if ( 0 !== mb_strpos( $longer->term, $row->term ) ) {
+					continue;
 				}
+
+				// "ספ" belongs with "ספה", which people actually search for,
+				// not with the longest phrase that happens to start the same.
+				if ( ! $best || $longer->searches > $best->searches ) {
+					$best = $longer;
+				}
+			}
+
+			if ( $best ) {
+				$best->searches += $row->searches;
+				$best->clicks   += $row->clicks;
+				$folded          = true;
 			}
 
 			if ( ! $folded ) {
@@ -739,6 +756,8 @@ final class Search {
 			if ( '' !== $whole ) {
 				$row->term = $whole;
 			}
+
+			$row->term = Search_Index::pretty( (string) $row->term );
 
 			$out[] = $row;
 		}

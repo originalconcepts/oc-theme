@@ -281,6 +281,40 @@ final class Search_Index {
 	}
 
 	/**
+	 * A normalised word, written the way a person writes it.
+	 *
+	 * Indexing folds the five final letters into their ordinary forms so that
+	 * "לחם" and "לחמי" share a stem. Anything shown back to a shopper has to
+	 * be folded out again, or the panel offers them "שולחנ".
+	 *
+	 * @param string $text Normalised text.
+	 */
+	public static function pretty( string $text ): string {
+		$words = explode( ' ', $text );
+
+		foreach ( $words as $i => $word ) {
+			if ( '' === $word ) {
+				continue;
+			}
+
+			$last = mb_substr( $word, -1, 1, 'UTF-8' );
+			$ends = array(
+				'מ' => 'ם',
+				'נ' => 'ן',
+				'צ' => 'ץ',
+				'פ' => 'ף',
+				'כ' => 'ך',
+			);
+
+			if ( isset( $ends[ $last ] ) ) {
+				$words[ $i ] = mb_substr( $word, 0, -1, 'UTF-8' ) . $ends[ $last ];
+			}
+		}
+
+		return implode( ' ', $words );
+	}
+
+	/**
 	 * The words of a query, each with the spellings it may appear as.
 	 *
 	 * A word and its prefix-stripped stem are the SAME word asked for once —
