@@ -301,9 +301,13 @@ final class Menu_Panel {
 	 * @return string
 	 */
 	private static function build( int $item_id, string $where, ?array $blocks = null ): string {
+		$columns = self::columns( $item_id, $where );
+
+		// Spare width only has a side to be gathered on when something is
+		// standing at the other one.
 		$parts = array_merge(
-			self::columns( $item_id, $where ),
-			self::extras( $item_id, $where, $blocks )
+			$columns,
+			self::extras( $item_id, $where, $blocks, ! empty( $columns ) )
 		);
 
 		if ( empty( $parts ) ) {
@@ -449,10 +453,10 @@ final class Menu_Panel {
 	 * @param string $where   Either 'nav' or 'drawer'.
 	 * @return array<int,array{track:string,html:string}>
 	 */
-	private static function extras( int $item_id, string $where, ?array $blocks = null ): array {
+	private static function extras( int $item_id, string $where, ?array $blocks = null, bool $gap = true ): array {
 		$widths = self::widths();
 		$out    = array();
-		$first  = true;
+		$first  = $gap;
 
 		foreach ( null === $blocks ? self::blocks( $item_id ) : self::clean( $blocks ) as $block ) {
 			if ( 'drawer' === $where ? 'desktop' === $block['dev'] : 'mobile' === $block['dev'] ) {
