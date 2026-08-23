@@ -456,13 +456,21 @@ a { color: inherit; }
 	gap: 6px;
 }
 
-.oc-search__histterm {
+/* A past search is a line of text with a way to forget it, not a pill: the
+ * pills above are the shop speaking, these are the visitor's own words. */
+.oc-searchbox .oc-search__histterm {
 	border: 0;
+	background: none;
 	padding: 5px 0 6px;
 	text-align: start;
 	flex: 1;
 	border-radius: 0;
 	text-underline-offset: 3px;
+}
+
+.oc-searchbox .oc-search__histterm:hover {
+	border: 0;
+	text-decoration: underline;
 }
 
 .oc-search__histdel {
