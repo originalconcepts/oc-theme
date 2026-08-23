@@ -3112,3 +3112,6 @@ msgstr "לא ניתן היה להוסיף."
 
 msgid "How the search panel presents itself. What it searches, and the words it answers to, live under Theme settings."
 msgstr "איך פאנל החיפוש מוצג. איפה הוא מחפש ולאילו מילים הוא עונה — בהגדרות התבנית."
+
+msgid "Did you mean %s?"
+msgstr "התכוונת ל%s?"

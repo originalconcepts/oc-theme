@@ -468,7 +468,9 @@ final class Search {
 	 * @param string $text Typed text.
 	 */
 	public static function flip_layout( string $text ): string {
-		$en = 'qwertyuiopasdfghjkl;zxcvbnm,.\'/';
+		// Position by position on the same keys: q sits where / does, x where
+		// ס does, and so on. The two strings must stay the same length.
+		$en = 'qwertyuiopasdfghjkl;zxcvbnm,./';
 		$he = '/\'קראטוןםפשדגכעיחלךףזסבהנמצתץ.';
 
 		$from = preg_match( '/[\x{0590}-\x{05FF}]/u', $text ) ? $he : $en;

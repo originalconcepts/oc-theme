@@ -39,7 +39,7 @@ final class Search_Panel {
 		ob_start();
 		?>
 		<div id="oc-header-search" class="oc-searchbox" data-oc-search data-mode="<?php echo esc_attr( $mode ); ?>" data-min="<?php echo esc_attr( (string) $min ); ?>" data-action="<?php echo esc_url( home_url( '/' ) ); ?>" data-cart="<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>" hidden>
-			<div class="oc-search__inner">
+			<div class="oc-search__inner oc-searchbox__stage">
 				<form class="oc-search__bar" role="search" method="get" action="<?php echo esc_url( home_url( '/' ) ); ?>">
 					<button type="submit" class="oc-search__go" aria-label="<?php esc_attr_e( 'Search', 'oc-theme' ); ?>"><?php echo self::glass(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></button>
 					<input
@@ -232,8 +232,8 @@ final class Search_Panel {
 					<p class="oc-search__did">
 						<?php
 						printf(
-							/* translators: %s: the corrected search word. */
-							esc_html__( 'Showing results for %s', 'oc-theme' ),
+							/* translators: %s: the word we think was meant. */
+							esc_html__( 'Did you mean %s?', 'oc-theme' ),
 							'<button type="button" class="oc-search__did-b" data-oc-search-term="' . esc_attr( $suggested ) . '">' . esc_html( $suggested ) . '</button>'
 						);
 						?>
@@ -338,7 +338,7 @@ final class Search_Panel {
 					'<li><a href="%s" data-oc-search-hit>%s<span>%s</span></a></li>',
 					esc_url( (string) get_term_link( $term_obj ) ),
 					$logo, // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- core markup.
-					esc_html( $term_obj->name )
+					self::mark( $term_obj->name, $term ) // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside.
 				);
 			}
 
@@ -388,7 +388,7 @@ final class Search_Panel {
 	 * @param string $title Product title.
 	 * @param string $term  Query.
 	 */
-	private static function mark( string $title, string $term ): string {
+	public static function mark( string $title, string $term ): string {
 		$tokens = Search_Index::tokens( $term );
 
 		if ( ! $tokens ) {

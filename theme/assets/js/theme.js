@@ -441,8 +441,11 @@
 
 		/* -- opening and closing -- */
 
+		var sCloseTimer = null;
+
 		function setSearchOpen( open ) {
-			searchPanel.hidden = ! open;
+			clearTimeout( sCloseTimer );
+
 			document.documentElement.classList.toggle( 'oc-search-open', open );
 
 			searchToggles.forEach( function ( t ) {
@@ -450,13 +453,29 @@
 			} );
 
 			if ( open ) {
+				searchPanel.hidden = false;
 				histPaint();
+
+				// One frame between showing it and opening it, or the browser
+				// has nothing to animate from.
+				requestAnimationFrame( function () {
+					searchPanel.classList.add( 'is-open' );
+				} );
 
 				if ( sField ) {
 					sField.focus();
 					sField.select();
 				}
+
+				return;
 			}
+
+			searchPanel.classList.remove( 'is-open' );
+
+			// Let it fold away before it leaves the page.
+			sCloseTimer = setTimeout( function () {
+				searchPanel.hidden = true;
+			}, 220 );
 		}
 
 		searchToggles.forEach( function ( toggle ) {

@@ -237,10 +237,55 @@ a { color: inherit; }
 .oc-searchbox {
 	background: var(--oc-header-bg, var(--oc-surface));
 	border-block-end: 1px solid var(--oc-line);
-	box-shadow: 0 16px 32px -24px rgba(0, 0, 0, .35);
+	box-shadow: 0 24px 48px -32px rgba(0, 0, 0, .28);
+
+	/* It arrives rather than appears: the panel unrolls from under the header
+	 * and its contents settle a moment later. */
+	transform-origin: top center;
+	transition: opacity .22s ease, transform .28s cubic-bezier(.2, .7, .3, 1);
+	opacity: 0;
+	transform: translateY(-10px);
+}
+
+.oc-searchbox.is-open {
+	opacity: 1;
+	transform: none;
 }
 
 .oc-searchbox[hidden] { display: none; }
+
+.oc-searchbox .oc-search__bar {
+	transition: box-shadow .2s ease, border-color .2s ease;
+}
+
+.oc-searchbox.is-open .oc-search__bar:focus-within {
+	box-shadow: 0 0 0 4px color-mix(in srgb, var(--oc-ink) 8%, transparent);
+}
+
+.oc-searchbox__stage > * {
+	opacity: 0;
+	transform: translateY(6px);
+	transition: opacity .26s ease, transform .26s ease;
+}
+
+.oc-searchbox.is-open .oc-searchbox__stage > * {
+	opacity: 1;
+	transform: none;
+	transition-delay: .06s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.oc-searchbox,
+	.oc-searchbox .oc-search__bar,
+	.oc-searchbox__stage > * {
+		transition: none;
+	}
+
+	.oc-searchbox {
+		opacity: 1;
+		transform: none;
+	}
+}
 
 .oc-search__inner {
 	max-inline-size: var(--oc-content-width, 1280px);
@@ -434,6 +479,12 @@ a { color: inherit; }
 
 .oc-search__terms a:hover { text-decoration: underline; }
 
+.oc-search__terms mark {
+	background: none;
+	color: inherit;
+	font-weight: 700;
+}
+
 .oc-search__brandimg {
 	inline-size: 26px;
 	block-size: 26px;
@@ -443,14 +494,12 @@ a { color: inherit; }
 
 /* results */
 
+/* Rows, but laid out in columns across the panel: a single tall list wastes
+ * the width and strands each add button far from its product. */
 .oc-search__prods.is-list {
-	display: flex;
-	flex-direction: column;
-	gap: 2px;
-	/* A row of text has a comfortable reading width; letting it stretch to
-	 * the whole panel would leave the add button stranded far from the
-	 * product it belongs to. */
-	max-inline-size: 620px;
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+	gap: 2px 24px;
 }
 
 .oc-search__prods.is-cards {
@@ -608,12 +657,15 @@ a { color: inherit; }
 }
 
 .oc-search__all {
-	display: inline-block;
-	margin-block-start: 14px;
-	font-size: .92rem;
+	display: block;
+	inline-size: fit-content;
+	margin: 22px auto 0;
+	font-size: .95rem;
 	color: inherit;
-	text-underline-offset: 4px;
+	text-underline-offset: 5px;
 }
+
+.oc-search__all:hover { text-decoration-thickness: 2px; }
 
 .oc-search__did {
 	font-size: .9rem;
