@@ -3690,3 +3690,9 @@ msgstr "גודל התמונה (פיקסלים)"
 
 msgid "Picture corners"
 msgstr "פינות התמונה"
+
+msgid "How far they step under the cursor (px)"
+msgstr "כמה הם זזים בריחוף (פיקסלים)"
+
+msgid "Forwards — leftwards in Hebrew. Zero holds them still."
+msgstr "קדימה — שמאלה בעברית. 0 משאיר אותם במקום."

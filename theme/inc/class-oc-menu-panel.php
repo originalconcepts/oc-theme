@@ -331,7 +331,10 @@ final class Menu_Panel {
 	 * @return string
 	 */
 	private static function build( int $item_id, string $where, ?array $blocks = null ): string {
-		$columns = self::columns( $item_id, $where );
+		// The drawer is the hierarchy already: it walks the same children down
+		// its own rows. Handing it the columns as well printed every category
+		// twice — once as a row you can open, once as a heading you cannot.
+		$columns = 'drawer' === $where ? array() : self::columns( $item_id, $where );
 
 		// Spare width only has a side to be gathered on when something is
 		// standing at the other one.

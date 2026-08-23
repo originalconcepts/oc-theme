@@ -631,7 +631,11 @@ final class Menu {
 	 * @return string
 	 */
 	private static function drawer_level( array $kids, int $parent, int $depth ): string {
-		if ( empty( $kids[ $parent ] ) || $depth > self::depth() ) {
+		// Three levels, whatever the drop-down setting says. That setting is
+		// about a drop-down hanging in mid-air, where a third level has
+		// nowhere to go; a drawer is a stack of screens and the third level
+		// is simply the next one.
+		if ( empty( $kids[ $parent ] ) || $depth > 3 ) {
 			return '';
 		}
 

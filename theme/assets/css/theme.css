@@ -1008,8 +1008,8 @@ html.oc-search-open { overflow: hidden; }
  * starts — right in Hebrew, left in Latin — so the menu assembles itself in
  * the direction the eye is already moving. Said once, for the bar, the panel
  * and the drawer alike. */
-:root { --oc-in-x: -18px; }
-[dir="rtl"] { --oc-in-x: 18px; }
+:root { --oc-in-x: -18px; --oc-fwd: 1; }
+[dir="rtl"] { --oc-in-x: 18px; --oc-fwd: -1; }
 
 .oc-nav { background: var(--oc-menu-bar-bg, transparent); }
 
@@ -1128,7 +1128,7 @@ html.oc-search-open { overflow: hidden; }
 /* Piece by piece: each row arrives a beat after the one before it. The delay
  * comes from --i, and twelve is where the effect stops being a rhythm and
  * starts being a wait — beyond that they all arrive together. */
-.oc-nav--mo-stagger .oc-nav__list .sub-menu > li { opacity: 0; transform: translateX(var(--oc-in-x, -18px)); }
+.oc-nav--mo-stagger .oc-nav__list .sub-menu > li { opacity: 0; transform: translateY(6px); }
 
 /* The lead is what makes the first rows readable. Without it they arrive
  * while the panel itself is still fading up, so their entrance happens
@@ -1258,8 +1258,10 @@ html.oc-menu-open .oc-menu-dim::before {
 .oc-nav--w-content .oc-mega__row,
 .oc-nav--w-full .oc-mega__row { max-inline-size: var(--oc-content-width, 1280px); margin-inline: auto; }
 
-/* Piece by piece, the same rhythm and the same lead as everywhere else. */
-.oc-nav--mo-stagger .oc-mega .oc-mb { opacity: 0; transform: translateX(var(--oc-in-x, -18px)); }
+/* Piece by piece. A column arriving on a desktop fades and lifts a little:
+ * the drawer's sideways travel is right for a stack of rows sliding in from
+ * the edge of a phone, and wrong for columns already standing in a row. */
+.oc-nav--mo-stagger .oc-mega .oc-mb { opacity: 0; transform: translateY(8px); }
 
 .oc-nav--mo-stagger .oc-nav__list > li:hover > .oc-mega .oc-mb,
 .oc-nav--mo-stagger .oc-nav__list > li.is-open > .oc-mega .oc-mb,
@@ -1324,6 +1326,19 @@ html.oc-menu-open .oc-menu-dim::before {
 }
 
 .oc-mb__list a:hover { color: var(--oc-mega-tx-h, var(--oc-primary)); }
+
+/* A link in a panel steps forward under the cursor — leftwards in Hebrew,
+ * rightwards in Latin, always the way the sentence was going. Nought turns
+ * it off. Not in the drawer: there is no cursor on a phone to answer. */
+.oc-nav .oc-mega .oc-mb__list a,
+.oc-nav .oc-mega .oc-mb__g a {
+	transition: color .18s ease, transform .18s cubic-bezier(.2, .7, .3, 1);
+}
+
+.oc-nav .oc-mega .oc-mb__list a:hover,
+.oc-nav .oc-mega .oc-mb__g a:hover {
+	transform: translateX(calc(var(--oc-mega-hov, 3px) * var(--oc-fwd, 1)));
+}
 
 /* --- a picture --- */
 

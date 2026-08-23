@@ -640,7 +640,7 @@ final class Customizer {
 			__( 'The content width comes from the site\'s own; on a wide layout it can look the same as the whole page.', 'oc-theme' )
 		);
 		$this->number( $c, 'oc_mega_pad', 'oc_menu', __( 'Space inside the panel (px)', 'oc-theme' ), 28, 8, 72, null, __( 'Between the edge of the panel and what is in it.', 'oc-theme' ) );
-		$this->number( $c, 'oc_mega_gap', 'oc_menu', __( 'Space between the columns (px)', 'oc-theme' ), 28, 8, 72 );
+		$this->number( $c, 'oc_mega_gap', 'oc_menu', __( 'Space between the columns (px)', 'oc-theme' ), 48, 8, 96 );
 		$this->number( $c, 'oc_mega_rt', 'oc_menu', __( 'Rounding, top corners (px)', 'oc-theme' ), 0, 0, 32 );
 		$this->number( $c, 'oc_mega_rb', 'oc_menu', __( 'Rounding, bottom corners (px)', 'oc-theme' ), 0, 0, 32 );
 
@@ -648,6 +648,7 @@ final class Customizer {
 		$this->color( $c, 'oc_mega_head', 'oc_menu', __( 'Colour of the column headings', 'oc-theme' ) );
 		$this->color( $c, 'oc_mega_tx', 'oc_menu', __( 'Colour of the links inside', 'oc-theme' ) );
 		$this->color( $c, 'oc_mega_tx_h', 'oc_menu', __( 'Those links under the cursor', 'oc-theme' ) );
+		$this->number( $c, 'oc_mega_hov', 'oc_menu', __( 'How far they step under the cursor (px)', 'oc-theme' ), 3, 0, 12, null, __( 'Forwards — leftwards in Hebrew. Zero holds them still.', 'oc-theme' ) );
 		$this->number( $c, 'oc_mega_fs', 'oc_menu', __( 'Text size inside the panel (px)', 'oc-theme' ), 15, 11, 22 );
 
 		$this->color( $c, 'oc_mega_line_t', 'oc_menu', __( 'Line above the panel', 'oc-theme' ), __( 'What separates it from the header.', 'oc-theme' ) );
