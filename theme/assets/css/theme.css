@@ -290,7 +290,7 @@ a { color: inherit; }
 .oc-search__inner {
 	max-inline-size: var(--oc-content-width, 1280px);
 	margin-inline: auto;
-	padding: 16px var(--oc-gap) 22px;
+	padding: 18px var(--oc-gap) 30px;
 }
 
 /* the box */
@@ -522,11 +522,15 @@ a { color: inherit; }
 	display: flex;
 	align-items: center;
 	gap: 12px;
-	flex: 1;
+	/* Not flex:1 — a stretched link would push the add button to the far edge
+	 * of the cell, away from the product it belongs to. */
+	flex: 0 1 auto;
 	color: inherit;
 	text-decoration: none;
 	min-inline-size: 0;
 }
+
+.oc-search__prods.is-list .oc-search__prod { justify-content: flex-start; }
 
 .oc-search__img {
 	inline-size: 56px;

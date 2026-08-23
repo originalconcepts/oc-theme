@@ -727,17 +727,45 @@ final class Search {
 			return array();
 		}
 
-		$hits = array();
+		$hits   = array();
+		$groups = Search_Index::query_groups( $query );
 
 		foreach ( $terms as $term ) {
-			$name = Search_Index::normalise( $term->name );
-			$syn  = array_map( array( Search_Index::class, 'normalise' ), Search_Index::term_synonyms( (int) $term->term_id ) );
+			// A term answers the same way a product does: word by word, with
+			// its own synonyms counted in. Otherwise "ספה" would fail to find
+			// the category called "ספות וכורסאות".
+			$words = Search_Index::tokens( $term->name );
 
-			foreach ( array_merge( array( $name ), $syn ) as $candidate ) {
-				if ( '' !== $candidate && false !== mb_strpos( $candidate, $flat ) ) {
-					$hits[] = $term;
-					continue 2;
+			foreach ( Search_Index::term_synonyms( (int) $term->term_id ) as $syn ) {
+				$words = array_merge( $words, Search_Index::tokens( (string) $syn ) );
+			}
+
+			foreach ( Search_Index::expand( $term->name ) as $syn ) {
+				$words = array_merge( $words, Search_Index::tokens( (string) $syn ) );
+			}
+
+			$all = true;
+
+			foreach ( $groups as $spellings ) {
+				$found = false;
+
+				foreach ( $spellings as $spelling ) {
+					foreach ( $words as $word ) {
+						if ( 0 === mb_strpos( $word, $spelling ) ) {
+							$found = true;
+							break 2;
+						}
+					}
 				}
+
+				if ( ! $found ) {
+					$all = false;
+					break;
+				}
+			}
+
+			if ( $all && $groups ) {
+				$hits[] = $term;
 			}
 		}
 
