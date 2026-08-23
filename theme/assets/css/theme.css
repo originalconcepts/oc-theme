@@ -1003,21 +1003,82 @@ html.oc-search-open { overflow: hidden; }
 	padding: 0;
 }
 
-.oc-nav__list { display: flex; gap: clamp(10px, 1.6vw, 22px); }
+/* Which side a line starts from. Latin reads left to right and Hebrew right
+ * to left, and an underline that grows the wrong way reads as a mistake even
+ * to someone who could not say why. */
+.oc-nav { --oc-ul-s: left center; --oc-ul-e: right center; }
+[dir="rtl"] .oc-nav { --oc-ul-s: right center; --oc-ul-e: left center; }
+
+.oc-nav { background: var(--oc-menu-bar-bg, transparent); }
+
+.oc-nav__list { display: flex; gap: var(--oc-menu-gap, clamp(10px, 1.6vw, 22px)); }
 .oc-nav__list li { position: relative; }
 
 .oc-nav__list a {
 	display: block;
-	padding-block: 10px;
 	text-decoration: none;
-	font-weight: 500;
+	font-weight: var(--oc-menu-fw, 500);
 	font-size: var(--oc-menu-fs, 1rem);
 	white-space: nowrap;
 }
 
-.oc-nav__list a:hover { color: var(--oc-primary); }
+.oc-nav__list > li > a {
+	position: relative;
+	padding-block: var(--oc-menu-pt, 10px) var(--oc-menu-pb, 10px);
+	letter-spacing: var(--oc-menu-track, 0);
+	text-transform: var(--oc-menu-tt, none);
+	color: var(--oc-menu-tx, var(--oc-header-tx, inherit));
+	transition: color .2s ease, transform .2s ease;
+}
 
-/* Sub-menus open on hover and on keyboard focus. */
+.oc-nav__list > li > a:hover,
+.oc-nav__list > li > a:focus-visible,
+.oc-nav__list > li.current-menu-item > a,
+.oc-nav__list > li.current-menu-ancestor > a { color: var(--oc-menu-tx-h, var(--oc-primary)); }
+
+/* A link may carry its own colour, set on the Menus screen. It has to beat
+ * the hover rule as well, or the link changes identity under the cursor. */
+.oc-nav__list > li > a[style*="--oc-link-c"],
+.oc-nav__list > li > a[style*="--oc-link-c"]:hover { color: var(--oc-link-c); }
+
+/* --- the line under the word --- */
+
+.oc-nav--hv-fill .oc-nav__list > li > a::after,
+.oc-nav--hv-slide .oc-nav__list > li > a::after {
+	content: '';
+	position: absolute;
+	inset-block-end: max(2px, calc(var(--oc-menu-pb, 10px) * .3));
+	inset-inline: 0;
+	block-size: var(--oc-menu-ul-w, 2px);
+	background: var(--oc-menu-ul, currentColor);
+	transform: scaleX(0);
+	transition: transform .28s cubic-bezier(.4, 0, .2, 1);
+}
+
+.oc-nav--hv-fill .oc-nav__list > li > a::after { transform-origin: var(--oc-ul-s); }
+
+.oc-nav--hv-fill .oc-nav__list > li > a:hover::after,
+.oc-nav--hv-fill .oc-nav__list > li > a:focus-visible::after,
+.oc-nav--hv-fill .oc-nav__list > li.current-menu-item > a::after,
+.oc-nav--hv-fill .oc-nav__list > li.current-menu-ancestor > a::after { transform: scaleX(1); }
+
+/* Slide: the line leaves by the far side and the next one arrives from the
+ * near side, so the two reads as one line travelling across. */
+.oc-nav--hv-slide .oc-nav__list > li > a::after { transform-origin: var(--oc-ul-e); }
+
+.oc-nav--hv-slide .oc-nav__list > li > a:hover::after,
+.oc-nav--hv-slide .oc-nav__list > li > a:focus-visible::after,
+.oc-nav--hv-slide .oc-nav__list > li.current-menu-item > a::after,
+.oc-nav--hv-slide .oc-nav__list > li.current-menu-ancestor > a::after {
+	transform: scaleX(1);
+	transform-origin: var(--oc-ul-s);
+}
+
+.oc-nav--hv-lift .oc-nav__list > li > a:hover,
+.oc-nav--hv-lift .oc-nav__list > li > a:focus-visible { transform: translateY(-2px); }
+
+/* --- what opens underneath --- */
+
 .oc-nav__list .sub-menu {
 	position: absolute;
 	inset-block-start: 100%;
@@ -1032,7 +1093,8 @@ html.oc-search-open { overflow: hidden; }
 	box-shadow: 0 8px 28px rgb(0 0 0 / 10%);
 	opacity: 0;
 	visibility: hidden;
-	transition: opacity .14s ease;
+	transform: translateY(-6px);
+	transition: opacity .18s ease, transform .18s ease, visibility 0s linear .18s;
 	z-index: 20;
 }
 
@@ -1042,12 +1104,72 @@ html.oc-search-open { overflow: hidden; }
 }
 
 .oc-nav__list li:hover > .sub-menu,
+.oc-nav__list li.is-open > .sub-menu,
 .oc-nav__list li:focus-within > .sub-menu {
 	opacity: 1;
 	visibility: visible;
+	transform: none;
+	transition: opacity .22s ease, transform .22s ease, visibility 0s;
 }
 
 .oc-nav__list .sub-menu a { padding: 8px 16px; }
+
+/* Piece by piece: each row arrives a beat after the one before it. The delay
+ * comes from --i, and twelve is where the effect stops being a rhythm and
+ * starts being a wait — beyond that they all arrive together. */
+.oc-nav--mo-stagger .oc-nav__list .sub-menu > li { opacity: 0; transform: translateY(6px); }
+
+.oc-nav--mo-stagger .oc-nav__list li:hover > .sub-menu > li,
+.oc-nav--mo-stagger .oc-nav__list li.is-open > .sub-menu > li,
+.oc-nav--mo-stagger .oc-nav__list li:focus-within > .sub-menu > li {
+	animation: oc-menu-in .26s cubic-bezier(.2, .7, .3, 1) forwards;
+	animation-delay: calc(var(--oc-menu-step, 40ms) * var(--i, 0));
+}
+
+.oc-nav--mo-stagger .sub-menu > li:nth-child(1)  { --i: 0; }
+.oc-nav--mo-stagger .sub-menu > li:nth-child(2)  { --i: 1; }
+.oc-nav--mo-stagger .sub-menu > li:nth-child(3)  { --i: 2; }
+.oc-nav--mo-stagger .sub-menu > li:nth-child(4)  { --i: 3; }
+.oc-nav--mo-stagger .sub-menu > li:nth-child(5)  { --i: 4; }
+.oc-nav--mo-stagger .sub-menu > li:nth-child(6)  { --i: 5; }
+.oc-nav--mo-stagger .sub-menu > li:nth-child(7)  { --i: 6; }
+.oc-nav--mo-stagger .sub-menu > li:nth-child(8)  { --i: 7; }
+.oc-nav--mo-stagger .sub-menu > li:nth-child(9)  { --i: 8; }
+.oc-nav--mo-stagger .sub-menu > li:nth-child(10) { --i: 9; }
+.oc-nav--mo-stagger .sub-menu > li:nth-child(11) { --i: 10; }
+.oc-nav--mo-stagger .sub-menu > li:nth-child(12) { --i: 11; }
+
+@keyframes oc-menu-in { to { opacity: 1; transform: none; } }
+
+.oc-nav--mo-none .oc-nav__list .sub-menu { transition: none; transform: none; }
+.oc-nav--mo-none .oc-nav__list > li > a::after { transition: none; }
+
+/* Dimming the page behind an open panel. Fixed and below the header's 50, so
+ * the menu itself stays lit while everything under it recedes. */
+.oc-menu-dim::before {
+	content: '';
+	position: fixed;
+	inset: 0;
+	background: rgb(0 0 0 / 28%);
+	opacity: 0;
+	visibility: hidden;
+	pointer-events: none;
+	z-index: 45;
+	transition: opacity .2s ease, visibility 0s linear .2s;
+}
+
+html.oc-menu-open .oc-menu-dim::before {
+	opacity: 1;
+	visibility: visible;
+	transition: opacity .22s ease, visibility 0s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.oc-nav__list .sub-menu,
+	.oc-nav__list > li > a,
+	.oc-nav__list > li > a::after { transition: none; }
+	.oc-nav--mo-stagger .oc-nav__list .sub-menu > li { opacity: 1; transform: none; animation: none; }
+}
 
 .oc-mobile-menu {
 	display: none;

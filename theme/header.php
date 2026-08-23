@@ -108,14 +108,14 @@ $oc_topbar_on   = (bool) get_theme_mod( 'oc_topbar', false ) && ( ! empty( $oc_t
 		</div>
 
 		<?php if ( has_nav_menu( 'primary' ) ) : ?>
-			<nav class="oc-nav" aria-label="<?php esc_attr_e( 'Primary', 'oc-theme' ); ?>">
+			<nav class="<?php echo esc_attr( OC\Theme\Menu::nav_class() ); ?>" aria-label="<?php esc_attr_e( 'Primary', 'oc-theme' ); ?>">
 				<?php
 				wp_nav_menu(
 					array(
 						'theme_location' => 'primary',
 						'container'      => '',
 						'menu_class'     => 'oc-nav__list',
-						'depth'          => 3,
+						'depth'          => OC\Theme\Menu::depth(),
 					)
 				);
 				?>

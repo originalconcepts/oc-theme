@@ -134,6 +134,7 @@ final class Customizer {
 
 		$this->design_panel( $wp_customize );
 		$this->header_section( $wp_customize );
+		$this->menu_section( $wp_customize );
 		$this->topbar_section( $wp_customize );
 		$this->footer_section( $wp_customize );
 		$this->catalog_panel( $wp_customize, $shop_panel );
@@ -337,7 +338,6 @@ final class Customizer {
 
 		$this->number( $c, 'oc_logo_h', 'oc_header', __( 'Logo height — desktop (px)', 'oc-theme' ), 48, 20, 120 );
 		$this->number( $c, 'oc_logo_h_mobile', 'oc_header', __( 'Logo height — mobile (px)', 'oc-theme' ), 40, 16, 100 );
-		$this->number( $c, 'oc_menu_font_px', 'oc_header', __( 'Menu text size (px)', 'oc-theme' ), 16, 12, 24 );
 
 		$this->color( $c, 'oc_header_bg', 'oc_header', __( 'Header background', 'oc-theme' ) );
 		$this->color( $c, 'oc_header_tx', 'oc_header', __( 'Header text and icons colour', 'oc-theme' ) );
@@ -440,6 +440,161 @@ final class Customizer {
 			),
 			'icons'
 		);
+	}
+
+	/**
+	 * Menu: how the primary menu reads and moves.
+	 *
+	 * Which links it holds comes from the Menus screen, and whether the
+	 * desktop shows an open menu or a hamburger is a header layout — both
+	 * are said so in the description, because a setting nobody can find is
+	 * the same as a setting that does not exist.
+	 *
+	 * @param \WP_Customize_Manager $c Customizer manager.
+	 */
+	private function menu_section( \WP_Customize_Manager $c ): void {
+		$c->add_section(
+			'oc_menu',
+			array(
+				'title'       => __( 'Menu', 'oc-theme' ),
+				'description' => __( 'The links themselves come from the Menus screen. Whether the desktop shows an open menu or a hamburger is the header layout, above.', 'oc-theme' ),
+				'priority'    => 12,
+			)
+		);
+
+		$this->heading( $c, 'oc_h_menu_type', 'oc_menu', __( 'Letters', 'oc-theme' ) );
+
+		$this->number( $c, 'oc_menu_font_px', 'oc_menu', __( 'Text size (px)', 'oc-theme' ), 16, 11, 26 );
+
+		$this->choice(
+			$c,
+			'oc_menu_weight',
+			'oc_menu',
+			__( 'Weight', 'oc-theme' ),
+			array(
+				'400' => __( 'Light', 'oc-theme' ),
+				'500' => __( 'Regular', 'oc-theme' ),
+				'600' => __( 'Medium', 'oc-theme' ),
+				'700' => __( 'Bold', 'oc-theme' ),
+			),
+			'500'
+		);
+
+		$this->choice(
+			$c,
+			'oc_menu_case',
+			'oc_menu',
+			__( 'Letter case', 'oc-theme' ),
+			array(
+				'none'  => __( 'As written', 'oc-theme' ),
+				'upper' => __( 'Capitals', 'oc-theme' ),
+			),
+			'none'
+		);
+
+		// Stored in hundredths of an em: a whole number is easier to nudge in
+		// a spin box than 0.04, and the token divides it back down.
+		$this->number( $c, 'oc_menu_track', 'oc_menu', __( 'Space between letters', 'oc-theme' ), 0, 0, 20 );
+		$this->number( $c, 'oc_menu_gap', 'oc_menu', __( 'Space between links (px)', 'oc-theme' ), 22, 6, 60 );
+		$this->number( $c, 'oc_menu_pad_t', 'oc_menu', __( 'Space above the link (px)', 'oc-theme' ), 10, 0, 40 );
+		$this->number( $c, 'oc_menu_pad_b', 'oc_menu', __( 'Space below the link (px)', 'oc-theme' ), 10, 0, 40 );
+
+		$this->heading( $c, 'oc_h_menu_col', 'oc_menu', __( 'Colours', 'oc-theme' ) );
+
+		$this->color( $c, 'oc_menu_tx', 'oc_menu', __( 'Link colour', 'oc-theme' ) );
+		$this->color( $c, 'oc_menu_tx_h', 'oc_menu', __( 'Link colour on hover', 'oc-theme' ) );
+		$this->color( $c, 'oc_menu_bar_bg', 'oc_menu', __( 'Menu strip background', 'oc-theme' ) );
+
+		$this->heading( $c, 'oc_h_menu_hover', 'oc_menu', __( 'Hover', 'oc-theme' ) );
+
+		$this->preset(
+			$c,
+			'oc_menu_hover',
+			'oc_menu',
+			__( 'What happens under the cursor', 'oc-theme' ),
+			array(
+				'fill'  => array(
+					'label' => __( 'A line draws itself', 'oc-theme' ),
+					'hint'  => __( 'Grows from the start of the word', 'oc-theme' ),
+					'svg'   => '<svg class="oc-wf" width="118" height="42" viewBox="0 0 59 21" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="14" y="6" width="31" height="4" rx="2" opacity=".55"/><rect x="26" y="14" width="19" height="2" rx="1"/></svg>',
+				),
+				'slide' => array(
+					'label' => __( 'A line slides through', 'oc-theme' ),
+					'hint'  => __( 'One leaves as the next arrives', 'oc-theme' ),
+					'svg'   => '<svg class="oc-wf" width="118" height="42" viewBox="0 0 59 21" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="14" y="6" width="31" height="4" rx="2" opacity=".55"/><rect x="14" y="14" width="12" height="2" rx="1" opacity=".3"/><rect x="29" y="14" width="16" height="2" rx="1"/></svg>',
+				),
+				'lift'  => array(
+					'label' => __( 'The word lifts', 'oc-theme' ),
+					'hint'  => __( 'Two pixels up, nothing else', 'oc-theme' ),
+					'svg'   => '<svg class="oc-wf" width="118" height="42" viewBox="0 0 59 21" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="14" y="4" width="31" height="4" rx="2"/><path d="M27 13 h5 M29.5 11 l-2.5 2.5 h5 z" opacity=".35"/></svg>',
+				),
+				'plain' => array(
+					'label' => __( 'Only the colour changes', 'oc-theme' ),
+					'hint'  => __( 'For quiet sites', 'oc-theme' ),
+					'svg'   => '<svg class="oc-wf" width="118" height="42" viewBox="0 0 59 21" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="14" y="8" width="31" height="4" rx="2"/></svg>',
+				),
+			),
+			'fill',
+			'118px'
+		);
+
+		$this->color( $c, 'oc_menu_ul', 'oc_menu', __( 'Line colour', 'oc-theme' ) );
+		$this->number(
+			$c,
+			'oc_menu_ul_w',
+			'oc_menu',
+			__( 'Line thickness (px)', 'oc-theme' ),
+			2,
+			1,
+			6,
+			array(
+				'setting' => 'oc_menu_hover',
+				'values'  => array( 'fill', 'slide' ),
+			)
+		);
+
+		$this->heading( $c, 'oc_h_menu_open', 'oc_menu', __( 'Opening', 'oc-theme' ) );
+
+		$this->choice(
+			$c,
+			'oc_menu_motion',
+			'oc_menu',
+			__( 'How a panel arrives', 'oc-theme' ),
+			array(
+				'stagger' => __( 'Piece by piece', 'oc-theme' ),
+				'fade'    => __( 'All at once', 'oc-theme' ),
+				'none'    => __( 'No movement', 'oc-theme' ),
+			),
+			'stagger'
+		);
+
+		$this->number(
+			$c,
+			'oc_menu_stagger',
+			'oc_menu',
+			__( 'Pause between pieces (ms)', 'oc-theme' ),
+			40,
+			10,
+			140,
+			array(
+				'setting' => 'oc_menu_motion',
+				'values'  => array( 'stagger' ),
+			)
+		);
+
+		$this->choice(
+			$c,
+			'oc_menu_depth',
+			'oc_menu',
+			__( 'Levels a plain drop-down may reach', 'oc-theme' ),
+			array(
+				'2' => __( 'Two — a link and its children', 'oc-theme' ),
+				'3' => __( 'Three — a grandchild as well', 'oc-theme' ),
+			),
+			'2'
+		);
+
+		$this->toggle( $c, 'oc_menu_dim', 'oc_menu', __( 'Dim the page behind an open panel', 'oc-theme' ), false );
 	}
 
 	/**

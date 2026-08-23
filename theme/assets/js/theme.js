@@ -28,6 +28,72 @@
 		col.appendChild( inner );
 	} );
 
+	/* ---------- primary menu ---------- */
+
+	/* CSS opens a panel on :hover all by itself, and that keeps working if
+	 * this never runs. What the class adds is the two things :hover cannot
+	 * do: hold the panel open for a moment after the cursor leaves, so a
+	 * diagonal move towards its corner does not close it on the way, and
+	 * tell the page to dim behind it. Pointer devices only — on a touch
+	 * screen there is no cursor to have intent. */
+	var ocNav = document.querySelector( '.oc-nav' );
+
+	if ( ocNav && window.matchMedia( '(hover: hover)' ).matches ) {
+		var navOpen = null;
+		var navTimer = null;
+
+		function navShow( li ) {
+			clearTimeout( navTimer );
+
+			if ( navOpen && navOpen !== li ) {
+				navOpen.classList.remove( 'is-open' );
+			}
+
+			navOpen = li;
+			li.classList.add( 'is-open' );
+			document.documentElement.classList.add( 'oc-menu-open' );
+		}
+
+		function navHide( delay ) {
+			clearTimeout( navTimer );
+			navTimer = setTimeout( function () {
+				if ( navOpen ) {
+					navOpen.classList.remove( 'is-open' );
+					navOpen = null;
+				}
+				document.documentElement.classList.remove( 'oc-menu-open' );
+			}, delay === undefined ? 180 : delay );
+		}
+
+		Array.prototype.forEach.call( ocNav.querySelectorAll( '.oc-nav__list > li' ), function ( li ) {
+			if ( ! li.querySelector( '.sub-menu' ) ) {
+				return;
+			}
+
+			li.addEventListener( 'pointerenter', function () { navShow( li ); } );
+			li.addEventListener( 'pointerleave', function () { navHide(); } );
+			li.addEventListener( 'focusin', function () { navShow( li ); } );
+			li.addEventListener( 'focusout', function ( event ) {
+				if ( ! li.contains( event.relatedTarget ) ) {
+					navHide( 0 );
+				}
+			} );
+		} );
+
+		document.addEventListener( 'keydown', function ( event ) {
+			if ( event.key !== 'Escape' || ! navOpen ) {
+				return;
+			}
+
+			var link = navOpen.querySelector( 'a' );
+			navHide( 0 );
+
+			if ( link ) {
+				link.focus();
+			}
+		} );
+	}
+
 	/* ---------- mobile menu ---------- */
 
 	var burger = document.querySelector( '.oc-burger' );
