@@ -56,7 +56,15 @@ final class Menu_Admin {
 		$id   = (int) $id;
 		$item = get_post( $id );
 
-		if ( ! $item instanceof \WP_Post || (int) $item->menu_item_parent > 0 ) {
+		if ( ! $item instanceof \WP_Post ) {
+			return;
+		}
+
+		// A raw post is not a menu item yet: its title, url and parent are
+		// assembled by this call, and without it the name comes out blank.
+		$item = wp_setup_nav_menu_item( $item );
+
+		if ( (int) $item->menu_item_parent > 0 ) {
 			return;
 		}
 
