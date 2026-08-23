@@ -466,7 +466,11 @@ final class Menu_Panel {
 	private static function image_block( array $block ): string {
 		$id = (int) ( $block['img'] ?? 0 );
 
-		if ( $id < 1 ) {
+		// The picker only offers images, so this can only happen when the
+		// attachment is replaced or deleted later. A block with a heading and
+		// a caption floating over nothing looks like a broken page; no block
+		// at all looks like a decision.
+		if ( $id < 1 || ! wp_attachment_is_image( $id ) ) {
 			return '';
 		}
 
