@@ -435,9 +435,6 @@ msgstr "אייקון חשבון"
 msgid "Cart icon with counter"
 msgstr "אייקון סל עם מונה"
 
-msgid "Footer"
-msgstr "פוטר (תחתית האתר)"
-
 msgid "Content columns are widget areas — fill them under Appearance → Widgets."
 msgstr "עמודות התוכן הן אזורי ווידג׳טים — ממלאים אותן בעיצוב ← ווידג׳טים."
 
@@ -735,9 +732,6 @@ msgstr "איפוס"
 msgid "Swatch shape"
 msgstr "צורת ה-Swatch"
 
-msgid "Round"
-msgstr "עגול"
-
 msgid "Square"
 msgstr "מרובע"
 
@@ -752,9 +746,6 @@ msgstr "רשת המוצרים"
 
 msgid "Loading & paging"
 msgstr "טעינה ועימוד"
-
-msgid "Text"
-msgstr "טקסט"
 
 msgid "Colour swatches"
 msgstr "עיגולי צבע (Swatches)"
@@ -1101,9 +1092,6 @@ msgstr "אין הרשמות עדיין — הן נאספות מהפופ-אפ ב�
 
 msgid "Information & content"
 msgstr "מידע ותוכן"
-
-msgid "Above the title"
-msgstr "מעל הכותרת"
 
 msgid "Below the content"
 msgstr "מתחת לתוכן"
@@ -1933,12 +1921,6 @@ msgstr "חסכת %s"
 msgid "Have a coupon?"
 msgstr "יש קופון?"
 
-msgid "In stock"
-msgstr "במלאי"
-
-msgid "Out of stock"
-msgstr "אזל"
-
 msgid "Dropdowns"
 msgstr "דרופ-דאונים"
 
@@ -2002,9 +1984,6 @@ msgstr "שם פרטי"
 msgid "Last name"
 msgstr "שם משפחה"
 
-msgid "Phone"
-msgstr "טלפון"
-
 msgid "Additional phone"
 msgstr "טלפון נוסף"
 
@@ -2059,9 +2038,6 @@ msgstr "קוד כניסה"
 msgid "Marketing consent"
 msgstr "אישור פרסומים"
 
-msgid "Yes"
-msgstr "כן"
-
 msgid "Terms & conditions"
 msgstr "תקנון"
 
@@ -2080,9 +2056,6 @@ msgstr "נא להזין מספר טלפון תקין"
 msgid "Secure encrypted payment"
 msgstr "תשלום מאובטח ומוצפן"
 
-msgid "Checkout"
-msgstr "קופה"
-
 msgid "Your details"
 msgstr "פרטי המזמין"
 
@@ -2092,26 +2065,14 @@ msgstr "חזרה לסל"
 msgid "Apply coupon"
 msgstr "החלת קופון"
 
-msgid "Coupon code"
-msgstr "קוד קופון"
-
 msgid "Including VAT"
 msgstr "כולל מע\"מ"
-
-msgid "privacy policy"
-msgstr "מדיניות הפרטיות"
 
 msgid "The details you provide will be used to process and deliver your order, for billing and customer service, in line with our %s. Providing them is not required by law, but without them the order cannot be completed."
 msgstr "הפרטים שמסרת ישמשו לטיפול בהזמנה ולאספקתה, לחיוב ולשירות לקוחות, בהתאם ל%s. מסירת המידע אינה חובה על פי חוק, אך בלעדיה לא ניתן להשלים את ההזמנה."
 
 msgid "Please confirm the privacy policy notice."
 msgstr "נא לאשר את הצהרת מדיניות הפרטיות."
-
-msgid "Floor"
-msgstr "קומה"
-
-msgid "Entry code"
-msgstr "קוד כניסה"
 
 msgid "Address fields"
 msgstr "שדות כתובת"
@@ -2130,9 +2091,6 @@ msgstr "שדה פתוח"
 
 msgid "\"Have a coupon?\" opens the field"
 msgstr "״יש לך קופון?״ שפותח את השדה"
-
-msgid "Hidden"
-msgstr "מוסתר"
 
 msgid "Log in to your account"
 msgstr "התחבר/י לחשבונך"
@@ -2331,9 +2289,6 @@ msgstr "אפשר לשלוח את הקישור לחבר: הנחה של %1$s%% מ�
 
 msgid "Copy link"
 msgstr "העתקת קישור"
-
-msgid "Copied"
-msgstr "הועתק ✓"
 
 msgid "Send on WhatsApp"
 msgstr "שליחה בוואטסאפ"
@@ -2569,14 +2524,8 @@ msgstr "אריח מוגדל תופס את כל הרוחב במובייל, אלא
 msgid "Catalogue image"
 msgstr "תמונה לקטלוג"
 
-msgid "Choose image"
-msgstr "בחירת תמונה"
-
 msgid "Shown in listings instead of the product image. Empty = the product image."
 msgstr "מוצגת ברשימות במקום תמונת המוצר. ריק = תמונת המוצר."
-
-msgid "Display"
-msgstr "תצוגה"
 
 msgid "— No change —"
 msgstr "— ללא שינוי —"
@@ -2652,9 +2601,6 @@ msgstr "מוצג עד תאריך"
 
 msgid "Both empty = always shown."
 msgstr "שניהם ריקים = מוצג תמיד."
-
-msgid "Position"
-msgstr "מיקום"
 
 msgid "Size"
 msgstr "גודל"
@@ -2742,10 +2688,6 @@ msgstr "הוספת מיקום"
 
 msgid "Position 1 places the block before the first product. Set the block to \"None\" to remove a row."
 msgstr "מיקום 1 מציב את הבלוק לפני המוצר הראשון. בחירת ״ללא״ מסירה שורה."
-
-msgctxt "catalogue layout tab"
-msgid "Layout"
-msgstr "פריסה"
 
 msgid "Picture position"
 msgstr "מיקום התמונה"
@@ -3172,3 +3114,117 @@ msgstr "כל מה שהמותג מייצר"
 
 msgid "A row holds about seven as cards and four as rows, so pick a number that fills its rows rather than leaving one short."
 msgstr "שורה מכילה בערך שבעה ככרטיסים וארבעה כשורות, אז בחרו מספר שממלא את השורות ולא משאיר אחת חסרה."
+
+msgid "Menu"
+msgstr "תפריט"
+
+msgid "The links themselves come from the Menus screen. Whether the desktop shows an open menu or a hamburger is the header layout, above."
+msgstr "הקישורים עצמם מגיעים ממסך התפריטים. האם בדסקטופ מוצג תפריט פתוח או המבורגר — זו פריסת ההדר, למעלה."
+
+msgid "Letters"
+msgstr "אותיות"
+
+msgid "Text size (px)"
+msgstr "גודל טקסט (פיקסלים)"
+
+msgid "Weight"
+msgstr "עובי"
+
+msgid "Light"
+msgstr "דק"
+
+msgid "Letter case"
+msgstr "אותיות גדולות"
+
+msgid "As written"
+msgstr "כפי שנכתב"
+
+msgid "Capitals"
+msgstr "אותיות גדולות"
+
+msgid "Space between letters"
+msgstr "מרווח בין האותיות"
+
+msgid "Space between links (px)"
+msgstr "מרווח בין הקישורים (פיקסלים)"
+
+msgid "Space above the link (px)"
+msgstr "מרווח מעל הקישור (פיקסלים)"
+
+msgid "Space below the link (px)"
+msgstr "מרווח מתחת לקישור (פיקסלים)"
+
+msgid "Link colour"
+msgstr "צבע הקישור"
+
+msgid "Link colour on hover"
+msgstr "צבע הקישור בריחוף"
+
+msgid "Menu strip background"
+msgstr "רקע שורת התפריט"
+
+msgid "Hover"
+msgstr "ריחוף"
+
+msgid "What happens under the cursor"
+msgstr "מה קורה מתחת לסמן"
+
+msgid "A line draws itself"
+msgstr "קו שמצייר את עצמו"
+
+msgid "Grows from the start of the word"
+msgstr "צומח מתחילת המילה"
+
+msgid "A line slides through"
+msgstr "קו שחולף"
+
+msgid "One leaves as the next arrives"
+msgstr "אחד יוצא בזמן שהבא נכנס"
+
+msgid "The word lifts"
+msgstr "המילה מתרוממת"
+
+msgid "Two pixels up, nothing else"
+msgstr "שני פיקסלים למעלה, שום דבר נוסף"
+
+msgid "Only the colour changes"
+msgstr "רק הצבע משתנה"
+
+msgid "For quiet sites"
+msgstr "לאתרים שקטים"
+
+msgid "Line colour"
+msgstr "צבע הקו"
+
+msgid "Line thickness (px)"
+msgstr "עובי הקו (פיקסלים)"
+
+msgid "Opening"
+msgstr "פתיחה"
+
+msgid "How a panel arrives"
+msgstr "איך נפתח החלון"
+
+msgid "Piece by piece"
+msgstr "אחד אחרי השני"
+
+msgid "All at once"
+msgstr "הכל יחד"
+
+msgid "No movement"
+msgstr "בלי תנועה"
+
+msgid "Pause between pieces (ms)"
+msgstr "השהיה בין האלמנטים (אלפיות שנייה)"
+
+msgid "Levels a plain drop-down may reach"
+msgstr "כמה רמות בתפריט נפתח רגיל"
+
+msgid "Two — a link and its children"
+msgstr "שתיים — קישור ותתי הקישורים שלו"
+
+msgid "Three — a grandchild as well"
+msgstr "שלוש — כולל רמה שלישית"
+
+msgid "Dim the page behind an open panel"
+msgstr "הכהיית העמוד מאחורי חלון פתוח"
