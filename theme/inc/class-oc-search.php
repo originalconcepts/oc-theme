@@ -976,7 +976,8 @@ final class Search {
 			wp_send_json_success( array( 'html' => '', 'empty' => 1 ) );
 		}
 
-		$html = Search_Panel::results_html( $term, $log );
+		$show = isset( $_GET['show'] ) ? min( 60, absint( wp_unslash( $_GET['show'] ) ) ) : 0;
+		$html = Search_Panel::results_html( $term, $log, $show );
 
 		wp_send_json_success( $html );
 	}

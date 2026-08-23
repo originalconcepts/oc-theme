@@ -504,8 +504,8 @@ a { color: inherit; }
 
 .oc-search__prods.is-cards {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-	gap: 16px;
+	grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+	gap: 18px;
 }
 
 .oc-search__prod {
@@ -702,8 +702,32 @@ a { color: inherit; }
 
 /* the minimal panel is a plain list, nothing beside it */
 
+/* The plain panel is one column of results and nothing beside it. */
 .oc-searchbox[data-mode="min"] .oc-search__side { display: none; }
 .oc-searchbox[data-mode="min"] .oc-search__cols { grid-template-columns: 1fr; }
+
+.oc-searchbox[data-mode="min"] .oc-search__prods.is-list {
+	grid-template-columns: 1fr;
+	max-inline-size: 640px;
+	margin-inline: auto;
+}
+
+.oc-search__more {
+	display: block;
+	inline-size: fit-content;
+	margin: 18px auto 0;
+	border: 1px solid var(--oc-line);
+	background: var(--oc-surface);
+	color: inherit;
+	font: inherit;
+	font-size: .92rem;
+	padding: 9px 22px;
+	border-radius: 999px;
+	cursor: pointer;
+}
+
+.oc-search__more:hover { border-color: var(--oc-ink); }
+.oc-search__more.is-busy { opacity: .55; }
 
 @media (max-width: 900px) {
 	/* On a phone the panel takes the screen and the box stays under the

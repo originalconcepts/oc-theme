@@ -701,6 +701,35 @@
 				} );
 			} );
 
+			var more = sOut.querySelector( '[data-oc-search-more]' );
+
+			if ( more ) {
+				more.addEventListener( 'click', function () {
+					if ( more.classList.contains( 'is-busy' ) ) {
+						return;
+					}
+
+					more.classList.add( 'is-busy' );
+
+					fetch( sAction + '?oc_search=1&q=' + encodeURIComponent( sTerm ) + '&show=' + encodeURIComponent( more.getAttribute( 'data-oc-search-more' ) ), {
+						credentials: 'same-origin'
+					} )
+						.then( function ( r ) {
+							return r.json();
+						} )
+						.then( function ( j ) {
+							if ( j && j.success ) {
+								paint( j.data, sTerm );
+							} else {
+								more.classList.remove( 'is-busy' );
+							}
+						} )
+						.catch( function () {
+							more.classList.remove( 'is-busy' );
+						} );
+				} );
+			}
+
 			sOut.querySelectorAll( '[data-oc-search-add]' ).forEach( function ( button ) {
 				button.addEventListener( 'click', function () {
 					var id = button.getAttribute( 'data-oc-search-add' );

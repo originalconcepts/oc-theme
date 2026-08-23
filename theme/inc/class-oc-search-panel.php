@@ -151,9 +151,9 @@ final class Search_Panel {
 	 * @param bool   $log  Whether to record the search.
 	 * @return array<string,mixed>
 	 */
-	public static function results_html( string $term, bool $log = false ): array {
+	public static function results_html( string $term, bool $log = false, int $show = 0 ): array {
 		$s     = Search::settings();
-		$limit = max( 1, (int) Search::look( 'limit', 6 ) );
+		$limit = $show > 0 ? $show : max( 1, (int) Search::look( 'limit', 6 ) );
 
 		$ids = Search::product_ids( $term );
 
@@ -245,6 +245,12 @@ final class Search_Panel {
 					<?php echo self::products_html( $shown, '' !== $suggested ? $suggested : $term ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 
 					<?php if ( $total > count( $shown ) ) : ?>
+						<?php if ( 'min' === Search::look( 'panel', 'full' ) ) : ?>
+							<button type="button" class="oc-search__more" data-oc-search-more="<?php echo esc_attr( (string) ( count( $shown ) + max( 1, (int) Search::look( 'limit', 6 ) ) ) ); ?>">
+								<?php esc_html_e( 'Show more', 'oc-theme' ); ?>
+							</button>
+						<?php endif; ?>
+
 						<a class="oc-search__all" href="<?php echo esc_url( self::results_url( '' !== $suggested ? $suggested : $term ) ); ?>">
 							<?php
 							printf(
