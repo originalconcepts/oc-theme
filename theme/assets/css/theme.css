@@ -1268,14 +1268,9 @@ html.oc-menu-open .oc-menu-dim::before {
 	animation-delay: calc(160ms + var(--oc-menu-step, 40ms) * var(--i, 0));
 }
 
+/* --i is written onto each piece by the renderer, which knows which of them
+ * are pieces and which is the spacer holding the row apart. */
 .oc-mega .oc-mb--gap { animation: none !important; opacity: 1; transform: none; }
-
-.oc-mega .oc-mb:nth-child(1) { --i: 0; }
-.oc-mega .oc-mb:nth-child(2) { --i: 1; }
-.oc-mega .oc-mb:nth-child(3) { --i: 2; }
-.oc-mega .oc-mb:nth-child(4) { --i: 3; }
-.oc-mega .oc-mb:nth-child(5) { --i: 4; }
-.oc-mega .oc-mb:nth-child(6) { --i: 5; }
 
 .oc-nav--mo-none .oc-mega { transition: none; transform: none; }
 

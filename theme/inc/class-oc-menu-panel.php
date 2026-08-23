@@ -346,10 +346,23 @@ final class Menu_Panel {
 
 		$tracks = array();
 		$body   = '';
+		$turn   = 0;
 
+		// Numbered here rather than counted in the stylesheet, because the
+		// spacer that gathers loose width is a box and not a piece: counting
+		// boxes gave it a turn in the sequence, and whatever came after it
+		// waited a beat on something nobody can see.
 		foreach ( $parts as $part ) {
 			$tracks[] = $part['track'];
-			$body    .= $part['html'];
+
+			$style = '';
+
+			if ( empty( $part['gap'] ) ) {
+				$style = ' style="--i:' . $turn . '"';
+				++$turn;
+			}
+
+			$body .= '<div class="' . esc_attr( $part['class'] ) . '"' . $style . '>' . $part['inner'] . '</div>';
 		}
 
 		if ( 'drawer' === $where ) {
@@ -454,7 +467,8 @@ final class Menu_Panel {
 
 			$columns[] = array(
 				'track' => 'max-content',
-				'html'  => '<div class="oc-mb oc-mb--col"><h4 class="oc-mb__g">' . $link . '</h4><ul class="oc-mb__list">' . implode( '', $kids ) . '</ul></div>',
+				'class' => 'oc-mb oc-mb--col',
+				'inner' => '<h4 class="oc-mb__g">' . $link . '</h4><ul class="oc-mb__list">' . implode( '', $kids ) . '</ul>',
 			);
 		}
 
@@ -466,7 +480,8 @@ final class Menu_Panel {
 				array(
 					array(
 						'track' => 'max-content',
-						'html'  => '<div class="oc-mb oc-mb--col"><ul class="oc-mb__list oc-mb__list--lead">' . $gathered . '</ul></div>',
+						'class' => 'oc-mb oc-mb--col',
+						'inner' => '<ul class="oc-mb__list oc-mb__list--lead">' . $gathered . '</ul>',
 					),
 				)
 			);
@@ -498,21 +513,24 @@ final class Menu_Panel {
 
 			$piece = self::block( $block );
 
-			if ( '' === $piece ) {
+			if ( null === $piece ) {
 				continue;
 			}
 
 			if ( $first && 'drawer' !== $where ) {
 				$out[] = array(
 					'track' => '1fr',
-					'html'  => '<div class="oc-mb oc-mb--gap" aria-hidden="true"></div>',
+					'class' => 'oc-mb oc-mb--gap',
+					'inner' => '',
+					'gap'   => true,
 				);
 				$first  = false;
 			}
 
 			$out[] = array(
 				'track' => (string) $widths[ $block['w'] ]['track'],
-				'html'  => $piece,
+				'class' => $piece['class'],
+				'inner' => $piece['inner'],
 			);
 		}
 
@@ -523,15 +541,10 @@ final class Menu_Panel {
 	 * One block.
 	 *
 	 * @param array<string,mixed> $block Block.
-	 * @return string
+	 * @return array{class:string,inner:string}|null
 	 */
-	private static function block( array $block ): string {
+	private static function block( array $block ): ?array {
 		$type = (string) $block['type'];
-		$dev  = (string) $block['dev'];
-
-		unset( $dev );
-
-		$classes = array( 'oc-mb', 'oc-mb--' . $type );
 
 		$inner = '';
 
@@ -550,10 +563,13 @@ final class Menu_Panel {
 		}
 
 		if ( '' === trim( $inner ) ) {
-			return '';
+			return null;
 		}
 
-		return '<div class="' . esc_attr( implode( ' ', $classes ) ) . '">' . $inner . '</div>';
+		return array(
+			'class' => 'oc-mb oc-mb--' . sanitize_html_class( $type ),
+			'inner' => $inner,
+		);
 	}
 
 	/**
