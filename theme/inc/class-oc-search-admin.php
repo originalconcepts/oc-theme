@@ -33,6 +33,7 @@ final class Search_Admin {
 		add_action( 'wp_ajax_oc_search_build', array( $this, 'ajax_build' ) );
 		add_action( 'admin_post_oc_search_build_step', array( $this, 'build_step' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'assets' ) );
+		add_action( 'admin_init', array( $this, 'nudge_queue' ) );
 
 		// A word list on every kind of term the search reads — including
 		// whichever taxonomy this site uses for brands.
@@ -46,6 +47,25 @@ final class Search_Admin {
 		add_filter( 'woocommerce_product_data_tabs', array( $this, 'product_tab' ) );
 		add_action( 'woocommerce_product_data_panels', array( $this, 'product_panel' ) );
 		add_action( 'woocommerce_process_product_meta', array( $this, 'save_product' ) );
+	}
+
+	/**
+	 * Keep a queued rebuild moving even if cron has stalled.
+	 *
+	 * A queue that stops being worked is the one way this could leave a shop
+	 * with words that no longer match its settings, so an admin page load is
+	 * enough to start it again.
+	 */
+	public function nudge_queue(): void {
+		$queue = get_option( 'oc_search_queue' );
+
+		if ( ! is_array( $queue ) || ! $queue ) {
+			return;
+		}
+
+		if ( ! wp_next_scheduled( 'oc_search_rebuild' ) ) {
+			wp_schedule_single_event( time() + 5, 'oc_search_rebuild' );
+		}
 	}
 
 	/**
@@ -885,9 +905,11 @@ final class Search_Admin {
 
 		update_option( 'oc_search', $s );
 
-		// Anything that changes what a word means changes the whole index.
+		// Anything that changes what a word means changes the whole index —
+		// but the words already held keep answering until each row is
+		// rewritten, so a shop is never left with an empty search.
 		if ( $rebuild ) {
-			Search_Index::rebuild_start();
+			Search_Index::requeue_all();
 			wp_schedule_single_event( time() + 5, 'oc_search_rebuild' );
 		}
 

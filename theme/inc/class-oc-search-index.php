@@ -782,7 +782,27 @@ final class Search_Index {
 	}
 
 	/**
-	 * Start a fresh rebuild.
+	 * Queue every object for rewriting, without emptying anything first.
+	 *
+	 * A settings change means the words have to be written again, but the
+	 * words already held are still the only ones the shop has. Each row is
+	 * replaced as its turn comes, so search keeps answering throughout — and
+	 * if the rebuild never finishes, the shop is stale rather than silent.
+	 */
+	public static function requeue_all(): void {
+		self::maybe_install();
+
+		$ids = self::all_ids();
+
+		update_option( 'oc_search_queue', $ids, false );
+		update_option( 'oc_search_total', count( $ids ), false );
+	}
+
+	/**
+	 * Start a fresh rebuild, emptying first.
+	 *
+	 * Only the explicit rebuild does this, because it runs in front of
+	 * someone who can watch it finish.
 	 */
 	public static function rebuild_start(): void {
 		global $wpdb;
