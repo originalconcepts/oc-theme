@@ -3117,7 +3117,7 @@ msgid "Did you mean %s?"
 msgstr "התכוונת ל־%s?"
 
 msgid "Only after a word has been searched at least"
-msgstr "רק אחרי שמילה חופשה לפחות"
+msgstr "רק אחרי שחיפשו מילה לפחות"
 
 msgid "times"
 msgstr "פעמים"
