@@ -38,6 +38,30 @@
 	 * screen there is no cursor to have intent. */
 	var ocNav = document.querySelector( '.oc-nav' );
 
+	/* A panel's markup is in the page; its pictures are not, because lazy is
+	 * what makes a panel nobody opens cost nothing. But a picture that starts
+	 * loading when its panel opens arrives after it, and a blank rectangle
+	 * under a heading is exactly the wait the panel was printed inline to
+	 * avoid. So they start the moment the cursor reaches the menu at all —
+	 * earlier than any one item, later than never. */
+	var ocWarmed = false;
+
+	function ocWarm() {
+		if ( ocWarmed ) {
+			return;
+		}
+
+		ocWarmed = true;
+
+		Array.prototype.forEach.call( document.querySelectorAll( '.oc-mega img[loading="lazy"]' ), function ( img ) {
+			img.setAttribute( 'loading', 'eager' );
+		} );
+	}
+
+	if ( ocNav ) {
+		ocNav.addEventListener( 'pointerenter', ocWarm );
+	}
+
 	if ( ocNav && window.matchMedia( '(hover: hover)' ).matches ) {
 		var navOpen = null;
 		var navTimer = null;
@@ -155,6 +179,7 @@
 		}
 
 		burger.addEventListener( 'click', function () {
+			ocWarm();
 			drwSet( burger.getAttribute( 'aria-expanded' ) !== 'true' );
 		} );
 
