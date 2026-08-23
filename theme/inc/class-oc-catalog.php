@@ -361,6 +361,14 @@ final class Catalog {
 			return $classes;
 		}
 
+		// Results answer a question, and an answer reads best as a plain,
+		// even list. An enlarged tile says "look here" — which is right when
+		// someone is browsing a category and wrong when they asked for
+		// something specific.
+		if ( is_search() ) {
+			return $classes;
+		}
+
 		$tile = self::tile( $product->get_id() );
 
 		if ( '' !== $tile['size'] ) {

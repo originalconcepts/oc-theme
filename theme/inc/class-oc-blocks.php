@@ -637,6 +637,12 @@ final class Blocks {
 			return $classes;
 		}
 
+		// The rhythm exists to make browsing varied. Search results are not
+		// browsing, so they stay even.
+		if ( is_search() ) {
+			return $classes;
+		}
+
 		// An explicit choice on the product always wins.
 		foreach ( $classes as $class ) {
 			if ( 0 === strpos( (string) $class, 'oc-tile--' ) ) {
