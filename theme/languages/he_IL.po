@@ -3115,3 +3115,12 @@ msgstr "איך פאנל החיפוש מוצג. איפה הוא מחפש ולאי
 
 msgid "Did you mean %s?"
 msgstr "התכוונת ל־%s?"
+
+msgid "Only after a word has been searched at least"
+msgstr "רק אחרי שמילה חופשה לפחות"
+
+msgid "times"
+msgstr "פעמים"
+
+msgid "A half-typed word is never offered back: \"שול\" counts towards \"שולחן\" and the finished word is what appears."
+msgstr "מילה חצי־מוקלדת לא תוצג: ״שול״ נספר לטובת ״שולחן״, והמילה השלמה היא שמופיעה."

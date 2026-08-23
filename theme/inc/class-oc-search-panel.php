@@ -168,7 +168,13 @@ final class Search_Panel {
 		}
 
 		if ( $log ) {
-			Search::remember( $term, count( $ids ) );
+			// When a rescue worked, what the shopper meant is worth more than
+			// what their fingers produced — that is what other shoppers should
+			// be offered later. A search that found nothing keeps its raw
+			// spelling, because that is the whole value of the empty report.
+			$meant = ( '' !== $suggested && $ids ) ? $suggested : $term;
+
+			Search::remember( $meant, count( $ids ) );
 		}
 
 		$total = count( $ids );

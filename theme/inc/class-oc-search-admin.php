@@ -437,9 +437,17 @@ final class Search_Admin {
 						<input type="number" name="pop_count" min="0" max="12" value="<?php echo esc_attr( (string) $s['pop_count'] ); ?>" style="inline-size:70px;" />
 						<?php esc_html_e( 'of them', 'oc-theme' ); ?>
 					</p>
+					<p style="margin:0 0 8px;">
+						<?php esc_html_e( 'Only after a word has been searched at least', 'oc-theme' ); ?>
+						<input type="number" name="pop_min" min="1" max="50" value="<?php echo esc_attr( (string) $s['pop_min'] ); ?>" style="inline-size:70px;" />
+						<?php esc_html_e( 'times', 'oc-theme' ); ?>
+					</p>
 					<p style="margin:0;">
 						<label style="display:block;margin-block-end:4px;"><?php esc_html_e( 'Never show these words', 'oc-theme' ); ?></label>
 						<input type="text" name="pop_block" value="<?php echo esc_attr( (string) $s['pop_block'] ); ?>" class="large-text" />
+					</p>
+					<p class="description" style="max-inline-size:700px;">
+						<?php esc_html_e( 'A half-typed word is never offered back: "שול" counts towards "שולחן" and the finished word is what appears.', 'oc-theme' ); ?>
 					</p>
 					<p class="description"><?php esc_html_e( 'Only the word and the day are kept. Nothing identifies who searched.', 'oc-theme' ); ?></p>
 				</td>
@@ -754,6 +762,7 @@ final class Search_Admin {
 			$s['pop_days']   = max( 1, min( 90, (int) ( $post['pop_days'] ?? 7 ) ) );
 			$s['pop_count']  = max( 0, min( 12, (int) ( $post['pop_count'] ?? 6 ) ) );
 			$s['pop_block']  = sanitize_text_field( (string) ( $post['pop_block'] ?? '' ) );
+			$s['pop_min']    = max( 1, min( 50, (int) ( $post['pop_min'] ?? 3 ) ) );
 			$s['prod_mode']  = in_array( $post['prod_mode'] ?? '', array( 'sales', 'searches', 'manual', 'random' ), true ) ? $post['prod_mode'] : 'sales';
 			$s['prod_ids']   = sanitize_text_field( (string) ( $post['prod_ids'] ?? '' ) );
 			$s['prod_count'] = max( 2, min( 12, (int) ( $post['prod_count'] ?? 8 ) ) );

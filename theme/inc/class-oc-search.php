@@ -63,6 +63,7 @@ final class Search {
 				// Popular searches.
 				'pop_days'  => 7,
 				'pop_count' => 6,
+				'pop_min'   => 3,
 				'pop_block' => '',
 
 				// Popular products: manual | sales | searches | random.
@@ -460,26 +461,68 @@ final class Search {
 	}
 
 	/**
-	 * The same keystrokes, read on the other keyboard.
+	 * The keyboard this site's language is typed on, beside QWERTY.
 	 *
-	 * Someone typing Hebrew with the layout still on English produces
-	 * "adcbhu,ץ" for "עגבניות". It happens every day here.
+	 * Someone typing Hebrew with the layout still on English produces "xpv"
+	 * for "ספה". The same mistake exists in Russian, Arabic and Greek, and
+	 * does not exist at all in Spanish or German, whose letters sit on the
+	 * same keys. So the site's own language decides — and a site that speaks
+	 * a language not listed here simply skips the whole idea.
+	 *
+	 * @return array{0:string,1:string}|null Latin row, native row.
+	 */
+	public static function layout_pair(): ?array {
+		$latin = 'qwertyuiopasdfghjkl;zxcvbnm,./';
+
+		$maps = array(
+			'he' => '/\'קראטוןםפשדגכעיחלךףזסבהנמצתץ.',
+			'ru' => 'йцукенгшщзфывапролджячсмитьбю.',
+			'ar' => 'ضصثقفغعهخحجدشسيبلاتنمكطئءؤرلاى',
+			'el' => ';ςερτυθιοπασδφγηξκλ΄ζχψωβνμ,./',
+		);
+
+		$language = strtolower( substr( (string) get_locale(), 0, 2 ) );
+
+		/**
+		 * Filter the keyboard pair used to read a mistyped search.
+		 *
+		 * @param array|null $pair     array( latin, native ) or null for none.
+		 * @param string     $language Two-letter site language.
+		 */
+		$pair = isset( $maps[ $language ] ) ? array( $latin, $maps[ $language ] ) : null;
+
+		return apply_filters( 'oc_search_keyboard_pair', $pair, $language );
+	}
+
+	/**
+	 * The same keystrokes, read on the other keyboard.
 	 *
 	 * @param string $text Typed text.
 	 */
 	public static function flip_layout( string $text ): string {
-		// Position by position on the same keys: q sits where / does, x where
-		// ס does, and so on. The two strings must stay the same length.
-		$en = 'qwertyuiopasdfghjkl;zxcvbnm,./';
-		$he = '/\'קראטוןםפשדגכעיחלךףזסבהנמצתץ.';
+		$pair = self::layout_pair();
 
-		$from = preg_match( '/[\x{0590}-\x{05FF}]/u', $text ) ? $he : $en;
-		$to   = $from === $he ? $en : $he;
+		if ( ! $pair ) {
+			return $text;
+		}
+
+		list( $latin, $native ) = $pair;
+
+		if ( mb_strlen( $latin, 'UTF-8' ) !== mb_strlen( $native, 'UTF-8' ) ) {
+			return $text;
+		}
+
+		// Which way round to read it: text that is already in the site's own
+		// script is being read as Latin, and the other way about.
+		$looks_native = (bool) preg_match( '/[^\x{0000}-\x{024F}]/u', $text );
+
+		$from = $looks_native ? $native : $latin;
+		$to   = $looks_native ? $latin : $native;
 
 		$out = '';
 
 		foreach ( preg_split( '//u', $text, -1, PREG_SPLIT_NO_EMPTY ) ?: array() as $char ) {
-			$at  = mb_strpos( $from, mb_strtolower( $char, 'UTF-8' ), 0, 'UTF-8' );
+			$at   = mb_strpos( $from, mb_strtolower( $char, 'UTF-8' ), 0, 'UTF-8' );
 			$out .= false === $at ? $char : mb_substr( $to, $at, 1, 'UTF-8' );
 		}
 
@@ -605,30 +648,170 @@ final class Search {
 			$wpdb->prepare(
 				"SELECT term, SUM(searches) AS searches, SUM(clicks) AS clicks, MAX(hits) AS hits
 				 FROM {$table} WHERE day >= %s {$where}
-				 GROUP BY term ORDER BY searches DESC LIMIT %d",
-				$from,
-				max( 1, $limit ) * 3
+				 GROUP BY term ORDER BY searches DESC LIMIT 300",
+				$from
 			)
 		);
 
+		if ( $empty ) {
+			return array_slice( self::without_blocked( $rows ), 0, $limit );
+		}
+
+		return array_slice( self::worth_showing( $rows ), 0, $limit );
+	}
+
+	/**
+	 * Drop the words the shop asked never to show.
+	 *
+	 * @param array<int,object> $rows Log rows.
+	 * @return array<int,object>
+	 */
+	private static function without_blocked( array $rows ): array {
 		$blocked = array_filter( array_map( 'trim', explode( ',', (string) self::settings()['pop_block'] ) ) );
 		$blocked = array_map( array( Search_Index::class, 'normalise' ), $blocked );
 
-		$out = array();
+		return array_values(
+			array_filter(
+				$rows,
+				static function ( $row ) use ( $blocked ) {
+					return ! in_array( $row->term, $blocked, true );
+				}
+			)
+		);
+	}
+
+	/**
+	 * Which searches are worth offering back to the next shopper.
+	 *
+	 * Three things stand between the log and the panel. A word has to have
+	 * been asked for often enough to mean anything. A half-typed word is not
+	 * a word: "שול" folds into "שולחן", carrying its count with it. And a
+	 * word nobody ever finished typing is finished here, from the shop's own
+	 * vocabulary, so the panel offers "שולחן" and never "שול".
+	 *
+	 * @param array<int,object> $rows Log rows.
+	 * @return array<int,object>
+	 */
+	private static function worth_showing( array $rows ): array {
+		$rows = self::without_blocked( $rows );
+
+		if ( ! $rows ) {
+			return array();
+		}
+
+		// Longest first, so a stub always meets its finished form.
+		usort(
+			$rows,
+			static function ( $a, $b ): int {
+				return mb_strlen( $b->term, 'UTF-8' ) <=> mb_strlen( $a->term, 'UTF-8' );
+			}
+		);
+
+		$kept = array();
 
 		foreach ( $rows as $row ) {
-			if ( in_array( $row->term, $blocked, true ) ) {
-				continue;
+			$folded = false;
+
+			foreach ( $kept as $longer ) {
+				if ( 0 === mb_strpos( $longer->term, $row->term ) ) {
+					$longer->searches += $row->searches;
+					$longer->clicks   += $row->clicks;
+					$folded            = true;
+					break;
+				}
 			}
 
-			$out[] = $row;
-
-			if ( count( $out ) >= $limit ) {
-				break;
+			if ( ! $folded ) {
+				$kept[] = clone $row;
 			}
 		}
 
+		$min  = max( 1, (int) self::settings()['pop_min'] );
+		$out  = array();
+
+		foreach ( $kept as $row ) {
+			if ( (int) $row->searches < $min ) {
+				continue;
+			}
+
+			$whole = self::finish_word( (string) $row->term );
+
+			if ( '' !== $whole ) {
+				$row->term = $whole;
+			}
+
+			$out[] = $row;
+		}
+
+		// Finishing two stubs can land on the same word.
+		$merged = array();
+
+		foreach ( $out as $row ) {
+			if ( isset( $merged[ $row->term ] ) ) {
+				$merged[ $row->term ]->searches += $row->searches;
+				$merged[ $row->term ]->clicks   += $row->clicks;
+				continue;
+			}
+
+			$merged[ $row->term ] = $row;
+		}
+
+		$out = array_values( $merged );
+
+		usort(
+			$out,
+			static function ( $a, $b ): int {
+				return (int) $b->searches <=> (int) $a->searches;
+			}
+		);
+
 		return $out;
+	}
+
+	/**
+	 * The whole word behind a half-typed one, from what the shop sells.
+	 *
+	 * @param string $stub What was typed.
+	 * @return string The finished word, or an empty string to keep the stub.
+	 */
+	private static function finish_word( string $stub ): string {
+		global $wpdb;
+
+		$words = Search_Index::tokens( $stub );
+
+		if ( count( $words ) !== 1 ) {
+			return '';
+		}
+
+		$word = (string) $words[0];
+
+		// Already a word the shop knows: leave it alone.
+		$exact = $wpdb->get_var( // phpcs:ignore WordPress.DB
+			$wpdb->prepare(
+				'SELECT 1 FROM ' . Search_Index::words() . ' WHERE token = %s LIMIT 1',
+				$word
+			)
+		);
+
+		if ( $exact ) {
+			return '';
+		}
+
+		// The commonest word that starts this way, preferring the shortest —
+		// "שולחן" over "שולחנות".
+		$whole = $wpdb->get_var( // phpcs:ignore WordPress.DB
+			$wpdb->prepare(
+				'SELECT token FROM ' . Search_Index::words()
+					. ' WHERE token LIKE %s AND field IN (%d, %d, %d)'
+					. ' GROUP BY token ORDER BY COUNT(*) DESC, CHAR_LENGTH(token) ASC LIMIT 1',
+				$wpdb->esc_like( $word ) . '%',
+				Search_Index::F_TITLE,
+				Search_Index::F_CAT,
+				Search_Index::F_ATTR
+			)
+		);
+
+		return $whole ? (string) $whole : '';
 	}
 
 	/* -------------------------------------------------------- the results */
