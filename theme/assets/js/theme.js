@@ -740,9 +740,14 @@
 				link.addEventListener( 'click', function () {
 					histAdd( sMeant || sTerm );
 
+					// Which answer was chosen, so the next shopper asking the
+					// same thing is offered it sooner.
+					var chosen = link.getAttribute( 'data-oc-id' ) || '';
+
 					try {
 						navigator.sendBeacon(
-							sAction + '?oc_search=1&click=1&q=' + encodeURIComponent( sTerm )
+							sAction + '?oc_search=1&click=1&q=' + encodeURIComponent( sMeant || sTerm ) +
+								( chosen ? '&id=' + encodeURIComponent( chosen ) : '' )
 						);
 					} catch ( e ) {}
 				} );

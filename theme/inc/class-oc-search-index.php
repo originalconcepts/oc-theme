@@ -78,6 +78,15 @@ final class Search_Index {
 		return $wpdb->prefix . 'oc_search_log';
 	}
 
+	/**
+	 * Which result people chose, for which search.
+	 */
+	public static function clicks(): string {
+		global $wpdb;
+
+		return $wpdb->prefix . 'oc_search_click';
+	}
+
 	/* ------------------------------------------------------------- schema */
 
 	/**
@@ -143,7 +152,18 @@ final class Search_Index {
 			) {$charset}"
 		);
 
-		update_option( 'oc_search_schema', 4, false );
+		$wpdb->query( // phpcs:ignore WordPress.DB
+			'CREATE TABLE IF NOT EXISTS ' . self::clicks() . " (
+				term VARCHAR(120) NOT NULL,
+				object_id BIGINT UNSIGNED NOT NULL,
+				n INT UNSIGNED NOT NULL DEFAULT 0,
+				updated INT UNSIGNED NOT NULL DEFAULT 0,
+				PRIMARY KEY (term, object_id),
+				KEY term (term)
+			) {$charset}"
+		);
+
+		update_option( 'oc_search_schema', 5, false );
 	}
 
 	/**
@@ -152,7 +172,7 @@ final class Search_Index {
 	public static function maybe_install(): void {
 		global $wpdb;
 
-		if ( 4 === (int) get_option( 'oc_search_schema' ) ) {
+		if ( 5 === (int) get_option( 'oc_search_schema' ) ) {
 			return;
 		}
 

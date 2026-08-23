@@ -270,22 +270,37 @@ final class Search {
 
 		$flat = Search_Index::normalise( $query );
 
+		// What shoppers chose last time this exact thing was searched for.
+		// Capped at ten so a popular answer nudges the order without owning
+		// it, and forgotten after three months so the shop can change.
+		$learn = empty( $s['learn'] ) ? '' :
+			'LEFT JOIN ' . Search_Index::clicks() . ' c ON c.object_id = m.object_id AND c.term = %s AND c.updated > %d';
+
+		$learn_score = $learn ? '+ LEAST(COALESCE(c.n, 0), 10) * 2 ' : '';
+
 		$sql = "SELECT m.object_id, x.kind, x.title, x.price, x.in_stock, x.sales, x.boost,
 				SUM(m.score) AS relevance,
 				(SUM(m.score) * %f
 					+ (LOG(1 + x.sales) + LOG(1 + x.views)) * %f
 					+ x.boost
-					+ IF(x.title_n = %s, 30, 0)
+					{$learn_score}+ IF(x.title_n = %s, 30, 0)
 					+ IF(x.title_n LIKE %s, 12, 0)
 				) AS rank_score
 			FROM ({$union}) m
 			INNER JOIN {$table} x ON x.object_id = m.object_id
+			{$learn}
 			WHERE x.hidden = 0";
 
 		// The order here is the order the placeholders appear in the statement:
-		// the ranking sits in the SELECT clause, so its values bind first.
+		// the ranking sits in the SELECT clause, so its values bind first, then
+		// the union it scores, then the join that reads what shoppers chose.
 		$values = array( $rel, $pop, $flat, $wpdb->esc_like( $flat ) . '%' );
 		$values = array_merge( $values, $union_values );
+
+		if ( $learn ) {
+			$values[] = $flat;
+			$values[] = time() - 90 * DAY_IN_SECONDS;
+		}
 
 		if ( 'hide' === $s['oos'] ) {
 			$sql .= ' AND x.in_stock = 1';
@@ -626,6 +641,41 @@ final class Search {
 				$click ? 1 : 0,
 				$click ? 0 : 1,
 				$click ? 1 : 0
+			)
+		);
+	}
+
+	/**
+	 * Remember which result answered a search.
+	 *
+	 * A shop's own ranking is a guess about what people want; this is the
+	 * only place the shoppers themselves get to correct it. The count is
+	 * bounded when it is read, and anything the shop set by hand still wins,
+	 * so a run of clicks can nudge the order but never take it over.
+	 *
+	 * @param string $term       What was searched for.
+	 * @param int    $product_id What was clicked.
+	 */
+	public static function remember_click( string $term, int $product_id ): void {
+		global $wpdb;
+
+		$flat = Search_Index::normalise( $term );
+
+		if ( '' === $flat || ! $product_id ) {
+			return;
+		}
+
+		Search_Index::maybe_install();
+
+		$table = Search_Index::clicks();
+
+		$wpdb->query( // phpcs:ignore WordPress.DB
+			$wpdb->prepare(
+				"INSERT INTO {$table} (term, object_id, n, updated) VALUES (%s, %d, 1, %d)
+				 ON DUPLICATE KEY UPDATE n = n + 1, updated = VALUES(updated)",
+				mb_substr( $flat, 0, 120, 'UTF-8' ),
+				$product_id,
+				time()
 			)
 		);
 	}
@@ -1327,6 +1377,13 @@ final class Search {
 
 		if ( ! empty( $_GET['click'] ) ) {
 			self::remember( $term, 1, true );
+
+			$chosen = isset( $_GET['id'] ) ? absint( wp_unslash( $_GET['id'] ) ) : 0;
+
+			if ( $chosen ) {
+				self::remember_click( $term, $chosen );
+			}
+
 			wp_send_json_success( array( 'ok' => 1 ) );
 		}
 

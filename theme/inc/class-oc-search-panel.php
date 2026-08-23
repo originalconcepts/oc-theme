@@ -507,8 +507,9 @@ final class Search_Panel {
 	 */
 	private static function row( \WC_Product $product, string $term ): string {
 		return sprintf(
-			'<div class="oc-search__prod"><a class="oc-search__prod-l" href="%s" data-oc-search-hit>%s<span class="oc-search__prod-b"><span class="oc-search__prod-t">%s</span><span class="oc-search__prod-p">%s</span></span></a>%s</div>',
+			'<div class="oc-search__prod"><a class="oc-search__prod-l" href="%s" data-oc-search-hit data-oc-id="%d">%s<span class="oc-search__prod-b"><span class="oc-search__prod-t">%s</span><span class="oc-search__prod-p">%s</span></span></a>%s</div>',
 			esc_url( (string) $product->get_permalink() ),
+			(int) $product->get_id(),
 			self::thumb( $product ),
 			self::mark( $product->get_name(), $term ), // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside.
 			wp_kses_post( (string) $product->get_price_html() ),
@@ -524,8 +525,9 @@ final class Search_Panel {
 	 */
 	private static function card( \WC_Product $product, string $term ): string {
 		return sprintf(
-			'<div class="oc-search__prod oc-search__prod--card"><a class="oc-search__prod-l" href="%s" data-oc-search-hit>%s<span class="oc-search__prod-b"><span class="oc-search__prod-t">%s</span><span class="oc-search__prod-p">%s</span></span></a>%s</div>',
+			'<div class="oc-search__prod oc-search__prod--card"><a class="oc-search__prod-l" href="%s" data-oc-search-hit data-oc-id="%d">%s<span class="oc-search__prod-b"><span class="oc-search__prod-t">%s</span><span class="oc-search__prod-p">%s</span></span></a>%s</div>',
 			esc_url( (string) $product->get_permalink() ),
+			(int) $product->get_id(),
 			self::thumb( $product ),
 			self::mark( $product->get_name(), $term ), // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside.
 			wp_kses_post( (string) $product->get_price_html() ),

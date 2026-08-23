@@ -373,7 +373,13 @@ a { color: inherit; }
 	color: var(--oc-ink);
 }
 
-.oc-searchbox .oc-search__wipe[hidden] { display: none; }
+/* Hidden but still holding its place, so the text does not jump sideways the
+ * moment the first letter is typed. */
+.oc-searchbox .oc-search__wipe[hidden] {
+	display: inline-flex;
+	visibility: hidden;
+	pointer-events: none;
+}
 
 .oc-search__sep {
 	inline-size: 1px;
