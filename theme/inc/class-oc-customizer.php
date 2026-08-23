@@ -220,6 +220,32 @@ final class Customizer {
 			array( 'setting' => 'oc_search_show_brand', 'values' => array( '1', 'true' ) )
 		);
 		$this->toggle( $c, 'oc_search_show_tag', 'oc_search_look', __( 'Matching tags', 'oc-theme' ), false );
+
+		$this->choice(
+			$c,
+			'oc_search_link_cat',
+			'oc_search_look',
+			__( 'A category there leads to', 'oc-theme' ),
+			array(
+				'narrow'  => __( 'These results, in that category', 'oc-theme' ),
+				'archive' => __( 'The whole category', 'oc-theme' ),
+			),
+			'narrow',
+			array( 'setting' => 'oc_search_show_cat', 'values' => array( '1', 'true' ) )
+		);
+
+		$this->choice(
+			$c,
+			'oc_search_link_brand',
+			'oc_search_look',
+			__( 'A brand there leads to', 'oc-theme' ),
+			array(
+				'narrow'  => __( 'These results, from that brand', 'oc-theme' ),
+				'archive' => __( 'Everything the brand makes', 'oc-theme' ),
+			),
+			'narrow',
+			array( 'setting' => 'oc_search_show_brand', 'values' => array( '1', 'true' ) )
+		);
 		$this->toggle( $c, 'oc_search_show_post', 'oc_search_look', __( 'Articles and pages', 'oc-theme' ), true );
 
 		$this->heading( $c, 'oc_h_search_shop', 'oc_search_look', __( 'Behaviour', 'oc-theme' ) );

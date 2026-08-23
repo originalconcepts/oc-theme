@@ -304,26 +304,41 @@ final class Search_Panel {
 		$blocks = array();
 
 		if ( Search::look( 'show_cat', true ) ) {
-			$blocks[] = array( __( 'Categories', 'oc-theme' ), Search::result_facets( $ids, 'product_cat', 4 ), 'product_cat' );
+			$blocks[] = array(
+				__( 'Categories', 'oc-theme' ),
+				Search::result_facets( $ids, 'product_cat', 4 ),
+				'product_cat',
+				(string) Search::look( 'link_cat', 'narrow' ),
+			);
 		}
 
 		if ( Search::look( 'show_brand', true ) ) {
 			$brand = Search::brand_taxonomy();
 
 			if ( $brand ) {
-				$blocks[] = array( __( 'Brands', 'oc-theme' ), Search::result_facets( $ids, $brand, 4 ), $brand );
+				$blocks[] = array(
+					__( 'Brands', 'oc-theme' ),
+					Search::result_facets( $ids, $brand, 4 ),
+					$brand,
+					(string) Search::look( 'link_brand', 'narrow' ),
+				);
 			}
 		}
 
 		if ( Search::look( 'show_tag', false ) ) {
-			$blocks[] = array( __( 'Tags', 'oc-theme' ), Search::result_facets( $ids, 'product_tag', 4 ), 'product_tag' );
+			$blocks[] = array(
+				__( 'Tags', 'oc-theme' ),
+				Search::result_facets( $ids, 'product_tag', 4 ),
+				'product_tag',
+				'narrow',
+			);
 		}
 
 		$out   = '';
 		$lines = 0;
 
 		foreach ( $blocks as $block ) {
-			list( $label, $facets, $taxonomy ) = $block;
+			list( $label, $facets, $taxonomy, $leads ) = $block;
 
 			if ( ! $facets ) {
 				continue;
@@ -350,12 +365,26 @@ final class Search_Panel {
 					}
 				}
 
+				$whole = 'archive' === $leads;
+				$link  = $whole
+					? (string) get_term_link( (int) $facet->term_id, $taxonomy )
+					: Search::narrowed_url( $term, $taxonomy, (string) $facet->slug );
+
+				if ( is_wp_error( $link ) ) {
+					continue;
+				}
+
+				// The count describes these results. Where the link leaves
+				// them behind it would only mislead — "MUTTI 2" followed by a
+				// shelf of thirty.
+				$count = $whole ? '' : sprintf( '<span class="oc-search__n">%d</span>', (int) $facet->n );
+
 				$rows .= sprintf(
-					'<li><a href="%s" data-oc-search-hit>%s<span>%s</span><span class="oc-search__n">%d</span></a></li>',
-					esc_url( Search::narrowed_url( $term, $taxonomy, (string) $facet->slug ) ),
+					'<li><a href="%s" data-oc-search-hit>%s<span>%s</span>%s</a></li>',
+					esc_url( $link ),
 					$logo, // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- core markup.
 					self::mark( (string) $facet->name, $term ), // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside.
-					(int) $facet->n
+					$count // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built above.
 				);
 			}
 

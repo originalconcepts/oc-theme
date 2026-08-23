@@ -3151,3 +3151,21 @@ msgstr "התחילו להקליד קטגוריה או מותג…"
 
 msgid "A category like \"NEW\" sits on half the shop and tells a shopper nothing about where they are. Left out here, it stops crowding out the categories that do."
 msgstr "קטגוריה כמו ״NEW״ יושבת על חצי מהחנות ולא אומרת לגולש כלום על איפה הוא נמצא. אם תוציאו אותה כאן, היא תפסיק לדחוק קטגוריות שכן אומרות."
+
+msgid "A category there leads to"
+msgstr "קטגוריה שם מובילה ל"
+
+msgid "These results, in that category"
+msgstr "התוצאות האלה, בקטגוריה הזו"
+
+msgid "The whole category"
+msgstr "כל הקטגוריה"
+
+msgid "A brand there leads to"
+msgstr "מותג שם מוביל ל"
+
+msgid "These results, from that brand"
+msgstr "התוצאות האלה, מהמותג הזה"
+
+msgid "Everything the brand makes"
+msgstr "כל מה שהמותג מייצר"
