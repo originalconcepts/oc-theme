@@ -1220,8 +1220,8 @@ html.oc-menu-open .oc-menu-dim::before {
 /* Under the link, and onwards in the reading direction — leftwards in
  * Hebrew. min() keeps it from running off the far edge on a narrow window. */
 .oc-nav--w-menu .oc-mega {
-	inset-inline-start: auto;
-	inset-inline-end: 0;
+	inset-inline-start: 0;
+	inset-inline-end: auto;
 	inline-size: min(760px, calc(100vw - 32px));
 	border-inline: 1px solid var(--oc-mega-line, var(--oc-line));
 	border-radius: var(--oc-radius, 8px);

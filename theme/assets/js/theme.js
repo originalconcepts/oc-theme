@@ -76,6 +76,33 @@
 			navOpen = li;
 			li.classList.add( 'is-open' );
 			document.documentElement.classList.add( 'oc-menu-open' );
+			navFit( li );
+		}
+
+		/* A panel that opens under its own link starts at that link's edge and
+		 * runs on in the reading direction. On the last link in the bar there
+		 * may not be that much page left, so it is pulled back inside. The
+		 * sign is the same either way: negative moves the box back towards
+		 * the middle, whichever edge it was heading for. */
+		function navFit( li ) {
+			if ( ! ocNav.classList.contains( 'oc-nav--w-menu' ) ) {
+				return;
+			}
+
+			var mega = li.querySelector( '.oc-mega' );
+
+			if ( ! mega ) {
+				return;
+			}
+
+			mega.style.insetInlineStart = '';
+
+			var box = mega.getBoundingClientRect();
+			var over = Math.max( 8 - box.left, box.right - ( document.documentElement.clientWidth - 8 ), 0 );
+
+			if ( over > 0 ) {
+				mega.style.insetInlineStart = -Math.round( over ) + 'px';
+			}
 		}
 
 		function navHide( delay ) {
