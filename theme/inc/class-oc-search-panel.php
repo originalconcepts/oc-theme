@@ -38,7 +38,7 @@ final class Search_Panel {
 
 		ob_start();
 		?>
-		<div id="oc-header-search" class="oc-searchbox" data-oc-search data-mode="<?php echo esc_attr( $mode ); ?>" data-min="<?php echo esc_attr( (string) $min ); ?>" data-action="<?php echo esc_url( home_url( '/' ) ); ?>" data-cart="<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>" hidden>
+		<div id="oc-header-search" class="oc-searchbox" data-oc-search data-mode="<?php echo esc_attr( $mode ); ?>" data-style="<?php echo esc_attr( 'field' === get_theme_mod( 'oc_header_search_style', 'icon' ) ? 'field' : 'icon' ); ?>" data-min="<?php echo esc_attr( (string) $min ); ?>" data-action="<?php echo esc_url( home_url( '/' ) ); ?>" data-cart="<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>" hidden>
 			<div class="oc-search__inner oc-searchbox__stage">
 				<form class="oc-search__bar" role="search" method="get" action="<?php echo esc_url( home_url( '/' ) ); ?>">
 					<button type="button" class="oc-search__wipe" hidden data-oc-search-clear aria-label="<?php esc_attr_e( 'Clear the text', 'oc-theme' ); ?>">

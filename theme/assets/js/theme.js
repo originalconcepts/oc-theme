@@ -339,7 +339,11 @@
 	var searchPanel = document.querySelector( '[data-oc-search]' );
 
 	if ( searchPanel ) {
-		var sField = searchPanel.querySelector( '[data-oc-search-field]' );
+		// There can be two boxes: the panel's own, and one the header carries
+		// when the site shows a field instead of an icon. They are the same
+		// search, so they share a value and either one drives the panel.
+		var sFields = Array.prototype.slice.call( document.querySelectorAll( '[data-oc-search-field]' ) );
+		var sField = sFields[ 0 ];
 		var sOut = searchPanel.querySelector( '[data-oc-search-out]' );
 		var sIdle = searchPanel.querySelector( '[data-oc-search-idle]' );
 		var sClear = searchPanel.querySelector( '[data-oc-search-clear]' );
@@ -457,7 +461,7 @@
 
 		var sCloseTimer = null;
 
-		function setSearchOpen( open ) {
+		function setSearchOpen( open, keepFocus ) {
 			clearTimeout( sCloseTimer );
 
 			document.documentElement.classList.toggle( 'oc-search-open', open );
@@ -476,9 +480,15 @@
 				void searchPanel.offsetWidth;
 				searchPanel.classList.add( 'is-open' );
 
-				if ( sField ) {
-					sField.focus();
-					sField.select();
+				// Focus goes to the panel's own box, unless the shopper is
+				// already typing in the header's.
+				if ( sField && ! keepFocus && ! searchPanel.querySelector( '.oc-search__bar[hidden]' ) ) {
+					var visible = sFields.filter( function ( f ) {
+						return f.offsetParent !== null;
+					} )[ 0 ] || sField;
+
+					visible.focus();
+					visible.select();
 				}
 
 				return;
@@ -569,11 +579,15 @@
 			var empty = ! term;
 
 			// An empty field with dir="auto" is read as left-to-right, which
-			// puts a Hebrew placeholder on the wrong side. The field follows
-			// the page until there are words of its own to follow.
-			if ( sField ) {
-				sField.setAttribute( 'dir', empty ? 'rtl' === document.documentElement.dir ? 'rtl' : 'ltr' : 'auto' );
-			}
+			// puts a Hebrew placeholder on the wrong side. A field follows the
+			// page until it has words of its own to follow.
+			sFields.forEach( function ( field ) {
+				field.setAttribute( 'dir', empty ? ( 'rtl' === document.documentElement.dir ? 'rtl' : 'ltr' ) : 'auto' );
+
+				if ( field.value !== term && document.activeElement !== field ) {
+					field.value = term;
+				}
+			} );
 
 			// The eraser only exists while there is something to erase; the
 			// glass stays put and goes quiet, because it anchors the line.
@@ -630,7 +644,11 @@
 		}
 
 		function run() {
-			var term = ( sField.value || '' ).trim();
+			var live = sFields.filter( function ( f ) {
+				return document.activeElement === f;
+			} )[ 0 ] || sField;
+
+			var term = ( live.value || '' ).trim();
 
 			sTerm = term;
 
@@ -660,26 +678,38 @@
 			}, 1100 );
 		}
 
-		if ( sField ) {
-			sField.addEventListener( 'input', function () {
-				// The bar's own state answers the keystroke, not the pause
-				// after it — the buttons should never lag behind the typing.
-				setBarState( ( sField.value || '' ).trim() );
+		sFields.forEach( function ( field ) {
+			field.addEventListener( 'input', function () {
+				// The state answers the keystroke, not the pause after it —
+				// the buttons should never lag behind the typing.
+				setBarState( ( field.value || '' ).trim() );
+
+				// A header box that starts a search opens the panel with it.
+				if ( searchPanel.hidden ) {
+					setSearchOpen( true, field );
+				}
 
 				clearTimeout( sTimer );
 				sTimer = setTimeout( run, 120 );
 			} );
 
-			sField.addEventListener( 'focus', function () {
-				if ( ( sField.value || '' ).trim().length >= sMin ) {
+			field.addEventListener( 'focus', function () {
+				if ( ( field.value || '' ).trim().length >= sMin ) {
+					if ( searchPanel.hidden ) {
+						setSearchOpen( true, field );
+					}
+
 					run();
 				}
 			} );
-		}
+		} );
 
 		if ( sClear ) {
 			sClear.addEventListener( 'click', function () {
-				sField.value = '';
+				sFields.forEach( function ( f ) {
+					f.value = '';
+				} );
+
 				sField.focus();
 				run();
 			} );
@@ -694,8 +724,17 @@
 				return;
 			}
 
-			sField.value = pill.getAttribute( 'data-oc-search-term' ) || '';
-			sField.focus();
+			var picked = pill.getAttribute( 'data-oc-search-term' ) || '';
+
+			sFields.forEach( function ( f ) {
+				f.value = picked;
+			} );
+
+			var visible = sFields.filter( function ( f ) {
+				return f.offsetParent !== null;
+			} )[ 0 ] || sField;
+
+			visible.focus();
 			run();
 		} );
 

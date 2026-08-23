@@ -235,6 +235,8 @@ a { color: inherit; }
  */
 
 .oc-searchbox {
+	position: relative;
+	z-index: 10020;
 	background: var(--oc-header-bg, var(--oc-surface));
 	border-block-end: 1px solid var(--oc-line);
 	box-shadow: 0 24px 48px -32px rgba(0, 0, 0, .28);
@@ -762,6 +764,16 @@ a { color: inherit; }
 /* the minimal panel is a plain list, nothing beside it */
 
 /* The plain panel is one column of results and nothing beside it. */
+/* The header already carries a search box: the panel must not open a second
+ * one under it. On a phone the header shows an icon instead, so the panel's
+ * own box is still the only one there. */
+@media (min-width: 901px) {
+	.oc-searchbox[data-style="field"] .oc-search__bar { display: none; }
+	.oc-searchbox[data-style="field"] .oc-search__body { margin-block-start: 4px; }
+}
+
+.oc-hsearch input[type="search"]:focus { outline: none; }
+
 .oc-searchbox[data-mode="min"] .oc-search__side { display: none; }
 .oc-searchbox[data-mode="min"] .oc-search__cols { grid-template-columns: 1fr; }
 
@@ -2265,7 +2277,10 @@ body.oc-tabs-tabs.woocommerce div.product .woocommerce-tabs ul.tabs li.active a,
 
 /* ---------- cart drawer ---------- */
 
-.oc-drawer { position: fixed; inset: 0; z-index: 120; }
+/* Above anything a plugin floats over the page — a story widget, a chat
+ * bubble. A surface the shopper opened on purpose outranks one that put
+ * itself there. */
+.oc-drawer { position: fixed; inset: 0; z-index: 10010; }
 
 .oc-drawer__overlay {
 	position: absolute;
@@ -4321,7 +4336,7 @@ body:not(.oc-no-lightbox) .oc-vslide.is-playing {
 .oc-voverlay {
 	position: fixed;
 	inset: 0;
-	z-index: 10000;
+	z-index: 10100;
 	background: var(--oc-surface, #fff);
 	display: grid;
 	place-items: center;
@@ -4362,7 +4377,7 @@ body:not(.oc-no-lightbox) .oc-vslide.is-playing {
 /* The open effect's travelling image. */
 .oc-lb-ghost {
 	position: fixed;
-	z-index: 10001;
+	z-index: 10101;
 	margin: 0;
 	object-fit: cover;
 	transition: all .45s cubic-bezier(.2, .7, .2, 1);
@@ -4899,7 +4914,7 @@ body:not(.oc-no-lightbox) .oc-vslide.is-playing {
 .oc-nmodal {
 	position: fixed;
 	inset: 0;
-	z-index: 10001;
+	z-index: 10101;
 	background: rgb(0 0 0 / 45%);
 	display: grid;
 	place-items: center;

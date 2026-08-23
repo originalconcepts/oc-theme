@@ -193,7 +193,7 @@ function oc_header_icons_render(): void {
 
 	if ( get_theme_mod( 'oc_header_search', true ) && 'field' === get_theme_mod( 'oc_header_search_style', 'icon' ) ) {
 		printf(
-			'<form role="search" method="get" class="oc-hsearch" action="%s"><input type="search" name="s" placeholder="%s" />%s<button type="submit" aria-label="%s">%s</button></form>',
+			'<form role="search" method="get" class="oc-hsearch" action="%s"><input type="search" name="s" placeholder="%s" autocomplete="off" data-oc-search-field />%s<button type="submit" aria-label="%s">%s</button></form>',
 			esc_url( home_url( '/' ) ),
 			esc_attr__( 'Search…', 'oc-theme' ),
 			class_exists( 'WooCommerce' ) ? '<input type="hidden" name="post_type" value="product" />' : '',
