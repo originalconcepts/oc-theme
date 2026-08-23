@@ -107,6 +107,7 @@
 
 			if ( open ) {
 				drw.hidden = false;
+				drw.classList.add( 'is-live' );
 				/* A frame between display and transform, or the panel is
 				 * already where it is going and never slides. */
 				void drw.offsetWidth;
@@ -130,6 +131,7 @@
 			/* Wait for the slide out before taking the panel off the page. */
 			setTimeout( function () {
 				if ( drw.getAttribute( 'data-open' ) !== 'true' ) {
+					drw.classList.remove( 'is-live' );
 					drw.hidden = true;
 				}
 			}, 300 );

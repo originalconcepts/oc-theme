@@ -1421,13 +1421,26 @@ html.oc-drw-open body { overflow: hidden; }
 /* One drawer serves the phone and the desktop hamburger, because at any
  * width they are the same thing. */
 .oc-drw {
+	--oc-abar: 0px;
 	position: fixed;
 	inset: 0;
 	z-index: 10015;
 	display: none;
 }
 
-.oc-drw[data-open="true"] { display: block; }
+/* Display and transform have to change in separate frames or the browser
+ * has nothing to animate between — so becoming displayable and becoming
+ * open are two different states. */
+.oc-drw.is-live { display: block; }
+
+/* The admin bar sits above everything at all times. Only a logged-in
+ * person ever sees this, and that person is usually the one building the
+ * menu, so the close button cannot be the thing hiding under it. */
+.admin-bar .oc-drw { --oc-abar: 46px; }
+
+@media (min-width: 783px) {
+	.admin-bar .oc-drw { --oc-abar: 32px; }
+}
 
 .oc-drw__scrim {
 	position: absolute;
@@ -1463,7 +1476,7 @@ html.oc-drw-open body { overflow: hidden; }
 .oc-drw__top {
 	display: flex;
 	justify-content: flex-end;
-	padding: 10px 12px 4px;
+	padding: calc(10px + var(--oc-abar, 0px)) 12px 4px;
 	flex: none;
 }
 
@@ -1582,7 +1595,7 @@ html.oc-drw-open body { overflow: hidden; }
 	position: fixed;
 	inset-block: 0;
 	inline-size: min(var(--oc-drw-w, 360px), 92vw);
-	padding: 58px var(--oc-gap, 16px) var(--oc-gap, 16px);
+	padding: calc(58px + var(--oc-abar, 0px)) var(--oc-gap, 16px) var(--oc-gap, 16px);
 	overflow-y: auto;
 	overscroll-behavior: contain;
 	background: var(--oc-drw-bg2, var(--oc-drw-bg, var(--oc-surface)));
@@ -1597,7 +1610,7 @@ html.oc-drw-open body { overflow: hidden; }
 
 .oc-drw__back {
 	position: absolute;
-	inset-block-start: 12px;
+	inset-block-start: calc(12px + var(--oc-abar, 0px));
 	inset-inline: var(--oc-gap, 16px) auto;
 	display: flex;
 	align-items: center;
