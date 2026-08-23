@@ -694,11 +694,16 @@
 			} );
 
 			field.addEventListener( 'focus', function () {
-				if ( ( field.value || '' ).trim().length >= sMin ) {
-					if ( searchPanel.hidden ) {
-						setSearchOpen( true, field );
-					}
+				var typed = ( field.value || '' ).trim();
 
+				// A panel that has something to say before a word is typed
+				// says it the moment the box is touched. A plain one waits,
+				// because opening it empty would be an empty box under a box.
+				if ( searchPanel.hidden && ( 'min' !== searchPanel.dataset.mode || typed.length >= sMin ) ) {
+					setSearchOpen( true, field );
+				}
+
+				if ( typed.length >= sMin ) {
 					run();
 				}
 			} );
