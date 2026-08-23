@@ -3554,3 +3554,6 @@ msgstr "הזזה אחורה"
 
 msgid "Move later"
 msgstr "הזזה קדימה"
+
+msgid "Image"
+msgstr "תמונה"
