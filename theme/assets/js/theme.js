@@ -522,7 +522,9 @@
 			}
 		} );
 
-		// A click outside the panel closes it, a click inside never does.
+		// A click outside the search closes it. "Outside" has to include the
+		// header's own box, which lives in the header rather than the panel —
+		// otherwise clicking it opened the panel and closed it in one gesture.
 		document.addEventListener( 'click', function ( event ) {
 			if ( searchPanel.hidden || searchPanel.contains( event.target ) ) {
 				return;
@@ -530,6 +532,14 @@
 
 			for ( var i = 0; i < searchToggles.length; i++ ) {
 				if ( searchToggles[ i ].contains( event.target ) ) {
+					return;
+				}
+			}
+
+			for ( var f = 0; f < sFields.length; f++ ) {
+				var form = sFields[ f ].closest( 'form' ) || sFields[ f ];
+
+				if ( form.contains( event.target ) ) {
 					return;
 				}
 			}
