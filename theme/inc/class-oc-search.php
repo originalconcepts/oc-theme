@@ -829,12 +829,14 @@ final class Search {
 		$whole = $wpdb->get_var( // phpcs:ignore WordPress.DB
 			$wpdb->prepare(
 				'SELECT token FROM ' . Search_Index::words()
-					. ' WHERE token LIKE %s AND field IN (%d, %d, %d)'
+					. ' WHERE token LIKE %s AND field IN (%d, %d, %d, %d, %d)'
 					. ' GROUP BY token ORDER BY COUNT(*) DESC, CHAR_LENGTH(token) ASC LIMIT 1',
 				$wpdb->esc_like( $word ) . '%',
 				Search_Index::F_TITLE,
 				Search_Index::F_CAT,
-				Search_Index::F_ATTR
+				Search_Index::F_ATTR,
+				Search_Index::F_BRAND,
+				Search_Index::F_TAG
 			)
 		);
 
