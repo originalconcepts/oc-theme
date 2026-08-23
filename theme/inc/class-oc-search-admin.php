@@ -552,8 +552,9 @@ final class Search_Admin {
 
 					<p style="margin:14px 0 0;">
 						<?php esc_html_e( 'How many to show', 'oc-theme' ); ?>
-						<input type="number" name="prod_count" min="2" max="12" value="<?php echo esc_attr( (string) $s['prod_count'] ); ?>" style="inline-size:70px;" />
+						<input type="number" name="prod_count" min="2" max="24" value="<?php echo esc_attr( (string) $s['prod_count'] ); ?>" style="inline-size:70px;" />
 					</p>
+					<p class="description"><?php esc_html_e( 'A row holds about seven as cards and four as rows, so pick a number that fills its rows rather than leaving one short.', 'oc-theme' ); ?></p>
 					<p class="description"><?php esc_html_e( 'Nothing sold yet and nothing chosen? The newest products stand in, so the panel is never empty.', 'oc-theme' ); ?></p>
 				</td>
 			</tr>
@@ -866,7 +867,7 @@ final class Search_Admin {
 			$chosen          = isset( $post['prod_ids'] ) ? (array) $post['prod_ids'] : array();
 			$chosen          = array_values( array_filter( array_map( 'absint', $chosen ) ) );
 			$s['prod_ids']   = implode( ', ', $chosen );
-			$s['prod_count'] = max( 2, min( 12, (int) ( $post['prod_count'] ?? 8 ) ) );
+			$s['prod_count'] = max( 2, min( 24, (int) ( $post['prod_count'] ?? 8 ) ) );
 		}
 
 		if ( 'boost' === $tab ) {

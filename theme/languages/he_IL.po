@@ -3169,3 +3169,6 @@ msgstr "התוצאות האלה, מהמותג הזה"
 
 msgid "Everything the brand makes"
 msgstr "כל מה שהמותג מייצר"
+
+msgid "A row holds about seven as cards and four as rows, so pick a number that fills its rows rather than leaving one short."
+msgstr "שורה מכילה בערך שבעה ככרטיסים וארבעה כשורות, אז בחרו מספר שממלא את השורות ולא משאיר אחת חסרה."
