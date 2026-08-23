@@ -3124,3 +3124,12 @@ msgstr "פעמים"
 
 msgid "A half-typed word is never offered back: \"שול\" counts towards \"שולחן\" and the finished word is what appears."
 msgstr "מילה חצי־מוקלדת לא תוצג: ״שול״ נספר לטובת ״שולחן״, והמילה השלמה היא שמופיעה."
+
+msgid "The products, in the order you want them"
+msgstr "המוצרים, בסדר שתרצו"
+
+msgid "Start typing a product name…"
+msgstr "התחילו להקליד שם מוצר…"
+
+msgid "Drag to reorder is not available here; the order you add them in is the order they appear."
+msgstr "אין כאן גרירה לסידור; הסדר שבו מוסיפים הוא הסדר שבו הם מוצגים."

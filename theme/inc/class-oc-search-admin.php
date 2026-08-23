@@ -32,6 +32,7 @@ final class Search_Admin {
 		add_action( 'admin_post_oc_search_save', array( $this, 'save' ) );
 		add_action( 'wp_ajax_oc_search_build', array( $this, 'ajax_build' ) );
 		add_action( 'admin_post_oc_search_build_step', array( $this, 'build_step' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'assets' ) );
 
 		// A word list on every kind of term the search reads — including
 		// whichever taxonomy this site uses for brands.
@@ -45,6 +46,28 @@ final class Search_Admin {
 		add_filter( 'woocommerce_product_data_tabs', array( $this, 'product_tab' ) );
 		add_action( 'woocommerce_product_data_panels', array( $this, 'product_panel' ) );
 		add_action( 'woocommerce_process_product_meta', array( $this, 'save_product' ) );
+	}
+
+	/**
+	 * WooCommerce's own product picker, on this screen only.
+	 *
+	 * Choosing a product by typing its name is the difference between a
+	 * setting a shop owner uses and one they ask someone else to fill in.
+	 *
+	 * @param string $hook Current screen.
+	 */
+	public function assets( $hook ): void {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- reading the screen, not acting.
+		if ( false === strpos( (string) $hook, self::PAGE ) && ( $_GET['page'] ?? '' ) !== self::PAGE ) {
+			return;
+		}
+
+		if ( ! function_exists( 'WC' ) ) {
+			return;
+		}
+
+		wp_enqueue_script( 'wc-enhanced-select' );
+		wp_enqueue_style( 'woocommerce_admin_styles' );
 	}
 
 	/**
@@ -466,10 +489,36 @@ final class Search_Admin {
 						<label style="display:block;margin-block-end:6px;"><input type="radio" name="prod_mode" value="<?php echo esc_attr( $key ); ?>" <?php checked( $key, $s['prod_mode'] ); ?> /> <?php echo esc_html( $label ); ?></label>
 					<?php endforeach; ?>
 
-					<p style="margin:10px 0 4px;"><label><?php esc_html_e( 'Product ids, in the order you want them', 'oc-theme' ); ?></label></p>
-					<input type="text" name="prod_ids" value="<?php echo esc_attr( (string) $s['prod_ids'] ); ?>" class="large-text" placeholder="128, 64, 91" />
+					<div id="oc-prod-pick" style="margin:14px 0 0;<?php echo 'manual' === $s['prod_mode'] ? '' : 'display:none;'; ?>">
+						<p style="margin:0 0 6px;"><label for="oc_prod_ids"><?php esc_html_e( 'The products, in the order you want them', 'oc-theme' ); ?></label></p>
+						<select
+							class="wc-product-search"
+							multiple="multiple"
+							id="oc_prod_ids"
+							name="prod_ids[]"
+							style="inline-size:100%;max-inline-size:640px;"
+							data-placeholder="<?php esc_attr_e( 'Start typing a product name…', 'oc-theme' ); ?>"
+							data-action="woocommerce_json_search_products_and_variations">
+							<?php
+							foreach ( array_filter( array_map( 'absint', preg_split( '/[\s,]+/', (string) $s['prod_ids'] ) ?: array() ) ) as $chosen ) {
+								$product = wc_get_product( $chosen );
 
-					<p style="margin:10px 0 0;">
+								if ( ! $product ) {
+									continue;
+								}
+
+								printf(
+									'<option value="%d" selected="selected">%s</option>',
+									(int) $chosen,
+									esc_html( wp_strip_all_tags( $product->get_formatted_name() ) )
+								);
+							}
+							?>
+						</select>
+						<p class="description"><?php esc_html_e( 'Drag to reorder is not available here; the order you add them in is the order they appear.', 'oc-theme' ); ?></p>
+					</div>
+
+					<p style="margin:14px 0 0;">
 						<?php esc_html_e( 'How many to show', 'oc-theme' ); ?>
 						<input type="number" name="prod_count" min="2" max="12" value="<?php echo esc_attr( (string) $s['prod_count'] ); ?>" style="inline-size:70px;" />
 					</p>
@@ -477,6 +526,22 @@ final class Search_Admin {
 				</td>
 			</tr>
 		</table>
+
+		<script>
+		( function () {
+			var box = document.getElementById( 'oc-prod-pick' );
+
+			if ( ! box ) {
+				return;
+			}
+
+			document.querySelectorAll( 'input[name="prod_mode"]' ).forEach( function ( radio ) {
+				radio.addEventListener( 'change', function () {
+					box.style.display = ( 'manual' === radio.value && radio.checked ) ? '' : 'none';
+				} );
+			} );
+		}() );
+		</script>
 		<?php
 	}
 
@@ -764,7 +829,9 @@ final class Search_Admin {
 			$s['pop_block']  = sanitize_text_field( (string) ( $post['pop_block'] ?? '' ) );
 			$s['pop_min']    = max( 1, min( 50, (int) ( $post['pop_min'] ?? 3 ) ) );
 			$s['prod_mode']  = in_array( $post['prod_mode'] ?? '', array( 'sales', 'searches', 'manual', 'random' ), true ) ? $post['prod_mode'] : 'sales';
-			$s['prod_ids']   = sanitize_text_field( (string) ( $post['prod_ids'] ?? '' ) );
+			$chosen          = isset( $post['prod_ids'] ) ? (array) $post['prod_ids'] : array();
+			$chosen          = array_values( array_filter( array_map( 'absint', $chosen ) ) );
+			$s['prod_ids']   = implode( ', ', $chosen );
 			$s['prod_count'] = max( 2, min( 12, (int) ( $post['prod_count'] ?? 8 ) ) );
 		}
 
