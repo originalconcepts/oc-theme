@@ -568,6 +568,13 @@
 		function setBarState( term ) {
 			var empty = ! term;
 
+			// An empty field with dir="auto" is read as left-to-right, which
+			// puts a Hebrew placeholder on the wrong side. The field follows
+			// the page until there are words of its own to follow.
+			if ( sField ) {
+				sField.setAttribute( 'dir', empty ? 'rtl' === document.documentElement.dir ? 'rtl' : 'ltr' : 'auto' );
+			}
+
 			// The eraser only exists while there is something to erase; the
 			// glass stays put and goes quiet, because it anchors the line.
 			if ( sClear ) {

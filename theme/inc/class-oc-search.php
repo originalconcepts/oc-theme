@@ -60,6 +60,9 @@ final class Search {
 				// sink | hide | normal.
 				'oos'       => 'sink',
 
+				// Term ids never offered beside the results.
+				'facet_skip' => '',
+
 				// Popular searches.
 				'pop_days'  => 7,
 				'pop_count' => 6,
@@ -1012,6 +1015,10 @@ final class Search {
 
 		$in = implode( ',', array_fill( 0, count( $ids ), '%d' ) );
 
+		// A marketing category like "NEW" sits on half the shop and tells a
+		// shopper nothing about where they are, so it can be kept out.
+		$skip = array_filter( array_map( 'absint', preg_split( '/[\s,]+/', (string) self::settings()['facet_skip'] ) ?: array() ) );
+
 		$rows = $wpdb->get_results( // phpcs:ignore WordPress.DB
 			$wpdb->prepare(
 				"SELECT t.term_id, t.name, t.slug, COUNT(DISTINCT tr.object_id) AS n
@@ -1022,11 +1029,26 @@ final class Search {
 				 GROUP BY t.term_id, t.name, t.slug
 				 ORDER BY n DESC, t.name ASC
 				 LIMIT %d",
-				array_merge( array( $taxonomy ), $ids, array( max( 1, $limit ) ) )
+				array_merge( array( $taxonomy ), $ids, array( max( 1, $limit ) + count( $skip ) ) )
 			)
 		);
 
-		return is_array( $rows ) ? $rows : array();
+		if ( ! is_array( $rows ) ) {
+			return array();
+		}
+
+		if ( $skip ) {
+			$rows = array_values(
+				array_filter(
+					$rows,
+					static function ( $row ) use ( $skip ) {
+						return ! in_array( (int) $row->term_id, $skip, true );
+					}
+				)
+			);
+		}
+
+		return array_slice( $rows, 0, max( 1, $limit ) );
 	}
 
 	/**

@@ -3142,3 +3142,12 @@ msgstr "מחיקת הטקסט"
 
 msgid "Show all results"
 msgstr "הצגת כל התוצאות"
+
+msgid "Never offer these beside the results"
+msgstr "לא להציע את אלה לצד התוצאות"
+
+msgid "Start typing a category or brand…"
+msgstr "התחילו להקליד קטגוריה או מותג…"
+
+msgid "A category like \"NEW\" sits on half the shop and tells a shopper nothing about where they are. Left out here, it stops crowding out the categories that do."
+msgstr "קטגוריה כמו ״NEW״ יושבת על חצי מהחנות ולא אומרת לגולש כלום על איפה הוא נמצא. אם תוציאו אותה כאן, היא תפסיק לדחוק קטגוריות שכן אומרות."

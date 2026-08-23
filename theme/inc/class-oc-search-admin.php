@@ -431,6 +431,38 @@ final class Search_Admin {
 				</td>
 			</tr>
 			<tr>
+				<th scope="row"><label for="oc_facet_skip"><?php esc_html_e( 'Never offer these beside the results', 'oc-theme' ); ?></label></th>
+				<td>
+					<select
+						class="wc-product-search"
+						multiple="multiple"
+						id="oc_facet_skip"
+						name="facet_skip[]"
+						style="inline-size:100%;max-inline-size:640px;"
+						data-placeholder="<?php esc_attr_e( 'Start typing a category or brand…', 'oc-theme' ); ?>"
+						data-action="woocommerce_json_search_categories">
+						<?php
+						foreach ( array_filter( array_map( 'absint', preg_split( '/[\s,]+/', (string) $s['facet_skip'] ) ?: array() ) ) as $skip_id ) {
+							$skip_term = get_term( $skip_id );
+
+							if ( ! $skip_term instanceof \WP_Term ) {
+								continue;
+							}
+
+							printf(
+								'<option value="%d" selected="selected">%s</option>',
+								(int) $skip_id,
+								esc_html( $skip_term->name )
+							);
+						}
+						?>
+					</select>
+					<p class="description" style="max-inline-size:700px;">
+						<?php esc_html_e( 'A category like "NEW" sits on half the shop and tells a shopper nothing about where they are. Left out here, it stops crowding out the categories that do.', 'oc-theme' ); ?>
+					</p>
+				</td>
+			</tr>
+			<tr>
 				<th scope="row"><?php esc_html_e( 'When nothing matches', 'oc-theme' ); ?></th>
 				<td>
 					<label style="display:block;margin-block-end:6px;"><input type="checkbox" name="kbd" value="1" <?php checked( 1, (int) $s['kbd'] ); ?> /> <?php esc_html_e( 'Read the words again on the other keyboard layout', 'oc-theme' ); ?></label>
@@ -819,7 +851,9 @@ final class Search_Admin {
 
 			$s['pop_mix'] = max( 0, min( 100, (int) ( $post['pop_mix'] ?? 30 ) ) );
 			$s['oos']     = in_array( $post['oos'] ?? '', array( 'sink', 'hide', 'normal' ), true ) ? $post['oos'] : 'sink';
-			$s['kbd']     = empty( $post['kbd'] ) ? 0 : 1;
+			$skip            = isset( $post['facet_skip'] ) ? (array) $post['facet_skip'] : array();
+			$s['facet_skip'] = implode( ', ', array_values( array_filter( array_map( 'absint', $skip ) ) ) );
+			$s['kbd']        = empty( $post['kbd'] ) ? 0 : 1;
 			$s['typo']    = empty( $post['typo'] ) ? 0 : 1;
 		}
 

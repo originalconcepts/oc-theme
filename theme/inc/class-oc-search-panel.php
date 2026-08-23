@@ -48,7 +48,6 @@ final class Search_Panel {
 						type="search"
 						name="s"
 						class="oc-search__field"
-						dir="auto"
 						autocomplete="off"
 						autocapitalize="off"
 						spellcheck="false"
