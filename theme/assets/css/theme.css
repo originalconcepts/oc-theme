@@ -1547,8 +1547,8 @@ html.oc-drw-open body { overflow: hidden; }
 /* Which way is "onwards". A chevron that points the wrong way in Hebrew
  * reads as a mistake, so the rotation follows the document direction and
  * every arrow in the drawer is derived from it. */
-.oc-drw { --oc-chev: 45deg; }
-[dir="rtl"] .oc-drw { --oc-chev: -45deg; }
+.oc-drw { --oc-chev: 45deg; --oc-in-x: -18px; }
+[dir="rtl"] .oc-drw { --oc-chev: -45deg; --oc-in-x: 18px; }
 
 /* The chevron is its own button, so tapping the word still follows the link
  * — the row does two different things and they need two different targets. */
@@ -1699,13 +1699,24 @@ html.oc-drw-open body { overflow: hidden; }
 /* --- arriving --- */
 
 /* Rows come in one after another, on the way in only. Going back out they
- * leave together: opening is an invitation, closing is an exit. */
-.oc-drw--mo-stagger .oc-drw__list > .oc-drw__i { opacity: 0; transform: translateY(9px); }
+ * leave together: opening is an invitation, closing is an exit.
+ *
+ * They travel the way the language reads — right to left in Hebrew — so the
+ * list assembles itself in the direction the eye is already moving.
+ *
+ * The lead is what makes the first rows readable at all. Without it they
+ * animate while the panel is still sliding in from off-screen, so their
+ * entrance happens where nobody can see it and they look as though they had
+ * been there all along. Everything waits for the panel to land. */
+.oc-drw--mo-stagger .oc-drw__list > .oc-drw__i {
+	opacity: 0;
+	transform: translateX(var(--oc-in-x, -18px));
+}
 
 .oc-drw--mo-stagger[data-open="true"] .oc-drw__body > .oc-drw__list > .oc-drw__i,
 .oc-drw--mo-stagger .oc-drw__i.is-open > .oc-drw__sub .oc-drw__list--sub > .oc-drw__i {
-	animation: oc-menu-in .32s cubic-bezier(.2, .7, .3, 1) forwards;
-	animation-delay: calc(var(--oc-menu-step, 40ms) * var(--i, 0));
+	animation: oc-menu-in .34s cubic-bezier(.2, .7, .3, 1) forwards;
+	animation-delay: calc(200ms + var(--oc-menu-step, 40ms) * var(--i, 0));
 }
 
 .oc-drw--mo-stagger .oc-drw__list > .oc-drw__i:nth-child(1)  { --i: 0; }
