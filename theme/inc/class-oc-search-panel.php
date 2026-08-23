@@ -225,7 +225,7 @@ final class Search_Panel {
 			);
 		}
 
-		$side = self::side_html( '' !== $suggested ? $suggested : $term );
+		$side = self::side_html( '' !== $suggested ? $suggested : $term, $ids );
 
 		?>
 		<div class="oc-search__cols<?php echo $side ? '' : ' is-single'; ?>">
@@ -301,35 +301,40 @@ final class Search_Panel {
 	 *
 	 * @param string $term Query.
 	 */
-	private static function side_html( string $term ): string {
+	private static function side_html( string $term, array $ids ): string {
 		$blocks = array();
 
 		if ( Search::look( 'show_cat', true ) ) {
-			$blocks[] = array( __( 'Categories', 'oc-theme' ), Search::matching_terms( $term, 'product_cat', 4 ), 'cat' );
+			$blocks[] = array( __( 'Categories', 'oc-theme' ), Search::result_facets( $ids, 'product_cat', 4 ), 'product_cat' );
 		}
 
 		if ( Search::look( 'show_brand', true ) ) {
-			$blocks[] = array( __( 'Brands', 'oc-theme' ), Search::matching_terms( $term, Search::brand_taxonomy(), 4 ), 'brand' );
+			$brand = Search::brand_taxonomy();
+
+			if ( $brand ) {
+				$blocks[] = array( __( 'Brands', 'oc-theme' ), Search::result_facets( $ids, $brand, 4 ), $brand );
+			}
 		}
 
 		if ( Search::look( 'show_tag', false ) ) {
-			$blocks[] = array( __( 'Tags', 'oc-theme' ), Search::matching_terms( $term, 'product_tag', 4 ), 'tag' );
+			$blocks[] = array( __( 'Tags', 'oc-theme' ), Search::result_facets( $ids, 'product_tag', 4 ), 'product_tag' );
 		}
 
 		$out   = '';
 		$lines = 0;
 
 		foreach ( $blocks as $block ) {
-			list( $label, $terms, $kind ) = $block;
+			list( $label, $facets, $taxonomy ) = $block;
 
-			if ( ! $terms ) {
+			if ( ! $facets ) {
 				continue;
 			}
 
-			$out .= '<h3 class="oc-search__h">' . esc_html( $label ) . '</h3><ul class="oc-search__terms">';
+			$rows = '';
 
-			foreach ( $terms as $term_obj ) {
-				// Nine lines is roughly the height of the product column.
+			foreach ( $facets as $facet ) {
+				// Nine lines is about the height of the product column beside
+				// it; this is a shortcut, not a directory.
 				if ( $lines >= 9 ) {
 					break;
 				}
@@ -338,23 +343,28 @@ final class Search_Panel {
 
 				$logo = '';
 
-				if ( 'brand' === $kind && 'logo' === Search::look( 'brand_style', 'text' ) ) {
-					$thumb = (int) get_term_meta( (int) $term_obj->term_id, 'thumbnail_id', true );
+				if ( $taxonomy !== 'product_cat' && $taxonomy !== 'product_tag' && 'logo' === Search::look( 'brand_style', 'text' ) ) {
+					$thumb = (int) get_term_meta( (int) $facet->term_id, 'thumbnail_id', true );
 
 					if ( $thumb ) {
 						$logo = wp_get_attachment_image( $thumb, 'thumbnail', false, array( 'class' => 'oc-search__brandimg', 'alt' => '' ) );
 					}
 				}
 
-				$out .= sprintf(
-					'<li><a href="%s" data-oc-search-hit>%s<span>%s</span></a></li>',
-					esc_url( (string) get_term_link( $term_obj ) ),
+				$rows .= sprintf(
+					'<li><a href="%s" data-oc-search-hit>%s<span>%s</span><span class="oc-search__n">%d</span></a></li>',
+					esc_url( Search::narrowed_url( $term, $taxonomy, (string) $facet->slug ) ),
 					$logo, // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- core markup.
-					self::mark( $term_obj->name, $term ) // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside.
+					self::mark( (string) $facet->name, $term ), // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside.
+					(int) $facet->n
 				);
 			}
 
-			$out .= '</ul>';
+			if ( '' === $rows ) {
+				continue;
+			}
+
+			$out .= '<h3 class="oc-search__h">' . esc_html( $label ) . '</h3><ul class="oc-search__terms">' . $rows . '</ul>';
 		}
 
 		return $out;

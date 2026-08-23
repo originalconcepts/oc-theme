@@ -984,6 +984,75 @@ final class Search {
 		return array_slice( $hits, 0, $limit );
 	}
 
+	/**
+	 * The categories, brands or tags the found products belong to.
+	 *
+	 * This is what a shopper actually wants beside their results. Searching
+	 * "נעל" should offer Adidas and Nike because those are the brands of the
+	 * shoes that came back — not because the word "נעל" resembles a brand
+	 * name. Each carries its count, which is what makes the short list
+	 * afterwards make sense: "Adidas 2" says, before the click, that two of
+	 * these results are Adidas.
+	 *
+	 * @param int[]  $ids      Product ids the search returned.
+	 * @param string $taxonomy Taxonomy.
+	 * @param int    $limit    How many.
+	 * @return array<int,object> term_id, name, slug, n.
+	 */
+	public static function result_facets( array $ids, string $taxonomy, int $limit = 5 ): array {
+		global $wpdb;
+
+		if ( ! $ids || ! $taxonomy || ! taxonomy_exists( $taxonomy ) ) {
+			return array();
+		}
+
+		// Counting every one of a thousand results would cost more than the
+		// list is worth; the top of the ranking decides what is offered.
+		$ids = array_slice( array_map( 'intval', $ids ), 0, 300 );
+
+		$in = implode( ',', array_fill( 0, count( $ids ), '%d' ) );
+
+		$rows = $wpdb->get_results( // phpcs:ignore WordPress.DB
+			$wpdb->prepare(
+				"SELECT t.term_id, t.name, t.slug, COUNT(DISTINCT tr.object_id) AS n
+				 FROM {$wpdb->term_relationships} tr
+				 INNER JOIN {$wpdb->term_taxonomy} tt ON tt.term_taxonomy_id = tr.term_taxonomy_id
+				 INNER JOIN {$wpdb->terms} t ON t.term_id = tt.term_id
+				 WHERE tt.taxonomy = %s AND tr.object_id IN ({$in})
+				 GROUP BY t.term_id, t.name, t.slug
+				 ORDER BY n DESC, t.name ASC
+				 LIMIT %d",
+				array_merge( array( $taxonomy ), $ids, array( max( 1, $limit ) ) )
+			)
+		);
+
+		return is_array( $rows ) ? $rows : array();
+	}
+
+	/**
+	 * The results page, narrowed to one category or brand.
+	 *
+	 * The link keeps the search rather than replacing it: a shopper who typed
+	 * "נעל" and picked Adidas wants Adidas shoes, not the whole Adidas shelf.
+	 *
+	 * @param string $query    What was searched for.
+	 * @param string $taxonomy Taxonomy.
+	 * @param string $slug     Term slug.
+	 */
+	public static function narrowed_url( string $query, string $taxonomy, string $slug ): string {
+		$object = get_taxonomy( $taxonomy );
+		$var    = $object && $object->query_var ? $object->query_var : $taxonomy;
+
+		return add_query_arg(
+			array(
+				's'         => rawurlencode( $query ),
+				'post_type' => 'product',
+				$var        => $slug,
+			),
+			home_url( '/' )
+		);
+	}
+
 	/* --------------------------------------------------------- the screen */
 
 	/**

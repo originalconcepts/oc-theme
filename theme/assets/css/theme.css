@@ -507,6 +507,16 @@ a { color: inherit; }
 
 .oc-search__terms a:hover { text-decoration: underline; }
 
+/* The count is what makes a short list make sense: "Adidas 2" says, before
+ * the click, that two of these results are Adidas. */
+.oc-search__n {
+	margin-inline-start: auto;
+	font-size: .8rem;
+	color: var(--oc-ink-2);
+	font-variant-numeric: tabular-nums;
+	flex: none;
+}
+
 .oc-search__terms mark {
 	background: none;
 	color: inherit;
