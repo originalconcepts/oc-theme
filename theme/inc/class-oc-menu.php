@@ -660,15 +660,20 @@ final class Menu {
 			$out .= '</div>';
 
 			if ( $more ) {
+				// One wrapper inside, always. Opening in place animates the
+				// height with a 0fr-to-1fr grid track, and that only collapses
+				// a single child — with two the second sits in an implicit
+				// auto row and the section never closes.
 				$out .= '<div class="oc-drw__sub">';
 				$out .= '<button type="button" class="oc-drw__back">' . esc_html( wp_strip_all_tags( (string) $item->title ) ) . '</button>';
+				$out .= '<div class="oc-drw__subin">';
 
 				if ( '' !== $below ) {
 					$out .= '<ul class="oc-drw__list oc-drw__list--sub">' . $below . '</ul>';
 				}
 
 				$out .= $panel;
-				$out .= '</div>';
+				$out .= '</div></div>';
 			}
 
 			$out .= '</li>';

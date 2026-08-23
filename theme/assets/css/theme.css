@@ -1584,7 +1584,7 @@ html.oc-drw-open body { overflow: hidden; }
 	background: var(--oc-drw-bg2, transparent);
 }
 
-.oc-drw--accordion .oc-drw__sub > * { overflow: hidden; min-block-size: 0; }
+.oc-drw--accordion .oc-drw__sub > .oc-drw__subin { overflow: hidden; min-block-size: 0; }
 .oc-drw--accordion .oc-drw__i.is-open > .oc-drw__sub { grid-template-rows: 1fr; }
 .oc-drw--accordion .oc-drw__i.is-open > .oc-drw__row .oc-drw__more span::before { transform: rotate(0deg); opacity: 0; }
 .oc-drw--accordion .oc-drw__back { display: none; }
