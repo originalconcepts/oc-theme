@@ -32,6 +32,7 @@ final class Menu {
 		add_filter( 'nav_menu_link_attributes', array( $this, 'link_atts' ), 10, 2 );
 		add_filter( 'nav_menu_item_title', array( $this, 'item_title' ), 10, 2 );
 		add_filter( 'walker_nav_menu_start_el', array( $this, 'panel' ), 10, 4 );
+		add_filter( 'wp_nav_menu_objects', array( $this, 'drop_hidden' ), 10, 2 );
 
 		// Deleting an item, or reordering the menu, can leave a panel cached
 		// for something that is no longer there.
@@ -403,6 +404,28 @@ final class Menu {
 	}
 
 	/**
+	 * Items that are not meant to be in this menu at all.
+	 *
+	 * @param array<int,\WP_Post> $items Menu items.
+	 * @param object|null         $args  wp_nav_menu arguments.
+	 * @return array<int,\WP_Post>
+	 */
+	public function drop_hidden( $items, $args = null ): array {
+		if ( empty( $args->oc_panels ) ) {
+			return (array) $items;
+		}
+
+		return array_values(
+			array_filter(
+				(array) $items,
+				static function ( $item ): bool {
+					return ! self::hidden( (int) $item->ID, 'nav' );
+				}
+			)
+		);
+	}
+
+	/**
 	 * Hide classes on the item, and the mark that says a panel opens here.
 	 *
 	 * @param array<int,string> $classes Item classes.
@@ -516,5 +539,141 @@ final class Menu {
 		}
 
 		return (string) $output . Menu_Panel::html( (int) $item->ID );
+	}
+
+	/*
+	 * The drawer.
+	 *
+	 * One drawer serves the phone and the desktop hamburger, because they are
+	 * the same thing at different widths. It is built here rather than by
+	 * wp_nav_menu(), because the sub-level has to hold two different kinds of
+	 * content at once — the item's own children and the blocks of its panel —
+	 * and a walker cannot see the second.
+	 */
+
+	/**
+	 * Whether an item is hidden in a given place.
+	 *
+	 * Decided when the markup is written rather than by a media query: the
+	 * desktop hamburger shows the drawer on a wide screen, so "hidden on
+	 * desktop" and "hidden in the drawer" are not the same question and a
+	 * breakpoint cannot tell them apart.
+	 *
+	 * @param int    $id    Menu item id.
+	 * @param string $where Either 'nav' or 'drawer'.
+	 * @return bool
+	 */
+	public static function hidden( int $id, string $where ): bool {
+		$hide = (string) get_post_meta( $id, '_oc_hide', true );
+
+		if ( 'all' === $hide ) {
+			return true;
+		}
+
+		return 'drawer' === $where ? 'mobile' === $hide : 'desktop' === $hide;
+	}
+
+	/**
+	 * Classes for the drawer, carrying its shape.
+	 *
+	 * @return string
+	 */
+	public static function drawer_class(): string {
+		$side = 'left' === get_theme_mod( 'oc_drw_side', 'right' ) ? 'left' : 'right';
+		$sub  = 'slide' === get_theme_mod( 'oc_drw_sub', 'accordion' ) ? 'slide' : 'accordion';
+
+		$classes = array( 'oc-drw', 'oc-drw--' . $side, 'oc-drw--' . $sub );
+
+		if ( get_theme_mod( 'oc_drw_overlay', true ) ) {
+			$classes[] = 'oc-drw--dim';
+		}
+
+		return implode( ' ', array_map( 'sanitize_html_class', $classes ) );
+	}
+
+	/**
+	 * The drawer's contents.
+	 *
+	 * @return string
+	 */
+	public static function drawer_html(): string {
+		$locations = get_nav_menu_locations();
+		$menu      = isset( $locations['primary'] ) ? (int) $locations['primary'] : 0;
+		$items     = $menu > 0 ? wp_get_nav_menu_items( $menu ) : array();
+
+		if ( ! is_array( $items ) || empty( $items ) ) {
+			return '';
+		}
+
+		$kids = array();
+
+		foreach ( $items as $item ) {
+			$kids[ (int) $item->menu_item_parent ][] = $item;
+		}
+
+		return '<ul class="oc-drw__list">' . self::drawer_level( $kids, 0, 1 ) . '</ul>';
+	}
+
+	/**
+	 * One level of the drawer, and whatever hangs off it.
+	 *
+	 * @param array<int,array<int,\WP_Post>> $kids  Items by parent.
+	 * @param int                            $parent Parent id.
+	 * @param int                            $depth  Current depth, one-based.
+	 * @return string
+	 */
+	private static function drawer_level( array $kids, int $parent, int $depth ): string {
+		if ( empty( $kids[ $parent ] ) || $depth > self::depth() ) {
+			return '';
+		}
+
+		$out = '';
+
+		foreach ( $kids[ $parent ] as $item ) {
+			$id = (int) $item->ID;
+
+			if ( self::hidden( $id, 'drawer' ) ) {
+				continue;
+			}
+
+			$panel = 1 === $depth ? Menu_Panel::html( $id, 'drawer' ) : '';
+			$below = self::drawer_level( $kids, $id, $depth + 1 );
+			$more  = '' !== $panel || '' !== $below;
+
+			$title = (string) apply_filters( 'nav_menu_item_title', $item->title, $item, null, $depth - 1 );
+			$style = (string) get_post_meta( $id, '_oc_color', true );
+
+			$out .= '<li class="oc-drw__i' . ( $more ? ' has-more' : '' ) . '">';
+			$out .= '<div class="oc-drw__row">';
+			$out .= '<a class="oc-drw__a" href="' . esc_url( (string) $item->url ) . '"' . ( '' !== $style ? ' style="--oc-link-c:' . esc_attr( $style ) . '"' : '' ) . '>' . $title . '</a>';
+
+			if ( $more ) {
+				$out .= '<button type="button" class="oc-drw__more" aria-expanded="false" aria-label="' . esc_attr(
+					sprintf(
+						/* translators: %s: menu item name. */
+						__( 'Open %s', 'oc-theme' ),
+						wp_strip_all_tags( (string) $item->title )
+					)
+				) . '"><span aria-hidden="true"></span></button>';
+			}
+
+			$out .= '</div>';
+
+			if ( $more ) {
+				$out .= '<div class="oc-drw__sub">';
+				$out .= '<button type="button" class="oc-drw__back">' . esc_html( wp_strip_all_tags( (string) $item->title ) ) . '</button>';
+
+				if ( '' !== $below ) {
+					$out .= '<ul class="oc-drw__list oc-drw__list--sub">' . $below . '</ul>';
+				}
+
+				$out .= $panel;
+				$out .= '</div>';
+			}
+
+			$out .= '</li>';
+		}
+
+		return $out;
 	}
 }

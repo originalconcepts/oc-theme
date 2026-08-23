@@ -316,18 +316,19 @@ final class Menu_Panel {
 	 * The HTML is printed into every page, so it must cost nothing to have.
 	 * Rendering happens once per change, not once per visitor.
 	 *
-	 * @param int $item_id Menu item id.
+	 * @param int    $item_id Menu item id.
+	 * @param string $where   Either 'nav' or 'drawer'.
 	 * @return string
 	 */
-	public static function html( int $item_id ): string {
-		$key    = 'oc_mpanel_' . $item_id . '_' . self::version();
+	public static function html( int $item_id, string $where = 'nav' ): string {
+		$key    = 'oc_mpanel_' . $item_id . '_' . $where . '_' . self::version();
 		$cached = get_transient( $key );
 
 		if ( is_string( $cached ) ) {
 			return $cached;
 		}
 
-		$html = self::render( self::blocks( $item_id ) );
+		$html = self::render( self::blocks( $item_id ), $where );
 
 		set_transient( $key, $html, DAY_IN_SECONDS );
 
@@ -339,20 +340,39 @@ final class Menu_Panel {
 	 * is on screen rather than what was last saved.
 	 *
 	 * @param array<int,array<string,mixed>> $blocks Blocks.
+	 * @param string                         $where  Either 'nav' or 'drawer'.
 	 * @return string
 	 */
-	public static function render( array $blocks ): string {
-		if ( empty( $blocks ) ) {
-			return '';
-		}
-
+	public static function render( array $blocks, string $where = 'nav' ): string {
 		$widths = self::widths();
 		$tracks = array();
 		$body   = '';
 
 		foreach ( $blocks as $block ) {
+			// A block says where it belongs, and the drawer is not the phone:
+			// the desktop hamburger shows it on a wide screen. Deciding here
+			// rather than with a breakpoint is the only way to tell the two
+			// apart.
+			if ( 'drawer' === $where ? 'desktop' === $block['dev'] : 'mobile' === $block['dev'] ) {
+				continue;
+			}
+
+			$piece = self::block( $block );
+
+			if ( '' === $piece ) {
+				continue;
+			}
+
 			$tracks[] = (string) $widths[ $block['w'] ]['fr'] . 'fr';
-			$body    .= self::block( $block );
+			$body    .= $piece;
+		}
+
+		if ( '' === $body ) {
+			return '';
+		}
+
+		if ( 'drawer' === $where ) {
+			return '<div class="oc-mega oc-mega--drawer">' . $body . '</div>';
 		}
 
 		$class = 'oc-mega oc-mega--' . sanitize_html_class( (string) get_theme_mod( 'oc_mega_width', 'content' ) );
@@ -370,13 +390,9 @@ final class Menu_Panel {
 		$type = (string) $block['type'];
 		$dev  = (string) $block['dev'];
 
-		$classes = array( 'oc-mb', 'oc-mb--' . $type );
+		unset( $dev );
 
-		if ( 'desktop' === $dev ) {
-			$classes[] = 'oc-mi--no-mobile';
-		} elseif ( 'mobile' === $dev ) {
-			$classes[] = 'oc-mi--no-desktop';
-		}
+		$classes = array( 'oc-mb', 'oc-mb--' . $type );
 
 		$inner = '';
 

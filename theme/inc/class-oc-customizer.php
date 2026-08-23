@@ -592,6 +592,75 @@ final class Customizer {
 
 		$this->number( $c, 'oc_mega_fs', 'oc_menu', __( 'Text size inside (px)', 'oc-theme' ), 15, 11, 22 );
 
+		$this->heading( $c, 'oc_h_drw', 'oc_menu', __( 'The drawer', 'oc-theme' ) );
+
+		$this->choice(
+			$c,
+			'oc_drw_side',
+			'oc_menu',
+			__( 'It slides in from', 'oc-theme' ),
+			array(
+				'right' => __( 'The right', 'oc-theme' ),
+				'left'  => __( 'The left', 'oc-theme' ),
+			),
+			'right'
+		);
+
+		$this->number( $c, 'oc_drw_w', 'oc_menu', __( 'How wide (px)', 'oc-theme' ), 360, 260, 520 );
+		$this->toggle( $c, 'oc_drw_overlay', 'oc_menu', __( 'Dim the page behind it', 'oc-theme' ), true );
+
+		$this->preset(
+			$c,
+			'oc_drw_sub',
+			'oc_menu',
+			__( 'A sub-category opens', 'oc-theme' ),
+			array(
+				'accordion' => array(
+					'label' => __( 'In place', 'oc-theme' ),
+					'hint'  => __( 'The list grows downwards', 'oc-theme' ),
+					'svg'   => '<svg class="oc-wf" width="118" height="60" viewBox="0 0 59 30" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="8" y="3" width="43" height="3.4" rx="1.7"/><rect x="8" y="9.5" width="43" height="3.4" rx="1.7"/><rect x="16" y="16" width="35" height="2.6" rx="1.3" opacity=".4"/><rect x="16" y="21" width="35" height="2.6" rx="1.3" opacity=".4"/><rect x="8" y="26" width="43" height="3.4" rx="1.7"/></svg>',
+				),
+				'slide'     => array(
+					'label' => __( 'Over the top', 'oc-theme' ),
+					'hint'  => __( 'A screen of its own, with a way back', 'oc-theme' ),
+					'svg'   => '<svg class="oc-wf" width="118" height="60" viewBox="0 0 59 30" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="4" y="3" width="30" height="3.4" rx="1.7" opacity=".25"/><rect x="4" y="9.5" width="30" height="3.4" rx="1.7" opacity=".25"/><rect x="4" y="16" width="30" height="3.4" rx="1.7" opacity=".25"/><rect x="20" y="1" width="35" height="28" rx="2" fill="none" stroke="currentColor" stroke-width="1"/><rect x="24" y="5" width="12" height="2.6" rx="1.3" opacity=".5"/><rect x="24" y="11" width="27" height="3.4" rx="1.7"/><rect x="24" y="17.5" width="27" height="3.4" rx="1.7"/></svg>',
+				),
+			),
+			'accordion',
+			'118px'
+		);
+
+		$this->color( $c, 'oc_drw_bg', 'oc_menu', __( 'Background', 'oc-theme' ) );
+		$this->color( $c, 'oc_drw_tx', 'oc_menu', __( 'Text', 'oc-theme' ) );
+		$this->color( $c, 'oc_drw_line', 'oc_menu', __( 'Divider line', 'oc-theme' ) );
+		$this->number( $c, 'oc_drw_fs', 'oc_menu', __( 'Text size (px)', 'oc-theme' ), 17, 12, 26 );
+		$this->number( $c, 'oc_drw_gap', 'oc_menu', __( 'Row height (px)', 'oc-theme' ), 14, 6, 30 );
+
+		$this->heading( $c, 'oc_h_drw2', 'oc_menu', __( 'The drawer — inside a category', 'oc-theme' ) );
+
+		$this->color( $c, 'oc_drw_bg2', 'oc_menu', __( 'Background', 'oc-theme' ) );
+		$this->color( $c, 'oc_drw_tx2', 'oc_menu', __( 'Text', 'oc-theme' ) );
+		$this->color( $c, 'oc_drw_line2', 'oc_menu', __( 'Divider line', 'oc-theme' ) );
+		$this->number( $c, 'oc_drw_fs2', 'oc_menu', __( 'Text size (px)', 'oc-theme' ), 15, 11, 24 );
+		$this->number( $c, 'oc_drw_gap2', 'oc_menu', __( 'Row height (px)', 'oc-theme' ), 11, 4, 26 );
+
+		$this->heading( $c, 'oc_h_drw_pic', 'oc_menu', __( 'The pictures beside the links', 'oc-theme' ) );
+
+		$this->number( $c, 'oc_drw_pic', 'oc_menu', __( 'How big (px)', 'oc-theme' ), 38, 24, 72 );
+
+		$this->choice(
+			$c,
+			'oc_drw_pic_r',
+			'oc_menu',
+			__( 'Their corners', 'oc-theme' ),
+			array(
+				'sharp' => __( 'Sharp', 'oc-theme' ),
+				'soft'  => __( 'Softened', 'oc-theme' ),
+				'round' => __( 'Round', 'oc-theme' ),
+			),
+			'soft'
+		);
+
 		$this->heading( $c, 'oc_h_menu_open', 'oc_menu', __( 'Opening', 'oc-theme' ) );
 
 		$this->choice(

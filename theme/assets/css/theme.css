@@ -949,10 +949,6 @@ html.oc-search-open { overflow: hidden; }
 }
 
 
-@media (min-width: 901px) {
-	.oc-header--burger ~ .oc-mobile-menu[data-open="true"] { display: block; }
-}
-
 .oc-logo--text { font-weight: 700; font-size: 1.2rem; text-decoration: none; }
 .custom-logo-link { display: inline-flex; align-items: center; }
 
@@ -1414,38 +1410,264 @@ html.oc-menu-open .oc-menu-dim::before {
 	border-radius: var(--oc-mi-pic-r, 8px);
 }
 
-/* Hidden on one side or the other. 900px is where the header swaps the open
- * menu for the drawer, so the same breakpoint decides this. */
-@media (min-width: 901px) {
-	.oc-mi--no-desktop { display: none !important; }
-}
 
-@media (max-width: 900px) {
-	.oc-mi--no-mobile { display: none !important; }
-}
+/* ---------- the drawer ---------- */
 
-/* The desktop hamburger shows the drawer at full width, so an item hidden
- * from the drawer must stay hidden there too. */
-.oc-header--burger ~ .oc-mobile-menu .oc-mi--no-mobile { display: none !important; }
+/* The page behind a drawer must not scroll under it. */
+html.oc-drw-open,
+html.oc-drw-open body { overflow: hidden; }
 
-.oc-mi--off { display: none !important; }
 
-.oc-mobile-menu {
+/* One drawer serves the phone and the desktop hamburger, because at any
+ * width they are the same thing. */
+.oc-drw {
+	position: fixed;
+	inset: 0;
+	z-index: 10015;
 	display: none;
-	padding: var(--oc-gap);
-	border-block-end: 1px solid var(--oc-line);
 }
-.oc-mobile-menu__list a {
+
+.oc-drw[data-open="true"] { display: block; }
+
+.oc-drw__scrim {
+	position: absolute;
+	inset: 0;
+	background: rgb(0 0 0 / 38%);
+	opacity: 0;
+	transition: opacity .22s ease;
+}
+
+.oc-drw:not(.oc-drw--dim) .oc-drw__scrim { background: transparent; }
+.oc-drw[data-open="true"] .oc-drw__scrim { opacity: 1; }
+
+.oc-drw__panel {
+	position: absolute;
+	inset-block: 0;
+	inline-size: min(var(--oc-drw-w, 360px), 92vw);
+	max-inline-size: 100%;
+	display: flex;
+	flex-direction: column;
+	background: var(--oc-drw-bg, var(--oc-surface));
+	color: var(--oc-drw-tx, inherit);
+	box-shadow: 0 0 40px rgb(0 0 0 / 16%);
+	transition: transform .28s cubic-bezier(.32, .72, 0, 1);
+	overflow: hidden;
+}
+
+/* Physical sides, not logical ones: "opens from the right" has to mean the
+ * right of the screen whichever way the language runs. */
+.oc-drw--right .oc-drw__panel { right: 0; transform: translateX(100%); }
+.oc-drw--left .oc-drw__panel { left: 0; transform: translateX(-100%); }
+.oc-drw[data-open="true"] .oc-drw__panel { transform: none; }
+
+.oc-drw__top {
+	display: flex;
+	justify-content: flex-end;
+	padding: 10px 12px 4px;
+	flex: none;
+}
+
+.oc-drw__x {
+	inline-size: 38px;
+	block-size: 38px;
+	border: 0;
+	background: none;
+	color: inherit;
+	font-size: 26px;
+	line-height: 1;
+	cursor: pointer;
+	border-radius: 50%;
+}
+
+.oc-drw__x:hover { background: rgb(0 0 0 / 6%); }
+
+.oc-drw__body {
+	position: relative;
+	flex: 1 1 auto;
+	overflow-y: auto;
+	overscroll-behavior: contain;
+	-webkit-overflow-scrolling: touch;
+}
+
+.oc-drw__list {
+	list-style: none;
+	margin: 0;
+	padding: 0 var(--oc-gap, 16px);
+}
+
+.oc-drw__row {
 	display: flex;
 	align-items: center;
-	gap: 10px;
-	padding-block: 10px;
-	text-decoration: none;
-	font-size: var(--oc-menu-fs, 1rem);
-	color: var(--oc-link-c, inherit);
+	gap: 8px;
+	border-block-end: 1px solid var(--oc-drw-line, var(--oc-line));
 }
-.oc-mobile-menu__list .oc-mi__t { flex: 1 1 auto; }
-.oc-mobile-menu .sub-menu { list-style: none; padding-inline-start: 16px; }
+
+.oc-drw__i:last-child > .oc-drw__row { border-block-end: 0; }
+
+.oc-drw__a {
+	flex: 1 1 auto;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding-block: var(--oc-drw-gap, 14px);
+	font-size: var(--oc-drw-fs, 17px);
+	font-weight: 500;
+	text-decoration: none;
+	color: var(--oc-link-c, inherit);
+	min-inline-size: 0;
+}
+
+.oc-drw__a .oc-mi__t { flex: 1 1 auto; }
+
+/* The picture the item carries. In the open desktop menu it is suppressed;
+ * here a row is tall enough to hold one. */
+.oc-drw .oc-mi__pic { display: block; flex: none; }
+
+.oc-drw .oc-mi__pic img {
+	inline-size: var(--oc-mi-pic, 38px);
+	block-size: var(--oc-mi-pic, 38px);
+	border-radius: var(--oc-mi-pic-r, 8px);
+	object-fit: cover;
+	display: block;
+}
+
+/* The chevron is its own button, so tapping the word still follows the link
+ * — the row does two different things and they need two different targets. */
+.oc-drw__more {
+	flex: none;
+	inline-size: 42px;
+	block-size: 42px;
+	border: 0;
+	background: none;
+	color: inherit;
+	cursor: pointer;
+	position: relative;
+	border-radius: 50%;
+}
+
+.oc-drw__more:hover { background: rgb(0 0 0 / 5%); }
+
+.oc-drw__more span,
+.oc-drw__more span::before {
+	position: absolute;
+	inset-block-start: 50%;
+	inset-inline-start: 50%;
+	inline-size: 13px;
+	block-size: 2px;
+	margin: -1px 0 0 -6.5px;
+	background: currentColor;
+	border-radius: 1px;
+	transition: transform .2s ease, opacity .2s ease;
+}
+
+.oc-drw__more span::before { content: ''; margin: 0; inset: 0; transform: rotate(90deg); }
+
+/* --- opening in place --- */
+
+.oc-drw--accordion .oc-drw__sub {
+	display: grid;
+	grid-template-rows: 0fr;
+	transition: grid-template-rows .28s ease;
+	background: var(--oc-drw-bg2, transparent);
+}
+
+.oc-drw--accordion .oc-drw__sub > * { overflow: hidden; min-block-size: 0; }
+.oc-drw--accordion .oc-drw__i.is-open > .oc-drw__sub { grid-template-rows: 1fr; }
+.oc-drw--accordion .oc-drw__i.is-open > .oc-drw__row .oc-drw__more span::before { transform: rotate(0deg); opacity: 0; }
+.oc-drw--accordion .oc-drw__back { display: none; }
+
+/* --- opening over the top --- */
+
+.oc-drw--slide .oc-drw__sub {
+	position: fixed;
+	inset-block: 0;
+	inline-size: min(var(--oc-drw-w, 360px), 92vw);
+	padding: 58px var(--oc-gap, 16px) var(--oc-gap, 16px);
+	overflow-y: auto;
+	overscroll-behavior: contain;
+	background: var(--oc-drw-bg2, var(--oc-drw-bg, var(--oc-surface)));
+	transition: transform .28s cubic-bezier(.32, .72, 0, 1);
+	z-index: 2;
+}
+
+.oc-drw--slide.oc-drw--right .oc-drw__sub { right: 0; transform: translateX(100%); }
+.oc-drw--slide.oc-drw--left .oc-drw__sub { left: 0; transform: translateX(-100%); }
+.oc-drw--slide .oc-drw__i.is-open > .oc-drw__sub { transform: none; }
+.oc-drw--slide .oc-drw__sub .oc-drw__sub { z-index: 3; }
+
+.oc-drw__back {
+	position: absolute;
+	inset-block-start: 12px;
+	inset-inline: var(--oc-gap, 16px) auto;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 6px 4px;
+	border: 0;
+	background: none;
+	color: inherit;
+	font: inherit;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+.oc-drw__back::before {
+	content: '';
+	inline-size: 8px;
+	block-size: 8px;
+	border-inline-end: 2px solid currentColor;
+	border-block-start: 2px solid currentColor;
+	transform: rotate(45deg);
+}
+
+[dir="ltr"] .oc-drw__back::before { transform: rotate(-135deg); }
+
+/* --- inside a category --- */
+
+.oc-drw__list--sub { padding-inline: 0; }
+.oc-drw--accordion .oc-drw__list--sub { padding-inline-start: 14px; }
+
+.oc-drw__list--sub .oc-drw__row { border-block-end: 1px solid var(--oc-drw-line2, var(--oc-drw-line, var(--oc-line))); }
+
+.oc-drw__list--sub .oc-drw__a {
+	padding-block: var(--oc-drw-gap2, 11px);
+	font-size: var(--oc-drw-fs2, 15px);
+	font-weight: 400;
+	color: var(--oc-link-c, var(--oc-drw-tx2, inherit));
+}
+
+/* --- what a panel becomes here --- */
+
+.oc-mega--drawer {
+	display: block;
+	padding-block: 4px 14px;
+	background: none;
+	border: 0;
+	color: inherit;
+}
+
+.oc-mega--drawer .oc-mb { margin-block-end: 14px; }
+.oc-mega--drawer .oc-mb:last-child { margin-block-end: 0; }
+.oc-mega--drawer .oc-mb__h { margin-block-end: 6px; font-size: var(--oc-drw-fs2, 15px); }
+.oc-mega--drawer .oc-mb__list li { margin-block-end: 0; }
+
+.oc-mega--drawer .oc-mb__list a,
+.oc-mega--drawer .oc-mb__list span {
+	display: block;
+	padding-block: var(--oc-drw-gap2, 11px);
+	font-size: var(--oc-drw-fs2, 15px);
+	border-block-end: 1px solid var(--oc-drw-line2, var(--oc-drw-line, var(--oc-line)));
+}
+
+.oc-mega--drawer .oc-mb--image { margin-block: 16px; }
+
+@media (prefers-reduced-motion: reduce) {
+	.oc-drw__panel,
+	.oc-drw__scrim,
+	.oc-drw--slide .oc-drw__sub,
+	.oc-drw--accordion .oc-drw__sub { transition: none; }
+}
+
 
 /* ---------- shop ---------- */
 
@@ -1567,7 +1789,6 @@ html.oc-menu-open .oc-menu-dim::before {
 @media (max-width: 900px) {
 	.oc-burger { display: block; }
 	.oc-nav { display: none; }
-	.oc-mobile-menu[data-open="true"] { display: block; }
 
 	/* mobile centred: hamburger at the start with search beside it, logo in
 	 * the centre, the remaining icons at the end */

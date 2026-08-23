@@ -94,27 +94,145 @@
 		} );
 	}
 
-	/* ---------- mobile menu ---------- */
+	/* ---------- the drawer ---------- */
 
 	var burger = document.querySelector( '.oc-burger' );
-	var menu = document.getElementById( 'oc-mobile-menu' );
+	var drawer = document.getElementById( 'oc-mobile-menu' );
 
-	function setMenu( open ) {
-		burger.setAttribute( 'aria-expanded', open ? 'true' : 'false' );
-		menu.hidden = ! open;
-		menu.setAttribute( 'data-open', open ? 'true' : 'false' );
-	}
+	if ( burger && drawer ) {
+		var drwLast = null;
 
-	if ( burger && menu ) {
+		function drwSet( open ) {
+			burger.setAttribute( 'aria-expanded', open ? 'true' : 'false' );
+
+			if ( open ) {
+				drawer.hidden = false;
+				/* A frame between display and transform, or the panel is
+				 * already where it is going and never slides. */
+				void drawer.offsetWidth;
+				drawer.setAttribute( 'data-open', 'true' );
+				document.documentElement.classList.add( 'oc-drw-open' );
+				drwLast = document.activeElement;
+
+				var first = drawer.querySelector( '.oc-drw__x' );
+
+				if ( first ) {
+					first.focus();
+				}
+
+				return;
+			}
+
+			drawer.setAttribute( 'data-open', 'false' );
+			document.documentElement.classList.remove( 'oc-drw-open' );
+			drwShut( drawer );
+
+			/* Wait for the slide out before taking the panel off the page. */
+			setTimeout( function () {
+				if ( drawer.getAttribute( 'data-open' ) !== 'true' ) {
+					drawer.hidden = true;
+				}
+			}, 300 );
+
+			if ( drwLast && drwLast.focus ) {
+				drwLast.focus();
+			}
+		}
+
+		/* Close every open branch, so reopening the drawer starts at the top
+		 * rather than wherever the last visit ended. */
+		function drwShut( scope ) {
+			Array.prototype.forEach.call( scope.querySelectorAll( '.oc-drw__i.is-open' ), function ( li ) {
+				li.classList.remove( 'is-open' );
+				var button = li.querySelector( ':scope > .oc-drw__row > .oc-drw__more' );
+
+				if ( button ) {
+					button.setAttribute( 'aria-expanded', 'false' );
+				}
+			} );
+		}
+
 		burger.addEventListener( 'click', function () {
-			setMenu( burger.getAttribute( 'aria-expanded' ) !== 'true' );
+			drwSet( burger.getAttribute( 'aria-expanded' ) !== 'true' );
+		} );
+
+		Array.prototype.forEach.call( drawer.querySelectorAll( '[data-oc-drw-close]' ), function ( node ) {
+			node.addEventListener( 'click', function () {
+				drwSet( false );
+			} );
+		} );
+
+		drawer.addEventListener( 'click', function ( event ) {
+			var more = event.target.closest( '.oc-drw__more' );
+
+			if ( more ) {
+				var li = more.closest( '.oc-drw__i' );
+				var open = li.classList.contains( 'is-open' );
+
+				/* Siblings close, so one branch is open at a time and the
+				 * list cannot grow past what a thumb can reach. */
+				Array.prototype.forEach.call( li.parentNode.children, function ( other ) {
+					if ( other !== li ) {
+						other.classList.remove( 'is-open' );
+						var b = other.querySelector( ':scope > .oc-drw__row > .oc-drw__more' );
+
+						if ( b ) {
+							b.setAttribute( 'aria-expanded', 'false' );
+						}
+					}
+				} );
+
+				li.classList.toggle( 'is-open', ! open );
+				more.setAttribute( 'aria-expanded', open ? 'false' : 'true' );
+
+				if ( open ) {
+					drwShut( li );
+				}
+
+				return;
+			}
+
+			var back = event.target.closest( '.oc-drw__back' );
+
+			if ( back ) {
+				var parent = back.closest( '.oc-drw__i' );
+
+				parent.classList.remove( 'is-open' );
+				var button = parent.querySelector( ':scope > .oc-drw__row > .oc-drw__more' );
+
+				if ( button ) {
+					button.setAttribute( 'aria-expanded', 'false' );
+					button.focus();
+				}
+			}
 		} );
 
 		document.addEventListener( 'keydown', function ( event ) {
-			if ( event.key === 'Escape' && ! menu.hidden ) {
-				setMenu( false );
-				burger.focus();
+			if ( event.key !== 'Escape' || drawer.hidden ) {
+				return;
 			}
+
+			/* Escape steps back one level before it closes the whole thing. */
+			var deepest = null;
+
+			Array.prototype.forEach.call( drawer.querySelectorAll( '.oc-drw__i.is-open' ), function ( li ) {
+				deepest = li;
+			} );
+
+			if ( deepest ) {
+				deepest.classList.remove( 'is-open' );
+				var button = deepest.querySelector( ':scope > .oc-drw__row > .oc-drw__more' );
+
+				if ( button ) {
+					button.setAttribute( 'aria-expanded', 'false' );
+					button.focus();
+				}
+
+				return;
+			}
+
+			drwSet( false );
+			burger.focus();
 		} );
 	}
 

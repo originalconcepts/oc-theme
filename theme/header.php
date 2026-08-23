@@ -150,17 +150,18 @@ if ( get_theme_mod( 'oc_header_search', true ) ) {
 }
 ?>
 
-<?php if ( has_nav_menu( 'primary' ) ) : ?>
-	<div id="oc-mobile-menu" class="oc-mobile-menu" hidden>
-		<?php
-		wp_nav_menu(
-			array(
-				'theme_location' => 'primary',
-				'container'      => '',
-				'menu_class'     => 'oc-mobile-menu__list',
-				'depth'          => 3,
-			)
+<?php
+if ( has_nav_menu( 'primary' ) ) {
+	$oc_drawer = OC\Theme\Menu::drawer_html();
+
+	if ( '' !== $oc_drawer ) {
+		printf(
+			'<div id="oc-mobile-menu" class="%1$s" hidden><div class="oc-drw__scrim" data-oc-drw-close></div><div class="oc-drw__panel" role="dialog" aria-modal="true" aria-label="%2$s"><div class="oc-drw__top"><button type="button" class="oc-drw__x" data-oc-drw-close aria-label="%3$s">&times;</button></div><div class="oc-drw__body">%4$s</div></div></div>',
+			esc_attr( OC\Theme\Menu::drawer_class() ),
+			esc_attr__( 'Menu', 'oc-theme' ),
+			esc_attr__( 'Close menu', 'oc-theme' ),
+			$oc_drawer // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
 		);
-		?>
-	</div>
-<?php endif; ?>
+	}
+}
+?>

@@ -3461,3 +3461,63 @@ msgstr "גודל הטקסט בפנים (פיקסלים)"
 
 msgid "Save"
 msgstr "שמירה"
+
+msgid "The drawer"
+msgstr "המגירה"
+
+msgid "The drawer — inside a category"
+msgstr "המגירה — בתוך קטגוריה"
+
+msgid "The pictures beside the links"
+msgstr "התמונות לצד הקישורים"
+
+msgid "It slides in from"
+msgstr "נפתחת מהצד"
+
+msgid "The right"
+msgstr "ימין"
+
+msgid "The left"
+msgstr "שמאל"
+
+msgid "How wide (px)"
+msgstr "רוחב (פיקסלים)"
+
+msgid "Dim the page behind it"
+msgstr "הכהיית העמוד מאחוריה"
+
+msgid "A sub-category opens"
+msgstr "תת־קטגוריה נפתחת"
+
+msgid "In place"
+msgstr "במקום"
+
+msgid "The list grows downwards"
+msgstr "הרשימה נפתחת כלפי מטה"
+
+msgid "Over the top"
+msgstr "מעל המסך"
+
+msgid "A screen of its own, with a way back"
+msgstr "מסך משלה, עם דרך חזרה"
+
+msgid "Background"
+msgstr "רקע"
+
+msgid "Divider line"
+msgstr "קו מפריד"
+
+msgid "Row height (px)"
+msgstr "גובה שורה (פיקסלים)"
+
+msgid "How big (px)"
+msgstr "גודל (פיקסלים)"
+
+msgid "Their corners"
+msgstr "הפינות שלהן"
+
+msgid "Open %s"
+msgstr "פתיחת %s"
+
+msgid "Close menu"
+msgstr "סגירת התפריט"

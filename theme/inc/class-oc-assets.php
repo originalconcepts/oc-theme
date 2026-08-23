@@ -294,6 +294,19 @@ final class Assets {
 				'--oc-mega-head'      => (string) get_theme_mod( 'oc_mega_head', '' ),
 				'--oc-mega-line'      => (string) get_theme_mod( 'oc_mega_line', '' ),
 				'--oc-mega-fs'        => absint( get_theme_mod( 'oc_mega_fs', 15 ) ) . 'px',
+				'--oc-drw-w'          => absint( get_theme_mod( 'oc_drw_w', 360 ) ) . 'px',
+				'--oc-drw-bg'         => (string) get_theme_mod( 'oc_drw_bg', '' ),
+				'--oc-drw-tx'         => (string) get_theme_mod( 'oc_drw_tx', '' ),
+				'--oc-drw-line'       => (string) get_theme_mod( 'oc_drw_line', '' ),
+				'--oc-drw-fs'         => absint( get_theme_mod( 'oc_drw_fs', 17 ) ) . 'px',
+				'--oc-drw-gap'        => absint( get_theme_mod( 'oc_drw_gap', 14 ) ) . 'px',
+				'--oc-drw-bg2'        => (string) get_theme_mod( 'oc_drw_bg2', '' ),
+				'--oc-drw-tx2'        => (string) get_theme_mod( 'oc_drw_tx2', '' ),
+				'--oc-drw-line2'      => (string) get_theme_mod( 'oc_drw_line2', '' ),
+				'--oc-drw-fs2'        => absint( get_theme_mod( 'oc_drw_fs2', 15 ) ) . 'px',
+				'--oc-drw-gap2'       => absint( get_theme_mod( 'oc_drw_gap2', 11 ) ) . 'px',
+				'--oc-mi-pic'         => absint( get_theme_mod( 'oc_drw_pic', 38 ) ) . 'px',
+				'--oc-mi-pic-r'       => self::corner( (string) get_theme_mod( 'oc_drw_pic_r', 'soft' ) ),
 				'--oc-logo-h-m'       => absint( get_theme_mod( 'oc_logo_h_mobile', 40 ) ) . 'px',
 				'--oc-topbar-bg'      => (string) get_theme_mod( 'oc_topbar_bg', '' ),
 				'--oc-topbar-tx'      => (string) get_theme_mod( 'oc_topbar_tx', '' ),
@@ -332,6 +345,23 @@ final class Assets {
 		// turn font-name quotes into &quot; and void the declarations — the
 		// bug that made the font settings appear dead.
 		echo "<style id='oc-tokens'>:root{" . $css . "}</style>\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+	}
+
+	/**
+	 * A corner name as a radius.
+	 *
+	 * @param string $name Corner style.
+	 * @return string
+	 */
+	private static function corner( string $name ): string {
+		switch ( $name ) {
+			case 'sharp':
+				return '0';
+			case 'round':
+				return '999px';
+			default:
+				return 'var(--oc-radius, 8px)';
+		}
 	}
 
 	/**
