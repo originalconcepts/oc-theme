@@ -356,9 +356,12 @@ final class Menu_Panel {
 			return '<div class="oc-mega oc-mega--drawer">' . $body . '</div>';
 		}
 
-		$class = 'oc-mega oc-mega--' . sanitize_html_class( (string) get_theme_mod( 'oc_mega_width', 'content' ) );
-
-		return '<div class="' . esc_attr( $class ) . '"><div class="oc-mega__row" style="--oc-mega-cols:' . esc_attr( implode( ' ', $tracks ) ) . '">' . $body . '</div></div>';
+		// How wide the panel opens is not written into it. This markup is
+		// cached, and a setting baked into cached markup is a setting that
+		// changes nothing until something unrelated happens to expire it —
+		// which is exactly how it behaved. The nav carries the width instead,
+		// and the nav is rebuilt on every request.
+		return '<div class="oc-mega"><div class="oc-mega__row" style="--oc-mega-cols:' . esc_attr( implode( ' ', $tracks ) ) . '">' . $body . '</div></div>';
 	}
 
 	/**

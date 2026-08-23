@@ -443,12 +443,13 @@ final class Customizer {
 	}
 
 	/**
-	 * Menu: how the primary menu reads and moves.
+	 * Menu: how the primary menu reads, opens and moves.
 	 *
-	 * Which links it holds comes from the Menus screen, and whether the
-	 * desktop shows an open menu or a hamburger is a header layout — both
-	 * are said so in the description, because a setting nobody can find is
-	 * the same as a setting that does not exist.
+	 * Ordered the way you meet the thing: the bar, then what a link does
+	 * under the cursor, then how a panel arrives, then the panel, then the
+	 * drawer. Every colour says which of the three surfaces it paints,
+	 * because "background" three times over tells you nothing once the
+	 * heading above it has scrolled away.
 	 *
 	 * @param \WP_Customize_Manager $c Customizer manager.
 	 */
@@ -462,7 +463,9 @@ final class Customizer {
 			)
 		);
 
-		$this->heading( $c, 'oc_h_menu_type', 'oc_menu', __( 'Letters', 'oc-theme' ) );
+		/* ---------- the bar ---------- */
+
+		$this->heading( $c, 'oc_h_menu_type', 'oc_menu', __( 'The menu bar', 'oc-theme' ) );
 
 		$this->number( $c, 'oc_menu_font_px', 'oc_menu', __( 'Text size (px)', 'oc-theme' ), 16, 11, 26 );
 
@@ -470,7 +473,7 @@ final class Customizer {
 			$c,
 			'oc_menu_weight',
 			'oc_menu',
-			__( 'Weight', 'oc-theme' ),
+			__( 'Text weight', 'oc-theme' ),
 			array(
 				'400' => __( 'Light', 'oc-theme' ),
 				'500' => __( 'Regular', 'oc-theme' ),
@@ -492,20 +495,30 @@ final class Customizer {
 			'none'
 		);
 
-		// Stored in hundredths of an em: a whole number is easier to nudge in
-		// a spin box than 0.04, and the token divides it back down.
-		$this->number( $c, 'oc_menu_track', 'oc_menu', __( 'Space between letters', 'oc-theme' ), 0, 0, 20 );
+		$this->number( $c, 'oc_menu_track', 'oc_menu', __( 'Space between letters', 'oc-theme' ), 0, 0, 20, null, __( 'Zero is normal. Each step is one hundredth of the letter height.', 'oc-theme' ) );
 		$this->number( $c, 'oc_menu_gap', 'oc_menu', __( 'Space between links (px)', 'oc-theme' ), 22, 6, 60 );
-		$this->number( $c, 'oc_menu_pad_t', 'oc_menu', __( 'Space above the link (px)', 'oc-theme' ), 10, 0, 40 );
-		$this->number( $c, 'oc_menu_pad_b', 'oc_menu', __( 'Space below the link (px)', 'oc-theme' ), 10, 0, 40 );
-
-		$this->heading( $c, 'oc_h_menu_col', 'oc_menu', __( 'Colours', 'oc-theme' ) );
 
 		$this->color( $c, 'oc_menu_tx', 'oc_menu', __( 'Link colour', 'oc-theme' ) );
-		$this->color( $c, 'oc_menu_tx_h', 'oc_menu', __( 'Link colour on hover', 'oc-theme' ) );
-		$this->color( $c, 'oc_menu_bar_bg', 'oc_menu', __( 'Menu strip background', 'oc-theme' ) );
+		$this->color( $c, 'oc_menu_tx_h', 'oc_menu', __( 'Link colour under the cursor', 'oc-theme' ) );
+		$this->color( $c, 'oc_menu_bar_bg', 'oc_menu', __( 'Background behind the links', 'oc-theme' ), __( 'Only visible when the menu sits on a row of its own, apart from the logo.', 'oc-theme' ) );
 
-		$this->heading( $c, 'oc_h_menu_hover', 'oc_menu', __( 'Hover', 'oc-theme' ) );
+		$this->choice(
+			$c,
+			'oc_menu_depth',
+			'oc_menu',
+			__( 'Depth of a plain drop-down', 'oc-theme' ),
+			array(
+				'2' => __( 'Two — a link and its children', 'oc-theme' ),
+				'3' => __( 'Three — a grandchild as well', 'oc-theme' ),
+			),
+			'2',
+			null,
+			__( 'Applies to a link that has no mega panel of its own.', 'oc-theme' )
+		);
+
+		/* ---------- under the cursor ---------- */
+
+		$this->heading( $c, 'oc_h_menu_hover', 'oc_menu', __( 'Under the cursor', 'oc-theme' ) );
 
 		$this->preset(
 			$c,
@@ -537,13 +550,23 @@ final class Customizer {
 			'fill',
 			'118px'
 		);
+		$this->color(
+			$c,
+			'oc_menu_ul',
+			'oc_menu',
+			__( 'Colour of the line', 'oc-theme' ),
+			'',
+			array(
+				'setting' => 'oc_menu_hover',
+				'values'  => array( 'fill', 'slide' ),
+			)
+		);
 
-		$this->color( $c, 'oc_menu_ul', 'oc_menu', __( 'Line colour', 'oc-theme' ) );
 		$this->number(
 			$c,
 			'oc_menu_ul_w',
 			'oc_menu',
-			__( 'Line thickness (px)', 'oc-theme' ),
+			__( 'Thickness of the line (px)', 'oc-theme' ),
 			2,
 			1,
 			6,
@@ -553,7 +576,44 @@ final class Customizer {
 			)
 		);
 
-		$this->heading( $c, 'oc_h_mega', 'oc_menu', __( 'The panel that opens', 'oc-theme' ) );
+		/* ---------- movement ---------- */
+
+		$this->heading( $c, 'oc_h_menu_open', 'oc_menu', __( 'Movement', 'oc-theme' ) );
+
+		$this->choice(
+			$c,
+			'oc_menu_motion',
+			'oc_menu',
+			__( 'How a panel arrives', 'oc-theme' ),
+			array(
+				'stagger' => __( 'Piece by piece', 'oc-theme' ),
+				'fade'    => __( 'All at once', 'oc-theme' ),
+				'none'    => __( 'No movement', 'oc-theme' ),
+			),
+			'stagger',
+			null,
+			__( 'Governs the drawer on a phone as well as the panel on a desktop.', 'oc-theme' )
+		);
+
+		$this->number(
+			$c,
+			'oc_menu_stagger',
+			'oc_menu',
+			__( 'Pause between pieces (ms)', 'oc-theme' ),
+			40,
+			10,
+			140,
+			array(
+				'setting' => 'oc_menu_motion',
+				'values'  => array( 'stagger' ),
+			)
+		);
+
+		$this->toggle( $c, 'oc_menu_dim', 'oc_menu', __( 'Darken the page behind an open panel', 'oc-theme' ), false );
+
+		/* ---------- the mega panel ---------- */
+
+		$this->heading( $c, 'oc_h_mega', 'oc_menu', __( 'The mega panel — desktop', 'oc-theme' ) );
 
 		$this->preset(
 			$c,
@@ -576,23 +636,26 @@ final class Customizer {
 				),
 			),
 			'content',
-			'132px'
+			'132px',
+			__( 'The content width comes from the site\'s own; on a wide layout it can look the same as the whole page.', 'oc-theme' )
 		);
-
-		$this->number( $c, 'oc_mega_pad', 'oc_menu', __( 'Padding inside (px)', 'oc-theme' ), 28, 8, 72 );
-		$this->number( $c, 'oc_mega_gap', 'oc_menu', __( 'Space between blocks (px)', 'oc-theme' ), 28, 8, 72 );
-		$this->number( $c, 'oc_mega_rt', 'oc_menu', __( 'Top corners (px)', 'oc-theme' ), 0, 0, 32 );
-		$this->number( $c, 'oc_mega_rb', 'oc_menu', __( 'Bottom corners (px)', 'oc-theme' ), 0, 0, 32 );
+		$this->number( $c, 'oc_mega_pad', 'oc_menu', __( 'Space inside the panel (px)', 'oc-theme' ), 28, 8, 72, null, __( 'Between the edge of the panel and what is in it.', 'oc-theme' ) );
+		$this->number( $c, 'oc_mega_gap', 'oc_menu', __( 'Space between the columns (px)', 'oc-theme' ), 28, 8, 72 );
+		$this->number( $c, 'oc_mega_rt', 'oc_menu', __( 'Rounding, top corners (px)', 'oc-theme' ), 0, 0, 32 );
+		$this->number( $c, 'oc_mega_rb', 'oc_menu', __( 'Rounding, bottom corners (px)', 'oc-theme' ), 0, 0, 32 );
 
 		$this->color( $c, 'oc_mega_bg', 'oc_menu', __( 'Panel background', 'oc-theme' ) );
-		$this->color( $c, 'oc_mega_tx', 'oc_menu', __( 'Panel text', 'oc-theme' ) );
-		$this->color( $c, 'oc_mega_tx_h', 'oc_menu', __( 'Panel text on hover', 'oc-theme' ) );
-		$this->color( $c, 'oc_mega_head', 'oc_menu', __( 'Column headings', 'oc-theme' ) );
-		$this->color( $c, 'oc_mega_line', 'oc_menu', __( 'Line above and below', 'oc-theme' ) );
+		$this->color( $c, 'oc_mega_head', 'oc_menu', __( 'Colour of the column headings', 'oc-theme' ) );
+		$this->color( $c, 'oc_mega_tx', 'oc_menu', __( 'Colour of the links inside', 'oc-theme' ) );
+		$this->color( $c, 'oc_mega_tx_h', 'oc_menu', __( 'Those links under the cursor', 'oc-theme' ) );
+		$this->number( $c, 'oc_mega_fs', 'oc_menu', __( 'Text size inside the panel (px)', 'oc-theme' ), 15, 11, 22 );
 
-		$this->number( $c, 'oc_mega_fs', 'oc_menu', __( 'Text size inside (px)', 'oc-theme' ), 15, 11, 22 );
+		$this->color( $c, 'oc_mega_line_t', 'oc_menu', __( 'Line above the panel', 'oc-theme' ), __( 'What separates it from the header.', 'oc-theme' ) );
+		$this->color( $c, 'oc_mega_line_b', 'oc_menu', __( 'Line below the panel', 'oc-theme' ), __( 'What separates it from the page.', 'oc-theme' ) );
 
-		$this->heading( $c, 'oc_h_drw', 'oc_menu', __( 'The drawer', 'oc-theme' ) );
+		/* ---------- the drawer ---------- */
+
+		$this->heading( $c, 'oc_h_drw', 'oc_menu', __( 'The drawer — phone and hamburger', 'oc-theme' ) );
 
 		$this->choice(
 			$c,
@@ -606,8 +669,8 @@ final class Customizer {
 			'right'
 		);
 
-		$this->number( $c, 'oc_drw_w', 'oc_menu', __( 'How wide (px)', 'oc-theme' ), 360, 260, 520 );
-		$this->toggle( $c, 'oc_drw_overlay', 'oc_menu', __( 'Dim the page behind it', 'oc-theme' ), true );
+		$this->number( $c, 'oc_drw_w', 'oc_menu', __( 'Drawer width (px)', 'oc-theme' ), 360, 260, 520 );
+		$this->toggle( $c, 'oc_drw_overlay', 'oc_menu', __( 'Darken the page behind it', 'oc-theme' ), true );
 
 		$this->preset(
 			$c,
@@ -629,30 +692,33 @@ final class Customizer {
 			'accordion',
 			'118px'
 		);
-
-		$this->color( $c, 'oc_drw_bg', 'oc_menu', __( 'Background', 'oc-theme' ) );
-		$this->color( $c, 'oc_drw_tx', 'oc_menu', __( 'Text', 'oc-theme' ) );
-		$this->color( $c, 'oc_drw_line', 'oc_menu', __( 'Divider line', 'oc-theme' ) );
+		$this->color( $c, 'oc_drw_bg', 'oc_menu', __( 'Drawer background', 'oc-theme' ) );
+		$this->color( $c, 'oc_drw_tx', 'oc_menu', __( 'Text colour', 'oc-theme' ) );
+		$this->color( $c, 'oc_drw_line', 'oc_menu', __( 'Colour of the line between rows', 'oc-theme' ) );
 		$this->number( $c, 'oc_drw_fs', 'oc_menu', __( 'Text size (px)', 'oc-theme' ), 17, 12, 26 );
-		$this->number( $c, 'oc_drw_gap', 'oc_menu', __( 'Row height (px)', 'oc-theme' ), 14, 6, 30 );
+		$this->number( $c, 'oc_drw_gap', 'oc_menu', __( 'Row height (px)', 'oc-theme' ), 14, 6, 30, null, __( 'The air above and below each row.', 'oc-theme' ) );
 
-		$this->heading( $c, 'oc_h_drw2', 'oc_menu', __( 'The drawer — inside a category', 'oc-theme' ) );
+		/* ---------- one level in ---------- */
+
+		$this->heading( $c, 'oc_h_drw2', 'oc_menu', __( 'The drawer — one level in', 'oc-theme' ) );
 
 		$this->color( $c, 'oc_drw_bg2', 'oc_menu', __( 'Background', 'oc-theme' ) );
-		$this->color( $c, 'oc_drw_tx2', 'oc_menu', __( 'Text', 'oc-theme' ) );
-		$this->color( $c, 'oc_drw_line2', 'oc_menu', __( 'Divider line', 'oc-theme' ) );
+		$this->color( $c, 'oc_drw_tx2', 'oc_menu', __( 'Text colour', 'oc-theme' ) );
+		$this->color( $c, 'oc_drw_line2', 'oc_menu', __( 'Colour of the line between rows', 'oc-theme' ) );
 		$this->number( $c, 'oc_drw_fs2', 'oc_menu', __( 'Text size (px)', 'oc-theme' ), 15, 11, 24 );
 		$this->number( $c, 'oc_drw_gap2', 'oc_menu', __( 'Row height (px)', 'oc-theme' ), 11, 4, 26 );
 
-		$this->heading( $c, 'oc_h_drw_pic', 'oc_menu', __( 'The pictures beside the links', 'oc-theme' ) );
+		/* ---------- the pictures ---------- */
 
-		$this->number( $c, 'oc_drw_pic', 'oc_menu', __( 'How big (px)', 'oc-theme' ), 38, 24, 72 );
+		$this->heading( $c, 'oc_h_drw_pic', 'oc_menu', __( 'Pictures beside the links, in the drawer', 'oc-theme' ) );
+
+		$this->number( $c, 'oc_drw_pic', 'oc_menu', __( 'Picture size (px)', 'oc-theme' ), 38, 24, 72 );
 
 		$this->choice(
 			$c,
 			'oc_drw_pic_r',
 			'oc_menu',
-			__( 'Their corners', 'oc-theme' ),
+			__( 'Picture corners', 'oc-theme' ),
 			array(
 				'sharp' => __( 'Sharp', 'oc-theme' ),
 				'soft'  => __( 'Softened', 'oc-theme' ),
@@ -660,49 +726,6 @@ final class Customizer {
 			),
 			'soft'
 		);
-
-		$this->heading( $c, 'oc_h_menu_open', 'oc_menu', __( 'Opening', 'oc-theme' ) );
-
-		$this->choice(
-			$c,
-			'oc_menu_motion',
-			'oc_menu',
-			__( 'How a panel arrives', 'oc-theme' ),
-			array(
-				'stagger' => __( 'Piece by piece', 'oc-theme' ),
-				'fade'    => __( 'All at once', 'oc-theme' ),
-				'none'    => __( 'No movement', 'oc-theme' ),
-			),
-			'stagger'
-		);
-
-		$this->number(
-			$c,
-			'oc_menu_stagger',
-			'oc_menu',
-			__( 'Pause between pieces (ms)', 'oc-theme' ),
-			40,
-			10,
-			140,
-			array(
-				'setting' => 'oc_menu_motion',
-				'values'  => array( 'stagger' ),
-			)
-		);
-
-		$this->choice(
-			$c,
-			'oc_menu_depth',
-			'oc_menu',
-			__( 'Levels a plain drop-down may reach', 'oc-theme' ),
-			array(
-				'2' => __( 'Two — a link and its children', 'oc-theme' ),
-				'3' => __( 'Three — a grandchild as well', 'oc-theme' ),
-			),
-			'2'
-		);
-
-		$this->toggle( $c, 'oc_menu_dim', 'oc_menu', __( 'Dim the page behind an open panel', 'oc-theme' ), false );
 	}
 
 	/**
@@ -1728,7 +1751,7 @@ final class Customizer {
 	 * @param string                   $def     Default value.
 	 * @param array|null               $dep     Optional visibility rule.
 	 */
-	private function choice( \WP_Customize_Manager $c, string $id, string $section, string $label, array $choices, string $def, ?array $dep = null ): void {
+	private function choice( \WP_Customize_Manager $c, string $id, string $section, string $label, array $choices, string $def, ?array $dep = null, string $hint = '' ): void {
 		$keys = array_map( 'strval', array_keys( $choices ) );
 
 		$c->add_setting(
@@ -1742,9 +1765,10 @@ final class Customizer {
 		);
 
 		$args = array(
-			'section' => $section,
-			'label'   => $label,
-			'choices' => $choices,
+			'section'     => $section,
+			'label'       => $label,
+			'description' => $hint,
+			'choices'     => $choices,
 		);
 		if ( null !== $dep ) {
 			$args['active_callback'] = $this->depend( $id, $dep );
@@ -1761,7 +1785,7 @@ final class Customizer {
 	 * @param string                $section Section id.
 	 * @param string                $label   Label.
 	 */
-	private function color( \WP_Customize_Manager $c, string $id, string $section, string $label ): void {
+	private function color( \WP_Customize_Manager $c, string $id, string $section, string $label, string $hint = '', ?array $dep = null ): void {
 		$c->add_setting(
 			$id,
 			array(
@@ -1770,16 +1794,17 @@ final class Customizer {
 			)
 		);
 
-		$c->add_control(
-			new \WP_Customize_Color_Control(
-				$c,
-				$id,
-				array(
-					'section' => $section,
-					'label'   => $label,
-				)
-			)
+		$args = array(
+			'section'     => $section,
+			'label'       => $label,
+			'description' => $hint,
 		);
+
+		if ( null !== $dep ) {
+			$args['active_callback'] = $this->depend( $id, $dep );
+		}
+
+		$c->add_control( new \WP_Customize_Color_Control( $c, $id, $args ) );
 	}
 
 	/**
@@ -1851,7 +1876,7 @@ final class Customizer {
 	 * @param string                             $def     Default value.
 	 * @param string                             $width   Item width.
 	 */
-	private function preset( \WP_Customize_Manager $c, string $id, string $section, string $label, array $presets, string $def, string $width ): void {
+	private function preset( \WP_Customize_Manager $c, string $id, string $section, string $label, array $presets, string $def, string $width, string $hint = '' ): void {
 		$c->add_setting(
 			$id,
 			array(
@@ -1867,10 +1892,11 @@ final class Customizer {
 				$c,
 				$id,
 				array(
-					'section'    => $section,
-					'label'      => $label,
-					'presets'    => $presets,
-					'item_width' => $width,
+					'section'     => $section,
+					'label'       => $label,
+					'description' => $hint,
+					'presets'     => $presets,
+					'item_width'  => $width,
 				)
 			)
 		);
@@ -1886,7 +1912,7 @@ final class Customizer {
 	 * @param bool                  $def     Default.
 	 * @param array|null            $dep     Optional visibility rule.
 	 */
-	private function toggle( \WP_Customize_Manager $c, string $id, string $section, string $label, bool $def, ?array $dep = null ): void {
+	private function toggle( \WP_Customize_Manager $c, string $id, string $section, string $label, bool $def, ?array $dep = null, string $hint = '' ): void {
 		$c->add_setting(
 			$id,
 			array(
@@ -1898,8 +1924,9 @@ final class Customizer {
 		);
 
 		$args = array(
-			'section' => $section,
-			'label'   => $label,
+			'section'     => $section,
+			'label'       => $label,
+			'description' => $hint,
 		);
 		if ( null !== $dep ) {
 			$args['active_callback'] = $this->depend( $id, $dep );
@@ -1920,7 +1947,7 @@ final class Customizer {
 	 * @param int                   $max     Maximum.
 	 * @param array|null            $dep     Optional visibility rule.
 	 */
-	private function number( \WP_Customize_Manager $c, string $id, string $section, string $label, int $def, int $min, int $max, ?array $dep = null ): void {
+	private function number( \WP_Customize_Manager $c, string $id, string $section, string $label, int $def, int $min, int $max, ?array $dep = null, string $hint = '' ): void {
 		$c->add_setting(
 			$id,
 			array(
@@ -1935,6 +1962,7 @@ final class Customizer {
 			'type'        => 'number',
 			'section'     => $section,
 			'label'       => $label,
+			'description' => $hint,
 			'input_attrs' => array(
 				'min' => $min,
 				'max' => $max,
@@ -2681,10 +2709,11 @@ final class Customizer {
 				$c,
 				$id,
 				array(
-					'section'    => $section,
-					'label'      => $label,
-					'presets'    => $presets,
-					'item_width' => $width,
+					'section'     => $section,
+					'label'       => $label,
+					'description' => $hint,
+					'presets'     => $presets,
+					'item_width'  => $width,
 				)
 			)
 		);

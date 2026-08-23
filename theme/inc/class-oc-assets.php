@@ -276,8 +276,6 @@ final class Assets {
 				// Stored in hundredths of an em so the Customizer can use a spin box.
 				'--oc-menu-track'     => ( absint( get_theme_mod( 'oc_menu_track', 0 ) ) / 100 ) . 'em',
 				'--oc-menu-gap'       => absint( get_theme_mod( 'oc_menu_gap', 22 ) ) . 'px',
-				'--oc-menu-pt'        => absint( get_theme_mod( 'oc_menu_pad_t', 10 ) ) . 'px',
-				'--oc-menu-pb'        => absint( get_theme_mod( 'oc_menu_pad_b', 10 ) ) . 'px',
 				'--oc-menu-tx'        => (string) get_theme_mod( 'oc_menu_tx', '' ),
 				'--oc-menu-tx-h'      => (string) get_theme_mod( 'oc_menu_tx_h', '' ),
 				'--oc-menu-bar-bg'    => (string) get_theme_mod( 'oc_menu_bar_bg', '' ),
@@ -292,7 +290,8 @@ final class Assets {
 				'--oc-mega-tx'        => (string) get_theme_mod( 'oc_mega_tx', '' ),
 				'--oc-mega-tx-h'      => (string) get_theme_mod( 'oc_mega_tx_h', '' ),
 				'--oc-mega-head'      => (string) get_theme_mod( 'oc_mega_head', '' ),
-				'--oc-mega-line'      => (string) get_theme_mod( 'oc_mega_line', '' ),
+				'--oc-mega-line-t'    => (string) get_theme_mod( 'oc_mega_line_t', '' ),
+				'--oc-mega-line-b'    => (string) get_theme_mod( 'oc_mega_line_b', '' ),
 				'--oc-mega-fs'        => absint( get_theme_mod( 'oc_mega_fs', 15 ) ) . 'px',
 				'--oc-drw-w'          => absint( get_theme_mod( 'oc_drw_w', 360 ) ) . 'px',
 				'--oc-drw-bg'         => (string) get_theme_mod( 'oc_drw_bg', '' ),

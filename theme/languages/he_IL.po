@@ -3573,3 +3573,120 @@ msgstr "העמודות מגיעות מתתי־הפריטים של הקישור �
 
 msgid "There are unsaved changes. Close anyway?"
 msgstr "יש שינויים שלא נשמרו. לסגור בכל זאת?"
+
+msgid "The menu bar"
+msgstr "שורת התפריט"
+
+msgid "Text weight"
+msgstr "עובי הטקסט"
+
+msgid "Zero is normal. Each step is one hundredth of the letter height."
+msgstr "0 הוא רגיל. כל יחידה היא מאית מגובה האות."
+
+msgid "Link colour under the cursor"
+msgstr "צבע הקישורים בריחוף"
+
+msgid "Background behind the links"
+msgstr "רקע מאחורי הקישורים"
+
+msgid "Only visible when the menu sits on a row of its own, apart from the logo."
+msgstr "נראה רק כשהתפריט יושב בשורה נפרדת מהלוגו."
+
+msgid "Depth of a plain drop-down"
+msgstr "עומק תפריט נפתח רגיל"
+
+msgid "Applies to a link that has no mega panel of its own."
+msgstr "חל על קישור שאין לו מגה־תפריט משלו."
+
+msgid "Under the cursor"
+msgstr "מתחת לסמן"
+
+msgid "Colour of the line"
+msgstr "צבע הקו"
+
+msgid "Thickness of the line (px)"
+msgstr "עובי הקו (פיקסלים)"
+
+msgid "Movement"
+msgstr "תנועה"
+
+msgid "Governs the drawer on a phone as well as the panel on a desktop."
+msgstr "משפיע גם על המגירה בנייד וגם על הפאנל בדסקטופ."
+
+msgid "Darken the page behind an open panel"
+msgstr "הכהיית העמוד מאחורי פאנל פתוח"
+
+msgid "The mega panel — desktop"
+msgstr "המגה־תפריט — דסקטופ"
+
+msgid "The content width comes from the site's own; on a wide layout it can look the same as the whole page."
+msgstr "רוחב התוכן נלקח מרוחב התוכן של האתר; בפריסה רחבה הוא עשוי להיראות זהה לכל רוחב העמוד."
+
+msgid "Space inside the panel (px)"
+msgstr "רווח פנימי בפאנל (פיקסלים)"
+
+msgid "Between the edge of the panel and what is in it."
+msgstr "בין קצה הפאנל לבין מה שיש בתוכו."
+
+msgid "Space between the columns (px)"
+msgstr "מרווח בין העמודות (פיקסלים)"
+
+msgid "Rounding, top corners (px)"
+msgstr "עיגול הפינות העליונות (פיקסלים)"
+
+msgid "Rounding, bottom corners (px)"
+msgstr "עיגול הפינות התחתונות (פיקסלים)"
+
+msgid "Colour of the column headings"
+msgstr "צבע כותרות העמודות"
+
+msgid "Colour of the links inside"
+msgstr "צבע הקישורים בפנים"
+
+msgid "Those links under the cursor"
+msgstr "אותם קישורים בריחוף"
+
+msgid "Text size inside the panel (px)"
+msgstr "גודל הטקסט בפאנל (פיקסלים)"
+
+msgid "Line above the panel"
+msgstr "הקו שמעל הפאנל"
+
+msgid "What separates it from the header."
+msgstr "מה שמפריד בינו לבין ההדר."
+
+msgid "Line below the panel"
+msgstr "הקו שמתחת לפאנל"
+
+msgid "What separates it from the page."
+msgstr "מה שמפריד בינו לבין תוכן העמוד."
+
+msgid "The drawer — phone and hamburger"
+msgstr "המגירה — נייד והמבורגר"
+
+msgid "Drawer width (px)"
+msgstr "רוחב המגירה (פיקסלים)"
+
+msgid "Darken the page behind it"
+msgstr "הכהיית העמוד מאחוריה"
+
+msgid "Drawer background"
+msgstr "רקע המגירה"
+
+msgid "Colour of the line between rows"
+msgstr "צבע הקו שבין השורות"
+
+msgid "The air above and below each row."
+msgstr "האוויר מעל ומתחת לכל שורה."
+
+msgid "The drawer — one level in"
+msgstr "המגירה — רמה אחת פנימה"
+
+msgid "Pictures beside the links, in the drawer"
+msgstr "התמונות שליד הקישורים, במגירה"
+
+msgid "Picture size (px)"
+msgstr "גודל התמונה (פיקסלים)"
+
+msgid "Picture corners"
+msgstr "פינות התמונה"

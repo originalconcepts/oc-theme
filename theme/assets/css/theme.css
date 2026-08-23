@@ -1029,7 +1029,6 @@ html.oc-search-open { overflow: hidden; }
 	position: relative;
 	display: flex;
 	align-items: center;
-	padding-block: var(--oc-menu-pt, 10px) var(--oc-menu-pb, 10px);
 	letter-spacing: var(--oc-menu-track, 0);
 	text-transform: var(--oc-menu-tt, none);
 	color: var(--oc-menu-tx, var(--oc-header-tx, inherit));
@@ -1197,7 +1196,8 @@ html.oc-menu-open .oc-menu-dim::before {
 	padding: var(--oc-mega-pad, 28px);
 	background: var(--oc-mega-bg, var(--oc-surface));
 	color: var(--oc-mega-tx, inherit);
-	border-block: 1px solid var(--oc-mega-line, var(--oc-line));
+	border-block-start: 1px solid var(--oc-mega-line-t, var(--oc-line));
+	border-block-end: 1px solid var(--oc-mega-line-b, var(--oc-line));
 	border-start-start-radius: var(--oc-mega-rt, 0);
 	border-start-end-radius: var(--oc-mega-rt, 0);
 	border-end-start-radius: var(--oc-mega-rb, 0);
@@ -1209,9 +1209,9 @@ html.oc-menu-open .oc-menu-dim::before {
 	transition: opacity .18s ease, transform .18s ease, visibility 0s linear .18s;
 }
 
-.oc-mega--full { inset-inline: 0; }
+.oc-nav--w-full .oc-mega { inset-inline: 0; }
 
-.oc-mega--content {
+.oc-nav--w-content .oc-mega {
 	inset-inline: 0;
 	max-inline-size: var(--oc-content-width, 1280px);
 	margin-inline: auto;
@@ -1219,7 +1219,7 @@ html.oc-menu-open .oc-menu-dim::before {
 
 /* Under the link, and onwards in the reading direction — leftwards in
  * Hebrew. min() keeps it from running off the far edge on a narrow window. */
-.oc-mega--menu {
+.oc-nav--w-menu .oc-mega {
 	inset-inline-start: auto;
 	inset-inline-end: 0;
 	inline-size: min(760px, calc(100vw - 32px));
@@ -1244,8 +1244,8 @@ html.oc-menu-open .oc-menu-dim::before {
 	font-size: var(--oc-mega-fs, 15px);
 }
 
-.oc-mega--content .oc-mega__row,
-.oc-mega--full .oc-mega__row { max-inline-size: var(--oc-content-width, 1280px); margin-inline: auto; }
+.oc-nav--w-content .oc-mega__row,
+.oc-nav--w-full .oc-mega__row { max-inline-size: var(--oc-content-width, 1280px); margin-inline: auto; }
 
 /* Piece by piece, the same rhythm as a plain drop-down. */
 .oc-nav--mo-stagger .oc-mega .oc-mb { opacity: 0; transform: translateY(8px); }
