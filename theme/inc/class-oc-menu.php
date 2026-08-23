@@ -28,9 +28,14 @@ final class Menu {
 	public function register(): void {
 		add_filter( 'body_class', array( $this, 'body_class' ) );
 
-		add_filter( 'nav_menu_css_class', array( $this, 'item_class' ), 10, 2 );
+		add_filter( 'nav_menu_css_class', array( $this, 'item_class' ), 10, 4 );
 		add_filter( 'nav_menu_link_attributes', array( $this, 'link_atts' ), 10, 2 );
 		add_filter( 'nav_menu_item_title', array( $this, 'item_title' ), 10, 2 );
+		add_filter( 'walker_nav_menu_start_el', array( $this, 'panel' ), 10, 4 );
+
+		// Deleting an item, or reordering the menu, can leave a panel cached
+		// for something that is no longer there.
+		add_action( 'wp_update_nav_menu', array( 'OC\\Theme\\Menu_Panel', 'flush' ) );
 
 		if ( ! is_admin() ) {
 			return;
@@ -88,10 +93,17 @@ final class Menu {
 			$motion = 'stagger';
 		}
 
+		$width = (string) get_theme_mod( 'oc_mega_width', 'content' );
+
+		if ( ! in_array( $width, array( 'full', 'content', 'menu' ), true ) ) {
+			$width = 'content';
+		}
+
 		$classes = array(
 			'oc-nav',
 			'oc-nav--hv-' . $hover,
 			'oc-nav--mo-' . $motion,
+			'oc-nav--w-' . $width,
 		);
 
 		if ( get_theme_mod( 'oc_menu_dim', false ) ) {
@@ -391,15 +403,23 @@ final class Menu {
 	}
 
 	/**
-	 * Hide classes on the item.
+	 * Hide classes on the item, and the mark that says a panel opens here.
 	 *
 	 * @param array<int,string> $classes Item classes.
 	 * @param \WP_Post          $item    Menu item.
+	 * @param object|null       $args    wp_nav_menu arguments.
+	 * @param int               $depth   Depth.
 	 * @return array<int,string>
 	 */
-	public function item_class( $classes, $item ): array {
+	public function item_class( $classes, $item, $args = null, $depth = 0 ): array {
 		$classes = (array) $classes;
 		$hide    = (string) get_post_meta( (int) $item->ID, '_oc_hide', true );
+
+		// A panel replaces the plain drop-down rather than joining it, so the
+		// stylesheet needs to know before it decides what to show.
+		if ( 0 === (int) $depth && ! empty( $args->oc_panels ) && ! empty( Menu_Panel::blocks( (int) $item->ID ) ) ) {
+			$classes[] = 'oc-has-panel';
+		}
 
 		if ( 'desktop' === $hide ) {
 			$classes[] = 'oc-mi--no-desktop';
@@ -474,5 +494,27 @@ final class Menu {
 		}
 
 		return $out;
+	}
+
+	/**
+	 * The panel, printed inside the item right after its link.
+	 *
+	 * It goes into the page rather than being fetched on hover: a panel is a
+	 * few kilobytes, and a request on hover is a wait the visitor feels every
+	 * single time. Its pictures are lazy, so a panel nobody opens costs the
+	 * bytes of its markup and nothing more.
+	 *
+	 * @param string      $output Item markup so far.
+	 * @param \WP_Post     $item   Menu item.
+	 * @param int         $depth  Depth.
+	 * @param object|null $args   wp_nav_menu arguments.
+	 * @return string
+	 */
+	public function panel( $output, $item, $depth, $args = null ): string {
+		if ( 0 !== (int) $depth || empty( $args->oc_panels ) ) {
+			return (string) $output;
+		}
+
+		return (string) $output . Menu_Panel::html( (int) $item->ID );
 	}
 }

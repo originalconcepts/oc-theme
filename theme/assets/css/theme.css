@@ -1171,6 +1171,208 @@ html.oc-menu-open .oc-menu-dim::before {
 	.oc-nav--mo-stagger .oc-nav__list .sub-menu > li { opacity: 1; transform: none; animation: none; }
 }
 
+/* ---------- the panel that opens under a link ---------- */
+
+/* A panel replaces the plain drop-down rather than joining it. Two windows
+ * opening from one link is not a richer menu, it is a bug. */
+.oc-nav__list > li.oc-has-panel > .sub-menu { display: none; }
+
+/* Full and content-width panels measure themselves against the header, so
+ * the item must stop being their containing block. An item whose panel opens
+ * under the link itself keeps its own positioning. */
+.oc-header { position: relative; }
+
+.oc-nav--w-full .oc-nav__list > li.oc-has-panel,
+.oc-nav--w-content .oc-nav__list > li.oc-has-panel { position: static; }
+
+.oc-mega {
+	position: absolute;
+	inset-block-start: 100%;
+	z-index: 21;
+	padding: var(--oc-mega-pad, 28px);
+	background: var(--oc-mega-bg, var(--oc-surface));
+	color: var(--oc-mega-tx, inherit);
+	border-block: 1px solid var(--oc-mega-line, var(--oc-line));
+	border-start-start-radius: var(--oc-mega-rt, 0);
+	border-start-end-radius: var(--oc-mega-rt, 0);
+	border-end-start-radius: var(--oc-mega-rb, 0);
+	border-end-end-radius: var(--oc-mega-rb, 0);
+	box-shadow: 0 14px 34px rgb(0 0 0 / 8%);
+	opacity: 0;
+	visibility: hidden;
+	transform: translateY(-6px);
+	transition: opacity .18s ease, transform .18s ease, visibility 0s linear .18s;
+}
+
+.oc-mega--full { inset-inline: 0; }
+
+.oc-mega--content {
+	inset-inline: 0;
+	max-inline-size: var(--oc-content-width, 1280px);
+	margin-inline: auto;
+}
+
+/* Under the link, and onwards in the reading direction — leftwards in
+ * Hebrew. min() keeps it from running off the far edge on a narrow window. */
+.oc-mega--menu {
+	inset-inline-start: auto;
+	inset-inline-end: 0;
+	inline-size: min(760px, calc(100vw - 32px));
+	border-inline: 1px solid var(--oc-mega-line, var(--oc-line));
+	border-radius: var(--oc-radius, 8px);
+}
+
+.oc-nav__list > li:hover > .oc-mega,
+.oc-nav__list > li.is-open > .oc-mega,
+.oc-nav__list > li:focus-within > .oc-mega {
+	opacity: 1;
+	visibility: visible;
+	transform: none;
+	transition: opacity .22s ease, transform .22s ease, visibility 0s;
+}
+
+.oc-mega__row {
+	display: grid;
+	grid-template-columns: var(--oc-mega-cols, 1fr);
+	gap: var(--oc-mega-gap, 28px);
+	align-items: start;
+	font-size: var(--oc-mega-fs, 15px);
+}
+
+.oc-mega--content .oc-mega__row,
+.oc-mega--full .oc-mega__row { max-inline-size: var(--oc-content-width, 1280px); margin-inline: auto; }
+
+/* Piece by piece, the same rhythm as a plain drop-down. */
+.oc-nav--mo-stagger .oc-mega .oc-mb { opacity: 0; transform: translateY(8px); }
+
+.oc-nav--mo-stagger .oc-nav__list > li:hover > .oc-mega .oc-mb,
+.oc-nav--mo-stagger .oc-nav__list > li.is-open > .oc-mega .oc-mb,
+.oc-nav--mo-stagger .oc-nav__list > li:focus-within > .oc-mega .oc-mb {
+	animation: oc-menu-in .3s cubic-bezier(.2, .7, .3, 1) forwards;
+	animation-delay: calc(var(--oc-menu-step, 40ms) * var(--i, 0));
+}
+
+.oc-mega .oc-mb:nth-child(1) { --i: 0; }
+.oc-mega .oc-mb:nth-child(2) { --i: 1; }
+.oc-mega .oc-mb:nth-child(3) { --i: 2; }
+.oc-mega .oc-mb:nth-child(4) { --i: 3; }
+.oc-mega .oc-mb:nth-child(5) { --i: 4; }
+.oc-mega .oc-mb:nth-child(6) { --i: 5; }
+
+.oc-nav--mo-none .oc-mega { transition: none; transform: none; }
+
+/* --- a column of links --- */
+
+.oc-mb__h {
+	margin: 0 0 10px;
+	font-size: 1em;
+	font-weight: 700;
+	letter-spacing: var(--oc-menu-track, 0);
+	color: var(--oc-mega-head, inherit);
+}
+
+.oc-mb__h a { text-decoration: none; color: inherit; }
+.oc-mb__h a:hover { color: var(--oc-mega-tx-h, var(--oc-primary)); }
+
+.oc-mb__list { list-style: none; margin: 0; padding: 0; }
+.oc-mb__list li { margin-block-end: 7px; }
+.oc-mb__list li:last-child { margin-block-end: 0; }
+
+.oc-mb__list a,
+.oc-mb__list span {
+	display: inline-block;
+	text-decoration: none;
+	color: inherit;
+	transition: color .18s ease;
+}
+
+.oc-mb__list a:hover { color: var(--oc-mega-tx-h, var(--oc-primary)); }
+
+/* --- a picture --- */
+
+.oc-mb__link { display: block; text-decoration: none; color: inherit; }
+
+.oc-mb__fig {
+	position: relative;
+	margin: 0;
+	overflow: hidden;
+	aspect-ratio: var(--oc-mb-ratio, 3 / 4);
+}
+
+.oc-mb__img {
+	display: block;
+	inline-size: 100%;
+	block-size: 100%;
+	object-fit: cover;
+}
+
+.oc-mb__fig--r-sharp { border-radius: 0; }
+.oc-mb__fig--r-soft { border-radius: var(--oc-radius, 8px); }
+.oc-mb__fig--r-round { border-radius: 999px; }
+
+.oc-mb__words {
+	position: absolute;
+	inset-inline: 0;
+	padding: 30px 16px 14px;
+	color: #fff;
+}
+
+.oc-mb__fig--bottom .oc-mb__words {
+	inset-block-end: 0;
+	background: linear-gradient(to top, rgb(0 0 0 / 55%), transparent);
+}
+
+.oc-mb__fig--top .oc-mb__words {
+	inset-block-start: 0;
+	padding: 14px 16px 30px;
+	background: linear-gradient(to bottom, rgb(0 0 0 / 55%), transparent);
+}
+
+.oc-mb__fig--centre .oc-mb__words {
+	inset-block: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	background: rgb(0 0 0 / 22%);
+}
+
+/* Words under the picture inherit the panel's own colours — there is no
+ * photograph behind them to fight with. */
+.oc-mb__fig--under { aspect-ratio: auto; overflow: visible; }
+.oc-mb__fig--under .oc-mb__img { aspect-ratio: var(--oc-mb-ratio, 3 / 4); border-radius: inherit; }
+
+.oc-mb__fig--under .oc-mb__words {
+	position: static;
+	padding: 12px 0 0;
+	color: inherit;
+	background: none;
+}
+
+.oc-mb__heading { margin: 0; font-size: 1.15em; font-weight: 700; line-height: 1.3; }
+.oc-mb__text { margin: 4px 0 0; font-size: .92em; opacity: .9; }
+
+.oc-mb__cta {
+	display: inline-block;
+	margin-block-start: 8px;
+	font-size: .9em;
+	font-weight: 600;
+	text-decoration: underline;
+	text-underline-offset: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.oc-mega { transition: none; }
+	.oc-nav--mo-stagger .oc-mega .oc-mb { opacity: 1; transform: none; animation: none; }
+}
+
+/* The open desktop menu is a desktop thing; the drawer renders panels its
+ * own way. */
+@media (max-width: 900px) {
+	.oc-nav .oc-mega { display: none; }
+}
+
 /* --- what one link may carry --- */
 
 /* A badge rides beside the word, not on top of it: a "New" that overlaps the

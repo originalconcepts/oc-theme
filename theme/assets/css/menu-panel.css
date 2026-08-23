@@ -1,0 +1,313 @@
+/**
+ * The panel builder.
+ */
+
+.oc-mp__lead { max-inline-size: 70ch; color: #50575e; }
+
+.oc-mp__grid {
+	display: grid;
+	grid-template-columns: 240px minmax(0, 1fr);
+	gap: 20px;
+	align-items: start;
+	margin-block-start: 16px;
+}
+
+@media (max-width: 900px) {
+	.oc-mp__grid { grid-template-columns: 1fr; }
+}
+
+.oc-mp__side {
+	background: #fff;
+	border: 1px solid #dcdcde;
+	border-radius: 6px;
+	padding: 12px;
+	position: sticky;
+	inset-block-start: 46px;
+}
+
+.oc-mp__sh {
+	font-size: 11px;
+	letter-spacing: .08em;
+	text-transform: uppercase;
+	color: #787c82;
+	font-weight: 400;
+	margin: 0 0 10px;
+}
+
+.oc-mp__item {
+	display: block;
+	padding: 8px 11px;
+	margin-block-end: 6px;
+	border: 1px solid #dcdcde;
+	border-radius: 5px;
+	text-decoration: none;
+	color: #1d2327;
+	background: #fff;
+}
+
+.oc-mp__item:last-child { margin-block-end: 0; }
+.oc-mp__item:hover { border-color: #8c8f94; color: #1d2327; }
+.oc-mp__item.is-on { border-color: #2271b1; box-shadow: inset 3px 0 0 #2271b1; }
+.oc-mp__item span { display: block; font-weight: 600; }
+.oc-mp__item small { color: #787c82; font-size: 11px; }
+
+.oc-mp__main {
+	background: #fff;
+	border: 1px solid #dcdcde;
+	border-radius: 6px;
+	padding: 16px;
+}
+
+/* --- the strip of blocks --- */
+
+.oc-mp__strip {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+	align-items: stretch;
+}
+
+.oc-mp__empty {
+	flex: 1 1 100%;
+	margin: 0 0 4px;
+	color: #787c82;
+	max-inline-size: 60ch;
+}
+
+.oc-mpc {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	min-inline-size: 165px;
+	border: 1px solid #dcdcde;
+	border-radius: 6px;
+	background: #fff;
+	cursor: grab;
+}
+
+.oc-mpc.is-on { border-color: #2271b1; box-shadow: 0 0 0 1px #2271b1; }
+.oc-mpc.is-over { border-color: #2271b1; border-style: dashed; }
+
+.oc-mpc__face {
+	flex: 1 1 auto;
+	display: block;
+	inline-size: 100%;
+	text-align: inherit;
+	padding: 10px 11px 8px;
+	background: none;
+	border: 0;
+	cursor: pointer;
+	font: inherit;
+	color: inherit;
+}
+
+.oc-mpc__face b { display: block; font-size: 13px; }
+.oc-mpc__face small { display: block; color: #787c82; font-size: 11px; margin-block-start: 2px; }
+
+.oc-mpc__icon { display: block; inline-size: 18px; block-size: 18px; margin-block-end: 6px; }
+.oc-mpc__icon svg { inline-size: 100%; block-size: 100%; fill: #2271b1; }
+
+.oc-mpc__tools {
+	display: flex;
+	gap: 2px;
+	padding: 0 6px 6px;
+	justify-content: flex-end;
+}
+
+.oc-mpc__mv,
+.oc-mpc__x {
+	inline-size: 22px;
+	block-size: 22px;
+	padding: 0;
+	border: 0;
+	background: none;
+	color: #787c82;
+	cursor: pointer;
+	border-radius: 4px;
+	font-size: 15px;
+	line-height: 1;
+}
+
+.oc-mpc__mv:hover,
+.oc-mpc__x:hover { background: #f0f0f1; color: #1d2327; }
+.oc-mpc__x:hover { color: #b32d2e; }
+
+/* --- adding one --- */
+
+.oc-mp__add { position: relative; }
+
+.oc-mp__addbtn {
+	block-size: 100%;
+	min-block-size: 74px;
+	min-inline-size: 140px;
+	border: 1px dashed #c3c4c7;
+	border-radius: 6px;
+	background: none;
+	color: #2271b1;
+	cursor: pointer;
+	font: inherit;
+	padding: 10px 14px;
+}
+
+.oc-mp__addbtn:hover:not(:disabled) { border-color: #2271b1; background: #f6f7f7; }
+.oc-mp__addbtn:disabled { color: #a7aaad; cursor: not-allowed; }
+
+.oc-mp__types {
+	display: none;
+	position: absolute;
+	inset-block-start: calc(100% + 4px);
+	inset-inline-start: 0;
+	z-index: 5;
+	min-inline-size: 250px;
+	padding: 6px;
+	background: #fff;
+	border: 1px solid #dcdcde;
+	border-radius: 6px;
+	box-shadow: 0 6px 20px rgb(0 0 0 / 12%);
+}
+
+.oc-mp__add.is-open .oc-mp__types { display: block; }
+
+.oc-mp__types button {
+	display: grid;
+	grid-template-columns: 20px 1fr;
+	gap: 4px 10px;
+	inline-size: 100%;
+	text-align: inherit;
+	padding: 8px 10px;
+	border: 0;
+	border-radius: 5px;
+	background: none;
+	cursor: pointer;
+	font: inherit;
+}
+
+.oc-mp__types button:hover { background: #f0f6fc; }
+.oc-mp__types .oc-mpc__icon { grid-row: span 2; margin: 0; }
+.oc-mp__types b { font-size: 13px; }
+.oc-mp__types small { color: #787c82; font-size: 11px; }
+
+/* --- one block's settings --- */
+
+.oc-mp__settings {
+	margin-block-start: 14px;
+	padding-block-start: 14px;
+	border-block-start: 1px solid #f0f0f1;
+}
+
+.oc-mp__srow { display: flex; gap: 16px; flex-wrap: wrap; }
+
+.oc-mp__f {
+	position: relative;
+	display: block;
+	margin-block-end: 12px;
+}
+
+.oc-mp__f > span:first-child {
+	display: block;
+	font-weight: 600;
+	font-size: 12px;
+	margin-block-end: 4px;
+}
+
+.oc-mp__f > small { display: block; color: #787c82; font-size: 11px; margin-block-start: 3px; }
+.oc-mp__f input[type="text"] { inline-size: 100%; max-inline-size: 460px; }
+.oc-mp__f--wide { max-inline-size: 560px; }
+
+.oc-mp__img { display: flex; align-items: center; gap: 8px; }
+.oc-mp__prev img { inline-size: 46px; block-size: 46px; object-fit: cover; border-radius: 4px; display: block; }
+.oc-mp__prevnum { color: #787c82; font-size: 11px; }
+
+/* --- rows of links --- */
+
+.oc-mp__rows { max-inline-size: 560px; }
+
+.oc-mp__row {
+	display: grid;
+	grid-template-columns: 14px minmax(0, 1fr) minmax(0, 1.3fr) 90px 22px;
+	gap: 6px;
+	align-items: center;
+	margin-block-end: 6px;
+}
+
+.oc-mp__row input[type="text"] { inline-size: 100%; }
+.oc-mp__grip { color: #c3c4c7; cursor: grab; font-size: 11px; letter-spacing: -2px; }
+.oc-mp__urlwrap { position: relative; }
+.oc-mp__addrow { margin-block-start: 4px; }
+
+/* --- address suggestions --- */
+
+.oc-mp__sug {
+	display: none;
+	position: absolute;
+	inset-block-start: calc(100% + 2px);
+	inset-inline: 0;
+	z-index: 10;
+	max-block-size: 240px;
+	overflow-y: auto;
+	background: #fff;
+	border: 1px solid #dcdcde;
+	border-radius: 5px;
+	box-shadow: 0 6px 20px rgb(0 0 0 / 12%);
+}
+
+.oc-mp__sug.is-open { display: block; }
+
+.oc-mp__sug button {
+	display: block;
+	inline-size: 100%;
+	text-align: inherit;
+	padding: 7px 10px;
+	border: 0;
+	background: none;
+	cursor: pointer;
+	font: inherit;
+}
+
+.oc-mp__sug button:hover { background: #f0f6fc; }
+.oc-mp__sug b { display: block; font-size: 13px; font-weight: 500; }
+.oc-mp__sug small { color: #787c82; font-size: 11px; }
+
+/* --- saving and seeing --- */
+
+.oc-mp__bar {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	margin: 16px 0 0;
+	padding-block-start: 14px;
+	border-block-start: 1px solid #f0f0f1;
+}
+
+.oc-mp__status { font-size: 13px; color: #787c82; }
+.oc-mp__status.is-ok { color: #007017; }
+.oc-mp__status.is-bad { color: #b32d2e; }
+
+.oc-mp__ph {
+	font-size: 11px;
+	letter-spacing: .08em;
+	text-transform: uppercase;
+	color: #787c82;
+	font-weight: 400;
+	margin: 20px 0 8px;
+}
+
+.oc-mp__frame {
+	inline-size: 100%;
+	block-size: 120px;
+	border: 1px solid #dcdcde;
+	border-radius: 6px;
+	background: #fff;
+	display: block;
+}
+
+/* --- the way in, on the Menus screen --- */
+
+.oc-mi__panel {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin: 0 0 8px;
+}
+
+.oc-mi__state { color: #646970; font-size: 12px; }

@@ -116,6 +116,7 @@ $oc_topbar_on   = (bool) get_theme_mod( 'oc_topbar', false ) && ( ! empty( $oc_t
 						'container'      => '',
 						'menu_class'     => 'oc-nav__list',
 						'depth'          => OC\Theme\Menu::depth(),
+						'oc_panels'      => true,
 					)
 				);
 				?>

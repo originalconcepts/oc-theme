@@ -553,6 +553,45 @@ final class Customizer {
 			)
 		);
 
+		$this->heading( $c, 'oc_h_mega', 'oc_menu', __( 'The panel that opens', 'oc-theme' ) );
+
+		$this->preset(
+			$c,
+			'oc_mega_width',
+			'oc_menu',
+			__( 'How wide it opens', 'oc-theme' ),
+			array(
+				'full'    => array(
+					'label' => __( 'The whole page', 'oc-theme' ),
+					'svg'   => '<svg class="oc-wf" width="132" height="46" viewBox="0 0 66 23" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="2" y="2" width="62" height="4" rx="2" opacity=".35"/><rect x="0" y="9" width="66" height="13" rx="1.5"/></svg>',
+				),
+				'content' => array(
+					'label' => __( 'The width of the content', 'oc-theme' ),
+					'svg'   => '<svg class="oc-wf" width="132" height="46" viewBox="0 0 66 23" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="2" y="2" width="62" height="4" rx="2" opacity=".35"/><rect x="6" y="9" width="54" height="13" rx="1.5"/></svg>',
+				),
+				'menu'    => array(
+					'label' => __( 'Under the link itself', 'oc-theme' ),
+					'hint'  => __( 'And leftwards, in Hebrew', 'oc-theme' ),
+					'svg'   => '<svg class="oc-wf" width="132" height="46" viewBox="0 0 66 23" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="2" y="2" width="62" height="4" rx="2" opacity=".35"/><rect x="44" y="1.5" width="12" height="5" rx="2.5"/><rect x="20" y="9" width="36" height="13" rx="1.5"/></svg>',
+				),
+			),
+			'content',
+			'132px'
+		);
+
+		$this->number( $c, 'oc_mega_pad', 'oc_menu', __( 'Padding inside (px)', 'oc-theme' ), 28, 8, 72 );
+		$this->number( $c, 'oc_mega_gap', 'oc_menu', __( 'Space between blocks (px)', 'oc-theme' ), 28, 8, 72 );
+		$this->number( $c, 'oc_mega_rt', 'oc_menu', __( 'Top corners (px)', 'oc-theme' ), 0, 0, 32 );
+		$this->number( $c, 'oc_mega_rb', 'oc_menu', __( 'Bottom corners (px)', 'oc-theme' ), 0, 0, 32 );
+
+		$this->color( $c, 'oc_mega_bg', 'oc_menu', __( 'Panel background', 'oc-theme' ) );
+		$this->color( $c, 'oc_mega_tx', 'oc_menu', __( 'Panel text', 'oc-theme' ) );
+		$this->color( $c, 'oc_mega_tx_h', 'oc_menu', __( 'Panel text on hover', 'oc-theme' ) );
+		$this->color( $c, 'oc_mega_head', 'oc_menu', __( 'Column headings', 'oc-theme' ) );
+		$this->color( $c, 'oc_mega_line', 'oc_menu', __( 'Line above and below', 'oc-theme' ) );
+
+		$this->number( $c, 'oc_mega_fs', 'oc_menu', __( 'Text size inside (px)', 'oc-theme' ), 15, 11, 22 );
+
 		$this->heading( $c, 'oc_h_menu_open', 'oc_menu', __( 'Opening', 'oc-theme' ) );
 
 		$this->choice(

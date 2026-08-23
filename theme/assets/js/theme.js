@@ -66,7 +66,7 @@
 		}
 
 		Array.prototype.forEach.call( ocNav.querySelectorAll( '.oc-nav__list > li' ), function ( li ) {
-			if ( ! li.querySelector( '.sub-menu' ) ) {
+			if ( ! li.querySelector( '.sub-menu, .oc-mega' ) ) {
 				return;
 			}
 
