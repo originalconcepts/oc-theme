@@ -3114,4 +3114,4 @@ msgid "How the search panel presents itself. What it searches, and the words it 
 msgstr "איך פאנל החיפוש מוצג. איפה הוא מחפש ולאילו מילים הוא עונה — בהגדרות התבנית."
 
 msgid "Did you mean %s?"
-msgstr "התכוונת ל%s?"
+msgstr "התכוונת ל־%s?"
