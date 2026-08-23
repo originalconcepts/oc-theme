@@ -1004,6 +1004,13 @@ html.oc-search-open { overflow: hidden; }
 .oc-nav { --oc-ul-s: left center; --oc-ul-e: right center; }
 [dir="rtl"] .oc-nav { --oc-ul-s: right center; --oc-ul-e: left center; }
 
+/* Everything that arrives one piece at a time travels from where reading
+ * starts — right in Hebrew, left in Latin — so the menu assembles itself in
+ * the direction the eye is already moving. Said once, for the bar, the panel
+ * and the drawer alike. */
+:root { --oc-in-x: -18px; }
+[dir="rtl"] { --oc-in-x: 18px; }
+
 .oc-nav { background: var(--oc-menu-bar-bg, transparent); }
 
 /* A top-level link fills the header's height. Two things follow from that,
@@ -1121,13 +1128,17 @@ html.oc-search-open { overflow: hidden; }
 /* Piece by piece: each row arrives a beat after the one before it. The delay
  * comes from --i, and twelve is where the effect stops being a rhythm and
  * starts being a wait — beyond that they all arrive together. */
-.oc-nav--mo-stagger .oc-nav__list .sub-menu > li { opacity: 0; transform: translateY(6px); }
+.oc-nav--mo-stagger .oc-nav__list .sub-menu > li { opacity: 0; transform: translateX(var(--oc-in-x, -18px)); }
 
+/* The lead is what makes the first rows readable. Without it they arrive
+ * while the panel itself is still fading up, so their entrance happens
+ * against a transparent background and only the tail of the sequence is
+ * ever seen — which reads as the setting doing nothing. */
 .oc-nav--mo-stagger .oc-nav__list li:hover > .sub-menu > li,
 .oc-nav--mo-stagger .oc-nav__list li.is-open > .sub-menu > li,
 .oc-nav--mo-stagger .oc-nav__list li:focus-within > .sub-menu > li {
 	animation: oc-menu-in .26s cubic-bezier(.2, .7, .3, 1) forwards;
-	animation-delay: calc(var(--oc-menu-step, 40ms) * var(--i, 0));
+	animation-delay: calc(160ms + var(--oc-menu-step, 40ms) * var(--i, 0));
 }
 
 .oc-nav--mo-stagger .sub-menu > li:nth-child(1)  { --i: 0; }
@@ -1247,15 +1258,17 @@ html.oc-menu-open .oc-menu-dim::before {
 .oc-nav--w-content .oc-mega__row,
 .oc-nav--w-full .oc-mega__row { max-inline-size: var(--oc-content-width, 1280px); margin-inline: auto; }
 
-/* Piece by piece, the same rhythm as a plain drop-down. */
-.oc-nav--mo-stagger .oc-mega .oc-mb { opacity: 0; transform: translateY(8px); }
+/* Piece by piece, the same rhythm and the same lead as everywhere else. */
+.oc-nav--mo-stagger .oc-mega .oc-mb { opacity: 0; transform: translateX(var(--oc-in-x, -18px)); }
 
 .oc-nav--mo-stagger .oc-nav__list > li:hover > .oc-mega .oc-mb,
 .oc-nav--mo-stagger .oc-nav__list > li.is-open > .oc-mega .oc-mb,
 .oc-nav--mo-stagger .oc-nav__list > li:focus-within > .oc-mega .oc-mb {
 	animation: oc-menu-in .3s cubic-bezier(.2, .7, .3, 1) forwards;
-	animation-delay: calc(var(--oc-menu-step, 40ms) * var(--i, 0));
+	animation-delay: calc(160ms + var(--oc-menu-step, 40ms) * var(--i, 0));
 }
+
+.oc-mega .oc-mb--gap { animation: none !important; opacity: 1; transform: none; }
 
 .oc-mega .oc-mb:nth-child(1) { --i: 0; }
 .oc-mega .oc-mb:nth-child(2) { --i: 1; }
@@ -1571,8 +1584,8 @@ html.oc-drw-open body { overflow: hidden; }
 /* Which way is "onwards". A chevron that points the wrong way in Hebrew
  * reads as a mistake, so the rotation follows the document direction and
  * every arrow in the drawer is derived from it. */
-.oc-drw { --oc-chev: 45deg; --oc-in-x: -18px; }
-[dir="rtl"] .oc-drw { --oc-chev: -45deg; --oc-in-x: 18px; }
+.oc-drw { --oc-chev: 45deg; }
+[dir="rtl"] .oc-drw { --oc-chev: -45deg; }
 
 /* The chevron is its own button, so tapping the word still follows the link
  * — the row does two different things and they need two different targets. */
