@@ -360,7 +360,10 @@ final class Assets {
 			case 'round':
 				return '999px';
 			default:
-				return 'var(--oc-radius, 8px)';
+				// Proportional, and deliberately not the site's global radius:
+				// a shop that sets sharp corners everywhere still has to be
+				// able to pick "softened" here and see something happen.
+				return 'calc(var(--oc-mi-pic, 38px) * .22)';
 		}
 	}
 

@@ -1492,7 +1492,7 @@ html.oc-drw-open body { overflow: hidden; }
 	border-radius: 50%;
 }
 
-.oc-drw__x:hover { background: rgb(0 0 0 / 6%); }
+.oc-drw__x:hover { color: var(--oc-primary); }
 
 .oc-drw__body {
 	position: relative;
@@ -1544,36 +1544,60 @@ html.oc-drw-open body { overflow: hidden; }
 	display: block;
 }
 
+/* Which way is "onwards". A chevron that points the wrong way in Hebrew
+ * reads as a mistake, so the rotation follows the document direction and
+ * every arrow in the drawer is derived from it. */
+.oc-drw { --oc-chev: 45deg; }
+[dir="rtl"] .oc-drw { --oc-chev: -45deg; }
+
 /* The chevron is its own button, so tapping the word still follows the link
  * — the row does two different things and they need two different targets. */
 .oc-drw__more {
 	flex: none;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 	inline-size: 42px;
 	block-size: 42px;
 	border: 0;
 	background: none;
 	color: inherit;
 	cursor: pointer;
-	position: relative;
-	border-radius: 50%;
 }
 
-.oc-drw__more:hover { background: rgb(0 0 0 / 5%); }
+.oc-drw__more:hover { color: var(--oc-primary); }
 
-.oc-drw__more span,
-.oc-drw__more span::before {
-	position: absolute;
-	inset-block-start: 50%;
-	inset-inline-start: 50%;
+/* Opening in place: a plus that becomes a minus. */
+.oc-drw__more span {
+	position: relative;
 	inline-size: 13px;
 	block-size: 2px;
-	margin: -1px 0 0 -6.5px;
 	background: currentColor;
 	border-radius: 1px;
 	transition: transform .2s ease, opacity .2s ease;
 }
 
-.oc-drw__more span::before { content: ''; margin: 0; inset: 0; transform: rotate(90deg); }
+.oc-drw__more span::before {
+	content: '';
+	position: absolute;
+	inset: 0;
+	background: currentColor;
+	border-radius: 1px;
+	transform: rotate(90deg);
+	transition: transform .2s ease, opacity .2s ease;
+}
+
+/* Opening over the top: a chevron pointing the way the screen will move. */
+.oc-drw--slide .oc-drw__more span {
+	inline-size: 9px;
+	block-size: 9px;
+	background: none;
+	border-block-start: 2px solid currentColor;
+	border-inline-end: 2px solid currentColor;
+	transform: rotate(var(--oc-chev));
+}
+
+.oc-drw--slide .oc-drw__more span::before { display: none; }
 
 /* --- opening in place --- */
 
@@ -1628,12 +1652,10 @@ html.oc-drw-open body { overflow: hidden; }
 	content: '';
 	inline-size: 8px;
 	block-size: 8px;
-	border-inline-end: 2px solid currentColor;
 	border-block-start: 2px solid currentColor;
-	transform: rotate(45deg);
+	border-inline-start: 2px solid currentColor;
+	transform: rotate(calc(var(--oc-chev, 45deg) * -1));
 }
-
-[dir="ltr"] .oc-drw__back::before { transform: rotate(-135deg); }
 
 /* --- inside a category --- */
 
@@ -1674,11 +1696,42 @@ html.oc-drw-open body { overflow: hidden; }
 
 .oc-mega--drawer .oc-mb--image { margin-block: 16px; }
 
+/* --- arriving --- */
+
+/* Rows come in one after another, on the way in only. Going back out they
+ * leave together: opening is an invitation, closing is an exit. */
+.oc-drw--mo-stagger .oc-drw__list > .oc-drw__i { opacity: 0; transform: translateY(9px); }
+
+.oc-drw--mo-stagger[data-open="true"] .oc-drw__body > .oc-drw__list > .oc-drw__i,
+.oc-drw--mo-stagger .oc-drw__i.is-open > .oc-drw__sub .oc-drw__list--sub > .oc-drw__i {
+	animation: oc-menu-in .32s cubic-bezier(.2, .7, .3, 1) forwards;
+	animation-delay: calc(var(--oc-menu-step, 40ms) * var(--i, 0));
+}
+
+.oc-drw--mo-stagger .oc-drw__list > .oc-drw__i:nth-child(1)  { --i: 0; }
+.oc-drw--mo-stagger .oc-drw__list > .oc-drw__i:nth-child(2)  { --i: 1; }
+.oc-drw--mo-stagger .oc-drw__list > .oc-drw__i:nth-child(3)  { --i: 2; }
+.oc-drw--mo-stagger .oc-drw__list > .oc-drw__i:nth-child(4)  { --i: 3; }
+.oc-drw--mo-stagger .oc-drw__list > .oc-drw__i:nth-child(5)  { --i: 4; }
+.oc-drw--mo-stagger .oc-drw__list > .oc-drw__i:nth-child(6)  { --i: 5; }
+.oc-drw--mo-stagger .oc-drw__list > .oc-drw__i:nth-child(7)  { --i: 6; }
+.oc-drw--mo-stagger .oc-drw__list > .oc-drw__i:nth-child(8)  { --i: 7; }
+.oc-drw--mo-stagger .oc-drw__list > .oc-drw__i:nth-child(9)  { --i: 8; }
+.oc-drw--mo-stagger .oc-drw__list > .oc-drw__i:nth-child(10) { --i: 9; }
+.oc-drw--mo-stagger .oc-drw__list > .oc-drw__i:nth-child(11) { --i: 10; }
+.oc-drw--mo-stagger .oc-drw__list > .oc-drw__i:nth-child(12) { --i: 11; }
+
+.oc-drw--mo-none .oc-drw__panel,
+.oc-drw--mo-none .oc-drw__scrim,
+.oc-drw--mo-none .oc-drw__sub { transition: none; }
+
 @media (prefers-reduced-motion: reduce) {
 	.oc-drw__panel,
 	.oc-drw__scrim,
 	.oc-drw--slide .oc-drw__sub,
 	.oc-drw--accordion .oc-drw__sub { transition: none; }
+
+	.oc-drw--mo-stagger .oc-drw__list > .oc-drw__i { opacity: 1; transform: none; animation: none; }
 }
 
 

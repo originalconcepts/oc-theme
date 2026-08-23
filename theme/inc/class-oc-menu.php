@@ -579,10 +579,18 @@ final class Menu {
 	 * @return string
 	 */
 	public static function drawer_class(): string {
-		$side = 'left' === get_theme_mod( 'oc_drw_side', 'right' ) ? 'left' : 'right';
-		$sub  = 'slide' === get_theme_mod( 'oc_drw_sub', 'accordion' ) ? 'slide' : 'accordion';
+		$side   = 'left' === get_theme_mod( 'oc_drw_side', 'right' ) ? 'left' : 'right';
+		$sub    = 'slide' === get_theme_mod( 'oc_drw_sub', 'accordion' ) ? 'slide' : 'accordion';
+		$motion = (string) get_theme_mod( 'oc_menu_motion', 'stagger' );
 
-		$classes = array( 'oc-drw', 'oc-drw--' . $side, 'oc-drw--' . $sub );
+		if ( ! in_array( $motion, array( 'stagger', 'fade', 'none' ), true ) ) {
+			$motion = 'stagger';
+		}
+
+		// The same setting governs both. A drop-down of two rows staggered
+		// forty milliseconds apart is a difference nobody can see; the drawer
+		// is where a menu has enough rows for the effect to read at all.
+		$classes = array( 'oc-drw', 'oc-drw--' . $side, 'oc-drw--' . $sub, 'oc-drw--mo-' . $motion );
 
 		if ( get_theme_mod( 'oc_drw_overlay', true ) ) {
 			$classes[] = 'oc-drw--dim';
