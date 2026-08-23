@@ -3557,3 +3557,19 @@ msgstr "הזזה קדימה"
 
 msgid "Image"
 msgstr "תמונה"
+
+msgid "%d column from the menu"
+msgid_plural "%d columns from the menu"
+msgstr[0] "עמודה אחת מהתפריט"
+msgstr[1] "%d עמודות מהתפריט"
+
+msgid "%d addition"
+msgid_plural "%d additions"
+msgstr[0] "תוספת אחת"
+msgstr[1] "%d תוספות"
+
+msgid "The columns come from this link's own sub-items, on the screen behind. Add a picture here and they will sit beside it."
+msgstr "העמודות מגיעות מתתי־הפריטים של הקישור הזה, במסך שמאחור. הוסיפו כאן תמונה והן ישבו לצדה."
+
+msgid "There are unsaved changes. Close anyway?"
+msgstr "יש שינויים שלא נשמרו. לסגור בכל זאת?"

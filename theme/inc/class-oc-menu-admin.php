@@ -29,8 +29,6 @@ final class Menu_Admin {
 	/**
 	 * Screen slug.
 	 */
-	private const PAGE = 'oc-menu-panels';
-
 	/**
 	 * Hooks.
 	 */
@@ -39,25 +37,12 @@ final class Menu_Admin {
 			return;
 		}
 
-		add_action( 'admin_menu', array( $this, 'page' ) );
 		add_action( 'wp_ajax_oc_menu_panel_save', array( $this, 'ajax_save' ) );
 		add_action( 'wp_ajax_oc_menu_panel_preview', array( $this, 'ajax_preview' ) );
 		add_action( 'wp_ajax_oc_menu_link_search', array( $this, 'ajax_search' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'assets' ) );
 		add_action( 'wp_nav_menu_item_custom_fields', array( $this, 'item_link' ), 5 );
-	}
-
-	/**
-	 * The screen.
-	 */
-	public function page(): void {
-		add_theme_page(
-			__( 'Menu panels', 'oc-theme' ),
-			__( 'Menu panels', 'oc-theme' ),
-			'edit_theme_options',
-			self::PAGE,
-			array( $this, 'screen' )
-		);
+		add_action( 'admin_footer-nav-menus.php', array( $this, 'modal' ) );
 	}
 
 	/**
@@ -79,24 +64,49 @@ final class Menu_Admin {
 			return;
 		}
 
-		$count = count( Menu_Panel::blocks( $id ) );
-		$kids  = self::has_children( $id );
-
-		if ( $count > 0 ) {
-			/* translators: %d: number of blocks. */
-			$state = sprintf( _n( '%d block', '%d blocks', $count, 'oc-theme' ), $count );
-		} elseif ( $kids ) {
-			$state = __( 'Opens as a plain drop-down', 'oc-theme' );
-		} else {
-			$state = __( 'Just a link', 'oc-theme' );
-		}
-
 		printf(
-			'<p class="oc-mi__panel"><span class="oc-mi__state">%s</span> <a class="button button-small" href="%s">%s</a></p>',
-			esc_html( $state ),
-			esc_url( add_query_arg( array( 'page' => self::PAGE, 'item' => $id ), admin_url( 'themes.php' ) ) ),
+			'<p class="oc-mi__panel"><span class="oc-mi__state">%1$s</span> <button type="button" class="button button-small oc-mi__edit" data-oc-panel="%2$d" data-oc-name="%3$s" data-oc-blocks="%4$s" data-oc-thumbs="%5$s">%6$s</button></p>',
+			esc_html( self::state_line( $id ) ),
+			$id,
+			esc_attr( wp_strip_all_tags( (string) $item->title ) ),
+			esc_attr( (string) wp_json_encode( Menu_Panel::blocks( $id ) ) ),
+			esc_attr( (string) wp_json_encode( self::thumbs( Menu_Panel::blocks( $id ) ) ) ),
 			esc_html__( 'Edit panel', 'oc-theme' )
 		);
+	}
+
+
+	/**
+	 * What happens when someone hovers this item, in a few words.
+	 *
+	 * Said in one place, because the Menus screen shows it and the editor
+	 * rewrites it after a save; two spellings of the same fact drift.
+	 *
+	 * @param int $id Menu item id.
+	 * @return string
+	 */
+	private static function state_line( int $id ): string {
+		$shape = Menu_Panel::shape( $id );
+
+		if ( ! Menu_Panel::is_panel( $id ) ) {
+			return $shape['columns'] > 0
+				? __( 'Opens as a plain drop-down', 'oc-theme' )
+				: __( 'Just a link', 'oc-theme' );
+		}
+
+		$parts = array();
+
+		if ( $shape['columns'] > 0 ) {
+			/* translators: %d: number of columns. */
+			$parts[] = sprintf( _n( '%d column from the menu', '%d columns from the menu', $shape['columns'], 'oc-theme' ), $shape['columns'] );
+		}
+
+		if ( $shape['extras'] > 0 ) {
+			/* translators: %d: number of additions. */
+			$parts[] = sprintf( _n( '%d addition', '%d additions', $shape['extras'], 'oc-theme' ), $shape['extras'] );
+		}
+
+		return implode( ' · ', $parts );
 	}
 
 	/**
@@ -145,140 +155,6 @@ final class Menu_Admin {
 	}
 
 	/**
-	 * Whether an item has children in the primary menu.
-	 *
-	 * @param int $id Menu item id.
-	 * @return bool
-	 */
-	private static function has_children( int $id ): bool {
-		$locations = get_nav_menu_locations();
-		$menu      = isset( $locations['primary'] ) ? (int) $locations['primary'] : 0;
-		$items     = $menu > 0 ? wp_get_nav_menu_items( $menu ) : array();
-
-		foreach ( (array) $items as $item ) {
-			if ( (int) $item->menu_item_parent === $id ) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	/**
-	 * Render the screen.
-	 */
-	public function screen(): void {
-		if ( ! current_user_can( 'edit_theme_options' ) ) {
-			return;
-		}
-
-		$items = self::items();
-
-		if ( empty( $items ) ) {
-			printf(
-				'<div class="wrap"><h1>%s</h1><div class="notice notice-warning"><p>%s</p></div></div>',
-				esc_html__( 'Menu panels', 'oc-theme' ),
-				sprintf(
-					/* translators: %s: link to the Menus screen. */
-					esc_html__( 'No menu is assigned to the primary location yet. Set one on the %s screen and come back.', 'oc-theme' ),
-					'<a href="' . esc_url( admin_url( 'nav-menus.php' ) ) . '">' . esc_html__( 'Menus', 'oc-theme' ) . '</a>'
-				)
-			);
-			return;
-		}
-
-		$current = isset( $_GET['item'] ) ? absint( $_GET['item'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-
-		if ( ! self::in_primary( $current ) ) {
-			$current = (int) $items[0]->ID;
-		}
-
-		wp_enqueue_media();
-
-		$data = array(
-			'types'   => Menu_Panel::types(),
-			'widths'  => Menu_Panel::widths(),
-			'devices' => Menu_Panel::devices(),
-			'max'     => Menu_Panel::MAX,
-			'blocks'  => Menu_Panel::blocks( $current ),
-			'thumbs'  => self::thumbs( Menu_Panel::blocks( $current ) ),
-			'cats'    => self::categories(),
-			'item'    => $current,
-			'nonce'   => wp_create_nonce( 'oc_menu_panel' ),
-			'ajax'    => admin_url( 'admin-ajax.php' ),
-			'css'     => get_template_directory_uri() . '/assets/css/' . ( file_exists( OC_THEME_DIR . '/assets/css/theme.min.css' ) ? 'theme.min.css' : 'theme.css' ),
-			'rtl'     => is_rtl(),
-			'i18n'    => array(
-				'save'     => __( 'Save', 'oc-theme' ),
-				'add'      => __( 'Add a block', 'oc-theme' ),
-				'remove'   => __( 'Remove this block', 'oc-theme' ),
-				'moveBack' => __( 'Move earlier', 'oc-theme' ),
-				'moveOn'   => __( 'Move later', 'oc-theme' ),
-				'width'    => __( 'Width', 'oc-theme' ),
-				'device'   => __( 'Shown', 'oc-theme' ),
-				'addLink'  => __( 'Add a link', 'oc-theme' ),
-				'linkText' => __( 'Words', 'oc-theme' ),
-				'linkUrl'  => __( 'Address', 'oc-theme' ),
-				'notAnAddress' => __( 'This is not an address yet — pick one from the list, or paste a link.', 'oc-theme' ),
-				'linkTag'  => __( 'Badge', 'oc-theme' ),
-				'addCat'   => __( 'Add a category', 'oc-theme' ),
-				'showSub'  => __( 'Show its sub-categories', 'oc-theme' ),
-				'pickCat'  => __( 'Choose a category', 'oc-theme' ),
-				'push'     => __( 'Leave the spare width in front of it', 'oc-theme' ),
-				'choose'   => __( 'Choose', 'oc-theme' ),
-				'clear'    => __( 'Remove', 'oc-theme' ),
-				'saved'    => __( 'Saved', 'oc-theme' ),
-				'saving'   => __( 'Saving…', 'oc-theme' ),
-				'failed'   => __( 'Could not save. Try again.', 'oc-theme' ),
-				'full'     => __( 'This panel is full.', 'oc-theme' ),
-				'empty'    => __( 'No blocks yet. This link opens as a plain drop-down if it has children, and as a plain link if it does not.', 'oc-theme' ),
-				'untitled' => __( 'Untitled', 'oc-theme' ),
-				'preview'  => __( 'How it will look', 'oc-theme' ),
-				'confirm'  => __( 'Remove this block?', 'oc-theme' ),
-			),
-		);
-		?>
-		<div class="wrap oc-mp">
-			<h1><?php esc_html_e( 'Menu panels', 'oc-theme' ); ?></h1>
-			<p class="oc-mp__lead"><?php esc_html_e( 'Pick a link on the right, then build what opens underneath it. Order and hierarchy stay on the Menus screen.', 'oc-theme' ); ?></p>
-
-			<div class="oc-mp__grid">
-				<div class="oc-mp__side">
-					<h2 class="oc-mp__sh"><?php esc_html_e( 'Links in the menu', 'oc-theme' ); ?></h2>
-					<?php
-					foreach ( $items as $item ) {
-						$id    = (int) $item->ID;
-						$count = count( Menu_Panel::blocks( $id ) );
-
-						if ( $count > 0 ) {
-							/* translators: %d: number of blocks. */
-							$state = sprintf( _n( '%d block', '%d blocks', $count, 'oc-theme' ), $count );
-						} elseif ( self::has_children( $id ) ) {
-							$state = __( 'Plain drop-down', 'oc-theme' );
-						} else {
-							$state = __( 'Link only', 'oc-theme' );
-						}
-
-						printf(
-							'<a class="oc-mp__item%s" href="%s"><span>%s</span><small>%s</small></a>',
-							$id === $current ? ' is-on' : '',
-							esc_url( add_query_arg( array( 'page' => self::PAGE, 'item' => $id ), admin_url( 'themes.php' ) ) ),
-							esc_html( $item->title ),
-							esc_html( $state )
-						);
-					}
-					?>
-				</div>
-
-				<div class="oc-mp__main">
-					<div id="oc-mp-root" data-oc-mp="<?php echo esc_attr( (string) wp_json_encode( $data ) ); ?>"></div>
-				</div>
-			</div>
-		</div>
-		<?php
-	}
-
-	/**
 	 * Store the blocks a browser sends.
 	 */
 	public function ajax_save(): void {
@@ -298,9 +174,13 @@ final class Menu_Admin {
 
 		Menu_Panel::save( $item, $blocks );
 
+		$blocks = Menu_Panel::blocks( $item );
+
 		wp_send_json_success(
 			array(
-				'count' => count( Menu_Panel::blocks( $item ) ),
+				'blocks' => $blocks,
+				'thumbs' => self::thumbs( $blocks ),
+				'state'  => self::state_line( $item ),
 			)
 		);
 	}
@@ -383,15 +263,78 @@ final class Menu_Admin {
 		return $out;
 	}
 
+
+	/**
+	 * The editor, on the Menus screen.
+	 *
+	 * It opens over that screen rather than replacing it, because everything
+	 * a panel is made of — which links, in what order, under which parent —
+	 * is on the screen underneath, and sending someone somewhere else to
+	 * arrange pictures around it made two screens out of one job.
+	 */
+	public function modal(): void {
+		if ( ! current_user_can( 'edit_theme_options' ) ) {
+			return;
+		}
+
+		$data = array(
+			'types'   => Menu_Panel::types(),
+			'widths'  => Menu_Panel::widths(),
+			'devices' => Menu_Panel::devices(),
+			'max'     => Menu_Panel::MAX,
+			'cats'    => self::categories(),
+			'nonce'   => wp_create_nonce( 'oc_menu_panel' ),
+			'ajax'    => admin_url( 'admin-ajax.php' ),
+			'css'     => get_template_directory_uri() . '/assets/css/' . ( file_exists( OC_THEME_DIR . '/assets/css/theme.min.css' ) ? 'theme.min.css' : 'theme.css' ),
+			'rtl'     => is_rtl(),
+			'i18n'    => array(
+				'save'     => __( 'Save', 'oc-theme' ),
+				'add'      => __( 'Add a block', 'oc-theme' ),
+				'remove'   => __( 'Remove this block', 'oc-theme' ),
+				'moveBack' => __( 'Move earlier', 'oc-theme' ),
+				'moveOn'   => __( 'Move later', 'oc-theme' ),
+				'width'    => __( 'Width', 'oc-theme' ),
+				'device'   => __( 'Shown', 'oc-theme' ),
+				'push'     => __( 'Leave the spare width in front of it', 'oc-theme' ),
+				'choose'   => __( 'Choose', 'oc-theme' ),
+				'clear'    => __( 'Remove', 'oc-theme' ),
+				'saved'    => __( 'Saved', 'oc-theme' ),
+				'saving'   => __( 'Saving…', 'oc-theme' ),
+				'failed'   => __( 'Could not save. Try again.', 'oc-theme' ),
+				'full'     => __( 'This panel is full.', 'oc-theme' ),
+				'empty'    => __( 'The columns come from this link\'s own sub-items, on the screen behind. Add a picture here and they will sit beside it.', 'oc-theme' ),
+				'preview'  => __( 'How it will look', 'oc-theme' ),
+				'confirm'  => __( 'Remove this block?', 'oc-theme' ),
+				'close'    => __( 'Close', 'oc-theme' ),
+				'leave'    => __( 'There are unsaved changes. Close anyway?', 'oc-theme' ),
+				'notAnAddress' => __( 'This is not an address yet — pick one from the list, or paste a link.', 'oc-theme' ),
+			),
+		);
+		?>
+		<div id="oc-mp-modal" class="oc-mp-modal" hidden data-oc-mp="<?php echo esc_attr( (string) wp_json_encode( $data ) ); ?>">
+			<div class="oc-mp-modal__scrim" data-oc-mp-close></div>
+			<div class="oc-mp-modal__box" role="dialog" aria-modal="true" aria-labelledby="oc-mp-modal-title">
+				<div class="oc-mp-modal__head">
+					<h2 id="oc-mp-modal-title"></h2>
+					<button type="button" class="oc-mp-modal__x" data-oc-mp-close aria-label="<?php esc_attr_e( 'Close', 'oc-theme' ); ?>">&times;</button>
+				</div>
+				<div id="oc-mp-root"></div>
+			</div>
+		</div>
+		<?php
+	}
+
 	/**
 	 * Assets for this screen only.
 	 *
 	 * @param string $hook Current admin page.
 	 */
 	public function assets( string $hook ): void {
-		if ( 'appearance_page_' . self::PAGE !== $hook ) {
+		if ( 'nav-menus.php' !== $hook ) {
 			return;
 		}
+
+		wp_enqueue_media();
 
 		wp_enqueue_style(
 			'oc-menu-panel',

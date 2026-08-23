@@ -286,11 +286,41 @@ final class Menu_Panel {
 			return $cached;
 		}
 
-		$html = self::build( $item_id, $where );
+		$html = self::is_panel( $item_id ) ? self::build( $item_id, $where ) : '';
 
 		set_transient( $key, $html, DAY_IN_SECONDS );
 
 		return $html;
+	}
+
+	/**
+	 * How much a panel would have in it: columns from the menu, extras of
+	 * its own.
+	 *
+	 * @param int $item_id Menu item id.
+	 * @return array{columns:int,extras:int}
+	 */
+	public static function shape( int $item_id ): array {
+		return array(
+			'columns' => count( self::columns( $item_id, 'nav' ) ),
+			'extras'  => count( self::blocks( $item_id ) ),
+		);
+	}
+
+	/**
+	 * Whether this item is worth opening a panel for.
+	 *
+	 * One list is a drop-down. Anything more than that — a second column, or
+	 * a picture — is a panel. Drawing a full-width band to hold a single
+	 * short list would be a worse version of the drop-down it replaced.
+	 *
+	 * @param int $item_id Menu item id.
+	 * @return bool
+	 */
+	public static function is_panel( int $item_id ): bool {
+		$shape = self::shape( $item_id );
+
+		return $shape['columns'] > 1 || $shape['extras'] > 0;
 	}
 
 	/**

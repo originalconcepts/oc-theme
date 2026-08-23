@@ -440,7 +440,7 @@ final class Menu {
 
 		// A panel replaces the plain drop-down rather than joining it, so the
 		// stylesheet needs to know before it decides what to show.
-		if ( 0 === (int) $depth && ! empty( $args->oc_panels ) && ! empty( Menu_Panel::blocks( (int) $item->ID ) ) ) {
+		if ( 0 === (int) $depth && ! empty( $args->oc_panels ) && Menu_Panel::is_panel( (int) $item->ID ) ) {
 			$classes[] = 'oc-has-panel';
 		}
 

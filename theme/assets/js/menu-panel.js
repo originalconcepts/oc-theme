@@ -1,7 +1,11 @@
 /**
- * The panel builder.
+ * The panel editor, on the Menus screen.
  *
- * Everything on screen is drawn from the description of the block types the
+ * It opens over that screen rather than replacing it: the columns of a panel
+ * are the item's own sub-items, sitting right there underneath, so arranging
+ * pictures around them belongs on the same screen and not on another one.
+ *
+ * Everything on show is drawn from the description of the block types the
  * server hands over, so a new type appears here without a line being changed.
  *
  * Text fields write straight into the model and never trigger a repaint —
@@ -11,17 +15,20 @@
 ( function () {
 	'use strict';
 
+	var modal = document.getElementById( 'oc-mp-modal' );
 	var root = document.getElementById( 'oc-mp-root' );
 
-	if ( ! root ) {
+	if ( ! modal || ! root ) {
 		return;
 	}
 
-	var D = JSON.parse( root.dataset.ocMp );
+	var D = JSON.parse( modal.dataset.ocMp );
 	var T = D.i18n;
 
 	var state = {
-		blocks: Array.isArray( D.blocks ) ? D.blocks : [],
+		item: 0,
+		button: null,
+		blocks: [],
 		open: null,
 		dirty: false
 	};
@@ -691,7 +698,7 @@
 
 		body.append( 'action', 'oc_menu_panel_save' );
 		body.append( 'nonce', D.nonce );
-		body.append( 'item', D.item );
+		body.append( 'item', state.item );
 		body.append( 'blocks', JSON.stringify( state.blocks ) );
 
 		fetch( D.ajax, { method: 'POST', body: body, credentials: 'same-origin' } )
@@ -703,6 +710,18 @@
 
 				state.dirty = false;
 				setStatus( T.saved, 'ok' );
+
+				/* The screen behind is now out of date about this item. */
+				if ( state.button ) {
+					state.button.dataset.ocBlocks = JSON.stringify( r.data.blocks );
+					state.button.dataset.ocThumbs = JSON.stringify( r.data.thumbs );
+
+					var line = state.button.parentNode.querySelector( '.oc-mi__state' );
+
+					if ( line ) {
+						line.textContent = r.data.state;
+					}
+				}
 			} )
 			.catch( function () {
 				setStatus( T.failed, 'bad' );
@@ -719,7 +738,7 @@
 
 		body.append( 'action', 'oc_menu_panel_preview' );
 		body.append( 'nonce', D.nonce );
-		body.append( 'item', D.item );
+		body.append( 'item', state.item );
 		body.append( 'blocks', JSON.stringify( state.blocks ) );
 
 		fetch( D.ajax, { method: 'POST', body: body, credentials: 'same-origin' } )
@@ -758,7 +777,7 @@
 		};
 	}
 
-	/* ---------- build the screen once ---------- */
+	/* ---------- opening, closing ---------- */
 
 	els.strip = el( 'div', { 'class': 'oc-mp__strip' } );
 	els.settings = el( 'div', { 'class': 'oc-mp__settings', hidden: 'hidden' } );
@@ -779,14 +798,55 @@
 	root.appendChild( el( 'h2', { 'class': 'oc-mp__ph', text: T.preview } ) );
 	root.appendChild( els.frame );
 
-	paintStrip();
-	paintSettings();
-	preview();
+	function open( button ) {
+		state.item = Number( button.dataset.ocPanel );
+		state.button = button;
+		state.blocks = JSON.parse( button.dataset.ocBlocks || '[]' );
+		state.open = state.blocks.length ? 0 : null;
+		state.dirty = false;
 
-	window.addEventListener( 'beforeunload', function ( e ) {
-		if ( state.dirty ) {
-			e.preventDefault();
-			e.returnValue = '';
+		D.thumbs = JSON.parse( button.dataset.ocThumbs || '{}' );
+
+		document.getElementById( 'oc-mp-modal-title' ).textContent = button.dataset.ocName || '';
+		modal.hidden = false;
+		document.body.classList.add( 'oc-mp-locked' );
+
+		setStatus( '' );
+		paintStrip();
+		paintSettings();
+		preview();
+	}
+
+	function close() {
+		if ( state.dirty && ! window.confirm( T.leave ) ) {
+			return;
+		}
+
+		modal.hidden = true;
+		document.body.classList.remove( 'oc-mp-locked' );
+
+		if ( state.button ) {
+			state.button.focus();
+		}
+	}
+
+	document.addEventListener( 'click', function ( event ) {
+		var button = event.target.closest( '.oc-mi__edit' );
+
+		if ( button ) {
+			event.preventDefault();
+			open( button );
+			return;
+		}
+
+		if ( event.target.closest( '[data-oc-mp-close]' ) ) {
+			close();
+		}
+	} );
+
+	document.addEventListener( 'keydown', function ( event ) {
+		if ( event.key === 'Escape' && ! modal.hidden ) {
+			close();
 		}
 	} );
 }() );
