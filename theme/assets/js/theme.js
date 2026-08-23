@@ -456,11 +456,11 @@
 				searchPanel.hidden = false;
 				histPaint();
 
-				// One frame between showing it and opening it, or the browser
-				// has nothing to animate from.
-				requestAnimationFrame( function () {
-					searchPanel.classList.add( 'is-open' );
-				} );
+				// Read a layout value first: that settles the closed state as the
+				// starting point, so the transition has somewhere to come from
+				// without waiting on a frame that may never be painted.
+				void searchPanel.offsetWidth;
+				searchPanel.classList.add( 'is-open' );
 
 				if ( sField ) {
 					sField.focus();
