@@ -688,8 +688,10 @@
 
 		/* -- what a result click teaches us -- */
 
-		function bindResults() {
-			sOut.querySelectorAll( '[data-oc-search-hit]' ).forEach( function ( link ) {
+		function bindResults( scope ) {
+			scope = scope || sOut;
+
+			scope.querySelectorAll( '[data-oc-search-hit]' ).forEach( function ( link ) {
 				link.addEventListener( 'click', function () {
 					histAdd( sTerm );
 
@@ -701,7 +703,7 @@
 				} );
 			} );
 
-			var more = sOut.querySelector( '[data-oc-search-more]' );
+			var more = scope.querySelector( '[data-oc-search-more]' );
 
 			if ( more ) {
 				more.addEventListener( 'click', function () {
@@ -730,7 +732,7 @@
 				} );
 			}
 
-			sOut.querySelectorAll( '[data-oc-search-add]' ).forEach( function ( button ) {
+			scope.querySelectorAll( '[data-oc-search-add]' ).forEach( function ( button ) {
 				button.addEventListener( 'click', function () {
 					var id = button.getAttribute( 'data-oc-search-add' );
 
@@ -781,6 +783,12 @@
 		}
 
 		histPaint();
+
+		// The products offered before a word is typed are as clickable as any
+		// result: their add buttons need the same wiring.
+		if ( sIdle ) {
+			bindResults( sIdle );
+		}
 	}
 
 	/* ---------- card gallery: hover arrows drive the scroll-snap strip ---------- */
