@@ -3458,3 +3458,6 @@ msgstr "קו עליון ותחתון"
 
 msgid "Text size inside (px)"
 msgstr "גודל הטקסט בפנים (פיקסלים)"
+
+msgid "Save"
+msgstr "שמירה"
