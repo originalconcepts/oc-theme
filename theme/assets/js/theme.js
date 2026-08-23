@@ -352,6 +352,7 @@
 		var sIdleTimer = null;
 		var sAbort = null;
 		var sTerm = '';
+		var sMeant = '';
 
 		var HIST_KEY = 'ocSearchHist';
 		var HIST_MAX = parseInt( ocSL.searchHistMax || 8, 10 );
@@ -380,8 +381,21 @@
 				return;
 			}
 
-			var list = histRead().filter( function ( x ) {
-				return x !== term;
+			var list = histRead();
+
+			// One attempt at a word, not the trail of keystrokes that led to
+			// it: "לסל" and "לסלו" and "לסלון" are the same search, so only
+			// the longest of them is kept.
+			var longer = list.filter( function ( x ) {
+				return 0 === x.indexOf( term ) && x !== term;
+			} )[ 0 ];
+
+			if ( longer ) {
+				term = longer;
+			}
+
+			list = list.filter( function ( x ) {
+				return x !== term && 0 !== term.indexOf( x );
 			} );
 
 			list.unshift( term );
@@ -549,6 +563,26 @@
 			bindResults();
 		}
 
+		var sGo = searchPanel.querySelector( '.oc-search__go' );
+
+		function setBarState( term ) {
+			var empty = ! term;
+
+			// The clear and the magnifier stay in place and go quiet rather
+			// than disappearing: a control that vanishes moves everything
+			// beside it.
+			if ( sClear ) {
+				sClear.hidden = false;
+				sClear.disabled = empty;
+				sClear.classList.toggle( 'is-off', empty );
+			}
+
+			if ( sGo ) {
+				sGo.disabled = empty;
+				sGo.classList.toggle( 'is-off', empty );
+			}
+		}
+
 		function ask( term, log ) {
 			var key = term + ( log ? '|log' : '' );
 
@@ -582,6 +616,11 @@
 
 					sCache.set( term, j.data );
 					paint( j.data, term );
+
+					// A rescued search is remembered as the word it resolved to.
+					if ( j.data && j.data.term ) {
+						sMeant = j.data.term;
+					}
 				} )
 				.catch( function () {} );
 		}
@@ -591,9 +630,7 @@
 
 			sTerm = term;
 
-			if ( sClear ) {
-				sClear.hidden = ! term;
-			}
+			setBarState( term );
 
 			if ( term.length < sMin ) {
 				paint( null, term );
@@ -614,7 +651,7 @@
 					fetch( sAction + '?oc_search=1&q=' + encodeURIComponent( term ) + '&log=1&quiet=1', {
 						credentials: 'same-origin'
 					} ).catch( function () {} );
-					histAdd( term );
+					histAdd( sMeant || term );
 				}
 			}, 1100 );
 		}
@@ -693,7 +730,7 @@
 
 			scope.querySelectorAll( '[data-oc-search-hit]' ).forEach( function ( link ) {
 				link.addEventListener( 'click', function () {
-					histAdd( sTerm );
+					histAdd( sMeant || sTerm );
 
 					try {
 						navigator.sendBeacon(
@@ -783,6 +820,7 @@
 		}
 
 		histPaint();
+		setBarState( sField ? ( sField.value || '' ).trim() : '' );
 
 		// The products offered before a word is typed are as clickable as any
 		// result: their add buttons need the same wiring.

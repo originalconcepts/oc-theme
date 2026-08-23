@@ -62,7 +62,7 @@ final class Search_Panel {
 					</button>
 					<span class="oc-search__sep" aria-hidden="true"></span>
 					<button type="button" class="oc-search__close" data-oc-search-close aria-label="<?php esc_attr_e( 'Close search', 'oc-theme' ); ?>">
-						<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M14 6l-6 6 6 6"/></svg>
+						<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M14 6l-6 6 6 6"/><path d="M20 12H9"/></svg>
 					</button>
 				</form>
 

@@ -348,13 +348,23 @@ a { color: inherit; }
 .oc-searchbox .oc-search__clear:hover,
 .oc-searchbox .oc-search__close:hover { background: var(--oc-surface-2, rgba(0, 0, 0, .05)); }
 
+.oc-searchbox .oc-search__go.is-off,
+.oc-searchbox .oc-search__clear.is-off {
+	color: var(--oc-ink-3, #9aa0a8);
+	opacity: .5;
+	cursor: default;
+	pointer-events: none;
+}
+
 .oc-search__sep {
 	inline-size: 1px;
 	block-size: 20px;
 	background: var(--oc-line);
 }
 
-.oc-search__close svg { transform: scaleX(-1); }
+/* The arrow points the way back reads in this writing direction: left in a
+ * right-to-left shop, which is where the eye leaves the line. */
+.oc-search__close svg { transform: none; }
 
 /* the two columns */
 
@@ -369,11 +379,10 @@ a { color: inherit; }
 
 .oc-search__cols.is-single { grid-template-columns: 1fr; }
 
-/* The narrow column must never be the tallest thing in the panel: it is a
- * shortcut, not a directory. */
+/* The narrow column is a shortcut, not a directory — it is kept short by
+ * how few things go into it, rather than by a clip that would slice the last
+ * line's underline in half. */
 .oc-search__side {
-	max-block-size: 340px;
-	overflow: hidden;
 	border-inline-end: 1px solid var(--oc-line);
 	padding-inline-end: 24px;
 }
@@ -449,10 +458,11 @@ a { color: inherit; }
 
 .oc-search__histterm {
 	border: 0;
-	padding: 4px 0;
+	padding: 5px 0 6px;
 	text-align: start;
 	flex: 1;
 	border-radius: 0;
+	text-underline-offset: 3px;
 }
 
 .oc-search__histdel {
