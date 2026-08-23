@@ -239,17 +239,27 @@ a { color: inherit; }
 	border-block-end: 1px solid var(--oc-line);
 	box-shadow: 0 24px 48px -32px rgba(0, 0, 0, .28);
 
-	/* It arrives rather than appears: the panel unrolls from under the header
-	 * and its contents settle a moment later. */
 	transform-origin: top center;
-	transition: opacity .22s ease, transform .28s cubic-bezier(.2, .7, .3, 1);
-	opacity: 0;
-	transform: translateY(-10px);
 }
 
+/* It arrives rather than appears. This is an animation and not a transition
+ * on purpose: an animation always finishes at the element's normal state, so
+ * a browser that never runs it simply shows the panel — where a transition
+ * from opacity 0 would leave it invisible. */
 .oc-searchbox.is-open {
-	opacity: 1;
-	transform: none;
+	animation: oc-search-in .28s cubic-bezier(.2, .7, .3, 1) both;
+}
+
+@keyframes oc-search-in {
+	from {
+		opacity: 0;
+		transform: translateY(-10px);
+	}
+
+	to {
+		opacity: 1;
+		transform: none;
+	}
 }
 
 .oc-searchbox[hidden] { display: none; }
@@ -262,29 +272,29 @@ a { color: inherit; }
 	box-shadow: 0 0 0 4px color-mix(in srgb, var(--oc-ink) 8%, transparent);
 }
 
-.oc-searchbox__stage > * {
-	opacity: 0;
-	transform: translateY(6px);
-	transition: opacity .26s ease, transform .26s ease;
-}
-
 .oc-searchbox.is-open .oc-searchbox__stage > * {
-	opacity: 1;
-	transform: none;
-	transition-delay: .06s;
+	animation: oc-search-settle .3s ease .05s both;
 }
 
-@media (prefers-reduced-motion: reduce) {
-	.oc-searchbox,
-	.oc-searchbox .oc-search__bar,
-	.oc-searchbox__stage > * {
-		transition: none;
+@keyframes oc-search-settle {
+	from {
+		opacity: 0;
+		transform: translateY(6px);
 	}
 
-	.oc-searchbox {
+	to {
 		opacity: 1;
 		transform: none;
 	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.oc-searchbox.is-open,
+	.oc-searchbox.is-open .oc-searchbox__stage > * {
+		animation: none;
+	}
+
+	.oc-searchbox .oc-search__bar { transition: none; }
 }
 
 .oc-search__inner {
