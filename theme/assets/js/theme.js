@@ -97,24 +97,24 @@
 	/* ---------- the drawer ---------- */
 
 	var burger = document.querySelector( '.oc-burger' );
-	var drawer = document.getElementById( 'oc-mobile-menu' );
+	var drw = document.getElementById( 'oc-mobile-menu' );
 
-	if ( burger && drawer ) {
+	if ( burger && drw ) {
 		var drwLast = null;
 
 		function drwSet( open ) {
 			burger.setAttribute( 'aria-expanded', open ? 'true' : 'false' );
 
 			if ( open ) {
-				drawer.hidden = false;
+				drw.hidden = false;
 				/* A frame between display and transform, or the panel is
 				 * already where it is going and never slides. */
-				void drawer.offsetWidth;
-				drawer.setAttribute( 'data-open', 'true' );
+				void drw.offsetWidth;
+				drw.setAttribute( 'data-open', 'true' );
 				document.documentElement.classList.add( 'oc-drw-open' );
 				drwLast = document.activeElement;
 
-				var first = drawer.querySelector( '.oc-drw__x' );
+				var first = drw.querySelector( '.oc-drw__x' );
 
 				if ( first ) {
 					first.focus();
@@ -123,14 +123,14 @@
 				return;
 			}
 
-			drawer.setAttribute( 'data-open', 'false' );
+			drw.setAttribute( 'data-open', 'false' );
 			document.documentElement.classList.remove( 'oc-drw-open' );
-			drwShut( drawer );
+			drwShut( drw );
 
 			/* Wait for the slide out before taking the panel off the page. */
 			setTimeout( function () {
-				if ( drawer.getAttribute( 'data-open' ) !== 'true' ) {
-					drawer.hidden = true;
+				if ( drw.getAttribute( 'data-open' ) !== 'true' ) {
+					drw.hidden = true;
 				}
 			}, 300 );
 
@@ -139,7 +139,7 @@
 			}
 		}
 
-		/* Close every open branch, so reopening the drawer starts at the top
+		/* Close every open branch, so reopening the drw starts at the top
 		 * rather than wherever the last visit ended. */
 		function drwShut( scope ) {
 			Array.prototype.forEach.call( scope.querySelectorAll( '.oc-drw__i.is-open' ), function ( li ) {
@@ -156,13 +156,13 @@
 			drwSet( burger.getAttribute( 'aria-expanded' ) !== 'true' );
 		} );
 
-		Array.prototype.forEach.call( drawer.querySelectorAll( '[data-oc-drw-close]' ), function ( node ) {
+		Array.prototype.forEach.call( drw.querySelectorAll( '[data-oc-drw-close]' ), function ( node ) {
 			node.addEventListener( 'click', function () {
 				drwSet( false );
 			} );
 		} );
 
-		drawer.addEventListener( 'click', function ( event ) {
+		drw.addEventListener( 'click', function ( event ) {
 			var more = event.target.closest( '.oc-drw__more' );
 
 			if ( more ) {
@@ -208,14 +208,14 @@
 		} );
 
 		document.addEventListener( 'keydown', function ( event ) {
-			if ( event.key !== 'Escape' || drawer.hidden ) {
+			if ( event.key !== 'Escape' || drw.hidden ) {
 				return;
 			}
 
 			/* Escape steps back one level before it closes the whole thing. */
 			var deepest = null;
 
-			Array.prototype.forEach.call( drawer.querySelectorAll( '.oc-drw__i.is-open' ), function ( li ) {
+			Array.prototype.forEach.call( drw.querySelectorAll( '.oc-drw__i.is-open' ), function ( li ) {
 				deepest = li;
 			} );
 
