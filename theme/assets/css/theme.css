@@ -919,7 +919,6 @@ html.oc-search-open { overflow: hidden; }
 		grid-row: 2;
 		display: flex;
 		justify-content: center;
-		padding-block-end: 6px;
 	}
 
 	/* split: menu at the start, logo centred, icons at the end */
@@ -1011,8 +1010,16 @@ html.oc-search-open { overflow: hidden; }
 
 .oc-nav { background: var(--oc-menu-bar-bg, transparent); }
 
-.oc-nav__list { display: flex; gap: var(--oc-menu-gap, clamp(10px, 1.6vw, 22px)); }
+/* A top-level link fills the header's height. Two things follow from that,
+ * and both are the point: the line under the word lands on the header's own
+ * bottom rule rather than floating somewhere above it, and there is no dead
+ * strip between the link and the panel it opens. The space settings still
+ * nudge the word up or down inside that height — equal on both sides means
+ * centred, which is where it started. */
+.oc-nav { align-self: stretch; }
+.oc-nav__list { display: flex; align-items: stretch; gap: var(--oc-menu-gap, clamp(10px, 1.6vw, 22px)); }
 .oc-nav__list li { position: relative; }
+.oc-nav__list > li { display: flex; }
 
 .oc-nav__list a {
 	display: block;
@@ -1024,6 +1031,8 @@ html.oc-search-open { overflow: hidden; }
 
 .oc-nav__list > li > a {
 	position: relative;
+	display: flex;
+	align-items: center;
 	padding-block: var(--oc-menu-pt, 10px) var(--oc-menu-pb, 10px);
 	letter-spacing: var(--oc-menu-track, 0);
 	text-transform: var(--oc-menu-tt, none);
@@ -1047,7 +1056,7 @@ html.oc-search-open { overflow: hidden; }
 .oc-nav--hv-slide .oc-nav__list > li > a::after {
 	content: '';
 	position: absolute;
-	inset-block-end: max(2px, calc(var(--oc-menu-pb, 10px) * .3));
+	inset-block-end: 0;
 	inset-inline: 0;
 	block-size: var(--oc-menu-ul-w, 2px);
 	background: var(--oc-menu-ul, currentColor);
