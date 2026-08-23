@@ -202,6 +202,7 @@ final class Menu_Admin {
 			'max'     => Menu_Panel::MAX,
 			'blocks'  => Menu_Panel::blocks( $current ),
 			'thumbs'  => self::thumbs( Menu_Panel::blocks( $current ) ),
+			'cats'    => self::categories(),
 			'item'    => $current,
 			'nonce'   => wp_create_nonce( 'oc_menu_panel' ),
 			'ajax'    => admin_url( 'admin-ajax.php' ),
@@ -211,7 +212,8 @@ final class Menu_Admin {
 				'save'     => __( 'Save', 'oc-theme' ),
 				'add'      => __( 'Add a block', 'oc-theme' ),
 				'remove'   => __( 'Remove this block', 'oc-theme' ),
-				'move'     => __( 'Move', 'oc-theme' ),
+				'moveBack' => __( 'Move earlier', 'oc-theme' ),
+				'moveOn'   => __( 'Move later', 'oc-theme' ),
 				'width'    => __( 'Width', 'oc-theme' ),
 				'device'   => __( 'Shown', 'oc-theme' ),
 				'addLink'  => __( 'Add a link', 'oc-theme' ),
@@ -219,6 +221,10 @@ final class Menu_Admin {
 				'linkUrl'  => __( 'Address', 'oc-theme' ),
 				'notAnAddress' => __( 'This is not an address yet — pick one from the list, or paste a link.', 'oc-theme' ),
 				'linkTag'  => __( 'Badge', 'oc-theme' ),
+				'addCat'   => __( 'Add a category', 'oc-theme' ),
+				'showSub'  => __( 'Show its sub-categories', 'oc-theme' ),
+				'pickCat'  => __( 'Choose a category', 'oc-theme' ),
+				'push'     => __( 'Leave the spare width in front of it', 'oc-theme' ),
 				'choose'   => __( 'Choose', 'oc-theme' ),
 				'clear'    => __( 'Remove', 'oc-theme' ),
 				'saved'    => __( 'Saved', 'oc-theme' ),
@@ -326,6 +332,53 @@ final class Menu_Admin {
 		$list = json_decode( $raw, true );
 
 		return is_array( $list ) ? Menu_Panel::clean( $list ) : array();
+	}
+
+
+	/**
+	 * The shop's categories as a flat list, indented by depth, so a picker
+	 * can show the tree without needing to know it is one.
+	 *
+	 * @return array<int,array<string,mixed>>
+	 */
+	private static function categories(): array {
+		if ( ! taxonomy_exists( 'product_cat' ) ) {
+			return array();
+		}
+
+		$terms = get_terms(
+			array(
+				'taxonomy'   => 'product_cat',
+				'hide_empty' => false,
+			)
+		);
+
+		if ( ! is_array( $terms ) ) {
+			return array();
+		}
+
+		$by_parent = array();
+
+		foreach ( $terms as $term ) {
+			$by_parent[ (int) $term->parent ][] = $term;
+		}
+
+		$out = array();
+
+		$walk = static function ( int $parent, int $depth ) use ( &$walk, $by_parent, &$out ): void {
+			foreach ( $by_parent[ $parent ] ?? array() as $term ) {
+				$out[] = array(
+					'id'    => (int) $term->term_id,
+					'label' => str_repeat( '— ', $depth ) . $term->name,
+				);
+
+				$walk( (int) $term->term_id, $depth + 1 );
+			}
+		};
+
+		$walk( 0, 0 );
+
+		return $out;
 	}
 
 	/**

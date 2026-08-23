@@ -45,21 +45,25 @@ final class Menu_Panel {
 	 */
 	public static function widths(): array {
 		return array(
+			'auto'   => array(
+				'label' => __( 'As wide as it needs', 'oc-theme' ),
+				'track' => 'max-content',
+			),
 			'narrow' => array(
 				'label' => __( 'Narrow', 'oc-theme' ),
-				'fr'    => 0.8,
+				'track' => '0.8fr',
 			),
 			'normal' => array(
 				'label' => __( 'Regular', 'oc-theme' ),
-				'fr'    => 1.2,
+				'track' => '1.2fr',
 			),
 			'wide'   => array(
 				'label' => __( 'Wide', 'oc-theme' ),
-				'fr'    => 1.8,
+				'track' => '1.8fr',
 			),
 			'double' => array(
 				'label' => __( 'Double', 'oc-theme' ),
-				'fr'    => 2.6,
+				'track' => '2.6fr',
 			),
 		);
 	}
@@ -101,6 +105,18 @@ final class Menu_Panel {
 					'rows'      => array(
 						'type'  => 'rows',
 						'label' => __( 'Links', 'oc-theme' ),
+					),
+				),
+			),
+			'menu'  => array(
+				'label'  => __( 'Menu', 'oc-theme' ),
+				'blurb'  => __( 'Categories, straight from the shop', 'oc-theme' ),
+				'icon'   => '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="13" height="3" rx="1.5"/><rect x="4" y="9" width="16" height="2" rx="1" opacity=".5"/><rect x="4" y="14" width="11" height="3" rx="1.5"/><rect x="4" y="20" width="15" height="2" rx="1" opacity=".5"/></svg>',
+				'fields' => array(
+					'groups' => array(
+						'type'  => 'groups',
+						'label' => __( 'What it lists', 'oc-theme' ),
+						'hint'  => __( 'Each line is one category. Show its children and it becomes a heading with a list under it; hide them and it stays one row of the menu.', 'oc-theme' ),
 					),
 				),
 			),
@@ -235,6 +251,7 @@ final class Menu_Panel {
 				'type' => $type,
 				'w'    => isset( $block['w'], $widths[ $block['w'] ] ) ? (string) $block['w'] : 'normal',
 				'dev'  => isset( $block['dev'], $devices[ $block['dev'] ] ) ? (string) $block['dev'] : 'both',
+				'push' => empty( $block['push'] ) ? 0 : 1,
 			);
 
 			foreach ( $types[ $type ]['fields'] as $key => $field ) {
@@ -271,6 +288,32 @@ final class Menu_Panel {
 				$def     = (string) ( $field['def'] ?? (string) array_key_first( $choices ) );
 
 				return isset( $choices[ (string) $value ] ) ? (string) $value : $def;
+
+			case 'groups':
+				$groups = array();
+
+				foreach ( (array) $value as $group ) {
+					if ( ! is_array( $group ) ) {
+						continue;
+					}
+
+					$term = absint( $group['c'] ?? 0 );
+
+					if ( $term < 1 ) {
+						continue;
+					}
+
+					$groups[] = array(
+						'c'   => $term,
+						'sub' => empty( $group['sub'] ) ? 0 : 1,
+					);
+
+					if ( count( $groups ) >= 20 ) {
+						break;
+					}
+				}
+
+				return $groups;
 
 			case 'rows':
 				$rows = array();
@@ -363,7 +406,16 @@ final class Menu_Panel {
 				continue;
 			}
 
-			$tracks[] = (string) $widths[ $block['w'] ]['fr'] . 'fr';
+			// A block can ask for the leftover width to be gathered in front
+			// of it. That is what puts two columns of links at one edge and
+			// two pictures at the other, instead of four things sharing the
+			// row equally — which is all a grid will do on its own.
+			if ( ! empty( $block['push'] ) && '' !== $body ) {
+				$tracks[] = '1fr';
+				$body    .= '<div class="oc-mb oc-mb--gap" aria-hidden="true"></div>';
+			}
+
+			$tracks[] = (string) $widths[ $block['w'] ]['track'];
 			$body    .= $piece;
 		}
 
@@ -399,6 +451,9 @@ final class Menu_Panel {
 		switch ( $type ) {
 			case 'links':
 				$inner = self::links_block( $block );
+				break;
+			case 'menu':
+				$inner = self::menu_block( $block );
 				break;
 			case 'image':
 				$inner = self::image_block( $block );
@@ -453,6 +508,76 @@ final class Menu_Panel {
 
 			$out .= '</ul>';
 		}
+
+		return $out;
+	}
+
+	/**
+	 * A column of the shop's own categories.
+	 *
+	 * A line that shows its children becomes a heading with a list under it;
+	 * a line that hides them stays one row of the menu. Consecutive plain
+	 * rows gather into one list, because that is what makes them read as a
+	 * menu rather than as a pile of separate things.
+	 *
+	 * @param array<string,mixed> $block Block.
+	 * @return string
+	 */
+	private static function menu_block( array $block ): string {
+		$groups = (array) ( $block['groups'] ?? array() );
+		$out    = '';
+		$run    = '';
+
+		$flush = static function () use ( &$run, &$out ): void {
+			if ( '' !== $run ) {
+				$out .= '<ul class="oc-mb__list oc-mb__list--menu">' . $run . '</ul>';
+				$run  = '';
+			}
+		};
+
+		foreach ( $groups as $group ) {
+			$term = get_term( (int) $group['c'], 'product_cat' );
+
+			if ( ! $term instanceof \WP_Term ) {
+				continue;
+			}
+
+			$link = (string) get_term_link( $term );
+			$name = esc_html( $term->name );
+
+			if ( empty( $group['sub'] ) ) {
+				$run .= '<li><a href="' . esc_url( $link ) . '">' . $name . '</a></li>';
+				continue;
+			}
+
+			$kids = get_terms(
+				array(
+					'taxonomy'   => 'product_cat',
+					'parent'     => (int) $term->term_id,
+					'hide_empty' => false,
+				)
+			);
+
+			// Nothing under it after all — then it is simply a row like the
+			// others, rather than a heading with an empty space beneath.
+			if ( ! is_array( $kids ) || empty( $kids ) ) {
+				$run .= '<li><a href="' . esc_url( $link ) . '">' . $name . '</a></li>';
+				continue;
+			}
+
+			$flush();
+
+			$out .= '<h4 class="oc-mb__g"><a href="' . esc_url( $link ) . '">' . $name . '</a></h4>';
+			$out .= '<ul class="oc-mb__list">';
+
+			foreach ( $kids as $kid ) {
+				$out .= '<li><a href="' . esc_url( (string) get_term_link( $kid ) ) . '">' . esc_html( $kid->name ) . '</a></li>';
+			}
+
+			$out .= '</ul>';
+		}
+
+		$flush();
 
 		return $out;
 	}

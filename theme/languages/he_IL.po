@@ -3524,3 +3524,33 @@ msgstr "סגירת התפריט"
 
 msgid "This is not an address yet — pick one from the list, or paste a link."
 msgstr "זו עדיין לא כתובת — בחרו מהרשימה, או הדביקו קישור."
+
+msgid "As wide as it needs"
+msgstr "לפי התוכן"
+
+msgid "Categories, straight from the shop"
+msgstr "קטגוריות, ישירות מהחנות"
+
+msgid "What it lists"
+msgstr "מה מוצג בו"
+
+msgid "Each line is one category. Show its children and it becomes a heading with a list under it; hide them and it stays one row of the menu."
+msgstr "כל שורה היא קטגוריה אחת. הצגת תתי הקטגוריות הופכת אותה לכותרת עם רשימה מתחתיה; הסתרתן משאירה אותה שורה אחת בתפריט."
+
+msgid "Add a category"
+msgstr "הוספת קטגוריה"
+
+msgid "Show its sub-categories"
+msgstr "הצג תתי קטגוריות"
+
+msgid "Choose a category"
+msgstr "בחרו קטגוריה"
+
+msgid "Leave the spare width in front of it"
+msgstr "השאר את הרווח הפנוי לפניו"
+
+msgid "Move earlier"
+msgstr "הזזה אחורה"
+
+msgid "Move later"
+msgstr "הזזה קדימה"

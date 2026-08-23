@@ -319,3 +319,29 @@
 	border-color: #b32d2e;
 	box-shadow: 0 0 0 1px #b32d2e;
 }
+
+.oc-mpc__mv svg { inline-size: 13px; block-size: 13px; fill: currentColor; display: block; margin: auto; }
+
+/* --- a menu block's categories --- */
+
+.oc-mp__group {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto 22px;
+	gap: 10px;
+	align-items: center;
+	margin-block-end: 6px;
+}
+
+.oc-mp__group select { inline-size: 100%; }
+
+.oc-mp__check {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	font-weight: 400;
+	font-size: 12px;
+	white-space: nowrap;
+}
+
+.oc-mp__check input { margin: 0; }
+.oc-mp__srow .oc-mp__check { margin-block-end: 12px; }

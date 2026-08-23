@@ -2278,6 +2278,7 @@ li.product:focus-within .oc-card-atc,
 .oc-card-media--gallery .oc-card-media__strip::-webkit-scrollbar { display: none; }
 
 .oc-card-media--gallery .oc-card-media__item {
+	position: relative;
 	flex: 0 0 100%;
 	block-size: 100%;
 	scroll-snap-align: start;

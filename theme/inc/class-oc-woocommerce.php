@@ -790,12 +790,24 @@ final class WooCommerce {
 		);
 		echo '<div class="oc-card-media__strip" aria-label="' . esc_attr__( 'Product images', 'oc-theme' ) . '">';
 
+		// The picture is also a link to the product. Where that link lives
+		// decides whether a phone can swipe the strip at all: a single sheet
+		// laid over the whole media box is not inside the scroller, so the
+		// browser pans the page under it instead of the pictures. One link
+		// per slide keeps the tap and gives the swipe something to move.
+		$slide_link = sprintf(
+			'<a class="oc-card-media__link woocommerce-LoopProduct-link" href="%s" aria-hidden="true" tabindex="-1"></a>',
+			esc_url( self::card_link( $product ) )
+		);
+		$per_slide  = 'gallery' === $mode ? $slide_link : '';
+
 		if ( '' !== $card_video ) {
 			// No play badge on the card — the loop speaks for itself. Lazy:
 			// the video only loads and plays as its card nears the viewport,
 			// so a catalogue full of videos stays light.
 			echo '<figure class="oc-card-media__item oc-card-media__item--video is-first">';
 			echo Video::loop_html( $card_video, 'oc-card-video', true ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
+			echo $per_slide; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
 			echo '</figure>';
 		}
 
@@ -810,6 +822,7 @@ final class WooCommerce {
 					'sizes'   => '(max-width: 900px) 50vw, 25vw',
 				)
 			);
+			echo $per_slide; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
 			echo '</figure>';
 		}
 
@@ -831,12 +844,12 @@ final class WooCommerce {
 			);
 		}
 
-		// The whole picture is the link. It sits under every control the card
-		// paints on top, so the cart chip and the gallery arrows keep working.
-		printf(
-			'<a class="oc-card-media__link woocommerce-LoopProduct-link" href="%s" aria-hidden="true" tabindex="-1"></a>',
-			esc_url( self::card_link( $product ) )
-		);
+		// Outside a gallery there is nothing to swipe, so one sheet over the
+		// whole picture is simpler and does the same job. It sits under every
+		// control the card paints on top, so the cart chip keeps working.
+		if ( 'gallery' !== $mode ) {
+			echo $slide_link; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
+		}
 
 		$this->card_atc_icon();
 		$this->card_flags();

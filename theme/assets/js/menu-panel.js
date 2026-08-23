@@ -26,6 +26,9 @@
 		dirty: false
 	};
 
+	var CHEV_L = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10.5 2.6 5.1 8l5.4 5.4 1-1L7.1 8l4.4-4.4z"/></svg>';
+	var CHEV_R = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5.5 2.6 10.9 8l-5.4 5.4-1-1L8.9 8 4.5 3.6z"/></svg>';
+
 	var els = {};
 	var previewTimer = null;
 	var dragFrom = null;
@@ -57,11 +60,12 @@
 	}
 
 	function blank( type ) {
-		var block = { type: type, w: 'normal', dev: 'both' };
+		var block = { type: type, w: 'normal', dev: 'both', push: 0 };
 		var fields = D.types[ type ].fields;
 
 		Object.keys( fields ).forEach( function ( key ) {
-			block[ key ] = fields[ key ].type === 'rows' ? [] : ( fields[ key ].def || ( fields[ key ].type === 'image' ? 0 : '' ) );
+			var kind = fields[ key ].type;
+			block[ key ] = ( kind === 'rows' || kind === 'groups' ) ? [] : ( fields[ key ].def || ( kind === 'image' ? 0 : '' ) );
 		} );
 
 		return block;
@@ -70,7 +74,19 @@
 	/* A card needs a name. The block's own heading is the truest one; failing
 	 * that, the type it is. */
 	function nameOf( block ) {
-		return ( block.title || block.heading || '' ).trim() || D.types[ block.type ].label;
+		var own = ( block.title || block.heading || '' ).trim();
+
+		if ( ! own && block.type === 'menu' && ( block.groups || [] ).length ) {
+			var first = catName( block.groups[ 0 ].c );
+			own = first ? first.replace( /^(— )+/, '' ) : '';
+		}
+
+		return own || D.types[ block.type ].label;
+	}
+
+	function catName( id ) {
+		var hit = ( D.cats || [] ).filter( function ( c ) { return c.id === Number( id ); } )[ 0 ];
+		return hit ? hit.label : '';
 	}
 
 	function summaryOf( block ) {
@@ -78,6 +94,10 @@
 
 		if ( block.type === 'links' ) {
 			bits.push( ( block.rows || [] ).length + '' );
+		}
+
+		if ( block.type === 'menu' ) {
+			bits.push( ( block.groups || [] ).length + '' );
 		}
 
 		if ( block.dev !== 'both' ) {
@@ -147,18 +167,23 @@
 				el( 'small', { text: summaryOf( block ) } )
 			] ),
 			el( 'span', { 'class': 'oc-mpc__tools' }, [
+				/* Drawn, not typed. The chevron characters are bidi-mirrored,
+				 * so in Hebrew the browser flips them and both buttons point
+				 * the opposite way from what they do. An SVG points where it
+				 * is drawn to point. Earlier in the row means further along
+				 * the reading direction, which in Hebrew is to the right. */
 				el( 'button', {
 					type: 'button',
 					'class': 'oc-mpc__mv',
-					'aria-label': T.move,
-					text: D.rtl ? '›' : '‹',
+					'aria-label': T.moveBack,
+					html: D.rtl ? CHEV_R : CHEV_L,
 					onclick: function () { move( i, i - 1 ); }
 				} ),
 				el( 'button', {
 					type: 'button',
 					'class': 'oc-mpc__mv',
-					'aria-label': T.move,
-					text: D.rtl ? '‹' : '›',
+					'aria-label': T.moveOn,
+					html: D.rtl ? CHEV_L : CHEV_R,
 					onclick: function () { move( i, i + 1 ); }
 				} ),
 				el( 'button', {
@@ -253,6 +278,15 @@
 		var block = state.blocks[ state.open ];
 		var fields = D.types[ block.type ].fields;
 
+		var push = el( 'input', {
+			type: 'checkbox',
+			checked: block.push ? 'checked' : null,
+			onchange: function () {
+				block.push = push.checked ? 1 : 0;
+				touch();
+			}
+		} );
+
 		box.appendChild( el( 'div', { 'class': 'oc-mp__srow' }, [
 			select( T.width, D.widths, block.w, function ( v ) {
 				block.w = v;
@@ -261,7 +295,8 @@
 			select( T.device, D.devices, block.dev, function ( v ) {
 				block.dev = v;
 				touch();
-			} )
+			} ),
+			el( 'label', { 'class': 'oc-mp__check' }, [ push, el( 'span', { text: T.push } ) ] )
 		] ) );
 
 		Object.keys( fields ).forEach( function ( key ) {
@@ -306,6 +341,10 @@
 
 		if ( def.type === 'rows' ) {
 			return rowsField( block, key, def );
+		}
+
+		if ( def.type === 'groups' ) {
+			return groupsField( block, key, def );
 		}
 
 		var input = el( 'input', {
@@ -479,6 +518,78 @@
 		return el( 'div', { 'class': 'oc-mp__f oc-mp__f--wide' }, [
 			el( 'span', { text: def.label } ),
 			list
+		] );
+	}
+
+	function groupsField( block, key, def ) {
+		var list = el( 'div', { 'class': 'oc-mp__rows' } );
+
+		block[ key ] = block[ key ] || [];
+
+		function draw() {
+			list.innerHTML = '';
+
+			block[ key ].forEach( function ( group, i ) {
+				var choose = el( 'select', {
+					onchange: function () {
+						group.c = Number( choose.value );
+						draw();
+						touch();
+					}
+				}, [ el( 'option', { value: '0', text: '— ' + T.pickCat + ' —' } ) ] );
+
+				( D.cats || [] ).forEach( function ( cat ) {
+					choose.appendChild( el( 'option', {
+						value: cat.id,
+						selected: Number( group.c ) === cat.id ? 'selected' : null,
+						text: cat.label
+					} ) );
+				} );
+
+				var sub = el( 'input', {
+					type: 'checkbox',
+					checked: group.sub ? 'checked' : null,
+					onchange: function () {
+						group.sub = sub.checked ? 1 : 0;
+						touch();
+					}
+				} );
+
+				list.appendChild( el( 'div', { 'class': 'oc-mp__group' }, [
+					choose,
+					el( 'label', { 'class': 'oc-mp__check' }, [ sub, el( 'span', { text: T.showSub } ) ] ),
+					el( 'button', {
+						type: 'button',
+						'class': 'oc-mpc__x',
+						'aria-label': T.remove,
+						text: '\u00d7',
+						onclick: function () {
+							block[ key ].splice( i, 1 );
+							draw();
+							touch();
+						}
+					} )
+				] ) );
+			} );
+
+			list.appendChild( el( 'button', {
+				type: 'button',
+				'class': 'button oc-mp__addrow',
+				text: '+ ' + T.addCat,
+				onclick: function () {
+					block[ key ].push( { c: 0, sub: 0 } );
+					draw();
+					touch();
+				}
+			} ) );
+		}
+
+		draw();
+
+		return el( 'div', { 'class': 'oc-mp__f oc-mp__f--wide' }, [
+			el( 'span', { text: def.label } ),
+			list,
+			def.hint ? el( 'small', { text: def.hint } ) : null
 		] );
 	}
 
