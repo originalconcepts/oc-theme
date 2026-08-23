@@ -1268,6 +1268,30 @@ html.oc-menu-open .oc-menu-dim::before {
 
 /* --- a column of links --- */
 
+/* Rank decides weight: every level-two category is bold, whether or not
+ * anything hangs off it, because it is the same kind of thing either way. */
+.oc-mb__g,
+.oc-mb__list--lead a {
+	font-weight: 700;
+	color: var(--oc-mega-head, inherit);
+}
+
+.oc-mb__g {
+	margin: 0 0 10px;
+	font-size: 1em;
+	letter-spacing: var(--oc-menu-track, 0);
+}
+
+.oc-mb__g a { text-decoration: none; color: inherit; }
+.oc-mb__g a:hover,
+.oc-mb__list--lead a:hover { color: var(--oc-mega-tx-h, var(--oc-primary)); }
+
+/* A gathered list that outgrows a column flows into two rather than
+ * standing a metre tall beside a column of four. */
+.oc-mb__list--lead { columns: auto 1; }
+.oc-mb__list--lead:has(> li:nth-child(11)) { columns: auto 2; column-gap: var(--oc-mega-gap, 28px); }
+.oc-mb__list--lead > li { break-inside: avoid; }
+
 .oc-mb__h {
 	margin: 0 0 10px;
 	font-size: 1em;

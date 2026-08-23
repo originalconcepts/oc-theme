@@ -315,9 +315,11 @@ final class Menu_Admin {
 			wp_send_json_error( array(), 403 );
 		}
 
+		$item = isset( $_POST['item'] ) ? absint( $_POST['item'] ) : 0;
+
 		wp_send_json_success(
 			array(
-				'html' => Menu_Panel::render( self::posted_blocks() ),
+				'html' => Menu_Panel::preview( $item, self::posted_blocks() ),
 			)
 		);
 	}

@@ -88,38 +88,6 @@ final class Menu_Panel {
 	 */
 	public static function types(): array {
 		$types = array(
-			'links' => array(
-				'label'  => __( 'Links column', 'oc-theme' ),
-				'blurb'  => __( 'A heading and a list under it', 'oc-theme' ),
-				'icon'   => '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="12" height="3" rx="1.5"/><rect x="4" y="10" width="16" height="2" rx="1" opacity=".5"/><rect x="4" y="15" width="13" height="2" rx="1" opacity=".5"/><rect x="4" y="20" width="15" height="2" rx="1" opacity=".5"/></svg>',
-				'fields' => array(
-					'title'     => array(
-						'type'  => 'text',
-						'label' => __( 'Heading', 'oc-theme' ),
-					),
-					'title_url' => array(
-						'type'  => 'url',
-						'label' => __( 'The heading links to', 'oc-theme' ),
-						'hint'  => __( 'Leave empty and the heading is plain text.', 'oc-theme' ),
-					),
-					'rows'      => array(
-						'type'  => 'rows',
-						'label' => __( 'Links', 'oc-theme' ),
-					),
-				),
-			),
-			'menu'  => array(
-				'label'  => __( 'Menu', 'oc-theme' ),
-				'blurb'  => __( 'Categories, straight from the shop', 'oc-theme' ),
-				'icon'   => '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="13" height="3" rx="1.5"/><rect x="4" y="9" width="16" height="2" rx="1" opacity=".5"/><rect x="4" y="14" width="11" height="3" rx="1.5"/><rect x="4" y="20" width="15" height="2" rx="1" opacity=".5"/></svg>',
-				'fields' => array(
-					'groups' => array(
-						'type'  => 'groups',
-						'label' => __( 'What it lists', 'oc-theme' ),
-						'hint'  => __( 'Each line is one category. Show its children and it becomes a heading with a list under it; hide them and it stays one row of the menu.', 'oc-theme' ),
-					),
-				),
-			),
 			'image' => array(
 				'label'  => __( 'Image', 'oc-theme' ),
 				'blurb'  => __( 'A picture, with words on it if you like', 'oc-theme' ),
@@ -289,61 +257,6 @@ final class Menu_Panel {
 
 				return isset( $choices[ (string) $value ] ) ? (string) $value : $def;
 
-			case 'groups':
-				$groups = array();
-
-				foreach ( (array) $value as $group ) {
-					if ( ! is_array( $group ) ) {
-						continue;
-					}
-
-					$term = absint( $group['c'] ?? 0 );
-
-					if ( $term < 1 ) {
-						continue;
-					}
-
-					$groups[] = array(
-						'c'   => $term,
-						'sub' => empty( $group['sub'] ) ? 0 : 1,
-					);
-
-					if ( count( $groups ) >= 20 ) {
-						break;
-					}
-				}
-
-				return $groups;
-
-			case 'rows':
-				$rows = array();
-
-				foreach ( (array) $value as $row ) {
-					if ( ! is_array( $row ) ) {
-						continue;
-					}
-
-					$text = sanitize_text_field( (string) ( $row['t'] ?? '' ) );
-					$url  = esc_url_raw( trim( (string) ( $row['u'] ?? '' ) ) );
-
-					// A row with no words is a row nobody can click.
-					if ( '' === $text ) {
-						continue;
-					}
-
-					$rows[] = array(
-						't' => $text,
-						'u' => $url,
-						'b' => sanitize_text_field( (string) ( $row['b'] ?? '' ) ),
-					);
-
-					if ( count( $rows ) >= 40 ) {
-						break;
-					}
-				}
-
-				return $rows;
-
 			default:
 				return sanitize_text_field( (string) $value );
 		}
@@ -356,8 +269,10 @@ final class Menu_Panel {
 	/**
 	 * The rendered panel for one item, from cache when it can be.
 	 *
-	 * The HTML is printed into every page, so it must cost nothing to have.
-	 * Rendering happens once per change, not once per visitor.
+	 * A panel is its columns plus its extras. The columns are not stored
+	 * anywhere — they are the item's own children, read straight from the
+	 * menu, so a category renamed or added on the Menus screen is renamed or
+	 * added here without anyone remembering to come back.
 	 *
 	 * @param int    $item_id Menu item id.
 	 * @param string $where   Either 'nav' or 'drawer'.
@@ -371,7 +286,7 @@ final class Menu_Panel {
 			return $cached;
 		}
 
-		$html = self::render( self::blocks( $item_id ), $where );
+		$html = self::build( $item_id, $where );
 
 		set_transient( $key, $html, DAY_IN_SECONDS );
 
@@ -379,23 +294,167 @@ final class Menu_Panel {
 	}
 
 	/**
-	 * Render a set of blocks. Public so the editor's preview can render what
-	 * is on screen rather than what was last saved.
+	 * Columns from the menu, extras from the panel, in one row.
 	 *
-	 * @param array<int,array<string,mixed>> $blocks Blocks.
-	 * @param string                         $where  Either 'nav' or 'drawer'.
+	 * @param int    $item_id Menu item id.
+	 * @param string $where   Either 'nav' or 'drawer'.
 	 * @return string
 	 */
-	public static function render( array $blocks, string $where = 'nav' ): string {
-		$widths = self::widths();
+	private static function build( int $item_id, string $where, ?array $blocks = null ): string {
+		$parts = array_merge(
+			self::columns( $item_id, $where ),
+			self::extras( $item_id, $where, $blocks )
+		);
+
+		if ( empty( $parts ) ) {
+			return '';
+		}
+
 		$tracks = array();
 		$body   = '';
 
-		foreach ( $blocks as $block ) {
-			// A block says where it belongs, and the drawer is not the phone:
-			// the desktop hamburger shows it on a wide screen. Deciding here
-			// rather than with a breakpoint is the only way to tell the two
-			// apart.
+		foreach ( $parts as $part ) {
+			$tracks[] = $part['track'];
+			$body    .= $part['html'];
+		}
+
+		if ( 'drawer' === $where ) {
+			return '<div class="oc-mega oc-mega--drawer">' . $body . '</div>';
+		}
+
+		$class = 'oc-mega oc-mega--' . sanitize_html_class( (string) get_theme_mod( 'oc_mega_width', 'content' ) );
+
+		return '<div class="' . esc_attr( $class ) . '"><div class="oc-mega__row" style="--oc-mega-cols:' . esc_attr( implode( ' ', $tracks ) ) . '">' . $body . '</div></div>';
+	}
+
+	/**
+	 * The panel as it would look with these extras, saved or not. The columns
+	 * still come from the menu — they are not the editor's to change.
+	 *
+	 * @param int                            $item_id Menu item id.
+	 * @param array<int,array<string,mixed>> $blocks  Extras.
+	 * @return string
+	 */
+	public static function preview( int $item_id, array $blocks ): string {
+		return self::build( $item_id, 'nav', $blocks );
+	}
+
+	/**
+	 * The menu, by parent, once.
+	 *
+	 * @return array<int,array<int,\WP_Post>>
+	 */
+	private static function tree(): array {
+		static $tree = null;
+
+		if ( null !== $tree ) {
+			return $tree;
+		}
+
+		$locations = get_nav_menu_locations();
+		$menu      = isset( $locations['primary'] ) ? (int) $locations['primary'] : 0;
+		$items     = $menu > 0 ? wp_get_nav_menu_items( $menu ) : array();
+		$tree      = array();
+
+		foreach ( (array) $items as $item ) {
+			$tree[ (int) $item->menu_item_parent ][] = $item;
+		}
+
+		return $tree;
+	}
+
+	/**
+	 * One item's children, laid out as columns.
+	 *
+	 * Rank decides weight: a level-two category is bold whether or not it has
+	 * anything under it, because it is the same kind of thing either way.
+	 *
+	 * A category with children takes a column of its own. A category without
+	 * joins one shared list — all of them, not merely the ones that happen to
+	 * sit next to each other, because a menu written by a person interleaves
+	 * them and gathering only neighbours turns ten categories into five
+	 * columns, two of them holding a single word. The shared list sits where
+	 * the first of its members sits, so dragging that one on the Menus screen
+	 * is how you decide whether the list opens the panel or closes it.
+	 *
+	 * @param int    $item_id Menu item id.
+	 * @param string $where   Either 'nav' or 'drawer'.
+	 * @return array<int,array{track:string,html:string}>
+	 */
+	private static function columns( int $item_id, string $where ): array {
+		$tree     = self::tree();
+		$children = $tree[ $item_id ] ?? array();
+		$columns  = array();
+		$gathered = '';
+		$seat     = null;
+
+		foreach ( $children as $child ) {
+			$id = (int) $child->ID;
+
+			if ( Menu::hidden( $id, $where ) ) {
+				continue;
+			}
+
+			$link = '<a href="' . esc_url( (string) $child->url ) . '">' . esc_html( wp_strip_all_tags( (string) $child->title ) ) . '</a>';
+			$kids = array();
+
+			foreach ( $tree[ $id ] ?? array() as $grand ) {
+				if ( Menu::hidden( (int) $grand->ID, $where ) ) {
+					continue;
+				}
+
+				$kids[] = '<li><a href="' . esc_url( (string) $grand->url ) . '">' . esc_html( wp_strip_all_tags( (string) $grand->title ) ) . '</a></li>';
+			}
+
+			if ( empty( $kids ) ) {
+				if ( null === $seat ) {
+					$seat = count( $columns );
+				}
+
+				$gathered .= '<li>' . $link . '</li>';
+				continue;
+			}
+
+			$columns[] = array(
+				'track' => 'max-content',
+				'html'  => '<div class="oc-mb oc-mb--col"><h4 class="oc-mb__g">' . $link . '</h4><ul class="oc-mb__list">' . implode( '', $kids ) . '</ul></div>',
+			);
+		}
+
+		if ( '' !== $gathered ) {
+			array_splice(
+				$columns,
+				(int) $seat,
+				0,
+				array(
+					array(
+						'track' => 'max-content',
+						'html'  => '<div class="oc-mb oc-mb--col"><ul class="oc-mb__list oc-mb__list--lead">' . $gathered . '</ul></div>',
+					),
+				)
+			);
+		}
+
+		return $columns;
+	}
+
+	/**
+	 * What the panel adds beyond the menu: pictures, products, the rest.
+	 *
+	 * The spare width gathers in front of the first of them, which is what
+	 * puts the columns at one edge and the pictures at the other instead of
+	 * everything sharing the row equally.
+	 *
+	 * @param int    $item_id Menu item id.
+	 * @param string $where   Either 'nav' or 'drawer'.
+	 * @return array<int,array{track:string,html:string}>
+	 */
+	private static function extras( int $item_id, string $where, ?array $blocks = null ): array {
+		$widths = self::widths();
+		$out    = array();
+		$first  = true;
+
+		foreach ( null === $blocks ? self::blocks( $item_id ) : self::clean( $blocks ) as $block ) {
 			if ( 'drawer' === $where ? 'desktop' === $block['dev'] : 'mobile' === $block['dev'] ) {
 				continue;
 			}
@@ -406,30 +465,21 @@ final class Menu_Panel {
 				continue;
 			}
 
-			// A block can ask for the leftover width to be gathered in front
-			// of it. That is what puts two columns of links at one edge and
-			// two pictures at the other, instead of four things sharing the
-			// row equally — which is all a grid will do on its own.
-			if ( ! empty( $block['push'] ) && '' !== $body ) {
-				$tracks[] = '1fr';
-				$body    .= '<div class="oc-mb oc-mb--gap" aria-hidden="true"></div>';
+			if ( $first && 'drawer' !== $where ) {
+				$out[] = array(
+					'track' => '1fr',
+					'html'  => '<div class="oc-mb oc-mb--gap" aria-hidden="true"></div>',
+				);
+				$first  = false;
 			}
 
-			$tracks[] = (string) $widths[ $block['w'] ]['track'];
-			$body    .= $piece;
+			$out[] = array(
+				'track' => (string) $widths[ $block['w'] ]['track'],
+				'html'  => $piece,
+			);
 		}
 
-		if ( '' === $body ) {
-			return '';
-		}
-
-		if ( 'drawer' === $where ) {
-			return '<div class="oc-mega oc-mega--drawer">' . $body . '</div>';
-		}
-
-		$class = 'oc-mega oc-mega--' . sanitize_html_class( (string) get_theme_mod( 'oc_mega_width', 'content' ) );
-
-		return '<div class="' . esc_attr( $class ) . '"><div class="oc-mega__row" style="--oc-mega-cols:' . esc_attr( implode( ' ', $tracks ) ) . '">' . $body . '</div></div>';
+		return $out;
 	}
 
 	/**
@@ -449,12 +499,6 @@ final class Menu_Panel {
 		$inner = '';
 
 		switch ( $type ) {
-			case 'links':
-				$inner = self::links_block( $block );
-				break;
-			case 'menu':
-				$inner = self::menu_block( $block );
-				break;
 			case 'image':
 				$inner = self::image_block( $block );
 				break;
@@ -473,113 +517,6 @@ final class Menu_Panel {
 		}
 
 		return '<div class="' . esc_attr( implode( ' ', $classes ) ) . '">' . $inner . '</div>';
-	}
-
-	/**
-	 * A heading and the links under it.
-	 *
-	 * @param array<string,mixed> $block Block.
-	 * @return string
-	 */
-	private static function links_block( array $block ): string {
-		$title = (string) ( $block['title'] ?? '' );
-		$url   = (string) ( $block['title_url'] ?? '' );
-		$rows  = (array) ( $block['rows'] ?? array() );
-		$out   = '';
-
-		if ( '' !== $title ) {
-			$out .= '<h3 class="oc-mb__h">';
-			$out .= '' !== $url
-				? '<a href="' . esc_url( $url ) . '">' . esc_html( $title ) . '</a>'
-				: esc_html( $title );
-			$out .= '</h3>';
-		}
-
-		if ( ! empty( $rows ) ) {
-			$out .= '<ul class="oc-mb__list">';
-
-			foreach ( $rows as $row ) {
-				$badge = '' !== (string) $row['b'] ? '<span class="oc-mbadge">' . esc_html( (string) $row['b'] ) . '</span>' : '';
-
-				$out .= '<li>' . ( '' !== (string) $row['u']
-					? '<a href="' . esc_url( (string) $row['u'] ) . '">' . esc_html( (string) $row['t'] ) . $badge . '</a>'
-					: '<span>' . esc_html( (string) $row['t'] ) . $badge . '</span>' ) . '</li>';
-			}
-
-			$out .= '</ul>';
-		}
-
-		return $out;
-	}
-
-	/**
-	 * A column of the shop's own categories.
-	 *
-	 * A line that shows its children becomes a heading with a list under it;
-	 * a line that hides them stays one row of the menu. Consecutive plain
-	 * rows gather into one list, because that is what makes them read as a
-	 * menu rather than as a pile of separate things.
-	 *
-	 * @param array<string,mixed> $block Block.
-	 * @return string
-	 */
-	private static function menu_block( array $block ): string {
-		$groups = (array) ( $block['groups'] ?? array() );
-		$out    = '';
-		$run    = '';
-
-		$flush = static function () use ( &$run, &$out ): void {
-			if ( '' !== $run ) {
-				$out .= '<ul class="oc-mb__list oc-mb__list--menu">' . $run . '</ul>';
-				$run  = '';
-			}
-		};
-
-		foreach ( $groups as $group ) {
-			$term = get_term( (int) $group['c'], 'product_cat' );
-
-			if ( ! $term instanceof \WP_Term ) {
-				continue;
-			}
-
-			$link = (string) get_term_link( $term );
-			$name = esc_html( $term->name );
-
-			if ( empty( $group['sub'] ) ) {
-				$run .= '<li><a href="' . esc_url( $link ) . '">' . $name . '</a></li>';
-				continue;
-			}
-
-			$kids = get_terms(
-				array(
-					'taxonomy'   => 'product_cat',
-					'parent'     => (int) $term->term_id,
-					'hide_empty' => false,
-				)
-			);
-
-			// Nothing under it after all — then it is simply a row like the
-			// others, rather than a heading with an empty space beneath.
-			if ( ! is_array( $kids ) || empty( $kids ) ) {
-				$run .= '<li><a href="' . esc_url( $link ) . '">' . $name . '</a></li>';
-				continue;
-			}
-
-			$flush();
-
-			$out .= '<h4 class="oc-mb__g"><a href="' . esc_url( $link ) . '">' . $name . '</a></h4>';
-			$out .= '<ul class="oc-mb__list">';
-
-			foreach ( $kids as $kid ) {
-				$out .= '<li><a href="' . esc_url( (string) get_term_link( $kid ) ) . '">' . esc_html( $kid->name ) . '</a></li>';
-			}
-
-			$out .= '</ul>';
-		}
-
-		$flush();
-
-		return $out;
 	}
 
 	/**

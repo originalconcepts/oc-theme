@@ -719,6 +719,7 @@
 
 		body.append( 'action', 'oc_menu_panel_preview' );
 		body.append( 'nonce', D.nonce );
+		body.append( 'item', D.item );
 		body.append( 'blocks', JSON.stringify( state.blocks ) );
 
 		fetch( D.ajax, { method: 'POST', body: body, credentials: 'same-origin' } )
