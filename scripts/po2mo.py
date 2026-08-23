@@ -16,18 +16,35 @@ def parse(path):
     """Read a .po into {key: msgstr}.
 
     A context entry is keyed the way gettext stores it: context, \x04, msgid.
+    A plural entry is keyed singular, \x00, plural, and its value is the forms
+    joined the same way — which is how the runtime finds form N.
     """
     entries = {}
-    state = {'ctxt': None, 'id': None, 'str': None, 'target': None}
+    state = {'ctxt': None, 'id': None, 'plural': None, 'str': None, 'forms': [], 'target': None}
 
     def flush():
-        if state['id'] is not None and state['str']:
+        if state['id'] is None:
+            return
+
+        if state['plural'] is not None:
+            forms = [f for f in state['forms'] if f is not None]
+
+            if not any(forms):
+                return
+
+            key = state['id'] + '\x00' + state['plural']
+            value = '\x00'.join(forms)
+        else:
+            if not state['str']:
+                return
+
             key = state['id']
+            value = state['str']
 
-            if state['ctxt']:
-                key = state['ctxt'] + '\x04' + key
+        if state['ctxt']:
+            key = state['ctxt'] + '\x04' + key
 
-            entries[key] = state['str']
+        entries[key] = value
 
     with open(path, encoding='utf-8') as handle:
         for raw in handle:
@@ -46,7 +63,22 @@ def parse(path):
                     flush()
                     state['ctxt'] = None
 
-                state.update(id=unquote(line[6:]), str='', target='id')
+                state.update(id=unquote(line[6:]), plural=None, str='', forms=[], target='id')
+                continue
+
+            if line.startswith('msgid_plural "'):
+                state.update(plural=unquote(line[13:]), target='plural')
+                continue
+
+            if line.startswith('msgstr['):
+                index = int(line[7:line.index(']')])
+                quoted = line[line.index(']') + 1:]
+
+                while len(state['forms']) <= index:
+                    state['forms'].append('')
+
+                state['forms'][index] = unquote(quoted)
+                state['target'] = 'form%d' % index
                 continue
 
             if line.startswith('msgstr "'):
@@ -54,7 +86,14 @@ def parse(path):
                 continue
 
             if line.startswith('"') and state['target']:
-                key = state['target'] if state['target'] != 'ctxt' else 'ctxt'
+                target = state['target']
+
+                if target.startswith('form'):
+                    index = int(target[4:])
+                    state['forms'][index] += unquote(line)
+                    continue
+
+                key = target if target != 'ctxt' else 'ctxt'
                 state[key] = (state[key] or '') + unquote(line)
 
     flush()

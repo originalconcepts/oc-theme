@@ -3261,3 +3261,200 @@ msgstr "במגירה בלבד"
 
 msgid "Nowhere — hidden"
 msgstr "בשום מקום — מוסתר"
+
+msgid "Menu panels"
+msgstr "פאנלים בתפריט"
+
+msgid "Pick a link on the right, then build what opens underneath it. Order and hierarchy stay on the Menus screen."
+msgstr "בחרו קישור מימין, ואז בנו את מה שנפתח מתחתיו. הסדר וההיררכיה נשארים במסך התפריטים."
+
+msgid "Links in the menu"
+msgstr "הקישורים בתפריט"
+
+msgid "No menu is assigned to the primary location yet. Set one on the %s screen and come back."
+msgstr "עדיין לא שויך תפריט למיקום הראשי. הגדירו אחד במסך %s וחזרו לכאן."
+
+msgid "Menus"
+msgstr "תפריטים"
+
+msgid "Edit panel"
+msgstr "עריכת פאנל"
+
+msgid "%d block"
+msgid_plural "%d blocks"
+msgstr[0] "בלוק אחד"
+msgstr[1] "%d בלוקים"
+
+msgid "Opens as a plain drop-down"
+msgstr "נפתח כתפריט רגיל"
+
+msgid "Just a link"
+msgstr "קישור בלבד"
+
+msgid "Plain drop-down"
+msgstr "תפריט נפתח רגיל"
+
+msgid "Link only"
+msgstr "קישור בלבד"
+
+msgid "Links column"
+msgstr "עמודת קישורים"
+
+msgid "A heading and a list under it"
+msgstr "כותרת ורשימה מתחתיה"
+
+msgid "Heading"
+msgstr "כותרת"
+
+msgid "The heading links to"
+msgstr "הכותרת מקשרת אל"
+
+msgid "Leave empty and the heading is plain text."
+msgstr "השאירו ריק והכותרת תהיה טקסט בלבד."
+
+msgid "Links"
+msgstr "קישורים"
+
+msgid "A picture, with words on it if you like"
+msgstr "תמונה, ואם רוצים גם טקסט עליה"
+
+msgid "Picture"
+msgstr "תמונה"
+
+msgid "Leads to"
+msgstr "מוביל אל"
+
+msgid "Heading on the picture"
+msgstr "כותרת על התמונה"
+
+msgid "A line under it"
+msgstr "שורה מתחתיה"
+
+msgid "Button words"
+msgstr "הטקסט על הכפתור"
+
+msgid "Shape"
+msgstr "צורה"
+
+msgid "Upright"
+msgstr "לגובה"
+
+msgid "Landscape"
+msgstr "לרוחב"
+
+msgid "The words sit"
+msgstr "מיקום הטקסט"
+
+msgid "At the bottom"
+msgstr "בתחתית"
+
+msgid "In the middle"
+msgstr "במרכז"
+
+msgid "At the top"
+msgstr "למעלה"
+
+msgid "Under the picture"
+msgstr "מתחת לתמונה"
+
+msgid "Corners"
+msgstr "פינות"
+
+msgid "Softened"
+msgstr "מעוגלות קלות"
+
+msgid "Narrow"
+msgstr "צר"
+
+msgid "Double"
+msgstr "כפול"
+
+msgid "Remove this block"
+msgstr "הסרת הבלוק"
+
+msgid "Move"
+msgstr "הזזה"
+
+msgid "Shown"
+msgstr "מוצג"
+
+msgid "Add a link"
+msgstr "הוספת קישור"
+
+msgid "Words"
+msgstr "טקסט"
+
+msgid "Address"
+msgstr "כתובת"
+
+msgid "Saving…"
+msgstr "שומר…"
+
+msgid "Could not save. Try again."
+msgstr "השמירה נכשלה. נסו שוב."
+
+msgid "This panel is full."
+msgstr "הפאנל מלא."
+
+msgid "No blocks yet. This link opens as a plain drop-down if it has children, and as a plain link if it does not."
+msgstr "אין עדיין בלוקים. הקישור ייפתח כתפריט רגיל אם יש לו תתי־קישורים, ואחרת יהיה קישור פשוט."
+
+msgid "How it will look"
+msgstr "איך זה ייראה"
+
+msgid "Remove this block?"
+msgstr "להסיר את הבלוק?"
+
+msgid "Unknown menu item."
+msgstr "פריט תפריט לא מוכר."
+
+msgid "Not allowed."
+msgstr "אין הרשאה."
+
+msgid "The panel that opens"
+msgstr "הפאנל שנפתח"
+
+msgid "How wide it opens"
+msgstr "באיזה רוחב הוא נפתח"
+
+msgid "The whole page"
+msgstr "כל רוחב העמוד"
+
+msgid "The width of the content"
+msgstr "רוחב התוכן"
+
+msgid "Under the link itself"
+msgstr "מתחת לקישור עצמו"
+
+msgid "And leftwards, in Hebrew"
+msgstr "ובעברית — שמאלה"
+
+msgid "Padding inside (px)"
+msgstr "ריפוד פנימי (פיקסלים)"
+
+msgid "Space between blocks (px)"
+msgstr "מרווח בין הבלוקים (פיקסלים)"
+
+msgid "Top corners (px)"
+msgstr "פינות עליונות (פיקסלים)"
+
+msgid "Bottom corners (px)"
+msgstr "פינות תחתונות (פיקסלים)"
+
+msgid "Panel background"
+msgstr "רקע הפאנל"
+
+msgid "Panel text"
+msgstr "טקסט הפאנל"
+
+msgid "Panel text on hover"
+msgstr "טקסט הפאנל בריחוף"
+
+msgid "Column headings"
+msgstr "כותרות העמודות"
+
+msgid "Line above and below"
+msgstr "קו עליון ותחתון"
+
+msgid "Text size inside (px)"
+msgstr "גודל הטקסט בפנים (פיקסלים)"
