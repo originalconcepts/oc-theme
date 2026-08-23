@@ -658,6 +658,10 @@
 
 		if ( sField ) {
 			sField.addEventListener( 'input', function () {
+				// The bar's own state answers the keystroke, not the pause
+				// after it — the buttons should never lag behind the typing.
+				setBarState( ( sField.value || '' ).trim() );
+
 				clearTimeout( sTimer );
 				sTimer = setTimeout( run, 120 );
 			} );
