@@ -1359,9 +1359,19 @@ final class Search {
 			return;
 		}
 
-		// A repeat of the same question inside a minute is answered by the
-		// browser itself, which is the only truly free answer there is.
-		header( 'Cache-Control: private, max-age=60' );
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- a public search.
+		$reporting = ! empty( $_GET['click'] ) || ! empty( $_GET['log'] );
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+		if ( $reporting ) {
+			// Anything that records something must reach the server every
+			// time. Cached, the second click of a run never happens at all.
+			nocache_headers();
+		} else {
+			// A repeat of the same question inside a minute is answered by the
+			// browser itself, which is the only truly free answer there is.
+			header( 'Cache-Control: private, max-age=60' );
+		}
 
 		$this->ajax();
 	}
