@@ -193,12 +193,14 @@ function oc_header_icons_render(): void {
 
 	if ( get_theme_mod( 'oc_header_search', true ) && 'field' === get_theme_mod( 'oc_header_search_style', 'icon' ) ) {
 		printf(
-			'<form role="search" method="get" class="oc-hsearch" action="%s"><input type="search" name="s" placeholder="%s" autocomplete="off" data-oc-search-field />%s<button type="submit" aria-label="%s">%s</button></form>',
+			'<form role="search" method="get" class="oc-hsearch" action="%s"><input type="search" name="s" placeholder="%s" autocomplete="off" data-oc-search-field />%s<button type="submit" aria-label="%s">%s</button><span class="oc-hsearch__sep" aria-hidden="true"></span><button type="button" class="oc-hsearch__close" data-oc-search-close aria-label="%s" hidden>%s</button></form>',
 			esc_url( home_url( '/' ) ),
 			esc_attr__( 'Search…', 'oc-theme' ),
 			class_exists( 'WooCommerce' ) ? '<input type="hidden" name="post_type" value="product" />' : '',
 			esc_attr__( 'Search', 'oc-theme' ),
-			'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.8-3.8"/></svg>'
+			'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.8-3.8"/></svg>',
+			esc_attr__( 'Close search', 'oc-theme' ),
+			'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>'
 		);
 	}
 

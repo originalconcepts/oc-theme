@@ -774,6 +774,33 @@ a { color: inherit; }
 
 .oc-hsearch input[type="search"]:focus { outline: none; }
 
+/* The same closing mark the wide bar carries, so the two presentations of one
+ * search do not disagree about how to leave it. */
+.oc-hsearch__sep {
+	inline-size: 1px;
+	block-size: 16px;
+	background: var(--oc-line);
+	flex: none;
+}
+
+.oc-hsearch__close {
+	border: 0;
+	background: none;
+	color: inherit;
+	cursor: pointer;
+	padding: 4px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 999px;
+	line-height: 0;
+	flex: none;
+}
+
+.oc-hsearch__close:hover { background: var(--oc-surface-2, rgba(0, 0, 0, .06)); }
+.oc-hsearch__close[hidden] { display: none; }
+.oc-hsearch__sep[hidden] { display: none; }
+
 .oc-searchbox[data-mode="min"] .oc-search__side { display: none; }
 .oc-searchbox[data-mode="min"] .oc-search__cols { grid-template-columns: 1fr; }
 

@@ -470,6 +470,18 @@
 				t.setAttribute( 'aria-expanded', open ? 'true' : 'false' );
 			} );
 
+			sCloses.forEach( function ( button ) {
+				if ( button.closest( '.oc-hsearch' ) ) {
+					button.hidden = ! open;
+
+					var sep = button.previousElementSibling;
+
+					if ( sep && sep.classList.contains( 'oc-hsearch__sep' ) ) {
+						sep.hidden = ! open;
+					}
+				}
+			} );
+
 			if ( open ) {
 				searchPanel.hidden = false;
 				histPaint();
@@ -508,13 +520,15 @@
 			} );
 		} );
 
-		var sClose = searchPanel.querySelector( '[data-oc-search-close]' );
+		// The panel's own X, and the one the header carries when the search
+		// lives there: one search, one way to leave it.
+		var sCloses = Array.prototype.slice.call( document.querySelectorAll( '[data-oc-search-close]' ) );
 
-		if ( sClose ) {
-			sClose.addEventListener( 'click', function () {
+		sCloses.forEach( function ( button ) {
+			button.addEventListener( 'click', function () {
 				setSearchOpen( false );
 			} );
-		}
+		} );
 
 		document.addEventListener( 'keydown', function ( event ) {
 			if ( 'Escape' === event.key && ! searchPanel.hidden ) {
