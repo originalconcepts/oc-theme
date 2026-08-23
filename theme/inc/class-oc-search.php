@@ -725,8 +725,16 @@ final class Search {
 					continue;
 				}
 
-				// "ספ" belongs with "ספה", which people actually search for,
-				// not with the longest phrase that happens to start the same.
+				// Only an unfinished WORD folds. "שול" belongs with "שולחן",
+				// but "ספה" is a finished search of its own and must not be
+				// swallowed by the rarer phrase "ספה ירוקה".
+				$next = mb_substr( $longer->term, mb_strlen( $row->term, 'UTF-8' ), 1, 'UTF-8' );
+
+				if ( ' ' === $next ) {
+					continue;
+				}
+
+				// Among the words it could be, the one people actually search.
 				if ( ! $best || $longer->searches > $best->searches ) {
 					$best = $longer;
 				}
