@@ -1463,6 +1463,7 @@ final class Customizer {
 				'circle' => __( 'Round', 'oc-theme' ),
 				'square' => __( 'Square', 'oc-theme' ),
 				'wide'   => __( 'Wide, with the words', 'oc-theme' ),
+				'under'  => __( 'Under the description', 'oc-theme' ),
 			),
 			'circle'
 		);

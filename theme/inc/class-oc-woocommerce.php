@@ -65,6 +65,7 @@ final class WooCommerce {
 		add_filter( 'body_class', array( $this, 'body_class' ) );
 		add_filter( 'posts_clauses', array( $this, 'oos_last' ), 20, 2 );
 		add_filter( 'woocommerce_sale_flash', array( $this, 'sale_badge' ), 10, 3 );
+		add_action( 'woocommerce_after_shop_loop_item', array( $this, 'card_atc_under' ), 20 );
 
 		// The add-to-cart area: a stock line above the button, icon rows
 		// below the form.
@@ -1020,6 +1021,40 @@ final class WooCommerce {
 	}
 
 	/**
+	 * The under-shape add-to-cart: a full row below the card's words, in the
+	 * product page's own button clothes.
+	 */
+	public function card_atc_under(): void {
+		global $product;
+
+		if ( 'under' !== get_theme_mod( 'oc_card_atc_shape', 'circle' ) || ! $product instanceof \WC_Product ) {
+			return;
+		}
+
+		if ( 'none' === get_theme_mod( 'oc_card_atc', 'always' ) || ! $product->is_purchasable() || ! $product->is_in_stock() ) {
+			return;
+		}
+
+		$simple = $product->is_type( 'simple' );
+		$icon   = 'plus' === get_theme_mod( 'oc_card_atc_icon', 'cart' ) ? 'plus' : 'cart';
+		$class  = 'oc-card-atc oc-card-atc--under oc-card-atc--i-' . $icon . ( $simple ? ' add_to_cart_button ajax_add_to_cart' : '' );
+
+		$mark = 'plus' === $icon
+			? '<svg class="oc-card-atc__cart" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>'
+			: '<svg class="oc-card-atc__cart" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.6"/><circle cx="17" cy="20" r="1.6"/><path d="M3 3h2.5l2.2 11.2a1.6 1.6 0 0 0 1.6 1.3h7.6a1.6 1.6 0 0 0 1.6-1.3L20 7H6"/></svg>';
+
+		printf(
+			'<a href="%s" data-quantity="1" data-product_id="%d" class="%s" rel="nofollow">%s</a>',
+			esc_url( $simple ? '?add-to-cart=' . $product->get_id() : $product->get_permalink() ),
+			absint( $product->get_id() ),
+			esc_attr( $class ),
+			$mark .
+			'<svg class="oc-card-atc__check" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 12.5l5 5 10-11"/></svg>' .
+			'<span class="oc-card-atc__word">' . esc_html( $product->add_to_cart_text() ) . '</span>'
+		);
+	}
+
+	/**
 	 * Inline colour declarations for a label, from a bg/tx setting pair.
 	 *
 	 * @param string $bg_key Background setting id.
@@ -1040,6 +1075,11 @@ final class WooCommerce {
 	 */
 	private function card_atc_icon(): void {
 		global $product;
+
+		// The under-shape renders after the words, not over the picture.
+		if ( 'under' === get_theme_mod( 'oc_card_atc_shape', 'circle' ) ) {
+			return;
+		}
 
 		if ( 'none' === get_theme_mod( 'oc_card_atc', 'always' ) || ! $product->is_purchasable() || ! $product->is_in_stock() ) {
 			return;
