@@ -1781,6 +1781,20 @@ final class Customizer {
 
 		$this->choice(
 			$c,
+			'oc_vpanel_side',
+			'oc_product',
+			__( 'Quick pick opens from', 'oc-theme' ),
+			array(
+				'right' => __( 'Right', 'oc-theme' ),
+				'left'  => __( 'Left', 'oc-theme' ),
+			),
+			'right',
+			null,
+			__( 'The panel a catalogue card opens for a product with options. On a phone it rises from the bottom.', 'oc-theme' )
+		);
+
+		$this->choice(
+			$c,
 			'oc_atc_icons_layout',
 			'oc_product',
 			__( 'Icons under the button', 'oc-theme' ),

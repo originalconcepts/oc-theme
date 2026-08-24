@@ -3989,3 +3989,12 @@ msgstr "רשמו כאן את התגובה שלכם לפוסט…"
 
 msgid "Please tick the comment-terms box before posting."
 msgstr "כדי לפרסם את התגובה, יש לסמן קודם את תיבת האישור."
+
+msgid "To the product page"
+msgstr "לדף המוצר"
+
+msgid "Quick pick opens from"
+msgstr "בחירה מהירה נפתחת מצד"
+
+msgid "The panel a catalogue card opens for a product with options. On a phone it rises from the bottom."
+msgstr "הפאנל שכרטיס בקטלוג פותח למוצר עם וריאציות. במובייל הוא עולה מלמטה."

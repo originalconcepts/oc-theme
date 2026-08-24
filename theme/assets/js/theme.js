@@ -6243,6 +6243,285 @@
 		}
 	}
 
+	/* ---------- quick pick: a card's add-to-cart for a product with options ----------
+	 * A variable product's catalogue button used to lead to its page; speed
+	 * says answer here. A panel slides in from the configured side (on a
+	 * phone, up from the bottom): the picture, the price, each attribute as
+	 * a row of chips, quantity when the shop shows one, and an add button
+	 * riding a sticky footer. A full selection resolves to one variation;
+	 * chips no live combination can reach step back disabled. */
+
+	( function () {
+		var L = window.ocL10n || {};
+		var vp = null;
+		var st = null;
+
+		function vpEl( tag, cls, text ) {
+			var n = document.createElement( tag );
+			if ( cls ) { n.className = cls; }
+			if ( text ) { n.textContent = text; }
+			return n;
+		}
+
+		function vpBuild() {
+			vp = vpEl( 'div', 'oc-vp oc-vp--' + ( L.vpSide === 'left' ? 'left' : 'right' ) );
+			vp.hidden = true;
+			vp.innerHTML =
+				'<div class="oc-vp__dim" data-vp-close></div>' +
+				'<aside class="oc-vp__panel" role="dialog" aria-modal="true">' +
+					'<button type="button" class="oc-vp__close" data-vp-close aria-label="close">&times;</button>' +
+					'<div class="oc-vp__head">' +
+						'<img class="oc-vp__img" alt="" />' +
+						'<div class="oc-vp__id">' +
+							'<a class="oc-vp__name" href="#"></a>' +
+							'<div class="oc-vp__price"></div>' +
+							'<a class="oc-vp__go" href="#"></a>' +
+						'</div>' +
+					'</div>' +
+					'<div class="oc-vp__groups"></div>' +
+					'<div class="oc-vp__foot">' +
+						'<div class="oc-vp__fprice"></div>' +
+						'<div class="oc-vp__qty" hidden>' +
+							'<button type="button" data-vp-q="-1">&minus;</button>' +
+							'<input type="number" min="1" value="1" inputmode="numeric" />' +
+							'<button type="button" data-vp-q="1">+</button>' +
+						'</div>' +
+						'<button type="button" class="oc-vp__add" disabled></button>' +
+					'</div>' +
+				'</aside>';
+			document.body.appendChild( vp );
+
+			vp.addEventListener( 'click', function ( e ) {
+				if ( e.target.closest( '[data-vp-close]' ) ) {
+					vpClose();
+				}
+
+				var q = e.target.closest( '[data-vp-q]' );
+
+				if ( q ) {
+					var input = vp.querySelector( '.oc-vp__qty input' );
+					input.value = String( Math.max( 1, ( Number( input.value ) || 1 ) + Number( q.dataset.vpQ ) ) );
+				}
+			} );
+
+			document.addEventListener( 'keydown', function ( e ) {
+				if ( e.key === 'Escape' && vp && ! vp.hidden ) {
+					vpClose();
+				}
+			} );
+
+			vp.querySelector( '.oc-vp__add' ).addEventListener( 'click', vpAdd );
+		}
+
+		function vpClose() {
+			if ( vp ) {
+				vp.classList.remove( 'is-open' );
+				setTimeout( function () { vp.hidden = true; }, 240 );
+			}
+		}
+
+		/* The variations a partial selection still allows, one group held out. */
+		function vpAllows( skipKey, withValue ) {
+			return st.vars.some( function ( v ) {
+				if ( ! v.stock ) {
+					return false;
+				}
+
+				return st.groups.every( function ( g ) {
+					var want = g.key === skipKey ? withValue : st.sel[ g.key ];
+					return ! want || ! v.attrs[ g.key ] || v.attrs[ g.key ] === want;
+				} );
+			} );
+		}
+
+		function vpResolved() {
+			if ( ! st.groups.every( function ( g ) { return st.sel[ g.key ]; } ) ) {
+				return null;
+			}
+
+			return st.vars.find( function ( v ) {
+				return v.stock && st.groups.every( function ( g ) {
+					return ! v.attrs[ g.key ] || v.attrs[ g.key ] === st.sel[ g.key ];
+				} );
+			} ) || null;
+		}
+
+		function vpPaint() {
+			vp.querySelectorAll( '.oc-vp__opt' ).forEach( function ( chip ) {
+				var on = st.sel[ chip.dataset.k ] === chip.dataset.v;
+				chip.classList.toggle( 'is-on', on );
+				chip.classList.toggle( 'is-off', ! vpAllows( chip.dataset.k, chip.dataset.v ) );
+			} );
+
+			var hit = vpResolved();
+			var price = vp.querySelector( '.oc-vp__price' );
+			var fprice = vp.querySelector( '.oc-vp__fprice' );
+			var img = vp.querySelector( '.oc-vp__img' );
+
+			if ( hit ) {
+				if ( hit.price ) { price.innerHTML = hit.price; }
+				if ( hit.img ) { img.src = hit.img; }
+			} else {
+				price.innerHTML = st.price;
+				if ( st.img ) { img.src = st.img; }
+			}
+
+			fprice.innerHTML = price.innerHTML;
+			vp.querySelector( '.oc-vp__add' ).disabled = ! hit;
+		}
+
+		function vpRender( d, productId ) {
+			st = { id: productId, sel: {}, groups: d.groups, vars: d.vars, price: d.price, img: d.img };
+
+			vp.querySelector( '.oc-vp__name' ).textContent = d.name;
+			vp.querySelector( '.oc-vp__name' ).href = d.url;
+			vp.querySelector( '.oc-vp__go' ).textContent = L.vpGo || '';
+			vp.querySelector( '.oc-vp__go' ).href = d.url;
+			vp.querySelector( '.oc-vp__img' ).src = d.img || '';
+			vp.querySelector( '.oc-vp__qty' ).hidden = ! d.qty;
+			vp.querySelector( '.oc-vp__qty input' ).value = '1';
+			vp.querySelector( '.oc-vp__add' ).textContent = L.vpAdd || 'Add to cart';
+
+			var box = vp.querySelector( '.oc-vp__groups' );
+			box.innerHTML = '';
+
+			d.groups.forEach( function ( g ) {
+				var wrap = vpEl( 'div', 'oc-vp__group' );
+				wrap.appendChild( vpEl( 'h4', 'oc-vp__glabel', g.label ) );
+				var row = vpEl( 'div', 'oc-vp__opts' );
+
+				g.options.forEach( function ( o ) {
+					var chip = vpEl( 'button', 'oc-vp__opt' );
+					chip.type = 'button';
+					chip.dataset.k = g.key;
+					chip.dataset.v = o.slug;
+
+					if ( o.swatch ) {
+						var dot = vpEl( 'i', 'oc-flt__swatch oc-vp__swatch' );
+						dot.setAttribute( 'style', o.swatch );
+						chip.appendChild( dot );
+					}
+
+					chip.appendChild( vpEl( 'span', '', o.label ) );
+					chip.addEventListener( 'click', function () {
+						st.sel[ g.key ] = st.sel[ g.key ] === o.slug ? '' : o.slug;
+						vpPaint();
+					} );
+					row.appendChild( chip );
+				} );
+
+				wrap.appendChild( row );
+				box.appendChild( wrap );
+
+				// One option is no question — answer it.
+				if ( g.options.length === 1 ) {
+					st.sel[ g.key ] = g.options[ 0 ].slug;
+				}
+			} );
+
+			vpPaint();
+		}
+
+		function vpAdd() {
+			var hit = vpResolved();
+
+			if ( ! hit ) {
+				return;
+			}
+
+			var btn = vp.querySelector( '.oc-vp__add' );
+			btn.classList.add( 'is-busy' );
+
+			var data = new FormData();
+			data.append( 'action', 'oc_cart_add' );
+			data.append( 'product_id', st.id );
+			data.append( 'variation_id', String( hit.id ) );
+			data.append( 'quantity', vp.querySelector( '.oc-vp__qty input' ).value || '1' );
+
+			st.groups.forEach( function ( g ) {
+				data.append( g.key, st.sel[ g.key ] );
+			} );
+
+			fetch( L.ajaxUrl || '/wp-admin/admin-ajax.php', { method: 'POST', credentials: 'same-origin', body: data } )
+				.then( function ( r ) { return r.json(); } )
+				.then( function ( out ) {
+					btn.classList.remove( 'is-busy' );
+
+					if ( out && out.fragments ) {
+						Object.keys( out.fragments ).forEach( function ( selector ) {
+							document.querySelectorAll( selector ).forEach( function ( el ) {
+								var box = document.createElement( 'div' );
+								box.innerHTML = out.fragments[ selector ];
+								if ( box.firstElementChild ) {
+									el.replaceWith( box.firstElementChild );
+								}
+							} );
+						} );
+
+						vpClose();
+
+						if ( window.__ocOpenDrawer ) {
+							window.__ocOpenDrawer();
+						} else if ( window.__ocCartToast ) {
+							window.__ocCartToast( st.groups.length ? vp.querySelector( '.oc-vp__name' ).textContent : '', st.img || '' );
+						}
+					}
+				} );
+		}
+
+		function vpOpen( productId ) {
+			if ( ! vp ) {
+				vpBuild();
+			}
+
+			vp.hidden = false;
+			requestAnimationFrame( function () { vp.classList.add( 'is-open' ); } );
+			vp.querySelector( '.oc-vp__groups' ).innerHTML = '<span class="oc-vp__loading">…</span>';
+			vp.querySelector( '.oc-vp__add' ).disabled = true;
+
+			var data = new FormData();
+			data.append( 'action', 'oc_card_picker' );
+			data.append( 'product_id', productId );
+
+			fetch( L.ajaxUrl || '/wp-admin/admin-ajax.php', { method: 'POST', credentials: 'same-origin', body: data } )
+				.then( function ( r ) { return r.json(); } )
+				.then( function ( res ) {
+					if ( ! res || ! res.success ) {
+						vpClose();
+						return;
+					}
+
+					vpRender( res.data, productId );
+				} );
+		}
+
+		document.addEventListener( 'click', function ( e ) {
+			var a = e.target.closest( 'a.add_to_cart_button.product_type_variable' );
+
+			if ( ! a || ! a.closest( '.products' ) ) {
+				return;
+			}
+
+			e.preventDefault();
+			e.stopPropagation();
+			vpOpen( a.dataset.product_id || a.getAttribute( 'data-product_id' ) || '' );
+		}, true );
+
+		/* A product with nothing to choose adds where it stands, and the
+		 * button says so with a tick. Woo's own script does the adding; the
+		 * tick rides its jQuery event, feature-checked (DECISIONS.md). */
+		if ( window.jQuery ) {
+			window.jQuery( document.body ).on( 'added_to_cart', function ( e2, f, h, btn ) {
+				var b = btn && btn[ 0 ];
+
+				if ( b ) {
+					b.classList.add( 'oc-tick' );
+					setTimeout( function () { b.classList.remove( 'oc-tick' ); }, 1800 );
+				}
+			} );
+		}
+	}() );
+
 	/* ---------- reading progress (single post) ---------- */
 
 	var prog = document.querySelector( '.oc-progress i' );

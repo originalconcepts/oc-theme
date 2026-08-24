@@ -47,6 +47,8 @@ final class Cart {
 		add_action( 'wp_ajax_nopriv_oc_cart_qty', array( $this, 'ajax_qty' ) );
 		add_action( 'wp_ajax_oc_cart_vars', array( $this, 'ajax_vars' ) );
 		add_action( 'wp_ajax_nopriv_oc_cart_vars', array( $this, 'ajax_vars' ) );
+		add_action( 'wp_ajax_oc_card_picker', array( $this, 'ajax_picker' ) );
+		add_action( 'wp_ajax_nopriv_oc_card_picker', array( $this, 'ajax_picker' ) );
 		add_action( 'wp_ajax_oc_cart_add', array( $this, 'ajax_add' ) );
 		add_action( 'wp_ajax_nopriv_oc_cart_add', array( $this, 'ajax_add' ) );
 		add_action( 'wp_ajax_oc_cart_coupon', array( $this, 'ajax_coupon' ) );
@@ -980,6 +982,89 @@ final class Cart {
 		}
 
 		return '';
+	}
+
+	/**
+	 * Everything the quick-pick panel needs to dress a variable product:
+	 * the product itself, its attributes as chip groups, and the variation
+	 * map the chips resolve against.
+	 */
+	public function ajax_picker(): void {
+		// phpcs:disable WordPress.Security.NonceVerification.Missing -- public read-only.
+		$product_id = isset( $_POST['product_id'] ) ? absint( $_POST['product_id'] ) : 0;
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
+
+		$product = wc_get_product( $product_id );
+
+		if ( ! $product || ! $product->is_type( 'variable' ) ) {
+			wp_send_json_error();
+		}
+
+		$groups = array();
+
+		foreach ( $product->get_variation_attributes() as $attr => $options ) {
+			$opts = array();
+
+			foreach ( (array) $options as $slug ) {
+				$slug   = (string) $slug;
+				$label  = $slug;
+				$swatch = '';
+
+				if ( taxonomy_exists( (string) $attr ) ) {
+					$term = get_term_by( 'slug', $slug, (string) $attr );
+
+					if ( $term instanceof \WP_Term ) {
+						$label = $term->name;
+						$image = (string) get_term_meta( $term->term_id, 'oc_swatch_image', true );
+						$color = (string) get_term_meta( $term->term_id, 'oc_swatch_color', true );
+
+						if ( '' !== $image ) {
+							$swatch = 'background-image:url(' . esc_url( $image ) . ');background-size:cover;';
+						} elseif ( '' !== $color ) {
+							$swatch = 'background-color:' . sanitize_hex_color( $color ) . ';';
+						}
+					}
+				}
+
+				$opts[] = array(
+					'slug'   => $slug,
+					'label'  => $label,
+					'swatch' => $swatch,
+				);
+			}
+
+			$groups[] = array(
+				'key'     => wc_variation_attribute_name( (string) $attr ),
+				'label'   => wc_attribute_label( (string) $attr, $product ),
+				'options' => $opts,
+			);
+		}
+
+		$vars = array();
+
+		foreach ( $product->get_available_variations() as $v ) {
+			$vars[] = array(
+				'id'    => (int) $v['variation_id'],
+				'attrs' => (array) $v['attributes'],
+				'price' => (string) $v['price_html'],
+				'stock' => ! empty( $v['is_in_stock'] ),
+				'img'   => isset( $v['image']['src'] ) ? (string) $v['image']['src'] : '',
+			);
+		}
+
+		$image = $product->get_image_id() ? (string) wp_get_attachment_image_url( (int) $product->get_image_id(), 'woocommerce_thumbnail' ) : '';
+
+		wp_send_json_success(
+			array(
+				'name'   => $product->get_name(),
+				'url'    => (string) $product->get_permalink(),
+				'img'    => $image,
+				'price'  => $product->get_price_html(),
+				'qty'    => (bool) get_theme_mod( 'oc_atc_qty', true ) && ! $product->is_sold_individually(),
+				'groups' => $groups,
+				'vars'   => $vars,
+			)
+		);
 	}
 
 	/**

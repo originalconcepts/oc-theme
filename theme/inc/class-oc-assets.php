@@ -164,6 +164,9 @@ final class Assets {
 				'ajaxUrl'              => admin_url( 'admin-ajax.php' ),
 				'cartOpenOnAdd'        => (int) Cart::settings()['open_on_add'],
 				'cartVarPick'          => __( 'Choose an option', 'oc-theme' ),
+				'vpSide'               => 'left' === get_theme_mod( 'oc_vpanel_side', 'right' ) ? 'left' : 'right',
+				'vpAdd'                => __( 'Add to cart', 'oc-theme' ),
+				'vpGo'                 => __( 'To the product page', 'oc-theme' ),
 				'inStock'              => __( 'In stock', 'oc-theme' ),
 				'outStock'             => __( 'Out of stock', 'oc-theme' ),
 				/* translators: %s: attribute label. */
