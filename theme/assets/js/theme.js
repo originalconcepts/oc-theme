@@ -4515,14 +4515,74 @@
 		} );
 	} );
 
-	/* ---------- add-to-cart: a loader takes the label until the add lands ---------- */
+	/* ---------- add-to-cart: ajax with a tick, the page never leaves ----------
+	 * The form's own fields are the payload — variation, attributes and
+	 * quantity all travel as they are. Anything but a clean add (grouped
+	 * forms, external products, a server refusal) falls back to the native
+	 * submit, whose notices know how to explain themselves. */
 
 	document.querySelectorAll( 'form.cart' ).forEach( function ( cartForm ) {
-		cartForm.addEventListener( 'submit', function () {
+		cartForm.addEventListener( 'submit', function ( ev ) {
 			var btn = cartForm.querySelector( '.single_add_to_cart_button' );
-			if ( btn && ! btn.classList.contains( 'disabled' ) ) {
-				btn.classList.add( 'is-loading' );
+
+			if ( ! btn || btn.classList.contains( 'disabled' ) ) {
+				return;
 			}
+
+			var pidEl = cartForm.querySelector( 'input[name="add-to-cart"], input[name="product_id"]' );
+			var pid = ( pidEl && pidEl.value ) || ( btn.name === 'add-to-cart' ? btn.value : '' );
+
+			if ( ! pid || cartForm.classList.contains( 'grouped_form' ) || cartForm.dataset.ocNative ) {
+				btn.classList.add( 'is-loading' );
+				return;
+			}
+
+			ev.preventDefault();
+			btn.classList.add( 'is-loading' );
+
+			var data = new FormData( cartForm );
+			data.append( 'action', 'oc_cart_add' );
+			data.append( 'product_id', pid );
+
+			fetch( ( window.ocL10n || {} ).ajaxUrl || '/wp-admin/admin-ajax.php', { method: 'POST', credentials: 'same-origin', body: data } )
+				.then( function ( r ) { return r.json(); } )
+				.then( function ( out ) {
+					btn.classList.remove( 'is-loading' );
+
+					if ( ! out || ! out.fragments ) {
+						cartForm.dataset.ocNative = '1';
+						cartForm.submit();
+						return;
+					}
+
+					Object.keys( out.fragments ).forEach( function ( selector ) {
+						document.querySelectorAll( selector ).forEach( function ( el ) {
+							var box = document.createElement( 'div' );
+							box.innerHTML = out.fragments[ selector ];
+							if ( box.firstElementChild ) {
+								el.replaceWith( box.firstElementChild );
+							}
+						} );
+					} );
+
+					btn.classList.add( 'oc-added' );
+
+					setTimeout( function () {
+						btn.classList.remove( 'oc-added' );
+
+						if ( window.__ocOpenDrawer ) {
+							window.__ocOpenDrawer();
+						} else if ( window.__ocCartToast ) {
+							var title = document.querySelector( '.product_title' );
+							window.__ocCartToast( title ? title.textContent : '', '' );
+						}
+					}, 900 );
+				} )
+				.catch( function () {
+					btn.classList.remove( 'is-loading' );
+					cartForm.dataset.ocNative = '1';
+					cartForm.submit();
+				} );
 		} );
 	} );
 
@@ -6800,13 +6860,20 @@
 							} );
 						} );
 
-						vpClose();
+						// The button answers with a tick first; the panel
+						// bows out a breath later.
+						btn.classList.add( 'oc-added' );
 
-						if ( window.__ocOpenDrawer ) {
-							window.__ocOpenDrawer();
-						} else if ( window.__ocCartToast ) {
-							window.__ocCartToast( vp.querySelector( '.oc-vp__name' ).textContent, st.img || '' );
-						}
+						setTimeout( function () {
+							btn.classList.remove( 'oc-added' );
+							vpClose();
+
+							if ( window.__ocOpenDrawer ) {
+								window.__ocOpenDrawer();
+							} else if ( window.__ocCartToast ) {
+								window.__ocCartToast( vp.querySelector( '.oc-vp__name' ).textContent, st.img || '' );
+							}
+						}, 750 );
 					}
 				} );
 		}
@@ -6886,6 +6953,27 @@
 			e.stopPropagation();
 			vpOpen( a.dataset.product_id || a.getAttribute( 'data-product_id' ) || '' );
 		}, true );
+
+		/* The search panel's "choose" opens the same door: the search steps
+		 * aside, the quick pick steps in. */
+		document.addEventListener( 'click', function ( e ) {
+			var pick = e.target.closest( '[data-oc-search-pick]' );
+
+			if ( ! pick ) {
+				return;
+			}
+
+			var box = pick.closest( '.oc-searchbox' );
+			var close = box && box.querySelector( '[data-oc-search-close]' );
+
+			if ( close ) {
+				close.click();
+			}
+
+			vpOpen( pick.dataset.ocSearchPick );
+		} );
+
+		window.__ocQuickPick = vpOpen;
 	}() );
 
 	/* ---------- reading progress (single post) ---------- */

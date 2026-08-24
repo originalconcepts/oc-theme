@@ -1917,6 +1917,30 @@ html.oc-menu-open .oc-menu-dim::after {
 .oc-vp__add:disabled { opacity: .4; cursor: default; filter: none; }
 .oc-vp__add.is-busy { opacity: .6; pointer-events: none; }
 
+/* The added tick: the label steps aside, the check takes the middle. */
+.oc-vp__add.oc-added,
+.single_add_to_cart_button.oc-added {
+	position: relative;
+	color: transparent !important;
+	background: var(--oc-cta, var(--oc-primary)) !important;
+	pointer-events: none;
+}
+
+.oc-vp__add.oc-added::after,
+.single_add_to_cart_button.oc-added::after {
+	content: "✓";
+	position: absolute;
+	inset: 0;
+	display: grid;
+	place-items: center;
+	color: #fff;
+	font-size: 1.3em;
+	font-weight: 700;
+	animation: oc-tick-in .25s cubic-bezier(.2, .7, .3, 1);
+}
+
+@keyframes oc-tick-in { from { transform: scale(.4); opacity: 0; } }
+
 /* Out of stock: the button signs you up instead, wearing ink. */
 .oc-vp__add--notify,
 .oc-btn-outline .oc-vp__add--notify {

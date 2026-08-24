@@ -531,6 +531,16 @@ final class Search_Panel {
 			);
 		}
 
+		// A variable product opens the quick-pick panel where it stands;
+		// only the kinds the panel cannot dress still walk to their page.
+		if ( $product->is_type( 'variable' ) && $product->is_purchasable() ) {
+			return sprintf(
+				'<button type="button" class="oc-search__add is-opts" data-oc-search-pick="%d">%s</button>',
+				(int) $product->get_id(),
+				esc_html__( 'Choose', 'oc-theme' )
+			);
+		}
+
 		return sprintf(
 			'<a class="oc-search__add is-opts" href="%s">%s</a>',
 			esc_url( (string) $product->get_permalink() ),
