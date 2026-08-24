@@ -3714,11 +3714,13 @@ li.product:focus-within .oc-card-atc,
 
 /* hover: second image sits on top, fades in. Position and z-index said
  * explicitly — a playing video composites on its own layer and liked to
- * repaint itself above the picture. */
+ * repaint itself above the picture. Decorative only: clicks fall through
+ * it to the link sheet beneath, or the card stopped opening the product. */
 .oc-card-media--hover .oc-card-media__item:not(.is-first) {
 	position: relative;
 	z-index: 2;
 	opacity: 0;
+	pointer-events: none;
 	transition: opacity .18s ease;
 }
 
