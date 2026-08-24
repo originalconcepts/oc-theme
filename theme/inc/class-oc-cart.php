@@ -1058,7 +1058,7 @@ final class Cart {
 		}
 
 		$image  = $product->get_image_id() ? (string) wp_get_attachment_image_url( (int) $product->get_image_id(), 'woocommerce_thumbnail' ) : '';
-		$colors = class_exists( 'OC\\Theme\\Variations' ) ? Variations::sticky_colors( $product ) : array( 'row' => '', 'label' => '' );
+		$colors = class_exists( 'OC\\Theme\\Variations' ) ? Variations::panel_colors( $product ) : array( 'row' => '', 'label' => '' );
 
 		wp_send_json_success(
 			array(

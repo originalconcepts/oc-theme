@@ -68,6 +68,23 @@ final class Variations {
 	}
 
 	/**
+	 * Colour-sibling row for the quick-pick panel — the same circles as the
+	 * page, each carrying its product id so a click can re-dress the panel.
+	 *
+	 * @param \WC_Product $product The product shown.
+	 * @return array{row: string, label: string}
+	 */
+	public static function panel_colors( \WC_Product $product ): array {
+		$out = self::sticky_colors( $product );
+
+		if ( self::$me instanceof self && '' !== $out['row'] ) {
+			$out['row'] = self::$me->colors_row( $product->get_id(), 'oc-colors--vp', true );
+		}
+
+		return $out;
+	}
+
+	/**
 	 * The display type of an attribute, for whoever draws options outside
 	 * the product form — the quick-pick panel, say.
 	 *
