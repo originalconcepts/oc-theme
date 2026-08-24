@@ -401,6 +401,88 @@
 			return groupsField( block, key, def );
 		}
 
+		if ( def.type === 'number' ) {
+			var num = el( 'input', {
+				type: 'number',
+				min: def.min !== undefined ? String( def.min ) : null,
+				max: def.max !== undefined ? String( def.max ) : null,
+				value: block[ key ] !== undefined && block[ key ] !== '' ? block[ key ] : ( def.def || 0 ),
+				oninput: function () {
+					block[ key ] = Number( num.value );
+					touch();
+				}
+			} );
+
+			return el( 'label', { 'class': 'oc-mp__f' }, [
+				el( 'span', { text: def.label } ),
+				num,
+				def.hint ? el( 'small', { text: def.hint } ) : null
+			] );
+		}
+
+		if ( def.type === 'category' ) {
+			var catSel = el( 'select', {
+				onchange: function () {
+					block[ key ] = Number( catSel.value );
+					touch();
+				}
+			}, [ el( 'option', { value: '0', text: T.anyCategory } ) ] );
+
+			( D.cats || [] ).forEach( function ( cat ) {
+				catSel.appendChild( el( 'option', {
+					value: cat.id,
+					selected: Number( block[ key ] ) === cat.id ? 'selected' : null,
+					text: cat.label
+				} ) );
+			} );
+
+			return el( 'label', { 'class': 'oc-mp__f' }, [
+				el( 'span', { text: def.label } ),
+				catSel,
+				def.hint ? el( 'small', { text: def.hint } ) : null
+			] );
+		}
+
+		if ( def.type === 'terms' ) {
+			block[ key ] = ( block[ key ] || [] ).map( Number );
+
+			var listEl = el( 'div', { 'class': 'oc-mp__checks' } );
+
+			if ( ! ( D.brands || [] ).length ) {
+				listEl.appendChild( el( 'small', { text: T.noBrands } ) );
+			}
+
+			( D.brands || [] ).forEach( function ( brand ) {
+				var tick = el( 'input', {
+					type: 'checkbox',
+					checked: block[ key ].indexOf( brand.id ) > -1 ? 'checked' : null,
+					onchange: function () {
+						var at = block[ key ].indexOf( brand.id );
+
+						if ( tick.checked && at === -1 ) {
+							block[ key ].push( brand.id );
+						} else if ( ! tick.checked && at > -1 ) {
+							block[ key ].splice( at, 1 );
+						}
+
+						touch();
+					}
+				} );
+
+				listEl.appendChild( el( 'label', { 'class': 'oc-mp__check' }, [ tick, el( 'span', { text: brand.label } ) ] ) );
+			} );
+
+			return el( 'div', { 'class': 'oc-mp__f oc-mp__f--wide' }, [
+				el( 'span', { text: def.label } ),
+				listEl,
+				def.hint ? el( 'small', { text: def.hint } ) : null
+			] );
+		}
+
+		if ( def.type === 'products' ) {
+			return productsField( block, key, def );
+		}
+
 		var input = el( 'input', {
 			type: 'text',
 			value: block[ key ] || '',
@@ -647,6 +729,67 @@
 		] );
 	}
 
+	function productsField( block, key, def ) {
+		block[ key ] = ( block[ key ] || [] ).map( Number );
+
+		D.names = D.names || {};
+
+		var wrap = el( 'div', { 'class': 'oc-mp__rows' } );
+
+		function draw() {
+			wrap.innerHTML = '';
+
+			var chips = el( 'div', { 'class': 'oc-mp__chips' } );
+
+			block[ key ].forEach( function ( id, i ) {
+				chips.appendChild( el( 'span', { 'class': 'oc-mp__chip' }, [
+					el( 'span', { text: D.names[ id ] || ( '#' + id ) } ),
+					el( 'button', {
+						type: 'button',
+						'class': 'oc-mpc__x',
+						'aria-label': T.remove,
+						text: '\u00d7',
+						onclick: function () {
+							block[ key ].splice( i, 1 );
+							draw();
+							touch();
+						}
+					} )
+				] ) );
+			} );
+
+			wrap.appendChild( chips );
+
+			var box = el( 'span', { 'class': 'oc-mp__urlwrap' } );
+			var input = el( 'input', { type: 'text', placeholder: T.searchProd } );
+
+			box.appendChild( input );
+			box.appendChild( suggest( input, function ( hit ) {
+				if ( hit.ptype !== 'product' || ! hit.id ) {
+					return;
+				}
+
+				if ( block[ key ].indexOf( Number( hit.id ) ) === -1 ) {
+					block[ key ].push( Number( hit.id ) );
+					D.names[ hit.id ] = hit.label;
+				}
+
+				draw();
+				touch();
+			} ) );
+
+			wrap.appendChild( box );
+		}
+
+		draw();
+
+		return el( 'div', { 'class': 'oc-mp__f oc-mp__f--wide' }, [
+			el( 'span', { text: def.label } ),
+			wrap,
+			def.hint ? el( 'small', { text: def.hint } ) : null
+		] );
+	}
+
 	/* ---------- picking an address without typing one ---------- */
 
 	function suggest( input, onpick ) {
@@ -764,6 +907,7 @@
 				if ( state.button ) {
 					state.button.dataset.ocBlocks = JSON.stringify( r.data.blocks );
 					state.button.dataset.ocThumbs = JSON.stringify( r.data.thumbs );
+					state.button.dataset.ocNames = JSON.stringify( r.data.names || {} );
 
 					var item = state.button.closest( 'li.menu-item' );
 					var line = item && item.querySelector( '.oc-mi__state' );
@@ -857,6 +1001,7 @@
 		state.dirty = false;
 
 		D.thumbs = JSON.parse( button.dataset.ocThumbs || '{}' );
+		D.names = JSON.parse( button.dataset.ocNames || '{}' );
 
 		document.getElementById( 'oc-mp-modal-title' ).textContent = button.dataset.ocName || '';
 		modal.hidden = false;

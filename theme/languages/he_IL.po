@@ -3744,3 +3744,57 @@ msgstr "שורה בלי תמונה לא תרד מתחת לגובה הזה. כש�
 
 msgid "Back"
 msgstr "חזרה"
+
+msgid "A few products, straight from the shop"
+msgstr "כמה מוצרים, ישירות מהחנות"
+
+msgid "Which products"
+msgstr "אילו מוצרים"
+
+msgid "From a category"
+msgstr "מקטגוריה"
+
+msgid "The products"
+msgstr "המוצרים"
+
+msgid "Used when \"the ones I choose\" is picked above. Search by name."
+msgstr "בשימוש כשנבחר למעלה ״אלה שאני בוחר״. חיפוש לפי שם."
+
+msgid "The category"
+msgstr "הקטגוריה"
+
+msgid "Used when \"from a category\" is picked above."
+msgstr "בשימוש כשנבחר למעלה ״מקטגוריה״."
+
+msgid "How many"
+msgstr "כמה"
+
+msgid "Logos or names, linking to each brand"
+msgstr "לוגואים או שמות, כל אחד מקשר למותג"
+
+msgid "Shown as"
+msgstr "מוצג בתור"
+
+msgid "Logo"
+msgstr "לוגו"
+
+msgid "Name"
+msgstr "שם"
+
+msgid "Which brands"
+msgstr "אילו מותגים"
+
+msgid "None ticked means all of them."
+msgstr "בלי סימון — כולם מוצגים."
+
+msgid "Add a product"
+msgstr "הוספת מוצר"
+
+msgid "Search a product by name"
+msgstr "חיפוש מוצר לפי שם"
+
+msgid "No brands exist yet on this site."
+msgstr "עדיין אין מותגים באתר."
+
+msgid "— choose —"
+msgstr "— בחירה —"

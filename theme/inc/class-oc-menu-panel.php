@@ -88,6 +88,62 @@ final class Menu_Panel {
 	 */
 	public static function types(): array {
 		$types = array(
+			'products' => array(
+				'label'  => __( 'Products', 'oc-theme' ),
+				'blurb'  => __( 'A few products, straight from the shop', 'oc-theme' ),
+				'icon'   => '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="8" height="10" rx="1.5" opacity=".5"/><rect x="13" y="3" width="8" height="10" rx="1.5" opacity=".5"/><rect x="3" y="15" width="8" height="2" rx="1"/><rect x="13" y="15" width="8" height="2" rx="1"/><rect x="3" y="19" width="5" height="2" rx="1"/><rect x="13" y="19" width="5" height="2" rx="1"/></svg>',
+				'fields' => array(
+					'mode'  => array(
+						'type'    => 'select',
+						'label'   => __( 'Which products', 'oc-theme' ),
+						'choices' => array(
+							'manual' => __( 'The ones I choose', 'oc-theme' ),
+							'sales'  => __( 'Best sellers', 'oc-theme' ),
+							'new'    => __( 'Newest', 'oc-theme' ),
+							'cat'    => __( 'From a category', 'oc-theme' ),
+						),
+						'def'     => 'sales',
+					),
+					'picks' => array(
+						'type'  => 'products',
+						'label' => __( 'The products', 'oc-theme' ),
+						'hint'  => __( 'Used when "the ones I choose" is picked above. Search by name.', 'oc-theme' ),
+					),
+					'cat'   => array(
+						'type'  => 'category',
+						'label' => __( 'The category', 'oc-theme' ),
+						'hint'  => __( 'Used when "from a category" is picked above.', 'oc-theme' ),
+					),
+					'count' => array(
+						'type'  => 'number',
+						'label' => __( 'How many', 'oc-theme' ),
+						'def'   => 3,
+						'min'   => 1,
+						'max'   => 6,
+					),
+				),
+			),
+			'brands' => array(
+				'label'  => __( 'Brands', 'oc-theme' ),
+				'blurb'  => __( 'Logos or names, linking to each brand', 'oc-theme' ),
+				'icon'   => '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="7" cy="7" r="3.4" opacity=".55"/><circle cx="17" cy="7" r="3.4" opacity=".55"/><circle cx="7" cy="17" r="3.4" opacity=".55"/><circle cx="17" cy="17" r="3.4" opacity=".55"/></svg>',
+				'fields' => array(
+					'style' => array(
+						'type'    => 'select',
+						'label'   => __( 'Shown as', 'oc-theme' ),
+						'choices' => array(
+							'logo' => __( 'Logo', 'oc-theme' ),
+							'text' => __( 'Name', 'oc-theme' ),
+						),
+						'def'     => 'logo',
+					),
+					'terms' => array(
+						'type'  => 'terms',
+						'label' => __( 'Which brands', 'oc-theme' ),
+						'hint'  => __( 'None ticked means all of them.', 'oc-theme' ),
+					),
+				),
+			),
 			'image' => array(
 				'label'  => __( 'Image', 'oc-theme' ),
 				'blurb'  => __( 'A picture, with words on it if you like', 'oc-theme' ),
@@ -269,6 +325,33 @@ final class Menu_Panel {
 
 			case 'range':
 				return max( 0, min( 100, absint( $value ) ) );
+
+			case 'number':
+				$min = (int) ( $field['min'] ?? 0 );
+				$max = (int) ( $field['max'] ?? 99 );
+
+				return max( $min, min( $max, (int) ( is_numeric( $value ) ? $value : ( $field['def'] ?? $min ) ) ) );
+
+			case 'category':
+				return absint( $value );
+
+			case 'products':
+			case 'terms':
+				$ids = array();
+
+				foreach ( (array) $value as $one ) {
+					$id = absint( is_array( $one ) ? ( $one['id'] ?? 0 ) : $one );
+
+					if ( $id > 0 ) {
+						$ids[] = $id;
+					}
+
+					if ( count( $ids ) >= 24 ) {
+						break;
+					}
+				}
+
+				return array_values( array_unique( $ids ) );
 
 			case 'select':
 				$choices = (array) ( $field['choices'] ?? array() );
@@ -607,6 +690,12 @@ final class Menu_Panel {
 			case 'image':
 				$inner = self::image_block( $block );
 				break;
+			case 'products':
+				$inner = self::products_block( $block );
+				break;
+			case 'brands':
+				$inner = self::brands_block( $block );
+				break;
 			default:
 				/**
 				 * Markup for a block type this class does not know.
@@ -625,6 +714,129 @@ final class Menu_Panel {
 			'class' => 'oc-mb oc-mb--' . sanitize_html_class( $type ),
 			'inner' => $inner,
 		);
+	}
+
+	/**
+	 * A few products: picture, name, price, each a door to its page.
+	 *
+	 * @param array<string,mixed> $block Block.
+	 * @return string
+	 */
+	private static function products_block( array $block ): string {
+		if ( ! class_exists( 'WooCommerce' ) ) {
+			return '';
+		}
+
+		$mode  = (string) ( $block['mode'] ?? 'sales' );
+		$count = max( 1, min( 6, (int) ( $block['count'] ?? 3 ) ) );
+
+		$args = array(
+			'status'  => 'publish',
+			'limit'   => $count,
+			'orderby' => 'date',
+			'order'   => 'DESC',
+		);
+
+		switch ( $mode ) {
+			case 'manual':
+				$picks = array_slice( (array) ( $block['picks'] ?? array() ), 0, $count );
+
+				if ( empty( $picks ) ) {
+					return '';
+				}
+
+				$args['include'] = array_map( 'absint', $picks );
+				$args['orderby'] = 'post__in';
+				break;
+
+			case 'sales':
+				$args['orderby'] = 'popularity';
+				break;
+
+			case 'cat':
+				$term = get_term( absint( $block['cat'] ?? 0 ), 'product_cat' );
+
+				if ( ! $term instanceof \WP_Term ) {
+					return '';
+				}
+
+				$args['category'] = array( $term->slug );
+				break;
+		}
+
+		$products = wc_get_products( $args );
+
+		if ( empty( $products ) ) {
+			return '';
+		}
+
+		$out = '<div class="oc-mb__prods">';
+
+		foreach ( $products as $product ) {
+			$image = $product->get_image( 'woocommerce_thumbnail', array( 'loading' => 'lazy' ) );
+
+			$out .= '<a class="oc-mb__prod" href="' . esc_url( (string) $product->get_permalink() ) . '">';
+			$out .= '<span class="oc-mb__prod-img">' . $image . '</span>';
+			$out .= '<span class="oc-mb__prod-name">' . esc_html( $product->get_name() ) . '</span>';
+			$out .= '<span class="oc-mb__prod-price">' . $product->get_price_html() . '</span>';
+			$out .= '</a>';
+		}
+
+		return $out . '</div>';
+	}
+
+	/**
+	 * The brands, as logos or names, each linking to its own shelf. A brand
+	 * asked to show a logo it does not have shows its name instead — visible
+	 * and correct beats invisible and broken.
+	 *
+	 * @param array<string,mixed> $block Block.
+	 * @return string
+	 */
+	private static function brands_block( array $block ): string {
+		$taxonomy = class_exists( 'OC\\Theme\\Search' ) ? Search::brand_taxonomy() : '';
+
+		if ( '' === $taxonomy ) {
+			return '';
+		}
+
+		$chosen = (array) ( $block['terms'] ?? array() );
+
+		$terms = get_terms(
+			array(
+				'taxonomy'   => $taxonomy,
+				'hide_empty' => false,
+				'include'    => empty( $chosen ) ? array() : array_map( 'absint', $chosen ),
+				'orderby'    => empty( $chosen ) ? 'name' : 'include',
+			)
+		);
+
+		if ( ! is_array( $terms ) || empty( $terms ) ) {
+			return '';
+		}
+
+		$logos = 'text' !== ( $block['style'] ?? 'logo' );
+		$out   = '<div class="oc-mb__brands">';
+
+		foreach ( $terms as $term ) {
+			$inner = '';
+
+			if ( $logos ) {
+				$thumb = (int) get_term_meta( (int) $term->term_id, 'thumbnail_id', true );
+
+				if ( $thumb > 0 ) {
+					$inner = wp_get_attachment_image( $thumb, 'medium', false, array( 'class' => 'oc-mb__brand-logo', 'loading' => 'lazy', 'alt' => $term->name ) );
+				}
+			}
+
+			if ( '' === $inner ) {
+				$inner = '<span class="oc-mb__brand-name">' . esc_html( $term->name ) . '</span>';
+			}
+
+			$out .= '<a class="oc-mb__brand" href="' . esc_url( (string) get_term_link( $term ) ) . '">' . $inner . '</a>';
+		}
+
+		return $out . '</div>';
 	}
 
 	/**

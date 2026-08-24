@@ -72,13 +72,16 @@ final class Menu_Admin {
 			return;
 		}
 
+		$blocks = Menu_Panel::blocks( $id );
+
 		printf(
-			'<p class="oc-mi__panel"><span class="oc-mi__state">%1$s</span> <button type="button" class="button button-small oc-mi__edit" data-oc-panel="%2$d" data-oc-name="%3$s" data-oc-blocks="%4$s" data-oc-thumbs="%5$s">%6$s</button></p>',
+			'<p class="oc-mi__panel"><span class="oc-mi__state">%1$s</span> <button type="button" class="button button-small oc-mi__edit" data-oc-panel="%2$d" data-oc-name="%3$s" data-oc-blocks="%4$s" data-oc-thumbs="%5$s" data-oc-names="%6$s">%7$s</button></p>',
 			esc_html( self::state_line( $id ) ),
 			(int) $id,
 			esc_attr( wp_strip_all_tags( (string) $item->title ) ),
-			esc_attr( (string) wp_json_encode( Menu_Panel::blocks( $id ) ) ),
-			esc_attr( (string) wp_json_encode( self::thumbs( Menu_Panel::blocks( $id ) ) ) ),
+			esc_attr( (string) wp_json_encode( $blocks ) ),
+			esc_attr( (string) wp_json_encode( self::thumbs( $blocks ) ) ),
+			esc_attr( (string) wp_json_encode( self::product_names( $blocks ) ) ),
 			esc_html__( 'Edit panel', 'oc-theme' )
 		);
 	}
@@ -188,6 +191,7 @@ final class Menu_Admin {
 			array(
 				'blocks' => $blocks,
 				'thumbs' => self::thumbs( $blocks ),
+				'names'  => self::product_names( $blocks ),
 				'state'  => self::state_line( $item ),
 			)
 		);
@@ -291,6 +295,7 @@ final class Menu_Admin {
 			'devices' => Menu_Panel::devices(),
 			'max'     => Menu_Panel::MAX,
 			'cats'    => self::categories(),
+			'brands'  => self::brands(),
 			'nonce'   => wp_create_nonce( 'oc_menu_panel' ),
 			'ajax'    => admin_url( 'admin-ajax.php' ),
 			'css'     => get_template_directory_uri() . '/assets/css/' . ( file_exists( OC_THEME_DIR . '/assets/css/theme.min.css' ) ? 'theme.min.css' : 'theme.css' ),
@@ -308,6 +313,10 @@ final class Menu_Admin {
 				'width'        => __( 'Width', 'oc-theme' ),
 				'device'       => __( 'Shown', 'oc-theme' ),
 				'push'         => __( 'Leave the spare width in front of it', 'oc-theme' ),
+				'addProduct'   => __( 'Add a product', 'oc-theme' ),
+				'searchProd'   => __( 'Search a product by name', 'oc-theme' ),
+				'noBrands'     => __( 'No brands exist yet on this site.', 'oc-theme' ),
+				'anyCategory'  => __( '— choose —', 'oc-theme' ),
 				'choose'       => __( 'Choose', 'oc-theme' ),
 				'clear'        => __( 'Remove', 'oc-theme' ),
 				'saved'        => __( 'Saved', 'oc-theme' ),
@@ -334,6 +343,63 @@ final class Menu_Admin {
 			</div>
 		</div>
 		<?php
+	}
+
+	/**
+	 * Names for the products a panel already picked, so the editor can show
+	 * words instead of ids without a request per product.
+	 *
+	 * @param array<int,array<string,mixed>> $blocks Blocks.
+	 * @return array<int,string>
+	 */
+	private static function product_names( array $blocks ): array {
+		$out = array();
+
+		foreach ( $blocks as $block ) {
+			foreach ( (array) ( $block['picks'] ?? array() ) as $id ) {
+				$id = absint( $id );
+
+				if ( $id > 0 ) {
+					$out[ $id ] = get_the_title( $id );
+				}
+			}
+		}
+
+		return $out;
+	}
+
+	/**
+	 * The site's brands, for the block editor's checklist.
+	 *
+	 * @return array<int,array{id:int,label:string}>
+	 */
+	private static function brands(): array {
+		$taxonomy = class_exists( 'OC\\Theme\\Search' ) ? Search::brand_taxonomy() : '';
+
+		if ( '' === $taxonomy ) {
+			return array();
+		}
+
+		$terms = get_terms(
+			array(
+				'taxonomy'   => $taxonomy,
+				'hide_empty' => false,
+			)
+		);
+
+		if ( ! is_array( $terms ) ) {
+			return array();
+		}
+
+		return array_map(
+			static function ( $term ): array {
+				return array(
+					'id'    => (int) $term->term_id,
+					'label' => (string) $term->name,
+				);
+			},
+			$terms
+		);
 	}
 
 	/**
@@ -453,6 +519,8 @@ final class Menu_Admin {
 			$type = get_post_type_object( $post->post_type );
 
 			$hits[] = array(
+				'id'    => (int) $post->ID,
+				'ptype' => (string) $post->post_type,
 				'label' => get_the_title( $post ),
 				'url'   => (string) get_permalink( $post ),
 				'kind'  => $type ? (string) $type->labels->singular_name : $post->post_type,
