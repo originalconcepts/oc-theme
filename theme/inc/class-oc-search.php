@@ -1206,6 +1206,21 @@ final class Search {
 
 		$ids = self::product_ids( $term );
 
+		// The panel rescues a mistyped word — the page must be no dumber.
+		// "riba" found nothing there, offered riva, and then this page shrugged.
+		if ( ! $ids ) {
+			$fixed = self::rescue( $term );
+
+			if ( '' !== $fixed ) {
+				$rescued = self::product_ids( $fixed );
+
+				if ( $rescued ) {
+					$ids = $rescued;
+					$query->set( 'oc_search_fixed', $fixed );
+				}
+			}
+		}
+
 		$query->set( 'post__in', $ids ? $ids : array( 0 ) );
 		$query->set( 'oc_search_term', $term );
 
@@ -1297,6 +1312,18 @@ final class Search {
 			return $title;
 		}
 
+		// A rescued word owns the heading, with the typo named beside it.
+		$fixed = self::fixed_term();
+
+		if ( '' !== $fixed ) {
+			return sprintf(
+				/* translators: 1: the corrected search word, 2: what was actually typed. */
+				__( 'Showing results for %1$s — you searched for %2$s', 'oc-theme' ),
+				$fixed,
+				$term
+			);
+		}
+
 		$narrow = self::narrowed_to();
 
 		if ( $narrow ) {
@@ -1324,6 +1351,15 @@ final class Search {
 	 */
 	public function show_title( $show ) {
 		return is_search() ? true : $show;
+	}
+
+	/**
+	 * The corrected word behind this results page, when a typo was rescued.
+	 */
+	public static function fixed_term(): string {
+		global $wp_query;
+
+		return $wp_query instanceof \WP_Query ? trim( (string) $wp_query->get( 'oc_search_fixed' ) ) : '';
 	}
 
 	/**
@@ -1370,7 +1406,12 @@ final class Search {
 			return $ids;
 		}
 
-		$term = self::current_term();
+		// The rescued word, when there is one — the typo's base is empty.
+		$term = self::fixed_term();
+
+		if ( '' === $term ) {
+			$term = self::current_term();
+		}
 
 		return '' === $term ? $ids : self::product_ids( $term );
 	}

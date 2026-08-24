@@ -1582,6 +1582,10 @@ html.oc-menu-open .oc-menu-dim::after {
 
 .oc-vp { position: fixed; inset: 0; z-index: 95; }
 
+/* The panel's own display rules must never outrank a hidden attribute —
+ * a quantity for an out-of-stock product was flexing right through it. */
+.oc-vp [hidden] { display: none !important; }
+
 .oc-vp__dim {
 	position: absolute;
 	inset: 0;
@@ -1750,7 +1754,16 @@ html.oc-menu-open .oc-menu-dim::after {
 
 .oc-vp__body { padding: 12px 22px 18px; }
 
-/* The card's corner labels, standing over the title instead of floating. */
+/* The card's corner labels, standing over the title instead of floating.
+ * The sale badge is pinned absolute by .woocommerce span.onsale at higher
+ * specificity, so its place in the row is said explicitly. */
+.oc-vp .oc-flags .onsale,
+.oc-mb__prod-flags .oc-flags .onsale {
+	position: static;
+	inset: auto;
+	margin: 0;
+}
+
 .oc-vp__flags { display: flex; flex-wrap: wrap; gap: 6px; }
 .oc-vp__flags:not(:empty) { margin-block-end: 8px; }
 .oc-vp__flags .oc-flags { position: static; flex-direction: row; gap: 6px; }
@@ -1907,7 +1920,7 @@ html.oc-menu-open .oc-menu-dim::after {
 		inset-inline: 0;
 		inset-block: auto 0;
 		inline-size: 100%;
-		max-block-size: 76vh;
+		max-block-size: 83vh;
 		border-radius: 16px 16px 0 0;
 		transform: translateY(100%);
 	}

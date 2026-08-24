@@ -240,8 +240,11 @@
 		}
 
 		burger.addEventListener( 'click', function () {
-			ocWarm();
 			drwSet( burger.getAttribute( 'aria-expanded' ) !== 'true' );
+
+			// Warming the pictures can wait until the panel has arrived —
+			// a decode burst during the slide was eating the first taps.
+			setTimeout( ocWarm, 450 );
 		} );
 
 		Array.prototype.forEach.call( drw.querySelectorAll( '[data-oc-drw-close]' ), function ( node ) {
@@ -6490,7 +6493,8 @@
 					var d = vpEl( 'button', 'oc-vp__dot' );
 					d.type = 'button';
 					d.addEventListener( 'click', function () {
-						sl.scrollIntoView( { behavior: 'smooth', block: 'nearest', inline: 'start' } );
+						var rtl = getComputedStyle( strip ).direction === 'rtl';
+						strip.scrollTo( { left: ( rtl ? -1 : 1 ) * i * vpStep(), behavior: 'smooth' } );
 					} );
 					dots.appendChild( d );
 				} );
@@ -6550,19 +6554,17 @@
 				vslide.querySelector( 'img' ).src = url;
 			}
 
-			if ( vslide.hidden === ! show ) {
-				if ( show ) {
-					vslide.scrollIntoView( { block: 'nearest', inline: 'center' } );
-				}
-				vpDots();
-				return;
+			if ( vslide.hidden !== ! show ) {
+				vslide.hidden = ! show;
 			}
 
-			vslide.hidden = ! show;
 			vpDots();
 
+			// Sideways only. scrollIntoView also drags every scrolling
+			// ancestor upward to the gallery — the chip just clicked would
+			// yank the whole panel to the top.
 			if ( show ) {
-				vslide.scrollIntoView( { block: 'nearest', inline: 'center' } );
+				strip.scrollTo( { left: 0, behavior: 'smooth' } );
 			}
 		}
 
@@ -6805,6 +6807,8 @@
 				} );
 		}
 
+		var vpOpenedAt = 0;
+
 		function vpLoad( productId ) {
 			// A blank slate first: the last product must not greet the next.
 			vp.querySelector( '.oc-vp__groups' ).innerHTML = '<span class="oc-vp__loading">…</span>';
@@ -6833,7 +6837,13 @@
 						return;
 					}
 
-					vpRender( res.data, productId );
+					// Rendering mid-slide stalls the entrance — the answer
+					// waits for the panel to settle before dressing it.
+					var settle = Math.max( 0, 340 - ( Date.now() - vpOpenedAt ) );
+
+					setTimeout( function () {
+						vpRender( res.data, productId );
+					}, settle );
 				} );
 		}
 
@@ -6843,6 +6853,7 @@
 			}
 
 			vp.hidden = false;
+			vpOpenedAt = Date.now();
 			// A freshly appended panel must be laid out once before the
 			// class flips, or the first entrance jumps instead of gliding.
 			void vp.offsetWidth;

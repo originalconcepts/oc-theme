@@ -4031,3 +4031,6 @@ msgstr "תמונה אחת במרכז"
 
 msgid "A small picture, no gallery"
 msgstr "תמונה קטנה, בלי גלריה"
+
+msgid "Showing results for %1$s — you searched for %2$s"
+msgstr "מציגים תוצאות עבור %1$s — חיפשתם %2$s"
