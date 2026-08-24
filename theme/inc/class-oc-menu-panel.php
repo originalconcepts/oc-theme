@@ -663,26 +663,20 @@ final class Menu_Panel {
 		$radius = (string) ( $block['radius'] ?? 'soft' );
 		$url    = (string) ( $block['url'] ?? '' );
 
-		$img = wp_get_attachment_image(
-			$id,
-			'medium_large',
-			false,
-			array(
-				'class'   => 'oc-mb__img',
-				'loading' => 'lazy',
-				'alt'     => '',
-				'sizes'   => '(max-width: 900px) 92vw, 480px',
-			)
-		);
+		// One src, no srcset, on purpose. With a candidate set, phones drew
+		// this picture as a white box while every DOM measurement insisted
+		// it was fine — the responsive machinery (lazy + WordPress's
+		// sizes="auto") sizes candidates by layout width, and inside a
+		// closed drawer that width is zero. A single "large" file covers a
+		// 480px card at double density, always paints, and a menu picture
+		// does not need more.
+		$src = wp_get_attachment_image_url( $id, 'large' );
 
-		// WordPress prefixes a lazy image's sizes with "auto", telling the
-		// browser to pick a candidate by the image's LAYOUT width — which is
-		// zero inside a closed drawer. The host's device optimiser then
-		// honours that zero and hands back a bitmap the element never
-		// paints: a white box where a sofa should be, on phones only, while
-		// every measurement of the DOM insists nothing is wrong. The
-		// explicit sizes above are the truth; the keyword goes.
-		$img = str_replace( 'sizes="auto, ', 'sizes="', $img );
+		if ( ! is_string( $src ) || '' === $src ) {
+			return '';
+		}
+
+		$img = '<img class="oc-mb__img" src="' . esc_url( $src ) . '" alt="" loading="lazy" decoding="async">';
 
 		$words = '';
 
