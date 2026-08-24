@@ -33,6 +33,7 @@ final class Render {
 	 */
 	public function register(): void {
 		add_filter( 'the_content', array( $this, 'compose' ), 9 );
+		add_filter( 'body_class', array( $this, 'body_class' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'assets' ) );
 
 		// A category may nominate a composed page as its lobby, shown above
@@ -42,6 +43,21 @@ final class Render {
 		add_action( 'woocommerce_archive_description', array( $this, 'lobby' ), 5 );
 
 		add_action( 'save_post_page', array( $this, 'flush' ) );
+	}
+
+	/**
+	 * A class on the body of a composed page — the hero is the title there,
+	 * so the theme's own heading and breadcrumb step aside (see blocks.css).
+	 *
+	 * @param array<int,string> $classes Body classes.
+	 * @return array<int,string>
+	 */
+	public function body_class( array $classes ): array {
+		if ( is_page() && self::is_composed( (int) get_queried_object_id() ) ) {
+			$classes[] = 'oc-composed';
+		}
+
+		return $classes;
 	}
 
 	/**

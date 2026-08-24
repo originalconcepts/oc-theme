@@ -15,6 +15,15 @@
 	margin-inline: calc(50% - 50vw);
 }
 
+/* On a composed page the hero is the title — the theme's own heading and
+ * breadcrumb step aside, and the article wrapper gives up its gaps. */
+.oc-composed .oc-page-title,
+.oc-composed .oc-breadcrumb { display: none; }
+
+.oc-composed .site-main { padding-block: 0; }
+
+.oc-composed .oc-content { margin: 0; }
+
 .ocb { position: relative; overflow: hidden; }
 
 .ocb__in { position: relative; margin-inline: auto; }

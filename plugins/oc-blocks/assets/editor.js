@@ -560,6 +560,12 @@
 			onclick: function () {
 				var frame = wp.media( { title: T.media, multiple: false, library: { type: 'image' } } );
 
+				// The library first — the upload dropzone greets with a wall
+				// of grey when the picture is already in the site.
+				frame.on( 'open', function () {
+					frame.content.mode( 'browse' );
+				} );
+
 				frame.on( 'select', function () {
 					var pick = frame.state().get( 'selection' ).first().toJSON();
 
@@ -609,6 +615,10 @@
 			text: T.pick,
 			onclick: function () {
 				var frame = wp.media( { title: T.video, multiple: false, library: { type: 'video' } } );
+
+				frame.on( 'open', function () {
+					frame.content.mode( 'browse' );
+				} );
 
 				frame.on( 'select', function () {
 					input.value = frame.state().get( 'selection' ).first().toJSON().url;
