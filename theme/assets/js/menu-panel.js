@@ -355,6 +355,28 @@
 			return imageField( block, key, def );
 		}
 
+		if ( def.type === 'range' ) {
+			var current = block[ key ] === undefined ? ( def.def || 50 ) : block[ key ];
+			var shown = el( 'span', { 'class': 'oc-mp__rangeval', text: current + '%' } );
+			var slider = el( 'input', {
+				type: 'range',
+				min: '0',
+				max: '100',
+				value: current,
+				oninput: function () {
+					block[ key ] = Number( slider.value );
+					shown.textContent = slider.value + '%';
+					touch();
+				}
+			} );
+
+			return el( 'label', { 'class': 'oc-mp__f oc-mp__f--wide' }, [
+				el( 'span', { text: def.label } ),
+				el( 'span', { 'class': 'oc-mp__range' }, [ slider, shown ] ),
+				def.hint ? el( 'small', { text: def.hint } ) : null
+			] );
+		}
+
 		if ( def.type === 'rows' ) {
 			return rowsField( block, key, def );
 		}

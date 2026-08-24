@@ -134,6 +134,12 @@ final class Menu_Panel {
 						),
 						'def'     => 'start',
 					),
+					'focus'   => array(
+						'type'  => 'range',
+						'label' => __( 'The picture\'s focal point (%)', 'oc-theme' ),
+						'def'   => 50,
+						'hint'  => __( 'Which part the frame keeps when it has to crop: 0 the top, 50 the middle, 100 the bottom.', 'oc-theme' ),
+					),
 					'pos'     => array(
 						'type'    => 'select',
 						'label'   => __( 'The words sit', 'oc-theme' ),
@@ -260,6 +266,9 @@ final class Menu_Panel {
 
 			case 'url':
 				return esc_url_raw( trim( (string) $value ) );
+
+			case 'range':
+				return max( 0, min( 100, absint( $value ) ) );
 
 			case 'select':
 				$choices = (array) ( $field['choices'] ?? array() );
@@ -646,6 +655,7 @@ final class Menu_Panel {
 		}
 
 		$align = 'centre' === ( $block['align'] ?? '' ) ? ' oc-mb__fig--al-c' : '';
+		$focus = max( 0, min( 100, absint( $block['focus'] ?? 50 ) ) );
 		$pos   = (string) ( $block['pos'] ?? 'bottom' );
 		$radius = (string) ( $block['radius'] ?? 'soft' );
 		$url    = (string) ( $block['url'] ?? '' );
@@ -677,7 +687,7 @@ final class Menu_Panel {
 			$words = '<div class="oc-mb__words">' . $words . '</div>';
 		}
 
-		$inner = '<figure class="oc-mb__fig oc-mb__fig--' . sanitize_html_class( $pos ) . ' oc-mb__fig--r-' . sanitize_html_class( $radius ) . $align . '" style="--oc-mb-ratio:' . esc_attr( $ratio ) . '">' . $img . $words . '</figure>';
+		$inner = '<figure class="oc-mb__fig oc-mb__fig--' . sanitize_html_class( $pos ) . ' oc-mb__fig--r-' . sanitize_html_class( $radius ) . $align . '" style="--oc-mb-ratio:' . esc_attr( $ratio ) . ( 50 === $focus ? '' : ';--oc-mb-focus:' . $focus . '%' ) . '">' . $img . $words . '</figure>';
 
 		return '' !== $url
 			? '<a class="oc-mb__link" href="' . esc_url( $url ) . '">' . $inner . '</a>'

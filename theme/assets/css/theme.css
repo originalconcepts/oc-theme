@@ -1416,6 +1416,8 @@ html.oc-menu-open .oc-menu-dim::before {
 	inline-size: 100%;
 	block-size: 100%;
 	object-fit: cover;
+	/* when the frame crops, the block may say which part to keep */
+	object-position: 50% var(--oc-mb-focus, 50%);
 }
 
 .oc-mb__fig--r-sharp { border-radius: 0; }

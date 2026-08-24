@@ -373,3 +373,7 @@ body.oc-mp-locked { overflow: hidden; }
 
 /* With the button seated in the handle, the body keeps only the words. */
 .oc-mi__panel .oc-mi__edit { opacity: 1; }
+
+.oc-mp__range { display: flex; align-items: center; gap: 10px; max-inline-size: 460px; }
+.oc-mp__range input[type="range"] { flex: 1 1 auto; }
+.oc-mp__rangeval { font-size: 12px; color: #50575e; min-inline-size: 34px; text-align: end; }

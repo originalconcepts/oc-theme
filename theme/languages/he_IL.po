@@ -3729,3 +3729,9 @@ msgstr "מיושר לצד"
 
 msgid "Centred"
 msgstr "ממורכז"
+
+msgid "The picture's focal point (%)"
+msgstr "מוקד התמונה (%)"
+
+msgid "Which part the frame keeps when it has to crop: 0 the top, 50 the middle, 100 the bottom."
+msgstr "איזה חלק המסגרת שומרת כשהיא נאלצת לחתוך: 0 החלק העליון, 50 האמצע, 100 התחתון."
