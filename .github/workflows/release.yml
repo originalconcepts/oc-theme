@@ -37,14 +37,16 @@ jobs:
         with:
           php-version: '8.1'
           tools: composer:v2
+      # No lockfile in this repository — the machine the theme is written on
+      # has no Node, so the lockfile would go stale the moment it was made.
+      # Plain install, no cache keyed on a file that does not exist.
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: npm
 
       - name: Build blocks
         run: |
-          npm ci
+          npm install --no-audit --no-fund
           npm run build
 
       - name: Stage artefacts
