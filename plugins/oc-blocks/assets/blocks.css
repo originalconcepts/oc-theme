@@ -16,8 +16,19 @@
 }
 
 /* On a composed page the hero is the title — the theme's own heading and
- * breadcrumb step aside, and the article wrapper gives up its gaps. */
-.oc-composed .oc-page-title,
+ * breadcrumb step aside, and the article wrapper gives up its gaps. The
+ * heading stays in the document for search engines and screen readers;
+ * only its pixels leave. */
+.oc-composed .oc-page-title {
+	position: absolute;
+	inline-size: 1px;
+	block-size: 1px;
+	margin: -1px;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
+}
+
 .oc-composed .oc-breadcrumb { display: none; }
 
 .oc-composed .site-main { padding-block: 0; }
