@@ -1348,51 +1348,48 @@ html.oc-menu-open .oc-menu-dim::before {
 .oc-mb__link { display: block; text-decoration: none; color: inherit; }
 
 /* In the desktop panel a picture is a card beside the columns, not a poster
- * behind them. The figure is absolutely anchored inside its cell, so it
- * contributes nothing to the row's height — the columns set that — and by
- * default it simply fills it, which makes the picture exactly as tall as
- * the lists it stands next to. A number from the Customizer pins the height
- * instead; either way the width follows from the picture's own shape. The
+ * behind them. With a pinned height — the default — the figure stands in
+ * the row like everything else, so the panel opens as far as the picture
+ * and whatever words hang on it need: nothing can poke out of the bottom.
+ * Its width follows from its own shape, and it hugs the far edge. The
  * drawer keeps full-width pictures — a phone column IS the row. */
-.oc-mega--cols .oc-mb--image {
-	align-self: stretch;
-	position: relative;
-	/* A picture no taller than the lists beside it reads as an afterthought.
-	 * This raises the row when the lists are short — about a third over a
-	 * typical column — and yields the moment the lists outgrow it. */
-	min-block-size: var(--oc-mega-img-min, 290px);
-}
-
-.oc-mega--cols .oc-mb--image .oc-mb__fig {
-	position: absolute;
-	inset-block-start: 0;
-	inset-inline-end: 0;
-	block-size: var(--oc-mega-img-h, 100%);
-	inline-size: auto;
-	aspect-ratio: var(--oc-mb-ratio, 3 / 4);
-	margin: 0;
-}
-
-/* A panel with no columns has nothing to measure the picture against, so
- * there it takes the pinned height, or a modest one. */
-.oc-mega:not(.oc-mega--cols):not(.oc-mega--drawer) .oc-mb__fig {
-	block-size: var(--oc-mega-img-h, 420px);
+.oc-mega:not(.oc-mega--drawer) .oc-mb--image .oc-mb__fig {
+	block-size: var(--oc-mega-img-h, 360px);
 	inline-size: auto;
 	aspect-ratio: var(--oc-mb-ratio, 3 / 4);
 	margin-inline-start: auto;
 }
 
-.oc-nav .oc-mega .oc-mb__fig--under {
-	display: flex;
-	flex-direction: column;
-	overflow: hidden;
+/* Words under the picture add to its height rather than living inside it,
+ * so a long caption opens the panel further instead of eating the image. */
+.oc-mega:not(.oc-mega--drawer) .oc-mb--image .oc-mb__fig--under {
+	block-size: auto;
+	inline-size: fit-content;
+	overflow: visible;
 }
 
-.oc-nav .oc-mega .oc-mb__fig--under .oc-mb__img {
-	flex: 1 1 auto;
-	min-block-size: 0;
-	aspect-ratio: auto;
-	inline-size: 100%;
+.oc-mega:not(.oc-mega--drawer) .oc-mb--image .oc-mb__fig--under .oc-mb__img {
+	block-size: var(--oc-mega-img-h, 360px);
+	inline-size: auto;
+	aspect-ratio: var(--oc-mb-ratio, 3 / 4);
+	border-radius: inherit;
+}
+
+/* Set to zero, the height instead matches the columns: the figure leaves
+ * the flow so it cannot be the tallest thing in the row it is measured
+ * against, and simply fills whatever the lists decide. */
+.oc-nav--imgfit .oc-mega--cols .oc-mb--image {
+	position: relative;
+	align-self: stretch;
+	min-block-size: var(--oc-mega-img-min, 290px);
+}
+
+.oc-nav--imgfit .oc-mega--cols .oc-mb--image .oc-mb__fig {
+	position: absolute;
+	inset-block-start: 0;
+	inset-inline-end: 0;
+	block-size: 100%;
+	margin: 0;
 }
 
 .oc-mb__fig {
@@ -1796,9 +1793,19 @@ html.oc-drw-open body { overflow: hidden; }
 
 /* --- what a panel becomes here --- */
 
+/* Inside the drawer the panel is ordinary flowing content, so every trait
+ * of the pop-up — the positioning, the hiding, the entrance — must be
+ * unlearned, not just the cosmetics. The base rule hides panels until
+ * hovered, and nothing in a drawer is ever hovered. */
 .oc-mega--drawer {
+	position: static;
+	opacity: 1;
+	visibility: visible;
+	transform: none;
+	transition: none;
+	box-shadow: none;
 	display: block;
-	padding-block: 4px 14px;
+	padding: 4px 0 14px;
 	background: none;
 	border: 0;
 	color: inherit;

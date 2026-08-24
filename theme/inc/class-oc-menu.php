@@ -109,6 +109,12 @@ final class Menu {
 			'oc-nav--w-' . $width,
 		);
 
+		// Picture height zero means "as tall as the columns". The mode rides
+		// the nav rather than the cached panel markup, like the width does.
+		if ( 0 === absint( get_theme_mod( 'oc_mega_img_h', 360 ) ) ) {
+			$classes[] = 'oc-nav--imgfit';
+		}
+
 		if ( get_theme_mod( 'oc_menu_dim', false ) ) {
 			$classes[] = 'oc-nav--dim';
 		}
