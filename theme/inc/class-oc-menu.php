@@ -115,6 +115,10 @@ final class Menu {
 			$classes[] = 'oc-nav--imgfit';
 		}
 
+		if ( 'down' === get_theme_mod( 'oc_menu_enter', 'side' ) ) {
+			$classes[] = 'oc-nav--in-down';
+		}
+
 		if ( get_theme_mod( 'oc_menu_dim', false ) ) {
 			$classes[] = 'oc-nav--dim';
 		}

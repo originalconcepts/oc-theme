@@ -3798,3 +3798,51 @@ msgstr "עדיין אין מותגים באתר."
 
 msgid "— choose —"
 msgstr "— בחירה —"
+
+msgid "Switched off"
+msgstr "כבוי"
+
+msgid "By brand"
+msgstr "לפי מותג"
+
+msgid "Leave empty for no heading."
+msgstr "השאירו ריק — בלי כותרת."
+
+msgid "A list of names"
+msgstr "רשימת שמות"
+
+msgid "Logos"
+msgstr "לוגואים"
+
+msgid "Drawn from"
+msgstr "נלקחים מ"
+
+msgid "The whole shop"
+msgstr "כל החנות"
+
+msgid "This item's category"
+msgstr "הקטגוריה של הפריט"
+
+msgid "On a category item, \"this item's category\" keeps only brands that have products in it."
+msgstr "בפריט של קטגוריה, ״הקטגוריה של הפריט״ משאיר רק מותגים שיש להם מוצרים בה."
+
+msgid "At most"
+msgstr "עד כמה"
+
+msgid "\"All brands\" leads to"
+msgstr "״לכל המותגים״ מוביל אל"
+
+msgid "Shown when there are more brands than fit. Empty on a category item falls back to the category itself."
+msgstr "מוצג כשיש יותר מותגים ממה שנכנס. ריק בפריט של קטגוריה — מוביל לקטגוריה עצמה."
+
+msgid "All brands"
+msgstr "לכל המותגים"
+
+msgid "The pieces arrive"
+msgstr "החלקים נכנסים"
+
+msgid "From the side"
+msgstr "מהצד"
+
+msgid "From above"
+msgstr "מלמעלה"

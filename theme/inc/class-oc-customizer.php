@@ -619,6 +619,22 @@ final class Customizer {
 			__( 'Governs the drawer on a phone as well as the panel on a desktop.', 'oc-theme' )
 		);
 
+		$this->choice(
+			$c,
+			'oc_menu_enter',
+			'oc_menu',
+			__( 'The pieces arrive', 'oc-theme' ),
+			array(
+				'side' => __( 'From the side', 'oc-theme' ),
+				'down' => __( 'From above', 'oc-theme' ),
+			),
+			'side',
+			array(
+				'setting' => 'oc_menu_motion',
+				'values'  => array( 'stagger' ),
+			)
+		);
+
 		$this->number(
 			$c,
 			'oc_menu_stagger',

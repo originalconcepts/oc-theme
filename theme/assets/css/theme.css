@@ -1281,6 +1281,11 @@ html.oc-menu-open .oc-menu-dim::before {
 	animation-delay: calc(180ms + var(--oc-menu-step, 40ms) * var(--i, 0));
 }
 
+/* From above instead of from the side: the same beat and the same fade,
+ * arriving down the page the way a list is read. */
+.oc-nav--in-down.oc-nav--mo-stagger .oc-nav__list .sub-menu > li { transform: translateY(-10px); }
+.oc-nav--in-down.oc-nav--mo-stagger .oc-mega .oc-mb { transform: translateY(-14px); }
+
 /* --i is written onto each piece by the renderer, which knows which of them
  * are pieces and which is the spacer holding the row apart. */
 .oc-mega .oc-mb--gap { animation: none !important; opacity: 1; transform: none; }
@@ -1293,7 +1298,7 @@ html.oc-menu-open .oc-menu-dim::before {
  * anything hangs off it, because it is the same kind of thing either way. */
 .oc-mb__g,
 .oc-mb__list--lead a {
-	font-weight: 700;
+	font-weight: 600;
 	color: var(--oc-mega-head, inherit);
 }
 
@@ -1315,7 +1320,7 @@ html.oc-menu-open .oc-menu-dim::before {
 .oc-mb__h {
 	margin: 0 0 10px;
 	font-size: 1em;
-	font-weight: 700;
+	font-weight: 600;
 	letter-spacing: var(--oc-menu-track, 0);
 	color: var(--oc-mega-head, inherit);
 }
@@ -1345,7 +1350,8 @@ html.oc-menu-open .oc-menu-dim::before {
 	font-weight: 400;
 }
 
-.oc-mega:not(.oc-mega--drawer) .oc-mb__list--lead a { font-weight: 700; }
+.oc-mega:not(.oc-mega--drawer) .oc-mb__list--lead a,
+.oc-mega:not(.oc-mega--drawer) .oc-mb__g a { font-weight: 600; }
 
 .oc-mb__list a:hover { color: var(--oc-mega-tx-h, var(--oc-primary)); }
 
@@ -1536,6 +1542,18 @@ html.oc-menu-open .oc-menu-dim::before {
 .oc-mb__prod:hover .oc-mb__prod-name { color: var(--oc-mega-tx-h, var(--oc-primary)); }
 
 /* --- the brands --- */
+
+/* The door to the rest, when more brands exist than the block shows. */
+.oc-mb__all {
+	display: inline-block;
+	margin-block-start: 12px;
+	font-size: calc(var(--oc-mega-fs, 15px) * .92);
+	color: inherit;
+	text-decoration: underline;
+	text-underline-offset: 3px;
+}
+
+.oc-mb__all:hover { color: var(--oc-mega-tx-h, var(--oc-primary)); }
 
 .oc-mb__brands {
 	display: flex;

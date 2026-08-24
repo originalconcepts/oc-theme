@@ -150,7 +150,7 @@
 
 	function card( block, i ) {
 		var node = el( 'div', {
-			'class': 'oc-mpc' + ( state.open === i ? ' is-on' : '' ),
+			'class': 'oc-mpc' + ( state.open === i ? ' is-on' : '' ) + ( block.dev === 'off' ? ' is-off' : '' ),
 			draggable: 'true',
 			ondragstart: function ( e ) {
 				dragFrom = i;
@@ -967,7 +967,39 @@
 			try {
 				var doc = frame.contentDocument;
 
-				frame.style.height = Math.max( 80, doc.body.scrollHeight ) + 'px';
+				/* The panel is drawn at the width the site gives it, which is
+				 * wider than this modal. Shown 1:1 the row keeps its size and
+				 * the far end — in Hebrew, the left end — falls off the edge
+				 * with no scrollbar to say so. Scaled to fit, all of it is
+				 * seen at once, only smaller. */
+				var row = doc.querySelector( '.oc-mega__row' );
+
+				if ( row ) {
+					var lo = Infinity;
+					var hi = -Infinity;
+
+					[].forEach.call( row.children, function ( c ) {
+						var r = c.getBoundingClientRect();
+						lo = Math.min( lo, r.left );
+						hi = Math.max( hi, r.right );
+					} );
+
+					var need = hi - lo;
+					var have = doc.documentElement.clientWidth;
+
+					if ( need > have && need > 0 ) {
+						doc.body.style.zoom = String( Math.max( 0.4, ( have / need ) * 0.97 ) );
+					}
+				}
+
+				var fit = function () {
+					frame.style.height = Math.max( 80, Math.ceil( doc.body.getBoundingClientRect().height ) ) + 'px';
+				};
+
+				fit();
+
+				/* Pictures arrive after onload and grow the panel under it. */
+				setTimeout( fit, 600 );
 			} catch ( e ) {}
 		};
 	}

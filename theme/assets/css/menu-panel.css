@@ -87,6 +87,10 @@ body.oc-mp-locked { overflow: hidden; }
 	max-inline-size: 60ch;
 }
 
+/* A switched-off block stays on the shelf but steps back from it. */
+.oc-mpc.is-off { opacity: .45; }
+.oc-mpc.is-off.is-on { opacity: .75; }
+
 .oc-mpc {
 	position: relative;
 	display: flex;

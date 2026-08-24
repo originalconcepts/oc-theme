@@ -78,6 +78,7 @@ final class Menu_Panel {
 			'both'    => __( 'Everywhere', 'oc-theme' ),
 			'desktop' => __( 'Desktop only', 'oc-theme' ),
 			'mobile'  => __( 'Drawer only', 'oc-theme' ),
+			'off'     => __( 'Switched off', 'oc-theme' ),
 		);
 	}
 
@@ -128,19 +129,47 @@ final class Menu_Panel {
 				'blurb'  => __( 'Logos or names, linking to each brand', 'oc-theme' ),
 				'icon'   => '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="7" cy="7" r="3.4" opacity=".55"/><circle cx="17" cy="7" r="3.4" opacity=".55"/><circle cx="7" cy="17" r="3.4" opacity=".55"/><circle cx="17" cy="17" r="3.4" opacity=".55"/></svg>',
 				'fields' => array(
+					'title' => array(
+						'type' => 'text',
+						'label' => __( 'Heading', 'oc-theme' ),
+						'def'   => __( 'By brand', 'oc-theme' ),
+						'hint'  => __( 'Leave empty for no heading.', 'oc-theme' ),
+					),
 					'style' => array(
 						'type'    => 'select',
 						'label'   => __( 'Shown as', 'oc-theme' ),
 						'choices' => array(
-							'logo' => __( 'Logo', 'oc-theme' ),
-							'text' => __( 'Name', 'oc-theme' ),
+							'list' => __( 'A list of names', 'oc-theme' ),
+							'logo' => __( 'Logos', 'oc-theme' ),
 						),
-						'def'     => 'logo',
+						'def'     => 'list',
+					),
+					'scope' => array(
+						'type'    => 'select',
+						'label'   => __( 'Drawn from', 'oc-theme' ),
+						'choices' => array(
+							'all' => __( 'The whole shop', 'oc-theme' ),
+							'cat' => __( 'This item\'s category', 'oc-theme' ),
+						),
+						'def'     => 'all',
+						'hint'    => __( 'On a category item, "this item\'s category" keeps only brands that have products in it.', 'oc-theme' ),
 					),
 					'terms' => array(
 						'type'  => 'terms',
 						'label' => __( 'Which brands', 'oc-theme' ),
 						'hint'  => __( 'None ticked means all of them.', 'oc-theme' ),
+					),
+					'count' => array(
+						'type'  => 'number',
+						'label' => __( 'At most', 'oc-theme' ),
+						'def'   => 8,
+						'min'   => 1,
+						'max'   => 24,
+					),
+					'link'  => array(
+						'type'  => 'url',
+						'label' => __( '"All brands" leads to', 'oc-theme' ),
+						'hint'  => __( 'Shown when there are more brands than fit. Empty on a category item falls back to the category itself.', 'oc-theme' ),
 					),
 				),
 			),
@@ -645,11 +674,15 @@ final class Menu_Panel {
 		$first  = $gap;
 
 		foreach ( null === $blocks ? self::blocks( $item_id ) : self::clean( $blocks ) as $block ) {
+			if ( 'off' === $block['dev'] ) {
+				continue;
+			}
+
 			if ( 'drawer' === $where ? 'desktop' === $block['dev'] : 'mobile' === $block['dev'] ) {
 				continue;
 			}
 
-			$piece = self::block( $block );
+			$piece = self::block( $block, $item_id );
 
 			if ( null === $piece ) {
 				continue;
@@ -678,10 +711,11 @@ final class Menu_Panel {
 	/**
 	 * One block.
 	 *
-	 * @param array<string,mixed> $block Block.
+	 * @param array<string,mixed> $block   Block.
+	 * @param int                 $item_id Menu item the block sits under.
 	 * @return array{class:string,inner:string}|null
 	 */
-	private static function block( array $block ): ?array {
+	private static function block( array $block, int $item_id = 0 ): ?array {
 		$type = (string) $block['type'];
 
 		$inner = '';
@@ -694,7 +728,7 @@ final class Menu_Panel {
 				$inner = self::products_block( $block );
 				break;
 			case 'brands':
-				$inner = self::brands_block( $block );
+				$inner = self::brands_block( $block, $item_id );
 				break;
 			default:
 				/**
@@ -790,53 +824,127 @@ final class Menu_Panel {
 	 * asked to show a logo it does not have shows its name instead — visible
 	 * and correct beats invisible and broken.
 	 *
-	 * @param array<string,mixed> $block Block.
+	 * @param array<string,mixed> $block   Block.
+	 * @param int                 $item_id Menu item the block sits under.
 	 * @return string
 	 */
-	private static function brands_block( array $block ): string {
+	private static function brands_block( array $block, int $item_id = 0 ): string {
 		$taxonomy = class_exists( 'OC\\Theme\\Search' ) ? Search::brand_taxonomy() : '';
 
 		if ( '' === $taxonomy ) {
 			return '';
 		}
 
-		$chosen = (array) ( $block['terms'] ?? array() );
+		// The category behind the menu item, when there is one. A fashion
+		// shop's "women" and "men" both carry brands, and the same block
+		// under each should offer each aisle its own — not the whole house.
+		$cat = null;
 
-		$terms = get_terms(
-			array(
-				'taxonomy'   => $taxonomy,
-				'hide_empty' => false,
-				'include'    => empty( $chosen ) ? array() : array_map( 'absint', $chosen ),
-				'orderby'    => empty( $chosen ) ? 'name' : 'include',
-			)
+		if ( $item_id > 0 && 'product_cat' === get_post_meta( $item_id, '_menu_item_object', true ) ) {
+			$term = get_term( (int) get_post_meta( $item_id, '_menu_item_object_id', true ), 'product_cat' );
+			$cat  = $term instanceof \WP_Term ? $term : null;
+		}
+
+		$chosen = array_map( 'absint', (array) ( $block['terms'] ?? array() ) );
+		$args   = array(
+			'taxonomy'   => $taxonomy,
+			'hide_empty' => false,
+			'include'    => empty( $chosen ) ? array() : $chosen,
+			'orderby'    => empty( $chosen ) ? 'name' : 'include',
 		);
+
+		if ( 'cat' === ( $block['scope'] ?? 'all' ) && null !== $cat && function_exists( 'wc_get_products' ) ) {
+			$in_cat = self::category_brands( $cat, $taxonomy );
+
+			if ( empty( $in_cat ) ) {
+				return '';
+			}
+
+			$args['include'] = empty( $chosen ) ? $in_cat : array_values( array_intersect( $chosen, $in_cat ) );
+
+			if ( empty( $args['include'] ) ) {
+				return '';
+			}
+		}
+
+		$terms = get_terms( $args );
 
 		if ( ! is_array( $terms ) || empty( $terms ) ) {
 			return '';
 		}
 
-		$logos = 'text' !== ( $block['style'] ?? 'logo' );
-		$out   = '<div class="oc-mb__brands">';
+		$count = max( 1, min( 24, (int) ( $block['count'] ?? 8 ) ) );
+		$total = count( $terms );
+		$terms = array_slice( $terms, 0, $count );
+		$title = trim( (string) ( $block['title'] ?? '' ) );
+		$out   = '' === $title ? '' : '<h4 class="oc-mb__g">' . esc_html( $title ) . '</h4>';
 
-		foreach ( $terms as $term ) {
-			$inner = '';
+		// 'text' is what this style was called before it grew a list.
+		if ( 'logo' !== ( $block['style'] ?? 'list' ) ) {
+			$rows = array();
 
-			if ( $logos ) {
+			foreach ( $terms as $term ) {
+				$rows[] = '<li><a href="' . esc_url( (string) get_term_link( $term ) ) . '">' . esc_html( $term->name ) . '</a></li>';
+			}
+
+			$out .= self::lists( $rows );
+		} else {
+			$out .= '<div class="oc-mb__brands">';
+
+			foreach ( $terms as $term ) {
 				$thumb = (int) get_term_meta( (int) $term->term_id, 'thumbnail_id', true );
+				$inner = $thumb > 0
+					? wp_get_attachment_image( $thumb, 'medium', false, array( 'class' => 'oc-mb__brand-logo', 'loading' => 'lazy', 'alt' => $term->name ) )
+					: '<span class="oc-mb__brand-name">' . esc_html( $term->name ) . '</span>';
 
-				if ( $thumb > 0 ) {
-					$inner = wp_get_attachment_image( $thumb, 'medium', false, array( 'class' => 'oc-mb__brand-logo', 'loading' => 'lazy', 'alt' => $term->name ) );
-				}
+				$out .= '<a class="oc-mb__brand" href="' . esc_url( (string) get_term_link( $term ) ) . '">' . $inner . '</a>';
 			}
 
-			if ( '' === $inner ) {
-				$inner = '<span class="oc-mb__brand-name">' . esc_html( $term->name ) . '</span>';
-			}
-
-			$out .= '<a class="oc-mb__brand" href="' . esc_url( (string) get_term_link( $term ) ) . '">' . $inner . '</a>';
+			$out .= '</div>';
 		}
 
-		return $out . '</div>';
+		// More of them than shown: a door to the rest. A set address wins;
+		// without one, a category item opens its own category.
+		if ( $total > count( $terms ) ) {
+			$more = (string) ( $block['link'] ?? '' );
+
+			if ( '' === $more && null !== $cat ) {
+				$link = get_term_link( $cat );
+				$more = is_wp_error( $link ) ? '' : (string) $link;
+			}
+
+			if ( '' !== $more ) {
+				$out .= '<a class="oc-mb__all" href="' . esc_url( $more ) . '">' . esc_html__( 'All brands', 'oc-theme' ) . '</a>';
+			}
+		}
+
+		return $out;
+	}
+
+	/**
+	 * The brands that have products in a category, as term ids.
+	 *
+	 * @param \WP_Term $cat      Category.
+	 * @param string   $taxonomy Brand taxonomy.
+	 * @return array<int,int>
+	 */
+	private static function category_brands( \WP_Term $cat, string $taxonomy ): array {
+		$ids = wc_get_products(
+			array(
+				'status'   => 'publish',
+				'limit'    => 200,
+				'return'   => 'ids',
+				'category' => array( $cat->slug ),
+			)
+		);
+
+		if ( empty( $ids ) ) {
+			return array();
+		}
+
+		$brands = wp_get_object_terms( $ids, $taxonomy, array( 'fields' => 'ids' ) );
+
+		return is_wp_error( $brands ) ? array() : array_map( 'intval', $brands );
 	}
 
 	/**
