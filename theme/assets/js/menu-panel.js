@@ -303,21 +303,37 @@
 			}
 		} );
 
-		box.appendChild( el( 'div', { 'class': 'oc-mp__srow' }, [
-			select( T.width, D.widths, block.w, function ( v ) {
-				block.w = v;
-				touch();
-			}, true ),
-			select( T.device, D.devices, block.dev, function ( v ) {
-				block.dev = v;
-				touch();
-			} ),
-			el( 'label', { 'class': 'oc-mp__check' }, [ push, el( 'span', { text: T.push } ) ] )
-		] ) );
+		/* The content first, the dials last. Every drop-down — width, where
+		 * the words sit, the corners, all of them — gathers into one row at
+		 * the bottom, right above Save, so tuning the block is one place to
+		 * look instead of a column to scroll. */
+		Object.keys( fields ).forEach( function ( key ) {
+			if ( fields[ key ].type !== 'select' ) {
+				box.appendChild( field( block, key, fields[ key ] ) );
+			}
+		} );
+
+		var dials = el( 'div', { 'class': 'oc-mp__srow oc-mp__srow--end' } );
+
+		dials.appendChild( select( T.width, D.widths, block.w, function ( v ) {
+			block.w = v;
+			touch();
+		}, true ) );
 
 		Object.keys( fields ).forEach( function ( key ) {
-			box.appendChild( field( block, key, fields[ key ] ) );
+			if ( fields[ key ].type === 'select' ) {
+				dials.appendChild( field( block, key, fields[ key ] ) );
+			}
 		} );
+
+		dials.appendChild( select( T.device, D.devices, block.dev, function ( v ) {
+			block.dev = v;
+			touch();
+		} ) );
+
+		dials.appendChild( el( 'label', { 'class': 'oc-mp__check' }, [ push, el( 'span', { text: T.push } ) ] ) );
+
+		box.appendChild( dials );
 	}
 
 	function select( label, choices, value, onchange, useLabelKey ) {
