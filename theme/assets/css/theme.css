@@ -1167,8 +1167,11 @@ html.oc-search-open { overflow: hidden; }
 .oc-nav--mo-none .oc-nav__list > li > a::after { transition: none; }
 
 /* Dimming the page behind an open panel. Fixed and below the header's 50, so
- * the menu itself stays lit while everything under it recedes. */
-.oc-menu-dim::before {
+ * the menu itself stays lit while everything under it recedes. On ::after,
+ * because the checkout paints its summary band on the body's ::before and
+ * one element has only one of each — sharing meant the band inherited this
+ * rule's "hidden until a panel opens" and vanished. */
+.oc-menu-dim::after {
 	content: '';
 	position: fixed;
 	inset: 0;
@@ -1180,7 +1183,7 @@ html.oc-search-open { overflow: hidden; }
 	transition: opacity .2s ease, visibility 0s linear .2s;
 }
 
-html.oc-menu-open .oc-menu-dim::before {
+html.oc-menu-open .oc-menu-dim::after {
 	opacity: 1;
 	visibility: visible;
 	transition: opacity .22s ease, visibility 0s;
