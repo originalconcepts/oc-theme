@@ -6323,7 +6323,9 @@
 
 				if ( arr ) {
 					var strip = vp.querySelector( '.oc-vp__strip' );
-					strip.scrollBy( { left: strip.clientWidth * Number( arr.dataset.vpGo ) * ( document.documentElement.dir === 'rtl' ? -1 : 1 ), behavior: 'smooth' } );
+					// Physical: the left arrow always shows what stands to
+					// the left. scrollBy speaks pixels, not reading order.
+					strip.scrollBy( { left: vpStep() * Number( arr.dataset.vpGo ), behavior: 'smooth' } );
 				}
 
 				/* A colour sibling is another product wearing this panel:
@@ -6440,6 +6442,13 @@
 			} );
 		}
 
+		/* One slide's stride: its width plus the gap between slides. */
+		function vpStep() {
+			var slide = vp.querySelector( '.oc-vp__slide:not([hidden])' );
+
+			return slide ? slide.offsetWidth + 10 : vp.querySelector( '.oc-vp__strip' ).clientWidth;
+		}
+
 		function vpDots() {
 			var strip = vp.querySelector( '.oc-vp__strip' );
 			var dots = vp.querySelector( '.oc-vp__dots' );
@@ -6451,19 +6460,31 @@
 					var d = vpEl( 'button', 'oc-vp__dot' );
 					d.type = 'button';
 					d.addEventListener( 'click', function () {
-						sl.scrollIntoView( { behavior: 'smooth', block: 'nearest', inline: 'center' } );
+						sl.scrollIntoView( { behavior: 'smooth', block: 'nearest', inline: 'start' } );
 					} );
 					dots.appendChild( d );
 				} );
 			}
 
-			var at = Math.round( Math.abs( strip.scrollLeft ) / Math.max( 1, strip.clientWidth ) );
+			var at = Math.round( Math.abs( strip.scrollLeft ) / Math.max( 1, vpStep() ) );
 
 			[].forEach.call( dots.children, function ( d, i ) {
 				d.classList.toggle( 'is-on', i === Math.min( at, dots.children.length - 1 ) );
 			} );
 
 			vp.querySelector( '.oc-vp__gal' ).classList.toggle( 'oc-vp__gal--one', slides.length < 2 );
+
+			/* An arrow with nowhere left to go steps back into grey. In RTL
+			 * the strip scrolls into negative territory — the absolute
+			 * distance from the start is the honest measure. */
+			var max = strip.scrollWidth - strip.clientWidth;
+			var gone = Math.abs( strip.scrollLeft );
+			var rtl = getComputedStyle( strip ).direction === 'rtl';
+			var atStart = gone < 2;
+			var atEnd = gone > max - 2;
+
+			vp.querySelector( '.oc-vp__arr--prev' ).classList.toggle( 'is-off', rtl ? atEnd : atStart );
+			vp.querySelector( '.oc-vp__arr--next' ).classList.toggle( 'is-off', rtl ? atStart : atEnd );
 		}
 
 		function vpGallery( imgs ) {
@@ -6659,6 +6680,15 @@
 					chip.addEventListener( 'click', function () {
 						st.sel[ g.key ] = st.sel[ g.key ] === o.slug ? '' : o.slug;
 						vpPaint();
+
+						// Answering one question reveals the next: whatever
+						// follows this group slides up into view.
+						var after = chip.closest( '.oc-vp__group' );
+						after = after && after.nextElementSibling;
+
+						if ( after ) {
+							after.scrollIntoView( { behavior: 'smooth', block: 'nearest' } );
+						}
 					} );
 					row.appendChild( chip );
 				} );

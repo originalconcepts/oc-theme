@@ -1641,8 +1641,12 @@ html.oc-menu-open .oc-menu-dim::after {
 
 .oc-vp__gal { position: relative; padding: 14px 14px 0; }
 
+/* The peeking strip: one picture and the edge of the next, inviting the
+ * scroll — the mobile catalogue's own gesture. (The earlier single-frame
+ * contained mode lives in git history, should it be wanted back.) */
 .oc-vp__strip {
 	display: flex;
+	gap: 10px;
 	overflow-x: auto;
 	scroll-snap-type: x mandatory;
 	scrollbar-width: none;
@@ -1651,20 +1655,23 @@ html.oc-menu-open .oc-menu-dim::after {
 
 .oc-vp__strip::-webkit-scrollbar { display: none; }
 
-.oc-vp--c-sharp .oc-vp__strip { border-radius: 0; }
-.oc-vp--c-soft  .oc-vp__strip { border-radius: 14px; }
-.oc-vp--c-round .oc-vp__strip { border-radius: 28px; }
-
 .oc-vp__slide {
-	flex: 0 0 100%;
-	scroll-snap-align: center;
+	flex: 0 0 80%;
+	scroll-snap-align: start;
+	overflow: hidden;
 }
+
+.oc-vp--c-sharp .oc-vp__slide { border-radius: 0; }
+.oc-vp--c-soft  .oc-vp__slide { border-radius: 14px; }
+.oc-vp--c-round .oc-vp__slide { border-radius: 28px; }
+
+.oc-vp__gal--one .oc-vp__slide { flex-basis: 100%; }
 
 .oc-vp__slide img {
 	display: block;
 	inline-size: 100%;
 	aspect-ratio: 4 / 3;
-	object-fit: contain;
+	object-fit: cover;
 	background: var(--oc-surface, #fff);
 }
 
@@ -1687,6 +1694,9 @@ html.oc-menu-open .oc-menu-dim::after {
 
 .oc-vp__arr--prev { left: 22px; }
 .oc-vp__arr--next { right: 22px; }
+
+/* Nowhere further that way: the arrow greys and sleeps. */
+.oc-vp__arr.is-off { opacity: .35; pointer-events: none; }
 
 .oc-vp__gal--one .oc-vp__arr,
 .oc-vp__gal--one .oc-vp__dots { display: none; }
