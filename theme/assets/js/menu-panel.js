@@ -918,7 +918,7 @@
 	seat();
 
 	if ( window.jQuery ) {
-		jQuery( document ).ajaxComplete( function () {
+		window.jQuery( document ).ajaxComplete( function () {
 			setTimeout( seat, 60 );
 		} );
 	}

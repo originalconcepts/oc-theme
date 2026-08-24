@@ -67,9 +67,13 @@ scan "No hardcoded child-theme slug" \
   "theme_mods_oc-" \
   "get_option('theme_mods_oc-main-theme-child') broke the moment a project renamed its child theme."
 
+# Bare jQuery() means the file is BUILT on jQuery, which is banned. Talking
+# to a stack that is itself jQuery — Woo checkout's update_checkout event,
+# wp-admin's ajax — is unavoidable and goes through window.jQuery, feature-
+# checked, which the pattern deliberately does not match.
 scan "No jQuery in front-end JS" \
-  "(jQuery\(|\\\$\(document\)\.ready)" \
-  "The new front end is vanilla. No jQuery, no Slick." \
+  "((^|[^.[:alnum:]_])jQuery\(|\\\$\(document\)\.ready)" \
+  "The new front end is vanilla. No jQuery, no Slick. Interop with jQuery stacks uses window.jQuery, feature-checked." \
   "*.js"
 
 echo
