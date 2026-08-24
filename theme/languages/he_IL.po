@@ -3983,3 +3983,9 @@ msgstr "הערה מתחת לטופס התגובה"
 
 msgid "Empty hides it."
 msgstr "ריק — לא תוצג."
+
+msgid "Write your comment to the post here…"
+msgstr "רשמו כאן את התגובה שלכם לפוסט…"
+
+msgid "Please tick the comment-terms box before posting."
+msgstr "כדי לפרסם את התגובה, יש לסמן קודם את תיבת האישור."

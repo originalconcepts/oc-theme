@@ -1925,9 +1925,24 @@ html[dir="ltr"] .oc-progress i { --oc-start: left; }
 }
 
 .oc-cmt .oc-cmt__note {
-	font-size: .84em;
-	line-height: 1.6;
+	font-size: .95em;
+	line-height: 1.65;
 	color: var(--oc-ink-2, #6b7482);
+}
+
+.oc-cmt .oc-cmt__note label {
+	display: flex;
+	align-items: flex-start;
+	gap: 10px;
+	cursor: pointer;
+}
+
+.oc-cmt .oc-cmt__note input[type="checkbox"] {
+	margin-block-start: .3em;
+	inline-size: 16px;
+	block-size: 16px;
+	flex: 0 0 auto;
+	accent-color: var(--oc-ink, #151a21);
 }
 
 .oc-cmt .form-submit { margin-block-start: 4px; }

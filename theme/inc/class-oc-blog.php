@@ -256,6 +256,18 @@ final class Blog {
 			wp_die( esc_html__( 'Your comment could not be posted.', 'oc-theme' ), '', array( 'response' => 403, 'back_link' => true ) );
 		}
 
+		// The note under the form is agreed to, not merely shown — unless
+		// the site keeps no note at all.
+		$note = (string) get_theme_mod(
+			'oc_blog_disclaimer',
+			__( 'Comments reflect their writers alone. Keep it kind — offensive or promotional comments are removed. Your email stays private and is never shown.', 'oc-theme' )
+		);
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- an agreement box, not an action.
+		if ( '' !== trim( $note ) && empty( $_POST['oc_ok'] ) ) {
+			wp_die( esc_html__( 'Please tick the comment-terms box before posting.', 'oc-theme' ), '', array( 'response' => 403, 'back_link' => true ) );
+		}
+
 		return $data;
 	}
 
@@ -294,7 +306,7 @@ final class Blog {
 		$defaults['title_reply_before']   = '<h3 id="reply-title" class="oc-cmt__ftitle">';
 		$defaults['title_reply_after']    = '</h3>';
 		$defaults['label_submit']         = __( 'Send comment', 'oc-theme' );
-		$defaults['comment_field']        = '<p class="comment-form-comment"><textarea id="comment" name="comment" rows="5" required placeholder="' . esc_attr__( 'What would you like to say?', 'oc-theme' ) . '"></textarea></p>';
+		$defaults['comment_field']        = '<p class="comment-form-comment"><textarea id="comment" name="comment" rows="5" required placeholder="' . esc_attr__( 'Write your comment to the post here…', 'oc-theme' ) . '"></textarea></p>';
 		$defaults['comment_notes_before'] = '';
 
 		// Said in the site's own words, not the language pack's mood.
@@ -314,8 +326,14 @@ final class Blog {
 			__( 'Comments reflect their writers alone. Keep it kind — offensive or promotional comments are removed. Your email stays private and is never shown.', 'oc-theme' )
 		);
 
+		// Agreed to, not merely shown: the box must be ticked to post. The
+		// browser holds the door with `required`; check_traps() holds it
+		// again on the server for whoever walks around the browser.
 		if ( '' !== trim( $note ) ) {
-			$defaults['comment_notes_after'] = '<p class="oc-cmt__note">' . esc_html( $note ) . '</p>';
+			$defaults['comment_notes_after'] = '<p class="oc-cmt__note"><label>' .
+				'<input type="checkbox" name="oc_ok" value="1" required /> ' .
+				'<span>' . esc_html( $note ) . '</span>' .
+				'</label></p>';
 		}
 
 		return $defaults;
