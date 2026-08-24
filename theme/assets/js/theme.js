@@ -6344,7 +6344,7 @@
 					e.preventDefault();
 
 					if ( ! sib.classList.contains( 'is-current' ) && sib.dataset.pid ) {
-						vpLoad( sib.dataset.pid );
+						vpLoad( sib.dataset.pid, true );
 					}
 				}
 			} );
@@ -6532,9 +6532,13 @@
 			vslide.appendChild( vpEl( 'img' ) );
 			strip.appendChild( vslide );
 
-			( imgs || [] ).forEach( function ( u ) {
+			( imgs || [] ).forEach( function ( u, i ) {
 				var sl = vpEl( 'div', 'oc-vp__slide' );
 				var im = vpEl( 'img' );
+				// Decoding on the main thread mid-entrance is the stutter;
+				// the slides past the first can also wait their turn.
+				im.decoding = 'async';
+				if ( i > 0 ) { im.loading = 'lazy'; }
 				im.src = u;
 				im.alt = '';
 				sl.appendChild( im );
@@ -6809,20 +6813,26 @@
 
 		var vpOpenedAt = 0;
 
-		function vpLoad( productId ) {
-			// A blank slate first: the last product must not greet the next.
-			vp.querySelector( '.oc-vp__groups' ).innerHTML = '<span class="oc-vp__loading">…</span>';
-			vp.querySelector( '.oc-vp__strip' ).innerHTML = '';
-			vp.querySelector( '.oc-vp__dots' ).innerHTML = '';
-			vp.querySelector( '.oc-vp__name' ).textContent = '';
-			vp.querySelector( '.oc-vp__price' ).innerHTML = '';
-			vp.querySelector( '.oc-vp__fprice' ).innerHTML = '';
-			vp.querySelector( '.oc-vp__flags' ).innerHTML = '';
-			vp.querySelector( '.oc-vp__blurb' ).innerHTML = '';
-			vp.querySelector( '.oc-vp__stock' ).innerHTML = '';
-			vp.querySelector( '.oc-vp__stars' ).hidden = true;
-			vp.querySelector( '.oc-vp__sku' ).hidden = true;
-			vp.querySelector( '.oc-vp__thumb' ).hidden = true;
+		function vpLoad( productId, keep ) {
+			// A fresh open starts from a blank slate — the last product must
+			// not greet the next. A colour switch keeps the panel dressed
+			// and only swaps the clothes when the answer lands: blanking it
+			// mid-view read as a jump.
+			if ( ! keep ) {
+				vp.querySelector( '.oc-vp__groups' ).innerHTML = '<span class="oc-vp__loading">…</span>';
+				vp.querySelector( '.oc-vp__strip' ).innerHTML = '';
+				vp.querySelector( '.oc-vp__dots' ).innerHTML = '';
+				vp.querySelector( '.oc-vp__name' ).textContent = '';
+				vp.querySelector( '.oc-vp__price' ).innerHTML = '';
+				vp.querySelector( '.oc-vp__fprice' ).innerHTML = '';
+				vp.querySelector( '.oc-vp__flags' ).innerHTML = '';
+				vp.querySelector( '.oc-vp__blurb' ).innerHTML = '';
+				vp.querySelector( '.oc-vp__stock' ).innerHTML = '';
+				vp.querySelector( '.oc-vp__stars' ).hidden = true;
+				vp.querySelector( '.oc-vp__sku' ).hidden = true;
+				vp.querySelector( '.oc-vp__thumb' ).hidden = true;
+			}
+
 			vp.querySelector( '.oc-vp__add' ).disabled = true;
 
 			var data = new FormData();

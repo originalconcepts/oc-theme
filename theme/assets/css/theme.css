@@ -1514,24 +1514,30 @@ html.oc-menu-open .oc-menu-dim::after {
 	color: inherit;
 }
 
-.oc-mb__prod-img { display: block; }
+/* The card's labels ride the picture's corners, exactly as they do on the
+ * catalogue cards. */
+.oc-mb__prod-img { position: relative; display: block; }
 
-/* The card's labels stand in a quiet row under the picture — floated over
- * it they landed on the whitespace a whole-picture fit leaves. */
-.oc-mb__prod-flags { display: block; }
-.oc-mb__prod-flags .oc-flags { position: static; flex-direction: row; flex-wrap: wrap; gap: 4px; }
-.oc-mb__prod-flags .oc-flags:empty { display: none; }
-.oc-mb__prod-flags .oc-flags:not(:empty) { margin-block-start: 7px; }
+.oc-mb__prod-img .oc-flags { top: 6px; }
+.oc-mb__prod-img .oc-flags--left { left: 6px; }
+.oc-mb__prod-img .oc-flags--right { right: 6px; }
 
-.oc-mb__prod-flags .oc-flags .onsale,
-.oc-mb__prod-flags .oc-flag {
+.oc-mb__prod-img .oc-flags .onsale,
+.oc-mb__prod-img .oc-flag {
 	font-size: .62rem;
 	padding: .45em .7em;
 }
 
-/* The sale badge dresses itself only under .woocommerce, and the header is
- * not it — said again here so the panel's badge is not bare text. */
-.oc-mb__prod-flags .oc-flags .onsale,
+/* The sale badge stacks inside its label column here — .woocommerce
+ * span.onsale would pin it absolute at higher specificity — and dresses
+ * itself, because outside the shop pages nobody else does. */
+.oc-mb__prod-img .oc-flags .onsale {
+	position: static;
+	inset: auto;
+	margin: 0;
+}
+
+.oc-mb__prod-img .oc-flags .onsale,
 .oc-vp__flags .oc-flags .onsale {
 	background: var(--oc-sale, #b4453c);
 	color: #fff;
@@ -1605,6 +1611,9 @@ html.oc-menu-open .oc-menu-dim::after {
 	background: var(--oc-surface, #fff);
 	box-shadow: 0 0 40px rgb(0 0 0 / 14%);
 	transition: transform .28s cubic-bezier(.22, .61, .36, 1);
+	/* Its own compositor layer: the slide keeps gliding even while the
+	 * main thread is busy dressing the content. */
+	will-change: transform;
 }
 
 /* The side is a setting, said physically so it survives RTL. */
@@ -1757,8 +1766,7 @@ html.oc-menu-open .oc-menu-dim::after {
 /* The card's corner labels, standing over the title instead of floating.
  * The sale badge is pinned absolute by .woocommerce span.onsale at higher
  * specificity, so its place in the row is said explicitly. */
-.oc-vp .oc-flags .onsale,
-.oc-mb__prod-flags .oc-flags .onsale {
+.oc-vp .oc-flags .onsale {
 	position: static;
 	inset: auto;
 	margin: 0;

@@ -898,8 +898,7 @@ final class Menu_Panel {
 			$image = $product->get_image( $size, array( 'loading' => 'lazy' ) );
 
 			$out .= '<a class="oc-mb__prod" href="' . esc_url( (string) $product->get_permalink() ) . '">';
-			$out .= '<span class="oc-mb__prod-img">' . $image . '</span>';
-			$out .= '<span class="oc-mb__prod-flags">' . WooCommerce::flags_html( $product ) . '</span>';
+			$out .= '<span class="oc-mb__prod-img">' . $image . WooCommerce::flags_html( $product ) . '</span>';
 			$out .= '<span class="oc-mb__prod-name">' . esc_html( $product->get_name() ) . '</span>';
 			$out .= '<span class="oc-mb__prod-price">' . $product->get_price_html() . '</span>';
 			$out .= '</a>';

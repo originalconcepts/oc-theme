@@ -144,6 +144,9 @@ final class Search {
 		}
 
 		add_action( 'pre_get_posts', array( $this, 'results_query' ) );
+		// A search lands on its results, even when only one product answers —
+		// jumping straight into it reads as being grabbed, not helped.
+		add_filter( 'woocommerce_redirect_single_search_result', '__return_false' );
 		add_filter( 'woocommerce_page_title', array( $this, 'results_title' ) );
 		add_filter( 'woocommerce_show_page_title', array( $this, 'show_title' ) );
 		add_filter( 'oc_page_title', array( $this, 'results_title' ) );
