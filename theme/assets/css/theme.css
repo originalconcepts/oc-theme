@@ -1904,11 +1904,20 @@ html.oc-drw-open body { overflow: hidden; }
 	transform: translateX(var(--oc-in-x, -18px));
 }
 
+/* Two animations, deliberately out of step: the movement settles a beat
+ * before the fade finishes, so a row lands softly instead of arriving and
+ * switching on at the same instant — that simultaneous stop is exactly
+ * what reads as "not smooth". One shared delay staggers both. */
 .oc-drw--mo-stagger[data-open="true"] .oc-drw__body > .oc-drw__list > .oc-drw__i > .oc-drw__row,
 .oc-drw--mo-stagger .oc-drw__i.is-open > .oc-drw__sub .oc-drw__list--sub > .oc-drw__i > .oc-drw__row {
-	animation: oc-menu-in .34s cubic-bezier(.2, .7, .3, 1) forwards;
+	animation:
+		oc-drw-move .55s cubic-bezier(.22, .61, .36, 1) forwards,
+		oc-drw-fade .7s ease-out forwards;
 	animation-delay: calc(200ms + var(--oc-menu-step, 40ms) * var(--i, 0));
 }
+
+@keyframes oc-drw-move { to { transform: none; } }
+@keyframes oc-drw-fade { to { opacity: 1; } }
 
 .oc-drw--mo-stagger .oc-drw__list > .oc-drw__i:nth-child(1)  { --i: 0; }
 .oc-drw--mo-stagger .oc-drw__list > .oc-drw__i:nth-child(2)  { --i: 1; }
