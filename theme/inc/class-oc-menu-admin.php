@@ -294,6 +294,10 @@ final class Menu_Admin {
 			'nonce'   => wp_create_nonce( 'oc_menu_panel' ),
 			'ajax'    => admin_url( 'admin-ajax.php' ),
 			'css'     => get_template_directory_uri() . '/assets/css/' . ( file_exists( OC_THEME_DIR . '/assets/css/theme.min.css' ) ? 'theme.min.css' : 'theme.css' ),
+			// The preview must wear the site's own tokens, or it shows the
+			// stylesheet's fallbacks — corners and sizes the site does not
+			// have, every one of them a bug report waiting to be written.
+			'tokens'  => ( new Assets() )->tokens_css(),
 			'rtl'     => is_rtl(),
 			'i18n'    => array(
 				'save'         => __( 'Save', 'oc-theme' ),

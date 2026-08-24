@@ -247,6 +247,29 @@ final class Assets {
 	 * 613 get_theme_mod() calls.
 	 */
 	public function design_tokens(): void {
+		$css = $this->tokens_css() . $this->context_overrides();
+
+		if ( '' === $css ) {
+			return;
+		}
+
+		// Values passed through safe_property()/safe_value(), which strip
+		// anything that could escape the declaration. esc_html() here would
+		// turn font-name quotes into &quot; and void the declarations — the
+		// bug that made the font settings appear dead.
+		echo "<style id='oc-tokens'>:root{" . $css . "}</style>\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+	}
+
+	/**
+	 * The token declarations alone, page context excluded. Public because the
+	 * panel editor's preview must dress its markup in the same tokens the
+	 * site wears — a preview drawn with the stylesheet's fallbacks shows
+	 * corners and sizes the site does not have, and every such difference
+	 * gets reported as a bug, correctly.
+	 *
+	 * @return string
+	 */
+	public function tokens_css(): string {
 		$display = (string) get_theme_mod( 'oc_font_display', '' );
 		$body    = (string) get_theme_mod( 'oc_font_body', '' );
 
@@ -340,17 +363,7 @@ final class Assets {
 			$css .= sprintf( '%s:%s;', $this->safe_property( $name ), $this->safe_value( $value ) );
 		}
 
-		$css .= $this->context_overrides();
-
-		if ( '' === $css ) {
-			return;
-		}
-
-		// Values passed through safe_property()/safe_value(), which strip
-		// anything that could escape the declaration. esc_html() here would
-		// turn font-name quotes into &quot; and void the declarations — the
-		// bug that made the font settings appear dead.
-		echo "<style id='oc-tokens'>:root{" . $css . "}</style>\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		return $css;
 	}
 
 	/**

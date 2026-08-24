@@ -1420,9 +1420,13 @@ html.oc-menu-open .oc-menu-dim::before {
 	object-position: 50% var(--oc-mb-focus, 50%);
 }
 
+/* The block's own corners, deliberately not the site's global radius: a
+ * shop that squares every corner still has to be able to choose "softened"
+ * here and see something happen — the same lesson the drawer's pictures
+ * taught. Round on a rectangle means generously rounded, not a pill. */
 .oc-mb__fig--r-sharp { border-radius: 0; }
-.oc-mb__fig--r-soft { border-radius: var(--oc-radius, 8px); }
-.oc-mb__fig--r-round { border-radius: 999px; }
+.oc-mb__fig--r-soft { border-radius: 14px; }
+.oc-mb__fig--r-round { border-radius: 28px; }
 
 .oc-mb__words {
 	position: absolute;

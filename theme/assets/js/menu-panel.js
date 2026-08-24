@@ -812,6 +812,7 @@
 		frame.srcdoc = '<!doctype html><html dir="' + ( D.rtl ? 'rtl' : 'ltr' ) + '"><head>' +
 			'<meta charset="utf-8">' +
 			'<link rel="stylesheet" href="' + D.css + '">' +
+			'<style>:root{' + ( D.tokens || '' ) + '}</style>' +
 			'<style>' +
 				'html,body{margin:0;padding:0;background:#fff}' +
 				'.oc-mega{position:static!important;opacity:1!important;visibility:visible!important;transform:none!important;box-shadow:none!important;max-inline-size:none!important;border-inline:0!important}' +
