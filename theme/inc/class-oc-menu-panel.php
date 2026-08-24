@@ -117,12 +117,22 @@ final class Menu_Panel {
 						'type'    => 'select',
 						'label'   => __( 'Shape', 'oc-theme' ),
 						'choices' => array(
-							'3/4'  => __( 'Upright', 'oc-theme' ),
-							'1/1'  => __( 'Square', 'oc-theme' ),
-							'4/3'  => __( 'Landscape', 'oc-theme' ),
-							'16/9' => __( 'Wide', 'oc-theme' ),
+							'natural' => __( 'As the picture is', 'oc-theme' ),
+							'3/4'     => __( 'Upright', 'oc-theme' ),
+							'1/1'     => __( 'Square', 'oc-theme' ),
+							'4/3'     => __( 'Landscape', 'oc-theme' ),
+							'16/9'    => __( 'Wide', 'oc-theme' ),
 						),
-						'def'     => '3/4',
+						'def'     => 'natural',
+					),
+					'align'   => array(
+						'type'    => 'select',
+						'label'   => __( 'The words are', 'oc-theme' ),
+						'choices' => array(
+							'start'  => __( 'To the side', 'oc-theme' ),
+							'centre' => __( 'Centred', 'oc-theme' ),
+						),
+						'def'     => 'start',
 					),
 					'pos'     => array(
 						'type'    => 'select',
@@ -622,8 +632,21 @@ final class Menu_Panel {
 			return '';
 		}
 
-		$ratio  = (string) ( $block['ratio'] ?? '3/4' );
-		$pos    = (string) ( $block['pos'] ?? 'bottom' );
+		$ratio = (string) ( $block['ratio'] ?? 'natural' );
+
+		// "As the picture is" resolves to the picture's own proportions, so
+		// the frame never crops what the photographer framed. It is resolved
+		// here and cached with the markup — the picture's shape does not
+		// change between requests.
+		if ( 'natural' === $ratio || ! preg_match( '#^\d+/\d+$#', $ratio ) ) {
+			$meta  = wp_get_attachment_metadata( $id );
+			$ratio = ! empty( $meta['width'] ) && ! empty( $meta['height'] )
+				? (int) $meta['width'] . '/' . (int) $meta['height']
+				: '3/4';
+		}
+
+		$align = 'centre' === ( $block['align'] ?? '' ) ? ' oc-mb__fig--al-c' : '';
+		$pos   = (string) ( $block['pos'] ?? 'bottom' );
 		$radius = (string) ( $block['radius'] ?? 'soft' );
 		$url    = (string) ( $block['url'] ?? '' );
 
@@ -654,7 +677,7 @@ final class Menu_Panel {
 			$words = '<div class="oc-mb__words">' . $words . '</div>';
 		}
 
-		$inner = '<figure class="oc-mb__fig oc-mb__fig--' . sanitize_html_class( $pos ) . ' oc-mb__fig--r-' . sanitize_html_class( $radius ) . '" style="--oc-mb-ratio:' . esc_attr( $ratio ) . '">' . $img . $words . '</figure>';
+		$inner = '<figure class="oc-mb__fig oc-mb__fig--' . sanitize_html_class( $pos ) . ' oc-mb__fig--r-' . sanitize_html_class( $radius ) . $align . '" style="--oc-mb-ratio:' . esc_attr( $ratio ) . '">' . $img . $words . '</figure>';
 
 		return '' !== $url
 			? '<a class="oc-mb__link" href="' . esc_url( $url ) . '">' . $inner . '</a>'

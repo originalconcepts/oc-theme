@@ -641,6 +641,7 @@ final class Customizer {
 		);
 		$this->number( $c, 'oc_mega_pad', 'oc_menu', __( 'Space inside the panel (px)', 'oc-theme' ), 28, 8, 72, null, __( 'Between the edge of the panel and what is in it.', 'oc-theme' ) );
 		$this->number( $c, 'oc_mega_gap', 'oc_menu', __( 'Space between the columns (px)', 'oc-theme' ), 48, 8, 96 );
+		$this->number( $c, 'oc_mega_rowgap', 'oc_menu', __( 'Space between links in a column (px)', 'oc-theme' ), 7, 0, 24 );
 		$this->number( $c, 'oc_mega_rt', 'oc_menu', __( 'Rounding, top corners (px)', 'oc-theme' ), 0, 0, 32, null, __( 'Corners show when the panel stops short of the screen edges — mostly when it opens under the link.', 'oc-theme' ) );
 		$this->number( $c, 'oc_mega_rb', 'oc_menu', __( 'Rounding, bottom corners (px)', 'oc-theme' ), 0, 0, 32 );
 
@@ -652,7 +653,7 @@ final class Customizer {
 		$this->number( $c, 'oc_mega_fs', 'oc_menu', __( 'Text size in the panel and the drop-down (px)', 'oc-theme' ), 15, 11, 22 );
 
 		$this->number( $c, 'oc_mega_rows', 'oc_menu', __( 'Rows in a column before it splits', 'oc-theme' ), 8, 3, 20, null, __( 'A longer list continues in a second column standing close beside it.', 'oc-theme' ) );
-		$this->number( $c, 'oc_mega_img_h', 'oc_menu', __( 'Picture height in the panel (px)', 'oc-theme' ), 0, 0, 640, null, __( 'Zero matches the picture to the height of the columns beside it.', 'oc-theme' ) );
+		$this->number( $c, 'oc_mega_img_h', 'oc_menu', __( 'Picture height in the panel (px)', 'oc-theme' ), 360, 0, 640, null, __( 'Zero matches the picture to the height of the columns beside it.', 'oc-theme' ) );
 		$this->color( $c, 'oc_mega_line_t', 'oc_menu', __( 'Line above the panel', 'oc-theme' ), __( 'What separates it from the header.', 'oc-theme' ) );
 		$this->color( $c, 'oc_mega_line_b', 'oc_menu', __( 'Line below the panel', 'oc-theme' ), __( 'What separates it from the page.', 'oc-theme' ) );
 

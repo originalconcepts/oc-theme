@@ -1317,7 +1317,7 @@ html.oc-menu-open .oc-menu-dim::before {
 .oc-mb__h a:hover { color: var(--oc-mega-tx-h, var(--oc-primary)); }
 
 .oc-mb__list { list-style: none; margin: 0; padding: 0; }
-.oc-mb__list li { margin-block-end: 7px; }
+.oc-mb__list li { margin-block-end: var(--oc-mega-rowgap, 7px); }
 .oc-mb__list li:last-child { margin-block-end: 0; }
 
 .oc-mb__list a,
@@ -1452,6 +1452,8 @@ html.oc-menu-open .oc-menu-dim::before {
 	color: inherit;
 	background: none;
 }
+
+.oc-mb__fig--al-c .oc-mb__words { text-align: center; }
 
 .oc-mb__heading { margin: 0; font-size: 1.15em; font-weight: 700; line-height: 1.3; }
 .oc-mb__text { margin: 4px 0 0; font-size: .92em; opacity: .9; }

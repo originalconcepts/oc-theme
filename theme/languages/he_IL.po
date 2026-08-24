@@ -3714,3 +3714,18 @@ msgstr "גודל הטקסט בפאנל ובתפריט הנפתח (פיקסלים
 
 msgid "Corners show when the panel stops short of the screen edges — mostly when it opens under the link."
 msgstr "הפינות נראות כשהפאנל לא נוגע בקצוות המסך — בעיקר כשהוא נפתח מתחת לקישור."
+
+msgid "Space between links in a column (px)"
+msgstr "מרווח בין הקישורים בעמודה (פיקסלים)"
+
+msgid "As the picture is"
+msgstr "כמו שהיא"
+
+msgid "The words are"
+msgstr "הטקסט"
+
+msgid "To the side"
+msgstr "מיושר לצד"
+
+msgid "Centred"
+msgstr "ממורכז"

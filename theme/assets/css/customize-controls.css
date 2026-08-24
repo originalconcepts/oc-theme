@@ -242,3 +242,25 @@ body.rtl .customize-panel-back::before,
 body.rtl .customize-section-back::before {
 	content: "\f345" !important; /* arrow-right-alt2: back to the list */
 }
+
+/* ---------- the Menu section: numbers pair up ----------
+ * The section is long, and most of its length is small number boxes that
+ * never needed a full row. Two per row halves the scrolling; anything with
+ * a picker or a drawing keeps the full width it needs. */
+
+#sub-accordion-section-oc_menu { display: flex; flex-wrap: wrap; column-gap: 12px; }
+
+#sub-accordion-section-oc_menu > li {
+	flex: 1 1 100%;
+	min-inline-size: 0;
+}
+
+#sub-accordion-section-oc_menu > li.customize-control-number {
+	flex: 1 1 calc(50% - 12px);
+}
+
+#sub-accordion-section-oc_menu .customize-control { margin-block-end: 10px; }
+
+#sub-accordion-section-oc_menu .customize-control-number input[type="number"] {
+	inline-size: 100%;
+}
