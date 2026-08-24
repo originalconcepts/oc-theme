@@ -73,7 +73,7 @@ final class Performance {
 	}
 
 	/**
-	 * jQuery without the Migrate shim.
+	 * Core jQuery without the Migrate shim.
 	 *
 	 * @param \WP_Scripts $scripts Core registry.
 	 */

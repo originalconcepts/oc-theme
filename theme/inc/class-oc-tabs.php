@@ -156,7 +156,7 @@ final class Tabs {
 		}
 
 		if ( ! empty( $settings['short_tab'] ) && $product instanceof \WC_Product && '' !== $product->get_short_description() ) {
-			$short_title       = '' !== (string) $settings['short_title'] ? (string) $settings['short_title'] : __( 'About this item', 'oc-theme' );
+			$short_title      = '' !== (string) $settings['short_title'] ? (string) $settings['short_title'] : __( 'About this item', 'oc-theme' );
 			$tabs['oc_short'] = array(
 				'title'    => $short_title,
 				'priority' => 1,
@@ -292,6 +292,7 @@ final class Tabs {
 			return;
 		}
 
+		// phpcs:ignore WordPress.WP.I18n.TextDomainMismatch -- Woo's own heading string; reuse its translation.
 		$heading = (string) apply_filters( 'woocommerce_product_description_heading', __( 'Description', 'woocommerce' ) );
 
 		echo '<div class="oc-desc-below">';
@@ -646,7 +647,7 @@ final class Tabs {
 		// phpcs:disable WordPress.Security.NonceVerification.Missing -- verified above.
 		$custom = array();
 
-		foreach ( (array) ( $_POST['ct_title'] ?? array() ) as $i => $title ) {
+		foreach ( (array) ( $_POST['ct_title'] ?? array() ) as $i => $title ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- unslashed and sanitized per element below.
 			$title = sanitize_text_field( wp_unslash( (string) $title ) );
 			$body  = wp_kses_post( wp_unslash( (string) ( $_POST['ct_content'][ $i ] ?? '' ) ) );
 
@@ -656,7 +657,7 @@ final class Tabs {
 
 			$custom[] = array(
 				'on'      => empty( $_POST['ct_on'][ $i ] ) ? 0 : 1,
-				'order'   => (int) ( $_POST['ct_order'][ $i ] ?? 30 ),
+				'order'   => (int) ( $_POST['ct_order'][ $i ] ?? 30 ), // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- cast to int.
 				'title'   => $title,
 				'content' => $body,
 				'scope'   => in_array( $_POST['ct_scope'][ $i ] ?? 'all', array( 'all', 'products', 'categories', 'attributes' ), true ) ? sanitize_key( $_POST['ct_scope'][ $i ] ) : 'all',
@@ -684,7 +685,15 @@ final class Tabs {
 		);
 		// phpcs:enable WordPress.Security.NonceVerification.Missing
 
-		wp_safe_redirect( add_query_arg( array( 'page' => self::MENU, 'oc_saved' => 1 ), admin_url( 'admin.php' ) ) );
+		wp_safe_redirect(
+			add_query_arg(
+				array(
+					'page'     => self::MENU,
+					'oc_saved' => 1,
+				),
+				admin_url( 'admin.php' )
+			)
+		);
 		exit;
 	}
 
@@ -871,7 +880,7 @@ final class Tabs {
 
 		$rows = array();
 
-		foreach ( (array) ( $_POST['pt_title'] ?? array() ) as $i => $title ) {
+		foreach ( (array) ( $_POST['pt_title'] ?? array() ) as $i => $title ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- unslashed and sanitized per element below.
 			$title = sanitize_text_field( wp_unslash( (string) $title ) );
 			$body  = wp_kses_post( wp_unslash( (string) ( $_POST['pt_content'][ $i ] ?? '' ) ) );
 
@@ -881,7 +890,7 @@ final class Tabs {
 
 			$rows[] = array(
 				'title'   => $title,
-				'order'   => (int) ( $_POST['pt_order'][ $i ] ?? 30 ),
+				'order'   => (int) ( $_POST['pt_order'][ $i ] ?? 30 ), // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- cast to int.
 				'content' => $body,
 			);
 		}

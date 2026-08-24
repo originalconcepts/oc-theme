@@ -13,3 +13,30 @@ parameters:
     bootstrapFiles:
         - tools/phpstan-bootstrap.php
         - vendor/php-stubs/woocommerce-stubs/woocommerce-stubs.php
+
+    # The stubs' phpdoc types say Woo objects are always there; the theme's
+    # guards exist precisely for the sites where they are not (a shop feature
+    # must not fatal on a site with no shop). Without this, every such guard
+    # reads as dead code.
+    treatPhpDocTypesAsCertain: false
+
+    ignoreErrors:
+        # Promotion King is an optional plugin; its classes are absent from
+        # analysis, so every class_exists/method_exists probe looks constant.
+        - '#PromoEngine#'
+        # Nav-menu items: wp_setup_nav_menu_item() adds these properties at
+        # runtime; WP_Post does not declare them.
+        - '#Access to an undefined property WP_Post::\$(title|url)#'
+        # WC_Product_Variation::get_permalink() accepts the cart item even
+        # though the parent class signature does not.
+        -
+            message: '#Method WC_Product::get_permalink\(\) invoked with 1 parameter, 0 required\.#'
+            path: theme/inc/class-oc-cart.php
+        # Called behind is_type( 'variable' ) guards the analyser cannot see
+        # through; at runtime these are WC_Product_Variable methods.
+        -
+            message: '#Call to an undefined method WC_Product::get_available_variations\(\)\.#'
+            path: theme/inc/class-oc-cart.php
+        -
+            message: '#Call to an undefined method WC_Product::get_variation_attributes\(\)\.#'
+            path: theme/inc/class-oc-woocommerce.php

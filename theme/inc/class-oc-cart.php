@@ -205,19 +205,19 @@ final class Cart {
 	public function fragments( array $fragments ): array {
 		$s = self::settings();
 
-		$fragments['[data-oc-mcart]']    = '<div data-oc-mcart>' . $this->items_html() . '</div>';
-		$fragments['[data-oc-ship-bar]'] = $this->ship_bar_html();
-		$fragments['[data-oc-cart-up]']   = $this->upsells_html();
-		$fragments['[data-oc-cart-up-m]'] = $this->upsells_html( 'collapse', true );
+		$fragments['[data-oc-mcart]']      = '<div data-oc-mcart>' . $this->items_html() . '</div>';
+		$fragments['[data-oc-ship-bar]']   = $this->ship_bar_html();
+		$fragments['[data-oc-cart-up]']    = $this->upsells_html();
+		$fragments['[data-oc-cart-up-m]']  = $this->upsells_html( 'collapse', true );
 		$fragments['[data-oc-promo-msgs]'] = $this->promo_msgs_html();
-		$fragments['[data-oc-cart-foot]'] = $this->foot_html();
+		$fragments['[data-oc-cart-foot]']  = $this->foot_html();
 
 		// The header badge follows the configured counting method.
 		$count = 'rows' === $s['count_method']
 			? count( WC()->cart->get_cart() )
 			: WC()->cart->get_cart_contents_count();
 
-		$fragments['span.oc-cart-count'] = '<span class="oc-cart-count">' . absint( $count ) . '</span>';
+		$fragments['span.oc-cart-count']   = '<span class="oc-cart-count">' . absint( $count ) . '</span>';
 		$fragments['[data-oc-head-count]'] = $this->head_count_html();
 		$fragments['[data-oc-clear]']      = $this->clear_html();
 
@@ -418,9 +418,9 @@ final class Cart {
 			$taxonomy = str_replace( 'attribute_', '', (string) $raw_tax );
 			// Hebrew attribute taxonomies arrive percent-encoded — decode
 			// before asking for the human label.
-			$label = wc_attribute_label( rawurldecode( $taxonomy ) );
-			$value    = rawurldecode( $slug );
-			$swatch   = '';
+			$label  = wc_attribute_label( rawurldecode( $taxonomy ) );
+			$value  = rawurldecode( $slug );
+			$swatch = '';
 
 			foreach ( array( $taxonomy, rawurldecode( $taxonomy ) ) as $tax_try ) {
 				if ( ! taxonomy_exists( $tax_try ) ) {
@@ -532,9 +532,9 @@ final class Cart {
 
 		// The discounts breakdown: the promotion engine's per-deal savings,
 		// then each coupon (with its removal control).
-		$rows          = array();
-		$promo_saved   = 0.0;
-		$coupon_saved  = 0.0;
+		$rows         = array();
+		$promo_saved  = 0.0;
+		$coupon_saved = 0.0;
 
 		if ( class_exists( '\\PromoEngine\\Cart' ) && method_exists( '\\PromoEngine\\Cart', 'instance' ) ) {
 			$pcart   = \PromoEngine\Cart::instance();
@@ -586,6 +586,7 @@ final class Cart {
 				$total_saved = $promo_saved + $coupon_saved;
 				$html       .= '<button type="button" class="oc-drawer__save-t" data-oc-save-toggle>'
 					. '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 12.5l5 5L19.5 7"/></svg>'
+					/* translators: %s: amount saved. */
 					. sprintf( esc_html__( 'You saved %s', 'oc-theme' ), '<strong>' . wc_price( $total_saved ) . '</strong>' )
 					. '<svg class="oc-drawer__save-c" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>'
 					. '</button>';
@@ -642,7 +643,7 @@ final class Cart {
 	/**
 	 * Promotion King's structured messages, when its panel API is around.
 	 *
-	 * @return array<int,array{text:string,keys:array<int,string>,applied:bool}>
+	 * @return array<int,array{text:string,name?:string,keys?:array<int,string>,applied:bool,promo_id?:int,pool?:string,pool_type?:string,cat_url?:string}>
 	 */
 	private function promo_messages(): array {
 		if ( ! class_exists( '\\PromoEngine\\Cart' ) || ! method_exists( '\\PromoEngine\\Cart', 'instance' ) ) {
@@ -658,7 +659,7 @@ final class Cart {
 	 * One promotion row — the promotion's NAME with an icon; a group deal
 	 * gains a link opening the participating-products popup.
 	 *
-	 * @param array{text:string,name?:string,promo_id?:int,pool?:string,applied:bool} $msg Message.
+	 * @param array{text:string,name?:string,promo_id?:int,pool?:string,pool_type?:string,cat_url?:string,applied:bool} $msg Message.
 	 */
 	private function promo_msg_row( array $msg ): string {
 		$icon = $msg['applied']
@@ -711,6 +712,9 @@ final class Cart {
 	 * The in-panel upsells block, in the configured style. Products already
 	 * in the cart never show — adding one removes it on the next fragment
 	 * refresh automatically.
+	 *
+	 * @param ?string $force_style Style to render instead of the setting.
+	 * @param bool    $mobile      Render the mobile variant.
 	 */
 	private function upsells_html( ?string $force_style = null, bool $mobile = false ): string {
 		$s    = self::settings();
@@ -733,7 +737,7 @@ final class Cart {
 
 		$style      = null !== $force_style ? $force_style : (string) $s['up_style'];
 		$horizontal = in_array( $style, array( 'slider', 'collapse' ), true );
-		$title = '' !== (string) $s['up_title'] ? (string) $s['up_title'] : __( 'You may also like', 'oc-theme' );
+		$title      = '' !== (string) $s['up_title'] ? (string) $s['up_title'] : __( 'You may also like', 'oc-theme' );
 
 		$bg   = (string) $s['up_bg'];
 		$html = '<div class="oc-cartup oc-cartup--' . esc_attr( $style ) . ( $mobile ? ' oc-cartup--m' : '' ) . '" ' . $attr . ( '' !== $bg ? ' style="--oc-up-bg:' . esc_attr( $bg ) . '"' : '' ) . '>';
@@ -764,7 +768,7 @@ final class Cart {
 
 			// A small flag on the image: the promotion label when one runs,
 			// otherwise the sale percent — same colours as the catalogue.
-			$flag  = (string) apply_filters( 'promeng_product_label', '', $product->get_id() );
+			$flag = (string) apply_filters( 'promeng_product_label', '', $product->get_id() );
 			if ( '' === $flag && $product->is_on_sale() ) {
 				$regular_f = (float) $product->get_regular_price();
 				$price_f   = (float) $product->get_price();
@@ -1054,7 +1058,7 @@ final class Cart {
 	 */
 	public function ajax_coupon(): void {
 		// phpcs:disable WordPress.Security.NonceVerification.Missing -- same surface as Woo's own cart ajax.
-		$code   = isset( $_POST['code'] ) ? wc_format_coupon_code( wp_unslash( (string) $_POST['code'] ) ) : '';
+		$code   = isset( $_POST['code'] ) ? wc_format_coupon_code( wp_unslash( (string) $_POST['code'] ) ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- wc_format_coupon_code() sanitizes.
 		$remove = ! empty( $_POST['remove'] );
 		// phpcs:enable WordPress.Security.NonceVerification.Missing
 
@@ -1258,24 +1262,32 @@ final class Cart {
 			array_merge(
 				self::settings(),
 				array(
-					'title'        => sanitize_text_field( wp_unslash( (string) ( $_POST['title'] ?? '' ) ) ),
-					'empty_text'   => sanitize_text_field( wp_unslash( (string) ( $_POST['empty_text'] ?? '' ) ) ),
-					'ship_goal'    => '' === trim( (string) ( $_POST['ship_goal'] ?? '' ) ) ? '' : (string) max( 0, (int) $_POST['ship_goal'] ),
-					'ship_text'    => sanitize_text_field( wp_unslash( (string) ( $_POST['ship_text'] ?? '' ) ) ),
-					'ship_done'    => sanitize_text_field( wp_unslash( (string) ( $_POST['ship_done'] ?? '' ) ) ),
-					'up_show'      => empty( $_POST['up_show'] ) ? 0 : 1,
-					'up_title'     => sanitize_text_field( wp_unslash( (string) ( $_POST['up_title'] ?? '' ) ) ),
-					'up_source'    => 'category' === ( $_POST['up_source'] ?? '' ) ? 'category' : 'items',
-					'up_cat'       => (int) ( $_POST['up_cat'] ?? 0 ),
-					'up_max'       => min( 12, max( 1, (int) ( $_POST['up_max'] ?? 5 ) ) ),
-					'btn_text'     => sanitize_text_field( wp_unslash( (string) ( $_POST['btn_text'] ?? '' ) ) ),
+					'title'      => sanitize_text_field( wp_unslash( (string) ( $_POST['title'] ?? '' ) ) ),
+					'empty_text' => sanitize_text_field( wp_unslash( (string) ( $_POST['empty_text'] ?? '' ) ) ),
+					'ship_goal'  => '' === trim( (string) ( $_POST['ship_goal'] ?? '' ) ) ? '' : (string) max( 0, (int) $_POST['ship_goal'] ), // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- cast to int.
+					'ship_text'  => sanitize_text_field( wp_unslash( (string) ( $_POST['ship_text'] ?? '' ) ) ),
+					'ship_done'  => sanitize_text_field( wp_unslash( (string) ( $_POST['ship_done'] ?? '' ) ) ),
+					'up_show'    => empty( $_POST['up_show'] ) ? 0 : 1,
+					'up_title'   => sanitize_text_field( wp_unslash( (string) ( $_POST['up_title'] ?? '' ) ) ),
+					'up_source'  => 'category' === ( $_POST['up_source'] ?? '' ) ? 'category' : 'items', // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- strict comparison stores a literal.
+					'up_cat'     => (int) ( $_POST['up_cat'] ?? 0 ), // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- cast to int.
+					'up_max'     => min( 12, max( 1, (int) ( $_POST['up_max'] ?? 5 ) ) ), // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- cast to int.
+					'btn_text'   => sanitize_text_field( wp_unslash( (string) ( $_POST['btn_text'] ?? '' ) ) ),
 				)
 			),
 			false
 		);
 		// phpcs:enable WordPress.Security.NonceVerification.Missing
 
-		wp_safe_redirect( add_query_arg( array( 'page' => 'oc-cart', 'oc_saved' => 1 ), admin_url( 'admin.php' ) ) );
+		wp_safe_redirect(
+			add_query_arg(
+				array(
+					'page'     => 'oc-cart',
+					'oc_saved' => 1,
+				),
+				admin_url( 'admin.php' )
+			)
+		);
 		exit;
 	}
 }

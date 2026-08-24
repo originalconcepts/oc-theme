@@ -101,26 +101,26 @@ final class Video {
 	 * product-page loops. No controls anywhere; sound never plays here.
 	 *
 	 * @param string $url   Video URL.
-	 * @param string $class Element class.
+	 * @param string $css_class Element class.
 	 * @param bool   $lazy  Defer loading until the element nears the viewport
 	 *                      (catalogue cards) — the front script wires it up.
 	 * @return string
 	 */
-	public static function loop_html( string $url, string $class, bool $lazy = false ): string {
+	public static function loop_html( string $url, string $css_class, bool $lazy = false ): string {
 		$source = self::source( $url, true );
 
 		if ( 'file' === $source['kind'] ) {
 			if ( $lazy ) {
 				return sprintf(
 					'<video class="%s" data-oc-vsrc="%s" muted loop playsinline preload="none"></video>',
-					esc_attr( $class ),
+					esc_attr( $css_class ),
 					esc_url( $source['src'] )
 				);
 			}
 
 			return sprintf(
 				'<video class="%s" src="%s" autoplay muted loop playsinline preload="metadata"></video>',
-				esc_attr( $class ),
+				esc_attr( $css_class ),
 				esc_url( $source['src'] )
 			);
 		}
@@ -128,7 +128,7 @@ final class Video {
 		if ( $lazy ) {
 			return sprintf(
 				'<iframe class="%s" data-oc-vsrc="%s" src="about:blank" loading="lazy" allow="autoplay; fullscreen" tabindex="-1" title="%s"></iframe>',
-				esc_attr( $class ),
+				esc_attr( $css_class ),
 				esc_url( $source['src'] ),
 				esc_attr__( 'Product video', 'oc-theme' )
 			);
@@ -136,7 +136,7 @@ final class Video {
 
 		return sprintf(
 			'<iframe class="%s" src="%s" loading="lazy" allow="autoplay; fullscreen" tabindex="-1" title="%s"></iframe>',
-			esc_attr( $class ),
+			esc_attr( $css_class ),
 			esc_url( $source['src'] ),
 			esc_attr__( 'Product video', 'oc-theme' )
 		);

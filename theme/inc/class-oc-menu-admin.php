@@ -75,7 +75,7 @@ final class Menu_Admin {
 		printf(
 			'<p class="oc-mi__panel"><span class="oc-mi__state">%1$s</span> <button type="button" class="button button-small oc-mi__edit" data-oc-panel="%2$d" data-oc-name="%3$s" data-oc-blocks="%4$s" data-oc-thumbs="%5$s">%6$s</button></p>',
 			esc_html( self::state_line( $id ) ),
-			$id,
+			(int) $id,
 			esc_attr( wp_strip_all_tags( (string) $item->title ) ),
 			esc_attr( (string) wp_json_encode( Menu_Panel::blocks( $id ) ) ),
 			esc_attr( (string) wp_json_encode( self::thumbs( Menu_Panel::blocks( $id ) ) ) ),
@@ -218,7 +218,7 @@ final class Menu_Admin {
 	 * @return array<int,array<string,mixed>>
 	 */
 	private static function posted_blocks(): array {
-		$raw = isset( $_POST['blocks'] ) ? (string) wp_unslash( $_POST['blocks'] ) : '[]'; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- decoded and cleaned below; the nonce is checked by the callers.
+		$raw  = isset( $_POST['blocks'] ) ? (string) wp_unslash( $_POST['blocks'] ) : '[]'; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- decoded and cleaned below; the nonce is checked by the callers.
 		$list = json_decode( $raw, true );
 
 		return is_array( $list ) ? Menu_Panel::clean( $list ) : array();
@@ -255,8 +255,8 @@ final class Menu_Admin {
 
 		$out = array();
 
-		$walk = static function ( int $parent, int $depth ) use ( &$walk, $by_parent, &$out ): void {
-			foreach ( $by_parent[ $parent ] ?? array() as $term ) {
+		$walk = static function ( int $parent_id, int $depth ) use ( &$walk, $by_parent, &$out ): void {
+			foreach ( $by_parent[ $parent_id ] ?? array() as $term ) {
 				$out[] = array(
 					'id'    => (int) $term->term_id,
 					'label' => str_repeat( '— ', $depth ) . $term->name,
@@ -296,25 +296,25 @@ final class Menu_Admin {
 			'css'     => get_template_directory_uri() . '/assets/css/' . ( file_exists( OC_THEME_DIR . '/assets/css/theme.min.css' ) ? 'theme.min.css' : 'theme.css' ),
 			'rtl'     => is_rtl(),
 			'i18n'    => array(
-				'save'     => __( 'Save', 'oc-theme' ),
-				'add'      => __( 'Add a block', 'oc-theme' ),
-				'remove'   => __( 'Remove this block', 'oc-theme' ),
-				'moveBack' => __( 'Move earlier', 'oc-theme' ),
-				'moveOn'   => __( 'Move later', 'oc-theme' ),
-				'width'    => __( 'Width', 'oc-theme' ),
-				'device'   => __( 'Shown', 'oc-theme' ),
-				'push'     => __( 'Leave the spare width in front of it', 'oc-theme' ),
-				'choose'   => __( 'Choose', 'oc-theme' ),
-				'clear'    => __( 'Remove', 'oc-theme' ),
-				'saved'    => __( 'Saved', 'oc-theme' ),
-				'saving'   => __( 'Saving…', 'oc-theme' ),
-				'failed'   => __( 'Could not save. Try again.', 'oc-theme' ),
-				'full'     => __( 'This panel is full.', 'oc-theme' ),
-				'empty'    => __( 'The columns come from this link\'s own sub-items, on the screen behind. Add a picture here and they will sit beside it.', 'oc-theme' ),
-				'preview'  => __( 'How it will look', 'oc-theme' ),
-				'confirm'  => __( 'Remove this block?', 'oc-theme' ),
-				'close'    => __( 'Close', 'oc-theme' ),
-				'leave'    => __( 'There are unsaved changes. Close anyway?', 'oc-theme' ),
+				'save'         => __( 'Save', 'oc-theme' ),
+				'add'          => __( 'Add a block', 'oc-theme' ),
+				'remove'       => __( 'Remove this block', 'oc-theme' ),
+				'moveBack'     => __( 'Move earlier', 'oc-theme' ),
+				'moveOn'       => __( 'Move later', 'oc-theme' ),
+				'width'        => __( 'Width', 'oc-theme' ),
+				'device'       => __( 'Shown', 'oc-theme' ),
+				'push'         => __( 'Leave the spare width in front of it', 'oc-theme' ),
+				'choose'       => __( 'Choose', 'oc-theme' ),
+				'clear'        => __( 'Remove', 'oc-theme' ),
+				'saved'        => __( 'Saved', 'oc-theme' ),
+				'saving'       => __( 'Saving…', 'oc-theme' ),
+				'failed'       => __( 'Could not save. Try again.', 'oc-theme' ),
+				'full'         => __( 'This panel is full.', 'oc-theme' ),
+				'empty'        => __( 'The columns come from this link\'s own sub-items, on the screen behind. Add a picture here and they will sit beside it.', 'oc-theme' ),
+				'preview'      => __( 'How it will look', 'oc-theme' ),
+				'confirm'      => __( 'Remove this block?', 'oc-theme' ),
+				'close'        => __( 'Close', 'oc-theme' ),
+				'leave'        => __( 'There are unsaved changes. Close anyway?', 'oc-theme' ),
 				'notAnAddress' => __( 'This is not an address yet — pick one from the list, or paste a link.', 'oc-theme' ),
 			),
 		);

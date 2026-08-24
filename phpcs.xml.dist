@@ -58,6 +58,15 @@
 	<!-- Unsanitised input. -->
 	<rule ref="WordPress.Security.ValidatedSanitizedInput">
 		<type>error</type>
+		<properties>
+			<!-- WooCommerce's sanitizers, which the sniff does not know. -->
+			<property name="customSanitizingFunctions" type="array">
+				<element value="wc_clean"/>
+				<element value="wc_format_coupon_code"/>
+				<element value="wc_sanitize_textarea"/>
+				<element value="wc_sanitize_phone_number"/>
+			</property>
+		</properties>
 	</rule>
 
 	<!-- Translations must be real. Hardcoded Hebrew is what we are leaving behind. -->
@@ -74,5 +83,14 @@
 	<!-- Anything that hits the database on every request should be deliberate. -->
 	<rule ref="WordPress.DB.DirectDatabaseQuery">
 		<type>warning</type>
+	</rule>
+
+	<!-- WooCommerce's own capability; the sniff only knows core's. -->
+	<rule ref="WordPress.WP.Capabilities">
+		<properties>
+			<property name="custom_capabilities" type="array">
+				<element value="manage_woocommerce"/>
+			</property>
+		</properties>
 	</rule>
 </ruleset>

@@ -84,7 +84,7 @@ final class Search_Admin {
 	 * @param string $hook Current screen.
 	 */
 	public function assets( $hook ): void {
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- reading the screen, not acting.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput -- reading the screen name for a strict comparison, not acting.
 		if ( false === strpos( (string) $hook, self::PAGE ) && ( $_GET['page'] ?? '' ) !== self::PAGE ) {
 			return;
 		}
@@ -209,7 +209,7 @@ final class Search_Admin {
 			array(
 				'post_type'      => 'product',
 				'post_status'    => 'publish',
-				'posts_per_page' => 300,
+				'posts_per_page' => 300, // phpcs:ignore WordPress.WP.PostsPerPage.posts_per_page_posts_per_page -- one bounded admin-side reindex, ids only.
 				'fields'         => 'ids',
 				'no_found_rows'  => true,
 				'tax_query'      => array( // phpcs:ignore WordPress.DB.SlowDBQuery
@@ -293,7 +293,7 @@ final class Search_Admin {
 			update_post_meta( $product_id, '_oc_syn', $syn );
 		}
 
-		update_post_meta( $product_id, '_oc_search_boost', max( -100, min( 100, (int) ( $_POST['oc_search_boost'] ?? 0 ) ) ) );
+		update_post_meta( $product_id, '_oc_search_boost', max( -100, min( 100, (int) ( $_POST['oc_search_boost'] ?? 0 ) ) ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- cast to int.
 		update_post_meta( $product_id, '_oc_search_hide', empty( $_POST['oc_search_hide'] ) ? '' : 1 );
 		// phpcs:enable WordPress.Security.NonceVerification.Missing
 	}
@@ -398,10 +398,10 @@ final class Search_Admin {
 	 */
 	private function tab_where( array $s ): void {
 		$fields = array(
-			'f_sku'   => array( __( 'Product code', 'oc-theme' ), 'w_sku' ),
-			'f_desc'  => array( __( 'Description', 'oc-theme' ), 'w_desc' ),
-			'f_tag'   => array( __( 'Tags', 'oc-theme' ), 'w_tag' ),
-			'f_attr'  => array( __( 'Attributes', 'oc-theme' ), 'w_attr' ),
+			'f_sku'  => array( __( 'Product code', 'oc-theme' ), 'w_sku' ),
+			'f_desc' => array( __( 'Description', 'oc-theme' ), 'w_desc' ),
+			'f_tag'  => array( __( 'Tags', 'oc-theme' ), 'w_tag' ),
+			'f_attr' => array( __( 'Attributes', 'oc-theme' ), 'w_attr' ),
 		);
 		?>
 		<table class="form-table" role="presentation">
@@ -469,7 +469,9 @@ final class Search_Admin {
 						data-placeholder="<?php esc_attr_e( 'Start typing a category or brand…', 'oc-theme' ); ?>"
 						data-action="woocommerce_json_search_categories">
 						<?php
-						foreach ( array_filter( array_map( 'absint', preg_split( '/[\s,]+/', (string) $s['facet_skip'] ) ?: array() ) ) as $skip_id ) {
+						$skip_bits = preg_split( '/[\s,]+/', (string) $s['facet_skip'] );
+
+						foreach ( array_filter( array_map( 'absint', $skip_bits ? $skip_bits : array() ) ) as $skip_id ) {
 							$skip_term = get_term( $skip_id );
 
 							if ( ! $skip_term instanceof \WP_Term ) {
@@ -559,7 +561,9 @@ final class Search_Admin {
 							data-placeholder="<?php esc_attr_e( 'Start typing a product name…', 'oc-theme' ); ?>"
 							data-action="woocommerce_json_search_products_and_variations">
 							<?php
-							foreach ( array_filter( array_map( 'absint', preg_split( '/[\s,]+/', (string) $s['prod_ids'] ) ?: array() ) ) as $chosen ) {
+							$id_bits = preg_split( '/[\s,]+/', (string) $s['prod_ids'] );
+
+							foreach ( array_filter( array_map( 'absint', $id_bits ? $id_bits : array() ) ) as $chosen ) {
 								$product = wc_get_product( $chosen );
 
 								if ( ! $product ) {
@@ -877,12 +881,12 @@ final class Search_Admin {
 				$s[ $key ] = max( 1, min( 30, (int) ( $post[ $key ] ?? $s[ $key ] ) ) );
 			}
 
-			$s['pop_mix'] = max( 0, min( 100, (int) ( $post['pop_mix'] ?? 30 ) ) );
-			$s['oos']     = in_array( $post['oos'] ?? '', array( 'sink', 'hide', 'normal' ), true ) ? $post['oos'] : 'sink';
+			$s['pop_mix']    = max( 0, min( 100, (int) ( $post['pop_mix'] ?? 30 ) ) );
+			$s['oos']        = in_array( $post['oos'] ?? '', array( 'sink', 'hide', 'normal' ), true ) ? $post['oos'] : 'sink';
 			$skip            = isset( $post['facet_skip'] ) ? (array) $post['facet_skip'] : array();
 			$s['facet_skip'] = implode( ', ', array_values( array_filter( array_map( 'absint', $skip ) ) ) );
 			$s['kbd']        = empty( $post['kbd'] ) ? 0 : 1;
-			$s['typo']    = empty( $post['typo'] ) ? 0 : 1;
+			$s['typo']       = empty( $post['typo'] ) ? 0 : 1;
 		}
 
 		if ( 'popular' === $tab ) {

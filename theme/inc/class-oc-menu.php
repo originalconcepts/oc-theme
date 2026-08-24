@@ -146,14 +146,14 @@ final class Menu {
 	 */
 	private static function fields(): array {
 		return array(
-			'_oc_color'     => 'colour',
-			'_oc_badge'     => 'text',
-			'_oc_badge_bg'  => 'colour',
-			'_oc_badge_tx'  => 'colour',
+			'_oc_color'      => 'colour',
+			'_oc_badge'      => 'text',
+			'_oc_badge_bg'   => 'colour',
+			'_oc_badge_tx'   => 'colour',
 			'_oc_badge_from' => 'date',
-			'_oc_badge_to'  => 'date',
-			'_oc_img'       => 'id',
-			'_oc_hide'      => 'hide',
+			'_oc_badge_to'   => 'date',
+			'_oc_img'        => 'id',
+			'_oc_hide'       => 'hide',
 		);
 	}
 
@@ -165,14 +165,14 @@ final class Menu {
 	public function item_fields( $id ): void {
 		$id = (int) $id;
 
-		$color  = (string) get_post_meta( $id, '_oc_color', true );
-		$badge  = (string) get_post_meta( $id, '_oc_badge', true );
-		$bg     = (string) get_post_meta( $id, '_oc_badge_bg', true );
-		$tx     = (string) get_post_meta( $id, '_oc_badge_tx', true );
-		$from   = (string) get_post_meta( $id, '_oc_badge_from', true );
-		$to     = (string) get_post_meta( $id, '_oc_badge_to', true );
-		$img    = (int) get_post_meta( $id, '_oc_img', true );
-		$hide   = (string) get_post_meta( $id, '_oc_hide', true );
+		$color = (string) get_post_meta( $id, '_oc_color', true );
+		$badge = (string) get_post_meta( $id, '_oc_badge', true );
+		$bg    = (string) get_post_meta( $id, '_oc_badge_bg', true );
+		$tx    = (string) get_post_meta( $id, '_oc_badge_tx', true );
+		$from  = (string) get_post_meta( $id, '_oc_badge_from', true );
+		$to    = (string) get_post_meta( $id, '_oc_badge_to', true );
+		$img   = (int) get_post_meta( $id, '_oc_img', true );
+		$hide  = (string) get_post_meta( $id, '_oc_hide', true );
 
 		$thumb = $img > 0 ? wp_get_attachment_image( $img, 'thumbnail' ) : '';
 		?>
@@ -536,7 +536,7 @@ final class Menu {
 	 * bytes of its markup and nothing more.
 	 *
 	 * @param string      $output Item markup so far.
-	 * @param \WP_Post     $item   Menu item.
+	 * @param \WP_Post    $item   Menu item.
 	 * @param int         $depth  Depth.
 	 * @param object|null $args   wp_nav_menu arguments.
 	 * @return string
@@ -633,23 +633,23 @@ final class Menu {
 	/**
 	 * One level of the drawer, and whatever hangs off it.
 	 *
-	 * @param array<int,array<int,\WP_Post>> $kids  Items by parent.
-	 * @param int                            $parent Parent id.
-	 * @param int                            $depth  Current depth, one-based.
+	 * @param array<int,array<int,\WP_Post>> $kids      Items by parent.
+	 * @param int                            $parent_id Parent id.
+	 * @param int                            $depth     Current depth, one-based.
 	 * @return string
 	 */
-	private static function drawer_level( array $kids, int $parent, int $depth ): string {
+	private static function drawer_level( array $kids, int $parent_id, int $depth ): string {
 		// Three levels, whatever the drop-down setting says. That setting is
 		// about a drop-down hanging in mid-air, where a third level has
 		// nowhere to go; a drawer is a stack of screens and the third level
 		// is simply the next one.
-		if ( empty( $kids[ $parent ] ) || $depth > 3 ) {
+		if ( empty( $kids[ $parent_id ] ) || $depth > 3 ) {
 			return '';
 		}
 
 		$out = '';
 
-		foreach ( $kids[ $parent ] as $item ) {
+		foreach ( $kids[ $parent_id ] as $item ) {
 			$id = (int) $item->ID;
 
 			if ( self::hidden( $id, 'drawer' ) ) {

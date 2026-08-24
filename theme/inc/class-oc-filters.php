@@ -83,23 +83,23 @@ final class Filters {
 		return wp_parse_args(
 			is_array( $saved ) ? $saved : array(),
 			array(
-				'enabled'      => 0,
-				'layout'       => 'sidebar',   // sidebar | topbar | drawer.
-				'topbar_style' => 'drop',      // drop | full.
-				'choice'       => 'check',     // check | dot.
-				'chip_swatch'  => 'off',       // off | both | only.
-				'chips_pos'    => 'start',     // start | center | inline | group.
-				'swatch_names' => 1,           // desktop.
+				'enabled'        => 0,
+				'layout'         => 'sidebar',   // sidebar | topbar | drawer.
+				'topbar_style'   => 'drop',      // drop | full.
+				'choice'         => 'check',     // check | dot.
+				'chip_swatch'    => 'off',       // off | both | only.
+				'chips_pos'      => 'start',     // start | center | inline | group.
+				'swatch_names'   => 1,           // desktop.
 				'swatch_names_m' => 1,         // mobile.
-				'counts'       => 1,
-				'empty'        => 'gray',      // gray | hide.
-				'instock'      => 1,
-				'brands'       => 0,
-				'brands_title' => '',
-				'price_mode'   => 'range',     // range | tiers | off.
-				'price_ui'     => 'slider',    // slider | inputs.
-				'price_tiers'  => '',
-				'groups'       => array(),     // ordered rows, see admin.
+				'counts'         => 1,
+				'empty'          => 'gray',      // gray | hide.
+				'instock'        => 1,
+				'brands'         => 0,
+				'brands_title'   => '',
+				'price_mode'     => 'range',     // range | tiers | off.
+				'price_ui'       => 'slider',    // slider | inputs.
+				'price_tiers'    => '',
+				'groups'         => array(),     // ordered rows, see admin.
 			)
 		);
 	}
@@ -421,6 +421,8 @@ final class Filters {
 
 	/**
 	 * Attribute taxonomy name from its numeric id.
+	 *
+	 * @param int $attribute_id Attribute id.
 	 */
 	private function attr_taxonomy( int $attribute_id ): string {
 		foreach ( wc_get_attribute_taxonomies() as $attribute ) {
@@ -433,7 +435,7 @@ final class Filters {
 	}
 
 	/**
-	 * tax_query for a given state, optionally skipping one group (facet
+	 * The tax_query for a given state, optionally skipping one group (facet
 	 * recounts exclude their own group so multi-select stays possible).
 	 *
 	 * @param array<string,mixed> $state Parsed state.
@@ -980,7 +982,7 @@ final class Filters {
 	}
 
 	/**
-	 * term_id => product count for one taxonomy over the base set.
+	 * Map of term_id => product count for one taxonomy over the base set.
 	 *
 	 * @param int                 $category Category id.
 	 * @param array<string,mixed> $state    Parsed state.
@@ -999,7 +1001,8 @@ final class Filters {
 
 		$placeholders = implode( ',', array_fill( 0, count( $ids ), '%d' ) );
 
-		$rows = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
+		// phpcs:disable WordPress.DB -- prepared; the placeholder list is built from array_fill(), and live counts cannot cache.
+		$rows = $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT tt.term_id, COUNT(DISTINCT tr.object_id) AS n
 				 FROM {$wpdb->term_relationships} tr
@@ -1009,6 +1012,7 @@ final class Filters {
 				array_merge( array( $taxonomy ), $ids )
 			)
 		);
+		// phpcs:enable WordPress.DB
 
 		$counts = array();
 		foreach ( (array) $rows as $row ) {
@@ -1019,8 +1023,8 @@ final class Filters {
 	}
 
 	/**
-	 * parent_id => count for a category facet group: each parent counts its
-	 * whole subtree.
+	 * Map of parent_id => count for a category facet group: each parent
+	 * counts its whole subtree.
 	 *
 	 * @param int                 $category Category id.
 	 * @param array<string,mixed> $state    Parsed state.
@@ -1060,7 +1064,8 @@ final class Filters {
 		$id_ph   = implode( ',', array_fill( 0, count( $ids ), '%d' ) );
 		$term_ph = implode( ',', array_fill( 0, count( $term_ids ), '%d' ) );
 
-		return (int) $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
+		// phpcs:disable WordPress.DB -- prepared; the placeholder list is built from array_fill(), and live counts cannot cache.
+		return (int) $wpdb->get_var(
 			$wpdb->prepare(
 				"SELECT COUNT(DISTINCT tr.object_id)
 				 FROM {$wpdb->term_relationships} tr
@@ -1069,6 +1074,7 @@ final class Filters {
 				array_merge( $term_ids, $ids )
 			)
 		);
+		// phpcs:enable WordPress.DB
 	}
 
 	/**
@@ -1122,13 +1128,15 @@ final class Filters {
 		$placeholders = implode( ',', array_fill( 0, count( $ids ), '%d' ) );
 		$args         = array_merge( $args, $ids );
 
-		$row = $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
+		// phpcs:disable WordPress.DB -- prepared; the placeholder list is built from array_fill(), and live counts cannot cache.
+		$row = $wpdb->get_row(
 			$wpdb->prepare(
 				'SELECT ' . implode( ', ', $cases ) . " FROM {$wpdb->wc_product_meta_lookup} WHERE product_id IN ( $placeholders )",
 				$args
 			),
 			ARRAY_A
 		);
+		// phpcs:enable WordPress.DB
 
 		if ( ! $row ) {
 			return $out;
@@ -1143,6 +1151,13 @@ final class Filters {
 		return $out;
 	}
 
+	/**
+	 * Lowest and highest price under every non-price filter.
+	 *
+	 * @param int                 $category Category id.
+	 * @param array<string,mixed> $state    Parsed state.
+	 * @return array{min:float,max:float}
+	 */
 	private function price_bounds( int $category, array $state ): array {
 		$ids = $this->base_ids( $category, $state, 'price', false );
 
@@ -1157,12 +1172,14 @@ final class Filters {
 
 		$placeholders = implode( ',', array_fill( 0, count( $ids ), '%d' ) );
 
-		$row = $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
+		// phpcs:disable WordPress.DB -- prepared; the placeholder list is built from array_fill(), and live counts cannot cache.
+		$row = $wpdb->get_row(
 			$wpdb->prepare(
 				"SELECT MIN(min_price) AS lo, MAX(max_price) AS hi FROM {$wpdb->wc_product_meta_lookup} WHERE product_id IN ( $placeholders )",
 				$ids
 			)
 		);
+		// phpcs:enable WordPress.DB
 
 		return array(
 			'min' => floor( (float) ( $row->lo ?? 0 ) ),
@@ -1173,6 +1190,9 @@ final class Filters {
 	/**
 	 * How an attribute renders: its own type by default (swatches stay
 	 * swatches), or forced to text from the admin screen.
+	 *
+	 * @param string $taxonomy Attribute taxonomy.
+	 * @param string $display  Saved display choice.
 	 */
 	private function attr_display_type( string $taxonomy, string $display ): string {
 		if ( 'text' === $display ) {
@@ -1190,6 +1210,8 @@ final class Filters {
 
 	/**
 	 * Inline style for a term's filter swatch — its image, else its colour.
+	 *
+	 * @param int $term_id Term id.
 	 */
 	private function term_swatch_style( int $term_id ): string {
 		$image = (string) get_term_meta( $term_id, 'oc_swatch_image', true );
@@ -1246,15 +1268,15 @@ final class Filters {
 		}
 
 		$config = array(
-			'category' => $category,
-			'layout'   => $layout,
-			'topbar'   => (string) $settings['topbar_style'],
-			'choice'   => (string) $settings['choice'],
-			'counts'   => (int) $settings['counts'],
+			'category'   => $category,
+			'layout'     => $layout,
+			'topbar'     => (string) $settings['topbar_style'],
+			'choice'     => (string) $settings['choice'],
+			'counts'     => (int) $settings['counts'],
 			'chipSwatch' => (string) $settings['chip_swatch'],
 			'chipsPos'   => (string) $settings['chips_pos'],
-			'empty'    => (string) $settings['empty'],
-			'currency' => html_entity_decode( get_woocommerce_currency_symbol(), ENT_QUOTES, 'UTF-8' ),
+			'empty'      => (string) $settings['empty'],
+			'currency'   => html_entity_decode( get_woocommerce_currency_symbol(), ENT_QUOTES, 'UTF-8' ),
 		);
 
 		echo '<script type="application/json" id="oc-flt-config">' . wp_json_encode( $config ) . '</script>';
@@ -1480,12 +1502,12 @@ final class Filters {
 				)
 			);
 
-			$html .= '<div class="oc-flt__group' . ( $allow_open && ! empty( $group['open'] ) ? ' is-open' : '' ) . '" data-flt-group="' . esc_attr( (string) $group['key'] ) . '">';
-			$html .= '<button type="button" class="oc-flt__title" data-flt-toggle>';
-			$html .= '<span>' . esc_html( (string) $group['title'] ) . '</span>';
-			$html .= '<em class="oc-flt__num" data-flt-num' . ( $active_count ? '' : ' hidden' ) . '>(' . absint( $active_count ) . ')</em>';
-			$html .= '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
-			$html .= '</button>';
+			$html    .= '<div class="oc-flt__group' . ( $allow_open && ! empty( $group['open'] ) ? ' is-open' : '' ) . '" data-flt-group="' . esc_attr( (string) $group['key'] ) . '">';
+			$html    .= '<button type="button" class="oc-flt__title" data-flt-toggle>';
+			$html    .= '<span>' . esc_html( (string) $group['title'] ) . '</span>';
+			$html    .= '<em class="oc-flt__num" data-flt-num' . ( $active_count ? '' : ' hidden' ) . '>(' . absint( $active_count ) . ')</em>';
+			$html    .= '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
+			$html    .= '</button>';
 			$noname_d = 'swatch' === $group['type'] && empty( $settings['swatch_names'] );
 			$noname_m = 'swatch' === $group['type'] && empty( $settings['swatch_names_m'] );
 
@@ -1622,7 +1644,7 @@ final class Filters {
 		$state    = $this->state();
 		$settings = self::settings();
 
-		$ordering = WC()->query->get_catalog_ordering_args( $orderby ?: null );
+		$ordering = WC()->query->get_catalog_ordering_args( $orderby ? $orderby : null );
 
 		$args = array(
 			'post_type'        => 'product',
@@ -1841,7 +1863,7 @@ final class Filters {
 				delete_term_meta( (int) $term_id, 'oc_smart' );
 			}
 
-			$price = (float) ( $_POST['oc_smart_price'] ?? 0 );
+			$price = (float) ( $_POST['oc_smart_price'] ?? 0 ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- cast to float.
 			if ( $price > 0 ) {
 				update_term_meta( (int) $term_id, 'oc_smart_price', $price );
 			} else {
@@ -2041,9 +2063,9 @@ final class Filters {
 				'type'    => 'attribute',
 				'id'      => $id,
 				'on'      => empty( $_POST['attr_on'][ $id ] ) ? 0 : 1,
-				'order'   => (int) ( $_POST['attr_order'][ $id ] ?? 10 ),
+				'order'   => (int) ( $_POST['attr_order'][ $id ] ?? 10 ), // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- cast to int.
 				'title'   => sanitize_text_field( wp_unslash( (string) ( $_POST['attr_title'][ $id ] ?? '' ) ) ),
-				'display' => 'text' === ( $_POST['attr_display'][ $id ] ?? 'auto' ) ? 'text' : 'auto',
+				'display' => 'text' === ( $_POST['attr_display'][ $id ] ?? 'auto' ) ? 'text' : 'auto', // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- strict comparison stores a literal.
 				'open'    => empty( $_POST['attr_open'][ $id ] ) ? 0 : 1,
 			);
 		}
@@ -2059,7 +2081,7 @@ final class Filters {
 			$groups[] = array(
 				'type'  => 'category',
 				'on'    => empty( $_POST['cat_on'][ $i ] ) ? 0 : 1,
-				'order' => (int) ( $_POST['cat_order'][ $i ] ?? 20 ),
+				'order' => (int) ( $_POST['cat_order'][ $i ] ?? 20 ), // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- cast to int.
 				'title' => $title,
 				'cats'  => array_values( $cats ),
 				'show'  => array_values( array_filter( array_map( 'absint', (array) ( $_POST['cat_show'][ $i ] ?? array() ) ) ) ),
@@ -2086,12 +2108,20 @@ final class Filters {
 					'price_tiers'  => sanitize_text_field( wp_unslash( (string) ( $_POST['price_tiers'] ?? '' ) ) ),
 					'groups'       => $groups,
 				)
-						),
+			),
 			false
 		);
 		// phpcs:enable WordPress.Security.NonceVerification.Missing
 
-		wp_safe_redirect( add_query_arg( array( 'page' => 'oc-filters', 'oc_saved' => 1 ), admin_url( 'admin.php' ) ) );
+		wp_safe_redirect(
+			add_query_arg(
+				array(
+					'page'     => 'oc-filters',
+					'oc_saved' => 1,
+				),
+				admin_url( 'admin.php' )
+			)
+		);
 		exit;
 	}
 }

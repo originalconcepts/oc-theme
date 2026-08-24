@@ -55,7 +55,7 @@ final class Catalog {
 	/**
 	 * A real admin screen, as opposed to admin-ajax.
 	 *
-	 * is_admin() is true during admin-ajax too, and the filter endpoint
+	 * The is_admin() check is true during admin-ajax too, and the filter endpoint
 	 * renders the very same product cards — so the plain check would strip
 	 * tile sizes out of every ajax page.
 	 */
@@ -132,7 +132,7 @@ final class Catalog {
 		add_action( 'woocommerce_product_data_panels', array( $this, 'panel' ) );
 		add_action( 'woocommerce_process_product_meta', array( $this, 'save' ) );
 
-		add_filter( 'the_posts', array( $this, 'prime_images' ), 10, 2 );
+		add_filter( 'the_posts', array( $this, 'prime_images' ) );
 		add_filter( 'woocommerce_post_class', array( $this, 'tile_class' ), 10, 2 );
 		add_filter( 'oc_card_image_ids', array( $this, 'catalogue_image' ), 10, 2 );
 
@@ -194,7 +194,7 @@ final class Catalog {
 
 				<p style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 4px;">
 					<label style="float:none;inline-size:auto;margin:0;"><?php esc_html_e( 'Catalogue image', 'oc-theme' ); ?></label>
-					<input type="hidden" name="oc_tile_image" id="oc_tile_image" value="<?php echo esc_attr( (string) ( $tile['image'] ?: '' ) ); ?>" />
+					<input type="hidden" name="oc_tile_image" id="oc_tile_image" value="<?php echo esc_attr( (string) ( $tile['image'] ? $tile['image'] : '' ) ); ?>" />
 					<button type="button" class="button" id="oc_tile_pick"><?php esc_html_e( 'Choose image', 'oc-theme' ); ?></button>
 					<button type="button" class="button-link-delete" id="oc_tile_clear" style="<?php echo $tile['image'] ? '' : 'display:none;'; ?>"><?php esc_html_e( 'Remove', 'oc-theme' ); ?></button>
 				</p>
@@ -208,7 +208,7 @@ final class Catalog {
 				<p class="description" style="margin-block-start:6px;"><?php esc_html_e( 'Shown in listings instead of the product image. Empty = the product image.', 'oc-theme' ); ?></p>
 
 				<?php
-				$focus_id  = $tile['image'] ?: (int) get_post_thumbnail_id( (int) $post->ID );
+				$focus_id  = $tile['image'] ? $tile['image'] : (int) get_post_thumbnail_id( (int) $post->ID );
 				$focus_src = $focus_id ? (string) wp_get_attachment_image_url( $focus_id, 'large' ) : '';
 				?>
 				<p style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:18px 0 4px;">
@@ -322,10 +322,9 @@ final class Catalog {
 	 * image asks the database for each attachment separately — the classic
 	 * N+1, and the fastest way to undo the work of the performance passes.
 	 *
-	 * @param array     $posts Posts.
-	 * @param \WP_Query $query Query.
+	 * @param array $posts Posts.
 	 */
-	public function prime_images( $posts, $query ) {
+	public function prime_images( $posts ) {
 		if ( self::back_office() || empty( $posts ) || ! is_object( $posts[0] ) || 'product' !== get_post_type( $posts[0] ) ) {
 			return $posts;
 		}

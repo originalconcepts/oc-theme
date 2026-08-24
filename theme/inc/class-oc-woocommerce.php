@@ -149,7 +149,6 @@ final class WooCommerce {
 		add_action( 'woocommerce_archive_description', array( $this, 'crumbs_below' ), 5 );
 		add_action( 'woocommerce_single_product_summary', array( $this, 'crumbs_below' ), 6 );
 
-
 		// Section headings follow their title settings.
 		add_filter( 'woocommerce_product_related_products_heading', array( $this, 'related_heading' ) );
 		add_filter( 'woocommerce_product_upsells_products_heading', array( $this, 'upsells_heading' ) );
@@ -689,6 +688,8 @@ final class WooCommerce {
 	 * WooCommerce runs its own link through `woocommerce_loop_product_link`;
 	 * plugins that rewrite catalogue destinations hook there, so the theme's
 	 * links go through it too.
+	 *
+	 * @param \WC_Product $product The product on the card.
 	 */
 	private static function card_link( \WC_Product $product ): string {
 		return (string) apply_filters( 'woocommerce_loop_product_link', get_permalink( $product->get_id() ), $product );
@@ -729,6 +730,9 @@ final class WooCommerce {
 		);
 	}
 
+	/**
+	 * The card's media block: image, hover image or video, and badges.
+	 */
 	public function card_media(): void {
 		global $product;
 
@@ -883,6 +887,7 @@ final class WooCommerce {
 		$sale_side = 'right' === get_theme_mod( 'oc_label_sale_pos', 'left' ) ? 'right' : 'left';
 
 		if ( $product->is_on_sale() ) {
+			// phpcs:ignore WordPress.WP.I18n.TextDomainMismatch -- Woo's own badge string; reuse its translation.
 			$sides[ $sale_side ] .= apply_filters( 'woocommerce_sale_flash', '<span class="onsale">' . esc_html__( 'Sale!', 'woocommerce' ) . '</span>', $product->get_id() ? get_post( $product->get_id() ) : null, $product );
 		} else {
 			// Promotion King promotions live outside WooCommerce sale prices;
@@ -967,8 +972,10 @@ final class WooCommerce {
 		$text  = '';
 
 		if ( $sales >= max( 1, absint( get_theme_mod( 'oc_label_strip_buy_min', 10 ) ) ) ) {
+			/* translators: %d: how many were bought. */
 			$text = str_replace( '%d', (string) $sales, (string) get_theme_mod( 'oc_label_strip_buy_text', __( 'In demand! %d bought recently', 'oc-theme' ) ) );
 		} elseif ( $adds >= max( 1, absint( get_theme_mod( 'oc_label_strip_cart_min', 50 ) ) ) ) {
+			/* translators: %d: how many were added to a cart. */
 			$text = str_replace( '%d', (string) $adds, (string) get_theme_mod( 'oc_label_strip_cart_text', __( 'Great choice! %d added to cart recently', 'oc-theme' ) ) );
 		}
 
@@ -1257,7 +1264,7 @@ final class WooCommerce {
 
 		$product_id = absint( $_POST['product'] ?? 0 );
 		$email      = sanitize_email( wp_unslash( (string) ( $_POST['email'] ?? '' ) ) );
-		$phone      = preg_replace( '/[^0-9+\-]/', '', wp_unslash( (string) ( $_POST['phone'] ?? '' ) ) );
+		$phone      = preg_replace( '/[^0-9+\-]/', '', wp_unslash( (string) ( $_POST['phone'] ?? '' ) ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- reduced to phone characters by the preg_replace.
 		$channel    = Waitlist::settings()['channel'];
 
 		$valid_email = is_email( $email );
@@ -1324,7 +1331,7 @@ final class WooCommerce {
 		check_ajax_referer( 'oc_notify', 'nonce' );
 
 		$product_id = absint( $_POST['product'] ?? 0 );
-		$keys       = json_decode( wp_unslash( (string) ( $_POST['entries'] ?? '[]' ) ), true );
+		$keys       = json_decode( wp_unslash( (string) ( $_POST['entries'] ?? '[]' ) ), true ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- JSON payload; decoded, type-checked and compared against stored keys only.
 
 		if ( ! $product_id || ! is_array( $keys ) ) {
 			wp_send_json_error();
@@ -1507,7 +1514,7 @@ final class WooCommerce {
 							$labels   = array();
 
 							foreach ( $options as $slug ) {
-								$term = get_term_by( 'slug', $slug, $attribute );
+								$term            = get_term_by( 'slug', $slug, $attribute );
 								$labels[ $slug ] = $term instanceof \WP_Term ? $term->name : rawurldecode( (string) $slug );
 
 								if ( $term instanceof \WP_Term ) {

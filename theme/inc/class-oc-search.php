@@ -34,53 +34,53 @@ final class Search {
 		return wp_parse_args(
 			is_array( $saved ) ? $saved : array(),
 			array(
-				'enabled'   => 1,
+				'enabled'    => 1,
 
 				// Where to look.
-				'f_sku'     => 1,
-				'f_desc'    => 1,
-				'f_tag'     => 1,
-				'f_attr'    => 1,
-				'f_posts'   => 1,
-				'f_pages'   => 0,
+				'f_sku'      => 1,
+				'f_desc'     => 1,
+				'f_tag'      => 1,
+				'f_attr'     => 1,
+				'f_posts'    => 1,
+				'f_pages'    => 0,
 
 				// What each field is worth.
-				'w_title'   => 10,
-				'w_sku'     => 8,
-				'w_cat'     => 5,
-				'w_attr'    => 4,
-				'w_tag'     => 4,
-				'w_syn'     => 3,
-				'w_desc'    => 1,
-				'w_brand'   => 6,
+				'w_title'    => 10,
+				'w_sku'      => 8,
+				'w_cat'      => 5,
+				'w_attr'     => 4,
+				'w_tag'      => 4,
+				'w_syn'      => 3,
+				'w_desc'     => 1,
+				'w_brand'    => 6,
 
 				// 0 = relevance only, 100 = popularity only.
-				'pop_mix'   => 30,
+				'pop_mix'    => 30,
 
 				// sink | hide | normal.
-				'oos'       => 'sink',
+				'oos'        => 'sink',
 
 				// Term ids never offered beside the results.
 				'facet_skip' => '',
 
 				// Popular searches.
-				'pop_days'  => 7,
-				'pop_count' => 6,
-				'pop_min'   => 3,
-				'pop_block' => '',
+				'pop_days'   => 7,
+				'pop_count'  => 6,
+				'pop_min'    => 3,
+				'pop_block'  => '',
 
 				// Popular products: manual | sales | searches | random.
-				'prod_mode' => 'sales',
-				'prod_ids'  => '',
+				'prod_mode'  => 'sales',
+				'prod_ids'   => '',
 				'prod_count' => 8,
 
 				// Pinned results: one per line, "query = id, id".
-				'pinned'    => '',
+				'pinned'     => '',
 
 				// Kindnesses that only run when nothing was found.
-				'typo'      => 1,
-				'kbd'       => 1,
-				'learn'     => 1,
+				'typo'       => 1,
+				'kbd'        => 1,
+				'learn'      => 1,
 			)
 		);
 	}
@@ -251,7 +251,7 @@ final class Search {
 
 		$kinds_in = implode( ',', array_fill( 0, count( $args['kinds'] ), '%s' ) );
 
-		$parts  = array();
+		$parts        = array();
 		$union_values = array();
 
 		foreach ( $groups as $i => $spellings ) {
@@ -313,7 +313,7 @@ final class Search {
 			$sql .= ' AND x.in_stock = 1';
 		}
 
-		$sql .= ' GROUP BY m.object_id HAVING COUNT(DISTINCT m.grp) = %d';
+		$sql     .= ' GROUP BY m.object_id HAVING COUNT(DISTINCT m.grp) = %d';
 		$values[] = count( $groups );
 
 		$sql .= " ORDER BY {$sink}rank_score DESC, x.sales DESC, m.object_id ASC";
@@ -419,7 +419,9 @@ final class Search {
 
 		$out = array();
 
-		foreach ( preg_split( '/\R/u', (string) self::settings()['pinned'] ) ?: array() as $line ) {
+		$pinned_lines = preg_split( '/\R/u', (string) self::settings()['pinned'] );
+
+		foreach ( $pinned_lines ? $pinned_lines : array() as $line ) {
 			$line = trim( (string) $line );
 
 			if ( '' === $line || false === strpos( $line, '=' ) ) {
@@ -546,7 +548,9 @@ final class Search {
 
 		$out = '';
 
-		foreach ( preg_split( '//u', $text, -1, PREG_SPLIT_NO_EMPTY ) ?: array() as $char ) {
+		$chars = preg_split( '//u', $text, -1, PREG_SPLIT_NO_EMPTY );
+
+		foreach ( $chars ? $chars : array() as $char ) {
 			$at   = mb_strpos( $from, mb_strtolower( $char, 'UTF-8' ), 0, 'UTF-8' );
 			$out .= false === $at ? $char : mb_substr( $to, $at, 1, 'UTF-8' );
 		}
@@ -582,7 +586,8 @@ final class Search {
 		// one wrong letter, and still an index range.
 		$stub = mb_substr( $word, 0, 2, 'UTF-8' );
 
-		$candidates = $wpdb->get_col( // phpcs:ignore WordPress.DB
+		// phpcs:disable WordPress.DB -- prepared statement; the table name is built by the theme.
+		$candidates = $wpdb->get_col(
 			$wpdb->prepare(
 				'SELECT DISTINCT token FROM ' . Search_Index::words()
 					. ' WHERE token LIKE %s AND CHAR_LENGTH(token) BETWEEN %d AND %d LIMIT 200',
@@ -591,6 +596,7 @@ final class Search {
 				$len + 1
 			)
 		);
+		// phpcs:enable WordPress.DB
 
 		$best     = '';
 		$distance = 2;
@@ -637,7 +643,8 @@ final class Search {
 		$table = Search_Index::log();
 		$day   = gmdate( 'Y-m-d' );
 
-		$wpdb->query( // phpcs:ignore WordPress.DB
+		// phpcs:disable WordPress.DB -- prepared statement; the table name is built by the theme.
+		$wpdb->query(
 			$wpdb->prepare(
 				"INSERT INTO {$table} (day, term, hits, searches, clicks) VALUES (%s, %s, %d, %d, %d)
 				 ON DUPLICATE KEY UPDATE hits = VALUES(hits), searches = searches + %d, clicks = clicks + %d",
@@ -650,6 +657,7 @@ final class Search {
 				$click ? 1 : 0
 			)
 		);
+		// phpcs:enable WordPress.DB
 	}
 
 	/**
@@ -676,7 +684,8 @@ final class Search {
 
 		$table = Search_Index::clicks();
 
-		$wpdb->query( // phpcs:ignore WordPress.DB
+		// phpcs:disable WordPress.DB -- prepared statement; the table name is built by the theme.
+		$wpdb->query(
 			$wpdb->prepare(
 				"INSERT INTO {$table} (term, object_id, n, updated) VALUES (%s, %d, 1, %d)
 				 ON DUPLICATE KEY UPDATE n = n + 1, updated = VALUES(updated)",
@@ -685,6 +694,7 @@ final class Search {
 				time()
 			)
 		);
+		// phpcs:enable WordPress.DB
 	}
 
 	/**
@@ -692,19 +702,20 @@ final class Search {
 	 *
 	 * @param int  $days  How far back.
 	 * @param int  $limit How many.
-	 * @param bool $empty Only the ones that found nothing.
+	 * @param bool $empty_only Only the ones that found nothing.
 	 * @return array<int,object>
 	 */
-	public static function popular_terms( int $days = 7, int $limit = 8, bool $empty = false ): array {
+	public static function popular_terms( int $days = 7, int $limit = 8, bool $empty_only = false ): array {
 		global $wpdb;
 
 		Search_Index::maybe_install();
 
 		$table = Search_Index::log();
 		$from  = gmdate( 'Y-m-d', time() - max( 1, $days ) * DAY_IN_SECONDS );
-		$where = $empty ? ' AND hits = 0' : ' AND hits > 0';
+		$where = $empty_only ? ' AND hits = 0' : ' AND hits > 0';
 
-		$rows = $wpdb->get_results( // phpcs:ignore WordPress.DB
+		// phpcs:disable WordPress.DB -- prepared statement; the table name is built by the theme.
+		$rows = $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT term, SUM(searches) AS searches, SUM(clicks) AS clicks, MAX(hits) AS hits
 				 FROM {$table} WHERE day >= %s {$where}
@@ -712,8 +723,9 @@ final class Search {
 				$from
 			)
 		);
+		// phpcs:enable WordPress.DB
 
-		if ( $empty ) {
+		if ( $empty_only ) {
 			$rows = self::without_blocked( $rows );
 
 			foreach ( $rows as $row ) {
@@ -811,8 +823,8 @@ final class Search {
 			}
 		}
 
-		$min  = max( 1, (int) self::settings()['pop_min'] );
-		$out  = array();
+		$min = max( 1, (int) self::settings()['pop_min'] );
+		$out = array();
 
 		foreach ( $kept as $row ) {
 			if ( (int) $row->searches < $min ) {
@@ -873,12 +885,14 @@ final class Search {
 		$word = (string) $words[0];
 
 		// Already a word the shop knows: leave it alone.
-		$exact = $wpdb->get_var( // phpcs:ignore WordPress.DB
+		// phpcs:disable WordPress.DB -- prepared statement; the table name is built by the theme.
+		$exact = $wpdb->get_var(
 			$wpdb->prepare(
 				'SELECT 1 FROM ' . Search_Index::words() . ' WHERE token = %s LIMIT 1',
 				$word
 			)
 		);
+		// phpcs:enable WordPress.DB
 
 		if ( $exact ) {
 			return '';
@@ -886,7 +900,8 @@ final class Search {
 
 		// The commonest word that starts this way, preferring the shortest —
 		// "שולחן" over "שולחנות".
-		$whole = $wpdb->get_var( // phpcs:ignore WordPress.DB
+		// phpcs:disable WordPress.DB -- prepared statement; the table name is built by the theme.
+		$whole = $wpdb->get_var(
 			$wpdb->prepare(
 				'SELECT token FROM ' . Search_Index::words()
 					. ' WHERE token LIKE %s AND field IN (%d, %d, %d, %d, %d)'
@@ -899,6 +914,7 @@ final class Search {
 				Search_Index::F_TAG
 			)
 		);
+		// phpcs:enable WordPress.DB
 
 		return $whole ? (string) $whole : '';
 	}
@@ -916,8 +932,9 @@ final class Search {
 		$mode  = (string) $s['prod_mode'];
 
 		if ( 'manual' === $mode ) {
-			$ids = array_filter( array_map( 'absint', preg_split( '/[\s,]+/', (string) $s['prod_ids'] ) ?: array() ) );
-			$ids = array_values( array_filter( $ids, static fn( $id ) => 'publish' === get_post_status( $id ) ) );
+			$bits = preg_split( '/[\s,]+/', (string) $s['prod_ids'] );
+			$ids  = array_filter( array_map( 'absint', $bits ? $bits : array() ) );
+			$ids  = array_values( array_filter( $ids, static fn( $id ) => 'publish' === get_post_status( $id ) ) );
 
 			if ( $ids ) {
 				return array_slice( $ids, 0, $count );
@@ -1074,9 +1091,11 @@ final class Search {
 
 		// A marketing category like "NEW" sits on half the shop and tells a
 		// shopper nothing about where they are, so it can be kept out.
-		$skip = array_filter( array_map( 'absint', preg_split( '/[\s,]+/', (string) self::settings()['facet_skip'] ) ?: array() ) );
+		$skip_bits = preg_split( '/[\s,]+/', (string) self::settings()['facet_skip'] );
+		$skip      = array_filter( array_map( 'absint', $skip_bits ? $skip_bits : array() ) );
 
-		$rows = $wpdb->get_results( // phpcs:ignore WordPress.DB
+		// phpcs:disable WordPress.DB -- prepared statement; the table name is built by the theme.
+		$rows = $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT t.term_id, t.name, t.slug, COUNT(DISTINCT tr.object_id) AS n
 				 FROM {$wpdb->term_relationships} tr
@@ -1089,6 +1108,7 @@ final class Search {
 				array_merge( array( $taxonomy ), $ids, array( max( 1, $limit ) + count( $skip ) ) )
 			)
 		);
+		// phpcs:enable WordPress.DB
 
 		if ( ! is_array( $rows ) ) {
 			return array();
@@ -1186,7 +1206,7 @@ final class Search {
 
 		$ids = self::product_ids( $term );
 
-		$query->set( 'post__in', $ids ?: array( 0 ) );
+		$query->set( 'post__in', $ids ? $ids : array( 0 ) );
 		$query->set( 'oc_search_term', $term );
 
 		$narrow = self::narrowed_to();
@@ -1389,6 +1409,7 @@ final class Search {
 	 * The panel asks, this answers.
 	 */
 	public function ajax(): void {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- public, read-only search endpoint; every value is sanitized on read.
 		$term = isset( $_GET['q'] ) ? sanitize_text_field( wp_unslash( $_GET['q'] ) ) : '';
 		$log  = ! empty( $_GET['log'] );
 
@@ -1407,10 +1428,16 @@ final class Search {
 		$min = (int) self::look( 'min', 2 );
 
 		if ( mb_strlen( trim( $term ), 'UTF-8' ) < max( 1, $min ) ) {
-			wp_send_json_success( array( 'html' => '', 'empty' => 1 ) );
+			wp_send_json_success(
+				array(
+					'html'  => '',
+					'empty' => 1,
+				)
+			);
 		}
 
 		$show = isset( $_GET['show'] ) ? min( 60, absint( wp_unslash( $_GET['show'] ) ) ) : 0;
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 		$html = Search_Panel::results_html( $term, $log, $show );
 
 		wp_send_json_success( $html );
@@ -1424,8 +1451,10 @@ final class Search {
 	 * ends up with a size they did not pick.
 	 */
 	public function ajax_add(): void {
+		// phpcs:disable WordPress.Security.NonceVerification.Missing -- nonce-less by design, like Woo's own add-to-cart endpoint; ids are absint()-ed and re-checked below.
 		$product_id = isset( $_POST['product_id'] ) ? absint( wp_unslash( $_POST['product_id'] ) ) : 0;
 		$quantity   = isset( $_POST['quantity'] ) ? max( 1, absint( wp_unslash( $_POST['quantity'] ) ) ) : 1;
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
 
 		$product = $product_id ? wc_get_product( $product_id ) : null;
 

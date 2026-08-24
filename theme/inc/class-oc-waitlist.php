@@ -160,8 +160,9 @@ final class Waitlist {
 			<tbody>
 				<?php foreach ( $rows as $row ) : ?>
 					<?php
-					$product  = wc_get_product( $row['product'] );
-					$stock_of = $row['variation'] ? ( wc_get_product( $row['variation'] ) ?: $product ) : $product;
+					$product   = wc_get_product( $row['product'] );
+					$variation = $row['variation'] ? wc_get_product( $row['variation'] ) : false;
+					$stock_of  = $variation ? $variation : $product;
 					?>
 					<tr>
 						<td data-title="<?php esc_attr_e( 'Product', 'oc-theme' ); ?>">
@@ -240,7 +241,15 @@ final class Waitlist {
 			false
 		);
 
-		wp_safe_redirect( add_query_arg( array( 'page' => 'oc-waitlist', 'oc_saved' => 1 ), admin_url( 'admin.php' ) ) );
+		wp_safe_redirect(
+			add_query_arg(
+				array(
+					'page'     => 'oc-waitlist',
+					'oc_saved' => 1,
+				),
+				admin_url( 'admin.php' )
+			)
+		);
 		exit;
 	}
 
@@ -328,7 +337,10 @@ final class Waitlist {
 
 		foreach ( $list as $key => $entry ) {
 			if ( ! is_array( $entry ) ) {
-				$entry = array( 'email' => (string) $key, 'phone' => '' );
+				$entry = array(
+					'email' => (string) $key,
+					'phone' => '',
+				);
 			}
 
 			if ( ! $matches( $entry ) ) {
@@ -338,7 +350,7 @@ final class Waitlist {
 			$sent = false;
 
 			if ( 'email' !== $settings['channel'] && ! empty( $entry['phone'] ) ) {
-				$sent = $this->send_whatsapp( (string) $entry['phone'], $target->get_name(), (string) $target->get_permalink() ) || $sent;
+				$sent = $this->send_whatsapp( (string) $entry['phone'], $target->get_name(), (string) $target->get_permalink() );
 			}
 			if ( 'whatsapp' !== $settings['channel'] && ! empty( $entry['email'] ) ) {
 				$sent = $this->send_email( (string) $entry['email'], $target, (string) ( $entry['name'] ?? '' ) ) || $sent;
@@ -453,9 +465,10 @@ final class Waitlist {
 		$store   = (string) get_bloginfo( 'name' );
 		$home    = (string) home_url( '/' );
 
-		$cta    = (string) get_theme_mod( 'oc_cta_color', '' );
-		$cta    = '' !== $cta ? $cta : ( (string) get_theme_mod( 'oc_color_primary', '' ) ?: '#1f2937' );
-		$radius = (string) get_theme_mod( 'oc_cta_radius', '8px' );
+		$cta     = (string) get_theme_mod( 'oc_cta_color', '' );
+		$primary = (string) get_theme_mod( 'oc_color_primary', '' );
+		$cta     = '' !== $cta ? $cta : ( $primary ? $primary : '#1f2937' );
+		$radius  = (string) get_theme_mod( 'oc_cta_radius', '8px' );
 
 		/* translators: %s: product name. */
 		$subject = sprintf( __( 'Good news — %s is back in stock!', 'oc-theme' ), $name );
@@ -513,7 +526,15 @@ final class Waitlist {
 		$phone = sanitize_text_field( wp_unslash( (string) ( $_POST['test_phone'] ?? '' ) ) );
 		$ok    = '' !== $phone && $this->send_whatsapp( $phone, __( 'Test product', 'oc-theme' ), home_url( '/' ) );
 
-		wp_safe_redirect( add_query_arg( array( 'page' => 'oc-waitlist', 'oc_test' => $ok ? 1 : 0 ), admin_url( 'admin.php' ) ) );
+		wp_safe_redirect(
+			add_query_arg(
+				array(
+					'page'    => 'oc-waitlist',
+					'oc_test' => $ok ? 1 : 0,
+				),
+				admin_url( 'admin.php' )
+			)
+		);
 		exit;
 	}
 
@@ -539,7 +560,15 @@ final class Waitlist {
 
 		$ok = is_email( $to ) && $products && $this->send_email( $to, $products[0], (string) wp_get_current_user()->first_name );
 
-		wp_safe_redirect( add_query_arg( array( 'page' => 'oc-waitlist', 'oc_test_email' => $ok ? 1 : 0 ), admin_url( 'admin.php' ) ) );
+		wp_safe_redirect(
+			add_query_arg(
+				array(
+					'page'          => 'oc-waitlist',
+					'oc_test_email' => $ok ? 1 : 0,
+				),
+				admin_url( 'admin.php' )
+			)
+		);
 		exit;
 	}
 
@@ -560,7 +589,7 @@ final class Waitlist {
 	/**
 	 * Every signup, flattened and newest first.
 	 *
-	 * @return array<int,array{product:int,key:string,email:string,phone:string,time:int}>
+	 * @return array<int,array{product:int,key:string,email:string,phone:string,variation:int,vname:string,time:int}>
 	 */
 	private function rows(): array {
 		global $wpdb;
@@ -751,9 +780,10 @@ final class Waitlist {
 					<tbody>
 						<?php foreach ( $rows as $row ) : ?>
 							<?php
-							$product  = wc_get_product( $row['product'] );
-							$stock_of = $row['variation'] ? ( wc_get_product( $row['variation'] ) ?: $product ) : $product;
-							$remove   = wp_nonce_url(
+							$product   = wc_get_product( $row['product'] );
+							$variation = $row['variation'] ? wc_get_product( $row['variation'] ) : false;
+							$stock_of  = $variation ? $variation : $product;
+							$remove    = wp_nonce_url(
 								add_query_arg(
 									array(
 										'page'       => 'oc-waitlist',

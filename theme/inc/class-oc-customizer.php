@@ -198,7 +198,10 @@ final class Customizer {
 				'card' => __( 'A card — picture above the words', 'oc-theme' ),
 			),
 			'list',
-			array( 'setting' => 'oc_search_panel', 'values' => array( 'full' ) )
+			array(
+				'setting' => 'oc_search_panel',
+				'values'  => array( 'full' ),
+			)
 		);
 
 		$this->number( $c, 'oc_search_limit', 'oc_search_look', __( 'Results in the panel', 'oc-theme' ), 6, 2, 16 );
@@ -218,7 +221,10 @@ final class Customizer {
 				'logo' => __( 'Their logo', 'oc-theme' ),
 			),
 			'text',
-			array( 'setting' => 'oc_search_show_brand', 'values' => array( '1', 'true' ) )
+			array(
+				'setting' => 'oc_search_show_brand',
+				'values'  => array( '1', 'true' ),
+			)
 		);
 		$this->toggle( $c, 'oc_search_show_tag', 'oc_search_look', __( 'Matching tags', 'oc-theme' ), false );
 
@@ -232,7 +238,10 @@ final class Customizer {
 				'archive' => __( 'The whole category', 'oc-theme' ),
 			),
 			'narrow',
-			array( 'setting' => 'oc_search_show_cat', 'values' => array( '1', 'true' ) )
+			array(
+				'setting' => 'oc_search_show_cat',
+				'values'  => array( '1', 'true' ),
+			)
 		);
 
 		$this->choice(
@@ -245,7 +254,10 @@ final class Customizer {
 				'archive' => __( 'Everything the brand makes', 'oc-theme' ),
 			),
 			'narrow',
-			array( 'setting' => 'oc_search_show_brand', 'values' => array( '1', 'true' ) )
+			array(
+				'setting' => 'oc_search_show_brand',
+				'values'  => array( '1', 'true' ),
+			)
 		);
 		$this->toggle( $c, 'oc_search_show_post', 'oc_search_look', __( 'Articles and pages', 'oc-theme' ), true );
 
@@ -253,7 +265,19 @@ final class Customizer {
 
 		$this->toggle( $c, 'oc_search_quickadd', 'oc_search_look', __( 'An add button on each result', 'oc-theme' ), true );
 		$this->toggle( $c, 'oc_search_history', 'oc_search_look', __( 'Remember this visitor\'s own searches', 'oc-theme' ), true );
-		$this->number( $c, 'oc_search_history_max', 'oc_search_look', __( 'How many of them to keep', 'oc-theme' ), 8, 3, 12, array( 'setting' => 'oc_search_history', 'values' => array( '1', 'true' ) ) );
+		$this->number(
+			$c,
+			'oc_search_history_max',
+			'oc_search_look',
+			__( 'How many of them to keep', 'oc-theme' ),
+			8,
+			3,
+			12,
+			array(
+				'setting' => 'oc_search_history',
+				'values'  => array( '1', 'true' ),
+			)
+		);
 	}
 
 	/**
@@ -749,7 +773,6 @@ final class Customizer {
 
 		$this->toggle( $c, 'oc_topbar', 'oc_topbar', __( 'Show the top bar', 'oc-theme' ), false );
 
-
 		$this->choice(
 			$c,
 			'oc_topbar_effect',
@@ -878,10 +901,10 @@ final class Customizer {
 			'oc_design',
 			__( 'Hover effect', 'oc-theme' ),
 			array(
-				'none'        => __( 'None', 'oc-theme' ),
-				'invert'      => __( 'Negative', 'oc-theme' ),
-				'sweep-ltr'   => __( 'Negative, left to right', 'oc-theme' ),
-				'sweep-rtl'   => __( 'Negative, right to left', 'oc-theme' ),
+				'none'      => __( 'None', 'oc-theme' ),
+				'invert'    => __( 'Negative', 'oc-theme' ),
+				'sweep-ltr' => __( 'Negative, left to right', 'oc-theme' ),
+				'sweep-rtl' => __( 'Negative, right to left', 'oc-theme' ),
 			),
 			'none'
 		);
@@ -1105,7 +1128,6 @@ final class Customizer {
 			),
 			'circle'
 		);
-
 	}
 
 	/**
@@ -1267,7 +1289,10 @@ final class Customizer {
 			4,
 			2,
 			8,
-			array( 'setting' => 'oc_card_image_mode', 'values' => array( 'gallery' ) )
+			array(
+				'setting' => 'oc_card_image_mode',
+				'values'  => array( 'gallery' ),
+			)
 		);
 
 		$this->choice(
@@ -1431,8 +1456,10 @@ final class Customizer {
 
 		$this->toggle( $c, 'oc_label_strip', 'oc_labels', __( 'Show the bottom strip', 'oc-theme' ), false );
 		$this->number( $c, 'oc_label_strip_buy_min', 'oc_labels', __( 'Show "in demand" from this many purchases', 'oc-theme' ), 10, 1, 10000 );
+		/* translators: %d is typed literally by the admin; it is replaced with the number at render time. */
 		$this->text( $c, 'oc_label_strip_buy_text', 'oc_labels', __( '"In demand" text (%d = the number)', 'oc-theme' ) );
 		$this->number( $c, 'oc_label_strip_cart_min', 'oc_labels', __( 'Show "great choice" from this many cart adds', 'oc-theme' ), 50, 1, 10000 );
+		/* translators: %d is typed literally by the admin; it is replaced with the number at render time. */
 		$this->text( $c, 'oc_label_strip_cart_text', 'oc_labels', __( '"Great choice" text (%d = the number)', 'oc-theme' ) );
 		$this->color( $c, 'oc_label_strip_bg', 'oc_labels', __( 'Strip background', 'oc-theme' ) );
 		$this->color( $c, 'oc_label_strip_tx', 'oc_labels', __( 'Strip text colour', 'oc-theme' ) );
@@ -1527,7 +1554,10 @@ final class Customizer {
 			'200px'
 		);
 
-		$thumbs_active = array( 'setting' => 'oc_gallery_preset', 'values' => array( 'thumbs-side', 'thumbs-under' ) );
+		$thumbs_active = array(
+			'setting' => 'oc_gallery_preset',
+			'values'  => array( 'thumbs-side', 'thumbs-under' ),
+		);
 
 		$this->number( $c, 'oc_gallery_thumbs_max', 'oc_product', __( 'Visible thumbnails (arrows page the rest)', 'oc-theme' ), 5, 2, 10, $thumbs_active );
 
@@ -1574,7 +1604,10 @@ final class Customizer {
 			600,
 			240,
 			1000,
-			array( 'setting' => 'oc_gallery_img_height', 'values' => array( 'fixed' ) )
+			array(
+				'setting' => 'oc_gallery_img_height',
+				'values'  => array( 'fixed' ),
+			)
 		);
 
 		$this->toggle( $c, 'oc_gallery_lightbox', 'oc_product', __( 'Open images in a lightbox', 'oc-theme' ), true );
@@ -1607,7 +1640,10 @@ final class Customizer {
 			'oc_product',
 			__( 'Arrows on the mobile gallery', 'oc-theme' ),
 			false,
-			array( 'setting' => 'oc_gallery_mobile', 'values' => array( 'dots' ) )
+			array(
+				'setting' => 'oc_gallery_mobile',
+				'values'  => array( 'dots' ),
+			)
 		);
 
 		$this->number( $c, 'oc_gallery_img_height_mobile_px', 'oc_product', __( 'Uniform height — mobile (px, 0 = auto)', 'oc-theme' ), 0, 0, 900 );
@@ -1754,6 +1790,7 @@ final class Customizer {
 	 *                                          ints because PHP coerces them.
 	 * @param string                   $def     Default value.
 	 * @param array|null               $dep     Optional visibility rule.
+	 * @param string                   $hint    Helper text under the control.
 	 */
 	private function choice( \WP_Customize_Manager $c, string $id, string $section, string $label, array $choices, string $def, ?array $dep = null, string $hint = '' ): void {
 		$keys = array_map( 'strval', array_keys( $choices ) );
@@ -1788,6 +1825,8 @@ final class Customizer {
 	 * @param string                $id      Setting id.
 	 * @param string                $section Section id.
 	 * @param string                $label   Label.
+	 * @param string                $hint    Helper text under the control.
+	 * @param array|null            $dep     Optional visibility rule.
 	 */
 	private function color( \WP_Customize_Manager $c, string $id, string $section, string $label, string $hint = '', ?array $dep = null ): void {
 		$c->add_setting(
@@ -1879,6 +1918,7 @@ final class Customizer {
 	 * @param array<string,array<string,string>> $presets Presets.
 	 * @param string                             $def     Default value.
 	 * @param string                             $width   Item width.
+	 * @param string                             $hint    Helper text under the control.
 	 */
 	private function preset( \WP_Customize_Manager $c, string $id, string $section, string $label, array $presets, string $def, string $width, string $hint = '' ): void {
 		$c->add_setting(
@@ -1915,6 +1955,7 @@ final class Customizer {
 	 * @param string                $label   Label.
 	 * @param bool                  $def     Default.
 	 * @param array|null            $dep     Optional visibility rule.
+	 * @param string                $hint    Helper text under the control.
 	 */
 	private function toggle( \WP_Customize_Manager $c, string $id, string $section, string $label, bool $def, ?array $dep = null, string $hint = '' ): void {
 		$c->add_setting(
@@ -1950,6 +1991,7 @@ final class Customizer {
 	 * @param int                   $min     Minimum.
 	 * @param int                   $max     Maximum.
 	 * @param array|null            $dep     Optional visibility rule.
+	 * @param string                $hint    Helper text under the control.
 	 */
 	private function number( \WP_Customize_Manager $c, string $id, string $section, string $label, int $def, int $min, int $max, ?array $dep = null, string $hint = '' ): void {
 		$c->add_setting(
@@ -2134,10 +2176,12 @@ final class Customizer {
 		$this->opt_text( $c, $o, 'help_text', 'oc_checkout', __( 'Help line in the header', 'oc-theme' ) );
 	}
 
-	/* ---------- controls bound to a key inside an existing option ----------
+	/*
+	---------- controls bound to a key inside an existing option ----------
 	 * WordPress can address one key of a serialized option directly, so a
 	 * control can move into the Customizer while its value stays exactly
-	 * where the rest of the theme already reads it from. */
+	 * where the rest of the theme already reads it from.
+	 */
 
 	/**
 	 * Shared arguments for an option-backed setting.
@@ -2205,6 +2249,7 @@ final class Customizer {
 	 * @param string                $label   Label.
 	 * @param array                 $choices Choices.
 	 * @param string                $def     Default.
+	 * @param array|null            $dep     Optional visibility rule.
 	 */
 	private function opt_select( \WP_Customize_Manager $c, string $option, string $key, string $section, string $label, array $choices, string $def, ?array $dep = null ): void {
 		list( $id, $args ) = $this->opt_args(
@@ -2242,6 +2287,7 @@ final class Customizer {
 	 * @param int                   $def     Default.
 	 * @param int                   $min     Minimum.
 	 * @param int                   $max     Maximum.
+	 * @param array|null            $dep     Optional visibility rule.
 	 */
 	private function opt_number( \WP_Customize_Manager $c, string $option, string $key, string $section, string $label, int $def, int $min, int $max, ?array $dep = null ): void {
 		list( $id, $args ) = $this->opt_args(
@@ -2696,8 +2742,9 @@ final class Customizer {
 	 * @param array                 $presets value => array{label,svg}.
 	 * @param string                $def     Default.
 	 * @param string                $width   Item width.
+	 * @param string                $hint    Helper text under the control.
 	 */
-	private function opt_preset( \WP_Customize_Manager $c, string $option, string $key, string $section, string $label, array $presets, string $def, string $width ): void {
+	private function opt_preset( \WP_Customize_Manager $c, string $option, string $key, string $section, string $label, array $presets, string $def, string $width, string $hint = '' ): void {
 		list( $id, $args ) = $this->opt_args(
 			$option,
 			$key,
@@ -2722,5 +2769,4 @@ final class Customizer {
 			)
 		);
 	}
-
 }

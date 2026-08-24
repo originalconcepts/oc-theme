@@ -66,7 +66,7 @@ final class Checkout {
 		add_filter( 'woocommerce_checkout_fields', array( $this, 'fields' ), 20 );
 		add_filter( 'woocommerce_package_rates', array( $this, 'free_hides_paid' ), 20 );
 		add_filter( 'woocommerce_get_country_locale', array( $this, 'country_locale' ), 20 );
-		add_filter( 'woocommerce_form_field_oc_co_shipping', array( $this, 'shipping_section' ), 10, 2 );
+		add_filter( 'woocommerce_form_field_oc_co_shipping', array( $this, 'shipping_section' ) );
 		add_filter( 'woocommerce_update_order_review_fragments', array( $this, 'rates_fragment' ) );
 		add_filter( 'woocommerce_cart_shipping_method_full_label', array( $this, 'free_label' ), 10, 2 );
 		add_filter( 'body_class', array( $this, 'body_class' ) );
@@ -100,14 +100,12 @@ final class Checkout {
 		add_filter( 'woocommerce_order_button_text', array( $this, 'button_text' ) );
 
 		add_action( 'woocommerce_after_checkout_validation', array( $this, 'validate' ), 10, 2 );
-		add_action( 'woocommerce_checkout_update_order_meta', array( $this, 'save_meta' ), 10, 2 );
+		add_action( 'woocommerce_checkout_update_order_meta', array( $this, 'save_meta' ) );
 		add_action( 'woocommerce_admin_order_data_after_billing_address', array( $this, 'admin_meta' ) );
 		add_action( 'woocommerce_email_order_meta', array( $this, 'email_meta' ), 10, 3 );
 
-		add_filter( 'woocommerce_cart_item_name', array( $this, 'review_item_name' ), 10, 3 );
+		add_filter( 'woocommerce_cart_item_name', array( $this, 'review_item_name' ), 10, 2 );
 		add_filter( 'woocommerce_checkout_cart_item_quantity', array( $this, 'review_item_qty' ), 10, 3 );
-
-
 
 		add_action( 'wp_ajax_oc_co_legal', array( $this, 'ajax_legal' ) );
 		add_action( 'wp_ajax_nopriv_oc_co_legal', array( $this, 'ajax_legal' ) );
@@ -159,7 +157,7 @@ final class Checkout {
 			wp_send_json_success();
 		}
 
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- session-scoped scratch data, no privileges.
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- session-scoped scratch data, no privileges; every key and value is sanitized below.
 		$raw = isset( $_POST['fields'] ) ? (array) wp_unslash( $_POST['fields'] ) : array();
 		$out = array();
 
@@ -230,7 +228,7 @@ final class Checkout {
 
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- read-only peek at Woo's own posted field.
 		if ( isset( $_POST['shipping_method'] ) ) {
-			$posted = wp_unslash( $_POST['shipping_method'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+			$posted = wp_unslash( $_POST['shipping_method'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput, WordPress.Security.NonceVerification.Missing -- read-only peek, cast to string below.
 			$method = is_array( $posted ) ? (string) reset( $posted ) : (string) $posted;
 		} elseif ( WC()->session ) {
 			$chosen = (array) WC()->session->get( 'chosen_shipping_methods' );
@@ -252,6 +250,8 @@ final class Checkout {
 
 	/**
 	 * Digits-count validation per the settings. Empty limits skip.
+	 *
+	 * @param string $phone The phone number as typed.
 	 */
 	private function phone_ok( string $phone ): bool {
 		$s      = self::settings();
@@ -301,7 +301,7 @@ final class Checkout {
 	/**
 	 * The shipping totals row says "Free" like any other price.
 	 *
-	 * @param string           $label Method label.
+	 * @param string            $label Method label.
 	 * @param \WC_Shipping_Rate $rate  Rate.
 	 * @return string
 	 */
@@ -371,11 +371,11 @@ final class Checkout {
 		$b['billing_address_1']['label']       = __( 'Street and house number', 'oc-theme' );
 		$b['billing_address_1']['placeholder'] = '';
 
-		$b['billing_address_2']['priority'] = 65;
-		$b['billing_address_2']['class']    = array( 'form-row-last' );
-		$b['billing_address_2']['label']    = __( 'Apartment', 'oc-theme' );
+		$b['billing_address_2']['priority']    = 65;
+		$b['billing_address_2']['class']       = array( 'form-row-last' );
+		$b['billing_address_2']['label']       = __( 'Apartment', 'oc-theme' );
 		$b['billing_address_2']['label_class'] = array();
-		$b['billing_address_2']['required'] = false;
+		$b['billing_address_2']['required']    = false;
 		$b['billing_address_2']['placeholder'] = '';
 
 		$b['billing_address_2']['required'] = ! empty( $s['apt_required'] ) && ! $pickup;
@@ -443,7 +443,10 @@ final class Checkout {
 		// very locale data — so the layout order must live HERE, not only on
 		// the server fields.
 		$layout = array(
-			'phone'     => array( 'required' => true, 'priority' => 40 ),
+			'phone'     => array(
+				'required' => true,
+				'priority' => 40,
+			),
 			'city'      => array(
 				'priority' => 55,
 				'label'    => __( 'City', 'oc-theme' ),
@@ -473,11 +476,9 @@ final class Checkout {
 	 * The pseudo-field: delivery-method cards + the "sending to someone
 	 * else" toggle with its recipient block.
 	 *
-	 * @param string $html Empty incoming html.
-	 * @param string $key  Field key.
 	 * @return string
 	 */
-	public function shipping_section( $html, $key ): string {
+	public function shipping_section(): string {
 		$s = self::settings();
 
 		if ( ! WC()->cart || ! WC()->cart->needs_shipping() ) {
@@ -686,6 +687,7 @@ final class Checkout {
 			$rate = $rates[ $current ];
 			$cost = (float) $rate->get_cost() + array_sum( array_map( 'floatval', $rate->get_taxes() ) );
 
+			// phpcs:ignore WordPress.WP.I18n.TextDomainMismatch -- Woo's own row label; reuse its translation.
 			echo '<tr class="oc-co-shiprow2"><th>' . esc_html__( 'Shipping', 'woocommerce' ) . '</th><td>';
 			echo '<span class="oc-co-shiprow2__in"><span>' . esc_html( $rate->get_label() ) . '</span>';
 			if ( $cost > 0 ) {
@@ -768,6 +770,7 @@ final class Checkout {
 			/* translators: %s: privacy policy link. */
 			esc_html__( 'The details you provide will be used to process and deliver your order, for billing and customer service, in line with our %s. Providing them is not required by law, but without them the order cannot be completed.', 'oc-theme' ),
 			$link // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped above.
+		// phpcs:ignore WordPress.WP.I18n.TextDomainMismatch -- Woo's own "required" marker; reuse its translation.
 		) . '&nbsp;<abbr class="required" title="' . esc_attr__( 'required', 'woocommerce' ) . '">*</abbr></span>';
 		echo '</label></p>';
 	}
@@ -863,6 +866,8 @@ final class Checkout {
 
 	/**
 	 * Human phone-rule message, range-aware.
+	 *
+	 * @param string $field Field name, already translated.
 	 */
 	private function phone_error( string $field ): string {
 		$s   = self::settings();
@@ -890,10 +895,9 @@ final class Checkout {
 	/**
 	 * Everything custom rides order meta.
 	 *
-	 * @param int   $order_id Order.
-	 * @param array $data     Posted data.
+	 * @param int $order_id Order.
 	 */
-	public function save_meta( $order_id, $data ): void {
+	public function save_meta( $order_id ): void {
 		$order = wc_get_order( $order_id );
 		if ( ! $order ) {
 			return;
@@ -1026,10 +1030,9 @@ final class Checkout {
 	 *
 	 * @param string $name      Item name html.
 	 * @param array  $cart_item Cart item.
-	 * @param string $key       Cart item key.
 	 * @return string
 	 */
-	public function review_item_name( $name, $cart_item, $key = '' ): string {
+	public function review_item_name( $name, $cart_item ): string {
 		if ( ! is_checkout() || is_cart() || ! isset( $cart_item['data'] ) ) {
 			return (string) $name;
 		}

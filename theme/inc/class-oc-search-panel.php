@@ -32,9 +32,9 @@ final class Search_Panel {
 	 * The whole panel, ready to open.
 	 */
 	public static function panel_html(): string {
-		$mode  = 'min' === Search::look( 'panel', 'full' ) ? 'min' : 'full';
-		$min   = max( 1, (int) Search::look( 'min', 2 ) );
-		$more  = esc_url( self::results_url( '' ) );
+		$mode = 'min' === Search::look( 'panel', 'full' ) ? 'min' : 'full';
+		$min  = max( 1, (int) Search::look( 'min', 2 ) );
+		$more = esc_url( self::results_url( '' ) );
 
 		ob_start();
 		?>
@@ -148,6 +148,7 @@ final class Search_Panel {
 	 *
 	 * @param string $term What was typed.
 	 * @param bool   $log  Whether to record the search.
+	 * @param int    $show How many products, 0 for the configured limit.
 	 * @return array<string,mixed>
 	 */
 	public static function results_html( string $term, bool $log = false, int $show = 0 ): array {
@@ -299,6 +300,7 @@ final class Search_Panel {
 	 * beside it, or the panel turns into a long ribbon of links.
 	 *
 	 * @param string $term Query.
+	 * @param array  $ids  Matched product ids.
 	 */
 	private static function side_html( string $term, array $ids ): string {
 		$blocks = array();
@@ -361,13 +363,21 @@ final class Search_Panel {
 					$thumb = (int) get_term_meta( (int) $facet->term_id, 'thumbnail_id', true );
 
 					if ( $thumb ) {
-						$logo = wp_get_attachment_image( $thumb, 'thumbnail', false, array( 'class' => 'oc-search__brandimg', 'alt' => '' ) );
+						$logo = wp_get_attachment_image(
+							$thumb,
+							'thumbnail',
+							false,
+							array(
+								'class' => 'oc-search__brandimg',
+								'alt'   => '',
+							)
+						);
 					}
 				}
 
 				$whole = 'archive' === $leads;
 				$link  = $whole
-					? (string) get_term_link( (int) $facet->term_id, $taxonomy )
+					? get_term_link( (int) $facet->term_id, $taxonomy )
 					: Search::narrowed_url( $term, $taxonomy, (string) $facet->slug );
 
 				if ( is_wp_error( $link ) ) {

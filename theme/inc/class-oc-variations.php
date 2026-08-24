@@ -34,6 +34,7 @@ final class Variations {
 	 * resolution as the summary row. Empty 'row' when the product has no
 	 * linked colour products.
 	 *
+	 * @param \WC_Product $product The product shown.
 	 * @return array{row: string, label: string}
 	 */
 	public static function sticky_colors( \WC_Product $product ): array {
@@ -611,7 +612,7 @@ final class Variations {
 					<?php endif; ?>
 				<?php endforeach; ?>
 			</select>
-			<?php echo wc_help_tip( esc_html__( 'The same product in other colours. Links sync both ways: connect black and grey here and each of them links back automatically.', 'oc-theme' ) ); ?>
+			<?php echo wc_help_tip( esc_html__( 'The same product in other colours. Links sync both ways: connect black and grey here and each of them links back automatically.', 'oc-theme' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- wc_help_tip() returns escaped markup. ?>
 		</p>
 		<?php
 	}
@@ -621,8 +622,8 @@ final class Variations {
 	 * row — the same multiselect WooCommerce draws for its 'select' type,
 	 * so search, "select all" and term creation keep working.
 	 *
-	 * @param object               $attribute_taxonomy Attribute taxonomy row.
-	 * @param int                  $i                  Row index.
+	 * @param object                     $attribute_taxonomy Attribute taxonomy row.
+	 * @param int                        $i                  Row index.
 	 * @param \WC_Product_Attribute|null $attribute   Attribute being rendered.
 	 */
 	public function option_terms( $attribute_taxonomy, $i, $attribute = null ): void {
@@ -1100,10 +1101,12 @@ final class Variations {
 
 		// A sibling removed here forgets this product too.
 		foreach ( array_diff( $old, $new ) as $removed ) {
-			$kept = array_values( array_diff(
-				array_filter( array_map( 'absint', (array) get_post_meta( $removed, '_oc_color_links', true ) ) ),
-				array( (int) $post_id )
-			) );
+			$kept = array_values(
+				array_diff(
+					array_filter( array_map( 'absint', (array) get_post_meta( $removed, '_oc_color_links', true ) ) ),
+					array( (int) $post_id )
+				)
+			);
 			update_post_meta( $removed, '_oc_color_links', $kept );
 		}
 	}
@@ -1263,11 +1266,11 @@ final class Variations {
 	 * the row never reshuffles as the visitor moves between colours.
 	 *
 	 * @param int    $product_id Current product.
-	 * @param string $class      Context class.
+	 * @param string $css_class  Context class.
 	 * @param bool   $with_data  Attach card-swap data (catalogue cards).
 	 * @return string Empty when the product has no siblings.
 	 */
-	private function colors_row( int $product_id, string $class, bool $with_data = false ): string {
+	private function colors_row( int $product_id, string $css_class, bool $with_data = false ): string {
 		$links = array_filter( array_map( 'absint', (array) get_post_meta( $product_id, '_oc_color_links', true ) ) );
 
 		if ( empty( $links ) ) {
@@ -1297,7 +1300,7 @@ final class Variations {
 			}
 
 			if ( $sale_context && $id !== $product_id ) {
-				$sale_siblings++;
+				++$sale_siblings;
 			}
 
 			// The sibling's own colour value decides the circle, through the
@@ -1316,6 +1319,7 @@ final class Variations {
 
 			if ( $with_data ) {
 				$badge = $sibling->is_on_sale()
+					// phpcs:ignore WordPress.WP.I18n.TextDomainMismatch -- Woo's own badge string; reuse its translation.
 					? (string) apply_filters( 'woocommerce_sale_flash', '<span class="onsale">' . esc_html__( 'Sale!', 'woocommerce' ) . '</span>', get_post( $id ), $sibling )
 					: '';
 
@@ -1354,7 +1358,7 @@ final class Variations {
 			return '';
 		}
 
-		return '<div class="oc-colors ' . esc_attr( $class ) . '">' . $items . '</div>';
+		return '<div class="oc-colors ' . esc_attr( $css_class ) . '">' . $items . '</div>';
 	}
 
 	/**

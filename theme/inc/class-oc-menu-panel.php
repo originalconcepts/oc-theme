@@ -41,7 +41,7 @@ final class Menu_Panel {
 	/**
 	 * Column widths a block may take, and their share of the row.
 	 *
-	 * @return array<string,array{label:string,fr:float}>
+	 * @return array<string,array{label:string,track:string}>
 	 */
 	public static function widths(): array {
 		return array(
@@ -347,6 +347,7 @@ final class Menu_Panel {
 	 *
 	 * @param int    $item_id Menu item id.
 	 * @param string $where   Either 'nav' or 'drawer'.
+	 * @param ?array $blocks  Blocks to preview instead of the saved ones.
 	 * @return string
 	 */
 	private static function build( int $item_id, string $where, ?array $blocks = null ): string {
@@ -456,7 +457,7 @@ final class Menu_Panel {
 	 *
 	 * @param int    $item_id Menu item id.
 	 * @param string $where   Either 'nav' or 'drawer'.
-	 * @return array<int,array{track:string,html:string}>
+	 * @return array<int,array{track:string,class:string,inner:string}>
 	 */
 	private static function columns( int $item_id, string $where ): array {
 		$tree     = self::tree();
@@ -551,7 +552,9 @@ final class Menu_Panel {
 	 *
 	 * @param int    $item_id Menu item id.
 	 * @param string $where   Either 'nav' or 'drawer'.
-	 * @return array<int,array{track:string,html:string}>
+	 * @param ?array $blocks  Blocks to preview instead of the saved ones.
+	 * @param bool   $gap     Whether the spare width gathers before the first extra.
+	 * @return array<int,array{track:string,class:string,inner:string,gap?:bool}>
 	 */
 	private static function extras( int $item_id, string $where, ?array $blocks = null, bool $gap = true ): array {
 		$widths = self::widths();
@@ -576,7 +579,7 @@ final class Menu_Panel {
 					'inner' => '',
 					'gap'   => true,
 				);
-				$first  = false;
+				$first = false;
 			}
 
 			$out[] = array(
@@ -654,9 +657,9 @@ final class Menu_Panel {
 				: '3/4';
 		}
 
-		$align = 'centre' === ( $block['align'] ?? '' ) ? ' oc-mb__fig--al-c' : '';
-		$focus = max( 0, min( 100, absint( $block['focus'] ?? 50 ) ) );
-		$pos   = (string) ( $block['pos'] ?? 'bottom' );
+		$align  = 'centre' === ( $block['align'] ?? '' ) ? ' oc-mb__fig--al-c' : '';
+		$focus  = max( 0, min( 100, absint( $block['focus'] ?? 50 ) ) );
+		$pos    = (string) ( $block['pos'] ?? 'bottom' );
 		$radius = (string) ( $block['radius'] ?? 'soft' );
 		$url    = (string) ( $block['url'] ?? '' );
 
@@ -673,7 +676,11 @@ final class Menu_Panel {
 
 		$words = '';
 
-		foreach ( array( 'heading' => 'h4', 'text' => 'p', 'cta' => 'span' ) as $key => $tag ) {
+		foreach ( array(
+			'heading' => 'h4',
+			'text'    => 'p',
+			'cta'     => 'span',
+		) as $key => $tag ) {
 			$value = (string) ( $block[ $key ] ?? '' );
 
 			if ( '' === $value ) {

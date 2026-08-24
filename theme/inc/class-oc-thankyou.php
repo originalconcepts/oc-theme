@@ -352,7 +352,7 @@ final class Thankyou {
 		echo '<button type="button" class="oc-ty__copy" data-oc-ty-copy data-done="' . esc_attr__( 'Copied', 'oc-theme' ) . '">' . esc_html__( 'Copy link', 'oc-theme' ) . '</button>';
 		echo '</div>';
 		echo '<a class="oc-ty__wa" target="_blank" rel="noopener" href="https://wa.me/?text=' . rawurlencode( $share_text ) . '">'
-			. '<span class="oc-ty__wa-i" aria-hidden="true">' . Contact::icon( 'whatsapp' ) . '</span>'
+			. '<span class="oc-ty__wa-i" aria-hidden="true">' . Contact::icon( 'whatsapp' ) . '</span>' // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static SVG markup.
 			. esc_html__( 'Send on WhatsApp', 'oc-theme' ) . '</a>';
 		echo '<p class="oc-ty__ref-fine">' . esc_html__( 'The gift is for a new customer — it will not apply to your own next order.', 'oc-theme' ) . '</p>';
 		echo '</div>';
@@ -409,9 +409,11 @@ final class Thankyou {
 	/**
 	 * The referrer cannot spend their own gift.
 	 *
-	 * @param bool           $valid     Whether the coupon is valid so far.
-	 * @param \WC_Coupon     $coupon    Coupon.
-	 * @param \WC_Discounts  $discounts What the coupon is being applied to.
+	 * @param bool          $valid     Whether the coupon is valid so far.
+	 * @param \WC_Coupon    $coupon    Coupon.
+	 * @param \WC_Discounts $discounts What the coupon is being applied to.
+	 *
+	 * @throws \Exception When the referrer tries to spend their own gift.
 	 */
 	public function coupon_is_valid( $valid, $coupon, $discounts = null ) {
 		if ( ! $valid || ! $coupon instanceof \WC_Coupon ) {
@@ -685,7 +687,7 @@ final class Thankyou {
 		// A rating can be revised. The running total follows the change so
 		// the average stays honest without recounting every order.
 		if ( $rating >= 1 && $rating <= 5 && $rating !== $had ) {
-			$order->update_meta_data( '_oc_ty_rating', $rating );
+			$order->update_meta_data( '_oc_ty_rating', (string) $rating );
 			$changed = true;
 
 			$agg = get_option( 'oc_ty_survey' );
@@ -811,12 +813,12 @@ final class Thankyou {
 			echo '<div class="notice notice-success"><p>' . esc_html__( 'Settings saved.', 'oc-theme' ) . '</p></div>';
 		}
 
-		$s        = self::settings();
-		$content  = '' !== trim( (string) $s['content'] ) ? (string) $s['content'] : self::default_content();
-		$assets   = admin_url( 'admin.php?page=oc-contact' );
-		$has_wa   = '' !== Contact::get( 'wa_group' );
-		$has_soc  = (bool) Contact::social_links();
-		$missing  = '<em> — <a href="' . esc_url( $assets ) . '">' . esc_html__( 'add it in Store details', 'oc-theme' ) . '</a></em>';
+		$s       = self::settings();
+		$content = '' !== trim( (string) $s['content'] ) ? (string) $s['content'] : self::default_content();
+		$assets  = admin_url( 'admin.php?page=oc-contact' );
+		$has_wa  = '' !== Contact::get( 'wa_group' );
+		$has_soc = (bool) Contact::social_links();
+		$missing = '<em> — <a href="' . esc_url( $assets ) . '">' . esc_html__( 'add it in Store details', 'oc-theme' ) . '</a></em>';
 		?>
 		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 			<input type="hidden" name="action" value="oc_thankyou_save" />

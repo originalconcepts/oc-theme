@@ -146,6 +146,9 @@ final class Blocks {
 		return self::$instance;
 	}
 
+	/**
+	 * Hook everything up.
+	 */
 	public function register(): void {
 		self::$instance = $this;
 
@@ -267,7 +270,12 @@ final class Blocks {
 			.oc-bimg img { max-inline-size:100%; block-size:auto; border-radius:6px; }
 		</style>
 		<div class="oc-bf">
-			<?php foreach ( array( 'img' => __( 'Image — desktop', 'oc-theme' ), 'img_m' => __( 'Image — mobile', 'oc-theme' ) ) as $key => $label ) : ?>
+			<?php
+			foreach ( array(
+				'img'   => __( 'Image — desktop', 'oc-theme' ),
+				'img_m' => __( 'Image — mobile', 'oc-theme' ),
+			) as $key => $label ) :
+				?>
 				<div>
 					<label><?php echo esc_html( $label ); ?></label>
 					<div class="oc-bimg" data-oc-bimg="<?php echo esc_attr( $key ); ?>">
@@ -278,7 +286,7 @@ final class Blocks {
 							}
 							?>
 						</div>
-						<input type="hidden" name="oc_block_<?php echo esc_attr( $key ); ?>" value="<?php echo esc_attr( (string) ( $b[ $key ] ?: '' ) ); ?>" />
+						<input type="hidden" name="oc_block_<?php echo esc_attr( $key ); ?>" value="<?php echo esc_attr( (string) ( $b[ $key ] ? $b[ $key ] : '' ) ); ?>" />
 						<p style="margin:8px 0 0;">
 							<button type="button" class="button oc-bimg__pick"><?php esc_html_e( 'Choose image', 'oc-theme' ); ?></button>
 							<button type="button" class="button-link-delete oc-bimg__clear" style="<?php echo $b[ $key ] ? '' : 'display:none;'; ?>"><?php esc_html_e( 'Remove', 'oc-theme' ); ?></button>
@@ -446,7 +454,7 @@ final class Blocks {
 		update_post_meta( $id, '_oc_block_alt', sanitize_text_field( wp_unslash( $_POST['oc_block_alt'] ?? '' ) ) );
 		update_post_meta( $id, '_oc_block_heading', sanitize_text_field( wp_unslash( $_POST['oc_block_heading'] ?? '' ) ) );
 		update_post_meta( $id, '_oc_block_cta', sanitize_text_field( wp_unslash( $_POST['oc_block_cta'] ?? '' ) ) );
-		update_post_meta( $id, '_oc_block_ink', 'dark' === ( $_POST['oc_block_ink'] ?? '' ) ? 'dark' : 'light' );
+		update_post_meta( $id, '_oc_block_ink', 'dark' === ( $_POST['oc_block_ink'] ?? '' ) ? 'dark' : 'light' ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- strict comparison stores a literal.
 		update_post_meta( $id, '_oc_block_from', sanitize_text_field( wp_unslash( $_POST['oc_block_from'] ?? '' ) ) );
 		update_post_meta( $id, '_oc_block_to', sanitize_text_field( wp_unslash( $_POST['oc_block_to'] ?? '' ) ) );
 
@@ -508,9 +516,9 @@ final class Blocks {
 		$places = $global['places'];
 
 		if ( is_tax( 'product_cat' ) ) {
-			$term  = get_queried_object();
-			$own   = $term instanceof \WP_Term ? get_term_meta( $term->term_id, '_oc_layout', true ) : '';
-			$own   = is_array( $own ) ? $own : array();
+			$term   = get_queried_object();
+			$own    = $term instanceof \WP_Term ? get_term_meta( $term->term_id, '_oc_layout', true ) : '';
+			$own    = is_array( $own ) ? $own : array();
 			$places = $own ? $own : $places;
 		}
 
@@ -968,7 +976,7 @@ final class Blocks {
 			return;
 		}
 
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- core verifies the term-edit nonce first.
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- core verifies the term-edit nonce first; read_table() sanitizes every cell.
 		$raw = isset( $_POST['oc_places'] ) ? (array) wp_unslash( $_POST['oc_places'] ) : array();
 
 		$places = $this->read_table( $raw );
@@ -979,7 +987,7 @@ final class Blocks {
 			delete_term_meta( $term_id, '_oc_layout' );
 		}
 
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- core verifies the term-edit nonce first.
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- core verifies the term-edit nonce first; every value is absint()-ed below.
 		$pace_raw = isset( $_POST['oc_rhythm'] ) ? (array) wp_unslash( $_POST['oc_rhythm'] ) : array();
 		$pace     = array();
 
@@ -1015,11 +1023,11 @@ final class Blocks {
 	/**
 	 * Keep the theme menu open while a block screen is showing.
 	 *
-	 * @param string $parent Parent file.
+	 * @param string $parent_file Parent file.
 	 * @return string
 	 */
-	public function menu_parent( $parent ) {
-		return $this->on_block_screen() ? Tabs::MENU : $parent;
+	public function menu_parent( $parent_file ) {
+		return $this->on_block_screen() ? Tabs::MENU : $parent_file;
 	}
 
 	/**
@@ -1144,6 +1152,7 @@ final class Blocks {
 		check_admin_referer( 'oc_layout_save' );
 
 		// phpcs:disable WordPress.Security.NonceVerification.Missing -- verified above.
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- read_table() sanitizes every cell.
 		$raw = isset( $_POST['oc_places'] ) ? (array) wp_unslash( $_POST['oc_places'] ) : array();
 
 		update_option(

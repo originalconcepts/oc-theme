@@ -47,8 +47,22 @@ final class Search_Index {
 	 * @var string[]
 	 */
 	private const STOP = array(
-		'של', 'את', 'עם', 'על', 'זה', 'הוא', 'היא', 'גם', 'או', 'אבל', 'כל',
-		'and', 'the', 'for', 'with', 'from',
+		'של',
+		'את',
+		'עם',
+		'על',
+		'זה',
+		'הוא',
+		'היא',
+		'גם',
+		'או',
+		'אבל',
+		'כל',
+		'and',
+		'the',
+		'for',
+		'with',
+		'from',
 	);
 
 	/**
@@ -104,7 +118,9 @@ final class Search_Index {
 		$w       = self::words();
 		$l       = self::log();
 
-		$wpdb->query( // phpcs:ignore WordPress.DB
+		// phpcs:disable WordPress.DB -- deliberate schema install; table names come from $wpdb->prefix.
+
+		$wpdb->query(
 			"CREATE TABLE IF NOT EXISTS {$t} (
 				object_id BIGINT UNSIGNED NOT NULL,
 				kind VARCHAR(12) NOT NULL DEFAULT 'product',
@@ -124,7 +140,7 @@ final class Search_Index {
 			) {$charset}"
 		);
 
-		$wpdb->query( // phpcs:ignore WordPress.DB
+		$wpdb->query(
 			"CREATE TABLE IF NOT EXISTS {$w} (
 				id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
 				token VARCHAR(48) NOT NULL,
@@ -138,7 +154,7 @@ final class Search_Index {
 			) {$charset}"
 		);
 
-		$wpdb->query( // phpcs:ignore WordPress.DB
+		$wpdb->query(
 			"CREATE TABLE IF NOT EXISTS {$l} (
 				id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
 				day DATE NOT NULL,
@@ -152,7 +168,7 @@ final class Search_Index {
 			) {$charset}"
 		);
 
-		$wpdb->query( // phpcs:ignore WordPress.DB
+		$wpdb->query(
 			'CREATE TABLE IF NOT EXISTS ' . self::clicks() . " (
 				term VARCHAR(120) NOT NULL,
 				object_id BIGINT UNSIGNED NOT NULL,
@@ -162,6 +178,8 @@ final class Search_Index {
 				KEY term (term)
 			) {$charset}"
 		);
+
+		// phpcs:enable WordPress.DB
 
 		update_option( 'oc_search_schema', 5, false );
 	}
@@ -375,7 +393,9 @@ final class Search_Index {
 		$raw = get_option( 'oc_search_synonyms', '' );
 		$out = array();
 
-		foreach ( preg_split( '/\R/u', (string) $raw ) ?: array() as $line ) {
+		$lines = preg_split( '/\R/u', (string) $raw );
+
+		foreach ( $lines ? $lines : array() as $line ) {
 			$line = trim( (string) $line );
 
 			if ( '' === $line || 0 === strpos( $line, '#' ) ) {
@@ -383,8 +403,9 @@ final class Search_Index {
 			}
 
 			// "canonical = a, b, c" — or just a comma list, all of it equal.
-			$parts = array_map( 'trim', preg_split( '/[=,]/u', $line ) ?: array() );
-			$parts = array_values( array_filter( $parts, 'strlen' ) );
+			$bits  = preg_split( '/[=,]/u', $line );
+			$parts = array_map( 'trim', $bits ? $bits : array() );
+			$parts = array_values( array_filter( $parts, static fn( string $part ): bool => '' !== $part ) );
 
 			if ( count( $parts ) < 2 ) {
 				continue;
@@ -441,7 +462,7 @@ final class Search_Index {
 	public static function term_synonyms( int $term_id ): array {
 		$raw = (string) get_term_meta( $term_id, '_oc_syn', true );
 
-		return array_values( array_filter( array_map( 'trim', explode( ',', $raw ) ), 'strlen' ) );
+		return array_values( array_filter( array_map( 'trim', explode( ',', $raw ) ), static fn( string $part ): bool => '' !== $part ) );
 	}
 
 	/**
@@ -453,7 +474,7 @@ final class Search_Index {
 	public static function product_synonyms( int $product_id ): array {
 		$raw = (string) get_post_meta( $product_id, '_oc_syn', true );
 
-		return array_values( array_filter( array_map( 'trim', explode( ',', $raw ) ), 'strlen' ) );
+		return array_values( array_filter( array_map( 'trim', explode( ',', $raw ) ), static fn( string $part ): bool => '' !== $part ) );
 	}
 
 	/* ---------------------------------------------------------- indexing */
@@ -483,10 +504,10 @@ final class Search_Index {
 			return;
 		}
 
-		$s      = Search::settings();
-		$bag    = array();
-		$syn    = array();
-		$brand  = 0;
+		$s     = Search::settings();
+		$bag   = array();
+		$syn   = array();
+		$brand = 0;
 
 		self::add( $bag, self::F_TITLE, $product->get_name() );
 		$syn = array_merge( $syn, self::expand( $product->get_name() ), self::product_synonyms( $product_id ) );
@@ -528,8 +549,8 @@ final class Search_Index {
 		if ( $brand_tax ) {
 			foreach ( wp_get_post_terms( $product_id, $brand_tax, array( 'fields' => 'all' ) ) as $term ) {
 				self::add( $bag, self::F_BRAND, $term->name );
-				$syn     = array_merge( $syn, self::term_synonyms( (int) $term->term_id ) );
-				$brand   = $brand ?: (int) $term->term_id;
+				$syn   = array_merge( $syn, self::term_synonyms( (int) $term->term_id ) );
+				$brand = $brand ? $brand : (int) $term->term_id;
 			}
 		}
 
@@ -540,7 +561,9 @@ final class Search_Index {
 				}
 
 				if ( $attribute->is_taxonomy() ) {
-					foreach ( $attribute->get_terms() ?: array() as $term ) {
+					$attr_terms = $attribute->get_terms();
+
+					foreach ( $attr_terms ? $attr_terms : array() as $term ) {
 						self::add( $bag, self::F_ATTR, $term->name );
 						$syn = array_merge( $syn, self::term_synonyms( (int) $term->term_id ), self::expand( $term->name ) );
 					}
