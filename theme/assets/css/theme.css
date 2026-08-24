@@ -907,7 +907,10 @@ html.oc-search-open { overflow: hidden; }
 		grid-template-rows: minmax(var(--oc-header-h, 72px), auto) auto;
 		align-items: center;
 		min-block-size: 0;
-		padding-block: 8px 4px;
+		/* No air under the menu row: its links stand on the header's own
+		 * bottom rule, so the hover line lands on that rule — the same
+		 * promise the single-row presets keep. */
+		padding-block: 8px 0;
 	}
 	.oc-header--centred .oc-header__start { display: contents; }
 	.oc-header--centred .oc-burger { grid-column: 1; grid-row: 1; justify-self: start; }
@@ -919,6 +922,10 @@ html.oc-search-open { overflow: hidden; }
 		grid-row: 2;
 		display: flex;
 		justify-content: center;
+		/* The row needs a height of its own for the links to fill — with the
+		 * bare line height, the word and its underline would sit squeezed
+		 * against the rule instead of standing on it. */
+		min-block-size: 46px;
 	}
 
 	/* split: menu at the start, logo centred, icons at the end */
