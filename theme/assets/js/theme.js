@@ -3722,7 +3722,34 @@
 
 	function mgGoTo( index ) {
 		var rtl = getComputedStyle( mgWrap ).direction === 'rtl';
-		mgWrap.scrollLeft = ( rtl ? -1 : 1 ) * index * mgWrap.clientWidth;
+		var target = ( rtl ? -1 : 1 ) * index * mgWrap.clientWidth;
+
+		if ( window.matchMedia( '(prefers-reduced-motion: reduce)' ).matches ) {
+			mgWrap.scrollLeft = target;
+			mgUpdateDots( index );
+			return;
+		}
+
+		// A veil: the stage dips for a breath, the jump happens unseen, and
+		// the new slide settles in with a whisper of scale — paging reads as
+		// a transition, not a lurch.
+		mgWrap.style.transition = 'opacity .16s ease, transform .16s ease';
+		mgWrap.style.opacity = '0';
+		mgWrap.style.transform = 'scale(.985)';
+
+		setTimeout( function () {
+			mgWrap.scrollLeft = target;
+			void mgWrap.offsetWidth;
+			mgWrap.style.transition = 'opacity .3s cubic-bezier(.2, .7, .2, 1), transform .3s cubic-bezier(.2, .7, .2, 1)';
+			mgWrap.style.opacity = '1';
+			mgWrap.style.transform = 'scale(1)';
+
+			setTimeout( function () {
+				mgWrap.style.transition = '';
+				mgWrap.style.transform = '';
+			}, 320 );
+		}, 170 );
+
 		// Direct update as well — scroll events lag (or never fire in
 		// frozen pipelines) on programmatic scrolls.
 		mgUpdateDots( index );

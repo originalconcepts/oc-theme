@@ -2020,6 +2020,14 @@ html.oc-menu-open .oc-menu-dim::after {
 	.oc-vp__arr { display: none; }
 }
 
+@keyframes oc-gal-in {
+	from { opacity: 0; transform: scale(1.015); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.woocommerce-product-gallery__image.is-active { animation: none !important; }
+}
+
 /* The lightbox owns its touches — no browser gesture underneath, so a
  * finger can page between the pictures. */
 .oc-voverlay { touch-action: none; }
@@ -2035,6 +2043,15 @@ html.oc-menu-open .oc-menu-dim::after {
 .oc-nores { padding-block: 10px 30px; max-inline-size: 560px; }
 
 .oc-nores__word { margin: 0 0 18px; font-size: 1.05em; }
+
+.oc-nores .oc-search__bar { border-width: 1px; }
+
+.oc-nores .oc-search__field {
+	border: 0;
+	background: none;
+	box-shadow: none;
+	outline: none;
+}
 
 .oc-nores .oc-search__go {
 	display: grid;
@@ -3712,6 +3729,12 @@ li.product:focus-within .oc-card-atc,
 	}
 }
 
+/* No cursor, no hover image — and no invisible layer swallowing the tap
+ * that should open the product. */
+@media (hover: none) {
+	.oc-card-media--hover .oc-card-media__item:not(.is-first) { display: none; }
+}
+
 /* gallery: native scroll-snap strip — no carousel library.
  * aspect-ratio locks the strip to the image box, so an OS that reserves
  * scrollbar space cannot make the strip taller than the image (which pushed
@@ -3806,6 +3829,7 @@ li.product:focus-within .oc-card-atc,
 
 	.woocommerce.oc-gallery-thumbs-side div.product div.images .woocommerce-product-gallery__image.is-active,
 	.woocommerce.oc-gallery-thumbs-under div.product div.images .woocommerce-product-gallery__image.is-active {
+		animation: oc-gal-in .5s cubic-bezier(.2, .7, .2, 1);
 		display: block;
 		width: 100%;
 	}
@@ -6182,6 +6206,16 @@ table.variations td.value select:has(+ .oc-dd) {
 	/* peek: ~75% wide slides, the next one showing at the edge */
 	.woocommerce.oc-gm-peek div.product div.images .woocommerce-product-gallery__image {
 		flex-basis: 78%;
+	}
+
+	/* The video slide takes the strip's own height — left to its 4/5 it
+	 * painted a small box first and jumped when the flex stretch landed. */
+	.oc-gm-dots .woocommerce-product-gallery__wrapper .oc-vslide,
+	.oc-gm-peek .woocommerce-product-gallery__wrapper .oc-vslide {
+		aspect-ratio: auto;
+		block-size: auto;
+		align-self: stretch;
+		min-block-size: 220px;
 	}
 	.oc-gm-peek .woocommerce-product-gallery__wrapper { gap: 8px; }
 
