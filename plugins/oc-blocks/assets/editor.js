@@ -945,7 +945,15 @@
 		var frame = els.frame;
 		var want = DEVICES[ state.device ];
 		var room = stage.clientWidth - 36;
-		var scale = Math.min( 1, room / want );
+
+		// A hidden or still-collapsing pane measures zero; try again when
+		// it has a size instead of scaling into nonsense.
+		if ( room <= 60 || stage.clientHeight <= 60 ) {
+			setTimeout( fitPreview, 300 );
+			return;
+		}
+
+		var scale = Math.min( 1, Math.max( 0.2, room / want ) );
 
 		frame.style.width = want + 'px';
 		frame.style.transform = 'scale(' + scale + ')';
