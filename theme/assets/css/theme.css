@@ -1572,7 +1572,10 @@ html.oc-menu-open .oc-menu-dim::after {
 
 /* =====================================================================
    Quick pick — a card's options panel
-   ===================================================================== */
+   =====================================================================
+   Wearing the product page's own clothes: the same .oc-var swatches and
+   buttons, the same .oc-colors sibling row, the same stock line, the CTA
+   sizes from the same tokens. One design language, two doors. */
 
 .oc-vp { position: fixed; inset: 0; z-index: 95; }
 
@@ -1589,7 +1592,7 @@ html.oc-menu-open .oc-menu-dim::after {
 .oc-vp__panel {
 	position: absolute;
 	inset-block: 0;
-	inline-size: min(430px, 94vw);
+	inline-size: min(440px, 94vw);
 	display: flex;
 	flex-direction: column;
 	background: var(--oc-surface, #fff);
@@ -1603,6 +1606,14 @@ html.oc-menu-open .oc-menu-dim::after {
 
 .oc-vp.is-open .oc-vp__panel { transform: none; }
 
+/* Buttons inherit ink on purpose — left to itself, iOS paints them blue. */
+.oc-vp button {
+	color: inherit;
+	font: inherit;
+	-webkit-appearance: none;
+	appearance: none;
+}
+
 .oc-vp__close {
 	position: absolute;
 	inset-block-start: 10px;
@@ -1614,6 +1625,8 @@ html.oc-menu-open .oc-menu-dim::after {
 	cursor: pointer;
 	z-index: 2;
 }
+
+.oc-vp__scroll { flex: 1; overflow-y: auto; overscroll-behavior: contain; }
 
 .oc-vp__head {
 	display: flex;
@@ -1651,50 +1664,31 @@ html.oc-menu-open .oc-menu-dim::after {
 	text-underline-offset: 3px;
 }
 
-.oc-vp__groups { flex: 1; overflow-y: auto; padding: 8px 22px 16px; }
-
-.oc-vp__glabel { margin: 16px 0 10px; font-size: .95em; }
-
-.oc-vp__opts { display: flex; flex-wrap: wrap; gap: 8px; }
-
-.oc-vp__opt {
-	display: inline-flex;
-	align-items: center;
-	gap: 8px;
-	padding: 9px 16px;
-	border: 1px solid var(--oc-line, #ddd);
-	border-radius: 999px;
-	background: var(--oc-surface, #fff);
-	font: inherit;
-	font-size: .93em;
-	cursor: pointer;
-	transition: border-color .15s ease, box-shadow .15s ease, opacity .15s ease;
+.oc-vp__blurb {
+	padding: 14px 22px 0;
+	font-size: .92em;
+	line-height: 1.65;
+	color: var(--oc-ink-2, #6b7482);
 }
 
-.oc-vp__opt:hover { border-color: var(--oc-ink, #151a21); }
+.oc-vp__blurb:empty { display: none; }
+.oc-vp__blurb p { margin: 0 0 .5em; }
 
-.oc-vp__opt.is-on {
-	border-color: var(--oc-ink, #151a21);
-	box-shadow: inset 0 0 0 1px var(--oc-ink, #151a21);
-}
+.oc-vp__groups { padding: 4px 22px 10px; }
 
-.oc-vp__opt.is-off { opacity: .35; }
+.oc-vp__glabel { margin: 18px 0 10px; font-size: .95em; }
 
-.oc-vp__swatch {
-	inline-size: 16px;
-	block-size: 16px;
-	border-radius: 50%;
-	border: 1px solid rgb(0 0 0 / 12%);
-	flex: 0 0 auto;
-}
+.oc-vp__stock { padding: 0 22px 14px; }
+.oc-vp__stock:empty { display: none; }
 
 .oc-vp__loading { display: block; padding: 30px; text-align: center; }
 
-/* The sticky foot: price, quantity when the shop shows one, the button. */
+/* The sticky foot: price, quantity when the shop shows one, the button —
+ * drawn at the product page's CTA height, in its button language. */
 .oc-vp__foot {
 	display: flex;
 	align-items: center;
-	gap: 14px;
+	gap: 12px;
 	padding: 16px 22px;
 	border-block-start: 1px solid var(--oc-line, #eee);
 	background: var(--oc-surface, #fff);
@@ -1706,51 +1700,53 @@ html.oc-menu-open .oc-menu-dim::after {
 
 .oc-vp__qty {
 	display: flex;
+	direction: ltr;
 	align-items: center;
-	border: 1px solid var(--oc-line, #ddd);
-	border-radius: 999px;
+	border: 1.5px solid var(--oc-line, #ddd);
+	border-radius: var(--oc-cta-r, 8px);
+	block-size: var(--oc-cta-h, 48px);
 	overflow: hidden;
 	flex: 0 0 auto;
 }
 
-.oc-vp__qty button {
-	inline-size: 34px;
-	block-size: 38px;
-	border: 0;
-	background: none;
-	font-size: 17px;
-	cursor: pointer;
-}
-
 .oc-vp__qty input {
-	inline-size: 34px;
 	border: 0;
+	inline-size: 40px;
+	block-size: 100%;
 	text-align: center;
 	font: inherit;
+	font-weight: 600;
+	background: transparent;
 	-moz-appearance: textfield;
 	appearance: textfield;
 }
 
 .oc-vp__qty input::-webkit-outer-spin-button,
-.oc-vp__qty input::-webkit-inner-spin-button { appearance: none; margin: 0; }
+.oc-vp__qty input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
 .oc-vp__add {
 	flex: 1;
-	padding: 13px 10px;
-	border: 0;
-	border-radius: calc(var(--oc-radius, 8px) * .75);
-	background: var(--oc-ink, #151a21);
-	color: var(--oc-surface, #fff);
-	font: inherit;
+	block-size: var(--oc-cta-h, 48px);
+	padding-inline: 10px;
+	border: 1.5px solid var(--oc-cta, var(--oc-primary));
+	border-radius: var(--oc-cta-r, 8px);
+	background: var(--oc-cta, var(--oc-primary));
+	color: #fff;
 	font-weight: 600;
 	cursor: pointer;
-	transition: opacity .15s ease;
+	transition: filter .12s ease, background-color .12s ease, color .12s ease, opacity .15s ease;
 }
 
-.oc-vp__add:disabled { opacity: .4; cursor: default; }
+.oc-vp__add:hover { filter: brightness(1.08); }
+
+.oc-btn-outline .oc-vp__add { background: transparent; color: var(--oc-cta, var(--oc-primary)); }
+.oc-btn-outline .oc-vp__add:hover { background: var(--oc-cta, var(--oc-primary)); color: #fff; }
+
+.oc-vp__add:disabled { opacity: .4; cursor: default; filter: none; }
 .oc-vp__add.is-busy { opacity: .6; pointer-events: none; }
 
-/* On a phone the panel is a sheet rising from the bottom, the foot pinned. */
+/* On a phone the panel is a sheet rising from the bottom, the foot pinned,
+ * a handle on its brow to pull it back down by. */
 @media (max-width: 782px) {
 	.oc-vp--right .oc-vp__panel,
 	.oc-vp--left .oc-vp__panel {
@@ -1763,6 +1759,17 @@ html.oc-menu-open .oc-menu-dim::after {
 	}
 
 	.oc-vp.is-open .oc-vp__panel { transform: none; }
+
+	.oc-vp__panel::before {
+		content: "";
+		display: block;
+		inline-size: 44px;
+		block-size: 5px;
+		border-radius: 999px;
+		background: color-mix(in srgb, var(--oc-ink) 18%, transparent);
+		margin: 10px auto 2px;
+		flex: 0 0 auto;
+	}
 }
 
 /* =====================================================================
@@ -3243,8 +3250,13 @@ li.product:focus-within .oc-card-atc,
 .oc-atc-hover li.product:hover .oc-card-atc,
 .oc-atc-hover li.product:focus-within .oc-card-atc { opacity: 1; transform: translateY(0); }
 
+/* Said at li.product depth, because the desktop hover mode says opacity:0
+ * at that depth and would outrank a shallower always. */
 @media (hover: none) {
+	.oc-matc-always li.product .oc-card-atc,
 	.oc-matc-always .oc-card-atc { opacity: 1; transform: none; }
+
+	.oc-matc-none li.product .oc-card-atc,
 	.oc-matc-none .oc-card-atc { display: none; }
 }
 

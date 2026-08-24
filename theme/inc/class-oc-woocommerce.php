@@ -1066,14 +1066,24 @@ final class WooCommerce {
 	 * status with its colour dot at the far end.
 	 */
 	public function stock_line(): void {
-		if ( ! get_theme_mod( 'oc_stock_indicator', true ) ) {
-			return;
-		}
-
 		global $product;
 
-		if ( ! $product instanceof \WC_Product ) {
-			return;
+		if ( $product instanceof \WC_Product ) {
+			echo self::stock_line_html( $product ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
+		}
+	}
+
+	/**
+	 * The stock line as a string, for whoever draws a product outside the
+	 * product page — the quick-pick panel, say. Empty when the setting is
+	 * off.
+	 *
+	 * @param \WC_Product $product Product.
+	 * @return string
+	 */
+	public static function stock_line_html( \WC_Product $product ): string {
+		if ( ! get_theme_mod( 'oc_stock_indicator', true ) ) {
+			return '';
 		}
 
 		$note   = '';
@@ -1101,7 +1111,7 @@ final class WooCommerce {
 			}
 		}
 
-		printf(
+		return sprintf(
 			'<div class="oc-stockline"><span class="oc-stockline__note">%s</span><span class="oc-stockline__status oc-stockline__status--%s"><i aria-hidden="true"></i>%s</span></div>',
 			esc_html( $note ),
 			esc_attr( $tone ),

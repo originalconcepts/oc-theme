@@ -68,6 +68,38 @@ final class Variations {
 	}
 
 	/**
+	 * The display type of an attribute, for whoever draws options outside
+	 * the product form — the quick-pick panel, say.
+	 *
+	 * @param string $taxonomy Attribute taxonomy.
+	 */
+	public static function display_type( string $taxonomy ): string {
+		return self::$me instanceof self ? self::$me->attr_type( rawurldecode( $taxonomy ) ) : 'select';
+	}
+
+	/**
+	 * A term's swatch style through the product page's own chain, so the
+	 * same colour never draws two different circles.
+	 *
+	 * @param \WC_Product $product  Product.
+	 * @param string      $taxonomy Attribute taxonomy.
+	 * @param \WP_Term    $term     Term.
+	 */
+	public static function swatch_css( \WC_Product $product, string $taxonomy, \WP_Term $term ): string {
+		if ( ! self::$me instanceof self ) {
+			return '';
+		}
+
+		$type = self::$me->attr_type( rawurldecode( $taxonomy ) );
+
+		if ( ! in_array( $type, array( 'swatch', 'swatch_image' ), true ) ) {
+			return '';
+		}
+
+		return self::$me->swatch_style( $product, $taxonomy, $term, $type );
+	}
+
+	/**
 	 * Hook in.
 	 */
 	public function register(): void {

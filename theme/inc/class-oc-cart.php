@@ -996,63 +996,69 @@ final class Cart {
 
 		$product = wc_get_product( $product_id );
 
-		if ( ! $product || ! $product->is_type( 'variable' ) ) {
+		// Simple products come through too: a colour sibling of a variable
+		// product may be one, and switching colours must not dead-end.
+		if ( ! $product || ! in_array( $product->get_type(), array( 'variable', 'simple' ), true ) ) {
 			wp_send_json_error();
 		}
 
 		$groups = array();
+		$vars   = array();
 
-		foreach ( $product->get_variation_attributes() as $attr => $options ) {
-			$opts = array();
+		if ( $product->is_type( 'variable' ) ) {
+			// A single-value colour attribute on a product whose colours live
+			// as linked siblings is no question — the page hides that row and
+			// lets the siblings answer; the panel does the same.
+			$has_siblings = ! empty( array_filter( array_map( 'absint', (array) get_post_meta( $product->get_id(), '_oc_color_links', true ) ) ) );
 
-			foreach ( (array) $options as $slug ) {
-				$slug   = (string) $slug;
-				$label  = $slug;
-				$swatch = '';
+			foreach ( $product->get_variation_attributes() as $attr => $options ) {
+				$attr = (string) $attr;
+				$type = Variations::display_type( $attr );
+				$opts = array();
 
-				if ( taxonomy_exists( (string) $attr ) ) {
-					$term = get_term_by( 'slug', $slug, (string) $attr );
+				foreach ( (array) $options as $slug ) {
+					$slug   = (string) $slug;
+					$label  = $slug;
+					$swatch = '';
 
-					if ( $term instanceof \WP_Term ) {
-						$label = $term->name;
-						$image = (string) get_term_meta( $term->term_id, 'oc_swatch_image', true );
-						$color = (string) get_term_meta( $term->term_id, 'oc_swatch_color', true );
+					if ( taxonomy_exists( $attr ) ) {
+						$term = get_term_by( 'slug', $slug, $attr );
 
-						if ( '' !== $image ) {
-							$swatch = 'background-image:url(' . esc_url( $image ) . ');background-size:cover;';
-						} elseif ( '' !== $color ) {
-							$swatch = 'background-color:' . sanitize_hex_color( $color ) . ';';
+						if ( $term instanceof \WP_Term ) {
+							$label  = $term->name;
+							$swatch = Variations::swatch_css( $product, $attr, $term );
 						}
 					}
+
+					$opts[] = array(
+						'slug'   => $slug,
+						'label'  => $label,
+						'swatch' => $swatch,
+					);
 				}
 
-				$opts[] = array(
-					'slug'   => $slug,
-					'label'  => $label,
-					'swatch' => $swatch,
+				$groups[] = array(
+					'key'     => wc_variation_attribute_name( $attr ),
+					'label'   => wc_attribute_label( $attr, $product ),
+					'type'    => in_array( $type, array( 'swatch', 'swatch_image' ), true ) ? 'swatch' : 'button',
+					'auto'    => $has_siblings && 1 === count( $opts ) && 'select' !== $type,
+					'options' => $opts,
 				);
 			}
 
-			$groups[] = array(
-				'key'     => wc_variation_attribute_name( (string) $attr ),
-				'label'   => wc_attribute_label( (string) $attr, $product ),
-				'options' => $opts,
-			);
+			foreach ( $product->get_available_variations() as $v ) {
+				$vars[] = array(
+					'id'    => (int) $v['variation_id'],
+					'attrs' => (array) $v['attributes'],
+					'price' => (string) $v['price_html'],
+					'stock' => ! empty( $v['is_in_stock'] ),
+					'img'   => isset( $v['image']['src'] ) ? (string) $v['image']['src'] : '',
+				);
+			}
 		}
 
-		$vars = array();
-
-		foreach ( $product->get_available_variations() as $v ) {
-			$vars[] = array(
-				'id'    => (int) $v['variation_id'],
-				'attrs' => (array) $v['attributes'],
-				'price' => (string) $v['price_html'],
-				'stock' => ! empty( $v['is_in_stock'] ),
-				'img'   => isset( $v['image']['src'] ) ? (string) $v['image']['src'] : '',
-			);
-		}
-
-		$image = $product->get_image_id() ? (string) wp_get_attachment_image_url( (int) $product->get_image_id(), 'woocommerce_thumbnail' ) : '';
+		$image  = $product->get_image_id() ? (string) wp_get_attachment_image_url( (int) $product->get_image_id(), 'woocommerce_thumbnail' ) : '';
+		$colors = class_exists( 'OC\\Theme\\Variations' ) ? Variations::sticky_colors( $product ) : array( 'row' => '', 'label' => '' );
 
 		wp_send_json_success(
 			array(
@@ -1060,7 +1066,12 @@ final class Cart {
 				'url'    => (string) $product->get_permalink(),
 				'img'    => $image,
 				'price'  => $product->get_price_html(),
+				'blurb'  => wp_kses_post( $product->get_short_description() ),
+				'stock'  => WooCommerce::stock_line_html( $product ),
 				'qty'    => (bool) get_theme_mod( 'oc_atc_qty', true ) && ! $product->is_sold_individually(),
+				'simple' => $product->is_type( 'simple' ),
+				'buy'    => $product->is_purchasable() && $product->is_in_stock(),
+				'colors' => $colors,
 				'groups' => $groups,
 				'vars'   => $vars,
 			)

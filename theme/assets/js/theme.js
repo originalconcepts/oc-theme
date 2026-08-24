@@ -6246,10 +6246,10 @@
 	/* ---------- quick pick: a card's add-to-cart for a product with options ----------
 	 * A variable product's catalogue button used to lead to its page; speed
 	 * says answer here. A panel slides in from the configured side (on a
-	 * phone, up from the bottom): the picture, the price, each attribute as
-	 * a row of chips, quantity when the shop shows one, and an add button
-	 * riding a sticky footer. A full selection resolves to one variation;
-	 * chips no live combination can reach step back disabled. */
+	 * phone, a sheet from the bottom with a drag handle): picture, price,
+	 * the short description, every attribute drawn in the product page's own
+	 * language — the same swatches, the same buttons — the colour siblings,
+	 * the stock line, and a sticky foot of price, quantity and add. */
 
 	( function () {
 		var L = window.ocL10n || {};
@@ -6270,23 +6270,27 @@
 				'<div class="oc-vp__dim" data-vp-close></div>' +
 				'<aside class="oc-vp__panel" role="dialog" aria-modal="true">' +
 					'<button type="button" class="oc-vp__close" data-vp-close aria-label="close">&times;</button>' +
-					'<div class="oc-vp__head">' +
-						'<img class="oc-vp__img" alt="" />' +
-						'<div class="oc-vp__id">' +
-							'<a class="oc-vp__name" href="#"></a>' +
-							'<div class="oc-vp__price"></div>' +
-							'<a class="oc-vp__go" href="#"></a>' +
+					'<div class="oc-vp__scroll">' +
+						'<div class="oc-vp__head">' +
+							'<img class="oc-vp__img" alt="" />' +
+							'<div class="oc-vp__id">' +
+								'<a class="oc-vp__name" href="#"></a>' +
+								'<div class="oc-vp__price"></div>' +
+								'<a class="oc-vp__go" href="#"></a>' +
+							'</div>' +
 						'</div>' +
+						'<div class="oc-vp__blurb"></div>' +
+						'<div class="oc-vp__groups"></div>' +
+						'<div class="oc-vp__stock"></div>' +
 					'</div>' +
-					'<div class="oc-vp__groups"></div>' +
 					'<div class="oc-vp__foot">' +
 						'<div class="oc-vp__fprice"></div>' +
 						'<div class="oc-vp__qty" hidden>' +
-							'<button type="button" data-vp-q="-1">&minus;</button>' +
-							'<input type="number" min="1" value="1" inputmode="numeric" />' +
-							'<button type="button" data-vp-q="1">+</button>' +
+							'<button type="button" class="oc-qty-btn" data-vp-q="-1">&minus;</button>' +
+							'<input type="number" class="qty" min="1" value="1" inputmode="numeric" />' +
+							'<button type="button" class="oc-qty-btn" data-vp-q="1">+</button>' +
 						'</div>' +
-						'<button type="button" class="oc-vp__add" disabled></button>' +
+						'<button type="button" class="oc-vp__add"></button>' +
 					'</div>' +
 				'</aside>';
 			document.body.appendChild( vp );
@@ -6302,6 +6306,18 @@
 					var input = vp.querySelector( '.oc-vp__qty input' );
 					input.value = String( Math.max( 1, ( Number( input.value ) || 1 ) + Number( q.dataset.vpQ ) ) );
 				}
+
+				/* A colour sibling is another product wearing this panel:
+				 * switching colour re-dresses the panel, no page leaves. */
+				var sib = e.target.closest( '.oc-vp .oc-colors__item' );
+
+				if ( sib ) {
+					e.preventDefault();
+
+					if ( ! sib.classList.contains( 'is-current' ) && sib.dataset.pid ) {
+						vpLoad( sib.dataset.pid );
+					}
+				}
 			} );
 
 			document.addEventListener( 'keydown', function ( e ) {
@@ -6311,6 +6327,58 @@
 			} );
 
 			vp.querySelector( '.oc-vp__add' ).addEventListener( 'click', vpAdd );
+			vpDrag( vp.querySelector( '.oc-vp__panel' ) );
+		}
+
+		/* The sheet's native gesture: pull it down by its handle, or from a
+		 * body scrolled to its top, and it goes home. */
+		function vpDrag( panel ) {
+			var startY = 0;
+			var delta = 0;
+			var dragging = false;
+			var scroll = panel.querySelector( '.oc-vp__scroll' );
+
+			panel.addEventListener( 'touchstart', function ( e ) {
+				if ( ! window.matchMedia( '(max-width: 782px)' ).matches ) {
+					return;
+				}
+
+				startY = e.touches[ 0 ].clientY;
+				delta = 0;
+				dragging = ( startY - panel.getBoundingClientRect().top ) < 40 || scroll.scrollTop <= 0;
+			}, { passive: true } );
+
+			panel.addEventListener( 'touchmove', function ( e ) {
+				if ( ! dragging ) {
+					return;
+				}
+
+				delta = e.touches[ 0 ].clientY - startY;
+
+				if ( delta > 0 && scroll.scrollTop <= 0 ) {
+					panel.style.transform = 'translateY(' + delta + 'px)';
+					panel.style.transition = 'none';
+					e.preventDefault();
+				} else {
+					delta = 0;
+					panel.style.transform = '';
+				}
+			}, { passive: false } );
+
+			panel.addEventListener( 'touchend', function () {
+				if ( ! dragging ) {
+					return;
+				}
+
+				dragging = false;
+				panel.style.transition = '';
+
+				if ( delta > 90 ) {
+					vpClose();
+				}
+
+				panel.style.transform = '';
+			} );
 		}
 
 		function vpClose() {
@@ -6335,6 +6403,10 @@
 		}
 
 		function vpResolved() {
+			if ( st.simple ) {
+				return st.buy ? { id: 0, price: '', img: '' } : null;
+			}
+
 			if ( ! st.groups.every( function ( g ) { return st.sel[ g.key ]; } ) ) {
 				return null;
 			}
@@ -6347,9 +6419,8 @@
 		}
 
 		function vpPaint() {
-			vp.querySelectorAll( '.oc-vp__opt' ).forEach( function ( chip ) {
-				var on = st.sel[ chip.dataset.k ] === chip.dataset.v;
-				chip.classList.toggle( 'is-on', on );
+			vp.querySelectorAll( '[data-k]' ).forEach( function ( chip ) {
+				chip.classList.toggle( 'is-selected', st.sel[ chip.dataset.k ] === chip.dataset.v );
 				chip.classList.toggle( 'is-off', ! vpAllows( chip.dataset.k, chip.dataset.v ) );
 			} );
 
@@ -6367,13 +6438,15 @@
 		}
 
 		function vpRender( d, productId ) {
-			st = { id: productId, sel: {}, groups: d.groups, vars: d.vars, price: d.price, img: d.img };
+			st = { id: productId, sel: {}, groups: d.groups, vars: d.vars, price: d.price, img: d.img, simple: !! d.simple, buy: !! d.buy };
 
 			vp.querySelector( '.oc-vp__name' ).textContent = d.name;
 			vp.querySelector( '.oc-vp__name' ).href = d.url;
 			vp.querySelector( '.oc-vp__go' ).textContent = L.vpGo || '';
 			vp.querySelector( '.oc-vp__go' ).href = d.url;
 			vp.querySelector( '.oc-vp__img' ).src = d.img || '';
+			vp.querySelector( '.oc-vp__blurb' ).innerHTML = d.blurb || '';
+			vp.querySelector( '.oc-vp__stock' ).innerHTML = d.stock || '';
 			vp.querySelector( '.oc-vp__qty' ).hidden = ! d.qty;
 			vp.querySelector( '.oc-vp__qty input' ).value = '1';
 			vp.querySelector( '.oc-vp__add' ).textContent = L.vpAdd || 'Add to cart';
@@ -6381,24 +6454,47 @@
 			var box = vp.querySelector( '.oc-vp__groups' );
 			box.innerHTML = '';
 
+			/* The colour siblings stand first, exactly the row the product
+			 * page shows, under the same label. */
+			if ( d.colors && d.colors.row ) {
+				var cwrap = vpEl( 'div', 'oc-vp__group' );
+				cwrap.appendChild( vpEl( 'h4', 'oc-vp__glabel', d.colors.label || '' ) );
+				var crow = vpEl( 'div' );
+				crow.innerHTML = d.colors.row;
+				cwrap.appendChild( crow.firstElementChild );
+				box.appendChild( cwrap );
+			}
+
 			d.groups.forEach( function ( g ) {
+				// A single-value colour on a product whose colours live as
+				// siblings: answered silently, the siblings row speaks.
+				if ( g.auto ) {
+					st.sel[ g.key ] = g.options[ 0 ].slug;
+					return;
+				}
+
 				var wrap = vpEl( 'div', 'oc-vp__group' );
 				wrap.appendChild( vpEl( 'h4', 'oc-vp__glabel', g.label ) );
-				var row = vpEl( 'div', 'oc-vp__opts' );
+				var row = vpEl( 'div', 'oc-var oc-var--' + ( g.type === 'swatch' ? 'swatch' : 'button' ) );
 
 				g.options.forEach( function ( o ) {
-					var chip = vpEl( 'button', 'oc-vp__opt' );
+					var chip;
+
+					if ( g.type === 'swatch' && o.swatch ) {
+						chip = vpEl( 'button', 'oc-var__swatch' );
+						chip.setAttribute( 'style', o.swatch );
+						chip.title = o.label;
+						chip.setAttribute( 'aria-label', o.label );
+					} else if ( g.type === 'swatch' ) {
+						chip = vpEl( 'button', 'oc-var__swatch oc-var__swatch--txt', o.label.charAt( 0 ) );
+						chip.title = o.label;
+					} else {
+						chip = vpEl( 'button', 'oc-var__btn', o.label );
+					}
+
 					chip.type = 'button';
 					chip.dataset.k = g.key;
 					chip.dataset.v = o.slug;
-
-					if ( o.swatch ) {
-						var dot = vpEl( 'i', 'oc-flt__swatch oc-vp__swatch' );
-						dot.setAttribute( 'style', o.swatch );
-						chip.appendChild( dot );
-					}
-
-					chip.appendChild( vpEl( 'span', '', o.label ) );
 					chip.addEventListener( 'click', function () {
 						st.sel[ g.key ] = st.sel[ g.key ] === o.slug ? '' : o.slug;
 						vpPaint();
@@ -6431,12 +6527,14 @@
 			var data = new FormData();
 			data.append( 'action', 'oc_cart_add' );
 			data.append( 'product_id', st.id );
-			data.append( 'variation_id', String( hit.id ) );
 			data.append( 'quantity', vp.querySelector( '.oc-vp__qty input' ).value || '1' );
 
-			st.groups.forEach( function ( g ) {
-				data.append( g.key, st.sel[ g.key ] );
-			} );
+			if ( ! st.simple ) {
+				data.append( 'variation_id', String( hit.id ) );
+				st.groups.forEach( function ( g ) {
+					data.append( g.key, st.sel[ g.key ] );
+				} );
+			}
 
 			fetch( L.ajaxUrl || '/wp-admin/admin-ajax.php', { method: 'POST', credentials: 'same-origin', body: data } )
 				.then( function ( r ) { return r.json(); } )
@@ -6459,19 +6557,13 @@
 						if ( window.__ocOpenDrawer ) {
 							window.__ocOpenDrawer();
 						} else if ( window.__ocCartToast ) {
-							window.__ocCartToast( st.groups.length ? vp.querySelector( '.oc-vp__name' ).textContent : '', st.img || '' );
+							window.__ocCartToast( vp.querySelector( '.oc-vp__name' ).textContent, st.img || '' );
 						}
 					}
 				} );
 		}
 
-		function vpOpen( productId ) {
-			if ( ! vp ) {
-				vpBuild();
-			}
-
-			vp.hidden = false;
-			requestAnimationFrame( function () { vp.classList.add( 'is-open' ); } );
+		function vpLoad( productId ) {
 			vp.querySelector( '.oc-vp__groups' ).innerHTML = '<span class="oc-vp__loading">…</span>';
 			vp.querySelector( '.oc-vp__add' ).disabled = true;
 
@@ -6489,6 +6581,16 @@
 
 					vpRender( res.data, productId );
 				} );
+		}
+
+		function vpOpen( productId ) {
+			if ( ! vp ) {
+				vpBuild();
+			}
+
+			vp.hidden = false;
+			requestAnimationFrame( function () { vp.classList.add( 'is-open' ); } );
+			vpLoad( productId );
 		}
 
 		/* The theme's own card icon: a simple product carries Woo's ajax
