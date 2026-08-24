@@ -103,6 +103,11 @@ final class Performance {
 	 * gateway's UI kit is dropped outside the checkout and cart.
 	 */
 	public function gateway_assets_checkout_only(): void {
+		// No WooCommerce, no gateways to sweep — and no is_checkout() to ask.
+		if ( ! class_exists( 'WooCommerce' ) ) {
+			return;
+		}
+
 		if ( is_checkout() || is_cart() || is_admin() ) {
 			return;
 		}

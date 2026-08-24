@@ -3,7 +3,7 @@
  * Plugin Name: OC Blocks
  * Plugin URI:  https://github.com/originalconcepts/oc-theme
  * Description: Content blocks for the OC theme — hero, products, categories, banners and the rest of the page-building set.
- * Version:     0.2.2
+ * Version:     0.2.3
  * Requires at least: 6.5
  * Requires PHP: 8.1
  * Author:      Original Concepts
