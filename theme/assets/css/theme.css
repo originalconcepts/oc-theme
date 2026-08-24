@@ -1514,23 +1514,25 @@ html.oc-menu-open .oc-menu-dim::after {
 	color: inherit;
 }
 
-/* The image box also hosts the card's corner labels, scaled to the little
- * card they now stand on. */
-.oc-mb__prod-img { position: relative; display: block; }
+.oc-mb__prod-img { display: block; }
 
-.oc-mb__prod-img .oc-flags { top: 6px; }
-.oc-mb__prod-img .oc-flags--left { left: 6px; }
-.oc-mb__prod-img .oc-flags--right { right: 6px; }
+/* The card's labels stand in a quiet row under the picture — floated over
+ * it they landed on the whitespace a whole-picture fit leaves. */
+.oc-mb__prod-flags { display: block; }
+.oc-mb__prod-flags .oc-flags { position: static; flex-direction: row; flex-wrap: wrap; gap: 4px; }
+.oc-mb__prod-flags .oc-flags:empty { display: none; }
+.oc-mb__prod-flags .oc-flags:not(:empty) { margin-block-start: 7px; }
 
-.oc-mb__prod-img .oc-flags .onsale,
-.oc-mb__prod-img .oc-flag {
+.oc-mb__prod-flags .oc-flags .onsale,
+.oc-mb__prod-flags .oc-flag {
 	font-size: .62rem;
 	padding: .45em .7em;
 }
 
 /* The sale badge dresses itself only under .woocommerce, and the header is
  * not it — said again here so the panel's badge is not bare text. */
-.oc-mb__prod-img .oc-flags .onsale {
+.oc-mb__prod-flags .oc-flags .onsale,
+.oc-vp__flags .oc-flags .onsale {
 	background: var(--oc-sale, #b4453c);
 	color: #fff;
 	font-weight: 600;
@@ -1573,9 +1575,10 @@ html.oc-menu-open .oc-menu-dim::after {
 /* =====================================================================
    Quick pick — a card's options panel
    =====================================================================
-   Wearing the product page's own clothes: the same .oc-var swatches and
-   buttons, the same .oc-colors sibling row, the same stock line, the CTA
-   sizes from the same tokens. One design language, two doors. */
+   A quick view in the product page's own clothes: the same .oc-var
+   swatches and buttons, the same .oc-colors sibling row, the same stock
+   line, the CTA sizes from the same tokens. One design language, two
+   doors. */
 
 .oc-vp { position: fixed; inset: 0; z-index: 95; }
 
@@ -1592,7 +1595,7 @@ html.oc-menu-open .oc-menu-dim::after {
 .oc-vp__panel {
 	position: absolute;
 	inset-block: 0;
-	inline-size: min(440px, 94vw);
+	inline-size: min(460px, 94vw);
 	display: flex;
 	flex-direction: column;
 	background: var(--oc-surface, #fff);
@@ -1606,8 +1609,9 @@ html.oc-menu-open .oc-menu-dim::after {
 
 .oc-vp.is-open .oc-vp__panel { transform: none; }
 
-/* Buttons inherit ink on purpose — left to itself, iOS paints them blue. */
-.oc-vp button {
+/* Buttons inherit ink on purpose — left to itself, iOS paints them blue.
+ * The add button dresses after, and keeps its own white. */
+.oc-vp button:not(.oc-vp__add) {
 	color: inherit;
 	font: inherit;
 	-webkit-appearance: none;
@@ -1618,9 +1622,14 @@ html.oc-menu-open .oc-menu-dim::after {
 	position: absolute;
 	inset-block-start: 10px;
 	inset-inline-end: 12px;
+	display: grid;
+	place-items: center;
+	inline-size: 34px;
+	block-size: 34px;
 	border: 0;
-	background: none;
-	font-size: 26px;
+	border-radius: 50%;
+	background: rgb(255 255 255 / 85%);
+	font-size: 24px;
 	line-height: 1;
 	cursor: pointer;
 	z-index: 2;
@@ -1628,44 +1637,133 @@ html.oc-menu-open .oc-menu-dim::after {
 
 .oc-vp__scroll { flex: 1; overflow-y: auto; overscroll-behavior: contain; }
 
-.oc-vp__head {
+/* ----- the gallery: full width, arrows, dots, the configured corners ----- */
+
+.oc-vp__gal { position: relative; padding: 14px 14px 0; }
+
+.oc-vp__strip {
 	display: flex;
-	gap: 16px;
-	padding: 22px 22px 16px;
-	border-block-end: 1px solid var(--oc-line, #eee);
+	overflow-x: auto;
+	scroll-snap-type: x mandatory;
+	scrollbar-width: none;
+	-webkit-overflow-scrolling: touch;
 }
 
-.oc-vp__img {
-	inline-size: 92px;
-	block-size: 92px;
-	object-fit: contain;
-	border-radius: 8px;
-	background: #f6f6f6;
-	flex: 0 0 auto;
+.oc-vp__strip::-webkit-scrollbar { display: none; }
+
+.oc-vp--c-sharp .oc-vp__strip { border-radius: 0; }
+.oc-vp--c-soft  .oc-vp__strip { border-radius: 14px; }
+.oc-vp--c-round .oc-vp__strip { border-radius: 28px; }
+
+.oc-vp__slide {
+	flex: 0 0 100%;
+	scroll-snap-align: center;
 }
+
+.oc-vp__slide img {
+	display: block;
+	inline-size: 100%;
+	aspect-ratio: 4 / 3;
+	object-fit: contain;
+	background: var(--oc-surface, #fff);
+}
+
+.oc-vp__arr {
+	position: absolute;
+	inset-block-start: 50%;
+	transform: translateY(-50%);
+	display: grid;
+	place-items: center;
+	inline-size: 36px;
+	block-size: 36px;
+	border: 0;
+	border-radius: 50%;
+	background: rgb(255 255 255 / 88%);
+	box-shadow: 0 2px 10px rgb(0 0 0 / 12%);
+	cursor: pointer;
+	z-index: 1;
+	transition: opacity .15s ease;
+}
+
+.oc-vp__arr--prev { left: 22px; }
+.oc-vp__arr--next { right: 22px; }
+
+.oc-vp__gal--one .oc-vp__arr,
+.oc-vp__gal--one .oc-vp__dots { display: none; }
+
+.oc-vp__dots {
+	display: flex;
+	justify-content: center;
+	gap: 6px;
+	padding-block: 10px 0;
+}
+
+.oc-vp__dot {
+	inline-size: 7px;
+	block-size: 7px;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	background: color-mix(in srgb, var(--oc-ink) 22%, transparent);
+	cursor: pointer;
+	transition: background .15s ease, transform .15s ease;
+}
+
+.oc-vp__dot.is-on { background: var(--oc-ink, #151a21); transform: scale(1.2); }
+
+/* ----- the words ----- */
+
+.oc-vp__body { padding: 12px 22px 18px; }
+
+/* The card's corner labels, standing over the title instead of floating. */
+.oc-vp__flags { display: flex; flex-wrap: wrap; gap: 6px; }
+.oc-vp__flags:not(:empty) { margin-block-end: 8px; }
+.oc-vp__flags .oc-flags { position: static; flex-direction: row; gap: 6px; }
+.oc-vp__flags .oc-flags:empty { display: none; }
 
 .oc-vp__name {
 	display: block;
+	font-size: 1.18em;
 	font-weight: 600;
+	line-height: 1.3;
 	text-decoration: none;
-	margin-block-end: 4px;
 }
 
-.oc-vp__price { font-weight: 600; }
-.oc-vp__price del { opacity: .55; margin-inline-end: 6px; font-weight: 400; }
-.oc-vp__price ins { text-decoration: none; }
+.oc-vp__name:hover { color: var(--oc-primary); }
 
-.oc-vp__go {
-	display: inline-block;
+.oc-vp__stars {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
 	margin-block-start: 6px;
-	font-size: .84em;
+	font-size: .86em;
 	color: var(--oc-ink-2, #6b7482);
-	text-decoration: underline;
-	text-underline-offset: 3px;
+	text-decoration: none;
 }
+
+.oc-vp__stars:hover span { text-decoration: underline; }
+.oc-vp__stars .star-rating { font-size: .9em; }
+
+.oc-vp__priceline {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 12px;
+	margin-block-start: 10px;
+}
+
+.oc-vp__price { font-size: 1.12em; font-weight: 700; }
+.oc-vp__price del { opacity: .55; margin-inline-end: 6px; font-weight: 400; }
+
+/* The sale price carries the sale colour, exactly as the pages do. */
+.oc-vp__price ins,
+.oc-vp__fprice ins,
+.oc-mb__prod-price ins { color: var(--oc-sale, #b4453c); text-decoration: none; }
+
+.oc-vp__sku { font-size: .82em; color: var(--oc-ink-2, #6b7482); white-space: nowrap; }
 
 .oc-vp__blurb {
-	padding: 14px 22px 0;
+	margin-block-start: 10px;
 	font-size: .92em;
 	line-height: 1.65;
 	color: var(--oc-ink-2, #6b7482);
@@ -1674,29 +1772,41 @@ html.oc-menu-open .oc-menu-dim::after {
 .oc-vp__blurb:empty { display: none; }
 .oc-vp__blurb p { margin: 0 0 .5em; }
 
-.oc-vp__groups { padding: 4px 22px 10px; }
+.oc-vp__sep {
+	border: 0;
+	border-block-start: 1px solid var(--oc-line, #eee);
+	margin-block: 16px 2px;
+}
 
-.oc-vp__glabel { margin: 18px 0 10px; font-size: .95em; }
+.oc-vp__glabel { margin: 16px 0 10px; font-size: .95em; }
 
-.oc-vp__stock { padding: 0 22px 14px; }
-.oc-vp__stock:empty { display: none; }
+.oc-vp__go {
+	display: inline-block;
+	margin-block-start: 18px;
+	font-size: .86em;
+	color: var(--oc-ink-2, #6b7482);
+	text-decoration: underline;
+	text-underline-offset: 3px;
+}
+
+.oc-vp__go:hover { color: var(--oc-primary); }
 
 .oc-vp__loading { display: block; padding: 30px; text-align: center; }
 
-/* The sticky foot: price, quantity when the shop shows one, the button —
- * drawn at the product page's CTA height, in its button language. */
+/* ----- the sticky foot: stock over the controls, page-language sizes ----- */
+
 .oc-vp__foot {
-	display: flex;
-	align-items: center;
-	gap: 12px;
-	padding: 16px 22px;
+	padding: 12px 22px 16px;
 	border-block-start: 1px solid var(--oc-line, #eee);
 	background: var(--oc-surface, #fff);
 }
 
+.oc-vp__stock:not(:empty) { margin-block-end: 10px; }
+
+.oc-vp__ctrls { display: flex; align-items: center; gap: 12px; }
+
 .oc-vp__fprice { font-weight: 700; white-space: nowrap; }
 .oc-vp__fprice del { display: none; }
-.oc-vp__fprice ins { text-decoration: none; }
 
 .oc-vp__qty {
 	display: flex;
@@ -1732,6 +1842,7 @@ html.oc-menu-open .oc-menu-dim::after {
 	border-radius: var(--oc-cta-r, 8px);
 	background: var(--oc-cta, var(--oc-primary));
 	color: #fff;
+	font: inherit;
 	font-weight: 600;
 	cursor: pointer;
 	transition: filter .12s ease, background-color .12s ease, color .12s ease, opacity .15s ease;
@@ -1745,6 +1856,14 @@ html.oc-menu-open .oc-menu-dim::after {
 .oc-vp__add:disabled { opacity: .4; cursor: default; filter: none; }
 .oc-vp__add.is-busy { opacity: .6; pointer-events: none; }
 
+/* Out of stock: the button signs you up instead, wearing ink. */
+.oc-vp__add--notify,
+.oc-btn-outline .oc-vp__add--notify {
+	background: var(--oc-ink, #151a21);
+	border-color: var(--oc-ink, #151a21);
+	color: #fff;
+}
+
 /* On a phone the panel is a sheet rising from the bottom, the foot pinned,
  * a handle on its brow to pull it back down by. */
 @media (max-width: 782px) {
@@ -1753,7 +1872,7 @@ html.oc-menu-open .oc-menu-dim::after {
 		inset-inline: 0;
 		inset-block: auto 0;
 		inline-size: 100%;
-		max-block-size: 84vh;
+		max-block-size: 88vh;
 		border-radius: 16px 16px 0 0;
 		transform: translateY(100%);
 	}
@@ -1770,6 +1889,8 @@ html.oc-menu-open .oc-menu-dim::after {
 		margin: 10px auto 2px;
 		flex: 0 0 auto;
 	}
+
+	.oc-vp__arr { display: none; }
 }
 
 /* =====================================================================

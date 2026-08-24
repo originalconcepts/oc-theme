@@ -1060,11 +1060,38 @@ final class Cart {
 		$image  = $product->get_image_id() ? (string) wp_get_attachment_image_url( (int) $product->get_image_id(), 'woocommerce_thumbnail' ) : '';
 		$colors = class_exists( 'OC\\Theme\\Variations' ) ? Variations::panel_colors( $product ) : array( 'row' => '', 'label' => '' );
 
+		// The pictures, featured first, capped — a panel is a glance.
+		$imgs = array();
+
+		foreach ( array_merge( array( (int) $product->get_image_id() ), array_map( 'intval', $product->get_gallery_image_ids() ) ) as $img_id ) {
+			if ( $img_id > 0 && count( $imgs ) < 6 ) {
+				$u = wp_get_attachment_image_url( $img_id, 'large' );
+
+				if ( $u ) {
+					$imgs[] = (string) $u;
+				}
+			}
+		}
+
+		$rating = array( 'html' => '', 'count' => 0, 'url' => '' );
+
+		if ( wc_review_ratings_enabled() && $product->get_review_count() > 0 ) {
+			$rating = array(
+				'html'  => wc_get_rating_html( (float) $product->get_average_rating() ),
+				'count' => (int) $product->get_review_count(),
+				'url'   => (string) $product->get_permalink() . '#reviews',
+			);
+		}
+
 		wp_send_json_success(
 			array(
 				'name'   => $product->get_name(),
 				'url'    => (string) $product->get_permalink(),
 				'img'    => $image,
+				'imgs'   => $imgs,
+				'sku'    => (string) $product->get_sku(),
+				'rating' => $rating,
+				'flags'  => WooCommerce::flags_html( $product ),
 				'price'  => $product->get_price_html(),
 				'blurb'  => wp_kses_post( $product->get_short_description() ),
 				'stock'  => WooCommerce::stock_line_html( $product ),

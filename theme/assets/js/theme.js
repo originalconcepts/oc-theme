@@ -6244,12 +6244,13 @@
 	}
 
 	/* ---------- quick pick: a card's add-to-cart for a product with options ----------
-	 * A variable product's catalogue button used to lead to its page; speed
-	 * says answer here. A panel slides in from the configured side (on a
-	 * phone, a sheet from the bottom with a drag handle): picture, price,
-	 * the short description, every attribute drawn in the product page's own
-	 * language — the same swatches, the same buttons — the colour siblings,
-	 * the stock line, and a sticky foot of price, quantity and add. */
+	 * A quick view in the product page's own clothes: a full-width gallery
+	 * with arrows and dots wearing the configured corners, the card labels
+	 * over the title, the star rating (a door to the reviews section), price
+	 * facing SKU, a rule, then the options — the same .oc-var swatches and
+	 * buttons, the same .oc-colors sibling row. The foot pins the stock line
+	 * above price, quantity and add; an out-of-stock product offers the
+	 * back-in-stock signup instead. On a phone it is a sheet with a handle. */
 
 	( function () {
 		var L = window.ocL10n || {};
@@ -6264,33 +6265,44 @@
 		}
 
 		function vpBuild() {
-			vp = vpEl( 'div', 'oc-vp oc-vp--' + ( L.vpSide === 'left' ? 'left' : 'right' ) );
+			vp = vpEl( 'div', 'oc-vp oc-vp--' + ( L.vpSide === 'left' ? 'left' : 'right' ) + ' oc-vp--c-' + ( L.vpCorners || 'soft' ) );
 			vp.hidden = true;
 			vp.innerHTML =
 				'<div class="oc-vp__dim" data-vp-close></div>' +
 				'<aside class="oc-vp__panel" role="dialog" aria-modal="true">' +
 					'<button type="button" class="oc-vp__close" data-vp-close aria-label="close">&times;</button>' +
 					'<div class="oc-vp__scroll">' +
-						'<div class="oc-vp__head">' +
-							'<img class="oc-vp__img" alt="" />' +
-							'<div class="oc-vp__id">' +
-								'<a class="oc-vp__name" href="#"></a>' +
-								'<div class="oc-vp__price"></div>' +
-								'<a class="oc-vp__go" href="#"></a>' +
-							'</div>' +
+						'<div class="oc-vp__gal">' +
+							'<div class="oc-vp__strip"></div>' +
+							'<button type="button" class="oc-vp__arr oc-vp__arr--prev" data-vp-go="-1" aria-label="prev"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>' +
+							'<button type="button" class="oc-vp__arr oc-vp__arr--next" data-vp-go="1" aria-label="next"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>' +
+							'<div class="oc-vp__dots"></div>' +
 						'</div>' +
-						'<div class="oc-vp__blurb"></div>' +
-						'<div class="oc-vp__groups"></div>' +
-						'<div class="oc-vp__stock"></div>' +
+						'<div class="oc-vp__body">' +
+							'<div class="oc-vp__flags"></div>' +
+							'<a class="oc-vp__name" href="#"></a>' +
+							'<a class="oc-vp__stars" href="#"></a>' +
+							'<div class="oc-vp__priceline">' +
+								'<div class="oc-vp__price"></div>' +
+								'<span class="oc-vp__sku"></span>' +
+							'</div>' +
+							'<div class="oc-vp__blurb"></div>' +
+							'<hr class="oc-vp__sep" />' +
+							'<div class="oc-vp__groups"></div>' +
+							'<a class="oc-vp__go" href="#"></a>' +
+						'</div>' +
 					'</div>' +
 					'<div class="oc-vp__foot">' +
-						'<div class="oc-vp__fprice"></div>' +
-						'<div class="oc-vp__qty" hidden>' +
-							'<button type="button" class="oc-qty-btn" data-vp-q="-1">&minus;</button>' +
-							'<input type="number" class="qty" min="1" value="1" inputmode="numeric" />' +
-							'<button type="button" class="oc-qty-btn" data-vp-q="1">+</button>' +
+						'<div class="oc-vp__stock"></div>' +
+						'<div class="oc-vp__ctrls">' +
+							'<div class="oc-vp__fprice"></div>' +
+							'<div class="oc-vp__qty" hidden>' +
+								'<button type="button" class="oc-qty-btn" data-vp-q="-1">&minus;</button>' +
+								'<input type="number" class="qty" min="1" value="1" inputmode="numeric" />' +
+								'<button type="button" class="oc-qty-btn" data-vp-q="1">+</button>' +
+							'</div>' +
+							'<button type="button" class="oc-vp__add"></button>' +
 						'</div>' +
-						'<button type="button" class="oc-vp__add"></button>' +
 					'</div>' +
 				'</aside>';
 			document.body.appendChild( vp );
@@ -6307,6 +6319,13 @@
 					input.value = String( Math.max( 1, ( Number( input.value ) || 1 ) + Number( q.dataset.vpQ ) ) );
 				}
 
+				var arr = e.target.closest( '[data-vp-go]' );
+
+				if ( arr ) {
+					var strip = vp.querySelector( '.oc-vp__strip' );
+					strip.scrollBy( { left: strip.clientWidth * Number( arr.dataset.vpGo ) * ( document.documentElement.dir === 'rtl' ? -1 : 1 ), behavior: 'smooth' } );
+				}
+
 				/* A colour sibling is another product wearing this panel:
 				 * switching colour re-dresses the panel, no page leaves. */
 				var sib = e.target.closest( '.oc-vp .oc-colors__item' );
@@ -6320,13 +6339,38 @@
 				}
 			} );
 
+			var galStrip = vp.querySelector( '.oc-vp__strip' );
+			var dotTick = false;
+
+			galStrip.addEventListener( 'scroll', function () {
+				if ( ! dotTick ) {
+					dotTick = true;
+					requestAnimationFrame( function () {
+						dotTick = false;
+						vpDots();
+					} );
+				}
+			}, { passive: true } );
+
 			document.addEventListener( 'keydown', function ( e ) {
 				if ( e.key === 'Escape' && vp && ! vp.hidden ) {
 					vpClose();
 				}
 			} );
 
-			vp.querySelector( '.oc-vp__add' ).addEventListener( 'click', vpAdd );
+			vp.querySelector( '.oc-vp__add' ).addEventListener( 'click', function () {
+				var btn = vp.querySelector( '.oc-vp__add' );
+
+				if ( btn.dataset.mode === 'notify' ) {
+					if ( typeof ocOpenNotify === 'function' ) {
+						ocOpenNotify( st.id, vp.querySelector( '.oc-vp__name' ).textContent, ! st.simple, 0 );
+					}
+					return;
+				}
+
+				vpAdd();
+			} );
+
 			vpDrag( vp.querySelector( '.oc-vp__panel' ) );
 		}
 
@@ -6388,6 +6432,91 @@
 			}
 		}
 
+		/* ----- the gallery ----- */
+
+		function vpSlides() {
+			return [].filter.call( vp.querySelectorAll( '.oc-vp__slide' ), function ( sl ) {
+				return ! sl.hidden;
+			} );
+		}
+
+		function vpDots() {
+			var strip = vp.querySelector( '.oc-vp__strip' );
+			var dots = vp.querySelector( '.oc-vp__dots' );
+			var slides = vpSlides();
+
+			if ( dots.children.length !== slides.length ) {
+				dots.innerHTML = '';
+				slides.forEach( function ( sl, i ) {
+					var d = vpEl( 'button', 'oc-vp__dot' );
+					d.type = 'button';
+					d.addEventListener( 'click', function () {
+						sl.scrollIntoView( { behavior: 'smooth', block: 'nearest', inline: 'center' } );
+					} );
+					dots.appendChild( d );
+				} );
+			}
+
+			var at = Math.round( Math.abs( strip.scrollLeft ) / Math.max( 1, strip.clientWidth ) );
+
+			[].forEach.call( dots.children, function ( d, i ) {
+				d.classList.toggle( 'is-on', i === Math.min( at, dots.children.length - 1 ) );
+			} );
+
+			vp.querySelector( '.oc-vp__gal' ).classList.toggle( 'oc-vp__gal--one', slides.length < 2 );
+		}
+
+		function vpGallery( imgs ) {
+			var strip = vp.querySelector( '.oc-vp__strip' );
+			strip.innerHTML = '';
+
+			// Slide zero belongs to the resolved variation, silent until one
+			// brings its own picture.
+			var vslide = vpEl( 'div', 'oc-vp__slide oc-vp__slide--var' );
+			vslide.hidden = true;
+			vslide.appendChild( vpEl( 'img' ) );
+			strip.appendChild( vslide );
+
+			( imgs || [] ).forEach( function ( u ) {
+				var sl = vpEl( 'div', 'oc-vp__slide' );
+				var im = vpEl( 'img' );
+				im.src = u;
+				im.alt = '';
+				sl.appendChild( im );
+				strip.appendChild( sl );
+			} );
+
+			strip.scrollLeft = 0;
+			vpDots();
+		}
+
+		function vpVarImage( url ) {
+			var strip = vp.querySelector( '.oc-vp__strip' );
+			var vslide = strip.querySelector( '.oc-vp__slide--var' );
+			var show = !! url && st.imgs.indexOf( url ) === -1;
+
+			if ( show ) {
+				vslide.querySelector( 'img' ).src = url;
+			}
+
+			if ( vslide.hidden === ! show ) {
+				if ( show ) {
+					vslide.scrollIntoView( { block: 'nearest', inline: 'center' } );
+				}
+				vpDots();
+				return;
+			}
+
+			vslide.hidden = ! show;
+			vpDots();
+
+			if ( show ) {
+				vslide.scrollIntoView( { block: 'nearest', inline: 'center' } );
+			}
+		}
+
+		/* ----- selection ----- */
+
 		/* The variations a partial selection still allows, one group held out. */
 		function vpAllows( skipKey, withValue ) {
 			return st.vars.some( function ( v ) {
@@ -6426,30 +6555,62 @@
 
 			var hit = vpResolved();
 			var price = vp.querySelector( '.oc-vp__price' );
-			var img = vp.querySelector( '.oc-vp__img' );
 
 			// WooCommerce answers '' for a variation priced like its
 			// siblings — the product's own price line covers that silence.
 			price.innerHTML = ( hit && hit.price ) ? hit.price : st.price;
-			img.src = ( hit && hit.img ) ? hit.img : ( st.img || '' );
-
 			vp.querySelector( '.oc-vp__fprice' ).innerHTML = price.innerHTML;
-			vp.querySelector( '.oc-vp__add' ).disabled = ! hit;
+			vpVarImage( hit && hit.img ? hit.img : '' );
+
+			var btn = vp.querySelector( '.oc-vp__add' );
+
+			if ( btn.dataset.mode !== 'notify' ) {
+				btn.disabled = ! hit;
+			}
 		}
 
 		function vpRender( d, productId ) {
-			st = { id: productId, sel: {}, groups: d.groups, vars: d.vars, price: d.price, img: d.img, simple: !! d.simple, buy: !! d.buy };
+			st = { id: productId, sel: {}, groups: d.groups, vars: d.vars, price: d.price, img: d.img, imgs: d.imgs || [], simple: !! d.simple, buy: !! d.buy };
 
 			vp.querySelector( '.oc-vp__name' ).textContent = d.name;
 			vp.querySelector( '.oc-vp__name' ).href = d.url;
 			vp.querySelector( '.oc-vp__go' ).textContent = L.vpGo || '';
 			vp.querySelector( '.oc-vp__go' ).href = d.url;
-			vp.querySelector( '.oc-vp__img' ).src = d.img || '';
+			vp.querySelector( '.oc-vp__flags' ).innerHTML = d.flags || '';
 			vp.querySelector( '.oc-vp__blurb' ).innerHTML = d.blurb || '';
 			vp.querySelector( '.oc-vp__stock' ).innerHTML = d.stock || '';
 			vp.querySelector( '.oc-vp__qty' ).hidden = ! d.qty;
 			vp.querySelector( '.oc-vp__qty input' ).value = '1';
-			vp.querySelector( '.oc-vp__add' ).textContent = L.vpAdd || 'Add to cart';
+
+			var stars = vp.querySelector( '.oc-vp__stars' );
+
+			if ( d.rating && d.rating.count > 0 ) {
+				stars.innerHTML = d.rating.html + '<span>' + ( L.vpReviews || '%s' ).replace( '%s', String( d.rating.count ) ) + '</span>';
+				stars.href = d.rating.url;
+				stars.hidden = false;
+			} else {
+				stars.hidden = true;
+			}
+
+			var sku = vp.querySelector( '.oc-vp__sku' );
+			sku.textContent = d.sku ? ( L.vpSku || 'SKU:' ) + ' ' + d.sku : '';
+			sku.hidden = ! d.sku;
+
+			// Out of stock: the button changes trade — it signs you up.
+			var btn = vp.querySelector( '.oc-vp__add' );
+
+			if ( ! d.buy ) {
+				btn.dataset.mode = 'notify';
+				btn.classList.add( 'oc-vp__add--notify' );
+				btn.textContent = L.notifyButton || L.vpAdd || '';
+				btn.disabled = false;
+			} else {
+				delete btn.dataset.mode;
+				btn.classList.remove( 'oc-vp__add--notify' );
+				btn.textContent = L.vpAdd || 'Add to cart';
+			}
+
+			vpGallery( st.imgs );
 
 			var box = vp.querySelector( '.oc-vp__groups' );
 			box.innerHTML = '';

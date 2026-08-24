@@ -165,6 +165,10 @@ final class Assets {
 				'cartOpenOnAdd'        => (int) Cart::settings()['open_on_add'],
 				'cartVarPick'          => __( 'Choose an option', 'oc-theme' ),
 				'vpSide'               => 'left' === get_theme_mod( 'oc_vpanel_side', 'right' ) ? 'left' : 'right',
+				'vpCorners'            => (string) get_theme_mod( 'oc_vpanel_corners', 'soft' ),
+				'vpSku'                => __( 'SKU:', 'oc-theme' ),
+				/* translators: %s: number of reviews. */
+				'vpReviews'            => __( '%s reviews', 'oc-theme' ),
 				'vpAdd'                => __( 'Add to cart', 'oc-theme' ),
 				'vpGo'                 => __( 'To the product page', 'oc-theme' ),
 				'inStock'              => __( 'In stock', 'oc-theme' ),

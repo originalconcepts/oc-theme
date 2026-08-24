@@ -1795,6 +1795,19 @@ final class Customizer {
 
 		$this->choice(
 			$c,
+			'oc_vpanel_corners',
+			'oc_product',
+			__( 'Quick-pick picture corners', 'oc-theme' ),
+			array(
+				'sharp' => __( 'Sharp', 'oc-theme' ),
+				'soft'  => __( 'Softened', 'oc-theme' ),
+				'round' => __( 'Round', 'oc-theme' ),
+			),
+			'soft'
+		);
+
+		$this->choice(
+			$c,
 			'oc_atc_icons_layout',
 			'oc_product',
 			__( 'Icons under the button', 'oc-theme' ),
