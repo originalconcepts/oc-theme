@@ -63,10 +63,16 @@ final class Updater {
 	}
 
 	/**
-	 * Register hooks. Admin only — never costs a front-end request.
+	 * Register hooks. Never on a front-end request — but an update check is
+	 * not only a person in wp-admin: the host's update runner comes through
+	 * WP-CLI and cron, where is_admin() is false, and an updater that does
+	 * not exist there reports "nothing to update" while GitHub holds a newer
+	 * release.
 	 */
 	public function register(): void {
-		if ( ! is_admin() ) {
+		$cli = defined( 'WP_CLI' ) && WP_CLI;
+
+		if ( ! is_admin() && ! wp_doing_cron() && ! $cli ) {
 			return;
 		}
 
