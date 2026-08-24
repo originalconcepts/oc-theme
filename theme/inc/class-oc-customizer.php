@@ -649,8 +649,10 @@ final class Customizer {
 		$this->color( $c, 'oc_mega_tx', 'oc_menu', __( 'Colour of the links inside', 'oc-theme' ) );
 		$this->color( $c, 'oc_mega_tx_h', 'oc_menu', __( 'Those links under the cursor', 'oc-theme' ) );
 		$this->number( $c, 'oc_mega_hov', 'oc_menu', __( 'How far they step under the cursor (px)', 'oc-theme' ), 3, 0, 12, null, __( 'Forwards — leftwards in Hebrew. Zero holds them still.', 'oc-theme' ) );
-		$this->number( $c, 'oc_mega_fs', 'oc_menu', __( 'Text size inside the panel (px)', 'oc-theme' ), 15, 11, 22 );
+		$this->number( $c, 'oc_mega_fs', 'oc_menu', __( 'Text size in the panel and the drop-down (px)', 'oc-theme' ), 15, 11, 22 );
 
+		$this->number( $c, 'oc_mega_rows', 'oc_menu', __( 'Rows in a column before it splits', 'oc-theme' ), 8, 3, 20, null, __( 'A longer list continues in a second column standing close beside it.', 'oc-theme' ) );
+		$this->number( $c, 'oc_mega_img_h', 'oc_menu', __( 'Picture height in the panel (px)', 'oc-theme' ), 0, 0, 640, null, __( 'Zero matches the picture to the height of the columns beside it.', 'oc-theme' ) );
 		$this->color( $c, 'oc_mega_line_t', 'oc_menu', __( 'Line above the panel', 'oc-theme' ), __( 'What separates it from the header.', 'oc-theme' ) );
 		$this->color( $c, 'oc_mega_line_b', 'oc_menu', __( 'Line below the panel', 'oc-theme' ), __( 'What separates it from the page.', 'oc-theme' ) );
 

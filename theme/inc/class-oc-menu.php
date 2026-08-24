@@ -35,8 +35,10 @@ final class Menu {
 		add_filter( 'wp_nav_menu_objects', array( $this, 'drop_hidden' ), 10, 2 );
 
 		// Deleting an item, or reordering the menu, can leave a panel cached
-		// for something that is no longer there.
+		// for something that is no longer there. And the row limit is baked
+		// into the cached markup, so saving the Customizer must retire it too.
 		add_action( 'wp_update_nav_menu', array( 'OC\\Theme\\Menu_Panel', 'flush' ) );
+		add_action( 'customize_save_after', array( 'OC\\Theme\\Menu_Panel', 'flush' ) );
 
 		if ( ! is_admin() ) {
 			return;

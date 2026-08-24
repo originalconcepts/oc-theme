@@ -358,3 +358,18 @@ body.oc-mp-locked { overflow: hidden; }
 
 .oc-mp__check input { margin: 0; }
 .oc-mp__srow .oc-mp__check { margin-block-end: 12px; }
+
+/* --- the way in, riding the item's title bar --- */
+
+.item-controls .oc-mi__edit {
+	opacity: 0;
+	margin-inline-end: 10px;
+	vertical-align: middle;
+	transition: opacity .12s ease;
+}
+
+.menu-item-handle:hover .oc-mi__edit,
+.item-controls .oc-mi__edit:focus-visible { opacity: 1; }
+
+/* With the button seated in the handle, the body keeps only the words. */
+.oc-mi__panel .oc-mi__edit { opacity: 1; }

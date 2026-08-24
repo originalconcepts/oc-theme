@@ -1123,12 +1123,12 @@ html.oc-search-open { overflow: hidden; }
 	transition: opacity .22s ease, transform .22s ease, visibility 0s;
 }
 
-.oc-nav__list .sub-menu a { padding: 8px 16px; }
+.oc-nav__list .sub-menu a { padding: 8px 16px; font-size: var(--oc-mega-fs, 15px); }
 
 /* Piece by piece: each row arrives a beat after the one before it. The delay
  * comes from --i, and twelve is where the effect stops being a rhythm and
  * starts being a wait — beyond that they all arrive together. */
-.oc-nav--mo-stagger .oc-nav__list .sub-menu > li { opacity: 0; transform: translateY(6px); }
+.oc-nav--mo-stagger .oc-nav__list .sub-menu > li { opacity: 0; transform: translateX(calc(var(--oc-in-x, -18px) * .5)); }
 
 /* The lead is what makes the first rows readable. Without it they arrive
  * while the panel itself is still fading up, so their entrance happens
@@ -1258,16 +1258,19 @@ html.oc-menu-open .oc-menu-dim::before {
 .oc-nav--w-content .oc-mega__row,
 .oc-nav--w-full .oc-mega__row { max-inline-size: var(--oc-content-width, 1280px); margin-inline: auto; }
 
-/* Piece by piece. A column arriving on a desktop fades and lifts a little:
- * the drawer's sideways travel is right for a stack of rows sliding in from
- * the edge of a phone, and wrong for columns already standing in a row. */
-.oc-nav--mo-stagger .oc-mega .oc-mb { opacity: 0; transform: translateY(8px); }
+/* Piece by piece: a short, quiet drift in from the reading side. Half the
+ * drawer's distance and half again as long, because a panel on a desktop is
+ * read at arm's length — the movement should be felt more than seen. */
+.oc-nav--mo-stagger .oc-mega .oc-mb {
+	opacity: 0;
+	transform: translateX(calc(var(--oc-in-x, -18px) * .7));
+}
 
 .oc-nav--mo-stagger .oc-nav__list > li:hover > .oc-mega .oc-mb,
 .oc-nav--mo-stagger .oc-nav__list > li.is-open > .oc-mega .oc-mb,
 .oc-nav--mo-stagger .oc-nav__list > li:focus-within > .oc-mega .oc-mb {
-	animation: oc-menu-in .3s cubic-bezier(.2, .7, .3, 1) forwards;
-	animation-delay: calc(160ms + var(--oc-menu-step, 40ms) * var(--i, 0));
+	animation: oc-menu-in .55s cubic-bezier(.22, .61, .36, 1) forwards;
+	animation-delay: calc(180ms + var(--oc-menu-step, 40ms) * var(--i, 0));
 }
 
 /* --i is written onto each piece by the renderer, which knows which of them
@@ -1287,7 +1290,7 @@ html.oc-menu-open .oc-menu-dim::before {
 }
 
 .oc-mb__g {
-	margin: 0 0 10px;
+	margin: 0 0 20px;
 	font-size: 1em;
 	letter-spacing: var(--oc-menu-track, 0);
 }
@@ -1296,11 +1299,10 @@ html.oc-menu-open .oc-menu-dim::before {
 .oc-mb__g a:hover,
 .oc-mb__list--lead a:hover { color: var(--oc-mega-tx-h, var(--oc-primary)); }
 
-/* A gathered list that outgrows a column flows into two rather than
- * standing a metre tall beside a column of four. */
-.oc-mb__list--lead { columns: auto 1; }
-.oc-mb__list--lead:has(> li:nth-child(11)) { columns: auto 2; column-gap: var(--oc-mega-gap, 28px); }
-.oc-mb__list--lead > li { break-inside: avoid; }
+/* A list past its row limit continues in a second list beside it. They sit
+ * close — a continuation is not a new column, so it does not get the big
+ * inter-column gap. */
+.oc-mb__cols { display: flex; gap: 22px; align-items: flex-start; }
 
 .oc-mb__h {
 	margin: 0 0 10px;
@@ -1343,6 +1345,39 @@ html.oc-menu-open .oc-menu-dim::before {
 /* --- a picture --- */
 
 .oc-mb__link { display: block; text-decoration: none; color: inherit; }
+
+/* In the desktop panel a picture is a card beside the columns, not a poster
+ * behind them. Its height either matches the columns (the default: the grid
+ * row is as tall as the tallest list, and the figure follows it) or is a
+ * fixed number from the Customizer; its width then comes from its own shape.
+ * The drawer keeps full-width pictures — a phone column IS the row. */
+.oc-nav .oc-mega .oc-mb--image {
+	align-self: stretch;
+	justify-self: end;
+	min-block-size: 0;
+}
+
+.oc-nav .oc-mega .oc-mb--image .oc-mb__link { block-size: 100%; }
+
+.oc-nav .oc-mega .oc-mb--image .oc-mb__fig {
+	block-size: var(--oc-mega-img-h, 100%);
+	inline-size: auto;
+	aspect-ratio: var(--oc-mb-ratio, 3 / 4);
+	margin-inline-start: auto;
+}
+
+.oc-nav .oc-mega .oc-mb--image .oc-mb__fig--under {
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+}
+
+.oc-nav .oc-mega .oc-mb--image .oc-mb__fig--under .oc-mb__img {
+	flex: 1 1 auto;
+	min-block-size: 0;
+	aspect-ratio: auto;
+	inline-size: 100%;
+}
 
 .oc-mb__fig {
 	position: relative;
@@ -1778,13 +1813,18 @@ html.oc-drw-open body { overflow: hidden; }
  * animate while the panel is still sliding in from off-screen, so their
  * entrance happens where nobody can see it and they look as though they had
  * been there all along. Everything waits for the panel to land. */
-.oc-drw--mo-stagger .oc-drw__list > .oc-drw__i {
+/* The ROW carries the entrance, never the li. An element with a transform
+ * becomes the containing block for everything absolute inside it, and the
+ * li holds the slide-over screen — so for as long as its entrance ran, a
+ * fast tap opened that screen trapped inside a 79px row. The row holds no
+ * screens, so it is free to move. */
+.oc-drw--mo-stagger .oc-drw__list > .oc-drw__i > .oc-drw__row {
 	opacity: 0;
 	transform: translateX(var(--oc-in-x, -18px));
 }
 
-.oc-drw--mo-stagger[data-open="true"] .oc-drw__body > .oc-drw__list > .oc-drw__i,
-.oc-drw--mo-stagger .oc-drw__i.is-open > .oc-drw__sub .oc-drw__list--sub > .oc-drw__i {
+.oc-drw--mo-stagger[data-open="true"] .oc-drw__body > .oc-drw__list > .oc-drw__i > .oc-drw__row,
+.oc-drw--mo-stagger .oc-drw__i.is-open > .oc-drw__sub .oc-drw__list--sub > .oc-drw__i > .oc-drw__row {
 	animation: oc-menu-in .34s cubic-bezier(.2, .7, .3, 1) forwards;
 	animation-delay: calc(200ms + var(--oc-menu-step, 40ms) * var(--i, 0));
 }
@@ -1812,7 +1852,7 @@ html.oc-drw-open body { overflow: hidden; }
 	.oc-drw--slide .oc-drw__sub,
 	.oc-drw--accordion .oc-drw__sub { transition: none; }
 
-	.oc-drw--mo-stagger .oc-drw__list > .oc-drw__i { opacity: 1; transform: none; animation: none; }
+	.oc-drw--mo-stagger .oc-drw__list > .oc-drw__i > .oc-drw__row { opacity: 1; transform: none; animation: none; }
 }
 
 

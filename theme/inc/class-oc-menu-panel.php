@@ -438,7 +438,7 @@ final class Menu_Panel {
 		$tree     = self::tree();
 		$children = $tree[ $item_id ] ?? array();
 		$columns  = array();
-		$gathered = '';
+		$gathered = array();
 		$seat     = null;
 
 		foreach ( $children as $child ) {
@@ -464,18 +464,18 @@ final class Menu_Panel {
 					$seat = count( $columns );
 				}
 
-				$gathered .= '<li>' . $link . '</li>';
+				$gathered[] = '<li>' . $link . '</li>';
 				continue;
 			}
 
 			$columns[] = array(
 				'track' => 'max-content',
 				'class' => 'oc-mb oc-mb--col',
-				'inner' => '<h4 class="oc-mb__g">' . $link . '</h4><ul class="oc-mb__list">' . implode( '', $kids ) . '</ul>',
+				'inner' => '<h4 class="oc-mb__g">' . $link . '</h4>' . self::lists( $kids ),
 			);
 		}
 
-		if ( '' !== $gathered ) {
+		if ( ! empty( $gathered ) ) {
 			array_splice(
 				$columns,
 				(int) $seat,
@@ -484,13 +484,38 @@ final class Menu_Panel {
 					array(
 						'track' => 'max-content',
 						'class' => 'oc-mb oc-mb--col',
-						'inner' => '<ul class="oc-mb__list oc-mb__list--lead">' . $gathered . '</ul>',
+						'inner' => self::lists( $gathered, 'oc-mb__list--lead' ),
 					),
 				)
 			);
 		}
 
 		return $columns;
+	}
+
+	/**
+	 * Rows as one list — or, past the row limit, as lists standing close
+	 * together. The continuation is not a new column, so it does not get the
+	 * big inter-column gap; it is the same list taking a breath.
+	 *
+	 * @param array<int,string> $rows  Row markup.
+	 * @param string            $extra Extra class for each list.
+	 * @return string
+	 */
+	private static function lists( array $rows, string $extra = '' ): string {
+		$cap   = max( 3, (int) get_theme_mod( 'oc_mega_rows', 8 ) );
+		$class = trim( 'oc-mb__list ' . $extra );
+		$uls   = array();
+
+		foreach ( array_chunk( $rows, $cap ) as $chunk ) {
+			$uls[] = '<ul class="' . esc_attr( $class ) . '">' . implode( '', $chunk ) . '</ul>';
+		}
+
+		if ( count( $uls ) === 1 ) {
+			return $uls[0];
+		}
+
+		return '<div class="oc-mb__cols">' . implode( '', $uls ) . '</div>';
 	}
 
 	/**

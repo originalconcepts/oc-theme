@@ -720,12 +720,15 @@
 				state.dirty = false;
 				setStatus( T.saved, 'ok' );
 
-				/* The screen behind is now out of date about this item. */
+				/* The screen behind is now out of date about this item. The
+				 * button lives in the item's handle, so the state line is
+				 * found from the item, not from beside the button. */
 				if ( state.button ) {
 					state.button.dataset.ocBlocks = JSON.stringify( r.data.blocks );
 					state.button.dataset.ocThumbs = JSON.stringify( r.data.thumbs );
 
-					var line = state.button.parentNode.querySelector( '.oc-mi__state' );
+					var item = state.button.closest( 'li.menu-item' );
+					var line = item && item.querySelector( '.oc-mi__state' );
 
 					if ( line ) {
 						line.textContent = r.data.state;
@@ -858,4 +861,27 @@
 			close();
 		}
 	} );
+
+	/* The way in rides the item's title bar, appearing on hover next to the
+	 * link's kind — one glance and one click, without opening the item. It is
+	 * printed inside the item's body (which still works with no JS) and
+	 * seated up here; new items arrive over ajax, so keep looking. */
+	function seat() {
+		document.querySelectorAll( '.oc-mi__panel .oc-mi__edit' ).forEach( function ( button ) {
+			var item = button.closest( 'li.menu-item' );
+			var controls = item && item.querySelector( '.menu-item-handle .item-controls' );
+
+			if ( controls ) {
+				controls.insertBefore( button, controls.firstChild );
+			}
+		} );
+	}
+
+	seat();
+
+	if ( window.jQuery ) {
+		jQuery( document ).ajaxComplete( function () {
+			setTimeout( seat, 60 );
+		} );
+	}
 } ) );

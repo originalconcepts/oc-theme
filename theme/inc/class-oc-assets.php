@@ -294,6 +294,9 @@ final class Assets {
 				'--oc-mega-line-b'    => (string) get_theme_mod( 'oc_mega_line_b', '' ),
 				'--oc-mega-fs'        => absint( get_theme_mod( 'oc_mega_fs', 15 ) ) . 'px',
 				'--oc-mega-hov'       => absint( get_theme_mod( 'oc_mega_hov', 3 ) ) . 'px',
+				// Empty when zero: the stylesheet then matches the picture to
+				// the height of the columns beside it.
+				'--oc-mega-img-h'     => absint( get_theme_mod( 'oc_mega_img_h', 0 ) ) > 0 ? absint( get_theme_mod( 'oc_mega_img_h', 0 ) ) . 'px' : '',
 				'--oc-drw-w'          => absint( get_theme_mod( 'oc_drw_w', 360 ) ) . 'px',
 				'--oc-drw-bg'         => (string) get_theme_mod( 'oc_drw_bg', '' ),
 				'--oc-drw-tx'         => (string) get_theme_mod( 'oc_drw_tx', '' ),

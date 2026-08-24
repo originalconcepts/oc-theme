@@ -3696,3 +3696,18 @@ msgstr "כמה הם זזים בריחוף (פיקסלים)"
 
 msgid "Forwards — leftwards in Hebrew. Zero holds them still."
 msgstr "קדימה — שמאלה בעברית. 0 משאיר אותם במקום."
+
+msgid "Rows in a column before it splits"
+msgstr "שורות בעמודה לפני שהיא מתפצלת"
+
+msgid "A longer list continues in a second column standing close beside it."
+msgstr "רשימה ארוכה יותר ממשיכה בעמודה שנייה צמודה לצדה."
+
+msgid "Picture height in the panel (px)"
+msgstr "גובה התמונה בפאנל (פיקסלים)"
+
+msgid "Zero matches the picture to the height of the columns beside it."
+msgstr "0 משווה את גובה התמונה לגובה העמודות שלצדה."
+
+msgid "Text size in the panel and the drop-down (px)"
+msgstr "גודל הטקסט בפאנל ובתפריט הנפתח (פיקסלים)"
