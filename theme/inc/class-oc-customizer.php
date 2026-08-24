@@ -148,6 +148,54 @@ final class Customizer {
 		$this->thankyou_section( $wp_customize, $shop_panel );
 		$this->cart_section( $wp_customize, $shop_panel );
 		$this->search_section( $wp_customize, $shop_panel );
+		$this->brands_section( $wp_customize, $shop_panel );
+	}
+
+	/**
+	 * The brands page at /brands/ — its background, width, and posture.
+	 *
+	 * @param \WP_Customize_Manager $c     Customizer manager.
+	 * @param string                $panel Panel id.
+	 */
+	private function brands_section( \WP_Customize_Manager $c, string $panel ): void {
+		$c->add_section(
+			'oc_brands',
+			array(
+				'title'       => __( 'The brands page', 'oc-theme' ),
+				'description' => __( 'Every brand on one page, at /brands/. Brand archives breadcrumb through it.', 'oc-theme' ),
+				'panel'       => $panel,
+				'priority'    => 56,
+			)
+		);
+
+		$this->color( $c, 'oc_brands_bg', 'oc_brands', __( 'Page background', 'oc-theme' ) );
+
+		$this->number(
+			$c,
+			'oc_brands_width',
+			'oc_brands',
+			__( 'Page width (px)', 'oc-theme' ),
+			1160,
+			0,
+			2400,
+			null,
+			__( '0 keeps the site content width.', 'oc-theme' )
+		);
+
+		$this->choice(
+			$c,
+			'oc_brands_view',
+			'oc_brands',
+			__( 'Shown as', 'oc-theme' ),
+			array(
+				'letters' => __( 'Split by letters', 'oc-theme' ),
+				'logos'   => __( 'Brand pictures, names under them', 'oc-theme' ),
+			),
+			'letters'
+		);
+
+		$this->number( $c, 'oc_brands_cols', 'oc_brands', __( 'Brands per row — desktop', 'oc-theme' ), 4, 1, 8 );
+		$this->number( $c, 'oc_brands_cols_m', 'oc_brands', __( 'Brands per row — phone', 'oc-theme' ), 2, 1, 4 );
 	}
 
 	/**

@@ -192,7 +192,7 @@ final class Menu_Panel {
 					'link'  => array(
 						'type'  => 'url',
 						'label' => __( '"All brands" leads to', 'oc-theme' ),
-						'hint'  => __( 'Shown when there are more brands than fit. Empty on a category item falls back to the category itself.', 'oc-theme' ),
+						'hint'  => __( 'Shown when there are more brands than fit. Empty leads to the brands page — or, drawn from a category, to that category.', 'oc-theme' ),
 					),
 				),
 			),
@@ -993,13 +993,18 @@ final class Menu_Panel {
 		}
 
 		// More of them than shown: a door to the rest. A set address wins;
-		// without one, a category item opens its own category.
+		// without one, a category item opens its own category, and anything
+		// else opens the brands page.
 		if ( $total > count( $terms ) ) {
 			$more = (string) ( $block['link'] ?? '' );
 
-			if ( '' === $more && null !== $cat ) {
+			if ( '' === $more && null !== $cat && 'cat' === ( $block['scope'] ?? 'all' ) ) {
 				$link = get_term_link( $cat );
 				$more = is_wp_error( $link ) ? '' : (string) $link;
+			}
+
+			if ( '' === $more ) {
+				$more = Brands::url();
 			}
 
 			if ( '' !== $more ) {

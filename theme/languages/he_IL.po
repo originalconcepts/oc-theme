@@ -3864,3 +3864,36 @@ msgstr "ממלאה את המסגרת"
 
 msgid "A band under the whole panel"
 msgstr "פס לרוחב מתחת לכל התפריט"
+
+msgid "The brands page"
+msgstr "עמוד המותגים"
+
+msgid "Every brand on one page, at /brands/. Brand archives breadcrumb through it."
+msgstr "כל המותגים בעמוד אחד, בכתובת ‎/brands/‎. פירורי הלחם של עמודי המותגים עוברים דרכו."
+
+msgid "Page background"
+msgstr "רקע העמוד"
+
+msgid "Page width (px)"
+msgstr "רוחב העמוד (px)"
+
+msgid "0 keeps the site content width."
+msgstr "0 = רוחב התוכן של האתר."
+
+msgid "Split by letters"
+msgstr "מחולק לפי אותיות"
+
+msgid "Brand pictures, names under them"
+msgstr "תמונות מותג, שם מתחת"
+
+msgid "Brands per row — desktop"
+msgstr "מותגים בשורה — דסקטופ"
+
+msgid "Brands per row — phone"
+msgstr "מותגים בשורה — מובייל"
+
+msgid "Brands by letter"
+msgstr "מותגים לפי אות"
+
+msgid "Shown when there are more brands than fit. Empty leads to the brands page — or, drawn from a category, to that category."
+msgstr "מוצג כשיש יותר מותגים ממה שנכנס. ריק — מוביל לעמוד המותגים; ב״הקטגוריה של הפריט״ — לקטגוריה עצמה."

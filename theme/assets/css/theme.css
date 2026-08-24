@@ -1570,6 +1570,110 @@ html.oc-menu-open .oc-menu-dim::after {
 
 /* --- the brands --- */
 
+/* =====================================================================
+   The brands page — /brands/
+   ===================================================================== */
+
+.oc-brands {
+	max-inline-size: var(--oc-brands-w, var(--oc-content-width, 1280px));
+	margin-inline: auto;
+	padding: 30px var(--oc-gap) 70px;
+}
+
+/* The letter bar. On a desktop every letter stands in the open; on a phone
+ * the row keeps one line and slides under the finger. */
+.oc-brands__abc {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	margin-block: 18px 6px;
+}
+
+.oc-brands__abc a {
+	min-inline-size: 36px;
+	padding: 7px 9px;
+	text-align: center;
+	text-decoration: none;
+	font-weight: 600;
+	border: 1px solid var(--oc-line, #e5e5e5);
+	border-radius: calc(var(--oc-radius, 8px) * .75);
+	transition: border-color .15s ease, color .15s ease;
+}
+
+.oc-brands__abc a:hover {
+	color: var(--oc-primary);
+	border-color: currentColor;
+}
+
+.oc-brands__sec { margin-block-start: 38px; scroll-margin-block-start: 90px; }
+
+.oc-brands__letter {
+	font-size: 1.35em;
+	padding-block-end: 10px;
+	border-block-end: 1px solid var(--oc-line, #e5e5e5);
+}
+
+.oc-brands__grid {
+	display: grid;
+	grid-template-columns: repeat(var(--oc-brands-cols, 4), 1fr);
+	gap: 14px 26px;
+	list-style: none;
+	margin: 18px 0 0;
+	padding: 0;
+}
+
+.oc-brands__grid--names a { text-decoration: none; }
+.oc-brands__grid--names a:hover { color: var(--oc-primary); }
+
+.oc-brands__grid--logos { gap: 26px; }
+
+.oc-brands__card {
+	display: block;
+	text-align: center;
+	text-decoration: none;
+}
+
+.oc-brands__face {
+	display: grid;
+	place-items: center;
+	aspect-ratio: 3 / 2;
+	padding: 14px;
+	border: 1px solid var(--oc-line, #e5e5e5);
+	border-radius: var(--oc-radius, 8px);
+	background: var(--oc-surface, #fff);
+	transition: border-color .15s ease;
+}
+
+.oc-brands__card:hover .oc-brands__face { border-color: color-mix(in srgb, var(--oc-ink) 35%, transparent); }
+
+.oc-brands__logo {
+	max-inline-size: 80%;
+	max-block-size: 70%;
+	object-fit: contain;
+}
+
+.oc-brands__stand { font-weight: 600; font-size: 1.05em; }
+
+.oc-brands__name { display: block; margin-block-start: 9px; }
+
+@media (max-width: 900px) {
+	.oc-brands__grid { grid-template-columns: repeat(var(--oc-brands-cols-m, 2), 1fr); }
+
+	.oc-brands__abc {
+		flex-wrap: nowrap;
+		overflow-x: auto;
+		scrollbar-width: none;
+		-webkit-overflow-scrolling: touch;
+		padding-block-end: 4px;
+	}
+
+	.oc-brands__abc::-webkit-scrollbar { display: none; }
+	.oc-brands__abc a { flex: 0 0 auto; }
+}
+
+/* The jump from letter to letter glides instead of teleporting. */
+html:has(.oc-brands) { scroll-behavior: smooth; }
+
 /* A shelf lying under the whole panel, held apart by a rule. The heading
  * stands at the reading edge, the brands take the middle, and the door to
  * the rest waits at the far end. */
