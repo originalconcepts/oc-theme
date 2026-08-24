@@ -477,3 +477,6 @@ msgstr "הוסיפו סקשן והוא יופיע כאן, בדיוק כמו בא
 
 msgid "Slide card"
 msgstr "שקופית"
+
+msgid "Pick a section from the list to edit it."
+msgstr "בחרו סקשן מהרשימה כדי לערוך אותו."

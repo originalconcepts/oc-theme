@@ -14,7 +14,7 @@
 
 	var state = {
 		sections: Array.isArray( D.sections ) ? D.sections : [],
-		open: null,
+		open: Array.isArray( D.sections ) && D.sections.length ? 0 : null,
 		dirty: false,
 		device: 'desktop',
 		draftTimer: null,
@@ -874,7 +874,7 @@
 		pane.innerHTML = '';
 
 		if ( null === state.open || ! state.sections[ state.open ] ) {
-			pane.appendChild( el( 'p', { 'class': 'ocbe-side__hint', text: T.empty } ) );
+			pane.appendChild( el( 'p', { 'class': 'ocbe-side__hint', text: state.sections.length ? T.select : T.empty } ) );
 			return;
 		}
 

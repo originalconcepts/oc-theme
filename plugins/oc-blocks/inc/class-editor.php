@@ -135,6 +135,7 @@ final class Editor {
 					'failed'   => __( 'Could not save', 'oc-blocks' ),
 					'add'      => __( 'Add a section', 'oc-blocks' ),
 					'empty'    => __( 'The page is empty. Add your first section:', 'oc-blocks' ),
+					'select'   => __( 'Pick a section from the list to edit it.', 'oc-blocks' ),
 					'sections' => __( 'Sections', 'oc-blocks' ),
 					'content'  => __( 'Content', 'oc-blocks' ),
 					'design'   => __( 'Design', 'oc-blocks' ),
