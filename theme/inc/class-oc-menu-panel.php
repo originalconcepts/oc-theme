@@ -671,8 +671,18 @@ final class Menu_Panel {
 				'class'   => 'oc-mb__img',
 				'loading' => 'lazy',
 				'alt'     => '',
+				'sizes'   => '(max-width: 900px) 92vw, 480px',
 			)
 		);
+
+		// WordPress prefixes a lazy image's sizes with "auto", telling the
+		// browser to pick a candidate by the image's LAYOUT width — which is
+		// zero inside a closed drawer. The host's device optimiser then
+		// honours that zero and hands back a bitmap the element never
+		// paints: a white box where a sofa should be, on phones only, while
+		// every measurement of the DOM insists nothing is wrong. The
+		// explicit sizes above are the truth; the keyword goes.
+		$img = str_replace( 'sizes="auto, ', 'sizes="', $img );
 
 		$words = '';
 
