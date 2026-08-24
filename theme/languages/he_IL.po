@@ -4007,3 +4007,27 @@ msgstr "%s חוות דעת"
 
 msgid "Quick-pick picture corners"
 msgstr "פינות התמונה בבחירה המהירה"
+
+msgid "Button icon"
+msgstr "אייקון הכפתור"
+
+msgid "Plus"
+msgstr "פלוס"
+
+msgid "Button shape"
+msgstr "צורת הכפתור"
+
+msgid "Wide, with the words"
+msgstr "רחב, עם הטקסט"
+
+msgid "Quick-pick gallery"
+msgstr "גלריה בבחירה המהירה"
+
+msgid "Two pictures, the next one peeking"
+msgstr "שתי תמונות — הבאה מציצה"
+
+msgid "One picture, centred"
+msgstr "תמונה אחת במרכז"
+
+msgid "A small picture, no gallery"
+msgstr "תמונה קטנה, בלי גלריה"

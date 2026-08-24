@@ -1046,7 +1046,14 @@ final class WooCommerce {
 		}
 
 		$simple = $product->is_type( 'simple' );
-		$class  = 'oc-card-atc' . ( $simple ? ' add_to_cart_button ajax_add_to_cart' : '' );
+		$icon   = 'plus' === get_theme_mod( 'oc_card_atc_icon', 'cart' ) ? 'plus' : 'cart';
+		$shape  = (string) get_theme_mod( 'oc_card_atc_shape', 'circle' );
+		$shape  = in_array( $shape, array( 'circle', 'square', 'wide' ), true ) ? $shape : 'circle';
+		$class  = 'oc-card-atc oc-card-atc--' . $shape . ' oc-card-atc--i-' . $icon . ( $simple ? ' add_to_cart_button ajax_add_to_cart' : '' );
+
+		$mark = 'plus' === $icon
+			? '<svg class="oc-card-atc__cart" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>'
+			: '<svg class="oc-card-atc__cart" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.6"/><circle cx="17" cy="20" r="1.6"/><path d="M3 3h2.5l2.2 11.2a1.6 1.6 0 0 0 1.6 1.3h7.6a1.6 1.6 0 0 0 1.6-1.3L20 7H6"/></svg>';
 
 		printf(
 			'<a href="%s" data-quantity="1" data-product_id="%d" class="%s" aria-label="%s" rel="nofollow">%s</a>',
@@ -1054,10 +1061,11 @@ final class WooCommerce {
 			absint( $product->get_id() ),
 			esc_attr( $class ),
 			esc_attr( $product->add_to_cart_text() ),
-			// Cart icon plus a check for the "added" state, inline so both
-			// inherit colour.
-			'<svg class="oc-card-atc__cart" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.6"/><circle cx="17" cy="20" r="1.6"/><path d="M3 3h2.5l2.2 11.2a1.6 1.6 0 0 0 1.6 1.3h7.6a1.6 1.6 0 0 0 1.6-1.3L20 7H6"/></svg>' .
-			'<svg class="oc-card-atc__check" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 12.5l5 5 10-11"/></svg>'
+			// The icon, a check for the "added" state (inline so both inherit
+			// colour), and — on the wide shape — the button's own words.
+			$mark .
+			'<svg class="oc-card-atc__check" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 12.5l5 5 10-11"/></svg>' .
+			( 'wide' === $shape ? '<span class="oc-card-atc__word">' . esc_html( $product->add_to_cart_text() ) . '</span>' : '' )
 		);
 	}
 

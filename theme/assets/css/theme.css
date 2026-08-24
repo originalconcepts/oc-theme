@@ -1620,20 +1620,23 @@ html.oc-menu-open .oc-menu-dim::after {
 
 .oc-vp__close {
 	position: absolute;
-	inset-block-start: 10px;
-	inset-inline-end: 12px;
+	inset-block-start: 12px;
+	inset-inline-end: 14px;
 	display: grid;
 	place-items: center;
-	inline-size: 34px;
-	block-size: 34px;
+	inline-size: 40px;
+	block-size: 40px;
 	border: 0;
 	border-radius: 50%;
-	background: rgb(255 255 255 / 85%);
-	font-size: 24px;
+	background: color-mix(in srgb, var(--oc-ink) 6%, var(--oc-surface, #fff));
+	font-size: 26px;
 	line-height: 1;
 	cursor: pointer;
 	z-index: 2;
+	transition: background .15s ease;
 }
+
+.oc-vp__close:hover { background: color-mix(in srgb, var(--oc-ink) 11%, var(--oc-surface, #fff)); }
 
 .oc-vp__scroll { flex: 1; overflow-y: auto; overscroll-behavior: contain; }
 
@@ -1666,6 +1669,28 @@ html.oc-menu-open .oc-menu-dim::after {
 .oc-vp--c-round .oc-vp__slide { border-radius: 28px; }
 
 .oc-vp__gal--one .oc-vp__slide { flex-basis: 100%; }
+
+/* One picture, centred: the full frame, nothing cropped. */
+.oc-vp--g-center .oc-vp__slide { flex-basis: 100%; }
+.oc-vp--g-center .oc-vp__slide img { object-fit: contain; }
+
+/* A small picture, no gallery: the panel's first face, kept as a choice. */
+.oc-vp--g-small .oc-vp__gal { display: none; }
+
+.oc-vp__top { display: flex; gap: 14px; align-items: flex-start; }
+.oc-vp__idcol { flex: 1; min-inline-size: 0; }
+
+.oc-vp__thumb {
+	inline-size: 92px;
+	block-size: 92px;
+	object-fit: contain;
+	background: #f6f6f6;
+	flex: 0 0 auto;
+}
+
+.oc-vp--c-sharp .oc-vp__thumb { border-radius: 0; }
+.oc-vp--c-soft  .oc-vp__thumb { border-radius: 14px; }
+.oc-vp--c-round .oc-vp__thumb { border-radius: 28px; }
 
 .oc-vp__slide img {
 	display: block;
@@ -1882,7 +1907,7 @@ html.oc-menu-open .oc-menu-dim::after {
 		inset-inline: 0;
 		inset-block: auto 0;
 		inline-size: 100%;
-		max-block-size: 88vh;
+		max-block-size: 76vh;
 		border-radius: 16px 16px 0 0;
 		transform: translateY(100%);
 	}
@@ -3371,6 +3396,44 @@ textarea { border-radius: var(--oc-radius, 8px); }
 .oc-card-atc.added { background: var(--oc-primary); color: #fff; }
 .oc-card-atc.added .oc-card-atc__cart { display: none; }
 .oc-card-atc.added .oc-card-atc__check { display: block; }
+
+/* The square wears the site's corner; the wide shape earns its words. */
+.oc-card-atc--square { border-radius: calc(var(--oc-radius, 8px) * .75); }
+
+.oc-card-atc--wide {
+	inline-size: auto;
+	padding-inline: 16px;
+	gap: 8px;
+	grid-auto-flow: column;
+	border-radius: 999px;
+	font-size: .84rem;
+	font-weight: 600;
+}
+
+.oc-card-atc--wide .oc-card-atc__word { white-space: nowrap; }
+.oc-card-atc--wide svg { grid-area: auto; }
+.oc-card-atc--wide .oc-card-atc__check { display: none; }
+.oc-card-atc--wide.added .oc-card-atc__check { display: block; }
+
+/* The plus turns a quarter, politely, under the cursor. */
+.oc-card-atc__cart { transition: transform .25s cubic-bezier(.2, .7, .3, 1); }
+.oc-card-atc--i-plus:hover .oc-card-atc__cart { transform: rotate(90deg); }
+
+/* On a phone the circle sits closer to the picture's corner, a little
+ * smaller — and over a bottom strip it keeps the same breath below as it
+ * keeps from the side. */
+@media (max-width: 782px) {
+	.oc-card-atc {
+		inline-size: 38px;
+		block-size: 38px;
+		inset-inline-start: 10px;
+		inset-block-end: 10px;
+	}
+
+	.oc-card-media:has(.oc-strip) .oc-card-atc {
+		inset-block-end: calc(10px + 2.3em);
+	}
+}
 
 li.product:hover .oc-card-atc,
 li.product:focus-within .oc-card-atc,

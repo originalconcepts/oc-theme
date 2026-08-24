@@ -1442,6 +1442,31 @@ final class Customizer {
 			'none'
 		);
 
+		$this->choice(
+			$c,
+			'oc_card_atc_icon',
+			'oc_card',
+			__( 'Button icon', 'oc-theme' ),
+			array(
+				'cart' => __( 'Cart', 'oc-theme' ),
+				'plus' => __( 'Plus', 'oc-theme' ),
+			),
+			'cart'
+		);
+
+		$this->choice(
+			$c,
+			'oc_card_atc_shape',
+			'oc_card',
+			__( 'Button shape', 'oc-theme' ),
+			array(
+				'circle' => __( 'Round', 'oc-theme' ),
+				'square' => __( 'Square', 'oc-theme' ),
+				'wide'   => __( 'Wide, with the words', 'oc-theme' ),
+			),
+			'circle'
+		);
+
 		$this->toggle( $c, 'oc_card_excerpt', 'oc_card', __( 'Show short description', 'oc-theme' ), false );
 
 		$this->heading( $c, 'oc_h_card_lines', 'oc_card', __( 'Text lines', 'oc-theme' ) );
@@ -1791,6 +1816,19 @@ final class Customizer {
 			'right',
 			null,
 			__( 'The panel a catalogue card opens for a product with options. On a phone it rises from the bottom.', 'oc-theme' )
+		);
+
+		$this->choice(
+			$c,
+			'oc_vpanel_gallery',
+			'oc_product',
+			__( 'Quick-pick gallery', 'oc-theme' ),
+			array(
+				'peek'   => __( 'Two pictures, the next one peeking', 'oc-theme' ),
+				'center' => __( 'One picture, centred', 'oc-theme' ),
+				'small'  => __( 'A small picture, no gallery', 'oc-theme' ),
+			),
+			'peek'
 		);
 
 		$this->choice(

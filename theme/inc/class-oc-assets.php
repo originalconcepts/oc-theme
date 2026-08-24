@@ -166,6 +166,7 @@ final class Assets {
 				'cartVarPick'          => __( 'Choose an option', 'oc-theme' ),
 				'vpSide'               => 'left' === get_theme_mod( 'oc_vpanel_side', 'right' ) ? 'left' : 'right',
 				'vpCorners'            => (string) get_theme_mod( 'oc_vpanel_corners', 'soft' ),
+				'vpGallery'            => (string) get_theme_mod( 'oc_vpanel_gallery', 'peek' ),
 				'vpSku'                => __( 'SKU:', 'oc-theme' ),
 				/* translators: %s: number of reviews. */
 				'vpReviews'            => __( '%s reviews', 'oc-theme' ),

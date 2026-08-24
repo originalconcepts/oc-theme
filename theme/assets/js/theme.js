@@ -6265,7 +6265,7 @@
 		}
 
 		function vpBuild() {
-			vp = vpEl( 'div', 'oc-vp oc-vp--' + ( L.vpSide === 'left' ? 'left' : 'right' ) + ' oc-vp--c-' + ( L.vpCorners || 'soft' ) );
+			vp = vpEl( 'div', 'oc-vp oc-vp--' + ( L.vpSide === 'left' ? 'left' : 'right' ) + ' oc-vp--c-' + ( L.vpCorners || 'soft' ) + ' oc-vp--g-' + ( L.vpGallery || 'peek' ) );
 			vp.hidden = true;
 			vp.innerHTML =
 				'<div class="oc-vp__dim" data-vp-close></div>' +
@@ -6279,12 +6279,17 @@
 							'<div class="oc-vp__dots"></div>' +
 						'</div>' +
 						'<div class="oc-vp__body">' +
+							'<div class="oc-vp__top">' +
+							'<img class="oc-vp__thumb" alt="" hidden />' +
+							'<div class="oc-vp__idcol">' +
 							'<div class="oc-vp__flags"></div>' +
 							'<a class="oc-vp__name" href="#"></a>' +
 							'<a class="oc-vp__stars" href="#"></a>' +
 							'<div class="oc-vp__priceline">' +
 								'<div class="oc-vp__price"></div>' +
 								'<span class="oc-vp__sku"></span>' +
+							'</div>' +
+							'</div>' +
 							'</div>' +
 							'<div class="oc-vp__blurb"></div>' +
 							'<hr class="oc-vp__sep" />' +
@@ -6365,7 +6370,7 @@
 
 				if ( btn.dataset.mode === 'notify' ) {
 					if ( typeof ocOpenNotify === 'function' ) {
-						ocOpenNotify( st.id, vp.querySelector( '.oc-vp__name' ).textContent, ! st.simple, 0 );
+						ocOpenNotify( st.id, vp.querySelector( '.oc-vp__name' ).textContent, ! st.simple, st.notifyVar || 0 );
 					}
 					return;
 				}
@@ -6380,8 +6385,10 @@
 		 * body scrolled to its top, and it goes home. */
 		function vpDrag( panel ) {
 			var startY = 0;
+			var startX = 0;
 			var delta = 0;
 			var dragging = false;
+			var decided = false;
 			var scroll = panel.querySelector( '.oc-vp__scroll' );
 
 			panel.addEventListener( 'touchstart', function ( e ) {
@@ -6390,8 +6397,14 @@
 				}
 
 				startY = e.touches[ 0 ].clientY;
+				startX = e.touches[ 0 ].clientX;
 				delta = 0;
-				dragging = ( startY - panel.getBoundingClientRect().top ) < 40 || scroll.scrollTop <= 0;
+				decided = false;
+
+				// The gallery strip scrolls sideways on its own — a touch
+				// born there belongs to it, not to the sheet.
+				var handle = ( startY - panel.getBoundingClientRect().top ) < 40;
+				dragging = handle || ( scroll.scrollTop <= 0 && ! e.target.closest( '.oc-vp__strip' ) );
 			}, { passive: true } );
 
 			panel.addEventListener( 'touchmove', function ( e ) {
@@ -6400,6 +6413,23 @@
 				}
 
 				delta = e.touches[ 0 ].clientY - startY;
+
+				// The first clear direction wins the gesture: sideways means
+				// it was never a pull.
+				if ( ! decided ) {
+					var dx = Math.abs( e.touches[ 0 ].clientX - startX );
+
+					if ( dx < 6 && Math.abs( delta ) < 6 ) {
+						return;
+					}
+
+					decided = true;
+
+					if ( dx > Math.abs( delta ) ) {
+						dragging = false;
+						return;
+					}
+				}
 
 				if ( delta > 0 && scroll.scrollTop <= 0 ) {
 					panel.style.transform = 'translateY(' + delta + 'px)';
@@ -6538,10 +6568,12 @@
 
 		/* ----- selection ----- */
 
-		/* The variations a partial selection still allows, one group held out. */
-		function vpAllows( skipKey, withValue ) {
+		/* The variations a partial selection still allows, one group held
+		 * out. Asked twice per chip: any at all, and any still in stock —
+		 * the difference is the Lanvin slash. */
+		function vpAllows( skipKey, withValue, needStock ) {
 			return st.vars.some( function ( v ) {
-				if ( ! v.stock ) {
+				if ( needStock && ! v.stock ) {
 					return false;
 				}
 
@@ -6552,9 +6584,9 @@
 			} );
 		}
 
-		function vpResolved() {
+		function vpMatch( needStock ) {
 			if ( st.simple ) {
-				return st.buy ? { id: 0, price: '', img: '' } : null;
+				return st.buy || ! needStock ? { id: 0, price: '', img: '', stock: st.buy } : null;
 			}
 
 			if ( ! st.groups.every( function ( g ) { return st.sel[ g.key ]; } ) ) {
@@ -6562,36 +6594,66 @@
 			}
 
 			return st.vars.find( function ( v ) {
-				return v.stock && st.groups.every( function ( g ) {
+				return ( ! needStock || v.stock ) && st.groups.every( function ( g ) {
 					return ! v.attrs[ g.key ] || v.attrs[ g.key ] === st.sel[ g.key ];
 				} );
 			} ) || null;
 		}
 
+		function vpButton( mode, varId ) {
+			var btn = vp.querySelector( '.oc-vp__add' );
+
+			st.notifyVar = varId || 0;
+			btn.classList.toggle( 'oc-vp__add--notify', mode === 'notify' );
+
+			if ( mode === 'notify' ) {
+				btn.dataset.mode = 'notify';
+				btn.textContent = L.notifyButton || L.vpAdd || '';
+				btn.disabled = false;
+			} else {
+				delete btn.dataset.mode;
+				btn.textContent = L.vpAdd || 'Add to cart';
+				btn.disabled = mode === 'wait';
+			}
+
+			// A stopped clock needs no quantity.
+			vp.querySelector( '.oc-vp__qty' ).hidden = ! st.qty || mode === 'notify';
+		}
+
 		function vpPaint() {
 			vp.querySelectorAll( '[data-k]' ).forEach( function ( chip ) {
+				var any = vpAllows( chip.dataset.k, chip.dataset.v, false );
+				var live = vpAllows( chip.dataset.k, chip.dataset.v, true );
+
 				chip.classList.toggle( 'is-selected', st.sel[ chip.dataset.k ] === chip.dataset.v );
-				chip.classList.toggle( 'is-off', ! vpAllows( chip.dataset.k, chip.dataset.v ) );
+				chip.classList.toggle( 'is-off', ! any );
+				chip.classList.toggle( 'is-oos', any && ! live );
 			} );
 
-			var hit = vpResolved();
+			var live = vpMatch( true );
+			var any = live || vpMatch( false );
 			var price = vp.querySelector( '.oc-vp__price' );
 
 			// WooCommerce answers '' for a variation priced like its
 			// siblings — the product's own price line covers that silence.
-			price.innerHTML = ( hit && hit.price ) ? hit.price : st.price;
+			price.innerHTML = ( any && any.price ) ? any.price : st.price;
 			vp.querySelector( '.oc-vp__fprice' ).innerHTML = price.innerHTML;
-			vpVarImage( hit && hit.img ? hit.img : '' );
+			vpVarImage( any && any.img ? any.img : '' );
 
-			var btn = vp.querySelector( '.oc-vp__add' );
-
-			if ( btn.dataset.mode !== 'notify' ) {
-				btn.disabled = ! hit;
+			if ( ! st.buy ) {
+				vpButton( 'notify', 0 );
+			} else if ( live ) {
+				vpButton( 'add', 0 );
+			} else if ( any ) {
+				// Chosen, exists, and gone: the road to the signup.
+				vpButton( 'notify', any.id );
+			} else {
+				vpButton( 'wait', 0 );
 			}
 		}
 
 		function vpRender( d, productId ) {
-			st = { id: productId, sel: {}, groups: d.groups, vars: d.vars, price: d.price, img: d.img, imgs: d.imgs || [], simple: !! d.simple, buy: !! d.buy };
+			st = { id: productId, sel: {}, groups: d.groups, vars: d.vars, price: d.price, img: d.img, imgs: d.imgs || [], simple: !! d.simple, buy: !! d.buy, qty: !! d.qty, notifyVar: 0 };
 
 			vp.querySelector( '.oc-vp__name' ).textContent = d.name;
 			vp.querySelector( '.oc-vp__name' ).href = d.url;
@@ -6600,8 +6662,11 @@
 			vp.querySelector( '.oc-vp__flags' ).innerHTML = d.flags || '';
 			vp.querySelector( '.oc-vp__blurb' ).innerHTML = d.blurb || '';
 			vp.querySelector( '.oc-vp__stock' ).innerHTML = d.stock || '';
-			vp.querySelector( '.oc-vp__qty' ).hidden = ! d.qty;
 			vp.querySelector( '.oc-vp__qty input' ).value = '1';
+
+			var thumb = vp.querySelector( '.oc-vp__thumb' );
+			thumb.hidden = ! ( L.vpGallery === 'small' && d.img );
+			thumb.src = d.img || '';
 
 			var stars = vp.querySelector( '.oc-vp__stars' );
 
@@ -6616,20 +6681,6 @@
 			var sku = vp.querySelector( '.oc-vp__sku' );
 			sku.textContent = d.sku ? ( L.vpSku || 'SKU:' ) + ' ' + d.sku : '';
 			sku.hidden = ! d.sku;
-
-			// Out of stock: the button changes trade — it signs you up.
-			var btn = vp.querySelector( '.oc-vp__add' );
-
-			if ( ! d.buy ) {
-				btn.dataset.mode = 'notify';
-				btn.classList.add( 'oc-vp__add--notify' );
-				btn.textContent = L.notifyButton || L.vpAdd || '';
-				btn.disabled = false;
-			} else {
-				delete btn.dataset.mode;
-				btn.classList.remove( 'oc-vp__add--notify' );
-				btn.textContent = L.vpAdd || 'Add to cart';
-			}
 
 			vpGallery( st.imgs );
 
@@ -6706,7 +6757,7 @@
 		}
 
 		function vpAdd() {
-			var hit = vpResolved();
+			var hit = vpMatch( true );
 
 			if ( ! hit ) {
 				return;
@@ -6755,7 +6806,19 @@
 		}
 
 		function vpLoad( productId ) {
+			// A blank slate first: the last product must not greet the next.
 			vp.querySelector( '.oc-vp__groups' ).innerHTML = '<span class="oc-vp__loading">…</span>';
+			vp.querySelector( '.oc-vp__strip' ).innerHTML = '';
+			vp.querySelector( '.oc-vp__dots' ).innerHTML = '';
+			vp.querySelector( '.oc-vp__name' ).textContent = '';
+			vp.querySelector( '.oc-vp__price' ).innerHTML = '';
+			vp.querySelector( '.oc-vp__fprice' ).innerHTML = '';
+			vp.querySelector( '.oc-vp__flags' ).innerHTML = '';
+			vp.querySelector( '.oc-vp__blurb' ).innerHTML = '';
+			vp.querySelector( '.oc-vp__stock' ).innerHTML = '';
+			vp.querySelector( '.oc-vp__stars' ).hidden = true;
+			vp.querySelector( '.oc-vp__sku' ).hidden = true;
+			vp.querySelector( '.oc-vp__thumb' ).hidden = true;
 			vp.querySelector( '.oc-vp__add' ).disabled = true;
 
 			var data = new FormData();
@@ -6780,6 +6843,9 @@
 			}
 
 			vp.hidden = false;
+			// A freshly appended panel must be laid out once before the
+			// class flips, or the first entrance jumps instead of gliding.
+			void vp.offsetWidth;
 			requestAnimationFrame( function () { vp.classList.add( 'is-open' ); } );
 			vpLoad( productId );
 		}
