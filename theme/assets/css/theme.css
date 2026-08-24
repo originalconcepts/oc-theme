@@ -1590,9 +1590,36 @@ html.oc-drw-open body { overflow: hidden; }
 
 .oc-drw__top {
 	display: flex;
-	justify-content: flex-end;
+	justify-content: space-between;
+	align-items: center;
 	padding: calc(10px + var(--oc-abar, 0px)) 12px 4px;
 	flex: none;
+}
+
+/* The way back rides the top bar, opposite the close — visible only while
+ * a sub-screen is open, and only in the mode that has screens to go back
+ * from. Hidden, not removed, so the close never changes address. */
+.oc-drw__topback {
+	inline-size: 38px;
+	block-size: 38px;
+	border: 0;
+	background: none;
+	color: inherit;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	visibility: hidden;
+}
+
+.oc-drw--slide.oc-drw--in .oc-drw__topback { visibility: visible; }
+
+.oc-drw__topback span {
+	inline-size: 10px;
+	block-size: 10px;
+	border-block-start: 2px solid currentColor;
+	border-inline-start: 2px solid currentColor;
+	transform: rotate(calc(var(--oc-chev, 45deg) * -1));
 }
 
 .oc-drw__x {
@@ -1736,7 +1763,7 @@ html.oc-drw-open body { overflow: hidden; }
 .oc-drw--accordion .oc-drw__sub > .oc-drw__subin { overflow: hidden; min-block-size: 0; }
 .oc-drw--accordion .oc-drw__i.is-open > .oc-drw__sub { grid-template-rows: 1fr; }
 .oc-drw--accordion .oc-drw__i.is-open > .oc-drw__row .oc-drw__more span::before { transform: rotate(0deg); opacity: 0; }
-.oc-drw--accordion .oc-drw__back { display: none; }
+.oc-drw--accordion .oc-drw__head { display: none; }
 
 /* --- opening over the top --- */
 
@@ -1768,10 +1795,34 @@ html.oc-drw-open body { overflow: hidden; }
 .oc-drw--slide .oc-drw__i.is-open > .oc-drw__sub { transform: none; }
 .oc-drw--slide .oc-drw__sub .oc-drw__sub { z-index: 3; }
 
-/* The way back stays put while the list under it scrolls. */
-.oc-drw--slide .oc-drw__back {
+/* The heading stays put while the list under it scrolls: the category as
+ * a link, and a plain "show all" at the far end — two doors to the same
+ * archive, for whoever does not want to pick a child first. */
+.oc-drw--slide .oc-drw__head {
 	flex: none;
-	padding-block: calc(14px + var(--oc-abar, 0px)) 12px;
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 14px;
+	padding: 16px var(--oc-gap, 16px) 12px;
+	border-block-end: 1px solid var(--oc-drw-line, var(--oc-line));
+}
+
+.oc-drw__title {
+	font-size: calc(var(--oc-drw-fs, 17px) * 1.06);
+	font-weight: 700;
+	text-decoration: none;
+	color: inherit;
+	min-inline-size: 0;
+}
+
+.oc-drw__all {
+	flex: none;
+	font-size: calc(var(--oc-drw-fs2, 15px) * .9);
+	text-decoration: underline;
+	text-underline-offset: 3px;
+	color: inherit;
+	opacity: .75;
 }
 
 .oc-drw--slide .oc-drw__subin {
@@ -1780,29 +1831,6 @@ html.oc-drw-open body { overflow: hidden; }
 	overscroll-behavior: contain;
 	padding-inline: var(--oc-gap, 16px);
 	padding-block-end: var(--oc-gap, 16px);
-}
-
-.oc-drw__back {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	padding: 6px var(--oc-gap, 16px);
-	border: 0;
-	background: none;
-	color: inherit;
-	font: inherit;
-	font-weight: 600;
-	cursor: pointer;
-	text-align: inherit;
-}
-
-.oc-drw__back::before {
-	content: '';
-	inline-size: 8px;
-	block-size: 8px;
-	border-block-start: 2px solid currentColor;
-	border-inline-start: 2px solid currentColor;
-	transform: rotate(calc(var(--oc-chev, 45deg) * -1));
 }
 
 /* --- inside a category --- */

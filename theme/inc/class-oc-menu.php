@@ -712,8 +712,16 @@ final class Menu {
 				// height with a 0fr-to-1fr grid track, and that only collapses
 				// a single child — with two the second sits in an implicit
 				// auto row and the section never closes.
+				// The screen opens with the category as a heading — a link,
+				// twice over: the name and a plain "show all" at the far end
+				// both lead to everything in it, for whoever does not want to
+				// pick a child first. The way back lives up in the drawer's
+				// own top bar, beside the close.
 				$out .= '<div class="oc-drw__sub">';
-				$out .= '<button type="button" class="oc-drw__back">' . esc_html( wp_strip_all_tags( (string) $item->title ) ) . '</button>';
+				$out .= '<div class="oc-drw__head">';
+				$out .= '<a class="oc-drw__title" href="' . esc_url( (string) $item->url ) . '">' . esc_html( wp_strip_all_tags( (string) $item->title ) ) . '</a>';
+				$out .= '<a class="oc-drw__all" href="' . esc_url( (string) $item->url ) . '">' . esc_html__( 'Show all', 'oc-theme' ) . '</a>';
+				$out .= '</div>';
 				$out .= '<div class="oc-drw__subin">';
 
 				if ( '' !== $below ) {

@@ -203,6 +203,40 @@
 					button.setAttribute( 'aria-expanded', 'false' );
 				}
 			} );
+			drwDepth();
+		}
+
+		/* The top bar's back arrow only exists while there is somewhere to
+		 * go back from. */
+		function drwDepth() {
+			drw.classList.toggle( 'oc-drw--in', !! drw.querySelector( '.oc-drw__i.is-open' ) );
+		}
+
+		/* One step out: the deepest open screen closes and its opener takes
+		 * the focus back. */
+		function drwStepBack() {
+			var deepest = null;
+
+			Array.prototype.forEach.call( drw.querySelectorAll( '.oc-drw__i.is-open' ), function ( li ) {
+				deepest = li;
+			} );
+
+			if ( ! deepest ) {
+				return false;
+			}
+
+			deepest.classList.remove( 'is-open' );
+
+			var button = deepest.querySelector( ':scope > .oc-drw__row > .oc-drw__more' );
+
+			if ( button ) {
+				button.setAttribute( 'aria-expanded', 'false' );
+				button.focus();
+			}
+
+			drwDepth();
+
+			return true;
 		}
 
 		burger.addEventListener( 'click', function () {
@@ -243,21 +277,15 @@
 					drwShut( li );
 				}
 
+				drwDepth();
+
 				return;
 			}
+		} );
 
-			var back = event.target.closest( '.oc-drw__back' );
-
-			if ( back ) {
-				var parent = back.closest( '.oc-drw__i' );
-
-				parent.classList.remove( 'is-open' );
-				var button = parent.querySelector( ':scope > .oc-drw__row > .oc-drw__more' );
-
-				if ( button ) {
-					button.setAttribute( 'aria-expanded', 'false' );
-					button.focus();
-				}
+		document.addEventListener( 'click', function ( event ) {
+			if ( event.target.closest( '[data-oc-drw-back]' ) ) {
+				drwStepBack();
 			}
 		} );
 
@@ -267,21 +295,7 @@
 			}
 
 			/* Escape steps back one level before it closes the whole thing. */
-			var deepest = null;
-
-			Array.prototype.forEach.call( drw.querySelectorAll( '.oc-drw__i.is-open' ), function ( li ) {
-				deepest = li;
-			} );
-
-			if ( deepest ) {
-				deepest.classList.remove( 'is-open' );
-				var button = deepest.querySelector( ':scope > .oc-drw__row > .oc-drw__more' );
-
-				if ( button ) {
-					button.setAttribute( 'aria-expanded', 'false' );
-					button.focus();
-				}
-
+			if ( drwStepBack() ) {
 				return;
 			}
 
