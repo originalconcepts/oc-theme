@@ -150,6 +150,7 @@ final class Search {
 		add_filter( 'woocommerce_page_title', array( $this, 'results_title' ) );
 		add_filter( 'woocommerce_show_page_title', array( $this, 'show_title' ) );
 		add_filter( 'oc_page_title', array( $this, 'results_title' ) );
+		add_action( 'woocommerce_archive_description', array( $this, 'rescue_note' ) );
 		add_action( 'template_redirect', array( $this, 'log_results_page' ) );
 		add_filter( 'woocommerce_catalog_orderby', array( $this, 'orderby_labels' ) );
 		add_filter( 'oc_filters_base_ids', array( $this, 'filter_base_ids' ) );
@@ -1315,16 +1316,13 @@ final class Search {
 			return $title;
 		}
 
-		// A rescued word owns the heading, with the typo named beside it.
+		// A rescued word owns the heading plainly; the typo is explained in
+		// the quieter line under it (see rescue_note).
 		$fixed = self::fixed_term();
 
 		if ( '' !== $fixed ) {
-			return sprintf(
-				/* translators: 1: the corrected search word, 2: what was actually typed. */
-				__( 'Showing results for %1$s — you searched for %2$s', 'oc-theme' ),
-				$fixed,
-				$term
-			);
+			/* translators: %s: what the shopper searched for. */
+			return sprintf( __( 'Search results for %s', 'oc-theme' ), $fixed );
 		}
 
 		$narrow = self::narrowed_to();
@@ -1354,6 +1352,33 @@ final class Search {
 	 */
 	public function show_title( $show ) {
 		return is_search() ? true : $show;
+	}
+
+	/**
+	 * The quiet line under a rescued heading: what was typed, what was shown.
+	 */
+	public function rescue_note(): void {
+		if ( ! is_search() ) {
+			return;
+		}
+
+		$fixed = self::fixed_term();
+
+		if ( '' === $fixed ) {
+			return;
+		}
+
+		printf(
+			'<p class="oc-search-note">%s</p>',
+			esc_html(
+				sprintf(
+					/* translators: 1: what was typed, 2: the corrected word. */
+					__( 'We could not find "%1$s" — showing results for "%2$s".', 'oc-theme' ),
+					self::current_term(),
+					$fixed
+				)
+			)
+		);
 	}
 
 	/**

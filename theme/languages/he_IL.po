@@ -4034,3 +4034,12 @@ msgstr "תמונה קטנה, בלי גלריה"
 
 msgid "Showing results for %1$s — you searched for %2$s"
 msgstr "מציגים תוצאות עבור %1$s — חיפשתם %2$s"
+
+msgid "We could not find \"%1$s\" — showing results for \"%2$s\"."
+msgstr "לא מצאנו את ״%1$s״ — מציגים תוצאות עבור ״%2$s״."
+
+msgid "Nothing answers to \"%s\". Try another word?"
+msgstr "לא נמצאו תוצאות עבור ״%s״. אולי מילה אחרת?"
+
+msgid "Popular searches:"
+msgstr "חיפושים פופולריים:"
