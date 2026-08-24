@@ -1517,8 +1517,8 @@ html.oc-menu-open .oc-menu-dim::after {
 .oc-mb__prod-img img {
 	display: block;
 	inline-size: 100%;
-	aspect-ratio: 1 / 1;
-	object-fit: cover;
+	aspect-ratio: var(--oc-mb-pr, 1 / 1);
+	object-fit: var(--oc-mb-pfit, contain);
 	border-radius: 10px;
 }
 
@@ -1545,6 +1545,23 @@ html.oc-menu-open .oc-menu-dim::after {
 .oc-mb__prod:hover .oc-mb__prod-name { color: var(--oc-mega-tx-h, var(--oc-primary)); }
 
 /* --- the brands --- */
+
+/* A shelf lying under the whole panel, held apart by a rule. The heading
+ * stands at the reading edge, the brands take the middle, and the door to
+ * the rest waits at the far end. */
+.oc-mega:not(.oc-mega--drawer) .oc-mb--band {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 14px 28px;
+	margin-block-start: 26px;
+	padding-block-start: 20px;
+	border-block-start: 1px solid var(--oc-line, #e8e8e8);
+}
+
+.oc-mega:not(.oc-mega--drawer) .oc-mb--band .oc-mb__g { margin: 0; }
+.oc-mega:not(.oc-mega--drawer) .oc-mb--band .oc-mb__brands { flex: 1; }
+.oc-mega:not(.oc-mega--drawer) .oc-mb--band a.oc-mb__all { margin-block-start: 0; margin-inline-start: auto; }
 
 /* The door to the rest, when more brands exist than the block shows. Said
  * with the panel's weight, because the bar's own anchor rule outranks a

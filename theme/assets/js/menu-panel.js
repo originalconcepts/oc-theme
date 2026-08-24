@@ -303,12 +303,40 @@
 			}
 		} );
 
-		/* The content first, the dials last. Every drop-down — width, where
-		 * the words sit, the corners, all of them — gathers into one row at
-		 * the bottom, right above Save, so tuning the block is one place to
-		 * look instead of a column to scroll. */
+		/* A field with `when` exists only while another field holds one of
+		 * the named values — a category picker has nothing to say to a
+		 * best-sellers block. */
+		function shown( def ) {
+			if ( ! def.when ) {
+				return true;
+			}
+
+			return Object.keys( def.when ).every( function ( on ) {
+				var current = block[ on ] === undefined ? ( fields[ on ] && fields[ on ].def ) : block[ on ];
+				return def.when[ on ].indexOf( current ) > -1;
+			} );
+		}
+
+		/* Lead fields open the block — the choice that decides what the rest
+		 * of the form even is, with its companions beside it on one row. */
+		var lead = el( 'div', { 'class': 'oc-mp__srow' } );
+
 		Object.keys( fields ).forEach( function ( key ) {
-			if ( fields[ key ].type !== 'select' ) {
+			if ( fields[ key ].lead && shown( fields[ key ] ) ) {
+				lead.appendChild( field( block, key, fields[ key ] ) );
+			}
+		} );
+
+		if ( lead.children.length ) {
+			box.appendChild( lead );
+		}
+
+		/* The content next, the dials last. Every remaining drop-down —
+		 * width, where the words sit, the corners, all of them — gathers
+		 * into one row at the bottom, right above Save, so tuning the block
+		 * is one place to look instead of a column to scroll. */
+		Object.keys( fields ).forEach( function ( key ) {
+			if ( ! fields[ key ].lead && fields[ key ].type !== 'select' && shown( fields[ key ] ) ) {
 				box.appendChild( field( block, key, fields[ key ] ) );
 			}
 		} );
@@ -321,7 +349,7 @@
 		}, true ) );
 
 		Object.keys( fields ).forEach( function ( key ) {
-			if ( fields[ key ].type === 'select' ) {
+			if ( ! fields[ key ].lead && fields[ key ].type === 'select' && shown( fields[ key ] ) ) {
 				dials.appendChild( field( block, key, fields[ key ] ) );
 			}
 		} );
@@ -359,11 +387,24 @@
 		] );
 	}
 
+	/* Whether other fields of this type show or hide by this one's value. */
+	function steers( type, key ) {
+		var fields = D.types[ type ].fields;
+
+		return Object.keys( fields ).some( function ( other ) {
+			return fields[ other ].when && fields[ other ].when[ key ];
+		} );
+	}
+
 	function field( block, key, def ) {
 		if ( def.type === 'select' ) {
 			return select( def.label, def.choices, block[ key ] || def.def, function ( v ) {
 				block[ key ] = v;
 				touch();
+
+				if ( steers( block.type, key ) ) {
+					paintSettings();
+				}
 			} );
 		}
 

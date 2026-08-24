@@ -104,16 +104,7 @@ final class Menu_Panel {
 							'cat'    => __( 'From a category', 'oc-theme' ),
 						),
 						'def'     => 'sales',
-					),
-					'picks' => array(
-						'type'  => 'products',
-						'label' => __( 'The products', 'oc-theme' ),
-						'hint'  => __( 'Used when "the ones I choose" is picked above. Search by name.', 'oc-theme' ),
-					),
-					'cat'   => array(
-						'type'  => 'category',
-						'label' => __( 'The category', 'oc-theme' ),
-						'hint'  => __( 'Used when "from a category" is picked above.', 'oc-theme' ),
+						'lead'    => true,
 					),
 					'count' => array(
 						'type'  => 'number',
@@ -121,6 +112,37 @@ final class Menu_Panel {
 						'def'   => 3,
 						'min'   => 1,
 						'max'   => 6,
+						'lead'  => true,
+					),
+					'picks' => array(
+						'type'  => 'products',
+						'label' => __( 'The products', 'oc-theme' ),
+						'hint'  => __( 'Search by name.', 'oc-theme' ),
+						'when'  => array( 'mode' => array( 'manual' ) ),
+					),
+					'cat'   => array(
+						'type'  => 'category',
+						'label' => __( 'The category', 'oc-theme' ),
+						'when'  => array( 'mode' => array( 'cat' ) ),
+					),
+					'shape' => array(
+						'type'    => 'select',
+						'label'   => __( 'Picture shape', 'oc-theme' ),
+						'choices' => array(
+							'1/1' => __( 'Square', 'oc-theme' ),
+							'3/4' => __( 'Upright', 'oc-theme' ),
+							'4/3' => __( 'Landscape', 'oc-theme' ),
+						),
+						'def'     => '1/1',
+					),
+					'fit'   => array(
+						'type'    => 'select',
+						'label'   => __( 'The picture', 'oc-theme' ),
+						'choices' => array(
+							'contain' => __( 'Whole, never cropped', 'oc-theme' ),
+							'cover'   => __( 'Fills the frame', 'oc-theme' ),
+						),
+						'def'     => 'contain',
 					),
 				),
 			),
@@ -141,6 +163,7 @@ final class Menu_Panel {
 						'choices' => array(
 							'list' => __( 'A list of names', 'oc-theme' ),
 							'logo' => __( 'Logos', 'oc-theme' ),
+							'band' => __( 'A band under the whole panel', 'oc-theme' ),
 						),
 						'def'     => 'list',
 					),
@@ -479,6 +502,19 @@ final class Menu_Panel {
 			return '';
 		}
 
+		// Bands lie under the row, full width, so they take no track in it.
+		// The drawer has no row to lie under — there they stay in the flow.
+		$bands = array();
+
+		if ( 'drawer' !== $where ) {
+			foreach ( $parts as $at => $part ) {
+				if ( ! empty( $part['band'] ) ) {
+					$bands[] = $part;
+					unset( $parts[ $at ] );
+				}
+			}
+		}
+
 		$tracks = array();
 		$body   = '';
 		$turn   = 0;
@@ -514,7 +550,16 @@ final class Menu_Panel {
 		// height against them, and against nothing when there are none.
 		$class = 'oc-mega' . ( empty( $columns ) ? '' : ' oc-mega--cols' );
 
-		return '<div class="' . esc_attr( $class ) . '"><div class="oc-mega__row" style="--oc-mega-cols:' . esc_attr( implode( ' ', $tracks ) ) . '">' . $body . '</div></div>';
+		$under = '';
+
+		foreach ( $bands as $part ) {
+			$under .= '<div class="' . esc_attr( $part['class'] ) . '" style="--i:' . $turn . '">' . $part['inner'] . '</div>';
+			++$turn;
+		}
+
+		$row = empty( $parts ) ? '' : '<div class="oc-mega__row" style="--oc-mega-cols:' . esc_attr( implode( ' ', $tracks ) ) . '">' . $body . '</div>';
+
+		return '<div class="' . esc_attr( $class ) . '">' . $row . $under . '</div>';
 	}
 
 	/**
@@ -688,7 +733,7 @@ final class Menu_Panel {
 				continue;
 			}
 
-			if ( $first && 'drawer' !== $where ) {
+			if ( $first && 'drawer' !== $where && empty( $piece['band'] ) ) {
 				$out[] = array(
 					'track' => '1fr',
 					'class' => 'oc-mb oc-mb--gap',
@@ -702,6 +747,7 @@ final class Menu_Panel {
 				'track' => (string) $widths[ $block['w'] ]['track'],
 				'class' => $piece['class'],
 				'inner' => $piece['inner'],
+				'band'  => ! empty( $piece['band'] ),
 			);
 		}
 
@@ -744,10 +790,18 @@ final class Menu_Panel {
 			return null;
 		}
 
-		return array(
+		$piece = array(
 			'class' => 'oc-mb oc-mb--' . sanitize_html_class( $type ),
 			'inner' => $inner,
 		);
+
+		// A band is not a column: it leaves the row and lies under it.
+		if ( 'brands' === $type && 'band' === (string) ( $block['style'] ?? 'list' ) ) {
+			$piece['class'] .= ' oc-mb--band';
+			$piece['band']   = true;
+		}
+
+		return $piece;
 	}
 
 	/**
@@ -804,10 +858,26 @@ final class Menu_Panel {
 			return '';
 		}
 
-		$out = '<div class="oc-mb__prods">';
+		$shape = (string) ( $block['shape'] ?? '1/1' );
+		$fit   = (string) ( $block['fit'] ?? 'contain' );
+		$style = '';
+
+		if ( '1/1' !== $shape ) {
+			$style .= '--oc-mb-pr:' . $shape . ';';
+		}
+
+		if ( 'contain' !== $fit ) {
+			$style .= '--oc-mb-pfit:' . $fit . ';';
+		}
+
+		$out = '<div class="oc-mb__prods"' . ( '' === $style ? '' : ' style="' . esc_attr( $style ) . '"' ) . '>';
+
+		// The catalogue size may be server-cropped square; a shape or a
+		// whole-picture fit needs the uncropped file.
+		$size = '1/1' === $shape && 'cover' === $fit ? 'woocommerce_thumbnail' : 'large';
 
 		foreach ( $products as $product ) {
-			$image = $product->get_image( 'woocommerce_thumbnail', array( 'loading' => 'lazy' ) );
+			$image = $product->get_image( $size, array( 'loading' => 'lazy' ) );
 
 			$out .= '<a class="oc-mb__prod" href="' . esc_url( (string) $product->get_permalink() ) . '">';
 			$out .= '<span class="oc-mb__prod-img">' . $image . '</span>';
@@ -879,8 +949,9 @@ final class Menu_Panel {
 		$title = trim( (string) ( $block['title'] ?? '' ) );
 		$out   = '' === $title ? '' : '<h4 class="oc-mb__g">' . esc_html( $title ) . '</h4>';
 
-		// 'text' is what this style was called before it grew a list.
-		if ( 'logo' !== ( $block['style'] ?? 'list' ) ) {
+		// 'text' is what this style was called before it grew a list. The
+		// band shows the same shelf as the logo grid, only laid full-width.
+		if ( ! in_array( (string) ( $block['style'] ?? 'list' ), array( 'logo', 'band' ), true ) ) {
 			$rows = array();
 
 			foreach ( $terms as $term ) {

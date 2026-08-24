@@ -3846,3 +3846,21 @@ msgstr "מהצד"
 
 msgid "From above"
 msgstr "מלמעלה"
+
+msgid "Search by name."
+msgstr "חיפוש לפי שם."
+
+msgid "Picture shape"
+msgstr "צורת התמונה"
+
+msgid "The picture"
+msgstr "התמונה"
+
+msgid "Whole, never cropped"
+msgstr "שלמה, בלי חיתוך"
+
+msgid "Fills the frame"
+msgstr "ממלאה את המסגרת"
+
+msgid "A band under the whole panel"
+msgstr "פס לרוחב מתחת לכל התפריט"
