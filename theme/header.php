@@ -145,7 +145,7 @@ $oc_topbar_on   = (bool) get_theme_mod( 'oc_topbar', false ) && ( ! empty( $oc_t
 </header>
 
 <?php
-if ( get_theme_mod( 'oc_header_search', true ) ) {
+if ( get_theme_mod( 'oc_header_search', true ) && class_exists( 'WooCommerce' ) ) {
 	echo OC\Theme\Search_Panel::panel_html(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
 }
 ?>

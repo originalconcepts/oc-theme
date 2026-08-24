@@ -23,6 +23,13 @@ final class Tabs {
 	 * Hook in.
 	 */
 	public function register(): void {
+		// A shop feature on a site with no shop. The theme's contract is to
+		// run as plain WordPress with an admin notice, never to fatal — the
+		// demo always has WooCommerce, so only a fresh site can catch this.
+		if ( ! class_exists( 'WooCommerce' ) ) {
+			return;
+		}
+
 		add_action( 'admin_menu', array( $this, 'menu' ), 55 );
 		add_action( 'admin_post_oc_tabs_save', array( $this, 'save_settings' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_assets' ) );

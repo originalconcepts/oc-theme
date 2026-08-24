@@ -27,6 +27,13 @@ final class Search_Admin {
 	 * Hook in.
 	 */
 	public function register(): void {
+		// A shop feature on a site with no shop. The theme's contract is to
+		// run as plain WordPress with an admin notice, never to fatal — the
+		// demo always has WooCommerce, so only a fresh site can catch this.
+		if ( ! class_exists( 'WooCommerce' ) ) {
+			return;
+		}
+
 		add_action( 'init', array( $this, 'brand_taxonomy' ), 5 );
 		add_action( 'admin_menu', array( $this, 'menu' ), 58 );
 		add_action( 'admin_post_oc_search_save', array( $this, 'save' ) );
