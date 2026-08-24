@@ -4043,3 +4043,6 @@ msgstr "לא נמצאו תוצאות עבור ״%s״. אולי מילה אחרת
 
 msgid "Popular searches:"
 msgstr "חיפושים פופולריים:"
+
+msgid "No results for \"%s\" — try a different search:"
+msgstr "לא מצאנו תוצאות עבור ״%s״ — נסו חיפוש אחר:"

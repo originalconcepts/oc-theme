@@ -1852,7 +1852,46 @@ html.oc-menu-open .oc-menu-dim::after {
 
 .oc-vp__go:hover { color: var(--oc-primary); }
 
-.oc-vp__loading { display: block; padding: 30px; text-align: center; }
+.oc-vp__loading { display: none; }
+
+/* Loading: a quiet skeleton, nothing half-dressed. */
+.oc-vp__skel { display: none; }
+
+.oc-vp.is-loading .oc-vp__skel {
+	display: block;
+	padding: 14px 14px 0;
+}
+
+.oc-vp.is-loading .oc-vp__scroll,
+.oc-vp.is-loading .oc-vp__foot { display: none; }
+
+.oc-vp__skel-img {
+	aspect-ratio: 4 / 3;
+	inline-size: 80%;
+	border-radius: 14px;
+	margin-block-end: 18px;
+}
+
+.oc-vp--c-sharp .oc-vp__skel-img { border-radius: 0; }
+.oc-vp--c-round .oc-vp__skel-img { border-radius: 28px; }
+
+.oc-vp__skel-line {
+	block-size: 15px;
+	border-radius: 999px;
+	margin: 0 8px 12px;
+}
+
+.oc-vp__skel-img,
+.oc-vp__skel-line {
+	background: linear-gradient(90deg, color-mix(in srgb, var(--oc-ink) 6%, transparent) 25%, color-mix(in srgb, var(--oc-ink) 11%, transparent) 42%, color-mix(in srgb, var(--oc-ink) 6%, transparent) 60%);
+	background-size: 300% 100%;
+	animation: oc-shimmer 1.3s ease-in-out infinite;
+}
+
+@keyframes oc-shimmer {
+	from { background-position: 100% 0; }
+	to { background-position: -100% 0; }
+}
 
 /* ----- the sticky foot: stock over the controls, page-language sizes ----- */
 
@@ -1917,9 +1956,11 @@ html.oc-menu-open .oc-menu-dim::after {
 .oc-vp__add:disabled { opacity: .4; cursor: default; filter: none; }
 .oc-vp__add.is-busy { opacity: .6; pointer-events: none; }
 
-/* The added tick: the label steps aside, the check takes the middle. */
+/* The added tick: the label steps aside; the round icon's own check —
+ * the same drawn stroke — takes the middle. */
 .oc-vp__add.oc-added,
-.single_add_to_cart_button.oc-added {
+.single_add_to_cart_button.oc-added,
+[data-oc-sticky-add].oc-added {
 	position: relative;
 	color: transparent !important;
 	background: var(--oc-cta, var(--oc-primary)) !important;
@@ -1927,15 +1968,15 @@ html.oc-menu-open .oc-menu-dim::after {
 }
 
 .oc-vp__add.oc-added::after,
-.single_add_to_cart_button.oc-added::after {
-	content: "✓";
+.single_add_to_cart_button.oc-added::after,
+[data-oc-sticky-add].oc-added::after {
+	content: "";
 	position: absolute;
 	inset: 0;
-	display: grid;
-	place-items: center;
-	color: #fff;
-	font-size: 1.3em;
-	font-weight: 700;
+	margin: auto;
+	inline-size: 22px;
+	block-size: 22px;
+	background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M4.5 12.5l5 5 10-11' fill='none' stroke='%23fff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
 	animation: oc-tick-in .25s cubic-bezier(.2, .7, .3, 1);
 }
 
@@ -1979,6 +2020,10 @@ html.oc-menu-open .oc-menu-dim::after {
 	.oc-vp__arr { display: none; }
 }
 
+/* The lightbox owns its touches — no browser gesture underneath, so a
+ * finger can page between the pictures. */
+.oc-voverlay { touch-action: none; }
+
 /* --- search: the rescued-word note, and the empty-handed page --- */
 
 .oc-search-note {
@@ -1991,17 +2036,15 @@ html.oc-menu-open .oc-menu-dim::after {
 
 .oc-nores__word { margin: 0 0 18px; font-size: 1.05em; }
 
-.oc-nores .oc-search { display: flex; gap: 8px; }
-
-.oc-nores .oc-search input {
-	flex: 1;
-	padding: 12px 16px;
-	border: 1.5px solid var(--oc-line, #ddd);
-	border-radius: var(--oc-radius, 8px);
-	font: inherit;
+.oc-nores .oc-search__go {
+	display: grid;
+	place-items: center;
+	border: 0;
+	background: none;
+	color: inherit;
+	cursor: pointer;
+	padding: 4px;
 }
-
-.oc-nores .oc-search input:focus { outline: none; border-color: var(--oc-ink, #151a21); }
 
 .oc-nores__pop { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-block-start: 18px; }
 
@@ -3599,8 +3642,12 @@ li.product:focus-within .oc-card-atc,
 	display: block;
 }
 
-/* hover: second image sits on top, fades in */
+/* hover: second image sits on top, fades in. Position and z-index said
+ * explicitly — a playing video composites on its own layer and liked to
+ * repaint itself above the picture. */
 .oc-card-media--hover .oc-card-media__item:not(.is-first) {
+	position: relative;
+	z-index: 2;
 	opacity: 0;
 	transition: opacity .18s ease;
 }

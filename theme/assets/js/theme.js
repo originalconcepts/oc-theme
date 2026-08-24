@@ -2571,6 +2571,15 @@
 						} );
 					} );
 
+					// The buttons answer with the catalogue's own tick —
+					// the round icon's check, not a character.
+					[ submitBtn, stickyBuy ].forEach( function ( b ) {
+						if ( b ) {
+							b.classList.add( 'oc-added' );
+							setTimeout( function () { b.classList.remove( 'oc-added' ); }, 1600 );
+						}
+					} );
+
 					if ( openOnAdd ) {
 						openDrawer();
 					} else {
@@ -4515,76 +4524,41 @@
 		} );
 	} );
 
-	/* ---------- add-to-cart: ajax with a tick, the page never leaves ----------
-	 * The form's own fields are the payload — variation, attributes and
-	 * quantity all travel as they are. Anything but a clean add (grouped
-	 * forms, external products, a server refusal) falls back to the native
-	 * submit, whose notices know how to explain themselves. */
+	/* ---------- hover image over a card video ----------
+	 * The film's own compositor layer likes to repaint itself above the
+	 * hover picture. While the cursor stands on the card the film pauses —
+	 * a still stays under the picture — and it plays on when the cursor
+	 * leaves. Hover-capable screens only. */
 
-	document.querySelectorAll( 'form.cart' ).forEach( function ( cartForm ) {
-		cartForm.addEventListener( 'submit', function ( ev ) {
-			var btn = cartForm.querySelector( '.single_add_to_cart_button' );
+	if ( window.matchMedia( '(hover: hover)' ).matches ) {
+		document.addEventListener( 'mouseover', function ( event ) {
+			var li = event.target.closest( 'li.product' );
 
-			if ( ! btn || btn.classList.contains( 'disabled' ) ) {
+			if ( ! li || ( event.relatedTarget && li.contains( event.relatedTarget ) ) ) {
 				return;
 			}
 
-			var pidEl = cartForm.querySelector( 'input[name="add-to-cart"], input[name="product_id"]' );
-			var pid = ( pidEl && pidEl.value ) || ( btn.name === 'add-to-cart' ? btn.value : '' );
+			var film = li.querySelector( '.oc-card-media--hover video' );
 
-			if ( ! pid || cartForm.classList.contains( 'grouped_form' ) || cartForm.dataset.ocNative ) {
-				btn.classList.add( 'is-loading' );
-				return;
+			if ( film && film.pause ) {
+				film.pause();
 			}
-
-			ev.preventDefault();
-			btn.classList.add( 'is-loading' );
-
-			var data = new FormData( cartForm );
-			data.append( 'action', 'oc_cart_add' );
-			data.append( 'product_id', pid );
-
-			fetch( ( window.ocL10n || {} ).ajaxUrl || '/wp-admin/admin-ajax.php', { method: 'POST', credentials: 'same-origin', body: data } )
-				.then( function ( r ) { return r.json(); } )
-				.then( function ( out ) {
-					btn.classList.remove( 'is-loading' );
-
-					if ( ! out || ! out.fragments ) {
-						cartForm.dataset.ocNative = '1';
-						cartForm.submit();
-						return;
-					}
-
-					Object.keys( out.fragments ).forEach( function ( selector ) {
-						document.querySelectorAll( selector ).forEach( function ( el ) {
-							var box = document.createElement( 'div' );
-							box.innerHTML = out.fragments[ selector ];
-							if ( box.firstElementChild ) {
-								el.replaceWith( box.firstElementChild );
-							}
-						} );
-					} );
-
-					btn.classList.add( 'oc-added' );
-
-					setTimeout( function () {
-						btn.classList.remove( 'oc-added' );
-
-						if ( window.__ocOpenDrawer ) {
-							window.__ocOpenDrawer();
-						} else if ( window.__ocCartToast ) {
-							var title = document.querySelector( '.product_title' );
-							window.__ocCartToast( title ? title.textContent : '', '' );
-						}
-					}, 900 );
-				} )
-				.catch( function () {
-					btn.classList.remove( 'is-loading' );
-					cartForm.dataset.ocNative = '1';
-					cartForm.submit();
-				} );
 		} );
-	} );
+
+		document.addEventListener( 'mouseout', function ( event ) {
+			var li = event.target.closest( 'li.product' );
+
+			if ( ! li || ( event.relatedTarget && li.contains( event.relatedTarget ) ) ) {
+				return;
+			}
+
+			var film = li.querySelector( '.oc-card-media--hover video' );
+
+			if ( film && film.play ) {
+				film.play().catch( function () {} );
+			}
+		} );
+	}
 
 	/* ---------- lazy card videos ----------
 	 * Catalogue videos carry data-oc-vsrc and no source: each one loads and
@@ -4974,6 +4948,46 @@
 					} else if ( 'ArrowRight' === event.key ) {
 						ocStepOverlay( 1 );
 					}
+				} );
+
+				/* A finger pages too. Un-zoomed only — zoomed, the pan owns
+				 * the touch. In RTL the next picture stands to the left, so
+				 * pushing the view rightward advances. */
+				var ocSwipeX = 0;
+				var ocSwipeY = 0;
+				var ocSwipeOn = false;
+
+				ocOverlay.addEventListener( 'pointerdown', function ( event ) {
+					if ( 'mouse' === event.pointerType ) {
+						return;
+					}
+
+					var img = ocOverlay.querySelector( '.oc-voverlay__media img' );
+
+					if ( img && img.classList.contains( 'is-zoomed' ) ) {
+						return;
+					}
+
+					ocSwipeOn = true;
+					ocSwipeX = event.clientX;
+					ocSwipeY = event.clientY;
+				} );
+
+				ocOverlay.addEventListener( 'pointerup', function ( event ) {
+					if ( ! ocSwipeOn ) {
+						return;
+					}
+
+					ocSwipeOn = false;
+
+					var dx = event.clientX - ocSwipeX;
+					var dy = event.clientY - ocSwipeY;
+
+					if ( Math.abs( dx ) < 45 || Math.abs( dx ) < Math.abs( dy ) * 1.2 ) {
+						return;
+					}
+
+					ocStepOverlay( dx > 0 ? 1 : -1 );
 				} );
 			}
 
@@ -6334,6 +6348,12 @@
 				'<div class="oc-vp__dim" data-vp-close></div>' +
 				'<aside class="oc-vp__panel" role="dialog" aria-modal="true">' +
 					'<button type="button" class="oc-vp__close" data-vp-close aria-label="close">&times;</button>' +
+					'<div class="oc-vp__skel" aria-hidden="true">' +
+						'<div class="oc-vp__skel-img"></div>' +
+						'<div class="oc-vp__skel-line" style="inline-size:60%"></div>' +
+						'<div class="oc-vp__skel-line" style="inline-size:35%"></div>' +
+						'<div class="oc-vp__skel-line" style="inline-size:78%"></div>' +
+					'</div>' +
 					'<div class="oc-vp__scroll">' +
 						'<div class="oc-vp__gal">' +
 							'<div class="oc-vp__strip"></div>' +
@@ -6719,6 +6739,7 @@
 		}
 
 		function vpRender( d, productId ) {
+			vp.classList.remove( 'is-loading' );
 			st = { id: productId, sel: {}, groups: d.groups, vars: d.vars, price: d.price, img: d.img, imgs: d.imgs || [], simple: !! d.simple, buy: !! d.buy, qty: !! d.qty, notifyVar: 0 };
 
 			vp.querySelector( '.oc-vp__name' ).textContent = d.name;
@@ -6886,7 +6907,8 @@
 			// and only swaps the clothes when the answer lands: blanking it
 			// mid-view read as a jump.
 			if ( ! keep ) {
-				vp.querySelector( '.oc-vp__groups' ).innerHTML = '<span class="oc-vp__loading">…</span>';
+				vp.classList.add( 'is-loading' );
+				vp.querySelector( '.oc-vp__groups' ).innerHTML = '';
 				vp.querySelector( '.oc-vp__strip' ).innerHTML = '';
 				vp.querySelector( '.oc-vp__dots' ).innerHTML = '';
 				vp.querySelector( '.oc-vp__name' ).textContent = '';

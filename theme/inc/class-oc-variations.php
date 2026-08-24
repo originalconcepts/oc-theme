@@ -597,7 +597,9 @@ final class Variations {
 					}
 
 					foreach ( $variation->get_attributes() as $attr_tax => $attr_slug ) {
-						$key = $attr_tax . ':' . $attr_slug;
+						// Keys arrive percent-encoded for Hebrew taxonomies;
+						// the callers ask in decoded form — speak one tongue.
+						$key = rawurldecode( (string) $attr_tax ) . ':' . $attr_slug;
 						if ( '' !== (string) $attr_slug && ! isset( $maps[ $pid ][ $key ] ) ) {
 							$maps[ $pid ][ $key ] = (int) $variation->get_image_id();
 						}
