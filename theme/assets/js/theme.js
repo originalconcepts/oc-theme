@@ -6355,18 +6355,14 @@
 
 			var hit = vpResolved();
 			var price = vp.querySelector( '.oc-vp__price' );
-			var fprice = vp.querySelector( '.oc-vp__fprice' );
 			var img = vp.querySelector( '.oc-vp__img' );
 
-			if ( hit ) {
-				if ( hit.price ) { price.innerHTML = hit.price; }
-				if ( hit.img ) { img.src = hit.img; }
-			} else {
-				price.innerHTML = st.price;
-				if ( st.img ) { img.src = st.img; }
-			}
+			// WooCommerce answers '' for a variation priced like its
+			// siblings — the product's own price line covers that silence.
+			price.innerHTML = ( hit && hit.price ) ? hit.price : st.price;
+			img.src = ( hit && hit.img ) ? hit.img : ( st.img || '' );
 
-			fprice.innerHTML = price.innerHTML;
+			vp.querySelector( '.oc-vp__fprice' ).innerHTML = price.innerHTML;
 			vp.querySelector( '.oc-vp__add' ).disabled = ! hit;
 		}
 
