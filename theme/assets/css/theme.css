@@ -1644,14 +1644,16 @@ html.oc-drw-open body { overflow: hidden; }
 	color: var(--oc-link-c, inherit);
 	min-inline-size: 0;
 	/* Air. A bare row of text hugging its rules reads as cramped; the
-	 * minimum is a setting, defaulting to twice the letter height. */
-	min-block-size: var(--oc-drw-minrow, calc(var(--oc-drw-fs, 17px) * 2));
+	 * minimum is a setting, defaulting to twice the letter height. The
+	 * box is border-box, so the row's own padding rides on top. */
+	min-block-size: calc(var(--oc-drw-minrow, calc(var(--oc-drw-fs, 17px) * 2)) + var(--oc-drw-gap, 14px) * 2);
 }
 
 /* One picture anywhere sets the rhythm for every row: those without take
- * the same height, so the list reads as one list rather than tall rows
- * with short ones squeezed between. */
-.oc-drw--pics .oc-drw__a { min-block-size: var(--oc-mi-pic, 38px); }
+ * exactly the height a picture row stands at — picture plus the padding —
+ * so the list reads as one list rather than tall rows with short ones
+ * squeezed between. */
+.oc-drw--pics .oc-drw__a { min-block-size: calc(var(--oc-mi-pic, 38px) + var(--oc-drw-gap, 14px) * 2); }
 
 .oc-drw__a .oc-mi__t { flex: 1 1 auto; }
 
