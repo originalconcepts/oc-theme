@@ -1328,6 +1328,18 @@ html.oc-menu-open .oc-menu-dim::before {
 	transition: color .18s ease;
 }
 
+/* Said explicitly, because inheritance loses here: every anchor under the
+ * nav matches the bar's own font rule, so a link inside the panel was taking
+ * the bar's size and weight and the panel's size setting changed nothing
+ * anyone could see. The drawer keeps its own sizes. */
+.oc-mega:not(.oc-mega--drawer) .oc-mb__list a,
+.oc-mega:not(.oc-mega--drawer) .oc-mb__list span {
+	font-size: var(--oc-mega-fs, 15px);
+	font-weight: 400;
+}
+
+.oc-mega:not(.oc-mega--drawer) .oc-mb__list--lead a { font-weight: 700; }
+
 .oc-mb__list a:hover { color: var(--oc-mega-tx-h, var(--oc-primary)); }
 
 /* A link in a panel steps forward under the cursor — leftwards in Hebrew,
