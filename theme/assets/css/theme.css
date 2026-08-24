@@ -1514,6 +1514,30 @@ html.oc-menu-open .oc-menu-dim::after {
 	color: inherit;
 }
 
+/* The image box also hosts the card's corner labels, scaled to the little
+ * card they now stand on. */
+.oc-mb__prod-img { position: relative; display: block; }
+
+.oc-mb__prod-img .oc-flags { top: 6px; }
+.oc-mb__prod-img .oc-flags--left { left: 6px; }
+.oc-mb__prod-img .oc-flags--right { right: 6px; }
+
+.oc-mb__prod-img .oc-flags .onsale,
+.oc-mb__prod-img .oc-flag {
+	font-size: .62rem;
+	padding: .45em .7em;
+}
+
+/* The sale badge dresses itself only under .woocommerce, and the header is
+ * not it — said again here so the panel's badge is not bare text. */
+.oc-mb__prod-img .oc-flags .onsale {
+	background: var(--oc-sale, #b4453c);
+	color: #fff;
+	font-weight: 600;
+	line-height: 1.5;
+	border-radius: 6px;
+}
+
 .oc-mb__prod-img img {
 	display: block;
 	inline-size: 100%;

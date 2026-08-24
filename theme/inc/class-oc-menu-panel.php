@@ -715,8 +715,8 @@ final class Menu_Panel {
 	 */
 	private static function extras( int $item_id, string $where, ?array $blocks = null, bool $gap = true ): array {
 		$widths = self::widths();
-		$out    = array();
-		$first  = $gap;
+		$side   = array();
+		$main   = array();
 
 		foreach ( null === $blocks ? self::blocks( $item_id ) : self::clean( $blocks ) as $block ) {
 			if ( 'off' === $block['dev'] ) {
@@ -733,25 +733,43 @@ final class Menu_Panel {
 				continue;
 			}
 
-			if ( $first && 'drawer' !== $where && empty( $piece['band'] ) ) {
-				$out[] = array(
-					'track' => '1fr',
-					'class' => 'oc-mb oc-mb--gap',
-					'inner' => '',
-					'gap'   => true,
-				);
-				$first = false;
-			}
-
-			$out[] = array(
+			$part = array(
 				'track' => (string) $widths[ $block['w'] ]['track'],
 				'class' => $piece['class'],
 				'inner' => $piece['inner'],
 				'band'  => ! empty( $piece['band'] ),
 			);
+
+			// A list of brands reads like another column, so it sits with
+			// the columns at the same rhythm; the visual blocks gather at
+			// the far end past the spare width. The drawer is a single
+			// file — there, order stays as written.
+			if ( 'drawer' !== $where && 'brands' === $block['type'] && 'list' === (string) ( $block['style'] ?? 'list' ) ) {
+				$side[] = $part;
+			} else {
+				$main[] = $part;
+			}
 		}
 
-		return $out;
+		// Spare width only has a side to be gathered on when something is
+		// standing at the other one — and a band underneath does not count.
+		$loose = array_filter(
+			$main,
+			static function ( array $part ): bool {
+				return empty( $part['band'] );
+			}
+		);
+
+		if ( $gap && 'drawer' !== $where && ! empty( $loose ) ) {
+			$side[] = array(
+				'track' => '1fr',
+				'class' => 'oc-mb oc-mb--gap',
+				'inner' => '',
+				'gap'   => true,
+			);
+		}
+
+		return array_merge( $side, $main );
 	}
 
 	/**
@@ -880,7 +898,7 @@ final class Menu_Panel {
 			$image = $product->get_image( $size, array( 'loading' => 'lazy' ) );
 
 			$out .= '<a class="oc-mb__prod" href="' . esc_url( (string) $product->get_permalink() ) . '">';
-			$out .= '<span class="oc-mb__prod-img">' . $image . '</span>';
+			$out .= '<span class="oc-mb__prod-img">' . $image . WooCommerce::flags_html( $product ) . '</span>';
 			$out .= '<span class="oc-mb__prod-name">' . esc_html( $product->get_name() ) . '</span>';
 			$out .= '<span class="oc-mb__prod-price">' . $product->get_price_html() . '</span>';
 			$out .= '</a>';

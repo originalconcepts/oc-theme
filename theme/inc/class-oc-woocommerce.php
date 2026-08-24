@@ -884,6 +884,17 @@ final class WooCommerce {
 	private function card_flags(): void {
 		global $product;
 
+		echo self::flags_html( $product ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
+	}
+
+	/**
+	 * The same corner labels as a string, for whoever draws a product
+	 * outside the catalogue loop — the menu panel's little cards, say.
+	 *
+	 * @param \WC_Product $product Product.
+	 * @return string
+	 */
+	public static function flags_html( \WC_Product $product ): string {
 		// Each label group picks its own side; both columns render so the
 		// colour-sibling swap always has the sale column to dock into.
 		$sides = array(
@@ -953,14 +964,18 @@ final class WooCommerce {
 			}
 		}
 
+		$out = '';
+
 		foreach ( $sides as $side => $flags ) {
-			printf(
+			$out .= sprintf(
 				'<div class="oc-flags oc-flags--%s"%s>%s</div>',
 				esc_attr( $side ),
 				$side === $sale_side ? ' data-sale' : '',
-				$flags // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
+				$flags
 			);
 		}
+
+		return $out;
 	}
 
 	/**
