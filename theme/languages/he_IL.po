@@ -3956,3 +3956,30 @@ msgid "%s comment"
 msgid_plural "%s comments"
 msgstr[0] "תגובה אחת"
 msgstr[1] "%s תגובות"
+
+msgid "Reply"
+msgstr "להגיב"
+
+msgid "Cancel"
+msgstr "ביטול"
+
+msgid "Answering %s"
+msgstr "בתגובה ל־%s"
+
+msgid "Commenting as %1$s. Not you? %2$s"
+msgstr "מגיבים בתור %1$s. לא אתם? %2$s"
+
+msgid "Log out"
+msgstr "התנתקות"
+
+msgid "Comments"
+msgstr "תגובות"
+
+msgid "Comments reflect their writers alone. Keep it kind — offensive or promotional comments are removed. Your email stays private and is never shown."
+msgstr "התגובות משקפות את דעת כותביהן בלבד. שמרו על שיח מכבד — תגובות פוגעניות או פרסומיות יוסרו. כתובת האימייל שלכם נשארת אצלנו ולא תוצג באתר."
+
+msgid "Note under the comment form"
+msgstr "הערה מתחת לטופס התגובה"
+
+msgid "Empty hides it."
+msgstr "ריק — לא תוצג."

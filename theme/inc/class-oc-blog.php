@@ -30,6 +30,27 @@ final class Blog {
 		add_filter( 'preprocess_comment', array( $this, 'check_traps' ) );
 		add_filter( 'comment_form_default_fields', array( $this, 'fields' ) );
 		add_filter( 'comment_form_defaults', array( $this, 'form_words' ) );
+
+		if ( ! is_admin() ) {
+			add_filter( 'get_comment_author', array( $this, 'short_name' ) );
+		}
+	}
+
+	/**
+	 * A commenter is a first name and an initial — full names belong to the
+	 * people who wrote them, not to every visitor who scrolls past.
+	 *
+	 * @param string $name Comment author name.
+	 * @return string
+	 */
+	public function short_name( $name ): string {
+		$parts = preg_split( '/\s+/', trim( (string) $name ) );
+
+		if ( ! is_array( $parts ) || count( $parts ) < 2 ) {
+			return (string) $name;
+		}
+
+		return $parts[0] . ' ' . mb_substr( $parts[1], 0, 1 ) . '׳';
 	}
 
 	/*
@@ -266,12 +287,36 @@ final class Blog {
 	 * @return array<string,mixed>
 	 */
 	public function form_words( array $defaults ): array {
-		$defaults['title_reply']         = __( 'Leave a comment', 'oc-theme' );
-		$defaults['title_reply_before']  = '<h3 id="reply-title" class="oc-cmt__ftitle">';
-		$defaults['title_reply_after']   = '</h3>';
-		$defaults['label_submit']        = __( 'Send comment', 'oc-theme' );
-		$defaults['comment_field']       = '<p class="comment-form-comment"><textarea id="comment" name="comment" rows="5" required placeholder="' . esc_attr__( 'What would you like to say?', 'oc-theme' ) . '"></textarea></p>';
+		$defaults['title_reply']          = __( 'Leave a comment', 'oc-theme' );
+		/* translators: %s: the commenter being answered. */
+		$defaults['title_reply_to']       = __( 'Answering %s', 'oc-theme' );
+		$defaults['cancel_reply_link']    = __( 'Cancel', 'oc-theme' );
+		$defaults['title_reply_before']   = '<h3 id="reply-title" class="oc-cmt__ftitle">';
+		$defaults['title_reply_after']    = '</h3>';
+		$defaults['label_submit']         = __( 'Send comment', 'oc-theme' );
+		$defaults['comment_field']        = '<p class="comment-form-comment"><textarea id="comment" name="comment" rows="5" required placeholder="' . esc_attr__( 'What would you like to say?', 'oc-theme' ) . '"></textarea></p>';
 		$defaults['comment_notes_before'] = '';
+
+		// Said in the site's own words, not the language pack's mood.
+		if ( is_user_logged_in() ) {
+			$user = wp_get_current_user();
+
+			$defaults['logged_in_as'] = '<p class="logged-in-as">' . sprintf(
+				/* translators: 1: display name, 2: logout url. */
+				esc_html__( 'Commenting as %1$s. Not you? %2$s', 'oc-theme' ),
+				'<b>' . esc_html( $user->display_name ) . '</b>',
+				'<a href="' . esc_url( wp_logout_url( (string) get_permalink() ) ) . '">' . esc_html__( 'Log out', 'oc-theme' ) . '</a>'
+			) . '</p>';
+		}
+
+		$note = (string) get_theme_mod(
+			'oc_blog_disclaimer',
+			__( 'Comments reflect their writers alone. Keep it kind — offensive or promotional comments are removed. Your email stays private and is never shown.', 'oc-theme' )
+		);
+
+		if ( '' !== trim( $note ) ) {
+			$defaults['comment_notes_after'] = '<p class="oc-cmt__note">' . esc_html( $note ) . '</p>';
+		}
 
 		return $defaults;
 	}

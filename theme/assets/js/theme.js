@@ -6243,6 +6243,38 @@
 		}
 	}
 
+	/* ---------- reading progress (single post) ---------- */
+
+	var prog = document.querySelector( '.oc-progress i' );
+
+	if ( prog ) {
+		var art = document.querySelector( '.oc-bsingle article' );
+		var progTick = false;
+
+		var progDraw = function () {
+			progTick = false;
+
+			if ( ! art ) {
+				return;
+			}
+
+			var rect = art.getBoundingClientRect();
+			var run = rect.height - window.innerHeight;
+			var done = run > 0 ? Math.min( 1, Math.max( 0, -rect.top / run ) ) : 1;
+
+			prog.style.transform = 'scaleX(' + done + ')';
+		};
+
+		window.addEventListener( 'scroll', function () {
+			if ( ! progTick ) {
+				progTick = true;
+				requestAnimationFrame( progDraw );
+			}
+		}, { passive: true } );
+
+		progDraw();
+	}
+
 	/* ---------- copy a link (blog share row) ---------- */
 
 	document.addEventListener( 'click', function ( e ) {

@@ -26,6 +26,7 @@ if ( post_password_required() ) {
 					'style'       => 'ol',
 					'short_ping'  => true,
 					'avatar_size' => 44,
+					'reply_text'  => __( 'Reply', 'oc-theme' ),
 				)
 			);
 			?>

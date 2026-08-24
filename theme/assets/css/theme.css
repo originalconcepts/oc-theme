@@ -1576,6 +1576,26 @@ html.oc-menu-open .oc-menu-dim::after {
 
 .oc-blog { padding-block: 26px 70px; }
 
+/* A hairline across the top of the site that fills as the post is read. */
+.oc-progress {
+	position: fixed;
+	inset-block-start: 0;
+	inset-inline: 0;
+	block-size: 3px;
+	z-index: 90;
+	pointer-events: none;
+}
+
+.oc-progress i {
+	display: block;
+	block-size: 100%;
+	background: var(--oc-primary);
+	transform: scaleX(0);
+	transform-origin: var(--oc-start, right);
+}
+
+html[dir="ltr"] .oc-progress i { --oc-start: left; }
+
 /* Category chips over the index. */
 .oc-bfilter {
 	display: flex;
@@ -1679,23 +1699,83 @@ html.oc-menu-open .oc-menu-dim::after {
 
 /* --- one post, read --- */
 
-.oc-bsingle { padding-block: 26px 70px; }
+.oc-bsingle { padding-block: 30px 70px; }
 
-.oc-bsingle__date {
-	display: block;
-	font-size: .85em;
+.oc-bsingle__head { margin-block-end: 22px; }
+
+.oc-bsingle__kick {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin: 0 0 12px;
+	font-size: .86em;
+	letter-spacing: .05em;
 	color: var(--oc-ink-2, #6b7482);
-	margin-block-end: 8px;
+}
+
+.oc-bsingle__kick a {
+	text-decoration: none;
+	font-weight: 600;
+	color: var(--oc-primary);
+}
+
+.oc-bsingle__title {
+	margin: 0;
+	font-size: clamp(1.7em, 3.6vw, 2.35em);
+	line-height: 1.22;
 }
 
 .oc-bsingle__hero {
 	inline-size: 100%;
 	block-size: auto;
 	border-radius: var(--oc-radius, 8px);
-	margin-block-end: 26px;
+	margin-block-end: 30px;
 }
 
-.oc-bsingle .oc-content { line-height: 1.75; }
+/* Reading size: a long text wants a larger letter and more air than the
+ * interface around it. */
+.oc-bsingle .oc-content {
+	font-size: 1.13rem;
+	line-height: 1.85;
+}
+
+.oc-bsingle .oc-content > p:first-of-type { font-size: 1.06em; }
+
+.oc-bsingle .oc-content h2 {
+	font-size: 1.5em;
+	margin-block: 1.5em .5em;
+}
+
+.oc-bsingle .oc-content h3 {
+	font-size: 1.2em;
+	margin-block: 1.4em .4em;
+}
+
+.oc-bsingle .oc-content ul,
+.oc-bsingle .oc-content ol { padding-inline-start: 1.3em; margin-block: 1em; }
+
+.oc-bsingle .oc-content li { margin-block-end: .5em; }
+
+.oc-bsingle .oc-content li::marker { color: var(--oc-primary); font-weight: 600; }
+
+.oc-bsingle .oc-content blockquote {
+	margin: 1.8em 0;
+	padding: 4px 26px;
+	border-inline-start: 3px solid var(--oc-primary);
+	font-size: 1.12em;
+	line-height: 1.7;
+	color: color-mix(in srgb, var(--oc-ink) 84%, transparent);
+}
+
+.oc-bsingle .oc-content blockquote p { margin-block: .4em; }
+
+.oc-bsingle .oc-content blockquote cite {
+	display: block;
+	margin-block-start: .5em;
+	font-size: .82em;
+	font-style: normal;
+	color: var(--oc-ink-2, #6b7482);
+}
 
 .oc-bsingle .oc-content video,
 .oc-bsingle .oc-content .wp-block-video video {
@@ -1712,8 +1792,24 @@ html.oc-menu-open .oc-menu-dim::after {
 	gap: 16px;
 }
 
-/* Share. */
+/* Share. A row in the post's footer on small screens; on a desktop the
+ * buttons stand in a little floating column at the far edge, riding along
+ * as you read. */
 .oc-bshare { display: flex; align-items: center; gap: 10px; }
+
+@media (min-width: 1150px) {
+	.oc-bsingle .oc-bshare {
+		position: fixed;
+		inset-inline-end: max(22px, calc((100vw - var(--oc-content-width, 1280px)) / 2 - 120px));
+		inset-block-start: 38vh;
+		flex-direction: column;
+		z-index: 40;
+	}
+
+	.oc-bsingle .oc-bshare .oc-bshare__word { display: none; }
+
+	.oc-bsingle .oc-bshare__btn { background: var(--oc-surface, #fff); }
+}
 
 .oc-bshare__word,
 .oc-bmeta__word { font-size: .88em; color: var(--oc-ink-2, #6b7482); margin-inline-end: 4px; }
@@ -1780,6 +1876,14 @@ html.oc-menu-open .oc-menu-dim::after {
 
 .oc-cmt__list .comment-author { display: flex; align-items: center; gap: 10px; font-weight: 600; font-style: normal; }
 
+/* The name is a name, not a link dressed as one. */
+.oc-cmt__list .fn,
+.oc-cmt__list .comment-author cite { font-style: normal; }
+
+.oc-cmt__list a { text-decoration: none; }
+.oc-cmt__list .comment-metadata a:hover,
+.oc-cmt__list .comment-edit-link { color: var(--oc-ink-2, #6b7482); }
+
 .oc-cmt__list .comment-author .says { display: none; }
 
 .oc-cmt__list .comment-metadata { font-size: .8em; }
@@ -1818,6 +1922,12 @@ html.oc-menu-open .oc-menu-dim::after {
 	.oc-cmt .comment-form-author,
 	.oc-cmt .comment-form-email { display: inline-block; inline-size: calc(50% - 6px); }
 	.oc-cmt .comment-form-author { margin-inline-end: 8px; }
+}
+
+.oc-cmt .oc-cmt__note {
+	font-size: .84em;
+	line-height: 1.6;
+	color: var(--oc-ink-2, #6b7482);
 }
 
 .oc-cmt .form-submit { margin-block-start: 4px; }

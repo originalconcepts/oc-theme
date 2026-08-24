@@ -173,6 +173,26 @@ final class Customizer {
 		$this->toggle( $c, 'oc_blog_date', 'oc_blog', __( 'Publish date', 'oc-theme' ), true );
 		$this->toggle( $c, 'oc_blog_excerpt', 'oc_blog', __( 'Short description', 'oc-theme' ), true );
 		$this->toggle( $c, 'oc_blog_comments', 'oc_blog', __( 'Comment count', 'oc-theme' ), true );
+
+		$this->heading( $c, 'oc_h_blog_cmt', 'oc_blog', __( 'Comments', 'oc-theme' ) );
+
+		$c->add_setting(
+			'oc_blog_disclaimer',
+			array(
+				'default'           => __( 'Comments reflect their writers alone. Keep it kind — offensive or promotional comments are removed. Your email stays private and is never shown.', 'oc-theme' ),
+				'sanitize_callback' => 'sanitize_textarea_field',
+			)
+		);
+
+		$c->add_control(
+			'oc_blog_disclaimer',
+			array(
+				'type'        => 'textarea',
+				'section'     => 'oc_blog',
+				'label'       => __( 'Note under the comment form', 'oc-theme' ),
+				'description' => __( 'Empty hides it.', 'oc-theme' ),
+			)
+		);
 	}
 
 	/**
