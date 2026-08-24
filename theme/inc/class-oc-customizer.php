@@ -725,6 +725,7 @@ final class Customizer {
 		$this->color( $c, 'oc_drw_line', 'oc_menu', __( 'Colour of the line between rows', 'oc-theme' ) );
 		$this->number( $c, 'oc_drw_fs', 'oc_menu', __( 'Text size (px)', 'oc-theme' ), 17, 12, 26 );
 		$this->number( $c, 'oc_drw_gap', 'oc_menu', __( 'Row height (px)', 'oc-theme' ), 14, 6, 30, null, __( 'The air above and below each row.', 'oc-theme' ) );
+		$this->number( $c, 'oc_drw_minrow', 'oc_menu', __( 'Least height of a bare row (px)', 'oc-theme' ), 34, 20, 72, null, __( 'A row with no picture never gets shorter than this. When any link carries a picture, bare rows match the picture height instead, so the list stays even.', 'oc-theme' ) );
 
 		/* ---------- one level in ---------- */
 

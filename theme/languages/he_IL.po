@@ -3735,3 +3735,9 @@ msgstr "מוקד התמונה (%)"
 
 msgid "Which part the frame keeps when it has to crop: 0 the top, 50 the middle, 100 the bottom."
 msgstr "איזה חלק המסגרת שומרת כשהיא נאלצת לחתוך: 0 החלק העליון, 50 האמצע, 100 התחתון."
+
+msgid "Least height of a bare row (px)"
+msgstr "גובה מינימלי לשורה בלי תמונה (פיקסלים)"
+
+msgid "A row with no picture never gets shorter than this. When any link carries a picture, bare rows match the picture height instead, so the list stays even."
+msgstr "שורה בלי תמונה לא תרד מתחת לגובה הזה. כשלפחות קישור אחד נושא תמונה, שורות בלי תמונה מיישרות לגובה התמונה — כדי שהרשימה תישאר אחידה."

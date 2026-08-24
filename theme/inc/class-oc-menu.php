@@ -604,7 +604,35 @@ final class Menu {
 			$classes[] = 'oc-drw--dim';
 		}
 
+		// Whether any link carries a picture decides the rhythm of every row:
+		// rows without one take the same height, so the list reads as one
+		// list rather than tall rows with short ones squeezed between.
+		if ( self::drawer_has_pictures() ) {
+			$classes[] = 'oc-drw--pics';
+		}
+
 		return implode( ' ', array_map( 'sanitize_html_class', $classes ) );
+	}
+
+	/**
+	 * Whether any link the drawer will show carries a picture.
+	 *
+	 * @return bool
+	 */
+	private static function drawer_has_pictures(): bool {
+		$locations = get_nav_menu_locations();
+		$menu      = isset( $locations['primary'] ) ? (int) $locations['primary'] : 0;
+		$items     = $menu > 0 ? wp_get_nav_menu_items( $menu ) : array();
+
+		foreach ( (array) $items as $item ) {
+			$id = (int) $item->ID;
+
+			if ( ! self::hidden( $id, 'drawer' ) && (int) get_post_meta( $id, '_oc_img', true ) > 0 ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**

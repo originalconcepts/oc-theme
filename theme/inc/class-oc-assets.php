@@ -329,6 +329,7 @@ final class Assets {
 				'--oc-drw-line'           => (string) get_theme_mod( 'oc_drw_line', '' ),
 				'--oc-drw-fs'             => absint( get_theme_mod( 'oc_drw_fs', 17 ) ) . 'px',
 				'--oc-drw-gap'            => absint( get_theme_mod( 'oc_drw_gap', 14 ) ) . 'px',
+				'--oc-drw-minrow'         => absint( get_theme_mod( 'oc_drw_minrow', 34 ) ) . 'px',
 				'--oc-drw-bg2'            => (string) get_theme_mod( 'oc_drw_bg2', '' ),
 				'--oc-drw-tx2'            => (string) get_theme_mod( 'oc_drw_tx2', '' ),
 				'--oc-drw-line2'          => (string) get_theme_mod( 'oc_drw_line2', '' ),

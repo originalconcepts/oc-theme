@@ -1643,7 +1643,15 @@ html.oc-drw-open body { overflow: hidden; }
 	text-decoration: none;
 	color: var(--oc-link-c, inherit);
 	min-inline-size: 0;
+	/* Air. A bare row of text hugging its rules reads as cramped; the
+	 * minimum is a setting, defaulting to twice the letter height. */
+	min-block-size: var(--oc-drw-minrow, calc(var(--oc-drw-fs, 17px) * 2));
 }
+
+/* One picture anywhere sets the rhythm for every row: those without take
+ * the same height, so the list reads as one list rather than tall rows
+ * with short ones squeezed between. */
+.oc-drw--pics .oc-drw__a { min-block-size: var(--oc-mi-pic, 38px); }
 
 .oc-drw__a .oc-mi__t { flex: 1 1 auto; }
 
