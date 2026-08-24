@@ -3711,3 +3711,6 @@ msgstr "0 משווה את גובה התמונה לגובה העמודות שלצ
 
 msgid "Text size in the panel and the drop-down (px)"
 msgstr "גודל הטקסט בפאנל ובתפריט הנפתח (פיקסלים)"
+
+msgid "Corners show when the panel stops short of the screen edges — mostly when it opens under the link."
+msgstr "הפינות נראות כשהפאנל לא נוגע בקצוות המסך — בעיקר כשהוא נפתח מתחת לקישור."

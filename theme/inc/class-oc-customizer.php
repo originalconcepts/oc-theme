@@ -641,7 +641,7 @@ final class Customizer {
 		);
 		$this->number( $c, 'oc_mega_pad', 'oc_menu', __( 'Space inside the panel (px)', 'oc-theme' ), 28, 8, 72, null, __( 'Between the edge of the panel and what is in it.', 'oc-theme' ) );
 		$this->number( $c, 'oc_mega_gap', 'oc_menu', __( 'Space between the columns (px)', 'oc-theme' ), 48, 8, 96 );
-		$this->number( $c, 'oc_mega_rt', 'oc_menu', __( 'Rounding, top corners (px)', 'oc-theme' ), 0, 0, 32 );
+		$this->number( $c, 'oc_mega_rt', 'oc_menu', __( 'Rounding, top corners (px)', 'oc-theme' ), 0, 0, 32, null, __( 'Corners show when the panel stops short of the screen edges — mostly when it opens under the link.', 'oc-theme' ) );
 		$this->number( $c, 'oc_mega_rb', 'oc_menu', __( 'Rounding, bottom corners (px)', 'oc-theme' ), 0, 0, 32 );
 
 		$this->color( $c, 'oc_mega_bg', 'oc_menu', __( 'Panel background', 'oc-theme' ) );

@@ -1234,8 +1234,9 @@ html.oc-menu-open .oc-menu-dim::before {
 	inset-inline-start: 0;
 	inset-inline-end: auto;
 	inline-size: min(760px, calc(100vw - 32px));
-	border-inline: 1px solid var(--oc-mega-line, var(--oc-line));
-	border-radius: var(--oc-radius, 8px);
+	border-inline: 1px solid var(--oc-mega-line-b, var(--oc-line));
+	/* No shorthand radius here: the four corner settings govern, and this
+	 * is the one width where anyone can see them. */
 }
 
 .oc-nav__list > li:hover > .oc-mega,
@@ -1356,7 +1357,10 @@ html.oc-menu-open .oc-menu-dim::before {
 .oc-mega--cols .oc-mb--image {
 	align-self: stretch;
 	position: relative;
-	min-block-size: 0;
+	/* A picture no taller than the lists beside it reads as an afterthought.
+	 * This raises the row when the lists are short — about a third over a
+	 * typical column — and yields the moment the lists outgrow it. */
+	min-block-size: var(--oc-mega-img-min, 290px);
 }
 
 .oc-mega--cols .oc-mb--image .oc-mb__fig {
@@ -1371,7 +1375,7 @@ html.oc-menu-open .oc-menu-dim::before {
 
 /* A panel with no columns has nothing to measure the picture against, so
  * there it takes the pinned height, or a modest one. */
-.oc-nav .oc-mega:not(.oc-mega--cols) .oc-mb__fig {
+.oc-mega:not(.oc-mega--cols):not(.oc-mega--drawer) .oc-mb__fig {
 	block-size: var(--oc-mega-img-h, 420px);
 	inline-size: auto;
 	aspect-ratio: var(--oc-mb-ratio, 3 / 4);
