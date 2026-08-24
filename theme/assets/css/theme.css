@@ -9911,6 +9911,15 @@ body.oc-checkout { overflow-x: clip; }
 	display: block;
 }
 
+/* In a gallery the link wraps its slide instead of lying over it — an
+ * absolutely positioned overlay inside a scrolled strip stops answering
+ * taps on iOS, hit-tested where the strip used to be. */
+.oc-card-media--gallery .oc-card-media__link {
+	position: static;
+	inset: auto;
+	block-size: 100%;
+}
+
 .oc-card-media__nav { z-index: 4; }
 
 @supports (grid-template-rows: subgrid) {

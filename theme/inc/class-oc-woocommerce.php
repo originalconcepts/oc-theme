@@ -794,29 +794,33 @@ final class WooCommerce {
 		);
 		echo '<div class="oc-card-media__strip" aria-label="' . esc_attr__( 'Product images', 'oc-theme' ) . '">';
 
-		// The picture is also a link to the product. Where that link lives
-		// decides whether a phone can swipe the strip at all: a single sheet
-		// laid over the whole media box is not inside the scroller, so the
-		// browser pans the page under it instead of the pictures. One link
-		// per slide keeps the tap and gives the swipe something to move.
-		$slide_link = sprintf(
-			'<a class="oc-card-media__link woocommerce-LoopProduct-link" href="%s" aria-hidden="true" tabindex="-1"></a>',
+		// The picture is also a link to the product, and in a gallery the
+		// link WRAPS each slide's content rather than lying over it. Two
+		// phone bugs taught this shape: an overlay outside the scroller
+		// cannot be swiped, and an absolutely-positioned overlay inside it
+		// stops answering taps on iOS once the strip has been scrolled —
+		// WebKit hit-tests it at the wrong place. An anchor around the
+		// image is the one form with nothing to mis-hit.
+		$slide_open  = 'gallery' === $mode ? sprintf(
+			'<a class="oc-card-media__link woocommerce-LoopProduct-link" href="%s" aria-hidden="true" tabindex="-1">',
 			esc_url( self::card_link( $product ) )
-		);
-		$per_slide  = 'gallery' === $mode ? $slide_link : '';
+		) : '';
+		$slide_close = 'gallery' === $mode ? '</a>' : '';
 
 		if ( '' !== $card_video ) {
 			// No play badge on the card — the loop speaks for itself. Lazy:
 			// the video only loads and plays as its card nears the viewport,
 			// so a catalogue full of videos stays light.
 			echo '<figure class="oc-card-media__item oc-card-media__item--video is-first">';
+			echo $slide_open; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
 			echo Video::loop_html( $card_video, 'oc-card-video', true ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
-			echo $per_slide; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
+			echo $slide_close; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
 			echo '</figure>';
 		}
 
 		foreach ( $ids as $i => $id ) {
 			printf( '<figure class="oc-card-media__item%s">', 0 === $i && '' === $card_video ? ' is-first' : '' );
+			echo $slide_open; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
 			echo wp_get_attachment_image( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- core-generated markup.
 				$id,
 				'large',
@@ -826,7 +830,7 @@ final class WooCommerce {
 					'sizes'   => '(max-width: 900px) 50vw, 25vw',
 				)
 			);
-			echo $per_slide; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
+			echo $slide_close; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
 			echo '</figure>';
 		}
 
@@ -852,7 +856,10 @@ final class WooCommerce {
 		// whole picture is simpler and does the same job. It sits under every
 		// control the card paints on top, so the cart chip keeps working.
 		if ( 'gallery' !== $mode ) {
-			echo $slide_link; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
+			printf(
+				'<a class="oc-card-media__link woocommerce-LoopProduct-link" href="%s" aria-hidden="true" tabindex="-1"></a>',
+				esc_url( self::card_link( $product ) )
+			);
 		}
 
 		$this->card_atc_icon();

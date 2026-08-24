@@ -1245,9 +1245,12 @@
 
 		var strip = li.querySelector( '.oc-card-media__strip' );
 		if ( strip && imgs.length ) {
+			// Each rebuilt slide keeps its wrapping link — without it, a
+			// colour-swapped card silently stopped leading anywhere.
 			strip.innerHTML = imgs.map( function ( src, i ) {
 				return '<figure class="oc-card-media__item' + ( 0 === i ? ' is-first' : '' ) + '">' +
-					'<img src="' + src + '" alt="" loading="' + ( 0 === i ? 'eager' : 'lazy' ) + '" sizes="(max-width: 900px) 50vw, 25vw"></figure>';
+					'<a class="oc-card-media__link woocommerce-LoopProduct-link" href="' + item.dataset.url + '" aria-hidden="true" tabindex="-1">' +
+					'<img src="' + src + '" alt="" loading="' + ( 0 === i ? 'eager' : 'lazy' ) + '" sizes="(max-width: 900px) 50vw, 25vw"></a></figure>';
 			} ).join( '' );
 			strip.scrollLeft = 0;
 		}
