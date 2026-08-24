@@ -377,7 +377,12 @@ final class Menu_Panel {
 		// changes nothing until something unrelated happens to expire it —
 		// which is exactly how it behaved. The nav carries the width instead,
 		// and the nav is rebuilt on every request.
-		return '<div class="oc-mega"><div class="oc-mega__row" style="--oc-mega-cols:' . esc_attr( implode( ' ', $tracks ) ) . '">' . $body . '</div></div>';
+		//
+		// Whether there are columns IS written in: a picture measures its
+		// height against them, and against nothing when there are none.
+		$class = 'oc-mega' . ( empty( $columns ) ? '' : ' oc-mega--cols' );
+
+		return '<div class="' . esc_attr( $class ) . '"><div class="oc-mega__row" style="--oc-mega-cols:' . esc_attr( implode( ' ', $tracks ) ) . '">' . $body . '</div></div>';
 	}
 
 	/**

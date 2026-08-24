@@ -1347,32 +1347,44 @@ html.oc-menu-open .oc-menu-dim::before {
 .oc-mb__link { display: block; text-decoration: none; color: inherit; }
 
 /* In the desktop panel a picture is a card beside the columns, not a poster
- * behind them. Its height either matches the columns (the default: the grid
- * row is as tall as the tallest list, and the figure follows it) or is a
- * fixed number from the Customizer; its width then comes from its own shape.
- * The drawer keeps full-width pictures — a phone column IS the row. */
-.oc-nav .oc-mega .oc-mb--image {
+ * behind them. The figure is absolutely anchored inside its cell, so it
+ * contributes nothing to the row's height — the columns set that — and by
+ * default it simply fills it, which makes the picture exactly as tall as
+ * the lists it stands next to. A number from the Customizer pins the height
+ * instead; either way the width follows from the picture's own shape. The
+ * drawer keeps full-width pictures — a phone column IS the row. */
+.oc-mega--cols .oc-mb--image {
 	align-self: stretch;
-	justify-self: end;
+	position: relative;
 	min-block-size: 0;
 }
 
-.oc-nav .oc-mega .oc-mb--image .oc-mb__link { block-size: 100%; }
-
-.oc-nav .oc-mega .oc-mb--image .oc-mb__fig {
+.oc-mega--cols .oc-mb--image .oc-mb__fig {
+	position: absolute;
+	inset-block-start: 0;
+	inset-inline-end: 0;
 	block-size: var(--oc-mega-img-h, 100%);
+	inline-size: auto;
+	aspect-ratio: var(--oc-mb-ratio, 3 / 4);
+	margin: 0;
+}
+
+/* A panel with no columns has nothing to measure the picture against, so
+ * there it takes the pinned height, or a modest one. */
+.oc-nav .oc-mega:not(.oc-mega--cols) .oc-mb__fig {
+	block-size: var(--oc-mega-img-h, 420px);
 	inline-size: auto;
 	aspect-ratio: var(--oc-mb-ratio, 3 / 4);
 	margin-inline-start: auto;
 }
 
-.oc-nav .oc-mega .oc-mb--image .oc-mb__fig--under {
+.oc-nav .oc-mega .oc-mb__fig--under {
 	display: flex;
 	flex-direction: column;
 	overflow: hidden;
 }
 
-.oc-nav .oc-mega .oc-mb--image .oc-mb__fig--under .oc-mb__img {
+.oc-nav .oc-mega .oc-mb__fig--under .oc-mb__img {
 	flex: 1 1 auto;
 	min-block-size: 0;
 	aspect-ratio: auto;
