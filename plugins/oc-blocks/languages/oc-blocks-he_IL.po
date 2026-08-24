@@ -1,0 +1,479 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: OC Blocks\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: he_IL\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Section is on"
+msgstr "הסקשן פעיל"
+
+msgid "Shown on"
+msgstr "מוצג ב"
+
+msgid "Everywhere"
+msgstr "בכל מקום"
+
+msgid "Desktop"
+msgstr "דסקטופ"
+
+msgid "Mobile"
+msgstr "מובייל"
+
+msgid "Width"
+msgstr "רוחב"
+
+msgid "Edge to edge"
+msgstr "מקצה לקצה"
+
+msgid "Content width"
+msgstr "רוחב התוכן"
+
+msgid "Custom"
+msgstr "מותאם"
+
+msgid "Custom width (px)"
+msgstr "רוחב מותאם (px)"
+
+msgid "Background"
+msgstr "רקע"
+
+msgid "None"
+msgstr "בלי"
+
+msgid "Colour"
+msgstr "צבע"
+
+msgid "Gradient"
+msgstr "גרדיינט"
+
+msgid "Image"
+msgstr "תמונה"
+
+msgid "Video"
+msgstr "וידאו"
+
+msgid "Second colour"
+msgstr "צבע שני"
+
+msgid "Gradient angle"
+msgstr "זווית הגרדיינט"
+
+msgid "Background image"
+msgstr "תמונת רקע"
+
+msgid "Background video"
+msgstr "וידאו רקע"
+
+msgid "Darken the background (%)"
+msgstr "החשכת הרקע (%)"
+
+msgid "Space above"
+msgstr "רווח מעל"
+
+msgid "Space below"
+msgstr "רווח מתחת"
+
+msgid "Small"
+msgstr "קטן"
+
+msgid "Normal"
+msgstr "רגיל"
+
+msgid "Large"
+msgstr "גדול"
+
+msgid "Entrance"
+msgstr "אפקט כניסה"
+
+msgid "Fade"
+msgstr "פייד"
+
+msgid "Rise"
+msgstr "עלייה"
+
+msgid "One by one"
+msgstr "אחד־אחד"
+
+msgid "Centre"
+msgstr "מרכז"
+
+msgid "Centre, reading side"
+msgstr "מרכז, צד הקריאה"
+
+msgid "Bottom centre"
+msgstr "למטה במרכז"
+
+msgid "Bottom, reading side"
+msgstr "למטה, צד הקריאה"
+
+msgid "Top, reading side"
+msgstr "למעלה, צד הקריאה"
+
+msgid "Banner / slider"
+msgstr "באנר / סליידר"
+
+msgid "One picture is a banner; several are a slider."
+msgstr "תמונה אחת היא באנר; כמה — סליידר."
+
+msgid "Slides"
+msgstr "שקופיות"
+
+msgid "Picture — desktop"
+msgstr "תמונה — דסקטופ"
+
+msgid "Picture — mobile (optional)"
+msgstr "תמונה — מובייל (לא חובה)"
+
+msgid "Or a video"
+msgstr "או וידאו"
+
+msgid "Heading"
+msgstr "כותרת"
+
+msgid "A line under it"
+msgstr "שורה מתחתיה"
+
+msgid "Button words"
+msgstr "טקסט הכפתור"
+
+msgid "Leads to"
+msgstr "מוביל אל"
+
+msgid "Words sit"
+msgstr "מיקום התוכן"
+
+msgid "Words are"
+msgstr "צבע התוכן"
+
+msgid "Light"
+msgstr "בהיר"
+
+msgid "Dark"
+msgstr "כהה"
+
+msgid "Darken the picture (%)"
+msgstr "החשכת התמונה (%)"
+
+msgid "Height — desktop (px)"
+msgstr "גובה — דסקטופ (px)"
+
+msgid "Height — mobile (px)"
+msgstr "גובה — מובייל (px)"
+
+msgid "Slide change"
+msgstr "אפקט החלפה"
+
+msgid "Slide"
+msgstr "החלקה"
+
+msgid "Change every (seconds, 0 off)"
+msgstr "החלפה כל (שניות, 0 כבוי)"
+
+msgid "Arrows"
+msgstr "חצים"
+
+msgid "Dots"
+msgstr "נקודות"
+
+msgid "Parallax"
+msgstr "פרלקס"
+
+msgid "Words"
+msgstr "תוכן"
+
+msgid "A heading, a few lines, a button."
+msgstr "כותרת, כמה שורות, כפתור."
+
+msgid "The words"
+msgstr "הטקסט"
+
+msgid "Aligned"
+msgstr "יישור"
+
+msgid "To the side"
+msgstr "לצד"
+
+msgid "Centred"
+msgstr "ממורכז"
+
+msgid "Button style"
+msgstr "סגנון הכפתור"
+
+msgid "Theme button"
+msgstr "כפתור התבנית"
+
+msgid "Underlined word"
+msgstr "מילה עם קו תחתון"
+
+msgid "Products"
+msgstr "מוצרים"
+
+msgid "A shelf of products, grid or slider."
+msgstr "מדף מוצרים — גריד או סליידר."
+
+msgid "Which products"
+msgstr "אילו מוצרים"
+
+msgid "From a category"
+msgstr "מקטגוריה"
+
+msgid "The ones I choose"
+msgstr "אלה שאני בוחר"
+
+msgid "Best sellers"
+msgstr "הכי נמכרים"
+
+msgid "Newest"
+msgstr "הכי חדשים"
+
+msgid "The category"
+msgstr "הקטגוריה"
+
+msgid "The products"
+msgstr "המוצרים"
+
+msgid "How many"
+msgstr "כמה"
+
+msgid "Laid as"
+msgstr "מוצג כ"
+
+msgid "Slider"
+msgstr "סליידר"
+
+msgid "Grid"
+msgstr "גריד"
+
+msgid "Per row — desktop"
+msgstr "בשורה — דסקטופ"
+
+msgid "Space between"
+msgstr "מרווח ביניהם"
+
+msgid "Touching"
+msgstr "צמוד"
+
+msgid "\"All products\" button"
+msgstr "כפתור ״לכל המוצרים״"
+
+msgid "It leads to (empty: the category)"
+msgstr "מוביל אל (ריק: הקטגוריה)"
+
+msgid "All products"
+msgstr "לכל המוצרים"
+
+msgid "Categories"
+msgstr "קטגוריות"
+
+msgid "Doors to the aisles — circles, cards, a slider."
+msgstr "דלתות למחלקות — עיגולים, כרטיסים, סליידר."
+
+msgid "Which categories"
+msgstr "אילו קטגוריות"
+
+msgid "Tick in the order they should stand."
+msgstr "סמנו לפי הסדר שבו הן יוצגו."
+
+msgid "Shape"
+msgstr "צורה"
+
+msgid "Circles"
+msgstr "עיגולים"
+
+msgid "Squares"
+msgstr "ריבועים"
+
+msgid "Upright"
+msgstr "לאורך"
+
+msgid "Corners"
+msgstr "פינות"
+
+msgid "Sharp"
+msgstr "חדות"
+
+msgid "Softened"
+msgstr "מעוגלות מעט"
+
+msgid "The name sits"
+msgstr "השם יושב"
+
+msgid "Under"
+msgstr "מתחת"
+
+msgid "On it, centred"
+msgstr "על התמונה, במרכז"
+
+msgid "On it, at the bottom"
+msgstr "על התמונה, למטה"
+
+msgid "Airy"
+msgstr "מאוורר"
+
+msgid "Under the cursor"
+msgstr "במעבר עכבר"
+
+msgid "Gentle zoom"
+msgstr "זום עדין"
+
+msgid "Nothing"
+msgstr "כלום"
+
+msgid "Running line"
+msgstr "פס טקסט רץ"
+
+msgid "A line of words on the move."
+msgstr "שורת מילים בתנועה."
+
+msgid "Letter size (px)"
+msgstr "גודל האותיות (px)"
+
+msgid "Letter colour"
+msgstr "צבע האותיות"
+
+msgid "Speed (seconds per round)"
+msgstr "מהירות (שניות לסיבוב)"
+
+msgid "Moves"
+msgstr "נע"
+
+msgid "Right to left"
+msgstr "מימין לשמאל"
+
+msgid "Left to right"
+msgstr "משמאל לימין"
+
+msgid "Angle (degrees)"
+msgstr "זווית (מעלות)"
+
+msgid "Brands"
+msgstr "מותגים"
+
+msgid "The logos, in a quiet row."
+msgstr "הלוגואים, בשורה שקטה."
+
+msgid "From the blog"
+msgstr "מהבלוג"
+
+msgid "The latest posts, or chosen ones."
+msgstr "הפוסטים האחרונים, או נבחרים."
+
+msgid "Which posts"
+msgstr "אילו פוסטים"
+
+msgid "Latest"
+msgstr "האחרונים"
+
+msgid "The posts"
+msgstr "הפוסטים"
+
+msgid "Publish date"
+msgstr "תאריך פרסום"
+
+msgid "Short description"
+msgstr "תיאור קצר"
+
+msgid "\"To the blog\" button"
+msgstr "כפתור ״לבלוג״"
+
+msgid "Its words"
+msgstr "הטקסט שלו"
+
+msgid "To the blog"
+msgstr "לבלוג"
+
+msgid "Lobby page"
+msgstr "עמוד לובי"
+
+msgid "— none —"
+msgstr "— בלי —"
+
+msgid "A page built with OC Blocks, shown at the top of this category."
+msgstr "עמוד שנבנה עם OC Blocks ומוצג בראש הקטגוריה הזו."
+
+msgid "OC Blocks"
+msgstr "OC Blocks"
+
+msgid "Build with OC Blocks"
+msgstr "בנייה עם OC Blocks"
+
+msgid "This page is built with the composer; its sections replace the content below."
+msgstr "העמוד הזה בנוי עם הקומפוזר; הסקשנים שלו מחליפים את התוכן שלמטה."
+
+msgid "Build this page from ready-made sections, with a live preview."
+msgstr "בנו את העמוד מסקשנים מוכנים, עם תצוגה מקדימה חיה."
+
+msgid "Open the composer"
+msgstr "פתיחת הקומפוזר"
+
+msgid "Save"
+msgstr "שמירה"
+
+msgid "Saved"
+msgstr "נשמר"
+
+msgid "Saving…"
+msgstr "שומר…"
+
+msgid "Could not save"
+msgstr "השמירה נכשלה"
+
+msgid "Add a section"
+msgstr "הוספת סקשן"
+
+msgid "The page is empty. Add your first section:"
+msgstr "העמוד ריק. הוסיפו את הסקשן הראשון:"
+
+msgid "Sections"
+msgstr "סקשנים"
+
+msgid "Content"
+msgstr "תוכן"
+
+msgid "Design"
+msgstr "עיצוב"
+
+msgid "Frame"
+msgstr "מעטפת"
+
+msgid "Remove"
+msgstr "הסרה"
+
+msgid "Duplicate"
+msgstr "שכפול"
+
+msgid "Remove this section?"
+msgstr "להסיר את הסקשן?"
+
+msgid "Choose"
+msgstr "בחירה"
+
+msgid "Change"
+msgstr "החלפה"
+
+msgid "Add a slide"
+msgstr "הוספת שקופית"
+
+msgid "Type to search…"
+msgstr "הקלידו לחיפוש…"
+
+msgid "View page"
+msgstr "צפייה בעמוד"
+
+msgid "There are unsaved changes."
+msgstr "יש שינויים שלא נשמרו."
+
+msgid "Choose a picture"
+msgstr "בחירת תמונה"
+
+msgid "Choose a video"
+msgstr "בחירת וידאו"
+
+msgid "Add a section and it will appear here, exactly as on the site."
+msgstr "הוסיפו סקשן והוא יופיע כאן, בדיוק כמו באתר."
+
+msgid "Slide card"
+msgstr "שקופית"
