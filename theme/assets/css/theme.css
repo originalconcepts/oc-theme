@@ -1543,17 +1543,20 @@ html.oc-menu-open .oc-menu-dim::before {
 
 /* --- the brands --- */
 
-/* The door to the rest, when more brands exist than the block shows. */
-.oc-mb__all {
+/* The door to the rest, when more brands exist than the block shows. Said
+ * with the panel's weight, because the bar's own anchor rule outranks a
+ * bare class and was quietly undoing the size and the underline. */
+.oc-mega a.oc-mb__all {
 	display: inline-block;
 	margin-block-start: 12px;
 	font-size: calc(var(--oc-mega-fs, 15px) * .92);
+	font-weight: 400;
 	color: inherit;
 	text-decoration: underline;
 	text-underline-offset: 3px;
 }
 
-.oc-mb__all:hover { color: var(--oc-mega-tx-h, var(--oc-primary)); }
+.oc-mega a.oc-mb__all:hover { color: var(--oc-mega-tx-h, var(--oc-primary)); }
 
 .oc-mb__brands {
 	display: flex;
