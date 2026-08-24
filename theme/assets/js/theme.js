@@ -6242,5 +6242,20 @@
 			} );
 		}
 	}
+
+	/* ---------- copy a link (blog share row) ---------- */
+
+	document.addEventListener( 'click', function ( e ) {
+		var btn = e.target.closest( '[data-oc-copy]' );
+
+		if ( ! btn || ! navigator.clipboard ) {
+			return;
+		}
+
+		navigator.clipboard.writeText( btn.dataset.ocCopy ).then( function () {
+			btn.classList.add( 'is-done' );
+			setTimeout( function () { btn.classList.remove( 'is-done' ); }, 1400 );
+		} );
+	} );
 }() );
 

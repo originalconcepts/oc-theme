@@ -3897,3 +3897,62 @@ msgstr "מותגים לפי אות"
 
 msgid "Shown when there are more brands than fit. Empty leads to the brands page — or, drawn from a category, to that category."
 msgstr "מוצג כשיש יותר מותגים ממה שנכנס. ריק — מוביל לעמוד המותגים; ב״הקטגוריה של הפריט״ — לקטגוריה עצמה."
+
+msgid "Everything"
+msgstr "הכל"
+
+msgid "Share"
+msgstr "שיתוף"
+
+msgid "Category"
+msgstr "קטגוריה"
+
+msgid "Tags"
+msgstr "תגיות"
+
+msgid "Blog"
+msgstr "בלוג"
+
+msgid "Posts per row"
+msgstr "פוסטים בשורה"
+
+msgid "On each card"
+msgstr "מה מוצג בכל פוסט"
+
+msgid "Publish date"
+msgstr "תאריך פרסום"
+
+msgid "Comment count"
+msgstr "מספר תגובות"
+
+msgid "Leave a comment"
+msgstr "השאירו תגובה"
+
+msgid "Send comment"
+msgstr "שליחת תגובה"
+
+msgid "Your name"
+msgstr "השם שלכם"
+
+msgid "Email — never shown"
+msgstr "אימייל — לא יוצג באתר"
+
+msgid "What would you like to say?"
+msgstr "מה תרצו להגיד?"
+
+msgid "Comments are closed."
+msgstr "התגובות סגורות."
+
+msgid "Post categories"
+msgstr "קטגוריות הבלוג"
+
+msgid "Leave this empty"
+msgstr "להשאיר ריק"
+
+msgid "Your comment could not be posted."
+msgstr "לא הצלחנו לפרסם את התגובה."
+
+msgid "%s comment"
+msgid_plural "%s comments"
+msgstr[0] "תגובה אחת"
+msgstr[1] "%s תגובות"

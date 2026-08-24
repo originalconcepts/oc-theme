@@ -149,6 +149,30 @@ final class Customizer {
 		$this->cart_section( $wp_customize, $shop_panel );
 		$this->search_section( $wp_customize, $shop_panel );
 		$this->brands_section( $wp_customize, $shop_panel );
+		$this->blog_section( $wp_customize );
+	}
+
+	/**
+	 * The blog: how the index carries its cards.
+	 *
+	 * @param \WP_Customize_Manager $c Customizer manager.
+	 */
+	private function blog_section( \WP_Customize_Manager $c ): void {
+		$c->add_section(
+			'oc_blog',
+			array(
+				'title'    => __( 'Blog', 'oc-theme' ),
+				'priority' => 41,
+			)
+		);
+
+		$this->number( $c, 'oc_blog_cols', 'oc_blog', __( 'Posts per row', 'oc-theme' ), 3, 1, 4 );
+
+		$this->heading( $c, 'oc_h_blog_card', 'oc_blog', __( 'On each card', 'oc-theme' ) );
+
+		$this->toggle( $c, 'oc_blog_date', 'oc_blog', __( 'Publish date', 'oc-theme' ), true );
+		$this->toggle( $c, 'oc_blog_excerpt', 'oc_blog', __( 'Short description', 'oc-theme' ), true );
+		$this->toggle( $c, 'oc_blog_comments', 'oc_blog', __( 'Comment count', 'oc-theme' ), true );
 	}
 
 	/**

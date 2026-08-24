@@ -1571,6 +1571,281 @@ html.oc-menu-open .oc-menu-dim::after {
 /* --- the brands --- */
 
 /* =====================================================================
+   The blog
+   ===================================================================== */
+
+.oc-blog { padding-block: 26px 70px; }
+
+/* Category chips over the index. */
+.oc-bfilter {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-block: 4px 30px;
+}
+
+.oc-bfilter a {
+	padding: 7px 15px;
+	border: 1px solid var(--oc-line, #e5e5e5);
+	border-radius: 999px;
+	text-decoration: none;
+	font-size: .93em;
+	transition: border-color .15s ease, background .15s ease, color .15s ease;
+}
+
+.oc-bfilter a:hover { border-color: currentColor; }
+
+.oc-bfilter a.is-on {
+	background: var(--oc-ink, #151a21);
+	border-color: var(--oc-ink, #151a21);
+	color: var(--oc-surface, #fff);
+}
+
+.oc-blog__grid {
+	display: grid;
+	grid-template-columns: repeat(var(--oc-blog-cols, 3), 1fr);
+	gap: 40px 28px;
+}
+
+@media (max-width: 900px) {
+	.oc-blog__grid { grid-template-columns: 1fr; gap: 34px; }
+}
+
+/* --- one card --- */
+
+.oc-bpost__media {
+	position: relative;
+	display: block;
+	overflow: hidden;
+	border-radius: var(--oc-radius, 8px);
+}
+
+.oc-bpost__media img {
+	display: block;
+	inline-size: 100%;
+	aspect-ratio: 3 / 2;
+	object-fit: cover;
+	transition: transform .5s cubic-bezier(.2, .7, .3, 1);
+}
+
+.oc-bpost:hover .oc-bpost__media img { transform: scale(1.035); }
+
+/* The film's announcement, on the corner of its card. */
+.oc-bpost__play {
+	position: absolute;
+	inset-block-end: 10px;
+	inset-inline-start: 10px;
+	inline-size: 38px;
+	block-size: 38px;
+	color: rgb(0 0 0 / 62%);
+}
+
+.oc-bpost__play svg { inline-size: 100%; block-size: 100%; }
+
+.oc-bpost__body { padding-block-start: 14px; }
+
+.oc-bpost__date {
+	display: block;
+	font-size: .82em;
+	letter-spacing: .04em;
+	color: var(--oc-ink-2, #6b7482);
+	margin-block-end: 6px;
+}
+
+.oc-bpost__title { margin: 0; font-size: 1.18em; line-height: 1.35; }
+
+.oc-bpost__title a { text-decoration: none; }
+.oc-bpost__title a:hover { color: var(--oc-primary); }
+
+.oc-bpost__excerpt {
+	margin-block: 8px 0;
+	color: var(--oc-ink-2, #6b7482);
+	font-size: .95em;
+	line-height: 1.6;
+}
+
+.oc-bpost__comments {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	margin-block-start: 10px;
+	font-size: .85em;
+	color: var(--oc-ink-2, #6b7482);
+	text-decoration: none;
+}
+
+.oc-bpost__comments:hover { color: var(--oc-primary); }
+.oc-bpost__comments svg { inline-size: 15px; block-size: 15px; }
+
+/* --- one post, read --- */
+
+.oc-bsingle { padding-block: 26px 70px; }
+
+.oc-bsingle__date {
+	display: block;
+	font-size: .85em;
+	color: var(--oc-ink-2, #6b7482);
+	margin-block-end: 8px;
+}
+
+.oc-bsingle__hero {
+	inline-size: 100%;
+	block-size: auto;
+	border-radius: var(--oc-radius, 8px);
+	margin-block-end: 26px;
+}
+
+.oc-bsingle .oc-content { line-height: 1.75; }
+
+.oc-bsingle .oc-content video,
+.oc-bsingle .oc-content .wp-block-video video {
+	inline-size: 100%;
+	block-size: auto;
+	border-radius: var(--oc-radius, 8px);
+}
+
+.oc-bsingle__foot {
+	margin-block-start: 34px;
+	padding-block-start: 22px;
+	border-block-start: 1px solid var(--oc-line, #e5e5e5);
+	display: grid;
+	gap: 16px;
+}
+
+/* Share. */
+.oc-bshare { display: flex; align-items: center; gap: 10px; }
+
+.oc-bshare__word,
+.oc-bmeta__word { font-size: .88em; color: var(--oc-ink-2, #6b7482); margin-inline-end: 4px; }
+
+.oc-bshare__btn {
+	display: grid;
+	place-items: center;
+	inline-size: 38px;
+	block-size: 38px;
+	border: 1px solid var(--oc-line, #e5e5e5);
+	border-radius: 50%;
+	background: none;
+	color: inherit;
+	cursor: pointer;
+	transition: border-color .15s ease, color .15s ease, transform .15s ease;
+}
+
+.oc-bshare__btn:hover { color: var(--oc-primary); border-color: currentColor; transform: translateY(-1px); }
+
+.oc-bshare__btn svg { inline-size: 18px; block-size: 18px; fill: currentColor; }
+
+.oc-bshare__btn.is-done { color: #1c7c3c; border-color: currentColor; }
+
+/* Belongs-to chips. */
+.oc-bmeta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+
+.oc-bmeta__chip {
+	padding: 5px 13px;
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--oc-ink) 6%, transparent);
+	text-decoration: none;
+	font-size: .88em;
+	transition: background .15s ease, color .15s ease;
+}
+
+.oc-bmeta__chip:hover { background: var(--oc-ink, #151a21); color: var(--oc-surface, #fff); }
+
+.oc-bmeta__chip--tag { background: none; border: 1px solid var(--oc-line, #e5e5e5); }
+
+/* --- the conversation --- */
+
+.oc-cmt { margin-block-start: 44px; }
+
+.oc-cmt__title,
+.oc-cmt__ftitle { font-size: 1.25em; margin-block: 0 18px; }
+
+.oc-cmt__list { list-style: none; margin: 0 0 30px; padding: 0; }
+
+.oc-cmt__list ol.children { list-style: none; margin: 14px 0 0; padding-inline-start: 30px; }
+
+.oc-cmt__list .comment { margin-block-end: 14px; }
+
+.oc-cmt__list .comment-body {
+	position: relative;
+	padding: 16px 18px;
+	border: 1px solid var(--oc-line, #e5e5e5);
+	border-radius: var(--oc-radius, 8px);
+	background: var(--oc-surface, #fff);
+}
+
+.oc-cmt__list .comment-meta { display: flex; align-items: center; gap: 10px; margin-block-end: 8px; }
+
+.oc-cmt__list .avatar { border-radius: 50%; }
+
+.oc-cmt__list .comment-author { display: flex; align-items: center; gap: 10px; font-weight: 600; font-style: normal; }
+
+.oc-cmt__list .comment-author .says { display: none; }
+
+.oc-cmt__list .comment-metadata { font-size: .8em; }
+.oc-cmt__list .comment-metadata a { color: var(--oc-ink-2, #6b7482); text-decoration: none; }
+
+.oc-cmt__list .comment-content { line-height: 1.65; }
+.oc-cmt__list .comment-content p:last-child { margin-block-end: 0; }
+
+.oc-cmt__list .reply { margin-block-start: 8px; font-size: .85em; }
+.oc-cmt__list .reply a { text-decoration: none; color: var(--oc-ink-2, #6b7482); }
+.oc-cmt__list .reply a:hover { color: var(--oc-primary); }
+
+.oc-cmt__list .comment-awaiting-moderation { font-size: .85em; color: var(--oc-ink-2, #6b7482); }
+
+/* The form. */
+.oc-cmt .comment-form { display: grid; gap: 12px; }
+
+.oc-cmt .comment-form p { margin: 0; }
+
+.oc-cmt .comment-form input[type="text"],
+.oc-cmt .comment-form input[type="email"],
+.oc-cmt .comment-form textarea {
+	inline-size: 100%;
+	padding: 12px 14px;
+	border: 1px solid var(--oc-line, #e5e5e5);
+	border-radius: calc(var(--oc-radius, 8px) * .75);
+	background: var(--oc-surface, #fff);
+	font: inherit;
+	transition: border-color .15s ease;
+}
+
+.oc-cmt .comment-form input:focus,
+.oc-cmt .comment-form textarea:focus { outline: none; border-color: var(--oc-ink, #151a21); }
+
+@media (min-width: 701px) {
+	.oc-cmt .comment-form-author,
+	.oc-cmt .comment-form-email { display: inline-block; inline-size: calc(50% - 6px); }
+	.oc-cmt .comment-form-author { margin-inline-end: 8px; }
+}
+
+.oc-cmt .form-submit { margin-block-start: 4px; }
+
+.oc-cmt .form-submit .submit {
+	padding: 12px 30px;
+	border: 0;
+	border-radius: calc(var(--oc-radius, 8px) * .75);
+	background: var(--oc-ink, #151a21);
+	color: var(--oc-surface, #fff);
+	font: inherit;
+	font-weight: 600;
+	cursor: pointer;
+	transition: opacity .15s ease;
+}
+
+.oc-cmt .form-submit .submit:hover { opacity: .85; }
+
+/* The trap: unseen by people, irresistible to robots. */
+.oc-cmt-trap {
+	position: absolute !important;
+	inline-size: 1px;
+	block-size: 1px;
+	overflow: hidden;
+	clip-path: inset(50%);
+}
+
+/* =====================================================================
    The brands page — /brands/
    ===================================================================== */
 
