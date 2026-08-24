@@ -1765,23 +1765,6 @@ html.oc-menu-open .oc-menu-dim::after {
 	.oc-vp.is-open .oc-vp__panel { transform: none; }
 }
 
-/* The tick a simple product answers with, right on the button it was
- * asked through. */
-.add_to_cart_button { position: relative; }
-
-.add_to_cart_button.oc-tick::after {
-	content: '✓';
-	position: absolute;
-	inset: 0;
-	display: grid;
-	place-items: center;
-	background: inherit;
-	border-radius: inherit;
-	background-color: var(--oc-surface, #fff);
-	color: var(--oc-primary);
-	font-weight: 700;
-}
-
 /* =====================================================================
    The blog
    ===================================================================== */

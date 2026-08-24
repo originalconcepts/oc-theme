@@ -6495,10 +6495,14 @@
 				} );
 		}
 
+		/* The theme's own card icon: a simple product carries Woo's ajax
+		 * classes and answers with its built-in tick; anything with options
+		 * carries only oc-card-atc — that click opens the panel instead of
+		 * leaving for the product page. */
 		document.addEventListener( 'click', function ( e ) {
-			var a = e.target.closest( 'a.add_to_cart_button.product_type_variable' );
+			var a = e.target.closest( 'a.oc-card-atc:not(.ajax_add_to_cart), a.add_to_cart_button.product_type_variable' );
 
-			if ( ! a || ! a.closest( '.products' ) ) {
+			if ( ! a ) {
 				return;
 			}
 
@@ -6506,20 +6510,6 @@
 			e.stopPropagation();
 			vpOpen( a.dataset.product_id || a.getAttribute( 'data-product_id' ) || '' );
 		}, true );
-
-		/* A product with nothing to choose adds where it stands, and the
-		 * button says so with a tick. Woo's own script does the adding; the
-		 * tick rides its jQuery event, feature-checked (DECISIONS.md). */
-		if ( window.jQuery ) {
-			window.jQuery( document.body ).on( 'added_to_cart', function ( e2, f, h, btn ) {
-				var b = btn && btn[ 0 ];
-
-				if ( b ) {
-					b.classList.add( 'oc-tick' );
-					setTimeout( function () { b.classList.remove( 'oc-tick' ); }, 1800 );
-				}
-			} );
-		}
 	}() );
 
 	/* ---------- reading progress (single post) ---------- */
