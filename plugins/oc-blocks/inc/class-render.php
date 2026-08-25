@@ -400,7 +400,20 @@ final class Render {
 			return '';
 		}
 
-		$one   = count( $slides ) < 2;
+		$one = count( $slides ) < 2;
+
+		// The fixed layer is honest only on a single-slide banner: in a
+		// moving strip every slide's fixed picture holds the same spot on
+		// the screen, and sliding between them reads as a broken crossfade.
+		// A slider at full strength gets the strong drift instead.
+		if ( ! $one ) {
+			$slides = str_replace(
+				array( ' ocb-hero__slide--fixedbg', 'ocb-hero__media ocb-hero__media--fixed"' ),
+				array( '', 'ocb-hero__media" data-ocb-parallax="100"' ),
+				$slides
+			);
+		}
+
 		$style = '--ocb-hero-h:' . absint( $s['h'] ) . 'px;--ocb-hero-hm:' . absint( $s['hm'] ) . 'px;'
 			. ( '' === (string) ( $s['fadebg'] ?? '' ) ? '' : '--ocb-hero-fadebg:' . $s['fadebg'] . ';' );
 
