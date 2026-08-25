@@ -379,8 +379,10 @@ final class Render {
 			$sets[] = $words;
 
 			// At full strength the picture stands still and the page glides
-			// over it: a fixed layer, clipped to its own slide.
-			$fixed = 100 === (int) $s['parallax'];
+			// over it: a fixed layer, clipped to its own slide. Not in fade
+			// mode — browsers refuse to paint a fixed layer inside a parent
+			// whose opacity is animating, and the slide went blank.
+			$fixed = 100 === (int) $s['parallax'] && 'fade' !== (string) $s['effect'];
 
 			$open  = '' !== $slide['url'] && '' === $slide['cta']
 				? '<a class="ocb-hero__slide' . ( $fixed ? ' ocb-hero__slide--fixedbg' : '' ) . ( 0 === $at ? ' is-on' : '' ) . '" href="' . esc_url( (string) $slide['url'] ) . '">'
@@ -1435,7 +1437,7 @@ final class Render {
 
 		$out .= '<form class="ocb-lead" method="post" action="' . esc_url( admin_url( 'admin-ajax.php' ) ) . '" data-ocb-lead novalidate'
 			. ' data-err-req="' . esc_attr__( 'Please fill in this field.', 'oc-blocks' ) . '"'
-			. ' data-err-phone="' . esc_attr__( 'Please enter a valid phone number (at least 9 digits).', 'oc-blocks' ) . '"'
+			. ' data-err-phone="' . esc_attr__( 'Please enter a valid phone number (10 digits).', 'oc-blocks' ) . '"'
 			. ' data-err-email="' . esc_attr__( 'Please enter a valid email address.', 'oc-blocks' ) . '"'
 			. ' data-err-consent="' . esc_attr__( 'Please tick the approval to continue.', 'oc-blocks' ) . '">'
 			. '<input type="hidden" name="action" value="oc_blocks_lead">'

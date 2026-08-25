@@ -670,7 +670,7 @@
 			if ( 'phone' === field.name && '' !== value ) {
 				var digits = value.replace( /\D/g, '' );
 
-				if ( digits.length < 9 || digits.length > 10 ) {
+				if ( 10 !== digits.length ) {
 					return msgs.phone;
 				}
 			}

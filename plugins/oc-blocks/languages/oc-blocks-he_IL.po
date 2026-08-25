@@ -1290,3 +1290,6 @@ msgstr "נא להזין כתובת אימייל תקינה."
 
 msgid "Please tick the approval to continue."
 msgstr "נא לסמן את האישור כדי להמשיך."
+
+msgid "Please enter a valid phone number (10 digits)."
+msgstr "נא להזין מספר טלפון תקין (10 ספרות)."
