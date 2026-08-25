@@ -35,7 +35,9 @@
 
 .oc-composed .oc-content { margin: 0; }
 
-.ocb { position: relative; overflow: hidden; }
+/* clip, not hidden: hidden makes the section a scroll container and
+ * position:sticky inside it (the scrolly pin) sticks to nothing. */
+.ocb { position: relative; overflow: hidden; overflow: clip; }
 
 .ocb__in { position: relative; margin-inline: auto; }
 

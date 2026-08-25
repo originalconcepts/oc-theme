@@ -35,6 +35,7 @@ final class Render {
 		add_filter( 'the_content', array( $this, 'compose' ), 9 );
 		add_filter( 'body_class', array( $this, 'body_class' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'assets' ) );
+		add_action( 'wp_enqueue_scripts', array( $this, 'integration_assets' ), 15 );
 
 		// A category may nominate a composed page as its lobby, shown above
 		// the products: "the women's front page" is just another page.
@@ -960,6 +961,59 @@ final class Render {
 
 		wp_enqueue_style( 'oc-blocks', OC_BLOCKS_URI . 'assets/blocks.css', array(), (string) filemtime( OC_BLOCKS_DIR . 'assets/blocks.css' ) );
 		wp_enqueue_script( 'oc-blocks', OC_BLOCKS_URI . 'assets/blocks.js', array(), (string) filemtime( OC_BLOCKS_DIR . 'assets/blocks.js' ), array( 'strategy' => 'defer', 'in_footer' => true ) );
+	}
+
+	/**
+	 * Stories and reviews decide their assets by looking for their shortcode
+	 * in the post content — but composed sections live in meta, and their
+	 * rendered markup often arrives from cache without the shortcode ever
+	 * running. So when a section needs them, their assets are requested here,
+	 * head-side, before each plugin's own loader makes its decision.
+	 */
+	public function integration_assets(): void {
+		$page = 0;
+
+		if ( is_page() ) {
+			$page = (int) get_queried_object_id();
+		} elseif ( function_exists( 'is_product_category' ) && is_product_category() ) {
+			$term = get_queried_object();
+
+			if ( $term instanceof \WP_Term ) {
+				$page = absint( get_term_meta( $term->term_id, 'oc_lobby_page', true ) );
+			}
+		}
+
+		if ( ! $page || ! self::is_composed( $page ) ) {
+			return;
+		}
+
+		$types = array();
+
+		foreach ( Registry::sections( $page ) as $s ) {
+			if ( ! empty( $s['on'] ) && isset( $s['type'] ) ) {
+				$types[ (string) $s['type'] ] = true;
+			}
+		}
+
+		// OC Story loads nothing unless a surface asked for it by now — the
+		// same call its own shortcode detection makes, plus the force filter
+		// as a second belt.
+		if ( isset( $types['story'] ) && class_exists( '\\OCS\\Display\\Injector' ) ) {
+			add_filter( 'ocs_force_assets', '__return_true' );
+
+			if ( class_exists( '\\OCS\\Surfaces\\SurfaceManager' ) ) {
+				foreach ( (array) \OCS\Surfaces\SurfaceManager::ids() as $id ) {
+					\OCS\Display\Injector::need( (string) $id );
+				}
+			}
+		}
+
+		// OC Reviews registers its bundle on every page; enqueueing the
+		// handles is all it takes.
+		if ( isset( $types['reviews'] ) && wp_style_is( 'ocr-front', 'registered' ) ) {
+			wp_enqueue_style( 'ocr-front' );
+			wp_enqueue_script( 'ocr-front' );
+		}
 	}
 
 	/*
