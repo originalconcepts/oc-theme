@@ -355,7 +355,10 @@
 .ocb-shelf--gap-small { --ocb-shelf-gap: 12px; }
 .ocb-shelf--gap-tight { --ocb-shelf-gap: 2px; }
 
-.ocb-shelf ul.products {
+/* .oc-compose in every selector: the theme's own `.woocommerce ul.products`
+ * rules weigh the same and load later, so the shelf needs the extra class
+ * to actually win — without it a slider stands as a grid. */
+.oc-compose .ocb-shelf ul.products {
 	display: grid;
 	grid-template-columns: repeat(var(--ocb-cols, 4), minmax(0, 1fr));
 	gap: var(--ocb-shelf-gap);
@@ -364,9 +367,9 @@
 	list-style: none;
 }
 
-.ocb-shelf ul.products li.product { width: auto; margin: 0; }
+.oc-compose .ocb-shelf ul.products li.product { width: auto; margin: 0; }
 
-.ocb-shelf--slider ul.products {
+.oc-compose .ocb-shelf--slider ul.products {
 	display: flex;
 	overflow-x: auto;
 	scroll-snap-type: x proximity;
@@ -375,16 +378,17 @@
 	padding-block-end: 6px;
 }
 
-.ocb-shelf--slider ul.products::-webkit-scrollbar { display: none; }
+.oc-compose .ocb-shelf--slider ul.products::-webkit-scrollbar { display: none; }
 
-.ocb-shelf--slider ul.products li.product {
+.oc-compose .ocb-shelf--slider ul.products li.product {
 	flex: 0 0 calc((100% - (var(--ocb-cols, 4) - 1) * var(--ocb-shelf-gap)) / var(--ocb-cols, 4));
+	max-inline-size: none;
 	scroll-snap-align: start;
 }
 
 @media (max-width: 782px) {
-	.ocb-shelf ul.products { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-	.ocb-shelf--slider ul.products li.product { flex-basis: 72%; }
+	.oc-compose .ocb-shelf ul.products { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+	.oc-compose .ocb-shelf--slider ul.products li.product { flex-basis: 72%; }
 }
 
 /* ---------- categories ---------- */
@@ -463,12 +467,20 @@
 .ocb-cats--w-center .ocb-cat__name { inset-block-start: 50%; transform: translateY(-50%); }
 .ocb-cats--w-bottom .ocb-cat__name { inset-block-end: 6px; }
 
-.ocb-cats--w-center .ocb-cat__pic::after,
-.ocb-cats--w-bottom .ocb-cat__pic::after {
+.ocb-cats--w-center .ocb-cat__pic::after {
 	content: "";
 	position: absolute;
 	inset: 0;
 	background: rgb(0 0 0 / 22%);
+}
+
+/* Words at the bottom get only a soft foot of shade, fading out upward —
+ * the picture itself stays clean. */
+.ocb-cats--w-bottom .ocb-cat__pic::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(to top, rgb(0 0 0 / 52%), rgb(0 0 0 / 16%) 38%, transparent 62%);
 }
 
 @media (max-width: 782px) {
