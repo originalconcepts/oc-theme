@@ -93,6 +93,7 @@
 .ocb--in-stagger .ocb-brand,
 .ocb--in-stagger .ocb-post,
 .ocb--in-stagger li.product,
+.ocb--in-stagger .ocb-ico__one,
 .ocb--in-stagger .ocb-words > * {
 	opacity: 0;
 	transform: translateY(16px);
@@ -104,6 +105,7 @@
 .ocb--in-stagger.is-in .ocb-brand,
 .ocb--in-stagger.is-in .ocb-post,
 .ocb--in-stagger.is-in li.product,
+.ocb--in-stagger.is-in .ocb-ico__one,
 .ocb--in-stagger.is-in .ocb-words > * {
 	opacity: 1;
 	transform: none;
@@ -1486,4 +1488,52 @@ html[dir="rtl"] .ocb-look__nav .ocb-arr svg { transform: scaleX(-1); }
 	.ocb-brs__shot { flex-basis: 78%; }
 
 	.ocb-brs__others { grid-template-columns: 1fr 1fr; }
+}
+
+
+/* ---------- icon columns ---------- */
+
+.ocb-ico {
+	display: grid;
+	grid-template-columns: repeat(var(--ocb-ico-n, 3), minmax(0, 1fr));
+	gap: clamp(24px, 4vw, 56px);
+	text-align: center;
+}
+
+.ocb-ico__pic {
+	display: inline-grid;
+	place-items: center;
+	color: var(--oc-ink, #1c1c1c);
+}
+
+.ocb-ico__pic svg { inline-size: var(--ocb-ico-size, 40px); block-size: var(--ocb-ico-size, 40px); }
+
+.ocb-ico--s { --ocb-ico-size: 30px; }
+.ocb-ico--l { --ocb-ico-size: 54px; }
+
+/* The circle under the icon, when asked for. */
+.ocb-ico--bg .ocb-ico__pic {
+	inline-size: calc(var(--ocb-ico-size, 40px) * 2.1);
+	block-size: calc(var(--ocb-ico-size, 40px) * 2.1);
+	border-radius: 50%;
+	background: var(--ocb-ico-bg, color-mix(in srgb, var(--oc-ink, #1c1c1c) 6%, transparent));
+}
+
+.ocb-ico__h {
+	margin: 16px 0 0;
+	font-size: 1.15em;
+	letter-spacing: .02em;
+	font-weight: 600;
+}
+
+.ocb-ico__t {
+	margin: 8px auto 0;
+	max-inline-size: 320px;
+	line-height: 1.65;
+	opacity: .75;
+	font-size: .95em;
+}
+
+@media (max-width: 782px) {
+	.ocb-ico { grid-template-columns: 1fr; gap: 30px; }
 }

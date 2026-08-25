@@ -1119,3 +1119,81 @@ msgstr "הוראות הגעה"
 
 msgid "Visit our branches"
 msgstr "בקרו בסניפים שלנו"
+
+msgid "Icon columns"
+msgstr "עמודות אייקונים"
+
+msgid "Little promises in a row — shipping, returns, service."
+msgstr "הבטחות קטנות בשורה — משלוח, החזרות, שירות."
+
+msgid "The columns"
+msgstr "העמודות"
+
+msgid "The icon"
+msgstr "האייקון"
+
+msgid "Little heading"
+msgstr "כותרת קטנה"
+
+msgid "A line or two"
+msgstr "שורה או שתיים"
+
+msgid "Icon size"
+msgstr "גודל האייקון"
+
+msgid "Round background behind the icon"
+msgstr "רקע עגול מאחורי האייקון"
+
+msgid "Circle colour"
+msgstr "צבע העיגול"
+
+msgid "Empty takes a soft tone from the theme."
+msgstr "ריק ייקח גוון רך מהתבנית."
+
+msgid "Delivery truck"
+msgstr "משאית משלוח"
+
+msgid "Easy returns"
+msgstr "החזרה קלה"
+
+msgid "Trust badge"
+msgstr "תו אמינות"
+
+msgid "Warranty shield"
+msgstr "מגן אחריות"
+
+msgid "Payment card"
+msgstr "כרטיס אשראי"
+
+msgid "Support headset"
+msgstr "אוזניות שירות"
+
+msgid "Gift"
+msgstr "מתנה"
+
+msgid "Star"
+msgstr "כוכב"
+
+msgid "Heart"
+msgstr "לב"
+
+msgid "Leaf"
+msgstr "עלה"
+
+msgid "Clock"
+msgstr "שעון"
+
+msgid "Package"
+msgstr "חבילה"
+
+msgid "Assembly tools"
+msgstr "כלי הרכבה"
+
+msgid "Armchair"
+msgstr "כורסה"
+
+msgid "Measuring tape"
+msgstr "מטר מדידה"
+
+msgid "Sparkle"
+msgstr "נצנוץ"

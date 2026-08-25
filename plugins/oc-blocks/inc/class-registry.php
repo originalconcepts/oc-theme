@@ -252,6 +252,33 @@ final class Registry {
 	}
 
 	/**
+	 * The icon library's names, for the picker.
+	 *
+	 * @return array<string,string>
+	 */
+	private static function icon_choices(): array {
+		return array(
+			'truck'    => __( 'Delivery truck', 'oc-blocks' ),
+			'returns'  => __( 'Easy returns', 'oc-blocks' ),
+			'badge'    => __( 'Trust badge', 'oc-blocks' ),
+			'shield'   => __( 'Warranty shield', 'oc-blocks' ),
+			'card'     => __( 'Payment card', 'oc-blocks' ),
+			'support'  => __( 'Support headset', 'oc-blocks' ),
+			'gift'     => __( 'Gift', 'oc-blocks' ),
+			'star'     => __( 'Star', 'oc-blocks' ),
+			'heart'    => __( 'Heart', 'oc-blocks' ),
+			'leaf'     => __( 'Leaf', 'oc-blocks' ),
+			'clock'    => __( 'Clock', 'oc-blocks' ),
+			'box'      => __( 'Package', 'oc-blocks' ),
+			'phone'    => __( 'Handset', 'oc-blocks' ),
+			'tools'    => __( 'Assembly tools', 'oc-blocks' ),
+			'armchair' => __( 'Armchair', 'oc-blocks' ),
+			'ruler'    => __( 'Measuring tape', 'oc-blocks' ),
+			'sparkle'  => __( 'Sparkle', 'oc-blocks' ),
+		);
+	}
+
+	/**
 	 * Every section type.
 	 *
 	 * @return array<string,array<string,mixed>>
@@ -1261,6 +1288,62 @@ final class Registry {
 						'label' => __( 'The consent wording', 'oc-blocks' ),
 						'hint'  => __( 'Empty shows "I have read and accept the privacy policy." — the policy words link to the privacy page.', 'oc-blocks' ),
 						'when'  => array( 'consent' => array( '1' ) ),
+					),
+				),
+			),
+			'icons'      => array(
+				'label'  => __( 'Icon columns', 'oc-blocks' ),
+				'blurb'  => __( 'Little promises in a row — shipping, returns, service.', 'oc-blocks' ),
+				'icon'   => '<svg viewBox="0 0 24 24"><circle cx="5" cy="7" r="2.4" opacity=".7"/><circle cx="12" cy="7" r="2.4" opacity=".5"/><circle cx="19" cy="7" r="2.4" opacity=".3"/><path d="M3 13h4M10 13h4M17 13h4M3.5 17h3M10.5 17h3M17.5 17h3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" opacity=".5"/></svg>',
+				'fields' => array(
+					'heading' => array(
+						'type'  => 'text',
+						'label' => __( 'Heading', 'oc-blocks' ),
+					),
+					'items'   => array(
+						'type'  => 'slides',
+						'label' => __( 'The columns', 'oc-blocks' ),
+						'def'   => array(),
+						'sub'   => array(
+							'icon'    => array(
+								'type'    => 'select',
+								'label'   => __( 'The icon', 'oc-blocks' ),
+								'choices' => self::icon_choices(),
+								'def'     => 'truck',
+							),
+							'heading' => array(
+								'type'  => 'text',
+								'label' => __( 'Little heading', 'oc-blocks' ),
+							),
+							'text'    => array(
+								'type'  => 'textarea',
+								'label' => __( 'A line or two', 'oc-blocks' ),
+							),
+						),
+					),
+					'size'    => array(
+						'type'    => 'seg',
+						'label'   => __( 'Icon size', 'oc-blocks' ),
+						'choices' => array(
+							's' => __( 'Small', 'oc-blocks' ),
+							'm' => __( 'Normal', 'oc-blocks' ),
+							'l' => __( 'Large', 'oc-blocks' ),
+						),
+						'def'     => 'm',
+						'group'   => 'design',
+					),
+					'bg'      => array(
+						'type'  => 'toggle',
+						'label' => __( 'Round background behind the icon', 'oc-blocks' ),
+						'def'   => 0,
+						'group' => 'design',
+					),
+					'bgc'     => array(
+						'type'  => 'color',
+						'label' => __( 'Circle colour', 'oc-blocks' ),
+						'hint'  => __( 'Empty takes a soft tone from the theme.', 'oc-blocks' ),
+						'when'  => array( 'bg' => array( '1' ) ),
+						'group' => 'design',
 					),
 				),
 			),

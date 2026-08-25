@@ -273,6 +273,8 @@ final class Render {
 				return self::branches( $s );
 			case 'contact':
 				return self::contact( $s );
+			case 'icons':
+				return self::icons( $s );
 		}
 
 		/**
@@ -1347,6 +1349,75 @@ final class Render {
 			. '</form>';
 
 		return '<div class="ocb-lead__wrap">' . $out . '</div>';
+	}
+
+	/**
+	 * The outline icon library — one hand, drawn to match the Bricks-style
+	 * promise rows: quiet strokes, no fills.
+	 *
+	 * @return array<string,string> Icon id => inner SVG.
+	 */
+	private static function icon_library(): array {
+		return array(
+			'truck'    => '<path d="M2.5 6.5h11V16h-11zM13.5 9.5h3.6l3.4 3.4V16h-7z"/><circle cx="6.8" cy="17.6" r="1.9"/><circle cx="16.6" cy="17.6" r="1.9"/><path d="M4.8 9.5h4M4.8 12h2.6"/>',
+			'returns'  => '<path d="M4 9a8.3 8.3 0 0 1 14.6-2.5L20.5 9M20.5 3.8V9h-5.2M20 15a8.3 8.3 0 0 1-14.6 2.5L3.5 15M3.5 20.2V15h5.2"/>',
+			'badge'    => '<path d="M12 2.6l2 1.8 2.7-.4 1 2.5 2.5 1-.4 2.7 1.8 2-1.8 2 .4 2.7-2.5 1-1 2.5-2.7-.4-2 1.8-2-1.8-2.7.4-1-2.5-2.5-1 .4-2.7-1.8-2 1.8-2-.4-2.7 2.5-1 1-2.5 2.7.4z"/><path d="M8.9 12.1l2.1 2.1 4.1-4.4"/>',
+			'shield'   => '<path d="M12 3l7 2.6v5.5c0 4.3-2.9 7.7-7 9.4-4.1-1.7-7-5.1-7-9.4V5.6z"/><path d="M8.9 12l2.1 2.1 4.1-4.3"/>',
+			'card'     => '<rect x="2.5" y="5.5" width="19" height="13" rx="2"/><path d="M2.5 9.5h19M6 14.5h4.5"/>',
+			'support'  => '<path d="M4.5 13.5v-2.3a7.5 7.5 0 0 1 15 0v2.3"/><rect x="3" y="12.8" width="3.8" height="5.6" rx="1.6"/><rect x="17.2" y="12.8" width="3.8" height="5.6" rx="1.6"/><path d="M19 18.4v.7a2.6 2.6 0 0 1-2.6 2.6h-3.6"/>',
+			'gift'     => '<rect x="3" y="8" width="18" height="3.8"/><path d="M5 11.8v8.7h14v-8.7M12 8v12.5M12 8s-4.4.3-5.4-1.7C5.8 4.8 7.6 3.1 9.2 3.9 10.9 4.8 12 8 12 8zM12 8s4.4.3 5.4-1.7C18.2 4.8 16.4 3.1 14.8 3.9 13.1 4.8 12 8 12 8z"/>',
+			'star'     => '<path d="M12 3.4l2.6 5.4 5.9.8-4.3 4.2 1 5.9-5.2-2.8-5.2 2.8 1-5.9-4.3-4.2 5.9-.8z"/>',
+			'heart'    => '<path d="M12 20.4S3.6 15.4 3.6 9.6c0-3 2.4-5.1 4.8-5.1 1.6 0 3 .8 3.6 2 .6-1.2 2-2 3.6-2 2.4 0 4.8 2.1 4.8 5.1 0 5.8-8.4 10.8-8.4 10.8z"/>',
+			'leaf'     => '<path d="M5 19C5 9.4 11 4.6 20 4c.5 9-4 15-15 15z"/><path d="M5 19c3-5 7-8.5 11-10.6"/>',
+			'clock'    => '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.4V12l3.1 2"/>',
+			'box'      => '<path d="M3.5 7.5L12 3l8.5 4.5v9L12 21l-8.5-4.5zM3.5 7.5L12 12l8.5-4.5M12 12v9"/>',
+			'phone'    => '<path d="M5 4h4l2 5-2.5 1.5a12 12 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/>',
+			'tools'    => '<path d="M14.7 6.3a4.3 4.3 0 0 0-5.8 5.5L3.2 17.5 6.5 20.8l5.7-5.7a4.3 4.3 0 0 0 5.5-5.8L14.9 12l-2.9-2.9z"/>',
+			'armchair' => '<path d="M5.5 11V7.5a3 3 0 0 1 3-3h7a3 3 0 0 1 3 3V11"/><path d="M4 11.2a2 2 0 0 1 2 2v1.8h12v-1.8a2 2 0 0 1 4 0v3.3a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3v-3.3a2 2 0 0 1 2-2zM6.5 19.5V21M17.5 19.5V21"/>',
+			'ruler'    => '<rect x="2.5" y="9" width="19" height="6" rx="1"/><path d="M6.5 9v2.6M10.2 9v3.6M13.8 9v2.6M17.5 9v3.6"/>',
+			'sparkle'  => '<path d="M11 3.5l1.6 4.9 4.9 1.6-4.9 1.6L11 16.5l-1.6-4.9L4.5 10l4.9-1.6zM18.5 15.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z"/>',
+		);
+	}
+
+	/**
+	 * Icon columns: a row of quiet promises — an icon, a few words each,
+	 * optionally sitting on a soft round circle.
+	 *
+	 * @param array<string,mixed> $s Section.
+	 */
+	private static function icons( array $s ): string {
+		$library = self::icon_library();
+		$items   = '';
+		$count   = 0;
+
+		foreach ( (array) $s['items'] as $row ) {
+			$head = trim( (string) ( $row['heading'] ?? '' ) );
+			$text = trim( (string) ( $row['text'] ?? '' ) );
+			$icon = $library[ (string) ( $row['icon'] ?? '' ) ] ?? '';
+
+			if ( '' === $head && '' === $text ) {
+				continue;
+			}
+
+			$count++;
+			$items .= '<div class="ocb-ico__one">'
+				. ( '' === $icon ? '' : '<i class="ocb-ico__pic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' . $icon . '</svg></i>' )
+				. ( '' === $head ? '' : '<h3 class="ocb-ico__h">' . esc_html( $head ) . '</h3>' )
+				. ( '' === $text ? '' : '<p class="ocb-ico__t">' . esc_html( $text ) . '</p>' )
+				. '</div>';
+		}
+
+		if ( 0 === $count ) {
+			return '';
+		}
+
+		$style = '--ocb-ico-n:' . $count . ';'
+			. ( '' === ( $s['bgc'] ?? '' ) ? '' : '--ocb-ico-bg:' . $s['bgc'] . ';' );
+
+		return self::heading( $s )
+			. '<div class="ocb-ico ocb-ico--' . esc_attr( (string) $s['size'] ) . ( empty( $s['bg'] ) ? '' : ' ocb-ico--bg' ) . '" style="' . esc_attr( $style ) . '">'
+			. $items
+			. '</div>';
 	}
 
 	/*

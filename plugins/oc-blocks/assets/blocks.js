@@ -30,7 +30,7 @@
 		// Stagger numbers its children once, here, so the stylesheet only
 		// needs one rule.
 		if ( el.classList.contains( 'ocb--in-stagger' ) ) {
-			var kids = el.querySelectorAll( '.ocb-cat, .ocb-brand, .ocb-post, li.product, .ocb-words > *' );
+			var kids = el.querySelectorAll( '.ocb-cat, .ocb-brand, .ocb-post, li.product, .ocb-ico__one, .ocb-words > *' );
 
 			kids.forEach( function ( kid, i ) {
 				kid.style.setProperty( '--ocb-i', String( Math.min( i, 11 ) ) );
