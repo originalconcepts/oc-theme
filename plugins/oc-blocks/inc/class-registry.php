@@ -686,6 +686,46 @@ final class Registry {
 				),
 			),
 
+			'scrolly'    => array(
+				'label'  => __( 'Scrolling story', 'oc-blocks' ),
+				'blurb'  => __( 'The picture stays; the words scroll past it, chapter by chapter.', 'oc-blocks' ),
+				'icon'   => '<svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="10" height="14" rx="1.5" opacity=".45"/><path d="M16 7h5.5M16 11h5.5M16 15h4M16 19h3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" opacity=".7"/></svg>',
+				'fields' => array(
+					'steps' => array(
+						'type'  => 'slides',
+						'label' => __( 'Chapters', 'oc-blocks' ),
+						'sub'   => array(
+							'img'     => array(
+								'type'  => 'image',
+								'label' => __( 'Picture', 'oc-blocks' ),
+							),
+							'vid'     => array(
+								'type'  => 'video',
+								'label' => __( 'Or a video', 'oc-blocks' ),
+							),
+							'heading' => array(
+								'type'  => 'text',
+								'label' => __( 'Heading', 'oc-blocks' ),
+							),
+							'text'    => array(
+								'type'  => 'textarea',
+								'label' => __( 'The words', 'oc-blocks' ),
+							),
+						),
+					),
+					'side'  => array(
+						'type'    => 'seg',
+						'label'   => __( 'The picture stands', 'oc-blocks' ),
+						'choices' => array(
+							'start' => __( 'Reading side', 'oc-blocks' ),
+							'end'   => __( 'Far side', 'oc-blocks' ),
+						),
+						'def'     => 'start',
+						'group'   => 'design',
+					),
+				),
+			),
+
 			'media'      => array(
 				'label'  => __( 'Media grid', 'oc-blocks' ),
 				'blurb'  => __( 'Pictures and video in an arrangement with character.', 'oc-blocks' ),

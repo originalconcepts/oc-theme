@@ -558,3 +558,15 @@ msgstr "מעוגלות"
 
 msgid "Choose the picture first, then drop spots on it."
 msgstr "בחרו קודם את התמונה, ואז הוסיפו עליה נקודות."
+
+msgid "Scrolling story"
+msgstr "תוכן נגלל"
+
+msgid "The picture stays; the words scroll past it, chapter by chapter."
+msgstr "התמונה נשארת; הטקסט נגלל לצידה, פרק אחרי פרק."
+
+msgid "Chapters"
+msgstr "פרקים"
+
+msgid "Picture"
+msgstr "תמונה"

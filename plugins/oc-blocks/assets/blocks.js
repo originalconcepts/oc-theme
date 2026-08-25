@@ -293,6 +293,36 @@
 		} );
 	} );
 
+	/* ---------- the scrolling story ---------- */
+
+	document.querySelectorAll( '[data-ocb-sc]' ).forEach( function ( sc ) {
+		var frames = sc.querySelectorAll( '[data-ocb-frame]' );
+		var steps = sc.querySelectorAll( '[data-ocb-step]' );
+
+		if ( frames.length < 2 ) {
+			return;
+		}
+
+		// A chapter takes the stage when it crosses the middle of the view.
+		var mid = new IntersectionObserver( function ( entries ) {
+			entries.forEach( function ( entry ) {
+				if ( ! entry.isIntersecting ) {
+					return;
+				}
+
+				var at = Number( entry.target.dataset.ocbStep );
+
+				frames.forEach( function ( fr, i ) {
+					fr.classList.toggle( 'is-on', i === at );
+				} );
+			} );
+		}, { rootMargin: '-46% 0px -46% 0px', threshold: 0 } );
+
+		steps.forEach( function ( step ) {
+			mid.observe( step );
+		} );
+	} );
+
 	/* ---------- parallax: the picture drifts slower than the page ---------- */
 
 	var lax = document.querySelectorAll( '[data-ocb-parallax]' );

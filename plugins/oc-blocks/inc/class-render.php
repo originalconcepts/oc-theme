@@ -253,6 +253,8 @@ final class Render {
 				return self::look( $s );
 			case 'media':
 				return self::media( $s );
+			case 'scrolly':
+				return self::scrolly( $s );
 		}
 
 		/**
@@ -806,6 +808,57 @@ final class Render {
 		}
 
 		return '<div class="ocb-mg ocb-mg--' . esc_attr( (string) $s['preset'] ) . ' ocb-mg--gap-' . esc_attr( (string) $s['gap'] ) . ' ocb-mg--c-' . esc_attr( (string) $s['corners'] ) . '">' . $cells . '</div>';
+	}
+
+	/**
+	 * The scrolling story: the picture holds its place while the words
+	 * scroll past it in chapters; each chapter brings its own picture, and
+	 * when the last one ends the page simply carries on.
+	 *
+	 * @param array<string,mixed> $s Section.
+	 * @return string
+	 */
+	private static function scrolly( array $s ): string {
+		$frames = '';
+		$steps  = '';
+		$at     = 0;
+
+		foreach ( (array) $s['steps'] as $step ) {
+			$media = '';
+
+			if ( '' !== $step['vid'] ) {
+				$media = '<video src="' . esc_url( (string) $step['vid'] ) . '" autoplay muted loop playsinline preload="metadata"></video>';
+			} elseif ( $step['img'] > 0 ) {
+				$url = (string) wp_get_attachment_image_url( (int) $step['img'], 'full' );
+
+				if ( '' !== $url ) {
+					$media = '<img src="' . esc_url( $url ) . '" alt="" loading="lazy" decoding="async">';
+				}
+			}
+
+			if ( '' === $media && '' === trim( (string) $step['heading'] ) && '' === trim( (string) $step['text'] ) ) {
+				continue;
+			}
+
+			$frames .= '<div class="ocb-sc__frame' . ( 0 === $at ? ' is-on' : '' ) . '" data-ocb-frame="' . $at . '">' . $media . '</div>';
+
+			$steps .= '<div class="ocb-sc__step" data-ocb-step="' . $at . '">'
+				. '<div class="ocb-sc__mmedia">' . $media . '</div>'
+				. ( '' === $step['heading'] ? '' : '<h3>' . esc_html( (string) $step['heading'] ) . '</h3>' )
+				. ( '' === $step['text'] ? '' : '<div class="ocb-sc__words">' . wpautop( esc_html( (string) $step['text'] ) ) . '</div>' )
+				. '</div>';
+
+			++$at;
+		}
+
+		if ( 0 === $at ) {
+			return '';
+		}
+
+		return '<div class="ocb-sc ocb-sc--' . esc_attr( (string) $s['side'] ) . '" data-ocb-sc>'
+			. '<div class="ocb-sc__pin"><div class="ocb-sc__stage">' . $frames . '</div></div>'
+			. '<div class="ocb-sc__flow">' . $steps . '</div>'
+			. '</div>';
 	}
 
 	/*

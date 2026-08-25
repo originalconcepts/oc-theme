@@ -796,3 +796,77 @@ html[dir="rtl"] .ocb-look__spot { translate: 50% -50%; }
 	.ocb-mg--inset .ocb-mg__cell--1 { aspect-ratio: 4 / 3; }
 	.ocb-mg--inset .ocb-mg__cell--2 { inline-size: 42%; }
 }
+
+/* ---------- the scrolling story ---------- */
+
+.ocb-sc {
+	display: grid;
+	grid-template-columns: 1.05fr 1fr;
+	gap: clamp(24px, 4vw, 70px);
+	align-items: start;
+}
+
+.ocb-sc--end .ocb-sc__pin { order: 2; }
+
+/* The picture holds its place while the words walk past. */
+.ocb-sc__pin {
+	position: sticky;
+	inset-block-start: calc(var(--oc-header-h, 72px) + 30px);
+}
+
+.ocb-sc__stage {
+	position: relative;
+	block-size: min(74vh, 640px);
+	overflow: hidden;
+	border-radius: var(--oc-radius, 8px);
+	background: color-mix(in srgb, var(--oc-ink, #1c1c1c) 5%, transparent);
+}
+
+.ocb-sc__frame {
+	position: absolute;
+	inset: 0;
+	opacity: 0;
+	transform: scale(1.03);
+	transition: opacity .6s ease, transform .9s cubic-bezier(.22, .61, .36, 1);
+}
+
+.ocb-sc__frame.is-on { opacity: 1; transform: none; }
+
+.ocb-sc__frame img,
+.ocb-sc__frame video {
+	inline-size: 100%;
+	block-size: 100%;
+	object-fit: cover;
+	display: block;
+}
+
+/* Each chapter earns its own stretch of road. */
+.ocb-sc__step {
+	min-block-size: 72vh;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+}
+
+.ocb-sc__step h3 {
+	margin: 0 0 12px;
+	font-size: clamp(1.3em, 2.2vw, 1.7em);
+}
+
+.ocb-sc__words { line-height: 1.8; opacity: .85; max-inline-size: 480px; }
+
+/* The pinned stage speaks for the pictures on a desktop. */
+.ocb-sc__mmedia { display: none; }
+
+@media (max-width: 782px) {
+	.ocb-sc { grid-template-columns: 1fr; gap: 0; }
+
+	.ocb-sc__pin { display: none; }
+
+	.ocb-sc__step { min-block-size: 0; padding-block: 22px; }
+
+	.ocb-sc__mmedia { display: block; margin-block-end: 16px; border-radius: var(--oc-radius, 8px); overflow: hidden; }
+
+	.ocb-sc__mmedia img,
+	.ocb-sc__mmedia video { inline-size: 100%; aspect-ratio: 4 / 3; object-fit: cover; display: block; }
+}

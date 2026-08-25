@@ -65,21 +65,25 @@
 			section[ key ] = defOf( D.types[ type ].fields[ key ] );
 		} );
 
-		if ( 'hero' === type ) {
-			section.slides = [ blankSlide() ];
-		}
+		// A repeater greets with its first row already open — an empty list
+		// teaches nothing.
+		Object.keys( D.types[ type ].fields ).forEach( function ( key ) {
+			if ( 'slides' === D.types[ type ].fields[ key ].type ) {
+				section[ key ] = [ blankRow( D.types[ type ].fields[ key ].sub ) ];
+			}
+		} );
 
 		return section;
 	}
 
-	function blankSlide() {
-		var slide = {};
+	function blankRow( sub ) {
+		var row = {};
 
-		Object.keys( D.types.hero.fields.slides.sub ).forEach( function ( key ) {
-			slide[ key ] = defOf( D.types.hero.fields.slides.sub[ key ] );
+		Object.keys( sub || {} ).forEach( function ( key ) {
+			row[ key ] = defOf( sub[ key ] );
 		} );
 
-		return slide;
+		return row;
 	}
 
 	function defOf( field ) {
@@ -842,7 +846,7 @@
 			text: '+ ' + T.addSlide,
 			onclick: function () {
 				section[ key ] = section[ key ] || [];
-				section[ key ].push( blankSlide() );
+				section[ key ].push( blankRow( field.sub ) );
 				touch();
 				paintSettings();
 			}
