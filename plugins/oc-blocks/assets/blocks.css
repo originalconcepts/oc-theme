@@ -1845,27 +1845,37 @@ html[dir="rtl"] .ocb-look__nav .ocb-arr svg { transform: scaleX(-1); }
 
 	.ocb-ico--m2 { grid-template-columns: 1fr 1fr; gap: 24px 14px; }
 
-	/* One at a time, after Prestige: the standing column rises and fades
-	 * out, the next one breathes in from below. */
-	.ocb-ico--mslider { display: grid; }
+	/* One at a time, after Prestige: the standing column rises well up
+	 * and fades away; only then does the next breathe in from below.
+	 * Full width, centred, and a finger swipe walks it. */
+	.ocb-ico--mslider {
+		display: grid;
+		grid-template-columns: 1fr;
+		min-block-size: 190px;
+		align-items: start;
+		touch-action: pan-y;
+	}
 
 	.ocb .ocb-ico--mslider .ocb-ico__one {
 		grid-area: 1 / 1;
+		inline-size: 100%;
 		opacity: 0;
 		transform: none;
 		transition: none;
 		pointer-events: none;
 	}
 
+	.ocb-ico--mslider .ocb-ico__t { max-inline-size: 88%; }
+
 	.ocb .ocb-ico--mslider .ocb-ico__one.is-live {
 		opacity: 1;
 		pointer-events: auto;
-		animation: ocb-ico-in .65s cubic-bezier(.22, .61, .36, 1);
+		animation: ocb-ico-in .85s cubic-bezier(.22, .61, .36, 1) backwards;
 	}
 
 	.ocb .ocb-ico--mslider .ocb-ico__one.is-out {
 		opacity: 1;
-		animation: ocb-ico-out .45s ease forwards;
+		animation: ocb-ico-out .7s ease forwards;
 	}
 
 	.ocb-ico__dots {
@@ -1873,7 +1883,7 @@ html[dir="rtl"] .ocb-look__nav .ocb-arr svg { transform: scaleX(-1); }
 		display: flex;
 		justify-content: center;
 		gap: 7px;
-		margin-block-start: 18px;
+		margin-block-start: 20px;
 	}
 
 	.ocb-ico__dots button {
@@ -1882,17 +1892,18 @@ html[dir="rtl"] .ocb-look__nav .ocb-arr svg { transform: scaleX(-1); }
 		padding: 0;
 		border: 0;
 		border-radius: 50%;
-		background: color-mix(in srgb, currentColor 22%, transparent);
+		background: color-mix(in srgb, var(--oc-ink, #1c1c1c) 20%, transparent);
 		cursor: pointer;
+		transition: background .2s ease;
 	}
 
-	.ocb-ico__dots button.is-on { background: currentColor; }
+	.ocb-ico__dots button.is-on { background: color-mix(in srgb, var(--oc-ink, #1c1c1c) 80%, transparent); }
 
 	@keyframes ocb-ico-in {
-		from { opacity: 0; transform: translateY(20px); }
+		from { opacity: 0; transform: translateY(30px); }
 	}
 
 	@keyframes ocb-ico-out {
-		to { opacity: 0; transform: translateY(-18px); }
+		to { opacity: 0; transform: translateY(-40px); }
 	}
 }

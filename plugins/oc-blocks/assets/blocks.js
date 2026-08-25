@@ -126,6 +126,29 @@
 
 		if ( fade ) {
 			slides[ 0 ].classList.add( 'is-on' );
+
+			// The strip cannot scroll in fade mode, so the finger speaks
+			// through a swipe instead.
+			var fx0 = null;
+
+			strip.addEventListener( 'touchstart', function ( e ) {
+				fx0 = e.touches[ 0 ].clientX;
+			}, { passive: true } );
+
+			strip.addEventListener( 'touchend', function ( e ) {
+				if ( null === fx0 ) {
+					return;
+				}
+
+				var fdx = e.changedTouches[ 0 ].clientX - fx0;
+
+				fx0 = null;
+
+				if ( Math.abs( fdx ) > 45 ) {
+					go( at + ( fdx < 0 ? 1 : -1 ) );
+					arm();
+				}
+			} );
 		} else {
 			// A finger's own scroll keeps the dots honest.
 			var tick = false;
@@ -476,15 +499,24 @@
 
 			at = ( n + items.length ) % items.length;
 
-			if ( old !== items[ at ] ) {
+			var next = items[ at ];
+
+			if ( old !== next ) {
+				// First the standing one leaves, all the way; only then
+				// does the next rise in.
 				old.classList.remove( 'is-live' );
 				old.classList.add( 'is-out' );
 				setTimeout( function () {
 					old.classList.remove( 'is-out' );
-				}, 460 );
+				}, 720 );
+				setTimeout( function () {
+					if ( items[ at ] === next ) {
+						next.classList.add( 'is-live' );
+					}
+				}, 600 );
+			} else {
+				next.classList.add( 'is-live' );
 			}
-
-			items[ at ].classList.add( 'is-live' );
 
 			[].forEach.call( dots.children, function ( d, i ) {
 				d.classList.toggle( 'is-on', i === at );
@@ -497,9 +529,31 @@
 			if ( ! reduced ) {
 				timer = setInterval( function () {
 					show( at + 1 );
-				}, 3600 );
+				}, 4400 );
 			}
 		}
+
+		// A finger walks it too.
+		var x0 = null;
+
+		ico.addEventListener( 'touchstart', function ( e ) {
+			x0 = e.touches[ 0 ].clientX;
+		}, { passive: true } );
+
+		ico.addEventListener( 'touchend', function ( e ) {
+			if ( null === x0 ) {
+				return;
+			}
+
+			var dx = e.changedTouches[ 0 ].clientX - x0;
+
+			x0 = null;
+
+			if ( Math.abs( dx ) > 40 ) {
+				show( at + ( dx < 0 ? 1 : -1 ) );
+				arm();
+			}
+		} );
 
 		show( 0 );
 		arm();
