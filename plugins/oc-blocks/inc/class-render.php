@@ -140,7 +140,7 @@ final class Render {
 
 		$out = '';
 
-		foreach ( $sections as $section ) {
+		foreach ( array_values( $sections ) as $at => $section ) {
 			if ( empty( $section['on'] ) ) {
 				continue;
 			}
@@ -151,7 +151,7 @@ final class Render {
 				continue;
 			}
 
-			$out .= self::wrap( $section, $inner );
+			$out .= self::wrap( $section, $inner, $at );
 		}
 
 		return '' === $out ? '' : '<div class="oc-compose">' . $out . '</div>';
@@ -164,7 +164,7 @@ final class Render {
 	 * @param string              $inner Block HTML.
 	 * @return string
 	 */
-	private static function wrap( array $s, string $inner ): string {
+	private static function wrap( array $s, string $inner, int $at = -1 ): string {
 		$type    = (string) $s['type'];
 		$classes = array(
 			'ocb',
@@ -222,6 +222,7 @@ final class Render {
 		}
 
 		return '<section class="' . esc_attr( implode( ' ', $classes ) ) . '"'
+			. ( $at < 0 ? '' : ' data-ocb-n="' . $at . '"' )
 			. ( '' === $style ? '' : ' style="' . esc_attr( $style ) . '"' ) . '>'
 			. $bg
 			. '<div class="ocb__in">' . $inner . '</div>'
@@ -343,7 +344,7 @@ final class Render {
 			$close = '' !== $slide['url'] && '' === $slide['cta'] ? '</a>' : '</div>';
 
 			$slides[] = $open
-				. '<div class="ocb-hero__media"' . ( empty( $s['parallax'] ) ? '' : ' data-ocb-parallax' ) . '>' . $media . '</div>'
+				. '<div class="ocb-hero__media"' . ( empty( $s['parallax'] ) ? '' : ' data-ocb-parallax="' . absint( $s['parallax'] ) . '"' ) . '>' . $media . '</div>'
 				. ( $s['shade'] > 0 ? '<div class="ocb-hero__shade" style="opacity:' . ( absint( $s['shade'] ) / 100 ) . '"></div>' : '' )
 				. $words
 				. $close;

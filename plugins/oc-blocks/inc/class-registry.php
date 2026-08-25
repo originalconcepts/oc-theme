@@ -334,8 +334,9 @@ final class Registry {
 						'group' => 'design',
 					),
 					'parallax' => array(
-						'type'  => 'toggle',
-						'label' => __( 'Parallax', 'oc-blocks' ),
+						'type'  => 'range',
+						'label' => __( 'Parallax strength', 'oc-blocks' ),
+						'hint'  => __( '0 is off; around 30 is gentle, 100 is dramatic.', 'oc-blocks' ),
 						'def'   => 0,
 						'group' => 'design',
 					),

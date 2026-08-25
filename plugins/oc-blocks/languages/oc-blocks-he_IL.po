@@ -816,3 +816,9 @@ msgstr "מוצגים 500 האחרונים — קובץ ה־CSV מכיל את כ�
 
 msgid "Not allowed."
 msgstr "אין הרשאה."
+
+msgid "Parallax strength"
+msgstr "חוזק הפרלקס"
+
+msgid "0 is off; around 30 is gentle, 100 is dramatic."
+msgstr "0 כבוי; בסביבות 30 עדין, 100 דרמטי."

@@ -205,8 +205,30 @@
 			requestAnimationFrame( truth );
 		}, { passive: true } );
 
+		// The arrows sit on the middle of the pictures, not of the whole
+		// card — the words under a product would drag them too low.
+		function midline() {
+			var img = row.querySelector( 'img' );
+
+			if ( ! img ) {
+				return;
+			}
+
+			var top = img.getBoundingClientRect().top - shelf.getBoundingClientRect().top + img.getBoundingClientRect().height / 2;
+
+			if ( top > 20 ) {
+				shelf.style.setProperty( '--ocb-arr-mid', top.toFixed( 0 ) + 'px' );
+			}
+		}
+
+		window.addEventListener( 'resize', midline, { passive: true } );
+
 		truth();
-		setTimeout( truth, 600 );
+		midline();
+		setTimeout( function () {
+			truth();
+			midline();
+		}, 600 );
 	} );
 
 	/* ---------- the marquee ---------- */
@@ -480,13 +502,18 @@
 					return;
 				}
 
-				// The drift may never outrun the headroom scale(1.12) buys,
-				// or a blank strip peeks past the picture's edge.
+				// Strength (1..100, old yes/no markup means 30) sets how fast
+				// the picture falls behind the page; the zoom grows with it,
+				// so the drift never outruns the headroom the zoom buys and a
+				// blank strip never peeks past the picture's edge.
+				var pct = parseInt( media.dataset.ocbParallax, 10 ) || 30;
+				var factor = 0.04 + ( pct / 100 ) * 0.36;
+				var cap = box.height * factor * 0.5;
 				var mid = box.top + box.height / 2 - window.innerHeight / 2;
-				var max = box.height * 0.055;
-				var shift = Math.max( -max, Math.min( max, mid * -0.12 ) );
+				var shift = Math.max( -cap, Math.min( cap, mid * -factor ) );
+				var zoom = ( 1 + ( cap * 2 ) / box.height + 0.01 ).toFixed( 3 );
 
-				media.style.transform = 'translateY(' + shift.toFixed( 1 ) + 'px) scale(1.12)';
+				media.style.transform = 'translateY(' + shift.toFixed( 1 ) + 'px) scale(' + zoom + ')';
 			} );
 		};
 

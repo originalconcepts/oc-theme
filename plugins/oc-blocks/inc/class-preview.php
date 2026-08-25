@@ -54,8 +54,26 @@ final class Preview {
 		nocache_headers();
 		header( 'Content-Type: text/html; charset=utf-8' );
 
-		// The theme's own front-end assets, enqueued by hand: this document
-		// never runs the full template, only the sections.
+		// Stories cut their stylesheet to the surfaces a page asked for by
+		// now — the draft's sections will ask mid-render, long after that
+		// decision, so every surface is requested up front. Same call the
+		// front end makes (Render::integration_assets).
+		if ( class_exists( '\\OCS\\Display\\Injector' ) ) {
+			add_filter( 'ocs_force_assets', '__return_true' );
+
+			if ( class_exists( '\\OCS\\Surfaces\\SurfaceManager' ) ) {
+				foreach ( (array) \OCS\Surfaces\SurfaceManager::ids() as $id ) {
+					\OCS\Display\Injector::need( (string) $id );
+				}
+			}
+		}
+
+		// The real asset pipeline, not a hand-picked imitation: every
+		// plugin's registrations, localisations and inline styles land
+		// exactly as they do on the site, and the preview stays 1:1.
+		do_action( 'wp_enqueue_scripts' );
+
+		// The blocks' own assets, in case nothing above brought them.
 		wp_enqueue_style( 'oc-blocks', OC_BLOCKS_URI . 'assets/blocks.css', array(), (string) filemtime( OC_BLOCKS_DIR . 'assets/blocks.css' ) );
 		wp_enqueue_script( 'oc-blocks', OC_BLOCKS_URI . 'assets/blocks.js', array(), (string) filemtime( OC_BLOCKS_DIR . 'assets/blocks.js' ), array( 'in_footer' => true ) );
 

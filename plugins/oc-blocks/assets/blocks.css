@@ -372,6 +372,7 @@
 .oc-compose .ocb-shelf--slider ul.products {
 	display: flex;
 	overflow-x: auto;
+	overflow-y: hidden;
 	scroll-snap-type: x proximity;
 	scrollbar-width: none;
 	-webkit-overflow-scrolling: touch;
@@ -385,6 +386,24 @@
 	max-inline-size: none;
 	scroll-snap-align: start;
 }
+
+/* On a shelf the arrow rides the strip's edge itself — half on the page,
+ * half on the first picture — at the height of the picture line (the
+ * script measures it into --ocb-arr-mid; the words under a product would
+ * otherwise drag the arrows too low). */
+.ocb-shelf .ocb-arr,
+.ocb-cats .ocb-arr,
+.ocb-brands .ocb-arr {
+	inset-block-start: var(--ocb-arr-mid, 50%);
+}
+
+.ocb-shelf .ocb-arr--prev,
+.ocb-cats .ocb-arr--prev,
+.ocb-brands .ocb-arr--prev { left: -20px; }
+
+.ocb-shelf .ocb-arr--next,
+.ocb-cats .ocb-arr--next,
+.ocb-brands .ocb-arr--next { right: -20px; }
 
 @media (max-width: 782px) {
 	.oc-compose .ocb-shelf ul.products { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -406,6 +425,7 @@
 .ocb-cats--slider .ocb-cats__row {
 	display: flex;
 	overflow-x: auto;
+	overflow-y: hidden;
 	scroll-snap-type: x proximity;
 	scrollbar-width: none;
 	-webkit-overflow-scrolling: touch;
@@ -530,6 +550,7 @@
 .ocb-brands--slider .ocb-brands__row {
 	display: flex;
 	overflow-x: auto;
+	overflow-y: hidden;
 	scrollbar-width: none;
 }
 
@@ -703,6 +724,10 @@ html[dir="rtl"] .ocb-look__spot { translate: 50% -50%; }
 }
 
 .ocb-look__nav .ocb-arr { position: static; transform: none; }
+
+/* Right-to-left reading walks the other way: the chevrons mirror so the
+ * forward arrow points where forward actually is. */
+html[dir="rtl"] .ocb-look__nav .ocb-arr svg { transform: scaleX(-1); }
 .ocb-look__nav .ocb-arr:hover { transform: scale(1.06); }
 
 .ocb-look__count { font-size: .88em; color: color-mix(in srgb, currentColor 60%, transparent); min-inline-size: 44px; }

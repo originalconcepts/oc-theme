@@ -195,6 +195,18 @@
 		frame.src = previewUrl( draft );
 	}
 
+	// Choosing a card walks the preview to its section.
+	function reveal( i ) {
+		try {
+			var doc = els.frame.contentDocument;
+			var target = doc && doc.querySelector( '[data-ocb-n="' + i + '"]' );
+
+			if ( target ) {
+				target.scrollIntoView( { behavior: 'smooth', block: 'start' } );
+			}
+		} catch ( e ) {}
+	}
+
 	/* ---------- save ---------- */
 
 	function save() {
@@ -285,6 +297,10 @@
 					state.open = state.open === i ? null : i;
 					paintRail();
 					paintSettings();
+
+					if ( state.open === i ) {
+						reveal( i );
+					}
 				}
 			}, [
 				el( 'span', { 'class': 'ocbe-card__icon', html: D.types[ section.type ] ? D.types[ section.type ].icon : '' } ),
