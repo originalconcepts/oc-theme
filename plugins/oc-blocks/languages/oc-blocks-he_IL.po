@@ -978,3 +978,108 @@ msgstr "שמירה"
 
 msgid "Download all leads as CSV"
 msgstr "הורדת כל הלידים כ־CSV"
+
+msgid "Branch"
+msgstr "סניף"
+
+msgid "New branch"
+msgstr "סניף חדש"
+
+msgid "Edit branch"
+msgstr "עריכת סניף"
+
+msgid "Regions"
+msgstr "אזורים"
+
+msgid "Region"
+msgstr "אזור"
+
+msgid "Branch details"
+msgstr "פרטי הסניף"
+
+msgid "Accessibility"
+msgstr "נגישות"
+
+msgid "Gallery & video"
+msgstr "גלריה ווידאו"
+
+msgid "Street and number, city"
+msgstr "רחוב ומספר, עיר"
+
+msgid "City"
+msgstr "עיר"
+
+msgid "Another phone (optional)"
+msgstr "טלפון נוסף (לא חובה)"
+
+msgid "One line per day or range"
+msgstr "שורה לכל יום או טווח ימים"
+
+msgid "Tick what the branch has; anything left unticked shows as \"no\"."
+msgstr "סמנו מה יש בסניף; מה שלא מסומן יוצג כ״אין״."
+
+msgid "Disabled parking"
+msgstr "חניית נכים"
+
+msgid "Accessible path from the parking to the door"
+msgstr "דרך נגישה מהחניה לפתח הסניף"
+
+msgid "Accessible entrance door"
+msgstr "דלת כניסה נגישה"
+
+msgid "Hearing assistance device"
+msgstr "מכשיר עזר לכבדי שמיעה"
+
+msgid "Accessible checkout"
+msgstr "קופה נגישה"
+
+msgid "Accessible toilets in the branch or mall"
+msgstr "שירותים נגישים בסניף או בקניון"
+
+msgid "Accessible seat"
+msgstr "מושב נגיש"
+
+msgid "Elevator"
+msgstr "מעלית"
+
+msgid "Choose gallery pictures"
+msgstr "בחירת תמונות לגלריה"
+
+msgid "Video (optional, from the media library)"
+msgstr "וידאו (לא חובה, מספריית המדיה)"
+
+msgid "Choose"
+msgstr "בחירה"
+
+msgid "More branches"
+msgstr "סניפים נוספים"
+
+msgid "The branches themselves, pulled from the Branches screen."
+msgstr "הסניפים עצמם, נמשכים ממסך הסניפים בניהול."
+
+msgid "Which branches"
+msgstr "אילו סניפים"
+
+msgid "All of them"
+msgstr "כולם"
+
+msgid "One region"
+msgstr "אזור אחד"
+
+msgid "— choose a region —"
+msgstr "— בחרו אזור —"
+
+msgid "Which region"
+msgstr "איזה אזור"
+
+msgid "Search box"
+msgstr "שדה חיפוש"
+
+msgid "Branch photos underneath"
+msgstr "תמונות הסניפים מתחת"
+
+msgid "Branch page"
+msgstr "לעמוד הסניף"
+
+msgid "Search a branch or a city"
+msgstr "חיפוש סניף או עיר"

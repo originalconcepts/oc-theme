@@ -1161,32 +1161,37 @@ final class Render {
 	}
 
 	/**
-	 * The branches: picture-backed cards with address, phone and hours,
-	 * beside a map that follows whichever branch is chosen.
+	 * The branches, pulled from the Branches screen the way stories and
+	 * reviews are pulled from theirs: cards with a square picture, a search
+	 * box, a map that follows the chosen branch, and the branch photos below
+	 * — every card linking to the branch's own page.
 	 *
 	 * @param array<string,mixed> $s Section.
 	 */
 	private static function branches( array $s ): string {
-		$rows = array();
+		if ( ! post_type_exists( Branches::CPT ) ) {
+			return '';
+		}
 
-		foreach ( (array) $s['items'] as $row ) {
-			$name = trim( (string) ( $row['name'] ?? '' ) );
-			$addr = trim( (string) ( $row['address'] ?? '' ) );
+		$args = array(
+			'post_type'      => Branches::CPT,
+			'posts_per_page' => 40,
+			'orderby'        => 'title',
+			'order'          => 'ASC',
+		);
 
-			if ( '' === $name && '' === $addr ) {
-				continue;
-			}
-
-			$rows[] = array(
-				'name'  => $name,
-				'addr'  => $addr,
-				'img'   => absint( $row['img'] ?? 0 ),
-				'phone' => trim( (string) ( $row['phone'] ?? '' ) ),
-				'hours' => trim( (string) ( $row['hours'] ?? '' ) ),
+		if ( 'region' === (string) $s['source'] && absint( $s['region'] ) > 0 ) {
+			$args['tax_query'] = array( // phpcs:ignore WordPress.DB.SlowDBQuery -- a handful of branches.
+				array(
+					'taxonomy' => Branches::TAX,
+					'terms'    => absint( $s['region'] ),
+				),
 			);
 		}
 
-		if ( empty( $rows ) ) {
+		$branches = get_posts( $args );
+
+		if ( empty( $branches ) ) {
 			return '';
 		}
 
@@ -1197,57 +1202,69 @@ final class Render {
 			'phone' => '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 4h4l2 5-2.5 1.5a12 12 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg>',
 		);
 
-		$icon = $icons[ (string) $s['icon'] ] ?? '';
+		$icon       = $icons[ (string) $s['icon'] ] ?? '';
+		$first_addr = '';
+		$cards      = '';
+		$strip      = '';
 
-		$with_map = ! empty( $s['map'] ) && '' !== $rows[0]['addr'];
-		$cards    = '';
+		foreach ( $branches as $at => $branch ) {
+			$d    = Branches::details( (int) $branch->ID );
+			$link = (string) get_permalink( $branch );
 
-		foreach ( $rows as $at => $row ) {
+			if ( '' === $first_addr && '' !== $d['address'] ) {
+				$first_addr = $d['address'];
+			}
+
 			$lines = '';
 
-			if ( '' !== $row['addr'] ) {
-				$lines .= '<p class="ocb-br__addr">' . esc_html( $row['addr'] ) . '</p>';
+			if ( '' !== $d['address'] ) {
+				$lines .= '<p class="ocb-br__addr">' . esc_html( $d['address'] ) . '</p>';
 			}
 
-			if ( '' !== $row['phone'] ) {
-				$lines .= '<p class="ocb-br__phone"><a href="tel:' . esc_attr( (string) preg_replace( '/[^0-9+]/', '', $row['phone'] ) ) . '">' . esc_html( $row['phone'] ) . '</a></p>';
+			if ( '' !== $d['phone'] ) {
+				$lines .= '<p class="ocb-br__phone"><a href="tel:' . esc_attr( (string) preg_replace( '/[^0-9+]/', '', $d['phone'] ) ) . '">' . esc_html( $d['phone'] ) . '</a></p>';
 			}
 
-			if ( '' !== $row['hours'] ) {
-				$lines .= '<p class="ocb-br__hours">' . nl2br( esc_html( $row['hours'] ) ) . '</p>';
+			if ( '' !== $d['hours'] ) {
+				$lines .= '<p class="ocb-br__hours">' . nl2br( esc_html( $d['hours'] ) ) . '</p>';
 			}
 
-			$pic = '';
+			$lines .= '<p class="ocb-br__more"><a href="' . esc_url( $link ) . '">' . esc_html__( 'Branch page', 'oc-blocks' ) . ' ←</a></p>';
 
-			if ( $row['img'] > 0 ) {
-				$pic_html = wp_get_attachment_image( $row['img'], 'medium', false, array( 'loading' => 'lazy' ) );
+			$photo = get_the_post_thumbnail( $branch, 'medium', array( 'loading' => 'lazy' ) );
+			$pic   = '' === $photo ? '' : '<span class="ocb-br__pic">' . $photo . '</span>';
 
-				if ( '' !== $pic_html ) {
-					$pic = '<span class="ocb-br__pic">' . $pic_html . '</span>';
-				}
-			}
-
-			$inner = '<span class="ocb-br__body">'
-				. '<span class="ocb-br__name">' . ( '' === $icon ? '' : '<i class="ocb-br__ico" aria-hidden="true">' . $icon . '</i>' ) . esc_html( $row['name'] ) . '</span>'
+			$cards .= '<div class="ocb-br__card' . ( 0 === $at ? ' is-on' : '' ) . '" data-ocb-br-addr="' . esc_attr( $d['address'] ) . '">'
+				. '<span class="ocb-br__body">'
+				. '<span class="ocb-br__name">' . ( '' === $icon ? '' : '<i class="ocb-br__ico" aria-hidden="true">' . $icon . '</i>' ) . esc_html( (string) $branch->post_title ) . '</span>'
 				. $lines
-				. '</span>' . $pic;
+				. '</span>' . $pic
+				. '</div>';
 
-			// A card is a button only when there is a map for it to steer.
-			$cards .= $with_map
-				? '<button type="button" class="ocb-br__card' . ( 0 === $at ? ' is-on' : '' ) . '" data-ocb-br-addr="' . esc_attr( $row['addr'] ) . '">' . $inner . '</button>'
-				: '<div class="ocb-br__card">' . $inner . '</div>';
+			if ( ! empty( $s['strip'] ) && '' !== $photo ) {
+				$strip .= '<a class="ocb-br__stop" href="' . esc_url( $link ) . '">'
+					. get_the_post_thumbnail( $branch, 'large', array( 'loading' => 'lazy' ) )
+					. '<span class="ocb-br__stop-name">' . esc_html( (string) $branch->post_title ) . '</span>'
+					. '<span class="ocb-br__stop-go">' . esc_html__( 'Branch page', 'oc-blocks' ) . '</span>'
+					. '</a>';
+			}
 		}
 
-		$map = '';
+		$with_map = ! empty( $s['map'] ) && '' !== $first_addr;
+		$map      = '';
 
 		if ( $with_map ) {
-			$map = '<div class="ocb-br__map"><iframe loading="lazy" title="' . esc_attr__( 'Map', 'oc-blocks' ) . '" src="' . esc_url( 'https://maps.google.com/maps?q=' . rawurlencode( $rows[0]['addr'] ) . '&hl=' . substr( get_locale(), 0, 2 ) . '&output=embed' ) . '"></iframe></div>';
+			$map = '<div class="ocb-br__map"><iframe loading="lazy" title="' . esc_attr__( 'Map', 'oc-blocks' ) . '" src="' . esc_url( 'https://maps.google.com/maps?q=' . rawurlencode( $first_addr ) . '&hl=' . substr( get_locale(), 0, 2 ) . '&output=embed' ) . '"></iframe></div>';
 		}
 
+		$search = empty( $s['search'] ) ? '' : '<p class="ocb-br__search"><input type="search" data-ocb-br-q placeholder="' . esc_attr__( 'Search a branch or a city', 'oc-blocks' ) . '" aria-label="' . esc_attr__( 'Search a branch or a city', 'oc-blocks' ) . '"></p>';
+
 		return self::heading( $s )
+			. $search
 			. '<div class="ocb-br' . ( $with_map ? ' ocb-br--map' : '' ) . '" data-ocb-br>'
 			. '<div class="ocb-br__list">' . $cards . '</div>' . $map
-			. '</div>';
+			. '</div>'
+			. ( '' === $strip ? '' : '<div class="ocb-br__strip">' . $strip . '</div>' );
 	}
 
 	/**
@@ -1308,6 +1325,11 @@ final class Render {
 		$need = false;
 
 		if ( is_page() && self::is_composed( (int) get_queried_object_id() ) ) {
+			$need = true;
+		}
+
+		// A branch's own page dresses itself from the same stylesheet.
+		if ( ! $need && is_singular( Branches::CPT ) ) {
 			$need = true;
 		}
 

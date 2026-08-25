@@ -30,6 +30,7 @@ require_once OC_BLOCKS_DIR . 'inc/class-editor.php';
 require_once OC_BLOCKS_DIR . 'inc/class-preview.php';
 require_once OC_BLOCKS_DIR . 'inc/class-newsletter.php';
 require_once OC_BLOCKS_DIR . 'inc/class-leads.php';
+require_once OC_BLOCKS_DIR . 'inc/class-branches.php';
 
 add_action(
 	'init',
@@ -43,3 +44,4 @@ add_action(
 ( new OC\Blocks\Preview() )->register();
 ( new OC\Blocks\Newsletter() )->register();
 ( new OC\Blocks\Leads() )->register();
+( new OC\Blocks\Branches() )->register();

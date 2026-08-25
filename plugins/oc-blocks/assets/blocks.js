@@ -432,29 +432,46 @@
 
 	document.querySelectorAll( '[data-ocb-br]' ).forEach( function ( br ) {
 		var frame = br.querySelector( '.ocb-br__map iframe' );
+		var cards = [].slice.call( br.querySelectorAll( '[data-ocb-br-addr]' ) );
 
-		if ( ! frame ) {
-			return;
+		if ( frame ) {
+			cards.forEach( function ( card ) {
+				card.addEventListener( 'click', function ( e ) {
+					// A link inside the card keeps being a link.
+					if ( e.target.closest( 'a' ) ) {
+						return;
+					}
+
+					var addr = card.dataset.ocbBrAddr;
+
+					if ( ! addr || card.classList.contains( 'is-on' ) ) {
+						return;
+					}
+
+					cards.forEach( function ( on ) {
+						on.classList.remove( 'is-on' );
+					} );
+					card.classList.add( 'is-on' );
+
+					var src = new URL( frame.src );
+					src.searchParams.set( 'q', addr );
+					frame.src = src.toString();
+				} );
+			} );
 		}
 
-		br.querySelectorAll( 'button.ocb-br__card' ).forEach( function ( card ) {
-			card.addEventListener( 'click', function () {
-				var addr = card.dataset.ocbBrAddr;
+		// The search box hides whichever cards do not carry the words.
+		var seek = ( br.parentElement || br ).parentElement.querySelector( '[data-ocb-br-q]' ) || document.querySelector( '[data-ocb-br-q]' );
 
-				if ( ! addr || card.classList.contains( 'is-on' ) ) {
-					return;
-				}
+		if ( seek ) {
+			seek.addEventListener( 'input', function () {
+				var needle = seek.value.trim();
 
-				br.querySelectorAll( '.ocb-br__card.is-on' ).forEach( function ( on ) {
-					on.classList.remove( 'is-on' );
+				cards.forEach( function ( card ) {
+					card.hidden = '' !== needle && card.textContent.indexOf( needle ) === -1;
 				} );
-				card.classList.add( 'is-on' );
-
-				var src = new URL( frame.src );
-				src.searchParams.set( 'q', addr );
-				frame.src = src.toString();
 			} );
-		} );
+		}
 	} );
 
 	/* ---------- newsletter ---------- */
@@ -536,11 +553,7 @@
 	var lax = document.querySelectorAll( '[data-ocb-parallax]' );
 
 	if ( lax.length && ! reduced ) {
-		var laxTick = false;
-
 		var laxDraw = function () {
-			laxTick = false;
-
 			lax.forEach( function ( media ) {
 				var box = media.parentElement.getBoundingClientRect();
 
@@ -564,13 +577,14 @@
 			} );
 		};
 
-		window.addEventListener( 'scroll', function () {
-			if ( ! laxTick ) {
-				laxTick = true;
-				requestAnimationFrame( laxDraw );
-			}
-		}, { passive: true } );
+		// Drawn straight from the scroll event, not via requestAnimationFrame:
+		// browsers starve rAF inside transform-scaled iframes — exactly where
+		// the composer preview lives — and the picture froze there.
+		window.addEventListener( 'scroll', laxDraw, { passive: true } );
+		window.addEventListener( 'resize', laxDraw, { passive: true } );
 
 		laxDraw();
+		setTimeout( laxDraw, 400 );
+		setTimeout( laxDraw, 1200 );
 	}
 }() );

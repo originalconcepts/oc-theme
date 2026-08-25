@@ -218,6 +218,40 @@ final class Registry {
 	}
 
 	/**
+	 * The branches block's region picker — the site's own regions, by name.
+	 *
+	 * @return array<string,mixed>
+	 */
+	private static function branch_region_field(): array {
+		$choices = array( '' => __( '— choose a region —', 'oc-blocks' ) );
+
+		if ( taxonomy_exists( Branches::TAX ) ) {
+			$terms = get_terms(
+				array(
+					'taxonomy'   => Branches::TAX,
+					'hide_empty' => false,
+				)
+			);
+
+			if ( is_array( $terms ) ) {
+				foreach ( $terms as $term ) {
+					if ( $term instanceof \WP_Term ) {
+						$choices[ (string) $term->term_id ] = $term->name;
+					}
+				}
+			}
+		}
+
+		return array(
+			'type'    => 'select',
+			'label'   => __( 'Which region', 'oc-blocks' ),
+			'choices' => $choices,
+			'def'     => '',
+			'when'    => array( 'source' => array( 'region' ) ),
+		);
+	}
+
+	/**
 	 * Every section type.
 	 *
 	 * @return array<string,array<string,mixed>>
@@ -1116,40 +1150,28 @@ final class Registry {
 
 			'branches'   => array(
 				'label'  => __( 'Branches', 'oc-blocks' ),
-				'blurb'  => __( 'The shops themselves — addresses, hours and a map.', 'oc-blocks' ),
+				'blurb'  => __( 'The branches themselves, pulled from the Branches screen.', 'oc-blocks' ),
 				'icon'   => '<svg viewBox="0 0 24 24"><path d="M12 21s-7-6.1-7-11a7 7 0 1 1 14 0c0 4.9-7 11-7 11z" fill="none" stroke="currentColor" stroke-width="2" opacity=".65"/><circle cx="12" cy="10" r="2.6" opacity=".7"/></svg>',
 				'fields' => array(
 					'heading' => array(
 						'type'  => 'text',
 						'label' => __( 'Heading', 'oc-blocks' ),
 					),
-					'items'   => array(
-						'type'  => 'slides',
-						'label' => __( 'The branches', 'oc-blocks' ),
-						'def'   => array(),
-						'sub'   => array(
-							'name'    => array(
-								'type'  => 'text',
-								'label' => __( 'Branch name', 'oc-blocks' ),
-							),
-							'img'     => array(
-								'type'  => 'image',
-								'label' => __( 'Branch picture (optional)', 'oc-blocks' ),
-								'def'   => 0,
-							),
-							'address' => array(
-								'type'  => 'text',
-								'label' => __( 'Address', 'oc-blocks' ),
-							),
-							'phone'   => array(
-								'type'  => 'text',
-								'label' => __( 'Phone', 'oc-blocks' ),
-							),
-							'hours'   => array(
-								'type'  => 'textarea',
-								'label' => __( 'Opening hours', 'oc-blocks' ),
-							),
+					'source'  => array(
+						'type'    => 'seg',
+						'label'   => __( 'Which branches', 'oc-blocks' ),
+						'choices' => array(
+							'all'    => __( 'All of them', 'oc-blocks' ),
+							'region' => __( 'One region', 'oc-blocks' ),
 						),
+						'def'     => 'all',
+					),
+					'region'  => self::branch_region_field(),
+					'search'  => array(
+						'type'  => 'toggle',
+						'label' => __( 'Search box', 'oc-blocks' ),
+						'def'   => 1,
+						'group' => 'design',
 					),
 					'icon'    => array(
 						'type'    => 'seg',
@@ -1170,8 +1192,15 @@ final class Registry {
 						'def'   => 1,
 						'group' => 'design',
 					),
+					'strip'   => array(
+						'type'  => 'toggle',
+						'label' => __( 'Branch photos underneath', 'oc-blocks' ),
+						'def'   => 1,
+						'group' => 'design',
+					),
 				),
 			),
+
 			'contact'    => array(
 				'label'  => __( 'Contact form', 'oc-blocks' ),
 				'blurb'  => __( 'Name, phone, a message — straight into the Leads screen.', 'oc-blocks' ),
