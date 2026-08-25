@@ -516,7 +516,7 @@ final class Render {
 		}
 
 		return self::heading( $s )
-			. '<div class="ocb-shelf ocb-shelf--' . esc_attr( (string) $s['layout'] ) . ' ocb-shelf--gap-' . esc_attr( (string) $s['gap'] ) . '" style="--ocb-cols:' . absint( $s['cols'] ) . '"'
+			. '<div class="ocb-shelf ocb-shelf--' . esc_attr( (string) $s['layout'] ) . ' ocb-shelf--gap-' . esc_attr( (string) $s['gap'] ) . ' ocb-shelf--m' . esc_attr( '' !== (string) ( $s['mcols'] ?? '' ) ? (string) $s['mcols'] : '1' ) . '" style="--ocb-cols:' . absint( $s['cols'] ) . '"'
 			. ( 'slider' === $s['layout'] ? ' data-ocb-shelf' : '' ) . '>'
 			. $cards
 			. ( 'slider' === $s['layout'] ? self::shelf_arrows() : '' )
@@ -573,6 +573,7 @@ final class Render {
 
 		$classes = 'ocb-cats ocb-cats--' . esc_attr( (string) $s['shape'] )
 			. ' ocb-cats--w-' . esc_attr( (string) $s['words'] )
+			. ' ocb-cats--m' . esc_attr( '' !== (string) ( $s['mlay'] ?? '' ) ? (string) $s['mlay'] : '2' )
 			. ' ocb-cats--' . esc_attr( (string) $s['layout'] )
 			. ' ocb-cats--gap-' . esc_attr( (string) $s['gap'] )
 			. ' ocb-cats--hv-' . esc_attr( (string) $s['hover'] )
@@ -713,8 +714,13 @@ final class Render {
 			$more = '<p class="ocb__more"><a class="ocb-btn ocb-btn--theme" href="' . esc_url( $url ) . '">' . esc_html( $text ) . '</a></p>';
 		}
 
+		$slider = 'slider' === (string) ( $s['layout'] ?? 'grid' );
+
 		return self::heading( $s )
-			. '<div class="ocb-posts" style="--ocb-cols:' . min( 4, max( 1, absint( $s['count'] ) ) ) . '">' . $cards . '</div>'
+			. '<div class="ocb-posts-wrap"' . ( $slider ? ' data-ocb-shelf' : '' ) . '>'
+			. '<div class="ocb-posts' . ( $slider ? ' ocb-posts--slider' : '' ) . ' ocb-posts--m' . esc_attr( '' !== (string) ( $s['mlay'] ?? '' ) ? (string) $s['mlay'] : '1' ) . '" style="--ocb-cols:' . min( 4, max( 1, absint( $s['count'] ) ) ) . '">' . $cards . '</div>'
+			. ( $slider ? self::shelf_arrows() : '' )
+			. '</div>'
 			. $more;
 	}
 
@@ -1495,10 +1501,11 @@ final class Render {
 		}
 
 		$style = '--ocb-ico-n:' . $count . ';'
-			. ( '' === ( $s['bgc'] ?? '' ) ? '' : '--ocb-ico-bg:' . $s['bgc'] . ';' );
+			. ( '' === ( $s['bgc'] ?? '' ) ? '' : '--ocb-ico-bg:' . $s['bgc'] . ';' )
+			. ( '' === ( $s['ic'] ?? '' ) ? '' : '--ocb-ico-color:' . $s['ic'] . ';' );
 
 		return self::heading( $s )
-			. '<div class="ocb-ico ocb-ico--' . esc_attr( (string) $s['size'] ) . ( empty( $s['bg'] ) ? '' : ' ocb-ico--bg' ) . '" style="' . esc_attr( $style ) . '">'
+			. '<div class="ocb-ico ocb-ico--' . esc_attr( (string) $s['size'] ) . ' ocb-ico--m' . esc_attr( '' !== (string) ( $s['mlay'] ?? '' ) ? (string) $s['mlay'] : '1' ) . ( empty( $s['bg'] ) ? '' : ' ocb-ico--bg' ) . '" style="' . esc_attr( $style ) . '">'
 			. $items
 			. '</div>';
 	}
