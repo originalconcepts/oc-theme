@@ -160,7 +160,7 @@
 	/* ---------- shelf sliders: products, categories, brands ---------- */
 
 	document.querySelectorAll( '[data-ocb-shelf]' ).forEach( function ( shelf ) {
-		var row = shelf.querySelector( '.ocb-cats__row, .ocb-brands__row, ul.products' );
+		var row = shelf.querySelector( '.ocb-cats__row, .ocb-brands__row, .ocb-posts--slider, ul.products' );
 
 		if ( ! row ) {
 			return;
@@ -259,7 +259,9 @@
 	document.querySelectorAll( '[data-ocb-look]' ).forEach( function ( look ) {
 		var spots = [].slice.call( look.querySelectorAll( '[data-ocb-spot]' ) );
 		var cards = [].slice.call( look.querySelectorAll( '[data-ocb-card]' ) );
+		var scenes = [].slice.call( look.querySelectorAll( '[data-ocb-lscene]' ) );
 		var count = look.querySelector( '.ocb-look__count b' );
+		var side = look.querySelector( '.ocb-look__side' );
 		var at = 0;
 
 		if ( ! cards.length ) {
@@ -269,11 +271,16 @@
 		function show( n ) {
 			at = ( n + cards.length ) % cards.length;
 
+			var scene = Number( cards[ at ].dataset.ocbScene || 0 );
+
 			spots.forEach( function ( sp, i ) {
 				sp.classList.toggle( 'is-on', i === at );
 			} );
 			cards.forEach( function ( c, i ) {
 				c.classList.toggle( 'is-on', i === at );
+			} );
+			scenes.forEach( function ( sc ) {
+				sc.classList.toggle( 'is-on', Number( sc.dataset.ocbLscene ) === scene );
 			} );
 
 			if ( count ) {
@@ -281,7 +288,29 @@
 			}
 		}
 
+		// Walking the rooms: the arrow on the picture jumps to the next
+		// room's first product.
+		function room( dir ) {
+			var current = Number( cards[ at ].dataset.ocbScene || 0 );
+			var total = scenes.length || 1;
+			var next = ( current + dir + total ) % total;
+
+			for ( var i = 0; i < cards.length; i++ ) {
+				if ( Number( cards[ i ].dataset.ocbScene || 0 ) === next ) {
+					show( i );
+					return;
+				}
+			}
+		}
+
 		look.addEventListener( 'click', function ( e ) {
+			var snav = e.target.closest( '[data-ocb-scene-go]' );
+
+			if ( snav ) {
+				room( Number( snav.dataset.ocbSceneGo ) );
+				return;
+			}
+
 			var spot = e.target.closest( '[data-ocb-spot]' );
 
 			if ( spot ) {
@@ -300,6 +329,11 @@
 				return;
 			}
 
+			if ( e.target.closest( '[data-ocb-look-close]' ) ) {
+				look.classList.remove( 'is-open' );
+				return;
+			}
+
 			var arr = e.target.closest( '[data-ocb-go]' );
 
 			if ( arr && e.target.closest( '.ocb-look__nav' ) ) {
@@ -307,12 +341,56 @@
 			}
 		} );
 
+		// The sheet follows the finger down, like the add-to-cart panel.
+		if ( side ) {
+			var y0 = null;
+			var dy = 0;
+
+			side.addEventListener( 'touchstart', function ( e ) {
+				if ( ! e.target.closest( '[data-ocb-look-close]' ) && side.scrollTop > 2 ) {
+					return;
+				}
+
+				y0 = e.touches[ 0 ].clientY;
+				dy = 0;
+			}, { passive: true } );
+
+			side.addEventListener( 'touchmove', function ( e ) {
+				if ( null === y0 ) {
+					return;
+				}
+
+				dy = e.touches[ 0 ].clientY - y0;
+
+				if ( dy > 0 ) {
+					side.style.transform = 'translateY(' + dy + 'px)';
+					side.style.transition = 'none';
+				}
+			}, { passive: true } );
+
+			side.addEventListener( 'touchend', function () {
+				if ( null === y0 ) {
+					return;
+				}
+
+				side.style.transform = '';
+				side.style.transition = '';
+
+				if ( dy > 90 ) {
+					look.classList.remove( 'is-open' );
+				}
+
+				y0 = null;
+			} );
+		}
+
 		// A tap outside the sheet folds it.
 		document.addEventListener( 'click', function ( e ) {
 			if ( look.classList.contains( 'is-open' ) && ! look.contains( e.target ) ) {
 				look.classList.remove( 'is-open' );
 			}
 		} );
+	} );
 	} );
 
 	/* ---------- the scrolling story ---------- */
@@ -336,6 +414,9 @@
 
 				frames.forEach( function ( fr, i ) {
 					fr.classList.toggle( 'is-on', i === at );
+				} );
+				sc.querySelectorAll( '[data-ocb-mstep]' ).forEach( function ( mt ) {
+					mt.classList.toggle( 'is-on', Number( mt.dataset.ocbMstep ) === at );
 				} );
 			} );
 		}, { rootMargin: '-46% 0px -46% 0px', threshold: 0 } );
@@ -392,7 +473,10 @@
 				var done = cd.dataset.ocbCdDone || '';
 				var out = cd.querySelector( '.ocb-cd__done' );
 
-				if ( done && out ) {
+				if ( cd.hasAttribute( 'data-ocb-cd-in' ) ) {
+					// A clock riding a banner just steps off it.
+					cd.hidden = true;
+				} else if ( done && out ) {
 					cd.querySelector( '.ocb-cd__cells' ).hidden = true;
 					out.textContent = done;
 					out.hidden = false;
@@ -464,12 +548,48 @@
 		var seek = ( br.parentElement || br ).parentElement.querySelector( '[data-ocb-br-q]' ) || document.querySelector( '[data-ocb-br-q]' );
 
 		if ( seek ) {
+			var none = br.querySelector( '.ocb-br__none' );
+
 			seek.addEventListener( 'input', function () {
 				var needle = seek.value.trim();
+				var first = null;
 
 				cards.forEach( function ( card ) {
-					card.hidden = '' !== needle && card.textContent.indexOf( needle ) === -1;
+					var hit = '' === needle || card.textContent.indexOf( needle ) > -1;
+
+					card.hidden = ! hit;
+
+					if ( hit && ! first ) {
+						first = card;
+					}
 				} );
+
+				var lost = '' !== needle && ! first;
+
+				// Nobody matched: say so kindly and keep the whole list up —
+				// an empty screen answers nothing.
+				if ( lost ) {
+					cards.forEach( function ( card ) {
+						card.hidden = false;
+					} );
+					first = cards[ 0 ];
+				}
+
+				if ( none ) {
+					none.hidden = ! lost;
+				}
+
+				// The map walks to the first match.
+				if ( first && frame && first.dataset.ocbBrAddr && ! first.classList.contains( 'is-on' ) ) {
+					cards.forEach( function ( on ) {
+						on.classList.remove( 'is-on' );
+					} );
+					first.classList.add( 'is-on' );
+
+					var src = new URL( frame.src );
+					src.searchParams.set( 'q', first.dataset.ocbBrAddr );
+					frame.src = src.toString();
+				}
 			} );
 		}
 	} );

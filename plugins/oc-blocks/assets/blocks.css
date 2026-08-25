@@ -180,6 +180,9 @@
 
 @media (max-width: 782px) {
 	.ocb-arr { display: none; }
+
+	/* Walking the rooms works on a phone too. */
+	.ocb-look__snav.ocb-arr { display: grid; }
 }
 
 .ocb-dots {
@@ -259,6 +262,70 @@
 .ocb-hero__media picture img { block-size: 100%; }
 
 [data-ocb-parallax] { will-change: transform; }
+
+/* Full-strength parallax: the picture stands still and the page glides
+ * over it. Fixed to the viewport, clipped to its own slide. */
+.ocb-hero__slide--fixedbg { clip-path: inset(0); }
+
+.ocb-hero__media--fixed { position: fixed; inset: 0; block-size: 100vh; }
+
+/* The banner's own clock, translucent squares in the Prestige manner. */
+.ocb-hero__cd {
+	display: flex;
+	gap: 12px;
+	z-index: 2;
+}
+
+.ocb-hero__cd--side {
+	position: absolute;
+	inset-inline-end: clamp(20px, 7vw, 110px);
+	inset-block-start: 50%;
+	transform: translateY(-50%);
+}
+
+.ocb-hero__cd--under { margin-block-start: 22px; justify-content: inherit; }
+
+.ocb-hero__cd-cell {
+	display: grid;
+	gap: 6px;
+	justify-items: center;
+	color: #fff;
+	text-shadow: 0 1px 10px rgb(0 0 0 / 30%);
+}
+
+.ocb-hero__cd-cell b {
+	display: grid;
+	place-items: center;
+	min-inline-size: 58px;
+	block-size: 58px;
+	padding-inline: 8px;
+	background: rgb(255 255 255 / 18%);
+	backdrop-filter: blur(4px);
+	border-radius: 8px;
+	font-size: 1.7em;
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+}
+
+.ocb-hero__cd-cell i {
+	font-style: normal;
+	font-size: .68em;
+	letter-spacing: .18em;
+	text-transform: uppercase;
+	opacity: .85;
+}
+
+@media (max-width: 782px) {
+	.ocb-hero__cd--side {
+		inset-inline: 0;
+		inset-block-start: auto;
+		inset-block-end: 20px;
+		transform: none;
+		justify-content: center;
+	}
+
+	.ocb-hero__cd-cell b { min-inline-size: 46px; block-size: 46px; font-size: 1.3em; }
+}
 
 .ocb-hero__shade {
 	position: absolute;
@@ -414,7 +481,8 @@
 
 @media (max-width: 782px) {
 	.oc-compose .ocb-shelf ul.products { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-	.oc-compose .ocb-shelf--slider ul.products li.product { flex-basis: 72%; }
+	.oc-compose .ocb-shelf--slider.ocb-shelf--m1 ul.products li.product { flex-basis: 82%; }
+	.oc-compose .ocb-shelf--slider.ocb-shelf--m2 ul.products li.product { flex-basis: 46%; }
 }
 
 /* ---------- categories ---------- */
@@ -511,8 +579,25 @@
 }
 
 @media (max-width: 782px) {
-	.ocb-cats__row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-	.ocb-cats--slider .ocb-cat { flex-basis: 38%; }
+	.ocb-cats--m1 .ocb-cats__row { display: grid; grid-template-columns: 1fr; }
+	.ocb-cats--m2 .ocb-cats__row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+	.ocb-cats--m3 .ocb-cats__row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+	.ocb-cats--m1 .ocb-cat,
+	.ocb-cats--m2 .ocb-cat,
+	.ocb-cats--m3 .ocb-cat { flex: none; }
+
+	.ocb-cats--mslider .ocb-cats__row {
+		display: flex;
+		overflow-x: auto;
+		overflow-y: hidden;
+		scroll-snap-type: x proximity;
+		scrollbar-width: none;
+	}
+
+	.ocb-cats--mslider .ocb-cats__row::-webkit-scrollbar { display: none; }
+
+	.ocb-cats--mslider .ocb-cat { flex: 0 0 38%; scroll-snap-align: start; }
 }
 
 /* ---------- marquee ---------- */
@@ -629,8 +714,41 @@
 
 .ocb-post__x { margin: 8px 0 0; opacity: .75; line-height: 1.6; }
 
+.ocb-posts-wrap { position: relative; }
+
+.ocb-posts--slider {
+	display: flex;
+	overflow-x: auto;
+	overflow-y: hidden;
+	scroll-snap-type: x proximity;
+	scrollbar-width: none;
+	-webkit-overflow-scrolling: touch;
+	padding-block-end: 6px;
+}
+
+.ocb-posts--slider::-webkit-scrollbar { display: none; }
+
+.ocb-posts--slider .ocb-post {
+	flex: 0 0 calc((100% - (var(--ocb-cols, 3) - 1) * 26px) / var(--ocb-cols, 3));
+	scroll-snap-align: start;
+}
+
 @media (max-width: 782px) {
-	.ocb-posts { grid-template-columns: 1fr; }
+	.ocb-posts--m1 { grid-template-columns: 1fr; }
+
+	.ocb-posts--m2 { grid-template-columns: 1fr 1fr; gap: 24px 14px; }
+
+	.ocb-posts--mslider {
+		display: flex;
+		overflow-x: auto;
+		overflow-y: hidden;
+		scroll-snap-type: x proximity;
+		scrollbar-width: none;
+	}
+
+	.ocb-posts--mslider::-webkit-scrollbar { display: none; }
+
+	.ocb-posts--mslider .ocb-post { flex: 0 0 74%; scroll-snap-align: start; }
 }
 
 /* ---------- shop the look ---------- */
@@ -647,6 +765,17 @@
 .ocb-look__pic { position: relative; overflow: hidden; border-radius: var(--oc-radius, 8px); }
 
 .ocb-look__pic img { display: block; inline-size: 100%; block-size: auto; }
+
+/* The rooms stand stacked; one is lit at a time. */
+.ocb-look__scene { position: relative; }
+
+.ocb-look__scene:not(.is-on) { display: none; }
+
+.ocb-look__scene.is-on { animation: ocb-look-in .5s ease; }
+
+.ocb-look__snav.ocb-arr { position: absolute; }
+.ocb-look__snav.ocb-arr--prev { left: 12px; right: auto; }
+.ocb-look__snav.ocb-arr--next { right: 12px; left: auto; }
 
 /* The spot: a breathing ring, the reference's own gesture. */
 .ocb-look__spot {
@@ -745,6 +874,8 @@ html[dir="rtl"] .ocb-look__nav .ocb-arr svg { transform: scaleX(-1); }
 
 .ocb-look__open { display: none; }
 
+.ocb-look__close { display: none; }
+
 @media (max-width: 782px) {
 	.ocb-look { grid-template-columns: 1fr; gap: 14px; }
 
@@ -768,6 +899,24 @@ html[dir="rtl"] .ocb-look__nav .ocb-arr svg { transform: scaleX(-1); }
 
 	@keyframes ocb-look-up {
 		from { transform: translateY(40px); opacity: 0; }
+	}
+
+	.ocb-look__close {
+		display: block;
+		inline-size: 100%;
+		padding: 4px 0 14px;
+		border: 0;
+		background: none;
+		cursor: pointer;
+	}
+
+	.ocb-look__grab {
+		display: block;
+		inline-size: 44px;
+		block-size: 4.5px;
+		margin-inline: auto;
+		border-radius: 3px;
+		background: color-mix(in srgb, currentColor 25%, transparent);
 	}
 
 	.ocb-look__open {
@@ -948,20 +1097,41 @@ html[dir="rtl"] .ocb-look__nav .ocb-arr svg { transform: scaleX(-1); }
 
 .ocb-sc__words { line-height: 1.8; opacity: .85; max-inline-size: 480px; }
 
-/* The pinned stage speaks for the pictures on a desktop. */
-.ocb-sc__mmedia { display: none; }
+/* The crossfading chapter words live inside the pin; desktop reads the
+ * flow instead. */
+.ocb-sc__mtexts { display: none; }
 
 @media (max-width: 782px) {
 	.ocb-sc { grid-template-columns: 1fr; gap: 0; }
 
-	.ocb-sc__pin { display: none; }
+	/* One stage, one story: picture and words trade places in a fade
+	 * while the chapters scroll invisibly underneath. */
+	.ocb-sc__pin {
+		display: block;
+		position: sticky;
+		inset-block-start: calc(var(--oc-header-h, 64px) + 12px);
+		z-index: 2;
+		background: var(--oc-bg-user, var(--oc-surface, #fff));
+		padding-block-end: 10px;
+	}
 
-	.ocb-sc__step { min-block-size: 0; padding-block: 22px; }
+	.ocb-sc__stage { block-size: 42vh; }
 
-	.ocb-sc__mmedia { display: block; margin-block-end: 16px; border-radius: var(--oc-radius, 8px); overflow: hidden; }
+	.ocb-sc__mtexts { display: grid; margin-block-start: 14px; }
 
-	.ocb-sc__mmedia img,
-	.ocb-sc__mmedia video { inline-size: 100%; aspect-ratio: 4 / 3; object-fit: cover; display: block; }
+	.ocb-sc__mtext {
+		grid-area: 1 / 1;
+		opacity: 0;
+		transform: translateY(8px);
+		transition: opacity .45s ease, transform .45s ease;
+		pointer-events: none;
+	}
+
+	.ocb-sc__mtext.is-on { opacity: 1; transform: none; pointer-events: auto; }
+
+	.ocb-sc__mtext h3 { margin: 0 0 8px; font-size: 1.2em; }
+
+	.ocb-sc__step { min-block-size: 78vh; visibility: hidden; padding-block: 0; }
 }
 
 /* ---------- questions & answers ---------- */
@@ -1346,6 +1516,31 @@ html[dir="rtl"] .ocb-look__nav .ocb-arr svg { transform: scaleX(-1); }
 
 
 
+/* The reviews slider's arrows wear the same quiet circles as every
+ * other shelf on the page. */
+.ocb--reviews .ocr-arrow {
+	inline-size: 40px;
+	block-size: 40px;
+	border: 0;
+	border-radius: 50%;
+	background: rgb(255 255 255 / 92%);
+	color: var(--oc-ink, #1c1c1c);
+	box-shadow: 0 2px 12px rgb(0 0 0 / 12%);
+	display: grid;
+	place-items: center;
+	transition: opacity .15s ease, transform .15s ease;
+}
+
+.ocb--reviews .ocr-arrow:hover { transform: translateY(-50%) scale(1.06); }
+
+.ocb--reviews .ocr-arrow svg { width: 18px; height: 18px; }
+
+/* Centred stories and reviews, when asked. */
+.ocb-alignc { text-align: center; }
+
+.ocb-alignc .ocr-widget,
+.ocb-alignc > * { margin-inline: auto; }
+
 /* Inside the reviews block, the card ends where the product line ends. */
 .ocb--reviews .ocr-wcard > :last-child { margin-block-end: 0; }
 .ocb--reviews .ocr-wcard__product { padding-block-end: 0; margin-block-end: 0; }
@@ -1503,7 +1698,7 @@ html[dir="rtl"] .ocb-look__nav .ocb-arr svg { transform: scaleX(-1); }
 .ocb-ico__pic {
 	display: inline-grid;
 	place-items: center;
-	color: var(--oc-ink, #1c1c1c);
+	color: var(--ocb-ico-color, var(--oc-ink, #1c1c1c));
 }
 
 .ocb-ico__pic svg { inline-size: var(--ocb-ico-size, 40px); block-size: var(--ocb-ico-size, 40px); }
@@ -1535,5 +1730,20 @@ html[dir="rtl"] .ocb-look__nav .ocb-arr svg { transform: scaleX(-1); }
 }
 
 @media (max-width: 782px) {
-	.ocb-ico { grid-template-columns: 1fr; gap: 30px; }
+	.ocb-ico--m1 { grid-template-columns: 1fr; gap: 30px; }
+
+	.ocb-ico--m2 { grid-template-columns: 1fr 1fr; gap: 24px 14px; }
+
+	.ocb-ico--mslider {
+		display: flex;
+		overflow-x: auto;
+		overflow-y: hidden;
+		scroll-snap-type: x proximity;
+		scrollbar-width: none;
+		gap: 14px;
+	}
+
+	.ocb-ico--mslider::-webkit-scrollbar { display: none; }
+
+	.ocb-ico--mslider .ocb-ico__one { flex: 0 0 64%; scroll-snap-align: start; }
 }

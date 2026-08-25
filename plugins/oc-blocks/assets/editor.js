@@ -195,6 +195,29 @@
 		frame.src = previewUrl( draft );
 	}
 
+	// A click on a section inside the preview answers back: open its card.
+	window.addEventListener( 'message', function ( e ) {
+		if ( ! e.data || 'number' !== typeof e.data.ocbPick ) {
+			return;
+		}
+
+		var i = e.data.ocbPick;
+
+		if ( ! state.sections[ i ] ) {
+			return;
+		}
+
+		state.open = i;
+		paintRail();
+		paintSettings();
+
+		var card = document.querySelectorAll( '.ocbe-card' )[ i ];
+
+		if ( card ) {
+			card.scrollIntoView( { behavior: 'smooth', block: 'nearest' } );
+		}
+	} );
+
 	// Choosing a card walks the preview to its section.
 	function reveal( i ) {
 		try {
@@ -1075,8 +1098,38 @@
 		var design = group( T.design, true );
 		var shell = group( T.shellttl, false );
 
+		// Blocks with mobile-only settings get a little device tab: one set
+		// of controls at a time instead of everything stacked.
+		var hasMobile = Object.keys( fields ).some( function ( key ) {
+			return 'm' === fields[ key ].dev;
+		} );
+
+		if ( hasMobile ) {
+			state.devTab = state.devTab || 'd';
+
+			var devSeg = el( 'div', { 'class': 'ocbe-seg ocbe-devtab' } );
+
+			[ [ 'd', T.devD ], [ 'm', T.devM ] ].forEach( function ( pair ) {
+				devSeg.appendChild( el( 'button', {
+					type: 'button',
+					'class': state.devTab === pair[ 0 ] ? 'is-on' : '',
+					text: pair[ 1 ],
+					onclick: function () {
+						state.devTab = pair[ 0 ];
+						paintSettings();
+					}
+				} ) );
+			} );
+
+			design.body.appendChild( devSeg );
+		}
+
 		Object.keys( fields ).forEach( function ( key ) {
 			if ( ! shown( section, fields[ key ], fields ) ) {
+				return;
+			}
+
+			if ( hasMobile && fields[ key ].dev && fields[ key ].dev !== state.devTab ) {
 				return;
 			}
 

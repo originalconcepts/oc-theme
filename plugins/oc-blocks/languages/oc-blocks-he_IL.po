@@ -1197,3 +1197,81 @@ msgstr "מטר מדידה"
 
 msgid "Sparkle"
 msgstr "נצנוץ"
+
+msgid "Countdown until (optional)"
+msgstr "ספירה לאחור עד (לא חובה)"
+
+msgid "Date and time, like: 2026-09-30 23:59 — a ticking clock joins the slide."
+msgstr "תאריך ושעה, למשל: 2026-09-30 23:59 — שעון מתקתק מצטרף לשקף."
+
+msgid "0 is off; around 30 is gentle; at 100 the picture stands still and the page glides over it."
+msgstr "0 כבוי; בסביבות 30 עדין; ב־100 התמונה עומדת במקום והדף מחליק מעליה."
+
+msgid "Countdown sits"
+msgstr "הספירה יושבת"
+
+msgid "Under the words"
+msgstr "מתחת לתוכן"
+
+msgid "On the other side"
+msgstr "בצד השני"
+
+msgid "Rooms with tagged products — spots on the picture, cards beside it."
+msgstr "חללים עם מוצרים מתויגים — נקודות על התמונה, כרטיסים לצידה."
+
+msgid "The rooms"
+msgstr "החללים"
+
+msgid "Room name (optional)"
+msgstr "שם החלל (לא חובה)"
+
+msgid "The products on it"
+msgstr "המוצרים שעל התמונה"
+
+msgid "The picture stands"
+msgstr "התמונה עומדת"
+
+msgid "Icon colour"
+msgstr "צבע האייקון"
+
+msgid "Mobile layout"
+msgstr "תצוגה במובייל"
+
+msgid "One per row"
+msgstr "אחד בשורה"
+
+msgid "Two per row"
+msgstr "שניים בשורה"
+
+msgid "Three per row"
+msgstr "שלושה בשורה"
+
+msgid "Mobile slider shows"
+msgstr "הסליידר במובייל מציג"
+
+msgid "One product and a peek"
+msgstr "מוצר אחד והצצה לבא"
+
+msgid "Two products and a peek"
+msgstr "שני מוצרים והצצה לבא"
+
+msgid "Sits"
+msgstr "יישור"
+
+msgid "To the reading side"
+msgstr "לצד הקריאה"
+
+msgid "Centred"
+msgstr "ממורכז"
+
+msgid "We could not find a branch by that name — but every one of ours is right here:"
+msgstr "לא מצאנו סניף בשם הזה — אבל כל הסניפים שלנו ממש כאן:"
+
+msgid "Desktop"
+msgstr "דסקטופ"
+
+msgid "Mobile"
+msgstr "מובייל"
+
+msgid "Close"
+msgstr "סגירה"

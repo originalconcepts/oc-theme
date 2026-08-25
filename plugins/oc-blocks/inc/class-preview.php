@@ -109,6 +109,9 @@ final class Preview {
 		echo '</head><body class="oc-compose-preview">';
 		echo $body; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
 		wp_print_scripts();
+		// A click on a section tells the composer to open its card — links,
+		// buttons and form fields keep doing their own job.
+		echo '<script>document.addEventListener("click",function(e){if(e.target.closest("a,button,input,textarea,select,label,form,iframe"))return;var s=e.target.closest("[data-ocb-n]");if(s&&window.parent!==window){window.parent.postMessage({ocbPick:Number(s.dataset.ocbN)},"*");}});</script>';
 		echo '</body></html>';
 		exit;
 	}

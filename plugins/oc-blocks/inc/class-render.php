@@ -342,15 +342,48 @@ final class Render {
 					. '</div>';
 			}
 
+		// A slide may carry a ticking clock — under the words, or riding
+			// the other side of the banner.
+			$cd = '';
+
+			if ( '' !== trim( (string) ( $slide['cd'] ?? '' ) ) ) {
+				$moment = date_create( trim( (string) $slide['cd'] ), wp_timezone() );
+
+				if ( $moment && $moment->getTimestamp() > time() ) {
+					$cells = '';
+
+					foreach ( array(
+						'd' => __( 'Days', 'oc-blocks' ),
+						'h' => __( 'Hours', 'oc-blocks' ),
+						'm' => __( 'Minutes', 'oc-blocks' ),
+						's' => __( 'Seconds', 'oc-blocks' ),
+					) as $unit => $label ) {
+						$cells .= '<span class="ocb-hero__cd-cell"><b data-ocb-cd-u="' . esc_attr( $unit ) . '">&nbsp;</b><i>' . esc_html( $label ) . '</i></span>';
+					}
+
+					$cd = '<div class="ocb-hero__cd ocb-hero__cd--' . esc_attr( (string) $s['cdpos'] ) . '" data-ocb-cd="' . esc_attr( (string) $moment->getTimestamp() ) . '" data-ocb-cd-in>' . $cells . '</div>';
+				}
+			}
+
+			if ( 'under' === (string) $s['cdpos'] && '' !== $cd ) {
+				$words = str_replace( '</div>', $cd . '</div>', $words ) ?: $words . $cd;
+				$cd    = '';
+			}
+
+			// At full strength the picture stands still and the page glides
+			// over it: a fixed layer, clipped to its own slide.
+			$fixed = 100 === (int) $s['parallax'];
+
 			$open  = '' !== $slide['url'] && '' === $slide['cta']
-				? '<a class="ocb-hero__slide" href="' . esc_url( (string) $slide['url'] ) . '">'
-				: '<div class="ocb-hero__slide">';
+				? '<a class="ocb-hero__slide' . ( $fixed ? ' ocb-hero__slide--fixedbg' : '' ) . '" href="' . esc_url( (string) $slide['url'] ) . '">'
+				: '<div class="ocb-hero__slide' . ( $fixed ? ' ocb-hero__slide--fixedbg' : '' ) . '">';
 			$close = '' !== $slide['url'] && '' === $slide['cta'] ? '</a>' : '</div>';
 
 			$slides[] = $open
-				. '<div class="ocb-hero__media"' . ( empty( $s['parallax'] ) ? '' : ' data-ocb-parallax="' . absint( $s['parallax'] ) . '"' ) . '>' . $media . '</div>'
+				. '<div class="ocb-hero__media' . ( $fixed ? ' ocb-hero__media--fixed' : '' ) . '"' . ( empty( $s['parallax'] ) || $fixed ? '' : ' data-ocb-parallax="' . absint( $s['parallax'] ) . '"' ) . '>' . $media . '</div>'
 				. ( $s['shade'] > 0 ? '<div class="ocb-hero__shade" style="opacity:' . ( absint( $s['shade'] ) / 100 ) . '"></div>' : '' )
 				. $words
+				. $cd
 				. $close;
 		}
 
@@ -717,70 +750,105 @@ final class Render {
 	}
 
 	/**
-	 * Shop the look: a picture wearing hot spots, each one a product. The
-	 * spots and the cards answer each other; arrows page through the set.
+	 * Shop the Look: rooms with tagged products. Each room is a picture with
+	 * its spots; the visitor walks the products — and the rooms — with one
+	 * pair of arrows, or by tapping a spot. Old single-picture sections are
+	 * read as one room.
 	 *
 	 * @param array<string,mixed> $s Section.
-	 * @return string
 	 */
 	private static function look( array $s ): string {
-		if ( ! class_exists( 'WooCommerce' ) || $s['img'] <= 0 || empty( $s['spots'] ) ) {
+		if ( ! class_exists( 'WooCommerce' ) ) {
 			return '';
 		}
 
-		$dsk = (string) wp_get_attachment_image_url( (int) $s['img'], 'full' );
+		$scenes = (array) ( $s['scenes'] ?? array() );
 
-		if ( '' === $dsk ) {
-			return '';
+		// A section saved before rooms existed carries img + spots directly.
+		if ( empty( $scenes ) && ! empty( $s['spots'] ) && ! empty( $s['img'] ) ) {
+			$scenes = array(
+				array(
+					'heading' => '',
+					'img'     => $s['img'],
+					'imgm'    => $s['imgm'] ?? 0,
+					'spots'   => $s['spots'],
+				),
+			);
 		}
 
-		$mob = $s['imgm'] > 0 ? (string) wp_get_attachment_image_url( (int) $s['imgm'], 'large' ) : '';
+		$pics   = '';
+		$cards  = '';
+		$at     = 0;
+		$sc     = 0;
 
-		$spots = '';
-		$cards = '';
-		$at    = 0;
+		foreach ( $scenes as $scene ) {
+			$dsk = absint( $scene['img'] ?? 0 ) > 0 ? (string) wp_get_attachment_image_url( absint( $scene['img'] ), 'full' ) : '';
 
-		foreach ( (array) $s['spots'] as $spot ) {
-			$product = wc_get_product( absint( $spot['id'] ) );
-
-			if ( ! $product || 'publish' !== $product->get_status() ) {
+			if ( '' === $dsk ) {
 				continue;
 			}
 
-			$img = $product->get_image_id() ? (string) wp_get_attachment_image_url( (int) $product->get_image_id(), 'large' ) : '';
+			$mob   = absint( $scene['imgm'] ?? 0 ) > 0 ? (string) wp_get_attachment_image_url( absint( $scene['imgm'] ), 'large' ) : '';
+			$spots = '';
+			$any   = false;
 
-			$spots .= sprintf(
-				'<button type="button" class="ocb-look__spot%s" style="--x:%d%%;--y:%d%%" data-ocb-spot="%d" aria-label="%s"><i></i></button>',
-				0 === $at ? ' is-on' : '',
-				absint( $spot['x'] ),
-				absint( $spot['y'] ),
-				$at,
-				esc_attr( $product->get_name() )
-			);
+			foreach ( (array) ( $scene['spots'] ?? array() ) as $spot ) {
+				$product = wc_get_product( absint( $spot['id'] ?? 0 ) );
 
-			$cards .= '<div class="ocb-look__card' . ( 0 === $at ? ' is-on' : '' ) . '" data-ocb-card="' . $at . '">'
-				. ( '' === $img ? '' : '<a class="ocb-look__cimg" href="' . esc_url( (string) $product->get_permalink() ) . '"><img src="' . esc_url( $img ) . '" alt="" loading="lazy" decoding="async"></a>' )
-				. '<h3 class="ocb-look__cname"><a href="' . esc_url( (string) $product->get_permalink() ) . '">' . esc_html( $product->get_name() ) . '</a></h3>'
-				. '<div class="ocb-look__cprice">' . $product->get_price_html() . '</div>'
-				. '<a class="ocb-btn ocb-btn--theme ocb-look__cgo" href="' . esc_url( (string) $product->get_permalink() ) . '">' . esc_html__( 'View product', 'oc-blocks' ) . '</a>'
+				if ( ! $product || 'publish' !== $product->get_status() ) {
+					continue;
+				}
+
+				$any = true;
+				$img = $product->get_image_id() ? (string) wp_get_attachment_image_url( (int) $product->get_image_id(), 'large' ) : '';
+
+				$spots .= sprintf(
+					'<button type="button" class="ocb-look__spot%s" style="--x:%d%%;--y:%d%%" data-ocb-spot="%d" aria-label="%s"><i></i></button>',
+					0 === $at ? ' is-on' : '',
+					absint( $spot['x'] ?? 50 ),
+					absint( $spot['y'] ?? 50 ),
+					$at,
+					esc_attr( $product->get_name() )
+				);
+
+				$cards .= '<div class="ocb-look__card' . ( 0 === $at ? ' is-on' : '' ) . '" data-ocb-card="' . $at . '" data-ocb-scene="' . $sc . '">'
+					. ( '' === $img ? '' : '<a class="ocb-look__cimg" href="' . esc_url( (string) $product->get_permalink() ) . '"><img src="' . esc_url( $img ) . '" alt="" loading="lazy" decoding="async"></a>' )
+					. '<h3 class="ocb-look__cname"><a href="' . esc_url( (string) $product->get_permalink() ) . '">' . esc_html( $product->get_name() ) . '</a></h3>'
+					. '<div class="ocb-look__cprice">' . $product->get_price_html() . '</div>'
+					. '<a class="ocb-btn ocb-btn--theme ocb-look__cgo" href="' . esc_url( (string) $product->get_permalink() ) . '">' . esc_html__( 'View product', 'oc-blocks' ) . '</a>'
+					. '</div>';
+
+				++$at;
+			}
+
+			if ( ! $any ) {
+				continue;
+			}
+
+			$pics .= '<div class="ocb-look__scene' . ( 0 === $sc ? ' is-on' : '' ) . '" data-ocb-lscene="' . $sc . '">'
+				. '<picture>'
+				. ( '' === $mob ? '' : '<source media="(max-width: 782px)" srcset="' . esc_url( $mob ) . '">' )
+				. '<img src="' . esc_url( $dsk ) . '" alt="" decoding="async">'
+				. '</picture>'
+				. $spots
 				. '</div>';
 
-			++$at;
+			++$sc;
 		}
 
 		if ( 0 === $at ) {
 			return '';
 		}
 
+		$snav = $sc > 1
+			? '<button type="button" class="ocb-arr ocb-arr--prev ocb-look__snav" data-ocb-scene-go="-1" aria-label="prev room"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5l-7 7 7 7"/></svg></button>'
+			. '<button type="button" class="ocb-arr ocb-arr--next ocb-look__snav" data-ocb-scene-go="1" aria-label="next room"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 5l7 7-7 7"/></svg></button>'
+			: '';
+
 		return '<div class="ocb-look ocb-look--' . esc_attr( (string) $s['side'] ) . '" data-ocb-look>'
-			. '<div class="ocb-look__pic">'
-			. '<picture>'
-			. ( '' === $mob ? '' : '<source media="(max-width: 782px)" srcset="' . esc_url( $mob ) . '">' )
-			. '<img src="' . esc_url( $dsk ) . '" alt="" decoding="async">'
-			. '</picture>'
-			. $spots
-			. '</div>'
+			. '<div class="ocb-look__pic">' . $pics . $snav . '</div>'
 			. '<div class="ocb-look__side">'
+			. '<button type="button" class="ocb-look__close" data-ocb-look-close aria-label="' . esc_attr__( 'Close', 'oc-blocks' ) . '"><span class="ocb-look__grab" aria-hidden="true"></span></button>'
 			. '<div class="ocb-look__cards">' . $cards . '</div>'
 			. ( $at > 1
 				? '<div class="ocb-look__nav">'
@@ -793,6 +861,7 @@ final class Render {
 			. '<button type="button" class="ocb-look__open" data-ocb-look-open>' . esc_html__( 'Show the products', 'oc-blocks' ) . '</button>'
 			. '</div>';
 	}
+
 
 	/**
 	 * Picture & words: an editorial split — media standing on one side, a
@@ -887,8 +956,14 @@ final class Render {
 
 			$frames .= '<div class="ocb-sc__frame' . ( 0 === $at ? ' is-on' : '' ) . '" data-ocb-frame="' . $at . '">' . $media . '</div>';
 
+			// On a phone the chapters trade places instead of stacking: the
+			// words ride inside the pinned stage and crossfade with it.
+			$mtexts = ( $mtexts ?? '' ) . '<div class="ocb-sc__mtext' . ( 0 === $at ? ' is-on' : '' ) . '" data-ocb-mstep="' . $at . '">'
+				. ( '' === $step['heading'] ? '' : '<h3>' . esc_html( (string) $step['heading'] ) . '</h3>' )
+				. ( '' === $step['text'] ? '' : '<div class="ocb-sc__words">' . wpautop( esc_html( (string) $step['text'] ) ) . '</div>' )
+				. '</div>';
+
 			$steps .= '<div class="ocb-sc__step" data-ocb-step="' . $at . '">'
-				. '<div class="ocb-sc__mmedia">' . $media . '</div>'
 				. ( '' === $step['heading'] ? '' : '<h3>' . esc_html( (string) $step['heading'] ) . '</h3>' )
 				. ( '' === $step['text'] ? '' : '<div class="ocb-sc__words">' . wpautop( esc_html( (string) $step['text'] ) ) . '</div>' )
 				. '</div>';
@@ -901,7 +976,8 @@ final class Render {
 		}
 
 		return '<div class="ocb-sc ocb-sc--' . esc_attr( (string) $s['side'] ) . '" data-ocb-sc>'
-			. '<div class="ocb-sc__pin"><div class="ocb-sc__stage">' . $frames . '</div></div>'
+			. '<div class="ocb-sc__pin"><div class="ocb-sc__stage">' . $frames . '</div>'
+			. '<div class="ocb-sc__mtexts">' . ( $mtexts ?? '' ) . '</div></div>'
 			. '<div class="ocb-sc__flow">' . $steps . '</div>'
 			. '</div>';
 	}
@@ -918,7 +994,7 @@ final class Render {
 			return '';
 		}
 
-		$atts = '';
+		$atts = 'center' === (string) ( $s['align'] ?? '' ) ? ' align="center"' : '';
 
 		if ( '' !== trim( (string) $s['placement'] ) ) {
 			$atts .= ' placement="' . esc_attr( (string) $s['placement'] ) . '"';
@@ -973,7 +1049,15 @@ final class Render {
 
 		$html = do_shortcode( '[oc_reviews' . $atts . ']' );
 
-		return '' === trim( $html ) ? '' : self::heading( $s ) . $html;
+		if ( '' === trim( $html ) ) {
+			return '';
+		}
+
+		if ( 'center' === (string) ( $s['align'] ?? '' ) ) {
+			$html = '<div class="ocb-alignc">' . $html . '</div>';
+		}
+
+		return self::heading( $s ) . $html;
 	}
 
 	/**
@@ -1243,14 +1327,13 @@ final class Render {
 
 			$lines .= '<p class="ocb-br__more"><a href="' . esc_url( $link ) . '">' . esc_html__( 'Branch page', 'oc-blocks' ) . ' ←</a></p>';
 
-			$photo = get_the_post_thumbnail( $branch, 'medium', array( 'loading' => 'lazy' ) );
-			$pic   = '' === $photo ? '' : '<span class="ocb-br__pic">' . $photo . '</span>';
+			$photo = get_the_post_thumbnail( $branch, 'large', array( 'loading' => 'lazy' ) );
 
 			$cards .= '<div class="ocb-br__card' . ( 0 === $at ? ' is-on' : '' ) . '" data-ocb-br-addr="' . esc_attr( $d['address'] ) . '">'
 				. '<span class="ocb-br__body">'
 				. '<span class="ocb-br__name">' . ( '' === $icon ? '' : '<i class="ocb-br__ico" aria-hidden="true">' . $icon . '</i>' ) . esc_html( (string) $branch->post_title ) . '</span>'
 				. $lines
-				. '</span>' . $pic
+				. '</span>'
 				. '</div>';
 
 			if ( ! empty( $s['strip'] ) && '' !== $photo ) {
@@ -1274,7 +1357,7 @@ final class Render {
 		return self::heading( $s )
 			. $search
 			. '<div class="ocb-br' . ( $with_map ? ' ocb-br--map' : '' ) . '" data-ocb-br>'
-			. '<div class="ocb-br__list">' . $cards . '</div>' . $map
+			. '<div class="ocb-br__list"><p class="ocb-br__none" hidden>' . esc_html__( 'We could not find a branch by that name — but every one of ours is right here:', 'oc-blocks' ) . '</p>' . $cards . '</div>' . $map
 			. '</div>'
 			. ( '' === $strip ? '' : '<div class="ocb-br__strip">' . $strip . '</div>' );
 	}

@@ -323,6 +323,11 @@ final class Registry {
 								'type'  => 'url',
 								'label' => __( 'Leads to', 'oc-blocks' ),
 							),
+							'cd'      => array(
+								'type'  => 'text',
+								'label' => __( 'Countdown until (optional)', 'oc-blocks' ),
+								'hint'  => __( 'Date and time, like: 2026-09-30 23:59 — a ticking clock joins the slide.', 'oc-blocks' ),
+							),
 						),
 					),
 					'pos'      => array(
@@ -397,9 +402,19 @@ final class Registry {
 					'parallax' => array(
 						'type'  => 'range',
 						'label' => __( 'Parallax strength', 'oc-blocks' ),
-						'hint'  => __( '0 is off; around 30 is gentle, 100 is dramatic.', 'oc-blocks' ),
+						'hint'  => __( '0 is off; around 30 is gentle; at 100 the picture stands still and the page glides over it.', 'oc-blocks' ),
 						'def'   => 0,
 						'group' => 'design',
+					),
+					'cdpos'    => array(
+						'type'    => 'seg',
+						'label'   => __( 'Countdown sits', 'oc-blocks' ),
+						'choices' => array(
+							'under' => __( 'Under the words', 'oc-blocks' ),
+							'side'  => __( 'On the other side', 'oc-blocks' ),
+						),
+						'def'     => 'side',
+						'group'   => 'design',
 					),
 				),
 			),
@@ -497,11 +512,13 @@ final class Registry {
 							'grid'   => __( 'Grid', 'oc-blocks' ),
 						),
 						'def'     => 'slider',
+						'dev'     => 'd',
 						'group'   => 'design',
 					),
 					'cols'    => array(
 						'type'  => 'number',
 						'label' => __( 'Per row — desktop', 'oc-blocks' ),
+						'dev'   => 'd',
 						'def'   => 4,
 						'min'   => 2,
 						'max'   => 6,
@@ -524,7 +541,18 @@ final class Registry {
 						'def'   => 1,
 						'group' => 'design',
 					),
-					'allurl'  => array(
+					'mcols'   => array(
+						'type'    => 'seg',
+						'label'   => __( 'Mobile slider shows', 'oc-blocks' ),
+						'choices' => array(
+							'1' => __( 'One product and a peek', 'oc-blocks' ),
+							'2' => __( 'Two products and a peek', 'oc-blocks' ),
+						),
+						'def'     => '1',
+						'dev'     => 'm',
+						'group'   => 'design',
+					),
+				'allurl'  => array(
 						'type'  => 'url',
 						'label' => __( 'It leads to (empty: the category)', 'oc-blocks' ),
 						'when'  => array( 'all' => array( '1' ) ),
@@ -588,11 +616,13 @@ final class Registry {
 							'grid'   => __( 'Grid', 'oc-blocks' ),
 						),
 						'def'     => 'slider',
+						'dev'     => 'd',
 						'group'   => 'design',
 					),
 					'cols'    => array(
 						'type'  => 'number',
 						'label' => __( 'Per row — desktop', 'oc-blocks' ),
+						'dev'   => 'd',
 						'def'   => 5,
 						'min'   => 2,
 						'max'   => 8,
@@ -617,6 +647,19 @@ final class Registry {
 							'none' => __( 'Nothing', 'oc-blocks' ),
 						),
 						'def'     => 'zoom',
+						'group'   => 'design',
+					),
+					'mlay'    => array(
+						'type'    => 'seg',
+						'label'   => __( 'Mobile layout', 'oc-blocks' ),
+						'choices' => array(
+							'1'      => __( 'One per row', 'oc-blocks' ),
+							'2'      => __( 'Two per row', 'oc-blocks' ),
+							'3'      => __( 'Three per row', 'oc-blocks' ),
+							'slider' => __( 'Slider', 'oc-blocks' ),
+						),
+						'def'     => '2',
+						'dev'     => 'm',
 						'group'   => 'design',
 					),
 				),
@@ -702,6 +745,7 @@ final class Registry {
 					'cols'    => array(
 						'type'  => 'number',
 						'label' => __( 'Per row — desktop', 'oc-blocks' ),
+						'dev'   => 'd',
 						'def'   => 5,
 						'min'   => 2,
 						'max'   => 8,
@@ -763,6 +807,29 @@ final class Registry {
 						'def'   => 1,
 						'group' => 'design',
 					),
+				'layout'  => array(
+						'type'    => 'seg',
+						'label'   => __( 'Laid as', 'oc-blocks' ),
+						'choices' => array(
+							'grid'   => __( 'Grid', 'oc-blocks' ),
+							'slider' => __( 'Slider', 'oc-blocks' ),
+						),
+						'def'     => 'grid',
+						'dev'     => 'd',
+						'group'   => 'design',
+					),
+					'mlay'    => array(
+						'type'    => 'seg',
+						'label'   => __( 'Mobile layout', 'oc-blocks' ),
+						'choices' => array(
+							'1'      => __( 'One per row', 'oc-blocks' ),
+							'2'      => __( 'Two per row', 'oc-blocks' ),
+							'slider' => __( 'Slider', 'oc-blocks' ),
+						),
+						'def'     => '1',
+						'dev'     => 'm',
+						'group'   => 'design',
+					),
 					'all'     => array(
 						'type'  => 'toggle',
 						'label' => __( '"To the blog" button', 'oc-blocks' ),
@@ -778,29 +845,40 @@ final class Registry {
 				),
 			),
 			'look'       => array(
-				'label'  => __( 'Shop the look', 'oc-blocks' ),
-				'blurb'  => __( 'A picture with hot spots — every spot a product.', 'oc-blocks' ),
-				'icon'   => '<svg viewBox="0 0 24 24"><rect x="2.5" y="4" width="12" height="16" rx="1.5" opacity=".4"/><circle cx="7" cy="10" r="2.2"/><circle cx="11" cy="15" r="2.2"/><rect x="16.5" y="7" width="5" height="10" rx="1" opacity=".55"/></svg>',
+				'label'  => __( 'Shop the Look', 'oc-blocks' ),
+				'blurb'  => __( 'Rooms with tagged products — spots on the picture, cards beside it.', 'oc-blocks' ),
+				'icon'   => '<svg viewBox="0 0 24 24"><rect x="2.5" y="4" width="19" height="16" rx="2" opacity=".35"/><circle cx="9" cy="10" r="2.2" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="15.5" cy="14.5" r="2.2" fill="none" stroke="currentColor" stroke-width="1.6" opacity=".7"/></svg>',
 				'fields' => array(
-					'img'   => array(
-						'type'  => 'image',
-						'label' => __( 'The picture — desktop', 'oc-blocks' ),
+					'scenes' => array(
+						'type'  => 'slides',
+						'label' => __( 'The rooms', 'oc-blocks' ),
+						'def'   => array(),
+						'sub'   => array(
+							'heading' => array(
+								'type'  => 'text',
+								'label' => __( 'Room name (optional)', 'oc-blocks' ),
+							),
+							'img'     => array(
+								'type'  => 'image',
+								'label' => __( 'Picture — desktop', 'oc-blocks' ),
+							),
+							'imgm'    => array(
+								'type'  => 'image',
+								'label' => __( 'Picture — mobile (optional)', 'oc-blocks' ),
+							),
+							'spots'   => array(
+								'type'  => 'spots',
+								'label' => __( 'The products on it', 'oc-blocks' ),
+								'def'   => array(),
+							),
+						),
 					),
-					'imgm'  => array(
-						'type'  => 'image',
-						'label' => __( 'The picture — mobile (optional)', 'oc-blocks' ),
-					),
-					'spots' => array(
-						'type'  => 'spots',
-						'label' => __( 'Hot spots', 'oc-blocks' ),
-						'hint'  => __( 'Click the picture to drop a spot, then choose its product.', 'oc-blocks' ),
-					),
-					'side'  => array(
+					'side'   => array(
 						'type'    => 'seg',
 						'label'   => __( 'The picture stands', 'oc-blocks' ),
 						'choices' => array(
-							'start' => __( 'Reading side', 'oc-blocks' ),
-							'end'   => __( 'Far side', 'oc-blocks' ),
+							'start' => __( 'On the right', 'oc-blocks' ),
+							'end'   => __( 'On the left', 'oc-blocks' ),
 						),
 						'def'     => 'start',
 						'group'   => 'design',
@@ -944,6 +1022,16 @@ final class Registry {
 						'max'   => 30,
 						'group' => 'design',
 					),
+					'align'   => array(
+						'type'    => 'seg',
+						'label'   => __( 'Sits', 'oc-blocks' ),
+						'choices' => array(
+							'start'  => __( 'To the reading side', 'oc-blocks' ),
+							'center' => __( 'Centred', 'oc-blocks' ),
+						),
+						'def'     => 'start',
+						'group'   => 'design',
+					),
 				),
 			),
 
@@ -1017,6 +1105,16 @@ final class Registry {
 						'min'   => 0,
 						'max'   => 20,
 						'group' => 'design',
+					),
+					'align'   => array(
+						'type'    => 'seg',
+						'label'   => __( 'Sits', 'oc-blocks' ),
+						'choices' => array(
+							'start'  => __( 'To the reading side', 'oc-blocks' ),
+							'center' => __( 'Centred', 'oc-blocks' ),
+						),
+						'def'     => 'start',
+						'group'   => 'design',
 					),
 				),
 			),
@@ -1344,6 +1442,23 @@ final class Registry {
 						'hint'  => __( 'Empty takes a soft tone from the theme.', 'oc-blocks' ),
 						'when'  => array( 'bg' => array( '1' ) ),
 						'group' => 'design',
+					),
+					'ic'      => array(
+						'type'  => 'color',
+						'label' => __( 'Icon colour', 'oc-blocks' ),
+						'group' => 'design',
+					),
+					'mlay'    => array(
+						'type'    => 'seg',
+						'label'   => __( 'Mobile layout', 'oc-blocks' ),
+						'choices' => array(
+							'1'      => __( 'One per row', 'oc-blocks' ),
+							'2'      => __( 'Two per row', 'oc-blocks' ),
+							'slider' => __( 'Slider', 'oc-blocks' ),
+						),
+						'def'     => '1',
+						'dev'     => 'm',
+						'group'   => 'design',
 					),
 				),
 			),

@@ -654,3 +654,29 @@ html[dir="ltr"] .ocbe-switch input:checked + i::after { transform: translateX(16
 }
 
 .ocbe-spots__x:hover { color: #b32d2e; }
+
+
+/* The little device tab: one set of design controls at a time. */
+.ocbe-devtab {
+	display: flex;
+	gap: 4px;
+	margin-block-end: 12px;
+	padding: 3px;
+	border-radius: 9px;
+	background: rgb(0 0 0 / 5%);
+}
+
+.ocbe-devtab button {
+	flex: 1;
+	padding: 7px 10px;
+	border: 0;
+	border-radius: 7px;
+	background: none;
+	font: inherit;
+	font-size: 12px;
+	font-weight: 600;
+	cursor: pointer;
+	opacity: .6;
+}
+
+.ocbe-devtab button.is-on { background: #fff; opacity: 1; box-shadow: 0 1px 4px rgb(0 0 0 / 10%); }
