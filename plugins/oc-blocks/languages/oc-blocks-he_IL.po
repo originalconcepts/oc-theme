@@ -642,3 +642,177 @@ msgstr "כרטיסי מוצר"
 
 msgid "floating video"
 msgstr "וידאו צף"
+
+msgid "Questions & answers"
+msgstr "שאלות ותשובות"
+
+msgid "An accordion of common questions, marked up for Google."
+msgstr "אקורדיון של שאלות נפוצות, עם סימון מובנה לגוגל."
+
+msgid "The questions"
+msgstr "השאלות"
+
+msgid "The question"
+msgstr "השאלה"
+
+msgid "The answer"
+msgstr "התשובה"
+
+msgid "To begin with"
+msgstr "בהתחלה"
+
+msgid "First one open"
+msgstr "הראשונה פתוחה"
+
+msgid "All closed"
+msgstr "הכל סגור"
+
+msgid "FAQ markup for Google"
+msgstr "סימון FAQ לגוגל"
+
+msgid "As featured in"
+msgstr "כפי שהופיע ב־"
+
+msgid "A quiet row of press and partner logos."
+msgstr "שורה שקטה של לוגואים — עיתונות ושותפים."
+
+msgid "The logos"
+msgstr "הלוגואים"
+
+msgid "Logo"
+msgstr "לוגו"
+
+msgid "Link (optional)"
+msgstr "קישור (לא חובה)"
+
+msgid "Logo height (px)"
+msgstr "גובה הלוגו (px)"
+
+msgid "Grey until hovered"
+msgstr "אפור עד ריחוף העכבר"
+
+msgid "The row"
+msgstr "השורה"
+
+msgid "Stands still"
+msgstr "עומדת במקום"
+
+msgid "Drifts along"
+msgstr "נעה לאיטה"
+
+msgid "Newsletter"
+msgstr "ניוזלטר"
+
+msgid "An email signup. Addresses collect under Tools."
+msgstr "הרשמה במייל. הכתובות נאספות תחת ״כלים״."
+
+msgid "A few words above the field"
+msgstr "כמה מילים מעל השדה"
+
+msgid "Inside the email field"
+msgstr "בתוך שדה האימייל"
+
+msgid "Empty shows \"Your email\"."
+msgstr "ריק יציג ״האימייל שלכם״."
+
+msgid "On the button"
+msgstr "על הכפתור"
+
+msgid "Empty shows \"Sign up\"."
+msgstr "ריק יציג ״הרשמה״."
+
+msgid "Small print underneath"
+msgstr "אותיות קטנות מתחת"
+
+msgid "Countdown"
+msgstr "ספירה לאחור"
+
+msgid "Days, hours and minutes until a sale ends."
+msgstr "ימים, שעות ודקות עד סוף המבצע."
+
+msgid "Counting down to"
+msgstr "סופרים לאחור עד"
+
+msgid "Date and time, like: 2026-09-30 23:59"
+msgstr "תאריך ושעה, למשל: 2026-09-30 23:59"
+
+msgid "When it reaches zero"
+msgstr "כשמגיעים לאפס"
+
+msgid "Shown instead of the numbers. Empty hides the whole section."
+msgstr "מוצג במקום המספרים. ריק מסתיר את כל הסקשן."
+
+msgid "Number size"
+msgstr "גודל המספרים"
+
+msgid "Branches"
+msgstr "סניפים"
+
+msgid "The shops themselves — addresses, hours and a map."
+msgstr "החנויות עצמן — כתובות, שעות פתיחה ומפה."
+
+msgid "The branches"
+msgstr "הסניפים"
+
+msgid "Branch name"
+msgstr "שם הסניף"
+
+msgid "Address"
+msgstr "כתובת"
+
+msgid "Phone"
+msgstr "טלפון"
+
+msgid "Opening hours"
+msgstr "שעות פתיחה"
+
+msgid "Show a map"
+msgstr "להציג מפה"
+
+msgid "Your email"
+msgstr "האימייל שלכם"
+
+msgid "Email"
+msgstr "אימייל"
+
+msgid "Sign up"
+msgstr "הרשמה"
+
+msgid "Thank you — you are on the list."
+msgstr "תודה, אתם ברשימה."
+
+msgid "Days"
+msgstr "ימים"
+
+msgid "Hours"
+msgstr "שעות"
+
+msgid "Minutes"
+msgstr "דקות"
+
+msgid "Seconds"
+msgstr "שניות"
+
+msgid "Map"
+msgstr "מפה"
+
+msgid "That does not look like an email address."
+msgstr "זו לא נראית כתובת אימייל."
+
+msgid "Newsletter signups"
+msgstr "נרשמים לניוזלטר"
+
+msgid "On the list: %s"
+msgstr "ברשימה: %s"
+
+msgid "Download as CSV"
+msgstr "הורדה כקובץ CSV"
+
+msgid "Signed up"
+msgstr "תאריך הרשמה"
+
+msgid "Showing the newest 500 — the CSV holds everyone."
+msgstr "מוצגים 500 האחרונים — קובץ ה־CSV מכיל את כולם."
+
+msgid "Not allowed."
+msgstr "אין הרשאה."

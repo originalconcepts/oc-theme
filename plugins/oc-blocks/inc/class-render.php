@@ -260,6 +260,16 @@ final class Render {
 				return self::story( $s );
 			case 'reviews':
 				return self::reviews( $s );
+			case 'faq':
+				return self::faq( $s );
+			case 'logos':
+				return self::logos( $s );
+			case 'news':
+				return self::news( $s );
+			case 'countdown':
+				return self::countdown( $s );
+			case 'branches':
+				return self::branches( $s );
 		}
 
 		/**
@@ -934,6 +944,269 @@ final class Render {
 		$html = do_shortcode( '[oc_reviews' . $atts . ']' );
 
 		return '' === trim( $html ) ? '' : self::heading( $s ) . $html;
+	}
+
+	/**
+	 * Questions and answers, folded, with FAQ schema for the search results.
+	 *
+	 * @param array<string,mixed> $s Section.
+	 */
+	private static function faq( array $s ): string {
+		$rows = array();
+
+		foreach ( (array) $s['items'] as $row ) {
+			$q = trim( (string) ( $row['q'] ?? '' ) );
+			$a = trim( (string) ( $row['a'] ?? '' ) );
+
+			if ( '' !== $q && '' !== $a ) {
+				$rows[] = array(
+					'q' => $q,
+					'a' => $a,
+				);
+			}
+		}
+
+		if ( empty( $rows ) ) {
+			return '';
+		}
+
+		$items = '';
+
+		foreach ( $rows as $at => $row ) {
+			$open   = 0 === $at && 'first' === (string) $s['open'];
+			$items .= '<div class="ocb-faq__item' . ( $open ? ' is-open' : '' ) . '">'
+				. '<button type="button" class="ocb-faq__q" aria-expanded="' . ( $open ? 'true' : 'false' ) . '">'
+				. '<span>' . esc_html( $row['q'] ) . '</span>'
+				. '<span class="ocb-faq__chev" aria-hidden="true"></span>'
+				. '</button>'
+				. '<div class="ocb-faq__a"><div class="ocb-faq__body">' . wp_kses_post( wpautop( $row['a'] ) ) . '</div></div>'
+				. '</div>';
+		}
+
+		$schema = '';
+
+		if ( ! empty( $s['schema'] ) ) {
+			$entities = array();
+
+			foreach ( $rows as $row ) {
+				$entities[] = array(
+					'@type'          => 'Question',
+					'name'           => $row['q'],
+					'acceptedAnswer' => array(
+						'@type' => 'Answer',
+						'text'  => $row['a'],
+					),
+				);
+			}
+
+			$schema = '<script type="application/ld+json">' . wp_json_encode(
+				array(
+					'@context'   => 'https://schema.org',
+					'@type'      => 'FAQPage',
+					'mainEntity' => $entities,
+				),
+				JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
+			) . '</script>';
+		}
+
+		return self::heading( $s ) . '<div class="ocb-faq" data-ocb-faq>' . $items . '</div>' . $schema;
+	}
+
+	/**
+	 * A row of press and partner logos — standing, or drifting like a marquee.
+	 *
+	 * @param array<string,mixed> $s Section.
+	 */
+	private static function logos( array $s ): string {
+		$items = '';
+
+		foreach ( (array) $s['items'] as $row ) {
+			$img = absint( $row['img'] ?? 0 );
+
+			if ( ! $img ) {
+				continue;
+			}
+
+			$pic = wp_get_attachment_image( $img, 'medium', false, array( 'loading' => 'lazy' ) );
+
+			if ( '' === $pic ) {
+				continue;
+			}
+
+			$url = (string) ( $row['url'] ?? '' );
+
+			$items .= '' !== $url
+				? '<a class="ocb-logos__one" href="' . esc_url( $url ) . '" target="_blank" rel="noopener">' . $pic . '</a>'
+				: '<span class="ocb-logos__one">' . $pic . '</span>';
+		}
+
+		if ( '' === $items ) {
+			return '';
+		}
+
+		$class = 'ocb-logos' . ( empty( $s['gray'] ) ? '' : ' ocb-logos--gray' );
+		$style = '--ocb-logo-h:' . absint( $s['size'] ) . 'px;';
+
+		if ( 'marquee' === (string) $s['move'] ) {
+			return self::heading( $s )
+				. '<div class="' . esc_attr( $class ) . ' ocb-mq ocb-mq--rtl ocb-logos--mq" style="' . esc_attr( $style . '--ocb-mq-speed:' . absint( $s['speed'] ) . 's;' ) . '" data-ocb-mq>'
+				. '<div class="ocb-mq__track">' . $items . $items . '</div>'
+				. '</div>';
+		}
+
+		return self::heading( $s )
+			. '<div class="' . esc_attr( $class ) . '" style="' . esc_attr( $style ) . '">'
+			. '<div class="ocb-logos__row">' . $items . '</div>'
+			. '</div>';
+	}
+
+	/**
+	 * The newsletter form. Addresses land under Tools → Newsletter signups.
+	 *
+	 * No nonce on purpose: for a logged-out visitor a nonce protects nothing,
+	 * and this markup gets cached for a day — longer than a nonce lives. The
+	 * honeypot and the throttle in Newsletter carry the abuse load instead.
+	 *
+	 * @param array<string,mixed> $s Section.
+	 */
+	private static function news( array $s ): string {
+		$button      = trim( (string) $s['button'] );
+		$placeholder = trim( (string) $s['placeholder'] );
+		$text        = trim( (string) $s['text'] );
+		$note        = trim( (string) $s['note'] );
+
+		$out = self::heading( $s );
+
+		if ( '' !== $text ) {
+			$out .= '<p class="ocb-news__text">' . esc_html( $text ) . '</p>';
+		}
+
+		$out .= '<form class="ocb-news" method="post" action="' . esc_url( admin_url( 'admin-ajax.php' ) ) . '" data-ocb-news>'
+			. '<input type="hidden" name="action" value="oc_blocks_subscribe">'
+			. '<input class="ocb-news__trap" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">'
+			. '<input class="ocb-news__mail" type="email" name="email" required placeholder="' . esc_attr( '' === $placeholder ? __( 'Your email', 'oc-blocks' ) : $placeholder ) . '" aria-label="' . esc_attr__( 'Email', 'oc-blocks' ) . '">'
+			. '<button class="ocb-news__go ocb-btn ocb-btn--theme" type="submit">' . esc_html( '' === $button ? __( 'Sign up', 'oc-blocks' ) : $button ) . '</button>'
+			. '<p class="ocb-news__thanks" hidden>' . esc_html__( 'Thank you — you are on the list.', 'oc-blocks' ) . '</p>'
+			. '</form>';
+
+		if ( '' !== $note ) {
+			$out .= '<p class="ocb-news__note">' . esc_html( $note ) . '</p>';
+		}
+
+		return '<div class="ocb-news__wrap">' . $out . '</div>';
+	}
+
+	/**
+	 * Days, hours, minutes and seconds until a moment in the shop's timezone.
+	 *
+	 * @param array<string,mixed> $s Section.
+	 */
+	private static function countdown( array $s ): string {
+		$raw = trim( (string) $s['until'] );
+
+		if ( '' === $raw ) {
+			return '';
+		}
+
+		$moment = date_create( $raw, wp_timezone() );
+
+		if ( ! $moment ) {
+			return '';
+		}
+
+		$stamp = $moment->getTimestamp();
+		$done  = trim( (string) $s['done'] );
+
+		// Already over and nothing to say about it: the section stands down.
+		if ( $stamp <= time() && '' === $done ) {
+			return '';
+		}
+
+		$units = array(
+			'd' => __( 'Days', 'oc-blocks' ),
+			'h' => __( 'Hours', 'oc-blocks' ),
+			'm' => __( 'Minutes', 'oc-blocks' ),
+			's' => __( 'Seconds', 'oc-blocks' ),
+		);
+
+		$cells = '';
+
+		foreach ( $units as $unit => $label ) {
+			$cells .= '<span class="ocb-cd__cell"><b class="ocb-cd__n" data-ocb-cd-u="' . esc_attr( $unit ) . '">&nbsp;</b><i>' . esc_html( $label ) . '</i></span>';
+		}
+
+		return self::heading( $s )
+			. '<div class="ocb-cd ocb-cd--' . esc_attr( (string) $s['size'] ) . '" data-ocb-cd="' . esc_attr( (string) $stamp ) . '" data-ocb-cd-done="' . esc_attr( $done ) . '">'
+			. '<div class="ocb-cd__cells">' . $cells . '</div>'
+			. '<p class="ocb-cd__done" hidden></p>'
+			. '</div>';
+	}
+
+	/**
+	 * The branches: cards with address, phone and hours, beside a map that
+	 * follows whichever branch is chosen.
+	 *
+	 * @param array<string,mixed> $s Section.
+	 */
+	private static function branches( array $s ): string {
+		$rows = array();
+
+		foreach ( (array) $s['items'] as $row ) {
+			$name = trim( (string) ( $row['name'] ?? '' ) );
+			$addr = trim( (string) ( $row['address'] ?? '' ) );
+
+			if ( '' === $name && '' === $addr ) {
+				continue;
+			}
+
+			$rows[] = array(
+				'name'  => $name,
+				'addr'  => $addr,
+				'phone' => trim( (string) ( $row['phone'] ?? '' ) ),
+				'hours' => trim( (string) ( $row['hours'] ?? '' ) ),
+			);
+		}
+
+		if ( empty( $rows ) ) {
+			return '';
+		}
+
+		$with_map = ! empty( $s['map'] ) && '' !== $rows[0]['addr'];
+		$cards    = '';
+
+		foreach ( $rows as $at => $row ) {
+			$lines = '';
+
+			if ( '' !== $row['addr'] ) {
+				$lines .= '<p class="ocb-br__addr">' . esc_html( $row['addr'] ) . '</p>';
+			}
+
+			if ( '' !== $row['phone'] ) {
+				$lines .= '<p class="ocb-br__phone"><a href="tel:' . esc_attr( (string) preg_replace( '/[^0-9+]/', '', $row['phone'] ) ) . '">' . esc_html( $row['phone'] ) . '</a></p>';
+			}
+
+			if ( '' !== $row['hours'] ) {
+				$lines .= '<p class="ocb-br__hours">' . nl2br( esc_html( $row['hours'] ) ) . '</p>';
+			}
+
+			$inner = '<span class="ocb-br__name">' . esc_html( $row['name'] ) . '</span>' . $lines;
+
+			// A card is a button only when there is a map for it to steer.
+			$cards .= $with_map
+				? '<button type="button" class="ocb-br__card' . ( 0 === $at ? ' is-on' : '' ) . '" data-ocb-br-addr="' . esc_attr( $row['addr'] ) . '">' . $inner . '</button>'
+				: '<div class="ocb-br__card">' . $inner . '</div>';
+		}
+
+		$map = '';
+
+		if ( $with_map ) {
+			$map = '<div class="ocb-br__map"><iframe loading="lazy" title="' . esc_attr__( 'Map', 'oc-blocks' ) . '" src="' . esc_url( 'https://maps.google.com/maps?q=' . rawurlencode( $rows[0]['addr'] ) . '&hl=' . substr( get_locale(), 0, 2 ) . '&output=embed' ) . '"></iframe></div>';
+		}
+
+		return self::heading( $s )
+			. '<div class="ocb-br' . ( $with_map ? ' ocb-br--map' : '' ) . '" data-ocb-br>'
+			. '<div class="ocb-br__list">' . $cards . '</div>' . $map
+			. '</div>';
 	}
 
 	/*

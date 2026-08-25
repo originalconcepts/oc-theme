@@ -323,6 +323,144 @@
 		} );
 	} );
 
+	/* ---------- questions & answers ---------- */
+
+	document.querySelectorAll( '[data-ocb-faq]' ).forEach( function ( faq ) {
+		faq.addEventListener( 'click', function ( e ) {
+			var q = e.target.closest( '.ocb-faq__q' );
+
+			if ( ! q ) {
+				return;
+			}
+
+			var item = q.parentElement;
+			var open = item.classList.toggle( 'is-open' );
+
+			q.setAttribute( 'aria-expanded', open ? 'true' : 'false' );
+		} );
+	} );
+
+	/* ---------- countdown ---------- */
+
+	document.querySelectorAll( '[data-ocb-cd]' ).forEach( function ( cd ) {
+		var end = Number( cd.dataset.ocbCd ) * 1000;
+		var cells = {};
+
+		cd.querySelectorAll( '[data-ocb-cd-u]' ).forEach( function ( n ) {
+			cells[ n.dataset.ocbCdU ] = n;
+		} );
+
+		var timer = 0;
+
+		var tick = function () {
+			var left = end - Date.now();
+
+			if ( left <= 0 ) {
+				clearInterval( timer );
+
+				var done = cd.dataset.ocbCdDone || '';
+				var out = cd.querySelector( '.ocb-cd__done' );
+
+				if ( done && out ) {
+					cd.querySelector( '.ocb-cd__cells' ).hidden = true;
+					out.textContent = done;
+					out.hidden = false;
+				} else {
+					// Nothing to say: the whole section stands down.
+					var section = cd.closest( '.ocb' );
+
+					if ( section ) {
+						section.style.display = 'none';
+					}
+				}
+
+				return;
+			}
+
+			var s = Math.floor( left / 1000 );
+
+			var show = {
+				d: Math.floor( s / 86400 ),
+				h: Math.floor( ( s % 86400 ) / 3600 ),
+				m: Math.floor( ( s % 3600 ) / 60 ),
+				s: s % 60
+			};
+
+			Object.keys( show ).forEach( function ( unit ) {
+				if ( cells[ unit ] ) {
+					cells[ unit ].textContent = String( show[ unit ] ).padStart( 2, '0' );
+				}
+			} );
+		};
+
+		tick();
+		timer = setInterval( tick, 1000 );
+	} );
+
+	/* ---------- branches: the map follows the chosen card ---------- */
+
+	document.querySelectorAll( '[data-ocb-br]' ).forEach( function ( br ) {
+		var frame = br.querySelector( '.ocb-br__map iframe' );
+
+		if ( ! frame ) {
+			return;
+		}
+
+		br.querySelectorAll( 'button.ocb-br__card' ).forEach( function ( card ) {
+			card.addEventListener( 'click', function () {
+				var addr = card.dataset.ocbBrAddr;
+
+				if ( ! addr || card.classList.contains( 'is-on' ) ) {
+					return;
+				}
+
+				br.querySelectorAll( '.ocb-br__card.is-on' ).forEach( function ( on ) {
+					on.classList.remove( 'is-on' );
+				} );
+				card.classList.add( 'is-on' );
+
+				var src = new URL( frame.src );
+				src.searchParams.set( 'q', addr );
+				frame.src = src.toString();
+			} );
+		} );
+	} );
+
+	/* ---------- newsletter ---------- */
+
+	document.querySelectorAll( '[data-ocb-news]' ).forEach( function ( form ) {
+		form.addEventListener( 'submit', function ( e ) {
+			e.preventDefault();
+
+			var go = form.querySelector( '.ocb-news__go' );
+
+			go.disabled = true;
+
+			fetch( form.action, { method: 'POST', body: new FormData( form ) } )
+				.then( function ( r ) {
+					return r.json();
+				} )
+				.then( function ( data ) {
+					if ( data && data.success ) {
+						form.classList.add( 'is-done' );
+						form.querySelector( '.ocb-news__thanks' ).hidden = false;
+					} else {
+						go.disabled = false;
+
+						var mail = form.querySelector( '.ocb-news__mail' );
+						mail.setCustomValidity( ( data && data.data && data.data.msg ) || '…' );
+						mail.reportValidity();
+						mail.addEventListener( 'input', function () {
+							mail.setCustomValidity( '' );
+						}, { once: true } );
+					}
+				} )
+				.catch( function () {
+					go.disabled = false;
+				} );
+		} );
+	} );
+
 	/* ---------- parallax: the picture drifts slower than the page ---------- */
 
 	var lax = document.querySelectorAll( '[data-ocb-parallax]' );

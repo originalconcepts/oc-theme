@@ -873,3 +873,224 @@ html[dir="rtl"] .ocb-look__spot { translate: 50% -50%; }
 	.ocb-sc__mmedia img,
 	.ocb-sc__mmedia video { inline-size: 100%; aspect-ratio: 4 / 3; object-fit: cover; display: block; }
 }
+
+/* ---------- questions & answers ---------- */
+
+.ocb-faq { max-inline-size: 760px; margin-inline: auto; }
+
+.ocb-faq__item { border-block-end: 1px solid color-mix(in srgb, currentColor 14%, transparent); }
+.ocb-faq__item:first-child { border-block-start: 1px solid color-mix(in srgb, currentColor 14%, transparent); }
+
+.ocb-faq__q {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 18px;
+	inline-size: 100%;
+	padding: 18px 2px;
+	border: 0;
+	background: none;
+	font: inherit;
+	font-weight: 600;
+	text-align: start;
+	cursor: pointer;
+	color: inherit;
+}
+
+/* The chevron: two strokes that fold into a minus when open. */
+.ocb-faq__chev {
+	position: relative;
+	flex: 0 0 auto;
+	inline-size: 14px;
+	block-size: 14px;
+}
+
+.ocb-faq__chev::before,
+.ocb-faq__chev::after {
+	content: "";
+	position: absolute;
+	inset-block-start: 50%;
+	inset-inline-start: 0;
+	inline-size: 100%;
+	block-size: 1.6px;
+	background: currentColor;
+	transition: transform .3s ease;
+}
+
+.ocb-faq__chev::after { transform: rotate(90deg); }
+.ocb-faq__item.is-open .ocb-faq__chev::after { transform: rotate(0deg); }
+
+/* Folding by grid rows: animatable without measuring anything. */
+.ocb-faq__a {
+	display: grid;
+	grid-template-rows: 0fr;
+	transition: grid-template-rows .35s ease;
+}
+
+.ocb-faq__item.is-open .ocb-faq__a { grid-template-rows: 1fr; }
+
+.ocb-faq__body { overflow: hidden; }
+
+.ocb-faq__body p { margin: 0 0 16px; line-height: 1.75; opacity: .85; }
+
+/* ---------- as featured in ---------- */
+
+.ocb-logos__row {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: center;
+	gap: clamp(26px, 5vw, 64px);
+}
+
+.ocb-logos__one { display: inline-flex; align-items: center; }
+
+.ocb-logos img {
+	block-size: var(--ocb-logo-h, 44px);
+	inline-size: auto;
+	max-inline-size: 180px;
+	object-fit: contain;
+	transition: filter .25s ease, opacity .25s ease;
+}
+
+.ocb-logos--gray img { filter: grayscale(1); opacity: .6; }
+.ocb-logos--gray .ocb-logos__one:hover img { filter: none; opacity: 1; }
+
+/* Drifting: the marquee machinery, minus its typography. */
+.ocb-logos--mq { font-size: 0; padding-block: 6px; }
+.ocb-logos--mq .ocb-mq__track { gap: clamp(40px, 6vw, 90px); padding-inline-end: clamp(40px, 6vw, 90px); align-items: center; }
+
+/* ---------- newsletter ---------- */
+
+.ocb-news__wrap { max-inline-size: 560px; margin-inline: auto; text-align: center; }
+
+.ocb-news__text { margin: 0 0 22px; line-height: 1.7; opacity: .8; }
+
+.ocb-news {
+	display: flex;
+	gap: 10px;
+	align-items: stretch;
+}
+
+.ocb-news__mail {
+	flex: 1 1 auto;
+	min-inline-size: 0;
+	padding: 13px 16px;
+	border: 1.5px solid color-mix(in srgb, currentColor 28%, transparent);
+	border-radius: var(--oc-cta-r, 8px);
+	background: var(--oc-surface, #fff);
+	color: var(--oc-ink, #1c1c1c);
+	font: inherit;
+}
+
+.ocb-news__mail:focus { outline: none; border-color: currentColor; }
+
+.ocb-news__go { flex: 0 0 auto; cursor: pointer; border: 0; font: inherit; }
+
+/* The trap: a field only a robot can reach. */
+.ocb-news__trap {
+	position: absolute;
+	inline-size: 1px;
+	block-size: 1px;
+	margin: -1px;
+	overflow: hidden;
+	clip-path: inset(50%);
+}
+
+.ocb-news.is-done .ocb-news__mail,
+.ocb-news.is-done .ocb-news__go { display: none; }
+
+.ocb-news__thanks { inline-size: 100%; margin: 0; padding: 13px; font-weight: 600; animation: ocb-look-in .4s ease; }
+
+.ocb-news__note { margin: 14px 0 0; font-size: .82em; opacity: .55; }
+
+@media (max-width: 560px) {
+	.ocb-news { flex-direction: column; }
+}
+
+/* ---------- countdown ---------- */
+
+.ocb-cd { text-align: center; }
+
+.ocb-cd__cells {
+	display: inline-flex;
+	gap: clamp(18px, 4vw, 44px);
+}
+
+.ocb-cd__cell { display: grid; gap: 6px; min-inline-size: 2.4em; }
+
+.ocb-cd__n {
+	font-size: clamp(2em, 5vw, 3.4em);
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+	line-height: 1;
+}
+
+.ocb-cd--s .ocb-cd__n { font-size: clamp(1.4em, 3.4vw, 2.2em); }
+.ocb-cd--l .ocb-cd__n { font-size: clamp(2.6em, 7vw, 4.8em); }
+
+.ocb-cd__cell i { font-style: normal; font-size: .82em; opacity: .6; }
+
+.ocb-cd__done { margin: 0; font-size: 1.2em; font-weight: 600; }
+
+/* ---------- branches ---------- */
+
+.ocb-br--map {
+	display: grid;
+	grid-template-columns: minmax(280px, 1fr) 1.3fr;
+	gap: clamp(18px, 3vw, 40px);
+	align-items: start;
+}
+
+.ocb-br__list { display: grid; gap: 12px; }
+
+.ocb-br:not(.ocb-br--map) .ocb-br__list {
+	grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+	gap: 18px;
+}
+
+.ocb-br__card {
+	display: block;
+	inline-size: 100%;
+	padding: 18px 20px;
+	border: 1.5px solid color-mix(in srgb, currentColor 14%, transparent);
+	border-radius: var(--oc-radius, 8px);
+	background: none;
+	font: inherit;
+	text-align: start;
+	color: inherit;
+	transition: border-color .2s ease, background .2s ease;
+}
+
+button.ocb-br__card { cursor: pointer; }
+button.ocb-br__card:hover { border-color: color-mix(in srgb, currentColor 40%, transparent); }
+button.ocb-br__card.is-on { border-color: currentColor; background: color-mix(in srgb, currentColor 4%, transparent); }
+
+.ocb-br__name { display: block; font-weight: 700; margin-block-end: 6px; }
+
+.ocb-br__card p { margin: 4px 0 0; line-height: 1.55; opacity: .8; font-size: .94em; }
+
+.ocb-br__phone a { color: inherit; text-decoration: none; }
+.ocb-br__phone a:hover { text-decoration: underline; }
+
+.ocb-br__map {
+	position: sticky;
+	inset-block-start: calc(var(--oc-header-h, 72px) + 20px);
+	border-radius: var(--oc-radius, 8px);
+	overflow: hidden;
+}
+
+.ocb-br__map iframe {
+	display: block;
+	inline-size: 100%;
+	block-size: min(64vh, 520px);
+	border: 0;
+}
+
+@media (max-width: 782px) {
+	.ocb-br--map { grid-template-columns: 1fr; }
+
+	.ocb-br__map { position: static; order: -1; }
+
+	.ocb-br__map iframe { block-size: 300px; }
+}

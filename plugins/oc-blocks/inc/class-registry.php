@@ -950,6 +950,213 @@ final class Registry {
 					),
 				),
 			),
+			'faq'        => array(
+				'label'  => __( 'Questions & answers', 'oc-blocks' ),
+				'blurb'  => __( 'An accordion of common questions, marked up for Google.', 'oc-blocks' ),
+				'icon'   => '<svg viewBox="0 0 24 24"><path d="M8.6 9a3.4 3.4 0 1 1 5.2 2.9c-1.1.7-1.8 1.3-1.8 2.6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity=".75"/><circle cx="12" cy="18.4" r="1.3" opacity=".75"/></svg>',
+				'fields' => array(
+					'heading' => array(
+						'type'  => 'text',
+						'label' => __( 'Heading', 'oc-blocks' ),
+					),
+					'items'   => array(
+						'type'  => 'slides',
+						'label' => __( 'The questions', 'oc-blocks' ),
+						'def'   => array(),
+						'sub'   => array(
+							'q' => array(
+								'type'  => 'text',
+								'label' => __( 'The question', 'oc-blocks' ),
+							),
+							'a' => array(
+								'type'  => 'textarea',
+								'label' => __( 'The answer', 'oc-blocks' ),
+							),
+						),
+					),
+					'open'    => array(
+						'type'    => 'seg',
+						'label'   => __( 'To begin with', 'oc-blocks' ),
+						'choices' => array(
+							'first' => __( 'First one open', 'oc-blocks' ),
+							'none'  => __( 'All closed', 'oc-blocks' ),
+						),
+						'def'     => 'first',
+						'group'   => 'design',
+					),
+					'schema'  => array(
+						'type'  => 'toggle',
+						'label' => __( 'FAQ markup for Google', 'oc-blocks' ),
+						'def'   => 1,
+						'group' => 'design',
+					),
+				),
+			),
+
+			'logos'      => array(
+				'label'  => __( 'As featured in', 'oc-blocks' ),
+				'blurb'  => __( 'A quiet row of press and partner logos.', 'oc-blocks' ),
+				'icon'   => '<svg viewBox="0 0 24 24"><rect x="2" y="9" width="5.5" height="6" rx="1" opacity=".7"/><rect x="9.2" y="9" width="5.6" height="6" rx="1" opacity=".45"/><rect x="16.5" y="9" width="5.5" height="6" rx="1" opacity=".25"/></svg>',
+				'fields' => array(
+					'heading' => array(
+						'type'  => 'text',
+						'label' => __( 'Heading', 'oc-blocks' ),
+					),
+					'items'   => array(
+						'type'  => 'slides',
+						'label' => __( 'The logos', 'oc-blocks' ),
+						'def'   => array(),
+						'sub'   => array(
+							'img' => array(
+								'type'  => 'image',
+								'label' => __( 'Logo', 'oc-blocks' ),
+								'def'   => 0,
+							),
+							'url' => array(
+								'type'  => 'url',
+								'label' => __( 'Link (optional)', 'oc-blocks' ),
+							),
+						),
+					),
+					'size'    => array(
+						'type'  => 'number',
+						'label' => __( 'Logo height (px)', 'oc-blocks' ),
+						'def'   => 44,
+						'min'   => 20,
+						'max'   => 120,
+						'group' => 'design',
+					),
+					'gray'    => array(
+						'type'  => 'toggle',
+						'label' => __( 'Grey until hovered', 'oc-blocks' ),
+						'def'   => 1,
+						'group' => 'design',
+					),
+					'move'    => array(
+						'type'    => 'seg',
+						'label'   => __( 'The row', 'oc-blocks' ),
+						'choices' => array(
+							'still'   => __( 'Stands still', 'oc-blocks' ),
+							'marquee' => __( 'Drifts along', 'oc-blocks' ),
+						),
+						'def'     => 'still',
+						'group'   => 'design',
+					),
+					'speed'   => array(
+						'type'  => 'number',
+						'label' => __( 'Speed (seconds per round)', 'oc-blocks' ),
+						'def'   => 30,
+						'min'   => 6,
+						'max'   => 90,
+						'when'  => array( 'move' => array( 'marquee' ) ),
+						'group' => 'design',
+					),
+				),
+			),
+
+			'news'       => array(
+				'label'  => __( 'Newsletter', 'oc-blocks' ),
+				'blurb'  => __( 'An email signup. Addresses collect under Tools.', 'oc-blocks' ),
+				'icon'   => '<svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="2" opacity=".6"/><path d="M4.5 8.5l7.5 5.5 7.5-5.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity=".8"/></svg>',
+				'fields' => array(
+					'heading'     => array(
+						'type'  => 'text',
+						'label' => __( 'Heading', 'oc-blocks' ),
+					),
+					'text'        => array(
+						'type'  => 'textarea',
+						'label' => __( 'A few words above the field', 'oc-blocks' ),
+					),
+					'placeholder' => array(
+						'type'  => 'text',
+						'label' => __( 'Inside the email field', 'oc-blocks' ),
+						'hint'  => __( 'Empty shows "Your email".', 'oc-blocks' ),
+					),
+					'button'      => array(
+						'type'  => 'text',
+						'label' => __( 'On the button', 'oc-blocks' ),
+						'hint'  => __( 'Empty shows "Sign up".', 'oc-blocks' ),
+					),
+					'note'        => array(
+						'type'  => 'text',
+						'label' => __( 'Small print underneath', 'oc-blocks' ),
+					),
+				),
+			),
+
+			'countdown'  => array(
+				'label'  => __( 'Countdown', 'oc-blocks' ),
+				'blurb'  => __( 'Days, hours and minutes until a sale ends.', 'oc-blocks' ),
+				'icon'   => '<svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8" fill="none" stroke="currentColor" stroke-width="2" opacity=".6"/><path d="M12 9.5v3.8l2.8 1.8M9.5 2.8h5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity=".8"/></svg>',
+				'fields' => array(
+					'heading' => array(
+						'type'  => 'text',
+						'label' => __( 'Heading', 'oc-blocks' ),
+					),
+					'until'   => array(
+						'type'  => 'text',
+						'label' => __( 'Counting down to', 'oc-blocks' ),
+						'hint'  => __( 'Date and time, like: 2026-09-30 23:59', 'oc-blocks' ),
+					),
+					'done'    => array(
+						'type'  => 'text',
+						'label' => __( 'When it reaches zero', 'oc-blocks' ),
+						'hint'  => __( 'Shown instead of the numbers. Empty hides the whole section.', 'oc-blocks' ),
+					),
+					'size'    => array(
+						'type'    => 'seg',
+						'label'   => __( 'Number size', 'oc-blocks' ),
+						'choices' => array(
+							's' => __( 'Small', 'oc-blocks' ),
+							'm' => __( 'Normal', 'oc-blocks' ),
+							'l' => __( 'Large', 'oc-blocks' ),
+						),
+						'def'     => 'm',
+						'group'   => 'design',
+					),
+				),
+			),
+
+			'branches'   => array(
+				'label'  => __( 'Branches', 'oc-blocks' ),
+				'blurb'  => __( 'The shops themselves — addresses, hours and a map.', 'oc-blocks' ),
+				'icon'   => '<svg viewBox="0 0 24 24"><path d="M12 21s-7-6.1-7-11a7 7 0 1 1 14 0c0 4.9-7 11-7 11z" fill="none" stroke="currentColor" stroke-width="2" opacity=".65"/><circle cx="12" cy="10" r="2.6" opacity=".7"/></svg>',
+				'fields' => array(
+					'heading' => array(
+						'type'  => 'text',
+						'label' => __( 'Heading', 'oc-blocks' ),
+					),
+					'items'   => array(
+						'type'  => 'slides',
+						'label' => __( 'The branches', 'oc-blocks' ),
+						'def'   => array(),
+						'sub'   => array(
+							'name'    => array(
+								'type'  => 'text',
+								'label' => __( 'Branch name', 'oc-blocks' ),
+							),
+							'address' => array(
+								'type'  => 'text',
+								'label' => __( 'Address', 'oc-blocks' ),
+							),
+							'phone'   => array(
+								'type'  => 'text',
+								'label' => __( 'Phone', 'oc-blocks' ),
+							),
+							'hours'   => array(
+								'type'  => 'textarea',
+								'label' => __( 'Opening hours', 'oc-blocks' ),
+							),
+						),
+					),
+					'map'     => array(
+						'type'  => 'toggle',
+						'label' => __( 'Show a map', 'oc-blocks' ),
+						'def'   => 1,
+						'group' => 'design',
+					),
+				),
+			),
 		);
 
 		/**

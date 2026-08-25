@@ -825,7 +825,7 @@
 					body.hidden = ! body.hidden;
 				}
 			}, [
-				el( 'span', { text: T.slide + ' ' + ( at + 1 ) + ( slide.heading ? ' — ' + slide.heading.slice( 0, 18 ) : '' ) } )
+				el( 'span', { text: T.slide + ' ' + ( at + 1 ) + ( ( slide.heading || slide.q || slide.name ) ? ' — ' + String( slide.heading || slide.q || slide.name ).slice( 0, 18 ) : '' ) } )
 			] );
 
 			var tools = el( 'span', { 'class': 'ocbe-slide__tools' }, [
