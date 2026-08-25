@@ -364,16 +364,18 @@ final class Registry {
 					'h'        => array(
 						'type'  => 'number',
 						'label' => __( 'Height — desktop (px)', 'oc-blocks' ),
+						'hint'  => __( '0 shows the picture at its natural height.', 'oc-blocks' ),
 						'def'   => 560,
-						'min'   => 200,
+						'min'   => 0,
 						'max'   => 1200,
 						'group' => 'design',
 					),
 					'hm'       => array(
 						'type'  => 'number',
 						'label' => __( 'Height — mobile (px)', 'oc-blocks' ),
+						'hint'  => __( '0 shows the picture at its natural height.', 'oc-blocks' ),
 						'def'   => 440,
-						'min'   => 160,
+						'min'   => 0,
 						'max'   => 900,
 						'group' => 'design',
 					),
@@ -412,6 +414,22 @@ final class Registry {
 						'label' => __( 'Parallax strength', 'oc-blocks' ),
 						'hint'  => __( '0 is off; around 30 is gentle; at 100 the picture stands still and the page glides over it.', 'oc-blocks' ),
 						'def'   => 0,
+						'group' => 'design',
+					),
+					'txtc'     => array(
+						'type'  => 'color',
+						'label' => __( 'Text colour', 'oc-blocks' ),
+						'hint'  => __( 'Empty follows the light/dark tone.', 'oc-blocks' ),
+						'group' => 'design',
+					),
+					'ctac'     => array(
+						'type'  => 'color',
+						'label' => __( 'Button colour', 'oc-blocks' ),
+						'group' => 'design',
+					),
+					'ctat'     => array(
+						'type'  => 'color',
+						'label' => __( 'Button text colour', 'oc-blocks' ),
 						'group' => 'design',
 					),
 					'fadebg'   => array(

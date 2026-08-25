@@ -52,11 +52,12 @@
 
 		var fade = hero.classList.contains( 'ocb-hero--fade' );
 		var sets = hero.querySelectorAll( '[data-ocb-set]' );
+		var real = slides.length;
 		var at = 0;
 		var timer = null;
 
 		function count() {
-			return slides.length;
+			return real;
 		}
 
 		// The words live outside the strip; the active slide lights its set,
@@ -95,14 +96,22 @@
 			} );
 		}
 
-		function turn() {
+		function turn( wrapForward ) {
 			if ( fade ) {
 				[].forEach.call( slides, function ( sl, i ) {
 					sl.classList.toggle( 'is-on', i === at );
 				} );
 			} else {
 				var rtl = getComputedStyle( strip ).direction === 'rtl';
-				strip.scrollTo( { left: ( rtl ? -1 : 1 ) * at * strip.clientWidth, behavior: 'smooth' } );
+				var slot = wrapForward ? real : at;
+
+				strip.scrollTo( { left: ( rtl ? -1 : 1 ) * slot * strip.clientWidth, behavior: 'smooth' } );
+
+				if ( wrapForward ) {
+					setTimeout( function () {
+						strip.scrollTo( { left: 0, behavior: 'auto' } );
+					}, 550 );
+				}
 			}
 
 			paintDots();
@@ -116,6 +125,10 @@
 				return;
 			}
 
+			// Walking forward off the last slide rides through the quiet
+			// copy of the first, so the loop reads as one more step ahead.
+			var wrapForward = ! fade && 0 === target && at === real - 1 && n > at;
+
 			// The words take their leave first — down and away — and only
 			// then does the banner itself turn.
 			var leaving = hero.querySelector( '.ocb-hero__set.is-on' );
@@ -127,9 +140,11 @@
 				setTimeout( function () {
 					leaving.classList.remove( 'is-leave' );
 				}, 430 );
-				setTimeout( turn, 360 );
+				setTimeout( function () {
+					turn( wrapForward );
+				}, 360 );
 			} else {
-				turn();
+				turn( wrapForward );
 			}
 		}
 
@@ -175,22 +190,42 @@
 			// A finger's own scroll keeps the dots honest.
 			var tick = false;
 
+			// The last slide is followed by a quiet copy of the first: a swipe
+			// past the end lands on it, and the strip snaps home unseen.
+			var loop = slides[ 0 ].cloneNode( true );
+
+			loop.setAttribute( 'aria-hidden', 'true' );
+			strip.appendChild( loop );
+
+			var settle = null;
+
 			strip.addEventListener( 'scroll', function () {
-				if ( tick ) {
-					return;
+				if ( ! tick ) {
+					tick = true;
+					requestAnimationFrame( function () {
+						tick = false;
+						var idx = Math.round( Math.abs( strip.scrollLeft ) / Math.max( 1, strip.clientWidth ) );
+						var shown = idx % real;
+
+						if ( shown !== at ) {
+							at = shown;
+							paintDots();
+							paintSets();
+							arm();
+						}
+					} );
 				}
 
-				tick = true;
-				requestAnimationFrame( function () {
-					tick = false;
+				// Once the finger lets go and the snap settles on the copy,
+				// jump home without a trace.
+				clearTimeout( settle );
+				settle = setTimeout( function () {
 					var idx = Math.round( Math.abs( strip.scrollLeft ) / Math.max( 1, strip.clientWidth ) );
 
-					if ( idx !== at ) {
-						at = Math.min( idx, count() - 1 );
-						paintDots();
-						arm();
+					if ( idx >= real ) {
+						strip.scrollTo( { left: 0, behavior: 'auto' } );
 					}
-				} );
+				}, 140 );
 			}, { passive: true } );
 		}
 

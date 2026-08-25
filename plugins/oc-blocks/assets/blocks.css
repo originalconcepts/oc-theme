@@ -287,6 +287,25 @@
 
 [data-ocb-parallax] > * { will-change: transform; }
 
+/* Height 0: the banner takes the picture's own height. */
+@media (min-width: 783px) {
+	.ocb-hero--hauto .ocb-hero__slide { block-size: auto; }
+
+	.ocb-hero--hauto .ocb-hero__media { position: relative; inset: auto; }
+
+	.ocb-hero--hauto .ocb-hero__media img,
+	.ocb-hero--hauto .ocb-hero__media picture img { block-size: auto; }
+}
+
+@media (max-width: 782px) {
+	.ocb-hero--hmauto .ocb-hero__slide { block-size: auto; }
+
+	.ocb-hero--hmauto .ocb-hero__media { position: relative; inset: auto; }
+
+	.ocb-hero--hmauto .ocb-hero__media img,
+	.ocb-hero--hmauto .ocb-hero__media picture img { block-size: auto; }
+}
+
 /* Full-strength parallax: the picture stands still and the page glides
  * over it. Fixed to the viewport, clipped to its own slide. */
 .ocb-hero__slide--fixedbg { clip-path: inset(0); }
@@ -391,8 +410,11 @@
 }
 
 /* Leaving, the words walk back the way they came — down and away —
- * a beat before the banner itself turns. */
+ * a beat before the banner itself turns. The :nth-child(n) twin
+ * outweighs the entrance-delay rules, so the line and the buttons
+ * leave with the heading instead of waiting out their delays. */
 .ocb-hero__set.is-leave .ocb-hero__words > *,
+.ocb-hero__set.is-leave .ocb-hero__words > :nth-child(n),
 .ocb-hero__set.is-leave .ocb-hero__cd {
 	animation: ocb-hero-out .42s ease forwards;
 }
@@ -455,6 +477,17 @@
 .ocb-hero__cta:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgb(0 0 0 / 18%); }
 
 .ocb-hero--dark .ocb-hero__cta { background: var(--oc-ink, #1c1c1c); color: #fff; }
+
+/* The shop's own colours, when chosen, outrank the light/dark tone. */
+.ocb-hero[style*="--ocb-hero-txt"] .ocb-hero__words,
+.ocb-hero[style*="--ocb-hero-txt"] .ocb-hero__cd-cell { color: var(--ocb-hero-txt); text-shadow: none; }
+
+.ocb-hero[style*="--ocb-hero-ctabg"] .ocb-hero__cta:not(.ocb-hero__cta--ghost) {
+	background: var(--ocb-hero-ctabg);
+	border-color: var(--ocb-hero-ctabg);
+}
+
+.ocb-hero[style*="--ocb-hero-ctaink"] .ocb-hero__cta:not(.ocb-hero__cta--ghost) { color: var(--ocb-hero-ctaink); }
 
 /* The second call, in negative: a quiet outline beside the filled one. */
 .ocb-hero__cta--ghost,
