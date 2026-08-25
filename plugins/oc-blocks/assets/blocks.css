@@ -236,11 +236,13 @@
 	text-decoration: none;
 }
 
-/* Fade mode: slides stack, one lit at a time. */
+/* Fade mode: slides stack, one lit at a time. The lit slide keeps its
+ * full flex width — flex:none shrank it to its (absolutely positioned,
+ * width-less) content and the whole banner stood blank. */
 .ocb-hero--fade .ocb-hero__slide {
 	position: absolute;
 	inset: 0;
-	flex: none;
+	inline-size: 100%;
 	opacity: 0;
 	transition: opacity .8s ease;
 	pointer-events: none;
