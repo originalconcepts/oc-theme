@@ -1827,9 +1827,9 @@ html[dir="rtl"] .ocb-look__nav .ocb-arr svg { transform: scaleX(-1); }
 
 .ocb-ico__h {
 	margin: 16px 0 0;
-	font-size: 1.15em;
+	font-size: .95em;
 	letter-spacing: .02em;
-	font-weight: 600;
+	font-weight: 700;
 }
 
 .ocb-ico__t {
@@ -1845,16 +1845,54 @@ html[dir="rtl"] .ocb-look__nav .ocb-arr svg { transform: scaleX(-1); }
 
 	.ocb-ico--m2 { grid-template-columns: 1fr 1fr; gap: 24px 14px; }
 
-	.ocb-ico--mslider {
-		display: flex;
-		overflow-x: auto;
-		overflow-y: hidden;
-		scroll-snap-type: x proximity;
-		scrollbar-width: none;
-		gap: 14px;
+	/* One at a time, after Prestige: the standing column rises and fades
+	 * out, the next one breathes in from below. */
+	.ocb-ico--mslider { display: grid; }
+
+	.ocb .ocb-ico--mslider .ocb-ico__one {
+		grid-area: 1 / 1;
+		opacity: 0;
+		transform: none;
+		transition: none;
+		pointer-events: none;
 	}
 
-	.ocb-ico--mslider::-webkit-scrollbar { display: none; }
+	.ocb .ocb-ico--mslider .ocb-ico__one.is-live {
+		opacity: 1;
+		pointer-events: auto;
+		animation: ocb-ico-in .65s cubic-bezier(.22, .61, .36, 1);
+	}
 
-	.ocb-ico--mslider .ocb-ico__one { flex: 0 0 64%; scroll-snap-align: start; }
+	.ocb .ocb-ico--mslider .ocb-ico__one.is-out {
+		opacity: 1;
+		animation: ocb-ico-out .45s ease forwards;
+	}
+
+	.ocb-ico__dots {
+		grid-area: 2 / 1;
+		display: flex;
+		justify-content: center;
+		gap: 7px;
+		margin-block-start: 18px;
+	}
+
+	.ocb-ico__dots button {
+		inline-size: 7px;
+		block-size: 7px;
+		padding: 0;
+		border: 0;
+		border-radius: 50%;
+		background: color-mix(in srgb, currentColor 22%, transparent);
+		cursor: pointer;
+	}
+
+	.ocb-ico__dots button.is-on { background: currentColor; }
+
+	@keyframes ocb-ico-in {
+		from { opacity: 0; transform: translateY(20px); }
+	}
+
+	@keyframes ocb-ico-out {
+		to { opacity: 0; transform: translateY(-18px); }
+	}
 }

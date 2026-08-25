@@ -1305,3 +1305,6 @@ msgstr "הצבע בין השקפים (בפייד)"
 
 msgid "The slide breathes out into this before the next one arrives. Empty is near-black."
 msgstr "השקף דוהה אל הצבע הזה לפני שהבא נכנס. ריק = כמעט שחור."
+
+msgid "One at a time, rotating"
+msgstr "אחד־אחד, מתחלף"

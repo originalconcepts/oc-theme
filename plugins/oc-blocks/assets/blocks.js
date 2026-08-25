@@ -435,6 +435,76 @@
 		} );
 	} );
 
+	/* ---------- icon columns: the phone shows one at a time ---------- */
+
+	document.querySelectorAll( '.ocb-ico--mslider' ).forEach( function ( ico ) {
+		if ( ! window.matchMedia( '(max-width: 782px)' ).matches ) {
+			return;
+		}
+
+		var items = [].slice.call( ico.querySelectorAll( '.ocb-ico__one' ) );
+
+		if ( items.length < 2 ) {
+			if ( items[ 0 ] ) {
+				items[ 0 ].classList.add( 'is-live' );
+			}
+
+			return;
+		}
+
+		var dots = document.createElement( 'div' );
+		var at = 0;
+		var timer = null;
+
+		dots.className = 'ocb-ico__dots';
+
+		items.forEach( function ( one, i ) {
+			var d = document.createElement( 'button' );
+
+			d.type = 'button';
+			d.addEventListener( 'click', function () {
+				show( i );
+				arm();
+			} );
+			dots.appendChild( d );
+		} );
+
+		ico.appendChild( dots );
+
+		function show( n ) {
+			var old = items[ at ];
+
+			at = ( n + items.length ) % items.length;
+
+			if ( old !== items[ at ] ) {
+				old.classList.remove( 'is-live' );
+				old.classList.add( 'is-out' );
+				setTimeout( function () {
+					old.classList.remove( 'is-out' );
+				}, 460 );
+			}
+
+			items[ at ].classList.add( 'is-live' );
+
+			[].forEach.call( dots.children, function ( d, i ) {
+				d.classList.toggle( 'is-on', i === at );
+			} );
+		}
+
+		function arm() {
+			clearInterval( timer );
+
+			if ( ! reduced ) {
+				timer = setInterval( function () {
+					show( at + 1 );
+				}, 3600 );
+			}
+		}
+
+		show( 0 );
+		arm();
+	} );
+
 	/* ---------- questions & answers ---------- */
 
 	document.querySelectorAll( '[data-ocb-faq]' ).forEach( function ( faq ) {
