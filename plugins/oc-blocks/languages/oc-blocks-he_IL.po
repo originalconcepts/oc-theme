@@ -1083,3 +1083,39 @@ msgstr "לעמוד הסניף"
 
 msgid "Search a branch or a city"
 msgstr "חיפוש סניף או עיר"
+
+msgid "Strip background"
+msgstr "רקע הפס"
+
+msgid "Rides the angle with the words — a diagonal ribbon."
+msgstr "נוסע עם הזווית יחד עם המילים — סרט אלכסוני."
+
+msgid "One picture or film"
+msgstr "תמונה או וידאו אחד"
+
+msgid "Video (plays on its own, silent)"
+msgstr "וידאו (מתנגן לבד, ללא קול)"
+
+msgid "In \"one picture or film\" it stands in for the picture; in \"picture with a little film\" it rides on top of it."
+msgstr "ב״תמונה או וידאו אחד״ הוא מחליף את התמונה; ב״תמונה עם סרטון קטן״ הוא רוכב עליה."
+
+msgid "Required consent checkbox"
+msgstr "תיבת אישור חובה"
+
+msgid "The consent wording"
+msgstr "נוסח האישור"
+
+msgid "Empty shows \"I have read and accept the privacy policy.\" — the policy words link to the privacy page."
+msgstr "ריק יציג ״קראתי ואני מאשר/ת את מדיניות הפרטיות.״ — המילים מקשרות לעמוד המדיניות."
+
+msgid "I have read and accept the privacy policy."
+msgstr "קראתי ואני מאשר/ת את מדיניות הפרטיות."
+
+msgid "privacy policy"
+msgstr "מדיניות הפרטיות"
+
+msgid "Get directions"
+msgstr "הוראות הגעה"
+
+msgid "Visit our branches"
+msgstr "בקרו בסניפים שלנו"

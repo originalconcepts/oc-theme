@@ -385,6 +385,10 @@ final class Render {
 	private static function content( array $s ): string {
 		$out = '';
 
+		if ( '' !== trim( (string) ( $s['eyebrow'] ?? '' ) ) ) {
+			$out .= '<span class="ocb-ed__eyebrow">' . esc_html( (string) $s['eyebrow'] ) . '</span>';
+		}
+
 		if ( '' !== $s['heading'] ) {
 			$out .= '<h2>' . esc_html( (string) $s['heading'] ) . '</h2>';
 		}
@@ -561,13 +565,14 @@ final class Render {
 		}
 
 		$style = '--ocb-mq-size:' . absint( $s['size'] ) . 'px;--ocb-mq-speed:' . absint( $s['speed'] ) . 's;--ocb-mq-angle:' . (int) $s['angle'] . 'deg;'
-			. ( '' === $s['color'] ? '' : '--ocb-mq-color:' . $s['color'] . ';' );
+			. ( '' === $s['color'] ? '' : '--ocb-mq-color:' . $s['color'] . ';' )
+			. ( '' === ( $s['bgc'] ?? '' ) ? '' : '--ocb-mq-bg:' . $s['bgc'] . ';' );
 
 		// Four copies seed the loop; the script clones more if a wide screen
 		// still shows a gap.
 		$piece = '<span>' . esc_html( $text ) . '</span>';
 
-		return '<div class="ocb-mq ocb-mq--' . esc_attr( (string) $s['dir'] ) . '" style="' . esc_attr( $style ) . '" data-ocb-mq>'
+		return '<div class="ocb-mq ocb-mq--' . esc_attr( (string) $s['dir'] ) . ( 0 === (int) $s['angle'] ? '' : ' ocb-mq--tilt' ) . '" style="' . esc_attr( $style ) . '" data-ocb-mq>'
 			. '<div class="ocb-mq__track">' . str_repeat( $piece, 4 ) . '</div>'
 			. '</div>';
 	}
@@ -804,6 +809,11 @@ final class Render {
 
 		$preset = (string) $s['preset'];
 		$main   = $img( absint( $s['img1'] ), 'ocb-ed__main' );
+
+		// In the single arrangement a video may BE the picture.
+		if ( 'single' === $preset && '' !== (string) $s['vid'] ) {
+			$main = '<figure class="ocb-ed__main ocb-ed__main--vid"><video src="' . esc_url( (string) $s['vid'] ) . '" autoplay muted loop playsinline preload="metadata"></video></figure>';
+		}
 
 		if ( '' === $main ) {
 			return '';
@@ -1196,7 +1206,7 @@ final class Render {
 		}
 
 		$icons = array(
-			'pin'   => '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s-7-6.1-7-11a7 7 0 1 1 14 0c0 4.9-7 11-7 11z"/><circle cx="12" cy="10" r="2.4"/></svg>',
+			'pin'   => '<svg viewBox="0 0 24 24" width="18" height="18"><path d="M12 22s-7.5-6.4-7.5-11.5a7.5 7.5 0 1 1 15 0C19.5 15.6 12 22 12 22z" fill="currentColor"/><circle cx="12" cy="10.3" r="2.8" fill="#fff"/></svg>',
 			'shop'  => '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 9l1.2-5h13.6L20 9M4 9v11h16V9M4 9h16M9.5 20v-6h5v6"/></svg>',
 			'tree'  => '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l5 7h-3l4 6h-4l3 5H7l3-5H6l4-6H7l5-7zM12 20v2.5"/></svg>',
 			'phone' => '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 4h4l2 5-2.5 1.5a12 12 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg>',
@@ -1302,11 +1312,36 @@ final class Render {
 			$fields .= '<label class="ocb-lead__f"><span>' . esc_html__( 'How can we help?', 'oc-blocks' ) . '</span><textarea name="msg" rows="4"></textarea></label>';
 		}
 
+		$consent = '';
+
+		if ( ! empty( $s['consent'] ) ) {
+			$wording = trim( (string) $s['consent_text'] );
+
+			if ( '' === $wording ) {
+				$wording = __( 'I have read and accept the privacy policy.', 'oc-blocks' );
+			}
+
+			$wording = esc_html( $wording );
+			$policy  = (string) get_privacy_policy_url();
+
+			// The policy words become the way to the policy itself.
+			if ( '' !== $policy ) {
+				$needle = esc_html( __( 'privacy policy', 'oc-blocks' ) );
+
+				if ( false !== mb_strpos( $wording, $needle ) ) {
+					$wording = str_replace( $needle, '<a href="' . esc_url( $policy ) . '" target="_blank" rel="noopener">' . $needle . '</a>', $wording );
+				}
+			}
+
+			$consent = '<label class="ocb-lead__consent"><input type="checkbox" name="consent" required><span>' . $wording . '</span></label>';
+		}
+
 		$out .= '<form class="ocb-lead" method="post" action="' . esc_url( admin_url( 'admin-ajax.php' ) ) . '" data-ocb-lead>'
 			. '<input type="hidden" name="action" value="oc_blocks_lead">'
 			. '<input type="hidden" name="page" value="' . absint( get_the_ID() ) . '">'
 			. '<input class="ocb-news__trap" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">'
 			. $fields
+			. $consent
 			. '<button class="ocb-lead__go ocb-btn ocb-btn--theme" type="submit">' . esc_html( '' === $button ? __( 'Send', 'oc-blocks' ) : $button ) . '</button>'
 			. '<p class="ocb-lead__thanks" hidden>' . esc_html( '' === $thanks ? __( 'Thank you — we will be in touch shortly.', 'oc-blocks' ) : $thanks ) . '</p>'
 			. '</form>';

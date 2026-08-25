@@ -382,6 +382,10 @@ final class Registry {
 				'blurb'  => __( 'A heading, a few lines, a button.', 'oc-blocks' ),
 				'icon'   => '<svg viewBox="0 0 24 24"><path d="M4 6h16M4 11h16M4 16h9" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity=".8"/></svg>',
 				'fields' => array(
+					'eyebrow' => array(
+						'type'  => 'text',
+						'label' => __( 'Little line above', 'oc-blocks' ),
+					),
 					'heading' => array(
 						'type'  => 'text',
 						'label' => __( 'Heading', 'oc-blocks' ),
@@ -640,6 +644,12 @@ final class Registry {
 						'max'   => 10,
 						'group' => 'design',
 					),
+					'bgc'   => array(
+						'type'  => 'color',
+						'label' => __( 'Strip background', 'oc-blocks' ),
+						'hint'  => __( 'Rides the angle with the words — a diagonal ribbon.', 'oc-blocks' ),
+						'group' => 'design',
+					),
 				),
 			),
 
@@ -820,6 +830,7 @@ final class Registry {
 						'type'    => 'seg',
 						'label'   => __( 'Arrangement', 'oc-blocks' ),
 						'choices' => array(
+							'single'  => __( 'One picture or film', 'oc-blocks' ),
 							'overlap' => __( 'Picture with a little film', 'oc-blocks' ),
 							'duo'     => __( 'Two pictures, staggered', 'oc-blocks' ),
 							'canvas'  => __( 'Wide picture, small guest', 'oc-blocks' ),
@@ -858,8 +869,9 @@ final class Registry {
 					),
 					'vid'     => array(
 						'type'  => 'video',
-						'label' => __( 'The little film (plays on its own, silent)', 'oc-blocks' ),
-						'when'  => array( 'preset' => array( 'overlap' ) ),
+						'label' => __( 'Video (plays on its own, silent)', 'oc-blocks' ),
+						'hint'  => __( 'In "one picture or film" it stands in for the picture; in "picture with a little film" it rides on top of it.', 'oc-blocks' ),
+						'when'  => array( 'preset' => array( 'overlap', 'single' ) ),
 					),
 					'side'    => array(
 						'type'    => 'seg',
@@ -1238,6 +1250,17 @@ final class Registry {
 						'type'  => 'text',
 						'label' => __( 'After it is sent', 'oc-blocks' ),
 						'hint'  => __( 'Empty shows "Thank you — we will be in touch shortly."', 'oc-blocks' ),
+					),
+					'consent' => array(
+						'type'  => 'toggle',
+						'label' => __( 'Required consent checkbox', 'oc-blocks' ),
+						'def'   => 1,
+					),
+					'consent_text' => array(
+						'type'  => 'text',
+						'label' => __( 'The consent wording', 'oc-blocks' ),
+						'hint'  => __( 'Empty shows "I have read and accept the privacy policy." — the policy words link to the privacy page.', 'oc-blocks' ),
+						'when'  => array( 'consent' => array( '1' ) ),
 					),
 				),
 			),

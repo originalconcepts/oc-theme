@@ -285,48 +285,71 @@ final class Branches {
 		$id = (int) get_the_ID();
 		$d  = self::details( $id );
 
-		// Media: the featured picture leads, the gallery follows, the video rides along.
-		$media = '';
-		$thumb = (int) get_post_thumbnail_id( $id );
-		$pics  = array_values( array_unique( array_filter( array_merge( array( $thumb ), $d['gallery'] ) ) ) );
-
-		foreach ( $pics as $pic ) {
-			$url = (string) wp_get_attachment_image_url( (int) $pic, 'large' );
-
-			if ( '' !== $url ) {
-				$media .= '<figure class="ocb-brs__shot"><img src="' . esc_url( $url ) . '" alt="" loading="lazy" decoding="async"></figure>';
-			}
-		}
-
-		if ( '' !== $d['video'] ) {
-			$media .= '<figure class="ocb-brs__shot ocb-brs__shot--vid"><video src="' . esc_url( $d['video'] ) . '" autoplay muted loop playsinline preload="metadata"></video></figure>';
-		}
-
-		if ( '' !== $media ) {
-			$media = '<div class="ocb-brs__media">' . $media . '</div>';
-		}
-
-		// The details card.
+		// The information column: address, phones, hours, the way there, and
+		// the branch's own picture underneath — the locator-page grammar.
 		$info = '';
 
-		if ( '' !== $d['address'] ) {
-			$info .= '<p class="ocb-brs__row"><strong>' . esc_html__( 'Address', 'oc-blocks' ) . '</strong>' . esc_html( $d['address'] ) . '</p>';
+		if ( '' !== trim( $content ) ) {
+			$info .= '<div class="ocb-brs__about">' . $content . '</div>';
 		}
+
+		if ( '' !== $d['address'] ) {
+			$info .= '<div class="ocb-brs__row"><strong>' . esc_html__( 'Address', 'oc-blocks' ) . '</strong>' . esc_html( $d['address'] ) . '</div>';
+		}
+
+		$phones = '';
 
 		foreach ( array( $d['phone'], $d['phone2'] ) as $phone ) {
 			if ( '' !== $phone ) {
-				$info .= '<p class="ocb-brs__row"><strong>' . esc_html__( 'Phone', 'oc-blocks' ) . '</strong><a href="tel:' . esc_attr( (string) preg_replace( '/[^0-9+]/', '', $phone ) ) . '">' . esc_html( $phone ) . '</a></p>';
+				$phones .= '<a href="tel:' . esc_attr( (string) preg_replace( '/[^0-9+]/', '', $phone ) ) . '">' . esc_html( $phone ) . '</a><br>';
 			}
 		}
 
+		if ( '' !== $phones ) {
+			$info .= '<div class="ocb-brs__row"><strong>' . esc_html__( 'Phone', 'oc-blocks' ) . '</strong>' . $phones . '</div>';
+		}
+
 		if ( '' !== $d['hours'] ) {
-			$info .= '<p class="ocb-brs__row"><strong>' . esc_html__( 'Opening hours', 'oc-blocks' ) . '</strong>' . nl2br( esc_html( $d['hours'] ) ) . '</p>';
+			$info .= '<div class="ocb-brs__row"><strong>' . esc_html__( 'Opening hours', 'oc-blocks' ) . '</strong>' . nl2br( esc_html( $d['hours'] ) ) . '</div>';
+		}
+
+		if ( '' !== $d['address'] ) {
+			$info .= '<p class="ocb-brs__dir"><a class="ocb-btn ocb-btn--theme" href="' . esc_url( 'https://www.google.com/maps/dir/?api=1&destination=' . rawurlencode( $d['address'] ) ) . '" target="_blank" rel="noopener">' . esc_html__( 'Get directions', 'oc-blocks' ) . '</a></p>';
+		}
+
+		$thumb = (int) get_post_thumbnail_id( $id );
+
+		if ( $thumb > 0 ) {
+			$info .= '<figure class="ocb-brs__photo">' . wp_get_attachment_image( $thumb, 'large', false, array( 'loading' => 'lazy' ) ) . '</figure>';
 		}
 
 		$map = '';
 
 		if ( '' !== $d['address'] ) {
 			$map = '<div class="ocb-brs__map"><iframe loading="lazy" title="' . esc_attr__( 'Map', 'oc-blocks' ) . '" src="' . esc_url( 'https://maps.google.com/maps?q=' . rawurlencode( $d['address'] ) . '&hl=' . substr( get_locale(), 0, 2 ) . '&output=embed' ) . '"></iframe></div>';
+		}
+
+		// The gallery and the video, when there is more to show than the one picture.
+		$extra = '';
+
+		foreach ( $d['gallery'] as $pic ) {
+			if ( (int) $pic === $thumb ) {
+				continue;
+			}
+
+			$url = (string) wp_get_attachment_image_url( (int) $pic, 'large' );
+
+			if ( '' !== $url ) {
+				$extra .= '<figure class="ocb-brs__shot"><img src="' . esc_url( $url ) . '" alt="" loading="lazy" decoding="async"></figure>';
+			}
+		}
+
+		if ( '' !== $d['video'] ) {
+			$extra .= '<figure class="ocb-brs__shot ocb-brs__shot--vid"><video src="' . esc_url( $d['video'] ) . '" autoplay muted loop playsinline preload="metadata"></video></figure>';
+		}
+
+		if ( '' !== $extra ) {
+			$extra = '<div class="ocb-brs__media">' . $extra . '</div>';
 		}
 
 		// Accessibility, the whole checklist — what there is and what there is not.
@@ -339,7 +362,7 @@ final class Branches {
 
 		$access = '<section class="ocb-brs__section"><h2>' . esc_html__( 'Accessibility', 'oc-blocks' ) . '</h2><div class="ocb-brs__accs">' . $rows . '</div></section>';
 
-		// The other branches, so nobody reaches a dead end.
+		// The other branches, never including the one already on stage.
 		$others = get_posts(
 			array(
 				'post_type'      => self::CPT,
@@ -353,25 +376,28 @@ final class Branches {
 		$more = '';
 
 		foreach ( $others as $other ) {
-			$od    = self::details( (int) $other->ID );
-			$photo = get_the_post_thumbnail( $other, 'medium', array( 'loading' => 'lazy' ) );
+			if ( (int) $other->ID === $id ) {
+				continue;
+			}
+
+			$photo = get_the_post_thumbnail( $other, 'large', array( 'loading' => 'lazy' ) );
 			$more .= '<a class="ocb-brs__other" href="' . esc_url( (string) get_permalink( $other ) ) . '">'
 				. ( '' === $photo ? '' : '<span class="ocb-brs__other-pic">' . $photo . '</span>' )
 				. '<span class="ocb-brs__other-name">' . esc_html( (string) $other->post_title ) . '</span>'
-				. ( '' === $od['address'] ? '' : '<span class="ocb-brs__other-addr">' . esc_html( $od['address'] ) . '</span>' )
+				. '<span class="ocb-brs__other-go">' . esc_html__( 'Branch page', 'oc-blocks' ) . '</span>'
 				. '</a>';
 		}
 
 		if ( '' !== $more ) {
-			$more = '<section class="ocb-brs__section"><h2>' . esc_html__( 'More branches', 'oc-blocks' ) . '</h2><div class="ocb-brs__others">' . $more . '</div></section>';
+			$more = '<section class="ocb-brs__section"><h2>' . esc_html__( 'Visit our branches', 'oc-blocks' ) . '</h2><div class="ocb-brs__others">' . $more . '</div></section>';
 		}
 
 		return '<div class="ocb-brs">'
-			. $media
 			. '<div class="ocb-brs__split">'
-			. '<div class="ocb-brs__info">' . ( '' === trim( $content ) ? '' : '<div class="ocb-brs__about">' . $content . '</div>' ) . $info . '</div>'
+			. '<div class="ocb-brs__info">' . $info . '</div>'
 			. $map
 			. '</div>'
+			. $extra
 			. $access
 			. $more
 			. '</div>';

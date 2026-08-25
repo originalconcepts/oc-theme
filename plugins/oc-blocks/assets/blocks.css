@@ -518,6 +518,7 @@
 .ocb-mq {
 	overflow: hidden;
 	transform: rotate(var(--ocb-mq-angle, 0deg));
+	background: var(--ocb-mq-bg, transparent);
 	color: var(--ocb-mq-color, inherit);
 	font-size: var(--ocb-mq-size, 42px);
 	font-weight: 600;
@@ -535,6 +536,9 @@
 }
 
 .ocb-mq--rtl .ocb-mq__track { animation-name: ocb-mq-r; }
+
+/* Angled, the strip stretches past both edges — a ribbon, not a box. */
+.ocb-mq--tilt { inline-size: 112%; margin-inline: -6%; }
 
 @keyframes ocb-mq { to { transform: translateX(-50%); } }
 @keyframes ocb-mq-r { to { transform: translateX(50%); } }
@@ -799,7 +803,10 @@ html[dir="rtl"] .ocb-look__nav .ocb-arr svg { transform: scaleX(-1); }
 .ocb-ed__media img { display: block; inline-size: 100%; block-size: 100%; object-fit: cover; }
 
 .ocb-ed__main { position: relative; }
-.ocb-ed__main img { aspect-ratio: 3 / 4; }
+.ocb-ed__main img,
+.ocb-ed__main video { aspect-ratio: 3 / 4; inline-size: 100%; block-size: 100%; object-fit: cover; display: block; }
+
+.ocb-ed--single .ocb-ed__main { inline-size: 92%; margin-inline: auto; }
 
 /* A little film riding the tall picture's inner edge, toward the words. */
 .ocb-ed--overlap .ocb-ed__main { inline-size: 78%; margin-inline-start: auto; }
@@ -1238,7 +1245,7 @@ html[dir="rtl"] .ocb-look__nav .ocb-arr svg { transform: scaleX(-1); }
 	margin-block-end: 6px;
 }
 
-.ocb-br__ico { display: inline-flex; opacity: .6; }
+.ocb-br__ico { display: inline-flex; color: var(--oc-cta, var(--oc-primary, #2f4e7a)); }
 
 .ocb-br__body p { margin: 4px 0 0; line-height: 1.55; opacity: .8; font-size: .94em; }
 
@@ -1293,6 +1300,20 @@ html[dir="rtl"] .ocb-look__nav .ocb-arr svg { transform: scaleX(-1); }
 .ocb-lead__f input:focus,
 .ocb-lead__f textarea:focus { outline: none; border-color: currentColor; }
 
+.ocb-lead__consent {
+	grid-column: 1 / -1;
+	display: flex;
+	gap: 10px;
+	align-items: baseline;
+	font-size: .9em;
+	opacity: .85;
+	cursor: pointer;
+}
+
+.ocb-lead__consent input { inline-size: 16px; block-size: 16px; accent-color: var(--oc-cta, var(--oc-primary, #2f4e7a)); flex: 0 0 auto; translate: 0 2px; }
+
+.ocb-lead__consent a { color: inherit; font-weight: 600; }
+
 .ocb-lead__go { grid-column: 1 / -1; justify-self: center; min-inline-size: 220px; border: 0; cursor: pointer; font: inherit; }
 
 .ocb-lead.is-done > *:not(.ocb-lead__thanks) { display: none; }
@@ -1322,6 +1343,10 @@ html[dir="rtl"] .ocb-look__nav .ocb-arr svg { transform: scaleX(-1); }
 }
 
 
+
+/* Inside the reviews block, the card ends where the product line ends. */
+.ocb--reviews .ocr-wcard > :last-child { margin-block-end: 0; }
+.ocb--reviews .ocr-wcard__product { padding-block-end: 0; margin-block-end: 0; }
 
 /* ---------- a branch's own page ---------- */
 
@@ -1357,8 +1382,8 @@ html[dir="rtl"] .ocb-look__nav .ocb-arr svg { transform: scaleX(-1); }
 
 .ocb-brs__split {
 	display: grid;
-	grid-template-columns: 1fr 1.2fr;
-	gap: clamp(20px, 3vw, 40px);
+	grid-template-columns: minmax(260px, 1fr) 2fr;
+	gap: clamp(24px, 4vw, 56px);
 	align-items: start;
 }
 
@@ -1378,7 +1403,21 @@ html[dir="rtl"] .ocb-look__nav .ocb-arr svg { transform: scaleX(-1); }
 
 .ocb-brs__map { border-radius: var(--oc-radius, 8px); overflow: hidden; }
 
-.ocb-brs__map iframe { display: block; inline-size: 100%; block-size: min(52vh, 440px); border: 0; }
+.ocb-brs__map iframe { display: block; inline-size: 100%; block-size: min(74vh, 700px); border: 0; }
+
+.ocb-brs__dir { margin: 22px 0 0; }
+
+.ocb-brs__photo { margin: 26px 0 0; border-radius: var(--oc-radius, 8px); overflow: hidden; }
+
+.ocb-brs__photo img { inline-size: 100%; block-size: auto; display: block; }
+
+.ocb-brs__other-go {
+	display: inline-block;
+	margin-block-start: 4px;
+	font-size: .85em;
+	opacity: .65;
+	border-block-end: 1px solid currentColor;
+}
 
 .ocb-brs__section h2 { margin: 0 0 18px; font-size: 1.3em; letter-spacing: .03em; }
 
