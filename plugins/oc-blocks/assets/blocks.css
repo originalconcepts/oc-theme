@@ -1160,18 +1160,18 @@ html[dir="rtl"] .ocb-look__nav .ocb-arr svg { transform: scaleX(-1); }
 
 .ocb-br__body { flex: 1 1 auto; min-inline-size: 0; }
 
-/* A small square picture, sitting at the height of the words. */
+/* A square picture, exactly as tall as the words beside it. */
 .ocb-br__pic {
-	flex: 0 0 88px;
+	flex: 0 0 auto;
 	align-self: stretch;
+	aspect-ratio: 1 / 1;
 	border-radius: 10px;
 	overflow: hidden;
 }
 
 .ocb-br__pic img {
-	inline-size: 88px;
+	inline-size: 100%;
 	block-size: 100%;
-	min-block-size: 88px;
 	object-fit: cover;
 	display: block;
 }
