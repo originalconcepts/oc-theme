@@ -436,7 +436,9 @@
 
 			go.disabled = true;
 
-			fetch( form.action, { method: 'POST', body: new FormData( form ) } )
+			// getAttribute, not .action: the hidden "action" field shadows the
+			// form's own property with itself.
+			fetch( form.getAttribute( 'action' ), { method: 'POST', body: new FormData( form ) } )
 				.then( function ( r ) {
 					return r.json();
 				} )
