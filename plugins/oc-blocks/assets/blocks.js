@@ -224,6 +224,9 @@
 
 					if ( idx >= real ) {
 						strip.scrollTo( { left: 0, behavior: 'auto' } );
+						at = 0;
+						paintDots();
+						paintSets();
 					}
 				}, 140 );
 			}, { passive: true } );
