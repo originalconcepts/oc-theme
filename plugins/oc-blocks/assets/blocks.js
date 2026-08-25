@@ -963,6 +963,12 @@
 	if ( lax.length && ! reduced ) {
 		var laxDraw = function () {
 		lax.forEach( function ( media ) {
+				// The phone's full-strength layer is CSS-fixed; JS keeps
+				// its hands off it.
+				if ( 'fixed' === getComputedStyle( media ).position ) {
+					return;
+				}
+
 				var box = media.parentElement.getBoundingClientRect();
 
 				if ( box.height < 4 || box.bottom < 0 || box.top > window.innerHeight ) {

@@ -358,6 +358,29 @@
 }
 
 @media (max-width: 782px) {
+	/* Full-strength parallax on the phone rides the compositor, not
+	 * JavaScript: the picture layer is fixed to the viewport and each
+	 * slide is a clipped window onto it — a scroll cannot shake what
+	 * never moves. (Slide-mode banners only; fade keeps the JS drift,
+	 * since a fixed layer vanishes inside an opacity animation.) */
+	.ocb-hero--slide .ocb-hero__slide,
+	.ocb-hero--one .ocb-hero__slide { clip-path: inset(0); }
+
+	.ocb-hero--slide [data-ocb-parallax="100"],
+	.ocb-hero--one [data-ocb-parallax="100"] {
+		position: fixed;
+		inset-block-start: 0;
+		inset-inline-start: 0;
+		inline-size: 100vw;
+		block-size: 100svh;
+	}
+
+	.ocb-hero--slide [data-ocb-parallax="100"] > *,
+	.ocb-hero--one [data-ocb-parallax="100"] > * {
+		transform: none !important;
+		block-size: 100% !important;
+	}
+
 	.ocb-hero__cd--side {
 		inset-inline: 0;
 		inset-block-start: auto;
