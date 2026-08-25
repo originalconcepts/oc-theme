@@ -369,7 +369,8 @@ final class Render {
 					. '<div class="ocb-hero__words">'
 					. ( '' === $slide['heading'] ? '' : '<h2>' . esc_html( (string) $slide['heading'] ) . '</h2>' )
 					. ( '' === $slide['text'] ? '' : '<p>' . esc_html( (string) $slide['text'] ) . '</p>' )
-					. ( '' === $slide['cta'] || '' === $slide['url'] ? '' : '<a class="ocb-hero__cta" href="' . esc_url( (string) $slide['url'] ) . '">' . esc_html( (string) $slide['cta'] ) . '</a>' )
+				. ( '' === $slide['cta'] || '' === $slide['url'] ? '' : '<a class="ocb-hero__cta" href="' . esc_url( (string) $slide['url'] ) . '">' . esc_html( (string) $slide['cta'] ) . '</a>' )
+					. ( '' === trim( (string) ( $slide['cta2'] ?? '' ) ) || '' === (string) ( $slide['url2'] ?? '' ) ? '' : '<a class="ocb-hero__cta ocb-hero__cta--ghost" href="' . esc_url( (string) $slide['url2'] ) . '">' . esc_html( (string) $slide['cta2'] ) . '</a>' )
 					. $under
 					. '</div>'
 					. $aside
@@ -400,7 +401,8 @@ final class Render {
 		}
 
 		$one   = count( $slides ) < 2;
-		$style = '--ocb-hero-h:' . absint( $s['h'] ) . 'px;--ocb-hero-hm:' . absint( $s['hm'] ) . 'px;';
+		$style = '--ocb-hero-h:' . absint( $s['h'] ) . 'px;--ocb-hero-hm:' . absint( $s['hm'] ) . 'px;'
+			. ( '' === (string) ( $s['fadebg'] ?? '' ) ? '' : '--ocb-hero-fadebg:' . $s['fadebg'] . ';' );
 
 		$html = '<div class="ocb-hero ocb-hero--' . esc_attr( (string) $s['effect'] ) . ' ocb-hero--pos-' . esc_attr( (string) $s['pos'] ) . ' ocb-hero--' . esc_attr( (string) $s['tone'] ) . ( $one ? ' ocb-hero--one' : '' ) . '"'
 			. ' style="' . esc_attr( $style ) . '"'

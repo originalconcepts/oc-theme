@@ -1293,3 +1293,15 @@ msgstr "נא לסמן את האישור כדי להמשיך."
 
 msgid "Please enter a valid phone number (10 digits)."
 msgstr "נא להזין מספר טלפון תקין (10 ספרות)."
+
+msgid "Second button — outline (optional)"
+msgstr "כפתור שני — נגטיב (לא חובה)"
+
+msgid "The second button leads to"
+msgstr "הכפתור השני מוביל אל"
+
+msgid "The colour between slides (fade)"
+msgstr "הצבע בין השקפים (בפייד)"
+
+msgid "The slide breathes out into this before the next one arrives. Empty is near-black."
+msgstr "השקף דוהה אל הצבע הזה לפני שהבא נכנס. ריק = כמעט שחור."

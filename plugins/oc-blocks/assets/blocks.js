@@ -768,6 +768,12 @@
 	if ( lax.length && ! reduced ) {
 		var laxDraw = function () {
 			lax.forEach( function ( media ) {
+				// In fade mode the settle animation owns the picture's
+				// transform; the drift would fight it frame by frame.
+				if ( media.closest( '.ocb-hero--fade' ) ) {
+					return;
+				}
+
 				var box = media.parentElement.getBoundingClientRect();
 
 				if ( box.bottom < 0 || box.top > window.innerHeight ) {

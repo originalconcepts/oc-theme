@@ -238,17 +238,39 @@
 
 /* Fade mode: slides stack, one lit at a time. The lit slide keeps its
  * full flex width — flex:none shrank it to its (absolutely positioned,
- * width-less) content and the whole banner stood blank. */
+ * width-less) content and the whole banner stood blank.
+ *
+ * The choreography, after Prestige: the outgoing picture breathes out
+ * into a dark ground, a beat of quiet, then the next one fades in a
+ * touch enlarged and settles gently to size. */
+.ocb-hero--fade .ocb-hero__strip { background: var(--ocb-hero-fadebg, #0e0d0c); }
+
 .ocb-hero--fade .ocb-hero__slide {
 	position: absolute;
 	inset: 0;
 	inline-size: 100%;
 	opacity: 0;
-	transition: opacity .8s ease;
+	transition: opacity .7s ease;
 	pointer-events: none;
 }
 
-.ocb-hero--fade .ocb-hero__slide.is-on { position: relative; opacity: 1; pointer-events: auto; }
+.ocb-hero--fade .ocb-hero__slide.is-on {
+	position: relative;
+	opacity: 1;
+	pointer-events: auto;
+	transition: opacity .9s ease .35s;
+}
+
+.ocb-hero--fade .ocb-hero__slide .ocb-hero__media { will-change: transform; }
+
+.ocb-hero--fade .ocb-hero__slide.is-on .ocb-hero__media {
+	animation: ocb-hero-settle 5.5s cubic-bezier(.19, .6, .32, 1) .35s backwards;
+}
+
+@keyframes ocb-hero-settle {
+	from { transform: scale(1.07); }
+	to { transform: scale(1); }
+}
 
 .ocb-hero__media { position: absolute; inset: 0; }
 
@@ -356,12 +378,14 @@
 .ocb-hero__set .ocb-hero__cd { pointer-events: auto; }
 
 .ocb-hero__set.is-on .ocb-hero__words > * {
-	animation: ocb-hero-in .7s cubic-bezier(.22, .61, .36, 1) backwards;
+	animation: ocb-hero-in 1.05s cubic-bezier(.22, .61, .36, 1) backwards;
+	animation-delay: .25s;
 }
 
-.ocb-hero__set.is-on .ocb-hero__words > :nth-child(2) { animation-delay: .12s; }
-.ocb-hero__set.is-on .ocb-hero__words > :nth-child(3) { animation-delay: .24s; }
-.ocb-hero__set.is-on .ocb-hero__words > :nth-child(4) { animation-delay: .32s; }
+.ocb-hero__set.is-on .ocb-hero__words > :nth-child(2) { animation-delay: .45s; }
+.ocb-hero__set.is-on .ocb-hero__words > :nth-child(3) { animation-delay: .62s; }
+.ocb-hero__set.is-on .ocb-hero__words > :nth-child(4) { animation-delay: .74s; }
+.ocb-hero__set.is-on .ocb-hero__words > :nth-child(5) { animation-delay: .84s; }
 
 @keyframes ocb-hero-in {
 	from { opacity: 0; transform: translateY(18px); }
@@ -422,12 +446,16 @@
 
 .ocb-hero--dark .ocb-hero__cta { background: var(--oc-ink, #1c1c1c); color: #fff; }
 
-/* The slide's words step in a breath after the slide itself. */
-.ocb-hero__words h2,
-.ocb-hero__words p,
-.ocb-hero__cta { animation: ocb-hero-words .8s cubic-bezier(.22, .61, .36, 1) backwards; }
+/* The second call, in negative: a quiet outline beside the filled one. */
+.ocb-hero__cta--ghost,
+.ocb-hero--dark .ocb-hero__cta--ghost {
+	background: transparent;
+	color: inherit;
+	border: 1.5px solid currentColor;
+	margin-inline-start: 12px;
+}
 
-.ocb-hero__words p { animation-delay: .12s; }
+
 .ocb-hero__cta { animation-delay: .24s; }
 
 @keyframes ocb-hero-words {

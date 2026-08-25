@@ -323,6 +323,14 @@ final class Registry {
 								'type'  => 'url',
 								'label' => __( 'Leads to', 'oc-blocks' ),
 							),
+							'cta2'    => array(
+								'type'  => 'text',
+								'label' => __( 'Second button — outline (optional)', 'oc-blocks' ),
+							),
+							'url2'    => array(
+								'type'  => 'url',
+								'label' => __( 'The second button leads to', 'oc-blocks' ),
+							),
 							'cd'      => array(
 								'type'  => 'text',
 								'label' => __( 'Countdown until (optional)', 'oc-blocks' ),
@@ -404,6 +412,13 @@ final class Registry {
 						'label' => __( 'Parallax strength', 'oc-blocks' ),
 						'hint'  => __( '0 is off; around 30 is gentle; at 100 the picture stands still and the page glides over it.', 'oc-blocks' ),
 						'def'   => 0,
+						'group' => 'design',
+					),
+					'fadebg'   => array(
+						'type'  => 'color',
+						'label' => __( 'The colour between slides (fade)', 'oc-blocks' ),
+						'hint'  => __( 'The slide breathes out into this before the next one arrives. Empty is near-black.', 'oc-blocks' ),
+						'when'  => array( 'effect' => array( 'fade' ) ),
 						'group' => 'design',
 					),
 					'cdpos'    => array(
