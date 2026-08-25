@@ -230,6 +230,11 @@
 					at = 0;
 					paintDots();
 					paintSets();
+
+					// A browser mid-momentum quietly drops the jump; ask
+					// again until it actually lands home.
+					clearTimeout( settle );
+					settle = setTimeout( snapHome, 90 );
 				}
 			}
 
@@ -964,22 +969,26 @@
 					return;
 				}
 
-				// Strength (1..100, old yes/no markup means 30) sets how far
-				// the picture falls behind the page. The travel is mapped to
-				// the banner's whole journey across the viewport, so it moves
-				// the entire time — no clamp, no dead stop — and lands on
-				// exactly the headroom the zoom buys at either end. The
-				// transform rides the picture itself, one layer inside, so
-				// the fade's settle animation on the wrapper never fights it.
-				var pct = parseInt( media.dataset.ocbParallax, 10 ) || 30;
-				var capFrac = 0.03 + ( pct / 100 ) * 0.25;
-				var span = ( window.innerHeight + box.height ) / 2;
-				var mid = box.top + box.height / 2 - window.innerHeight / 2;
-				var shift = ( mid / span ) * -capFrac * box.height;
-				var zoom = ( 1 + capFrac * 2 + 0.01 ).toFixed( 3 );
+				// Strength is how much of the page's motion the picture
+				// refuses: at 100 it is glued to the viewport — a true
+				// fixed-background feel — and in between it lags the page
+				// proportionally. Instead of zooming for headroom, the
+				// picture is given extra height that blends toward the
+				// viewport's own, which covers every position exactly.
+				var f = ( parseInt( media.dataset.ocbParallax, 10 ) || 30 ) / 100;
+				var H = Math.round( box.height + f * ( window.innerHeight - box.height ) );
+				var y = ( -f * box.top ).toFixed( 1 );
 				var moving = media.firstElementChild || media;
 
-				moving.style.transform = 'translateY(' + shift.toFixed( 1 ) + 'px) scale(' + zoom + ')';
+				if ( moving.__ocbH !== H ) {
+					moving.__ocbH = H;
+					moving.style.blockSize = H + 'px';
+				}
+
+				if ( moving.__ocbY !== y ) {
+					moving.__ocbY = y;
+					moving.style.transform = 'translate3d(0,' + y + 'px,0)';
+				}
 			} );
 		};
 
