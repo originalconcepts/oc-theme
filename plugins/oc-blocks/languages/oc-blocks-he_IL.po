@@ -570,3 +570,51 @@ msgstr "פרקים"
 
 msgid "Picture"
 msgstr "תמונה"
+
+msgid "Stories"
+msgstr "סטוריז"
+
+msgid "An OC Story gallery, placed by hand."
+msgstr "גלריית OC Story, במיקום שתבחרו."
+
+msgid "Placement id (from OC Story)"
+msgstr "מזהה פלייסמנט (מתוך OC Story)"
+
+msgid "Empty shows the default gallery; a placement id from the OC Story screen shows that one."
+msgstr "ריק — הגלריה הרגילה; מזהה פלייסמנט ממסך OC Story — מציג אותו."
+
+msgid "Circle size (px, 0 = as set)"
+msgstr "גודל העיגולים (px, ‏0 = כמו בהגדרות)"
+
+msgid "Names under the circles"
+msgstr "שמות מתחת לעיגולים"
+
+msgid "At most (0 = all)"
+msgstr "עד כמה (0 = הכל)"
+
+msgid "Reviews"
+msgstr "חוות דעת"
+
+msgid "What buyers said — slider, grid or wall."
+msgstr "מה הלקוחות אמרו — סליידר, גריד או קיר."
+
+msgid "Photo wall"
+msgstr "קיר תמונות"
+
+msgid "Which reviews"
+msgstr "אילו חוות דעת"
+
+msgid "All"
+msgstr "הכל"
+
+msgid "Featured"
+msgstr "מומלצות"
+
+msgid "Minimum stars"
+msgstr "מינימום כוכבים"
+
+msgid "Only reviews with photos"
+msgstr "רק חוות דעת עם תמונות"
+
+msgid "Slider moves every (seconds, 0 off)"
+msgstr "הסליידר מתקדם כל (שניות, 0 כבוי)"

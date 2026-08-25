@@ -76,20 +76,21 @@ final class Preview {
 			$fonts = '<link rel="stylesheet" href="' . esc_url( OC_THEME_URI . '/assets/fonts/assistant.css' ) . '">';
 		}
 
+		// The body renders FIRST: integration blocks (stories, reviews)
+		// enqueue their own assets mid-render, and the head must have seen
+		// them before it prints.
+		$body = empty( $sections )
+			? '<p style="padding:60px 30px;text-align:center;opacity:.55;font-size:15px;">' . esc_html__( 'Add a section and it will appear here, exactly as on the site.', 'oc-blocks' ) . '</p>'
+			: Render::sections_html( $sections );
+
 		echo '<!doctype html><html dir="' . ( is_rtl() ? 'rtl' : 'ltr' ) . '" lang="' . esc_attr( get_locale() ) . '"><head><meta charset="utf-8">';
 		echo '<meta name="viewport" content="width=device-width, initial-scale=1">';
 		echo $fonts; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
-		wp_print_styles( array( 'oc-theme', 'oc-blocks' ) );
+		wp_print_styles();
 		echo '<style>:root{' . $tokens . '}body{margin:0;background:var(--oc-bg-user,var(--oc-surface,#fff));color:var(--oc-ink,#1c1c1c);font-family:var(--oc-font-body,system-ui,sans-serif);line-height:1.55}</style>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- CSS custom properties from the theme's own generator.
 		echo '</head><body class="oc-compose-preview">';
-
-		if ( empty( $sections ) ) {
-			echo '<p style="padding:60px 30px;text-align:center;opacity:.55;font-size:15px;">' . esc_html__( 'Add a section and it will appear here, exactly as on the site.', 'oc-blocks' ) . '</p>';
-		} else {
-			echo Render::sections_html( $sections ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
-		}
-
-		wp_print_scripts( array( 'oc-blocks' ) );
+		echo $body; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
+		wp_print_scripts();
 		echo '</body></html>';
 		exit;
 	}

@@ -255,6 +255,10 @@ final class Render {
 				return self::media( $s );
 			case 'scrolly':
 				return self::scrolly( $s );
+			case 'story':
+				return self::story( $s );
+			case 'reviews':
+				return self::reviews( $s );
 		}
 
 		/**
@@ -859,6 +863,76 @@ final class Render {
 			. '<div class="ocb-sc__pin"><div class="ocb-sc__stage">' . $frames . '</div></div>'
 			. '<div class="ocb-sc__flow">' . $steps . '</div>'
 			. '</div>';
+	}
+
+	/**
+	 * An OC Story gallery through the plugin's own shortcode, which carries
+	 * its own assets. Quiet when the plugin is away.
+	 *
+	 * @param array<string,mixed> $s Section.
+	 * @return string
+	 */
+	private static function story( array $s ): string {
+		if ( ! shortcode_exists( 'oc_story' ) ) {
+			return '';
+		}
+
+		$atts = '';
+
+		if ( '' !== trim( (string) $s['placement'] ) ) {
+			$atts .= ' placement="' . esc_attr( (string) $s['placement'] ) . '"';
+		}
+
+		if ( $s['size'] > 0 ) {
+			$atts .= ' size="' . absint( $s['size'] ) . '"';
+		}
+
+		$atts .= ' labels="' . ( empty( $s['labels'] ) ? 'no' : 'yes' ) . '"';
+
+		if ( $s['max'] > 0 ) {
+			$atts .= ' max="' . absint( $s['max'] ) . '"';
+		}
+
+		$html = do_shortcode( '[oc_story' . $atts . ']' );
+
+		return '' === trim( $html ) ? '' : self::heading( $s ) . $html;
+	}
+
+	/**
+	 * OC Reviews through its own shortcode — slider, grid or wall, with the
+	 * plugin's own assets and rules. Quiet when the plugin is away.
+	 *
+	 * @param array<string,mixed> $s Section.
+	 * @return string
+	 */
+	private static function reviews( array $s ): string {
+		if ( ! shortcode_exists( 'oc_reviews' ) ) {
+			return '';
+		}
+
+		$atts = ' layout="' . esc_attr( (string) $s['layout'] ) . '"'
+			. ' count="' . absint( $s['count'] ) . '"'
+			. ' columns="' . absint( $s['cols'] ) . '"'
+			. ' min_rating="' . absint( $s['min_rating'] ) . '"'
+			. ' has_media="' . ( empty( $s['media'] ) ? 'no' : 'yes' ) . '"';
+
+		if ( 'featured' === $s['source'] ) {
+			$atts .= ' source="featured"';
+		} elseif ( 'category' === $s['source'] && $s['cat'] > 0 ) {
+			$term = get_term( absint( $s['cat'] ), 'product_cat' );
+
+			if ( $term instanceof \WP_Term ) {
+				$atts .= ' source="category" ids="' . absint( $term->term_id ) . '"';
+			}
+		}
+
+		if ( $s['autoplay'] > 0 ) {
+			$atts .= ' autoplay="' . absint( $s['autoplay'] ) . '"';
+		}
+
+		$html = do_shortcode( '[oc_reviews' . $atts . ']' );
+
+		return '' === trim( $html ) ? '' : self::heading( $s ) . $html;
 	}
 
 	/*

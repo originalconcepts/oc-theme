@@ -792,6 +792,118 @@ final class Registry {
 					),
 				),
 			),
+			'story'      => array(
+				'label'  => __( 'Stories', 'oc-blocks' ),
+				'blurb'  => __( 'An OC Story gallery, placed by hand.', 'oc-blocks' ),
+				'icon'   => '<svg viewBox="0 0 24 24"><circle cx="6" cy="12" r="3.4" opacity=".55"/><circle cx="14" cy="12" r="3.4" opacity=".4"/><circle cx="21" cy="12" r="2.4" opacity=".25"/></svg>',
+				'fields' => array(
+					'heading'   => array(
+						'type'  => 'text',
+						'label' => __( 'Heading', 'oc-blocks' ),
+					),
+					'placement' => array(
+						'type'  => 'text',
+						'label' => __( 'Placement id (from OC Story)', 'oc-blocks' ),
+						'hint'  => __( 'Empty shows the default gallery; a placement id from the OC Story screen shows that one.', 'oc-blocks' ),
+					),
+					'size'      => array(
+						'type'  => 'number',
+						'label' => __( 'Circle size (px, 0 = as set)', 'oc-blocks' ),
+						'def'   => 0,
+						'min'   => 0,
+						'max'   => 200,
+						'group' => 'design',
+					),
+					'labels'    => array(
+						'type'  => 'toggle',
+						'label' => __( 'Names under the circles', 'oc-blocks' ),
+						'def'   => 1,
+						'group' => 'design',
+					),
+					'max'       => array(
+						'type'  => 'number',
+						'label' => __( 'At most (0 = all)', 'oc-blocks' ),
+						'def'   => 0,
+						'min'   => 0,
+						'max'   => 30,
+						'group' => 'design',
+					),
+				),
+			),
+
+			'reviews'    => array(
+				'label'  => __( 'Reviews', 'oc-blocks' ),
+				'blurb'  => __( 'What buyers said — slider, grid or wall.', 'oc-blocks' ),
+				'icon'   => '<svg viewBox="0 0 24 24"><path d="M12 3l2.6 5.3 5.9.9-4.2 4.1 1 5.8L12 16.3 6.7 19l1-5.8L3.5 9.2l5.9-.9z" opacity=".55"/></svg>',
+				'fields' => array(
+					'heading'    => array(
+						'type'  => 'text',
+						'label' => __( 'Heading', 'oc-blocks' ),
+					),
+					'layout'     => array(
+						'type'    => 'seg',
+						'label'   => __( 'Laid as', 'oc-blocks' ),
+						'choices' => array(
+							'slider' => __( 'Slider', 'oc-blocks' ),
+							'grid'   => __( 'Grid', 'oc-blocks' ),
+							'wall'   => __( 'Photo wall', 'oc-blocks' ),
+						),
+						'def'     => 'slider',
+					),
+					'source'     => array(
+						'type'    => 'seg',
+						'label'   => __( 'Which reviews', 'oc-blocks' ),
+						'choices' => array(
+							'all'      => __( 'All', 'oc-blocks' ),
+							'featured' => __( 'Featured', 'oc-blocks' ),
+							'category' => __( 'From a category', 'oc-blocks' ),
+						),
+						'def'     => 'all',
+					),
+					'cat'        => array(
+						'type'  => 'category',
+						'label' => __( 'The category', 'oc-blocks' ),
+						'when'  => array( 'source' => array( 'category' ) ),
+					),
+					'count'      => array(
+						'type'  => 'number',
+						'label' => __( 'How many', 'oc-blocks' ),
+						'def'   => 8,
+						'min'   => 2,
+						'max'   => 24,
+					),
+					'cols'       => array(
+						'type'  => 'number',
+						'label' => __( 'Per row — desktop', 'oc-blocks' ),
+						'def'   => 3,
+						'min'   => 2,
+						'max'   => 5,
+						'group' => 'design',
+					),
+					'min_rating' => array(
+						'type'  => 'number',
+						'label' => __( 'Minimum stars', 'oc-blocks' ),
+						'def'   => 4,
+						'min'   => 1,
+						'max'   => 5,
+						'group' => 'design',
+					),
+					'media'      => array(
+						'type'  => 'toggle',
+						'label' => __( 'Only reviews with photos', 'oc-blocks' ),
+						'def'   => 0,
+						'group' => 'design',
+					),
+					'autoplay'   => array(
+						'type'  => 'number',
+						'label' => __( 'Slider moves every (seconds, 0 off)', 'oc-blocks' ),
+						'def'   => 0,
+						'min'   => 0,
+						'max'   => 20,
+						'group' => 'design',
+					),
+				),
+			),
 		);
 
 		/**
