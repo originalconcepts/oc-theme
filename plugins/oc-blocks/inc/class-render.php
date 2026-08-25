@@ -414,13 +414,43 @@ final class Render {
 			);
 		}
 
+		// "Natural height" means the first picture's own proportions: the
+		// banner takes that ratio and every other slide is cropped to it,
+		// so the strip never inherits a stray tall video's height.
+		$ratio  = '';
+		$ratiom = '';
+
+		foreach ( (array) $s['slides'] as $slide ) {
+			if ( absint( $slide['img'] ?? 0 ) > 0 && '' === $ratio ) {
+				$src = wp_get_attachment_image_src( absint( $slide['img'] ), 'full' );
+
+				if ( $src && $src[1] > 0 && $src[2] > 0 ) {
+					$ratio = $src[1] . ' / ' . $src[2];
+				}
+			}
+
+			if ( absint( $slide['imgm'] ?? 0 ) > 0 && '' === $ratiom ) {
+				$srcm = wp_get_attachment_image_src( absint( $slide['imgm'] ), 'full' );
+
+				if ( $srcm && $srcm[1] > 0 && $srcm[2] > 0 ) {
+					$ratiom = $srcm[1] . ' / ' . $srcm[2];
+				}
+			}
+		}
+
+		if ( '' === $ratiom ) {
+			$ratiom = $ratio;
+		}
+
 		$style = '--ocb-hero-h:' . absint( $s['h'] ) . 'px;--ocb-hero-hm:' . absint( $s['hm'] ) . 'px;'
+			. ( '' === $ratio ? '' : '--ocb-hero-ratio:' . $ratio . ';' )
+			. ( '' === $ratiom ? '' : '--ocb-hero-ratio-m:' . $ratiom . ';' )
 			. ( '' === (string) ( $s['fadebg'] ?? '' ) ? '' : '--ocb-hero-fadebg:' . $s['fadebg'] . ';' )
 			. ( '' === (string) ( $s['txtc'] ?? '' ) ? '' : '--ocb-hero-txt:' . $s['txtc'] . ';' )
 			. ( '' === (string) ( $s['ctac'] ?? '' ) ? '' : '--ocb-hero-ctabg:' . $s['ctac'] . ';' )
 			. ( '' === (string) ( $s['ctat'] ?? '' ) ? '' : '--ocb-hero-ctaink:' . $s['ctat'] . ';' );
 
-		$html = '<div class="ocb-hero ocb-hero--' . esc_attr( (string) $s['effect'] ) . ' ocb-hero--pos-' . esc_attr( (string) $s['pos'] ) . ' ocb-hero--' . esc_attr( (string) $s['tone'] ) . ( $one ? ' ocb-hero--one' : '' ) . ( 0 === absint( $s['h'] ) ? ' ocb-hero--hauto' : '' ) . ( 0 === absint( $s['hm'] ) ? ' ocb-hero--hmauto' : '' ) . '"'
+		$html = '<div class="ocb-hero ocb-hero--' . esc_attr( (string) $s['effect'] ) . ' ocb-hero--pos-' . esc_attr( (string) $s['pos'] ) . ' ocb-hero--' . esc_attr( (string) $s['tone'] ) . ( $one ? ' ocb-hero--one' : '' ) . ( 0 === absint( $s['h'] ) && '' !== $ratio ? ' ocb-hero--hauto' : '' ) . ( 0 === absint( $s['hm'] ) && '' !== $ratiom ? ' ocb-hero--hmauto' : '' ) . '"'
 			. ' style="' . esc_attr( $style ) . '"'
 			. ( $one || empty( $s['auto'] ) ? '' : ' data-ocb-auto="' . absint( $s['auto'] ) . '"' ) . '>'
 			. '<div class="ocb-hero__strip">' . implode( '', $slides ) . '</div>'

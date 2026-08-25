@@ -219,17 +219,23 @@
 				// Once the finger lets go and the snap settles on the copy,
 				// jump home without a trace.
 				clearTimeout( settle );
-				settle = setTimeout( function () {
-					var idx = Math.round( Math.abs( strip.scrollLeft ) / Math.max( 1, strip.clientWidth ) );
-
-					if ( idx >= real ) {
-						strip.scrollTo( { left: 0, behavior: 'auto' } );
-						at = 0;
-						paintDots();
-						paintSets();
-					}
-				}, 140 );
+				settle = setTimeout( snapHome, 160 );
 			}, { passive: true } );
+
+			function snapHome() {
+				var idx = Math.round( Math.abs( strip.scrollLeft ) / Math.max( 1, strip.clientWidth ) );
+
+				if ( idx >= real ) {
+					strip.scrollTo( { left: 0, behavior: 'auto' } );
+					at = 0;
+					paintDots();
+					paintSets();
+				}
+			}
+
+			if ( 'onscrollend' in strip ) {
+				strip.addEventListener( 'scrollend', snapHome );
+			}
 		}
 
 		hero.addEventListener( 'click', function ( e ) {
@@ -954,7 +960,7 @@
 		lax.forEach( function ( media ) {
 				var box = media.parentElement.getBoundingClientRect();
 
-				if ( box.bottom < 0 || box.top > window.innerHeight ) {
+				if ( box.height < 4 || box.bottom < 0 || box.top > window.innerHeight ) {
 					return;
 				}
 

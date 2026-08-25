@@ -287,23 +287,20 @@
 
 [data-ocb-parallax] > * { will-change: transform; }
 
-/* Height 0: the banner takes the picture's own height. */
+/* Height 0: the banner takes the first picture's own proportions —
+ * every slide wears that ratio, so nothing inflates the strip. */
 @media (min-width: 783px) {
-	.ocb-hero--hauto .ocb-hero__slide { block-size: auto; }
-
-	.ocb-hero--hauto .ocb-hero__media { position: relative; inset: auto; }
-
-	.ocb-hero--hauto .ocb-hero__media img,
-	.ocb-hero--hauto .ocb-hero__media picture img { block-size: auto; }
+	.ocb-hero--hauto .ocb-hero__slide {
+		block-size: auto;
+		aspect-ratio: var(--ocb-hero-ratio, 16 / 9);
+	}
 }
 
 @media (max-width: 782px) {
-	.ocb-hero--hmauto .ocb-hero__slide { block-size: auto; }
-
-	.ocb-hero--hmauto .ocb-hero__media { position: relative; inset: auto; }
-
-	.ocb-hero--hmauto .ocb-hero__media img,
-	.ocb-hero--hmauto .ocb-hero__media picture img { block-size: auto; }
+	.ocb-hero--hmauto .ocb-hero__slide {
+		block-size: auto;
+		aspect-ratio: var(--ocb-hero-ratio-m, var(--ocb-hero-ratio, 4 / 5));
+	}
 }
 
 /* Full-strength parallax: the picture stands still and the page glides

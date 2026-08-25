@@ -855,7 +855,13 @@
 		var wrap = el( 'div', { 'class': 'ocbe-slides' } );
 
 		( section[ key ] || [] ).forEach( function ( slide, at ) {
-			var body = el( 'div', { 'class': 'ocbe-slide__body', hidden: at === 0 && section[ key ].length === 1 ? null : 'hidden' } );
+			// A row remembers being open across repaints — choosing a
+			// picture repaints the pane and used to fold everything shut.
+			if ( undefined === slide.__open ) {
+				slide.__open = at === 0 && section[ key ].length === 1;
+			}
+
+			var body = el( 'div', { 'class': 'ocbe-slide__body', hidden: slide.__open ? null : 'hidden' } );
 
 			Object.keys( field.sub ).forEach( function ( subKey ) {
 				body.appendChild( fieldRow( slide, subKey, field.sub[ subKey ], field.sub ) );
@@ -865,6 +871,7 @@
 				type: 'button',
 				'class': 'ocbe-slide__head',
 				onclick: function () {
+					slide.__open = body.hidden;
 					body.hidden = ! body.hidden;
 				}
 			}, [
@@ -910,7 +917,11 @@
 			text: '+ ' + T.addSlide,
 			onclick: function () {
 				section[ key ] = section[ key ] || [];
-				section[ key ].push( blankRow( field.sub ) );
+
+				var row = blankRow( field.sub );
+
+				row.__open = true;
+				section[ key ].push( row );
 				touch();
 				paintSettings();
 			}
