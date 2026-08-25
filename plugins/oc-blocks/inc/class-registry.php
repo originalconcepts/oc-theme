@@ -1489,7 +1489,7 @@ final class Registry {
 						'choices' => array(
 							'1'      => __( 'One per row', 'oc-blocks' ),
 							'2'      => __( 'Two per row', 'oc-blocks' ),
-							'slider' => __( 'Slider', 'oc-blocks' ),
+							'slider' => __( 'One at a time, rotating', 'oc-blocks' ),
 						),
 						'def'     => '1',
 						'dev'     => 'm',
