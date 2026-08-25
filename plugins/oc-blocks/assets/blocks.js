@@ -917,8 +917,10 @@
 		var laxDraw = function () {
 			lax.forEach( function ( media ) {
 				// In fade mode the settle animation owns the picture's
-				// transform; the drift would fight it frame by frame.
-				if ( media.closest( '.ocb-hero--fade' ) ) {
+				// transform; the drift would fight it frame by frame. On the
+				// phone the fade banner rides the strip instead, so the
+				// drift is welcome back there.
+				if ( media.closest( '.ocb-hero--fade' ) && window.innerWidth > 782 ) {
 					return;
 				}
 
