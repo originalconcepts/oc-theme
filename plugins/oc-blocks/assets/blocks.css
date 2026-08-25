@@ -1160,24 +1160,23 @@ html[dir="rtl"] .ocb-look__nav .ocb-arr svg { transform: scaleX(-1); }
 
 .ocb-br__body { flex: 1 1 auto; min-inline-size: 0; }
 
-/* A square picture, exactly as tall as the words beside it. The image is
- * absolute so its own size never inflates the card — the square takes its
- * height from the words and its width from the ratio, nothing else. */
+/* A square picture, exactly as tall as the words beside it: the height
+ * comes from the words, the width from the image's own 1:1 ratio — a
+ * replaced element carries that transfer reliably, a styled span does not. */
 .ocb-br__pic {
-	position: relative;
+	display: flex;
 	flex: 0 0 auto;
 	align-self: stretch;
-	aspect-ratio: 1 / 1;
 	border-radius: 10px;
 	overflow: hidden;
 }
 
 .ocb-br__pic img {
-	position: absolute;
-	inset: 0;
-	inline-size: 100%;
 	block-size: 100%;
+	inline-size: auto;
+	aspect-ratio: 1 / 1;
 	object-fit: cover;
+	display: block;
 }
 
 .ocb-br__more { margin-block-start: 8px; }
