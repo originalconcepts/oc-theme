@@ -289,10 +289,6 @@ final class Branches {
 		// the branch's own picture underneath — the locator-page grammar.
 		$info = '';
 
-		if ( '' !== trim( $content ) ) {
-			$info .= '<div class="ocb-brs__about">' . $content . '</div>';
-		}
-
 		if ( '' !== $d['address'] ) {
 			$info .= '<div class="ocb-brs__row"><strong>' . esc_html__( 'Address', 'oc-blocks' ) . '</strong>' . esc_html( $d['address'] ) . '</div>';
 		}
@@ -310,7 +306,22 @@ final class Branches {
 		}
 
 		if ( '' !== $d['hours'] ) {
-			$info .= '<div class="ocb-brs__row"><strong>' . esc_html__( 'Opening hours', 'oc-blocks' ) . '</strong>' . nl2br( esc_html( $d['hours'] ) ) . '</div>';
+			// Each line splits into a day column and an hours column, the
+			// way a store-locator page tables them.
+			$rows_h = '';
+
+			foreach ( preg_split( '/\r?\n/', $d['hours'] ) as $line ) {
+				$line = trim( $line );
+
+				if ( '' === $line ) {
+					continue;
+				}
+
+				$parts   = preg_split( '/\s+/', $line, 2 );
+				$rows_h .= '<span class="ocb-brs__hd">' . esc_html( $parts[0] ) . '</span><span class="ocb-brs__ht">' . esc_html( $parts[1] ?? '' ) . '</span>';
+			}
+
+			$info .= '<div class="ocb-brs__row"><strong>' . esc_html__( 'Opening hours', 'oc-blocks' ) . '</strong><span class="ocb-brs__hours">' . $rows_h . '</span></div>';
 		}
 
 		if ( '' !== $d['address'] ) {
@@ -392,11 +403,14 @@ final class Branches {
 			$more = '<section class="ocb-brs__section"><h2>' . esc_html__( 'Visit our branches', 'oc-blocks' ) . '</h2><div class="ocb-brs__others">' . $more . '</div></section>';
 		}
 
+		$about = '' === trim( $content ) ? '' : '<div class="ocb-brs__about">' . $content . '</div>';
+
 		return '<div class="ocb-brs">'
 			. '<div class="ocb-brs__split">'
 			. '<div class="ocb-brs__info">' . $info . '</div>'
 			. $map
 			. '</div>'
+			. $about
 			. $extra
 			. $access
 			. $more

@@ -51,11 +51,20 @@
 		}
 
 		var fade = hero.classList.contains( 'ocb-hero--fade' );
+		var sets = hero.querySelectorAll( '[data-ocb-set]' );
 		var at = 0;
 		var timer = null;
 
 		function count() {
 			return slides.length;
+		}
+
+		// The words live outside the strip; the active slide lights its set,
+		// and re-adding the class replays the little entrance.
+		function paintSets() {
+			sets.forEach( function ( set ) {
+				set.classList.toggle( 'is-on', Number( set.dataset.ocbSet ) === at );
+			} );
 		}
 
 		function paintDots() {
@@ -99,6 +108,7 @@
 			}
 
 			paintDots();
+			paintSets();
 		}
 
 		function arm() {
@@ -633,10 +643,93 @@
 	/* ---------- contact / leads form ---------- */
 
 	document.querySelectorAll( '[data-ocb-lead]' ).forEach( function ( form ) {
+		var msgs = {
+			req: form.dataset.errReq || '',
+			phone: form.dataset.errPhone || '',
+			email: form.dataset.errEmail || '',
+			consent: form.dataset.errConsent || ''
+		};
+
+		function slotOf( field ) {
+			var wrap = field.closest( 'label' );
+
+			return wrap ? wrap.querySelector( '.ocb-lead__err' ) : null;
+		}
+
+		function faultOf( field ) {
+			var value = ( field.value || '' ).trim();
+
+			if ( 'checkbox' === field.type ) {
+				return field.checked ? '' : msgs.consent;
+			}
+
+			if ( field.required && '' === value ) {
+				return msgs.req;
+			}
+
+			if ( 'phone' === field.name && '' !== value ) {
+				var digits = value.replace( /\D/g, '' );
+
+				if ( digits.length < 9 || digits.length > 10 ) {
+					return msgs.phone;
+				}
+			}
+
+			if ( 'email' === field.name && '' !== value && ! /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test( value ) ) {
+				return msgs.email;
+			}
+
+			return '';
+		}
+
+		function judge( field ) {
+			var slot = slotOf( field );
+			var fault = faultOf( field );
+
+			if ( slot ) {
+				slot.textContent = fault;
+				slot.hidden = '' === fault;
+			}
+
+			field.closest( 'label' ).classList.toggle( 'is-bad', '' !== fault );
+
+			return '' === fault;
+		}
+
+		var watched = form.querySelectorAll( 'input[name="name"], input[name="phone"], input[name="email"], input[name="consent"], textarea[name="msg"]' );
+
+		watched.forEach( function ( field ) {
+			field.addEventListener( 'blur', function () {
+				judge( field );
+			} );
+			field.addEventListener( 'input', function () {
+				if ( field.closest( 'label' ).classList.contains( 'is-bad' ) ) {
+					judge( field );
+				}
+			} );
+			field.addEventListener( 'change', function () {
+				judge( field );
+			} );
+		} );
+
 		form.addEventListener( 'submit', function ( e ) {
 			e.preventDefault();
 
+			var first = null;
+
+			watched.forEach( function ( field ) {
+				if ( ! judge( field ) && ! first ) {
+					first = field;
+				}
+			} );
+
+			if ( first ) {
+				first.focus();
+				return;
+			}
+
 			var go = form.querySelector( '.ocb-lead__go' );
+			var thanks = form.querySelector( '.ocb-lead__thanks' );
 
 			go.disabled = true;
 
@@ -647,18 +740,19 @@
 					return r.json();
 				} )
 				.then( function ( data ) {
-					if ( data && data.success ) {
-						form.classList.add( 'is-done' );
-						form.querySelector( '.ocb-lead__thanks' ).hidden = false;
-					} else {
-						go.disabled = false;
+					go.disabled = false;
 
-						var first = form.querySelector( 'input[name="name"]' );
-						first.setCustomValidity( ( data && data.data && data.data.msg ) || '…' );
-						first.reportValidity();
-						first.addEventListener( 'input', function () {
-							first.setCustomValidity( '' );
-						}, { once: true } );
+					if ( data && data.success ) {
+						// The form stays, empty and ready; the word of
+						// thanks stands under the button.
+						form.reset();
+						form.querySelectorAll( '.is-bad' ).forEach( function ( bad ) {
+							bad.classList.remove( 'is-bad' );
+						} );
+						form.querySelectorAll( '.ocb-lead__err' ).forEach( function ( slot ) {
+							slot.hidden = true;
+						} );
+						thanks.hidden = false;
 					}
 				} )
 				.catch( function () {

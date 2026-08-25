@@ -303,13 +303,15 @@ final class Render {
 	 */
 
 	/**
-	 * Banner / slider: one picture is a banner, several are a slider.
+	 * Banner / slider. The pictures travel in the strip; the words and the
+	 * clock live in an overlay of their own, one set per slide, entering
+	 * with a small rise instead of scrolling along.
 	 *
 	 * @param array<string,mixed> $s Section.
-	 * @return string
 	 */
 	private static function hero( array $s ): string {
 		$slides = array();
+		$sets   = array();
 
 		foreach ( (array) $s['slides'] as $slide ) {
 			$media = '';
@@ -332,18 +334,10 @@ final class Render {
 				continue;
 			}
 
-			$words = '';
+			$at = count( $slides );
 
-			if ( '' !== $slide['heading'] || '' !== $slide['text'] || '' !== $slide['cta'] ) {
-				$words = '<div class="ocb-hero__words">'
-					. ( '' === $slide['heading'] ? '' : '<h2>' . esc_html( (string) $slide['heading'] ) . '</h2>' )
-					. ( '' === $slide['text'] ? '' : '<p>' . esc_html( (string) $slide['text'] ) . '</p>' )
-					. ( '' === $slide['cta'] || '' === $slide['url'] ? '' : '<a class="ocb-hero__cta" href="' . esc_url( (string) $slide['url'] ) . '">' . esc_html( (string) $slide['cta'] ) . '</a>' )
-					. '</div>';
-			}
-
-		// A slide may carry a ticking clock — under the words, or riding
-			// the other side of the banner.
+			// A slide may carry a ticking clock — under the words, or held
+			// in the middle of the banner's other half.
 			$cd = '';
 
 			if ( '' !== trim( (string) ( $slide['cd'] ?? '' ) ) ) {
@@ -365,25 +359,37 @@ final class Render {
 				}
 			}
 
-			if ( 'under' === (string) $s['cdpos'] && '' !== $cd ) {
-				$words = str_replace( '</div>', $cd . '</div>', $words ) ?: $words . $cd;
-				$cd    = '';
+			$words = '';
+
+			if ( '' !== $slide['heading'] || '' !== $slide['text'] || '' !== $slide['cta'] || '' !== $cd ) {
+				$under = 'under' === (string) $s['cdpos'] ? $cd : '';
+				$aside = 'under' === (string) $s['cdpos'] ? '' : $cd;
+
+				$words = '<div class="ocb-hero__set' . ( 0 === $at ? ' is-on' : '' ) . '" data-ocb-set="' . $at . '">'
+					. '<div class="ocb-hero__words">'
+					. ( '' === $slide['heading'] ? '' : '<h2>' . esc_html( (string) $slide['heading'] ) . '</h2>' )
+					. ( '' === $slide['text'] ? '' : '<p>' . esc_html( (string) $slide['text'] ) . '</p>' )
+					. ( '' === $slide['cta'] || '' === $slide['url'] ? '' : '<a class="ocb-hero__cta" href="' . esc_url( (string) $slide['url'] ) . '">' . esc_html( (string) $slide['cta'] ) . '</a>' )
+					. $under
+					. '</div>'
+					. $aside
+					. '</div>';
 			}
+
+			$sets[] = $words;
 
 			// At full strength the picture stands still and the page glides
 			// over it: a fixed layer, clipped to its own slide.
 			$fixed = 100 === (int) $s['parallax'];
 
 			$open  = '' !== $slide['url'] && '' === $slide['cta']
-				? '<a class="ocb-hero__slide' . ( $fixed ? ' ocb-hero__slide--fixedbg' : '' ) . '" href="' . esc_url( (string) $slide['url'] ) . '">'
-				: '<div class="ocb-hero__slide' . ( $fixed ? ' ocb-hero__slide--fixedbg' : '' ) . '">';
+				? '<a class="ocb-hero__slide' . ( $fixed ? ' ocb-hero__slide--fixedbg' : '' ) . ( 0 === $at ? ' is-on' : '' ) . '" href="' . esc_url( (string) $slide['url'] ) . '">'
+				: '<div class="ocb-hero__slide' . ( $fixed ? ' ocb-hero__slide--fixedbg' : '' ) . ( 0 === $at ? ' is-on' : '' ) . '">';
 			$close = '' !== $slide['url'] && '' === $slide['cta'] ? '</a>' : '</div>';
 
 			$slides[] = $open
 				. '<div class="ocb-hero__media' . ( $fixed ? ' ocb-hero__media--fixed' : '' ) . '"' . ( empty( $s['parallax'] ) || $fixed ? '' : ' data-ocb-parallax="' . absint( $s['parallax'] ) . '"' ) . '>' . $media . '</div>'
 				. ( $s['shade'] > 0 ? '<div class="ocb-hero__shade" style="opacity:' . ( absint( $s['shade'] ) / 100 ) . '"></div>' : '' )
-				. $words
-				. $cd
 				. $close;
 		}
 
@@ -397,7 +403,8 @@ final class Render {
 		$html = '<div class="ocb-hero ocb-hero--' . esc_attr( (string) $s['effect'] ) . ' ocb-hero--pos-' . esc_attr( (string) $s['pos'] ) . ' ocb-hero--' . esc_attr( (string) $s['tone'] ) . ( $one ? ' ocb-hero--one' : '' ) . '"'
 			. ' style="' . esc_attr( $style ) . '"'
 			. ( $one || empty( $s['auto'] ) ? '' : ' data-ocb-auto="' . absint( $s['auto'] ) . '"' ) . '>'
-			. '<div class="ocb-hero__strip">' . implode( '', $slides ) . '</div>';
+			. '<div class="ocb-hero__strip">' . implode( '', $slides ) . '</div>'
+			. '<div class="ocb-hero__sets">' . implode( '', $sets ) . '</div>';
 
 		if ( ! $one && ! empty( $s['arrows'] ) ) {
 			$html .= '<button type="button" class="ocb-arr ocb-arr--prev" data-ocb-go="-1" aria-label="prev"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5l-7 7 7 7"/></svg></button>'
@@ -410,6 +417,7 @@ final class Render {
 
 		return $html . '</div>';
 	}
+
 
 	/**
 	 * Words: a heading, a few lines, a button.
@@ -718,7 +726,7 @@ final class Render {
 
 		return self::heading( $s )
 			. '<div class="ocb-posts-wrap"' . ( $slider ? ' data-ocb-shelf' : '' ) . '>'
-			. '<div class="ocb-posts' . ( $slider ? ' ocb-posts--slider' : '' ) . ' ocb-posts--m' . esc_attr( '' !== (string) ( $s['mlay'] ?? '' ) ? (string) $s['mlay'] : '1' ) . '" style="--ocb-cols:' . min( 4, max( 1, absint( $s['count'] ) ) ) . '">' . $cards . '</div>'
+			. '<div class="ocb-posts ocb-posts--c-' . esc_attr( '' !== (string) ( $s['corners'] ?? '' ) ? (string) $s['corners'] : 'soft' ) . ( $slider ? ' ocb-posts--slider' : '' ) . ' ocb-posts--m' . esc_attr( '' !== (string) ( $s['mlay'] ?? '' ) ? (string) $s['mlay'] : '1' ) . '" style="--ocb-cols:' . min( 4, max( 1, absint( $s['count'] ) ) ) . '">' . $cards . '</div>'
 			. ( $slider ? self::shelf_arrows() : '' )
 			. '</div>'
 			. $more;
@@ -924,7 +932,7 @@ final class Render {
 			$words .= '<p class="ocb-ed__go"><a class="ocb-btn ocb-btn--theme" href="' . esc_url( (string) $s['url'] ) . '">' . esc_html( (string) $s['cta'] ) . '</a></p>';
 		}
 
-		return '<div class="ocb-ed ocb-ed--' . esc_attr( $preset ) . ( 'end' === (string) $s['side'] ? ' ocb-ed--flip' : '' ) . '">'
+		return '<div class="ocb-ed ocb-ed--' . esc_attr( $preset ) . ' ocb-ed--c-' . esc_attr( '' !== (string) ( $s['corners'] ?? '' ) ? (string) $s['corners'] : 'soft' ) . ( 'end' === (string) $s['side'] ? ' ocb-ed--flip' : '' ) . '">'
 			. '<div class="ocb-ed__media">' . $media . '</div>'
 			. '<div class="ocb-ed__words">' . $words . '</div>'
 			. '</div>';
@@ -1327,10 +1335,6 @@ final class Render {
 				$lines .= '<p class="ocb-br__phone"><a href="tel:' . esc_attr( (string) preg_replace( '/[^0-9+]/', '', $d['phone'] ) ) . '">' . esc_html( $d['phone'] ) . '</a></p>';
 			}
 
-			if ( '' !== $d['hours'] ) {
-				$lines .= '<p class="ocb-br__hours">' . nl2br( esc_html( $d['hours'] ) ) . '</p>';
-			}
-
 			$lines .= '<p class="ocb-br__more"><a href="' . esc_url( $link ) . '">' . esc_html__( 'Branch page', 'oc-blocks' ) . ' ←</a></p>';
 
 			$photo = get_the_post_thumbnail( $branch, 'large', array( 'loading' => 'lazy' ) );
@@ -1389,18 +1393,20 @@ final class Render {
 			$out .= '<p class="ocb-lead__text">' . esc_html( $text ) . '</p>';
 		}
 
-		$fields = '<label class="ocb-lead__f ocb-lead__f--half"><span>' . esc_html__( 'Full name', 'oc-blocks' ) . '</span><input type="text" name="name" required autocomplete="name"></label>';
+		$err = '<em class="ocb-lead__err" hidden></em>';
+
+		$fields = '<label class="ocb-lead__f ocb-lead__f--half"><span>' . esc_html__( 'Full name', 'oc-blocks' ) . '</span><input type="text" name="name" required autocomplete="name">' . $err . '</label>';
 
 		if ( ! empty( $s['phone'] ) ) {
-			$fields .= '<label class="ocb-lead__f ocb-lead__f--half"><span>' . esc_html__( 'Phone', 'oc-blocks' ) . '</span><input type="tel" name="phone" required autocomplete="tel"></label>';
+			$fields .= '<label class="ocb-lead__f ocb-lead__f--half"><span>' . esc_html__( 'Phone', 'oc-blocks' ) . '</span><input type="tel" name="phone" required autocomplete="tel" inputmode="tel">' . $err . '</label>';
 		}
 
 		if ( ! empty( $s['email'] ) ) {
-			$fields .= '<label class="ocb-lead__f"><span>' . esc_html__( 'Email', 'oc-blocks' ) . '</span><input type="email" name="email" autocomplete="email"></label>';
+			$fields .= '<label class="ocb-lead__f"><span>' . esc_html__( 'Email', 'oc-blocks' ) . '</span><input type="email" name="email" autocomplete="email">' . $err . '</label>';
 		}
 
 		if ( ! empty( $s['msg'] ) ) {
-			$fields .= '<label class="ocb-lead__f"><span>' . esc_html__( 'How can we help?', 'oc-blocks' ) . '</span><textarea name="msg" rows="4"></textarea></label>';
+			$fields .= '<label class="ocb-lead__f"><span>' . esc_html__( 'How can we help?', 'oc-blocks' ) . '</span><textarea name="msg" rows="4"></textarea>' . $err . '</label>';
 		}
 
 		$consent = '';
@@ -1424,10 +1430,14 @@ final class Render {
 				}
 			}
 
-			$consent = '<label class="ocb-lead__consent"><input type="checkbox" name="consent" required><span>' . $wording . '</span></label>';
+			$consent = '<label class="ocb-lead__consent"><input type="checkbox" name="consent" required><span>' . $wording . '</span><em class="ocb-lead__err" hidden></em></label>';
 		}
 
-		$out .= '<form class="ocb-lead" method="post" action="' . esc_url( admin_url( 'admin-ajax.php' ) ) . '" data-ocb-lead>'
+		$out .= '<form class="ocb-lead" method="post" action="' . esc_url( admin_url( 'admin-ajax.php' ) ) . '" data-ocb-lead novalidate'
+			. ' data-err-req="' . esc_attr__( 'Please fill in this field.', 'oc-blocks' ) . '"'
+			. ' data-err-phone="' . esc_attr__( 'Please enter a valid phone number (at least 9 digits).', 'oc-blocks' ) . '"'
+			. ' data-err-email="' . esc_attr__( 'Please enter a valid email address.', 'oc-blocks' ) . '"'
+			. ' data-err-consent="' . esc_attr__( 'Please tick the approval to continue.', 'oc-blocks' ) . '">'
 			. '<input type="hidden" name="action" value="oc_blocks_lead">'
 			. '<input type="hidden" name="page" value="' . absint( get_the_ID() ) . '">'
 			. '<input class="ocb-news__trap" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">'

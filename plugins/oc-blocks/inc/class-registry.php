@@ -818,6 +818,16 @@ final class Registry {
 						'dev'     => 'd',
 						'group'   => 'design',
 					),
+					'corners' => array(
+						'type'    => 'seg',
+						'label'   => __( 'Picture corners', 'oc-blocks' ),
+						'choices' => array(
+							'soft'  => __( 'Softened', 'oc-blocks' ),
+							'sharp' => __( 'Sharp', 'oc-blocks' ),
+						),
+						'def'     => 'soft',
+						'group'   => 'design',
+					),
 					'mlay'    => array(
 						'type'    => 'seg',
 						'label'   => __( 'Mobile layout', 'oc-blocks' ),
@@ -986,6 +996,16 @@ final class Registry {
 							'end'   => __( 'On the left', 'oc-blocks' ),
 						),
 						'def'     => 'end',
+						'group'   => 'design',
+					),
+					'corners' => array(
+						'type'    => 'seg',
+						'label'   => __( 'Picture corners', 'oc-blocks' ),
+						'choices' => array(
+							'soft'  => __( 'Softened', 'oc-blocks' ),
+							'sharp' => __( 'Sharp', 'oc-blocks' ),
+						),
+						'def'     => 'soft',
 						'group'   => 'design',
 					),
 				),

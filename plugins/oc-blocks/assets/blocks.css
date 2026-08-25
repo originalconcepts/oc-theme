@@ -278,8 +278,10 @@
 
 .ocb-hero__cd--side {
 	position: absolute;
-	inset-inline-end: clamp(20px, 7vw, 110px);
 	inset-block-start: 50%;
+	inset-inline-end: 0;
+	inline-size: 50%;
+	justify-content: center;
 	transform: translateY(-50%);
 }
 
@@ -332,6 +334,35 @@
 	inset: 0;
 	background: linear-gradient(rgb(0 0 0 / 55%), rgb(0 0 0 / 25%) 40%, rgb(0 0 0 / 55%));
 	pointer-events: none;
+}
+
+/* One set of words per slide, floating over the strip — they never
+ * scroll with the pictures; they step in when their slide arrives. */
+.ocb-hero__sets { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
+
+.ocb-hero__set {
+	position: absolute;
+	inset: 0;
+	opacity: 0;
+	visibility: hidden;
+	transition: opacity .45s ease, visibility .45s ease;
+}
+
+.ocb-hero__set.is-on { opacity: 1; visibility: visible; }
+
+.ocb-hero__set .ocb-hero__words a,
+.ocb-hero__set .ocb-hero__cd { pointer-events: auto; }
+
+.ocb-hero__set.is-on .ocb-hero__words > * {
+	animation: ocb-hero-in .7s cubic-bezier(.22, .61, .36, 1) backwards;
+}
+
+.ocb-hero__set.is-on .ocb-hero__words > :nth-child(2) { animation-delay: .12s; }
+.ocb-hero__set.is-on .ocb-hero__words > :nth-child(3) { animation-delay: .24s; }
+.ocb-hero__set.is-on .ocb-hero__words > :nth-child(4) { animation-delay: .32s; }
+
+@keyframes ocb-hero-in {
+	from { opacity: 0; transform: translateY(18px); }
 }
 
 .ocb-hero__words {
@@ -461,6 +492,14 @@
 	align-content: start;
 }
 
+/* Rows sized by content, the price stays close to the words instead of
+ * drifting to the card's floor. */
+.oc-compose .ocb-shelf--slider ul.products li.product .price { margin-block-start: 6px; }
+
+/* Sold out: the notify line speaks; the add button stands down. */
+.oc-compose ul.products li.product.outofstock .oc-card-atc,
+.oc-compose ul.products li.product.outofstock .add_to_cart_button { display: none !important; }
+
 /* On a shelf the arrow rides the strip's edge itself — half on the page,
  * half on the first picture — at the height of the picture line (the
  * script measures it into --ocb-arr-mid; the words under a product would
@@ -482,7 +521,7 @@
 @media (max-width: 782px) {
 	.oc-compose .ocb-shelf ul.products { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 	.oc-compose .ocb-shelf--slider.ocb-shelf--m1 ul.products li.product { flex-basis: 82%; }
-	.oc-compose .ocb-shelf--slider.ocb-shelf--m2 ul.products li.product { flex-basis: 46%; }
+	.oc-compose .ocb-shelf--slider.ocb-shelf--m2 ul.products li.product { flex-basis: 42%; }
 }
 
 /* ---------- categories ---------- */
@@ -690,7 +729,10 @@
 	gap: 34px 26px;
 }
 
-.ocb-post__pic { display: block; overflow: hidden; border-radius: var(--oc-radius, 8px); }
+.ocb-post__pic { display: block; overflow: hidden; }
+
+.ocb-posts--c-soft .ocb-post__pic { border-radius: 14px; }
+.ocb-posts--c-sharp .ocb-post__pic { border-radius: 0; }
 
 .ocb-post__pic img {
 	inline-size: 100%;
@@ -951,6 +993,11 @@ html[dir="rtl"] .ocb-look__nav .ocb-arr svg { transform: scaleX(-1); }
 
 .ocb-ed__media figure { margin: 0; }
 
+.ocb-ed--c-soft .ocb-ed__media figure,
+.ocb-ed--c-soft .ocb-ed__film { border-radius: 14px; overflow: hidden; }
+.ocb-ed--c-sharp .ocb-ed__media figure,
+.ocb-ed--c-sharp .ocb-ed__film { border-radius: 0; }
+
 .ocb-ed__media img { display: block; inline-size: 100%; block-size: 100%; object-fit: cover; }
 
 .ocb-ed__main { position: relative; }
@@ -1105,19 +1152,22 @@ html[dir="rtl"] .ocb-look__nav .ocb-arr svg { transform: scaleX(-1); }
 	.ocb-sc { grid-template-columns: 1fr; gap: 0; }
 
 	/* One stage, one story: picture and words trade places in a fade
-	 * while the chapters scroll invisibly underneath. */
+	 * while the chapters scroll invisibly underneath. The pin fills the
+	 * screen below the header, so no blank floor shows before the next
+	 * section arrives. */
 	.ocb-sc__pin {
-		display: block;
+		display: flex;
+		flex-direction: column;
 		position: sticky;
-		inset-block-start: calc(var(--oc-header-h, 64px) + 12px);
+		inset-block-start: calc(var(--oc-header-h, 64px) + 8px);
+		block-size: calc(100svh - var(--oc-header-h, 64px) - 16px);
 		z-index: 2;
 		background: var(--oc-bg-user, var(--oc-surface, #fff));
-		padding-block-end: 10px;
 	}
 
-	.ocb-sc__stage { block-size: 42vh; }
+	.ocb-sc__stage { block-size: auto; flex: 1 1 auto; min-block-size: 34vh; }
 
-	.ocb-sc__mtexts { display: grid; margin-block-start: 14px; }
+	.ocb-sc__mtexts { display: grid; margin-block-start: 14px; flex: 0 0 auto; padding-block-end: 8px; }
 
 	.ocb-sc__mtext {
 		grid-area: 1 / 1;
@@ -1131,7 +1181,7 @@ html[dir="rtl"] .ocb-look__nav .ocb-arr svg { transform: scaleX(-1); }
 
 	.ocb-sc__mtext h3 { margin: 0 0 8px; font-size: 1.2em; }
 
-	.ocb-sc__step { min-block-size: 78vh; visibility: hidden; padding-block: 0; }
+	.ocb-sc__step { min-block-size: 58vh; visibility: hidden; padding-block: 0; }
 }
 
 /* ---------- questions & answers ---------- */
@@ -1488,15 +1538,26 @@ html[dir="rtl"] .ocb-look__nav .ocb-arr svg { transform: scaleX(-1); }
 
 .ocb-lead__go { grid-column: 1 / -1; justify-self: center; min-inline-size: 220px; border: 0; cursor: pointer; font: inherit; }
 
-.ocb-lead.is-done > *:not(.ocb-lead__thanks) { display: none; }
+.ocb-lead__err {
+	font-style: normal;
+	font-size: .82em;
+	font-weight: 600;
+	color: var(--oc-sale, #b4453c);
+}
+
+.ocb-lead__f.is-bad input,
+.ocb-lead__f.is-bad textarea { border-color: var(--oc-sale, #b4453c); }
+
+.ocb-lead__consent.is-bad span { color: var(--oc-sale, #b4453c); }
 
 .ocb-lead__thanks {
 	grid-column: 1 / -1;
 	margin: 0;
-	padding: 20px;
+	padding: 8px 0 0;
 	text-align: center;
 	font-weight: 600;
-	font-size: 1.1em;
+	font-size: 1.05em;
+	color: var(--oc-cta, var(--oc-primary, #2f4e7a));
 	animation: ocb-look-in .4s ease;
 }
 
@@ -1598,6 +1659,15 @@ html[dir="rtl"] .ocb-look__nav .ocb-arr svg { transform: scaleX(-1); }
 
 .ocb-brs__row a { color: inherit; }
 
+/* The hours, tabled: days on one side, times on the other. */
+.ocb-brs__hours {
+	display: grid;
+	grid-template-columns: auto 1fr;
+	gap: 4px 18px;
+}
+
+.ocb-brs__ht { opacity: .8; }
+
 .ocb-brs__map { border-radius: var(--oc-radius, 8px); overflow: hidden; }
 
 .ocb-brs__map iframe { display: block; inline-size: 100%; block-size: min(74vh, 700px); border: 0; }
@@ -1682,7 +1752,18 @@ html[dir="rtl"] .ocb-look__nav .ocb-arr svg { transform: scaleX(-1); }
 
 	.ocb-brs__shot { flex-basis: 78%; }
 
-	.ocb-brs__others { grid-template-columns: 1fr 1fr; }
+	.ocb-brs__others {
+		display: flex;
+		overflow-x: auto;
+		overflow-y: hidden;
+		scroll-snap-type: x proximity;
+		scrollbar-width: none;
+		gap: 14px;
+	}
+
+	.ocb-brs__others::-webkit-scrollbar { display: none; }
+
+	.ocb-brs__other { flex: 0 0 72%; scroll-snap-align: start; }
 }
 
 
