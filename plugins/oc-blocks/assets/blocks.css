@@ -342,6 +342,21 @@
 }
 
 @media (max-width: 782px) {
+	/* On the phone the fade banner turns into a real strip: the whole
+	 * picture or video follows the finger; the desktop keeps the fade. */
+	.ocb-hero--fade .ocb-hero__strip { overflow-x: auto; background: none; }
+
+	.ocb-hero--fade .ocb-hero__slide {
+		position: relative;
+		inset: auto;
+		flex: 0 0 100%;
+		opacity: 1;
+		pointer-events: auto;
+		transition: none;
+	}
+
+	.ocb-hero--fade .ocb-hero__slide .ocb-hero__media { animation: none; }
+
 	.ocb-hero__cd--side {
 		inset-inline: 0;
 		inset-block-start: auto;
@@ -389,6 +404,17 @@
 
 @keyframes ocb-hero-in {
 	from { opacity: 0; transform: translateY(18px); }
+}
+
+/* Leaving, the words walk back the way they came — down and away —
+ * a beat before the banner itself turns. */
+.ocb-hero__set.is-leave .ocb-hero__words > *,
+.ocb-hero__set.is-leave .ocb-hero__cd {
+	animation: ocb-hero-out .42s ease forwards;
+}
+
+@keyframes ocb-hero-out {
+	to { opacity: 0; transform: translateY(24px); }
 }
 
 .ocb-hero__words {

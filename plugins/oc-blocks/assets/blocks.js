@@ -50,7 +50,9 @@
 			return;
 		}
 
-		var fade = hero.classList.contains( 'ocb-hero--fade' );
+		// On the phone a fade banner rides the strip instead — the whole
+		// picture follows the finger.
+		var fade = hero.classList.contains( 'ocb-hero--fade' ) && ! window.matchMedia( '(max-width: 782px)' ).matches;
 		var sets = hero.querySelectorAll( '[data-ocb-set]' );
 		var at = 0;
 		var timer = null;
@@ -95,20 +97,42 @@
 			} );
 		}
 
-		function go( n, instant ) {
-			at = ( n + count() ) % count();
-
+		function turn() {
 			if ( fade ) {
 				[].forEach.call( slides, function ( sl, i ) {
 					sl.classList.toggle( 'is-on', i === at );
 				} );
 			} else {
 				var rtl = getComputedStyle( strip ).direction === 'rtl';
-				strip.scrollTo( { left: ( rtl ? -1 : 1 ) * at * strip.clientWidth, behavior: instant ? 'auto' : 'smooth' } );
+				strip.scrollTo( { left: ( rtl ? -1 : 1 ) * at * strip.clientWidth, behavior: 'smooth' } );
 			}
 
 			paintDots();
 			paintSets();
+		}
+
+		function go( n, instant ) {
+			var target = ( n + count() ) % count();
+
+			if ( target === at ) {
+				return;
+			}
+
+			// The words take their leave first — down and away — and only
+			// then does the banner itself turn.
+			var leaving = hero.querySelector( '.ocb-hero__set.is-on' );
+
+			at = target;
+
+			if ( leaving && ! instant ) {
+				leaving.classList.add( 'is-leave' );
+				setTimeout( function () {
+					leaving.classList.remove( 'is-leave' );
+				}, 430 );
+				setTimeout( turn, 360 );
+			} else {
+				turn();
+			}
 		}
 
 		function arm() {
