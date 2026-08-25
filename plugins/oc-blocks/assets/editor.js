@@ -415,6 +415,8 @@
 				return picksField( section, key, field );
 			case 'slides':
 				return slidesField( section, key, field );
+			case 'spots':
+				return spotsField( section, key, field );
 			default:
 				return textField( section, key, field );
 		}
@@ -570,7 +572,7 @@
 					var pick = frame.state().get( 'selection' ).first().toJSON();
 
 					section[ key ] = pick.id;
-					state.thumbs[ pick.id ] = ( pick.sizes && pick.sizes.thumbnail ? pick.sizes.thumbnail.url : pick.url );
+					state.thumbs[ pick.id ] = ( pick.sizes && ( pick.sizes.large || pick.sizes.medium_large || pick.sizes.full ) ? ( pick.sizes.large || pick.sizes.medium_large || pick.sizes.full ).url : pick.url );
 					touch();
 					paintSettings();
 				} );
@@ -845,6 +847,151 @@
 				paintSettings();
 			}
 		} ) );
+
+		return labelWrap( field, [ wrap ], true );
+	}
+
+	function spotsField( section, key, field ) {
+		var wrap = el( 'div', { 'class': 'ocbe-spots' } );
+		var imgId = Number( section.img || 0 );
+
+		if ( ! imgId || ! state.thumbs[ imgId ] ) {
+			wrap.appendChild( el( 'p', { 'class': 'ocbe-f__hint', text: T.noimg } ) );
+			return labelWrap( field, [ wrap ], true );
+		}
+
+		section[ key ] = section[ key ] || [];
+
+		var stage = el( 'div', { 'class': 'ocbe-spots__stage' } );
+		var img = el( 'img', { src: state.thumbs[ imgId ], alt: '' } );
+
+		stage.appendChild( img );
+
+		section[ key ].forEach( function ( spot, at ) {
+			stage.appendChild( el( 'button', {
+				type: 'button',
+				'class': 'ocbe-spots__dot' + ( state.spotSel === at ? ' is-on' : '' ),
+				style: 'left:' + spot.x + '%;top:' + spot.y + '%',
+				text: String( at + 1 ),
+				onclick: function ( e ) {
+					e.stopPropagation();
+					state.spotSel = at;
+					paintSettings();
+				}
+			} ) );
+		} );
+
+		stage.addEventListener( 'click', function ( e ) {
+			if ( e.target.closest( '.ocbe-spots__dot' ) ) {
+				return;
+			}
+
+			var box = stage.getBoundingClientRect();
+
+			section[ key ].push( {
+				x: Math.round( ( ( e.clientX - box.left ) / box.width ) * 100 ),
+				y: Math.round( ( ( e.clientY - box.top ) / box.height ) * 100 ),
+				id: 0
+			} );
+			state.spotSel = section[ key ].length - 1;
+			touch();
+			paintSettings();
+		} );
+
+		wrap.appendChild( stage );
+
+		section[ key ].forEach( function ( spot, at ) {
+			var row = el( 'div', { 'class': 'ocbe-spots__row' + ( state.spotSel === at ? ' is-on' : '' ) } );
+
+			row.appendChild( el( 'b', { text: String( at + 1 ) } ) );
+
+			if ( spot.id && state.names[ spot.id ] ) {
+				row.appendChild( el( 'span', { 'class': 'ocbe-chip' }, [
+					el( 'span', { text: state.names[ spot.id ] } ),
+					el( 'button', {
+						type: 'button',
+						html: '&times;',
+						onclick: function () {
+							spot.id = 0;
+							touch();
+							paintSettings();
+						}
+					} )
+				] ) );
+			} else {
+				var box = el( 'input', { type: 'text', placeholder: T.search } );
+				var drop = el( 'div', { 'class': 'ocbe-picks__drop', hidden: 'hidden' } );
+				var timer = null;
+
+				box.addEventListener( 'focus', function () {
+					state.spotSel = at;
+				} );
+
+				box.addEventListener( 'input', function () {
+					clearTimeout( timer );
+					timer = setTimeout( function () {
+						var q = box.value.trim();
+
+						if ( q.length < 2 ) {
+							drop.hidden = true;
+							return;
+						}
+
+						var body = new FormData();
+
+						body.append( 'action', 'oc_blocks_search' );
+						body.append( 'nonce', D.nonce );
+						body.append( 'kind', 'product' );
+						body.append( 'q', q );
+
+						fetch( D.ajax, { method: 'POST', credentials: 'same-origin', body: body } )
+							.then( function ( r ) { return r.json(); } )
+							.then( function ( r ) {
+								drop.innerHTML = '';
+
+								if ( ! r || ! r.success || ! r.data.hits.length ) {
+									drop.hidden = true;
+									return;
+								}
+
+								r.data.hits.forEach( function ( hit ) {
+									drop.appendChild( el( 'button', {
+										type: 'button',
+										text: hit.label,
+										onclick: function () {
+											spot.id = hit.id;
+											state.names[ hit.id ] = hit.label;
+											touch();
+											paintSettings();
+										}
+									} ) );
+								} );
+
+								drop.hidden = false;
+							} );
+					}, 250 );
+				} );
+
+				var pickWrap = el( 'span', { 'class': 'ocbe-picks ocbe-spots__pick' }, [ box, drop ] );
+
+				row.appendChild( pickWrap );
+			}
+
+			row.appendChild( el( 'button', {
+				type: 'button',
+				'class': 'ocbe-spots__x',
+				html: '&times;',
+				'aria-label': T.remove,
+				onclick: function () {
+					section[ key ].splice( at, 1 );
+					state.spotSel = null;
+					touch();
+					paintSettings();
+				}
+			} ) );
+
+			wrap.appendChild( row );
+		} );
 
 		return labelWrap( field, [ wrap ], true );
 	}

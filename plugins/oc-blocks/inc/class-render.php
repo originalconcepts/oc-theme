@@ -249,6 +249,10 @@ final class Render {
 				return self::brands( $s );
 			case 'posts':
 				return self::posts( $s );
+			case 'look':
+				return self::look( $s );
+			case 'media':
+				return self::media( $s );
 		}
 
 		/**
@@ -683,6 +687,125 @@ final class Render {
 		}
 
 		return $out . '</article>';
+	}
+
+	/**
+	 * Shop the look: a picture wearing hot spots, each one a product. The
+	 * spots and the cards answer each other; arrows page through the set.
+	 *
+	 * @param array<string,mixed> $s Section.
+	 * @return string
+	 */
+	private static function look( array $s ): string {
+		if ( ! class_exists( 'WooCommerce' ) || $s['img'] <= 0 || empty( $s['spots'] ) ) {
+			return '';
+		}
+
+		$dsk = (string) wp_get_attachment_image_url( (int) $s['img'], 'full' );
+
+		if ( '' === $dsk ) {
+			return '';
+		}
+
+		$mob = $s['imgm'] > 0 ? (string) wp_get_attachment_image_url( (int) $s['imgm'], 'large' ) : '';
+
+		$spots = '';
+		$cards = '';
+		$at    = 0;
+
+		foreach ( (array) $s['spots'] as $spot ) {
+			$product = wc_get_product( absint( $spot['id'] ) );
+
+			if ( ! $product || 'publish' !== $product->get_status() ) {
+				continue;
+			}
+
+			$img = $product->get_image_id() ? (string) wp_get_attachment_image_url( (int) $product->get_image_id(), 'large' ) : '';
+
+			$spots .= sprintf(
+				'<button type="button" class="ocb-look__spot%s" style="--x:%d%%;--y:%d%%" data-ocb-spot="%d" aria-label="%s"><i></i></button>',
+				0 === $at ? ' is-on' : '',
+				absint( $spot['x'] ),
+				absint( $spot['y'] ),
+				$at,
+				esc_attr( $product->get_name() )
+			);
+
+			$cards .= '<div class="ocb-look__card' . ( 0 === $at ? ' is-on' : '' ) . '" data-ocb-card="' . $at . '">'
+				. ( '' === $img ? '' : '<a class="ocb-look__cimg" href="' . esc_url( (string) $product->get_permalink() ) . '"><img src="' . esc_url( $img ) . '" alt="" loading="lazy" decoding="async"></a>' )
+				. '<h3 class="ocb-look__cname"><a href="' . esc_url( (string) $product->get_permalink() ) . '">' . esc_html( $product->get_name() ) . '</a></h3>'
+				. '<div class="ocb-look__cprice">' . $product->get_price_html() . '</div>'
+				. '<a class="ocb-btn ocb-btn--theme ocb-look__cgo" href="' . esc_url( (string) $product->get_permalink() ) . '">' . esc_html__( 'View product', 'oc-blocks' ) . '</a>'
+				. '</div>';
+
+			++$at;
+		}
+
+		if ( 0 === $at ) {
+			return '';
+		}
+
+		return '<div class="ocb-look ocb-look--' . esc_attr( (string) $s['side'] ) . '" data-ocb-look>'
+			. '<div class="ocb-look__pic">'
+			. '<picture>'
+			. ( '' === $mob ? '' : '<source media="(max-width: 782px)" srcset="' . esc_url( $mob ) . '">' )
+			. '<img src="' . esc_url( $dsk ) . '" alt="" decoding="async">'
+			. '</picture>'
+			. $spots
+			. '</div>'
+			. '<div class="ocb-look__side">'
+			. '<div class="ocb-look__cards">' . $cards . '</div>'
+			. ( $at > 1
+				? '<div class="ocb-look__nav">'
+					. '<button type="button" class="ocb-arr ocb-arr--prev" data-ocb-go="-1" aria-label="prev"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5l-7 7 7 7"/></svg></button>'
+					. '<span class="ocb-look__count"><b>1</b> / ' . $at . '</span>'
+					. '<button type="button" class="ocb-arr ocb-arr--next" data-ocb-go="1" aria-label="next"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 5l7 7-7 7"/></svg></button>'
+					. '</div>'
+				: '' )
+			. '</div>'
+			. '<button type="button" class="ocb-look__open" data-ocb-look-open>' . esc_html__( 'Show the products', 'oc-blocks' ) . '</button>'
+			. '</div>';
+	}
+
+	/**
+	 * A media grid with character: a few curated arrangements instead of a
+	 * plain picture drop.
+	 *
+	 * @param array<string,mixed> $s Section.
+	 * @return string
+	 */
+	private static function media( array $s ): string {
+		$cells = '';
+		$count = 'duo' === $s['preset'] || 'inset' === $s['preset'] ? 2 : 3;
+
+		for ( $i = 1; $i <= $count; $i++ ) {
+			$vid = (string) ( $s[ 'v' . $i ] ?? '' );
+			$img = absint( $s[ 'm' . $i ] ?? 0 );
+
+			$inner = '';
+
+			if ( '' !== $vid ) {
+				$inner = '<video src="' . esc_url( $vid ) . '" autoplay muted loop playsinline preload="metadata"></video>';
+			} elseif ( $img > 0 ) {
+				$url = (string) wp_get_attachment_image_url( $img, 'full' );
+
+				if ( '' !== $url ) {
+					$inner = '<img src="' . esc_url( $url ) . '" alt="" loading="lazy" decoding="async">';
+				}
+			}
+
+			if ( '' === $inner ) {
+				continue;
+			}
+
+			$cells .= '<div class="ocb-mg__cell ocb-mg__cell--' . $i . '">' . $inner . '</div>';
+		}
+
+		if ( '' === $cells ) {
+			return '';
+		}
+
+		return '<div class="ocb-mg ocb-mg--' . esc_attr( (string) $s['preset'] ) . ' ocb-mg--gap-' . esc_attr( (string) $s['gap'] ) . ' ocb-mg--c-' . esc_attr( (string) $s['corners'] ) . '">' . $cells . '</div>';
 	}
 
 	/*

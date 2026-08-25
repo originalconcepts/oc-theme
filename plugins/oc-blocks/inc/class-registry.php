@@ -655,6 +655,103 @@ final class Registry {
 					),
 				),
 			),
+			'look'       => array(
+				'label'  => __( 'Shop the look', 'oc-blocks' ),
+				'blurb'  => __( 'A picture with hot spots — every spot a product.', 'oc-blocks' ),
+				'icon'   => '<svg viewBox="0 0 24 24"><rect x="2.5" y="4" width="12" height="16" rx="1.5" opacity=".4"/><circle cx="7" cy="10" r="2.2"/><circle cx="11" cy="15" r="2.2"/><rect x="16.5" y="7" width="5" height="10" rx="1" opacity=".55"/></svg>',
+				'fields' => array(
+					'img'   => array(
+						'type'  => 'image',
+						'label' => __( 'The picture — desktop', 'oc-blocks' ),
+					),
+					'imgm'  => array(
+						'type'  => 'image',
+						'label' => __( 'The picture — mobile (optional)', 'oc-blocks' ),
+					),
+					'spots' => array(
+						'type'  => 'spots',
+						'label' => __( 'Hot spots', 'oc-blocks' ),
+						'hint'  => __( 'Click the picture to drop a spot, then choose its product.', 'oc-blocks' ),
+					),
+					'side'  => array(
+						'type'    => 'seg',
+						'label'   => __( 'The picture stands', 'oc-blocks' ),
+						'choices' => array(
+							'start' => __( 'Reading side', 'oc-blocks' ),
+							'end'   => __( 'Far side', 'oc-blocks' ),
+						),
+						'def'     => 'start',
+						'group'   => 'design',
+					),
+				),
+			),
+
+			'media'      => array(
+				'label'  => __( 'Media grid', 'oc-blocks' ),
+				'blurb'  => __( 'Pictures and video in an arrangement with character.', 'oc-blocks' ),
+				'icon'   => '<svg viewBox="0 0 24 24"><rect x="2.5" y="4" width="9" height="16" rx="1.5" opacity=".45"/><rect x="13.5" y="4" width="8" height="7" rx="1.5" opacity=".45"/><rect x="13.5" y="13" width="8" height="7" rx="1.5" opacity=".45"/></svg>',
+				'fields' => array(
+					'preset'  => array(
+						'type'    => 'seg',
+						'label'   => __( 'Arrangement', 'oc-blocks' ),
+						'choices' => array(
+							'tall'  => __( 'Tall beside two', 'oc-blocks' ),
+							'duo'   => __( 'Two uprights', 'oc-blocks' ),
+							'trio'  => __( 'Three columns', 'oc-blocks' ),
+							'inset' => __( 'Wide with an inset', 'oc-blocks' ),
+						),
+						'def'     => 'tall',
+					),
+					'm1'      => array(
+						'type'  => 'image',
+						'label' => __( 'Picture 1', 'oc-blocks' ),
+					),
+					'v1'      => array(
+						'type'  => 'video',
+						'label' => __( 'Or video 1', 'oc-blocks' ),
+					),
+					'm2'      => array(
+						'type'  => 'image',
+						'label' => __( 'Picture 2', 'oc-blocks' ),
+					),
+					'v2'      => array(
+						'type'  => 'video',
+						'label' => __( 'Or video 2', 'oc-blocks' ),
+					),
+					'm3'      => array(
+						'type'  => 'image',
+						'label' => __( 'Picture 3', 'oc-blocks' ),
+						'when'  => array( 'preset' => array( 'tall', 'trio' ) ),
+					),
+					'v3'      => array(
+						'type'  => 'video',
+						'label' => __( 'Or video 3', 'oc-blocks' ),
+						'when'  => array( 'preset' => array( 'tall', 'trio' ) ),
+					),
+					'gap'     => array(
+						'type'    => 'seg',
+						'label'   => __( 'Space between', 'oc-blocks' ),
+						'choices' => array(
+							'normal' => __( 'Normal', 'oc-blocks' ),
+							'small'  => __( 'Small', 'oc-blocks' ),
+							'tight'  => __( 'Touching', 'oc-blocks' ),
+						),
+						'def'     => 'normal',
+						'group'   => 'design',
+					),
+					'corners' => array(
+						'type'    => 'seg',
+						'label'   => __( 'Corners', 'oc-blocks' ),
+						'choices' => array(
+							'sharp' => __( 'Sharp', 'oc-blocks' ),
+							'soft'  => __( 'Softened', 'oc-blocks' ),
+							'round' => __( 'Round', 'oc-blocks' ),
+						),
+						'def'     => 'soft',
+						'group'   => 'design',
+					),
+				),
+			),
 		);
 
 		/**
@@ -769,6 +866,27 @@ final class Registry {
 				$def     = (string) ( $field['def'] ?? (string) array_key_first( $choices ) );
 
 				return isset( $choices[ (string) ( is_scalar( $value ) ? $value : '' ) ] ) ? (string) $value : $def;
+
+			case 'spots':
+				$rows = array();
+
+				foreach ( (array) $value as $row ) {
+					if ( ! is_array( $row ) ) {
+						continue;
+					}
+
+					$rows[] = array(
+						'x'  => max( 0, min( 100, absint( $row['x'] ?? 50 ) ) ),
+						'y'  => max( 0, min( 100, absint( $row['y'] ?? 50 ) ) ),
+						'id' => absint( $row['id'] ?? 0 ),
+					);
+
+					if ( count( $rows ) >= 12 ) {
+						break;
+					}
+				}
+
+				return $rows;
 
 			case 'slides':
 				$rows = array();

@@ -586,3 +586,213 @@
 @media (max-width: 782px) {
 	.ocb-posts { grid-template-columns: 1fr; }
 }
+
+/* ---------- shop the look ---------- */
+
+.ocb-look {
+	display: grid;
+	grid-template-columns: 1.15fr 1fr;
+	gap: clamp(20px, 3.4vw, 54px);
+	align-items: center;
+}
+
+.ocb-look--end .ocb-look__pic { order: 2; }
+
+.ocb-look__pic { position: relative; overflow: hidden; border-radius: var(--oc-radius, 8px); }
+
+.ocb-look__pic img { display: block; inline-size: 100%; block-size: auto; }
+
+/* The spot: a breathing ring, the reference's own gesture. */
+.ocb-look__spot {
+	position: absolute;
+	inset-block-start: var(--y, 50%);
+	inset-inline-start: var(--x, 50%);
+	translate: -50% -50%;
+	inline-size: 40px;
+	block-size: 40px;
+	display: grid;
+	place-items: center;
+	border: 0;
+	padding: 0;
+	background: rgb(255 255 255 / 22%);
+	border-radius: 50%;
+	cursor: pointer;
+	transition: background .2s ease;
+}
+
+html[dir="rtl"] .ocb-look__spot { translate: 50% -50%; }
+
+.ocb-look__spot i {
+	inline-size: 14px;
+	block-size: 14px;
+	border-radius: 50%;
+	background: #fff;
+	box-shadow: 0 1px 8px rgb(0 0 0 / 30%);
+	transition: transform .2s ease;
+}
+
+.ocb-look__spot::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	border-radius: 50%;
+	border: 1.5px solid rgb(255 255 255 / 75%);
+	animation: ocb-spot 2.4s ease-out infinite;
+}
+
+@keyframes ocb-spot {
+	0% { transform: scale(.55); opacity: 0; }
+	35% { opacity: 1; }
+	100% { transform: scale(1.15); opacity: 0; }
+}
+
+.ocb-look__spot:hover i,
+.ocb-look__spot.is-on i { transform: scale(1.35); }
+
+.ocb-look__spot.is-on { background: rgb(255 255 255 / 40%); }
+
+/* The answering card. */
+.ocb-look__side { text-align: center; }
+
+.ocb-look__cards { position: relative; }
+
+.ocb-look__card { display: none; animation: ocb-look-in .45s cubic-bezier(.22, .61, .36, 1); }
+.ocb-look__card.is-on { display: block; }
+
+@keyframes ocb-look-in {
+	from { opacity: 0; transform: translateY(12px); }
+}
+
+.ocb-look__cimg { display: block; max-inline-size: 320px; margin-inline: auto; }
+
+.ocb-look__cimg img {
+	inline-size: 100%;
+	aspect-ratio: 4 / 5;
+	object-fit: contain;
+}
+
+.ocb-look__cname { margin: 14px 0 0; font-size: 1.1em; letter-spacing: .04em; }
+.ocb-look__cname a { text-decoration: none; color: inherit; }
+
+.ocb-look__cprice { margin-block-start: 6px; font-weight: 600; }
+.ocb-look__cprice del { opacity: .55; margin-inline-end: 6px; font-weight: 400; }
+.ocb-look__cprice ins { text-decoration: none; color: var(--oc-sale, #b4453c); }
+
+.ocb-look__cgo { margin-block-start: 16px; }
+
+.ocb-look__nav {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 16px;
+	margin-block-start: 22px;
+}
+
+.ocb-look__nav .ocb-arr { position: static; transform: none; }
+.ocb-look__nav .ocb-arr:hover { transform: scale(1.06); }
+
+.ocb-look__count { font-size: .88em; color: color-mix(in srgb, currentColor 60%, transparent); min-inline-size: 44px; }
+
+.ocb-look__open { display: none; }
+
+@media (max-width: 782px) {
+	.ocb-look { grid-template-columns: 1fr; gap: 14px; }
+
+	/* The phone leads with the picture; the products wait behind a button
+	 * and rise when asked — the spots ask too. */
+	.ocb-look__side {
+		display: none;
+		position: fixed;
+		inset-inline: 0;
+		inset-block-end: 0;
+		z-index: 96;
+		background: var(--oc-surface, #fff);
+		border-radius: 16px 16px 0 0;
+		box-shadow: 0 -10px 40px rgb(0 0 0 / 18%);
+		padding: 26px 20px 22px;
+		max-block-size: 78vh;
+		overflow-y: auto;
+	}
+
+	.ocb-look.is-open .ocb-look__side { display: block; animation: ocb-look-up .3s cubic-bezier(.22, .61, .36, 1); }
+
+	@keyframes ocb-look-up {
+		from { transform: translateY(40px); opacity: 0; }
+	}
+
+	.ocb-look__open {
+		display: block;
+		inline-size: 100%;
+		margin-block-start: 2px;
+		padding: 13px;
+		border: 1.5px solid var(--oc-ink, #1c1c1c);
+		border-radius: var(--oc-cta-r, 8px);
+		background: none;
+		font: inherit;
+		font-weight: 600;
+		cursor: pointer;
+	}
+
+	.ocb-look__arrs { display: none; }
+}
+
+/* ---------- media grid ---------- */
+
+.ocb-mg { display: grid; --ocb-mg-gap: clamp(12px, 1.8vw, 24px); gap: var(--ocb-mg-gap); }
+.ocb-mg--gap-small { --ocb-mg-gap: 8px; }
+.ocb-mg--gap-tight { --ocb-mg-gap: 2px; }
+
+.ocb-mg__cell { position: relative; overflow: hidden; }
+
+.ocb-mg--c-soft .ocb-mg__cell { border-radius: 14px; }
+.ocb-mg--c-round .ocb-mg__cell { border-radius: 28px; }
+
+.ocb-mg__cell img,
+.ocb-mg__cell video {
+	inline-size: 100%;
+	block-size: 100%;
+	object-fit: cover;
+	display: block;
+	transition: transform .6s cubic-bezier(.2, .7, .3, 1);
+}
+
+.ocb-mg__cell:hover img { transform: scale(1.04); }
+
+/* tall: one upright beside two stacked */
+.ocb-mg--tall {
+	grid-template-columns: 1.1fr 1fr;
+	grid-template-rows: repeat(2, minmax(0, 1fr));
+	aspect-ratio: 16 / 10;
+}
+
+.ocb-mg--tall .ocb-mg__cell--1 { grid-row: 1 / span 2; }
+
+/* duo: two uprights */
+.ocb-mg--duo { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.ocb-mg--duo .ocb-mg__cell { aspect-ratio: 4 / 5; }
+
+/* trio: three columns */
+.ocb-mg--trio { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.ocb-mg--trio .ocb-mg__cell { aspect-ratio: 3 / 4; }
+
+/* inset: one wide, the second riding its corner */
+.ocb-mg--inset { position: relative; }
+.ocb-mg--inset .ocb-mg__cell--1 { aspect-ratio: 21 / 9; }
+
+.ocb-mg--inset .ocb-mg__cell--2 {
+	position: absolute;
+	inset-block-end: clamp(16px, 4vw, 44px);
+	inset-inline-end: clamp(16px, 4vw, 44px);
+	inline-size: min(30%, 300px);
+	aspect-ratio: 3 / 4;
+	box-shadow: 0 14px 44px rgb(0 0 0 / 26%);
+}
+
+@media (max-width: 782px) {
+	.ocb-mg--tall { grid-template-columns: 1fr; grid-template-rows: none; aspect-ratio: auto; }
+	.ocb-mg--tall .ocb-mg__cell--1 { grid-row: auto; aspect-ratio: 4 / 5; }
+	.ocb-mg--tall .ocb-mg__cell { aspect-ratio: 4 / 3; }
+	.ocb-mg--trio { grid-template-columns: 1fr; }
+	.ocb-mg--inset .ocb-mg__cell--1 { aspect-ratio: 4 / 3; }
+	.ocb-mg--inset .ocb-mg__cell--2 { inline-size: 42%; }
+}

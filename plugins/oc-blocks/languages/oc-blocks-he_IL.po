@@ -480,3 +480,81 @@ msgstr "שקופית"
 
 msgid "Pick a section from the list to edit it."
 msgstr "בחרו סקשן מהרשימה כדי לערוך אותו."
+
+msgid "Shop the look"
+msgstr "Shop the Look"
+
+msgid "A picture with hot spots — every spot a product."
+msgstr "תמונה עם נקודות חמות — כל נקודה מוצר."
+
+msgid "The picture — desktop"
+msgstr "התמונה — דסקטופ"
+
+msgid "The picture — mobile (optional)"
+msgstr "התמונה — מובייל (לא חובה)"
+
+msgid "Hot spots"
+msgstr "נקודות חמות"
+
+msgid "Click the picture to drop a spot, then choose its product."
+msgstr "לחצו על התמונה כדי להוסיף נקודה, ואז בחרו לה מוצר."
+
+msgid "The picture stands"
+msgstr "התמונה עומדת"
+
+msgid "Reading side"
+msgstr "בצד הקריאה"
+
+msgid "Far side"
+msgstr "בצד הרחוק"
+
+msgid "View product"
+msgstr "לצפייה במוצר"
+
+msgid "Show the products"
+msgstr "הצגת המוצרים"
+
+msgid "Media grid"
+msgstr "גריד מדיה"
+
+msgid "Pictures and video in an arrangement with character."
+msgstr "תמונות ווידאו בסידור עם אופי."
+
+msgid "Arrangement"
+msgstr "סידור"
+
+msgid "Tall beside two"
+msgstr "גבוהה לצד שתיים"
+
+msgid "Two uprights"
+msgstr "שתיים לאורך"
+
+msgid "Three columns"
+msgstr "שלוש עמודות"
+
+msgid "Wide with an inset"
+msgstr "רחבה עם חלון קטן"
+
+msgid "Picture 1"
+msgstr "תמונה 1"
+
+msgid "Or video 1"
+msgstr "או וידאו 1"
+
+msgid "Picture 2"
+msgstr "תמונה 2"
+
+msgid "Or video 2"
+msgstr "או וידאו 2"
+
+msgid "Picture 3"
+msgstr "תמונה 3"
+
+msgid "Or video 3"
+msgstr "או וידאו 3"
+
+msgid "Round"
+msgstr "מעוגלות"
+
+msgid "Choose the picture first, then drop spots on it."
+msgstr "בחרו קודם את התמונה, ואז הוסיפו עליה נקודות."

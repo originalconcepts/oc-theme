@@ -152,6 +152,7 @@ final class Editor {
 					'view'     => __( 'View page', 'oc-blocks' ),
 					'unsaved'  => __( 'There are unsaved changes.', 'oc-blocks' ),
 					'media'    => __( 'Choose a picture', 'oc-blocks' ),
+					'noimg'    => __( 'Choose the picture first, then drop spots on it.', 'oc-blocks' ),
 					'video'    => __( 'Choose a video', 'oc-blocks' ),
 				),
 			)
@@ -221,7 +222,7 @@ final class Editor {
 		array_walk_recursive(
 			$sections,
 			static function ( $value, $key ) use ( &$ids ): void {
-				if ( in_array( $key, array( 'img', 'imgm', 'bgimg' ), true ) && absint( $value ) > 0 ) {
+				if ( in_array( $key, array( 'img', 'imgm', 'bgimg', 'm1', 'm2', 'm3' ), true ) && absint( $value ) > 0 ) {
 					$ids[ absint( $value ) ] = true;
 				}
 			}
@@ -230,7 +231,7 @@ final class Editor {
 		$out = array();
 
 		foreach ( array_keys( $ids ) as $id ) {
-			$url = wp_get_attachment_image_url( $id, 'thumbnail' );
+			$url = wp_get_attachment_image_url( $id, 'large' );
 
 			if ( $url ) {
 				$out[ $id ] = (string) $url;
@@ -250,6 +251,14 @@ final class Editor {
 		$out = array();
 
 		foreach ( $sections as $section ) {
+			foreach ( (array) ( $section['spots'] ?? array() ) as $spot ) {
+				$title = get_the_title( absint( $spot['id'] ?? 0 ) );
+
+				if ( '' !== $title ) {
+					$out[ absint( $spot['id'] ) ] = $title;
+				}
+			}
+
 			foreach ( array( 'picks' ) as $key ) {
 				foreach ( (array) ( $section[ $key ] ?? array() ) as $id ) {
 					$title = get_the_title( absint( $id ) );

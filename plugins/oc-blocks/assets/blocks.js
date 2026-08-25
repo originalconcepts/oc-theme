@@ -232,6 +232,67 @@
 		}
 	} );
 
+	/* ---------- shop the look ---------- */
+
+	document.querySelectorAll( '[data-ocb-look]' ).forEach( function ( look ) {
+		var spots = [].slice.call( look.querySelectorAll( '[data-ocb-spot]' ) );
+		var cards = [].slice.call( look.querySelectorAll( '[data-ocb-card]' ) );
+		var count = look.querySelector( '.ocb-look__count b' );
+		var at = 0;
+
+		if ( ! cards.length ) {
+			return;
+		}
+
+		function show( n ) {
+			at = ( n + cards.length ) % cards.length;
+
+			spots.forEach( function ( sp, i ) {
+				sp.classList.toggle( 'is-on', i === at );
+			} );
+			cards.forEach( function ( c, i ) {
+				c.classList.toggle( 'is-on', i === at );
+			} );
+
+			if ( count ) {
+				count.textContent = String( at + 1 );
+			}
+		}
+
+		look.addEventListener( 'click', function ( e ) {
+			var spot = e.target.closest( '[data-ocb-spot]' );
+
+			if ( spot ) {
+				show( Number( spot.dataset.ocbSpot ) );
+
+				// On a phone the spot also opens the sheet.
+				if ( window.matchMedia( '(max-width: 782px)' ).matches ) {
+					look.classList.add( 'is-open' );
+				}
+
+				return;
+			}
+
+			if ( e.target.closest( '[data-ocb-look-open]' ) ) {
+				look.classList.toggle( 'is-open' );
+				return;
+			}
+
+			var arr = e.target.closest( '[data-ocb-go]' );
+
+			if ( arr && e.target.closest( '.ocb-look__nav' ) ) {
+				show( at + Number( arr.dataset.ocbGo ) );
+			}
+		} );
+
+		// A tap outside the sheet folds it.
+		document.addEventListener( 'click', function ( e ) {
+			if ( look.classList.contains( 'is-open' ) && ! look.contains( e.target ) ) {
+				look.classList.remove( 'is-open' );
+			}
+		} );
+	} );
+
 	/* ---------- parallax: the picture drifts slower than the page ---------- */
 
 	var lax = document.querySelectorAll( '[data-ocb-parallax]' );
