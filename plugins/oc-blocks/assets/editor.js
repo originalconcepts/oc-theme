@@ -88,7 +88,11 @@
 
 	function defOf( field ) {
 		if ( undefined !== field.def ) {
-			return field.def;
+			// Arrays and objects are cloned — a shared default reference
+			// would quietly weld every row's list to every other row's.
+			return 'object' === typeof field.def && null !== field.def
+				? JSON.parse( JSON.stringify( field.def ) )
+				: field.def;
 		}
 
 		switch ( field.type ) {
