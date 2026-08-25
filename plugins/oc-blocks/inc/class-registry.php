@@ -168,6 +168,56 @@ final class Registry {
 	}
 
 	/**
+	 * The stories block's gallery picker.
+	 *
+	 * When OC Story is active its galleries are offered by name in a
+	 * dropdown; without it the field falls back to a typed id, so a saved
+	 * choice survives the plugin being switched off and on.
+	 *
+	 * @return array<string,mixed>
+	 */
+	private static function story_gallery_field(): array {
+		if ( ! class_exists( '\\OCS\\Model\\Placement' ) ) {
+			return array(
+				'type'  => 'text',
+				'label' => __( 'Placement id (from OC Story)', 'oc-blocks' ),
+				'hint'  => __( 'Empty shows the default gallery; a placement id from the OC Story screen shows that one.', 'oc-blocks' ),
+			);
+		}
+
+		$surfaces = array(
+			'circles'  => __( 'circles', 'oc-blocks' ),
+			'slider'   => __( 'slider', 'oc-blocks' ),
+			'grid'     => __( 'grid', 'oc-blocks' ),
+			'product'  => __( 'product cards', 'oc-blocks' ),
+			'floating' => __( 'floating video', 'oc-blocks' ),
+		);
+
+		$choices = array( '' => __( 'The default gallery — all stories, as circles', 'oc-blocks' ) );
+
+		foreach ( \OCS\Model\Placement::all() as $id => $placement ) {
+			if ( empty( $placement['enabled'] ) ) {
+				continue;
+			}
+
+			$label   = '' !== (string) $placement['label'] ? (string) $placement['label'] : $id;
+			$surface = (string) ( $placement['surface'] ?? 'circles' );
+
+			$choices[ $id ] = isset( $surfaces[ $surface ] )
+				? $label . ' · ' . $surfaces[ $surface ]
+				: $label;
+		}
+
+		return array(
+			'type'    => 'select',
+			'label'   => __( 'Which gallery', 'oc-blocks' ),
+			'choices' => $choices,
+			'def'     => '',
+			'hint'    => __( 'The galleries defined in OC Story. How it looks — circles, slider, grid — travels with the gallery.', 'oc-blocks' ),
+		);
+	}
+
+	/**
 	 * Every section type.
 	 *
 	 * @return array<string,array<string,mixed>>
@@ -801,11 +851,7 @@ final class Registry {
 						'type'  => 'text',
 						'label' => __( 'Heading', 'oc-blocks' ),
 					),
-					'placement' => array(
-						'type'  => 'text',
-						'label' => __( 'Placement id (from OC Story)', 'oc-blocks' ),
-						'hint'  => __( 'Empty shows the default gallery; a placement id from the OC Story screen shows that one.', 'oc-blocks' ),
-					),
+					'placement' => self::story_gallery_field(),
 					'size'      => array(
 						'type'  => 'number',
 						'label' => __( 'Circle size (px, 0 = as set)', 'oc-blocks' ),

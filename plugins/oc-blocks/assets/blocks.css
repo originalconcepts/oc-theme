@@ -842,9 +842,10 @@ html[dir="rtl"] .ocb-look__spot { translate: 50% -50%; }
 	display: block;
 }
 
-/* Each chapter earns its own stretch of road. */
+/* Each chapter earns its own stretch of road — near a full screen, so the
+ * picture stays pinned long enough for the swap to be felt. */
 .ocb-sc__step {
-	min-block-size: 72vh;
+	min-block-size: 92vh;
 	display: flex;
 	flex-direction: column;
 	justify-content: center;

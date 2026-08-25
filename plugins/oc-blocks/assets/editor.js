@@ -412,6 +412,8 @@
 				return areaField( section, key, field );
 			case 'category':
 				return categoryField( section, key, field );
+			case 'select':
+				return selectField( section, key, field );
 			case 'cats':
 				return catsField( section, key, field );
 			case 'products':
@@ -636,6 +638,25 @@
 		} );
 
 		return labelWrap( field, [ el( 'span', { 'class': 'ocbe-f__vid' }, [ input, pick ] ) ], true );
+	}
+
+	function selectField( section, key, field ) {
+		var select = el( 'select', {
+			onchange: function () {
+				section[ key ] = select.value;
+				touch();
+			}
+		} );
+
+		Object.keys( field.choices || {} ).forEach( function ( value ) {
+			select.appendChild( el( 'option', {
+				value: value,
+				selected: String( section[ key ] || '' ) === value ? 'selected' : null,
+				text: field.choices[ value ]
+			} ) );
+		} );
+
+		return labelWrap( field, [ select ] );
 	}
 
 	function categoryField( section, key, field ) {

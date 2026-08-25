@@ -618,3 +618,27 @@ msgstr "רק חוות דעת עם תמונות"
 
 msgid "Slider moves every (seconds, 0 off)"
 msgstr "הסליידר מתקדם כל (שניות, 0 כבוי)"
+
+msgid "Which gallery"
+msgstr "איזו גלריה"
+
+msgid "The default gallery — all stories, as circles"
+msgstr "גלריית ברירת המחדל — כל הסטוריז, כעיגולים"
+
+msgid "The galleries defined in OC Story. How it looks — circles, slider, grid — travels with the gallery."
+msgstr "הגלריות שהוגדרו ב־OC Story. איך זה נראה — עיגולים, סליידר, רשת — נוסע יחד עם הגלריה."
+
+msgid "circles"
+msgstr "עיגולים"
+
+msgid "slider"
+msgstr "סליידר"
+
+msgid "grid"
+msgstr "רשת"
+
+msgid "product cards"
+msgstr "כרטיסי מוצר"
+
+msgid "floating video"
+msgstr "וידאו צף"
