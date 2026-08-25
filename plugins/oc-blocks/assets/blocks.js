@@ -480,8 +480,13 @@
 					return;
 				}
 
+				// The drift may never outrun the headroom scale(1.12) buys,
+				// or a blank strip peeks past the picture's edge.
 				var mid = box.top + box.height / 2 - window.innerHeight / 2;
-				media.style.transform = 'translateY(' + ( mid * -0.12 ).toFixed( 1 ) + 'px) scale(1.12)';
+				var max = box.height * 0.055;
+				var shift = Math.max( -max, Math.min( max, mid * -0.12 ) );
+
+				media.style.transform = 'translateY(' + shift.toFixed( 1 ) + 'px) scale(1.12)';
 			} );
 		};
 
