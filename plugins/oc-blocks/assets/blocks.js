@@ -50,9 +50,7 @@
 			return;
 		}
 
-		// On the phone a fade banner rides the strip instead — the whole
-		// picture follows the finger.
-		var fade = hero.classList.contains( 'ocb-hero--fade' ) && ! window.matchMedia( '(max-width: 782px)' ).matches;
+		var fade = hero.classList.contains( 'ocb-hero--fade' );
 		var sets = hero.querySelectorAll( '[data-ocb-set]' );
 		var at = 0;
 		var timer = null;
@@ -915,15 +913,7 @@
 
 	if ( lax.length && ! reduced ) {
 		var laxDraw = function () {
-			lax.forEach( function ( media ) {
-				// In fade mode the settle animation owns the picture's
-				// transform; the drift would fight it frame by frame. On the
-				// phone the fade banner rides the strip instead, so the
-				// drift is welcome back there.
-				if ( media.closest( '.ocb-hero--fade' ) && window.innerWidth > 782 ) {
-					return;
-				}
-
+		lax.forEach( function ( media ) {
 				var box = media.parentElement.getBoundingClientRect();
 
 				if ( box.bottom < 0 || box.top > window.innerHeight ) {
@@ -934,15 +924,18 @@
 				// the picture falls behind the page. The travel is mapped to
 				// the banner's whole journey across the viewport, so it moves
 				// the entire time — no clamp, no dead stop — and lands on
-				// exactly the headroom the zoom buys at either end.
+				// exactly the headroom the zoom buys at either end. The
+				// transform rides the picture itself, one layer inside, so
+				// the fade's settle animation on the wrapper never fights it.
 				var pct = parseInt( media.dataset.ocbParallax, 10 ) || 30;
-				var capFrac = 0.03 + ( pct / 100 ) * 0.15;
+				var capFrac = 0.03 + ( pct / 100 ) * 0.25;
 				var span = ( window.innerHeight + box.height ) / 2;
 				var mid = box.top + box.height / 2 - window.innerHeight / 2;
 				var shift = ( mid / span ) * -capFrac * box.height;
 				var zoom = ( 1 + capFrac * 2 + 0.01 ).toFixed( 3 );
+				var moving = media.firstElementChild || media;
 
-				media.style.transform = 'translateY(' + shift.toFixed( 1 ) + 'px) scale(' + zoom + ')';
+				moving.style.transform = 'translateY(' + shift.toFixed( 1 ) + 'px) scale(' + zoom + ')';
 			} );
 		};
 

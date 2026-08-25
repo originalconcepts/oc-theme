@@ -285,7 +285,7 @@
 
 .ocb-hero__media picture img { block-size: 100%; }
 
-[data-ocb-parallax] { will-change: transform; }
+[data-ocb-parallax] > * { will-change: transform; }
 
 /* Full-strength parallax: the picture stands still and the page glides
  * over it. Fixed to the viewport, clipped to its own slide. */
@@ -342,21 +342,6 @@
 }
 
 @media (max-width: 782px) {
-	/* On the phone the fade banner turns into a real strip: the whole
-	 * picture or video follows the finger; the desktop keeps the fade. */
-	.ocb-hero--fade .ocb-hero__strip { overflow-x: auto; background: none; }
-
-	.ocb-hero--fade .ocb-hero__slide {
-		position: relative;
-		inset: auto;
-		flex: 0 0 100%;
-		opacity: 1;
-		pointer-events: auto;
-		transition: none;
-	}
-
-	.ocb-hero--fade .ocb-hero__slide .ocb-hero__media { animation: none; }
-
 	.ocb-hero__cd--side {
 		inset-inline: 0;
 		inset-block-start: auto;
@@ -384,7 +369,6 @@
 	inset: 0;
 	opacity: 0;
 	visibility: hidden;
-	transition: opacity .45s ease, visibility .45s ease;
 }
 
 .ocb-hero__set.is-on { opacity: 1; visibility: visible; }
