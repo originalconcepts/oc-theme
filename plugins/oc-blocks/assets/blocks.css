@@ -264,11 +264,11 @@
 .ocb-hero--fade .ocb-hero__slide .ocb-hero__media { will-change: transform; }
 
 .ocb-hero--fade .ocb-hero__slide.is-on .ocb-hero__media {
-	animation: ocb-hero-settle 3s cubic-bezier(.19, .6, .32, 1) .35s backwards;
+	animation: ocb-hero-settle 2s cubic-bezier(.19, .6, .32, 1) .35s backwards;
 }
 
 @keyframes ocb-hero-settle {
-	from { transform: scale(1.1); }
+	from { transform: scale(1.15); }
 	to { transform: scale(1); }
 }
 
