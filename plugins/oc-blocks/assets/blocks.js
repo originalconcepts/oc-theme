@@ -355,10 +355,19 @@
 				return;
 			}
 
+			// One at a time: opening a question folds whichever was open.
 			var item = q.parentElement;
-			var open = item.classList.toggle( 'is-open' );
+			var wasOpen = item.classList.contains( 'is-open' );
 
-			q.setAttribute( 'aria-expanded', open ? 'true' : 'false' );
+			faq.querySelectorAll( '.ocb-faq__item.is-open' ).forEach( function ( other ) {
+				other.classList.remove( 'is-open' );
+				other.querySelector( '.ocb-faq__q' ).setAttribute( 'aria-expanded', 'false' );
+			} );
+
+			if ( ! wasOpen ) {
+				item.classList.add( 'is-open' );
+				q.setAttribute( 'aria-expanded', 'true' );
+			}
 		} );
 	} );
 
@@ -485,6 +494,43 @@
 		} );
 	} );
 
+	/* ---------- contact / leads form ---------- */
+
+	document.querySelectorAll( '[data-ocb-lead]' ).forEach( function ( form ) {
+		form.addEventListener( 'submit', function ( e ) {
+			e.preventDefault();
+
+			var go = form.querySelector( '.ocb-lead__go' );
+
+			go.disabled = true;
+
+			// getAttribute, not .action: the hidden "action" field shadows
+			// the form's own property with itself.
+			fetch( form.getAttribute( 'action' ), { method: 'POST', body: new FormData( form ) } )
+				.then( function ( r ) {
+					return r.json();
+				} )
+				.then( function ( data ) {
+					if ( data && data.success ) {
+						form.classList.add( 'is-done' );
+						form.querySelector( '.ocb-lead__thanks' ).hidden = false;
+					} else {
+						go.disabled = false;
+
+						var first = form.querySelector( 'input[name="name"]' );
+						first.setCustomValidity( ( data && data.data && data.data.msg ) || '…' );
+						first.reportValidity();
+						first.addEventListener( 'input', function () {
+							first.setCustomValidity( '' );
+						}, { once: true } );
+					}
+				} )
+				.catch( function () {
+					go.disabled = false;
+				} );
+		} );
+	} );
+
 	/* ---------- parallax: the picture drifts slower than the page ---------- */
 
 	var lax = document.querySelectorAll( '[data-ocb-parallax]' );
@@ -502,16 +548,17 @@
 					return;
 				}
 
-				// Strength (1..100, old yes/no markup means 30) sets how fast
-				// the picture falls behind the page; the zoom grows with it,
-				// so the drift never outruns the headroom the zoom buys and a
-				// blank strip never peeks past the picture's edge.
+				// Strength (1..100, old yes/no markup means 30) sets how far
+				// the picture falls behind the page. The travel is mapped to
+				// the banner's whole journey across the viewport, so it moves
+				// the entire time — no clamp, no dead stop — and lands on
+				// exactly the headroom the zoom buys at either end.
 				var pct = parseInt( media.dataset.ocbParallax, 10 ) || 30;
-				var factor = 0.04 + ( pct / 100 ) * 0.36;
-				var cap = box.height * factor * 0.5;
+				var capFrac = 0.03 + ( pct / 100 ) * 0.15;
+				var span = ( window.innerHeight + box.height ) / 2;
 				var mid = box.top + box.height / 2 - window.innerHeight / 2;
-				var shift = Math.max( -cap, Math.min( cap, mid * -factor ) );
-				var zoom = ( 1 + ( cap * 2 ) / box.height + 0.01 ).toFixed( 3 );
+				var shift = ( mid / span ) * -capFrac * box.height;
+				var zoom = ( 1 + capFrac * 2 + 0.01 ).toFixed( 3 );
 
 				media.style.transform = 'translateY(' + shift.toFixed( 1 ) + 'px) scale(' + zoom + ')';
 			} );

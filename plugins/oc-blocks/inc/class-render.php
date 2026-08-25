@@ -271,6 +271,8 @@ final class Render {
 				return self::countdown( $s );
 			case 'branches':
 				return self::branches( $s );
+			case 'contact':
+				return self::contact( $s );
 		}
 
 		/**
@@ -786,44 +788,59 @@ final class Render {
 	}
 
 	/**
-	 * A media grid with character: a few curated arrangements instead of a
-	 * plain picture drop.
+	 * Picture & words: an editorial split — media standing on one side, a
+	 * short story on the other. Three arrangements, sides swappable.
 	 *
 	 * @param array<string,mixed> $s Section.
-	 * @return string
 	 */
 	private static function media( array $s ): string {
-		$cells = '';
-		$count = 'duo' === $s['preset'] || 'inset' === $s['preset'] ? 2 : 3;
+		$img = static function ( int $id, string $class ): string {
+			$url = $id > 0 ? (string) wp_get_attachment_image_url( $id, 'full' ) : '';
 
-		for ( $i = 1; $i <= $count; $i++ ) {
-			$vid = (string) ( $s[ 'v' . $i ] ?? '' );
-			$img = absint( $s[ 'm' . $i ] ?? 0 );
+			return '' === $url
+				? ''
+				: '<figure class="' . esc_attr( $class ) . '"><img src="' . esc_url( $url ) . '" alt="" loading="lazy" decoding="async"></figure>';
+		};
 
-			$inner = '';
+		$preset = (string) $s['preset'];
+		$main   = $img( absint( $s['img1'] ), 'ocb-ed__main' );
 
-			if ( '' !== $vid ) {
-				$inner = '<video src="' . esc_url( $vid ) . '" autoplay muted loop playsinline preload="metadata"></video>';
-			} elseif ( $img > 0 ) {
-				$url = (string) wp_get_attachment_image_url( $img, 'full' );
-
-				if ( '' !== $url ) {
-					$inner = '<img src="' . esc_url( $url ) . '" alt="" loading="lazy" decoding="async">';
-				}
-			}
-
-			if ( '' === $inner ) {
-				continue;
-			}
-
-			$cells .= '<div class="ocb-mg__cell ocb-mg__cell--' . $i . '">' . $inner . '</div>';
-		}
-
-		if ( '' === $cells ) {
+		if ( '' === $main ) {
 			return '';
 		}
 
-		return '<div class="ocb-mg ocb-mg--' . esc_attr( (string) $s['preset'] ) . ' ocb-mg--gap-' . esc_attr( (string) $s['gap'] ) . ' ocb-mg--c-' . esc_attr( (string) $s['corners'] ) . '">' . $cells . '</div>';
+		$media = $main;
+
+		if ( 'overlap' === $preset && '' !== (string) $s['vid'] ) {
+			$media .= '<div class="ocb-ed__film"><video src="' . esc_url( (string) $s['vid'] ) . '" autoplay muted loop playsinline preload="metadata"></video></div>';
+		}
+
+		if ( 'duo' === $preset || 'canvas' === $preset ) {
+			$media .= $img( absint( $s['img2'] ), 'ocb-ed__second' );
+		}
+
+		$words = '';
+
+		if ( '' !== trim( (string) $s['eyebrow'] ) ) {
+			$words .= '<span class="ocb-ed__eyebrow">' . esc_html( (string) $s['eyebrow'] ) . '</span>';
+		}
+
+		if ( '' !== trim( (string) $s['heading'] ) ) {
+			$words .= '<h2 class="ocb-ed__h">' . esc_html( (string) $s['heading'] ) . '</h2>';
+		}
+
+		if ( '' !== trim( (string) $s['text'] ) ) {
+			$words .= '<div class="ocb-ed__text">' . wp_kses_post( wpautop( (string) $s['text'] ) ) . '</div>';
+		}
+
+		if ( '' !== trim( (string) $s['cta'] ) && '' !== (string) $s['url'] ) {
+			$words .= '<p class="ocb-ed__go"><a class="ocb-btn ocb-btn--theme" href="' . esc_url( (string) $s['url'] ) . '">' . esc_html( (string) $s['cta'] ) . '</a></p>';
+		}
+
+		return '<div class="ocb-ed ocb-ed--' . esc_attr( $preset ) . ( 'end' === (string) $s['side'] ? ' ocb-ed--flip' : '' ) . '">'
+			. '<div class="ocb-ed__media">' . $media . '</div>'
+			. '<div class="ocb-ed__words">' . $words . '</div>'
+			. '</div>';
 	}
 
 	/**
@@ -1144,8 +1161,8 @@ final class Render {
 	}
 
 	/**
-	 * The branches: cards with address, phone and hours, beside a map that
-	 * follows whichever branch is chosen.
+	 * The branches: picture-backed cards with address, phone and hours,
+	 * beside a map that follows whichever branch is chosen.
 	 *
 	 * @param array<string,mixed> $s Section.
 	 */
@@ -1163,6 +1180,7 @@ final class Render {
 			$rows[] = array(
 				'name'  => $name,
 				'addr'  => $addr,
+				'img'   => absint( $row['img'] ?? 0 ),
 				'phone' => trim( (string) ( $row['phone'] ?? '' ) ),
 				'hours' => trim( (string) ( $row['hours'] ?? '' ) ),
 			);
@@ -1171,6 +1189,15 @@ final class Render {
 		if ( empty( $rows ) ) {
 			return '';
 		}
+
+		$icons = array(
+			'pin'   => '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s-7-6.1-7-11a7 7 0 1 1 14 0c0 4.9-7 11-7 11z"/><circle cx="12" cy="10" r="2.4"/></svg>',
+			'shop'  => '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 9l1.2-5h13.6L20 9M4 9v11h16V9M4 9h16M9.5 20v-6h5v6"/></svg>',
+			'tree'  => '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l5 7h-3l4 6h-4l3 5H7l3-5H6l4-6H7l5-7zM12 20v2.5"/></svg>',
+			'phone' => '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 4h4l2 5-2.5 1.5a12 12 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg>',
+		);
+
+		$icon = $icons[ (string) $s['icon'] ] ?? '';
 
 		$with_map = ! empty( $s['map'] ) && '' !== $rows[0]['addr'];
 		$cards    = '';
@@ -1190,7 +1217,20 @@ final class Render {
 				$lines .= '<p class="ocb-br__hours">' . nl2br( esc_html( $row['hours'] ) ) . '</p>';
 			}
 
-			$inner = '<span class="ocb-br__name">' . esc_html( $row['name'] ) . '</span>' . $lines;
+			$pic = '';
+
+			if ( $row['img'] > 0 ) {
+				$pic_html = wp_get_attachment_image( $row['img'], 'medium', false, array( 'loading' => 'lazy' ) );
+
+				if ( '' !== $pic_html ) {
+					$pic = '<span class="ocb-br__pic">' . $pic_html . '</span>';
+				}
+			}
+
+			$inner = '<span class="ocb-br__body">'
+				. '<span class="ocb-br__name">' . ( '' === $icon ? '' : '<i class="ocb-br__ico" aria-hidden="true">' . $icon . '</i>' ) . esc_html( $row['name'] ) . '</span>'
+				. $lines
+				. '</span>' . $pic;
 
 			// A card is a button only when there is a map for it to steer.
 			$cards .= $with_map
@@ -1208,6 +1248,53 @@ final class Render {
 			. '<div class="ocb-br' . ( $with_map ? ' ocb-br--map' : '' ) . '" data-ocb-br>'
 			. '<div class="ocb-br__list">' . $cards . '</div>' . $map
 			. '</div>';
+	}
+
+	/**
+	 * The contact form. Everything sent lands on the Leads screen, and — when
+	 * a webhook is set there — travels on to the shop's CRM as JSON.
+	 *
+	 * Nonce-free like the newsletter, and for the same reason: the markup is
+	 * cached longer than a nonce lives, and a logged-out nonce guards nothing.
+	 * The honeypot and the throttle in Leads carry the abuse load.
+	 *
+	 * @param array<string,mixed> $s Section.
+	 */
+	private static function contact( array $s ): string {
+		$button = trim( (string) $s['button'] );
+		$thanks = trim( (string) $s['thanks'] );
+		$text   = trim( (string) $s['text'] );
+
+		$out = self::heading( $s );
+
+		if ( '' !== $text ) {
+			$out .= '<p class="ocb-lead__text">' . esc_html( $text ) . '</p>';
+		}
+
+		$fields = '<label class="ocb-lead__f ocb-lead__f--half"><span>' . esc_html__( 'Full name', 'oc-blocks' ) . '</span><input type="text" name="name" required autocomplete="name"></label>';
+
+		if ( ! empty( $s['phone'] ) ) {
+			$fields .= '<label class="ocb-lead__f ocb-lead__f--half"><span>' . esc_html__( 'Phone', 'oc-blocks' ) . '</span><input type="tel" name="phone" required autocomplete="tel"></label>';
+		}
+
+		if ( ! empty( $s['email'] ) ) {
+			$fields .= '<label class="ocb-lead__f"><span>' . esc_html__( 'Email', 'oc-blocks' ) . '</span><input type="email" name="email" autocomplete="email"></label>';
+		}
+
+		if ( ! empty( $s['msg'] ) ) {
+			$fields .= '<label class="ocb-lead__f"><span>' . esc_html__( 'How can we help?', 'oc-blocks' ) . '</span><textarea name="msg" rows="4"></textarea></label>';
+		}
+
+		$out .= '<form class="ocb-lead" method="post" action="' . esc_url( admin_url( 'admin-ajax.php' ) ) . '" data-ocb-lead>'
+			. '<input type="hidden" name="action" value="oc_blocks_lead">'
+			. '<input type="hidden" name="page" value="' . absint( get_the_ID() ) . '">'
+			. '<input class="ocb-news__trap" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">'
+			. $fields
+			. '<button class="ocb-lead__go ocb-btn ocb-btn--theme" type="submit">' . esc_html( '' === $button ? __( 'Send', 'oc-blocks' ) : $button ) . '</button>'
+			. '<p class="ocb-lead__thanks" hidden>' . esc_html( '' === $thanks ? __( 'Thank you — we will be in touch shortly.', 'oc-blocks' ) : $thanks ) . '</p>'
+			. '</form>';
+
+		return '<div class="ocb-lead__wrap">' . $out . '</div>';
 	}
 
 	/*

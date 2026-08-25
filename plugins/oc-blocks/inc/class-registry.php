@@ -778,67 +778,63 @@ final class Registry {
 			),
 
 			'media'      => array(
-				'label'  => __( 'Media grid', 'oc-blocks' ),
-				'blurb'  => __( 'Pictures and video in an arrangement with character.', 'oc-blocks' ),
-				'icon'   => '<svg viewBox="0 0 24 24"><rect x="2.5" y="4" width="9" height="16" rx="1.5" opacity=".45"/><rect x="13.5" y="4" width="8" height="7" rx="1.5" opacity=".45"/><rect x="13.5" y="13" width="8" height="7" rx="1.5" opacity=".45"/></svg>',
+				'label'  => __( 'Picture & words', 'oc-blocks' ),
+				'blurb'  => __( 'An editorial split: pictures on one side, a story on the other.', 'oc-blocks' ),
+				'icon'   => '<svg viewBox="0 0 24 24"><rect x="2.5" y="4" width="9.5" height="16" rx="1.5" opacity=".45"/><path d="M15 7h6.5M15 11h6.5M15 15h4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity=".7"/></svg>',
 				'fields' => array(
 					'preset'  => array(
 						'type'    => 'seg',
 						'label'   => __( 'Arrangement', 'oc-blocks' ),
 						'choices' => array(
-							'tall'  => __( 'Tall beside two', 'oc-blocks' ),
-							'duo'   => __( 'Two uprights', 'oc-blocks' ),
-							'trio'  => __( 'Three columns', 'oc-blocks' ),
-							'inset' => __( 'Wide with an inset', 'oc-blocks' ),
+							'overlap' => __( 'Picture with a little film', 'oc-blocks' ),
+							'duo'     => __( 'Two pictures, staggered', 'oc-blocks' ),
+							'canvas'  => __( 'Wide picture, small guest', 'oc-blocks' ),
 						),
-						'def'     => 'tall',
+						'def'     => 'overlap',
 					),
-					'm1'      => array(
+					'eyebrow' => array(
+						'type'  => 'text',
+						'label' => __( 'Little line above', 'oc-blocks' ),
+						'hint'  => __( 'A collection name, a chapter — small letters over the heading.', 'oc-blocks' ),
+					),
+					'heading' => array(
+						'type'  => 'text',
+						'label' => __( 'Heading', 'oc-blocks' ),
+					),
+					'text'    => array(
+						'type'  => 'textarea',
+						'label' => __( 'The story', 'oc-blocks' ),
+					),
+					'cta'     => array(
+						'type'  => 'text',
+						'label' => __( 'Button (optional)', 'oc-blocks' ),
+					),
+					'url'     => array(
+						'type'  => 'url',
+						'label' => __( 'The button leads to', 'oc-blocks' ),
+					),
+					'img1'    => array(
 						'type'  => 'image',
-						'label' => __( 'Picture 1', 'oc-blocks' ),
+						'label' => __( 'The main picture', 'oc-blocks' ),
 					),
-					'v1'      => array(
-						'type'  => 'video',
-						'label' => __( 'Or video 1', 'oc-blocks' ),
-					),
-					'm2'      => array(
+					'img2'    => array(
 						'type'  => 'image',
-						'label' => __( 'Picture 2', 'oc-blocks' ),
+						'label' => __( 'The second picture', 'oc-blocks' ),
+						'when'  => array( 'preset' => array( 'duo', 'canvas' ) ),
 					),
-					'v2'      => array(
+					'vid'     => array(
 						'type'  => 'video',
-						'label' => __( 'Or video 2', 'oc-blocks' ),
+						'label' => __( 'The little film (plays on its own, silent)', 'oc-blocks' ),
+						'when'  => array( 'preset' => array( 'overlap' ) ),
 					),
-					'm3'      => array(
-						'type'  => 'image',
-						'label' => __( 'Picture 3', 'oc-blocks' ),
-						'when'  => array( 'preset' => array( 'tall', 'trio' ) ),
-					),
-					'v3'      => array(
-						'type'  => 'video',
-						'label' => __( 'Or video 3', 'oc-blocks' ),
-						'when'  => array( 'preset' => array( 'tall', 'trio' ) ),
-					),
-					'gap'     => array(
+					'side'    => array(
 						'type'    => 'seg',
-						'label'   => __( 'Space between', 'oc-blocks' ),
+						'label'   => __( 'The pictures stand', 'oc-blocks' ),
 						'choices' => array(
-							'normal' => __( 'Normal', 'oc-blocks' ),
-							'small'  => __( 'Small', 'oc-blocks' ),
-							'tight'  => __( 'Touching', 'oc-blocks' ),
+							'start' => __( 'On the right', 'oc-blocks' ),
+							'end'   => __( 'On the left', 'oc-blocks' ),
 						),
-						'def'     => 'normal',
-						'group'   => 'design',
-					),
-					'corners' => array(
-						'type'    => 'seg',
-						'label'   => __( 'Corners', 'oc-blocks' ),
-						'choices' => array(
-							'sharp' => __( 'Sharp', 'oc-blocks' ),
-							'soft'  => __( 'Softened', 'oc-blocks' ),
-							'round' => __( 'Round', 'oc-blocks' ),
-						),
-						'def'     => 'soft',
+						'def'     => 'end',
 						'group'   => 'design',
 					),
 				),
@@ -1136,6 +1132,11 @@ final class Registry {
 								'type'  => 'text',
 								'label' => __( 'Branch name', 'oc-blocks' ),
 							),
+							'img'     => array(
+								'type'  => 'image',
+								'label' => __( 'Branch picture (optional)', 'oc-blocks' ),
+								'def'   => 0,
+							),
 							'address' => array(
 								'type'  => 'text',
 								'label' => __( 'Address', 'oc-blocks' ),
@@ -1150,11 +1151,64 @@ final class Registry {
 							),
 						),
 					),
+					'icon'    => array(
+						'type'    => 'seg',
+						'label'   => __( 'Little icon by the name', 'oc-blocks' ),
+						'choices' => array(
+							'pin'   => __( 'Map pin', 'oc-blocks' ),
+							'shop'  => __( 'Shopfront', 'oc-blocks' ),
+							'tree'  => __( 'Tree', 'oc-blocks' ),
+							'phone' => __( 'Handset', 'oc-blocks' ),
+							'none'  => __( 'None', 'oc-blocks' ),
+						),
+						'def'     => 'pin',
+						'group'   => 'design',
+					),
 					'map'     => array(
 						'type'  => 'toggle',
 						'label' => __( 'Show a map', 'oc-blocks' ),
 						'def'   => 1,
 						'group' => 'design',
+					),
+				),
+			),
+			'contact'    => array(
+				'label'  => __( 'Contact form', 'oc-blocks' ),
+				'blurb'  => __( 'Name, phone, a message — straight into the Leads screen.', 'oc-blocks' ),
+				'icon'   => '<svg viewBox="0 0 24 24"><path d="M21 3L10.5 13.5M21 3l-6.5 18-4-7.5L3 9.5 21 3z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" opacity=".75"/></svg>',
+				'fields' => array(
+					'heading' => array(
+						'type'  => 'text',
+						'label' => __( 'Heading', 'oc-blocks' ),
+					),
+					'text'    => array(
+						'type'  => 'textarea',
+						'label' => __( 'A few words above the form', 'oc-blocks' ),
+					),
+					'phone'   => array(
+						'type'  => 'toggle',
+						'label' => __( 'Phone field', 'oc-blocks' ),
+						'def'   => 1,
+					),
+					'email'   => array(
+						'type'  => 'toggle',
+						'label' => __( 'Email field', 'oc-blocks' ),
+						'def'   => 1,
+					),
+					'msg'     => array(
+						'type'  => 'toggle',
+						'label' => __( 'Message field', 'oc-blocks' ),
+						'def'   => 1,
+					),
+					'button'  => array(
+						'type'  => 'text',
+						'label' => __( 'On the button', 'oc-blocks' ),
+						'hint'  => __( 'Empty shows "Send".', 'oc-blocks' ),
+					),
+					'thanks'  => array(
+						'type'  => 'text',
+						'label' => __( 'After it is sent', 'oc-blocks' ),
+						'hint'  => __( 'Empty shows "Thank you — we will be in touch shortly."', 'oc-blocks' ),
 					),
 				),
 			),

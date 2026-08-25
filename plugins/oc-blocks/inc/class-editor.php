@@ -222,7 +222,7 @@ final class Editor {
 		array_walk_recursive(
 			$sections,
 			static function ( $value, $key ) use ( &$ids ): void {
-				if ( in_array( $key, array( 'img', 'imgm', 'bgimg', 'm1', 'm2', 'm3' ), true ) && absint( $value ) > 0 ) {
+				if ( in_array( $key, array( 'img', 'imgm', 'bgimg', 'img1', 'img2' ), true ) && absint( $value ) > 0 ) {
 					$ids[ absint( $value ) ] = true;
 				}
 			}

@@ -822,3 +822,159 @@ msgstr "חוזק הפרלקס"
 
 msgid "0 is off; around 30 is gentle, 100 is dramatic."
 msgstr "0 כבוי; בסביבות 30 עדין, 100 דרמטי."
+
+msgid "Picture & words"
+msgstr "תמונה ומילים"
+
+msgid "An editorial split: pictures on one side, a story on the other."
+msgstr "חלוקה מגזינית: תמונות בצד אחד, סיפור בצד השני."
+
+msgid "Picture with a little film"
+msgstr "תמונה עם סרטון קטן"
+
+msgid "Two pictures, staggered"
+msgstr "שתי תמונות במדורג"
+
+msgid "Wide picture, small guest"
+msgstr "תמונה רחבה ואורחת קטנה"
+
+msgid "Little line above"
+msgstr "שורה קטנה מעל"
+
+msgid "A collection name, a chapter — small letters over the heading."
+msgstr "שם קולקציה, פרק — אותיות קטנות מעל הכותרת."
+
+msgid "The story"
+msgstr "הסיפור"
+
+msgid "Button (optional)"
+msgstr "כפתור (לא חובה)"
+
+msgid "The button leads to"
+msgstr "הכפתור מוביל אל"
+
+msgid "The main picture"
+msgstr "התמונה הראשית"
+
+msgid "The second picture"
+msgstr "התמונה השנייה"
+
+msgid "The little film (plays on its own, silent)"
+msgstr "הסרטון הקטן (מתנגן לבד, ללא קול)"
+
+msgid "The pictures stand"
+msgstr "התמונות עומדות"
+
+msgid "On the right"
+msgstr "מימין"
+
+msgid "On the left"
+msgstr "משמאל"
+
+msgid "Branch picture (optional)"
+msgstr "תמונת הסניף (לא חובה)"
+
+msgid "Little icon by the name"
+msgstr "אייקון קטן ליד השם"
+
+msgid "Map pin"
+msgstr "סיכת מיקום"
+
+msgid "Shopfront"
+msgstr "חזית חנות"
+
+msgid "Tree"
+msgstr "עץ"
+
+msgid "Handset"
+msgstr "טלפון"
+
+msgid "Contact form"
+msgstr "טופס צור קשר"
+
+msgid "Name, phone, a message — straight into the Leads screen."
+msgstr "שם, טלפון והודעה — ישר אל מסך הלידים."
+
+msgid "A few words above the form"
+msgstr "כמה מילים מעל הטופס"
+
+msgid "Phone field"
+msgstr "שדה טלפון"
+
+msgid "Email field"
+msgstr "שדה אימייל"
+
+msgid "Message field"
+msgstr "שדה הודעה"
+
+msgid "Empty shows \"Send\"."
+msgstr "ריק יציג ״שליחה״."
+
+msgid "After it is sent"
+msgstr "אחרי השליחה"
+
+msgid "Empty shows \"Thank you — we will be in touch shortly.\""
+msgstr "ריק יציג ״תודה, נחזור אליכם ממש בקרוב.״"
+
+msgid "Send"
+msgstr "שליחה"
+
+msgid "Thank you — we will be in touch shortly."
+msgstr "תודה, נחזור אליכם ממש בקרוב."
+
+msgid "Full name"
+msgstr "שם מלא"
+
+msgid "How can we help?"
+msgstr "איך נוכל לעזור?"
+
+msgid "Please write your name."
+msgstr "נשמח לשם שלכם."
+
+msgid "Leads"
+msgstr "לידים"
+
+msgid "Lead"
+msgstr "ליד"
+
+msgid "Search leads"
+msgstr "חיפוש לידים"
+
+msgid "No leads yet — the contact block fills this screen."
+msgstr "אין לידים עדיין — בלוק צור הקשר ממלא את המסך הזה."
+
+msgid "Name"
+msgstr "שם"
+
+msgid "Message"
+msgstr "הודעה"
+
+msgid "From the page"
+msgstr "מהעמוד"
+
+msgid "Arrived"
+msgstr "הגיע"
+
+msgid "The lead"
+msgstr "הליד"
+
+msgid "Leads settings"
+msgstr "הגדרות לידים"
+
+msgid "Settings & export"
+msgstr "הגדרות וייצוא"
+
+msgid "CRM webhook"
+msgstr "Webhook ל־CRM"
+
+msgid "Every new lead is POSTed there as JSON — name, phone, email, message, page. Works with any CRM that accepts webhooks, and with Make / Zapier in between."
+msgstr "כל ליד חדש נשלח לשם כ־JSON — שם, טלפון, אימייל, הודעה ועמוד. עובד עם כל CRM שמקבל webhooks, וגם דרך Make / Zapier."
+
+msgid "Saved."
+msgstr "נשמר."
+
+msgid "Save"
+msgstr "שמירה"
+
+msgid "Download all leads as CSV"
+msgstr "הורדת כל הלידים כ־CSV"
