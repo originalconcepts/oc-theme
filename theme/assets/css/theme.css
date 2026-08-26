@@ -9601,10 +9601,13 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 /* saved-address selector */
 .oc-co-addrsel { display: flex; flex-direction: column; gap: 10px; margin: 12px 0 4px; }
 .oc-co-addrcard {
-	display: flex;
+	/* !important: the checkout's global `label { display:block }` otherwise
+	 * wins and drops the radio onto its own line above the text */
+	display: flex !important;
 	align-items: center;
 	gap: 12px;
 	padding: 15px 17px;
+	margin: 0;
 	border: 1px solid var(--oc-line, #d9d6d0);
 	border-radius: 14px;
 	background: #fff;
