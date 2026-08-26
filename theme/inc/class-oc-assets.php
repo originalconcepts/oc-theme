@@ -170,6 +170,9 @@ final class Assets {
 				'readMore'             => __( 'Read more', 'oc-theme' ),
 				'readLess'             => __( 'Read less', 'oc-theme' ),
 				'ajaxUrl'              => admin_url( 'admin-ajax.php' ),
+				/* translators: %d: seconds. */
+				'authResend'           => __( 'Resend in another %ds', 'oc-theme' ),
+				'authMailed'           => __( 'The code is in your inbox.', 'oc-theme' ),
 				'cartOpenOnAdd'        => (int) Cart::settings()['open_on_add'],
 				'cartVarPick'          => __( 'Choose an option', 'oc-theme' ),
 				'vpSide'               => 'left' === get_theme_mod( 'oc_vpanel_side', 'right' ) ? 'left' : 'right',

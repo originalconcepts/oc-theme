@@ -4619,3 +4619,246 @@ msgstr "Yoast SEO פעיל, ולכן מנוע ה-SEO של התבנית זז הצ
 
 msgid "Max swatches on the card (0 = all; the rest become +N)"
 msgstr "מקסימום סוואטשים בכרטיס (0 = הכל; השאר הופכים ל-N+)"
+
+msgid "%s is your sign-in code"
+msgstr "%s הוא קוד הכניסה שלך"
+
+msgid "A code was just sent — give it a moment before asking again."
+msgstr "קוד נשלח הרגע — חכו רגע לפני שמבקשים שוב."
+
+msgid "A name, a valid email and a phone are all needed."
+msgstr "צריך שם, מייל תקין וטלפון."
+
+msgid "A recognised number gets a code; a new one opens an account once"
+msgstr "מספר מזוהה מקבל קוד; מספר חדש פותח חשבון פעם אחת"
+
+msgid "ActiveTrail API key"
+msgstr "מפתח API של ActiveTrail"
+
+msgid "Change"
+msgstr "שינוי"
+
+msgid "Change number"
+msgstr "שנה מספר טלפון"
+
+msgid "Client ID"
+msgstr "Client ID"
+
+msgid "Client secret"
+msgstr "Client Secret"
+
+msgid "Code lifetime (seconds)"
+msgstr "תוקף הקוד (שניות)"
+
+msgid "Create account"
+msgstr "פתיחת חשבון"
+
+msgid "Daily SMS budget"
+msgstr "תקציב SMS יומי"
+
+msgid "Design — side, width, title, alignment — lives in the Customizer under \"Login panel\". This screen holds the machinery and the keys."
+msgstr "העיצוב — צד, רוחב, כותרת, יישור — נמצא בהתאמה אישית תחת \"פאנל התחברות\". המסך הזה מחזיק את המנגנון ואת המפתחות."
+
+msgid "Email is not available for this number."
+msgstr "אין מייל זמין למספר הזה."
+
+msgid "Enter phone number"
+msgstr "הזן מספר טלפון"
+
+msgid "Enter the code from the SMS"
+msgstr "יש להזין את הקוד שהתקבל ב-SMS"
+
+msgid "Facebook and Apple"
+msgstr "פייסבוק ואפל"
+
+msgid "Google Cloud Console → Credentials → OAuth client (Web). Authorised redirect URI:"
+msgstr "Google Cloud Console ← Credentials ← OAuth client (Web). כתובת ה-Redirect המאושרת:"
+
+msgid "Google sign-in"
+msgstr "כניסה עם גוגל"
+
+msgid "I have read and accept the privacy policy"
+msgstr "קראתי ואני מאשר את מדיניות הפרטיות"
+
+msgid "International numbers too"
+msgstr "גם מספרים בינלאומיים"
+
+msgid "Israeli mobile numbers only (recommended — blocks SMS-pumping fraud)"
+msgstr "מספרי נייד ישראליים בלבד (מומלץ — חוסם הונאת SMS pumping)"
+
+msgid "Login"
+msgstr "התחברות"
+
+msgid "On Android devices, worth a glance at the spam folder."
+msgstr "במכשירי אנדרואיד מומלץ לבדוק גם בספאם."
+
+msgid "Opening an account"
+msgstr "פתיחת חשבון"
+
+msgid "Past this, sending pauses until midnight and you get an email."
+msgstr "מעבר לזה השליחה נעצרת עד חצות ואתם מקבלים מייל."
+
+msgid "Phase two — the plumbing is ready, the switches arrive once a site actually needs them (Facebook wants an app review; Apple wants a paid developer account)."
+msgstr "שלב ב' — הצנרת מוכנה, המתגים יגיעו כשאתר באמת יצטרך (פייסבוק דורש App Review; אפל דורשת חשבון מפתח בתשלום)."
+
+msgid "Phone number and off we go :)"
+msgstr "מס' טלפון ומתחילים :)"
+
+msgid "Phone sign-in"
+msgstr "כניסה עם טלפון"
+
+msgid "Phone sign-in is not available right now."
+msgstr "כניסה עם טלפון אינה זמינה כרגע."
+
+msgid "Reach"
+msgstr "טווח"
+
+msgid "SMS login is resting — please try again later or sign in another way."
+msgstr "הכניסה ב-SMS נחה — נסו שוב מאוחר יותר או היכנסו בדרך אחרת."
+
+msgid "SMS login: the daily cap was reached"
+msgstr "כניסה ב-SMS: התקרה היומית הושגה"
+
+msgid "SMS sign-in"
+msgstr "כניסה ב-SMS"
+
+msgid "Safety rails"
+msgstr "מעקות בטיחות"
+
+msgid "Seconds between sends to one number"
+msgstr "שניות בין שליחות לאותו מספר"
+
+msgid "Send code"
+msgstr "שלח קוד"
+
+msgid "Send it again"
+msgstr "שלחו לי שוב"
+
+msgid "Send the code by email"
+msgstr "שלח קוד במייל"
+
+msgid "Sender name"
+msgstr "שם השולח"
+
+msgid "Sends per hour — per number / per address"
+msgstr "שליחות לשעה — למספר / לכתובת IP"
+
+msgid "Sent to"
+msgstr "נשלח ל"
+
+msgid "Show the Google button"
+msgstr "הצג את כפתור גוגל"
+
+msgid "Sign in"
+msgstr "התחברות"
+
+msgid "Sign in with Google"
+msgstr "כניסה עם Google"
+
+msgid "Something moved — start again."
+msgstr "משהו זז — התחילו מחדש."
+
+msgid "Something went wrong — refresh and try again."
+msgstr "משהו השתבש — רעננו ונסו שוב."
+
+msgid "That does not look like a valid phone number."
+msgstr "זה לא נראה כמו מספר טלפון תקין."
+
+msgid "That does not look like an Israeli mobile number."
+msgstr "זה לא נראה כמו מספר נייד ישראלי."
+
+msgid "That is not the code — look again."
+msgstr "זה לא הקוד — הציצו שוב."
+
+msgid "The account did not open — try again."
+msgstr "החשבון לא נפתח — נסו שוב."
+
+msgid "The code expired — ask for a new one."
+msgstr "תוקף הקוד פג — בקשו קוד חדש."
+
+msgid "The login SMS budget (%d a day) ran out — sending is paused until midnight. If this is real traffic, raise the cap under Settings, Login."
+msgstr "תקציב ה-SMS לכניסה (%d ביום) נגמר — השליחה מושהית עד חצות. אם זו תנועה אמיתית, העלו את התקרה בהגדרות ← התחברות."
+
+msgid "The message did not go out — try again in a moment."
+msgstr "ההודעה לא יצאה — נסו שוב בעוד רגע."
+
+msgid "The page went stale — refresh and try again."
+msgstr "העמוד התיישן — רעננו ונסו שוב."
+
+msgid "The privacy policy needs your approval."
+msgstr "צריך לאשר את מדיניות הפרטיות."
+
+msgid "This email is already registered — try signing in with Google, or use another address."
+msgstr "המייל כבר רשום — נסו להיכנס עם גוגל, או השתמשו בכתובת אחרת."
+
+msgid "This number is already registered — sign in with it instead."
+msgstr "המספר כבר רשום — פשוט היכנסו איתו."
+
+msgid "Too many attempts — try again in about an hour."
+msgstr "יותר מדי ניסיונות — נסו שוב בעוד כשעה."
+
+msgid "Too many tries — ask for a new code."
+msgstr "יותר מדי ניסיונות — בקשו קוד חדש."
+
+msgid "We do not know this number yet — fill in your details once, and next time the phone alone gets you in."
+msgstr "המספר עדיין לא מוכר לנו — מלאו פרטים פעם אחת, ובפעם הבאה נכנסים עם הטלפון בלבד."
+
+msgid "Wrong tries before the code dies"
+msgstr "טעויות עד שהקוד נפסל"
+
+msgid "You can also sign in with…"
+msgstr "אפשר להתחבר גם עם..."
+
+msgid "Your sign-in code for %s"
+msgstr "קוד הכניסה שלך ל%s"
+
+msgid "Resend in another %ds"
+msgstr "שלח שוב קוד בעוד %ds"
+
+msgid "The code is in your inbox."
+msgstr "הקוד אצלכם במייל."
+
+msgid "Login panel"
+msgstr "פאנל התחברות"
+
+msgid "Opens from"
+msgstr "נפתח מצד"
+
+msgid "Right"
+msgstr "ימין"
+
+msgid "Left"
+msgstr "שמאל"
+
+msgid "Panel width (px)"
+msgstr "רוחב הפאנל (px)"
+
+msgid "Title — the phone step"
+msgstr "כותרת — שלב הטלפון"
+
+msgid "Club pitch — the registration step"
+msgstr "טקסט המועדון — שלב ההרשמה"
+
+msgid "Content alignment"
+msgstr "יישור התוכן"
+
+msgid "Centred"
+msgstr "ממורכז"
+
+msgid "Aligned to the start"
+msgstr "מיושר להתחלה"
+
+msgid "Buttons and fields"
+msgstr "כפתורים ושדות"
+
+msgid "Like the rest of the theme"
+msgstr "כמו שאר התבנית"
+
+msgid "Sharp"
+msgstr "חד"
+
+msgid "Soft"
+msgstr "רך"
+
+msgid "Round"
+msgstr "עגול"

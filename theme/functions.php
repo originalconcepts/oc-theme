@@ -64,6 +64,8 @@ require_once OC_THEME_DIR . '/inc/class-oc-redirects-admin.php';
 require_once OC_THEME_DIR . '/inc/class-oc-seo.php';
 require_once OC_THEME_DIR . '/inc/class-oc-seo-alt.php';
 require_once OC_THEME_DIR . '/inc/class-oc-seo-admin.php';
+require_once OC_THEME_DIR . '/inc/class-oc-auth.php';
+require_once OC_THEME_DIR . '/inc/class-oc-auth-admin.php';
 
 /**
  * Cache-busting version for a theme-relative asset.
@@ -176,8 +178,9 @@ function oc_header_icons_render(): void {
 
 		if ( get_theme_mod( 'oc_header_account', true ) && class_exists( 'WooCommerce' ) ) {
 			printf(
-				'<a class="oc-htext__link" href="%s">%s</a>',
+				'<a class="oc-htext__link" href="%s"%s>%s</a>',
 				esc_url( wc_get_page_permalink( 'myaccount' ) ),
+				apply_filters( 'oc_header_account_attrs', '' ), // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- attribute string built by the theme.
 				esc_html__( 'Account', 'oc-theme' )
 			);
 		}
@@ -224,9 +227,10 @@ function oc_header_icons_render(): void {
 
 	if ( class_exists( 'WooCommerce' ) && get_theme_mod( 'oc_header_account', true ) ) {
 		printf(
-			'<a class="oc-hicon oc-account-link" href="%s" aria-label="%s">%s</a>',
+			'<a class="oc-hicon oc-account-link" href="%s" aria-label="%s"%s>%s</a>',
 			esc_url( wc_get_page_permalink( 'myaccount' ) ),
 			esc_attr__( 'My account', 'oc-theme' ),
+			apply_filters( 'oc_header_account_attrs', '' ), // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- attribute string built by the theme.
 			'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c1.8-3.4 4.6-5 8-5s6.2 1.6 8 5"/></svg>'
 		);
 	}
@@ -365,6 +369,8 @@ add_action( 'admin_notices', 'oc_dependency_notice' );
 ( new OC\Theme\Seo() )->register();
 ( new OC\Theme\Seo_Alt() )->register();
 ( new OC\Theme\Seo_Admin() )->register();
+( new OC\Theme\Auth() )->register();
+( new OC\Theme\Auth_Admin() )->register();
 ( new OC\Theme\Updater( get_template(), OC_THEME_VERSION, OC_THEME_REPO ) )->register();
 
 if ( ! defined( 'OC_LOGIN_DISABLE' ) || ! OC_LOGIN_DISABLE ) {

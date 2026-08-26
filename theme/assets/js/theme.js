@@ -7141,3 +7141,259 @@
 	} );
 }() );
 
+
+/* ---------- the login drawer ----------
+ * Phone first. A recognised number gets its six digits; a new one fills
+ * its details once. Google is a plain link — the server does the dance. */
+
+( function () {
+	var root = null;
+	var L = window.ocL10n || {};
+	var phone = '';
+	var timer = null;
+
+	function el( sel ) {
+		return root ? root.querySelector( sel ) : null;
+	}
+
+	function say( form, msg ) {
+		var err = form.querySelector( '.oc-auth__err' );
+
+		if ( err ) {
+			err.textContent = msg || '';
+			err.hidden = ! msg;
+		}
+	}
+
+	function step( name ) {
+		root.querySelectorAll( '.oc-auth__step' ).forEach( function ( s ) {
+			s.hidden = s.dataset.step !== name;
+		} );
+
+		if ( 'code' === name ) {
+			var first = el( '.oc-auth__boxes input' );
+			if ( first ) { first.focus(); }
+		}
+	}
+
+	function post( action, data ) {
+		var body = new FormData();
+		body.append( 'action', action );
+		body.append( 'nonce', root.dataset.nonce );
+		Object.keys( data ).forEach( function ( k ) { body.append( k, data[ k ] ); } );
+
+		return fetch( L.ajaxUrl || '/wp-admin/admin-ajax.php', { method: 'POST', credentials: 'same-origin', body: body } )
+			.then( function ( r ) { return r.json(); } );
+	}
+
+	function countdown( seconds ) {
+		var resend = el( '[data-auth-resend]' );
+		var emailBtn = el( '[data-auth-email]' );
+		var label = el( '[data-auth-timer]' );
+		var left = seconds;
+
+		clearInterval( timer );
+		resend.hidden = true;
+		if ( emailBtn ) { emailBtn.hidden = true; }
+
+		function tick() {
+			if ( left < 1 ) {
+				clearInterval( timer );
+				label.textContent = '';
+				resend.hidden = false;
+				if ( emailBtn && '1' === root.dataset.hasEmail ) { emailBtn.hidden = false; }
+				return;
+			}
+
+			label.textContent = ( L.authResend || 'Resend in %ds' ).replace( '%d', left );
+			left--;
+		}
+
+		tick();
+		timer = setInterval( tick, 1000 );
+	}
+
+	function open() {
+		root.hidden = false;
+		void root.offsetWidth;
+		requestAnimationFrame( function () { root.classList.add( 'is-open' ); } );
+		step( 'phone' );
+
+		var tel = el( '[data-step="phone"] .oc-auth__tel' );
+		if ( tel ) { tel.focus(); }
+
+		/* Android reads the SMS by itself when the browser plays along. */
+		if ( 'OTPCredential' in window ) {
+			navigator.credentials.get( { otp: { transport: [ 'sms' ] }, signal: undefined } ).then( function ( otp ) {
+				if ( otp && otp.code ) { fillCode( otp.code ); }
+			} ).catch( function () {} );
+		}
+	}
+
+	function close() {
+		clearInterval( timer );
+		root.classList.remove( 'is-open' );
+		setTimeout( function () { root.hidden = true; }, 300 );
+	}
+
+	function fillCode( code ) {
+		var boxes = root.querySelectorAll( '.oc-auth__boxes input' );
+
+		code.replace( /\D/g, '' ).slice( 0, 6 ).split( '' ).forEach( function ( d, i ) {
+			if ( boxes[ i ] ) { boxes[ i ].value = d; }
+		} );
+
+		if ( boxes[ 5 ] && boxes[ 5 ].value ) { boxes[ 5 ].focus(); }
+	}
+
+	function codeValue() {
+		return Array.prototype.map.call( root.querySelectorAll( '.oc-auth__boxes input' ), function ( b ) { return b.value; } ).join( '' );
+	}
+
+	document.addEventListener( 'click', function ( e ) {
+		var opener = e.target.closest( '[data-oc-auth]' );
+
+		if ( opener ) {
+			root = root || document.querySelector( '.oc-auth' );
+
+			if ( root ) {
+				e.preventDefault();
+				open();
+			}
+
+			return;
+		}
+
+		if ( ! root || root.hidden ) { return; }
+
+		if ( e.target.closest( '[data-auth-close]' ) ) { close(); }
+
+		if ( e.target.closest( '[data-auth-change]' ) ) {
+			clearInterval( timer );
+			step( 'phone' );
+			var tel = el( '[data-step="phone"] .oc-auth__tel' );
+			if ( tel ) { tel.focus(); tel.select && tel.select(); }
+		}
+
+		if ( e.target.closest( '[data-auth-resend]' ) ) {
+			post( 'oc_auth_start', { phone: phone } ).then( function ( out ) {
+				var form = el( '[data-step="code"] form' );
+
+				if ( out && out.success ) {
+					say( form, '' );
+					countdown( out.data.wait || 60 );
+				} else {
+					say( form, out && out.data ? out.data.msg : '' );
+				}
+			} );
+		}
+
+		if ( e.target.closest( '[data-auth-email]' ) ) {
+			post( 'oc_auth_email_code', { phone: phone } ).then( function ( out ) {
+				var form = el( '[data-step="code"] form' );
+				say( form, out && out.success ? ( L.authMailed || 'The code is in your inbox.' ) : ( out && out.data ? out.data.msg : '' ) );
+
+				if ( out && out.success ) { countdown( out.data.wait || 60 ); }
+			} );
+		}
+	} );
+
+	/* The six boxes: type and hop, paste and spread, erase and step back. */
+	document.addEventListener( 'input', function ( e ) {
+		var box = e.target.closest( '.oc-auth__boxes input' );
+		if ( ! box ) { return; }
+
+		if ( box.value.length > 1 ) { fillCode( box.value ); return; }
+
+		if ( box.value && box.nextElementSibling ) { box.nextElementSibling.focus(); }
+	} );
+
+	document.addEventListener( 'keydown', function ( e ) {
+		var box = e.target.closest && e.target.closest( '.oc-auth__boxes input' );
+
+		if ( box && 'Backspace' === e.key && ! box.value && box.previousElementSibling ) {
+			box.previousElementSibling.focus();
+		}
+	} );
+
+	document.addEventListener( 'paste', function ( e ) {
+		if ( e.target.closest && e.target.closest( '.oc-auth__boxes' ) ) {
+			e.preventDefault();
+			fillCode( ( e.clipboardData || window.clipboardData ).getData( 'text' ) || '' );
+		}
+	} );
+
+	document.addEventListener( 'submit', function ( e ) {
+		var form = e.target.closest( '.oc-auth__form' );
+		if ( ! form ) { return; }
+
+		e.preventDefault();
+
+		var kind = form.dataset.authForm;
+		var cta = form.querySelector( '.oc-auth__cta' );
+		cta.classList.add( 'is-busy' );
+
+		function done() { cta.classList.remove( 'is-busy' ); }
+
+		if ( 'start' === kind ) {
+			phone = form.querySelector( '[name="phone"]' ).value.trim();
+
+			post( 'oc_auth_start', { phone: phone } ).then( function ( out ) {
+				done();
+
+				if ( ! out || ! out.success ) { say( form, out && out.data ? out.data.msg : '' ); return; }
+
+				say( form, '' );
+				phone = out.data.phone;
+
+				if ( 'code' === out.data.step ) {
+					root.dataset.hasEmail = out.data.email ? '1' : '0';
+					el( '[data-auth-pretty]' ).textContent = out.data.pretty;
+					root.querySelectorAll( '.oc-auth__boxes input' ).forEach( function ( b ) { b.value = ''; } );
+					step( 'code' );
+					countdown( out.data.wait || 60 );
+				} else {
+					var show = el( '[data-step="register"] [name="phone_show"]' );
+					if ( show ) { show.value = out.data.pretty; }
+					var ts = el( '[data-step="register"] [name="ts"]' );
+					if ( ! ts ) {
+						ts = document.createElement( 'input' );
+						ts.type = 'hidden';
+						ts.name = 'ts';
+						el( '[data-step="register"] form' ).appendChild( ts );
+					}
+					ts.value = String( Math.floor( Date.now() / 1000 ) );
+					step( 'register' );
+				}
+			} );
+		}
+
+		if ( 'verify' === kind ) {
+			post( 'oc_auth_verify', { phone: phone, code: codeValue() } ).then( function ( out ) {
+				done();
+
+				if ( out && out.success ) { window.location.reload(); return; }
+
+				say( form, out && out.data ? out.data.msg : '' );
+			} );
+		}
+
+		if ( 'register' === kind ) {
+			post( 'oc_auth_register', {
+				phone: phone,
+				first: form.querySelector( '[name="first"]' ).value.trim(),
+				last: form.querySelector( '[name="last"]' ).value.trim(),
+				email: form.querySelector( '[name="email"]' ).value.trim(),
+				consent: form.querySelector( '[name="consent"]' ).checked ? '1' : '',
+				website: form.querySelector( '[name="website"]' ).value,
+				ts: ( form.querySelector( '[name="ts"]' ) || { value: '0' } ).value
+			} ).then( function ( out ) {
+				done();
+
+				if ( out && out.success ) { window.location.reload(); return; }
+
+				say( form, out && out.data ? out.data.msg : '' );
+			} );
+		}
+	} );
+}() );

@@ -11490,3 +11490,176 @@ body.oc-checkout { overflow-x: clip; }
 		}
 	}
 }
+
+/* ---------- the login drawer ----------
+ * Width and side from the Customizer; alignment and button shape too. The
+ * default look leans on the theme's own tokens, so it lands dressed. */
+
+.oc-auth { position: fixed; inset: 0; z-index: 1200; }
+
+.oc-auth__dim {
+	position: absolute;
+	inset: 0;
+	background: rgba(14, 13, 12, .45);
+	opacity: 0;
+	transition: opacity .28s ease;
+}
+
+.oc-auth__panel {
+	position: absolute;
+	inset-block: 0;
+	inline-size: min(var(--oc-auth-w, 480px), 94vw);
+	background: var(--oc-bg, #fff);
+	display: flex;
+	flex-direction: column;
+	padding: 22px 28px 28px;
+	overflow-y: auto;
+	transition: translate .32s cubic-bezier(.22, .8, .3, 1);
+}
+
+.oc-auth--right .oc-auth__panel { inset-inline-end: 0; translate: 0; }
+.oc-auth--left .oc-auth__panel { inset-inline-start: 0; translate: 0; }
+
+html[dir="rtl"] .oc-auth--right .oc-auth__panel { translate: -100% 0; }
+html[dir="rtl"] .oc-auth--left .oc-auth__panel { translate: 100% 0; }
+html:not([dir="rtl"]) .oc-auth--right .oc-auth__panel { translate: 100% 0; }
+html:not([dir="rtl"]) .oc-auth--left .oc-auth__panel { translate: -100% 0; }
+
+.oc-auth.is-open .oc-auth__dim { opacity: 1; }
+.oc-auth.is-open .oc-auth__panel { translate: 0 0 !important; }
+
+.oc-auth__head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	border-block-end: 1px solid var(--oc-line, #e5e2dd);
+	padding-block-end: 14px;
+	margin-block-end: 26px;
+}
+
+.oc-auth__name { margin: 0; font-size: 1.15rem; }
+
+.oc-auth__close {
+	border: 0;
+	background: none;
+	font-size: 26px;
+	line-height: 1;
+	cursor: pointer;
+	color: var(--oc-ink, #111);
+	padding: 2px 6px;
+}
+
+.oc-auth--a-c .oc-auth__step { text-align: center; }
+.oc-auth--a-s .oc-auth__step { text-align: start; }
+
+.oc-auth__title { margin: 4px 0 18px; font-size: 1.3rem; }
+.oc-auth__sub { margin: 0 0 14px; color: var(--oc-ink-2, #555); }
+.oc-auth__club { margin: 0 0 16px; color: var(--oc-ink-2, #555); }
+.oc-auth__hint { margin: 10px 0 0; font-size: .8rem; color: var(--oc-ink-2, #777); }
+
+.oc-auth__form { display: flex; flex-direction: column; gap: 14px; margin-block-start: 6px; }
+
+.oc-auth__form input[type="tel"],
+.oc-auth__form input[type="text"]:not(.oc-auth__hp),
+.oc-auth__form input[type="email"] {
+	inline-size: 100%;
+	block-size: var(--oc-cta-h, 48px);
+	border: 1px solid var(--oc-line, #d9d6d0);
+	border-radius: var(--oc-cta-r, 8px);
+	padding-inline: 14px;
+	font: inherit;
+	background: var(--oc-bg, #fff);
+	color: var(--oc-ink, #111);
+}
+
+.oc-auth--a-c .oc-auth__form input { text-align: center; }
+
+.oc-auth__pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+.oc-auth__phone-row { display: flex; align-items: center; gap: 10px; }
+.oc-auth__phone-row .oc-auth__tel { color: var(--oc-ink-2, #888); background: var(--oc-bg-2, #f6f5f3); direction: ltr; }
+
+.oc-auth__cta {
+	block-size: var(--oc-cta-h, 48px);
+	border: 1.5px solid var(--oc-cta, var(--oc-primary, #111));
+	border-radius: var(--oc-cta-r, 8px);
+	background: var(--oc-cta, var(--oc-primary, #111));
+	color: #fff;
+	font: inherit;
+	font-weight: 600;
+	cursor: pointer;
+	transition: filter .12s ease, opacity .15s ease;
+}
+
+.oc-auth__cta:hover { filter: brightness(1.08); }
+.oc-auth__cta.is-busy { opacity: .6; pointer-events: none; }
+
+.oc-auth__err { margin: 0; font-size: .85rem; color: var(--oc-sale, #b4453c); animation: oc-need-in .25s ease; }
+
+.oc-auth__boxes { display: flex; gap: 8px; justify-content: center; }
+
+.oc-auth__boxes input {
+	inline-size: 46px !important;
+	block-size: 54px !important;
+	text-align: center;
+	font-size: 1.25rem;
+	padding: 0 !important;
+}
+
+.oc-auth__resend { margin: 0; display: flex; gap: 12px; justify-content: center; align-items: center; color: var(--oc-ink-2, #666); font-size: .9rem; flex-wrap: wrap; }
+
+.oc-auth--a-s .oc-auth__boxes,
+.oc-auth--a-s .oc-auth__resend { justify-content: flex-start; }
+
+.oc-auth__link {
+	border: 0;
+	background: none;
+	padding: 0;
+	font: inherit;
+	font-size: .9rem;
+	color: var(--oc-ink, #111);
+	text-decoration: underline;
+	text-underline-offset: 3px;
+	cursor: pointer;
+}
+
+.oc-auth__social { margin-block-start: 26px; display: flex; flex-direction: column; gap: 10px; align-items: center; }
+.oc-auth--a-s .oc-auth__social { align-items: flex-start; }
+.oc-auth__also { margin: 0 0 4px; font-weight: 600; }
+
+.oc-auth__provider {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	border: 1px solid var(--oc-line, #d9d6d0);
+	border-radius: var(--oc-cta-r, 8px);
+	padding: 10px 22px;
+	color: var(--oc-ink, #111);
+	text-decoration: none;
+	font-weight: 500;
+	transition: border-color .12s ease;
+}
+
+.oc-auth__provider:hover { border-color: var(--oc-ink, #111); }
+
+.oc-auth__consent { display: flex; gap: 8px; align-items: flex-start; font-size: .85rem; color: var(--oc-ink-2, #555); text-align: start; }
+.oc-auth__consent a { color: inherit; }
+.oc-auth--a-c .oc-auth__consent { justify-content: center; }
+
+.oc-auth__hp { position: absolute !important; inset-inline-start: -9999px; }
+
+/* Shape overrides, when the panel refuses the theme's default. */
+.oc-auth--b-sharp .oc-auth__form input:not(.oc-auth__hp),
+.oc-auth--b-sharp .oc-auth__cta,
+.oc-auth--b-sharp .oc-auth__provider { border-radius: 0; }
+.oc-auth--b-soft .oc-auth__form input:not(.oc-auth__hp),
+.oc-auth--b-soft .oc-auth__cta,
+.oc-auth--b-soft .oc-auth__provider { border-radius: 8px; }
+.oc-auth--b-round .oc-auth__form input:not(.oc-auth__hp),
+.oc-auth--b-round .oc-auth__cta,
+.oc-auth--b-round .oc-auth__provider { border-radius: 999px; }
+
+@media (max-width: 600px) {
+	.oc-auth__panel { inline-size: 100vw; padding: 18px 20px 24px; }
+	.oc-auth__boxes input { inline-size: 42px !important; block-size: 50px !important; }
+}

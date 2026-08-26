@@ -150,6 +150,67 @@ final class Customizer {
 		$this->search_section( $wp_customize, $shop_panel );
 		$this->brands_section( $wp_customize, $shop_panel );
 		$this->blog_section( $wp_customize );
+		$this->login_section( $wp_customize );
+	}
+
+	/**
+	 * The login panel: how the drawer looks. The machinery and the keys
+	 * live under Settings — no secret ever rides a theme mod.
+	 *
+	 * @param \WP_Customize_Manager $c Customizer manager.
+	 */
+	private function login_section( \WP_Customize_Manager $c ): void {
+		$c->add_section(
+			'oc_login_panel',
+			array(
+				'title'    => __( 'Login panel', 'oc-theme' ),
+				'priority' => 168,
+			)
+		);
+
+		$this->choice(
+			$c,
+			'oc_login_side',
+			'oc_login_panel',
+			__( 'Opens from', 'oc-theme' ),
+			array(
+				'right' => __( 'Right', 'oc-theme' ),
+				'left'  => __( 'Left', 'oc-theme' ),
+			),
+			'right'
+		);
+
+		$this->number( $c, 'oc_login_width', 'oc_login_panel', __( 'Panel width (px)', 'oc-theme' ), 480, 320, 720 );
+
+		$this->text( $c, 'oc_login_title', 'oc_login_panel', __( 'Title — the phone step', 'oc-theme' ) );
+
+		$this->text( $c, 'oc_login_club_text', 'oc_login_panel', __( 'Club pitch — the registration step', 'oc-theme' ) );
+
+		$this->choice(
+			$c,
+			'oc_login_align',
+			'oc_login_panel',
+			__( 'Content alignment', 'oc-theme' ),
+			array(
+				'center' => __( 'Centred', 'oc-theme' ),
+				'start'  => __( 'Aligned to the start', 'oc-theme' ),
+			),
+			'center'
+		);
+
+		$this->choice(
+			$c,
+			'oc_login_btn_shape',
+			'oc_login_panel',
+			__( 'Buttons and fields', 'oc-theme' ),
+			array(
+				'inherit' => __( 'Like the rest of the theme', 'oc-theme' ),
+				'sharp'   => __( 'Sharp', 'oc-theme' ),
+				'soft'    => __( 'Soft', 'oc-theme' ),
+				'round'   => __( 'Round', 'oc-theme' ),
+			),
+			'inherit'
+		);
 	}
 
 	/**
