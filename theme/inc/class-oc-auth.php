@@ -38,14 +38,14 @@ final class Auth {
 
 		$on = self::settings();
 
-		if ( empty( $on['sms_on'] ) && empty( $on['google_on'] ) && empty( $on['fb_on'] ) && empty( $on['apple_on'] ) ) {
+		if ( empty( $on['sms_on'] ) && empty( $on['google_on'] ) && empty( $on['fb_on'] ) && empty( $on['apple_on'] ) && empty( $on['email_on'] ) ) {
 			return; // Nothing enabled — the account icon behaves as always.
 		}
 
 		add_action( 'wp_footer', array( $this, 'panel' ) );
 		add_filter( 'oc_header_account_attrs', array( $this, 'icon_attrs' ) );
 
-		foreach ( array( 'oc_auth_start', 'oc_auth_verify', 'oc_auth_register', 'oc_auth_email_code' ) as $action ) {
+		foreach ( array( 'oc_auth_start', 'oc_auth_verify', 'oc_auth_register', 'oc_auth_email_code', 'oc_auth_email_login' ) as $action ) {
 			add_action( 'wp_ajax_nopriv_' . $action, array( $this, substr( $action, 3 ) ) );
 			add_action( 'wp_ajax_' . $action, array( $this, substr( $action, 3 ) ) );
 		}
@@ -85,6 +85,7 @@ final class Auth {
 				'phone_hourly'    => 3,
 				'ip_hourly'       => 5,
 				'daily_cap'       => 300,
+				'email_on'        => 0,
 				'google_on'       => 0,
 				'google_id'       => '',
 				'google_secret'   => '',
@@ -420,6 +421,45 @@ final class Auth {
 		);
 
 		wp_send_json_success( array( 'wait' => (int) self::settings()['resend_cooldown'] ) );
+	}
+
+	/**
+	 * Plain email + password — for whoever prefers the classic door.
+	 * Slowed hard against guessing, and closed to administrators: their
+	 * door is the private login path, and this endpoint must not become a
+	 * password oracle for it.
+	 */
+	public function auth_email_login(): void {
+		$this->guard();
+
+		if ( empty( self::settings()['email_on'] ) ) {
+			wp_send_json_error( array( 'msg' => __( 'Email sign-in is not available right now.', 'oc-theme' ) ) );
+		}
+
+		$email = sanitize_email( (string) wp_unslash( $_POST['email'] ?? '' ) );
+		$pass  = (string) wp_unslash( $_POST['password'] ?? '' );
+
+		if ( ! is_email( $email ) || '' === $pass ) {
+			wp_send_json_error( array( 'msg' => __( 'An email and a password are both needed.', 'oc-theme' ) ) );
+		}
+
+		$bucket = 'ocau_pw_' . md5( self::ip() . '|' . $email );
+		$fails  = (int) get_transient( $bucket );
+
+		if ( $fails >= 5 ) {
+			wp_send_json_error( array( 'msg' => __( 'Too many attempts — try again in a few minutes.', 'oc-theme' ) ) );
+		}
+
+		$user = wp_authenticate( $email, $pass );
+
+		if ( is_wp_error( $user ) || user_can( $user, 'manage_options' ) || user_can( $user, 'manage_woocommerce' ) ) {
+			set_transient( $bucket, $fails + 1, 15 * MINUTE_IN_SECONDS );
+			wp_send_json_error( array( 'msg' => __( 'The email or the password is wrong.', 'oc-theme' ) ) );
+		}
+
+		delete_transient( $bucket );
+		wp_set_auth_cookie( $user->ID, true );
+		wp_send_json_success();
 	}
 
 	/**
@@ -1152,7 +1192,11 @@ final class Auth {
 		$width = absint( get_theme_mod( 'oc_login_width', 480 ) );
 		$title = trim( (string) get_theme_mod( 'oc_login_title', '' ) );
 		$title = '' !== $title ? $title : __( 'Phone number and off we go :)', 'oc-theme' );
-		$club  = trim( (string) get_theme_mod( 'oc_login_club_text', '' ) );
+		$club = trim( (string) get_theme_mod( 'oc_login_club_text', '' ) );
+
+		if ( '' === $club ) {
+			$club = __( 'Join the club and earn 5% of your order back in points, to spend on your next purchases.', 'oc-theme' );
+		}
 		$align = get_theme_mod( 'oc_login_align', 'center' );
 		$shape = get_theme_mod( 'oc_login_btn_shape', 'inherit' );
 
@@ -1188,7 +1232,7 @@ final class Auth {
 							<button type="submit" class="oc-auth__cta"><?php esc_html_e( 'Send code', 'oc-theme' ); ?></button>
 						</form>
 					<?php endif; ?>
-					<?php if ( ! empty( $s['google_on'] ) || ! empty( $s['fb_on'] ) || ! empty( $s['apple_on'] ) ) : ?>
+					<?php if ( ! empty( $s['google_on'] ) || ! empty( $s['fb_on'] ) || ! empty( $s['apple_on'] ) || ! empty( $s['email_on'] ) ) : ?>
 						<div class="oc-auth__social">
 							<?php if ( ! empty( $s['sms_on'] ) ) : ?>
 								<p class="oc-auth__also"><?php esc_html_e( 'You can also sign in with…', 'oc-theme' ); ?></p>
@@ -1211,9 +1255,31 @@ final class Auth {
 								<?php esc_html_e( 'Sign in with Apple', 'oc-theme' ); ?>
 							</a>
 							<?php endif; ?>
+							<?php if ( ! empty( $s['email_on'] ) ) : ?>
+							<button type="button" class="oc-auth__provider" data-auth-goto="email">
+								<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+								<?php esc_html_e( 'Sign in with email and password', 'oc-theme' ); ?>
+							</button>
+							<?php endif; ?>
 						</div>
 					<?php endif; ?>
 				</div>
+
+				<?php if ( ! empty( $s['email_on'] ) ) : ?>
+				<div class="oc-auth__step" data-step="email" hidden>
+					<h3 class="oc-auth__title"><?php esc_html_e( 'Sign in with email and password', 'oc-theme' ); ?></h3>
+					<form class="oc-auth__form" data-auth-form="login" novalidate>
+						<input type="email" name="email" autocomplete="email" placeholder="<?php esc_attr_e( 'Email', 'oc-theme' ); ?>" required>
+						<input type="password" name="password" autocomplete="current-password" placeholder="<?php esc_attr_e( 'Password', 'oc-theme' ); ?>" required>
+						<p class="oc-auth__err" hidden></p>
+						<button type="submit" class="oc-auth__cta"><?php esc_html_e( 'Sign in', 'oc-theme' ); ?></button>
+						<p class="oc-auth__resend">
+							<a class="oc-auth__link" href="<?php echo esc_url( function_exists( 'wc_lostpassword_url' ) ? wc_lostpassword_url() : wp_lostpassword_url() ); ?>"><?php esc_html_e( 'Forgot the password?', 'oc-theme' ); ?></a>
+							<button type="button" class="oc-auth__link" data-auth-change><?php esc_html_e( 'Back', 'oc-theme' ); ?></button>
+						</p>
+					</form>
+				</div>
+				<?php endif; ?>
 
 				<div class="oc-auth__step" data-step="code" hidden>
 					<h3 class="oc-auth__title"><?php esc_html_e( 'Enter the code from the SMS', 'oc-theme' ); ?></h3>
@@ -1262,6 +1328,11 @@ final class Auth {
 						<button type="submit" class="oc-auth__cta"><?php esc_html_e( 'Create account', 'oc-theme' ); ?></button>
 					</form>
 				</div>
+				<footer class="oc-auth__signup" data-auth-signup>
+					<h4><?php esc_html_e( 'Not registered yet?', 'oc-theme' ); ?></h4>
+					<p><?php echo esc_html( $club ); ?></p>
+					<button type="button" class="oc-auth__signup-btn" data-auth-goto="register"><?php esc_html_e( 'Sign up', 'oc-theme' ); ?></button>
+				</footer>
 			</aside>
 		</div>
 		<?php

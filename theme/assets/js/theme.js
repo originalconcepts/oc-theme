@@ -7170,10 +7170,29 @@
 			s.hidden = s.dataset.step !== name;
 		} );
 
+		var pitch = el( '[data-auth-signup]' );
+
+		if ( pitch ) { pitch.hidden = 'register' === name; }
+
 		if ( 'code' === name ) {
 			var first = el( '.oc-auth__boxes input' );
 			if ( first ) { first.focus(); }
 		}
+	}
+
+	/* The registration form's time trap — set whenever the step opens. */
+	function armRegister() {
+		var form = el( '[data-step="register"] form' );
+		var ts = form.querySelector( '[name="ts"]' );
+
+		if ( ! ts ) {
+			ts = document.createElement( 'input' );
+			ts.type = 'hidden';
+			ts.name = 'ts';
+			form.appendChild( ts );
+		}
+
+		ts.value = String( Math.floor( Date.now() / 1000 ) );
 	}
 
 	function post( action, data ) {
@@ -7283,6 +7302,36 @@
 
 		if ( e.target.closest( '[data-auth-close]' ) ) { close(); }
 
+		var goto_ = e.target.closest( '[data-auth-goto]' );
+
+		if ( goto_ ) {
+			if ( 'email' === goto_.dataset.authGoto ) {
+				step( 'email' );
+
+				if ( window.matchMedia( '(min-width: 783px)' ).matches ) {
+					var em = el( '[data-step="email"] [name="email"]' );
+					if ( em ) { em.focus(); }
+				}
+			} else if ( 'register' === goto_.dataset.authGoto ) {
+				// Direct sign-up: the phone is theirs to type.
+				var show = el( '[data-step="register"] [name="phone_show"]' );
+
+				if ( show ) {
+					show.readOnly = false;
+					show.value = '';
+					show.placeholder = ( window.ocL10n || {} ).authPhone || '';
+				}
+
+				var change = el( '[data-step="register"] [data-auth-change]' );
+				if ( change ) { change.hidden = true; }
+
+				armRegister();
+				step( 'register' );
+			}
+
+			return;
+		}
+
 		if ( e.target.closest( '[data-auth-change]' ) ) {
 			clearInterval( timer );
 			step( 'phone' );
@@ -7372,15 +7421,16 @@
 					countdown( out.data.wait || 60 );
 				} else {
 					var show = el( '[data-step="register"] [name="phone_show"]' );
-					if ( show ) { show.value = out.data.pretty; }
-					var ts = el( '[data-step="register"] [name="ts"]' );
-					if ( ! ts ) {
-						ts = document.createElement( 'input' );
-						ts.type = 'hidden';
-						ts.name = 'ts';
-						el( '[data-step="register"] form' ).appendChild( ts );
+
+					if ( show ) {
+						show.value = out.data.pretty;
+						show.readOnly = true;
 					}
-					ts.value = String( Math.floor( Date.now() / 1000 ) );
+
+					var change = el( '[data-step="register"] [data-auth-change]' );
+					if ( change ) { change.hidden = false; }
+
+					armRegister();
 					step( 'register' );
 				}
 			} );
@@ -7402,9 +7452,24 @@
 			} );
 		}
 
+		if ( 'login' === kind ) {
+			post( 'oc_auth_email_login', {
+				email: form.querySelector( '[name="email"]' ).value.trim(),
+				password: form.querySelector( '[name="password"]' ).value
+			} ).then( function ( out ) {
+				done();
+
+				if ( out && out.success ) { window.location.reload(); return; }
+
+				say( form, out && out.data ? out.data.msg : '' );
+			} );
+		}
+
 		if ( 'register' === kind ) {
+			var shown = form.querySelector( '[name="phone_show"]' );
+
 			post( 'oc_auth_register', {
-				phone: phone,
+				phone: shown && shown.value.trim() ? shown.value.trim() : phone,
 				first: form.querySelector( '[name="first"]' ).value.trim(),
 				last: form.querySelector( '[name="last"]' ).value.trim(),
 				email: form.querySelector( '[name="email"]' ).value.trim(),
@@ -7439,4 +7504,39 @@
 			shade.hidden = true;
 		}
 	} );
+}() );
+
+
+/* ---------- the goodbye toast: signed out, counting down ---------- */
+
+( function () {
+	if ( -1 === window.location.search.indexOf( 'oc_bye=1' ) ) { return; }
+
+	window.history.replaceState( null, '', window.location.pathname );
+
+	var L = window.ocL10n || {};
+	var toast = document.createElement( 'div' );
+	toast.className = 'oc-bye';
+	document.body.appendChild( toast );
+
+	var left = 3;
+
+	function paint() {
+		toast.textContent = ( L.byeMsg || 'Signed out' ) + ' (' + left + ')';
+	}
+
+	paint();
+
+	var tick = setInterval( function () {
+		left--;
+
+		if ( left < 1 ) {
+			clearInterval( tick );
+			toast.classList.add( 'is-out' );
+			setTimeout( function () { toast.remove(); }, 400 );
+			return;
+		}
+
+		paint();
+	}, 1000 );
 }() );

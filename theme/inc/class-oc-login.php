@@ -64,12 +64,21 @@ final class Gate {
 		add_action( 'after_setup_theme', array( $this, 'mark_request' ), 1 );
 		add_action( 'wp_loaded', array( $this, 'handle' ) );
 
-		// Signing out of a shop lands on the shop — never on WordPress's
-		// own login screen (which the Gate hides anyway).
+		// Signing out of a shop lands on the shop — never on a login form.
+		// Two roads lead out: WordPress's own logout and WooCommerce's
+		// customer-logout endpoint, which redirects by its own filter. Both
+		// carry a flag the front end turns into a small goodbye toast.
 		add_filter(
 			'logout_redirect',
 			static function (): string {
-				return home_url( '/' );
+				return home_url( '/?oc_bye=1' );
+			},
+			99
+		);
+		add_filter(
+			'woocommerce_logout_default_location',
+			static function (): string {
+				return home_url( '/?oc_bye=1' );
 			},
 			99
 		);

@@ -11621,20 +11621,26 @@ body.oc-checkout { overflow-x: clip; }
 	cursor: pointer;
 }
 
-.oc-auth__social { margin-block-start: 26px; display: flex; flex-direction: column; gap: 10px; align-items: center; }
-.oc-auth--a-s .oc-auth__social { align-items: flex-start; }
+.oc-auth__social { margin-block-start: 26px; display: flex; flex-direction: column; gap: 10px; }
 .oc-auth__also { margin: 0 0 4px; font-weight: 600; }
 
+/* Every door the same width as the send button. */
 .oc-auth__provider {
-	display: inline-flex;
+	display: flex;
+	inline-size: 100%;
 	align-items: center;
+	justify-content: center;
 	gap: 10px;
 	border: 1px solid var(--oc-line, #d9d6d0);
 	border-radius: var(--oc-cta-r, 8px);
-	padding: 10px 22px;
+	block-size: var(--oc-cta-h, 48px);
+	padding-inline: 22px;
+	background: none;
 	color: var(--oc-ink, #111);
 	text-decoration: none;
+	font: inherit;
 	font-weight: 500;
+	cursor: pointer;
 	transition: border-color .12s ease;
 }
 
@@ -11645,6 +11651,38 @@ body.oc-checkout { overflow-x: clip; }
 .oc-auth--a-c .oc-auth__consent { justify-content: center; }
 
 .oc-auth__hp { position: absolute !important; inset-inline-start: -9999px; }
+
+/* The pitch at the bottom: not registered yet? */
+.oc-auth__signup {
+	margin-block-start: auto;
+	padding-block-start: 22px;
+	border-block-start: 1px solid var(--oc-line, #e5e2dd);
+}
+
+.oc-auth--a-c .oc-auth__signup { text-align: center; }
+.oc-auth--a-s .oc-auth__signup { text-align: start; }
+
+.oc-auth__signup h4 { margin: 0 0 6px; font-size: 1rem; }
+.oc-auth__signup p { margin: 0 0 14px; color: var(--oc-ink-2, #555); font-size: .9rem; }
+
+.oc-auth__signup-btn {
+	inline-size: 100%;
+	block-size: var(--oc-cta-h, 48px);
+	border: 1.5px solid var(--oc-ink, #111);
+	border-radius: var(--oc-cta-r, 8px);
+	background: none;
+	color: var(--oc-ink, #111);
+	font: inherit;
+	font-weight: 600;
+	cursor: pointer;
+	transition: background-color .12s ease, color .12s ease;
+}
+
+.oc-auth__signup-btn:hover { background: var(--oc-ink, #111); color: #fff; }
+
+.oc-auth--b-sharp .oc-auth__signup-btn { border-radius: 0; }
+.oc-auth--b-soft .oc-auth__signup-btn { border-radius: 8px; }
+.oc-auth--b-round .oc-auth__signup-btn { border-radius: 999px; }
 
 /* Shape overrides, when the panel refuses the theme's default. */
 .oc-auth--b-sharp .oc-auth__form input:not(.oc-auth__hp),
@@ -11740,3 +11778,29 @@ body.oc-checkout { overflow-x: clip; }
 }
 
 .oc-delacc__yes:hover { filter: brightness(1.08); }
+
+
+/* ---------- the goodbye toast ---------- */
+
+.oc-bye {
+	position: fixed;
+	inset-block-start: 18px;
+	inset-inline-start: 50%;
+	translate: -50% 0;
+	z-index: 100001;
+	background: var(--oc-ink, #111);
+	color: #fff;
+	padding: 10px 22px;
+	border-radius: 999px;
+	font-size: .9rem;
+	animation: oc-bye-in .3s ease;
+	transition: opacity .4s ease, translate .4s ease;
+}
+
+html[dir="rtl"] .oc-bye { translate: 50% 0; }
+
+.oc-bye.is-out { opacity: 0; }
+
+@keyframes oc-bye-in {
+	from { opacity: 0; translate: -50% -8px; }
+}

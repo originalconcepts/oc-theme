@@ -173,6 +173,8 @@ final class Assets {
 				/* translators: %d: seconds. */
 				'authResend'           => __( 'Resend in another %ds', 'oc-theme' ),
 				'authMailed'           => __( 'The code is in your inbox.', 'oc-theme' ),
+				'authPhone'            => __( 'Enter phone number', 'oc-theme' ),
+				'byeMsg'               => __( 'You have signed out — see you soon', 'oc-theme' ),
 				'cartOpenOnAdd'        => (int) Cart::settings()['open_on_add'],
 				'cartVarPick'          => __( 'Choose an option', 'oc-theme' ),
 				'vpSide'               => 'left' === get_theme_mod( 'oc_vpanel_side', 'right' ) ? 'left' : 'right',

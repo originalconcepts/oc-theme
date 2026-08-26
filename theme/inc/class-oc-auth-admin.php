@@ -90,6 +90,17 @@ final class Auth_Admin {
 				</tr>
 			</table>
 
+			<h2><?php esc_html_e( 'Email sign-in', 'oc-theme' ); ?></h2>
+			<table class="form-table">
+				<tr>
+					<th><?php esc_html_e( 'Email and password', 'oc-theme' ); ?></th>
+					<td>
+						<label><input type="checkbox" name="email_on" value="1" <?php checked( ! empty( $s['email_on'] ) ); ?>> <?php esc_html_e( 'The classic door — email and password, with a forgot-password link', 'oc-theme' ); ?></label>
+						<p class="description"><?php esc_html_e( 'Guess-proofed: five wrong tries pause it for a few minutes, and administrator accounts cannot enter here at all — their door stays the private login path.', 'oc-theme' ); ?></p>
+					</td>
+				</tr>
+			</table>
+
 			<h2><?php esc_html_e( 'Safety rails', 'oc-theme' ); ?></h2>
 			<table class="form-table">
 				<tr>
@@ -282,6 +293,7 @@ final class Auth_Admin {
 		$s = Auth::settings();
 
 		$s['sms_on']    = empty( $_POST['sms_on'] ) ? 0 : 1;
+		$s['email_on']  = empty( $_POST['email_on'] ) ? 0 : 1;
 		$s['google_on'] = empty( $_POST['google_on'] ) ? 0 : 1;
 		$s['fb_on']     = empty( $_POST['fb_on'] ) ? 0 : 1;
 		$s['apple_on']  = empty( $_POST['apple_on'] ) ? 0 : 1;

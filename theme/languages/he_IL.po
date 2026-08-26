@@ -5060,3 +5060,45 @@ msgstr "לקוחות עשויים להסתיר את הכתובת ולקבל ממ
 
 msgid "Fill the four fields above, tick \"Show the Apple button\", Save — and try it. Note: Apple sends the customer's name only on the very first approval; a customer who removes the site under Settings, Apple ID, Sign-In & Security can approve it afresh."
 msgstr "ממלאים את ארבעת השדות למעלה, מסמנים \"הצג את כפתור אפל\", שומרים — ומנסים. שימו לב: אפל שולחת את שם הלקוח רק באישור הראשון אי-פעם; לקוח שמסיר את האתר תחת הגדרות ← Apple ID ← כניסה ואבטחה יכול לאשר מחדש."
+
+msgid "Sign in with email and password"
+msgstr "כניסה עם מייל וסיסמה"
+
+msgid "Password"
+msgstr "סיסמה"
+
+msgid "Forgot the password?"
+msgstr "שכחת סיסמה?"
+
+msgid "Not registered yet?"
+msgstr "עדיין לא רשומים?"
+
+msgid "Join the club and earn 5% of your order back in points, to spend on your next purchases."
+msgstr "הצטרפו למועדון וצברו 5% מערך ההזמנה בנקודות שתוכלו לממש בקניות הבאות."
+
+msgid "Email sign-in"
+msgstr "כניסה עם מייל"
+
+msgid "Email and password"
+msgstr "מייל וסיסמה"
+
+msgid "The classic door — email and password, with a forgot-password link"
+msgstr "הדלת הקלאסית — מייל וסיסמה, עם קישור לשחזור סיסמה"
+
+msgid "Guess-proofed: five wrong tries pause it for a few minutes, and administrator accounts cannot enter here at all — their door stays the private login path."
+msgstr "מוגן מניחושים: חמש טעויות משהות לכמה דקות, וחשבונות ניהול כלל לא נכנסים מכאן — הדלת שלהם נשארת נתיב הכניסה הפרטי."
+
+msgid "Email sign-in is not available right now."
+msgstr "כניסה עם מייל אינה זמינה כרגע."
+
+msgid "An email and a password are both needed."
+msgstr "צריך גם מייל וגם סיסמה."
+
+msgid "Too many attempts — try again in a few minutes."
+msgstr "יותר מדי ניסיונות — נסו שוב בעוד כמה דקות."
+
+msgid "The email or the password is wrong."
+msgstr "המייל או הסיסמה שגויים."
+
+msgid "You have signed out — see you soon"
+msgstr "התנתקת מהחשבון — נתראה בקרוב"
