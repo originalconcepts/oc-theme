@@ -96,20 +96,22 @@
 			} );
 		}
 
-		function turn( wrapForward ) {
+		function park( slot, smooth ) {
+			var rtl = getComputedStyle( strip ).direction === 'rtl';
+
+			strip.scrollTo( { left: ( rtl ? -1 : 1 ) * slot * strip.clientWidth, behavior: smooth ? 'smooth' : 'auto' } );
+		}
+
+		function turn( wrapForward, wrapBack ) {
 			if ( fade ) {
 				[].forEach.call( slides, function ( sl, i ) {
 					sl.classList.toggle( 'is-on', i === at );
 				} );
 			} else {
-				var rtl = getComputedStyle( strip ).direction === 'rtl';
-				var slot = wrapForward ? real : at;
-
-				// On a wrap the strip heads for the quiet copy; the settle
-				// watcher jumps home only once it has truly landed there —
-				// a blind timer used to fire mid-flight and leave the strip
-				// stranded between slides.
-				strip.scrollTo( { left: ( rtl ? -1 : 1 ) * slot * strip.clientWidth, behavior: 'smooth' } );
+				// On a wrap the strip heads for the quiet copy in the SAME
+				// direction of travel; the settle watcher jumps to the real
+				// slide only once it has truly landed there.
+				park( wrapForward ? real + 1 : ( wrapBack ? 0 : at + 1 ), true );
 			}
 
 			paintDots();
@@ -123,9 +125,10 @@
 				return;
 			}
 
-			// Walking forward off the last slide rides through the quiet
-			// copy of the first, so the loop reads as one more step ahead.
+			// Walking off either end rides through the quiet copy waiting
+			// there, so the loop always continues in the direction of travel.
 			var wrapForward = ! fade && 0 === target && at === real - 1 && n > at;
+			var wrapBack = ! fade && real - 1 === target && 0 === at && n < at;
 
 			// The words take their leave first — down and away — and only
 			// then does the banner itself turn.
@@ -139,10 +142,10 @@
 					leaving.classList.remove( 'is-leave' );
 				}, 430 );
 				setTimeout( function () {
-					turn( wrapForward );
+					turn( wrapForward, wrapBack );
 				}, 360 );
 			} else {
-				turn( wrapForward );
+				turn( wrapForward, wrapBack );
 			}
 		}
 
@@ -188,22 +191,38 @@
 			// A finger's own scroll keeps the dots honest.
 			var tick = false;
 
-			// The last slide is followed by a quiet copy of the first: a swipe
-			// past the end lands on it, and the strip snaps home unseen.
-			var loop = slides[ 0 ].cloneNode( true );
+			// A quiet copy of the last slide stands before the first, and a
+			// copy of the first stands after the last: a swipe off either
+			// end continues in its own direction, and the strip snaps to
+			// the real slide unseen. Every real slide therefore lives one
+			// slot further in.
+			var head = slides[ real - 1 ].cloneNode( true );
+			var tail = slides[ 0 ].cloneNode( true );
 
-			loop.setAttribute( 'aria-hidden', 'true' );
-			strip.appendChild( loop );
+			head.setAttribute( 'aria-hidden', 'true' );
+			tail.setAttribute( 'aria-hidden', 'true' );
+			strip.insertBefore( head, strip.firstChild );
+			strip.appendChild( tail );
+
+			// The opening position is set by hand — browsers disagree about
+			// where a right-to-left strip wakes up.
+			( function start() {
+				if ( strip.clientWidth > 0 ) {
+					park( 1, false );
+				} else {
+					setTimeout( start, 200 );
+				}
+			}() );
 
 			var settle = null;
 
 			strip.addEventListener( 'scroll', function () {
 				if ( ! tick ) {
-					tick = true;
+				tick = true;
 					requestAnimationFrame( function () {
 						tick = false;
 						var idx = Math.round( Math.abs( strip.scrollLeft ) / Math.max( 1, strip.clientWidth ) );
-						var shown = idx % real;
+						var shown = ( idx - 1 + real ) % real;
 
 						if ( shown !== at ) {
 							at = shown;
@@ -224,26 +243,31 @@
 				var pos = Math.abs( strip.scrollLeft );
 				var width = Math.max( 1, strip.clientWidth );
 				var idx = Math.round( pos / width );
+				var onTail = idx >= real + 1;
+				var onHead = 0 === idx;
 
-				if ( idx >= real ) {
-					// Wait for the strip to actually park on the copy —
-					// jumping mid-flight leaves it stranded between slides.
-					if ( Math.abs( pos - real * width ) > 4 ) {
-						clearTimeout( settle );
-						settle = setTimeout( snapHome, 90 );
-						return;
-					}
+				if ( ! onTail && ! onHead ) {
+					return;
+				}
 
-					strip.scrollTo( { left: 0, behavior: 'auto' } );
-					at = 0;
-					paintDots();
-					paintSets();
+				// Wait for the strip to actually park on the copy — jumping
+				// mid-flight leaves it stranded between slides. Browsers
+				// mid-momentum also quietly drop the jump, so ask again
+				// until it truly lands.
+				var slot = onTail ? real + 1 : 0;
 
-					// A browser mid-momentum quietly drops the jump; ask
-					// again until it actually lands home.
+				if ( Math.abs( pos - slot * width ) > 4 ) {
 					clearTimeout( settle );
 					settle = setTimeout( snapHome, 90 );
+					return;
 				}
+
+				park( onTail ? 1 : real, false );
+				at = onTail ? 0 : real - 1;
+				paintDots();
+				paintSets();
+				clearTimeout( settle );
+				settle = setTimeout( snapHome, 90 );
 			}
 
 			if ( 'onscrollend' in strip ) {

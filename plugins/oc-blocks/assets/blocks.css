@@ -130,7 +130,7 @@
 }
 
 .ocb-btn--theme {
-	padding: 13px 34px;
+	padding: 10px 28px;
 	background: var(--oc-cta, var(--oc-primary, #2f4e7a));
 	color: #fff;
 	border: 1.5px solid var(--oc-cta, var(--oc-primary, #2f4e7a));
@@ -485,7 +485,7 @@
 .ocb-hero__cta {
 	display: inline-block;
 	margin-block-start: 18px;
-	padding: 12px 34px;
+	padding: 10px 28px;
 	background: #fff;
 	color: var(--oc-ink, #1c1c1c);
 	border-radius: var(--oc-cta-r, 8px);
@@ -1058,7 +1058,7 @@ html[dir="rtl"] .ocb-look__nav .ocb-arr svg { transform: scaleX(-1); }
 		display: block;
 		inline-size: 100%;
 		margin-block-start: 2px;
-		padding: 13px;
+		padding: 10px;
 		border: 1.5px solid var(--oc-ink, #1c1c1c);
 		border-radius: var(--oc-cta-r, 8px);
 		background: none;
@@ -1378,7 +1378,7 @@ html[dir="rtl"] .ocb-look__nav .ocb-arr svg { transform: scaleX(-1); }
 .ocb-news__mail {
 	flex: 1 1 auto;
 	min-inline-size: 0;
-	padding: 13px 16px;
+	padding: 10px 16px;
 	border: 1.5px solid color-mix(in srgb, currentColor 28%, transparent);
 	border-radius: var(--oc-cta-r, 8px);
 	background: var(--oc-surface, #fff);
@@ -1603,7 +1603,7 @@ html[dir="rtl"] .ocb-look__nav .ocb-arr svg { transform: scaleX(-1); }
 
 .ocb-lead__f input,
 .ocb-lead__f textarea {
-	padding: 12px 14px;
+	padding: 10px 14px;
 	border: 1.5px solid color-mix(in srgb, currentColor 22%, transparent);
 	border-radius: var(--oc-cta-r, 8px);
 	background: var(--oc-surface, #fff);
