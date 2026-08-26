@@ -2435,6 +2435,7 @@ final class Customizer {
 
 		$this->heading( $c, 'oc_h_ck_pack', 'oc_checkout', __( 'Signed-in checkout & address book', 'oc-theme' ) );
 		$this->opt_toggle( $c, $o, 'multi_address', 'oc_checkout', __( 'Pack a signed-in shopper\'s details and let them keep several saved addresses', 'oc-theme' ), false );
+		$this->opt_toggle( $c, $o, 'reorder', 'oc_checkout', __( 'Show an "Order again" button on the orders list', 'oc-theme' ), true );
 
 		$this->heading( $c, 'oc_h_ck_phone', 'oc_checkout', __( 'Phone validation', 'oc-theme' ) );
 		$this->opt_number( $c, $o, 'phone_min', 'oc_checkout', __( 'Digits from', 'oc-theme' ), 9, 0, 20 );

@@ -7767,3 +7767,70 @@
 		}
 	} );
 }() );
+
+/* -- orders list: "order again" with a cart-merge choice -- */
+( function () {
+	if ( ! document.querySelector( '[data-oc-reorder]' ) ) { return; }
+
+	var L = window.ocL10n || {};
+	var ajaxUrl = L.ajaxUrl || '/wp-admin/admin-ajax.php';
+
+	function post( id, nonce, mode ) {
+		var b = new FormData();
+		b.append( 'action', 'oc_reorder' );
+		b.append( 'order_id', id );
+		b.append( 'nonce', nonce );
+		b.append( 'mode', mode );
+		return fetch( ajaxUrl, { method: 'POST', credentials: 'same-origin', body: b } ).then( function ( r ) { return r.json(); } );
+	}
+
+	function go( out ) {
+		if ( out && out.success && out.data && out.data.redirect ) {
+			window.location.assign( out.data.redirect );
+			return true;
+		}
+		return false;
+	}
+
+	function modal( id, nonce ) {
+		var dim = document.createElement( 'div' );
+		dim.className = 'oc-reorder-dim';
+		dim.innerHTML =
+			'<div class="oc-reorder-box" role="alertdialog" aria-modal="true">' +
+			'<h4>' + ( L.reorderTitle || 'You already have items in your cart' ) + '</h4>' +
+			'<p>' + ( L.reorderBody || 'Add these products as well, or empty the cart and add only them?' ) + '</p>' +
+			'<div class="oc-reorder-acts">' +
+			'<button type="button" class="button oc-reorder-add">' + ( L.reorderAdd || 'Add as well' ) + '</button>' +
+			'<button type="button" class="button oc-reorder-replace">' + ( L.reorderReplace || 'Empty and add' ) + '</button>' +
+			'</div>' +
+			'<button type="button" class="oc-reorder-close" aria-label="' + ( L.reorderCancel || 'Cancel' ) + '">&times;</button>' +
+			'</div>';
+		document.body.appendChild( dim );
+
+		function close() { dim.remove(); }
+		function run( mode, btn ) {
+			btn.disabled = true;
+			post( id, nonce, mode ).then( function ( out ) { if ( ! go( out ) ) { btn.disabled = false; close(); } } );
+		}
+
+		dim.querySelector( '.oc-reorder-add' ).addEventListener( 'click', function () { run( 'add', this ); } );
+		dim.querySelector( '.oc-reorder-replace' ).addEventListener( 'click', function () { run( 'replace', this ); } );
+		dim.querySelector( '.oc-reorder-close' ).addEventListener( 'click', close );
+		dim.addEventListener( 'click', function ( e ) { if ( e.target === dim ) { close(); } } );
+	}
+
+	document.addEventListener( 'click', function ( e ) {
+		var btn = e.target.closest( '[data-oc-reorder]' );
+		if ( ! btn ) { return; }
+		e.preventDefault();
+		btn.disabled = true;
+		post( btn.dataset.ocReorder, btn.dataset.nonce, 'ask' ).then( function ( out ) {
+			btn.disabled = false;
+			if ( out && out.success && out.data && out.data.choice ) {
+				modal( btn.dataset.ocReorder, btn.dataset.nonce );
+			} else if ( ! go( out ) && out && out.data && out.data.msg ) {
+				window.alert( out.data.msg );
+			}
+		} );
+	} );
+}() );

@@ -52,6 +52,7 @@ final class Checkout {
 				'consent_text'    => '',      // Override for its label.
 				'help_text'       => '',      // Header help line ("Need help? 077…").
 				'multi_address'   => 0,       // Packed logged-in checkout + address book.
+				'reorder'         => 1,       // "Order again" button on the orders list.
 			)
 		);
 	}

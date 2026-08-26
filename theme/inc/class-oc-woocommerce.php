@@ -143,6 +143,16 @@ final class WooCommerce {
 		add_action( 'woocommerce_edit_account_form', array( $this, 'account_phone_field' ) );
 		add_action( 'woocommerce_save_account_details', array( $this, 'save_account_extras' ) );
 
+		// The orders list, reimagined: number over date, a product-thumbnail
+		// column, a colour-coded status pill, and an optional reorder button.
+		add_filter( 'woocommerce_account_orders_columns', array( $this, 'orders_columns' ) );
+		add_action( 'woocommerce_my_account_my_orders_column_order-number', array( $this, 'orders_col_number' ) );
+		add_action( 'woocommerce_my_account_my_orders_column_order-products', array( $this, 'orders_col_products' ) );
+		add_action( 'woocommerce_my_account_my_orders_column_order-total', array( $this, 'orders_col_total' ) );
+		add_action( 'woocommerce_my_account_my_orders_column_order-status', array( $this, 'orders_col_status' ) );
+		add_action( 'woocommerce_my_account_my_orders_column_order-actions', array( $this, 'orders_col_actions' ) );
+		add_action( 'wp_ajax_oc_reorder', array( $this, 'ajax_reorder' ) );
+
 		// /my-account/ itself lands on the orders, not on an empty dashboard.
 		// Matched by PATH, not by is_wc_endpoint_url() — custom endpoints
 		// (stock alerts and friends) are invisible to that check and were
@@ -1824,5 +1834,239 @@ final class WooCommerce {
 			update_user_meta( $user_id, 'billing_first_name', $user->first_name );
 			update_user_meta( $user_id, 'billing_last_name', $user->last_name );
 		}
+	}
+
+	/* --------------------------------------------------------- orders list */
+
+	/**
+	 * Reorder the columns: number (with the date beneath it), a product
+	 * thumbnail column in place of the date, total, status, actions.
+	 *
+	 * @param array<string,string> $cols Columns.
+	 * @return array<string,string>
+	 */
+	public function orders_columns( array $cols ): array {
+		$out = array();
+
+		$out['order-number']   = $cols['order-number'] ?? __( 'Order', 'woocommerce' );
+		$out['order-products'] = __( 'Products', 'oc-theme' );
+		$out['order-total']    = $cols['order-total'] ?? __( 'Total', 'woocommerce' );
+		$out['order-status']   = $cols['order-status'] ?? __( 'Status', 'woocommerce' );
+		$out['order-actions']  = $cols['order-actions'] ?? '&nbsp;';
+
+		return $out;
+	}
+
+	/**
+	 * Tone + label for an order status.
+	 *
+	 * @param string $status Status slug (no wc- prefix).
+	 * @return array{tone:string,label:string}
+	 */
+	private function status_meta( string $status ): array {
+		$tone = 'muted';
+		switch ( $status ) {
+			case 'completed':
+				$tone = 'ok';
+				break;
+			case 'processing':
+			case 'on-hold':
+				$tone = 'work';
+				break;
+			case 'pending':
+				$tone = 'pend';
+				break;
+			case 'cancelled':
+			case 'refunded':
+			case 'failed':
+				$tone = 'bad';
+				break;
+		}
+
+		return array(
+			'tone'  => $tone,
+			'label' => wc_get_order_status_name( $status ),
+		);
+	}
+
+	/**
+	 * Order number with the date on the line below, as DD/MM/YY.
+	 *
+	 * @param \WC_Order $order Order.
+	 */
+	public function orders_col_number( $order ): void {
+		$created = $order->get_date_created();
+		$date    = $created ? $created->date_i18n( 'd/m/y' ) : '';
+		?>
+		<a href="<?php echo esc_url( $order->get_view_order_url() ); ?>" class="oc-onum"><?php echo esc_html( '#' . $order->get_order_number() ); ?></a>
+		<?php if ( '' !== $date ) : ?>
+			<time class="oc-odate" datetime="<?php echo esc_attr( $created->date( 'c' ) ); ?>"><?php echo esc_html( $date ); ?></time>
+		<?php endif; ?>
+		<?php
+	}
+
+	/**
+	 * Product thumbnails (rounded squares) with an overflow chip, and the
+	 * product count beneath.
+	 *
+	 * @param \WC_Order $order Order.
+	 */
+	public function orders_col_products( $order ): void {
+		$items = $order->get_items();
+		$count = count( $items );
+		$max   = 4;
+		$i     = 0;
+		?>
+		<div class="oc-oprods">
+			<div class="oc-oprods__imgs">
+				<?php
+				foreach ( $items as $item ) {
+					if ( $i >= $max ) {
+						break;
+					}
+					$product = $item->get_product();
+					$pid     = $product ? $product->get_image_id() : 0;
+					$url     = $pid ? wp_get_attachment_image_url( $pid, 'woocommerce_thumbnail' ) : wc_placeholder_img_src( 'woocommerce_thumbnail' );
+					?>
+					<span class="oc-oprods__img"><img src="<?php echo esc_url( (string) $url ); ?>" alt="" loading="lazy" /></span>
+					<?php
+					++$i;
+				}
+				if ( $count > $max ) :
+					?>
+					<span class="oc-oprods__more">+<?php echo esc_html( (string) ( $count - $max ) ); ?></span>
+					<?php
+				endif;
+				?>
+			</div>
+			<span class="oc-oprods__count">
+				<?php
+				/* translators: %s: number of products. */
+				echo esc_html( sprintf( _n( '%s product', '%s products', $count, 'oc-theme' ), number_format_i18n( $count ) ) );
+				?>
+			</span>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Just the price — the item count already lives in the products column.
+	 *
+	 * @param \WC_Order $order Order.
+	 */
+	public function orders_col_total( $order ): void {
+		echo wp_kses_post( $order->get_formatted_order_total() );
+	}
+
+	/**
+	 * The status as a soft colour-coded pill.
+	 *
+	 * @param \WC_Order $order Order.
+	 */
+	public function orders_col_status( $order ): void {
+		$meta = $this->status_meta( $order->get_status() );
+		printf(
+			'<span class="oc-ostatus oc-ostatus--%1$s">%2$s</span>',
+			esc_attr( $meta['tone'] ),
+			esc_html( $meta['label'] )
+		);
+	}
+
+	/**
+	 * The standard order actions, plus an optional "order again" button.
+	 *
+	 * @param \WC_Order $order Order.
+	 */
+	public function orders_col_actions( $order ): void {
+		$actions = wc_get_account_orders_actions( $order );
+
+		foreach ( $actions as $key => $action ) {
+			printf(
+				'<a href="%1$s" class="woocommerce-button button %2$s">%3$s</a>',
+				esc_url( $action['url'] ),
+				esc_attr( sanitize_html_class( $key ) ),
+				esc_html( $action['name'] )
+			);
+		}
+
+		if ( ! empty( Checkout::settings()['reorder'] ) && count( $order->get_items() ) ) {
+			printf(
+				'<button type="button" class="woocommerce-button button oc-reorder" data-oc-reorder="%1$d" data-nonce="%2$s">%3$s</button>',
+				absint( $order->get_id() ),
+				esc_attr( wp_create_nonce( 'oc_reorder' ) ),
+				esc_html__( 'Order again', 'oc-theme' )
+			);
+		}
+	}
+
+	/**
+	 * Add an order's items back to the cart. Modes: 'ask' (report a non-empty
+	 * cart so the client can offer a choice), 'add' (keep what's there), or
+	 * 'replace' (empty first). Returns the checkout URL to send them on.
+	 */
+	public function ajax_reorder(): void {
+		check_ajax_referer( 'oc_reorder', 'nonce' );
+
+		if ( ! is_user_logged_in() ) {
+			wp_send_json_error( array( 'msg' => __( 'Please sign in first.', 'oc-theme' ) ) );
+		}
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- verified above.
+		$order = wc_get_order( absint( $_POST['order_id'] ?? 0 ) );
+
+		if ( ! $order || (int) $order->get_customer_id() !== get_current_user_id() ) {
+			wp_send_json_error( array( 'msg' => __( 'That order could not be found.', 'oc-theme' ) ) );
+		}
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- verified above.
+		$mode = sanitize_text_field( wp_unslash( $_POST['mode'] ?? 'ask' ) );
+		$cart = WC()->cart;
+
+		if ( 'ask' === $mode && $cart->get_cart_contents_count() > 0 ) {
+			wp_send_json_success( array( 'choice' => true ) );
+		}
+
+		if ( 'replace' === $mode ) {
+			$cart->empty_cart();
+		}
+
+		$added   = 0;
+		$skipped = 0;
+
+		foreach ( $order->get_items() as $item ) {
+			$product = $item->get_product();
+			if ( ! $product || ! $product->is_purchasable() || ! $product->is_in_stock() ) {
+				++$skipped;
+				continue;
+			}
+
+			$variations = array();
+			foreach ( $item->get_meta_data() as $meta ) {
+				if ( taxonomy_is_product_attribute( $meta->key ) ) {
+					$variations[ $meta->key ] = $meta->value;
+				} elseif ( meta_is_product_attribute( $meta->key, $meta->value, $item->get_product_id() ) ) {
+					$variations[ $meta->key ] = $meta->value;
+				}
+			}
+
+			$ok = $cart->add_to_cart( $item->get_product_id(), $item->get_quantity(), $item->get_variation_id(), $variations );
+			if ( $ok ) {
+				++$added;
+			} else {
+				++$skipped;
+			}
+		}
+
+		if ( ! $added ) {
+			wp_send_json_error( array( 'msg' => __( 'None of these products are available right now.', 'oc-theme' ) ) );
+		}
+
+		wp_send_json_success(
+			array(
+				'added'    => $added,
+				'skipped'  => $skipped,
+				'redirect' => wc_get_checkout_url(),
+			)
+		);
 	}
 }

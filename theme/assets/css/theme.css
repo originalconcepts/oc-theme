@@ -12258,6 +12258,166 @@ html[dir="rtl"] .oc-bye { translate: 50% 0; }
 .woocommerce-MyAccount-content > h2,
 .woocommerce-MyAccount-content > h3 { margin-block-start: 0; }
 
+/* ---------- orders list ---------- */
+.woocommerce-orders-table { border-collapse: collapse; inline-size: 100%; }
+.woocommerce-orders-table th {
+	text-align: start;
+	font-size: .82rem;
+	font-weight: 600;
+	color: var(--oc-ink-2, #6b7482);
+	padding: 0 12px 10px;
+	border-block-end: 1px solid var(--oc-line, #e5e2dd);
+}
+.woocommerce-orders-table td {
+	vertical-align: middle;
+	padding: 14px 12px;
+	border-block-end: 1px solid var(--oc-line, #eee9e3);
+}
+
+.oc-onum { display: block; font-weight: 600; color: var(--oc-ink, #111); text-decoration: none; }
+.oc-onum:hover { text-decoration: underline; }
+.oc-odate { display: block; margin-block-start: 3px; font-size: .82rem; color: var(--oc-ink-2, #6b7482); font-variant-numeric: tabular-nums; }
+
+/* product thumbnails: rounded app-icon squares in a row, count beneath */
+.oc-oprods { display: flex; flex-direction: column; gap: 7px; }
+.oc-oprods__imgs { display: flex; gap: 6px; align-items: center; }
+.oc-oprods__img,
+.oc-oprods__more {
+	inline-size: 46px;
+	block-size: 46px;
+	border-radius: 12px;
+	flex: none;
+	border: 1px solid var(--oc-line, #e5e2dd);
+	background: var(--oc-bg-2, #f6f5f3);
+	overflow: hidden;
+}
+.oc-oprods__img img { inline-size: 100%; block-size: 100%; object-fit: cover; display: block; }
+.oc-oprods__more {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	font-weight: 600;
+	font-size: .85rem;
+	color: var(--oc-ink-2, #6b7482);
+}
+.oc-oprods__count { font-size: .82rem; color: var(--oc-ink-2, #6b7482); }
+
+/* status pill: a soft colour ellipse behind the label */
+.oc-ostatus {
+	display: inline-block;
+	padding: 5px 15px;
+	border-radius: 999px;
+	font-size: .85rem;
+	font-weight: 600;
+	white-space: nowrap;
+}
+.oc-ostatus--ok   { color: var(--oc-success, #2f7d4f); background: color-mix(in srgb, var(--oc-success, #2f7d4f) 13%, transparent); }
+.oc-ostatus--work { color: #a9680c; background: color-mix(in srgb, #c9760f 16%, transparent); }
+.oc-ostatus--pend { color: #2f5fa8; background: color-mix(in srgb, #2f5fa8 13%, transparent); }
+.oc-ostatus--bad  { color: var(--oc-sale, #b4453c); background: color-mix(in srgb, var(--oc-sale, #b4453c) 12%, transparent); }
+.oc-ostatus--muted { color: var(--oc-ink-2, #6b7482); background: color-mix(in srgb, var(--oc-ink-2, #6b7482) 12%, transparent); }
+
+/* actions: wrap neatly */
+.woocommerce-orders-table__cell-order-actions { white-space: nowrap; }
+.woocommerce-orders-table__cell-order-actions .button { margin: 3px 0 3px 6px; }
+.woocommerce-orders-table__cell-order-actions .oc-reorder {
+	background: none;
+	color: var(--oc-ink, #111);
+	border: 1px solid var(--oc-line, #d9d6d0);
+}
+.woocommerce-orders-table__cell-order-actions .oc-reorder:hover { border-color: var(--oc-ink, #111); }
+
+/* reorder cart-merge dialog */
+.oc-reorder-dim {
+	position: fixed;
+	inset: 0;
+	z-index: 9999;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 20px;
+	background: rgba(0, 0, 0, .42);
+}
+.oc-reorder-box {
+	position: relative;
+	inline-size: 100%;
+	max-inline-size: 400px;
+	background: #fff;
+	border-radius: 14px;
+	padding: 28px 24px 24px;
+	text-align: center;
+}
+.oc-reorder-box h4 { margin: 0 0 8px; font-size: 1.12rem; }
+.oc-reorder-box p { margin: 0 0 20px; color: var(--oc-ink-2, #6b7482); font-size: .9rem; line-height: 1.6; }
+.oc-reorder-acts { display: flex; flex-direction: column; gap: 10px; }
+.oc-reorder-acts .button { inline-size: 100%; margin: 0; justify-content: center; }
+.oc-reorder-replace {
+	background: none !important;
+	color: var(--oc-ink, #111) !important;
+	border: 1px solid var(--oc-line, #d9d6d0) !important;
+}
+.oc-reorder-close {
+	position: absolute;
+	inset-block-start: 12px;
+	inset-inline-end: 14px;
+	border: 0;
+	background: none;
+	font-size: 1.5rem;
+	line-height: 1;
+	cursor: pointer;
+	color: var(--oc-ink-2, #6b7482);
+}
+
+/* orders on phones: each order becomes a comfortable card, not a scroll strip
+ * (overrides the shared one-line-scroll rule for account tables) */
+@media (max-width: 900px) {
+	.woocommerce-MyAccount-content .woocommerce-orders-table.shop_table_responsive {
+		display: block;
+		overflow: visible;
+		white-space: normal;
+	}
+	.woocommerce-MyAccount-content .woocommerce-orders-table thead { display: none; }
+	.woocommerce-MyAccount-content .woocommerce-orders-table tbody,
+	.woocommerce-MyAccount-content .woocommerce-orders-table tr { display: block; }
+
+	.woocommerce-MyAccount-content .woocommerce-orders-table tr {
+		display: grid;
+		grid-template-columns: 1fr auto;
+		gap: 12px 12px;
+		align-items: center;
+		border: 1px solid var(--oc-line, #e5e2dd);
+		border-radius: 12px;
+		padding: 15px;
+		margin-block-end: 14px;
+	}
+	.woocommerce-MyAccount-content .woocommerce-orders-table td {
+		display: block;
+		padding: 0;
+		border: 0;
+		text-align: start !important;
+	}
+	.woocommerce-MyAccount-content .woocommerce-orders-table td::before { display: none !important; }
+
+	.woocommerce-orders-table__cell-order-number   { grid-column: 1; grid-row: 1; }
+	.woocommerce-orders-table__cell-order-status    { grid-column: 2; grid-row: 1; justify-self: end; }
+	.woocommerce-orders-table__cell-order-products  { grid-column: 1 / -1; grid-row: 2; }
+	.woocommerce-orders-table__cell-order-total     { grid-column: 1 / -1; grid-row: 3; font-weight: 600; }
+	.woocommerce-orders-table__cell-order-actions   {
+		grid-column: 1 / -1;
+		grid-row: 4;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px;
+		white-space: normal;
+	}
+	.woocommerce-orders-table__cell-order-actions .button {
+		flex: 1 1 auto;
+		min-inline-size: 120px;
+		margin: 0;
+		justify-content: center;
+	}
+}
+
 /* Fields wear the checkout's exact clothes: rounded, the label resting
  * inside like a placeholder and gliding up on focus/fill. Forms cap at
  * the width of the name pair — no field sprawls across the page. */

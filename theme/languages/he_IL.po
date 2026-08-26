@@ -5249,3 +5249,35 @@ msgstr "חזרה לכתובות השמורות"
 
 msgid "%s is required."
 msgstr "%s הוא שדה חובה."
+
+msgid "%s product"
+msgid_plural "%s products"
+msgstr[0] "מוצר %s"
+msgstr[1] "%s מוצרים"
+
+msgid "Order again"
+msgstr "הזמנה מחדש"
+
+msgid "You already have items in your cart"
+msgstr "כבר יש לך מוצרים בסל"
+
+msgid "Add these products as well, or empty the cart and add only them?"
+msgstr "להוסיף את המוצרים האלה בנוסף, או לרוקן את הסל ולהוסיף רק אותם?"
+
+msgid "Add as well"
+msgstr "הוספה בנוסף"
+
+msgid "Empty and add"
+msgstr "רוקן והוסף"
+
+msgid "Please sign in first."
+msgstr "יש להתחבר תחילה."
+
+msgid "That order could not be found."
+msgstr "ההזמנה לא נמצאה."
+
+msgid "None of these products are available right now."
+msgstr "אף אחד מהמוצרים אינו זמין כרגע."
+
+msgid "Show an \"Order again\" button on the orders list"
+msgstr "הצגת כפתור ״הזמנה מחדש״ בעמוד ההזמנות"
