@@ -12289,7 +12289,7 @@ html[dir="rtl"] .oc-bye { translate: 50% 0; }
 /* product thumbnails: rounded app-icon squares, the count above them; the
  * whole block links to the order */
 .oc-oprods { display: flex; flex-direction: column; gap: 8px; text-decoration: none; color: inherit; }
-.oc-oprods__imgs { display: flex; gap: 7px; align-items: center; }
+.oc-oprods__imgs { display: flex; flex-wrap: wrap; gap: 7px; align-items: center; }
 .oc-oprods__img,
 .oc-oprods__more {
 	inline-size: 56px;
