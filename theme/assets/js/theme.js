@@ -6360,6 +6360,7 @@
 		var L = window.ocL10n || {};
 		var vp = null;
 		var st = null;
+		var vpWant = '';
 
 		function vpEl( tag, cls, text ) {
 			var n = document.createElement( tag );
@@ -6876,6 +6877,26 @@
 				}
 			} );
 
+			/* The colour arrives answered: the card's current colour when it
+			 * matches, the first otherwise — the same default the catalogue
+			 * and the product page show. */
+			st.groups.forEach( function ( g ) {
+				if ( g.auto || 'swatch' !== g.type || st.sel[ g.key ] || ! g.options.length ) {
+					return;
+				}
+
+				var want = '';
+
+				g.options.forEach( function ( o ) {
+					if ( o.slug === vpWant ) {
+						want = o.slug;
+					}
+				} );
+
+				st.sel[ g.key ] = want || g.options[ 0 ].slug;
+			} );
+			vpWant = '';
+
 			vpPaint();
 		}
 
@@ -7042,6 +7063,11 @@
 
 			e.preventDefault();
 			e.stopPropagation();
+
+			// The colour the card is showing travels into the panel.
+			var curDot = a.closest( 'li.product' ) && a.closest( 'li.product' ).querySelector( '.oc-colors__item--term.is-current' );
+			vpWant = curDot ? ( curDot.dataset.slug || '' ) : '';
+
 			vpOpen( a.dataset.product_id || a.getAttribute( 'data-product_id' ) || '' );
 		}, true );
 

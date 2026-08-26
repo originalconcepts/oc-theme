@@ -1037,6 +1037,26 @@ final class Cart {
 					);
 				}
 
+				// The panel keeps the product page's order — terms, not the
+				// order the variations happen to be stored in. Variation
+				// slugs arrive percent-encoded for Hebrew, term slugs plain:
+				// the map answers to both spellings.
+				if ( taxonomy_exists( $attr ) && count( $opts ) > 1 ) {
+					$order = array();
+
+					foreach ( (array) wc_get_product_terms( $product->get_id(), $attr, array( 'fields' => 'slugs' ) ) as $i => $term_slug ) {
+						$order[ (string) $term_slug ]                  = $i;
+						$order[ rawurlencode( (string) $term_slug ) ]  = $i;
+					}
+
+					usort(
+						$opts,
+						static function ( $a, $b ) use ( $order ) {
+							return ( $order[ $a['slug'] ] ?? 999 ) <=> ( $order[ $b['slug'] ] ?? 999 );
+						}
+					);
+				}
+
 				$groups[] = array(
 					'key'     => wc_variation_attribute_name( $attr ),
 					'label'   => wc_attribute_label( $attr, $product ),
