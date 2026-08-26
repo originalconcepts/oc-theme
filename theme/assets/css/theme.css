@@ -12342,7 +12342,7 @@ html[dir="rtl"] .oc-bye { translate: 50% 0; }
 .woocommerce-orders-table__cell-order-actions {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 8px;
+	gap: 10px;
 	align-items: center;
 }
 .woocommerce-orders-table__cell-order-actions .button {
@@ -12353,17 +12353,17 @@ html[dir="rtl"] .oc-bye { translate: 50% 0; }
 	font-weight: 600;
 }
 /* primary action (view) wears the brand; reorder stays a quiet outline */
-.woocommerce-orders-table__cell-order-actions .button.view {
-	background: var(--oc-primary, #03104c);
-	color: #fff;
-	border: 1px solid var(--oc-primary, #03104c);
+.woocommerce-account .woocommerce-MyAccount-content .woocommerce-orders-table__cell-order-actions a.button.view {
+	background: var(--oc-primary, #03104c) !important;
+	color: #fff !important;
+	border: 1px solid var(--oc-primary, #03104c) !important;
 }
 .woocommerce-orders-table__cell-order-actions .oc-reorder {
-	background: none;
-	color: var(--oc-ink, #111);
-	border: 1px solid var(--oc-line, #d9d6d0);
+	background: none !important;
+	color: var(--oc-ink, #111) !important;
+	border: 1px solid var(--oc-line, #d9d6d0) !important;
 }
-.woocommerce-orders-table__cell-order-actions .oc-reorder:hover { border-color: var(--oc-ink, #111); }
+.woocommerce-orders-table__cell-order-actions .oc-reorder:hover { border-color: var(--oc-ink, #111) !important; }
 
 /* reorder cart-merge dialog */
 .oc-reorder-dim {
