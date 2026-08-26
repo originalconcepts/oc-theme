@@ -954,8 +954,20 @@ final class Auth {
 	 * we sign ourselves with the downloaded .p8 key, ES256.
 	 */
 	private function apple_secret(): string {
-		$s   = self::settings();
-		$key = openssl_pkey_get_private( (string) $s['apple_key'] );
+		$s = self::settings();
+
+		// People paste the .p8 in every shape — with the BEGIN/END lines,
+		// without them, single-line, CRLF. Rebuild the canonical PEM from
+		// the base64 body and every shape reads.
+		$b64 = (string) preg_replace( '/-----[^-]+-----|\s+/', '', (string) $s['apple_key'] );
+
+		if ( '' === $b64 ) {
+			return '';
+		}
+
+		$key = openssl_pkey_get_private(
+			"-----BEGIN PRIVATE KEY-----\n" . chunk_split( $b64, 64, "\n" ) . '-----END PRIVATE KEY-----'
+		);
 
 		if ( false === $key ) {
 			return '';
