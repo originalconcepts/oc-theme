@@ -513,12 +513,13 @@ final class Auth {
 
 		$user_id = wp_insert_user(
 			array(
-				'user_login' => $login,
-				'user_pass'  => wp_generate_password( 24 ),
-				'user_email' => $email,
-				'first_name' => $first,
-				'last_name'  => $last,
-				'role'       => class_exists( 'WooCommerce' ) ? 'customer' : 'subscriber',
+				'user_login'   => $login,
+				'user_pass'    => wp_generate_password( 24 ),
+				'user_email'   => $email,
+				'first_name'   => $first,
+				'last_name'    => $last,
+				'display_name' => trim( $first . ' ' . $last ),
+				'role'         => class_exists( 'WooCommerce' ) ? 'customer' : 'subscriber',
 			)
 		);
 
@@ -686,12 +687,14 @@ final class Auth {
 		if ( ! $user ) {
 			$user_id = wp_insert_user(
 				array(
-					'user_login' => $prefix . substr( md5( $meta_key . $provider_id ), 0, 12 ),
-					'user_pass'  => wp_generate_password( 24 ),
-					'user_email' => $email,
-					'first_name' => $first,
-					'last_name'  => $last,
-					'role'       => class_exists( 'WooCommerce' ) ? 'customer' : 'subscriber',
+					'user_login'   => $prefix . substr( md5( $meta_key . $provider_id ), 0, 12 ),
+					'user_pass'    => wp_generate_password( 24 ),
+					'user_email'   => $email,
+					'first_name'   => $first,
+					'last_name'    => $last,
+					// Without this the greeting says the internal login hash.
+					'display_name' => '' !== trim( $first . ' ' . $last ) ? trim( $first . ' ' . $last ) : __( 'Customer', 'oc-theme' ),
+					'role'         => class_exists( 'WooCommerce' ) ? 'customer' : 'subscriber',
 				)
 			);
 

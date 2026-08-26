@@ -238,6 +238,7 @@ final class Auth_Admin {
 						<br><code style="direction:ltr;display:inline-block;user-select:all"><?php echo esc_html( admin_url( 'admin-post.php?action=oc_auth_apple_cb' ) ); ?></code>
 					</li>
 					<li><?php esc_html_e( 'Keys: create a new key, tick "Sign in with Apple", configure it to the App ID, and download the .p8 file — Apple hands it out exactly once. Note the Key ID, and paste the file\'s contents above.', 'oc-theme' ); ?></li>
+					<li><?php esc_html_e( 'Customers may pick "Hide My Email" and get a relay address — it works, but Apple only forwards mail from registered senders: under Services, "Sign in with Apple for Email Communication", add the site domain and the shop\'s sending address, or order emails will never reach them.', 'oc-theme' ); ?></li>
 				</ol>
 			</details>
 

@@ -5009,3 +5009,6 @@ msgstr "המפתחות יושבים בראש אותו מסך Basic: ה-App ID ג
 
 msgid "In Development mode the login works only for the app's own admins — handy for a first test. Once it works, flip the toggle at the top to Live so every customer can sign in. The basic email and public_profile permissions need no review."
 msgstr "במצב Development ההתחברות עובדת רק לאדמינים של האפליקציה — נוח לבדיקה ראשונה. כשעובד, מעבירים את המתג למעלה ל-Live כדי שכל לקוח יוכל להיכנס. ההרשאות הבסיסיות email ו-public_profile לא דורשות אישור."
+
+msgid "Customers may pick \"Hide My Email\" and get a relay address — it works, but Apple only forwards mail from registered senders: under Services, \"Sign in with Apple for Email Communication\", add the site domain and the shop's sending address, or order emails will never reach them."
+msgstr "לקוחות עשויים לבחור \"הסתר את האימייל שלי\" ולקבל כתובת ממסר — היא עובדת, אבל אפל מעבירה מיילים רק משולחים רשומים: תחת Services ← \"Sign in with Apple for Email Communication\" מוסיפים את דומיין האתר ואת כתובת השליחה של החנות, אחרת אישורי הזמנה לא יגיעו אליהם."
