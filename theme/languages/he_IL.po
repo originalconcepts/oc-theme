@@ -4862,3 +4862,6 @@ msgstr "רך"
 
 msgid "Round"
 msgstr "עגול"
+
+msgid "Up to 11 characters — the carrier's rule; anything longer is refused."
+msgstr "עד 11 תווים — מגבלת המפעילים; ארוך יותר נדחה."

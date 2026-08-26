@@ -76,7 +76,10 @@ final class Auth_Admin {
 				</tr>
 				<tr>
 					<th><?php esc_html_e( 'Sender name', 'oc-theme' ); ?></th>
-					<td><input type="text" name="sender" class="regular-text" value="<?php echo esc_attr( (string) $s['sender'] ); ?>" placeholder="<?php echo esc_attr( (string) get_bloginfo( 'name' ) ); ?>"></td>
+					<td>
+						<input type="text" name="sender" class="regular-text" maxlength="11" value="<?php echo esc_attr( (string) $s['sender'] ); ?>" placeholder="<?php echo esc_attr( (string) get_bloginfo( 'name' ) ); ?>">
+						<p class="description"><?php esc_html_e( 'Up to 11 characters — the carrier\'s rule; anything longer is refused.', 'oc-theme' ); ?></p>
+					</td>
 				</tr>
 				<tr>
 					<th><?php esc_html_e( 'Reach', 'oc-theme' ); ?></th>

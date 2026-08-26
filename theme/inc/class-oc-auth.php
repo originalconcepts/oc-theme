@@ -275,6 +275,12 @@ final class Auth {
 			return false;
 		}
 
+		// A sender name may carry at most 11 characters — the carrier's
+		// rule, enforced by ActiveTrail with a 400. Never let a long shop
+		// name silently kill every code.
+		$from = trim( (string) $s['sender'] );
+		$from = mb_substr( '' !== $from ? $from : (string) get_bloginfo( 'name' ), 0, 11 );
+
 		$response = wp_remote_post(
 			'https://webapi.mymarketing.co.il/api/smscampaign/OperationalMessage',
 			array(
@@ -289,7 +295,7 @@ final class Auth {
 							'unsubscribe_text' => '',
 							'can_unsubscribe'  => false,
 							'name'             => 'login',
-							'from_name'        => '' !== trim( (string) $s['sender'] ) ? (string) $s['sender'] : (string) get_bloginfo( 'name' ),
+							'from_name'        => $from,
 							/* translators: %s: the code. */
 							'content'          => sprintf( __( '%s is your sign-in code', 'oc-theme' ), $code ),
 						),
