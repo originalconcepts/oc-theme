@@ -68,6 +68,11 @@ final class WooCommerce {
 				// pattern so the address title never leaks into the link.
 				'ערוך %s'  => 'עריכה',
 				'להוסיף %s' => 'הוספה',
+				// Order statuses read to the customer in the feminine.
+				'הושלם' => 'הושלמה',
+				'בוטלו' => 'בוטלה',
+				'בוטל' => 'בוטלה',
+				'ממתין לתשלום' => 'טרם שולמה',
 			);
 
 			return $map[ $translation ] ?? $translation;
