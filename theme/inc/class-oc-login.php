@@ -64,6 +64,16 @@ final class Gate {
 		add_action( 'after_setup_theme', array( $this, 'mark_request' ), 1 );
 		add_action( 'wp_loaded', array( $this, 'handle' ) );
 
+		// Signing out of a shop lands on the shop — never on WordPress's
+		// own login screen (which the Gate hides anyway).
+		add_filter(
+			'logout_redirect',
+			static function (): string {
+				return home_url( '/' );
+			},
+			99
+		);
+
 		// Anything WordPress prints, mails or redirects to must use the new path.
 		add_filter( 'site_url', array( $this, 'filter_url' ), 10, 2 );
 		add_filter( 'network_site_url', array( $this, 'filter_url' ), 10, 2 );
