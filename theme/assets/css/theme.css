@@ -9572,10 +9572,10 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 	display: flex;
 	align-items: center;
 	gap: 12px;
-	padding: 13px 15px;
+	padding: 15px 17px;
 	border: 1px solid var(--oc-line, #e5e2dd);
-	border-radius: var(--oc-cta-r, 8px);
-	background: var(--oc-bg, #fff);
+	border-radius: 14px;
+	background: #fff;
 	margin-block: 8px 4px;
 }
 .oc-copack-card__body { display: flex; flex-direction: column; gap: 2px; min-inline-size: 0; }
@@ -9599,24 +9599,35 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 .oc-copack.is-edit-orderer .oc-copack-card--orderer { display: none; }
 
 /* saved-address selector */
-.oc-co-addrsel { display: flex; flex-direction: column; gap: 8px; margin: 12px 0 4px; }
+.oc-co-addrsel { display: flex; flex-direction: column; gap: 10px; margin: 12px 0 4px; }
 .oc-co-addrcard {
 	display: flex;
 	align-items: center;
-	gap: 11px;
-	padding: 12px 14px;
+	gap: 12px;
+	padding: 15px 17px;
 	border: 1px solid var(--oc-line, #d9d6d0);
-	border-radius: var(--oc-cta-r, 8px);
-	background: var(--oc-bg, #fff);
+	border-radius: 14px;
+	background: #fff;
 	cursor: pointer;
-	transition: border-color .12s ease;
+	transition: border-color .12s ease, box-shadow .12s ease;
 }
-.oc-co-addrcard.is-on { border-color: var(--oc-ink, #111); }
-.oc-co-addrcard input { accent-color: var(--oc-ink, #111); flex: none; }
+.oc-co-addrcard.is-on {
+	border-color: var(--oc-ink, #111);
+	box-shadow: inset 0 0 0 1px var(--oc-ink, #111);
+}
+/* pin the radio: the theme sets input{width:100%}, which otherwise drops it
+ * onto its own line above the text */
+.oc-co-addrcard input[type="radio"] {
+	flex: none;
+	inline-size: 18px;
+	block-size: 18px;
+	margin: 0;
+	accent-color: var(--oc-ink, #111);
+}
 .oc-co-addrcard__in { display: flex; flex-direction: column; gap: 2px; min-inline-size: 0; }
 .oc-co-addrcard__label { font-weight: 600; font-size: .9rem; }
 .oc-co-addrcard__line { color: var(--oc-ink-2, #666); font-size: .85rem; }
-.oc-co-addrcard__new { font-weight: 600; font-size: .9rem; }
+.oc-co-addrcard__new { font-weight: 600; font-size: .92rem; }
 
 /* address fields fold away while a saved address is selected */
 .oc-copack-addr:not(.is-add-addr) .oc-co-addr { display: none !important; }
@@ -9628,11 +9639,11 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 .oc-co-chip {
 	border: 1px solid var(--oc-line, #d9d6d0);
 	border-radius: 999px;
-	background: var(--oc-bg, #fff);
+	background: #fff;
 	color: var(--oc-ink, #111);
 	font: inherit;
 	font-size: .84rem;
-	padding: 6px 14px;
+	padding: 7px 16px;
 	cursor: pointer;
 	transition: border-color .12s ease, background .12s ease, color .12s ease;
 }
@@ -9643,10 +9654,10 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 	inline-size: 100%;
 	max-inline-size: 260px;
 	border: 1px solid var(--oc-line, #d9d6d0);
-	border-radius: var(--oc-cta-r, 8px);
-	background: var(--oc-bg, #fff);
+	border-radius: 12px;
+	background: #fff;
 	color: var(--oc-ink, #111);
-	padding-inline: 12px;
+	padding-inline: 13px;
 	font: inherit;
 }
 /* label a NEW address only — hide the chips when a saved one is chosen */
@@ -12462,10 +12473,12 @@ p.no-comments {
 
 /* ---------- checkout sign-in block (OC Auth in the checkout) ---------- */
 
+/* a modern, self-contained card — rounded even where the site runs sharp
+ * corners (its radius tokens are 0), on a clean white ground */
 .oc-colog {
 	border: 1px solid var(--oc-line, #e5e2dd);
-	border-radius: var(--oc-radius, 12px);
-	background: var(--oc-bg-2, #f6f5f3);
+	border-radius: 16px;
+	background: #fff;
 	margin-block-end: 22px;
 	overflow: hidden;
 }
@@ -12477,31 +12490,34 @@ p.no-comments {
 	align-items: center;
 	justify-content: space-between;
 	gap: 12px;
-	padding: 15px 18px;
+	padding: 17px 20px;
 	border: 0;
 	background: none;
 	color: var(--oc-ink, #111);
 	font: inherit;
-	font-weight: 700;
-	font-size: .98rem;
+	font-weight: 600;
+	font-size: 1rem;
 	text-align: start;
 	cursor: pointer;
 }
-.oc-colog__head-t { line-height: 1.3; }
+.oc-colog__head-t { line-height: 1.35; }
 
-/* a + that becomes − when the panel is open */
+/* a + that becomes − when open, set in a soft round chip */
 .oc-colog__head-ic {
 	position: relative;
 	flex: none;
-	inline-size: 20px;
-	block-size: 20px;
+	inline-size: 28px;
+	block-size: 28px;
+	border-radius: 50%;
+	background: color-mix(in srgb, var(--oc-ink, #151a21) 6%, transparent);
+	color: var(--oc-ink-2, #6b7482);
 }
 .oc-colog__head-ic::before,
 .oc-colog__head-ic::after {
 	content: "";
 	position: absolute;
 	inset-block-start: 50%;
-	inset-inline: 2px;
+	inset-inline: 8px;
 	block-size: 2px;
 	margin-block-start: -1px;
 	background: currentColor;
@@ -12514,7 +12530,7 @@ p.no-comments {
 .oc-colog.is-open .oc-colog__head-ic::after { rotate: 0deg; opacity: 0; }
 
 .oc-colog__body {
-	padding: 2px 18px 20px;
+	padding: 4px 20px 22px;
 	border-block-start: 1px solid var(--oc-line, #e5e2dd);
 }
 
@@ -12524,20 +12540,20 @@ p.no-comments {
 .oc-colog__telrow { display: flex; gap: 8px; }
 .oc-colog__telrow input {
 	flex: 1;
-	block-size: 48px;
+	block-size: 50px;
 	border: 1px solid var(--oc-line, #d9d6d0);
-	border-radius: var(--oc-cta-r, 8px);
-	background: var(--oc-bg, #fff);
+	border-radius: 12px;
+	background: #fff;
 	color: var(--oc-ink, #111);
-	padding-inline: 13px;
+	padding-inline: 15px;
 	font: inherit;
 }
 .oc-colog__telrow button {
 	flex: none;
-	block-size: 48px;
+	block-size: 50px;
 	padding-inline: 22px;
 	border: 0;
-	border-radius: var(--oc-cta-r, 8px);
+	border-radius: 12px;
 	background: var(--oc-cta, var(--oc-primary, #111));
 	color: #fff;
 	font: inherit;
@@ -12551,10 +12567,10 @@ p.no-comments {
 .oc-colog__provs { display: flex; gap: 8px; }
 .oc-colog__prov {
 	flex: 1;
-	block-size: 46px;
+	block-size: 48px;
 	border: 1px solid var(--oc-line, #d9d6d0);
-	border-radius: var(--oc-cta-r, 8px);
-	background: var(--oc-bg, #fff);
+	border-radius: 12px;
+	background: #fff;
 	color: var(--oc-ink, #111);
 	display: flex;
 	align-items: center;
@@ -12611,8 +12627,8 @@ p.no-comments {
 	text-align: center;
 	font-size: 1.2rem;
 	border: 1px solid var(--oc-line, #d9d6d0);
-	border-radius: var(--oc-cta-r, 8px);
-	background: var(--oc-bg, #fff);
+	border-radius: 12px;
+	background: #fff;
 	color: var(--oc-ink, #111);
 }
 
@@ -12620,8 +12636,8 @@ p.no-comments {
 .oc-colog__emailform input {
 	block-size: 48px;
 	border: 1px solid var(--oc-line, #d9d6d0);
-	border-radius: var(--oc-cta-r, 8px);
-	background: var(--oc-bg, #fff);
+	border-radius: 12px;
+	background: #fff;
 	color: var(--oc-ink, #111);
 	padding-inline: 13px;
 	font: inherit;
@@ -12629,7 +12645,7 @@ p.no-comments {
 .oc-colog__emailform button {
 	block-size: 48px;
 	border: 0;
-	border-radius: var(--oc-cta-r, 8px);
+	border-radius: 12px;
 	background: var(--oc-cta, var(--oc-primary, #111));
 	color: #fff;
 	font: inherit;

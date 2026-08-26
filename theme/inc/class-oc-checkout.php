@@ -587,7 +587,7 @@ final class Checkout {
 				</div>
 			<?php endif; ?>
 
-			<?php if ( ! empty( $s['send_other'] ) ) : ?>
+			<?php if ( ! empty( $s['send_other'] ) && ! $this->orderer_packed() ) : ?>
 				<label class="oc-co-toggle">
 					<input type="checkbox" name="oc_send_other" id="oc_send_other" value="1" />
 					<span><?php esc_html_e( "I'm sending to someone else", 'oc-theme' ); ?></span>
@@ -772,6 +772,7 @@ final class Checkout {
 					<button type="button" class="oc-co-chip<?php echo $key === $current ? ' is-on' : ''; ?>" data-oc-chip="<?php echo esc_attr( $key ); ?>"><?php echo esc_html( $text ); ?></button>
 				<?php endforeach; ?>
 				<button type="button" class="oc-co-chip" data-oc-chip="custom"><?php esc_html_e( 'Other…', 'oc-theme' ); ?></button>
+				<button type="button" class="oc-co-chip" data-oc-chip="none"><?php esc_html_e( "Don't save", 'oc-theme' ); ?></button>
 			</div>
 			<input type="text" class="oc-co-addrlabels__custom" data-oc-chip-input placeholder="<?php esc_attr_e( 'Label — e.g. Grandma', 'oc-theme' ); ?>" hidden />
 			<input type="hidden" name="oc_addr_label" value="<?php echo esc_attr( $current ); ?>" data-oc-addr-label />
@@ -960,7 +961,7 @@ final class Checkout {
 		<?php $has_email = isset( $prov['email'] ); ?>
 		<div class="oc-colog" data-oc-colog data-nonce="<?php echo esc_attr( wp_create_nonce( 'oc_auth' ) ); ?>">
 			<button type="button" class="oc-colog__head" data-colog-toggle aria-expanded="false" aria-controls="oc-colog-body">
-				<span class="oc-colog__head-t"><?php esc_html_e( 'Already have an account? Quick sign-in', 'oc-theme' ); ?></span>
+				<span class="oc-colog__head-t"><?php esc_html_e( 'Quick sign-in', 'oc-theme' ); ?></span>
 				<span class="oc-colog__head-ic" aria-hidden="true"></span>
 			</button>
 
@@ -1188,10 +1189,13 @@ final class Checkout {
 		if ( $uid && Addresses::enabled() && ! $this->is_pickup() ) {
 			$street = sanitize_text_field( wp_unslash( $_POST['billing_address_1'] ?? '' ) );
 
-			if ( '' !== trim( $street ) ) {
+			$label = sanitize_text_field( wp_unslash( $_POST['oc_addr_label'] ?? '' ) );
+
+			// "Don't save" — the address ships the order but never enters the book.
+			if ( '' !== trim( $street ) && '__none' !== $label ) {
 				$choice = sanitize_text_field( wp_unslash( $_POST['oc_addr_choice'] ?? '' ) );
 				$data   = array(
-					'label'     => sanitize_text_field( wp_unslash( $_POST['oc_addr_label'] ?? '' ) ),
+					'label'     => $label,
 					'city'      => sanitize_text_field( wp_unslash( $_POST['billing_city'] ?? '' ) ),
 					'address_1' => $street,
 					'address_2' => sanitize_text_field( wp_unslash( $_POST['billing_address_2'] ?? '' ) ),

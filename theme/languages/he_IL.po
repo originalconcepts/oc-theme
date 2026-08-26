@@ -5158,7 +5158,7 @@ msgid "%2$s items"
 msgstr "%2$s פריטים"
 
 msgid "Quick sign-in"
-msgstr "כניסה מהירה"
+msgstr "התחברות מהירה"
 
 msgid "Enter your phone — a six-digit code will be sent to verify."
 msgstr "הזן מספר טלפון — יישלח אליך קוד בן 6 ספרות לאימות."
@@ -5216,3 +5216,6 @@ msgstr "קופה למשתמש מחובר ופנקס כתובות"
 
 msgid "Pack a signed-in shopper's details and let them keep several saved addresses"
 msgstr "אריזת פרטי לקוח מחובר ואפשרות לשמור כמה כתובות"
+
+msgid "Don't save"
+msgstr "ללא"

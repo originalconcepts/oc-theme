@@ -1263,9 +1263,14 @@
 				if ( '__new' === r.value ) {
 					root.classList.add( 'is-add-addr' );
 					Object.keys( ADDR ).forEach( function ( k ) { setField( ADDR[ k ], '' ); } );
+					// drop any stale "required" error left on the just-cleared rows
+					document.querySelectorAll( '.oc-co-addr.woocommerce-invalid' ).forEach( function ( row ) {
+						row.classList.remove( 'woocommerce-invalid', 'woocommerce-invalid-required-field' );
+					} );
 					setLabel( 'home' );
-					var city = fld( ADDR.city );
-					if ( city ) { city.focus(); }
+					// the first field is the street, not the city
+					var first = fld( ADDR.a1 );
+					if ( first ) { first.focus(); }
 				} else {
 					root.classList.remove( 'is-add-addr' );
 					var d = r.dataset;
@@ -1299,7 +1304,8 @@
 					}
 				} else {
 					if ( custom ) { custom.hidden = true; }
-					if ( hidden ) { hidden.value = chip.dataset.ocChip; }
+					// "Don't save" is stored as a sentinel the order-save skips
+					if ( hidden ) { hidden.value = 'none' === chip.dataset.ocChip ? '__none' : chip.dataset.ocChip; }
 				}
 			} );
 
