@@ -4409,3 +4409,210 @@ msgstr "נוצר כשהקטגוריה נמחקה."
 
 msgid "Created when the address changed."
 msgstr "נוצר כשהכתובת השתנתה."
+
+msgid "301 redirects"
+msgstr "הפניות 301"
+
+msgid "SEO"
+msgstr "SEO"
+
+msgid "SEO and sharing"
+msgstr "SEO ושיתוף"
+
+msgid "Content types"
+msgstr "סוגי תוכן"
+
+msgid "Taxonomies"
+msgstr "טקסונומיות"
+
+msgid "Archives"
+msgstr "ארכיונים"
+
+msgid "Social"
+msgstr "רשתות חברתיות"
+
+msgid "Automatic ALT"
+msgstr "ALT אוטומטי"
+
+msgid "Import and tools"
+msgstr "ייבוא וכלים"
+
+msgid "Separator"
+msgstr "מפריד"
+
+msgid "Default title template"
+msgstr "תבנית ברירת מחדל לכותרת"
+
+msgid "Default description template"
+msgstr "תבנית ברירת מחדל לתיאור"
+
+msgid "Every page always has a value — freshly imported content included."
+msgstr "לכל עמוד תמיד יש ערך — כולל תוכן שיובא הרגע."
+
+msgid "Empty means: the excerpt, and failing that the content's first 155 characters."
+msgstr "ריק אומר: התקציר, ואם אין — 155 התווים הראשונים של התוכן."
+
+msgid "Front page title"
+msgstr "כותרת דף הבית"
+
+msgid "Front page description"
+msgstr "תיאור דף הבית"
+
+msgid "Title template"
+msgstr "תבנית כותרת"
+
+msgid "Description template"
+msgstr "תבנית תיאור"
+
+msgid "Noindex by default"
+msgstr "החרג מאינדוקס כברירת מחדל"
+
+msgid "Search results"
+msgstr "תוצאות חיפוש"
+
+msgid "Date archives"
+msgstr "ארכיוני תאריכים"
+
+msgid "Author archives"
+msgstr "ארכיוני מחבר"
+
+msgid "Page 2 and onward"
+msgstr "עמוד 2 ואילך"
+
+msgid "Keep out of the index"
+msgstr "החרג מהאינדוקס"
+
+msgid "Default share image"
+msgstr "תמונת שיתוף ברירת מחדל"
+
+msgid "Used when a page has no image of its own — a full URL or a media library id."
+msgstr "משמשת כשלעמוד אין תמונה משלו — כתובת מלאה או מזהה מספריית המדיה."
+
+msgid "or media id"
+msgstr "או מזהה מדיה"
+
+msgid "Twitter card type"
+msgstr "סוג כרטיס טוויטר"
+
+msgid "Facebook app id"
+msgstr "מזהה אפליקציית פייסבוק"
+
+msgid "Every image carries an ALT, unique within its page"
+msgstr "לכל תמונה יש ALT, ייחודי בתוך העמוד שלה"
+
+msgid "Mode"
+msgstr "מצב עבודה"
+
+msgid "Complete only where ALT is missing"
+msgstr "להשלים רק היכן שאין ALT"
+
+msgid "Override everything"
+msgstr "לדרוס הכל"
+
+msgid "ALT template — content pages"
+msgstr "תבנית ALT — עמודי תוכן"
+
+msgid "ALT template — taxonomy pages"
+msgstr "תבנית ALT — עמודי טקסונומיה"
+
+msgid "The regular variables work here, plus %%filename%% and %%index%%."
+msgstr "המשתנים הרגילים עובדים כאן, בתוספת %%filename%% ו-%%index%%."
+
+msgid "Content images"
+msgstr "תמונות בתוך התוכן"
+
+msgid "Fix images embedded in the editor without an ALT"
+msgstr "תקן תמונות שהוטמעו בעורך בלי ALT"
+
+msgid "On upload"
+msgstr "בהעלאה"
+
+msgid "Write the ALT into the library the moment a file is uploaded"
+msgstr "קבע את ה-ALT בספרייה ברגע העלאת הקובץ"
+
+msgid "Whole library"
+msgstr "כל הספרייה"
+
+msgid "Complete ALT for the entire media library"
+msgstr "השלם ALT לכל ספריית המדיה"
+
+msgid "Runs in batches of 50 — for exports and third-party tools that read the library directly."
+msgstr "רץ במנות של 50 — לייצוא ולכלי צד שלישי שקוראים את הספרייה ישירות."
+
+msgid "WP All Import keys"
+msgstr "מפתחות WP All Import"
+
+msgid "Map these directly in the Custom Fields screen. An empty column never deletes a value — it returns the field to automatic. The image ALT imports to the core key _wp_attachment_image_alt."
+msgstr "ממפים אותם ישירות במסך Custom Fields. עמודה ריקה אף פעם לא מוחקת ערך — היא מחזירה את השדה למצב אוטומטי. ALT לתמונה מיובא למפתח הליבה ‎_wp_attachment_image_alt."
+
+msgid "Meta title"
+msgstr "מטא כותרת"
+
+msgid "Meta description"
+msgstr "מטא תיאור"
+
+msgid "Noindex (1/0, yes/no — every spelling accepted)"
+msgstr "החרגה מאינדוקס (1/0, כן/לא — כל צורת כתיבה מתקבלת)"
+
+msgid "Nofollow"
+msgstr "Nofollow"
+
+msgid "Canonical"
+msgstr "Canonical"
+
+msgid "Share image (URL or media id)"
+msgstr "תמונת שיתוף (כתובת או מזהה מדיה)"
+
+msgid "Share title"
+msgstr "כותרת שיתוף"
+
+msgid "Share description"
+msgstr "תיאור שיתוף"
+
+msgid "Twitter image"
+msgstr "תמונת טוויטר"
+
+msgid "Twitter title"
+msgstr "כותרת טוויטר"
+
+msgid "Twitter description"
+msgstr "תיאור טוויטר"
+
+msgid "Migrate from Yoast"
+msgstr "מעבר מ-Yoast"
+
+msgid "Copies titles, descriptions, robots and social fields — posts and taxonomies — onto our keys. Nothing is deleted from Yoast; run it again whenever, and going back stays possible."
+msgstr "מעתיק כותרות, תיאורים, רובוטים ושדות שיתוף — פוסטים וטקסונומיות — אל המפתחות שלנו. שום דבר לא נמחק מ-Yoast; אפשר להריץ שוב מתי שרוצים, ואפשר לחזור אחורה."
+
+msgid "Run migration"
+msgstr "הרץ מיגרציה"
+
+msgid "Migration done — %s values copied."
+msgstr "המיגרציה הושלמה — הועתקו %s ערכים."
+
+msgid "Available variables"
+msgstr "המשתנים הזמינים"
+
+msgid "Show this page in search results"
+msgstr "הצג עמוד זה בתוצאות חיפוש"
+
+msgid "Sharing and advanced"
+msgstr "שיתוף ומתקדם"
+
+msgid "nofollow — do not follow links from this page"
+msgstr "nofollow — לא לעקוב אחרי קישורים מהעמוד הזה"
+
+msgid "Twitter: image / title / description (falls back to the share values)"
+msgstr "טוויטר: תמונה / כותרת / תיאור (נופל לערכי השיתוף)"
+
+msgid "Indexing"
+msgstr "אינדוקס"
+
+msgid "Image %d"
+msgstr "תמונה %d"
+
+msgid "Page %d"
+msgstr "עמוד %d"
+
+msgid "Yoast SEO is active, so the theme's own SEO engine stepped aside — two engines would print two title tags. Deactivate Yoast (after migrating in Settings ← SEO ← Tools) to switch over."
+msgstr "Yoast SEO פעיל, ולכן מנוע ה-SEO של התבנית זז הצידה — שני מנועים ידפיסו שני תגי title. כבו את Yoast (אחרי מיגרציה בהגדרות ← SEO ← ייבוא וכלים) כדי לעבור."

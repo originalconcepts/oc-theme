@@ -49,21 +49,19 @@ final class Redirects_Admin {
 	 * @param array<string,string> $args Extra query args.
 	 */
 	public static function url( array $args = array() ): string {
-		return add_query_arg( $args, admin_url( 'admin.php?page=oc-redirects' ) );
+		return add_query_arg( $args, admin_url( 'options-general.php?page=oc-redirects' ) );
 	}
 
 	/**
-	 * Top-level, next to the shop's own things.
+	 * Under Settings — the main menu stays light.
 	 */
 	public function menu(): void {
-		add_menu_page(
-			__( 'Redirects', 'oc-theme' ),
-			__( 'Redirects', 'oc-theme' ),
+		add_options_page(
+			__( '301 redirects', 'oc-theme' ),
+			__( '301 redirects', 'oc-theme' ),
 			'manage_options',
 			'oc-redirects',
-			array( $this, 'render' ),
-			'dashicons-randomize',
-			27
+			array( $this, 'render' )
 		);
 	}
 
@@ -82,7 +80,7 @@ final class Redirects_Admin {
 		$tab = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'list'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
 		echo '<div class="wrap ocrd">';
-		echo '<h1>' . esc_html__( 'Redirects', 'oc-theme' ) . '</h1>';
+		echo '<h1>' . esc_html__( '301 redirects', 'oc-theme' ) . '</h1>';
 
 		if ( isset( $_GET['ocrd_msg'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			echo '<div class="notice notice-success"><p>' . esc_html( sanitize_text_field( wp_unslash( $_GET['ocrd_msg'] ) ) ) . '</p></div>'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended

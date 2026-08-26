@@ -39,6 +39,12 @@ final class Assets {
 	 * Product JSON-LD.
 	 */
 	public function seo_fallback(): void {
+		// The theme's own SEO engine owns the head now; this fallback only
+		// speaks when both it and every SEO plugin are out of the picture.
+		if ( class_exists( __NAMESPACE__ . '\Seo' ) && ! Seo::yoast_active() ) {
+			return;
+		}
+
 		if ( defined( 'WPSEO_VERSION' ) || class_exists( 'RankMath\Helper' ) || defined( 'AIOSEO_VERSION' ) || defined( 'SEOPRESS_VERSION' ) ) {
 			return;
 		}

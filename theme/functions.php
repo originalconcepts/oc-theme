@@ -13,7 +13,7 @@ declare( strict_types = 1 );
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'OC_THEME_VERSION', '0.3.1' );
+define( 'OC_THEME_VERSION', '0.3.2' );
 define( 'OC_THEME_DIR', get_template_directory() );
 define( 'OC_THEME_URI', get_template_directory_uri() );
 define( 'OC_THEME_REPO', 'originalconcepts/oc-theme' );
@@ -61,6 +61,9 @@ require_once OC_THEME_DIR . '/inc/class-oc-search-panel.php';
 require_once OC_THEME_DIR . '/inc/class-oc-search-admin.php';
 require_once OC_THEME_DIR . '/inc/class-oc-redirects.php';
 require_once OC_THEME_DIR . '/inc/class-oc-redirects-admin.php';
+require_once OC_THEME_DIR . '/inc/class-oc-seo.php';
+require_once OC_THEME_DIR . '/inc/class-oc-seo-alt.php';
+require_once OC_THEME_DIR . '/inc/class-oc-seo-admin.php';
 
 /**
  * Cache-busting version for a theme-relative asset.
@@ -359,6 +362,9 @@ add_action( 'admin_notices', 'oc_dependency_notice' );
 ( new OC\Theme\Blog() )->register();
 ( new OC\Theme\Redirects() )->register();
 ( new OC\Theme\Redirects_Admin() )->register();
+( new OC\Theme\Seo() )->register();
+( new OC\Theme\Seo_Alt() )->register();
+( new OC\Theme\Seo_Admin() )->register();
 ( new OC\Theme\Updater( get_template(), OC_THEME_VERSION, OC_THEME_REPO ) )->register();
 
 if ( ! defined( 'OC_LOGIN_DISABLE' ) || ! OC_LOGIN_DISABLE ) {
