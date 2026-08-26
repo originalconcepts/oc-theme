@@ -198,7 +198,9 @@ final class Auth {
 
 	/**
 	 * May we send this phone a code right now? '' when yes, a human reason
-	 * when no. Counts one send when allowed.
+	 * when no. A CHECK only — it never spends quota, so an attempt that fails
+	 * to actually go out (bad API key, provider hiccup) costs nothing. Call
+	 * note_send() once the message has truly left.
 	 *
 	 * @param string $phone Normalised digits.
 	 */
@@ -245,13 +247,35 @@ final class Auth {
 			return __( 'SMS login is resting — please try again later or sign in another way.', 'oc-theme' );
 		}
 
+		return '';
+	}
+
+	/**
+	 * Record one code that actually went out: the resend cooldown, and the
+	 * per-phone, per-IP and daily counters. Called only after a successful
+	 * send, so failed attempts never eat into the rails.
+	 *
+	 * @param string $phone Normalised digits.
+	 */
+	private function note_send( string $phone ): void {
+		$s  = self::settings();
+		$ip = self::ip();
+
+		$day = get_option( 'ocau_day', array() );
+
+		if ( ! is_array( $day ) || ( $day['d'] ?? '' ) !== gmdate( 'Y-m-d' ) ) {
+			$day = array(
+				'd' => gmdate( 'Y-m-d' ),
+				'n' => 0,
+			);
+		}
+
 		++$day['n'];
 		update_option( 'ocau_day', $day, false );
-		set_transient( 'ocau_cool_' . $phone, 1, (int) $s['resend_cooldown'] );
-		set_transient( 'ocau_ph_' . $phone, $per_phone + 1, HOUR_IN_SECONDS );
-		set_transient( 'ocau_ip_' . md5( $ip ), $per_ip + 1, HOUR_IN_SECONDS );
 
-		return '';
+		set_transient( 'ocau_cool_' . $phone, 1, (int) $s['resend_cooldown'] );
+		set_transient( 'ocau_ph_' . $phone, ( (int) get_transient( 'ocau_ph_' . $phone ) ) + 1, HOUR_IN_SECONDS );
+		set_transient( 'ocau_ip_' . md5( $ip ), ( (int) get_transient( 'ocau_ip_' . md5( $ip ) ) ) + 1, HOUR_IN_SECONDS );
 	}
 
 	/**
@@ -387,6 +411,8 @@ final class Auth {
 			wp_send_json_error( array( 'msg' => __( 'The message did not go out — try again in a moment.', 'oc-theme' ) ) );
 		}
 
+		$this->note_send( $phone );
+
 		wp_send_json_success( array(
 			'step'   => 'code',
 			'phone'  => $phone,
@@ -418,13 +444,19 @@ final class Auth {
 
 		$code = $this->mint_code( $phone );
 
-		wp_mail(
+		$sent = wp_mail(
 			(string) $user->user_email,
 			/* translators: %s: site name. */
 			sprintf( __( 'Your sign-in code for %s', 'oc-theme' ), (string) get_bloginfo( 'name' ) ),
 			/* translators: %s: the code. */
 			sprintf( __( '%s is your sign-in code', 'oc-theme' ), $code )
 		);
+
+		if ( ! $sent ) {
+			wp_send_json_error( array( 'msg' => __( 'The message did not go out — try again in a moment.', 'oc-theme' ) ) );
+		}
+
+		$this->note_send( $phone );
 
 		wp_send_json_success( array( 'wait' => (int) self::settings()['resend_cooldown'] ) );
 	}
