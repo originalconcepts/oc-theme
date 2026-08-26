@@ -5243,3 +5243,6 @@ msgstr "השתמש בכתובת זו כברירת מחדל"
 
 msgid "Save address"
 msgstr "שמירת כתובת"
+
+msgid "Back to saved addresses"
+msgstr "חזרה לכתובות השמורות"

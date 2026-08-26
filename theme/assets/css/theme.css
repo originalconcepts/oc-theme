@@ -9598,8 +9598,36 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 .oc-copack:not(.is-edit-orderer) .oc-co-contact { display: none !important; }
 .oc-copack.is-edit-orderer .oc-copack-card--orderer { display: none; }
 
-/* saved-address selector */
-.oc-co-addrsel { display: flex; flex-direction: column; gap: 10px; margin: 12px 0 4px; }
+/* saved-address selector — a half/half grid: addresses beside "add new" */
+.oc-co-addrsel {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 10px;
+	margin: 12px 0 4px;
+}
+@media (max-width: 560px) {
+	.oc-co-addrsel { grid-template-columns: 1fr; }
+}
+/* editing or adding leaves the packed state: the whole selector folds away
+ * and the address fields take over (like the orderer card's edit) */
+.oc-copack-addr.is-add-addr .oc-co-addrsel { display: none; }
+
+/* return-to-selector control, shown only while editing/adding */
+.oc-co-addrback {
+	display: none;
+	align-items: center;
+	gap: 6px;
+	margin: 12px 0 2px;
+	border: 0;
+	background: none;
+	color: var(--oc-ink-2, #6b7482);
+	font: inherit;
+	font-size: .88rem;
+	cursor: pointer;
+	padding: 0;
+}
+.oc-co-addrback:hover { color: var(--oc-ink, #111); }
+.oc-copack-addr.is-add-addr .oc-co-addrback { display: inline-flex; }
 .oc-co-addrcard {
 	/* !important: the checkout's global `label { display:block }` otherwise
 	 * wins and drops the radio onto its own line above the text */

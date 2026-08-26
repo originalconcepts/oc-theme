@@ -1252,56 +1252,74 @@
 		/* address selector */
 		var sel = document.querySelector( '[data-oc-addrsel]' );
 		if ( sel ) {
-			// "Edit" on a saved card: keep it selected, but reveal the fields
-			// prefilled with its values so a change updates that same address.
-			sel.addEventListener( 'click', function ( e ) {
-				var ed = e.target.closest( '[data-oc-addr-edit]' );
-				if ( ! ed ) { return; }
-				e.preventDefault();
-				var card = ed.closest( '.oc-co-addrcard' );
-				var r = card.querySelector( 'input[type="radio"]' );
-				r.checked = true;
+			function highlight( card ) {
 				sel.querySelectorAll( '.oc-co-addrcard' ).forEach( function ( c ) { c.classList.toggle( 'is-on', c === card ); } );
-				root.classList.add( 'is-add-addr' );
+			}
+
+			function fillFrom( r ) {
 				var d = r.dataset;
 				setField( ADDR.city, d.city );
 				setField( ADDR.a1, d.a1 );
 				setField( ADDR.a2, d.a2 );
 				setField( ADDR.floor, d.floor );
 				setField( ADDR.entry, d.entry );
-				setLabel( d.label || 'home' );
+				if ( d.label ) { setLabel( d.label ); }
+			}
+
+			// Pick a saved card: stay packed (fields folded), fields filled for submit.
+			function pickSaved( r ) {
+				r.checked = true;
+				highlight( r.closest( '.oc-co-addrcard' ) );
+				root.classList.remove( 'is-add-addr' );
+				fillFrom( r );
+			}
+
+			// Enter add/edit: the selector folds away and the fields take over.
+			function enterEdit( r, blank ) {
+				r.checked = true;
+				highlight( r.closest( '.oc-co-addrcard' ) );
+				root.classList.add( 'is-add-addr' );
+				if ( blank ) {
+					Object.keys( ADDR ).forEach( function ( k ) { setField( ADDR[ k ], '' ); } );
+					document.querySelectorAll( '.oc-co-addr.woocommerce-invalid' ).forEach( function ( row ) {
+						row.classList.remove( 'woocommerce-invalid', 'woocommerce-invalid-required-field' );
+					} );
+					setLabel( 'home' );
+				} else {
+					fillFrom( r );
+				}
 				var first = fld( ADDR.a1 );
 				if ( first ) { first.focus(); }
+			}
+
+			function defaultRadio() {
+				return sel.querySelector( '.oc-co-addrcard:not(.oc-co-addrcard--new) input[type="radio"]' );
+			}
+
+			sel.addEventListener( 'click', function ( e ) {
+				// "Edit" on a saved card → edit it in place (fields prefilled).
+				var ed = e.target.closest( '[data-oc-addr-edit]' );
+				if ( ed ) {
+					e.preventDefault();
+					enterEdit( ed.closest( '.oc-co-addrcard' ).querySelector( 'input[type="radio"]' ), false );
+				}
+			} );
+
+			// Back out of add/edit to the saved-address list.
+			document.addEventListener( 'click', function ( e ) {
+				if ( ! e.target.closest( '[data-oc-addr-back]' ) ) { return; }
+				var checked = sel.querySelector( 'input[name="oc_addr_choice"]:checked' );
+				if ( ! checked || '__new' === checked.value ) { checked = defaultRadio(); }
+				if ( checked ) { pickSaved( checked ); }
 			} );
 
 			sel.addEventListener( 'change', function ( e ) {
 				var r = e.target.closest( 'input[name="oc_addr_choice"]' );
 				if ( ! r ) { return; }
-
-				sel.querySelectorAll( '.oc-co-addrcard' ).forEach( function ( c ) {
-					c.classList.toggle( 'is-on', c.contains( r ) );
-				} );
-
 				if ( '__new' === r.value ) {
-					root.classList.add( 'is-add-addr' );
-					Object.keys( ADDR ).forEach( function ( k ) { setField( ADDR[ k ], '' ); } );
-					// drop any stale "required" error left on the just-cleared rows
-					document.querySelectorAll( '.oc-co-addr.woocommerce-invalid' ).forEach( function ( row ) {
-						row.classList.remove( 'woocommerce-invalid', 'woocommerce-invalid-required-field' );
-					} );
-					setLabel( 'home' );
-					// the first field is the street, not the city
-					var first = fld( ADDR.a1 );
-					if ( first ) { first.focus(); }
+					enterEdit( r, true );
 				} else {
-					root.classList.remove( 'is-add-addr' );
-					var d = r.dataset;
-					setField( ADDR.city, d.city );
-					setField( ADDR.a1, d.a1 );
-					setField( ADDR.a2, d.a2 );
-					setField( ADDR.floor, d.floor );
-					setField( ADDR.entry, d.entry );
-					if ( d.label ) { setLabel( d.label ); }
+					pickSaved( r );
 				}
 			} );
 		}

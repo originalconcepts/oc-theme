@@ -586,6 +586,10 @@ final class Checkout {
 						<span class="oc-co-addrcard__in"><span class="oc-co-addrcard__new">＋ <?php esc_html_e( 'Ship to a new address', 'oc-theme' ); ?></span></span>
 					</label>
 				</div>
+				<button type="button" class="oc-co-addrback" data-oc-addr-back>
+					<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+					<?php esc_html_e( 'Back to saved addresses', 'oc-theme' ); ?>
+				</button>
 			<?php endif; ?>
 
 			<?php if ( ! empty( $s['send_other'] ) && ! $this->orderer_packed() ) : ?>
