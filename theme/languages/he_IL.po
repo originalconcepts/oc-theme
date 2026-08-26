@@ -5102,3 +5102,6 @@ msgstr "המייל או הסיסמה שגויים."
 
 msgid "You have signed out — see you soon"
 msgstr "התנתקת מהחשבון — נתראה בקרוב"
+
+msgid "Hello, %s"
+msgstr "שלום, %s"

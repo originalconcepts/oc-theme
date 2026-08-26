@@ -7540,3 +7540,42 @@
 		paint();
 	}, 1000 );
 }() );
+
+
+/* ---------- the signed-in account menu: one click to anywhere ---------- */
+
+( function () {
+	document.addEventListener( 'click', function ( e ) {
+		var menu = document.querySelector( '.oc-accmenu' );
+
+		if ( ! menu ) { return; }
+
+		var icon = e.target.closest( '[data-oc-accmenu]' );
+
+		if ( icon ) {
+			e.preventDefault();
+			menu.hidden = ! menu.hidden;
+
+			if ( ! menu.hidden ) {
+				var r = icon.getBoundingClientRect();
+				var w = menu.offsetWidth;
+				var left = Math.min( Math.max( 8, r.left + r.width / 2 - w / 2 ), window.innerWidth - w - 8 );
+				menu.style.top = ( r.bottom + 10 ) + 'px';
+				menu.style.left = left + 'px';
+			}
+
+			return;
+		}
+
+		if ( ! menu.hidden && ! e.target.closest( '.oc-accmenu' ) ) {
+			menu.hidden = true;
+		}
+	} );
+
+	document.addEventListener( 'keydown', function ( e ) {
+		if ( 'Escape' === e.key ) {
+			var menu = document.querySelector( '.oc-accmenu' );
+			if ( menu ) { menu.hidden = true; }
+		}
+	} );
+}() );

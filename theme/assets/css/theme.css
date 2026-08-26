@@ -11804,3 +11804,60 @@ html[dir="rtl"] .oc-bye { translate: 50% 0; }
 @keyframes oc-bye-in {
 	from { opacity: 0; translate: -50% -8px; }
 }
+
+
+/* ---------- signed-in account: the green dot and the quick menu ---------- */
+
+.oc-hicon[data-oc-accmenu],
+.oc-htext__link[data-oc-accmenu] { position: relative; }
+
+.oc-hicon[data-oc-accmenu]::after,
+.oc-htext__link[data-oc-accmenu]::after {
+	content: '';
+	position: absolute;
+	inset-block-start: 2px;
+	inset-inline-end: 0;
+	inline-size: 8px;
+	block-size: 8px;
+	border-radius: 50%;
+	background: #2fa36b;
+	box-shadow: 0 0 0 2px var(--oc-bg, #fff);
+}
+
+.oc-accmenu {
+	position: fixed;
+	z-index: 100000;
+	min-inline-size: 200px;
+	background: var(--oc-bg, #fff);
+	border: 1px solid var(--oc-line, #e5e2dd);
+	border-radius: 12px;
+	box-shadow: 0 14px 40px rgba(14, 13, 12, .14);
+	padding: 8px;
+	animation: oc-bye-in .18s ease;
+}
+
+.oc-accmenu__hi {
+	margin: 0;
+	padding: 8px 12px 10px;
+	font-weight: 600;
+	border-block-end: 1px solid var(--oc-line, #eee9e3);
+	margin-block-end: 4px;
+}
+
+.oc-accmenu__item {
+	display: block;
+	padding: 9px 12px;
+	border-radius: 8px;
+	color: var(--oc-ink, #111);
+	text-decoration: none;
+	font-size: .92rem;
+}
+
+.oc-accmenu__item:hover { background: var(--oc-bg-2, #f6f5f3); }
+
+.oc-accmenu__item--out {
+	color: var(--oc-sale, #b4453c);
+	margin-block-start: 4px;
+	border-block-start: 1px solid var(--oc-line, #eee9e3);
+	border-radius: 0 0 8px 8px;
+}

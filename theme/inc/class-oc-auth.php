@@ -36,6 +36,12 @@ final class Auth {
 		add_action( 'woocommerce_after_edit_account_form', array( $this, 'delete_block' ) );
 		add_action( 'admin_post_oc_delete_account', array( $this, 'delete_account' ) );
 
+		// Signed-in comforts, provider-independent too: the account icon
+		// grows a green dot and a quick menu, and an account whose display
+		// name is still its internal login heals itself to the first name.
+		add_action( 'wp_footer', array( $this, 'account_menu' ) );
+		add_action( 'init', array( $this, 'heal_display_name' ) );
+
 		$on = self::settings();
 
 		if ( empty( $on['sms_on'] ) && empty( $on['google_on'] ) && empty( $on['fb_on'] ) && empty( $on['apple_on'] ) && empty( $on['email_on'] ) ) {
@@ -1174,9 +1180,67 @@ final class Auth {
 	public function icon_attrs( $attrs ) {
 		if ( ! is_user_logged_in() ) {
 			$attrs .= ' data-oc-auth="1"';
+		} else {
+			$attrs .= ' data-oc-accmenu="1"';
 		}
 
 		return $attrs;
+	}
+
+	/**
+	 * A greeting whose name is an internal login is no greeting. Accounts
+	 * created before display names were set heal themselves on sight.
+	 */
+	public function heal_display_name(): void {
+		if ( ! is_user_logged_in() ) {
+			return;
+		}
+
+		$user = wp_get_current_user();
+
+		if ( $user->display_name === $user->user_login && '' !== trim( (string) $user->first_name ) ) {
+			wp_update_user(
+				array(
+					'ID'           => $user->ID,
+					'display_name' => trim( $user->first_name . ' ' . $user->last_name ),
+				)
+			);
+		}
+	}
+
+	/**
+	 * The signed-in account icon opens a small menu: every account section
+	 * one click away, the dashboard skipped — there is nothing there.
+	 */
+	public function account_menu(): void {
+		if ( ! is_user_logged_in() || ! function_exists( 'wc_get_account_menu_items' ) ) {
+			return;
+		}
+
+		$items = wc_get_account_menu_items();
+		unset( $items['dashboard'] );
+
+		if ( empty( $items ) ) {
+			return;
+		}
+
+		$user = wp_get_current_user();
+		$name = '' !== trim( (string) $user->first_name ) ? trim( (string) $user->first_name ) : (string) $user->display_name;
+		?>
+		<nav class="oc-accmenu" hidden aria-label="<?php esc_attr_e( 'My account', 'oc-theme' ); ?>">
+			<p class="oc-accmenu__hi"><?php echo esc_html( sprintf( /* translators: %s: first name. */ __( 'Hello, %s', 'oc-theme' ), $name ) ); ?></p>
+			<?php foreach ( $items as $endpoint => $label ) : ?>
+				<?php
+				$url = wc_get_account_endpoint_url( $endpoint );
+
+				if ( 'customer-logout' === $endpoint ) {
+					$url = wp_nonce_url( $url, 'customer-logout' );
+				}
+				?>
+				<a class="oc-accmenu__item<?php echo 'customer-logout' === $endpoint ? ' oc-accmenu__item--out' : ''; ?>" href="<?php echo esc_url( $url ); ?>"><?php echo esc_html( $label ); ?></a>
+			<?php endforeach; ?>
+		</nav>
+		<?php
 	}
 
 	/**
