@@ -5156,3 +5156,15 @@ msgstr "פריט אחד"
 
 msgid "%2$s items"
 msgstr "%2$s פריטים"
+
+msgid "Quick sign-in"
+msgstr "כניסה מהירה"
+
+msgid "Enter your phone — a six-digit code will be sent to verify."
+msgstr "הזן מספר טלפון — יישלח אליך קוד בן 6 ספרות לאימות."
+
+msgid "Phone number"
+msgstr "מספר טלפון"
+
+msgid "No account found for this number — continue with the details below."
+msgstr "לא נמצא חשבון עם המספר הזה — המשך עם הפרטים למטה."

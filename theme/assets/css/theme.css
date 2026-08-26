@@ -12372,3 +12372,114 @@ p.no-comments {
 	color: var(--oc-ink-2, #999);
 	font-weight: 400;
 }
+
+/* ---------- checkout sign-in block (OC Auth in the checkout) ---------- */
+
+.oc-colog {
+	border: 1px solid var(--oc-line, #e5e2dd);
+	border-radius: var(--oc-radius, 12px);
+	background: var(--oc-bg-2, #f6f5f3);
+	padding: 20px;
+	margin-block-end: 22px;
+	max-inline-size: 560px;
+}
+
+.oc-colog__q { font-weight: 700; margin: 0 0 3px; font-size: 1.02rem; }
+.oc-colog__d { color: var(--oc-ink-2, #666); font-size: .86rem; margin: 0 0 14px; }
+
+.oc-colog__telrow { display: flex; gap: 8px; }
+.oc-colog__telrow input {
+	flex: 1;
+	block-size: 48px;
+	border: 1px solid var(--oc-line, #d9d6d0);
+	border-radius: var(--oc-cta-r, 8px);
+	background: var(--oc-bg, #fff);
+	color: var(--oc-ink, #111);
+	padding-inline: 13px;
+	font: inherit;
+}
+.oc-colog__telrow button {
+	flex: none;
+	block-size: 48px;
+	padding-inline: 22px;
+	border: 0;
+	border-radius: var(--oc-cta-r, 8px);
+	background: var(--oc-cta, var(--oc-primary, #111));
+	color: #fff;
+	font: inherit;
+	font-weight: 700;
+	cursor: pointer;
+}
+
+.oc-colog__or { display: flex; align-items: center; gap: 12px; color: var(--oc-ink-2, #888); font-size: .84rem; margin: 16px 0; }
+.oc-colog__or::before, .oc-colog__or::after { content: ""; flex: 1; border-block-start: 1px solid var(--oc-line, #e5e2dd); }
+
+.oc-colog__provs { display: flex; gap: 8px; }
+.oc-colog__prov {
+	flex: 1;
+	block-size: 46px;
+	border: 1px solid var(--oc-line, #d9d6d0);
+	border-radius: var(--oc-cta-r, 8px);
+	background: var(--oc-bg, #fff);
+	color: var(--oc-ink, #111);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	font: inherit;
+	font-weight: 600;
+	font-size: .86rem;
+	text-decoration: none;
+	cursor: pointer;
+	transition: border-color .12s ease;
+}
+.oc-colog__prov:hover { border-color: var(--oc-ink, #111); }
+.oc-colog__prov span { display: none; }
+@media (min-width: 480px) { .oc-colog__prov span { display: inline; } }
+
+.oc-colog__boxes { display: flex; gap: 8px; }
+.oc-colog__boxes input {
+	inline-size: 44px;
+	block-size: 52px;
+	text-align: center;
+	font-size: 1.2rem;
+	border: 1px solid var(--oc-line, #d9d6d0);
+	border-radius: var(--oc-cta-r, 8px);
+	background: var(--oc-bg, #fff);
+	color: var(--oc-ink, #111);
+}
+
+.oc-colog__emailform { display: flex; flex-direction: column; gap: 10px; }
+.oc-colog__emailform input {
+	block-size: 48px;
+	border: 1px solid var(--oc-line, #d9d6d0);
+	border-radius: var(--oc-cta-r, 8px);
+	background: var(--oc-bg, #fff);
+	color: var(--oc-ink, #111);
+	padding-inline: 13px;
+	font: inherit;
+}
+.oc-colog__emailform button {
+	block-size: 48px;
+	border: 0;
+	border-radius: var(--oc-cta-r, 8px);
+	background: var(--oc-cta, var(--oc-primary, #111));
+	color: #fff;
+	font: inherit;
+	font-weight: 700;
+	cursor: pointer;
+}
+
+.oc-colog__back {
+	border: 0;
+	background: none;
+	color: var(--oc-ink, #111);
+	text-decoration: underline;
+	text-underline-offset: 3px;
+	font: inherit;
+	font-size: .88rem;
+	cursor: pointer;
+	margin-block-start: 12px;
+}
+
+.oc-colog__err { margin: 8px 0 0; font-size: .85rem; color: var(--oc-sale, #b4453c); }
