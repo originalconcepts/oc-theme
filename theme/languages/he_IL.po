@@ -5246,3 +5246,6 @@ msgstr "שמירת כתובת"
 
 msgid "Back to saved addresses"
 msgstr "חזרה לכתובות השמורות"
+
+msgid "%s is required."
+msgstr "%s הוא שדה חובה."

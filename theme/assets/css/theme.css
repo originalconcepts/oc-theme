@@ -12534,11 +12534,17 @@ html[dir="rtl"] .oc-bye { translate: 50% 0; }
 	color: var(--oc-ink, #111);
 	padding-inline: 13px;
 	font: inherit;
+	box-sizing: border-box;
 }
-.oc-abook__row { display: flex; flex-direction: column; gap: 5px; margin: 0 0 12px; }
+/* the display:block above would otherwise defeat the hidden attribute */
+.oc-abook__custom[hidden] { display: none; }
+.oc-abook__row { display: flex; flex-direction: column; gap: 5px; margin: 0 0 12px; min-inline-size: 0; }
 .oc-abook__row label { font-size: .84rem; color: var(--oc-ink-2, #6b7482); }
 .oc-abook__row input {
 	block-size: 46px;
+	inline-size: 100%;
+	min-inline-size: 0;
+	box-sizing: border-box;
 	border: 1px solid var(--oc-line, #d9d6d0);
 	border-radius: 5px;
 	background: #fff;
@@ -12546,7 +12552,8 @@ html[dir="rtl"] .oc-bye { translate: 50% 0; }
 	padding-inline: 13px;
 	font: inherit;
 }
-.oc-abook__grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+/* floor / apt / entry share the row above's width — never spill past it */
+.oc-abook__grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 .oc-abook__def { display: flex; align-items: center; gap: 8px; margin: 4px 0 18px; cursor: pointer; }
 .oc-abook__def input { inline-size: 18px; block-size: 18px; accent-color: var(--oc-ink, #111); }
 .oc-abook__formacts { display: flex; align-items: center; gap: 16px; }
@@ -12563,10 +12570,79 @@ html[dir="rtl"] .oc-bye { translate: 50% 0; }
 }
 .oc-abook__cancel { font-size: .88rem; color: var(--oc-ink-2, #6b7482); text-decoration: underline; text-underline-offset: 3px; }
 .oc-abook__cancel:hover { color: var(--oc-ink, #111); }
+.oc-abook__req { color: var(--oc-sale, #b4453c); }
 
 @media (max-width: 560px) {
 	.oc-abook__grid3 { grid-template-columns: 1fr 1fr; }
 }
+
+/* ---------- account details: fields dressed like the address form ---------- */
+.woocommerce-MyAccount-content form.edit-account { max-inline-size: 520px; }
+
+.woocommerce-MyAccount-content form.edit-account .form-row {
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+	margin: 0 0 14px;
+	position: static;
+}
+/* the label sits above the field (not floating inside) */
+.woocommerce-MyAccount-content form.edit-account .form-row > label {
+	position: static;
+	inset: auto;
+	max-inline-size: none;
+	margin: 0;
+	font-size: .84rem;
+	font-weight: 400;
+	color: var(--oc-ink-2, #6b7482);
+	white-space: normal;
+	overflow: visible;
+	pointer-events: auto;
+	transition: none;
+}
+.woocommerce-MyAccount-content form.edit-account .form-row input.input-text {
+	block-size: 46px;
+	inline-size: 100%;
+	box-sizing: border-box;
+	border: 1px solid var(--oc-line, #d9d6d0);
+	border-radius: 5px;
+	background: #fff;
+	color: var(--oc-ink, #111);
+	padding-inline: 13px;
+	font: inherit;
+}
+.woocommerce-MyAccount-content form.edit-account .form-row span.required { color: var(--oc-sale, #b4453c); text-decoration: none; }
+.woocommerce-MyAccount-content form.edit-account > p em,
+.woocommerce-MyAccount-content form.edit-account > .woocommerce-form-row + em,
+.woocommerce-MyAccount-content form.edit-account em { color: var(--oc-ink-2, #6b7482); font-size: .82rem; font-style: normal; }
+
+/* password change: a button reveals the fields past a divider; the fieldset
+ * carries no border of its own — the fields already have theirs */
+.woocommerce-MyAccount-content form.edit-account > fieldset {
+	border: 0;
+	padding: 0;
+	margin: 4px 0 0;
+	max-inline-size: 520px;
+}
+.woocommerce-MyAccount-content form.edit-account > fieldset > legend { display: none; }
+.oc-pwtoggle {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	inline-size: 100%;
+	max-inline-size: 520px;
+	margin-block-start: 20px;
+	padding-block-start: 20px;
+	border: 0;
+	border-block-start: 1px solid var(--oc-line, #e5e2dd);
+	background: none;
+	color: var(--oc-ink, #111);
+	font: inherit;
+	font-weight: 600;
+	cursor: pointer;
+}
+.oc-pwtoggle svg { inline-size: 16px; block-size: 16px; transition: rotate .2s ease; flex: none; }
+.oc-pwtoggle.is-open svg { rotate: 180deg; }
 
 /* Everything in an address block reads from the start edge. */
 .woocommerce-MyAccount-content .woocommerce-Address,
@@ -12575,7 +12651,6 @@ html[dir="rtl"] .oc-bye { translate: 50% 0; }
 .woocommerce-MyAccount-content .woocommerce-Address address { border: 0; padding: 0; font-style: normal; color: var(--oc-ink-2, #555); line-height: 1.8; }
 
 /* Notices, ours, everywhere — WordPress's green-bar look retires. */
-.woocommerce-message,
 .woocommerce-info,
 .woocommerce-noreviews,
 p.no-comments {
@@ -12584,6 +12659,16 @@ p.no-comments {
 	border-radius: 10px;
 	background: var(--oc-bg-2, #f8f7f5) !important;
 	color: var(--oc-ink, #111) !important;
+	padding: 14px 18px !important;
+}
+
+/* success wears green the way the error wears red — same shape, not grey */
+.woocommerce-message {
+	border: 1px solid var(--oc-success, #2f7d4f) !important;
+	border-block-start-width: 1px !important;
+	border-radius: 10px;
+	background: none !important;
+	color: var(--oc-success, #2f7d4f) !important;
 	padding: 14px 18px !important;
 }
 

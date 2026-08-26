@@ -323,6 +323,38 @@ final class Addresses {
 	/* ---------------------------------------------- my-account management */
 
 	/**
+	 * Which address fields are required, honouring the store's checkout rules.
+	 *
+	 * @return array<string,array{label:string,req:bool}>
+	 */
+	public static function field_rules(): array {
+		$s = class_exists( '\OC\Theme\Checkout' ) ? Checkout::settings() : array();
+
+		return array(
+			'address_1' => array(
+				'label' => __( 'Street and house number', 'oc-theme' ),
+				'req'   => true,
+			),
+			'city'      => array(
+				'label' => __( 'City', 'oc-theme' ),
+				'req'   => true,
+			),
+			'address_2' => array(
+				'label' => __( 'Apartment', 'oc-theme' ),
+				'req'   => ! empty( $s['apt_required'] ),
+			),
+			'floor'     => array(
+				'label' => __( 'Floor', 'oc-theme' ),
+				'req'   => ! empty( $s['floor_required'] ),
+			),
+			'entry'     => array(
+				'label' => __( 'Entry code', 'oc-theme' ),
+				'req'   => ! empty( $s['entry_required'] ),
+			),
+		);
+	}
+
+	/**
 	 * The base URL of the addresses screen.
 	 */
 	private static function account_url(): string {
@@ -343,21 +375,28 @@ final class Addresses {
 
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- each branch verifies its own nonce below.
 		if ( isset( $_POST['oc_addr_save'] ) && check_admin_referer( 'oc_addr_save' ) ) {
-			$street = sanitize_text_field( wp_unslash( $_POST['address_1'] ?? '' ) );
+			$in      = array();
+			$missing = false;
+			foreach ( self::field_rules() as $key => $rule ) {
+				$in[ $key ] = sanitize_text_field( wp_unslash( $_POST[ $key ] ?? '' ) );
+				if ( $rule['req'] && '' === trim( $in[ $key ] ) ) {
+					/* translators: %s: field label. */
+					wc_add_notice( sprintf( __( '%s is required.', 'oc-theme' ), $rule['label'] ), 'error' );
+					$missing = true;
+				}
+			}
 
-			if ( '' === trim( $street ) ) {
-				wc_add_notice( __( 'A street and house number are needed.', 'oc-theme' ), 'error' );
-			} else {
+			if ( ! $missing ) {
 				self::save(
 					$uid,
 					array(
 						'id'         => sanitize_text_field( wp_unslash( $_POST['oc_addr_id'] ?? '' ) ),
 						'label'      => sanitize_text_field( wp_unslash( $_POST['label'] ?? '' ) ),
-						'city'       => sanitize_text_field( wp_unslash( $_POST['city'] ?? '' ) ),
-						'address_1'  => $street,
-						'address_2'  => sanitize_text_field( wp_unslash( $_POST['address_2'] ?? '' ) ),
-						'floor'      => sanitize_text_field( wp_unslash( $_POST['floor'] ?? '' ) ),
-						'entry'      => sanitize_text_field( wp_unslash( $_POST['entry'] ?? '' ) ),
+						'city'       => $in['city'],
+						'address_1'  => $in['address_1'],
+						'address_2'  => $in['address_2'],
+						'floor'      => $in['floor'],
+						'entry'      => $in['entry'],
 						'is_default' => ! empty( $_POST['is_default'] ),
 					)
 				);
@@ -445,18 +484,42 @@ final class Addresses {
 	 * @param string $id  Address id, or 'new'.
 	 */
 	private static function render_form( int $uid, string $id ): void {
-		$addr    = 'new' === $id ? array() : ( self::get( $uid, $id ) ?? array() );
-		$current = (string) ( $addr['label'] ?? 'home' );
-		if ( '' === $current || ! array_key_exists( $current, self::labels() ) ) {
-			$custom  = '' !== (string) ( $addr['label'] ?? '' ) && ! array_key_exists( (string) $addr['label'], self::labels() );
-			$current = $custom ? 'custom' : 'home';
-		}
-		$val = static function ( $k ) use ( $addr ) {
+		$rules = self::field_rules();
+		$addr  = 'new' === $id ? array() : ( self::get( $uid, $id ) ?? array() );
+
+		// phpcs:disable WordPress.Security.NonceVerification.Missing -- redisplay of the user's own just-submitted values; the save path already verified the nonce.
+		$posted = isset( $_POST['oc_addr_save'] );
+
+		$get = static function ( $k ) use ( $posted, $addr ) {
+			if ( $posted && isset( $_POST[ $k ] ) ) {
+				return esc_attr( sanitize_text_field( wp_unslash( $_POST[ $k ] ) ) );
+			}
 			return esc_attr( (string) ( $addr[ $k ] ?? '' ) );
+		};
+
+		$label_raw = $posted && isset( $_POST['label'] )
+			? sanitize_text_field( wp_unslash( $_POST['label'] ) )
+			: (string) ( $addr['label'] ?? 'home' );
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
+
+		$current = $label_raw;
+		if ( '' === $current || ! array_key_exists( $current, self::labels() ) ) {
+			$is_custom = '' !== $label_raw && ! array_key_exists( $label_raw, self::labels() );
+			$current   = $is_custom ? 'custom' : 'home';
+		}
+
+		$row = static function ( $key, $id_attr ) use ( $rules, $get ) {
+			$rule = $rules[ $key ];
+			?>
+			<p class="oc-abook__row">
+				<label for="<?php echo esc_attr( $id_attr ); ?>"><?php echo esc_html( $rule['label'] ); ?><?php echo $rule['req'] ? ' <span class="oc-abook__req" aria-hidden="true">*</span>' : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static markup. ?></label>
+				<input type="text" id="<?php echo esc_attr( $id_attr ); ?>" name="<?php echo esc_attr( $key ); ?>" value="<?php echo $get( $key ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- esc_attr in $get. ?>"<?php echo $rule['req'] ? ' required' : ''; ?> />
+			</p>
+			<?php
 		};
 		?>
 		<div class="oc-abook oc-abook--form">
-			<form method="post" class="oc-abook__form" data-oc-abook-form novalidate>
+			<form method="post" class="oc-abook__form" data-oc-abook-form>
 				<?php wp_nonce_field( 'oc_addr_save' ); ?>
 				<input type="hidden" name="oc_addr_id" value="<?php echo esc_attr( 'new' === $id ? '' : $id ); ?>" />
 
@@ -466,30 +529,15 @@ final class Addresses {
 					<?php endforeach; ?>
 					<button type="button" class="oc-co-chip<?php echo 'custom' === $current ? ' is-on' : ''; ?>" data-oc-chip="custom"><?php esc_html_e( 'Other…', 'oc-theme' ); ?></button>
 				</div>
-				<input type="text" class="oc-abook__custom" data-oc-chip-input placeholder="<?php esc_attr_e( 'Label — e.g. Grandma', 'oc-theme' ); ?>" value="<?php echo 'custom' === $current ? $val( 'label' ) : ''; ?>" <?php echo 'custom' === $current ? '' : 'hidden'; ?> />
-				<input type="hidden" name="label" data-oc-abook-label value="<?php echo 'custom' === $current ? $val( 'label' ) : esc_attr( $current ); ?>" />
+				<input type="text" class="oc-abook__custom" data-oc-chip-input placeholder="<?php esc_attr_e( 'Label — e.g. Grandma', 'oc-theme' ); ?>" value="<?php echo 'custom' === $current ? esc_attr( $label_raw ) : ''; ?>" <?php echo 'custom' === $current ? '' : 'hidden'; ?> />
+				<input type="hidden" name="label" data-oc-abook-label value="<?php echo 'custom' === $current ? esc_attr( $label_raw ) : esc_attr( $current ); ?>" />
 
-				<p class="oc-abook__row">
-					<label for="oc_ab_a1"><?php esc_html_e( 'Street and house number', 'oc-theme' ); ?></label>
-					<input type="text" id="oc_ab_a1" name="address_1" value="<?php echo $val( 'address_1' ); ?>" />
-				</p>
-				<p class="oc-abook__row">
-					<label for="oc_ab_city"><?php esc_html_e( 'City', 'oc-theme' ); ?></label>
-					<input type="text" id="oc_ab_city" name="city" value="<?php echo $val( 'city' ); ?>" />
-				</p>
+				<?php $row( 'address_1', 'oc_ab_a1' ); ?>
+				<?php $row( 'city', 'oc_ab_city' ); ?>
 				<div class="oc-abook__grid3">
-					<p class="oc-abook__row">
-						<label for="oc_ab_a2"><?php esc_html_e( 'Apartment', 'oc-theme' ); ?></label>
-						<input type="text" id="oc_ab_a2" name="address_2" value="<?php echo $val( 'address_2' ); ?>" />
-					</p>
-					<p class="oc-abook__row">
-						<label for="oc_ab_floor"><?php esc_html_e( 'Floor', 'oc-theme' ); ?></label>
-						<input type="text" id="oc_ab_floor" name="floor" value="<?php echo $val( 'floor' ); ?>" />
-					</p>
-					<p class="oc-abook__row">
-						<label for="oc_ab_entry"><?php esc_html_e( 'Entry code', 'oc-theme' ); ?></label>
-						<input type="text" id="oc_ab_entry" name="entry" value="<?php echo $val( 'entry' ); ?>" />
-					</p>
+					<?php $row( 'address_2', 'oc_ab_a2' ); ?>
+					<?php $row( 'floor', 'oc_ab_floor' ); ?>
+					<?php $row( 'entry', 'oc_ab_entry' ); ?>
 				</div>
 
 				<label class="oc-abook__def">

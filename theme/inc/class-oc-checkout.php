@@ -587,12 +587,12 @@ final class Checkout {
 					</label>
 				</div>
 				<button type="button" class="oc-co-addrback" data-oc-addr-back>
-					<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+					<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
 					<?php esc_html_e( 'Back to saved addresses', 'oc-theme' ); ?>
 				</button>
 			<?php endif; ?>
 
-			<?php if ( ! empty( $s['send_other'] ) && ! $this->orderer_packed() ) : ?>
+			<?php if ( ! empty( $s['send_other'] ) ) : ?>
 				<label class="oc-co-toggle">
 					<input type="checkbox" name="oc_send_other" id="oc_send_other" value="1" />
 					<span><?php esc_html_e( "I'm sending to someone else", 'oc-theme' ); ?></span>

@@ -7710,3 +7710,34 @@
 		custom.addEventListener( 'input', function () { hidden.value = custom.value.trim(); } );
 	}
 }() );
+
+/* -- account details: reveal the password fields behind a button -- */
+( function () {
+	var form = document.querySelector( 'form.edit-account, form.woocommerce-EditAccountForm' );
+	if ( ! form ) { return; }
+	var fs = form.querySelector( 'fieldset' );
+	if ( ! fs ) { return; }
+
+	var legend = fs.querySelector( 'legend' );
+	var label = legend ? legend.textContent.trim() : 'שינוי סיסמה';
+
+	var btn = document.createElement( 'button' );
+	btn.type = 'button';
+	btn.className = 'oc-pwtoggle';
+	btn.innerHTML = '<span>' + label + '</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
+	btn.setAttribute( 'aria-expanded', 'false' );
+
+	fs.parentNode.insertBefore( btn, fs );
+	fs.hidden = true;
+
+	btn.addEventListener( 'click', function () {
+		var open = fs.hidden;
+		fs.hidden = ! open;
+		btn.classList.toggle( 'is-open', open );
+		btn.setAttribute( 'aria-expanded', open ? 'true' : 'false' );
+		if ( open ) {
+			var first = fs.querySelector( 'input' );
+			if ( first ) { first.focus(); }
+		}
+	} );
+}() );
