@@ -7219,8 +7219,12 @@
 		requestAnimationFrame( function () { root.classList.add( 'is-open' ); } );
 		step( 'phone' );
 
-		var tel = el( '[data-step="phone"] .oc-auth__tel' );
-		if ( tel ) { tel.focus(); }
+		// Desktop only: on a phone the keyboard would bury the other
+		// sign-in options the moment the drawer opens.
+		if ( window.matchMedia( '(min-width: 783px)' ).matches ) {
+			var tel = el( '[data-step="phone"] .oc-auth__tel' );
+			if ( tel ) { tel.focus(); }
+		}
 
 		/* Android reads the SMS by itself when the browser plays along. */
 		if ( 'OTPCredential' in window ) {

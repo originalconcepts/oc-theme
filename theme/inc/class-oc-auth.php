@@ -860,6 +860,7 @@ final class Auth {
 		setcookie( 'oc_auth_state', '', time() - 100, '/', '', is_ssl(), true );
 
 		if ( '' === $state || $state !== (string) ( $_POST['state'] ?? '' ) || empty( $_POST['code'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			self::apple_note( 'state: cookie=' . ( '' === $state ? 'missing' : 'present' ) . ' match=' . ( $state === (string) ( $_POST['state'] ?? '' ) ? 'yes' : 'no' ) . ' code=' . ( empty( $_POST['code'] ) ? 'missing' : 'present' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			wp_safe_redirect( $back );
 			exit;
 		}
@@ -867,6 +868,7 @@ final class Auth {
 		$secret = $this->apple_secret();
 
 		if ( '' === $secret ) {
+			self::apple_note( 'secret: could not sign (key unreadable?)' );
 			wp_safe_redirect( $back );
 			exit;
 		}
@@ -890,6 +892,7 @@ final class Auth {
 		$parts    = explode( '.', $id_token );
 
 		if ( 3 !== count( $parts ) ) {
+			self::apple_note( 'token: ' . ( is_wp_error( $token_res ) ? $token_res->get_error_message() : wp_remote_retrieve_response_code( $token_res ) . ' ' . substr( (string) wp_remote_retrieve_body( $token_res ), 0, 300 ) ) );
 			wp_safe_redirect( $back );
 			exit;
 		}
@@ -901,9 +904,12 @@ final class Auth {
 		$sub    = (string) ( $claims['sub'] ?? '' );
 
 		if ( '' === $sub || ( $claims['aud'] ?? '' ) !== (string) $s['apple_client_id'] || 'https://appleid.apple.com' !== (string) ( $claims['iss'] ?? '' ) ) {
+			self::apple_note( 'claims: sub=' . ( '' === $sub ? 'missing' : 'ok' ) . ' aud=' . (string) ( $claims['aud'] ?? '(none)' ) . ' iss=' . (string) ( $claims['iss'] ?? '(none)' ) );
 			wp_safe_redirect( $back );
 			exit;
 		}
+
+		self::apple_note( '' );
 
 		// The name travels only on the very first authorisation, as a
 		// POSTed JSON blob beside the code.
@@ -928,6 +934,19 @@ final class Auth {
 			'a',
 			$back
 		);
+	}
+
+	/**
+	 * A one-line breadcrumb about the last Apple attempt, for the doctor.
+	 * Empty means the last attempt went through.
+	 *
+	 * @param string $why What went wrong.
+	 */
+	private static function apple_note( string $why ): void {
+		update_option( 'ocau_apple_note', array(
+			't' => (string) gmdate( 'c' ),
+			'w' => $why,
+		), false );
 	}
 
 	/**

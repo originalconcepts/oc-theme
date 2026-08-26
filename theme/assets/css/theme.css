@@ -11495,7 +11495,8 @@ body.oc-checkout { overflow-x: clip; }
  * Width and side from the Customizer; alignment and button shape too. The
  * default look leans on the theme's own tokens, so it lands dressed. */
 
-.oc-auth { position: fixed; inset: 0; z-index: 1200; }
+/* Above every floating thing on the page — the story video floats high. */
+.oc-auth { position: fixed; inset: 0; z-index: 100000; }
 
 .oc-auth__dim {
 	position: absolute;
