@@ -12434,6 +12434,93 @@ html[dir="rtl"] .oc-bye { translate: 50% 0; }
 }
 .oc-reorder-close:hover { color: var(--oc-ink, #111); }
 
+/* ---------- single order view ---------- */
+/* Woo's default "Order #X was placed on…" line, replaced by our header */
+.woocommerce-MyAccount-content > p:has( + .oc-ov ) { display: none; }
+
+.oc-ov__cards {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 16px;
+	margin-block-end: 18px;
+}
+.oc-ov__card {
+	background: #fff;
+	border: 1px solid var(--oc-line, #e5e2dd);
+	border-radius: 12px;
+	padding: 18px 20px;
+}
+.oc-ov__card-h {
+	margin: 0 0 12px;
+	font-size: .74rem;
+	font-weight: 600;
+	letter-spacing: .04em;
+	text-transform: uppercase;
+	color: var(--oc-ink-2, #6b7482);
+}
+.oc-ov__name { margin: 0 0 5px; font-weight: 600; font-size: 1rem; color: var(--oc-ink, #111); }
+.oc-ov__line { margin: 0 0 3px; font-size: .9rem; color: var(--oc-ink-2, #6b7482); }
+.oc-ov__recip { margin: 10px 0 0; font-size: .85rem; color: var(--oc-ink-2, #6b7482); }
+
+.oc-ov__card--dest { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; }
+.oc-ov__dest-body { min-inline-size: 0; }
+.oc-ov__mapwrap { flex: none; }
+
+/* the stylised location card: a soft map with a couple of "streets" + a pin */
+.oc-ov__map {
+	position: relative;
+	inline-size: 116px;
+	block-size: 116px;
+	border-radius: 14px;
+	overflow: hidden;
+	border: 1px solid var(--oc-line, #e5e2dd);
+	background: linear-gradient(135deg, #eef2f8 0%, #dde5f0 100%);
+	display: grid;
+	place-items: center;
+}
+.oc-ov__map-streets {
+	position: absolute;
+	inset: 0;
+	background-image:
+		linear-gradient(90deg, transparent 20%, #fff 20%, #fff 25%, transparent 25%),
+		linear-gradient(0deg, transparent 60%, #fff 60%, #fff 66%, transparent 66%),
+		linear-gradient(58deg, transparent 46%, rgba(255, 255, 255, .75) 46%, rgba(255, 255, 255, .75) 50%, transparent 50%);
+	opacity: .95;
+}
+.oc-ov__pin { position: relative; z-index: 1; filter: drop-shadow(0 3px 5px rgba(3, 16, 76, .28)); }
+.oc-ov__map-cap {
+	position: absolute;
+	inset-inline: 0;
+	inset-block-end: 0;
+	padding: 4px 6px;
+	background: rgba(255, 255, 255, .88);
+	font-size: .72rem;
+	font-weight: 500;
+	text-align: center;
+	color: var(--oc-ink, #111);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.oc-ov__map--pickup { background: var(--oc-bg-2, #f4f6fa); }
+
+/* the item list header: title on one side, date + status on the other */
+.oc-ov__phead {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	flex-wrap: wrap;
+	margin-block-end: 14px;
+}
+.oc-ov__phead-h { margin: 0; }
+.oc-ov__phead-meta { display: flex; align-items: center; gap: 12px; }
+.oc-ov__date { font-size: .85rem; color: var(--oc-ink-2, #6b7482); font-variant-numeric: tabular-nums; }
+
+@media (max-width: 640px) {
+	.oc-ov__cards { grid-template-columns: 1fr; }
+}
+
 /* orders on phones: each order becomes a comfortable card, not a scroll strip
  * (overrides the shared one-line-scroll rule for account tables) */
 @media (max-width: 900px) {

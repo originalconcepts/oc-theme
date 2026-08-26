@@ -153,6 +153,17 @@ final class WooCommerce {
 		add_action( 'woocommerce_my_account_my_orders_column_order-actions', array( $this, 'orders_col_actions' ) );
 		add_action( 'wp_ajax_oc_reorder', array( $this, 'ajax_reorder' ) );
 
+		// The single order view: our own layout — two summary cards (orderer +
+		// destination with a location card) over a thank-you-style item list.
+		add_action(
+			'init',
+			static function (): void {
+				remove_action( 'woocommerce_view_order', 'woocommerce_order_details_table', 10 );
+			},
+			20
+		);
+		add_action( 'woocommerce_view_order', array( $this, 'render_order_view' ), 10 );
+
 		// /my-account/ itself lands on the orders, not on an empty dashboard.
 		// Matched by PATH, not by is_wc_endpoint_url() — custom endpoints
 		// (stock alerts and friends) are invisible to that check and were
@@ -1968,7 +1979,18 @@ final class WooCommerce {
 	 * @param \WC_Order $order Order.
 	 */
 	public function orders_col_status( $order ): void {
-		$meta = $this->status_meta( $order->get_status() );
+		echo $this->status_pill( $order->get_status() ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
+	}
+
+	/**
+	 * A colour-coded status pill (icon + label) — shared by the orders list
+	 * and the single-order view.
+	 *
+	 * @param string $status Status slug.
+	 * @return string
+	 */
+	private function status_pill( string $status ): string {
+		$meta = $this->status_meta( $status );
 
 		$p     = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">';
 		$icons = array(
@@ -1979,10 +2001,10 @@ final class WooCommerce {
 			'muted' => $p . '<circle cx="12" cy="12" r="9"/></svg>',
 		);
 
-		printf(
+		return sprintf(
 			'<span class="oc-ostatus oc-ostatus--%1$s">%2$s<span>%3$s</span></span>',
 			esc_attr( $meta['tone'] ),
-			$icons[ $meta['tone'] ], // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static inline SVG.
+			$icons[ $meta['tone'] ],
 			esc_html( $meta['label'] )
 		);
 	}
@@ -2095,5 +2117,169 @@ final class WooCommerce {
 				'redirect' => wc_get_checkout_url(),
 			)
 		);
+	}
+
+	/* ----------------------------------------------------- single order view */
+
+	/**
+	 * Is this order a local-pickup order?
+	 *
+	 * @param \WC_Order $order Order.
+	 */
+	private function order_is_pickup( $order ): bool {
+		foreach ( $order->get_shipping_methods() as $method ) {
+			if ( 0 === strpos( (string) $method->get_method_id(), 'local_pickup' ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * A stylised "location" card — a soft map-like square with streets and a
+	 * pin. No external service, no API key.
+	 *
+	 * @param string $label Small caption (e.g. the city).
+	 */
+	private function location_card( string $label ): string {
+		$pin = '<svg class="oc-ov__pin" viewBox="0 0 24 24" width="30" height="30" aria-hidden="true"><path fill="var(--oc-primary,#03104c)" d="M12 2a7 7 0 0 0-7 7c0 4.7 6.2 12.3 6.4 12.6a.8.8 0 0 0 1.2 0C12.8 21.3 19 13.7 19 9a7 7 0 0 0-7-7z"/><circle cx="12" cy="9" r="2.6" fill="#fff"/></svg>';
+
+		return '<div class="oc-ov__map" aria-hidden="true"><span class="oc-ov__map-streets"></span>' . $pin
+			. ( '' !== $label ? '<span class="oc-ov__map-cap">' . esc_html( $label ) . '</span>' : '' )
+			. '</div>';
+	}
+
+	/**
+	 * Our whole order-view layout.
+	 *
+	 * @param int $order_id Order id.
+	 */
+	public function render_order_view( $order_id ): void {
+		$order = wc_get_order( $order_id );
+		if ( ! $order ) {
+			return;
+		}
+
+		$pickup  = $this->order_is_pickup( $order );
+		$created = $order->get_date_created();
+
+		$name  = trim( $order->get_billing_first_name() . ' ' . $order->get_billing_last_name() );
+		$email = $order->get_billing_email();
+		$phone = $order->get_billing_phone();
+
+		// The delivery address (this theme keeps it in billing, no postcode).
+		$street = $order->get_billing_address_1();
+		$city   = $order->get_billing_city();
+		$apt    = $order->get_billing_address_2();
+		$floor  = (string) $order->get_meta( '_oc_floor' );
+		$entry  = (string) $order->get_meta( '_oc_entry' );
+
+		$extra = array();
+		if ( '' !== $apt ) {
+			/* translators: %s: apartment. */
+			$extra[] = sprintf( __( 'Apt %s', 'oc-theme' ), $apt );
+		}
+		if ( '' !== $floor ) {
+			/* translators: %s: floor. */
+			$extra[] = sprintf( __( 'Floor %s', 'oc-theme' ), $floor );
+		}
+		if ( '' !== $entry ) {
+			/* translators: %s: entry code. */
+			$extra[] = sprintf( __( 'Entry %s', 'oc-theme' ), $entry );
+		}
+
+		// Recipient, when the order was sent to someone else.
+		$r_first = (string) $order->get_meta( '_oc_recipient_first' );
+		$r_last  = (string) $order->get_meta( '_oc_recipient_last' );
+		$r_phone = (string) $order->get_meta( '_oc_recipient_phone' );
+		$r_name  = trim( $r_first . ' ' . $r_last );
+		?>
+		<div class="oc-ov">
+			<div class="oc-ov__cards">
+				<div class="oc-ov__card">
+					<h3 class="oc-ov__card-h"><?php esc_html_e( 'Orderer details', 'oc-theme' ); ?></h3>
+					<p class="oc-ov__name"><?php echo esc_html( $name ); ?></p>
+					<?php if ( '' !== $email ) : ?>
+						<p class="oc-ov__line" dir="ltr"><?php echo esc_html( $email ); ?></p>
+					<?php endif; ?>
+					<?php if ( '' !== $phone ) : ?>
+						<p class="oc-ov__line" dir="ltr"><?php echo esc_html( $phone ); ?></p>
+					<?php endif; ?>
+				</div>
+
+				<div class="oc-ov__card oc-ov__card--dest">
+					<div class="oc-ov__dest-body">
+						<?php if ( $pickup ) : ?>
+							<h3 class="oc-ov__card-h"><?php esc_html_e( 'Store pickup', 'oc-theme' ); ?></h3>
+							<p class="oc-ov__name"><?php echo esc_html( get_bloginfo( 'name' ) ); ?></p>
+							<p class="oc-ov__line"><?php esc_html_e( 'Collect your order from the store.', 'oc-theme' ); ?></p>
+						<?php else : ?>
+							<h3 class="oc-ov__card-h"><?php esc_html_e( 'Delivery address', 'oc-theme' ); ?></h3>
+							<p class="oc-ov__name"><?php echo esc_html( trim( $street . ( '' !== $city ? ', ' . $city : '' ) ) ); ?></p>
+							<?php if ( $extra ) : ?>
+								<p class="oc-ov__line"><?php echo esc_html( implode( ' · ', $extra ) ); ?></p>
+							<?php endif; ?>
+							<?php if ( '' !== $r_name ) : ?>
+								<p class="oc-ov__recip"><?php esc_html_e( 'Recipient:', 'oc-theme' ); ?> <?php echo esc_html( $r_name ); ?><?php echo '' !== $r_phone ? ' · ' . esc_html( $r_phone ) : ''; ?></p>
+							<?php endif; ?>
+						<?php endif; ?>
+					</div>
+					<div class="oc-ov__mapwrap">
+						<?php
+						if ( $pickup ) {
+							echo '<div class="oc-ov__map oc-ov__map--pickup" aria-hidden="true"><svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="var(--oc-primary,#03104c)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 4l9 5.5"/><path d="M5 10.5V20h14v-9.5"/><path d="M9 20v-5h6v5"/></svg></div>';
+						} else {
+							echo $this->location_card( $city ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside.
+						}
+						?>
+					</div>
+				</div>
+			</div>
+
+			<div class="oc-ty__box oc-ov__products">
+				<div class="oc-ov__phead">
+					<h2 class="oc-ty__h oc-ov__phead-h"><?php esc_html_e( 'Order items', 'oc-theme' ); ?></h2>
+					<div class="oc-ov__phead-meta">
+						<?php if ( $created ) : ?>
+							<span class="oc-ov__date"><?php echo esc_html( $created->date_i18n( 'd/m/y · H:i' ) ); ?></span>
+						<?php endif; ?>
+						<?php echo $this->status_pill( $order->get_status() ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts. ?>
+					</div>
+				</div>
+
+				<?php foreach ( $order->get_items() as $item ) : ?>
+					<?php
+					$product = is_callable( array( $item, 'get_product' ) ) ? $item->get_product() : null;
+					$thumb   = $product ? $product->get_image( array( 64, 64 ) ) : '';
+					$qty     = (int) $item->get_quantity();
+					$meta    = wc_display_item_meta( $item, array( 'echo' => false ) );
+					?>
+					<div class="oc-ty__item">
+						<span class="oc-ty__item-img">
+							<?php echo wp_kses_post( $thumb ); ?>
+							<span class="oc-ty__item-badge"><?php echo esc_html( (string) $qty ); ?></span>
+						</span>
+						<span class="oc-ty__item-body">
+							<span class="oc-ty__item-name"><?php echo esc_html( $item->get_name() ); ?></span>
+							<?php if ( $meta ) : ?>
+								<span class="oc-ty__item-meta"><?php echo wp_kses_post( $meta ); ?></span>
+							<?php endif; ?>
+						</span>
+						<span class="oc-ty__item-total"><?php echo wp_kses_post( $order->get_formatted_line_subtotal( $item ) ); ?></span>
+					</div>
+				<?php endforeach; ?>
+
+				<div class="oc-ty__totals">
+					<?php foreach ( $order->get_order_item_totals() as $key => $row ) : ?>
+						<div class="oc-ty__trow<?php echo 'order_total' === $key ? ' oc-ty__trow--total' : ''; ?>">
+							<span><?php echo esc_html( wp_strip_all_tags( (string) $row['label'] ) ); ?></span>
+							<span><?php echo wp_kses_post( $row['value'] ); ?></span>
+						</div>
+					<?php endforeach; ?>
+				</div>
+			</div>
+		</div>
+		<?php
 	}
 }

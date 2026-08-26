@@ -5293,3 +5293,21 @@ msgstr "ערב טוב"
 
 msgid "Good night"
 msgstr "לילה טוב"
+
+msgid "Orderer details"
+msgstr "פרטי המזמין"
+
+msgid "Store pickup"
+msgstr "איסוף עצמי"
+
+msgid "Collect your order from the store."
+msgstr "איסוף ההזמנה מהחנות."
+
+msgid "Recipient:"
+msgstr "נמען:"
+
+msgid "Order items"
+msgstr "פריטי ההזמנה"
+
+msgid "Entry %s"
+msgstr "קוד כניסה %s"
