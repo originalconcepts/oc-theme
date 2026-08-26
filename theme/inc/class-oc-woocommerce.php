@@ -51,10 +51,20 @@ final class WooCommerce {
 		);
 
 		// /my-account/ itself lands on the orders, not on an empty dashboard.
+		// Matched by PATH, not by is_wc_endpoint_url() — custom endpoints
+		// (stock alerts and friends) are invisible to that check and were
+		// being bounced to the orders.
 		add_action(
 			'template_redirect',
 			static function (): void {
-				if ( function_exists( 'is_account_page' ) && is_account_page() && is_user_logged_in() && ! is_wc_endpoint_url() ) {
+				if ( ! function_exists( 'is_account_page' ) || ! is_account_page() || ! is_user_logged_in() ) {
+					return;
+				}
+
+				$here = trim( (string) wp_parse_url( (string) ( $_SERVER['REQUEST_URI'] ?? '' ), PHP_URL_PATH ), '/' ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+				$page = trim( (string) wp_parse_url( (string) wc_get_page_permalink( 'myaccount' ), PHP_URL_PATH ), '/' );
+
+				if ( $here === $page ) {
 					wp_safe_redirect( wc_get_account_endpoint_url( 'orders' ) );
 					exit;
 				}

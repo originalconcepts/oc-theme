@@ -11976,6 +11976,9 @@ html[dir="rtl"] .oc-bye { translate: 50% 0; }
 	align-items: start;
 }
 
+.woocommerce-account .woocommerce > .oc-macct-side { grid-column: 1; }
+.woocommerce-account .woocommerce > .woocommerce-MyAccount-content { grid-column: 2; }
+
 .woocommerce-account .woocommerce > .woocommerce-notices-wrapper,
 .woocommerce-account .woocommerce > .woocommerce-message,
 .woocommerce-account .woocommerce > .woocommerce-info,
@@ -11986,7 +11989,46 @@ html[dir="rtl"] .oc-bye { translate: 50% 0; }
 
 @media (max-width: 900px) {
 	.woocommerce-account .woocommerce { display: block; }
-	.oc-macct-side { margin-block-end: 26px; }
+
+	/* The card becomes a finger-scrolled strip of chips — stacked it sat
+	 * on top of the content. */
+	.oc-macct-side {
+		position: static;
+		margin-block-end: 24px;
+		padding: 10px 12px;
+	}
+
+	.oc-macct-side__hi { padding: 0 0 10px; }
+
+	.oc-macct-side .woocommerce-MyAccount-navigation ul {
+		display: flex;
+		gap: 6px;
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
+		scrollbar-width: none;
+		padding-block-end: 2px;
+	}
+
+	.oc-macct-side .woocommerce-MyAccount-navigation ul::-webkit-scrollbar { display: none; }
+
+	.oc-macct-side .woocommerce-MyAccount-navigation a {
+		white-space: nowrap;
+		border: 1px solid var(--oc-line, #e5e2dd);
+		border-radius: 999px;
+		padding: 7px 14px;
+	}
+
+	.oc-macct-side .woocommerce-MyAccount-navigation .is-active > a {
+		background: var(--oc-ink, #111);
+		color: #fff;
+		border-color: var(--oc-ink, #111);
+	}
+
+	.oc-macct-side .woocommerce-MyAccount-navigation--customer-logout a {
+		margin-block-start: 0;
+		border-block-start: 1px solid var(--oc-line, #e5e2dd);
+		border-radius: 999px;
+	}
 }
 
 /* -- the side card -- */
