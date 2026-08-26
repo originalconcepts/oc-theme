@@ -6079,6 +6079,14 @@ table.variations td.value select:has(+ .oc-dd) {
 	block-size: var(--oc-swatch-cat, 22px);
 }
 
+/* "Above" now lives inside the text box (first thing, before the title), so
+ * only the cards that actually carry swatches spend the height on them. */
+.oc-card-text > .oc-colors--loop:first-child { margin-block: 2px 8px; }
+
+/* The panel group with an unanswered question wears the same red as the
+ * product page's row. */
+.oc-vp__group.oc-tr-need .oc-vp__glabel { color: var(--oc-sale, #b4453c); }
+
 .oc-card-minimal .oc-colors--loop { justify-content: flex-start; }
 
 /* Sits in the variations area, matching the attribute rows: label line

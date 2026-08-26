@@ -6726,7 +6726,10 @@
 			} else {
 				delete btn.dataset.mode;
 				btn.textContent = L.vpAdd || 'Add to cart';
-				btn.disabled = mode === 'wait';
+
+				/* Full colour even before a choice is made — a click with an
+				 * unanswered question gets guidance, not a greyed-out shrug. */
+				btn.disabled = false;
 			}
 
 			// A stopped clock needs no quantity.
@@ -6821,6 +6824,7 @@
 				}
 
 				var wrap = vpEl( 'div', 'oc-vp__group' );
+				wrap.dataset.g = g.key;
 				wrap.appendChild( vpEl( 'h4', 'oc-vp__glabel', g.label ) );
 				var row = vpEl( 'div', 'oc-var oc-var--' + ( g.type === 'swatch' ? 'swatch' : 'button' ) );
 
@@ -6846,6 +6850,11 @@
 						st.sel[ g.key ] = st.sel[ g.key ] === o.slug ? '' : o.slug;
 						vpPaint();
 
+						if ( st.sel[ g.key ] ) {
+							wrap.classList.remove( 'oc-tr-need' );
+							wrap.querySelectorAll( '.oc-var-need' ).forEach( function ( el ) { el.remove(); } );
+						}
+
 						// Answering one question reveals the next: whatever
 						// follows this group slides up into view.
 						var after = chip.closest( '.oc-vp__group' );
@@ -6870,10 +6879,43 @@
 			vpPaint();
 		}
 
+		/* The product page's manners, worn by the panel: every unanswered
+		 * attribute gets a red note under its row and the panel glides to
+		 * the first of them — in place of a silent nothing. */
+		function vpNeed() {
+			vp.querySelectorAll( '.oc-var-need' ).forEach( function ( el ) { el.remove(); } );
+			vp.querySelectorAll( '.oc-vp__group.oc-tr-need' ).forEach( function ( el ) { el.classList.remove( 'oc-tr-need' ); } );
+
+			var first = null;
+
+			st.groups.forEach( function ( g ) {
+				if ( g.auto || st.sel[ g.key ] ) { return; }
+
+				var wrap = vp.querySelector( '.oc-vp__group[data-g="' + g.key + '"]' );
+
+				if ( ! wrap ) { return; }
+
+				wrap.classList.add( 'oc-tr-need' );
+
+				var msg = document.createElement( 'p' );
+				msg.className = 'oc-var-need';
+				msg.textContent = ( L.varNeed || 'Please choose %s' ).replace( '%s', g.label );
+				wrap.appendChild( msg );
+
+				if ( ! first ) { first = wrap; }
+			} );
+
+			if ( first ) { first.scrollIntoView( { behavior: 'smooth', block: 'center' } ); }
+		}
+
 		function vpAdd() {
 			var hit = vpMatch( true );
 
 			if ( ! hit ) {
+				if ( ! st.simple && ! st.groups.every( function ( g ) { return g.auto || st.sel[ g.key ]; } ) ) {
+					vpNeed();
+				}
+
 				return;
 			}
 

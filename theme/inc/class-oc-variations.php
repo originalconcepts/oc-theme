@@ -167,7 +167,13 @@ final class Variations {
 		// Both positions hook in; the choice is read at render time, so the
 		// customizer preview reflects it immediately — a hook picked when the
 		// theme loads would only see the saved value.
-		add_action( 'woocommerce_before_shop_loop_item_title', array( $this, 'loop_colors_above' ), 20 );
+		//
+		// "Above" renders INSIDE the text box (right after it opens, before
+		// the title) rather than as the card's own grid row: a shared subgrid
+		// track made every card in the row reserve swatch height when one
+		// neighbour had swatches. Inside the box each card packs itself —
+		// the same decision the reviews row got.
+		add_action( 'woocommerce_shop_loop_item_title', array( $this, 'loop_colors_above' ), 2 );
 		add_action( 'woocommerce_after_shop_loop_item_title', array( $this, 'loop_colors_below' ), 30 );
 	}
 
