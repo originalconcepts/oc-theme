@@ -170,7 +170,19 @@ final class Addresses {
 	 */
 	public static function save( int $uid, array $in ): string {
 		$list = self::all( $uid );
-		$id   = isset( $in['id'] ) && '' !== (string) $in['id'] && 'wc' !== $in['id']
+
+		// First real write while only the billing seed was on show, and it is
+		// not the seed itself being saved — adopt the seed as a real entry so
+		// the billing address survives beside the address just added.
+		if ( ! $list && ( ! isset( $in['id'] ) || 'wc' !== (string) $in['id'] ) ) {
+			$seed = self::from_wc_billing( $uid );
+			if ( $seed ) {
+				$seed['id'] = wp_generate_uuid4();
+				$list[]     = $seed;
+			}
+		}
+
+		$id = isset( $in['id'] ) && '' !== (string) $in['id'] && 'wc' !== $in['id']
 			? (string) $in['id']
 			: wp_generate_uuid4();
 

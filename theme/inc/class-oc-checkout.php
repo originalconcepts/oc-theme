@@ -1204,9 +1204,10 @@ final class Checkout {
 					'entry'     => sanitize_text_field( wp_unslash( $_POST['billing_oc_entry'] ?? '' ) ),
 				);
 
-				// An existing card was kept — update it in place; anything else
-				// (a new address, or the billing seed) is stored fresh.
-				if ( '' !== $choice && '__new' !== $choice && 'wc' !== $choice ) {
+				// Carry the chosen card's id through — a real id updates in
+				// place; the 'wc' seed tells save() to store it as itself (and
+				// skip the adopt-the-seed step, so it never doubles).
+				if ( '' !== $choice && '__new' !== $choice ) {
 					$data['id'] = $choice;
 				}
 
