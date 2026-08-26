@@ -532,6 +532,12 @@ final class Seo {
 		$title = is_front_page() && '' !== trim( (string) self::settings()['home_title'] )
 			? self::render( (string) self::settings()['home_title'] )
 			: self::auto_title( $object );
+
+		// A latest-posts front page has no subject; the template would chain
+		// the site name onto itself ("Eden - Eden") — core's title is right.
+		if ( null === $object && is_front_page() && '' === trim( (string) self::settings()['home_title'] ) ) {
+			$title = wp_get_document_title();
+		}
 		$desc  = is_front_page() && '' !== trim( (string) self::settings()['home_desc'] )
 			? self::render( (string) self::settings()['home_desc'] )
 			: self::auto_desc( $object );
