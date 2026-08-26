@@ -12267,24 +12267,32 @@ html[dir="rtl"] .oc-bye { translate: 50% 0; }
 .woocommerce-orders-table { border-collapse: collapse; inline-size: 100%; }
 .woocommerce-orders-table th {
 	text-align: start;
-	font-size: .82rem;
+	font-size: .74rem;
 	font-weight: 600;
+	letter-spacing: .04em;
+	text-transform: uppercase;
 	color: var(--oc-ink-2, #6b7482);
-	padding: 0 12px 10px;
+	padding: 0 14px 12px;
 	border-block-end: 1px solid var(--oc-line, #e5e2dd);
 }
 .woocommerce-orders-table td,
 .woocommerce-orders-table tbody th {
 	vertical-align: middle;
-	padding: 14px 12px;
+	padding: 18px 14px;
 	border-block-end: 1px solid var(--oc-line, #eee9e3);
 	font-weight: 400;
 	text-align: start;
 }
+/* kill WooCommerce's even-row zebra tint — the cards carry their own rhythm */
+.woocommerce-orders-table tbody tr:nth-child(2n) td,
+.woocommerce-orders-table tbody tr:nth-child(2n) th { background: transparent !important; }
 
-.oc-onum { display: block; font-weight: 600; color: var(--oc-ink, #111); text-decoration: none; }
-.oc-onum:hover { text-decoration: underline; }
-.oc-odate { display: block; margin-block-start: 3px; font-size: .82rem; color: var(--oc-ink-2, #6b7482); font-variant-numeric: tabular-nums; }
+.oc-onum { display: block; font-weight: 700; font-size: 1.02rem; color: var(--oc-primary, #03104c); text-decoration: none; letter-spacing: .01em; }
+.oc-onum:hover { text-decoration: underline; text-underline-offset: 3px; }
+.oc-odate { display: block; margin-block-start: 4px; font-size: .82rem; color: var(--oc-ink-2, #6b7482); font-variant-numeric: tabular-nums; }
+
+/* total: the number carries weight */
+.woocommerce-orders-table__cell-order-total { font-size: 1.02rem; font-weight: 700; color: var(--oc-ink, #111); font-variant-numeric: tabular-nums; }
 
 /* product thumbnails: rounded app-icon squares, the count above them; the
  * whole block links to the order */
@@ -12312,25 +12320,44 @@ html[dir="rtl"] .oc-bye { translate: 50% 0; }
 .oc-oprods__count { font-size: .82rem; color: var(--oc-ink-2, #6b7482); }
 .oc-oprods:hover .oc-oprods__count { text-decoration: underline; }
 
-/* status pill: a soft colour ellipse behind the label */
+/* status pill: an icon + label on a soft colour ellipse */
 .oc-ostatus {
-	display: inline-block;
-	padding: 5px 15px;
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 6px 14px 6px 12px;
 	border-radius: 999px;
 	font-size: .85rem;
 	font-weight: 600;
 	white-space: nowrap;
 }
-.oc-ostatus--ok   { color: var(--oc-success, #2f7d4f); background: color-mix(in srgb, var(--oc-success, #2f7d4f) 13%, transparent); }
-.oc-ostatus--work { color: #a9680c; background: color-mix(in srgb, #c9760f 16%, transparent); }
-.oc-ostatus--pend { color: #2f5fa8; background: color-mix(in srgb, #2f5fa8 13%, transparent); }
-.oc-ostatus--bad  { color: var(--oc-sale, #b4453c); background: color-mix(in srgb, var(--oc-sale, #b4453c) 12%, transparent); }
-.oc-ostatus--muted { color: var(--oc-ink-2, #6b7482); background: color-mix(in srgb, var(--oc-ink-2, #6b7482) 12%, transparent); }
+.oc-ostatus svg { flex: none; }
+.oc-ostatus--ok   { color: #1c7a49; background: color-mix(in srgb, #1c7a49 15%, transparent); }
+.oc-ostatus--work { color: #b26a06; background: color-mix(in srgb, #e08707 20%, transparent); }
+.oc-ostatus--pend { color: #2b57a6; background: color-mix(in srgb, #2b57a6 15%, transparent); }
+.oc-ostatus--bad  { color: #c0392b; background: color-mix(in srgb, #c0392b 14%, transparent); }
+.oc-ostatus--muted { color: var(--oc-ink-2, #6b7482); background: color-mix(in srgb, var(--oc-ink-2, #6b7482) 13%, transparent); }
 
-/* actions: wrap neatly, with breathing room between buttons */
-.woocommerce-orders-table__cell-order-actions { white-space: nowrap; }
-.woocommerce-orders-table__cell-order-actions .button { margin: 4px 0; margin-inline-start: 10px; }
-.woocommerce-orders-table__cell-order-actions .button:first-child { margin-inline-start: 0; }
+/* actions: a real flex row with a gap — reliable spacing between buttons */
+.woocommerce-orders-table__cell-order-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	align-items: center;
+}
+.woocommerce-orders-table__cell-order-actions .button {
+	margin: 0;
+	padding: 9px 18px;
+	border-radius: 8px;
+	font-size: .88rem;
+	font-weight: 600;
+}
+/* primary action (view) wears the brand; reorder stays a quiet outline */
+.woocommerce-orders-table__cell-order-actions .button.view {
+	background: var(--oc-primary, #03104c);
+	color: #fff;
+	border: 1px solid var(--oc-primary, #03104c);
+}
 .woocommerce-orders-table__cell-order-actions .oc-reorder {
 	background: none;
 	color: var(--oc-ink, #111);

@@ -1966,9 +1966,20 @@ final class WooCommerce {
 	 */
 	public function orders_col_status( $order ): void {
 		$meta = $this->status_meta( $order->get_status() );
+
+		$p     = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">';
+		$icons = array(
+			'ok'    => $p . '<path d="M20 6 9 17l-5-5"/></svg>',
+			'work'  => $p . '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+			'pend'  => $p . '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+			'bad'   => $p . '<circle cx="12" cy="12" r="9"/><path d="m15 9-6 6M9 9l6 6"/></svg>',
+			'muted' => $p . '<circle cx="12" cy="12" r="9"/></svg>',
+		);
+
 		printf(
-			'<span class="oc-ostatus oc-ostatus--%1$s">%2$s</span>',
+			'<span class="oc-ostatus oc-ostatus--%1$s">%2$s<span>%3$s</span></span>',
 			esc_attr( $meta['tone'] ),
+			$icons[ $meta['tone'] ], // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static inline SVG.
 			esc_html( $meta['label'] )
 		);
 	}
