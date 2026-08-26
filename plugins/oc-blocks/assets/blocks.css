@@ -622,6 +622,7 @@
 .ocb-cats { position: relative; --ocb-cats-gap: 24px; }
 .ocb-cats--gap-small { --ocb-cats-gap: 12px; }
 .ocb-cats--gap-large { --ocb-cats-gap: 40px; }
+.ocb-cats--gap-none { --ocb-cats-gap: 0px; }
 
 .ocb-cats__row {
 	display: grid;
@@ -767,6 +768,7 @@
 .ocb-brands { position: relative; --ocb-br-gap: 30px; }
 .ocb-brands--gap-small { --ocb-br-gap: 14px; }
 .ocb-brands--gap-large { --ocb-br-gap: 52px; }
+.ocb-brands--gap-none { --ocb-br-gap: 0px; }
 
 .ocb-brands__row {
 	display: grid;

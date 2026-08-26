@@ -5629,6 +5629,37 @@ html:not([dir]) .oc-cartup__items--h.oc-fade-end {
 
 .oc-htrans.admin-bar .oc-header { inset-block-start: 32px; }
 
+/* Its own ink, until the first scroll brings the solid bar. */
+.oc-htrans .oc-header:not(.is-scrolled) { color: var(--oc-header-tr-tx, var(--oc-header-tx, inherit)); }
+.oc-htrans .oc-header:not(.is-scrolled) .oc-hicon,
+.oc-htrans .oc-header:not(.is-scrolled) .oc-htext__link,
+.oc-htrans .oc-header:not(.is-scrolled) .oc-nav a,
+.oc-htrans .oc-header:not(.is-scrolled) .oc-cart-link { color: inherit; }
+
+/* And its own (usually light) logo, swapped by state. */
+.oc-logo-tr { display: none; }
+
+.oc-htrans .oc-header:not(.is-scrolled) .custom-logo-link .custom-logo { display: none; }
+
+.oc-htrans .oc-header:not(.is-scrolled) .custom-logo-link .oc-logo-tr {
+	display: block;
+}
+
+/* Sized exactly like the regular logo. */
+.oc-header .oc-logo-tr {
+	block-size: var(--oc-logo-h, 48px);
+	max-block-size: none;
+	inline-size: auto;
+}
+
+/* The sticky header must clear WordPress's own admin bar, or a signed-in
+ * team member scrolls into a hidden strip. */
+.admin-bar .oc-header.is-sticky { inset-block-start: 32px; }
+
+@media (max-width: 782px) {
+	.admin-bar .oc-header.is-sticky { inset-block-start: 46px; }
+}
+
 /* ---------- load more / infinite ---------- */
 
 .oc-load-more {

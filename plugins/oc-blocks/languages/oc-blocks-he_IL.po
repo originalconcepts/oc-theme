@@ -1323,3 +1323,9 @@ msgstr "צבע הטקסט על הכפתור"
 
 msgid "0 shows the picture at its natural height."
 msgstr "0 יציג את התמונה בגובה הטבעי שלה."
+
+msgid "No space"
+msgstr "ללא רווח"
+
+msgid "On sale"
+msgstr "מבצעים"

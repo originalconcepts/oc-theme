@@ -273,6 +273,13 @@ final class Assets {
 	public function design_tokens(): void {
 		$css = $this->tokens_css() . $this->context_overrides();
 
+		// The transparent header's own ink, until the first scroll.
+		$tr = sanitize_hex_color( (string) get_theme_mod( 'oc_header_tr_tx', '' ) );
+
+		if ( is_string( $tr ) && '' !== $tr ) {
+			$css .= '--oc-header-tr-tx:' . $tr . ';';
+		}
+
 		if ( '' === $css ) {
 			return;
 		}
@@ -510,6 +517,14 @@ final class Assets {
 
 		if ( (int) $dims['w'] > 0 && (int) $dims['h'] > 0 ) {
 			$html = (string) preg_replace( '/<img /', '<img width="' . (int) $dims['w'] . '" height="' . (int) $dims['h'] . '" ', $html, 1 );
+		}
+
+		// The transparent header may carry its own (usually light) logo —
+		// it rides inside the same link and CSS swaps the two by state.
+		$tr = (string) get_theme_mod( 'oc_logo_transparent', '' );
+
+		if ( '' !== $tr && 'none' !== get_theme_mod( 'oc_header_transparent', 'none' ) && false !== strpos( $html, '</a>' ) ) {
+			$html = str_replace( '</a>', '<img class="oc-logo-tr" src="' . esc_url( $tr ) . '" alt="" />' . '</a>', $html );
 		}
 
 		return $html;

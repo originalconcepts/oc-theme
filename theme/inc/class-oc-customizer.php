@@ -551,6 +551,29 @@ final class Customizer {
 			'none'
 		);
 
+		// The transparent state may need its own face: a light logo and a
+		// light ink for the icons, until the first scroll brings the solid bar.
+		$c->add_setting(
+			'oc_logo_transparent',
+			array(
+				'default'           => '',
+				'sanitize_callback' => 'esc_url_raw',
+			)
+		);
+		$c->add_control(
+			new \WP_Customize_Image_Control(
+				$c,
+				'oc_logo_transparent',
+				array(
+					'section'     => 'oc_header',
+					'label'       => __( 'Logo for the transparent state', 'oc-theme' ),
+					'description' => __( 'Usually the light version. Swaps back to the regular logo once the page scrolls.', 'oc-theme' ),
+				)
+			)
+		);
+
+		$this->color( $c, 'oc_header_tr_tx', 'oc_header', __( 'Text and icons colour — transparent state', 'oc-theme' ) );
+
 		$this->toggle( $c, 'oc_header_border', 'oc_header', __( 'Bottom border line', 'oc-theme' ), true );
 		$this->toggle( $c, 'oc_header_search', 'oc_header', __( 'Search icon', 'oc-theme' ), true );
 		$this->toggle( $c, 'oc_header_account', 'oc_header', __( 'Account icon', 'oc-theme' ), true );
@@ -988,7 +1011,7 @@ final class Customizer {
 			'oc_footer',
 			array(
 				'title'       => __( 'Footer', 'oc-theme' ),
-				'description' => __( 'Content columns are widget areas — fill them under Appearance → Widgets.', 'oc-theme' ),
+				'description' => __( 'The footer has three floors. (1) Content columns: three widget areas — Appearance → Widgets → "Footer column 1/2/3"; a text widget, a menu widget, contact details, anything. An empty column simply does not render. (2) The bottom bar: the menu assigned to the "Footer menu" location (Appearance → Menus) beside the credit line below. (3) This screen styles it all: background, layout, credit. Order of columns follows the site language direction.', 'oc-theme' ),
 				'priority'    => 12,
 			)
 		);

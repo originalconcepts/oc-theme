@@ -562,6 +562,16 @@ final class Render {
 				$args['orderby'] = 'popularity';
 				break;
 
+			case 'sale':
+				$on_sale = wc_get_product_ids_on_sale();
+
+				if ( empty( $on_sale ) ) {
+					return '';
+				}
+
+				$args['include'] = array_map( 'absint', $on_sale );
+				break;
+
 			case 'cat':
 				$cat = get_term( absint( $s['cat'] ), 'product_cat' );
 
