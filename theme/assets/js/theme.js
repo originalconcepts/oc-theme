@@ -7601,3 +7601,53 @@
 		}
 	} );
 }() );
+
+
+/* ---------- signing out asks first ---------- */
+
+( function () {
+	var box = null;
+	var pending = '';
+
+	function build() {
+		var L = window.ocL10n || {};
+		box = document.createElement( 'div' );
+		box.className = 'oc-delacc__dim';
+		box.hidden = true;
+		box.innerHTML =
+			'<div class="oc-delacc__box" role="alertdialog" aria-modal="true">' +
+				'<h4>' + ( L.byeAsk || 'Sign out of the account?' ) + '</h4>' +
+				'<div class="oc-delacc__row">' +
+					'<button type="button" class="oc-delacc__cancel" data-bye-no>' + ( L.byeNo || 'Cancel' ) + '</button>' +
+					'<button type="button" class="oc-delacc__yes" data-bye-yes>' + ( L.byeYes || 'Sign out' ) + '</button>' +
+				'</div>' +
+			'</div>';
+		document.body.appendChild( box );
+
+		box.addEventListener( 'click', function ( e ) {
+			if ( e.target.closest( '[data-bye-yes]' ) && pending ) {
+				window.location.href = pending;
+				return;
+			}
+
+			if ( e.target.closest( '[data-bye-no]' ) || e.target === box ) {
+				box.hidden = true;
+				pending = '';
+			}
+		} );
+	}
+
+	document.addEventListener( 'click', function ( e ) {
+		var link = e.target.closest( 'a[href*="customer-logout"]' );
+
+		if ( ! link ) { return; }
+
+		e.preventDefault();
+		e.stopPropagation();
+
+		if ( ! box ) { build(); }
+
+		pending = link.href;
+		box.hidden = false;
+	}, true );
+}() );

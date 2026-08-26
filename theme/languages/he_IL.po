@@ -5129,3 +5129,12 @@ msgstr "הרשמה — ההטבות, אחת בכל שורה"
 
 msgid "Each line becomes a ✓ item."
 msgstr "כל שורה הופכת לפריט עם ✓."
+
+msgid "Sign out of the account?"
+msgstr "להתנתק מהחשבון?"
+
+msgid "Sign out"
+msgstr "התנתקות"
+
+msgid "Stay signed in"
+msgstr "להישאר מחובר"
