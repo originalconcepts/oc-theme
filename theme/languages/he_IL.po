@@ -4991,3 +4991,21 @@ msgstr "מחק לתמיד"
 
 msgid "The customer account was deleted at the customer's request; the order is kept as the law requires."
 msgstr "חשבון הלקוח נמחק לבקשתו; ההזמנה נשמרת כנדרש בחוק."
+
+msgid "with the client's Facebook account, press My Apps, then Create App, and walk the wizard: app name after the shop; use case \"Authenticate and request data from users with Facebook Login\"; under Business connect the client's verified business portfolio if there is one (helpful, not required); the Requirements screen is informational — Next, and Create."
+msgstr "עם חשבון הפייסבוק של הלקוח, לוחצים My Apps ואז Create App ועוברים את האשף: שם אפליקציה על שם החנות; שימוש \"Authenticate and request data from users with Facebook Login\"; בשלב Business מחברים את הפורטפוליו העסקי המאומת של הלקוח אם יש (עוזר, לא חובה); מסך ה-Requirements הוא מידע בלבד — Next, ו-Create."
+
+msgid "In the app dashboard open Use cases, press Customize on the login use case, and under Permissions and features make sure email says \"Ready for testing\". Do not add any other permission — extras like birthday drag the app into a full App Review, and the panel only stores a name and an email anyway."
+msgstr "בלוח האפליקציה נכנסים ל-Use cases, לוחצים Customize על שימוש ההתחברות, ותחת Permissions and features מוודאים ש-email במצב \"Ready for testing\". לא מוסיפים שום הרשאה אחרת — תוספות כמו יום הולדת גוררות App Review מלא, והפאנל ממילא שומר רק שם ומייל."
+
+msgid "Still inside Customize, open Settings in its side menu, and under \"Valid OAuth Redirect URIs\" add exactly this, then Save Changes:"
+msgstr "עדיין בתוך Customize, פותחים Settings בתפריט הצד שלו, ותחת \"Valid OAuth Redirect URIs\" מוסיפים בדיוק את זה ואז Save Changes:"
+
+msgid "Back in the app's own side menu: App settings, Basic. Fill the privacy policy URL, a category, the app icon and the site domain. For \"User data deletion\" choose \"Data deletion instructions URL\" and point it at the privacy policy page — customers delete themselves under My account, Account details, and the policy should say so."
+msgstr "חוזרים לתפריט הצד של האפליקציה עצמה: App settings ← Basic. ממלאים כתובת מדיניות פרטיות, קטגוריה, אייקון ודומיין האתר. ב-\"User data deletion\" בוחרים \"Data deletion instructions URL\" ומפנים לעמוד מדיניות הפרטיות — לקוחות מוחקים את עצמם באזור האישי ← פרטי חשבון, וכדאי שהמדיניות תגיד את זה."
+
+msgid "The keys sit at the top of that same Basic screen: App ID is visible, App Secret shows after pressing Show (Facebook asks for your password). Paste both into the fields above."
+msgstr "המפתחות יושבים בראש אותו מסך Basic: ה-App ID גלוי, וה-App Secret נחשף בלחיצה על Show (פייסבוק תבקש את הסיסמה שלך). מדביקים את שניהם בשדות למעלה."
+
+msgid "In Development mode the login works only for the app's own admins — handy for a first test. Once it works, flip the toggle at the top to Live so every customer can sign in. The basic email and public_profile permissions need no review."
+msgstr "במצב Development ההתחברות עובדת רק לאדמינים של האפליקציה — נוח לבדיקה ראשונה. כשעובד, מעבירים את המתג למעלה ל-Live כדי שכל לקוח יוכל להיכנס. ההרשאות הבסיסיות email ו-public_profile לא דורשות אישור."

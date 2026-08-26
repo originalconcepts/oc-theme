@@ -184,14 +184,16 @@ final class Auth_Admin {
 					<li>
 						<?php esc_html_e( 'Sign in at', 'oc-theme' ); ?>
 						<a href="https://developers.facebook.com" target="_blank" rel="noopener">developers.facebook.com</a>
-						<?php esc_html_e( 'with the client\'s Facebook account, press My Apps, then Create App. Use case: "Authenticate and request data from users with Facebook Login", type Consumer — name the app after the shop.', 'oc-theme' ); ?>
+						<?php esc_html_e( 'with the client\'s Facebook account, press My Apps, then Create App, and walk the wizard: app name after the shop; use case "Authenticate and request data from users with Facebook Login"; under Business connect the client\'s verified business portfolio if there is one (helpful, not required); the Requirements screen is informational — Next, and Create.', 'oc-theme' ); ?>
 					</li>
+					<li><?php esc_html_e( 'In the app dashboard open Use cases, press Customize on the login use case, and under Permissions and features make sure email says "Ready for testing". Do not add any other permission — extras like birthday drag the app into a full App Review, and the panel only stores a name and an email anyway.', 'oc-theme' ); ?></li>
 					<li>
-						<?php esc_html_e( 'Inside the app: Facebook Login, Settings — and under "Valid OAuth Redirect URIs" add exactly:', 'oc-theme' ); ?>
+						<?php esc_html_e( 'Still inside Customize, open Settings in its side menu, and under "Valid OAuth Redirect URIs" add exactly this, then Save Changes:', 'oc-theme' ); ?>
 						<br><code style="direction:ltr;display:inline-block;user-select:all"><?php echo esc_html( admin_url( 'admin-post.php?action=oc_auth_fb_cb' ) ); ?></code>
 					</li>
-					<li><?php esc_html_e( 'App settings, Basic: fill the privacy policy URL and a category, then copy the App ID and the App Secret into the fields above.', 'oc-theme' ); ?></li>
-					<li><?php esc_html_e( 'Flip the app from Development to Live (the toggle at the top). The basic email and public_profile permissions need no review.', 'oc-theme' ); ?></li>
+					<li><?php esc_html_e( 'Back in the app\'s own side menu: App settings, Basic. Fill the privacy policy URL, a category, the app icon and the site domain. For "User data deletion" choose "Data deletion instructions URL" and point it at the privacy policy page — customers delete themselves under My account, Account details, and the policy should say so.', 'oc-theme' ); ?></li>
+					<li><?php esc_html_e( 'The keys sit at the top of that same Basic screen: App ID is visible, App Secret shows after pressing Show (Facebook asks for your password). Paste both into the fields above.', 'oc-theme' ); ?></li>
+					<li><?php esc_html_e( 'In Development mode the login works only for the app\'s own admins — handy for a first test. Once it works, flip the toggle at the top to Live so every customer can sign in. The basic email and public_profile permissions need no review.', 'oc-theme' ); ?></li>
 				</ol>
 				<p class="description"><?php esc_html_e( 'Note: a Facebook account registered by phone may carry no email — the customer still gets an account, anchored to their Facebook identity.', 'oc-theme' ); ?></p>
 			</details>
