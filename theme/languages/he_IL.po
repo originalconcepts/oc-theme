@@ -5012,3 +5012,51 @@ msgstr "במצב Development ההתחברות עובדת רק לאדמינים �
 
 msgid "Customers may pick \"Hide My Email\" and get a relay address — it works, but Apple only forwards mail from registered senders: under Services, \"Sign in with Apple for Email Communication\", add the site domain and the shop's sending address, or order emails will never reach them."
 msgstr "לקוחות עשויים לבחור \"הסתר את האימייל שלי\" ולקבל כתובת ממסר — היא עובדת, אבל אפל מעבירה מיילים רק משולחים רשומים: תחת Services ← \"Sign in with Apple for Email Communication\" מוסיפים את דומיין האתר ואת כתובת השליחה של החנות, אחרת אישורי הזמנה לא יגיעו אליהם."
+
+msgid "Needed once per site, about ten minutes. Three things are created at Apple: an App ID (the primary identity), a Services ID (the site's identity — this is the \"client\"), and a key (.p8 file). The Team ID is not created — it already exists."
+msgstr "עושים פעם אחת לאתר, בערך עשר דקות. יוצרים אצל אפל שלושה דברים: App ID (הזהות הראשית), Services ID (הזהות של האתר — זה ה\"client\"), ומפתח (קובץ p8.). את ה-Team ID לא יוצרים — הוא כבר קיים."
+
+msgid "Open Certificates, Identifiers & Profiles. The Team ID shows at the top of every page, next to the company name (10 characters) — copy it into the Team ID field above."
+msgstr "נכנסים ל-Certificates, Identifiers & Profiles. ה-Team ID מוצג בראש כל עמוד, ליד שם החברה (10 תווים) — מעתיקים אותו לשדה Team ID למעלה."
+
+msgid "App ID."
+msgstr "App ID."
+
+msgid "Identifiers, press the plus. Choose App IDs, Continue; on the next screen choose App (not App Clip), Continue. Description: the site name; Bundle ID: Explicit, e.g. com.company.site. The capabilities list is long — use the magnifier to search \"Sign in\", tick Sign in with Apple and nothing else. Continue, Register."
+msgstr "Identifiers ← לוחצים על הפלוס. בוחרים App IDs ← Continue; במסך הבא בוחרים App (לא App Clip) ← Continue. Description: שם האתר; Bundle ID: Explicit, למשל com.company.site. רשימת היכולות ארוכה — מחפשים עם הזכוכית-מגדלת \"Sign in\", מסמנים Sign in with Apple ותו לא. Continue ← Register."
+
+msgid "Services ID."
+msgstr "Services ID."
+
+msgid "The plus again, this time choose Services IDs, Continue. Description: anything; Identifier: the App ID's identifier with a suffix, e.g. com.company.site.web — it must differ from the App ID, the two share one namespace. This identifier is the value for the \"Services ID (client)\" field above. Continue, Register."
+msgstr "שוב הפלוס, הפעם בוחרים Services IDs ← Continue. Description: מה שרוצים; Identifier: המזהה של ה-App ID עם סיומת, למשל com.company.site.web — הוא חייב להיות שונה מה-App ID, השניים חולקים מרחב שמות אחד. המזהה הזה הוא הערך לשדה \"Services ID (client)\" למעלה. Continue ← Register."
+
+msgid "Configuring the Services ID."
+msgstr "הגדרת ה-Services ID."
+
+msgid "Back in the Identifiers list, switch the filter at the top right from App IDs to Services IDs and open the one just created. Tick Sign in with Apple, press Configure: Primary App ID — the App ID from step 2; Domains — the site domain; Return URLs — exactly:"
+msgstr "חוזרים לרשימת ה-Identifiers, מחליפים את הסינון למעלה מימין מ-App IDs ל-Services IDs ונכנסים לזה שנוצר הרגע. מסמנים Sign in with Apple ← Configure: ‏Primary App ID — ה-App ID משלב 2; Domains — דומיין האתר; Return URLs — בדיוק:"
+
+msgid "Next, Done — and do not leave without pressing Save at the top; this screen forgets silently."
+msgstr "Next ← Done — ולא לצאת בלי ללחוץ Save למעלה; המסך הזה שוכח בשקט."
+
+msgid "The key."
+msgstr "המפתח."
+
+msgid "Keys in the left menu, the plus. Name it, tick Sign in with Apple, Configure, pick the App ID from step 2, Save, Continue, Register — then Download. The .p8 file downloads exactly once, keep it somewhere safe. The Key ID (10 characters) shows on that screen, and stays readable any time under Keys — only the file itself is one-time."
+msgstr "Keys בתפריט השמאלי ← הפלוס. נותנים שם, מסמנים Sign in with Apple ← Configure ← בוחרים את ה-App ID משלב 2 ← Save ← Continue ← Register — ואז Download. קובץ ה-p8. יורד פעם אחת בלבד, לשמור במקום בטוח. ה-Key ID (10 תווים) מוצג באותו מסך, ונשאר קריא תמיד תחת Keys — רק הקובץ עצמו חד-פעמי."
+
+msgid "Pasting the key."
+msgstr "הדבקת המפתח."
+
+msgid "On a Mac: right-click the downloaded AuthKey_XXXX.p8, Open With, TextEdit. Select all, copy, and paste into the Private key field above — with or without the BEGIN/END lines, both work."
+msgstr "במק: קליק ימני על AuthKey_XXXX.p8 שירד ← Open With ← TextEdit. לבחור הכל, להעתיק ולהדביק בשדה המפתח הפרטי למעלה — עם או בלי שורות ה-BEGIN/END, שתי הצורות עובדות."
+
+msgid "Hide My Email."
+msgstr "Hide My Email."
+
+msgid "Customers may hide their address and get an Apple relay — it works, but Apple forwards mail only from registered senders. Under Services (left menu), \"Sign in with Apple for Email Communication\": add the site domain and the shop's sending address, and check they show a green SPF. Skip this and order emails to those customers silently vanish."
+msgstr "לקוחות עשויים להסתיר את הכתובת ולקבל ממסר של אפל — זה עובד, אבל אפל מעבירה מיילים רק משולחים רשומים. תחת Services (בתפריט השמאלי) ← \"Sign in with Apple for Email Communication\": מוסיפים את דומיין האתר ואת כתובת השליחה של החנות, ובודקים שמופיע SPF ירוק. מדלגים על זה — ואישורי הזמנה ללקוחות האלה נעלמים בשקט."
+
+msgid "Fill the four fields above, tick \"Show the Apple button\", Save — and try it. Note: Apple sends the customer's name only on the very first approval; a customer who removes the site under Settings, Apple ID, Sign-In & Security can approve it afresh."
+msgstr "ממלאים את ארבעת השדות למעלה, מסמנים \"הצג את כפתור אפל\", שומרים — ומנסים. שימו לב: אפל שולחת את שם הלקוח רק באישור הראשון אי-פעם; לקוח שמסיר את האתר תחת הגדרות ← Apple ID ← כניסה ואבטחה יכול לאשר מחדש."

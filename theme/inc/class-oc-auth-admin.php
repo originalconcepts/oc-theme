@@ -226,19 +226,40 @@ final class Auth_Admin {
 			</table>
 			<details style="max-width:760px;margin:4px 0 20px">
 				<summary style="cursor:pointer;font-weight:600"><?php esc_html_e( 'How to get the keys from Apple — step by step', 'oc-theme' ); ?></summary>
+				<p class="description" style="margin-top:10px"><?php esc_html_e( 'Needed once per site, about ten minutes. Three things are created at Apple: an App ID (the primary identity), a Services ID (the site\'s identity — this is the "client"), and a key (.p8 file). The Team ID is not created — it already exists.', 'oc-theme' ); ?></p>
 				<ol style="margin-top:12px;line-height:1.9">
 					<li>
 						<?php esc_html_e( 'An Apple Developer account is needed (99$ a year, the client\'s):', 'oc-theme' ); ?>
 						<a href="https://developer.apple.com/account" target="_blank" rel="noopener">developer.apple.com/account</a>.
-						<?php esc_html_e( 'The Team ID sits on the Membership page — copy it into the field above.', 'oc-theme' ); ?>
+						<?php esc_html_e( 'Open Certificates, Identifiers & Profiles. The Team ID shows at the top of every page, next to the company name (10 characters) — copy it into the Team ID field above.', 'oc-theme' ); ?>
 					</li>
-					<li><?php esc_html_e( 'Certificates, Identifiers & Profiles, Identifiers: create an App ID (type App, any bundle id like com.example.site.app) and tick the "Sign in with Apple" capability.', 'oc-theme' ); ?></li>
 					<li>
-						<?php esc_html_e( 'Create a second identifier of type Services ID — its identifier (e.g. com.example.site.web) is the client that goes in the field above. Enable "Sign in with Apple", press Configure: choose the App ID as primary, add the site\'s domain, and as Return URL add exactly:', 'oc-theme' ); ?>
-						<br><code style="direction:ltr;display:inline-block;user-select:all"><?php echo esc_html( admin_url( 'admin-post.php?action=oc_auth_apple_cb' ) ); ?></code>
+						<strong><?php esc_html_e( 'App ID.', 'oc-theme' ); ?></strong>
+						<?php esc_html_e( 'Identifiers, press the plus. Choose App IDs, Continue; on the next screen choose App (not App Clip), Continue. Description: the site name; Bundle ID: Explicit, e.g. com.company.site. The capabilities list is long — use the magnifier to search "Sign in", tick Sign in with Apple and nothing else. Continue, Register.', 'oc-theme' ); ?>
 					</li>
-					<li><?php esc_html_e( 'Keys: create a new key, tick "Sign in with Apple", configure it to the App ID, and download the .p8 file — Apple hands it out exactly once. Note the Key ID, and paste the file\'s contents above.', 'oc-theme' ); ?></li>
-					<li><?php esc_html_e( 'Customers may pick "Hide My Email" and get a relay address — it works, but Apple only forwards mail from registered senders: under Services, "Sign in with Apple for Email Communication", add the site domain and the shop\'s sending address, or order emails will never reach them.', 'oc-theme' ); ?></li>
+					<li>
+						<strong><?php esc_html_e( 'Services ID.', 'oc-theme' ); ?></strong>
+						<?php esc_html_e( 'The plus again, this time choose Services IDs, Continue. Description: anything; Identifier: the App ID\'s identifier with a suffix, e.g. com.company.site.web — it must differ from the App ID, the two share one namespace. This identifier is the value for the "Services ID (client)" field above. Continue, Register.', 'oc-theme' ); ?>
+					</li>
+					<li>
+						<strong><?php esc_html_e( 'Configuring the Services ID.', 'oc-theme' ); ?></strong>
+						<?php esc_html_e( 'Back in the Identifiers list, switch the filter at the top right from App IDs to Services IDs and open the one just created. Tick Sign in with Apple, press Configure: Primary App ID — the App ID from step 2; Domains — the site domain; Return URLs — exactly:', 'oc-theme' ); ?>
+						<br><code style="direction:ltr;display:inline-block;user-select:all"><?php echo esc_html( admin_url( 'admin-post.php?action=oc_auth_apple_cb' ) ); ?></code>
+						<br><?php esc_html_e( 'Next, Done — and do not leave without pressing Save at the top; this screen forgets silently.', 'oc-theme' ); ?>
+					</li>
+					<li>
+						<strong><?php esc_html_e( 'The key.', 'oc-theme' ); ?></strong>
+						<?php esc_html_e( 'Keys in the left menu, the plus. Name it, tick Sign in with Apple, Configure, pick the App ID from step 2, Save, Continue, Register — then Download. The .p8 file downloads exactly once, keep it somewhere safe. The Key ID (10 characters) shows on that screen, and stays readable any time under Keys — only the file itself is one-time.', 'oc-theme' ); ?>
+					</li>
+					<li>
+						<strong><?php esc_html_e( 'Pasting the key.', 'oc-theme' ); ?></strong>
+						<?php esc_html_e( 'On a Mac: right-click the downloaded AuthKey_XXXX.p8, Open With, TextEdit. Select all, copy, and paste into the Private key field above — with or without the BEGIN/END lines, both work.', 'oc-theme' ); ?>
+					</li>
+					<li>
+						<strong><?php esc_html_e( 'Hide My Email.', 'oc-theme' ); ?></strong>
+						<?php esc_html_e( 'Customers may hide their address and get an Apple relay — it works, but Apple forwards mail only from registered senders. Under Services (left menu), "Sign in with Apple for Email Communication": add the site domain and the shop\'s sending address, and check they show a green SPF. Skip this and order emails to those customers silently vanish.', 'oc-theme' ); ?>
+					</li>
+					<li><?php esc_html_e( 'Fill the four fields above, tick "Show the Apple button", Save — and try it. Note: Apple sends the customer\'s name only on the very first approval; a customer who removes the site under Settings, Apple ID, Sign-In & Security can approve it afresh.', 'oc-theme' ); ?></li>
 				</ol>
 			</details>
 
