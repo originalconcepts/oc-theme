@@ -120,8 +120,11 @@ final class Gate {
 		}
 
 		// A logged-out visitor asking for /wp-admin gets a 404 rather than a
-		// redirect that would point straight at the private path.
-		if ( is_admin() && ! is_user_logged_in() && ! wp_doing_ajax() && ! wp_doing_cron() ) {
+		// redirect that would point straight at the private path. admin-post
+		// passes: it is WordPress's public form endpoint, built for
+		// signed-out actions (the Google sign-in rides it) and inert for
+		// anything unregistered.
+		if ( is_admin() && ! is_user_logged_in() && ! wp_doing_ajax() && ! wp_doing_cron() && 'admin-post.php' !== ( $GLOBALS['pagenow'] ?? '' ) ) {
 			if ( ! ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ) {
 				$this->not_found();
 			}
