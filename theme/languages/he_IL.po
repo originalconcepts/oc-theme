@@ -4639,7 +4639,7 @@ msgid "Change"
 msgstr "שינוי"
 
 msgid "Change number"
-msgstr "שנה מספר טלפון"
+msgstr "שנה מספר"
 
 msgid "Client ID"
 msgstr "Client ID"
@@ -5168,3 +5168,15 @@ msgstr "מספר טלפון"
 
 msgid "No account found for this number — continue with the details below."
 msgstr "לא נמצא חשבון עם המספר הזה — המשך עם הפרטים למטה."
+
+msgid "Already have an account? Quick sign-in"
+msgstr "כבר יש לך חשבון? התחברות מהירה"
+
+msgid "Enter the code"
+msgstr "הזן את הקוד"
+
+msgid "Resend code"
+msgstr "שלח שוב"
+
+msgid "Resend available in %d s"
+msgstr "שליחה חוזרת בעוד %d שנ׳"

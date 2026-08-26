@@ -1033,6 +1033,24 @@
 		var L = window.ocL10n || {};
 		var nonce = box.dataset.nonce;
 		var phone = '';
+		var tick = null;
+
+		var head = box.querySelector( '[data-colog-toggle]' );
+		var body = box.querySelector( '.oc-colog__body' );
+
+		function open( yes ) {
+			box.classList.toggle( 'is-open', yes );
+			if ( head ) { head.setAttribute( 'aria-expanded', yes ? 'true' : 'false' ); }
+			if ( body ) { body.hidden = ! yes; }
+			if ( yes ) {
+				var f = box.querySelector( '.oc-colog__step:not([hidden]) input' );
+				if ( f ) { try { f.focus(); } catch ( _ ) {} }
+			}
+		}
+
+		if ( head ) {
+			head.addEventListener( 'click', function () { open( ! box.classList.contains( 'is-open' ) ); } );
+		}
 
 		function err( form, msg ) {
 			var step = form.closest( '.oc-colog__step' );
@@ -1040,13 +1058,40 @@
 			if ( e ) { e.textContent = msg || ''; e.hidden = ! msg; }
 		}
 
+		function countdown() {
+			var wait = box.querySelector( '[data-colog-wait]' );
+			var btn = box.querySelector( '[data-colog-resend]' );
+			if ( ! wait || ! btn ) { return; }
+			var n = 30;
+			var tpl = L.cologResendIn || 'Resend available in %d s';
+			if ( tick ) { clearInterval( tick ); }
+			btn.hidden = true;
+			wait.hidden = false;
+			wait.textContent = tpl.replace( '%d', n );
+			tick = setInterval( function () {
+				n -= 1;
+				if ( n <= 0 ) {
+					clearInterval( tick );
+					tick = null;
+					wait.hidden = true;
+					btn.hidden = false;
+					return;
+				}
+				wait.textContent = tpl.replace( '%d', n );
+			}, 1000 );
+		}
+
 		function step( name ) {
 			box.querySelectorAll( '.oc-colog__step' ).forEach( function ( s ) { s.hidden = s.dataset.cologStep !== name; } );
 			// The "or" divider and providers belong to the phone step only.
 			box.querySelectorAll( '[data-colog-only]' ).forEach( function ( x ) { x.hidden = x.dataset.cologOnly !== name; } );
 			if ( 'code' === name ) {
+				countdown();
 				var b0 = box.querySelector( '.oc-colog__boxes input' );
 				if ( b0 ) { b0.focus(); }
+			} else if ( tick ) {
+				clearInterval( tick );
+				tick = null;
 			}
 		}
 
@@ -1119,6 +1164,19 @@
 			if ( e.target.closest( '[data-colog-change]' ) ) { step( 'phone' ); }
 			var goto_ = e.target.closest( '[data-colog-goto]' );
 			if ( goto_ ) { step( goto_.dataset.cologGoto ); }
+			if ( e.target.closest( '[data-colog-resend]' ) && phone ) {
+				var rbtn = e.target.closest( '[data-colog-resend]' );
+				rbtn.disabled = true;
+				post( 'oc_auth_start', { phone: phone } ).then( function ( out ) {
+					rbtn.disabled = false;
+					if ( out && out.success && 'code' === out.data.step ) {
+						box.querySelectorAll( '.oc-colog__boxes input' ).forEach( function ( b ) { b.value = ''; } );
+						countdown();
+						var b0 = box.querySelector( '.oc-colog__boxes input' );
+						if ( b0 ) { b0.focus(); }
+					}
+				} );
+			}
 		} );
 
 		box.addEventListener( 'input', function ( e ) {

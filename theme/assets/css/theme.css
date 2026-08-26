@@ -12379,13 +12379,60 @@ p.no-comments {
 	border: 1px solid var(--oc-line, #e5e2dd);
 	border-radius: var(--oc-radius, 12px);
 	background: var(--oc-bg-2, #f6f5f3);
-	padding: 20px;
 	margin-block-end: 22px;
-	max-inline-size: 560px;
+	overflow: hidden;
 }
 
-.oc-colog__q { font-weight: 700; margin: 0 0 3px; font-size: 1.02rem; }
-.oc-colog__d { color: var(--oc-ink-2, #666); font-size: .86rem; margin: 0 0 14px; }
+/* the always-visible bar; the whole row toggles the panel */
+.oc-colog__head {
+	inline-size: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 15px 18px;
+	border: 0;
+	background: none;
+	color: var(--oc-ink, #111);
+	font: inherit;
+	font-weight: 700;
+	font-size: .98rem;
+	text-align: start;
+	cursor: pointer;
+}
+.oc-colog__head-t { line-height: 1.3; }
+
+/* a + that becomes − when the panel is open */
+.oc-colog__head-ic {
+	position: relative;
+	flex: none;
+	inline-size: 20px;
+	block-size: 20px;
+}
+.oc-colog__head-ic::before,
+.oc-colog__head-ic::after {
+	content: "";
+	position: absolute;
+	inset-block-start: 50%;
+	inset-inline: 2px;
+	block-size: 2px;
+	margin-block-start: -1px;
+	background: currentColor;
+	border-radius: 2px;
+}
+.oc-colog__head-ic::after {
+	rotate: 90deg;
+	transition: rotate .2s ease, opacity .2s ease;
+}
+.oc-colog.is-open .oc-colog__head-ic::after { rotate: 0deg; opacity: 0; }
+
+.oc-colog__body {
+	padding: 2px 18px 20px;
+	border-block-start: 1px solid var(--oc-line, #e5e2dd);
+}
+
+.oc-colog__q { font-weight: 700; margin: 14px 0 3px; font-size: 1.02rem; }
+.oc-colog__d { color: var(--oc-ink-2, #666); font-size: .86rem; margin: 14px 0; }
 
 .oc-colog__telrow { display: flex; gap: 8px; }
 .oc-colog__telrow input {
@@ -12437,7 +12484,40 @@ p.no-comments {
 .oc-colog__prov span { display: none; }
 @media (min-width: 480px) { .oc-colog__prov span { display: inline; } }
 
-.oc-colog__boxes { display: flex; gap: 8px; }
+/* the "sent to <number>" line with the change-number link beside it */
+.oc-colog__sent {
+	display: flex;
+	align-items: baseline;
+	gap: 10px;
+	flex-wrap: wrap;
+	margin: 0 0 14px;
+}
+.oc-colog__sent .oc-colog__d { margin: 0; }
+
+/* links inside the panel (change number / resend) */
+.oc-colog__link {
+	border: 0;
+	background: none;
+	color: var(--oc-ink, #111);
+	text-decoration: underline;
+	text-underline-offset: 3px;
+	font: inherit;
+	font-size: .85rem;
+	cursor: pointer;
+	padding: 0;
+}
+.oc-colog__link[disabled] { opacity: .5; cursor: default; }
+
+/* resend line under the code boxes */
+.oc-colog__resend {
+	margin: 12px 0 0;
+	font-size: .85rem;
+	color: var(--oc-ink-2, #888);
+	min-block-size: 1.2em;
+}
+
+/* dir=ltr keeps the digits reading 1→6, flex-end hugs them to the RTL side */
+.oc-colog__boxes { display: flex; gap: 8px; justify-content: flex-end; }
 .oc-colog__boxes input {
 	inline-size: 44px;
 	block-size: 52px;

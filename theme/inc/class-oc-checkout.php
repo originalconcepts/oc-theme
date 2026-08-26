@@ -87,7 +87,7 @@ final class Checkout {
 			20
 		);
 		add_action( 'woocommerce_before_checkout_form', array( $this, 'brand_row' ), 3 );
-		add_action( 'woocommerce_before_checkout_form', array( $this, 'login_block' ), 5 );
+		add_action( 'woocommerce_before_checkout_billing_form', array( $this, 'login_block' ), 5 );
 		add_action( 'woocommerce_before_checkout_billing_form', array( $this, 'orderer_heading' ) );
 		add_action( 'woocommerce_review_order_after_cart_contents', array( $this, 'summary_coupon_row' ) );
 		add_action( 'woocommerce_review_order_after_shipping', array( $this, 'shipping_row' ) );
@@ -802,65 +802,77 @@ final class Checkout {
 			'email'  => '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>',
 		);
 		?>
+		<?php $has_email = isset( $prov['email'] ); ?>
 		<div class="oc-colog" data-oc-colog data-nonce="<?php echo esc_attr( wp_create_nonce( 'oc_auth' ) ); ?>">
-			<?php if ( $sms ) : ?>
-				<div class="oc-colog__step" data-colog-step="phone">
-					<p class="oc-colog__q"><?php esc_html_e( 'Quick sign-in', 'oc-theme' ); ?></p>
-					<p class="oc-colog__d"><?php esc_html_e( 'Enter your phone — a six-digit code will be sent to verify.', 'oc-theme' ); ?></p>
-					<form class="oc-colog__telrow" data-colog-form="start" novalidate>
-						<input type="tel" name="phone" inputmode="tel" autocomplete="tel" placeholder="<?php esc_attr_e( 'Phone number', 'oc-theme' ); ?>" dir="ltr">
-						<button type="submit"><?php esc_html_e( 'Send code', 'oc-theme' ); ?></button>
-					</form>
-					<p class="oc-colog__err" data-colog-err hidden></p>
-				</div>
+			<button type="button" class="oc-colog__head" data-colog-toggle aria-expanded="false" aria-controls="oc-colog-body">
+				<span class="oc-colog__head-t"><?php esc_html_e( 'Already have an account? Quick sign-in', 'oc-theme' ); ?></span>
+				<span class="oc-colog__head-ic" aria-hidden="true"></span>
+			</button>
 
-				<div class="oc-colog__step" data-colog-step="code" hidden>
-					<p class="oc-colog__q"><?php esc_html_e( 'Enter the code', 'oc-theme' ); ?></p>
-					<p class="oc-colog__d"><?php esc_html_e( 'Sent to', 'oc-theme' ); ?> <span data-colog-pretty></span></p>
-					<form class="oc-colog__boxes" data-colog-form="verify" dir="ltr" novalidate>
-						<?php for ( $i = 0; $i < 6; $i++ ) : ?>
-							<input type="text" inputmode="numeric" maxlength="1" autocomplete="<?php echo 0 === $i ? 'one-time-code' : 'off'; ?>" aria-label="<?php echo esc_attr( (string) ( $i + 1 ) ); ?>">
-						<?php endfor; ?>
-					</form>
-					<p class="oc-colog__err" data-colog-err hidden></p>
-					<button type="button" class="oc-colog__back" data-colog-change><?php esc_html_e( 'Change number', 'oc-theme' ); ?></button>
-				</div>
-			<?php endif; ?>
-
-			<?php $has_email = isset( $prov['email'] ); ?>
-			<?php if ( $has_email ) : ?>
-				<div class="oc-colog__step" data-colog-step="email" hidden>
-					<p class="oc-colog__q"><?php esc_html_e( 'Email and password', 'oc-theme' ); ?></p>
-					<form class="oc-colog__emailform" data-colog-form="email" novalidate>
-						<input type="email" name="email" autocomplete="email" placeholder="<?php esc_attr_e( 'Email', 'oc-theme' ); ?>">
-						<input type="password" name="password" autocomplete="current-password" placeholder="<?php esc_attr_e( 'Password', 'oc-theme' ); ?>">
-						<button type="submit"><?php esc_html_e( 'Sign in', 'oc-theme' ); ?></button>
-					</form>
-					<p class="oc-colog__err" data-colog-err hidden></p>
-					<button type="button" class="oc-colog__back" data-colog-change><?php esc_html_e( 'Back', 'oc-theme' ); ?></button>
-				</div>
-			<?php endif; ?>
-
-			<?php $socials = array_diff_key( $prov, array( 'email' => 1 ) ); ?>
-			<?php if ( ! empty( $socials ) || $has_email ) : ?>
+			<div class="oc-colog__body" id="oc-colog-body" hidden>
 				<?php if ( $sms ) : ?>
-					<div class="oc-colog__or" data-colog-only="phone" aria-hidden="true"><span><?php esc_html_e( 'or', 'oc-theme' ); ?></span></div>
+					<div class="oc-colog__step" data-colog-step="phone">
+						<p class="oc-colog__d"><?php esc_html_e( 'Enter your phone — a six-digit code will be sent to verify.', 'oc-theme' ); ?></p>
+						<form class="oc-colog__telrow" data-colog-form="start" novalidate>
+							<input type="tel" name="phone" inputmode="tel" autocomplete="tel" placeholder="<?php esc_attr_e( 'Phone number', 'oc-theme' ); ?>" dir="ltr">
+							<button type="submit"><?php esc_html_e( 'Send code', 'oc-theme' ); ?></button>
+						</form>
+						<p class="oc-colog__err" data-colog-err hidden></p>
+					</div>
+
+					<div class="oc-colog__step" data-colog-step="code" hidden>
+						<p class="oc-colog__q"><?php esc_html_e( 'Enter the code', 'oc-theme' ); ?></p>
+						<p class="oc-colog__sent">
+							<span class="oc-colog__d"><?php esc_html_e( 'Sent to', 'oc-theme' ); ?> <span data-colog-pretty dir="ltr"></span></span>
+							<button type="button" class="oc-colog__link" data-colog-change><?php esc_html_e( 'Change number', 'oc-theme' ); ?></button>
+						</p>
+						<form class="oc-colog__boxes" data-colog-form="verify" dir="ltr" novalidate>
+							<?php for ( $i = 0; $i < 6; $i++ ) : ?>
+								<input type="text" inputmode="numeric" maxlength="1" autocomplete="<?php echo 0 === $i ? 'one-time-code' : 'off'; ?>" aria-label="<?php echo esc_attr( (string) ( $i + 1 ) ); ?>">
+							<?php endfor; ?>
+						</form>
+						<p class="oc-colog__err" data-colog-err hidden></p>
+						<p class="oc-colog__resend">
+							<span data-colog-wait hidden></span>
+							<button type="button" class="oc-colog__link" data-colog-resend hidden><?php esc_html_e( 'Resend code', 'oc-theme' ); ?></button>
+						</p>
+					</div>
 				<?php endif; ?>
-				<div class="oc-colog__provs" data-colog-only="phone">
-					<?php foreach ( $socials as $key => $label ) : ?>
-						<a class="oc-colog__prov" href="<?php echo esc_url( admin_url( 'admin-post.php?action=oc_auth_' . $key ) ); ?>" rel="nofollow" title="<?php echo esc_attr( $label ); ?>">
-							<?php echo $icons[ $key ]; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static inline SVG. ?>
-							<span><?php echo esc_html( $label ); ?></span>
-						</a>
-					<?php endforeach; ?>
-					<?php if ( $has_email ) : ?>
-						<button type="button" class="oc-colog__prov" data-colog-goto="email" title="<?php echo esc_attr( $prov['email'] ); ?>">
-							<?php echo $icons['email']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static inline SVG. ?>
-							<span><?php echo esc_html( $prov['email'] ); ?></span>
-						</button>
+
+				<?php if ( $has_email ) : ?>
+					<div class="oc-colog__step" data-colog-step="email" hidden>
+						<p class="oc-colog__q"><?php esc_html_e( 'Email and password', 'oc-theme' ); ?></p>
+						<form class="oc-colog__emailform" data-colog-form="email" novalidate>
+							<input type="email" name="email" autocomplete="email" placeholder="<?php esc_attr_e( 'Email', 'oc-theme' ); ?>">
+							<input type="password" name="password" autocomplete="current-password" placeholder="<?php esc_attr_e( 'Password', 'oc-theme' ); ?>">
+							<button type="submit"><?php esc_html_e( 'Sign in', 'oc-theme' ); ?></button>
+						</form>
+						<p class="oc-colog__err" data-colog-err hidden></p>
+						<button type="button" class="oc-colog__back" data-colog-change><?php esc_html_e( 'Back', 'oc-theme' ); ?></button>
+					</div>
+				<?php endif; ?>
+
+				<?php $socials = array_diff_key( $prov, array( 'email' => 1 ) ); ?>
+				<?php if ( ! empty( $socials ) || $has_email ) : ?>
+					<?php if ( $sms ) : ?>
+						<div class="oc-colog__or" data-colog-only="phone" aria-hidden="true"><span><?php esc_html_e( 'or', 'oc-theme' ); ?></span></div>
 					<?php endif; ?>
-				</div>
-			<?php endif; ?>
+					<div class="oc-colog__provs" data-colog-only="phone">
+						<?php foreach ( $socials as $key => $label ) : ?>
+							<a class="oc-colog__prov" href="<?php echo esc_url( admin_url( 'admin-post.php?action=oc_auth_' . $key ) ); ?>" rel="nofollow" title="<?php echo esc_attr( $label ); ?>">
+								<?php echo $icons[ $key ]; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static inline SVG. ?>
+								<span><?php echo esc_html( $label ); ?></span>
+							</a>
+						<?php endforeach; ?>
+						<?php if ( $has_email ) : ?>
+							<button type="button" class="oc-colog__prov" data-colog-goto="email" title="<?php echo esc_attr( $prov['email'] ); ?>">
+								<?php echo $icons['email']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static inline SVG. ?>
+								<span><?php echo esc_html( $prov['email'] ); ?></span>
+							</button>
+						<?php endif; ?>
+					</div>
+				<?php endif; ?>
+			</div>
 		</div>
 		<?php
 	}

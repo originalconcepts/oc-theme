@@ -179,6 +179,7 @@ final class Assets {
 				'byeYes'               => __( 'Sign out', 'oc-theme' ),
 				'byeNo'                => __( 'Stay signed in', 'oc-theme' ),
 				'cologNoAcct'          => __( 'No account found for this number — continue with the details below.', 'oc-theme' ),
+				'cologResendIn'        => __( 'Resend available in %d s', 'oc-theme' ),
 				'cartOpenOnAdd'        => (int) Cart::settings()['open_on_add'],
 				'cartVarPick'          => __( 'Choose an option', 'oc-theme' ),
 				'vpSide'               => 'left' === get_theme_mod( 'oc_vpanel_side', 'right' ) ? 'left' : 'right',
