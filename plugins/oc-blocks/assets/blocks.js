@@ -105,13 +105,11 @@
 				var rtl = getComputedStyle( strip ).direction === 'rtl';
 				var slot = wrapForward ? real : at;
 
+				// On a wrap the strip heads for the quiet copy; the settle
+				// watcher jumps home only once it has truly landed there —
+				// a blind timer used to fire mid-flight and leave the strip
+				// stranded between slides.
 				strip.scrollTo( { left: ( rtl ? -1 : 1 ) * slot * strip.clientWidth, behavior: 'smooth' } );
-
-				if ( wrapForward ) {
-					setTimeout( function () {
-						strip.scrollTo( { left: 0, behavior: 'auto' } );
-					}, 550 );
-				}
 			}
 
 			paintDots();
@@ -223,9 +221,19 @@
 			}, { passive: true } );
 
 			function snapHome() {
-				var idx = Math.round( Math.abs( strip.scrollLeft ) / Math.max( 1, strip.clientWidth ) );
+				var pos = Math.abs( strip.scrollLeft );
+				var width = Math.max( 1, strip.clientWidth );
+				var idx = Math.round( pos / width );
 
 				if ( idx >= real ) {
+					// Wait for the strip to actually park on the copy —
+					// jumping mid-flight leaves it stranded between slides.
+					if ( Math.abs( pos - real * width ) > 4 ) {
+						clearTimeout( settle );
+						settle = setTimeout( snapHome, 90 );
+						return;
+					}
+
 					strip.scrollTo( { left: 0, behavior: 'auto' } );
 					at = 0;
 					paintDots();
