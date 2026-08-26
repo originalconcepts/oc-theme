@@ -873,7 +873,7 @@ final class Redirects_Admin {
 			);
 		}
 
-		foreach ( array( 'product_cat', 'category' ) as $taxonomy ) {
+		foreach ( array_filter( array( 'product_cat', 'category', Search::brand_taxonomy() ) ) as $taxonomy ) {
 			foreach ( (array) get_terms(
 				array(
 					'taxonomy'   => $taxonomy,

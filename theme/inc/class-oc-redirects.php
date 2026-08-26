@@ -729,7 +729,9 @@ final class Redirects {
 	 * @param string $taxonomy Taxonomy.
 	 */
 	public function on_term_delete( $term_id, $taxonomy ): void {
-		if ( ! in_array( $taxonomy, array( 'product_cat', 'category' ), true ) ) {
+		$brand = Search::brand_taxonomy();
+
+		if ( ! in_array( $taxonomy, array( 'product_cat', 'category', $brand ), true ) || '' === $taxonomy ) {
 			return;
 		}
 
@@ -758,6 +760,10 @@ final class Redirects {
 		} elseif ( $term->parent > 0 ) {
 			$parent = get_term_link( (int) $term->parent, $taxonomy );
 			$target = is_wp_error( $parent ) ? '' : (string) $parent;
+		}
+
+		if ( '' === $target && '' !== $brand && $taxonomy === $brand ) {
+			$target = Brands::url(); // A gone brand joins the rest at /brands/.
 		}
 
 		if ( '' === $target ) {
@@ -801,7 +807,9 @@ final class Redirects {
 			'paths' => array(),
 		);
 
-		foreach ( array( 'product_cat', 'category' ) as $taxonomy ) {
+		$taxonomies = array_filter( array( 'product_cat', 'category', Search::brand_taxonomy() ) );
+
+		foreach ( $taxonomies as $taxonomy ) {
 			$terms = get_terms(
 				array(
 					'taxonomy'   => $taxonomy,
