@@ -11,12 +11,18 @@ import pathlib
 import rcssmin
 import rjsmin
 
-root = pathlib.Path(__file__).resolve().parent.parent / "theme" / "assets"
+repo = pathlib.Path(__file__).resolve().parent.parent
+root = repo / "theme" / "assets"
+blocks = repo / "plugins" / "oc-blocks" / "assets"
 
 for src, minifier in (
     (root / "js" / "theme.js", rjsmin.jsmin),
     (root / "js" / "checkout.js", rjsmin.jsmin),
     (root / "css" / "theme.css", rcssmin.cssmin),
+    (blocks / "blocks.js", rjsmin.jsmin),
+    (blocks / "blocks.css", rcssmin.cssmin),
+    (blocks / "editor.js", rjsmin.jsmin),
+    (blocks / "editor.css", rcssmin.cssmin),
 ):
     out = src.with_suffix(".min" + src.suffix)
     minified = minifier(src.read_text())

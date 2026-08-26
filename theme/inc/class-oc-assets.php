@@ -31,6 +31,7 @@ final class Assets {
 		add_action( 'wp_enqueue_scripts', array( $this, 'front_end' ) );
 		add_action( 'wp_head', array( $this, 'design_tokens' ), 1 );
 		add_action( 'wp_head', array( $this, 'seo_fallback' ), 2 );
+		add_filter( 'get_custom_logo', array( $this, 'logo_dimensions' ) );
 	}
 
 	/**
@@ -110,8 +111,6 @@ final class Assets {
 	 * Enqueue the front-end bundle.
 	 */
 	public function front_end(): void {
-		$this->fonts();
-
 		$css = oc_asset_min( '/assets/css/theme.css' );
 		$js  = oc_asset_min( '/assets/js/theme.js' );
 
@@ -121,6 +120,9 @@ final class Assets {
 			array(),
 			oc_asset_version( $css )
 		);
+
+		// After the enqueue — the font-face inlines onto this handle.
+		$this->fonts();
 
 		// The order-received page shares the bundle: its thank-you module
 		// (stars, copy button) guards on its own DOM, like the checkout does.
@@ -460,6 +462,51 @@ final class Assets {
 	/**
 	 * Load the chosen Google fonts in one request. Hebrew subsets included.
 	 */
+	/**
+	 * An SVG logo carries no width/height meta, so the browser reserves no
+	 * box for it and the layout shifts when it lands. Read the intrinsic
+	 * ratio out of the file once, cache it on the attachment, and stamp it.
+	 *
+	 * @param string $html The custom logo markup.
+	 * @return string
+	 */
+	public function logo_dimensions( $html ) {
+		if ( ! is_string( $html ) || '' === $html || false !== strpos( $html, 'width=' ) ) {
+			return $html;
+		}
+
+		$id = (int) get_theme_mod( 'custom_logo' );
+
+		if ( $id < 1 ) {
+			return $html;
+		}
+
+		$dims = get_post_meta( $id, '_oc_svg_dims', true );
+
+		if ( ! is_array( $dims ) || empty( $dims['w'] ) ) {
+			$file = get_attached_file( $id );
+			$dims = array( 'w' => 0, 'h' => 0 );
+
+			if ( is_string( $file ) && file_exists( $file ) && 'svg' === strtolower( (string) pathinfo( $file, PATHINFO_EXTENSION ) ) ) {
+				$head = (string) file_get_contents( $file, false, null, 0, 4096 ); // phpcs:ignore WordPress.WP.AlternativeFunctions
+
+				if ( preg_match( '/viewBox=["\']\s*[\d.\-]+[\s,]+[\d.\-]+[\s,]+([\d.]+)[\s,]+([\d.]+)/i', $head, $m ) ) {
+					$dims = array( 'w' => (int) round( (float) $m[1] ), 'h' => (int) round( (float) $m[2] ) );
+				} elseif ( preg_match( '/<svg[^>]*\swidth=["\']?([\d.]+)[^>]*\sheight=["\']?([\d.]+)/i', $head, $m ) ) {
+					$dims = array( 'w' => (int) round( (float) $m[1] ), 'h' => (int) round( (float) $m[2] ) );
+				}
+			}
+
+			update_post_meta( $id, '_oc_svg_dims', $dims );
+		}
+
+		if ( (int) $dims['w'] > 0 && (int) $dims['h'] > 0 ) {
+			$html = (string) preg_replace( '/<img /', '<img width="' . (int) $dims['w'] . '" height="' . (int) $dims['h'] . '" ', $html, 1 );
+		}
+
+		return $html;
+	}
+
 	private function fonts(): void {
 		$families = array_filter(
 			array_unique(
@@ -487,7 +534,16 @@ final class Assets {
 				continue;
 			}
 
-			wp_enqueue_style( 'oc-font-' . $slug, OC_THEME_URI . $rel, array(), oc_asset_version( $rel ) );
+			// Inlined, not enqueued: the file is a few hundred bytes of
+			// @font-face, and a render-blocking request for it costs more
+			// than it weighs. Relative url()s become absolute on the way.
+			$css = (string) file_get_contents( OC_THEME_DIR . $rel ); // phpcs:ignore WordPress.WP.AlternativeFunctions
+			$css = (string) preg_replace(
+				'/url\(\s*(?![\'"]?(?:https?:|\/|data:))[\'"]?([^\'")]+)[\'"]?\s*\)/i',
+				'url(' . OC_THEME_URI . '/assets/fonts/$1)',
+				$css
+			);
+			wp_add_inline_style( 'oc-theme', $css );
 
 			if ( ! $preloaded && file_exists( OC_THEME_DIR . '/assets/fonts/' . $slug . '-400-hebrew.woff2' ) ) {
 				$preloaded = true;

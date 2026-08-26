@@ -24,6 +24,25 @@ define( 'OC_BLOCKS_VERSION', '0.2.3' );
 define( 'OC_BLOCKS_DIR', plugin_dir_path( __FILE__ ) );
 define( 'OC_BLOCKS_URI', plugin_dir_url( __FILE__ ) );
 
+/**
+ * Prefer the minified build of an asset — only when it is at least as new
+ * as its source. A stale .min (edited source, skipped scripts/minify.py)
+ * must never ship: slower is acceptable, broken is not.
+ *
+ * @param string $rel Path relative to the plugin root, e.g. 'assets/blocks.css'.
+ * @return string The path to enqueue.
+ */
+function oc_blocks_asset( string $rel ): string {
+	$min = (string) preg_replace( '/\.(js|css)$/', '.min.$1', $rel );
+
+	if ( file_exists( OC_BLOCKS_DIR . $min ) && file_exists( OC_BLOCKS_DIR . $rel )
+		&& filemtime( OC_BLOCKS_DIR . $min ) >= filemtime( OC_BLOCKS_DIR . $rel ) ) {
+		return $min;
+	}
+
+	return $rel;
+}
+
 require_once OC_BLOCKS_DIR . 'inc/class-registry.php';
 require_once OC_BLOCKS_DIR . 'inc/class-render.php';
 require_once OC_BLOCKS_DIR . 'inc/class-editor.php';

@@ -29,11 +29,20 @@ final class Render {
 	private static $used = false;
 
 	/**
+	 * True while rendering the page's first visible section — its hero
+	 * image is the likely LCP and deserves fetchpriority over lazy.
+	 *
+	 * @var bool
+	 */
+	private static $first_section = false;
+
+	/**
 	 * Hook in.
 	 */
 	public function register(): void {
 		add_filter( 'the_content', array( $this, 'compose' ), 9 );
 		add_filter( 'body_class', array( $this, 'body_class' ) );
+		add_action( 'wp_head', array( $this, 'preload_hero' ), 2 );
 		add_action( 'wp_enqueue_scripts', array( $this, 'assets' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'integration_assets' ), 15 );
 
@@ -144,6 +153,8 @@ final class Render {
 			if ( empty( $section['on'] ) ) {
 				continue;
 			}
+
+			self::$first_section = ( '' === $out );
 
 			$inner = self::block( $section );
 
@@ -319,16 +330,35 @@ final class Render {
 			if ( '' !== $slide['vid'] ) {
 				$media = '<video src="' . esc_url( (string) $slide['vid'] ) . '" autoplay muted loop playsinline preload="metadata"></video>';
 			} elseif ( $slide['img'] > 0 ) {
-				$dsk = (string) wp_get_attachment_image_url( (int) $slide['img'], 'full' );
-				$mob = $slide['imgm'] > 0 ? (string) wp_get_attachment_image_url( (int) $slide['imgm'], 'large' ) : '';
+				$meta = wp_get_attachment_image_src( (int) $slide['img'], 'full' );
+				$dsk  = is_array( $meta ) ? (string) $meta[0] : '';
 
 				if ( '' === $dsk ) {
 					continue;
 				}
 
+				// Responsive candidates, so a phone never pays for the
+				// desktop original; the first slide of the page's first
+				// section is the LCP and asks for priority.
+				$set  = (string) wp_get_attachment_image_srcset( (int) $slide['img'], 'full' );
+				$dims = ' width="' . absint( $meta[1] ) . '" height="' . absint( $meta[2] ) . '"';
+				$lcp  = self::$first_section && 0 === count( $slides );
+
+				$mob     = '';
+				$mob_set = '';
+
+				if ( $slide['imgm'] > 0 ) {
+					$mob     = (string) wp_get_attachment_image_url( (int) $slide['imgm'], 'large' );
+					$mob_set = (string) wp_get_attachment_image_srcset( (int) $slide['imgm'], 'full' );
+				}
+
 				$media = '<picture>'
-					. ( '' === $mob ? '' : '<source media="(max-width: 782px)" srcset="' . esc_url( $mob ) . '">' )
-					. '<img src="' . esc_url( $dsk ) . '" alt="' . esc_attr( (string) $slide['heading'] ) . '">'
+					. ( '' === $mob ? '' : '<source media="(max-width: 782px)" srcset="' . esc_attr( '' !== $mob_set ? $mob_set : esc_url( $mob ) ) . '"' . ( '' === $mob_set ? '' : ' sizes="100vw"' ) . '>' )
+					. '<img src="' . esc_url( $dsk ) . '"'
+					. ( '' === $set ? '' : ' srcset="' . esc_attr( $set ) . '" sizes="100vw"' )
+					. $dims
+					. ( $lcp ? ' fetchpriority="high"' : '' )
+					. ' decoding="async" alt="' . esc_attr( (string) $slide['heading'] ) . '">'
 					. '</picture>';
 			} else {
 				continue;
@@ -1577,6 +1607,65 @@ final class Render {
 	/**
 	 * The block styles and behaviours, only where sections render.
 	 */
+	/**
+	 * When the page opens on a hero, its first image is the LCP — tell the
+	 * browser before the parser ever reaches the markup.
+	 */
+	public function preload_hero(): void {
+		if ( ! is_singular() ) {
+			return;
+		}
+
+		$sections = Registry::sections( (int) get_queried_object_id() );
+
+		foreach ( $sections as $section ) {
+			if ( empty( $section['on'] ) ) {
+				continue;
+			}
+
+			if ( 'hero' !== (string) $section['type'] ) {
+				return; // The page opens on something else — nothing to rush.
+			}
+
+			$slide = ( (array) ( $section['slides'] ?? array() ) )[0] ?? null;
+
+			if ( ! is_array( $slide ) || '' !== (string) ( $slide['vid'] ?? '' ) || absint( $slide['img'] ?? 0 ) < 1 ) {
+				return;
+			}
+
+			$desktop = absint( $slide['img'] );
+			$mobile  = absint( $slide['imgm'] ?? 0 );
+			$url     = (string) wp_get_attachment_image_url( $desktop, 'full' );
+
+			if ( '' === $url ) {
+				return;
+			}
+
+			$set = (string) wp_get_attachment_image_srcset( $desktop, 'full' );
+
+			if ( $mobile > 0 ) {
+				$mob_url = (string) wp_get_attachment_image_url( $mobile, 'large' );
+				$mob_set = (string) wp_get_attachment_image_srcset( $mobile, 'full' );
+
+				if ( '' !== $mob_url ) {
+					echo '<link rel="preload" as="image" media="(max-width: 782px)" href="' . esc_url( $mob_url ) . '"'
+						. ( '' === $mob_set ? '' : ' imagesrcset="' . esc_attr( $mob_set ) . '" imagesizes="100vw"' )
+						. ' fetchpriority="high">' . "\n";
+				}
+
+				echo '<link rel="preload" as="image" media="(min-width: 783px)" href="' . esc_url( $url ) . '"'
+					. ( '' === $set ? '' : ' imagesrcset="' . esc_attr( $set ) . '" imagesizes="100vw"' )
+					. ' fetchpriority="high">' . "\n";
+			} else {
+				echo '<link rel="preload" as="image" href="' . esc_url( $url ) . '"'
+					. ( '' === $set ? '' : ' imagesrcset="' . esc_attr( $set ) . '" imagesizes="100vw"' )
+					. ' fetchpriority="high">' . "\n";
+			}
+
+			return;
+		}
+	}
+
 	public function assets(): void {
 		$need = false;
 
@@ -1598,8 +1687,10 @@ final class Render {
 			return;
 		}
 
-		wp_enqueue_style( 'oc-blocks', OC_BLOCKS_URI . 'assets/blocks.css', array(), (string) filemtime( OC_BLOCKS_DIR . 'assets/blocks.css' ) );
-		wp_enqueue_script( 'oc-blocks', OC_BLOCKS_URI . 'assets/blocks.js', array(), (string) filemtime( OC_BLOCKS_DIR . 'assets/blocks.js' ), array( 'strategy' => 'defer', 'in_footer' => true ) );
+		$css = oc_blocks_asset( 'assets/blocks.css' );
+		$js  = oc_blocks_asset( 'assets/blocks.js' );
+		wp_enqueue_style( 'oc-blocks', OC_BLOCKS_URI . $css, array(), (string) filemtime( OC_BLOCKS_DIR . $css ) );
+		wp_enqueue_script( 'oc-blocks', OC_BLOCKS_URI . $js, array(), (string) filemtime( OC_BLOCKS_DIR . $js ), array( 'strategy' => 'defer', 'in_footer' => true ) );
 	}
 
 	/**

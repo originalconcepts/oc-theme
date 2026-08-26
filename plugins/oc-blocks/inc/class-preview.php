@@ -74,8 +74,10 @@ final class Preview {
 		do_action( 'wp_enqueue_scripts' );
 
 		// The blocks' own assets, in case nothing above brought them.
-		wp_enqueue_style( 'oc-blocks', OC_BLOCKS_URI . 'assets/blocks.css', array(), (string) filemtime( OC_BLOCKS_DIR . 'assets/blocks.css' ) );
-		wp_enqueue_script( 'oc-blocks', OC_BLOCKS_URI . 'assets/blocks.js', array(), (string) filemtime( OC_BLOCKS_DIR . 'assets/blocks.js' ), array( 'in_footer' => true ) );
+		$css = oc_blocks_asset( 'assets/blocks.css' );
+		$js  = oc_blocks_asset( 'assets/blocks.js' );
+		wp_enqueue_style( 'oc-blocks', OC_BLOCKS_URI . $css, array(), (string) filemtime( OC_BLOCKS_DIR . $css ) );
+		wp_enqueue_script( 'oc-blocks', OC_BLOCKS_URI . $js, array(), (string) filemtime( OC_BLOCKS_DIR . $js ), array( 'in_footer' => true ) );
 
 		if ( function_exists( 'oc_asset_min' ) && defined( 'OC_THEME_URI' ) ) {
 			$css = oc_asset_min( '/assets/css/theme.css' );

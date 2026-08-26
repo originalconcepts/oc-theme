@@ -109,8 +109,10 @@ final class Editor {
 		$page_id = isset( $_GET['post'] ) ? absint( $_GET['post'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only routing.
 
 		wp_enqueue_media();
-		wp_enqueue_style( 'oc-blocks-editor', OC_BLOCKS_URI . 'assets/editor.css', array(), (string) filemtime( OC_BLOCKS_DIR . 'assets/editor.css' ) );
-		wp_enqueue_script( 'oc-blocks-editor', OC_BLOCKS_URI . 'assets/editor.js', array( 'jquery' ), (string) filemtime( OC_BLOCKS_DIR . 'assets/editor.js' ), true );
+		$css = oc_blocks_asset( 'assets/editor.css' );
+		$js  = oc_blocks_asset( 'assets/editor.js' );
+		wp_enqueue_style( 'oc-blocks-editor', OC_BLOCKS_URI . $css, array(), (string) filemtime( OC_BLOCKS_DIR . $css ) );
+		wp_enqueue_script( 'oc-blocks-editor', OC_BLOCKS_URI . $js, array( 'jquery' ), (string) filemtime( OC_BLOCKS_DIR . $js ), true );
 
 		wp_localize_script(
 			'oc-blocks-editor',

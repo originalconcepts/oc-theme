@@ -48,6 +48,19 @@ final class Performance {
 		);
 		add_action( 'wp_print_styles', array( $this, 'drop_block_css' ), 999 );
 
+		// jQuery held first paint hostage from the head. Deferring is safe
+		// by construction: core only honours the strategy when every
+		// dependent script can defer too, and downgrades it otherwise —
+		// worst case this line is a no-op, never a breakage.
+		add_action(
+			'wp_enqueue_scripts',
+			static function (): void {
+				wp_script_add_data( 'jquery-core', 'strategy', 'defer' );
+				wp_script_add_data( 'jquery', 'strategy', 'defer' );
+			},
+			99
+		);
+
 		// Woo's origin tracker (sourcebuster.js + inline config).
 		add_filter( 'wc_order_attribution_allow_tracking', '__return_false' );
 
