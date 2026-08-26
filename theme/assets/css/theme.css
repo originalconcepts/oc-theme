@@ -12293,6 +12293,8 @@ html[dir="rtl"] .oc-bye { translate: 50% 0; }
 
 /* total: the number carries weight */
 .woocommerce-orders-table__cell-order-total { font-size: 1.02rem; font-weight: 700; color: var(--oc-ink, #111); font-variant-numeric: tabular-nums; }
+/* the product count rides next to the total only on phones */
+.oc-ototal-count { display: none; font-weight: 400; font-size: .84rem; color: var(--oc-ink-2, #6b7482); }
 
 /* product thumbnails: rounded app-icon squares, the count above them; the
  * whole block links to the order */
@@ -12300,9 +12302,9 @@ html[dir="rtl"] .oc-bye { translate: 50% 0; }
 .oc-oprods__imgs { display: flex; flex-wrap: wrap; gap: 7px; align-items: center; }
 .oc-oprods__img,
 .oc-oprods__more {
-	inline-size: 56px;
-	block-size: 56px;
-	border-radius: 13px;
+	inline-size: 84px;
+	block-size: 84px;
+	border-radius: 16px;
 	flex: none;
 	border: 1px solid var(--oc-line, #e5e2dd);
 	background: #fff;
@@ -12338,8 +12340,9 @@ html[dir="rtl"] .oc-bye { translate: 50% 0; }
 .oc-ostatus--bad  { color: #c0392b; background: color-mix(in srgb, #c0392b 14%, transparent); }
 .oc-ostatus--muted { color: var(--oc-ink-2, #6b7482); background: color-mix(in srgb, var(--oc-ink-2, #6b7482) 13%, transparent); }
 
-/* actions: a real flex row with a gap — reliable spacing between buttons */
-.woocommerce-orders-table__cell-order-actions {
+/* actions: the CELL stays a table cell (a flex <td> misaligns the row) — the
+ * inner wrapper is the flex row with the gap */
+.oc-oactions {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 10px;
@@ -12472,22 +12475,26 @@ html[dir="rtl"] .oc-bye { translate: 50% 0; }
 	.woocommerce-orders-table__cell-order-products  { grid-column: 1 / -1; grid-row: 2; }
 	.woocommerce-orders-table__cell-order-total     { grid-column: 1 / -1; grid-row: 3; font-weight: 600; }
 
-	/* "סה״כ" label before the total on phones */
+	/* thumbnails a touch smaller so they fit a phone row; count moves away */
+	.oc-oprods__img,
+	.oc-oprods__more { inline-size: 72px; block-size: 72px; }
+	.oc-oprods__count { display: none; }
+
+	/* "סה״כ" label before the total, and the product count right after it */
 	.woocommerce-MyAccount-content .woocommerce-orders-table.shop_table_responsive td.woocommerce-orders-table__cell-order-total::before {
 		display: inline !important;
 		content: attr(data-title) ": ";
 		color: var(--oc-ink-2, #6b7482);
 		font-weight: 400;
 	}
+	.oc-ototal-count { display: inline; }
+	.oc-ototal-count::before { content: " · "; }
 
 	.woocommerce-orders-table__cell-order-actions   {
 		grid-column: 1 / -1;
 		grid-row: 4;
-		display: flex;
-		flex-wrap: wrap;
-		gap: 10px;
-		white-space: normal;
 	}
+	.woocommerce-orders-table__cell-order-actions .oc-oactions { gap: 10px; }
 	.woocommerce-orders-table__cell-order-actions .button {
 		flex: 1 1 auto;
 		min-inline-size: 120px;

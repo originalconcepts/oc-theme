@@ -1956,7 +1956,10 @@ final class WooCommerce {
 	 * @param \WC_Order $order Order.
 	 */
 	public function orders_col_total( $order ): void {
-		echo wp_kses_post( $order->get_formatted_order_total() );
+		$count = count( $order->get_items() );
+		echo '<span class="oc-ototal">' . wp_kses_post( $order->get_formatted_order_total() ) . '</span>';
+		/* translators: %s: number of products. */
+		echo ' <span class="oc-ototal-count">' . esc_html( sprintf( _n( '%s product', '%s products', $count, 'oc-theme' ), number_format_i18n( $count ) ) ) . '</span>';
 	}
 
 	/**
@@ -1990,6 +1993,10 @@ final class WooCommerce {
 	 * @param \WC_Order $order Order.
 	 */
 	public function orders_col_actions( $order ): void {
+		// Wrapped in our own flex row so the cell itself stays a real table
+		// cell — a flex <td> drops out of the row and misaligns the border.
+		echo '<span class="oc-oactions">';
+
 		$actions = wc_get_account_orders_actions( $order );
 
 		foreach ( $actions as $key => $action ) {
@@ -2009,6 +2016,8 @@ final class WooCommerce {
 				esc_html__( 'Order again', 'oc-theme' )
 			);
 		}
+
+		echo '</span>';
 	}
 
 	/**
