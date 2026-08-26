@@ -76,7 +76,7 @@ final class Gate {
 			99
 		);
 		add_filter(
-			'woocommerce_logout_default_location',
+			'woocommerce_logout_default_redirect_url',
 			static function (): string {
 				return home_url( '/?oc_bye=1' );
 			},
