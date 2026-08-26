@@ -200,7 +200,7 @@ final class Variations {
 
 		$d = $this->default_term( $product );
 
-		return null === $d ? $link : add_query_arg( 'attribute_' . sanitize_title( $d['tax'] ), $d['slug'], (string) $link );
+		return null === $d ? $link : add_query_arg( 'attribute_' . rawurlencode( sanitize_title( $d['tax'] ) ), $d['slug'], (string) $link );
 	}
 
 	/**
@@ -1418,7 +1418,9 @@ final class Variations {
 			// Woo reads the preselection from the sanitize_title form of the
 			// attribute name — for a Hebrew attribute that means the
 			// percent-encoded key, not the readable one.
-			$qkey = 'attribute_' . sanitize_title( $attr_tax );
+			// rawurlencode keeps the sanitize_title percents literal in the
+			// URL, so PHP's own decode hands Woo exactly the key it expects.
+			$qkey = 'attribute_' . rawurlencode( sanitize_title( $attr_tax ) );
 
 			foreach ( $terms as $term ) {
 				$style = $this->swatch_style( $product, $attr_tax, $term, $type );
