@@ -12265,7 +12265,19 @@ html[dir="rtl"] .oc-bye { translate: 50% 0; }
 .woocommerce-MyAccount-content table.shop_table .button:hover { border-color: var(--oc-ink, #111); filter: none; }
 
 /* Addresses: two cards. */
-.woocommerce-MyAccount-content .woocommerce-Addresses { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; }
+.woocommerce-MyAccount-content .woocommerce-Addresses {
+	display: grid !important;
+	grid-template-columns: 1fr 1fr;
+	gap: 18px;
+	inline-size: 100%;
+}
+
+.woocommerce-MyAccount-content .woocommerce-Addresses::before,
+.woocommerce-MyAccount-content .woocommerce-Addresses::after { content: none !important; }
+
+@media (max-width: 600px) {
+	.woocommerce-MyAccount-content .woocommerce-Addresses { grid-template-columns: 1fr; }
+}
 .woocommerce-MyAccount-content .woocommerce-Address { float: none !important; inline-size: auto !important; max-inline-size: none !important; }
 
 .woocommerce-MyAccount-content .woocommerce-Address,
@@ -12283,9 +12295,25 @@ html[dir="rtl"] .oc-bye { translate: 50% 0; }
 	max-inline-size: none !important;
 }
 
-.woocommerce-MyAccount-content .woocommerce-Address-title { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
-.woocommerce-MyAccount-content .woocommerce-Address-title h3 { margin: 0 0 8px; font-size: 1.02rem; }
+.woocommerce-MyAccount-content .woocommerce-Address-title {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 12px;
+	text-align: start;
+}
+
+.woocommerce-MyAccount-content .woocommerce-Address-title::before,
+.woocommerce-MyAccount-content .woocommerce-Address-title::after { content: none !important; }
+
+.woocommerce-MyAccount-content .woocommerce-Address-title h2,
+.woocommerce-MyAccount-content .woocommerce-Address-title h3 {
+	float: none !important;
+	margin: 0 0 8px;
+	font-size: 1.02rem;
+}
 .woocommerce-MyAccount-content .woocommerce-Address-title .edit {
+	float: none !important;
 	font-size: .85rem;
 	color: var(--oc-ink-2, #666);
 	text-decoration: underline;
