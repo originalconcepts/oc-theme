@@ -5629,6 +5629,14 @@ html:not([dir]) .oc-cartup__items--h.oc-fade-end {
 
 .oc-htrans.admin-bar .oc-header { inset-block-start: 32px; }
 
+/* On phones WordPress's admin bar is absolute — it scrolls away — so a
+ * fixed header offset for it leaves a see-through strip on every scroll.
+ * The bar may cover the header's top at scroll 0 for signed-in staff;
+ * that beats a permanent gap. */
+@media (max-width: 782px) {
+	.oc-htrans.admin-bar .oc-header { inset-block-start: 0; }
+}
+
 /* Its own ink, until the first scroll brings the solid bar. */
 .oc-htrans .oc-header:not(.is-scrolled) { color: var(--oc-header-tr-tx, var(--oc-header-tx, inherit)); }
 .oc-htrans .oc-header:not(.is-scrolled) .oc-hicon,
@@ -5656,8 +5664,10 @@ html:not([dir]) .oc-cartup__items--h.oc-fade-end {
  * team member scrolls into a hidden strip. */
 .admin-bar .oc-header.is-sticky { inset-block-start: 32px; }
 
+/* Same story as the transparent header: the mobile admin bar scrolls
+ * away, so the sticky offset must not outlive it. */
 @media (max-width: 782px) {
-	.admin-bar .oc-header.is-sticky { inset-block-start: 46px; }
+	.admin-bar .oc-header.is-sticky { inset-block-start: 0; }
 }
 
 /* ---------- load more / infinite ---------- */
