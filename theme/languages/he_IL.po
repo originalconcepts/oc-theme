@@ -4967,3 +4967,27 @@ msgstr "ה-Team ID יושב בעמוד ה-Membership — מעתיקים אותו
 
 msgid "with the client's Facebook account, press My Apps, then Create App. Use case: \"Authenticate and request data from users with Facebook Login\", type Consumer — name the app after the shop."
 msgstr "עם חשבון הפייסבוק של הלקוח, לוחצים My Apps ואז Create App. שימוש: \"Authenticate and request data from users with Facebook Login\", סוג Consumer — קוראים לאפליקציה על שם החנות."
+
+msgid "Delete account"
+msgstr "מחיקת חשבון"
+
+msgid "Deleting the account permanently erases your details from the site. Orders and invoices are kept as the law requires, detached from you."
+msgstr "מחיקת החשבון מוחקת לצמיתות את הפרטים שלך מהאתר. הזמנות וחשבוניות נשמרות כנדרש בחוק, מנותקות ממך."
+
+msgid "Delete my account"
+msgstr "מחק את החשבון שלי"
+
+msgid "Are you sure?"
+msgstr "בטוחים?"
+
+msgid "The account and all your personal details will be deleted for good — there is no way back. Orders and invoices are kept as the law requires."
+msgstr "החשבון וכל הפרטים האישיים שלך יימחקו לתמיד — אין דרך חזרה. הזמנות וחשבוניות נשמרות כנדרש בחוק."
+
+msgid "Keep my account"
+msgstr "השאר את החשבון"
+
+msgid "Delete for good"
+msgstr "מחק לתמיד"
+
+msgid "The customer account was deleted at the customer's request; the order is kept as the law requires."
+msgstr "חשבון הלקוח נמחק לבקשתו; ההזמנה נשמרת כנדרש בחוק."

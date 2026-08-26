@@ -11660,3 +11660,73 @@ body.oc-checkout { overflow-x: clip; }
 	.oc-auth__panel { inline-size: 100vw; padding: 18px 20px 24px; }
 	.oc-auth__boxes input { inline-size: 42px !important; block-size: 50px !important; }
 }
+
+/* ---------- account deletion ---------- */
+
+.oc-delacc {
+	margin-block-start: 34px;
+	padding-block-start: 20px;
+	border-block-start: 1px solid var(--oc-line, #e5e2dd);
+}
+
+.oc-delacc h3 { margin: 0 0 6px; font-size: 1.05rem; }
+.oc-delacc > p { margin: 0 0 12px; color: var(--oc-ink-2, #666); font-size: .9rem; max-inline-size: 60ch; }
+
+.oc-delacc__open {
+	border: 1px solid var(--oc-sale, #b4453c);
+	background: none;
+	color: var(--oc-sale, #b4453c);
+	border-radius: var(--oc-cta-r, 8px);
+	padding: 9px 20px;
+	font: inherit;
+	cursor: pointer;
+	transition: background-color .12s ease, color .12s ease;
+}
+
+.oc-delacc__open:hover { background: var(--oc-sale, #b4453c); color: #fff; }
+
+.oc-delacc__dim {
+	position: fixed;
+	inset: 0;
+	z-index: 1300;
+	background: rgba(14, 13, 12, .5);
+	display: grid;
+	place-items: center;
+	padding: 20px;
+}
+
+.oc-delacc__box {
+	background: var(--oc-bg, #fff);
+	border-radius: 12px;
+	padding: 26px 28px;
+	max-inline-size: 440px;
+	text-align: center;
+}
+
+.oc-delacc__box h4 { margin: 0 0 10px; font-size: 1.15rem; }
+.oc-delacc__box p { margin: 0 0 18px; color: var(--oc-ink-2, #555); }
+
+.oc-delacc__row { display: flex; gap: 10px; justify-content: center; }
+
+.oc-delacc__cancel {
+	border: 1px solid var(--oc-line, #d9d6d0);
+	background: none;
+	color: var(--oc-ink, #111);
+	border-radius: var(--oc-cta-r, 8px);
+	padding: 10px 20px;
+	font: inherit;
+	cursor: pointer;
+}
+
+.oc-delacc__yes {
+	border: 1.5px solid var(--oc-sale, #b4453c);
+	background: var(--oc-sale, #b4453c);
+	color: #fff;
+	border-radius: var(--oc-cta-r, 8px);
+	padding: 10px 20px;
+	font: inherit;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+.oc-delacc__yes:hover { filter: brightness(1.08); }

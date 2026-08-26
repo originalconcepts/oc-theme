@@ -31,6 +31,11 @@ final class Auth {
 	 * Hook in.
 	 */
 	public function register(): void {
+		// The right to delete your account does not depend on which sign-in
+		// methods are switched on — it always exists.
+		add_action( 'woocommerce_after_edit_account_form', array( $this, 'delete_block' ) );
+		add_action( 'admin_post_oc_delete_account', array( $this, 'delete_account' ) );
+
 		$on = self::settings();
 
 		if ( empty( $on['sms_on'] ) && empty( $on['google_on'] ) && empty( $on['fb_on'] ) && empty( $on['apple_on'] ) ) {
@@ -993,6 +998,93 @@ final class Auth {
 		}
 
 		return $out;
+	}
+
+	/*
+	 * ----------------------------------------------------- account deletion
+	 */
+
+	/**
+	 * The way out, at the bottom of the account-details page: a red-lined
+	 * block, a warning dialog, and a goodbye. Meta's data-deletion
+	 * requirement points here.
+	 */
+	public function delete_block(): void {
+		if ( ! is_user_logged_in() ) {
+			return;
+		}
+
+		// A shop manager does not get to vaporise themselves by accident.
+		if ( current_user_can( 'manage_woocommerce' ) || current_user_can( 'manage_options' ) ) {
+			return;
+		}
+		?>
+		<section class="oc-delacc">
+			<h3><?php esc_html_e( 'Delete account', 'oc-theme' ); ?></h3>
+			<p><?php esc_html_e( 'Deleting the account permanently erases your details from the site. Orders and invoices are kept as the law requires, detached from you.', 'oc-theme' ); ?></p>
+			<button type="button" class="oc-delacc__open"><?php esc_html_e( 'Delete my account', 'oc-theme' ); ?></button>
+
+			<div class="oc-delacc__dim" hidden>
+				<div class="oc-delacc__box" role="alertdialog" aria-modal="true" aria-label="<?php esc_attr_e( 'Delete account', 'oc-theme' ); ?>">
+					<h4><?php esc_html_e( 'Are you sure?', 'oc-theme' ); ?></h4>
+					<p><?php esc_html_e( 'The account and all your personal details will be deleted for good — there is no way back. Orders and invoices are kept as the law requires.', 'oc-theme' ); ?></p>
+					<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+						<?php wp_nonce_field( 'oc_delete_account' ); ?>
+						<input type="hidden" name="action" value="oc_delete_account">
+						<div class="oc-delacc__row">
+							<button type="button" class="oc-delacc__cancel" data-delacc-close><?php esc_html_e( 'Keep my account', 'oc-theme' ); ?></button>
+							<button type="submit" class="oc-delacc__yes"><?php esc_html_e( 'Delete for good', 'oc-theme' ); ?></button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</section>
+		<?php
+	}
+
+	/**
+	 * The deletion itself: orders stay for the books but forget whose they
+	 * were; the user row and every personal detail go; the session ends on
+	 * the front page.
+	 */
+	public function delete_account(): void {
+		if ( ! is_user_logged_in() ) {
+			wp_safe_redirect( home_url( '/' ) );
+			exit;
+		}
+
+		check_admin_referer( 'oc_delete_account' );
+
+		$user_id = get_current_user_id();
+
+		if ( current_user_can( 'manage_woocommerce' ) || current_user_can( 'manage_options' ) ) {
+			wp_safe_redirect( home_url( '/' ) );
+			exit;
+		}
+
+		// Orders keep their books-required details, detached from the user.
+		if ( function_exists( 'wc_get_orders' ) ) {
+			$orders = wc_get_orders(
+				array(
+					'customer_id' => $user_id,
+					'limit'       => -1,
+				)
+			);
+
+			foreach ( $orders as $order ) {
+				$order->set_customer_id( 0 );
+				$order->add_order_note( __( 'The customer account was deleted at the customer\'s request; the order is kept as the law requires.', 'oc-theme' ) );
+				$order->save();
+			}
+		}
+
+		wp_logout();
+
+		require_once ABSPATH . 'wp-admin/includes/user.php';
+		wp_delete_user( $user_id );
+
+		wp_safe_redirect( home_url( '/' ) );
+		exit;
 	}
 
 	/*

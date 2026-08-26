@@ -7417,3 +7417,22 @@
 		}
 	} );
 }() );
+
+/* ---------- account deletion: the warning stands between ---------- */
+
+( function () {
+	document.addEventListener( 'click', function ( e ) {
+		var open = e.target.closest( '.oc-delacc__open' );
+
+		if ( open ) {
+			var dim = open.closest( '.oc-delacc' ).querySelector( '.oc-delacc__dim' );
+			dim.hidden = false;
+			return;
+		}
+
+		if ( e.target.closest( '[data-delacc-close]' ) || ( e.target.classList && e.target.classList.contains( 'oc-delacc__dim' ) ) ) {
+			var shade = e.target.closest( '.oc-delacc__dim' ) || e.target;
+			shade.hidden = true;
+		}
+	} );
+}() );
