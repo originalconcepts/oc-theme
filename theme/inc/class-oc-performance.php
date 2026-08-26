@@ -48,18 +48,12 @@ final class Performance {
 		);
 		add_action( 'wp_print_styles', array( $this, 'drop_block_css' ), 999 );
 
-		// jQuery held first paint hostage from the head. Deferring is safe
-		// by construction: core only honours the strategy when every
-		// dependent script can defer too, and downgrades it otherwise —
-		// worst case this line is a no-op, never a breakage.
-		add_action(
-			'wp_enqueue_scripts',
-			static function (): void {
-				wp_script_add_data( 'jquery-core', 'strategy', 'defer' );
-				wp_script_add_data( 'jquery', 'strategy', 'defer' );
-			},
-			99
-		);
+		// jQuery stays blocking, deliberately. Deferring it looked safe —
+		// core downgrades the strategy when a REGISTERED dependent cannot
+		// defer — but a script enqueued mid-page (Woo's variation template
+		// enqueues wp-util while the content renders) arrives after the
+		// header already printed jQuery deferred, executes first, and dies
+		// with "jQuery is not defined". Correct beats fast.
 
 		// Woo's origin tracker (sourcebuster.js + inline config).
 		add_filter( 'wc_order_attribution_allow_tracking', '__return_false' );
