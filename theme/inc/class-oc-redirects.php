@@ -369,7 +369,18 @@ final class Redirects {
 			return $target;
 		}
 
-		return home_url( '/' === $target ? '/' : '/' . ltrim( $target, '/' ) );
+		if ( '/' === $target ) {
+			return home_url( '/' );
+		}
+
+		$path = '/' . ltrim( $target, '/' );
+
+		// Land straight on the canonical form — no second hop for the slash.
+		if ( false === strpos( $path, '?' ) && false === strpos( basename( $path ), '.' ) ) {
+			$path = user_trailingslashit( $path );
+		}
+
+		return home_url( $path );
 	}
 
 	/**
@@ -476,8 +487,8 @@ final class Redirects {
 		$wild = '*' === substr( rtrim( (string) $args['source'] ), -1 );
 
 		if ( $wild ) {
-			$source .= '/*';
-			$source  = str_replace( '//*', '/*', $source );
+			// Normalise keeps a literal star, so shed it before re-adding.
+			$source = untrailingslashit( rtrim( $source, '*/' ) ) . '/*';
 		}
 
 		$target_path = 0 === strpos( $target, 'http' ) ? $target : self::normalize( $target );
