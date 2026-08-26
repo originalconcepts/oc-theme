@@ -143,6 +143,26 @@ final class Auth_Admin {
 				</tr>
 			</table>
 
+			<details style="max-width:760px;margin:4px 0 20px">
+				<summary style="cursor:pointer;font-weight:600"><?php esc_html_e( 'How to get the keys from Google — step by step', 'oc-theme' ); ?></summary>
+				<ol style="margin-top:12px;line-height:1.9">
+					<li>
+						<?php esc_html_e( 'Sign in at', 'oc-theme' ); ?>
+						<a href="https://console.cloud.google.com" target="_blank" rel="noopener">console.cloud.google.com</a>
+						<?php esc_html_e( '(preferably with the client\'s own Google account — the sign-in screen shows in their name) and create a New Project, named after the site.', 'oc-theme' ); ?>
+					</li>
+					<li><?php esc_html_e( 'Search for "Google Auth Platform" at the top and open it. Press "Get started": app name (the shop\'s name — this is what shoppers see), support email, Audience: External, a contact email, agree and Create.', 'oc-theme' ); ?></li>
+					<li>
+						<?php esc_html_e( 'On the Overview screen press "Create OAuth client": Application type — Web application, any name, and under Authorized redirect URIs add exactly:', 'oc-theme' ); ?>
+						<br><code style="direction:ltr;display:inline-block;user-select:all"><?php echo esc_html( admin_url( 'admin-post.php?action=oc_auth_google_cb' ) ); ?></code>
+						<br><?php esc_html_e( '"Authorized JavaScript origins" can stay empty. Press Create.', 'oc-theme' ); ?>
+					</li>
+					<li><?php esc_html_e( 'Copy the Client ID and the Client Secret into the fields above, tick "Show the Google button", and Save.', 'oc-theme' ); ?></li>
+					<li><?php esc_html_e( 'One check under Audience (in the right-side menu): if the status says Testing — press "Publish app". In Testing mode only manually-added test users can sign in.', 'oc-theme' ); ?></li>
+				</ol>
+				<p class="description"><?php esc_html_e( 'No extra scopes and no Google verification are needed — the sign-in only uses the basic name-and-email profile. Every client site gets its own project and its own keys.', 'oc-theme' ); ?></p>
+			</details>
+
 			<h2><?php esc_html_e( 'Facebook and Apple', 'oc-theme' ); ?></h2>
 			<p class="description"><?php esc_html_e( 'Phase two — the plumbing is ready, the switches arrive once a site actually needs them (Facebook wants an app review; Apple wants a paid developer account).', 'oc-theme' ); ?></p>
 

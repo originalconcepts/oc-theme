@@ -4865,3 +4865,30 @@ msgstr "עגול"
 
 msgid "Up to 11 characters — the carrier's rule; anything longer is refused."
 msgstr "עד 11 תווים — מגבלת המפעילים; ארוך יותר נדחה."
+
+msgid "How to get the keys from Google — step by step"
+msgstr "איך מוציאים את המפתחות מגוגל — שלב אחר שלב"
+
+msgid "Sign in at"
+msgstr "נכנסים אל"
+
+msgid "(preferably with the client's own Google account — the sign-in screen shows in their name) and create a New Project, named after the site."
+msgstr "(עדיף עם חשבון הגוגל של הלקוח — מסך ההתחברות מוצג על שמו) ויוצרים New Project על שם האתר."
+
+msgid "Search for \"Google Auth Platform\" at the top and open it. Press \"Get started\": app name (the shop's name — this is what shoppers see), support email, Audience: External, a contact email, agree and Create."
+msgstr "מחפשים למעלה \"Google Auth Platform\" ונכנסים. לוחצים \"Get started\": שם האפליקציה (שם החנות — זה מה שהגולשים רואים), מייל תמיכה, Audience: External, מייל ליצירת קשר, אישור ו-Create."
+
+msgid "On the Overview screen press \"Create OAuth client\": Application type — Web application, any name, and under Authorized redirect URIs add exactly:"
+msgstr "במסך ה-Overview לוחצים \"Create OAuth client\": סוג אפליקציה — Web application, שם חופשי, ותחת Authorized redirect URIs מוסיפים בדיוק:"
+
+msgid "\"Authorized JavaScript origins\" can stay empty. Press Create."
+msgstr "את \"Authorized JavaScript origins\" אפשר להשאיר ריק. לוחצים Create."
+
+msgid "Copy the Client ID and the Client Secret into the fields above, tick \"Show the Google button\", and Save."
+msgstr "מעתיקים את ה-Client ID וה-Client Secret לשדות למעלה, מדליקים \"הצג את כפתור גוגל\" ושומרים."
+
+msgid "One check under Audience (in the right-side menu): if the status says Testing — press \"Publish app\". In Testing mode only manually-added test users can sign in."
+msgstr "בדיקה אחת תחת Audience (בתפריט הצד): אם המצב Testing — לוחצים \"Publish app\". במצב Testing רק משתמשי בדיקה שהוספו ידנית יוכלו להתחבר."
+
+msgid "No extra scopes and no Google verification are needed — the sign-in only uses the basic name-and-email profile. Every client site gets its own project and its own keys."
+msgstr "לא צריך להוסיף Scopes ולא נדרש אימות של גוגל — הכניסה משתמשת רק בפרופיל הבסיסי של שם ומייל. כל אתר לקוח מקבל פרויקט משלו ומפתחות משלו."
