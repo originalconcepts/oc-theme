@@ -1914,11 +1914,18 @@ final class WooCommerce {
 	public function orders_col_products( $order ): void {
 		$items = $order->get_items();
 		$count = count( $items );
-		$max   = 4;
+		$max   = 5;
 		$i     = 0;
+		$view  = $order->get_view_order_url();
 		?>
-		<div class="oc-oprods">
-			<div class="oc-oprods__imgs">
+		<a class="oc-oprods" href="<?php echo esc_url( $view ); ?>">
+			<span class="oc-oprods__count">
+				<?php
+				/* translators: %s: number of products. */
+				echo esc_html( sprintf( _n( '%s product', '%s products', $count, 'oc-theme' ), number_format_i18n( $count ) ) );
+				?>
+			</span>
+			<span class="oc-oprods__imgs">
 				<?php
 				foreach ( $items as $item ) {
 					if ( $i >= $max ) {
@@ -1938,14 +1945,8 @@ final class WooCommerce {
 					<?php
 				endif;
 				?>
-			</div>
-			<span class="oc-oprods__count">
-				<?php
-				/* translators: %s: number of products. */
-				echo esc_html( sprintf( _n( '%s product', '%s products', $count, 'oc-theme' ), number_format_i18n( $count ) ) );
-				?>
 			</span>
-		</div>
+		</a>
 		<?php
 	}
 
@@ -2037,6 +2038,12 @@ final class WooCommerce {
 			$product = $item->get_product();
 			if ( ! $product || ! $product->is_purchasable() || ! $product->is_in_stock() ) {
 				++$skipped;
+				continue;
+			}
+
+			// Skip a promo freebie (a fully-discounted line, total 0 on a paid
+			// subtotal) — the promo engine re-adds it once the paid item is in.
+			if ( (float) $item->get_total() <= 0 && (float) $item->get_subtotal() > 0 ) {
 				continue;
 			}
 
