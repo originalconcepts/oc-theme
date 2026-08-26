@@ -11661,6 +11661,12 @@ body.oc-checkout { overflow-x: clip; }
 	.oc-auth__boxes input { inline-size: 42px !important; block-size: 50px !important; }
 }
 
+/* ---------- my account: quiet navigation ---------- */
+
+.woocommerce-MyAccount-navigation a { text-decoration: none; }
+.woocommerce-MyAccount-navigation a:hover,
+.woocommerce-MyAccount-navigation .is-active > a { text-decoration: underline; text-underline-offset: 4px; }
+
 /* ---------- account deletion ---------- */
 
 .oc-delacc {
@@ -11684,6 +11690,9 @@ body.oc-checkout { overflow-x: clip; }
 }
 
 .oc-delacc__open:hover { background: var(--oc-sale, #b4453c); color: #fff; }
+
+/* display:grid must never outrank the hidden attribute. */
+.oc-delacc__dim[hidden] { display: none; }
 
 .oc-delacc__dim {
 	position: fixed;

@@ -34,6 +34,19 @@ final class WooCommerce {
 			return;
 		}
 
+		// The Downloads tab means nothing to a customer with no downloads.
+		add_filter(
+			'woocommerce_account_menu_items',
+			static function ( array $items ): array {
+				if ( isset( $items['downloads'] ) && function_exists( 'wc_get_customer_available_downloads' )
+					&& empty( wc_get_customer_available_downloads( get_current_user_id() ) ) ) {
+					unset( $items['downloads'] );
+				}
+
+				return $items;
+			}
+		);
+
 		// Our own wrappers instead of the default sidebar-shaped ones.
 		remove_action( 'woocommerce_before_main_content', 'woocommerce_output_content_wrapper', 10 );
 		remove_action( 'woocommerce_after_main_content', 'woocommerce_output_content_wrapper_end', 10 );
