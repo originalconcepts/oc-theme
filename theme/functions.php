@@ -48,6 +48,7 @@ require_once OC_THEME_DIR . '/inc/class-oc-menu-panel.php';
 require_once OC_THEME_DIR . '/inc/class-oc-menu-admin.php';
 require_once OC_THEME_DIR . '/inc/class-oc-blocks.php';
 require_once OC_THEME_DIR . '/inc/class-oc-cart.php';
+require_once OC_THEME_DIR . '/inc/class-oc-addresses.php';
 require_once OC_THEME_DIR . '/inc/class-oc-checkout.php';
 require_once OC_THEME_DIR . '/inc/class-oc-announce.php';
 require_once OC_THEME_DIR . '/inc/class-oc-contact.php';

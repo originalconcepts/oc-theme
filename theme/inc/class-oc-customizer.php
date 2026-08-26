@@ -2433,6 +2433,9 @@ final class Customizer {
 		$this->opt_toggle( $c, $o, 'floor_required', 'oc_checkout', __( 'Floor is required', 'oc-theme' ), false );
 		$this->opt_toggle( $c, $o, 'entry_required', 'oc_checkout', __( 'Entry code is required', 'oc-theme' ), false );
 
+		$this->heading( $c, 'oc_h_ck_pack', 'oc_checkout', __( 'Signed-in checkout & address book', 'oc-theme' ) );
+		$this->opt_toggle( $c, $o, 'multi_address', 'oc_checkout', __( 'Pack a signed-in shopper\'s details and let them keep several saved addresses', 'oc-theme' ), false );
+
 		$this->heading( $c, 'oc_h_ck_phone', 'oc_checkout', __( 'Phone validation', 'oc-theme' ) );
 		$this->opt_number( $c, $o, 'phone_min', 'oc_checkout', __( 'Digits from', 'oc-theme' ), 9, 0, 20 );
 		$this->opt_number( $c, $o, 'phone_max', 'oc_checkout', __( 'Digits to', 'oc-theme' ), 10, 0, 20 );

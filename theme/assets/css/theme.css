@@ -9565,6 +9565,93 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 .oc-co-pickup [data-oc-co-address-head],
 .oc-co-pickup .oc-co-addr { display: none !important; }
 
+/* ---------- packed logged-in checkout ---------- */
+
+/* compact summary card (orderer contact) */
+.oc-copack-card {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 13px 15px;
+	border: 1px solid var(--oc-line, #e5e2dd);
+	border-radius: var(--oc-cta-r, 8px);
+	background: var(--oc-bg, #fff);
+	margin-block: 8px 4px;
+}
+.oc-copack-card__body { display: flex; flex-direction: column; gap: 2px; min-inline-size: 0; }
+.oc-copack-card__title { font-weight: 600; }
+.oc-copack-card__sub { color: var(--oc-ink-2, #666); font-size: .86rem; }
+.oc-copack-card__edit {
+	margin-inline-start: auto;
+	flex: none;
+	border: 0;
+	background: none;
+	color: var(--oc-ink, #111);
+	text-decoration: underline;
+	text-underline-offset: 3px;
+	font: inherit;
+	font-size: .86rem;
+	cursor: pointer;
+}
+
+/* fold the real contact fields away until "edit" */
+.oc-copack:not(.is-edit-orderer) .oc-co-contact { display: none !important; }
+.oc-copack.is-edit-orderer .oc-copack-card--orderer { display: none; }
+
+/* saved-address selector */
+.oc-co-addrsel { display: flex; flex-direction: column; gap: 8px; margin: 12px 0 4px; }
+.oc-co-addrcard {
+	display: flex;
+	align-items: center;
+	gap: 11px;
+	padding: 12px 14px;
+	border: 1px solid var(--oc-line, #d9d6d0);
+	border-radius: var(--oc-cta-r, 8px);
+	background: var(--oc-bg, #fff);
+	cursor: pointer;
+	transition: border-color .12s ease;
+}
+.oc-co-addrcard.is-on { border-color: var(--oc-ink, #111); }
+.oc-co-addrcard input { accent-color: var(--oc-ink, #111); flex: none; }
+.oc-co-addrcard__in { display: flex; flex-direction: column; gap: 2px; min-inline-size: 0; }
+.oc-co-addrcard__label { font-weight: 600; font-size: .9rem; }
+.oc-co-addrcard__line { color: var(--oc-ink-2, #666); font-size: .85rem; }
+.oc-co-addrcard__new { font-weight: 600; font-size: .9rem; }
+
+/* address fields fold away while a saved address is selected */
+.oc-copack-addr:not(.is-add-addr) .oc-co-addr { display: none !important; }
+
+/* "save this address as" chips, under the address fields */
+.oc-co-addrlabels { margin: 6px 0 2px; }
+.oc-co-addrlabels__t { display: block; color: var(--oc-ink-2, #666); font-size: .84rem; margin-block-end: 7px; }
+.oc-co-addrlabels__chips { display: flex; flex-wrap: wrap; gap: 7px; }
+.oc-co-chip {
+	border: 1px solid var(--oc-line, #d9d6d0);
+	border-radius: 999px;
+	background: var(--oc-bg, #fff);
+	color: var(--oc-ink, #111);
+	font: inherit;
+	font-size: .84rem;
+	padding: 6px 14px;
+	cursor: pointer;
+	transition: border-color .12s ease, background .12s ease, color .12s ease;
+}
+.oc-co-chip.is-on { border-color: var(--oc-ink, #111); background: var(--oc-ink, #111); color: #fff; }
+.oc-co-addrlabels__custom {
+	margin-block-start: 8px;
+	block-size: 42px;
+	inline-size: 100%;
+	max-inline-size: 260px;
+	border: 1px solid var(--oc-line, #d9d6d0);
+	border-radius: var(--oc-cta-r, 8px);
+	background: var(--oc-bg, #fff);
+	color: var(--oc-ink, #111);
+	padding-inline: 12px;
+	font: inherit;
+}
+/* label a NEW address only — hide the chips when a saved one is chosen */
+.oc-copack-addr:not(.is-add-addr) .oc-co-addrlabels { display: none; }
+
 /* ---------- sending to someone else ---------- */
 
 .oc-checkout .oc-co-addrhead .oc-co-toggle {

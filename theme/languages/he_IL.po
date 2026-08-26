@@ -1964,7 +1964,7 @@ msgid "Entry code (optional)"
 msgstr "קוד כניסה (אופציונלי)"
 
 msgid "Delivery method"
-msgstr "שיטת משלוח"
+msgstr "שיטת אספקה"
 
 msgid "Delivery address"
 msgstr "כתובת למשלוח"
@@ -5180,3 +5180,39 @@ msgstr "שלח שוב"
 
 msgid "Resend available in %d s"
 msgstr "שליחה חוזרת בעוד %d שנ׳"
+
+msgctxt "address label"
+msgid "Home"
+msgstr "בית"
+
+msgctxt "address label"
+msgid "Work"
+msgstr "עבודה"
+
+msgctxt "address label"
+msgid "Parents"
+msgstr "הורים"
+
+msgid "Apt %s"
+msgstr "דירה %s"
+
+msgid "Floor %s"
+msgstr "קומה %s"
+
+msgid "Ship to a new address"
+msgstr "משלוח לכתובת אחרת"
+
+msgid "Save this address as"
+msgstr "שמירת הכתובת בתור"
+
+msgid "Other…"
+msgstr "אחר…"
+
+msgid "Label — e.g. Grandma"
+msgstr "שם לכתובת — למשל: סבתא"
+
+msgid "Signed-in checkout & address book"
+msgstr "קופה למשתמש מחובר ופנקס כתובות"
+
+msgid "Pack a signed-in shopper's details and let them keep several saved addresses"
+msgstr "אריזת פרטי לקוח מחובר ואפשרות לשמור כמה כתובות"

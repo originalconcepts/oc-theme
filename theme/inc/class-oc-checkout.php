@@ -51,6 +51,7 @@ final class Checkout {
 				'consent'         => 1,       // Marketing-consent checkbox.
 				'consent_text'    => '',      // Override for its label.
 				'help_text'       => '',      // Header help line ("Need help? 077…").
+				'multi_address'   => 0,       // Packed logged-in checkout + address book.
 			)
 		);
 	}
@@ -70,6 +71,7 @@ final class Checkout {
 		add_filter( 'woocommerce_update_order_review_fragments', array( $this, 'rates_fragment' ) );
 		add_filter( 'woocommerce_cart_shipping_method_full_label', array( $this, 'free_label' ), 10, 2 );
 		add_filter( 'body_class', array( $this, 'body_class' ) );
+		add_filter( 'woocommerce_checkout_get_value', array( $this, 'prefill_value' ), 20, 2 );
 
 		// Our login block replaces the quiet default notice.
 		add_action(
@@ -89,6 +91,7 @@ final class Checkout {
 		add_action( 'woocommerce_before_checkout_form', array( $this, 'brand_row' ), 3 );
 		add_action( 'woocommerce_before_checkout_billing_form', array( $this, 'login_block' ), 5 );
 		add_action( 'woocommerce_before_checkout_billing_form', array( $this, 'orderer_heading' ) );
+		add_action( 'woocommerce_after_checkout_billing_form', array( $this, 'address_labels' ) );
 		add_action( 'woocommerce_review_order_after_cart_contents', array( $this, 'summary_coupon_row' ) );
 		add_action( 'woocommerce_review_order_after_shipping', array( $this, 'shipping_row' ) );
 		add_action( 'woocommerce_review_order_before_order_total', array( $this, 'savings_row' ) );
@@ -239,6 +242,59 @@ final class Checkout {
 	}
 
 	/**
+	 * Is the packed logged-in experience in play for this render? (Feature on
+	 * and the visitor signed in — contact details always come packed then.)
+	 */
+	private function orderer_packed(): bool {
+		return Addresses::enabled() && is_user_logged_in();
+	}
+
+	/**
+	 * Should the delivery address arrive packed — i.e. the signed-in visitor
+	 * already has at least one saved (or billing-seeded) address to pick from?
+	 */
+	private function addr_packed(): bool {
+		if ( ! $this->orderer_packed() ) {
+			return false;
+		}
+
+		return (bool) Addresses::book( get_current_user_id() );
+	}
+
+	/**
+	 * Feed the default saved address into Woo's field prefill, so the packed
+	 * card and the (hidden) real fields agree from the first paint.
+	 *
+	 * @param mixed  $value Woo's value.
+	 * @param string $input Field key.
+	 * @return mixed
+	 */
+	public function prefill_value( $value, $input ) {
+		if ( ! $this->addr_packed() ) {
+			return $value;
+		}
+
+		$addr = Addresses::default_addr( get_current_user_id() );
+		if ( ! $addr ) {
+			return $value;
+		}
+
+		$map = array(
+			'billing_city'      => 'city',
+			'billing_address_1' => 'address_1',
+			'billing_address_2' => 'address_2',
+			'billing_oc_floor'  => 'floor',
+			'billing_oc_entry'  => 'entry',
+		);
+
+		if ( isset( $map[ $input ] ) && '' !== (string) ( $addr[ $map[ $input ] ] ?? '' ) ) {
+			return $addr[ $map[ $input ] ];
+		}
+
+		return $value;
+	}
+
+	/**
 	 * Whether the "sending to someone else" toggle is on in this submit.
 	 */
 	private function sending_to_other(): bool {
@@ -332,13 +388,16 @@ final class Checkout {
 
 		unset( $b['billing_company'] );
 
-		// Contact block.
+		// Contact block. The oc-co-contact class lets the packed logged-in
+		// card fold these four rows away behind an "edit" toggle.
 		$b['billing_first_name']['priority'] = 10;
+		$b['billing_first_name']['class']    = array( 'form-row-first', 'oc-co-contact' );
 		$b['billing_last_name']['priority']  = 20;
+		$b['billing_last_name']['class']     = array( 'form-row-last', 'oc-co-contact' );
 		$b['billing_email']['priority']      = 30;
-		$b['billing_email']['class']         = array( 'form-row-first' );
+		$b['billing_email']['class']         = array( 'form-row-first', 'oc-co-contact' );
 		$b['billing_phone']['priority']      = 40;
-		$b['billing_phone']['class']         = array( 'form-row-last' );
+		$b['billing_phone']['class']         = array( 'form-row-last', 'oc-co-contact' );
 		$b['billing_phone']['required']      = true;
 
 		$b['billing_first_name']['autocomplete'] = 'given-name';
@@ -496,6 +555,38 @@ final class Checkout {
 		<div class="oc-co-section oc-co-addrhead" data-oc-co-address-head>
 			<h3 class="oc-co-h"><?php esc_html_e( 'Delivery address', 'oc-theme' ); ?></h3>
 
+			<?php if ( $this->addr_packed() ) : ?>
+				<?php
+				$uid     = get_current_user_id();
+				$book    = Addresses::book( $uid );
+				$default = Addresses::default_addr( $uid );
+				$def_id  = (string) ( $default['id'] ?? '' );
+				?>
+				<div class="oc-co-addrsel" data-oc-addrsel>
+					<?php foreach ( $book as $a ) : ?>
+						<label class="oc-co-addrcard<?php echo (string) $a['id'] === $def_id ? ' is-on' : ''; ?>">
+							<input type="radio" name="oc_addr_choice" value="<?php echo esc_attr( (string) $a['id'] ); ?>" <?php checked( (string) $a['id'], $def_id ); ?>
+								data-label="<?php echo esc_attr( (string) $a['label'] ); ?>"
+								data-city="<?php echo esc_attr( (string) $a['city'] ); ?>"
+								data-a1="<?php echo esc_attr( (string) $a['address_1'] ); ?>"
+								data-a2="<?php echo esc_attr( (string) $a['address_2'] ); ?>"
+								data-floor="<?php echo esc_attr( (string) $a['floor'] ); ?>"
+								data-entry="<?php echo esc_attr( (string) $a['entry'] ); ?>" />
+							<span class="oc-co-addrcard__in">
+								<?php if ( ! empty( $a['label'] ) ) : ?>
+									<span class="oc-co-addrcard__label"><?php echo esc_html( Addresses::label_text( (string) $a['label'] ) ); ?></span>
+								<?php endif; ?>
+								<span class="oc-co-addrcard__line"><?php echo esc_html( Addresses::format( $a ) ); ?></span>
+							</span>
+						</label>
+					<?php endforeach; ?>
+					<label class="oc-co-addrcard oc-co-addrcard--new">
+						<input type="radio" name="oc_addr_choice" value="__new" />
+						<span class="oc-co-addrcard__in"><span class="oc-co-addrcard__new">＋ <?php esc_html_e( 'Ship to a new address', 'oc-theme' ); ?></span></span>
+					</label>
+				</div>
+			<?php endif; ?>
+
 			<?php if ( ! empty( $s['send_other'] ) ) : ?>
 				<label class="oc-co-toggle">
 					<input type="checkbox" name="oc_send_other" id="oc_send_other" value="1" />
@@ -622,6 +713,70 @@ final class Checkout {
 		echo '<div class="oc-co-headrow">';
 		echo '<h3 class="oc-co-h oc-co-h--first">' . esc_html__( 'Your details', 'oc-theme' ) . '</h3>';
 		echo '</div>';
+
+		if ( ! $this->orderer_packed() ) {
+			return;
+		}
+
+		$uid   = get_current_user_id();
+		$user  = wp_get_current_user();
+		$first = get_user_meta( $uid, 'billing_first_name', true );
+		$last  = get_user_meta( $uid, 'billing_last_name', true );
+		$phone = get_user_meta( $uid, 'billing_phone', true );
+		$email = get_user_meta( $uid, 'billing_email', true );
+
+		$first = '' !== (string) $first ? $first : $user->first_name;
+		$last  = '' !== (string) $last ? $last : $user->last_name;
+		$email = '' !== (string) $email ? $email : $user->user_email;
+
+		$name = trim( $first . ' ' . $last );
+		if ( '' === $name ) {
+			$name = $user->display_name;
+		}
+
+		$sub = implode( ' · ', array_filter( array( (string) $phone, (string) $email ) ) );
+		?>
+		<div class="oc-copack-card oc-copack-card--orderer">
+			<div class="oc-copack-card__body">
+				<span class="oc-copack-card__title"><?php echo esc_html( $name ); ?></span>
+				<?php if ( '' !== $sub ) : ?>
+					<span class="oc-copack-card__sub" dir="ltr"><?php echo esc_html( $sub ); ?></span>
+				<?php endif; ?>
+			</div>
+			<button type="button" class="oc-copack-card__edit" data-oc-copack-edit="orderer"><?php esc_html_e( 'Edit', 'oc-theme' ); ?></button>
+		</div>
+		<?php
+	}
+
+	/**
+	 * The "save this address as…" chip row, printed after the address fields.
+	 * Only signed-in shoppers under the multi-address feature see it — a guest
+	 * has nowhere to save. It hides on pickup (oc-co-addr) and, when a saved
+	 * address is picked rather than a new one, folds away with the fields.
+	 */
+	public function address_labels(): void {
+		if ( ! $this->orderer_packed() ) {
+			return;
+		}
+
+		$default = Addresses::default_addr( get_current_user_id() );
+		$current = (string) ( $default['label'] ?? 'home' );
+		if ( '' === $current ) {
+			$current = 'home';
+		}
+		?>
+		<div class="oc-co-addrlabels oc-co-addr" data-oc-addr-labels>
+			<span class="oc-co-addrlabels__t"><?php esc_html_e( 'Save this address as', 'oc-theme' ); ?></span>
+			<div class="oc-co-addrlabels__chips">
+				<?php foreach ( Addresses::labels() as $key => $text ) : ?>
+					<button type="button" class="oc-co-chip<?php echo $key === $current ? ' is-on' : ''; ?>" data-oc-chip="<?php echo esc_attr( $key ); ?>"><?php echo esc_html( $text ); ?></button>
+				<?php endforeach; ?>
+				<button type="button" class="oc-co-chip" data-oc-chip="custom"><?php esc_html_e( 'Other…', 'oc-theme' ); ?></button>
+			</div>
+			<input type="text" class="oc-co-addrlabels__custom" data-oc-chip-input placeholder="<?php esc_attr_e( 'Label — e.g. Grandma', 'oc-theme' ); ?>" hidden />
+			<input type="hidden" name="oc_addr_label" value="<?php echo esc_attr( $current ); ?>" data-oc-addr-label />
+		</div>
+		<?php
 	}
 
 	/**
@@ -1026,6 +1181,37 @@ final class Checkout {
 				update_user_meta( $user_id, 'oc_marketing_consent', 'yes' );
 			}
 		}
+
+		// Keep the address book in step with what was ordered — only for a
+		// signed-in shopper under the feature, and never on pickup.
+		$uid = $order->get_customer_id();
+		if ( $uid && Addresses::enabled() && ! $this->is_pickup() ) {
+			$street = sanitize_text_field( wp_unslash( $_POST['billing_address_1'] ?? '' ) );
+
+			if ( '' !== trim( $street ) ) {
+				$choice = sanitize_text_field( wp_unslash( $_POST['oc_addr_choice'] ?? '' ) );
+				$data   = array(
+					'label'     => sanitize_text_field( wp_unslash( $_POST['oc_addr_label'] ?? '' ) ),
+					'city'      => sanitize_text_field( wp_unslash( $_POST['billing_city'] ?? '' ) ),
+					'address_1' => $street,
+					'address_2' => sanitize_text_field( wp_unslash( $_POST['billing_address_2'] ?? '' ) ),
+					'floor'     => sanitize_text_field( wp_unslash( $_POST['billing_oc_floor'] ?? '' ) ),
+					'entry'     => sanitize_text_field( wp_unslash( $_POST['billing_oc_entry'] ?? '' ) ),
+				);
+
+				// An existing card was kept — update it in place; anything else
+				// (a new address, or the billing seed) is stored fresh.
+				if ( '' !== $choice && '__new' !== $choice && 'wc' !== $choice ) {
+					$data['id'] = $choice;
+				}
+
+				if ( ! Addresses::all( $uid ) ) {
+					$data['is_default'] = true;
+				}
+
+				Addresses::save( $uid, $data );
+			}
+		}
 		// phpcs:enable WordPress.Security.NonceVerification.Missing
 
 		$order->save();
@@ -1186,6 +1372,13 @@ final class Checkout {
 			$s = self::settings();
 			if ( ! empty( $s['summary'] ) && ! empty( $s['summary_fold'] ) ) {
 				$classes[] = 'oc-co-dfold';
+			}
+
+			if ( $this->orderer_packed() ) {
+				$classes[] = 'oc-copack';
+			}
+			if ( $this->addr_packed() ) {
+				$classes[] = 'oc-copack-addr';
 			}
 		}
 

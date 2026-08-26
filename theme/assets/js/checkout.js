@@ -1198,4 +1198,103 @@
 	}() );
 
 
+	/* -- packed logged-in checkout: orderer card, address selector, labels -- */
+	( function () {
+		var root = document.body;
+		if ( ! root.classList.contains( 'oc-copack' ) ) { return; }
+
+		var ADDR = {
+			city: 'billing_city',
+			a1: 'billing_address_1',
+			a2: 'billing_address_2',
+			floor: 'billing_oc_floor',
+			entry: 'billing_oc_entry'
+		};
+
+		function fld( id ) { return document.getElementById( id ); }
+
+		function setField( id, val ) {
+			var el = fld( id );
+			if ( ! el ) { return; }
+			el.value = val || '';
+			var row = el.closest( '.form-row' );
+			if ( row ) { row.classList.toggle( 'is-filled', !! ( val && String( val ).length ) ); }
+		}
+
+		function setLabel( key ) {
+			var hidden = document.querySelector( '[data-oc-addr-label]' );
+			if ( hidden ) { hidden.value = key || ''; }
+			document.querySelectorAll( '[data-oc-chip]' ).forEach( function ( c ) {
+				c.classList.toggle( 'is-on', c.dataset.ocChip === key );
+			} );
+		}
+
+		/* orderer: reveal the real contact fields */
+		document.addEventListener( 'click', function ( e ) {
+			if ( e.target.closest( '[data-oc-copack-edit="orderer"]' ) ) {
+				root.classList.add( 'is-edit-orderer' );
+			}
+		} );
+
+		/* address selector */
+		var sel = document.querySelector( '[data-oc-addrsel]' );
+		if ( sel ) {
+			sel.addEventListener( 'change', function ( e ) {
+				var r = e.target.closest( 'input[name="oc_addr_choice"]' );
+				if ( ! r ) { return; }
+
+				sel.querySelectorAll( '.oc-co-addrcard' ).forEach( function ( c ) {
+					c.classList.toggle( 'is-on', c.contains( r ) );
+				} );
+
+				if ( '__new' === r.value ) {
+					root.classList.add( 'is-add-addr' );
+					Object.keys( ADDR ).forEach( function ( k ) { setField( ADDR[ k ], '' ); } );
+					setLabel( 'home' );
+					var city = fld( ADDR.city );
+					if ( city ) { city.focus(); }
+				} else {
+					root.classList.remove( 'is-add-addr' );
+					var d = r.dataset;
+					setField( ADDR.city, d.city );
+					setField( ADDR.a1, d.a1 );
+					setField( ADDR.a2, d.a2 );
+					setField( ADDR.floor, d.floor );
+					setField( ADDR.entry, d.entry );
+					if ( d.label ) { setLabel( d.label ); }
+				}
+			} );
+		}
+
+		/* label chips */
+		var labels = document.querySelector( '[data-oc-addr-labels]' );
+		if ( labels ) {
+			var custom = labels.querySelector( '[data-oc-chip-input]' );
+			var hidden = labels.querySelector( '[data-oc-addr-label]' );
+
+			labels.addEventListener( 'click', function ( e ) {
+				var chip = e.target.closest( '[data-oc-chip]' );
+				if ( ! chip ) { return; }
+				labels.querySelectorAll( '[data-oc-chip]' ).forEach( function ( c ) { c.classList.remove( 'is-on' ); } );
+				chip.classList.add( 'is-on' );
+
+				if ( 'custom' === chip.dataset.ocChip ) {
+					if ( custom ) {
+						custom.hidden = false;
+						custom.focus();
+						if ( hidden ) { hidden.value = custom.value.trim(); }
+					}
+				} else {
+					if ( custom ) { custom.hidden = true; }
+					if ( hidden ) { hidden.value = chip.dataset.ocChip; }
+				}
+			} );
+
+			if ( custom && hidden ) {
+				custom.addEventListener( 'input', function () { hidden.value = custom.value.trim(); } );
+			}
+		}
+	}() );
+
+
 }() );
