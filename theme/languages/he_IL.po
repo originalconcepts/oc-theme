@@ -5150,3 +5150,9 @@ msgstr "צבע טקסט ואייקונים — מצב שקוף"
 
 msgid "The footer has three floors. (1) Content columns: three widget areas — Appearance → Widgets → \"Footer column 1/2/3\"; a text widget, a menu widget, contact details, anything. An empty column simply does not render. (2) The bottom bar: the menu assigned to the \"Footer menu\" location (Appearance → Menus) beside the credit line below. (3) This screen styles it all: background, layout, credit. Order of columns follows the site language direction."
 msgstr "לפוטר שלוש קומות. (1) עמודות תוכן: שלושה אזורי ווידג'טים — עיצוב ← ווידג'טים ← \"עמודת פוטר 1/2/3\"; ווידג'ט טקסט, תפריט, פרטי קשר — כל דבר. עמודה ריקה פשוט לא מוצגת. (2) הפס התחתון: התפריט שמשויך למיקום \"תפריט פוטר\" (עיצוב ← תפריטים) לצד שורת הקרדיט שלמטה. (3) המסך הזה מעצב את הכל: רקע, פריסה, קרדיט. סדר העמודות עוקב אחרי כיוון שפת האתר."
+
+msgid "One item"
+msgstr "פריט אחד"
+
+msgid "%2$s items"
+msgstr "%2$s פריטים"

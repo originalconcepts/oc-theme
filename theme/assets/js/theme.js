@@ -7651,3 +7651,30 @@
 		box.hidden = false;
 	}, true );
 }() );
+
+/* ---------- my-account fields: the label floats like at checkout ---------- */
+
+( function () {
+	var scope = document.querySelector( '.woocommerce-MyAccount-content, .woocommerce-account:not(.logged-in) .woocommerce' );
+
+	if ( ! scope ) { return; }
+
+	function fill( field ) {
+		var row = field.closest( '.form-row' );
+		if ( row ) { row.classList.toggle( 'is-filled', '' !== field.value.trim() ); }
+	}
+
+	function all() {
+		scope.querySelectorAll( '.input-text, select, textarea' ).forEach( fill );
+	}
+
+	all();
+	setTimeout( all, 600 ); // autofill lands late
+
+	scope.addEventListener( 'input', function ( e ) {
+		if ( e.target.matches( '.input-text, select, textarea' ) ) { fill( e.target ); }
+	} );
+	scope.addEventListener( 'change', function ( e ) {
+		if ( e.target.matches( 'select' ) ) { fill( e.target ); }
+	} );
+}() );

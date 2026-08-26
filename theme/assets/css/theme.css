@@ -11990,22 +11990,31 @@ html[dir="rtl"] .oc-bye { translate: 50% 0; }
 @media (max-width: 900px) {
 	.woocommerce-account .woocommerce { display: block; }
 
-	/* The card becomes a finger-scrolled strip of chips — stacked it sat
-	 * on top of the content. */
+	/* Frameless: a plain greeting, then chips scrolling freely off the
+	 * screen edge — the cut chip says "there is more". */
 	.oc-macct-side {
 		position: static;
-		margin-block-end: 24px;
-		padding: 10px 12px;
+		border: 0;
+		border-radius: 0;
+		padding: 0;
+		margin-block-end: 22px;
 	}
 
-	.oc-macct-side__hi { padding: 0 0 10px; }
+	.oc-macct-side__hi {
+		border: 0;
+		padding: 0 0 10px;
+		margin: 0;
+		font-size: 1.05rem;
+	}
 
 	.oc-macct-side .woocommerce-MyAccount-navigation ul {
 		display: flex;
-		gap: 6px;
+		gap: 8px;
 		overflow-x: auto;
 		-webkit-overflow-scrolling: touch;
 		scrollbar-width: none;
+		margin-inline: calc(-1 * var(--oc-gap, 16px));
+		padding-inline: var(--oc-gap, 16px);
 		padding-block-end: 2px;
 	}
 
@@ -12024,11 +12033,32 @@ html[dir="rtl"] .oc-bye { translate: 50% 0; }
 		border-color: var(--oc-ink, #111);
 	}
 
-	.oc-macct-side .woocommerce-MyAccount-navigation--customer-logout a {
+	.oc-macct-side .woocommerce-MyAccount-navigation-link--customer-logout a {
 		margin-block-start: 0;
 		border-block-start: 1px solid var(--oc-line, #e5e2dd);
 		border-radius: 999px;
 	}
+
+	/* Orders keep one line per order and scroll sideways under the finger —
+	 * WooCommerce's stacked-blocks phone table undone. */
+	.woocommerce-MyAccount-content table.shop_table_responsive {
+		display: block;
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
+		white-space: nowrap;
+	}
+
+	.woocommerce-MyAccount-content table.shop_table_responsive thead { display: table-header-group; }
+	.woocommerce-MyAccount-content table.shop_table_responsive tbody { display: table-row-group; }
+	.woocommerce-MyAccount-content table.shop_table_responsive tr { display: table-row; }
+
+	.woocommerce-MyAccount-content table.shop_table_responsive th,
+	.woocommerce-MyAccount-content table.shop_table_responsive td {
+		display: table-cell;
+		text-align: start !important;
+	}
+
+	.woocommerce-MyAccount-content table.shop_table_responsive td::before { display: none; }
 }
 
 /* -- the side card -- */
@@ -12070,7 +12100,7 @@ html[dir="rtl"] .oc-bye { translate: 50% 0; }
 	text-decoration: none;
 }
 
-.oc-macct-side .woocommerce-MyAccount-navigation--customer-logout a {
+.oc-macct-side .woocommerce-MyAccount-navigation-link--customer-logout a {
 	color: var(--oc-sale, #b4453c);
 	margin-block-start: 4px;
 	border-block-start: 1px solid var(--oc-line, #eee9e3);
@@ -12084,33 +12114,93 @@ html[dir="rtl"] .oc-bye { translate: 50% 0; }
 .woocommerce-MyAccount-content > h2,
 .woocommerce-MyAccount-content > h3 { margin-block-start: 0; }
 
-/* Fields, in the site's own character. */
-.woocommerce-MyAccount-content .form-row input.input-text,
-.woocommerce-MyAccount-content .form-row select,
-.woocommerce-MyAccount-content .form-row textarea,
-.woocommerce-account:not(.logged-in) .woocommerce form .form-row input.input-text {
-	inline-size: 100%;
-	block-size: var(--oc-cta-h, 48px);
-	border: 1px solid var(--oc-line, #d9d6d0);
-	border-radius: var(--oc-cta-r, 8px);
-	padding-inline: 14px;
-	font: inherit;
-	background: var(--oc-bg, #fff);
-	color: var(--oc-ink, #111);
-	box-shadow: none;
+/* Fields wear the checkout's exact clothes: rounded, the label resting
+ * inside like a placeholder and gliding up on focus/fill. Forms cap at
+ * the width of the name pair — no field sprawls across the page. */
+.woocommerce-MyAccount-content form.edit-account,
+.woocommerce-MyAccount-content .woocommerce-address-fields,
+.woocommerce-account:not(.logged-in) .woocommerce form.login,
+.woocommerce-account:not(.logged-in) .woocommerce form.register { max-inline-size: 560px; }
+
+.woocommerce-MyAccount-content .form-row,
+.woocommerce-account:not(.logged-in) .woocommerce form .form-row { position: relative; }
+
+.woocommerce-MyAccount-content .form-row > label,
+.woocommerce-account:not(.logged-in) .woocommerce form .form-row > label {
+	position: absolute;
+	inset-block-start: 15px;
+	inset-inline-start: 13px;
+	font-size: .88rem;
+	font-weight: 400;
+	color: var(--oc-ink-2, #999);
+	line-height: 1.2;
+	z-index: 2;
+	pointer-events: none;
+	transition: all .14s ease;
+	max-inline-size: calc(100% - 28px);
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	margin: 0;
 }
 
-.woocommerce-MyAccount-content .form-row textarea { block-size: auto; padding-block: 12px; }
+.woocommerce-MyAccount-content .form-row:focus-within > label,
+.woocommerce-MyAccount-content .form-row.is-filled > label,
+.woocommerce-account:not(.logged-in) .woocommerce form .form-row:focus-within > label,
+.woocommerce-account:not(.logged-in) .woocommerce form .form-row.is-filled > label {
+	inset-block-start: 5px;
+	font-size: .66rem;
+}
 
-.woocommerce-MyAccount-content .form-row input.input-text:focus,
+.woocommerce-MyAccount-content .form-row .input-text,
+.woocommerce-MyAccount-content .form-row select,
+.woocommerce-MyAccount-content .form-row textarea,
+.woocommerce-account:not(.logged-in) .woocommerce form .form-row .input-text {
+	inline-size: 100%;
+	min-block-size: 50px;
+	border: 1px solid rgb(228 230 234);
+	border-radius: 5px;
+	background: var(--oc-surface, #fff);
+	padding: 21px 13px 6px;
+	font: inherit;
+	font-size: .875rem;
+	color: var(--oc-ink, #111);
+	box-shadow: none;
+	transition: border-color .15s ease;
+}
+
+.woocommerce-MyAccount-content .form-row select { block-size: 50px; padding-block: 21px 6px; line-height: 1.2; }
+.woocommerce-MyAccount-content .form-row textarea { min-block-size: 90px; }
+
+.woocommerce-MyAccount-content .form-row .input-text::placeholder,
+.woocommerce-account:not(.logged-in) .woocommerce form .form-row .input-text::placeholder { color: transparent; }
+
+.woocommerce-MyAccount-content .form-row .input-text:focus,
 .woocommerce-MyAccount-content .form-row select:focus,
-.woocommerce-account:not(.logged-in) .woocommerce form .form-row input.input-text:focus {
+.woocommerce-MyAccount-content .form-row textarea:focus,
+.woocommerce-account:not(.logged-in) .woocommerce form .form-row .input-text:focus {
 	outline: none;
 	border-color: var(--oc-ink, #111);
 }
 
-.woocommerce-MyAccount-content .form-row label,
-.woocommerce-account:not(.logged-in) .woocommerce form .form-row label { font-weight: 600; margin-block-end: 5px; display: inline-block; }
+/* Required stars and "(optional)" chatter, checkout-style. */
+.woocommerce-MyAccount-content .form-row .optional { display: none; }
+
+/* Select2 (country/state) matches the fields. */
+.woocommerce-MyAccount-content .select2-container--default .select2-selection--single {
+	block-size: 50px;
+	border: 1px solid rgb(228 230 234);
+	border-radius: 5px;
+	background: var(--oc-surface, #fff);
+}
+
+.woocommerce-MyAccount-content .select2-container--default .select2-selection--single .select2-selection__rendered {
+	line-height: 50px;
+	padding-block-start: 12px;
+	padding-inline-start: 13px;
+}
+
+.woocommerce-MyAccount-content .select2-container--default .select2-selection--single .select2-selection__arrow { block-size: 48px; }
 
 /* The password fieldset loses the fence, keeps a heading. */
 .woocommerce-MyAccount-content fieldset {
@@ -12181,6 +12271,14 @@ html[dir="rtl"] .oc-bye { translate: 50% 0; }
 	border: 1px solid var(--oc-line, #e5e2dd);
 	border-radius: 12px;
 	padding: 18px 20px;
+	text-align: start;
+}
+
+.woocommerce-MyAccount-content .woocommerce-Addresses .col-1,
+.woocommerce-MyAccount-content .woocommerce-Addresses .col-2 {
+	float: none !important;
+	inline-size: auto !important;
+	max-inline-size: none !important;
 }
 
 .woocommerce-MyAccount-content .woocommerce-Address-title { display: flex; align-items: baseline; justify-content: space-between; }
@@ -12188,21 +12286,47 @@ html[dir="rtl"] .oc-bye { translate: 50% 0; }
 .woocommerce-MyAccount-content .woocommerce-Address-title .edit { font-size: .85rem; }
 .woocommerce-MyAccount-content .woocommerce-Address address { border: 0; padding: 0; font-style: normal; color: var(--oc-ink-2, #555); line-height: 1.8; }
 
-/* Notices inside the account: soft, rounded, ours. */
-.woocommerce-account .woocommerce-message,
-.woocommerce-account .woocommerce-info {
-	border: 1px solid var(--oc-line, #e5e2dd);
+/* Notices, ours, everywhere — WordPress's green-bar look retires. */
+.woocommerce-message,
+.woocommerce-info,
+.woocommerce-noreviews,
+p.no-comments {
+	border: 1px solid var(--oc-line, #e5e2dd) !important;
+	border-block-start-width: 1px !important;
 	border-radius: 10px;
-	background: var(--oc-bg-2, #f8f7f5);
-	color: var(--oc-ink, #111);
-	padding: 14px 18px;
+	background: var(--oc-bg-2, #f8f7f5) !important;
+	color: var(--oc-ink, #111) !important;
+	padding: 14px 18px !important;
 }
 
-.woocommerce-account .woocommerce-error {
-	border: 1px solid var(--oc-sale, #b4453c);
+.woocommerce-message::before,
+.woocommerce-info::before { display: none; }
+
+.woocommerce-error {
+	border: 1px solid var(--oc-sale, #b4453c) !important;
 	border-radius: 10px;
-	background: none;
-	color: var(--oc-sale, #b4453c);
-	padding: 14px 18px;
+	background: none !important;
+	color: var(--oc-sale, #b4453c) !important;
+	padding: 14px 18px !important;
 	list-style: none;
+}
+
+.woocommerce-error::before { display: none; }
+.woocommerce-error li { margin: 0; }
+
+.woocommerce-message .button,
+.woocommerce-info .button {
+	background: var(--oc-cta, var(--oc-primary, #111));
+	color: #fff;
+	border: 0;
+	border-radius: var(--oc-cta-r, 8px);
+	padding: 9px 20px;
+}
+
+/* The orders total: the price alone on its line, the count a whisper. */
+.oc-ocount {
+	display: block;
+	font-size: .78rem;
+	color: var(--oc-ink-2, #999);
+	font-weight: 400;
 }

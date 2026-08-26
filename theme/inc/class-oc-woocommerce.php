@@ -34,6 +34,75 @@ final class WooCommerce {
 			return;
 		}
 
+		// Woo 9's "verify your email to link past guest orders" prompt:
+		// legitimate for shops migrating guests, noise for ours — customers
+		// arrive by phone or social and their orders are already theirs.
+		add_action(
+			'wp',
+			static function (): void {
+				global $wp_filter;
+
+				if ( empty( $wp_filter['woocommerce_before_account_orders'] ) ) {
+					return;
+				}
+
+				foreach ( $wp_filter['woocommerce_before_account_orders']->callbacks as $priority => $callbacks ) {
+					foreach ( $callbacks as $cb ) {
+						if ( is_array( $cb['function'] ) && is_object( $cb['function'][0] )
+							&& false !== strpos( get_class( $cb['function'][0] ), 'CustomerEmailVerification' ) ) {
+							remove_action( 'woocommerce_before_account_orders', $cb['function'], $priority );
+						}
+					}
+				}
+			},
+			1
+		);
+
+		// Wording the shop prefers, applied at translation time so no
+		// WordPress or WooCommerce update ever tramples it. Exact-string
+		// matches only — the map stays surgical.
+		$reword = static function ( $translation ) {
+			$map = array(
+				'מצב' => 'סטטוס',
+			);
+
+			return $map[ $translation ] ?? $translation;
+		};
+		add_filter(
+			'gettext',
+			static function ( $translation, $text, $domain ) use ( $reword ) {
+				return 'woocommerce' === $domain ? $reword( $translation ) : $translation;
+			},
+			20,
+			3
+		);
+		add_filter(
+			'gettext_with_context',
+			static function ( $translation, $text, $context, $domain ) use ( $reword ) {
+				return 'woocommerce' === $domain ? $reword( $translation ) : $translation;
+			},
+			20,
+			4
+		);
+
+		// The orders table's total: the price stands alone, the item count
+		// whispers underneath instead of crowding the line.
+		add_filter(
+			'ngettext',
+			static function ( $translation, $single, $plural, $number, $domain ) {
+				if ( 'woocommerce' === $domain && '%1$s for %2$s item' === $single ) {
+					return 1 === (int) $number
+						? '%1$s<span class="oc-ocount">' . __( 'One item', 'oc-theme' ) . '</span>'
+						/* translators: %2$s: item count (printf swallows %1$s). */
+						: '%1$s<span class="oc-ocount">' . __( '%2$s items', 'oc-theme' ) . '</span>';
+				}
+
+				return $translation;
+			},
+			20,
+			5
+		);
+
 		// The Downloads tab means nothing to a customer with no downloads,
 		// and the Dashboard means nothing to anyone — orders are the lobby.
 		add_filter(
