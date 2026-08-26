@@ -184,7 +184,7 @@ final class WooCommerce {
 				$name = '' !== trim( (string) $user->first_name ) ? trim( (string) $user->first_name ) : (string) $user->display_name;
 
 				echo '<div class="oc-macct-side"><p class="oc-macct-side__hi">' .
-					esc_html( sprintf( /* translators: %s: first name. */ __( 'Hello, %s', 'oc-theme' ), $name ) ) .
+					esc_html( oc_greeting( $name ) ) .
 					'</p>';
 			}
 		);

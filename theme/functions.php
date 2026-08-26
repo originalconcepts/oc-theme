@@ -32,6 +32,36 @@ if ( ! defined( 'OC_LOGIN_SLUG' ) ) {
 	define( 'OC_LOGIN_SLUG', 'ocadmin' );
 }
 
+/**
+ * A warm, time-of-day greeting for the account areas — no comma, a light
+ * emoji. Uses the site's timezone (a single-timezone Israeli store), so the
+ * server hour matches the shopper's.
+ *
+ * @param string $name First name (may be empty).
+ * @return string
+ */
+function oc_greeting( string $name ): string {
+	$hour = (int) current_time( 'G' );
+
+	if ( $hour >= 5 && $hour < 12 ) {
+		$text  = __( 'Good morning', 'oc-theme' );
+		$emoji = '☀️';
+	} elseif ( $hour >= 12 && $hour < 17 ) {
+		$text  = __( 'Good afternoon', 'oc-theme' );
+		$emoji = '🌤️';
+	} elseif ( $hour >= 17 && $hour < 22 ) {
+		$text  = __( 'Good evening', 'oc-theme' );
+		$emoji = '🌆';
+	} else {
+		$text  = __( 'Good night', 'oc-theme' );
+		$emoji = '🌙';
+	}
+
+	$name = trim( $name );
+
+	return trim( '' !== $name ? $text . ' ' . $name : $text ) . ' ' . $emoji;
+}
+
 require_once OC_THEME_DIR . '/inc/class-oc-updater.php';
 require_once OC_THEME_DIR . '/inc/class-oc-assets.php';
 require_once OC_THEME_DIR . '/inc/class-oc-login.php';

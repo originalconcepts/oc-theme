@@ -1260,7 +1260,7 @@ final class Auth {
 		$name = '' !== trim( (string) $user->first_name ) ? trim( (string) $user->first_name ) : (string) $user->display_name;
 		?>
 		<nav class="oc-accmenu" hidden aria-label="<?php esc_attr_e( 'My account', 'oc-theme' ); ?>">
-			<p class="oc-accmenu__hi"><?php echo esc_html( sprintf( /* translators: %s: first name. */ __( 'Hello, %s', 'oc-theme' ), $name ) ); ?></p>
+			<p class="oc-accmenu__hi"><?php echo esc_html( oc_greeting( $name ) ); ?></p>
 			<?php foreach ( $items as $endpoint => $label ) : ?>
 				<?php
 				$url = wc_get_account_endpoint_url( $endpoint );

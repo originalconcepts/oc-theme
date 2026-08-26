@@ -12142,7 +12142,9 @@ html[dir="rtl"] .oc-bye { translate: 50% 0; }
 		margin-block-end: 22px;
 	}
 
-	.oc-macct-side__hi {
+	/* higher specificity than the base rule (which sits later in source) so the
+	 * divider under the greeting is actually removed on phones */
+	.woocommerce-account .oc-macct-side__hi {
 		border: 0;
 		padding: 0 0 10px;
 		margin: 0;
@@ -12299,13 +12301,17 @@ html[dir="rtl"] .oc-bye { translate: 50% 0; }
 /* product thumbnails: rounded app-icon squares, the count above them; the
  * whole block links to the order */
 .oc-oprods { display: flex; flex-direction: column; gap: 8px; text-decoration: none; color: inherit; }
-.oc-oprods__imgs { display: flex; flex-wrap: wrap; gap: 7px; align-items: center; }
+/* one row of up to 5 thumbnails + an overflow chip; each caps at 66px and
+ * shrinks to fit so they never wrap or spill, whatever the column width */
+.oc-oprods__imgs { display: flex; flex-wrap: nowrap; gap: 7px; align-items: center; }
 .oc-oprods__img,
 .oc-oprods__more {
-	inline-size: 84px;
-	block-size: 84px;
-	border-radius: 16px;
-	flex: none;
+	flex: 0 1 66px;
+	aspect-ratio: 1;
+	inline-size: auto;
+	block-size: auto;
+	min-inline-size: 0;
+	border-radius: 15px;
 	border: 1px solid var(--oc-line, #e5e2dd);
 	background: #fff;
 	overflow: hidden;
@@ -12475,9 +12481,7 @@ html[dir="rtl"] .oc-bye { translate: 50% 0; }
 	.woocommerce-orders-table__cell-order-products  { grid-column: 1 / -1; grid-row: 2; }
 	.woocommerce-orders-table__cell-order-total     { grid-column: 1 / -1; grid-row: 3; font-weight: 600; }
 
-	/* thumbnails a touch smaller so they fit a phone row; count moves away */
-	.oc-oprods__img,
-	.oc-oprods__more { inline-size: 72px; block-size: 72px; }
+	/* the count moves away (it rides next to the total on phones) */
 	.oc-oprods__count { display: none; }
 
 	/* "סה״כ" label before the total, and the product count right after it */

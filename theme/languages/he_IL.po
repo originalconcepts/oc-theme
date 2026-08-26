@@ -5281,3 +5281,15 @@ msgstr "אף אחד מהמוצרים אינו זמין כרגע."
 
 msgid "Show an \"Order again\" button on the orders list"
 msgstr "הצגת כפתור ״הזמנה מחדש״ בעמוד ההזמנות"
+
+msgid "Good morning"
+msgstr "בוקר טוב"
+
+msgid "Good afternoon"
+msgstr "צהריים טובים"
+
+msgid "Good evening"
+msgstr "ערב טוב"
+
+msgid "Good night"
+msgstr "לילה טוב"
