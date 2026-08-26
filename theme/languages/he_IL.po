@@ -4049,3 +4049,363 @@ msgstr "לא מצאנו תוצאות עבור ״%s״ — נסו חיפוש אח�
 
 msgid "Under the description"
 msgstr "מתחת לתיאור"
+
+msgid "Redirects"
+msgstr "הפניות"
+
+msgid "Import"
+msgstr "ייבוא"
+
+msgid "Auto mapping"
+msgstr "מיפוי אוטומטי"
+
+msgid "404 journal"
+msgstr "יומן 404"
+
+msgid "Batches"
+msgstr "אצוות"
+
+msgid "From address"
+msgstr "מכתובת"
+
+msgid "To address"
+msgstr "לכתובת"
+
+msgid "Type"
+msgstr "סוג"
+
+msgid "Note"
+msgstr "הערה"
+
+msgid "301 permanent"
+msgstr "301 קבועה"
+
+msgid "302 temporary"
+msgstr "302 זמנית"
+
+msgid "410 gone"
+msgstr "410 הוסר"
+
+msgid "Update"
+msgstr "עדכון"
+
+msgid "Add redirect"
+msgstr "הוספת הפניה"
+
+msgid "A full URL or a relative path; a trailing * makes a prefix rule. The target field searches the site as you type."
+msgstr "כתובת מלאה או נתיב יחסי; * בסוף יוצרת כלל תחילית. שדה היעד מחפש באתר תוך כדי הקלדה."
+
+msgid "Every origin"
+msgstr "כל המקורות"
+
+msgid "Manual"
+msgstr "ידני"
+
+msgid "Imported"
+msgstr "מיובא"
+
+msgid "Automatic"
+msgstr "אוטומטי"
+
+msgid "Newest first"
+msgstr "חדש קודם"
+
+msgid "Most hits first"
+msgstr "כניסות רבות קודם"
+
+msgid "Export CSV"
+msgstr "ייצוא CSV"
+
+msgid "%s rules"
+msgstr "%s כללים"
+
+msgid "Origin"
+msgstr "מקור"
+
+msgid "Hits"
+msgstr "כניסות"
+
+msgid "Last used"
+msgstr "שימוש אחרון"
+
+msgid "On"
+msgstr "פעיל"
+
+msgid "No rules yet — the form above makes the first one."
+msgstr "אין עדיין כללים — הטופס למעלה יוצר את הראשון."
+
+msgid "Edit"
+msgstr "עריכה"
+
+msgid "Never"
+msgstr "אף פעם"
+
+msgid "Delete selected"
+msgstr "מחיקת המסומנים"
+
+msgid "Turn selected off"
+msgstr "כיבוי המסומנים"
+
+msgid "Turn selected on"
+msgstr "הפעלת המסומנים"
+
+msgid "Two-column file"
+msgstr "קובץ שתי עמודות"
+
+msgid "Column one is the old address, column two the new one, an optional third column the type. CSV or XLSX; a header row is skipped on its own. Nothing is written before you approve the preview."
+msgstr "עמודה ראשונה — הכתובת הישנה, שנייה — החדשה, ושלישית (רשות) — הסוג. CSV או XLSX; שורת כותרת מדולגת אוטומטית. שום דבר לא נכתב לפני אישור התצוגה המקדימה."
+
+msgid "Upload and preview"
+msgstr "העלאה ותצוגה מקדימה"
+
+msgid "From another plugin"
+msgstr "מתוסף אחר"
+
+msgid "One click brings the existing rules over from Redirection or Rank Math, if their tables are still in the database."
+msgstr "לחיצה אחת מעבירה את הכללים הקיימים מ-Redirection או Rank Math, אם הטבלאות שלהם עדיין במסד הנתונים."
+
+msgid "Import from Redirection"
+msgstr "ייבוא מ-Redirection"
+
+msgid "Import from Rank Math"
+msgstr "ייבוא מ-Rank Math"
+
+msgid "New — will be created"
+msgstr "חדשות — ייווצרו"
+
+msgid "Existing — choose below whether to update"
+msgstr "קיימות — בחרו למטה אם לעדכן"
+
+msgid "Problematic — target answers 404, or a loop"
+msgstr "בעייתיות — היעד מחזיר 404, או לולאה"
+
+msgid "Rejected — empty, malformed or another domain"
+msgstr "נדחו — ריקות, פגומות או דומיין אחר"
+
+msgid "Preview"
+msgstr "תצוגה מקדימה"
+
+msgid "Update the target of existing rules"
+msgstr "עדכון היעד של כללים קיימים"
+
+msgid "Approve and import"
+msgstr "אישור וייבוא"
+
+msgid "Auto mapping from the old site"
+msgstr "מיפוי אוטומטי מהאתר הישן"
+
+msgid "Upload only the old site's addresses — a CSV/XLSX with a URL column (extra columns like name, SKU and type sharpen the match), a sitemap.xml, or a pasted list. Every address walks the matching ladder and comes back with a proposed target and a confidence level. Nothing is written before your approval."
+msgstr "מעלים רק את כתובות האתר הישן — CSV/XLSX עם עמודת כתובת (עמודות נוספות כמו שם, מק\"ט וסוג מחדדות את ההתאמה), sitemap.xml או רשימה מודבקת. כל כתובת עוברת את סולם ההתאמה וחוזרת עם יעד מוצע ורמת ביטחון. שום דבר לא נכתב לפני האישור שלכם."
+
+msgid "Or paste addresses here, one per line"
+msgstr "או הדביקו כאן כתובות, אחת בשורה"
+
+msgid "Map against the new site"
+msgstr "מיפוי מול האתר החדש"
+
+msgid "Replacement dictionary"
+msgstr "מילון החלפות"
+
+msgid "A rule filled in once per site — \"/women/ becomes /clothes/\" — applies to the address and to everything beneath it, on every run."
+msgstr "כלל שממלאים פעם אחת לאתר — \"‎/women/ הופך ל-‎/clothes/\" — חל על הכתובת ועל כל מה שמתחתיה, בכל הרצה."
+
+msgid "Add rule"
+msgstr "הוספת כלל"
+
+msgid "Certain"
+msgstr "ודאי"
+
+msgid "High"
+msgstr "גבוה"
+
+msgid "To approve"
+msgstr "לאישור"
+
+msgid "Fallback"
+msgstr "ברירת מחדל"
+
+msgid "Same SKU"
+msgstr "אותו מק\"ט"
+
+msgid "Same slug"
+msgstr "אותו מזהה כתובת"
+
+msgid "Same name"
+msgstr "אותו שם"
+
+msgid "Normalised match"
+msgstr "התאמה מנורמלת"
+
+msgid "Dictionary"
+msgstr "מילון"
+
+msgid "Similar words"
+msgstr "מילים דומות"
+
+msgid "Climbed to parent"
+msgstr "טיפוס להורה"
+
+msgid "No match found"
+msgstr "לא נמצאה התאמה"
+
+msgid "Auto mapping · %s addresses"
+msgstr "מיפוי אוטומטי · %s כתובות"
+
+msgid "Old address"
+msgstr "כתובת ישנה"
+
+msgid "Proposed target (editable)"
+msgstr "יעד מוצע (ניתן לעריכה)"
+
+msgid "How"
+msgstr "איך"
+
+msgid "Confidence"
+msgstr "ביטחון"
+
+msgid "Apply one target to all checked rows:"
+msgstr "החלת יעד אחד על כל השורות המסומנות:"
+
+msgid "Approve the checked rows"
+msgstr "אישור השורות המסומנות"
+
+msgid "Approve every certain row"
+msgstr "אישור כל השורות הוודאיות"
+
+msgid "Export mapping CSV"
+msgstr "ייצוא מיפוי CSV"
+
+msgid "Addresses that answered 404, how often, and where the visitor came from. Entries older than 30 days clear themselves."
+msgstr "כתובות שהחזירו 404, כמה פעמים, ומאיפה הגיע המבקר. רשומות בנות יותר מ-30 יום נמחקות מעצמן."
+
+msgid "Clear the journal"
+msgstr "ניקוי היומן"
+
+msgid "Last seen"
+msgstr "נראה לאחרונה"
+
+msgid "Came from"
+msgstr "הגיע מ"
+
+msgid "Quiet here — no unanswered 404s."
+msgstr "שקט כאן — אין 404 ללא מענה."
+
+msgid "Create redirect"
+msgstr "יצירת הפניה"
+
+msgid "Import batches"
+msgstr "אצוות ייבוא"
+
+msgid "Every import is remembered as a batch; one click takes the whole batch back out if something went wrong."
+msgstr "כל ייבוא נשמר כאצווה; לחיצה אחת מוציאה את כל האצווה החוצה אם משהו השתבש."
+
+msgid "File"
+msgstr "קובץ"
+
+msgid "Rules"
+msgstr "כללים"
+
+msgid "By"
+msgstr "על ידי"
+
+msgid "No imports yet."
+msgstr "אין עדיין ייבואים."
+
+msgid "Remove every rule from this batch?"
+msgstr "להסיר את כל הכללים מהאצווה הזו?"
+
+msgid "Undo batch"
+msgstr "ביטול אצווה"
+
+msgid "Automatic redirects"
+msgstr "הפניות אוטומטיות"
+
+msgid "Deleted product"
+msgstr "מוצר שנמחק"
+
+msgid "Deleted category"
+msgstr "קטגוריה שנמחקה"
+
+msgid "Deleted post"
+msgstr "פוסט שנמחק"
+
+msgid "Deleted page"
+msgstr "עמוד שנמחק"
+
+msgid "Create a redirect automatically"
+msgstr "יצירת הפניה אוטומטית"
+
+msgid "Fixed target (optional) — overrides the step-up logic"
+msgstr "יעד קבוע (רשות) — גובר על לוגיקת העלייה ברמה"
+
+msgid "Address changes"
+msgstr "שינויי כתובת"
+
+msgid "Redirect the old address when a slug changes"
+msgstr "הפניית הכתובת הישנה כשמזהה הכתובת משתנה"
+
+msgid "Keep the journal"
+msgstr "שמירת היומן"
+
+msgid "Saved."
+msgstr "נשמר."
+
+msgid "Done."
+msgstr "בוצע."
+
+msgid "Nothing was selected."
+msgstr "לא סומן דבר."
+
+msgid "The file came up empty."
+msgstr "הקובץ יצא ריק."
+
+msgid "Parsed — review below."
+msgstr "נקרא — עברו למטה."
+
+msgid "Mapped — review below."
+msgstr "מופה — עברו למטה."
+
+msgid "Pasted list"
+msgstr "רשימה מודבקת"
+
+msgid "An empty column"
+msgstr "עמודה ריקה"
+
+msgid "Another domain"
+msgstr "דומיין אחר"
+
+msgid "Points at itself"
+msgstr "מצביע על עצמו"
+
+msgid "Already in the table"
+msgstr "כבר בטבלה"
+
+msgid "The preview expired — upload again."
+msgstr "התצוגה המקדימה פגה — העלו שוב."
+
+msgid "The mapping expired — upload again."
+msgstr "המיפוי פג — העלו שוב."
+
+msgid "Imported %s rules."
+msgstr "יובאו %s כללים."
+
+msgid "The batch was taken out."
+msgstr "האצווה הוצאה."
+
+msgid "The journal was cleared."
+msgstr "היומן נוקה."
+
+msgid "Both addresses are needed."
+msgstr "צריך את שתי הכתובות."
+
+msgid "A rule pointing at itself would spin forever."
+msgstr "כלל שמצביע על עצמו יסתובב לנצח."
+
+msgid "Created when the content was trashed."
+msgstr "נוצר כשהתוכן הועבר לפח."
+
+msgid "Created when the category was deleted."
+msgstr "נוצר כשהקטגוריה נמחקה."
+
+msgid "Created when the address changed."
+msgstr "נוצר כשהכתובת השתנתה."

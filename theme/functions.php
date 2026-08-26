@@ -59,6 +59,8 @@ require_once OC_THEME_DIR . '/inc/class-oc-brands.php';
 require_once OC_THEME_DIR . '/inc/class-oc-blog.php';
 require_once OC_THEME_DIR . '/inc/class-oc-search-panel.php';
 require_once OC_THEME_DIR . '/inc/class-oc-search-admin.php';
+require_once OC_THEME_DIR . '/inc/class-oc-redirects.php';
+require_once OC_THEME_DIR . '/inc/class-oc-redirects-admin.php';
 
 /**
  * Cache-busting version for a theme-relative asset.
@@ -355,6 +357,8 @@ add_action( 'admin_notices', 'oc_dependency_notice' );
 ( new OC\Theme\Search_Admin() )->register();
 ( new OC\Theme\Brands() )->register();
 ( new OC\Theme\Blog() )->register();
+( new OC\Theme\Redirects() )->register();
+( new OC\Theme\Redirects_Admin() )->register();
 ( new OC\Theme\Updater( get_template(), OC_THEME_VERSION, OC_THEME_REPO ) )->register();
 
 if ( ! defined( 'OC_LOGIN_DISABLE' ) || ! OC_LOGIN_DISABLE ) {
