@@ -7724,14 +7724,20 @@
 		if ( drow ) { drow.style.display = 'none'; }
 	}
 
-	// Shrink the email to half width so it pairs with the phone field beside it
-	// (the phone is printed as form-row-last by the server).
+	// Pair email (shrunk to half width) with the phone beside it. The phone is
+	// printed on the woocommerce_edit_account_form hook, which sits AFTER the
+	// password fieldset — so move its row up to right after the email.
 	var email = form.querySelector( '#account_email' );
+	var phone = form.querySelector( '#account_phone' );
 	if ( email ) {
 		var erow = email.closest( '.form-row' );
 		if ( erow ) {
-			erow.classList.remove( 'form-row-wide' );
-			erow.classList.add( 'form-row-first' );
+			erow.classList.remove( 'form-row-wide', 'woocommerce-form-row--wide' );
+			erow.classList.add( 'form-row-first', 'woocommerce-form-row--first' );
+			if ( phone ) {
+				var prow = phone.closest( '.form-row' );
+				if ( prow ) { erow.parentNode.insertBefore( prow, erow.nextSibling ); }
+			}
 		}
 	}
 
