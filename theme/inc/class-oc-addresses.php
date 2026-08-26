@@ -541,7 +541,7 @@ final class Addresses {
 				</div>
 
 				<label class="oc-abook__def">
-					<input type="checkbox" name="is_default" value="1" <?php checked( ! empty( $addr['is_default'] ) || 'new' === $id ); ?> />
+					<input type="checkbox" name="is_default" value="1" <?php checked( ! empty( $addr['is_default'] ) ); ?> />
 					<span><?php esc_html_e( 'Use as my default address', 'oc-theme' ); ?></span>
 				</label>
 

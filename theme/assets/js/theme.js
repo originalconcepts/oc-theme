@@ -7711,10 +7711,30 @@
 	}
 }() );
 
-/* -- account details: reveal the password fields behind a button -- */
+/* -- account details: pair email with phone, reveal password behind a button -- */
 ( function () {
 	var form = document.querySelector( 'form.edit-account, form.woocommerce-EditAccountForm' );
 	if ( ! form ) { return; }
+
+	// The display name is derived, not edited — hide its row (kept in the DOM
+	// so it still submits its value).
+	var dn = form.querySelector( '#account_display_name' );
+	if ( dn ) {
+		var drow = dn.closest( '.form-row' );
+		if ( drow ) { drow.style.display = 'none'; }
+	}
+
+	// Shrink the email to half width so it pairs with the phone field beside it
+	// (the phone is printed as form-row-last by the server).
+	var email = form.querySelector( '#account_email' );
+	if ( email ) {
+		var erow = email.closest( '.form-row' );
+		if ( erow ) {
+			erow.classList.remove( 'form-row-wide' );
+			erow.classList.add( 'form-row-first' );
+		}
+	}
+
 	var fs = form.querySelector( 'fieldset' );
 	if ( ! fs ) { return; }
 

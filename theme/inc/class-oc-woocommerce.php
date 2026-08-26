@@ -137,6 +137,12 @@ final class WooCommerce {
 			);
 		}
 
+		// Account details: add an editable phone, and keep the billing meta in
+		// step with the account so a signed-in shopper meets the same details
+		// at checkout (the packed orderer card reads billing_*).
+		add_action( 'woocommerce_edit_account_form', array( $this, 'account_phone_field' ) );
+		add_action( 'woocommerce_save_account_details', array( $this, 'save_account_extras' ) );
+
 		// /my-account/ itself lands on the orders, not on an empty dashboard.
 		// Matched by PATH, not by is_wc_endpoint_url() — custom endpoints
 		// (stock alerts and friends) are invisible to that check and were
@@ -1782,5 +1788,41 @@ final class WooCommerce {
 			</div>
 		</div>
 		<?php
+	}
+
+	/**
+	 * An editable phone field on the account-details form, prefilled from the
+	 * billing phone. Rendered as a form-row-last so it pairs with the email.
+	 */
+	public function account_phone_field(): void {
+		$phone = (string) get_user_meta( get_current_user_id(), 'billing_phone', true );
+		?>
+		<p class="woocommerce-form-row woocommerce-form-row--last form-row form-row-last oc-acct-phone">
+			<label for="account_phone"><?php esc_html_e( 'Phone', 'oc-theme' ); ?>&nbsp;<span class="required" aria-hidden="true">*</span></label>
+			<input type="tel" class="woocommerce-Input woocommerce-Input--tel input-text" name="account_phone" id="account_phone" autocomplete="tel" inputmode="tel" value="<?php echo esc_attr( $phone ); ?>" required />
+		</p>
+		<?php
+	}
+
+	/**
+	 * On account save: store the phone, and mirror the account name/email into
+	 * the billing meta so checkout greets the shopper with the same details.
+	 *
+	 * @param int $user_id User id.
+	 */
+	public function save_account_extras( $user_id ): void {
+		// WooCommerce verifies its own save-account nonce before this fires.
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing
+		if ( isset( $_POST['account_phone'] ) ) {
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing
+			update_user_meta( $user_id, 'billing_phone', sanitize_text_field( wp_unslash( $_POST['account_phone'] ) ) );
+		}
+
+		$user = get_userdata( (int) $user_id );
+		if ( $user ) {
+			update_user_meta( $user_id, 'billing_email', $user->user_email );
+			update_user_meta( $user_id, 'billing_first_name', $user->first_name );
+			update_user_meta( $user_id, 'billing_last_name', $user->last_name );
+		}
 	}
 }

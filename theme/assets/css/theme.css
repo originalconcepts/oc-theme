@@ -12576,8 +12576,21 @@ html[dir="rtl"] .oc-bye { translate: 50% 0; }
 	.oc-abook__grid3 { grid-template-columns: 1fr 1fr; }
 }
 
+/* account buttons: text sits centred, not shoved to one edge */
+.woocommerce-MyAccount-content .button,
+.woocommerce-MyAccount-content a.button,
+.woocommerce-MyAccount-content button.button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+}
+
 /* ---------- account details: fields dressed like the address form ---------- */
 .woocommerce-MyAccount-content form.edit-account { max-inline-size: 520px; }
+
+/* the display name is derived automatically — hidden, but still submitted */
+.woocommerce-MyAccount-content form.edit-account .form-row:has( #account_display_name ) { display: none !important; }
 
 .woocommerce-MyAccount-content form.edit-account .form-row {
 	display: flex;
@@ -12651,15 +12664,20 @@ html[dir="rtl"] .oc-bye { translate: 50% 0; }
 .woocommerce-MyAccount-content .woocommerce-Address address { border: 0; padding: 0; font-style: normal; color: var(--oc-ink-2, #555); line-height: 1.8; }
 
 /* Notices, ours, everywhere — WordPress's green-bar look retires. */
+/* info: a clean bordered box, same shape as success/error — not a washed fill */
 .woocommerce-info,
 .woocommerce-noreviews,
 p.no-comments {
 	border: 1px solid var(--oc-line, #e5e2dd) !important;
 	border-block-start-width: 1px !important;
 	border-radius: 10px;
-	background: var(--oc-bg-2, #f8f7f5) !important;
+	background: none !important;
 	color: var(--oc-ink, #111) !important;
 	padding: 14px 18px !important;
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	flex-wrap: wrap;
 }
 
 /* success wears green the way the error wears red — same shape, not grey */
