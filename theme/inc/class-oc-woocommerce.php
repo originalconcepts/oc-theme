@@ -34,16 +34,51 @@ final class WooCommerce {
 			return;
 		}
 
-		// The Downloads tab means nothing to a customer with no downloads.
+		// The Downloads tab means nothing to a customer with no downloads,
+		// and the Dashboard means nothing to anyone — orders are the lobby.
 		add_filter(
 			'woocommerce_account_menu_items',
 			static function ( array $items ): array {
+				unset( $items['dashboard'] );
+
 				if ( isset( $items['downloads'] ) && function_exists( 'wc_get_customer_available_downloads' )
 					&& empty( wc_get_customer_available_downloads( get_current_user_id() ) ) ) {
 					unset( $items['downloads'] );
 				}
 
 				return $items;
+			}
+		);
+
+		// /my-account/ itself lands on the orders, not on an empty dashboard.
+		add_action(
+			'template_redirect',
+			static function (): void {
+				if ( function_exists( 'is_account_page' ) && is_account_page() && is_user_logged_in() && ! is_wc_endpoint_url() ) {
+					wp_safe_redirect( wc_get_account_endpoint_url( 'orders' ) );
+					exit;
+				}
+			}
+		);
+
+		// The side navigation dresses like the header's quick menu: one card,
+		// the greeting on top, sign-out in red past a rule. The wrapper opens
+		// before the nav and closes after it so the card holds both.
+		add_action(
+			'woocommerce_before_account_navigation',
+			static function (): void {
+				$user = wp_get_current_user();
+				$name = '' !== trim( (string) $user->first_name ) ? trim( (string) $user->first_name ) : (string) $user->display_name;
+
+				echo '<div class="oc-macct-side"><p class="oc-macct-side__hi">' .
+					esc_html( sprintf( /* translators: %s: first name. */ __( 'Hello, %s', 'oc-theme' ), $name ) ) .
+					'</p>';
+			}
+		);
+		add_action(
+			'woocommerce_after_account_navigation',
+			static function (): void {
+				echo '</div>';
 			}
 		);
 
