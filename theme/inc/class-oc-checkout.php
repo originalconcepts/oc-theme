@@ -578,6 +578,7 @@ final class Checkout {
 								<?php endif; ?>
 								<span class="oc-co-addrcard__line"><?php echo esc_html( Addresses::format( $a ) ); ?></span>
 							</span>
+							<button type="button" class="oc-co-addrcard__edit" data-oc-addr-edit><?php esc_html_e( 'Edit', 'oc-theme' ); ?></button>
 						</label>
 					<?php endforeach; ?>
 					<label class="oc-co-addrcard oc-co-addrcard--new">

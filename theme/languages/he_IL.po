@@ -5219,3 +5219,27 @@ msgstr "אריזת פרטי לקוח מחובר ואפשרות לשמור כמה
 
 msgid "Don't save"
 msgstr "ללא"
+
+msgid "Make default"
+msgstr "הפוך לברירת מחדל"
+
+msgid "Add an address"
+msgstr "הוספת כתובת"
+
+msgid "A street and house number are needed."
+msgstr "יש להזין רחוב ומספר בית."
+
+msgid "Address saved."
+msgstr "הכתובת נשמרה."
+
+msgid "Address removed."
+msgstr "הכתובת הוסרה."
+
+msgid "Default address updated."
+msgstr "כתובת ברירת המחדל עודכנה."
+
+msgid "Use as my default address"
+msgstr "השתמש בכתובת זו כברירת מחדל"
+
+msgid "Save address"
+msgstr "שמירת כתובת"

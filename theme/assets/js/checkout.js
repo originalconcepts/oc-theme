@@ -1252,6 +1252,28 @@
 		/* address selector */
 		var sel = document.querySelector( '[data-oc-addrsel]' );
 		if ( sel ) {
+			// "Edit" on a saved card: keep it selected, but reveal the fields
+			// prefilled with its values so a change updates that same address.
+			sel.addEventListener( 'click', function ( e ) {
+				var ed = e.target.closest( '[data-oc-addr-edit]' );
+				if ( ! ed ) { return; }
+				e.preventDefault();
+				var card = ed.closest( '.oc-co-addrcard' );
+				var r = card.querySelector( 'input[type="radio"]' );
+				r.checked = true;
+				sel.querySelectorAll( '.oc-co-addrcard' ).forEach( function ( c ) { c.classList.toggle( 'is-on', c === card ); } );
+				root.classList.add( 'is-add-addr' );
+				var d = r.dataset;
+				setField( ADDR.city, d.city );
+				setField( ADDR.a1, d.a1 );
+				setField( ADDR.a2, d.a2 );
+				setField( ADDR.floor, d.floor );
+				setField( ADDR.entry, d.entry );
+				setLabel( d.label || 'home' );
+				var first = fld( ADDR.a1 );
+				if ( first ) { first.focus(); }
+			} );
+
 			sel.addEventListener( 'change', function ( e ) {
 				var r = e.target.closest( 'input[name="oc_addr_choice"]' );
 				if ( ! r ) { return; }

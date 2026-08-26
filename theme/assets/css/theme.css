@@ -9574,7 +9574,7 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 	gap: 12px;
 	padding: 15px 17px;
 	border: 1px solid var(--oc-line, #e5e2dd);
-	border-radius: 14px;
+	border-radius: 5px;
 	background: #fff;
 	margin-block: 8px 4px;
 }
@@ -9606,18 +9606,16 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 	display: flex !important;
 	align-items: center;
 	gap: 12px;
-	padding: 15px 17px;
+	padding: 12px 15px;
 	margin: 0;
 	border: 1px solid var(--oc-line, #d9d6d0);
-	border-radius: 14px;
+	border-radius: 5px;
 	background: #fff;
 	cursor: pointer;
-	transition: border-color .12s ease, box-shadow .12s ease;
+	transition: border-color .12s ease;
 }
-.oc-co-addrcard.is-on {
-	border-color: var(--oc-ink, #111);
-	box-shadow: inset 0 0 0 1px var(--oc-ink, #111);
-}
+/* selected: a single, softer accent border — no doubled shadow */
+.oc-co-addrcard.is-on { border-color: var(--oc-ink-2, #6b7482); }
 /* pin the radio: the theme sets input{width:100%}, which otherwise drops it
  * onto its own line above the text */
 .oc-co-addrcard input[type="radio"] {
@@ -9627,10 +9625,25 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 	margin: 0;
 	accent-color: var(--oc-ink, #111);
 }
-.oc-co-addrcard__in { display: flex; flex-direction: column; gap: 2px; min-inline-size: 0; }
-.oc-co-addrcard__label { font-weight: 600; font-size: .9rem; }
-.oc-co-addrcard__line { color: var(--oc-ink-2, #666); font-size: .85rem; }
-.oc-co-addrcard__new { font-weight: 600; font-size: .92rem; }
+.oc-co-addrcard__in { display: flex; flex-direction: column; gap: 1px; min-inline-size: 0; }
+.oc-co-addrcard__label { font-weight: 600; font-size: 1rem; }
+.oc-co-addrcard__line { color: var(--oc-ink-2, #666); font-size: .84rem; }
+.oc-co-addrcard__new { font-weight: 600; font-size: .95rem; }
+
+/* edit an existing saved address inline */
+.oc-co-addrcard__edit {
+	margin-inline-start: auto;
+	flex: none;
+	border: 0;
+	background: none;
+	color: var(--oc-ink-2, #6b7482);
+	text-decoration: underline;
+	text-underline-offset: 3px;
+	font: inherit;
+	font-size: .82rem;
+	cursor: pointer;
+}
+.oc-co-addrcard__edit:hover { color: var(--oc-ink, #111); }
 
 /* address fields fold away while a saved address is selected */
 .oc-copack-addr:not(.is-add-addr) .oc-co-addr { display: none !important; }
@@ -9657,7 +9670,7 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 	inline-size: 100%;
 	max-inline-size: 260px;
 	border: 1px solid var(--oc-line, #d9d6d0);
-	border-radius: 12px;
+	border-radius: 5px;
 	background: #fff;
 	color: var(--oc-ink, #111);
 	padding-inline: 13px;
@@ -12423,6 +12436,110 @@ html[dir="rtl"] .oc-bye { translate: 50% 0; }
 }
 .woocommerce-MyAccount-content .woocommerce-Address-title .edit:hover { color: var(--oc-ink, #111); }
 
+/* ---------- address book (my-account management) ---------- */
+.oc-abook__grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+	gap: 14px;
+}
+.oc-abook__card {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	padding: 16px 17px;
+	border: 1px solid var(--oc-line, #e5e2dd);
+	border-radius: 5px;
+	background: #fff;
+}
+.oc-abook__card.is-default { border-color: var(--oc-ink-2, #6b7482); }
+.oc-abook__top { display: flex; align-items: center; gap: 8px; }
+.oc-abook__label { font-weight: 600; font-size: 1rem; }
+.oc-abook__pill {
+	font-size: .7rem;
+	font-weight: 600;
+	letter-spacing: .02em;
+	color: var(--oc-ink-2, #6b7482);
+	border: 1px solid var(--oc-line, #e5e2dd);
+	border-radius: 999px;
+	padding: 2px 9px;
+}
+.oc-abook__line { margin: 0; color: var(--oc-ink-2, #666); font-size: .88rem; line-height: 1.6; flex: 1; }
+.oc-abook__acts { display: flex; flex-wrap: wrap; gap: 14px; margin-block-start: 4px; }
+.oc-abook__act {
+	font-size: .84rem;
+	color: var(--oc-ink-2, #6b7482);
+	text-decoration: underline;
+	text-underline-offset: 3px;
+}
+.oc-abook__act:hover { color: var(--oc-ink, #111); }
+.oc-abook__act--del:hover { color: var(--oc-sale, #b4453c); }
+.oc-abook__add {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	min-block-size: 120px;
+	border: 1px dashed color-mix(in srgb, var(--oc-ink, #151a21) 26%, transparent);
+	border-radius: 5px;
+	color: var(--oc-ink-2, #6b7482);
+	text-decoration: none;
+	font-weight: 600;
+	font-size: .9rem;
+	transition: border-color .12s ease, color .12s ease;
+}
+.oc-abook__add:hover { border-color: var(--oc-ink, #111); color: var(--oc-ink, #111); }
+.oc-abook__add-plus { font-size: 1.5rem; line-height: 1; }
+
+/* the add / edit form */
+.oc-abook__form { max-inline-size: 520px; }
+.oc-abook__chips { display: flex; flex-wrap: wrap; gap: 7px; margin-block-end: 10px; }
+.oc-abook__custom {
+	display: block;
+	block-size: 44px;
+	inline-size: 100%;
+	max-inline-size: 260px;
+	margin-block-end: 14px;
+	border: 1px solid var(--oc-line, #d9d6d0);
+	border-radius: 5px;
+	background: #fff;
+	color: var(--oc-ink, #111);
+	padding-inline: 13px;
+	font: inherit;
+}
+.oc-abook__row { display: flex; flex-direction: column; gap: 5px; margin: 0 0 12px; }
+.oc-abook__row label { font-size: .84rem; color: var(--oc-ink-2, #6b7482); }
+.oc-abook__row input {
+	block-size: 46px;
+	border: 1px solid var(--oc-line, #d9d6d0);
+	border-radius: 5px;
+	background: #fff;
+	color: var(--oc-ink, #111);
+	padding-inline: 13px;
+	font: inherit;
+}
+.oc-abook__grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.oc-abook__def { display: flex; align-items: center; gap: 8px; margin: 4px 0 18px; cursor: pointer; }
+.oc-abook__def input { inline-size: 18px; block-size: 18px; accent-color: var(--oc-ink, #111); }
+.oc-abook__formacts { display: flex; align-items: center; gap: 16px; }
+.oc-abook__save {
+	block-size: 48px;
+	padding-inline: 26px;
+	border: 0;
+	border-radius: 5px;
+	background: var(--oc-cta, var(--oc-primary, #111));
+	color: #fff;
+	font: inherit;
+	font-weight: 700;
+	cursor: pointer;
+}
+.oc-abook__cancel { font-size: .88rem; color: var(--oc-ink-2, #6b7482); text-decoration: underline; text-underline-offset: 3px; }
+.oc-abook__cancel:hover { color: var(--oc-ink, #111); }
+
+@media (max-width: 560px) {
+	.oc-abook__grid3 { grid-template-columns: 1fr 1fr; }
+}
+
 /* Everything in an address block reads from the start edge. */
 .woocommerce-MyAccount-content .woocommerce-Address,
 .woocommerce-MyAccount-content .woocommerce-Address address,
@@ -12480,7 +12597,7 @@ p.no-comments {
  * corners (its radius tokens are 0), on a clean white ground */
 .oc-colog {
 	border: 1px solid var(--oc-line, #e5e2dd);
-	border-radius: 16px;
+	border-radius: 5px;
 	background: #fff;
 	margin-block-end: 22px;
 	overflow: hidden;
@@ -12545,7 +12662,7 @@ p.no-comments {
 	flex: 1;
 	block-size: 50px;
 	border: 1px solid var(--oc-line, #d9d6d0);
-	border-radius: 12px;
+	border-radius: 5px;
 	background: #fff;
 	color: var(--oc-ink, #111);
 	padding-inline: 15px;
@@ -12556,7 +12673,7 @@ p.no-comments {
 	block-size: 50px;
 	padding-inline: 22px;
 	border: 0;
-	border-radius: 12px;
+	border-radius: 5px;
 	background: var(--oc-cta, var(--oc-primary, #111));
 	color: #fff;
 	font: inherit;
@@ -12572,7 +12689,7 @@ p.no-comments {
 	flex: 1;
 	block-size: 48px;
 	border: 1px solid var(--oc-line, #d9d6d0);
-	border-radius: 12px;
+	border-radius: 5px;
 	background: #fff;
 	color: var(--oc-ink, #111);
 	display: flex;
@@ -12630,7 +12747,7 @@ p.no-comments {
 	text-align: center;
 	font-size: 1.2rem;
 	border: 1px solid var(--oc-line, #d9d6d0);
-	border-radius: 12px;
+	border-radius: 5px;
 	background: #fff;
 	color: var(--oc-ink, #111);
 }
@@ -12639,7 +12756,7 @@ p.no-comments {
 .oc-colog__emailform input {
 	block-size: 48px;
 	border: 1px solid var(--oc-line, #d9d6d0);
-	border-radius: 12px;
+	border-radius: 5px;
 	background: #fff;
 	color: var(--oc-ink, #111);
 	padding-inline: 13px;
@@ -12648,7 +12765,7 @@ p.no-comments {
 .oc-colog__emailform button {
 	block-size: 48px;
 	border: 0;
-	border-radius: 12px;
+	border-radius: 5px;
 	background: var(--oc-cta, var(--oc-primary, #111));
 	color: #fff;
 	font: inherit;

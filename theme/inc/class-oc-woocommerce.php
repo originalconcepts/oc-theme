@@ -123,6 +123,20 @@ final class WooCommerce {
 			}
 		);
 
+		// The address book takes over the "Addresses" screen when the feature
+		// is on: our card grid + editor instead of Woo's billing/shipping
+		// forms. Edits here and edits at checkout write the same user meta.
+		if ( Addresses::enabled() ) {
+			add_action( 'template_redirect', array( Addresses::class, 'handle_account' ), 5 );
+			add_action(
+				'wp',
+				static function (): void {
+					remove_action( 'woocommerce_account_edit-address_endpoint', 'woocommerce_account_edit_address' );
+					add_action( 'woocommerce_account_edit-address_endpoint', array( Addresses::class, 'render_account' ) );
+				}
+			);
+		}
+
 		// /my-account/ itself lands on the orders, not on an empty dashboard.
 		// Matched by PATH, not by is_wc_endpoint_url() — custom endpoints
 		// (stock alerts and friends) are invisible to that check and were

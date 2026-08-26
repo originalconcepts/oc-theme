@@ -307,4 +307,190 @@ final class Addresses {
 
 		return false;
 	}
+
+	/* ---------------------------------------------- my-account management */
+
+	/**
+	 * The base URL of the addresses screen.
+	 */
+	private static function account_url(): string {
+		return function_exists( 'wc_get_account_endpoint_url' )
+			? (string) wc_get_account_endpoint_url( 'edit-address' )
+			: '';
+	}
+
+	/**
+	 * Process a save / delete / set-default before anything renders.
+	 */
+	public static function handle_account(): void {
+		if ( ! is_user_logged_in() || ! self::enabled() || ! function_exists( 'wc_add_notice' ) ) {
+			return;
+		}
+
+		$uid = get_current_user_id();
+
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- each branch verifies its own nonce below.
+		if ( isset( $_POST['oc_addr_save'] ) && check_admin_referer( 'oc_addr_save' ) ) {
+			$street = sanitize_text_field( wp_unslash( $_POST['address_1'] ?? '' ) );
+
+			if ( '' === trim( $street ) ) {
+				wc_add_notice( __( 'A street and house number are needed.', 'oc-theme' ), 'error' );
+			} else {
+				self::save(
+					$uid,
+					array(
+						'id'         => sanitize_text_field( wp_unslash( $_POST['oc_addr_id'] ?? '' ) ),
+						'label'      => sanitize_text_field( wp_unslash( $_POST['label'] ?? '' ) ),
+						'city'       => sanitize_text_field( wp_unslash( $_POST['city'] ?? '' ) ),
+						'address_1'  => $street,
+						'address_2'  => sanitize_text_field( wp_unslash( $_POST['address_2'] ?? '' ) ),
+						'floor'      => sanitize_text_field( wp_unslash( $_POST['floor'] ?? '' ) ),
+						'entry'      => sanitize_text_field( wp_unslash( $_POST['entry'] ?? '' ) ),
+						'is_default' => ! empty( $_POST['is_default'] ),
+					)
+				);
+				wc_add_notice( __( 'Address saved.', 'oc-theme' ) );
+				wp_safe_redirect( self::account_url() );
+				exit;
+			}
+		}
+
+		if ( isset( $_GET['oc_addr_del'] ) && isset( $_GET['_wpnonce'] )
+			&& wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'oc_addr_del' ) ) {
+			self::delete( $uid, sanitize_text_field( wp_unslash( $_GET['oc_addr_del'] ) ) );
+			wc_add_notice( __( 'Address removed.', 'oc-theme' ) );
+			wp_safe_redirect( self::account_url() );
+			exit;
+		}
+
+		if ( isset( $_GET['oc_addr_def'] ) && isset( $_GET['_wpnonce'] )
+			&& wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'oc_addr_def' ) ) {
+			self::set_default( $uid, sanitize_text_field( wp_unslash( $_GET['oc_addr_def'] ) ) );
+			wc_add_notice( __( 'Default address updated.', 'oc-theme' ) );
+			wp_safe_redirect( self::account_url() );
+			exit;
+		}
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+	}
+
+	/**
+	 * Render the addresses screen in place of Woo's billing/shipping forms.
+	 */
+	public static function render_account(): void {
+		$uid = get_current_user_id();
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display-only routing.
+		$editing = isset( $_GET['oc_addr'] ) ? sanitize_text_field( wp_unslash( $_GET['oc_addr'] ) ) : '';
+
+		if ( '' !== $editing ) {
+			self::render_form( $uid, $editing );
+			return;
+		}
+
+		$book = self::book( $uid );
+		?>
+		<div class="oc-abook">
+			<div class="oc-abook__grid">
+				<?php foreach ( $book as $a ) : ?>
+					<?php
+					$id      = (string) ( $a['id'] ?? '' );
+					$is_def  = ! empty( $a['is_default'] );
+					$del_url = wp_nonce_url( add_query_arg( 'oc_addr_del', $id, self::account_url() ), 'oc_addr_del' );
+					$def_url = wp_nonce_url( add_query_arg( 'oc_addr_def', $id, self::account_url() ), 'oc_addr_def' );
+					$edit    = add_query_arg( 'oc_addr', $id, self::account_url() );
+					?>
+					<div class="oc-abook__card<?php echo $is_def ? ' is-default' : ''; ?>">
+						<div class="oc-abook__top">
+							<span class="oc-abook__label"><?php echo esc_html( self::label_text( (string) ( $a['label'] ?? '' ) ) ); ?></span>
+							<?php if ( $is_def ) : ?>
+								<span class="oc-abook__pill"><?php esc_html_e( 'Default', 'oc-theme' ); ?></span>
+							<?php endif; ?>
+						</div>
+						<p class="oc-abook__line"><?php echo esc_html( self::format( $a ) ); ?></p>
+						<div class="oc-abook__acts">
+							<a class="oc-abook__act" href="<?php echo esc_url( $edit ); ?>"><?php esc_html_e( 'Edit', 'oc-theme' ); ?></a>
+							<?php if ( ! $is_def ) : ?>
+								<a class="oc-abook__act" href="<?php echo esc_url( $def_url ); ?>"><?php esc_html_e( 'Make default', 'oc-theme' ); ?></a>
+								<a class="oc-abook__act oc-abook__act--del" href="<?php echo esc_url( $del_url ); ?>"><?php esc_html_e( 'Remove', 'oc-theme' ); ?></a>
+							<?php endif; ?>
+						</div>
+					</div>
+				<?php endforeach; ?>
+
+				<a class="oc-abook__add" href="<?php echo esc_url( add_query_arg( 'oc_addr', 'new', self::account_url() ) ); ?>">
+					<span class="oc-abook__add-plus" aria-hidden="true">＋</span>
+					<span><?php esc_html_e( 'Add an address', 'oc-theme' ); ?></span>
+				</a>
+			</div>
+		</div>
+		<?php
+	}
+
+	/**
+	 * The add / edit form.
+	 *
+	 * @param int    $uid User id.
+	 * @param string $id  Address id, or 'new'.
+	 */
+	private static function render_form( int $uid, string $id ): void {
+		$addr    = 'new' === $id ? array() : ( self::get( $uid, $id ) ?? array() );
+		$current = (string) ( $addr['label'] ?? 'home' );
+		if ( '' === $current || ! array_key_exists( $current, self::labels() ) ) {
+			$custom  = '' !== (string) ( $addr['label'] ?? '' ) && ! array_key_exists( (string) $addr['label'], self::labels() );
+			$current = $custom ? 'custom' : 'home';
+		}
+		$val = static function ( $k ) use ( $addr ) {
+			return esc_attr( (string) ( $addr[ $k ] ?? '' ) );
+		};
+		?>
+		<div class="oc-abook oc-abook--form">
+			<form method="post" class="oc-abook__form" data-oc-abook-form novalidate>
+				<?php wp_nonce_field( 'oc_addr_save' ); ?>
+				<input type="hidden" name="oc_addr_id" value="<?php echo esc_attr( 'new' === $id ? '' : $id ); ?>" />
+
+				<div class="oc-abook__chips" data-oc-abook-chips>
+					<?php foreach ( self::labels() as $key => $text ) : ?>
+						<button type="button" class="oc-co-chip<?php echo $key === $current ? ' is-on' : ''; ?>" data-oc-chip="<?php echo esc_attr( $key ); ?>"><?php echo esc_html( $text ); ?></button>
+					<?php endforeach; ?>
+					<button type="button" class="oc-co-chip<?php echo 'custom' === $current ? ' is-on' : ''; ?>" data-oc-chip="custom"><?php esc_html_e( 'Other…', 'oc-theme' ); ?></button>
+				</div>
+				<input type="text" class="oc-abook__custom" data-oc-chip-input placeholder="<?php esc_attr_e( 'Label — e.g. Grandma', 'oc-theme' ); ?>" value="<?php echo 'custom' === $current ? $val( 'label' ) : ''; ?>" <?php echo 'custom' === $current ? '' : 'hidden'; ?> />
+				<input type="hidden" name="label" data-oc-abook-label value="<?php echo 'custom' === $current ? $val( 'label' ) : esc_attr( $current ); ?>" />
+
+				<p class="oc-abook__row">
+					<label for="oc_ab_a1"><?php esc_html_e( 'Street and house number', 'oc-theme' ); ?></label>
+					<input type="text" id="oc_ab_a1" name="address_1" value="<?php echo $val( 'address_1' ); ?>" />
+				</p>
+				<p class="oc-abook__row">
+					<label for="oc_ab_city"><?php esc_html_e( 'City', 'oc-theme' ); ?></label>
+					<input type="text" id="oc_ab_city" name="city" value="<?php echo $val( 'city' ); ?>" />
+				</p>
+				<div class="oc-abook__grid3">
+					<p class="oc-abook__row">
+						<label for="oc_ab_a2"><?php esc_html_e( 'Apartment', 'oc-theme' ); ?></label>
+						<input type="text" id="oc_ab_a2" name="address_2" value="<?php echo $val( 'address_2' ); ?>" />
+					</p>
+					<p class="oc-abook__row">
+						<label for="oc_ab_floor"><?php esc_html_e( 'Floor', 'oc-theme' ); ?></label>
+						<input type="text" id="oc_ab_floor" name="floor" value="<?php echo $val( 'floor' ); ?>" />
+					</p>
+					<p class="oc-abook__row">
+						<label for="oc_ab_entry"><?php esc_html_e( 'Entry code', 'oc-theme' ); ?></label>
+						<input type="text" id="oc_ab_entry" name="entry" value="<?php echo $val( 'entry' ); ?>" />
+					</p>
+				</div>
+
+				<label class="oc-abook__def">
+					<input type="checkbox" name="is_default" value="1" <?php checked( ! empty( $addr['is_default'] ) || 'new' === $id ); ?> />
+					<span><?php esc_html_e( 'Use as my default address', 'oc-theme' ); ?></span>
+				</label>
+
+				<div class="oc-abook__formacts">
+					<button type="submit" name="oc_addr_save" value="1" class="oc-abook__save"><?php esc_html_e( 'Save address', 'oc-theme' ); ?></button>
+					<a class="oc-abook__cancel" href="<?php echo esc_url( self::account_url() ); ?>"><?php esc_html_e( 'Cancel', 'oc-theme' ); ?></a>
+				</div>
+			</form>
+		</div>
+		<?php
+	}
 }

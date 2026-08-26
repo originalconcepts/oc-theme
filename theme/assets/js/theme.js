@@ -7678,3 +7678,35 @@
 		if ( e.target.matches( 'select' ) ) { fill( e.target ); }
 	} );
 }() );
+
+/* -- address-book form: label chips (my-account) -- */
+( function () {
+	var chips = document.querySelector( '[data-oc-abook-chips]' );
+	if ( ! chips ) { return; }
+
+	var form = chips.closest( '[data-oc-abook-form]' );
+	var custom = form.querySelector( '[data-oc-chip-input]' );
+	var hidden = form.querySelector( '[data-oc-abook-label]' );
+
+	chips.addEventListener( 'click', function ( e ) {
+		var chip = e.target.closest( '[data-oc-chip]' );
+		if ( ! chip ) { return; }
+		chips.querySelectorAll( '[data-oc-chip]' ).forEach( function ( c ) { c.classList.remove( 'is-on' ); } );
+		chip.classList.add( 'is-on' );
+
+		if ( 'custom' === chip.dataset.ocChip ) {
+			if ( custom ) {
+				custom.hidden = false;
+				custom.focus();
+				if ( hidden ) { hidden.value = custom.value.trim(); }
+			}
+		} else {
+			if ( custom ) { custom.hidden = true; }
+			if ( hidden ) { hidden.value = chip.dataset.ocChip; }
+		}
+	} );
+
+	if ( custom && hidden ) {
+		custom.addEventListener( 'input', function () { hidden.value = custom.value.trim(); } );
+	}
+}() );
