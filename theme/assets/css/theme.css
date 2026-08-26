@@ -12061,14 +12061,16 @@ html[dir="rtl"] .oc-bye { translate: 50% 0; }
 	.woocommerce-MyAccount-content table.shop_table_responsive td::before { display: none; }
 }
 
-/* -- the side card -- */
+/* -- the side card (desktop; the mobile media query above wins on phones) -- */
 
-.oc-macct-side {
-	border: 1px solid var(--oc-line, #e5e2dd);
-	border-radius: 12px;
-	padding: 8px;
-	position: sticky;
-	inset-block-start: 90px;
+@media (min-width: 901px) {
+	.oc-macct-side {
+		border: 1px solid var(--oc-line, #e5e2dd);
+		border-radius: 12px;
+		padding: 8px;
+		position: sticky;
+		inset-block-start: 90px;
+	}
 }
 
 .oc-macct-side__hi {
