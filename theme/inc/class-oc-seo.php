@@ -639,25 +639,21 @@ final class Seo {
 	 * @param array<string,mixed> $robots Current directives.
 	 */
 	public function robots( $robots ) {
-		if ( self::is_noindex() ) {
+		$noindex = self::is_noindex()
+			|| ( (int) get_query_var( 'paged' ) > 1 && ! empty( self::settings()['paged_noindex'] ) );
+
+		if ( $noindex ) {
+			// Always the clean pair — core may have piled nofollow on top.
 			$robots['noindex'] = true;
 			$robots['follow']  = true;
-			unset( $robots['index'] );
+			unset( $robots['index'], $robots['nofollow'] );
 		} else {
 			$robots['max-image-preview:large'] = true;
 		}
 
-		$object = self::subject();
-
-		if ( '1' === self::field( $object, '_ocseo_nofollow' ) ) {
+		if ( '1' === self::field( self::subject(), '_ocseo_nofollow' ) ) {
 			$robots['nofollow'] = true;
 			unset( $robots['follow'] );
-		}
-
-		if ( (int) get_query_var( 'paged' ) > 1 && ! empty( self::settings()['paged_noindex'] ) ) {
-			$robots['noindex'] = true;
-			$robots['follow']  = true;
-			unset( $robots['index'] );
 		}
 
 		return $robots;
@@ -768,6 +764,16 @@ final class Seo {
 	 * @param int      $index         Position in a gallery, 1-based (0 = unknown).
 	 */
 	public static function alt_for( int $attachment_id, int $parent_id = 0, int $index = 0 ): string {
+		// The same picture shown twice on one page (thumbnail + zoom) keeps
+		// one description — only different pictures need differentiating.
+		static $memo = array();
+
+		$memo_key = $attachment_id . ':' . $parent_id;
+
+		if ( $attachment_id > 0 && isset( $memo[ $memo_key ] ) ) {
+			return $memo[ $memo_key ];
+		}
+
 		$settings = self::settings();
 
 		$manual = trim( (string) get_post_meta( $attachment_id, '_wp_attachment_image_alt', true ) );
@@ -855,6 +861,10 @@ final class Seo {
 		}
 
 		self::$spoken[ $alt ] = true;
+
+		if ( $attachment_id > 0 ) {
+			$memo[ $memo_key ] = $alt;
+		}
 
 		return $alt;
 	}
