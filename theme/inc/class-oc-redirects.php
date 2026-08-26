@@ -305,17 +305,15 @@ final class Redirects {
 			exit;
 		}
 
-		$target = self::resolve_chain( (string) $rule['t'] );
+		$target = self::to_url( self::resolve_chain( (string) $rule['t'] ) );
 
 		// The visitor's own parameters travel along (UTM already stripped
 		// from the comparison, but the original request keeps them all).
 		$query = (string) wp_parse_url( $request, PHP_URL_QUERY );
 
-		if ( '' !== $query && false === strpos( $target, '?' ) ) {
+		if ( '' !== $query && '' !== $target && false === strpos( $target, '?' ) ) {
 			$target .= '?' . $query;
 		}
-
-		$target = self::to_url( $target );
 
 		if ( '' === $target || self::normalize( $target ) === strtok( $path, '?' ) ) {
 			return; // A rule pointing at itself is a rule ignored.
