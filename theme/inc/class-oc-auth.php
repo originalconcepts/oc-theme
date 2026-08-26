@@ -33,7 +33,7 @@ final class Auth {
 	public function register(): void {
 		$on = self::settings();
 
-		if ( empty( $on['sms_on'] ) && empty( $on['google_on'] ) ) {
+		if ( empty( $on['sms_on'] ) && empty( $on['google_on'] ) && empty( $on['fb_on'] ) && empty( $on['apple_on'] ) ) {
 			return; // Nothing enabled — the account icon behaves as always.
 		}
 
@@ -49,6 +49,14 @@ final class Auth {
 		add_action( 'admin_post_oc_auth_google', array( $this, 'google_start' ) );
 		add_action( 'admin_post_nopriv_oc_auth_google_cb', array( $this, 'google_back' ) );
 		add_action( 'admin_post_oc_auth_google_cb', array( $this, 'google_back' ) );
+		add_action( 'admin_post_nopriv_oc_auth_fb', array( $this, 'fb_start' ) );
+		add_action( 'admin_post_oc_auth_fb', array( $this, 'fb_start' ) );
+		add_action( 'admin_post_nopriv_oc_auth_fb_cb', array( $this, 'fb_back' ) );
+		add_action( 'admin_post_oc_auth_fb_cb', array( $this, 'fb_back' ) );
+		add_action( 'admin_post_nopriv_oc_auth_apple', array( $this, 'apple_start' ) );
+		add_action( 'admin_post_oc_auth_apple', array( $this, 'apple_start' ) );
+		add_action( 'admin_post_nopriv_oc_auth_apple_cb', array( $this, 'apple_back' ) );
+		add_action( 'admin_post_oc_auth_apple_cb', array( $this, 'apple_back' ) );
 	}
 
 	/**
@@ -79,6 +87,10 @@ final class Auth {
 				'fb_id'           => '',
 				'fb_secret'       => '',
 				'apple_on'        => 0,
+				'apple_client_id' => '',
+				'apple_team_id'   => '',
+				'apple_key_id'    => '',
+				'apple_key'       => '',
 			)
 		);
 	}
@@ -641,6 +653,349 @@ final class Auth {
 	}
 
 	/*
+	 * ----------------------------------------------------- facebook, apple
+	 */
+
+	/**
+	 * A signed-in social identity becomes a session: link by the provider's
+	 * own id first, then by a verified email, and open an account otherwise.
+	 *
+	 * @param string $meta_key Provider id meta key.
+	 * @param string $provider_id The provider's stable id.
+	 * @param string $email    Email, may be ''.
+	 * @param string $first    First name.
+	 * @param string $last     Last name.
+	 * @param string $prefix   Login prefix for a fresh account.
+	 * @param string $back     Where to land.
+	 */
+	private function finish_social( string $meta_key, string $provider_id, string $email, string $first, string $last, string $prefix, string $back ): void {
+		$found = get_users(
+			array(
+				'meta_key'   => $meta_key, // phpcs:ignore WordPress.DB.SlowDBQuery
+				'meta_value' => $provider_id, // phpcs:ignore WordPress.DB.SlowDBQuery
+				'number'     => 1,
+			)
+		);
+		$user  = ! empty( $found ) ? $found[0] : ( '' !== $email ? get_user_by( 'email', $email ) : false );
+
+		if ( ! $user ) {
+			$user_id = wp_insert_user(
+				array(
+					'user_login' => $prefix . substr( md5( $meta_key . $provider_id ), 0, 12 ),
+					'user_pass'  => wp_generate_password( 24 ),
+					'user_email' => $email,
+					'first_name' => $first,
+					'last_name'  => $last,
+					'role'       => class_exists( 'WooCommerce' ) ? 'customer' : 'subscriber',
+				)
+			);
+
+			if ( is_wp_error( $user_id ) ) {
+				wp_safe_redirect( $back );
+				exit;
+			}
+
+			$user = get_user_by( 'id', (int) $user_id );
+		}
+
+		update_user_meta( $user->ID, $meta_key, $provider_id );
+		wp_set_auth_cookie( $user->ID, true );
+		wp_safe_redirect( '' !== $back ? $back : home_url( '/' ) );
+		exit;
+	}
+
+	/**
+	 * Mint the state + return cookies for an outgoing social hop.
+	 *
+	 * @param bool $cross_post True when the answer arrives as a cross-site
+	 *                         POST (Apple) — the cookie must say SameSite=None
+	 *                         or the browser will keep it to itself.
+	 * @return string The state.
+	 */
+	private function state_out( bool $cross_post = false ): string {
+		$state = wp_generate_password( 24, false );
+		$opts  = array(
+			'expires'  => time() + 600,
+			'path'     => '/',
+			'secure'   => is_ssl(),
+			'httponly' => true,
+			'samesite' => $cross_post ? 'None' : 'Lax',
+		);
+
+		setcookie( 'oc_auth_state', $state, $opts );
+		setcookie( 'oc_auth_back', esc_url_raw( (string) wp_get_referer() ), $opts );
+
+		return $state;
+	}
+
+	/**
+	 * Off to Facebook.
+	 */
+	public function fb_start(): void {
+		$s = self::settings();
+
+		if ( empty( $s['fb_on'] ) || '' === (string) $s['fb_id'] ) {
+			wp_safe_redirect( home_url( '/' ) );
+			exit;
+		}
+
+		wp_redirect( add_query_arg( // phpcs:ignore WordPress.Security.SafeRedirect
+			array(
+				'client_id'     => rawurlencode( (string) $s['fb_id'] ),
+				'redirect_uri'  => rawurlencode( admin_url( 'admin-post.php?action=oc_auth_fb_cb' ) ),
+				'response_type' => 'code',
+				'scope'         => rawurlencode( 'email,public_profile' ),
+				'state'         => $this->state_out(),
+			),
+			'https://www.facebook.com/v19.0/dialog/oauth'
+		) );
+		exit;
+	}
+
+	/**
+	 * Back from Facebook: code for a token, token for a profile.
+	 */
+	public function fb_back(): void {
+		$s     = self::settings();
+		$state = (string) ( $_COOKIE['oc_auth_state'] ?? '' );
+		$back  = (string) ( $_COOKIE['oc_auth_back'] ?? home_url( '/' ) );
+
+		setcookie( 'oc_auth_state', '', time() - 100, '/', '', is_ssl(), true );
+
+		if ( '' === $state || $state !== (string) ( $_GET['state'] ?? '' ) || empty( $_GET['code'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			wp_safe_redirect( $back );
+			exit;
+		}
+
+		$token_res = wp_remote_get(
+			add_query_arg(
+				array(
+					'client_id'     => rawurlencode( (string) $s['fb_id'] ),
+					'client_secret' => rawurlencode( (string) $s['fb_secret'] ),
+					'redirect_uri'  => rawurlencode( admin_url( 'admin-post.php?action=oc_auth_fb_cb' ) ),
+					'code'          => rawurlencode( sanitize_text_field( (string) wp_unslash( $_GET['code'] ) ) ), // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				),
+				'https://graph.facebook.com/v19.0/oauth/access_token'
+			),
+			array( 'timeout' => 15 )
+		);
+
+		$token = json_decode( (string) wp_remote_retrieve_body( $token_res ), true );
+		$token = is_array( $token ) ? (string) ( $token['access_token'] ?? '' ) : '';
+
+		if ( '' === $token ) {
+			wp_safe_redirect( $back );
+			exit;
+		}
+
+		$me_res = wp_remote_get(
+			'https://graph.facebook.com/v19.0/me?fields=id,first_name,last_name,email&access_token=' . rawurlencode( $token ),
+			array( 'timeout' => 15 )
+		);
+
+		$me = json_decode( (string) wp_remote_retrieve_body( $me_res ), true );
+		$me = is_array( $me ) ? $me : array();
+		$id = (string) ( $me['id'] ?? '' );
+
+		if ( '' === $id ) {
+			wp_safe_redirect( $back );
+			exit;
+		}
+
+		// A Facebook account may carry no email at all (phone signups, or
+		// permission declined) — the account still opens, anchored to the id.
+		$this->finish_social(
+			'oc_fb_id',
+			$id,
+			sanitize_email( (string) ( $me['email'] ?? '' ) ),
+			sanitize_text_field( (string) ( $me['first_name'] ?? '' ) ),
+			sanitize_text_field( (string) ( $me['last_name'] ?? '' ) ),
+			'f',
+			$back
+		);
+	}
+
+	/**
+	 * Off to Apple. Asking for name/email obliges response_mode=form_post,
+	 * so the answer arrives as a cross-site POST — the state cookie says
+	 * SameSite=None for exactly that reason.
+	 */
+	public function apple_start(): void {
+		$s = self::settings();
+
+		if ( empty( $s['apple_on'] ) || '' === (string) $s['apple_client_id'] ) {
+			wp_safe_redirect( home_url( '/' ) );
+			exit;
+		}
+
+		wp_redirect( add_query_arg( // phpcs:ignore WordPress.Security.SafeRedirect
+			array(
+				'client_id'     => rawurlencode( (string) $s['apple_client_id'] ),
+				'redirect_uri'  => rawurlencode( admin_url( 'admin-post.php?action=oc_auth_apple_cb' ) ),
+				'response_type' => 'code',
+				'response_mode' => 'form_post',
+				'scope'         => rawurlencode( 'name email' ),
+				'state'         => $this->state_out( true ),
+			),
+			'https://appleid.apple.com/auth/authorize'
+		) );
+		exit;
+	}
+
+	/**
+	 * Back from Apple: a POSTed code, exchanged with the signed JWT that
+	 * stands in for a client secret; the id_token straight off Apple's own
+	 * token endpoint carries the identity.
+	 */
+	public function apple_back(): void {
+		$s     = self::settings();
+		$state = (string) ( $_COOKIE['oc_auth_state'] ?? '' );
+		$back  = (string) ( $_COOKIE['oc_auth_back'] ?? home_url( '/' ) );
+
+		setcookie( 'oc_auth_state', '', time() - 100, '/', '', is_ssl(), true );
+
+		if ( '' === $state || $state !== (string) ( $_POST['state'] ?? '' ) || empty( $_POST['code'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			wp_safe_redirect( $back );
+			exit;
+		}
+
+		$secret = $this->apple_secret();
+
+		if ( '' === $secret ) {
+			wp_safe_redirect( $back );
+			exit;
+		}
+
+		$token_res = wp_remote_post(
+			'https://appleid.apple.com/auth/token',
+			array(
+				'timeout' => 15,
+				'body'    => array(
+					'client_id'     => (string) $s['apple_client_id'],
+					'client_secret' => $secret,
+					'code'          => sanitize_text_field( (string) wp_unslash( $_POST['code'] ) ), // phpcs:ignore WordPress.Security.NonceVerification.Missing
+					'grant_type'    => 'authorization_code',
+					'redirect_uri'  => admin_url( 'admin-post.php?action=oc_auth_apple_cb' ),
+				),
+			)
+		);
+
+		$body     = json_decode( (string) wp_remote_retrieve_body( $token_res ), true );
+		$id_token = is_array( $body ) ? (string) ( $body['id_token'] ?? '' ) : '';
+		$parts    = explode( '.', $id_token );
+
+		if ( 3 !== count( $parts ) ) {
+			wp_safe_redirect( $back );
+			exit;
+		}
+
+		// The token came to us directly from Apple over TLS in exchange for
+		// our signed secret — parsing suffices, no JWKS trip needed.
+		$claims = json_decode( (string) base64_decode( strtr( $parts[1], '-_', '+/' ) . str_repeat( '=', ( 4 - strlen( $parts[1] ) % 4 ) % 4 ) ), true );
+		$claims = is_array( $claims ) ? $claims : array();
+		$sub    = (string) ( $claims['sub'] ?? '' );
+
+		if ( '' === $sub || ( $claims['aud'] ?? '' ) !== (string) $s['apple_client_id'] || 'https://appleid.apple.com' !== (string) ( $claims['iss'] ?? '' ) ) {
+			wp_safe_redirect( $back );
+			exit;
+		}
+
+		// The name travels only on the very first authorisation, as a
+		// POSTed JSON blob beside the code.
+		$first = '';
+		$last  = '';
+
+		if ( ! empty( $_POST['user'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			$blob = json_decode( (string) wp_unslash( $_POST['user'] ), true ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+
+			if ( is_array( $blob ) ) {
+				$first = sanitize_text_field( (string) ( $blob['name']['firstName'] ?? '' ) );
+				$last  = sanitize_text_field( (string) ( $blob['name']['lastName'] ?? '' ) );
+			}
+		}
+
+		$this->finish_social(
+			'oc_apple_sub',
+			$sub,
+			sanitize_email( (string) ( $claims['email'] ?? '' ) ),
+			$first,
+			$last,
+			'a',
+			$back
+		);
+	}
+
+	/**
+	 * Apple's client secret is not a string off a dashboard — it is a JWT
+	 * we sign ourselves with the downloaded .p8 key, ES256.
+	 */
+	private function apple_secret(): string {
+		$s   = self::settings();
+		$key = openssl_pkey_get_private( (string) $s['apple_key'] );
+
+		if ( false === $key ) {
+			return '';
+		}
+
+		$header  = self::b64url( (string) wp_json_encode( array(
+			'alg' => 'ES256',
+			'kid' => (string) $s['apple_key_id'],
+		) ) );
+		$payload = self::b64url( (string) wp_json_encode( array(
+			'iss' => (string) $s['apple_team_id'],
+			'iat' => time(),
+			'exp' => time() + HOUR_IN_SECONDS,
+			'aud' => 'https://appleid.apple.com',
+			'sub' => (string) $s['apple_client_id'],
+		) ) );
+
+		$der = '';
+
+		if ( ! openssl_sign( $header . '.' . $payload, $der, $key, OPENSSL_ALGO_SHA256 ) ) {
+			return '';
+		}
+
+		return $header . '.' . $payload . '.' . self::b64url( self::der_to_raw( $der ) );
+	}
+
+	/**
+	 * Base64url, the JWT dialect.
+	 *
+	 * @param string $bin Raw bytes.
+	 */
+	private static function b64url( string $bin ): string {
+		return rtrim( strtr( base64_encode( $bin ), '+/', '-_' ), '=' );
+	}
+
+	/**
+	 * openssl hands ES256 signatures back as DER; a JWT wants the two bare
+	 * 32-byte integers side by side.
+	 *
+	 * @param string $der DER-encoded ECDSA signature.
+	 */
+	private static function der_to_raw( string $der ): string {
+		$offset = 2;
+
+		if ( ord( $der[1] ) > 0x80 ) {
+			$offset += ord( $der[1] ) - 0x80;
+		}
+
+		$out = '';
+
+		for ( $i = 0; $i < 2; $i++ ) {
+			$offset++; // 0x02, the INTEGER tag.
+			$len    = ord( $der[ $offset ] );
+			$offset++;
+			$int    = substr( $der, $offset, $len );
+			$offset += $len;
+			$int    = ltrim( $int, "\x00" );
+			$out   .= str_pad( $int, 32, "\x00", STR_PAD_LEFT );
+		}
+
+		return $out;
+	}
+
+	/*
 	 * -------------------------------------------------------------- panel
 	 */
 
@@ -707,15 +1062,29 @@ final class Auth {
 							<button type="submit" class="oc-auth__cta"><?php esc_html_e( 'Send code', 'oc-theme' ); ?></button>
 						</form>
 					<?php endif; ?>
-					<?php if ( ! empty( $s['google_on'] ) ) : ?>
+					<?php if ( ! empty( $s['google_on'] ) || ! empty( $s['fb_on'] ) || ! empty( $s['apple_on'] ) ) : ?>
 						<div class="oc-auth__social">
 							<?php if ( ! empty( $s['sms_on'] ) ) : ?>
 								<p class="oc-auth__also"><?php esc_html_e( 'You can also sign in with…', 'oc-theme' ); ?></p>
 							<?php endif; ?>
+							<?php if ( ! empty( $s['google_on'] ) ) : ?>
 							<a class="oc-auth__provider" href="<?php echo esc_url( admin_url( 'admin-post.php?action=oc_auth_google' ) ); ?>" rel="nofollow">
 								<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="#4285F4" d="M23.5 12.3c0-.9-.1-1.5-.2-2.2H12v4.4h6.5c-.1 1.1-.8 2.7-2.4 3.8l3.7 2.8c2.2-2 3.7-5 3.7-8.8z"/><path fill="#34A853" d="M12 24c3.2 0 5.9-1 7.9-2.9l-3.7-2.8c-1 .7-2.4 1.2-4.2 1.2-3.2 0-5.9-2.1-6.9-5L1.3 17.4C3.3 21.4 7.3 24 12 24z"/><path fill="#FBBC05" d="M5.1 14.5c-.2-.7-.4-1.4-.4-2.2s.1-1.5.4-2.2L1.3 7.2C.5 8.7 0 10.3 0 12.3s.5 3.6 1.3 5.1l3.8-2.9z"/><path fill="#EA4335" d="M12 4.8c2.3 0 3.8 1 4.7 1.8l3.4-3.3C18 1.3 15.2 0 12 0 7.3 0 3.3 2.6 1.3 6.6l3.8 2.9c1-2.9 3.7-4.7 6.9-4.7z"/></svg>
 								<?php esc_html_e( 'Sign in with Google', 'oc-theme' ); ?>
 							</a>
+							<?php endif; ?>
+							<?php if ( ! empty( $s['fb_on'] ) ) : ?>
+							<a class="oc-auth__provider" href="<?php echo esc_url( admin_url( 'admin-post.php?action=oc_auth_fb' ) ); ?>" rel="nofollow">
+								<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="#1877F2" d="M24 12a12 12 0 1 0-13.9 11.9v-8.4H7.1V12h3.1V9.4c0-3 1.8-4.7 4.5-4.7 1.3 0 2.7.2 2.7.2v3h-1.5c-1.5 0-2 .9-2 1.9V12h3.4l-.5 3.5h-2.9v8.4A12 12 0 0 0 24 12z"/></svg>
+								<?php esc_html_e( 'Sign in with Facebook', 'oc-theme' ); ?>
+							</a>
+							<?php endif; ?>
+							<?php if ( ! empty( $s['apple_on'] ) ) : ?>
+							<a class="oc-auth__provider" href="<?php echo esc_url( admin_url( 'admin-post.php?action=oc_auth_apple' ) ); ?>" rel="nofollow">
+								<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M16.7 12.9c0-2.4 2-3.6 2.1-3.6-1.1-1.7-2.9-1.9-3.5-1.9-1.5-.2-2.9.9-3.7.9-.8 0-1.9-.9-3.2-.9-1.6 0-3.1 1-4 2.4-1.7 2.9-.4 7.3 1.2 9.7.8 1.2 1.8 2.5 3 2.4 1.2 0 1.7-.8 3.1-.8 1.5 0 1.9.8 3.2.8 1.3 0 2.1-1.2 2.9-2.4.9-1.4 1.3-2.7 1.3-2.8-.1 0-2.4-1-2.4-3.8zM14.4 5.6c.6-.8 1.1-1.9 1-3-1 0-2.1.6-2.8 1.5-.6.7-1.2 1.9-1 3 1 .1 2.1-.6 2.8-1.5z"/></svg>
+								<?php esc_html_e( 'Sign in with Apple', 'oc-theme' ); ?>
+							</a>
+							<?php endif; ?>
 						</div>
 					<?php endif; ?>
 				</div>

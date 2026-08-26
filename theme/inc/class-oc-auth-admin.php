@@ -163,8 +163,81 @@ final class Auth_Admin {
 				<p class="description"><?php esc_html_e( 'No extra scopes and no Google verification are needed — the sign-in only uses the basic name-and-email profile. Every client site gets its own project and its own keys.', 'oc-theme' ); ?></p>
 			</details>
 
-			<h2><?php esc_html_e( 'Facebook and Apple', 'oc-theme' ); ?></h2>
-			<p class="description"><?php esc_html_e( 'Phase two — the plumbing is ready, the switches arrive once a site actually needs them (Facebook wants an app review; Apple wants a paid developer account).', 'oc-theme' ); ?></p>
+			<h2><?php esc_html_e( 'Sign in with Facebook', 'oc-theme' ); ?></h2>
+			<table class="form-table">
+				<tr>
+					<th><?php esc_html_e( 'Facebook sign-in', 'oc-theme' ); ?></th>
+					<td><label><input type="checkbox" name="fb_on" value="1" <?php checked( ! empty( $s['fb_on'] ) ); ?>> <?php esc_html_e( 'Show the Facebook button', 'oc-theme' ); ?></label></td>
+				</tr>
+				<tr>
+					<th><?php esc_html_e( 'App ID', 'oc-theme' ); ?></th>
+					<td><input type="text" name="fb_id" class="large-text ltr" value="<?php echo esc_attr( (string) $s['fb_id'] ); ?>" autocomplete="off"></td>
+				</tr>
+				<tr>
+					<th><?php esc_html_e( 'App secret', 'oc-theme' ); ?></th>
+					<td><input type="text" name="fb_secret" class="large-text ltr" value="<?php echo esc_attr( (string) $s['fb_secret'] ); ?>" autocomplete="off"></td>
+				</tr>
+			</table>
+			<details style="max-width:760px;margin:4px 0 20px">
+				<summary style="cursor:pointer;font-weight:600"><?php esc_html_e( 'How to get the keys from Facebook — step by step', 'oc-theme' ); ?></summary>
+				<ol style="margin-top:12px;line-height:1.9">
+					<li>
+						<?php esc_html_e( 'Sign in at', 'oc-theme' ); ?>
+						<a href="https://developers.facebook.com" target="_blank" rel="noopener">developers.facebook.com</a>
+						<?php esc_html_e( 'with the client\'s Facebook account, press My Apps, then Create App. Use case: "Authenticate and request data from users with Facebook Login", type Consumer — name the app after the shop.', 'oc-theme' ); ?>
+					</li>
+					<li>
+						<?php esc_html_e( 'Inside the app: Facebook Login, Settings — and under "Valid OAuth Redirect URIs" add exactly:', 'oc-theme' ); ?>
+						<br><code style="direction:ltr;display:inline-block;user-select:all"><?php echo esc_html( admin_url( 'admin-post.php?action=oc_auth_fb_cb' ) ); ?></code>
+					</li>
+					<li><?php esc_html_e( 'App settings, Basic: fill the privacy policy URL and a category, then copy the App ID and the App Secret into the fields above.', 'oc-theme' ); ?></li>
+					<li><?php esc_html_e( 'Flip the app from Development to Live (the toggle at the top). The basic email and public_profile permissions need no review.', 'oc-theme' ); ?></li>
+				</ol>
+				<p class="description"><?php esc_html_e( 'Note: a Facebook account registered by phone may carry no email — the customer still gets an account, anchored to their Facebook identity.', 'oc-theme' ); ?></p>
+			</details>
+
+			<h2><?php esc_html_e( 'Sign in with Apple', 'oc-theme' ); ?></h2>
+			<table class="form-table">
+				<tr>
+					<th><?php esc_html_e( 'Apple sign-in', 'oc-theme' ); ?></th>
+					<td><label><input type="checkbox" name="apple_on" value="1" <?php checked( ! empty( $s['apple_on'] ) ); ?>> <?php esc_html_e( 'Show the Apple button', 'oc-theme' ); ?></label></td>
+				</tr>
+				<tr>
+					<th><?php esc_html_e( 'Services ID (client)', 'oc-theme' ); ?></th>
+					<td><input type="text" name="apple_client_id" class="regular-text ltr" value="<?php echo esc_attr( (string) $s['apple_client_id'] ); ?>" placeholder="com.example.site" autocomplete="off"></td>
+				</tr>
+				<tr>
+					<th><?php esc_html_e( 'Team ID', 'oc-theme' ); ?></th>
+					<td><input type="text" name="apple_team_id" class="regular-text ltr" value="<?php echo esc_attr( (string) $s['apple_team_id'] ); ?>" autocomplete="off"></td>
+				</tr>
+				<tr>
+					<th><?php esc_html_e( 'Key ID', 'oc-theme' ); ?></th>
+					<td><input type="text" name="apple_key_id" class="regular-text ltr" value="<?php echo esc_attr( (string) $s['apple_key_id'] ); ?>" autocomplete="off"></td>
+				</tr>
+				<tr>
+					<th><?php esc_html_e( 'Private key (.p8 contents)', 'oc-theme' ); ?></th>
+					<td>
+						<textarea name="apple_key" rows="5" class="large-text code" style="direction:ltr" autocomplete="off"><?php echo esc_textarea( (string) $s['apple_key'] ); ?></textarea>
+						<p class="description"><?php esc_html_e( 'Open the downloaded .p8 file in a text editor and paste everything, BEGIN and END lines included.', 'oc-theme' ); ?></p>
+					</td>
+				</tr>
+			</table>
+			<details style="max-width:760px;margin:4px 0 20px">
+				<summary style="cursor:pointer;font-weight:600"><?php esc_html_e( 'How to get the keys from Apple — step by step', 'oc-theme' ); ?></summary>
+				<ol style="margin-top:12px;line-height:1.9">
+					<li>
+						<?php esc_html_e( 'An Apple Developer account is needed (99$ a year, the client\'s):', 'oc-theme' ); ?>
+						<a href="https://developer.apple.com/account" target="_blank" rel="noopener">developer.apple.com/account</a>.
+						<?php esc_html_e( 'The Team ID sits on the Membership page — copy it into the field above.', 'oc-theme' ); ?>
+					</li>
+					<li><?php esc_html_e( 'Certificates, Identifiers & Profiles, Identifiers: create an App ID (type App, any bundle id like com.example.site.app) and tick the "Sign in with Apple" capability.', 'oc-theme' ); ?></li>
+					<li>
+						<?php esc_html_e( 'Create a second identifier of type Services ID — its identifier (e.g. com.example.site.web) is the client that goes in the field above. Enable "Sign in with Apple", press Configure: choose the App ID as primary, add the site\'s domain, and as Return URL add exactly:', 'oc-theme' ); ?>
+						<br><code style="direction:ltr;display:inline-block;user-select:all"><?php echo esc_html( admin_url( 'admin-post.php?action=oc_auth_apple_cb' ) ); ?></code>
+					</li>
+					<li><?php esc_html_e( 'Keys: create a new key, tick "Sign in with Apple", configure it to the App ID, and download the .p8 file — Apple hands it out exactly once. Note the Key ID, and paste the file\'s contents above.', 'oc-theme' ); ?></li>
+				</ol>
+			</details>
 
 			<p><button class="button button-primary"><?php esc_html_e( 'Save', 'oc-theme' ); ?></button></p>
 		</form>
@@ -186,11 +259,16 @@ final class Auth_Admin {
 
 		$s['sms_on']    = empty( $_POST['sms_on'] ) ? 0 : 1;
 		$s['google_on'] = empty( $_POST['google_on'] ) ? 0 : 1;
+		$s['fb_on']     = empty( $_POST['fb_on'] ) ? 0 : 1;
+		$s['apple_on']  = empty( $_POST['apple_on'] ) ? 0 : 1;
 		$s['reach']     = 'intl' === ( $_POST['reach'] ?? '' ) ? 'intl' : 'israel';
 
-		foreach ( array( 'api_key', 'sender', 'google_id', 'google_secret' ) as $field ) {
+		foreach ( array( 'api_key', 'sender', 'google_id', 'google_secret', 'fb_id', 'fb_secret', 'apple_client_id', 'apple_team_id', 'apple_key_id' ) as $field ) {
 			$s[ $field ] = sanitize_text_field( (string) wp_unslash( $_POST[ $field ] ?? '' ) );
 		}
+
+		// The .p8 must keep its line breaks — openssl reads PEM, not prose.
+		$s['apple_key'] = trim( (string) wp_unslash( $_POST['apple_key'] ?? '' ) );
 
 		foreach ( array( 'code_expiry' => 180, 'max_attempts' => 5, 'resend_cooldown' => 60, 'phone_hourly' => 3, 'ip_hourly' => 5, 'daily_cap' => 300 ) as $field => $fallback ) {
 			$value       = absint( $_POST[ $field ] ?? 0 );

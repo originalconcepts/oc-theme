@@ -4892,3 +4892,78 @@ msgstr "בדיקה אחת תחת Audience (בתפריט הצד): אם המצב T
 
 msgid "No extra scopes and no Google verification are needed — the sign-in only uses the basic name-and-email profile. Every client site gets its own project and its own keys."
 msgstr "לא צריך להוסיף Scopes ולא נדרש אימות של גוגל — הכניסה משתמשת רק בפרופיל הבסיסי של שם ומייל. כל אתר לקוח מקבל פרויקט משלו ומפתחות משלו."
+
+msgid "An Apple Developer account is needed (99$ a year, the client's):"
+msgstr "נדרש חשבון Apple Developer (99$ לשנה, של הלקוח):"
+
+msgid "App ID"
+msgstr "App ID"
+
+msgid "App secret"
+msgstr "App Secret"
+
+msgid "App settings, Basic: fill the privacy policy URL and a category, then copy the App ID and the App Secret into the fields above."
+msgstr "תחת App settings ← Basic: ממלאים כתובת מדיניות פרטיות וקטגוריה, ומעתיקים את ה-App ID וה-App Secret לשדות למעלה."
+
+msgid "Apple sign-in"
+msgstr "כניסה עם אפל"
+
+msgid "Certificates, Identifiers & Profiles, Identifiers: create an App ID (type App, any bundle id like com.example.site.app) and tick the \"Sign in with Apple\" capability."
+msgstr "ב-Certificates, Identifiers & Profiles ← Identifiers: יוצרים App ID (סוג App, כל bundle id כמו com.example.site.app) ומסמנים את היכולת \"Sign in with Apple\"."
+
+msgid "Create a second identifier of type Services ID — its identifier (e.g. com.example.site.web) is the client that goes in the field above. Enable \"Sign in with Apple\", press Configure: choose the App ID as primary, add the site's domain, and as Return URL add exactly:"
+msgstr "יוצרים מזהה שני מסוג Services ID — המזהה שלו (למשל com.example.site.web) הוא ה-client שנכנס בשדה למעלה. מדליקים \"Sign in with Apple\", לוחצים Configure: בוחרים את ה-App ID כראשי, מוסיפים את הדומיין של האתר, וכ-Return URL מוסיפים בדיוק:"
+
+msgid "Facebook sign-in"
+msgstr "כניסה עם פייסבוק"
+
+msgid "Flip the app from Development to Live (the toggle at the top). The basic email and public_profile permissions need no review."
+msgstr "מעבירים את האפליקציה מ-Development ל-Live (המתג למעלה). ההרשאות הבסיסיות email ו-public_profile לא דורשות אישור."
+
+msgid "How to get the keys from Apple — step by step"
+msgstr "איך מוציאים את המפתחות מאפל — שלב אחר שלב"
+
+msgid "How to get the keys from Facebook — step by step"
+msgstr "איך מוציאים את המפתחות מפייסבוק — שלב אחר שלב"
+
+msgid "Inside the app: Facebook Login, Settings — and under \"Valid OAuth Redirect URIs\" add exactly:"
+msgstr "בתוך האפליקציה: Facebook Login ← Settings — ותחת \"Valid OAuth Redirect URIs\" מוסיפים בדיוק:"
+
+msgid "Key ID"
+msgstr "Key ID"
+
+msgid "Keys: create a new key, tick \"Sign in with Apple\", configure it to the App ID, and download the .p8 file — Apple hands it out exactly once. Note the Key ID, and paste the file's contents above."
+msgstr "ב-Keys: יוצרים מפתח חדש, מסמנים \"Sign in with Apple\", מקשרים ל-App ID ומורידים את קובץ ה-p8. — אפל נותנת אותו פעם אחת בלבד. רושמים את ה-Key ID ומדביקים את תוכן הקובץ למעלה."
+
+msgid "Note: a Facebook account registered by phone may carry no email — the customer still gets an account, anchored to their Facebook identity."
+msgstr "שימו לב: חשבון פייסבוק שנרשם עם טלפון עשוי להיות בלי מייל — הלקוח עדיין מקבל חשבון, מעוגן לזהות הפייסבוק שלו."
+
+msgid "Open the downloaded .p8 file in a text editor and paste everything, BEGIN and END lines included."
+msgstr "פותחים את קובץ ה-p8. שהורדתם בעורך טקסט ומדביקים הכל, כולל שורות ה-BEGIN וה-END."
+
+msgid "Private key (.p8 contents)"
+msgstr "מפתח פרטי (תוכן ה-p8.)"
+
+msgid "Services ID (client)"
+msgstr "Services ID (ה-client)"
+
+msgid "Show the Apple button"
+msgstr "הצג את כפתור אפל"
+
+msgid "Show the Facebook button"
+msgstr "הצג את כפתור פייסבוק"
+
+msgid "Sign in with Apple"
+msgstr "כניסה עם Apple"
+
+msgid "Sign in with Facebook"
+msgstr "כניסה עם Facebook"
+
+msgid "Team ID"
+msgstr "Team ID"
+
+msgid "The Team ID sits on the Membership page — copy it into the field above."
+msgstr "ה-Team ID יושב בעמוד ה-Membership — מעתיקים אותו לשדה למעלה."
+
+msgid "with the client's Facebook account, press My Apps, then Create App. Use case: \"Authenticate and request data from users with Facebook Login\", type Consumer — name the app after the shop."
+msgstr "עם חשבון הפייסבוק של הלקוח, לוחצים My Apps ואז Create App. שימוש: \"Authenticate and request data from users with Facebook Login\", סוג Consumer — קוראים לאפליקציה על שם החנות."
