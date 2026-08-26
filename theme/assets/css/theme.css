@@ -12283,9 +12283,21 @@ html[dir="rtl"] .oc-bye { translate: 50% 0; }
 	max-inline-size: none !important;
 }
 
-.woocommerce-MyAccount-content .woocommerce-Address-title { display: flex; align-items: baseline; justify-content: space-between; }
+.woocommerce-MyAccount-content .woocommerce-Address-title { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
 .woocommerce-MyAccount-content .woocommerce-Address-title h3 { margin: 0 0 8px; font-size: 1.02rem; }
-.woocommerce-MyAccount-content .woocommerce-Address-title .edit { font-size: .85rem; }
+.woocommerce-MyAccount-content .woocommerce-Address-title .edit {
+	font-size: .85rem;
+	color: var(--oc-ink-2, #666);
+	text-decoration: underline;
+	text-underline-offset: 3px;
+	white-space: nowrap;
+}
+.woocommerce-MyAccount-content .woocommerce-Address-title .edit:hover { color: var(--oc-ink, #111); }
+
+/* Everything in an address block reads from the start edge. */
+.woocommerce-MyAccount-content .woocommerce-Address,
+.woocommerce-MyAccount-content .woocommerce-Address address,
+.woocommerce-MyAccount-content .u-columns .woocommerce-Address { text-align: start; }
 .woocommerce-MyAccount-content .woocommerce-Address address { border: 0; padding: 0; font-style: normal; color: var(--oc-ink-2, #555); line-height: 1.8; }
 
 /* Notices, ours, everywhere — WordPress's green-bar look retires. */

@@ -63,7 +63,11 @@ final class WooCommerce {
 		// matches only — the map stays surgical.
 		$reword = static function ( $translation ) {
 			$map = array(
-				'מצב' => 'סטטוס',
+				'מצב'               => 'סטטוס',
+				'ערוך כתובת לחיוב'  => 'עריכה',
+				'ערוך כתובת משלוח'  => 'עריכה',
+				'להוסיף כתובת משלוח' => 'הוספה',
+				'הוסף כתובת משלוח'  => 'הוספה',
 			);
 
 			return $map[ $translation ] ?? $translation;
