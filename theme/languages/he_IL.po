@@ -4616,3 +4616,6 @@ msgstr "עמוד %d"
 
 msgid "Yoast SEO is active, so the theme's own SEO engine stepped aside — two engines would print two title tags. Deactivate Yoast (after migrating in Settings ← SEO ← Tools) to switch over."
 msgstr "Yoast SEO פעיל, ולכן מנוע ה-SEO של התבנית זז הצידה — שני מנועים ידפיסו שני תגי title. כבו את Yoast (אחרי מיגרציה בהגדרות ← SEO ← ייבוא וכלים) כדי לעבור."
+
+msgid "Max swatches on the card (0 = all; the rest become +N)"
+msgstr "מקסימום סוואטשים בכרטיס (0 = הכל; השאר הופכים ל-N+)"

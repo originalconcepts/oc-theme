@@ -6084,6 +6084,24 @@ table.variations td.value select:has(+ .oc-dd) {
  * with a breath of air from the picture. */
 .oc-card-text > .oc-colors--loop:first-child { margin-block: 12px 8px; }
 
+/* The catalogue cap's tail: "+2" standing at the row's end, leading to the
+ * product where every colour shows. */
+.oc-colors__more {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-inline-size: var(--oc-swatch-cat, 22px);
+	block-size: var(--oc-swatch-cat, 22px);
+	padding-inline: 2px;
+	font-size: .78rem;
+	font-weight: 600;
+	color: var(--oc-ink-2, #666);
+	text-decoration: none;
+	direction: ltr;
+}
+
+.oc-colors__more:hover { color: var(--oc-ink); }
+
 .oc-card-minimal .oc-colors--loop { justify-content: flex-start; }
 
 /* Sits in the variations area, matching the attribute rows: label line

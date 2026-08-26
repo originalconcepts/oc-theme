@@ -1317,6 +1317,8 @@ final class Customizer {
 			),
 			'below'
 		);
+
+		$this->number( $c, 'oc_swatch_loop_max', 'oc_swatches', __( 'Max swatches on the card (0 = all; the rest become +N)', 'oc-theme' ), 0, 0, 12 );
 	}
 
 	/**

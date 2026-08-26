@@ -175,6 +175,143 @@ final class Variations {
 		// the same decision the reviews row got.
 		add_action( 'woocommerce_shop_loop_item_title', array( $this, 'loop_colors_above' ), 2 );
 		add_action( 'woocommerce_after_shop_loop_item_title', array( $this, 'loop_colors_below' ), 30 );
+
+		// The card's default colour travels: every card link carries the
+		// first colour's attribute, so the product page opens with the same
+		// swatch selected the visitor was just looking at.
+		add_filter( 'woocommerce_loop_product_link', array( $this, 'carry_default_color' ), 10, 2 );
+
+		// And a product entered with nothing chosen still opens on its first
+		// variation — the same default the catalogue card shows.
+		add_filter( 'woocommerce_product_default_attributes', array( $this, 'first_variation_default' ), 10, 2 );
+	}
+
+	/**
+	 * The catalogue card's link, carrying the default colour.
+	 *
+	 * @param string $link    The permalink.
+	 * @param mixed  $product The product.
+	 * @return string
+	 */
+	public function carry_default_color( $link, $product ) {
+		if ( ! $product instanceof \WC_Product ) {
+			return $link;
+		}
+
+		$d = $this->default_term( $product );
+
+		return null === $d ? $link : add_query_arg( 'attribute_' . $d['tax'], $d['slug'], (string) $link );
+	}
+
+	/**
+	 * A variable product with no chosen defaults opens on its first
+	 * variation, matching the swatch the catalogue pre-marks. A default the
+	 * shop owner set per product always wins.
+	 *
+	 * @param array $defaults Saved defaults.
+	 * @param mixed $product  The product.
+	 * @return array
+	 */
+	public function first_variation_default( $defaults, $product ) {
+		if ( ! empty( $defaults ) || ! $product instanceof \WC_Product_Variable ) {
+			return $defaults;
+		}
+
+		foreach ( $product->get_variation_attributes() as $name => $options ) {
+			if ( ! empty( $options ) ) {
+				$defaults[ sanitize_title( (string) $name ) ] = (string) reset( $options );
+			}
+		}
+
+		return $defaults;
+	}
+
+	/**
+	 * The card's default colour: the first term the swatch row would draw.
+	 * Null for simple products, colour-sibling products, and products whose
+	 * colours are not a swatch attribute.
+	 *
+	 * @param \WC_Product $product The product.
+	 * @return array{tax:string,slug:string}|null
+	 */
+	private function default_term( \WC_Product $product ): ?array {
+		static $cache = array();
+
+		$id = $product->get_id();
+
+		if ( array_key_exists( $id, $cache ) ) {
+			return $cache[ $id ];
+		}
+
+		$cache[ $id ] = null;
+
+		if ( ! $product->is_type( 'variable' ) ) {
+			return null;
+		}
+
+		// Colour-sibling products carry their colour in the product itself.
+		if ( ! empty( array_filter( array_map( 'absint', (array) get_post_meta( $id, '_oc_color_links', true ) ) ) ) ) {
+			return null;
+		}
+
+		foreach ( array_keys( $product->get_attributes() ) as $attr_tax ) {
+			$attr_tax = rawurldecode( (string) $attr_tax );
+			$type     = $this->attr_type( $attr_tax );
+
+			if ( ! in_array( $type, array( 'swatch', 'swatch_image' ), true ) ) {
+				continue;
+			}
+
+			$terms = wc_get_product_terms( $id, $attr_tax, array( 'fields' => 'all' ) );
+
+			if ( count( $terms ) < 2 ) {
+				return null;
+			}
+
+			foreach ( $terms as $term ) {
+				if ( '' !== $this->swatch_style( $product, $attr_tax, $term, $type ) ) {
+					$cache[ $id ] = array(
+						'tax'  => $attr_tax,
+						'slug' => $term->slug,
+					);
+
+					return $cache[ $id ];
+				}
+			}
+
+			return null;
+		}
+
+		return null;
+	}
+
+	/**
+	 * The catalogue cap: at most N swatches, the rest folded into a +N chip
+	 * that leads to the product. The current colour never disappears — when
+	 * it falls past the cap it takes the last visible slot.
+	 *
+	 * @param array<int,string> $list       The built swatch anchors.
+	 * @param int               $at_current Index of the current item, -1 when none.
+	 * @param string            $permalink  Where +N leads.
+	 * @return array<int,string>
+	 */
+	private static function capped( array $list, int $at_current, string $permalink ): array {
+		$max = absint( get_theme_mod( 'oc_swatch_loop_max', 0 ) );
+
+		if ( $max < 1 || count( $list ) <= $max ) {
+			return $list;
+		}
+
+		$extra = count( $list ) - $max;
+
+		if ( $at_current >= $max ) {
+			$list[ $max - 1 ] = $list[ $at_current ];
+		}
+
+		$list   = array_slice( $list, 0, $max );
+		$list[] = '<a class="oc-colors__more" href="' . esc_url( $permalink ) . '">+' . (int) $extra . '</a>';
+
+		return $list;
 	}
 
 	/**
@@ -1267,7 +1404,7 @@ final class Variations {
 			$galleries = $this->galleries_meta( $product->get_id() );
 			$max       = 'gallery' === get_theme_mod( 'oc_card_image_mode', 'single' ) ? max( 2, (int) get_theme_mod( 'oc_card_gallery_max', 4 ) ) : 1;
 			$permalink = get_permalink( $product->get_id() );
-			$items     = '';
+			$list      = array();
 
 			foreach ( $terms as $term ) {
 				$style = $this->swatch_style( $product, $attr_tax, $term, $type );
@@ -1293,12 +1430,16 @@ final class Variations {
 					}
 				}
 
-				$items .= sprintf(
-					'<a class="oc-colors__item oc-colors__item--term" href="%s" style="%s" title="%s" aria-label="%s" data-url="%s" data-pid="%d" data-imgs="%s" data-slug="%s"></a>',
+				// The first colour is the card's default, pre-marked — the
+				// same one the card links carry into the product page.
+				$list[] = sprintf(
+					'<a class="oc-colors__item oc-colors__item--term%s" href="%s" style="%s" title="%s" aria-label="%s"%s data-url="%s" data-pid="%d" data-imgs="%s" data-slug="%s"></a>',
+					empty( $list ) ? ' is-current' : '',
 					esc_url( add_query_arg( 'attribute_' . $attr_tax, $term->slug, $permalink ) ),
 					$style, // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
 					esc_attr( $term->name ),
 					esc_attr( $term->name ),
+					empty( $list ) ? ' aria-current="true"' : '',
 					esc_url( add_query_arg( 'attribute_' . $attr_tax, $term->slug, $permalink ) ),
 					absint( $product->get_id() ),
 					esc_attr( (string) wp_json_encode( $imgs ) ),
@@ -1306,11 +1447,11 @@ final class Variations {
 				);
 			}
 
-			if ( '' === $items ) {
+			if ( empty( $list ) ) {
 				return '';
 			}
 
-			return '<div class="oc-colors oc-colors--loop">' . $items . '</div>';
+			return '<div class="oc-colors oc-colors--loop">' . implode( '', self::capped( $list, 0, $permalink ) ) . '</div>';
 		}
 
 		return '';
@@ -1342,7 +1483,8 @@ final class Variations {
 		// full-price product inside the sale section.
 		$sale_context = $with_data && Filters::sale_context();
 
-		$items         = '';
+		$list          = array();
+		$at_current    = -1;
 		$sale_siblings = 0;
 
 		foreach ( $ids as $id ) {
@@ -1393,7 +1535,11 @@ final class Variations {
 				);
 			}
 
-			$items .= sprintf(
+			if ( $current ) {
+				$at_current = count( $list );
+			}
+
+			$list[] = sprintf(
 				'<a class="oc-colors__item%s" href="%s" title="%s" aria-label="%s"%s%s%s>%s</a>',
 				$current ? ' is-current' : '',
 				esc_url( $current ? '#' : get_permalink( $id ) ),
@@ -1406,7 +1552,7 @@ final class Variations {
 			);
 		}
 
-		if ( '' === $items ) {
+		if ( empty( $list ) ) {
 			return '';
 		}
 
@@ -1415,7 +1561,12 @@ final class Variations {
 			return '';
 		}
 
-		return '<div class="oc-colors ' . esc_attr( $css_class ) . '">' . $items . '</div>';
+		// The catalogue row is capped; anywhere else shows everything.
+		if ( false !== strpos( $css_class, 'loop' ) ) {
+			$list = self::capped( $list, $at_current, get_permalink( $product_id ) );
+		}
+
+		return '<div class="oc-colors ' . esc_attr( $css_class ) . '">' . implode( '', $list ) . '</div>';
 	}
 
 	/**
