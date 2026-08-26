@@ -11517,16 +11517,13 @@ body.oc-checkout { overflow-x: clip; }
 	transition: translate .32s cubic-bezier(.22, .8, .3, 1);
 }
 
-.oc-auth--right .oc-auth__panel { inset-inline-end: 0; translate: 0; }
-.oc-auth--left .oc-auth__panel { inset-inline-start: 0; translate: 0; }
-
-html[dir="rtl"] .oc-auth--right .oc-auth__panel { translate: -100% 0; }
-html[dir="rtl"] .oc-auth--left .oc-auth__panel { translate: 100% 0; }
-html:not([dir="rtl"]) .oc-auth--right .oc-auth__panel { translate: 100% 0; }
-html:not([dir="rtl"]) .oc-auth--left .oc-auth__panel { translate: -100% 0; }
+/* The side is physical — "right" means the right edge of the screen in
+ * either reading direction, matching how the customizer words it. */
+.oc-auth--right .oc-auth__panel { right: 0; translate: 100% 0; }
+.oc-auth--left .oc-auth__panel { left: 0; translate: -100% 0; }
 
 .oc-auth.is-open .oc-auth__dim { opacity: 1; }
-.oc-auth.is-open .oc-auth__panel { translate: 0 0 !important; }
+.oc-auth.is-open .oc-auth__panel { translate: 0 0; }
 
 .oc-auth__head {
 	display: flex;
