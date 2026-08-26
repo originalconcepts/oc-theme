@@ -200,7 +200,7 @@ final class Variations {
 
 		$d = $this->default_term( $product );
 
-		return null === $d ? $link : add_query_arg( 'attribute_' . $d['tax'], $d['slug'], (string) $link );
+		return null === $d ? $link : add_query_arg( 'attribute_' . sanitize_title( $d['tax'] ), $d['slug'], (string) $link );
 	}
 
 	/**
@@ -1415,6 +1415,11 @@ final class Variations {
 			$permalink = get_permalink( $product->get_id() );
 			$list      = array();
 
+			// Woo reads the preselection from the sanitize_title form of the
+			// attribute name — for a Hebrew attribute that means the
+			// percent-encoded key, not the readable one.
+			$qkey = 'attribute_' . sanitize_title( $attr_tax );
+
 			foreach ( $terms as $term ) {
 				$style = $this->swatch_style( $product, $attr_tax, $term, $type );
 
@@ -1444,12 +1449,12 @@ final class Variations {
 				$list[] = sprintf(
 					'<a class="oc-colors__item oc-colors__item--term%s" href="%s" style="%s" title="%s" aria-label="%s"%s data-url="%s" data-pid="%d" data-imgs="%s" data-slug="%s"></a>',
 					empty( $list ) ? ' is-current' : '',
-					esc_url( add_query_arg( 'attribute_' . $attr_tax, $term->slug, $permalink ) ),
+					esc_url( add_query_arg( $qkey, $term->slug, $permalink ) ),
 					$style, // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
 					esc_attr( $term->name ),
 					esc_attr( $term->name ),
 					empty( $list ) ? ' aria-current="true"' : '',
-					esc_url( add_query_arg( 'attribute_' . $attr_tax, $term->slug, $permalink ) ),
+					esc_url( add_query_arg( $qkey, $term->slug, $permalink ) ),
 					absint( $product->get_id() ),
 					esc_attr( (string) wp_json_encode( $imgs ) ),
 					esc_attr( $term->slug )
