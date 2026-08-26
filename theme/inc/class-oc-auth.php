@@ -739,7 +739,6 @@ final class Auth {
 							<button type="button" class="oc-auth__link" data-auth-email hidden><?php esc_html_e( 'Send the code by email', 'oc-theme' ); ?></button>
 						</p>
 						<p class="oc-auth__hint"><?php esc_html_e( 'On Android devices, worth a glance at the spam folder.', 'oc-theme' ); ?></p>
-						<button type="submit" class="oc-auth__cta"><?php esc_html_e( 'Sign in', 'oc-theme' ); ?></button>
 					</form>
 				</div>
 

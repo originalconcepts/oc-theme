@@ -7244,6 +7244,17 @@
 		} );
 
 		if ( boxes[ 5 ] && boxes[ 5 ].value ) { boxes[ 5 ].focus(); }
+
+		maybeVerify();
+	}
+
+	/* Six digits in — the check runs itself, no button to press. */
+	function maybeVerify() {
+		if ( 6 !== codeValue().length ) { return; }
+
+		var form = el( '[data-step="code"] form' );
+
+		if ( form ) { form.dispatchEvent( new Event( 'submit', { bubbles: true, cancelable: true } ) ); }
 	}
 
 	function codeValue() {
@@ -7306,6 +7317,8 @@
 		if ( box.value.length > 1 ) { fillCode( box.value ); return; }
 
 		if ( box.value && box.nextElementSibling ) { box.nextElementSibling.focus(); }
+
+		maybeVerify();
 	} );
 
 	document.addEventListener( 'keydown', function ( e ) {
@@ -7331,9 +7344,10 @@
 
 		var kind = form.dataset.authForm;
 		var cta = form.querySelector( '.oc-auth__cta' );
-		cta.classList.add( 'is-busy' );
 
-		function done() { cta.classList.remove( 'is-busy' ); }
+		if ( cta ) { cta.classList.add( 'is-busy' ); }
+
+		function done() { if ( cta ) { cta.classList.remove( 'is-busy' ); } }
 
 		if ( 'start' === kind ) {
 			phone = form.querySelector( '[name="phone"]' ).value.trim();
@@ -7369,12 +7383,18 @@
 		}
 
 		if ( 'verify' === kind ) {
+			var boxes = root.querySelectorAll( '.oc-auth__boxes input' );
+			boxes.forEach( function ( b ) { b.disabled = true; } );
+
 			post( 'oc_auth_verify', { phone: phone, code: codeValue() } ).then( function ( out ) {
 				done();
+				boxes.forEach( function ( b ) { b.disabled = false; } );
 
 				if ( out && out.success ) { window.location.reload(); return; }
 
 				say( form, out && out.data ? out.data.msg : '' );
+				boxes.forEach( function ( b ) { b.value = ''; } );
+				if ( boxes[ 0 ] ) { boxes[ 0 ].focus(); }
 			} );
 		}
 
