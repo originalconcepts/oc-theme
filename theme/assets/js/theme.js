@@ -7174,6 +7174,15 @@
 
 		if ( pitch ) { pitch.hidden = 'register' === name; }
 
+		// The header: the title on the front step, the way back elsewhere.
+		var title = el( '.oc-auth__name' );
+		var backlink = el( '.oc-auth__backlink' );
+
+		if ( title && backlink ) {
+			title.hidden = 'phone' !== name;
+			backlink.hidden = 'phone' === name;
+		}
+
 		if ( 'code' === name ) {
 			var first = el( '.oc-auth__boxes input' );
 			if ( first ) { first.focus(); }
@@ -7313,7 +7322,8 @@
 					if ( em ) { em.focus(); }
 				}
 			} else if ( 'register' === goto_.dataset.authGoto ) {
-				// Direct sign-up: the phone is theirs to type.
+				// Direct sign-up: the phone is theirs to type, and the pitch
+				// speaks perks, not an unrecognised number.
 				var show = el( '[data-step="register"] [name="phone_show"]' );
 
 				if ( show ) {
@@ -7324,6 +7334,12 @@
 
 				var change = el( '[data-step="register"] [data-auth-change]' );
 				if ( change ) { change.hidden = true; }
+
+				var flowMsg = el( '[data-reg-flow]' );
+				var perks = el( '[data-reg-direct]' );
+
+				if ( flowMsg ) { flowMsg.hidden = true; }
+				if ( perks ) { perks.hidden = false; }
 
 				armRegister();
 				step( 'register' );
@@ -7429,6 +7445,12 @@
 
 					var change = el( '[data-step="register"] [data-auth-change]' );
 					if ( change ) { change.hidden = false; }
+
+					var flowMsg = el( '[data-reg-flow]' );
+					var perks = el( '[data-reg-direct]' );
+
+					if ( flowMsg ) { flowMsg.hidden = false; }
+					if ( perks ) { perks.hidden = true; }
 
 					armRegister();
 					step( 'register' );

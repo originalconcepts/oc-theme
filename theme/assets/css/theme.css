@@ -11622,7 +11622,68 @@ body.oc-checkout { overflow-x: clip; }
 }
 
 .oc-auth__social { margin-block-start: 26px; display: flex; flex-direction: column; gap: 10px; }
-.oc-auth__also { margin: 0 0 4px; font-weight: 600; }
+
+/* ---- or ---- */
+.oc-auth__or {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	color: var(--oc-ink-2, #888);
+	font-size: .85rem;
+	margin-block-end: 4px;
+}
+
+.oc-auth__or::before,
+.oc-auth__or::after {
+	content: '';
+	flex: 1;
+	border-block-start: 1px solid var(--oc-line, #e5e2dd);
+}
+
+/* Back to sign in, standing where the title stood. */
+.oc-auth__backlink {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	border: 0;
+	background: none;
+	padding: 0;
+	font: inherit;
+	font-size: 1.05rem;
+	font-weight: 600;
+	color: var(--oc-ink, #111);
+	cursor: pointer;
+}
+
+/* The perks: a check before every promise. */
+.oc-auth__perks { margin-block-end: 6px; }
+.oc-auth__perks p { margin: 0 0 10px; font-weight: 600; }
+
+.oc-auth__perks ul {
+	list-style: none;
+	margin: 0 0 8px;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 7px;
+	text-align: start;
+}
+
+.oc-auth--a-c .oc-auth__perks ul { align-items: center; }
+
+.oc-auth__perks li {
+	display: flex;
+	align-items: baseline;
+	gap: 8px;
+	color: var(--oc-ink-2, #555);
+	font-size: .92rem;
+}
+
+.oc-auth__perks li::before {
+	content: '✓';
+	color: #2fa36b;
+	font-weight: 700;
+}
 
 /* Every door the same width as the send button. */
 .oc-auth__provider {

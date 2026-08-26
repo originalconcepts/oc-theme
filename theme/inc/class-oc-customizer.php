@@ -184,7 +184,26 @@ final class Customizer {
 
 		$this->text( $c, 'oc_login_title', 'oc_login_panel', __( 'Title — the phone step', 'oc-theme' ) );
 
-		$this->text( $c, 'oc_login_club_text', 'oc_login_panel', __( 'Club pitch — the registration step', 'oc-theme' ) );
+		$this->text( $c, 'oc_login_club_text', 'oc_login_panel', __( 'Club pitch — the drawer\'s foot', 'oc-theme' ) );
+
+		$this->text( $c, 'oc_login_reg_title', 'oc_login_panel', __( 'Registration — the line above the perks', 'oc-theme' ) );
+
+		$c->add_setting(
+			'oc_login_reg_perks',
+			array(
+				'default'           => '',
+				'sanitize_callback' => 'sanitize_textarea_field',
+			)
+		);
+		$c->add_control(
+			'oc_login_reg_perks',
+			array(
+				'type'        => 'textarea',
+				'section'     => 'oc_login_panel',
+				'label'       => __( 'Registration — the perks, one per line', 'oc-theme' ),
+				'description' => __( 'Each line becomes a ✓ item.', 'oc-theme' ),
+			)
+		);
 
 		$this->choice(
 			$c,

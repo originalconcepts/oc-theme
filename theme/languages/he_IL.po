@@ -5105,3 +5105,27 @@ msgstr "התנתקת מהחשבון — נתראה בקרוב"
 
 msgid "Hello, %s"
 msgstr "שלום, %s"
+
+msgid "Back to sign in"
+msgstr "חזרה להתחברות"
+
+msgid "or"
+msgstr "או"
+
+msgid "Open an account in a moment and enjoy:"
+msgstr "יוצרים חשבון בקלות ונהנים מ:"
+
+msgid "5% back in points on every purchase\nClub-only deals and benefits\nExclusive products"
+msgstr "5% צבירה בנקודות בכל רכישה\nהטבות ומבצעים לחברי מועדון\nמוצרים בלעדיים"
+
+msgid "Club pitch — the drawer's foot"
+msgstr "טקסט המועדון — תחתית הפאנל"
+
+msgid "Registration — the line above the perks"
+msgstr "הרשמה — השורה שמעל ההטבות"
+
+msgid "Registration — the perks, one per line"
+msgstr "הרשמה — ההטבות, אחת בכל שורה"
+
+msgid "Each line becomes a ✓ item."
+msgstr "כל שורה הופכת לפריט עם ✓."

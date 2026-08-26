@@ -1261,6 +1261,20 @@ final class Auth {
 		if ( '' === $club ) {
 			$club = __( 'Join the club and earn 5% of your order back in points, to spend on your next purchases.', 'oc-theme' );
 		}
+
+		$reg_title = trim( (string) get_theme_mod( 'oc_login_reg_title', '' ) );
+
+		if ( '' === $reg_title ) {
+			$reg_title = __( 'Open an account in a moment and enjoy:', 'oc-theme' );
+		}
+
+		$perks = trim( (string) get_theme_mod( 'oc_login_reg_perks', '' ) );
+
+		if ( '' === $perks ) {
+			$perks = __( "5% back in points on every purchase\nClub-only deals and benefits\nExclusive products", 'oc-theme' );
+		}
+
+		$perks = array_filter( array_map( 'trim', preg_split( '/\r?\n/', $perks ) ) );
 		$align = get_theme_mod( 'oc_login_align', 'center' );
 		$shape = get_theme_mod( 'oc_login_btn_shape', 'inherit' );
 
@@ -1284,6 +1298,10 @@ final class Auth {
 			<aside class="oc-auth__panel" role="dialog" aria-modal="true" aria-label="<?php esc_attr_e( 'Sign in', 'oc-theme' ); ?>">
 				<header class="oc-auth__head">
 					<h2 class="oc-auth__name"><?php esc_html_e( 'Sign in', 'oc-theme' ); ?></h2>
+					<button type="button" class="oc-auth__backlink" data-auth-change hidden>
+						<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
+						<?php esc_html_e( 'Back to sign in', 'oc-theme' ); ?>
+					</button>
 					<button type="button" class="oc-auth__close" data-auth-close aria-label="<?php esc_attr_e( 'Close', 'oc-theme' ); ?>">&times;</button>
 				</header>
 
@@ -1299,7 +1317,7 @@ final class Auth {
 					<?php if ( ! empty( $s['google_on'] ) || ! empty( $s['fb_on'] ) || ! empty( $s['apple_on'] ) || ! empty( $s['email_on'] ) ) : ?>
 						<div class="oc-auth__social">
 							<?php if ( ! empty( $s['sms_on'] ) ) : ?>
-								<p class="oc-auth__also"><?php esc_html_e( 'You can also sign in with…', 'oc-theme' ); ?></p>
+								<div class="oc-auth__or" aria-hidden="true"><span><?php esc_html_e( 'or', 'oc-theme' ); ?></span></div>
 							<?php endif; ?>
 							<?php if ( ! empty( $s['google_on'] ) ) : ?>
 							<a class="oc-auth__provider" href="<?php echo esc_url( admin_url( 'admin-post.php?action=oc_auth_google' ) ); ?>" rel="nofollow">
@@ -1369,10 +1387,15 @@ final class Auth {
 
 				<div class="oc-auth__step" data-step="register" hidden>
 					<h3 class="oc-auth__title"><?php esc_html_e( 'Opening an account', 'oc-theme' ); ?></h3>
-					<p class="oc-auth__sub"><?php esc_html_e( 'We do not know this number yet — fill in your details once, and next time the phone alone gets you in.', 'oc-theme' ); ?></p>
-					<?php if ( '' !== $club ) : ?>
-						<p class="oc-auth__club"><?php echo esc_html( $club ); ?></p>
-					<?php endif; ?>
+					<p class="oc-auth__sub" data-reg-flow><?php esc_html_e( 'We do not know this number yet — fill in your details once, and next time the phone alone gets you in.', 'oc-theme' ); ?></p>
+					<div class="oc-auth__perks" data-reg-direct hidden>
+						<p><?php echo esc_html( $reg_title ); ?></p>
+						<ul>
+							<?php foreach ( $perks as $perk ) : ?>
+								<li><?php echo esc_html( $perk ); ?></li>
+							<?php endforeach; ?>
+						</ul>
+					</div>
 					<form class="oc-auth__form" data-auth-form="register" novalidate>
 						<div class="oc-auth__phone-row">
 							<input class="oc-auth__tel" type="tel" name="phone_show" readonly>
