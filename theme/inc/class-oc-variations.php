@@ -183,7 +183,7 @@ final class Variations {
 
 		// And a product entered with nothing chosen still opens on its first
 		// variation — the same default the catalogue card shows.
-		add_filter( 'woocommerce_product_default_attributes', array( $this, 'first_variation_default' ), 10, 2 );
+		add_filter( 'woocommerce_product_get_default_attributes', array( $this, 'first_variation_default' ), 10, 2 );
 	}
 
 	/**
@@ -213,17 +213,26 @@ final class Variations {
 	 * @return array
 	 */
 	public function first_variation_default( $defaults, $product ) {
-		if ( ! empty( $defaults ) || ! $product instanceof \WC_Product_Variable ) {
+		if ( ! empty( $defaults ) || is_admin() || ! $product instanceof \WC_Product_Variable ) {
 			return $defaults;
 		}
 
-		foreach ( $product->get_variation_attributes() as $name => $options ) {
-			if ( ! empty( $options ) ) {
-				$defaults[ sanitize_title( (string) $name ) ] = (string) reset( $options );
+		// This filter fires on every property read — remember the answer.
+		static $cache = array();
+
+		$id = $product->get_id();
+
+		if ( ! isset( $cache[ $id ] ) ) {
+			$cache[ $id ] = array();
+
+			foreach ( $product->get_variation_attributes() as $name => $options ) {
+				if ( ! empty( $options ) ) {
+					$cache[ $id ][ sanitize_title( (string) $name ) ] = (string) reset( $options );
+				}
 			}
 		}
 
-		return $defaults;
+		return $cache[ $id ];
 	}
 
 	/**
