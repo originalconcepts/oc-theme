@@ -1126,41 +1126,54 @@
 			} );
 		}
 
-		box.addEventListener( 'submit', function ( e ) {
-			var form = e.target.closest( '.oc-colog__step form, [data-colog-form]' );
-			if ( ! form ) { return; }
+		// The block lives INSIDE Woo's checkout <form>, so it can hold no <form>
+		// of its own (nested forms are illegal and the parser drops them). Its
+		// steps are plain <div>s, driven by button clicks and Enter — with the
+		// default prevented so Enter never submits the outer checkout form.
+		function doStart() {
+			var form = box.querySelector( '[data-colog-form="start"]' );
+			phone = form.querySelector( '[name="phone"]' ).value.trim();
+			post( 'oc_auth_start', { phone: phone } ).then( function ( out ) {
+				if ( ! out || ! out.success ) { err( form, out && out.data ? out.data.msg : '' ); return; }
+				if ( 'code' === out.data.step ) {
+					phone = out.data.phone;
+					err( form, '' );
+					box.querySelector( '[data-colog-pretty]' ).textContent = out.data.pretty;
+					box.querySelectorAll( '.oc-colog__boxes input' ).forEach( function ( b ) { b.value = ''; } );
+					step( 'code' );
+				} else {
+					// No account for this number — the guest form is right below.
+					err( form, L.cologNoAcct || 'No account found for this number — continue with the details below.' );
+				}
+			} );
+		}
+
+		function doEmail() {
+			var form = box.querySelector( '[data-colog-form="email"]' );
+			post( 'oc_auth_email_login', {
+				email: form.querySelector( '[name="email"]' ).value.trim(),
+				password: form.querySelector( '[name="password"]' ).value
+			} ).then( function ( out ) {
+				if ( out && out.success ) { window.location.reload(); return; }
+				err( form, out && out.data ? out.data.msg : '' );
+			} );
+		}
+
+		box.addEventListener( 'keydown', function ( e ) {
+			if ( 'Enter' !== e.key ) { return; }
+			var f = e.target.closest( '[data-colog-form]' );
+			if ( ! f ) { return; }
 			e.preventDefault();
-			var kind = form.dataset.cologForm;
-
-			if ( 'start' === kind ) {
-				phone = form.querySelector( '[name="phone"]' ).value.trim();
-				post( 'oc_auth_start', { phone: phone } ).then( function ( out ) {
-					if ( ! out || ! out.success ) { err( form, out && out.data ? out.data.msg : '' ); return; }
-					if ( 'code' === out.data.step ) {
-						phone = out.data.phone;
-						err( form, '' );
-						box.querySelector( '[data-colog-pretty]' ).textContent = out.data.pretty;
-						box.querySelectorAll( '.oc-colog__boxes input' ).forEach( function ( b ) { b.value = ''; } );
-						step( 'code' );
-					} else {
-						// No account for this number — the guest form is right below.
-						err( form, L.cologNoAcct || 'No account found for this number — continue with the details below.' );
-					}
-				} );
-			}
-
-			if ( 'email' === kind ) {
-				post( 'oc_auth_email_login', {
-					email: form.querySelector( '[name="email"]' ).value.trim(),
-					password: form.querySelector( '[name="password"]' ).value
-				} ).then( function ( out ) {
-					if ( out && out.success ) { window.location.reload(); return; }
-					err( form, out && out.data ? out.data.msg : '' );
-				} );
-			}
+			if ( 'start' === f.dataset.cologForm ) { doStart(); }
+			if ( 'email' === f.dataset.cologForm ) { doEmail(); }
 		} );
 
 		box.addEventListener( 'click', function ( e ) {
+			var act = e.target.closest( '[data-colog-act]' );
+			if ( act ) {
+				if ( 'start' === act.dataset.cologAct ) { doStart(); }
+				if ( 'email' === act.dataset.cologAct ) { doEmail(); }
+			}
 			if ( e.target.closest( '[data-colog-change]' ) ) { step( 'phone' ); }
 			var goto_ = e.target.closest( '[data-colog-goto]' );
 			if ( goto_ ) { step( goto_.dataset.cologGoto ); }

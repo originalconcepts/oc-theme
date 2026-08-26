@@ -968,10 +968,10 @@ final class Checkout {
 				<?php if ( $sms ) : ?>
 					<div class="oc-colog__step" data-colog-step="phone">
 						<p class="oc-colog__d"><?php esc_html_e( 'Enter your phone — a six-digit code will be sent to verify.', 'oc-theme' ); ?></p>
-						<form class="oc-colog__telrow" data-colog-form="start" novalidate>
+						<div class="oc-colog__telrow" data-colog-form="start">
 							<input type="tel" name="phone" inputmode="tel" autocomplete="tel" placeholder="<?php esc_attr_e( 'Phone number', 'oc-theme' ); ?>" dir="ltr">
-							<button type="submit"><?php esc_html_e( 'Send code', 'oc-theme' ); ?></button>
-						</form>
+							<button type="button" data-colog-act="start"><?php esc_html_e( 'Send code', 'oc-theme' ); ?></button>
+						</div>
 						<p class="oc-colog__err" data-colog-err hidden></p>
 					</div>
 
@@ -981,11 +981,11 @@ final class Checkout {
 							<span class="oc-colog__d"><?php esc_html_e( 'Sent to', 'oc-theme' ); ?> <span data-colog-pretty dir="ltr"></span></span>
 							<button type="button" class="oc-colog__link" data-colog-change><?php esc_html_e( 'Change number', 'oc-theme' ); ?></button>
 						</p>
-						<form class="oc-colog__boxes" data-colog-form="verify" dir="ltr" novalidate>
+						<div class="oc-colog__boxes" data-colog-form="verify" dir="ltr">
 							<?php for ( $i = 0; $i < 6; $i++ ) : ?>
 								<input type="text" inputmode="numeric" maxlength="1" autocomplete="<?php echo 0 === $i ? 'one-time-code' : 'off'; ?>" aria-label="<?php echo esc_attr( (string) ( $i + 1 ) ); ?>">
 							<?php endfor; ?>
-						</form>
+						</div>
 						<p class="oc-colog__err" data-colog-err hidden></p>
 						<p class="oc-colog__resend">
 							<span data-colog-wait hidden></span>
@@ -997,11 +997,11 @@ final class Checkout {
 				<?php if ( $has_email ) : ?>
 					<div class="oc-colog__step" data-colog-step="email" hidden>
 						<p class="oc-colog__q"><?php esc_html_e( 'Email and password', 'oc-theme' ); ?></p>
-						<form class="oc-colog__emailform" data-colog-form="email" novalidate>
+						<div class="oc-colog__emailform" data-colog-form="email">
 							<input type="email" name="email" autocomplete="email" placeholder="<?php esc_attr_e( 'Email', 'oc-theme' ); ?>">
 							<input type="password" name="password" autocomplete="current-password" placeholder="<?php esc_attr_e( 'Password', 'oc-theme' ); ?>">
-							<button type="submit"><?php esc_html_e( 'Sign in', 'oc-theme' ); ?></button>
-						</form>
+							<button type="button" data-colog-act="email"><?php esc_html_e( 'Sign in', 'oc-theme' ); ?></button>
+						</div>
 						<p class="oc-colog__err" data-colog-err hidden></p>
 						<button type="button" class="oc-colog__back" data-colog-change><?php esc_html_e( 'Back', 'oc-theme' ); ?></button>
 					</div>
