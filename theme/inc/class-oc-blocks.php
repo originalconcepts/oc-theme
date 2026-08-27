@@ -210,6 +210,7 @@ final class Blocks {
 
 		add_action( 'add_meta_boxes', array( $this, 'meta_box' ) );
 		add_action( 'save_post_' . self::TYPE, array( $this, 'save_block' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'admin_assets' ) );
 
 		// Injection: one counter, two render paths (normal and the filter ajax).
 		add_action( 'woocommerce_before_shop_loop', array( $this, 'start' ), 1 );
@@ -323,6 +324,24 @@ final class Blocks {
 	 */
 	public function meta_box(): void {
 		add_meta_box( 'oc_block_box', __( 'Block', 'oc-theme' ), array( $this, 'box' ), self::TYPE, 'normal', 'high' );
+	}
+
+	/**
+	 * The block editor needs WordPress's colour picker.
+	 *
+	 * @param string $hook Current admin page.
+	 */
+	public function admin_assets( string $hook ): void {
+		if ( ! in_array( $hook, array( 'post.php', 'post-new.php' ), true ) ) {
+			return;
+		}
+
+		$screen = get_current_screen();
+
+		if ( $screen && self::TYPE === $screen->post_type ) {
+			wp_enqueue_style( 'wp-color-picker' );
+			wp_enqueue_script( 'wp-color-picker' );
+		}
 	}
 
 	/**
@@ -518,8 +537,8 @@ final class Blocks {
 					</select>
 				</div>
 				<div>
-					<label for="oc_block_ps_bg"><?php esc_html_e( 'Band background', 'oc-theme' ); ?></label>
-					<input type="text" id="oc_block_ps_bg" name="oc_block_ps_bg" value="<?php echo esc_attr( $p['bg'] ); ?>" class="widefat ltr" placeholder="#f4f1ec" />
+					<label for="oc_block_ps_bg"><?php esc_html_e( 'Band background', 'oc-theme' ); ?></label><br>
+					<input type="text" id="oc_block_ps_bg" name="oc_block_ps_bg" value="<?php echo esc_attr( $p['bg'] ); ?>" class="oc-color-field ltr" data-default-color="" placeholder="#f4f1ec" />
 					<p class="description"><?php esc_html_e( 'A colour behind this band. Empty = none.', 'oc-theme' ); ?></p>
 				</div>
 			</div>
@@ -623,6 +642,13 @@ final class Blocks {
 			syncType();
 			syncMode();
 		}() );
+		</script>
+		<script>
+		jQuery( function ( $ ) {
+			if ( $.fn.wpColorPicker ) {
+				$( '.oc-color-field' ).wpColorPicker();
+			}
+		} );
 		</script>
 		<script>
 		( function () {
