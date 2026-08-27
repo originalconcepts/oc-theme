@@ -5479,3 +5479,69 @@ msgstr "יישור"
 
 msgid "Reading side"
 msgstr "צד הקריאה"
+
+msgid "Product slider band"
+msgstr "סרט סליידר מוצרים"
+
+msgid "A shelf of products on this category page — best sellers, on sale, recently viewed, and more."
+msgstr "מדף מוצרים בעמוד הקטגוריה — רבי-מכר, במבצע, מוצרים שצפית בהם, ועוד."
+
+msgid "Product slider"
+msgstr "סליידר מוצרים"
+
+msgid "Show a product shelf on this category."
+msgstr "הצגת מדף מוצרים בקטגוריה זו."
+
+msgid "Products I viewed"
+msgstr "מוצרים שצפיתי בהם"
+
+msgid "On sale"
+msgstr "במבצע"
+
+msgid "— This category —"
+msgstr "— הקטגוריה הזו —"
+
+msgid "Product IDs"
+msgstr "מזהי מוצרים"
+
+msgid "Comma-separated product IDs, shown in this order."
+msgstr "מזהי מוצרים מופרדים בפסיקים, מוצגים בסדר הזה."
+
+msgid "Above the products"
+msgstr "מעל המוצרים"
+
+msgid "Below the products"
+msgstr "מתחת למוצרים"
+
+msgid "Laid as"
+msgstr "להציג כ"
+
+msgid "Grid"
+msgstr "רשת"
+
+msgid "Per row — desktop"
+msgstr "בשורה — דסקטופ"
+
+msgid "Space between"
+msgstr "מרווח"
+
+msgid "Normal"
+msgstr "רגיל"
+
+msgid "Touching"
+msgstr "צמוד"
+
+msgid "Mobile slider shows"
+msgstr "סליידר במובייל מציג"
+
+msgid "One product and a peek"
+msgstr "מוצר אחד והצצה"
+
+msgid "Two products and a peek"
+msgstr "שני מוצרים והצצה"
+
+msgid "“All products” button"
+msgstr "כפתור ״כל המוצרים״"
+
+msgid "A button after the shelf."
+msgstr "כפתור אחרי המדף."

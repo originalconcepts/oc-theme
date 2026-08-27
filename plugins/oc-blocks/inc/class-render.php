@@ -549,27 +549,62 @@ final class Render {
 	 * @return string
 	 */
 	private static function products( array $s ): string {
+		return self::product_shelf(
+			array(
+				'heading' => (string) ( $s['heading'] ?? '' ),
+				'mode'    => (string) $s['mode'],
+				'cat'     => absint( $s['cat'] ?? 0 ),
+				'picks'   => (array) ( $s['picks'] ?? array() ),
+				'count'   => absint( $s['count'] ),
+				'layout'  => (string) $s['layout'],
+				'cols'    => absint( $s['cols'] ),
+				'gap'     => (string) $s['gap'],
+				'mcols'   => (string) ( $s['mcols'] ?? '1' ),
+				'all'     => ! empty( $s['all'] ),
+				'allurl'  => (string) ( $s['allurl'] ?? '' ),
+			)
+		);
+	}
+
+	/**
+	 * A shelf of products — grid or slider — drawn with the theme's own cards.
+	 * Shared by the Products block and the category product-slider band.
+	 *
+	 * Options: heading, mode (cat|manual|sales|new|sale|viewed), cat (term id
+	 * or WP_Term), picks (ids), ids (ids, alias of picks), count, layout, cols,
+	 * gap, mcols, all (bool), allurl, exclude (id to drop, e.g. the current
+	 * product).
+	 *
+	 * @param array<string,mixed> $o Options.
+	 * @return string
+	 */
+	public static function product_shelf( array $o ): string {
 		if ( ! class_exists( 'WooCommerce' ) ) {
 			return '';
 		}
 
+		$count = max( 1, absint( $o['count'] ?? 8 ) );
+		$cols  = max( 2, absint( $o['cols'] ?? 4 ) );
+		$mode  = (string) ( $o['mode'] ?? 'new' );
+		$cat   = null;
+
 		$args = array(
 			'status'  => 'publish',
-			'limit'   => absint( $s['count'] ),
+			'limit'   => $count,
 			'orderby' => 'date',
 			'order'   => 'DESC',
 			'return'  => 'ids',
 		);
 
-		$cat = null;
-
-		switch ( (string) $s['mode'] ) {
+		switch ( $mode ) {
 			case 'manual':
-				if ( empty( $s['picks'] ) ) {
+				$picks = array_filter( array_map( 'absint', (array) ( $o['picks'] ?? $o['ids'] ?? array() ) ) );
+
+				if ( empty( $picks ) ) {
 					return '';
 				}
 
-				$args['include'] = array_map( 'absint', (array) $s['picks'] );
+				$args['include'] = $picks;
 				$args['orderby'] = 'post__in';
 				break;
 
@@ -587,8 +622,19 @@ final class Render {
 				$args['include'] = array_map( 'absint', $on_sale );
 				break;
 
+			case 'viewed':
+				$viewed = self::recently_viewed_ids( $count, absint( $o['exclude'] ?? 0 ) );
+
+				if ( empty( $viewed ) ) {
+					return '';
+				}
+
+				$args['include'] = $viewed;
+				$args['orderby'] = 'post__in';
+				break;
+
 			case 'cat':
-				$cat = get_term( absint( $s['cat'] ), 'product_cat' );
+				$cat = $o['cat'] instanceof \WP_Term ? $o['cat'] : get_term( absint( $o['cat'] ?? 0 ), 'product_cat' );
 
 				if ( ! $cat instanceof \WP_Term ) {
 					return '';
@@ -600,19 +646,23 @@ final class Render {
 
 		$ids = wc_get_products( $args );
 
+		if ( ! empty( $o['exclude'] ) ) {
+			$ids = array_values( array_diff( array_map( 'absint', (array) $ids ), array( absint( $o['exclude'] ) ) ) );
+		}
+
 		if ( empty( $ids ) ) {
 			return '';
 		}
 
 		// The theme's own loop draws the cards, so a products shelf here is
 		// pixel-for-pixel the catalogue — labels, galleries, quick pick.
-		$shortcode = '[products ids="' . implode( ',', array_map( 'absint', $ids ) ) . '" columns="' . absint( $s['cols'] ) . '" orderby="post__in" limit="' . count( $ids ) . '"]';
+		$shortcode = '[products ids="' . implode( ',', array_map( 'absint', $ids ) ) . '" columns="' . $cols . '" orderby="post__in" limit="' . count( $ids ) . '"]';
 		$cards     = do_shortcode( $shortcode );
 
 		$more = '';
 
-		if ( ! empty( $s['all'] ) ) {
-			$url = (string) $s['allurl'];
+		if ( ! empty( $o['all'] ) ) {
+			$url = (string) ( $o['allurl'] ?? '' );
 
 			if ( '' === $url && $cat instanceof \WP_Term ) {
 				$link = get_term_link( $cat );
@@ -628,12 +678,43 @@ final class Render {
 			}
 		}
 
-		return self::heading( $s )
-			. '<div class="ocb-shelf ocb-shelf--' . esc_attr( (string) $s['layout'] ) . ' ocb-shelf--gap-' . esc_attr( (string) $s['gap'] ) . ' ocb-shelf--m' . esc_attr( '' !== (string) ( $s['mcols'] ?? '' ) ? (string) $s['mcols'] : '1' ) . '" style="--ocb-cols:' . absint( $s['cols'] ) . '"'
-			. ( 'slider' === $s['layout'] ? ' data-ocb-shelf' : '' ) . '>'
+		$layout = 'grid' === (string) ( $o['layout'] ?? 'slider' ) ? 'grid' : 'slider';
+		$gap    = (string) ( $o['gap'] ?? 'normal' );
+		$mcols  = '' !== (string) ( $o['mcols'] ?? '' ) ? (string) $o['mcols'] : '1';
+		$head   = self::heading( array( 'heading' => (string) ( $o['heading'] ?? '' ) ) );
+
+		return $head
+			. '<div class="ocb-shelf ocb-shelf--' . esc_attr( $layout ) . ' ocb-shelf--gap-' . esc_attr( $gap ) . ' ocb-shelf--m' . esc_attr( $mcols ) . '" style="--ocb-cols:' . $cols . '"'
+			. ( 'slider' === $layout ? ' data-ocb-shelf' : '' ) . '>'
 			. $cards
-			. ( 'slider' === $s['layout'] ? self::shelf_arrows() : '' )
+			. ( 'slider' === $layout ? self::shelf_arrows() : '' )
 			. '</div>' . $more;
+	}
+
+	/**
+	 * Recently-viewed product ids, newest first, from the WooCommerce cookie.
+	 *
+	 * @param int $limit   How many.
+	 * @param int $exclude An id to drop (e.g. the current product).
+	 * @return int[]
+	 */
+	private static function recently_viewed_ids( int $limit, int $exclude = 0 ): array {
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash -- ids are absint-ed below.
+		$raw = isset( $_COOKIE['woocommerce_recently_viewed'] ) ? (string) $_COOKIE['woocommerce_recently_viewed'] : '';
+
+		if ( '' === $raw ) {
+			return array();
+		}
+
+		// WooCommerce stores pipe-separated ids, newest last.
+		$ids = array_reverse( array_filter( array_map( 'absint', explode( '|', $raw ) ) ) );
+		$ids = array_values( array_unique( $ids ) );
+
+		if ( $exclude > 0 ) {
+			$ids = array_values( array_diff( $ids, array( $exclude ) ) );
+		}
+
+		return array_slice( $ids, 0, max( 1, $limit ) );
 	}
 
 	/**
@@ -1709,7 +1790,10 @@ final class Render {
 
 		if ( ! $need && function_exists( 'is_product_category' ) && is_product_category() ) {
 			$term = get_queried_object();
-			$need = $term instanceof \WP_Term && absint( get_term_meta( $term->term_id, 'oc_lobby_page', true ) ) > 0;
+			$need = $term instanceof \WP_Term && (
+				absint( get_term_meta( $term->term_id, 'oc_lobby_page', true ) ) > 0
+				|| '1' === (string) get_term_meta( $term->term_id, '_oc_ps_show', true )
+			);
 		}
 
 		if ( ! $need ) {

@@ -49,6 +49,33 @@ class Category {
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_assets' ) );
 
 		add_action( 'wp', array( $this, 'setup' ) );
+
+		// Track product views for the "recently viewed" slider source.
+		add_action( 'template_redirect', array( $this, 'track_view' ), 20 );
+	}
+
+	/**
+	 * Remember a viewed product in the WooCommerce recently-viewed cookie.
+	 */
+	public function track_view(): void {
+		if ( ! function_exists( 'is_product' ) || ! is_product() || ! function_exists( 'wc_setcookie' ) ) {
+			return;
+		}
+
+		$id = (int) get_queried_object_id();
+
+		if ( $id <= 0 || headers_sent() ) {
+			return;
+		}
+
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash -- ids are absint-ed.
+		$raw    = isset( $_COOKIE['woocommerce_recently_viewed'] ) ? (string) $_COOKIE['woocommerce_recently_viewed'] : '';
+		$viewed = array_filter( array_map( 'absint', explode( '|', $raw ) ) );
+		$viewed = array_values( array_diff( $viewed, array( $id ) ) );
+		$viewed[] = $id;
+		$viewed = array_slice( $viewed, -15 );
+
+		wc_setcookie( 'woocommerce_recently_viewed', implode( '|', $viewed ) );
 	}
 
 	/* ------------------------------------------------------------------ *
@@ -138,6 +165,35 @@ class Category {
 	}
 
 	/**
+	 * Read a term's product-slider-band settings.
+	 *
+	 * @param int $term_id Term id.
+	 * @return array<string,mixed>
+	 */
+	private static function pslider( int $term_id ): array {
+		$get = static function ( string $key, string $def = '' ) use ( $term_id ): string {
+			$v = get_term_meta( $term_id, $key, true );
+
+			return '' !== (string) $v ? (string) $v : $def;
+		};
+
+		return array(
+			'show'    => '1' === $get( '_oc_ps_show' ),
+			'heading' => $get( '_oc_ps_heading' ),
+			'mode'    => $get( '_oc_ps_mode', 'viewed' ),   // viewed|sales|new|sale|cat|manual.
+			'cat'     => absint( $get( '_oc_ps_cat' ) ),
+			'ids'     => $get( '_oc_ps_ids' ),
+			'count'   => max( 2, (int) $get( '_oc_ps_count', '8' ) ),
+			'layout'  => $get( '_oc_ps_layout', 'slider' ), // slider|grid.
+			'cols'    => max( 2, (int) $get( '_oc_ps_cols', '4' ) ),
+			'gap'     => $get( '_oc_ps_gap', 'normal' ),
+			'mcols'   => $get( '_oc_ps_mcols', '1' ),
+			'all'     => '1' === $get( '_oc_ps_all' ),
+			'pos'     => $get( '_oc_ps_pos', 'top' ),        // top|bottom.
+		);
+	}
+
+	/**
 	 * The queried category's direct children.
 	 *
 	 * @param int $term_id Parent id.
@@ -212,6 +268,53 @@ class Category {
 				15
 			);
 		}
+
+		// Product-slider band, above or below the product grid.
+		$ps = self::pslider( $term->term_id );
+
+		if ( $ps['show'] ) {
+			$render = function () use ( $term, $ps ): void {
+				echo self::product_band( $term, $ps ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
+			};
+
+			if ( 'bottom' === $ps['pos'] ) {
+				add_action( 'woocommerce_after_shop_loop', $render, 20 );
+			} else {
+				add_action( 'woocommerce_archive_description', $render, 20 );
+			}
+		}
+	}
+
+	/**
+	 * Build the product-slider band for this category by delegating to the
+	 * OC-Blocks shelf renderer (same cards, same slider engine).
+	 *
+	 * @param \WP_Term            $term Category.
+	 * @param array<string,mixed> $ps   Slider settings.
+	 * @return string
+	 */
+	private static function product_band( \WP_Term $term, array $ps ): string {
+		if ( ! class_exists( '\OC\Blocks\Render' ) ) {
+			return '';
+		}
+
+		$html = \OC\Blocks\Render::product_shelf(
+			array(
+				'heading' => $ps['heading'],
+				'mode'    => $ps['mode'],
+				// "From a category" defaults to this one when none is chosen.
+				'cat'     => $ps['cat'] > 0 ? $ps['cat'] : $term,
+				'ids'     => array_filter( array_map( 'absint', preg_split( '/[^0-9]+/', (string) $ps['ids'] ) ?: array() ) ),
+				'count'   => $ps['count'],
+				'layout'  => $ps['layout'],
+				'cols'    => $ps['cols'],
+				'gap'     => $ps['gap'],
+				'mcols'   => $ps['mcols'],
+				'all'     => $ps['all'],
+			)
+		);
+
+		return '' === $html ? '' : '<section class="oc-cat-pslider">' . $html . '</section>';
 	}
 
 	/**
@@ -544,6 +647,67 @@ class Category {
 	}
 
 	/**
+	 * A number row.
+	 *
+	 * @param string $name    Field name.
+	 * @param int    $value   Current value (0 shows the placeholder).
+	 * @param string $label   Label.
+	 * @param int    $min     Minimum.
+	 * @param int    $max     Maximum.
+	 * @param int    $def     Placeholder default.
+	 * @param string $show_if data-attribute gate.
+	 */
+	private function number_field( string $name, int $value, string $label, int $min, int $max, int $def, string $show_if = '' ): void {
+		$gate = '' !== $show_if ? ' data-oc-when="' . esc_attr( $show_if ) . '"' : '';
+		?>
+		<tr class="form-field"<?php echo $gate; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- literal above. ?>>
+			<th scope="row"><label for="<?php echo esc_attr( $name ); ?>"><?php echo esc_html( $label ); ?></label></th>
+			<td>
+				<input type="number" min="<?php echo esc_attr( (string) $min ); ?>" max="<?php echo esc_attr( (string) $max ); ?>" name="<?php echo esc_attr( $name ); ?>" id="<?php echo esc_attr( $name ); ?>" value="<?php echo esc_attr( (string) ( $value > 0 ? $value : '' ) ); ?>" placeholder="<?php echo esc_attr( (string) $def ); ?>" style="inline-size:90px">
+			</td>
+		</tr>
+		<?php
+	}
+
+	/**
+	 * Product-category choices for a picker, indented by depth.
+	 *
+	 * @return array<string,string>
+	 */
+	private static function cat_choices(): array {
+		$choices = array( '' => __( '— This category —', 'oc-theme' ) );
+		$terms   = get_terms(
+			array(
+				'taxonomy'   => 'product_cat',
+				'hide_empty' => false,
+				'orderby'    => 'name',
+			)
+		);
+
+		if ( ! is_array( $terms ) ) {
+			return $choices;
+		}
+
+		$by_parent = array();
+
+		foreach ( $terms as $t ) {
+			if ( $t instanceof \WP_Term ) {
+				$by_parent[ (int) $t->parent ][] = $t;
+			}
+		}
+
+		$walk = static function ( int $parent, int $depth ) use ( &$walk, &$by_parent, &$choices ): void {
+			foreach ( $by_parent[ $parent ] ?? array() as $t ) {
+				$choices[ (string) $t->term_id ] = str_repeat( '— ', $depth ) . $t->name;
+				$walk( (int) $t->term_id, $depth + 1 );
+			}
+		};
+		$walk( 0, 0 );
+
+		return $choices;
+	}
+
+	/**
 	 * The category-page fields on the edit screen.
 	 *
 	 * @param \WP_Term $term Category.
@@ -555,6 +719,7 @@ class Category {
 
 		$h   = self::hero( $term->term_id );
 		$sub = self::subs( $term->term_id );
+		$ps  = self::pslider( $term->term_id );
 		?>
 		<tr class="form-field oc-cat-sec">
 			<th scope="row" colspan="2" style="padding-block-end:0">
@@ -754,6 +919,108 @@ class Category {
 			'',
 			'_oc_sub_show:1,_oc_sub_place:out'
 		);
+		?>
+
+		<tr class="form-field oc-cat-sec">
+			<th scope="row" colspan="2" style="padding-block-end:0">
+				<h2 style="margin:22px 0 0;font-size:1.15em"><?php esc_html_e( 'Product slider band', 'oc-theme' ); ?></h2>
+				<p class="description" style="font-weight:400"><?php esc_html_e( 'A shelf of products on this category page — best sellers, on sale, recently viewed, and more.', 'oc-theme' ); ?></p>
+			</th>
+		</tr>
+		<?php
+		$this->toggle_field( '_oc_ps_show', $ps['show'], __( 'Product slider', 'oc-theme' ), __( 'Show a product shelf on this category.', 'oc-theme' ) );
+
+		$this->select_field(
+			'_oc_ps_mode',
+			$ps['mode'],
+			__( 'Which products', 'oc-theme' ),
+			array(
+				'viewed' => __( 'Products I viewed', 'oc-theme' ),
+				'sales'  => __( 'Best sellers', 'oc-theme' ),
+				'new'    => __( 'Newest', 'oc-theme' ),
+				'sale'   => __( 'On sale', 'oc-theme' ),
+				'cat'    => __( 'From a category', 'oc-theme' ),
+				'manual' => __( 'The ones I choose', 'oc-theme' ),
+			),
+			'',
+			'_oc_ps_show:1'
+		);
+
+		$this->select_field(
+			'_oc_ps_cat',
+			(string) ( $ps['cat'] > 0 ? $ps['cat'] : '' ),
+			__( 'The category', 'oc-theme' ),
+			self::cat_choices(),
+			'',
+			'_oc_ps_show:1,_oc_ps_mode:cat'
+		);
+		?>
+		<tr class="form-field" data-oc-when="_oc_ps_show:1,_oc_ps_mode:manual">
+			<th scope="row"><label for="_oc_ps_ids"><?php esc_html_e( 'Product IDs', 'oc-theme' ); ?></label></th>
+			<td>
+				<input type="text" name="_oc_ps_ids" id="_oc_ps_ids" value="<?php echo esc_attr( (string) $ps['ids'] ); ?>" class="ltr regular-text" placeholder="e.g. 12, 84, 190">
+				<p class="description"><?php esc_html_e( 'Comma-separated product IDs, shown in this order.', 'oc-theme' ); ?></p>
+			</td>
+		</tr>
+		<?php
+		$this->select_field(
+			'_oc_ps_pos',
+			$ps['pos'],
+			__( 'Position', 'oc-theme' ),
+			array(
+				'top'    => __( 'Above the products', 'oc-theme' ),
+				'bottom' => __( 'Below the products', 'oc-theme' ),
+			),
+			'',
+			'_oc_ps_show:1'
+		);
+		?>
+		<tr class="form-field" data-oc-when="_oc_ps_show:1">
+			<th scope="row"><label for="_oc_ps_heading"><?php esc_html_e( 'Heading', 'oc-theme' ); ?></label></th>
+			<td><input type="text" name="_oc_ps_heading" id="_oc_ps_heading" value="<?php echo esc_attr( (string) $ps['heading'] ); ?>" class="regular-text"></td>
+		</tr>
+		<?php
+		$this->select_field(
+			'_oc_ps_layout',
+			$ps['layout'],
+			__( 'Laid as', 'oc-theme' ),
+			array(
+				'slider' => __( 'Slider', 'oc-theme' ),
+				'grid'   => __( 'Grid', 'oc-theme' ),
+			),
+			'',
+			'_oc_ps_show:1'
+		);
+
+		$this->number_field( '_oc_ps_count', $ps['count'], __( 'How many', 'oc-theme' ), 2, 24, 8, '_oc_ps_show:1' );
+		$this->number_field( '_oc_ps_cols', $ps['cols'], __( 'Per row — desktop', 'oc-theme' ), 2, 6, 4, '_oc_ps_show:1' );
+
+		$this->select_field(
+			'_oc_ps_gap',
+			$ps['gap'],
+			__( 'Space between', 'oc-theme' ),
+			array(
+				'normal' => __( 'Normal', 'oc-theme' ),
+				'small'  => __( 'Small', 'oc-theme' ),
+				'tight'  => __( 'Touching', 'oc-theme' ),
+			),
+			'',
+			'_oc_ps_show:1'
+		);
+
+		$this->select_field(
+			'_oc_ps_mcols',
+			$ps['mcols'],
+			__( 'Mobile slider shows', 'oc-theme' ),
+			array(
+				'1' => __( 'One product and a peek', 'oc-theme' ),
+				'2' => __( 'Two products and a peek', 'oc-theme' ),
+			),
+			'',
+			'_oc_ps_show:1'
+		);
+
+		$this->toggle_field( '_oc_ps_all', $ps['all'], __( '“All products” button', 'oc-theme' ), __( 'A button after the shelf.', 'oc-theme' ), '_oc_ps_show:1' );
 
 		$this->admin_script();
 	}
@@ -884,6 +1151,19 @@ class Category {
 		$this->save_enum( $term_id, '_oc_sub_place', array( 'out', 'in' ) );
 		$this->save_enum( $term_id, '_oc_sub_align', array( 'start', 'center' ) );
 
+		$this->save_bool( $term_id, '_oc_ps_show' );
+		$this->save_text( $term_id, '_oc_ps_heading' );
+		$this->save_enum( $term_id, '_oc_ps_mode', array( 'viewed', 'sales', 'new', 'sale', 'cat', 'manual' ) );
+		$this->save_int( $term_id, '_oc_ps_cat' );
+		$this->save_ids( $term_id, '_oc_ps_ids' );
+		$this->save_int( $term_id, '_oc_ps_count', 2, 24 );
+		$this->save_enum( $term_id, '_oc_ps_layout', array( 'slider', 'grid' ) );
+		$this->save_int( $term_id, '_oc_ps_cols', 2, 6 );
+		$this->save_enum( $term_id, '_oc_ps_gap', array( 'normal', 'small', 'tight' ) );
+		$this->save_enum( $term_id, '_oc_ps_mcols', array( '1', '2' ) );
+		$this->save_bool( $term_id, '_oc_ps_all' );
+		$this->save_enum( $term_id, '_oc_ps_pos', array( 'top', 'bottom' ) );
+
 		// phpcs:enable WordPress.Security.NonceVerification.Missing
 	}
 
@@ -971,6 +1251,41 @@ class Category {
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing
 		if ( isset( $_POST[ $key ] ) && '1' === (string) wp_unslash( $_POST[ $key ] ) ) {
 			update_term_meta( $term_id, $key, '1' );
+		} else {
+			delete_term_meta( $term_id, $key );
+		}
+	}
+
+	/**
+	 * Save a plain text value, or delete when empty.
+	 *
+	 * @param int    $term_id Term id.
+	 * @param string $key     Meta key / POST key.
+	 */
+	private function save_text( int $term_id, string $key ): void {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- sanitised below.
+		$value = isset( $_POST[ $key ] ) ? sanitize_text_field( wp_unslash( $_POST[ $key ] ) ) : '';
+
+		if ( '' !== $value ) {
+			update_term_meta( $term_id, $key, $value );
+		} else {
+			delete_term_meta( $term_id, $key );
+		}
+	}
+
+	/**
+	 * Save a comma/space list of ids as "12,84,190", or delete when empty.
+	 *
+	 * @param int    $term_id Term id.
+	 * @param string $key     Meta key / POST key.
+	 */
+	private function save_ids( int $term_id, string $key ): void {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- ids are absint-ed.
+		$raw = isset( $_POST[ $key ] ) ? (string) wp_unslash( $_POST[ $key ] ) : '';
+		$ids = array_filter( array_map( 'absint', preg_split( '/[^0-9]+/', $raw ) ?: array() ) );
+
+		if ( $ids ) {
+			update_term_meta( $term_id, $key, implode( ',', $ids ) );
 		} else {
 			delete_term_meta( $term_id, $key );
 		}

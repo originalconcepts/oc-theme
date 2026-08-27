@@ -3414,6 +3414,11 @@ html.oc-drw-open body { overflow: hidden; }
 	.oc-subcats__pic img { transition: none; }
 }
 
+/* the product-slider band on a category page (cards + shelf come from
+ * blocks.css; this is just the band's breathing room) */
+.oc-cat-pslider { margin-block: 30px 10px; }
+.oc-cat-pslider .ocb__title { margin-block-start: 0; }
+
 /* ---------- footer ---------- */
 
 .oc-footer {
