@@ -518,6 +518,7 @@ final class Registry {
 							'sales'  => __( 'Best sellers', 'oc-blocks' ),
 							'new'    => __( 'Newest', 'oc-blocks' ),
 							'sale'   => __( 'On sale', 'oc-blocks' ),
+							'viewed' => __( 'Products they viewed', 'oc-blocks' ),
 						),
 						'def'     => 'cat',
 					),

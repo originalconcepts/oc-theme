@@ -46,6 +46,11 @@ final class Render {
 		add_action( 'wp_enqueue_scripts', array( $this, 'assets' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'integration_assets' ), 15 );
 
+		// Recently-viewed shelf: filled in per-visitor after load, so the page
+		// itself stays cacheable.
+		add_action( 'wp_ajax_oc_viewed', array( $this, 'ajax_viewed' ) );
+		add_action( 'wp_ajax_nopriv_oc_viewed', array( $this, 'ajax_viewed' ) );
+
 		// A category may nominate a composed page as its lobby, shown above
 		// the products: "the women's front page" is just another page.
 		add_action( 'product_cat_edit_form_fields', array( $this, 'lobby_field' ), 15 );
@@ -588,6 +593,13 @@ final class Render {
 		$mode  = (string) ( $o['mode'] ?? 'new' );
 		$cat   = null;
 
+		// "Products I viewed" is per-visitor, so on a normal (cacheable) render
+		// we emit a placeholder and let JS fetch the shelf; only the ajax call
+		// resolves it for real.
+		if ( 'viewed' === $mode && ! wp_doing_ajax() ) {
+			return self::viewed_placeholder( $o, $count, $cols );
+		}
+
 		$args = array(
 			'status'  => 'publish',
 			'limit'   => $count,
@@ -715,6 +727,52 @@ final class Render {
 		}
 
 		return array_slice( $ids, 0, max( 1, $limit ) );
+	}
+
+	/**
+	 * The empty stand-in for a recently-viewed shelf; JS fills it after load.
+	 *
+	 * @param array<string,mixed> $o     Options.
+	 * @param int                 $count How many.
+	 * @param int                 $cols  Columns.
+	 * @return string
+	 */
+	private static function viewed_placeholder( array $o, int $count, int $cols ): string {
+		$cfg = array(
+			'heading' => (string) ( $o['heading'] ?? '' ),
+			'count'   => $count,
+			'cols'    => $cols,
+			'gap'     => (string) ( $o['gap'] ?? 'normal' ),
+			'mcols'   => '' !== (string) ( $o['mcols'] ?? '' ) ? (string) $o['mcols'] : '1',
+			'layout'  => 'grid' === (string) ( $o['layout'] ?? 'slider' ) ? 'grid' : 'slider',
+			'all'     => empty( $o['all'] ) ? 0 : 1,
+			'exclude' => absint( $o['exclude'] ?? 0 ),
+		);
+
+		return '<div class="oc-viewed" data-oc-viewed="' . esc_attr( (string) wp_json_encode( $cfg ) ) . '"></div>';
+	}
+
+	/**
+	 * Ajax: render the recently-viewed shelf for this visitor (reads the
+	 * cookie that rode along with the request).
+	 */
+	public function ajax_viewed(): void {
+		// phpcs:disable WordPress.Security.NonceVerification.Missing -- public, read-only listing of the visitor's own recently-viewed products; no state change.
+		$o = array(
+			'mode'    => 'viewed',
+			'heading' => isset( $_POST['heading'] ) ? sanitize_text_field( wp_unslash( $_POST['heading'] ) ) : '',
+			'count'   => isset( $_POST['count'] ) ? absint( wp_unslash( $_POST['count'] ) ) : 8,
+			'cols'    => isset( $_POST['cols'] ) ? absint( wp_unslash( $_POST['cols'] ) ) : 4,
+			'gap'     => isset( $_POST['gap'] ) ? sanitize_key( wp_unslash( $_POST['gap'] ) ) : 'normal',
+			'mcols'   => isset( $_POST['mcols'] ) ? sanitize_key( wp_unslash( $_POST['mcols'] ) ) : '1',
+			'layout'  => isset( $_POST['layout'] ) ? sanitize_key( wp_unslash( $_POST['layout'] ) ) : 'slider',
+			'all'     => ! empty( $_POST['all'] ),
+			'exclude' => isset( $_POST['exclude'] ) ? absint( wp_unslash( $_POST['exclude'] ) ) : 0,
+		);
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
+
+		echo self::product_shelf( $o ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
+		wp_die();
 	}
 
 	/**
@@ -1804,6 +1862,7 @@ final class Render {
 		$js  = oc_blocks_asset( 'assets/blocks.js' );
 		wp_enqueue_style( 'oc-blocks', OC_BLOCKS_URI . $css, array(), (string) filemtime( OC_BLOCKS_DIR . $css ) );
 		wp_enqueue_script( 'oc-blocks', OC_BLOCKS_URI . $js, array(), (string) filemtime( OC_BLOCKS_DIR . $js ), array( 'strategy' => 'defer', 'in_footer' => true ) );
+		wp_localize_script( 'oc-blocks', 'OCB', array( 'ajax' => admin_url( 'admin-ajax.php' ) ) );
 	}
 
 	/**

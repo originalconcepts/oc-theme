@@ -295,7 +295,7 @@
 
 	/* ---------- shelf sliders: products, categories, brands ---------- */
 
-	document.querySelectorAll( '[data-ocb-shelf]' ).forEach( function ( shelf ) {
+	function initShelf( shelf ) {
 		var row = shelf.querySelector( '.ocb-cats__row, .ocb-brands__row, .ocb-posts--slider, ul.products' );
 
 		if ( ! row ) {
@@ -365,6 +365,48 @@
 			truth();
 			midline();
 		}, 600 );
+	}
+
+	document.querySelectorAll( '[data-ocb-shelf]' ).forEach( initShelf );
+
+	// Expose so a shelf injected after load (recently-viewed) can be wired up.
+	window.OCB = window.OCB || {};
+	window.OCB.initShelf = initShelf;
+
+	/* ---------- recently-viewed: filled in per-visitor after load ---------- */
+
+	document.querySelectorAll( '[data-oc-viewed]' ).forEach( function ( box ) {
+		var cfg;
+
+		try {
+			cfg = JSON.parse( box.getAttribute( 'data-oc-viewed' ) );
+		} catch ( e ) {
+			return;
+		}
+
+		var body = new FormData();
+		body.append( 'action', 'oc_viewed' );
+		Object.keys( cfg ).forEach( function ( k ) {
+			body.append( k, cfg[ k ] );
+		} );
+
+		var url = ( window.OCB && OCB.ajax ) || '/wp-admin/admin-ajax.php';
+
+		fetch( url, { method: 'POST', body: body, credentials: 'same-origin' } )
+			.then( function ( r ) {
+				return r.text();
+			} )
+			.then( function ( html ) {
+				if ( ! html || ! html.trim() ) {
+					return;
+				}
+
+				box.innerHTML = html;
+				box.removeAttribute( 'data-oc-viewed' );
+				box.querySelectorAll( '[data-ocb-shelf]' ).forEach( initShelf );
+				box.classList.add( 'is-in' );
+			} )
+			.catch( function () {} );
 	} );
 
 	/* ---------- the marquee ---------- */

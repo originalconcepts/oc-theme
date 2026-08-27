@@ -1329,3 +1329,6 @@ msgstr "ללא רווח"
 
 msgid "On sale"
 msgstr "מבצעים"
+
+msgid "Products they viewed"
+msgstr "מוצרים שצפו בהם"

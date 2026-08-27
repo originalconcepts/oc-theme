@@ -545,6 +545,11 @@
 /* ---------- shelves: products / categories / brands ---------- */
 
 .ocb-shelf { position: relative; --ocb-shelf-gap: 24px; }
+
+/* recently-viewed shelf, injected after load */
+.oc-viewed.is-in { animation: ocb-vfade .45s ease both; }
+@keyframes ocb-vfade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .oc-viewed.is-in { animation: none; } }
 .ocb-shelf--gap-small { --ocb-shelf-gap: 12px; }
 .ocb-shelf--gap-tight { --ocb-shelf-gap: 2px; }
 
