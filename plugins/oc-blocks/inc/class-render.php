@@ -46,10 +46,10 @@ final class Render {
 		add_action( 'wp_enqueue_scripts', array( $this, 'assets' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'integration_assets' ), 15 );
 
-		// Recently-viewed shelf: filled in per-visitor after load, so the page
-		// itself stays cacheable.
-		add_action( 'wp_ajax_oc_viewed', array( $this, 'ajax_viewed' ) );
-		add_action( 'wp_ajax_nopriv_oc_viewed', array( $this, 'ajax_viewed' ) );
+		// Deferred shelves (recently-viewed, catalogue sliders): filled in
+		// after load so the page itself stays cacheable.
+		add_action( 'wp_ajax_oc_shelf', array( $this, 'ajax_shelf' ) );
+		add_action( 'wp_ajax_nopriv_oc_shelf', array( $this, 'ajax_shelf' ) );
 
 		// A category may nominate a composed page as its lobby, shown above
 		// the products: "the women's front page" is just another page.
@@ -593,11 +593,13 @@ final class Render {
 		$mode  = (string) ( $o['mode'] ?? 'new' );
 		$cat   = null;
 
-		// "Products I viewed" is per-visitor, so on a normal (cacheable) render
-		// we emit a placeholder and let JS fetch the shelf; only the ajax call
-		// resolves it for real.
-		if ( 'viewed' === $mode && ! wp_doing_ajax() ) {
-			return self::viewed_placeholder( $o, $count, $cols );
+		// A shelf can be deferred to a JS fetch after load: always for the
+		// per-visitor "viewed" source (so the page stays cacheable), and on
+		// request via $o['defer'] (the catalogue-layout slider defers so it
+		// never runs a nested product query mid-loop). The ajax call resolves
+		// it for real.
+		if ( ( 'viewed' === $mode || ! empty( $o['defer'] ) ) && ! wp_doing_ajax() ) {
+			return self::shelf_placeholder( $o, $count, $cols );
 		}
 
 		$args = array(
@@ -730,15 +732,20 @@ final class Render {
 	}
 
 	/**
-	 * The empty stand-in for a recently-viewed shelf; JS fills it after load.
+	 * The empty stand-in for a deferred shelf; JS fetches the real thing after
+	 * load. Carries the (admin-set) config so the ajax call can rebuild it.
 	 *
 	 * @param array<string,mixed> $o     Options.
 	 * @param int                 $count How many.
 	 * @param int                 $cols  Columns.
 	 * @return string
 	 */
-	private static function viewed_placeholder( array $o, int $count, int $cols ): string {
+	private static function shelf_placeholder( array $o, int $count, int $cols ): string {
+		$cat = $o['cat'] instanceof \WP_Term ? $o['cat']->term_id : absint( $o['cat'] ?? 0 );
 		$cfg = array(
+			'mode'    => (string) ( $o['mode'] ?? 'viewed' ),
+			'cat'     => $cat,
+			'ids'     => implode( ',', array_filter( array_map( 'absint', (array) ( $o['ids'] ?? $o['picks'] ?? array() ) ) ) ),
 			'heading' => (string) ( $o['heading'] ?? '' ),
 			'count'   => $count,
 			'cols'    => $cols,
@@ -749,20 +756,25 @@ final class Render {
 			'exclude' => absint( $o['exclude'] ?? 0 ),
 		);
 
-		return '<div class="oc-viewed" data-oc-viewed="' . esc_attr( (string) wp_json_encode( $cfg ) ) . '"></div>';
+		return '<div class="oc-shelf-load" data-oc-shelf="' . esc_attr( (string) wp_json_encode( $cfg ) ) . '"></div>';
 	}
 
 	/**
-	 * Ajax: render the recently-viewed shelf for this visitor (reads the
-	 * cookie that rode along with the request).
+	 * Ajax: render a deferred shelf. The config rode in with the request; the
+	 * "viewed" source additionally reads the visitor's cookie.
 	 */
-	public function ajax_viewed(): void {
-		// phpcs:disable WordPress.Security.NonceVerification.Missing -- public, read-only listing of the visitor's own recently-viewed products; no state change.
+	public function ajax_shelf(): void {
+		// phpcs:disable WordPress.Security.NonceVerification.Missing -- public, read-only product listing; no state change.
+		$modes = array( 'viewed', 'sales', 'new', 'sale', 'cat', 'manual' );
+		$mode  = isset( $_POST['mode'] ) ? sanitize_key( wp_unslash( $_POST['mode'] ) ) : 'viewed';
+
 		$o = array(
-			'mode'    => 'viewed',
+			'mode'    => in_array( $mode, $modes, true ) ? $mode : 'viewed',
+			'cat'     => isset( $_POST['cat'] ) ? absint( wp_unslash( $_POST['cat'] ) ) : 0,
+			'ids'     => isset( $_POST['ids'] ) ? array_filter( array_map( 'absint', explode( ',', (string) wp_unslash( $_POST['ids'] ) ) ) ) : array(),
 			'heading' => isset( $_POST['heading'] ) ? sanitize_text_field( wp_unslash( $_POST['heading'] ) ) : '',
-			'count'   => isset( $_POST['count'] ) ? absint( wp_unslash( $_POST['count'] ) ) : 8,
-			'cols'    => isset( $_POST['cols'] ) ? absint( wp_unslash( $_POST['cols'] ) ) : 4,
+			'count'   => isset( $_POST['count'] ) ? min( 24, absint( wp_unslash( $_POST['count'] ) ) ) : 8,
+			'cols'    => isset( $_POST['cols'] ) ? min( 6, absint( wp_unslash( $_POST['cols'] ) ) ) : 4,
 			'gap'     => isset( $_POST['gap'] ) ? sanitize_key( wp_unslash( $_POST['gap'] ) ) : 'normal',
 			'mcols'   => isset( $_POST['mcols'] ) ? sanitize_key( wp_unslash( $_POST['mcols'] ) ) : '1',
 			'layout'  => isset( $_POST['layout'] ) ? sanitize_key( wp_unslash( $_POST['layout'] ) ) : 'slider',
@@ -1853,6 +1865,10 @@ final class Render {
 				|| '1' === (string) get_term_meta( $term->term_id, '_oc_ps_show', true )
 			);
 		}
+
+		// The theme's catalogue-layout slider blocks also need these assets;
+		// the theme answers this filter when one is on the current listing.
+		$need = (bool) apply_filters( 'oc_blocks_need_assets', $need );
 
 		if ( ! $need ) {
 			return;

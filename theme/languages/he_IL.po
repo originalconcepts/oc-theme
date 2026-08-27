@@ -5545,3 +5545,12 @@ msgstr "כפתור ״כל המוצרים״"
 
 msgid "A button after the shelf."
 msgstr "כפתור אחרי המדף."
+
+msgid "What is this block?"
+msgstr "מה הבלוק הזה?"
+
+msgid "— Current category —"
+msgstr "— הקטגוריה הנוכחית —"
+
+msgid "Products they viewed"
+msgstr "מוצרים שצפו בהם"

@@ -546,10 +546,10 @@
 
 .ocb-shelf { position: relative; --ocb-shelf-gap: 24px; }
 
-/* recently-viewed shelf, injected after load */
-.oc-viewed.is-in { animation: ocb-vfade .45s ease both; }
+/* deferred shelf (recently-viewed / catalogue slider), injected after load */
+.oc-shelf-load.is-in { animation: ocb-vfade .45s ease both; }
 @keyframes ocb-vfade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-@media (prefers-reduced-motion: reduce) { .oc-viewed.is-in { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .oc-shelf-load.is-in { animation: none; } }
 .ocb-shelf--gap-small { --ocb-shelf-gap: 12px; }
 .ocb-shelf--gap-tight { --ocb-shelf-gap: 2px; }
 
@@ -620,6 +620,42 @@
 	.oc-compose .ocb-shelf ul.products { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 	.oc-compose .ocb-shelf--slider.ocb-shelf--m1 ul.products li.product { flex-basis: 82%; }
 	.oc-compose .ocb-shelf--slider.ocb-shelf--m2 ul.products li.product { flex-basis: 42%; }
+}
+
+/* the same shelf inside a catalogue-layout slider block — a grid item, with
+ * no .oc-compose wrapper, so the rules are mirrored here (the extra class
+ * outweighs the theme's catalogue grid). */
+.oc-block--slider .ocb-shelf ul.products {
+	display: grid;
+	grid-template-columns: repeat(var(--ocb-cols, 4), minmax(0, 1fr));
+	gap: var(--ocb-shelf-gap);
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.oc-block--slider .ocb-shelf ul.products li.product { width: auto; margin: 0; }
+.oc-block--slider .ocb-shelf--slider ul.products {
+	display: flex;
+	overflow-x: auto;
+	overflow-y: hidden;
+	scroll-snap-type: x proximity;
+	scrollbar-width: none;
+	-webkit-overflow-scrolling: touch;
+	padding-block-end: 6px;
+}
+.oc-block--slider .ocb-shelf--slider ul.products::-webkit-scrollbar { display: none; }
+.oc-block--slider .ocb-shelf--slider ul.products li.product {
+	flex: 0 0 calc((100% - (var(--ocb-cols, 4) - 1) * var(--ocb-shelf-gap)) / var(--ocb-cols, 4));
+	max-inline-size: none;
+	scroll-snap-align: start;
+	grid-template-rows: none;
+	align-content: start;
+}
+.oc-block--slider .ocb-shelf--slider ul.products li.product .price { margin-block-start: 6px; }
+@media (max-width: 782px) {
+	.oc-block--slider .ocb-shelf ul.products { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+	.oc-block--slider .ocb-shelf--slider.ocb-shelf--m1 ul.products li.product { flex-basis: 82%; }
+	.oc-block--slider .ocb-shelf--slider.ocb-shelf--m2 ul.products li.product { flex-basis: 42%; }
 }
 
 /* ---------- categories ---------- */

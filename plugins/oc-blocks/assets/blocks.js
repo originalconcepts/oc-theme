@@ -373,19 +373,19 @@
 	window.OCB = window.OCB || {};
 	window.OCB.initShelf = initShelf;
 
-	/* ---------- recently-viewed: filled in per-visitor after load ---------- */
+	/* ---------- deferred shelves: filled in after load (cache-safe) ---------- */
 
-	document.querySelectorAll( '[data-oc-viewed]' ).forEach( function ( box ) {
+	document.querySelectorAll( '[data-oc-shelf]' ).forEach( function ( box ) {
 		var cfg;
 
 		try {
-			cfg = JSON.parse( box.getAttribute( 'data-oc-viewed' ) );
+			cfg = JSON.parse( box.getAttribute( 'data-oc-shelf' ) );
 		} catch ( e ) {
 			return;
 		}
 
 		var body = new FormData();
-		body.append( 'action', 'oc_viewed' );
+		body.append( 'action', 'oc_shelf' );
 		Object.keys( cfg ).forEach( function ( k ) {
 			body.append( k, cfg[ k ] );
 		} );
@@ -398,11 +398,15 @@
 			} )
 			.then( function ( html ) {
 				if ( ! html || ! html.trim() ) {
+					// nothing to show (e.g. no viewed products): drop the row.
+					if ( box.closest( 'li.oc-block--slider' ) ) {
+						box.closest( 'li.oc-block--slider' ).remove();
+					}
 					return;
 				}
 
 				box.innerHTML = html;
-				box.removeAttribute( 'data-oc-viewed' );
+				box.removeAttribute( 'data-oc-shelf' );
 				box.querySelectorAll( '[data-ocb-shelf]' ).forEach( initShelf );
 				box.classList.add( 'is-in' );
 			} )

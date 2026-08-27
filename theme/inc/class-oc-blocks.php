@@ -71,6 +71,56 @@ final class Blocks {
 	}
 
 	/**
+	 * What a catalogue block can be.
+	 *
+	 * @return array<string,string>
+	 */
+	public static function types(): array {
+		return array(
+			'banner' => __( 'Image', 'oc-theme' ),
+			'slider' => __( 'Product slider', 'oc-theme' ),
+		);
+	}
+
+	/**
+	 * Product-category choices for the slider's "from a category" picker.
+	 *
+	 * @return array<string,string>
+	 */
+	private static function cat_choices(): array {
+		$choices = array( '' => __( '— Current category —', 'oc-theme' ) );
+		$terms   = get_terms(
+			array(
+				'taxonomy'   => 'product_cat',
+				'hide_empty' => false,
+				'orderby'    => 'name',
+			)
+		);
+
+		if ( ! is_array( $terms ) ) {
+			return $choices;
+		}
+
+		$kids = array();
+
+		foreach ( $terms as $t ) {
+			if ( $t instanceof \WP_Term ) {
+				$kids[ (int) $t->parent ][] = $t;
+			}
+		}
+
+		$walk = static function ( int $parent, int $depth ) use ( &$walk, &$kids, &$choices ): void {
+			foreach ( $kids[ $parent ] ?? array() as $t ) {
+				$choices[ (string) $t->term_id ] = str_repeat( '— ', $depth ) . $t->name;
+				$walk( (int) $t->term_id, $depth + 1 );
+			}
+		};
+		$walk( 0, 0 );
+
+		return $choices;
+	}
+
+	/**
 	 * The global layout: the rhythm, and the placements used by any category
 	 * that has not defined its own.
 	 *
@@ -170,6 +220,14 @@ final class Blocks {
 		add_action( 'product_cat_edit_form_fields', array( $this, 'term_fields' ), 20 );
 		add_action( 'edited_product_cat', array( $this, 'save_term' ) );
 
+		// Load the OC-Blocks shelf assets when a slider block is on the listing.
+		add_filter(
+			'oc_blocks_need_assets',
+			function ( $need ) {
+				return $need || $this->has_slider();
+			}
+		);
+
 		add_action( 'admin_menu', array( $this, 'menu' ), 57 );
 		add_action( 'admin_post_oc_layout_save', array( $this, 'save_layout' ) );
 
@@ -216,6 +274,7 @@ final class Blocks {
 	 */
 	public static function block( int $id ): array {
 		return array(
+			'type'    => 'slider' === get_post_meta( $id, '_oc_block_type', true ) ? 'slider' : 'banner',
 			'img'     => (int) get_post_meta( $id, '_oc_block_img', true ),
 			'img_m'   => (int) get_post_meta( $id, '_oc_block_img_m', true ),
 			'link'    => (string) get_post_meta( $id, '_oc_block_link', true ),
@@ -227,6 +286,18 @@ final class Blocks {
 			'from'    => (string) get_post_meta( $id, '_oc_block_from', true ),
 			'to'      => (string) get_post_meta( $id, '_oc_block_to', true ),
 			'focus'   => self::read_focus( $id ),
+			'ps'      => array(
+				'mode'    => (string) get_post_meta( $id, '_oc_block_ps_mode', true ) ?: 'viewed',
+				'cat'     => (int) get_post_meta( $id, '_oc_block_ps_cat', true ),
+				'ids'     => (string) get_post_meta( $id, '_oc_block_ps_ids', true ),
+				'heading' => (string) get_post_meta( $id, '_oc_block_ps_heading', true ),
+				'count'   => max( 2, (int) ( get_post_meta( $id, '_oc_block_ps_count', true ) ?: 8 ) ),
+				'cols'    => max( 2, (int) ( get_post_meta( $id, '_oc_block_ps_cols', true ) ?: 4 ) ),
+				'gap'     => (string) get_post_meta( $id, '_oc_block_ps_gap', true ) ?: 'normal',
+				'mcols'   => (string) get_post_meta( $id, '_oc_block_ps_mcols', true ) ?: '1',
+				'layout'  => 'grid' === get_post_meta( $id, '_oc_block_ps_layout', true ) ? 'grid' : 'slider',
+				'all'     => (bool) get_post_meta( $id, '_oc_block_ps_all', true ),
+			),
 		);
 	}
 
@@ -268,7 +339,33 @@ final class Blocks {
 			.oc-bf > div { flex:1; min-inline-size:220px; }
 			.oc-bimg { border:1px dashed #c3c4c7; border-radius:8px; padding:10px; text-align:center; }
 			.oc-bimg img { max-inline-size:100%; block-size:auto; border-radius:6px; }
+			.oc-btype { display:flex; gap:14px; margin-block-end:18px; }
+			.oc-btype__opt { display:flex; flex-direction:column; align-items:center; gap:8px; inline-size:170px; padding:14px 12px; cursor:pointer; border:2px solid #dcdcde; border-radius:12px; background:#fff; text-align:center; transition:border-color .12s, box-shadow .12s; }
+			.oc-btype__opt:hover { border-color:#a7aaad; }
+			.oc-btype__opt input { position:absolute; opacity:0; pointer-events:none; }
+			.oc-btype__opt.is-sel, .oc-btype__opt:has(input:checked) { border-color:#2271b1; box-shadow:0 0 0 1px #2271b1; }
+			.oc-btype__opt svg { display:block; inline-size:100%; block-size:56px; }
+			.oc-btype__opt b { font-size:13px; }
 		</style>
+
+		<p style="margin:0 0 6px;font-weight:600;"><?php esc_html_e( 'What is this block?', 'oc-theme' ); ?></p>
+		<div class="oc-btype">
+			<?php
+			$type_icons = array(
+				'banner' => '<svg viewBox="0 0 120 60" aria-hidden="true"><rect x="6" y="6" width="108" height="48" rx="6" fill="#b9c0c7"/><rect x="16" y="36" width="46" height="8" rx="4" fill="#fff"/><rect x="16" y="47" width="32" height="4" rx="2" fill="#eaeef1"/></svg>',
+				'slider' => '<svg viewBox="0 0 120 60" aria-hidden="true"><rect x="6" y="10" width="30" height="40" rx="4" fill="#b9c0c7"/><rect x="44" y="10" width="30" height="40" rx="4" fill="#b9c0c7"/><rect x="82" y="10" width="30" height="40" rx="4" fill="#cfd6dc"/><path d="M100 30h12M108 26l4 4-4 4" stroke="#8b9199" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+			);
+			foreach ( self::types() as $tval => $tlabel ) :
+				?>
+				<label class="oc-btype__opt<?php echo $b['type'] === $tval ? ' is-sel' : ''; ?>">
+					<input type="radio" name="oc_block_type" value="<?php echo esc_attr( $tval ); ?>" <?php checked( $b['type'], $tval ); ?> data-oc-btype>
+					<?php echo $type_icons[ $tval ] ?? ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static SVG. ?>
+					<b><?php echo esc_html( $tlabel ); ?></b>
+				</label>
+			<?php endforeach; ?>
+		</div>
+
+		<div data-oc-type-group="banner">
 		<div class="oc-bf">
 			<?php
 			foreach ( array(
@@ -363,6 +460,88 @@ final class Blocks {
 				</select>
 			</div>
 		</div>
+		</div><!-- /banner group -->
+
+		<?php $p = $b['ps']; ?>
+		<div data-oc-type-group="slider">
+			<div class="oc-bf">
+				<div>
+					<label for="oc_block_ps_mode"><?php esc_html_e( 'Which products', 'oc-theme' ); ?></label>
+					<select id="oc_block_ps_mode" name="oc_block_ps_mode" class="widefat" data-oc-ps-mode>
+						<?php
+						foreach ( array(
+							'viewed' => __( 'Products they viewed', 'oc-theme' ),
+							'sales'  => __( 'Best sellers', 'oc-theme' ),
+							'new'    => __( 'Newest', 'oc-theme' ),
+							'sale'   => __( 'On sale', 'oc-theme' ),
+							'cat'    => __( 'From a category', 'oc-theme' ),
+							'manual' => __( 'The ones I choose', 'oc-theme' ),
+						) as $mval => $mlabel ) :
+							?>
+							<option value="<?php echo esc_attr( $mval ); ?>" <?php selected( $p['mode'], $mval ); ?>><?php echo esc_html( $mlabel ); ?></option>
+						<?php endforeach; ?>
+					</select>
+				</div>
+				<div data-oc-ps-when="cat">
+					<label for="oc_block_ps_cat"><?php esc_html_e( 'The category', 'oc-theme' ); ?></label>
+					<select id="oc_block_ps_cat" name="oc_block_ps_cat" class="widefat">
+						<?php foreach ( self::cat_choices() as $cval => $clabel ) : ?>
+							<option value="<?php echo esc_attr( (string) $cval ); ?>" <?php selected( (string) $p['cat'], (string) $cval ); ?>><?php echo esc_html( $clabel ); ?></option>
+						<?php endforeach; ?>
+					</select>
+				</div>
+				<div data-oc-ps-when="manual">
+					<label for="oc_block_ps_ids"><?php esc_html_e( 'Product IDs', 'oc-theme' ); ?></label>
+					<input type="text" id="oc_block_ps_ids" name="oc_block_ps_ids" value="<?php echo esc_attr( $p['ids'] ); ?>" class="widefat ltr" placeholder="12, 84, 190" />
+				</div>
+			</div>
+
+			<div class="oc-bf">
+				<div>
+					<label for="oc_block_ps_heading"><?php esc_html_e( 'Heading', 'oc-theme' ); ?></label>
+					<input type="text" id="oc_block_ps_heading" name="oc_block_ps_heading" value="<?php echo esc_attr( $p['heading'] ); ?>" class="widefat" />
+				</div>
+				<div>
+					<label for="oc_block_ps_layout"><?php esc_html_e( 'Laid as', 'oc-theme' ); ?></label>
+					<select id="oc_block_ps_layout" name="oc_block_ps_layout" class="widefat">
+						<option value="slider" <?php selected( 'slider', $p['layout'] ); ?>><?php esc_html_e( 'Slider', 'oc-theme' ); ?></option>
+						<option value="grid" <?php selected( 'grid', $p['layout'] ); ?>><?php esc_html_e( 'Grid', 'oc-theme' ); ?></option>
+					</select>
+				</div>
+			</div>
+
+			<div class="oc-bf">
+				<div>
+					<label for="oc_block_ps_count"><?php esc_html_e( 'How many', 'oc-theme' ); ?></label>
+					<input type="number" id="oc_block_ps_count" name="oc_block_ps_count" min="2" max="24" value="<?php echo esc_attr( (string) $p['count'] ); ?>" />
+				</div>
+				<div>
+					<label for="oc_block_ps_cols"><?php esc_html_e( 'Per row — desktop', 'oc-theme' ); ?></label>
+					<input type="number" id="oc_block_ps_cols" name="oc_block_ps_cols" min="2" max="6" value="<?php echo esc_attr( (string) $p['cols'] ); ?>" />
+				</div>
+				<div>
+					<label for="oc_block_ps_gap"><?php esc_html_e( 'Space between', 'oc-theme' ); ?></label>
+					<select id="oc_block_ps_gap" name="oc_block_ps_gap" class="widefat">
+						<option value="normal" <?php selected( 'normal', $p['gap'] ); ?>><?php esc_html_e( 'Normal', 'oc-theme' ); ?></option>
+						<option value="small" <?php selected( 'small', $p['gap'] ); ?>><?php esc_html_e( 'Small', 'oc-theme' ); ?></option>
+						<option value="tight" <?php selected( 'tight', $p['gap'] ); ?>><?php esc_html_e( 'Touching', 'oc-theme' ); ?></option>
+					</select>
+				</div>
+				<div>
+					<label for="oc_block_ps_mcols"><?php esc_html_e( 'Mobile slider shows', 'oc-theme' ); ?></label>
+					<select id="oc_block_ps_mcols" name="oc_block_ps_mcols" class="widefat">
+						<option value="1" <?php selected( '1', $p['mcols'] ); ?>><?php esc_html_e( 'One product and a peek', 'oc-theme' ); ?></option>
+						<option value="2" <?php selected( '2', $p['mcols'] ); ?>><?php esc_html_e( 'Two products and a peek', 'oc-theme' ); ?></option>
+					</select>
+				</div>
+			</div>
+
+			<div class="oc-bf">
+				<div>
+					<label style="font-weight:400;"><input type="checkbox" name="oc_block_ps_all" value="1" <?php checked( true, $p['all'] ); ?> /> <?php esc_html_e( '“All products” button', 'oc-theme' ); ?></label>
+				</div>
+			</div>
+		</div><!-- /slider group -->
 
 		<div class="oc-bf">
 			<div>
@@ -398,6 +577,37 @@ final class Blocks {
 				focus.value = 50;
 				paint();
 			} );
+		}() );
+		</script>
+		<script>
+		( function () {
+			// Type picker: show the banner fields or the slider fields.
+			function syncType() {
+				var picked = document.querySelector( '[data-oc-btype]:checked' );
+				var type = picked ? picked.value : 'banner';
+				document.querySelectorAll( '[data-oc-type-group]' ).forEach( function ( g ) {
+					g.style.display = ( g.getAttribute( 'data-oc-type-group' ) === type ) ? '' : 'none';
+				} );
+				document.querySelectorAll( '.oc-btype__opt' ).forEach( function ( o ) {
+					var r = o.querySelector( 'input[type=radio]' );
+					o.classList.toggle( 'is-sel', !! ( r && r.checked ) );
+				} );
+			}
+			// Slider source: show category / IDs field only when relevant.
+			function syncMode() {
+				var sel = document.querySelector( '[data-oc-ps-mode]' );
+				var mode = sel ? sel.value : '';
+				document.querySelectorAll( '[data-oc-ps-when]' ).forEach( function ( el ) {
+					el.style.display = ( el.getAttribute( 'data-oc-ps-when' ) === mode ) ? '' : 'none';
+				} );
+			}
+			document.querySelectorAll( '[data-oc-btype]' ).forEach( function ( r ) {
+				r.addEventListener( 'change', syncType );
+			} );
+			var modeSel = document.querySelector( '[data-oc-ps-mode]' );
+			if ( modeSel ) { modeSel.addEventListener( 'change', syncMode ); }
+			syncType();
+			syncMode();
 		}() );
 		</script>
 		<script>
@@ -447,6 +657,22 @@ final class Blocks {
 		}
 
 		// phpcs:disable WordPress.Security.NonceVerification.Missing -- verified above.
+		update_post_meta( $id, '_oc_block_type', 'slider' === ( $_POST['oc_block_type'] ?? '' ) ? 'slider' : 'banner' ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- strict comparison stores a literal.
+
+		$ps_modes = array( 'viewed', 'sales', 'new', 'sale', 'cat', 'manual' );
+		$ps_mode  = sanitize_key( wp_unslash( $_POST['oc_block_ps_mode'] ?? '' ) );
+		update_post_meta( $id, '_oc_block_ps_mode', in_array( $ps_mode, $ps_modes, true ) ? $ps_mode : 'viewed' );
+		update_post_meta( $id, '_oc_block_ps_cat', absint( $_POST['oc_block_ps_cat'] ?? 0 ) );
+		$ps_ids = array_filter( array_map( 'absint', preg_split( '/[^0-9]+/', (string) wp_unslash( $_POST['oc_block_ps_ids'] ?? '' ) ) ?: array() ) );
+		update_post_meta( $id, '_oc_block_ps_ids', implode( ',', $ps_ids ) );
+		update_post_meta( $id, '_oc_block_ps_heading', sanitize_text_field( wp_unslash( $_POST['oc_block_ps_heading'] ?? '' ) ) );
+		update_post_meta( $id, '_oc_block_ps_count', min( 24, max( 2, absint( $_POST['oc_block_ps_count'] ?? 8 ) ) ) );
+		update_post_meta( $id, '_oc_block_ps_cols', min( 6, max( 2, absint( $_POST['oc_block_ps_cols'] ?? 4 ) ) ) );
+		update_post_meta( $id, '_oc_block_ps_gap', sanitize_key( wp_unslash( $_POST['oc_block_ps_gap'] ?? 'normal' ) ) );
+		update_post_meta( $id, '_oc_block_ps_mcols', '2' === ( $_POST['oc_block_ps_mcols'] ?? '1' ) ? '2' : '1' ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- strict comparison stores a literal.
+		update_post_meta( $id, '_oc_block_ps_layout', 'grid' === ( $_POST['oc_block_ps_layout'] ?? 'slider' ) ? 'grid' : 'slider' ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- strict comparison stores a literal.
+		update_post_meta( $id, '_oc_block_ps_all', empty( $_POST['oc_block_ps_all'] ) ? '' : 1 );
+
 		update_post_meta( $id, '_oc_block_img', absint( $_POST['oc_block_img'] ?? 0 ) );
 		update_post_meta( $id, '_oc_block_img_m', absint( $_POST['oc_block_img_m'] ?? 0 ) );
 		update_post_meta( $id, '_oc_block_link', esc_url_raw( wp_unslash( $_POST['oc_block_link'] ?? '' ) ) );
@@ -681,13 +907,17 @@ final class Blocks {
 		$id = (int) $place['block'];
 		$b  = self::block( $id );
 
-		if ( ! $b['img'] ) {
-			return '';
-		}
-
 		$today = current_time( 'Y-m-d' );
 
 		if ( ( '' !== $b['from'] && $today < $b['from'] ) || ( '' !== $b['to'] && $today > $b['to'] ) ) {
+			return '';
+		}
+
+		if ( 'slider' === $b['type'] ) {
+			return $this->slider_html( $place, $b );
+		}
+
+		if ( ! $b['img'] ) {
 			return '';
 		}
 
@@ -732,6 +962,78 @@ final class Blocks {
 		}
 
 		return '<li class="' . esc_attr( $class ) . '">' . $inner . '</li>';
+	}
+
+	/**
+	 * A product-slider placement — a full-row grid item whose shelf is fetched
+	 * after load (so no nested product query runs inside the catalogue loop and
+	 * the page stays cacheable).
+	 *
+	 * @param array<string,mixed> $place Placement.
+	 * @param array<string,mixed> $b     Block settings.
+	 * @return string
+	 */
+	private function slider_html( array $place, array $b ): string {
+		if ( ! class_exists( '\OC\Blocks\Render' ) ) {
+			return '';
+		}
+
+		$ps = $b['ps'];
+
+		// "From a category" with none chosen means the category being viewed.
+		$cat = $ps['cat'];
+
+		if ( $cat <= 0 && is_tax( 'product_cat' ) ) {
+			$term = get_queried_object();
+			$cat  = $term instanceof \WP_Term ? $term->term_id : 0;
+		}
+
+		$html = \OC\Blocks\Render::product_shelf(
+			array(
+				'defer'   => true,
+				'heading' => $ps['heading'],
+				'mode'    => $ps['mode'],
+				'cat'     => $cat,
+				'ids'     => array_filter( array_map( 'absint', preg_split( '/[^0-9]+/', (string) $ps['ids'] ) ?: array() ) ),
+				'count'   => $ps['count'],
+				'layout'  => $ps['layout'],
+				'cols'    => $ps['cols'],
+				'gap'     => $ps['gap'],
+				'mcols'   => $ps['mcols'],
+				'all'     => $ps['all'],
+			)
+		);
+
+		if ( '' === $html ) {
+			return '';
+		}
+
+		$devices = (string) $place['devices'];
+		$class   = 'oc-block oc-block--slider oc-block--row';
+		$class  .= 'desktop' === $devices ? ' oc-block--desk' : '';
+		$class  .= 'mobile' === $devices ? ' oc-block--mob' : '';
+
+		return '<li class="' . esc_attr( $class ) . '">' . $html . '</li>';
+	}
+
+	/**
+	 * Does the current catalogue listing carry a slider block? Drives loading
+	 * the OC-Blocks assets (shelf CSS/JS) on that page.
+	 */
+	public function has_slider(): bool {
+		if ( ! function_exists( 'is_shop' ) || ! ( is_shop() || is_product_taxonomy() ) ) {
+			return false;
+		}
+
+		foreach ( $this->plan() as $places ) {
+			foreach ( $places as $place ) {
+				if ( 'slider' === get_post_meta( (int) $place['block'], '_oc_block_type', true ) ) {
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 
 	/* -------------------------------------------------------------- admin */
