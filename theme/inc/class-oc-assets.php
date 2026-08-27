@@ -379,6 +379,8 @@ final class Assets {
 				'--oc-topbar-bg'          => (string) get_theme_mod( 'oc_topbar_bg', '' ),
 				'--oc-topbar-tx'          => (string) get_theme_mod( 'oc_topbar_tx', '' ),
 				'--oc-footer-bg'          => (string) get_theme_mod( 'oc_footer_bg', '' ),
+				'--oc-footer-tx'          => (string) get_theme_mod( 'oc_footer_tx', '' ),
+				'--oc-footer-head'        => (string) get_theme_mod( 'oc_footer_head', '' ),
 				'--oc-primary-user'       => (string) get_theme_mod( 'oc_color_primary', '' ),
 				'--oc-secondary-user'     => (string) get_theme_mod( 'oc_color_secondary', '' ),
 				'--oc-sale-user'          => (string) get_theme_mod( 'oc_color_sale', '' ),

@@ -3187,23 +3187,23 @@ html.oc-drw-open body { overflow: hidden; }
 /* ---------- footer ---------- */
 
 .oc-footer {
-	--f-ink: var(--oc-ink);
-	--f-ink-2: var(--oc-ink-2, #6b7482);
-	--f-line: var(--oc-line);
-	--f-heading: var(--oc-ink);
-	--f-accent: var(--oc-primary, #03104c);
+	/* text colour drives everything; heading falls back to it; muted + line
+	 * derive from it. --oc-footer-tx/head come from the Customizer (omitted
+	 * when empty, so the fallbacks below apply). */
+	--f-ink: var(--oc-footer-tx, var(--oc-ink));
+	--f-heading: var(--oc-footer-head, var(--f-ink));
+	--f-ink-2: color-mix(in srgb, var(--f-ink) 62%, transparent);
+	--f-line: color-mix(in srgb, var(--f-ink) 16%, transparent);
+	--f-accent: var(--f-heading);
 	margin-block-start: calc(var(--oc-gap) * 2);
-	border-block-start: 1px solid var(--oc-line);
+	border-block-start: 1px solid var(--f-line);
 	background: var(--oc-footer-bg, var(--oc-bg));
 	color: var(--f-ink);
 }
-/* light text for a dark footer background */
+/* quick light-text preset for a dark background (an explicit text colour wins) */
 .oc-footer--dark {
-	--f-ink: rgba(255, 255, 255, .9);
-	--f-ink-2: rgba(255, 255, 255, .58);
-	--f-line: rgba(255, 255, 255, .14);
-	--f-heading: #fff;
-	--f-accent: #fff;
+	--f-ink: var(--oc-footer-tx, rgba(255, 255, 255, .9));
+	--f-heading: var(--oc-footer-head, var(--oc-footer-tx, #fff));
 	border-block-start: 0;
 }
 
@@ -3281,7 +3281,7 @@ html.oc-drw-open body { overflow: hidden; }
 	font-weight: 700;
 	cursor: pointer;
 }
-.oc-footer--dark .oc-footer__news-go { color: var(--oc-footer-bg, #111); background: #fff; }
+.oc-footer--dark .oc-footer__news-go { color: var(--oc-footer-bg, #111); }
 .oc-footer__news-thanks { flex-basis: 100%; margin: 8px 0 0; color: var(--oc-success, #2f7d4f); font-size: .88rem; }
 .oc-footer--dark .oc-footer__news-thanks { color: #7ee0a3; }
 

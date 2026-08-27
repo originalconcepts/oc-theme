@@ -1030,7 +1030,33 @@ final class Customizer {
 
 		// Brand.
 		$this->heading( $c, 'oc_h_ft_brand', 'oc_footer', __( 'Brand column', 'oc-theme' ) );
-		$this->toggle( $c, 'oc_footer_logo', 'oc_footer', __( 'Show the site logo', 'oc-theme' ), true );
+		$this->choice(
+			$c,
+			'oc_footer_logo_src',
+			'oc_footer',
+			__( 'Logo', 'oc-theme' ),
+			array(
+				'regular'     => __( 'Regular site logo', 'oc-theme' ),
+				'transparent' => __( 'Transparent-header logo (usually the light one)', 'oc-theme' ),
+				'custom'      => __( 'A custom logo (upload below)', 'oc-theme' ),
+				'none'        => __( 'No logo', 'oc-theme' ),
+			),
+			'regular'
+		);
+		$c->add_setting( 'oc_footer_logo_img', array( 'default' => '', 'sanitize_callback' => 'esc_url_raw' ) );
+		$c->add_control(
+			new \WP_Customize_Image_Control(
+				$c,
+				'oc_footer_logo_img',
+				array(
+					'section'         => 'oc_footer',
+					'label'           => __( 'Custom footer logo', 'oc-theme' ),
+					'active_callback' => static function () {
+						return 'custom' === get_theme_mod( 'oc_footer_logo_src', 'regular' );
+					},
+				)
+			)
+		);
 		$this->text( $c, 'oc_footer_tagline', 'oc_footer', __( 'Tagline under the logo', 'oc-theme' ) );
 
 		// Column headings.
@@ -1046,25 +1072,12 @@ final class Customizer {
 		$this->text( $c, 'oc_footer_news_h', 'oc_footer', __( 'Heading', 'oc-theme' ) );
 		$this->text( $c, 'oc_footer_news_t', 'oc_footer', __( 'Text', 'oc-theme' ) );
 
-		// Social.
-		$this->heading( $c, 'oc_h_ft_social', 'oc_footer', __( 'Social links (leave empty to hide)', 'oc-theme' ) );
-		foreach ( array(
-			'facebook'  => 'Facebook',
-			'instagram' => 'Instagram',
-			'x'         => 'X (Twitter)',
-			'tiktok'    => 'TikTok',
-			'youtube'   => 'YouTube',
-			'pinterest' => 'Pinterest',
-			'linkedin'  => 'LinkedIn',
-			'whatsapp'  => 'WhatsApp',
-		) as $key => $label ) {
-			$this->text( $c, 'oc_social_' . $key, 'oc_footer', $label );
-		}
-
-		// Bottom bar.
-		$this->heading( $c, 'oc_h_ft_bottom', 'oc_footer', __( 'Style & bottom bar', 'oc-theme' ) );
-		$this->color( $c, 'oc_footer_bg', 'oc_footer', __( 'Footer background', 'oc-theme' ) );
-		$this->toggle( $c, 'oc_footer_dark', 'oc_footer', __( 'Light text (for a dark background)', 'oc-theme' ), false );
+		// Colours & bottom bar. (Social icons come from Settings → Store details.)
+		$this->heading( $c, 'oc_h_ft_bottom', 'oc_footer', __( 'Colours & bottom bar', 'oc-theme' ) );
+		$this->color( $c, 'oc_footer_bg', 'oc_footer', __( 'Background', 'oc-theme' ) );
+		$this->toggle( $c, 'oc_footer_dark', 'oc_footer', __( 'Light text (quick preset for a dark background)', 'oc-theme' ), false );
+		$this->color( $c, 'oc_footer_tx', 'oc_footer', __( 'Text & icons colour', 'oc-theme' ), __( 'Overrides the preset above.', 'oc-theme' ) );
+		$this->color( $c, 'oc_footer_head', 'oc_footer', __( 'Heading colour (empty = same as text)', 'oc-theme' ) );
 		$this->text( $c, 'oc_footer_credit', 'oc_footer', __( 'Credit line (empty = © year and site name)', 'oc-theme' ) );
 		$this->text( $c, 'oc_footer_oc_url', 'oc_footer', __( 'Builder credit link (Original Concepts)', 'oc-theme' ) );
 		if ( class_exists( 'WooCommerce' ) ) {
