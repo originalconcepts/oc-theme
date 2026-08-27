@@ -719,6 +719,15 @@ final class Registry {
 						'max'   => 160,
 						'group' => 'design',
 					),
+					'sizem' => array(
+						'type'  => 'number',
+						'label' => __( 'Letter size — mobile (px)', 'oc-blocks' ),
+						'def'   => 0,
+						'min'   => 0,
+						'max'   => 160,
+						'hint'  => __( '0 = same as above. Smaller letters make a thinner strip.', 'oc-blocks' ),
+						'group' => 'design',
+					),
 					'color' => array(
 						'type'  => 'color',
 						'label' => __( 'Letter colour', 'oc-blocks' ),

@@ -813,6 +813,12 @@
 	padding-block: .35em;
 }
 
+/* A separate mobile letter size — the strip's thickness follows the font
+ * size (the padding is in em), so smaller letters give a thinner strip. */
+@media (max-width: 782px) {
+	.ocb-mq { font-size: var(--ocb-mq-size-m, var(--ocb-mq-size, 42px)); }
+}
+
 .ocb-mq__track {
 	display: inline-flex;
 	gap: 1.4em;

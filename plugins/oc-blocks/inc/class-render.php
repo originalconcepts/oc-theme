@@ -58,6 +58,11 @@ final class Render {
 		add_action( 'woocommerce_archive_description', array( $this, 'lobby' ), 5 );
 
 		add_action( 'save_post', array( $this, 'flush' ) );
+
+		// Category edits change what the categories block and product sliders
+		// show (e.g. a new card image), so they must turn the cache too.
+		add_action( 'edited_product_cat', array( $this, 'flush' ) );
+		add_action( 'edited_category', array( $this, 'flush' ) );
 	}
 
 	/**
@@ -876,6 +881,7 @@ final class Render {
 		}
 
 		$style = '--ocb-mq-size:' . absint( $s['size'] ) . 'px;--ocb-mq-speed:' . absint( $s['speed'] ) . 's;--ocb-mq-angle:' . (int) $s['angle'] . 'deg;'
+			. ( absint( $s['sizem'] ?? 0 ) > 0 ? '--ocb-mq-size-m:' . absint( $s['sizem'] ) . 'px;' : '' )
 			. ( '' === $s['color'] ? '' : '--ocb-mq-color:' . $s['color'] . ';' )
 			. ( '' === ( $s['bgc'] ?? '' ) ? '' : '--ocb-mq-bg:' . $s['bgc'] . ';' );
 
