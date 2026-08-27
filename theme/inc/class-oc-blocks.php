@@ -291,6 +291,8 @@ final class Blocks {
 				'cat'     => (int) get_post_meta( $id, '_oc_block_ps_cat', true ),
 				'ids'     => (string) get_post_meta( $id, '_oc_block_ps_ids', true ),
 				'heading' => (string) get_post_meta( $id, '_oc_block_ps_heading', true ),
+				'halign'  => 'center' === get_post_meta( $id, '_oc_block_ps_halign', true ) ? 'center' : 'start',
+				'bg'      => (string) get_post_meta( $id, '_oc_block_ps_bg', true ),
 				'count'   => max( 2, (int) ( get_post_meta( $id, '_oc_block_ps_count', true ) ?: 8 ) ),
 				'cols'    => max( 2, (int) ( get_post_meta( $id, '_oc_block_ps_cols', true ) ?: 4 ) ),
 				'gap'     => (string) get_post_meta( $id, '_oc_block_ps_gap', true ) ?: 'normal',
@@ -502,11 +504,23 @@ final class Blocks {
 					<input type="text" id="oc_block_ps_heading" name="oc_block_ps_heading" value="<?php echo esc_attr( $p['heading'] ); ?>" class="widefat" />
 				</div>
 				<div>
+					<label for="oc_block_ps_halign"><?php esc_html_e( 'Heading alignment', 'oc-theme' ); ?></label>
+					<select id="oc_block_ps_halign" name="oc_block_ps_halign" class="widefat">
+						<option value="start" <?php selected( 'start', $p['halign'] ); ?>><?php esc_html_e( 'Reading side', 'oc-theme' ); ?></option>
+						<option value="center" <?php selected( 'center', $p['halign'] ); ?>><?php esc_html_e( 'Centre', 'oc-theme' ); ?></option>
+					</select>
+				</div>
+				<div>
 					<label for="oc_block_ps_layout"><?php esc_html_e( 'Laid as', 'oc-theme' ); ?></label>
 					<select id="oc_block_ps_layout" name="oc_block_ps_layout" class="widefat">
 						<option value="slider" <?php selected( 'slider', $p['layout'] ); ?>><?php esc_html_e( 'Slider', 'oc-theme' ); ?></option>
 						<option value="grid" <?php selected( 'grid', $p['layout'] ); ?>><?php esc_html_e( 'Grid', 'oc-theme' ); ?></option>
 					</select>
+				</div>
+				<div>
+					<label for="oc_block_ps_bg"><?php esc_html_e( 'Band background', 'oc-theme' ); ?></label>
+					<input type="text" id="oc_block_ps_bg" name="oc_block_ps_bg" value="<?php echo esc_attr( $p['bg'] ); ?>" class="widefat ltr" placeholder="#f4f1ec" />
+					<p class="description"><?php esc_html_e( 'A colour behind this band. Empty = none.', 'oc-theme' ); ?></p>
 				</div>
 			</div>
 
@@ -666,6 +680,10 @@ final class Blocks {
 		$ps_ids = array_filter( array_map( 'absint', preg_split( '/[^0-9]+/', (string) wp_unslash( $_POST['oc_block_ps_ids'] ?? '' ) ) ?: array() ) );
 		update_post_meta( $id, '_oc_block_ps_ids', implode( ',', $ps_ids ) );
 		update_post_meta( $id, '_oc_block_ps_heading', sanitize_text_field( wp_unslash( $_POST['oc_block_ps_heading'] ?? '' ) ) );
+		update_post_meta( $id, '_oc_block_ps_halign', 'center' === ( $_POST['oc_block_ps_halign'] ?? '' ) ? 'center' : 'start' ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- strict comparison stores a literal.
+		$ps_bg  = trim( (string) wp_unslash( $_POST['oc_block_ps_bg'] ?? '' ) );
+		$ps_bg  = preg_match( '/^#([0-9a-f]{3}|[0-9a-f]{6})$|^(rgb|rgba|hsl|hsla)\([0-9.,%\s\/]+\)$/i', $ps_bg ) ? $ps_bg : '';
+		update_post_meta( $id, '_oc_block_ps_bg', $ps_bg );
 		update_post_meta( $id, '_oc_block_ps_count', min( 24, max( 2, absint( $_POST['oc_block_ps_count'] ?? 8 ) ) ) );
 		update_post_meta( $id, '_oc_block_ps_cols', min( 6, max( 2, absint( $_POST['oc_block_ps_cols'] ?? 4 ) ) ) );
 		update_post_meta( $id, '_oc_block_ps_gap', sanitize_key( wp_unslash( $_POST['oc_block_ps_gap'] ?? 'normal' ) ) );
@@ -992,6 +1010,7 @@ final class Blocks {
 			array(
 				'defer'   => true,
 				'heading' => $ps['heading'],
+				'halign'  => $ps['halign'],
 				'mode'    => $ps['mode'],
 				'cat'     => $cat,
 				'ids'     => array_filter( array_map( 'absint', preg_split( '/[^0-9]+/', (string) $ps['ids'] ) ?: array() ) ),
@@ -1012,8 +1031,11 @@ final class Blocks {
 		$class   = 'oc-block oc-block--slider oc-block--row';
 		$class  .= 'desktop' === $devices ? ' oc-block--desk' : '';
 		$class  .= 'mobile' === $devices ? ' oc-block--mob' : '';
+		$class  .= '' !== $ps['bg'] ? ' oc-block--slider--bg' : '';
 
-		return '<li class="' . esc_attr( $class ) . '">' . $html . '</li>';
+		$style = '' !== $ps['bg'] ? ' style="background:' . esc_attr( $ps['bg'] ) . '"' : '';
+
+		return '<li class="' . esc_attr( $class ) . '"' . $style . '>' . $html . '</li>';
 	}
 
 	/**

@@ -546,6 +546,8 @@
 
 .ocb-shelf { position: relative; --ocb-shelf-gap: 24px; }
 
+.ocb__title--center { text-align: center; }
+
 /* deferred shelf (recently-viewed / catalogue slider), injected after load */
 .oc-shelf-load.is-in { animation: ocb-vfade .45s ease both; }
 @keyframes ocb-vfade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }

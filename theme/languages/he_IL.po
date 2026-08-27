@@ -5554,3 +5554,12 @@ msgstr "— הקטגוריה הנוכחית —"
 
 msgid "Products they viewed"
 msgstr "מוצרים שצפו בהם"
+
+msgid "Heading alignment"
+msgstr "יישור הכותרת"
+
+msgid "Band background"
+msgstr "רקע האזור"
+
+msgid "A colour behind this band. Empty = none."
+msgstr "צבע מאחורי האזור. ריק = ללא."

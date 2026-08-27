@@ -695,7 +695,10 @@ final class Render {
 		$layout = 'grid' === (string) ( $o['layout'] ?? 'slider' ) ? 'grid' : 'slider';
 		$gap    = (string) ( $o['gap'] ?? 'normal' );
 		$mcols  = '' !== (string) ( $o['mcols'] ?? '' ) ? (string) $o['mcols'] : '1';
-		$head   = self::heading( array( 'heading' => (string) ( $o['heading'] ?? '' ) ) );
+
+		$htext = trim( (string) ( $o['heading'] ?? '' ) );
+		$hcls  = 'center' === (string) ( $o['halign'] ?? '' ) ? ' ocb__title--center' : '';
+		$head  = '' === $htext ? '' : '<h2 class="ocb__title' . $hcls . '">' . esc_html( $htext ) . '</h2>';
 
 		return $head
 			. '<div class="ocb-shelf ocb-shelf--' . esc_attr( $layout ) . ' ocb-shelf--gap-' . esc_attr( $gap ) . ' ocb-shelf--m' . esc_attr( $mcols ) . '" style="--ocb-cols:' . $cols . '"'
@@ -747,6 +750,7 @@ final class Render {
 			'cat'     => $cat,
 			'ids'     => implode( ',', array_filter( array_map( 'absint', (array) ( $o['ids'] ?? $o['picks'] ?? array() ) ) ) ),
 			'heading' => (string) ( $o['heading'] ?? '' ),
+			'halign'  => 'center' === (string) ( $o['halign'] ?? '' ) ? 'center' : 'start',
 			'count'   => $count,
 			'cols'    => $cols,
 			'gap'     => (string) ( $o['gap'] ?? 'normal' ),
@@ -773,6 +777,7 @@ final class Render {
 			'cat'     => isset( $_POST['cat'] ) ? absint( wp_unslash( $_POST['cat'] ) ) : 0,
 			'ids'     => isset( $_POST['ids'] ) ? array_filter( array_map( 'absint', explode( ',', (string) wp_unslash( $_POST['ids'] ) ) ) ) : array(),
 			'heading' => isset( $_POST['heading'] ) ? sanitize_text_field( wp_unslash( $_POST['heading'] ) ) : '',
+			'halign'  => isset( $_POST['halign'] ) ? sanitize_key( wp_unslash( $_POST['halign'] ) ) : 'start',
 			'count'   => isset( $_POST['count'] ) ? min( 24, absint( wp_unslash( $_POST['count'] ) ) ) : 8,
 			'cols'    => isset( $_POST['cols'] ) ? min( 6, absint( wp_unslash( $_POST['cols'] ) ) ) : 4,
 			'gap'     => isset( $_POST['gap'] ) ? sanitize_key( wp_unslash( $_POST['gap'] ) ) : 'normal',

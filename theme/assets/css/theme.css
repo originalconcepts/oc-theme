@@ -11657,6 +11657,28 @@ body.oc-checkout { overflow-x: clip; }
 /* a little reserved height while the deferred shelf loads, to soften the jump */
 .oc-block--slider .oc-shelf-load:not(.is-in) { display: block; min-block-size: 40px; }
 
+/* optional band background (catalogue layout only) */
+.woocommerce ul.products li.oc-block--slider--bg {
+	padding: 22px clamp(16px, 3vw, 34px);
+	border-radius: 12px;
+}
+
+/* On phones the band runs edge to edge: the heading and the first card line
+ * up with the page, and the strip's trailing side reaches the screen edge
+ * with no gap. */
+@media (max-width: 782px) {
+	.woocommerce ul.products li.oc-block--slider {
+		margin-inline: calc(50% - 50vw);
+		border-radius: 0;
+	}
+	.woocommerce ul.products li.oc-block--slider--bg { padding-inline: 0; padding-block: 18px; }
+	.oc-block--slider .ocb__title { padding-inline: var(--oc-gap, 20px); }
+	.oc-block--slider .ocb-shelf--slider ul.products {
+		padding-inline: var(--oc-gap, 20px) 0;
+		scroll-padding-inline-start: var(--oc-gap, 20px);
+	}
+}
+
 .oc-block__link { display: block; block-size: 100%; color: inherit; text-decoration: none; }
 .oc-block__media { display: block; block-size: 100%; }
 
