@@ -7834,3 +7834,31 @@
 		} );
 	} );
 }() );
+
+/* -- footer newsletter sign-up (reuses the oc_blocks_subscribe endpoint) -- */
+( function () {
+	var form = document.querySelector( '[data-oc-subscribe]' );
+	if ( ! form ) { return; }
+
+	form.addEventListener( 'submit', function ( e ) {
+		e.preventDefault();
+		if ( form.querySelector( '.oc-footer__news-trap' ).value ) { return; } // honeypot
+		var go = form.querySelector( '.oc-footer__news-go' );
+		var mail = form.querySelector( '.oc-footer__news-mail' );
+		if ( go ) { go.disabled = true; }
+		fetch( form.getAttribute( 'action' ), {
+			method: 'POST',
+			credentials: 'same-origin',
+			body: new FormData( form )
+		} ).then( function ( r ) { return r.json(); } ).then( function ( out ) {
+			if ( go ) { go.disabled = false; }
+			if ( out && out.success ) {
+				var t = form.querySelector( '.oc-footer__news-thanks' );
+				if ( t ) { t.hidden = false; }
+				if ( mail ) { mail.value = ''; }
+			} else if ( out && out.data && out.data.msg ) {
+				window.alert( out.data.msg );
+			}
+		} ).catch( function () { if ( go ) { go.disabled = false; } } );
+	} );
+}() );

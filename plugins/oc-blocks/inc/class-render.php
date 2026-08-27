@@ -52,7 +52,7 @@ final class Render {
 		add_action( 'edited_product_cat', array( $this, 'save_lobby' ) );
 		add_action( 'woocommerce_archive_description', array( $this, 'lobby' ), 5 );
 
-		add_action( 'save_post_page', array( $this, 'flush' ) );
+		add_action( 'save_post', array( $this, 'flush' ) );
 	}
 
 	/**
@@ -63,6 +63,9 @@ final class Render {
 	 * @return array<int,string>
 	 */
 	public function body_class( array $classes ): array {
+		// Only a composed PAGE takes over its title/breadcrumb — a post keeps
+		// its heading, and a product keeps its whole layout (the sections land
+		// inside the description).
 		if ( is_page() && self::is_composed( (int) get_queried_object_id() ) ) {
 			$classes[] = 'oc-composed';
 		}
@@ -82,19 +85,31 @@ final class Render {
 	}
 
 	/**
+	 * The post types the composer may build. Pages, posts and products —
+	 * a product's sections take over its full description (the_content).
+	 *
+	 * @return array<int,string>
+	 */
+	public static function composable_types(): array {
+		return array_values( (array) apply_filters( 'oc_blocks_post_types', array( 'page', 'post', 'product' ) ) );
+	}
+
+	/**
 	 * A composed page shows its sections in place of its content.
 	 *
 	 * @param string $content Content.
 	 * @return string
 	 */
 	public function compose( $content ) {
-		if ( ! is_page() || ! in_the_loop() || ! is_main_query() ) {
+		if ( ! in_the_loop() || ! is_main_query() ) {
 			return $content;
 		}
 
 		$page_id = get_the_ID();
 
-		if ( ! $page_id || ! self::is_composed( (int) $page_id ) ) {
+		if ( ! $page_id
+			|| ! in_array( get_post_type( $page_id ), self::composable_types(), true )
+			|| ! self::is_composed( (int) $page_id ) ) {
 			return $content;
 		}
 

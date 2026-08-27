@@ -5311,3 +5311,18 @@ msgstr "פריטי ההזמנה"
 
 msgid "Entry %s"
 msgstr "קוד כניסה %s"
+
+msgid "E-commerce site by"
+msgstr "בניית אתר מכירות"
+
+msgid "Your email"
+msgstr "האימייל שלך"
+
+msgid "Subscribe"
+msgstr "הרשמה"
+
+msgid "Newsletter"
+msgstr "ניוזלטר"
+
+msgid "Thank you — you are on the list."
+msgstr "תודה — נרשמת לרשימה."

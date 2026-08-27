@@ -162,10 +162,14 @@ function oc_setup(): void {
 
 	register_nav_menus(
 		array(
-			'primary'   => __( 'Primary menu', 'oc-theme' ),
-			'secondary' => __( 'Header side menu', 'oc-theme' ),
-			'topbar'    => __( 'Top bar menu', 'oc-theme' ),
-			'footer'    => __( 'Footer menu', 'oc-theme' ),
+			'primary'    => __( 'Primary menu', 'oc-theme' ),
+			'secondary'  => __( 'Header side menu', 'oc-theme' ),
+			'topbar'     => __( 'Top bar menu', 'oc-theme' ),
+			'footer'     => __( 'Footer menu', 'oc-theme' ),
+			'footer-col-1' => __( 'Footer column 1', 'oc-theme' ),
+			'footer-col-2' => __( 'Footer column 2', 'oc-theme' ),
+			'footer-col-3' => __( 'Footer column 3', 'oc-theme' ),
+			'footer-col-4' => __( 'Footer column 4', 'oc-theme' ),
 		)
 	);
 

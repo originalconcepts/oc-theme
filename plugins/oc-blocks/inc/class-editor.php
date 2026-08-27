@@ -27,7 +27,8 @@ final class Editor {
 	public function register(): void {
 		add_action( 'admin_menu', array( $this, 'screen' ) );
 		add_filter( 'page_row_actions', array( $this, 'row_action' ), 10, 2 );
-		add_action( 'add_meta_boxes_page', array( $this, 'meta_box' ) );
+		add_filter( 'post_row_actions', array( $this, 'row_action' ), 10, 2 );
+		add_action( 'add_meta_boxes', array( $this, 'meta_box' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'assets' ) );
 
 		add_action( 'wp_ajax_oc_blocks_save', array( $this, 'ajax_save' ) );
@@ -43,7 +44,7 @@ final class Editor {
 			'',
 			__( 'OC Blocks', 'oc-blocks' ),
 			__( 'OC Blocks', 'oc-blocks' ),
-			'edit_pages',
+			'edit_posts',
 			'oc-blocks',
 			array( $this, 'render_screen' )
 		);
@@ -57,7 +58,7 @@ final class Editor {
 	 * @return array<string,string>
 	 */
 	public function row_action( $actions, $post ) {
-		if ( 'page' === $post->post_type && current_user_can( 'edit_page', $post->ID ) ) {
+		if ( in_array( $post->post_type, Render::composable_types(), true ) && current_user_can( 'edit_post', $post->ID ) ) {
 			$actions['oc_blocks'] = '<a href="' . esc_url( self::url( (int) $post->ID ) ) . '">' . esc_html__( 'Build with OC Blocks', 'oc-blocks' ) . '</a>';
 		}
 
@@ -65,9 +66,15 @@ final class Editor {
 	}
 
 	/**
-	 * The door from the page's edit screen.
+	 * The door from the edit screen of any composable post type.
+	 *
+	 * @param string $post_type Current edit screen's post type.
 	 */
-	public function meta_box(): void {
+	public function meta_box( $post_type ): void {
+		if ( ! in_array( (string) $post_type, Render::composable_types(), true ) ) {
+			return;
+		}
+
 		add_meta_box(
 			'oc-blocks-door',
 			__( 'OC Blocks', 'oc-blocks' ),
@@ -75,13 +82,13 @@ final class Editor {
 				$built = Render::is_composed( (int) $post->ID );
 
 				echo '<p style="margin-block-start:0;">'
-					. esc_html( $built ? __( 'This page is built with the composer; its sections replace the content below.', 'oc-blocks' ) : __( 'Build this page from ready-made sections, with a live preview.', 'oc-blocks' ) )
+					. esc_html( $built ? __( 'This is built with the composer; its sections replace the content below.', 'oc-blocks' ) : __( 'Build this from ready-made sections, with a live preview.', 'oc-blocks' ) )
 					. '</p>';
 				echo '<a class="button button-primary" style="width:100%;text-align:center;" href="' . esc_url( self::url( (int) $post->ID ) ) . '">'
 					. esc_html( $built ? __( 'Open the composer', 'oc-blocks' ) : __( 'Build with OC Blocks', 'oc-blocks' ) )
 					. '</a>';
 			},
-			'page',
+			$post_type,
 			'side',
 			'high'
 		);
@@ -327,7 +334,7 @@ final class Editor {
 
 		$page_id = isset( $_POST['page'] ) ? absint( $_POST['page'] ) : 0;
 
-		if ( ! $page_id || ! current_user_can( 'edit_page', $page_id ) ) {
+		if ( ! $page_id || ! current_user_can( 'edit_post', $page_id ) ) {
 			wp_send_json_error( array(), 403 );
 		}
 
@@ -352,7 +359,7 @@ final class Editor {
 	public function ajax_draft(): void {
 		check_ajax_referer( 'oc_blocks', 'nonce' );
 
-		if ( ! current_user_can( 'edit_pages' ) ) {
+		if ( ! current_user_can( 'edit_posts' ) ) {
 			wp_send_json_error( array(), 403 );
 		}
 
@@ -371,7 +378,7 @@ final class Editor {
 	public function ajax_search(): void {
 		check_ajax_referer( 'oc_blocks', 'nonce' );
 
-		if ( ! current_user_can( 'edit_pages' ) ) {
+		if ( ! current_user_can( 'edit_posts' ) ) {
 			wp_send_json_error( array(), 403 );
 		}
 

@@ -1011,25 +1011,76 @@ final class Customizer {
 			'oc_footer',
 			array(
 				'title'       => __( 'Footer', 'oc-theme' ),
-				'description' => __( 'The footer has three floors. (1) Content columns: three widget areas — Appearance → Widgets → "Footer column 1/2/3"; a text widget, a menu widget, contact details, anything. An empty column simply does not render. (2) The bottom bar: the menu assigned to the "Footer menu" location (Appearance → Menus) beside the credit line below. (3) This screen styles it all: background, layout, credit. Order of columns follows the site language direction.', 'oc-theme' ),
+				'description' => __( 'A ready-made footer preset — pick it, then fill the blanks. Link columns are menus (Appearance → Menus → assign to "Footer column 1–4"); each column\'s heading is set below. The bottom bar uses the "Footer menu" for its legal links.', 'oc-theme' ),
 				'priority'    => 12,
 			)
 		);
 
 		$this->choice(
 			$c,
+			'oc_footer_preset',
+			'oc_footer',
+			__( 'Footer preset', 'oc-theme' ),
+			array(
+				'columns' => __( 'Columns — brand, link columns, newsletter', 'oc-theme' ),
+				'minimal' => __( 'Minimal — menu and credit only', 'oc-theme' ),
+			),
+			'columns'
+		);
+
+		// Brand.
+		$this->heading( $c, 'oc_h_ft_brand', 'oc_footer', __( 'Brand column', 'oc-theme' ) );
+		$this->toggle( $c, 'oc_footer_logo', 'oc_footer', __( 'Show the site logo', 'oc-theme' ), true );
+		$this->text( $c, 'oc_footer_tagline', 'oc_footer', __( 'Tagline under the logo', 'oc-theme' ) );
+
+		// Column headings.
+		$this->heading( $c, 'oc_h_ft_cols', 'oc_footer', __( 'Link-column headings', 'oc-theme' ) );
+		for ( $i = 1; $i <= 4; $i++ ) {
+			/* translators: %d: column number. */
+			$this->text( $c, 'oc_footer_col' . $i . '_h', 'oc_footer', sprintf( __( 'Column %d heading', 'oc-theme' ), $i ) );
+		}
+
+		// Newsletter.
+		$this->heading( $c, 'oc_h_ft_news', 'oc_footer', __( 'Newsletter column', 'oc-theme' ) );
+		$this->toggle( $c, 'oc_footer_news', 'oc_footer', __( 'Show the newsletter sign-up', 'oc-theme' ), true );
+		$this->text( $c, 'oc_footer_news_h', 'oc_footer', __( 'Heading', 'oc-theme' ) );
+		$this->text( $c, 'oc_footer_news_t', 'oc_footer', __( 'Text', 'oc-theme' ) );
+
+		// Social.
+		$this->heading( $c, 'oc_h_ft_social', 'oc_footer', __( 'Social links (leave empty to hide)', 'oc-theme' ) );
+		foreach ( array(
+			'facebook'  => 'Facebook',
+			'instagram' => 'Instagram',
+			'x'         => 'X (Twitter)',
+			'tiktok'    => 'TikTok',
+			'youtube'   => 'YouTube',
+			'pinterest' => 'Pinterest',
+			'linkedin'  => 'LinkedIn',
+			'whatsapp'  => 'WhatsApp',
+		) as $key => $label ) {
+			$this->text( $c, 'oc_social_' . $key, 'oc_footer', $label );
+		}
+
+		// Bottom bar.
+		$this->heading( $c, 'oc_h_ft_bottom', 'oc_footer', __( 'Style & bottom bar', 'oc-theme' ) );
+		$this->color( $c, 'oc_footer_bg', 'oc_footer', __( 'Footer background', 'oc-theme' ) );
+		$this->toggle( $c, 'oc_footer_dark', 'oc_footer', __( 'Light text (for a dark background)', 'oc-theme' ), false );
+		$this->text( $c, 'oc_footer_credit', 'oc_footer', __( 'Credit line (empty = © year and site name)', 'oc-theme' ) );
+		$this->text( $c, 'oc_footer_oc_url', 'oc_footer', __( 'Builder credit link (Original Concepts)', 'oc-theme' ) );
+		if ( class_exists( 'WooCommerce' ) ) {
+			$this->toggle( $c, 'oc_footer_country', 'oc_footer', __( 'Show the country / currency in the bottom bar', 'oc-theme' ), false );
+		}
+		$this->choice(
+			$c,
 			'oc_footer_layout',
 			'oc_footer',
 			__( 'Bottom bar layout', 'oc-theme' ),
 			array(
-				'inline'   => __( 'Menu and credit on one line', 'oc-theme' ),
+				'inline'   => __( 'On one line', 'oc-theme' ),
 				'centered' => __( 'Centred, stacked', 'oc-theme' ),
 			),
 			'inline'
 		);
-
-		$this->color( $c, 'oc_footer_bg', 'oc_footer', __( 'Footer background', 'oc-theme' ) );
-		$this->text( $c, 'oc_footer_credit', 'oc_footer', __( 'Credit line (empty = © year and site name)', 'oc-theme' ) );
 	}
 
 	/*
