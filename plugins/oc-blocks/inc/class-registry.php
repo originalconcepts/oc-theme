@@ -929,6 +929,11 @@ final class Registry {
 							),
 						),
 					),
+					'heading' => array(
+						'type'  => 'text',
+						'label' => __( 'Panel title', 'oc-blocks' ),
+						'hint'  => __( 'Shown above the products on mobile. Empty = “Shop the Look”.', 'oc-blocks' ),
+					),
 					'side'   => array(
 						'type'    => 'seg',
 						'label'   => __( 'The picture stands', 'oc-blocks' ),

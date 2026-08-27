@@ -514,14 +514,16 @@ html[dir="ltr"] .ocbe-switch input:checked + i::after { transform: translateX(16
 .ocbe-chip button:hover { color: #b32d2e; }
 
 .ocbe-picks__drop {
-	position: absolute;
-	inset-inline: 0;
-	z-index: 5;
+	/* In-flow (not an absolute overlay) so the results are never clipped by
+	 * the scrolling settings panel — they push the rows below and the panel
+	 * grows; a long list scrolls inside the box. */
+	margin-block-start: 4px;
 	background: #fff;
 	border: 1px solid #ddd;
 	border-radius: 10px;
 	box-shadow: 0 8px 30px rgb(0 0 0 / 12%);
-	overflow: hidden;
+	max-block-size: 240px;
+	overflow: hidden auto;
 }
 
 .ocbe-picks__drop button {

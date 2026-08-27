@@ -971,20 +971,47 @@
 
 .ocb-look--end .ocb-look__pic { order: 2; }
 
-.ocb-look__pic { position: relative; overflow: hidden; border-radius: var(--oc-radius, 8px); }
+/* Rooms are a slider: one fills the frame, and with several the next peeks
+ * in. Swiping (or a dot) picks the room; its products answer below. */
+.ocb-look__pic {
+	position: relative;
+	display: flex;
+	overflow-x: auto;
+	scroll-snap-type: x mandatory;
+	scrollbar-width: none;
+	gap: 12px;
+	border-radius: var(--oc-radius, 8px);
+}
+.ocb-look__pic::-webkit-scrollbar { display: none; }
 
-.ocb-look__pic img { display: block; inline-size: 100%; block-size: auto; }
+.ocb-look__scene {
+	position: relative;
+	flex: 0 0 100%;
+	scroll-snap-align: start;
+	overflow: hidden;
+	border-radius: var(--oc-radius, 8px);
+}
+.ocb-look--multi .ocb-look__scene { flex-basis: 90%; }
 
-/* The rooms stand stacked; one is lit at a time. */
-.ocb-look__scene { position: relative; }
+.ocb-look__scene img { display: block; inline-size: 100%; block-size: auto; }
+.ocb-look__scene picture { display: contents; }
 
-.ocb-look__scene:not(.is-on) { display: none; }
+/* scene dots */
+.ocb-look__dots { display: flex; justify-content: center; gap: 8px; margin-block-start: 12px; }
+.ocb-look__dot {
+	inline-size: 8px;
+	block-size: 8px;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	background: color-mix(in srgb, currentColor 24%, transparent);
+	cursor: pointer;
+	transition: background .2s, transform .2s;
+}
+.ocb-look__dot.is-on { background: currentColor; transform: scale(1.25); }
 
-.ocb-look__scene.is-on { animation: ocb-look-in .5s ease; }
-
-.ocb-look__snav.ocb-arr { position: absolute; }
-.ocb-look__snav.ocb-arr--prev { left: 12px; right: auto; }
-.ocb-look__snav.ocb-arr--next { right: 12px; left: auto; }
+/* the mobile take-over bar (close on the left, centred title) */
+.ocb-look__bar { display: none; }
 
 /* The spot: a breathing ring, the reference's own gesture. */
 .ocb-look__spot {
@@ -1081,67 +1108,100 @@ html[dir="rtl"] .ocb-look__nav .ocb-arr svg { transform: scaleX(-1); }
 
 .ocb-look__count { font-size: .88em; color: color-mix(in srgb, currentColor 60%, transparent); min-inline-size: 44px; }
 
-.ocb-look__open { display: none; }
+.ocb-look__open,
+.ocb-look__x { display: none; }
 
-.ocb-look__close { display: none; }
+/* the page underneath stays put while the take-over is open */
+html.oc-look-lock,
+html.oc-look-lock body { overflow: hidden; }
 
 @media (max-width: 782px) {
 	.ocb-look { grid-template-columns: 1fr; gap: 14px; }
+	.ocb-look--multi .ocb-look__scene { flex-basis: 100%; }
 
-	/* The phone leads with the picture; the products wait behind a button
-	 * and rise when asked — the spots ask too. */
-	.ocb-look__side {
-		display: none;
-		position: fixed;
-		inset-inline: 0;
-		inset-block-end: 0;
-		z-index: 96;
-		background: var(--oc-surface, #fff);
-		border-radius: 16px 16px 0 0;
-		box-shadow: 0 -10px 40px rgb(0 0 0 / 18%);
-		padding: 26px 20px 22px;
-		max-block-size: 78vh;
-		overflow-y: auto;
-	}
-
-	.ocb-look.is-open .ocb-look__side { display: block; animation: ocb-look-up .3s cubic-bezier(.22, .61, .36, 1); }
-
-	@keyframes ocb-look-up {
-		from { transform: translateY(40px); opacity: 0; }
-	}
-
-	.ocb-look__close {
-		display: block;
-		inline-size: 100%;
-		padding: 4px 0 14px;
-		border: 0;
-		background: none;
-		cursor: pointer;
-	}
-
-	.ocb-look__grab {
-		display: block;
-		inline-size: 44px;
-		block-size: 4.5px;
-		margin-inline: auto;
-		border-radius: 3px;
-		background: color-mix(in srgb, currentColor 25%, transparent);
-	}
+	/* Closed on a phone: just the picture, its spots, and a button. */
+	.ocb-look__side { display: none; }
 
 	.ocb-look__open {
 		display: block;
 		inline-size: 100%;
-		margin-block-start: 2px;
-		padding: 10px;
+		padding: 12px;
 		border: 1.5px solid var(--oc-ink, #1c1c1c);
 		border-radius: var(--oc-cta-r, 8px);
 		background: none;
+		color: var(--oc-ink, #1c1c1c);
 		font: inherit;
 		font-weight: 600;
 		cursor: pointer;
 	}
 
-	.ocb-look__arrs { display: none; }
+	/* Open: a full-screen take-over like Prestige — a bar (close on the left,
+	 * centred title), the picture up top, the products below. Both enter
+	 * gently; closing the × returns to the picture. */
+	.ocb-look.is-open {
+		position: fixed;
+		inset: 0;
+		z-index: 99;
+		display: flex;
+		flex-direction: column;
+		gap: 0;
+		background: var(--oc-surface, #fff);
+		overflow: hidden;
+		animation: ocb-look-open .28s ease both;
+	}
+	@keyframes ocb-look-open { from { opacity: 0; } }
+
+	.ocb-look.is-open .ocb-look__bar {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		position: relative;
+		flex: 0 0 auto;
+		padding: 14px 54px;
+		border-block-end: 1px solid var(--oc-line, #ececec);
+	}
+	.ocb-look__title { font-weight: 600; letter-spacing: .04em; text-align: center; }
+	.ocb-look.is-open .ocb-look__x {
+		display: grid;
+		place-items: center;
+		position: absolute;
+		inset-inline-start: 10px;
+		inset-block: 0;
+		margin-block: auto;
+		inline-size: 38px;
+		block-size: 38px;
+		padding: 0;
+		border: 0;
+		border-radius: 50%;
+		background: none;
+		color: var(--oc-ink, #1c1c1c);
+		cursor: pointer;
+	}
+
+	.ocb-look.is-open .ocb-look__pic {
+		flex: 0 0 46vh;
+		border-radius: 0;
+		animation: ocb-look-pic .38s cubic-bezier(.22, .61, .36, 1) both;
+	}
+	@keyframes ocb-look-pic { from { transform: scale(1.03); opacity: .6; } }
+	.ocb-look.is-open .ocb-look__scene { block-size: 46vh; }
+	.ocb-look.is-open .ocb-look__scene img { block-size: 100%; object-fit: cover; }
+
+	.ocb-look.is-open .ocb-look__dots { margin-block: 10px 2px; }
+
+	.ocb-look.is-open .ocb-look__side {
+		display: block;
+		flex: 1;
+		overflow-y: auto;
+		padding: 10px 18px 24px;
+		text-align: center;
+		animation: ocb-look-up .4s cubic-bezier(.22, .61, .36, 1) both;
+	}
+	@keyframes ocb-look-up { from { transform: translateY(26px); opacity: 0; } }
+
+	.ocb-look.is-open .ocb-look__open { display: none; }
+	.ocb-look.is-open .ocb-look__cimg { max-inline-size: 220px; }
+	.ocb-look.is-open .ocb-look__cimg img { aspect-ratio: 1 / 1; }
 }
 
 /* ---------- picture & words: the editorial split ---------- */

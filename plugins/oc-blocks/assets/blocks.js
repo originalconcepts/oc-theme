@@ -439,139 +439,143 @@
 	/* ---------- shop the look ---------- */
 
 	document.querySelectorAll( '[data-ocb-look]' ).forEach( function ( look ) {
+		var pic = look.querySelector( '[data-ocb-look-scenes]' );
+		var sceneEls = [].slice.call( look.querySelectorAll( '.ocb-look__scene' ) );
 		var spots = [].slice.call( look.querySelectorAll( '[data-ocb-spot]' ) );
 		var cards = [].slice.call( look.querySelectorAll( '[data-ocb-card]' ) );
-		var scenes = [].slice.call( look.querySelectorAll( '[data-ocb-lscene]' ) );
-		var count = look.querySelector( '.ocb-look__count b' );
+		var dots = [].slice.call( look.querySelectorAll( '[data-ocb-lgo]' ) );
 		var side = look.querySelector( '.ocb-look__side' );
-		var at = 0;
+		var nav = look.querySelector( '.ocb-look__nav' );
+		var cur = look.querySelector( '.ocb-look__cur' );
+		var tot = look.querySelector( '.ocb-look__tot' );
 
 		if ( ! cards.length ) {
 			return;
 		}
 
-		function show( n ) {
-			at = ( n + cards.length ) % cards.length;
+		// Products grouped by the room (scene) they belong to, so the count
+		// and the paging are per-room, not across all rooms.
+		var byScene = {};
+		cards.forEach( function ( c ) {
+			var s = Number( c.dataset.ocbScene || 0 );
+			( byScene[ s ] = byScene[ s ] || [] ).push( c );
+		} );
 
-			var scene = Number( cards[ at ].dataset.ocbScene || 0 );
+		var curScene = Number( cards[ 0 ].dataset.ocbScene || 0 );
+		var idx = 0;
 
-			spots.forEach( function ( sp, i ) {
-				sp.classList.toggle( 'is-on', i === at );
-			} );
-			cards.forEach( function ( c, i ) {
-				c.classList.toggle( 'is-on', i === at );
-			} );
-			scenes.forEach( function ( sc ) {
-				sc.classList.toggle( 'is-on', Number( sc.dataset.ocbLscene ) === scene );
-			} );
+		function paint() {
+			var list = byScene[ curScene ] || [];
 
-			if ( count ) {
-				count.textContent = String( at + 1 );
+			if ( ! list.length ) {
+				return;
+			}
+
+			idx = ( idx % list.length + list.length ) % list.length;
+
+			var card = list[ idx ];
+			var globalAt = Number( card.dataset.ocbCard );
+
+			cards.forEach( function ( c ) { c.classList.toggle( 'is-on', c === card ); } );
+			spots.forEach( function ( sp ) { sp.classList.toggle( 'is-on', Number( sp.dataset.ocbSpot ) === globalAt ); } );
+			dots.forEach( function ( d ) { d.classList.toggle( 'is-on', Number( d.dataset.ocbLgo ) === curScene ); } );
+
+			if ( cur ) { cur.textContent = String( idx + 1 ); }
+			if ( tot ) { tot.textContent = String( list.length ); }
+			if ( nav ) { nav.hidden = list.length < 2; }
+		}
+
+		// Page through the current room's products.
+		function prod( dir ) {
+			if ( ( byScene[ curScene ] || [] ).length > 1 ) {
+				idx += dir;
+				paint();
 			}
 		}
 
-		// Walking the rooms: the arrow on the picture jumps to the next
-		// room's first product.
-		function room( dir ) {
-			var current = Number( cards[ at ].dataset.ocbScene || 0 );
-			var total = scenes.length || 1;
-			var next = ( current + dir + total ) % total;
-
-			for ( var i = 0; i < cards.length; i++ ) {
-				if ( Number( cards[ i ].dataset.ocbScene || 0 ) === next ) {
-					show( i );
-					return;
-				}
+		// Move to a room: scroll the slider to it, show its first product.
+		function toScene( s, scroll ) {
+			if ( byScene[ s ] === undefined ) {
+				return;
 			}
+
+			curScene = s;
+			idx = 0;
+
+			if ( scroll && sceneEls[ s ] ) {
+				sceneEls[ s ].scrollIntoView( { inline: 'start', block: 'nearest', behavior: 'smooth' } );
+			}
+
+			paint();
+		}
+
+		// Swiping the picture picks the nearest room and updates the products.
+		var st = null;
+		if ( pic && sceneEls.length > 1 ) {
+			pic.addEventListener( 'scroll', function () {
+				clearTimeout( st );
+				st = setTimeout( function () {
+					var pr = pic.getBoundingClientRect();
+					var best = curScene, bestD = Infinity;
+					sceneEls.forEach( function ( el, i ) {
+						var d = Math.abs( el.getBoundingClientRect().left - pr.left );
+						if ( d < bestD ) { bestD = d; best = i; }
+					} );
+					if ( best !== curScene ) { curScene = best; idx = 0; paint(); }
+				}, 90 );
+			}, { passive: true } );
+		}
+
+		function openLook() {
+			look.classList.add( 'is-open' );
+			document.documentElement.classList.add( 'oc-look-lock' );
+		}
+		function closeLook() {
+			look.classList.remove( 'is-open' );
+			document.documentElement.classList.remove( 'oc-look-lock' );
 		}
 
 		look.addEventListener( 'click', function ( e ) {
-			var snav = e.target.closest( '[data-ocb-scene-go]' );
-
-			if ( snav ) {
-				room( Number( snav.dataset.ocbSceneGo ) );
-				return;
-			}
-
 			var spot = e.target.closest( '[data-ocb-spot]' );
-
 			if ( spot ) {
-				show( Number( spot.dataset.ocbSpot ) );
-
-				// On a phone the spot also opens the sheet.
-				if ( window.matchMedia( '(max-width: 782px)' ).matches ) {
-					look.classList.add( 'is-open' );
+				var g = Number( spot.dataset.ocbSpot );
+				for ( var i = 0; i < cards.length; i++ ) {
+					if ( Number( cards[ i ].dataset.ocbCard ) === g ) {
+						curScene = Number( cards[ i ].dataset.ocbScene || 0 );
+						idx = ( byScene[ curScene ] || [] ).indexOf( cards[ i ] );
+						paint();
+						break;
+					}
 				}
-
+				if ( window.matchMedia( '(max-width: 782px)' ).matches ) { openLook(); }
 				return;
 			}
 
-			if ( e.target.closest( '[data-ocb-look-open]' ) ) {
-				look.classList.toggle( 'is-open' );
-				return;
-			}
+			var dot = e.target.closest( '[data-ocb-lgo]' );
+			if ( dot ) { toScene( Number( dot.dataset.ocbLgo ), true ); return; }
 
-			if ( e.target.closest( '[data-ocb-look-close]' ) ) {
-				look.classList.remove( 'is-open' );
-				return;
-			}
+			if ( e.target.closest( '[data-ocb-look-open]' ) ) { openLook(); return; }
+			if ( e.target.closest( '[data-ocb-look-close]' ) ) { closeLook(); return; }
 
 			var arr = e.target.closest( '[data-ocb-go]' );
-
-			if ( arr && e.target.closest( '.ocb-look__nav' ) ) {
-				show( at + Number( arr.dataset.ocbGo ) );
-			}
+			if ( arr && e.target.closest( '.ocb-look__nav' ) ) { prod( Number( arr.dataset.ocbGo ) ); }
 		} );
 
-		// The sheet follows the finger down, like the add-to-cart panel.
+		// Swipe the products sideways to page through them (a horizontal
+		// swipe, not a vertical scroll).
 		if ( side ) {
-			var y0 = null;
-			var dy = 0;
-
-			side.addEventListener( 'touchstart', function ( e ) {
-				if ( ! e.target.closest( '[data-ocb-look-close]' ) && side.scrollTop > 2 ) {
-					return;
-				}
-
-				y0 = e.touches[ 0 ].clientY;
-				dy = 0;
-			}, { passive: true } );
-
-			side.addEventListener( 'touchmove', function ( e ) {
-				if ( null === y0 ) {
-					return;
-				}
-
-				dy = e.touches[ 0 ].clientY - y0;
-
-				if ( dy > 0 ) {
-					side.style.transform = 'translateY(' + dy + 'px)';
-					side.style.transition = 'none';
-				}
-			}, { passive: true } );
-
-			side.addEventListener( 'touchend', function () {
-				if ( null === y0 ) {
-					return;
-				}
-
-				side.style.transform = '';
-				side.style.transition = '';
-
-				if ( dy > 90 ) {
-					look.classList.remove( 'is-open' );
-				}
-
-				y0 = null;
+			var sx = null, sy = 0;
+			side.addEventListener( 'touchstart', function ( e ) { sx = e.touches[ 0 ].clientX; sy = e.touches[ 0 ].clientY; }, { passive: true } );
+			side.addEventListener( 'touchend', function ( e ) {
+				if ( null === sx ) { return; }
+				var dx = e.changedTouches[ 0 ].clientX - sx;
+				var dy = e.changedTouches[ 0 ].clientY - sy;
+				if ( Math.abs( dx ) > 46 && Math.abs( dx ) > Math.abs( dy ) ) { prod( dx < 0 ? 1 : -1 ); }
+				sx = null;
 			} );
 		}
 
-		// A tap outside the sheet folds it.
-		document.addEventListener( 'click', function ( e ) {
-			if ( look.classList.contains( 'is-open' ) && ! look.contains( e.target ) ) {
-				look.classList.remove( 'is-open' );
-			}
-		} );
+		paint();
 	} );
 
 	/* ---------- the scrolling story ---------- */

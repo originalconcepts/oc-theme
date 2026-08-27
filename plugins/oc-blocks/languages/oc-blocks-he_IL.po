@@ -1332,3 +1332,12 @@ msgstr "מבצעים"
 
 msgid "Products they viewed"
 msgstr "מוצרים שצפו בהם"
+
+msgid "Panel title"
+msgstr "כותרת הפאנל"
+
+msgid "Shown above the products on mobile. Empty = “Shop the Look”."
+msgstr "מוצגת מעל המוצרים במובייל. ריק = ״Shop the Look״."
+
+msgid "View %d"
+msgstr "תצוגה %d"
