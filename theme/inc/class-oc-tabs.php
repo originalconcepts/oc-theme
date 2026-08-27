@@ -728,6 +728,8 @@ final class Tabs {
 		$rows  = is_array( $saved ) ? array_values( array_filter( $saved, 'is_array' ) ) : array();
 		?>
 		<div id="oc_product_tabs_data" class="panel woocommerce_options_panel hidden">
+			<?php // Always submitted, so a save that removed the last row still clears the meta. ?>
+			<input type="hidden" name="pt_panel" value="1" />
 			<style>
 			/* Woo's options-panel floats labels and half-widths textareas —
 			 * inside a tab row that collapsed the frame around the content.
@@ -874,8 +876,11 @@ final class Tabs {
 	 */
 	public function product_tabs_save( $product ): void {
 		// phpcs:disable WordPress.Security.NonceVerification.Missing -- Woo verified the product-save nonce already.
-		if ( ! isset( $_POST['pt_title'] ) && ! isset( $_POST['pt_content'] ) ) {
-			return; // Quick-edit and API saves never touch the rows.
+		// The panel always posts pt_panel; without it this is a quick-edit or
+		// API save that never touched the tabs. With it — even with zero rows
+		// left — we process, so deleting the last tab actually sticks.
+		if ( ! isset( $_POST['pt_panel'] ) ) {
+			return;
 		}
 
 		$rows = array();
