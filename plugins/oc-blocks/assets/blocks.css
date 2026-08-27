@@ -546,6 +546,12 @@
 
 .ocb-shelf { position: relative; --ocb-shelf-gap: 24px; }
 
+/* A shelf OF PRODUCTS echoes the catalogue's own product spacing exactly —
+ * the same --oc-grid-gap × --oc-density the grid uses — so a product slider
+ * sits at the identical gap as the catalogue it came from, whatever the
+ * shop's density. (Category / brand / post shelves keep their own gap.) */
+.ocb-shelf ul.products { --ocb-shelf-gap: calc(var(--oc-grid-gap, 20px) * var(--oc-density, 1)); }
+
 .ocb__title--center { text-align: center; }
 .ocb__title--start { text-align: start; }
 
