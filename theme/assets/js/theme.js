@@ -7886,6 +7886,24 @@
 	Array.prototype.forEach.call( sliders, function ( el ) {
 		var down = false, startX = 0, startScroll = 0, moved = false;
 
+		// Nudge the first card to the reading side (RTL scroll start), touching
+		// only this container's scroll — never the page.
+		( function alignStart() {
+			var f = el.firstElementChild;
+			if ( ! f ) { return; }
+			var rtl = 'rtl' === getComputedStyle( el ).direction;
+			var pad = parseFloat( getComputedStyle( el ).paddingInlineStart ) || 0;
+			function off() {
+				var c = el.getBoundingClientRect(), r = f.getBoundingClientRect();
+				return rtl ? ( r.right - ( c.right - pad ) ) : ( r.left - ( c.left + pad ) );
+			}
+			var d = off();
+			if ( Math.abs( d ) < 1 ) { return; }
+			var base = el.scrollLeft;
+			el.scrollLeft = base + d;
+			if ( Math.abs( off() ) > Math.abs( d ) ) { el.scrollLeft = base - d; }
+		}() );
+
 		el.addEventListener( 'pointerdown', function ( e ) {
 			if ( 'touch' === e.pointerType ) { return; }
 			down = true; moved = false;
