@@ -597,6 +597,13 @@
  * drifting to the card's floor. */
 .oc-compose .ocb-shelf--slider ul.products li.product .price { margin-block-start: 6px; }
 
+/* On a composed page the shelf's cards ride through the_content, where
+ * wpautop wraps the loop price in a bare <p> with a 16px paragraph margin.
+ * Pull it back tight to the description so a composed shelf matches the
+ * catalogue slider. */
+.oc-compose .ocb-shelf ul.products li.product .oc-card-text > p:not(.oc-card-excerpt) { margin-block: 6px 0; }
+.oc-compose .ocb-shelf ul.products li.product .oc-card-text > p:not(.oc-card-excerpt) .price { margin-block-start: 0; }
+
 /* Sold out: the notify line speaks; the add button stands down. */
 .oc-compose ul.products li.product.outofstock .oc-card-atc,
 .oc-compose ul.products li.product.outofstock .add_to_cart_button { display: none !important; }
@@ -623,6 +630,15 @@
 	.oc-compose .ocb-shelf ul.products { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 	.oc-compose .ocb-shelf--slider.ocb-shelf--m1 ul.products li.product { flex-basis: 82%; }
 	.oc-compose .ocb-shelf--slider.ocb-shelf--m2 ul.products li.product { flex-basis: 42%; }
+
+	/* The strip runs to the screen edge: break out of the section's inline
+	 * padding, keep the first card lined up with the heading, let the
+	 * trailing side reach the edge with no gap. */
+	.oc-compose .ocb-shelf--slider { margin-inline: calc(50% - 50vw); }
+	.oc-compose .ocb-shelf--slider ul.products {
+		padding-inline: clamp(16px, 3vw, 32px) 0;
+		scroll-padding-inline-start: clamp(16px, 3vw, 32px);
+	}
 }
 
 /* the same shelf inside a catalogue-layout slider block — a grid item, with
