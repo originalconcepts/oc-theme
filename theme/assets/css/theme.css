@@ -3360,14 +3360,8 @@ html.oc-drw-open body { overflow: hidden; }
 		opacity: .7;
 	}
 	.oc-footer--m-accordion .oc-footer__col.is-open .oc-footer__col-h::after { rotate: -135deg; }
-	.oc-footer--m-accordion .oc-footer__col-list {
-		display: grid;
-		grid-template-rows: 0fr;
-		transition: grid-template-rows .22s ease;
-	}
-	.oc-footer--m-accordion .oc-footer__col-list > * { overflow: hidden; }
-	.oc-footer--m-accordion .oc-footer__col.is-open .oc-footer__col-list { grid-template-rows: 1fr; }
-	.oc-footer--m-accordion .oc-footer__col.is-open .oc-footer__col-list { padding-block-end: 6px; }
+	.oc-footer--m-accordion .oc-footer__col-list { display: none; }
+	.oc-footer--m-accordion .oc-footer__col.is-open .oc-footer__col-list { display: block; padding-block-end: 10px; }
 
 	/* --- open: everything visible, stacked --- */
 	.oc-footer--m-open .oc-footer__col-h { padding-block-start: 18px; margin-block-end: 12px; }
