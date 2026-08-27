@@ -443,7 +443,6 @@
 		var sceneEls = [].slice.call( look.querySelectorAll( '.ocb-look__scene' ) );
 		var spots = [].slice.call( look.querySelectorAll( '[data-ocb-spot]' ) );
 		var cards = [].slice.call( look.querySelectorAll( '[data-ocb-card]' ) );
-		var dots = [].slice.call( look.querySelectorAll( '[data-ocb-lgo]' ) );
 		var side = look.querySelector( '.ocb-look__side' );
 		var nav = look.querySelector( '.ocb-look__nav' );
 		var cur = look.querySelector( '.ocb-look__cur' );
@@ -478,7 +477,7 @@
 
 			cards.forEach( function ( c ) { c.classList.toggle( 'is-on', c === card ); } );
 			spots.forEach( function ( sp ) { sp.classList.toggle( 'is-on', Number( sp.dataset.ocbSpot ) === globalAt ); } );
-			dots.forEach( function ( d ) { d.classList.toggle( 'is-on', Number( d.dataset.ocbLgo ) === curScene ); } );
+			sceneEls.forEach( function ( el, i ) { el.classList.toggle( 'is-cur', i === curScene ); } );
 
 			if ( cur ) { cur.textContent = String( idx + 1 ); }
 			if ( tot ) { tot.textContent = String( list.length ); }
@@ -491,22 +490,6 @@
 				idx += dir;
 				paint();
 			}
-		}
-
-		// Move to a room: scroll the slider to it, show its first product.
-		function toScene( s, scroll ) {
-			if ( byScene[ s ] === undefined ) {
-				return;
-			}
-
-			curScene = s;
-			idx = 0;
-
-			if ( scroll && sceneEls[ s ] ) {
-				sceneEls[ s ].scrollIntoView( { inline: 'start', block: 'nearest', behavior: 'smooth' } );
-			}
-
-			paint();
 		}
 
 		// Swiping the picture picks the nearest room and updates the products.
@@ -527,12 +510,15 @@
 		}
 
 		function openLook() {
+			look.classList.remove( 'is-closing' );
 			look.classList.add( 'is-open' );
 			document.documentElement.classList.add( 'oc-look-lock' );
 		}
 		function closeLook() {
+			look.classList.add( 'is-closing' );
 			look.classList.remove( 'is-open' );
 			document.documentElement.classList.remove( 'oc-look-lock' );
+			setTimeout( function () { look.classList.remove( 'is-closing' ); }, 300 );
 		}
 
 		look.addEventListener( 'click', function ( e ) {
@@ -550,9 +536,6 @@
 				if ( window.matchMedia( '(max-width: 782px)' ).matches ) { openLook(); }
 				return;
 			}
-
-			var dot = e.target.closest( '[data-ocb-lgo]' );
-			if ( dot ) { toScene( Number( dot.dataset.ocbLgo ), true ); return; }
 
 			if ( e.target.closest( '[data-ocb-look-open]' ) ) { openLook(); return; }
 			if ( e.target.closest( '[data-ocb-look-close]' ) ) { closeLook(); return; }

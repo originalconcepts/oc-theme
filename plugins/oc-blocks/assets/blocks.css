@@ -991,26 +991,14 @@
 	overflow: hidden;
 	border-radius: var(--oc-radius, 8px);
 }
-.ocb-look--multi .ocb-look__scene { flex-basis: 90%; }
+/* a peek of the next room invites the swipe */
+.ocb-look--multi .ocb-look__scene { flex-basis: 88%; }
 
 .ocb-look__scene img { display: block; inline-size: 100%; block-size: auto; }
 .ocb-look__scene picture { display: contents; }
 
-/* scene dots */
-.ocb-look__dots { display: flex; justify-content: center; gap: 8px; margin-block-start: 12px; }
-.ocb-look__dot {
-	inline-size: 8px;
-	block-size: 8px;
-	padding: 0;
-	border: 0;
-	border-radius: 50%;
-	background: color-mix(in srgb, currentColor 24%, transparent);
-	cursor: pointer;
-	transition: background .2s, transform .2s;
-}
-.ocb-look__dot.is-on { background: currentColor; transform: scale(1.25); }
-
-/* the mobile take-over bar (close on the left, centred title) */
+/* the mobile take-over bar (close on the left, centred title) — it sits
+ * between the picture and the products */
 .ocb-look__bar { display: none; }
 
 /* The spot: a breathing ring, the reference's own gesture. */
@@ -1115,11 +1103,18 @@ html[dir="rtl"] .ocb-look__nav .ocb-arr svg { transform: scaleX(-1); }
 html.oc-look-lock,
 html.oc-look-lock body { overflow: hidden; }
 
+/* the panel's product card IS the catalogue card ([products] shortcode);
+ * keep it tidy and centred, and undo the <p> wpautop puts around the price. */
+.ocb-look__card ul.products { margin: 0; padding: 0; }
+.ocb-look__card ul.products li.product { inline-size: 100%; max-inline-size: 300px; margin-inline: auto; }
+.oc-compose .ocb-look .oc-card-text > p:not(.oc-card-excerpt) { margin-block: 6px 0; }
+.oc-compose .ocb-look .oc-card-text > p:not(.oc-card-excerpt) .price { margin-block-start: 0; }
+
 @media (max-width: 782px) {
 	.ocb-look { grid-template-columns: 1fr; gap: 14px; }
-	.ocb-look--multi .ocb-look__scene { flex-basis: 100%; }
 
-	/* Closed on a phone: just the picture, its spots, and a button. */
+	/* Closed on a phone: just the picture (a peek of the next room), its
+	 * spots, and a button. */
 	.ocb-look__side { display: none; }
 
 	.ocb-look__open {
@@ -1135,73 +1130,93 @@ html.oc-look-lock body { overflow: hidden; }
 		cursor: pointer;
 	}
 
-	/* Open: a full-screen take-over like Prestige — a bar (close on the left,
-	 * centred title), the picture up top, the products below. Both enter
-	 * gently; closing the × returns to the picture. */
-	.ocb-look.is-open {
+	/* Open (and closing): a full-screen take-over — the current room's
+	 * picture on top, a bar with the close × on the left and a centred title
+	 * BETWEEN the picture and the products, then the products. It rises from
+	 * the bottom while the picture settles into place; the × eases it shut. */
+	.ocb-look.is-open,
+	.ocb-look.is-closing {
 		position: fixed;
 		inset: 0;
 		z-index: 9999;
 		display: flex;
 		flex-direction: column;
-		gap: 0;
 		background: var(--oc-surface, #fff);
 		overflow: hidden;
-		animation: ocb-look-open .28s ease both;
 	}
+	.ocb-look.is-open { animation: ocb-look-open .32s ease both; }
+	.ocb-look.is-closing { animation: ocb-look-shut .3s ease both; pointer-events: none; }
 	@keyframes ocb-look-open { from { opacity: 0; } }
+	@keyframes ocb-look-shut { to { opacity: 0; } }
 
-	.ocb-look.is-open .ocb-look__bar {
+	/* picture: block layout, only the current room, filling the top */
+	.ocb-look.is-open .ocb-look__pic,
+	.ocb-look.is-closing .ocb-look__pic {
+		display: block;
+		flex: 0 0 42vh;
+		overflow: hidden;
+		border-radius: 0;
+	}
+	.ocb-look.is-open .ocb-look__scene,
+	.ocb-look.is-closing .ocb-look__scene { display: none; block-size: 42vh; }
+	.ocb-look.is-open .ocb-look__scene.is-cur,
+	.ocb-look.is-closing .ocb-look__scene.is-cur { display: block; }
+	.ocb-look.is-open .ocb-look__scene img,
+	.ocb-look.is-closing .ocb-look__scene img { block-size: 42vh; object-fit: cover; }
+	.ocb-look.is-open .ocb-look__pic { animation: ocb-look-pic .42s cubic-bezier(.22, .61, .36, 1) both; }
+	@keyframes ocb-look-pic { from { transform: scale(1.05); } }
+
+	.ocb-look.is-open .ocb-look__bar,
+	.ocb-look.is-closing .ocb-look__bar {
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		position: relative;
 		flex: 0 0 auto;
-		padding: 14px 54px;
+		padding: 13px 54px;
 		border-block-end: 1px solid var(--oc-line, #ececec);
 	}
 	.ocb-look__title { font-weight: 600; letter-spacing: .04em; text-align: center; }
-	.ocb-look.is-open .ocb-look__x {
+	.ocb-look.is-open .ocb-look__x,
+	.ocb-look.is-closing .ocb-look__x {
 		display: grid;
 		place-items: center;
 		position: absolute;
-		inset-inline-start: 10px;
+		inset-inline-start: 8px;
 		inset-block: 0;
 		margin-block: auto;
-		inline-size: 38px;
-		block-size: 38px;
+		inline-size: 40px;
+		block-size: 40px;
 		padding: 0;
 		border: 0;
-		border-radius: 50%;
 		background: none;
 		color: var(--oc-ink, #1c1c1c);
 		cursor: pointer;
 	}
 
-	.ocb-look.is-open .ocb-look__pic {
-		flex: 0 0 46vh;
-		border-radius: 0;
-		animation: ocb-look-pic .38s cubic-bezier(.22, .61, .36, 1) both;
-	}
-	@keyframes ocb-look-pic { from { transform: scale(1.03); opacity: .6; } }
-	.ocb-look.is-open .ocb-look__scene { block-size: 46vh; }
-	.ocb-look.is-open .ocb-look__scene img { block-size: 100%; object-fit: cover; }
-
-	.ocb-look.is-open .ocb-look__dots { margin-block: 10px 2px; }
-
-	.ocb-look.is-open .ocb-look__side {
-		display: block;
+	/* products: centred in the lower half, no scroll of their own */
+	.ocb-look.is-open .ocb-look__side,
+	.ocb-look.is-closing .ocb-look__side {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
 		flex: 1;
+		min-block-size: 0;
 		overflow-y: auto;
-		padding: 10px 18px 24px;
+		padding: 8px 18px 18px;
 		text-align: center;
-		animation: ocb-look-up .4s cubic-bezier(.22, .61, .36, 1) both;
 	}
-	@keyframes ocb-look-up { from { transform: translateY(26px); opacity: 0; } }
+	.ocb-look.is-open .ocb-look__side { animation: ocb-look-rise .42s cubic-bezier(.22, .61, .36, 1) both; }
+	.ocb-look.is-closing .ocb-look__side { animation: ocb-look-fall .3s ease both; }
+	@keyframes ocb-look-rise { from { transform: translateY(100%); } }
+	@keyframes ocb-look-fall { to { transform: translateY(60%); opacity: 0; } }
 
-	.ocb-look.is-open .ocb-look__open { display: none; }
-	.ocb-look.is-open .ocb-look__cimg { max-inline-size: 220px; }
-	.ocb-look.is-open .ocb-look__cimg img { aspect-ratio: 1 / 1; }
+	.ocb-look.is-open .ocb-look__open,
+	.ocb-look.is-closing .ocb-look__open { display: none; }
+
+	.ocb-look.is-open .ocb-look__card ul.products li.product,
+	.ocb-look.is-closing .ocb-look__card ul.products li.product { max-inline-size: 190px; }
+	.ocb-look.is-open .ocb-look__nav { margin-block-start: 10px; }
 }
 
 /* ---------- picture & words: the editorial split ---------- */

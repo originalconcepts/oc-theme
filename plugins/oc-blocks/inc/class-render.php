@@ -1087,7 +1087,6 @@ final class Render {
 				}
 
 				$any = true;
-				$img = $product->get_image_id() ? (string) wp_get_attachment_image_url( (int) $product->get_image_id(), 'large' ) : '';
 
 				$spots .= sprintf(
 					'<button type="button" class="ocb-look__spot%s" style="--x:%d%%;--y:%d%%" data-ocb-spot="%d" aria-label="%s"><i></i></button>',
@@ -1098,11 +1097,10 @@ final class Render {
 					esc_attr( $product->get_name() )
 				);
 
+				// The card is the catalogue's own card — picture, name, price
+				// and quick-buy, exactly as on a category page.
 				$cards .= '<div class="ocb-look__card' . ( 0 === $at ? ' is-on' : '' ) . '" data-ocb-card="' . $at . '" data-ocb-scene="' . $sc . '">'
-					. ( '' === $img ? '' : '<a class="ocb-look__cimg" href="' . esc_url( (string) $product->get_permalink() ) . '"><img src="' . esc_url( $img ) . '" alt="" loading="lazy" decoding="async"></a>' )
-					. '<h3 class="ocb-look__cname"><a href="' . esc_url( (string) $product->get_permalink() ) . '">' . esc_html( $product->get_name() ) . '</a></h3>'
-					. '<div class="ocb-look__cprice">' . $product->get_price_html() . '</div>'
-					. '<a class="ocb-btn ocb-btn--theme ocb-look__cgo" href="' . esc_url( (string) $product->get_permalink() ) . '">' . esc_html__( 'View product', 'oc-blocks' ) . '</a>'
+					. do_shortcode( '[products ids="' . absint( $product->get_id() ) . '" limit="1" columns="1" orderby="post__in"]' )
 					. '</div>';
 
 				++$at;
@@ -1130,25 +1128,12 @@ final class Render {
 		$title = trim( (string) ( $s['heading'] ?? '' ) );
 		$title = '' !== $title ? $title : __( 'Shop the Look', 'oc-blocks' );
 
-		$dots = '';
-
-		if ( $sc > 1 ) {
-			$dots = '<div class="ocb-look__dots">';
-
-			for ( $i = 0; $i < $sc; $i++ ) {
-				$dots .= '<button type="button" class="ocb-look__dot' . ( 0 === $i ? ' is-on' : '' ) . '" data-ocb-lgo="' . $i . '" aria-label="' . esc_attr( sprintf( /* translators: %d: scene number. */ __( 'View %d', 'oc-blocks' ), $i + 1 ) ) . '"></button>';
-			}
-
-			$dots .= '</div>';
-		}
-
 		return '<div class="ocb-look ocb-look--' . esc_attr( (string) $s['side'] ) . ( $sc > 1 ? ' ocb-look--multi' : '' ) . '" data-ocb-look>'
+			. '<div class="ocb-look__pic" data-ocb-look-scenes>' . $pics . '</div>'
 			. '<div class="ocb-look__bar">'
 			. '<button type="button" class="ocb-look__x" data-ocb-look-close aria-label="' . esc_attr__( 'Close', 'oc-blocks' ) . '"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>'
 			. '<span class="ocb-look__title">' . esc_html( $title ) . '</span>'
 			. '</div>'
-			. '<div class="ocb-look__pic" data-ocb-look-scenes>' . $pics . '</div>'
-			. $dots
 			. '<div class="ocb-look__side">'
 			. '<div class="ocb-look__cards">' . $cards . '</div>'
 			. '<div class="ocb-look__nav" hidden>'
