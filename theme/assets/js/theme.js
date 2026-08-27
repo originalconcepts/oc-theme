@@ -7886,10 +7886,6 @@
 	Array.prototype.forEach.call( sliders, function ( el ) {
 		var down = false, startX = 0, startScroll = 0, moved = false;
 
-		// Start at the reading side (right in RTL). Setting scrollLeft to the
-		// full width clamps to the start under every RTL scroll model.
-		el.scrollLeft = el.scrollWidth;
-
 		el.addEventListener( 'pointerdown', function ( e ) {
 			if ( 'touch' === e.pointerType ) { return; }
 			down = true; moved = false;

@@ -3403,14 +3403,11 @@ html.oc-drw-open body { overflow: hidden; }
 .oc-subcats--slider.is-drag { cursor: grabbing; scroll-behavior: auto; user-select: none; }
 .oc-subcats--slider .oc-subcats__card { flex: 0 0 auto; }
 
-/* On mobile the strip runs to the screen edge on the trailing side, so the
- * next card is cut by the edge with no gap; the first card still lines up
- * with the content on the reading side. */
+/* On mobile the strip keeps its reading-side edge at the content gutter (so
+ * the first card lines up with the page) and bleeds only the trailing side
+ * out to the screen edge — the next card is cut by the edge with no gap. */
 @media (max-width: 700px) {
-	.oc-subcats--out.oc-subcats--slider {
-		margin-inline: calc(-1 * var(--oc-gap, 20px));
-		padding-inline: var(--oc-gap, 20px) 0;
-	}
+	.oc-subcats--out.oc-subcats--slider { margin-inline-end: calc(-1 * var(--oc-gap, 20px)); }
 }
 
 @media (prefers-reduced-motion: reduce) {
