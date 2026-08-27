@@ -3192,8 +3192,18 @@ html.oc-drw-open body { overflow: hidden; }
 	inline-size: 100%;
 	margin-block-end: var(--oc-gap);
 }
-.oc-chero__img { display: block; inline-size: 100%; block-size: 100%; object-fit: cover; }
+.oc-chero__img { display: block; inline-size: 100%; object-fit: cover; }
 .oc-chero picture { display: contents; }
+/* In the fixed-height layouts (text-over, split) the image fills its box by
+ * being pinned to it — a percentage height would collapse to the image's
+ * natural height, because a grid item's min-height is not a definite height. */
+.oc-chero--text-over .oc-chero__img,
+.oc-chero--split .oc-chero__img {
+	position: absolute;
+	inset: 0;
+	block-size: 100%;
+	object-fit: cover;
+}
 .oc-chero__title { margin: 0 0 .35em; }
 .oc-chero__desc { font-size: 1rem; line-height: 1.55; }
 .oc-chero__desc :last-child { margin-block-end: 0; }
@@ -3254,7 +3264,7 @@ html.oc-drw-open body { overflow: hidden; }
 /* Both halves always share one height: the taller one wins. The height
  * setting is a floor (min), so a tall content column grows the image to
  * match, and a short one still fills the set height. */
-.oc-chero--split .oc-chero__media { overflow: hidden; min-block-size: var(--ch-h, 440px); }
+.oc-chero--split .oc-chero__media { position: relative; overflow: hidden; min-block-size: var(--ch-h, 440px); }
 .oc-chero--split .oc-chero__panel {
 	display: flex;
 	align-items: center;
@@ -3273,8 +3283,9 @@ html.oc-drw-open body { overflow: hidden; }
 	.oc-chero--text-below .oc-chero__media { block-size: var(--ch-hm); }
 	.oc-chero--text-below .oc-chero__img { block-size: var(--ch-hm, auto); }
 	.oc-chero--split { grid-template-columns: 1fr; }
-	.oc-chero--split .oc-chero__media { block-size: var(--ch-hm, 300px); order: 0; }
-	.oc-chero--split .oc-chero__panel { order: 1; }
+	/* stacked: each half is its own natural height, image on top */
+	.oc-chero--split .oc-chero__media { min-block-size: 0; block-size: var(--ch-hm, 300px); order: 0; }
+	.oc-chero--split .oc-chero__panel { min-block-size: 0; order: 1; }
 }
 
 /* ---- entrance ---- */
