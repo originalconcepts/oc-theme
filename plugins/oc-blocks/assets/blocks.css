@@ -1107,6 +1107,7 @@ html.oc-look-lock body { overflow: hidden; }
  * keep it tidy and centred, and undo the <p> wpautop puts around the price. */
 .ocb-look__card ul.products { margin: 0; padding: 0; }
 .ocb-look__card ul.products li.product { inline-size: 100%; max-inline-size: 300px; margin-inline: auto; }
+.ocb-look__card .oc-card-excerpt { display: none; }
 .oc-compose .ocb-look .oc-card-text > p:not(.oc-card-excerpt) { margin-block: 6px 0; }
 .oc-compose .ocb-look .oc-card-text > p:not(.oc-card-excerpt) .price { margin-block-start: 0; }
 
@@ -1138,33 +1139,35 @@ html.oc-look-lock body { overflow: hidden; }
 	.ocb-look.is-closing {
 		position: fixed;
 		inset: 0;
-		z-index: 9999;
+		/* below the quick-pick (z-95) so add-to-cart opens ABOVE the take-over,
+		 * yet above the sticky header (z-50) */
+		z-index: 90;
 		display: flex;
 		flex-direction: column;
 		background: var(--oc-surface, #fff);
 		overflow: hidden;
 	}
-	.ocb-look.is-open { animation: ocb-look-open .32s ease both; }
-	.ocb-look.is-closing { animation: ocb-look-shut .3s ease both; pointer-events: none; }
-	@keyframes ocb-look-open { from { opacity: 0; } }
-	@keyframes ocb-look-shut { to { opacity: 0; } }
+	/* the whole take-over rises from the bottom as ONE unit — picture, bar and
+	 * products together — like the quick-pick panel, and slides back down. */
+	.ocb-look.is-open { animation: ocb-look-up .36s cubic-bezier(.22, .61, .36, 1) both; }
+	.ocb-look.is-closing { animation: ocb-look-down .3s cubic-bezier(.4, 0, .7, 1) both; pointer-events: none; }
+	@keyframes ocb-look-up { from { transform: translateY(100%); } }
+	@keyframes ocb-look-down { to { transform: translateY(100%); } }
 
 	/* picture: block layout, only the current room, filling the top */
 	.ocb-look.is-open .ocb-look__pic,
 	.ocb-look.is-closing .ocb-look__pic {
 		display: block;
-		flex: 0 0 42vh;
+		flex: 0 0 46vh;
 		overflow: hidden;
 		border-radius: 0;
 	}
 	.ocb-look.is-open .ocb-look__scene,
-	.ocb-look.is-closing .ocb-look__scene { display: none; block-size: 42vh; }
+	.ocb-look.is-closing .ocb-look__scene { display: none; block-size: 46vh; }
 	.ocb-look.is-open .ocb-look__scene.is-cur,
 	.ocb-look.is-closing .ocb-look__scene.is-cur { display: block; }
 	.ocb-look.is-open .ocb-look__scene img,
-	.ocb-look.is-closing .ocb-look__scene img { block-size: 42vh; object-fit: cover; }
-	.ocb-look.is-open .ocb-look__pic { animation: ocb-look-pic .42s cubic-bezier(.22, .61, .36, 1) both; }
-	@keyframes ocb-look-pic { from { transform: scale(1.05); } }
+	.ocb-look.is-closing .ocb-look__scene img { block-size: 46vh; object-fit: cover; }
 
 	.ocb-look.is-open .ocb-look__bar,
 	.ocb-look.is-closing .ocb-look__bar {
@@ -1206,10 +1209,6 @@ html.oc-look-lock body { overflow: hidden; }
 		padding: 8px 18px 18px;
 		text-align: center;
 	}
-	.ocb-look.is-open .ocb-look__side { animation: ocb-look-rise .42s cubic-bezier(.22, .61, .36, 1) both; }
-	.ocb-look.is-closing .ocb-look__side { animation: ocb-look-fall .3s ease both; }
-	@keyframes ocb-look-rise { from { transform: translateY(100%); } }
-	@keyframes ocb-look-fall { to { transform: translateY(60%); opacity: 0; } }
 
 	.ocb-look.is-open .ocb-look__open,
 	.ocb-look.is-closing .ocb-look__open { display: none; }
@@ -1217,6 +1216,9 @@ html.oc-look-lock body { overflow: hidden; }
 	.ocb-look.is-open .ocb-look__card ul.products li.product,
 	.ocb-look.is-closing .ocb-look__card ul.products li.product { max-inline-size: 190px; }
 	.ocb-look.is-open .ocb-look__nav { margin-block-start: 10px; }
+	/* no 1 / 2 indicator in the panel */
+	.ocb-look.is-open .ocb-look__count,
+	.ocb-look.is-closing .ocb-look__count { display: none; }
 }
 
 /* ---------- picture & words: the editorial split ---------- */

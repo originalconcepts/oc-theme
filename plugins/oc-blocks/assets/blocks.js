@@ -509,7 +509,15 @@
 			}, { passive: true } );
 		}
 
+		// A placeholder holds the block's space while it is a fixed overlay,
+		// so the page below doesn't jump when it opens or closes.
+		var ph = null;
 		function openLook() {
+			if ( ! ph ) {
+				ph = document.createElement( 'div' );
+				ph.style.height = look.offsetHeight + 'px';
+				look.parentNode.insertBefore( ph, look );
+			}
 			look.classList.remove( 'is-closing' );
 			look.classList.add( 'is-open' );
 			document.documentElement.classList.add( 'oc-look-lock' );
@@ -518,7 +526,10 @@
 			look.classList.add( 'is-closing' );
 			look.classList.remove( 'is-open' );
 			document.documentElement.classList.remove( 'oc-look-lock' );
-			setTimeout( function () { look.classList.remove( 'is-closing' ); }, 300 );
+			setTimeout( function () {
+				look.classList.remove( 'is-closing' );
+				if ( ph ) { ph.remove(); ph = null; }
+			}, 300 );
 		}
 
 		look.addEventListener( 'click', function ( e ) {
