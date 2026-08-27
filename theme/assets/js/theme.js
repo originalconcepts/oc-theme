@@ -7862,3 +7862,17 @@
 		} ).catch( function () { if ( go ) { go.disabled = false; } } );
 	} );
 }() );
+
+/* -- footer link columns: accordion on phones -- */
+( function () {
+	var footer = document.querySelector( '.oc-footer--m-accordion' );
+	if ( ! footer ) { return; }
+
+	footer.addEventListener( 'click', function ( e ) {
+		if ( window.matchMedia( '(min-width: 701px)' ).matches ) { return; }
+		var head = e.target.closest( '.oc-footer__col-h' );
+		if ( ! head ) { return; }
+		var col = head.closest( '.oc-footer__col' );
+		if ( col ) { col.classList.toggle( 'is-open' ); }
+	} );
+}() );

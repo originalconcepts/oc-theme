@@ -1081,6 +1081,18 @@ final class Customizer {
 			),
 			'inline'
 		);
+		$this->choice(
+			$c,
+			'oc_footer_mobile',
+			'oc_footer',
+			__( 'Link columns on phones', 'oc-theme' ),
+			array(
+				'accordion' => __( 'Accordion — tap a heading to open', 'oc-theme' ),
+				'open'      => __( 'Open — stacked, all visible', 'oc-theme' ),
+				'two'       => __( 'Two per row', 'oc-theme' ),
+			),
+			'accordion'
+		);
 	}
 
 	/*

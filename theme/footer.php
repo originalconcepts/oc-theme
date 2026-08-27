@@ -15,6 +15,7 @@ defined( 'ABSPATH' ) || exit;
 $oc_preset = sanitize_html_class( (string) get_theme_mod( 'oc_footer_preset', 'columns' ) );
 $oc_layout = sanitize_html_class( (string) get_theme_mod( 'oc_footer_layout', 'inline' ) );
 $oc_dark   = (bool) get_theme_mod( 'oc_footer_dark', false );
+$oc_mobile = sanitize_html_class( (string) get_theme_mod( 'oc_footer_mobile', 'accordion' ) );
 $oc_credit = trim( (string) get_theme_mod( 'oc_footer_credit', '' ) );
 
 /**
@@ -68,9 +69,9 @@ $oc_bottom = static function () use ( $oc_credit ) {
 			<?php endif; ?>
 
 			<?php
-			$oc_oc_url = trim( (string) get_theme_mod( 'oc_footer_oc_url', 'https://originalconcepts.co.il' ) );
+			$oc_oc_url = trim( (string) get_theme_mod( 'oc_footer_oc_url', 'https://onlinestore.co.il' ) );
 			if ( '' === $oc_oc_url ) {
-				$oc_oc_url = 'https://originalconcepts.co.il';
+				$oc_oc_url = 'https://onlinestore.co.il';
 			}
 			?>
 			<a class="oc-footer__oc" href="<?php echo esc_url( $oc_oc_url ); ?>" target="_blank" rel="noopener">
@@ -82,7 +83,7 @@ $oc_bottom = static function () use ( $oc_credit ) {
 	<?php
 };
 ?>
-<footer class="oc-footer oc-footer--<?php echo esc_attr( $oc_preset ); ?> oc-footer--bar-<?php echo esc_attr( $oc_layout ); ?><?php echo $oc_dark ? ' oc-footer--dark' : ''; ?>">
+<footer class="oc-footer oc-footer--<?php echo esc_attr( $oc_preset ); ?> oc-footer--bar-<?php echo esc_attr( $oc_layout ); ?> oc-footer--m-<?php echo esc_attr( $oc_mobile ); ?><?php echo $oc_dark ? ' oc-footer--dark' : ''; ?>">
 
 <?php if ( 'minimal' === $oc_preset ) : ?>
 
