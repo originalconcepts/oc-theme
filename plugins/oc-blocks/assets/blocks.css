@@ -1107,7 +1107,7 @@ html.oc-look-lock body { overflow: hidden; }
  * keep it tidy and centred, and undo the <p> wpautop puts around the price. */
 .ocb-look__card ul.products { margin: 0; padding: 0; }
 .ocb-look__card ul.products li.product { inline-size: 100%; max-inline-size: 300px; margin-inline: auto; }
-.ocb-look__card .oc-card-excerpt { display: none; }
+.ocb-look__card .oc-card-excerpt { display: none !important; }
 .oc-compose .ocb-look .oc-card-text > p:not(.oc-card-excerpt) { margin-block: 6px 0; }
 .oc-compose .ocb-look .oc-card-text > p:not(.oc-card-excerpt) .price { margin-block-start: 0; }
 
