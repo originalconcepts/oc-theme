@@ -157,7 +157,7 @@ class Category {
 	 * @return string
 	 */
 	private static function render( \WP_Term $term, array $h ): string {
-		$title = '<h1 class="oc-chero__title oc-page-title">' . esc_html( $term->name ) . '</h1>';
+		$title = '<h1 class="oc-chero__title">' . esc_html( $term->name ) . '</h1>';
 		$desc  = trim( (string) term_description( $term->term_id, 'product_cat' ) );
 		$desc  = '' !== $desc ? '<div class="oc-chero__desc">' . wp_kses_post( $desc ) . '</div>' : '';
 		$words = '<div class="oc-chero__words"><div class="oc-chero__wordsin">' . $title . $desc . '</div></div>';

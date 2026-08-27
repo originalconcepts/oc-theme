@@ -3219,6 +3219,12 @@ html.oc-drw-open body { overflow: hidden; }
 	padding-block: clamp(20px, 5vw, 52px);
 }
 .oc-chero--text-over .oc-chero__wordsin { max-inline-size: 640px; }
+/* title and description share one alignment: reading-side by default,
+ * centred for the centre positions — never a mix of the two */
+.oc-chero__wordsin { text-align: start; }
+.oc-chero--pos-cc .oc-chero__wordsin,
+.oc-chero--pos-bc .oc-chero__wordsin { text-align: center; }
+.oc-chero__title { text-align: inherit; }
 .oc-chero--light { color: #fff; }
 .oc-chero--light .oc-chero__desc { color: rgba(255, 255, 255, .9); }
 .oc-chero--dark { color: var(--oc-ink); }
@@ -3245,10 +3251,14 @@ html.oc-drw-open body { overflow: hidden; }
 	grid-template-columns: 1fr 1fr;
 	align-items: stretch;
 }
-.oc-chero--split .oc-chero__media { overflow: hidden; block-size: var(--ch-h, 440px); }
+/* Both halves always share one height: the taller one wins. The height
+ * setting is a floor (min), so a tall content column grows the image to
+ * match, and a short one still fills the set height. */
+.oc-chero--split .oc-chero__media { overflow: hidden; min-block-size: var(--ch-h, 440px); }
 .oc-chero--split .oc-chero__panel {
 	display: flex;
 	align-items: center;
+	min-block-size: var(--ch-h, 440px);
 	background: var(--ch-cbg, var(--oc-bg));
 	padding: clamp(24px, 4vw, 60px);
 }
@@ -3265,6 +3275,24 @@ html.oc-drw-open body { overflow: hidden; }
 	.oc-chero--split { grid-template-columns: 1fr; }
 	.oc-chero--split .oc-chero__media { block-size: var(--ch-hm, 300px); order: 0; }
 	.oc-chero--split .oc-chero__panel { order: 1; }
+}
+
+/* ---- entrance ---- */
+/* Image and background settle in with a soft fade; the words ease down
+ * from just above. Runs once on load, purely in CSS. */
+@keyframes oc-chero-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes oc-chero-drop {
+	from { opacity: 0; transform: translateY(-18px); }
+	to   { opacity: 1; transform: none; }
+}
+.oc-chero__media,
+.oc-chero__panel { animation: oc-chero-fade .9s ease both; }
+.oc-chero__wordsin { animation: oc-chero-drop .8s .18s cubic-bezier(.22, .61, .36, 1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+	.oc-chero__media,
+	.oc-chero__panel,
+	.oc-chero__wordsin { animation: none; }
 }
 
 /* ---------- footer ---------- */
