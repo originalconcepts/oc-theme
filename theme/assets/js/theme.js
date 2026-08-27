@@ -7876,3 +7876,39 @@
 		if ( col ) { col.classList.toggle( 'is-open' ); }
 	} );
 }() );
+
+/* -- sub-category card slider: drag to scroll with a mouse (touch uses the
+ *    native free-scroll) -- */
+( function () {
+	var sliders = document.querySelectorAll( '[data-oc-slider]' );
+	if ( ! sliders.length ) { return; }
+
+	Array.prototype.forEach.call( sliders, function ( el ) {
+		var down = false, startX = 0, startScroll = 0, moved = false;
+
+		el.addEventListener( 'pointerdown', function ( e ) {
+			if ( 'touch' === e.pointerType ) { return; }
+			down = true; moved = false;
+			startX = e.clientX; startScroll = el.scrollLeft;
+			el.classList.add( 'is-drag' );
+		} );
+		el.addEventListener( 'pointermove', function ( e ) {
+			if ( ! down ) { return; }
+			var dx = e.clientX - startX;
+			if ( Math.abs( dx ) > 3 ) { moved = true; }
+			el.scrollLeft = startScroll - dx;
+		} );
+		function end() {
+			if ( ! down ) { return; }
+			down = false;
+			el.classList.remove( 'is-drag' );
+		}
+		el.addEventListener( 'pointerup', end );
+		el.addEventListener( 'pointerleave', end );
+		el.addEventListener( 'pointercancel', end );
+		// A drag must not also open the card's link.
+		el.addEventListener( 'click', function ( e ) {
+			if ( moved ) { e.preventDefault(); }
+		}, true );
+	} );
+}() );

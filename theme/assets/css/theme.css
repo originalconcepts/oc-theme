@@ -3389,6 +3389,30 @@ html.oc-drw-open body { overflow: hidden; }
 .oc-subcats--shape-circle .oc-subcats__pic { border-radius: 50%; }
 .oc-subcats__name { font-size: .92rem; text-align: center; color: inherit; }
 
+/* image cards as a free-scroll slider (finger-swipe on touch, drag on
+ * desktop). No snapping — a free slider. */
+.oc-subcats--slider {
+	flex-wrap: nowrap;
+	overflow-x: auto;
+	scroll-snap-type: none;
+	-webkit-overflow-scrolling: touch;
+	scrollbar-width: none;
+	cursor: grab;
+}
+.oc-subcats--slider::-webkit-scrollbar { display: none; }
+.oc-subcats--slider.is-drag { cursor: grabbing; scroll-behavior: auto; user-select: none; }
+.oc-subcats--slider .oc-subcats__card { flex: 0 0 auto; }
+
+/* On mobile the strip runs to the screen edge on the trailing side, so the
+ * next card is cut by the edge with no gap; the first card still lines up
+ * with the content on the reading side. */
+@media (max-width: 700px) {
+	.oc-subcats--out.oc-subcats--slider {
+		margin-inline: calc(-1 * var(--oc-gap, 20px));
+		padding-inline: var(--oc-gap, 20px) 0;
+	}
+}
+
 @media (prefers-reduced-motion: reduce) {
 	.oc-subcats__pic img { transition: none; }
 }

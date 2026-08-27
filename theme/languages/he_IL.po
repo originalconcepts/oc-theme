@@ -5326,3 +5326,156 @@ msgstr "ניוזלטר"
 
 msgid "Thank you — you are on the list."
 msgstr "תודה — נרשמת לרשימה."
+
+msgid "Centre, reading side"
+msgstr "מרכז, צד הקריאה"
+
+msgid "Bottom centre"
+msgstr "תחתית, מרכז"
+
+msgid "Bottom, reading side"
+msgstr "תחתית, צד הקריאה"
+
+msgid "Top, reading side"
+msgstr "למעלה, צד הקריאה"
+
+msgid "Category page — hero"
+msgstr "עמוד קטגוריה — באנר"
+
+msgid "A banner at the top of this category. The category name and description move onto it. Leave the layout on “None” to keep the plain title."
+msgstr "באנר בראש הקטגוריה. שם הקטגוריה והתיאור עוברים אליו. השאירו את הפריסה על ״ללא״ כדי לשמור על כותרת רגילה."
+
+msgid "None — plain title"
+msgstr "ללא — כותרת רגילה"
+
+msgid "Full-width image"
+msgstr "תמונה לכל הרוחב"
+
+msgid "Half image · half content"
+msgstr "חצי תמונה · חצי תוכן"
+
+msgid "Hero image — desktop"
+msgstr "תמונת באנר — דסקטופ"
+
+msgid "Shown on the category page."
+msgstr "מוצגת בעמוד הקטגוריה."
+
+msgid "Hero image — mobile (optional)"
+msgstr "תמונת באנר — מובייל (רשות)"
+
+msgid "Used on phones. If empty, the desktop image is used."
+msgstr "לשימוש בטלפון. אם ריק, נעשה שימוש בתמונת הדסקטופ."
+
+msgid "Height"
+msgstr "גובה"
+
+msgid "Desktop"
+msgstr "דסקטופ"
+
+msgid "Mobile"
+msgstr "מובייל"
+
+msgid "Leave empty for the automatic height."
+msgstr "השאירו ריק לגובה אוטומטי."
+
+msgid "Over the image"
+msgstr "על התמונה"
+
+msgid "Below the image"
+msgstr "מתחת לתמונה"
+
+msgid "Text position"
+msgstr "מיקום הטקסט"
+
+msgid "Light (for a dark image)"
+msgstr "בהיר (לתמונה כהה)"
+
+msgid "Dark (for a light image)"
+msgstr "כהה (לתמונה בהירה)"
+
+msgid "Darken image"
+msgstr "הכהיית התמונה"
+
+msgid "A dark veil over the image so light text stays readable. 0 = off."
+msgstr "צעיף כהה מעל התמונה כדי שטקסט בהיר יישאר קריא. 0 = כבוי."
+
+msgid "Image side"
+msgstr "צד התמונה"
+
+msgid "Reading side (right in Hebrew)"
+msgstr "צד הקריאה (ימין בעברית)"
+
+msgid "Opposite side"
+msgstr "הצד הנגדי"
+
+msgid "Content background"
+msgstr "רקע אזור התוכן"
+
+msgid "Background colour behind the content half. Leave empty for the page background."
+msgstr "צבע הרקע מאחורי חצי התוכן. השאירו ריק לרקע העמוד."
+
+msgid "Card image"
+msgstr "תמונת כרטיס"
+
+msgid "One image for this category, used by the categories block, the sub-category strip and the blog. If empty, the hero image is used."
+msgstr "תמונה אחת לקטגוריה, בשימוש בלוק הקטגוריות, רצועת תתי-הקטגוריות והבלוג. אם ריק, נעשה שימוש בתמונת הבאנר."
+
+msgid "Shown for this category on the blog and in category strips."
+msgstr "מוצגת לקטגוריה זו בבלוג וברצועות הקטגוריה."
+
+msgid "Sub-categories"
+msgstr "תתי-קטגוריות"
+
+msgid "Show this category’s sub-categories under the description (or over the hero image)."
+msgstr "הצגת תתי-הקטגוריות של קטגוריה זו מתחת לתיאור (או על תמונת הבאנר)."
+
+msgid "Show sub-categories"
+msgstr "הצגת תתי-קטגוריות"
+
+msgid "Display a strip of the child categories."
+msgstr "הצגת רצועה של קטגוריות הבן."
+
+msgid "Clean — underlined links"
+msgstr "נקי — קישורים עם קו תחתון"
+
+msgid "Pills"
+msgstr "גלולות"
+
+msgid "Image cards"
+msgstr "כרטיסי תמונה"
+
+msgid "Pill shape"
+msgstr "צורת הגלולה"
+
+msgid "Rounded (ellipse)"
+msgstr "מעוגל (אליפסה)"
+
+msgid "Rectangle"
+msgstr "מלבן"
+
+msgid "Image shape"
+msgstr "צורת התמונה"
+
+msgid "Portrait"
+msgstr "לאורך"
+
+msgid "Circle"
+msgstr "עיגול"
+
+msgid "Scroll the cards sideways instead of wrapping. On mobile it is a free finger-swipe that runs to the screen edge."
+msgstr "גלילת הכרטיסים לצדדים במקום ירידת שורה. במובייל זו החלקת אצבע חופשית שנמשכת עד קצה המסך."
+
+msgid "Below the description"
+msgstr "מתחת לתיאור"
+
+msgid "Over the hero image (full-width, text-over only)"
+msgstr "על תמונת הבאנר (לכל הרוחב, טקסט-על-התמונה בלבד)"
+
+msgid "Over the image, they follow the text’s alignment."
+msgstr "על התמונה, הן עוקבות אחר יישור הטקסט."
+
+msgid "Alignment"
+msgstr "יישור"
+
+msgid "Reading side"
+msgstr "צד הקריאה"

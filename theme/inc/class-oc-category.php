@@ -131,6 +131,7 @@ class Category {
 			'pill'    => $get( '_oc_sub_pill', 'round' ),        // round | rect.
 			'shape'   => $get( '_oc_sub_shape', 'square' ),      // square | portrait | circle.
 			'corners' => $get( '_oc_sub_corners', 'soft' ),      // sharp | soft.
+			'slider'  => '1' === $get( '_oc_sub_slider' ),
 			'place'   => $get( '_oc_sub_place', 'out' ),         // out | in.
 			'align'   => $get( '_oc_sub_align', 'start' ),       // start | center.
 		);
@@ -369,12 +370,19 @@ class Category {
 			$classes .= ' oc-subcats--pill-' . ( 'rect' === $sub['pill'] ? 'rect' : 'round' );
 		}
 
+		$attrs = '';
+
 		if ( 'card' === $style ) {
 			$shape    = in_array( $sub['shape'], array( 'square', 'portrait', 'circle' ), true ) ? $sub['shape'] : 'square';
 			$classes .= ' oc-subcats--shape-' . $shape . ' oc-subcats--corners-' . ( 'sharp' === $sub['corners'] ? 'sharp' : 'soft' );
+
+			if ( ! empty( $sub['slider'] ) ) {
+				$classes .= ' oc-subcats--slider';
+				$attrs    = ' data-oc-slider';
+			}
 		}
 
-		return '<nav class="' . esc_attr( $classes ) . '" aria-label="' . esc_attr__( 'Sub-categories', 'oc-theme' ) . '">' . $items . '</nav>';
+		return '<nav class="' . esc_attr( $classes ) . '"' . $attrs . ' aria-label="' . esc_attr__( 'Sub-categories', 'oc-theme' ) . '">' . $items . '</nav>';
 	}
 
 	/* ------------------------------------------------------------------ *
@@ -458,6 +466,60 @@ class Category {
 	}
 
 	/**
+	 * A small illustrative SVG for the visual pickers.
+	 *
+	 * @param string $key Icon key.
+	 * @return string
+	 */
+	private static function icon( string $key ): string {
+		$icons = array(
+			// Hero layouts.
+			'l-none'  => '<svg viewBox="0 0 108 64" aria-hidden="true"><rect x="20" y="22" width="68" height="7" rx="3.5" fill="#b9c0c7"/><rect x="30" y="35" width="48" height="4" rx="2" fill="#dbe0e5"/><rect x="34" y="44" width="40" height="4" rx="2" fill="#dbe0e5"/></svg>',
+			'l-full'  => '<svg viewBox="0 0 108 64" aria-hidden="true"><rect x="6" y="6" width="96" height="52" rx="5" fill="#b9c0c7"/><rect x="16" y="38" width="44" height="7" rx="3.5" fill="#fff"/><rect x="16" y="48" width="30" height="4" rx="2" fill="#eaeef1"/></svg>',
+			'l-split' => '<svg viewBox="0 0 108 64" aria-hidden="true"><rect x="6" y="6" width="46" height="52" rx="5" fill="#eaeef1"/><rect x="56" y="6" width="46" height="52" rx="5" fill="#b9c0c7"/><rect x="14" y="26" width="30" height="7" rx="3.5" fill="#b9c0c7"/><rect x="14" y="37" width="22" height="4" rx="2" fill="#cfd6dc"/></svg>',
+			// Sub-category displays.
+			's-clean' => '<svg viewBox="0 0 108 64" aria-hidden="true"><rect x="22" y="20" width="30" height="5" rx="2.5" fill="#b9c0c7"/><rect x="22" y="27" width="30" height="2" rx="1" fill="#cfd6dc"/><rect x="60" y="20" width="26" height="5" rx="2.5" fill="#b9c0c7"/><rect x="60" y="27" width="26" height="2" rx="1" fill="#cfd6dc"/><rect x="22" y="38" width="34" height="5" rx="2.5" fill="#b9c0c7"/><rect x="22" y="45" width="34" height="2" rx="1" fill="#cfd6dc"/></svg>',
+			's-pill'  => '<svg viewBox="0 0 108 64" aria-hidden="true"><rect x="14" y="26" width="36" height="15" rx="7.5" fill="none" stroke="#b9c0c7" stroke-width="2.5"/><rect x="58" y="26" width="30" height="15" rx="7.5" fill="none" stroke="#b9c0c7" stroke-width="2.5"/></svg>',
+			's-card'  => '<svg viewBox="0 0 108 64" aria-hidden="true"><rect x="12" y="12" width="24" height="26" rx="3" fill="#b9c0c7"/><rect x="16" y="42" width="16" height="4" rx="2" fill="#cfd6dc"/><rect x="42" y="12" width="24" height="26" rx="3" fill="#b9c0c7"/><rect x="46" y="42" width="16" height="4" rx="2" fill="#cfd6dc"/><rect x="72" y="12" width="24" height="26" rx="3" fill="#b9c0c7"/><rect x="76" y="42" width="16" height="4" rx="2" fill="#cfd6dc"/></svg>',
+		);
+
+		return $icons[ $key ] ?? '';
+	}
+
+	/**
+	 * A visual radio picker — each option is an illustrated card.
+	 *
+	 * @param string                             $name    Field name.
+	 * @param string                             $current Current value.
+	 * @param string                             $label   Row label.
+	 * @param array<string,array<string,string>> $options value => [label, svg].
+	 * @param string                             $hint    Hint.
+	 * @param string                             $show_if data-attribute gate.
+	 */
+	private function visual_field( string $name, string $current, string $label, array $options, string $hint = '', string $show_if = '' ): void {
+		$gate = '' !== $show_if ? ' data-oc-when="' . esc_attr( $show_if ) . '"' : '';
+		?>
+		<tr class="form-field"<?php echo $gate; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- literal above. ?>>
+			<th scope="row"><label><?php echo esc_html( $label ); ?></label></th>
+			<td>
+				<div class="oc-vpick">
+					<?php foreach ( $options as $value => $opt ) : ?>
+						<label class="oc-vpick__opt<?php echo $current === (string) $value ? ' is-sel' : ''; ?>">
+							<input type="radio" name="<?php echo esc_attr( $name ); ?>" value="<?php echo esc_attr( (string) $value ); ?>" <?php checked( $current, (string) $value ); ?> data-oc-field data-oc-vpick>
+							<span class="oc-vpick__art"><?php echo $opt['svg']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static illustrative SVG. ?></span>
+							<span class="oc-vpick__lbl"><?php echo esc_html( $opt['label'] ); ?></span>
+						</label>
+					<?php endforeach; ?>
+				</div>
+				<?php if ( '' !== $hint ) : ?>
+					<p class="description"><?php echo esc_html( $hint ); ?></p>
+				<?php endif; ?>
+			</td>
+		</tr>
+		<?php
+	}
+
+	/**
 	 * A checkbox row.
 	 *
 	 * @param string $name    Field name.
@@ -494,21 +556,21 @@ class Category {
 		$h   = self::hero( $term->term_id );
 		$sub = self::subs( $term->term_id );
 		?>
-		<tr class="form-field">
+		<tr class="form-field oc-cat-sec">
 			<th scope="row" colspan="2" style="padding-block-end:0">
 				<h2 style="margin:22px 0 0;font-size:1.15em"><?php esc_html_e( 'Category page — hero', 'oc-theme' ); ?></h2>
 				<p class="description" style="font-weight:400"><?php esc_html_e( 'A banner at the top of this category. The category name and description move onto it. Leave the layout on “None” to keep the plain title.', 'oc-theme' ); ?></p>
 			</th>
 		</tr>
 		<?php
-		$this->select_field(
+		$this->visual_field(
 			'_oc_hero_layout',
 			$h['layout'],
 			__( 'Layout', 'oc-theme' ),
 			array(
-				''      => __( 'None — plain title', 'oc-theme' ),
-				'full'  => __( 'Full-width image', 'oc-theme' ),
-				'split' => __( 'Half image · half content', 'oc-theme' ),
+				''      => array( 'label' => __( 'None — plain title', 'oc-theme' ), 'svg' => self::icon( 'l-none' ) ),
+				'full'  => array( 'label' => __( 'Full-width image', 'oc-theme' ), 'svg' => self::icon( 'l-full' ) ),
+				'split' => array( 'label' => __( 'Half image · half content', 'oc-theme' ), 'svg' => self::icon( 'l-split' ) ),
 			)
 		);
 
@@ -591,7 +653,7 @@ class Category {
 			</td>
 		</tr>
 
-		<tr class="form-field">
+		<tr class="form-field oc-cat-sec">
 			<th scope="row" colspan="2" style="padding-block-end:0">
 				<h2 style="margin:22px 0 0;font-size:1.15em"><?php esc_html_e( 'Card image', 'oc-theme' ); ?></h2>
 				<p class="description" style="font-weight:400"><?php esc_html_e( 'One image for this category, used by the categories block, the sub-category strip and the blog. If empty, the hero image is used.', 'oc-theme' ); ?></p>
@@ -602,7 +664,7 @@ class Category {
 		$this->image_field( '_oc_card_img', $card, __( 'Image', 'oc-theme' ) );
 		?>
 
-		<tr class="form-field">
+		<tr class="form-field oc-cat-sec">
 			<th scope="row" colspan="2" style="padding-block-end:0">
 				<h2 style="margin:22px 0 0;font-size:1.15em"><?php esc_html_e( 'Sub-categories', 'oc-theme' ); ?></h2>
 				<p class="description" style="font-weight:400"><?php esc_html_e( 'Show this category’s sub-categories under the description (or over the hero image).', 'oc-theme' ); ?></p>
@@ -611,14 +673,14 @@ class Category {
 		<?php
 		$this->toggle_field( '_oc_sub_show', $sub['show'], __( 'Show sub-categories', 'oc-theme' ), __( 'Display a strip of the child categories.', 'oc-theme' ) );
 
-		$this->select_field(
+		$this->visual_field(
 			'_oc_sub_style',
 			$sub['style'],
 			__( 'Display', 'oc-theme' ),
 			array(
-				'clean' => __( 'Clean — underlined links', 'oc-theme' ),
-				'pill'  => __( 'Pills', 'oc-theme' ),
-				'card'  => __( 'Image cards', 'oc-theme' ),
+				'clean' => array( 'label' => __( 'Clean — underlined links', 'oc-theme' ), 'svg' => self::icon( 's-clean' ) ),
+				'pill'  => array( 'label' => __( 'Pills', 'oc-theme' ), 'svg' => self::icon( 's-pill' ) ),
+				'card'  => array( 'label' => __( 'Image cards', 'oc-theme' ), 'svg' => self::icon( 's-card' ) ),
 			),
 			'',
 			'_oc_sub_show:1'
@@ -661,6 +723,14 @@ class Category {
 			'_oc_sub_show:1,_oc_sub_style:card'
 		);
 
+		$this->toggle_field(
+			'_oc_sub_slider',
+			$sub['slider'],
+			__( 'Slider', 'oc-theme' ),
+			__( 'Scroll the cards sideways instead of wrapping. On mobile it is a free finger-swipe that runs to the screen edge.', 'oc-theme' ),
+			'_oc_sub_show:1,_oc_sub_style:card'
+		);
+
 		$this->select_field(
 			'_oc_sub_place',
 			$sub['place'],
@@ -693,6 +763,24 @@ class Category {
 	 */
 	private function admin_script(): void {
 		?>
+		<style>
+		.oc-cat-sec th { border-block-start: 1px solid #dcdcde; padding-block-start: 4px; }
+		.oc-cat-sec h2 { color: #1d2327; }
+		.oc-vpick { display: flex; flex-wrap: wrap; gap: 12px; }
+		.oc-vpick__opt {
+			display: flex; flex-direction: column; align-items: center; gap: 7px;
+			inline-size: 128px; padding: 12px 10px 10px; cursor: pointer;
+			border: 2px solid #dcdcde; border-radius: 10px; background: #fff;
+			text-align: center; transition: border-color .12s, box-shadow .12s;
+		}
+		.oc-vpick__opt:hover { border-color: #a7aaad; }
+		.oc-vpick__opt input { position: absolute; opacity: 0; pointer-events: none; }
+		.oc-vpick__opt.is-sel,
+		.oc-vpick__opt:has(input:checked) { border-color: #2271b1; box-shadow: 0 0 0 1px #2271b1; }
+		.oc-vpick__art { inline-size: 100%; }
+		.oc-vpick__art svg { display: block; inline-size: 100%; block-size: 62px; }
+		.oc-vpick__lbl { font-size: 12px; font-weight: 600; line-height: 1.3; }
+		</style>
 		<script>
 		( function ( $ ) {
 			// Image pickers.
@@ -721,10 +809,14 @@ class Category {
 			// comma-separated clause must match (AND); values within a clause
 			// are alternatives (OR).
 			function fval( name ) {
-				var el = document.querySelector( '[name="' + name + '"]' );
-				if ( ! el ) { return ''; }
-				if ( 'checkbox' === el.type ) { return el.checked ? '1' : ''; }
-				return el.value || '';
+				var els = document.getElementsByName( name );
+				if ( ! els.length ) { return ''; }
+				if ( 'radio' === els[ 0 ].type ) {
+					var picked = document.querySelector( '[name="' + name + '"]:checked' );
+					return picked ? picked.value : '';
+				}
+				if ( 'checkbox' === els[ 0 ].type ) { return els[ 0 ].checked ? '1' : ''; }
+				return els[ 0 ].value || '';
 			}
 			function sync() {
 				$( '[data-oc-when]' ).each( function () {
@@ -736,8 +828,17 @@ class Category {
 					$( this ).toggle( ok );
 				} );
 			}
+			// Visual-picker selected state (fallback for browsers without :has).
+			function vsel() {
+				$( '.oc-vpick__opt' ).each( function () {
+					var r = $( this ).find( 'input[type=radio]' )[ 0 ];
+					$( this ).toggleClass( 'is-sel', !! ( r && r.checked ) );
+				} );
+			}
 			$( document ).on( 'change', '[data-oc-field]', sync );
+			$( document ).on( 'change', '[data-oc-vpick]', vsel );
 			sync();
+			vsel();
 		} )( jQuery );
 		</script>
 		<?php
@@ -779,6 +880,7 @@ class Category {
 		$this->save_enum( $term_id, '_oc_sub_pill', array( 'round', 'rect' ) );
 		$this->save_enum( $term_id, '_oc_sub_shape', array( 'square', 'portrait', 'circle' ) );
 		$this->save_enum( $term_id, '_oc_sub_corners', array( 'sharp', 'soft' ) );
+		$this->save_bool( $term_id, '_oc_sub_slider' );
 		$this->save_enum( $term_id, '_oc_sub_place', array( 'out', 'in' ) );
 		$this->save_enum( $term_id, '_oc_sub_align', array( 'start', 'center' ) );
 
@@ -797,7 +899,7 @@ class Category {
 
 		$card = absint( get_term_meta( $term->term_id, '_oc_card_img', true ) );
 		?>
-		<tr class="form-field">
+		<tr class="form-field oc-cat-sec">
 			<th scope="row" colspan="2" style="padding-block-end:0">
 				<h2 style="margin:22px 0 0;font-size:1.15em"><?php esc_html_e( 'Card image', 'oc-theme' ); ?></h2>
 				<p class="description" style="font-weight:400"><?php esc_html_e( 'Shown for this category on the blog and in category strips.', 'oc-theme' ); ?></p>
