@@ -2084,6 +2084,21 @@ html.oc-menu-open .oc-menu-dim::after {
 
 .oc-blog { padding-block: 26px 70px; }
 
+/* A blog category's shared card image, above the archive title. */
+.oc-blog__cat-img {
+	margin: 0 0 20px;
+	overflow: hidden;
+	border-radius: 14px;
+	max-block-size: 280px;
+}
+.oc-blog__cat-img img {
+	display: block;
+	inline-size: 100%;
+	block-size: 100%;
+	max-block-size: 280px;
+	object-fit: cover;
+}
+
 /* A hairline across the top of the site that fills as the post is read. */
 .oc-progress {
 	position: fixed;
@@ -3304,6 +3319,78 @@ html.oc-drw-open body { overflow: hidden; }
 	.oc-chero__media,
 	.oc-chero__panel,
 	.oc-chero__wordsin { animation: none; }
+}
+
+/* ---------- sub-category strip ---------- */
+.oc-subcats {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px 14px;
+	margin-block-start: 16px;
+}
+.oc-subcats--out { margin-block: 14px 4px; }
+.oc-subcats--align-center { justify-content: center; }
+.oc-subcats--align-start { justify-content: flex-start; }
+
+/* clean — underlined links */
+.oc-subcats--clean { gap: 6px 20px; }
+.oc-subcats__link {
+	color: inherit;
+	font-size: .95rem;
+	text-decoration: underline;
+	text-underline-offset: 4px;
+	text-decoration-thickness: 1px;
+}
+.oc-subcats__link:hover { text-decoration-thickness: 2px; }
+
+/* pills — rounded or rectangular */
+.oc-subcats__pill {
+	display: inline-block;
+	padding: 7px 16px;
+	font-size: .9rem;
+	line-height: 1.2;
+	color: inherit;
+	text-decoration: none;
+	border: 1px solid currentColor;
+	transition: background-color .15s ease;
+}
+.oc-subcats--pill-round .oc-subcats__pill { border-radius: 999px; }
+.oc-subcats--pill-rect .oc-subcats__pill { border-radius: 5px; }
+.oc-subcats__pill:hover { background: color-mix(in srgb, currentColor 12%, transparent); }
+
+/* image cards — square / portrait / circle, soft or sharp corners */
+.oc-subcats--card { gap: 16px 18px; }
+.oc-subcats__card {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	inline-size: clamp(104px, 20vw, 148px);
+	color: inherit;
+	text-decoration: none;
+}
+.oc-subcats__pic {
+	display: block;
+	overflow: hidden;
+	background: color-mix(in srgb, currentColor 8%, transparent);
+}
+.oc-subcats__pic img {
+	display: block;
+	inline-size: 100%;
+	block-size: 100%;
+	object-fit: cover;
+	transition: transform .4s ease;
+}
+.oc-subcats__card:hover .oc-subcats__pic img { transform: scale(1.05); }
+.oc-subcats--shape-square .oc-subcats__pic { aspect-ratio: 1; }
+.oc-subcats--shape-portrait .oc-subcats__pic { aspect-ratio: 3 / 4; }
+.oc-subcats--shape-circle .oc-subcats__pic { aspect-ratio: 1; }
+.oc-subcats--corners-soft .oc-subcats__pic { border-radius: 12px; }
+.oc-subcats--corners-sharp .oc-subcats__pic { border-radius: 0; }
+.oc-subcats--shape-circle .oc-subcats__pic { border-radius: 50%; }
+.oc-subcats__name { font-size: .92rem; text-align: center; color: inherit; }
+
+@media (prefers-reduced-motion: reduce) {
+	.oc-subcats__pic img { transition: none; }
 }
 
 /* ---------- footer ---------- */

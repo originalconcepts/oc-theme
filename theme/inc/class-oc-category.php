@@ -41,6 +41,11 @@ class Category {
 	public function register(): void {
 		add_action( 'product_cat_edit_form_fields', array( $this, 'fields' ), 20 );
 		add_action( 'edited_product_cat', array( $this, 'save' ) );
+
+		// Core blog categories get the shared card image only.
+		add_action( 'category_edit_form_fields', array( $this, 'category_fields' ), 20 );
+		add_action( 'edited_category', array( $this, 'category_save' ) );
+
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_assets' ) );
 
 		add_action( 'wp', array( $this, 'setup' ) );
@@ -107,6 +112,49 @@ class Category {
 		return in_array( $h['layout'], array( 'full', 'split' ), true ) && $h['img'] > 0;
 	}
 
+	/**
+	 * Read a term's sub-category-strip settings.
+	 *
+	 * @param int $term_id Term id.
+	 * @return array<string,mixed>
+	 */
+	private static function subs( int $term_id ): array {
+		$get = static function ( string $key, string $def = '' ) use ( $term_id ): string {
+			$v = get_term_meta( $term_id, $key, true );
+
+			return '' !== (string) $v ? (string) $v : $def;
+		};
+
+		return array(
+			'show'    => '1' === $get( '_oc_sub_show' ),
+			'style'   => $get( '_oc_sub_style', 'clean' ),      // clean | pill | card.
+			'pill'    => $get( '_oc_sub_pill', 'round' ),        // round | rect.
+			'shape'   => $get( '_oc_sub_shape', 'square' ),      // square | portrait | circle.
+			'corners' => $get( '_oc_sub_corners', 'soft' ),      // sharp | soft.
+			'place'   => $get( '_oc_sub_place', 'out' ),         // out | in.
+			'align'   => $get( '_oc_sub_align', 'start' ),       // start | center.
+		);
+	}
+
+	/**
+	 * The queried category's direct children.
+	 *
+	 * @param int $term_id Parent id.
+	 * @return \WP_Term[]
+	 */
+	private static function children( int $term_id ): array {
+		$terms = get_terms(
+			array(
+				'taxonomy'   => 'product_cat',
+				'parent'     => $term_id,
+				'hide_empty' => false,
+				'orderby'    => 'menu_order',
+			)
+		);
+
+		return is_array( $terms ) ? array_filter( $terms, static fn( $t ) => $t instanceof \WP_Term ) : array();
+	}
+
 	/* ------------------------------------------------------------------ *
 	 *  Front-end
 	 * ------------------------------------------------------------------ */
@@ -127,26 +175,42 @@ class Category {
 			return;
 		}
 
-		$h = self::hero( $term->term_id );
+		$h       = self::hero( $term->term_id );
+		$sub     = self::subs( $term->term_id );
+		$hero_on = self::has_hero( $h );
 
-		if ( ! self::has_hero( $h ) ) {
-			return;
+		if ( $hero_on ) {
+			// The hero carries the H1 and the description, so hide Woo's own.
+			add_filter( 'woocommerce_show_page_title', '__return_false' );
+			remove_action( 'woocommerce_archive_description', 'woocommerce_taxonomy_archive_description', 10 );
+			remove_action( 'woocommerce_archive_description', 'woocommerce_product_archive_description', 10 );
+
+			// Full-bleed: render before the <main> wrapper opens (open_wrapper
+			// is priority 10 on the same hook).
+			add_action(
+				'woocommerce_before_main_content',
+				function () use ( $term, $h, $sub ): void {
+					echo self::render( $term, $h, $sub ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
+				},
+				5
+			);
 		}
 
-		// The hero carries the H1 and the description, so hide Woo's own.
-		add_filter( 'woocommerce_show_page_title', '__return_false' );
-		remove_action( 'woocommerce_archive_description', 'woocommerce_taxonomy_archive_description', 10 );
-		remove_action( 'woocommerce_archive_description', 'woocommerce_product_archive_description', 10 );
+		// Sub-categories can sit inside an over-image hero; otherwise they go
+		// below the description in the normal content flow.
+		$place_in = $hero_on && 'full' === $h['layout'] && 'over' === $h['text'] && 'in' === $sub['place'];
 
-		// Full-bleed: render before the <main> wrapper opens (open_wrapper is
-		// priority 10 on the same hook).
-		add_action(
-			'woocommerce_before_main_content',
-			function () use ( $term, $h ): void {
-				echo self::render( $term, $h ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
-			},
-			5
-		);
+		if ( $sub['show'] && ! $place_in ) {
+			$align = 'center' === $sub['align'] ? 'center' : 'start';
+
+			add_action(
+				'woocommerce_archive_description',
+				function () use ( $term, $sub, $align ): void {
+					echo self::subcats_html( $term, $sub, 'out', $align ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
+				},
+				15
+			);
+		}
 	}
 
 	/**
@@ -154,13 +218,23 @@ class Category {
 	 *
 	 * @param \WP_Term            $term Category.
 	 * @param array<string,mixed> $h    Hero settings.
+	 * @param array<string,mixed> $sub  Sub-category settings.
 	 * @return string
 	 */
-	private static function render( \WP_Term $term, array $h ): string {
+	private static function render( \WP_Term $term, array $h, array $sub = array() ): string {
 		$title = '<h1 class="oc-chero__title">' . esc_html( $term->name ) . '</h1>';
 		$desc  = trim( (string) term_description( $term->term_id, 'product_cat' ) );
 		$desc  = '' !== $desc ? '<div class="oc-chero__desc">' . wp_kses_post( $desc ) . '</div>' : '';
-		$words = '<div class="oc-chero__words"><div class="oc-chero__wordsin">' . $title . $desc . '</div></div>';
+
+		// Sub-categories over the image: they follow the content's alignment.
+		$subs = '';
+
+		if ( ! empty( $sub['show'] ) && 'full' === $h['layout'] && 'over' === $h['text'] && 'in' === $sub['place'] ) {
+			$align = in_array( $h['pos'], array( 'cc', 'bc' ), true ) ? 'center' : 'start';
+			$subs  = self::subcats_html( $term, $sub, 'in', $align );
+		}
+
+		$words = '<div class="oc-chero__words"><div class="oc-chero__wordsin">' . $title . $desc . $subs . '</div></div>';
 
 		$style = '';
 
@@ -237,6 +311,72 @@ class Category {
 		return $img;
 	}
 
+	/**
+	 * The strip of sub-categories under a category.
+	 *
+	 * @param \WP_Term            $term    Parent category.
+	 * @param array<string,mixed> $sub     Sub-category settings.
+	 * @param string              $context 'in' (over the hero image) | 'out'.
+	 * @param string              $align   'start' | 'center'.
+	 * @return string
+	 */
+	private static function subcats_html( \WP_Term $term, array $sub, string $context, string $align ): string {
+		$children = self::children( $term->term_id );
+
+		if ( empty( $children ) ) {
+			return '';
+		}
+
+		$style = in_array( $sub['style'], array( 'clean', 'pill', 'card' ), true ) ? $sub['style'] : 'clean';
+		$items = '';
+
+		foreach ( $children as $child ) {
+			$link = get_term_link( $child );
+
+			if ( is_wp_error( $link ) ) {
+				continue;
+			}
+
+			$link = esc_url( (string) $link );
+			$name = esc_html( $child->name );
+
+			if ( 'card' === $style ) {
+				$id  = self::card_image_id( $child->term_id );
+				$img = $id > 0
+					? wp_get_attachment_image( $id, 'medium', false, array( 'loading' => 'lazy', 'alt' => $child->name ) )
+					: '';
+
+				$items .= '<a class="oc-subcats__card" href="' . $link . '">'
+					. '<span class="oc-subcats__pic">' . $img . '</span>'
+					. '<span class="oc-subcats__name">' . $name . '</span>'
+					. '</a>';
+			} elseif ( 'pill' === $style ) {
+				$items .= '<a class="oc-subcats__pill" href="' . $link . '">' . $name . '</a>';
+			} else {
+				$items .= '<a class="oc-subcats__link" href="' . $link . '">' . $name . '</a>';
+			}
+		}
+
+		if ( '' === $items ) {
+			return '';
+		}
+
+		$classes = 'oc-subcats oc-subcats--' . $style
+			. ' oc-subcats--align-' . ( 'center' === $align ? 'center' : 'start' )
+			. ' oc-subcats--' . ( 'in' === $context ? 'in' : 'out' );
+
+		if ( 'pill' === $style ) {
+			$classes .= ' oc-subcats--pill-' . ( 'rect' === $sub['pill'] ? 'rect' : 'round' );
+		}
+
+		if ( 'card' === $style ) {
+			$shape    = in_array( $sub['shape'], array( 'square', 'portrait', 'circle' ), true ) ? $sub['shape'] : 'square';
+			$classes .= ' oc-subcats--shape-' . $shape . ' oc-subcats--corners-' . ( 'sharp' === $sub['corners'] ? 'sharp' : 'soft' );
+		}
+
+		return '<nav class="' . esc_attr( $classes ) . '" aria-label="' . esc_attr__( 'Sub-categories', 'oc-theme' ) . '">' . $items . '</nav>';
+	}
+
 	/* ------------------------------------------------------------------ *
 	 *  Admin — the category edit screen
 	 * ------------------------------------------------------------------ */
@@ -253,7 +393,7 @@ class Category {
 
 		$screen = get_current_screen();
 
-		if ( $screen && 'product_cat' === $screen->taxonomy ) {
+		if ( $screen && in_array( $screen->taxonomy, array( 'product_cat', 'category' ), true ) ) {
 			wp_enqueue_media();
 		}
 	}
@@ -318,6 +458,30 @@ class Category {
 	}
 
 	/**
+	 * A checkbox row.
+	 *
+	 * @param string $name    Field name.
+	 * @param bool   $checked Current state.
+	 * @param string $label   Label.
+	 * @param string $text    Text beside the checkbox.
+	 * @param string $show_if data-attribute gate.
+	 */
+	private function toggle_field( string $name, bool $checked, string $label, string $text, string $show_if = '' ): void {
+		$gate = '' !== $show_if ? ' data-oc-when="' . esc_attr( $show_if ) . '"' : '';
+		?>
+		<tr class="form-field"<?php echo $gate; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- literal above. ?>>
+			<th scope="row"><label for="<?php echo esc_attr( $name ); ?>"><?php echo esc_html( $label ); ?></label></th>
+			<td>
+				<label>
+					<input type="checkbox" name="<?php echo esc_attr( $name ); ?>" id="<?php echo esc_attr( $name ); ?>" value="1" <?php checked( $checked ); ?> data-oc-field>
+					<?php echo esc_html( $text ); ?>
+				</label>
+			</td>
+		</tr>
+		<?php
+	}
+
+	/**
 	 * The category-page fields on the edit screen.
 	 *
 	 * @param \WP_Term $term Category.
@@ -327,7 +491,8 @@ class Category {
 			return;
 		}
 
-		$h = self::hero( $term->term_id );
+		$h   = self::hero( $term->term_id );
+		$sub = self::subs( $term->term_id );
 		?>
 		<tr class="form-field">
 			<th scope="row" colspan="2" style="padding-block-end:0">
@@ -425,7 +590,101 @@ class Category {
 				<p class="description"><?php esc_html_e( 'Background colour behind the content half. Leave empty for the page background.', 'oc-theme' ); ?></p>
 			</td>
 		</tr>
+
+		<tr class="form-field">
+			<th scope="row" colspan="2" style="padding-block-end:0">
+				<h2 style="margin:22px 0 0;font-size:1.15em"><?php esc_html_e( 'Card image', 'oc-theme' ); ?></h2>
+				<p class="description" style="font-weight:400"><?php esc_html_e( 'One image for this category, used by the categories block, the sub-category strip and the blog. If empty, the hero image is used.', 'oc-theme' ); ?></p>
+			</th>
+		</tr>
 		<?php
+		$card = absint( get_term_meta( $term->term_id, '_oc_card_img', true ) );
+		$this->image_field( '_oc_card_img', $card, __( 'Image', 'oc-theme' ) );
+		?>
+
+		<tr class="form-field">
+			<th scope="row" colspan="2" style="padding-block-end:0">
+				<h2 style="margin:22px 0 0;font-size:1.15em"><?php esc_html_e( 'Sub-categories', 'oc-theme' ); ?></h2>
+				<p class="description" style="font-weight:400"><?php esc_html_e( 'Show this category’s sub-categories under the description (or over the hero image).', 'oc-theme' ); ?></p>
+			</th>
+		</tr>
+		<?php
+		$this->toggle_field( '_oc_sub_show', $sub['show'], __( 'Show sub-categories', 'oc-theme' ), __( 'Display a strip of the child categories.', 'oc-theme' ) );
+
+		$this->select_field(
+			'_oc_sub_style',
+			$sub['style'],
+			__( 'Display', 'oc-theme' ),
+			array(
+				'clean' => __( 'Clean — underlined links', 'oc-theme' ),
+				'pill'  => __( 'Pills', 'oc-theme' ),
+				'card'  => __( 'Image cards', 'oc-theme' ),
+			),
+			'',
+			'_oc_sub_show:1'
+		);
+
+		$this->select_field(
+			'_oc_sub_pill',
+			$sub['pill'],
+			__( 'Pill shape', 'oc-theme' ),
+			array(
+				'round' => __( 'Rounded (ellipse)', 'oc-theme' ),
+				'rect'  => __( 'Rectangle', 'oc-theme' ),
+			),
+			'',
+			'_oc_sub_show:1,_oc_sub_style:pill'
+		);
+
+		$this->select_field(
+			'_oc_sub_shape',
+			$sub['shape'],
+			__( 'Image shape', 'oc-theme' ),
+			array(
+				'square'   => __( 'Square', 'oc-theme' ),
+				'portrait' => __( 'Portrait', 'oc-theme' ),
+				'circle'   => __( 'Circle', 'oc-theme' ),
+			),
+			'',
+			'_oc_sub_show:1,_oc_sub_style:card'
+		);
+
+		$this->select_field(
+			'_oc_sub_corners',
+			$sub['corners'],
+			__( 'Corners', 'oc-theme' ),
+			array(
+				'soft'  => __( 'Soft', 'oc-theme' ),
+				'sharp' => __( 'Sharp', 'oc-theme' ),
+			),
+			'',
+			'_oc_sub_show:1,_oc_sub_style:card'
+		);
+
+		$this->select_field(
+			'_oc_sub_place',
+			$sub['place'],
+			__( 'Placement', 'oc-theme' ),
+			array(
+				'out' => __( 'Below the description', 'oc-theme' ),
+				'in'  => __( 'Over the hero image (full-width, text-over only)', 'oc-theme' ),
+			),
+			__( 'Over the image, they follow the text’s alignment.', 'oc-theme' ),
+			'_oc_sub_show:1'
+		);
+
+		$this->select_field(
+			'_oc_sub_align',
+			$sub['align'],
+			__( 'Alignment', 'oc-theme' ),
+			array(
+				'start'  => __( 'Reading side', 'oc-theme' ),
+				'center' => __( 'Centre', 'oc-theme' ),
+			),
+			'',
+			'_oc_sub_show:1,_oc_sub_place:out'
+		);
+
 		$this->admin_script();
 	}
 
@@ -458,17 +717,26 @@ class Category {
 				$( this ).hide();
 			} );
 
-			// Conditional rows: show only when _oc_hero_layout matches.
+			// Conditional rows. data-oc-when="field:a|b,field2:c" — every
+			// comma-separated clause must match (AND); values within a clause
+			// are alternatives (OR).
+			function fval( name ) {
+				var el = document.querySelector( '[name="' + name + '"]' );
+				if ( ! el ) { return ''; }
+				if ( 'checkbox' === el.type ) { return el.checked ? '1' : ''; }
+				return el.value || '';
+			}
 			function sync() {
-				var layout = $( 'select[name="_oc_hero_layout"]' ).val() || '';
 				$( '[data-oc-when]' ).each( function () {
-					var spec = $( this ).data( 'oc-when' ).toString().split( ':' );
-					var field = spec[ 0 ], vals = ( spec[ 1 ] || '' ).split( '|' );
-					var on = ( field === '_oc_hero_layout' ) && vals.indexOf( layout ) !== -1;
-					$( this ).toggle( on );
+					var ok = true;
+					$( this ).data( 'oc-when' ).toString().split( ',' ).forEach( function ( cond ) {
+						var p = cond.split( ':' ), field = p[ 0 ], vals = ( p[ 1 ] || '' ).split( '|' );
+						if ( vals.indexOf( fval( field ) ) === -1 ) { ok = false; }
+					} );
+					$( this ).toggle( ok );
 				} );
 			}
-			$( document ).on( 'change', 'select[name="_oc_hero_layout"]', sync );
+			$( document ).on( 'change', '[data-oc-field]', sync );
 			sync();
 		} )( jQuery );
 		</script>
@@ -504,7 +772,54 @@ class Category {
 		$this->save_enum( $term_id, '_oc_hero_side', array( 'start', 'end' ) );
 		$this->save_colour( $term_id, '_oc_hero_cbg' );
 
+		$this->save_int( $term_id, '_oc_card_img' );
+
+		$this->save_bool( $term_id, '_oc_sub_show' );
+		$this->save_enum( $term_id, '_oc_sub_style', array( 'clean', 'pill', 'card' ) );
+		$this->save_enum( $term_id, '_oc_sub_pill', array( 'round', 'rect' ) );
+		$this->save_enum( $term_id, '_oc_sub_shape', array( 'square', 'portrait', 'circle' ) );
+		$this->save_enum( $term_id, '_oc_sub_corners', array( 'sharp', 'soft' ) );
+		$this->save_enum( $term_id, '_oc_sub_place', array( 'out', 'in' ) );
+		$this->save_enum( $term_id, '_oc_sub_align', array( 'start', 'center' ) );
+
 		// phpcs:enable WordPress.Security.NonceVerification.Missing
+	}
+
+	/**
+	 * The card-image row on a core (blog) category edit screen.
+	 *
+	 * @param \WP_Term $term Category.
+	 */
+	public function category_fields( $term ): void {
+		if ( ! $term instanceof \WP_Term ) {
+			return;
+		}
+
+		$card = absint( get_term_meta( $term->term_id, '_oc_card_img', true ) );
+		?>
+		<tr class="form-field">
+			<th scope="row" colspan="2" style="padding-block-end:0">
+				<h2 style="margin:22px 0 0;font-size:1.15em"><?php esc_html_e( 'Card image', 'oc-theme' ); ?></h2>
+				<p class="description" style="font-weight:400"><?php esc_html_e( 'Shown for this category on the blog and in category strips.', 'oc-theme' ); ?></p>
+			</th>
+		</tr>
+		<?php
+		$this->image_field( '_oc_card_img', $card, __( 'Image', 'oc-theme' ) );
+		$this->admin_script();
+	}
+
+	/**
+	 * Save a core-category card image.
+	 *
+	 * @param int $term_id Term id.
+	 */
+	public function category_save( $term_id ): void {
+		if ( ! current_user_can( 'manage_categories' ) ) {
+			return;
+		}
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- core verifies the term-edit nonce.
+		$this->save_int( $term_id, '_oc_card_img' );
 	}
 
 	/**
@@ -539,6 +854,21 @@ class Category {
 
 		if ( $raw >= $min ) {
 			update_term_meta( $term_id, $key, (string) min( $max, $raw ) );
+		} else {
+			delete_term_meta( $term_id, $key );
+		}
+	}
+
+	/**
+	 * Save a checkbox as '1', or delete when unchecked.
+	 *
+	 * @param int    $term_id Term id.
+	 * @param string $key     Meta key / POST key.
+	 */
+	private function save_bool( int $term_id, string $key ): void {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing
+		if ( isset( $_POST[ $key ] ) && '1' === (string) wp_unslash( $_POST[ $key ] ) ) {
+			update_term_meta( $term_id, $key, '1' );
 		} else {
 			delete_term_meta( $term_id, $key );
 		}

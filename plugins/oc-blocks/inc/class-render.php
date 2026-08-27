@@ -666,7 +666,11 @@ final class Render {
 				continue;
 			}
 
-			$thumb = absint( get_term_meta( $id, 'thumbnail_id', true ) );
+			// Prefer the theme's shared card image (with its hero/thumbnail
+			// fallback chain); fall back to the WooCommerce category image.
+			$thumb = class_exists( '\OC\Theme\Category' )
+				? \OC\Theme\Category::card_image_id( $id )
+				: absint( get_term_meta( $id, 'thumbnail_id', true ) );
 			$img   = $thumb > 0 ? wp_get_attachment_image( $thumb, 'large', false, array( 'loading' => 'lazy', 'alt' => $term->name ) ) : '';
 			$link  = get_term_link( $term );
 
