@@ -9060,8 +9060,10 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 
 /* the upsell cards render their own flag (corner or straddling the
  * border) from the same label — the plugin's image banner would double
- * it, so it stays out of the cards entirely */
-.oc-cartup .promeng-banner { display: none; }
+ * it, so it stays out of the cards entirely. The menu panel's product
+ * cards carry the same flag, and the same rule. */
+.oc-cartup .promeng-banner,
+.oc-mb__prod .promeng-banner { display: none; }
 
 
 .oc-vmodal__swatch {
