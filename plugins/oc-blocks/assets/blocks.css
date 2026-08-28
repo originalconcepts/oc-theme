@@ -1065,6 +1065,10 @@ html[dir="rtl"] .ocb-look__spot { translate: 50% -50%; }
 /* Desktop: the media box anchors the add-to-cart circle on the picture —
  * the catalogue's own gesture. "View product" below stays the way through. */
 .ocb-look__cmedia { position: relative; max-inline-size: 320px; margin-inline: auto; }
+
+/* the swatch row sits centred under the price on the desktop card — the
+ * catalogue card presets (minimal and friends) must not drag it aside */
+.ocb-look .ocb-look__card .oc-colors--loop { justify-content: center; }
 .ocb-look__cmedia .ocb-look__cadd {
 	display: grid;
 	place-items: center;

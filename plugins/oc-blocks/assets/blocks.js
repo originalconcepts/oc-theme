@@ -661,16 +661,24 @@
 				e.preventDefault();
 
 				var pid = swatch.dataset.pid || '';
+				var card = swatch.closest( '.ocb-look__card' );
+
+				// The chosen colour is marked on the card either way, so the
+				// add button opens the panel with it already selected.
+				card.querySelectorAll( '.oc-colors__item' ).forEach( function ( s ) {
+					s.classList.toggle( 'is-current', s === swatch );
+					s.removeAttribute( 'aria-current' );
+				} );
+				swatch.setAttribute( 'aria-current', 'true' );
 
 				if ( mobile() && look.classList.contains( 'is-open' ) ) {
 					if ( window.__ocQuickPick && pid ) {
-						window.__ocQuickPick( pid );
+						window.__ocQuickPick( pid, swatch.dataset.slug || '' );
 					}
 
 					return;
 				}
 
-				var card = swatch.closest( '.ocb-look__card' );
 				var img = card.querySelector( '.ocb-look__cimg img' );
 				var imgs = [];
 
@@ -685,11 +693,17 @@
 					img.removeAttribute( 'srcset' );
 				}
 
-				card.querySelectorAll( '.oc-colors__item' ).forEach( function ( s ) {
-					s.classList.toggle( 'is-current', s === swatch );
-					s.removeAttribute( 'aria-current' );
-				} );
-				swatch.setAttribute( 'aria-current', 'true' );
+				// A colour-sibling is its own product — the add button must
+				// add (or open) THAT one.
+				var cadd = card.querySelector( '.ocb-look__cadd' );
+
+				if ( cadd && pid ) {
+					cadd.setAttribute( 'data-product_id', pid );
+
+					if ( cadd.classList.contains( 'ajax_add_to_cart' ) ) {
+						cadd.setAttribute( 'href', '?add-to-cart=' + pid );
+					}
+				}
 
 				// The card's links follow the chosen colour through.
 				if ( swatch.dataset.url ) {

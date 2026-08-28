@@ -7040,9 +7040,15 @@
 				} );
 		}
 
-		function vpOpen( productId ) {
+		function vpOpen( productId, preSlug ) {
 			if ( ! vp ) {
 				vpBuild();
+			}
+
+			// A colour already chosen outside (a card swatch) arrives marked —
+			// the panel's own vpWant machinery picks it up during the build.
+			if ( preSlug ) {
+				vpWant = preSlug;
 			}
 
 			vp.hidden = false;
@@ -7069,7 +7075,8 @@
 			e.stopPropagation();
 
 			// The colour the card is showing travels into the panel.
-			var curDot = a.closest( 'li.product' ) && a.closest( 'li.product' ).querySelector( '.oc-colors__item--term.is-current' );
+			var host = a.closest( 'li.product, .ocb-look__card' );
+			var curDot = host && host.querySelector( '.oc-colors__item--term.is-current' );
 			vpWant = curDot ? ( curDot.dataset.slug || '' ) : '';
 
 			vpOpen( a.dataset.product_id || a.getAttribute( 'data-product_id' ) || '' );
