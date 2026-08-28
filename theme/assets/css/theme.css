@@ -12240,6 +12240,12 @@ body.oc-checkout { overflow-x: clip; }
 }
 
 /* Back to sign in, standing where the title stood. */
+/* These are shown and hidden by their own [hidden] attribute; a bare
+ * display rule quietly outranks it, so each one says so out loud. */
+.oc-auth__backlink[hidden],
+.oc-auth__err[hidden],
+.oc-auth__resend[hidden] { display: none; }
+
 .oc-auth__backlink {
 	display: inline-flex;
 	align-items: center;

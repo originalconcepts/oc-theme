@@ -7527,7 +7527,23 @@
 			} ).then( function ( out ) {
 				done();
 
-				if ( out && out.success ) { window.location.reload(); return; }
+				if ( out && out.success ) {
+					// The number has to prove itself before the account is
+					// real: the details wait while a code goes out.
+					if ( out.data && 'code' === out.data.step ) {
+						say( form, '' );
+						phone = out.data.phone;
+						root.dataset.hasEmail = '0';
+						el( '[data-auth-pretty]' ).textContent = out.data.pretty;
+						root.querySelectorAll( '.oc-auth__boxes input' ).forEach( function ( b ) { b.value = ''; } );
+						step( 'code' );
+						countdown( out.data.wait || 60 );
+						return;
+					}
+
+					window.location.reload();
+					return;
+				}
 
 				say( form, out && out.data ? out.data.msg : '' );
 			} );

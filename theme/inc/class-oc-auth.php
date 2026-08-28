@@ -387,9 +387,12 @@ final class Auth {
 			) );
 		}
 
-		$user = self::user_by_phone( $phone );
+		$user    = self::user_by_phone( $phone );
+		$pending = $user ? false : get_transient( 'ocau_reg_' . $phone );
 
-		if ( ! $user ) {
+		// Details already waiting on this number: the visitor is on the code
+		// screen asking for another one, not starting over.
+		if ( ! $user && ! is_array( $pending ) ) {
 			wp_send_json_success( array(
 				'step'   => 'register',
 				'phone'  => $phone,
@@ -417,7 +420,7 @@ final class Auth {
 			'step'   => 'code',
 			'phone'  => $phone,
 			'pretty' => self::pretty_phone( $phone ),
-			'email'  => '' !== (string) $user->user_email,
+			'email'  => $user ? '' !== (string) $user->user_email : false,
 			'wait'   => (int) self::settings()['resend_cooldown'],
 		) );
 	}
@@ -531,7 +534,23 @@ final class Auth {
 
 		$user = self::user_by_phone( $phone );
 
+		// A number with details waiting has just proven itself — this is the
+		// moment the account opens.
 		if ( ! $user ) {
+			$pending = get_transient( 'ocau_reg_' . $phone );
+
+			if ( is_array( $pending ) ) {
+				$user_id = self::open_account( $phone, $pending );
+
+				if ( ! $user_id ) {
+					wp_send_json_error( array( 'msg' => __( 'The account did not open — try again.', 'oc-theme' ) ) );
+				}
+
+				delete_transient( 'ocau_reg_' . $phone );
+				wp_set_auth_cookie( $user_id, true );
+				wp_send_json_success();
+			}
+
 			wp_send_json_error( array( 'msg' => __( 'Something moved — start again.', 'oc-theme' ) ) );
 		}
 
@@ -583,6 +602,60 @@ final class Auth {
 			wp_send_json_error( array( 'msg' => __( 'This email is already registered — try signing in with Google, or use another address.', 'oc-theme' ) ) );
 		}
 
+		$details = array(
+			'first' => $first,
+			'last'  => $last,
+			'email' => $email,
+		);
+
+		// The phone is the only key this account will ever have, so it is
+		// proven before the account exists: the details wait while a code
+		// goes out, and the account opens when the code comes back right.
+		// Without SMS there is nothing to prove it with, so the account
+		// opens straight away as before.
+		if ( ! empty( self::settings()['sms_on'] ) ) {
+			$why = $this->may_send( $phone );
+
+			if ( '' !== $why ) {
+				wp_send_json_error( array( 'msg' => $why ) );
+			}
+
+			if ( ! $this->send_sms( $phone, $this->mint_code( $phone ) ) ) {
+				wp_send_json_error( array( 'msg' => __( 'The message did not go out — try again in a moment.', 'oc-theme' ) ) );
+			}
+
+			$this->note_send( $phone );
+			set_transient( 'ocau_reg_' . $phone, $details, max( 15 * MINUTE_IN_SECONDS, (int) self::settings()['code_expiry'] ) );
+
+			wp_send_json_success( array(
+				'step'   => 'code',
+				'phone'  => $phone,
+				'pretty' => self::pretty_phone( $phone ),
+				'wait'   => (int) self::settings()['resend_cooldown'],
+			) );
+		}
+
+		$user_id = self::open_account( $phone, $details );
+
+		if ( ! $user_id ) {
+			wp_send_json_error( array( 'msg' => __( 'The account did not open — try again.', 'oc-theme' ) ) );
+		}
+
+		wp_set_auth_cookie( $user_id, true );
+		wp_send_json_success();
+	}
+
+	/**
+	 * Open an account for a proven phone number.
+	 *
+	 * @param string               $phone   Normalised phone.
+	 * @param array<string,string> $details first, last, email.
+	 * @return int The new user's id, or 0 when it could not be created.
+	 */
+	private static function open_account( string $phone, array $details ): int {
+		$first = (string) ( $details['first'] ?? '' );
+		$last  = (string) ( $details['last'] ?? '' );
+		$email = (string) ( $details['email'] ?? '' );
 		$login = 'u' . $phone;
 
 		if ( username_exists( $login ) ) {
@@ -602,7 +675,7 @@ final class Auth {
 		);
 
 		if ( is_wp_error( $user_id ) ) {
-			wp_send_json_error( array( 'msg' => __( 'The account did not open — try again.', 'oc-theme' ) ) );
+			return 0;
 		}
 
 		update_user_meta( $user_id, 'oc_phone', $phone );
@@ -612,8 +685,7 @@ final class Auth {
 		update_user_meta( $user_id, 'billing_email', $email );
 		update_user_meta( $user_id, 'oc_privacy_consent', (string) gmdate( 'c' ) );
 
-		wp_set_auth_cookie( (int) $user_id, true );
-		wp_send_json_success();
+		return (int) $user_id;
 	}
 
 	/*
