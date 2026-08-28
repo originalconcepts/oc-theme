@@ -1160,12 +1160,29 @@ final class Render {
 				continue;
 			}
 
+			// The canvas carries the picture's true aspect ratio, so the whole
+			// photo always shows (letterboxed when the screen disagrees) and
+			// the spot percentages land on the very pixels the editor meant —
+			// whatever shape the client's pictures are.
+			$dmeta = wp_get_attachment_metadata( absint( $scene['img'] ) );
+			$ard   = ! empty( $dmeta['width'] ) && ! empty( $dmeta['height'] ) ? absint( $dmeta['width'] ) . ' / ' . absint( $dmeta['height'] ) : '';
+			$arm   = '';
+
+			if ( '' !== $mob ) {
+				$mmeta = wp_get_attachment_metadata( absint( $scene['imgm'] ) );
+				$arm   = ! empty( $mmeta['width'] ) && ! empty( $mmeta['height'] ) ? absint( $mmeta['width'] ) . ' / ' . absint( $mmeta['height'] ) : '';
+			}
+
+			$canvas_style = ( '' !== $ard ? '--ocb-ard:' . $ard . ';' : '' ) . ( '' !== $arm ? '--ocb-arm:' . $arm . ';' : '' );
+
 			$pics .= '<div class="ocb-look__scene' . ( 0 === $sc ? ' is-on' : '' ) . '" data-ocb-lscene="' . $sc . '">'
+				. '<div class="ocb-look__canvas"' . ( '' !== $canvas_style ? ' style="' . esc_attr( $canvas_style ) . '"' : '' ) . '>'
 				. '<picture>'
 				. ( '' === $mob ? '' : '<source media="(max-width: 782px)" srcset="' . esc_url( $mob ) . '">' )
 				. '<img src="' . esc_url( $dsk ) . '" alt="" decoding="async">'
 				. '</picture>'
 				. $spots
+				. '</div>'
 				. '</div>';
 
 			++$sc;

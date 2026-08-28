@@ -958,17 +958,55 @@
 		stage.appendChild( img );
 
 		section[ key ].forEach( function ( spot, at ) {
-			stage.appendChild( el( 'button', {
+			var dot = el( 'button', {
 				type: 'button',
 				'class': 'ocbe-spots__dot' + ( state.spotSel === at ? ' is-on' : '' ),
 				style: 'left:' + spot.x + '%;top:' + spot.y + '%',
-				text: String( at + 1 ),
-				onclick: function ( e ) {
-					e.stopPropagation();
+				text: String( at + 1 )
+			} );
+
+			// A dot drags to its exact place; a plain tap just selects it.
+			dot.addEventListener( 'pointerdown', function ( ev ) {
+				ev.preventDefault();
+				ev.stopPropagation();
+				dot.setPointerCapture( ev.pointerId );
+
+				var moved = false;
+
+				function mv( e2 ) {
+					var box = stage.getBoundingClientRect();
+
+					spot.x = Math.round( Math.min( 100, Math.max( 0, ( ( e2.clientX - box.left ) / box.width ) * 100 ) ) );
+					spot.y = Math.round( Math.min( 100, Math.max( 0, ( ( e2.clientY - box.top ) / box.height ) * 100 ) ) );
+					dot.style.left = spot.x + '%';
+					dot.style.top = spot.y + '%';
+					moved = true;
+				}
+
+				function up() {
+					dot.removeEventListener( 'pointermove', mv );
+					dot.removeEventListener( 'pointerup', up );
+					dot.removeEventListener( 'pointercancel', up );
 					state.spotSel = at;
+
+					if ( moved ) {
+						touch();
+					}
+
 					paintSettings();
 				}
-			} ) );
+
+				dot.addEventListener( 'pointermove', mv );
+				dot.addEventListener( 'pointerup', up );
+				dot.addEventListener( 'pointercancel', up );
+			} );
+
+			// The stage's own click must not add a second spot on top.
+			dot.addEventListener( 'click', function ( e ) {
+				e.stopPropagation();
+			} );
+
+			stage.appendChild( dot );
 		} );
 
 		stage.addEventListener( 'click', function ( e ) {

@@ -621,6 +621,8 @@ html[dir="ltr"] .ocbe-switch input:checked + i::after { transform: translateX(16
 .ocbe-spots__dot {
 	position: absolute;
 	translate: -50% -50%;
+	cursor: grab;
+	touch-action: none;
 	inline-size: 26px;
 	block-size: 26px;
 	border: 2px solid #fff;

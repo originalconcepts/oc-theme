@@ -999,6 +999,15 @@
 /* The rooms stand stacked; one is lit at a time. */
 .ocb-look__scene { position: relative; }
 
+/* The canvas IS the picture's box — its true aspect ratio, spots anchored
+ * to it, so a percentage always lands on the same pixel of the photo,
+ * whatever shape the client's pictures are. */
+.ocb-look__canvas { position: relative; aspect-ratio: var(--ocb-ard, auto); }
+.ocb-look__canvas img { display: block; inline-size: 100%; block-size: 100%; object-fit: cover; }
+@media (max-width: 782px) {
+	.ocb-look__canvas { aspect-ratio: var(--ocb-arm, var(--ocb-ard, auto)); }
+}
+
 .ocb-look__scene:not(.is-on) { display: none; }
 
 .ocb-look__scene.is-on { animation: ocb-look-in .5s ease; }
@@ -1010,8 +1019,11 @@
 /* The spot: a breathing ring, the reference's own gesture. */
 .ocb-look__spot {
 	position: absolute;
-	inset-block-start: var(--y, 50%);
-	inset-inline-start: var(--x, 50%);
+	/* physical left/top — the editor measures its percentages from the
+	 * picture's left edge; inline-start flipped them into a mirror on RTL */
+	top: var(--y, 50%);
+	left: var(--x, 50%);
+	right: auto;
 	translate: -50% -50%;
 	inline-size: 40px;
 	block-size: 40px;
@@ -1025,7 +1037,7 @@
 	transition: background .2s ease;
 }
 
-html[dir="rtl"] .ocb-look__spot { translate: 50% -50%; }
+/* (no RTL flip — the coordinates are physical, left-measured) */
 
 .ocb-look__spot i {
 	inline-size: 14px;
@@ -1228,13 +1240,23 @@ html.oc-look-lock body { overflow: hidden; }
 		border-radius: 0;
 		overflow: hidden;
 	}
+	/* The photo shows WHOLE: the canvas keeps the picture's own ratio and
+	 * fits the screen (letterboxed on the dark ground when they disagree) —
+	 * a full-screen crop hid the products; and a spot's percentage only
+	 * means anything on the whole picture. Works for portrait, square and
+	 * landscape photos alike. */
 	.ocb-look.is-open .ocb-look__scene,
-	.ocb-look.is-closing .ocb-look__scene { block-size: 100%; }
-	.ocb-look.is-open .ocb-look__scene img,
-	.ocb-look.is-closing .ocb-look__scene img {
+	.ocb-look.is-closing .ocb-look__scene {
+		display: grid;
+		place-items: center;
 		block-size: 100%;
-		object-fit: cover;
-		transition: object-position .5s cubic-bezier(.22, .61, .36, 1);
+	}
+	.ocb-look.is-open .ocb-look__scene:not(.is-on),
+	.ocb-look.is-closing .ocb-look__scene:not(.is-on) { display: none; }
+	.ocb-look.is-open .ocb-look__canvas,
+	.ocb-look.is-closing .ocb-look__canvas {
+		block-size: 100%;
+		max-inline-size: 100%;
 	}
 	.ocb-look.is-open .ocb-look__spot { inline-size: 44px; block-size: 44px; }
 
