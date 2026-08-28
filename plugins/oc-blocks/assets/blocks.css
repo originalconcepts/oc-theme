@@ -1085,48 +1085,15 @@ html[dir="rtl"] .ocb-look__nav .ocb-arr svg { transform: scaleX(-1); }
 
 .ocb-look__close { display: none; }
 
+/* the page underneath stays put while the story view is open */
+html.oc-look-lock,
+html.oc-look-lock body { overflow: hidden; }
+
 @media (max-width: 782px) {
 	.ocb-look { grid-template-columns: 1fr; gap: 14px; }
 
-	/* The phone leads with the picture; the products wait behind a button
-	 * and rise when asked — the spots ask too. */
-	.ocb-look__side {
-		display: none;
-		position: fixed;
-		inset-inline: 0;
-		inset-block-end: 0;
-		z-index: 96;
-		background: var(--oc-surface, #fff);
-		border-radius: 16px 16px 0 0;
-		box-shadow: 0 -10px 40px rgb(0 0 0 / 18%);
-		padding: 26px 20px 22px;
-		max-block-size: 78vh;
-		overflow-y: auto;
-	}
-
-	.ocb-look.is-open .ocb-look__side { display: block; animation: ocb-look-up .3s cubic-bezier(.22, .61, .36, 1); }
-
-	@keyframes ocb-look-up {
-		from { transform: translateY(40px); opacity: 0; }
-	}
-
-	.ocb-look__close {
-		display: block;
-		inline-size: 100%;
-		padding: 4px 0 14px;
-		border: 0;
-		background: none;
-		cursor: pointer;
-	}
-
-	.ocb-look__grab {
-		display: block;
-		inline-size: 44px;
-		block-size: 4.5px;
-		margin-inline: auto;
-		border-radius: 3px;
-		background: color-mix(in srgb, currentColor 25%, transparent);
-	}
+	/* Closed: the picture with its spots, and a button. */
+	.ocb-look__side { display: none; }
 
 	.ocb-look__open {
 		display: block;
@@ -1136,10 +1103,146 @@ html[dir="rtl"] .ocb-look__nav .ocb-arr svg { transform: scaleX(-1); }
 		border: 1.5px solid var(--oc-ink, #1c1c1c);
 		border-radius: var(--oc-cta-r, 8px);
 		background: none;
+		color: var(--oc-ink, #1c1c1c);
 		font: inherit;
 		font-weight: 600;
 		cursor: pointer;
 	}
+
+	/* Open — the oc-story view: the picture fills the whole screen with its
+	 * spots, and the products ride a horizontal strip along its foot. Swipe
+	 * the strip or tap a spot to move between products; tapping a product of
+	 * another room swaps the room picture. */
+	.ocb-look.is-open,
+	.ocb-look.is-closing {
+		position: fixed;
+		inset: 0;
+		/* above the sticky header (50), below the quick-pick panel (95) */
+		z-index: 90;
+		display: block;
+		background: #0c0c0d;
+		overflow: hidden;
+	}
+	.ocb-look.is-open { animation: ocb-look-story-in .32s cubic-bezier(.22, .61, .36, 1) both; }
+	.ocb-look.is-closing { animation: ocb-look-story-out .28s ease both; pointer-events: none; }
+	@keyframes ocb-look-story-in { from { opacity: 0; transform: scale(1.04); } }
+	@keyframes ocb-look-story-out { to { opacity: 0; } }
+
+	.ocb-look.is-open .ocb-look__pic,
+	.ocb-look.is-closing .ocb-look__pic {
+		position: absolute;
+		inset: 0;
+		border-radius: 0;
+		overflow: hidden;
+	}
+	.ocb-look.is-open .ocb-look__scene,
+	.ocb-look.is-closing .ocb-look__scene { block-size: 100%; }
+	.ocb-look.is-open .ocb-look__scene img,
+	.ocb-look.is-closing .ocb-look__scene img {
+		block-size: 100%;
+		object-fit: cover;
+		transition: object-position .5s cubic-bezier(.22, .61, .36, 1);
+	}
+	.ocb-look.is-open .ocb-look__spot { inline-size: 44px; block-size: 44px; }
+
+	/* the close: a circle over the picture, top-left, an × drawn in CSS */
+	.ocb-look.is-open .ocb-look__close,
+	.ocb-look.is-closing .ocb-look__close {
+		display: grid;
+		place-items: center;
+		position: absolute;
+		inset-block-start: max(14px, env(safe-area-inset-top));
+		inset-inline-start: 14px;
+		z-index: 6;
+		inline-size: 40px;
+		block-size: 40px;
+		padding: 0;
+		border: 0;
+		border-radius: 50%;
+		background: rgb(0 0 0 / 45%);
+		cursor: pointer;
+	}
+	.ocb-look.is-open .ocb-look__grab,
+	.ocb-look.is-closing .ocb-look__grab {
+		display: block;
+		position: relative;
+		inline-size: 16px;
+		block-size: 16px;
+		margin: 0;
+		border-radius: 0;
+		background: none;
+	}
+	.ocb-look.is-open .ocb-look__grab::before,
+	.ocb-look.is-open .ocb-look__grab::after,
+	.ocb-look.is-closing .ocb-look__grab::before,
+	.ocb-look.is-closing .ocb-look__grab::after {
+		content: "";
+		position: absolute;
+		inset-block-start: 50%;
+		inset-inline-start: 0;
+		inline-size: 16px;
+		block-size: 2px;
+		border-radius: 2px;
+		background: #fff;
+	}
+	.ocb-look.is-open .ocb-look__grab::before,
+	.ocb-look.is-closing .ocb-look__grab::before { transform: rotate(45deg); }
+	.ocb-look.is-open .ocb-look__grab::after,
+	.ocb-look.is-closing .ocb-look__grab::after { transform: rotate(-45deg); }
+
+	/* the product strip along the foot of the picture */
+	.ocb-look.is-open .ocb-look__side,
+	.ocb-look.is-closing .ocb-look__side {
+		display: block;
+		position: absolute;
+		inset-inline: 0;
+		inset-block-end: 0;
+		z-index: 5;
+		animation: ocb-look-strip .4s cubic-bezier(.22, .61, .36, 1) both;
+	}
+	@keyframes ocb-look-strip { from { transform: translateY(110%); } }
+
+	.ocb-look.is-open .ocb-look__cards {
+		display: flex;
+		overflow-x: auto;
+		scroll-snap-type: x mandatory;
+		scrollbar-width: none;
+		gap: 10px;
+		padding: 6px 14px calc(14px + env(safe-area-inset-bottom));
+	}
+	.ocb-look.is-open .ocb-look__cards::-webkit-scrollbar { display: none; }
+
+	/* every product shows in the strip: a compact card, picture beside words */
+	.ocb-look.is-open .ocb-look__card,
+	.ocb-look.is-closing .ocb-look__card {
+		display: grid;
+		grid-template-columns: 64px minmax(0, 1fr);
+		grid-template-rows: auto auto;
+		column-gap: 12px;
+		align-content: center;
+		flex: 0 0 80%;
+		scroll-snap-align: center;
+		background: var(--oc-surface, #fff);
+		border-radius: 14px;
+		padding: 10px 12px;
+		box-shadow: 0 10px 30px rgb(0 0 0 / 25%);
+		text-align: start;
+		animation: none;
+	}
+	.ocb-look.is-open .ocb-look__cimg { grid-row: 1 / 3; align-self: center; }
+	.ocb-look.is-open .ocb-look__cname { grid-column: 2; align-self: end; }
+	.ocb-look.is-open .ocb-look__cprice { grid-column: 2; align-self: start; }
+	.ocb-look.is-open .ocb-look__card.is-on { outline: 2px solid var(--oc-ink, #1c1c1c); outline-offset: -2px; }
+	.ocb-look.is-open .ocb-look__cimg,
+	.ocb-look.is-closing .ocb-look__cimg { flex: 0 0 64px; max-inline-size: 64px; margin: 0; }
+	.ocb-look.is-open .ocb-look__cimg img { aspect-ratio: 1 / 1; object-fit: cover; border-radius: 8px; }
+	.ocb-look.is-open .ocb-look__cname { margin: 0; font-size: .95em; }
+	.ocb-look.is-open .ocb-look__cprice { margin-block-start: 2px; font-size: .92em; }
+	.ocb-look.is-open .ocb-look__cgo { display: none; }
+	.ocb-look.is-open .ocb-look__nav { display: none; }
+
+	.ocb-look.is-open .ocb-look__open,
+	.ocb-look.is-closing .ocb-look__open { display: none; }
 
 	.ocb-look__arrs { display: none; }
 }

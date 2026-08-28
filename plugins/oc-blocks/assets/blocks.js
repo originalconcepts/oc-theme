@@ -444,10 +444,62 @@
 		var scenes = [].slice.call( look.querySelectorAll( '[data-ocb-lscene]' ) );
 		var count = look.querySelector( '.ocb-look__count b' );
 		var side = look.querySelector( '.ocb-look__side' );
+		var cardsWrap = look.querySelector( '.ocb-look__cards' );
 		var at = 0;
 
 		if ( ! cards.length ) {
 			return;
+		}
+
+		function mobile() {
+			return window.matchMedia( '(max-width: 782px)' ).matches;
+		}
+
+		// The story view centres the shown product in its strip.
+		function centreCard( smooth ) {
+			if ( ! mobile() || ! look.classList.contains( 'is-open' ) || ! cardsWrap || ! cards[ at ] ) {
+				return;
+			}
+
+			var r = cards[ at ].getBoundingClientRect();
+			var wr = cardsWrap.getBoundingClientRect();
+
+			cardsWrap.scrollBy( { left: ( r.left + r.width / 2 ) - ( wr.left + wr.width / 2 ), behavior: smooth ? 'smooth' : 'auto' } );
+		}
+
+		// Going full-screen drops the block from the flow — a placeholder
+		// holds its space, so the page never jumps open or shut.
+		var ph = null;
+
+		function openLook() {
+			if ( ! ph ) {
+				ph = document.createElement( 'div' );
+				ph.style.height = look.offsetHeight + 'px';
+				look.parentNode.insertBefore( ph, look );
+			}
+
+			look.classList.remove( 'is-closing' );
+			look.classList.add( 'is-open' );
+			document.documentElement.classList.add( 'oc-look-lock' );
+			centreCard( false );
+		}
+
+		function closeLook() {
+			if ( ! look.classList.contains( 'is-open' ) ) {
+				return;
+			}
+
+			look.classList.add( 'is-closing' );
+			look.classList.remove( 'is-open' );
+			document.documentElement.classList.remove( 'oc-look-lock' );
+			setTimeout( function () {
+				look.classList.remove( 'is-closing' );
+
+				if ( ph ) {
+					ph.remove();
+					ph = null;
+				}
+			}, 290 );
 		}
 
 		function show( n ) {
@@ -498,21 +550,22 @@
 			if ( spot ) {
 				show( Number( spot.dataset.ocbSpot ) );
 
-				// On a phone the spot also opens the sheet.
-				if ( window.matchMedia( '(max-width: 782px)' ).matches ) {
-					look.classList.add( 'is-open' );
+				// On a phone the spot also opens the story view.
+				if ( mobile() ) {
+					openLook();
+					centreCard( true );
 				}
 
 				return;
 			}
 
 			if ( e.target.closest( '[data-ocb-look-open]' ) ) {
-				look.classList.toggle( 'is-open' );
+				openLook();
 				return;
 			}
 
 			if ( e.target.closest( '[data-ocb-look-close]' ) ) {
-				look.classList.remove( 'is-open' );
+				closeLook();
 				return;
 			}
 
@@ -526,6 +579,7 @@
 		// The sheet follows the finger down, like the add-to-cart panel.
 		if ( side ) {
 			var y0 = null;
+			var x0 = 0;
 			var dy = 0;
 
 			side.addEventListener( 'touchstart', function ( e ) {
@@ -534,6 +588,7 @@
 				}
 
 				y0 = e.touches[ 0 ].clientY;
+				x0 = e.touches[ 0 ].clientX;
 				dy = 0;
 			}, { passive: true } );
 
@@ -543,6 +598,13 @@
 				}
 
 				dy = e.touches[ 0 ].clientY - y0;
+
+				// A sideways swipe belongs to the product strip, not to the
+				// pull-down-to-close gesture.
+				if ( Math.abs( e.touches[ 0 ].clientX - x0 ) > Math.abs( dy ) ) {
+					dy = 0;
+					return;
+				}
 
 				if ( dy > 0 ) {
 					side.style.transform = 'translateY(' + dy + 'px)';
@@ -559,17 +621,49 @@
 				side.style.transition = '';
 
 				if ( dy > 90 ) {
-					look.classList.remove( 'is-open' );
+					closeLook();
 				}
 
 				y0 = null;
 			} );
 		}
 
+		// Swiping the strip picks the centred product (and its room's picture).
+		if ( cardsWrap ) {
+			var st = null;
+
+			cardsWrap.addEventListener( 'scroll', function () {
+				if ( ! mobile() || ! look.classList.contains( 'is-open' ) ) {
+					return;
+				}
+
+				clearTimeout( st );
+				st = setTimeout( function () {
+					var mid = cardsWrap.getBoundingClientRect().left + cardsWrap.clientWidth / 2;
+					var best = at;
+					var bestD = Infinity;
+
+					cards.forEach( function ( c, i ) {
+						var r = c.getBoundingClientRect();
+						var d = Math.abs( ( r.left + r.width / 2 ) - mid );
+
+						if ( d < bestD ) {
+							bestD = d;
+							best = i;
+						}
+					} );
+
+					if ( best !== at ) {
+						show( best );
+					}
+				}, 80 );
+			}, { passive: true } );
+		}
+
 		// A tap outside the sheet folds it.
 		document.addEventListener( 'click', function ( e ) {
 			if ( look.classList.contains( 'is-open' ) && ! look.contains( e.target ) ) {
-				look.classList.remove( 'is-open' );
+				closeLook();
 			}
 		} );
 	} );
