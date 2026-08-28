@@ -1150,6 +1150,29 @@ html[dir="rtl"] .ocb-look__nav .ocb-arr svg { transform: scaleX(-1); }
 /* the strip's add button lives only in the mobile story view */
 .ocb-look__cadd { display: none; }
 
+/* Adding, the same language as a product page: the icon steps aside for a
+ * spinner, then a tick answers, then the button returns to itself. Woo's
+ * own "View cart" link that follows the button has no place here. */
+.ocb-look__cadd-ok { display: none; }
+.ocb-look__cadd.loading { pointer-events: none; }
+.ocb-look__cadd.loading .ocb-look__cadd-i { visibility: hidden; }
+.ocb-look__cadd.loading::after {
+	content: "";
+	grid-area: 1 / 1;
+	inline-size: 18px;
+	block-size: 18px;
+	border: 2px solid currentColor;
+	border-block-start-color: transparent;
+	border-radius: 50%;
+	animation: ocb-spin .6s linear infinite;
+}
+@keyframes ocb-spin { to { transform: rotate(360deg); } }
+.ocb-look__cadd.added .ocb-look__cadd-i { display: none; }
+.ocb-look__cadd.added .ocb-look__cadd-ok { display: block; }
+.ocb-look__cadd-i,
+.ocb-look__cadd-ok { grid-area: 1 / 1; }
+.ocb-look__card .added_to_cart { display: none !important; }
+
 /* the page underneath stays put while the story view is open */
 html.oc-look-lock,
 html.oc-look-lock body { overflow: hidden; }

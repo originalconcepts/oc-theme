@@ -4869,6 +4869,11 @@ body.oc-tabs-tabs.woocommerce div.product .woocommerce-tabs ul.tabs li.active a,
  * itself there. */
 .oc-drawer { position: fixed; inset: 0; z-index: 10010; }
 
+/* the page stands still while the drawer is up — pinned, so iOS honours it */
+html.oc-cart-lock,
+html.oc-cart-lock body { overflow: hidden; }
+html.oc-cart-lock body { position: fixed; inset-inline: 0; inline-size: 100%; }
+
 .oc-drawer__overlay {
 	position: absolute;
 	inset: 0;

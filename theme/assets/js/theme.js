@@ -2352,6 +2352,12 @@
 
 	var drawer = document.querySelector( '[data-oc-cart-drawer]' );
 
+	// The page behind the drawer must stand still. Hiding the root's overflow
+	// alone does not hold on iOS — the body scrolls on regardless, which read
+	// as a huge stray scroll under the panel — so the body is pinned at its
+	// place and released to the same spot.
+	var drawerY = 0;
+
 	function openDrawer() {
 		if ( ! drawer ) {
 			return;
@@ -2360,7 +2366,10 @@
 		setTimeout( function () {
 			drawer.classList.add( 'is-open' );
 		}, 10 );
-		document.documentElement.style.overflow = 'hidden';
+
+		drawerY = window.scrollY || window.pageYOffset || 0;
+		document.body.style.top = ( -drawerY ) + 'px';
+		document.documentElement.classList.add( 'oc-cart-lock' );
 	}
 
 	function closeDrawer() {
@@ -2368,7 +2377,9 @@
 			return;
 		}
 		drawer.classList.remove( 'is-open' );
-		document.documentElement.style.overflow = '';
+		document.documentElement.classList.remove( 'oc-cart-lock' );
+		document.body.style.top = '';
+		window.scrollTo( 0, drawerY );
 		setTimeout( function () {
 			drawer.hidden = true;
 		}, 220 );

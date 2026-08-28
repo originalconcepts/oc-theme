@@ -846,18 +846,23 @@ final class Cart {
 			// non-empty cart. Its input is settings only, so a short
 			// transient serves everyone; ten minutes of staleness in an
 			// upsell list is invisible.
-			$key = 'oc_cart_up_' . (int) $s['up_cat'] . '_' . ( (int) $s['up_max'] + count( $in_cart ) );
-			$ids = get_transient( $key );
+			// Fetch with room to spare: hidden, sold-out and already-in-cart
+			// products fall away below, and asking for exactly the maximum
+			// left the block short of the number the shop asked for.
+			$want = (int) $s['up_max'] * 3 + count( $in_cart ) + 5;
+			$key  = 'oc_cart_up2_' . (int) $s['up_cat'] . '_' . $want;
+			$ids  = get_transient( $key );
 
 			if ( ! is_array( $ids ) ) {
 				$ids = wc_get_products(
 					array(
-						'status'   => 'publish',
-						'limit'    => (int) $s['up_max'] + count( $in_cart ),
-						'category' => array( get_term_field( 'slug', (int) $s['up_cat'], 'product_cat' ) ),
-						'orderby'  => 'date',
-						'order'    => 'DESC',
-						'return'   => 'ids',
+						'status'       => 'publish',
+						'limit'        => $want,
+						'category'     => array( get_term_field( 'slug', (int) $s['up_cat'], 'product_cat' ) ),
+						'stock_status' => 'instock',
+						'orderby'      => 'date',
+						'order'        => 'DESC',
+						'return'       => 'ids',
 					)
 				);
 				set_transient( $key, array_map( 'intval', (array) $ids ), 10 * MINUTE_IN_SECONDS );

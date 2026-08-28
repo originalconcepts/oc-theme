@@ -1118,9 +1118,10 @@ final class Render {
 						. ' href="' . esc_url( $simple ? '?add-to-cart=' . $product->get_id() : (string) $product->get_permalink() ) . '"'
 						. ' data-quantity="1" data-product_id="' . absint( $product->get_id() ) . '" rel="nofollow" aria-label="' . esc_attr__( 'Add to cart', 'oc-blocks' ) . '">'
 						. ( $plus
-							? '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>'
-							: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.6"/><circle cx="17" cy="20" r="1.6"/><path d="M3 3h2.5l2.2 11.2a1.6 1.6 0 0 0 1.6 1.3h7.6a1.6 1.6 0 0 0 1.6-1.3L20 7H6"/></svg>' )
-						. '<span class="ocb-look__cadd-n" hidden></span>'
+							? '<svg class="ocb-look__cadd-i" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>'
+							: '<svg class="ocb-look__cadd-i" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.6"/><circle cx="17" cy="20" r="1.6"/><path d="M3 3h2.5l2.2 11.2a1.6 1.6 0 0 0 1.6 1.3h7.6a1.6 1.6 0 0 0 1.6-1.3L20 7H6"/></svg>' )
+						. '<svg class="ocb-look__cadd-ok" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 12.5l5 5 10-11"/></svg>'
+					. '<span class="ocb-look__cadd-n" hidden></span>'
 						. '</a>';
 				}
 

@@ -942,6 +942,13 @@
 
 				if ( b && b.classList.contains( 'ocb-look__cadd' ) ) {
 					bump( b.getAttribute( 'data-product_id' ) || '' );
+
+					// The tick has its moment, then the button is itself again.
+					b.classList.remove( 'loading' );
+					b.classList.add( 'added' );
+					setTimeout( function () {
+						b.classList.remove( 'added' );
+					}, 1600 );
 				}
 			} );
 		}
