@@ -533,6 +533,11 @@
 				sc.classList.toggle( 'is-on', Number( sc.dataset.ocbLscene ) === scene );
 			} );
 
+			// A lone product owns the strip's full width; several share it.
+			if ( cardsWrap ) {
+				cardsWrap.classList.toggle( 'is-multi', sceneList( scene ).length > 1 );
+			}
+
 			// The count speaks for this room alone: position / its products.
 			if ( count ) {
 				var list = sceneList( scene );
@@ -595,13 +600,17 @@
 			if ( spot ) {
 				show( Number( spot.dataset.ocbSpot ) );
 
-				// On a phone the spot also opens the story view; the centring
-				// waits a frame so the strip has its layout.
+				// On a phone the spot also opens the story view. Already open,
+				// the strip GLIDES to the product — no re-open, no jump.
 				if ( mobile() ) {
-					openLook();
-					requestAnimationFrame( function () {
+					if ( look.classList.contains( 'is-open' ) ) {
 						centreCard( true );
-					} );
+					} else {
+						openLook();
+						requestAnimationFrame( function () {
+							centreCard( false );
+						} );
+					}
 				}
 
 				return;

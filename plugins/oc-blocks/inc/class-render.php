@@ -1103,7 +1103,7 @@ final class Render {
 				// quick-pick panel (its handler answers a.oc-card-atc).
 				$simple = $product->is_type( 'simple' ) && $product->is_purchasable() && $product->is_in_stock();
 				$plus   = function_exists( 'get_theme_mod' ) && 'plus' === get_theme_mod( 'oc_card_atc_icon', 'cart' );
-				$add    = '<a class="ocb-look__cadd oc-card-atc' . ( $simple ? ' add_to_cart_button ajax_add_to_cart' : '' ) . '"'
+				$add    = '<a class="ocb-look__cadd add_to_cart_button' . ( $simple ? ' ajax_add_to_cart' : ' product_type_variable' ) . '"'
 					. ' href="' . esc_url( $simple ? '?add-to-cart=' . $product->get_id() : (string) $product->get_permalink() ) . '"'
 					. ' data-quantity="1" data-product_id="' . absint( $product->get_id() ) . '" rel="nofollow" aria-label="' . esc_attr__( 'Add to cart', 'oc-blocks' ) . '">'
 					. ( $plus
