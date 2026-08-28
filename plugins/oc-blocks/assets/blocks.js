@@ -497,12 +497,18 @@
 		// holds its space, so the page never jumps open or shut.
 		var ph = null;
 
+		var savedY = null;
+
 		function openLook() {
 			if ( ! ph ) {
 				ph = document.createElement( 'div' );
 				ph.style.height = look.offsetHeight + 'px';
 				look.parentNode.insertBefore( ph, look );
 			}
+
+			// Remember where the page stood — the scroll lock (iOS above all)
+			// may quietly move it, and closing must land exactly back.
+			savedY = window.scrollY;
 
 			look.classList.remove( 'is-closing' );
 			look.classList.add( 'is-open' );
@@ -520,6 +526,13 @@
 			look.classList.add( 'is-closing' );
 			look.classList.remove( 'is-open' );
 			document.documentElement.classList.remove( 'oc-look-lock' );
+
+			// Put the page back on its exact spot NOW, behind the fading
+			// overlay — by the time it clears, nothing has moved.
+			if ( null !== savedY ) {
+				window.scrollTo( 0, savedY );
+				savedY = null;
+			}
 			setTimeout( function () {
 				look.classList.remove( 'is-closing' );
 				alignScene();

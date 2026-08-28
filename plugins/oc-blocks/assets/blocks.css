@@ -1234,8 +1234,10 @@ html.oc-look-lock body { overflow: hidden; }
 	}
 	@keyframes ocb-look-strip { from { transform: translateY(110%); } }
 
-	/* the strip carries oc-story's exact measures */
-	.ocb-look.is-open .ocb-look__cards {
+	/* the strip carries oc-story's exact measures — and keeps them while the
+	 * take-over is CLOSING, or the products spill for the fade's length */
+	.ocb-look.is-open .ocb-look__cards,
+	.ocb-look.is-closing .ocb-look__cards {
 		display: flex;
 		overflow-x: auto;
 		scroll-snap-type: x proximity;
@@ -1245,7 +1247,8 @@ html.oc-look-lock body { overflow: hidden; }
 		padding: 14px 12px;
 		padding-block-end: max(14px, env(safe-area-inset-bottom));
 	}
-	.ocb-look.is-open .ocb-look__cards::-webkit-scrollbar { display: none; }
+	.ocb-look.is-open .ocb-look__cards::-webkit-scrollbar,
+	.ocb-look.is-closing .ocb-look__cards::-webkit-scrollbar { display: none; }
 
 	/* The strip holds only the current room's products, and the card copies
 	 * oc-story's recipe measure for measure: 64px thumb at the reading side,
@@ -1272,7 +1275,8 @@ html.oc-look-lock body { overflow: hidden; }
 		text-align: start;
 		animation: none;
 	}
-	.ocb-look.is-open .ocb-look__cards.is-multi .ocb-look__card.in-scene { flex: 0 0 80%; max-inline-size: 80%; }
+	.ocb-look.is-open .ocb-look__cards.is-multi .ocb-look__card.in-scene,
+	.ocb-look.is-closing .ocb-look__cards.is-multi .ocb-look__card.in-scene { flex: 0 0 80%; max-inline-size: 80%; }
 	.ocb-look.is-open .ocb-look__cimg,
 	.ocb-look.is-closing .ocb-look__cimg {
 		grid-column: 1;
