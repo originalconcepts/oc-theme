@@ -1107,12 +1107,15 @@ html.oc-look-lock body { overflow: hidden; }
 	.ocb-look__side { display: none; }
 
 	/* The rooms are a swipe slider — one fills the frame, the next peeks in.
-	 * The arrows belong to the desktop. */
+	 * It runs edge to edge (no white gutter), and the arrows belong to the
+	 * desktop. */
 	.ocb-look .ocb-look__snav.ocb-arr { display: none; }
 	.ocb-look:not(.is-open):not(.is-closing) .ocb-look__pic {
 		display: flex;
 		overflow-x: auto;
 		gap: 10px;
+		margin-inline: calc(50% - 50vw);
+		border-radius: 0;
 		scroll-snap-type: x mandatory;
 		scrollbar-width: none;
 	}
@@ -1122,9 +1125,14 @@ html.oc-look-lock body { overflow: hidden; }
 		flex: 0 0 88%;
 		scroll-snap-align: start;
 		overflow: hidden;
-		border-radius: var(--oc-radius, 8px);
+		border-radius: 0;
 	}
 	.ocb-look:not(.is-open):not(.is-closing) .ocb-look__scene:only-child { flex-basis: 100%; }
+
+	/* No re-entry fade on the phone: the desktop's scene cross-fade re-runs
+	 * whenever a scene re-renders — every swipe, and the return from the
+	 * take-over, read as the picture "loading again". */
+	.ocb-look .ocb-look__scene.is-on { animation: none; }
 
 	.ocb-look__open {
 		display: block;
