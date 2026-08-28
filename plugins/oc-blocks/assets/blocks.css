@@ -1255,8 +1255,11 @@ html.oc-look-lock body { overflow: hidden; }
 	.ocb-look.is-closing .ocb-look__scene:not(.is-on) { display: none; }
 	.ocb-look.is-open .ocb-look__canvas,
 	.ocb-look.is-closing .ocb-look__canvas {
-		block-size: 100%;
-		max-inline-size: 100%;
+		/* the largest box of the picture's own ratio that fits the screen —
+		 * width drives, the aspect-ratio supplies the height */
+		inline-size: min(100vw, calc(100vh * var(--ocb-arm, var(--ocb-ard, 1))));
+		inline-size: min(100vw, calc(100dvh * var(--ocb-arm, var(--ocb-ard, 1))));
+		block-size: auto;
 	}
 	.ocb-look.is-open .ocb-look__spot { inline-size: 44px; block-size: 44px; }
 
