@@ -1350,3 +1350,9 @@ msgstr "אפשר גם ללחוץ על התמונה כדי למקם נקודה ב
 
 msgid "Hide the side panels"
 msgstr "הסתרת הפאנלים הצדדיים"
+
+msgid "Letter size — desktop (px)"
+msgstr "גודל האותיות — דסקטופ (px)"
+
+msgid "Letter size — mobile (px)"
+msgstr "גודל האותיות — מובייל (px)"

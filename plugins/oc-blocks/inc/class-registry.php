@@ -713,11 +713,12 @@ final class Registry {
 					),
 					'size'  => array(
 						'type'  => 'number',
-						'label' => __( 'Letter size (px)', 'oc-blocks' ),
+						'label' => __( 'Letter size — desktop (px)', 'oc-blocks' ),
 						'def'   => 42,
 						'min'   => 14,
 						'max'   => 160,
 						'group' => 'design',
+						'half'  => true,
 					),
 					'sizem' => array(
 						'type'  => 'number',
@@ -725,8 +726,8 @@ final class Registry {
 						'def'   => 0,
 						'min'   => 0,
 						'max'   => 160,
-						'hint'  => __( '0 = same as above. Smaller letters make a thinner strip.', 'oc-blocks' ),
 						'group' => 'design',
+						'half'  => true,
 					),
 					'color' => array(
 						'type'  => 'color',
