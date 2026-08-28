@@ -1103,15 +1103,18 @@ final class Render {
 				// quick-pick panel (its handler answers a.oc-card-atc).
 				$simple = $product->is_type( 'simple' ) && $product->is_purchasable() && $product->is_in_stock();
 				$plus   = function_exists( 'get_theme_mod' ) && 'plus' === get_theme_mod( 'oc_card_atc_icon', 'cart' );
+				// The desktop button wears the catalogue's own shape setting.
+				$sq     = function_exists( 'get_theme_mod' ) && 'circle' !== get_theme_mod( 'oc_card_atc_shape', 'circle' );
+				$shape  = $sq ? ' ocb-look__cadd--sh-square' : '';
 
 				if ( ! $product->is_in_stock() ) {
 					// Sold out: a bell — the product page carries the
 					// back-in-stock signup.
-					$add = '<a class="ocb-look__cadd ocb-look__cadd--oos add_to_cart_button product_type_variable" data-product_id="' . absint( $product->get_id() ) . '" href="' . esc_url( (string) $product->get_permalink() ) . '" aria-label="' . esc_attr__( 'Notify me when back', 'oc-blocks' ) . '">'
+					$add = '<a class="ocb-look__cadd ocb-look__cadd--oos add_to_cart_button product_type_variable' . $shape . '" data-product_id="' . absint( $product->get_id() ) . '" href="' . esc_url( (string) $product->get_permalink() ) . '" aria-label="' . esc_attr__( 'Notify me when back', 'oc-blocks' ) . '">'
 						. '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10.5 21a2 2 0 0 0 3 0"/></svg>'
 						. '</a>';
 				} else {
-					$add = '<a class="ocb-look__cadd add_to_cart_button' . ( $simple ? ' ajax_add_to_cart' : ' product_type_variable' ) . '"'
+					$add = '<a class="ocb-look__cadd add_to_cart_button' . ( $simple ? ' ajax_add_to_cart' : ' product_type_variable' ) . $shape . '"'
 						. ' href="' . esc_url( $simple ? '?add-to-cart=' . $product->get_id() : (string) $product->get_permalink() ) . '"'
 						. ' data-quantity="1" data-product_id="' . absint( $product->get_id() ) . '" rel="nofollow" aria-label="' . esc_attr__( 'Add to cart', 'oc-blocks' ) . '">'
 						. ( $plus

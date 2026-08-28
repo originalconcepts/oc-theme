@@ -1087,6 +1087,8 @@ html[dir="rtl"] .ocb-look__spot { translate: 50% -50%; }
 .ocb-look__cmedia .ocb-look__cadd:hover { background: var(--oc-cta, var(--oc-primary, #03104c)); color: #fff; }
 .ocb-look__cmedia .ocb-look__cadd--oos { background: #111; color: #fff; }
 .ocb-look__cmedia .ocb-look__cadd--oos:hover { background: #111; color: #fff; }
+/* the catalogue's shape setting: square wears the site's corner */
+.ocb-look__cmedia .ocb-look__cadd--sh-square { border-radius: calc(var(--oc-radius, 8px) * .75); }
 
 .ocb-look__cname { margin: 14px 0 0; font-size: 1.1em; letter-spacing: .04em; }
 .ocb-look__cname a { text-decoration: none; color: inherit; }
@@ -1286,7 +1288,8 @@ html.oc-look-lock body { overflow: hidden; }
 	.ocb-look.is-closing .ocb-look__cards {
 		display: flex;
 		overflow-x: auto;
-		scroll-snap-type: x proximity;
+		/* one product unit per swipe — a free glide doesn't fit this strip */
+		scroll-snap-type: x mandatory;
 		scroll-padding-inline: 12px;
 		scrollbar-width: none;
 		gap: 10px;
