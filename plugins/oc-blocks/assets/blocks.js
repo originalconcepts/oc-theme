@@ -455,15 +455,42 @@
 			return window.matchMedia( '(max-width: 782px)' ).matches;
 		}
 
-		// The story view centres the shown product in its strip. scrollIntoView
-		// is the one road that behaves inside a scroll-snap strip on iOS —
-		// a smooth scrollBy there gets snapped straight back.
+		// The story view brings the shown product to the strip's start. A
+		// horizontal scrollBy only — scrollIntoView also scrolls vertical
+		// ancestors (the freshly opened take-over lurched down from it). The
+		// geometric delta is direction-proof, and the strip's proximity snap
+		// lets a programmatic scroll settle where it lands.
 		function centreCard( smooth ) {
 			if ( ! mobile() || ! look.classList.contains( 'is-open' ) || ! cardsWrap || ! cards[ at ] ) {
 				return;
 			}
 
-			cards[ at ].scrollIntoView( { behavior: smooth ? 'smooth' : 'auto', inline: 'start', block: 'nearest' } );
+			var r = cards[ at ].getBoundingClientRect();
+			var wr = cardsWrap.getBoundingClientRect();
+
+			cardsWrap.scrollBy( { left: r.right - ( wr.right - 12 ), behavior: smooth ? 'smooth' : 'auto' } );
+		}
+
+		// The closed slider parks on the room being looked at.
+		function alignScene() {
+			var pic = look.querySelector( '.ocb-look__pic' );
+
+			if ( ! pic || ! mobile() || look.classList.contains( 'is-open' ) ) {
+				return;
+			}
+
+			var s = Number( cards[ at ].dataset.ocbScene || 0 );
+			var el = null;
+
+			scenes.forEach( function ( sc ) {
+				if ( Number( sc.dataset.ocbLscene ) === s ) {
+					el = sc;
+				}
+			} );
+
+			if ( el ) {
+				pic.scrollBy( { left: el.getBoundingClientRect().right - pic.getBoundingClientRect().right, behavior: 'auto' } );
+			}
 		}
 
 		// Going full-screen drops the block from the flow — a placeholder
@@ -495,6 +522,7 @@
 			document.documentElement.classList.remove( 'oc-look-lock' );
 			setTimeout( function () {
 				look.classList.remove( 'is-closing' );
+				alignScene();
 
 				if ( ph ) {
 					ph.remove();
@@ -722,6 +750,50 @@
 				}, 80 );
 			}, { passive: true } );
 		}
+
+		// Closed on a phone the rooms are a swipe slider — the most visible
+		// room becomes the current one, and its products stand ready.
+		( function () {
+			var pic = look.querySelector( '.ocb-look__pic' );
+
+			if ( ! pic || scenes.length < 2 ) {
+				return;
+			}
+
+			var pt = null;
+
+			pic.addEventListener( 'scroll', function () {
+				if ( ! mobile() || look.classList.contains( 'is-open' ) ) {
+					return;
+				}
+
+				clearTimeout( pt );
+				pt = setTimeout( function () {
+					var pr = pic.getBoundingClientRect();
+					var bestScene = null;
+					var bestOv = -1;
+
+					scenes.forEach( function ( sc ) {
+						var r = sc.getBoundingClientRect();
+						var ov = Math.min( r.right, pr.right ) - Math.max( r.left, pr.left );
+
+						if ( ov > bestOv ) {
+							bestOv = ov;
+							bestScene = Number( sc.dataset.ocbLscene );
+						}
+					} );
+
+					if ( null !== bestScene && Number( cards[ at ].dataset.ocbScene || 0 ) !== bestScene ) {
+						for ( var i = 0; i < cards.length; i++ ) {
+							if ( Number( cards[ i ].dataset.ocbScene || 0 ) === bestScene ) {
+								show( i );
+								break;
+							}
+						}
+					}
+				}, 90 );
+			}, { passive: true } );
+		}() );
 
 		// A tap outside the sheet folds it.
 		document.addEventListener( 'click', function ( e ) {

@@ -1106,6 +1106,26 @@ html.oc-look-lock body { overflow: hidden; }
 	/* Closed: the picture with its spots, and a button. */
 	.ocb-look__side { display: none; }
 
+	/* The rooms are a swipe slider — one fills the frame, the next peeks in.
+	 * The arrows belong to the desktop. */
+	.ocb-look__snav { display: none; }
+	.ocb-look:not(.is-open):not(.is-closing) .ocb-look__pic {
+		display: flex;
+		overflow-x: auto;
+		gap: 10px;
+		scroll-snap-type: x mandatory;
+		scrollbar-width: none;
+	}
+	.ocb-look:not(.is-open):not(.is-closing) .ocb-look__pic::-webkit-scrollbar { display: none; }
+	.ocb-look:not(.is-open):not(.is-closing) .ocb-look__scene {
+		display: block;
+		flex: 0 0 88%;
+		scroll-snap-align: start;
+		overflow: hidden;
+		border-radius: var(--oc-radius, 8px);
+	}
+	.ocb-look:not(.is-open):not(.is-closing) .ocb-look__scene:only-child { flex-basis: 100%; }
+
 	.ocb-look__open {
 		display: block;
 		inline-size: 100%;
@@ -1315,7 +1335,10 @@ html.oc-look-lock body { overflow: hidden; }
 		opacity: 1;
 		transform: none;
 	}
-	/* how many of this product went to the cart — oc-story's own badge */
+	/* how many of this product went to the cart — oc-story's own badge.
+	 * Nothing in the cart = no badge (display beats the hidden attribute,
+	 * so say it explicitly). */
+	.ocb-look__cadd-n[hidden] { display: none; }
 	.ocb-look__cadd-n {
 		position: absolute;
 		inset-block-start: -6px;
