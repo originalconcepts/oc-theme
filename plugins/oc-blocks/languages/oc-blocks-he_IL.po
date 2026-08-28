@@ -1341,3 +1341,9 @@ msgstr "מוצגת מעל המוצרים במובייל. ריק = ״Shop the Loo
 
 msgid "View %d"
 msgstr "תצוגה %d"
+
+msgid "+ Add a product"
+msgstr "+ הוספת מוצר"
+
+msgid "You can also click the picture to place a spot exactly where you want it."
+msgstr "אפשר גם ללחוץ על התמונה כדי למקם נקודה בדיוק איפה שרוצים."

@@ -164,6 +164,8 @@ final class Editor {
 					'unsaved'  => __( 'There are unsaved changes.', 'oc-blocks' ),
 					'media'    => __( 'Choose a picture', 'oc-blocks' ),
 					'noimg'    => __( 'Choose the picture first, then drop spots on it.', 'oc-blocks' ),
+					'addspot'  => __( '+ Add a product', 'oc-blocks' ),
+					'spothint' => __( 'You can also click the picture to place a spot exactly where you want it.', 'oc-blocks' ),
 					'video'    => __( 'Choose a video', 'oc-blocks' ),
 				),
 			)

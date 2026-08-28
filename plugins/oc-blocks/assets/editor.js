@@ -982,6 +982,21 @@
 
 		wrap.appendChild( stage );
 
+		// An explicit way in — clicking the picture is easy to miss, and with
+		// every product removed there was seemingly no way to add one.
+		wrap.appendChild( el( 'button', {
+			type: 'button',
+			'class': 'button ocbe-spots__add',
+			text: T.addspot,
+			onclick: function () {
+				section[ key ].push( { x: 50, y: 50, id: 0 } );
+				state.spotSel = section[ key ].length - 1;
+				touch();
+				paintSettings();
+			}
+		} ) );
+		wrap.appendChild( el( 'p', { 'class': 'ocbe-f__hint', text: T.spothint } ) );
+
 		section[ key ].forEach( function ( spot, at ) {
 			var row = el( 'div', { 'class': 'ocbe-spots__row' + ( state.spotSel === at ? ' is-on' : '' ) } );
 
