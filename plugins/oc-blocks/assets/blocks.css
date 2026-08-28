@@ -1113,10 +1113,10 @@ html.oc-look-lock body { overflow: hidden; }
 .ocb-look__card .oc-card-atc {
 	position: static;
 	inset: auto;
-	opacity: 1;
-	visibility: visible;
-	transform: none;
-	pointer-events: auto;
+	opacity: 1 !important;
+	visibility: visible !important;
+	transform: none !important;
+	pointer-events: auto !important;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
