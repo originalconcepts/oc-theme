@@ -1280,7 +1280,8 @@ html.oc-look-lock body { overflow: hidden; }
 	.ocb-look.is-closing .ocb-look__card.in-scene {
 		display: grid;
 		grid-template-columns: 64px minmax(0, 1fr) auto;
-		grid-template-rows: auto auto;
+		/* third row hosts the swatches; empty, it collapses to nothing */
+		grid-template-rows: auto auto auto;
 		column-gap: 12px;
 		row-gap: 3px;
 		align-items: center;
@@ -1300,7 +1301,7 @@ html.oc-look-lock body { overflow: hidden; }
 	.ocb-look.is-open .ocb-look__cimg,
 	.ocb-look.is-closing .ocb-look__cimg {
 		grid-column: 1;
-		grid-row: 1 / 3;
+		grid-row: 1 / 4;
 		align-self: center;
 		inline-size: 64px;
 		max-inline-size: 64px;
@@ -1346,7 +1347,7 @@ html.oc-look-lock body { overflow: hidden; }
 		place-items: center;
 		position: relative;
 		grid-column: 3;
-		grid-row: 1 / 3;
+		grid-row: 1 / 4;
 		align-self: center;
 		inline-size: 40px;
 		block-size: 40px;
@@ -1379,6 +1380,15 @@ html.oc-look-lock body { overflow: hidden; }
 		font-weight: 700;
 		line-height: 1;
 		box-shadow: 0 0 0 2px #fff;
+	}
+	/* the swatch row rides under the price, small */
+	.ocb-look.is-open .ocb-look__card .oc-colors--loop,
+	.ocb-look.is-closing .ocb-look__card .oc-colors--loop {
+		grid-column: 2;
+		grid-row: 3;
+		justify-content: flex-start;
+		margin: 2px 0 0;
+		--oc-swatch-cat: 14px;
 	}
 	.ocb-look.is-open .ocb-look__card.is-on { outline: 2px solid var(--oc-ink, #1c1c1c); outline-offset: -2px; }
 	.ocb-look.is-open .ocb-look__cgo { display: none; }
