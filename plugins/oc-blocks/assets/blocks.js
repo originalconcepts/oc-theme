@@ -651,6 +651,60 @@
 		}
 
 		look.addEventListener( 'click', function ( e ) {
+			// A colour swatch on the card: in the story it opens the quick
+			// pick for that colour's product; on the desktop it swaps the
+			// card's picture (the catalogue's own handler needs a catalogue
+			// card and stands down here).
+			var swatch = e.target.closest( '.ocb-look__card .oc-colors__item' );
+
+			if ( swatch ) {
+				e.preventDefault();
+
+				var pid = swatch.dataset.pid || '';
+
+				if ( mobile() && look.classList.contains( 'is-open' ) ) {
+					if ( window.__ocQuickPick && pid ) {
+						window.__ocQuickPick( pid );
+					}
+
+					return;
+				}
+
+				var card = swatch.closest( '.ocb-look__card' );
+				var img = card.querySelector( '.ocb-look__cimg img' );
+				var imgs = [];
+
+				try {
+					imgs = JSON.parse( swatch.dataset.imgs || '[]' );
+				} catch ( err ) {
+					imgs = [];
+				}
+
+				if ( img && imgs[ 0 ] ) {
+					img.src = imgs[ 0 ];
+					img.removeAttribute( 'srcset' );
+				}
+
+				card.querySelectorAll( '.oc-colors__item' ).forEach( function ( s ) {
+					s.classList.toggle( 'is-current', s === swatch );
+					s.removeAttribute( 'aria-current' );
+				} );
+				swatch.setAttribute( 'aria-current', 'true' );
+
+				// The card's links follow the chosen colour through.
+				if ( swatch.dataset.url ) {
+					[ '.ocb-look__cimg', '.ocb-look__cname a', '.ocb-look__cgo' ].forEach( function ( sel ) {
+						var a = card.querySelector( sel );
+
+						if ( a ) {
+							a.href = swatch.dataset.url;
+						}
+					} );
+				}
+
+				return;
+			}
+
 			var snav = e.target.closest( '[data-ocb-scene-go]' );
 
 			if ( snav ) {

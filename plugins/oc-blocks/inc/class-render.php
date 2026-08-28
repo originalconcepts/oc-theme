@@ -1107,7 +1107,7 @@ final class Render {
 				if ( ! $product->is_in_stock() ) {
 					// Sold out: a bell — the product page carries the
 					// back-in-stock signup.
-					$add = '<a class="ocb-look__cadd ocb-look__cadd--oos" href="' . esc_url( (string) $product->get_permalink() ) . '" aria-label="' . esc_attr__( 'Notify me when back', 'oc-blocks' ) . '">'
+					$add = '<a class="ocb-look__cadd ocb-look__cadd--oos add_to_cart_button product_type_variable" data-product_id="' . absint( $product->get_id() ) . '" href="' . esc_url( (string) $product->get_permalink() ) . '" aria-label="' . esc_attr__( 'Notify me when back', 'oc-blocks' ) . '">'
 						. '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10.5 21a2 2 0 0 0 3 0"/></svg>'
 						. '</a>';
 				} else {
@@ -1135,12 +1135,14 @@ final class Render {
 				}
 
 				$cards .= '<div class="ocb-look__card' . ( 0 === $at ? ' is-on' : '' ) . '" data-ocb-card="' . $at . '" data-ocb-scene="' . $sc . '">'
+					. '<div class="ocb-look__cmedia">'
 					. ( '' === $img ? '' : '<a class="ocb-look__cimg" href="' . esc_url( (string) $product->get_permalink() ) . '"><img src="' . esc_url( $img ) . '" alt="" loading="lazy" decoding="async"></a>' )
+					. $add
+					. '</div>'
 					. '<h3 class="ocb-look__cname"><a href="' . esc_url( (string) $product->get_permalink() ) . '">' . esc_html( $product->get_name() ) . '</a></h3>'
 					. '<div class="ocb-look__cprice">' . $product->get_price_html() . '</div>'
 					. $swatches
 					. '<a class="ocb-btn ocb-btn--theme ocb-look__cgo" href="' . esc_url( (string) $product->get_permalink() ) . '">' . esc_html__( 'View product', 'oc-blocks' ) . '</a>'
-					. $add
 					. '</div>';
 
 				++$at;

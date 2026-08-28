@@ -1062,6 +1062,28 @@ html[dir="rtl"] .ocb-look__spot { translate: 50% -50%; }
 	object-fit: contain;
 }
 
+/* Desktop: the media box anchors the add-to-cart circle on the picture —
+ * the catalogue's own gesture. "View product" below stays the way through. */
+.ocb-look__cmedia { position: relative; max-inline-size: 320px; margin-inline: auto; }
+.ocb-look__cmedia .ocb-look__cadd {
+	display: grid;
+	place-items: center;
+	position: absolute;
+	inset-inline-start: 12px;
+	inset-block-end: 12px;
+	inline-size: 42px;
+	block-size: 42px;
+	border-radius: 50%;
+	background: #fff;
+	color: var(--oc-ink, #1c1c1c);
+	box-shadow: 0 2px 10px rgb(0 0 0 / 14%);
+	text-decoration: none;
+	transition: background-color .15s ease, color .15s ease;
+}
+.ocb-look__cmedia .ocb-look__cadd:hover { background: var(--oc-cta, var(--oc-primary, #03104c)); color: #fff; }
+.ocb-look__cmedia .ocb-look__cadd--oos { background: #111; color: #fff; }
+.ocb-look__cmedia .ocb-look__cadd--oos:hover { background: #111; color: #fff; }
+
 .ocb-look__cname { margin: 14px 0 0; font-size: 1.1em; letter-spacing: .04em; }
 .ocb-look__cname a { text-decoration: none; color: inherit; }
 
@@ -1341,11 +1363,16 @@ html.oc-look-lock body { overflow: hidden; }
 		font-weight: 700;
 		color: #111;
 	}
+	/* the media box dissolves in the strip — picture and circle sit on the
+	 * card's own grid */
+	.ocb-look.is-open .ocb-look__cmedia,
+	.ocb-look.is-closing .ocb-look__cmedia { display: contents; }
 	.ocb-look.is-open .ocb-look__cadd,
 	.ocb-look.is-closing .ocb-look__cadd {
 		display: grid;
 		place-items: center;
 		position: relative;
+		inset: auto;
 		grid-column: 3;
 		grid-row: 1 / 4;
 		align-self: center;
@@ -1356,10 +1383,14 @@ html.oc-look-lock body { overflow: hidden; }
 		border-radius: 50%;
 		background: var(--oc-cta, var(--oc-primary, #03104c));
 		color: #fff;
+		box-shadow: none;
 		text-decoration: none;
 		opacity: 1;
 		transform: none;
 	}
+	/* sold out: the bell, on black */
+	.ocb-look.is-open .ocb-look__cadd--oos,
+	.ocb-look.is-closing .ocb-look__cadd--oos { background: #111; color: #fff; }
 	/* how many of this product went to the cart — oc-story's own badge.
 	 * Nothing in the cart = no badge (display beats the hidden attribute,
 	 * so say it explicitly). */
