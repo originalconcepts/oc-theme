@@ -407,6 +407,14 @@
 			'class': 'ocbe-add__btn',
 			onclick: function () {
 				wrap.classList.toggle( 'is-open' );
+
+				// On a long page the list unfolds below the rail's fold —
+				// bring it into view, or the click looks like a dud.
+				if ( wrap.classList.contains( 'is-open' ) ) {
+					requestAnimationFrame( function () {
+						list.scrollIntoView( { behavior: 'smooth', block: 'nearest' } );
+					} );
+				}
 			}
 		}, [
 			el( 'span', { html: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>' } ),
@@ -1287,6 +1295,20 @@
 			} );
 		} );
 
+		// Focus: both side columns fold away, the canvas takes the room.
+		var zenBtn = el( 'button', {
+			type: 'button',
+			'class': 'ocbe-dev__b ocbe-zen',
+			'aria-label': T.focus,
+			title: T.focus,
+			html: '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>',
+			onclick: function () {
+				root.classList.toggle( 'ocbe--zen' );
+				zenBtn.classList.toggle( 'is-on', root.classList.contains( 'ocbe--zen' ) );
+				requestAnimationFrame( fitPreview );
+			}
+		} );
+
 		var header = el( 'header', { 'class': 'ocbe-top' }, [
 			el( 'a', {
 				'class': 'ocbe-top__back',
@@ -1294,7 +1316,7 @@
 				html: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 5l7 7-7 7"/></svg>'
 			} ),
 			el( 'span', { 'class': 'ocbe-top__title', text: D.title } ),
-			el( 'span', { 'class': 'ocbe-dev' }, els.deviceBtns ),
+			el( 'span', { 'class': 'ocbe-dev' }, els.deviceBtns.concat( [ zenBtn ] ) ),
 			el( 'span', { 'class': 'ocbe-top__end' }, [
 				els.status,
 				el( 'a', { 'class': 'ocbe-top__view', href: D.view, target: '_blank', text: T.view } ),

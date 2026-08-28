@@ -1347,3 +1347,6 @@ msgstr "+ הוספת מוצר"
 
 msgid "You can also click the picture to place a spot exactly where you want it."
 msgstr "אפשר גם ללחוץ על התמונה כדי למקם נקודה בדיוק איפה שרוצים."
+
+msgid "Hide the side panels"
+msgstr "הסתרת הפאנלים הצדדיים"

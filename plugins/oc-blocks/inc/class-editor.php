@@ -165,6 +165,7 @@ final class Editor {
 					'media'    => __( 'Choose a picture', 'oc-blocks' ),
 					'noimg'    => __( 'Choose the picture first, then drop spots on it.', 'oc-blocks' ),
 					'addspot'  => __( '+ Add a product', 'oc-blocks' ),
+					'focus'    => __( 'Hide the side panels', 'oc-blocks' ),
 					'spothint' => __( 'You can also click the picture to place a spot exactly where you want it.', 'oc-blocks' ),
 					'video'    => __( 'Choose a video', 'oc-blocks' ),
 				),

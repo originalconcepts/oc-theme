@@ -609,6 +609,11 @@ html[dir="ltr"] .ocbe-switch input:checked + i::after { transform: translateX(16
 
 /* spot placer */
 .ocbe-spots__stage { position: relative; cursor: crosshair; border-radius: 10px; overflow: hidden; }
+/* focus mode: both side columns fold away, the canvas takes the room */
+.ocbe--zen .ocbe-rail,
+.ocbe--zen .ocbe-side { display: none; }
+.ocbe-zen { margin-inline-start: 6px; }
+
 .ocbe-spots__add { margin-block-start: 10px; }
 .ocbe-spots__add + .ocbe-f__hint { margin-block-start: 6px; }
 .ocbe-spots__stage img { display: block; inline-size: 100%; }
