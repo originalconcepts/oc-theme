@@ -7206,7 +7206,7 @@
 			// The way back belongs to the screens the visitor CHOSE — signing
 			// up, or the password door. Typing the code is the phone journey
 			// carrying on, and it has its own way back already.
-			backlink.hidden = 'register' !== name && 'email' !== name;
+			backlink.hidden = 'register' !== name && 'email' !== name && 'reset' !== name;
 		}
 
 		if ( 'code' === name ) {
@@ -7340,7 +7340,20 @@
 		var goto_ = e.target.closest( '[data-auth-goto]' );
 
 		if ( goto_ ) {
-			if ( 'email' === goto_.dataset.authGoto ) {
+			if ( 'reset' === goto_.dataset.authGoto ) {
+				var rform = el( '[data-step="reset"] form' );
+				var sent = el( '[data-auth-sent]' );
+
+				say( rform, '' );
+				if ( sent ) { sent.hidden = true; }
+
+				step( 'reset' );
+
+				if ( window.matchMedia( '(min-width: 783px)' ).matches ) {
+					var rem = el( '[data-step="reset"] [name="email"]' );
+					if ( rem ) { rem.focus(); }
+				}
+			} else if ( 'email' === goto_.dataset.authGoto ) {
 				step( 'email' );
 
 				if ( window.matchMedia( '(min-width: 783px)' ).matches ) {
@@ -7497,6 +7510,28 @@
 				say( form, out && out.data ? out.data.msg : '' );
 				boxes.forEach( function ( b ) { b.value = ''; } );
 				if ( boxes[ 0 ] ) { boxes[ 0 ].focus(); }
+			} );
+		}
+
+		if ( 'reset' === kind ) {
+			post( 'oc_auth_reset', { email: form.querySelector( '[name="email"]' ).value.trim() } ).then( function ( out ) {
+				done();
+
+				var sent = el( '[data-auth-sent]' );
+
+				if ( out && out.success ) {
+					say( form, '' );
+
+					if ( sent ) {
+						sent.textContent = out.data && out.data.msg ? out.data.msg : '';
+						sent.hidden = false;
+					}
+
+					return;
+				}
+
+				if ( sent ) { sent.hidden = true; }
+				say( form, out && out.data ? out.data.msg : '' );
 			} );
 		}
 

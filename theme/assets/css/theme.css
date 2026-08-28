@@ -12244,7 +12244,19 @@ body.oc-checkout { overflow-x: clip; }
  * display rule quietly outranks it, so each one says so out loud. */
 .oc-auth__backlink[hidden],
 .oc-auth__err[hidden],
+.oc-auth__sent[hidden],
 .oc-auth__resend[hidden] { display: none; }
+
+/* the answer after a reset link goes out */
+.oc-auth__sent {
+	margin: 0;
+	padding: 10px 12px;
+	border-radius: var(--oc-cta-r, 8px);
+	background: color-mix(in srgb, var(--oc-ink, #111) 6%, transparent);
+	font-size: .95rem;
+	line-height: 1.45;
+	text-align: center;
+}
 
 .oc-auth__backlink {
 	display: inline-flex;

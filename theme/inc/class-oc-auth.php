@@ -51,7 +51,7 @@ final class Auth {
 		add_action( 'wp_footer', array( $this, 'panel' ) );
 		add_filter( 'oc_header_account_attrs', array( $this, 'icon_attrs' ) );
 
-		foreach ( array( 'oc_auth_start', 'oc_auth_verify', 'oc_auth_register', 'oc_auth_email_code', 'oc_auth_email_login' ) as $action ) {
+		foreach ( array( 'oc_auth_start', 'oc_auth_verify', 'oc_auth_register', 'oc_auth_email_code', 'oc_auth_email_login', 'oc_auth_reset' ) as $action ) {
 			add_action( 'wp_ajax_nopriv_' . $action, array( $this, substr( $action, 3 ) ) );
 			add_action( 'wp_ajax_' . $action, array( $this, substr( $action, 3 ) ) );
 		}
@@ -388,7 +388,7 @@ final class Auth {
 		}
 
 		$user    = self::user_by_phone( $phone );
-		$pending = $user ? false : get_transient( 'ocau_reg_' . $phone );
+		$pending = $user ? false : get_transient( 'ocau_pend_' . $phone );
 
 		// Details already waiting on this number: the visitor is on the code
 		// screen asking for another one, not starting over.
@@ -537,7 +537,7 @@ final class Auth {
 		// A number with details waiting has just proven itself — this is the
 		// moment the account opens.
 		if ( ! $user ) {
-			$pending = get_transient( 'ocau_reg_' . $phone );
+			$pending = get_transient( 'ocau_pend_' . $phone );
 
 			if ( is_array( $pending ) ) {
 				$user_id = self::open_account( $phone, $pending );
@@ -546,7 +546,7 @@ final class Auth {
 					wp_send_json_error( array( 'msg' => __( 'The account did not open — try again.', 'oc-theme' ) ) );
 				}
 
-				delete_transient( 'ocau_reg_' . $phone );
+				delete_transient( 'ocau_pend_' . $phone );
 				wp_set_auth_cookie( $user_id, true );
 				wp_send_json_success();
 			}
@@ -572,14 +572,16 @@ final class Auth {
 			wp_send_json_error( array( 'msg' => __( 'Something went wrong — refresh and try again.', 'oc-theme' ) ) );
 		}
 
-		$ip     = 'ocau_reg_' . md5( self::ip() );
+		// The hourly count guards against a flood of real sign-ups, so it
+		// counts messages that actually went out. Charging it up front made
+		// a mistyped name or a second thought cost an attempt, and a careful
+		// person ran out before finishing.
+		$ip     = 'ocau_ipreg_' . md5( self::ip() );
 		$per_ip = (int) get_transient( $ip );
 
 		if ( $per_ip >= (int) self::settings()['ip_hourly'] ) {
 			wp_send_json_error( array( 'msg' => __( 'Too many attempts — try again in about an hour.', 'oc-theme' ) ) );
 		}
-
-		set_transient( $ip, $per_ip + 1, HOUR_IN_SECONDS );
 
 		$phone = self::normalize_phone( (string) wp_unslash( $_POST['phone'] ?? '' ) );
 		$first = sanitize_text_field( (string) wp_unslash( $_POST['first'] ?? '' ) );
@@ -625,7 +627,8 @@ final class Auth {
 			}
 
 			$this->note_send( $phone );
-			set_transient( 'ocau_reg_' . $phone, $details, max( 15 * MINUTE_IN_SECONDS, (int) self::settings()['code_expiry'] ) );
+			set_transient( $ip, $per_ip + 1, HOUR_IN_SECONDS );
+			set_transient( 'ocau_pend_' . $phone, $details, max( 15 * MINUTE_IN_SECONDS, (int) self::settings()['code_expiry'] ) );
 
 			wp_send_json_success( array(
 				'step'   => 'code',
@@ -641,8 +644,44 @@ final class Auth {
 			wp_send_json_error( array( 'msg' => __( 'The account did not open — try again.', 'oc-theme' ) ) );
 		}
 
+		set_transient( $ip, $per_ip + 1, HOUR_IN_SECONDS );
 		wp_set_auth_cookie( $user_id, true );
 		wp_send_json_success();
+	}
+
+	/**
+	 * The password-reset request, answered inside the panel.
+	 *
+	 * The answer never says whether the address is on file — that would tell
+	 * a stranger which of our customers exist.
+	 */
+	public function auth_reset(): void {
+		$this->guard();
+
+		$email = sanitize_email( (string) wp_unslash( $_POST['email'] ?? '' ) );
+
+		if ( ! is_email( $email ) ) {
+			wp_send_json_error( array( 'msg' => __( 'That does not look like an email address.', 'oc-theme' ) ) );
+		}
+
+		$ip     = 'ocau_ipreset_' . md5( self::ip() );
+		$per_ip = (int) get_transient( $ip );
+
+		if ( $per_ip >= 10 ) {
+			wp_send_json_error( array( 'msg' => __( 'Too many attempts — try again in about an hour.', 'oc-theme' ) ) );
+		}
+
+		set_transient( $ip, $per_ip + 1, HOUR_IN_SECONDS );
+
+		$user = get_user_by( 'email', $email );
+
+		if ( $user ) {
+			retrieve_password( $user->user_login );
+		}
+
+		wp_send_json_success( array(
+			'msg' => __( 'If that address is on an account, the link is on its way.', 'oc-theme' ),
+		) );
 	}
 
 	/**
@@ -1460,8 +1499,22 @@ final class Auth {
 						<p class="oc-auth__err" hidden></p>
 						<button type="submit" class="oc-auth__cta"><?php esc_html_e( 'Sign in', 'oc-theme' ); ?></button>
 						<p class="oc-auth__resend">
-							<a class="oc-auth__link" href="<?php echo esc_url( function_exists( 'wc_lostpassword_url' ) ? wc_lostpassword_url() : wp_lostpassword_url() ); ?>"><?php esc_html_e( 'Forgot the password?', 'oc-theme' ); ?></a>
+							<button type="button" class="oc-auth__link" data-auth-goto="reset"><?php esc_html_e( 'Forgot the password?', 'oc-theme' ); ?></button>
 							<button type="button" class="oc-auth__link" data-auth-change><?php esc_html_e( 'Back', 'oc-theme' ); ?></button>
+						</p>
+					</form>
+				</div>
+
+				<div class="oc-auth__step" data-step="reset" hidden>
+					<h3 class="oc-auth__title"><?php esc_html_e( 'Setting a new password', 'oc-theme' ); ?></h3>
+					<p class="oc-auth__sub"><?php esc_html_e( 'Give the address on the account and a link to set a new password is on its way.', 'oc-theme' ); ?></p>
+					<form class="oc-auth__form" data-auth-form="reset" novalidate>
+						<input type="email" name="email" autocomplete="email" placeholder="<?php esc_attr_e( 'Email', 'oc-theme' ); ?>" required>
+						<p class="oc-auth__err" hidden></p>
+						<p class="oc-auth__sent" data-auth-sent hidden></p>
+						<button type="submit" class="oc-auth__cta"><?php esc_html_e( 'Send the link', 'oc-theme' ); ?></button>
+						<p class="oc-auth__resend">
+							<button type="button" class="oc-auth__link" data-auth-goto="email"><?php esc_html_e( 'Back', 'oc-theme' ); ?></button>
 						</p>
 					</form>
 				</div>

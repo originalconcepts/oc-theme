@@ -4663,7 +4663,7 @@ msgid "Email is not available for this number."
 msgstr "אין מייל זמין למספר הזה."
 
 msgid "Enter phone number"
-msgstr "הזן מספר טלפון"
+msgstr "מספר טלפון"
 
 msgid "Enter the code from the SMS"
 msgstr "יש להזין את הקוד שהתקבל ב-SMS"
@@ -5563,3 +5563,18 @@ msgstr "רקע האזור"
 
 msgid "A colour behind this band. Empty = none."
 msgstr "צבע מאחורי האזור. ריק = ללא."
+
+msgid "Setting a new password"
+msgstr "הגדרת סיסמה חדשה"
+
+msgid "Give the address on the account and a link to set a new password is on its way."
+msgstr "הזינו את כתובת המייל של החשבון ויישלח אליכם קישור להגדרת סיסמה חדשה."
+
+msgid "Send the link"
+msgstr "שליחת הקישור"
+
+msgid "If that address is on an account, the link is on its way."
+msgstr "אם הכתובת רשומה אצלנו, הקישור בדרך אליכם."
+
+msgid "That does not look like an email address."
+msgstr "זו לא נראית כמו כתובת מייל תקינה."
