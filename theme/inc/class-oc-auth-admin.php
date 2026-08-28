@@ -71,8 +71,27 @@ final class Auth_Admin {
 					<td><label><input type="checkbox" name="sms_on" value="1" <?php checked( ! empty( $s['sms_on'] ) ); ?>> <?php esc_html_e( 'A recognised number gets a code; a new one opens an account once', 'oc-theme' ); ?></label></td>
 				</tr>
 				<tr>
+					<th><?php esc_html_e( 'Sending service', 'oc-theme' ); ?></th>
+					<td>
+						<label><input type="radio" name="sms_provider" value="activetrail" data-oc-sms-provider <?php checked( 'inforu' !== (string) $s['sms_provider'] ); ?>> <?php esc_html_e( 'ActiveTrail', 'oc-theme' ); ?></label><br>
+						<label><input type="radio" name="sms_provider" value="inforu" data-oc-sms-provider <?php checked( 'inforu', (string) $s['sms_provider'] ); ?>> <?php esc_html_e( 'InforU', 'oc-theme' ); ?></label>
+						<p class="description"><?php esc_html_e( 'The codes go out through the service chosen here; only its own fields are asked for below.', 'oc-theme' ); ?></p>
+					</td>
+				</tr>
+				<tr data-oc-sms-for="activetrail">
 					<th><?php esc_html_e( 'ActiveTrail API key', 'oc-theme' ); ?></th>
 					<td><input type="text" name="api_key" class="large-text ltr" value="<?php echo esc_attr( (string) $s['api_key'] ); ?>" autocomplete="off"></td>
+				</tr>
+				<tr data-oc-sms-for="inforu">
+					<th><?php esc_html_e( 'InforU username', 'oc-theme' ); ?></th>
+					<td><input type="text" name="inforu_user" class="regular-text ltr" value="<?php echo esc_attr( (string) $s['inforu_user'] ); ?>" autocomplete="off"></td>
+				</tr>
+				<tr data-oc-sms-for="inforu">
+					<th><?php esc_html_e( 'InforU API token', 'oc-theme' ); ?></th>
+					<td>
+						<input type="text" name="inforu_token" class="large-text ltr" value="<?php echo esc_attr( (string) $s['inforu_token'] ); ?>" autocomplete="off">
+						<p class="description"><?php esc_html_e( 'In the InforU system: Account details → API Token.', 'oc-theme' ); ?></p>
+					</td>
 				</tr>
 				<tr>
 					<th><?php esc_html_e( 'Sender name', 'oc-theme' ); ?></th>
@@ -89,6 +108,26 @@ final class Auth_Admin {
 					</td>
 				</tr>
 			</table>
+			<script>
+			( function () {
+				var rows = document.querySelectorAll( '[data-oc-sms-for]' );
+
+				function paint() {
+					var picked = document.querySelector( '[data-oc-sms-provider]:checked' );
+					var name = picked ? picked.value : 'activetrail';
+
+					rows.forEach( function ( row ) {
+						row.style.display = row.dataset.ocSmsFor === name ? '' : 'none';
+					} );
+				}
+
+				document.querySelectorAll( '[data-oc-sms-provider]' ).forEach( function ( radio ) {
+					radio.addEventListener( 'change', paint );
+				} );
+
+				paint();
+			}() );
+			</script>
 
 			<h2><?php esc_html_e( 'Email sign-in', 'oc-theme' ); ?></h2>
 			<table class="form-table">
@@ -299,7 +338,9 @@ final class Auth_Admin {
 		$s['apple_on']  = empty( $_POST['apple_on'] ) ? 0 : 1;
 		$s['reach']     = 'intl' === ( $_POST['reach'] ?? '' ) ? 'intl' : 'israel';
 
-		foreach ( array( 'api_key', 'sender', 'google_id', 'google_secret', 'fb_id', 'fb_secret', 'apple_client_id', 'apple_team_id', 'apple_key_id' ) as $field ) {
+		$s['sms_provider'] = 'inforu' === ( $_POST['sms_provider'] ?? '' ) ? 'inforu' : 'activetrail'; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- strict comparison stores a literal.
+
+		foreach ( array( 'api_key', 'inforu_user', 'inforu_token', 'sender', 'google_id', 'google_secret', 'fb_id', 'fb_secret', 'apple_client_id', 'apple_team_id', 'apple_key_id' ) as $field ) {
 			$s[ $field ] = sanitize_text_field( (string) wp_unslash( $_POST[ $field ] ?? '' ) );
 		}
 

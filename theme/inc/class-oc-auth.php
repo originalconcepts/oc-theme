@@ -82,7 +82,10 @@ final class Auth {
 			is_array( $saved ) ? $saved : array(),
 			array(
 				'sms_on'          => 0,
+				'sms_provider'    => 'activetrail', // activetrail | inforu.
 				'api_key'         => '',
+				'inforu_user'     => '',
+				'inforu_token'    => '',
 				'sender'          => '',
 				'reach'           => 'israel',
 				'code_expiry'     => 180,
@@ -319,15 +322,37 @@ final class Auth {
 	private function send_sms( string $phone, string $code ): bool {
 		$s = self::settings();
 
+		/* translators: %s: the code. */
+		$text = sprintf( __( '%s is your sign-in code', 'oc-theme' ), $code );
+
+		// A sender name may carry at most 11 characters — the carrier's
+		// rule, which both services enforce. Never let a long shop name
+		// silently kill every code.
+		$from = trim( (string) $s['sender'] );
+		$from = mb_substr( '' !== $from ? $from : (string) get_bloginfo( 'name' ), 0, 11 );
+
+		// The number goes out in the local form both services expect.
+		$to = 0 === strpos( $phone, '972' ) ? '0' . substr( $phone, 3 ) : $phone;
+
+		if ( 'inforu' === (string) $s['sms_provider'] ) {
+			return $this->send_sms_inforu( $to, $text, $from, $s );
+		}
+
+		return $this->send_sms_activetrail( $to, $text, $from, $s );
+	}
+
+	/**
+	 * ActiveTrail's operational-message endpoint.
+	 *
+	 * @param string               $to   Local-form phone.
+	 * @param string               $text The message.
+	 * @param string               $from Sender name.
+	 * @param array<string,mixed>  $s    Settings.
+	 */
+	private function send_sms_activetrail( string $to, string $text, string $from, array $s ): bool {
 		if ( '' === trim( (string) $s['api_key'] ) ) {
 			return false;
 		}
-
-		// A sender name may carry at most 11 characters — the carrier's
-		// rule, enforced by ActiveTrail with a 400. Never let a long shop
-		// name silently kill every code.
-		$from = trim( (string) $s['sender'] );
-		$from = mb_substr( '' !== $from ? $from : (string) get_bloginfo( 'name' ), 0, 11 );
 
 		$response = wp_remote_post(
 			'https://webapi.mymarketing.co.il/api/smscampaign/OperationalMessage',
@@ -344,17 +369,69 @@ final class Auth {
 							'can_unsubscribe'  => false,
 							'name'             => 'login',
 							'from_name'        => $from,
-							/* translators: %s: the code. */
-							'content'          => sprintf( __( '%s is your sign-in code', 'oc-theme' ), $code ),
+							'content'          => $text,
 						),
 						'scheduling' => array( 'send_now' => true ),
-						'mobiles'    => array( array( 'phone_number' => 0 === strpos( $phone, '972' ) ? '0' . substr( $phone, 3 ) : $phone ) ),
+						'mobiles'    => array( array( 'phone_number' => $to ) ),
 					)
 				),
 			)
 		);
 
 		return ! is_wp_error( $response ) && 200 === (int) wp_remote_retrieve_response_code( $response );
+	}
+
+	/**
+	 * InforU's XML gateway. The request travels as one InforuXML field; the
+	 * answer is XML whose Status is 1 when the message was accepted — a 200
+	 * alone means nothing here, so the body decides.
+	 *
+	 * @param string              $to   Local-form phone.
+	 * @param string              $text The message.
+	 * @param string              $from Sender name.
+	 * @param array<string,mixed> $s    Settings.
+	 */
+	private function send_sms_inforu( string $to, string $text, string $from, array $s ): bool {
+		$user  = trim( (string) $s['inforu_user'] );
+		$token = trim( (string) $s['inforu_token'] );
+
+		if ( '' === $user || '' === $token ) {
+			return false;
+		}
+
+		$xml = '<Inforu>'
+			. '<User><Username>' . self::xml( $user ) . '</Username><ApiToken>' . self::xml( $token ) . '</ApiToken></User>'
+			. '<Content Type="sms"><Message>' . self::xml( $text ) . '</Message></Content>'
+			. '<Recipients><PhoneNumber>' . self::xml( $to ) . '</PhoneNumber></Recipients>'
+			. '<Settings><Sender>' . self::xml( $from ) . '</Sender></Settings>'
+			. '</Inforu>';
+
+		$response = wp_remote_post(
+			'https://api.inforu.co.il/SendMessageXml.ashx',
+			array(
+				'timeout' => 15,
+				'body'    => array( 'InforuXML' => $xml ),
+			)
+		);
+
+		if ( is_wp_error( $response ) || 200 !== (int) wp_remote_retrieve_response_code( $response ) ) {
+			return false;
+		}
+
+		$body = (string) wp_remote_retrieve_body( $response );
+
+		if ( preg_match( '~<Status>\s*(-?\d+)\s*</Status>~i', $body, $m ) ) {
+			return 1 === (int) $m[1];
+		}
+
+		return false;
+	}
+
+	/**
+	 * Text made safe to sit inside an XML element.
+	 */
+	private static function xml( string $text ): string {
+		return htmlspecialchars( $text, ENT_XML1 | ENT_QUOTES, 'UTF-8' );
 	}
 
 	/*

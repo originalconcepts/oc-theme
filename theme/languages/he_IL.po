@@ -5578,3 +5578,24 @@ msgstr "אם הכתובת רשומה אצלנו, הקישור בדרך אליכ�
 
 msgid "That does not look like an email address."
 msgstr "זו לא נראית כמו כתובת מייל תקינה."
+
+msgid "Sending service"
+msgstr "שירות השליחה"
+
+msgid "ActiveTrail"
+msgstr "ActiveTrail"
+
+msgid "InforU"
+msgstr "InforU"
+
+msgid "The codes go out through the service chosen here; only its own fields are asked for below."
+msgstr "הקודים נשלחים דרך השירות שנבחר כאן; רק השדות שלו יוצגו למטה."
+
+msgid "InforU username"
+msgstr "שם משתמש InforU"
+
+msgid "InforU API token"
+msgstr "מפתח API של InforU"
+
+msgid "In the InforU system: Account details → API Token."
+msgstr "במערכת InforU: פרטי חשבון ← API Token."
