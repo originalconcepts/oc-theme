@@ -6975,6 +6975,10 @@
 						// bows out a breath later.
 						btn.classList.add( 'oc-added' );
 
+						// Anyone listening (the shop-the-look strip counts
+						// its own products) hears which product landed.
+						document.dispatchEvent( new CustomEvent( 'oc:added', { detail: { productId: String( st.id ) } } ) );
+
 						setTimeout( function () {
 							btn.classList.remove( 'oc-added' );
 							vpClose();

@@ -1109,6 +1109,7 @@ final class Render {
 					. ( $plus
 						? '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>'
 						: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.6"/><circle cx="17" cy="20" r="1.6"/><path d="M3 3h2.5l2.2 11.2a1.6 1.6 0 0 0 1.6 1.3h7.6a1.6 1.6 0 0 0 1.6-1.3L20 7H6"/></svg>' )
+					. '<span class="ocb-look__cadd-n" hidden></span>'
 					. '</a>';
 
 				$cards .= '<div class="ocb-look__card' . ( 0 === $at ? ' is-on' : '' ) . '" data-ocb-card="' . $at . '" data-ocb-scene="' . $sc . '">'
@@ -1148,8 +1149,10 @@ final class Render {
 
 		return '<div class="ocb-look ocb-look--' . esc_attr( (string) $s['side'] ) . '" data-ocb-look>'
 			. '<div class="ocb-look__pic">' . $pics . $snav . '</div>'
-			. '<div class="ocb-look__side">'
+			// The close stands outside the strip: fixed to the screen, so the
+			// strip's entry animation never drags it along.
 			. '<button type="button" class="ocb-look__close" data-ocb-look-close aria-label="' . esc_attr__( 'Close', 'oc-blocks' ) . '"><span class="ocb-look__grab" aria-hidden="true"></span></button>'
+			. '<div class="ocb-look__side">'
 			. '<div class="ocb-look__cards">' . $cards . '</div>'
 			. ( $at > 1
 				? '<div class="ocb-look__nav">'

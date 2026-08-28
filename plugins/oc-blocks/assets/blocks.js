@@ -463,7 +463,7 @@
 				return;
 			}
 
-			cards[ at ].scrollIntoView( { behavior: smooth ? 'smooth' : 'auto', inline: 'center', block: 'nearest' } );
+			cards[ at ].scrollIntoView( { behavior: smooth ? 'smooth' : 'auto', inline: 'start', block: 'nearest' } );
 		}
 
 		// Going full-screen drops the block from the flow — a placeholder
@@ -526,6 +526,8 @@
 			} );
 			cards.forEach( function ( c, i ) {
 				c.classList.toggle( 'is-on', i === at );
+				// The story strip shows only this room's products.
+				c.classList.toggle( 'in-scene', Number( c.dataset.ocbScene || 0 ) === scene );
 			} );
 			scenes.forEach( function ( sc ) {
 				sc.classList.toggle( 'is-on', Number( sc.dataset.ocbLscene ) === scene );
@@ -576,6 +578,15 @@
 
 			if ( snav ) {
 				room( Number( snav.dataset.ocbSceneGo ) );
+
+				// In the story view the strip now holds the new room's
+				// products — start it at the first one.
+				if ( mobile() && look.classList.contains( 'is-open' ) ) {
+					requestAnimationFrame( function () {
+						centreCard( false );
+					} );
+				}
+
 				return;
 			}
 
@@ -676,16 +687,22 @@
 
 				clearTimeout( st );
 				st = setTimeout( function () {
-					var mid = cardsWrap.getBoundingClientRect().left + cardsWrap.clientWidth / 2;
+					// The strip shows one room's products; the most visible
+					// card wins (overlap, so reading direction never matters).
+					var wr = cardsWrap.getBoundingClientRect();
 					var best = at;
-					var bestD = Infinity;
+					var bestOv = -1;
 
 					cards.forEach( function ( c, i ) {
-						var r = c.getBoundingClientRect();
-						var d = Math.abs( ( r.left + r.width / 2 ) - mid );
+						if ( ! c.classList.contains( 'in-scene' ) ) {
+							return;
+						}
 
-						if ( d < bestD ) {
-							bestD = d;
+						var r = c.getBoundingClientRect();
+						var ov = Math.min( r.right, wr.right ) - Math.max( r.left, wr.left );
+
+						if ( ov > bestOv ) {
+							bestOv = ov;
 							best = i;
 						}
 					} );
@@ -703,6 +720,38 @@
 				closeLook();
 			}
 		} );
+
+		// After an add, the product's circle wears a count of how many of it
+		// went to the cart (like the story viewer's own badge).
+		function bump( productId ) {
+			var add = look.querySelector( '.ocb-look__cadd[data-product_id="' + String( productId ) + '"]' );
+			var n = add && add.querySelector( '.ocb-look__cadd-n' );
+
+			if ( ! n ) {
+				return;
+			}
+
+			n.textContent = String( ( parseInt( n.textContent, 10 ) || 0 ) + 1 );
+			n.hidden = false;
+		}
+
+		// The quick-pick panel announces its adds; Woo's own ajax (simple
+		// products) speaks jQuery.
+		document.addEventListener( 'oc:added', function ( e ) {
+			if ( e.detail && e.detail.productId ) {
+				bump( e.detail.productId );
+			}
+		} );
+
+		if ( window.jQuery ) {
+			window.jQuery( document.body ).on( 'added_to_cart', function ( e2, fragments, hash, $button ) {
+				var b = $button && $button[ 0 ];
+
+				if ( b && b.classList.contains( 'ocb-look__cadd' ) ) {
+					bump( b.getAttribute( 'data-product_id' ) || '' );
+				}
+			} );
+		}
 
 		// Settle the opening state (the count reads per-room from the start).
 		show( 0 );
