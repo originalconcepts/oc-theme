@@ -969,10 +969,12 @@
 	align-items: center;
 }
 
-/* wpautop wraps the block's bare buttons in <p> at the top level — as grid
- * items those empty wrappers steal cells and push the card below the
- * picture. Dissolve them; the buttons stand on their own. */
-.ocb-look > p { display: contents; }
+/* wpautop wraps the block's bare buttons and links in <p> — at the top
+ * level AND inside each product card. As class-less grid items those
+ * wrappers steal cells and knock the layout over. Dissolve them; the
+ * buttons stand on their own. */
+.ocb-look > p,
+.ocb-look__card > p { display: contents; }
 
 .ocb-look--end .ocb-look__pic { order: 2; }
 
