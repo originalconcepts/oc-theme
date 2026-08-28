@@ -455,16 +455,15 @@
 			return window.matchMedia( '(max-width: 782px)' ).matches;
 		}
 
-		// The story view centres the shown product in its strip.
+		// The story view centres the shown product in its strip. scrollIntoView
+		// is the one road that behaves inside a scroll-snap strip on iOS —
+		// a smooth scrollBy there gets snapped straight back.
 		function centreCard( smooth ) {
 			if ( ! mobile() || ! look.classList.contains( 'is-open' ) || ! cardsWrap || ! cards[ at ] ) {
 				return;
 			}
 
-			var r = cards[ at ].getBoundingClientRect();
-			var wr = cardsWrap.getBoundingClientRect();
-
-			cardsWrap.scrollBy( { left: ( r.left + r.width / 2 ) - ( wr.left + wr.width / 2 ), behavior: smooth ? 'smooth' : 'auto' } );
+			cards[ at ].scrollIntoView( { behavior: smooth ? 'smooth' : 'auto', inline: 'center', block: 'nearest' } );
 		}
 
 		// Going full-screen drops the block from the flow — a placeholder
@@ -481,7 +480,9 @@
 			look.classList.remove( 'is-closing' );
 			look.classList.add( 'is-open' );
 			document.documentElement.classList.add( 'oc-look-lock' );
-			centreCard( false );
+			requestAnimationFrame( function () {
+				centreCard( false );
+			} );
 		}
 
 		function closeLook() {
@@ -502,6 +503,19 @@
 			}, 290 );
 		}
 
+		// The cards (by index) that share a scene.
+		function sceneList( scene ) {
+			var list = [];
+
+			cards.forEach( function ( c, i ) {
+				if ( Number( c.dataset.ocbScene || 0 ) === scene ) {
+					list.push( i );
+				}
+			} );
+
+			return list;
+		}
+
 		function show( n ) {
 			at = ( n + cards.length ) % cards.length;
 
@@ -517,9 +531,29 @@
 				sc.classList.toggle( 'is-on', Number( sc.dataset.ocbLscene ) === scene );
 			} );
 
+			// The count speaks for this room alone: position / its products.
 			if ( count ) {
-				count.textContent = String( at + 1 );
+				var list = sceneList( scene );
+
+				count.textContent = String( list.indexOf( at ) + 1 );
+
+				var wrap = count.parentNode;
+
+				if ( wrap && wrap.lastChild && 3 === wrap.lastChild.nodeType ) {
+					wrap.lastChild.textContent = ' / ' + list.length;
+				}
 			}
+		}
+
+		// The product arrows walk the current room's products only.
+		function prodStep( dir ) {
+			var list = sceneList( Number( cards[ at ].dataset.ocbScene || 0 ) );
+
+			if ( list.length < 2 ) {
+				return;
+			}
+
+			show( list[ ( list.indexOf( at ) + dir + list.length ) % list.length ] );
 		}
 
 		// Walking the rooms: the arrow on the picture jumps to the next
@@ -550,10 +584,13 @@
 			if ( spot ) {
 				show( Number( spot.dataset.ocbSpot ) );
 
-				// On a phone the spot also opens the story view.
+				// On a phone the spot also opens the story view; the centring
+				// waits a frame so the strip has its layout.
 				if ( mobile() ) {
 					openLook();
-					centreCard( true );
+					requestAnimationFrame( function () {
+						centreCard( true );
+					} );
 				}
 
 				return;
@@ -572,7 +609,7 @@
 			var arr = e.target.closest( '[data-ocb-go]' );
 
 			if ( arr && e.target.closest( '.ocb-look__nav' ) ) {
-				show( at + Number( arr.dataset.ocbGo ) );
+				prodStep( Number( arr.dataset.ocbGo ) );
 			}
 		} );
 
@@ -666,6 +703,9 @@
 				closeLook();
 			}
 		} );
+
+		// Settle the opening state (the count reads per-room from the start).
+		show( 0 );
 	} );
 
 	/* ---------- the scrolling story ---------- */

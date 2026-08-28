@@ -1098,11 +1098,25 @@ final class Render {
 					esc_attr( $product->get_name() )
 				);
 
+				// The story strip's add button: a simple product adds through
+				// Woo's own ajax; anything with options opens the theme's
+				// quick-pick panel (its handler answers a.oc-card-atc).
+				$simple = $product->is_type( 'simple' ) && $product->is_purchasable() && $product->is_in_stock();
+				$plus   = function_exists( 'get_theme_mod' ) && 'plus' === get_theme_mod( 'oc_card_atc_icon', 'cart' );
+				$add    = '<a class="ocb-look__cadd oc-card-atc' . ( $simple ? ' add_to_cart_button ajax_add_to_cart' : '' ) . '"'
+					. ' href="' . esc_url( $simple ? '?add-to-cart=' . $product->get_id() : (string) $product->get_permalink() ) . '"'
+					. ' data-quantity="1" data-product_id="' . absint( $product->get_id() ) . '" rel="nofollow" aria-label="' . esc_attr__( 'Add to cart', 'oc-blocks' ) . '">'
+					. ( $plus
+						? '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>'
+						: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.6"/><circle cx="17" cy="20" r="1.6"/><path d="M3 3h2.5l2.2 11.2a1.6 1.6 0 0 0 1.6 1.3h7.6a1.6 1.6 0 0 0 1.6-1.3L20 7H6"/></svg>' )
+					. '</a>';
+
 				$cards .= '<div class="ocb-look__card' . ( 0 === $at ? ' is-on' : '' ) . '" data-ocb-card="' . $at . '" data-ocb-scene="' . $sc . '">'
 					. ( '' === $img ? '' : '<a class="ocb-look__cimg" href="' . esc_url( (string) $product->get_permalink() ) . '"><img src="' . esc_url( $img ) . '" alt="" loading="lazy" decoding="async"></a>' )
 					. '<h3 class="ocb-look__cname"><a href="' . esc_url( (string) $product->get_permalink() ) . '">' . esc_html( $product->get_name() ) . '</a></h3>'
 					. '<div class="ocb-look__cprice">' . $product->get_price_html() . '</div>'
 					. '<a class="ocb-btn ocb-btn--theme ocb-look__cgo" href="' . esc_url( (string) $product->get_permalink() ) . '">' . esc_html__( 'View product', 'oc-blocks' ) . '</a>'
+					. $add
 					. '</div>';
 
 				++$at;

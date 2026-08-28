@@ -1085,6 +1085,9 @@ html[dir="rtl"] .ocb-look__nav .ocb-arr svg { transform: scaleX(-1); }
 
 .ocb-look__close { display: none; }
 
+/* the strip's add button lives only in the mobile story view */
+.ocb-look__cadd { display: none; }
+
 /* the page underneath stays put while the story view is open */
 html.oc-look-lock,
 html.oc-look-lock body { overflow: hidden; }
@@ -1212,32 +1215,70 @@ html.oc-look-lock body { overflow: hidden; }
 	}
 	.ocb-look.is-open .ocb-look__cards::-webkit-scrollbar { display: none; }
 
-	/* every product shows in the strip: a compact card, picture beside words */
+	/* every product shows in the strip: one low row, exactly the oc-story
+	 * shape — picture at the reading side, the words beside it, and the
+	 * add-to-cart circle at the far end */
 	.ocb-look.is-open .ocb-look__card,
 	.ocb-look.is-closing .ocb-look__card {
 		display: grid;
-		grid-template-columns: 64px minmax(0, 1fr);
+		grid-template-columns: 52px minmax(0, 1fr) auto;
 		grid-template-rows: auto auto;
-		column-gap: 12px;
-		align-content: center;
-		flex: 0 0 80%;
+		column-gap: 10px;
+		align-items: center;
+		flex: 0 0 78%;
 		scroll-snap-align: center;
 		background: var(--oc-surface, #fff);
-		border-radius: 14px;
-		padding: 10px 12px;
+		border-radius: 12px;
+		padding: 8px 10px;
 		box-shadow: 0 10px 30px rgb(0 0 0 / 25%);
 		text-align: start;
 		animation: none;
 	}
-	.ocb-look.is-open .ocb-look__cimg { grid-row: 1 / 3; align-self: center; }
-	.ocb-look.is-open .ocb-look__cname { grid-column: 2; align-self: end; }
-	.ocb-look.is-open .ocb-look__cprice { grid-column: 2; align-self: start; }
-	.ocb-look.is-open .ocb-look__card.is-on { outline: 2px solid var(--oc-ink, #1c1c1c); outline-offset: -2px; }
 	.ocb-look.is-open .ocb-look__cimg,
-	.ocb-look.is-closing .ocb-look__cimg { flex: 0 0 64px; max-inline-size: 64px; margin: 0; }
-	.ocb-look.is-open .ocb-look__cimg img { aspect-ratio: 1 / 1; object-fit: cover; border-radius: 8px; }
-	.ocb-look.is-open .ocb-look__cname { margin: 0; font-size: .95em; }
-	.ocb-look.is-open .ocb-look__cprice { margin-block-start: 2px; font-size: .92em; }
+	.ocb-look.is-closing .ocb-look__cimg {
+		grid-column: 1;
+		grid-row: 1 / 3;
+		align-self: center;
+		inline-size: 52px;
+		max-inline-size: 52px;
+		margin: 0;
+	}
+	.ocb-look.is-open .ocb-look__cimg img,
+	.ocb-look.is-closing .ocb-look__cimg img { aspect-ratio: 1 / 1; object-fit: cover; border-radius: 8px; }
+	.ocb-look.is-open .ocb-look__cname,
+	.ocb-look.is-closing .ocb-look__cname {
+		grid-column: 2;
+		grid-row: 1;
+		align-self: end;
+		margin: 0;
+		font-size: .9em;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	.ocb-look.is-open .ocb-look__cprice,
+	.ocb-look.is-closing .ocb-look__cprice {
+		grid-column: 2;
+		grid-row: 2;
+		align-self: start;
+		margin: 0;
+		font-size: .88em;
+	}
+	.ocb-look.is-open .ocb-look__cadd,
+	.ocb-look.is-closing .ocb-look__cadd {
+		display: grid;
+		place-items: center;
+		grid-column: 3;
+		grid-row: 1 / 3;
+		inline-size: 38px;
+		block-size: 38px;
+		border: 1.5px solid var(--oc-ink, #1c1c1c);
+		border-radius: 50%;
+		color: var(--oc-ink, #1c1c1c);
+		background: none;
+		text-decoration: none;
+	}
+	.ocb-look.is-open .ocb-look__card.is-on { outline: 2px solid var(--oc-ink, #1c1c1c); outline-offset: -2px; }
 	.ocb-look.is-open .ocb-look__cgo { display: none; }
 	.ocb-look.is-open .ocb-look__nav { display: none; }
 
