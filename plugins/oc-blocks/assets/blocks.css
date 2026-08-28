@@ -1416,14 +1416,14 @@ html.oc-look-lock body { overflow: hidden; }
 		line-height: 1;
 		box-shadow: 0 0 0 2px #fff;
 	}
-	/* the swatch row rides under the price, small */
+	/* the swatch row rides under the price — a touch bigger, for fingers */
 	.ocb-look.is-open .ocb-look__card .oc-colors--loop,
 	.ocb-look.is-closing .ocb-look__card .oc-colors--loop {
 		grid-column: 2;
 		grid-row: 3;
 		justify-content: flex-start;
-		margin: 2px 0 0;
-		--oc-swatch-cat: 14px;
+		margin: 3px 0 0;
+		--oc-swatch-cat: 18px;
 	}
 	.ocb-look.is-open .ocb-look__card.is-on { outline: 2px solid var(--oc-ink, #1c1c1c); outline-offset: -2px; }
 	.ocb-look.is-open .ocb-look__cgo { display: none; }

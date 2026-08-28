@@ -1134,14 +1134,19 @@ final class Render {
 					$GLOBALS['product'] = $prev_product;
 				}
 
+				// The swatch row obeys the catalogue's own placement setting:
+				// above the title, or below the words (the default).
+				$sw_above = function_exists( 'get_theme_mod' ) && 'above' === get_theme_mod( 'oc_colors_loop_pos', 'below' );
+
 				$cards .= '<div class="ocb-look__card' . ( 0 === $at ? ' is-on' : '' ) . '" data-ocb-card="' . $at . '" data-ocb-scene="' . $sc . '">'
 					. '<div class="ocb-look__cmedia">'
 					. ( '' === $img ? '' : '<a class="ocb-look__cimg" href="' . esc_url( (string) $product->get_permalink() ) . '"><img src="' . esc_url( $img ) . '" alt="" loading="lazy" decoding="async"></a>' )
 					. $add
 					. '</div>'
+					. ( $sw_above ? $swatches : '' )
 					. '<h3 class="ocb-look__cname"><a href="' . esc_url( (string) $product->get_permalink() ) . '">' . esc_html( $product->get_name() ) . '</a></h3>'
 					. '<div class="ocb-look__cprice">' . $product->get_price_html() . '</div>'
-					. $swatches
+					. ( $sw_above ? '' : $swatches )
 					. '<a class="ocb-btn ocb-btn--theme ocb-look__cgo" href="' . esc_url( (string) $product->get_permalink() ) . '">' . esc_html__( 'View product', 'oc-blocks' ) . '</a>'
 					. '</div>';
 
