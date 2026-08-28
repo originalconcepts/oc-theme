@@ -971,26 +971,20 @@
 
 .ocb-look--end .ocb-look__pic { order: 2; }
 
-/* Rooms are a slider: one fills the frame, and with several the next peeks
- * in. Swiping (or a dot) picks the room; its products answer below. */
 .ocb-look__pic { position: relative; overflow: hidden; border-radius: var(--oc-radius, 8px); }
 
-/* Desktop: the rooms are stacked; one is lit at a time and fades in. */
+.ocb-look__pic img { display: block; inline-size: 100%; block-size: auto; }
+
+/* The rooms stand stacked; one is lit at a time. */
 .ocb-look__scene { position: relative; }
-.ocb-look__scene:not(.is-cur) { display: none; }
-.ocb-look__scene.is-cur { animation: ocb-look-fade .5s ease; }
-.ocb-look__scene img { display: block; inline-size: 100%; block-size: auto; transition: object-position .5s cubic-bezier(.22, .61, .36, 1); }
-.ocb-look__scene picture { display: contents; }
-@keyframes ocb-look-fade { from { opacity: 0; } }
 
-/* room arrows (only with more than one room) */
-.ocb-look__snav.ocb-arr { position: absolute; inset-block-start: 50%; transform: translateY(-50%); z-index: 3; }
-.ocb-look__snav--prev { inset-inline-start: 12px; inset-inline-end: auto; }
-.ocb-look__snav--next { inset-inline-end: 12px; inset-inline-start: auto; }
-html[dir="rtl"] .ocb-look__snav svg { transform: scaleX(-1); }
+.ocb-look__scene:not(.is-on) { display: none; }
 
-/* the mobile take-over's bar — shown only in the take-over */
-.ocb-look__bar { display: none; }
+.ocb-look__scene.is-on { animation: ocb-look-in .5s ease; }
+
+.ocb-look__snav.ocb-arr { position: absolute; }
+.ocb-look__snav.ocb-arr--prev { left: 12px; right: auto; }
+.ocb-look__snav.ocb-arr--next { right: 12px; left: auto; }
 
 /* The spot: a breathing ring, the reference's own gesture. */
 .ocb-look__spot {
@@ -1087,193 +1081,67 @@ html[dir="rtl"] .ocb-look__nav .ocb-arr svg { transform: scaleX(-1); }
 
 .ocb-look__count { font-size: .88em; color: color-mix(in srgb, currentColor 60%, transparent); min-inline-size: 44px; }
 
-.ocb-look__open,
-.ocb-look__x { display: none; }
+.ocb-look__open { display: none; }
 
-/* the page underneath stays put while the take-over is open */
-html.oc-look-lock,
-html.oc-look-lock body { overflow: hidden; }
-
-/* the panel's product card IS the catalogue card ([products] shortcode);
- * keep it tidy and centred, and undo the <p> wpautop puts around the price. */
-.ocb-look__card ul.products { margin: 0; padding: 0; }
-.ocb-look__card ul.products li.product { inline-size: 100%; max-inline-size: 300px; margin-inline: auto; }
-/* keep only picture, name and price — no labels over the image, no rating */
-.ocb-look__card .oc-card-media__flags,
-.ocb-look__card .oc-flags,
-.ocb-look__card .onsale,
-.ocb-look__card .star-rating,
-.ocb-look__card .woocommerce-product-rating { display: none; }
-.ocb-look__card .oc-card-excerpt { display: none !important; }
-.oc-compose .ocb-look .oc-card-text > p:not(.oc-card-excerpt) { margin-block: 6px 0; }
-.oc-compose .ocb-look .oc-card-text > p:not(.oc-card-excerpt) .price { margin-block-start: 0; }
-
-/* The quick add-to-cart is always a real button under the price here (the
- * catalogue may hide it until hover / float it over the picture). */
-.ocb-look__card .oc-card-atc {
-	position: static;
-	inset: auto;
-	opacity: 1 !important;
-	visibility: visible !important;
-	transform: none !important;
-	pointer-events: auto !important;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	gap: 8px;
-	inline-size: auto;
-	block-size: auto;
-	margin-block-start: 12px;
-	padding: 10px 22px;
-	border-radius: var(--oc-cta-r, 8px);
-	background: var(--oc-primary, #03104c);
-	color: #fff;
-	font-weight: 600;
-}
-.ocb-look__card .oc-card-atc__word {
-	position: static;
-	clip: auto;
-	clip-path: none;
-	inline-size: auto;
-	block-size: auto;
-	margin: 0;
-	white-space: nowrap;
-}
-.ocb-look__card .oc-card-atc__check { display: none; }
+.ocb-look__close { display: none; }
 
 @media (max-width: 782px) {
 	.ocb-look { grid-template-columns: 1fr; gap: 14px; }
-	/* on a phone the rooms are walked through the product bar, not arrows */
-	.ocb-look__snav { display: none; }
 
-	/* Closed: a full-width, tall picture with its spots, and a button. */
-	.ocb-look__side { display: none; }
-	.ocb-look:not(.is-open):not(.is-closing) .ocb-look__pic {
-		margin-inline: calc(50% - 50vw);
-		border-radius: 0;
+	/* The phone leads with the picture; the products wait behind a button
+	 * and rise when asked — the spots ask too. */
+	.ocb-look__side {
+		display: none;
+		position: fixed;
+		inset-inline: 0;
+		inset-block-end: 0;
+		z-index: 96;
+		background: var(--oc-surface, #fff);
+		border-radius: 16px 16px 0 0;
+		box-shadow: 0 -10px 40px rgb(0 0 0 / 18%);
+		padding: 26px 20px 22px;
+		max-block-size: 78vh;
+		overflow-y: auto;
 	}
-	.ocb-look:not(.is-open):not(.is-closing) .ocb-look__scene img {
-		block-size: 62vh;
-		object-fit: cover;
+
+	.ocb-look.is-open .ocb-look__side { display: block; animation: ocb-look-up .3s cubic-bezier(.22, .61, .36, 1); }
+
+	@keyframes ocb-look-up {
+		from { transform: translateY(40px); opacity: 0; }
 	}
+
+	.ocb-look__close {
+		display: block;
+		inline-size: 100%;
+		padding: 4px 0 14px;
+		border: 0;
+		background: none;
+		cursor: pointer;
+	}
+
+	.ocb-look__grab {
+		display: block;
+		inline-size: 44px;
+		block-size: 4.5px;
+		margin-inline: auto;
+		border-radius: 3px;
+		background: color-mix(in srgb, currentColor 25%, transparent);
+	}
+
 	.ocb-look__open {
 		display: block;
 		inline-size: 100%;
-		margin-block-start: 12px;
-		padding: 12px;
+		margin-block-start: 2px;
+		padding: 10px;
 		border: 1.5px solid var(--oc-ink, #1c1c1c);
 		border-radius: var(--oc-cta-r, 8px);
 		background: none;
-		color: var(--oc-ink, #1c1c1c);
 		font: inherit;
 		font-weight: 600;
 		cursor: pointer;
 	}
 
-	/* Open (oc-story style): the picture fills the whole screen with its
-	 * spots; the products ride a horizontal bar along its foot — swipe the
-	 * bar or tap a spot to move between them (the picture pans to match). */
-	.ocb-look.is-open,
-	.ocb-look.is-closing {
-		position: fixed;
-		inset: 0;
-		/* below the quick-pick (z-95) so add-to-cart opens ABOVE this */
-		z-index: 90;
-		display: block;
-		background: #0b0b0c;
-		overflow: hidden;
-	}
-	.ocb-look.is-open { animation: ocb-look-up .34s cubic-bezier(.22, .61, .36, 1) both; }
-	.ocb-look.is-closing { animation: ocb-look-down .3s cubic-bezier(.4, 0, .7, 1) both; pointer-events: none; }
-	@keyframes ocb-look-up { from { transform: translateY(100%); } }
-	@keyframes ocb-look-down { to { transform: translateY(100%); } }
-
-	.ocb-look.is-open .ocb-look__pic,
-	.ocb-look.is-closing .ocb-look__pic {
-		position: absolute;
-		inset: 0;
-		margin: 0;
-		border-radius: 0;
-		overflow: hidden;
-	}
-	.ocb-look.is-open .ocb-look__scene,
-	.ocb-look.is-closing .ocb-look__scene { display: none; block-size: 100%; }
-	.ocb-look.is-open .ocb-look__scene.is-cur,
-	.ocb-look.is-closing .ocb-look__scene.is-cur { display: block; block-size: 100%; }
-	.ocb-look.is-open .ocb-look__scene img,
-	.ocb-look.is-closing .ocb-look__scene img { block-size: 100%; object-fit: cover; }
-	.ocb-look.is-open .ocb-look__spot { inline-size: 44px; block-size: 44px; }
-
-	/* close button, over the picture, top-left; no title in this mode */
-	.ocb-look.is-open .ocb-look__bar,
-	.ocb-look.is-closing .ocb-look__bar { display: contents; }
-	.ocb-look__title { font-weight: 600; letter-spacing: .04em; text-align: center; }
-	.ocb-look.is-open .ocb-look__title { display: none; }
-	.ocb-look.is-open .ocb-look__x,
-	.ocb-look.is-closing .ocb-look__x {
-		display: grid;
-		place-items: center;
-		position: absolute;
-		inset-block-start: 14px;
-		inset-inline-start: 14px;
-		z-index: 5;
-		inline-size: 40px;
-		block-size: 40px;
-		padding: 0;
-		border: 0;
-		border-radius: 50%;
-		background: rgb(0 0 0 / 45%);
-		color: #fff;
-		cursor: pointer;
-	}
-
-	/* the product bar along the bottom — a horizontal strip of compact cards */
-	.ocb-look.is-open .ocb-look__side,
-	.ocb-look.is-closing .ocb-look__side {
-		display: block;
-		position: absolute;
-		inset-inline: 0;
-		inset-block-end: 0;
-		z-index: 4;
-		padding: 0;
-		text-align: start;
-	}
-	.ocb-look.is-open .ocb-look__cards {
-		display: flex;
-		overflow-x: auto;
-		scroll-snap-type: x mandatory;
-		scrollbar-width: none;
-		gap: 10px;
-		padding: 0 14px 16px;
-	}
-	.ocb-look.is-open .ocb-look__cards::-webkit-scrollbar { display: none; }
-	.ocb-look.is-open .ocb-look__card,
-	.ocb-look.is-closing .ocb-look__card {
-		display: block;
-		flex: 0 0 82%;
-		scroll-snap-align: center;
-		background: var(--oc-surface, #fff);
-		border-radius: 14px;
-		padding: 10px;
-		box-shadow: 0 10px 34px rgb(0 0 0 / 30%);
-		animation: none;
-	}
-	/* compact: the picture beside the name and price */
-	.ocb-look.is-open .ocb-look__card ul.products li.product {
-		display: flex;
-		align-items: center;
-		gap: 12px;
-		max-inline-size: none;
-		text-align: start;
-	}
-	.ocb-look.is-open .ocb-look__card .oc-card-media { flex: 0 0 78px; inline-size: 78px; }
-	.ocb-look.is-open .ocb-look__card .oc-card-text { flex: 1; min-inline-size: 0; align-items: flex-start; text-align: start; }
-	.ocb-look.is-open .ocb-look__card .woocommerce-loop-product__title { margin-block: 0 2px; }
-
-	.ocb-look.is-open .ocb-look__open,
-	.ocb-look.is-closing .ocb-look__open,
-	.ocb-look.is-open .ocb-look__nav,
-	.ocb-look.is-closing .ocb-look__nav { display: none; }
+	.ocb-look__arrs { display: none; }
 }
 
 /* ---------- picture & words: the editorial split ---------- */

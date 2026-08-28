@@ -1087,6 +1087,7 @@ final class Render {
 				}
 
 				$any = true;
+				$img = $product->get_image_id() ? (string) wp_get_attachment_image_url( (int) $product->get_image_id(), 'large' ) : '';
 
 				$spots .= sprintf(
 					'<button type="button" class="ocb-look__spot%s" style="--x:%d%%;--y:%d%%" data-ocb-spot="%d" aria-label="%s"><i></i></button>',
@@ -1097,10 +1098,11 @@ final class Render {
 					esc_attr( $product->get_name() )
 				);
 
-				// The card is the catalogue's own card — picture, name, price
-				// and quick-buy, exactly as on a category page.
 				$cards .= '<div class="ocb-look__card' . ( 0 === $at ? ' is-on' : '' ) . '" data-ocb-card="' . $at . '" data-ocb-scene="' . $sc . '">'
-					. do_shortcode( '[products ids="' . absint( $product->get_id() ) . '" limit="1" columns="1" orderby="post__in"]' )
+					. ( '' === $img ? '' : '<a class="ocb-look__cimg" href="' . esc_url( (string) $product->get_permalink() ) . '"><img src="' . esc_url( $img ) . '" alt="" loading="lazy" decoding="async"></a>' )
+					. '<h3 class="ocb-look__cname"><a href="' . esc_url( (string) $product->get_permalink() ) . '">' . esc_html( $product->get_name() ) . '</a></h3>'
+					. '<div class="ocb-look__cprice">' . $product->get_price_html() . '</div>'
+					. '<a class="ocb-btn ocb-btn--theme ocb-look__cgo" href="' . esc_url( (string) $product->get_permalink() ) . '">' . esc_html__( 'View product', 'oc-blocks' ) . '</a>'
 					. '</div>';
 
 				++$at;
@@ -1125,28 +1127,23 @@ final class Render {
 			return '';
 		}
 
-		$title = trim( (string) ( $s['heading'] ?? '' ) );
-		$title = '' !== $title ? $title : __( 'Shop the Look', 'oc-blocks' );
-
-		// Room arrows (desktop, more than one room).
 		$snav = $sc > 1
-			? '<button type="button" class="ocb-arr ocb-arr--prev ocb-look__snav ocb-look__snav--prev" data-ocb-scene-go="-1" aria-label="' . esc_attr__( 'Previous room', 'oc-blocks' ) . '"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5l-7 7 7 7"/></svg></button>'
-				. '<button type="button" class="ocb-arr ocb-arr--next ocb-look__snav ocb-look__snav--next" data-ocb-scene-go="1" aria-label="' . esc_attr__( 'Next room', 'oc-blocks' ) . '"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 5l7 7-7 7"/></svg></button>'
+			? '<button type="button" class="ocb-arr ocb-arr--prev ocb-look__snav" data-ocb-scene-go="-1" aria-label="prev room"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5l-7 7 7 7"/></svg></button>'
+			. '<button type="button" class="ocb-arr ocb-arr--next ocb-look__snav" data-ocb-scene-go="1" aria-label="next room"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 5l7 7-7 7"/></svg></button>'
 			: '';
 
-		return '<div class="ocb-look ocb-look--' . esc_attr( (string) $s['side'] ) . ( $sc > 1 ? ' ocb-look--multi' : '' ) . '" data-ocb-look>'
-			. '<div class="ocb-look__pic" data-ocb-look-scenes>' . $pics . $snav . '</div>'
-			. '<div class="ocb-look__bar">'
-			. '<button type="button" class="ocb-look__x" data-ocb-look-close aria-label="' . esc_attr__( 'Close', 'oc-blocks' ) . '"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>'
-			. '<span class="ocb-look__title">' . esc_html( $title ) . '</span>'
-			. '</div>'
+		return '<div class="ocb-look ocb-look--' . esc_attr( (string) $s['side'] ) . '" data-ocb-look>'
+			. '<div class="ocb-look__pic">' . $pics . $snav . '</div>'
 			. '<div class="ocb-look__side">'
+			. '<button type="button" class="ocb-look__close" data-ocb-look-close aria-label="' . esc_attr__( 'Close', 'oc-blocks' ) . '"><span class="ocb-look__grab" aria-hidden="true"></span></button>'
 			. '<div class="ocb-look__cards">' . $cards . '</div>'
-			. '<div class="ocb-look__nav" hidden>'
-			. '<button type="button" class="ocb-arr ocb-arr--prev" data-ocb-go="-1" aria-label="prev"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5l-7 7 7 7"/></svg></button>'
-			. '<span class="ocb-look__count"><b class="ocb-look__cur">1</b> / <b class="ocb-look__tot">1</b></span>'
-			. '<button type="button" class="ocb-arr ocb-arr--next" data-ocb-go="1" aria-label="next"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 5l7 7-7 7"/></svg></button>'
-			. '</div>'
+			. ( $at > 1
+				? '<div class="ocb-look__nav">'
+					. '<button type="button" class="ocb-arr ocb-arr--prev" data-ocb-go="-1" aria-label="prev"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5l-7 7 7 7"/></svg></button>'
+					. '<span class="ocb-look__count"><b>1</b> / ' . $at . '</span>'
+					. '<button type="button" class="ocb-arr ocb-arr--next" data-ocb-go="1" aria-label="next"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 5l7 7-7 7"/></svg></button>'
+					. '</div>'
+				: '' )
 			. '</div>'
 			. '<button type="button" class="ocb-look__open" data-ocb-look-open>' . esc_html__( 'Show the products', 'oc-blocks' ) . '</button>'
 			. '</div>';
