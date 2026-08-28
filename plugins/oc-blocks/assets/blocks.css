@@ -1108,7 +1108,7 @@ html.oc-look-lock body { overflow: hidden; }
 
 	/* The rooms are a swipe slider — one fills the frame, the next peeks in.
 	 * The arrows belong to the desktop. */
-	.ocb-look__snav { display: none; }
+	.ocb-look .ocb-look__snav.ocb-arr { display: none; }
 	.ocb-look:not(.is-open):not(.is-closing) .ocb-look__pic {
 		display: flex;
 		overflow-x: auto;
