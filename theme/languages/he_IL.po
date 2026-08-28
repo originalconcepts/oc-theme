@@ -5599,3 +5599,40 @@ msgstr "מפתח API של InforU"
 
 msgid "In the InforU system: Account details → API Token."
 msgstr "במערכת InforU: פרטי חשבון ← API Token."
+
+msgid "Print"
+msgstr "הדפסה"
+
+msgid "Print orders"
+msgstr "הדפסת הזמנות"
+
+msgid "Print this order"
+msgstr "הדפסת ההזמנה"
+
+msgid "Order %s"
+msgstr "הזמנה %s"
+
+msgid "Qty"
+msgstr "כמות"
+
+msgid "Item"
+msgstr "פריט"
+
+msgid "Note from the customer:"
+msgstr "הערת הלקוח:"
+
+msgid "Nothing to print — no order was found."
+msgstr "אין מה להדפיס — לא נמצאה הזמנה."
+
+msgid "That print link has expired — pick the orders again."
+msgstr "קישור ההדפסה פג — בחרו את ההזמנות מחדש."
+
+msgid "You cannot print orders."
+msgstr "אין לך הרשאה להדפיס הזמנות."
+
+
+
+msgid "%d order"
+msgid_plural "%d orders"
+msgstr[0] "הזמנה אחת"
+msgstr[1] "%d הזמנות"
