@@ -7649,6 +7649,11 @@ body:not(.oc-no-lightbox) .oc-vslide.is-playing {
 	border-radius: var(--oc-cta-r, 8px);
 	padding-inline: 14px;
 	inline-size: 100%;
+	/* iOS magnifies the page when a field's letters are smaller than 16px;
+	 * at 16 the panel opens where it stands. The typed number and address
+	 * sit centred in their field. */
+	font-size: 16px;
+	text-align: center;
 }
 
 .oc-nmodal__form button {
@@ -12152,6 +12157,7 @@ body.oc-checkout { overflow-x: clip; }
 
 .oc-auth__form input[type="tel"],
 .oc-auth__form input[type="text"]:not(.oc-auth__hp),
+.oc-auth__form input[type="password"],
 .oc-auth__form input[type="email"] {
 	inline-size: 100%;
 	block-size: var(--oc-cta-h, 48px);

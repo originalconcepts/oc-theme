@@ -1429,13 +1429,13 @@ final class Auth {
 						</ul>
 					</div>
 					<form class="oc-auth__form" data-auth-form="register" novalidate>
-						<div class="oc-auth__phone-row">
-							<input class="oc-auth__tel" type="tel" name="phone_show" readonly>
-							<button type="button" class="oc-auth__link" data-auth-change><?php esc_html_e( 'Change', 'oc-theme' ); ?></button>
-						</div>
 						<div class="oc-auth__pair">
 							<input type="text" name="first" autocomplete="given-name" placeholder="<?php esc_attr_e( 'First name', 'oc-theme' ); ?>" required>
 							<input type="text" name="last" autocomplete="family-name" placeholder="<?php esc_attr_e( 'Last name', 'oc-theme' ); ?>">
+						</div>
+						<div class="oc-auth__phone-row">
+							<input class="oc-auth__tel" type="tel" name="phone_show" readonly>
+							<button type="button" class="oc-auth__link" data-auth-change><?php esc_html_e( 'Change', 'oc-theme' ); ?></button>
 						</div>
 						<input type="email" name="email" autocomplete="email" placeholder="<?php esc_attr_e( 'Email', 'oc-theme' ); ?>" required>
 						<input type="text" name="website" class="oc-auth__hp" tabindex="-1" autocomplete="off" aria-hidden="true">

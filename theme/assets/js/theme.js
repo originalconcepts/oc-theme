@@ -7202,7 +7202,11 @@
 
 		if ( title && backlink ) {
 			title.hidden = 'phone' !== name;
-			backlink.hidden = 'phone' === name;
+
+			// The way back belongs to the screens the visitor CHOSE — signing
+			// up, or the password door. Typing the code is the phone journey
+			// carrying on, and it has its own way back already.
+			backlink.hidden = 'register' !== name && 'email' !== name;
 		}
 
 		if ( 'code' === name ) {
