@@ -482,7 +482,7 @@
 	function labelWrap( field, kids, wide ) {
 		var rows = [ el( 'span', { 'class': 'ocbe-f__l', text: field.label } ) ];
 
-		return el( 'label', { 'class': 'ocbe-f' + ( wide ? ' ocbe-f--wide' : '' ) }, rows.concat( kids, [
+		return el( 'label', { 'class': 'ocbe-f' + ( wide ? ' ocbe-f--wide' : '' ) + ( field.half ? ' ocbe-f--half' : '' ) }, rows.concat( kids, [
 			field.hint ? el( 'small', { 'class': 'ocbe-f__hint', text: field.hint } ) : null
 		] ) );
 	}

@@ -329,6 +329,11 @@ html[dir="ltr"] .ocbe-frame { transform-origin: top left; }
 
 .ocbe-f { display: block; margin-block-end: 14px; }
 
+/* Two settings that belong together stand together — a pair of colours
+ * reads at a glance instead of hunting up and down the panel. */
+.ocbe-f--half { display: inline-block; inline-size: calc(50% - 4px); vertical-align: top; }
+.ocbe-f--half + .ocbe-f--half { margin-inline-start: 8px; }
+
 .ocbe-f__l {
 	display: block;
 	margin-block-end: 6px;

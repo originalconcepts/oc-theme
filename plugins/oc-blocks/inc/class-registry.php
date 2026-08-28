@@ -732,6 +732,14 @@ final class Registry {
 						'type'  => 'color',
 						'label' => __( 'Letter colour', 'oc-blocks' ),
 						'group' => 'design',
+						'half'  => true,
+					),
+					'bgc'   => array(
+						'type'  => 'color',
+						'label' => __( 'Strip background', 'oc-blocks' ),
+						'hint'  => __( 'Rides the angle with the words — a diagonal ribbon.', 'oc-blocks' ),
+						'group' => 'design',
+						'half'  => true,
 					),
 					'speed' => array(
 						'type'  => 'number',
@@ -757,12 +765,6 @@ final class Registry {
 						'def'   => 0,
 						'min'   => -10,
 						'max'   => 10,
-						'group' => 'design',
-					),
-					'bgc'   => array(
-						'type'  => 'color',
-						'label' => __( 'Strip background', 'oc-blocks' ),
-						'hint'  => __( 'Rides the angle with the words — a diagonal ribbon.', 'oc-blocks' ),
 						'group' => 'design',
 					),
 				),

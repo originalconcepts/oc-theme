@@ -835,8 +835,11 @@
 
 .ocb-mq__track {
 	display: inline-flex;
-	gap: 1.4em;
-	padding-inline-end: 1.4em;
+	/* One space between repeats — enough that the words never touch, not the
+	 * wide hole a big gap opened mid-strip. (The logo strip keeps its own
+	 * roomier spacing further down.) */
+	gap: .4em;
+	padding-inline-end: .4em;
 	animation: ocb-mq var(--ocb-mq-speed, 20s) linear infinite;
 	will-change: transform;
 }
