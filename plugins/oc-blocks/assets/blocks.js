@@ -439,11 +439,10 @@
 	/* ---------- shop the look ---------- */
 
 	document.querySelectorAll( '[data-ocb-look]' ).forEach( function ( look ) {
-		var pic = look.querySelector( '[data-ocb-look-scenes]' );
 		var sceneEls = [].slice.call( look.querySelectorAll( '.ocb-look__scene' ) );
 		var spots = [].slice.call( look.querySelectorAll( '[data-ocb-spot]' ) );
 		var cards = [].slice.call( look.querySelectorAll( '[data-ocb-card]' ) );
-		var side = look.querySelector( '.ocb-look__side' );
+		var cardsWrap = look.querySelector( '.ocb-look__cards' );
 		var nav = look.querySelector( '.ocb-look__nav' );
 		var cur = look.querySelector( '.ocb-look__cur' );
 		var tot = look.querySelector( '.ocb-look__tot' );
@@ -452,30 +451,27 @@
 			return;
 		}
 
-		// Products grouped by the room (scene) they belong to, so the count
-		// and the paging are per-room, not across all rooms.
 		var byScene = {};
 		cards.forEach( function ( c ) {
 			var s = Number( c.dataset.ocbScene || 0 );
 			( byScene[ s ] = byScene[ s ] || [] ).push( c );
 		} );
+		var scenesList = Object.keys( byScene ).map( Number ).sort( function ( a, b ) { return a - b; } );
 
-		var curScene = Number( cards[ 0 ].dataset.ocbScene || 0 );
-		var idx = 0;
+		var current = cards[ 0 ];
 
-		function paint() {
-			var list = byScene[ curScene ] || [];
+		function mobile() { return window.matchMedia( '(max-width: 782px)' ).matches; }
 
-			if ( ! list.length ) {
-				return;
-			}
-
-			idx = ( idx % list.length + list.length ) % list.length;
-
-			var card = list[ idx ];
+		// Show one product: light its card, its room, its spot; pan the room's
+		// picture toward the spot; update the room's own count.
+		function show( card ) {
+			if ( ! card ) { return; }
+			current = card;
+			var scene = Number( card.dataset.ocbScene || 0 );
 			var globalAt = Number( card.dataset.ocbCard );
 
 			cards.forEach( function ( c ) { c.classList.toggle( 'is-on', c === card ); } );
+			sceneEls.forEach( function ( el, i ) { el.classList.toggle( 'is-cur', i === scene ); } );
 
 			var activeSpot = null;
 			spots.forEach( function ( sp ) {
@@ -483,52 +479,67 @@
 				sp.classList.toggle( 'is-on', on );
 				if ( on ) { activeSpot = sp; }
 			} );
-			sceneEls.forEach( function ( el, i ) { el.classList.toggle( 'is-cur', i === curScene ); } );
 
-			// Pan the room's picture toward the chosen product's spot so it
-			// sits more to the centre.
-			var img = sceneEls[ curScene ] && sceneEls[ curScene ].querySelector( 'img' );
+			var img = sceneEls[ scene ] && sceneEls[ scene ].querySelector( 'img' );
 			if ( img && activeSpot ) {
 				var px = Math.max( 15, Math.min( 85, parseFloat( activeSpot.style.getPropertyValue( '--x' ) ) || 50 ) );
 				var py = Math.max( 15, Math.min( 85, parseFloat( activeSpot.style.getPropertyValue( '--y' ) ) || 50 ) );
 				img.style.objectPosition = px + '% ' + py + '%';
 			}
 
-			if ( cur ) { cur.textContent = String( idx + 1 ); }
+			var list = byScene[ scene ] || [];
+			var pos = list.indexOf( card );
+			if ( cur ) { cur.textContent = String( pos + 1 ); }
 			if ( tot ) { tot.textContent = String( list.length ); }
 			if ( nav ) { nav.hidden = list.length < 2; }
 		}
 
-		// Page through the current room's products.
+		// Desktop: page products within the current room.
 		function prod( dir ) {
-			if ( ( byScene[ curScene ] || [] ).length > 1 ) {
-				idx += dir;
-				paint();
-			}
+			var scene = Number( current.dataset.ocbScene || 0 );
+			var list = byScene[ scene ] || [];
+			if ( list.length < 2 ) { return; }
+			show( list[ ( list.indexOf( current ) + dir + list.length ) % list.length ] );
 		}
 
-		// Swiping the picture picks the nearest room and updates the products.
+		// Desktop: the room arrows move to another room's first product.
+		function sceneNav( dir ) {
+			var scene = Number( current.dataset.ocbScene || 0 );
+			var at = scenesList.indexOf( scene );
+			show( byScene[ scenesList[ ( at + dir + scenesList.length ) % scenesList.length ] ][ 0 ] );
+		}
+
+		// Mobile take-over: centre a product in the bottom bar.
+		function scrollToCard( card, smooth ) {
+			if ( ! cardsWrap || ! card ) { return; }
+			var r = card.getBoundingClientRect(), wr = cardsWrap.getBoundingClientRect();
+			cardsWrap.scrollBy( { left: ( r.left + r.width / 2 ) - ( wr.left + wr.width / 2 ), behavior: smooth ? 'smooth' : 'auto' } );
+		}
+
+		// Mobile: scrolling the bar picks the centred product (and its room).
 		var st = null;
-		if ( pic && sceneEls.length > 1 ) {
-			pic.addEventListener( 'scroll', function () {
+		if ( cardsWrap ) {
+			cardsWrap.addEventListener( 'scroll', function () {
+				if ( ! mobile() || ! look.classList.contains( 'is-open' ) ) { return; }
 				clearTimeout( st );
 				st = setTimeout( function () {
-					var pr = pic.getBoundingClientRect();
-					var best = curScene, bestD = Infinity;
-					sceneEls.forEach( function ( el, i ) {
-						var d = Math.abs( el.getBoundingClientRect().left - pr.left );
-						if ( d < bestD ) { bestD = d; best = i; }
+					var mid = cardsWrap.getBoundingClientRect().left + cardsWrap.clientWidth / 2;
+					var best = current, bestD = Infinity;
+					cards.forEach( function ( c ) {
+						var r = c.getBoundingClientRect();
+						var d = Math.abs( ( r.left + r.width / 2 ) - mid );
+						if ( d < bestD ) { bestD = d; best = c; }
 					} );
-					if ( best !== curScene ) { curScene = best; idx = 0; paint(); }
-				}, 90 );
+					if ( best !== current ) { show( best ); }
+				}, 80 );
 			}, { passive: true } );
 		}
 
-		// A placeholder holds the block's space while it is a fixed overlay,
-		// so the page below doesn't jump when it opens or closes.
+		// A placeholder holds the block's flow space while it is a fixed
+		// take-over, so the page never jumps on open or close.
 		var ph = null;
 		function openLook() {
-			if ( ! ph ) {
+			if ( mobile() && ! ph ) {
 				ph = document.createElement( 'div' );
 				ph.style.height = look.offsetHeight + 'px';
 				look.parentNode.insertBefore( ph, look );
@@ -536,6 +547,7 @@
 			look.classList.remove( 'is-closing' );
 			look.classList.add( 'is-open' );
 			document.documentElement.classList.add( 'oc-look-lock' );
+			scrollToCard( current, false );
 		}
 		function closeLook() {
 			look.classList.add( 'is-closing' );
@@ -544,26 +556,19 @@
 			setTimeout( function () {
 				look.classList.remove( 'is-closing' );
 				if ( ph ) { ph.remove(); ph = null; }
-				// leave the slider on the room the shopper was looking at.
-				if ( sceneEls[ curScene ] ) {
-					sceneEls[ curScene ].scrollIntoView( { inline: 'start', block: 'nearest' } );
-				}
 			}, 300 );
 		}
 
 		look.addEventListener( 'click', function ( e ) {
+			var snav = e.target.closest( '[data-ocb-scene-go]' );
+			if ( snav ) { sceneNav( Number( snav.dataset.ocbSceneGo ) ); return; }
+
 			var spot = e.target.closest( '[data-ocb-spot]' );
 			if ( spot ) {
 				var g = Number( spot.dataset.ocbSpot );
-				for ( var i = 0; i < cards.length; i++ ) {
-					if ( Number( cards[ i ].dataset.ocbCard ) === g ) {
-						curScene = Number( cards[ i ].dataset.ocbScene || 0 );
-						idx = ( byScene[ curScene ] || [] ).indexOf( cards[ i ] );
-						paint();
-						break;
-					}
-				}
-				if ( window.matchMedia( '(max-width: 782px)' ).matches ) { openLook(); }
+				var card = cards.filter( function ( c ) { return Number( c.dataset.ocbCard ) === g; } )[ 0 ];
+				if ( card ) { show( card ); }
+				if ( mobile() ) { openLook(); scrollToCard( card, false ); }
 				return;
 			}
 
@@ -574,21 +579,7 @@
 			if ( arr && e.target.closest( '.ocb-look__nav' ) ) { prod( Number( arr.dataset.ocbGo ) ); }
 		} );
 
-		// Swipe the products sideways to page through them (a horizontal
-		// swipe, not a vertical scroll).
-		if ( side ) {
-			var sx = null, sy = 0;
-			side.addEventListener( 'touchstart', function ( e ) { sx = e.touches[ 0 ].clientX; sy = e.touches[ 0 ].clientY; }, { passive: true } );
-			side.addEventListener( 'touchend', function ( e ) {
-				if ( null === sx ) { return; }
-				var dx = e.changedTouches[ 0 ].clientX - sx;
-				var dy = e.changedTouches[ 0 ].clientY - sy;
-				if ( Math.abs( dx ) > 46 && Math.abs( dx ) > Math.abs( dy ) ) { prod( dx < 0 ? 1 : -1 ); }
-				sx = null;
-			} );
-		}
-
-		paint();
+		show( cards[ 0 ] );
 	} );
 
 	/* ---------- the scrolling story ---------- */

@@ -1128,8 +1128,14 @@ final class Render {
 		$title = trim( (string) ( $s['heading'] ?? '' ) );
 		$title = '' !== $title ? $title : __( 'Shop the Look', 'oc-blocks' );
 
+		// Room arrows (desktop, more than one room).
+		$snav = $sc > 1
+			? '<button type="button" class="ocb-arr ocb-arr--prev ocb-look__snav ocb-look__snav--prev" data-ocb-scene-go="-1" aria-label="' . esc_attr__( 'Previous room', 'oc-blocks' ) . '"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5l-7 7 7 7"/></svg></button>'
+				. '<button type="button" class="ocb-arr ocb-arr--next ocb-look__snav ocb-look__snav--next" data-ocb-scene-go="1" aria-label="' . esc_attr__( 'Next room', 'oc-blocks' ) . '"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 5l7 7-7 7"/></svg></button>'
+			: '';
+
 		return '<div class="ocb-look ocb-look--' . esc_attr( (string) $s['side'] ) . ( $sc > 1 ? ' ocb-look--multi' : '' ) . '" data-ocb-look>'
-			. '<div class="ocb-look__pic" data-ocb-look-scenes>' . $pics . '</div>'
+			. '<div class="ocb-look__pic" data-ocb-look-scenes>' . $pics . $snav . '</div>'
 			. '<div class="ocb-look__bar">'
 			. '<button type="button" class="ocb-look__x" data-ocb-look-close aria-label="' . esc_attr__( 'Close', 'oc-blocks' ) . '"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>'
 			. '<span class="ocb-look__title">' . esc_html( $title ) . '</span>'
