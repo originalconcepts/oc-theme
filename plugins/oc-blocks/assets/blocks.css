@@ -1134,6 +1134,18 @@ html.oc-look-lock body { overflow: hidden; }
 	 * take-over, read as the picture "loading again". */
 	.ocb-look .ocb-look__scene.is-on { animation: none; }
 
+	/* The closing ghost: a still copy of the open view that only fades out —
+	 * no entry animations replaying, no touches, riding above the real block
+	 * which is already back in the page underneath. */
+	.ocb-look--ghost,
+	.ocb-look--ghost * { animation: none !important; }
+	.ocb-look--ghost {
+		pointer-events: none;
+		z-index: 91;
+		transition: opacity .3s ease;
+	}
+	.ocb-look--ghost.is-fading { opacity: 0; }
+
 	.ocb-look__open {
 		display: block;
 		inline-size: 100%;

@@ -538,25 +538,41 @@
 				return;
 			}
 
-			look.classList.add( 'is-closing' );
+			// The smooth close: a static GHOST of the open view fades out on
+			// top, while underneath the real block returns to the page in the
+			// same breath — spot, scroll and all. When the ghost clears, the
+			// page was already standing exactly as before the open; nothing
+			// re-renders in sight. (The old way kept the block itself as the
+			// fading overlay, which left a white hole in the page until the
+			// animation ended — the "blank page, then the block jumps back".)
+			var ghost = look.cloneNode( true );
+
+			ghost.classList.add( 'ocb-look--ghost' );
+			ghost.setAttribute( 'aria-hidden', 'true' );
+			ghost.removeAttribute( 'data-ocb-look' );
+			document.body.appendChild( ghost );
+
 			look.classList.remove( 'is-open' );
 			document.documentElement.classList.remove( 'oc-look-lock' );
 
-			// Put the page back on its exact spot NOW, behind the fading
-			// overlay — by the time it clears, nothing has moved.
 			if ( null !== savedY ) {
 				window.scrollTo( 0, savedY );
 				savedY = null;
 			}
-			setTimeout( function () {
-				look.classList.remove( 'is-closing' );
-				alignScene();
 
-				if ( ph ) {
-					ph.remove();
-					ph = null;
-				}
-			}, 290 );
+			if ( ph ) {
+				ph.remove();
+				ph = null;
+			}
+
+			alignScene();
+
+			requestAnimationFrame( function () {
+				ghost.classList.add( 'is-fading' );
+			} );
+			setTimeout( function () {
+				ghost.remove();
+			}, 340 );
 		}
 
 		// The cards (by index) that share a scene.

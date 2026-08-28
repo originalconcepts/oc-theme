@@ -270,6 +270,18 @@ final class Editor {
 				}
 			}
 
+			// Shop-the-look rooms carry their spots a level deeper — without
+			// this walk a saved room reopened in the editor showed bare rows.
+			foreach ( (array) ( $section['scenes'] ?? array() ) as $scene ) {
+				foreach ( (array) ( $scene['spots'] ?? array() ) as $spot ) {
+					$title = get_the_title( absint( $spot['id'] ?? 0 ) );
+
+					if ( '' !== $title ) {
+						$out[ absint( $spot['id'] ) ] = $title;
+					}
+				}
+			}
+
 			foreach ( array( 'picks' ) as $key ) {
 				foreach ( (array) ( $section[ $key ] ?? array() ) as $id ) {
 					$title = get_the_title( absint( $id ) );
@@ -401,6 +413,7 @@ final class Editor {
 			$hits[] = array(
 				'id'    => (int) $post->ID,
 				'label' => get_the_title( $post ),
+				'img'   => (string) get_the_post_thumbnail_url( $post, 'thumbnail' ),
 			);
 		}
 

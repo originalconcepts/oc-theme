@@ -539,6 +539,18 @@ html[dir="ltr"] .ocbe-switch input:checked + i::after { transform: translateX(16
 
 .ocbe-picks__drop button:hover { background: #f5f5f5; }
 
+/* a small picture beside each result — much easier to pick the right one */
+.ocbe-picks__hit { display: flex; align-items: center; gap: 8px; }
+.ocbe-picks__hit img {
+	inline-size: 28px;
+	block-size: 28px;
+	object-fit: cover;
+	border-radius: 6px;
+	flex: 0 0 auto;
+	background: #f0f0f1;
+}
+.ocbe-picks__hit span { min-inline-size: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
 /* slides */
 .ocbe-slide {
 	border: 1px solid #e5e5e5;

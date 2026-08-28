@@ -821,7 +821,7 @@
 						r.data.hits.forEach( function ( hit ) {
 							drop.appendChild( el( 'button', {
 								type: 'button',
-								text: hit.label,
+								'class': 'ocbe-picks__hit',
 								onclick: function () {
 									section[ key ] = section[ key ] || [];
 
@@ -835,7 +835,10 @@
 									paintChips();
 									touch();
 								}
-							} ) );
+							}, [
+								hit.img ? el( 'img', { src: hit.img, alt: '' } ) : null,
+								el( 'span', { text: hit.label } )
+							] ) );
 						} );
 
 						drop.hidden = false;
@@ -1036,14 +1039,17 @@
 								r.data.hits.forEach( function ( hit ) {
 									drop.appendChild( el( 'button', {
 										type: 'button',
-										text: hit.label,
+										'class': 'ocbe-picks__hit',
 										onclick: function () {
 											spot.id = hit.id;
 											state.names[ hit.id ] = hit.label;
 											touch();
 											paintSettings();
 										}
-									} ) );
+									}, [
+										hit.img ? el( 'img', { src: hit.img, alt: '' } ) : null,
+										el( 'span', { text: hit.label } )
+									] ) );
 								} );
 
 								drop.hidden = false;
