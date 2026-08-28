@@ -580,7 +580,8 @@
 	display: flex;
 	overflow-x: auto;
 	overflow-y: hidden;
-	scroll-snap-type: x proximity;
+	/* free glide — no per-product snapping */
+	scroll-snap-type: none;
 	scrollbar-width: none;
 	-webkit-overflow-scrolling: touch;
 	padding-block-end: 6px;
@@ -663,7 +664,8 @@
 	display: flex;
 	overflow-x: auto;
 	overflow-y: hidden;
-	scroll-snap-type: x proximity;
+	/* free glide — no per-product snapping */
+	scroll-snap-type: none;
 	scrollbar-width: none;
 	-webkit-overflow-scrolling: touch;
 	padding-block-end: 6px;
@@ -681,6 +683,18 @@
 	.oc-block--slider .ocb-shelf ul.products { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 	.oc-block--slider .ocb-shelf--slider.ocb-shelf--m1 ul.products li.product { flex-basis: 82%; }
 	.oc-block--slider .ocb-shelf--slider.ocb-shelf--m2 ul.products li.product { flex-basis: 42%; }
+}
+
+/* On a phone the story and review strips run to the screen's trailing edge
+ * — the section's inline padding left a white gutter there. The reading
+ * side keeps its gutter; only the far side bleeds. */
+@media (max-width: 782px) {
+	.ocb--story .ocs-slider,
+	.ocb--story .ocs-circles,
+	.ocb--reviews .ocr-widget--slider {
+		margin-inline-end: calc(-1 * clamp(16px, 3vw, 32px));
+	}
+	.ocb--reviews .ocr-slider { padding-inline-end: 0; }
 }
 
 /* ---------- categories ---------- */
