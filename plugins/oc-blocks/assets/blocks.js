@@ -455,11 +455,26 @@
 			return window.matchMedia( '(max-width: 782px)' ).matches;
 		}
 
+		// A horizontal scroll by a geometric delta, clamped to the strip's
+		// real extent — asking for more than the edge (the LAST item aligned
+		// to the start) leaves an over-scrolled gap that snaps back at the
+		// first touch. Direction-proof: the clamp range covers both the
+		// negative-scrollLeft (RTL) and positive conventions.
+		function hscroll( el, delta, smooth ) {
+			var max = el.scrollWidth - el.clientWidth;
+
+			if ( max <= 0 ) {
+				return;
+			}
+
+			var target = Math.max( Math.min( 0, -max ), Math.min( Math.max( 0, max ), el.scrollLeft + delta ) );
+
+			el.scrollTo( { left: target, behavior: smooth ? 'smooth' : 'auto' } );
+		}
+
 		// The story view brings the shown product to the strip's start. A
-		// horizontal scrollBy only — scrollIntoView also scrolls vertical
-		// ancestors (the freshly opened take-over lurched down from it). The
-		// geometric delta is direction-proof, and the strip's proximity snap
-		// lets a programmatic scroll settle where it lands.
+		// horizontal scroll only — scrollIntoView also scrolls vertical
+		// ancestors (the freshly opened take-over lurched down from it).
 		function centreCard( smooth ) {
 			if ( ! mobile() || ! look.classList.contains( 'is-open' ) || ! cardsWrap || ! cards[ at ] ) {
 				return;
@@ -468,7 +483,7 @@
 			var r = cards[ at ].getBoundingClientRect();
 			var wr = cardsWrap.getBoundingClientRect();
 
-			cardsWrap.scrollBy( { left: r.right - ( wr.right - 12 ), behavior: smooth ? 'smooth' : 'auto' } );
+			hscroll( cardsWrap, r.right - ( wr.right - 12 ), smooth );
 		}
 
 		// The closed slider parks on the room being looked at.
@@ -489,7 +504,7 @@
 			} );
 
 			if ( el ) {
-				pic.scrollBy( { left: el.getBoundingClientRect().right - pic.getBoundingClientRect().right, behavior: 'auto' } );
+				hscroll( pic, el.getBoundingClientRect().right - pic.getBoundingClientRect().right, false );
 			}
 		}
 
