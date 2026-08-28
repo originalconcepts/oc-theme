@@ -994,7 +994,7 @@
 /* a peek of the next room invites the swipe */
 .ocb-look--multi .ocb-look__scene { flex-basis: 88%; }
 
-.ocb-look__scene img { display: block; inline-size: 100%; block-size: auto; }
+.ocb-look__scene img { display: block; inline-size: 100%; block-size: auto; transition: object-position .5s cubic-bezier(.22, .61, .36, 1); }
 .ocb-look__scene picture { display: contents; }
 
 /* the mobile take-over bar (close on the left, centred title) — it sits
@@ -1115,12 +1115,22 @@ html.oc-look-lock body { overflow: hidden; }
 	.ocb-look { grid-template-columns: 1fr; gap: 14px; }
 
 	/* Closed on a phone: just the picture (a peek of the next room), its
-	 * spots, and a button. */
+	 * spots, and a button. The picture runs full-width and tall. */
 	.ocb-look__side { display: none; }
+
+	.ocb-look:not(.is-open):not(.is-closing) .ocb-look__pic {
+		margin-inline: calc(50% - 50vw);
+		border-radius: 0;
+	}
+	.ocb-look:not(.is-open):not(.is-closing) .ocb-look__scene img {
+		block-size: 60vh;
+		object-fit: cover;
+	}
 
 	.ocb-look__open {
 		display: block;
 		inline-size: 100%;
+		margin-block-start: 12px;
 		padding: 12px;
 		border: 1.5px solid var(--oc-ink, #1c1c1c);
 		border-radius: var(--oc-cta-r, 8px);
@@ -1158,16 +1168,16 @@ html.oc-look-lock body { overflow: hidden; }
 	.ocb-look.is-open .ocb-look__pic,
 	.ocb-look.is-closing .ocb-look__pic {
 		display: block;
-		flex: 0 0 46vh;
+		flex: 0 0 56vh;
 		overflow: hidden;
 		border-radius: 0;
 	}
 	.ocb-look.is-open .ocb-look__scene,
-	.ocb-look.is-closing .ocb-look__scene { display: none; block-size: 46vh; }
+	.ocb-look.is-closing .ocb-look__scene { display: none; block-size: 56vh; }
 	.ocb-look.is-open .ocb-look__scene.is-cur,
 	.ocb-look.is-closing .ocb-look__scene.is-cur { display: block; }
 	.ocb-look.is-open .ocb-look__scene img,
-	.ocb-look.is-closing .ocb-look__scene img { block-size: 46vh; object-fit: cover; }
+	.ocb-look.is-closing .ocb-look__scene img { block-size: 56vh; object-fit: cover; }
 
 	.ocb-look.is-open .ocb-look__bar,
 	.ocb-look.is-closing .ocb-look__bar {

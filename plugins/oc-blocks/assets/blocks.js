@@ -476,8 +476,23 @@
 			var globalAt = Number( card.dataset.ocbCard );
 
 			cards.forEach( function ( c ) { c.classList.toggle( 'is-on', c === card ); } );
-			spots.forEach( function ( sp ) { sp.classList.toggle( 'is-on', Number( sp.dataset.ocbSpot ) === globalAt ); } );
+
+			var activeSpot = null;
+			spots.forEach( function ( sp ) {
+				var on = Number( sp.dataset.ocbSpot ) === globalAt;
+				sp.classList.toggle( 'is-on', on );
+				if ( on ) { activeSpot = sp; }
+			} );
 			sceneEls.forEach( function ( el, i ) { el.classList.toggle( 'is-cur', i === curScene ); } );
+
+			// Pan the room's picture toward the chosen product's spot so it
+			// sits more to the centre.
+			var img = sceneEls[ curScene ] && sceneEls[ curScene ].querySelector( 'img' );
+			if ( img && activeSpot ) {
+				var px = Math.max( 15, Math.min( 85, parseFloat( activeSpot.style.getPropertyValue( '--x' ) ) || 50 ) );
+				var py = Math.max( 15, Math.min( 85, parseFloat( activeSpot.style.getPropertyValue( '--y' ) ) || 50 ) );
+				img.style.objectPosition = px + '% ' + py + '%';
+			}
 
 			if ( cur ) { cur.textContent = String( idx + 1 ); }
 			if ( tot ) { tot.textContent = String( list.length ); }
@@ -529,6 +544,10 @@
 			setTimeout( function () {
 				look.classList.remove( 'is-closing' );
 				if ( ph ) { ph.remove(); ph = null; }
+				// leave the slider on the room the shopper was looking at.
+				if ( sceneEls[ curScene ] ) {
+					sceneEls[ curScene ].scrollIntoView( { inline: 'start', block: 'nearest' } );
+				}
 			}, 300 );
 		}
 
