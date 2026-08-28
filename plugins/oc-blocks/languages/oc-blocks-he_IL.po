@@ -1356,3 +1356,9 @@ msgstr "גודל האותיות — דסקטופ (px)"
 
 msgid "Letter size — mobile (px)"
 msgstr "גודל האותיות — מובייל (px)"
+
+msgid "Leads to (optional)"
+msgstr "מוביל אל (רשות)"
+
+msgid "Give an address and the whole strip becomes a link."
+msgstr "הזינו כתובת והפס כולו יהפוך לקישור."

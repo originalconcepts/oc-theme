@@ -886,8 +886,12 @@ final class Render {
 			. ( '' === ( $s['bgc'] ?? '' ) ? '' : '--ocb-mq-bg:' . $s['bgc'] . ';' );
 
 		// Four copies seed the loop; the script clones more if a wide screen
-		// still shows a gap.
-		$piece = '<span>' . esc_html( $text ) . '</span>';
+		// still shows a gap. With an address given, every pass is a link —
+		// wherever the eye catches the words, the tap lands.
+		$url   = trim( (string) ( $s['url'] ?? '' ) );
+		$piece = '' !== $url
+			? '<a class="ocb-mq__link" href="' . esc_url( $url ) . '">' . esc_html( $text ) . '</a>'
+			: '<span>' . esc_html( $text ) . '</span>';
 
 		return '<div class="ocb-mq ocb-mq--' . esc_attr( (string) $s['dir'] ) . ( 0 === (int) $s['angle'] ? '' : ' ocb-mq--tilt' ) . '" style="' . esc_attr( $style ) . '" data-ocb-mq>'
 			. '<div class="ocb-mq__track">' . str_repeat( $piece, 4 ) . '</div>'

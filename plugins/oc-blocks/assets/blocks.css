@@ -846,6 +846,9 @@
 
 .ocb-mq--rtl .ocb-mq__track { animation-name: ocb-mq-r; }
 
+/* a linked strip keeps the strip's own look — the words simply lead */
+.ocb-mq__link { color: inherit; text-decoration: none; }
+
 /* Angled, the strip stretches past both edges — a ribbon, not a box. */
 .ocb-mq--tilt { inline-size: 112%; margin-inline: -6%; }
 

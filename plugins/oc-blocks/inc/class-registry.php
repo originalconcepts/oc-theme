@@ -711,6 +711,11 @@ final class Registry {
 						'label' => __( 'The words', 'oc-blocks' ),
 						'def'   => '',
 					),
+					'url'   => array(
+						'type'  => 'url',
+						'label' => __( 'Leads to (optional)', 'oc-blocks' ),
+						'hint'  => __( 'Give an address and the whole strip becomes a link.', 'oc-blocks' ),
+					),
 					'size'  => array(
 						'type'  => 'number',
 						'label' => __( 'Letter size — desktop (px)', 'oc-blocks' ),
