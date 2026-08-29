@@ -1341,10 +1341,28 @@ final class WooCommerce {
 		}
 
 		$format = (string) apply_filters( 'oc_delivery_date_format', 'j/n' );
+		$last   = end( $when );
+
+		// A shopper reads "tomorrow" faster than a date, but only when it is
+		// honestly tomorrow — which it is not when the shop does not ship
+		// that day. The window already skipped those days, so asking whether
+		// the first one it found is tomorrow answers both questions at once.
+		$morrow = $clock->modify( '+1 day' )->format( 'Y-m-d' );
+
+		$label = static function ( \DateTimeImmutable $day ) use ( $format, $morrow ): array {
+			return $day->format( 'Y-m-d' ) === $morrow
+				? array( __( 'tomorrow', 'oc-theme' ), true )
+				: array( $day->format( $format ), false );
+		};
+
+		list( $from, $relative ) = $label( $when[0] );
+		list( $to )              = $label( $last );
 
 		return array(
-			'from' => $when[0]->format( $format ),
-			'to'   => end( $when )->format( $format ),
+			'from'     => $from,
+			'to'       => $to,
+			'relative' => $relative,
+			'one_day'  => $when[0]->format( 'Y-m-d' ) === $last->format( 'Y-m-d' ),
 		);
 	}
 
@@ -1362,7 +1380,7 @@ final class WooCommerce {
 		}
 
 		$note   = '';
-		$status = __( 'Ready to ship', 'oc-theme' );
+		$status = __( 'In stock', 'oc-theme' );
 		$tone   = 'green';
 
 		if ( ! $product->is_in_stock() ) {
@@ -1386,31 +1404,53 @@ final class WooCommerce {
 			}
 		}
 
-		// The right-hand side says two things by turns: what the stock is
-		// doing, and when the parcel would arrive. Both are short enough to
-		// sit on one line of a phone, which is why they take turns instead
-		// of sharing the row.
+		// The badge keeps saying what the stock IS. That is a state, and a
+		// state that is off the screen half the time is worse than no state at
+		// all. The messages take turns on the other side instead: what is left,
+		// that it is ready, and when it lands.
 		$window = $product->is_in_stock() ? self::delivery_window() : null;
 
 		if ( $window ) {
-			$eta = sprintf(
-				/* translators: 1: earliest date, 2: latest date, both short like 2/12. */
-				__( 'Arrives %1$s–%2$s', 'oc-theme' ),
-				$window['from'],
-				$window['to']
-			);
+			if ( $window['one_day'] ) {
+				$eta = $window['relative']
+					/* translators: %s: a day named in words, like "tomorrow". */
+					? sprintf( __( 'Delivery %s', 'oc-theme' ), $window['from'] )
+					/* translators: %s: a short date like 4/12. */
+					: sprintf( __( 'Delivery on %s', 'oc-theme' ), $window['from'] );
+			} else {
+				$eta = sprintf(
+					/* translators: 1: earliest day, worded or dated. 2: latest date, short like 4/12. */
+					__( 'Delivery between %1$s and %2$s', 'oc-theme' ),
+					$window['from'],
+					$window['to']
+				);
+			}
+
+			$turns = array();
+
+			if ( '' !== $note ) {
+				$turns[] = $note;
+			}
+
+			$turns[] = __( 'Ready to ship', 'oc-theme' );
+			$turns[] = $eta;
+
+			$items = '';
+
+			foreach ( $turns as $i => $turn ) {
+				$items .= sprintf(
+					'<span class="oc-stockline__turn%s">%s</span>',
+					0 === $i ? ' is-current' : '',
+					esc_html( $turn )
+				);
+			}
 
 			return sprintf(
-				'<div class="oc-stockline oc-stockline--turns"><span class="oc-stockline__note">%s</span>'
-					. '<span class="oc-stockline__turns">'
-					. '<span class="oc-stockline__status oc-stockline__status--%s is-current"><i aria-hidden="true"></i>%s</span>'
-					. '<span class="oc-stockline__status oc-stockline__status--%s oc-stockline__status--eta"><i aria-hidden="true"></i>%s</span>'
-					. '</span></div>',
-				esc_html( $note ),
+				'<div class="oc-stockline oc-stockline--turns"><span class="oc-stockline__turns">%s</span>'
+					. '<span class="oc-stockline__status oc-stockline__status--%s"><i aria-hidden="true"></i>%s</span></div>',
+				$items,
 				esc_attr( $tone ),
-				esc_html( $status ),
-				esc_attr( $tone ),
-				esc_html( $eta )
+				esc_html( $status )
 			);
 		}
 

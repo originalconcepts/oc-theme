@@ -14547,38 +14547,35 @@ p.no-comments {
 	display: block;
 	block-size: 1.5em;
 	min-inline-size: 12ch;
+	flex: 1 1 auto;
 	overflow: hidden;
 }
 
-.oc-stockline--turns .oc-stockline__status {
+/* The turning messages sit where the note used to, at the start of the
+ * row. The badge on the other end is a plain flex item again, because the
+ * stock state does not move. */
+.oc-stockline__turn {
 	position: absolute;
-	inset-inline-end: 0;
+	inset-inline-start: 0;
 	inset-block-start: 0;
-	display: inline-flex;
-	align-items: center;
-	gap: 6px;
 	white-space: nowrap;
 	opacity: 0;
 	translate: 0 100%;
 	transition: opacity .3s ease, translate .3s ease;
 }
 
-.oc-stockline--turns .oc-stockline__status.is-current {
+.oc-stockline__turn.is-current {
 	opacity: 1;
 	translate: 0 0;
 }
 
-/* The arrival note is a fact, not a stock state, so it keeps the dot's
- * spacing but not its colour shouting a second time. */
-.oc-stockline__status--eta i { opacity: .45; }
-
 @media (prefers-reduced-motion: reduce) {
-	.oc-stockline--turns .oc-stockline__status { transition: none; }
+	.oc-stockline__turn { transition: none; }
 }
 
-/* On a phone the note and the turning slot share a tight row, so the slot
+/* On a phone the badge and the turning slot share a tight row, so the slot
  * only claims what it needs. */
 @media (max-width: 480px) {
 	.oc-stockline__turns { min-inline-size: 0; }
-	.oc-stockline--turns .oc-stockline__status { font-size: .92em; }
+	.oc-stockline__turn { font-size: .92em; }
 }

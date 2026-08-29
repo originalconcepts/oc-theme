@@ -8597,7 +8597,8 @@ window.__ocMoney = function ( n, money ) {
 
 /* ---------- the stock line takes turns ----------
  *
- * What the stock is doing, then when the parcel would arrive, then back.
+ * What is left in stock, that it is ready, then when the parcel arrives.
+ * The badge beside them never moves: it says what the stock IS.
  * The same idea as the messages in the top bar, and it borrows their
  * timing so the page has one rhythm rather than two. A visitor who has
  * asked for less motion gets the stock state and nothing moving. */
@@ -8609,7 +8610,7 @@ window.__ocMoney = function ( n, money ) {
 	if ( still ) { return; }
 
 	Array.prototype.forEach.call( lines, function ( wrap ) {
-		var msgs = wrap.querySelectorAll( '.oc-stockline__status' );
+		var msgs = wrap.querySelectorAll( '.oc-stockline__turn' );
 		if ( msgs.length < 2 ) { return; }
 
 		var at = 0;

@@ -6219,3 +6219,15 @@ msgstr "הגדרות הקטלוג של ווקומרס עצמו, ושל התבנ�
 
 msgid "Shop settings now live under the page they affect: the catalogue, the product page and the checkout."
 msgstr "הגדרות החנות נמצאות עכשיו תחת העמוד שהן משפיעות עליו: הקטלוג, עמוד המוצר והצ׳ק אווט."
+
+msgid "tomorrow"
+msgstr "מחר"
+
+msgid "Delivery between %1$s and %2$s"
+msgstr "משלוח בין %1$s ל־%2$s"
+
+msgid "Delivery %s"
+msgstr "משלוח %s"
+
+msgid "Delivery on %s"
+msgstr "משלוח ב־%s"
