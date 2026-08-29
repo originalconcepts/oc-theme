@@ -314,6 +314,10 @@ final class Bought_Together {
 		$kind   = self::kind( $product->get_id() );
 		$amount = self::amount( $product->get_id() );
 
+		// The theme puts the SKU in the price line on a product page. These
+		// are cards, not the page, so the price stays a price — the same
+		// flag the cart's own cards use.
+		Cart::$in_upsells = true;
 		?>
 		<?php $band = Product_Linked::band( 'oc_bt_bg' ); ?>
 		<div class="oc-bt<?php echo esc_attr( $band['class'] ); ?>" data-oc-bt="<?php echo absint( $product->get_id() ); ?>"
@@ -348,11 +352,11 @@ final class Bought_Together {
 							</a>
 
 							<div class="oc-bt__info">
-								<a class="oc-bt__name" href="<?php echo esc_url( get_permalink( $item->get_id() ) ); ?>"><?php echo esc_html( $item->get_name() ); ?></a>
-								<span class="oc-bt__price"><?php echo wp_kses_post( $item->get_price_html() ); ?></span>
 								<?php if ( $self ) : ?>
 									<span class="oc-bt__this"><?php esc_html_e( 'This product', 'oc-theme' ); ?></span>
 								<?php endif; ?>
+								<a class="oc-bt__name" href="<?php echo esc_url( get_permalink( $item->get_id() ) ); ?>"><?php echo esc_html( $item->get_name() ); ?></a>
+								<span class="oc-bt__price"><?php echo wp_kses_post( $item->get_price_html() ); ?></span>
 								<?php
 								// The page's own product is answered by the form
 								// above; a companion answers here.
@@ -381,6 +385,8 @@ final class Bought_Together {
 			</div>
 		</div>
 		<?php
+
+		Cart::$in_upsells = false;
 	}
 
 	/**

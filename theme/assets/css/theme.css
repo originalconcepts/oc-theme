@@ -13816,8 +13816,10 @@ p.no-comments {
 	content: "";
 	inline-size: 10px;
 	block-size: 6px;
-	border-inline-start: 2px solid #fff;
-	border-block-end: 2px solid #fff;
+	/* Physical sides on purpose. Logical ones mirror in RTL and the tick
+	 * came out back to front. */
+	border-left: 2px solid #fff;
+	border-bottom: 2px solid #fff;
 	transform: rotate(-45deg) scale(.4);
 	opacity: 0;
 	transition: opacity .16s, transform .16s;
@@ -13987,7 +13989,11 @@ p.no-comments {
 
 .oc-xsell__tile input { position: absolute; opacity: 0; inline-size: 0; block-size: 0; }
 .oc-xsell__tile.is-on { border-color: currentColor; background: color-mix(in srgb, currentColor 4%, transparent); }
-.oc-xsell__tile:focus-within { outline: 2px solid currentColor; outline-offset: 2px; }
+
+/* A chosen tile already says so with its border; an outline on top of that
+ * read as two frames around the same card. The focus ring moves onto the
+ * tick box, and only for a keyboard. */
+.oc-xsell__tile:has( input:focus-visible ) .oc-xsell__box { outline: 2px solid currentColor; outline-offset: 2px; }
 
 .oc-xsell__tilepic { position: relative; display: block; line-height: 0; }
 
@@ -14055,11 +14061,16 @@ p.no-comments {
 .oc-bt__title { margin-block: 0 16px; font-size: clamp(17px, 2vw, 22px); }
 
 .oc-bt__body {
-	display: grid;
-	grid-template-columns: 1fr auto;
-	gap: 24px;
+	display: flex;
+	flex-wrap: wrap;
 	align-items: center;
+	gap: 22px;
 }
+
+/* The sum follows the last card rather than being pushed to the far side
+ * of the row, which left it stranded when there were only two or three. */
+.oc-bt__items { flex: 0 1 auto; }
+.oc-bt__sum { flex: 0 0 auto; }
 
 .oc-bt__items {
 	display: flex;
@@ -14117,8 +14128,9 @@ p.no-comments {
 	content: "";
 	inline-size: 9px;
 	block-size: 5px;
-	border-inline-start: 2px solid #fff;
-	border-block-end: 2px solid #fff;
+	/* Physical sides: see the note on the other tick. */
+	border-left: 2px solid #fff;
+	border-bottom: 2px solid #fff;
 	transform: rotate(-45deg) scale(.4);
 	opacity: 0;
 	transition: opacity .16s, transform .16s;
@@ -14153,7 +14165,13 @@ p.no-comments {
 
 .oc-bt__name:hover { text-decoration: underline; }
 .oc-bt__price { font-size: 13px; }
-.oc-bt__this { font-size: 11px; opacity: .6; }
+.oc-bt__this {
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: .04em;
+	text-transform: uppercase;
+	opacity: .55;
+}
 
 .oc-bt__sum {
 	display: flex;
@@ -14178,7 +14196,9 @@ p.no-comments {
  * readable, and the plus moves above each one. */
 @media (max-width: 782px) {
 	.oc-bt { padding: 16px; }
-	.oc-bt__body { grid-template-columns: 1fr; gap: 16px; }
+	.oc-bt__body { gap: 16px; }
+	.oc-bt__items,
+	.oc-bt__sum { flex: 1 1 100%; }
 
 	.oc-bt__items { flex-direction: column; gap: 8px; }
 

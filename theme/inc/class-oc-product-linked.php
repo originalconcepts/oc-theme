@@ -191,6 +191,10 @@ final class Product_Linked {
 			$classes[] = 'oc-linked--band';
 		}
 
+		// A card is not the product page: the theme's SKU-in-the-price-line
+		// belongs to the page, not to these. Same flag the cart's cards use.
+		Cart::$in_upsells = true;
+
 		echo '<div class="' . esc_attr( implode( ' ', $classes ) ) . '"' . $band['style'] . '>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in band().
 		echo '<h2 class="oc-xsell__title">' . esc_html( $title ) . '</h2>';
 
@@ -220,6 +224,8 @@ final class Product_Linked {
 		}
 
 		echo '</div>';
+
+		Cart::$in_upsells = false;
 	}
 
 	/*
