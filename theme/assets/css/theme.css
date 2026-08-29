@@ -4153,6 +4153,12 @@ li.product:focus-within .oc-card-atc,
 	 * by its column box, which ends exactly where the row does */
 }
 
+/* A grid item's automatic minimum size is its min-content, so one wide
+ * child — a row that scrolls sideways, a long unbroken string — makes the
+ * column grow past its track and takes the whole page with it. The columns
+ * are already minmax(0, …); this says the same thing about their contents. */
+.single-product div.product > * { min-inline-size: 0; }
+
 .oc-stick-inner { position: relative; }
 
 .oc-ratio-60-40.single-product div.product { --oc-col-a: minmax(0, 1.5fr); --oc-col-b: minmax(0, 1fr); }
@@ -13792,9 +13798,10 @@ p.no-comments {
 
 	flex: 0 0 auto;
 	inline-size: calc((100% - (var(--oc-linked-cols, 4) - 1) * var(--oc-gap, 20px)) / var(--oc-linked-cols, 4));
-	/* A floor, so no arithmetic anywhere above can leave a card with no
-	 * width and the row looking cropped. */
-	min-inline-size: 140px;
+	/* No minimum width here. A card that cannot shrink makes the row's
+	 * min-content the whole row, and the section holding it is a grid item
+	 * that grows to its min-content — which dragged the product page, the
+	 * gallery included, to eight cards wide on a phone. */
 	block-size: auto;
 	align-self: start;
 	margin: 0 !important;
@@ -14555,6 +14562,9 @@ p.no-comments {
  * row. The badge on the other end is a plain flex item again, because the
  * stock state does not move. */
 .oc-stockline__turn {
+	/* Set like the badge beside them, so the row reads as one line of type
+	 * rather than a heading with a footnote. */
+	font-weight: 600;
 	position: absolute;
 	inset-inline-start: 0;
 	inset-block-start: 0;
