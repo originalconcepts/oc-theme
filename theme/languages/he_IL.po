@@ -5730,3 +5730,13 @@ msgid "%d file uploaded in the last two days is held back, in case it is still b
 msgid_plural "%d files uploaded in the last two days are held back, in case they are still being worked on."
 msgstr[0] "קובץ אחד שהועלה ביומיים האחרונים נשמר בצד, למקרה שעדיין עובדים עליו."
 msgstr[1] "%d קבצים שהועלו ביומיים האחרונים נשמרים בצד, למקרה שעדיין עובדים עליהם."
+
+msgid "%1$d file deleted, %2$s freed."
+msgid_plural "%1$d files deleted, %2$s freed."
+msgstr[0] "קובץ אחד נמחק, %2$s פונו."
+msgstr[1] "%1$d קבצים נמחקו, %2$s פונו."
+
+msgid "%d was kept because something still uses it."
+msgid_plural "%d were kept because something still uses them."
+msgstr[0] "אחד נשמר כי משהו עדיין משתמש בו."
+msgstr[1] "%d נשמרו כי משהו עדיין משתמש בהם."
