@@ -8079,3 +8079,146 @@
 		} );
 	} );
 }() );
+
+/* ---------- bought together ----------
+ *
+ * Unticking answers straight away: the total, what it saves, and the
+ * button's own words all follow what is still ticked. The main product
+ * cannot be untitcked -- it is the page you are on. */
+( function () {
+	var block = document.querySelector( '[data-oc-bt]' );
+	if ( ! block ) { return; }
+
+	var L        = window.ocL10n || {},
+		items    = block.querySelectorAll( '[data-oc-bt-item]' ),
+		wasEl    = block.querySelector( '[data-oc-bt-was]' ),
+		nowEl    = block.querySelector( '[data-oc-bt-now]' ),
+		savedEl  = block.querySelector( '[data-oc-bt-saved]' ),
+		btn      = block.querySelector( '[data-oc-bt-add]' ),
+		note     = block.querySelector( '[data-oc-bt-note]' ),
+		kind     = block.dataset.kind,
+		amount   = parseFloat( block.dataset.amount ) || 0,
+		money    = {};
+
+	try { money = JSON.parse( block.dataset.money || '{}' ); } catch ( e ) { money = {}; }
+
+	function price( n ) {
+		var dec = ( 'undefined' === typeof money.decimals ) ? 2 : money.decimals,
+			s   = ( Math.round( n * 100 ) / 100 ).toFixed( dec ),
+			bits = s.split( '.' ),
+			whole = bits[ 0 ].replace( /\B(?=(\d{3})+(?!\d))/g, money.thousand || ',' ),
+			out = whole + ( bits[ 1 ] ? ( money.dot || '.' ) + bits[ 1 ] : '' ),
+			sym = money.symbol || '';
+
+		switch ( money.format ) {
+			case 'right':       return out + sym;
+			case 'left_space':  return sym + ' ' + out;
+			case 'right_space': return out + ' ' + sym;
+			default:            return sym + out;
+		}
+	}
+
+	function chosen() {
+		var picked = [];
+
+		Array.prototype.forEach.call( items, function ( li ) {
+			var box = li.querySelector( '[data-oc-bt-on]' );
+			if ( box && box.checked ) { picked.push( li ); }
+		} );
+
+		return picked;
+	}
+
+	function draw() {
+		var picked = chosen(),
+			full   = 0;
+
+		picked.forEach( function ( li ) { full += parseFloat( li.dataset.price ) || 0; } );
+
+		var off = 0;
+		// A discount is for taking more than one thing.
+		if ( picked.length > 1 && amount > 0 ) {
+			off = 'percent' === kind ? full * ( amount / 100 ) : amount;
+			off = Math.min( off, full );
+		}
+
+		var pay = full - off;
+
+		nowEl.textContent = price( pay );
+
+		if ( off > 0 ) {
+			wasEl.textContent = price( full );
+			wasEl.hidden = false;
+			savedEl.textContent = ( L.btSaved || 'You save %s' ).replace( '%s', price( off ) );
+			savedEl.hidden = false;
+		} else {
+			wasEl.hidden = true;
+			savedEl.hidden = true;
+		}
+
+		if ( ! picked.length ) {
+			btn.disabled = true;
+			btn.textContent = L.btNone || 'Pick at least one';
+		} else if ( 1 === picked.length ) {
+			btn.disabled = false;
+			btn.textContent = L.btOne || 'Add to cart';
+		} else {
+			btn.disabled = false;
+			btn.textContent = ( L.btAll || 'Add all to cart' );
+		}
+	}
+
+	block.addEventListener( 'change', function ( e ) {
+		var box = e.target.closest( '[data-oc-bt-on]' );
+		if ( ! box ) { return; }
+
+		var li = box.closest( '[data-oc-bt-item]' );
+		if ( li ) { li.classList.toggle( 'is-on', box.checked ); }
+
+		draw();
+	} );
+
+	btn.addEventListener( 'click', function () {
+		var picked = chosen();
+		if ( ! picked.length ) { return; }
+
+		btn.disabled = true;
+		btn.classList.add( 'is-busy' );
+		note.textContent = '';
+
+		var body = new FormData();
+		body.append( 'action', 'oc_bt_add' );
+		body.append( 'nonce', L.btNonce || '' );
+		body.append( 'main', block.dataset.ocBt );
+		picked.forEach( function ( li ) { body.append( 'ids[]', li.dataset.ocBtItem ); } );
+
+		fetch( L.ajaxUrl || '/wp-admin/admin-ajax.php', { method: 'POST', credentials: 'same-origin', body: body } )
+			.then( function ( r ) { return r.json(); } )
+			.then( function ( res ) {
+				btn.classList.remove( 'is-busy' );
+				btn.disabled = false;
+
+				if ( ! res || ! res.success ) {
+					note.textContent = ( res && res.data && res.data.msg ) || '';
+					return;
+				}
+
+				note.textContent = res.data.msg || '';
+
+				// Let the rest of the theme know, so the cart drawer and the
+				// counter catch up the way they do for any other add.
+				document.body.dispatchEvent( new CustomEvent( 'wc_fragment_refresh' ) );
+
+				if ( window.jQuery ) {
+					window.jQuery( document.body ).trigger( 'wc_fragment_refresh' );
+					window.jQuery( document.body ).trigger( 'added_to_cart', [ res.data.fragments || {}, '', window.jQuery( btn ) ] );
+				}
+			} )
+			.catch( function () {
+				btn.classList.remove( 'is-busy' );
+				btn.disabled = false;
+			} );
+	} );
+
+	draw();
+}() );

@@ -2164,6 +2164,18 @@ final class Customizer {
 		);
 		$this->toggle(
 			$c,
+			'oc_bt_on',
+			'oc_product',
+			__( 'Show the bought-together bundle', 'oc-theme' ),
+			true,
+			null,
+			__( 'Appears only on products that have a bundle set, on their own Linked Products tab.', 'oc-theme' )
+		);
+
+		$this->text( $c, 'oc_bt_title', 'oc_product', __( 'Bundle heading', 'oc-theme' ) );
+
+		$this->toggle(
+			$c,
 			'oc_xsell_on',
 			'oc_product',
 			__( 'Show products that go with this one', 'oc-theme' ),

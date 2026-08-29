@@ -5991,3 +5991,68 @@ msgstr "פחות"
 
 msgid "More"
 msgstr "עוד"
+
+msgid "Bought together"
+msgstr "נקנים יחד"
+
+msgid "Often bought together"
+msgstr "נקנים יחד לעיתים קרובות"
+
+msgid "Offered on this product's page as one bundle, with this product. The shopper can untick any of them."
+msgstr "מוצגים בעמוד המוצר כחבילה אחת, יחד עם המוצר הזה. הלקוח יכול להסיר כל אחד מהם."
+
+msgid "Bundle heading"
+msgstr "כותרת החבילה"
+
+msgid "Left empty, the heading from the Customizer is used."
+msgstr "אם נשאר ריק, תוצג הכותרת מההתאמה האישית."
+
+msgid "Bundle discount"
+msgstr "הנחת חבילה"
+
+msgid "No discount"
+msgstr "ללא הנחה"
+
+msgid "Percentage off"
+msgstr "הנחה באחוזים"
+
+msgid "Amount off"
+msgstr "הנחה בסכום"
+
+msgid "How much"
+msgstr "כמה"
+
+msgid "Comes off in the cart once two or more of the bundle are in it, and recalculates itself if one is taken out."
+msgstr "יורדת בסל ברגע ששני פריטים או יותר מהחבילה נמצאים בו, ומחושבת מחדש אם מסירים אחד."
+
+msgid "Show the bought-together bundle"
+msgstr "הצג חבילת ״נקנים יחד״"
+
+msgid "Appears only on products that have a bundle set, on their own Linked Products tab."
+msgstr "מופיעה רק במוצרים שהוגדרה להם חבילה, בלשונית ״מוצרים מקושרים״ שלהם."
+
+msgid "This product"
+msgstr "המוצר הזה"
+
+msgid "Add all to cart"
+msgstr "הוסף הכל לסל"
+
+msgid "Pick at least one"
+msgstr "יש לבחור לפחות אחד"
+
+msgid "You save %s"
+msgstr "חסכת %s"
+
+msgid "Nothing to add."
+msgstr "אין מה להוסיף."
+
+msgid "Those could not be added."
+msgstr "לא ניתן היה להוסיף אותם."
+
+msgid "Bundle discount — %s"
+msgstr "הנחת חבילה — %s"
+
+msgid "%d product added"
+msgid_plural "%d products added"
+msgstr[0] "מוצר אחד נוסף"
+msgstr[1] "%d מוצרים נוספו"

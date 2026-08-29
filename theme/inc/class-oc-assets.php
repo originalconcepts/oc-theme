@@ -186,6 +186,12 @@ final class Assets {
 				'reorderReplace'       => __( 'Empty and add', 'oc-theme' ),
 				'reorderCancel'        => __( 'Cancel', 'oc-theme' ),
 				'cartOpenOnAdd'        => (int) Cart::settings()['open_on_add'],
+				'btNonce'              => wp_create_nonce( 'oc_bt' ),
+				'btAll'                => __( 'Add all to cart', 'oc-theme' ),
+				'btOne'                => __( 'Add to cart', 'oc-theme' ),
+				'btNone'               => __( 'Pick at least one', 'oc-theme' ),
+				/* translators: %s: an amount of money. */
+				'btSaved'              => __( 'You save %s', 'oc-theme' ),
 				'cartVarPick'          => __( 'Choose an option', 'oc-theme' ),
 				'vpSide'               => 'left' === get_theme_mod( 'oc_vpanel_side', 'right' ) ? 'left' : 'right',
 				'vpCorners'            => (string) get_theme_mod( 'oc_vpanel_corners', 'soft' ),

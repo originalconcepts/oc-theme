@@ -78,6 +78,7 @@ require_once OC_THEME_DIR . '/inc/class-oc-assets.php';
 require_once OC_THEME_DIR . '/inc/class-oc-login.php';
 require_once OC_THEME_DIR . '/inc/class-oc-woocommerce.php';
 require_once OC_THEME_DIR . '/inc/class-oc-product-linked.php';
+require_once OC_THEME_DIR . '/inc/class-oc-bought-together.php';
 require_once OC_THEME_DIR . '/inc/class-oc-customizer.php';
 require_once OC_THEME_DIR . '/inc/class-oc-variations.php';
 require_once OC_THEME_DIR . '/inc/class-oc-video.php';
@@ -432,6 +433,7 @@ add_action( 'admin_notices', 'oc_dependency_notice' );
 ( new OC\Theme\Auth_Admin() )->register();
 ( new OC\Theme\Two_Factor() )->register();
 ( new OC\Theme\Product_Linked() )->register();
+( new OC\Theme\Bought_Together() )->register();
 ( new OC\Theme\Updater( get_template(), OC_THEME_VERSION, OC_THEME_REPO ) )->register();
 
 if ( ! defined( 'OC_LOGIN_DISABLE' ) || ! OC_LOGIN_DISABLE ) {
