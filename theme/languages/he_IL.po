@@ -5911,3 +5911,14 @@ msgstr "מתחילת השורה"
 
 msgid "Only tells when there are too few cards to fill the row."
 msgstr "משפיע רק כשאין מספיק כרטיסים כדי למלא את השורה."
+
+msgid "Similar products"
+msgstr "מוצרים דומים"
+
+msgid "Leave out of similar products"
+msgstr "להשאיר מחוץ למוצרים דומים"
+
+msgid "Do not use this category to decide what is similar (%d product in it)."
+msgid_plural "Do not use this category to decide what is similar (%d products in it)."
+msgstr[0] "לא להשתמש בקטגוריה הזו כדי לקבוע מה דומה (מוצר אחד בתוכה)."
+msgstr[1] "לא להשתמש בקטגוריה הזו כדי לקבוע מה דומה (%d מוצרים בתוכה)."

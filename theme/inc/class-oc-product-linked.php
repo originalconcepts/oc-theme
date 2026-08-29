@@ -70,6 +70,21 @@ final class Product_Linked {
 
 		$terms = array_values( array_unique( array_map( 'intval', (array) $terms ) ) );
 
+		// A shelf marked "leave out of similar products" on its own edit
+		// screen steps aside first. This applies whichever scope is chosen:
+		// it is a statement about the category, not about the setting.
+		$kept = array();
+		foreach ( $terms as $id ) {
+			if ( '1' !== (string) get_term_meta( $id, '_oc_rel_skip', true ) ) {
+				$kept[] = $id;
+			}
+		}
+
+		// Unless that would leave nothing to go on.
+		if ( $kept ) {
+			$terms = $kept;
+		}
+
 		if ( 'leaf' !== (string) get_theme_mod( 'oc_related_scope', 'all' ) || count( $terms ) < 2 ) {
 			return $terms;
 		}
