@@ -773,7 +773,10 @@ a { color: inherit; }
 .oc-hsearch input[type="search"]::-webkit-search-cancel-button,
 .oc-hsearch input[type="search"]::-webkit-search-decoration { display: none; }
 
-.oc-hsearch__wipe {
+/* Scoped through the form, because `.oc-hsearch button` above sets every
+ * button in here to no background and would otherwise outrank a lone
+ * class — which is exactly how this button lost its grey disc. */
+.oc-hsearch .oc-hsearch__wipe {
 	inline-size: 17px;
 	block-size: 17px;
 	padding: 0;
@@ -789,12 +792,12 @@ a { color: inherit; }
 	color: var(--oc-ink-2);
 }
 
-.oc-hsearch__wipe:hover {
+.oc-hsearch .oc-hsearch__wipe:hover {
 	background: var(--oc-line);
 	color: var(--oc-ink);
 }
 
-.oc-hsearch__wipe[hidden] { display: none; }
+.oc-hsearch .oc-hsearch__wipe[hidden] { display: none; }
 
 .oc-searchbox[data-mode="min"] .oc-search__side { display: none; }
 .oc-searchbox[data-mode="min"] .oc-search__cols { grid-template-columns: 1fr; }
