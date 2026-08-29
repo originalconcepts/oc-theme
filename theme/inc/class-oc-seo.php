@@ -67,6 +67,11 @@ final class Seo {
 		add_filter( 'wp_robots', array( $this, 'robots' ), 20 );
 		add_filter( 'wp_sitemaps_posts_query_args', array( $this, 'sitemap_posts' ) );
 		add_filter( 'wp_sitemaps_taxonomies_query_args', array( $this, 'sitemap_terms' ) );
+		add_filter( 'wp_sitemaps_enabled', array( $this, 'sitemap_on' ) );
+		add_filter( 'wp_sitemaps_taxonomies', array( $this, 'sitemap_taxonomies' ) );
+		add_filter( 'wp_sitemaps_post_types', array( $this, 'sitemap_post_types' ) );
+		add_action( 'init', array( $this, 'sitemap_route' ) );
+		add_filter( 'robots_txt', array( $this, 'robots_txt' ), 20, 2 );
 		add_action( 'updated_post_meta', array( $this, 'normalize_meta' ), 10, 4 );
 		add_action( 'added_post_meta', array( $this, 'normalize_meta' ), 10, 4 );
 	}
@@ -668,6 +673,108 @@ final class Seo {
 	/*
 	 * ------------------------------------------------------------- sitemaps
 	 */
+
+	/**
+	 * The sitemap stands whether or not the site invites search engines.
+	 *
+	 * WordPress ties the two together: tick "discourage search engines" and
+	 * `wp_sitemaps_enabled` goes false, which switches the whole system off —
+	 * no providers, no file, a 404. The two are not really related, and on a
+	 * site still being built it is useful to see the sitemap that will go
+	 * live. Being unindexed is said once, plainly, in robots and in the
+	 * robots meta tag; it does not need the sitemap withheld as well.
+	 *
+	 * @param bool $on Whether core would serve one.
+	 */
+	public function sitemap_on( $on ): bool {
+		unset( $on );
+
+		/**
+		 * Filters whether the sitemap is served.
+		 *
+		 * @param bool $on Whether to serve it.
+		 */
+		return (bool) apply_filters( 'oc_sitemap_enabled', true );
+	}
+
+	/**
+	 * Answer on /sitemap.xml, which is where people and robots look.
+	 *
+	 * Core only claims wp-sitemap.xml. The friendly name is registered here
+	 * rather than relied upon: a rule of the same shape was already in the
+	 * database from some earlier tool, and a flush would have taken it away
+	 * with nobody the wiser.
+	 */
+	public function sitemap_route(): void {
+		add_rewrite_rule( '^sitemap\.xml$', 'index.php?sitemap=index', 'top' );
+
+		if ( ! get_option( 'oc_seo_sitemap_rw' ) ) {
+			flush_rewrite_rules( false );
+			update_option( 'oc_seo_sitemap_rw', '1', false );
+		}
+	}
+
+	/**
+	 * Point robots.txt at it.
+	 *
+	 * @param string $output The robots.txt body.
+	 * @param bool   $public Whether the site invites indexing.
+	 */
+	public function robots_txt( $output, $public ): string {
+		unset( $public );
+
+		$line = 'Sitemap: ' . home_url( '/sitemap.xml' );
+
+		if ( false !== strpos( (string) $output, $line ) ) {
+			return (string) $output;
+		}
+
+		return rtrim( (string) $output ) . "\n\n" . $line . "\n";
+	}
+
+	/**
+	 * Keep product attributes out of the sitemap.
+	 *
+	 * Colour and size archives are public, so core offers them, but a page
+	 * per shade is thin duplicate-ish content and not what the shop wants
+	 * crawled. Categories, brands and blog categories stay.
+	 *
+	 * @param array<string,\WP_Taxonomy> $taxonomies Taxonomies core would list.
+	 * @return array<string,\WP_Taxonomy>
+	 */
+	public function sitemap_taxonomies( $taxonomies ) {
+		foreach ( array_keys( (array) $taxonomies ) as $name ) {
+			$name = (string) $name;
+
+			if ( 0 === strpos( $name, 'pa_' ) || 'post_format' === $name || 'product_tag' === $name ) {
+				unset( $taxonomies[ $name ] );
+			}
+		}
+
+		/**
+		 * Filters the taxonomies the sitemap lists.
+		 *
+		 * @param array<string,\WP_Taxonomy> $taxonomies Taxonomies.
+		 */
+		return (array) apply_filters( 'oc_sitemap_taxonomies', $taxonomies );
+	}
+
+	/**
+	 * And the post types.
+	 *
+	 * @param array<string,\WP_Post_Type> $types Post types core would list.
+	 * @return array<string,\WP_Post_Type>
+	 */
+	public function sitemap_post_types( $types ) {
+		unset( $types['attachment'] );
+
+		/**
+		 * Filters the post types the sitemap lists.
+		 *
+		 * @param array<string,\WP_Post_Type> $types Post types.
+		 */
+		return (array) apply_filters( 'oc_sitemap_post_types', $types );
+	}
 
 	/**
 	 * A noindexed post has no business in the core sitemap.
