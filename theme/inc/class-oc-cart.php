@@ -533,10 +533,14 @@ final class Cart {
 		}
 
 		// The discounts breakdown: the promotion engine's per-deal savings,
-		// then each coupon (with its removal control).
+		// each coupon (with its removal control), and any negative fee —
+		// which is how a bundle discount lands. Its amount was always in the
+		// total; without a line of its own nothing said why the total had
+		// moved, and a discount nobody can see is a discount nobody trusts.
 		$rows         = array();
 		$promo_saved  = 0.0;
 		$coupon_saved = 0.0;
+		$fee_saved    = 0.0;
 
 		if ( class_exists( '\\PromoEngine\\Cart' ) && method_exists( '\\PromoEngine\\Cart', 'instance' ) ) {
 			$pcart   = \PromoEngine\Cart::instance();
@@ -555,13 +559,26 @@ final class Cart {
 			$rows[]        = '<div class="oc-drawer__discount"><span>' . esc_html__( 'Coupon', 'oc-theme' ) . ' ' . esc_html( $code ) . ' <button type="button" class="oc-drawer__discount-x" data-oc-coupon-remove data-code="' . esc_attr( $code ) . '" aria-label="' . esc_attr__( 'Remove', 'oc-theme' ) . '">&times;</button></span><strong>&minus;' . wc_price( $saved ) . '</strong></div>';
 		}
 
+		foreach ( WC()->cart->get_fees() as $fee ) {
+			$amount = (float) $fee->amount;
+
+			// Only the ones that take money off. A positive fee is a charge
+			// and belongs with the totals, not among the savings.
+			if ( $amount >= 0 ) {
+				continue;
+			}
+
+			$fee_saved += abs( $amount );
+			$rows[]     = '<div class="oc-drawer__discount"><span>' . esc_html( (string) $fee->name ) . '</span><strong>&minus;' . wc_price( abs( $amount ) ) . '</strong></div>';
+		}
+
 		// What the customer actually pays before shipping: the cart contents
 		// (already carrying line-price promos and coupons) plus fees (how
 		// cart-level promos land).
 		$payable_amount = (float) WC()->cart->get_cart_contents_total() + (float) WC()->cart->get_cart_contents_tax()
 			+ (float) WC()->cart->get_fee_total() + (float) WC()->cart->get_fee_tax();
 		$payable_amount = max( 0.0, $payable_amount );
-		$subtotal_row   = wc_price( $payable_amount + $promo_saved + $coupon_saved );
+		$subtotal_row   = wc_price( $payable_amount + $promo_saved + $coupon_saved + $fee_saved );
 		$total          = wc_price( $payable_amount );
 		$label          = '' !== (string) $s['btn_text'] ? (string) $s['btn_text'] : __( 'Continue to checkout', 'oc-theme' );
 
@@ -585,7 +602,7 @@ final class Cart {
 			$html .= '<div class="oc-drawer__saveline">';
 
 			if ( $rows ) {
-				$total_saved = $promo_saved + $coupon_saved;
+				$total_saved = $promo_saved + $coupon_saved + $fee_saved;
 				$html       .= '<button type="button" class="oc-drawer__save-t" data-oc-save-toggle>'
 					. '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 12.5l5 5L19.5 7"/></svg>'
 					/* translators: %s: amount saved. */
