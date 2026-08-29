@@ -13777,14 +13777,32 @@ p.no-comments {
 .woocommerce .oc-linked--slider ul.products::-webkit-scrollbar { display: none; }
 
 .woocommerce .oc-linked--slider ul.products li.product {
+	/* The card is built on subgrid: it takes its row tracks from the list
+	 * above it. A slider turns that list into a flex row, the card stops
+	 * being a grid item, and subgrid has no rows left to inherit — the text
+	 * track collapsed to nothing and the name and price spilled out below
+	 * the card, where the row's own clipping cut them off. That is the
+	 * cropping. Off the grid it lays itself out as a plain column and is
+	 * once again as tall as what is in it. */
+	display: flex;
+	flex-direction: column;
+	grid-template-rows: none;
+	grid-row: auto;
+	align-content: normal;
+
 	flex: 0 0 auto;
 	inline-size: calc((100% - (var(--oc-linked-cols, 4) - 1) * var(--oc-gap, 20px)) / var(--oc-linked-cols, 4));
 	/* A floor, so no arithmetic anywhere above can leave a card with no
 	 * width and the row looking cropped. */
 	min-inline-size: 140px;
+	block-size: auto;
+	align-self: start;
 	margin: 0 !important;
 	clear: none;
 }
+
+/* The spacer row the grid used between cards has no job in a flex row. */
+.woocommerce .oc-linked--slider ul.products li.product::after { content: none; }
 
 .oc-linked--slider ul.products.is-drag {
 	cursor: grabbing;
