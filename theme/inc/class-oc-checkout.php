@@ -96,6 +96,7 @@ final class Checkout {
 		add_action( 'woocommerce_review_order_after_cart_contents', array( $this, 'summary_coupon_row' ) );
 		add_action( 'woocommerce_review_order_after_shipping', array( $this, 'shipping_row' ) );
 		add_action( 'woocommerce_review_order_before_order_total', array( $this, 'savings_row' ) );
+		add_filter( 'woocommerce_cart_totals_fee_html', array( $this, 'fee_html' ), 10, 2 );
 		add_action( 'woocommerce_review_order_after_order_total', array( $this, 'vat_note_row' ) );
 		add_action( 'woocommerce_review_order_before_payment', array( $this, 'payment_heading' ) );
 		add_action( 'woocommerce_review_order_before_submit', array( $this, 'privacy_note' ), 12 );
@@ -890,6 +891,36 @@ final class Checkout {
 
 			echo '<tr class="oc-co-disc"><th>' . esc_html( $row[0] ) . $remove . '</th><td>&minus;' . wp_kses_post( wc_price( $row[1] ) ) . '</td></tr>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
 		}
+	}
+
+	/**
+	 * A fee that takes money off is a discount, and reads like one.
+	 *
+	 * WooCommerce prints a fee as a plain amount, so a negative one came out
+	 * as a price with a trailing minus — right-to-left that lands on the
+	 * wrong side and reads as nonsense. Written the way the coupon rows
+	 * above are written: a proper minus sign, then the amount as a positive
+	 * number. The row's markup is already the same shape as theirs, so with
+	 * the stylesheet matching them it is the same row.
+	 *
+	 * @param string $html The amount cell.
+	 * @param object $fee  The fee.
+	 * @return string
+	 */
+	public function fee_html( $html, $fee ) {
+		$total = (float) ( $fee->total ?? 0 );
+
+		if ( $total >= 0 ) {
+			return $html;
+		}
+
+		$amount = wc_price( abs( $total ), array( 'currency' => '' ) );
+
+		if ( ! empty( WC()->cart ) && WC()->cart->display_prices_including_tax() ) {
+			$amount = wc_price( abs( $total + (float) ( $fee->tax ?? 0 ) ), array( 'currency' => '' ) );
+		}
+
+		return '&minus;' . $amount;
 	}
 
 	/**

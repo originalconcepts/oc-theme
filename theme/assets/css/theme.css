@@ -10314,8 +10314,13 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 .oc-checkout #order_review tr.cart-discount { display: none; }
 
 /* discount rows read like any other summary row */
+/* A fee row is WooCommerce's own markup but the same shape as the theme's
+ * discount row, so it is dressed identically rather than left looking like
+ * a different kind of line. */
 .oc-checkout tr.oc-co-disc th,
 .oc-checkout tr.oc-co-disc td,
+.oc-checkout tr.fee th,
+.oc-checkout tr.fee td,
 .oc-checkout tr.oc-co-shiprow2 th,
 .oc-checkout tr.oc-co-shiprow2 td {
 	color: var(--oc-ink, #111);
@@ -10325,7 +10330,8 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 	padding-block: 7px;
 }
 
-.oc-checkout tr.oc-co-disc td { text-align: left; }
+.oc-checkout tr.oc-co-disc td,
+.oc-checkout tr.fee td { text-align: left; }
 
 .oc-co-disc__x {
 	border: 0;
