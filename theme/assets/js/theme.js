@@ -8026,7 +8026,7 @@
 			var box = e.target.closest( '[data-oc-xs-on]' );
 			if ( ! box ) { return; }
 
-			var row = box.closest( '.oc-xsell__row' );
+			var row = box.closest( '.oc-xsell__row, .oc-xsell__tile' );
 			if ( ! row ) { return; }
 
 			var qty = row.querySelector( '[data-oc-xs-qty]' );

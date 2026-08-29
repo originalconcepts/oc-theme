@@ -171,6 +171,16 @@ final class Product_Linked {
 				break;
 
 			case 'grid':
+				// Beside the button a grid still has to be tickable, so it
+				// gets tiles rather than the catalogue's cards.
+				if ( 'cart' === self::xsell_place() ) {
+					$this->tiles( $products );
+					break;
+				}
+
+				$this->cards( $products, $style );
+				break;
+
 			case 'slider':
 				$this->cards( $products, $style );
 				break;
@@ -267,6 +277,46 @@ final class Product_Linked {
 			}
 
 			echo '</select>';
+		}
+
+		echo '</div>';
+	}
+
+	/**
+	 * Square tiles you can tick, in a row that scrolls.
+	 *
+	 * The grid beside the add-to-cart button is the same promise as the
+	 * rows — pick some, they come along — so a tile is a label wrapping a
+	 * real checkbox rather than a card with a link. A product with options
+	 * cannot be answered in a tile this size, so that one opens the
+	 * quick-pick panel instead of pretending to be tickable.
+	 *
+	 * @param \WC_Product[] $products The cross-sells.
+	 */
+	private function tiles( array $products ): void {
+		echo '<div class="oc-xsell__tiles" data-oc-slider>';
+
+		foreach ( $products as $p ) {
+			$id       = $p->get_id();
+			$variable = ! $p->is_type( 'simple' );
+
+			if ( $variable ) {
+				echo '<button type="button" class="oc-xsell__tile oc-xsell__tile--opts" data-oc-xs-open="' . absint( $id ) . '">';
+				echo '<span class="oc-xsell__tilepic">' . $p->get_image( 'woocommerce_thumbnail' ) . '</span>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- WooCommerce markup.
+				echo '<span class="oc-xsell__tilename">' . esc_html( $p->get_name() ) . '</span>';
+				echo '<span class="oc-xsell__tileprice">' . wp_kses_post( $p->get_price_html() ) . '</span>';
+				echo '<span class="oc-xsell__tilehint">' . esc_html__( 'Choose options', 'oc-theme' ) . '</span>';
+				echo '</button>';
+				continue;
+			}
+
+			echo '<label class="oc-xsell__tile" data-oc-xs="' . absint( $id ) . '">';
+			echo '<input type="checkbox" name="oc_xs[' . absint( $id ) . '][on]" value="1" data-oc-xs-on>';
+			echo '<input type="hidden" name="oc_xs[' . absint( $id ) . '][qty]" value="1">';
+			echo '<span class="oc-xsell__tilepic">' . $p->get_image( 'woocommerce_thumbnail' ) . '<span class="oc-xsell__box" aria-hidden="true"></span></span>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- WooCommerce markup.
+			echo '<span class="oc-xsell__tilename">' . esc_html( $p->get_name() ) . '</span>';
+			echo '<span class="oc-xsell__tileprice">' . wp_kses_post( $p->get_price_html() ) . '</span>';
+			echo '</label>';
 		}
 
 		echo '</div>';
