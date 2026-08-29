@@ -70,6 +70,7 @@ final class Seo {
 		add_filter( 'wp_sitemaps_enabled', array( $this, 'sitemap_on' ) );
 		add_filter( 'wp_sitemaps_taxonomies', array( $this, 'sitemap_taxonomies' ) );
 		add_filter( 'wp_sitemaps_post_types', array( $this, 'sitemap_post_types' ) );
+		add_filter( 'wp_sitemaps_add_provider', array( $this, 'sitemap_providers' ), 10, 2 );
 		add_action( 'init', array( $this, 'sitemap_route' ) );
 		add_filter( 'redirect_canonical', array( $this, 'sitemap_no_canonical' ), 10, 2 );
 		add_filter( 'robots_txt', array( $this, 'robots_txt' ), 20, 2 );
@@ -781,6 +782,25 @@ final class Seo {
 		 * @param array<string,\WP_Taxonomy> $taxonomies Taxonomies.
 		 */
 		return (array) apply_filters( 'oc_sitemap_taxonomies', $taxonomies );
+	}
+
+	/**
+	 * No author sitemap.
+	 *
+	 * It lists an archive per writer, which on a shop is a page nobody wants
+	 * found and which hands out the login slug behind each account — the very
+	 * thing the hardening stopped ?author=1 doing.
+	 *
+	 * @param \WP_Sitemaps_Provider $provider The provider.
+	 * @param string                $name     Its name.
+	 * @return \WP_Sitemaps_Provider|false
+	 */
+	public function sitemap_providers( $provider, $name ) {
+		if ( 'users' === $name ) {
+			return false;
+		}
+
+		return $provider;
 	}
 
 	/**
