@@ -102,12 +102,25 @@ final class Product_Linked {
 
 		switch ( self::xsell_place() ) {
 			case 'cart':
-				add_action( 'woocommerce_before_add_to_cart_button', array( $this, 'render_cross_sells' ), 20 );
+				// Above the whole add-to-cart area, not tucked between the
+				// quantity and the button. For a product with options that
+				// means before the options too, which is why both hooks are
+				// registered: variations answer to the first, a simple
+				// product to the second, and whichever fires first wins.
+				add_action( 'woocommerce_before_variations_form', array( $this, 'render_cross_sells' ), 5 );
+				add_action( 'woocommerce_before_add_to_cart_button', array( $this, 'render_cross_sells' ), 5 );
 				break;
 
 			case 'tabs':
-				// The tabs are priority 10; this follows them.
-				add_action( 'woocommerce_after_single_product_summary', array( $this, 'render_cross_sells' ), 12 );
+				// Follow the tabs wherever the shop put them. Beside the
+				// gallery they sit inside the summary column at 35, so this
+				// goes at 36 and stays in that column; below, they are the
+				// full-width row and this follows it there.
+				if ( 'side' === (string) get_theme_mod( 'oc_product_tabs_pos', 'below' ) ) {
+					add_action( 'woocommerce_single_product_summary', array( $this, 'render_cross_sells' ), 36 );
+				} else {
+					add_action( 'woocommerce_after_single_product_summary', array( $this, 'render_cross_sells' ), 12 );
+				}
 				break;
 
 			case 'summary':
@@ -148,11 +161,19 @@ final class Product_Linked {
 	 * Draw it.
 	 */
 	public function render_cross_sells(): void {
+		static $drawn = false;
+
+		if ( $drawn ) {
+			return;
+		}
+
 		$products = self::cross_sells();
 
 		if ( ! $products ) {
 			return;
 		}
+
+		$drawn = true;
 
 		$style = self::xsell_style();
 		$title = trim( (string) get_theme_mod( 'oc_xsell_title', '' ) );

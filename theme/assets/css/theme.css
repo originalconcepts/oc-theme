@@ -14190,3 +14190,29 @@ p.no-comments {
 	font-size: 12px;
 	background: #fff;
 }
+
+/* Beside the add-to-cart button the block lives inside form.cart, which is
+ * a flex row built to hold the quantity pill and the button side by side.
+ * Left as an ordinary flex item it joined that row and pushed the quantity
+ * onto a line of its own — so it takes the full width and goes first,
+ * above the options, the quantity and the button alike. */
+.woocommerce div.product form.cart .oc-xsell {
+	flex: 1 1 100%;
+	order: -1;
+	inline-size: 100%;
+	margin-block: 0 18px;
+}
+
+.woocommerce div.product form.cart .oc-xsell__rows,
+.woocommerce div.product form.cart .oc-xsell__tiles { inline-size: 100%; }
+
+/* Room to breathe: a row is a picture, a name and a price, and it was
+ * being asked to do that in the height of a button. */
+.oc-xsell--cart .oc-xsell__row { padding: 12px; gap: 14px; }
+.oc-xsell--cart .oc-xsell__row { grid-template-columns: auto 72px 1fr auto; }
+.oc-xsell--cart .oc-xsell__name { font-size: 14px; }
+.oc-xsell--cart .oc-xsell__price { font-size: 14px; }
+
+@media (max-width: 600px) {
+	.oc-xsell--cart .oc-xsell__row { grid-template-columns: auto 60px 1fr; }
+}
