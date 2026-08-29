@@ -312,27 +312,67 @@ final class Two_Factor {
 		$error = '';
 
 		if ( 'POST' === ( $_SERVER['REQUEST_METHOD'] ?? '' ) && isset( $_POST['oc_code'] ) ) {
-			$given = preg_replace( '/\D+/', '', (string) wp_unslash( $_POST['oc_code'] ) );
+			$given = (string) wp_unslash( $_POST['oc_code'] );
 
-			if ( hash_equals( (string) $kept['hash'], wp_hash( (string) $given . $token ) ) ) {
-				delete_transient( self::key( $token ) );
-				$this->finish( $kept );
+			switch ( self::check( $token, $given ) ) {
+				case 'ok':
+					$this->finish( $kept );
+					break;
+
+				case 'spent':
+					wp_safe_redirect( add_query_arg( 'oc_2fa', 'spent', wp_login_url() ) );
+					exit;
+
+				case 'gone':
+					wp_safe_redirect( wp_login_url() );
+					exit;
+
+				default:
+					$error = __( 'That code was not right.', 'oc-theme' );
 			}
-
-			$kept['tries'] = (int) $kept['tries'] + 1;
-
-			if ( $kept['tries'] >= self::TRIES ) {
-				delete_transient( self::key( $token ) );
-				wp_safe_redirect( add_query_arg( 'oc_2fa', 'spent', wp_login_url() ) );
-				exit;
-			}
-
-			set_transient( self::key( $token ), $kept, self::WINDOW );
-			$error = __( 'That code was not right.', 'oc-theme' );
 		}
 		// phpcs:enable WordPress.Security.NonceVerification
 
 		$this->form( $token, $error, (int) $kept['uid'] );
+	}
+
+	/**
+	 * Weigh a code against a half-finished sign-in.
+	 *
+	 * Separate from the screen so the whole of it can be proven without a
+	 * browser — this is the piece that, wrong, either lets anyone in or
+	 * locks the owner out.
+	 *
+	 * @param string $token The single-use token.
+	 * @param string $given What was typed.
+	 *
+	 * @return string One of: ok, bad, spent, gone.
+	 */
+	public static function check( string $token, string $given ): string {
+		$kept = '' === $token ? false : get_transient( self::key( $token ) );
+
+		if ( ! is_array( $kept ) ) {
+			return 'gone';
+		}
+
+		$given = (string) preg_replace( '/\D+/', '', $given );
+
+		if ( '' !== $given && hash_equals( (string) $kept['hash'], wp_hash( $given . $token ) ) ) {
+			// Single use: the token dies with the sign-in it authorised.
+			delete_transient( self::key( $token ) );
+			return 'ok';
+		}
+
+		$kept['tries'] = (int) $kept['tries'] + 1;
+
+		if ( $kept['tries'] >= self::TRIES ) {
+			delete_transient( self::key( $token ) );
+			return 'spent';
+		}
+
+		set_transient( self::key( $token ), $kept, self::WINDOW );
+
+		return 'bad';
 	}
 
 	/**
