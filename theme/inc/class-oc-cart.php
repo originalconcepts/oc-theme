@@ -559,6 +559,15 @@ final class Cart {
 			$rows[]        = '<div class="oc-drawer__discount"><span>' . esc_html__( 'Coupon', 'oc-theme' ) . ' ' . esc_html( $code ) . ' <button type="button" class="oc-drawer__discount-x" data-oc-coupon-remove data-code="' . esc_attr( $code ) . '" aria-label="' . esc_attr__( 'Remove', 'oc-theme' ) . '">&times;</button></span><strong>&minus;' . wc_price( $saved ) . '</strong></div>';
 		}
 
+		// Fees are the shape a bundle discount arrives in. Two things make
+		// this awkward: WooCommerce only fills get_fees() during a totals
+		// calculation, so when the page is drawn from totals already worked
+		// out the list comes back empty even though the money is right and
+		// get_fee_total() knows it. Named fees are listed when they are
+		// there; otherwise the total still gets a line, because a discount
+		// the customer cannot see is one they do not believe in.
+		$listed = 0.0;
+
 		foreach ( WC()->cart->get_fees() as $fee ) {
 			$amount = (float) $fee->amount;
 
@@ -568,8 +577,17 @@ final class Cart {
 				continue;
 			}
 
+			$listed    += abs( $amount );
 			$fee_saved += abs( $amount );
 			$rows[]     = '<div class="oc-drawer__discount"><span>' . esc_html( (string) $fee->name ) . '</span><strong>&minus;' . wc_price( abs( $amount ) ) . '</strong></div>';
+		}
+
+		$fee_total = (float) WC()->cart->get_fee_total();
+
+		if ( $fee_total < 0 && abs( $fee_total ) - $listed > 0.01 ) {
+			$rest       = abs( $fee_total ) - $listed;
+			$fee_saved += $rest;
+			$rows[]     = '<div class="oc-drawer__discount"><span>' . esc_html__( 'Discount', 'oc-theme' ) . '</span><strong>&minus;' . wc_price( $rest ) . '</strong></div>';
 		}
 
 		// What the customer actually pays before shipping: the cart contents
