@@ -2088,6 +2088,18 @@ final class Customizer {
 			'below'
 		);
 
+		$this->choice(
+			$c,
+			'oc_products_heading_align',
+			'oc_product',
+			__( 'Section headings alignment', 'oc-theme' ),
+			array(
+				'start'  => __( 'Start', 'oc-theme' ),
+				'center' => __( 'Centre', 'oc-theme' ),
+			),
+			'start'
+		);
+
 		$this->heading( $c, 'oc_h_related', 'oc_product', __( 'Similar products', 'oc-theme' ) );
 		$this->toggle( $c, 'oc_product_related', 'oc_product', __( 'Show similar products', 'oc-theme' ), true );
 		$this->text(
@@ -2358,17 +2370,7 @@ final class Customizer {
 			)
 		);
 
-		$this->choice(
-			$c,
-			'oc_products_heading_align',
-			'oc_product',
-			__( 'Section headings alignment', 'oc-theme' ),
-			array(
-				'start'  => __( 'Start', 'oc-theme' ),
-				'center' => __( 'Centre', 'oc-theme' ),
-			),
-			'start'
-		);
+
 	}
 
 	/**
