@@ -14191,20 +14191,24 @@ p.no-comments {
 	background: #fff;
 }
 
-/* Beside the add-to-cart button the block lives inside form.cart, which is
- * a flex row built to hold the quantity pill and the button side by side.
- * Left as an ordinary flex item it joined that row and pushed the quantity
- * onto a line of its own — so it takes the full width and goes first,
- * above the options, the quantity and the button alike. */
+/* Beside the add-to-cart button the block sits above the whole area — the
+ * colour swatches included, which this theme draws before the form opens.
+ * It is therefore outside form.cart; theme.js copies the ticks in as the
+ * form is sent. Should it ever be rendered inside the form again, the flex
+ * rule below keeps it off the quantity-and-button row. */
+.oc-xsell--cart {
+	inline-size: 100%;
+	margin-block: 4px 20px;
+}
+
 .woocommerce div.product form.cart .oc-xsell {
 	flex: 1 1 100%;
 	order: -1;
 	inline-size: 100%;
-	margin-block: 0 18px;
 }
 
-.woocommerce div.product form.cart .oc-xsell__rows,
-.woocommerce div.product form.cart .oc-xsell__tiles { inline-size: 100%; }
+.oc-xsell--cart .oc-xsell__rows,
+.oc-xsell--cart .oc-xsell__tiles { inline-size: 100%; }
 
 /* Room to breathe: a row is a picture, a name and a price, and it was
  * being asked to do that in the height of a button. */

@@ -8077,6 +8077,58 @@
 				box.dispatchEvent( new Event( 'change', { bubbles: true } ) );
 			}
 		} );
+
+		/* The block beside the add-to-cart button sits ABOVE the whole area,
+		 * which means above the colour swatches -- and those are drawn before
+		 * the form opens, so the block is outside it. Fields outside a form
+		 * are not submitted with it, so what is ticked is copied in as the
+		 * form is sent. Mirrors are rebuilt every time, never accumulated. */
+		if ( block.classList.contains( 'oc-xsell--cart' ) ) {
+			var form = document.querySelector( 'form.cart' );
+
+			if ( form && ! form.contains( block ) ) {
+				form.addEventListener( 'submit', function () {
+					Array.prototype.forEach.call(
+						form.querySelectorAll( '[data-oc-xs-mirror]' ),
+						function ( old ) { old.parentNode.removeChild( old ); }
+					);
+
+					function carry( name, value ) {
+						var input = document.createElement( 'input' );
+						input.type = 'hidden';
+						input.name = name;
+						input.value = value;
+						input.setAttribute( 'data-oc-xs-mirror', '' );
+						form.appendChild( input );
+					}
+
+					Array.prototype.forEach.call(
+						block.querySelectorAll( '[data-oc-xs-on]' ),
+						function ( box ) {
+							if ( ! box.checked ) { return; }
+
+							var row = box.closest( '[data-oc-xs]' );
+							if ( ! row ) { return; }
+
+							var id = row.getAttribute( 'data-oc-xs' );
+							carry( 'oc_xs[' + id + '][on]', '1' );
+
+							var qty = row.querySelector( '.oc-xsell__n' );
+							carry( 'oc_xs[' + id + '][qty]', qty ? ( qty.value || '1' ) : '1' );
+
+							Array.prototype.forEach.call(
+								row.querySelectorAll( '[data-oc-xs-attr]' ),
+								function ( sel ) {
+									if ( sel.value ) {
+										carry( 'oc_xs[' + id + '][attr][' + sel.dataset.ocXsAttr + ']', sel.value );
+									}
+								}
+							);
+						}
+					);
+				} );
+			}
+		}
 	} );
 }() );
 

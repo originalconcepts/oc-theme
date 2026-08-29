@@ -102,13 +102,13 @@ final class Product_Linked {
 
 		switch ( self::xsell_place() ) {
 			case 'cart':
-				// Above the whole add-to-cart area, not tucked between the
-				// quantity and the button. For a product with options that
-				// means before the options too, which is why both hooks are
-				// registered: variations answer to the first, a simple
-				// product to the second, and whichever fires first wins.
-				add_action( 'woocommerce_before_variations_form', array( $this, 'render_cross_sells' ), 5 );
-				add_action( 'woocommerce_before_add_to_cart_button', array( $this, 'render_cross_sells' ), 5 );
+				// Above the whole add-to-cart area — above the colour
+				// swatches too, which this theme draws before the form
+				// opens. That puts the block outside the form, so the ticks
+				// cannot travel with the submission on their own; theme.js
+				// copies them in as the form is sent. See oc-xsell in the
+				// script for the other half of this.
+				add_action( 'woocommerce_before_add_to_cart_form', array( $this, 'render_cross_sells' ), 5 );
 				break;
 
 			case 'tabs':
@@ -293,7 +293,10 @@ final class Product_Linked {
 			// spelling finds the variation again.
 			$key = 'oc_xs[' . absint( $p->get_id() ) . '][attr][' . esc_attr( wc_variation_attribute_name( $name ) ) . ']';
 
-			echo '<select class="oc-xsell__opt" name="' . esc_attr( $key ) . '" data-oc-xs-attr aria-label="' . esc_attr( wc_attribute_label( $name, $p ) ) . '">';
+			// The data attribute carries the same key the name does, because
+			// the block sits outside the form and theme.js rebuilds these
+			// fields inside it as the form is sent.
+			echo '<select class="oc-xsell__opt" name="' . esc_attr( $key ) . '" data-oc-xs-attr="' . esc_attr( wc_variation_attribute_name( $name ) ) . '" aria-label="' . esc_attr( wc_attribute_label( $name, $p ) ) . '">';
 			echo '<option value="">' . esc_html( sprintf( /* translators: %s: attribute name, e.g. Colour. */ __( 'Choose %s', 'oc-theme' ), wc_attribute_label( $name, $p ) ) ) . '</option>';
 
 			foreach ( $values as $value ) {
