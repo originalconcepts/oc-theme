@@ -490,26 +490,48 @@ final class Seo_Links {
 	 * @param array<string,bool>   $done   Targets already linked here.
 	 */
 	private function link_node( \DOMText $node, \DOMDocument $doc, array &$index, int &$budget, array &$done ): void {
-		$text = (string) $node->nodeValue;
+		// Left to right through the text, taking the earliest match each time
+		// and carrying on through what is left. Working phrase by phrase
+		// instead would link only the first phrase that happened to appear
+		// anywhere in the paragraph and leave the rest of it bare.
+		while ( $budget > 0 ) {
+			$text = (string) $node->nodeValue;
+			$best = null;
 
-		foreach ( $index as $phrase => $url ) {
-			if ( isset( $done[ $url ] ) ) {
-				continue;
+			foreach ( $index as $phrase => $url ) {
+				if ( isset( $done[ $url ] ) ) {
+					continue;
+				}
+
+				// The lookarounds are the Hebrew-safe form of a word boundary:
+				// \b is defined against ASCII word characters and would happily
+				// match inside a Hebrew word.
+				$pattern = '/(?<![\p{L}\p{N}])' . preg_quote( (string) $phrase, '/' ) . '(?![\p{L}\p{N}])/u';
+
+				if ( ! preg_match( $pattern, $text, $m, PREG_OFFSET_CAPTURE ) ) {
+					continue;
+				}
+
+				$at = (int) $m[0][1];
+
+				// The list is longest-first, so an earlier start wins and a tie
+				// goes to the longer phrase already seen.
+				if ( null === $best || $at < $best['at'] ) {
+					$best = array(
+						'at'     => $at,
+						'hit'    => (string) $m[0][0],
+						'phrase' => (string) $phrase,
+						'url'    => (string) $url,
+					);
+				}
 			}
 
-			// The lookarounds are the Hebrew-safe form of a word boundary:
-			// \b is defined against ASCII word characters and would happily
-			// match inside a Hebrew word.
-			$pattern = '/(?<![\p{L}\p{N}])' . preg_quote( (string) $phrase, '/' ) . '(?![\p{L}\p{N}])/u';
-
-			if ( ! preg_match( $pattern, $text, $m, PREG_OFFSET_CAPTURE ) ) {
-				continue;
+			if ( null === $best ) {
+				return;
 			}
 
-			$at     = (int) $m[0][1];
-			$hit    = (string) $m[0][0];
-			$before = substr( $text, 0, $at );
-			$after  = substr( $text, $at + strlen( $hit ) );
+			$before = substr( $text, 0, $best['at'] );
+			$after  = substr( $text, $best['at'] + strlen( $best['hit'] ) );
 
 			$frag = $doc->createDocumentFragment();
 
@@ -518,24 +540,33 @@ final class Seo_Links {
 			}
 
 			$link = $doc->createElement( 'a' );
-			$link->setAttribute( 'href', $url );
+			$link->setAttribute( 'href', $best['url'] );
 			$link->setAttribute( 'class', 'oc-autolink' );
-			$link->appendChild( $doc->createTextNode( $hit ) );
+			$link->appendChild( $doc->createTextNode( $best['hit'] ) );
 			$frag->appendChild( $link );
 
+			$rest = null;
+
 			if ( '' !== $after ) {
-				$frag->appendChild( $doc->createTextNode( $after ) );
+				$rest = $doc->createTextNode( $after );
+				$frag->appendChild( $rest );
 			}
 
-			if ( $node->parentNode ) {
-				$node->parentNode->replaceChild( $frag, $node );
+			if ( ! $node->parentNode ) {
+				return;
 			}
 
-			$done[ $url ] = true;
-			unset( $index[ $phrase ] );
+			$node->parentNode->replaceChild( $frag, $node );
+
+			$done[ $best['url'] ] = true;
+			unset( $index[ $best['phrase'] ] );
 			$budget--;
 
-			return;
+			if ( null === $rest ) {
+				return;
+			}
+
+			$node = $rest;
 		}
 	}
 
