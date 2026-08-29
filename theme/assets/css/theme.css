@@ -14400,3 +14400,49 @@ p.no-comments {
 
 .oc-xsell__square .oc-xsell__price { font-size: 13px; }
 .oc-xsell__square .oc-xsell__add { min-inline-size: 0; margin-block-start: 2px; }
+
+/* ------------------------------------------------------------------ *
+ * A fee row at checkout is a discount, and looks like the others.
+ *
+ * The promotion plugin claims tr.fee outright — flex row, 18px, bold,
+ * no padding — and does it with !important on every declaration. That
+ * styling landed on the bundle discount and made one line shout while
+ * the subtotal, shipping and coupon lines beside it spoke normally.
+ *
+ * Winning this needs both more specificity and !important; specificity
+ * is what decides between two !important declarations. Everything here
+ * restates the theme's own discount row and nothing more.
+ * ------------------------------------------------------------------ */
+
+.oc-checkout .woocommerce-checkout-review-order-table tr.fee {
+	display: table-row !important;
+	padding: 0 !important;
+}
+
+.oc-checkout .woocommerce-checkout-review-order-table tr.fee th,
+.oc-checkout .woocommerce-checkout-review-order-table tr.fee td {
+	display: table-cell !important;
+	float: none !important;
+	width: auto !important;
+	border: 0 !important;
+	background: none !important;
+	padding-block: 7px !important;
+	padding-inline: 0 !important;
+	font-size: .95rem !important;
+	font-weight: 400 !important;
+	color: var(--oc-ink, #111) !important;
+}
+
+.oc-checkout .woocommerce-checkout-review-order-table tr.fee th { text-align: start !important; }
+.oc-checkout .woocommerce-checkout-review-order-table tr.fee td { text-align: left !important; }
+
+/* The amount keeps its own direction so the currency sits where it
+ * should, but not the plugin's size and weight. */
+.oc-checkout .woocommerce-checkout-review-order-table tr.fee td > span,
+.oc-checkout .woocommerce-checkout-review-order-table tr.fee td > span bdi {
+	display: inline !important;
+	padding: 0 !important;
+	font-size: .95rem !important;
+	font-weight: 400 !important;
+	color: var(--oc-ink, #111) !important;
+}
