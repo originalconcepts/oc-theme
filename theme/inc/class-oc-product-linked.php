@@ -747,9 +747,12 @@ final class Product_Linked {
 			'dot'      => wc_get_price_decimal_separator(),
 			'thousand' => wc_get_price_thousand_separator(),
 			'format'   => get_option( 'woocommerce_currency_pos', 'left' ),
-			// This shop writes 1,000 rather than 1,000.00, and a running
-			// total that ignored that would not look like its own prices.
-			'trim'     => 'yes' === get_option( 'woocommerce_price_trim_zeros', 'no' ),
+			// Whether to keep the pence is decided by a filter, not by an
+			// option -- wc_price() asks this same question, and something on
+			// this site answers yes, which is why its prices read 1,000 while
+			// the option is not even set. Asked the way WooCommerce asks it,
+			// a running total writes amounts the way the shop does.
+			'trim'     => (bool) apply_filters( 'woocommerce_price_trim_zeros', false ),
 		);
 	}
 
