@@ -102,7 +102,27 @@ final class Media_Clean {
 	private const KEY_EXTRA = array(
 		'_oc_sections',
 		'_product_image_gallery',
+	);
+
+	/**
+	 * Keys that describe an attachment rather than point at one.
+	 *
+	 * These matter more than they look. An attachment's own metadata is a
+	 * blob of widths, heights and file sizes — numbers like 509 and 644,
+	 * sitting squarely in the range attachment IDs occupy. Read as
+	 * references they mark half the library as spoken for and bury the real
+	 * orphans, so they are skipped. None of them ever names another file.
+	 *
+	 * @var string[]
+	 */
+	private const KEY_SELF = array(
+		'_wp_attachment_metadata',
 		'_wp_attached_file',
+		'_wp_attachment_backup_sizes',
+		'_wp_attachment_image_alt',
+		'_wp_attachment_is_custom_background',
+		'_edit_lock',
+		'_edit_last',
 	);
 
 	/**
@@ -237,7 +257,12 @@ final class Media_Clean {
 			$parts[] = $wpdb->prepare( "{$column} = %s", $key ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		}
 
-		return '( ' . implode( ' OR ', $parts ) . ' )';
+		$skip = array();
+		foreach ( self::KEY_SELF as $key ) {
+			$skip[] = $wpdb->prepare( "{$column} <> %s", $key ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		}
+
+		return '( ' . implode( ' OR ', $parts ) . ' ) AND ( ' . implode( ' AND ', $skip ) . ' )';
 	}
 
 	/**
@@ -330,33 +355,37 @@ final class Media_Clean {
 	public static function bucket( object $row, array $refs, array $posts ): string {
 		$id = (int) $row->ID;
 
-		// Uploaded a moment ago — someone may still be working with it.
-		$age = time() - (int) strtotime( (string) $row->post_date_gmt . ' UTC' );
-		if ( $age < self::GRACE_HOURS * HOUR_IN_SECONDS ) {
-			return 'recent';
-		}
-
 		// Pointed at by ID from somewhere.
 		if ( isset( $refs[ $id ] ) ) {
 			return 'used';
 		}
 
 		// Hanging off a post.
+		$found  = 'orphan';
 		$parent = (int) $row->post_parent;
+
 		if ( $parent > 0 && isset( $posts[ $parent ] ) ) {
 			$status = (string) $posts[ $parent ]->post_status;
 
 			if ( 'trash' === $status ) {
-				return 'trash';
+				$found = 'trash';
+			} elseif ( in_array( $status, array( 'draft', 'pending', 'auto-draft' ), true ) ) {
+				$found = 'draft';
+			} else {
+				return 'used';
 			}
-			if ( in_array( $status, array( 'draft', 'pending', 'auto-draft' ), true ) ) {
-				return 'draft';
-			}
-
-			return 'used';
 		}
 
-		return 'orphan';
+		// Deletable on the face of it — but uploaded a moment ago, so
+		// someone may still be part-way through putting it to work. The
+		// grace period is applied last, so that a picture already in use
+		// is reported as in use rather than merely young.
+		$age = time() - (int) strtotime( (string) $row->post_date_gmt . ' UTC' );
+		if ( $age < self::GRACE_HOURS * HOUR_IN_SECONDS ) {
+			return 'recent';
+		}
+
+		return $found;
 	}
 
 	/**
