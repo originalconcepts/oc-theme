@@ -2122,7 +2122,7 @@ final class Customizer {
 				'all'  => __( 'Every category the product is in', 'oc-theme' ),
 				'leaf' => __( 'The category shown in its path', 'oc-theme' ),
 			),
-			'all',
+			'leaf',
 			array(
 				'setting' => 'oc_product_related',
 				'values'  => array( '1' ),

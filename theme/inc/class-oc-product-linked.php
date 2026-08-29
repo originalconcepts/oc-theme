@@ -40,6 +40,11 @@ final class Product_Linked {
 		add_filter( 'woocommerce_output_related_products_args', array( $this, 'related_args' ) );
 		add_filter( 'woocommerce_breadcrumb_main_term', array( $this, 'breadcrumb_term' ), 10, 2 );
 
+		// WooCommerce keeps each product's similar row in a transient. Without
+		// this, changing the setting appears to do nothing until the caches
+		// happen to expire, and the setting reads as broken.
+		add_action( 'customize_save_after', array( $this, 'forget_related' ) );
+
 		add_action( 'wp', array( $this, 'place_cross_sells' ) );
 		add_action( 'woocommerce_add_to_cart', array( $this, 'add_the_ticked' ), 20, 6 );
 	}
@@ -583,7 +588,7 @@ final class Product_Linked {
 	public function related_terms( $terms, $product_id ) {
 		$terms = array_values( array_unique( array_map( 'intval', (array) $terms ) ) );
 
-		if ( 'leaf' !== (string) get_theme_mod( 'oc_related_scope', 'all' ) || count( $terms ) < 2 ) {
+		if ( 'leaf' !== (string) get_theme_mod( 'oc_related_scope', 'leaf' ) || count( $terms ) < 2 ) {
 			return $terms;
 		}
 
@@ -616,6 +621,19 @@ final class Product_Linked {
 		$primary = self::primary_term( (int) $post_id );
 
 		return $primary ?: $main;
+	}
+
+	/**
+	 * Throw away the cached similar rows.
+	 *
+	 * Bumping WooCommerce's product cache version does it wholesale and works
+	 * whether the transients live in the database or in Redis, which deleting
+	 * option rows by hand would not.
+	 */
+	public function forget_related(): void {
+		if ( class_exists( 'WC_Cache_Helper' ) ) {
+			\WC_Cache_Helper::get_transient_version( 'product', true );
+		}
 	}
 
 	/**
