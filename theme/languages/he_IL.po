@@ -5636,3 +5636,97 @@ msgid "%d order"
 msgid_plural "%d orders"
 msgstr[0] "הזמנה אחת"
 msgstr[1] "%d הזמנות"
+
+msgid "Media cleanup"
+msgstr "ניקוי מדיה"
+
+msgid "The scan expired. Please run it again."
+msgstr "הסריקה פגה. יש להריץ אותה שוב."
+
+msgid "Finds pictures and videos nothing points at any more. A file is treated as in use if it hangs off a post, if its ID appears in any field that holds media, or if its name is written anywhere at all — content, settings or the customizer. Anything in the least doubtful is kept."
+msgstr "מאתר תמונות וסרטונים שאף אחד כבר לא מפנה אליהם. קובץ נחשב בשימוש אם הוא משויך לפריט כלשהו, אם המזהה שלו מופיע באחד השדות שמחזיקים מדיה, או אם שמו כתוב במקום כלשהו — בתוכן, בהגדרות או במתאים אישית. כל מה שיש לגביו ספק כלשהו — נשמר."
+
+msgid "Scan the media library"
+msgstr "סרוק את ספריית המדיה"
+
+msgid "Attached to nothing"
+msgstr "לא משויכות לשום מקום"
+
+msgid "No post, no field and no page mentions these. Safe to remove."
+msgstr "אף פריט, שדה או עמוד לא מזכיר אותן. אפשר למחוק בבטחה."
+
+msgid "Belonging to drafts"
+msgstr "שייכות לטיוטות"
+
+msgid "Uploaded to a product or page that was never published. Removing them empties those drafts."
+msgstr "הועלו למוצר או לעמוד שמעולם לא פורסם. מחיקה תרוקן את הטיוטות האלה."
+
+msgid "Belonging to the bin"
+msgstr "שייכות לפריטים באשפה"
+
+msgid "Uploaded to something already in the bin. If you might restore it, keep these."
+msgstr "הועלו לפריט שכבר נמצא באשפה. אם יתכן שתשחזר אותו — כדאי לשמור."
+
+msgid "in use"
+msgstr "בשימוש"
+
+msgid "attached to nothing"
+msgstr "לא משויכות"
+
+msgid "on drafts"
+msgstr "בטיוטות"
+
+msgid "on binned items"
+msgstr "בפריטים באשפה"
+
+msgid "can be freed"
+msgstr "ניתן לפנות"
+
+msgid "no preview"
+msgstr "אין תצוגה"
+
+msgid "view"
+msgstr "הצג"
+
+msgid "Nothing to clean — every file in the library is spoken for."
+msgstr "אין מה לנקות — כל קובץ בספרייה נמצא בשימוש."
+
+msgid "Delete only what is attached to nothing"
+msgstr "מחק רק את מה שאינו משויך"
+
+msgid "Delete everything ticked"
+msgstr "מחק את כל המסומן"
+
+msgid "Deleting is permanent — the files leave the server."
+msgstr "המחיקה סופית — הקבצים יוסרו מהשרת."
+
+msgid "Scanning…"
+msgstr "סורק…"
+
+msgid "Checking file names — %1$d of %2$d"
+msgstr "בודק שמות קבצים — %1$d מתוך %2$d"
+
+msgid "Deleting — %1$d of %2$d"
+msgstr "מוחק — %1$d מתוך %2$d"
+
+msgid "Nothing is ticked."
+msgstr "לא סומן דבר."
+
+msgid "Delete %d files for good? This cannot be undone."
+msgstr "למחוק %d קבצים לצמיתות? לא ניתן לבטל פעולה זו."
+
+msgid "Done: %1$d deleted, %2$s freed. %3$d were kept because something still uses them."
+msgstr "הסתיים: %1$d נמחקו, %2$s פונו. %3$d נשמרו כי משהו עדיין משתמש בהם."
+
+msgid "Something went wrong. Please try again."
+msgstr "משהו השתבש. נסו שוב."
+
+msgid "Download the record (%d file)"
+msgid_plural "Download the record (%d files)"
+msgstr[0] "הורדת הרישום (קובץ אחד)"
+msgstr[1] "הורדת הרישום (%d קבצים)"
+
+msgid "%d file uploaded in the last two days is held back, in case it is still being worked on."
+msgid_plural "%d files uploaded in the last two days are held back, in case they are still being worked on."
+msgstr[0] "קובץ אחד שהועלה ביומיים האחרונים נשמר בצד, למקרה שעדיין עובדים עליו."
+msgstr[1] "%d קבצים שהועלו ביומיים האחרונים נשמרים בצד, למקרה שעדיין עובדים עליהם."
