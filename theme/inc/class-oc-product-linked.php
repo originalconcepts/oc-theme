@@ -195,7 +195,19 @@ final class Product_Linked {
 		// belongs to the page, not to these. Same flag the cart's cards use.
 		Cart::$in_upsells = true;
 
-		echo '<div class="' . esc_attr( implode( ' ', $classes ) ) . '"' . $band['style'] . '>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in band().
+		// Beside the button the block also feeds the running total printed on
+		// it, so the page's own price and the shop's money format travel with
+		// the markup.
+		$data = '';
+
+		if ( 'cart' === self::xsell_place() ) {
+			$self  = wc_get_product( get_the_ID() );
+			$data .= ' data-oc-xs-total="1"';
+			$data .= ' data-main="' . esc_attr( (string) ( $self instanceof \WC_Product ? wc_get_price_to_display( $self ) : 0 ) ) . '"';
+			$data .= ' data-money="' . esc_attr( (string) wp_json_encode( self::money() ) ) . '"';
+		}
+
+		echo '<div class="' . esc_attr( implode( ' ', $classes ) ) . '"' . $band['style'] . $data . '>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped above.
 		echo '<h2 class="oc-xsell__title">' . esc_html( $title ) . '</h2>';
 
 		switch ( $style ) {
@@ -247,7 +259,7 @@ final class Product_Linked {
 		foreach ( $products as $p ) {
 			$id = $p->get_id();
 
-			echo '<li class="oc-xsell__row" data-oc-xs="' . absint( $id ) . '">';
+			echo '<li class="oc-xsell__row" data-oc-xs="' . absint( $id ) . '" data-price="' . esc_attr( (string) wc_get_price_to_display( $p ) ) . '">';
 
 			echo '<label class="oc-xsell__tick">';
 			echo '<input type="checkbox" name="oc_xs[' . absint( $id ) . '][on]" value="1" data-oc-xs-on>';
@@ -356,7 +368,7 @@ final class Product_Linked {
 				continue;
 			}
 
-			echo '<label class="oc-xsell__tile" data-oc-xs="' . absint( $id ) . '">';
+			echo '<label class="oc-xsell__tile" data-oc-xs="' . absint( $id ) . '" data-price="' . esc_attr( (string) wc_get_price_to_display( $p ) ) . '">';
 			echo '<input type="checkbox" name="oc_xs[' . absint( $id ) . '][on]" value="1" data-oc-xs-on>';
 			echo '<input type="hidden" name="oc_xs[' . absint( $id ) . '][qty]" value="1">';
 			echo '<span class="oc-xsell__tilepic">' . $p->get_image( 'woocommerce_thumbnail' ) . '<span class="oc-xsell__box" aria-hidden="true"></span></span>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- WooCommerce markup.
@@ -710,13 +722,32 @@ final class Product_Linked {
 	 * @return array<string,mixed>
 	 */
 	public function related_args( $args ) {
-		$cols = (int) get_theme_mod( 'oc_related_cols', 4 );
-		$cols = max( 2, min( 6, $cols ) );
+		$cols = max( 2, min( 6, (int) get_theme_mod( 'oc_related_cols', 4 ) ) );
+
+		// How many to show is its own question. It used to fall out of the
+		// column count -- a grid showed exactly one row -- which meant asking
+		// for four across quietly asked for four products.
+		$count = max( 2, min( 24, (int) get_theme_mod( 'oc_related_count', 8 ) ) );
 
 		$args['columns']        = $cols;
-		$args['posts_per_page'] = 'slider' === self::related_layout() ? max( 8, $cols * 3 ) : $cols;
+		$args['posts_per_page'] = $count;
 
 		return $args;
+	}
+
+	/**
+	 * How this shop writes an amount, so a running total can match it.
+	 *
+	 * @return array<string,mixed>
+	 */
+	public static function money(): array {
+		return array(
+			'symbol'   => html_entity_decode( get_woocommerce_currency_symbol(), ENT_QUOTES, 'UTF-8' ),
+			'decimals' => wc_get_price_decimals(),
+			'dot'      => wc_get_price_decimal_separator(),
+			'thousand' => wc_get_price_thousand_separator(),
+			'format'   => get_option( 'woocommerce_currency_pos', 'left' ),
+		);
 	}
 
 	/**

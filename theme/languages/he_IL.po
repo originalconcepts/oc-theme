@@ -6098,3 +6098,9 @@ msgstr "רקע אזור החבילה"
 
 msgid "Left empty the area sits on the page as it does now. A colour gives it its own band, with room around the products."
 msgstr "אם נשאר ריק, האזור יישאר על העמוד כפי שהוא היום. צבע ייתן לו רצועה משלו, עם מרווח סביב המוצרים."
+
+msgid "How many similar products"
+msgstr "כמה מוצרים דומים להציג"
+
+msgid "The most it will show. A category with fewer products in it shows what it has."
+msgstr "המקסימום שיוצג. קטגוריה עם פחות מוצרים תציג את מה שיש בה."

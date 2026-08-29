@@ -14270,20 +14270,30 @@ p.no-comments {
  * room to sit in — nothing about the products themselves changes.
  * ------------------------------------------------------------------ */
 
+/* The colour runs the full width of the row, the way a band should, while
+ * the products inside stay lined up with the rest of the page. The theme
+ * already breaks out this way elsewhere. */
 .oc-linked--band {
 	background: var(--oc-band);
-	padding: 30px var(--oc-gap, 20px);
-	border-radius: 14px;
+	padding-block: 34px;
+	margin-inline: calc(50% - 50vw);
+	padding-inline: max(var(--oc-gap, 20px), calc(50vw - 50%));
+	border-radius: 0;
 }
 
-/* Beside the add-to-cart button the band is already inside a narrow
- * column, so it takes less room and loses the outer radius fight. */
-.oc-xsell--cart.oc-linked--band { padding: 18px 16px; border-radius: 12px; }
+/* Beside the add-to-cart button the block lives in a narrow column, and a
+ * band that escaped it would run across the gallery. That one stays put. */
+.oc-xsell--cart.oc-linked--band {
+	margin-inline: 0;
+	padding: 18px 16px;
+	border-radius: 12px;
+}
 
 /* The bundle draws its own outline; given a colour it becomes the fill
  * instead, so the two do not stack into a box within a box. */
 .oc-bt.oc-linked--band { background: var(--oc-band); border-color: transparent; }
 
 @media (max-width: 767px) {
-	.oc-linked--band { padding: 22px var(--oc-gap, 16px); }
+	.oc-linked--band { padding-block: 24px; }
+	.oc-xsell--cart.oc-linked--band { padding: 16px 14px; }
 }

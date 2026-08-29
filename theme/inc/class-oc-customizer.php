@@ -2156,6 +2156,21 @@ final class Customizer {
 
 		$this->number(
 			$c,
+			'oc_related_count',
+			'oc_product',
+			__( 'How many similar products', 'oc-theme' ),
+			8,
+			2,
+			24,
+			array(
+				'setting' => 'oc_product_related',
+				'values'  => array( '1' ),
+			),
+			__( 'The most it will show. A category with fewer products in it shows what it has.', 'oc-theme' )
+		);
+
+		$this->number(
+			$c,
 			'oc_related_cols',
 			'oc_product',
 			__( 'Similar products per row', 'oc-theme' ),

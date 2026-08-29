@@ -8010,6 +8010,24 @@
 	} );
 }() );
 
+/* ---------- one way of writing an amount, shared ---------- */
+window.__ocMoney = function ( n, money ) {
+	money = money || {};
+
+	var dec   = ( 'undefined' === typeof money.decimals ) ? 2 : money.decimals,
+		bits  = ( Math.round( n * 100 ) / 100 ).toFixed( dec ).split( '.' ),
+		whole = bits[ 0 ].replace( /\B(?=(\d{3})+(?!\d))/g, money.thousand || ',' ),
+		out   = whole + ( bits[ 1 ] ? ( money.dot || '.' ) + bits[ 1 ] : '' ),
+		sym   = money.symbol || '';
+
+	switch ( money.format ) {
+		case 'right':       return out + sym;
+		case 'left_space':  return sym + ' ' + out;
+		case 'right_space': return out + ' ' + sym;
+		default:            return sym + out;
+	}
+};
+
 /* ---------- cross-sells on a product page ----------
  *
  * Ticking a row reveals its quantity and marks it; the tick itself is a
@@ -8077,6 +8095,84 @@
 				box.dispatchEvent( new Event( 'change', { bubbles: true } ) );
 			}
 		} );
+
+		/* The button carries what pressing it will cost: the product, its
+		 * quantity, and whatever is ticked here — the same idea as the
+		 * checkout button naming its own total. */
+		if ( block.hasAttribute( 'data-oc-xs-total' ) ) {
+			var form  = document.querySelector( 'form.cart' ),
+				money = {};
+
+			try { money = JSON.parse( block.dataset.money || '{}' ); } catch ( e ) { money = {}; }
+
+			if ( form ) {
+				var btn = form.querySelector( '.single_add_to_cart_button' );
+
+				if ( btn ) {
+					if ( ! btn.dataset.ocLabel ) {
+						btn.dataset.ocLabel = btn.textContent.trim();
+					}
+
+					// A variable product's price follows the chosen variation;
+					// Woo writes it into the summary, so it is read from there
+					// and the block's own figure is the fallback.
+					var mainPrice = function () {
+						var shown = form.querySelector( '.woocommerce-variation-price .amount' );
+
+						if ( shown ) {
+							var raw = shown.textContent.replace( /[^0-9.,-]/g, '' )
+								.split( money.thousand || ',' ).join( '' )
+								.replace( money.dot || '.', '.' );
+							var n = parseFloat( raw );
+							if ( ! isNaN( n ) ) { return n; }
+						}
+
+						return parseFloat( block.dataset.main ) || 0;
+					};
+
+					var paint = function () {
+						var qtyField = form.querySelector( 'input.qty' ),
+							qty      = qtyField ? ( parseInt( qtyField.value, 10 ) || 1 ) : 1,
+							sum      = mainPrice() * qty;
+
+						Array.prototype.forEach.call(
+							block.querySelectorAll( '[data-oc-xs-on]' ),
+							function ( box ) {
+								if ( ! box.checked ) { return; }
+
+								var row = box.closest( '[data-oc-xs]' );
+								if ( ! row ) { return; }
+
+								var each = parseFloat( row.dataset.price ) || 0,
+									n    = row.querySelector( '.oc-xsell__n' );
+
+								sum += each * ( n ? ( parseInt( n.value, 10 ) || 1 ) : 1 );
+							}
+						);
+
+						btn.textContent = sum > 0
+							? btn.dataset.ocLabel + ' · ' + window.__ocMoney( sum, money )
+							: btn.dataset.ocLabel;
+					};
+
+					block.addEventListener( 'change', function () { setTimeout( paint, 0 ); } );
+					block.addEventListener( 'click', function ( e ) {
+						if ( e.target.closest( '[data-oc-xs-step]' ) ) { setTimeout( paint, 0 ); }
+					} );
+					form.addEventListener( 'change', function () { setTimeout( paint, 0 ); } );
+					form.addEventListener( 'input', function () { setTimeout( paint, 0 ); } );
+					form.addEventListener( 'click', function () { setTimeout( paint, 0 ); } );
+
+					if ( window.jQuery ) {
+						window.jQuery( form ).on( 'show_variation hide_variation reset_data', function () {
+							setTimeout( paint, 0 );
+						} );
+					}
+
+					paint();
+				}
+			}
+		}
 
 		/* The block beside the add-to-cart button sits ABOVE the whole area,
 		 * which means above the colour swatches -- and those are drawn before
@@ -8155,19 +8251,7 @@
 	try { money = JSON.parse( block.dataset.money || '{}' ); } catch ( e ) { money = {}; }
 
 	function price( n ) {
-		var dec = ( 'undefined' === typeof money.decimals ) ? 2 : money.decimals,
-			s   = ( Math.round( n * 100 ) / 100 ).toFixed( dec ),
-			bits = s.split( '.' ),
-			whole = bits[ 0 ].replace( /\B(?=(\d{3})+(?!\d))/g, money.thousand || ',' ),
-			out = whole + ( bits[ 1 ] ? ( money.dot || '.' ) + bits[ 1 ] : '' ),
-			sym = money.symbol || '';
-
-		switch ( money.format ) {
-			case 'right':       return out + sym;
-			case 'left_space':  return sym + ' ' + out;
-			case 'right_space': return out + ' ' + sym;
-			default:            return sym + out;
-		}
+		return window.__ocMoney( n, money );
 	}
 
 	function chosen() {
