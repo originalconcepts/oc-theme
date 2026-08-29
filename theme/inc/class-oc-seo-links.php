@@ -153,7 +153,10 @@ final class Seo_Links {
 				return is_singular( array( 'post', 'page' ) );
 
 			case 'category':
-				return is_tax( 'product_cat' ) || is_category() || is_tax( 'product_brand' );
+				return is_tax( 'product_cat' ) || is_category();
+
+			case 'brand':
+				return is_tax( 'product_brand' );
 
 			case 'product':
 				return is_singular( 'product' );

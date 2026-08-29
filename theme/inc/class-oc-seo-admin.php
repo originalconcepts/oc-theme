@@ -398,6 +398,7 @@ final class Seo_Admin {
 			'all'      => __( 'Everywhere on the site', 'oc-theme' ),
 			'content'  => __( 'Articles and pages only', 'oc-theme' ),
 			'category' => __( 'Category pages only', 'oc-theme' ),
+			'brand'    => __( 'Brand pages only', 'oc-theme' ),
 			'product'  => __( 'Product pages only', 'oc-theme' ),
 		);
 		?>
@@ -613,7 +614,7 @@ final class Seo_Admin {
 		}
 
 		if ( 'links' === $tab ) {
-			$scopes = array( 'all', 'content', 'category', 'product' );
+			$scopes = array( 'all', 'content', 'category', 'brand', 'product' );
 			$kinds  = array( 'product_cat', 'product', 'post', 'product_brand', 'category' );
 
 			$settings['links_on']    = empty( $_POST['links_on'] ) ? 0 : 1;

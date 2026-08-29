@@ -5818,3 +5818,6 @@ msgstr "לעולם אל תקשר את אלה"
 
 msgid "One phrase per line."
 msgstr "ביטוי אחד בכל שורה."
+
+msgid "Brand pages only"
+msgstr "רק בעמודי מותג"
