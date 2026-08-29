@@ -8009,3 +8009,73 @@
 		}, true );
 	} );
 }() );
+
+/* ---------- cross-sells on a product page ----------
+ *
+ * Ticking a row reveals its quantity and marks it; the tick itself is a
+ * real checkbox inside the product's form, so what is ticked travels with
+ * the add-to-cart submission and the server adds it alongside. Tapping a
+ * picture or a name opens the same quick-pick panel the catalogue uses. */
+( function () {
+	var blocks = document.querySelectorAll( '.oc-xsell' );
+	if ( ! blocks.length ) { return; }
+
+	Array.prototype.forEach.call( blocks, function ( block ) {
+		// The tick, and the quantity it reveals.
+		block.addEventListener( 'change', function ( e ) {
+			var box = e.target.closest( '[data-oc-xs-on]' );
+			if ( ! box ) { return; }
+
+			var row = box.closest( '.oc-xsell__row' );
+			if ( ! row ) { return; }
+
+			var qty = row.querySelector( '[data-oc-xs-qty]' );
+
+			row.classList.toggle( 'is-on', box.checked );
+			if ( qty ) { qty.hidden = ! box.checked; }
+		} );
+
+		// Plus and minus on the quantity.
+		block.addEventListener( 'click', function ( e ) {
+			var step = e.target.closest( '[data-oc-xs-step]' );
+			if ( ! step ) { return; }
+
+			var field = step.parentNode.querySelector( '.oc-xsell__n' );
+			if ( ! field ) { return; }
+
+			var next = ( parseInt( field.value, 10 ) || 1 ) + parseInt( step.dataset.ocXsStep, 10 );
+			field.value = Math.max( 1, next );
+		} );
+
+		// A picture or a name opens the quick pick.
+		block.addEventListener( 'click', function ( e ) {
+			var open = e.target.closest( '[data-oc-xs-open]' );
+			if ( ! open ) { return; }
+
+			e.preventDefault();
+
+			if ( window.__ocQuickPick ) {
+				window.__ocQuickPick( open.dataset.ocXsOpen );
+			} else {
+				// No panel on the page (it builds with the cart): the product
+				// page is a fair second best.
+				var row = open.closest( '[data-oc-xs]' );
+				if ( row ) { window.location = '/?p=' + row.dataset.ocXs; }
+			}
+		} );
+
+		// Choosing an option implies wanting the product.
+		block.addEventListener( 'change', function ( e ) {
+			var opt = e.target.closest( '[data-oc-xs-attr]' );
+			if ( ! opt || ! opt.value ) { return; }
+
+			var row = opt.closest( '.oc-xsell__row' );
+			var box = row && row.querySelector( '[data-oc-xs-on]' );
+
+			if ( box && ! box.checked ) {
+				box.checked = true;
+				box.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+			}
+		} );
+	} );
+}() );

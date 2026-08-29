@@ -2162,6 +2162,139 @@ final class Customizer {
 			),
 			__( 'Only tells when there are too few cards to fill the row.', 'oc-theme' )
 		);
+		$this->toggle(
+			$c,
+			'oc_xsell_on',
+			'oc_product',
+			__( 'Show products that go with this one', 'oc-theme' ),
+			false,
+			null,
+			__( 'The Cross-sells list on the product\'s own Linked Products tab. WooCommerce only shows these in the cart; this brings them onto the product page.', 'oc-theme' )
+		);
+
+		$this->text( $c, 'oc_xsell_title', 'oc_product', __( 'Goes-with title', 'oc-theme' ) );
+
+		$this->preset(
+			$c,
+			'oc_xsell_place',
+			'oc_product',
+			__( 'Where they appear', 'oc-theme' ),
+			array(
+				'cart'    => array(
+					'label' => __( 'Beside the add-to-cart button', 'oc-theme' ),
+					'svg'   => self::wf( '0 0 132 52', self::rect( 8, 6, 44, 40, 'dt', 2 ) . self::rect( 60, 8, 30, 5, 'ln' ) . self::rect( 60, 17, 20, 4, 'ln' ) . self::rect( 60, 26, 64, 7, 'ac', 2 ) . self::rect( 60, 36, 64, 7, 'ac', 2 ) ),
+				),
+				'tabs'    => array(
+					'label' => __( 'After the tabs', 'oc-theme' ),
+					'svg'   => self::wf( '0 0 132 52', self::rect( 8, 4, 116, 14, 'dt', 2 ) . self::rect( 8, 22, 26, 5, 'ln' ) . self::rect( 8, 32, 116, 14, 'ac', 2 ) ),
+				),
+				'summary' => array(
+					'label' => __( 'Under the gallery and details', 'oc-theme' ),
+					'svg'   => self::wf( '0 0 132 52', self::rect( 8, 4, 44, 24, 'dt', 2 ) . self::rect( 60, 6, 40, 5, 'ln' ) . self::rect( 60, 15, 28, 4, 'ln' ) . self::rect( 8, 34, 26, 12, 'ac', 2 ) . self::rect( 38, 34, 26, 12, 'ac', 2 ) . self::rect( 68, 34, 26, 12, 'ac', 2 ) . self::rect( 98, 34, 26, 12, 'ac', 2 ) ),
+				),
+			),
+			'summary',
+			'150px',
+			'',
+			array(
+				'setting' => 'oc_xsell_on',
+				'values'  => array( '1' ),
+			)
+		);
+
+		$this->preset(
+			$c,
+			'oc_xsell_style_cart',
+			'oc_product',
+			__( 'Shape beside the button', 'oc-theme' ),
+			array(
+				'rows' => array(
+					'label' => __( 'Rows with a tick box', 'oc-theme' ),
+					'svg'   => self::wf( '0 0 132 52', self::rect( 8, 8, 8, 8, 'ac', 2 ) . self::rect( 20, 6, 12, 12, 'dt', 2 ) . self::rect( 36, 9, 60, 6, 'ln' ) . self::rect( 8, 22, 8, 8, 'ac', 2 ) . self::rect( 20, 20, 12, 12, 'dt', 2 ) . self::rect( 36, 23, 60, 6, 'ln' ) . self::rect( 8, 36, 8, 8, 'ac', 2 ) . self::rect( 20, 34, 12, 12, 'dt', 2 ) . self::rect( 36, 37, 60, 6, 'ln' ) ),
+				),
+				'grid' => array(
+					'label' => __( 'Squares you can tick', 'oc-theme' ),
+					'svg'   => self::wf( '0 0 132 52', self::rect( 8, 10, 34, 32, 'dt', 2 ) . self::rect( 12, 14, 8, 8, 'ac', 2 ) . self::rect( 48, 10, 34, 32, 'dt', 2 ) . self::rect( 52, 14, 8, 8, 'ac', 2 ) . self::rect( 88, 10, 34, 32, 'dt', 2 ) . self::rect( 92, 14, 8, 8, 'ac', 2 ) ),
+				),
+			),
+			'rows',
+			'150px',
+			__( 'Whatever is ticked is added together with the product itself.', 'oc-theme' ),
+			array(
+				'setting' => 'oc_xsell_place',
+				'values'  => array( 'cart' ),
+			)
+		);
+
+		$this->preset(
+			$c,
+			'oc_xsell_style_tabs',
+			'oc_product',
+			__( 'Shape after the tabs', 'oc-theme' ),
+			array(
+				'wide' => array(
+					'label' => __( 'One across the width', 'oc-theme' ),
+					'svg'   => self::wf( '0 0 132 52', self::rect( 8, 12, 30, 28, 'dt', 2 ) . self::rect( 44, 16, 44, 6, 'ln' ) . self::rect( 44, 26, 28, 5, 'ln' ) . self::rect( 96, 20, 28, 12, 'ac', 2 ) ),
+				),
+				'grid' => array(
+					'label' => __( 'Cards in a row', 'oc-theme' ),
+					'svg'   => self::wf( '0 0 132 52', self::rect( 8, 8, 26, 36, 'dt', 2 ) . self::rect( 38, 8, 26, 36, 'dt', 2 ) . self::rect( 68, 8, 26, 36, 'dt', 2 ) . self::rect( 98, 8, 26, 36, 'dt', 2 ) ),
+				),
+			),
+			'wide',
+			'150px',
+			__( 'Each product carries its own add-to-cart button here.', 'oc-theme' ),
+			array(
+				'setting' => 'oc_xsell_place',
+				'values'  => array( 'tabs' ),
+			)
+		);
+
+		$this->preset(
+			$c,
+			'oc_xsell_style_sum',
+			'oc_product',
+			__( 'Shape under the details', 'oc-theme' ),
+			array(
+				'grid'   => array(
+					'label' => __( 'Grid', 'oc-theme' ),
+					'svg'   => self::wf( '0 0 132 52', self::rect( 8, 6, 26, 18, 'ac', 2 ) . self::rect( 38, 6, 26, 18, 'ac', 2 ) . self::rect( 68, 6, 26, 18, 'ac', 2 ) . self::rect( 98, 6, 26, 18, 'ac', 2 ) . self::rect( 8, 28, 26, 18, 'ac', 2 ) . self::rect( 38, 28, 26, 18, 'ac', 2 ) . self::rect( 68, 28, 26, 18, 'ac', 2 ) . self::rect( 98, 28, 26, 18, 'ac', 2 ) ),
+				),
+				'slider' => array(
+					'label' => __( 'Free slider', 'oc-theme' ),
+					'svg'   => self::wf( '0 0 132 52', self::rect( 8, 14, 30, 24, 'ac', 2 ) . self::rect( 42, 14, 30, 24, 'ac', 2 ) . self::rect( 76, 14, 30, 24, 'ac', 2 ) . self::rect( 110, 14, 22, 24, 'dt', 2 ) ),
+				),
+			),
+			'grid',
+			'150px',
+			__( 'The catalogue\'s own cards, so the add button follows the card setting.', 'oc-theme' ),
+			array(
+				'setting' => 'oc_xsell_place',
+				'values'  => array( 'summary' ),
+			)
+		);
+
+		$this->number( $c, 'oc_xsell_cols', 'oc_product', __( 'Goes-with products per row', 'oc-theme' ), 4, 2, 6, array(
+				'setting' => 'oc_xsell_on',
+				'values'  => array( '1' ),
+			) );
+
+		$this->select(
+			$c,
+			'oc_xsell_align',
+			'oc_product',
+			__( 'Goes-with alignment', 'oc-theme' ),
+			array(
+				'start'  => __( 'From the start of the row', 'oc-theme' ),
+				'center' => __( 'Centred', 'oc-theme' ),
+			),
+			'start',
+			array(
+				'setting' => 'oc_xsell_on',
+				'values'  => array( '1' ),
+			)
+		);
+
 		$this->toggle( $c, 'oc_product_upsells', 'oc_product', __( 'Show complementary products', 'oc-theme' ), true );
 		$this->text( $c, 'oc_upsells_title', 'oc_product', __( 'Complementary products title', 'oc-theme' ) );
 

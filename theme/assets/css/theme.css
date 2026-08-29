@@ -13746,3 +13746,200 @@ p.no-comments {
 		inline-size: calc((100% - var(--oc-gap, 20px)) / 2);
 	}
 }
+
+/* ------------------------------------------------------------------ *
+ * Cross-sells on a product page — "goes well with".
+ *
+ * Three homes, four shapes. Beside the button the products are things
+ * you tick and they ride along with the main one; further down the page
+ * each stands on its own with a button of its own.
+ * ------------------------------------------------------------------ */
+
+.oc-xsell { margin-block: 22px 0; }
+.oc-xsell--tabs,
+.oc-xsell--summary { margin-block-start: 48px; }
+
+.oc-xsell__title {
+	margin-block: 0 14px;
+	font-size: clamp(16px, 1.8vw, 21px);
+}
+
+.oc-xsell--center .oc-xsell__title { text-align: center; }
+
+/* -- rows -- */
+
+.oc-xsell__rows {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.oc-xsell__row {
+	display: grid;
+	grid-template-columns: auto 64px 1fr auto;
+	align-items: center;
+	gap: 12px;
+	margin: 0;
+	padding: 10px;
+	border: 1px solid var(--oc-line, #e5e5e5);
+	border-radius: 10px;
+	transition: border-color .18s, background-color .18s;
+}
+
+.oc-xsell__row.is-on {
+	border-color: currentColor;
+	background: color-mix(in srgb, currentColor 4%, transparent);
+}
+
+.oc-xsell__tick { display: inline-flex; cursor: pointer; }
+.oc-xsell__tick input { position: absolute; opacity: 0; inline-size: 0; block-size: 0; }
+
+.oc-xsell__box {
+	display: grid;
+	place-items: center;
+	inline-size: 22px;
+	block-size: 22px;
+	border: 1.5px solid var(--oc-line, #c9c9c9);
+	border-radius: 6px;
+	transition: background-color .16s, border-color .16s;
+}
+
+.oc-xsell__box::after {
+	content: "";
+	inline-size: 10px;
+	block-size: 6px;
+	border-inline-start: 2px solid #fff;
+	border-block-end: 2px solid #fff;
+	transform: rotate(-45deg) scale(.4);
+	opacity: 0;
+	transition: opacity .16s, transform .16s;
+}
+
+.oc-xsell__tick input:checked + .oc-xsell__box {
+	background: currentColor;
+	border-color: currentColor;
+}
+
+.oc-xsell__tick input:checked + .oc-xsell__box::after { opacity: 1; transform: rotate(-45deg) scale(1); }
+.oc-xsell__tick input:focus-visible + .oc-xsell__box { outline: 2px solid currentColor; outline-offset: 2px; }
+
+.oc-xsell__media {
+	padding: 0;
+	border: 0;
+	background: none;
+	cursor: pointer;
+	line-height: 0;
+}
+
+.oc-xsell__media img {
+	inline-size: 100%;
+	aspect-ratio: 1;
+	object-fit: cover;
+	border-radius: 8px;
+}
+
+.oc-xsell__info { display: flex; flex-direction: column; gap: 3px; min-inline-size: 0; }
+
+.oc-xsell__name {
+	padding: 0;
+	border: 0;
+	background: none;
+	font: inherit;
+	font-weight: 600;
+	text-align: start;
+	cursor: pointer;
+	color: inherit;
+}
+
+.oc-xsell__name:hover { text-decoration: underline; }
+.oc-xsell__price { font-size: 14px; }
+.oc-xsell__price del { opacity: .55; }
+
+.oc-xsell__opts { display: flex; flex-wrap: wrap; gap: 6px; margin-block-start: 6px; }
+
+.oc-xsell__opt {
+	max-inline-size: 160px;
+	padding: 5px 8px;
+	border: 1px solid var(--oc-line, #ddd);
+	border-radius: 7px;
+	font-size: 13px;
+	background: #fff;
+}
+
+.oc-xsell__qty {
+	display: inline-flex;
+	align-items: center;
+	border: 1px solid var(--oc-line, #ddd);
+	border-radius: 8px;
+	overflow: hidden;
+}
+
+.oc-xsell__qty[hidden] { display: none; }
+
+.oc-xsell__step {
+	inline-size: 30px;
+	block-size: 32px;
+	border: 0;
+	background: none;
+	font-size: 16px;
+	cursor: pointer;
+	color: inherit;
+}
+
+.oc-xsell__n {
+	inline-size: 40px;
+	block-size: 32px;
+	border: 0;
+	text-align: center;
+	font: inherit;
+	font-size: 14px;
+	-moz-appearance: textfield;
+}
+
+.oc-xsell__n::-webkit-outer-spin-button,
+.oc-xsell__n::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+/* -- one across the width -- */
+
+.oc-xsell__wides { display: flex; flex-direction: column; gap: 12px; }
+
+.oc-xsell__wides--slide {
+	flex-direction: row;
+	gap: var(--oc-gap, 20px);
+	overflow-x: auto;
+	scrollbar-width: none;
+	overscroll-behavior-inline: contain;
+}
+
+.oc-xsell__wides--slide::-webkit-scrollbar { display: none; }
+.oc-xsell__wides--slide.is-drag { cursor: grabbing; scroll-behavior: auto; user-select: none; }
+.oc-xsell__wides--slide .oc-xsell__wide { flex: 0 0 min(100%, 460px); }
+
+.oc-xsell__wide {
+	display: grid;
+	grid-template-columns: 96px 1fr auto;
+	align-items: center;
+	gap: 14px;
+	padding: 12px;
+	border: 1px solid var(--oc-line, #e5e5e5);
+	border-radius: 12px;
+}
+
+.oc-xsell__wide .oc-xsell__media img { border-radius: 9px; }
+
+.oc-xsell__add {
+	inline-size: 100%;
+	min-inline-size: 150px;
+	text-align: center;
+	white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+	.oc-xsell__wide { grid-template-columns: 76px 1fr; }
+	.oc-xsell__wide .oc-xsell__add { grid-column: 1 / -1; min-inline-size: 0; }
+	.oc-xsell__row { grid-template-columns: auto 56px 1fr; }
+	.oc-xsell__qty { grid-column: 2 / -1; justify-self: start; }
+}

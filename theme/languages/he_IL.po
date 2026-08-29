@@ -5922,3 +5922,72 @@ msgid "Do not use this category to decide what is similar (%d product in it)."
 msgid_plural "Do not use this category to decide what is similar (%d products in it)."
 msgstr[0] "לא להשתמש בקטגוריה הזו כדי לקבוע מה דומה (מוצר אחד בתוכה)."
 msgstr[1] "לא להשתמש בקטגוריה הזו כדי לקבוע מה דומה (%d מוצרים בתוכה)."
+
+msgid "Show products that go with this one"
+msgstr "הצג מוצרים שמשתלבים עם המוצר"
+
+msgid "The Cross-sells list on the product's own Linked Products tab. WooCommerce only shows these in the cart; this brings them onto the product page."
+msgstr "רשימת ה-Cross-sells בלשונית ״מוצרים מקושרים״ של המוצר. ווקומרס מציגה אותם רק בסל; ההגדרה הזו מביאה אותם לעמוד המוצר."
+
+msgid "Goes-with title"
+msgstr "כותרת ״משתלב עם״"
+
+msgid "Goes well with"
+msgstr "משתלב עם"
+
+msgid "Beside the add-to-cart button"
+msgstr "ליד כפתור ההוספה לסל"
+
+msgid "After the tabs"
+msgstr "אחרי הטאבים"
+
+msgid "Under the gallery and details"
+msgstr "מתחת לגלריה ולפרטי המוצר"
+
+msgid "Shape beside the button"
+msgstr "תצוגה ליד הכפתור"
+
+msgid "Rows with a tick box"
+msgstr "שורות עם תיבת סימון"
+
+msgid "Squares you can tick"
+msgstr "ריבועים לסימון"
+
+msgid "Whatever is ticked is added together with the product itself."
+msgstr "כל מה שמסומן יתווסף לסל יחד עם המוצר עצמו."
+
+msgid "Shape after the tabs"
+msgstr "תצוגה אחרי הטאבים"
+
+msgid "One across the width"
+msgstr "מוצר לרוחב"
+
+msgid "Cards in a row"
+msgstr "כרטיסים בשורה"
+
+msgid "Each product carries its own add-to-cart button here."
+msgstr "כאן לכל מוצר יש כפתור הוספה לסל משלו."
+
+msgid "Shape under the details"
+msgstr "תצוגה מתחת לפרטים"
+
+msgid "The catalogue's own cards, so the add button follows the card setting."
+msgstr "כרטיסי הקטלוג הרגילים, כך שכפתור ההוספה נגזר מהגדרת הכרטיס."
+
+msgid "Goes-with products per row"
+msgstr "מוצרים משתלבים בשורה"
+
+msgid "Goes-with alignment"
+msgstr "יישור מוצרים משתלבים"
+
+msgid "Choose options"
+msgstr "בחירת אפשרויות"
+
+msgid "Choose %s"
+msgstr "בחר %s"
+
+msgid "Less"
+msgstr "פחות"
+
+msgid "More"
+msgstr "עוד"
