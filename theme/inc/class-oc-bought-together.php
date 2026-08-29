@@ -276,8 +276,16 @@ final class Bought_Together {
 			return;
 		}
 
-		// Ahead of the tabs, where the eye still is.
-		add_action( 'woocommerce_after_single_product_summary', array( $this, 'render' ), 9 );
+		// Where the product's own information sits decides this. Left at a
+		// priority ahead of the tabs, the bundle came between the gallery
+		// and the description — the page read as though the shop wanted to
+		// sell you three more things before telling you about the one you
+		// came for. With the information below the gallery it follows it;
+		// with the information beside the gallery there is nothing above to
+		// wait for, so it takes the first slot under the summary.
+		$below = 'side' !== (string) get_theme_mod( 'oc_product_tabs_pos', 'below' );
+
+		add_action( 'woocommerce_after_single_product_summary', array( $this, 'render' ), $below ? 11 : 9 );
 	}
 
 	/**

@@ -1793,11 +1793,37 @@ final class Customizer {
 	 * @param string                $panel Parent panel id.
 	 */
 	private function product_section( \WP_Customize_Manager $c, string $panel ): void {
+		unset( $panel );
+
+		// A panel of its own, holding the three rooms a product page has:
+		// the page itself, its information tabs, and the other products it
+		// carries. It cannot live inside WooCommerce's panel — WordPress
+		// does not nest one panel in another — and the grouping is worth
+		// more than the address.
+		$c->add_panel(
+			'oc_product_panel',
+			array(
+				'title'       => __( 'Product page', 'oc-theme' ),
+				'description' => __( 'The page itself, the information tabs, and the other products it shows.', 'oc-theme' ),
+				'priority'    => 202,
+			)
+		);
+
+		$c->add_section(
+			'oc_linked',
+			array(
+				'title'       => __( 'Related & complementary', 'oc-theme' ),
+				'description' => __( 'Every block of other products a product page can carry, and how each one looks.', 'oc-theme' ),
+				'panel'       => 'oc_product_panel',
+				'priority'    => 30,
+			)
+		);
+
 		$c->add_section(
 			'oc_product',
 			array(
-				'title'    => __( 'Product page', 'oc-theme' ),
-				'panel'    => $panel,
+				'title'    => __( 'General', 'oc-theme' ),
+				'panel'    => 'oc_product_panel',
 				'priority' => 10,
 			)
 		);
@@ -2017,7 +2043,7 @@ final class Customizer {
 		$this->choice(
 			$c,
 			'oc_vpanel_side',
-			'oc_product',
+			'oc_card',
 			__( 'Quick pick opens from', 'oc-theme' ),
 			array(
 				'right' => __( 'Right', 'oc-theme' ),
@@ -2031,7 +2057,7 @@ final class Customizer {
 		$this->choice(
 			$c,
 			'oc_vpanel_gallery',
-			'oc_product',
+			'oc_card',
 			__( 'Quick-pick gallery', 'oc-theme' ),
 			array(
 				'peek'   => __( 'Two pictures, the next one peeking', 'oc-theme' ),
@@ -2044,7 +2070,7 @@ final class Customizer {
 		$this->choice(
 			$c,
 			'oc_vpanel_corners',
-			'oc_product',
+			'oc_card',
 			__( 'Quick-pick picture corners', 'oc-theme' ),
 			array(
 				'sharp' => __( 'Sharp', 'oc-theme' ),
@@ -2094,7 +2120,7 @@ final class Customizer {
 		$this->choice(
 			$c,
 			'oc_product_tabs',
-			'oc_product',
+			'oc_tabs_cfg',
 			__( 'Product information style', 'oc-theme' ),
 			array(
 				'tabs'      => __( 'Tabs', 'oc-theme' ),
@@ -2106,7 +2132,7 @@ final class Customizer {
 		$this->choice(
 			$c,
 			'oc_product_tabs_pos',
-			'oc_product',
+			'oc_tabs_cfg',
 			__( 'Product info position — desktop', 'oc-theme' ),
 			array(
 				'below'   => __( 'Full width below', 'oc-theme' ),
@@ -2119,7 +2145,7 @@ final class Customizer {
 		$this->choice(
 			$c,
 			'oc_products_heading_align',
-			'oc_product',
+			'oc_linked',
 			__( 'Section headings alignment', 'oc-theme' ),
 			array(
 				'start'  => __( 'Start', 'oc-theme' ),
@@ -2128,12 +2154,12 @@ final class Customizer {
 			'start'
 		);
 
-		$this->heading( $c, 'oc_h_related', 'oc_product', __( 'Similar products', 'oc-theme' ) );
-		$this->toggle( $c, 'oc_product_related', 'oc_product', __( 'Show similar products', 'oc-theme' ), true );
+		$this->heading( $c, 'oc_h_related', 'oc_linked', __( 'Similar products', 'oc-theme' ) );
+		$this->toggle( $c, 'oc_product_related', 'oc_linked', __( 'Show similar products', 'oc-theme' ), true );
 		$this->text(
 			$c,
 			'oc_related_title',
-			'oc_product',
+			'oc_linked',
 			__( 'Similar products title', 'oc-theme' ),
 			array(
 				'setting' => 'oc_product_related',
@@ -2144,7 +2170,7 @@ final class Customizer {
 		$this->select(
 			$c,
 			'oc_related_scope',
-			'oc_product',
+			'oc_linked',
 			__( 'Which products count as similar', 'oc-theme' ),
 			array(
 				'all'  => __( 'Every category the product is in', 'oc-theme' ),
@@ -2161,7 +2187,7 @@ final class Customizer {
 		$this->preset(
 			$c,
 			'oc_related_layout',
-			'oc_product',
+			'oc_linked',
 			__( 'Similar products layout', 'oc-theme' ),
 			array(
 				'grid'   => array(
@@ -2185,7 +2211,7 @@ final class Customizer {
 		$this->number(
 			$c,
 			'oc_related_count',
-			'oc_product',
+			'oc_linked',
 			__( 'How many similar products', 'oc-theme' ),
 			8,
 			2,
@@ -2200,7 +2226,7 @@ final class Customizer {
 		$this->number(
 			$c,
 			'oc_related_cols',
-			'oc_product',
+			'oc_linked',
 			__( 'Similar products per row', 'oc-theme' ),
 			4,
 			2,
@@ -2214,7 +2240,7 @@ final class Customizer {
 		$this->select(
 			$c,
 			'oc_related_align',
-			'oc_product',
+			'oc_linked',
 			__( 'Similar products alignment', 'oc-theme' ),
 			array(
 				'start'  => __( 'From the start of the row', 'oc-theme' ),
@@ -2231,7 +2257,7 @@ final class Customizer {
 		$this->color(
 			$c,
 			'oc_related_bg',
-			'oc_product',
+			'oc_linked',
 			__( 'Similar products background', 'oc-theme' ),
 			__( 'Left empty the area sits on the page as it does now. A colour gives it its own band, with room around the products.', 'oc-theme' ),
 			array(
@@ -2239,11 +2265,11 @@ final class Customizer {
 				'values'  => array( '1' ),
 			)
 		);
-		$this->heading( $c, 'oc_h_bt', 'oc_product', __( 'Bought together', 'oc-theme' ) );
+		$this->heading( $c, 'oc_h_bt', 'oc_linked', __( 'Bought together', 'oc-theme' ) );
 		$this->toggle(
 			$c,
 			'oc_bt_on',
-			'oc_product',
+			'oc_linked',
 			__( 'Show the bought-together bundle', 'oc-theme' ),
 			true,
 			null,
@@ -2253,7 +2279,7 @@ final class Customizer {
 		$this->text(
 			$c,
 			'oc_bt_title',
-			'oc_product',
+			'oc_linked',
 			__( 'Bundle heading', 'oc-theme' ),
 			array(
 				'setting' => 'oc_bt_on',
@@ -2264,7 +2290,7 @@ final class Customizer {
 		$this->color(
 			$c,
 			'oc_bt_bg',
-			'oc_product',
+			'oc_linked',
 			__( 'Bundle background', 'oc-theme' ),
 			__( 'Left empty the area sits on the page as it does now. A colour gives it its own band, with room around the products.', 'oc-theme' ),
 			array(
@@ -2273,11 +2299,11 @@ final class Customizer {
 			)
 		);
 
-		$this->heading( $c, 'oc_h_xsell', 'oc_product', __( 'Products that go with it', 'oc-theme' ) );
+		$this->heading( $c, 'oc_h_xsell', 'oc_linked', __( 'Products that go with it', 'oc-theme' ) );
 		$this->toggle(
 			$c,
 			'oc_xsell_on',
-			'oc_product',
+			'oc_linked',
 			__( 'Show products that go with this one', 'oc-theme' ),
 			false,
 			null,
@@ -2287,7 +2313,7 @@ final class Customizer {
 		$this->text(
 			$c,
 			'oc_xsell_title',
-			'oc_product',
+			'oc_linked',
 			__( 'Goes-with title', 'oc-theme' ),
 			array(
 				'setting' => 'oc_xsell_on',
@@ -2298,7 +2324,7 @@ final class Customizer {
 		$this->preset(
 			$c,
 			'oc_xsell_place',
-			'oc_product',
+			'oc_linked',
 			__( 'Where they appear', 'oc-theme' ),
 			array(
 				'cart'    => array(
@@ -2326,7 +2352,7 @@ final class Customizer {
 		$this->preset(
 			$c,
 			'oc_xsell_style_cart',
-			'oc_product',
+			'oc_linked',
 			__( 'Shape beside the button', 'oc-theme' ),
 			array(
 				'rows' => array(
@@ -2350,7 +2376,7 @@ final class Customizer {
 		$this->preset(
 			$c,
 			'oc_xsell_style_tabs',
-			'oc_product',
+			'oc_linked',
 			__( 'Shape after the tabs', 'oc-theme' ),
 			array(
 				'wide' => array(
@@ -2374,7 +2400,7 @@ final class Customizer {
 		$this->preset(
 			$c,
 			'oc_xsell_style_sum',
-			'oc_product',
+			'oc_linked',
 			__( 'Shape under the details', 'oc-theme' ),
 			array(
 				'grid'   => array(
@@ -2395,7 +2421,7 @@ final class Customizer {
 			)
 		);
 
-		$this->number( $c, 'oc_xsell_cols', 'oc_product', __( 'Goes-with products per row', 'oc-theme' ), 4, 2, 6, array(
+		$this->number( $c, 'oc_xsell_cols', 'oc_linked', __( 'Goes-with products per row', 'oc-theme' ), 4, 2, 6, array(
 				'setting' => 'oc_xsell_on',
 				'values'  => array( '1' ),
 			) );
@@ -2403,7 +2429,7 @@ final class Customizer {
 		$this->select(
 			$c,
 			'oc_xsell_align',
-			'oc_product',
+			'oc_linked',
 			__( 'Goes-with alignment', 'oc-theme' ),
 			array(
 				'start'  => __( 'From the start of the row', 'oc-theme' ),
@@ -2419,7 +2445,7 @@ final class Customizer {
 		$this->color(
 			$c,
 			'oc_xsell_bg',
-			'oc_product',
+			'oc_linked',
 			__( 'Goes-with background', 'oc-theme' ),
 			__( 'Left empty the area sits on the page as it does now. A colour gives it its own band, with room around the products.', 'oc-theme' ),
 			array(
@@ -2428,11 +2454,11 @@ final class Customizer {
 			)
 		);
 
-		$this->heading( $c, 'oc_h_upsells', 'oc_product', __( 'Upgrades', 'oc-theme' ) );
+		$this->heading( $c, 'oc_h_upsells', 'oc_linked', __( 'Upgrades', 'oc-theme' ) );
 		$this->toggle(
 			$c,
 			'oc_product_upsells',
-			'oc_product',
+			'oc_linked',
 			__( 'Show upgrades', 'oc-theme' ),
 			true,
 			null,
@@ -2441,7 +2467,7 @@ final class Customizer {
 		$this->text(
 			$c,
 			'oc_upsells_title',
-			'oc_product',
+			'oc_linked',
 			__( 'Upgrades title', 'oc-theme' ),
 			array(
 				'setting' => 'oc_product_upsells',
@@ -2452,7 +2478,7 @@ final class Customizer {
 		$this->color(
 			$c,
 			'oc_upsells_bg',
-			'oc_product',
+			'oc_linked',
 			__( 'Upgrades background', 'oc-theme' ),
 			__( 'Left empty the area sits on the page as it does now. A colour gives it its own band, with room around the products.', 'oc-theme' ),
 			array(
@@ -3148,10 +3174,10 @@ final class Customizer {
 		$c->add_section(
 			'oc_tabs_cfg',
 			array(
-				'title'       => __( 'Product tabs', 'oc-theme' ),
+				'title'       => __( 'Tabs', 'oc-theme' ),
 				'description' => __( 'The built-in tabs. Tab titles and the custom tabs stay under Theme settings.', 'oc-theme' ),
-				'priority'    => 14,
-				'panel'       => $panel,
+				'priority'    => 20,
+				'panel'       => 'oc_product_panel',
 			)
 		);
 

@@ -2418,6 +2418,27 @@
 		// when the add completes.
 		var openOnAdd = 1 === Number( ( window.ocL10n || {} ).cartOpenOnAdd );
 
+		/* Blocks that add through their own request — the goes-with cards —
+		 * say so here, and get the same aftermath as any other add: the
+		 * drawer opens, or the toast carries the news, whichever the shop
+		 * asked for. They have already applied the fragments themselves. */
+		document.body.addEventListener( 'oc-added-to-cart', function ( event ) {
+			if ( openOnAdd ) {
+				openDrawer();
+				return;
+			}
+
+			var id = event.detail && event.detail.id;
+			var card = id && document.querySelector( '[data-oc-xs="' + id + '"]' );
+			var name = card && card.querySelector( '.oc-xsell__name' );
+			var pic = card && card.querySelector( 'img' );
+
+			cartToast(
+				name ? name.textContent.trim() : '',
+				pic ? pic.currentSrc || pic.src : ''
+			);
+		} );
+
 		document.addEventListener( 'click', function ( event ) {
 			var btn = event.target.closest( '.oc-card-atc.ajax_add_to_cart, .oc-cartup__add.ajax_add_to_cart' );
 			if ( ! btn ) {
@@ -8071,6 +8092,52 @@ window.__ocMoney = function ( n, money ) {
 
 			var next = ( parseInt( field.value, 10 ) || 1 ) + parseInt( step.dataset.ocXsStep, 10 );
 			field.value = Math.max( 1, next );
+		} );
+
+		/* Its own add-to-cart, answering the way the product page's does:
+		 * spinner, then the tick, then whatever the shop does after an add —
+		 * the drawer or the toast, according to the setting. */
+		block.addEventListener( 'click', function ( e ) {
+			var add = e.target.closest( '[data-oc-xs-add]' );
+			if ( ! add || add.classList.contains( 'is-loading' ) ) { return; }
+
+			e.preventDefault();
+
+			var L2 = window.ocL10n || {};
+			add.classList.add( 'is-loading' );
+
+			var body = new FormData();
+			body.append( 'action', 'oc_cart_add' );
+			body.append( 'product_id', add.dataset.ocXsAdd );
+			body.append( 'quantity', '1' );
+
+			fetch( L2.ajaxUrl || '/wp-admin/admin-ajax.php', { method: 'POST', credentials: 'same-origin', body: body } )
+				.then( function ( r ) { return r.json(); } )
+				.then( function ( res ) {
+					add.classList.remove( 'is-loading' );
+
+					if ( ! res || ! res.fragments ) { return; }
+
+					Object.keys( res.fragments ).forEach( function ( selector ) {
+						document.querySelectorAll( selector ).forEach( function ( el ) {
+							var box = document.createElement( 'div' );
+							box.innerHTML = res.fragments[ selector ];
+							if ( box.firstElementChild ) { el.replaceWith( box.firstElementChild ); }
+						} );
+					} );
+
+					add.classList.add( 'oc-added' );
+					setTimeout( function () { add.classList.remove( 'oc-added' ); }, 1600 );
+
+					// The shop decides what happens next: the drawer opens,
+					// or a toast says so. Both live in the cart's own script,
+					// which listens for this.
+					document.body.dispatchEvent( new CustomEvent( 'oc-added-to-cart', {
+						bubbles: true,
+						detail: { id: add.dataset.ocXsAdd }
+					} ) );
+				} )
+				.catch( function () { add.classList.remove( 'is-loading' ); } );
 		} );
 
 		// A picture or a name opens the quick pick.

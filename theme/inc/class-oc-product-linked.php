@@ -119,6 +119,7 @@ final class Product_Linked {
 				if ( 'side' === (string) get_theme_mod( 'oc_product_tabs_pos', 'below' ) ) {
 					add_action( 'woocommerce_single_product_summary', array( $this, 'render_cross_sells' ), 36 );
 				} else {
+					// After the tabs at 10, and after the bundle at 11.
 					add_action( 'woocommerce_after_single_product_summary', array( $this, 'render_cross_sells' ), 12 );
 				}
 				break;
@@ -465,9 +466,12 @@ final class Product_Linked {
 		$label = __( 'Add to cart', 'oc-theme' );
 
 		if ( $p->is_type( 'simple' ) ) {
-			return '<a href="' . esc_url( '?add-to-cart=' . $p->get_id() ) . '" rel="nofollow"' .
-				' class="oc-xsell__add button add_to_cart_button ajax_add_to_cart"' .
-				' data-product_id="' . absint( $p->get_id() ) . '" data-quantity="1">' . esc_html( $label ) . '</a>';
+			// Its own button, not WooCommerce's ajax link: that one hangs a
+			// "view cart" beside itself and answers with nothing while it
+			// works. theme.js gives this the product page's manners —
+			// spinner, tick, and whatever the shop does after an add.
+			return '<button type="button" class="oc-xsell__add" data-oc-xs-add="' . absint( $p->get_id() ) . '">' .
+				esc_html( $label ) . '</button>';
 		}
 
 		return '<button type="button" class="oc-xsell__add button" data-oc-xs-open="' . absint( $p->get_id() ) . '">' .

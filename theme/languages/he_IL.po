@@ -5936,7 +5936,7 @@ msgid "Goes well with"
 msgstr "משתלב עם"
 
 msgid "Beside the add-to-cart button"
-msgstr "ליד כפתור ההוספה לסל"
+msgstr "לפני הוספה לסל"
 
 msgid "After the tabs"
 msgstr "אחרי הטאבים"
@@ -6064,7 +6064,7 @@ msgid "A product sits in several categories at once — its own, its parent, and
 msgstr "מוצר יושב בכמה קטגוריות בו-זמנית — שלו, של האב, ומדפים כמו NEW. ווקומרס שואבת מכולן, ולכן הרחבה מנצחת. האפשרות השנייה משתמשת בקטגוריה היחידה שמופיעה בנתיב של המוצר: עבור ספות וכורסאות / ספות — זו ספות."
 
 msgid "Products that go with it"
-msgstr "מוצרים שמשתלבים איתו"
+msgstr "השלמת הלוק/חלל"
 
 msgid "Upgrades"
 msgstr "שדרוגים"
@@ -6171,3 +6171,12 @@ msgstr "ו"
 msgctxt "weekday, one or two letters"
 msgid "Sa"
 msgstr "ש"
+
+msgid "Related & complementary"
+msgstr "נלווים ומשלימים"
+
+msgid "Every block of other products a product page can carry, and how each one looks."
+msgstr "כל בלוק של מוצרים אחרים שעמוד מוצר יכול לשאת, ואיך כל אחד נראה."
+
+msgid "The page itself, the information tabs, and the other products it shows."
+msgstr "העמוד עצמו, לשוניות המידע, והמוצרים האחרים שהוא מציג."

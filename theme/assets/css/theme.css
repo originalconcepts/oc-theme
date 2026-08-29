@@ -1961,6 +1961,7 @@ html.oc-menu-open .oc-menu-dim::after {
 .oc-vp__add.oc-added,
 .single_add_to_cart_button.oc-added,
 .oc-bt__add.oc-added,
+.oc-xsell__add.oc-added,
 [data-oc-sticky-add].oc-added {
 	position: relative;
 	color: transparent !important;
@@ -1971,6 +1972,7 @@ html.oc-menu-open .oc-menu-dim::after {
 .oc-vp__add.oc-added::after,
 .single_add_to_cart_button.oc-added::after,
 .oc-bt__add.oc-added::after,
+.oc-xsell__add.oc-added::after,
 [data-oc-sticky-add].oc-added::after {
 	content: "";
 	position: absolute;
@@ -4449,7 +4451,10 @@ body:not(.oc-no-lightbox) .woocommerce-product-gallery__image:not(.oc-vslide) im
 .upsells.products > h2 { text-align: start; }
 .oc-headings-center .related.products > h2,
 .oc-headings-center .up-sells.products > h2,
-.oc-headings-center .upsells.products > h2 { text-align: center; }
+.oc-headings-center .upsells.products > h2,
+.oc-headings-center .oc-linked__title,
+.oc-headings-center .oc-xsell__title,
+.oc-headings-center .oc-bt__title { text-align: center; }
 
 /* ---------- tabs / accordion ---------- */
 
@@ -4785,6 +4790,7 @@ body.oc-tabs-tabs.woocommerce div.product .woocommerce-tabs ul.tabs li.active a,
 /* Both add buttons show a spinner while the ajax add is in flight. */
 .single_add_to_cart_button.is-loading,
 .oc-bt__add.is-loading,
+.oc-xsell__add.is-loading,
 .oc-sticky-atc__buy.is-loading {
 	pointer-events: none;
 	opacity: .85;
@@ -4792,6 +4798,7 @@ body.oc-tabs-tabs.woocommerce div.product .woocommerce-tabs ul.tabs li.active a,
 
 .single_add_to_cart_button.is-loading::after,
 .oc-bt__add.is-loading::after,
+.oc-xsell__add.is-loading::after,
 .oc-sticky-atc__buy.is-loading::after {
 	content: "";
 	inline-size: 15px;
@@ -13720,8 +13727,20 @@ p.no-comments {
 	font-size: clamp(18px, 2.2vw, 24px);
 }
 
-.woocommerce .oc-linked--center ul.products { justify-content: center; }
-.oc-linked--center .oc-linked__title { text-align: center; }
+.woocommerce .oc-linked--center ul.products,
+.woocommerce .oc-xsell--center ul.products { justify-content: center; }
+
+.oc-linked--center .oc-linked__title,
+.oc-xsell--center .oc-xsell__title { text-align: center; }
+
+/* Centring was only ever moving the heading. The products are what a
+ * shop means by it, so every shape this block takes centres too. */
+.oc-xsell--center .oc-xsell__rows { align-items: center; }
+.oc-xsell--center .oc-xsell__tiles,
+.oc-xsell--center .oc-xsell__squares,
+.oc-xsell--center .oc-xsell__wides { justify-content: center; }
+.oc-xsell--center .oc-xsell__row,
+.oc-xsell--center .oc-xsell__wide { inline-size: min(100%, 620px); }
 
 /* A row that scrolls. The cards keep the width the grid gave them, so
  * nothing about the card has to know which row it landed in. */
@@ -13958,12 +13977,31 @@ p.no-comments {
 
 .oc-xsell__wide .oc-xsell__media img { border-radius: 9px; }
 
+/* Its own button now — it stopped being WooCommerce's ajax link so it
+ * could spin and tick like the product page's. */
 .oc-xsell__add {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
 	inline-size: 100%;
 	min-inline-size: 150px;
+	min-block-size: 42px;
+	padding: 0 16px;
+	border: 1.5px solid var(--oc-primary);
+	border-radius: var(--oc-cta-r, var(--oc-radius, 8px));
+	background: var(--oc-primary);
+	color: #fff;
+	font: inherit;
+	font-size: 14px;
+	font-weight: 600;
 	text-align: center;
 	white-space: nowrap;
+	cursor: pointer;
+	transition: filter .15s;
 }
+
+.oc-xsell__add:hover { filter: brightness(1.08); }
 
 @media (max-width: 600px) {
 	.oc-xsell__wide { grid-template-columns: 76px 1fr; }
