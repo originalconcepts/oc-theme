@@ -227,6 +227,14 @@ final class Product_Linked {
 					break;
 				}
 
+				// After the tabs it is the same card the bundle uses — the
+				// two sit on the same page and should be the same size —
+				// with a button of its own in place of the tick.
+				if ( 'tabs' === self::xsell_place() ) {
+					$this->squares( $products );
+					break;
+				}
+
 				$this->cards( $products, $style );
 				break;
 
@@ -375,6 +383,38 @@ final class Product_Linked {
 			echo '<span class="oc-xsell__tilename">' . esc_html( $p->get_name() ) . '</span>';
 			echo '<span class="oc-xsell__tileprice">' . wp_kses_post( $p->get_price_html() ) . '</span>';
 			echo '</label>';
+		}
+
+		echo '</div>';
+	}
+
+	/**
+	 * Cards the size of the bundle's, each standing on its own.
+	 *
+	 * The bundle and this block sit on the same page, so a product should
+	 * not be one size in one and another size a few centimetres below. The
+	 * shape is the bundle's; what changes is that nothing is ticked here —
+	 * each card carries its own way into the cart.
+	 *
+	 * @param \WC_Product[] $products The cross-sells.
+	 */
+	private function squares( array $products ): void {
+		echo '<div class="oc-xsell__squares" data-oc-slider>';
+
+		foreach ( $products as $p ) {
+			$id = $p->get_id();
+
+			echo '<div class="oc-xsell__square" data-oc-xs="' . absint( $id ) . '">';
+
+			echo '<button type="button" class="oc-xsell__media" data-oc-xs-open="' . absint( $id ) . '" aria-label="' . esc_attr( $p->get_name() ) . '">';
+			echo $p->get_image( 'woocommerce_thumbnail' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- WooCommerce markup.
+			echo '</button>';
+
+			echo '<button type="button" class="oc-xsell__name" data-oc-xs-open="' . absint( $id ) . '">' . esc_html( $p->get_name() ) . '</button>';
+			echo '<span class="oc-xsell__price">' . wp_kses_post( $p->get_price_html() ) . '</span>';
+			echo $this->own_button( $p ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
+
+			echo '</div>';
 		}
 
 		echo '</div>';

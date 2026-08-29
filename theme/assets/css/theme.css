@@ -1960,6 +1960,7 @@ html.oc-menu-open .oc-menu-dim::after {
  * the same drawn stroke — takes the middle. */
 .oc-vp__add.oc-added,
 .single_add_to_cart_button.oc-added,
+.oc-bt__add.oc-added,
 [data-oc-sticky-add].oc-added {
 	position: relative;
 	color: transparent !important;
@@ -1969,6 +1970,7 @@ html.oc-menu-open .oc-menu-dim::after {
 
 .oc-vp__add.oc-added::after,
 .single_add_to_cart_button.oc-added::after,
+.oc-bt__add.oc-added::after,
 [data-oc-sticky-add].oc-added::after {
 	content: "";
 	position: absolute;
@@ -4782,12 +4784,14 @@ body.oc-tabs-tabs.woocommerce div.product .woocommerce-tabs ul.tabs li.active a,
 
 /* Both add buttons show a spinner while the ajax add is in flight. */
 .single_add_to_cart_button.is-loading,
+.oc-bt__add.is-loading,
 .oc-sticky-atc__buy.is-loading {
 	pointer-events: none;
 	opacity: .85;
 }
 
 .single_add_to_cart_button.is-loading::after,
+.oc-bt__add.is-loading::after,
 .oc-sticky-atc__buy.is-loading::after {
 	content: "";
 	inline-size: 15px;
@@ -14150,7 +14154,15 @@ p.no-comments {
 .oc-bt__tick input:checked + .oc-bt__box::after { opacity: 1; transform: rotate(-45deg) scale(1); }
 .oc-bt__tick input:disabled + .oc-bt__box { opacity: .55; }
 
-.oc-bt__media { display: block; line-height: 0; }
+.oc-bt__media {
+	display: block;
+	padding: 0;
+	border: 0;
+	background: none;
+	line-height: 0;
+	cursor: pointer;
+	inline-size: 100%;
+}
 
 .oc-bt__media img {
 	inline-size: 100%;
@@ -14162,9 +14174,15 @@ p.no-comments {
 .oc-bt__info { display: flex; flex-direction: column; gap: 2px; }
 
 .oc-bt__name {
+	padding: 0;
+	border: 0;
+	background: none;
+	font: inherit;
 	font-size: 13px;
 	font-weight: 600;
 	line-height: 1.3;
+	text-align: start;
+	cursor: pointer;
 	color: inherit;
 	text-decoration: none;
 	display: -webkit-box;
@@ -14202,9 +14220,27 @@ p.no-comments {
 /* The saving stays green: it is the good news, not the price. */
 .oc-bt__saved { font-size: 13px; font-weight: 600; color: #16a34a; }
 
-.oc-bt__add { inline-size: 100%; }
-.oc-bt__add[disabled] { opacity: .5; cursor: not-allowed; }
-.oc-bt__add.is-busy { opacity: .7; pointer-events: none; }
+/* Its own button rather than WooCommerce's .alt, whose purple kept showing
+ * through in states the theme had not dressed. */
+.oc-bt__add {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	inline-size: 100%;
+	min-block-size: var(--oc-cta-h, 48px);
+	padding: 0 20px;
+	border: 1.5px solid var(--oc-primary);
+	border-radius: var(--oc-cta-r, var(--oc-radius, 8px));
+	background: var(--oc-primary);
+	color: #fff;
+	font: inherit;
+	font-weight: 600;
+	cursor: pointer;
+	transition: filter .15s;
+}
+
+.oc-bt__add:hover { filter: brightness(1.08); }
+.oc-bt__add[disabled] { opacity: .5; cursor: not-allowed; filter: none; }
 .oc-bt__note { margin: 0; font-size: 13px; min-block-size: 1em; opacity: .8; }
 
 /* On a phone the cards stack, which is the only way the names stay
@@ -14313,3 +14349,48 @@ p.no-comments {
 	.oc-linked--band { padding-block: 24px; }
 	.oc-xsell--cart.oc-linked--band { padding: 16px 14px; }
 }
+
+/* -- after the tabs: the bundle's card, without the tick -- */
+
+.oc-xsell__squares {
+	display: flex;
+	gap: 16px;
+	overflow-x: auto;
+	overflow-y: hidden;
+	align-items: start;
+	scrollbar-width: none;
+	overscroll-behavior-inline: contain;
+	padding-block-end: 4px;
+}
+
+.oc-xsell__squares::-webkit-scrollbar { display: none; }
+.oc-xsell__squares.is-drag { cursor: grabbing; scroll-behavior: auto; user-select: none; }
+
+/* The same width the bundle gives a product, so the two blocks agree. */
+.oc-xsell__square {
+	flex: 0 0 148px;
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	padding: 8px;
+	border: 1px solid var(--oc-line, #e5e5e5);
+	border-radius: 10px;
+}
+
+.oc-xsell__square .oc-xsell__media img {
+	inline-size: 100%;
+	aspect-ratio: 1;
+	object-fit: cover;
+	border-radius: 7px;
+}
+
+.oc-xsell__square .oc-xsell__name {
+	font-size: 13px;
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}
+
+.oc-xsell__square .oc-xsell__price { font-size: 13px; }
+.oc-xsell__square .oc-xsell__add { min-inline-size: 0; margin-block-start: 2px; }

@@ -8361,9 +8361,13 @@ window.__ocMoney = function ( n, money ) {
 
 		picked.forEach( function ( li ) { full += priceOf( li ); } );
 
-		var off = 0;
-		// A discount is for taking more than one thing.
-		if ( picked.length > 1 && amount > 0 ) {
+		// The discount is for taking the whole bundle. Leave one out and the
+		// total goes back to what those products plainly cost — the same rule
+		// the cart applies, so the two cannot say different things.
+		var whole = picked.length === items.length,
+			off   = 0;
+
+		if ( whole && amount > 0 ) {
 			off = 'percent' === kind ? full * ( amount / 100 ) : amount;
 			off = Math.min( off, full );
 		}
@@ -8416,6 +8420,19 @@ window.__ocMoney = function ( n, money ) {
 		}
 
 		draw();
+	} );
+
+	// A picture or a name opens the quick pick, the way a catalogue card
+	// does, rather than leaving the page the bundle is on.
+	block.addEventListener( 'click', function ( e ) {
+		var open = e.target.closest( '[data-oc-bt-open]' );
+		if ( ! open ) { return; }
+
+		e.preventDefault();
+
+		if ( window.__ocQuickPick ) {
+			window.__ocQuickPick( open.dataset.ocBtOpen );
+		}
 	} );
 
 	// The product's own variation picker moves the bundle's total too.
@@ -8478,13 +8495,28 @@ window.__ocMoney = function ( n, money ) {
 					draw();
 				}, 1600 );
 
-				// The drawer and the counter catch up. Only the fragment
-				// refresh — Woo's added_to_cart event is what hangs a
-				// "view cart" link off the button that fired it.
+				// The drawer, the mini cart and the counter are redrawn from
+				// the fragments the answer carries — the same way the
+				// product page's own add does it. Asking for a refresh alone
+				// left the cart looking untouched until the page was
+				// reloaded, which is what George saw.
+				var fragments = res.data.fragments || {};
+
+				Object.keys( fragments ).forEach( function ( selector ) {
+					document.querySelectorAll( selector ).forEach( function ( el ) {
+						var box = document.createElement( 'div' );
+						box.innerHTML = fragments[ selector ];
+
+						if ( box.firstElementChild ) {
+							el.replaceWith( box.firstElementChild );
+						}
+					} );
+				} );
+
+				// Woo's added_to_cart event is what hangs a "view cart" link
+				// off the button that fired it, so only the refresh goes out.
 				if ( window.jQuery ) {
 					window.jQuery( document.body ).trigger( 'wc_fragment_refresh' );
-				} else {
-					document.body.dispatchEvent( new CustomEvent( 'wc_fragment_refresh' ) );
 				}
 			} )
 			.catch( function () {

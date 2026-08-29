@@ -347,15 +347,15 @@ final class Bought_Together {
 								<span class="screen-reader-text"><?php echo esc_html( $item->get_name() ); ?></span>
 							</label>
 
-							<a class="oc-bt__media" href="<?php echo esc_url( get_permalink( $item->get_id() ) ); ?>">
+							<button type="button" class="oc-bt__media" data-oc-bt-open="<?php echo absint( $item->get_id() ); ?>" aria-label="<?php echo esc_attr( $item->get_name() ); ?>">
 								<?php echo $item->get_image( 'woocommerce_thumbnail' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- WooCommerce markup. ?>
-							</a>
+							</button>
 
 							<div class="oc-bt__info">
 								<?php if ( $self ) : ?>
 									<span class="oc-bt__this"><?php esc_html_e( 'This product', 'oc-theme' ); ?></span>
 								<?php endif; ?>
-								<a class="oc-bt__name" href="<?php echo esc_url( get_permalink( $item->get_id() ) ); ?>"><?php echo esc_html( $item->get_name() ); ?></a>
+								<button type="button" class="oc-bt__name" data-oc-bt-open="<?php echo absint( $item->get_id() ); ?>"><?php echo esc_html( $item->get_name() ); ?></button>
 								<span class="oc-bt__price"><?php echo wp_kses_post( $item->get_price_html() ); ?></span>
 								<?php
 								// The page's own product is answered by the form
@@ -376,7 +376,7 @@ final class Bought_Together {
 						<span class="oc-bt__saved" data-oc-bt-saved hidden></span>
 					</div>
 
-					<button type="button" class="oc-bt__add button alt" data-oc-bt-add>
+					<button type="button" class="oc-bt__add" data-oc-bt-add>
 						<?php esc_html_e( 'Add all to cart', 'oc-theme' ); ?>
 					</button>
 
@@ -618,19 +618,35 @@ final class Bought_Together {
 
 			if ( ! isset( $bundles[ $from ] ) ) {
 				$bundles[ $from ] = array(
-					'lines' => 0,
-					'sum'   => 0.0,
+					'ids' => array(),
+					'sum' => 0.0,
 				);
 			}
 
-			++$bundles[ $from ]['lines'];
+			$bundles[ $from ]['ids'][ (int) $item['product_id'] ] = true;
 			$bundles[ $from ]['sum'] += (float) $item['line_subtotal'] + (float) $item['line_subtotal_tax'];
 		}
 
 		foreach ( $bundles as $main => $bundle ) {
-			// One line on its own is not a bundle any more.
-			if ( $bundle['lines'] < 2 ) {
+			$product = wc_get_product( (int) $main );
+
+			if ( ! $product instanceof \WC_Product ) {
 				continue;
+			}
+
+			// The discount is for taking the whole bundle. Leave one out and
+			// it does not apply — the same rule the page states before the
+			// button is pressed, so the cart cannot disagree with it.
+			$needed = array( (int) $main );
+
+			foreach ( self::members( $product ) as $member ) {
+				$needed[] = $member->get_id();
+			}
+
+			foreach ( $needed as $id ) {
+				if ( ! isset( $bundle['ids'][ $id ] ) ) {
+					continue 2;
+				}
 			}
 
 			$kind   = self::kind( (int) $main );
@@ -647,8 +663,7 @@ final class Bought_Together {
 				continue;
 			}
 
-			$product = wc_get_product( (int) $main );
-			$name    = $product instanceof \WC_Product ? $product->get_name() : '';
+			$name = $product->get_name();
 
 			$cart->add_fee(
 				$name
