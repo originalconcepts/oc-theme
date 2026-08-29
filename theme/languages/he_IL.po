@@ -5881,3 +5881,33 @@ msgstr "אימות דו-שלבי מופעל, אבל אין מספר טלפון �
 
 msgid "Edit your profile"
 msgstr "עריכת הפרופיל שלך"
+
+msgid "Which products count as similar"
+msgstr "אילו מוצרים נחשבים דומים"
+
+msgid "Every category the product is in"
+msgstr "כל הקטגוריות שהמוצר משויך אליהן"
+
+msgid "Its sub-category only"
+msgstr "תת-הקטגוריה שלו בלבד"
+
+msgid "A product filed under a sub-category, its parent and a shelf like NEW pulls neighbours from all three, and the loosest one wins. The narrow setting keeps only the most specific category — and falls back to what it has if there is nothing deeper."
+msgstr "מוצר שמשויך לתת-קטגוריה, לקטגוריית האב שלה ולמדף כמו NEW שואב מוצרים משלושתן, והרחבה מנצחת. האפשרות המצומצמת שומרת רק על הקטגוריה הספציפית ביותר — ואם אין עמוקה יותר, נשארת עם מה שיש."
+
+msgid "Similar products layout"
+msgstr "תצוגת מוצרים דומים"
+
+msgid "Free slider"
+msgstr "סליידר חופשי"
+
+msgid "Similar products per row"
+msgstr "מוצרים דומים בשורה"
+
+msgid "Similar products alignment"
+msgstr "יישור מוצרים דומים"
+
+msgid "From the start of the row"
+msgstr "מתחילת השורה"
+
+msgid "Only tells when there are too few cards to fill the row."
+msgstr "משפיע רק כשאין מספיק כרטיסים כדי למלא את השורה."

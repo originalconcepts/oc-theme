@@ -2090,6 +2090,78 @@ final class Customizer {
 
 		$this->toggle( $c, 'oc_product_related', 'oc_product', __( 'Show similar products', 'oc-theme' ), true );
 		$this->text( $c, 'oc_related_title', 'oc_product', __( 'Similar products title', 'oc-theme' ) );
+
+		$this->select(
+			$c,
+			'oc_related_scope',
+			'oc_product',
+			__( 'Which products count as similar', 'oc-theme' ),
+			array(
+				'all'  => __( 'Every category the product is in', 'oc-theme' ),
+				'leaf' => __( 'Its sub-category only', 'oc-theme' ),
+			),
+			'all',
+			array(
+				'setting' => 'oc_product_related',
+				'values'  => array( '1' ),
+			),
+			__( 'A product filed under a sub-category, its parent and a shelf like NEW pulls neighbours from all three, and the loosest one wins. The narrow setting keeps only the most specific category — and falls back to what it has if there is nothing deeper.', 'oc-theme' )
+		);
+
+		$this->preset(
+			$c,
+			'oc_related_layout',
+			'oc_product',
+			__( 'Similar products layout', 'oc-theme' ),
+			array(
+				'grid'   => array(
+					'label' => __( 'Grid', 'oc-theme' ),
+					'svg'   => self::wf( '0 0 132 52', self::rect( 8, 6, 26, 18, 'ac', 2 ) . self::rect( 38, 6, 26, 18, 'ac', 2 ) . self::rect( 68, 6, 26, 18, 'ac', 2 ) . self::rect( 98, 6, 26, 18, 'ac', 2 ) . self::rect( 8, 28, 26, 18, 'ac', 2 ) . self::rect( 38, 28, 26, 18, 'ac', 2 ) . self::rect( 68, 28, 26, 18, 'ac', 2 ) . self::rect( 98, 28, 26, 18, 'ac', 2 ) ),
+				),
+				'slider' => array(
+					'label' => __( 'Free slider', 'oc-theme' ),
+					'svg'   => self::wf( '0 0 132 52', self::rect( 8, 14, 30, 24, 'ac', 2 ) . self::rect( 42, 14, 30, 24, 'ac', 2 ) . self::rect( 76, 14, 30, 24, 'ac', 2 ) . self::rect( 110, 14, 22, 24, 'dt', 2 ) ),
+				),
+			),
+			'grid',
+			'150px',
+			'',
+			array(
+				'setting' => 'oc_product_related',
+				'values'  => array( '1' ),
+			)
+		);
+
+		$this->number(
+			$c,
+			'oc_related_cols',
+			'oc_product',
+			__( 'Similar products per row', 'oc-theme' ),
+			4,
+			2,
+			6,
+			array(
+				'setting' => 'oc_product_related',
+				'values'  => array( '1' ),
+			)
+		);
+
+		$this->select(
+			$c,
+			'oc_related_align',
+			'oc_product',
+			__( 'Similar products alignment', 'oc-theme' ),
+			array(
+				'start'  => __( 'From the start of the row', 'oc-theme' ),
+				'center' => __( 'Centred', 'oc-theme' ),
+			),
+			'start',
+			array(
+				'setting' => 'oc_product_related',
+				'values'  => array( '1' ),
+			),
+			__( 'Only tells when there are too few cards to fill the row.', 'oc-theme' )
+		);
 		$this->toggle( $c, 'oc_product_upsells', 'oc_product', __( 'Show complementary products', 'oc-theme' ), true );
 		$this->text( $c, 'oc_upsells_title', 'oc_product', __( 'Complementary products title', 'oc-theme' ) );
 
@@ -2215,26 +2287,30 @@ final class Customizer {
 	 * @param string                $label   Label.
 	 * @param array<string,string>  $choices Choices.
 	 */
-	private function select( \WP_Customize_Manager $c, string $id, string $section, string $label, array $choices ): void {
+	private function select( \WP_Customize_Manager $c, string $id, string $section, string $label, array $choices, string $def = '', ?array $dep = null, string $hint = '' ): void {
 		$c->add_setting(
 			$id,
 			array(
-				'default'           => '',
-				'sanitize_callback' => static function ( $value ) use ( $choices ): string {
-					return array_key_exists( (string) $value, $choices ) ? (string) $value : '';
+				'default'           => $def,
+				'sanitize_callback' => static function ( $value ) use ( $choices, $def ): string {
+					return array_key_exists( (string) $value, $choices ) ? (string) $value : $def;
 				},
 			)
 		);
 
-		$c->add_control(
-			$id,
-			array(
-				'type'    => 'select',
-				'section' => $section,
-				'label'   => $label,
-				'choices' => $choices,
-			)
+		$args = array(
+			'type'        => 'select',
+			'section'     => $section,
+			'label'       => $label,
+			'description' => $hint,
+			'choices'     => $choices,
 		);
+
+		if ( null !== $dep ) {
+			$args['active_callback'] = $this->depend( $id, $dep );
+		}
+
+		$c->add_control( $id, $args );
 	}
 
 	/**
@@ -2276,7 +2352,7 @@ final class Customizer {
 	 * @param string                             $width   Item width.
 	 * @param string                             $hint    Helper text under the control.
 	 */
-	private function preset( \WP_Customize_Manager $c, string $id, string $section, string $label, array $presets, string $def, string $width, string $hint = '' ): void {
+	private function preset( \WP_Customize_Manager $c, string $id, string $section, string $label, array $presets, string $def, string $width, string $hint = '', ?array $dep = null ): void {
 		$c->add_setting(
 			$id,
 			array(
@@ -2287,19 +2363,19 @@ final class Customizer {
 			)
 		);
 
-		$c->add_control(
-			new Customize\Preset_Control(
-				$c,
-				$id,
-				array(
-					'section'     => $section,
-					'label'       => $label,
-					'description' => $hint,
-					'presets'     => $presets,
-					'item_width'  => $width,
-				)
-			)
+		$args = array(
+			'section'     => $section,
+			'label'       => $label,
+			'description' => $hint,
+			'presets'     => $presets,
+			'item_width'  => $width,
 		);
+
+		if ( null !== $dep ) {
+			$args['active_callback'] = $this->depend( $id, $dep );
+		}
+
+		$c->add_control( new Customize\Preset_Control( $c, $id, $args ) );
 	}
 
 	/**

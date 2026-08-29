@@ -13687,3 +13687,62 @@ p.no-comments {
 }
 
 .oc-colog__err { margin: 8px 0 0; font-size: .85rem; color: var(--oc-sale, #b4453c); }
+
+/* ------------------------------------------------------------------ *
+ * Linked products on a product page — related, cross-sells.
+ *
+ * One set of clothes for every linked row, so a shop that switches a
+ * block from a grid to a slider gets the same cards either way.
+ * ------------------------------------------------------------------ */
+
+.oc-linked { margin-block-start: 48px; }
+
+.oc-linked__title {
+	margin-block: 0 18px;
+	font-size: clamp(18px, 2.2vw, 24px);
+}
+
+.woocommerce .oc-linked--center ul.products { justify-content: center; }
+.oc-linked--center .oc-linked__title { text-align: center; }
+
+/* A row that scrolls. The cards keep the width the grid gave them, so
+ * nothing about the card has to know which row it landed in. */
+.woocommerce .oc-linked--slider ul.products {
+	display: flex;
+	flex-wrap: nowrap;
+	gap: var(--oc-gap, 20px);
+	overflow-x: auto;
+	scroll-snap-type: none;          /* free scroll — the finger decides */
+	overscroll-behavior-inline: contain;
+	scrollbar-width: none;
+	margin-block-end: 0;
+	padding-block-end: 4px;
+}
+
+.woocommerce .oc-linked--slider ul.products::-webkit-scrollbar { display: none; }
+
+.woocommerce .oc-linked--slider ul.products li.product {
+	flex: 0 0 auto;
+	inline-size: calc((100% - (var(--oc-linked-cols, 4) - 1) * var(--oc-gap, 20px)) / var(--oc-linked-cols, 4));
+	margin: 0 !important;
+	clear: none;
+}
+
+.oc-linked--slider ul.products.is-drag {
+	cursor: grabbing;
+	scroll-behavior: auto;
+	user-select: none;
+}
+
+/* On a phone the row runs to the edge of the screen rather than stopping
+ * at the gutter, which is what makes it read as more-to-come. */
+@media (max-width: 767px) {
+	.woocommerce .oc-linked--slider ul.products {
+		margin-inline: calc(-1 * var(--oc-gap, 20px));
+		padding-inline: var(--oc-gap, 20px);
+	}
+
+	.woocommerce .oc-linked--slider ul.products li.product {
+		inline-size: calc((100% - var(--oc-gap, 20px)) / 2);
+	}
+}
