@@ -13996,12 +13996,15 @@ p.no-comments {
 	box-shadow: 0 1px 3px rgb(0 0 0 / 18%);
 }
 
-.oc-xsell__tile input:checked + .oc-xsell__tilepic .oc-xsell__box {
+/* A general sibling, not an adjacent one: the tile carries a hidden
+ * quantity field between the checkbox and the picture, so `+` matched
+ * nothing and a ticked tile never showed its tick. */
+.oc-xsell__tile input:checked ~ .oc-xsell__tilepic .oc-xsell__box {
 	background: currentColor;
 	border-color: currentColor;
 }
 
-.oc-xsell__tile input:checked + .oc-xsell__tilepic .oc-xsell__box::after { opacity: 1; transform: rotate(-45deg) scale(1); }
+.oc-xsell__tile input:checked ~ .oc-xsell__tilepic .oc-xsell__box::after { opacity: 1; transform: rotate(-45deg) scale(1); }
 
 .oc-xsell__tilename {
 	font-size: 13px;

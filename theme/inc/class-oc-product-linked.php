@@ -469,7 +469,7 @@ final class Product_Linked {
 	 * @param array  $data      Extra cart item data.
 	 */
 	public function add_the_ticked( $key, $id, $qty, $variation, $attrs, $data ): void {
-		unset( $key, $id, $qty, $variation, $attrs, $data );
+		unset( $key, $qty, $variation, $attrs, $data );
 
 		static $busy = false;
 
@@ -484,8 +484,20 @@ final class Product_Linked {
 			return;
 		}
 
-		$busy    = true;
-		$allowed = wp_list_pluck( self::cross_sells(), 'id' );
+		$busy = true;
+
+		// The product being added comes from the hook, never from the loop:
+		// this theme adds to cart over ajax, where there is no post in hand
+		// and get_the_ID() is empty. That was the whole bug — the list of
+		// what this page may offer came back empty, so every tick was
+		// refused as something the page never offered.
+		$parent  = wc_get_product( (int) $id );
+		$allowed = $parent instanceof \WC_Product ? wp_list_pluck( self::cross_sells( $parent ), 'id' ) : array();
+
+		if ( ! $allowed ) {
+			$busy = false;
+			return;
+		}
 
 		foreach ( $asked as $pid => $row ) {
 			$pid = absint( $pid );
