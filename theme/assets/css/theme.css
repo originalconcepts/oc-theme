@@ -112,12 +112,6 @@ a { color: inherit; }
 
 .oc-hicon:hover { color: var(--oc-primary); }
 
-/* burger inherits the header text colour too */
-.oc-burger span,
-.oc-burger span::before,
-.oc-burger span::after { background: currentColor; }
-.oc-burger { color: var(--oc-header-tx, var(--oc-ink)); }
-
 /* lanvin-style text links replacing the icons on desktop */
 .oc-htext { display: flex; align-items: center; gap: 20px; }
 
@@ -774,32 +768,33 @@ a { color: inherit; }
 
 .oc-hsearch input[type="search"]:focus { outline: none; }
 
-/* The same closing mark the wide bar carries, so the two presentations of one
- * search do not disagree about how to leave it. */
-.oc-hsearch__sep {
-	inline-size: 1px;
-	block-size: 16px;
-	background: var(--oc-line);
-	flex: none;
-}
+/* The browser's own clear button turns up in the wrong place and in a shape
+ * nothing else on the site uses. Ours is the wide bar's, scaled down. */
+.oc-hsearch input[type="search"]::-webkit-search-cancel-button,
+.oc-hsearch input[type="search"]::-webkit-search-decoration { display: none; }
 
-.oc-hsearch__close {
-	border: 0;
-	background: none;
-	color: inherit;
-	cursor: pointer;
-	padding: 4px;
+.oc-hsearch__wipe {
+	inline-size: 17px;
+	block-size: 17px;
+	padding: 0;
+	flex: none;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
+	border: 0;
 	border-radius: 999px;
 	line-height: 0;
-	flex: none;
+	cursor: pointer;
+	background: var(--oc-surface-2, rgba(0, 0, 0, .07));
+	color: var(--oc-ink-2);
 }
 
-.oc-hsearch__close:hover { background: var(--oc-surface-2, rgba(0, 0, 0, .06)); }
-.oc-hsearch__close[hidden] { display: none; }
-.oc-hsearch__sep[hidden] { display: none; }
+.oc-hsearch__wipe:hover {
+	background: var(--oc-line);
+	color: var(--oc-ink);
+}
+
+.oc-hsearch__wipe[hidden] { display: none; }
 
 .oc-searchbox[data-mode="min"] .oc-search__side { display: none; }
 .oc-searchbox[data-mode="min"] .oc-search__cols { grid-template-columns: 1fr; }
@@ -981,19 +976,35 @@ html.oc-search-open { overflow: hidden; }
 	background: none;
 	cursor: pointer;
 	position: relative;
+	/* Whatever ink the header is wearing — the transparent state's included,
+	 * which sets its own colour on the header itself. */
+	color: inherit;
 }
+
+/* Three bars cut from the same settings as the other icons: their width is
+ * the icon size, their thickness the icon stroke. Hard-coded pixels here
+ * were why the size and weight settings appeared to do nothing to it. */
 .oc-burger span,
 .oc-burger span::before,
 .oc-burger span::after {
 	content: "";
 	position: absolute;
-	inset-inline: 8px;
-	block-size: 2px;
-	background: var(--oc-ink);
+	inline-size: var(--oc-hicon, 20px);
+	block-size: max(1px, calc(var(--oc-hicon-sw, 1.8) * 1px));
+	border-radius: 2px;
+	background: currentColor;
 }
-.oc-burger span { inset-block-start: 19px; }
-.oc-burger span::before { inset-block-start: -7px; inset-inline: 0; }
-.oc-burger span::after { inset-block-start: 7px; inset-inline: 0; }
+
+.oc-burger span {
+	inset-block-start: 50%;
+	inset-inline-start: 50%;
+	translate: -50% -50%;
+}
+
+/* The outer two ride at a distance that grows with the icon, so the three
+ * keep their proportions at every size. */
+.oc-burger span::before { inset-block-start: calc(-1 * var(--oc-hicon, 20px) * .32); inset-inline-start: 0; }
+.oc-burger span::after { inset-block-start: calc(var(--oc-hicon, 20px) * .32); inset-inline-start: 0; }
 
 /* ---------- navigation ---------- */
 
@@ -6011,6 +6022,11 @@ html:not([dir]) .oc-cartup__items--h.oc-fade-end {
 	background: transparent;
 	border-block-end-color: transparent;
 	transition: background-color .2s ease, border-color .2s ease;
+	/* A fixed header pinned to the very top sits ON the top bar, and the
+	 * icons end up straddling the two. This holds it below the bar and lets
+	 * it ride up as the bar scrolls away; the shift is measured in script
+	 * and is zero when there is no top bar. */
+	translate: 0 var(--oc-htrans-shift, 0px);
 }
 
 .oc-htrans .oc-header.is-scrolled {
@@ -6038,7 +6054,10 @@ html:not([dir]) .oc-cartup__items--h.oc-fade-end {
 /* And its own (usually light) logo, swapped by state. */
 .oc-logo-tr { display: none; }
 
-.oc-htrans .oc-header:not(.is-scrolled) .custom-logo-link .custom-logo { display: none; }
+/* The site logo only gives way to a transparent-state logo that was
+ * actually uploaded. Without :has() this hid the logo unconditionally, so a
+ * shop that had not uploaded one had no logo at all over its hero. */
+.oc-htrans .oc-header:not(.is-scrolled) .custom-logo-link:has(.oc-logo-tr) .custom-logo { display: none; }
 
 .oc-htrans .oc-header:not(.is-scrolled) .custom-logo-link .oc-logo-tr {
 	display: block;

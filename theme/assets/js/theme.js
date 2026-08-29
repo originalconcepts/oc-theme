@@ -350,7 +350,32 @@
 	if ( siteHeader && document.body.classList.contains( 'oc-htrans' ) ) {
 		var updateHeaderScroll = function () {
 			siteHeader.classList.toggle( 'is-scrolled', window.scrollY > 12 );
+
+			// A transparent header is fixed, so it would sit on top of the
+			// top bar and its icons would straddle the two. Hold it below the
+			// bar and let it ride up as the bar scrolls away.
+			if ( ocTransBar ) {
+				siteHeader.style.setProperty(
+					'--oc-htrans-shift',
+					Math.max( 0, ocTransBarH - window.scrollY ) + 'px'
+				);
+			}
 		};
+
+		// Measured once and on resize rather than on every scroll frame, so
+		// the scroll handler never asks the page for a layout.
+		var ocTransBar = document.body.classList.contains( 'oc-htrans' )
+			? document.querySelector( '.oc-topbar' )
+			: null;
+		var ocTransBarH = ocTransBar ? ocTransBar.offsetHeight : 0;
+
+		window.addEventListener( 'resize', function () {
+			if ( ocTransBar ) {
+				ocTransBarH = ocTransBar.offsetHeight;
+				updateHeaderScroll();
+			}
+		}, { passive: true } );
+
 		window.addEventListener( 'scroll', updateHeaderScroll, { passive: true } );
 		updateHeaderScroll();
 	}
@@ -601,7 +626,9 @@
 		var sField = sFields[ 0 ];
 		var sOut = searchPanel.querySelector( '[data-oc-search-out]' );
 		var sIdle = searchPanel.querySelector( '[data-oc-search-idle]' );
-		var sClear = searchPanel.querySelector( '[data-oc-search-clear]' );
+		// One in the panel, one in the header field when the site shows a
+		// field. Same search, so the same wipe drives both.
+		var sClears = Array.prototype.slice.call( document.querySelectorAll( '[data-oc-search-clear]' ) );
 		var sLive = searchPanel.querySelector( '[data-oc-search-live]' );
 		var sMin = parseInt( searchPanel.dataset.min, 10 ) || 2;
 		var sAction = searchPanel.dataset.action;
@@ -723,18 +750,6 @@
 
 			searchToggles.forEach( function ( t ) {
 				t.setAttribute( 'aria-expanded', open ? 'true' : 'false' );
-			} );
-
-			sCloses.forEach( function ( button ) {
-				if ( button.closest( '.oc-hsearch' ) ) {
-					button.hidden = ! open;
-
-					var sep = button.previousElementSibling;
-
-					if ( sep && sep.classList.contains( 'oc-hsearch__sep' ) ) {
-						sep.hidden = ! open;
-					}
-				}
 			} );
 
 			if ( open ) {
@@ -870,8 +885,8 @@
 
 			// The eraser only exists while there is something to erase; the
 			// glass stays put and goes quiet, because it anchors the line.
-			if ( sClear ) {
-				sClear.hidden = empty;
+			if ( sClears.length ) {
+				sClears.forEach( function ( b ) { b.hidden = empty; } );
 			}
 
 			if ( sGo ) {
@@ -988,7 +1003,7 @@
 			} );
 		} );
 
-		if ( sClear ) {
+		sClears.forEach( function ( sClear ) {
 			sClear.addEventListener( 'click', function () {
 				sFields.forEach( function ( f ) {
 					f.value = '';
@@ -997,7 +1012,8 @@
 				sField.focus();
 				run();
 			} );
-		}
+		} );
+
 
 		/* -- a suggestion, a pill or a past search fills the box -- */
 

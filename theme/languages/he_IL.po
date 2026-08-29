@@ -397,7 +397,7 @@ msgid "Arrows on the mobile gallery"
 msgstr "חצים בגלריית המובייל"
 
 msgid "Header"
-msgstr "הדר (ראש האתר)"
+msgstr "הדר מרכזי"
 
 msgid "The logo comes from Site Identity; menus from the Menus screen."
 msgstr "הלוגו מוגדר בזהות האתר; התפריטים במסך התפריטים."
