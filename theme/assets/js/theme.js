@@ -1213,26 +1213,48 @@
 				return;
 			}
 
-			// Scroll the strip and nothing else. scrollIntoView walks every
-			// scrollable ancestor it can find, so a card sitting in a product
-			// slider had its whole row dragged sideways as well — pressing the
-			// picture arrow turned the page of products instead of the
-			// picture. Measuring the two boxes and moving the strip's own
-			// scroll is exact in RTL and survives the gap between slides.
-			var box = strip.getBoundingClientRect();
-			var here = slide.getBoundingClientRect();
-			var rtl = 'rtl' === getComputedStyle( strip ).direction;
-			var delta = rtl ? ( here.right - box.right ) : ( here.left - box.left );
+			// scrollIntoView is what actually drives this strip, but it
+			// scrolls every scrollable ancestor it can reach as well — which
+			// is why pressing the picture arrow also turned the row of
+			// products underneath. Note where those ancestors are and hold
+			// them there while the picture moves. Block "nearest" already
+			// keeps the page from scrolling vertically.
+			var keep = [];
+			var node = strip.parentElement;
 
-			if ( Math.abs( delta ) < 1 ) {
+			while ( node && node !== document.documentElement ) {
+				if ( node.scrollWidth > node.clientWidth + 1 ) {
+					keep.push( [ node, node.scrollLeft ] );
+				}
+
+				node = node.parentElement;
+			}
+
+			slide.scrollIntoView( {
+				behavior: jump ? 'auto' : 'smooth',
+				block: 'nearest',
+				inline: 'start'
+			} );
+
+			if ( ! keep.length ) {
 				return;
 			}
 
-			strip.scrollTo( {
-				left: strip.scrollLeft + delta,
-				behavior: jump ? 'auto' : 'smooth'
-			} );
+			// Long enough to cover a smooth scroll, and it costs nothing:
+			// putting a scroll offset back that has not moved is free.
+			( function hold( frame ) {
+				keep.forEach( function ( pair ) {
+					pair[ 0 ].scrollLeft = pair[ 1 ];
+				} );
+
+				if ( frame < 40 ) {
+					requestAnimationFrame( function () {
+						hold( frame + 1 );
+					} );
+				}
+			}( 0 ) );
 		}
+
 
 		media.querySelectorAll( '.oc-card-media__nav' ).forEach( function ( btn ) {
 			btn.addEventListener( 'click', function ( event ) {
