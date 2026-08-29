@@ -24,7 +24,7 @@ defined( 'ABSPATH' ) || exit;
  */
 final class Updater {
 
-	private const TRANSIENT = 'oc_theme_release';
+	private const TRANSIENT = 'oc_release_';
 	private const TTL       = 6 * HOUR_IN_SECONDS;
 	private const API       = 'https://api.github.com/repos/%s/releases/latest';
 
@@ -50,16 +50,48 @@ final class Updater {
 	private string $repo;
 
 	/**
+	 * "theme" or "plugin". The release is looked up the same way for both;
+	 * only the transient WordPress keeps its answer in, and the shape of the
+	 * answer, differ.
+	 *
+	 * @var string
+	 */
+	private string $kind;
+
+	/**
+	 * For a plugin, the file WordPress knows it by, e.g.
+	 * "oc-blocks/oc-blocks.php". Empty for a theme.
+	 *
+	 * @var string
+	 */
+	private string $file;
+
+	/**
 	 * Store the update source.
 	 *
-	 * @param string $slug    Theme directory name.
+	 * @param string $slug    Theme or plugin directory name.
 	 * @param string $version Installed version.
 	 * @param string $repo    GitHub owner/repo.
+	 * @param string $kind    "theme" or "plugin".
+	 * @param string $file    Plugin file, for a plugin.
 	 */
-	public function __construct( string $slug, string $version, string $repo ) {
+	public function __construct( string $slug, string $version, string $repo, string $kind = 'theme', string $file = '' ) {
 		$this->slug    = $slug;
 		$this->version = $version;
 		$this->repo    = $repo;
+		$this->kind    = 'plugin' === $kind ? 'plugin' : 'theme';
+		$this->file    = $file;
+	}
+
+	/**
+	 * Where this instance keeps its answer. Keyed by slug, because the theme
+	 * and the plugin come from one release but take a different asset out of
+	 * it — one cache for both would hand the plugin the theme's zip.
+	 *
+	 * @return string
+	 */
+	private function cache_key(): string {
+		return self::TRANSIENT . str_replace( '-', '_', $this->slug );
 	}
 
 	/**
@@ -76,7 +108,7 @@ final class Updater {
 			return;
 		}
 
-		add_filter( 'pre_set_site_transient_update_themes', array( $this, 'inject_update' ) );
+		add_filter( 'pre_set_site_transient_update_' . $this->kind . 's', array( $this, 'inject_update' ) );
 		add_filter( 'upgrader_source_selection', array( $this, 'normalise_folder' ), 10, 4 );
 		add_action( 'upgrader_process_complete', array( $this, 'flush' ), 10, 2 );
 	}
@@ -98,6 +130,22 @@ final class Updater {
 		}
 
 		if ( version_compare( $release['version'], $this->version, '<=' ) ) {
+			return $transient;
+		}
+
+		// A theme's entry is an array keyed by directory; a plugin's is an
+		// object keyed by the plugin file. WordPress reads them differently
+		// and silently ignores the wrong shape.
+		if ( 'plugin' === $this->kind ) {
+			$offer              = new \stdClass();
+			$offer->slug        = $this->slug;
+			$offer->plugin      = $this->file;
+			$offer->new_version = $release['version'];
+			$offer->url         = $release['url'];
+			$offer->package     = $release['package'];
+
+			$transient->response[ $this->file ] = $offer;
+
 			return $transient;
 		}
 
@@ -128,7 +176,13 @@ final class Updater {
 	public function normalise_folder( $source, $remote_source, $upgrader, $args = array() ) {
 		global $wp_filesystem;
 
-		if ( is_wp_error( $source ) || ! isset( $args['theme'] ) || $args['theme'] !== $this->slug ) {
+		$named = $args[ $this->kind ] ?? '';
+
+		if ( 'plugin' === $this->kind ) {
+			$named = '' === $named ? '' : dirname( (string) $named );
+		}
+
+		if ( is_wp_error( $source ) || $named !== $this->slug ) {
 			return $source;
 		}
 
@@ -149,7 +203,7 @@ final class Updater {
 		if ( ! $wp_filesystem->move( $source, $desired ) ) {
 			return new \WP_Error(
 				'oc_rename_failed',
-				__( 'Could not prepare the downloaded theme folder.', 'oc-theme' )
+				__( 'Could not prepare the downloaded folder.', 'oc-theme' )
 			);
 		}
 
@@ -163,8 +217,8 @@ final class Updater {
 	 * @param array        $data     Update context.
 	 */
 	public function flush( $upgrader, $data ): void {
-		if ( isset( $data['type'] ) && 'theme' === $data['type'] ) {
-			delete_site_transient( self::TRANSIENT );
+		if ( isset( $data['type'] ) && $this->kind === $data['type'] ) {
+			delete_site_transient( $this->cache_key() );
 		}
 	}
 
@@ -175,7 +229,7 @@ final class Updater {
 	 * @return array{version:string,package:string,url:string}|null
 	 */
 	private function latest_release(): ?array {
-		$cached = get_site_transient( self::TRANSIENT );
+		$cached = get_site_transient( $this->cache_key() );
 		if ( is_array( $cached ) ) {
 			return $cached;
 		}
@@ -190,7 +244,7 @@ final class Updater {
 
 		if ( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) {
 			// Cache the failure briefly so a broken token does not hammer the API.
-			set_site_transient( self::TRANSIENT, 'none', 15 * MINUTE_IN_SECONDS );
+			set_site_transient( $this->cache_key(), 'none', 15 * MINUTE_IN_SECONDS );
 			return null;
 		}
 
@@ -217,7 +271,7 @@ final class Updater {
 			'url'     => (string) ( $body['html_url'] ?? '' ),
 		);
 
-		set_site_transient( self::TRANSIENT, $release, self::TTL );
+		set_site_transient( $this->cache_key(), $release, self::TTL );
 
 		return $release;
 	}

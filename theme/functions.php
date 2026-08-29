@@ -436,6 +436,24 @@ add_action( 'admin_notices', 'oc_dependency_notice' );
 ( new OC\Theme\Bought_Together() )->register();
 ( new OC\Theme\Updater( get_template(), OC_THEME_VERSION, OC_THEME_REPO ) )->register();
 
+// The blocks plugin ships in the same release and had no updater at all, so
+// it was the one piece that always had to be installed by hand. The theme
+// registers it: the two travel together, and a site whose theme is inactive
+// has nothing for the plugin to update into anyway.
+add_action(
+	'plugins_loaded',
+	static function () {
+		if ( ! defined( 'OC_BLOCKS_VERSION' ) || ! defined( 'OC_BLOCKS_DIR' ) ) {
+			return;
+		}
+
+		$file = plugin_basename( OC_BLOCKS_DIR . 'oc-blocks.php' );
+
+		( new OC\Theme\Updater( dirname( $file ), OC_BLOCKS_VERSION, OC_THEME_REPO, 'plugin', $file ) )->register();
+	},
+	20
+);
+
 if ( ! defined( 'OC_LOGIN_DISABLE' ) || ! OC_LOGIN_DISABLE ) {
 	$oc_login_slug = trim( sanitize_title( (string) apply_filters( 'oc_login_slug', OC_LOGIN_SLUG ) ), '/' );
 

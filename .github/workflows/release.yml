@@ -29,6 +29,10 @@ jobs:
           for dir in plugins/*/; do
             name=$(basename "$dir")
             got=$(grep -m1 '^ \* Version:' "$dir$name.php" | tr -d ' ' | cut -d: -f2)
+            const=$(grep -m1 "define( 'OC_BLOCKS_VERSION'" "$dir$name.php" | sed "s/.*'\\([0-9.]*\\)'.*/\\1/" || true)
+            if [ -n "$const" ] && [ "$const" != "$v" ]; then
+              echo "OC_BLOCKS_VERSION is $const but the tag is $v"; exit 1
+            fi
             echo "  $name=$got"
             test "$got" = "$v"
           done
