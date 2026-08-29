@@ -3,7 +3,7 @@
  * Plugin Name: OC Blocks
  * Plugin URI:  https://github.com/originalconcepts/oc-theme
  * Description: Page composer for the OC theme — hero sliders, products, categories, banners and the rest, edited in a full-screen composer with a live 1:1 preview.
- * Version:     0.3.4
+ * Version:     0.3.5
  * Requires at least: 6.5
  * Requires PHP: 8.1
  * Author:      Original Concepts
