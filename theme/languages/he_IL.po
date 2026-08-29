@@ -5796,7 +5796,7 @@ msgid "characters"
 msgstr "תווים"
 
 msgid "Stops a two-letter category name linking half the words on the page."
-msgstr "מונע ממשם קטגוריה בן שתי אותיות לקשר חצי מהמילים בעמוד."
+msgstr "מונע משם קטגוריה בן שתי אותיות לקשר חצי מהמילים בעמוד."
 
 msgid "Headings"
 msgstr "כותרות"
