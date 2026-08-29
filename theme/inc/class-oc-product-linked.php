@@ -261,7 +261,9 @@ final class Product_Linked {
 		echo '<div class="oc-xsell__opts">';
 
 		foreach ( $attributes as $name => $values ) {
-			$key = 'oc_xs[' . absint( $p->get_id() ) . '][attr][' . esc_attr( sanitize_title( $name ) ) . ']';
+			// The raw attribute name: sanitising a Hebrew one such as pa_צבע
+			// turns it into percent-escapes and it stops naming its variation.
+			$key = 'oc_xs[' . absint( $p->get_id() ) . '][attr][' . esc_attr( $name ) . ']';
 
 			echo '<select class="oc-xsell__opt" name="' . esc_attr( $key ) . '" data-oc-xs-attr aria-label="' . esc_attr( wc_attribute_label( $name, $p ) ) . '">';
 			echo '<option value="">' . esc_html( sprintf( /* translators: %s: attribute name, e.g. Colour. */ __( 'Choose %s', 'oc-theme' ), wc_attribute_label( $name, $p ) ) ) . '</option>';
@@ -480,7 +482,7 @@ final class Product_Linked {
 						continue 2; // An unanswered option means nothing to add.
 					}
 
-					$vars[ 'attribute_' . sanitize_title( (string) $name ) ] = $value;
+					$vars[ 'attribute_' . urldecode( (string) $name ) ] = $value;
 				}
 
 				$data_store = \WC_Data_Store::load( 'product' );
