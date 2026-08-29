@@ -5743,3 +5743,78 @@ msgstr[1] "%d נשמרו כי משהו עדיין משתמש בהם."
 
 msgid "Those details were not right."
 msgstr "הפרטים שהוזנו אינם נכונים."
+
+msgid "Internal links"
+msgstr "קישורים פנימיים"
+
+msgid "Finds a phrase in the text that names somewhere else on the site and links it there. The links are added as the page is drawn, so nothing is written into your content and unticking the box puts everything back as it was."
+msgstr "מאתר בטקסט ביטוי ששייך למקום אחר באתר ומקשר אליו. הקישורים נוספים בזמן הצגת העמוד — שום דבר לא נכתב לתוך התוכן שלך, וביטול הסימון מחזיר הכול בדיוק כפי שהיה."
+
+msgid "Automatic internal links"
+msgstr "קישורים פנימיים אוטומטיים"
+
+msgid "Create automatic internal links"
+msgstr "צור קישורים פנימיים אוטומטיים"
+
+msgid "Where"
+msgstr "היכן"
+
+msgid "Everywhere on the site"
+msgstr "בכל האתר"
+
+msgid "Articles and pages only"
+msgstr "רק בעמודי תוכן"
+
+msgid "Category pages only"
+msgstr "רק בעמודי קטגוריה"
+
+msgid "Product pages only"
+msgstr "רק בעמודי מוצר"
+
+msgid "Link to"
+msgstr "קשר אל"
+
+msgid "Product categories"
+msgstr "קטגוריות מוצרים"
+
+msgid "Blog categories"
+msgstr "קטגוריות הבלוג"
+
+msgid "Categories are the usual choice. Linking every product name inside an article is rarely what anyone means."
+msgstr "קטגוריות הן הבחירה הרגילה. קישור של כל שם מוצר בתוך כתבה הוא כמעט אף פעם לא מה שהתכוונו אליו."
+
+msgid "Most links on one page"
+msgstr "מקסימום קישורים בעמוד אחד"
+
+msgid "Left unbounded a long article turns into a mesh of links and reads as spam. Five is a sensible ceiling."
+msgstr "בלי הגבלה, כתבה ארוכה הופכת לרשת של קישורים ונקראת כספאם. חמישה הם תקרה הגיונית."
+
+msgid "Shortest phrase to link"
+msgstr "הביטוי הקצר ביותר שיקושר"
+
+msgid "characters"
+msgstr "תווים"
+
+msgid "Stops a two-letter category name linking half the words on the page."
+msgstr "מונע ממשם קטגוריה בן שתי אותיות לקשר חצי מהמילים בעמוד."
+
+msgid "Headings"
+msgstr "כותרות"
+
+msgid "Link inside headings too"
+msgstr "לקשר גם בתוך כותרות"
+
+msgid "Off by default — a linked heading looks like a mistake to most readers."
+msgstr "כבוי כברירת מחדל — כותרת מקושרת נראית לרוב הקוראים כמו טעות."
+
+msgid "Phrases you choose yourself"
+msgstr "ביטויים שאתה קובע בעצמך"
+
+msgid "One per line: the phrase, a vertical bar, then the address. These win over anything found automatically — use them for the phrases you actually want to rank for."
+msgstr "אחד בכל שורה: הביטוי, קו אנכי, ואז הכתובת. אלה גוברים על כל מה שנמצא אוטומטית — השתמש בהם לביטויים שאתה באמת רוצה לקדם."
+
+msgid "Never link these"
+msgstr "לעולם אל תקשר את אלה"
+
+msgid "One phrase per line."
+msgstr "ביטוי אחד בכל שורה."
