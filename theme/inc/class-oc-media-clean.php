@@ -611,15 +611,26 @@ final class Media_Clean {
 		$this->guard();
 
 		$ids = isset( $_POST['ids'] ) ? array_map( 'absint', (array) wp_unslash( $_POST['ids'] ) ) : array();
-		$ids = array_filter( $ids );
 
+		wp_send_json_success( self::delete_batch( array_filter( $ids ) ) );
+	}
+
+	/**
+	 * Remove a batch, checking each one over again first.
+	 *
+	 * Separate from the ajax handler so the guard can be exercised on its
+	 * own: hand it a picture that is in use and it must come back kept.
+	 *
+	 * @param int[] $ids Attachment IDs.
+	 *
+	 * @return array{deleted:int,kept:int,bytes:int}
+	 */
+	public static function delete_batch( array $ids ): array {
 		if ( ! $ids ) {
-			wp_send_json_success(
-				array(
-					'deleted' => 0,
-					'kept'    => 0,
-					'bytes'   => 0,
-				)
+			return array(
+				'deleted' => 0,
+				'kept'    => 0,
+				'bytes'   => 0,
 			);
 		}
 
@@ -677,12 +688,10 @@ final class Media_Clean {
 		}
 		update_option( self::LOG, $log, false );
 
-		wp_send_json_success(
-			array(
-				'deleted' => $deleted,
-				'kept'    => $kept,
-				'bytes'   => $freed,
-			)
+		return array(
+			'deleted' => $deleted,
+			'kept'    => $kept,
+			'bytes'   => $freed,
 		);
 	}
 
