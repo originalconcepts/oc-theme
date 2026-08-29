@@ -14199,7 +14199,8 @@ p.no-comments {
 /* With a discount running, the payable total is a sale price and wears the
  * colour the shop gives every other one. */
 .oc-bt.is-off .oc-bt__now { color: var(--oc-sale, #b4453c); }
-.oc-bt__saved { font-size: 13px; font-weight: 600; color: var(--oc-sale, #b4453c); }
+/* The saving stays green: it is the good news, not the price. */
+.oc-bt__saved { font-size: 13px; font-weight: 600; color: #16a34a; }
 
 .oc-bt__add { inline-size: 100%; }
 .oc-bt__add[disabled] { opacity: .5; cursor: not-allowed; }
