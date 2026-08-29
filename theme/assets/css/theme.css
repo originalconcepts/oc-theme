@@ -8596,6 +8596,19 @@ body.oc-sort-open .oc-sortsheet__overlay[hidden] { display: block; }
 @media (min-width: 901px) {
 	.oc-tabspos-gallery.single-product div.product .woocommerce-tabs { grid-column: 1; }
 	.oc-side-gallery-end.oc-tabspos-gallery.single-product div.product .woocommerce-tabs { grid-column: 2; }
+
+	/* In this layout the product is a grid, and everything printed after the
+	 * summary becomes a grid item. Left to place itself, the bundle took the
+	 * free cell beside the gallery and the description was pushed below it —
+	 * the page offered three more things before saying what this one is.
+	 * These blocks belong across the whole width, under everything. */
+	.oc-tabspos-gallery.single-product div.product > .oc-bt,
+	.oc-tabspos-gallery.single-product div.product > .oc-xsell,
+	.oc-tabspos-gallery.single-product div.product > .related.products,
+	.oc-tabspos-gallery.single-product div.product > .up-sells,
+	.oc-tabspos-gallery.single-product div.product > .upsells {
+		grid-column: 1 / -1;
+	}
 }
 
 /* ---------- full description below the tab area ---------- */

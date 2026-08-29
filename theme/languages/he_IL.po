@@ -5945,7 +5945,7 @@ msgid "Under the gallery and details"
 msgstr "מתחת לגלריה ולפרטי המוצר"
 
 msgid "Shape beside the button"
-msgstr "תצוגה ליד הכפתור"
+msgstr "תצוגה לפני ההוספה לסל"
 
 msgid "Rows with a tick box"
 msgstr "שורות עם תיבת סימון"
