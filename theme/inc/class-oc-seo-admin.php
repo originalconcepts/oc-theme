@@ -379,6 +379,131 @@ final class Seo_Admin {
 	}
 
 	/**
+	 * Internal links: the box, and everything it reveals.
+	 *
+	 * @param array<string,mixed> $settings Current settings.
+	 */
+	private function links_tab( array $settings ): void {
+		$targets = (array) $settings['links_targets'];
+
+		$kinds = array(
+			'product_cat'   => __( 'Product categories', 'oc-theme' ),
+			'product'       => __( 'Products', 'oc-theme' ),
+			'post'          => __( 'Articles and pages', 'oc-theme' ),
+			'product_brand' => __( 'Brands', 'oc-theme' ),
+			'category'      => __( 'Blog categories', 'oc-theme' ),
+		);
+
+		$scopes = array(
+			'all'      => __( 'Everywhere on the site', 'oc-theme' ),
+			'content'  => __( 'Articles and pages only', 'oc-theme' ),
+			'category' => __( 'Category pages only', 'oc-theme' ),
+			'product'  => __( 'Product pages only', 'oc-theme' ),
+		);
+		?>
+		<p class="description" style="max-width:60em">
+			<?php esc_html_e( 'Finds a phrase in the text that names somewhere else on the site and links it there. The links are added as the page is drawn, so nothing is written into your content and unticking the box puts everything back as it was.', 'oc-theme' ); ?>
+		</p>
+
+		<table class="form-table" role="presentation">
+			<tr>
+				<th scope="row"><?php esc_html_e( 'Automatic internal links', 'oc-theme' ); ?></th>
+				<td>
+					<label>
+						<input type="checkbox" name="links_on" value="1" id="ocseo-links-on" <?php checked( ! empty( $settings['links_on'] ) ); ?>>
+						<?php esc_html_e( 'Create automatic internal links', 'oc-theme' ); ?>
+					</label>
+				</td>
+			</tr>
+		</table>
+
+		<div id="ocseo-links-more" <?php echo empty( $settings['links_on'] ) ? 'hidden' : ''; ?>>
+			<table class="form-table" role="presentation">
+				<tr>
+					<th scope="row"><?php esc_html_e( 'Where', 'oc-theme' ); ?></th>
+					<td>
+						<?php foreach ( $scopes as $key => $label ) : ?>
+							<label style="display:block;margin-block-end:4px">
+								<input type="radio" name="links_scope" value="<?php echo esc_attr( $key ); ?>" <?php checked( $key, (string) $settings['links_scope'] ); ?>>
+								<?php echo esc_html( $label ); ?>
+							</label>
+						<?php endforeach; ?>
+					</td>
+				</tr>
+
+				<tr>
+					<th scope="row"><?php esc_html_e( 'Link to', 'oc-theme' ); ?></th>
+					<td>
+						<?php foreach ( $kinds as $key => $label ) : ?>
+							<label style="display:block;margin-block-end:4px">
+								<input type="checkbox" name="links_targets[]" value="<?php echo esc_attr( $key ); ?>" <?php checked( in_array( $key, $targets, true ) ); ?>>
+								<?php echo esc_html( $label ); ?>
+							</label>
+						<?php endforeach; ?>
+						<p class="description"><?php esc_html_e( 'Categories are the usual choice. Linking every product name inside an article is rarely what anyone means.', 'oc-theme' ); ?></p>
+					</td>
+				</tr>
+
+				<tr>
+					<th scope="row"><label for="ocseo-links-max"><?php esc_html_e( 'Most links on one page', 'oc-theme' ); ?></label></th>
+					<td>
+						<input type="number" min="1" max="50" id="ocseo-links-max" name="links_max" value="<?php echo esc_attr( (string) (int) $settings['links_max'] ); ?>" class="small-text">
+						<p class="description"><?php esc_html_e( 'Left unbounded a long article turns into a mesh of links and reads as spam. Five is a sensible ceiling.', 'oc-theme' ); ?></p>
+					</td>
+				</tr>
+
+				<tr>
+					<th scope="row"><label for="ocseo-links-min"><?php esc_html_e( 'Shortest phrase to link', 'oc-theme' ); ?></label></th>
+					<td>
+						<input type="number" min="2" max="40" id="ocseo-links-min" name="links_min" value="<?php echo esc_attr( (string) (int) $settings['links_min'] ); ?>" class="small-text">
+						<?php esc_html_e( 'characters', 'oc-theme' ); ?>
+						<p class="description"><?php esc_html_e( 'Stops a two-letter category name linking half the words on the page.', 'oc-theme' ); ?></p>
+					</td>
+				</tr>
+
+				<tr>
+					<th scope="row"><?php esc_html_e( 'Headings', 'oc-theme' ); ?></th>
+					<td>
+						<label>
+							<input type="checkbox" name="links_headings" value="1" <?php checked( ! empty( $settings['links_headings'] ) ); ?>>
+							<?php esc_html_e( 'Link inside headings too', 'oc-theme' ); ?>
+						</label>
+						<p class="description"><?php esc_html_e( 'Off by default — a linked heading looks like a mistake to most readers.', 'oc-theme' ); ?></p>
+					</td>
+				</tr>
+
+				<tr>
+					<th scope="row"><label for="ocseo-links-manual"><?php esc_html_e( 'Phrases you choose yourself', 'oc-theme' ); ?></label></th>
+					<td>
+						<textarea id="ocseo-links-manual" name="links_manual" rows="5" class="large-text code" placeholder="&#1512;&#1497;&#1492;&#1493;&#1496; &#1502;&#1513;&#1512;&#1491;&#1497; | https://example.com/category/office/"><?php echo esc_textarea( (string) $settings['links_manual'] ); ?></textarea>
+						<p class="description"><?php esc_html_e( 'One per line: the phrase, a vertical bar, then the address. These win over anything found automatically — use them for the phrases you actually want to rank for.', 'oc-theme' ); ?></p>
+					</td>
+				</tr>
+
+				<tr>
+					<th scope="row"><label for="ocseo-links-exclude"><?php esc_html_e( 'Never link these', 'oc-theme' ); ?></label></th>
+					<td>
+						<textarea id="ocseo-links-exclude" name="links_exclude" rows="4" class="large-text code"><?php echo esc_textarea( (string) $settings['links_exclude'] ); ?></textarea>
+						<p class="description"><?php esc_html_e( 'One phrase per line.', 'oc-theme' ); ?></p>
+					</td>
+				</tr>
+			</table>
+		</div>
+
+		<script>
+		( function () {
+			var box = document.getElementById( 'ocseo-links-on' ),
+				more = document.getElementById( 'ocseo-links-more' );
+			if ( ! box || ! more ) { return; }
+			box.addEventListener( 'change', function () {
+				more.hidden = ! box.checked;
+			} );
+		}() );
+		</script>
+		<?php
+	}
+
+	/**
 	 * Tools: the import keys, and the one-time Yoast migration.
 	 */
 	private function tools_tab(): void {
