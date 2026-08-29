@@ -129,6 +129,14 @@ final class Seo {
 				'alt_tpl_tax'    => '',
 				'alt_content'    => 1,
 				'alt_upload'     => 0,
+				'links_on'       => 0,
+				'links_scope'    => 'content',
+				'links_targets'  => array( 'product_cat' ),
+				'links_max'      => 5,
+				'links_min'      => 3,
+				'links_headings' => 0,
+				'links_exclude'  => '',
+				'links_manual'   => '',
 			)
 		);
 	}

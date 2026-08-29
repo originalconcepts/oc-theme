@@ -115,6 +115,7 @@ final class Seo_Admin {
 			'archives' => __( 'Archives', 'oc-theme' ),
 			'social'   => __( 'Social', 'oc-theme' ),
 			'alt'      => __( 'Automatic ALT', 'oc-theme' ),
+			'links'    => __( 'Internal links', 'oc-theme' ),
 			'tools'    => __( 'Import and tools', 'oc-theme' ),
 		);
 
@@ -158,6 +159,9 @@ final class Seo_Admin {
 				break;
 			case 'alt':
 				$this->alt_tab( $settings );
+				break;
+			case 'links':
+				$this->links_tab( $settings );
 				break;
 			default:
 				$this->general_tab( $settings );
@@ -481,6 +485,26 @@ final class Seo_Admin {
 			$settings['alt_tpl_tax'] = sanitize_text_field( (string) wp_unslash( $_POST['alt_tpl_tax'] ?? '' ) );
 			$settings['alt_content'] = empty( $_POST['alt_content'] ) ? 0 : 1;
 			$settings['alt_upload']  = empty( $_POST['alt_upload'] ) ? 0 : 1;
+		}
+
+		if ( 'links' === $tab ) {
+			$scopes = array( 'all', 'content', 'category', 'product' );
+			$kinds  = array( 'product_cat', 'product', 'post', 'product_brand', 'category' );
+
+			$settings['links_on']    = empty( $_POST['links_on'] ) ? 0 : 1;
+			$settings['links_scope'] = in_array( $_POST['links_scope'] ?? '', $scopes, true ) ? sanitize_key( (string) wp_unslash( $_POST['links_scope'] ) ) : 'content';
+
+			$want = isset( $_POST['links_targets'] ) ? array_map( 'sanitize_key', (array) wp_unslash( $_POST['links_targets'] ) ) : array();
+
+			$settings['links_targets']  = array_values( array_intersect( $want, $kinds ) );
+			$settings['links_max']      = min( 50, max( 1, (int) ( $_POST['links_max'] ?? 5 ) ) );
+			$settings['links_min']      = min( 40, max( 2, (int) ( $_POST['links_min'] ?? 3 ) ) );
+			$settings['links_headings'] = empty( $_POST['links_headings'] ) ? 0 : 1;
+			$settings['links_exclude']  = sanitize_textarea_field( (string) wp_unslash( $_POST['links_exclude'] ?? '' ) );
+			$settings['links_manual']   = sanitize_textarea_field( (string) wp_unslash( $_POST['links_manual'] ?? '' ) );
+
+			// The phrase list is built from these choices, so it has to go.
+			Seo_Links::forget();
 		}
 
 		update_option( Seo::SETTINGS, $settings, false );
