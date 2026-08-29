@@ -129,39 +129,63 @@ final class Login_Url {
 	}
 
 	/**
+	 * What should happen to a request — the whole rule, and nothing else.
+	 *
+	 * Kept free of globals and side effects so it can be put through every
+	 * combination that matters without a browser. Getting this wrong locks
+	 * the shop's owner out of their own admin, so it is worth being able to
+	 * prove rather than hope.
+	 *
+	 * @param string $path      Request path, relative to the site root, no slashes.
+	 * @param bool   $logged_in Whether someone is signed in.
+	 * @param string $action    The `action` parameter, if any.
+	 * @param string $slug      The login slug.
+	 *
+	 * @return string One of: login, admin, home, pass.
+	 */
+	public static function decide( string $path, bool $logged_in, string $action, string $slug ): string {
+		// The new door.
+		if ( $path === $slug ) {
+			return ( $logged_in && '' === $action ) ? 'admin' : 'login';
+		}
+
+		// The old door: only the errands get through.
+		if ( 'wp-login.php' === $path ) {
+			return in_array( $action, self::ERRANDS, true ) ? 'pass' : 'home';
+		}
+
+		// The admin itself. Anyone signed in carries on as before; everyone
+		// else is sent to the shop front rather than to a login form.
+		if ( 'wp-admin' === $path || 0 === strpos( $path, 'wp-admin/' ) ) {
+			if ( $logged_in ) {
+				return 'pass';
+			}
+
+			return in_array( wp_basename( $path ), self::OPEN, true ) ? 'pass' : 'home';
+		}
+
+		return 'pass';
+	}
+
+	/**
 	 * Decide what this request is, and send it where it belongs.
 	 */
 	public function route(): void {
-		$path = $this->path();
-		$slug = self::slug();
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- reading an action name to route on, nothing acted on.
+		$action = isset( $_REQUEST['action'] ) ? sanitize_key( wp_unslash( $_REQUEST['action'] ) ) : '';
 
-		// The new door: serve the real login page from here.
-		if ( $path === $slug ) {
-			$this->serve_login();
-			return;
-		}
+		switch ( self::decide( $this->path(), is_user_logged_in(), $action, self::slug() ) ) {
+			case 'login':
+				$this->serve_login();
+				break;
 
-		// The old door.
-		if ( 'wp-login.php' === $path ) {
-			// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- reading an action name to route on, nothing acted on.
-			$action = isset( $_REQUEST['action'] ) ? sanitize_key( wp_unslash( $_REQUEST['action'] ) ) : '';
+			case 'admin':
+				wp_safe_redirect( admin_url(), 302 );
+				exit;
 
-			if ( ! in_array( $action, self::ERRANDS, true ) ) {
+			case 'home':
 				wp_safe_redirect( home_url( '/' ), 302 );
 				exit;
-			}
-
-			return;
-		}
-
-		// The admin, for someone who is not signed in.
-		if ( 0 === strpos( $path, 'wp-admin' ) && ! is_user_logged_in() ) {
-			if ( in_array( wp_basename( $path ), self::OPEN, true ) ) {
-				return;
-			}
-
-			wp_safe_redirect( home_url( '/' ), 302 );
-			exit;
 		}
 	}
 
@@ -170,15 +194,6 @@ final class Login_Url {
 	 */
 	private function serve_login(): void {
 		global $pagenow, $error, $interim_login, $action, $user_login;
-
-		// Already signed in and just visiting the door: go on through.
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- reading an action name only.
-		$asked = isset( $_REQUEST['action'] ) ? sanitize_key( wp_unslash( $_REQUEST['action'] ) ) : '';
-
-		if ( is_user_logged_in() && '' === $asked ) {
-			wp_safe_redirect( admin_url(), 302 );
-			exit;
-		}
 
 		// wp-login.php reads $pagenow and expects to be the page in hand.
 		$pagenow = 'wp-login.php'; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
