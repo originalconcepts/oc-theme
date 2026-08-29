@@ -747,6 +747,9 @@ final class Product_Linked {
 			'dot'      => wc_get_price_decimal_separator(),
 			'thousand' => wc_get_price_thousand_separator(),
 			'format'   => get_option( 'woocommerce_currency_pos', 'left' ),
+			// This shop writes 1,000 rather than 1,000.00, and a running
+			// total that ignored that would not look like its own prices.
+			'trim'     => 'yes' === get_option( 'woocommerce_price_trim_zeros', 'no' ),
 		);
 	}
 

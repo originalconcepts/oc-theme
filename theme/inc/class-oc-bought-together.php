@@ -476,13 +476,7 @@ final class Bought_Together {
 	 * @return array<string,mixed>
 	 */
 	private static function money(): array {
-		return array(
-			'symbol'   => html_entity_decode( get_woocommerce_currency_symbol(), ENT_QUOTES, 'UTF-8' ),
-			'decimals' => wc_get_price_decimals(),
-			'dot'      => wc_get_price_decimal_separator(),
-			'thousand' => wc_get_price_thousand_separator(),
-			'format'   => get_option( 'woocommerce_currency_pos', 'left' ),
-		);
+		return Product_Linked::money();
 	}
 
 	/*

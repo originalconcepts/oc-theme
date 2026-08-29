@@ -8017,8 +8017,16 @@ window.__ocMoney = function ( n, money ) {
 	var dec   = ( 'undefined' === typeof money.decimals ) ? 2 : money.decimals,
 		bits  = ( Math.round( n * 100 ) / 100 ).toFixed( dec ).split( '.' ),
 		whole = bits[ 0 ].replace( /\B(?=(\d{3})+(?!\d))/g, money.thousand || ',' ),
-		out   = whole + ( bits[ 1 ] ? ( money.dot || '.' ) + bits[ 1 ] : '' ),
+		frac  = bits[ 1 ] || '',
 		sym   = money.symbol || '';
+
+	// The shop's own setting: 1,000 rather than 1,000.00 when nothing but
+	// zeros follows the point.
+	if ( money.trim && /^0*$/.test( frac ) ) {
+		frac = '';
+	}
+
+	var out = whole + ( frac ? ( money.dot || '.' ) + frac : '' );
 
 	switch ( money.format ) {
 		case 'right':       return out + sym;
