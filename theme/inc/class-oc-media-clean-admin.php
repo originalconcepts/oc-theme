@@ -208,6 +208,11 @@ final class Media_Clean_Admin {
 		.ocmc__lede { max-width: 70ch; color: #50575e; }
 		.ocmc__stats { display: flex; flex-wrap: wrap; gap: 10px; margin: 18px 0; }
 		.ocmc__stat { flex: 1 1 140px; background: #fff; border: 1px solid #dcdcde; border-radius: 8px; padding: 14px 16px; }
+		/* "5.4 MB" is a number followed by a Latin unit, which right-to-left
+		   text reorders into "MB 5.4". Isolating the run keeps it readable. */
+		.ocmc__stat b,
+		.ocmc__group h2 em,
+		.ocmc__item span { direction: ltr; unicode-bidi: isolate; }
 		.ocmc__stat b { display: block; font-size: 26px; line-height: 1.1; }
 		.ocmc__stat span { color: #646970; font-size: 12px; }
 		.ocmc__stat--safe b { color: #2271b1; }
