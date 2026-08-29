@@ -6083,3 +6083,18 @@ msgstr "יש לבחור אפשרויות"
 
 msgid "Please choose the options first."
 msgstr "יש לבחור קודם את האפשרויות."
+
+msgid "Similar products background"
+msgstr "רקע אזור מוצרים דומים"
+
+msgid "Upgrades background"
+msgstr "רקע אזור שדרוגים"
+
+msgid "Goes-with background"
+msgstr "רקע אזור מוצרים משתלבים"
+
+msgid "Bundle background"
+msgstr "רקע אזור החבילה"
+
+msgid "Left empty the area sits on the page as it does now. A colour gives it its own band, with room around the products."
+msgstr "אם נשאר ריק, האזור יישאר על העמוד כפי שהוא היום. צבע ייתן לו רצועה משלו, עם מרווח סביב המוצרים."

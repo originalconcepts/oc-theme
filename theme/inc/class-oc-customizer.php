@@ -2184,6 +2184,18 @@ final class Customizer {
 			),
 			__( 'Only tells when there are too few cards to fill the row.', 'oc-theme' )
 		);
+
+		$this->color(
+			$c,
+			'oc_related_bg',
+			'oc_product',
+			__( 'Similar products background', 'oc-theme' ),
+			__( 'Left empty the area sits on the page as it does now. A colour gives it its own band, with room around the products.', 'oc-theme' ),
+			array(
+				'setting' => 'oc_product_related',
+				'values'  => array( '1' ),
+			)
+		);
 		$this->heading( $c, 'oc_h_bt', 'oc_product', __( 'Bought together', 'oc-theme' ) );
 		$this->toggle(
 			$c,
@@ -2200,6 +2212,18 @@ final class Customizer {
 			'oc_bt_title',
 			'oc_product',
 			__( 'Bundle heading', 'oc-theme' ),
+			array(
+				'setting' => 'oc_bt_on',
+				'values'  => array( '1' ),
+			)
+		);
+
+		$this->color(
+			$c,
+			'oc_bt_bg',
+			'oc_product',
+			__( 'Bundle background', 'oc-theme' ),
+			__( 'Left empty the area sits on the page as it does now. A colour gives it its own band, with room around the products.', 'oc-theme' ),
 			array(
 				'setting' => 'oc_bt_on',
 				'values'  => array( '1' ),
@@ -2349,6 +2373,18 @@ final class Customizer {
 			)
 		);
 
+		$this->color(
+			$c,
+			'oc_xsell_bg',
+			'oc_product',
+			__( 'Goes-with background', 'oc-theme' ),
+			__( 'Left empty the area sits on the page as it does now. A colour gives it its own band, with room around the products.', 'oc-theme' ),
+			array(
+				'setting' => 'oc_xsell_on',
+				'values'  => array( '1' ),
+			)
+		);
+
 		$this->heading( $c, 'oc_h_upsells', 'oc_product', __( 'Upgrades', 'oc-theme' ) );
 		$this->toggle(
 			$c,
@@ -2364,6 +2400,18 @@ final class Customizer {
 			'oc_upsells_title',
 			'oc_product',
 			__( 'Upgrades title', 'oc-theme' ),
+			array(
+				'setting' => 'oc_product_upsells',
+				'values'  => array( '1' ),
+			)
+		);
+
+		$this->color(
+			$c,
+			'oc_upsells_bg',
+			'oc_product',
+			__( 'Upgrades background', 'oc-theme' ),
+			__( 'Left empty the area sits on the page as it does now. A colour gives it its own band, with room around the products.', 'oc-theme' ),
 			array(
 				'setting' => 'oc_product_upsells',
 				'values'  => array( '1' ),

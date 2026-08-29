@@ -24,13 +24,19 @@ if ( 'center' === $oc_align ) {
 	$oc_classes[] = 'oc-linked--center';
 }
 
+$oc_band = \OC\Theme\Product_Linked::band( 'oc_related_bg' );
+
+if ( '' !== $oc_band['class'] ) {
+	$oc_classes[] = 'oc-linked--band';
+}
+
 $oc_heading = apply_filters( 'woocommerce_product_related_products_heading', __( 'Related products', 'woocommerce' ) );
 
 // The slider sizes its cards from the same column count the grid uses, so
 // switching between the two does not change how wide a card is.
 $oc_cols = max( 2, min( 6, (int) get_theme_mod( 'oc_related_cols', 4 ) ) );
 ?>
-<section class="<?php echo esc_attr( implode( ' ', $oc_classes ) ); ?>" style="--oc-linked-cols:<?php echo (int) $oc_cols; ?>">
+<section class="<?php echo esc_attr( implode( ' ', $oc_classes ) ); ?>" style="--oc-linked-cols:<?php echo (int) $oc_cols; ?><?php echo '' !== $oc_band['class'] ? ';--oc-band:' . esc_attr( (string) get_theme_mod( 'oc_related_bg', '' ) ) : ''; ?>">
 	<?php if ( $oc_heading ) : ?>
 		<h2 class="oc-linked__title"><?php echo esc_html( $oc_heading ); ?></h2>
 	<?php endif; ?>

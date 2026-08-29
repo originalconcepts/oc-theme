@@ -185,7 +185,13 @@ final class Product_Linked {
 			$classes[] = 'oc-xsell--center';
 		}
 
-		echo '<div class="' . esc_attr( implode( ' ', $classes ) ) . '">';
+		$band = self::band( 'oc_xsell_bg' );
+
+		if ( '' !== $band['class'] ) {
+			$classes[] = 'oc-linked--band';
+		}
+
+		echo '<div class="' . esc_attr( implode( ' ', $classes ) ) . '"' . $band['style'] . '>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in band().
 		echo '<h2 class="oc-xsell__title">' . esc_html( $title ) . '</h2>';
 
 		switch ( $style ) {
@@ -705,6 +711,32 @@ final class Product_Linked {
 		$args['posts_per_page'] = 'slider' === self::related_layout() ? max( 8, $cols * 3 ) : $cols;
 
 		return $args;
+	}
+
+	/**
+	 * The band a linked area sits on, if the shop asked for one.
+	 *
+	 * Returns the class and the inline custom property together, so a caller
+	 * only has to drop them in. With no colour set nothing is added and the
+	 * area sits on the page exactly as before.
+	 *
+	 * @param string $mod The theme mod holding the colour.
+	 * @return array{class:string,style:string}
+	 */
+	public static function band( string $mod ): array {
+		$colour = trim( (string) get_theme_mod( $mod, '' ) );
+
+		if ( '' === $colour || ! preg_match( '/^#[0-9a-f]{3,8}$/i', $colour ) ) {
+			return array(
+				'class' => '',
+				'style' => '',
+			);
+		}
+
+		return array(
+			'class' => ' oc-linked--band',
+			'style' => ' style="--oc-band:' . esc_attr( $colour ) . '"',
+		);
 	}
 
 	/**

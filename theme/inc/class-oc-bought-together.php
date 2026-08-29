@@ -315,7 +315,9 @@ final class Bought_Together {
 		$amount = self::amount( $product->get_id() );
 
 		?>
-		<div class="oc-bt" data-oc-bt="<?php echo absint( $product->get_id() ); ?>"
+		<?php $band = Product_Linked::band( 'oc_bt_bg' ); ?>
+		<div class="oc-bt<?php echo esc_attr( $band['class'] ); ?>" data-oc-bt="<?php echo absint( $product->get_id() ); ?>"
+			<?php echo $band['style']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in band(). ?>
 			data-kind="<?php echo esc_attr( $kind ); ?>"
 			data-amount="<?php echo esc_attr( (string) $amount ); ?>"
 			data-money="<?php echo esc_attr( (string) wp_json_encode( self::money() ) ); ?>">

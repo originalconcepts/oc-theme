@@ -13711,7 +13711,12 @@ p.no-comments {
 	display: flex;
 	flex-wrap: nowrap;
 	gap: var(--oc-gap, 20px);
+	/* Sideways only. Setting one axis to auto turns the other from visible
+	 * into auto as well — the row then grew its own vertical scrollbar and
+	 * the cards had to be scrolled up and down to be read. */
 	overflow-x: auto;
+	overflow-y: hidden;
+	align-items: start;
 	scroll-snap-type: none;          /* free scroll — the finger decides */
 	overscroll-behavior-inline: contain;
 	scrollbar-width: none;
@@ -13912,6 +13917,7 @@ p.no-comments {
 	flex-direction: row;
 	gap: var(--oc-gap, 20px);
 	overflow-x: auto;
+	overflow-y: hidden;
 	scrollbar-width: none;
 	overscroll-behavior-inline: contain;
 }
@@ -13952,6 +13958,8 @@ p.no-comments {
 	display: flex;
 	gap: 12px;
 	overflow-x: auto;
+	overflow-y: hidden;
+	align-items: start;
 	scrollbar-width: none;
 	overscroll-behavior-inline: contain;
 	padding-block-end: 4px;
@@ -14233,4 +14241,29 @@ p.no-comments {
 
 @media (max-width: 600px) {
 	.oc-xsell--cart .oc-xsell__row { grid-template-columns: auto 60px 1fr; }
+}
+
+/* ------------------------------------------------------------------ *
+ * A band behind a linked area.
+ *
+ * Off unless a colour is chosen, and then it is only a colour plus the
+ * room to sit in — nothing about the products themselves changes.
+ * ------------------------------------------------------------------ */
+
+.oc-linked--band {
+	background: var(--oc-band);
+	padding: 30px var(--oc-gap, 20px);
+	border-radius: 14px;
+}
+
+/* Beside the add-to-cart button the band is already inside a narrow
+ * column, so it takes less room and loses the outer radius fight. */
+.oc-xsell--cart.oc-linked--band { padding: 18px 16px; border-radius: 12px; }
+
+/* The bundle draws its own outline; given a colour it becomes the fill
+ * instead, so the two do not stack into a box within a box. */
+.oc-bt.oc-linked--band { background: var(--oc-band); border-color: transparent; }
+
+@media (max-width: 767px) {
+	.oc-linked--band { padding: 22px var(--oc-gap, 16px); }
 }
