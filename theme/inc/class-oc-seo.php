@@ -708,6 +708,16 @@ final class Seo {
 	public function sitemap_route(): void {
 		add_rewrite_rule( '^sitemap\.xml$', 'index.php?sitemap=index', 'top' );
 
+		// Core answers /sitemap.xml with a redirect to its own wp-sitemap.xml.
+		// That works, but it makes the address everyone is given a staging
+		// post rather than the thing itself, so the redirect goes and the rule
+		// above serves the index where it was asked for.
+		$server = wp_sitemaps_get_server();
+
+		if ( $server instanceof \WP_Sitemaps ) {
+			remove_filter( 'pre_handle_404', array( $server, 'redirect_sitemapxml' ), 10 );
+		}
+
 		if ( ! get_option( 'oc_seo_sitemap_rw' ) ) {
 			flush_rewrite_rules( false );
 			update_option( 'oc_seo_sitemap_rw', '1', false );
