@@ -13,7 +13,7 @@ declare( strict_types = 1 );
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'OC_THEME_VERSION', '0.3.6' );
+define( 'OC_THEME_VERSION', '0.3.7' );
 define( 'OC_THEME_DIR', get_template_directory() );
 define( 'OC_THEME_URI', get_template_directory_uri() );
 define( 'OC_THEME_REPO', 'originalconcepts/oc-theme' );
@@ -440,19 +440,17 @@ add_action( 'admin_notices', 'oc_dependency_notice' );
 // it was the one piece that always had to be installed by hand. The theme
 // registers it: the two travel together, and a site whose theme is inactive
 // has nothing for the plugin to update into anyway.
-add_action(
-	'plugins_loaded',
-	static function () {
-		if ( ! defined( 'OC_BLOCKS_VERSION' ) || ! defined( 'OC_BLOCKS_DIR' ) ) {
-			return;
-		}
+// Registered straight away, not on plugins_loaded: plugins load before
+// themes, so that hook has already fired by the time a theme's functions.php
+// runs and the callback would never be called. The constants it needs are
+// defined for the same reason -- the plugin is already in memory.
+if ( defined( 'OC_BLOCKS_VERSION' ) && defined( 'OC_BLOCKS_DIR' ) ) {
+	$oc_blocks_file = plugin_basename( OC_BLOCKS_DIR . 'oc-blocks.php' );
 
-		$file = plugin_basename( OC_BLOCKS_DIR . 'oc-blocks.php' );
+	( new OC\Theme\Updater( dirname( $oc_blocks_file ), OC_BLOCKS_VERSION, OC_THEME_REPO, 'plugin', $oc_blocks_file ) )->register();
 
-		( new OC\Theme\Updater( dirname( $file ), OC_BLOCKS_VERSION, OC_THEME_REPO, 'plugin', $file ) )->register();
-	},
-	20
-);
+	unset( $oc_blocks_file );
+}
 
 if ( ! defined( 'OC_LOGIN_DISABLE' ) || ! OC_LOGIN_DISABLE ) {
 	$oc_login_slug = trim( sanitize_title( (string) apply_filters( 'oc_login_slug', OC_LOGIN_SLUG ) ), '/' );
