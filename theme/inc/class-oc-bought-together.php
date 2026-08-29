@@ -528,13 +528,16 @@ final class Bought_Together {
 			if ( $item->is_type( 'variable' ) ) {
 				$chosen = isset( $picked[ $id ] ) ? (array) $picked[ $id ] : array();
 
-				foreach ( $chosen as $key => $value ) {
-					// Kept as sent: these are already in the spelling the
-					// variation is stored under.
-					$key   = sanitize_text_field( (string) $key );
-					$value = sanitize_text_field( (string) $value );
+				// The keys are built from the product, never taken from the
+				// request — the same way WooCommerce's own add-to-cart does
+				// it. sanitize_text_field() would be wrong here twice over:
+				// it eats percent-encoded octets, so a Hebrew attribute's key
+				// and its value both come out gutted.
+				foreach ( array_keys( $item->get_variation_attributes() ) as $name ) {
+					$key   = wc_variation_attribute_name( (string) $name );
+					$value = isset( $chosen[ $key ] ) ? sanitize_title( wp_unslash( (string) $chosen[ $key ] ) ) : '';
 
-					if ( '' === $value || 0 !== strpos( $key, 'attribute_' ) ) {
+					if ( '' === $value ) {
 						continue;
 					}
 

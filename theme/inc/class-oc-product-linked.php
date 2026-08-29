@@ -477,19 +477,21 @@ final class Product_Linked {
 			$vars = array();
 
 			if ( $product->is_type( 'variable' ) ) {
-				foreach ( (array) ( $row['attr'] ?? array() ) as $name => $value ) {
-					$name  = sanitize_text_field( (string) $name );
-					$value = sanitize_text_field( (string) $value );
+				$sent = (array) ( $row['attr'] ?? array() );
+
+				// Keys come from the product, not the request, and the value
+				// gets sanitize_title() rather than sanitize_text_field() —
+				// the latter eats percent-encoded octets, which is the whole
+				// of a Hebrew attribute's key and slug.
+				foreach ( array_keys( $product->get_variation_attributes() ) as $name ) {
+					$key   = wc_variation_attribute_name( (string) $name );
+					$value = isset( $sent[ $key ] ) ? sanitize_title( wp_unslash( (string) $sent[ $key ] ) ) : '';
 
 					if ( '' === $value ) {
 						continue 2; // An unanswered option means nothing to add.
 					}
 
-					if ( 0 !== strpos( $name, 'attribute_' ) ) {
-						continue;
-					}
-
-					$vars[ $name ] = $value;
+					$vars[ $key ] = $value;
 				}
 
 				$data_store = \WC_Data_Store::load( 'product' );
