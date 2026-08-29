@@ -631,6 +631,22 @@ final class Product_Linked {
 	 * option rows by hand would not.
 	 */
 	public function forget_related(): void {
+		global $wpdb;
+
+		// Bumping WooCommerce's product cache version does not reach these:
+		// wc_get_related_products() keeps a plain wc_related_<id> transient
+		// that carries no version in its name. They have to be deleted by
+		// name, which is why the option table is asked for the list and
+		// delete_transient() then does the removing — that way an object
+		// cache holding them is cleared too, rather than only the rows.
+		$names = (array) $wpdb->get_col(
+			"SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE '\_transient\_wc\_related\_%'"
+		);
+
+		foreach ( $names as $option ) {
+			delete_transient( substr( (string) $option, strlen( '_transient_' ) ) );
+		}
+
 		if ( class_exists( 'WC_Cache_Helper' ) ) {
 			\WC_Cache_Helper::get_transient_version( 'product', true );
 		}
