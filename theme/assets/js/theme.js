@@ -3975,9 +3975,11 @@
 		}
 	} )();
 
-	function ocMarkSigned( productId, variationId, key ) {
+	/* The token is this browser's proof that it made the signup: the key is
+	 * only the shopper's own address, which anyone might know. */
+	function ocMarkSigned( productId, variationId, key, token ) {
 		var map = ocSignedMap();
-		map[ productId + '|' + ( variationId || 0 ) ] = { k: key || '' };
+		map[ productId + '|' + ( variationId || 0 ) ] = { k: key || '', t: token || '' };
 		ocSaveSignedMap( map );
 	}
 
@@ -4277,7 +4279,7 @@
 								sessionStorage.setItem( 'ocNotifyOk', '1' );
 							} catch ( e ) {}
 
-							ocMarkSigned( ocNotifyModal.dataset.product, varsEl ? varsEl.value : 0, res.data && res.data.key ? res.data.key : '' );
+							ocMarkSigned( ocNotifyModal.dataset.product, varsEl ? varsEl.value : 0, res.data && res.data.key ? res.data.key : '', res.data && res.data.token ? res.data.token : '' );
 							ocRefreshSigned();
 						}
 					} )
@@ -4300,7 +4302,7 @@
 
 				Object.keys( map ).forEach( function ( k ) {
 					if ( 0 === k.indexOf( pid + '|' ) && map[ k ] && map[ k ].k ) {
-						keys.push( map[ k ].k );
+						keys.push( { k: map[ k ].k, t: map[ k ].t || '' } );
 					}
 				} );
 

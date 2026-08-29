@@ -1565,6 +1565,14 @@ final class WooCommerce {
 		// A logged-in customer brings a name — the restock email greets with it.
 		$person = is_user_logged_in() ? wp_get_current_user()->first_name : '';
 
+		// The key is the shopper's own address or phone number, which is not
+		// a secret: anyone who knew it could ask for their signup to be
+		// dropped. Each entry gets a token as well, issued once and kept only
+		// by the browser that signed up, and removal has to present it.
+		$token = ( is_array( $list[ $key ] ?? null ) && ! empty( $list[ $key ]['token'] ) )
+			? (string) $list[ $key ]['token']
+			: wp_generate_password( 20, false );
+
 		$list[ $key ] = array(
 			'email'     => $valid_email ? $email : '',
 			'phone'     => $valid_phone ? $phone : '',
@@ -1573,11 +1581,17 @@ final class WooCommerce {
 			'vname'     => $vname,
 			'time'      => time(),
 			'consent'   => time(),
+			'token'     => $token,
 		);
 		update_post_meta( $product_id, '_oc_notify_list', $list );
 
-		// The browser keeps the key — self-service removal presents it back.
-		wp_send_json_success( array( 'key' => $key ) );
+		// The browser keeps both — self-service removal presents them back.
+		wp_send_json_success(
+			array(
+				'key'   => $key,
+				'token' => $token,
+			)
+		);
 	}
 
 	/**
@@ -1597,10 +1611,27 @@ final class WooCommerce {
 		$list = get_post_meta( $product_id, '_oc_notify_list', true );
 
 		if ( is_array( $list ) ) {
-			foreach ( $keys as $key ) {
-				if ( is_string( $key ) ) {
-					unset( $list[ sanitize_text_field( wp_unslash( $key ) ) ] );
+			foreach ( $keys as $entry ) {
+				// Either a bare key, from a browser that signed up before
+				// tokens existed, or { k: key, t: token }.
+				$key   = is_array( $entry ) ? (string) ( $entry['k'] ?? '' ) : (string) $entry;
+				$token = is_array( $entry ) ? (string) ( $entry['t'] ?? '' ) : '';
+				$key   = sanitize_text_field( wp_unslash( $key ) );
+
+				if ( '' === $key || ! isset( $list[ $key ] ) ) {
+					continue;
 				}
+
+				$held = is_array( $list[ $key ] ) ? (string) ( $list[ $key ]['token'] ?? '' ) : '';
+
+				// An entry made before tokens has none to check, so it goes on
+				// the old rules; everything since must prove it owns the
+				// signup rather than merely know the address.
+				if ( '' !== $held && ! hash_equals( $held, sanitize_text_field( wp_unslash( $token ) ) ) ) {
+					continue;
+				}
+
+				unset( $list[ $key ] );
 			}
 
 			if ( empty( $list ) ) {
