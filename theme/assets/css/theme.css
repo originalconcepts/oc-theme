@@ -13779,6 +13779,9 @@ p.no-comments {
 .woocommerce .oc-linked--slider ul.products li.product {
 	flex: 0 0 auto;
 	inline-size: calc((100% - (var(--oc-linked-cols, 4) - 1) * var(--oc-gap, 20px)) / var(--oc-linked-cols, 4));
+	/* A floor, so no arithmetic anywhere above can leave a card with no
+	 * width and the row looking cropped. */
+	min-inline-size: 140px;
 	margin: 0 !important;
 	clear: none;
 }
@@ -14393,9 +14396,16 @@ p.no-comments {
 .oc-linked--band {
 	background: var(--oc-band);
 	padding-block: 34px;
-	margin-inline: calc(50% - 50vw);
+	/* min(0px, …) is doing real work. The usual full-bleed trick assumes the
+	 * container is narrower than the viewport; when it is not — a wide fixed
+	 * container, or simply a narrow window — 50% - 50vw turns positive and
+	 * the margin squeezes the block instead of widening it. It collapsed the
+	 * similar-products row to nineteen pixels and the cards with it, which
+	 * is the clipping George reported. Clamped, it can only ever widen. */
+	margin-inline: min(0px, calc(50% - 50vw));
 	padding-inline: max(var(--oc-gap, 20px), calc(50vw - 50%));
 	border-radius: 0;
+	box-sizing: border-box;
 }
 
 /* Beside the add-to-cart button the block lives in a narrow column, and a
