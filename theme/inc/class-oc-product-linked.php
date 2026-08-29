@@ -261,9 +261,11 @@ final class Product_Linked {
 		echo '<div class="oc-xsell__opts">';
 
 		foreach ( $attributes as $name => $values ) {
-			// The raw attribute name: sanitising a Hebrew one such as pa_צבע
-			// turns it into percent-escapes and it stops naming its variation.
-			$key = 'oc_xs[' . absint( $p->get_id() ) . '][attr][' . esc_attr( $name ) . ']';
+			// The full key the variation is stored under, carried whole so the
+			// server never has to rebuild it. A Hebrew attribute such as
+			// pa_צבע lives as attribute_pa_%d7%a6%d7%91%d7%a2, and only that
+			// spelling finds the variation again.
+			$key = 'oc_xs[' . absint( $p->get_id() ) . '][attr][' . esc_attr( wc_variation_attribute_name( $name ) ) . ']';
 
 			echo '<select class="oc-xsell__opt" name="' . esc_attr( $key ) . '" data-oc-xs-attr aria-label="' . esc_attr( wc_attribute_label( $name, $p ) ) . '">';
 			echo '<option value="">' . esc_html( sprintf( /* translators: %s: attribute name, e.g. Colour. */ __( 'Choose %s', 'oc-theme' ), wc_attribute_label( $name, $p ) ) ) . '</option>';
@@ -476,13 +478,18 @@ final class Product_Linked {
 
 			if ( $product->is_type( 'variable' ) ) {
 				foreach ( (array) ( $row['attr'] ?? array() ) as $name => $value ) {
+					$name  = sanitize_text_field( (string) $name );
 					$value = sanitize_text_field( (string) $value );
 
 					if ( '' === $value ) {
 						continue 2; // An unanswered option means nothing to add.
 					}
 
-					$vars[ 'attribute_' . urldecode( (string) $name ) ] = $value;
+					if ( 0 !== strpos( $name, 'attribute_' ) ) {
+						continue;
+					}
+
+					$vars[ $name ] = $value;
 				}
 
 				$data_store = \WC_Data_Store::load( 'product' );

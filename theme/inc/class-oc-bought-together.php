@@ -400,10 +400,11 @@ final class Bought_Together {
 		echo '<span class="oc-bt__opts">';
 
 		foreach ( $attributes as $name => $values ) {
-			// The raw taxonomy name, not a sanitised one: a Hebrew attribute
-			// such as pa_צבע survives sanitising as percent-escapes, and then
-			// nothing matches the variation it is meant to name.
-			echo '<select class="oc-bt__opt" data-oc-bt-attr="' . esc_attr( 'attribute_' . $name ) . '" aria-label="' . esc_attr( wc_attribute_label( $name, $item ) ) . '">';
+			// wc_variation_attribute_name() builds exactly the key the variation
+			// is stored under. It matters here: a Hebrew attribute such as
+			// pa_צבע is held as attribute_pa_%d7%a6%d7%91%d7%a2, and only that
+			// spelling finds the variation again.
+			echo '<select class="oc-bt__opt" data-oc-bt-attr="' . esc_attr( wc_variation_attribute_name( $name ) ) . '" aria-label="' . esc_attr( wc_attribute_label( $name, $item ) ) . '">';
 			echo '<option value="">' . esc_html( sprintf( /* translators: %s: attribute name, e.g. Colour. */ __( 'Choose %s', 'oc-theme' ), wc_attribute_label( $name, $item ) ) ) . '</option>';
 
 			foreach ( $values as $value ) {
@@ -449,18 +450,11 @@ final class Bought_Together {
 
 			$object = wc_get_product( $id );
 
-			// WooCommerce hands these back percent-encoded when the attribute
-			// name is not plain ASCII. Decoded here so the browser compares
-			// like with like.
-			$attrs = array();
-
-			foreach ( (array) ( $variation['attributes'] ?? array() ) as $key => $value ) {
-				$attrs[ urldecode( (string) $key ) ] = (string) $value;
-			}
-
 			$out[] = array(
 				'id'    => $id,
-				'attrs' => $attrs,
+				// Left exactly as WooCommerce spells them, which is how they
+				// are stored and how they must come back.
+				'attrs' => (array) ( $variation['attributes'] ?? array() ),
 				'price' => $object ? (float) wc_get_price_to_display( $object ) : 0.0,
 			);
 		}
@@ -535,9 +529,9 @@ final class Bought_Together {
 				$chosen = isset( $picked[ $id ] ) ? (array) $picked[ $id ] : array();
 
 				foreach ( $chosen as $key => $value ) {
-					// Decoded, because a browser may send either form for a
-					// non-ASCII attribute name.
-					$key   = urldecode( sanitize_text_field( (string) $key ) );
+					// Kept as sent: these are already in the spelling the
+					// variation is stored under.
+					$key   = sanitize_text_field( (string) $key );
 					$value = sanitize_text_field( (string) $value );
 
 					if ( '' === $value || 0 !== strpos( $key, 'attribute_' ) ) {
