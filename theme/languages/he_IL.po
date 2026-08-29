@@ -5821,3 +5821,63 @@ msgstr "ביטוי אחד בכל שורה."
 
 msgid "Brand pages only"
 msgstr "רק בעמודי מותג"
+
+msgid "Two-step sign-in"
+msgstr "אימות דו-שלבי"
+
+msgid "Two-step sign-in for staff"
+msgstr "אימות דו-שלבי לצוות"
+
+msgid "A password can be reused, guessed or phished. With this on, the password gets you half way in and a code sent to the phone on the account finishes the job — so taking the shop needs the password and the handset. If the text cannot be sent the code goes to the account's e-mail instead, so a provider outage slows a sign-in rather than locking anyone out."
+msgstr "סיסמה אפשר לנחש, לגנוב בפישינג, או שהיא חוזרת על סיסמה מאתר אחר שנפרץ. כשזה דלוק, הסיסמה מכניסה חצי דרך וקוד שנשלח לטלפון שרשום בחשבון משלים את השאר — כדי להשתלט על החנות צריך גם את הסיסמה וגם את המכשיר. אם לא ניתן לשלוח SMS, הקוד נשלח למייל של החשבון — כך שתקלה אצל ספק ה-SMS מאטה התחברות במקום לנעול מישהו בחוץ."
+
+msgid "Ask for a code"
+msgstr "בקש קוד"
+
+msgid "Off — password only"
+msgstr "כבוי — סיסמה בלבד"
+
+msgid "Administrators"
+msgstr "מנהלי מערכת"
+
+msgid "Administrators and shop managers"
+msgstr "מנהלי מערכת ומנהלי חנות"
+
+msgid "Everyone who signs in"
+msgstr "כל מי שמתחבר"
+
+msgid "An account with no phone number on file is let through with a warning rather than shut out of the site it runs. Add a mobile number to each staff profile."
+msgstr "חשבון שאין לו מספר טלפון רשום ייכנס עם אזהרה, ולא ייחסם מהאתר שהוא מנהל. יש להוסיף מספר נייד לפרופיל של כל איש צוות."
+
+msgid "Mobile for sign-in codes"
+msgstr "נייד לקבלת קודי התחברות"
+
+msgid "Two-step sign-in is currently off for everyone. The number is kept ready for when it is switched on."
+msgstr "אימות דו-שלבי כבוי כרגע לכולם. המספר נשמר ומוכן למקרה שיופעל."
+
+msgid "Without a number there is nowhere to send a code, so this account still rests on its password alone."
+msgstr "בלי מספר אין לאן לשלוח קוד, ולכן החשבון הזה עדיין מוגן בסיסמה בלבד."
+
+msgid "Codes for this account go here. If the text cannot be sent, the code goes to this account's e-mail instead."
+msgstr "הקודים של החשבון הזה נשלחים לכאן. אם לא ניתן לשלוח SMS, הקוד יישלח למייל של החשבון."
+
+msgid "We sent a code to the phone ending %s."
+msgstr "שלחנו קוד לטלפון שמסתיים ב-%s."
+
+msgid "Code"
+msgstr "קוד"
+
+msgid "Start again"
+msgstr "להתחיל מחדש"
+
+msgid "That code was not right."
+msgstr "הקוד שהוזן אינו נכון."
+
+msgid "%s is your sign-in code. It is good for ten minutes."
+msgstr "%s הוא קוד ההתחברות שלך. הוא תקף לעשר דקות."
+
+msgid "Two-step sign-in is on, but there is no phone number on your account — so there is nowhere to send your code and your account is still protected by its password alone. Add a mobile number to your profile."
+msgstr "אימות דו-שלבי מופעל, אבל אין מספר טלפון בחשבון שלך — כך שאין לאן לשלוח את הקוד, והחשבון שלך עדיין מוגן בסיסמה בלבד. הוסף מספר נייד לפרופיל שלך."
+
+msgid "Edit your profile"
+msgstr "עריכת הפרופיל שלך"
