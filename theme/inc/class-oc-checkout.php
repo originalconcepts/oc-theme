@@ -165,11 +165,13 @@ final class Checkout {
 		$raw = isset( $_POST['fields'] ) ? (array) wp_unslash( $_POST['fields'] ) : array();
 		$out = array();
 
+		// A checkout has a few dozen fields. Without a ceiling the session row
+		// will hold however much anyone cares to post at it.
 		foreach ( $raw as $key => $value ) {
-			if ( ! is_scalar( $value ) ) {
+			if ( ! is_scalar( $value ) || count( $out ) >= 60 ) {
 				continue;
 			}
-			$out[ sanitize_key( $key ) ] = sanitize_text_field( (string) $value );
+			$out[ sanitize_key( $key ) ] = mb_substr( sanitize_text_field( (string) $value ), 0, 500 );
 		}
 
 		WC()->session->set( 'oc_co_stash', $out );

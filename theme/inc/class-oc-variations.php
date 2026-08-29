@@ -23,6 +23,11 @@ defined( 'ABSPATH' ) || exit;
 final class Variations {
 
 	/**
+	 * Where the attribute guard records that it fired.
+	 */
+	private const GUARD_LOG = 'oc_save_guard';
+
+	/**
 	 * Registered instance, for the sticky bar's colour-sibling row.
 	 *
 	 * @var Variations|null
@@ -867,8 +872,8 @@ final class Variations {
 	 * treats their absence as "remove everything" — so a form that lost
 	 * those fields (a broken edit screen, a script error, a truncated
 	 * request) silently wipes the attributes and orphans every variation.
-	 * When that shape appears, restore the stored attributes and note the
-	 * request's vitals in a log so the cause can be traced.
+	 * When that shape appears, restore the stored attributes and note that it
+	 * happened, so a recurrence is visible without a trace of every save.
 	 *
 	 * @param \WC_Product $product Product being saved.
 	 */
@@ -876,33 +881,6 @@ final class Variations {
 		if ( ! $product instanceof \WC_Product || ! $product->is_type( 'variable' ) ) {
 			return;
 		}
-
-		// phpcs:disable WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash -- forensic read-only trace; Woo verified its nonce.
-		$names  = isset( $_POST['attribute_names'] ) ? array_map( 'sanitize_text_field', (array) wp_unslash( $_POST['attribute_names'] ) ) : array();
-		$values = isset( $_POST['attribute_values'] ) ? (array) $_POST['attribute_values'] : array();
-
-		$detail = array();
-		foreach ( $names as $i => $name ) {
-			$val      = $values[ $i ] ?? null;
-			$detail[] = sprintf(
-				'[%s] name=%s values=%s',
-				(string) $i,
-				rawurlencode( $name ),
-				null === $val ? 'MISSING' : ( is_array( $val ) ? 'array:' . count( $val ) : 'str:' . strlen( (string) $val ) )
-			);
-		}
-
-		$this->save_log(
-			sprintf(
-				'save product=%d attribute_names=%d resulting_attrs=%d oc_cgal=%s %s',
-				$product->get_id(),
-				count( $names ),
-				count( $product->get_attributes() ),
-				isset( $_POST['oc_cgal'] ) ? 'yes' : 'no',
-				implode( ' ', $detail )
-			)
-		);
-		// phpcs:enable
 
 		if ( ! empty( $product->get_attributes() ) ) {
 			return;
@@ -921,15 +899,27 @@ final class Variations {
 	}
 
 	/**
-	 * Append a line to the save-forensics log.
+	 * Note that the guard had to step in.
 	 *
-	 * @param string $line Log line.
+	 * This used to append a line per save to wp-content/uploads, a file the
+	 * whole internet could read. It held no secrets, but a public trace of
+	 * how the admin saves products is a map drawn for the wrong reader, and
+	 * the per-save detail was scaffolding for a bug the guard now handles.
+	 * What is worth keeping is how often it fires, which lives in an option.
+	 *
+	 * @param string $line What happened.
 	 */
 	private function save_log( string $line ): void {
-		$uploads = wp_get_upload_dir();
-		$file    = trailingslashit( $uploads['basedir'] ) . 'oc-save-debug.log';
+		$seen = (array) get_option( self::GUARD_LOG, array() );
 
-		file_put_contents( $file, gmdate( 'c' ) . ' ' . $line . "\n", FILE_APPEND ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- append-only debug trace.
+		update_option(
+			self::GUARD_LOG,
+			array(
+				'count' => (int) ( $seen['count'] ?? 0 ) + 1,
+				'last'  => gmdate( 'c' ) . ' ' . $line,
+			),
+			false
+		);
 	}
 
 	/**

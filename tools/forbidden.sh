@@ -16,9 +16,12 @@ FAIL=0
 scan() {
   local label="$1" pattern="$2" why="$3" glob="${4:-*.php}"
   local hits
+  # A line may carry `guard-ok: <reason>` to say it was looked at and is not
+  # the defect this pattern hunts. Used sparingly — every one of them is a
+  # promise someone checked, and a guard nobody trusts gets ignored.
   hits=$(grep -rInE --include="$glob" \
       --exclude-dir=vendor --exclude-dir=node_modules --exclude-dir=build \
-      -- "$pattern" ${ROOTS[@]} 2>/dev/null || true)
+      -- "$pattern" ${ROOTS[@]} 2>/dev/null | grep -v 'guard-ok:' || true)
   if [ -n "$hits" ]; then
     FAIL=1
     printf '\n\033[1;31m✗ %s\033[0m\n  %s\n' "$label" "$why"

@@ -5740,3 +5740,6 @@ msgid "%d was kept because something still uses it."
 msgid_plural "%d were kept because something still uses them."
 msgstr[0] "אחד נשמר כי משהו עדיין משתמש בו."
 msgstr[1] "%d נשמרו כי משהו עדיין משתמש בהם."
+
+msgid "Those details were not right."
+msgstr "הפרטים שהוזנו אינם נכונים."

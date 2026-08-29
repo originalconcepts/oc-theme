@@ -92,6 +92,28 @@ final class Leads {
 			wp_send_json_error( array( 'msg' => __( 'Please write your name.', 'oc-blocks' ) ) );
 		}
 
+		// The throttle below is keyed on who the sender says they are, which
+		// a script defeats by making up a new name every time. This one is
+		// keyed on where they are sending from, which they cannot change as
+		// cheaply. A real contact form sees a handful an hour; anything past
+		// that is told "thank you" and quietly dropped.
+		$ip    = isset( $_SERVER['REMOTE_ADDR'] ) ? (string) $_SERVER['REMOTE_ADDR'] : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- hashed below, never printed or stored.
+		$burst = 'oc_blocks_lead_ip_' . md5( $ip );
+		$sent  = (int) get_transient( $burst );
+
+		/**
+		 * Filters how many leads one sender may leave in an hour.
+		 *
+		 * @param int $max The cap.
+		 */
+		$max = (int) apply_filters( 'oc_blocks_lead_hourly_cap', 20 );
+
+		if ( $sent >= $max ) {
+			wp_send_json_success();
+		}
+
+		set_transient( $burst, $sent + 1, HOUR_IN_SECONDS );
+
 		$gate = 'oc_blocks_lead_' . md5( strtolower( $name . '|' . $phone . '|' . $email ) );
 
 		if ( false !== get_transient( $gate ) ) {

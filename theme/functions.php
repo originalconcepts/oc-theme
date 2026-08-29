@@ -19,6 +19,17 @@ define( 'OC_THEME_URI', get_template_directory_uri() );
 define( 'OC_THEME_REPO', 'originalconcepts/oc-theme' );
 
 /**
+ * No editing theme or plugin PHP from inside the admin.
+ *
+ * The built-in editors turn one borrowed admin session into running code on
+ * the server, and this theme is deployed from git, so nobody needs them.
+ * Override in wp-config.php if a site ever genuinely does.
+ */
+if ( ! defined( 'DISALLOW_FILE_EDIT' ) ) {
+	define( 'DISALLOW_FILE_EDIT', true );
+}
+
+/**
  * Private login path.
  *
  * Override per site in wp-config.php — give each client site its own, so that
@@ -75,6 +86,7 @@ require_once OC_THEME_DIR . '/inc/class-oc-tabs.php';
 require_once OC_THEME_DIR . '/inc/class-oc-catalog.php';
 require_once OC_THEME_DIR . '/inc/class-oc-category.php';
 require_once OC_THEME_DIR . '/inc/class-oc-order-print.php';
+require_once OC_THEME_DIR . '/inc/class-oc-hardening.php';
 require_once OC_THEME_DIR . '/inc/class-oc-media-clean.php';
 require_once OC_THEME_DIR . '/inc/class-oc-media-clean-admin.php';
 require_once OC_THEME_DIR . '/inc/class-oc-menu.php';
@@ -393,6 +405,7 @@ add_action( 'admin_notices', 'oc_dependency_notice' );
 ( new OC\Theme\Category() )->register();
 ( new OC\Theme\Order_Print() )->register();
 ( new OC\Theme\Media_Clean() )->register();
+( new OC\Theme\Hardening() )->register();
 ( new OC\Theme\Menu() )->register();
 ( new OC\Theme\Menu_Admin() )->register();
 ( new OC\Theme\Blocks() )->register();

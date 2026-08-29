@@ -1235,7 +1235,7 @@ final class Auth {
 		}
 
 		$key = openssl_pkey_get_private(
-			"-----BEGIN PRIVATE KEY-----\n" . chunk_split( $b64, 64, "\n" ) . '-----END PRIVATE KEY-----'
+			"-----BEGIN PRIVATE KEY-----\n" . chunk_split( $b64, 64, "\n" ) . '-----END PRIVATE KEY-----' // guard-ok: builds the PEM wrapper around the key the shop pasted into its own settings; no key is in this repo.
 		);
 
 		if ( false === $key ) {
