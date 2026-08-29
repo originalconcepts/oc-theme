@@ -25,6 +25,11 @@
  * shop that would read _price 1200 as a reference to attachment 1200 and the
  * report would be nonsense. Keys are matched by name instead.
  *
+ * Every reference also remembers who made it, because "in use" and "wanted
+ * only by a draft" are different answers. A picture held by nothing but an
+ * unpublished product belongs in the drafts group, where it can be cleared
+ * out on purpose; the same picture on a published product is untouchable.
+ *
  * @package OC_Theme
  */
 
@@ -164,29 +169,32 @@ final class Media_Clean {
 	 */
 
 	/**
-	 * Every attachment ID that something points at.
+	 * Who points at what.
 	 *
-	 * One pass over the tables that can hold an ID. Returns a map so lookups
-	 * are cheap, with the ID as the key.
+	 * Returns a map of attachment ID to the things that mention it. A post
+	 * is recorded by its own ID, so that a picture spoken for only by an
+	 * unpublished product can be told apart from one on the live shop —
+	 * which is the whole difference between the drafts group and the
+	 * untouchable one. Everything outside the posts table (a category, a
+	 * user, an option, the customizer) is recorded as a bare tag, and any
+	 * one of those is enough to make a file untouchable.
 	 *
-	 * @return array<int,bool>
+	 * @return array<int,array<string,bool>>
 	 */
-	public static function referenced_ids(): array {
+	public static function reference_map(): array {
 		global $wpdb;
 
 		$found = array();
 
-		$soak = static function ( $values ) use ( &$found ): void {
-			foreach ( (array) $values as $value ) {
-				if ( ! is_string( $value ) || '' === $value ) {
-					continue;
-				}
-				if ( preg_match_all( '/\d+/', $value, $m ) ) {
-					foreach ( $m[0] as $n ) {
-						$id = (int) $n;
-						if ( $id > 0 ) {
-							$found[ $id ] = true;
-						}
+		$soak = static function ( $value, string $source ) use ( &$found ): void {
+			if ( ! is_string( $value ) || '' === $value ) {
+				return;
+			}
+			if ( preg_match_all( '/\d+/', $value, $m ) ) {
+				foreach ( $m[0] as $n ) {
+					$id = (int) $n;
+					if ( $id > 0 ) {
+						$found[ $id ][ $source ] = true;
 					}
 				}
 			}
@@ -195,9 +203,17 @@ final class Media_Clean {
 		// Meta values under keys that sound like they hold media.
 		$where = self::key_clause( 'meta_key' );
 
-		$soak( $wpdb->get_col( "SELECT meta_value FROM {$wpdb->postmeta} WHERE {$where}" ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-		$soak( $wpdb->get_col( "SELECT meta_value FROM {$wpdb->termmeta} WHERE {$where}" ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-		$soak( $wpdb->get_col( "SELECT meta_value FROM {$wpdb->usermeta} WHERE {$where}" ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+		$rows = (array) $wpdb->get_results( "SELECT post_id, meta_value FROM {$wpdb->postmeta} WHERE {$where}" ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+		foreach ( $rows as $row ) {
+			$soak( $row->meta_value, 'post:' . (int) $row->post_id );
+		}
+
+		foreach ( (array) $wpdb->get_col( "SELECT meta_value FROM {$wpdb->termmeta} WHERE {$where}" ) as $value ) { // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+			$soak( $value, 'term' );
+		}
+		foreach ( (array) $wpdb->get_col( "SELECT meta_value FROM {$wpdb->usermeta} WHERE {$where}" ) as $value ) { // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+			$soak( $value, 'user' );
+		}
 
 		// Options: the customizer, the logo, our own settings.
 		$opts = $wpdb->get_col(
@@ -212,11 +228,13 @@ final class Media_Clean {
 			      OR option_name LIKE '%icon%'
 			      OR option_name LIKE '%media%' )"
 		);
-		$soak( $opts );
+		foreach ( $opts as $value ) {
+			$soak( $value, 'option' );
+		}
 
 		// Content: what the editor wrote into a page.
-		$rows = $wpdb->get_col(
-			"SELECT post_content FROM {$wpdb->posts}
+		$rows = $wpdb->get_results(
+			"SELECT ID, post_content FROM {$wpdb->posts}
 			 WHERE post_type <> 'revision'
 			   AND ( post_content LIKE '%wp-image-%'
 			      OR post_content LIKE '%attachment_%'
@@ -224,14 +242,14 @@ final class Media_Clean {
 			      OR post_content LIKE '%wp:image%'
 			      OR post_content LIKE '%ids=%' )"
 		);
-		foreach ( $rows as $content ) {
-			if ( preg_match_all( '/wp-image-(\d+)|attachment_(\d+)|["\']?ids["\']?\s*[:=]\s*["\']?([\d,\s]+)|"id"\s*:\s*(\d+)/i', (string) $content, $m, PREG_SET_ORDER ) ) {
+		foreach ( $rows as $row ) {
+			if ( preg_match_all( '/wp-image-(\d+)|attachment_(\d+)|["\']?ids["\']?\s*[:=]\s*["\']?([\d,\s]+)|"id"\s*:\s*(\d+)/i', (string) $row->post_content, $m, PREG_SET_ORDER ) ) {
 				foreach ( $m as $hit ) {
 					$blob = trim( $hit[1] . $hit[2] . ( $hit[3] ?? '' ) . ( $hit[4] ?? '' ) );
 					foreach ( preg_split( '/[,\s]+/', $blob ) as $n ) {
 						$id = (int) $n;
 						if ( $id > 0 ) {
-							$found[ $id ] = true;
+							$found[ $id ][ 'post:' . (int) $row->ID ] = true;
 						}
 					}
 				}
@@ -240,6 +258,30 @@ final class Media_Clean {
 
 		return $found;
 	}
+
+	/**
+	 * Just the IDs, for callers that only need to know "is this spoken for".
+	 *
+	 * @return array<int,bool>
+	 */
+	public static function referenced_ids(): array {
+		$out = array();
+		foreach ( array_keys( self::reference_map() ) as $id ) {
+			$out[ (int) $id ] = true;
+		}
+
+		return $out;
+	}
+
+	/**
+	 * Post statuses that mean a picture is on the live shop.
+	 *
+	 * 'inherit' covers revisions, which carry a copy of their parent's
+	 * featured image and therefore stand for the parent.
+	 *
+	 * @var string[]
+	 */
+	private const LIVE = array( 'publish', 'future', 'private', 'inherit' );
 
 	/**
 	 * A WHERE fragment matching every key that might hold media.
@@ -273,9 +315,13 @@ final class Media_Clean {
 	 * stores paths. The stem is searched without its size suffix, so that
 	 * sofa-800x600.jpg is found by looking for "sofa".
 	 *
-	 * @param int $id Attachment ID.
+	 * @param int  $id        Attachment ID.
+	 * @param bool $live_only Weigh only published posts, for files already
+	 *                        known to belong to a draft or to the bin. The
+	 *                        orphan group is checked without this, so that
+	 *                        a mention absolutely anywhere protects it.
 	 */
-	public static function name_referenced( int $id ): bool {
+	public static function name_referenced( int $id, bool $live_only = false ): bool {
 		global $wpdb;
 
 		$file = (string) get_post_meta( $id, '_wp_attached_file', true );
@@ -293,12 +339,17 @@ final class Media_Clean {
 
 		$like = '%' . $wpdb->esc_like( $stem ) . '%';
 
+		$live = $live_only
+			? " AND post_status IN ( '" . implode( "', '", self::LIVE ) . "' )"
+			: '';
+
 		$hit = (int) $wpdb->get_var(
 			$wpdb->prepare(
 				"SELECT 1 FROM {$wpdb->posts}
 				 WHERE post_type <> 'attachment' AND post_type <> 'revision'
 				   AND ( post_content LIKE %s OR post_excerpt LIKE %s )
-				 LIMIT 1",
+				   {$live}
+				 LIMIT 1", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 				$like,
 				$like
 			)
@@ -309,8 +360,11 @@ final class Media_Clean {
 
 		$hit = (int) $wpdb->get_var(
 			$wpdb->prepare(
-				"SELECT 1 FROM {$wpdb->postmeta}
-				 WHERE post_id <> %d AND meta_value LIKE %s LIMIT 1",
+				"SELECT 1 FROM {$wpdb->postmeta} m
+				 INNER JOIN {$wpdb->posts} p ON p.ID = m.post_id
+				 WHERE m.post_id <> %d AND m.meta_value LIKE %s
+				   {$live}
+				 LIMIT 1", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 				$id,
 				$like
 			)
@@ -349,18 +403,45 @@ final class Media_Clean {
 	 * Returns one of: used, draft, trash, orphan, recent.
 	 *
 	 * @param object            $row  Row with ID, post_parent, post_date_gmt.
-	 * @param array<int,bool>   $refs Reference set from referenced_ids().
+	 * @param array<int,array<string,bool>> $refs Map from reference_map().
 	 * @param array<int,object> $posts Parent lookup.
 	 */
 	public static function bucket( object $row, array $refs, array $posts ): string {
 		$id = (int) $row->ID;
 
-		// Pointed at by ID from somewhere.
-		if ( isset( $refs[ $id ] ) ) {
-			return 'used';
+		// Who mentions it, and are any of them live?
+		$draft = false;
+		$trash = false;
+
+		foreach ( array_keys( (array) ( $refs[ $id ] ?? array() ) ) as $source ) {
+			$source = (string) $source;
+
+			// A category, a user, an option or the customizer. No status to
+			// weigh, so any of these settles it.
+			if ( 0 !== strpos( $source, 'post:' ) ) {
+				return 'used';
+			}
+
+			$pid = (int) substr( $source, 5 );
+
+			// A post we cannot see is treated as live, not as absent.
+			if ( ! isset( $posts[ $pid ] ) ) {
+				return 'used';
+			}
+
+			$status = (string) $posts[ $pid ]->post_status;
+
+			if ( in_array( $status, self::LIVE, true ) ) {
+				return 'used';
+			}
+			if ( 'trash' === $status ) {
+				$trash = true;
+			} else {
+				$draft = true;
+			}
 		}
 
-		// Hanging off a post.
+		// And what it hangs off, which is the same question again.
 		$found  = 'orphan';
 		$parent = (int) $row->post_parent;
 
@@ -368,12 +449,20 @@ final class Media_Clean {
 			$status = (string) $posts[ $parent ]->post_status;
 
 			if ( 'trash' === $status ) {
-				$found = 'trash';
+				$trash = true;
 			} elseif ( in_array( $status, array( 'draft', 'pending', 'auto-draft' ), true ) ) {
-				$found = 'draft';
+				$draft = true;
 			} else {
 				return 'used';
 			}
+		}
+
+		// Wanted by an unpublished thing beats wanted by a binned one: a
+		// draft may yet be published, so it is the more careful label.
+		if ( $draft ) {
+			$found = 'draft';
+		} elseif ( $trash ) {
+			$found = 'trash';
 		}
 
 		// Deletable on the face of it — but uploaded a moment ago, so
@@ -411,7 +500,7 @@ final class Media_Clean {
 		global $wpdb;
 
 		$rows = (array) $wpdb->get_results(
-			"SELECT ID, post_type, post_status, post_title FROM {$wpdb->posts} WHERE post_type <> 'attachment'"
+			"SELECT ID, post_type, post_status, post_title FROM {$wpdb->posts}"
 		);
 
 		$out = array();
@@ -470,7 +559,7 @@ final class Media_Clean {
 	public function ajax_start(): void {
 		$this->guard();
 
-		$refs    = self::referenced_ids();
+		$refs    = self::reference_map();
 		$posts   = self::parents();
 		$rows    = self::attachments();
 		$queue   = array();
@@ -536,7 +625,10 @@ final class Media_Clean {
 			$item = $queue[ $done ];
 			$id   = (int) $item['id'];
 
-			if ( self::name_referenced( $id ) ) {
+			// The orphan group claims nothing at all points at the file, so
+			// it is held by a mention anywhere. The draft and bin groups
+			// only promise that nothing live wants it.
+			if ( self::name_referenced( $id, 'orphan' !== $item['bucket'] ) ) {
 				$state['report']['used'][] = $id;
 				continue;
 			}
@@ -636,7 +728,7 @@ final class Media_Clean {
 
 		// The scan may be minutes old. Anything that has since been put to
 		// use must survive, so the reference set is rebuilt for this batch.
-		$refs  = self::referenced_ids();
+		$refs  = self::reference_map();
 		$posts = self::parents();
 		$log   = (array) get_option( self::LOG, array() );
 
@@ -650,18 +742,17 @@ final class Media_Clean {
 				continue;
 			}
 
-			if ( isset( $refs[ $id ] ) || self::name_referenced( $id ) ) {
+			// Judged again from scratch, by the same rules the screen used.
+			$bucket = self::bucket( $post, $refs, $posts );
+
+			if ( ! in_array( $bucket, array( 'orphan', 'draft', 'trash' ), true ) ) {
 				$kept++;
 				continue;
 			}
 
-			$parent = (int) $post->post_parent;
-			if ( $parent > 0 && isset( $posts[ $parent ] ) ) {
-				$status = (string) $posts[ $parent ]->post_status;
-				if ( ! in_array( $status, array( 'draft', 'pending', 'auto-draft', 'trash' ), true ) ) {
-					$kept++;
-					continue;
-				}
+			if ( self::name_referenced( $id, 'orphan' !== $bucket ) ) {
+				$kept++;
+				continue;
 			}
 
 			$bytes = self::bytes( $id );
