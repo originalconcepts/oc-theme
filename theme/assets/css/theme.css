@@ -4082,6 +4082,14 @@ li.product:focus-within .oc-card-atc,
 	.oc-card-media--gallery .oc-card-media__nav:hover { opacity: 1; }
 }
 
+/* Without a pointer there is no hover to reveal them, so on a touch screen
+ * the arrows stood at zero opacity and the card's gallery had no way in at
+ * all -- a sideways swipe went to the slider under it and turned the page
+ * of products instead. Inside a slider they simply stay visible. */
+@media (hover: none) {
+	.oc-linked--slider .oc-card-media--gallery .oc-card-media__nav { opacity: .8; }
+}
+
 .oc-card-media__strip { display: grid; }
 
 .oc-card-media__item {
@@ -6032,9 +6040,16 @@ html:not([dir]) .oc-cartup__items--h.oc-fade-end {
 	translate: 0 var(--oc-htrans-shift, 0px);
 }
 
-.oc-htrans .oc-header.is-scrolled {
+/* The solid state has three ways in: the first scroll, the pointer resting
+ * on the bar, and the keyboard or the search reaching something inside it.
+ * Hovering a bar you cannot read is how a transparent header hides its own
+ * controls, so the ink arrives with the background rather than after it. */
+.oc-htrans .oc-header.is-scrolled,
+.oc-htrans .oc-header:hover,
+.oc-htrans .oc-header:focus-within {
 	background: var(--oc-header-bg, var(--oc-surface));
 	border-block-end-color: var(--oc-line);
+	color: var(--oc-header-tx, var(--oc-ink));
 }
 
 .oc-htrans.admin-bar .oc-header { inset-block-start: 32px; }
@@ -6047,12 +6062,25 @@ html:not([dir]) .oc-cartup__items--h.oc-fade-end {
 	.oc-htrans.admin-bar .oc-header { inset-block-start: 0; }
 }
 
-/* Its own ink, until the first scroll brings the solid bar. */
-.oc-htrans .oc-header:not(.is-scrolled) { color: var(--oc-header-tr-tx, var(--oc-header-tx, inherit)); }
-.oc-htrans .oc-header:not(.is-scrolled) .oc-hicon,
-.oc-htrans .oc-header:not(.is-scrolled) .oc-htext__link,
-.oc-htrans .oc-header:not(.is-scrolled) .oc-nav a,
-.oc-htrans .oc-header:not(.is-scrolled) .oc-cart-link { color: inherit; }
+/* Its own ink, for as long as it is actually see-through. */
+.oc-htrans .oc-header:not(.is-scrolled):not(:hover):not(:focus-within) { color: var(--oc-header-tr-tx, var(--oc-header-tx, inherit)); }
+.oc-htrans .oc-header .oc-hicon,
+.oc-htrans .oc-header .oc-htext__link,
+.oc-htrans .oc-header .oc-nav a,
+.oc-htrans .oc-header .oc-cart-link { color: inherit; }
+
+/* A transparent header is out of the flow, so the search panel -- which
+ * follows it in the document and outranks it on z-index -- opened at the
+ * very top of the page and covered the bar it belongs to. Pin it under the
+ * header instead. The phone rule below takes the whole screen and must keep
+ * winning, so this is desktop only. */
+@media (min-width: 901px) {
+	.oc-htrans .oc-searchbox {
+		position: fixed;
+		inset-inline: 0;
+		inset-block-start: calc(var(--oc-header-h, 72px) + var(--oc-htrans-shift, 0px));
+	}
+}
 
 /* And its own (usually light) logo, swapped by state. */
 .oc-logo-tr { display: none; }
@@ -6060,9 +6088,9 @@ html:not([dir]) .oc-cartup__items--h.oc-fade-end {
 /* The site logo only gives way to a transparent-state logo that was
  * actually uploaded. Without :has() this hid the logo unconditionally, so a
  * shop that had not uploaded one had no logo at all over its hero. */
-.oc-htrans .oc-header:not(.is-scrolled) .custom-logo-link:has(.oc-logo-tr) .custom-logo { display: none; }
+.oc-htrans .oc-header:not(.is-scrolled):not(:hover):not(:focus-within) .custom-logo-link:has(.oc-logo-tr) .custom-logo { display: none; }
 
-.oc-htrans .oc-header:not(.is-scrolled) .custom-logo-link .oc-logo-tr {
+.oc-htrans .oc-header:not(.is-scrolled):not(:hover):not(:focus-within) .custom-logo-link .oc-logo-tr {
 	display: block;
 }
 

@@ -8022,6 +8022,14 @@
 
 		el.addEventListener( 'pointerdown', function ( e ) {
 			if ( 'touch' === e.pointerType ) { return; }
+
+			// A control inside a card owns its own press. The gallery arrows
+			// sit on top of the row, so without this the press that should
+			// turn the picture started a drag and slid the whole row instead.
+			if ( e.target.closest( '.oc-card-media__nav, .oc-colors__item, button, [role="button"], input, select, textarea' ) ) {
+				return;
+			}
+
 			down = true; moved = false;
 			startX = e.clientX; startScroll = el.scrollLeft;
 			el.classList.add( 'is-drag' );
