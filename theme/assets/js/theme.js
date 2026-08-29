@@ -8527,3 +8527,36 @@ window.__ocMoney = function ( n, money ) {
 
 	draw();
 }() );
+
+/* ---------- the stock line takes turns ----------
+ *
+ * What the stock is doing, then when the parcel would arrive, then back.
+ * The same idea as the messages in the top bar, and it borrows their
+ * timing so the page has one rhythm rather than two. A visitor who has
+ * asked for less motion gets the stock state and nothing moving. */
+( function () {
+	var lines = document.querySelectorAll( '.oc-stockline--turns .oc-stockline__turns' );
+	if ( ! lines.length ) { return; }
+
+	var still = window.matchMedia && window.matchMedia( '(prefers-reduced-motion: reduce)' ).matches;
+	if ( still ) { return; }
+
+	Array.prototype.forEach.call( lines, function ( wrap ) {
+		var msgs = wrap.querySelectorAll( '.oc-stockline__status' );
+		if ( msgs.length < 2 ) { return; }
+
+		var at = 0;
+
+		setInterval( function () {
+			// Nothing turns while the tab is in the background: coming back
+			// to a half-finished transition looks like a fault.
+			if ( document.hidden ) { return; }
+
+			at = ( at + 1 ) % msgs.length;
+
+			Array.prototype.forEach.call( msgs, function ( m, i ) {
+				m.classList.toggle( 'is-current', i === at );
+			} );
+		}, 4000 );
+	} );
+}() );

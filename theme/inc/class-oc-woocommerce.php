@@ -1299,6 +1299,56 @@ final class WooCommerce {
 	}
 
 	/**
+	 * When this would arrive, in the shop's own working days.
+	 *
+	 * Counting starts tomorrow — nothing ships the same day — and walks
+	 * forward over the days the shop actually sends orders out, collecting
+	 * as many as the lead time asks for. The first one it lands on is the
+	 * earliest the parcel could appear; the last is the latest.
+	 *
+	 * Ordered on Sunday with a three-day lead and deliveries Sunday to
+	 * Thursday: Monday, Tuesday, Wednesday — so "between Monday and
+	 * Wednesday". Ordered on Wednesday, with no Friday or Saturday runs:
+	 * Thursday, Sunday, Monday — the weekend is simply not counted, and the
+	 * window stretches to match rather than promising a day nobody works.
+	 *
+	 * @return array{from:string,to:string}|null
+	 */
+	public static function delivery_window(): ?array {
+		$days = array_filter( explode( ',', (string) get_theme_mod( 'oc_ship_days', '0,1,2,3,4' ) ), 'strlen' );
+		$days = array_values( array_unique( array_map( 'intval', $days ) ) );
+		$lead = max( 1, min( 30, (int) get_theme_mod( 'oc_ship_lead', 3 ) ) );
+
+		if ( ! $days ) {
+			return null;
+		}
+
+		$when  = array();
+		$clock = new \DateTimeImmutable( 'today', wp_timezone() );
+
+		// A fortnight of looking is more than enough for any sane lead time,
+		// and stops a shop that ships on no days at all spinning here.
+		for ( $step = 1; $step <= 60 && count( $when ) < $lead; $step++ ) {
+			$day = $clock->modify( '+' . $step . ' days' );
+
+			if ( in_array( (int) $day->format( 'w' ), $days, true ) ) {
+				$when[] = $day;
+			}
+		}
+
+		if ( ! $when ) {
+			return null;
+		}
+
+		$format = (string) apply_filters( 'oc_delivery_date_format', 'j/n' );
+
+		return array(
+			'from' => $when[0]->format( $format ),
+			'to'   => end( $when )->format( $format ),
+		);
+	}
+
+	/**
 	 * The stock line as a string, for whoever draws a product outside the
 	 * product page — the quick-pick panel, say. Empty when the setting is
 	 * off.
@@ -1312,7 +1362,7 @@ final class WooCommerce {
 		}
 
 		$note   = '';
-		$status = __( 'In stock', 'oc-theme' );
+		$status = __( 'Ready to ship', 'oc-theme' );
 		$tone   = 'green';
 
 		if ( ! $product->is_in_stock() ) {
@@ -1334,6 +1384,34 @@ final class WooCommerce {
 			} elseif ( $qty <= $low * 2 ) {
 				$note = __( 'Last items in stock', 'oc-theme' );
 			}
+		}
+
+		// The right-hand side says two things by turns: what the stock is
+		// doing, and when the parcel would arrive. Both are short enough to
+		// sit on one line of a phone, which is why they take turns instead
+		// of sharing the row.
+		$window = $product->is_in_stock() ? self::delivery_window() : null;
+
+		if ( $window ) {
+			$eta = sprintf(
+				/* translators: 1: earliest date, 2: latest date, both short like 2/12. */
+				__( 'Arrives %1$s–%2$s', 'oc-theme' ),
+				$window['from'],
+				$window['to']
+			);
+
+			return sprintf(
+				'<div class="oc-stockline oc-stockline--turns"><span class="oc-stockline__note">%s</span>'
+					. '<span class="oc-stockline__turns">'
+					. '<span class="oc-stockline__status oc-stockline__status--%s is-current"><i aria-hidden="true"></i>%s</span>'
+					. '<span class="oc-stockline__status oc-stockline__status--%s oc-stockline__status--eta"><i aria-hidden="true"></i>%s</span>'
+					. '</span></div>',
+				esc_html( $note ),
+				esc_attr( $tone ),
+				esc_html( $status ),
+				esc_attr( $tone ),
+				esc_html( $eta )
+			);
 		}
 
 		return sprintf(

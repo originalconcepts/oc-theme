@@ -1986,6 +1986,34 @@ final class Customizer {
 		$this->toggle( $c, 'oc_atc_qty', 'oc_product', __( 'Show the quantity beside the button', 'oc-theme' ), true );
 		$this->toggle( $c, 'oc_stock_indicator', 'oc_product', __( 'Stock line above the button', 'oc-theme' ), true );
 
+		$this->days(
+			$c,
+			'oc_ship_days',
+			'oc_product',
+			__( 'Days orders go out', 'oc-theme' ),
+			'0,1,2,3,4',
+			__( 'The stock line takes turns between what the stock is doing and when the parcel would arrive. Counting starts tomorrow and skips the days you do not send.', 'oc-theme' ),
+			array(
+				'setting' => 'oc_stock_indicator',
+				'values'  => array( '1' ),
+			)
+		);
+
+		$this->number(
+			$c,
+			'oc_ship_lead',
+			'oc_product',
+			__( 'Delivery days', 'oc-theme' ),
+			3,
+			1,
+			30,
+			array(
+				'setting' => 'oc_stock_indicator',
+				'values'  => array( '1' ),
+			),
+			__( 'How many sending days it takes. Three, ordered on a Sunday with a Sunday-to-Thursday week, reads "arrives 2/12–4/12".', 'oc-theme' )
+		);
+
 		$this->choice(
 			$c,
 			'oc_vpanel_side',
@@ -2444,6 +2472,47 @@ final class Customizer {
 	 * @param string                $id      Heading id.
 	 * @param string                $section Section id.
 	 * @param string                $label   Heading text.
+	 */
+	private function days( \WP_Customize_Manager $c, string $id, string $section, string $label, string $def, string $hint = '', ?array $dep = null ): void {
+		require_once __DIR__ . '/class-oc-days-control.php';
+
+		$c->add_setting(
+			$id,
+			array(
+				'default'           => $def,
+				'sanitize_callback' => static function ( $value ): string {
+					$days = array_filter( explode( ',', (string) $value ), 'strlen' );
+					$days = array_map( 'intval', $days );
+					$days = array_values( array_unique( array_filter( $days, static fn( $d ) => $d >= 0 && $d <= 6 ) ) );
+
+					sort( $days );
+
+					return implode( ',', $days );
+				},
+			)
+		);
+
+		$args = array(
+			'section'     => $section,
+			'label'       => $label,
+			'description' => $hint,
+		);
+
+		if ( null !== $dep ) {
+			$args['active_callback'] = $this->depend( $id, $dep );
+		}
+
+		$c->add_control( new Customize\Days_Control( $c, $id, $args ) );
+	}
+
+	/**
+	 * A section heading.
+	 *
+	 * @param \WP_Customize_Manager $c       Manager.
+	 * @param string                $id      Setting id.
+	 * @param string                $section Section id.
+	 * @param string                $label   Label.
+	 * @param array|null            $dep     Optional visibility rule.
 	 */
 	private function heading( \WP_Customize_Manager $c, string $id, string $section, string $label, ?array $dep = null ): void {
 		require_once __DIR__ . '/class-oc-heading-control.php';

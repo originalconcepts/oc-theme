@@ -264,3 +264,44 @@ body.rtl .customize-section-back::before {
 #sub-accordion-section-oc_menu .customize-control-number input[type="number"] {
 	inline-size: 100%;
 }
+
+/* ---------- weekday picker ---------- */
+
+.oc-days {
+	display: flex;
+	gap: 4px;
+	margin-block-start: 8px;
+}
+
+.oc-days__day {
+	flex: 1;
+	cursor: pointer;
+}
+
+.oc-days__day input {
+	position: absolute;
+	opacity: 0;
+	width: 0;
+	height: 0;
+}
+
+.oc-days__day span {
+	display: grid;
+	place-items: center;
+	height: 32px;
+	border: 1px solid #c3c4c7;
+	border-radius: 6px;
+	background: #fff;
+	font-size: 12px;
+	font-weight: 600;
+	color: #50575e;
+	transition: background-color .15s, border-color .15s, color .15s;
+}
+
+.oc-days__day input:checked + span {
+	background: #2271b1;
+	border-color: #2271b1;
+	color: #fff;
+}
+
+.oc-days__day input:focus-visible + span { outline: 2px solid #2271b1; outline-offset: 2px; }

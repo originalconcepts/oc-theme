@@ -7207,7 +7207,15 @@ body:not(.oc-no-lightbox) .oc-vslide.is-playing {
 	padding: 0;
 }
 
-.oc-no-qty.single-product div.product form.cart div.quantity { display: none; }
+/* Switched off means gone. This was a plain `display: none` and something
+ * in the add-to-cart area kept out-ranking it, so the setting appeared to
+ * do nothing; `body` for the extra weight and !important to end the
+ * argument. The variation form keeps its own copy of the quantity, so both
+ * places are named. */
+body.oc-no-qty.single-product div.product form.cart div.quantity,
+body.oc-no-qty.single-product div.product form.cart .woocommerce-variation-add-to-cart div.quantity {
+	display: none !important;
+}
 
 /* The button itself: CTA colour, the set height, filling the row. */
 .woocommerce div.product form.cart .single_add_to_cart_button {
@@ -14445,4 +14453,53 @@ p.no-comments {
 	font-size: .95rem !important;
 	font-weight: 400 !important;
 	color: var(--oc-ink, #111) !important;
+}
+
+/* ------------------------------------------------------------------ *
+ * The stock line's two messages.
+ *
+ * They take turns in one fixed-height slot, so the row never changes
+ * height and nothing below it moves. Built like the top bar's rotating
+ * messages, which is where the motion vocabulary already lives.
+ * ------------------------------------------------------------------ */
+
+.oc-stockline__turns {
+	position: relative;
+	display: block;
+	block-size: 1.5em;
+	min-inline-size: 12ch;
+	overflow: hidden;
+}
+
+.oc-stockline--turns .oc-stockline__status {
+	position: absolute;
+	inset-inline-end: 0;
+	inset-block-start: 0;
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	white-space: nowrap;
+	opacity: 0;
+	translate: 0 100%;
+	transition: opacity .3s ease, translate .3s ease;
+}
+
+.oc-stockline--turns .oc-stockline__status.is-current {
+	opacity: 1;
+	translate: 0 0;
+}
+
+/* The arrival note is a fact, not a stock state, so it keeps the dot's
+ * spacing but not its colour shouting a second time. */
+.oc-stockline__status--eta i { opacity: .45; }
+
+@media (prefers-reduced-motion: reduce) {
+	.oc-stockline--turns .oc-stockline__status { transition: none; }
+}
+
+/* On a phone the note and the turning slot share a tight row, so the slot
+ * only claims what it needs. */
+@media (max-width: 480px) {
+	.oc-stockline__turns { min-inline-size: 0; }
+	.oc-stockline--turns .oc-stockline__status { font-size: .92em; }
 }

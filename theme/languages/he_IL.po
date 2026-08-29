@@ -6104,3 +6104,70 @@ msgstr "כמה מוצרים דומים להציג"
 
 msgid "The most it will show. A category with fewer products in it shows what it has."
 msgstr "המקסימום שיוצג. קטגוריה עם פחות מוצרים תציג את מה שיש בה."
+
+msgid "Ready to ship"
+msgstr "מוכן למשלוח"
+
+msgid "Arrives %1$s–%2$s"
+msgstr "יסופק %1$s–%2$s"
+
+msgid "Days orders go out"
+msgstr "ימי משלוח"
+
+msgid "The stock line takes turns between what the stock is doing and when the parcel would arrive. Counting starts tomorrow and skips the days you do not send."
+msgstr "שורת המלאי מתחלפת בין מצב המלאי לבין מועד ההגעה המשוער. הספירה מתחילה ממחר ומדלגת על הימים שבהם אינכם שולחים."
+
+msgid "Delivery days"
+msgstr "ימי אספקה"
+
+msgid "How many sending days it takes. Three, ordered on a Sunday with a Sunday-to-Thursday week, reads \"arrives 2/12–4/12\"."
+msgstr "כמה ימי משלוח לוקח. שלושה, בהזמנה ביום ראשון ובשבוע ראשון–חמישי, יוצגו כ״יסופק 2/12–4/12״."
+
+msgid "Sunday"
+msgstr "ראשון"
+
+msgid "Monday"
+msgstr "שני"
+
+msgid "Tuesday"
+msgstr "שלישי"
+
+msgid "Wednesday"
+msgstr "רביעי"
+
+msgid "Thursday"
+msgstr "חמישי"
+
+msgid "Friday"
+msgstr "שישי"
+
+msgid "Saturday"
+msgstr "שבת"
+
+msgctxt "weekday, one or two letters"
+msgid "Su"
+msgstr "א"
+
+msgctxt "weekday, one or two letters"
+msgid "Mo"
+msgstr "ב"
+
+msgctxt "weekday, one or two letters"
+msgid "Tu"
+msgstr "ג"
+
+msgctxt "weekday, one or two letters"
+msgid "We"
+msgstr "ד"
+
+msgctxt "weekday, one or two letters"
+msgid "Th"
+msgstr "ה"
+
+msgctxt "weekday, one or two letters"
+msgid "Fr"
+msgstr "ו"
+
+msgctxt "weekday, one or two letters"
+msgid "Sa"
+msgstr "ש"
