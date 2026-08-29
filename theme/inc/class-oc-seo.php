@@ -71,6 +71,7 @@ final class Seo {
 		add_filter( 'wp_sitemaps_taxonomies', array( $this, 'sitemap_taxonomies' ) );
 		add_filter( 'wp_sitemaps_post_types', array( $this, 'sitemap_post_types' ) );
 		add_action( 'init', array( $this, 'sitemap_route' ) );
+		add_filter( 'redirect_canonical', array( $this, 'sitemap_no_canonical' ), 10, 2 );
 		add_filter( 'robots_txt', array( $this, 'robots_txt' ), 20, 2 );
 		add_action( 'updated_post_meta', array( $this, 'normalize_meta' ), 10, 4 );
 		add_action( 'added_post_meta', array( $this, 'normalize_meta' ), 10, 4 );
@@ -708,20 +709,33 @@ final class Seo {
 	public function sitemap_route(): void {
 		add_rewrite_rule( '^sitemap\.xml$', 'index.php?sitemap=index', 'top' );
 
-		// Core answers /sitemap.xml with a redirect to its own wp-sitemap.xml.
-		// That works, but it makes the address everyone is given a staging
-		// post rather than the thing itself, so the redirect goes and the rule
-		// above serves the index where it was asked for.
-		$server = wp_sitemaps_get_server();
-
-		if ( $server instanceof \WP_Sitemaps ) {
-			remove_filter( 'pre_handle_404', array( $server, 'redirect_sitemapxml' ), 10 );
-		}
-
 		if ( ! get_option( 'oc_seo_sitemap_rw' ) ) {
 			flush_rewrite_rules( false );
 			update_option( 'oc_seo_sitemap_rw', '1', false );
 		}
+	}
+
+	/**
+	 * Let /sitemap.xml be the address, not a signpost to one.
+	 *
+	 * The rewrite rule above resolves the request perfectly well; it was
+	 * WordPress's canonical redirect that then sent everyone on to
+	 * wp-sitemap.xml, so the URL in robots.txt was never the one that
+	 * answered. Canonicalisation is switched off for sitemap requests only,
+	 * and every other URL on the site is tidied as before.
+	 *
+	 * @param string|false $redirect  Where WordPress means to send this.
+	 * @param string       $requested The URL that was asked for.
+	 * @return string|false
+	 */
+	public function sitemap_no_canonical( $redirect, $requested ) {
+		unset( $requested );
+
+		if ( '' !== (string) get_query_var( 'sitemap' ) || '' !== (string) get_query_var( 'sitemap-stylesheet' ) ) {
+			return false;
+		}
+
+		return $redirect;
 	}
 
 	/**
