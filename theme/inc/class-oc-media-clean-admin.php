@@ -33,9 +33,39 @@ final class Media_Clean_Admin {
 		$nonce   = wp_create_nonce( 'ocmc' );
 		$logged  = Media_Clean::log_count();
 
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reading a result summary, nothing acted on.
+		$just_did = isset( $_GET['ocmc_done'] ) ? absint( $_GET['ocmc_done'] ) : -1;
+		$freed    = isset( $_GET['ocmc_freed'] ) ? absint( $_GET['ocmc_freed'] ) : 0;
+		$kept     = isset( $_GET['ocmc_kept'] ) ? absint( $_GET['ocmc_kept'] ) : 0;
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+
 		?>
 		<div class="wrap ocmc">
 			<h1><?php esc_html_e( 'Media cleanup', 'oc-theme' ); ?></h1>
+
+			<?php if ( $just_did >= 0 ) : ?>
+				<div class="notice notice-success is-dismissible">
+					<p>
+						<?php
+						printf(
+							/* translators: 1: number of files, 2: disk space, e.g. "5.4 MB". */
+							esc_html( _n( '%1$d file deleted, %2$s freed.', '%1$d files deleted, %2$s freed.', $just_did, 'oc-theme' ) ),
+							(int) $just_did,
+							esc_html( size_format( $freed, 1 ) )
+						);
+						?>
+						<?php if ( $kept > 0 ) : ?>
+							<?php
+							printf(
+								/* translators: %d: number of files. */
+								esc_html( _n( '%d was kept because something still uses it.', '%d were kept because something still uses them.', $kept, 'oc-theme' ) ),
+								(int) $kept
+							);
+							?>
+						<?php endif; ?>
+					</p>
+				</div>
+			<?php endif; ?>
 
 			<p class="ocmc__lede">
 				<?php esc_html_e( 'Finds pictures and videos nothing points at any more. A file is treated as in use if it hangs off a post, if its ID appears in any field that holds media, or if its name is written anywhere at all — content, settings or the customizer. Anything in the least doubtful is kept.', 'oc-theme' ); ?>
@@ -72,7 +102,7 @@ final class Media_Clean_Admin {
 		</div>
 		<?php
 
-		self::script( $nonce );
+		self::script( $nonce, $just_did >= 0 && ! isset( $_GET['ocmc_scanned'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	}
 
 	/**
@@ -244,9 +274,10 @@ final class Media_Clean_Admin {
 	/**
 	 * The wiring.
 	 *
-	 * @param string $nonce Ajax nonce.
+	 * @param string $nonce   Ajax nonce.
+	 * @param bool   $rescan  Start a fresh scan on load, after a deletion.
 	 */
-	private static function script( string $nonce ): void {
+	private static function script( string $nonce, bool $rescan = false ): void {
 		$strings = array(
 			'scanning' => __( 'Scanning…', 'oc-theme' ),
 			'checking' => __( 'Checking file names — %1$d of %2$d', 'oc-theme' ),
@@ -293,34 +324,45 @@ final class Media_Clean_Admin {
 			}
 
 			var scan = document.getElementById( 'ocmc-scan' );
-			if ( scan ) {
-				scan.addEventListener( 'click', function () {
-					scan.disabled = true;
-					out.innerHTML = '';
-					progress( 4, T.scanning );
 
-					post( 'ocmc_start', {} ).then( function ( res ) {
-						if ( ! res || ! res.success ) { throw 0; }
-						var total = res.data.total;
+			function startScan() {
+				if ( scan ) { scan.disabled = true; }
+				out.innerHTML = '';
+				progress( 4, T.scanning );
 
-						function step() {
-							return post( 'ocmc_step', {} ).then( function ( r ) {
-								if ( ! r || ! r.success ) { throw 0; }
-								var pct = total ? Math.round( ( r.data.done / total ) * 100 ) : 100;
-								progress( pct, sprintf( T.checking, r.data.done, total ) );
-								return r.data.ready ? null : step();
-							} );
-						}
+				post( 'ocmc_start', {} ).then( function ( res ) {
+					if ( ! res || ! res.success ) { throw 0; }
+					var total = res.data.total;
 
-						return total ? step() : null;
-					} ).then( function () {
-						window.location = window.location.href.split( '#' )[ 0 ];
-					} ).catch( function () {
-						scan.disabled = false;
-						progress( 100, T.failed );
-					} );
+					function step() {
+						return post( 'ocmc_step', {} ).then( function ( r ) {
+							if ( ! r || ! r.success ) { throw 0; }
+							var pct = total ? Math.round( ( r.data.done / total ) * 100 ) : 100;
+							progress( pct, sprintf( T.checking, r.data.done, total ) );
+							return r.data.ready ? null : step();
+						} );
+					}
+
+					return total ? step() : null;
+				} ).then( function () {
+					// Keep whatever the page is saying about a deletion, but
+					// mark the scan as done so arriving here again does not
+					// set another one going.
+					var u = new URL( window.location.href );
+					u.hash = '';
+					u.searchParams.set( 'ocmc_scanned', '1' );
+					window.location = u.toString();
+				} ).catch( function () {
+					if ( scan ) { scan.disabled = false; }
+					progress( 100, T.failed );
 				} );
 			}
+
+			if ( scan ) { scan.addEventListener( 'click', startScan ); }
+
+			<?php if ( $rescan ) : ?>
+			startScan();
+			<?php endif; ?>
 
 			document.addEventListener( 'click', function ( e ) {
 				var pick = e.target.closest( '[data-ocmc-all]' );
@@ -348,8 +390,15 @@ final class Media_Clean_Admin {
 				function chunk() {
 					var slice = ids.slice( done, done + 20 );
 					if ( ! slice.length ) {
-						window.alert( sprintf( T.done, deleted, ( bytes / 1048576 ).toFixed( 1 ) + ' MB', kept ) );
-						window.location = window.location.href.split( '#' )[ 0 ];
+						// Straight back to a clean page, which re-scans on
+						// arrival. The findings on screen are about a library
+						// that no longer exists.
+						var u = new URL( window.location.href );
+						u.hash = '';
+						u.searchParams.set( 'ocmc_done', deleted );
+						u.searchParams.set( 'ocmc_freed', bytes );
+						u.searchParams.set( 'ocmc_kept', kept );
+						window.location = u.toString();
 						return;
 					}
 					return post( 'ocmc_delete', { ids: slice } ).then( function ( r ) {

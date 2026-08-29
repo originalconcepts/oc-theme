@@ -41,6 +41,12 @@ class Order_Print {
 
 		add_action( 'admin_menu', array( $this, 'screen' ) );
 
+		// The sheet is a document of its own, so it has to be written before
+		// WordPress starts drawing the admin around it. Left to the ordinary
+		// page callback the whole admin menu comes along, and prints as a
+		// column down the side of every sheet.
+		add_action( 'admin_init', array( $this, 'maybe_render' ), 1 );
+
 		// A single order can be printed from its own edit screen too.
 		add_action( 'woocommerce_order_actions', array( $this, 'order_action' ) );
 		add_action( 'woocommerce_order_action_oc_print_order', array( $this, 'order_action_run' ) );
@@ -136,6 +142,24 @@ class Order_Print {
 			self::PAGE,
 			array( $this, 'render' )
 		);
+	}
+
+	/**
+	 * Catch our own screen early and answer it in full.
+	 *
+	 * admin_init runs before a single byte of the admin page is sent, so
+	 * exiting here is what keeps the sheet a bare document.
+	 */
+	public function maybe_render(): void {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- render() checks the nonce.
+		$page = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : '';
+
+		if ( self::PAGE !== $page ) {
+			return;
+		}
+
+		$this->render();
+		exit;
 	}
 
 	/**

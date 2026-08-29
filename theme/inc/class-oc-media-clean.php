@@ -779,6 +779,11 @@ final class Media_Clean {
 		}
 		update_option( self::LOG, $log, false );
 
+		// The findings on screen describe a library that no longer exists.
+		// Throwing them away is what stops the deleted files lingering as
+		// broken thumbnails until the transient happens to expire.
+		delete_transient( self::STORE );
+
 		return array(
 			'deleted' => $deleted,
 			'kept'    => $kept,
