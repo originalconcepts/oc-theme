@@ -1212,13 +1212,25 @@
 			if ( ! slide ) {
 				return;
 			}
-			// Scroll to the slide itself — exact in RTL and gap-proof. A
-			// wrap-around switches instantly (like the lightbox loop); block
-			// "nearest" keeps the page from scrolling vertically.
-			slide.scrollIntoView( {
-				behavior: jump ? 'auto' : 'smooth',
-				block: 'nearest',
-				inline: 'start'
+
+			// Scroll the strip and nothing else. scrollIntoView walks every
+			// scrollable ancestor it can find, so a card sitting in a product
+			// slider had its whole row dragged sideways as well — pressing the
+			// picture arrow turned the page of products instead of the
+			// picture. Measuring the two boxes and moving the strip's own
+			// scroll is exact in RTL and survives the gap between slides.
+			var box = strip.getBoundingClientRect();
+			var here = slide.getBoundingClientRect();
+			var rtl = 'rtl' === getComputedStyle( strip ).direction;
+			var delta = rtl ? ( here.right - box.right ) : ( here.left - box.left );
+
+			if ( Math.abs( delta ) < 1 ) {
+				return;
+			}
+
+			strip.scrollTo( {
+				left: strip.scrollLeft + delta,
+				behavior: jump ? 'auto' : 'smooth'
 			} );
 		}
 
