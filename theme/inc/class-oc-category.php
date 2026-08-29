@@ -40,9 +40,7 @@ class Category {
 	 */
 	public function register(): void {
 		add_action( 'product_cat_edit_form_fields', array( $this, 'fields' ), 20 );
-		add_action( 'product_cat_edit_form_fields', array( $this, 'related_field' ), 30 );
 		add_action( 'edited_product_cat', array( $this, 'save' ) );
-		add_action( 'edited_product_cat', array( $this, 'save_related_field' ) );
 
 		// Core blog categories get the shared card image only.
 		add_action( 'category_edit_form_fields', array( $this, 'category_fields' ), 20 );
@@ -883,57 +881,6 @@ class Category {
 	 *
 	 * @param int $term_id Term id.
 	 */
-
-	/**
-	 * "Do not use this category to find similar products."
-	 *
-	 * A shop keeps shelves that are not really categories — NEW, SALE, a
-	 * seasonal edit. A product sitting in one of those *and* in its real
-	 * category pulls its similar-products row from whichever is looser, and
-	 * on a shelf holding most of the catalogue that means the row fills with
-	 * whatever happens to be new. Ticking this here takes the shelf out of
-	 * that sum without touching anything else it does.
-	 *
-	 * @param \WP_Term $term The category.
-	 */
-	public function related_field( $term ): void {
-		if ( ! $term instanceof \WP_Term ) {
-			return;
-		}
-
-		$count = (int) $term->count;
-		?>
-		<tr class="form-field oc-cat-sec">
-			<th scope="row" colspan="2" style="padding-block-end:0">
-				<h2 style="margin:22px 0 0;font-size:1.15em"><?php esc_html_e( 'Similar products', 'oc-theme' ); ?></h2>
-			</th>
-		</tr>
-		<?php
-		$this->toggle_field(
-			'_oc_rel_skip',
-			'1' === (string) get_term_meta( $term->term_id, '_oc_rel_skip', true ),
-			__( 'Leave out of similar products', 'oc-theme' ),
-			sprintf(
-				/* translators: %d: how many products are in this category. */
-				_n( 'Do not use this category to decide what is similar (%d product in it).', 'Do not use this category to decide what is similar (%d products in it).', $count, 'oc-theme' ),
-				$count
-			)
-		);
-	}
-
-	/**
-	 * Keep that tick.
-	 *
-	 * @param int $term_id The category.
-	 */
-	public function save_related_field( $term_id ): void {
-		if ( ! current_user_can( 'manage_product_terms' ) && ! current_user_can( 'manage_woocommerce' ) ) {
-			return;
-		}
-
-		// Core verifies the term-edit nonce before this fires.
-		$this->save_bool( (int) $term_id, '_oc_rel_skip' );
-	}
 
 	public function save( $term_id ): void {
 		if ( ! current_user_can( 'manage_product_terms' ) && ! current_user_can( 'manage_woocommerce' ) ) {

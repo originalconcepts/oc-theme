@@ -2088,8 +2088,18 @@ final class Customizer {
 			'below'
 		);
 
+		$this->heading( $c, 'oc_h_related', 'oc_product', __( 'Similar products', 'oc-theme' ) );
 		$this->toggle( $c, 'oc_product_related', 'oc_product', __( 'Show similar products', 'oc-theme' ), true );
-		$this->text( $c, 'oc_related_title', 'oc_product', __( 'Similar products title', 'oc-theme' ) );
+		$this->text(
+			$c,
+			'oc_related_title',
+			'oc_product',
+			__( 'Similar products title', 'oc-theme' ),
+			array(
+				'setting' => 'oc_product_related',
+				'values'  => array( '1' ),
+			)
+		);
 
 		$this->select(
 			$c,
@@ -2098,14 +2108,14 @@ final class Customizer {
 			__( 'Which products count as similar', 'oc-theme' ),
 			array(
 				'all'  => __( 'Every category the product is in', 'oc-theme' ),
-				'leaf' => __( 'Its sub-category only', 'oc-theme' ),
+				'leaf' => __( 'The category shown in its path', 'oc-theme' ),
 			),
 			'all',
 			array(
 				'setting' => 'oc_product_related',
 				'values'  => array( '1' ),
 			),
-			__( 'A product filed under a sub-category, its parent and a shelf like NEW pulls neighbours from all three, and the loosest one wins. The narrow setting keeps only the most specific category — and falls back to what it has if there is nothing deeper.', 'oc-theme' )
+			__( 'A product sits in several categories at once — its own, its parent, and shelves like NEW. WooCommerce draws neighbours from all of them, so the loosest wins. The second option uses the single category shown in the product\'s path: for Sofas and armchairs / Sofas, that is Sofas.', 'oc-theme' )
 		);
 
 		$this->preset(
@@ -2162,6 +2172,7 @@ final class Customizer {
 			),
 			__( 'Only tells when there are too few cards to fill the row.', 'oc-theme' )
 		);
+		$this->heading( $c, 'oc_h_bt', 'oc_product', __( 'Bought together', 'oc-theme' ) );
 		$this->toggle(
 			$c,
 			'oc_bt_on',
@@ -2172,8 +2183,18 @@ final class Customizer {
 			__( 'Appears only on products that have a bundle set, on their own Linked Products tab.', 'oc-theme' )
 		);
 
-		$this->text( $c, 'oc_bt_title', 'oc_product', __( 'Bundle heading', 'oc-theme' ) );
+		$this->text(
+			$c,
+			'oc_bt_title',
+			'oc_product',
+			__( 'Bundle heading', 'oc-theme' ),
+			array(
+				'setting' => 'oc_bt_on',
+				'values'  => array( '1' ),
+			)
+		);
 
+		$this->heading( $c, 'oc_h_xsell', 'oc_product', __( 'Products that go with it', 'oc-theme' ) );
 		$this->toggle(
 			$c,
 			'oc_xsell_on',
@@ -2184,7 +2205,16 @@ final class Customizer {
 			__( 'The Cross-sells list on the product\'s own Linked Products tab. WooCommerce only shows these in the cart; this brings them onto the product page.', 'oc-theme' )
 		);
 
-		$this->text( $c, 'oc_xsell_title', 'oc_product', __( 'Goes-with title', 'oc-theme' ) );
+		$this->text(
+			$c,
+			'oc_xsell_title',
+			'oc_product',
+			__( 'Goes-with title', 'oc-theme' ),
+			array(
+				'setting' => 'oc_xsell_on',
+				'values'  => array( '1' ),
+			)
+		);
 
 		$this->preset(
 			$c,
@@ -2307,8 +2337,26 @@ final class Customizer {
 			)
 		);
 
-		$this->toggle( $c, 'oc_product_upsells', 'oc_product', __( 'Show complementary products', 'oc-theme' ), true );
-		$this->text( $c, 'oc_upsells_title', 'oc_product', __( 'Complementary products title', 'oc-theme' ) );
+		$this->heading( $c, 'oc_h_upsells', 'oc_product', __( 'Upgrades', 'oc-theme' ) );
+		$this->toggle(
+			$c,
+			'oc_product_upsells',
+			'oc_product',
+			__( 'Show upgrades', 'oc-theme' ),
+			true,
+			null,
+			__( 'The Upsells list on the product\'s Linked Products tab — a better version of what is being looked at.', 'oc-theme' )
+		);
+		$this->text(
+			$c,
+			'oc_upsells_title',
+			'oc_product',
+			__( 'Upgrades title', 'oc-theme' ),
+			array(
+				'setting' => 'oc_product_upsells',
+				'values'  => array( '1' ),
+			)
+		);
 
 		$this->choice(
 			$c,
@@ -2332,20 +2380,21 @@ final class Customizer {
 	 * @param string                $section Section id.
 	 * @param string                $label   Heading text.
 	 */
-	private function heading( \WP_Customize_Manager $c, string $id, string $section, string $label ): void {
+	private function heading( \WP_Customize_Manager $c, string $id, string $section, string $label, ?array $dep = null ): void {
 		require_once __DIR__ . '/class-oc-heading-control.php';
 
 		$c->add_setting( $id, array( 'sanitize_callback' => 'sanitize_text_field' ) );
-		$c->add_control(
-			new Heading_Control(
-				$c,
-				$id,
-				array(
-					'section' => $section,
-					'label'   => $label,
-				)
-			)
+
+		$args = array(
+			'section' => $section,
+			'label'   => $label,
 		);
+
+		if ( null !== $dep ) {
+			$args['active_callback'] = $this->depend( $id, $dep );
+		}
+
+		$c->add_control( new Heading_Control( $c, $id, $args ) );
 	}
 
 	/*
@@ -2466,7 +2515,7 @@ final class Customizer {
 	 * @param string                $section Section id.
 	 * @param string                $label   Label.
 	 */
-	private function text( \WP_Customize_Manager $c, string $id, string $section, string $label ): void {
+	private function text( \WP_Customize_Manager $c, string $id, string $section, string $label, ?array $dep = null ): void {
 		$c->add_setting(
 			$id,
 			array(
@@ -2475,14 +2524,17 @@ final class Customizer {
 			)
 		);
 
-		$c->add_control(
-			$id,
-			array(
-				'type'    => 'text',
-				'section' => $section,
-				'label'   => $label,
-			)
+		$args = array(
+			'type'    => 'text',
+			'section' => $section,
+			'label'   => $label,
 		);
+
+		if ( null !== $dep ) {
+			$args['active_callback'] = $this->depend( $id, $dep );
+		}
+
+		$c->add_control( $id, $args );
 	}
 
 	/**

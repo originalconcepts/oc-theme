@@ -190,6 +190,7 @@ final class Assets {
 				'btAll'                => __( 'Add all to cart', 'oc-theme' ),
 				'btOne'                => __( 'Add to cart', 'oc-theme' ),
 				'btNone'               => __( 'Pick at least one', 'oc-theme' ),
+				'btChoose'             => __( 'Choose the options', 'oc-theme' ),
 				/* translators: %s: an amount of money. */
 				'btSaved'              => __( 'You save %s', 'oc-theme' ),
 				'cartVarPick'          => __( 'Choose an option', 'oc-theme' ),

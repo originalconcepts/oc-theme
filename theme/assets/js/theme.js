@@ -8129,11 +8129,93 @@
 		return picked;
 	}
 
+	/* What a card's options currently say, as Woo's attribute_ pairs. */
+	function attrsOf( li ) {
+		var out = {}, done = true;
+
+		Array.prototype.forEach.call( li.querySelectorAll( '[data-oc-bt-attr]' ), function ( sel ) {
+			if ( sel.value ) { out[ sel.dataset.ocBtAttr ] = sel.value; }
+			else { done = false; }
+		} );
+
+		return { attrs: out, done: done };
+	}
+
+	/* The page's own product is answered by the form above, not in the card,
+	 * so its choice is read from there. */
+	function selfAttrs() {
+		var form = document.querySelector( 'form.variations_form' );
+		if ( ! form ) { return { attrs: {}, done: true, price: null }; }
+
+		var out = {}, done = true;
+
+		Array.prototype.forEach.call( form.querySelectorAll( 'select[name^="attribute_"]' ), function ( sel ) {
+			if ( sel.value ) { out[ sel.name ] = sel.value; }
+			else { done = false; }
+		} );
+
+		var idField = form.querySelector( 'input[name="variation_id"]' ),
+			id = idField ? parseInt( idField.value, 10 ) : 0,
+			price = null;
+
+		// Woo writes the chosen variation's price into the summary; read the
+		// number back so the bundle total follows a colour change.
+		if ( id ) {
+			var el = form.querySelector( '.woocommerce-variation-price .amount' );
+			if ( el ) {
+				var raw = el.textContent.replace( /[^0-9.,-]/g, '' ).replace( new RegExp( '\\' + ( money.thousand || ',' ), 'g' ), '' ).replace( money.dot || '.', '.' );
+				var n = parseFloat( raw );
+				if ( ! isNaN( n ) ) { price = n; }
+			}
+		}
+
+		return { attrs: out, done: done, id: id, price: price };
+	}
+
+	/* A card's price right now — its variation's, if one is chosen. */
+	function priceOf( li ) {
+		if ( '1' === li.dataset.self ) {
+			var mine = selfAttrs();
+			if ( null !== mine.price ) { return mine.price; }
+			return parseFloat( li.dataset.price ) || 0;
+		}
+
+		var map = li.dataset.variations;
+		if ( ! map ) { return parseFloat( li.dataset.price ) || 0; }
+
+		var want = attrsOf( li );
+		if ( ! want.done ) { return parseFloat( li.dataset.price ) || 0; }
+
+		var found = match( li, want.attrs );
+		return found ? found.price : ( parseFloat( li.dataset.price ) || 0 );
+	}
+
+	/* Which variation the chosen options point at. Woo leaves an empty string
+	 * on an attribute that means "any", so an empty slot matches anything. */
+	function match( li, want ) {
+		var list;
+		try { list = JSON.parse( li.dataset.variations || '[]' ); } catch ( e ) { return null; }
+
+		for ( var i = 0; i < list.length; i++ ) {
+			var ok = true;
+
+			for ( var key in list[ i ].attrs ) {
+				if ( ! Object.prototype.hasOwnProperty.call( list[ i ].attrs, key ) ) { continue; }
+				var need = list[ i ].attrs[ key ];
+				if ( need && want[ key ] !== need ) { ok = false; break; }
+			}
+
+			if ( ok ) { return list[ i ]; }
+		}
+
+		return null;
+	}
+
 	function draw() {
 		var picked = chosen(),
 			full   = 0;
 
-		picked.forEach( function ( li ) { full += parseFloat( li.dataset.price ) || 0; } );
+		picked.forEach( function ( li ) { full += priceOf( li ); } );
 
 		var off = 0;
 		// A discount is for taking more than one thing.
@@ -8156,9 +8238,18 @@
 			savedEl.hidden = true;
 		}
 
+		// Anything with options still unanswered holds the button.
+		var waiting = picked.some( function ( li ) {
+			if ( '1' === li.dataset.self ) { return ! selfAttrs().done; }
+			return li.dataset.variations ? ! attrsOf( li ).done : false;
+		} );
+
 		if ( ! picked.length ) {
 			btn.disabled = true;
 			btn.textContent = L.btNone || 'Pick at least one';
+		} else if ( waiting ) {
+			btn.disabled = true;
+			btn.textContent = L.btChoose || 'Choose the options';
 		} else if ( 1 === picked.length ) {
 			btn.disabled = false;
 			btn.textContent = L.btOne || 'Add to cart';
@@ -8170,13 +8261,26 @@
 
 	block.addEventListener( 'change', function ( e ) {
 		var box = e.target.closest( '[data-oc-bt-on]' );
-		if ( ! box ) { return; }
 
-		var li = box.closest( '[data-oc-bt-item]' );
-		if ( li ) { li.classList.toggle( 'is-on', box.checked ); }
+		if ( box ) {
+			var li = box.closest( '[data-oc-bt-item]' );
+			if ( li ) { li.classList.toggle( 'is-on', box.checked ); }
+		}
 
 		draw();
 	} );
+
+	// The product's own variation picker moves the bundle's total too.
+	( function () {
+		var form = document.querySelector( 'form.variations_form' );
+		if ( ! form ) { return; }
+
+		form.addEventListener( 'change', function () { setTimeout( draw, 0 ); } );
+
+		if ( window.jQuery ) {
+			window.jQuery( form ).on( 'show_variation hide_variation reset_data', function () { setTimeout( draw, 0 ); } );
+		}
+	}() );
 
 	btn.addEventListener( 'click', function () {
 		var picked = chosen();
@@ -8190,7 +8294,15 @@
 		body.append( 'action', 'oc_bt_add' );
 		body.append( 'nonce', L.btNonce || '' );
 		body.append( 'main', block.dataset.ocBt );
-		picked.forEach( function ( li ) { body.append( 'ids[]', li.dataset.ocBtItem ); } );
+		picked.forEach( function ( li ) {
+			body.append( 'ids[]', li.dataset.ocBtItem );
+
+			var want = '1' === li.dataset.self ? selfAttrs() : attrsOf( li );
+
+			Object.keys( want.attrs ).forEach( function ( key ) {
+				body.append( 'variations[' + li.dataset.ocBtItem + '][' + key + ']', want.attrs[ key ] );
+			} );
+		} );
 
 		fetch( L.ajaxUrl || '/wp-admin/admin-ajax.php', { method: 'POST', credentials: 'same-origin', body: body } )
 			.then( function ( r ) { return r.json(); } )

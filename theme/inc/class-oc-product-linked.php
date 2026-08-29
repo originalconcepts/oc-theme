@@ -38,6 +38,7 @@ final class Product_Linked {
 
 		add_filter( 'woocommerce_get_related_product_cat_terms', array( $this, 'related_terms' ), 10, 2 );
 		add_filter( 'woocommerce_output_related_products_args', array( $this, 'related_args' ) );
+		add_filter( 'woocommerce_breadcrumb_main_term', array( $this, 'breadcrumb_term' ), 10, 2 );
 
 		add_action( 'wp', array( $this, 'place_cross_sells' ) );
 		add_action( 'woocommerce_add_to_cart', array( $this, 'add_the_ticked' ), 20, 6 );
@@ -501,81 +502,109 @@ final class Product_Linked {
 	 */
 
 	/**
+	 * The one category a product most belongs to.
+	 *
+	 * A product is filed in several places at once — its real category, that
+	 * category's parent, and shelves like NEW or SALE that are not really
+	 * categories at all. Everything that has to name *the* category needs the
+	 * same answer, so it is worked out once here.
+	 *
+	 * The narrowest one wins: deepest in the tree first, and where two sit at
+	 * the same depth, the one holding fewer products. That is what "more
+	 * specific" means in practice — a shelf holding most of the catalogue
+	 * tells you almost nothing, while the category with four things in it
+	 * tells you what the product is. Ties break on the id so the answer never
+	 * moves on its own.
+	 *
+	 * For "Sofas and armchairs / Sofas" it gives Sofas: deeper, and the path
+	 * the shopper walked.
+	 *
+	 * @param int $product_id The product.
+	 * @return \WP_Term|null
+	 */
+	public static function primary_term( int $product_id ): ?\WP_Term {
+		$terms = wp_get_post_terms( $product_id, 'product_cat' );
+
+		if ( is_wp_error( $terms ) || ! $terms ) {
+			return null;
+		}
+
+		$best  = null;
+		$score = null;
+
+		foreach ( $terms as $term ) {
+			if ( ! $term instanceof \WP_Term ) {
+				continue;
+			}
+
+			$here = array(
+				-1 * count( (array) get_ancestors( $term->term_id, 'product_cat', 'taxonomy' ) ), // deeper first
+				(int) $term->count,                                                               // then narrower
+				(int) $term->term_id,                                                             // then steady
+			);
+
+			if ( null === $score || $here < $score ) {
+				$score = $here;
+				$best  = $term;
+			}
+		}
+
+		return $best;
+	}
+
+	/**
 	 * Which categories decide what counts as related.
 	 *
 	 * WooCommerce hands us every category the product sits in and finds
-	 * neighbours in all of them. On a shop where a bedside table is filed
-	 * under "Bedroom", "Side tables" and "NEW", that means the related row
-	 * fills with whatever else is new — the loosest of the three wins, and
-	 * the row stops being about this product at all.
+	 * neighbours in all of them, so a table filed under "Living room tables"
+	 * and NEW fills its similar row with whatever else happens to be new —
+	 * the loosest of them wins and the row stops being about the product.
 	 *
-	 * On the narrow setting only the most specific categories are kept:
-	 *
-	 *   - a category that is the parent of another one the product is in is
-	 *     dropped, because the child says the same thing more precisely;
-	 *   - top-level categories are then dropped too, but only if something
-	 *     deeper survived — a product filed *only* at the top level keeps
-	 *     what it has rather than losing its related row entirely.
+	 * On the narrow setting the row is drawn from the one category above,
+	 * which is also the one the breadcrumb shows. What the shopper reads at
+	 * the top of the page and what they get at the bottom then agree, and
+	 * nothing has to be configured per category for that to be true.
 	 *
 	 * @param int[] $terms      Category term ids.
 	 * @param int   $product_id The product.
 	 * @return int[]
 	 */
 	public function related_terms( $terms, $product_id ) {
-		unset( $product_id );
-
 		$terms = array_values( array_unique( array_map( 'intval', (array) $terms ) ) );
-
-		// A shelf marked "leave out of similar products" on its own edit
-		// screen steps aside first. This applies whichever scope is chosen:
-		// it is a statement about the category, not about the setting.
-		$kept = array();
-		foreach ( $terms as $id ) {
-			if ( '1' !== (string) get_term_meta( $id, '_oc_rel_skip', true ) ) {
-				$kept[] = $id;
-			}
-		}
-
-		// Unless that would leave nothing to go on.
-		if ( $kept ) {
-			$terms = $kept;
-		}
 
 		if ( 'leaf' !== (string) get_theme_mod( 'oc_related_scope', 'all' ) || count( $terms ) < 2 ) {
 			return $terms;
 		}
 
-		// Drop anything that is an ancestor of another term in the list.
-		$ancestors = array();
-		foreach ( $terms as $id ) {
-			foreach ( (array) get_ancestors( $id, 'product_cat', 'taxonomy' ) as $up ) {
-				$ancestors[ (int) $up ] = true;
-			}
+		$primary = self::primary_term( (int) $product_id );
+
+		return $primary ? array( $primary->term_id ) : $terms;
+	}
+
+	/**
+	 * The breadcrumb names the same category.
+	 *
+	 * WooCommerce picks whichever term sorts first by parent, which on this
+	 * catalogue meant a product's path read "Home / NEW / Ball table" — the
+	 * shelf, not the category. One rule now answers both, so the path and
+	 * the similar row cannot disagree.
+	 *
+	 * @param \WP_Term   $main  The term WooCommerce chose.
+	 * @param \WP_Term[] $terms All of the product's terms.
+	 * @return \WP_Term
+	 */
+	public function breadcrumb_term( $main, $terms ) {
+		unset( $terms );
+
+		$post_id = get_queried_object_id();
+
+		if ( ! $post_id ) {
+			return $main;
 		}
 
-		$deepest = array();
-		foreach ( $terms as $id ) {
-			if ( ! isset( $ancestors[ $id ] ) ) {
-				$deepest[] = $id;
-			}
-		}
+		$primary = self::primary_term( (int) $post_id );
 
-		if ( ! $deepest ) {
-			return $terms;
-		}
-
-		// Of those, prefer the ones that actually sit under a parent. A
-		// marketing shelf like NEW or SALE lives at the top level and would
-		// otherwise drag the whole catalogue in behind it.
-		$nested = array();
-		foreach ( $deepest as $id ) {
-			$term = get_term( $id, 'product_cat' );
-			if ( $term instanceof \WP_Term && $term->parent > 0 ) {
-				$nested[] = $id;
-			}
-		}
-
-		return $nested ? $nested : $deepest;
+		return $primary ?: $main;
 	}
 
 	/**

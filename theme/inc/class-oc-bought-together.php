@@ -242,10 +242,15 @@ final class Bought_Together {
 		foreach ( self::ids( $product->get_id() ) as $id ) {
 			$item = wc_get_product( $id );
 
-			// Only things that can actually be bought in one press. A product
-			// with options cannot be, so it is left out rather than offered
-			// and then refused.
-			if ( ! $item instanceof \WC_Product || ! $item->is_type( 'simple' ) ) {
+			if ( ! $item instanceof \WC_Product ) {
+				continue;
+			}
+
+			// A variable product joins the bundle carrying its own options,
+			// answered in the card. Anything more exotic — grouped, external —
+			// cannot be bought in one press and is left out rather than
+			// offered and then refused.
+			if ( ! $item->is_type( 'simple' ) && ! $item->is_type( 'variable' ) ) {
 				continue;
 			}
 
@@ -281,7 +286,11 @@ final class Bought_Together {
 	public function render(): void {
 		$product = wc_get_product( get_the_ID() );
 
-		if ( ! $product instanceof \WC_Product || ! $product->is_type( 'simple' ) || ! $product->is_purchasable() ) {
+		if ( ! $product instanceof \WC_Product || ! $product->is_purchasable() ) {
+			return;
+		}
+
+		if ( ! $product->is_type( 'simple' ) && ! $product->is_type( 'variable' ) ) {
 			return;
 		}
 
@@ -319,7 +328,13 @@ final class Bought_Together {
 					foreach ( $all as $i => $item ) :
 						$self = 0 === $i;
 						?>
-						<li class="oc-bt__item is-on" data-oc-bt-item="<?php echo absint( $item->get_id() ); ?>" data-price="<?php echo esc_attr( (string) wc_get_price_to_display( $item ) ); ?>">
+						<li class="oc-bt__item is-on<?php echo $item->is_type( 'variable' ) ? ' oc-bt__item--opts' : ''; ?>"
+							data-oc-bt-item="<?php echo absint( $item->get_id() ); ?>"
+							data-self="<?php echo $self ? '1' : '0'; ?>"
+							<?php if ( $item->is_type( 'variable' ) ) : ?>
+								data-variations="<?php echo esc_attr( (string) wp_json_encode( self::variation_map( $item ) ) ); ?>"
+							<?php endif; ?>
+							data-price="<?php echo esc_attr( (string) wc_get_price_to_display( $item ) ); ?>">
 							<label class="oc-bt__tick">
 								<input type="checkbox" checked <?php disabled( $self ); ?> data-oc-bt-on>
 								<span class="oc-bt__box" aria-hidden="true"></span>
@@ -336,6 +351,13 @@ final class Bought_Together {
 								<?php if ( $self ) : ?>
 									<span class="oc-bt__this"><?php esc_html_e( 'This product', 'oc-theme' ); ?></span>
 								<?php endif; ?>
+								<?php
+								// The page's own product is answered by the form
+								// above; a companion answers here.
+								if ( ! $self ) {
+									self::options( $item );
+								}
+								?>
 							</div>
 						</li>
 					<?php endforeach; ?>
@@ -357,6 +379,81 @@ final class Bought_Together {
 			</div>
 		</div>
 		<?php
+	}
+
+	/**
+	 * The option pickers for a variable member.
+	 *
+	 * @param \WC_Product $item The product.
+	 */
+	private static function options( \WC_Product $item ): void {
+		if ( ! $item->is_type( 'variable' ) ) {
+			return;
+		}
+
+		$attributes = $item->get_variation_attributes();
+
+		if ( ! $attributes ) {
+			return;
+		}
+
+		echo '<span class="oc-bt__opts">';
+
+		foreach ( $attributes as $name => $values ) {
+			echo '<select class="oc-bt__opt" data-oc-bt-attr="' . esc_attr( 'attribute_' . sanitize_title( $name ) ) . '" aria-label="' . esc_attr( wc_attribute_label( $name, $item ) ) . '">';
+			echo '<option value="">' . esc_html( sprintf( /* translators: %s: attribute name, e.g. Colour. */ __( 'Choose %s', 'oc-theme' ), wc_attribute_label( $name, $item ) ) ) . '</option>';
+
+			foreach ( $values as $value ) {
+				$label = $value;
+
+				if ( taxonomy_exists( $name ) ) {
+					$term  = get_term_by( 'slug', $value, $name );
+					$label = ( $term && ! is_wp_error( $term ) ) ? $term->name : $value;
+				}
+
+				echo '<option value="' . esc_attr( $value ) . '">' . esc_html( $label ) . '</option>';
+			}
+
+			echo '</select>';
+		}
+
+		echo '</span>';
+	}
+
+	/**
+	 * Every buyable variation of a product, with what it costs.
+	 *
+	 * Sent to the browser so the running total can follow a change of colour
+	 * without asking the server, and so the right variation id travels back
+	 * when the bundle is added.
+	 *
+	 * @param \WC_Product $item The variable product.
+	 * @return array<int,array<string,mixed>>
+	 */
+	private static function variation_map( \WC_Product $item ): array {
+		if ( ! $item->is_type( 'variable' ) ) {
+			return array();
+		}
+
+		$out = array();
+
+		foreach ( $item->get_available_variations() as $variation ) {
+			$id = (int) ( $variation['variation_id'] ?? 0 );
+
+			if ( ! $id || empty( $variation['is_purchasable'] ) || empty( $variation['is_in_stock'] ) ) {
+				continue;
+			}
+
+			$object = wc_get_product( $id );
+
+			$out[] = array(
+				'id'    => $id,
+				'attrs' => (array) ( $variation['attributes'] ?? array() ),
+				'price' => $object ? (float) wc_get_price_to_display( $object ) : 0.0,
+			);
+		}
+
+		return $out;
 	}
 
 	/**
@@ -388,6 +485,8 @@ final class Bought_Together {
 		$main = isset( $_POST['main'] ) ? absint( wp_unslash( $_POST['main'] ) ) : 0;
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- verified above.
 		$want = isset( $_POST['ids'] ) ? array_map( 'absint', (array) wp_unslash( $_POST['ids'] ) ) : array();
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- verified above.
+		$picked = isset( $_POST['variations'] ) ? (array) wp_unslash( $_POST['variations'] ) : array();
 
 		$product = wc_get_product( $main );
 
@@ -403,16 +502,59 @@ final class Bought_Together {
 			$allowed[] = $item->get_id();
 		}
 
-		$added = 0;
+		$added   = 0;
+		$pending = 0;
 
 		foreach ( $want as $id ) {
 			if ( ! in_array( $id, $allowed, true ) ) {
 				continue;
 			}
 
-			if ( WC()->cart->add_to_cart( $id, 1, 0, array(), array( self::TAG => $main ) ) ) {
+			$item = wc_get_product( $id );
+
+			if ( ! $item instanceof \WC_Product ) {
+				continue;
+			}
+
+			$variation = 0;
+			$attrs     = array();
+
+			if ( $item->is_type( 'variable' ) ) {
+				$chosen = isset( $picked[ $id ] ) ? (array) $picked[ $id ] : array();
+
+				foreach ( $chosen as $key => $value ) {
+					$key   = sanitize_text_field( (string) $key );
+					$value = sanitize_text_field( (string) $value );
+
+					if ( '' === $value || 0 !== strpos( $key, 'attribute_' ) ) {
+						continue;
+					}
+
+					$attrs[ $key ] = $value;
+				}
+
+				// A variation nobody answered cannot be guessed at.
+				if ( count( $attrs ) < count( $item->get_variation_attributes() ) ) {
+					++$pending;
+					continue;
+				}
+
+				$store     = \WC_Data_Store::load( 'product' );
+				$variation = (int) $store->find_matching_product_variation( $item, $attrs );
+
+				if ( ! $variation ) {
+					++$pending;
+					continue;
+				}
+			}
+
+			if ( WC()->cart->add_to_cart( $id, 1, $variation, $attrs, array( self::TAG => $main ) ) ) {
 				++$added;
 			}
+		}
+
+		if ( ! $added && $pending ) {
+			wp_send_json_error( array( 'msg' => __( 'Please choose the options first.', 'oc-theme' ) ) );
 		}
 
 		if ( ! $added ) {

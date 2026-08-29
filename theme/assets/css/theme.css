@@ -14179,3 +14179,14 @@ p.no-comments {
 	.oc-bt__info { flex: 1; }
 	.oc-bt__sum { min-inline-size: 0; }
 }
+
+.oc-bt__opts { display: flex; flex-wrap: wrap; gap: 5px; margin-block-start: 5px; }
+
+.oc-bt__opt {
+	max-inline-size: 100%;
+	padding: 4px 6px;
+	border: 1px solid var(--oc-line, #ddd);
+	border-radius: 6px;
+	font-size: 12px;
+	background: #fff;
+}

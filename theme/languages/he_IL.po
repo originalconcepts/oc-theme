@@ -6056,3 +6056,30 @@ msgid "%d product added"
 msgid_plural "%d products added"
 msgstr[0] "מוצר אחד נוסף"
 msgstr[1] "%d מוצרים נוספו"
+
+msgid "The category shown in its path"
+msgstr "הקטגוריה שמופיעה בנתיב שלו"
+
+msgid "A product sits in several categories at once — its own, its parent, and shelves like NEW. WooCommerce draws neighbours from all of them, so the loosest wins. The second option uses the single category shown in the product's path: for Sofas and armchairs / Sofas, that is Sofas."
+msgstr "מוצר יושב בכמה קטגוריות בו-זמנית — שלו, של האב, ומדפים כמו NEW. ווקומרס שואבת מכולן, ולכן הרחבה מנצחת. האפשרות השנייה משתמשת בקטגוריה היחידה שמופיעה בנתיב של המוצר: עבור ספות וכורסאות / ספות — זו ספות."
+
+msgid "Products that go with it"
+msgstr "מוצרים שמשתלבים איתו"
+
+msgid "Upgrades"
+msgstr "שדרוגים"
+
+msgid "Show upgrades"
+msgstr "הצג שדרוגים"
+
+msgid "Upgrades title"
+msgstr "כותרת שדרוגים"
+
+msgid "The Upsells list on the product's Linked Products tab — a better version of what is being looked at."
+msgstr "רשימת ה-Upsells בלשונית ״מוצרים מקושרים״ של המוצר — גרסה משודרגת של מה שנצפה כרגע."
+
+msgid "Choose the options"
+msgstr "יש לבחור אפשרויות"
+
+msgid "Please choose the options first."
+msgstr "יש לבחור קודם את האפשרויות."
