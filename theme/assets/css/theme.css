@@ -13818,11 +13818,13 @@ p.no-comments {
 	transition: opacity .16s, transform .16s;
 }
 
+.oc-xsell__row.is-on .oc-xsell__box,
 .oc-xsell__tick input:checked + .oc-xsell__box {
 	background: currentColor;
 	border-color: currentColor;
 }
 
+.oc-xsell__row.is-on .oc-xsell__box::after,
 .oc-xsell__tick input:checked + .oc-xsell__box::after { opacity: 1; transform: rotate(-45deg) scale(1); }
 .oc-xsell__tick input:focus-visible + .oc-xsell__box { outline: 2px solid currentColor; outline-offset: 2px; }
 
@@ -13996,15 +13998,24 @@ p.no-comments {
 	box-shadow: 0 1px 3px rgb(0 0 0 / 18%);
 }
 
-/* A general sibling, not an adjacent one: the tile carries a hidden
- * quantity field between the checkbox and the picture, so `+` matched
- * nothing and a ticked tile never showed its tick. */
+/* The tick is drawn from the class the script already sets, not from the
+ * checkbox's own state. The sibling selector should have worked -- the
+ * browser agreed the element matched it and that it outranked everything
+ * else -- and the declaration still never landed. Since `is-on` is put on
+ * the tile the moment the box changes, and is what colours its border, the
+ * tick may as well come from the same place: one source of truth, and no
+ * combinator to be clever about. `:checked` stays as the no-script case. */
+.oc-xsell__tile.is-on .oc-xsell__box,
 .oc-xsell__tile input:checked ~ .oc-xsell__tilepic .oc-xsell__box {
 	background: currentColor;
 	border-color: currentColor;
 }
 
-.oc-xsell__tile input:checked ~ .oc-xsell__tilepic .oc-xsell__box::after { opacity: 1; transform: rotate(-45deg) scale(1); }
+.oc-xsell__tile.is-on .oc-xsell__box::after,
+.oc-xsell__tile input:checked ~ .oc-xsell__tilepic .oc-xsell__box::after {
+	opacity: 1;
+	transform: rotate(-45deg) scale(1);
+}
 
 .oc-xsell__tilename {
 	font-size: 13px;
