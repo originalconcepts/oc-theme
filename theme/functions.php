@@ -114,6 +114,7 @@ require_once OC_THEME_DIR . '/inc/class-oc-seo-links.php';
 require_once OC_THEME_DIR . '/inc/class-oc-seo-admin.php';
 require_once OC_THEME_DIR . '/inc/class-oc-auth.php';
 require_once OC_THEME_DIR . '/inc/class-oc-auth-admin.php';
+require_once OC_THEME_DIR . '/inc/class-oc-2fa.php';
 
 /**
  * Cache-busting version for a theme-relative asset.
@@ -428,6 +429,7 @@ add_action( 'admin_notices', 'oc_dependency_notice' );
 ( new OC\Theme\Seo_Admin() )->register();
 ( new OC\Theme\Auth() )->register();
 ( new OC\Theme\Auth_Admin() )->register();
+( new OC\Theme\Two_Factor() )->register();
 ( new OC\Theme\Updater( get_template(), OC_THEME_VERSION, OC_THEME_REPO ) )->register();
 
 if ( ! defined( 'OC_LOGIN_DISABLE' ) || ! OC_LOGIN_DISABLE ) {

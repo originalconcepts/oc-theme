@@ -140,6 +140,36 @@ final class Auth_Admin {
 				</tr>
 			</table>
 
+			<h2><?php esc_html_e( 'Two-step sign-in for staff', 'oc-theme' ); ?></h2>
+			<p class="description" style="max-width:60em">
+				<?php esc_html_e( 'A password can be reused, guessed or phished. With this on, the password gets you half way in and a code sent to the phone on the account finishes the job — so taking the shop needs the password and the handset. If the text cannot be sent the code goes to the account\'s e-mail instead, so a provider outage slows a sign-in rather than locking anyone out.', 'oc-theme' ); ?>
+			</p>
+			<table class="form-table">
+				<tr>
+					<th><?php esc_html_e( 'Ask for a code', 'oc-theme' ); ?></th>
+					<td>
+						<?php
+						$tfa_modes = array(
+							'off'    => __( 'Off — password only', 'oc-theme' ),
+							'admins' => __( 'Administrators', 'oc-theme' ),
+							'shop'   => __( 'Administrators and shop managers', 'oc-theme' ),
+							'all'    => __( 'Everyone who signs in', 'oc-theme' ),
+						);
+						$tfa_now = (string) ( $s['tfa_mode'] ?? 'off' );
+						foreach ( $tfa_modes as $tfa_key => $tfa_label ) :
+							?>
+							<label style="display:block;margin-block-end:4px">
+								<input type="radio" name="tfa_mode" value="<?php echo esc_attr( $tfa_key ); ?>" <?php checked( $tfa_key, $tfa_now ); ?>>
+								<?php echo esc_html( $tfa_label ); ?>
+							</label>
+						<?php endforeach; ?>
+						<p class="description">
+							<?php esc_html_e( 'An account with no phone number on file is let through with a warning rather than shut out of the site it runs. Add a mobile number to each staff profile.', 'oc-theme' ); ?>
+						</p>
+					</td>
+				</tr>
+			</table>
+
 			<h2><?php esc_html_e( 'Safety rails', 'oc-theme' ); ?></h2>
 			<table class="form-table">
 				<tr>
@@ -339,6 +369,9 @@ final class Auth_Admin {
 		$s['reach']     = 'intl' === ( $_POST['reach'] ?? '' ) ? 'intl' : 'israel';
 
 		$s['sms_provider'] = 'inforu' === ( $_POST['sms_provider'] ?? '' ) ? 'inforu' : 'activetrail'; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- strict comparison stores a literal.
+
+		$tfa             = isset( $_POST['tfa_mode'] ) ? sanitize_key( (string) wp_unslash( $_POST['tfa_mode'] ) ) : 'off';
+		$s['tfa_mode']   = in_array( $tfa, array( 'off', 'admins', 'shop', 'all' ), true ) ? $tfa : 'off';
 
 		foreach ( array( 'api_key', 'inforu_user', 'inforu_token', 'sender', 'google_id', 'google_secret', 'fb_id', 'fb_secret', 'apple_client_id', 'apple_team_id', 'apple_key_id' ) as $field ) {
 			$s[ $field ] = sanitize_text_field( (string) wp_unslash( $_POST[ $field ] ?? '' ) );

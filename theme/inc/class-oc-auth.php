@@ -90,6 +90,7 @@ final class Auth {
 				'reach'           => 'israel',
 				'code_expiry'     => 180,
 				'max_attempts'    => 5,
+				'tfa_mode'        => 'off',
 				'resend_cooldown' => 60,
 				'phone_hourly'    => 3,
 				'ip_hourly'       => 5,
@@ -311,6 +312,19 @@ final class Auth {
 		);
 
 		return $code;
+	}
+
+	/**
+	 * Send a code to a phone, for anything that needs one.
+	 *
+	 * The second factor on the admin login uses this rather than keeping a
+	 * second copy of the provider plumbing.
+	 *
+	 * @param string $phone Normalised digits.
+	 * @param string $code  The six digits.
+	 */
+	public static function sms_code( string $phone, string $code ): bool {
+		return ( new self() )->send_sms( $phone, $code );
 	}
 
 	/**
