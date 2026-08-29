@@ -37,6 +37,9 @@ final class Customizer {
 	 */
 	public function register(): void {
 		add_action( 'customize_register', array( $this, 'build' ) );
+		// Late, so that WordPress, WooCommerce and every plugin have already
+		// filed their own sections and there is something there to move.
+		add_action( 'customize_register', array( $this, 'reorganise' ), 1000 );
 		add_action( 'customize_controls_enqueue_scripts', array( $this, 'controls_js' ) );
 	}
 
@@ -127,30 +130,138 @@ final class Customizer {
 		require_once OC_THEME_DIR . '/inc/class-oc-segmented-control.php';
 		require_once OC_THEME_DIR . '/inc/class-oc-toggle-control.php';
 
-		// Shop sections live inside WooCommerce's own Customizer panel, which
-		// is where a shop owner looks for them. Global design stays top-level
-		// because it applies to the whole site, not just the shop.
-		$shop_panel = $wp_customize->get_panel( 'woocommerce' ) ? 'woocommerce' : '';
+		// The Customizer is organised by the page a setting shows up on, not by
+		// which plugin registered it. Panels first, so every section below has
+		// its room to move into.
+		$this->panels( $wp_customize );
 
 		$this->design_panel( $wp_customize );
 		$this->header_section( $wp_customize );
 		$this->menu_section( $wp_customize );
 		$this->topbar_section( $wp_customize );
 		$this->footer_section( $wp_customize );
-		$this->catalog_panel( $wp_customize, $shop_panel );
-		$this->filters_section( $wp_customize, $shop_panel );
-		$this->card_section( $wp_customize, $shop_panel );
-		$this->product_section( $wp_customize, $shop_panel );
-		$this->swatches_section( $wp_customize, $shop_panel );
-		$this->labels_section( $wp_customize, $shop_panel );
-		$this->checkout_section( $wp_customize, $shop_panel );
-		$this->tabs_section( $wp_customize, $shop_panel );
-		$this->thankyou_section( $wp_customize, $shop_panel );
-		$this->cart_section( $wp_customize, $shop_panel );
-		$this->search_section( $wp_customize, $shop_panel );
-		$this->brands_section( $wp_customize, $shop_panel );
+		$this->catalog_panel( $wp_customize );
+		$this->filters_section( $wp_customize );
+		$this->card_section( $wp_customize );
+		$this->product_section( $wp_customize );
+		$this->swatches_section( $wp_customize );
+		$this->swatches_catalogue( $wp_customize );
+		$this->labels_section( $wp_customize );
+		$this->checkout_section( $wp_customize );
+		$this->tabs_section( $wp_customize );
+		$this->thankyou_section( $wp_customize );
+		$this->cart_section( $wp_customize );
+		$this->search_section( $wp_customize );
+		$this->brands_section( $wp_customize );
 		$this->blog_section( $wp_customize );
 		$this->login_section( $wp_customize );
+	}
+
+	/**
+	 * The rooms of the site, in the order a visitor meets them.
+	 *
+	 * WordPress does not nest one panel inside another, which is why the
+	 * Menus panel sits beside Header rather than inside it, and why the
+	 * shop's own sections are pulled out of WooCommerce's panel instead of
+	 * that panel being pulled into ours.
+	 *
+	 * @param \WP_Customize_Manager $c Customizer manager.
+	 */
+	private function panels( \WP_Customize_Manager $c ): void {
+		// 'Header' and 'Footer' are left untranslated on purpose: they are the
+		// names the shop owner uses for them in every language.
+		$rooms = array(
+			array( 'oc_header_panel', 'Header', 30, __( 'The strip above the header, the header itself, and the menu that drops out of it.', 'oc-theme' ) ),
+			array( 'oc_catalog_panel', __( 'Catalogue page', 'oc-theme' ), 60, __( 'The listing a shopper browses: the grid, the card, and everything drawn on it.', 'oc-theme' ) ),
+			array( 'oc_checkout_panel', __( 'Checkout area', 'oc-theme' ), 90, __( 'From the basket to the thank-you page.', 'oc-theme' ) ),
+			array( 'oc_panels_panel', __( 'Panels', 'oc-theme' ), 100, __( 'The drawers that slide in over the page.', 'oc-theme' ) ),
+		);
+
+		foreach ( $rooms as $room ) {
+			$c->add_panel(
+				$room[0],
+				array(
+					'title'       => $room[1],
+					'description' => $room[3],
+					'priority'    => $room[2],
+				)
+			);
+		}
+	}
+
+	/**
+	 * Files everyone else's sections under the page they belong to.
+	 *
+	 * Nothing is stored and nothing is renamed on disk. The Customizer is
+	 * rebuilt from nothing on every load, so this changes one property on an
+	 * object that will not outlive the request — delete this method and every
+	 * section is back where its owner filed it, with every value intact.
+	 *
+	 * @param \WP_Customize_Manager $c Customizer manager.
+	 */
+	public function reorganise( \WP_Customize_Manager $c ): void {
+		$sections = array(
+			// WooCommerce's own catalogue settings, joined by ours since the
+			// theme was built. Renamed, so a description says whose they are.
+			'woocommerce_product_catalog' => array(
+				'panel'       => 'oc_catalog_panel',
+				'priority'    => 10,
+				'title'       => __( 'General', 'oc-theme' ),
+				'description' => __( "WooCommerce's own catalogue settings, and the theme's on top of them.", 'oc-theme' ),
+			),
+			'woocommerce_product_images'  => array(
+				'panel'    => 'oc_product_panel',
+				'priority' => 40,
+			),
+			'woocommerce_checkout'        => array(
+				'panel'    => 'oc_checkout_panel',
+				'priority' => 40,
+				'title'    => __( 'Pages & policy', 'oc-theme' ),
+			),
+			// WordPress's own, put back into the running order of the site.
+			'title_tagline'               => array( 'priority' => 20 ),
+			'static_front_page'           => array( 'priority' => 50 ),
+			'colors'                      => array( 'priority' => 120 ),
+		);
+
+		foreach ( $sections as $id => $to ) {
+			$section = $c->get_section( $id );
+
+			if ( ! $section instanceof \WP_Customize_Section ) {
+				continue;
+			}
+
+			foreach ( $to as $key => $value ) {
+				$section->$key = $value;
+			}
+		}
+
+		// A panel cannot go inside a panel, so Menus sits beside Header rather
+		// than in it — as close as WordPress allows.
+		$panels = array(
+			'nav_menus'   => array( 'priority' => 35 ),
+			'woocommerce' => array(
+				'priority'    => 110,
+				'description' => __( 'Shop settings now live under the page they affect: the catalogue, the product page and the checkout.', 'oc-theme' ),
+			),
+		);
+
+		foreach ( $panels as $id => $to ) {
+			$panel = $c->get_panel( $id );
+
+			if ( ! $panel instanceof \WP_Customize_Panel ) {
+				continue;
+			}
+
+			foreach ( $to as $key => $value ) {
+				$panel->$key = $value;
+			}
+		}
+
+		// A header image and a page background the theme has never once read.
+		// Hidden, not deleted: whatever is stored stays stored.
+		$c->remove_section( 'header_image' );
+		$c->remove_section( 'background_image' );
 	}
 
 	/**
@@ -164,7 +275,8 @@ final class Customizer {
 			'oc_login_panel',
 			array(
 				'title'    => __( 'Login panel', 'oc-theme' ),
-				'priority' => 168,
+				'priority' => 10,
+				'panel'    => 'oc_panels_panel',
 			)
 		);
 
@@ -242,7 +354,7 @@ final class Customizer {
 			'oc_blog',
 			array(
 				'title'    => __( 'Blog', 'oc-theme' ),
-				'priority' => 41,
+				'priority' => 55,
 			)
 		);
 
@@ -279,16 +391,14 @@ final class Customizer {
 	 * The brands page at /brands/ — its background, width, and posture.
 	 *
 	 * @param \WP_Customize_Manager $c     Customizer manager.
-	 * @param string                $panel Panel id.
 	 */
-	private function brands_section( \WP_Customize_Manager $c, string $panel ): void {
+	private function brands_section( \WP_Customize_Manager $c ): void {
 		$c->add_section(
 			'oc_brands',
 			array(
 				'title'       => __( 'The brands page', 'oc-theme' ),
 				'description' => __( 'Every brand on one page, at /brands/. Brand archives breadcrumb through it.', 'oc-theme' ),
-				'panel'       => $panel,
-				'priority'    => 56,
+				'priority'    => 80,
 			)
 		);
 
@@ -326,16 +436,15 @@ final class Customizer {
 	 * Search: how the panel looks and what it offers.
 	 *
 	 * @param \WP_Customize_Manager $c     Customizer manager.
-	 * @param string                $panel Panel id.
 	 */
-	private function search_section( \WP_Customize_Manager $c, string $panel ): void {
+	private function search_section( \WP_Customize_Manager $c ): void {
 		$c->add_section(
 			'oc_search_look',
 			array(
 				'title'       => __( 'Search', 'oc-theme' ),
 				'description' => __( 'How the search panel presents itself. What it searches, and the words it answers to, live under Theme settings.', 'oc-theme' ),
-				'priority'    => 55,
-				'panel'       => $panel,
+				'priority'    => 20,
+				'panel'       => 'oc_panels_panel',
 			)
 		);
 
@@ -463,7 +572,8 @@ final class Customizer {
 			array(
 				'title'       => __( 'Header', 'oc-theme' ),
 				'description' => __( 'The logo comes from Site Identity; menus from the Menus screen.', 'oc-theme' ),
-				'priority'    => 11,
+				'priority'    => 20,
+				'panel'       => 'oc_header_panel',
 			)
 		);
 
@@ -676,9 +786,10 @@ final class Customizer {
 		$c->add_section(
 			'oc_menu',
 			array(
-				'title'       => __( 'Menu', 'oc-theme' ),
+				'title'       => __( 'Mega menu', 'oc-theme' ),
 				'description' => __( 'The links themselves come from the Menus screen. Whether the desktop shows an open menu or a hamburger is the header layout, above.', 'oc-theme' ),
-				'priority'    => 12,
+				'priority'    => 30,
+				'panel'       => 'oc_header_panel',
 			)
 		);
 
@@ -979,7 +1090,8 @@ final class Customizer {
 			array(
 				'title'       => __( 'Top bar', 'oc-theme' ),
 				'description' => __( 'A strip above the header: how it looks and behaves. The messages themselves are written under Theme settings → Announcement bar.', 'oc-theme' ),
-				'priority'    => 11,
+				'priority'    => 10,
+				'panel'       => 'oc_header_panel',
 			)
 		);
 
@@ -1010,9 +1122,9 @@ final class Customizer {
 		$c->add_section(
 			'oc_footer',
 			array(
-				'title'       => __( 'Footer', 'oc-theme' ),
+				'title'       => 'Footer',
 				'description' => __( 'A ready-made footer preset — pick it, then fill the blanks. Link columns are menus (Appearance → Menus → assign to "Footer column 1–4"); each column\'s heading is set below. The bottom bar uses the "Footer menu" for its legal links.', 'oc-theme' ),
-				'priority'    => 12,
+				'priority'    => 40,
 			)
 		);
 
@@ -1241,9 +1353,8 @@ final class Customizer {
 	 * Catalogue: grid, ordering, page header.
 	 *
 	 * @param \WP_Customize_Manager $c     Customizer manager.
-	 * @param string                $panel Parent panel id.
 	 */
-	private function catalog_panel( \WP_Customize_Manager $c, string $panel ): void {
+	private function catalog_panel( \WP_Customize_Manager $c ): void {
 		// WooCommerce already has a "Product Catalog" section — our catalogue
 		// controls join it under the plugin's own, rather than a second
 		// near-identical section. Falls back to our own section without Woo.
@@ -1255,8 +1366,8 @@ final class Customizer {
 				'oc_catalog',
 				array(
 					'title'    => __( 'Catalogue & archive', 'oc-theme' ),
-					'panel'    => $panel,
-					'priority' => 8,
+					'panel'    => 'oc_catalog_panel',
+					'priority' => 10,
 				)
 			);
 		}
@@ -1423,19 +1534,16 @@ final class Customizer {
 	 * catalogue side by side.
 	 *
 	 * @param \WP_Customize_Manager $c     Customizer manager.
-	 * @param string                $panel Parent panel id.
 	 */
-	private function swatches_section( \WP_Customize_Manager $c, string $panel ): void {
+	private function swatches_section( \WP_Customize_Manager $c ): void {
 		$c->add_section(
 			'oc_swatches',
 			array(
-				'title'    => __( 'Colour swatches', 'oc-theme' ),
-				'panel'    => $panel,
-				'priority' => 11,
+				'title'    => __( 'Swatches', 'oc-theme' ),
+				'panel'    => 'oc_product_panel',
+				'priority' => 15,
 			)
 		);
-
-		$this->heading( $c, 'oc_h_sw_product', 'oc_swatches', __( 'Product page', 'oc-theme' ) );
 
 		$this->number( $c, 'oc_swatch_size', 'oc_swatches', __( 'Swatch size — product page (px)', 'oc-theme' ), 32, 20, 56 );
 
@@ -1469,14 +1577,34 @@ final class Customizer {
 
 		$this->toggle( $c, 'oc_dd_pair', 'oc_swatches', __( 'Two dropdowns side by side', 'oc-theme' ), false );
 
-		$this->heading( $c, 'oc_h_sw_cat', 'oc_swatches', __( 'Catalogue', 'oc-theme' ) );
+	}
 
-		$this->number( $c, 'oc_swatch_size_cat', 'oc_swatches', __( 'Swatch size — catalogue (px)', 'oc-theme' ), 22, 14, 40 );
+	/**
+	 * The same swatches, as the catalogue draws them on a card.
+	 *
+	 * One feature, configured on the two pages it appears on: a swatch on a
+	 * product page is a control the shopper picks a variation with, and a
+	 * swatch on a card is a hint that the product comes in more colours. They
+	 * are sized and shaped separately because they do different jobs.
+	 *
+	 * @param \WP_Customize_Manager $c Customizer manager.
+	 */
+	private function swatches_catalogue( \WP_Customize_Manager $c ): void {
+		$c->add_section(
+			'oc_swatches_cat',
+			array(
+				'title'    => __( 'Swatches', 'oc-theme' ),
+				'panel'    => 'oc_catalog_panel',
+				'priority' => 30,
+			)
+		);
+
+		$this->number( $c, 'oc_swatch_size_cat', 'oc_swatches_cat', __( 'Swatch size — catalogue (px)', 'oc-theme' ), 22, 14, 40 );
 
 		$this->choice(
 			$c,
 			'oc_swatch_shape_cat',
-			'oc_swatches',
+			'oc_swatches_cat',
 			__( 'Swatch shape — catalogue', 'oc-theme' ),
 			array(
 				'circle' => __( 'Round', 'oc-theme' ),
@@ -1488,7 +1616,7 @@ final class Customizer {
 		$this->choice(
 			$c,
 			'oc_colors_loop_pos',
-			'oc_swatches',
+			'oc_swatches_cat',
 			__( 'Colour swatches on the card', 'oc-theme' ),
 			array(
 				'above' => __( 'Above the title', 'oc-theme' ),
@@ -1497,22 +1625,21 @@ final class Customizer {
 			'below'
 		);
 
-		$this->number( $c, 'oc_swatch_loop_max', 'oc_swatches', __( 'Max swatches on the card (0 = all; the rest become +N)', 'oc-theme' ), 0, 0, 12 );
+		$this->number( $c, 'oc_swatch_loop_max', 'oc_swatches_cat', __( 'Max swatches on the card (0 = all; the rest become +N)', 'oc-theme' ), 0, 0, 12 );
 	}
 
 	/**
 	 * Product card: preset, image behaviour, contents.
 	 *
 	 * @param \WP_Customize_Manager $c     Customizer manager.
-	 * @param string                $panel Parent panel id.
 	 */
-	private function card_section( \WP_Customize_Manager $c, string $panel ): void {
+	private function card_section( \WP_Customize_Manager $c ): void {
 		$c->add_section(
 			'oc_card',
 			array(
 				'title'    => __( 'Product card', 'oc-theme' ),
-				'panel'    => $panel,
-				'priority' => 9,
+				'panel'    => 'oc_catalog_panel',
+				'priority' => 20,
 			)
 		);
 
@@ -1673,15 +1800,14 @@ final class Customizer {
 	 * labels, "new", and the bottom strip — in one place.
 	 *
 	 * @param \WP_Customize_Manager $c     Customizer manager.
-	 * @param string                $panel Parent panel id.
 	 */
-	private function labels_section( \WP_Customize_Manager $c, string $panel ): void {
+	private function labels_section( \WP_Customize_Manager $c ): void {
 		$c->add_section(
 			'oc_labels',
 			array(
 				'title'    => __( 'Labels', 'oc-theme' ),
-				'panel'    => $panel,
-				'priority' => 12,
+				'panel'    => 'oc_catalog_panel',
+				'priority' => 40,
 			)
 		);
 
@@ -1790,11 +1916,8 @@ final class Customizer {
 	 * Product page: layout, gallery, buy area.
 	 *
 	 * @param \WP_Customize_Manager $c     Customizer manager.
-	 * @param string                $panel Parent panel id.
 	 */
-	private function product_section( \WP_Customize_Manager $c, string $panel ): void {
-		unset( $panel );
-
+	private function product_section( \WP_Customize_Manager $c ): void {
 		// A panel of its own, holding the three rooms a product page has:
 		// the page itself, its information tabs, and the other products it
 		// carries. It cannot live inside WooCommerce's panel — WordPress
@@ -1805,7 +1928,7 @@ final class Customizer {
 			array(
 				'title'       => __( 'Product page', 'oc-theme' ),
 				'description' => __( 'The page itself, the information tabs, and the other products it shows.', 'oc-theme' ),
-				'priority'    => 202,
+				'priority'    => 70,
 			)
 		);
 
@@ -2866,16 +2989,15 @@ final class Customizer {
 	 * at risk; only where the knobs live changes.
 	 *
 	 * @param \WP_Customize_Manager $c     Customizer manager.
-	 * @param string                $panel Panel to nest under.
 	 */
-	private function checkout_section( \WP_Customize_Manager $c, string $panel ): void {
+	private function checkout_section( \WP_Customize_Manager $c ): void {
 		$c->add_section(
 			'oc_checkout',
 			array(
-				'title'       => __( 'Checkout', 'oc-theme' ),
+				'title'       => __( 'Checkout page', 'oc-theme' ),
 				'description' => __( 'How the checkout is laid out. Texts the shop edits day to day stay under Theme settings.', 'oc-theme' ),
-				'priority'    => 13,
-				'panel'       => $panel,
+				'priority'    => 20,
+				'panel'       => 'oc_checkout_panel',
 			)
 		);
 
@@ -3168,9 +3290,8 @@ final class Customizer {
 	 * builder itself stays under Theme settings — it is content.
 	 *
 	 * @param \WP_Customize_Manager $c     Customizer manager.
-	 * @param string                $panel Panel to nest under.
 	 */
-	private function tabs_section( \WP_Customize_Manager $c, string $panel ): void {
+	private function tabs_section( \WP_Customize_Manager $c ): void {
 		$c->add_section(
 			'oc_tabs_cfg',
 			array(
@@ -3248,16 +3369,15 @@ final class Customizer {
 	 * terms are the shop's own and stay under Theme settings.
 	 *
 	 * @param \WP_Customize_Manager $c     Customizer manager.
-	 * @param string                $panel Panel to nest under.
 	 */
-	private function thankyou_section( \WP_Customize_Manager $c, string $panel ): void {
+	private function thankyou_section( \WP_Customize_Manager $c ): void {
 		$c->add_section(
 			'oc_thankyou_cfg',
 			array(
 				'title'       => __( 'Thank-you page', 'oc-theme' ),
 				'description' => __( 'How the order-received page is laid out.', 'oc-theme' ),
-				'priority'    => 15,
-				'panel'       => $panel,
+				'priority'    => 30,
+				'panel'       => 'oc_checkout_panel',
 			)
 		);
 
@@ -3285,16 +3405,15 @@ final class Customizer {
 	 * merchandising rules stay under Theme settings.
 	 *
 	 * @param \WP_Customize_Manager $c     Customizer manager.
-	 * @param string                $panel Panel to nest under.
 	 */
-	private function cart_section( \WP_Customize_Manager $c, string $panel ): void {
+	private function cart_section( \WP_Customize_Manager $c ): void {
 		$c->add_section(
 			'oc_cart_cfg',
 			array(
 				'title'       => __( 'Cart & mini-cart', 'oc-theme' ),
 				'description' => __( 'The drawer\'s shape. Titles, free-shipping threshold and upsell rules stay under Theme settings.', 'oc-theme' ),
-				'priority'    => 16,
-				'panel'       => $panel,
+				'priority'    => 10,
+				'panel'       => 'oc_checkout_panel',
 			)
 		);
 
@@ -3374,19 +3493,15 @@ final class Customizer {
 	 * merchandising, and it changes with the catalogue.
 	 *
 	 * @param \WP_Customize_Manager $c     Customizer manager.
-	 * @param string                $panel Panel to nest under.
 	 */
-	private function filters_section( \WP_Customize_Manager $c, string $panel ): void {
+	private function filters_section( \WP_Customize_Manager $c ): void {
 		$c->add_section(
 			'oc_filters_cfg',
 			array(
 				'title'       => __( 'Catalogue filters', 'oc-theme' ),
 				'description' => __( 'How filtering looks. The filter groups themselves stay under Theme settings.', 'oc-theme' ),
-				// Right behind the catalogue section — which, when WooCommerce
-				// is active, is WooCommerce's own at priority 10. Same
-				// priority plus a later registration puts this just after it.
-				'priority'    => 10,
-				'panel'       => $panel,
+				'priority'    => 50,
+				'panel'       => 'oc_catalog_panel',
 			)
 		);
 

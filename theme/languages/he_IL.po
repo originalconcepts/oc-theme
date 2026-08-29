@@ -1688,7 +1688,7 @@ msgid "Show the value name next to the swatch on mobile"
 msgstr "הצגת שם הערך לצד הדוגמית במובייל"
 
 msgid "Cart & mini-cart"
-msgstr "עגלה ומיני-קארט"
+msgstr "סל קניות ומיני קארט"
 
 msgid "Panel"
 msgstr "פאנל"
@@ -4819,7 +4819,7 @@ msgid "The code is in your inbox."
 msgstr "הקוד אצלכם במייל."
 
 msgid "Login panel"
-msgstr "פאנל התחברות"
+msgstr "התחברות"
 
 msgid "Opens from"
 msgstr "נפתח מצד"
@@ -6180,3 +6180,42 @@ msgstr "כל בלוק של מוצרים אחרים שעמוד מוצר יכול 
 
 msgid "The page itself, the information tabs, and the other products it shows."
 msgstr "העמוד עצמו, לשוניות המידע, והמוצרים האחרים שהוא מציג."
+
+msgid "Mega menu"
+msgstr "מגה מניו"
+
+msgid "Swatches"
+msgstr "סוואטשס"
+
+msgid "Checkout page"
+msgstr "קופה"
+
+msgid "Catalogue page"
+msgstr "עמוד קטלוג"
+
+msgid "Checkout area"
+msgstr "צ׳ק אווט"
+
+msgid "Panels"
+msgstr "פאנלים"
+
+msgid "Pages & policy"
+msgstr "עמודים ומדיניות"
+
+msgid "The strip above the header, the header itself, and the menu that drops out of it."
+msgstr "הרצועה שמעל ההדר, ההדר עצמו, והתפריט שנפתח ממנו."
+
+msgid "The listing a shopper browses: the grid, the card, and everything drawn on it."
+msgstr "הרשימה שהלקוח גולש בה: הרשת, הכרטיס, וכל מה שמצויר עליו."
+
+msgid "From the basket to the thank-you page."
+msgstr "מהסל ועד דף התודה."
+
+msgid "The drawers that slide in over the page."
+msgstr "המגירות שנפתחות מעל העמוד."
+
+msgid "WooCommerce's own catalogue settings, and the theme's on top of them."
+msgstr "הגדרות הקטלוג של ווקומרס עצמו, ושל התבנית מעליהן."
+
+msgid "Shop settings now live under the page they affect: the catalogue, the product page and the checkout."
+msgstr "הגדרות החנות נמצאות עכשיו תחת העמוד שהן משפיעות עליו: הקטלוג, עמוד המוצר והצ׳ק אווט."
