@@ -8372,6 +8372,10 @@ window.__ocMoney = function ( n, money ) {
 
 		nowEl.textContent = price( pay );
 
+		// The block wears a class while a discount is running, which is what
+		// lets the payable total take the shop's sale colour.
+		block.classList.toggle( 'is-off', off > 0 );
+
 		if ( off > 0 ) {
 			wasEl.textContent = price( full );
 			wasEl.hidden = false;
@@ -8430,9 +8434,10 @@ window.__ocMoney = function ( n, money ) {
 		var picked = chosen();
 		if ( ! picked.length ) { return; }
 
+		var label = btn.textContent;
+
 		btn.disabled = true;
-		btn.classList.add( 'is-busy' );
-		note.textContent = '';
+		btn.classList.add( 'is-loading' );
 
 		var body = new FormData();
 		body.append( 'action', 'oc_bt_add' );
@@ -8451,27 +8456,39 @@ window.__ocMoney = function ( n, money ) {
 		fetch( L.ajaxUrl || '/wp-admin/admin-ajax.php', { method: 'POST', credentials: 'same-origin', body: body } )
 			.then( function ( r ) { return r.json(); } )
 			.then( function ( res ) {
-				btn.classList.remove( 'is-busy' );
-				btn.disabled = false;
+				btn.classList.remove( 'is-loading' );
 
 				if ( ! res || ! res.success ) {
+					btn.disabled = false;
 					note.textContent = ( res && res.data && res.data.msg ) || '';
 					return;
 				}
 
-				note.textContent = res.data.msg || '';
+				note.textContent = '';
 
-				// Let the rest of the theme know, so the cart drawer and the
-				// counter catch up the way they do for any other add.
-				document.body.dispatchEvent( new CustomEvent( 'wc_fragment_refresh' ) );
+				// The same answer the product's own button gives: the label
+				// steps aside, the tick takes the middle, and after a moment
+				// the button is itself again. No message, no "view cart".
+				btn.classList.add( 'oc-added' );
 
+				setTimeout( function () {
+					btn.classList.remove( 'oc-added' );
+					btn.textContent = label;
+					btn.disabled = false;
+					draw();
+				}, 1600 );
+
+				// The drawer and the counter catch up. Only the fragment
+				// refresh — Woo's added_to_cart event is what hangs a
+				// "view cart" link off the button that fired it.
 				if ( window.jQuery ) {
 					window.jQuery( document.body ).trigger( 'wc_fragment_refresh' );
-					window.jQuery( document.body ).trigger( 'added_to_cart', [ res.data.fragments || {}, '', window.jQuery( btn ) ] );
+				} else {
+					document.body.dispatchEvent( new CustomEvent( 'wc_fragment_refresh' ) );
 				}
 			} )
 			.catch( function () {
-				btn.classList.remove( 'is-busy' );
+				btn.classList.remove( 'is-loading' );
 				btn.disabled = false;
 			} );
 	} );

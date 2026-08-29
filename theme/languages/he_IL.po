@@ -6041,7 +6041,7 @@ msgid "Pick at least one"
 msgstr "יש לבחור לפחות אחד"
 
 msgid "You save %s"
-msgstr "חסכת %s"
+msgstr "חסכון של %s"
 
 msgid "Nothing to add."
 msgstr "אין מה להוסיף."

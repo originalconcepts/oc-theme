@@ -14076,7 +14076,7 @@ p.no-comments {
 	display: flex;
 	flex-wrap: wrap;
 	align-items: stretch;
-	gap: 10px;
+	gap: 34px;
 	margin: 0;
 	padding: 0;
 	list-style: none;
@@ -14095,16 +14095,26 @@ p.no-comments {
 	transition: opacity .18s, border-color .18s;
 }
 
-/* A plus between the cards, so the row reads as a sum. */
+/* The plus is what makes the row a sum rather than three cards standing
+ * near each other, so it is drawn to be seen: its own disc, sitting in the
+ * gap, vertically on the pictures rather than on the whole card. */
 .oc-bt__item + .oc-bt__item::before {
 	content: "+";
 	position: absolute;
-	inset-inline-start: -12px;
-	inset-block-start: 50%;
-	transform: translateY(-50%);
-	font-size: 15px;
+	inset-inline-start: -30px;
+	inset-block-start: 66px;
+	display: grid;
+	place-items: center;
+	inline-size: 26px;
+	block-size: 26px;
+	margin-block-start: -13px;
+	border-radius: 50%;
+	background: var(--oc-line, #e5e5e5);
+	color: var(--oc-ink, #151a21);
+	font-size: 17px;
+	font-weight: 700;
 	line-height: 1;
-	opacity: .5;
+	opacity: 1;
 }
 
 .oc-bt__item:not(.is-on) { opacity: .42; }
@@ -14185,7 +14195,11 @@ p.no-comments {
 .oc-bt__was { font-size: 14px; text-decoration: line-through; opacity: .55; }
 .oc-bt__was[hidden], .oc-bt__saved[hidden] { display: none; }
 .oc-bt__now { font-size: 22px; font-weight: 700; line-height: 1.2; }
-.oc-bt__saved { font-size: 13px; font-weight: 600; color: #16a34a; }
+
+/* With a discount running, the payable total is a sale price and wears the
+ * colour the shop gives every other one. */
+.oc-bt.is-off .oc-bt__now { color: var(--oc-sale, #b4453c); }
+.oc-bt__saved { font-size: 13px; font-weight: 600; color: var(--oc-sale, #b4453c); }
 
 .oc-bt__add { inline-size: 100%; }
 .oc-bt__add[disabled] { opacity: .5; cursor: not-allowed; }
@@ -14200,7 +14214,7 @@ p.no-comments {
 	.oc-bt__items,
 	.oc-bt__sum { flex: 1 1 100%; }
 
-	.oc-bt__items { flex-direction: column; gap: 8px; }
+	.oc-bt__items { flex-direction: column; gap: 34px; }
 
 	.oc-bt__item {
 		flex-direction: row;
@@ -14212,8 +14226,9 @@ p.no-comments {
 
 	.oc-bt__item + .oc-bt__item::before {
 		inset-inline-start: 50%;
-		inset-block-start: -9px;
-		transform: translateX(-50%);
+		inset-block-start: -30px;
+		margin-block-start: 0;
+		margin-inline-start: -13px;
 	}
 
 	.oc-bt__tick { inset-block-start: 50%; transform: translateY(-50%); inset-inline-start: 10px; }
