@@ -1760,6 +1760,14 @@ html.oc-look-lock body { overflow: hidden; }
 	/* Was 58vh — most of a screen of scrolling for every single swap, which
 	 * read as the block being stuck rather than paced. */
 	.ocb-sc__step { min-block-size: 38vh; visibility: hidden; padding-block: 0; }
+
+	/* The last chapter is the one that gets rushed: it arrives, and the road
+	 * runs out from under it almost at once, so the pin lets go and the whole
+	 * block leaves — which reads as a jump rather than an ending. It gets a
+	 * stretch of its own to be read on. The gap between chapters is untouched;
+	 * this is road AFTER the last one takes the stage, and the pin covers it,
+	 * so no empty floor shows. */
+	.ocb-sc__step:last-child { min-block-size: 62vh; }
 }
 
 /* ---------- questions & answers ---------- */
