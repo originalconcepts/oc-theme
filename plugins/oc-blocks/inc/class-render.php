@@ -1322,10 +1322,16 @@ final class Render {
 				. ( '' === $step['text'] ? '' : '<div class="ocb-sc__words">' . wpautop( esc_html( (string) $step['text'] ) ) . '</div>' )
 				. '</div>';
 
-			$steps .= '<div class="ocb-sc__step" data-ocb-step="' . $at . '">'
+			// The chapter's words sit in a box of their own inside the tall
+			// step. The step is most of a screen high and its content rides
+			// in the middle, so a fade timed to the step would start while
+			// the words were still sitting in plain view; timed to this box
+			// it starts when the words themselves reach the edge — and the
+			// heading and its paragraph go together rather than one leading.
+			$steps .= '<div class="ocb-sc__step" data-ocb-step="' . $at . '"><div class="ocb-sc__chapter">'
 				. ( '' === $step['heading'] ? '' : '<h3>' . esc_html( (string) $step['heading'] ) . '</h3>' )
 				. ( '' === $step['text'] ? '' : '<div class="ocb-sc__words">' . wpautop( esc_html( (string) $step['text'] ) ) . '</div>' )
-				. '</div>';
+				. '</div></div>';
 
 			++$at;
 		}

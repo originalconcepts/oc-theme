@@ -1694,7 +1694,7 @@ html.oc-look-lock body { overflow: hidden; }
  * version — nothing is hidden that they cannot bring back. */
 @supports (animation-timeline: view()) {
 	@media (prefers-reduced-motion: no-preference) and (min-width: 783px) {
-		.ocb-sc__step > * {
+		.ocb-sc__chapter {
 			animation: ocb-sc-rise linear both, ocb-sc-leave linear both;
 			animation-timeline: view(), view();
 			animation-range: entry 10% cover 26%, exit 30% exit 92%;
