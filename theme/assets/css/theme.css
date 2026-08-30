@@ -3689,47 +3689,26 @@ html.oc-drw-open body { overflow: hidden; }
 
 	/* mobile centred: hamburger at the start with search beside it, logo in
 	 * the centre, the remaining icons at the end */
-	/* The burger stands alone at the reading edge and the icons keep each
-	 * other company at the other one. Search used to sit beside the burger
-	 * to make the two sides weigh the same, because the logo was centred by
-	 * auto margins — which centre a thing in the space LEFT OVER, not in the
-	 * bar. So the logo comes out of the flow and is centred against the
-	 * header itself, and the sides are then free to be uneven. */
-	.oc-header--m-centered .oc-header__start { display: contents; }
+	.oc-header--m-centered .oc-header__start,
+	.oc-header--m-centered .oc-header__end { display: contents; }
+	.oc-header--m-centered .oc-header__inner { display: flex; }
 
-	.oc-header--m-centered .oc-header__end {
-		display: flex;
-		align-items: center;
-		order: 3;
-		margin-inline-start: 0;
+	/* Two controls each side with the logo centred between them. The menu
+	 * sits a little nearer the edge than the box around it suggests — its
+	 * bars are drawn inside a 40px tap target — and it keeps a clear step
+	 * away from the search, so the two never read as one pair of marks. */
+	.oc-header--m-centered .oc-burger {
+		order: 1;
+		margin-inline-start: -6px;
+		margin-inline-end: 10px;
 	}
 
-	.oc-header--m-centered .oc-header__inner {
-		display: flex;
-		position: relative;
-		justify-content: space-between;
-	}
-
-	.oc-header--m-centered .oc-burger { order: 1; }
-
+	.oc-header--m-centered .oc-search-toggle { order: 2; }
 	.oc-header--m-centered .oc-logo,
-	.oc-header--m-centered .custom-logo-link {
-		order: 2;
-		/* The sides are one control against three, so a logo centred on the
-		 * BAR must overlap the heavier side unless it is shrunk to fit —
-		 * measured, this one crossed into the search icon by thirteen
-		 * pixels. It takes the middle track instead and centres inside it:
-		 * full size, clear of both sides at every width, and only slightly
-		 * off the true middle. Shrinking the shop's own mark to win back
-		 * those thirteen pixels is the worse trade. */
-		margin-inline: 0;
-		flex: 1 1 auto;
-		min-inline-size: 0;
-		display: flex;
-		justify-content: center;
-	}
-
+	.oc-header--m-centered .custom-logo-link { order: 3; margin-inline: auto; }
 	.oc-header--m-centered .oc-nav2 { order: 4; }
+	.oc-header--m-centered .oc-account-link { order: 5; }
+	.oc-header--m-centered .oc-cart-link { order: 6; }
 
 	.woocommerce ul.products { grid-template-columns: repeat(var(--oc-grid-cols-m, 2), minmax(0, 1fr)); }
 	.oc-cols-m-1 { --oc-grid-cols-m: 1; }
