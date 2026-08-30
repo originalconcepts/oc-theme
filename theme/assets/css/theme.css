@@ -3706,12 +3706,17 @@ html.oc-drw-open body { overflow: hidden; }
 	.oc-header--m-centered .oc-logo,
 	.oc-header--m-centered .custom-logo-link {
 		order: 2;
-		margin-inline: 0;
 		position: absolute;
-		inset-inline-start: 50%;
-		translate: -50% 0;
+		/* Pinned to both edges with automatic margins, which is what actually
+		 * centres an absolutely positioned box. A logical inset paired with a
+		 * physical translate does not: the inset flips with the writing
+		 * direction and the translate does not, so in Hebrew the two pulled
+		 * the logo the same way and it ended up against the icons. */
+		inset-inline: 0;
+		margin-inline: auto;
+		inline-size: fit-content;
 		/* Never wide enough to reach the controls on either side. */
-		max-inline-size: calc(100% - 200px);
+		max-inline-size: calc(100% - 210px);
 	}
 
 	.oc-header--m-centered .oc-nav2 { order: 4; }
