@@ -3715,17 +3715,18 @@ html.oc-drw-open body { overflow: hidden; }
 	.oc-header--m-centered .oc-logo,
 	.oc-header--m-centered .custom-logo-link {
 		order: 2;
-		position: absolute;
-		/* Pinned to both edges with automatic margins, which is what actually
-		 * centres an absolutely positioned box. A logical inset paired with a
-		 * physical translate does not: the inset flips with the writing
-		 * direction and the translate does not, so in Hebrew the two pulled
-		 * the logo the same way and it ended up against the icons. */
-		inset-inline: 0;
-		margin-inline: auto;
-		inline-size: fit-content;
-		/* Never wide enough to reach the controls on either side. */
-		max-inline-size: calc(100% - 210px);
+		/* The sides are one control against three, so a logo centred on the
+		 * BAR must overlap the heavier side unless it is shrunk to fit —
+		 * measured, this one crossed into the search icon by thirteen
+		 * pixels. It takes the middle track instead and centres inside it:
+		 * full size, clear of both sides at every width, and only slightly
+		 * off the true middle. Shrinking the shop's own mark to win back
+		 * those thirteen pixels is the worse trade. */
+		margin-inline: 0;
+		flex: 1 1 auto;
+		min-inline-size: 0;
+		display: flex;
+		justify-content: center;
 	}
 
 	.oc-header--m-centered .oc-nav2 { order: 4; }
