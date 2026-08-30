@@ -355,15 +355,21 @@
 			// top bar and its icons would straddle the two. Hold it below the
 			// bar and let it ride up as the bar scrolls away.
 			if ( ocTransBar ) {
+				var shift = Math.max( 0, ocTransBarH - window.scrollY );
+
 				// On the document, not on the header: the search panel sits
-				// outside the header and has to read this too, to know where
-				// the header's bottom edge actually is. Written on the header
-				// it fell back to zero out there, and the panel opened on top
-				// of the bar instead of under it.
-				document.documentElement.style.setProperty(
-					'--oc-htrans-shift',
-					Math.max( 0, ocTransBarH - window.scrollY ) + 'px'
-				);
+				// outside the header and has to read these too. Written on
+				// the header they fell back to zero out there, and the panel
+				// opened on top of the bar instead of under it.
+				var root = document.documentElement.style;
+
+				root.setProperty( '--oc-htrans-shift', shift + 'px' );
+
+				// The bottom edge as it is actually drawn. The height setting
+				// is what the header is ASKED for, not what it ends up being
+				// — mine were eleven pixels apart — and anything hung off the
+				// setting lands inside the bar by that much.
+				root.setProperty( '--oc-htrans-bottom', ( shift + ocHeaderH ) + 'px' );
 			}
 		};
 
@@ -373,10 +379,12 @@
 			? document.querySelector( '.oc-topbar' )
 			: null;
 		var ocTransBarH = ocTransBar ? ocTransBar.offsetHeight : 0;
+		var ocHeaderH = siteHeader.offsetHeight;
 
 		window.addEventListener( 'resize', function () {
 			if ( ocTransBar ) {
 				ocTransBarH = ocTransBar.offsetHeight;
+				ocHeaderH = siteHeader.offsetHeight;
 				updateHeaderScroll();
 			}
 		}, { passive: true } );

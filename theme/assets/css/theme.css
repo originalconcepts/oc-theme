@@ -6082,7 +6082,9 @@ html:not([dir]) .oc-cartup__items--h.oc-fade-end {
 	.oc-htrans .oc-searchbox {
 		position: fixed;
 		inset-inline: 0;
-		inset-block-start: calc(var(--oc-header-h, 72px) + var(--oc-htrans-shift, 0px));
+		/* The measured edge, with the arithmetic from the setting as the
+		 * fallback for the frame before script has run. */
+		inset-block-start: var(--oc-htrans-bottom, calc(var(--oc-header-h, 72px) + var(--oc-htrans-shift, 0px)));
 	}
 }
 
