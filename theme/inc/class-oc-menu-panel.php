@@ -879,7 +879,14 @@ final class Menu_Panel {
 			$image = $product->get_image( $size, array( 'loading' => 'lazy' ) );
 
 			$out .= '<a class="oc-mb__prod" href="' . esc_url( (string) $product->get_permalink() ) . '">';
-			$out .= '<span class="oc-mb__prod-img">' . $image . WooCommerce::flags_html( $product ) . '</span>';
+			// The same focal point the catalogue crops to. Set per product, as
+			// it is on a card — the stylesheet can ask for it, but only the
+			// markup knows which half of THIS picture matters.
+			$focus = class_exists( 'OC\\Theme\\Catalog' ) ? (int) Catalog::focus( $product->get_id() ) : 50;
+
+			$out .= '<span class="oc-mb__prod-img"'
+				. ( 50 === $focus ? '' : ' style="--oc-card-focus:' . esc_attr( (string) $focus ) . '%"' )
+				. '>' . $image . WooCommerce::flags_html( $product ) . '</span>';
 			$out .= '<span class="oc-mb__prod-name">' . esc_html( $product->get_name() ) . '</span>';
 			$out .= '<span class="oc-mb__prod-price">' . $product->get_price_html() . '</span>';
 			$out .= '</a>';
