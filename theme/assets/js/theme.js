@@ -1544,7 +1544,7 @@
 				}
 				nbar.disabled = false;
 				nbar.classList.remove( 'oc-signed' );
-				nbar.textContent = L2.notifyButton || 'Notify me when it is back';
+				nbar.textContent = L2.notifyBar || 'Notify me';
 				nbar.dataset.product = item.dataset.pid;
 				nbar.dataset.name = item.dataset.name || '';
 				if ( '1' === item.dataset.var ) {
@@ -4330,7 +4330,11 @@
 		document.querySelectorAll( '.oc-notify-open[data-product="' + productId + '"]' ).forEach( function ( trigger ) {
 			trigger.classList.remove( 'oc-signed' );
 			trigger.disabled = false;
-			trigger.textContent = L.notifyButton || 'Notify me when it is back';
+			// The card's bar and the product page's button share this sweep and
+			// do not share a label: the bar has a card's width to say it in.
+			trigger.textContent = trigger.classList.contains( 'oc-notify-bar' )
+				? ( L.notifyBar || 'Notify me' )
+				: ( L.notifyButton || 'Notify me when it is back' );
 			var hint = trigger.parentNode.querySelector( '.oc-oos__hint' );
 			if ( hint ) {
 				hint.remove();

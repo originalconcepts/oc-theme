@@ -222,6 +222,7 @@ final class Assets {
 				'addedToCart'          => __( 'Added to cart', 'oc-theme' ),
 				'notifyNonce'          => wp_create_nonce( 'oc_notify' ),
 				'notifyTitle'          => __( 'Notify me', 'oc-theme' ),
+				'notifyBar'            => __( 'Notify me', 'oc-theme' ),
 				'notifyIntro'          => __( 'Sign up and we will let you know the moment this product is back in stock.', 'oc-theme' ),
 				'notifyPhone'          => __( 'Phone (WhatsApp)', 'oc-theme' ),
 				'notifyEmail'          => __( 'Email address', 'oc-theme' ),

@@ -1601,7 +1601,10 @@ final class WooCommerce {
 			absint( $product->get_id() ),
 			esc_attr( $product->get_name() ),
 			$product->is_type( 'variable' ) ? ' data-variable="1"' : '',
-			esc_html__( 'Notify me when it is back', 'oc-theme' )
+			// The bar spans a card, not a product page: the short label is
+			// the one that fits, and the picture above it already says what
+			// the product is. Already translated, so no new string.
+			esc_html__( 'Notify me', 'oc-theme' )
 		);
 	}
 

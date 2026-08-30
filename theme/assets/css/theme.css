@@ -7636,6 +7636,12 @@ body.oc-no-qty.single-product div.product form.cart .woocommerce-variation-add-t
 [data-oc-slider] .oc-strip,
 .oc-linked--slider .oc-strip { font-size: .72rem; }
 
+/* The composed shelf is narrower still — measured on a phone, its card is
+ * 151px against the 173px of the rows above, and at .72rem the line wanted
+ * 152px and lost its last word to the ellipsis. It gets its own step down,
+ * with room left for the number to gain a digit. */
+.ocb-shelf--slider .oc-strip { font-size: .64rem; }
+
 /* ---------- add-to-cart loader + quantity edge cases ---------- */
 
 /* Max-one products: Woo hands over a hidden input — no pill at all. */
@@ -7748,10 +7754,17 @@ body.oc-no-qty.single-product div.product form.cart .woocommerce-variation-add-t
 	bottom: 0;
 	z-index: 3;
 	border: 0;
-	padding: .8em .7em;
+	/* Same reasoning as the strip above it: the side padding is only air on
+	 * an element that already spans the card, so it goes before the type
+	 * does. One line always — the script writes a longer "you are on the
+	 * list" onto this same element, which no shorter label can prevent. */
+	padding: .66em .45em;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 	background: var(--oc-notify, #1c1c1c);
 	color: var(--oc-notify-tx, #fff);
-	font-size: .82rem;
+	font-size: .78rem;
 	font-weight: 600;
 	cursor: pointer;
 	transition: opacity .15s ease;
