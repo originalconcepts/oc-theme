@@ -3705,7 +3705,12 @@ html.oc-drw-open body { overflow: hidden; }
 	 * away from the search, so the two never read as one pair of marks. */
 	.oc-header--m-centered .oc-burger {
 		order: 1;
-		margin-inline-start: -6px;
+		/* Its bars are 24px inside a 40px tap target, and the header's own
+		 * padding is narrower than the content gutter — left alone the mark
+		 * lands 17.6px from the edge while the pictures below it start at 16.
+		 * This is the 1.6px that makes the menu begin exactly where they do,
+		 * without shrinking the target a thumb has to find. */
+		margin-inline-start: -2px;
 		margin-inline-end: 10px;
 	}
 
