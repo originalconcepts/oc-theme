@@ -727,7 +727,7 @@ final class Menu_Panel {
 				continue;
 			}
 
-			$piece = self::block( $block, $item_id );
+			$piece = self::block( $block, $item_id, $where );
 
 			if ( null === $piece ) {
 				continue;
@@ -777,9 +777,10 @@ final class Menu_Panel {
 	 *
 	 * @param array<string,mixed> $block   Block.
 	 * @param int                 $item_id Menu item the block sits under.
+	 * @param string              $where   'drawer' or the mega panel.
 	 * @return array{class:string,inner:string}|null
 	 */
-	private static function block( array $block, int $item_id = 0 ): ?array {
+	private static function block( array $block, int $item_id = 0, string $where = '' ): ?array {
 		$type = (string) $block['type'];
 
 		$inner = '';
@@ -792,7 +793,13 @@ final class Menu_Panel {
 				$inner = self::products_block( $block );
 				break;
 			case 'brands':
-				$inner = self::brands_block( $block, $item_id );
+				// In the drawer a shelf of brands is out of place: everything
+				// else there is a row you press, so a flat run of names reads
+				// as text rather than as somewhere to go. It becomes a row of
+				// its own, with the arrow and the screen behind it.
+				$inner = 'drawer' === $where
+					? self::brands_drawer( $block, $item_id )
+					: self::brands_block( $block, $item_id );
 				break;
 			default:
 				/**
@@ -916,11 +923,93 @@ final class Menu_Panel {
 	 * @param int                 $item_id Menu item the block sits under.
 	 * @return string
 	 */
-	private static function brands_block( array $block, int $item_id = 0 ): string {
+	/**
+	 * The same brands, wearing the drawer's own grammar: one row carrying the
+	 * name and an arrow, and behind it a screen of brands as ordinary rows,
+	 * ruled apart like every other list in there. Each one opens its brand.
+	 *
+	 * @param array<string,mixed> $block   Block.
+	 * @param int                 $item_id Menu item the block sits under.
+	 * @return string
+	 */
+	private static function brands_drawer( array $block, int $item_id = 0 ): string {
+		$found = self::brand_terms( $block, $item_id );
+
+		if ( null === $found ) {
+			return '';
+		}
+
+		$title = trim( (string) ( $block['title'] ?? '' ) );
+		$title = '' === $title ? __( 'Brands', 'oc-theme' ) : $title;
+		$all   = self::brands_more_url( $block, $found['cat'] );
+		$rows  = '';
+
+		foreach ( $found['terms'] as $term ) {
+			$rows .= '<li class="oc-drw__i"><div class="oc-drw__row"><a class="oc-drw__a" href="'
+				. esc_url( (string) get_term_link( $term ) ) . '">'
+				. esc_html( $term->name ) . '</a></div></li>';
+		}
+
+		if ( '' === $rows ) {
+			return '';
+		}
+
+		$head = '<div class="oc-drw__head"><a class="oc-drw__title" href="' . esc_url( $all ) . '">'
+			. esc_html( $title ) . '</a>';
+
+		if ( '' !== $all ) {
+			$head .= '<a class="oc-drw__all" href="' . esc_url( $all ) . '">' . esc_html__( 'Show all', 'oc-theme' ) . '</a>';
+		}
+
+		$head .= '</div>';
+
+		return '<ul class="oc-drw__list oc-drw__list--sub oc-drw__list--brands">'
+			. '<li class="oc-drw__i has-more">'
+			. '<div class="oc-drw__row">'
+			. '<a class="oc-drw__a" href="' . esc_url( $all ) . '">' . esc_html( $title ) . '</a>'
+			. '<button type="button" class="oc-drw__more" aria-expanded="false" aria-label="'
+			. esc_attr( sprintf( /* translators: %s: menu item name. */ __( 'Open %s', 'oc-theme' ), $title ) )
+			. '"><span aria-hidden="true"></span></button>'
+			. '</div>'
+			. '<div class="oc-drw__sub">' . $head
+			. '<div class="oc-drw__subin"><ul class="oc-drw__list oc-drw__list--sub">' . $rows . '</ul></div>'
+			. '</div></li></ul>';
+	}
+
+	/**
+	 * Where "all of them" leads: a set address wins; without one a category
+	 * item opens its own category, and anything else opens the brands page.
+	 *
+	 * @param array<string,mixed> $block Block.
+	 * @param \WP_Term|null       $cat   Category behind the menu item.
+	 * @return string
+	 */
+	private static function brands_more_url( array $block, ?\WP_Term $cat ): string {
+		$more = (string) ( $block['link'] ?? '' );
+
+		if ( '' === $more && null !== $cat && 'cat' === ( $block['scope'] ?? 'all' ) ) {
+			$link = get_term_link( $cat );
+			$more = is_wp_error( $link ) ? '' : (string) $link;
+		}
+
+		return '' === $more ? Brands::url() : $more;
+	}
+
+	/**
+	 * Which brands this block is asking for, and how many there are in all.
+	 * One place, because the panel and the drawer must agree about the set
+	 * they are drawing — the same block showing different brands in the two
+	 * presentations of one menu is a bug waiting to be reported.
+	 *
+	 * @param array<string,mixed> $block   Block.
+	 * @param int                 $item_id Menu item the block sits under.
+	 * @return array{terms:\WP_Term[],total:int,cat:\WP_Term|null}|null
+	 */
+	private static function brand_terms( array $block, int $item_id = 0 ): ?array {
 		$taxonomy = class_exists( 'OC\\Theme\\Search' ) ? Search::brand_taxonomy() : '';
 
 		if ( '' === $taxonomy ) {
-			return '';
+			return null;
 		}
 
 		// The category behind the menu item, when there is one. A fashion
@@ -945,25 +1034,41 @@ final class Menu_Panel {
 			$in_cat = self::category_brands( $cat, $taxonomy );
 
 			if ( empty( $in_cat ) ) {
-				return '';
+				return null;
 			}
 
 			$args['include'] = empty( $chosen ) ? $in_cat : array_values( array_intersect( $chosen, $in_cat ) );
 
 			if ( empty( $args['include'] ) ) {
-				return '';
+				return null;
 			}
 		}
 
 		$terms = get_terms( $args );
 
 		if ( ! is_array( $terms ) || empty( $terms ) ) {
-			return '';
+			return null;
 		}
 
 		$count = max( 1, min( 24, (int) ( $block['count'] ?? 8 ) ) );
-		$total = count( $terms );
-		$terms = array_slice( $terms, 0, $count );
+
+		return array(
+			'total' => count( $terms ),
+			'terms' => array_slice( $terms, 0, $count ),
+			'cat'   => $cat,
+		);
+	}
+
+	private static function brands_block( array $block, int $item_id = 0 ): string {
+		$found = self::brand_terms( $block, $item_id );
+
+		if ( null === $found ) {
+			return '';
+		}
+
+		$cat   = $found['cat'];
+		$total = $found['total'];
+		$terms = $found['terms'];
 		$title = trim( (string) ( $block['title'] ?? '' ) );
 		$out   = '' === $title ? '' : '<h4 class="oc-mb__g">' . esc_html( $title ) . '</h4>';
 
@@ -996,16 +1101,7 @@ final class Menu_Panel {
 		// without one, a category item opens its own category, and anything
 		// else opens the brands page.
 		if ( $total > count( $terms ) ) {
-			$more = (string) ( $block['link'] ?? '' );
-
-			if ( '' === $more && null !== $cat && 'cat' === ( $block['scope'] ?? 'all' ) ) {
-				$link = get_term_link( $cat );
-				$more = is_wp_error( $link ) ? '' : (string) $link;
-			}
-
-			if ( '' === $more ) {
-				$more = Brands::url();
-			}
+			$more = self::brands_more_url( $block, $cat );
 
 			if ( '' !== $more ) {
 				$out .= '<a class="oc-mb__all" href="' . esc_url( $more ) . '">' . esc_html__( 'All brands', 'oc-theme' ) . '</a>';

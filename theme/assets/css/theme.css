@@ -3070,6 +3070,19 @@ html.oc-drw-open body { overflow: hidden; }
 
 .oc-drw__list--sub .oc-drw__row { border-block-end: 1px solid var(--oc-drw-line2, var(--oc-drw-line, var(--oc-line))); }
 
+/* Brands arrive inside a panel block, which is padded for the mega menu's
+ * benefit. In the drawer that padding would indent one row against every
+ * other, so the block gets out of the way and the list stands in the file
+ * with the rest. */
+.oc-drw .oc-mb--brands {
+	padding: 0;
+	margin: 0;
+	border: 0;
+	background: none;
+}
+
+.oc-drw__list--brands { margin: 0; padding: 0; list-style: none; }
+
 .oc-drw__list--sub .oc-drw__a {
 	padding-block: var(--oc-drw-gap2, 11px);
 	font-size: var(--oc-drw-fs2, 15px);
