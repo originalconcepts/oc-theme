@@ -153,7 +153,14 @@ final class Render {
 	 * Deploys and edits both start a fresh cache generation.
 	 */
 	private static function version(): string {
-		return (string) get_option( 'oc_blocks_ver', 0 ) . '-' . (string) filemtime( __FILE__ );
+		// The plugin's version belongs in here as well as this file's own
+		// timestamp. Keyed on the timestamp alone, anything that changes what
+		// a block says without changing THIS file leaves a day of cached
+		// markup saying the old thing — a translation, most obviously, which
+		// is how a Hebrew site went on reading "Chapter 1 of 2".
+		return (string) get_option( 'oc_blocks_ver', 0 )
+			. '-' . ( defined( 'OC_BLOCKS_VERSION' ) ? OC_BLOCKS_VERSION : '0' )
+			. '-' . (string) filemtime( __FILE__ );
 	}
 
 	/**
