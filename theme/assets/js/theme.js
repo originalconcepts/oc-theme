@@ -153,6 +153,18 @@
 	if ( burger && drw ) {
 		var drwLast = null;
 
+		// Which kind of hand opened it. A key press means a keyboard is
+		// driving and focus should follow; a pointer means it should not.
+		var drwViaKey = false;
+
+		document.addEventListener( 'keydown', function () {
+			drwViaKey = true;
+		}, true );
+
+		document.addEventListener( 'pointerdown', function () {
+			drwViaKey = false;
+		}, true );
+
 		function drwSet( open ) {
 			burger.setAttribute( 'aria-expanded', open ? 'true' : 'false' );
 
@@ -169,7 +181,12 @@
 
 				var first = drw.querySelector( '.oc-drw__x' );
 
-				if ( first ) {
+				// Only pull focus for someone arriving by keyboard. Forcing it
+				// on a touch is where a first tap goes to die: Safari spends
+				// it settling the focus and the scroll lock, and the visitor
+				// presses a link twice to open it once. A keyboard visitor
+				// still lands inside the drawer, which is the point of it.
+				if ( first && drwViaKey ) {
 					first.focus();
 				}
 

@@ -2886,6 +2886,13 @@ html.oc-drw-open body { overflow: hidden; }
 	padding: 0 var(--oc-gap, 16px);
 }
 
+/* No double-tap zoom to wait on, and no gesture for the browser to hold the
+ * press back for: the row answers the first touch as a press. */
+.oc-drw__a,
+.oc-drw__more,
+.oc-drw__title,
+.oc-drw__all { touch-action: manipulation; }
+
 .oc-drw__row {
 	display: flex;
 	align-items: center;
