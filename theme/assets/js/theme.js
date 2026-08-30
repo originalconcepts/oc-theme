@@ -315,7 +315,7 @@
 		// a theory about WHY the first tap goes missing; this does not care
 		// why. Touch only — a mouse keeps its ordinary click — and only when
 		// the finger did not travel, so a scroll is still a scroll.
-		var drwTap = null, drwTapX = 0, drwTapY = 0, drwTapMoved = false;
+		var drwTap = null, drwTapX = 0, drwTapY = 0, drwTapMoved = false, drwSkipClick = false;
 
 		drw.addEventListener( 'pointerdown', function ( event ) {
 			if ( 'mouse' === event.pointerType ) {
@@ -323,7 +323,7 @@
 				return;
 			}
 
-			drwTap = event.target.closest( '.oc-drw__a, .oc-drw__title, .oc-drw__all' );
+			drwTap = event.target.closest( '.oc-drw__a, .oc-drw__title, .oc-drw__all, .oc-drw__more' );
 			drwTapX = event.clientX;
 			drwTapY = event.clientY;
 			drwTapMoved = false;
@@ -341,6 +341,22 @@
 			drwTap = null;
 
 			if ( ! link || drwTapMoved || 'mouse' === event.pointerType ) {
+				return;
+			}
+
+			// The arrow opens its branch on the touch, and the click that
+			// follows is told to keep its hands off.
+			if ( link.classList.contains( 'oc-drw__more' ) ) {
+				event.preventDefault();
+				drwSkipClick = true;
+				drwToggle( link );
+
+				// If no click follows after all, the guard must not outlive
+				// the touch that set it.
+				setTimeout( function () {
+					drwSkipClick = false;
+				}, 500 );
+
 				return;
 			}
 
@@ -363,37 +379,50 @@
 			} );
 		} );
 
+		/* One branch open at a time, so the list cannot grow past what a thumb
+		 * can reach. Lifted out of the click handler because a touch has to
+		 * be able to do this too, without waiting for a click that may never
+		 * be made from it. */
+		function drwToggle( more ) {
+			var li = more.closest( '.oc-drw__i' );
+			var open = li.classList.contains( 'is-open' );
+
+			Array.prototype.forEach.call( li.parentNode.children, function ( other ) {
+				if ( other !== li ) {
+					other.classList.remove( 'is-open' );
+					var b = other.querySelector( ':scope > .oc-drw__row > .oc-drw__more' );
+
+					if ( b ) {
+						b.setAttribute( 'aria-expanded', 'false' );
+					}
+				}
+			} );
+
+			li.classList.toggle( 'is-open', ! open );
+			more.setAttribute( 'aria-expanded', open ? 'false' : 'true' );
+
+			if ( open ) {
+				drwShut( li );
+			}
+
+			drwDepth();
+		}
+
 		drw.addEventListener( 'click', function ( event ) {
 			var more = event.target.closest( '.oc-drw__more' );
 
-			if ( more ) {
-				var li = more.closest( '.oc-drw__i' );
-				var open = li.classList.contains( 'is-open' );
-
-				/* Siblings close, so one branch is open at a time and the
-				 * list cannot grow past what a thumb can reach. */
-				Array.prototype.forEach.call( li.parentNode.children, function ( other ) {
-					if ( other !== li ) {
-						other.classList.remove( 'is-open' );
-						var b = other.querySelector( ':scope > .oc-drw__row > .oc-drw__more' );
-
-						if ( b ) {
-							b.setAttribute( 'aria-expanded', 'false' );
-						}
-					}
-				} );
-
-				li.classList.toggle( 'is-open', ! open );
-				more.setAttribute( 'aria-expanded', open ? 'false' : 'true' );
-
-				if ( open ) {
-					drwShut( li );
-				}
-
-				drwDepth();
-
+			if ( ! more ) {
 				return;
 			}
+
+			// A touch already did this. The click the browser makes from it
+			// arrives afterwards and would fold the branch straight back up.
+			if ( drwSkipClick ) {
+				drwSkipClick = false;
+				return;
+			}
+
+			drwToggle( more );
 		} );
 
 		document.addEventListener( 'click', function ( event ) {
