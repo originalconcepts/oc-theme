@@ -2765,8 +2765,10 @@ html:has(.oc-brands) { scroll-behavior: smooth; }
 /* ---------- the drawer ---------- */
 
 /* The page behind a drawer must not scroll under it. */
-html.oc-drw-open,
-html.oc-drw-open body { overflow: hidden; }
+/* The body is pinned at its offset in script instead, because Safari on a
+ * phone declines this and scrolls the page underneath anyway. Kept for the
+ * document, where it is honoured and harmless. */
+html.oc-drw-open { overflow: hidden; }
 
 
 /* One drawer serves the phone and the desktop hamburger, because at any

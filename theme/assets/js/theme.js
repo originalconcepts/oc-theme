@@ -153,6 +153,37 @@
 	if ( burger && drw ) {
 		var drwLast = null;
 
+		// Holding the page still. overflow:hidden on the document is what the
+		// stylesheet asked for and what Safari on a phone quietly declines —
+		// the page keeps its scroll underneath, and the first touch afterwards
+		// goes on settling that rather than on what it landed on. Pinning the
+		// body at its offset actually holds, and putting the offset back on
+		// close means nothing appears to move.
+		var drwScrollY = 0;
+
+		function drwLock( on ) {
+			var body = document.body;
+
+			if ( on ) {
+				drwScrollY = window.scrollY || window.pageYOffset || 0;
+				body.style.position = 'fixed';
+				body.style.insetInlineStart = '0';
+				body.style.insetInlineEnd = '0';
+				body.style.top = ( -drwScrollY ) + 'px';
+				return;
+			}
+
+			if ( 'fixed' !== body.style.position ) {
+				return;
+			}
+
+			body.style.position = '';
+			body.style.insetInlineStart = '';
+			body.style.insetInlineEnd = '';
+			body.style.top = '';
+			window.scrollTo( 0, drwScrollY );
+		}
+
 		// Which kind of hand opened it. A key press means a keyboard is
 		// driving and focus should follow; a pointer means it should not.
 		var drwViaKey = false;
@@ -176,6 +207,7 @@
 				void drw.offsetWidth;
 				drw.setAttribute( 'data-open', 'true' );
 				drw.classList.remove( 'is-settled' );
+				drwLock( true );
 				document.documentElement.classList.add( 'oc-drw-open' );
 				drwLast = document.activeElement;
 
@@ -194,6 +226,7 @@
 			}
 
 			drw.setAttribute( 'data-open', 'false' );
+			drwLock( false );
 			document.documentElement.classList.remove( 'oc-drw-open' );
 			drwShut( drw );
 
@@ -276,6 +309,53 @@
 			},
 			true
 		);
+
+		// And the link answers the touch itself rather than waiting for the
+		// click the browser may or may not make from it. Everything above is
+		// a theory about WHY the first tap goes missing; this does not care
+		// why. Touch only — a mouse keeps its ordinary click — and only when
+		// the finger did not travel, so a scroll is still a scroll.
+		var drwTap = null, drwTapX = 0, drwTapY = 0, drwTapMoved = false;
+
+		drw.addEventListener( 'pointerdown', function ( event ) {
+			if ( 'mouse' === event.pointerType ) {
+				drwTap = null;
+				return;
+			}
+
+			drwTap = event.target.closest( '.oc-drw__a, .oc-drw__title, .oc-drw__all' );
+			drwTapX = event.clientX;
+			drwTapY = event.clientY;
+			drwTapMoved = false;
+		}, true );
+
+		drw.addEventListener( 'pointermove', function ( event ) {
+			if ( drwTap && ( Math.abs( event.clientX - drwTapX ) > 10 || Math.abs( event.clientY - drwTapY ) > 10 ) ) {
+				drwTapMoved = true;
+			}
+		}, true );
+
+		drw.addEventListener( 'pointerup', function ( event ) {
+			var link = drwTap;
+
+			drwTap = null;
+
+			if ( ! link || drwTapMoved || 'mouse' === event.pointerType ) {
+				return;
+			}
+
+			var href = link.getAttribute( 'href' );
+
+			if ( ! href || '#' === href.charAt( 0 ) ) {
+				return;
+			}
+
+			// Stop the click this touch would have become, so the page is
+			// never asked to go there twice.
+			event.preventDefault();
+			drwLock( false );
+			window.location.href = href;
+		}, true );
 
 		Array.prototype.forEach.call( drw.querySelectorAll( '[data-oc-drw-close]' ), function ( node ) {
 			node.addEventListener( 'click', function () {
