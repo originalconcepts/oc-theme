@@ -1362,3 +1362,7 @@ msgstr "מוביל אל (רשות)"
 
 msgid "Give an address and the whole strip becomes a link."
 msgstr "הזינו כתובת והפס כולו יהפוך לקישור."
+
+#. translators: 1: chapter number, 2: how many chapters there are.
+msgid "Chapter %1$d of %2$d"
+msgstr "פרק %1$d מתוך %2$d"
