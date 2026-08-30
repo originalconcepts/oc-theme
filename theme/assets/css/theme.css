@@ -1002,10 +1002,16 @@ html.oc-search-open { overflow: hidden; }
 	background: currentColor;
 }
 
+/* Centred by pinning both edges and letting the margins do it, the same way
+ * the logo has to be. A logical inset at 50% with a physical translate back
+ * does NOT centre anything in Hebrew: the inset measures from the right and
+ * the translate always pulls left, so the two compounded and the bars ended
+ * up sixteen pixels outside their own button, leaning toward the search. */
 .oc-burger span {
 	inset-block-start: 50%;
-	inset-inline-start: 50%;
-	translate: -50% -50%;
+	inset-inline: 0;
+	margin-inline: auto;
+	translate: 0 -50%;
 }
 
 /* The outer two ride at a distance that grows with the icon, so the three
