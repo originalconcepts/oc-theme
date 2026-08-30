@@ -1340,8 +1340,35 @@ final class Render {
 			return '';
 		}
 
+		// A row of dots that fills as the story is read: one for every
+		// chapter, lit up to and including the one on stage, so it says both
+		// how far in you are and how much is left. Buttons rather than marks,
+		// because a thing that shows position invites a press, and a press
+		// that does nothing reads as a fault.
+		$dots = '';
+
+		if ( $at > 1 ) {
+			for ( $d = 0; $d < $at; $d++ ) {
+				$dots .= sprintf(
+					'<button type="button" class="ocb-sc__dot%1$s" data-ocb-dot="%2$d" aria-label="%3$s"></button>',
+					0 === $d ? ' is-filled' : '',
+					$d,
+					esc_attr(
+						sprintf(
+							/* translators: 1: chapter number, 2: how many chapters there are. */
+							__( 'Chapter %1$d of %2$d', 'oc-blocks' ),
+							$d + 1,
+							$at
+						)
+					)
+				);
+			}
+
+			$dots = '<div class="ocb-sc__dots" data-ocb-dots>' . $dots . '</div>';
+		}
+
 		return '<div class="ocb-sc ocb-sc--' . esc_attr( (string) $s['side'] ) . '" data-ocb-sc>'
-			. '<div class="ocb-sc__pin"><div class="ocb-sc__stage">' . $frames . '</div>'
+			. '<div class="ocb-sc__pin"><div class="ocb-sc__stage">' . $frames . $dots . '</div>'
 			. '<div class="ocb-sc__mtexts">' . ( $mtexts ?? '' ) . '</div></div>'
 			. '<div class="ocb-sc__flow">' . $steps . '</div>'
 			. '</div>';

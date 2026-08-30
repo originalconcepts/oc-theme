@@ -3143,7 +3143,13 @@ html.oc-drw-open body { overflow: hidden; }
 	animation:
 		oc-drw-move .55s cubic-bezier(.22, .61, .36, 1) forwards,
 		oc-drw-fade .7s ease-out forwards;
-	animation-delay: calc(200ms + var(--oc-menu-step, 40ms) * var(--i, 0));
+	/* The step stops counting after the eighth row. Multiplied out over a
+	 * long menu it put the last rows two full seconds away, and a row that
+	 * has not arrived cannot be read or pressed — the menu felt like it was
+	 * still loading. Capped, the whole drawer is there in about a second
+	 * however many items it holds, and the stagger still reads on the rows
+	 * where the eye actually follows it. */
+	animation-delay: calc(120ms + var(--oc-menu-step, 40ms) * min(var(--i, 0), 8));
 }
 
 @keyframes oc-drw-move { to { transform: none; } }

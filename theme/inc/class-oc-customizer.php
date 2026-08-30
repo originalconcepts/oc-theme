@@ -993,8 +993,8 @@ final class Customizer {
 
 		$this->color( $c, 'oc_mega_bg', 'oc_menu', __( 'Panel background', 'oc-theme' ) );
 		$this->color( $c, 'oc_mega_head', 'oc_menu', __( 'Colour of the column headings', 'oc-theme' ) );
-		$this->color( $c, 'oc_mega_tx', 'oc_menu', __( 'Colour of the links inside', 'oc-theme' ) );
-		$this->color( $c, 'oc_mega_tx_h', 'oc_menu', __( 'Those links under the cursor', 'oc-theme' ) );
+		$this->color( $c, 'oc_mega_tx', 'oc_menu', __( 'Mega panel — link colour', 'oc-theme' ) );
+		$this->color( $c, 'oc_mega_tx_h', 'oc_menu', __( 'Mega panel — link colour on hover', 'oc-theme' ), __( 'The links inside the open panel, not the menu bar above it.', 'oc-theme' ) );
 		$this->number( $c, 'oc_mega_hov', 'oc_menu', __( 'How far they step under the cursor (px)', 'oc-theme' ), 3, 0, 12, null, __( 'Forwards — leftwards in Hebrew. Zero holds them still.', 'oc-theme' ) );
 		$this->number( $c, 'oc_mega_fs', 'oc_menu', __( 'Text size in the panel and the drop-down (px)', 'oc-theme' ), 15, 11, 22 );
 

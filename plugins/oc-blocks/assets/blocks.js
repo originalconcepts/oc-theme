@@ -988,11 +988,35 @@
 					mt.classList.toggle( 'is-on', i === at );
 					mt.classList.toggle( 'is-past', i < at );
 				} );
+
+				// The dots fill up to where you have read, so going back down
+				// the page empties them again.
+				sc.querySelectorAll( '[data-ocb-dot]' ).forEach( function ( dot ) {
+					dot.classList.toggle( 'is-filled', Number( dot.dataset.ocbDot ) <= at );
+				} );
 			} );
 		}, { rootMargin: '-46% 0px -46% 0px', threshold: 0 } );
 
 		steps.forEach( function ( step ) {
 			mid.observe( step );
+		} );
+
+		// Pressing a dot walks to that chapter. The step is the thing with a
+		// place on the page — the picture never moves — so that is what the
+		// page scrolls to, landing it where the observer hands it the stage.
+		sc.querySelectorAll( '[data-ocb-dot]' ).forEach( function ( dot ) {
+			dot.addEventListener( 'click', function () {
+				var step = steps[ Number( dot.dataset.ocbDot ) ];
+
+				if ( ! step ) {
+					return;
+				}
+
+				var box = step.getBoundingClientRect();
+				var middle = box.top + window.scrollY - ( window.innerHeight - box.height ) / 2;
+
+				window.scrollTo( { top: Math.max( 0, middle ), behavior: 'smooth' } );
+			} );
 		} );
 	} );
 

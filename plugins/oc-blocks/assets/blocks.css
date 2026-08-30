@@ -1649,6 +1649,57 @@ html.oc-look-lock body { overflow: hidden; }
 
 .ocb-sc__frame.is-on { opacity: 1; transform: none; }
 
+/* The dots ride just outside the picture on a wide screen, in the gutter
+ * between it and the words, and only when that gutter is real: below the
+ * width where it closes they move inside the picture instead, which is
+ * also where they sit on a phone. */
+.ocb-sc__dots {
+	position: absolute;
+	inset-block-start: 50%;
+	translate: 0 -50%;
+	inset-inline-end: -26px;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	z-index: 3;
+}
+
+.ocb-sc__dot {
+	inline-size: 9px;
+	block-size: 9px;
+	padding: 0;
+	border: 0;
+	border-radius: 999px;
+	cursor: pointer;
+	background: color-mix(in srgb, var(--oc-ink, #1c1c1c) 22%, transparent);
+	transition: background-color .3s ease, scale .3s ease;
+}
+
+.ocb-sc__dot.is-filled { background: var(--oc-ink, #1c1c1c); }
+
+.ocb-sc__dot:hover { scale: 1.25; }
+
+.ocb-sc__dot:focus-visible {
+	outline: 2px solid var(--oc-ink, #1c1c1c);
+	outline-offset: 3px;
+}
+
+/* No gutter to stand in — over the picture, where a light dot has to read
+ * against whatever the photograph is doing. */
+@media (max-width: 1100px) {
+	.ocb-sc__dots {
+		inset-inline-end: 14px;
+		padding: 7px 5px;
+		border-radius: 999px;
+		background: rgb(0 0 0 / 22%);
+		backdrop-filter: blur(3px);
+	}
+
+	.ocb-sc__dot { background: rgb(255 255 255 / 45%); }
+	.ocb-sc__dot.is-filled { background: #fff; }
+	.ocb-sc__dot:focus-visible { outline-color: #fff; }
+}
+
 .ocb-sc__frame img,
 .ocb-sc__frame video {
 	inline-size: 100%;
