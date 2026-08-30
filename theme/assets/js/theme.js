@@ -355,7 +355,12 @@
 			// top bar and its icons would straddle the two. Hold it below the
 			// bar and let it ride up as the bar scrolls away.
 			if ( ocTransBar ) {
-				siteHeader.style.setProperty(
+				// On the document, not on the header: the search panel sits
+				// outside the header and has to read this too, to know where
+				// the header's bottom edge actually is. Written on the header
+				// it fell back to zero out there, and the panel opened on top
+				// of the bar instead of under it.
+				document.documentElement.style.setProperty(
 					'--oc-htrans-shift',
 					Math.max( 0, ocTransBarH - window.scrollY ) + 'px'
 				);
@@ -793,6 +798,23 @@
 		// The panel's own X, and the one the header carries when the search
 		// lives there: one search, one way to leave it.
 		var sCloses = Array.prototype.slice.call( document.querySelectorAll( '[data-oc-search-close]' ) );
+		var sTyped = Array.prototype.slice.call( document.querySelectorAll( '[data-oc-search-typed]' ) );
+
+		// One mark that empties the line and closes the panel, which is what
+		// it looks like it should do.
+		Array.prototype.slice.call( document.querySelectorAll( '[data-oc-search-reset]' ) ).forEach( function ( button ) {
+			button.addEventListener( 'click', function () {
+				sFields.forEach( function ( f ) {
+					f.value = '';
+				} );
+
+				sTyped.forEach( function ( b ) {
+					b.hidden = true;
+				} );
+
+				setSearchOpen( false );
+			} );
+		} );
 
 		sCloses.forEach( function ( button ) {
 			button.addEventListener( 'click', function () {
@@ -888,6 +910,11 @@
 			if ( sClears.length ) {
 				sClears.forEach( function ( b ) { b.hidden = empty; } );
 			}
+
+			// The header field's closing mark keeps the same company: it
+			// turns up once there is something written and goes again when
+			// the line is empty.
+			sTyped.forEach( function ( b ) { b.hidden = empty; } );
 
 			if ( sGo ) {
 				sGo.disabled = empty;

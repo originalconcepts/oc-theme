@@ -769,35 +769,39 @@ a { color: inherit; }
 .oc-hsearch input[type="search"]:focus { outline: none; }
 
 /* The browser's own clear button turns up in the wrong place and in a shape
- * nothing else on the site uses. Ours is the wide bar's, scaled down. */
+ * nothing else on the site uses. */
 .oc-hsearch input[type="search"]::-webkit-search-cancel-button,
 .oc-hsearch input[type="search"]::-webkit-search-decoration { display: none; }
 
-/* Scoped through the form, because `.oc-hsearch button` above sets every
- * button in here to no background and would otherwise outrank a lone
- * class — which is exactly how this button lost its grey disc. */
-.oc-hsearch .oc-hsearch__wipe {
-	inline-size: 17px;
-	block-size: 17px;
-	padding: 0;
+/* Past the glass, a hairline and then one mark that empties the line and
+ * closes the panel — the same closing grammar the wide bar carries, so the
+ * two presentations of one search do not disagree about how to leave it.
+ * Both arrive only once something has been written. */
+.oc-hsearch__sep {
+	inline-size: 1px;
+	block-size: 16px;
+	background: currentColor;
+	opacity: .28;
 	flex: none;
+}
+
+.oc-hsearch button.oc-hsearch__close {
+	border: 0;
+	background: none;
+	color: inherit;
+	cursor: pointer;
+	padding: 4px;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	border: 0;
 	border-radius: 999px;
 	line-height: 0;
-	cursor: pointer;
-	background: var(--oc-surface-2, rgba(0, 0, 0, .07));
-	color: var(--oc-ink-2);
+	flex: none;
 }
 
-.oc-hsearch .oc-hsearch__wipe:hover {
-	background: var(--oc-line);
-	color: var(--oc-ink);
-}
-
-.oc-hsearch .oc-hsearch__wipe[hidden] { display: none; }
+.oc-hsearch button.oc-hsearch__close:hover { background: var(--oc-surface-2, rgba(0, 0, 0, .06)); }
+.oc-hsearch__close[hidden],
+.oc-hsearch__sep[hidden] { display: none; }
 
 .oc-searchbox[data-mode="min"] .oc-search__side { display: none; }
 .oc-searchbox[data-mode="min"] .oc-search__cols { grid-template-columns: 1fr; }
