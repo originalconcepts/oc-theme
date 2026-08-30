@@ -1578,8 +1578,13 @@ html.oc-menu-open .oc-menu-dim::after {
 .oc-mb__prod-img img {
 	display: block;
 	inline-size: 100%;
-	aspect-ratio: var(--oc-mb-pr, 1 / 1);
-	object-fit: var(--oc-mb-pfit, contain);
+	/* A block that was never told what shape to be takes the shape of the
+	 * shop's own product cards, and fills it. Square-and-contain was the old
+	 * default, and against upright furniture photography it letterboxed the
+	 * picture — white bars inside the frame, and the sale label riding the
+	 * FRAME's corner, half on the picture and half on the bar beside it. */
+	aspect-ratio: var(--oc-mb-pr, var(--oc-card-ratio, 1 / 1));
+	object-fit: var(--oc-mb-pfit, cover);
 	border-radius: 10px;
 }
 

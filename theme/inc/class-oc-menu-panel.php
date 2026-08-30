@@ -133,7 +133,7 @@ final class Menu_Panel {
 							'3/4' => __( 'Upright', 'oc-theme' ),
 							'4/3' => __( 'Landscape', 'oc-theme' ),
 						),
-						'def'     => '1/1',
+						'def'     => '',
 					),
 					'fit'   => array(
 						'type'    => 'select',
@@ -142,7 +142,7 @@ final class Menu_Panel {
 							'contain' => __( 'Whole, never cropped', 'oc-theme' ),
 							'cover'   => __( 'Fills the frame', 'oc-theme' ),
 						),
-						'def'     => 'contain',
+						'def'     => '',
 					),
 				),
 			),
@@ -883,15 +883,21 @@ final class Menu_Panel {
 			return '';
 		}
 
-		$shape = (string) ( $block['shape'] ?? '1/1' );
-		$fit   = (string) ( $block['fit'] ?? 'contain' );
-		$style = '';
+		// Only what the block actually chose is written out. Comparing against
+		// a default here instead meant an explicit choice that happened to
+		// equal the old default wrote nothing — so it could not be told apart
+		// from "never chosen", and changing the default would silently move it.
+		$shapes = array( '1/1', '3/4', '4/3' );
+		$fits   = array( 'contain', 'cover' );
+		$shape  = isset( $block['shape'] ) ? (string) $block['shape'] : '';
+		$fit    = isset( $block['fit'] ) ? (string) $block['fit'] : '';
+		$style  = '';
 
-		if ( '1/1' !== $shape ) {
+		if ( in_array( $shape, $shapes, true ) ) {
 			$style .= '--oc-mb-pr:' . $shape . ';';
 		}
 
-		if ( 'contain' !== $fit ) {
+		if ( in_array( $fit, $fits, true ) ) {
 			$style .= '--oc-mb-pfit:' . $fit . ';';
 		}
 
