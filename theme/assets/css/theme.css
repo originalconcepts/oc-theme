@@ -3191,6 +3191,19 @@ html.oc-drw-open body { overflow: hidden; }
 @keyframes oc-drw-move { to { transform: none; } }
 @keyframes oc-drw-fade { to { opacity: 1; } }
 
+/* The first touch anywhere in the drawer ends the arrival for every row at
+ * once. A row still on its way in is see-through and standing a little to
+ * the side of where it will settle, so pressing one is a guess — and a
+ * press that lands on a guess reads as the menu ignoring you. Rows are the
+ * full width of the panel, so settling them moves nothing under the finger
+ * horizontally: whatever was pressed is still what is pressed. */
+.oc-drw.is-settled .oc-drw__list > .oc-drw__i > .oc-drw__row,
+.oc-drw.is-settled .oc-drw__list--sub > .oc-drw__i > .oc-drw__row {
+	animation: none !important;
+	opacity: 1 !important;
+	transform: none !important;
+}
+
 .oc-drw--mo-stagger .oc-drw__list > .oc-drw__i:nth-child(1)  { --i: 0; }
 .oc-drw--mo-stagger .oc-drw__list > .oc-drw__i:nth-child(2)  { --i: 1; }
 .oc-drw--mo-stagger .oc-drw__list > .oc-drw__i:nth-child(3)  { --i: 2; }
@@ -3709,9 +3722,10 @@ html.oc-drw-open body { overflow: hidden; }
 		 * padding is narrower than the content gutter — left alone the mark
 		 * lands 17.6px from the edge while the pictures below it start at 16.
 		 * This is the 1.6px that makes the menu begin exactly where they do,
-		 * without shrinking the target a thumb has to find. */
+		 * without shrinking the target a thumb has to find. The step to the
+		 * search is the row's own, the same one the account keeps from the
+		 * basket. */
 		margin-inline-start: -2px;
-		margin-inline-end: 10px;
 	}
 
 	.oc-header--m-centered .oc-search-toggle { order: 2; }

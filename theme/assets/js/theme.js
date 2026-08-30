@@ -163,6 +163,7 @@
 				 * already where it is going and never slides. */
 				void drw.offsetWidth;
 				drw.setAttribute( 'data-open', 'true' );
+				drw.classList.remove( 'is-settled' );
 				document.documentElement.classList.add( 'oc-drw-open' );
 				drwLast = document.activeElement;
 
@@ -246,6 +247,18 @@
 			// a decode burst during the slide was eating the first taps.
 			setTimeout( ocWarm, 450 );
 		} );
+
+		// The moment a finger lands anywhere in the drawer, every row finishes
+		// arriving. Waiting for an animation before a menu will answer is the
+		// menu's problem, not the visitor's — and capture, so this runs
+		// before the press is resolved into a click on whatever it hit.
+		drw.addEventListener(
+			'pointerdown',
+			function () {
+				drw.classList.add( 'is-settled' );
+			},
+			true
+		);
 
 		Array.prototype.forEach.call( drw.querySelectorAll( '[data-oc-drw-close]' ), function ( node ) {
 			node.addEventListener( 'click', function () {
