@@ -7637,10 +7637,11 @@ body.oc-no-qty.single-product div.product form.cart .woocommerce-variation-add-t
 .oc-linked--slider .oc-strip { font-size: .72rem; }
 
 /* The composed shelf is narrower still — measured on a phone, its card is
- * 151px against the 173px of the rows above, and at .72rem the line wanted
- * 152px and lost its last word to the ellipsis. It gets its own step down,
- * with room left for the number to gain a digit. */
-.ocb-shelf--slider .oc-strip { font-size: .64rem; }
+ * 151px against the 173px of the rows above. One step down from the other
+ * sliders is as far as it needs to go: the line then has nine pixels to
+ * spare, and still seven when the number reaches four digits. A step up
+ * from here fits today's number and clips tomorrow's. */
+.ocb-shelf--slider .oc-strip { font-size: .68rem; }
 
 /* ---------- add-to-cart loader + quantity edge cases ---------- */
 
