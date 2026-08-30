@@ -125,25 +125,6 @@ final class Menu_Panel {
 						'label' => __( 'The category', 'oc-theme' ),
 						'when'  => array( 'mode' => array( 'cat' ) ),
 					),
-					'shape' => array(
-						'type'    => 'select',
-						'label'   => __( 'Picture shape', 'oc-theme' ),
-						'choices' => array(
-							'1/1' => __( 'Square', 'oc-theme' ),
-							'3/4' => __( 'Upright', 'oc-theme' ),
-							'4/3' => __( 'Landscape', 'oc-theme' ),
-						),
-						'def'     => '',
-					),
-					'fit'   => array(
-						'type'    => 'select',
-						'label'   => __( 'The picture', 'oc-theme' ),
-						'choices' => array(
-							'contain' => __( 'Whole, never cropped', 'oc-theme' ),
-							'cover'   => __( 'Fills the frame', 'oc-theme' ),
-						),
-						'def'     => '',
-					),
 				),
 			),
 			'brands' => array(
@@ -883,25 +864,12 @@ final class Menu_Panel {
 			return '';
 		}
 
-		// Only what the block actually chose is written out. Comparing against
-		// a default here instead meant an explicit choice that happened to
-		// equal the old default wrote nothing — so it could not be told apart
-		// from "never chosen", and changing the default would silently move it.
-		$shapes = array( '1/1', '3/4', '4/3' );
-		$fits   = array( 'contain', 'cover' );
-		$shape  = isset( $block['shape'] ) ? (string) $block['shape'] : '';
-		$fit    = isset( $block['fit'] ) ? (string) $block['fit'] : '';
-		$style  = '';
-
-		if ( in_array( $shape, $shapes, true ) ) {
-			$style .= '--oc-mb-pr:' . $shape . ';';
-		}
-
-		if ( in_array( $fit, $fits, true ) ) {
-			$style .= '--oc-mb-pfit:' . $fit . ';';
-		}
-
-		$out = '<div class="oc-mb__prods"' . ( '' === $style ? '' : ' style="' . esc_attr( $style ) . '"' ) . '>';
+		// No shape or fit of its own. A product in the menu is the same
+		// product the catalogue is showing, so it wears the shape the shop
+		// chose for its cards — set that once and the two can never disagree.
+		// Blocks saved when this was a per-panel choice keep the value in the
+		// database; it is simply not read any more.
+		$out = '<div class="oc-mb__prods">';
 
 		// The catalogue size may be server-cropped square; a shape or a
 		// whole-picture fit needs the uncropped file.
