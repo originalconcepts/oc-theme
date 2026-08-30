@@ -7614,11 +7614,27 @@ body.oc-no-qty.single-product div.product form.cart .woocommerce-variation-add-t
 	text-align: center;
 	font-size: .78rem;
 	line-height: 1.35;
-	padding: .55em .7em;
+	/* Measured on a slider card: the line wanted 176px and had 173, so it
+	 * broke in two over three pixels. The side padding is only breathing
+	 * room — the strip already spans the whole card — so it gives them up
+	 * before the type does. */
+	padding: .55em .4em;
 	background: var(--flag-bg, #ede4da);
 	color: var(--flag-tx, #111);
 	pointer-events: none;
+	/* One line, always. The wording is the shop's to edit, so the clip is
+	 * there for a sentence far longer than any of the defaults rather than
+	 * as part of the normal reading. */
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
+
+/* A card in a slider is narrower than one in the grid, and the number in
+ * the message can grow a digit at any time. A little less type there buys
+ * the room for both without touching the catalogue's own cards. */
+[data-oc-slider] .oc-strip,
+.oc-linked--slider .oc-strip { font-size: .72rem; }
 
 /* ---------- add-to-cart loader + quantity edge cases ---------- */
 
