@@ -683,7 +683,22 @@ final class Render {
 		// The theme's own loop draws the cards, so a products shelf here is
 		// pixel-for-pixel the catalogue — labels, galleries, quick pick.
 		$shortcode = '[products ids="' . implode( ',', array_map( 'absint', $ids ) ) . '" columns="' . $cols . '" orderby="post__in" limit="' . count( $ids ) . '"]';
-		$cards     = do_shortcode( $shortcode );
+
+		// The layout is settled before the cards are drawn, so a shelf that
+		// scrolls can tell the theme's own card renderer to keep to one
+		// picture. Both the deferred and the ajax rebuild come back through
+		// here, so this one place covers every way the shelf is built.
+		$oc_slider = 'grid' !== (string) ( $o['layout'] ?? 'slider' ) && class_exists( '\OC\Theme\WooCommerce' );
+
+		if ( $oc_slider ) {
+			\OC\Theme\WooCommerce::slider_row( true );
+		}
+
+		$cards = do_shortcode( $shortcode );
+
+		if ( $oc_slider ) {
+			\OC\Theme\WooCommerce::slider_row( false );
+		}
 
 		$more = '';
 

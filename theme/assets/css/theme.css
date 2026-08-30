@@ -12138,6 +12138,19 @@ body.oc-checkout { overflow-x: clip; }
 	.woocommerce ul.products li.oc-block--big > * { grid-row: 1 / 8; }
 	.woocommerce ul.products li.oc-block--big::after { grid-row: 8; }
 
+	/* A slider band paints a background, and the row spacer rides INSIDE the
+	 * item — so its gap came out painted band colour while the product row
+	 * above it contributed a WHITE one. Measured on the catalogue: 28px of
+	 * white above the band, 6px below, which is why it read as stuck to the
+	 * products underneath. The spacer is handed out as margin instead: the
+	 * same advance down the page, but the space now falls outside the
+	 * colour, and the two sides match. */
+	.woocommerce ul.products li.oc-block--slider::after { content: none; }
+
+	.woocommerce ul.products li.oc-block--slider {
+		margin-block-end: calc(6px + var(--oc-gap-eff, 20px) + 16px);
+	}
+
 	/* Two rows tall: the picture takes the first row entire plus the second
 	 * row's picture track, which drops the text onto the second row's text
 	 * tracks. */

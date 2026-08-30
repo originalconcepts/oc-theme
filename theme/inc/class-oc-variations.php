@@ -1401,7 +1401,9 @@ final class Variations {
 			}
 
 			$galleries = $this->galleries_meta( $product->get_id() );
-			$max       = 'gallery' === get_theme_mod( 'oc_card_image_mode', 'single' ) ? max( 2, (int) get_theme_mod( 'oc_card_gallery_max', 4 ) ) : 1;
+			// Same rule as the card itself: inside a sideways row there is one
+			// picture, so the swatch must not hand the script four to rebuild.
+			$max       = ( 'gallery' === get_theme_mod( 'oc_card_image_mode', 'single' ) && ! WooCommerce::in_slider() ) ? max( 2, (int) get_theme_mod( 'oc_card_gallery_max', 4 ) ) : 1;
 			$permalink = get_permalink( $product->get_id() );
 			$list      = array();
 
@@ -1614,7 +1616,7 @@ final class Variations {
 	 */
 	private function card_image_urls( \WC_Product $product ): array {
 		$mode = (string) get_theme_mod( 'oc_card_image_mode', 'single' );
-		$max  = 'gallery' === $mode ? max( 2, (int) get_theme_mod( 'oc_card_gallery_max', 4 ) ) : 1;
+		$max  = ( 'gallery' === $mode && ! WooCommerce::in_slider() ) ? max( 2, (int) get_theme_mod( 'oc_card_gallery_max', 4 ) ) : 1;
 
 		$ids = array_merge(
 			array( (int) $product->get_image_id() ),

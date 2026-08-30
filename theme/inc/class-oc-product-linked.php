@@ -498,6 +498,7 @@ final class Product_Linked {
 
 		if ( 'slider' === $style ) {
 			$open = str_replace( '<ul ', '<ul data-oc-slider ', $open );
+			WooCommerce::slider_row( true );
 		}
 
 		echo $open; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- WooCommerce markup.
@@ -512,6 +513,11 @@ final class Product_Linked {
 		}
 
 		$GLOBALS['post'] = $original; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+
+		if ( 'slider' === $style ) {
+			WooCommerce::slider_row( false );
+		}
+
 		wp_reset_postdata();
 
 		woocommerce_product_loop_end();

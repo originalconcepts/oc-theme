@@ -49,6 +49,7 @@ $oc_cols = max( 2, min( 6, (int) get_theme_mod( 'oc_related_cols', 4 ) ) );
 
 	if ( 'slider' === $oc_layout ) {
 		$oc_open = str_replace( '<ul class="products', '<ul data-oc-slider class="products', $oc_open );
+		\OC\Theme\WooCommerce::slider_row( true );
 	}
 
 	echo $oc_open; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- WooCommerce's own markup.
@@ -59,6 +60,10 @@ $oc_cols = max( 2, min( 6, (int) get_theme_mod( 'oc_related_cols', 4 ) ) );
 		setup_postdata( $GLOBALS['post'] = $post_object ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited, Squiz.PHP.DisallowMultipleAssignments.Found
 
 		wc_get_template_part( 'content', 'product' );
+	}
+
+	if ( 'slider' === $oc_layout ) {
+		\OC\Theme\WooCommerce::slider_row( false );
 	}
 
 	woocommerce_product_loop_end();

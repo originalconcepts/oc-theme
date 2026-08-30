@@ -25,6 +25,35 @@ defined( 'ABSPATH' ) || exit;
 final class WooCommerce {
 
 	/**
+	 * How deep we are inside rows of cards that scroll sideways.
+	 *
+	 * A count rather than a flag: a composed shelf can sit inside a page
+	 * that is itself drawing a loop, and a count survives that nesting
+	 * where a boolean would be switched off by the inner row closing.
+	 *
+	 * @var int
+	 */
+	private static $slider_depth = 0;
+
+	/**
+	 * Open or close a row of cards that scrolls sideways.
+	 *
+	 * @param bool $open Opening the row, or closing it.
+	 */
+	public static function slider_row( bool $open ): void {
+		self::$slider_depth = $open ? self::$slider_depth + 1 : max( 0, self::$slider_depth - 1 );
+	}
+
+	/**
+	 * Is a card being drawn inside a row that scrolls sideways?
+	 *
+	 * @return bool
+	 */
+	public static function in_slider(): bool {
+		return self::$slider_depth > 0;
+	}
+
+	/**
 	 * Static wiring only. Setting-dependent wiring lives in runtime_hooks().
 	 */
 	public function register(): void {
@@ -919,7 +948,17 @@ final class WooCommerce {
 		}
 
 		$mode = (string) get_theme_mod( 'oc_card_image_mode', 'single' );
-		$max  = 'gallery' === $mode ? max( 2, (int) get_theme_mod( 'oc_card_gallery_max', 4 ) ) : 2;
+
+		// A card inside a sideways-scrolling row carries one picture. Two
+		// horizontal scrollers inside one another fight on a phone: the
+		// swipe meant to bring the next product turns this product's
+		// gallery instead. Decided here rather than hidden in CSS, so the
+		// other images never reach the markup and are never fetched.
+		if ( 'gallery' === $mode && self::in_slider() ) {
+			$mode = 'single';
+		}
+
+		$max = 'gallery' === $mode ? max( 2, (int) get_theme_mod( 'oc_card_gallery_max', 4 ) ) : 2;
 
 		$ids = array_merge(
 			array( (int) $product->get_image_id() ),
