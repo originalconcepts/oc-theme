@@ -871,9 +871,13 @@ final class Menu_Panel {
 		// database; it is simply not read any more.
 		$out = '<div class="oc-mb__prods">';
 
-		// The catalogue size may be server-cropped square; a shape or a
-		// whole-picture fit needs the uncropped file.
-		$size = '1/1' === $shape && 'cover' === $fit ? 'woocommerce_thumbnail' : 'large';
+		// WooCommerce's own thumbnail is cropped square by the server, which
+		// makes it the right file exactly when the card is square — the shape
+		// this picture now takes. So the size follows the card ratio too,
+		// rather than a pair of settings that no longer exist.
+		$size = '1/1' === (string) get_theme_mod( 'oc_card_ratio', '1/1' )
+			? 'woocommerce_thumbnail'
+			: 'large';
 
 		foreach ( $products as $product ) {
 			$image = $product->get_image( $size, array( 'loading' => 'lazy' ) );
