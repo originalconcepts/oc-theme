@@ -3680,16 +3680,41 @@ html.oc-drw-open body { overflow: hidden; }
 
 	/* mobile centred: hamburger at the start with search beside it, logo in
 	 * the centre, the remaining icons at the end */
-	.oc-header--m-centered .oc-header__start,
-	.oc-header--m-centered .oc-header__end { display: contents; }
-	.oc-header--m-centered .oc-header__inner { display: flex; }
+	/* The burger stands alone at the reading edge and the icons keep each
+	 * other company at the other one. Search used to sit beside the burger
+	 * to make the two sides weigh the same, because the logo was centred by
+	 * auto margins — which centre a thing in the space LEFT OVER, not in the
+	 * bar. So the logo comes out of the flow and is centred against the
+	 * header itself, and the sides are then free to be uneven. */
+	.oc-header--m-centered .oc-header__start { display: contents; }
+
+	.oc-header--m-centered .oc-header__end {
+		display: flex;
+		align-items: center;
+		order: 3;
+		margin-inline-start: 0;
+	}
+
+	.oc-header--m-centered .oc-header__inner {
+		display: flex;
+		position: relative;
+		justify-content: space-between;
+	}
+
 	.oc-header--m-centered .oc-burger { order: 1; }
-	.oc-header--m-centered .oc-search-toggle { order: 2; }
+
 	.oc-header--m-centered .oc-logo,
-	.oc-header--m-centered .custom-logo-link { order: 3; margin-inline: auto; }
+	.oc-header--m-centered .custom-logo-link {
+		order: 2;
+		margin-inline: 0;
+		position: absolute;
+		inset-inline-start: 50%;
+		translate: -50% 0;
+		/* Never wide enough to reach the controls on either side. */
+		max-inline-size: calc(100% - 200px);
+	}
+
 	.oc-header--m-centered .oc-nav2 { order: 4; }
-	.oc-header--m-centered .oc-account-link { order: 5; }
-	.oc-header--m-centered .oc-cart-link { order: 6; }
 
 	.woocommerce ul.products { grid-template-columns: repeat(var(--oc-grid-cols-m, 2), minmax(0, 1fr)); }
 	.oc-cols-m-1 { --oc-grid-cols-m: 1; }
