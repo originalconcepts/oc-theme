@@ -979,8 +979,14 @@
 				frames.forEach( function ( fr, i ) {
 					fr.classList.toggle( 'is-on', i === at );
 				} );
+				// On a phone every chapter sits in the same grid cell, so the
+				// direction it travels has to come from somewhere: behind the
+				// current one leaves upwards, ahead of it waits below.
 				sc.querySelectorAll( '[data-ocb-mstep]' ).forEach( function ( mt ) {
-					mt.classList.toggle( 'is-on', Number( mt.dataset.ocbMstep ) === at );
+					var i = Number( mt.dataset.ocbMstep );
+
+					mt.classList.toggle( 'is-on', i === at );
+					mt.classList.toggle( 'is-past', i < at );
 				} );
 			} );
 		}, { rootMargin: '-46% 0px -46% 0px', threshold: 0 } );

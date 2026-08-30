@@ -1666,12 +1666,51 @@ html.oc-look-lock body { overflow: hidden; }
 	justify-content: center;
 }
 
+/* Set in the same grammar as every other heading the page carries — the
+ * display face, the same tracking as a section title, balanced over its
+ * lines — a step down in size because it titles a chapter, not a section. */
+.ocb-sc__step h3,
+.ocb-sc__mtext h3 {
+	font-family: var(--oc-font-display, inherit);
+	letter-spacing: .02em;
+	line-height: 1.2;
+	text-wrap: balance;
+	font-weight: 600;
+}
+
 .ocb-sc__step h3 {
 	margin: 0 0 12px;
-	font-size: clamp(1.3em, 2.2vw, 1.7em);
+	font-size: clamp(1.3em, 2.4vw, 1.75em);
 }
 
 .ocb-sc__words { line-height: 1.8; opacity: .85; max-inline-size: 480px; }
+
+/* A chapter arrives and leaves with the scroll rather than sitting at full
+ * strength until it is gone: it rises into place as it enters, and lifts
+ * and fades as it approaches the top edge, while the next one is already
+ * coming up underneath. Driven by the scroll position itself, so the words
+ * track the wheel exactly instead of animating on a timer of their own.
+ * Browsers without scroll-driven animations keep the plain, readable
+ * version — nothing is hidden that they cannot bring back. */
+@supports (animation-timeline: view()) {
+	@media (prefers-reduced-motion: no-preference) and (min-width: 783px) {
+		.ocb-sc__step > * {
+			animation: ocb-sc-rise linear both, ocb-sc-leave linear both;
+			animation-timeline: view(), view();
+			animation-range: entry 10% cover 26%, exit 30% exit 92%;
+		}
+	}
+}
+
+@keyframes ocb-sc-rise {
+	from { opacity: 0; translate: 0 26px; }
+	to { opacity: 1; translate: 0 0; }
+}
+
+@keyframes ocb-sc-leave {
+	from { opacity: 1; translate: 0 0; }
+	to { opacity: 0; translate: 0 -26px; }
+}
 
 /* The crossfading chapter words live inside the pin; desktop reads the
  * flow instead. */
@@ -1698,19 +1737,27 @@ html.oc-look-lock body { overflow: hidden; }
 
 	.ocb-sc__mtexts { display: grid; margin-block-start: 14px; flex: 0 0 auto; padding-block-end: 8px; }
 
+	/* A chapter that has had its turn leaves upwards; one that has not had
+	 * it yet waits below and rises into the place the last one held. Every
+	 * chapter sits in the same grid cell, so which way it travels can only
+	 * come from whether it is behind or ahead — the script says which. */
 	.ocb-sc__mtext {
 		grid-area: 1 / 1;
 		opacity: 0;
-		transform: translateY(8px);
-		transition: opacity .45s ease, transform .45s ease;
+		transform: translateY(22px);
+		transition: opacity .38s ease, transform .38s cubic-bezier(.22, .61, .36, 1);
 		pointer-events: none;
 	}
 
+	.ocb-sc__mtext.is-past { transform: translateY(-22px); }
+
 	.ocb-sc__mtext.is-on { opacity: 1; transform: none; pointer-events: auto; }
 
-	.ocb-sc__mtext h3 { margin: 0 0 8px; font-size: 1.2em; }
+	.ocb-sc__mtext h3 { margin: 0 0 8px; font-size: clamp(1.15em, 4.4vw, 1.3em); }
 
-	.ocb-sc__step { min-block-size: 58vh; visibility: hidden; padding-block: 0; }
+	/* Was 58vh — most of a screen of scrolling for every single swap, which
+	 * read as the block being stuck rather than paced. */
+	.ocb-sc__step { min-block-size: 38vh; visibility: hidden; padding-block: 0; }
 }
 
 /* ---------- questions & answers ---------- */
