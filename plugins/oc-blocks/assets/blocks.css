@@ -1680,7 +1680,7 @@ html.oc-look-lock body { overflow: hidden; }
 
 .ocb-sc__step h3 {
 	margin: 0 0 12px;
-	font-size: clamp(1.3em, 2.4vw, 1.75em);
+	font-size: clamp(1.4em, 2.6vw, 1.9em);
 }
 
 .ocb-sc__words { line-height: 1.8; opacity: .85; max-inline-size: 480px; }
@@ -1695,21 +1695,23 @@ html.oc-look-lock body { overflow: hidden; }
 @supports (animation-timeline: view()) {
 	@media (prefers-reduced-motion: no-preference) and (min-width: 783px) {
 		.ocb-sc__chapter {
-			animation: ocb-sc-rise linear both, ocb-sc-leave linear both;
-			animation-timeline: view(), view();
-			animation-range: entry 10% cover 26%, exit 30% exit 92%;
+			animation: ocb-sc-pass linear both;
+			animation-timeline: view();
+			animation-range: cover 0% cover 100%;
 		}
 	}
 }
 
-@keyframes ocb-sc-rise {
-	from { opacity: 0; translate: 0 26px; }
-	to { opacity: 1; translate: 0 0; }
-}
-
-@keyframes ocb-sc-leave {
-	from { opacity: 1; translate: 0 0; }
-	to { opacity: 0; translate: 0 -26px; }
+/* One animation for the whole pass, not two. Two animations on the same
+ * property both carry fill: both, so the one declared last pins the
+ * property to its own start value for the whole time its range has not
+ * begun — the arrival was being held at full strength by the departure and
+ * never showed at all. One pass, four stops, nothing to fight over. */
+@keyframes ocb-sc-pass {
+	0% { opacity: 0; translate: 0 26px; }
+	24% { opacity: 1; translate: 0 0; }
+	68% { opacity: 1; translate: 0 0; }
+	100% { opacity: 0; translate: 0 -26px; }
 }
 
 /* The crossfading chapter words live inside the pin; desktop reads the
@@ -1753,7 +1755,7 @@ html.oc-look-lock body { overflow: hidden; }
 
 	.ocb-sc__mtext.is-on { opacity: 1; transform: none; pointer-events: auto; }
 
-	.ocb-sc__mtext h3 { margin: 0 0 8px; font-size: clamp(1.15em, 4.4vw, 1.3em); }
+	.ocb-sc__mtext h3 { margin: 0 0 8px; font-size: clamp(1.25em, 5vw, 1.5em); }
 
 	/* Was 58vh — most of a screen of scrolling for every single swap, which
 	 * read as the block being stuck rather than paced. */
