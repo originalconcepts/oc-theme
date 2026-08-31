@@ -338,7 +338,7 @@ final class Product_Linked {
 
 				if ( taxonomy_exists( $name ) ) {
 					$term  = get_term_by( 'slug', $value, $name );
-					$label = ( $term && ! is_wp_error( $term ) ) ? $term->name : $value;
+					$label = $term instanceof \WP_Term ? $term->name : $value;
 				}
 
 				echo '<option value="' . esc_attr( $value ) . '">' . esc_html( $label ) . '</option>';

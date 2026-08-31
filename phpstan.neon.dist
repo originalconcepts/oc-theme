@@ -57,6 +57,4 @@ parameters:
         # WC_Order_Item_Product; the stubs type the collection as the base class.
         -
             message: '#Call to an undefined method WC_Order_Item::get_(product|product_id|variation_id|subtotal|total)\(\)\.#'
-            paths:
-                - theme/inc/class-oc-woocommerce.php
-                - theme/inc/class-oc-order-print.php
+            path: theme/inc/class-oc-woocommerce.php
