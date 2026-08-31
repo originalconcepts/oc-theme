@@ -505,7 +505,7 @@ final class Redirects {
 			'source'      => $source,
 			'source_key'  => $key,
 			'target'      => 0 === strpos( $target, 'http' ) ? $target : ( '' === $target_path ? '/' : $target_path ),
-			'type'        => in_array( (int) ( $args['type'] ?? 301 ), array( 301, 302, 410 ), true ) ? (int) $args['type'] : 301,
+			'type'        => in_array( (int) ( $args['type'] ?? 301 ), array( 301, 302, 410 ), true ) ? (int) ( $args['type'] ?? 301 ) : 301,
 			'origin'      => in_array( (string) ( $args['origin'] ?? 'manual' ), array( 'manual', 'import', 'auto' ), true ) ? (string) $args['origin'] : 'manual',
 			'batch_id'    => absint( $args['batch_id'] ?? 0 ),
 			'match_rule'  => sanitize_key( (string) ( $args['match_rule'] ?? '' ) ),
