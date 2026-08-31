@@ -502,7 +502,11 @@ final class Render {
 			. ( '' === (string) ( $s['ctac'] ?? '' ) ? '' : '--ocb-hero-ctabg:' . $s['ctac'] . ';' )
 			. ( '' === (string) ( $s['ctat'] ?? '' ) ? '' : '--ocb-hero-ctaink:' . $s['ctat'] . ';' );
 
-		$html = '<div class="ocb-hero ocb-hero--' . esc_attr( (string) $s['effect'] ) . ' ocb-hero--pos-' . esc_attr( (string) $s['pos'] ) . ' ocb-hero--' . esc_attr( (string) $s['tone'] ) . ( $one ? ' ocb-hero--one' : '' ) . ( 0 === absint( $s['h'] ) && '' !== $ratio ? ' ocb-hero--hauto' : '' ) . ( 0 === absint( $s['hm'] ) && '' !== $ratiom ? ' ocb-hero--hmauto' : '' ) . '"'
+		// The toggle arrived after sites already carried video slides, so an
+		// absent value means the old behaviour: the video covers the area.
+		$vcontain = isset( $s['vcover'] ) && ! $s['vcover'];
+
+		$html = '<div class="ocb-hero ocb-hero--' . esc_attr( (string) $s['effect'] ) . ' ocb-hero--pos-' . esc_attr( (string) $s['pos'] ) . ' ocb-hero--' . esc_attr( (string) $s['tone'] ) . ( $one ? ' ocb-hero--one' : '' ) . ( $vcontain ? ' ocb-hero--vcontain' : '' ) . ( 0 === absint( $s['h'] ) && '' !== $ratio ? ' ocb-hero--hauto' : '' ) . ( 0 === absint( $s['hm'] ) && '' !== $ratiom ? ' ocb-hero--hmauto' : '' ) . '"'
 			. ' style="' . esc_attr( $style ) . '"'
 			. ( $one || empty( $s['auto'] ) ? '' : ' data-ocb-auto="' . absint( $s['auto'] ) . '"' ) . '>'
 			. '<div class="ocb-hero__strip">' . implode( '', $slides ) . '</div>'
@@ -832,6 +836,10 @@ final class Render {
 			return '';
 		}
 
+		// The block may call a category by its own name — "ספורט" on the
+		// shelf can read "ספורטיבי" on the door.
+		$names = is_array( $s['names'] ?? null ) ? $s['names'] : array();
+
 		$items = '';
 
 		foreach ( $ids as $id ) {
@@ -840,6 +848,9 @@ final class Render {
 			if ( ! $term instanceof \WP_Term ) {
 				continue;
 			}
+
+			$label = trim( (string) ( $names[ $id ] ?? '' ) );
+			$label = '' !== $label ? $label : $term->name;
 
 			// Prefer the theme's shared card image (with its hero/thumbnail
 			// fallback chain); fall back to the WooCommerce category image.
@@ -852,7 +863,7 @@ final class Render {
 				false,
 				array(
 					'loading' => 'lazy',
-					'alt'     => $term->name,
+					'alt'     => $label,
 				)
 			) : '';
 			$link  = get_term_link( $term );
@@ -863,7 +874,7 @@ final class Render {
 
 			$items .= '<a class="ocb-cat" href="' . esc_url( (string) $link ) . '">'
 				. '<span class="ocb-cat__pic">' . $img . '</span>'
-				. '<span class="ocb-cat__name">' . esc_html( $term->name ) . '</span>'
+				. '<span class="ocb-cat__name">' . esc_html( $label ) . '</span>'
 				. '</a>';
 		}
 
@@ -873,6 +884,7 @@ final class Render {
 
 		$classes = 'ocb-cats ocb-cats--' . esc_attr( (string) $s['shape'] )
 			. ' ocb-cats--w-' . esc_attr( (string) $s['words'] )
+			. ( 'chip' === (string) ( $s['wstyle'] ?? 'clean' ) ? ' ocb-cats--ws-chip' : '' )
 			. ' ocb-cats--m' . esc_attr( '' !== (string) ( $s['mlay'] ?? '' ) ? (string) $s['mlay'] : '2' )
 			. ' ocb-cats--' . esc_attr( (string) $s['layout'] )
 			. ' ocb-cats--gap-' . esc_attr( (string) $s['gap'] )
@@ -880,7 +892,7 @@ final class Render {
 			. ( 'circle' === $s['shape'] ? '' : ' ocb-cats--c-' . esc_attr( (string) $s['corners'] ) );
 
 		return self::heading( $s )
-			. '<div class="' . $classes . '" style="--ocb-cols:' . absint( $s['cols'] ) . '"'
+			. '<div class="' . $classes . '" style="--ocb-cols:' . absint( $s['cols'] ) . ( absint( $s['wsize'] ?? 0 ) > 0 ? ';--ocb-cat-fs:' . absint( $s['wsize'] ) . 'px' : '' ) . '"'
 			. ( 'slider' === $s['layout'] ? ' data-ocb-shelf' : '' ) . '>'
 			. '<div class="ocb-cats__row">' . $items . '</div>'
 			. ( 'slider' === $s['layout'] ? self::shelf_arrows() : '' )

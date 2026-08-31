@@ -490,6 +490,16 @@ html[dir="ltr"] .ocbe-switch input:checked + i::after { transform: translateX(16
 }
 
 .ocbe-checks__row { display: flex; align-items: center; gap: 8px; padding-block: 4px; cursor: pointer; }
+.ocbe-checks__rename {
+	margin-inline-start: auto;
+	inline-size: 46%;
+	min-inline-size: 110px;
+	padding: 3px 8px;
+	border: 1px solid #dcdcde;
+	border-radius: 6px;
+	font-size: 12px;
+}
+.ocbe-checks__rename:focus { border-color: #2271b1; outline: none; }
 
 /* picks */
 .ocbe-picks { position: relative; }

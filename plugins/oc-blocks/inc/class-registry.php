@@ -403,6 +403,13 @@ final class Registry {
 						'def'   => 1,
 						'group' => 'design',
 					),
+					'vcover'   => array(
+						'type'  => 'toggle',
+						'label' => __( 'Video stretches over the whole area (crop)', 'oc-blocks' ),
+						'hint'  => __( 'Off: the whole frame shows, with bars where the proportions differ.', 'oc-blocks' ),
+						'def'   => 1,
+						'group' => 'design',
+					),
 					'dots'     => array(
 						'type'  => 'toggle',
 						'label' => __( 'Dots', 'oc-blocks' ),
@@ -642,6 +649,29 @@ final class Registry {
 						),
 						'def'     => 'under',
 						'group'   => 'design',
+					),
+					'wstyle'  => array(
+						'type'    => 'seg',
+						'label'   => __( 'Name style', 'oc-blocks' ),
+						'choices' => array(
+							'clean' => __( 'Plain', 'oc-blocks' ),
+							'chip'  => __( 'On white, styled like the buttons', 'oc-blocks' ),
+						),
+						'def'     => 'clean',
+						'group'   => 'design',
+					),
+					'wsize'   => array(
+						'type'  => 'number',
+						'label' => __( 'Name size (px, 0 — as the design)', 'oc-blocks' ),
+						'def'   => 0,
+						'min'   => 0,
+						'max'   => 48,
+						'group' => 'design',
+						'half'  => true,
+					),
+					'names'   => array(
+						'type'  => 'labels',
+						'label' => __( 'Display names', 'oc-blocks' ),
 					),
 					'layout'  => array(
 						'type'    => 'seg',
@@ -1604,6 +1634,20 @@ final class Registry {
 			case 'video':
 			case 'url':
 				return esc_url_raw( trim( (string) ( is_scalar( $value ) ? $value : '' ) ) );
+
+			case 'labels':
+				$clean = array();
+
+				foreach ( (array) ( is_array( $value ) ? $value : array() ) as $id => $text ) {
+					$id   = absint( $id );
+					$text = sanitize_text_field( (string) ( is_scalar( $text ) ? $text : '' ) );
+
+					if ( $id > 0 && '' !== $text ) {
+						$clean[ $id ] = $text;
+					}
+				}
+
+				return $clean;
 
 			case 'toggle':
 				return empty( $value ) ? 0 : 1;

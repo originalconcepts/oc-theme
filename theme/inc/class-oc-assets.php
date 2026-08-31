@@ -504,7 +504,7 @@ final class Assets {
 	 * @return string
 	 */
 	public function logo_dimensions( $html ) {
-		if ( ! is_string( $html ) || '' === $html || false !== strpos( $html, 'width=' ) ) {
+		if ( ! is_string( $html ) || '' === $html ) {
 			return $html;
 		}
 
@@ -512,6 +512,12 @@ final class Assets {
 
 		if ( $id < 1 ) {
 			return $html;
+		}
+
+		// Raster logos arrive with width/height already on them; only an SVG
+		// needs measuring. Either way the transparent logo below still rides.
+		if ( false !== strpos( $html, 'width=' ) ) {
+			return $this->transparent_logo( $html );
 		}
 
 		$dims = get_post_meta( $id, '_oc_svg_dims', true );
@@ -546,11 +552,20 @@ final class Assets {
 			$html = (string) preg_replace( '/<img /', '<img width="' . (int) $dims['w'] . '" height="' . (int) $dims['h'] . '" ', $html, 1 );
 		}
 
-		// The transparent header may carry its own (usually light) logo —
-		// it rides inside the same link and CSS swaps the two by state.
+		return $this->transparent_logo( $html );
+	}
+
+	/**
+	 * The transparent header may carry its own (usually light) logo — it
+	 * rides inside the same link and CSS swaps the two by state.
+	 *
+	 * @param string $html Logo markup.
+	 * @return string
+	 */
+	private function transparent_logo( string $html ): string {
 		$tr = (string) get_theme_mod( 'oc_logo_transparent', '' );
 
-		if ( '' !== $tr && 'none' !== get_theme_mod( 'oc_header_transparent', 'none' ) && false !== strpos( $html, '</a>' ) ) {
+		if ( '' !== $tr && 'none' !== get_theme_mod( 'oc_header_transparent', 'none' ) && false === strpos( $html, 'oc-logo-tr' ) && false !== strpos( $html, '</a>' ) ) {
 			$html = str_replace( '</a>', '<img class="oc-logo-tr" src="' . esc_url( $tr ) . '" alt="" /></a>', $html );
 		}
 
