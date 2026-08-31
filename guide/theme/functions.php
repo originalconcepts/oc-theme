@@ -172,6 +172,31 @@ function search_html( string $placeholder = 'חיפוש במדריך…' ): stri
 }
 
 /**
+ * The guide is written in Hebrew, so it reads right to left — whatever the
+ * WordPress locale of the install happens to be. Without this the page comes
+ * out `lang="en-US"` with no direction, and every numbered step, breadcrumb
+ * and search icon lands on the wrong side.
+ *
+ * The admin is left alone: an English admin turned RTL is worse than either.
+ */
+add_filter(
+	'locale',
+	static function ( $locale ) {
+		return is_admin() ? $locale : 'he_IL';
+	}
+);
+
+add_action(
+	'after_setup_theme',
+	static function (): void {
+		if ( ! is_admin() && isset( $GLOBALS['wp_locale'] ) ) {
+			$GLOBALS['wp_locale']->text_direction = 'rtl';
+		}
+	},
+	0
+);
+
+/**
  * The child's own stylesheet, after the parent's.
  */
 add_action(

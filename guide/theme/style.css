@@ -99,7 +99,8 @@ a:hover { text-decoration: underline; }
 .g-search { position: relative; flex: 0 0 auto; }
 .g-search input {
 	inline-size: 230px;
-	padding: 9px 38px 9px 14px;
+	padding: 9px 14px;
+	padding-inline-start: 38px;
 	border: 1px solid var(--g-line);
 	border-radius: 999px;
 	background: var(--g-bg-2);
