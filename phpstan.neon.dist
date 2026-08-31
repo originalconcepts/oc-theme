@@ -39,4 +39,24 @@ parameters:
             path: theme/inc/class-oc-cart.php
         -
             message: '#Call to an undefined method WC_Product::get_variation_attributes\(\)\.#'
-            path: theme/inc/class-oc-woocommerce.php
+            paths:
+                - theme/inc/class-oc-woocommerce.php
+                - theme/inc/class-oc-cart.php
+                - theme/inc/class-oc-bought-together.php
+                - theme/inc/class-oc-product-linked.php
+        -
+            message: '#Call to an undefined method WC_Product::get_available_variations\(\)\.#'
+            path: theme/inc/class-oc-bought-together.php
+        # WC_Data_Store proxies to the variation store via __call.
+        -
+            message: '#Call to an undefined method WC_Data_Store::find_matching_product_variation\(\)\.#'
+            paths:
+                - theme/inc/class-oc-bought-together.php
+                - theme/inc/class-oc-product-linked.php
+        # Order items fetched from WC_Order::get_items( 'line_item' ) are
+        # WC_Order_Item_Product; the stubs type the collection as the base class.
+        -
+            message: '#Call to an undefined method WC_Order_Item::get_(product|product_id|variation_id|subtotal|total)\(\)\.#'
+            paths:
+                - theme/inc/class-oc-woocommerce.php
+                - theme/inc/class-oc-order-print.php

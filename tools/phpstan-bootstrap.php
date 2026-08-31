@@ -15,3 +15,4 @@ define( 'OC_THEME_REPO', 'originalconcepts/oc-theme' );
 define( 'OC_LOGIN_SLUG', 'ocadmin' );
 define( 'OC_BLOCKS_VERSION', '0.0.0' );
 define( 'OC_BLOCKS_DIR', __DIR__ );
+define( 'OC_BLOCKS_URI', 'https://example.invalid' );

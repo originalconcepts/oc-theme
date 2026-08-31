@@ -1351,7 +1351,7 @@ final class WooCommerce {
 	 * Thursday, Sunday, Monday — the weekend is simply not counted, and the
 	 * window stretches to match rather than promising a day nobody works.
 	 *
-	 * @return array{from:string,to:string}|null
+	 * @return array{from:string,to:string,relative:bool,one_day:bool}|null
 	 */
 	public static function delivery_window(): ?array {
 		$days = array_filter( explode( ',', (string) get_theme_mod( 'oc_ship_days', '0,1,2,3,4' ) ), 'strlen' );
