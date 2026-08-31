@@ -849,8 +849,8 @@ final class Auth {
 		setcookie( 'oc_auth_state', $state, time() + 600, '/', '', is_ssl(), true );
 		setcookie( 'oc_auth_back', esc_url_raw( (string) wp_get_referer() ), time() + 600, '/', '', is_ssl(), true );
 
-		wp_redirect(
-			add_query_arg( // phpcs:ignore WordPress.Security.SafeRedirect
+		wp_redirect( // phpcs:ignore WordPress.Security.SafeRedirect.wp_redirect_wp_redirect -- fixed provider https URL.
+			add_query_arg(
 				array(
 					'client_id'     => rawurlencode( (string) $s['google_id'] ),
 					'redirect_uri'  => rawurlencode( admin_url( 'admin-post.php?action=oc_auth_google_cb' ) ),
@@ -1041,8 +1041,8 @@ final class Auth {
 			exit;
 		}
 
-		wp_redirect(
-			add_query_arg( // phpcs:ignore WordPress.Security.SafeRedirect
+		wp_redirect( // phpcs:ignore WordPress.Security.SafeRedirect.wp_redirect_wp_redirect -- fixed provider https URL.
+			add_query_arg(
 				array(
 					'client_id'     => rawurlencode( (string) $s['fb_id'] ),
 					'redirect_uri'  => rawurlencode( admin_url( 'admin-post.php?action=oc_auth_fb_cb' ) ),
@@ -1132,8 +1132,8 @@ final class Auth {
 			exit;
 		}
 
-		wp_redirect(
-			add_query_arg( // phpcs:ignore WordPress.Security.SafeRedirect
+		wp_redirect( // phpcs:ignore WordPress.Security.SafeRedirect.wp_redirect_wp_redirect -- fixed provider https URL.
+			add_query_arg(
 				array(
 					'client_id'     => rawurlencode( (string) $s['apple_client_id'] ),
 					'redirect_uri'  => rawurlencode( admin_url( 'admin-post.php?action=oc_auth_apple_cb' ) ),

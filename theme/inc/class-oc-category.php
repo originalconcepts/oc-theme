@@ -78,10 +78,7 @@ class Category {
 		wc_setcookie( 'woocommerce_recently_viewed', implode( '|', $viewed ) );
 	}
 
-	/*
-	------------------------------------------------------------------ *
-	 *  Reading helpers
-	 * ------------------------------------------------------------------ */
+	/* ---------------------------------------------------------- reading helpers */
 
 	/**
 	 * The card image id for a term, with the fallback chain George asked for:
@@ -184,10 +181,7 @@ class Category {
 		return is_array( $terms ) ? array_filter( $terms, static fn( $t ) => $t instanceof \WP_Term ) : array();
 	}
 
-	/*
-	------------------------------------------------------------------ *
-	 *  Front-end
-	 * ------------------------------------------------------------------ */
+	/* ---------------------------------------------------------- front-end */
 
 	/**
 	 * On a product-category archive with a hero set, suppress the default
@@ -422,10 +416,7 @@ class Category {
 		return '<nav class="' . esc_attr( $classes ) . '"' . $attrs . ' aria-label="' . esc_attr__( 'Sub-categories', 'oc-theme' ) . '">' . $items . '</nav>';
 	}
 
-	/*
-	------------------------------------------------------------------ *
-	 *  Admin — the category edit screen
-	 * ------------------------------------------------------------------ */
+	/* ---------------------------------------------------------- admin — the category edit screen */
 
 	/**
 	 * Load wp.media on the product-category edit screen.
@@ -900,10 +891,7 @@ class Category {
 		<?php
 	}
 
-	/*
-	------------------------------------------------------------------ *
-	 *  Save
-	 * ------------------------------------------------------------------ */
+	/* ---------------------------------------------------------- save */
 
 	/**
 	 * Save the category-page fields.

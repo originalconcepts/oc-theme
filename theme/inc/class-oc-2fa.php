@@ -138,8 +138,7 @@ final class Two_Factor {
 			return;
 		}
 
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- as above.
-		$phone = Auth::normalize_phone( (string) wp_unslash( $_POST['oc_phone'] ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- normalize_phone() reduces it to digits.
+		$phone = Auth::normalize_phone( (string) wp_unslash( $_POST['oc_phone'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- core profile-update nonce ran; normalize_phone() reduces it to digits.
 
 		if ( '' === $phone ) {
 			delete_user_meta( $user_id, 'oc_phone' );

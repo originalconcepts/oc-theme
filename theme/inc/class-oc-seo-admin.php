@@ -978,8 +978,8 @@ final class Seo_Admin {
 		$copied = 0;
 
 		foreach ( $map as $theirs => $ours ) {
-			$copied += (int) $wpdb->query(
-				$wpdb->prepare( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			$copied += (int) $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery -- one-off import copy.
+				$wpdb->prepare(
 					"INSERT INTO {$wpdb->postmeta} (post_id, meta_key, meta_value)
 				 SELECT y.post_id, %s, y.meta_value FROM {$wpdb->postmeta} y
 				 WHERE y.meta_key = %s AND y.meta_value != ''
