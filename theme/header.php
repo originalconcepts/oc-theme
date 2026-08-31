@@ -91,7 +91,7 @@ $oc_topbar_on   = (bool) get_theme_mod( 'oc_topbar', false ) && ( ! empty( $oc_t
 				aria-expanded="false"
 				aria-label="<?php esc_attr_e( 'Open menu', 'oc-theme' ); ?>"
 			>
-				<span aria-hidden="true"></span>
+				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" aria-hidden="true"><path d="M1.5 4.3h21M1.5 12h21M1.5 19.7h21"/></svg>
 			</button>
 
 			<?php
