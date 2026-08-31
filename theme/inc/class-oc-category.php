@@ -69,16 +69,17 @@ class Category {
 		}
 
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash -- ids are absint-ed.
-		$raw    = isset( $_COOKIE['woocommerce_recently_viewed'] ) ? (string) $_COOKIE['woocommerce_recently_viewed'] : '';
-		$viewed = array_filter( array_map( 'absint', explode( '|', $raw ) ) );
-		$viewed = array_values( array_diff( $viewed, array( $id ) ) );
+		$raw      = isset( $_COOKIE['woocommerce_recently_viewed'] ) ? (string) $_COOKIE['woocommerce_recently_viewed'] : '';
+		$viewed   = array_filter( array_map( 'absint', explode( '|', $raw ) ) );
+		$viewed   = array_values( array_diff( $viewed, array( $id ) ) );
 		$viewed[] = $id;
-		$viewed = array_slice( $viewed, -15 );
+		$viewed   = array_slice( $viewed, -15 );
 
 		wc_setcookie( 'woocommerce_recently_viewed', implode( '|', $viewed ) );
 	}
 
-	/* ------------------------------------------------------------------ *
+	/*
+	------------------------------------------------------------------ *
 	 *  Reading helpers
 	 * ------------------------------------------------------------------ */
 
@@ -183,7 +184,8 @@ class Category {
 		return is_array( $terms ) ? array_filter( $terms, static fn( $t ) => $t instanceof \WP_Term ) : array();
 	}
 
-	/* ------------------------------------------------------------------ *
+	/*
+	------------------------------------------------------------------ *
 	 *  Front-end
 	 * ------------------------------------------------------------------ */
 
@@ -239,7 +241,6 @@ class Category {
 				15
 			);
 		}
-
 	}
 
 	/**
@@ -372,7 +373,15 @@ class Category {
 			if ( 'card' === $style ) {
 				$id  = self::card_image_id( $child->term_id );
 				$img = $id > 0
-					? wp_get_attachment_image( $id, 'medium', false, array( 'loading' => 'lazy', 'alt' => $child->name ) )
+					? wp_get_attachment_image(
+						$id,
+						'medium',
+						false,
+						array(
+							'loading' => 'lazy',
+							'alt'     => $child->name,
+						)
+					)
 					: '';
 
 				$items .= '<a class="oc-subcats__card" href="' . $link . '">'
@@ -413,7 +422,8 @@ class Category {
 		return '<nav class="' . esc_attr( $classes ) . '"' . $attrs . ' aria-label="' . esc_attr__( 'Sub-categories', 'oc-theme' ) . '">' . $items . '</nav>';
 	}
 
-	/* ------------------------------------------------------------------ *
+	/*
+	------------------------------------------------------------------ *
 	 *  Admin — the category edit screen
 	 * ------------------------------------------------------------------ */
 
@@ -447,7 +457,7 @@ class Category {
 		$preview = $id > 0
 			? wp_get_attachment_image( $id, 'thumbnail', false, array( 'style' => 'display:block;max-inline-size:120px;height:auto;border-radius:6px' ) )
 			: '';
-		$gate = '' !== $show_if ? ' data-oc-when="' . esc_attr( $show_if ) . '"' : '';
+		$gate    = '' !== $show_if ? ' data-oc-when="' . esc_attr( $show_if ) . '"' : '';
 		?>
 		<tr class="form-field oc-cat-imgfield" data-oc-imgfield<?php echo $gate; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- literal above. ?>>
 			<th scope="row"><label><?php echo esc_html( $label ); ?></label></th>
@@ -467,12 +477,12 @@ class Category {
 	/**
 	 * A select row.
 	 *
-	 * @param string                $name    Field name.
-	 * @param string                $current Current value.
-	 * @param string                $label   Label.
-	 * @param array<string,string>  $choices Options.
-	 * @param string                $hint    Hint.
-	 * @param string                $show_if data-attribute gate "field:value|value".
+	 * @param string               $name    Field name.
+	 * @param string               $current Current value.
+	 * @param string               $label   Label.
+	 * @param array<string,string> $choices Options.
+	 * @param string               $hint    Hint.
+	 * @param string               $show_if data-attribute gate "field:value|value".
 	 */
 	private function select_field( string $name, string $current, string $label, array $choices, string $hint = '', string $show_if = '' ): void {
 		$gate = '' !== $show_if ? ' data-oc-when="' . esc_attr( $show_if ) . '"' : '';
@@ -596,9 +606,18 @@ class Category {
 			$h['layout'],
 			__( 'Layout', 'oc-theme' ),
 			array(
-				''      => array( 'label' => __( 'None — plain title', 'oc-theme' ), 'svg' => self::icon( 'l-none' ) ),
-				'full'  => array( 'label' => __( 'Full-width image', 'oc-theme' ), 'svg' => self::icon( 'l-full' ) ),
-				'split' => array( 'label' => __( 'Half image · half content', 'oc-theme' ), 'svg' => self::icon( 'l-split' ) ),
+				''      => array(
+					'label' => __( 'None — plain title', 'oc-theme' ),
+					'svg'   => self::icon( 'l-none' ),
+				),
+				'full'  => array(
+					'label' => __( 'Full-width image', 'oc-theme' ),
+					'svg'   => self::icon( 'l-full' ),
+				),
+				'split' => array(
+					'label' => __( 'Half image · half content', 'oc-theme' ),
+					'svg'   => self::icon( 'l-split' ),
+				),
 			)
 		);
 
@@ -706,9 +725,18 @@ class Category {
 			$sub['style'],
 			__( 'Display', 'oc-theme' ),
 			array(
-				'clean' => array( 'label' => __( 'Clean — underlined links', 'oc-theme' ), 'svg' => self::icon( 's-clean' ) ),
-				'pill'  => array( 'label' => __( 'Pills', 'oc-theme' ), 'svg' => self::icon( 's-pill' ) ),
-				'card'  => array( 'label' => __( 'Image cards', 'oc-theme' ), 'svg' => self::icon( 's-card' ) ),
+				'clean' => array(
+					'label' => __( 'Clean — underlined links', 'oc-theme' ),
+					'svg'   => self::icon( 's-clean' ),
+				),
+				'pill'  => array(
+					'label' => __( 'Pills', 'oc-theme' ),
+					'svg'   => self::icon( 's-pill' ),
+				),
+				'card'  => array(
+					'label' => __( 'Image cards', 'oc-theme' ),
+					'svg'   => self::icon( 's-card' ),
+				),
 			),
 			'',
 			'_oc_sub_show:1'
@@ -872,7 +900,8 @@ class Category {
 		<?php
 	}
 
-	/* ------------------------------------------------------------------ *
+	/*
+	------------------------------------------------------------------ *
 	 *  Save
 	 * ------------------------------------------------------------------ */
 
@@ -881,7 +910,6 @@ class Category {
 	 *
 	 * @param int $term_id Term id.
 	 */
-
 	public function save( $term_id ): void {
 		if ( ! current_user_can( 'manage_product_terms' ) && ! current_user_can( 'manage_woocommerce' ) ) {
 			return;
@@ -974,7 +1002,7 @@ class Category {
 	/**
 	 * Save a non-negative integer, or delete when empty / zero.
 	 *
-	 * @param int $term_id Term id.
+	 * @param int    $term_id Term id.
 	 * @param string $key  Meta key / POST key.
 	 * @param int    $min  Minimum kept value.
 	 * @param int    $max  Maximum kept value.

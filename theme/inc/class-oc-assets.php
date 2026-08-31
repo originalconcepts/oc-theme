@@ -517,15 +517,24 @@ final class Assets {
 
 		if ( ! is_array( $dims ) || empty( $dims['w'] ) ) {
 			$file = get_attached_file( $id );
-			$dims = array( 'w' => 0, 'h' => 0 );
+			$dims = array(
+				'w' => 0,
+				'h' => 0,
+			);
 
 			if ( is_string( $file ) && file_exists( $file ) && 'svg' === strtolower( (string) pathinfo( $file, PATHINFO_EXTENSION ) ) ) {
 				$head = (string) file_get_contents( $file, false, null, 0, 4096 ); // phpcs:ignore WordPress.WP.AlternativeFunctions
 
 				if ( preg_match( '/viewBox=["\']\s*[\d.\-]+[\s,]+[\d.\-]+[\s,]+([\d.]+)[\s,]+([\d.]+)/i', $head, $m ) ) {
-					$dims = array( 'w' => (int) round( (float) $m[1] ), 'h' => (int) round( (float) $m[2] ) );
+					$dims = array(
+						'w' => (int) round( (float) $m[1] ),
+						'h' => (int) round( (float) $m[2] ),
+					);
 				} elseif ( preg_match( '/<svg[^>]*\swidth=["\']?([\d.]+)[^>]*\sheight=["\']?([\d.]+)/i', $head, $m ) ) {
-					$dims = array( 'w' => (int) round( (float) $m[1] ), 'h' => (int) round( (float) $m[2] ) );
+					$dims = array(
+						'w' => (int) round( (float) $m[1] ),
+						'h' => (int) round( (float) $m[2] ),
+					);
 				}
 			}
 

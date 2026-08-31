@@ -164,8 +164,8 @@ final class Addresses {
 	 * carrying the synthetic 'wc' seed id) is given a fresh uuid so the seed
 	 * turns into a stored address on first save.
 	 *
-	 * @param int                  $uid User id.
-	 * @param array<string,mixed>  $in  Raw address input.
+	 * @param int                 $uid User id.
+	 * @param array<string,mixed> $in  Raw address input.
 	 * @return string
 	 */
 	public static function save( int $uid, array $in ): string {

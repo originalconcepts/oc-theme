@@ -452,9 +452,9 @@ final class Seo_Links {
 	/**
 	 * Gather the text worth looking at.
 	 *
-	 * @param \DOMNode    $node     Where to start.
-	 * @param \DOMText[]  $found    Collected nodes.
-	 * @param bool        $headings Whether headings count.
+	 * @param \DOMNode   $node     Where to start.
+	 * @param \DOMText[] $found    Collected nodes.
+	 * @param bool       $headings Whether headings count.
 	 */
 	private function collect( \DOMNode $node, array &$found, bool $headings ): void {
 		foreach ( $node->childNodes as $child ) {
@@ -563,7 +563,7 @@ final class Seo_Links {
 
 			$done[ $best['url'] ] = true;
 			unset( $index[ $best['phrase'] ] );
-			$budget--;
+			--$budget;
 
 			if ( null === $rest ) {
 				return;

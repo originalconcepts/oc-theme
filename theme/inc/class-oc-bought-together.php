@@ -632,7 +632,7 @@ final class Bought_Together {
 			}
 
 			$bundles[ $from ]['ids'][ (int) $item['product_id'] ] = true;
-			$bundles[ $from ]['sum'] += (float) $item['line_subtotal'] + (float) $item['line_subtotal_tax'];
+			$bundles[ $from ]['sum']                             += (float) $item['line_subtotal'] + (float) $item['line_subtotal_tax'];
 		}
 
 		foreach ( $bundles as $main => $bundle ) {

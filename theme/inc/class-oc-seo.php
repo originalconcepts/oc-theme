@@ -553,7 +553,7 @@ final class Seo {
 		if ( null === $object && is_front_page() && '' === trim( (string) self::settings()['home_title'] ) ) {
 			$title = wp_get_document_title();
 		}
-		$desc  = is_front_page() && '' !== trim( (string) self::settings()['home_desc'] )
+		$desc = is_front_page() && '' !== trim( (string) self::settings()['home_desc'] )
 			? self::render( (string) self::settings()['home_desc'] )
 			: self::auto_desc( $object );
 
@@ -924,9 +924,9 @@ final class Seo {
 	 * The chain: manual ALT → the post the image belongs to → the current
 	 * page's context → the cleaned filename. Duplicates grow a differentiator.
 	 *
-	 * @param int      $attachment_id The image.
-	 * @param int      $parent_id     The post it serves right now (0 = none known).
-	 * @param int      $index         Position in a gallery, 1-based (0 = unknown).
+	 * @param int $attachment_id The image.
+	 * @param int $parent_id     The post it serves right now (0 = none known).
+	 * @param int $index         Position in a gallery, 1-based (0 = unknown).
 	 */
 	public static function alt_for( int $attachment_id, int $parent_id = 0, int $index = 0 ): string {
 		// The same picture shown twice on one page (thumbnail + zoom) keeps
@@ -1022,7 +1022,7 @@ final class Seo {
 		while ( isset( self::$spoken[ $alt ] ) ) {
 			/* translators: %d: image position. */
 			$alt = $base . ' ' . $settings['sep'] . ' ' . sprintf( __( 'Image %d', 'oc-theme' ), $n );
-			$n++;
+			++$n;
 		}
 
 		self::$spoken[ $alt ] = true;

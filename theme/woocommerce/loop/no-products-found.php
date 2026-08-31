@@ -41,7 +41,19 @@ $oc_pop  = class_exists( 'OC\\Theme\\Search' ) ? Search::popular_terms( 14, 6 ) 
 		<div class="oc-nores__pop">
 			<span><?php esc_html_e( 'Popular searches:', 'oc-theme' ); ?></span>
 			<?php foreach ( $oc_pop as $oc_row ) : ?>
-				<a href="<?php echo esc_url( add_query_arg( array( 's' => rawurlencode( (string) $oc_row->term ), 'post_type' => 'product' ), home_url( '/' ) ) ); ?>"><?php echo esc_html( (string) $oc_row->term ); ?></a>
+				<a href="
+				<?php
+				echo esc_url(
+					add_query_arg(
+						array(
+							's'         => rawurlencode( (string) $oc_row->term ),
+							'post_type' => 'product',
+						),
+						home_url( '/' )
+					)
+				);
+				?>
+							"><?php echo esc_html( (string) $oc_row->term ); ?></a>
 			<?php endforeach; ?>
 		</div>
 	<?php endif; ?>

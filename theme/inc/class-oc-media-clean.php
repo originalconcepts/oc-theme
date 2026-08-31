@@ -402,9 +402,9 @@ final class Media_Clean {
 	 *
 	 * Returns one of: used, draft, trash, orphan, recent.
 	 *
-	 * @param object            $row  Row with ID, post_parent, post_date_gmt.
+	 * @param object                        $row  Row with ID, post_parent, post_date_gmt.
 	 * @param array<int,array<string,bool>> $refs Map from reference_map().
-	 * @param array<int,object> $posts Parent lookup.
+	 * @param array<int,object>             $posts Parent lookup.
 	 */
 	public static function bucket( object $row, array $refs, array $posts ): string {
 		$id = (int) $row->ID;
@@ -559,11 +559,11 @@ final class Media_Clean {
 	public function ajax_start(): void {
 		$this->guard();
 
-		$refs    = self::reference_map();
-		$posts   = self::parents();
-		$rows    = self::attachments();
-		$queue   = array();
-		$report  = array(
+		$refs   = self::reference_map();
+		$posts  = self::parents();
+		$rows   = self::attachments();
+		$queue  = array();
+		$report = array(
 			'used'   => array(),
 			'draft'  => array(),
 			'trash'  => array(),
@@ -746,12 +746,12 @@ final class Media_Clean {
 			$bucket = self::bucket( $post, $refs, $posts );
 
 			if ( ! in_array( $bucket, array( 'orphan', 'draft', 'trash' ), true ) ) {
-				$kept++;
+				++$kept;
 				continue;
 			}
 
 			if ( self::name_referenced( $id, 'orphan' !== $bucket ) ) {
-				$kept++;
+				++$kept;
 				continue;
 			}
 
@@ -759,7 +759,7 @@ final class Media_Clean {
 			$name  = wp_basename( (string) get_post_meta( $id, '_wp_attached_file', true ) );
 
 			if ( wp_delete_attachment( $id, true ) ) {
-				$deleted++;
+				++$deleted;
 				$freed += $bytes;
 
 				$log[] = array(
@@ -770,7 +770,7 @@ final class Media_Clean {
 					'who'   => wp_get_current_user()->user_login,
 				);
 			} else {
-				$kept++;
+				++$kept;
 			}
 		}
 

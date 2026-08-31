@@ -428,7 +428,7 @@ final class Redirects {
 		// checked at most once a day.
 		if ( false === get_transient( 'ocrd_log_swept' ) ) {
 			set_transient( 'ocrd_log_swept', 1, DAY_IN_SECONDS );
-			$wpdb->query( 'DELETE FROM ' . self::log_table() . " WHERE last_hit < DATE_SUB(NOW(), INTERVAL 30 DAY)" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			$wpdb->query( 'DELETE FROM ' . self::log_table() . ' WHERE last_hit < DATE_SUB(NOW(), INTERVAL 30 DAY)' ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 		}
 	}
 
@@ -853,11 +853,11 @@ final class Redirects {
 			$slug = strtolower( rawurldecode( (string) get_post_field( 'post_name', $post_id ) ) );
 			$name = (string) get_the_title( $post_id );
 
-			$index['slug'][ $slug ]                    = $path;
-			$index['name'][ mb_strtolower( $name ) ]   = $path;
-			$index['norm'][ self::loose( $name ) ]     = $path;
-			$index['norm'][ self::loose( $slug ) ]     = $path;
-			$index['paths'][ $path ]                   = $path;
+			$index['slug'][ $slug ]                  = $path;
+			$index['name'][ mb_strtolower( $name ) ] = $path;
+			$index['norm'][ self::loose( $name ) ]   = $path;
+			$index['norm'][ self::loose( $slug ) ]   = $path;
+			$index['paths'][ $path ]                 = $path;
 
 			if ( 'product' === get_post_type( $post_id ) ) {
 				$sku = (string) get_post_meta( $post_id, '_sku', true );
@@ -908,9 +908,9 @@ final class Redirects {
 	/**
 	 * Propose a target for one old address, walking the ladder.
 	 *
-	 * @param string              $old_path Normalised old path.
-	 * @param array<string,mixed> $row      Extra columns from the file: name, sku, type.
-	 * @param array               $index    The site index.
+	 * @param string               $old_path Normalised old path.
+	 * @param array<string,mixed>  $row      Extra columns from the file: name, sku, type.
+	 * @param array                $index    The site index.
 	 * @param array<string,string> $mapped  Old→target choices made so far (parents first).
 	 * @return array{target:string,rule:string,confidence:string}
 	 */

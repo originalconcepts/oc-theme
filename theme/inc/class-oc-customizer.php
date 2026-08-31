@@ -1155,7 +1155,13 @@ final class Customizer {
 			),
 			'regular'
 		);
-		$c->add_setting( 'oc_footer_logo_img', array( 'default' => '', 'sanitize_callback' => 'esc_url_raw' ) );
+		$c->add_setting(
+			'oc_footer_logo_img',
+			array(
+				'default'           => '',
+				'sanitize_callback' => 'esc_url_raw',
+			)
+		);
 		$c->add_control(
 			new \WP_Customize_Image_Control(
 				$c,
@@ -1576,7 +1582,6 @@ final class Customizer {
 		);
 
 		$this->toggle( $c, 'oc_dd_pair', 'oc_swatches', __( 'Two dropdowns side by side', 'oc-theme' ), false );
-
 	}
 
 	/**
@@ -2544,10 +2549,19 @@ final class Customizer {
 			)
 		);
 
-		$this->number( $c, 'oc_xsell_cols', 'oc_linked', __( 'Goes-with products per row', 'oc-theme' ), 4, 2, 6, array(
+		$this->number(
+			$c,
+			'oc_xsell_cols',
+			'oc_linked',
+			__( 'Goes-with products per row', 'oc-theme' ),
+			4,
+			2,
+			6,
+			array(
 				'setting' => 'oc_xsell_on',
 				'values'  => array( '1' ),
-			) );
+			)
+		);
 
 		$this->select(
 			$c,
@@ -2609,8 +2623,6 @@ final class Customizer {
 				'values'  => array( '1' ),
 			)
 		);
-
-
 	}
 
 	/**

@@ -69,8 +69,8 @@ class Order_Print {
 	/**
 	 * Turn the ticked rows into a trip to the print sheet.
 	 *
-	 * @param string    $redirect Where the list would have gone.
-	 * @param string    $action   The chosen action.
+	 * @param string         $redirect Where the list would have gone.
+	 * @param string         $action   The chosen action.
 	 * @param int[]|string[] $ids The ticked order ids.
 	 * @return string
 	 */
@@ -215,13 +215,15 @@ class Order_Print {
 		<body>
 			<div class="bar no-print">
 				<button type="button" onclick="window.print()"><?php esc_html_e( 'Print', 'oc-theme' ); ?></button>
-				<span><?php
+				<span>
+				<?php
 					printf(
 						/* translators: %d: how many orders. */
 						esc_html( _n( '%d order', '%d orders', count( $orders ), 'oc-theme' ) ),
 						count( $orders )
 					);
-				?></span>
+				?>
+				</span>
 			</div>
 
 			<?php if ( ! $orders ) : ?>
@@ -278,10 +280,12 @@ class Order_Print {
 		?>
 		<section class="sheet">
 			<header class="head">
-				<h1><?php
+				<h1>
+				<?php
 					/* translators: %s: order number. */
 					printf( esc_html__( 'Order %s', 'oc-theme' ), esc_html( $order->get_order_number() ) );
-				?></h1>
+				?>
+				</h1>
 				<div class="head-meta">
 					<?php if ( $created ) : ?>
 						<span><?php echo esc_html( $created->date_i18n( 'd/m/Y · H:i' ) ); ?></span>

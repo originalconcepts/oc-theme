@@ -707,8 +707,8 @@ final class Blocks {
 		update_post_meta( $id, '_oc_block_ps_ids', implode( ',', $ps_ids ) );
 		update_post_meta( $id, '_oc_block_ps_heading', sanitize_text_field( wp_unslash( $_POST['oc_block_ps_heading'] ?? '' ) ) );
 		update_post_meta( $id, '_oc_block_ps_halign', 'center' === ( $_POST['oc_block_ps_halign'] ?? '' ) ? 'center' : 'start' ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- strict comparison stores a literal.
-		$ps_bg  = trim( (string) wp_unslash( $_POST['oc_block_ps_bg'] ?? '' ) );
-		$ps_bg  = preg_match( '/^#([0-9a-f]{3}|[0-9a-f]{6})$|^(rgb|rgba|hsl|hsla)\([0-9.,%\s\/]+\)$/i', $ps_bg ) ? $ps_bg : '';
+		$ps_bg = trim( (string) wp_unslash( $_POST['oc_block_ps_bg'] ?? '' ) );
+		$ps_bg = preg_match( '/^#([0-9a-f]{3}|[0-9a-f]{6})$|^(rgb|rgba|hsl|hsla)\([0-9.,%\s\/]+\)$/i', $ps_bg ) ? $ps_bg : '';
 		update_post_meta( $id, '_oc_block_ps_bg', $ps_bg );
 		update_post_meta( $id, '_oc_block_ps_count', min( 24, max( 2, absint( $_POST['oc_block_ps_count'] ?? 8 ) ) ) );
 		update_post_meta( $id, '_oc_block_ps_cols', min( 6, max( 2, absint( $_POST['oc_block_ps_cols'] ?? 4 ) ) ) );

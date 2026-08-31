@@ -185,7 +185,13 @@ final class Redirects_Admin {
 				</label>
 				<label><span><?php esc_html_e( 'Type', 'oc-theme' ); ?></span>
 					<select name="type">
-						<?php foreach ( array( 301 => __( '301 permanent', 'oc-theme' ), 302 => __( '302 temporary', 'oc-theme' ), 410 => __( '410 gone', 'oc-theme' ) ) as $value => $label ) : ?>
+						<?php
+						foreach ( array(
+							301 => __( '301 permanent', 'oc-theme' ),
+							302 => __( '302 temporary', 'oc-theme' ),
+							410 => __( '410 gone', 'oc-theme' ),
+						) as $value => $label ) :
+							?>
 							<option value="<?php echo esc_attr( (string) $value ); ?>" <?php selected( (int) ( $editing['type'] ?? 301 ), $value ); ?>><?php echo esc_html( $label ); ?></option>
 						<?php endforeach; ?>
 					</select>
@@ -203,7 +209,13 @@ final class Redirects_Admin {
 			<input type="search" name="s" value="<?php echo esc_attr( $search ); ?>" placeholder="<?php esc_attr_e( 'Search…', 'oc-theme' ); ?>">
 			<select name="origin">
 				<option value=""><?php esc_html_e( 'Every origin', 'oc-theme' ); ?></option>
-				<?php foreach ( array( 'manual' => __( 'Manual', 'oc-theme' ), 'import' => __( 'Imported', 'oc-theme' ), 'auto' => __( 'Automatic', 'oc-theme' ) ) as $key => $label ) : ?>
+				<?php
+				foreach ( array(
+					'manual' => __( 'Manual', 'oc-theme' ),
+					'import' => __( 'Imported', 'oc-theme' ),
+					'auto'   => __( 'Automatic', 'oc-theme' ),
+				) as $key => $label ) :
+					?>
 					<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $origin, $key ); ?>><?php echo esc_html( $label ); ?></option>
 				<?php endforeach; ?>
 			</select>
@@ -290,7 +302,16 @@ final class Redirects_Admin {
 			echo '<p class="ocrd-pages">';
 
 			for ( $i = 1; $i <= $pages; $i++ ) {
-				$link = self::url( array_filter( array( 's' => $search, 'origin' => $origin, 'batch' => $batch, 'paged' => $i ) ) );
+				$link = self::url(
+					array_filter(
+						array(
+							's'      => $search,
+							'origin' => $origin,
+							'batch'  => $batch,
+							'paged'  => $i,
+						)
+					)
+				);
 				echo $i === $paged ? '<strong>' . esc_html( (string) $i ) . '</strong> ' : '<a href="' . esc_url( $link ) . '">' . esc_html( (string) $i ) . '</a> ';
 			}
 
@@ -459,7 +480,7 @@ final class Redirects_Admin {
 			$key = (string) ( $row['confidence'] ?? 'fallback' );
 
 			if ( isset( $counts[ $key ] ) ) {
-				$counts[ $key ]++;
+				++$counts[ $key ];
 			}
 		}
 
@@ -489,7 +510,19 @@ final class Redirects_Admin {
 		</h2>
 		<p>
 			<?php foreach ( $counts as $key => $count ) : ?>
-				<a class="button<?php echo $filter === $key ? ' button-primary' : ''; ?>" href="<?php echo esc_url( self::url( array( 'tab' => 'map', 'preview' => $token, 'confidence' => $filter === $key ? '' : $key ) ) ); ?>">
+				<a class="button<?php echo $filter === $key ? ' button-primary' : ''; ?>" href="
+				<?php
+				echo esc_url(
+					self::url(
+						array(
+							'tab'        => 'map',
+							'preview'    => $token,
+							'confidence' => $filter === $key ? '' : $key,
+						)
+					)
+				);
+				?>
+				">
 					<?php echo esc_html( $labels[ $key ] . ' · ' . number_format_i18n( $count ) ); ?>
 				</a>
 			<?php endforeach; ?>
@@ -1004,8 +1037,8 @@ final class Redirects_Admin {
 				}
 
 				// The column letter keeps the cells in their places.
-				$ref   = (string) $cell['r'];
-				$col   = 0;
+				$ref = (string) $cell['r'];
+				$col = 0;
 
 				foreach ( str_split( (string) preg_replace( '/\d+/', '', $ref ) ) as $letter ) {
 					$col = $col * 26 + ( ord( $letter ) - 64 );
@@ -1109,11 +1142,23 @@ final class Redirects_Admin {
 
 		if ( 'pairs' === $mode ) {
 			set_transient( 'ocrd_preview_' . $token, $this->sort_pairs( $rows, $name ), HOUR_IN_SECONDS * 6 );
-			$this->back( __( 'Parsed — review below.', 'oc-theme' ), array( 'tab' => 'import', 'preview' => $token ) );
+			$this->back(
+				__( 'Parsed — review below.', 'oc-theme' ),
+				array(
+					'tab'     => 'import',
+					'preview' => $token,
+				)
+			);
 		}
 
 		set_transient( 'ocrd_map_' . $token, $this->run_mapper( $rows, $name ), HOUR_IN_SECONDS * 6 );
-		$this->back( __( 'Mapped — review below.', 'oc-theme' ), array( 'tab' => 'map', 'preview' => $token ) );
+		$this->back(
+			__( 'Mapped — review below.', 'oc-theme' ),
+			array(
+				'tab'     => 'map',
+				'preview' => $token,
+			)
+		);
 	}
 
 	/**
@@ -1232,7 +1277,7 @@ final class Redirects_Admin {
 				);
 
 				if ( ! is_wp_error( $saved ) ) {
-					$made++;
+					++$made;
 				}
 			}
 		}
@@ -1369,7 +1414,7 @@ final class Redirects_Admin {
 			);
 
 			if ( ! is_wp_error( $saved ) ) {
-				$made++;
+				++$made;
 			}
 		}
 
@@ -1487,7 +1532,7 @@ final class Redirects_Admin {
 		}
 
 		foreach ( array( 'fixed_product', 'fixed_term', 'fixed_post', 'fixed_page' ) as $field ) {
-			$raw                 = trim( (string) wp_unslash( $_POST[ $field ] ?? '' ) );
+			$raw                = trim( (string) wp_unslash( $_POST[ $field ] ?? '' ) );
 			$settings[ $field ] = '' === $raw ? '' : Redirects::normalize( $raw );
 		}
 
@@ -1560,7 +1605,7 @@ final class Redirects_Admin {
 					);
 
 					if ( ! is_wp_error( $saved ) ) {
-						$made++;
+						++$made;
 					}
 				}
 			}
@@ -1590,7 +1635,7 @@ final class Redirects_Admin {
 						);
 
 						if ( ! is_wp_error( $saved ) ) {
-							$made++;
+							++$made;
 						}
 					}
 				}

@@ -106,10 +106,14 @@ final class Hardening {
 
 		// Drop the header that advertises it.
 		remove_action( 'wp_head', 'rsd_link' );
-		add_filter( 'wp_headers', static function ( $headers ) {
-			unset( $headers['X-Pingback'] );
-			return $headers;
-		}, 99 );
+		add_filter(
+			'wp_headers',
+			static function ( $headers ) {
+				unset( $headers['X-Pingback'] );
+				return $headers;
+			},
+			99
+		);
 	}
 
 	/*

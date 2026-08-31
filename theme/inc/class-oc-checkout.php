@@ -969,8 +969,8 @@ final class Checkout {
 
 		$a = \OC\Theme\Auth::settings();
 
-		$sms   = ! empty( $a['sms_on'] );
-		$prov  = array();
+		$sms  = ! empty( $a['sms_on'] );
+		$prov = array();
 
 		if ( ! empty( $a['google_on'] ) ) {
 			$prov['google'] = __( 'Google', 'oc-theme' );

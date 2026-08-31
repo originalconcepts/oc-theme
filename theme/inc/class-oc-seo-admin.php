@@ -634,7 +634,15 @@ final class Seo_Admin {
 		}
 
 		update_option( Seo::SETTINGS, $settings, false );
-		wp_safe_redirect( add_query_arg( array( 'tab' => $tab, 'ocseo_msg' => __( 'Saved.', 'oc-theme' ) ), self::url() ) );
+		wp_safe_redirect(
+			add_query_arg(
+				array(
+					'tab'       => $tab,
+					'ocseo_msg' => __( 'Saved.', 'oc-theme' ),
+				),
+				self::url()
+			)
+		);
 		exit;
 	}
 
@@ -970,27 +978,29 @@ final class Seo_Admin {
 		$copied = 0;
 
 		foreach ( $map as $theirs => $ours ) {
-			$copied += (int) $wpdb->query( $wpdb->prepare( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
-				"INSERT INTO {$wpdb->postmeta} (post_id, meta_key, meta_value)
+			$copied += (int) $wpdb->query(
+				$wpdb->prepare( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+					"INSERT INTO {$wpdb->postmeta} (post_id, meta_key, meta_value)
 				 SELECT y.post_id, %s, y.meta_value FROM {$wpdb->postmeta} y
 				 WHERE y.meta_key = %s AND y.meta_value != ''
 				   AND NOT EXISTS ( SELECT 1 FROM {$wpdb->postmeta} o WHERE o.post_id = y.post_id AND o.meta_key = %s )",
-				$ours,
-				$theirs,
-				$ours
-			) );
+					$ours,
+					$theirs,
+					$ours
+				)
+			);
 		}
 
 		// Yoast keeps taxonomy fields in one option, not in term meta.
 		$tax_meta = get_option( 'wpseo_taxonomy_meta', array() );
 		$tax_map  = array(
-			'wpseo_title'                => '_ocseo_title',
-			'wpseo_desc'                 => '_ocseo_desc',
-			'wpseo_noindex'              => '_ocseo_noindex',
-			'wpseo_canonical'            => '_ocseo_canonical',
-			'wpseo_opengraph-image'      => '_ocseo_og_image',
-			'wpseo_opengraph-title'      => '_ocseo_og_title',
-			'wpseo_opengraph-description'=> '_ocseo_og_desc',
+			'wpseo_title'                 => '_ocseo_title',
+			'wpseo_desc'                  => '_ocseo_desc',
+			'wpseo_noindex'               => '_ocseo_noindex',
+			'wpseo_canonical'             => '_ocseo_canonical',
+			'wpseo_opengraph-image'       => '_ocseo_og_image',
+			'wpseo_opengraph-title'       => '_ocseo_og_title',
+			'wpseo_opengraph-description' => '_ocseo_og_desc',
 		);
 
 		foreach ( (array) $tax_meta as $terms ) {
@@ -1004,7 +1014,7 @@ final class Seo_Admin {
 
 					if ( '' !== $value && '' === trim( (string) get_term_meta( (int) $term_id, $ours, true ) ) ) {
 						update_term_meta( (int) $term_id, $ours, $value );
-						$copied++;
+						++$copied;
 					}
 				}
 			}
@@ -1016,7 +1026,14 @@ final class Seo_Admin {
 		if ( is_array( $titles ) && ! empty( $titles ) ) {
 			$settings = Seo::settings();
 
-			$seps = array( 'sc-dash' => '-', 'sc-ndash' => '–', 'sc-mdash' => '—', 'sc-pipe' => '|', 'sc-bull' => '•', 'sc-middot' => '·' );
+			$seps = array(
+				'sc-dash'   => '-',
+				'sc-ndash'  => '–',
+				'sc-mdash'  => '—',
+				'sc-pipe'   => '|',
+				'sc-bull'   => '•',
+				'sc-middot' => '·',
+			);
 
 			if ( ! empty( $titles['separator'] ) && isset( $seps[ $titles['separator'] ] ) ) {
 				$settings['sep'] = $seps[ $titles['separator'] ];
@@ -1053,14 +1070,16 @@ final class Seo_Admin {
 			update_option( Seo::SETTINGS, $settings, false );
 		}
 
-		wp_safe_redirect( add_query_arg(
-			array(
-				'tab'       => 'tools',
-				/* translators: %s: how many values. */
-				'ocseo_msg' => sprintf( __( 'Migration done — %s values copied.', 'oc-theme' ), number_format_i18n( $copied ) ),
-			),
-			self::url()
-		) );
+		wp_safe_redirect(
+			add_query_arg(
+				array(
+					'tab'       => 'tools',
+					/* translators: %s: how many values. */
+					'ocseo_msg' => sprintf( __( 'Migration done — %s values copied.', 'oc-theme' ), number_format_i18n( $copied ) ),
+				),
+				self::url()
+			)
+		);
 		exit;
 	}
 

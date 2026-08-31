@@ -358,10 +358,10 @@ final class Auth {
 	/**
 	 * ActiveTrail's operational-message endpoint.
 	 *
-	 * @param string               $to   Local-form phone.
-	 * @param string               $text The message.
-	 * @param string               $from Sender name.
-	 * @param array<string,mixed>  $s    Settings.
+	 * @param string              $to   Local-form phone.
+	 * @param string              $text The message.
+	 * @param string              $from Sender name.
+	 * @param array<string,mixed> $s    Settings.
 	 */
 	private function send_sms_activetrail( string $to, string $text, string $from, array $s ): bool {
 		if ( '' === trim( (string) $s['api_key'] ) ) {
@@ -471,11 +471,13 @@ final class Auth {
 		$phone = self::normalize_phone( (string) wp_unslash( $_POST['phone'] ?? '' ) );
 
 		if ( '' === $phone ) {
-			wp_send_json_error( array(
-				'msg' => 'israel' === self::settings()['reach']
-					? __( 'That does not look like an Israeli mobile number.', 'oc-theme' )
-					: __( 'That does not look like a valid phone number.', 'oc-theme' ),
-			) );
+			wp_send_json_error(
+				array(
+					'msg' => 'israel' === self::settings()['reach']
+						? __( 'That does not look like an Israeli mobile number.', 'oc-theme' )
+						: __( 'That does not look like a valid phone number.', 'oc-theme' ),
+				)
+			);
 		}
 
 		$user    = self::user_by_phone( $phone );
@@ -484,11 +486,13 @@ final class Auth {
 		// Details already waiting on this number: the visitor is on the code
 		// screen asking for another one, not starting over.
 		if ( ! $user && ! is_array( $pending ) ) {
-			wp_send_json_success( array(
-				'step'   => 'register',
-				'phone'  => $phone,
-				'pretty' => self::pretty_phone( $phone ),
-			) );
+			wp_send_json_success(
+				array(
+					'step'   => 'register',
+					'phone'  => $phone,
+					'pretty' => self::pretty_phone( $phone ),
+				)
+			);
 		}
 
 		if ( empty( self::settings()['sms_on'] ) ) {
@@ -507,13 +511,15 @@ final class Auth {
 
 		$this->note_send( $phone );
 
-		wp_send_json_success( array(
-			'step'   => 'code',
-			'phone'  => $phone,
-			'pretty' => self::pretty_phone( $phone ),
-			'email'  => $user ? '' !== (string) $user->user_email : false,
-			'wait'   => (int) self::settings()['resend_cooldown'],
-		) );
+		wp_send_json_success(
+			array(
+				'step'   => 'code',
+				'phone'  => $phone,
+				'pretty' => self::pretty_phone( $phone ),
+				'email'  => $user ? '' !== (string) $user->user_email : false,
+				'wait'   => (int) self::settings()['resend_cooldown'],
+			)
+		);
 	}
 
 	/**
@@ -721,12 +727,14 @@ final class Auth {
 			set_transient( $ip, $per_ip + 1, HOUR_IN_SECONDS );
 			set_transient( 'ocau_pend_' . $phone, $details, max( 15 * MINUTE_IN_SECONDS, (int) self::settings()['code_expiry'] ) );
 
-			wp_send_json_success( array(
-				'step'   => 'code',
-				'phone'  => $phone,
-				'pretty' => self::pretty_phone( $phone ),
-				'wait'   => (int) self::settings()['resend_cooldown'],
-			) );
+			wp_send_json_success(
+				array(
+					'step'   => 'code',
+					'phone'  => $phone,
+					'pretty' => self::pretty_phone( $phone ),
+					'wait'   => (int) self::settings()['resend_cooldown'],
+				)
+			);
 		}
 
 		$user_id = self::open_account( $phone, $details );
@@ -770,9 +778,11 @@ final class Auth {
 			retrieve_password( $user->user_login );
 		}
 
-		wp_send_json_success( array(
-			'msg' => __( 'If that address is on an account, the link is on its way.', 'oc-theme' ),
-		) );
+		wp_send_json_success(
+			array(
+				'msg' => __( 'If that address is on an account, the link is on its way.', 'oc-theme' ),
+			)
+		);
 	}
 
 	/**
@@ -837,17 +847,19 @@ final class Auth {
 		setcookie( 'oc_auth_state', $state, time() + 600, '/', '', is_ssl(), true );
 		setcookie( 'oc_auth_back', esc_url_raw( (string) wp_get_referer() ), time() + 600, '/', '', is_ssl(), true );
 
-		wp_redirect( add_query_arg( // phpcs:ignore WordPress.Security.SafeRedirect
-			array(
-				'client_id'     => rawurlencode( (string) $s['google_id'] ),
-				'redirect_uri'  => rawurlencode( admin_url( 'admin-post.php?action=oc_auth_google_cb' ) ),
-				'response_type' => 'code',
-				'scope'         => rawurlencode( 'openid email profile' ),
-				'state'         => $state,
-				'prompt'        => 'select_account',
-			),
-			'https://accounts.google.com/o/oauth2/v2/auth'
-		) );
+		wp_redirect(
+			add_query_arg( // phpcs:ignore WordPress.Security.SafeRedirect
+				array(
+					'client_id'     => rawurlencode( (string) $s['google_id'] ),
+					'redirect_uri'  => rawurlencode( admin_url( 'admin-post.php?action=oc_auth_google_cb' ) ),
+					'response_type' => 'code',
+					'scope'         => rawurlencode( 'openid email profile' ),
+					'state'         => $state,
+					'prompt'        => 'select_account',
+				),
+				'https://accounts.google.com/o/oauth2/v2/auth'
+			)
+		);
 		exit;
 	}
 
@@ -1027,16 +1039,18 @@ final class Auth {
 			exit;
 		}
 
-		wp_redirect( add_query_arg( // phpcs:ignore WordPress.Security.SafeRedirect
-			array(
-				'client_id'     => rawurlencode( (string) $s['fb_id'] ),
-				'redirect_uri'  => rawurlencode( admin_url( 'admin-post.php?action=oc_auth_fb_cb' ) ),
-				'response_type' => 'code',
-				'scope'         => rawurlencode( 'email,public_profile' ),
-				'state'         => $this->state_out(),
-			),
-			'https://www.facebook.com/v19.0/dialog/oauth'
-		) );
+		wp_redirect(
+			add_query_arg( // phpcs:ignore WordPress.Security.SafeRedirect
+				array(
+					'client_id'     => rawurlencode( (string) $s['fb_id'] ),
+					'redirect_uri'  => rawurlencode( admin_url( 'admin-post.php?action=oc_auth_fb_cb' ) ),
+					'response_type' => 'code',
+					'scope'         => rawurlencode( 'email,public_profile' ),
+					'state'         => $this->state_out(),
+				),
+				'https://www.facebook.com/v19.0/dialog/oauth'
+			)
+		);
 		exit;
 	}
 
@@ -1116,17 +1130,19 @@ final class Auth {
 			exit;
 		}
 
-		wp_redirect( add_query_arg( // phpcs:ignore WordPress.Security.SafeRedirect
-			array(
-				'client_id'     => rawurlencode( (string) $s['apple_client_id'] ),
-				'redirect_uri'  => rawurlencode( admin_url( 'admin-post.php?action=oc_auth_apple_cb' ) ),
-				'response_type' => 'code',
-				'response_mode' => 'form_post',
-				'scope'         => rawurlencode( 'name email' ),
-				'state'         => $this->state_out( true ),
-			),
-			'https://appleid.apple.com/auth/authorize'
-		) );
+		wp_redirect(
+			add_query_arg( // phpcs:ignore WordPress.Security.SafeRedirect
+				array(
+					'client_id'     => rawurlencode( (string) $s['apple_client_id'] ),
+					'redirect_uri'  => rawurlencode( admin_url( 'admin-post.php?action=oc_auth_apple_cb' ) ),
+					'response_type' => 'code',
+					'response_mode' => 'form_post',
+					'scope'         => rawurlencode( 'name email' ),
+					'state'         => $this->state_out( true ),
+				),
+				'https://appleid.apple.com/auth/authorize'
+			)
+		);
 		exit;
 	}
 
@@ -1226,10 +1242,14 @@ final class Auth {
 	 * @param string $why What went wrong.
 	 */
 	private static function apple_note( string $why ): void {
-		update_option( 'ocau_apple_note', array(
-			't' => (string) gmdate( 'c' ),
-			'w' => $why,
-		), false );
+		update_option(
+			'ocau_apple_note',
+			array(
+				't' => (string) gmdate( 'c' ),
+				'w' => $why,
+			),
+			false
+		);
 	}
 
 	/**
@@ -1256,17 +1276,25 @@ final class Auth {
 			return '';
 		}
 
-		$header  = self::b64url( (string) wp_json_encode( array(
-			'alg' => 'ES256',
-			'kid' => (string) $s['apple_key_id'],
-		) ) );
-		$payload = self::b64url( (string) wp_json_encode( array(
-			'iss' => (string) $s['apple_team_id'],
-			'iat' => time(),
-			'exp' => time() + HOUR_IN_SECONDS,
-			'aud' => 'https://appleid.apple.com',
-			'sub' => (string) $s['apple_client_id'],
-		) ) );
+		$header  = self::b64url(
+			(string) wp_json_encode(
+				array(
+					'alg' => 'ES256',
+					'kid' => (string) $s['apple_key_id'],
+				)
+			)
+		);
+		$payload = self::b64url(
+			(string) wp_json_encode(
+				array(
+					'iss' => (string) $s['apple_team_id'],
+					'iat' => time(),
+					'exp' => time() + HOUR_IN_SECONDS,
+					'aud' => 'https://appleid.apple.com',
+					'sub' => (string) $s['apple_client_id'],
+				)
+			)
+		);
 
 		$der = '';
 
@@ -1302,13 +1330,13 @@ final class Auth {
 		$out = '';
 
 		for ( $i = 0; $i < 2; $i++ ) {
-			$offset++; // 0x02, the INTEGER tag.
-			$len    = ord( $der[ $offset ] );
-			$offset++;
-			$int    = substr( $der, $offset, $len );
+			++$offset; // 0x02, the INTEGER tag.
+			$len = ord( $der[ $offset ] );
+			++$offset;
+			$int     = substr( $der, $offset, $len );
 			$offset += $len;
-			$int    = ltrim( $int, "\x00" );
-			$out   .= str_pad( $int, 32, "\x00", STR_PAD_LEFT );
+			$int     = ltrim( $int, "\x00" );
+			$out    .= str_pad( $int, 32, "\x00", STR_PAD_LEFT );
 		}
 
 		return $out;
@@ -1490,7 +1518,7 @@ final class Auth {
 		$width = absint( get_theme_mod( 'oc_login_width', 480 ) );
 		$title = trim( (string) get_theme_mod( 'oc_login_title', '' ) );
 		$title = '' !== $title ? $title : __( 'Phone number and off we go :)', 'oc-theme' );
-		$club = trim( (string) get_theme_mod( 'oc_login_club_text', '' ) );
+		$club  = trim( (string) get_theme_mod( 'oc_login_club_text', '' ) );
 
 		if ( '' === $club ) {
 			$club = __( 'Join the club and earn 5% of your order back in points, to spend on your next purchases.', 'oc-theme' );

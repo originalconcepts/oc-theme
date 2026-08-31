@@ -233,14 +233,14 @@ final class Render {
 		switch ( (string) $s['bg'] ) {
 			case 'color':
 				if ( '' !== $s['bg1'] ) {
-					$style .= '--ocb-bg:' . $s['bg1'] . ';';
+					$style    .= '--ocb-bg:' . $s['bg1'] . ';';
 					$classes[] = 'ocb--bg';
 				}
 				break;
 
 			case 'gradient':
 				if ( '' !== $s['bg1'] && '' !== $s['bg2'] ) {
-					$style .= '--ocb-bg:linear-gradient(' . absint( $s['bga'] ) . 'deg,' . $s['bg1'] . ',' . $s['bg2'] . ');';
+					$style    .= '--ocb-bg:linear-gradient(' . absint( $s['bga'] ) . 'deg,' . $s['bg1'] . ',' . $s['bg2'] . ');';
 					$classes[] = 'ocb--bg';
 				}
 				break;
@@ -726,8 +726,8 @@ final class Render {
 		$htext  = trim( (string) ( $o['heading'] ?? '' ) );
 		$halign = (string) ( $o['halign'] ?? '' );
 		// Explicit choice wins; unset keeps the default centred heading.
-		$hcls   = 'center' === $halign ? ' ocb__title--center' : ( 'start' === $halign ? ' ocb__title--start' : '' );
-		$head   = '' === $htext ? '' : '<h2 class="ocb__title' . $hcls . '">' . esc_html( $htext ) . '</h2>';
+		$hcls = 'center' === $halign ? ' ocb__title--center' : ( 'start' === $halign ? ' ocb__title--start' : '' );
+		$head = '' === $htext ? '' : '<h2 class="ocb__title' . $hcls . '">' . esc_html( $htext ) . '</h2>';
 
 		return $head
 			. '<div class="ocb-shelf ocb-shelf--' . esc_attr( $layout ) . ' ocb-shelf--gap-' . esc_attr( $gap ) . ' ocb-shelf--m' . esc_attr( $mcols ) . '" style="--ocb-cols:' . $cols . '"'
@@ -856,7 +856,15 @@ final class Render {
 			$thumb = class_exists( '\OC\Theme\Category' )
 				? \OC\Theme\Category::card_image_id( $id )
 				: absint( get_term_meta( $id, 'thumbnail_id', true ) );
-			$img   = $thumb > 0 ? wp_get_attachment_image( $thumb, 'large', false, array( 'loading' => 'lazy', 'alt' => $term->name ) ) : '';
+			$img   = $thumb > 0 ? wp_get_attachment_image(
+				$thumb,
+				'large',
+				false,
+				array(
+					'loading' => 'lazy',
+					'alt'     => $term->name,
+				)
+			) : '';
 			$link  = get_term_link( $term );
 
 			if ( is_wp_error( $link ) ) {
@@ -957,7 +965,15 @@ final class Render {
 		foreach ( $terms as $term ) {
 			$thumb = absint( get_term_meta( $term->term_id, 'thumbnail_id', true ) );
 			$logo  = $thumb > 0
-				? wp_get_attachment_image( $thumb, 'medium', false, array( 'loading' => 'lazy', 'alt' => $term->name ) )
+				? wp_get_attachment_image(
+					$thumb,
+					'medium',
+					false,
+					array(
+						'loading' => 'lazy',
+						'alt'     => $term->name,
+					)
+				)
 				: '<span class="ocb-brand__name">' . esc_html( $term->name ) . '</span>';
 			$link  = get_term_link( $term );
 
@@ -1089,10 +1105,10 @@ final class Render {
 			);
 		}
 
-		$pics   = '';
-		$cards  = '';
-		$at     = 0;
-		$sc     = 0;
+		$pics  = '';
+		$cards = '';
+		$at    = 0;
+		$sc    = 0;
 
 		foreach ( $scenes as $scene ) {
 			$dsk = absint( $scene['img'] ?? 0 ) > 0 ? (string) wp_get_attachment_image_url( absint( $scene['img'] ), 'full' ) : '';
@@ -1130,8 +1146,8 @@ final class Render {
 				$simple = $product->is_type( 'simple' ) && $product->is_purchasable() && $product->is_in_stock();
 				$plus   = function_exists( 'get_theme_mod' ) && 'plus' === get_theme_mod( 'oc_card_atc_icon', 'cart' );
 				// The desktop button wears the catalogue's own shape setting.
-				$sq     = function_exists( 'get_theme_mod' ) && 'circle' !== get_theme_mod( 'oc_card_atc_shape', 'circle' );
-				$shape  = $sq ? ' ocb-look__cadd--sh-square' : '';
+				$sq    = function_exists( 'get_theme_mod' ) && 'circle' !== get_theme_mod( 'oc_card_atc_shape', 'circle' );
+				$shape = $sq ? ' ocb-look__cadd--sh-square' : '';
 
 				if ( ! $product->is_in_stock() ) {
 					// Sold out: a bell — the product page carries the
@@ -1156,11 +1172,11 @@ final class Render {
 				$swatches = '';
 
 				if ( class_exists( '\\OC\\Theme\\Variations' ) ) {
-					$prev_product        = $GLOBALS['product'] ?? null;
+					$prev_product       = $GLOBALS['product'] ?? null;
 					$GLOBALS['product'] = $product;
 					ob_start();
 					( new \OC\Theme\Variations() )->loop_colors();
-					$swatches            = trim( (string) ob_get_clean() );
+					$swatches           = trim( (string) ob_get_clean() );
 					$GLOBALS['product'] = $prev_product;
 				}
 
@@ -1898,7 +1914,7 @@ final class Render {
 				continue;
 			}
 
-			$count++;
+			++$count;
 			$items .= '<div class="ocb-ico__one">'
 				. ( '' === $icon ? '' : '<i class="ocb-ico__pic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' . $icon . '</svg></i>' )
 				. ( '' === $head ? '' : '<h3 class="ocb-ico__h">' . esc_html( $head ) . '</h3>' )
@@ -2017,7 +2033,16 @@ final class Render {
 		$css = oc_blocks_asset( 'assets/blocks.css' );
 		$js  = oc_blocks_asset( 'assets/blocks.js' );
 		wp_enqueue_style( 'oc-blocks', OC_BLOCKS_URI . $css, array(), (string) filemtime( OC_BLOCKS_DIR . $css ) );
-		wp_enqueue_script( 'oc-blocks', OC_BLOCKS_URI . $js, array(), (string) filemtime( OC_BLOCKS_DIR . $js ), array( 'strategy' => 'defer', 'in_footer' => true ) );
+		wp_enqueue_script(
+			'oc-blocks',
+			OC_BLOCKS_URI . $js,
+			array(),
+			(string) filemtime( OC_BLOCKS_DIR . $js ),
+			array(
+				'strategy'  => 'defer',
+				'in_footer' => true,
+			)
+		);
 		wp_localize_script( 'oc-blocks', 'OCB', array( 'ajax' => admin_url( 'admin-ajax.php' ) ) );
 	}
 

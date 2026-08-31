@@ -253,7 +253,14 @@ final class Blog {
 		// phpcs:enable
 
 		if ( '' !== $honey || $since < 3 ) {
-			wp_die( esc_html__( 'Your comment could not be posted.', 'oc-theme' ), '', array( 'response' => 403, 'back_link' => true ) );
+			wp_die(
+				esc_html__( 'Your comment could not be posted.', 'oc-theme' ),
+				'',
+				array(
+					'response'  => 403,
+					'back_link' => true,
+				)
+			);
 		}
 
 		// The note under the form is agreed to, not merely shown — unless
@@ -265,7 +272,14 @@ final class Blog {
 
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- an agreement box, not an action.
 		if ( '' !== trim( $note ) && empty( $_POST['oc_ok'] ) ) {
-			wp_die( esc_html__( 'Please tick the comment-terms box before posting.', 'oc-theme' ), '', array( 'response' => 403, 'back_link' => true ) );
+			wp_die(
+				esc_html__( 'Please tick the comment-terms box before posting.', 'oc-theme' ),
+				'',
+				array(
+					'response'  => 403,
+					'back_link' => true,
+				)
+			);
 		}
 
 		return $data;
@@ -299,7 +313,7 @@ final class Blog {
 	 * @return array<string,mixed>
 	 */
 	public function form_words( array $defaults ): array {
-		$defaults['title_reply']          = __( 'Leave a comment', 'oc-theme' );
+		$defaults['title_reply'] = __( 'Leave a comment', 'oc-theme' );
 		/* translators: %s: the commenter being answered. */
 		$defaults['title_reply_to']       = __( 'Answering %s', 'oc-theme' );
 		$defaults['cancel_reply_link']    = __( 'Cancel', 'oc-theme' );
