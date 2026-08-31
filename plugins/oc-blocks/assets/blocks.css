@@ -285,6 +285,10 @@
 
 .ocb-hero__media picture img { block-size: 100%; }
 
+/* Toggle off: the whole video frame shows, letterboxed on black where the
+ * proportions differ from the strip's. */
+.ocb-hero--vcontain .ocb-hero__media video { object-fit: contain; background: #000; }
+
 [data-ocb-parallax] > * { will-change: transform; }
 
 /* Height 0: the banner takes the first picture's own proportions —
@@ -755,6 +759,19 @@
 	display: block;
 	margin-block-start: 10px;
 	font-weight: 600;
+	font-size: var(--ocb-cat-fs, inherit);
+}
+
+/* The name on a white pill, wearing the buttons' corner token from the
+ * global design settings. */
+.ocb-cats--ws-chip .ocb-cat__name {
+	display: inline-block;
+	background: #fff;
+	color: var(--oc-ink, #16181d);
+	border-radius: var(--oc-cta-r, 8px);
+	padding: .5em 1.15em;
+	line-height: 1.25;
+	text-shadow: none;
 }
 
 /* The name on the picture. */
@@ -774,6 +791,17 @@
 
 .ocb-cats--w-center .ocb-cat__name { inset-block-start: 50%; transform: translateY(-50%); }
 .ocb-cats--w-bottom .ocb-cat__name { inset-block-end: 6px; }
+
+/* A pill laid on the picture hugs its words and sits centred — logical
+ * inset plus auto margins, so RTL cannot pull it sideways. */
+.ocb-cats--ws-chip.ocb-cats--w-center .ocb-cat__name,
+.ocb-cats--ws-chip.ocb-cats--w-bottom .ocb-cat__name {
+	inline-size: fit-content;
+	max-inline-size: calc(100% - 16px);
+	margin-inline: auto;
+	color: var(--oc-ink, #16181d);
+}
+.ocb-cats--ws-chip.ocb-cats--w-bottom .ocb-cat__name { inset-block-end: 10px; }
 
 .ocb-cats--w-center .ocb-cat__pic::after {
 	content: "";

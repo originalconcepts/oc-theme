@@ -3653,9 +3653,15 @@ html.oc-drw-open { overflow: hidden; }
 	.oc-footer__grid { flex-direction: column; gap: 4px; }
 	.oc-footer__brand,
 	.oc-footer__news { flex: 1 1 auto; min-inline-size: 0; max-inline-size: none; }
-	.oc-footer__brand { margin-block-end: 20px; }
+	/* the brand block always reads centred on a phone: logo, then the
+	 * tagline under it, then the social row — one column, one axis */
+	.oc-footer__brand { margin-block-end: 20px; text-align: center; }
+	.oc-footer__brand .custom-logo-link,
+	.oc-footer__brand-logo { display: inline-flex; }
+	.oc-footer__brand img { margin-inline: auto; }
+	.oc-footer__social { justify-content: center; }
 	.oc-footer__news { margin-block-start: 22px; }
-	.oc-footer__tagline { max-inline-size: none; }
+	.oc-footer__tagline { max-inline-size: none; margin-inline: auto; }
 	.oc-footer__col { flex: 1 1 auto; border-block-start: 1px solid var(--f-line); }
 
 	.oc-footer__bottom { flex-direction: column; align-items: flex-start; }

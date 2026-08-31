@@ -110,6 +110,8 @@
 				return [];
 			case 'category':
 				return 0;
+			case 'labels':
+				return {};
 			default:
 				return '';
 		}
@@ -467,6 +469,8 @@
 				return selectField( section, key, field );
 			case 'cats':
 				return catsField( section, key, field );
+			case 'labels':
+				return null;
 			case 'products':
 			case 'posts':
 				return picksField( section, key, field );
@@ -745,6 +749,27 @@
 		var picked = ( section[ key ] || [] ).map( Number );
 
 		treeWalk( 0, 0, function ( cat, depth ) {
+			// A ticked category may wear its own display name on the block.
+			var rename = el( 'input', {
+				type: 'text',
+				'class': 'ocbe-checks__rename',
+				placeholder: cat.label,
+				value: ( section.names && section.names[ cat.id ] ) || '',
+				hidden: picked.indexOf( cat.id ) > -1 ? null : 'hidden',
+				onclick: function ( e ) { e.preventDefault(); },
+				oninput: function () {
+					section.names = section.names || {};
+
+					if ( rename.value.trim() ) {
+						section.names[ cat.id ] = rename.value;
+					} else {
+						delete section.names[ cat.id ];
+					}
+
+					touch();
+				}
+			} );
+
 			var input = el( 'input', {
 				type: 'checkbox',
 				checked: picked.indexOf( cat.id ) > -1 ? 'checked' : null,
@@ -754,8 +779,14 @@
 
 					if ( at > -1 ) {
 						now.splice( at, 1 );
+						rename.hidden = true;
+
+						if ( section.names ) {
+							delete section.names[ cat.id ];
+						}
 					} else {
 						now.push( cat.id );
+						rename.hidden = false;
 					}
 
 					section[ key ] = now;
@@ -765,7 +796,8 @@
 
 			list.appendChild( el( 'label', { 'class': 'ocbe-checks__row', style: 'padding-inline-start:' + ( depth * 14 ) + 'px' }, [
 				input,
-				el( 'span', { text: cat.label } )
+				el( 'span', { text: cat.label } ),
+				rename
 			] ) );
 		} );
 
@@ -1215,7 +1247,11 @@
 				return;
 			}
 
-			( 'design' === fields[ key ].group ? design : content ).body.appendChild( fieldRow( section, key, fields[ key ], fields ) );
+			var row = fieldRow( section, key, fields[ key ], fields );
+
+			if ( row ) {
+				( 'design' === fields[ key ].group ? design : content ).body.appendChild( row );
+			}
 		} );
 
 		Object.keys( D.shell ).forEach( function ( key ) {
