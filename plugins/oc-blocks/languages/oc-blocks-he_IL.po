@@ -400,6 +400,9 @@ msgstr "OC Blocks"
 msgid "Build with OC Blocks"
 msgstr "בנייה עם OC Blocks"
 
+msgid "Edit with OC Blocks"
+msgstr "עריכה עם OC Blocks"
+
 msgid "This page is built with the composer; its sections replace the content below."
 msgstr "העמוד הזה בנוי עם הקומפוזר; הסקשנים שלו מחליפים את התוכן שלמטה."
 

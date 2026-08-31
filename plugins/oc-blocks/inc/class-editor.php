@@ -29,6 +29,7 @@ final class Editor {
 		add_filter( 'page_row_actions', array( $this, 'row_action' ), 10, 2 );
 		add_filter( 'post_row_actions', array( $this, 'row_action' ), 10, 2 );
 		add_action( 'add_meta_boxes', array( $this, 'meta_box' ) );
+		add_action( 'admin_bar_menu', array( $this, 'admin_bar' ), 81 );
 		add_action( 'admin_enqueue_scripts', array( $this, 'assets' ) );
 
 		add_action( 'wp_ajax_oc_blocks_save', array( $this, 'ajax_save' ) );
@@ -59,10 +60,36 @@ final class Editor {
 	 */
 	public function row_action( $actions, $post ) {
 		if ( in_array( $post->post_type, Render::composable_types(), true ) && current_user_can( 'edit_post', $post->ID ) ) {
-			$actions['oc_blocks'] = '<a href="' . esc_url( self::url( (int) $post->ID ) ) . '">' . esc_html__( 'Build with OC Blocks', 'oc-blocks' ) . '</a>';
+			$actions['oc_blocks'] = '<a href="' . esc_url( self::url( (int) $post->ID ) ) . '">' . esc_html__( 'Edit with OC Blocks', 'oc-blocks' ) . '</a>';
 		}
 
 		return $actions;
+	}
+
+	/**
+	 * The door from the black bar: viewing a composable page on the front
+	 * end puts the composer one click away, next to WordPress's own Edit.
+	 *
+	 * @param \WP_Admin_Bar $bar Admin bar.
+	 */
+	public function admin_bar( $bar ): void {
+		if ( is_admin() || ! is_singular( Render::composable_types() ) ) {
+			return;
+		}
+
+		$post_id = (int) get_queried_object_id();
+
+		if ( $post_id < 1 || ! current_user_can( 'edit_post', $post_id ) ) {
+			return;
+		}
+
+		$bar->add_node(
+			array(
+				'id'    => 'oc-blocks-edit',
+				'title' => __( 'Edit with OC Blocks', 'oc-blocks' ),
+				'href'  => self::url( $post_id ),
+			)
+		);
 	}
 
 	/**
@@ -85,7 +112,7 @@ final class Editor {
 					. esc_html( $built ? __( 'This is built with the composer; its sections replace the content below.', 'oc-blocks' ) : __( 'Build this from ready-made sections, with a live preview.', 'oc-blocks' ) )
 					. '</p>';
 				echo '<a class="button button-primary" style="width:100%;text-align:center;" href="' . esc_url( self::url( (int) $post->ID ) ) . '">'
-					. esc_html( $built ? __( 'Open the composer', 'oc-blocks' ) : __( 'Build with OC Blocks', 'oc-blocks' ) )
+					. esc_html__( 'Edit with OC Blocks', 'oc-blocks' )
 					. '</a>';
 			},
 			$post_type,

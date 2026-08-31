@@ -268,6 +268,7 @@ final class WooCommerce {
 		add_action( 'woocommerce_product_options_sku', array( $this, 'sku_toggle_field' ) );
 		add_action( 'woocommerce_admin_process_product_object', array( $this, 'sku_toggle_save' ) );
 		add_filter( 'woocommerce_breadcrumb_defaults', array( $this, 'breadcrumb_defaults' ) );
+		add_filter( 'woocommerce_get_breadcrumb', array( $this, 'drop_shop_crumb' ) );
 		add_filter( 'body_class', array( $this, 'body_class' ) );
 		add_filter( 'posts_clauses', array( $this, 'oos_last' ), 20, 2 );
 		add_filter( 'woocommerce_sale_flash', array( $this, 'sale_badge' ), 10, 3 );
@@ -692,6 +693,36 @@ final class WooCommerce {
 		printf(
 			'<script>document.body.dataset.ocThumbsMax=%d;</script>',
 			absint( get_theme_mod( 'oc_gallery_thumbs_max', 5 ) )
+		);
+	}
+
+	/**
+	 * The trail reads home, category, product — never the shop page in the
+	 * middle. WooCommerce prepends it only when the permalink structure
+	 * happens to carry the shop slug, so the same theme showed "Shop"
+	 * between the crumbs on one site and nothing on another.
+	 *
+	 * @param array $crumbs Breadcrumb items as [ label, url ] pairs.
+	 * @return array
+	 */
+	public function drop_shop_crumb( array $crumbs ): array {
+		if ( is_shop() ) {
+			return $crumbs;
+		}
+
+		$shop = (string) get_permalink( wc_get_page_id( 'shop' ) );
+
+		if ( '' === $shop ) {
+			return $crumbs;
+		}
+
+		return array_values(
+			array_filter(
+				$crumbs,
+				static function ( $crumb ) use ( $shop ) {
+					return untrailingslashit( (string) ( $crumb[1] ?? '' ) ) !== untrailingslashit( $shop );
+				}
+			)
 		);
 	}
 

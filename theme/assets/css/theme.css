@@ -7646,18 +7646,19 @@ body.oc-no-qty.single-product div.product form.cart .woocommerce-variation-add-t
 	text-overflow: ellipsis;
 }
 
-/* A card in a slider is narrower than one in the grid, and the number in
- * the message can grow a digit at any time. A little less type there buys
- * the room for both without touching the catalogue's own cards. */
-[data-oc-slider] .oc-strip,
-.oc-linked--slider .oc-strip { font-size: .72rem; }
+/* A slider card is only narrower than a grid card on a phone — on desktop
+ * the strip reads at the catalogue's own size everywhere. The smaller type
+ * below exists purely for the phone widths where the line was clipping. */
+@media (max-width: 782px) {
+	[data-oc-slider] .oc-strip,
+	.oc-linked--slider .oc-strip { font-size: .72rem; }
 
-/* The composed shelf is narrower still — measured on a phone, its card is
- * 151px against the 173px of the rows above. One step down from the other
- * sliders is as far as it needs to go: the line then has nine pixels to
- * spare, and still seven when the number reaches four digits. A step up
- * from here fits today's number and clips tomorrow's. */
-.ocb-shelf--slider .oc-strip { font-size: .68rem; }
+	/* The composed shelf is narrower still — measured on a phone, its card
+	 * is 151px against the 173px of the rows above. One step down from the
+	 * other sliders is as far as it needs to go: the line then has nine
+	 * pixels to spare, and still seven at four digits. */
+	.ocb-shelf--slider .oc-strip { font-size: .68rem; }
+}
 
 /* ---------- add-to-cart loader + quantity edge cases ---------- */
 
