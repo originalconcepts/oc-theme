@@ -291,12 +291,20 @@ final class Filters {
 	 * benefit sets define it, and a trigger of "any product" marks nothing,
 	 * because "the whole shop is on promotion" is exactly the wrong answer.
 	 *
-	 * @param object         $promotion  Engine promotion.
-	 * @param int            $product_id Product.
-	 * @param array<int,int> $cats       The product's categories + ancestors.
+	 * An unrecognised type matches nothing — the engine's own label switch
+	 * defaults to false, and assuming "discount" here is how the original
+	 * bug happened.
+	 *
+	 * @param \PromoEngine\Promotion $promotion  Engine promotion.
+	 * @param int                    $product_id Product.
+	 * @param array<int,int>         $cats       The product's categories + ancestors.
 	 */
 	private static function promotion_targets( $promotion, int $product_id, array $cats ): bool {
 		$type = (string) ( $promotion->type ?? 'discount' );
+
+		if ( ! in_array( $type, array( 'discount', 'buy_x_pay_y', 'buy_x_get_y' ), true ) ) {
+			return false;
+		}
 
 		if ( 'buy_x_get_y' === $type ) {
 			if ( in_array( $product_id, array_map( 'intval', (array) $promotion->get( 'benefit_product_ids', array() ) ), true ) ) {
@@ -376,6 +384,13 @@ final class Filters {
 			}
 
 			$type = (string) ( $promotion->type ?? 'discount' );
+
+			// An unrecognised type contributes nothing — the engine's own label
+			// switch defaults to false, and assuming "discount" is how the
+			// original 1=1 bug happened.
+			if ( ! in_array( $type, array( 'discount', 'buy_x_pay_y', 'buy_x_get_y' ), true ) ) {
+				continue;
+			}
 
 			if ( 'buy_x_get_y' === $type ) {
 				// The benefit products and the trigger set — but a trigger of
