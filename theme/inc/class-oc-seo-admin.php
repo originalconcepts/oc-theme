@@ -581,7 +581,7 @@ final class Seo_Admin {
 		if ( 'types' === $tab || 'taxes' === $tab ) {
 			$rows = array();
 
-			foreach ( (array) ( $_POST['rows'] ?? array() ) as $name => $row ) {
+			foreach ( (array) ( $_POST['rows'] ?? array() ) as $name => $row ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- keys and values unslashed and sanitized per field below.
 				$rows[ sanitize_key( (string) $name ) ] = array(
 					'title'   => sanitize_text_field( (string) wp_unslash( $row['title'] ?? '' ) ),
 					'desc'    => sanitize_text_field( (string) wp_unslash( $row['desc'] ?? '' ) ),
@@ -600,13 +600,13 @@ final class Seo_Admin {
 
 		if ( 'social' === $tab ) {
 			$settings['og_default'] = sanitize_text_field( (string) wp_unslash( $_POST['og_default'] ?? '' ) );
-			$settings['tw_card']    = in_array( $_POST['tw_card'] ?? '', array( 'summary', 'summary_large_image' ), true ) ? (string) $_POST['tw_card'] : 'summary_large_image';
+			$settings['tw_card']    = in_array( $_POST['tw_card'] ?? '', array( 'summary', 'summary_large_image' ), true ) ? (string) $_POST['tw_card'] : 'summary_large_image'; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- strict comparison stores a literal.
 			$settings['fb_app_id']  = sanitize_text_field( (string) wp_unslash( $_POST['fb_app_id'] ?? '' ) );
 		}
 
 		if ( 'alt' === $tab ) {
 			$settings['alt_on']      = empty( $_POST['alt_on'] ) ? 0 : 1;
-			$settings['alt_mode']    = 'force' === ( $_POST['alt_mode'] ?? '' ) ? 'force' : 'fill';
+			$settings['alt_mode']    = 'force' === ( $_POST['alt_mode'] ?? '' ) ? 'force' : 'fill'; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- strict comparison stores a literal.
 			$settings['alt_tpl']     = sanitize_text_field( (string) wp_unslash( $_POST['alt_tpl'] ?? '' ) );
 			$settings['alt_tpl_tax'] = sanitize_text_field( (string) wp_unslash( $_POST['alt_tpl_tax'] ?? '' ) );
 			$settings['alt_content'] = empty( $_POST['alt_content'] ) ? 0 : 1;
@@ -618,13 +618,13 @@ final class Seo_Admin {
 			$kinds  = array( 'product_cat', 'product', 'post', 'product_brand', 'category' );
 
 			$settings['links_on']    = empty( $_POST['links_on'] ) ? 0 : 1;
-			$settings['links_scope'] = in_array( $_POST['links_scope'] ?? '', $scopes, true ) ? sanitize_key( (string) wp_unslash( $_POST['links_scope'] ) ) : 'content';
+			$settings['links_scope'] = in_array( $_POST['links_scope'] ?? '', $scopes, true ) ? sanitize_key( (string) wp_unslash( $_POST['links_scope'] ) ) : 'content'; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- whitelist check; the stored value is unslashed and sanitized.
 
 			$want = isset( $_POST['links_targets'] ) ? array_map( 'sanitize_key', (array) wp_unslash( $_POST['links_targets'] ) ) : array();
 
 			$settings['links_targets']  = array_values( array_intersect( $want, $kinds ) );
-			$settings['links_max']      = min( 50, max( 1, (int) ( $_POST['links_max'] ?? 5 ) ) );
-			$settings['links_min']      = min( 40, max( 2, (int) ( $_POST['links_min'] ?? 3 ) ) );
+			$settings['links_max']      = min( 50, max( 1, (int) ( $_POST['links_max'] ?? 5 ) ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- cast to int.
+			$settings['links_min']      = min( 40, max( 2, (int) ( $_POST['links_min'] ?? 3 ) ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- cast to int.
 			$settings['links_headings'] = empty( $_POST['links_headings'] ) ? 0 : 1;
 			$settings['links_exclude']  = sanitize_textarea_field( (string) wp_unslash( $_POST['links_exclude'] ?? '' ) );
 			$settings['links_manual']   = sanitize_textarea_field( (string) wp_unslash( $_POST['links_manual'] ?? '' ) );

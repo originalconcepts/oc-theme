@@ -366,7 +366,7 @@ final class Auth_Admin {
 		$s['google_on'] = empty( $_POST['google_on'] ) ? 0 : 1;
 		$s['fb_on']     = empty( $_POST['fb_on'] ) ? 0 : 1;
 		$s['apple_on']  = empty( $_POST['apple_on'] ) ? 0 : 1;
-		$s['reach']     = 'intl' === ( $_POST['reach'] ?? '' ) ? 'intl' : 'israel';
+		$s['reach']     = 'intl' === ( $_POST['reach'] ?? '' ) ? 'intl' : 'israel'; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- strict comparison stores a literal.
 
 		$s['sms_provider'] = 'inforu' === ( $_POST['sms_provider'] ?? '' ) ? 'inforu' : 'activetrail'; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- strict comparison stores a literal.
 
@@ -378,7 +378,7 @@ final class Auth_Admin {
 		}
 
 		// The .p8 must keep its line breaks — openssl reads PEM, not prose.
-		$s['apple_key'] = trim( (string) wp_unslash( $_POST['apple_key'] ?? '' ) );
+		$s['apple_key'] = trim( (string) wp_unslash( $_POST['apple_key'] ?? '' ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- PEM key; sanitizing would strip the line breaks openssl needs.
 
 		foreach ( array(
 			'code_expiry'     => 180,

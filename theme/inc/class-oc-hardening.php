@@ -86,7 +86,7 @@ final class Hardening {
 		// goes here.
 		add_filter(
 			'xmlrpc_methods',
-			static function ( $methods ) {
+			static function ( $methods ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter -- hook signature.
 				return array();
 			},
 			99
@@ -145,7 +145,7 @@ final class Hardening {
 					return;
 				}
 
-				// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				// phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- only fed to is_numeric(), never stored or output.
 				if ( is_numeric( trim( (string) wp_unslash( $_GET['author'] ) ) ) ) {
 					wp_safe_redirect( home_url( '/' ), 301 );
 					exit;

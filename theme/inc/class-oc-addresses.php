@@ -307,11 +307,11 @@ final class Addresses {
 	/**
 	 * Does the list already carry a default?
 	 *
-	 * @param array<int,array<string,mixed>> $list Addresses.
+	 * @param array<int,array<string,mixed>> $addresses Addresses.
 	 * @return bool
 	 */
-	private static function has_default( array $list ): bool {
-		foreach ( $list as $a ) {
+	private static function has_default( array $addresses ): bool {
+		foreach ( $addresses as $a ) {
 			if ( ! empty( $a['is_default'] ) ) {
 				return true;
 			}

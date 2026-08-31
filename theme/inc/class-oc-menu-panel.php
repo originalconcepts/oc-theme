@@ -1044,6 +1044,13 @@ final class Menu_Panel {
 		);
 	}
 
+	/**
+	 * Render a brands block — a plain link list, or the logo/band shelf.
+	 *
+	 * @param array<string,mixed> $block   Block.
+	 * @param int                 $item_id Menu item the block sits under.
+	 * @return string Markup, empty when no brands resolve.
+	 */
 	private static function brands_block( array $block, int $item_id = 0 ): string {
 		$found = self::brand_terms( $block, $item_id );
 

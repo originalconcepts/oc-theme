@@ -147,8 +147,8 @@ class Order_Print {
 	/**
 	 * Catch our own screen early and answer it in full.
 	 *
-	 * admin_init runs before a single byte of the admin page is sent, so
-	 * exiting here is what keeps the sheet a bare document.
+	 * The admin_init hook runs before a single byte of the admin page is
+	 * sent, so exiting here is what keeps the sheet a bare document.
 	 */
 	public function maybe_render(): void {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- render() checks the nonce.
@@ -177,7 +177,7 @@ class Order_Print {
 			wp_die( esc_html__( 'That print link has expired — pick the orders again.', 'oc-theme' ) );
 		}
 
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- nonce verified above.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput -- nonce verified above; ids are absint-ed below.
 		$raw = isset( $_GET['ids'] ) ? (string) wp_unslash( $_GET['ids'] ) : '';
 		$ids = array_filter( array_map( 'absint', explode( ',', $raw ) ) );
 

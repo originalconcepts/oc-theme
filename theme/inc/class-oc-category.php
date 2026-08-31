@@ -253,7 +253,7 @@ class Category {
 	 */
 	private static function render( \WP_Term $term, array $h, array $sub = array() ): string {
 		$title = '<h1 class="oc-chero__title">' . esc_html( $term->name ) . '</h1>';
-		$desc  = trim( (string) term_description( $term->term_id, 'product_cat' ) );
+		$desc  = trim( (string) term_description( $term->term_id ) );
 		$desc  = '' !== $desc ? '<div class="oc-chero__desc">' . wp_kses_post( $desc ) . '</div>' : '';
 
 		// Sub-categories over the image: they follow the content's alignment.
@@ -428,7 +428,7 @@ class Category {
 	 * ------------------------------------------------------------------ */
 
 	/**
-	 * wp.media on the product-category edit screen.
+	 * Load wp.media on the product-category edit screen.
 	 *
 	 * @param string $hook Current admin page.
 	 */
@@ -1025,7 +1025,7 @@ class Category {
 	 * @param string $key     Meta key / POST key.
 	 */
 	private function save_bool( int $term_id, string $key ): void {
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- strict comparison against a literal.
 		if ( isset( $_POST[ $key ] ) && '1' === (string) wp_unslash( $_POST[ $key ] ) ) {
 			update_term_meta( $term_id, $key, '1' );
 		} else {

@@ -1264,7 +1264,7 @@ final class WooCommerce {
 			esc_url( $simple ? '?add-to-cart=' . $product->get_id() : $product->get_permalink() ),
 			absint( $product->get_id() ),
 			esc_attr( $class ),
-			$mark .
+			$mark . // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static SVG; the words below are escaped.
 			'<svg class="oc-card-atc__check" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 12.5l5 5 10-11"/></svg>' .
 			'<span class="oc-card-atc__word">' . esc_html( $product->add_to_cart_text() ) . '</span>'
 		);
@@ -1319,7 +1319,7 @@ final class WooCommerce {
 			esc_attr( $product->add_to_cart_text() ),
 			// The icon, a check for the "added" state (inline so both inherit
 			// colour), and — on the wide shape — the button's own words.
-			$mark .
+			$mark . // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static SVG; the words below are escaped.
 			'<svg class="oc-card-atc__check" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 12.5l5 5 10-11"/></svg>' .
 			( 'wide' === $shape ? '<span class="oc-card-atc__word">' . esc_html( $product->add_to_cart_text() ) . '</span>' : '' )
 		);
@@ -1363,15 +1363,17 @@ final class WooCommerce {
 		}
 
 		$when  = array();
+		$found = 0;
 		$clock = new \DateTimeImmutable( 'today', wp_timezone() );
 
 		// A fortnight of looking is more than enough for any sane lead time,
 		// and stops a shop that ships on no days at all spinning here.
-		for ( $step = 1; $step <= 60 && count( $when ) < $lead; $step++ ) {
+		for ( $step = 1; $step <= 60 && $found < $lead; $step++ ) {
 			$day = $clock->modify( '+' . $step . ' days' );
 
 			if ( in_array( (int) $day->format( 'w' ), $days, true ) ) {
 				$when[] = $day;
+				++$found;
 			}
 		}
 
@@ -2055,10 +2057,10 @@ final class WooCommerce {
 	public function orders_columns( array $cols ): array {
 		$out = array();
 
-		$out['order-number']   = $cols['order-number'] ?? __( 'Order', 'woocommerce' );
+		$out['order-number']   = $cols['order-number'] ?? __( 'Order', 'woocommerce' ); // phpcs:ignore WordPress.WP.I18n.TextDomainMismatch -- Woo's own column string; reuse its translation.
 		$out['order-products'] = __( 'Products', 'oc-theme' );
-		$out['order-total']    = $cols['order-total'] ?? __( 'Total', 'woocommerce' );
-		$out['order-status']   = $cols['order-status'] ?? __( 'Status', 'woocommerce' );
+		$out['order-total']    = $cols['order-total'] ?? __( 'Total', 'woocommerce' ); // phpcs:ignore WordPress.WP.I18n.TextDomainMismatch -- Woo's own column string; reuse its translation.
+		$out['order-status']   = $cols['order-status'] ?? __( 'Status', 'woocommerce' ); // phpcs:ignore WordPress.WP.I18n.TextDomainMismatch -- Woo's own column string; reuse its translation.
 		$out['order-actions']  = $cols['order-actions'] ?? '&nbsp;';
 
 		return $out;

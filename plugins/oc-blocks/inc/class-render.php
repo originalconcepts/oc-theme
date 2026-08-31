@@ -205,6 +205,7 @@ final class Render {
 	 *
 	 * @param array<string,mixed> $s     Section.
 	 * @param string              $inner Block HTML.
+	 * @param int                 $at    The section's index, printed as data-ocb-n; -1 leaves it off.
 	 * @return string
 	 */
 	private static function wrap( array $s, string $inner, int $at = -1 ): string {
@@ -804,7 +805,7 @@ final class Render {
 		$o = array(
 			'mode'    => in_array( $mode, $modes, true ) ? $mode : 'viewed',
 			'cat'     => isset( $_POST['cat'] ) ? absint( wp_unslash( $_POST['cat'] ) ) : 0,
-			'ids'     => isset( $_POST['ids'] ) ? array_filter( array_map( 'absint', explode( ',', (string) wp_unslash( $_POST['ids'] ) ) ) ) : array(),
+			'ids'     => isset( $_POST['ids'] ) ? array_filter( array_map( 'absint', explode( ',', (string) wp_unslash( $_POST['ids'] ) ) ) ) : array(), // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- every id is absint-ed.
 			'heading' => isset( $_POST['heading'] ) ? sanitize_text_field( wp_unslash( $_POST['heading'] ) ) : '',
 			'halign'  => isset( $_POST['halign'] ) && in_array( sanitize_key( wp_unslash( $_POST['halign'] ) ), array( 'start', 'center' ), true ) ? sanitize_key( wp_unslash( $_POST['halign'] ) ) : '',
 			'count'   => isset( $_POST['count'] ) ? min( 24, absint( wp_unslash( $_POST['count'] ) ) ) : 8,
@@ -1267,12 +1268,12 @@ final class Render {
 	 * @param array<string,mixed> $s Section.
 	 */
 	private static function media( array $s ): string {
-		$img = static function ( int $id, string $class ): string {
+		$img = static function ( int $id, string $css_class ): string {
 			$url = $id > 0 ? (string) wp_get_attachment_image_url( $id, 'full' ) : '';
 
 			return '' === $url
 				? ''
-				: '<figure class="' . esc_attr( $class ) . '"><img src="' . esc_url( $url ) . '" alt="" loading="lazy" decoding="async"></figure>';
+				: '<figure class="' . esc_attr( $css_class ) . '"><img src="' . esc_url( $url ) . '" alt="" loading="lazy" decoding="async"></figure>';
 		};
 
 		$preset = (string) $s['preset'];
@@ -2002,6 +2003,10 @@ final class Render {
 		}
 	}
 
+	/**
+	 * The blocks' stylesheet and script, on the views that render sections:
+	 * composed pages, branch pages, and dressed category listings.
+	 */
 	public function assets(): void {
 		$need = false;
 

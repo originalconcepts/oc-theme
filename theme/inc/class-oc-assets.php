@@ -179,6 +179,7 @@ final class Assets {
 				'byeYes'               => __( 'Sign out', 'oc-theme' ),
 				'byeNo'                => __( 'Stay signed in', 'oc-theme' ),
 				'cologNoAcct'          => __( 'No account found for this number — continue with the details below.', 'oc-theme' ),
+				/* translators: %d: seconds. */
 				'cologResendIn'        => __( 'Resend available in %d s', 'oc-theme' ),
 				'reorderTitle'         => __( 'You already have items in your cart', 'oc-theme' ),
 				'reorderBody'          => __( 'Add these products as well, or empty the cart and add only them?', 'oc-theme' ),
@@ -550,12 +551,16 @@ final class Assets {
 		$tr = (string) get_theme_mod( 'oc_logo_transparent', '' );
 
 		if ( '' !== $tr && 'none' !== get_theme_mod( 'oc_header_transparent', 'none' ) && false !== strpos( $html, '</a>' ) ) {
-			$html = str_replace( '</a>', '<img class="oc-logo-tr" src="' . esc_url( $tr ) . '" alt="" />' . '</a>', $html );
+			$html = str_replace( '</a>', '<img class="oc-logo-tr" src="' . esc_url( $tr ) . '" alt="" /></a>', $html );
 		}
 
 		return $html;
 	}
 
+	/**
+	 * Inline the self-hosted @font-face CSS for the chosen display and body
+	 * families, and preload the hebrew regular of the first one found.
+	 */
 	private function fonts(): void {
 		$families = array_filter(
 			array_unique(

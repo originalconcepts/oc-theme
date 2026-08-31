@@ -258,7 +258,7 @@ final class Branches {
 		update_post_meta( $post_id, '_oc_br_hours', sanitize_textarea_field( wp_unslash( $_POST['oc_br_hours'] ?? '' ) ) );
 		update_post_meta( $post_id, '_oc_br_video', esc_url_raw( wp_unslash( $_POST['oc_br_video'] ?? '' ) ) );
 
-		$gallery = implode( ',', array_filter( array_map( 'absint', explode( ',', (string) wp_unslash( $_POST['oc_br_gallery'] ?? '' ) ) ) ) );
+		$gallery = implode( ',', array_filter( array_map( 'absint', explode( ',', (string) wp_unslash( $_POST['oc_br_gallery'] ?? '' ) ) ) ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- every id is absint-ed.
 		update_post_meta( $post_id, '_oc_br_gallery', $gallery );
 
 		$access = array();

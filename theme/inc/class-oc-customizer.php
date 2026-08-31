@@ -1190,7 +1190,7 @@ final class Customizer {
 		$this->text( $c, 'oc_footer_news_h', 'oc_footer', __( 'Heading', 'oc-theme' ) );
 		$this->text( $c, 'oc_footer_news_t', 'oc_footer', __( 'Text', 'oc-theme' ) );
 
-		// Colours & bottom bar. (Social icons come from Settings → Store details.)
+		// Colours & bottom bar. Social icons come from Settings → Store details.
 		$this->heading( $c, 'oc_h_ft_bottom', 'oc_footer', __( 'Colours & bottom bar', 'oc-theme' ) );
 		$this->color( $c, 'oc_footer_bg', 'oc_footer', __( 'Background', 'oc-theme' ) );
 		$this->toggle( $c, 'oc_footer_dark', 'oc_footer', __( 'Light text (quick preset for a dark background)', 'oc-theme' ), false );
@@ -2626,13 +2626,16 @@ final class Customizer {
 	}
 
 	/**
-	 * A styled group heading between controls — sections stay scannable as
-	 * they grow.
+	 * Days-of-the-week picker — the value is a sorted, comma-separated list
+	 * of day numbers (0 = Sunday … 6 = Saturday).
 	 *
 	 * @param \WP_Customize_Manager $c       Manager.
-	 * @param string                $id      Heading id.
+	 * @param string                $id      Setting id.
 	 * @param string                $section Section id.
-	 * @param string                $label   Heading text.
+	 * @param string                $label   Label.
+	 * @param string                $def     Default value.
+	 * @param string                $hint    Helper text under the control.
+	 * @param array|null            $dep     Optional visibility rule.
 	 */
 	private function days( \WP_Customize_Manager $c, string $id, string $section, string $label, string $def, string $hint = '', ?array $dep = null ): void {
 		require_once __DIR__ . '/class-oc-days-control.php';
@@ -2775,6 +2778,9 @@ final class Customizer {
 	 * @param string                $section Section id.
 	 * @param string                $label   Label.
 	 * @param array<string,string>  $choices Choices.
+	 * @param string                $def     Default value.
+	 * @param array|null            $dep     Optional visibility rule.
+	 * @param string                $hint    Helper text under the control.
 	 */
 	private function select( \WP_Customize_Manager $c, string $id, string $section, string $label, array $choices, string $def = '', ?array $dep = null, string $hint = '' ): void {
 		$c->add_setting(
@@ -2809,6 +2815,7 @@ final class Customizer {
 	 * @param string                $id      Setting id.
 	 * @param string                $section Section id.
 	 * @param string                $label   Label.
+	 * @param array|null            $dep     Optional visibility rule.
 	 */
 	private function text( \WP_Customize_Manager $c, string $id, string $section, string $label, ?array $dep = null ): void {
 		$c->add_setting(
@@ -2843,6 +2850,7 @@ final class Customizer {
 	 * @param string                             $def     Default value.
 	 * @param string                             $width   Item width.
 	 * @param string                             $hint    Helper text under the control.
+	 * @param array|null                         $dep     Optional visibility rule.
 	 */
 	private function preset( \WP_Customize_Manager $c, string $id, string $section, string $label, array $presets, string $def, string $width, string $hint = '', ?array $dep = null ): void {
 		$c->add_setting(

@@ -443,6 +443,8 @@ final class Auth {
 
 	/**
 	 * Text made safe to sit inside an XML element.
+	 *
+	 * @param string $text The raw text.
 	 */
 	private static function xml( string $text ): string {
 		return htmlspecialchars( $text, ENT_XML1 | ENT_QUOTES, 'UTF-8' );
@@ -468,7 +470,7 @@ final class Auth {
 	public function auth_start(): void {
 		$this->guard();
 
-		$phone = self::normalize_phone( (string) wp_unslash( $_POST['phone'] ?? '' ) );
+		$phone = self::normalize_phone( (string) wp_unslash( $_POST['phone'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput -- guard() checked the nonce; normalize_phone() reduces to digits.
 
 		if ( '' === $phone ) {
 			wp_send_json_error(
@@ -529,7 +531,7 @@ final class Auth {
 	public function auth_email_code(): void {
 		$this->guard();
 
-		$phone = self::normalize_phone( (string) wp_unslash( $_POST['phone'] ?? '' ) );
+		$phone = self::normalize_phone( (string) wp_unslash( $_POST['phone'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput -- guard() checked the nonce; normalize_phone() reduces to digits.
 		$user  = '' === $phone ? null : self::user_by_phone( $phone );
 
 		if ( ! $user || '' === (string) $user->user_email ) {
@@ -574,8 +576,8 @@ final class Auth {
 			wp_send_json_error( array( 'msg' => __( 'Email sign-in is not available right now.', 'oc-theme' ) ) );
 		}
 
-		$email = sanitize_email( (string) wp_unslash( $_POST['email'] ?? '' ) );
-		$pass  = (string) wp_unslash( $_POST['password'] ?? '' );
+		$email = sanitize_email( (string) wp_unslash( $_POST['email'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- guard() checked the nonce.
+		$pass  = (string) wp_unslash( $_POST['password'] ?? '' ); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput -- guard() checked the nonce; the password must reach wp_authenticate() untouched.
 
 		if ( ! is_email( $email ) || '' === $pass ) {
 			wp_send_json_error( array( 'msg' => __( 'An email and a password are both needed.', 'oc-theme' ) ) );
@@ -607,8 +609,8 @@ final class Auth {
 	public function auth_verify(): void {
 		$this->guard();
 
-		$phone = self::normalize_phone( (string) wp_unslash( $_POST['phone'] ?? '' ) );
-		$code  = (string) preg_replace( '/\D+/', '', (string) wp_unslash( $_POST['code'] ?? '' ) );
+		$phone = self::normalize_phone( (string) wp_unslash( $_POST['phone'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput -- guard() checked the nonce; normalize_phone() reduces to digits.
+		$code  = (string) preg_replace( '/\D+/', '', (string) wp_unslash( $_POST['code'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput -- guard() checked the nonce; reduced to digits.
 		$kept  = '' === $phone ? false : get_transient( 'ocau_code_' . $phone );
 
 		if ( ! is_array( $kept ) ) {
@@ -665,7 +667,7 @@ final class Auth {
 
 		// The honeypot field must come back empty, and the form must have
 		// been open for longer than a script bothers to wait.
-		if ( '' !== trim( (string) wp_unslash( $_POST['website'] ?? '' ) ) || ( time() - absint( $_POST['ts'] ?? 0 ) ) < 3 ) {
+		if ( '' !== trim( (string) wp_unslash( $_POST['website'] ?? '' ) ) || ( time() - absint( $_POST['ts'] ?? 0 ) ) < 3 ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput -- guard() checked the nonce; the honeypot is only compared to '', ts passes absint().
 			wp_send_json_error( array( 'msg' => __( 'Something went wrong — refresh and try again.', 'oc-theme' ) ) );
 		}
 
@@ -680,16 +682,16 @@ final class Auth {
 			wp_send_json_error( array( 'msg' => __( 'Too many attempts — try again in about an hour.', 'oc-theme' ) ) );
 		}
 
-		$phone = self::normalize_phone( (string) wp_unslash( $_POST['phone'] ?? '' ) );
-		$first = sanitize_text_field( (string) wp_unslash( $_POST['first'] ?? '' ) );
-		$last  = sanitize_text_field( (string) wp_unslash( $_POST['last'] ?? '' ) );
-		$email = sanitize_email( (string) wp_unslash( $_POST['email'] ?? '' ) );
+		$phone = self::normalize_phone( (string) wp_unslash( $_POST['phone'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput -- guard() checked the nonce; normalize_phone() reduces to digits.
+		$first = sanitize_text_field( (string) wp_unslash( $_POST['first'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- guard() checked the nonce.
+		$last  = sanitize_text_field( (string) wp_unslash( $_POST['last'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- guard() checked the nonce.
+		$email = sanitize_email( (string) wp_unslash( $_POST['email'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- guard() checked the nonce.
 
 		if ( '' === $phone || '' === $first || ! is_email( $email ) ) {
 			wp_send_json_error( array( 'msg' => __( 'A name, a valid email and a phone are all needed.', 'oc-theme' ) ) );
 		}
 
-		if ( empty( $_POST['consent'] ) ) {
+		if ( empty( $_POST['consent'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing -- guard() checked the nonce.
 			wp_send_json_error( array( 'msg' => __( 'The privacy policy needs your approval.', 'oc-theme' ) ) );
 		}
 
@@ -757,7 +759,7 @@ final class Auth {
 	public function auth_reset(): void {
 		$this->guard();
 
-		$email = sanitize_email( (string) wp_unslash( $_POST['email'] ?? '' ) );
+		$email = sanitize_email( (string) wp_unslash( $_POST['email'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- guard() checked the nonce.
 
 		if ( ! is_email( $email ) ) {
 			wp_send_json_error( array( 'msg' => __( 'That does not look like an email address.', 'oc-theme' ) ) );
@@ -869,12 +871,12 @@ final class Auth {
 	 */
 	public function google_back(): void {
 		$s     = self::settings();
-		$state = (string) ( $_COOKIE['oc_auth_state'] ?? '' );
-		$back  = (string) ( $_COOKIE['oc_auth_back'] ?? home_url( '/' ) );
+		$state = (string) ( $_COOKIE['oc_auth_state'] ?? '' ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- our own alphanumeric state cookie, strict-compared below.
+		$back  = (string) ( $_COOKIE['oc_auth_back'] ?? home_url( '/' ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- set by us via esc_url_raw(); wp_safe_redirect() validates it.
 
 		setcookie( 'oc_auth_state', '', time() - 100, '/', '', is_ssl(), true );
 
-		if ( '' === $state || $state !== (string) ( $_GET['state'] ?? '' ) || empty( $_GET['code'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( '' === $state || $state !== (string) ( $_GET['state'] ?? '' ) || empty( $_GET['code'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput -- OAuth callback; the raw state is only strict-compared against our cookie.
 			wp_safe_redirect( $back );
 			exit;
 		}
@@ -1059,12 +1061,12 @@ final class Auth {
 	 */
 	public function fb_back(): void {
 		$s     = self::settings();
-		$state = (string) ( $_COOKIE['oc_auth_state'] ?? '' );
-		$back  = (string) ( $_COOKIE['oc_auth_back'] ?? home_url( '/' ) );
+		$state = (string) ( $_COOKIE['oc_auth_state'] ?? '' ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- our own alphanumeric state cookie, strict-compared below.
+		$back  = (string) ( $_COOKIE['oc_auth_back'] ?? home_url( '/' ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- set by us via esc_url_raw(); wp_safe_redirect() validates it.
 
 		setcookie( 'oc_auth_state', '', time() - 100, '/', '', is_ssl(), true );
 
-		if ( '' === $state || $state !== (string) ( $_GET['state'] ?? '' ) || empty( $_GET['code'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( '' === $state || $state !== (string) ( $_GET['state'] ?? '' ) || empty( $_GET['code'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput -- OAuth callback; the raw state is only strict-compared against our cookie.
 			wp_safe_redirect( $back );
 			exit;
 		}
@@ -1153,13 +1155,13 @@ final class Auth {
 	 */
 	public function apple_back(): void {
 		$s     = self::settings();
-		$state = (string) ( $_COOKIE['oc_auth_state'] ?? '' );
-		$back  = (string) ( $_COOKIE['oc_auth_back'] ?? home_url( '/' ) );
+		$state = (string) ( $_COOKIE['oc_auth_state'] ?? '' ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- our own alphanumeric state cookie, strict-compared below.
+		$back  = (string) ( $_COOKIE['oc_auth_back'] ?? home_url( '/' ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- set by us via esc_url_raw(); wp_safe_redirect() validates it.
 
 		setcookie( 'oc_auth_state', '', time() - 100, '/', '', is_ssl(), true );
 
-		if ( '' === $state || $state !== (string) ( $_POST['state'] ?? '' ) || empty( $_POST['code'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
-			self::apple_note( 'state: cookie=' . ( '' === $state ? 'missing' : 'present' ) . ' match=' . ( $state === (string) ( $_POST['state'] ?? '' ) ? 'yes' : 'no' ) . ' code=' . ( empty( $_POST['code'] ) ? 'missing' : 'present' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		if ( '' === $state || $state !== (string) ( $_POST['state'] ?? '' ) || empty( $_POST['code'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput -- OAuth callback; the raw state is only strict-compared against our cookie.
+			self::apple_note( 'state: cookie=' . ( '' === $state ? 'missing' : 'present' ) . ' match=' . ( $state === (string) ( $_POST['state'] ?? '' ) ? 'yes' : 'no' ) . ' code=' . ( empty( $_POST['code'] ) ? 'missing' : 'present' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput -- diagnostic breadcrumb; the raw value is only compared, never stored.
 			wp_safe_redirect( $back );
 			exit;
 		}
@@ -1198,7 +1200,7 @@ final class Auth {
 
 		// The token came to us directly from Apple over TLS in exchange for
 		// our signed secret — parsing suffices, no JWKS trip needed.
-		$claims = json_decode( (string) base64_decode( strtr( $parts[1], '-_', '+/' ) . str_repeat( '=', ( 4 - strlen( $parts[1] ) % 4 ) % 4 ) ), true );
+		$claims = json_decode( (string) base64_decode( strtr( $parts[1], '-_', '+/' ) . str_repeat( '=', ( 4 - strlen( $parts[1] ) % 4 ) % 4 ) ), true ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode -- decoding a JWT segment, not obfuscation.
 		$claims = is_array( $claims ) ? $claims : array();
 		$sub    = (string) ( $claims['sub'] ?? '' );
 
@@ -1216,7 +1218,7 @@ final class Auth {
 		$last  = '';
 
 		if ( ! empty( $_POST['user'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
-			$blob = json_decode( (string) wp_unslash( $_POST['user'] ), true ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			$blob = json_decode( (string) wp_unslash( $_POST['user'] ), true ); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput -- JSON blob; each field is sanitized after decode.
 
 			if ( is_array( $blob ) ) {
 				$first = sanitize_text_field( (string) ( $blob['name']['firstName'] ?? '' ) );
@@ -1311,11 +1313,11 @@ final class Auth {
 	 * @param string $bin Raw bytes.
 	 */
 	private static function b64url( string $bin ): string {
-		return rtrim( strtr( base64_encode( $bin ), '+/', '-_' ), '=' );
+		return rtrim( strtr( base64_encode( $bin ), '+/', '-_' ), '=' ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- the JWT base64url dialect, not obfuscation.
 	}
 
 	/**
-	 * openssl hands ES256 signatures back as DER; a JWT wants the two bare
+	 * OpenSSL hands ES256 signatures back as DER; a JWT wants the two bare
 	 * 32-byte integers side by side.
 	 *
 	 * @param string $der DER-encoded ECDSA signature.

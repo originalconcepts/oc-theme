@@ -804,12 +804,12 @@ final class Redirects_Admin {
 		global $wpdb;
 
 		// Editing may change the source itself; the old row must not linger.
-		$id = absint( $_POST['id'] ?? 0 );
+		$id = absint( $_POST['id'] ?? 0 ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- guard() ran check_admin_referer().
 
 		if ( $id > 0 ) {
 			$was = (string) $wpdb->get_var( $wpdb->prepare( 'SELECT source FROM ' . Redirects::table() . ' WHERE id = %d', $id ) ); // phpcs:ignore WordPress.DB
 
-			$raw = (string) wp_unslash( $_POST['source'] ?? '' );
+			$raw = (string) wp_unslash( $_POST['source'] ?? '' ); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput -- guard() ran check_admin_referer(); normalized on the next line.
 			$now = Redirects::normalize( $raw );
 
 			if ( '*' === substr( rtrim( $raw ), -1 ) ) {
@@ -821,6 +821,7 @@ final class Redirects_Admin {
 			}
 		}
 
+		// phpcs:disable WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput -- guard() ran check_admin_referer(); Redirects::save() normalizes and whitelists every field.
 		$saved = Redirects::save(
 			array(
 				'source' => (string) wp_unslash( $_POST['source'] ?? '' ),
@@ -830,6 +831,7 @@ final class Redirects_Admin {
 				'origin' => 'manual',
 			)
 		);
+		// phpcs:enable WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput
 
 		if ( is_wp_error( $saved ) ) {
 			$this->back( $saved->get_error_message() );
@@ -846,8 +848,8 @@ final class Redirects_Admin {
 
 		global $wpdb;
 
-		$ids   = array_filter( array_map( 'absint', (array) ( $_POST['ids'] ?? array() ) ) );
-		$doing = sanitize_key( (string) ( $_POST['doing'] ?? '' ) );
+		$ids   = array_filter( array_map( 'absint', (array) ( $_POST['ids'] ?? array() ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput -- guard() ran check_admin_referer(); absint() bounds every id.
+		$doing = sanitize_key( (string) wp_unslash( $_POST['doing'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- guard() ran check_admin_referer().
 
 		if ( empty( $ids ) ) {
 			$this->back( __( 'Nothing was selected.', 'oc-theme' ) );
@@ -1026,7 +1028,7 @@ final class Redirects_Admin {
 
 		$rows = array();
 
-		foreach ( $xml->sheetData->row as $line ) {
+		foreach ( $xml->sheetData->row as $line ) { // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- the XLSX schema names this node.
 			$cells = array();
 
 			foreach ( $line->c as $cell ) {
@@ -1118,18 +1120,23 @@ final class Redirects_Admin {
 	public function handle_upload(): void {
 		$this->guard();
 
-		$mode   = sanitize_key( (string) ( $_POST['mode'] ?? 'pairs' ) );
-		$pasted = trim( (string) wp_unslash( $_POST['pasted'] ?? '' ) );
+		$mode   = sanitize_key( (string) wp_unslash( $_POST['mode'] ?? 'pairs' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- guard() ran check_admin_referer().
+		$pasted = trim( (string) wp_unslash( $_POST['pasted'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput -- guard() ran check_admin_referer(); every line is normalized as it is parsed.
 		$name   = '';
 		$rows   = array();
 
-		if ( ! empty( $_FILES['file']['tmp_name'] ) ) {
-			$name = sanitize_file_name( (string) $_FILES['file']['name'] );
-			$rows = $this->read_file( (string) $_FILES['file']['tmp_name'], $name );
+		if ( ! empty( $_FILES['file']['tmp_name'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing -- guard() ran check_admin_referer().
+			$name = sanitize_file_name( (string) $_FILES['file']['name'] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput -- guard() ran check_admin_referer(); $_FILES is never slashed, and sanitize_file_name() cleans it.
+			$rows = $this->read_file( (string) $_FILES['file']['tmp_name'], $name ); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput -- guard() ran check_admin_referer(); tmp_name is a server-made path.
 		} elseif ( '' !== $pasted ) {
-			$name = __( 'Pasted list', 'oc-theme' );
+			$name  = __( 'Pasted list', 'oc-theme' );
+			$lines = preg_split( '/\r?\n/', $pasted );
 
-			foreach ( preg_split( '/\r?\n/', $pasted ) ?: array() as $line ) {
+			if ( ! is_array( $lines ) ) {
+				$lines = array();
+			}
+
+			foreach ( $lines as $line ) {
 				$rows[] = array( trim( $line ) );
 			}
 		}
@@ -1242,7 +1249,7 @@ final class Redirects_Admin {
 	public function handle_confirm_import(): void {
 		$this->guard();
 
-		$token   = sanitize_key( (string) ( $_POST['token'] ?? '' ) );
+		$token   = sanitize_key( (string) wp_unslash( $_POST['token'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- guard() ran check_admin_referer().
 		$preview = get_transient( 'ocrd_preview_' . $token );
 
 		if ( ! is_array( $preview ) ) {
@@ -1250,8 +1257,8 @@ final class Redirects_Admin {
 		}
 
 		$batch  = $this->new_batch( (string) $preview['file'] );
-		$picks  = (array) ( $_POST['pick'] ?? array() );
-		$update = ! empty( $_POST['update_existing'] );
+		$picks  = (array) ( $_POST['pick'] ?? array() ); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput -- guard() ran check_admin_referer(); every pick is absint()-bound below.
+		$update = ! empty( $_POST['update_existing'] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- guard() ran check_admin_referer().
 		$made   = 0;
 
 		foreach ( array( 'new', 'existing', 'problem' ) as $group ) {
@@ -1353,17 +1360,17 @@ final class Redirects_Admin {
 
 		global $wpdb;
 
-		$token   = sanitize_key( (string) ( $_POST['token'] ?? '' ) );
+		$token   = sanitize_key( (string) wp_unslash( $_POST['token'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- guard() ran check_admin_referer().
 		$preview = get_transient( 'ocrd_map_' . $token );
 
 		if ( ! is_array( $preview ) ) {
 			$this->back( __( 'The mapping expired — upload again.', 'oc-theme' ), array( 'tab' => 'map' ) );
 		}
 
-		$scope   = sanitize_key( (string) ( $_POST['scope'] ?? 'picked' ) );
-		$picks   = array_flip( array_map( 'absint', (array) ( $_POST['pick'] ?? array() ) ) );
-		$targets = (array) ( $_POST['target'] ?? array() );
-		$bulk    = Redirects::normalize( (string) wp_unslash( $_POST['bulk_target'] ?? '' ) );
+		$scope   = sanitize_key( (string) wp_unslash( $_POST['scope'] ?? 'picked' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- guard() ran check_admin_referer().
+		$picks   = array_flip( array_map( 'absint', (array) ( $_POST['pick'] ?? array() ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput -- guard() ran check_admin_referer(); absint() bounds every pick.
+		$targets = (array) ( $_POST['target'] ?? array() ); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput -- guard() ran check_admin_referer(); each target is unslashed and normalized at use.
+		$bulk    = Redirects::normalize( (string) wp_unslash( $_POST['bulk_target'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput -- guard() ran check_admin_referer(); normalized.
 		$batch   = $this->new_batch( (string) $preview['file'] );
 		$made    = 0;
 
@@ -1398,7 +1405,7 @@ final class Redirects_Admin {
 
 			$target = isset( $targets[ $at ] ) ? Redirects::normalize( (string) wp_unslash( $targets[ $at ] ) ) : (string) $row['target'];
 
-			if ( 'picked' === $scope && '' !== $bulk && isset( $picks[ $at ] ) && '' !== (string) wp_unslash( $_POST['bulk_target'] ?? '' ) ) {
+			if ( 'picked' === $scope && '' !== $bulk && isset( $picks[ $at ] ) && '' !== (string) wp_unslash( $_POST['bulk_target'] ?? '' ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput -- guard() ran check_admin_referer(); an emptiness check only.
 				$target = $bulk;
 			}
 
@@ -1473,7 +1480,7 @@ final class Redirects_Admin {
 
 		global $wpdb;
 
-		$batch = absint( $_GET['batch'] ?? 0 );
+		$batch = absint( $_GET['batch'] ?? 0 ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- guard() ran check_admin_referer().
 		$wpdb->query( $wpdb->prepare( 'DELETE FROM ' . Redirects::table() . ' WHERE batch_id = %d', $batch ) ); // phpcs:ignore WordPress.DB
 		Redirects::rebuild_cache();
 
@@ -1497,7 +1504,7 @@ final class Redirects_Admin {
 		header( 'Content-Disposition: attachment; filename=redirects-' . gmdate( 'Y-m-d' ) . '.csv' );
 		echo "\xEF\xBB\xBF";
 
-		$map = isset( $_GET['map'] ) ? sanitize_key( wp_unslash( $_GET['map'] ) ) : '';
+		$map = isset( $_GET['map'] ) ? sanitize_key( wp_unslash( $_GET['map'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- guard() ran check_admin_referer().
 
 		if ( '' !== $map ) {
 			$preview = get_transient( 'ocrd_map_' . $map );
@@ -1528,11 +1535,11 @@ final class Redirects_Admin {
 		$settings = array();
 
 		foreach ( array( 'log404', 'auto_product', 'auto_term', 'auto_post', 'auto_page', 'auto_slug' ) as $flag ) {
-			$settings[ $flag ] = empty( $_POST[ $flag ] ) ? 0 : 1;
+			$settings[ $flag ] = empty( $_POST[ $flag ] ) ? 0 : 1; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- guard() ran check_admin_referer().
 		}
 
 		foreach ( array( 'fixed_product', 'fixed_term', 'fixed_post', 'fixed_page' ) as $field ) {
-			$raw                = trim( (string) wp_unslash( $_POST[ $field ] ?? '' ) );
+			$raw                = trim( (string) wp_unslash( $_POST[ $field ] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput -- guard() ran check_admin_referer(); normalized on the next line.
 			$settings[ $field ] = '' === $raw ? '' : Redirects::normalize( $raw );
 		}
 
@@ -1547,13 +1554,13 @@ final class Redirects_Admin {
 		$this->guard();
 
 		$dictionary = (array) get_option( Redirects::DICTIONARY, array() );
-		$drop       = isset( $_GET['drop'] ) ? (string) rawurldecode( (string) wp_unslash( $_GET['drop'] ) ) : '';
+		$drop       = isset( $_GET['drop'] ) ? (string) rawurldecode( (string) wp_unslash( $_GET['drop'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput -- guard() ran check_admin_referer(); used only as an exact array key.
 
 		if ( '' !== $drop ) {
 			unset( $dictionary[ $drop ] );
 		} else {
-			$from = Redirects::normalize( (string) wp_unslash( $_POST['from'] ?? '' ) );
-			$to   = Redirects::normalize( (string) wp_unslash( $_POST['to'] ?? '' ) );
+			$from = Redirects::normalize( (string) wp_unslash( $_POST['from'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput -- guard() ran check_admin_referer(); normalized.
+			$to   = Redirects::normalize( (string) wp_unslash( $_POST['to'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput -- guard() ran check_admin_referer(); normalized.
 
 			if ( '' !== $from && '' !== $to && $from !== $to ) {
 				$dictionary[ $from ] = $to;
@@ -1584,7 +1591,7 @@ final class Redirects_Admin {
 
 		global $wpdb;
 
-		$which = sanitize_key( (string) ( $_GET['which'] ?? '' ) );
+		$which = sanitize_key( (string) wp_unslash( $_GET['which'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- guard() ran check_admin_referer().
 		$made  = 0;
 		$batch = $this->new_batch( 'redirection' === $which ? 'Redirection' : 'Rank Math' );
 

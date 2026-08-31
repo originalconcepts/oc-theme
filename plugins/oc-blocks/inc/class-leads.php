@@ -76,7 +76,7 @@ final class Leads {
 	 */
 	public function take(): void {
 		// phpcs:disable WordPress.Security.NonceVerification.Missing -- see above.
-		$trap  = isset( $_POST['website'] ) ? trim( (string) wp_unslash( $_POST['website'] ) ) : '';
+		$trap  = isset( $_POST['website'] ) ? trim( (string) wp_unslash( $_POST['website'] ) ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- honeypot; only ever compared to the empty string.
 		$name  = isset( $_POST['name'] ) ? sanitize_text_field( wp_unslash( $_POST['name'] ) ) : '';
 		$phone = isset( $_POST['phone'] ) ? sanitize_text_field( wp_unslash( $_POST['phone'] ) ) : '';
 		$email = isset( $_POST['email'] ) ? sanitize_email( wp_unslash( $_POST['email'] ) ) : '';
@@ -245,7 +245,7 @@ final class Leads {
 	 *
 	 * @param \WP_Post $post Lead.
 	 */
-	public function boxes( \WP_Post $post ): void {
+	public function boxes( \WP_Post $post ): void { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- hook signature.
 		add_meta_box(
 			'oc-lead-details',
 			__( 'The lead', 'oc-blocks' ),
@@ -290,7 +290,7 @@ final class Leads {
 	 */
 	public function settings_html(): void {
 		if ( isset( $_POST['oc_lead_hook'] ) && check_admin_referer( 'oc_blocks_leads_settings' ) && current_user_can( 'manage_options' ) ) {
-			$url = esc_url_raw( trim( (string) wp_unslash( $_POST['oc_lead_hook'] ) ) );
+			$url = esc_url_raw( trim( (string) wp_unslash( $_POST['oc_lead_hook'] ) ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- esc_url_raw() sanitizes.
 			update_option( self::HOOK, $url, false );
 			echo '<div class="notice notice-success"><p>' . esc_html__( 'Saved.', 'oc-blocks' ) . '</p></div>';
 		}
@@ -349,14 +349,16 @@ final class Leads {
 			return '"' . str_replace( '"', '""', $value ) . '"';
 		};
 
+		// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped -- CSV fields, quoted and doubled.
 		foreach ( $leads as $lead ) {
-			echo $cell( (string) $lead->post_title ) . ',' // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- CSV fields, quoted and doubled.
+			echo $cell( (string) $lead->post_title ) . ','
 				. $cell( (string) get_post_meta( $lead->ID, '_oc_lead_phone', true ) ) . ','
 				. $cell( (string) get_post_meta( $lead->ID, '_oc_lead_email', true ) ) . ','
 				. $cell( (string) get_post_meta( $lead->ID, '_oc_lead_msg', true ) ) . ','
 				. $cell( (string) get_the_title( absint( get_post_meta( $lead->ID, '_oc_lead_page', true ) ) ) ) . ','
-				. $cell( (string) get_the_date( 'Y-m-d H:i', $lead ) ) . "\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- CSV fields, quoted and doubled.
+				. $cell( (string) get_the_date( 'Y-m-d H:i', $lead ) ) . "\n";
 		}
+		// phpcs:enable WordPress.Security.EscapeOutput.OutputNotEscaped
 
 		exit;
 	}

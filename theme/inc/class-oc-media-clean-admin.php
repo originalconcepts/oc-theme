@@ -280,10 +280,14 @@ final class Media_Clean_Admin {
 	private static function script( string $nonce, bool $rescan = false ): void {
 		$strings = array(
 			'scanning' => __( 'Scanning…', 'oc-theme' ),
+			/* translators: 1: files checked so far, 2: total files to check. */
 			'checking' => __( 'Checking file names — %1$d of %2$d', 'oc-theme' ),
+			/* translators: 1: files deleted so far, 2: total files to delete. */
 			'deleting' => __( 'Deleting — %1$d of %2$d', 'oc-theme' ),
 			'none'     => __( 'Nothing is ticked.', 'oc-theme' ),
+			/* translators: %d: number of files ticked for deletion. */
 			'confirm'  => __( 'Delete %d files for good? This cannot be undone.', 'oc-theme' ),
+			/* translators: 1: files deleted, 2: disk space freed, e.g. "5.4 MB", 3: files kept. */
 			'done'     => __( 'Done: %1$d deleted, %2$s freed. %3$d were kept because something still uses them.', 'oc-theme' ),
 			'failed'   => __( 'Something went wrong. Please try again.', 'oc-theme' ),
 		);

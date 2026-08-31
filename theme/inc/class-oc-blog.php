@@ -248,7 +248,7 @@ final class Blog {
 	 */
 	public function check_traps( array $data ): array {
 		// phpcs:disable WordPress.Security.NonceVerification.Missing -- spam traps, deliberately nonce-free.
-		$honey = isset( $_POST['oc_hp'] ) ? (string) wp_unslash( $_POST['oc_hp'] ) : '';
+		$honey = isset( $_POST['oc_hp'] ) ? (string) wp_unslash( $_POST['oc_hp'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- honeypot; only compared against the empty string, never stored.
 		$since = isset( $_POST['oc_t'] ) ? time() - (int) $_POST['oc_t'] : 999;
 		// phpcs:enable
 

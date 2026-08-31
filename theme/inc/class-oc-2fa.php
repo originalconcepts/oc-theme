@@ -139,7 +139,7 @@ final class Two_Factor {
 		}
 
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- as above.
-		$phone = Auth::normalize_phone( (string) wp_unslash( $_POST['oc_phone'] ) );
+		$phone = Auth::normalize_phone( (string) wp_unslash( $_POST['oc_phone'] ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- normalize_phone() reduces it to digits.
 
 		if ( '' === $phone ) {
 			delete_user_meta( $user_id, 'oc_phone' );
@@ -231,7 +231,7 @@ final class Two_Factor {
 
 		// phpcs:disable WordPress.Security.NonceVerification.Missing -- the login form's own POST, already authenticated above.
 		$remember = ! empty( $_POST['rememberme'] );
-		$to       = isset( $_POST['redirect_to'] ) ? (string) wp_unslash( $_POST['redirect_to'] ) : '';
+		$to       = isset( $_POST['redirect_to'] ) ? (string) wp_unslash( $_POST['redirect_to'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- validated by wp_validate_redirect() at use in finish().
 		// phpcs:enable WordPress.Security.NonceVerification.Missing
 
 		set_transient(
@@ -311,8 +311,8 @@ final class Two_Factor {
 
 		$error = '';
 
-		if ( 'POST' === ( $_SERVER['REQUEST_METHOD'] ?? '' ) && isset( $_POST['oc_code'] ) ) {
-			$given = (string) wp_unslash( $_POST['oc_code'] );
+		if ( 'POST' === sanitize_text_field( wp_unslash( (string) ( $_SERVER['REQUEST_METHOD'] ?? '' ) ) ) && isset( $_POST['oc_code'] ) ) {
+			$given = (string) wp_unslash( $_POST['oc_code'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- check() reduces it to digits.
 
 			switch ( self::check( $token, $given ) ) {
 				case 'ok':

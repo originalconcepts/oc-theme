@@ -93,7 +93,7 @@ final class Preview {
 		$fonts = '';
 
 		if ( defined( 'OC_THEME_URI' ) ) {
-			$fonts = '<link rel="stylesheet" href="' . esc_url( OC_THEME_URI . '/assets/fonts/assistant.css' ) . '">';
+			$fonts = '<link rel="stylesheet" href="' . esc_url( OC_THEME_URI . '/assets/fonts/assistant.css' ) . '">'; // phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedStylesheet -- standalone preview document, outside the normal enqueue pipeline.
 		}
 
 		// The body renders FIRST: integration blocks (stories, reviews)

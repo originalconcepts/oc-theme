@@ -22,7 +22,7 @@ if ( '' !== $oc_band['class'] ) {
 	$oc_classes[] = 'oc-linked--band';
 }
 
-$oc_heading = apply_filters( 'woocommerce_product_upsells_products_heading', __( 'You may also like&hellip;', 'woocommerce' ) );
+$oc_heading = apply_filters( 'woocommerce_product_upsells_products_heading', __( 'You may also like&hellip;', 'woocommerce' ) ); // phpcs:ignore WordPress.WP.I18n.TextDomainMismatch -- WooCommerce's own string; its translations apply.
 ?>
 <section class="<?php echo esc_attr( implode( ' ', $oc_classes ) ); ?>"<?php echo $oc_band['style']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in band(). ?>>
 	<?php if ( $oc_heading ) : ?>

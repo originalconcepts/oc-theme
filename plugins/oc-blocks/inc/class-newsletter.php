@@ -48,7 +48,7 @@ final class Newsletter {
 	 */
 	public function subscribe(): void {
 		// phpcs:disable WordPress.Security.NonceVerification.Missing -- see above.
-		$trap  = isset( $_POST['website'] ) ? trim( (string) wp_unslash( $_POST['website'] ) ) : '';
+		$trap  = isset( $_POST['website'] ) ? trim( (string) wp_unslash( $_POST['website'] ) ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- honeypot; only ever compared to the empty string.
 		$email = isset( $_POST['email'] ) ? sanitize_email( wp_unslash( $_POST['email'] ) ) : '';
 		// phpcs:enable
 
