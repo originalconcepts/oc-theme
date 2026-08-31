@@ -47,7 +47,12 @@ final class Days_Control extends \WP_Customize_Control {
 	 * Draw the row.
 	 */
 	protected function render_content(): void {
-		$chosen = array_filter( explode( ',', (string) $this->value() ), 'strlen' );
+		$chosen = array_filter(
+			explode( ',', (string) $this->value() ),
+			static function ( $v ) {
+				return '' !== (string) $v;
+			}
+		);
 		$chosen = array_map( 'intval', $chosen );
 
 		// Starts on Sunday, the way the week runs here.

@@ -1354,7 +1354,12 @@ final class WooCommerce {
 	 * @return array{from:string,to:string,relative:bool,one_day:bool}|null
 	 */
 	public static function delivery_window(): ?array {
-		$days = array_filter( explode( ',', (string) get_theme_mod( 'oc_ship_days', '0,1,2,3,4' ) ), 'strlen' );
+		$days = array_filter(
+			explode( ',', (string) get_theme_mod( 'oc_ship_days', '0,1,2,3,4' ) ),
+			static function ( $v ) {
+				return '' !== (string) $v;
+			}
+		);
 		$days = array_values( array_unique( array_map( 'intval', $days ) ) );
 		$lead = max( 1, min( 30, (int) get_theme_mod( 'oc_ship_lead', 3 ) ) );
 

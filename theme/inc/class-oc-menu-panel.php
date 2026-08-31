@@ -692,7 +692,7 @@ final class Menu_Panel {
 	 * @param string $where   Either 'nav' or 'drawer'.
 	 * @param ?array $blocks  Blocks to preview instead of the saved ones.
 	 * @param bool   $gap     Whether the spare width gathers before the first extra.
-	 * @return array<int,array{track:string,class:string,inner:string,gap?:bool}>
+	 * @return array<int,array{track:string,class:string,inner:string,band?:bool,gap?:bool}>
 	 */
 	private static function extras( int $item_id, string $where, ?array $blocks = null, bool $gap = true ): array {
 		$widths = self::widths();
@@ -759,7 +759,7 @@ final class Menu_Panel {
 	 * @param array<string,mixed> $block   Block.
 	 * @param int                 $item_id Menu item the block sits under.
 	 * @param string              $where   'drawer' or the mega panel.
-	 * @return array{class:string,inner:string}|null
+	 * @return array{class:string,inner:string,band?:bool}|null
 	 */
 	private static function block( array $block, int $item_id = 0, string $where = '' ): ?array {
 		$type = (string) $block['type'];

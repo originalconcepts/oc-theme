@@ -46,7 +46,7 @@ final class Redirects_Admin {
 	/**
 	 * The room's address.
 	 *
-	 * @param array<string,string> $args Extra query args.
+	 * @param array<string,string|int> $args Extra query args.
 	 */
 	public static function url( array $args = array() ): string {
 		return add_query_arg( $args, admin_url( 'options-general.php?page=oc-redirects' ) );

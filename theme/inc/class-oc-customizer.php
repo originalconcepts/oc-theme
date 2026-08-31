@@ -2645,7 +2645,12 @@ final class Customizer {
 			array(
 				'default'           => $def,
 				'sanitize_callback' => static function ( $value ): string {
-					$days = array_filter( explode( ',', (string) $value ), 'strlen' );
+					$days = array_filter(
+						explode( ',', (string) $value ),
+						static function ( $v ) {
+							return '' !== (string) $v;
+						}
+					);
 					$days = array_map( 'intval', $days );
 					$days = array_values( array_unique( array_filter( $days, static fn( $d ) => $d >= 0 && $d <= 6 ) ) );
 

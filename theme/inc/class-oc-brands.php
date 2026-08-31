@@ -183,7 +183,7 @@ final class Brands {
 			$style .= 'body.oc-brands-page{background:' . $bg . '}';
 		}
 
-		$out  = '' === $style ? '' : '<style>' . $style . '</style>';
+		$out  = '<style>' . $style . '</style>';
 		$out .= '<main id="main" class="site-main"><div class="oc-brands">';
 		$out .= '<h1 class="oc-page-title">' . esc_html__( 'Brands', 'oc-theme' ) . '</h1>';
 

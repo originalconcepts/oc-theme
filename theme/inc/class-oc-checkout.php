@@ -916,7 +916,7 @@ final class Checkout {
 
 		$amount = wc_price( abs( $total ), array( 'currency' => '' ) );
 
-		if ( ! empty( WC()->cart ) && WC()->cart->display_prices_including_tax() ) {
+		if ( WC()->cart instanceof \WC_Cart && WC()->cart->display_prices_including_tax() ) {
 			$amount = wc_price( abs( $total + (float) ( $fee->tax ?? 0 ) ), array( 'currency' => '' ) );
 		}
 

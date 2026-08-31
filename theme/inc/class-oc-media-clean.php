@@ -528,7 +528,14 @@ final class Media_Clean {
 
 		$total = file_exists( $file ) ? (int) filesize( $file ) : 0;
 		$dir   = dirname( $file );
-		$meta  = wp_get_attachment_metadata( $id );
+
+		/**
+		 * Core's documented shape omits original_image, which is present for
+		 * scaled images since WP 5.3 — widen to what the call really returns.
+		 *
+		 * @var array<string,mixed>|false $meta
+		 */
+		$meta = wp_get_attachment_metadata( $id );
 
 		if ( is_array( $meta ) ) {
 			if ( ! empty( $meta['sizes'] ) && is_array( $meta['sizes'] ) ) {

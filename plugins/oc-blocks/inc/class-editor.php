@@ -259,7 +259,7 @@ final class Editor {
 	 * Names for picked ids (products, posts, categories), for the chips.
 	 *
 	 * @param array<int,array<string,mixed>> $sections Sections.
-	 * @return array<int,string>
+	 * @return array{ids: array<int|string, string>, cats: array<int, array{id: int, label: string, parent: int}>} Picked-id names keyed by id (categories under 'c' . id), plus the whole category tree.
 	 */
 	private static function names( array $sections ): array {
 		$out = array();

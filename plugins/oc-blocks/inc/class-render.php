@@ -22,13 +22,6 @@ defined( 'ABSPATH' ) || exit;
 final class Render {
 
 	/**
-	 * Whether this request printed sections (so the assets know to come).
-	 *
-	 * @var bool
-	 */
-	private static $used = false;
-
-	/**
 	 * True while rendering the page's first visible section — its hero
 	 * image is the likely LCP and deserves fetchpriority over lazy.
 	 *
@@ -133,8 +126,6 @@ final class Render {
 	 * @return string
 	 */
 	public static function page_html( int $page_id ): string {
-		self::$used = true;
-
 		$key    = 'oc_compose_' . $page_id . '_' . self::version();
 		$cached = get_transient( $key );
 
@@ -177,8 +168,6 @@ final class Render {
 	 * @return string
 	 */
 	public static function sections_html( array $sections ): string {
-		self::$used = true;
-
 		$out = '';
 
 		foreach ( array_values( $sections ) as $at => $section ) {

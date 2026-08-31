@@ -48,7 +48,7 @@ class Order_Print {
 		add_action( 'admin_init', array( $this, 'maybe_render' ), 1 );
 
 		// A single order can be printed from its own edit screen too.
-		add_action( 'woocommerce_order_actions', array( $this, 'order_action' ) );
+		add_filter( 'woocommerce_order_actions', array( $this, 'order_action' ) );
 		add_action( 'woocommerce_order_action_oc_print_order', array( $this, 'order_action_run' ) );
 	}
 

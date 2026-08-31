@@ -136,7 +136,7 @@ final class Leads {
 			)
 		);
 
-		if ( ! is_wp_error( $lead_id ) && $lead_id > 0 ) {
+		if ( $lead_id > 0 ) {
 			$this->forward( (int) $lead_id, $name, $phone, $email, $msg, $page );
 		}
 
