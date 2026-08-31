@@ -183,7 +183,7 @@ final class Brands {
 			$style .= 'body.oc-brands-page{background:' . $bg . '}';
 		}
 
-		$out  = '' === $style ? '' : '<style>' . $style . '</style>';
+		$out  = '<style>' . $style . '</style>';
 		$out .= '<main id="main" class="site-main"><div class="oc-brands">';
 		$out .= '<h1 class="oc-page-title">' . esc_html__( 'Brands', 'oc-theme' ) . '</h1>';
 
@@ -249,7 +249,16 @@ final class Brands {
 		foreach ( $terms as $term ) {
 			$thumb = (int) get_term_meta( (int) $term->term_id, 'thumbnail_id', true );
 			$logo  = $thumb > 0
-				? wp_get_attachment_image( $thumb, 'medium', false, array( 'class' => 'oc-brands__logo', 'loading' => 'lazy', 'alt' => $term->name ) )
+				? wp_get_attachment_image(
+					$thumb,
+					'medium',
+					false,
+					array(
+						'class'   => 'oc-brands__logo',
+						'loading' => 'lazy',
+						'alt'     => $term->name,
+					)
+				)
 				: '<span class="oc-brands__stand">' . esc_html( $term->name ) . '</span>';
 
 			$out .= '<li><a class="oc-brands__card" href="' . esc_url( (string) get_term_link( $term ) ) . '">';

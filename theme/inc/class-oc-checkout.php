@@ -916,7 +916,7 @@ final class Checkout {
 
 		$amount = wc_price( abs( $total ), array( 'currency' => '' ) );
 
-		if ( ! empty( WC()->cart ) && WC()->cart->display_prices_including_tax() ) {
+		if ( WC()->cart instanceof \WC_Cart && WC()->cart->display_prices_including_tax() ) {
 			$amount = wc_price( abs( $total + (float) ( $fee->tax ?? 0 ) ), array( 'currency' => '' ) );
 		}
 
@@ -969,8 +969,8 @@ final class Checkout {
 
 		$a = \OC\Theme\Auth::settings();
 
-		$sms   = ! empty( $a['sms_on'] );
-		$prov  = array();
+		$sms  = ! empty( $a['sms_on'] );
+		$prov = array();
 
 		if ( ! empty( $a['google_on'] ) ) {
 			$prov['google'] = __( 'Google', 'oc-theme' );

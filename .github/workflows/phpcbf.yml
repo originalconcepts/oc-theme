@@ -1,0 +1,32 @@
+# Temporary tool run: this machine has no local PHP, so the runner is the
+# toolchain. Dispatched manually; produces the phpcbf diff as an artifact.
+name: phpcbf
+
+on:
+  workflow_dispatch:
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+          tools: composer:v2
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      - name: PHPCBF
+        run: composer run lint:fix || true
+
+      - name: Collect the diff
+        run: git diff > phpcbf.patch && wc -c phpcbf.patch
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: phpcbf-patch
+          path: phpcbf.patch

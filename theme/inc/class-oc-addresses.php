@@ -164,8 +164,8 @@ final class Addresses {
 	 * carrying the synthetic 'wc' seed id) is given a fresh uuid so the seed
 	 * turns into a stored address on first save.
 	 *
-	 * @param int                  $uid User id.
-	 * @param array<string,mixed>  $in  Raw address input.
+	 * @param int                 $uid User id.
+	 * @param array<string,mixed> $in  Raw address input.
 	 * @return string
 	 */
 	public static function save( int $uid, array $in ): string {
@@ -307,11 +307,11 @@ final class Addresses {
 	/**
 	 * Does the list already carry a default?
 	 *
-	 * @param array<int,array<string,mixed>> $list Addresses.
+	 * @param array<int,array<string,mixed>> $addresses Addresses.
 	 * @return bool
 	 */
-	private static function has_default( array $list ): bool {
-		foreach ( $list as $a ) {
+	private static function has_default( array $addresses ): bool {
+		foreach ( $addresses as $a ) {
 			if ( ! empty( $a['is_default'] ) ) {
 				return true;
 			}

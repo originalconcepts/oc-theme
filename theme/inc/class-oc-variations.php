@@ -304,28 +304,28 @@ final class Variations {
 	 * that leads to the product. The current colour never disappears — when
 	 * it falls past the cap it takes the last visible slot.
 	 *
-	 * @param array<int,string> $list       The built swatch anchors.
+	 * @param array<int,string> $anchors    The built swatch anchors.
 	 * @param int               $at_current Index of the current item, -1 when none.
 	 * @param string            $permalink  Where +N leads.
 	 * @return array<int,string>
 	 */
-	private static function capped( array $list, int $at_current, string $permalink ): array {
+	private static function capped( array $anchors, int $at_current, string $permalink ): array {
 		$max = absint( get_theme_mod( 'oc_swatch_loop_max', 0 ) );
 
-		if ( $max < 1 || count( $list ) <= $max ) {
-			return $list;
+		if ( $max < 1 || count( $anchors ) <= $max ) {
+			return $anchors;
 		}
 
-		$extra = count( $list ) - $max;
+		$extra = count( $anchors ) - $max;
 
 		if ( $at_current >= $max ) {
-			$list[ $max - 1 ] = $list[ $at_current ];
+			$anchors[ $max - 1 ] = $anchors[ $at_current ];
 		}
 
-		$list   = array_slice( $list, 0, $max );
-		$list[] = '<a class="oc-colors__more" href="' . esc_url( $permalink ) . '">+' . (int) $extra . '</a>';
+		$anchors   = array_slice( $anchors, 0, $max );
+		$anchors[] = '<a class="oc-colors__more" href="' . esc_url( $permalink ) . '">+' . (int) $extra . '</a>';
 
-		return $list;
+		return $anchors;
 	}
 
 	/**

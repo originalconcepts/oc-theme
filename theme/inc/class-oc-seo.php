@@ -166,16 +166,16 @@ final class Seo {
 	/**
 	 * A per-item field: post meta or term meta, trimmed, '' when unset.
 	 *
-	 * @param \WP_Post|\WP_Term|null $object The item.
-	 * @param string                 $key    Meta key.
+	 * @param \WP_Post|\WP_Term|null $item The item.
+	 * @param string                 $key  Meta key.
 	 */
-	public static function field( $object, string $key ): string {
-		if ( $object instanceof \WP_Post ) {
-			return trim( (string) get_post_meta( $object->ID, $key, true ) );
+	public static function field( $item, string $key ): string {
+		if ( $item instanceof \WP_Post ) {
+			return trim( (string) get_post_meta( $item->ID, $key, true ) );
 		}
 
-		if ( $object instanceof \WP_Term ) {
-			return trim( (string) get_term_meta( $object->term_id, $key, true ) );
+		if ( $item instanceof \WP_Term ) {
+			return trim( (string) get_term_meta( $item->term_id, $key, true ) );
 		}
 
 		return '';
@@ -213,13 +213,13 @@ final class Seo {
 	 * Fill a template's %%variables%% for the given item.
 	 *
 	 * @param string                 $template The template.
-	 * @param \WP_Post|\WP_Term|null $object   The item, null for site-level.
+	 * @param \WP_Post|\WP_Term|null $item     The item, null for site-level.
 	 */
-	public static function render( string $template, $object = null ): string {
+	public static function render( string $template, $item = null ): string {
 		$out = (string) preg_replace_callback(
 			'/%%([a-z0-9_]+)%%/i',
-			static function ( $m ) use ( $object ) {
-				return self::variable( strtolower( (string) $m[1] ), $object );
+			static function ( $m ) use ( $item ) {
+				return self::variable( strtolower( (string) $m[1] ), $item );
 			},
 			$template
 		);
@@ -234,10 +234,10 @@ final class Seo {
 	/**
 	 * One variable's value.
 	 *
-	 * @param string                 $name   Variable, without the %%.
-	 * @param \WP_Post|\WP_Term|null $object The item.
+	 * @param string                 $name Variable, without the %%.
+	 * @param \WP_Post|\WP_Term|null $item The item.
 	 */
-	private static function variable( string $name, $object ): string {
+	private static function variable( string $name, $item ): string {
 		$settings = self::settings();
 
 		switch ( $name ) {
@@ -252,55 +252,55 @@ final class Seo {
 				/* translators: %d: page number. */
 				return $paged > 1 ? sprintf( __( 'Page %d', 'oc-theme' ), $paged ) : '';
 			case 'title':
-				if ( $object instanceof \WP_Term ) {
-					return $object->name;
+				if ( $item instanceof \WP_Term ) {
+					return $item->name;
 				}
-				return $object instanceof \WP_Post ? (string) get_the_title( $object ) : (string) get_bloginfo( 'name' );
+				return $item instanceof \WP_Post ? (string) get_the_title( $item ) : (string) get_bloginfo( 'name' );
 			case 'term_title':
-				return $object instanceof \WP_Term ? $object->name : '';
+				return $item instanceof \WP_Term ? $item->name : '';
 			case 'term_desc':
-				return $object instanceof \WP_Term ? wp_strip_all_tags( (string) $object->description ) : '';
+				return $item instanceof \WP_Term ? wp_strip_all_tags( (string) $item->description ) : '';
 			case 'excerpt':
-				return $object instanceof \WP_Post ? self::text_of( $object, 155 ) : '';
+				return $item instanceof \WP_Post ? self::text_of( $item, 155 ) : '';
 			case 'parent_title':
-				if ( $object instanceof \WP_Post && $object->post_parent > 0 ) {
-					return (string) get_the_title( $object->post_parent );
+				if ( $item instanceof \WP_Post && $item->post_parent > 0 ) {
+					return (string) get_the_title( $item->post_parent );
 				}
 				return '';
 			case 'category':
-				if ( $object instanceof \WP_Post ) {
-					$taxonomy = 'product' === $object->post_type ? 'product_cat' : 'category';
-					$terms    = get_the_terms( $object, $taxonomy );
+				if ( $item instanceof \WP_Post ) {
+					$taxonomy = 'product' === $item->post_type ? 'product_cat' : 'category';
+					$terms    = get_the_terms( $item, $taxonomy );
 					return is_array( $terms ) && ! empty( $terms ) ? $terms[0]->name : '';
 				}
 				return '';
 			case 'brand':
 				$taxonomy = Search::brand_taxonomy();
-				if ( '' !== $taxonomy && $object instanceof \WP_Post ) {
-					$terms = get_the_terms( $object, $taxonomy );
+				if ( '' !== $taxonomy && $item instanceof \WP_Post ) {
+					$terms = get_the_terms( $item, $taxonomy );
 					return is_array( $terms ) && ! empty( $terms ) ? $terms[0]->name : '';
 				}
 				return '';
 			case 'sku':
-				if ( $object instanceof \WP_Post && function_exists( 'wc_get_product' ) ) {
-					$product = wc_get_product( $object->ID );
+				if ( $item instanceof \WP_Post && function_exists( 'wc_get_product' ) ) {
+					$product = wc_get_product( $item->ID );
 					return $product ? (string) $product->get_sku() : '';
 				}
 				return '';
 			case 'price':
-				if ( $object instanceof \WP_Post && function_exists( 'wc_get_product' ) ) {
-					$product = wc_get_product( $object->ID );
+				if ( $item instanceof \WP_Post && function_exists( 'wc_get_product' ) ) {
+					$product = wc_get_product( $item->ID );
 					return $product ? html_entity_decode( wp_strip_all_tags( (string) wc_price( (float) $product->get_price() ) ) ) : '';
 				}
 				return '';
 		}
 
-		if ( 0 === strpos( $name, 'cf_' ) && $object instanceof \WP_Post ) {
-			return trim( (string) get_post_meta( $object->ID, substr( $name, 3 ), true ) );
+		if ( 0 === strpos( $name, 'cf_' ) && $item instanceof \WP_Post ) {
+			return trim( (string) get_post_meta( $item->ID, substr( $name, 3 ), true ) );
 		}
 
-		if ( 0 === strpos( $name, 'tax_' ) && $object instanceof \WP_Post ) {
-			$terms = get_the_terms( $object, substr( $name, 4 ) );
+		if ( 0 === strpos( $name, 'tax_' ) && $item instanceof \WP_Post ) {
+			$terms = get_the_terms( $item, substr( $name, 4 ) );
 			return is_array( $terms ) ? implode( ', ', wp_list_pluck( $terms, 'name' ) ) : '';
 		}
 
@@ -339,70 +339,70 @@ final class Seo {
 	/**
 	 * The title that will actually print, manual → type template → site.
 	 *
-	 * @param \WP_Post|\WP_Term|null $object The item, null for the current request.
+	 * @param \WP_Post|\WP_Term|null $item The item, null for the current request.
 	 */
-	public static function auto_title( $object = null ): string {
-		$object   = $object ?? self::subject();
+	public static function auto_title( $item = null ): string {
+		$item     = $item ?? self::subject();
 		$settings = self::settings();
 
-		$manual = self::field( $object, '_ocseo_title' );
+		$manual = self::field( $item, '_ocseo_title' );
 
 		if ( '' !== $manual ) {
-			return self::render( $manual, $object );
+			return self::render( $manual, $item );
 		}
 
 		$row = array( 'title' => '' );
 
-		if ( $object instanceof \WP_Post ) {
-			$row = self::type_row( 'types', $object->post_type );
-		} elseif ( $object instanceof \WP_Term ) {
-			$row = self::type_row( 'taxes', $object->taxonomy );
+		if ( $item instanceof \WP_Post ) {
+			$row = self::type_row( 'types', $item->post_type );
+		} elseif ( $item instanceof \WP_Term ) {
+			$row = self::type_row( 'taxes', $item->taxonomy );
 		}
 
 		$template = '' !== $row['title'] ? $row['title'] : (string) $settings['title_tpl'];
 
-		return self::render( $template, $object );
+		return self::render( $template, $item );
 	}
 
 	/**
 	 * The description that will actually print.
 	 *
-	 * @param \WP_Post|\WP_Term|null $object The item.
+	 * @param \WP_Post|\WP_Term|null $item The item.
 	 */
-	public static function auto_desc( $object = null ): string {
-		$object = $object ?? self::subject();
+	public static function auto_desc( $item = null ): string {
+		$item = $item ?? self::subject();
 
-		$manual = self::field( $object, '_ocseo_desc' );
+		$manual = self::field( $item, '_ocseo_desc' );
 
 		if ( '' !== $manual ) {
-			return self::render( $manual, $object );
+			return self::render( $manual, $item );
 		}
 
 		$row = array( 'desc' => '' );
 
-		if ( $object instanceof \WP_Post ) {
-			$row = self::type_row( 'types', $object->post_type );
-		} elseif ( $object instanceof \WP_Term ) {
-			$row = self::type_row( 'taxes', $object->taxonomy );
+		if ( $item instanceof \WP_Post ) {
+			$row = self::type_row( 'types', $item->post_type );
+		} elseif ( $item instanceof \WP_Term ) {
+			$row = self::type_row( 'taxes', $item->taxonomy );
 		}
 
 		$settings = self::settings();
 		$template = '' !== $row['desc'] ? $row['desc'] : (string) $settings['desc_tpl'];
 
 		if ( '' !== $template ) {
-			$out = self::render( $template, $object );
+			$out = self::render( $template, $item );
 
 			if ( '' !== $out ) {
 				return $out;
 			}
 		}
 
-		if ( $object instanceof \WP_Post ) {
-			return self::text_of( $object, 155 );
+		if ( $item instanceof \WP_Post ) {
+			return self::text_of( $item, 155 );
 		}
 
-		if ( $object instanceof \WP_Term ) {
-			$text = wp_strip_all_tags( (string) $object->description );
+		if ( $item instanceof \WP_Term ) {
+			$text = wp_strip_all_tags( (string) $item->description );
 			return mb_strlen( $text ) > 155 ? rtrim( mb_substr( $text, 0, 155 ) ) . '…' : $text;
 		}
 
@@ -412,19 +412,19 @@ final class Seo {
 	/**
 	 * The share image URL: manual → featured → first in content → site default.
 	 *
-	 * @param \WP_Post|\WP_Term|null $object The item.
+	 * @param \WP_Post|\WP_Term|null $item The item.
 	 */
-	public static function auto_image( $object = null ): string {
-		$object = $object ?? self::subject();
+	public static function auto_image( $item = null ): string {
+		$item = $item ?? self::subject();
 
-		$manual = self::image_url( self::field( $object, '_ocseo_og_image' ) );
+		$manual = self::image_url( self::field( $item, '_ocseo_og_image' ) );
 
 		if ( '' !== $manual ) {
 			return $manual;
 		}
 
-		if ( $object instanceof \WP_Post ) {
-			$id = (int) get_post_thumbnail_id( $object );
+		if ( $item instanceof \WP_Post ) {
+			$id = (int) get_post_thumbnail_id( $item );
 
 			if ( $id > 0 ) {
 				$url = wp_get_attachment_image_url( $id, 'large' );
@@ -434,13 +434,13 @@ final class Seo {
 				}
 			}
 
-			if ( preg_match( '/<img[^>]+src=["\']([^"\']+)/i', (string) $object->post_content, $m ) ) {
+			if ( preg_match( '/<img[^>]+src=["\']([^"\']+)/i', (string) $item->post_content, $m ) ) {
 				return (string) $m[1];
 			}
 		}
 
-		if ( $object instanceof \WP_Term ) {
-			$id = (int) get_term_meta( $object->term_id, 'thumbnail_id', true );
+		if ( $item instanceof \WP_Term ) {
+			$id = (int) get_term_meta( $item->term_id, 'thumbnail_id', true );
 
 			if ( $id > 0 ) {
 				$url = wp_get_attachment_image_url( $id, 'large' );
@@ -553,7 +553,7 @@ final class Seo {
 		if ( null === $object && is_front_page() && '' === trim( (string) self::settings()['home_title'] ) ) {
 			$title = wp_get_document_title();
 		}
-		$desc  = is_front_page() && '' !== trim( (string) self::settings()['home_desc'] )
+		$desc = is_front_page() && '' !== trim( (string) self::settings()['home_desc'] )
 			? self::render( (string) self::settings()['home_desc'] )
 			: self::auto_desc( $object );
 
@@ -750,11 +750,11 @@ final class Seo {
 	/**
 	 * Point robots.txt at it.
 	 *
-	 * @param string $output The robots.txt body.
-	 * @param bool   $public Whether the site invites indexing.
+	 * @param string $output    The robots.txt body.
+	 * @param bool   $is_public Whether the site invites indexing.
 	 */
-	public function robots_txt( $output, $public ): string {
-		unset( $public );
+	public function robots_txt( $output, $is_public ): string {
+		unset( $is_public );
 
 		$line = 'Sitemap: ' . home_url( '/sitemap.xml' );
 
@@ -924,9 +924,9 @@ final class Seo {
 	 * The chain: manual ALT → the post the image belongs to → the current
 	 * page's context → the cleaned filename. Duplicates grow a differentiator.
 	 *
-	 * @param int      $attachment_id The image.
-	 * @param int      $parent_id     The post it serves right now (0 = none known).
-	 * @param int      $index         Position in a gallery, 1-based (0 = unknown).
+	 * @param int $attachment_id The image.
+	 * @param int $parent_id     The post it serves right now (0 = none known).
+	 * @param int $index         Position in a gallery, 1-based (0 = unknown).
 	 */
 	public static function alt_for( int $attachment_id, int $parent_id = 0, int $index = 0 ): string {
 		// The same picture shown twice on one page (thumbnail + zoom) keeps
@@ -1022,7 +1022,7 @@ final class Seo {
 		while ( isset( self::$spoken[ $alt ] ) ) {
 			/* translators: %d: image position. */
 			$alt = $base . ' ' . $settings['sep'] . ' ' . sprintf( __( 'Image %d', 'oc-theme' ), $n );
-			$n++;
+			++$n;
 		}
 
 		self::$spoken[ $alt ] = true;

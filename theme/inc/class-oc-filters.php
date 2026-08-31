@@ -229,9 +229,9 @@ final class Filters {
 
 	/**
 	 * Is this product "on promotion" — a WooCommerce sale price or a live
-	 * Promotion King promotion targeting it (the engine's own rules:
-	 * all / chosen products / chosen categories with ancestors, minus
-	 * exclusions; channel and customer type respected)?
+	 * Promotion King promotion targeting it? Targeting mirrors the engine's
+	 * own catalog-label rules per promotion type (channel and customer type
+	 * respected).
 	 *
 	 * @param \WC_Product $product The product.
 	 */
@@ -260,9 +260,6 @@ final class Filters {
 				if ( method_exists( $promotion, 'customer_type_allowed' ) && ! $promotion->customer_type_allowed( $logged_in ) ) {
 					continue;
 				}
-				if ( 'cart' === (string) $promotion->get( 'applies_to', 'all' ) ) {
-					continue;
-				}
 				$promos[] = $promotion;
 			}
 		}
@@ -279,20 +276,7 @@ final class Filters {
 		$cats = array_map( 'intval', array_unique( $cats ) );
 
 		foreach ( $promos as $promotion ) {
-			$excluded = array_map( 'intval', (array) $promotion->get( 'excluded_product_ids', array() ) );
-			if ( in_array( $product_id, $excluded, true ) ) {
-				continue;
-			}
-
-			$applies = (string) $promotion->get( 'applies_to', 'all' );
-
-			if ( 'all' === $applies ) {
-				return true;
-			}
-			if ( 'products' === $applies && in_array( $product_id, array_map( 'intval', (array) $promotion->get( 'product_ids', array() ) ), true ) ) {
-				return true;
-			}
-			if ( 'categories' === $applies && array_intersect( array_map( 'intval', (array) $promotion->get( 'category_ids', array() ) ), $cats ) ) {
+			if ( self::promotion_targets( $promotion, $product_id, $cats ) ) {
 				return true;
 			}
 		}
@@ -301,11 +285,83 @@ final class Filters {
 	}
 
 	/**
+	 * Does one live promotion target one product? Mirrors the engine's own
+	 * catalog-label targeting per promotion type. The type matters: a
+	 * "buy X get Y" promotion has no applies_to at all — its trigger and
+	 * benefit sets define it, and a trigger of "any product" marks nothing,
+	 * because "the whole shop is on promotion" is exactly the wrong answer.
+	 *
+	 * An unrecognised type matches nothing — the engine's own label switch
+	 * defaults to false, and assuming "discount" here is how the original
+	 * bug happened.
+	 *
+	 * @param \PromoEngine\Promotion $promotion  Engine promotion.
+	 * @param int                    $product_id Product.
+	 * @param array<int,int>         $cats       The product's categories + ancestors.
+	 */
+	private static function promotion_targets( $promotion, int $product_id, array $cats ): bool {
+		$type = (string) ( $promotion->type ?? 'discount' );
+
+		if ( ! in_array( $type, array( 'discount', 'buy_x_pay_y', 'buy_x_get_y' ), true ) ) {
+			return false;
+		}
+
+		if ( 'buy_x_get_y' === $type ) {
+			if ( in_array( $product_id, array_map( 'intval', (array) $promotion->get( 'benefit_product_ids', array() ) ), true ) ) {
+				return true;
+			}
+
+			$buy = (string) $promotion->get( 'buy_applies_to', 'all' );
+
+			if ( 'products' === $buy ) {
+				return in_array( $product_id, array_map( 'intval', (array) $promotion->get( 'buy_product_ids', array() ) ), true );
+			}
+			if ( 'categories' === $buy ) {
+				return (bool) array_intersect( array_map( 'intval', (array) $promotion->get( 'buy_category_ids', array() ) ), $cats );
+			}
+
+			return false;
+		}
+
+		if ( in_array( $product_id, array_map( 'intval', (array) $promotion->get( 'excluded_product_ids', array() ) ), true ) ) {
+			return false;
+		}
+
+		if ( 'buy_x_pay_y' === $type ) {
+			if ( 'category' === (string) $promotion->get( 'scope', 'product' ) ) {
+				return (bool) array_intersect( array_map( 'intval', (array) $promotion->get( 'category_ids', array() ) ), $cats );
+			}
+
+			return in_array( $product_id, array_map( 'intval', (array) $promotion->get( 'product_ids', array() ) ), true );
+		}
+
+		// Plain discount. One shown as a cart-summary line is not a product
+		// promotion, and neither is one aimed at the cart itself.
+		if ( $promotion->get( 'as_cart_discount', false ) ) {
+			return false;
+		}
+
+		$applies = (string) $promotion->get( 'applies_to', 'all' );
+
+		if ( 'all' === $applies ) {
+			return true;
+		}
+		if ( 'products' === $applies ) {
+			return in_array( $product_id, array_map( 'intval', (array) $promotion->get( 'product_ids', array() ) ), true );
+		}
+		if ( 'categories' === $applies ) {
+			return (bool) array_intersect( array_map( 'intval', (array) $promotion->get( 'category_ids', array() ) ), $cats );
+		}
+
+		return false;
+	}
+
+	/**
 	 * Products targeted by a live Promotion King promotion, as SQL — one
-	 * OR'ed condition per promotion, mirroring the engine's own targeting
-	 * (all / chosen products / chosen categories incl. descendants, minus
-	 * per-promotion exclusions; channel and customer-type respected).
-	 * Empty string when the engine is absent or nothing is live.
+	 * OR'ed condition per promotion, mirroring the engine's catalog-label
+	 * targeting per promotion type (discount / buy X pay Y / buy X get Y;
+	 * channel and customer-type respected). Empty string when the engine is
+	 * absent or nothing is live.
 	 */
 	private function engine_sale_sql(): string {
 		if ( ! class_exists( '\PromoEngine\Repository' ) ) {
@@ -327,14 +383,75 @@ final class Filters {
 				continue;
 			}
 
-			$applies = (string) $promotion->get( 'applies_to', 'all' );
+			$type = (string) ( $promotion->type ?? 'discount' );
 
-			if ( 'cart' === $applies ) {
+			// An unrecognised type contributes nothing — the engine's own label
+			// switch defaults to false, and assuming "discount" is how the
+			// original 1=1 bug happened.
+			if ( ! in_array( $type, array( 'discount', 'buy_x_pay_y', 'buy_x_get_y' ), true ) ) {
+				continue;
+			}
+
+			if ( 'buy_x_get_y' === $type ) {
+				// The benefit products and the trigger set — but a trigger of
+				// "any product" adds nothing, or the whole shop would qualify.
+				$parts = array();
+
+				$benefit = array_filter( array_map( 'absint', (array) $promotion->get( 'benefit_product_ids', array() ) ) );
+				if ( $benefit ) {
+					$parts[] = "{$wpdb->posts}.ID IN ( " . implode( ',', $benefit ) . ' )';
+				}
+
+				$buy = (string) $promotion->get( 'buy_applies_to', 'all' );
+
+				if ( 'products' === $buy ) {
+					$ids = array_filter( array_map( 'absint', (array) $promotion->get( 'buy_product_ids', array() ) ) );
+					if ( $ids ) {
+						$parts[] = "{$wpdb->posts}.ID IN ( " . implode( ',', $ids ) . ' )';
+					}
+				} elseif ( 'categories' === $buy ) {
+					$exists = $this->cat_family_exists_sql( (array) $promotion->get( 'buy_category_ids', array() ) );
+					if ( '' !== $exists ) {
+						$parts[] = $exists;
+					}
+				}
+
+				if ( $parts ) {
+					$conds[] = '( ' . implode( ' OR ', $parts ) . ' )';
+				}
+
 				continue;
 			}
 
 			$excluded = array_filter( array_map( 'absint', (array) $promotion->get( 'excluded_product_ids', array() ) ) );
 			$not      = $excluded ? " AND {$wpdb->posts}.ID NOT IN ( " . implode( ',', $excluded ) . ' )' : '';
+
+			if ( 'buy_x_pay_y' === $type ) {
+				if ( 'category' === (string) $promotion->get( 'scope', 'product' ) ) {
+					$exists = $this->cat_family_exists_sql( (array) $promotion->get( 'category_ids', array() ) );
+					if ( '' !== $exists ) {
+						$conds[] = '( ' . $exists . $not . ' )';
+					}
+				} else {
+					$ids = array_filter( array_map( 'absint', (array) $promotion->get( 'product_ids', array() ) ) );
+					if ( $ids ) {
+						$conds[] = "( {$wpdb->posts}.ID IN ( " . implode( ',', $ids ) . ' )' . $not . ' )';
+					}
+				}
+
+				continue;
+			}
+
+			// Plain discount. A cart-summary line is not a product promotion.
+			if ( $promotion->get( 'as_cart_discount', false ) ) {
+				continue;
+			}
+
+			$applies = (string) $promotion->get( 'applies_to', 'all' );
+
+			if ( 'cart' === $applies ) {
+				continue;
+			}
 
 			if ( 'all' === $applies ) {
 				$conds[] = '( 1=1' . $not . ' )';
@@ -344,32 +461,53 @@ final class Filters {
 					$conds[] = "( {$wpdb->posts}.ID IN ( " . implode( ',', $ids ) . ' )' . $not . ' )';
 				}
 			} elseif ( 'categories' === $applies ) {
-				$cat_ids = array_filter( array_map( 'absint', (array) $promotion->get( 'category_ids', array() ) ) );
-				$family  = array();
-				foreach ( $cat_ids as $cat_id ) {
-					$family = array_merge( $family, array( $cat_id ), array_map( 'intval', get_term_children( $cat_id, 'product_cat' ) ) );
-				}
-				$family = array_unique( array_filter( $family ) );
-
-				if ( $family ) {
-					$tt_ids = get_terms(
-						array(
-							'taxonomy'   => 'product_cat',
-							'include'    => $family,
-							'fields'     => 'tt_ids',
-							'hide_empty' => false,
-						)
-					);
-
-					if ( is_array( $tt_ids ) && $tt_ids ) {
-						$in      = implode( ',', array_map( 'absint', $tt_ids ) );
-						$conds[] = "( EXISTS ( SELECT 1 FROM {$wpdb->term_relationships} oc_pk_tr WHERE oc_pk_tr.object_id = {$wpdb->posts}.ID AND oc_pk_tr.term_taxonomy_id IN ( $in ) )" . $not . ' )';
-					}
+				$exists = $this->cat_family_exists_sql( (array) $promotion->get( 'category_ids', array() ) );
+				if ( '' !== $exists ) {
+					$conds[] = '( ' . $exists . $not . ' )';
 				}
 			}
 		}
 
 		return $conds ? '( ' . implode( ' OR ', $conds ) . ' )' : '';
+	}
+
+	/**
+	 * EXISTS clause matching products in any of the given categories or their
+	 * descendants — empty string when the list resolves to nothing.
+	 *
+	 * @param array<int,mixed> $cat_ids Chosen category ids.
+	 */
+	private function cat_family_exists_sql( array $cat_ids ): string {
+		global $wpdb;
+
+		$family = array();
+
+		foreach ( array_filter( array_map( 'absint', $cat_ids ) ) as $cat_id ) {
+			$family = array_merge( $family, array( $cat_id ), array_map( 'intval', get_term_children( $cat_id, 'product_cat' ) ) );
+		}
+
+		$family = array_unique( array_filter( $family ) );
+
+		if ( ! $family ) {
+			return '';
+		}
+
+		$tt_ids = get_terms(
+			array(
+				'taxonomy'   => 'product_cat',
+				'include'    => $family,
+				'fields'     => 'tt_ids',
+				'hide_empty' => false,
+			)
+		);
+
+		if ( ! is_array( $tt_ids ) || ! $tt_ids ) {
+			return '';
+		}
+
+		$in = implode( ',', array_map( 'absint', $tt_ids ) );
+
+		return "EXISTS ( SELECT 1 FROM {$wpdb->term_relationships} oc_pk_tr WHERE oc_pk_tr.object_id = {$wpdb->posts}.ID AND oc_pk_tr.term_taxonomy_id IN ( $in ) )";
 	}
 
 	/**

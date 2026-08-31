@@ -109,8 +109,8 @@ final class Blocks {
 			}
 		}
 
-		$walk = static function ( int $parent, int $depth ) use ( &$walk, &$kids, &$choices ): void {
-			foreach ( $kids[ $parent ] ?? array() as $t ) {
+		$walk = static function ( int $parent_id, int $depth ) use ( &$walk, &$kids, &$choices ): void {
+			foreach ( $kids[ $parent_id ] ?? array() as $t ) {
 				$choices[ (string) $t->term_id ] = str_repeat( '— ', $depth ) . $t->name;
 				$walk( (int) $t->term_id, $depth + 1 );
 			}
@@ -274,6 +274,12 @@ final class Blocks {
 	 * @return array<string,mixed>
 	 */
 	public static function block( int $id ): array {
+		$ps_mode  = (string) get_post_meta( $id, '_oc_block_ps_mode', true );
+		$ps_count = get_post_meta( $id, '_oc_block_ps_count', true );
+		$ps_cols  = get_post_meta( $id, '_oc_block_ps_cols', true );
+		$ps_gap   = (string) get_post_meta( $id, '_oc_block_ps_gap', true );
+		$ps_mcols = (string) get_post_meta( $id, '_oc_block_ps_mcols', true );
+
 		return array(
 			'type'    => 'slider' === get_post_meta( $id, '_oc_block_type', true ) ? 'slider' : 'banner',
 			'img'     => (int) get_post_meta( $id, '_oc_block_img', true ),
@@ -288,16 +294,16 @@ final class Blocks {
 			'to'      => (string) get_post_meta( $id, '_oc_block_to', true ),
 			'focus'   => self::read_focus( $id ),
 			'ps'      => array(
-				'mode'    => (string) get_post_meta( $id, '_oc_block_ps_mode', true ) ?: 'viewed',
+				'mode'    => $ps_mode ? $ps_mode : 'viewed',
 				'cat'     => (int) get_post_meta( $id, '_oc_block_ps_cat', true ),
 				'ids'     => (string) get_post_meta( $id, '_oc_block_ps_ids', true ),
 				'heading' => (string) get_post_meta( $id, '_oc_block_ps_heading', true ),
 				'halign'  => 'center' === get_post_meta( $id, '_oc_block_ps_halign', true ) ? 'center' : 'start',
 				'bg'      => (string) get_post_meta( $id, '_oc_block_ps_bg', true ),
-				'count'   => max( 2, (int) ( get_post_meta( $id, '_oc_block_ps_count', true ) ?: 8 ) ),
-				'cols'    => max( 2, (int) ( get_post_meta( $id, '_oc_block_ps_cols', true ) ?: 4 ) ),
-				'gap'     => (string) get_post_meta( $id, '_oc_block_ps_gap', true ) ?: 'normal',
-				'mcols'   => (string) get_post_meta( $id, '_oc_block_ps_mcols', true ) ?: '1',
+				'count'   => max( 2, (int) ( $ps_count ? $ps_count : 8 ) ),
+				'cols'    => max( 2, (int) ( $ps_cols ? $ps_cols : 4 ) ),
+				'gap'     => $ps_gap ? $ps_gap : 'normal',
+				'mcols'   => $ps_mcols ? $ps_mcols : '1',
 				'layout'  => 'grid' === get_post_meta( $id, '_oc_block_ps_layout', true ) ? 'grid' : 'slider',
 				'all'     => (bool) get_post_meta( $id, '_oc_block_ps_all', true ),
 			),
@@ -703,12 +709,13 @@ final class Blocks {
 		$ps_mode  = sanitize_key( wp_unslash( $_POST['oc_block_ps_mode'] ?? '' ) );
 		update_post_meta( $id, '_oc_block_ps_mode', in_array( $ps_mode, $ps_modes, true ) ? $ps_mode : 'viewed' );
 		update_post_meta( $id, '_oc_block_ps_cat', absint( $_POST['oc_block_ps_cat'] ?? 0 ) );
-		$ps_ids = array_filter( array_map( 'absint', preg_split( '/[^0-9]+/', (string) wp_unslash( $_POST['oc_block_ps_ids'] ?? '' ) ) ?: array() ) );
+		$ps_ids_split = preg_split( '/[^0-9]+/', (string) wp_unslash( $_POST['oc_block_ps_ids'] ?? '' ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- reduced to digits by the preg_split + absint below.
+		$ps_ids       = array_filter( array_map( 'absint', is_array( $ps_ids_split ) ? $ps_ids_split : array() ) );
 		update_post_meta( $id, '_oc_block_ps_ids', implode( ',', $ps_ids ) );
 		update_post_meta( $id, '_oc_block_ps_heading', sanitize_text_field( wp_unslash( $_POST['oc_block_ps_heading'] ?? '' ) ) );
 		update_post_meta( $id, '_oc_block_ps_halign', 'center' === ( $_POST['oc_block_ps_halign'] ?? '' ) ? 'center' : 'start' ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- strict comparison stores a literal.
-		$ps_bg  = trim( (string) wp_unslash( $_POST['oc_block_ps_bg'] ?? '' ) );
-		$ps_bg  = preg_match( '/^#([0-9a-f]{3}|[0-9a-f]{6})$|^(rgb|rgba|hsl|hsla)\([0-9.,%\s\/]+\)$/i', $ps_bg ) ? $ps_bg : '';
+		$ps_bg = trim( (string) wp_unslash( $_POST['oc_block_ps_bg'] ?? '' ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- validated against a strict colour regex below, else emptied.
+		$ps_bg = preg_match( '/^#([0-9a-f]{3}|[0-9a-f]{6})$|^(rgb|rgba|hsl|hsla)\([0-9.,%\s\/]+\)$/i', $ps_bg ) ? $ps_bg : '';
 		update_post_meta( $id, '_oc_block_ps_bg', $ps_bg );
 		update_post_meta( $id, '_oc_block_ps_count', min( 24, max( 2, absint( $_POST['oc_block_ps_count'] ?? 8 ) ) ) );
 		update_post_meta( $id, '_oc_block_ps_cols', min( 6, max( 2, absint( $_POST['oc_block_ps_cols'] ?? 4 ) ) ) );
@@ -1032,6 +1039,8 @@ final class Blocks {
 			$cat  = $term instanceof \WP_Term ? $term->term_id : 0;
 		}
 
+		$ids_split = preg_split( '/[^0-9]+/', (string) $ps['ids'] );
+
 		$html = \OC\Blocks\Render::product_shelf(
 			array(
 				'defer'   => true,
@@ -1039,7 +1048,7 @@ final class Blocks {
 				'halign'  => $ps['halign'],
 				'mode'    => $ps['mode'],
 				'cat'     => $cat,
-				'ids'     => array_filter( array_map( 'absint', preg_split( '/[^0-9]+/', (string) $ps['ids'] ) ?: array() ) ),
+				'ids'     => array_filter( array_map( 'absint', is_array( $ids_split ) ? $ids_split : array() ) ),
 				'count'   => $ps['count'],
 				'layout'  => $ps['layout'],
 				'cols'    => $ps['cols'],

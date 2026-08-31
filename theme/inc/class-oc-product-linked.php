@@ -134,10 +134,11 @@ final class Product_Linked {
 	/**
 	 * The products this one goes with, minus anything unbuyable.
 	 *
+	 * @param \WC_Product|null $product The product to read; the queried one when null.
 	 * @return \WC_Product[]
 	 */
 	public static function cross_sells( ?\WC_Product $product = null ): array {
-		$product = $product ?: wc_get_product( get_the_ID() );
+		$product = $product instanceof \WC_Product ? $product : wc_get_product( get_the_ID() );
 
 		if ( ! $product instanceof \WC_Product ) {
 			return array();
@@ -337,7 +338,7 @@ final class Product_Linked {
 
 				if ( taxonomy_exists( $name ) ) {
 					$term  = get_term_by( 'slug', $value, $name );
-					$label = ( $term && ! is_wp_error( $term ) ) ? $term->name : $value;
+					$label = $term instanceof \WP_Term ? $term->name : $value;
 				}
 
 				echo '<option value="' . esc_attr( $value ) . '">' . esc_html( $label ) . '</option>';
@@ -551,7 +552,7 @@ final class Product_Linked {
 			return;
 		}
 
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- WooCommerce verified its own add-to-cart request.
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput -- WooCommerce verified its own add-to-cart request; every field is absint-ed, int-cast or sanitize_title-ed at use below.
 		$asked = isset( $_POST['oc_xs'] ) ? (array) wp_unslash( $_POST['oc_xs'] ) : array();
 
 		if ( ! $asked ) {
@@ -664,9 +665,9 @@ final class Product_Linked {
 			}
 
 			$here = array(
-				-1 * count( (array) get_ancestors( $term->term_id, 'product_cat', 'taxonomy' ) ), // deeper first
-				(int) $term->count,                                                               // then narrower
-				(int) $term->term_id,                                                             // then steady
+				-1 * count( (array) get_ancestors( $term->term_id, 'product_cat', 'taxonomy' ) ), // Deeper first.
+				(int) $term->count,                                                               // Then narrower.
+				(int) $term->term_id,                                                             // Then steady.
 			);
 
 			if ( null === $score || $here < $score ) {
@@ -730,7 +731,7 @@ final class Product_Linked {
 
 		$primary = self::primary_term( (int) $post_id );
 
-		return $primary ?: $main;
+		return $primary instanceof \WP_Term ? $primary : $main;
 	}
 
 	/**
@@ -749,9 +750,11 @@ final class Product_Linked {
 		// name, which is why the option table is asked for the list and
 		// delete_transient() then does the removing — that way an object
 		// cache holding them is cleared too, rather than only the rows.
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery -- maintenance purge; the live transient names cannot themselves be cached.
 		$names = (array) $wpdb->get_col(
 			"SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE '\_transient\_wc\_related\_%'"
 		);
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery
 
 		foreach ( $names as $option ) {
 			delete_transient( substr( (string) $option, strlen( '_transient_' ) ) );

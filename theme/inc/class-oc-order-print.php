@@ -48,7 +48,7 @@ class Order_Print {
 		add_action( 'admin_init', array( $this, 'maybe_render' ), 1 );
 
 		// A single order can be printed from its own edit screen too.
-		add_action( 'woocommerce_order_actions', array( $this, 'order_action' ) );
+		add_filter( 'woocommerce_order_actions', array( $this, 'order_action' ) );
 		add_action( 'woocommerce_order_action_oc_print_order', array( $this, 'order_action_run' ) );
 	}
 
@@ -69,8 +69,8 @@ class Order_Print {
 	/**
 	 * Turn the ticked rows into a trip to the print sheet.
 	 *
-	 * @param string    $redirect Where the list would have gone.
-	 * @param string    $action   The chosen action.
+	 * @param string         $redirect Where the list would have gone.
+	 * @param string         $action   The chosen action.
 	 * @param int[]|string[] $ids The ticked order ids.
 	 * @return string
 	 */
@@ -147,8 +147,8 @@ class Order_Print {
 	/**
 	 * Catch our own screen early and answer it in full.
 	 *
-	 * admin_init runs before a single byte of the admin page is sent, so
-	 * exiting here is what keeps the sheet a bare document.
+	 * The admin_init hook runs before a single byte of the admin page is
+	 * sent, so exiting here is what keeps the sheet a bare document.
 	 */
 	public function maybe_render(): void {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- render() checks the nonce.
@@ -177,7 +177,7 @@ class Order_Print {
 			wp_die( esc_html__( 'That print link has expired — pick the orders again.', 'oc-theme' ) );
 		}
 
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- nonce verified above.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput -- nonce verified above; ids are absint-ed below.
 		$raw = isset( $_GET['ids'] ) ? (string) wp_unslash( $_GET['ids'] ) : '';
 		$ids = array_filter( array_map( 'absint', explode( ',', $raw ) ) );
 
@@ -215,13 +215,15 @@ class Order_Print {
 		<body>
 			<div class="bar no-print">
 				<button type="button" onclick="window.print()"><?php esc_html_e( 'Print', 'oc-theme' ); ?></button>
-				<span><?php
+				<span>
+				<?php
 					printf(
 						/* translators: %d: how many orders. */
 						esc_html( _n( '%d order', '%d orders', count( $orders ), 'oc-theme' ) ),
 						count( $orders )
 					);
-				?></span>
+				?>
+				</span>
 			</div>
 
 			<?php if ( ! $orders ) : ?>
@@ -278,10 +280,12 @@ class Order_Print {
 		?>
 		<section class="sheet">
 			<header class="head">
-				<h1><?php
+				<h1>
+				<?php
 					/* translators: %s: order number. */
 					printf( esc_html__( 'Order %s', 'oc-theme' ), esc_html( $order->get_order_number() ) );
-				?></h1>
+				?>
+				</h1>
 				<div class="head-meta">
 					<?php if ( $created ) : ?>
 						<span><?php echo esc_html( $created->date_i18n( 'd/m/Y · H:i' ) ); ?></span>

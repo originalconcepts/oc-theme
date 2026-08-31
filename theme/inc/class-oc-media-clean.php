@@ -203,15 +203,16 @@ final class Media_Clean {
 		// Meta values under keys that sound like they hold media.
 		$where = self::key_clause( 'meta_key' );
 
-		$rows = (array) $wpdb->get_results( "SELECT post_id, meta_value FROM {$wpdb->postmeta} WHERE {$where}" ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+		// phpcs:disable WordPress.DB -- maintenance scan over core tables: the key clause is prepared piecewise in key_clause(), table names come from $wpdb, and live counts cannot cache.
+		$rows = (array) $wpdb->get_results( "SELECT post_id, meta_value FROM {$wpdb->postmeta} WHERE {$where}" );
 		foreach ( $rows as $row ) {
 			$soak( $row->meta_value, 'post:' . (int) $row->post_id );
 		}
 
-		foreach ( (array) $wpdb->get_col( "SELECT meta_value FROM {$wpdb->termmeta} WHERE {$where}" ) as $value ) { // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+		foreach ( (array) $wpdb->get_col( "SELECT meta_value FROM {$wpdb->termmeta} WHERE {$where}" ) as $value ) {
 			$soak( $value, 'term' );
 		}
-		foreach ( (array) $wpdb->get_col( "SELECT meta_value FROM {$wpdb->usermeta} WHERE {$where}" ) as $value ) { // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+		foreach ( (array) $wpdb->get_col( "SELECT meta_value FROM {$wpdb->usermeta} WHERE {$where}" ) as $value ) {
 			$soak( $value, 'user' );
 		}
 
@@ -242,6 +243,7 @@ final class Media_Clean {
 			      OR post_content LIKE '%wp:image%'
 			      OR post_content LIKE '%ids=%' )"
 		);
+		// phpcs:enable WordPress.DB
 		foreach ( $rows as $row ) {
 			if ( preg_match_all( '/wp-image-(\d+)|attachment_(\d+)|["\']?ids["\']?\s*[:=]\s*["\']?([\d,\s]+)|"id"\s*:\s*(\d+)/i', (string) $row->post_content, $m, PREG_SET_ORDER ) ) {
 				foreach ( $m as $hit ) {
@@ -343,13 +345,14 @@ final class Media_Clean {
 			? " AND post_status IN ( '" . implode( "', '", self::LIVE ) . "' )"
 			: '';
 
+		// phpcs:disable WordPress.DB -- reference hunt over core tables: the only interpolations are $wpdb table names and the status list built from the LIVE const, the LIKE wildcards are literal, and live checks cannot cache.
 		$hit = (int) $wpdb->get_var(
 			$wpdb->prepare(
 				"SELECT 1 FROM {$wpdb->posts}
 				 WHERE post_type <> 'attachment' AND post_type <> 'revision'
 				   AND ( post_content LIKE %s OR post_excerpt LIKE %s )
 				   {$live}
-				 LIMIT 1", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				 LIMIT 1",
 				$like,
 				$like
 			)
@@ -364,7 +367,7 @@ final class Media_Clean {
 				 INNER JOIN {$wpdb->posts} p ON p.ID = m.post_id
 				 WHERE m.post_id <> %d AND m.meta_value LIKE %s
 				   {$live}
-				 LIMIT 1", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				 LIMIT 1",
 				$id,
 				$like
 			)
@@ -389,6 +392,7 @@ final class Media_Clean {
 				$like
 			)
 		);
+		// phpcs:enable WordPress.DB
 
 		return (bool) $hit;
 	}
@@ -402,9 +406,9 @@ final class Media_Clean {
 	 *
 	 * Returns one of: used, draft, trash, orphan, recent.
 	 *
-	 * @param object            $row  Row with ID, post_parent, post_date_gmt.
+	 * @param object                        $row  Row with ID, post_parent, post_date_gmt.
 	 * @param array<int,array<string,bool>> $refs Map from reference_map().
-	 * @param array<int,object> $posts Parent lookup.
+	 * @param array<int,object>             $posts Parent lookup.
 	 */
 	public static function bucket( object $row, array $refs, array $posts ): string {
 		$id = (int) $row->ID;
@@ -485,7 +489,7 @@ final class Media_Clean {
 	public static function attachments(): array {
 		global $wpdb;
 
-		return (array) $wpdb->get_results(
+		return (array) $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery -- maintenance scan; live counts cannot cache.
 			"SELECT ID, post_parent, post_date_gmt, post_title
 			 FROM {$wpdb->posts} WHERE post_type = 'attachment' ORDER BY ID ASC"
 		);
@@ -499,7 +503,7 @@ final class Media_Clean {
 	public static function parents(): array {
 		global $wpdb;
 
-		$rows = (array) $wpdb->get_results(
+		$rows = (array) $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery -- maintenance scan; live counts cannot cache.
 			"SELECT ID, post_type, post_status, post_title FROM {$wpdb->posts}"
 		);
 
@@ -524,7 +528,14 @@ final class Media_Clean {
 
 		$total = file_exists( $file ) ? (int) filesize( $file ) : 0;
 		$dir   = dirname( $file );
-		$meta  = wp_get_attachment_metadata( $id );
+
+		/**
+		 * Core's documented shape omits original_image, which is present for
+		 * scaled images since WP 5.3 — widen to what the call really returns.
+		 *
+		 * @var array<string,mixed>|false $meta
+		 */
+		$meta = wp_get_attachment_metadata( $id );
 
 		if ( is_array( $meta ) ) {
 			if ( ! empty( $meta['sizes'] ) && is_array( $meta['sizes'] ) ) {
@@ -559,11 +570,11 @@ final class Media_Clean {
 	public function ajax_start(): void {
 		$this->guard();
 
-		$refs    = self::reference_map();
-		$posts   = self::parents();
-		$rows    = self::attachments();
-		$queue   = array();
-		$report  = array(
+		$refs   = self::reference_map();
+		$posts  = self::parents();
+		$rows   = self::attachments();
+		$queue  = array();
+		$report = array(
 			'used'   => array(),
 			'draft'  => array(),
 			'trash'  => array(),
@@ -702,7 +713,7 @@ final class Media_Clean {
 	public function ajax_delete(): void {
 		$this->guard();
 
-		$ids = isset( $_POST['ids'] ) ? array_map( 'absint', (array) wp_unslash( $_POST['ids'] ) ) : array();
+		$ids = isset( $_POST['ids'] ) ? array_map( 'absint', (array) wp_unslash( $_POST['ids'] ) ) : array(); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- guard() above ran check_ajax_referer().
 
 		wp_send_json_success( self::delete_batch( array_filter( $ids ) ) );
 	}
@@ -746,12 +757,12 @@ final class Media_Clean {
 			$bucket = self::bucket( $post, $refs, $posts );
 
 			if ( ! in_array( $bucket, array( 'orphan', 'draft', 'trash' ), true ) ) {
-				$kept++;
+				++$kept;
 				continue;
 			}
 
 			if ( self::name_referenced( $id, 'orphan' !== $bucket ) ) {
-				$kept++;
+				++$kept;
 				continue;
 			}
 
@@ -759,7 +770,7 @@ final class Media_Clean {
 			$name  = wp_basename( (string) get_post_meta( $id, '_wp_attached_file', true ) );
 
 			if ( wp_delete_attachment( $id, true ) ) {
-				$deleted++;
+				++$deleted;
 				$freed += $bytes;
 
 				$log[] = array(
@@ -770,7 +781,7 @@ final class Media_Clean {
 					'who'   => wp_get_current_user()->user_login,
 				);
 			} else {
-				$kept++;
+				++$kept;
 			}
 		}
 
@@ -806,8 +817,8 @@ final class Media_Clean {
 		header( 'Content-Type: text/csv; charset=utf-8' );
 		header( 'Content-Disposition: attachment; filename=oc-media-deleted.csv' );
 
-		$out = fopen( 'php://output', 'w' );
-		fwrite( $out, "\xEF\xBB\xBF" );
+		$out = fopen( 'php://output', 'w' ); // phpcs:ignore WordPress.WP.AlternativeFunctions -- streaming CSV to php://output; no file is touched.
+		fwrite( $out, "\xEF\xBB\xBF" ); // phpcs:ignore WordPress.WP.AlternativeFunctions -- UTF-8 BOM so Excel reads Hebrew; still the php://output stream.
 		fputcsv( $out, array( 'ID', 'File', 'Bytes', 'Deleted (UTC)', 'By' ) );
 
 		foreach ( array_reverse( $log ) as $line ) {
@@ -823,7 +834,7 @@ final class Media_Clean {
 			);
 		}
 
-		fclose( $out );
+		fclose( $out ); // phpcs:ignore WordPress.WP.AlternativeFunctions -- closes the php://output stream.
 		exit;
 	}
 

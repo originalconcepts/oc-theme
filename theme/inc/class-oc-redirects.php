@@ -212,7 +212,7 @@ final class Redirects {
 	public static function rebuild_cache(): array {
 		global $wpdb;
 
-		$rows  = $wpdb->get_results( 'SELECT id, source, target, type FROM ' . self::table() . ' WHERE active = 1', ARRAY_A ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$rows  = $wpdb->get_results( 'SELECT id, source, target, type FROM ' . self::table() . ' WHERE active = 1', ARRAY_A ); // phpcs:ignore WordPress.DB -- table name from $wpdb->prefix.
 		$cache = array(
 			'exact' => array(),
 			'wild'  => array(),
@@ -388,7 +388,7 @@ final class Redirects {
 	 */
 	private function count_hit( int $id ): void {
 		global $wpdb;
-		$wpdb->query( $wpdb->prepare( 'UPDATE ' . self::table() . ' SET hits = hits + 1, last_hit = %s WHERE id = %d', current_time( 'mysql' ), $id ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$wpdb->query( $wpdb->prepare( 'UPDATE ' . self::table() . ' SET hits = hits + 1, last_hit = %s WHERE id = %d', current_time( 'mysql' ), $id ) ); // phpcs:ignore WordPress.DB -- prepared; table name from $wpdb->prefix.
 	}
 
 	/**
@@ -413,7 +413,8 @@ final class Redirects {
 
 		$key = self::source_key( strtok( $path, '?' ) );
 
-		$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		// phpcs:disable WordPress.DB -- prepared; table name from $wpdb->prefix.
+		$wpdb->query(
 			$wpdb->prepare(
 				'INSERT INTO ' . self::log_table() . ' (path, path_key, referer, hits, last_hit) VALUES (%s, %s, %s, 1, %s)
 				ON DUPLICATE KEY UPDATE hits = hits + 1, last_hit = VALUES(last_hit), referer = VALUES(referer)',
@@ -423,12 +424,13 @@ final class Redirects {
 				current_time( 'mysql' )
 			)
 		);
+		// phpcs:enable WordPress.DB
 
 		// The journal never balloons: entries older than 30 days leave,
 		// checked at most once a day.
 		if ( false === get_transient( 'ocrd_log_swept' ) ) {
 			set_transient( 'ocrd_log_swept', 1, DAY_IN_SECONDS );
-			$wpdb->query( 'DELETE FROM ' . self::log_table() . " WHERE last_hit < DATE_SUB(NOW(), INTERVAL 30 DAY)" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			$wpdb->query( 'DELETE FROM ' . self::log_table() . ' WHERE last_hit < DATE_SUB(NOW(), INTERVAL 30 DAY)' ); // phpcs:ignore WordPress.DB -- table name from $wpdb->prefix.
 		}
 	}
 
@@ -473,7 +475,7 @@ final class Redirects {
 		$source = self::normalize( (string) ( $args['source'] ?? '' ) );
 		$target = trim( (string) ( $args['target'] ?? '' ) );
 
-		if ( '' === $source || '/' === $source && '' === $target ) {
+		if ( '' === $source || ( '/' === $source && '' === $target ) ) {
 			return new \WP_Error( 'ocrd_empty', __( 'Both addresses are needed.', 'oc-theme' ) );
 		}
 
@@ -496,7 +498,7 @@ final class Redirects {
 		}
 
 		$key      = self::source_key( $source );
-		$existing = $wpdb->get_row( $wpdb->prepare( 'SELECT id, origin FROM ' . self::table() . ' WHERE source_key = %s', $key ), ARRAY_A ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$existing = $wpdb->get_row( $wpdb->prepare( 'SELECT id, origin FROM ' . self::table() . ' WHERE source_key = %s', $key ), ARRAY_A ); // phpcs:ignore WordPress.DB -- prepared; table name from $wpdb->prefix.
 
 		$user = wp_get_current_user();
 		$data = array(
@@ -553,7 +555,7 @@ final class Redirects {
 			return;
 		}
 
-		$wpdb->query( 'DELETE FROM ' . self::table() . ' WHERE id IN (' . implode( ',', $ids ) . ')' ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$wpdb->query( 'DELETE FROM ' . self::table() . ' WHERE id IN (' . implode( ',', $ids ) . ')' ); // phpcs:ignore WordPress.DB -- table name from $wpdb->prefix; ids are absint-filtered above.
 		self::rebuild_cache();
 	}
 
@@ -678,7 +680,7 @@ final class Redirects {
 	public function on_untrash( $post_id ): void {
 		global $wpdb;
 
-		$wpdb->query( $wpdb->prepare( 'DELETE FROM ' . self::table() . " WHERE origin = 'auto' AND object_id = %d", absint( $post_id ) ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$wpdb->query( $wpdb->prepare( 'DELETE FROM ' . self::table() . " WHERE origin = 'auto' AND object_id = %d", absint( $post_id ) ) ); // phpcs:ignore WordPress.DB -- prepared; table name from $wpdb->prefix.
 		self::rebuild_cache();
 	}
 
@@ -842,7 +844,7 @@ final class Redirects {
 			array(
 				'post_type'      => array( 'product', 'page', 'post' ),
 				'post_status'    => 'publish',
-				'posts_per_page' => 3000,
+				'posts_per_page' => 3000, // phpcs:ignore WordPress.WP.PostsPerPage.posts_per_page_posts_per_page -- one bounded admin-side mapper scan, ids only.
 				'fields'         => 'ids',
 				'no_found_rows'  => true,
 			)
@@ -853,11 +855,11 @@ final class Redirects {
 			$slug = strtolower( rawurldecode( (string) get_post_field( 'post_name', $post_id ) ) );
 			$name = (string) get_the_title( $post_id );
 
-			$index['slug'][ $slug ]                    = $path;
-			$index['name'][ mb_strtolower( $name ) ]   = $path;
-			$index['norm'][ self::loose( $name ) ]     = $path;
-			$index['norm'][ self::loose( $slug ) ]     = $path;
-			$index['paths'][ $path ]                   = $path;
+			$index['slug'][ $slug ]                  = $path;
+			$index['name'][ mb_strtolower( $name ) ] = $path;
+			$index['norm'][ self::loose( $name ) ]   = $path;
+			$index['norm'][ self::loose( $slug ) ]   = $path;
+			$index['paths'][ $path ]                 = $path;
 
 			if ( 'product' === get_post_type( $post_id ) ) {
 				$sku = (string) get_post_meta( $post_id, '_sku', true );
@@ -884,8 +886,13 @@ final class Redirects {
 		$text = str_replace( array( '-', '_', '"', "'", '״', '׳' ), ' ', $text );
 
 		$words = array();
+		$parts = preg_split( '/\s+/u', $text );
 
-		foreach ( preg_split( '/\s+/u', $text ) ?: array() as $word ) {
+		if ( ! is_array( $parts ) ) {
+			$parts = array();
+		}
+
+		foreach ( $parts as $word ) {
 			if ( '' === $word ) {
 				continue;
 			}
@@ -908,9 +915,9 @@ final class Redirects {
 	/**
 	 * Propose a target for one old address, walking the ladder.
 	 *
-	 * @param string              $old_path Normalised old path.
-	 * @param array<string,mixed> $row      Extra columns from the file: name, sku, type.
-	 * @param array               $index    The site index.
+	 * @param string               $old_path Normalised old path.
+	 * @param array<string,mixed>  $row      Extra columns from the file: name, sku, type.
+	 * @param array                $index    The site index.
 	 * @param array<string,string> $mapped  Old→target choices made so far (parents first).
 	 * @return array{target:string,rule:string,confidence:string}
 	 */
@@ -995,9 +1002,9 @@ final class Redirects {
 		}
 
 		// 6. Word overlap, above a threshold only.
-		$best      = '';
-		$bestScore = 0.0;
-		$words     = array_filter( explode( ' ', self::loose( '' !== $name ? $name : str_replace( '/', ' ', $old_path ) ) ) );
+		$best       = '';
+		$best_score = 0.0;
+		$words      = array_filter( explode( ' ', self::loose( '' !== $name ? $name : str_replace( '/', ' ', $old_path ) ) ) );
 
 		if ( count( $words ) > 0 ) {
 			foreach ( $index['norm'] as $key => $path ) {
@@ -1010,14 +1017,14 @@ final class Redirects {
 				$common = count( array_intersect( $words, $theirs ) );
 				$score  = $common / max( count( $words ), count( $theirs ) );
 
-				if ( $score > $bestScore ) {
-					$bestScore = $score;
-					$best      = $path;
+				if ( $score > $best_score ) {
+					$best_score = $score;
+					$best       = $path;
 				}
 			}
 		}
 
-		if ( $bestScore >= 0.6 && '' !== $best ) {
+		if ( $best_score >= 0.6 && '' !== $best ) {
 			return array(
 				'target'     => $best,
 				'rule'       => 'similar',

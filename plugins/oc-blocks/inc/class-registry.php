@@ -292,9 +292,9 @@ final class Registry {
 				'icon'   => '<svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2" opacity=".4"/><path d="M6 12h0M18 12h0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="10" cy="19.5" r="0" /><path d="M9 21.5h6" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity=".6"/></svg>',
 				'fields' => array(
 					'slides'   => array(
-						'type'   => 'slides',
-						'label'  => __( 'Slides', 'oc-blocks' ),
-						'sub'    => array(
+						'type'  => 'slides',
+						'label' => __( 'Slides', 'oc-blocks' ),
+						'sub'   => array(
 							'img'     => array(
 								'type'  => 'image',
 								'label' => __( 'Picture — desktop', 'oc-blocks' ),
@@ -587,7 +587,7 @@ final class Registry {
 						'dev'     => 'm',
 						'group'   => 'design',
 					),
-				'allurl'  => array(
+					'allurl'  => array(
 						'type'  => 'url',
 						'label' => __( 'It leads to (empty: the category)', 'oc-blocks' ),
 						'when'  => array( 'all' => array( '1' ) ),
@@ -861,7 +861,7 @@ final class Registry {
 						'def'   => 1,
 						'group' => 'design',
 					),
-				'layout'  => array(
+					'layout'  => array(
 						'type'    => 'seg',
 						'label'   => __( 'Laid as', 'oc-blocks' ),
 						'choices' => array(
@@ -1096,7 +1096,7 @@ final class Registry {
 						'max'   => 30,
 						'group' => 'design',
 					),
-					'align'   => array(
+					'align'     => array(
 						'type'    => 'seg',
 						'label'   => __( 'Sits', 'oc-blocks' ),
 						'choices' => array(
@@ -1180,7 +1180,7 @@ final class Registry {
 						'max'   => 20,
 						'group' => 'design',
 					),
-					'align'   => array(
+					'align'      => array(
 						'type'    => 'seg',
 						'label'   => __( 'Sits', 'oc-blocks' ),
 						'choices' => array(
@@ -1417,40 +1417,40 @@ final class Registry {
 				'blurb'  => __( 'Name, phone, a message — straight into the Leads screen.', 'oc-blocks' ),
 				'icon'   => '<svg viewBox="0 0 24 24"><path d="M21 3L10.5 13.5M21 3l-6.5 18-4-7.5L3 9.5 21 3z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" opacity=".75"/></svg>',
 				'fields' => array(
-					'heading' => array(
+					'heading'      => array(
 						'type'  => 'text',
 						'label' => __( 'Heading', 'oc-blocks' ),
 					),
-					'text'    => array(
+					'text'         => array(
 						'type'  => 'textarea',
 						'label' => __( 'A few words above the form', 'oc-blocks' ),
 					),
-					'phone'   => array(
+					'phone'        => array(
 						'type'  => 'toggle',
 						'label' => __( 'Phone field', 'oc-blocks' ),
 						'def'   => 1,
 					),
-					'email'   => array(
+					'email'        => array(
 						'type'  => 'toggle',
 						'label' => __( 'Email field', 'oc-blocks' ),
 						'def'   => 1,
 					),
-					'msg'     => array(
+					'msg'          => array(
 						'type'  => 'toggle',
 						'label' => __( 'Message field', 'oc-blocks' ),
 						'def'   => 1,
 					),
-					'button'  => array(
+					'button'       => array(
 						'type'  => 'text',
 						'label' => __( 'On the button', 'oc-blocks' ),
 						'hint'  => __( 'Empty shows "Send".', 'oc-blocks' ),
 					),
-					'thanks'  => array(
+					'thanks'       => array(
 						'type'  => 'text',
 						'label' => __( 'After it is sent', 'oc-blocks' ),
 						'hint'  => __( 'Empty shows "Thank you — we will be in touch shortly."', 'oc-blocks' ),
 					),
-					'consent' => array(
+					'consent'      => array(
 						'type'  => 'toggle',
 						'label' => __( 'Required consent checkbox', 'oc-blocks' ),
 						'def'   => 1,

@@ -1085,8 +1085,8 @@ final class Cart {
 					$order = array();
 
 					foreach ( (array) wc_get_product_terms( $product->get_id(), $attr, array( 'fields' => 'slugs' ) ) as $i => $term_slug ) {
-						$order[ (string) $term_slug ]                  = $i;
-						$order[ rawurlencode( (string) $term_slug ) ]  = $i;
+						$order[ (string) $term_slug ]                 = $i;
+						$order[ rawurlencode( (string) $term_slug ) ] = $i;
 					}
 
 					usort(
@@ -1118,7 +1118,10 @@ final class Cart {
 		}
 
 		$image  = $product->get_image_id() ? (string) wp_get_attachment_image_url( (int) $product->get_image_id(), 'woocommerce_thumbnail' ) : '';
-		$colors = class_exists( 'OC\\Theme\\Variations' ) ? Variations::panel_colors( $product ) : array( 'row' => '', 'label' => '' );
+		$colors = class_exists( 'OC\\Theme\\Variations' ) ? Variations::panel_colors( $product ) : array(
+			'row'   => '',
+			'label' => '',
+		);
 
 		// The pictures, featured first, capped — a panel is a glance.
 		$imgs = array();
@@ -1133,7 +1136,11 @@ final class Cart {
 			}
 		}
 
-		$rating = array( 'html' => '', 'count' => 0, 'url' => '' );
+		$rating = array(
+			'html'  => '',
+			'count' => 0,
+			'url'   => '',
+		);
 
 		if ( wc_review_ratings_enabled() && $product->get_review_count() > 0 ) {
 			$rating = array(

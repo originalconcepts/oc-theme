@@ -48,7 +48,7 @@ final class Bought_Together {
 	private const AMOUNT = '_oc_bt_amount';
 
 	/**
-	 * percent or fixed.
+	 * Percent or fixed.
 	 */
 	private const KIND = '_oc_bt_kind';
 
@@ -113,7 +113,7 @@ final class Bought_Together {
 			}
 		}
 
-		echo '</select> ' . wc_help_tip( __( 'Offered on this product\'s page as one bundle, with this product. The shopper can untick any of them.', 'oc-theme' ) ) . '</p>';
+		echo '</select> ' . wc_help_tip( __( 'Offered on this product\'s page as one bundle, with this product. The shopper can untick any of them.', 'oc-theme' ) ) . '</p>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- wc_help_tip() returns escaped markup.
 		echo '</div>';
 
 		echo '<div class="options_group">';
@@ -179,7 +179,7 @@ final class Bought_Together {
 		$kind = isset( $_POST['oc_bt_kind'] ) ? sanitize_key( (string) wp_unslash( $_POST['oc_bt_kind'] ) ) : 'none';
 		$kind = in_array( $kind, array( 'none', 'percent', 'fixed' ), true ) ? $kind : 'none';
 
-		$amount = isset( $_POST['oc_bt_amount'] ) ? wc_format_decimal( wp_unslash( $_POST['oc_bt_amount'] ) ) : '';
+		$amount = isset( $_POST['oc_bt_amount'] ) ? wc_format_decimal( wp_unslash( $_POST['oc_bt_amount'] ) ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- wc_format_decimal() sanitizes.
 		$title  = isset( $_POST['oc_bt_title'] ) ? sanitize_text_field( wp_unslash( $_POST['oc_bt_title'] ) ) : '';
 		// phpcs:enable WordPress.Security.NonceVerification.Missing
 
@@ -428,7 +428,7 @@ final class Bought_Together {
 
 				if ( taxonomy_exists( $name ) ) {
 					$term  = get_term_by( 'slug', $value, $name );
-					$label = ( $term && ! is_wp_error( $term ) ) ? $term->name : $value;
+					$label = $term instanceof \WP_Term ? $term->name : $value;
 				}
 
 				echo '<option value="' . esc_attr( $value ) . '">' . esc_html( $label ) . '</option>';
@@ -501,7 +501,7 @@ final class Bought_Together {
 		$main = isset( $_POST['main'] ) ? absint( wp_unslash( $_POST['main'] ) ) : 0;
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- verified above.
 		$want = isset( $_POST['ids'] ) ? array_map( 'absint', (array) wp_unslash( $_POST['ids'] ) ) : array();
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- verified above.
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput -- verified above; keys are rebuilt from the product and each value gets sanitize_title() at use.
 		$picked = isset( $_POST['variations'] ) ? (array) wp_unslash( $_POST['variations'] ) : array();
 
 		$product = wc_get_product( $main );
@@ -632,7 +632,7 @@ final class Bought_Together {
 			}
 
 			$bundles[ $from ]['ids'][ (int) $item['product_id'] ] = true;
-			$bundles[ $from ]['sum'] += (float) $item['line_subtotal'] + (float) $item['line_subtotal_tax'];
+			$bundles[ $from ]['sum']                             += (float) $item['line_subtotal'] + (float) $item['line_subtotal_tax'];
 		}
 
 		foreach ( $bundles as $main => $bundle ) {

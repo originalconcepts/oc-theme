@@ -239,7 +239,7 @@ final class Media_Clean_Admin {
 		.ocmc__stats { display: flex; flex-wrap: wrap; gap: 10px; margin: 18px 0; }
 		.ocmc__stat { flex: 1 1 140px; background: #fff; border: 1px solid #dcdcde; border-radius: 8px; padding: 14px 16px; }
 		/* "5.4 MB" is a number followed by a Latin unit, which right-to-left
-		   text reorders into "MB 5.4". Isolating the run keeps it readable. */
+			text reorders into "MB 5.4". Isolating the run keeps it readable. */
 		.ocmc__stat b,
 		.ocmc__group h2 em,
 		.ocmc__item span { direction: ltr; unicode-bidi: isolate; }
@@ -280,10 +280,14 @@ final class Media_Clean_Admin {
 	private static function script( string $nonce, bool $rescan = false ): void {
 		$strings = array(
 			'scanning' => __( 'Scanning…', 'oc-theme' ),
+			/* translators: 1: files checked so far, 2: total files to check. */
 			'checking' => __( 'Checking file names — %1$d of %2$d', 'oc-theme' ),
+			/* translators: 1: files deleted so far, 2: total files to delete. */
 			'deleting' => __( 'Deleting — %1$d of %2$d', 'oc-theme' ),
 			'none'     => __( 'Nothing is ticked.', 'oc-theme' ),
+			/* translators: %d: number of files ticked for deletion. */
 			'confirm'  => __( 'Delete %d files for good? This cannot be undone.', 'oc-theme' ),
+			/* translators: 1: files deleted, 2: disk space freed, e.g. "5.4 MB", 3: files kept. */
 			'done'     => __( 'Done: %1$d deleted, %2$s freed. %3$d were kept because something still uses them.', 'oc-theme' ),
 			'failed'   => __( 'Something went wrong. Please try again.', 'oc-theme' ),
 		);

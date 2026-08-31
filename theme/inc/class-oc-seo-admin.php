@@ -581,7 +581,7 @@ final class Seo_Admin {
 		if ( 'types' === $tab || 'taxes' === $tab ) {
 			$rows = array();
 
-			foreach ( (array) ( $_POST['rows'] ?? array() ) as $name => $row ) {
+			foreach ( (array) ( $_POST['rows'] ?? array() ) as $name => $row ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- keys and values unslashed and sanitized per field below.
 				$rows[ sanitize_key( (string) $name ) ] = array(
 					'title'   => sanitize_text_field( (string) wp_unslash( $row['title'] ?? '' ) ),
 					'desc'    => sanitize_text_field( (string) wp_unslash( $row['desc'] ?? '' ) ),
@@ -600,13 +600,13 @@ final class Seo_Admin {
 
 		if ( 'social' === $tab ) {
 			$settings['og_default'] = sanitize_text_field( (string) wp_unslash( $_POST['og_default'] ?? '' ) );
-			$settings['tw_card']    = in_array( $_POST['tw_card'] ?? '', array( 'summary', 'summary_large_image' ), true ) ? (string) $_POST['tw_card'] : 'summary_large_image';
+			$settings['tw_card']    = in_array( $_POST['tw_card'] ?? '', array( 'summary', 'summary_large_image' ), true ) ? (string) $_POST['tw_card'] : 'summary_large_image'; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- strict comparison stores a literal.
 			$settings['fb_app_id']  = sanitize_text_field( (string) wp_unslash( $_POST['fb_app_id'] ?? '' ) );
 		}
 
 		if ( 'alt' === $tab ) {
 			$settings['alt_on']      = empty( $_POST['alt_on'] ) ? 0 : 1;
-			$settings['alt_mode']    = 'force' === ( $_POST['alt_mode'] ?? '' ) ? 'force' : 'fill';
+			$settings['alt_mode']    = 'force' === ( $_POST['alt_mode'] ?? '' ) ? 'force' : 'fill'; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- strict comparison stores a literal.
 			$settings['alt_tpl']     = sanitize_text_field( (string) wp_unslash( $_POST['alt_tpl'] ?? '' ) );
 			$settings['alt_tpl_tax'] = sanitize_text_field( (string) wp_unslash( $_POST['alt_tpl_tax'] ?? '' ) );
 			$settings['alt_content'] = empty( $_POST['alt_content'] ) ? 0 : 1;
@@ -618,13 +618,13 @@ final class Seo_Admin {
 			$kinds  = array( 'product_cat', 'product', 'post', 'product_brand', 'category' );
 
 			$settings['links_on']    = empty( $_POST['links_on'] ) ? 0 : 1;
-			$settings['links_scope'] = in_array( $_POST['links_scope'] ?? '', $scopes, true ) ? sanitize_key( (string) wp_unslash( $_POST['links_scope'] ) ) : 'content';
+			$settings['links_scope'] = in_array( $_POST['links_scope'] ?? '', $scopes, true ) ? sanitize_key( (string) wp_unslash( $_POST['links_scope'] ) ) : 'content'; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- whitelist check; the stored value is unslashed and sanitized.
 
 			$want = isset( $_POST['links_targets'] ) ? array_map( 'sanitize_key', (array) wp_unslash( $_POST['links_targets'] ) ) : array();
 
 			$settings['links_targets']  = array_values( array_intersect( $want, $kinds ) );
-			$settings['links_max']      = min( 50, max( 1, (int) ( $_POST['links_max'] ?? 5 ) ) );
-			$settings['links_min']      = min( 40, max( 2, (int) ( $_POST['links_min'] ?? 3 ) ) );
+			$settings['links_max']      = min( 50, max( 1, (int) ( $_POST['links_max'] ?? 5 ) ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- cast to int.
+			$settings['links_min']      = min( 40, max( 2, (int) ( $_POST['links_min'] ?? 3 ) ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- cast to int.
 			$settings['links_headings'] = empty( $_POST['links_headings'] ) ? 0 : 1;
 			$settings['links_exclude']  = sanitize_textarea_field( (string) wp_unslash( $_POST['links_exclude'] ?? '' ) );
 			$settings['links_manual']   = sanitize_textarea_field( (string) wp_unslash( $_POST['links_manual'] ?? '' ) );
@@ -634,7 +634,15 @@ final class Seo_Admin {
 		}
 
 		update_option( Seo::SETTINGS, $settings, false );
-		wp_safe_redirect( add_query_arg( array( 'tab' => $tab, 'ocseo_msg' => __( 'Saved.', 'oc-theme' ) ), self::url() ) );
+		wp_safe_redirect(
+			add_query_arg(
+				array(
+					'tab'       => $tab,
+					'ocseo_msg' => __( 'Saved.', 'oc-theme' ),
+				),
+				self::url()
+			)
+		);
 		exit;
 	}
 
@@ -970,27 +978,29 @@ final class Seo_Admin {
 		$copied = 0;
 
 		foreach ( $map as $theirs => $ours ) {
-			$copied += (int) $wpdb->query( $wpdb->prepare( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
-				"INSERT INTO {$wpdb->postmeta} (post_id, meta_key, meta_value)
+			$copied += (int) $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery -- one-off import copy.
+				$wpdb->prepare(
+					"INSERT INTO {$wpdb->postmeta} (post_id, meta_key, meta_value)
 				 SELECT y.post_id, %s, y.meta_value FROM {$wpdb->postmeta} y
 				 WHERE y.meta_key = %s AND y.meta_value != ''
 				   AND NOT EXISTS ( SELECT 1 FROM {$wpdb->postmeta} o WHERE o.post_id = y.post_id AND o.meta_key = %s )",
-				$ours,
-				$theirs,
-				$ours
-			) );
+					$ours,
+					$theirs,
+					$ours
+				)
+			);
 		}
 
 		// Yoast keeps taxonomy fields in one option, not in term meta.
 		$tax_meta = get_option( 'wpseo_taxonomy_meta', array() );
 		$tax_map  = array(
-			'wpseo_title'                => '_ocseo_title',
-			'wpseo_desc'                 => '_ocseo_desc',
-			'wpseo_noindex'              => '_ocseo_noindex',
-			'wpseo_canonical'            => '_ocseo_canonical',
-			'wpseo_opengraph-image'      => '_ocseo_og_image',
-			'wpseo_opengraph-title'      => '_ocseo_og_title',
-			'wpseo_opengraph-description'=> '_ocseo_og_desc',
+			'wpseo_title'                 => '_ocseo_title',
+			'wpseo_desc'                  => '_ocseo_desc',
+			'wpseo_noindex'               => '_ocseo_noindex',
+			'wpseo_canonical'             => '_ocseo_canonical',
+			'wpseo_opengraph-image'       => '_ocseo_og_image',
+			'wpseo_opengraph-title'       => '_ocseo_og_title',
+			'wpseo_opengraph-description' => '_ocseo_og_desc',
 		);
 
 		foreach ( (array) $tax_meta as $terms ) {
@@ -1004,7 +1014,7 @@ final class Seo_Admin {
 
 					if ( '' !== $value && '' === trim( (string) get_term_meta( (int) $term_id, $ours, true ) ) ) {
 						update_term_meta( (int) $term_id, $ours, $value );
-						$copied++;
+						++$copied;
 					}
 				}
 			}
@@ -1016,7 +1026,14 @@ final class Seo_Admin {
 		if ( is_array( $titles ) && ! empty( $titles ) ) {
 			$settings = Seo::settings();
 
-			$seps = array( 'sc-dash' => '-', 'sc-ndash' => '–', 'sc-mdash' => '—', 'sc-pipe' => '|', 'sc-bull' => '•', 'sc-middot' => '·' );
+			$seps = array(
+				'sc-dash'   => '-',
+				'sc-ndash'  => '–',
+				'sc-mdash'  => '—',
+				'sc-pipe'   => '|',
+				'sc-bull'   => '•',
+				'sc-middot' => '·',
+			);
 
 			if ( ! empty( $titles['separator'] ) && isset( $seps[ $titles['separator'] ] ) ) {
 				$settings['sep'] = $seps[ $titles['separator'] ];
@@ -1053,14 +1070,16 @@ final class Seo_Admin {
 			update_option( Seo::SETTINGS, $settings, false );
 		}
 
-		wp_safe_redirect( add_query_arg(
-			array(
-				'tab'       => 'tools',
-				/* translators: %s: how many values. */
-				'ocseo_msg' => sprintf( __( 'Migration done — %s values copied.', 'oc-theme' ), number_format_i18n( $copied ) ),
-			),
-			self::url()
-		) );
+		wp_safe_redirect(
+			add_query_arg(
+				array(
+					'tab'       => 'tools',
+					/* translators: %s: how many values. */
+					'ocseo_msg' => sprintf( __( 'Migration done — %s values copied.', 'oc-theme' ), number_format_i18n( $copied ) ),
+				),
+				self::url()
+			)
+		);
 		exit;
 	}
 

@@ -30,7 +30,7 @@ if ( '' !== $oc_band['class'] ) {
 	$oc_classes[] = 'oc-linked--band';
 }
 
-$oc_heading = apply_filters( 'woocommerce_product_related_products_heading', __( 'Related products', 'woocommerce' ) );
+$oc_heading = apply_filters( 'woocommerce_product_related_products_heading', __( 'Related products', 'woocommerce' ) ); // phpcs:ignore WordPress.WP.I18n.TextDomainMismatch -- WooCommerce's own string; its translations apply.
 
 // The slider sizes its cards from the same column count the grid uses, so
 // switching between the two does not change how wide a card is.

@@ -90,6 +90,8 @@
 		<properties>
 			<property name="custom_capabilities" type="array">
 				<element value="manage_woocommerce"/>
+				<element value="edit_shop_orders"/>
+				<element value="manage_product_terms"/>
 			</property>
 		</properties>
 	</rule>

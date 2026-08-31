@@ -127,13 +127,13 @@ final class Menu_Panel {
 					),
 				),
 			),
-			'brands' => array(
+			'brands'   => array(
 				'label'  => __( 'Brands', 'oc-theme' ),
 				'blurb'  => __( 'Logos or names, linking to each brand', 'oc-theme' ),
 				'icon'   => '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="7" cy="7" r="3.4" opacity=".55"/><circle cx="17" cy="7" r="3.4" opacity=".55"/><circle cx="7" cy="17" r="3.4" opacity=".55"/><circle cx="17" cy="17" r="3.4" opacity=".55"/></svg>',
 				'fields' => array(
 					'title' => array(
-						'type' => 'text',
+						'type'  => 'text',
 						'label' => __( 'Heading', 'oc-theme' ),
 						'def'   => __( 'By brand', 'oc-theme' ),
 						'hint'  => __( 'Leave empty for no heading.', 'oc-theme' ),
@@ -177,7 +177,7 @@ final class Menu_Panel {
 					),
 				),
 			),
-			'image' => array(
+			'image'    => array(
 				'label'  => __( 'Image', 'oc-theme' ),
 				'blurb'  => __( 'A picture, with words on it if you like', 'oc-theme' ),
 				'icon'   => '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2" opacity=".45"/><circle cx="9" cy="10" r="2"/><path d="M4 18l5-5 4 4 3-3 4 4z"/></svg>',
@@ -692,7 +692,7 @@ final class Menu_Panel {
 	 * @param string $where   Either 'nav' or 'drawer'.
 	 * @param ?array $blocks  Blocks to preview instead of the saved ones.
 	 * @param bool   $gap     Whether the spare width gathers before the first extra.
-	 * @return array<int,array{track:string,class:string,inner:string,gap?:bool}>
+	 * @return array<int,array{track:string,class:string,inner:string,band?:bool,gap?:bool}>
 	 */
 	private static function extras( int $item_id, string $where, ?array $blocks = null, bool $gap = true ): array {
 		$widths = self::widths();
@@ -759,7 +759,7 @@ final class Menu_Panel {
 	 * @param array<string,mixed> $block   Block.
 	 * @param int                 $item_id Menu item the block sits under.
 	 * @param string              $where   'drawer' or the mega panel.
-	 * @return array{class:string,inner:string}|null
+	 * @return array{class:string,inner:string,band?:bool}|null
 	 */
 	private static function block( array $block, int $item_id = 0, string $where = '' ): ?array {
 		$type = (string) $block['type'];
@@ -1044,6 +1044,13 @@ final class Menu_Panel {
 		);
 	}
 
+	/**
+	 * Render a brands block — a plain link list, or the logo/band shelf.
+	 *
+	 * @param array<string,mixed> $block   Block.
+	 * @param int                 $item_id Menu item the block sits under.
+	 * @return string Markup, empty when no brands resolve.
+	 */
 	private static function brands_block( array $block, int $item_id = 0 ): string {
 		$found = self::brand_terms( $block, $item_id );
 
@@ -1073,7 +1080,16 @@ final class Menu_Panel {
 			foreach ( $terms as $term ) {
 				$thumb = (int) get_term_meta( (int) $term->term_id, 'thumbnail_id', true );
 				$inner = $thumb > 0
-					? wp_get_attachment_image( $thumb, 'medium', false, array( 'class' => 'oc-mb__brand-logo', 'loading' => 'lazy', 'alt' => $term->name ) )
+					? wp_get_attachment_image(
+						$thumb,
+						'medium',
+						false,
+						array(
+							'class'   => 'oc-mb__brand-logo',
+							'loading' => 'lazy',
+							'alt'     => $term->name,
+						)
+					)
 					: '<span class="oc-mb__brand-name">' . esc_html( $term->name ) . '</span>';
 
 				$out .= '<a class="oc-mb__brand" href="' . esc_url( (string) get_term_link( $term ) ) . '">' . $inner . '</a>';

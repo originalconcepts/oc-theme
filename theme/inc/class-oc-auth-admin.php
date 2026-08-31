@@ -155,7 +155,7 @@ final class Auth_Admin {
 							'shop'   => __( 'Administrators and shop managers', 'oc-theme' ),
 							'all'    => __( 'Everyone who signs in', 'oc-theme' ),
 						);
-						$tfa_now = (string) ( $s['tfa_mode'] ?? 'off' );
+						$tfa_now   = (string) ( $s['tfa_mode'] ?? 'off' );
 						foreach ( $tfa_modes as $tfa_key => $tfa_label ) :
 							?>
 							<label style="display:block;margin-block-end:4px">
@@ -366,21 +366,28 @@ final class Auth_Admin {
 		$s['google_on'] = empty( $_POST['google_on'] ) ? 0 : 1;
 		$s['fb_on']     = empty( $_POST['fb_on'] ) ? 0 : 1;
 		$s['apple_on']  = empty( $_POST['apple_on'] ) ? 0 : 1;
-		$s['reach']     = 'intl' === ( $_POST['reach'] ?? '' ) ? 'intl' : 'israel';
+		$s['reach']     = 'intl' === ( $_POST['reach'] ?? '' ) ? 'intl' : 'israel'; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- strict comparison stores a literal.
 
 		$s['sms_provider'] = 'inforu' === ( $_POST['sms_provider'] ?? '' ) ? 'inforu' : 'activetrail'; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- strict comparison stores a literal.
 
-		$tfa             = isset( $_POST['tfa_mode'] ) ? sanitize_key( (string) wp_unslash( $_POST['tfa_mode'] ) ) : 'off';
-		$s['tfa_mode']   = in_array( $tfa, array( 'off', 'admins', 'shop', 'all' ), true ) ? $tfa : 'off';
+		$tfa           = isset( $_POST['tfa_mode'] ) ? sanitize_key( (string) wp_unslash( $_POST['tfa_mode'] ) ) : 'off';
+		$s['tfa_mode'] = in_array( $tfa, array( 'off', 'admins', 'shop', 'all' ), true ) ? $tfa : 'off';
 
 		foreach ( array( 'api_key', 'inforu_user', 'inforu_token', 'sender', 'google_id', 'google_secret', 'fb_id', 'fb_secret', 'apple_client_id', 'apple_team_id', 'apple_key_id' ) as $field ) {
 			$s[ $field ] = sanitize_text_field( (string) wp_unslash( $_POST[ $field ] ?? '' ) );
 		}
 
 		// The .p8 must keep its line breaks — openssl reads PEM, not prose.
-		$s['apple_key'] = trim( (string) wp_unslash( $_POST['apple_key'] ?? '' ) );
+		$s['apple_key'] = trim( (string) wp_unslash( $_POST['apple_key'] ?? '' ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- PEM key; sanitizing would strip the line breaks openssl needs.
 
-		foreach ( array( 'code_expiry' => 180, 'max_attempts' => 5, 'resend_cooldown' => 60, 'phone_hourly' => 3, 'ip_hourly' => 5, 'daily_cap' => 300 ) as $field => $fallback ) {
+		foreach ( array(
+			'code_expiry'     => 180,
+			'max_attempts'    => 5,
+			'resend_cooldown' => 60,
+			'phone_hourly'    => 3,
+			'ip_hourly'       => 5,
+			'daily_cap'       => 300,
+		) as $field => $fallback ) {
 			$value       = absint( $_POST[ $field ] ?? 0 );
 			$s[ $field ] = $value > 0 ? $value : $fallback;
 		}

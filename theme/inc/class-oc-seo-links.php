@@ -442,7 +442,7 @@ final class Seo_Links {
 
 		$out = '';
 
-		foreach ( $root->childNodes as $child ) {
+		foreach ( $root->childNodes as $child ) { // phpcs:ignore WordPress.NamingConventions.ValidVariableName -- PHP DOM API property.
 			$out .= $doc->saveHTML( $child );
 		}
 
@@ -452,14 +452,14 @@ final class Seo_Links {
 	/**
 	 * Gather the text worth looking at.
 	 *
-	 * @param \DOMNode    $node     Where to start.
-	 * @param \DOMText[]  $found    Collected nodes.
-	 * @param bool        $headings Whether headings count.
+	 * @param \DOMNode   $node     Where to start.
+	 * @param \DOMText[] $found    Collected nodes.
+	 * @param bool       $headings Whether headings count.
 	 */
 	private function collect( \DOMNode $node, array &$found, bool $headings ): void {
-		foreach ( $node->childNodes as $child ) {
+		foreach ( $node->childNodes as $child ) { // phpcs:ignore WordPress.NamingConventions.ValidVariableName -- PHP DOM API property.
 			if ( $child instanceof \DOMText ) {
-				if ( '' !== trim( (string) $child->nodeValue ) ) {
+				if ( '' !== trim( (string) $child->nodeValue ) ) { // phpcs:ignore WordPress.NamingConventions.ValidVariableName -- PHP DOM API property.
 					$found[] = $child;
 				}
 				continue;
@@ -469,7 +469,7 @@ final class Seo_Links {
 				continue;
 			}
 
-			$tag = strtolower( $child->tagName );
+			$tag = strtolower( $child->tagName ); // phpcs:ignore WordPress.NamingConventions.ValidVariableName -- PHP DOM API property.
 
 			if ( in_array( $tag, self::SKIP, true ) ) {
 				continue;
@@ -498,7 +498,7 @@ final class Seo_Links {
 		// instead would link only the first phrase that happened to appear
 		// anywhere in the paragraph and leave the rest of it bare.
 		while ( $budget > 0 ) {
-			$text = (string) $node->nodeValue;
+			$text = (string) $node->nodeValue; // phpcs:ignore WordPress.NamingConventions.ValidVariableName -- PHP DOM API property.
 			$best = null;
 
 			foreach ( $index as $phrase => $url ) {
@@ -555,15 +555,15 @@ final class Seo_Links {
 				$frag->appendChild( $rest );
 			}
 
-			if ( ! $node->parentNode ) {
+			if ( ! $node->parentNode ) { // phpcs:ignore WordPress.NamingConventions.ValidVariableName -- PHP DOM API property.
 				return;
 			}
 
-			$node->parentNode->replaceChild( $frag, $node );
+			$node->parentNode->replaceChild( $frag, $node ); // phpcs:ignore WordPress.NamingConventions.ValidVariableName -- PHP DOM API property.
 
 			$done[ $best['url'] ] = true;
 			unset( $index[ $best['phrase'] ] );
-			$budget--;
+			--$budget;
 
 			if ( null === $rest ) {
 				return;
