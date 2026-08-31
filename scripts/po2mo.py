@@ -161,7 +161,16 @@ def compile_mo(entries, out):
 
 
 if __name__ == '__main__':
-    po = sys.argv[1] if len(sys.argv) > 1 else 'theme/languages/he_IL.po'
-    mo = po[:-3] + '.mo'
-    count = compile_mo(parse(po), mo)
-    print('%s -> %s (%d strings)' % (po, mo, count))
+    import glob
+
+    # No argument compiles every catalogue in the repo — the day this took
+    # only the theme's, the plugin's was "compiled" by hand and every Hebrew
+    # string in its admin came out mojibake.
+    paths = sys.argv[1:] or sorted(
+        glob.glob('theme/languages/*.po') + glob.glob('plugins/*/languages/*.po')
+    )
+
+    for po in paths:
+        mo = po[:-3] + '.mo'
+        count = compile_mo(parse(po), mo)
+        print('%s -> %s (%d strings)' % (po, mo, count))
