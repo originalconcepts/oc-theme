@@ -988,9 +988,19 @@ html.oc-search-open { overflow: hidden; }
 	color: inherit;
 }
 
-/* Three bars cut from the same settings as the other icons: their width is
- * the icon size, their thickness the icon stroke. Hard-coded pixels here
- * were why the size and weight settings appeared to do nothing to it. */
+/* The burger is an SVG like every other header icon, so all three lines
+ * pass through one rasteriser with one stroke setting — CSS bars at a
+ * fractional thickness landed each bar on a different device-pixel seam,
+ * and the top one came out visibly fatter. */
+.oc-burger svg {
+	display: block;
+	margin: auto;
+	inline-size: var(--oc-hicon, 20px);
+	block-size: var(--oc-hicon, 20px);
+	stroke-width: var(--oc-hicon-sw, 1.8);
+}
+
+/* The old three-bar markup, kept only for pages the cache still holds. */
 .oc-burger span,
 .oc-burger span::before,
 .oc-burger span::after {
