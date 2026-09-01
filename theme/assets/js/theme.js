@@ -488,13 +488,24 @@
 
 	if ( siteHeader && document.body.classList.contains( 'oc-htrans' ) ) {
 		var updateHeaderScroll = function () {
-			siteHeader.classList.toggle( 'is-scrolled', window.scrollY > 12 );
+			// The drawer pins the body in place, which resets window.scrollY
+			// to zero and fires a scroll event — reading it here dropped the
+			// solid state and pushed the shift back in, so the header fell
+			// below a top bar that was no longer above it. While the pin is
+			// on, the real position lives in the pin itself.
+			var y = window.scrollY;
+
+			if ( 'fixed' === document.body.style.position ) {
+				y = Math.max( y, -parseInt( document.body.style.top || '0', 10 ) || 0 );
+			}
+
+			siteHeader.classList.toggle( 'is-scrolled', y > 12 );
 
 			// A transparent header is fixed, so it would sit on top of the
 			// top bar and its icons would straddle the two. Hold it below the
 			// bar and let it ride up as the bar scrolls away.
 			if ( ocTransBar ) {
-				var shift = Math.max( 0, ocTransBarH - window.scrollY );
+				var shift = Math.max( 0, ocTransBarH - y );
 
 				// On the document, not on the header: the search panel sits
 				// outside the header and has to read these too. Written on
