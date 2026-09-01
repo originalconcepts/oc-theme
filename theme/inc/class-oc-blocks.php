@@ -1123,8 +1123,9 @@ final class Blocks {
 			<thead><tr>
 				<th style="inline-size:34%;"><?php esc_html_e( 'Block', 'oc-theme' ); ?></th>
 				<th style="inline-size:18%;"><?php esc_html_e( 'Position', 'oc-theme' ); ?></th>
-				<th style="inline-size:24%;"><?php esc_html_e( 'Size', 'oc-theme' ); ?></th>
-				<th style="inline-size:24%;"><?php esc_html_e( 'Shows on', 'oc-theme' ); ?></th>
+				<th style="inline-size:22%;"><?php esc_html_e( 'Size', 'oc-theme' ); ?></th>
+				<th style="inline-size:20%;"><?php esc_html_e( 'Shows on', 'oc-theme' ); ?></th>
+				<th style="inline-size:4%;"><span class="screen-reader-text"><?php esc_html_e( 'Remove', 'oc-theme' ); ?></span></th>
 			</tr></thead>
 			<tbody>
 			<?php foreach ( $places as $i => $place ) : ?>
@@ -1152,6 +1153,9 @@ final class Blocks {
 							<?php endforeach; ?>
 						</select>
 					</td>
+					<td style="text-align:center;">
+						<button type="button" class="button-link oc-place-x" aria-label="<?php esc_attr_e( 'Remove this placement', 'oc-theme' ); ?>" style="color:#b32d2e;font-size:18px;line-height:1;text-decoration:none;">&times;</button>
+					</td>
 				</tr>
 			<?php endforeach; ?>
 			</tbody>
@@ -1160,7 +1164,7 @@ final class Blocks {
 			<button type="button" class="button" id="oc-places-add"><?php esc_html_e( 'Add a placement', 'oc-theme' ); ?></button>
 		</p>
 		<p class="description" style="max-inline-size:760px;">
-			<?php esc_html_e( 'Position 1 places the block before the first product. Set the block to "None" to remove a row.', 'oc-theme' ); ?>
+			<?php esc_html_e( 'Position 1 places the block before the first product. The × at the end of a row removes that placement (save to apply); the block itself stays in the Blocks tab for reuse.', 'oc-theme' ); ?>
 		</p>
 		<script>
 		( function () {
@@ -1173,11 +1177,42 @@ final class Blocks {
 
 			add.dataset.ready = '1';
 
+			// The x empties the last remaining row instead of removing it —
+			// the add button clones it, so one template must always stay.
+			table.addEventListener( 'click', function ( e ) {
+				var x = e.target.closest( '.oc-place-x' );
+
+				if ( ! x ) {
+					return;
+				}
+
+				var body = table.tBodies[ 0 ],
+					row = x.closest( 'tr' );
+
+				if ( body.rows.length > 1 ) {
+					row.remove();
+					return;
+				}
+
+				row.querySelectorAll( 'select, input' ).forEach( function ( field ) {
+					if ( 'SELECT' === field.tagName ) {
+						field.selectedIndex = 0;
+					} else {
+						field.value = '';
+					}
+				} );
+			} );
+
+			// A counter that only grows: after a mid-table removal the row
+			// count would collide with a key still in use.
+			var next = table.tBodies[ 0 ].rows.length;
+
 			add.addEventListener( 'click', function () {
 				var body = table.tBodies[ 0 ],
 					last = body.rows[ body.rows.length - 1 ],
-					row = last.cloneNode( true ),
-					next = body.rows.length;
+					row = last.cloneNode( true );
+
+				next++;
 
 				// Re-key the clone, so the browser posts it as its own row.
 				row.querySelectorAll( '[name]' ).forEach( function ( field ) {

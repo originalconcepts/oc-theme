@@ -2686,8 +2686,8 @@ msgstr "כלום"
 msgid "Add a placement"
 msgstr "הוספת מיקום"
 
-msgid "Position 1 places the block before the first product. Set the block to \"None\" to remove a row."
-msgstr "מיקום 1 מציב את הבלוק לפני המוצר הראשון. בחירת ״ללא״ מסירה שורה."
+msgid "Position 1 places the block before the first product. The × at the end of a row removes that placement (save to apply); the block itself stays in the Blocks tab for reuse."
+msgstr "מיקום 1 מציב את הבלוק לפני המוצר הראשון. ה‑× בסוף שורה מסיר את השיבוץ (שמרו כדי להחיל); הבלוק עצמו נשאר בלשונית ״בלוקים״ לשימוש חוזר."
 
 msgid "Picture position"
 msgstr "מיקום התמונה"
@@ -6231,3 +6231,6 @@ msgstr "משלוח %s"
 
 msgid "Delivery on %s"
 msgstr "משלוח ב־%s"
+
+msgid "Remove this placement"
+msgstr "הסרת השיבוץ הזה"
