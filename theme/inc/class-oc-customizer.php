@@ -834,6 +834,18 @@ final class Customizer {
 
 		$this->choice(
 			$c,
+			'oc_menu_bar_span',
+			'oc_menu',
+			__( 'That background reaches', 'oc-theme' ),
+			array(
+				'site' => __( 'The site width, like the content', 'oc-theme' ),
+				'full' => __( 'The whole screen, edge to edge', 'oc-theme' ),
+			),
+			'site'
+		);
+
+		$this->choice(
+			$c,
 			'oc_menu_depth',
 			'oc_menu',
 			__( 'Depth of a plain drop-down', 'oc-theme' ),

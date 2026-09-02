@@ -780,10 +780,20 @@ a { color: inherit; }
 .oc-hsearch__sep {
 	inline-size: 1px;
 	block-size: 16px;
+	margin-inline: 8px 6px;
 	background: currentColor;
 	opacity: .28;
 	flex: none;
+	transition: inline-size .25s ease, margin .25s ease, opacity .25s ease;
 }
+
+/* Typing makes room: the line shortens a little, the glass slides along
+ * with it, and the hairline and the closing mark take the space it gave up
+ * — all in one movement, and the pill keeps its width. */
+.oc-hsearch { gap: 0; }
+.oc-hsearch input[type="search"] { margin-inline-end: 6px; transition: inline-size .25s ease; }
+.oc-hsearch button[type="submit"] { flex: none; }
+.oc-hsearch:has(.oc-hsearch__close:not([hidden])) input[type="search"] { inline-size: calc(clamp(120px, 14vw, 190px) - 44px); }
 
 .oc-hsearch button.oc-hsearch__close {
 	border: 0;
@@ -800,8 +810,19 @@ a { color: inherit; }
 }
 
 .oc-hsearch button.oc-hsearch__close:hover { background: var(--oc-surface-2, rgba(0, 0, 0, .06)); }
-.oc-hsearch__close[hidden],
-.oc-hsearch__sep[hidden] { display: none; }
+
+.oc-hsearch button.oc-hsearch__close {
+	inline-size: 24px;
+	block-size: 24px;
+	overflow: hidden;
+	transition: inline-size .25s ease, padding .25s ease, opacity .25s ease;
+}
+
+/* Empty line: the hairline and the mark fold to nothing — still in the row,
+ * so their return is a slide rather than a jump. (The old rule lost to the
+ * button's own display, and the mark showed on an empty line.) */
+.oc-hsearch__sep[hidden] { display: block; inline-size: 0; margin-inline: 0; opacity: 0; }
+.oc-hsearch button.oc-hsearch__close[hidden] { display: inline-flex; inline-size: 0; padding: 0; opacity: 0; pointer-events: none; }
 
 .oc-searchbox[data-mode="min"] .oc-search__side { display: none; }
 .oc-searchbox[data-mode="min"] .oc-search__cols { grid-template-columns: 1fr; }
@@ -1053,6 +1074,28 @@ html.oc-search-open { overflow: hidden; }
 [dir="rtl"] { --oc-in-x: 18px; --oc-fwd: -1; }
 
 .oc-nav { background: var(--oc-menu-bar-bg, transparent); }
+
+@media (min-width: 901px) {
+	/* With a band behind the links, the header's bottom rule moves onto the
+	 * band's own edge. Drawn on the white header below it, the rule read as
+	 * a pale strip between the menu and the page. */
+	.oc-header--band:not(.oc-header--noline) { border-block-end-color: transparent; }
+	.oc-header--band:not(.oc-header--noline) .oc-nav { box-shadow: inset 0 -1px 0 var(--oc-line); }
+
+	/* Edge to edge: the band is painted by a layer behind the links that
+	 * reaches past the container to the screen's sides. */
+	.oc-header--band-full { overflow-x: clip; }
+	.oc-header--band-full .oc-nav { position: relative; background: none; box-shadow: none; }
+	.oc-header--band-full .oc-nav::before {
+		content: '';
+		position: absolute;
+		inset-block: 0;
+		inset-inline: calc(50% - 50vw);
+		background: var(--oc-menu-bar-bg, transparent);
+		z-index: -1;
+	}
+	.oc-header--band-full:not(.oc-header--noline) .oc-nav::before { box-shadow: inset 0 -1px 0 var(--oc-line); }
+}
 
 /* A top-level link fills the header's height. Two things follow from that,
  * and both are the point: the line under the word lands on the header's own

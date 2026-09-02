@@ -6330,3 +6330,12 @@ msgstr "שורה אחת שנגללת הצידה במקום להישבר לשור
 
 msgid "A finger-swipe strip that runs to the screen edge — below the hero or with its text."
 msgstr "רצועת החלקה שרצה עד קצה המסך — מתחת לבאנר או יחד עם הטקסט שלו."
+
+msgid "That background reaches"
+msgstr "הרקע הזה נמשך"
+
+msgid "The site width, like the content"
+msgstr "לרוחב האתר, כמו התוכן"
+
+msgid "The whole screen, edge to edge"
+msgstr "לכל רוחב המסך, מקצה לקצה"

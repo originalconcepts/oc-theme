@@ -79,7 +79,7 @@ $oc_topbar_on   = (bool) get_theme_mod( 'oc_topbar', false ) && ( ! empty( $oc_t
 
 <header
 	id="main-header"
-	class="oc-header oc-header--<?php echo esc_attr( $oc_preset ); ?> oc-header--m-<?php echo esc_attr( $oc_mobile ); ?><?php echo $oc_sticky ? ' is-sticky' : ''; ?><?php echo $oc_hborder ? '' : ' oc-header--noline'; ?><?php echo 'text' === get_theme_mod( 'oc_header_icons_style', 'icons' ) ? ' oc-icons-text' : ''; ?><?php echo 'field' === get_theme_mod( 'oc_header_search_style', 'icon' ) ? ' oc-search-field' : ''; ?>"
+	class="oc-header oc-header--<?php echo esc_attr( $oc_preset ); ?> oc-header--m-<?php echo esc_attr( $oc_mobile ); ?><?php echo $oc_sticky ? ' is-sticky' : ''; ?><?php echo $oc_hborder ? '' : ' oc-header--noline'; ?><?php echo 'text' === get_theme_mod( 'oc_header_icons_style', 'icons' ) ? ' oc-icons-text' : ''; ?><?php echo 'field' === get_theme_mod( 'oc_header_search_style', 'icon' ) ? ' oc-search-field' : ''; ?><?php echo '' !== (string) get_theme_mod( 'oc_menu_bar_bg', '' ) ? ' oc-header--band' : ''; ?><?php echo '' !== (string) get_theme_mod( 'oc_menu_bar_bg', '' ) && 'full' === get_theme_mod( 'oc_menu_bar_span', 'site' ) ? ' oc-header--band-full' : ''; ?>"
 >
 	<div class="oc-header__inner">
 
