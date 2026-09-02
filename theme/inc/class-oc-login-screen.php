@@ -538,13 +538,19 @@ final class Login_Screen {
 
 			pwd.className = 'oc-l__pwd';
 
-			Array.prototype.slice.call( form.children ).forEach( function ( row ) {
-				if ( row !== box && ! row.classList.contains( 'oc-l__pwd' ) ) {
+			// The list is taken before the moving starts: appending a row to
+			// the new block removes it from form.children, and a live list
+			// shifting under the loop is how the last rows — remember me,
+			// and the submit button itself — got left behind on the card.
+			var rows = Array.prototype.slice.call( form.children );
+
+			form.appendChild( pwd );
+
+			rows.forEach( function ( row ) {
+				if ( row !== box && row !== pwd ) {
 					pwd.appendChild( row );
 				}
 			} );
-
-			form.appendChild( pwd );
 
 			var opener = document.getElementById( 'oc-l-pwd-open' );
 
