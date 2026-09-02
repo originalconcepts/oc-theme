@@ -3390,6 +3390,16 @@ html.oc-drw-open { overflow: hidden; }
 }
 /* content stays off the edge */
 .oc-chero--split .oc-chero__wordsin { max-inline-size: 520px; margin-inline: auto; }
+
+/* A grid cell will not shrink below its content, and a sideways strip of
+ * sub-categories is as wide as all its pills — so a slider inside the
+ * split hero's panel widened the panel, the hero, and the whole page past
+ * the phone's edge. The cell and the words yield; the strip scrolls. */
+.oc-chero__panel,
+.oc-chero__words,
+.oc-chero__wordsin { min-inline-size: 0; max-inline-size: 100%; }
+.oc-chero--split .oc-chero__wordsin { max-inline-size: min(520px, 100%); }
+.oc-chero .oc-subcats { inline-size: 100%; min-inline-size: 0; }
 /* image on the reading side (default) or the opposite side */
 .oc-chero--img-end .oc-chero__media { order: 2; }
 .oc-chero--img-end .oc-chero__panel { order: 1; }
