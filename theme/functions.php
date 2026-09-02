@@ -76,6 +76,7 @@ function oc_greeting( string $name ): string {
 require_once OC_THEME_DIR . '/inc/class-oc-updater.php';
 require_once OC_THEME_DIR . '/inc/class-oc-assets.php';
 require_once OC_THEME_DIR . '/inc/class-oc-login.php';
+require_once OC_THEME_DIR . '/inc/class-oc-login-screen.php';
 require_once OC_THEME_DIR . '/inc/class-oc-woocommerce.php';
 require_once OC_THEME_DIR . '/inc/class-oc-product-linked.php';
 require_once OC_THEME_DIR . '/inc/class-oc-bought-together.php';
@@ -432,6 +433,7 @@ add_action( 'admin_notices', 'oc_dependency_notice' );
 ( new OC\Theme\Auth() )->register();
 ( new OC\Theme\Auth_Admin() )->register();
 ( new OC\Theme\Two_Factor() )->register();
+( new OC\Theme\Login_Screen() )->register();
 ( new OC\Theme\Product_Linked() )->register();
 ( new OC\Theme\Bought_Together() )->register();
 ( new OC\Theme\Updater( get_template(), OC_THEME_VERSION, OC_THEME_REPO ) )->register();

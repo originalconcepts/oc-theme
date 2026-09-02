@@ -6234,3 +6234,42 @@ msgstr "משלוח ב־%s"
 
 msgid "Remove this placement"
 msgstr "הסרת השיבוץ הזה"
+
+msgid "Continue with Google"
+msgstr "המשך עם Google"
+
+msgid "A code to my phone"
+msgstr "קוד לנייד שלי"
+
+msgid "The number on your user account — the code arrives by SMS."
+msgstr "המספר שרשום בחשבון המשתמש שלך — הקוד יגיע ב‑SMS."
+
+msgid "The code"
+msgstr "הקוד"
+
+msgid "Send me a code"
+msgstr "שלחו לי קוד"
+
+msgid "A different number"
+msgstr "מספר אחר"
+
+msgid "Sent — the code is on its way."
+msgstr "נשלח — הקוד בדרך."
+
+msgid "No user account carries that number."
+msgstr "אין חשבון משתמש עם המספר הזה."
+
+msgid "One moment…"
+msgstr "רגע אחד…"
+
+msgid "The connection stumbled — try again."
+msgstr "החיבור נתקע — נסו שוב."
+
+msgid "Type the phone number first."
+msgstr "הקלידו קודם את מספר הטלפון."
+
+msgid "Type the code you received."
+msgstr "הקלידו את הקוד שקיבלתם."
+
+msgid "by"
+msgstr "מאת"

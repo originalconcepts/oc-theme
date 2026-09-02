@@ -846,8 +846,15 @@ final class Auth {
 		}
 
 		$state = wp_generate_password( 24, false );
+
+		// The sign-in screen asks for the dashboard by name: its referer is
+		// the login page itself, and landing back there after a successful
+		// sign-in reads as though nothing happened.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- compared to one literal; no state changes here.
+		$back = 'admin' === sanitize_key( (string) ( $_GET['to'] ?? '' ) ) ? admin_url() : esc_url_raw( (string) wp_get_referer() );
+
 		setcookie( 'oc_auth_state', $state, time() + 600, '/', '', is_ssl(), true );
-		setcookie( 'oc_auth_back', esc_url_raw( (string) wp_get_referer() ), time() + 600, '/', '', is_ssl(), true );
+		setcookie( 'oc_auth_back', $back, time() + 600, '/', '', is_ssl(), true );
 
 		wp_redirect( // phpcs:ignore WordPress.Security.SafeRedirect.wp_redirect_wp_redirect -- fixed provider https URL.
 			add_query_arg(
