@@ -336,24 +336,36 @@ final class Login_Screen {
 		.oc-l__provider[hidden],
 		.oc-l__back[hidden] { display: none; }
 
-		/* Remember-me is a checkbox and its words on one line — WordPress
-		 * floats it and lets the label wrap under the box. */
-		.login .forgetmenot { margin: 0; float: none; }
-		.login .forgetmenot label {
+		/* The checkbox, its words and WordPress's help dot are three
+		 * siblings in one paragraph — the row is what has to line them up,
+		 * not the label, which holds only the words. */
+		.login .forgetmenot {
 			display: flex;
 			align-items: center;
 			gap: 8px;
+			margin: 0;
+			float: none;
+			line-height: 1.4;
+		}
+		.login .forgetmenot input[type="checkbox"] { margin: 0; flex: none; }
+		.login .forgetmenot label {
+			display: inline;
 			margin: 0;
 			font-weight: 400;
 			font-size: 13.5px;
 			color: var(--ocl-ink-2);
 			cursor: pointer;
 		}
-		.login .forgetmenot input[type="checkbox"] { margin: 0; flex: none; }
-
-		/* The help dot WordPress hangs beside it has nothing to say here. */
-		.login .forgetmenot + .login-password-help,
-		.login .login-password-help { display: none; }
+		.login .forgetmenot .wp-tooltip { display: inline-flex; align-items: center; }
+		.login .forgetmenot .wp-tooltip__toggle {
+			display: inline-flex;
+			align-items: center;
+			padding: 0;
+			border: 0;
+			background: none;
+			color: var(--ocl-ink-2);
+			cursor: pointer;
+		}
 
 		/* ---------- WordPress's own furniture ---------- */
 
