@@ -6273,3 +6273,6 @@ msgstr "הקלידו את הקוד שקיבלתם."
 
 msgid "by"
 msgstr "מאת"
+
+msgid "Sign in with username and password"
+msgstr "כניסה עם שם משתמש וסיסמה"
