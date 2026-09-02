@@ -4367,9 +4367,17 @@ li.product:focus-within .oc-card-atc,
  * Specificity matched against woo's nth-child(n+2){display:inline-block}.
  * Desktop only — on mobile the gallery becomes a swipe strip. */
 @media (min-width: 901px) {
-	.woocommerce.oc-gallery-thumbs-side div.product div.images .woocommerce-product-gallery__image:not(.is-active),
-	.woocommerce.oc-gallery-thumbs-under div.product div.images .woocommerce-product-gallery__image:not(.is-active) {
+	.woocommerce.oc-gallery-thumbs-side div.product div.images .woocommerce-product-gallery__image:not(.is-active):not(:only-child),
+	.woocommerce.oc-gallery-thumbs-under div.product div.images .woocommerce-product-gallery__image:not(.is-active):not(:only-child) {
 		display: none;
+	}
+
+	/* A product with one picture has nothing to pick from — the picture
+	 * simply shows, rail or no rail. */
+	.woocommerce.oc-gallery-thumbs-side div.product div.images .woocommerce-product-gallery__image:only-child,
+	.woocommerce.oc-gallery-thumbs-under div.product div.images .woocommerce-product-gallery__image:only-child {
+		display: block;
+		width: 100%;
 	}
 
 	.woocommerce.oc-gallery-thumbs-side div.product div.images .woocommerce-product-gallery__image.is-active,

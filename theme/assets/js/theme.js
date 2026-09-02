@@ -3793,7 +3793,13 @@
 			galleryWrap.querySelectorAll( '.woocommerce-product-gallery__image' )
 		);
 
+		// One picture: no rail to build, but the picture is still the one
+		// on show — the presets hide every slide that is not active, and a
+		// lone slide with nothing to activate it was a blank square.
 		if ( gSlides.length < 2 ) {
+			if ( gSlides[ 0 ] ) {
+				gSlides[ 0 ].classList.add( 'is-active' );
+			}
 			return;
 		}
 
