@@ -158,6 +158,7 @@ class Category {
 			'corners' => $get( '_oc_sub_corners', 'soft' ),      // sharp | soft.
 			'slider'  => '1' === $get( '_oc_sub_slider' ),
 			'place'   => $get( '_oc_sub_place', 'out' ),         // out | in.
+			'place_m' => $get( '_oc_sub_place_m', 'out' ),       // same | out | in — the phone's own answer.
 			'align'   => $get( '_oc_sub_align', 'start' ),       // start | center.
 		);
 	}
@@ -220,21 +221,59 @@ class Category {
 			);
 		}
 
-		// Sub-categories can sit inside an over-image hero; otherwise they go
-		// below the description in the normal content flow.
-		$place_in = $hero_on && 'full' === $h['layout'] && 'over' === $h['text'] && 'in' === $sub['place'];
+		// Sub-categories either ride the hero with its text, under the
+		// description, or stand below the hero above the products. Each
+		// screen answers for itself: a phone's hero has no room for a
+		// stack of pills, so it usually wants them below.
+		$places = self::sub_places( $hero_on, $sub );
 
-		if ( $sub['show'] && ! $place_in ) {
+		if ( $sub['show'] && in_array( 'out', $places, true ) ) {
 			$align = 'center' === $sub['align'] ? 'center' : 'start';
+			$only  = self::only_for( 'out', $places );
 
 			add_action(
 				'woocommerce_archive_description',
-				function () use ( $term, $sub, $align ): void {
-					echo self::subcats_html( $term, $sub, 'out', $align ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
+				function () use ( $term, $sub, $align, $only ): void {
+					echo self::subcats_html( $term, $sub, 'out', $align, $only ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
 				},
 				15
 			);
 		}
+	}
+
+	/**
+	 * Where the strip goes on each screen: [ desktop, mobile ], each
+	 * 'in' (with the hero's text) or 'out' (below the hero). Without a
+	 * hero there is nothing to be in.
+	 *
+	 * @param bool                $hero_on Hero drawn.
+	 * @param array<string,mixed> $sub     Sub-category settings.
+	 * @return string[]
+	 */
+	private static function sub_places( bool $hero_on, array $sub ): array {
+		if ( ! $hero_on ) {
+			return array( 'out', 'out' );
+		}
+
+		$d = 'in' === $sub['place'] ? 'in' : 'out';
+		$m = 'same' === $sub['place_m'] ? $d : ( 'in' === $sub['place_m'] ? 'in' : 'out' );
+
+		return array( $d, $m );
+	}
+
+	/**
+	 * When the two screens disagree, each copy of the strip is marked for
+	 * the screen it serves; when they agree, one copy serves both.
+	 *
+	 * @param string   $where  'in' | 'out'.
+	 * @param string[] $places From sub_places().
+	 */
+	private static function only_for( string $where, array $places ): string {
+		if ( $places[0] === $places[1] ) {
+			return '';
+		}
+
+		return $places[0] === $where ? 'd' : 'm';
 	}
 
 	/**
@@ -250,12 +289,17 @@ class Category {
 		$desc  = trim( (string) term_description( $term->term_id ) );
 		$desc  = '' !== $desc ? '<div class="oc-chero__desc">' . wp_kses_post( $desc ) . '</div>' : '';
 
-		// Sub-categories over the image: they follow the content's alignment.
+		// Sub-categories with the text: they follow its alignment.
 		$subs = '';
 
-		if ( ! empty( $sub['show'] ) && 'full' === $h['layout'] && 'over' === $h['text'] && 'in' === $sub['place'] ) {
-			$align = in_array( $h['pos'], array( 'cc', 'bc' ), true ) ? 'center' : 'start';
-			$subs  = self::subcats_html( $term, $sub, 'in', $align );
+		if ( ! empty( $sub['show'] ) ) {
+			$places = self::sub_places( true, $sub );
+
+			if ( in_array( 'in', $places, true ) ) {
+				$over  = 'full' === $h['layout'] && 'over' === $h['text'];
+				$align = $over ? ( in_array( $h['pos'], array( 'cc', 'bc' ), true ) ? 'center' : 'start' ) : ( 'center' === $sub['align'] ? 'center' : 'start' );
+				$subs  = self::subcats_html( $term, $sub, 'in', $align, self::only_for( 'in', $places ) );
+			}
 		}
 
 		$words = '<div class="oc-chero__words"><div class="oc-chero__wordsin">' . $title . $desc . $subs . '</div></div>';
@@ -340,11 +384,12 @@ class Category {
 	 *
 	 * @param \WP_Term            $term    Parent category.
 	 * @param array<string,mixed> $sub     Sub-category settings.
-	 * @param string              $context 'in' (over the hero image) | 'out'.
+	 * @param string              $context 'in' (with the hero's text) | 'out'.
 	 * @param string              $align   'start' | 'center'.
+	 * @param string              $only    '' (both screens) | 'd' | 'm'.
 	 * @return string
 	 */
-	private static function subcats_html( \WP_Term $term, array $sub, string $context, string $align ): string {
+	private static function subcats_html( \WP_Term $term, array $sub, string $context, string $align, string $only = '' ): string {
 		$children = self::children( $term->term_id );
 
 		if ( empty( $children ) ) {
@@ -395,7 +440,8 @@ class Category {
 
 		$classes = 'oc-subcats oc-subcats--' . $style
 			. ' oc-subcats--align-' . ( 'center' === $align ? 'center' : 'start' )
-			. ' oc-subcats--' . ( 'in' === $context ? 'in' : 'out' );
+			. ' oc-subcats--' . ( 'in' === $context ? 'in' : 'out' )
+			. ( '' !== $only ? ' oc-subcats--dev-' . $only : '' );
 
 		if ( 'pill' === $style ) {
 			$classes .= ' oc-subcats--pill-' . ( 'rect' === $sub['pill'] ? 'rect' : 'round' );
@@ -781,12 +827,25 @@ class Category {
 		$this->select_field(
 			'_oc_sub_place',
 			$sub['place'],
-			__( 'Placement', 'oc-theme' ),
+			__( 'Placement (desktop)', 'oc-theme' ),
 			array(
-				'out' => __( 'Below the description', 'oc-theme' ),
-				'in'  => __( 'Over the hero image (full-width, text-over only)', 'oc-theme' ),
+				'out' => __( 'Below the hero, above the products', 'oc-theme' ),
+				'in'  => __( 'With the text, under the description', 'oc-theme' ),
 			),
-			__( 'Over the image, they follow the text’s alignment.', 'oc-theme' ),
+			__( 'Only with a hero; without one the strip sits above the products. With the text, they follow its alignment.', 'oc-theme' ),
+			'_oc_sub_show:1'
+		);
+
+		$this->select_field(
+			'_oc_sub_place_m',
+			$sub['place_m'],
+			__( 'Placement (mobile)', 'oc-theme' ),
+			array(
+				'out'  => __( 'Below the hero, above the products', 'oc-theme' ),
+				'in'   => __( 'With the text, under the description', 'oc-theme' ),
+				'same' => __( 'Same as desktop', 'oc-theme' ),
+			),
+			__( 'A phone’s hero has little room; below it is usually the better place.', 'oc-theme' ),
 			'_oc_sub_show:1'
 		);
 
@@ -927,6 +986,7 @@ class Category {
 		$this->save_enum( $term_id, '_oc_sub_corners', array( 'sharp', 'soft' ) );
 		$this->save_bool( $term_id, '_oc_sub_slider' );
 		$this->save_enum( $term_id, '_oc_sub_place', array( 'out', 'in' ) );
+		$this->save_enum( $term_id, '_oc_sub_place_m', array( 'out', 'in', 'same' ) );
 		$this->save_enum( $term_id, '_oc_sub_align', array( 'start', 'center' ) );
 
 		// phpcs:enable WordPress.Security.NonceVerification.Missing

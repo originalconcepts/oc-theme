@@ -1243,7 +1243,9 @@
 				return;
 			}
 
-			if ( hasMobile && fields[ key ].dev && fields[ key ].dev !== state.devTab ) {
+			// Desktop is the whole picture: every setting that shapes both
+			// screens. Mobile holds only what the phone does differently.
+			if ( hasMobile && ( fields[ key ].dev || 'd' ) !== state.devTab ) {
 				return;
 			}
 

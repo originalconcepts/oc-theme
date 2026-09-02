@@ -3430,6 +3430,13 @@ html.oc-drw-open { overflow: hidden; }
 	margin-block-start: 16px;
 }
 .oc-subcats--out { margin-block: 14px 4px; }
+
+/* A strip drawn twice, once for each screen, shows on one of them only. */
+@media (max-width: 782px) { .oc-subcats--dev-d { display: none !important; } }
+@media (min-width: 783px) { .oc-subcats--dev-m { display: none !important; } }
+
+/* The read-more inside a hero keeps the hero's own text colour. */
+.oc-chero .oc-readmore { color: inherit; text-decoration: underline; margin-block: 4px 0; }
 .oc-subcats--align-center { justify-content: center; }
 .oc-subcats--align-start { justify-content: flex-start; }
 
@@ -6247,7 +6254,8 @@ html:not([dir]) .oc-cartup__items--h.oc-fade-end {
 /* exactly two lines — the browser's own line clamp, desktop and mobile —
  * then a read-more */
 .term-description.oc-clamped,
-.oc-archive-desc.oc-clamped {
+.oc-archive-desc.oc-clamped,
+.oc-chero__desc.oc-clamped {
 	display: -webkit-box;
 	-webkit-box-orient: vertical;
 	-webkit-line-clamp: 2;
@@ -6257,7 +6265,8 @@ html:not([dir]) .oc-cartup__items--h.oc-fade-end {
 }
 
 .term-description.oc-clamped.is-open,
-.oc-archive-desc.oc-clamped.is-open {
+.oc-archive-desc.oc-clamped.is-open,
+.oc-chero__desc.oc-clamped.is-open {
 	display: block;
 	-webkit-line-clamp: unset;
 	line-clamp: unset;

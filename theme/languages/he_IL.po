@@ -6297,3 +6297,21 @@ msgstr "מוצרים שצפו בהם, מהקטגוריה הזו"
 
 msgid "Forgot password?"
 msgstr "שכחת סיסמא?"
+
+msgid "Placement (desktop)"
+msgstr "מיקום (דסקטופ)"
+
+msgid "Placement (mobile)"
+msgstr "מיקום (מובייל)"
+
+msgid "Below the hero, above the products"
+msgstr "מתחת לבאנר, מעל המוצרים"
+
+msgid "With the text, under the description"
+msgstr "יחד עם הטקסט, מתחת לתיאור"
+
+msgid "Only with a hero; without one the strip sits above the products. With the text, they follow its alignment."
+msgstr "רק כשיש באנר; בלעדיו הרצועה יושבת מעל המוצרים. יחד עם הטקסט הן עוקבות אחרי היישור שלו."
+
+msgid "A phone’s hero has little room; below it is usually the better place."
+msgstr "בבאנר של טלפון אין הרבה מקום; מתחתיו זה בדרך כלל המקום הנכון."

@@ -112,6 +112,10 @@ final class Registry {
 				'def'   => 0,
 				'when'  => array( 'bg' => array( 'image', 'video' ) ),
 			),
+			'ink'     => array(
+				'type'  => 'color',
+				'label' => __( 'Text colour', 'oc-blocks' ),
+			),
 			'pt'      => array(
 				'type'    => 'seg',
 				'label'   => __( 'Space above', 'oc-blocks' ),

@@ -992,6 +992,14 @@
 }
 
 @media (max-width: 782px) {
+	/* A phone layout of its own, whatever the desktop chose — a desktop
+	 * slider is a flex strip, and a column count alone could not undo it. */
+	.ocb-posts--m1,
+	.ocb-posts--m2 { display: grid; overflow: visible; padding-block-end: 0; }
+
+	.ocb-posts--m1 .ocb-post,
+	.ocb-posts--m2 .ocb-post { flex: none; }
+
 	.ocb-posts--m1 { grid-template-columns: 1fr; }
 
 	.ocb-posts--m2 { grid-template-columns: 1fr 1fr; gap: 24px 14px; }
@@ -1008,6 +1016,9 @@
 
 	.ocb-posts--mslider .ocb-post { flex: 0 0 74%; scroll-snap-align: start; }
 }
+
+.ocb--ink { color: var(--ocb-ink); }
+.ocb--ink .ocb-news__mail { color: inherit; border-color: currentColor; }
 
 /* ---------- shop the look ---------- */
 

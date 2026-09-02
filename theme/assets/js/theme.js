@@ -3941,9 +3941,10 @@
 
 	/* ---------- category description: clamp with read-more ---------- */
 
-	document.querySelectorAll( '.term-description, .oc-archive-desc' ).forEach( function ( box ) {
+	document.querySelectorAll( '.term-description, .oc-archive-desc, .oc-chero__desc' ).forEach( function ( box ) {
 		// Clamp to two lines, then keep the clamp only if something was
-		// actually cut off.
+		// actually cut off. The hero's description too — on a phone a long
+		// one pushed the whole hero out of its frame.
 		box.classList.add( 'oc-clamped' );
 		if ( box.scrollHeight <= box.clientHeight + 4 ) {
 			box.classList.remove( 'oc-clamped' );

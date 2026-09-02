@@ -237,6 +237,12 @@ final class Render {
 			$style .= '--ocb-w:' . absint( $s['wpx'] ) . 'px;';
 		}
 
+		// The section's own text colour, set beside its background.
+		if ( '' !== (string) ( $s['ink'] ?? '' ) ) {
+			$style    .= '--ocb-ink:' . $s['ink'] . ';';
+			$classes[] = 'ocb--ink';
+		}
+
 		$bg = '';
 
 		switch ( (string) $s['bg'] ) {
