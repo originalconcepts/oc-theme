@@ -6315,3 +6315,18 @@ msgstr "רק כשיש באנר; בלעדיו הרצועה יושבת מעל המ
 
 msgid "A phone’s hero has little room; below it is usually the better place."
 msgstr "בבאנר של טלפון אין הרבה מקום; מתחתיו זה בדרך כלל המקום הנכון."
+
+msgid "Slider (desktop)"
+msgstr "סליידר (דסקטופ)"
+
+msgid "Slider (mobile)"
+msgstr "סליידר (מובייל)"
+
+msgid "Wrapped rows"
+msgstr "שורות שנשברות"
+
+msgid "One row that scrolls sideways instead of wrapping — links, pills or cards alike. Drag on desktop, swipe on touch."
+msgstr "שורה אחת שנגללת הצידה במקום להישבר לשורות — לינקים, אליפסות או תמונות. גרירה בדסקטופ, החלקה במגע."
+
+msgid "A finger-swipe strip that runs to the screen edge — below the hero or with its text."
+msgstr "רצועת החלקה שרצה עד קצה המסך — מתחת לבאנר או יחד עם הטקסט שלו."

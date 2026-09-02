@@ -3497,25 +3497,45 @@ html.oc-drw-open { overflow: hidden; }
 .oc-subcats--shape-circle .oc-subcats__pic { border-radius: 50%; }
 .oc-subcats__name { font-size: .92rem; text-align: center; color: inherit; }
 
-/* image cards as a free-scroll slider (finger-swipe on touch, drag on
- * desktop). No snapping — a free slider. */
-.oc-subcats--slider {
-	flex-wrap: nowrap;
-	overflow-x: auto;
-	scroll-snap-type: none;
-	-webkit-overflow-scrolling: touch;
-	scrollbar-width: none;
-	cursor: grab;
+/* The strip as a free-scroll slider — links, pills or cards — with each
+ * screen deciding for itself: -d rules on desktop (mouse drag), -m on a
+ * phone (finger swipe). No snapping. */
+@media (min-width: 783px) {
+	.oc-subcats--slider-d {
+		flex-wrap: nowrap;
+		overflow-x: auto;
+		scroll-snap-type: none;
+		scrollbar-width: none;
+		cursor: grab;
+	}
+	.oc-subcats--slider-d::-webkit-scrollbar { display: none; }
+	.oc-subcats--slider-d.is-drag { cursor: grabbing; scroll-behavior: auto; user-select: none; }
+	.oc-subcats--slider-d > a { flex: 0 0 auto; white-space: nowrap; }
+	/* a strip has no centre to hold */
+	.oc-subcats--slider-d.oc-subcats--align-center { justify-content: flex-start; }
 }
-.oc-subcats--slider::-webkit-scrollbar { display: none; }
-.oc-subcats--slider.is-drag { cursor: grabbing; scroll-behavior: auto; user-select: none; }
-.oc-subcats--slider .oc-subcats__card { flex: 0 0 auto; }
 
-/* On mobile the strip keeps its reading-side edge at the content gutter (so
- * the first card lines up with the page) and bleeds only the trailing side
- * out to the screen edge — the next card is cut by the edge with no gap. */
-@media (max-width: 700px) {
-	.oc-subcats--out.oc-subcats--slider { margin-inline-end: calc(-1 * var(--oc-gap, 20px)); }
+@media (max-width: 782px) {
+	.oc-subcats--slider-m {
+		flex-wrap: nowrap;
+		overflow-x: auto;
+		scroll-snap-type: none;
+		-webkit-overflow-scrolling: touch;
+		scrollbar-width: none;
+		/* a little room so the last item is not cut by the strip's own edge */
+		padding-inline-end: var(--oc-gap, 20px);
+	}
+	.oc-subcats--slider-m::-webkit-scrollbar { display: none; }
+	.oc-subcats--slider-m > a { flex: 0 0 auto; white-space: nowrap; }
+	.oc-subcats--slider-m.oc-subcats--align-center { justify-content: flex-start; }
+
+	/* Below the hero the strip keeps its reading-side edge at the content
+	 * gutter and bleeds the trailing side out to the screen edge. */
+	.oc-subcats--out.oc-subcats--slider-m { margin-inline-end: calc(-1 * var(--oc-gap, 20px)); }
+
+	/* With the hero's text it stays inside the words' padding, and scrolls
+	 * within it. */
+	.oc-subcats--in.oc-subcats--slider-m { max-inline-size: 100%; }
 }
 
 @media (prefers-reduced-motion: reduce) {

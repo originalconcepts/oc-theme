@@ -157,6 +157,7 @@ class Category {
 			'shape'   => $get( '_oc_sub_shape', 'square' ),      // square | portrait | circle.
 			'corners' => $get( '_oc_sub_corners', 'soft' ),      // sharp | soft.
 			'slider'  => '1' === $get( '_oc_sub_slider' ),
+			'slider_m' => $get( '_oc_sub_slider_m', 'same' ),    // same | yes | no — the phone's own answer.
 			'place'   => $get( '_oc_sub_place', 'out' ),         // out | in.
 			'place_m' => $get( '_oc_sub_place_m', 'out' ),       // same | out | in — the phone's own answer.
 			'align'   => $get( '_oc_sub_align', 'start' ),       // start | center.
@@ -452,11 +453,21 @@ class Category {
 		if ( 'card' === $style ) {
 			$shape    = in_array( $sub['shape'], array( 'square', 'portrait', 'circle' ), true ) ? $sub['shape'] : 'square';
 			$classes .= ' oc-subcats--shape-' . $shape . ' oc-subcats--corners-' . ( 'sharp' === $sub['corners'] ? 'sharp' : 'soft' );
+		}
 
-			if ( ! empty( $sub['slider'] ) ) {
-				$classes .= ' oc-subcats--slider';
-				$attrs    = ' data-oc-slider';
-			}
+		// A sideways strip instead of wrapped rows — any style, and each
+		// screen decides for itself. The desktop strip also takes the
+		// mouse drag; a phone swipes on its own.
+		$slide_d = ! empty( $sub['slider'] );
+		$slide_m = 'same' === ( $sub['slider_m'] ?? 'same' ) ? $slide_d : 'yes' === $sub['slider_m'];
+
+		if ( $slide_d ) {
+			$classes .= ' oc-subcats--slider oc-subcats--slider-d';
+			$attrs    = ' data-oc-slider';
+		}
+
+		if ( $slide_m ) {
+			$classes .= ' oc-subcats--slider-m';
 		}
 
 		return '<nav class="' . esc_attr( $classes ) . '"' . $attrs . ' aria-label="' . esc_attr__( 'Sub-categories', 'oc-theme' ) . '">' . $items . '</nav>';
@@ -819,9 +830,22 @@ class Category {
 		$this->toggle_field(
 			'_oc_sub_slider',
 			$sub['slider'],
-			__( 'Slider', 'oc-theme' ),
-			__( 'Scroll the cards sideways instead of wrapping. On mobile it is a free finger-swipe that runs to the screen edge.', 'oc-theme' ),
-			'_oc_sub_show:1,_oc_sub_style:card'
+			__( 'Slider (desktop)', 'oc-theme' ),
+			__( 'One row that scrolls sideways instead of wrapping — links, pills or cards alike. Drag on desktop, swipe on touch.', 'oc-theme' ),
+			'_oc_sub_show:1'
+		);
+
+		$this->select_field(
+			'_oc_sub_slider_m',
+			$sub['slider_m'],
+			__( 'Slider (mobile)', 'oc-theme' ),
+			array(
+				'same' => __( 'Same as desktop', 'oc-theme' ),
+				'yes'  => __( 'Slider', 'oc-theme' ),
+				'no'   => __( 'Wrapped rows', 'oc-theme' ),
+			),
+			__( 'A finger-swipe strip that runs to the screen edge — below the hero or with its text.', 'oc-theme' ),
+			'_oc_sub_show:1'
 		);
 
 		$this->select_field(
@@ -985,6 +1009,7 @@ class Category {
 		$this->save_enum( $term_id, '_oc_sub_shape', array( 'square', 'portrait', 'circle' ) );
 		$this->save_enum( $term_id, '_oc_sub_corners', array( 'sharp', 'soft' ) );
 		$this->save_bool( $term_id, '_oc_sub_slider' );
+		$this->save_enum( $term_id, '_oc_sub_slider_m', array( 'same', 'yes', 'no' ) );
 		$this->save_enum( $term_id, '_oc_sub_place', array( 'out', 'in' ) );
 		$this->save_enum( $term_id, '_oc_sub_place_m', array( 'out', 'in', 'same' ) );
 		$this->save_enum( $term_id, '_oc_sub_align', array( 'start', 'center' ) );
