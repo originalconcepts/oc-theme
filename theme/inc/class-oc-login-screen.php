@@ -138,13 +138,19 @@ final class Login_Screen {
 
 		/* ---------- the mark above the card ---------- */
 
-		.login h1 { margin-block-end: 22px; }
+		/* Recent WordPress paints its own mark on the h1 itself, not on the
+		 * link inside it — dressing only the link leaves theirs showing
+		 * through underneath. Both carry the shop's. */
+		.login h1,
+		.login h1.wp-login-logo { margin: 0 0 22px; padding: 0; background: none; }
 
-		.login h1 a {
+		.login h1 a,
+		.login h1.wp-login-logo a {
 			display: block;
 			inline-size: 100%;
 			block-size: <?php echo $logo['mine'] ? '62px' : '74px'; ?>;
 			margin: 0;
+			padding: 0;
 			background-image: url("<?php echo esc_url( $logo['url'] ); ?>");
 			background-size: contain;
 			background-position: center;
