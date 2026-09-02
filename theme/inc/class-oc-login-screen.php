@@ -35,6 +35,9 @@ final class Login_Screen {
 		add_filter( 'login_body_class', array( $this, 'body_class' ) );
 		add_action( 'login_form', array( $this, 'alternatives' ) );
 		add_filter( 'gettext', array( $this, 'field_label' ), 10, 3 );
+		add_filter( 'gettext', array( $this, 'spelling' ), 20 );
+		add_filter( 'gettext_with_context', array( $this, 'spelling' ), 20 );
+		add_filter( 'ngettext', array( $this, 'spelling' ), 20 );
 		add_action( 'login_footer', array( $this, 'credit' ) );
 	}
 
@@ -110,11 +113,34 @@ final class Login_Screen {
 	 * @param string $domain Text domain.
 	 */
 	public function field_label( $text, $source, $domain ): string {
-		if ( 'default' === $domain && 'Username or Email Address' === $source ) {
+		if ( 'default' !== $domain ) {
+			return (string) $text;
+		}
+
+		if ( 'Username or Email Address' === $source ) {
 			return __( 'Email address', 'oc-theme' );
 		}
 
+		// The short form, since the link sits on the password row itself.
+		if ( 'Lost your password?' === $source ) {
+			return __( 'Forgot password?', 'oc-theme' );
+		}
+
 		return (string) $text;
+	}
+
+	/**
+	 * The shop writes the word one way. WordPress's and WooCommerce's
+	 * Hebrew write it the other, and the difference shows on every screen
+	 * where both speak — so the translation is corrected on its way out,
+	 * everywhere, in every text domain.
+	 *
+	 * @param string $text Translated text.
+	 */
+	public function spelling( $text ): string {
+		$text = (string) $text;
+
+		return false === strpos( $text, 'סיסמה' ) ? $text : str_replace( 'סיסמה', 'סיסמא', $text );
 	}
 
 	/**
@@ -428,7 +454,13 @@ final class Login_Screen {
 		.login .message { border-inline-start-color: var(--ocl-primary); }
 
 		.login .privacy-policy-page-link { margin-block-start: 18px; }
-		.login .language-switcher { margin-block-start: 20px; }
+		.login .language-switcher { margin-block-start: 10px; }
+
+		/* The password row: its label at one end, the recovery link at the other. */
+		.oc-l__pwrow { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+		.oc-l__pwrow label { margin: 0; }
+		.oc-l__pwrow a { font-size: 13px; color: var(--ocl-ink-2); text-decoration: none; }
+		.oc-l__pwrow a:hover { color: var(--ocl-primary); }
 
 		.oc-login__by {
 			display: flex;
@@ -624,6 +656,27 @@ final class Login_Screen {
 						pwd.appendChild( row );
 					}
 				} );
+
+				// The recovery link belongs to the password, not to the
+				// page: it moves onto the password row's far end, and so
+				// shows only once that door is open.
+				var nav = document.getElementById( 'nav' ),
+					lost = nav && nav.querySelector( 'a[href*="lostpassword"]' ),
+					wrap = pwd.querySelector( '.user-pass-wrap' ),
+					label = wrap && wrap.querySelector( 'label[for="user_pass"]' );
+
+				if ( lost && label ) {
+					var line = document.createElement( 'div' );
+
+					line.className = 'oc-l__pwrow';
+					wrap.insertBefore( line, label );
+					line.appendChild( label );
+					line.appendChild( lost );
+
+					if ( ! nav.querySelector( 'a' ) ) {
+						nav.remove();
+					}
+				}
 
 				if ( opener ) {
 					pwd.hidden = true;

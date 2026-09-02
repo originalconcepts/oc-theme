@@ -5005,7 +5005,7 @@ msgid "Back in the app's own side menu: App settings, Basic. Fill the privacy po
 msgstr "חוזרים לתפריט הצד של האפליקציה עצמה: App settings ← Basic. ממלאים כתובת מדיניות פרטיות, קטגוריה, אייקון ודומיין האתר. ב-\"User data deletion\" בוחרים \"Data deletion instructions URL\" ומפנים לעמוד מדיניות הפרטיות — לקוחות מוחקים את עצמם באזור האישי ← פרטי חשבון, וכדאי שהמדיניות תגיד את זה."
 
 msgid "The keys sit at the top of that same Basic screen: App ID is visible, App Secret shows after pressing Show (Facebook asks for your password). Paste both into the fields above."
-msgstr "המפתחות יושבים בראש אותו מסך Basic: ה-App ID גלוי, וה-App Secret נחשף בלחיצה על Show (פייסבוק תבקש את הסיסמה שלך). מדביקים את שניהם בשדות למעלה."
+msgstr "המפתחות יושבים בראש אותו מסך Basic: ה-App ID גלוי, וה-App Secret נחשף בלחיצה על Show (פייסבוק תבקש את הסיסמא שלך). מדביקים את שניהם בשדות למעלה."
 
 msgid "In Development mode the login works only for the app's own admins — handy for a first test. Once it works, flip the toggle at the top to Live so every customer can sign in. The basic email and public_profile permissions need no review."
 msgstr "במצב Development ההתחברות עובדת רק לאדמינים של האפליקציה — נוח לבדיקה ראשונה. כשעובד, מעבירים את המתג למעלה ל-Live כדי שכל לקוח יוכל להיכנס. ההרשאות הבסיסיות email ו-public_profile לא דורשות אישור."
@@ -5062,13 +5062,13 @@ msgid "Fill the four fields above, tick \"Show the Apple button\", Save — and 
 msgstr "ממלאים את ארבעת השדות למעלה, מסמנים \"הצג את כפתור אפל\", שומרים — ומנסים. שימו לב: אפל שולחת את שם הלקוח רק באישור הראשון אי-פעם; לקוח שמסיר את האתר תחת הגדרות ← Apple ID ← כניסה ואבטחה יכול לאשר מחדש."
 
 msgid "Sign in with email and password"
-msgstr "כניסה עם מייל וסיסמה"
+msgstr "כניסה עם מייל וסיסמא"
 
 msgid "Password"
-msgstr "סיסמה"
+msgstr "סיסמא"
 
 msgid "Forgot the password?"
-msgstr "שכחת סיסמה?"
+msgstr "שכחת סיסמא?"
 
 msgid "Not registered yet?"
 msgstr "עדיין לא רשומים?"
@@ -5080,10 +5080,10 @@ msgid "Email sign-in"
 msgstr "כניסה עם מייל"
 
 msgid "Email and password"
-msgstr "מייל וסיסמה"
+msgstr "מייל וסיסמא"
 
 msgid "The classic door — email and password, with a forgot-password link"
-msgstr "הדלת הקלאסית — מייל וסיסמה, עם קישור לשחזור סיסמה"
+msgstr "הדלת הקלאסית — מייל וסיסמא, עם קישור לשחזור סיסמא"
 
 msgid "Guess-proofed: five wrong tries pause it for a few minutes, and administrator accounts cannot enter here at all — their door stays the private login path."
 msgstr "מוגן מניחושים: חמש טעויות משהות לכמה דקות, וחשבונות ניהול כלל לא נכנסים מכאן — הדלת שלהם נשארת נתיב הכניסה הפרטי."
@@ -5092,13 +5092,13 @@ msgid "Email sign-in is not available right now."
 msgstr "כניסה עם מייל אינה זמינה כרגע."
 
 msgid "An email and a password are both needed."
-msgstr "צריך גם מייל וגם סיסמה."
+msgstr "צריך גם מייל וגם סיסמא."
 
 msgid "Too many attempts — try again in a few minutes."
 msgstr "יותר מדי ניסיונות — נסו שוב בעוד כמה דקות."
 
 msgid "The email or the password is wrong."
-msgstr "המייל או הסיסמה שגויים."
+msgstr "המייל או הסיסמא שגויים."
 
 msgid "You have signed out — see you soon"
 msgstr "התנתקת מהחשבון — נתראה בקרוב"
@@ -5565,10 +5565,10 @@ msgid "A colour behind this band. Empty = none."
 msgstr "צבע מאחורי האזור. ריק = ללא."
 
 msgid "Setting a new password"
-msgstr "הגדרת סיסמה חדשה"
+msgstr "הגדרת סיסמא חדשה"
 
 msgid "Give the address on the account and a link to set a new password is on its way."
-msgstr "הזינו את כתובת המייל של החשבון ויישלח אליכם קישור להגדרת סיסמה חדשה."
+msgstr "הזינו את כתובת המייל של החשבון ויישלח אליכם קישור להגדרת סיסמא חדשה."
 
 msgid "Send the link"
 msgstr "שליחת הקישור"
@@ -5829,13 +5829,13 @@ msgid "Two-step sign-in for staff"
 msgstr "אימות דו-שלבי לצוות"
 
 msgid "A password can be reused, guessed or phished. With this on, the password gets you half way in and a code sent to the phone on the account finishes the job — so taking the shop needs the password and the handset. If the text cannot be sent the code goes to the account's e-mail instead, so a provider outage slows a sign-in rather than locking anyone out."
-msgstr "סיסמה אפשר לנחש, לגנוב בפישינג, או שהיא חוזרת על סיסמה מאתר אחר שנפרץ. כשזה דלוק, הסיסמה מכניסה חצי דרך וקוד שנשלח לטלפון שרשום בחשבון משלים את השאר — כדי להשתלט על החנות צריך גם את הסיסמה וגם את המכשיר. אם לא ניתן לשלוח SMS, הקוד נשלח למייל של החשבון — כך שתקלה אצל ספק ה-SMS מאטה התחברות במקום לנעול מישהו בחוץ."
+msgstr "סיסמא אפשר לנחש, לגנוב בפישינג, או שהיא חוזרת על סיסמא מאתר אחר שנפרץ. כשזה דלוק, הסיסמא מכניסה חצי דרך וקוד שנשלח לטלפון שרשום בחשבון משלים את השאר — כדי להשתלט על החנות צריך גם את הסיסמא וגם את המכשיר. אם לא ניתן לשלוח SMS, הקוד נשלח למייל של החשבון — כך שתקלה אצל ספק ה-SMS מאטה התחברות במקום לנעול מישהו בחוץ."
 
 msgid "Ask for a code"
 msgstr "בקש קוד"
 
 msgid "Off — password only"
-msgstr "כבוי — סיסמה בלבד"
+msgstr "כבוי — סיסמא בלבד"
 
 msgid "Administrators"
 msgstr "מנהלי מערכת"
@@ -5856,7 +5856,7 @@ msgid "Two-step sign-in is currently off for everyone. The number is kept ready 
 msgstr "אימות דו-שלבי כבוי כרגע לכולם. המספר נשמר ומוכן למקרה שיופעל."
 
 msgid "Without a number there is nowhere to send a code, so this account still rests on its password alone."
-msgstr "בלי מספר אין לאן לשלוח קוד, ולכן החשבון הזה עדיין מוגן בסיסמה בלבד."
+msgstr "בלי מספר אין לאן לשלוח קוד, ולכן החשבון הזה עדיין מוגן בסיסמא בלבד."
 
 msgid "Codes for this account go here. If the text cannot be sent, the code goes to this account's e-mail instead."
 msgstr "הקודים של החשבון הזה נשלחים לכאן. אם לא ניתן לשלוח SMS, הקוד יישלח למייל של החשבון."
@@ -5877,7 +5877,7 @@ msgid "%s is your sign-in code. It is good for ten minutes."
 msgstr "%s הוא קוד ההתחברות שלך. הוא תקף לעשר דקות."
 
 msgid "Two-step sign-in is on, but there is no phone number on your account — so there is nowhere to send your code and your account is still protected by its password alone. Add a mobile number to your profile."
-msgstr "אימות דו-שלבי מופעל, אבל אין מספר טלפון בחשבון שלך — כך שאין לאן לשלוח את הקוד, והחשבון שלך עדיין מוגן בסיסמה בלבד. הוסף מספר נייד לפרופיל שלך."
+msgstr "אימות דו-שלבי מופעל, אבל אין מספר טלפון בחשבון שלך — כך שאין לאן לשלוח את הקוד, והחשבון שלך עדיין מוגן בסיסמא בלבד. הוסף מספר נייד לפרופיל שלך."
 
 msgid "Edit your profile"
 msgstr "עריכת הפרופיל שלך"
@@ -6275,7 +6275,7 @@ msgid "by"
 msgstr "מאת"
 
 msgid "Sign in with username and password"
-msgstr "כניסה עם שם משתמש וסיסמה"
+msgstr "כניסה עם שם משתמש וסיסמא"
 
 msgid "Sign in with a phone number"
 msgstr "התחברות עם מס׳ טלפון"
@@ -6294,3 +6294,6 @@ msgstr "אילו מהמוצרים שלה"
 
 msgid "Products they viewed, from this category"
 msgstr "מוצרים שצפו בהם, מהקטגוריה הזו"
+
+msgid "Forgot password?"
+msgstr "שכחת סיסמא?"
