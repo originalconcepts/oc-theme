@@ -6230,7 +6230,7 @@ msgid "Delivery %s"
 msgstr "משלוח %s"
 
 msgid "Delivery on %s"
-msgstr "משלוח ב־%s"
+msgstr "המשלוח יסופק ב־%s"
 
 msgid "Remove this placement"
 msgstr "הסרת השיבוץ הזה"
@@ -6339,3 +6339,12 @@ msgstr "לרוחב האתר, כמו התוכן"
 
 msgid "The whole screen, edge to edge"
 msgstr "לכל רוחב המסך, מקצה לקצה"
+
+msgid "Delivery between %1$s - %2$s"
+msgstr "המשלוח יסופק בין %1$s - %2$s"
+
+msgid "%1$s delivered between %2$s - %3$s"
+msgstr "%1$s יסופק בין %2$s - %3$s"
+
+msgid "%1$s delivered on %2$s"
+msgstr "%1$s יסופק ב־%2$s"

@@ -1382,7 +1382,7 @@ final class WooCommerce {
 	 * Thursday, Sunday, Monday — the weekend is simply not counted, and the
 	 * window stretches to match rather than promising a day nobody works.
 	 *
-	 * @return array{from:string,to:string,relative:bool,one_day:bool}|null
+	 * @return array{from:string,to:string,relative:bool,one_day:bool,from_ts:int,to_ts:int}|null
 	 */
 	public static function delivery_window(): ?array {
 		$days = array_filter(
@@ -1440,7 +1440,30 @@ final class WooCommerce {
 			'to'       => $to,
 			'relative' => $relative,
 			'one_day'  => $when[0]->format( 'Y-m-d' ) === $last->format( 'Y-m-d' ),
+			'from_ts'  => $when[0]->getTimestamp(),
+			'to_ts'    => $last->getTimestamp(),
 		);
+	}
+
+	/**
+	 * The first free-shipping minimum found across the shipping zones —
+	 * the sum at which a product's own price already earns free delivery.
+	 * Zero when no zone offers one.
+	 */
+	public static function free_shipping_minimum(): float {
+		if ( ! class_exists( '\WC_Shipping_Zones' ) ) {
+			return 0.0;
+		}
+
+		foreach ( \WC_Shipping_Zones::get_zones() as $zone ) {
+			foreach ( $zone['shipping_methods'] as $method ) {
+				if ( 'free_shipping' === $method->id && 'yes' === $method->enabled && (float) $method->min_amount > 0 ) {
+					return (float) $method->min_amount;
+				}
+			}
+		}
+
+		return 0.0;
 	}
 
 	/**
@@ -1488,19 +1511,32 @@ final class WooCommerce {
 		$window = $product->is_in_stock() ? self::delivery_window() : null;
 
 		if ( $window ) {
+			// Dates in the shop's own short form — "3 Sep" — and in bold, so
+			// the eye lands on the day and not on the sentence around it.
+			$day  = static function ( int $ts ): string {
+				return '<strong>' . esc_html( wp_date( 'j M', $ts ) ) . '</strong>';
+			};
+			$from = $day( (int) $window['from_ts'] );
+			$to   = $day( (int) $window['to_ts'] );
+
+			// A product that on its own crosses the free-shipping line says
+			// so in the same breath.
+			$floor = self::free_shipping_minimum();
+			$free  = $floor > 0 && (float) wc_get_price_to_display( $product ) >= $floor;
+			$gift  = '<strong>' . esc_html__( 'Free shipping', 'oc-theme' ) . '</strong>';
+
 			if ( $window['one_day'] ) {
-				$eta = $window['relative']
-					/* translators: %s: a day named in words, like "tomorrow". */
-					? sprintf( __( 'Delivery %s', 'oc-theme' ), $window['from'] )
-					/* translators: %s: a short date like 4/12. */
-					: sprintf( __( 'Delivery on %s', 'oc-theme' ), $window['from'] );
+				$eta = $free
+					/* translators: 1: "Free shipping" in bold. 2: a short date like 3 Sep, in bold. */
+					? sprintf( __( '%1$s delivered on %2$s', 'oc-theme' ), $gift, $from )
+					/* translators: %s: a short date like 3 Sep, in bold. */
+					: sprintf( __( 'Delivery on %s', 'oc-theme' ), $from );
 			} else {
-				$eta = sprintf(
-					/* translators: 1: earliest day, worded or dated. 2: latest date, short like 4/12. */
-					__( 'Delivery between %1$s and %2$s', 'oc-theme' ),
-					$window['from'],
-					$window['to']
-				);
+				$eta = $free
+					/* translators: 1: "Free shipping" in bold. 2: earliest date. 3: latest date, both short like 3 Sep and in bold. */
+					? sprintf( __( '%1$s delivered between %2$s - %3$s', 'oc-theme' ), $gift, $from, $to )
+					/* translators: 1: earliest date. 2: latest date, both short like 3 Sep and in bold. */
+					: sprintf( __( 'Delivery between %1$s - %2$s', 'oc-theme' ), $from, $to );
 			}
 
 			$turns = array();
@@ -1518,7 +1554,7 @@ final class WooCommerce {
 				$items .= sprintf(
 					'<span class="oc-stockline__turn%s">%s</span>',
 					0 === $i ? ' is-current' : '',
-					esc_html( $turn )
+					wp_kses( $turn, array( 'strong' => array() ) )
 				);
 			}
 
