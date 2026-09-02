@@ -3748,13 +3748,31 @@
 		if ( ! first || gSlides.length <= maxThumbs ) {
 			return;
 		}
-		var step = ( vertical ? first.offsetHeight : first.offsetWidth ) + 10;
+		// The rail is built before its pictures have arrived; measured
+		// then, a thumb is 0px tall and the cap came out as five gaps —
+		// 40px, a sliver of the first thumb. Fall back to the thumb size
+		// the stylesheet declares, and measure again once the page has
+		// loaded for real.
+		var size = vertical ? first.offsetHeight : first.offsetWidth;
+		if ( size < 8 ) {
+			size = parseInt( getComputedStyle( document.documentElement ).getPropertyValue( '--oc-thumbs-w' ), 10 ) || 80;
+		}
+		var step = size + 10;
 		if ( vertical ) {
 			gRail.style.maxBlockSize = ( step * maxThumbs - 10 ) + 'px';
 		} else {
 			gRail.style.maxInlineSize = ( step * maxThumbs - 10 ) + 'px';
 		}
 		gRail.classList.add( 'is-capped' );
+
+		if ( ! sizeRail.armed ) {
+			sizeRail.armed = true;
+			window.addEventListener( 'load', sizeRail, { once: true } );
+			var img = first.querySelector( 'img' );
+			if ( img && ! img.complete ) {
+				img.addEventListener( 'load', sizeRail, { once: true } );
+			}
+		}
 	}
 
 	function buildGalleryRail() {
