@@ -1514,7 +1514,16 @@ final class WooCommerce {
 			// Dates in the shop's own short form — "3 Sep" — and in bold, so
 			// the eye lands on the day and not on the sentence around it.
 			$day  = static function ( int $ts ): string {
-				return '<strong>' . esc_html( wp_date( 'j M', $ts ) ) . '</strong>';
+				$short = (string) wp_date( 'M', $ts );
+
+				// Hebrew abbreviates a month with a geresh — ספט׳, not ספט —
+				// which WordPress's own short names leave off. A month that
+				// is not shortened (מאי, מרץ) takes none.
+				if ( 0 === strpos( get_locale(), 'he' ) && $short !== (string) wp_date( 'F', $ts ) && '׳' !== mb_substr( $short, -1 ) ) {
+					$short .= '׳';
+				}
+
+				return '<strong>' . esc_html( wp_date( 'j', $ts ) . ' ' . $short ) . '</strong>';
 			};
 			$from = $day( (int) $window['from_ts'] );
 			$to   = $day( (int) $window['to_ts'] );
