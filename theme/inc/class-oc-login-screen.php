@@ -34,6 +34,7 @@ final class Login_Screen {
 		add_filter( 'login_headertext', array( $this, 'logo_text' ) );
 		add_filter( 'login_body_class', array( $this, 'body_class' ) );
 		add_action( 'login_form', array( $this, 'alternatives' ) );
+		add_filter( 'gettext', array( $this, 'field_label' ), 10, 3 );
 		add_action( 'login_footer', array( $this, 'credit' ) );
 	}
 
@@ -95,6 +96,25 @@ final class Login_Screen {
 		$classes[] = 'oc-login';
 
 		return (array) $classes;
+	}
+
+	/**
+	 * An account here is reached by its email address; a username is the
+	 * internal name nobody was ever given. WordPress offers both and says
+	 * so, which is one more decision at the door than there needs to be.
+	 * The field still accepts either — only the wording narrows, so an
+	 * older account whose login is not an email is not locked out.
+	 *
+	 * @param string $text   Translated text.
+	 * @param string $source Original text.
+	 * @param string $domain Text domain.
+	 */
+	public function field_label( $text, $source, $domain ): string {
+		if ( 'default' === $domain && 'Username or Email Address' === $source ) {
+			return __( 'Email address', 'oc-theme' );
+		}
+
+		return (string) $text;
 	}
 
 	/**
@@ -313,8 +333,15 @@ final class Login_Screen {
 		.oc-l__or::before,
 		.oc-l__or::after { content: ""; flex: 1; block-size: 1px; background: var(--ocl-line); }
 
+		.oc-l__head { margin-block-end: 2px; }
+		.oc-l__title { margin: 0 0 4px; font-size: 17px; font-weight: 700; line-height: 1.3; color: var(--ocl-ink); }
+		.oc-l__note { margin: 0; font-size: 13px; line-height: 1.5; color: var(--ocl-ink-2); }
+
 		.oc-l__msg { margin: 0; font-size: 13px; line-height: 1.5; color: var(--ocl-ink-2); }
 		.oc-l__msg.is-bad { color: #b32d2e; }
+		.oc-l__msg[hidden] { display: none; }
+
+		.login input::placeholder { color: #aab0bb; opacity: 1; }
 
 		.oc-l__back {
 			align-self: center;
@@ -456,17 +483,23 @@ final class Login_Screen {
 			data-otp="<?php echo $otp ? '1' : '0'; ?>">
 
 			<?php if ( $otp ) : ?>
-				<p class="oc-l__msg" id="oc-l-msg"><?php esc_html_e( 'The number on your user account — the code arrives by SMS.', 'oc-theme' ); ?></p>
+				<div class="oc-l__head">
+					<h2 class="oc-l__title" id="oc-l-title"><?php esc_html_e( 'Sign in with a phone number', 'oc-theme' ); ?></h2>
+					<p class="oc-l__note" id="oc-l-note"><?php esc_html_e( 'The number your account is registered under.', 'oc-theme' ); ?></p>
+				</div>
 
 				<p class="oc-l__step" data-step="phone">
-					<label for="oc-l-phone"><?php esc_html_e( 'Phone', 'oc-theme' ); ?></label>
-					<input type="tel" id="oc-l-phone" dir="ltr" inputmode="tel" autocomplete="tel" />
+					<input type="tel" id="oc-l-phone" dir="ltr" inputmode="tel" autocomplete="tel"
+						placeholder="<?php esc_attr_e( '05XXXXXXXX', 'oc-theme' ); ?>"
+						aria-label="<?php esc_attr_e( 'Phone', 'oc-theme' ); ?>" />
 				</p>
 
 				<p class="oc-l__step" data-step="code" hidden>
-					<label for="oc-l-code"><?php esc_html_e( 'The code', 'oc-theme' ); ?></label>
-					<input type="text" id="oc-l-code" class="oc-l__code" dir="ltr" inputmode="numeric" autocomplete="one-time-code" maxlength="6" />
+					<input type="text" id="oc-l-code" class="oc-l__code" dir="ltr" inputmode="numeric" autocomplete="one-time-code" maxlength="6"
+						aria-label="<?php esc_attr_e( 'The code', 'oc-theme' ); ?>" />
 				</p>
+
+				<p class="oc-l__msg" id="oc-l-msg" role="status" hidden></p>
 
 				<button type="button" class="oc-l__cta" id="oc-l-go"><?php esc_html_e( 'Send me a code', 'oc-theme' ); ?></button>
 				<button type="button" class="oc-l__back" id="oc-l-back" hidden><?php esc_html_e( 'A different number', 'oc-theme' ); ?></button>
@@ -498,7 +531,7 @@ final class Login_Screen {
 			<?php if ( $otp ) : ?>
 				<button type="button" class="oc-l__provider" id="oc-l-pwd-open">
 					<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="3.5" y="10.5" width="17" height="10.5" rx="2.4"/><path d="M7.6 10.5V7.4a4.4 4.4 0 0 1 8.8 0v3.1"/></svg>
-					<?php esc_html_e( 'Sign in with username and password', 'oc-theme' ); ?>
+					<?php esc_html_e( 'Sign in with email and password', 'oc-theme' ); ?>
 				</button>
 			<?php endif; ?>
 		</div>
@@ -543,6 +576,10 @@ final class Login_Screen {
 	 */
 	private function script( bool $otp ): void {
 		$words = array(
+			'phoneTitle' => __( 'Sign in with a phone number', 'oc-theme' ),
+			'phoneNote'  => __( 'The number your account is registered under.', 'oc-theme' ),
+			'codeTitle'  => __( 'Enter the code', 'oc-theme' ),
+			'codeNote'   => __( 'Sent by SMS to the number you gave.', 'oc-theme' ),
 			'sent'     => __( 'Sent — the code is on its way.', 'oc-theme' ),
 			'noUser'   => __( 'No user account carries that number.', 'oc-theme' ),
 			'wait'     => __( 'One moment…', 'oc-theme' ),
@@ -618,6 +655,8 @@ final class Login_Screen {
 			var go = document.getElementById( 'oc-l-go' ),
 				back = document.getElementById( 'oc-l-back' ),
 				msg = document.getElementById( 'oc-l-msg' ),
+				title = document.getElementById( 'oc-l-title' ),
+				note = document.getElementById( 'oc-l-note' ),
 				phone = document.getElementById( 'oc-l-phone' ),
 				code = document.getElementById( 'oc-l-code' ),
 				step = 'phone',
@@ -625,6 +664,7 @@ final class Login_Screen {
 
 			function say( text, bad ) {
 				msg.textContent = text;
+				msg.hidden = ! text;
 				msg.classList.toggle( 'is-bad', !! bad );
 			}
 
@@ -635,6 +675,8 @@ final class Login_Screen {
 					el.hidden = el.dataset.step !== which;
 				} );
 
+				title.textContent = 'code' === which ? T.codeTitle : T.phoneTitle;
+				note.textContent = 'code' === which ? T.codeNote : T.phoneNote;
 				go.textContent = 'code' === which ? T.verify : T.send;
 				back.hidden = 'code' !== which;
 				( 'code' === which ? code : phone ).focus();

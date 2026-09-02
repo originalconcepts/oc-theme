@@ -6276,3 +6276,15 @@ msgstr "מאת"
 
 msgid "Sign in with username and password"
 msgstr "כניסה עם שם משתמש וסיסמה"
+
+msgid "Sign in with a phone number"
+msgstr "התחברות עם מס׳ טלפון"
+
+msgid "The number your account is registered under."
+msgstr "המספר המשויך לחשבון שלך"
+
+msgid "Sent by SMS to the number you gave."
+msgstr "נשלח ב‑SMS למספר שהזנתם."
+
+msgid "05XXXXXXXX"
+msgstr "05XXXXXXXX"
