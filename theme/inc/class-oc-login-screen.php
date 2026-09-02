@@ -538,25 +538,36 @@ final class Login_Screen {
 
 			pwd.className = 'oc-l__pwd';
 
-			// The list is taken before the moving starts: appending a row to
-			// the new block removes it from form.children, and a live list
-			// shifting under the loop is how the last rows — remember me,
-			// and the submit button itself — got left behind on the card.
-			var rows = Array.prototype.slice.call( form.children );
-
-			form.appendChild( pwd );
-
-			rows.forEach( function ( row ) {
-				if ( row !== box && row !== pwd ) {
-					pwd.appendChild( row );
-				}
-			} );
-
 			var opener = document.getElementById( 'oc-l-pwd-open' );
 
-			if ( opener ) {
-				pwd.hidden = true;
+			// Remember-me and the submit button are printed after this
+			// block, so at the moment the script runs they do not exist
+			// yet. Gathering waits for the closing tag; a snapshot of the
+			// list is taken first, because appending to the new block
+			// removes a row from the live form.children the loop walks.
+			function gather() {
+				var rows = Array.prototype.slice.call( form.children );
 
+				form.appendChild( pwd );
+
+				rows.forEach( function ( row ) {
+					if ( row !== box && row !== pwd ) {
+						pwd.appendChild( row );
+					}
+				} );
+
+				if ( opener ) {
+					pwd.hidden = true;
+				}
+			}
+
+			if ( 'loading' === document.readyState ) {
+				document.addEventListener( 'DOMContentLoaded', gather );
+			} else {
+				gather();
+			}
+
+			if ( opener ) {
 				opener.addEventListener( 'click', function () {
 					pwd.hidden = false;
 					opener.hidden = true;
