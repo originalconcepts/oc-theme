@@ -580,14 +580,14 @@ final class Login_Screen {
 			'phoneNote'  => __( 'The number your account is registered under.', 'oc-theme' ),
 			'codeTitle'  => __( 'Enter the code', 'oc-theme' ),
 			'codeNote'   => __( 'Sent by SMS to the number you gave.', 'oc-theme' ),
-			'sent'     => __( 'Sent — the code is on its way.', 'oc-theme' ),
-			'noUser'   => __( 'No user account carries that number.', 'oc-theme' ),
-			'wait'     => __( 'One moment…', 'oc-theme' ),
-			'network'  => __( 'The connection stumbled — try again.', 'oc-theme' ),
-			'needNum'  => __( 'Type the phone number first.', 'oc-theme' ),
-			'needCode' => __( 'Type the code you received.', 'oc-theme' ),
-			'send'     => __( 'Send me a code', 'oc-theme' ),
-			'verify'   => __( 'Sign in', 'oc-theme' ),
+			'sent'       => __( 'Sent — the code is on its way.', 'oc-theme' ),
+			'noUser'     => __( 'No user account carries that number.', 'oc-theme' ),
+			'wait'       => __( 'One moment…', 'oc-theme' ),
+			'network'    => __( 'The connection stumbled — try again.', 'oc-theme' ),
+			'needNum'    => __( 'Type the phone number first.', 'oc-theme' ),
+			'needCode'   => __( 'Type the code you received.', 'oc-theme' ),
+			'send'       => __( 'Send me a code', 'oc-theme' ),
+			'verify'     => __( 'Sign in', 'oc-theme' ),
 		);
 		?>
 		<script id="oc-login-js">
