@@ -174,7 +174,8 @@
 .ocb-arr--prev { left: 14px; }
 .ocb-arr--next { right: 14px; }
 
-.ocb-arr.is-off { opacity: .3; pointer-events: none; }
+/* An arrow with nowhere to go is not shown at all — a faded one reads as a button that is broken. */
+.ocb-arr.is-off { display: none; }
 
 .ocb--still .ocb-arr { display: none; }
 

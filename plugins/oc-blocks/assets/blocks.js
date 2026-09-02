@@ -302,18 +302,37 @@
 			return;
 		}
 
-		function step() {
+		// One card and the gap after it, both measured — the gap is a
+		// setting (density, small, tight), and a guessed constant drifted
+		// the strip a few pixels per click until a card sat half cut.
+		function pitch() {
 			var item = row.querySelector( ':scope > *' );
+			var gap = parseFloat( getComputedStyle( row ).columnGap ) || 0;
 
-			return item ? item.getBoundingClientRect().width + 24 : row.clientWidth;
+			return item ? item.getBoundingClientRect().width + gap : row.clientWidth;
 		}
 
+		// A click turns a whole page: as many cards as are fully in view,
+		// landing on a card edge so the first one is never a sliver.
 		shelf.addEventListener( 'click', function ( e ) {
 			var arr = e.target.closest( '[data-ocb-go]' );
 
-			if ( arr ) {
-				row.scrollBy( { left: step() * 2 * Number( arr.dataset.ocbGo ), behavior: 'smooth' } );
+			if ( ! arr ) {
+				return;
 			}
+
+			var cs = getComputedStyle( row );
+			var p = pitch();
+			var gap = parseFloat( cs.columnGap ) || 0;
+			var page = Math.max( 1, Math.floor( ( row.clientWidth + gap + 1 ) / p ) );
+			var max = row.scrollWidth - row.clientWidth;
+			var gone = Math.abs( row.scrollLeft );
+			var to = Math.round( gone / p ) * p + page * p * Number( arr.dataset.ocbGo );
+
+			to = Math.min( max, Math.max( 0, to ) );
+
+			// In RTL the browser counts scrollLeft in negatives.
+			row.scrollTo( { left: 'rtl' === cs.direction ? -to : to, behavior: 'smooth' } );
 		} );
 
 		// Arrows grey out at the ends.
