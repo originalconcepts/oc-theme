@@ -123,6 +123,10 @@ final class Login_Screen {
 			--ocl-line: #e3e6ec;
 		}
 
+		/* Centred while the card fits, and scrolled from the top once it
+		 * does not — centring a column taller than the screen pushes its
+		 * head off the top edge, which is where the logo was going on a
+		 * phone with every provider switched on. */
 		body.login {
 			background: radial-gradient(1100px 560px at 50% -8%, #eef1f7 0%, #f7f8fa 46%, #f7f8fa 100%);
 			color: var(--ocl-ink);
@@ -130,7 +134,7 @@ final class Login_Screen {
 			min-block-size: 100dvh;
 			display: flex;
 			flex-direction: column;
-			justify-content: center;
+			justify-content: safe center;
 			align-items: center;
 			padding-block: 32px;
 		}
