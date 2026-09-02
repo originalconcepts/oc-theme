@@ -151,16 +151,16 @@ class Category {
 		};
 
 		return array(
-			'show'    => '1' === $get( '_oc_sub_show' ),
-			'style'   => $get( '_oc_sub_style', 'clean' ),      // clean | pill | card.
-			'pill'    => $get( '_oc_sub_pill', 'round' ),        // round | rect.
-			'shape'   => $get( '_oc_sub_shape', 'square' ),      // square | portrait | circle.
-			'corners' => $get( '_oc_sub_corners', 'soft' ),      // sharp | soft.
-			'slider'  => '1' === $get( '_oc_sub_slider' ),
+			'show'     => '1' === $get( '_oc_sub_show' ),
+			'style'    => $get( '_oc_sub_style', 'clean' ),      // clean | pill | card.
+			'pill'     => $get( '_oc_sub_pill', 'round' ),        // round | rect.
+			'shape'    => $get( '_oc_sub_shape', 'square' ),      // square | portrait | circle.
+			'corners'  => $get( '_oc_sub_corners', 'soft' ),      // sharp | soft.
+			'slider'   => '1' === $get( '_oc_sub_slider' ),
 			'slider_m' => $get( '_oc_sub_slider_m', 'same' ),    // same | yes | no — the phone's own answer.
-			'place'   => $get( '_oc_sub_place', 'out' ),         // out | in.
-			'place_m' => $get( '_oc_sub_place_m', 'out' ),       // same | out | in — the phone's own answer.
-			'align'   => $get( '_oc_sub_align', 'start' ),       // start | center.
+			'place'    => $get( '_oc_sub_place', 'out' ),         // out | in.
+			'place_m'  => $get( '_oc_sub_place_m', 'out' ),       // same | out | in — the phone's own answer.
+			'align'    => $get( '_oc_sub_align', 'start' ),       // start | center.
 		);
 	}
 
