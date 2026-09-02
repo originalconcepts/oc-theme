@@ -336,8 +336,24 @@ final class Login_Screen {
 		.oc-l__provider[hidden],
 		.oc-l__back[hidden] { display: none; }
 
+		/* Remember-me is a checkbox and its words on one line — WordPress
+		 * floats it and lets the label wrap under the box. */
 		.login .forgetmenot { margin: 0; float: none; }
-		.login .forgetmenot label { font-weight: 400; font-size: 13.5px; color: var(--ocl-ink-2); }
+		.login .forgetmenot label {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			margin: 0;
+			font-weight: 400;
+			font-size: 13.5px;
+			color: var(--ocl-ink-2);
+			cursor: pointer;
+		}
+		.login .forgetmenot input[type="checkbox"] { margin: 0; flex: none; }
+
+		/* The help dot WordPress hangs beside it has nothing to say here. */
+		.login .forgetmenot + .login-password-help,
+		.login .login-password-help { display: none; }
 
 		/* ---------- WordPress's own furniture ---------- */
 
