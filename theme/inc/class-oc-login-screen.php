@@ -456,6 +456,16 @@ final class Login_Screen {
 	 * are the ones already in place.
 	 */
 	private function otp_script(): void {
+		$words = array(
+			'sent'     => __( 'Sent — the code is on its way.', 'oc-theme' ),
+			'noUser'   => __( 'No user account carries that number.', 'oc-theme' ),
+			'wait'     => __( 'One moment…', 'oc-theme' ),
+			'network'  => __( 'The connection stumbled — try again.', 'oc-theme' ),
+			'needNum'  => __( 'Type the phone number first.', 'oc-theme' ),
+			'needCode' => __( 'Type the code you received.', 'oc-theme' ),
+			'send'     => __( 'Send me a code', 'oc-theme' ),
+			'verify'   => __( 'Sign in', 'oc-theme' ),
+		);
 		?>
 		<script id="oc-login-js">
 		( function () {
@@ -473,18 +483,7 @@ final class Login_Screen {
 				return;
 			}
 
-			var T = <?php echo wp_json_encode(
-				array(
-					'sent'    => __( 'Sent — the code is on its way.', 'oc-theme' ),
-					'noUser'  => __( 'No user account carries that number.', 'oc-theme' ),
-					'wait'    => __( 'One moment…', 'oc-theme' ),
-					'network' => __( 'The connection stumbled — try again.', 'oc-theme' ),
-					'needNum' => __( 'Type the phone number first.', 'oc-theme' ),
-					'needCode' => __( 'Type the code you received.', 'oc-theme' ),
-					'send'    => __( 'Send me a code', 'oc-theme' ),
-					'verify'  => __( 'Sign in', 'oc-theme' ),
-				)
-			); ?>;
+			var T = <?php echo wp_json_encode( $words ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- wp_json_encode() is the escape. ?>;
 
 			function say( text, bad ) {
 				msg.textContent = text;
