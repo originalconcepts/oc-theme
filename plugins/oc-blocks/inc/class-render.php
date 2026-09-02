@@ -111,7 +111,15 @@ final class Render {
 	 * @return string
 	 */
 	public function compose( $content ) {
-		if ( ! in_the_loop() || ! is_main_query() ) {
+		// A composed page must never compose itself from inside itself.
+		// WordPress runs the content filter for other reasons while a page
+		// is being built — an excerpt with no hand-written text is made by
+		// filtering the post's content — and the loop still points at the
+		// page, so without this guard the page draws the page draws the
+		// page until PHP gives up.
+		static $composing = false;
+
+		if ( $composing || ! in_the_loop() || ! is_main_query() ) {
 			return $content;
 		}
 
@@ -123,7 +131,11 @@ final class Render {
 			return $content;
 		}
 
-		return self::page_html( (int) $page_id );
+		$composing = true;
+		$html      = self::page_html( (int) $page_id );
+		$composing = false;
+
+		return $html;
 	}
 
 	/**
@@ -1109,6 +1121,21 @@ final class Render {
 	}
 
 	/**
+	 * A post's summary without asking WordPress for one: get_the_excerpt()
+	 * builds a missing excerpt by running the content filter, and that is
+	 * the filter this composer lives on.
+	 *
+	 * @param \WP_Post $post  The post.
+	 * @param int      $words How many words.
+	 */
+	public static function post_excerpt( \WP_Post $post, int $words ): string {
+		$text = '' !== trim( (string) $post->post_excerpt ) ? (string) $post->post_excerpt : (string) $post->post_content;
+		$text = wp_strip_all_tags( strip_shortcodes( excerpt_remove_blocks( $text ) ) );
+
+		return wp_trim_words( $text, $words );
+	}
+
+	/**
 	 * One post card — the blog's own when the OC theme is running.
 	 *
 	 * @param \WP_Post $post    Post.
@@ -1133,7 +1160,7 @@ final class Render {
 		$out .= '<h3 class="ocb-post__title"><a href="' . esc_url( $link ) . '">' . esc_html( get_the_title( $post ) ) . '</a></h3>';
 
 		if ( $excerpt ) {
-			$out .= '<p class="ocb-post__x">' . esc_html( wp_trim_words( (string) get_the_excerpt( $post ), 18 ) ) . '</p>';
+			$out .= '<p class="ocb-post__x">' . esc_html( self::post_excerpt( $post, 18 ) ) . '</p>';
 		}
 
 		return $out . '</article>';

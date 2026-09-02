@@ -89,7 +89,11 @@ final class Blog {
 		$out .= '<h2 class="oc-bpost__title"><a href="' . esc_url( $link ) . '">' . esc_html( get_the_title( $post ) ) . '</a></h2>';
 
 		if ( get_theme_mod( 'oc_blog_excerpt', true ) ) {
-			$out .= '<p class="oc-bpost__excerpt">' . esc_html( wp_trim_words( (string) get_the_excerpt( $post ), 22 ) ) . '</p>';
+			// Not get_the_excerpt(): a missing excerpt is built through the
+			// content filter, and on a composed page that filter is the
+			// composer itself — the page would draw itself without end.
+			$text = '' !== trim( (string) $post->post_excerpt ) ? (string) $post->post_excerpt : (string) $post->post_content;
+			$out .= '<p class="oc-bpost__excerpt">' . esc_html( wp_trim_words( wp_strip_all_tags( strip_shortcodes( excerpt_remove_blocks( $text ) ) ), 22 ) ) . '</p>';
 		}
 
 		if ( get_theme_mod( 'oc_blog_comments', true ) ) {
