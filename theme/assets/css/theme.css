@@ -1079,7 +1079,10 @@ html.oc-search-open { overflow: hidden; }
 	/* With a band behind the links, the header's bottom rule moves onto the
 	 * band's own edge. Drawn on the white header below it, the rule read as
 	 * a pale strip between the menu and the page. */
-	.oc-header--band:not(.oc-header--noline) { border-block-end-color: transparent; }
+	/* The header's own rule goes entirely — a transparent one still kept its
+	 * pixel, and the white header showed through it as a hairline gap
+	 * between the band and the page. */
+	.oc-header--band { border-block-end-width: 0; }
 	.oc-header--band:not(.oc-header--noline) .oc-nav { box-shadow: inset 0 -1px 0 var(--oc-line); }
 
 	/* Edge to edge: the band is painted by a layer behind the links that
