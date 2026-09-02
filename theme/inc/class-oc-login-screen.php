@@ -454,7 +454,9 @@ final class Login_Screen {
 		.login .message { border-inline-start-color: var(--ocl-primary); }
 
 		.login .privacy-policy-page-link { margin-block-start: 18px; }
-		.login .language-switcher { margin-block-start: 10px; }
+		/* Under the card: the credit first, the language switcher under it. */
+		.login .language-switcher { order: 2; margin-block-start: 12px; }
+		.login .oc-login__by { order: 1; }
 
 		/* The password row: its label at one end, the recovery link at the other. */
 		.oc-l__pwrow { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
@@ -467,7 +469,7 @@ final class Login_Screen {
 			align-items: center;
 			justify-content: center;
 			gap: 7px;
-			margin-block-start: 20px;
+			margin-block-start: 16px;
 			color: var(--ocl-ink-2);
 			font-size: 12px;
 			text-decoration: none;
