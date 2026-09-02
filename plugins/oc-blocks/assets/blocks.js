@@ -322,17 +322,21 @@
 			}
 
 			var cs = getComputedStyle( row );
+			var rtl = 'rtl' === cs.direction;
 			var p = pitch();
 			var gap = parseFloat( cs.columnGap ) || 0;
 			var page = Math.max( 1, Math.floor( ( row.clientWidth + gap + 1 ) / p ) );
 			var max = row.scrollWidth - row.clientWidth;
+			// Distance travelled from the start edge, whichever side that is.
 			var gone = Math.abs( row.scrollLeft );
-			var to = Math.round( gone / p ) * p + page * p * Number( arr.dataset.ocbGo );
+			// The arrows are named by screen side; in RTL the left one advances.
+			var dir = Number( arr.dataset.ocbGo ) * ( rtl ? -1 : 1 );
+			var to = Math.round( gone / p ) * p + page * p * dir;
 
 			to = Math.min( max, Math.max( 0, to ) );
 
 			// In RTL the browser counts scrollLeft in negatives.
-			row.scrollTo( { left: 'rtl' === cs.direction ? -to : to, behavior: 'smooth' } );
+			row.scrollTo( { left: rtl ? -to : to, behavior: 'smooth' } );
 		} );
 
 		// Arrows grey out at the ends.
