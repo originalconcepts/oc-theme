@@ -22,6 +22,13 @@ defined( 'ABSPATH' ) || exit;
 final class Render {
 
 	/**
+	 * Which of a category's products a shelf shows.
+	 *
+	 * @var string[]
+	 */
+	const PICKS = array( 'new', 'sales', 'viewed', 'sale', 'manual' );
+
+	/**
 	 * True while rendering the page's first visible section — its hero
 	 * image is the likely LCP and deserves fetchpriority over lazy.
 	 *
@@ -604,7 +611,12 @@ final class Render {
 		// request via $o['defer'] (the catalogue-layout slider defers so it
 		// never runs a nested product query mid-loop). The ajax call resolves
 		// it for real.
-		if ( ( 'viewed' === $mode || ! empty( $o['defer'] ) ) && ! wp_doing_ajax() ) {
+		// Within a category, which of its products: newest (the default),
+		// best sellers, the ones this visitor viewed, on sale, or hand-picked.
+		$pick = (string) ( $o['pick'] ?? 'new' );
+		$pick = in_array( $pick, self::PICKS, true ) ? $pick : 'new';
+
+		if ( ( 'viewed' === $mode || ( 'cat' === $mode && 'viewed' === $pick ) || ! empty( $o['defer'] ) ) && ! wp_doing_ajax() ) {
 			return self::shelf_placeholder( $o, $count, $cols );
 		}
 
@@ -661,6 +673,49 @@ final class Render {
 				}
 
 				$args['category'] = array( $cat->slug );
+
+				switch ( $pick ) {
+					case 'sales':
+						$args['orderby'] = 'popularity';
+						break;
+
+					case 'sale':
+						$on_sale = wc_get_product_ids_on_sale();
+
+						if ( empty( $on_sale ) ) {
+							return '';
+						}
+
+						$args['include'] = array_map( 'absint', $on_sale );
+						break;
+
+					case 'viewed':
+						// A wider net than the shelf, since only some of what
+						// the visitor saw lives in this aisle.
+						$viewed = self::recently_viewed_ids( $count * 4, absint( $o['exclude'] ?? 0 ) );
+
+						if ( empty( $viewed ) ) {
+							return '';
+						}
+
+						$args['include'] = $viewed;
+						$args['orderby'] = 'post__in';
+						break;
+
+					case 'manual':
+						$picks = array_filter( array_map( 'absint', (array) ( $o['picks'] ?? $o['ids'] ?? array() ) ) );
+
+						if ( empty( $picks ) ) {
+							return '';
+						}
+
+						// Hand-picked means exactly those, in that order — the
+						// category is where they were chosen from, not a gate.
+						unset( $args['category'] );
+						$args['include'] = $picks;
+						$args['orderby'] = 'post__in';
+						break;
+				}
 				break;
 		}
 
@@ -770,6 +825,7 @@ final class Render {
 		$cat = $o['cat'] instanceof \WP_Term ? $o['cat']->term_id : absint( $o['cat'] ?? 0 );
 		$cfg = array(
 			'mode'    => (string) ( $o['mode'] ?? 'viewed' ),
+			'pick'    => in_array( (string) ( $o['pick'] ?? '' ), self::PICKS, true ) ? (string) $o['pick'] : 'new',
 			'cat'     => $cat,
 			'ids'     => implode( ',', array_filter( array_map( 'absint', (array) ( $o['ids'] ?? $o['picks'] ?? array() ) ) ) ),
 			'heading' => (string) ( $o['heading'] ?? '' ),
@@ -795,8 +851,11 @@ final class Render {
 		$modes = array( 'viewed', 'sales', 'new', 'sale', 'cat', 'manual' );
 		$mode  = isset( $_POST['mode'] ) ? sanitize_key( wp_unslash( $_POST['mode'] ) ) : 'viewed';
 
+		$pick = isset( $_POST['pick'] ) ? sanitize_key( wp_unslash( $_POST['pick'] ) ) : 'new';
+
 		$o = array(
 			'mode'    => in_array( $mode, $modes, true ) ? $mode : 'viewed',
+			'pick'    => in_array( $pick, self::PICKS, true ) ? $pick : 'new',
 			'cat'     => isset( $_POST['cat'] ) ? absint( wp_unslash( $_POST['cat'] ) ) : 0,
 			'ids'     => isset( $_POST['ids'] ) ? array_filter( array_map( 'absint', explode( ',', (string) wp_unslash( $_POST['ids'] ) ) ) ) : array(), // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- every id is absint-ed.
 			'heading' => isset( $_POST['heading'] ) ? sanitize_text_field( wp_unslash( $_POST['heading'] ) ) : '',

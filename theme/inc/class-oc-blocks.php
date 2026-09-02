@@ -29,6 +29,13 @@ final class Blocks {
 	const TYPE = 'oc_block';
 
 	/**
+	 * Which of a category's products a slider block shows.
+	 *
+	 * @var string[]
+	 */
+	const PS_PICKS = array( 'new', 'sales', 'viewed', 'sale', 'manual' );
+
+	/**
 	 * Position of the product currently being rendered, 1-based and absolute
 	 * within the listing (page 2 of 24 starts at 25).
 	 *
@@ -295,6 +302,7 @@ final class Blocks {
 			'focus'   => self::read_focus( $id ),
 			'ps'      => array(
 				'mode'    => $ps_mode ? $ps_mode : 'viewed',
+				'pick'    => in_array( (string) get_post_meta( $id, '_oc_block_ps_pick', true ), self::PS_PICKS, true ) ? (string) get_post_meta( $id, '_oc_block_ps_pick', true ) : 'new',
 				'cat'     => (int) get_post_meta( $id, '_oc_block_ps_cat', true ),
 				'ids'     => (string) get_post_meta( $id, '_oc_block_ps_ids', true ),
 				'heading' => (string) get_post_meta( $id, '_oc_block_ps_heading', true ),
@@ -347,6 +355,14 @@ final class Blocks {
 		if ( $screen && self::TYPE === $screen->post_type ) {
 			wp_enqueue_style( 'wp-color-picker' );
 			wp_enqueue_script( 'wp-color-picker' );
+
+			// WooCommerce's own product search (type a name, pick from the
+			// list) for the hand-picked shelf. Registered on every admin
+			// screen; only Woo's screens enqueue it.
+			if ( class_exists( 'WooCommerce' ) ) {
+				wp_enqueue_style( 'woocommerce_admin_styles' );
+				wp_enqueue_script( 'wc-enhanced-select' );
+			}
 		}
 	}
 
@@ -517,9 +533,36 @@ final class Blocks {
 						<?php endforeach; ?>
 					</select>
 				</div>
-				<div data-oc-ps-when="manual">
-					<label for="oc_block_ps_ids"><?php esc_html_e( 'Product IDs', 'oc-theme' ); ?></label>
-					<input type="text" id="oc_block_ps_ids" name="oc_block_ps_ids" value="<?php echo esc_attr( $p['ids'] ); ?>" class="widefat ltr" placeholder="12, 84, 190" />
+				<div data-oc-ps-when="cat">
+					<label for="oc_block_ps_pick"><?php esc_html_e( 'Which of its products', 'oc-theme' ); ?></label>
+					<select id="oc_block_ps_pick" name="oc_block_ps_pick" class="widefat" data-oc-ps-pick>
+						<?php
+						foreach ( array(
+							'new'    => __( 'Newest', 'oc-theme' ),
+							'sales'  => __( 'Best sellers', 'oc-theme' ),
+							'viewed' => __( 'Products they viewed, from this category', 'oc-theme' ),
+							'sale'   => __( 'On sale', 'oc-theme' ),
+							'manual' => __( 'The ones I choose', 'oc-theme' ),
+						) as $kval => $klabel ) :
+							?>
+							<option value="<?php echo esc_attr( $kval ); ?>" <?php selected( $p['pick'], $kval ); ?>><?php echo esc_html( $klabel ); ?></option>
+						<?php endforeach; ?>
+					</select>
+				</div>
+				<div data-oc-ps-when="manual" style="flex:1 1 320px">
+					<label for="oc_block_ps_ids"><?php esc_html_e( 'The products', 'oc-theme' ); ?></label>
+					<?php
+					$ids_split = preg_split( '/[^0-9]+/', (string) $p['ids'] );
+					$ids_now   = array_filter( array_map( 'absint', is_array( $ids_split ) ? $ids_split : array() ) );
+					?>
+					<select id="oc_block_ps_ids" name="oc_block_ps_ids[]" class="wc-product-search widefat" multiple="multiple" style="width:100%" data-action="woocommerce_json_search_products" data-placeholder="<?php esc_attr_e( 'Start typing a product name…', 'oc-theme' ); ?>">
+						<?php foreach ( $ids_now as $pid ) : ?>
+							<?php $prod = function_exists( 'wc_get_product' ) ? wc_get_product( $pid ) : null; ?>
+							<?php if ( $prod ) : ?>
+								<option value="<?php echo esc_attr( (string) $pid ); ?>" selected="selected"><?php echo esc_html( wp_strip_all_tags( $prod->get_formatted_name() ) ); ?></option>
+							<?php endif; ?>
+						<?php endforeach; ?>
+					</select>
 				</div>
 			</div>
 
@@ -632,12 +675,18 @@ final class Blocks {
 					o.classList.toggle( 'is-sel', !! ( r && r.checked ) );
 				} );
 			}
-			// Slider source: show category / IDs field only when relevant.
+			// Slider source: the category and its pick show for "from a
+			// category"; the product picker shows for "the ones I choose",
+			// whether that is the source itself or the pick within a category.
 			function syncMode() {
 				var sel = document.querySelector( '[data-oc-ps-mode]' );
+				var pickSel = document.querySelector( '[data-oc-ps-pick]' );
 				var mode = sel ? sel.value : '';
+				var pick = pickSel ? pickSel.value : '';
 				document.querySelectorAll( '[data-oc-ps-when]' ).forEach( function ( el ) {
-					el.style.display = ( el.getAttribute( 'data-oc-ps-when' ) === mode ) ? '' : 'none';
+					var when = el.getAttribute( 'data-oc-ps-when' );
+					var on = when === mode || ( 'manual' === when && 'cat' === mode && 'manual' === pick );
+					el.style.display = on ? '' : 'none';
 				} );
 			}
 			document.querySelectorAll( '[data-oc-btype]' ).forEach( function ( r ) {
@@ -645,6 +694,8 @@ final class Blocks {
 			} );
 			var modeSel = document.querySelector( '[data-oc-ps-mode]' );
 			if ( modeSel ) { modeSel.addEventListener( 'change', syncMode ); }
+			var pickSel = document.querySelector( '[data-oc-ps-pick]' );
+			if ( pickSel ) { pickSel.addEventListener( 'change', syncMode ); }
 			syncType();
 			syncMode();
 		}() );
@@ -709,8 +760,12 @@ final class Blocks {
 		$ps_mode  = sanitize_key( wp_unslash( $_POST['oc_block_ps_mode'] ?? '' ) );
 		update_post_meta( $id, '_oc_block_ps_mode', in_array( $ps_mode, $ps_modes, true ) ? $ps_mode : 'viewed' );
 		update_post_meta( $id, '_oc_block_ps_cat', absint( $_POST['oc_block_ps_cat'] ?? 0 ) );
-		$ps_ids_split = preg_split( '/[^0-9]+/', (string) wp_unslash( $_POST['oc_block_ps_ids'] ?? '' ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- reduced to digits by the preg_split + absint below.
-		$ps_ids       = array_filter( array_map( 'absint', is_array( $ps_ids_split ) ? $ps_ids_split : array() ) );
+		$ps_pick = sanitize_key( wp_unslash( $_POST['oc_block_ps_pick'] ?? '' ) );
+		update_post_meta( $id, '_oc_block_ps_pick', in_array( $ps_pick, self::PS_PICKS, true ) ? $ps_pick : 'new' );
+		// The picker posts an array of ids; an older form posted "12, 84".
+		$ps_ids_raw   = wp_unslash( $_POST['oc_block_ps_ids'] ?? array() ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- every id is absint-ed below.
+		$ps_ids_split = is_array( $ps_ids_raw ) ? $ps_ids_raw : preg_split( '/[^0-9]+/', (string) $ps_ids_raw );
+		$ps_ids       = array_values( array_unique( array_filter( array_map( 'absint', is_array( $ps_ids_split ) ? $ps_ids_split : array() ) ) ) );
 		update_post_meta( $id, '_oc_block_ps_ids', implode( ',', $ps_ids ) );
 		update_post_meta( $id, '_oc_block_ps_heading', sanitize_text_field( wp_unslash( $_POST['oc_block_ps_heading'] ?? '' ) ) );
 		update_post_meta( $id, '_oc_block_ps_halign', 'center' === ( $_POST['oc_block_ps_halign'] ?? '' ) ? 'center' : 'start' ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- strict comparison stores a literal.
@@ -1047,6 +1102,7 @@ final class Blocks {
 				'heading' => $ps['heading'],
 				'halign'  => $ps['halign'],
 				'mode'    => $ps['mode'],
+				'pick'    => $ps['pick'],
 				'cat'     => $cat,
 				'ids'     => array_filter( array_map( 'absint', is_array( $ids_split ) ? $ids_split : array() ) ),
 				'count'   => $ps['count'],

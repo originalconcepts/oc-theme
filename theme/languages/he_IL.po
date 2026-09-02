@@ -6288,3 +6288,9 @@ msgstr "נשלח ב‑SMS למספר שהזנתם."
 
 msgid "05XXXXXXXX"
 msgstr "05XXXXXXXX"
+
+msgid "Which of its products"
+msgstr "אילו מהמוצרים שלה"
+
+msgid "Products they viewed, from this category"
+msgstr "מוצרים שצפו בהם, מהקטגוריה הזו"

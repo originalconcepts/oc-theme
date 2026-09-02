@@ -440,9 +440,9 @@ final class Login_Screen {
 			font-size: 12px;
 			text-decoration: none;
 		}
-		.oc-login__by img { block-size: 24px; inline-size: auto; opacity: .75; }
-		.oc-login__by:hover { color: var(--ocl-ink); }
-		.oc-login__by:hover img { opacity: 1; }
+		.oc-login__by img { block-size: 24px; inline-size: auto; }
+		/* The logo already leads to the shop, and the privacy link belongs on the shop, not on its door. */
+		.login #backtoblog, .login .privacy-policy-page-link { display: none; }
 
 		@media (max-width: 480px) {
 			.login form { padding: 22px 18px; }
@@ -796,8 +796,7 @@ final class Login_Screen {
 
 		$url = trim( (string) get_theme_mod( 'oc_footer_oc_url', 'https://onlinestore.co.il' ) );
 		?>
-		<a class="oc-login__by" href="<?php echo esc_url( '' === $url ? 'https://onlinestore.co.il' : $url ); ?>" target="_blank" rel="noopener">
-			<span><?php esc_html_e( 'by', 'oc-theme' ); ?></span>
+		<a class="oc-login__by" href="<?php echo esc_url( '' === $url ? 'https://onlinestore.co.il' : $url ); ?>" target="_blank" rel="noopener" aria-label="Original Concepts">
 			<img src="<?php echo esc_url( OC_THEME_URI . '/assets/img/oc-credit.svg' ); ?>" alt="Original Concepts" width="50" height="26" />
 		</a>
 		<?php
