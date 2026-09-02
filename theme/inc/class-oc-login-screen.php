@@ -292,6 +292,11 @@ final class Login_Screen {
 		.oc-alt__btn:hover { border-color: #c7cdd8; background: #fcfcfd; color: var(--ocl-ink); }
 		.oc-alt__btn svg { flex: none; }
 
+		/* display:flex outranks the hidden attribute; say it again louder. */
+		.oc-alt__btn[hidden],
+		.oc-otp__back[hidden],
+		.oc-otp__step[hidden] { display: none; }
+
 		/* ---------- the code panel ---------- */
 
 		.oc-otp { display: none; margin-block-start: 4px; }
