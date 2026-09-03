@@ -6372,3 +6372,129 @@ msgstr "חינם מעל %s"
 
 msgid "%1$s: delivery %2$s, not included in free delivery"
 msgstr "%1$s: משלוח %2$s, לא כלול במשלוח חינם"
+
+msgid "Shipping"
+msgstr "משלוחים"
+
+msgid "Israel"
+msgstr "ישראל"
+
+msgid "OC shipping is now pricing delivery in the “%1$s” zone; %2$d of WooCommerce’s own methods were paused."
+msgstr "משלוח OC מתמחר עכשיו את המשלוח באזור ״%1$s״; %2$d משיטות ווקומרס הושבתו זמנית."
+
+msgid "WooCommerce prices delivery again; %d of its methods were switched back on."
+msgstr "ווקומרס מתמחרת שוב את המשלוח; %d משיטותיה הופעלו מחדש."
+
+msgid "The theme prices delivery"
+msgstr "התבנית מתמחרת את המשלוח"
+
+msgid "On. “OC shipping” is the delivery method in the “%s” zone."
+msgstr "פועל. ״משלוח OC״ היא שיטת המשלוח באזור ״%s״."
+
+msgid "Off. WooCommerce prices delivery with its own methods. Switching on pauses those methods in the shop’s zone and prices every parcel by the rules below; switching off gives them back exactly as they were."
+msgstr "כבוי. ווקומרס מתמחרת את המשלוח בשיטות שלה. הפעלה משביתה זמנית את השיטות האלה באזור של החנות ומתמחרת כל חבילה לפי הכללים כאן; כיבוי מחזיר אותן בדיוק כפי שהיו."
+
+msgid "Active now: %s"
+msgstr "פעיל כרגע: %s"
+
+msgid "The basics"
+msgstr "הבסיס"
+
+msgid "Delivery price"
+msgstr "מחיר משלוח"
+
+msgid "Free delivery over"
+msgstr "משלוח חינם מעל"
+
+msgid "0 = never free."
+msgstr "0 = לעולם לא חינם."
+
+msgid "Name when free"
+msgstr "השם כשחינם"
+
+msgid "When several prices apply"
+msgstr "כשכמה מחירים חלים"
+
+msgid "The highest one is charged"
+msgstr "הגבוה מביניהם נגבה"
+
+msgid "They add up"
+msgstr "הם מצטברים"
+
+msgid "Count the cart before coupons toward free delivery"
+msgstr "לספור את העגלה לפני קופונים לצורך משלוח חינם"
+
+msgid "Product groups"
+msgstr "קבוצות מוצרים"
+
+msgid "Products that ship at a price of their own. Each group is a WooCommerce shipping class — assign it on the product (Shipping tab) or in bulk edit. A group left out of free delivery is charged even when the rest of the cart earned it."
+msgstr "מוצרים שנשלחים במחיר משלהם. כל קבוצה היא מחלקת משלוח של ווקומרס — משייכים אותה במוצר (לשונית משלוח) או בעריכה קבוצתית. קבוצה שאינה כלולה במשלוח חינם נגבית גם כשיתר העגלה הרוויחה אותו."
+
+msgid "Group"
+msgstr "קבוצה"
+
+msgid "Included in free delivery"
+msgstr "כלולה במשלוח חינם"
+
+msgid "e.g. Kitchen appliances"
+msgstr "לדוגמה: מוצרי חשמל למטבח"
+
+msgid "Add a group"
+msgstr "הוספת קבוצה"
+
+msgid "Regions"
+msgstr "אזורים"
+
+msgid "Places that cost differently. Match by postcode — an exact code, a range like 88000-88999, or a prefix like 88* — and/or by city name as the customer types it at the checkout (several names, comma-separated). The first matching region wins."
+msgstr "מקומות שעולים אחרת. זיהוי לפי מיקוד — מדויק, טווח כמו 88000-88999, או קידומת כמו ‎88*‎ — ו/או לפי שם העיר כפי שהלקוח מקליד בקופה (כמה שמות מופרדים בפסיק). האזור הראשון שמתאים קובע."
+
+msgid "Region"
+msgstr "אזור"
+
+msgid "Postcodes"
+msgstr "מיקודים"
+
+msgid "Cities"
+msgstr "ערים"
+
+msgid "Free delivery"
+msgstr "משלוח חינם"
+
+msgid "As everywhere"
+msgstr "כמו בכל מקום"
+
+msgid "Never free here"
+msgstr "לעולם לא חינם כאן"
+
+msgid "e.g. Eilat"
+msgstr "לדוגמה: אילת"
+
+msgid "Eilat"
+msgstr "אילת"
+
+msgid "Add a region"
+msgstr "הוספת אזור"
+
+msgid "Save shipping rules"
+msgstr "שמירת כללי המשלוח"
+
+msgid "Check a price"
+msgstr "בדיקת מחיר"
+
+msgid "Pick products and an address; the price and the reasons come from the very same calculator the checkout uses — with the rules as saved above."
+msgstr "בוחרים מוצרים וכתובת; המחיר והסיבות מגיעים מאותו מחשבון בדיוק שהקופה משתמשת בו — לפי הכללים כפי שנשמרו למעלה."
+
+msgid "Postcode"
+msgstr "מיקוד"
+
+msgid "Calculate"
+msgstr "חשב"
+
+msgid "Shipping rules saved."
+msgstr "כללי המשלוח נשמרו."
+
+msgid "%s more (in eligible products) would make delivery free."
+msgstr "עוד %s (במוצרים הכלולים) והמשלוח חינם."
+
+msgid "An empty parcel: the base price."
+msgstr "חבילה ריקה: מחיר הבסיס."
