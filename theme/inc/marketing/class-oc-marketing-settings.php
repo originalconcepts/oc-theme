@@ -87,12 +87,12 @@ final class Settings {
 			return trim( (string) $v );
 		};
 
-		$fb     = (array) ( $raw['fb'] ?? array() );
-		$ga4    = (array) ( $raw['ga4'] ?? array() );
-		$gads   = (array) ( $raw['gads'] ?? array() );
-		$gtm    = (array) ( $raw['gtm'] ?? array() );
-		$tiktok = (array) ( $raw['tiktok'] ?? array() );
-		$events = (array) ( $raw['events'] ?? array() );
+		$fb      = (array) ( $raw['fb'] ?? array() );
+		$ga4     = (array) ( $raw['ga4'] ?? array() );
+		$gads    = (array) ( $raw['gads'] ?? array() );
+		$gtm     = (array) ( $raw['gtm'] ?? array() );
+		$tiktok  = (array) ( $raw['tiktok'] ?? array() );
+		$events  = (array) ( $raw['events'] ?? array() );
 		$consent = (string) ( $raw['consent'] ?? 'auto' );
 
 		return array(
