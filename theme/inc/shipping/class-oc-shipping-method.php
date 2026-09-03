@@ -79,7 +79,7 @@ final class Method extends \WC_Shipping_Method {
 				'cost'      => $quote['cost'],
 				'package'   => $package,
 				'meta_data' => array(
-					'oc_reason' => Shipping::explain( $quote, $rules ),
+					'oc_reason' => Shipping::explain( $quote ),
 				),
 			)
 		);

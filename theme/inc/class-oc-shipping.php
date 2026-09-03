@@ -199,9 +199,8 @@ final class Shipping {
 	 * A quote's reasons in words, for the checkout and the simulator.
 	 *
 	 * @param array<string,mixed> $quote Quote.
-	 * @param array<string,mixed> $rules Rules.
 	 */
-	public static function explain( array $quote, array $rules ): string {
+	public static function explain( array $quote ): string {
 		$parts = array();
 
 		foreach ( (array) $quote['reasons'] as $reason ) {

@@ -39,8 +39,8 @@ final class Quote {
 	 * language.
 	 *
 	 * @param array<int,array{subtotal:float,group:string,qty:int}> $lines Parcel lines.
-	 * @param array{country?:string,postcode?:string,city?:string}  $dest  Destination.
-	 * @param array<string,mixed>                                    $rules Normalized rules.
+	 * @param array{country?:string,postcode?:string,city?:string}   $dest  Destination.
+	 * @param array<string,mixed>                                     $rules Normalized rules.
 	 * @return array{cost:float,free:bool,region:string,groups:string[],eligible:float,threshold:float,missing:float,reasons:array<int,array{code:string,args:array<string,mixed>}>}
 	 */
 	public static function calculate( array $lines, array $dest, array $rules ): array {
