@@ -93,11 +93,12 @@ final class Settings {
 		$gtm    = (array) ( $raw['gtm'] ?? array() );
 		$tiktok = (array) ( $raw['tiktok'] ?? array() );
 		$events = (array) ( $raw['events'] ?? array() );
+		$consent = (string) ( $raw['consent'] ?? 'auto' );
 
 		return array(
 			'version' => self::VERSION,
 			'enabled' => ! empty( $raw['enabled'] ),
-			'consent' => in_array( (string) ( $raw['consent'] ?? 'auto' ), array( 'off', 'optout', 'optin', 'auto' ), true ) ? (string) $raw['consent'] : 'auto',
+			'consent' => in_array( $consent, array( 'off', 'optout', 'optin', 'auto' ), true ) ? $consent : 'auto',
 			'fb'      => array(
 				'pixel' => preg_replace( '/\D+/', '', $str( $fb['pixel'] ?? '' ) ),
 				'token' => $str( $fb['token'] ?? '' ),
