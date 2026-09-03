@@ -54,7 +54,12 @@ final class Method extends \WC_Shipping_Method {
 		$this->title   = (string) $this->get_option( 'title', '' );
 		$this->enabled = 'yes';
 
-		add_action( 'woocommerce_update_options_shipping_' . $this->id, array( $this, 'process_admin_options' ) );
+		add_action(
+			'woocommerce_update_options_shipping_' . $this->id,
+			function (): void {
+				$this->process_admin_options();
+			}
+		);
 	}
 
 	/**
@@ -69,8 +74,8 @@ final class Method extends \WC_Shipping_Method {
 			return;
 		}
 
-		$quote = Quote::calculate( Shipping::lines_from_package( (array) $package, $rules ), Shipping::destination_from_package( (array) $package ), $rules );
-		$label = $quote['free'] ? Shipping::free_label( $rules ) : ( '' !== $this->title ? $this->title : Shipping::label( $rules ) );
+		$quote = Quote::calculate( \OC\Theme\Shipping::lines_from_package( (array) $package, $rules ), \OC\Theme\Shipping::destination_from_package( (array) $package ), $rules );
+		$label = $quote['free'] ? \OC\Theme\Shipping::free_label( $rules ) : ( '' !== $this->title ? $this->title : \OC\Theme\Shipping::label( $rules ) );
 
 		$this->add_rate(
 			array(
@@ -79,7 +84,7 @@ final class Method extends \WC_Shipping_Method {
 				'cost'      => $quote['cost'],
 				'package'   => $package,
 				'meta_data' => array(
-					'oc_reason' => Shipping::explain( $quote ),
+					'oc_reason' => \OC\Theme\Shipping::explain( $quote ),
 				),
 			)
 		);
