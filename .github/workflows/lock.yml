@@ -1,0 +1,38 @@
+# Tool run: this machine has no local PHP or Composer, so the runner
+# resolves dependencies. Dispatched manually; produces composer.lock as an
+# artifact to commit.
+name: composer lock
+
+on:
+  workflow_dispatch:
+    inputs:
+      packages:
+        description: Packages to update (space-separated), empty for a plain lock refresh
+        required: false
+        default: ''
+
+jobs:
+  lock:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          coverage: none
+          tools: composer:v2
+
+      - name: Resolve
+        run: |
+          if [ -n "${{ github.event.inputs.packages }}" ]; then
+            composer update ${{ github.event.inputs.packages }} --with-all-dependencies --no-interaction --no-install
+          else
+            composer update --lock --no-interaction --no-install
+          fi
+          composer validate --no-check-publish
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: composer-lock
+          path: composer.lock
