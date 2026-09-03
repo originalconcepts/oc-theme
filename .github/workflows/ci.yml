@@ -54,6 +54,9 @@ jobs:
       - name: PHPStan
         run: composer run analyse
 
+      - name: PHPUnit
+        run: composer run test
+
   js:
     name: Blocks build
     runs-on: ubuntu-latest

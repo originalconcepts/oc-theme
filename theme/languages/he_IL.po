@@ -6348,3 +6348,27 @@ msgstr "%1$s יסופק בין %2$s - %3$s"
 
 msgid "%1$s delivered on %2$s"
 msgstr "%1$s יסופק ב־%2$s"
+
+msgid "OC shipping"
+msgstr "משלוח OC"
+
+msgid "Delivery priced by the theme’s shipping rules: a base price, free delivery over a sum, groups priced on their own terms, and regions that cost differently."
+msgstr "משלוח שמתומחר לפי כללי המשלוח של התבנית: מחיר בסיס, משלוח חינם מעל סכום, קבוצות מוצרים במחיר משלהן ואזורים שעולים אחרת."
+
+msgid "Name at the checkout"
+msgstr "השם בקופה"
+
+msgid "Leave empty to use the name from the shipping rules."
+msgstr "ריק — השם מכללי המשלוח."
+
+msgid "Home delivery"
+msgstr "משלוח עד הבית"
+
+msgid "%1$s: delivery %2$s"
+msgstr "%1$s: משלוח %2$s"
+
+msgid "Free over %s"
+msgstr "חינם מעל %s"
+
+msgid "%1$s: delivery %2$s, not included in free delivery"
+msgstr "%1$s: משלוח %2$s, לא כלול במשלוח חינם"

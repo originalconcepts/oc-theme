@@ -1530,8 +1530,12 @@ final class WooCommerce {
 
 			// A product that on its own crosses the free-shipping line says
 			// so in the same breath.
-			$floor = self::free_shipping_minimum();
-			$free  = $floor > 0 && (float) wc_get_price_to_display( $product ) >= $floor;
+			if ( Shipping::enabled() ) {
+				$free = ! empty( Shipping::product_quote( $product )['free'] );
+			} else {
+				$floor = self::free_shipping_minimum();
+				$free  = $floor > 0 && (float) wc_get_price_to_display( $product ) >= $floor;
+			}
 			$gift  = '<strong>' . esc_html__( 'Free shipping', 'oc-theme' ) . '</strong>';
 
 			if ( $window['one_day'] ) {
