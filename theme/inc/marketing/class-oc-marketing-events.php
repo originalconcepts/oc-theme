@@ -35,6 +35,8 @@ final class Events {
 
 	/**
 	 * A fresh event id, shared by the browser and the server for one event.
+	 *
+	 * @param string $prefix What kind of event, for a readable id.
 	 */
 	public static function id( string $prefix = 'oc' ): string {
 		return $prefix . '_' . substr( str_replace( '-', '', wp_generate_uuid4() ), 0, 20 );

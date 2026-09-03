@@ -26,7 +26,8 @@ final class Dispatch {
 	/**
 	 * Deliver one job to every network that has server access.
 	 *
-	 * @param array<string,mixed> $job From Events::server().
+	 * @param array<string,mixed> $job  From Events::server().
+	 * @param bool                $wait Wait for the networks' answers (and log them).
 	 */
 	public static function send( array $job, bool $wait = true ): void {
 		$s      = Settings::get();
@@ -106,6 +107,7 @@ final class Dispatch {
 	 * @param string               $url     Endpoint.
 	 * @param array<string,mixed>  $body    JSON body.
 	 * @param array<string,string> $headers Extra headers.
+	 * @param bool                 $wait    Wait for the answer.
 	 */
 	private static function post( string $network, string $event, string $url, array $body, array $headers, bool $wait = true ): void {
 		$response = wp_remote_post(

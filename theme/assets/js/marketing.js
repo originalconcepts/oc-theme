@@ -215,7 +215,7 @@
 	function mirror( n, d, id, u ) {
 		if ( ! cfg.rest || ! navigator.sendBeacon ) { return; }
 		try {
-			var blob = new Blob( [ JSON.stringify( { n: n, d: d, id: id, u: u || undefined } ) ], { type: 'application/json' } );
+			var blob = new Blob( [ JSON.stringify( { n: n, d: d, id: id, u: u || undefined, _n: cfg.nonce } ) ], { type: 'application/json' } );
 			navigator.sendBeacon( cfg.rest + 'oc/v1/mkt', blob );
 		} catch ( e ) {}
 	}

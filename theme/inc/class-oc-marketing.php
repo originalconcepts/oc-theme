@@ -50,7 +50,16 @@ final class Marketing {
 
 		$s = Settings::get();
 
-		wp_enqueue_script( 'oc-marketing', OC_THEME_URI . oc_asset_min( '/assets/js/marketing.js' ), array(), oc_asset_version( '/assets/js/marketing.js' ), array( 'in_footer' => true, 'strategy' => 'defer' ) );
+		wp_enqueue_script(
+			'oc-marketing',
+			OC_THEME_URI . oc_asset_min( '/assets/js/marketing.js' ),
+			array(),
+			oc_asset_version( '/assets/js/marketing.js' ),
+			array(
+				'in_footer' => true,
+				'strategy'  => 'defer',
+			)
+		);
 
 		wp_localize_script(
 			'oc-marketing',
@@ -67,6 +76,7 @@ final class Marketing {
 				'events'        => $s['events'],
 				'currency'      => get_woocommerce_currency(),
 				'rest'          => esc_url_raw( rest_url() ),
+				'nonce'         => wp_create_nonce( 'oc_mkt' ),
 				'pageId'        => Events::id( 'pv' ),
 				'page'          => self::page_context(),
 				'user'          => self::user_match(),

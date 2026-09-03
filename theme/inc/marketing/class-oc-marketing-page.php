@@ -53,11 +53,19 @@ final class Page {
 			'/mkt',
 			array(
 				'methods'             => 'POST',
-				'permission_callback' => '__return_true',
+				// The page carries a nonce of ours; a beacon cannot set
+				// headers, so it rides in the body. Guests hold one too.
+				'permission_callback' => static function ( \WP_REST_Request $req ): bool {
+					return false !== wp_verify_nonce( (string) $req->get_param( '_n' ), 'oc_mkt' );
+				},
 				'callback'            => array( $this, 'rest_mirror' ),
 				'args'                => array(
-					'n'  => array( 'required' => true ),
-					'id' => array( 'required' => true ),
+					'n'  => array(
+						'required' => true,
+					),
+					'id' => array(
+						'required' => true,
+					),
 				),
 			)
 		);
@@ -74,7 +82,14 @@ final class Page {
 	public function rest_mirror( \WP_REST_Request $req ): \WP_REST_Response {
 		$name = sanitize_key( (string) $req->get_param( 'n' ) );
 		$id   = substr( preg_replace( '/[^a-z0-9_]/i', '', (string) $req->get_param( 'id' ) ), 0, 40 );
-		$ok   = array( 'addtocart' => 'AddToCart', 'addpaymentinfo' => 'AddPaymentInfo', 'search' => 'Search', 'subscribe' => 'Subscribe', 'lead' => 'Lead', 'contact' => 'Contact' );
+		$ok   = array(
+			'addtocart'      => 'AddToCart',
+			'addpaymentinfo' => 'AddPaymentInfo',
+			'search'         => 'Search',
+			'subscribe'      => 'Subscribe',
+			'lead'           => 'Lead',
+			'contact'        => 'Contact',
+		);
 
 		if ( ! Settings::live() || ! isset( $ok[ $name ] ) || '' === $id ) {
 			return new \WP_REST_Response( array( 'ok' => false ), 400 );

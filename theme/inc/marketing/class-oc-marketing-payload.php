@@ -136,7 +136,18 @@ final class Payload {
 	public static function fb_user( array $user, array $client ): array {
 		$out = array();
 
-		foreach ( array( 'em' => 'email', 'ph' => 'phone', 'fn' => 'first', 'ln' => 'last', 'ct' => 'city', 'zp' => 'zip', 'country' => 'country', 'external_id' => 'id' ) as $key => $kind ) {
+		$kinds = array(
+			'em'          => 'email',
+			'ph'          => 'phone',
+			'fn'          => 'first',
+			'ln'          => 'last',
+			'ct'          => 'city',
+			'zp'          => 'zip',
+			'country'     => 'country',
+			'external_id' => 'id',
+		);
+
+		foreach ( $kinds as $key => $kind ) {
 			$v = (string) ( $user[ $key ] ?? '' );
 
 			if ( '' === $v ) {
@@ -165,7 +176,14 @@ final class Payload {
 			}
 		}
 
-		foreach ( array( 'ip' => 'client_ip_address', 'ua' => 'client_user_agent', 'fbp' => 'fbp', 'fbc' => 'fbc' ) as $from => $to ) {
+		$wires = array(
+			'ip'  => 'client_ip_address',
+			'ua'  => 'client_user_agent',
+			'fbp' => 'fbp',
+			'fbc' => 'fbc',
+		);
+
+		foreach ( $wires as $from => $to ) {
 			if ( '' !== (string) ( $client[ $from ] ?? '' ) ) {
 				$out[ $to ] = (string) $client[ $from ];
 			}
@@ -270,7 +288,14 @@ final class Payload {
 			$u['external_id'] = self::hash( (string) $user['external_id'] );
 		}
 
-		foreach ( array( 'ip' => 'ip', 'ua' => 'user_agent', 'ttclid' => 'ttclid', 'ttp' => 'ttp' ) as $from => $to ) {
+		$wires = array(
+			'ip'     => 'ip',
+			'ua'     => 'user_agent',
+			'ttclid' => 'ttclid',
+			'ttp'    => 'ttp',
+		);
+
+		foreach ( $wires as $from => $to ) {
 			if ( '' !== (string) ( $client[ $from ] ?? '' ) ) {
 				$u[ $to ] = (string) $client[ $from ];
 			}
