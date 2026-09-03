@@ -26,6 +26,17 @@
 	if ( 'off' !== cfg.consentMode ) {
 		var state = 'granted' === consent ? 'granted' : 'denied';
 		gtag( 'consent', 'default', { ad_storage: state, analytics_storage: state, ad_user_data: state, ad_personalization: state, wait_for_update: 500 } );
+		// Google's own guidance for a denied state: redact ad data, carry
+		// click ids through the URL instead of cookies.
+		gtag( 'set', 'ads_data_redaction', true );
+		gtag( 'set', 'url_passthrough', true );
+	}
+
+	// Meta's click id rides the URL once; without the pixel loaded yet,
+	// nobody would turn it into the cookie the server matches on.
+	var fbclid = location.search.match( /[?&]fbclid=([^&]+)/ );
+	if ( fbclid && ! /(^|; )_fbc=/.test( document.cookie ) ) {
+		document.cookie = '_fbc=fb.1.' + Date.now() + '.' + decodeURIComponent( fbclid[ 1 ] ) + ';path=/;max-age=' + ( 90 * 86400 ) + ';SameSite=Lax' + ( 'https:' === location.protocol ? ';Secure' : '' ) + ';domain=' + location.hostname.replace( /^www\./, '' );
 	}
 
 	function setCookie( name, value, days ) {
@@ -108,7 +119,7 @@
 	/* ---------- translating one event into every dialect ---------- */
 
 	var FB = { PageView: 'PageView', ViewContent: 'ViewContent', Search: 'Search', AddToCart: 'AddToCart', InitiateCheckout: 'InitiateCheckout', AddPaymentInfo: 'AddPaymentInfo', Purchase: 'Purchase', Lead: 'Lead', CompleteRegistration: 'CompleteRegistration', Subscribe: 'Subscribe', Contact: 'Contact' };
-	var TT = { ViewContent: 'ViewContent', Search: 'Search', AddToCart: 'AddToCart', InitiateCheckout: 'InitiateCheckout', AddPaymentInfo: 'AddPaymentInfo', Purchase: 'CompletePayment', CompleteRegistration: 'CompleteRegistration', Subscribe: 'Subscribe', Contact: 'Contact', Lead: 'SubmitForm' };
+	var TT = { ViewContent: 'ViewContent', Search: 'Search', AddToCart: 'AddToCart', InitiateCheckout: 'InitiateCheckout', AddPaymentInfo: 'AddPaymentInfo', PlaceOrder: 'PlaceAnOrder', Purchase: 'CompletePayment', CompleteRegistration: 'CompleteRegistration', Subscribe: 'Subscribe', Contact: 'Contact', Lead: 'SubmitForm' };
 	var GA = { ViewContent: 'view_item', ViewCategory: 'view_item_list', Search: 'search', AddToCart: 'add_to_cart', RemoveFromCart: 'remove_from_cart', InitiateCheckout: 'begin_checkout', AddPaymentInfo: 'add_payment_info', Purchase: 'purchase', Lead: 'generate_lead', CompleteRegistration: 'sign_up', Login: 'login', Subscribe: 'subscribe', Contact: 'contact', SelectItem: 'select_item', ScrollDepth: 'scroll_depth', VideoStart: 'video_start', VideoComplete: 'video_complete' };
 
 	function items( d ) { return ( d && d.items ) || []; }
@@ -195,6 +206,17 @@
 
 	function uid( prefix ) { return ( prefix || 'oc' ) + '_' + Math.random().toString( 36 ).slice( 2, 12 ) + Date.now().toString( 36 ); }
 
+	// The server sends the same event, with the same id, from its side —
+	// with the visitor's cookies and address, which the browser alone
+	// cannot vouch for. Fire and forget; a lost mirror costs nothing.
+	function mirror( n, d, id ) {
+		if ( ! cfg.rest || ! navigator.sendBeacon ) { return; }
+		try {
+			var blob = new Blob( [ JSON.stringify( { n: n, d: d, id: id } ) ], { type: 'application/json' } );
+			navigator.sendBeacon( cfg.rest + 'oc/v1/mkt', blob );
+		} catch ( e ) {}
+	}
+
 	window.ocTrack = function ( n, d, id ) { send( n, d, id || uid() ); };
 
 	/* ---------- the server's queue ---------- */
@@ -222,7 +244,10 @@
 		if ( ! id ) { return; }
 		product( id ).then( function ( item ) {
 			var it = Object.assign( {}, item, { qty: qty || 1 } );
-			send( 'AddToCart', { currency: cfg.currency, value: it.price * it.qty, items: [ it ], content_name: it.name, content_category: it.category }, uid( 'atc' ) );
+			var id = uid( 'atc' );
+			var d = { currency: cfg.currency, value: it.price * it.qty, items: [ it ], content_name: it.name, content_category: it.category };
+			send( 'AddToCart', d, id );
+			mirror( 'addtocart', d, id );
 		} );
 	}
 
@@ -230,7 +255,9 @@
 	document.addEventListener( 'oc:added', function ( e ) { addedToCart( e.detail && e.detail.productId, 1 ); } );
 	document.addEventListener( 'oc:search', function ( e ) {
 		if ( ! cfg.events.search || ! e.detail || ! e.detail.term ) { return; }
-		send( 'Search', { search: e.detail.term }, uid( 'srch' ) );
+		var sid = uid( 'srch' );
+		send( 'Search', { search: e.detail.term }, sid );
+		mirror( 'search', { search: e.detail.term }, sid );
 	} );
 	document.addEventListener( 'oc:newsletter', function ( e ) {
 		send( 'Subscribe', {}, ( e.detail && e.detail.eventId ) || uid( 'sub' ) );
@@ -262,10 +289,18 @@
 		if ( paid || ! cfg.page || 'checkout' !== cfg.page.type ) { return; }
 		paid = true;
 		var m = document.querySelector( 'input[name="payment_method"]:checked' );
-		send( 'AddPaymentInfo', Object.assign( {}, cfg.page.cart || {}, { payment_type: m ? m.value : '' } ), uid( 'pay' ) );
+		var pid = uid( 'pay' );
+		var pd = Object.assign( {}, cfg.page.cart || {}, { payment_type: m ? m.value : '' } );
+		send( 'AddPaymentInfo', pd, pid );
+		mirror( 'addpaymentinfo', pd, pid );
 	}
 	document.addEventListener( 'change', function ( e ) { if ( e.target.matches( 'input[name="payment_method"]' ) ) { paymentInfo(); } } );
-	document.addEventListener( 'click', function ( e ) { if ( e.target.closest( '#place_order' ) ) { paymentInfo(); } } );
+	document.addEventListener( 'click', function ( e ) {
+		if ( ! e.target.closest( '#place_order' ) ) { return; }
+		paymentInfo();
+		// TikTok's funnel has a step between payment details and payment.
+		if ( cfg.page && 'checkout' === cfg.page.type ) { send( 'PlaceOrder', cfg.page.cart || {}, uid( 'po' ) ); }
+	} );
 
 	// Scroll depth, once per mark.
 	if ( cfg.events.scroll ) {

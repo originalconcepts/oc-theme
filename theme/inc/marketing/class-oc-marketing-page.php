@@ -41,10 +41,112 @@ final class Page {
 		add_action( 'oc_newsletter_subscribed', array( $this, 'subscribed' ), 10, 2 );
 		add_action( Events::HOOK, array( Dispatch::class, 'send' ) );
 		add_action( 'oc_marketing_ga4_fallback', array( $this, 'ga4_fallback' ) );
+		add_action( 'rest_api_init', array( $this, 'rest' ) );
 	}
 
 	/**
-	 * The page's own events, queued for the browser.
+	 * Register the REST route the browser uses to mirror its own events.
+	 */
+	public function rest(): void {
+		register_rest_route(
+			'oc/v1',
+			'/mkt',
+			array(
+				'methods'             => 'POST',
+				'permission_callback' => '__return_true',
+				'callback'            => array( $this, 'rest_mirror' ),
+				'args'                => array(
+					'n'  => array( 'required' => true ),
+					'id' => array( 'required' => true ),
+				),
+			)
+		);
+	}
+
+	/**
+	 * A browser-born event (add to cart, payment details) mirrored from the
+	 * server with the visitor's own cookies and address — the same id, so
+	 * the networks count one. Bounded: known names only, small data.
+	 *
+	 * @param \WP_REST_Request $req Request.
+	 * @return \WP_REST_Response
+	 */
+	public function rest_mirror( \WP_REST_Request $req ): \WP_REST_Response {
+		$name = sanitize_key( (string) $req->get_param( 'n' ) );
+		$id   = substr( preg_replace( '/[^a-z0-9_]/i', '', (string) $req->get_param( 'id' ) ), 0, 40 );
+		$ok   = array( 'addtocart' => 'AddToCart', 'addpaymentinfo' => 'AddPaymentInfo', 'search' => 'Search', 'subscribe' => 'Subscribe', 'lead' => 'Lead', 'contact' => 'Contact' );
+
+		if ( ! Settings::live() || ! isset( $ok[ $name ] ) || '' === $id ) {
+			return new \WP_REST_Response( array( 'ok' => false ), 400 );
+		}
+
+		$data  = (array) $req->get_param( 'd' );
+		$clean = array();
+
+		foreach ( array( 'currency', 'value', 'search', 'content_name', 'content_category' ) as $k ) {
+			if ( isset( $data[ $k ] ) ) {
+				$clean[ $k ] = is_numeric( $data[ $k ] ) ? (float) $data[ $k ] : sanitize_text_field( (string) $data[ $k ] );
+			}
+		}
+
+		foreach ( array_slice( (array) ( $data['items'] ?? array() ), 0, 50 ) as $i ) {
+			if ( is_array( $i ) && isset( $i['id'] ) ) {
+				$clean['items'][] = array(
+					'id'       => sanitize_text_field( (string) $i['id'] ),
+					'name'     => sanitize_text_field( (string) ( $i['name'] ?? '' ) ),
+					'price'    => (float) ( $i['price'] ?? 0 ),
+					'qty'      => max( 1, (int) ( $i['qty'] ?? 1 ) ),
+					'category' => sanitize_text_field( (string) ( $i['category'] ?? '' ) ),
+				);
+			}
+		}
+
+		Events::server( $ok[ $name ], $clean, $id, self::visitor_user(), Events::client(), (string) $req->get_header( 'referer' ) );
+
+		return new \WP_REST_Response( array( 'ok' => true ), 200 );
+	}
+
+	/**
+	 * The signed-in shopper, for matching server events.
+	 *
+	 * @return array<string,string>
+	 */
+	public static function visitor_user(): array {
+		$uid = get_current_user_id();
+
+		if ( $uid <= 0 || ! function_exists( 'WC' ) || ! WC()->customer ) {
+			return array();
+		}
+
+		$c = WC()->customer;
+
+		return array(
+			'em'          => (string) $c->get_email(),
+			'ph'          => (string) $c->get_billing_phone(),
+			'fn'          => (string) $c->get_first_name(),
+			'ln'          => (string) $c->get_last_name(),
+			'ct'          => (string) $c->get_billing_city(),
+			'zp'          => (string) $c->get_billing_postcode(),
+			'country'     => (string) ( $c->get_billing_country() ? $c->get_billing_country() : 'IL' ),
+			'external_id' => (string) $uid,
+		);
+	}
+
+	/**
+	 * Queue for the browser and mirror from the server, one id for both.
+	 *
+	 * @param string              $name Event.
+	 * @param array<string,mixed> $data Data.
+	 * @param string              $id   Id.
+	 */
+	private static function both( string $name, array $data, string $id = '' ): void {
+		$id = Events::queue( $name, $data, $id );
+		Events::server( $name, $data, $id, self::visitor_user() );
+	}
+
+	/**
+	 * The page's own events, queued for the browser and mirrored from the
+	 * server.
 	 */
 	public function page_events(): void {
 		if ( is_admin() || ! Settings::live() || ! class_exists( 'WooCommerce' ) ) {
@@ -59,7 +161,7 @@ final class Page {
 			if ( $product instanceof \WC_Product ) {
 				$item = self::item( $product );
 
-				Events::queue(
+				self::both(
 					'ViewContent',
 					array(
 						'currency'         => get_woocommerce_currency(),
@@ -102,12 +204,12 @@ final class Page {
 		}
 
 		if ( is_search() && '' !== get_search_query() && ! empty( Settings::get()['events']['search'] ) ) {
-			Events::queue( 'Search', array( 'search' => get_search_query() ) );
+			self::both( 'Search', array( 'search' => get_search_query() ) );
 			return;
 		}
 
 		if ( function_exists( 'is_checkout' ) && is_checkout() && ! is_order_received_page() && WC()->cart && ! WC()->cart->is_empty() ) {
-			Events::queue( 'InitiateCheckout', self::cart_data() );
+			self::both( 'InitiateCheckout', self::cart_data() );
 			return;
 		}
 
