@@ -78,6 +78,9 @@ require_once OC_THEME_DIR . '/inc/class-oc-assets.php';
 require_once OC_THEME_DIR . '/inc/class-oc-login.php';
 require_once OC_THEME_DIR . '/inc/class-oc-login-screen.php';
 require_once OC_THEME_DIR . '/inc/class-oc-woocommerce.php';
+require_once OC_THEME_DIR . '/inc/shipping/class-oc-shipping-quote.php';
+require_once OC_THEME_DIR . '/inc/shipping/class-oc-shipping-rules.php';
+require_once OC_THEME_DIR . '/inc/class-oc-shipping.php';
 require_once OC_THEME_DIR . '/inc/class-oc-product-linked.php';
 require_once OC_THEME_DIR . '/inc/class-oc-bought-together.php';
 require_once OC_THEME_DIR . '/inc/class-oc-customizer.php';
@@ -400,6 +403,7 @@ add_action( 'admin_notices', 'oc_dependency_notice' );
 
 ( new OC\Theme\Assets() )->register();
 ( new OC\Theme\WooCommerce() )->register();
+( new OC\Theme\Shipping() )->register();
 ( new OC\Theme\Customizer() )->register();
 ( new OC\Theme\Variations() )->register();
 ( new OC\Theme\Video() )->register();

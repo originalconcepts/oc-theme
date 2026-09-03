@@ -471,17 +471,28 @@ final class Cart {
 
 		$goal = (float) $s['ship_goal'];
 
-		if ( $goal <= 0 ) {
-			$goal = $this->free_shipping_minimum();
+		if ( Shipping::enabled() ) {
+			// The theme prices delivery: the bar counts only what earns
+			// free delivery, and stops at the line the rules draw.
+			$progress = Shipping::cart_progress();
+
+			$goal = $progress['goal'];
+
+			$subtotal = $progress['have'];
+		} else {
+			if ( $goal <= 0 ) {
+				$goal = $this->free_shipping_minimum();
+			}
+
+			$subtotal = (float) WC()->cart->get_displayed_subtotal();
 		}
 
 		if ( $goal <= 0 ) {
 			return '<div data-oc-ship-bar hidden></div>';
 		}
 
-		$subtotal = (float) WC()->cart->get_displayed_subtotal();
-		$left     = max( 0.0, $goal - $subtotal );
-		$percent  = min( 100, (int) round( $subtotal / $goal * 100 ) );
+		$left    = max( 0.0, $goal - $subtotal );
+		$percent = min( 100, (int) round( $subtotal / $goal * 100 ) );
 
 		if ( $left > 0 ) {
 			$template = '' !== (string) $s['ship_text'] ? (string) $s['ship_text'] : __( '[sum] left for free shipping', 'oc-theme' );
