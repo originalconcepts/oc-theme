@@ -28,6 +28,13 @@ final class Rules {
 	const VERSION = 1;
 
 	/**
+	 * The rules read once per request.
+	 *
+	 * @var array<string,mixed>|null
+	 */
+	private static $cached = null;
+
+	/**
 	 * The rules as the calculator wants them. Seeded from WooCommerce's own
 	 * methods the first time, so a shop that already ships keeps shipping
 	 * the same way the moment the switch is thrown.
@@ -35,13 +42,19 @@ final class Rules {
 	 * @return array<string,mixed>
 	 */
 	public static function get(): array {
+		if ( null !== self::$cached ) {
+			return self::$cached;
+		}
+
 		$raw = get_option( self::OPTION, null );
 
 		if ( ! is_array( $raw ) ) {
 			$raw = self::seed_from_woo();
 		}
 
-		return self::normalize( $raw );
+		self::$cached = self::normalize( $raw );
+
+		return self::$cached;
 	}
 
 	/**
@@ -58,6 +71,7 @@ final class Rules {
 	 */
 	public static function save( array $rules ): void {
 		update_option( self::OPTION, self::normalize( $rules ), false );
+		self::$cached = null;
 	}
 
 	/**
