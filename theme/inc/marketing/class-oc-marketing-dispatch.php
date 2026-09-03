@@ -28,7 +28,7 @@ final class Dispatch {
 	 *
 	 * @param array<string,mixed> $job From Events::server().
 	 */
-	public static function send( array $job ): void {
+	public static function send( array $job, bool $wait = true ): void {
 		$s      = Settings::get();
 		$name   = (string) ( $job['name'] ?? '' );
 		$data   = (array) ( $job['data'] ?? array() );
@@ -54,7 +54,8 @@ final class Dispatch {
 				$name,
 				'https://graph.facebook.com/v19.0/' . rawurlencode( $s['fb']['pixel'] ) . '/events?access_token=' . rawurlencode( $s['fb']['token'] ),
 				$body,
-				array()
+				array(),
+				$wait
 			);
 		}
 
@@ -71,7 +72,8 @@ final class Dispatch {
 						'event_source_id' => $s['tiktok']['pixel'],
 						'data'            => array( $event ),
 					),
-					array( 'Access-Token' => $s['tiktok']['token'] )
+					array( 'Access-Token' => $s['tiktok']['token'] ),
+					$wait
 				);
 			}
 		}
@@ -89,7 +91,8 @@ final class Dispatch {
 						'client_id' => $cid,
 						'events'    => array( $event ),
 					),
-					array()
+					array(),
+					$wait
 				);
 			}
 		}
@@ -104,15 +107,21 @@ final class Dispatch {
 	 * @param array<string,mixed>  $body    JSON body.
 	 * @param array<string,string> $headers Extra headers.
 	 */
-	private static function post( string $network, string $event, string $url, array $body, array $headers ): void {
+	private static function post( string $network, string $event, string $url, array $body, array $headers, bool $wait = true ): void {
 		$response = wp_remote_post(
 			$url,
 			array(
-				'timeout' => 8,
-				'headers' => array_merge( array( 'Content-Type' => 'application/json' ), $headers ),
-				'body'    => wp_json_encode( $body ),
+				'timeout'  => $wait ? 8 : 1,
+				'blocking' => $wait,
+				'headers'  => array_merge( array( 'Content-Type' => 'application/json' ), $headers ),
+				'body'     => wp_json_encode( $body ),
 			)
 		);
+
+		if ( ! $wait ) {
+			self::log( $network, $event, 202, 'sent, not waited for' );
+			return;
+		}
 
 		$code = is_wp_error( $response ) ? 0 : (int) wp_remote_retrieve_response_code( $response );
 		$text = is_wp_error( $response ) ? $response->get_error_message() : substr( (string) wp_remote_retrieve_body( $response ), 0, 300 );

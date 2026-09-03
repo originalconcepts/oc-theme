@@ -101,7 +101,18 @@ final class Page {
 			}
 		}
 
-		Events::server( $ok[ $name ], $clean, $id, self::visitor_user(), Events::client(), (string) $req->get_header( 'referer' ) );
+		// A guest at the checkout has typed who they are; that is worth more
+		// to matching than any cookie. Hashed before it leaves the server.
+		$user = self::visitor_user();
+		$u    = (array) $req->get_param( 'u' );
+
+		foreach ( array( 'em', 'ph', 'fn', 'ln', 'ct', 'zp' ) as $k ) {
+			if ( '' === (string) ( $user[ $k ] ?? '' ) && '' !== (string) ( $u[ $k ] ?? '' ) ) {
+				$user[ $k ] = substr( sanitize_text_field( (string) $u[ $k ] ), 0, 120 );
+			}
+		}
+
+		Events::server( $ok[ $name ], $clean, $id, $user, Events::client(), (string) $req->get_header( 'referer' ) );
 
 		return new \WP_REST_Response( array( 'ok' => true ), 200 );
 	}

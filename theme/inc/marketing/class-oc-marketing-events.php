@@ -150,6 +150,15 @@ final class Events {
 			'time'   => time(),
 		);
 
+		// Money and identity must not be lost: they queue in the scheduler
+		// and are retried. Everything else — a product seen, a search — is
+		// sent on the spot without waiting for an answer; a lost one costs
+		// nothing and a scheduler row per page view would.
+		if ( ! in_array( $name, array( 'Purchase', 'CompleteRegistration', 'Subscribe', 'Lead', 'Contact' ), true ) ) {
+			Dispatch::send( $job, false );
+			return;
+		}
+
 		if ( function_exists( 'as_enqueue_async_action' ) ) {
 			as_enqueue_async_action( self::HOOK, array( $job ), 'oc-marketing' );
 			return;

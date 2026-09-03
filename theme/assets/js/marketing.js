@@ -51,6 +51,9 @@
 		var box = document.querySelector( '[data-oc-consent]' );
 		if ( box ) { box.remove(); }
 		if ( 'granted' === answer && ! loaded ) { load(); }
+		// Pixels already on the page hear the answer too.
+		if ( window.fbq ) { window.fbq( 'consent', 'granted' === answer ? 'grant' : 'revoke' ); }
+		if ( window.ttq ) { 'granted' === answer ? window.ttq.grantConsent() : window.ttq.revokeConsent(); }
 	}
 
 	window.ocConsent = { grant: function () { decide( 'granted' ); }, deny: function () { decide( 'denied' ); }, state: function () { return consent; } };
@@ -209,10 +212,10 @@
 	// The server sends the same event, with the same id, from its side —
 	// with the visitor's cookies and address, which the browser alone
 	// cannot vouch for. Fire and forget; a lost mirror costs nothing.
-	function mirror( n, d, id ) {
+	function mirror( n, d, id, u ) {
 		if ( ! cfg.rest || ! navigator.sendBeacon ) { return; }
 		try {
-			var blob = new Blob( [ JSON.stringify( { n: n, d: d, id: id } ) ], { type: 'application/json' } );
+			var blob = new Blob( [ JSON.stringify( { n: n, d: d, id: id, u: u || undefined } ) ], { type: 'application/json' } );
 			navigator.sendBeacon( cfg.rest + 'oc/v1/mkt', blob );
 		} catch ( e ) {}
 	}
@@ -292,7 +295,8 @@
 		var pid = uid( 'pay' );
 		var pd = Object.assign( {}, cfg.page.cart || {}, { payment_type: m ? m.value : '' } );
 		send( 'AddPaymentInfo', pd, pid );
-		mirror( 'addpaymentinfo', pd, pid );
+		var val = function ( sel ) { var el = document.querySelector( sel ); return el ? el.value.trim() : ''; };
+		mirror( 'addpaymentinfo', pd, pid, { em: val( '#billing_email' ), ph: val( '#billing_phone' ), fn: val( '#billing_first_name' ), ln: val( '#billing_last_name' ), ct: val( '#billing_city' ), zp: val( '#billing_postcode' ) } );
 	}
 	document.addEventListener( 'change', function ( e ) { if ( e.target.matches( 'input[name="payment_method"]' ) ) { paymentInfo(); } } );
 	document.addEventListener( 'click', function ( e ) {
