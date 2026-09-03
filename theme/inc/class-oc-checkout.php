@@ -68,6 +68,7 @@ final class Checkout {
 		add_filter( 'woocommerce_checkout_fields', array( $this, 'fields' ), 20 );
 		add_filter( 'woocommerce_package_rates', array( $this, 'free_hides_paid' ), 20 );
 		add_filter( 'woocommerce_get_country_locale', array( $this, 'country_locale' ), 20 );
+		add_filter( 'woocommerce_checkout_get_value', array( $this, 'pin_country' ), 20, 2 );
 		add_filter( 'woocommerce_form_field_oc_co_shipping', array( $this, 'shipping_section' ) );
 		add_filter( 'woocommerce_update_order_review_fragments', array( $this, 'rates_fragment' ) );
 		add_filter( 'woocommerce_cart_shipping_method_full_label', array( $this, 'free_label' ), 10, 2 );
@@ -468,10 +469,18 @@ final class Checkout {
 			}
 		}
 
-		// Country: hidden entirely when asked for, or left to Woo's own
-		// single-country auto-hide in auto mode.
-		if ( 'hide' === $s['country_mode'] ) {
+		// Country: hidden when asked for, and in auto mode whenever the shop
+		// delivers to a single country. WooCommerce's own auto-hide looks at
+		// where the shop *sells*, which is usually left at "everywhere"; the
+		// question a shopper answers here is where the parcel goes.
+		$only = 'hide' === $s['country_mode'] || 'auto' === $s['country_mode'] ? self::single_country() : '';
+
+		if ( 'hide' === $s['country_mode'] || '' !== $only ) {
 			$b['billing_country']['class'][] = 'oc-co-hidden';
+
+			if ( '' !== $only ) {
+				$b['billing_country']['default'] = $only;
+			}
 		}
 
 		if ( $pickup ) {
@@ -492,6 +501,50 @@ final class Checkout {
 		$fields['shipping'] = array();
 
 		return $fields;
+	}
+
+	/**
+	 * The one country the shop delivers to, or '' when there are several.
+	 * Shipping locations decide; selling locations are the fallback.
+	 */
+	public static function single_country(): string {
+		if ( ! function_exists( 'WC' ) || ! WC()->countries ) {
+			return '';
+		}
+
+		$ship = (array) WC()->countries->get_shipping_countries();
+
+		if ( 1 === count( $ship ) ) {
+			return (string) array_key_first( $ship );
+		}
+
+		$sell = (array) WC()->countries->get_allowed_countries();
+
+		return 1 === count( $sell ) ? (string) array_key_first( $sell ) : '';
+	}
+
+	/**
+	 * A hidden country field must post the country it stands for — not a
+	 * value left in the session from before the shop narrowed down.
+	 *
+	 * @param mixed  $value Value.
+	 * @param string $input Field key.
+	 * @return mixed
+	 */
+	public function pin_country( $value, $input ) {
+		if ( 'billing_country' !== $input ) {
+			return $value;
+		}
+
+		$s = self::settings();
+
+		if ( 'auto' !== $s['country_mode'] && 'hide' !== $s['country_mode'] ) {
+			return $value;
+		}
+
+		$only = self::single_country();
+
+		return '' !== $only ? $only : $value;
 	}
 
 	/**
