@@ -106,11 +106,11 @@ final class Shipping_Admin {
 					<strong><?php esc_html_e( 'The theme prices delivery', 'oc-theme' ); ?></strong>
 				</label>
 				<p class="description">
-					<?php if ( $status['ours'] ) : ?>
+					<?php if ( ! empty( $rules['enabled'] ) ) : ?>
 						<?php
 						printf(
 							/* translators: %s: zone name. */
-							esc_html__( 'On. “OC shipping” is the delivery method in the “%s” zone.', 'oc-theme' ),
+							esc_html__( 'On. Every parcel is priced by the rules below; “OC shipping” is the delivery method in the “%s” zone.', 'oc-theme' ),
 							esc_html( $status['zone'] )
 						);
 						?>
@@ -121,6 +121,9 @@ final class Shipping_Admin {
 						<?php endif; ?>
 					<?php endif; ?>
 				</p>
+				<?php if ( empty( $rules['enabled'] ) && $status['ours'] ) : ?>
+					<p class="description ocship-warn"><?php esc_html_e( '“OC shipping” was added to the zone by hand while this switch is off: it prices parcels by the rules below as they stand. Switch on to make the rules the single source, or remove the method from the zone.', 'oc-theme' ); ?></p>
+				<?php endif; ?>
 			</div>
 
 			<div class="ocship-card">
@@ -283,6 +286,7 @@ final class Shipping_Admin {
 			.ocship-card > .description { margin: 0 0 14px; }
 			.ocship-card--switch { display: flex; flex-direction: column; gap: 6px; border-color: #2271b1; }
 			.ocship-switch { display: flex; align-items: center; gap: 10px; font-size: 1.05em; }
+			.ocship-warn { color: #8a4b00; background: #fcf9e8; border-inline-start: 3px solid #dba617; padding: 8px 10px; }
 			.ocship-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px 18px; }
 			.ocship-grid label > span { display: block; font-weight: 600; margin-bottom: 4px; }
 			.ocship-grid label input[type="text"], .ocship-grid label input[type="number"], .ocship-grid label select { width: 100%; }

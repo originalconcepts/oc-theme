@@ -87,6 +87,21 @@ final class Engage {
 
 		$paused = array_map( 'absint', (array) get_option( self::PAUSED, array() ) );
 
+		// Nothing on record — the methods were paused by hand, not by us.
+		// Giving back means every delivery method in the zone comes on, so
+		// the zone is never left with nothing to offer.
+		if ( ! $paused ) {
+			$zone = self::zone();
+
+			if ( $zone ) {
+				foreach ( $zone->get_shipping_methods( false ) as $method ) {
+					if ( in_array( $method->id, array( 'flat_rate', 'free_shipping' ), true ) ) {
+						$paused[] = (int) $method->instance_id;
+					}
+				}
+			}
+		}
+
 		foreach ( $paused as $instance_id ) {
 			self::set_enabled( $instance_id, true );
 		}

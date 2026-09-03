@@ -156,12 +156,26 @@ final class Rules {
 			return $seed;
 		}
 
+		// A paused method still says what the shop charged — the theme's own
+		// switch may have paused it — so its price counts too; an enabled
+		// one is preferred by being read first.
+		$rows = array();
+
 		foreach ( \WC_Shipping_Zones::get_zones() as $zone ) {
 			foreach ( $zone['shipping_methods'] as $method ) {
-				if ( 'yes' !== $method->enabled ) {
-					continue;
-				}
+				$rows[] = $method;
+			}
+		}
 
+		usort(
+			$rows,
+			static function ( $a, $b ): int {
+				return ( 'yes' === $b->enabled ? 1 : 0 ) - ( 'yes' === $a->enabled ? 1 : 0 );
+			}
+		);
+
+		foreach ( $rows as $method ) {
+			{
 				if ( 'flat_rate' === $method->id && 0.0 === (float) $seed['base'] ) {
 					$seed['base']  = (float) $method->get_option( 'cost' );
 					$seed['label'] = (string) $method->get_title();

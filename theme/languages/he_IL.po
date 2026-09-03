@@ -6498,3 +6498,9 @@ msgstr "עוד %s (במוצרים הכלולים) והמשלוח חינם."
 
 msgid "An empty parcel: the base price."
 msgstr "חבילה ריקה: מחיר הבסיס."
+
+msgid "On. Every parcel is priced by the rules below; “OC shipping” is the delivery method in the “%s” zone."
+msgstr "פועל. כל חבילה מתומחרת לפי הכללים כאן; ״משלוח OC״ היא שיטת המשלוח באזור ״%s״."
+
+msgid "“OC shipping” was added to the zone by hand while this switch is off: it prices parcels by the rules below as they stand. Switch on to make the rules the single source, or remove the method from the zone."
+msgstr "״משלוח OC״ נוספה לאזור ידנית בזמן שהמתג כבוי: היא מתמחרת חבילות לפי הכללים כאן כפי שהם. הפעילו את המתג כדי שהכללים יהיו המקור היחיד, או הסירו את השיטה מהאזור."

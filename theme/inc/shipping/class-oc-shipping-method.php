@@ -68,11 +68,10 @@ final class Method extends \WC_Shipping_Method {
 	 * @param array<string,mixed> $package Package.
 	 */
 	public function calculate_shipping( $package = array() ): void {
+		// Someone put this method in a zone; a shopper is at the checkout.
+		// Whether or not the switch is on, they get a price — from the
+		// rules as saved, or from what WooCommerce's own methods said.
 		$rules = Rules::get();
-
-		if ( empty( $rules['enabled'] ) ) {
-			return;
-		}
 
 		$quote = Quote::calculate( \OC\Theme\Shipping::lines_from_package( (array) $package, $rules ), \OC\Theme\Shipping::destination_from_package( (array) $package ), $rules );
 		$label = $quote['free'] ? \OC\Theme\Shipping::free_label( $rules ) : ( '' !== $this->title ? $this->title : \OC\Theme\Shipping::label( $rules ) );
