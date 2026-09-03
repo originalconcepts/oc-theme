@@ -1332,6 +1332,7 @@
 					if ( data && data.success ) {
 						form.classList.add( 'is-done' );
 						form.querySelector( '.ocb-news__thanks' ).hidden = false;
+						document.dispatchEvent( new CustomEvent( 'oc:newsletter', { detail: { eventId: data.data && data.data.event_id } } ) );
 					} else {
 						go.disabled = false;
 

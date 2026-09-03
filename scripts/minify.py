@@ -18,6 +18,7 @@ blocks = repo / "plugins" / "oc-blocks" / "assets"
 for src, minifier in (
     (root / "js" / "theme.js", rjsmin.jsmin),
     (root / "js" / "checkout.js", rjsmin.jsmin),
+    (root / "js" / "marketing.js", rjsmin.jsmin),
     (root / "css" / "theme.css", rcssmin.cssmin),
     (blocks / "blocks.js", rjsmin.jsmin),
     (blocks / "blocks.css", rcssmin.cssmin),

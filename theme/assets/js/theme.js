@@ -1018,6 +1018,13 @@
 				return;
 			}
 
+			// Anyone listening (the marketing script, for one) hears what
+			// was searched — once per term, only when something came back.
+			if ( data && data.html && term && term !== paint.last ) {
+				paint.last = term;
+				document.dispatchEvent( new CustomEvent( 'oc:search', { detail: { term: term } } ) );
+			}
+
 			if ( ! data || ! data.html ) {
 				sOut.hidden = true;
 				sOut.innerHTML = '';

@@ -12,3 +12,5 @@ define( 'OC_TESTS', true );
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../theme/inc/shipping/class-oc-shipping-quote.php';
 require_once __DIR__ . '/../theme/inc/shipping/class-oc-shipping-rules.php';
+require_once __DIR__ . '/../theme/inc/marketing/class-oc-marketing-settings.php';
+require_once __DIR__ . '/../theme/inc/marketing/class-oc-marketing-payload.php';

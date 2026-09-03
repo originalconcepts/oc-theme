@@ -6504,3 +6504,144 @@ msgstr "פועל. כל חבילה מתומחרת לפי הכללים כאן; ״�
 
 msgid "“OC shipping” was added to the zone by hand while this switch is off: it prices parcels by the rules below as they stand. Switch on to make the rules the single source, or remove the method from the zone."
 msgstr "״משלוח OC״ נוספה לאזור ידנית בזמן שהמתג כבוי: היא מתמחרת חבילות לפי הכללים כאן כפי שהם. הפעילו את המתג כדי שהכללים יהיו המקור היחיד, או הסירו את השיטה מהאזור."
+
+msgid "Marketing"
+msgstr "שיווק"
+
+msgid "Tracking is on"
+msgstr "המעקב פועל"
+
+msgid "Enter the IDs below and switch on. Every event the networks expect — product views, categories, searches, add to cart, checkout, payment details, purchases with their value, sign-ups, logins, newsletter — is sent from the browser and, where it matters, from the server too, with one shared id so nothing counts twice."
+msgstr "מזינים את המזהים למטה ומפעילים. כל אירוע שהרשתות מצפות לו — צפייה במוצר, קטגוריות, חיפושים, הוספה לסל, התחלת קופה, פרטי תשלום, רכישות עם הערך שלהן, הרשמות, כניסות, ניוזלטר — נשלח מהדפדפן, ובמקומות שחשוב גם מהשרת, עם מזהה משותף אחד כך ששום דבר לא נספר פעמיים."
+
+msgid "On, but no network has an ID yet — nothing is sent."
+msgstr "פועל, אבל לאף רשת אין עדיין מזהה — שום דבר לא נשלח."
+
+msgid "Meta (Facebook / Instagram)"
+msgstr "מטא (פייסבוק / אינסטגרם)"
+
+msgid "Pixel ID"
+msgstr "מזהה פיקסל"
+
+msgid "Conversions API access token"
+msgstr "טוקן גישה ל‑Conversions API"
+
+msgid "Events Manager → the pixel → Settings → Conversions API → Generate access token."
+msgstr "Events Manager ← הפיקסל ← Settings ← Conversions API ← Generate access token."
+
+msgid "Test event code (optional)"
+msgstr "קוד אירוע בדיקה (אופציונלי)"
+
+msgid "From Events Manager → Test events. Server events then show up there. Clear it when done."
+msgstr "מ‑Events Manager ← Test events. אירועי השרת יופיעו שם. לנקות בסיום."
+
+msgid "Google"
+msgstr "גוגל"
+
+msgid "GA4 measurement ID"
+msgstr "מזהה מדידה GA4"
+
+msgid "GA4 API secret (optional)"
+msgstr "סוד API של GA4 (אופציונלי)"
+
+msgid "Admin → Data streams → the stream → Measurement Protocol API secrets. Lets the server report a purchase the browser never did."
+msgstr "Admin ← Data streams ← הזרם ← Measurement Protocol API secrets. מאפשר לשרת לדווח רכישה שהדפדפן לא דיווח."
+
+msgid "Google Ads conversion ID"
+msgstr "מזהה המרה של Google Ads"
+
+msgid "Purchase conversion label"
+msgstr "תווית המרת רכישה"
+
+msgid "From the conversion action’s tag setup: the part after the slash."
+msgstr "מהגדרת התג של פעולת ההמרה: החלק שאחרי הקו הנטוי."
+
+msgid "Tag Manager container (optional)"
+msgstr "קונטיינר Tag Manager (אופציונלי)"
+
+msgid "Every event is also pushed to the dataLayer as oc_<event>, for any extra tag."
+msgstr "כל אירוע נדחף גם ל‑dataLayer כ‑‎oc_<event>‎, לכל תג נוסף."
+
+msgid "TikTok"
+msgstr "טיקטוק"
+
+msgid "Events API access token"
+msgstr "טוקן גישה ל‑Events API"
+
+msgid "Events Manager → the pixel → Settings → Events API → Generate access token."
+msgstr "Events Manager ← הפיקסל ← Settings ← Events API ← Generate access token."
+
+msgid "Consent and events"
+msgstr "הסכמה ואירועים"
+
+msgid "Cookie consent"
+msgstr "הסכמה לעוגיות"
+
+msgid "Automatic — opt-in in Europe, opt-out elsewhere"
+msgstr "אוטומטי — באירופה רק אחרי אישור, בשאר העולם אלא אם סירבו"
+
+msgid "Banner; tags run unless declined"
+msgstr "באנר; התגים רצים אלא אם סירבו"
+
+msgid "Banner; nothing runs until accepted"
+msgstr "באנר; שום דבר לא רץ עד אישור"
+
+msgid "No banner, no consent layer"
+msgstr "בלי באנר ובלי שכבת הסכמה"
+
+msgid "Google Consent Mode v2 is always wired; the choice only sets what a visitor starts with."
+msgstr "Google Consent Mode v2 מחובר תמיד; הבחירה קובעת רק במה מבקר מתחיל."
+
+msgid "Scroll depth (25 / 50 / 75 / 100%)"
+msgstr "עומק גלילה (25 / 50 / 75 / 100%)"
+
+msgid "Video start and complete"
+msgstr "התחלת וסיום וידאו"
+
+msgid "Searches"
+msgstr "חיפושים"
+
+msgid "Save marketing settings"
+msgstr "שמירת הגדרות השיווק"
+
+msgid "Server events"
+msgstr "אירועי שרת"
+
+msgid "The last calls the server made to Meta, TikTok and GA4, and what they answered. “Send a test event” fires a PageView through the server with the saved keys."
+msgstr "הקריאות האחרונות שהשרת עשה למטא, טיקטוק ו‑GA4, ומה הן ענו. ״שליחת אירוע בדיקה״ יורה PageView דרך השרת עם המפתחות השמורים."
+
+msgid "Send a test event"
+msgstr "שליחת אירוע בדיקה"
+
+msgid "When"
+msgstr "מתי"
+
+msgid "Network"
+msgstr "רשת"
+
+msgid "Event"
+msgstr "אירוע"
+
+msgid "Status"
+msgstr "סטטוס"
+
+msgid "Answer"
+msgstr "תשובה"
+
+msgid "Nothing sent yet."
+msgstr "עדיין לא נשלח דבר."
+
+msgid "Marketing settings saved."
+msgstr "הגדרות השיווק נשמרו."
+
+msgid "Sent — see the log."
+msgstr "נשלח — ראו את היומן."
+
+msgid "We use cookies to run the shop, measure visits and show relevant offers."
+msgstr "אנחנו משתמשים בעוגיות כדי להפעיל את החנות, למדוד ביקורים ולהציג הצעות רלוונטיות."
+
+msgid "Only what is needed"
+msgstr "רק מה שנחוץ"
+
+msgid "Accept"
+msgstr "אישור"

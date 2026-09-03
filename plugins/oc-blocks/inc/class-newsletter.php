@@ -75,9 +75,14 @@ final class Newsletter {
 			}
 		}
 
+		// The marketing layer hears about it — with an id the page's own
+		// script shares, so the browser and the server count one signup.
+		$event_id = 'sub_' . substr( str_replace( '-', '', wp_generate_uuid4() ), 0, 20 );
+		do_action( 'oc_newsletter_subscribed', $email, $event_id );
+
 		// Repeat signups and full lists all hear the same thing: an address
 		// owner learns nothing about whether it was already known.
-		wp_send_json_success();
+		wp_send_json_success( array( 'event_id' => $event_id ) );
 	}
 
 	/**
