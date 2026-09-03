@@ -175,17 +175,15 @@ final class Rules {
 		);
 
 		foreach ( $rows as $method ) {
-			{
-				if ( 'flat_rate' === $method->id && 0.0 === (float) $seed['base'] ) {
-					$seed['base']  = (float) $method->get_option( 'cost' );
-					$seed['label'] = (string) $method->get_title();
-				}
+			if ( 'flat_rate' === $method->id && 0.0 === (float) $seed['base'] ) {
+				$seed['base']  = (float) $method->get_option( 'cost' );
+				$seed['label'] = (string) $method->get_title();
+			}
 
-				if ( 'free_shipping' === $method->id && 0.0 === (float) $seed['free_over'] ) {
-					$seed['free_over']           = (float) $method->get_option( 'min_amount' );
-					$seed['free_label']          = (string) $method->get_title();
-					$seed['free_ignore_coupons'] = 'yes' === $method->get_option( 'ignore_discounts' );
-				}
+			if ( 'free_shipping' === $method->id && 0.0 === (float) $seed['free_over'] ) {
+				$seed['free_over']           = (float) $method->get_option( 'min_amount' );
+				$seed['free_label']          = (string) $method->get_title();
+				$seed['free_ignore_coupons'] = 'yes' === $method->get_option( 'ignore_discounts' );
 			}
 		}
 
