@@ -1537,7 +1537,8 @@ final class WooCommerce {
 
 				$free = $floor > 0 && (float) wc_get_price_to_display( $product ) >= $floor;
 			}
-			$gift  = '<strong>' . esc_html__( 'Free shipping', 'oc-theme' ) . '</strong>';
+
+			$gift = '<strong>' . esc_html__( 'Free shipping', 'oc-theme' ) . '</strong>';
 
 			if ( $window['one_day'] ) {
 				$eta = $free

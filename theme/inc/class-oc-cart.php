@@ -490,8 +490,9 @@ final class Cart {
 		if ( $goal <= 0 ) {
 			return '<div data-oc-ship-bar hidden></div>';
 		}
-		$left     = max( 0.0, $goal - $subtotal );
-		$percent  = min( 100, (int) round( $subtotal / $goal * 100 ) );
+
+		$left    = max( 0.0, $goal - $subtotal );
+		$percent = min( 100, (int) round( $subtotal / $goal * 100 ) );
 
 		if ( $left > 0 ) {
 			$template = '' !== (string) $s['ship_text'] ? (string) $s['ship_text'] : __( '[sum] left for free shipping', 'oc-theme' );

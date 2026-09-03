@@ -38,10 +38,15 @@ final class Quote {
 	 * as codes with arguments — words are for the caller, who knows the
 	 * language.
 	 *
-	 * @param array<int,array{subtotal:float,group:string,qty:int}> $lines Parcel lines.
-	 * @param array{country?:string,postcode?:string,city?:string}   $dest  Destination.
-	 * @param array<string,mixed>                                     $rules Normalized rules.
-	 * @return array{cost:float,free:bool,region:string,groups:string[],eligible:float,threshold:float,missing:float,reasons:array<int,array{code:string,args:array<string,mixed>}>}
+	 * @param array $lines Parcel lines: each [ 'subtotal' => float, 'group' => string, 'qty' => int ].
+	 * @param array $dest  Destination: [ 'country' => string, 'postcode' => string, 'city' => string ].
+	 * @param array $rules Normalized rules.
+	 * @return array The quote.
+	 *
+	 * @phpstan-param array<int,array{subtotal:float,group:string,qty:int}> $lines
+	 * @phpstan-param array{country?:string,postcode?:string,city?:string} $dest
+	 * @phpstan-param array<string,mixed> $rules
+	 * @phpstan-return array{cost:float,free:bool,region:string,groups:string[],eligible:float,threshold:float,missing:float,reasons:array<int,array{code:string,args:array<string,mixed>}>}
 	 */
 	public static function calculate( array $lines, array $dest, array $rules ): array {
 		$region  = self::region_for( $dest, $rules );
