@@ -149,6 +149,7 @@ final class Admin {
 		return array(
 			'state' => (string) $feed['state'],
 			'items' => (int) $feed['items'],
+			'skip'  => (int) $feed['skipped'],
 			'done'  => (int) $feed['cursor'],
 			'total' => is_array( $total ) ? count( $total ) : (int) $feed['cursor'],
 			'made'  => (int) $feed['made'],
@@ -351,6 +352,14 @@ final class Admin {
 								esc_html( (string) wp_date( 'd/m/Y H:i', (int) $feed['made'] ) ),
 								esc_html( (string) ( $every[ $feed['every'] ] ?? '' ) )
 							);
+							if ( (int) $feed['skipped'] > 0 ) {
+								echo ' · ';
+								printf(
+									/* translators: %d: number of products left out. */
+									esc_html( _n( '%d left out, with no picture or no price', '%d left out, with no picture or no price', (int) $feed['skipped'], 'oc-theme' ) ),
+									(int) $feed['skipped']
+								);
+							}
 						} elseif ( 'running' === $feed['state'] ) {
 							esc_html_e( 'Building…', 'oc-theme' );
 						} else {

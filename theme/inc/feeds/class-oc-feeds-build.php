@@ -42,6 +42,7 @@ final class Build {
 		file_put_contents( $part, $open ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- writing this plugin's own feed file.
 
 		$feed['state']   = 'running';
+		$feed['skipped'] = 0;
 		$feed['cursor']  = 0;
 		$feed['started'] = time();
 		$feed['beat']    = time();
@@ -63,6 +64,18 @@ final class Build {
 			return;
 		}
 
+		// One worker at a time. The screen drives batches while it is open
+		// and the schedule drives them in the background, and without this
+		// both appended the same products to the same file — a feed full of
+		// duplicate ids, which is the one thing a network refuses outright.
+		$lock = 'oc_feed_lock_' . $key;
+
+		if ( false !== get_transient( $lock ) ) {
+			return;
+		}
+
+		set_transient( $lock, 1, 2 * MINUTE_IN_SECONDS );
+
 		$ids = get_transient( 'oc_feed_ids_' . $key );
 
 		if ( ! is_array( $ids ) ) {
@@ -77,8 +90,9 @@ final class Build {
 		$part  = Feeds::path( $key, (string) $feed['format'] ) . '.part';
 		$at    = (int) $feed['cursor'];
 		$stop  = min( $at + Feeds::BATCH, count( $ids ) );
-		$rows  = '';
-		$made  = 0;
+		$rows    = '';
+		$made    = 0;
+		$skipped = 0;
 
 		for ( ; $at < $stop; $at++ ) {
 			$product = wc_get_product( (int) $ids[ $at ] );
@@ -88,6 +102,15 @@ final class Build {
 			}
 
 			foreach ( self::items_of( $product, $feed ) as $item ) {
+				// A line with no picture or no price is rejected wherever it
+				// is sent, and a feed full of rejections is what gets a whole
+				// catalogue held for review. Leave them out and say so.
+				if ( '' === (string) $item['image'] || (float) $item['price'] <= 0 ) {
+					++$skipped;
+
+					continue;
+				}
+
 				$rows .= self::row( $item, $feed );
 				++$made;
 			}
@@ -97,8 +120,9 @@ final class Build {
 			file_put_contents( $part, $rows, FILE_APPEND ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- appending to this plugin's own feed file.
 		}
 
-		$feed['cursor'] = $at;
-		$feed['items']  = (int) $feed['items'] + $made;
+		$feed['cursor']  = $at;
+		$feed['items']   = (int) $feed['items'] + $made;
+		$feed['skipped'] = (int) ( $feed['skipped'] ?? 0 ) + $skipped;
 		$feed['beat']   = time();
 		$feed['ms']     = (int) $feed['ms'] + (int) round( ( microtime( true ) - $began ) * 1000 );
 
@@ -118,6 +142,7 @@ final class Build {
 		}
 
 		Feeds::put( $key, $feed );
+		delete_transient( $lock );
 	}
 
 	/*

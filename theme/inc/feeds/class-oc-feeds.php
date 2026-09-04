@@ -170,6 +170,7 @@ final class Feeds {
 			'delivery'  => '',
 			'made'      => 0,
 			'items'     => 0,
+			'skipped'   => 0,
 			'ms'        => 0,
 			'state'     => 'new',
 			'cursor'    => 0,
@@ -198,6 +199,7 @@ final class Feeds {
 		$out['utm']       = empty( $raw['utm'] ) ? 0 : 1;
 		$out['made']      = absint( $raw['made'] ?? 0 );
 		$out['items']     = absint( $raw['items'] ?? 0 );
+		$out['skipped']   = absint( $raw['skipped'] ?? 0 );
 		$out['ms']        = absint( $raw['ms'] ?? 0 );
 		$out['cursor']    = absint( $raw['cursor'] ?? 0 );
 		$out['started']   = absint( $raw['started'] ?? 0 );
