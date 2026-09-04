@@ -824,7 +824,7 @@ final class Media_Clean {
 					'name'   => '' === $file ? (string) get_the_title( $id ) : wp_basename( $file ),
 					'link'   => get_edit_post_link( $id, 'raw' ),
 					'used'   => self::used_by( $id, $refs, $posts ),
-					'shrink' => self::shrinkable( $one['mime'], $one['w'], $one['h'] ),
+					'shrink' => self::shrinkable( $one['mime'] ),
 					'backup' => '' !== (string) get_post_meta( $id, self::BACKUP, true ),
 				)
 			);
@@ -843,20 +843,17 @@ final class Media_Clean {
 	/**
 	 * Whether this file is one the shrinker may touch.
 	 *
-	 * Only photographs it can re-encode without changing the address every
-	 * reference already uses: JPEG and PNG, and only when the stored file is
-	 * bigger than anything the site can show.
+	 * Only what it can re-encode without changing the address every
+	 * reference already uses: JPEG and PNG. Whether re-encoding actually
+	 * wins anything is not decided here — shrink() puts the original back
+	 * when it does not, which is a truthful answer no guess can give. A
+	 * four-megabyte PNG at 1400px is a photograph saved in the wrong
+	 * format, and it is worth letting the shrinker try.
 	 *
 	 * @param string $mime Mime type.
-	 * @param int    $w    Width.
-	 * @param int    $h    Height.
 	 */
-	private static function shrinkable( string $mime, int $w, int $h ): bool {
-		if ( ! in_array( $mime, array( 'image/jpeg', 'image/png' ), true ) ) {
-			return false;
-		}
-
-		return max( $w, $h ) > self::MAX_SIDE || 'image/jpeg' === $mime;
+	private static function shrinkable( string $mime ): bool {
+		return in_array( $mime, array( 'image/jpeg', 'image/png' ), true );
 	}
 
 	/**
