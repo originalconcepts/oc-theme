@@ -40,6 +40,11 @@ final class Feeds {
 	private const EVENT = 'oc_feeds_tick';
 
 	/**
+	 * The event that carries one run forward by a batch.
+	 */
+	private const STEP = 'oc_feeds_step';
+
+	/**
 	 * How many products one batch reads.
 	 */
 	public const BATCH = 200;
@@ -57,27 +62,10 @@ final class Feeds {
 			return;
 		}
 
-		add_filter( 'cron_schedules', array( $this, 'schedules' ) ); // phpcs:ignore WordPress.WP.CronInterval.ChangeDetected -- a five-minute tick that only ever looks at a timestamp.
 		add_action( self::EVENT, array( $this, 'tick' ) );
+		add_action( self::STEP, array( self::class, 'run_step' ) );
 		add_action( 'init', array( $this, 'keep_scheduled' ) );
 		add_action( 'init', array( $this, 'serve' ), 5 );
-	}
-
-	/**
-	 * The tick's own interval.
-	 *
-	 * @param array<string,array<string,mixed>> $in Schedules.
-	 * @return array<string,array<string,mixed>>
-	 */
-	public function schedules( array $in ): array {
-		// phpcs:ignore WordPress.WP.CronInterval.CronSchedulesInterval -- the tick only reads a timestamp and returns; it is what lets a build resume in small batches instead of one long request that a parallel run cuts off.
-		$in['oc_feeds_5min'] = array(
-			// phpcs:ignore WordPress.WP.CronInterval.CronSchedulesInterval -- the tick reads one timestamp and returns; short steps are what let a build resume instead of dying half way.
-			'interval' => 5 * MINUTE_IN_SECONDS,
-			'display'  => __( 'Every five minutes (OC feeds)', 'oc-theme' ),
-		);
-
-		return $in;
 	}
 
 	/**
@@ -88,7 +76,38 @@ final class Feeds {
 	 */
 	public function keep_scheduled(): void {
 		if ( ! wp_next_scheduled( self::EVENT ) ) {
-			wp_schedule_event( time() + 60, 'oc_feeds_5min', self::EVENT );
+			wp_schedule_event( time() + 60, 'hourly', self::EVENT );
+		}
+	}
+
+	/**
+	 * Carry on with a run that is already going.
+	 *
+	 * Each batch books the next one ten seconds out rather than waiting for
+	 * the hourly tick, so a catalogue of thirty thousand is finished in
+	 * minutes — and every batch is still its own short request that nothing
+	 * can cut off half way.
+	 *
+	 * @param string $key Feed key.
+	 */
+	public static function run_step( string $key ): void {
+		Build::step( $key );
+
+		$feed = self::get( $key );
+
+		if ( null !== $feed && 'running' === $feed['state'] ) {
+			self::book( $key );
+		}
+	}
+
+	/**
+	 * Book the next batch.
+	 *
+	 * @param string $key Feed key.
+	 */
+	public static function book( string $key ): void {
+		if ( ! wp_next_scheduled( self::STEP, array( $key ) ) ) {
+			wp_schedule_single_event( time() + 10, self::STEP, array( $key ) );
 		}
 	}
 
@@ -339,29 +358,26 @@ final class Feeds {
 	 * feeds never has six builds racing each other.
 	 */
 	public function tick(): void {
-		$all  = self::all();
-		$now  = time();
-		$next = '';
+		$all = self::all();
+		$now = time();
 
 		foreach ( $all as $key => $feed ) {
 			if ( 'running' !== $feed['state'] ) {
 				continue;
 			}
 
-			// A run that stopped breathing is picked up rather than left.
+			// Still going: make sure the next batch is booked, in case the
+			// chain was broken by a deploy or a crash mid-run.
 			if ( $now - (int) $feed['beat'] < self::STALL ) {
-				Build::step( $key );
+				self::book( $key );
 
 				return;
 			}
 
-			$next = $key;
-			break;
-		}
-
-		if ( '' !== $next ) {
-			Build::start( $next );
-			Build::step( $next );
+			// It stopped breathing. Begin again rather than leave a feed
+			// that is never finished and never retried.
+			Build::start( $key );
+			self::book( $key );
 
 			return;
 		}
@@ -384,7 +400,7 @@ final class Feeds {
 
 		if ( '' !== $due ) {
 			Build::start( $due );
-			Build::step( $due );
+			self::book( $due );
 		}
 	}
 }

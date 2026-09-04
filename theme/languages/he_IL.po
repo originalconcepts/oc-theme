@@ -6922,8 +6922,6 @@ msgstr "אחרי המרה, למחוק את התמונה שהוחלפה ואת ה
 msgid "Pictures in the library that are still JPEG or PNG. Converting one rebuilds it and all its sizes as WebP and the site starts serving those. Nothing is deleted unless you asked for it in the settings, so a conversion can be undone."
 msgstr "תמונות בספרייה שעדיין JPEG או PNG. המרה בונה מחדש את התמונה ואת כל הגדלים שלה כ‑WebP, והאתר מתחיל להגיש אותם. שום דבר לא נמחק אלא אם ביקשתם זאת בהגדרות, כך שאפשר לחזור אחורה."
 
-msgid "Every five minutes (OC feeds)"
-msgstr "כל חמש דקות (פידים OC)"
 
 msgid "Product catalogue for %s"
 msgstr "קטלוג המוצרים של %s"
