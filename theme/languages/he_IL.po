@@ -6903,3 +6903,15 @@ msgstr "לא נשאר כלום"
 
 msgid "kept"
 msgstr "נשמר"
+
+msgid "There is nothing to go back to for this one."
+msgstr "אין למה לחזור עבור התמונה הזו."
+
+msgid "The file it replaced is gone, so this cannot be undone."
+msgstr "הקובץ שהוחלף נמחק, ולכן אי אפשר לבטל."
+
+msgid "Go back"
+msgstr "חזרה"
+
+msgid "Back to the old format"
+msgstr "חזר לפורמט הקודם"

@@ -184,6 +184,8 @@ final class Webp_Admin {
 			'spare'    => __( '%s left over', 'oc-theme' ),
 			'nospare'  => __( 'nothing left over', 'oc-theme' ),
 			'kept'     => __( 'kept', 'oc-theme' ),
+			'undo'     => __( 'Go back', 'oc-theme' ),
+			'undone'   => __( 'Back to the old format', 'oc-theme' ),
 		);
 		?>
 		<script>
@@ -256,7 +258,10 @@ final class Webp_Admin {
 					var pic = it.thumb ? '<img src="' + esc( it.thumb ) + '" alt="" loading="lazy">' : '<img alt="">';
 					var act = 'no' === have
 						? '<button type="button" class="button" data-ocwp-one="' + it.id + '">' + esc( T.convert ) + '</button>'
-						: ( it.olds ? '<button type="button" class="button" data-ocwp-drop="' + it.id + '">' + esc( T.drop ) + '</button>' : '' );
+						: ( it.olds
+							? '<button type="button" class="button" data-ocwp-drop="' + it.id + '">' + esc( T.drop ) + '</button>'
+								+ ' <button type="button" class="button-link" data-ocwp-undo="' + it.id + '">' + esc( T.undo ) + '</button>'
+							: '' );
 					var spare = 'yes' === have
 						? '<br><span class="ocwp__spare">' + esc( it.olds ? sprintf( T.spare, kb( it.spare ) ) : T.nospare ) + '</span>'
 						: '';
@@ -327,8 +332,13 @@ final class Webp_Admin {
 					return;
 				}
 
-				var one = e.target.closest( '[data-ocwp-one], [data-ocwp-drop]' );
+				var one = e.target.closest( '[data-ocwp-one], [data-ocwp-drop], [data-ocwp-undo]' );
 				if ( ! one ) { return; }
+
+				if ( one.hasAttribute( 'data-ocwp-undo' ) ) {
+					run( [ one.getAttribute( 'data-ocwp-undo' ) ], 'undo' );
+					return;
+				}
 
 				var drop = one.hasAttribute( 'data-ocwp-drop' );
 				run( [ one.getAttribute( drop ? 'data-ocwp-drop' : 'data-ocwp-one' ) ], drop );
@@ -347,13 +357,17 @@ final class Webp_Admin {
 					progress( Math.round( 100 * at / ids.length ), sprintf( T.prog, at, ids.length ) );
 
 					var id = ids[ at++ ];
-					post( drop ? 'ocmc_drop' : 'ocmc_convert', { id: id } ).then( function ( r ) {
+					var call = 'undo' === drop ? 'ocmc_undo' : ( drop ? 'ocmc_drop' : 'ocmc_convert' );
+					post( call, { id: id } ).then( function ( r ) {
 						var d = r && r.data ? r.data : {};
 						var row = document.querySelector( '[data-ocwp-row="' + id + '"]' );
 						if ( row ) {
 							var msg = row.querySelector( '[data-ocwp-msg]' );
 							var cell = row.querySelector( '[data-ocwp-size]' );
-							if ( d.ok && drop ) {
+							if ( d.ok && 'undo' === drop ) {
+								msg.textContent = T.undone;
+								if ( cell ) { cell.textContent = kb( d.after ); }
+							} else if ( d.ok && drop ) {
 								saved += d.freed || 0;
 								msg.textContent = sprintf( T.sumsaved, kb( d.freed || 0 ) );
 							} else if ( d.ok ) {

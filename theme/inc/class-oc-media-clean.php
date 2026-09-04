@@ -172,6 +172,7 @@ final class Media_Clean {
 		add_action( 'wp_ajax_ocmc_formats', array( $this, 'ajax_formats' ) );
 		add_action( 'wp_ajax_ocmc_convert', array( $this, 'ajax_convert' ) );
 		add_action( 'wp_ajax_ocmc_drop', array( $this, 'ajax_drop' ) );
+		add_action( 'wp_ajax_ocmc_undo', array( $this, 'ajax_undo' ) );
 		add_filter( 'image_editor_output_format', array( $this, 'webp_sizes' ) );
 		add_action( 'wp_ajax_ocmc_shrink', array( $this, 'ajax_shrink' ) );
 		add_action( 'wp_ajax_ocmc_restore', array( $this, 'ajax_restore' ) );
@@ -1424,15 +1425,16 @@ final class Media_Clean {
 		$before = self::bytes( $id );
 
 		// Everything needed to put it back exactly as it was.
-		if ( '' === (string) get_post_meta( $id, self::PREWEBP, true ) ) {
+		// An array, not JSON: WordPress strips the backslashes out of a meta
+		// string, and `\u05d1` becoming `u05d1` turns every Hebrew filename
+		// here into one that does not exist.
+		if ( ! is_array( get_post_meta( $id, self::PREWEBP, true ) ) ) {
 			update_post_meta(
 				$id,
 				self::PREWEBP,
-				wp_json_encode(
-					array(
-						'file' => (string) get_post_meta( $id, '_wp_attached_file', true ),
-						'meta' => wp_get_attachment_metadata( $id ),
-					)
+				array(
+					'file' => (string) get_post_meta( $id, '_wp_attached_file', true ),
+					'meta' => (array) wp_get_attachment_metadata( $id ),
 				)
 			);
 		}
@@ -1478,13 +1480,7 @@ final class Media_Clean {
 	 * @return array<int,string> Absolute paths.
 	 */
 	public static function old_files( int $id ): array {
-		$saved = (string) get_post_meta( $id, self::PREWEBP, true );
-
-		if ( '' === $saved ) {
-			return array();
-		}
-
-		$was = json_decode( $saved, true );
+		$was = get_post_meta( $id, self::PREWEBP, true );
 
 		if ( ! is_array( $was ) ) {
 			return array();
@@ -1559,10 +1555,20 @@ final class Media_Clean {
 		}
 
 		$freed = 0;
+		$meta  = (array) wp_get_attachment_metadata( $id );
+		$dir   = dirname( (string) get_attached_file( $id ) );
 
 		foreach ( $files as $path ) {
 			$freed += (int) filesize( $path );
 			wp_delete_file( $path );
+
+			// The file WordPress still calls this picture's original may be
+			// one of these; the key has to go with it or wp_get_original_
+			// image_path() hands out an address that answers nothing.
+			if ( ! empty( $meta['original_image'] ) && $dir . '/' . $meta['original_image'] === $path ) {
+				unset( $meta['original_image'] );
+				wp_update_attachment_metadata( $id, $meta );
+			}
 		}
 
 		delete_post_meta( $id, self::PREWEBP );
@@ -1572,6 +1578,90 @@ final class Media_Clean {
 			'freed' => $freed,
 			'gone'  => count( $files ),
 		);
+	}
+
+	/**
+	 * Put a converted picture back the way it was.
+	 *
+	 * Only possible while the files it replaced are still there — which is
+	 * exactly what "clear the file it replaces" gives up.
+	 *
+	 * @param int $id Attachment ID.
+	 * @return array<string,mixed>
+	 */
+	public static function undo_webp( int $id ): array {
+		$was = get_post_meta( $id, self::PREWEBP, true );
+
+		if ( ! is_array( $was ) || empty( $was['file'] ) ) {
+			return array(
+				'ok'  => false,
+				'why' => __( 'There is nothing to go back to for this one.', 'oc-theme' ),
+			);
+		}
+
+		$uploads = wp_get_upload_dir();
+		$path    = (string) $uploads['basedir'] . '/' . ltrim( (string) $was['file'], '/' );
+
+		if ( ! file_exists( $path ) ) {
+			return array(
+				'ok'  => false,
+				'why' => __( 'The file it replaced is gone, so this cannot be undone.', 'oc-theme' ),
+			);
+		}
+
+		// The WebP files go; the old ones were never moved, only left behind.
+		foreach ( self::live_files( $id ) as $gone ) {
+			wp_delete_file( $gone );
+		}
+
+		update_post_meta( $id, '_wp_attached_file', (string) $was['file'] );
+		wp_update_attachment_metadata( $id, (array) $was['meta'] );
+		delete_post_meta( $id, self::PREWEBP );
+
+		return array(
+			'ok'    => true,
+			'after' => self::bytes( $id ),
+			'name'  => wp_basename( (string) $was['file'] ),
+		);
+	}
+
+	/**
+	 * The files an attachment is serving right now.
+	 *
+	 * @param int $id Attachment ID.
+	 * @return array<int,string> Absolute paths.
+	 */
+	private static function live_files( int $id ): array {
+		$file = (string) get_attached_file( $id );
+
+		if ( '' === $file ) {
+			return array();
+		}
+
+		$dir  = dirname( $file );
+		$out  = file_exists( $file ) ? array( $file ) : array();
+		$meta = (array) wp_get_attachment_metadata( $id );
+
+		foreach ( (array) ( $meta['sizes'] ?? array() ) as $size ) {
+			$path = $dir . '/' . (string) ( $size['file'] ?? '' );
+
+			if ( '' !== (string) ( $size['file'] ?? '' ) && file_exists( $path ) ) {
+				$out[] = $path;
+			}
+		}
+
+		return $out;
+	}
+
+	/**
+	 * Undo one conversion, over ajax.
+	 */
+	public function ajax_undo(): void {
+		$this->guard();
+
+		$id = isset( $_POST['id'] ) ? absint( wp_unslash( $_POST['id'] ) ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- guard() above ran check_ajax_referer().
+
+		wp_send_json_success( self::undo_webp( $id ) );
 	}
 
 	/**
