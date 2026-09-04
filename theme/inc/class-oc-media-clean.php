@@ -949,9 +949,9 @@ final class Media_Clean {
 
 			if ( ! copy( $file, $backup ) ) {
 				return array(
-				'ok'  => false,
-				'why' => __( 'The original could not be copied aside, so nothing was changed.', 'oc-theme' ),
-			);
+					'ok'  => false,
+					'why' => __( 'The original could not be copied aside, so nothing was changed.', 'oc-theme' ),
+				);
 			}
 
 			update_post_meta( $id, self::BACKUP, $backup );
