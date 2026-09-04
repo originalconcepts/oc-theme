@@ -1360,7 +1360,7 @@ final class Media_Clean {
 	public function ajax_webp(): void {
 		$this->guard();
 
-		$on = isset( $_POST['on'] ) && '1' === (string) wp_unslash( $_POST['on'] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- guard() above ran check_ajax_referer().
+		$on = isset( $_POST['on'] ) && '1' === sanitize_key( wp_unslash( $_POST['on'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- guard() above ran check_ajax_referer().
 
 		update_option( self::WEBP, $on ? 1 : 0, false );
 
