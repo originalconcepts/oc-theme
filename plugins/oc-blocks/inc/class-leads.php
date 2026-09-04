@@ -70,8 +70,9 @@ final class Leads {
 	/**
 	 * The form's fields as the block declares them, each with the input
 	 * name it answers to. The lead's own four kinds keep their plain names
-	 * (the Leads columns read them); the first name field is always there
-	 * and always required, because a lead without a name is nothing.
+	 * (the Leads columns read them); name, phone and email are always
+	 * required when present, and the name field is always there, because a
+	 * lead without a name is nothing.
 	 *
 	 * @param array<string,mixed> $s Contact section.
 	 * @return array<int,array{kind:string,label:string,name:string,req:int,w:string,opts:array<int,string>}>
@@ -104,7 +105,7 @@ final class Leads {
 				'kind'  => $kind,
 				'label' => trim( (string) ( $row['label'] ?? '' ) ),
 				'name'  => $core ? $kind : 'x' . (int) $i,
-				'req'   => 'name' === $kind && $core ? 1 : ( empty( $row['req'] ) ? 0 : 1 ),
+				'req'   => $core && 'msg' !== $kind ? 1 : ( empty( $row['req'] ) ? 0 : 1 ),
 				'w'     => 'half' === ( $row['w'] ?? '' ) ? 'half' : 'full',
 				'opts'  => $opts,
 			);

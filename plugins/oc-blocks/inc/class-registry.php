@@ -1477,6 +1477,15 @@ final class Registry {
 					),
 					'text'         => array(
 						'type'  => 'textarea',
+						'label' => __( 'Intro text', 'oc-blocks' ),
+					),
+					'fheading'     => array(
+						'type'  => 'text',
+						'label' => __( 'Heading above the form', 'oc-blocks' ),
+						'hint'  => __( 'Shown only when filled — right over the fields, in every layout.', 'oc-blocks' ),
+					),
+					'ftext'        => array(
+						'type'  => 'textarea',
 						'label' => __( 'A few words above the form', 'oc-blocks' ),
 					),
 					'layout'       => array(
@@ -1542,7 +1551,7 @@ final class Registry {
 							),
 							array(
 								'kind' => 'email',
-								'req'  => 0,
+								'req'  => 1,
 								'w'    => 'full',
 							),
 							array(
@@ -1582,6 +1591,8 @@ final class Registry {
 								'type'  => 'toggle',
 								'label' => __( 'Required', 'oc-blocks' ),
 								'def'   => 1,
+								'hint'  => __( 'Name, phone and email are always required.', 'oc-blocks' ),
+								'when'  => array( 'kind' => array( 'msg', 'text', 'long', 'number', 'date', 'select' ) ),
 							),
 						),
 					),

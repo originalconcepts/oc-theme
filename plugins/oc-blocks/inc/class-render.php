@@ -1922,6 +1922,7 @@ final class Render {
 		$err    = '<em class="ocb-lead__err" hidden></em>';
 		$fields = '';
 		$kinds  = Registry::field_kinds();
+		$me     = self::visitor();
 
 		foreach ( Leads::fields_of( $s ) as $row ) {
 			$kind  = (string) $row['kind'];
@@ -1929,16 +1930,17 @@ final class Render {
 			$name  = (string) $row['name'];
 			$req   = $row['req'] ? ' required' : '';
 			$attrs = ' name="' . esc_attr( $name ) . '" data-kind="' . esc_attr( $kind ) . '"' . $req;
+			$known = isset( $me[ $name ] ) && '' !== $me[ $name ] ? ' value="' . esc_attr( $me[ $name ] ) . '"' : '';
 
 			switch ( $kind ) {
 				case 'name':
-					$input = '<input type="text"' . $attrs . ' autocomplete="name">';
+					$input = '<input type="text"' . $attrs . $known . ' autocomplete="name">';
 					break;
 				case 'phone':
-					$input = '<input type="tel"' . $attrs . ' autocomplete="tel" inputmode="tel">';
+					$input = '<input type="tel"' . $attrs . $known . ' autocomplete="tel" inputmode="tel">';
 					break;
 				case 'email':
-					$input = '<input type="email"' . $attrs . ' autocomplete="email">';
+					$input = '<input type="email"' . $attrs . $known . ' autocomplete="email">';
 					break;
 				case 'msg':
 				case 'long':
@@ -1990,7 +1992,12 @@ final class Render {
 			$consent = '<label class="ocb-lead__consent"><input type="checkbox" name="consent" required><span>' . $wording . '</span><em class="ocb-lead__err" hidden></em></label>';
 		}
 
-		$form = '<form class="ocb-lead" method="post" action="' . esc_url( admin_url( 'admin-ajax.php' ) ) . '" data-ocb-lead novalidate'
+		$fhead = trim( (string) $s['fheading'] );
+		$ftext = trim( (string) $s['ftext'] );
+		$form  = '' === $fhead ? '' : '<h3 class="ocb-lead__fhead">' . esc_html( $fhead ) . '</h3>';
+		$form .= '' === $ftext ? '' : '<p class="ocb-lead__ftext">' . esc_html( $ftext ) . '</p>';
+
+		$form .= '<form class="ocb-lead" method="post" action="' . esc_url( admin_url( 'admin-ajax.php' ) ) . '" data-ocb-lead novalidate'
 			. ' data-err-req="' . esc_attr__( 'Please fill in this field.', 'oc-blocks' ) . '"'
 			. ' data-err-phone="' . esc_attr__( 'Please enter a valid phone number (10 digits).', 'oc-blocks' ) . '"'
 			. ' data-err-email="' . esc_attr__( 'Please enter a valid email address.', 'oc-blocks' ) . '"'
@@ -2023,6 +2030,37 @@ final class Render {
 		}
 
 		return '<div class="ocb-lead__wrap">' . $words . $form . '</div>';
+	}
+
+	/**
+	 * What the form already knows about a signed-in visitor: name, phone,
+	 * email. Anonymous visitors (and cached pages, which are anonymous by
+	 * construction) get an empty set.
+	 *
+	 * @return array<string,string>
+	 */
+	private static function visitor(): array {
+		if ( ! is_user_logged_in() ) {
+			return array();
+		}
+
+		$user  = wp_get_current_user();
+		$name  = trim( (string) $user->first_name . ' ' . (string) $user->last_name );
+		$phone = (string) get_user_meta( $user->ID, 'oc_phone', true );
+
+		if ( '' === $phone ) {
+			$phone = (string) get_user_meta( $user->ID, 'billing_phone', true );
+		}
+
+		if ( 0 === strpos( $phone, '972' ) ) {
+			$phone = '0' . substr( $phone, 3 );
+		}
+
+		return array(
+			'name'  => '' === $name ? (string) $user->display_name : $name,
+			'phone' => $phone,
+			'email' => (string) $user->user_email,
+		);
 	}
 
 	/**

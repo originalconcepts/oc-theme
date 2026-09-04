@@ -2174,6 +2174,11 @@ html.oc-look-lock body { overflow: hidden; }
 
 .ocb-lead__text { margin: 0 0 24px; text-align: center; line-height: 1.7; opacity: .8; }
 
+.ocb-lead__fhead { margin: 0 0 6px; font-size: 1.15em; text-align: center; }
+.ocb-lead__ftext { margin: 0 0 18px; text-align: center; line-height: 1.6; opacity: .8; }
+.ocb-lead__fhead + .ocb-lead { margin-block-start: 14px; }
+.ocb-lead__ftext + .ocb-lead { margin-block-start: 0; }
+
 .ocb-lead {
 	display: grid;
 	grid-template-columns: 1fr 1fr;
@@ -2261,7 +2266,11 @@ html.oc-look-lock body { overflow: hidden; }
 .ocb-lead__wrap--image .ocb__title,
 .ocb-lead__wrap--info .ocb__title,
 .ocb-lead__wrap--image .ocb-lead__text,
-.ocb-lead__wrap--info .ocb-lead__text { text-align: start; }
+.ocb-lead__wrap--info .ocb-lead__text,
+.ocb-lead__wrap--image .ocb-lead__fhead,
+.ocb-lead__wrap--info .ocb-lead__fhead,
+.ocb-lead__wrap--image .ocb-lead__ftext,
+.ocb-lead__wrap--info .ocb-lead__ftext { text-align: start; }
 
 .ocb-lead__wrap--image .ocb-lead__go,
 .ocb-lead__wrap--info .ocb-lead__go { justify-self: stretch; }

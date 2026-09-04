@@ -1474,3 +1474,15 @@ msgstr "[%1$s] פנייה חדשה מאת %2$s"
 
 msgid "Every enquiry is emailed to the addresses the contact block names (the site admin otherwise) and kept here. Every new lead is also POSTed there as JSON — name, phone, email, message, page. Works with any CRM that accepts webhooks, and with Make / Zapier in between."
 msgstr "כל פנייה נשלחת במייל לכתובות שבלוק יצירת הקשר מגדיר (אחרת למנהל האתר) ונשמרת כאן. כל ליד חדש נשלח לשם גם כ־JSON — שם, טלפון, אימייל, הודעה, עמוד. עובד עם כל CRM שמקבל webhooks, וגם עם Make / Zapier באמצע."
+
+msgid "Intro text"
+msgstr "טקסט פתיחה"
+
+msgid "Heading above the form"
+msgstr "כותרת מעל הטופס"
+
+msgid "Shown only when filled — right over the fields, in every layout."
+msgstr "מוצג רק אם מולא — ממש מעל השדות, בכל פריסה."
+
+msgid "Name, phone and email are always required."
+msgstr "שם, טלפון ואימייל תמיד חובה."
