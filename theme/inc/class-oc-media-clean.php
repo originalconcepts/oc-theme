@@ -1555,8 +1555,15 @@ final class Media_Clean {
 		}
 
 		$freed = 0;
-		$meta  = (array) wp_get_attachment_metadata( $id );
 		$dir   = dirname( (string) get_attached_file( $id ) );
+
+		/**
+		 * As in bytes(): core's documented shape omits original_image, which
+		 * is exactly the key this has to look at.
+		 *
+		 * @var array<string,mixed> $meta
+		 */
+		$meta = (array) wp_get_attachment_metadata( $id );
 
 		foreach ( $files as $path ) {
 			$freed += (int) filesize( $path );
@@ -1565,7 +1572,7 @@ final class Media_Clean {
 			// The file WordPress still calls this picture's original may be
 			// one of these; the key has to go with it or wp_get_original_
 			// image_path() hands out an address that answers nothing.
-			if ( ! empty( $meta['original_image'] ) && $dir . '/' . $meta['original_image'] === $path ) {
+			if ( ! empty( $meta['original_image'] ) && $dir . '/' . (string) $meta['original_image'] === $path ) {
 				unset( $meta['original_image'] );
 				wp_update_attachment_metadata( $id, $meta );
 			}
