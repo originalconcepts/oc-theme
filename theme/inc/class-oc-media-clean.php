@@ -1210,7 +1210,6 @@ final class Media_Clean {
 		foreach ( array(
 			array( (string) $uploads['baseurl'], (string) $uploads['basedir'] ),
 			array( content_url(), (string) WP_CONTENT_DIR ),
-			array( includes_url(), ABSPATH . WPINC ),
 		) as $pair ) {
 			if ( 0 === strpos( $url, $pair[0] ) ) {
 				return $pair[1] . substr( $url, strlen( $pair[0] ) );
