@@ -2214,13 +2214,14 @@ html.oc-look-lock body { overflow: hidden; }
 	grid-column: 1 / -1;
 	display: flex;
 	gap: 10px;
-	align-items: baseline;
+	align-items: center;
 	font-size: .9em;
 	opacity: .85;
 	cursor: pointer;
 }
 
-.ocb-lead__consent input { inline-size: 16px; block-size: 16px; accent-color: var(--oc-cta, var(--oc-primary, #2f4e7a)); flex: 0 0 auto; translate: 0 2px; }
+/* 24px, which is the smallest a finger is reliably given. */
+.ocb-lead__consent input { inline-size: 24px; block-size: 24px; accent-color: var(--oc-cta, var(--oc-primary, #2f4e7a)); flex: 0 0 auto; }
 
 .ocb-lead__consent a { color: inherit; font-weight: 600; }
 
