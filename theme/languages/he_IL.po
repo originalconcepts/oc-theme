@@ -6726,3 +6726,63 @@ msgstr "המקור הוחזר"
 
 msgid "Re-save this picture at the size the site actually shows? The address does not change, and the original is kept so this can be undone."
 msgstr "לשמור את התמונה מחדש בגודל שהאתר באמת מציג? הכתובת לא משתנה, והמקור נשמר כדי שאפשר יהיה לבטל."
+
+msgid "That address is not on this site."
+msgstr "הכתובת הזו אינה באתר הזה."
+
+msgid "The page returned nothing."
+msgstr "העמוד לא החזיר תוכן."
+
+msgid "Cleanup"
+msgstr "ניקוי"
+
+msgid "One page"
+msgstr "עמוד בודד"
+
+msgid "Documents and the rest"
+msgstr "מסמכים והשאר"
+
+msgid "Shrink the ticked ones"
+msgstr "הקטנת המסומנים"
+
+msgid "Delete the ticked ones"
+msgstr "מחיקת המסומנים"
+
+msgid "Deleting is permanent. Shrinking is not — the original is kept."
+msgstr "מחיקה היא סופית. הקטנה לא — המקור נשמר."
+
+msgid "Give it the address of any page on the site and it reads that page the way a browser does: every picture and film the page names, heaviest first. This is the weight a visitor to that page pays."
+msgstr "הזינו כתובת של כל עמוד באתר, והכלי יקרא אותו כמו שדפדפן קורא: כל תמונה וסרטון שהעמוד מבקש, מהכבד לקל. זה המשקל שמבקר בעמוד הזה משלם."
+
+msgid "The page"
+msgstr "העמוד"
+
+msgid "Check it"
+msgstr "בדיקה"
+
+msgid "The original is kept, so this can always be undone."
+msgstr "המקור נשמר, כך שתמיד אפשר לבטל."
+
+msgid "Shrink %d pictures? Each keeps its original, so this can be undone."
+msgstr "להקטין %d תמונות? לכל אחת נשמר המקור, כך שאפשר לבטל."
+
+msgid "Shrinking — %1$d of %2$d"
+msgstr "מקטין — %1$d מתוך %2$d"
+
+msgid "Done. %s saved."
+msgstr "הסתיים. נחסכו %s."
+
+msgid "That page names no pictures or films we can weigh."
+msgstr "העמוד הזה לא מבקש תמונות או סרטונים שאפשר לשקול."
+
+msgid "This page loads %1$d files, %2$s of pictures and film."
+msgstr "העמוד טוען %1$d קבצים, %2$s של תמונות וסרטונים."
+
+msgid "not in the library"
+msgstr "לא בספריית המדיה"
+
+msgid "Reading the page…"
+msgstr "קורא את העמוד…"
+
+msgid "nothing points at it"
+msgstr "שום דבר לא מפנה אליו"

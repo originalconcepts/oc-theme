@@ -153,6 +153,7 @@ final class Media_Clean {
 		add_action( 'wp_ajax_ocmc_step', array( $this, 'ajax_step' ) );
 		add_action( 'wp_ajax_ocmc_delete', array( $this, 'ajax_delete' ) );
 		add_action( 'wp_ajax_ocmc_heavy', array( $this, 'ajax_heavy' ) );
+		add_action( 'wp_ajax_ocmc_page', array( $this, 'ajax_page' ) );
 		add_action( 'wp_ajax_ocmc_shrink', array( $this, 'ajax_shrink' ) );
 		add_action( 'wp_ajax_ocmc_restore', array( $this, 'ajax_restore' ) );
 		add_action( 'admin_post_ocmc_csv', array( $this, 'handle_csv' ) );
@@ -705,6 +706,7 @@ final class Media_Clean {
 					'name'  => wp_basename( (string) get_post_meta( $id, '_wp_attached_file', true ) ),
 					'bytes' => $size,
 					'link'  => get_edit_post_link( $id, 'raw' ),
+					'mime'  => (string) get_post_mime_type( $id ),
 				);
 			}
 
@@ -741,7 +743,7 @@ final class Media_Clean {
 	public static function heavy( int $min, string $type, int $limit = 200 ): array {
 		global $wpdb;
 
-		$sql = "SELECT p.ID, p.post_title, p.post_mime_type, p.post_parent, m.meta_value AS meta
+		$sql = "SELECT p.ID, p.post_title, p.post_mime_type, p.post_parent, p.post_date_gmt, m.meta_value AS meta
 			 FROM {$wpdb->posts} p
 			 LEFT JOIN {$wpdb->postmeta} m ON m.post_id = p.ID AND m.meta_key = '_wp_attachment_metadata'
 			 WHERE p.post_type = 'attachment'";
@@ -791,6 +793,7 @@ final class Media_Clean {
 				'w'      => (int) ( $meta['width'] ?? 0 ),
 				'h'      => (int) ( $meta['height'] ?? 0 ),
 				'parent' => (int) $row->post_parent,
+				'date'   => (string) $row->post_date_gmt,
 			);
 		}
 
@@ -816,6 +819,21 @@ final class Media_Clean {
 		foreach ( $found as $one ) {
 			$id   = $one['id'];
 			$file = (string) get_post_meta( $id, '_wp_attached_file', true );
+			$verd = self::bucket(
+				(object) array(
+					'ID'            => $id,
+					'post_parent'   => $one['parent'],
+					'post_date_gmt' => $one['date'],
+				),
+				$refs,
+				$posts
+			);
+
+			// The cleanup half checks the name too before calling anything an
+			// orphan; do the same here so the two never disagree.
+			if ( 'orphan' === $verd && self::name_referenced( $id, false ) ) {
+				$verd = 'used';
+			}
 
 			$items[] = array_merge(
 				$one,
@@ -823,9 +841,10 @@ final class Media_Clean {
 					'thumb'  => wp_get_attachment_image_url( $id, 'thumbnail' ),
 					'name'   => '' === $file ? (string) get_the_title( $id ) : wp_basename( $file ),
 					'link'   => get_edit_post_link( $id, 'raw' ),
-					'used'   => self::used_by( $id, $refs, $posts ),
+					'used'   => self::used_by( $id, $refs, $posts, (int) $one['parent'] ),
 					'shrink' => self::shrinkable( $one['mime'] ),
 					'backup' => '' !== (string) get_post_meta( $id, self::BACKUP, true ),
+					'verd'   => $verd,
 				)
 			);
 		}
@@ -859,17 +878,30 @@ final class Media_Clean {
 	/**
 	 * The human answer to "where is this used?".
 	 *
-	 * @param int                           $id    Attachment ID.
-	 * @param array<int,array<string,bool>> $refs  Reference map: id => set of sources.
-	 * @param array<int,object>             $posts Posts by ID.
+	 * Must agree with bucket(), which is what the cleanup half of this screen
+	 * reports — and bucket() weighs the file's parent as well as the
+	 * reference map. Reading only the map told us a video attached to a
+	 * published product was pointed at by nothing, which is exactly the
+	 * answer that gets something deleted that should not be.
+	 *
+	 * @param int                           $id     Attachment ID.
+	 * @param array<int,array<string,bool>> $refs   Reference map: id => set of sources.
+	 * @param array<int,object>             $posts  Posts by ID.
+	 * @param int                           $parent The file's post_parent.
 	 * @return array<int,array<string,string>>
 	 */
-	private static function used_by( int $id, array $refs, array $posts ): array {
+	private static function used_by( int $id, array $refs, array $posts, int $parent = 0 ): array {
 		$out  = array();
 		$seen = array();
 
+		$sources = array_keys( (array) ( $refs[ $id ] ?? array() ) );
+
+		if ( $parent > 0 ) {
+			$sources[] = 'post:' . $parent;
+		}
+
 		// The map is a set — the provenance is in the keys, as bucket() reads it.
-		foreach ( array_keys( (array) ( $refs[ $id ] ?? array() ) ) as $source ) {
+		foreach ( $sources as $source ) {
 			if ( 0 !== strpos( (string) $source, 'post:' ) ) {
 				$label = (string) $source;
 
@@ -1044,6 +1076,177 @@ final class Media_Clean {
 			'ok'    => true,
 			'after' => (int) filesize( $file ),
 		);
+	}
+
+	/**
+	 * What one page actually makes a visitor download.
+	 *
+	 * The page is fetched and read the way a browser reads it — every
+	 * picture, film and poster it names — because that, and not what the
+	 * library holds, is the number the visitor feels. Files are matched
+	 * back to the library where they came from it, so a heavy one can be
+	 * shrunk from here.
+	 *
+	 * @param string $url Address on this site.
+	 * @return array<string,mixed>
+	 */
+	public static function page_media( string $url ): array {
+		$url  = esc_url_raw( trim( $url ) );
+		$home = wp_parse_url( home_url(), PHP_URL_HOST );
+		$host = wp_parse_url( $url, PHP_URL_HOST );
+
+		if ( '' === $url || $host !== $home ) {
+			return array(
+				'ok'  => false,
+				'why' => __( 'That address is not on this site.', 'oc-theme' ),
+			);
+		}
+
+		$answer = wp_remote_get(
+			$url,
+			array(
+				'timeout'    => 25,
+				'user-agent' => 'Mozilla/5.0 (Linux; Android 11) AppleWebKit/537.36 Chrome/152.0 Mobile Safari/537.36',
+			)
+		);
+
+		if ( is_wp_error( $answer ) ) {
+			return array(
+				'ok'  => false,
+				'why' => $answer->get_error_message(),
+			);
+		}
+
+		$html = (string) wp_remote_retrieve_body( $answer );
+
+		if ( '' === $html ) {
+			return array(
+				'ok'  => false,
+				'why' => __( 'The page returned nothing.', 'oc-theme' ),
+			);
+		}
+
+		$hits = array();
+
+		// src, poster and the addresses inside inline styles. srcset is left
+		// alone on purpose: it offers a browser many widths and the browser
+		// takes one, so counting them all would invent weight nobody loads.
+		foreach ( array( '/<(?:img|video|source|iframe)\b[^>]*?\b(?:src|poster)\s*=\s*["\']([^"\']+)/i', '/url\(\s*["\']?([^"\')]+\.(?:jpe?g|png|gif|webp|avif|svg|mp4|webm))/i' ) as $pattern ) {
+			if ( preg_match_all( $pattern, $html, $m ) ) {
+				foreach ( $m[1] as $one ) {
+					$one = html_entity_decode( trim( $one ), ENT_QUOTES );
+
+					if ( 0 === strpos( $one, 'data:' ) || '' === $one ) {
+						continue;
+					}
+
+					$hits[ strtok( $one, '?' ) ] = true;
+				}
+			}
+		}
+
+		$uploads = wp_get_upload_dir();
+		$items   = array();
+		$total   = 0;
+
+		foreach ( array_keys( $hits ) as $link ) {
+			$full = 0 === strpos( $link, '//' ) ? 'https:' . $link : $link;
+
+			if ( 0 === strpos( $full, '/' ) ) {
+				$full = home_url( $full );
+			}
+
+			if ( wp_parse_url( $full, PHP_URL_HOST ) !== $home ) {
+				continue;
+			}
+
+			$path = self::disk_path( $full, $uploads );
+
+			if ( '' === $path || ! file_exists( $path ) ) {
+				continue;
+			}
+
+			$bytes  = (int) filesize( $path );
+			$total += $bytes;
+			$id     = 0 === strpos( $full, (string) $uploads['baseurl'] ) ? self::attachment_of( $full ) : 0;
+
+			$items[] = array(
+				'url'    => $full,
+				'name'   => wp_basename( $path ),
+				'bytes'  => $bytes,
+				'id'     => $id,
+				'mime'   => (string) ( wp_check_filetype( $path )['type'] ?? '' ),
+				'thumb'  => $id > 0 ? wp_get_attachment_image_url( $id, 'thumbnail' ) : '',
+				'link'   => $id > 0 ? get_edit_post_link( $id, 'raw' ) : '',
+				'shrink' => $id > 0 && self::shrinkable( (string) ( wp_check_filetype( $path )['type'] ?? '' ) ),
+				'backup' => $id > 0 && '' !== (string) get_post_meta( $id, self::BACKUP, true ),
+			);
+		}
+
+		usort(
+			$items,
+			static function ( array $a, array $b ): int {
+				return $b['bytes'] <=> $a['bytes'];
+			}
+		);
+
+		return array(
+			'ok'    => true,
+			'items' => array_slice( $items, 0, 60 ),
+			'bytes' => $total,
+			'count' => count( $items ),
+			'html'  => strlen( $html ),
+			'url'   => $url,
+		);
+	}
+
+	/**
+	 * Where a URL on this site lands on disk, or '' when it is not ours.
+	 *
+	 * @param string               $url     Absolute URL.
+	 * @param array<string,string> $uploads Upload directory info.
+	 */
+	private static function disk_path( string $url, array $uploads ): string {
+		foreach ( array(
+			array( (string) $uploads['baseurl'], (string) $uploads['basedir'] ),
+			array( content_url(), (string) WP_CONTENT_DIR ),
+			array( includes_url(), ABSPATH . WPINC ),
+		) as $pair ) {
+			if ( 0 === strpos( $url, $pair[0] ) ) {
+				return $pair[1] . substr( $url, strlen( $pair[0] ) );
+			}
+		}
+
+		return '';
+	}
+
+	/**
+	 * The library item a served picture came from, size suffix and all.
+	 *
+	 * @param string $url Absolute URL inside the uploads folder.
+	 */
+	private static function attachment_of( string $url ): int {
+		$id = attachment_url_to_postid( $url );
+
+		if ( $id > 0 ) {
+			return $id;
+		}
+
+		// "photo-600x750.png" is a size WordPress generated from "photo.png".
+		$bare = (string) preg_replace( '/-\d+x\d+(?=\.[a-z0-9]+$)/i', '', $url );
+
+		return $bare === $url ? 0 : attachment_url_to_postid( $bare );
+	}
+
+	/**
+	 * One page's media, over ajax.
+	 */
+	public function ajax_page(): void {
+		$this->guard();
+
+		$url = isset( $_POST['url'] ) ? esc_url_raw( wp_unslash( $_POST['url'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- guard() above ran check_ajax_referer().
+
+		wp_send_json_success( self::page_media( $url ) );
 	}
 
 	/**
