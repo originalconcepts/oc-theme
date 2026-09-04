@@ -62,8 +62,8 @@ final class Admin {
 		$this->guard();
 
 		// phpcs:disable WordPress.Security.NonceVerification.Missing -- guard() above ran check_ajax_referer().
-		$key  = isset( $_POST['key'] ) ? sanitize_key( wp_unslash( $_POST['key'] ) ) : '';
-		$raw  = isset( $_POST['feed'] ) ? (array) wp_unslash( $_POST['feed'] ) : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- every member is sanitised by Feeds::clean().
+		$key = isset( $_POST['key'] ) ? sanitize_key( wp_unslash( $_POST['key'] ) ) : '';
+		$raw = isset( $_POST['feed'] ) ? (array) wp_unslash( $_POST['feed'] ) : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- every member is sanitised by Feeds::clean().
 		// phpcs:enable
 
 		$fresh = '' === $key;

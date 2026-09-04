@@ -180,16 +180,51 @@ final class Build {
 	private static function columns( array $feed ): array {
 		if ( 'google' === $feed['target'] ) {
 			return array(
-				'id', 'title', 'description', 'link', 'image_link', 'additional_image_link', 'availability',
-				'price', 'sale_price', 'sale_price_effective_date', 'brand', 'gtin', 'mpn', 'identifier_exists',
-				'condition', 'item_group_id', 'color', 'size', 'google_product_category', 'product_type', 'shipping_weight',
+				'id',
+				'title',
+				'description',
+				'link',
+				'image_link',
+				'additional_image_link',
+				'availability',
+				'price',
+				'sale_price',
+				'sale_price_effective_date',
+				'brand',
+				'gtin',
+				'mpn',
+				'identifier_exists',
+				'condition',
+				'item_group_id',
+				'color',
+				'size',
+				'google_product_category',
+				'product_type',
+				'shipping_weight',
 			);
 		}
 
 		return array(
-			'id', 'title', 'description', 'link', 'image_link', 'additional_image_link', 'availability',
-			'price', 'sale_price', 'sale_price_effective_date', 'brand', 'gtin', 'mpn', 'condition',
-			'item_group_id', 'color', 'size', 'google_product_category', 'product_type', 'quantity_to_sell_on_facebook',
+			'id',
+			'title',
+			'description',
+			'link',
+			'image_link',
+			'additional_image_link',
+			'availability',
+			'price',
+			'sale_price',
+			'sale_price_effective_date',
+			'brand',
+			'gtin',
+			'mpn',
+			'condition',
+			'item_group_id',
+			'color',
+			'size',
+			'google_product_category',
+			'product_type',
+			'quantity_to_sell_on_facebook',
 		);
 	}
 
@@ -439,11 +474,11 @@ final class Build {
 	 * what it calls each of those things.
 	 *
 	 * @param \WC_Product         $item   The thing being sold (a variation, or the product).
-	 * @param \WC_Product         $parent Its product.
+	 * @param \WC_Product         $owner  Its product.
 	 * @param array<string,mixed> $feed   Feed.
 	 * @return array<string,mixed>
 	 */
-	private static function fields( \WC_Product $item, \WC_Product $parent, array $feed ): array {
+	private static function fields( \WC_Product $item, \WC_Product $owner, array $feed ): array {
 		$link = (string) $item->get_permalink();
 
 		if ( ! empty( $feed['utm'] ) ) {
@@ -457,10 +492,12 @@ final class Build {
 			);
 		}
 
-		$image = wp_get_attachment_url( (int) ( $item->get_image_id() ?: $parent->get_image_id() ) );
+		$picture = (int) $item->get_image_id();
+		$picture = $picture > 0 ? $picture : (int) $owner->get_image_id();
+		$image   = wp_get_attachment_url( $picture );
 		$more  = array();
 
-		foreach ( array_slice( $parent->get_gallery_image_ids(), 0, 10 ) as $gid ) {
+		foreach ( array_slice( $owner->get_gallery_image_ids(), 0, 10 ) as $gid ) {
 			$url = wp_get_attachment_url( (int) $gid );
 
 			if ( is_string( $url ) && '' !== $url ) {
@@ -468,15 +505,20 @@ final class Build {
 			}
 		}
 
-		$text = 'long' === $feed['desc']
-			? ( $parent->get_description() ?: $parent->get_short_description() )
-			: ( $parent->get_short_description() ?: $parent->get_description() );
+		$long  = trim( (string) $owner->get_description() );
+		$brief = trim( (string) $owner->get_short_description() );
+
+		if ( 'long' === $feed['desc'] ) {
+			$text = '' !== $long ? $long : $brief;
+		} else {
+			$text = '' !== $brief ? $brief : $long;
+		}
 
 		$text = trim( (string) wp_strip_all_tags( strip_shortcodes( (string) $text ) ) );
 		$text = (string) preg_replace( '/\s+/u', ' ', $text );
 
 		if ( '' === $text ) {
-			$text = (string) $parent->get_name();
+			$text = (string) $owner->get_name();
 		}
 
 		$regular = (float) $item->get_regular_price();
@@ -485,9 +527,9 @@ final class Build {
 
 		return array(
 			'id'        => (string) $item->get_id(),
-			'group'     => (string) $parent->get_id(),
+			'group'     => (string) $owner->get_id(),
 			'sku'       => (string) $item->get_sku(),
-			'title'     => self::cut( (string) ( $item->get_id() === $parent->get_id() ? $parent->get_name() : $item->get_name() ), 150 ),
+			'title'     => self::cut( (string) ( $item->get_id() === $owner->get_id() ? $owner->get_name() : $item->get_name() ), 150 ),
 			'desc'      => self::cut( $text, 4900 ),
 			'link'      => $link,
 			'image'     => is_string( $image ) ? $image : '',
@@ -498,12 +540,12 @@ final class Build {
 			'sale_to'   => (string) $item->get_date_on_sale_to(),
 			'stock'     => $item->is_in_stock(),
 			'qty'       => $item->managing_stock() ? (int) $item->get_stock_quantity() : 0,
-			'brand'     => self::brand( $parent, $feed ),
-			'gtin'      => self::gtin( $item, $parent ),
+			'brand'     => self::brand( $owner, $feed ),
+			'gtin'      => self::gtin( $item, $owner ),
 			'mpn'       => (string) $item->get_sku(),
-			'cats'      => self::cats( $parent ),
-			'colour'    => self::attribute( $item, $parent, array( 'color', 'colour', 'צבע' ) ),
-			'size'      => self::attribute( $item, $parent, array( 'size', 'מידה' ) ),
+			'cats'      => self::cats( $owner ),
+			'colour'    => self::attribute( $item, $owner, array( 'color', 'colour', 'צבע' ) ),
+			'size'      => self::attribute( $item, $owner, array( 'size', 'מידה' ) ),
 			'weight'    => (string) $item->get_weight(),
 			'ship'      => empty( $feed['ship'] ) ? '' : self::ship( $item ),
 		);
@@ -535,10 +577,10 @@ final class Build {
 	 * The barcode, where the shop keeps one.
 	 *
 	 * @param \WC_Product $item   Item.
-	 * @param \WC_Product $parent Its product.
+	 * @param \WC_Product $owner  Its product.
 	 */
-	private static function gtin( \WC_Product $item, \WC_Product $parent ): string {
-		foreach ( array( $item, $parent ) as $one ) {
+	private static function gtin( \WC_Product $item, \WC_Product $owner ): string {
+		foreach ( array( $item, $owner ) as $one ) {
 			if ( method_exists( $one, 'get_global_unique_id' ) ) {
 				$id = trim( (string) $one->get_global_unique_id() );
 
@@ -598,12 +640,12 @@ final class Build {
 	/**
 	 * One attribute by any of the names a shop might have given it.
 	 *
-	 * @param \WC_Product    $item   Item.
-	 * @param \WC_Product    $parent Its product.
+	 * @param \WC_Product       $item  Item.
+	 * @param \WC_Product       $owner Its product.
 	 * @param array<int,string> $names Candidate names.
 	 */
-	private static function attribute( \WC_Product $item, \WC_Product $parent, array $names ): string {
-		foreach ( array( $item, $parent ) as $one ) {
+	private static function attribute( \WC_Product $item, \WC_Product $owner, array $names ): string {
+		foreach ( array( $item, $owner ) as $one ) {
 			foreach ( $names as $name ) {
 				foreach ( array( 'pa_' . $name, $name ) as $slug ) {
 					$value = $one->get_attribute( $slug );
