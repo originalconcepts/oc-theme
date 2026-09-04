@@ -1616,15 +1616,16 @@ final class Media_Clean {
 				);
 			}
 
-			$holes = implode( ',', array_fill( 0, count( $ids ), '%d' ) );
+			// A page names a few dozen files at most, so each one is asked for
+			// by id rather than built into a query of its own.
+			$rows = array();
 
-			$rows = (array) $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery -- maintenance scan; live counts cannot cache.
-				$wpdb->prepare(
-					// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $holes is a list of %d placeholders built right above.
-					"SELECT ID, post_mime_type FROM {$wpdb->posts} WHERE post_type = 'attachment' AND ID IN ({$holes})",
-					$ids
-				)
-			);
+			foreach ( $ids as $one ) {
+				$rows[] = (object) array(
+					'ID'             => $one,
+					'post_mime_type' => (string) get_post_mime_type( $one ),
+				);
+			}
 		} else {
 			$rows = (array) $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery -- maintenance scan; live counts cannot cache.
 				"SELECT ID, post_mime_type FROM {$wpdb->posts}
