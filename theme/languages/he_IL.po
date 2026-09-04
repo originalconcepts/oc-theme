@@ -6915,3 +6915,9 @@ msgstr "חזרה"
 
 msgid "Back to the old format"
 msgstr "חזר לפורמט הקודם"
+
+msgid "After a conversion, remove the picture it replaced and its old sizes — unless that name is written somewhere on the site, in which case it is always kept. Clearing is what gives up the way back."
+msgstr "אחרי המרה, למחוק את התמונה שהוחלפה ואת הגדלים הישנים שלה — אלא אם השם הזה כתוב במקום כלשהו באתר, ואז הוא תמיד נשמר. המחיקה היא מה שמוותר על האפשרות לחזור אחורה."
+
+msgid "Pictures in the library that are still JPEG or PNG. Converting one rebuilds it and all its sizes as WebP and the site starts serving those. Nothing is deleted unless you asked for it in the settings, so a conversion can be undone."
+msgstr "תמונות בספרייה שעדיין JPEG או PNG. המרה בונה מחדש את התמונה ואת כל הגדלים שלה כ‑WebP, והאתר מתחיל להגיש אותם. שום דבר לא נמחק אלא אם ביקשתם זאת בהגדרות, כך שאפשר לחזור אחורה."

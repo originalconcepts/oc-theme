@@ -376,8 +376,15 @@ final class Media_Clean_Admin {
 			background: #1d2327; color: #fff; padding: 10px 14px; border-radius: 999px;
 			box-shadow: 0 8px 28px rgba(0,0,0,.28); z-index: 9999;
 		}
+		/* display:flex above beats the hidden attribute on its own, which is
+		   why the bar used to stand there before anything was ticked. */
+		.ocmc__float[hidden] { display: none; }
 		.ocmc__float b { font-size: 13px; font-weight: 600; padding-inline-start: 6px; }
-		.ocmc__float .button { border-radius: 999px; padding: 2px 16px; }
+		.ocmc__float .button { border-radius: 999px; padding: 2px 16px; border: 0; }
+		.ocmc__float .button[hidden] { display: none; }
+		.ocmc__float .button:not(.button-primary) { background: #fff; color: #2271b1; }
+		.ocmc__float .button:not(.button-primary):hover { background: #f0f6fc; color: #135e96; }
+		.ocmc__float .button:disabled { opacity: .45; }
 		</style>
 		<?php
 	}

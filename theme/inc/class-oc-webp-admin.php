@@ -41,48 +41,56 @@ final class Webp_Admin {
 				<div class="notice notice-error inline"><p><?php esc_html_e( 'This server cannot write WebP, so nothing here will work. Ask the host to enable it.', 'oc-theme' ); ?></p></div>
 			<?php endif; ?>
 
-			<p class="ocmc__webp">
-				<label>
-					<input type="checkbox" id="ocmc-webp" <?php checked( (bool) get_option( Media_Clean::WEBP, false ) ); ?>>
-					<b><?php esc_html_e( 'Convert pictures as they are uploaded', 'oc-theme' ); ?></b>
-				</label>
-				<span><?php esc_html_e( 'From now on every picture uploaded is written as WebP, at every size. The file you chose is kept beside it, untouched.', 'oc-theme' ); ?></span>
-				<em id="ocmc-webp-said"></em>
-			</p>
-
-			<p class="ocmc__webp">
-				<label>
-					<input type="checkbox" id="ocmc-drop" <?php checked( (bool) get_option( Media_Clean::DROP, false ) ); ?>>
-					<b><?php esc_html_e( 'Clear the file it replaces', 'oc-theme' ); ?></b>
-				</label>
-				<span><?php esc_html_e( 'After a conversion, remove the picture it replaced and its old sizes — unless that name is written somewhere on the site, in which case it is always kept.', 'oc-theme' ); ?></span>
-				<em id="ocmc-drop-said"></em>
-			</p>
-
 			<nav class="ocmc__tabs">
-				<button type="button" class="ocmc__tab is-on" data-ocwp-tab="no"><?php esc_html_e( 'To convert', 'oc-theme' ); ?></button>
+				<button type="button" class="ocmc__tab is-on" data-ocwp-tab="set"><?php esc_html_e( 'Settings', 'oc-theme' ); ?></button>
+				<button type="button" class="ocmc__tab" data-ocwp-tab="no"><?php esc_html_e( 'To convert', 'oc-theme' ); ?></button>
 				<button type="button" class="ocmc__tab" data-ocwp-tab="yes"><?php esc_html_e( 'Already WebP', 'oc-theme' ); ?></button>
 			</nav>
 
-			<p class="ocmc__note" data-ocwp-note="no">
-				<?php esc_html_e( 'Pictures in the library that are still JPEG or PNG. Converting one rebuilds it and all its sizes as WebP and the site starts serving those. Nothing is deleted unless you ask above, so a conversion can always be undone.', 'oc-theme' ); ?>
-			</p>
-			<p class="ocmc__note" data-ocwp-note="yes" hidden>
-				<?php esc_html_e( 'Pictures already being served as WebP. Where a conversion left the old file behind, it is offered for removal here.', 'oc-theme' ); ?>
-			</p>
+			<div data-ocwp-panel="set">
+				<p class="ocmc__webp">
+					<label>
+						<input type="checkbox" id="ocmc-webp" <?php checked( (bool) get_option( Media_Clean::WEBP, false ) ); ?>>
+						<b><?php esc_html_e( 'Convert pictures as they are uploaded', 'oc-theme' ); ?></b>
+					</label>
+					<span><?php esc_html_e( 'From now on every picture uploaded is written as WebP, at every size. The file you chose is kept beside it, untouched.', 'oc-theme' ); ?></span>
+				</p>
 
-			<p class="ocmc__controls">
-				<label class="ocmc__url">
-					<?php esc_html_e( 'On one page (optional)', 'oc-theme' ); ?>
-					<input type="url" id="ocwp-url" placeholder="<?php echo esc_attr( home_url( '/' ) ); ?>" class="regular-text ltr">
-				</label>
-				<button type="button" class="button button-primary" id="ocwp-go"><?php esc_html_e( 'Look again', 'oc-theme' ); ?></button>
-			</p>
-			<p class="ocmc__hint"><?php esc_html_e( 'Leave the address empty for the whole library. Fill it in and only the pictures that page uses are listed.', 'oc-theme' ); ?></p>
+				<p class="ocmc__webp">
+					<label>
+						<input type="checkbox" id="ocmc-drop" <?php checked( (bool) get_option( Media_Clean::DROP, false ) ); ?>>
+						<b><?php esc_html_e( 'Clear the file it replaces', 'oc-theme' ); ?></b>
+					</label>
+					<span><?php esc_html_e( 'After a conversion, remove the picture it replaced and its old sizes — unless that name is written somewhere on the site, in which case it is always kept. Clearing is what gives up the way back.', 'oc-theme' ); ?></span>
+				</p>
 
-			<div class="ocmc__bar" id="ocmc-bar" hidden><i></i><span></span></div>
+				<p class="submit">
+					<button type="button" class="button button-primary" id="ocwp-save"><?php esc_html_e( 'Save', 'oc-theme' ); ?></button>
+					<em id="ocwp-said" class="ocwp__said"></em>
+				</p>
+			</div>
 
-			<div id="ocwp-out"></div>
+			<div data-ocwp-panel="list" hidden>
+				<p class="ocmc__note" data-ocwp-note="no">
+					<?php esc_html_e( 'Pictures in the library that are still JPEG or PNG. Converting one rebuilds it and all its sizes as WebP and the site starts serving those. Nothing is deleted unless you asked for it in the settings, so a conversion can be undone.', 'oc-theme' ); ?>
+				</p>
+				<p class="ocmc__note" data-ocwp-note="yes" hidden>
+					<?php esc_html_e( 'Pictures already being served as WebP. Where a conversion left the old file behind, it is offered for removal here.', 'oc-theme' ); ?>
+				</p>
+
+				<p class="ocmc__controls">
+					<label class="ocmc__url">
+						<?php esc_html_e( 'On one page (optional)', 'oc-theme' ); ?>
+						<input type="url" id="ocwp-url" placeholder="<?php echo esc_attr( home_url( '/' ) ); ?>" class="regular-text ltr">
+					</label>
+					<button type="button" class="button button-primary" id="ocwp-go"><?php esc_html_e( 'Look again', 'oc-theme' ); ?></button>
+				</p>
+				<p class="ocmc__hint"><?php esc_html_e( 'Leave the address empty for the whole library. Fill it in and only the pictures that page uses are listed.', 'oc-theme' ); ?></p>
+
+				<div class="ocmc__bar" id="ocmc-bar" hidden><i></i><span></span></div>
+
+				<div id="ocwp-out"></div>
+			</div>
 		</div>
 
 		<div class="ocmc__float" id="ocwp-float" hidden>
@@ -135,9 +143,20 @@ final class Webp_Admin {
 			background: #1d2327; color: #fff; padding: 10px 14px; border-radius: 999px;
 			box-shadow: 0 8px 28px rgba(0,0,0,.28); z-index: 9999;
 		}
+		/* display:flex above beats the hidden attribute on its own, which is
+		   why the bar used to stand there before anything was ticked. */
+		.ocmc__float[hidden] { display: none; }
 		.ocmc__float b { font-size: 13px; font-weight: 600; padding-inline-start: 6px; }
-		.ocmc__float .button { border-radius: 999px; padding: 2px 16px; }
+		.ocmc__float .button { border-radius: 999px; padding: 2px 16px; border: 0; }
+		.ocmc__float .button[hidden] { display: none; }
+		.ocmc__float .button:not(.button-primary) { background: #fff; color: #2271b1; }
+		.ocmc__float .button:not(.button-primary):hover { background: #f0f6fc; color: #135e96; }
+		.ocmc__float .button:disabled { opacity: .45; }
 		.ocwp__spare { color: #996800; font-size: 12px; }
+		.ocwp__said { font-style: normal; color: #007017; font-size: 13px; margin-inline-start: 10px; }
+		.ocwp__load { display: flex; align-items: center; gap: 10px; color: #646970; font-size: 13px; margin: 20px 0; }
+		.ocwp__spin { inline-size: 18px; block-size: 18px; border: 2px solid #dcdcde; border-block-start-color: #2271b1; border-radius: 50%; animation: ocwp-spin .8s linear infinite; }
+		@keyframes ocwp-spin { to { transform: rotate(360deg); } }
 		</style>
 		<?php
 	}
@@ -184,6 +203,7 @@ final class Webp_Admin {
 			'spare'    => __( '%s left over', 'oc-theme' ),
 			'nospare'  => __( 'nothing left over', 'oc-theme' ),
 			'kept'     => __( 'kept', 'oc-theme' ),
+			'settings' => __( 'Settings', 'oc-theme' ),
 			'undo'     => __( 'Go back', 'oc-theme' ),
 			'undone'   => __( 'Back to the old format', 'oc-theme' ),
 		);
@@ -194,6 +214,7 @@ final class Webp_Admin {
 				T     = <?php echo wp_json_encode( $strings ); ?>,
 				bar   = document.getElementById( 'ocmc-bar' ),
 				out   = document.getElementById( 'ocwp-out' ),
+				seen  = {},
 				have  = 'no';
 
 			function post( action, data ) {
@@ -231,11 +252,24 @@ final class Webp_Admin {
 
 			function floatBar() {
 				var pill = document.getElementById( 'ocwp-float' );
-				var n = document.querySelectorAll( '.ocwp__cb:checked' ).length;
-				pill.hidden = 0 === n;
-				document.getElementById( 'ocwp-float-n' ).textContent = sprintf( T.picked, n );
-				document.getElementById( 'ocwp-convert' ).hidden = 'no' !== have;
-				document.getElementById( 'ocwp-drop' ).hidden = 'yes' !== have;
+				var ticks = document.querySelectorAll( '.ocwp__cb:checked' );
+				var listOpen = ! document.querySelector( '[data-ocwp-panel="list"]' ).hidden;
+
+				// Only what is already WebP *and* still has an old file behind
+				// it can have anything cleared, so the button follows that.
+				var withOld = 0;
+				ticks.forEach( function ( cb ) {
+					if ( '1' === cb.getAttribute( 'data-ocwp-olds' ) ) { withOld++; }
+				} );
+
+				var convert = document.getElementById( 'ocwp-convert' );
+				var drop = document.getElementById( 'ocwp-drop' );
+
+				convert.hidden = 'no' !== have;
+				drop.hidden = 'yes' !== have || 0 === withOld;
+
+				pill.hidden = ! listOpen || 0 === ticks.length || ( convert.hidden && drop.hidden );
+				document.getElementById( 'ocwp-float-n' ).textContent = sprintf( T.picked, ticks.length );
 			}
 
 			function ticked() {
@@ -266,7 +300,8 @@ final class Webp_Admin {
 						? '<br><span class="ocwp__spare">' + esc( it.olds ? sprintf( T.spare, kb( it.spare ) ) : T.nospare ) + '</span>'
 						: '';
 					return '<tr data-ocwp-row="' + it.id + '">'
-						+ '<td><span class="ocmc__pic"><input type="checkbox" class="ocwp__cb" value="' + it.id + '">' + pic + '</span></td>'
+						+ '<td><span class="ocmc__pic"><input type="checkbox" class="ocwp__cb" value="' + it.id
+						+ '" data-ocwp-olds="' + ( it.olds ? '1' : '0' ) + '">' + pic + '</span></td>'
 						+ '<td><span class="ocmc__hname">' + ( it.link ? '<a href="' + esc( it.link ) + '">' + esc( it.name ) + '</a>' : esc( it.name ) ) + '</span>'
 						+ '<br><span class="ocmc__hdim">' + esc( it.mime ) + '</span>' + spare + '</td>'
 						+ '<td class="ocmc__hbytes" data-ocwp-size>' + esc( kb( it.bytes ) ) + '</td>'
@@ -283,7 +318,9 @@ final class Webp_Admin {
 			}
 
 			function look() {
-				out.innerHTML = '<p class="ocmc__hsum">' + esc( T.looking ) + '</p>';
+				seen[ have ] = true;
+				out.innerHTML = '<p class="ocwp__load"><span class="ocwp__spin" aria-hidden="true"></span>' + esc( T.looking ) + '</p>';
+				floatBar();
 				post( 'ocmc_formats', { have: have, url: document.getElementById( 'ocwp-url' ).value } ).then( function ( r ) {
 					if ( r && r.success && ! r.data.why ) { draw( r.data ); }
 					else { out.innerHTML = '<p class="ocmc__hsum">' + esc( ( r && r.data && r.data.why ) || T.failed ) + '</p>'; floatBar(); }
@@ -294,26 +331,50 @@ final class Webp_Admin {
 
 			document.querySelectorAll( '[data-ocwp-tab]' ).forEach( function ( tab ) {
 				tab.addEventListener( 'click', function () {
-					have = tab.getAttribute( 'data-ocwp-tab' );
+					var want = tab.getAttribute( 'data-ocwp-tab' );
+
 					document.querySelectorAll( '[data-ocwp-tab]' ).forEach( function ( t ) {
 						t.classList.toggle( 'is-on', t === tab );
 					} );
+
+					var list = 'set' !== want;
+					document.querySelector( '[data-ocwp-panel="set"]' ).hidden = list;
+					document.querySelector( '[data-ocwp-panel="list"]' ).hidden = ! list;
+
+					if ( ! list ) {
+						floatBar();
+						return;
+					}
+
+					var same = have === want;
+					have = want;
+
 					document.querySelectorAll( '[data-ocwp-note]' ).forEach( function ( n ) {
 						n.hidden = n.getAttribute( 'data-ocwp-note' ) !== have;
 					} );
-					look();
+
+					// Each list is looked up the first time it is opened, and
+					// kept after that; the whole library takes a moment.
+					if ( ! same || ! seen[ have ] ) { look(); }
 				} );
 			} );
 
-			[ [ 'ocmc-webp', 'webp' ], [ 'ocmc-drop', 'drop' ] ].forEach( function ( pair ) {
-				var box = document.getElementById( pair[ 0 ] );
-				if ( ! box ) { return; }
-				box.addEventListener( 'change', function () {
-					var said = document.getElementById( pair[ 0 ] + '-said' );
-					said.textContent = '';
-					post( 'ocmc_webp', { on: box.checked ? '1' : '0', key: pair[ 1 ] } ).then( function ( r ) {
-						said.textContent = r && r.success ? T.saved : T.failed;
-					} ).catch( function () { said.textContent = T.failed; } );
+			var save = document.getElementById( 'ocwp-save' );
+
+			save.addEventListener( 'click', function () {
+				var said = document.getElementById( 'ocwp-said' );
+				said.textContent = '';
+				save.disabled = true;
+
+				Promise.all( [
+					post( 'ocmc_webp', { on: document.getElementById( 'ocmc-webp' ).checked ? '1' : '0', key: 'webp' } ),
+					post( 'ocmc_webp', { on: document.getElementById( 'ocmc-drop' ).checked ? '1' : '0', key: 'drop' } )
+				] ).then( function ( rs ) {
+					save.disabled = false;
+					said.textContent = rs.every( function ( r ) { return r && r.success; } ) ? T.saved : T.failed;
+				} ).catch( function () {
+					save.disabled = false;
+					said.textContent = T.failed;
 				} );
 			} );
 
@@ -395,7 +456,7 @@ final class Webp_Admin {
 				} );
 			} );
 
-			look();
+			floatBar();
 		}() );
 		</script>
 		<?php
