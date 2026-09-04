@@ -6645,3 +6645,84 @@ msgstr "רק מה שנחוץ"
 
 msgid "Accept"
 msgstr "אישור"
+
+msgid "A category or brand"
+msgstr "קטגוריה או מותג"
+
+msgid "A site setting"
+msgstr "הגדרה באתר"
+
+msgid "The file is not on the server."
+msgstr "הקובץ לא נמצא בשרת."
+
+msgid "Only JPEG and PNG pictures can be shrunk here."
+msgstr "אפשר להקטין כאן רק תמונות JPEG ו‑PNG."
+
+msgid "The original could not be copied aside, so nothing was changed."
+msgstr "לא ניתן היה לשמור עותק של המקור, ולכן שום דבר לא שונה."
+
+msgid "Re-encoding saved nothing, so the original was kept. A PNG photograph only gets smaller by becoming a JPEG or WebP, which changes its address."
+msgstr "הקידוד מחדש לא חסך כלום, ולכן המקור נשמר. תצלום ב‑PNG מתכווץ רק אם הופך ל‑JPEG או WebP, וזה משנה את הכתובת שלו."
+
+msgid "There is no original kept for this one."
+msgstr "לא נשמר מקור לקובץ הזה."
+
+msgid "The original could not be put back."
+msgstr "לא ניתן היה להחזיר את המקור."
+
+msgid "Heavy files"
+msgstr "קבצים כבדים"
+
+msgid "Which pictures and films weigh the most, and which pages they sit on. A heavy file is not a mistake — it is simply what every visitor to that page downloads."
+msgstr "אילו תמונות וסרטונים שוקלים הכי הרבה, ובאילו עמודים הם יושבים. קובץ כבד הוא לא תקלה — הוא פשוט מה שכל מבקר בעמוד הזה מוריד."
+
+msgid "Larger than"
+msgstr "גדול מ־"
+
+msgid "Kind"
+msgstr "סוג"
+
+msgid "Pictures"
+msgstr "תמונות"
+
+msgid "Films"
+msgstr "סרטונים"
+
+msgid "Find them"
+msgstr "מצא אותם"
+
+msgid "Looking…"
+msgstr "מחפש…"
+
+msgid "%1$d files are over that size, %2$s between them. Showing the largest %3$d."
+msgstr "%1$d קבצים מעל הגודל הזה, %2$s בסך הכול. מוצגים %3$d הגדולים ביותר."
+
+msgid "Nothing in the library is that big."
+msgstr "אין בספרייה קובץ בגודל כזה."
+
+msgid "Where it is used"
+msgstr "איפה בשימוש"
+
+msgid "Action"
+msgstr "פעולה"
+
+msgid "Nothing points at it"
+msgstr "שום דבר לא מפנה אליו"
+
+msgid "Shrink"
+msgstr "הקטנה"
+
+msgid "Put the original back"
+msgstr "החזרת המקור"
+
+msgid "Working…"
+msgstr "עובד…"
+
+msgid "%1$s → %2$s"
+msgstr "%1$s ← %2$s"
+
+msgid "Original kept"
+msgstr "המקור הוחזר"
+
+msgid "Re-save this picture at the size the site actually shows? The address does not change, and the original is kept so this can be undone."
+msgstr "לשמור את התמונה מחדש בגודל שהאתר באמת מציג? הכתובת לא משתנה, והמקור נשמר כדי שאפשר יהיה לבטל."

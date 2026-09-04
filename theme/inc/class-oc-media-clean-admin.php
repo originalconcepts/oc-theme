@@ -99,6 +99,8 @@ final class Media_Clean_Admin {
 				}
 				?>
 			</div>
+
+			<?php self::heavy_panel(); ?>
 		</div>
 		<?php
 
@@ -230,6 +232,46 @@ final class Media_Clean_Admin {
 	}
 
 	/**
+	 * The heavy-file finder: everything over a size you choose, biggest
+	 * first, with what points at it.
+	 */
+	private static function heavy_panel(): void {
+		?>
+		<div class="ocmc__heavy">
+			<h2><?php esc_html_e( 'Heavy files', 'oc-theme' ); ?></h2>
+			<p class="ocmc__note">
+				<?php esc_html_e( 'Which pictures and films weigh the most, and which pages they sit on. A heavy file is not a mistake — it is simply what every visitor to that page downloads.', 'oc-theme' ); ?>
+			</p>
+
+			<p class="ocmc__controls">
+				<label>
+					<?php esc_html_e( 'Larger than', 'oc-theme' ); ?>
+					<select id="ocmc-min">
+						<option value="200">200 KB</option>
+						<option value="500" selected>500 KB</option>
+						<option value="1024">1 MB</option>
+						<option value="2048">2 MB</option>
+						<option value="3072">3 MB</option>
+						<option value="5120">5 MB</option>
+					</select>
+				</label>
+				<label>
+					<?php esc_html_e( 'Kind', 'oc-theme' ); ?>
+					<select id="ocmc-type">
+						<option value="all"><?php esc_html_e( 'Everything', 'oc-theme' ); ?></option>
+						<option value="image"><?php esc_html_e( 'Pictures', 'oc-theme' ); ?></option>
+						<option value="video"><?php esc_html_e( 'Films', 'oc-theme' ); ?></option>
+					</select>
+				</label>
+				<button type="button" class="button button-primary" id="ocmc-heavy"><?php esc_html_e( 'Find them', 'oc-theme' ); ?></button>
+			</p>
+
+			<div id="ocmc-heavy-out"></div>
+		</div>
+		<?php
+	}
+
+	/**
 	 * Looks.
 	 */
 	private static function styles(): void {
@@ -267,6 +309,23 @@ final class Media_Clean_Admin {
 		.ocmc__bar { position: relative; block-size: 26px; background: #f0f0f1; border-radius: 13px; overflow: hidden; max-inline-size: 520px; margin: 14px 0; }
 		.ocmc__bar i { position: absolute; inset-block: 0; inset-inline-start: 0; inline-size: 0; background: #2271b1; transition: inline-size .2s; }
 		.ocmc__bar span { position: relative; display: grid; place-items: center; block-size: 100%; font-size: 12px; color: #1d2327; }
+		.ocmc__heavy { margin-block-start: 44px; border-block-start: 1px solid #dcdcde; padding-block-start: 24px; }
+		.ocmc__controls { display: flex; align-items: end; gap: 14px; flex-wrap: wrap; margin: 14px 0 18px; }
+		.ocmc__controls label { display: grid; gap: 4px; font-size: 12px; color: #646970; }
+		.ocmc__hsum { margin: 0 0 12px; font-size: 13px; }
+		.ocmc__htable { inline-size: 100%; border-collapse: collapse; font-size: 13px; }
+		.ocmc__htable th { text-align: start; font-size: 12px; color: #646970; font-weight: 600; padding: 6px 10px; border-block-end: 1px solid #dcdcde; }
+		.ocmc__htable td { padding: 8px 10px; border-block-end: 1px solid #f0f0f1; vertical-align: top; }
+		.ocmc__htable img { inline-size: 56px; block-size: 56px; object-fit: cover; border-radius: 4px; background: #f0f0f1; display: block; }
+		.ocmc__hname { word-break: break-all; font-weight: 500; }
+		.ocmc__hdim { color: #646970; font-size: 12px; }
+		.ocmc__hbytes { white-space: nowrap; font-variant-numeric: tabular-nums; font-weight: 600; }
+		.ocmc__hused { margin: 0; padding: 0; list-style: none; }
+		.ocmc__hused li { margin-block-end: 2px; }
+		.ocmc__hused em { color: #996800; font-style: normal; font-size: 11px; }
+		.ocmc__hnone { color: #b32d2e; font-size: 12px; }
+		.ocmc__hgo { white-space: nowrap; }
+		.ocmc__hmsg { display: block; font-size: 11px; color: #646970; margin-block-start: 4px; max-inline-size: 240px; }
 		</style>
 		<?php
 	}
@@ -290,6 +349,22 @@ final class Media_Clean_Admin {
 			/* translators: 1: files deleted, 2: disk space freed, e.g. "5.4 MB", 3: files kept. */
 			'done'     => __( 'Done: %1$d deleted, %2$s freed. %3$d were kept because something still uses them.', 'oc-theme' ),
 			'failed'   => __( 'Something went wrong. Please try again.', 'oc-theme' ),
+			'looking'  => __( 'Looking…', 'oc-theme' ),
+			/* translators: 1: number of files, 2: their total size, 3: how many are listed. */
+			'hsum'     => __( '%1$d files are over that size, %2$s between them. Showing the largest %3$d.', 'oc-theme' ),
+			'hnone'    => __( 'Nothing in the library is that big.', 'oc-theme' ),
+			'hfile'    => __( 'File', 'oc-theme' ),
+			'hsize'    => __( 'Size', 'oc-theme' ),
+			'hwhere'   => __( 'Where it is used', 'oc-theme' ),
+			'hact'     => __( 'Action', 'oc-theme' ),
+			'hused0'   => __( 'Nothing points at it', 'oc-theme' ),
+			'hshrink'  => __( 'Shrink', 'oc-theme' ),
+			'hundo'    => __( 'Put the original back', 'oc-theme' ),
+			'hworking' => __( 'Working…', 'oc-theme' ),
+			/* translators: 1: size before, 2: size after. */
+			'hdone'    => __( '%1$s → %2$s', 'oc-theme' ),
+			'hkept'    => __( 'Original kept', 'oc-theme' ),
+			'hask'     => __( 'Re-save this picture at the size the site actually shows? The address does not change, and the original is kept so this can be undone.', 'oc-theme' ),
 		);
 		?>
 		<script>
@@ -425,6 +500,117 @@ final class Media_Clean_Admin {
 
 			var all = document.getElementById( 'ocmc-del-all' );
 			if ( all ) { all.addEventListener( 'click', function () { run( gather( null ) ); } ); }
+
+			/* ---------- heavy files ---------- */
+
+			var hOut = document.getElementById( 'ocmc-heavy-out' );
+			var hGo  = document.getElementById( 'ocmc-heavy' );
+
+			function esc( v ) {
+				var d = document.createElement( 'div' );
+				d.textContent = null === v || undefined === v ? '' : String( v );
+				return d.innerHTML;
+			}
+
+			function kb( n ) {
+				if ( n >= 1048576 ) { return ( n / 1048576 ).toFixed( 1 ) + ' MB'; }
+				return Math.round( n / 1024 ) + ' KB';
+			}
+
+			function usedCell( item ) {
+				if ( ! item.used.length ) {
+					return '<span class="ocmc__hnone">' + esc( T.hused0 ) + '</span>';
+				}
+				return '<ul class="ocmc__hused">' + item.used.map( function ( u ) {
+					var name = u.link ? '<a href="' + esc( u.link ) + '">' + esc( u.title ) + '</a>' : esc( u.title );
+					return '<li>' + name + ( u.state ? ' <em>' + esc( u.state ) + '</em>' : '' ) + '</li>';
+				} ).join( '' ) + '</ul>';
+			}
+
+			function drawHeavy( d ) {
+				if ( ! d.items.length ) {
+					hOut.innerHTML = '<p class="ocmc__hsum">' + esc( T.hnone ) + '</p>';
+					return;
+				}
+				var rows = d.items.map( function ( it ) {
+					var pic = it.thumb ? '<img src="' + esc( it.thumb ) + '" alt="" loading="lazy">' : '<img alt="">';
+					var dim = it.w && it.h ? it.w + '×' + it.h : it.mime.replace( /^.*\// , '' );
+					var act = it.shrink
+						? '<button type="button" class="button ocmc__hgo" data-ocmc-shrink="' + it.id + '">' + esc( T.hshrink ) + '</button>'
+						: '';
+					if ( it.backup ) {
+						act += ' <button type="button" class="button-link ocmc__hgo" data-ocmc-undo="' + it.id + '">' + esc( T.hundo ) + '</button>';
+					}
+					return '<tr data-ocmc-row="' + it.id + '">'
+						+ '<td>' + pic + '</td>'
+						+ '<td><span class="ocmc__hname">' + ( it.link ? '<a href="' + esc( it.link ) + '">' + esc( it.name ) + '</a>' : esc( it.name ) ) + '</span>'
+						+ '<br><span class="ocmc__hdim">' + esc( dim ) + ' · ' + esc( it.mime ) + '</span></td>'
+						+ '<td class="ocmc__hbytes" data-ocmc-size>' + esc( kb( it.bytes ) ) + '</td>'
+						+ '<td>' + usedCell( it ) + '</td>'
+						+ '<td>' + act + '<span class="ocmc__hmsg" data-ocmc-msg></span></td>'
+						+ '</tr>';
+				} ).join( '' );
+
+				hOut.innerHTML = '<p class="ocmc__hsum">'
+					+ esc( sprintf( T.hsum, d.over, kb( d.bytes ), d.shown ) ) + '</p>'
+					+ '<table class="ocmc__htable"><thead><tr><th></th><th>' + esc( T.hfile ) + '</th><th>'
+					+ esc( T.hsize ) + '</th><th>' + esc( T.hwhere ) + '</th><th>' + esc( T.hact )
+					+ '</th></tr></thead><tbody>' + rows + '</tbody></table>';
+			}
+
+			if ( hGo ) {
+				hGo.addEventListener( 'click', function () {
+					hGo.disabled = true;
+					hOut.innerHTML = '<p class="ocmc__hsum">' + esc( T.looking ) + '</p>';
+					post( 'ocmc_heavy', {
+						min: document.getElementById( 'ocmc-min' ).value,
+						type: document.getElementById( 'ocmc-type' ).value
+					} ).then( function ( r ) {
+						hGo.disabled = false;
+						if ( r && r.success ) { drawHeavy( r.data ); }
+						else { hOut.innerHTML = '<p class="ocmc__hsum">' + esc( T.failed ) + '</p>'; }
+					} ).catch( function () {
+						hGo.disabled = false;
+						hOut.innerHTML = '<p class="ocmc__hsum">' + esc( T.failed ) + '</p>';
+					} );
+				} );
+			}
+
+			document.addEventListener( 'click', function ( e ) {
+				var btn = e.target.closest( '[data-ocmc-shrink], [data-ocmc-undo]' );
+				if ( ! btn ) { return; }
+
+				var undo = btn.hasAttribute( 'data-ocmc-undo' );
+				var id   = btn.getAttribute( undo ? 'data-ocmc-undo' : 'data-ocmc-shrink' );
+				var row  = btn.closest( '[data-ocmc-row]' );
+				var msg  = row.querySelector( '[data-ocmc-msg]' );
+				var cell = row.querySelector( '[data-ocmc-size]' );
+
+				if ( ! undo && ! window.confirm( T.hask ) ) { return; }
+
+				btn.disabled = true;
+				msg.textContent = T.hworking;
+
+				post( undo ? 'ocmc_restore' : 'ocmc_shrink', { id: id } ).then( function ( r ) {
+					btn.disabled = false;
+					var d = r && r.data ? r.data : {};
+					if ( d.ok ) {
+						if ( undo ) {
+							msg.textContent = T.hkept;
+							cell.textContent = kb( d.after );
+							btn.remove();
+						} else {
+							msg.textContent = sprintf( T.hdone, kb( d.before ), kb( d.after ) );
+							cell.textContent = kb( d.after );
+						}
+					} else {
+						msg.textContent = d.why || T.failed;
+					}
+				} ).catch( function () {
+					btn.disabled = false;
+					msg.textContent = T.failed;
+				} );
+			} );
 		}() );
 		</script>
 		<?php

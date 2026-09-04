@@ -60,6 +60,20 @@ final class Media_Clean {
 	private const STEP = 40;
 
 	/**
+	 * The longest side a stored original is ever asked to keep.
+	 *
+	 * Nothing on the site shows a picture wider than the widest layout on a
+	 * high-density screen; anything beyond this is weight the visitor pays
+	 * for and never sees.
+	 */
+	private const MAX_SIDE = 2560;
+
+	/**
+	 * Where a shrunk file's untouched original is remembered.
+	 */
+	private const BACKUP = '_oc_mclean_original';
+
+	/**
 	 * Freshly uploaded media is never offered, in hours.
 	 *
 	 * Someone may be part-way through building a page with it.
@@ -138,6 +152,9 @@ final class Media_Clean {
 		add_action( 'wp_ajax_ocmc_start', array( $this, 'ajax_start' ) );
 		add_action( 'wp_ajax_ocmc_step', array( $this, 'ajax_step' ) );
 		add_action( 'wp_ajax_ocmc_delete', array( $this, 'ajax_delete' ) );
+		add_action( 'wp_ajax_ocmc_heavy', array( $this, 'ajax_heavy' ) );
+		add_action( 'wp_ajax_ocmc_shrink', array( $this, 'ajax_shrink' ) );
+		add_action( 'wp_ajax_ocmc_restore', array( $this, 'ajax_restore' ) );
 		add_action( 'admin_post_ocmc_csv', array( $this, 'handle_csv' ) );
 	}
 
@@ -701,6 +718,346 @@ final class Media_Clean {
 		$out['recent'] = count( (array) $report['recent'] );
 
 		return $out;
+	}
+
+	/*
+	 * --------------------------------------------------------- the heavy files
+	 */
+
+	/**
+	 * The biggest files in the library, and what points at them.
+	 *
+	 * Sizes come from the attachment's own metadata, where WordPress records
+	 * the bytes of the original and of every size it generated — asking the
+	 * filesystem eighteen thousand times would take longer than the request
+	 * is allowed to live. Anything whose metadata predates that (or lost it)
+	 * is measured on disk, up to a fixed number per scan.
+	 *
+	 * @param int    $min   Smallest total size to report, in bytes.
+	 * @param string $type  'all', 'image' or 'video'.
+	 * @param int    $limit Longest list to return.
+	 * @return array<string,mixed>
+	 */
+	public static function heavy( int $min, string $type, int $limit = 200 ): array {
+		global $wpdb;
+
+		$where = "p.post_type = 'attachment'";
+
+		if ( 'image' === $type ) {
+			$where .= " AND p.post_mime_type LIKE 'image/%'";
+		} elseif ( 'video' === $type ) {
+			$where .= " AND p.post_mime_type LIKE 'video/%'";
+		}
+
+		$rows = (array) $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.NotPrepared -- maintenance scan; $where is built from a fixed set above.
+			"SELECT p.ID, p.post_title, p.post_mime_type, p.post_parent, m.meta_value AS meta
+			 FROM {$wpdb->posts} p
+			 LEFT JOIN {$wpdb->postmeta} m ON m.post_id = p.ID AND m.meta_key = '_wp_attachment_metadata'
+			 WHERE {$where}"
+		);
+
+		$found   = array();
+		$stats   = 0;
+		$total   = 0;
+		$scanned = 0;
+
+		foreach ( $rows as $row ) {
+			++$scanned;
+			$meta  = is_string( $row->meta ) ? maybe_unserialize( $row->meta ) : array();
+			$bytes = 0;
+
+			if ( is_array( $meta ) ) {
+				$bytes = (int) ( $meta['filesize'] ?? 0 );
+
+				foreach ( (array) ( $meta['sizes'] ?? array() ) as $size ) {
+					$bytes += (int) ( $size['filesize'] ?? 0 );
+				}
+			}
+
+			// No recorded size: ask the disk, but only so many times.
+			if ( 0 === $bytes && $stats < 400 ) {
+				++$stats;
+				$bytes = self::bytes( (int) $row->ID );
+			}
+
+			$total += $bytes;
+
+			if ( $bytes < $min ) {
+				continue;
+			}
+
+			$found[] = array(
+				'id'     => (int) $row->ID,
+				'bytes'  => $bytes,
+				'mime'   => (string) $row->post_mime_type,
+				'w'      => (int) ( $meta['width'] ?? 0 ),
+				'h'      => (int) ( $meta['height'] ?? 0 ),
+				'parent' => (int) $row->post_parent,
+			);
+		}
+
+		usort(
+			$found,
+			static function ( array $a, array $b ): int {
+				return $b['bytes'] <=> $a['bytes'];
+			}
+		);
+
+		$over = count( $found );
+		$sum  = 0;
+
+		foreach ( $found as $one ) {
+			$sum += $one['bytes'];
+		}
+
+		$found = array_slice( $found, 0, max( 1, $limit ) );
+		$refs  = self::reference_map();
+		$posts = self::parents();
+		$items = array();
+
+		foreach ( $found as $one ) {
+			$id   = $one['id'];
+			$file = (string) get_post_meta( $id, '_wp_attached_file', true );
+
+			$items[] = array_merge(
+				$one,
+				array(
+					'thumb'   => wp_get_attachment_image_url( $id, 'thumbnail' ),
+					'name'    => '' === $file ? (string) get_the_title( $id ) : wp_basename( $file ),
+					'link'    => get_edit_post_link( $id, 'raw' ),
+					'used'    => self::used_by( $id, $refs, $posts ),
+					'shrink'  => self::shrinkable( $one['mime'], $one['w'], $one['h'] ),
+					'backup'  => '' !== (string) get_post_meta( $id, self::BACKUP, true ),
+				)
+			);
+		}
+
+		return array(
+			'items'   => $items,
+			'over'    => $over,
+			'bytes'   => $sum,
+			'library' => $total,
+			'scanned' => $scanned,
+			'shown'   => count( $items ),
+		);
+	}
+
+	/**
+	 * Whether this file is one the shrinker may touch.
+	 *
+	 * Only photographs it can re-encode without changing the address every
+	 * reference already uses: JPEG and PNG, and only when the stored file is
+	 * bigger than anything the site can show.
+	 *
+	 * @param string $mime Mime type.
+	 * @param int    $w    Width.
+	 * @param int    $h    Height.
+	 */
+	private static function shrinkable( string $mime, int $w, int $h ): bool {
+		if ( ! in_array( $mime, array( 'image/jpeg', 'image/png' ), true ) ) {
+			return false;
+		}
+
+		return max( $w, $h ) > self::MAX_SIDE || 'image/jpeg' === $mime;
+	}
+
+	/**
+	 * The human answer to "where is this used?".
+	 *
+	 * @param int                      $id    Attachment ID.
+	 * @param array<int,array<string>> $refs  Reference map.
+	 * @param array<int,object>        $posts Posts by ID.
+	 * @return array<int,array<string,string>>
+	 */
+	private static function used_by( int $id, array $refs, array $posts ): array {
+		$out  = array();
+		$seen = array();
+
+		foreach ( (array) ( $refs[ $id ] ?? array() ) as $source ) {
+			if ( 0 !== strpos( (string) $source, 'post:' ) ) {
+				$label = (string) $source;
+
+				if ( ! isset( $seen[ $label ] ) ) {
+					$seen[ $label ] = true;
+					$out[]          = array(
+						'title' => 'term' === $label ? __( 'A category or brand', 'oc-theme' ) : __( 'A site setting', 'oc-theme' ),
+						'link'  => '',
+						'state' => '',
+					);
+				}
+
+				continue;
+			}
+
+			$pid = (int) substr( (string) $source, 5 );
+			$row = $posts[ $pid ] ?? null;
+
+			if ( ! $row || isset( $seen[ 'p' . $pid ] ) ) {
+				continue;
+			}
+
+			$seen[ 'p' . $pid ] = true;
+			$out[]              = array(
+				'title' => '' !== (string) $row->post_title ? (string) $row->post_title : '#' . $pid,
+				'link'  => (string) get_edit_post_link( $pid, 'raw' ),
+				'state' => 'publish' === $row->post_status ? '' : (string) $row->post_status,
+			);
+
+			if ( count( $out ) >= 6 ) {
+				break;
+			}
+		}
+
+		return $out;
+	}
+
+	/**
+	 * Re-encode one picture in place: never wider than the site can show,
+	 * and no heavier than it needs to be at that width.
+	 *
+	 * The address does not change — every reference in the shop keeps
+	 * working — and the untouched original is kept beside it, so a shrink
+	 * can always be undone.
+	 *
+	 * @param int $id      Attachment ID.
+	 * @param int $quality JPEG quality.
+	 * @return array<string,mixed>
+	 */
+	public static function shrink( int $id, int $quality = 82 ): array {
+		$file = (string) get_attached_file( $id );
+		$mime = (string) get_post_mime_type( $id );
+
+		if ( '' === $file || ! file_exists( $file ) ) {
+			return array( 'ok' => false, 'why' => __( 'The file is not on the server.', 'oc-theme' ) );
+		}
+
+		if ( ! in_array( $mime, array( 'image/jpeg', 'image/png' ), true ) ) {
+			return array( 'ok' => false, 'why' => __( 'Only JPEG and PNG pictures can be shrunk here.', 'oc-theme' ) );
+		}
+
+		$before = (int) filesize( $file );
+		$backup = (string) get_post_meta( $id, self::BACKUP, true );
+
+		// The original is copied aside once, on the first shrink only, so a
+		// second pass never overwrites the good copy with a shrunk one.
+		if ( '' === $backup ) {
+			$backup = $file . '.ocfull';
+
+			if ( ! copy( $file, $backup ) ) {
+				return array( 'ok' => false, 'why' => __( 'The original could not be copied aside, so nothing was changed.', 'oc-theme' ) );
+			}
+
+			update_post_meta( $id, self::BACKUP, $backup );
+		}
+
+		$editor = wp_get_image_editor( $file );
+
+		if ( is_wp_error( $editor ) ) {
+			return array( 'ok' => false, 'why' => $editor->get_error_message() );
+		}
+
+		$size = $editor->get_size();
+
+		if ( max( (int) $size['width'], (int) $size['height'] ) > self::MAX_SIDE ) {
+			$editor->resize( self::MAX_SIDE, self::MAX_SIDE, false );
+		}
+
+		$editor->set_quality( max( 40, min( 100, $quality ) ) );
+		$saved = $editor->save( $file, $mime );
+
+		if ( is_wp_error( $saved ) ) {
+			return array( 'ok' => false, 'why' => $saved->get_error_message() );
+		}
+
+		clearstatcache( true, $file );
+		$after = (int) filesize( $file );
+
+		// A PNG of a photograph barely moves; when the new file is no better
+		// than the old one, put the original straight back.
+		if ( $after >= $before ) {
+			copy( $backup, $file );
+			wp_delete_file( $backup );
+			delete_post_meta( $id, self::BACKUP );
+			clearstatcache( true, $file );
+
+			return array(
+				'ok'     => false,
+				'why'    => __( 'Re-encoding saved nothing, so the original was kept. A PNG photograph only gets smaller by becoming a JPEG or WebP, which changes its address.', 'oc-theme' ),
+				'before' => $before,
+				'after'  => $before,
+			);
+		}
+
+		require_once ABSPATH . 'wp-admin/includes/image.php';
+		wp_update_attachment_metadata( $id, wp_generate_attachment_metadata( $id, $file ) );
+
+		return array( 'ok' => true, 'before' => $before, 'after' => $after );
+	}
+
+	/**
+	 * Put a shrunk picture back the way it was.
+	 *
+	 * @param int $id Attachment ID.
+	 * @return array<string,mixed>
+	 */
+	public static function restore( int $id ): array {
+		$backup = (string) get_post_meta( $id, self::BACKUP, true );
+		$file   = (string) get_attached_file( $id );
+
+		if ( '' === $backup || ! file_exists( $backup ) || '' === $file ) {
+			return array( 'ok' => false, 'why' => __( 'There is no original kept for this one.', 'oc-theme' ) );
+		}
+
+		if ( ! copy( $backup, $file ) ) {
+			return array( 'ok' => false, 'why' => __( 'The original could not be put back.', 'oc-theme' ) );
+		}
+
+		wp_delete_file( $backup );
+		delete_post_meta( $id, self::BACKUP );
+		clearstatcache( true, $file );
+
+		require_once ABSPATH . 'wp-admin/includes/image.php';
+		wp_update_attachment_metadata( $id, wp_generate_attachment_metadata( $id, $file ) );
+
+		return array( 'ok' => true, 'after' => (int) filesize( $file ) );
+	}
+
+	/**
+	 * The heavy list, over ajax.
+	 */
+	public function ajax_heavy(): void {
+		$this->guard();
+
+		// phpcs:disable WordPress.Security.NonceVerification.Missing -- guard() above ran check_ajax_referer().
+		$min  = isset( $_POST['min'] ) ? absint( wp_unslash( $_POST['min'] ) ) : 500;
+		$type = isset( $_POST['type'] ) ? sanitize_key( wp_unslash( $_POST['type'] ) ) : 'all';
+		// phpcs:enable
+
+		$type = in_array( $type, array( 'all', 'image', 'video' ), true ) ? $type : 'all';
+
+		wp_send_json_success( self::heavy( max( 1, $min ) * KB_IN_BYTES, $type ) );
+	}
+
+	/**
+	 * Shrink one picture, over ajax.
+	 */
+	public function ajax_shrink(): void {
+		$this->guard();
+
+		$id = isset( $_POST['id'] ) ? absint( wp_unslash( $_POST['id'] ) ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- guard() above ran check_ajax_referer().
+
+		wp_send_json_success( self::shrink( $id ) );
+	}
+
+	/**
+	 * Undo one shrink, over ajax.
+	 */
+	public function ajax_restore(): void {
+		$this->guard();
+
+		$id = isset( $_POST['id'] ) ? absint( wp_unslash( $_POST['id'] ) ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- guard() above ran check_ajax_referer().
+
+		wp_send_json_success( self::restore( $id ) );
 	}
 
 	/*
