@@ -862,16 +862,17 @@ final class Media_Clean {
 	/**
 	 * The human answer to "where is this used?".
 	 *
-	 * @param int                      $id    Attachment ID.
-	 * @param array<int,array<string>> $refs  Reference map.
-	 * @param array<int,object>        $posts Posts by ID.
+	 * @param int                           $id    Attachment ID.
+	 * @param array<int,array<string,bool>> $refs  Reference map: id => set of sources.
+	 * @param array<int,object>             $posts Posts by ID.
 	 * @return array<int,array<string,string>>
 	 */
 	private static function used_by( int $id, array $refs, array $posts ): array {
 		$out  = array();
 		$seen = array();
 
-		foreach ( (array) ( $refs[ $id ] ?? array() ) as $source ) {
+		// The map is a set — the provenance is in the keys, as bucket() reads it.
+		foreach ( array_keys( (array) ( $refs[ $id ] ?? array() ) ) as $source ) {
 			if ( 0 !== strpos( (string) $source, 'post:' ) ) {
 				$label = (string) $source;
 
