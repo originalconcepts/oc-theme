@@ -6921,3 +6921,150 @@ msgstr "אחרי המרה, למחוק את התמונה שהוחלפה ואת ה
 
 msgid "Pictures in the library that are still JPEG or PNG. Converting one rebuilds it and all its sizes as WebP and the site starts serving those. Nothing is deleted unless you asked for it in the settings, so a conversion can be undone."
 msgstr "תמונות בספרייה שעדיין JPEG או PNG. המרה בונה מחדש את התמונה ואת כל הגדלים שלה כ‑WebP, והאתר מתחיל להגיש אותם. שום דבר לא נמחק אלא אם ביקשתם זאת בהגדרות, כך שאפשר לחזור אחורה."
+
+msgid "Every five minutes (OC feeds)"
+msgstr "כל חמש דקות (פידים OC)"
+
+msgid "Product catalogue for %s"
+msgstr "קטלוג המוצרים של %s"
+
+msgid "Product feeds"
+msgstr "פידים למוצרים"
+
+msgid "Meta catalogue"
+msgstr "קטלוג מטה"
+
+msgid "Google Merchant Center"
+msgstr "Google Merchant Center"
+
+msgid "Zap"
+msgstr "זאפ"
+
+msgid "Product feed"
+msgstr "פיד מוצרים"
+
+msgid "A feed is the file a network reads to know what you sell. Choose who it is for, give it a name, and everything else already carries the setting that suits a shop. Each feed has one address that never changes and always answers with the newest build."
+msgstr "פיד הוא הקובץ שרשת קוראת כדי לדעת מה אתם מוכרים. בוחרים למי הוא, נותנים לו שם, וכל השאר כבר מוגדר במה שנכון לחנות. לכל פיד יש כתובת אחת שלא משתנה, והיא תמיד מחזירה את הבנייה האחרונה."
+
+msgid "+ New feed"
+msgstr "+ פיד חדש"
+
+msgid "New feed"
+msgstr "פיד חדש"
+
+msgid "Who is it for?"
+msgstr "למי הפיד?"
+
+msgid "Meta"
+msgstr "מטה"
+
+msgid "Rebuild"
+msgstr "בנייה מחדש"
+
+msgid "Every hour (recommended)"
+msgstr "כל שעה (מומלץ)"
+
+msgid "Every four hours"
+msgstr "כל ארבע שעות"
+
+msgid "Once a day"
+msgstr "פעם ביום"
+
+msgid "Only products in stock"
+msgstr "רק מוצרים במלאי"
+
+msgid "Off is usually right: a network wants to be told an item is out of stock, and dropping it instead makes the catalogue look like it lost the product."
+msgstr "בדרך כלל עדיף כבוי: רשת רוצה לדעת שמוצר אזל, והשמטה שלו במקום זה גורמת לקטלוג להיראות כאילו איבד את המוצר."
+
+msgid "Send each variation on its own"
+msgstr "לשלוח כל וריאציה בנפרד"
+
+msgid "Each colour and size becomes its own line, tied to the product. This is what lets a shopper land on the one that was advertised."
+msgstr "כל צבע ומידה הופכים לשורה משלהם, מקושרת למוצר. זה מה שמאפשר לקונה להגיע בדיוק לזו שפורסמה."
+
+msgid "Format"
+msgstr "פורמט"
+
+msgid "XML"
+msgstr "XML"
+
+msgid "CSV"
+msgstr "CSV"
+
+msgid "Description"
+msgstr "תיאור"
+
+msgid "Brand, when a product has none"
+msgstr "מותג, כשלמוצר אין"
+
+msgid "Google product category"
+msgstr "קטגוריית מוצר של גוגל"
+
+msgid "e.g. 604"
+msgstr "למשל 604"
+
+msgid "Delivery time"
+msgstr "זמן אספקה"
+
+msgid "e.g. 3-5 working days"
+msgstr "למשל 3-5 ימי עסקים"
+
+msgid "Include the shipping price"
+msgstr "לכלול את מחיר המשלוח"
+
+msgid "Only these categories"
+msgstr "רק הקטגוריות האלה"
+
+msgid "Leave empty for the whole shop."
+msgstr "ריק = כל החנות."
+
+msgid "Create feed"
+msgstr "צור Feed"
+
+msgid "No feeds yet."
+msgstr "אין עדיין פידים."
+
+msgid "every hour"
+msgstr "כל שעה"
+
+msgid "every four hours"
+msgstr "כל ארבע שעות"
+
+msgid "once a day"
+msgstr "פעם ביום"
+
+msgid "%1$d items · built %2$s · %3$s"
+msgstr "%1$d פריטים · נבנה %2$s · %3$s"
+
+msgid "Building…"
+msgstr "בונה…"
+
+msgid "Not built yet"
+msgstr "עדיין לא נבנה"
+
+msgid "in stock only"
+msgstr "רק במלאי"
+
+msgid "no variations"
+msgstr "בלי וריאציות"
+
+msgid "Copy"
+msgstr "העתקה"
+
+msgid "Download"
+msgstr "הורדה"
+
+msgid "Delete"
+msgstr "מחיקה"
+
+msgid "Building the feed…"
+msgstr "בונה את הפיד…"
+
+msgid "Building — %1$d of %2$d products"
+msgstr "בונה — %1$d מתוך %2$d מוצרים"
+
+msgid "Ready."
+msgstr "מוכן."
+
+msgid "Delete this feed? The address stops working."
+msgstr "למחוק את הפיד? הכתובת תפסיק לעבוד."
