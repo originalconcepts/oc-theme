@@ -68,6 +68,90 @@ final class Leads {
 	}
 
 	/**
+	 * The form's fields as the block declares them, each with the input
+	 * name it answers to. The lead's own four kinds keep their plain names
+	 * (the Leads columns read them); the first name field is always there
+	 * and always required, because a lead without a name is nothing.
+	 *
+	 * @param array<string,mixed> $s Contact section.
+	 * @return array<int,array{kind:string,label:string,name:string,req:int,w:string,opts:array<int,string>}>
+	 */
+	public static function fields_of( array $s ): array {
+		$rows  = array();
+		$taken = array();
+
+		foreach ( (array) ( $s['fields'] ?? array() ) as $i => $row ) {
+			$kind = (string) ( $row['kind'] ?? 'text' );
+			$core = in_array( $kind, array( 'name', 'phone', 'email', 'msg' ), true ) && ! isset( $taken[ $kind ] );
+
+			if ( $core ) {
+				$taken[ $kind ] = true;
+			}
+
+			$opts = array();
+
+			if ( 'select' === $kind ) {
+				foreach ( preg_split( '/\r\n|\r|\n/', (string) ( $row['opts'] ?? '' ) ) ?: array() as $opt ) {
+					$opt = trim( $opt );
+
+					if ( '' !== $opt ) {
+						$opts[] = $opt;
+					}
+				}
+			}
+
+			$rows[] = array(
+				'kind'  => $kind,
+				'label' => trim( (string) ( $row['label'] ?? '' ) ),
+				'name'  => $core ? $kind : 'x' . (int) $i,
+				'req'   => 'name' === $kind && $core ? 1 : ( empty( $row['req'] ) ? 0 : 1 ),
+				'w'     => 'half' === ( $row['w'] ?? '' ) ? 'half' : 'full',
+				'opts'  => $opts,
+			);
+		}
+
+		if ( ! isset( $taken['name'] ) ) {
+			array_unshift(
+				$rows,
+				array(
+					'kind'  => 'name',
+					'label' => '',
+					'name'  => 'name',
+					'req'   => 1,
+					'w'     => 'full',
+					'opts'  => array(),
+				)
+			);
+		}
+
+		return $rows;
+	}
+
+	/**
+	 * The contact section a submission came from: the page's section at the
+	 * index the form carried, or its first contact block when that fails.
+	 *
+	 * @param int $page Page id.
+	 * @param int $at   Section index.
+	 * @return array<string,mixed>
+	 */
+	private function section_of( int $page, int $at ): array {
+		$sections = $page > 0 ? Registry::sections( $page ) : array();
+
+		if ( isset( $sections[ $at ] ) && 'contact' === $sections[ $at ]['type'] ) {
+			return $sections[ $at ];
+		}
+
+		foreach ( $sections as $section ) {
+			if ( 'contact' === $section['type'] ) {
+				return $section;
+			}
+		}
+
+		return Registry::clean( array( array( 'type' => 'contact' ) ) )[0];
+	}
+
+	/**
 	 * Take one lead.
 	 *
 	 * Nonce-free by design — the form ships in cached HTML that outlives any
@@ -76,17 +160,63 @@ final class Leads {
 	 */
 	public function take(): void {
 		// phpcs:disable WordPress.Security.NonceVerification.Missing -- see above.
-		$trap  = isset( $_POST['website'] ) ? trim( (string) wp_unslash( $_POST['website'] ) ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- honeypot; only ever compared to the empty string.
-		$name  = isset( $_POST['name'] ) ? sanitize_text_field( wp_unslash( $_POST['name'] ) ) : '';
-		$phone = isset( $_POST['phone'] ) ? sanitize_text_field( wp_unslash( $_POST['phone'] ) ) : '';
-		$email = isset( $_POST['email'] ) ? sanitize_email( wp_unslash( $_POST['email'] ) ) : '';
-		$msg   = isset( $_POST['msg'] ) ? sanitize_textarea_field( wp_unslash( $_POST['msg'] ) ) : '';
-		$page  = isset( $_POST['page'] ) ? absint( wp_unslash( $_POST['page'] ) ) : 0;
+		$trap = isset( $_POST['website'] ) ? trim( (string) wp_unslash( $_POST['website'] ) ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- honeypot; only ever compared to the empty string.
+		$page = isset( $_POST['page'] ) ? absint( wp_unslash( $_POST['page'] ) ) : 0;
+		$at   = isset( $_POST['sec'] ) ? (int) wp_unslash( $_POST['sec'] ) : -1; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- cast to int.
 		// phpcs:enable
 
 		if ( '' !== $trap ) {
 			wp_send_json_success(); // A bot told "thank you" moves on.
 		}
+
+		$section = $this->section_of( $page, $at );
+		$kinds   = Registry::field_kinds();
+		$core    = array(
+			'name'  => '',
+			'phone' => '',
+			'email' => '',
+			'msg'   => '',
+		);
+		$extra   = array();
+
+		foreach ( self::fields_of( $section ) as $row ) {
+			$kind = $row['kind'];
+			$name = $row['name'];
+			// phpcs:disable WordPress.Security.NonceVerification.Missing -- see take().
+			$raw = isset( $_POST[ $name ] ) && is_scalar( $_POST[ $name ] ) ? (string) wp_unslash( $_POST[ $name ] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- sanitized by kind just below.
+			// phpcs:enable
+
+			switch ( $kind ) {
+				case 'email':
+					$value = sanitize_email( $raw );
+					break;
+				case 'msg':
+				case 'long':
+					$value = mb_substr( sanitize_textarea_field( $raw ), 0, 3000 );
+					break;
+				case 'select':
+					$value = in_array( $raw, $row['opts'], true ) ? $raw : '';
+					break;
+				default:
+					$value = mb_substr( sanitize_text_field( $raw ), 0, 300 );
+			}
+
+			if ( $row['req'] && '' === $value ) {
+				wp_send_json_error( array( 'msg' => __( 'Please fill in all the required fields.', 'oc-blocks' ) ) );
+			}
+
+			if ( array_key_exists( $name, $core ) ) {
+				$core[ $name ] = $value;
+			} elseif ( '' !== $value ) {
+				$label   = '' === $row['label'] ? (string) ( $kinds[ $kind ] ?? $kind ) : $row['label'];
+				$extra[] = array( $label, $value );
+			}
+		}
+
+		$name  = $core['name'];
+		$phone = $core['phone'];
+		$email = $core['email'];
+		$msg   = $core['msg'];
 
 		if ( '' === $name || mb_strlen( $name ) < 2 ) {
 			wp_send_json_error( array( 'msg' => __( 'Please write your name.', 'oc-blocks' ) ) );
@@ -130,17 +260,94 @@ final class Leads {
 				'meta_input'  => array(
 					'_oc_lead_phone' => $phone,
 					'_oc_lead_email' => $email,
-					'_oc_lead_msg'   => mb_substr( $msg, 0, 3000 ),
+					'_oc_lead_msg'   => $msg,
 					'_oc_lead_page'  => $page,
+					'_oc_lead_extra' => $extra,
 				),
 			)
 		);
 
 		if ( $lead_id > 0 ) {
-			$this->forward( (int) $lead_id, $name, $phone, $email, $msg, $page );
+			$this->mail( (int) $lead_id, $section, $name, $phone, $email, $msg, $extra, $page );
+			$this->forward( (int) $lead_id, $name, $phone, $email, $msg, $extra, $page );
 		}
 
 		wp_send_json_success();
+	}
+
+	/**
+	 * Who a block's enquiries go to: the addresses it names, else the admin.
+	 *
+	 * @param array<string,mixed> $section Contact section.
+	 * @return array<int,string>
+	 */
+	public static function recipients( array $section ): array {
+		$to = array();
+
+		foreach ( explode( ',', (string) ( $section['to'] ?? '' ) ) as $one ) {
+			$one = sanitize_email( trim( $one ) );
+
+			if ( '' !== $one && is_email( $one ) ) {
+				$to[] = $one;
+			}
+		}
+
+		if ( empty( $to ) ) {
+			$to[] = (string) get_option( 'admin_email' );
+		}
+
+		return array_values( array_unique( $to ) );
+	}
+
+	/**
+	 * The enquiry by email: every field as a line, the page it came from,
+	 * and a link to the lead itself. Reply-To is the sender when they left
+	 * an address, so answering is one click.
+	 *
+	 * @param int                           $lead_id Lead id.
+	 * @param array<string,mixed>           $section Contact section.
+	 * @param string                        $name    Name.
+	 * @param string                        $phone   Phone.
+	 * @param string                        $email   Email.
+	 * @param string                        $msg     Message.
+	 * @param array<int,array{0:string,1:string}> $extra   Extra fields.
+	 * @param int                           $page    Page id.
+	 */
+	private function mail( int $lead_id, array $section, string $name, string $phone, string $email, string $msg, array $extra, int $page ): void {
+		$site  = wp_specialchars_decode( (string) get_option( 'blogname' ), ENT_QUOTES );
+		$lines = array(
+			__( 'Full name', 'oc-blocks' ) => $name,
+			__( 'Phone', 'oc-blocks' )     => $phone,
+			__( 'Email', 'oc-blocks' )     => $email,
+			__( 'Message', 'oc-blocks' )   => $msg,
+		);
+
+		foreach ( $extra as $pair ) {
+			$lines[ $pair[0] ] = $pair[1];
+		}
+
+		$body = '';
+
+		foreach ( $lines as $label => $value ) {
+			if ( '' !== $value ) {
+				$body .= $label . ': ' . $value . "\n";
+			}
+		}
+
+		$body .= "\n" . __( 'From the page', 'oc-blocks' ) . ': ' . ( $page > 0 ? (string) get_the_title( $page ) . ' — ' . (string) get_permalink( $page ) : $site ) . "\n";
+		$body .= __( 'Arrived', 'oc-blocks' ) . ': ' . wp_date( 'd/m/Y H:i' ) . "\n";
+		$body .= __( 'On the Leads screen', 'oc-blocks' ) . ': ' . admin_url( 'post.php?post=' . $lead_id . '&action=edit' ) . "\n";
+
+		$headers = array( 'Content-Type: text/plain; charset=UTF-8' );
+
+		if ( '' !== $email && is_email( $email ) ) {
+			$headers[] = 'Reply-To: ' . $name . ' <' . $email . '>';
+		}
+
+		/* translators: 1: site name, 2: sender name */
+		$subject = sprintf( __( '[%1$s] New enquiry from %2$s', 'oc-blocks' ), $site, $name );
+
+		wp_mail( self::recipients( $section ), $subject, $body, $headers );
 	}
 
 	/**
@@ -154,9 +361,10 @@ final class Leads {
 	 * @param string $phone   Phone.
 	 * @param string $email   Email.
 	 * @param string $msg     Message.
+	 * @param array<int,array{0:string,1:string}> $extra Extra fields.
 	 * @param int    $page    Page the form stood on.
 	 */
-	private function forward( int $lead_id, string $name, string $phone, string $email, string $msg, int $page ): void {
+	private function forward( int $lead_id, string $name, string $phone, string $email, string $msg, array $extra, int $page ): void {
 		$hook = (string) get_option( self::HOOK, '' );
 
 		if ( '' === $hook ) {
@@ -169,6 +377,7 @@ final class Leads {
 			'phone'   => $phone,
 			'email'   => $email,
 			'message' => $msg,
+			'extra'   => self::extra_text( $extra ),
 			'page'    => $page > 0 ? (string) get_the_title( $page ) : '',
 			'site'    => home_url( '/' ),
 			'time'    => gmdate( 'c' ),
@@ -191,6 +400,23 @@ final class Leads {
 				'body'     => wp_json_encode( $payload ),
 			)
 		);
+	}
+
+	/**
+	 * A lead's extra fields as one readable line: "Order number: 1234; Note: …".
+	 *
+	 * @param mixed $extra Whatever the meta holds.
+	 */
+	public static function extra_text( $extra ): string {
+		$bits = array();
+
+		foreach ( (array) ( is_array( $extra ) ? $extra : array() ) as $pair ) {
+			if ( is_array( $pair ) && isset( $pair[0], $pair[1] ) ) {
+				$bits[] = (string) $pair[0] . ': ' . (string) $pair[1];
+			}
+		}
+
+		return implode( '; ', $bits );
 	}
 
 	/**
@@ -230,7 +456,9 @@ final class Leads {
 				break;
 
 			case 'oc_msg':
-				echo esc_html( wp_html_excerpt( (string) get_post_meta( $post_id, '_oc_lead_msg', true ), 70, '…' ) );
+				$text = (string) get_post_meta( $post_id, '_oc_lead_msg', true );
+				$more = self::extra_text( get_post_meta( $post_id, '_oc_lead_extra', true ) );
+				echo esc_html( wp_html_excerpt( trim( $text . ( '' === $more ? '' : ' · ' . $more ) ), 90, '…' ) );
 				break;
 
 			case 'oc_page':
@@ -254,8 +482,15 @@ final class Leads {
 					__( 'Phone', 'oc-blocks' )         => (string) get_post_meta( $lead->ID, '_oc_lead_phone', true ),
 					__( 'Email', 'oc-blocks' )         => (string) get_post_meta( $lead->ID, '_oc_lead_email', true ),
 					__( 'Message', 'oc-blocks' )       => (string) get_post_meta( $lead->ID, '_oc_lead_msg', true ),
-					__( 'From the page', 'oc-blocks' ) => (string) get_the_title( absint( get_post_meta( $lead->ID, '_oc_lead_page', true ) ) ),
 				);
+
+				foreach ( (array) get_post_meta( $lead->ID, '_oc_lead_extra', true ) as $pair ) {
+					if ( is_array( $pair ) && isset( $pair[0], $pair[1] ) ) {
+						$rows[ (string) $pair[0] ] = (string) $pair[1];
+					}
+				}
+
+				$rows[ __( 'From the page', 'oc-blocks' ) ] = (string) get_the_title( absint( get_post_meta( $lead->ID, '_oc_lead_page', true ) ) );
 
 				echo '<table class="widefat striped">';
 
@@ -307,7 +542,7 @@ final class Leads {
 						<th scope="row"><label for="oc_lead_hook"><?php esc_html_e( 'CRM webhook', 'oc-blocks' ); ?></label></th>
 						<td>
 							<input type="url" class="regular-text ltr" id="oc_lead_hook" name="oc_lead_hook" value="<?php echo esc_attr( $hook ); ?>" placeholder="https://">
-							<p class="description"><?php esc_html_e( 'Every new lead is POSTed there as JSON — name, phone, email, message, page. Works with any CRM that accepts webhooks, and with Make / Zapier in between.', 'oc-blocks' ); ?></p>
+							<p class="description"><?php esc_html_e( 'Every enquiry is emailed to the addresses the contact block names (the site admin otherwise) and kept here. Every new lead is also POSTed there as JSON — name, phone, email, message, page. Works with any CRM that accepts webhooks, and with Make / Zapier in between.', 'oc-blocks' ); ?></p>
 						</td>
 					</tr>
 				</table>
@@ -343,7 +578,7 @@ final class Leads {
 
 		// The BOM, so Hebrew-locale Excel reads the file as UTF-8.
 		echo "\xEF\xBB\xBF";
-		echo "name,phone,email,message,page,date\n";
+		echo "name,phone,email,message,extra,page,date\n";
 
 		$cell = static function ( string $value ): string {
 			return '"' . str_replace( '"', '""', $value ) . '"';
@@ -355,6 +590,7 @@ final class Leads {
 				. $cell( (string) get_post_meta( $lead->ID, '_oc_lead_phone', true ) ) . ','
 				. $cell( (string) get_post_meta( $lead->ID, '_oc_lead_email', true ) ) . ','
 				. $cell( (string) get_post_meta( $lead->ID, '_oc_lead_msg', true ) ) . ','
+				. $cell( self::extra_text( get_post_meta( $lead->ID, '_oc_lead_extra', true ) ) ) . ','
 				. $cell( (string) get_the_title( absint( get_post_meta( $lead->ID, '_oc_lead_page', true ) ) ) ) . ','
 				. $cell( (string) get_the_date( 'Y-m-d H:i', $lead ) ) . "\n";
 		}

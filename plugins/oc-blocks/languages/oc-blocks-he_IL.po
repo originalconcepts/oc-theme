@@ -1369,3 +1369,108 @@ msgstr "הזינו כתובת והפס כולו יהפוך לקישור."
 #. translators: 1: chapter number, 2: how many chapters there are.
 msgid "Chapter %1$d of %2$d"
 msgstr "פרק %1$d מתוך %2$d"
+
+msgid "Short text"
+msgstr "טקסט קצר"
+
+msgid "Long text"
+msgstr "טקסט ארוך"
+
+msgid "Number"
+msgstr "מספר"
+
+msgid "Date"
+msgstr "תאריך"
+
+msgid "Dropdown"
+msgstr "רשימה נפתחת"
+
+msgid "Layout"
+msgstr "פריסה"
+
+msgid "Words above the form"
+msgstr "תוכן מעל הטופס"
+
+msgid "Form + picture"
+msgstr "טופס + תמונה"
+
+msgid "Form + contact details"
+msgstr "טופס + פרטי התקשרות"
+
+msgid "Two-column layouts put the form first in the reading direction — picture or details sit on the far side."
+msgstr "בפריסות של שתי עמודות הטופס ראשון בכיוון הקריאה — התמונה או הפרטים בצד השני."
+
+msgid "The picture"
+msgstr "התמונה"
+
+msgid "Full address"
+msgstr "כתובת מלאה"
+
+msgid "One line per day or range."
+msgstr "שורה לכל יום או טווח."
+
+msgid "Another phone"
+msgstr "טלפון נוסף"
+
+msgid "Email address"
+msgstr "כתובת אימייל"
+
+msgid "The form fields"
+msgstr "שדות הטופס"
+
+msgid "Order them with the arrows. A half-width field shares its row with the next half-width one."
+msgstr "סדרו אותם עם החצים. שדה בחצי שורה חולק שורה עם שדה חצי־שורה שאחריו."
+
+msgid "Field"
+msgstr "שדה"
+
+msgid "Add a field"
+msgstr "הוספת שדה"
+
+msgid "Kind"
+msgstr "סוג"
+
+msgid "Label"
+msgstr "תווית"
+
+msgid "Empty shows the kind's own wording."
+msgstr "ריק מציג את הניסוח המובנה של הסוג."
+
+msgid "The choices"
+msgstr "האפשרויות"
+
+msgid "One per line."
+msgstr "אחת בכל שורה."
+
+msgid "Full row"
+msgstr "שורה מלאה"
+
+msgid "Half a row"
+msgstr "חצי שורה"
+
+msgid "Required"
+msgstr "חובה"
+
+msgid "Send the enquiry to"
+msgstr "לשלוח את הפנייה אל"
+
+msgid "Email addresses, separated by commas. Empty sends to the site admin. Every enquiry is also kept on the Leads screen."
+msgstr "כתובות אימייל, מופרדות בפסיקים. ריק שולח למנהל האתר. כל פנייה נשמרת גם במסך הלידים."
+
+msgid "Choose…"
+msgstr "בחירה…"
+
+msgid "(optional)"
+msgstr "(לא חובה)"
+
+msgid "Please fill in all the required fields."
+msgstr "נא למלא את כל שדות החובה."
+
+msgid "On the Leads screen"
+msgstr "במסך הלידים"
+
+msgid "[%1$s] New enquiry from %2$s"
+msgstr "[%1$s] פנייה חדשה מאת %2$s"
+
+msgid "Every enquiry is emailed to the addresses the contact block names (the site admin otherwise) and kept here. Every new lead is also POSTed there as JSON — name, phone, email, message, page. Works with any CRM that accepts webhooks, and with Make / Zapier in between."
+msgstr "כל פנייה נשלחת במייל לכתובות שבלוק יצירת הקשר מגדיר (אחרת למנהל האתר) ונשמרת כאן. כל ליד חדש נשלח לשם גם כ־JSON — שם, טלפון, אימייל, הודעה, עמוד. עובד עם כל CRM שמקבל webhooks, וגם עם Make / Zapier באמצע."

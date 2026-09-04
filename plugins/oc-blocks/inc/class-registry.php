@@ -283,6 +283,26 @@ final class Registry {
 	}
 
 	/**
+	 * What a contact-form field can be. The first four are the lead's own
+	 * columns on the Leads screen; the rest travel with it as extras.
+	 *
+	 * @return array<string,string> Kind => label.
+	 */
+	public static function field_kinds(): array {
+		return array(
+			'name'   => __( 'Full name', 'oc-blocks' ),
+			'phone'  => __( 'Phone', 'oc-blocks' ),
+			'email'  => __( 'Email', 'oc-blocks' ),
+			'msg'    => __( 'Message', 'oc-blocks' ),
+			'text'   => __( 'Short text', 'oc-blocks' ),
+			'long'   => __( 'Long text', 'oc-blocks' ),
+			'number' => __( 'Number', 'oc-blocks' ),
+			'date'   => __( 'Date', 'oc-blocks' ),
+			'select' => __( 'Dropdown', 'oc-blocks' ),
+		);
+	}
+
+	/**
 	 * Every section type.
 	 *
 	 * @return array<string,array<string,mixed>>
@@ -1459,20 +1479,116 @@ final class Registry {
 						'type'  => 'textarea',
 						'label' => __( 'A few words above the form', 'oc-blocks' ),
 					),
-					'phone'        => array(
-						'type'  => 'toggle',
-						'label' => __( 'Phone field', 'oc-blocks' ),
-						'def'   => 1,
+					'layout'       => array(
+						'type'    => 'seg',
+						'label'   => __( 'Layout', 'oc-blocks' ),
+						'choices' => array(
+							'stack' => __( 'Words above the form', 'oc-blocks' ),
+							'image' => __( 'Form + picture', 'oc-blocks' ),
+							'info'  => __( 'Form + contact details', 'oc-blocks' ),
+						),
+						'def'     => 'stack',
+						'hint'    => __( 'Two-column layouts put the form first in the reading direction — picture or details sit on the far side.', 'oc-blocks' ),
 					),
-					'email'        => array(
-						'type'  => 'toggle',
-						'label' => __( 'Email field', 'oc-blocks' ),
-						'def'   => 1,
+					'img'          => array(
+						'type'  => 'image',
+						'label' => __( 'The picture', 'oc-blocks' ),
+						'when'  => array( 'layout' => array( 'image' ) ),
 					),
-					'msg'          => array(
-						'type'  => 'toggle',
-						'label' => __( 'Message field', 'oc-blocks' ),
-						'def'   => 1,
+					'address'      => array(
+						'type'  => 'text',
+						'label' => __( 'Full address', 'oc-blocks' ),
+						'when'  => array( 'layout' => array( 'info' ) ),
+					),
+					'hours'        => array(
+						'type'  => 'textarea',
+						'label' => __( 'Opening hours', 'oc-blocks' ),
+						'hint'  => __( 'One line per day or range.', 'oc-blocks' ),
+						'when'  => array( 'layout' => array( 'info' ) ),
+					),
+					'tel'          => array(
+						'type'  => 'text',
+						'label' => __( 'Phone', 'oc-blocks' ),
+						'half'  => true,
+						'when'  => array( 'layout' => array( 'info' ) ),
+					),
+					'tel2'         => array(
+						'type'  => 'text',
+						'label' => __( 'Another phone', 'oc-blocks' ),
+						'half'  => true,
+						'when'  => array( 'layout' => array( 'info' ) ),
+					),
+					'mail'         => array(
+						'type'  => 'text',
+						'label' => __( 'Email address', 'oc-blocks' ),
+						'when'  => array( 'layout' => array( 'info' ) ),
+					),
+					'fields'       => array(
+						'type'  => 'slides',
+						'label' => __( 'The form fields', 'oc-blocks' ),
+						'hint'  => __( 'Order them with the arrows. A half-width field shares its row with the next half-width one.', 'oc-blocks' ),
+						'row'   => __( 'Field', 'oc-blocks' ),
+						'add'   => __( 'Add a field', 'oc-blocks' ),
+						'def'   => array(
+							array(
+								'kind' => 'name',
+								'req'  => 1,
+								'w'    => 'half',
+							),
+							array(
+								'kind' => 'phone',
+								'req'  => 1,
+								'w'    => 'half',
+							),
+							array(
+								'kind' => 'email',
+								'req'  => 0,
+								'w'    => 'full',
+							),
+							array(
+								'kind' => 'msg',
+								'req'  => 0,
+								'w'    => 'full',
+							),
+						),
+						'sub'   => array(
+							'kind'  => array(
+								'type'    => 'select',
+								'label'   => __( 'Kind', 'oc-blocks' ),
+								'choices' => self::field_kinds(),
+								'def'     => 'text',
+							),
+							'label' => array(
+								'type'  => 'text',
+								'label' => __( 'Label', 'oc-blocks' ),
+								'hint'  => __( 'Empty shows the kind\'s own wording.', 'oc-blocks' ),
+							),
+							'opts'  => array(
+								'type'  => 'textarea',
+								'label' => __( 'The choices', 'oc-blocks' ),
+								'hint'  => __( 'One per line.', 'oc-blocks' ),
+								'when'  => array( 'kind' => array( 'select' ) ),
+							),
+							'w'     => array(
+								'type'    => 'seg',
+								'label'   => __( 'Width', 'oc-blocks' ),
+								'choices' => array(
+									'full' => __( 'Full row', 'oc-blocks' ),
+									'half' => __( 'Half a row', 'oc-blocks' ),
+								),
+								'def'     => 'full',
+							),
+							'req'   => array(
+								'type'  => 'toggle',
+								'label' => __( 'Required', 'oc-blocks' ),
+								'def'   => 1,
+							),
+						),
+					),
+					'to'           => array(
+						'type'  => 'text',
+						'label' => __( 'Send the enquiry to', 'oc-blocks' ),
+						'hint'  => __( 'Email addresses, separated by commas. Empty sends to the site admin. Every enquiry is also kept on the Leads screen.', 'oc-blocks' ),
 					),
 					'button'       => array(
 						'type'  => 'text',

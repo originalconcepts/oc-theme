@@ -1377,7 +1377,7 @@
 				return msgs.req;
 			}
 
-			if ( 'phone' === field.name && '' !== value ) {
+			if ( 'phone' === field.dataset.kind && '' !== value ) {
 				var digits = value.replace( /\D/g, '' );
 
 				if ( 10 !== digits.length ) {
@@ -1385,7 +1385,7 @@
 				}
 			}
 
-			if ( 'email' === field.name && '' !== value && ! /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test( value ) ) {
+			if ( 'email' === field.dataset.kind && '' !== value && ! /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test( value ) ) {
 				return msgs.email;
 			}
 
@@ -1406,7 +1406,7 @@
 			return '' === fault;
 		}
 
-		var watched = form.querySelectorAll( 'input[name="name"], input[name="phone"], input[name="email"], input[name="consent"], textarea[name="msg"]' );
+		var watched = form.querySelectorAll( '.ocb-lead__f input, .ocb-lead__f textarea, .ocb-lead__f select, .ocb-lead__consent input' );
 
 		watched.forEach( function ( field ) {
 			field.addEventListener( 'blur', function () {

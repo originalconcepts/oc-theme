@@ -37,6 +37,14 @@ final class Render {
 	private static $first_section = false;
 
 	/**
+	 * Index of the section being rendered, for blocks that need to name
+	 * themselves back to the server (the contact form).
+	 *
+	 * @var int
+	 */
+	private static $at = -1;
+
+	/**
 	 * Hook in.
 	 */
 	public function register(): void {
@@ -195,6 +203,7 @@ final class Render {
 			}
 
 			self::$first_section = ( '' === $out );
+			self::$at            = $at;
 
 			$inner = self::block( $section );
 
@@ -1883,8 +1892,9 @@ final class Render {
 	}
 
 	/**
-	 * The contact form. Everything sent lands on the Leads screen, and — when
-	 * a webhook is set there — travels on to the shop's CRM as JSON.
+	 * The contact form. Everything sent lands on the Leads screen, goes out
+	 * by email to whoever the block names (the site admin otherwise), and —
+	 * when a webhook is set — travels on to the shop's CRM as JSON.
 	 *
 	 * Nonce-free like the newsletter, and for the same reason: the markup is
 	 * cached longer than a nonce lives, and a logged-out nonce guards nothing.
@@ -1896,27 +1906,64 @@ final class Render {
 		$button = trim( (string) $s['button'] );
 		$thanks = trim( (string) $s['thanks'] );
 		$text   = trim( (string) $s['text'] );
+		$layout = (string) $s['layout'];
+		$twin   = 'stack' !== $layout;
 
-		$out = self::heading( $s );
+		$words = self::heading( $s );
+
+		if ( $twin && '' !== $words ) {
+			$words = str_replace( 'class="ocb__title"', 'class="ocb__title ocb__title--start"', $words );
+		}
 
 		if ( '' !== $text ) {
-			$out .= '<p class="ocb-lead__text">' . esc_html( $text ) . '</p>';
+			$words .= '<p class="ocb-lead__text">' . esc_html( $text ) . '</p>';
 		}
 
-		$err = '<em class="ocb-lead__err" hidden></em>';
+		$err    = '<em class="ocb-lead__err" hidden></em>';
+		$fields = '';
+		$kinds  = Registry::field_kinds();
 
-		$fields = '<label class="ocb-lead__f ocb-lead__f--half"><span>' . esc_html__( 'Full name', 'oc-blocks' ) . '</span><input type="text" name="name" required autocomplete="name">' . $err . '</label>';
+		foreach ( Leads::fields_of( $s ) as $row ) {
+			$kind  = (string) $row['kind'];
+			$label = '' === $row['label'] ? ( 'msg' === $kind ? __( 'How can we help?', 'oc-blocks' ) : (string) ( $kinds[ $kind ] ?? $kind ) ) : $row['label'];
+			$name  = (string) $row['name'];
+			$req   = $row['req'] ? ' required' : '';
+			$attrs = ' name="' . esc_attr( $name ) . '" data-kind="' . esc_attr( $kind ) . '"' . $req;
 
-		if ( ! empty( $s['phone'] ) ) {
-			$fields .= '<label class="ocb-lead__f ocb-lead__f--half"><span>' . esc_html__( 'Phone', 'oc-blocks' ) . '</span><input type="tel" name="phone" required autocomplete="tel" inputmode="tel">' . $err . '</label>';
-		}
+			switch ( $kind ) {
+				case 'name':
+					$input = '<input type="text"' . $attrs . ' autocomplete="name">';
+					break;
+				case 'phone':
+					$input = '<input type="tel"' . $attrs . ' autocomplete="tel" inputmode="tel">';
+					break;
+				case 'email':
+					$input = '<input type="email"' . $attrs . ' autocomplete="email">';
+					break;
+				case 'msg':
+				case 'long':
+					$input = '<textarea' . $attrs . ' rows="4"></textarea>';
+					break;
+				case 'number':
+					$input = '<input type="text"' . $attrs . ' inputmode="numeric">';
+					break;
+				case 'date':
+					$input = '<input type="date"' . $attrs . '>';
+					break;
+				case 'select':
+					$input = '<select' . $attrs . '><option value="">' . esc_html__( 'Choose…', 'oc-blocks' ) . '</option>';
 
-		if ( ! empty( $s['email'] ) ) {
-			$fields .= '<label class="ocb-lead__f"><span>' . esc_html__( 'Email', 'oc-blocks' ) . '</span><input type="email" name="email" autocomplete="email">' . $err . '</label>';
-		}
+					foreach ( $row['opts'] as $opt ) {
+						$input .= '<option value="' . esc_attr( $opt ) . '">' . esc_html( $opt ) . '</option>';
+					}
 
-		if ( ! empty( $s['msg'] ) ) {
-			$fields .= '<label class="ocb-lead__f"><span>' . esc_html__( 'How can we help?', 'oc-blocks' ) . '</span><textarea name="msg" rows="4"></textarea>' . $err . '</label>';
+					$input .= '</select>';
+					break;
+				default:
+					$input = '<input type="text"' . $attrs . '>';
+			}
+
+			$fields .= '<label class="ocb-lead__f' . ( 'half' === $row['w'] ? ' ocb-lead__f--half' : '' ) . '"><span>' . esc_html( $label ) . ( $row['req'] ? '' : ' <small>' . esc_html__( '(optional)', 'oc-blocks' ) . '</small>' ) . '</span>' . $input . $err . '</label>';
 		}
 
 		$consent = '';
@@ -1943,13 +1990,14 @@ final class Render {
 			$consent = '<label class="ocb-lead__consent"><input type="checkbox" name="consent" required><span>' . $wording . '</span><em class="ocb-lead__err" hidden></em></label>';
 		}
 
-		$out .= '<form class="ocb-lead" method="post" action="' . esc_url( admin_url( 'admin-ajax.php' ) ) . '" data-ocb-lead novalidate'
+		$form = '<form class="ocb-lead" method="post" action="' . esc_url( admin_url( 'admin-ajax.php' ) ) . '" data-ocb-lead novalidate'
 			. ' data-err-req="' . esc_attr__( 'Please fill in this field.', 'oc-blocks' ) . '"'
 			. ' data-err-phone="' . esc_attr__( 'Please enter a valid phone number (10 digits).', 'oc-blocks' ) . '"'
 			. ' data-err-email="' . esc_attr__( 'Please enter a valid email address.', 'oc-blocks' ) . '"'
 			. ' data-err-consent="' . esc_attr__( 'Please tick the approval to continue.', 'oc-blocks' ) . '">'
 			. '<input type="hidden" name="action" value="oc_blocks_lead">'
 			. '<input type="hidden" name="page" value="' . absint( get_the_ID() ) . '">'
+			. '<input type="hidden" name="sec" value="' . (int) self::$at . '">'
 			. '<input class="ocb-news__trap" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">'
 			. $fields
 			. $consent
@@ -1957,7 +2005,64 @@ final class Render {
 			. '<p class="ocb-lead__thanks" hidden>' . esc_html( '' === $thanks ? __( 'Thank you — we will be in touch shortly.', 'oc-blocks' ) : $thanks ) . '</p>'
 			. '</form>';
 
-		return '<div class="ocb-lead__wrap">' . $out . '</div>';
+		if ( 'image' === $layout ) {
+			$img = absint( $s['img'] );
+			$pic = $img > 0 ? wp_get_attachment_image( $img, 'large', false, array( 'loading' => 'lazy' ) ) : '';
+
+			return '<div class="ocb-lead__wrap ocb-lead__wrap--image">'
+				. '<div class="ocb-lead__col">' . $words . $form . '</div>'
+				. ( '' === $pic ? '' : '<figure class="ocb-lead__pic">' . $pic . '</figure>' )
+				. '</div>';
+		}
+
+		if ( 'info' === $layout ) {
+			return '<div class="ocb-lead__wrap ocb-lead__wrap--info">'
+				. '<div class="ocb-lead__info">' . $words . self::contact_details( $s ) . '</div>'
+				. '<div class="ocb-lead__col">' . $form . '</div>'
+				. '</div>';
+		}
+
+		return '<div class="ocb-lead__wrap">' . $words . $form . '</div>';
+	}
+
+	/**
+	 * The details column of the contact block: address, hours, phones and
+	 * email, each behind its icon. Only the filled ones appear.
+	 *
+	 * @param array<string,mixed> $s Section.
+	 */
+	private static function contact_details( array $s ): string {
+		$library = self::icon_library();
+		$items   = '';
+
+		$rows = array(
+			array( 'pin', __( 'Address', 'oc-blocks' ), trim( (string) $s['address'] ), '' ),
+			array( 'clock', __( 'Opening hours', 'oc-blocks' ), trim( (string) $s['hours'] ), '' ),
+			array( 'phone', __( 'Phone', 'oc-blocks' ), trim( (string) $s['tel'] ), 'tel' ),
+			array( 'phone', __( 'Phone', 'oc-blocks' ), trim( (string) $s['tel2'] ), 'tel' ),
+			array( 'mail', __( 'Email', 'oc-blocks' ), trim( (string) $s['mail'] ), 'mailto' ),
+		);
+
+		foreach ( $rows as $row ) {
+			list( $icon, $label, $value, $link ) = $row;
+
+			if ( '' === $value ) {
+				continue;
+			}
+
+			if ( 'tel' === $link ) {
+				$body = '<a href="tel:' . esc_attr( (string) preg_replace( '/[^0-9+]/', '', $value ) ) . '" dir="ltr">' . esc_html( $value ) . '</a>';
+			} elseif ( 'mailto' === $link ) {
+				$body = '<a href="mailto:' . esc_attr( $value ) . '" dir="ltr">' . esc_html( $value ) . '</a>';
+			} else {
+				$body = nl2br( esc_html( $value ) );
+			}
+
+			$items .= '<li class="ocb-lead__item"><i class="ocb-lead__ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' . $library[ $icon ] . '</svg></i>'
+				. '<div><b>' . esc_html( $label ) . '</b>' . $body . '</div></li>';
+		}
+
+		return '' === $items ? '' : '<ul class="ocb-lead__items">' . $items . '</ul>';
 	}
 
 	/**
@@ -1984,6 +2089,8 @@ final class Render {
 			'tools'    => '<path d="M14.7 6.3a4.3 4.3 0 0 0-5.8 5.5L3.2 17.5 6.5 20.8l5.7-5.7a4.3 4.3 0 0 0 5.5-5.8L14.9 12l-2.9-2.9z"/>',
 			'armchair' => '<path d="M5.5 11V7.5a3 3 0 0 1 3-3h7a3 3 0 0 1 3 3V11"/><path d="M4 11.2a2 2 0 0 1 2 2v1.8h12v-1.8a2 2 0 0 1 4 0v3.3a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3v-3.3a2 2 0 0 1 2-2zM6.5 19.5V21M17.5 19.5V21"/>',
 			'ruler'    => '<rect x="2.5" y="9" width="19" height="6" rx="1"/><path d="M6.5 9v2.6M10.2 9v3.6M13.8 9v2.6M17.5 9v3.6"/>',
+			'pin'      => '<path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.4"/>',
+			'mail'     => '<rect x="3" y="5.5" width="18" height="13" rx="2"/><path d="M3.5 7l8.5 6 8.5-6"/>',
 			'sparkle'  => '<path d="M11 3.5l1.6 4.9 4.9 1.6-4.9 1.6L11 16.5l-1.6-4.9L4.5 10l4.9-1.6zM18.5 15.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z"/>',
 		);
 	}

@@ -700,6 +700,7 @@
 			onchange: function () {
 				section[ key ] = select.value;
 				touch();
+				paintSettings();
 			}
 		} );
 
@@ -894,6 +895,23 @@
 		return labelWrap( field, [ wrap ], true );
 	}
 
+	// What a repeater row calls itself in its folded bar: its heading, or
+	// failing that the label of the choice it made (a form field says
+	// "Phone" even before it is given a label of its own).
+	function rowName( slide, field ) {
+		var own = slide.heading || slide.q || slide.name || slide.label;
+
+		if ( own ) {
+			return String( own );
+		}
+
+		var pick = Object.keys( field.sub ).filter( function ( k ) {
+			return 'select' === field.sub[ k ].type && slide[ k ] && field.sub[ k ].choices && field.sub[ k ].choices[ slide[ k ] ];
+		} )[ 0 ];
+
+		return pick ? String( field.sub[ pick ].choices[ slide[ pick ] ] ) : '';
+	}
+
 	function slidesField( section, key, field ) {
 		var wrap = el( 'div', { 'class': 'ocbe-slides' } );
 
@@ -907,6 +925,10 @@
 			var body = el( 'div', { 'class': 'ocbe-slide__body', hidden: slide.__open ? null : 'hidden' } );
 
 			Object.keys( field.sub ).forEach( function ( subKey ) {
+				if ( ! shown( slide, field.sub[ subKey ], field.sub ) ) {
+					return;
+				}
+
 				body.appendChild( fieldRow( slide, subKey, field.sub[ subKey ], field.sub ) );
 			} );
 
@@ -918,7 +940,7 @@
 					body.hidden = ! body.hidden;
 				}
 			}, [
-				el( 'span', { text: T.slide + ' ' + ( at + 1 ) + ( ( slide.heading || slide.q || slide.name ) ? ' — ' + String( slide.heading || slide.q || slide.name ).slice( 0, 18 ) : '' ) } )
+				el( 'span', { text: ( field.row || T.slide ) + ' ' + ( at + 1 ) + ( rowName( slide, field ) ? ' — ' + rowName( slide, field ).slice( 0, 18 ) : '' ) } )
 			] );
 
 			var tools = el( 'span', { 'class': 'ocbe-slide__tools' }, [
@@ -957,7 +979,7 @@
 		wrap.appendChild( el( 'button', {
 			type: 'button',
 			'class': 'ocbe-slides__add',
-			text: '+ ' + T.addSlide,
+			text: '+ ' + ( field.add || T.addSlide ),
 			onclick: function () {
 				section[ key ] = section[ key ] || [];
 
