@@ -157,14 +157,44 @@ final class Render {
 		$cached = get_transient( $key );
 
 		if ( is_string( $cached ) ) {
-			return $cached;
+			return self::personalise( $cached );
 		}
 
 		$html = self::sections_html( Registry::sections( $page_id ) );
 
 		set_transient( $key, $html, DAY_IN_SECONDS );
 
-		return $html;
+		return self::personalise( $html );
+	}
+
+	/**
+	 * What the cached HTML must never carry, added per request: a signed-in
+	 * visitor's own name, phone and email in the contact form. The form
+	 * marks the inputs (`data-ocb-me`) and the values ride in here, after
+	 * the shared cache.
+	 *
+	 * @param string $html Composed page.
+	 */
+	private static function personalise( string $html ): string {
+		if ( false === strpos( $html, 'data-ocb-me="' ) ) {
+			return $html;
+		}
+
+		$me = self::visitor();
+
+		if ( empty( $me ) ) {
+			return $html;
+		}
+
+		return (string) preg_replace_callback(
+			'/data-ocb-me="(name|phone|email)"/',
+			static function ( array $m ) use ( $me ): string {
+				$value = (string) ( $me[ $m[1] ] ?? '' );
+
+				return '' === $value ? '' : 'value="' . esc_attr( $value ) . '"';
+			},
+			$html
+		);
 	}
 
 	/**
@@ -1922,7 +1952,6 @@ final class Render {
 		$err    = '<em class="ocb-lead__err" hidden></em>';
 		$fields = '';
 		$kinds  = Registry::field_kinds();
-		$me     = self::visitor();
 
 		foreach ( Leads::fields_of( $s ) as $row ) {
 			$kind  = (string) $row['kind'];
@@ -1930,7 +1959,7 @@ final class Render {
 			$name  = (string) $row['name'];
 			$req   = $row['req'] ? ' required' : '';
 			$attrs = ' name="' . esc_attr( $name ) . '" data-kind="' . esc_attr( $kind ) . '"' . $req;
-			$known = isset( $me[ $name ] ) && '' !== $me[ $name ] ? ' value="' . esc_attr( $me[ $name ] ) . '"' : '';
+			$known = ' data-ocb-me="' . esc_attr( $kind ) . '"'; // Filled per request, after the shared cache — see personalise().
 
 			switch ( $kind ) {
 				case 'name':
@@ -2034,8 +2063,8 @@ final class Render {
 
 	/**
 	 * What the form already knows about a signed-in visitor: name, phone,
-	 * email. Anonymous visitors (and cached pages, which are anonymous by
-	 * construction) get an empty set.
+	 * email. Anonymous visitors get an empty set. Never rendered into the
+	 * cached HTML — personalise() adds it per request.
 	 *
 	 * @return array<string,string>
 	 */
