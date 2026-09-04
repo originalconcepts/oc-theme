@@ -368,8 +368,8 @@ final class Media_Clean_Admin {
 		.ocmc__hint { margin: -8px 0 18px; font-size: 12px; color: #646970; }
 		.ocmc__pic { display: flex; align-items: center; gap: 10px; }
 		.ocmc__hcb { margin: 0; flex: 0 0 auto; }
-		/* left/transform rather than the logical property: the pill is centred
-		   on the window, and a logical inset flips it off-centre under RTL. */
+		/* left/transform, not the logical property: the pill is centred on the
+		window, and a logical inset flips it off-centre under RTL. */
 		.ocmc__float {
 			position: fixed; inset-block-end: 24px; left: 50%; transform: translateX(-50%);
 			display: flex; align-items: center; gap: 12px;

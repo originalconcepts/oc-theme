@@ -1616,9 +1616,14 @@ final class Media_Clean {
 				);
 			}
 
-			$rows = (array) $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.NotPrepared -- ids are integers from the page scan.
-				"SELECT ID, post_mime_type FROM {$wpdb->posts}
-				 WHERE post_type = 'attachment' AND ID IN (" . implode( ',', array_map( 'absint', $ids ) ) . ')'
+			$holes = implode( ',', array_fill( 0, count( $ids ), '%d' ) );
+
+			$rows = (array) $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery -- maintenance scan; live counts cannot cache.
+				$wpdb->prepare(
+					// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $holes is a list of %d placeholders built right above.
+					"SELECT ID, post_mime_type FROM {$wpdb->posts} WHERE post_type = 'attachment' AND ID IN ({$holes})",
+					$ids
+				)
 			);
 		} else {
 			$rows = (array) $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery -- maintenance scan; live counts cannot cache.
