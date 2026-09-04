@@ -105,6 +105,7 @@ require_once OC_THEME_DIR . '/inc/class-oc-order-print.php';
 require_once OC_THEME_DIR . '/inc/class-oc-hardening.php';
 require_once OC_THEME_DIR . '/inc/class-oc-media-clean.php';
 require_once OC_THEME_DIR . '/inc/class-oc-media-clean-admin.php';
+require_once OC_THEME_DIR . '/inc/class-oc-webp-admin.php';
 require_once OC_THEME_DIR . '/inc/class-oc-menu.php';
 require_once OC_THEME_DIR . '/inc/class-oc-menu-panel.php';
 require_once OC_THEME_DIR . '/inc/class-oc-menu-admin.php';

@@ -6804,3 +6804,102 @@ msgstr "%d מסומנים"
 
 msgid "%1$d of them are over the size you asked for, %2$s."
 msgstr "%1$d מהם מעל הגודל שביקשתם, %2$s."
+
+msgid "Convert to WebP"
+msgstr "המרה ל‑WebP"
+
+msgid "Only JPEG and PNG pictures can become WebP."
+msgstr "רק תמונות JPEG ו‑PNG יכולות להפוך ל‑WebP."
+
+msgid "This server cannot write WebP."
+msgstr "השרת הזה לא יודע לכתוב WebP."
+
+msgid "WordPress did not produce a WebP file."
+msgstr "וורדפרס לא יצר קובץ WebP."
+
+msgid "There is nothing left over for this one."
+msgstr "לא נשארו קבצים ישנים לתמונה הזו."
+
+msgid "The old name is written somewhere on the site, so the old file was kept."
+msgstr "השם הישן כתוב במקום כלשהו באתר, ולכן הקובץ הישן נשמר."
+
+msgid "WebP is the same picture at about a quarter of the weight. Every browser in use reads it."
+msgstr "WebP הוא אותה תמונה בערך ברבע מהמשקל. כל הדפדפנים בשימוש קוראים אותו."
+
+msgid "This server cannot write WebP, so nothing here will work. Ask the host to enable it."
+msgstr "השרת הזה לא יודע לכתוב WebP, ולכן שום דבר כאן לא יעבוד. בקשו מהאחסון להפעיל את זה."
+
+msgid "Convert pictures as they are uploaded"
+msgstr "המרת תמונות בזמן ההעלאה"
+
+msgid "From now on every picture uploaded is written as WebP, at every size. The file you chose is kept beside it, untouched."
+msgstr "מעכשיו כל תמונה שמעלים נכתבת כ‑WebP, בכל הגדלים. הקובץ שבחרתם נשמר לצידה, ללא שינוי."
+
+msgid "Clear the file it replaces"
+msgstr "מחיקת הקובץ שהוחלף"
+
+msgid "After a conversion, remove the picture it replaced and its old sizes — unless that name is written somewhere on the site, in which case it is always kept."
+msgstr "אחרי המרה, למחוק את התמונה שהוחלפה ואת הגדלים הישנים שלה — אלא אם השם הזה כתוב במקום כלשהו באתר, ואז הוא תמיד נשמר."
+
+msgid "To convert"
+msgstr "להמרה"
+
+msgid "Already WebP"
+msgstr "כבר ב‑WebP"
+
+msgid "Pictures in the library that are still JPEG or PNG. Converting one rebuilds it and all its sizes as WebP and the site starts serving those. Nothing is deleted unless you ask above, so a conversion can always be undone."
+msgstr "תמונות בספרייה שעדיין JPEG או PNG. המרה בונה מחדש את התמונה ואת כל הגדלים שלה כ‑WebP, והאתר מתחיל להגיש אותם. שום דבר לא נמחק אלא אם ביקשתם למעלה, כך שתמיד אפשר לחזור אחורה."
+
+msgid "Pictures already being served as WebP. Where a conversion left the old file behind, it is offered for removal here."
+msgstr "תמונות שכבר מוגשות כ‑WebP. איפה שהמרה השאירה מאחור את הקובץ הישן, אפשר למחוק אותו כאן."
+
+msgid "Look again"
+msgstr "חיפוש"
+
+msgid "Leave the address empty for the whole library. Fill it in and only the pictures that page uses are listed."
+msgstr "השאירו את הכתובת ריקה לכל הספרייה. מלאו אותה — ויוצגו רק התמונות שאותו עמוד משתמש בהן."
+
+msgid "Convert the ticked ones"
+msgstr "המרת המסומנים"
+
+msgid "Clear what they replaced"
+msgstr "מחיקת הקבצים שהוחלפו"
+
+msgid "Convert"
+msgstr "המרה"
+
+msgid "Clear the old file"
+msgstr "מחיקת הקובץ הישן"
+
+msgid "%1$d pictures are not WebP yet, %2$s between them."
+msgstr "%1$d תמונות עדיין לא ב‑WebP, %2$s בסך הכול."
+
+msgid "%1$d pictures are already WebP, %2$s between them."
+msgstr "%1$d תמונות כבר ב‑WebP, %2$s בסך הכול."
+
+msgid "Showing the first %d."
+msgstr "מוצגות %d הראשונות."
+
+msgid "Nothing here."
+msgstr "אין כאן כלום."
+
+msgid "Converting — %1$d of %2$d"
+msgstr "ממיר — %1$d מתוך %2$d"
+
+msgid "Done. %s lighter."
+msgstr "הסתיים. %s פחות."
+
+msgid "Convert %d pictures to WebP? The site starts serving the new files; the old ones stay unless you asked to clear them."
+msgstr "להמיר %d תמונות ל‑WebP? האתר יתחיל להגיש את הקבצים החדשים; הישנים נשארים אלא אם ביקשתם למחוק אותם."
+
+msgid "Remove the files these %d replaced? Any name still written somewhere on the site is kept."
+msgstr "למחוק את הקבצים ש‑%d אלה החליפו? כל שם שעדיין כתוב במקום כלשהו באתר יישמר."
+
+msgid "%s left over"
+msgstr "%s נשארו מאחור"
+
+msgid "nothing left over"
+msgstr "לא נשאר כלום"
+
+msgid "kept"
+msgstr "נשמר"

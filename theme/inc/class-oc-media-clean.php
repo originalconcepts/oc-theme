@@ -79,6 +79,16 @@ final class Media_Clean {
 	public const WEBP = 'oc_mclean_webp';
 
 	/**
+	 * Whether a conversion also clears the files it replaces.
+	 */
+	public const DROP = 'oc_mclean_drop';
+
+	/**
+	 * Where a converted picture's previous shape is remembered.
+	 */
+	private const PREWEBP = '_oc_mclean_prewebp';
+
+	/**
 	 * Freshly uploaded media is never offered, in hours.
 	 *
 	 * Someone may be part-way through building a page with it.
@@ -159,6 +169,9 @@ final class Media_Clean {
 		add_action( 'wp_ajax_ocmc_delete', array( $this, 'ajax_delete' ) );
 		add_action( 'wp_ajax_ocmc_heavy', array( $this, 'ajax_heavy' ) );
 		add_action( 'wp_ajax_ocmc_webp', array( $this, 'ajax_webp' ) );
+		add_action( 'wp_ajax_ocmc_formats', array( $this, 'ajax_formats' ) );
+		add_action( 'wp_ajax_ocmc_convert', array( $this, 'ajax_convert' ) );
+		add_action( 'wp_ajax_ocmc_drop', array( $this, 'ajax_drop' ) );
 		add_filter( 'image_editor_output_format', array( $this, 'webp_sizes' ) );
 		add_action( 'wp_ajax_ocmc_shrink', array( $this, 'ajax_shrink' ) );
 		add_action( 'wp_ajax_ocmc_restore', array( $this, 'ajax_restore' ) );
@@ -186,6 +199,22 @@ final class Media_Clean {
 			'oc-media-clean',
 			array( $this, 'render' )
 		);
+
+		add_submenu_page(
+			'upload.php',
+			__( 'Convert to WebP', 'oc-theme' ),
+			__( 'Convert to WebP', 'oc-theme' ),
+			'manage_options',
+			'oc-media-webp',
+			array( $this, 'render_webp' )
+		);
+	}
+
+	/**
+	 * The WebP screen lives next door too.
+	 */
+	public function render_webp(): void {
+		Webp_Admin::render();
 	}
 
 	/*
@@ -1355,14 +1384,366 @@ final class Media_Clean {
 	}
 
 	/**
+	 * Turn one picture already in the library into WebP.
+	 *
+	 * Nothing is deleted. WordPress rebuilds the file and all its sizes in
+	 * the new format and starts serving those; the old files stay where
+	 * they are, so a hand-written address somewhere in the shop still
+	 * answers, and the change can be undone exactly.
+	 *
+	 * @param int $id Attachment ID.
+	 * @return array<string,mixed>
+	 */
+	public static function to_webp( int $id ): array {
+		$mime = (string) get_post_mime_type( $id );
+
+		if ( ! in_array( $mime, array( 'image/jpeg', 'image/png' ), true ) ) {
+			return array(
+				'ok'  => false,
+				'why' => __( 'Only JPEG and PNG pictures can become WebP.', 'oc-theme' ),
+			);
+		}
+
+		if ( ! wp_image_editor_supports( array( 'mime_type' => 'image/webp' ) ) ) {
+			return array(
+				'ok'  => false,
+				'why' => __( 'This server cannot write WebP.', 'oc-theme' ),
+			);
+		}
+
+		$source = (string) wp_get_original_image_path( $id );
+		$source = '' !== $source && file_exists( $source ) ? $source : (string) get_attached_file( $id );
+
+		if ( '' === $source || ! file_exists( $source ) ) {
+			return array(
+				'ok'  => false,
+				'why' => __( 'The file is not on the server.', 'oc-theme' ),
+			);
+		}
+
+		$before = self::bytes( $id );
+
+		// Everything needed to put it back exactly as it was.
+		if ( '' === (string) get_post_meta( $id, self::PREWEBP, true ) ) {
+			update_post_meta(
+				$id,
+				self::PREWEBP,
+				wp_json_encode(
+					array(
+						'file' => (string) get_post_meta( $id, '_wp_attached_file', true ),
+						'meta' => wp_get_attachment_metadata( $id ),
+					)
+				)
+			);
+		}
+
+		$force = static function ( array $formats ): array {
+			$formats['image/jpeg'] = 'image/webp';
+			$formats['image/png']  = 'image/webp';
+
+			return $formats;
+		};
+
+		require_once ABSPATH . 'wp-admin/includes/image.php';
+
+		add_filter( 'image_editor_output_format', $force, 99 );
+		$meta = wp_create_image_subsizes( $source, $id );
+		remove_filter( 'image_editor_output_format', $force, 99 );
+
+		if ( empty( $meta['file'] ) || 'webp' !== strtolower( (string) pathinfo( (string) $meta['file'], PATHINFO_EXTENSION ) ) ) {
+			return array(
+				'ok'  => false,
+				'why' => __( 'WordPress did not produce a WebP file.', 'oc-theme' ),
+			);
+		}
+
+		wp_update_attachment_metadata( $id, $meta );
+
+		$after = self::bytes( $id );
+
+		return array(
+			'ok'     => true,
+			'before' => $before,
+			'after'  => $after,
+			'name'   => wp_basename( (string) $meta['file'] ),
+			'olds'   => count( self::old_files( $id ) ),
+		);
+	}
+
+	/**
+	 * The files a converted picture left behind: its own previous format,
+	 * every size it used to have, and the untouched upload.
+	 *
+	 * @param int $id Attachment ID.
+	 * @return array<int,string> Absolute paths.
+	 */
+	public static function old_files( int $id ): array {
+		$saved = (string) get_post_meta( $id, self::PREWEBP, true );
+
+		if ( '' === $saved ) {
+			return array();
+		}
+
+		$was = json_decode( $saved, true );
+
+		if ( ! is_array( $was ) ) {
+			return array();
+		}
+
+		$uploads = wp_get_upload_dir();
+		$base    = (string) $uploads['basedir'];
+		$now     = (string) get_post_meta( $id, '_wp_attached_file', true );
+		$live    = array( $now );
+
+		foreach ( (array) ( wp_get_attachment_metadata( $id )['sizes'] ?? array() ) as $size ) {
+			$live[] = dirname( $now ) . '/' . (string) ( $size['file'] ?? '' );
+		}
+
+		$old  = array();
+		$file = (string) ( $was['file'] ?? '' );
+
+		if ( '' !== $file ) {
+			$old[] = $file;
+
+			foreach ( (array) ( $was['meta']['sizes'] ?? array() ) as $size ) {
+				$old[] = dirname( $file ) . '/' . (string) ( $size['file'] ?? '' );
+			}
+
+			$original = (string) ( $was['meta']['original_image'] ?? '' );
+
+			if ( '' !== $original ) {
+				$old[] = dirname( $file ) . '/' . $original;
+			}
+		}
+
+		$out = array();
+
+		foreach ( array_unique( $old ) as $one ) {
+			if ( in_array( $one, $live, true ) ) {
+				continue;
+			}
+
+			$path = $base . '/' . ltrim( $one, '/' );
+
+			if ( file_exists( $path ) ) {
+				$out[] = $path;
+			}
+		}
+
+		return $out;
+	}
+
+	/**
+	 * Remove what a conversion left behind — but only when nothing anywhere
+	 * writes that name, because a hand-written address is the one reference
+	 * the metadata cannot tell us about.
+	 *
+	 * @param int $id Attachment ID.
+	 * @return array<string,mixed>
+	 */
+	public static function drop_old( int $id ): array {
+		$files = self::old_files( $id );
+
+		if ( empty( $files ) ) {
+			return array(
+				'ok'  => false,
+				'why' => __( 'There is nothing left over for this one.', 'oc-theme' ),
+			);
+		}
+
+		if ( self::name_referenced( $id, false ) ) {
+			return array(
+				'ok'  => false,
+				'why' => __( 'The old name is written somewhere on the site, so the old file was kept.', 'oc-theme' ),
+			);
+		}
+
+		$freed = 0;
+
+		foreach ( $files as $path ) {
+			$freed += (int) filesize( $path );
+			wp_delete_file( $path );
+		}
+
+		delete_post_meta( $id, self::PREWEBP );
+
+		return array(
+			'ok'    => true,
+			'freed' => $freed,
+			'gone'  => count( $files ),
+		);
+	}
+
+	/**
+	 * The library split by format: what is not WebP yet, and what is.
+	 *
+	 * @param string $have  'no' for pictures still to convert, 'yes' for the converted.
+	 * @param string $url   One page to look at; empty means the whole library.
+	 * @param int    $limit Longest list to return.
+	 * @return array<string,mixed>
+	 */
+	public static function by_format( string $have, string $url = '', int $limit = 300 ): array {
+		global $wpdb;
+
+		$want = 'yes' === $have;
+		$ids  = array();
+
+		if ( '' !== trim( $url ) ) {
+			$page = self::page_media( $url );
+
+			if ( empty( $page['ok'] ) ) {
+				return array(
+					'items' => array(),
+					'total' => 0,
+					'bytes' => 0,
+					'why'   => (string) ( $page['why'] ?? '' ),
+				);
+			}
+
+			foreach ( (array) $page['items'] as $one ) {
+				if ( (int) $one['id'] > 0 ) {
+					$ids[] = (int) $one['id'];
+				}
+			}
+
+			$ids = array_values( array_unique( $ids ) );
+
+			if ( empty( $ids ) ) {
+				return array(
+					'items' => array(),
+					'total' => 0,
+					'bytes' => 0,
+				);
+			}
+
+			$rows = (array) $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.NotPrepared -- ids are integers from the page scan.
+				"SELECT ID, post_mime_type FROM {$wpdb->posts}
+				 WHERE post_type = 'attachment' AND ID IN (" . implode( ',', array_map( 'absint', $ids ) ) . ')'
+			);
+		} else {
+			$rows = (array) $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery -- maintenance scan; live counts cannot cache.
+				"SELECT ID, post_mime_type FROM {$wpdb->posts}
+				 WHERE post_type = 'attachment' AND post_mime_type LIKE 'image/%'
+				 ORDER BY ID DESC"
+			);
+		}
+
+		$items = array();
+		$total = 0;
+		$bytes = 0;
+
+		foreach ( $rows as $row ) {
+			$id   = (int) $row->ID;
+			$file = (string) get_post_meta( $id, '_wp_attached_file', true );
+			$ext  = strtolower( (string) pathinfo( $file, PATHINFO_EXTENSION ) );
+
+			if ( 'svg' === $ext || '' === $ext ) {
+				continue;
+			}
+
+			$is = 'webp' === $ext;
+
+			if ( $is !== $want ) {
+				continue;
+			}
+
+			// Only what this tool can actually act on.
+			if ( ! $want && ! in_array( (string) $row->post_mime_type, array( 'image/jpeg', 'image/png' ), true ) ) {
+				continue;
+			}
+
+			++$total;
+
+			if ( count( $items ) >= $limit ) {
+				continue;
+			}
+
+			$size   = self::bytes( $id );
+			$bytes += $size;
+			$olds   = $want ? self::old_files( $id ) : array();
+			$spare  = 0;
+
+			foreach ( $olds as $path ) {
+				$spare += (int) filesize( $path );
+			}
+
+			$items[] = array(
+				'id'    => $id,
+				'name'  => wp_basename( $file ),
+				'bytes' => $size,
+				'thumb' => wp_get_attachment_image_url( $id, 'thumbnail' ),
+				'link'  => get_edit_post_link( $id, 'raw' ),
+				'mime'  => (string) $row->post_mime_type,
+				'olds'  => count( $olds ),
+				'spare' => $spare,
+			);
+		}
+
+		return array(
+			'items' => $items,
+			'total' => $total,
+			'bytes' => $bytes,
+			'shown' => count( $items ),
+			'page'  => trim( $url ),
+		);
+	}
+
+	/**
+	 * The format lists, over ajax.
+	 */
+	public function ajax_formats(): void {
+		$this->guard();
+
+		// phpcs:disable WordPress.Security.NonceVerification.Missing -- guard() above ran check_ajax_referer().
+		$have = isset( $_POST['have'] ) ? sanitize_key( wp_unslash( $_POST['have'] ) ) : 'no';
+		$url  = isset( $_POST['url'] ) ? esc_url_raw( wp_unslash( $_POST['url'] ) ) : '';
+		// phpcs:enable
+
+		wp_send_json_success( self::by_format( 'yes' === $have ? 'yes' : 'no', $url ) );
+	}
+
+	/**
+	 * Convert one picture, over ajax.
+	 */
+	public function ajax_convert(): void {
+		$this->guard();
+
+		$id  = isset( $_POST['id'] ) ? absint( wp_unslash( $_POST['id'] ) ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- guard() above ran check_ajax_referer().
+		$out = self::to_webp( $id );
+
+		if ( ! empty( $out['ok'] ) && get_option( self::DROP, false ) ) {
+			$gone = self::drop_old( $id );
+
+			$out['dropped'] = ! empty( $gone['ok'] );
+			$out['freed']   = (int) ( $gone['freed'] ?? 0 );
+		}
+
+		wp_send_json_success( $out );
+	}
+
+	/**
+	 * Clear one picture's leftovers, over ajax.
+	 */
+	public function ajax_drop(): void {
+		$this->guard();
+
+		$id = isset( $_POST['id'] ) ? absint( wp_unslash( $_POST['id'] ) ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- guard() above ran check_ajax_referer().
+
+		wp_send_json_success( self::drop_old( $id ) );
+	}
+
+	/**
 	 * Turn WebP sizes on or off, over ajax.
 	 */
 	public function ajax_webp(): void {
 		$this->guard();
 
-		$on = isset( $_POST['on'] ) && '1' === sanitize_key( wp_unslash( $_POST['on'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- guard() above ran check_ajax_referer().
+		// phpcs:disable WordPress.Security.NonceVerification.Missing -- guard() above ran check_ajax_referer().
+		$on  = isset( $_POST['on'] ) && '1' === sanitize_key( wp_unslash( $_POST['on'] ) );
+		$key = isset( $_POST['key'] ) ? sanitize_key( wp_unslash( $_POST['key'] ) ) : 'webp';
+		// phpcs:enable
 
-		update_option( self::WEBP, $on ? 1 : 0, false );
+		update_option( 'drop' === $key ? self::DROP : self::WEBP, $on ? 1 : 0, false );
 
 		wp_send_json_success( array( 'on' => $on ) );
 	}

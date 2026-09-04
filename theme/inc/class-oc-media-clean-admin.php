@@ -78,15 +78,6 @@ final class Media_Clean_Admin {
 				<button type="button" class="ocmc__tab" data-ocmc-tab="heavy"><?php esc_html_e( 'Heavy files', 'oc-theme' ); ?></button>
 			</nav>
 
-			<p class="ocmc__webp">
-				<label>
-					<input type="checkbox" id="ocmc-webp" <?php checked( (bool) get_option( Media_Clean::WEBP, false ) ); ?>>
-					<b><?php esc_html_e( 'Build new pictures as WebP', 'oc-theme' ); ?></b>
-				</label>
-				<span><?php esc_html_e( 'From now on, every size WordPress makes from an uploaded picture is written as WebP — a quarter of the weight, same picture. The file you upload keeps its own format, and nothing already on the site changes.', 'oc-theme' ); ?></span>
-				<em id="ocmc-webp-said"></em>
-			</p>
-
 			<div class="ocmc__panel" data-ocmc-panel="clean">
 			<p>
 				<button type="button" class="button button-primary button-hero" id="ocmc-scan">
@@ -377,16 +368,16 @@ final class Media_Clean_Admin {
 		.ocmc__hint { margin: -8px 0 18px; font-size: 12px; color: #646970; }
 		.ocmc__pic { display: flex; align-items: center; gap: 10px; }
 		.ocmc__hcb { margin: 0; flex: 0 0 auto; }
+		/* left/transform rather than the logical property: the pill is centred
+		   on the window, and a logical inset flips it off-centre under RTL. */
 		.ocmc__float {
-			position: fixed; inset-block-end: 24px; inset-inline-start: 50%; transform: translateX(-50%);
+			position: fixed; inset-block-end: 24px; left: 50%; transform: translateX(-50%);
 			display: flex; align-items: center; gap: 12px;
-			background: #1d2327; color: #fff; padding: 10px 16px; border-radius: 999px;
+			background: #1d2327; color: #fff; padding: 10px 14px; border-radius: 999px;
 			box-shadow: 0 8px 28px rgba(0,0,0,.28); z-index: 9999;
 		}
-		.ocmc__float b { font-size: 13px; font-weight: 600; }
-		.ocmc__webp { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; background: #fff; border: 1px solid #dcdcde; border-radius: 8px; padding: 12px 16px; margin: 0 0 18px; }
-		.ocmc__webp span { font-size: 12px; color: #646970; flex: 1 1 320px; }
-		.ocmc__webp em { font-style: normal; font-size: 12px; color: #007017; }
+		.ocmc__float b { font-size: 13px; font-weight: 600; padding-inline-start: 6px; }
+		.ocmc__float .button { border-radius: 999px; padding: 2px 16px; }
 		</style>
 		<?php
 	}
@@ -445,7 +436,6 @@ final class Media_Clean_Admin {
 			'picked'   => __( '%d ticked', 'oc-theme' ),
 			/* translators: 1: number of files over the size, 2: their total size. */
 			'pover'    => __( '%1$d of them are over the size you asked for, %2$s.', 'oc-theme' ),
-			'saved'    => __( 'Saved.', 'oc-theme' ),
 		);
 		?>
 		<script>
@@ -606,20 +596,6 @@ final class Media_Clean_Admin {
 					var name = u.link ? '<a href="' + esc( u.link ) + '">' + esc( u.title ) + '</a>' : esc( u.title );
 					return '<li>' + name + ( u.state ? ' <em>' + esc( u.state ) + '</em>' : '' ) + '</li>';
 				} ).join( '' ) + '</ul>';
-			}
-
-			/* ---------- new uploads as WebP ---------- */
-
-			var webp = document.getElementById( 'ocmc-webp' );
-
-			if ( webp ) {
-				webp.addEventListener( 'change', function () {
-					var said = document.getElementById( 'ocmc-webp-said' );
-					said.textContent = '';
-					post( 'ocmc_webp', { on: webp.checked ? '1' : '0' } ).then( function ( r ) {
-						said.textContent = r && r.success ? T.saved : T.failed;
-					} ).catch( function () { said.textContent = T.failed; } );
-				} );
 			}
 
 			/* ---------- tabs ---------- */
