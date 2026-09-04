@@ -887,17 +887,17 @@ final class Media_Clean {
 	 * @param int                           $id     Attachment ID.
 	 * @param array<int,array<string,bool>> $refs   Reference map: id => set of sources.
 	 * @param array<int,object>             $posts  Posts by ID.
-	 * @param int                           $parent The file's post_parent.
+	 * @param int                           $owner  The file's post_parent.
 	 * @return array<int,array<string,string>>
 	 */
-	private static function used_by( int $id, array $refs, array $posts, int $parent = 0 ): array {
+	private static function used_by( int $id, array $refs, array $posts, int $owner = 0 ): array {
 		$out  = array();
 		$seen = array();
 
 		$sources = array_keys( (array) ( $refs[ $id ] ?? array() ) );
 
-		if ( $parent > 0 ) {
-			$sources[] = 'post:' . $parent;
+		if ( $owner > 0 ) {
+			$sources[] = 'post:' . $owner;
 		}
 
 		// The map is a set — the provenance is in the keys, as bucket() reads it.
