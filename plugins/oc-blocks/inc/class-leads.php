@@ -91,7 +91,7 @@ final class Leads {
 			$opts = array();
 
 			if ( 'select' === $kind ) {
-				foreach ( preg_split( '/\r\n|\r|\n/', (string) ( $row['opts'] ?? '' ) ) ?: array() as $opt ) {
+				foreach ( (array) preg_split( '/\r\n|\r|\n/', (string) ( $row['opts'] ?? '' ) ) as $opt ) {
 					$opt = trim( $opt );
 
 					if ( '' !== $opt ) {
@@ -304,14 +304,14 @@ final class Leads {
 	 * and a link to the lead itself. Reply-To is the sender when they left
 	 * an address, so answering is one click.
 	 *
-	 * @param int                           $lead_id Lead id.
-	 * @param array<string,mixed>           $section Contact section.
-	 * @param string                        $name    Name.
-	 * @param string                        $phone   Phone.
-	 * @param string                        $email   Email.
-	 * @param string                        $msg     Message.
+	 * @param int                                 $lead_id Lead id.
+	 * @param array<string,mixed>                 $section Contact section.
+	 * @param string                              $name    Name.
+	 * @param string                              $phone   Phone.
+	 * @param string                              $email   Email.
+	 * @param string                              $msg     Message.
 	 * @param array<int,array{0:string,1:string}> $extra   Extra fields.
-	 * @param int                           $page    Page id.
+	 * @param int                                 $page    Page id.
 	 */
 	private function mail( int $lead_id, array $section, string $name, string $phone, string $email, string $msg, array $extra, int $page ): void {
 		$site  = wp_specialchars_decode( (string) get_option( 'blogname' ), ENT_QUOTES );
@@ -356,13 +356,13 @@ final class Leads {
 	 * Non-blocking on purpose: the visitor is not kept waiting for someone
 	 * else's server. A developer wanting more rides `oc_blocks_lead_payload`.
 	 *
-	 * @param int    $lead_id Lead post id.
-	 * @param string $name    Name.
-	 * @param string $phone   Phone.
-	 * @param string $email   Email.
-	 * @param string $msg     Message.
-	 * @param array<int,array{0:string,1:string}> $extra Extra fields.
-	 * @param int    $page    Page the form stood on.
+	 * @param int                                 $lead_id Lead post id.
+	 * @param string                              $name    Name.
+	 * @param string                              $phone   Phone.
+	 * @param string                              $email   Email.
+	 * @param string                              $msg     Message.
+	 * @param array<int,array{0:string,1:string}> $extra   Extra fields.
+	 * @param int                                 $page    Page the form stood on.
 	 */
 	private function forward( int $lead_id, string $name, string $phone, string $email, string $msg, array $extra, int $page ): void {
 		$hook = (string) get_option( self::HOOK, '' );
@@ -479,9 +479,9 @@ final class Leads {
 			__( 'The lead', 'oc-blocks' ),
 			static function ( \WP_Post $lead ): void {
 				$rows = array(
-					__( 'Phone', 'oc-blocks' )         => (string) get_post_meta( $lead->ID, '_oc_lead_phone', true ),
-					__( 'Email', 'oc-blocks' )         => (string) get_post_meta( $lead->ID, '_oc_lead_email', true ),
-					__( 'Message', 'oc-blocks' )       => (string) get_post_meta( $lead->ID, '_oc_lead_msg', true ),
+					__( 'Phone', 'oc-blocks' )   => (string) get_post_meta( $lead->ID, '_oc_lead_phone', true ),
+					__( 'Email', 'oc-blocks' )   => (string) get_post_meta( $lead->ID, '_oc_lead_email', true ),
+					__( 'Message', 'oc-blocks' ) => (string) get_post_meta( $lead->ID, '_oc_lead_msg', true ),
 				);
 
 				foreach ( (array) get_post_meta( $lead->ID, '_oc_lead_extra', true ) as $pair ) {
