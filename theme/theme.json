@@ -15,7 +15,7 @@
 				{ "slug": "success",    "name": "Success",    "color": "#22876B" },
 				{ "slug": "sale",       "name": "Sale",       "color": "#B4453C" },
 				{ "slug": "text",       "name": "Text",       "color": "#151A21" },
-				{ "slug": "text-muted", "name": "Muted text", "color": "#6B7482" },
+				{ "slug": "text-muted", "name": "Muted text", "color": "#666E7C" },
 				{ "slug": "surface",    "name": "Surface",    "color": "#FFFFFF" },
 				{ "slug": "background", "name": "Background", "color": "#F2F4F7" }
 			]

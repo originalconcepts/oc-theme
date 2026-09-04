@@ -326,6 +326,13 @@ final class Seo {
 			$text = (string) $post->post_content;
 		}
 
+		// A page built in the composer keeps its words in meta, not in
+		// post_content, so without this the front page and every composed
+		// page would go out with no description at all.
+		if ( '' === trim( $text ) && class_exists( '\OC\Blocks\Render' ) ) {
+			$text = \OC\Blocks\Render::words_of( $post->ID, $limit + 40 );
+		}
+
 		$text = wp_strip_all_tags( strip_shortcodes( $text ) );
 		$text = trim( (string) preg_replace( '/\s+/u', ' ', $text ) );
 

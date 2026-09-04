@@ -1205,6 +1205,42 @@ final class Render {
 	}
 
 	/**
+	 * The words a composed page is made of, in reading order: headings and
+	 * paragraphs, nothing else. A page built here has an empty post_content,
+	 * so anything reading the post for a summary — a search result, a share
+	 * card, the SEO description — would otherwise find nothing at all.
+	 *
+	 * @param int $page_id Page id.
+	 * @param int $limit   Longest answer, in characters.
+	 */
+	public static function words_of( int $page_id, int $limit = 300 ): string {
+		$want = array( 'eyebrow', 'heading', 'text', 'fheading', 'ftext', 'sub' );
+		$out  = array();
+
+		foreach ( Registry::sections( $page_id ) as $section ) {
+			if ( empty( $section['on'] ) ) {
+				continue;
+			}
+
+			foreach ( $want as $key ) {
+				$bit = trim( (string) ( $section[ $key ] ?? '' ) );
+
+				if ( '' !== $bit ) {
+					$out[] = $bit;
+				}
+			}
+
+			if ( mb_strlen( implode( ' ', $out ) ) >= $limit ) {
+				break;
+			}
+		}
+
+		$text = trim( (string) preg_replace( '/\s+/u', ' ', implode( '. ', $out ) ) );
+
+		return mb_strlen( $text ) > $limit ? rtrim( mb_substr( $text, 0, $limit ) ) : $text;
+	}
+
+	/**
 	 * One post card — the blog's own when the OC theme is running.
 	 *
 	 * @param \WP_Post $post    Post.

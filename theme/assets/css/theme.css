@@ -10,7 +10,7 @@
 
 :root {
 	--oc-ink: var(--wp--preset--color--text, #151a21);
-	--oc-ink-2: var(--wp--preset--color--text-muted, #6b7482);
+	--oc-ink-2: var(--wp--preset--color--text-muted, #666e7c);
 	--oc-bg: var(--wp--preset--color--background, #f2f4f7);
 	--oc-surface: var(--wp--preset--color--surface, #fff);
 	--oc-primary: var(--oc-primary-user, var(--wp--preset--color--primary, #2f4e7a));
@@ -1832,14 +1832,17 @@ html.oc-menu-open .oc-menu-dim::after {
 .oc-vp__dots {
 	display: flex;
 	justify-content: center;
-	gap: 6px;
+	gap: 0;
 	padding-block: 10px 0;
 }
 
 .oc-vp__dot {
-	inline-size: 7px;
-	block-size: 7px;
-	padding: 0;
+	/* The dot is still 7px — the padding is what a finger lands on, and
+	   background-clip keeps the paint on the little core. */
+	inline-size: 24px;
+	block-size: 24px;
+	padding: 8.5px;
+	background-clip: content-box;
 	border: 0;
 	border-radius: 50%;
 	background: color-mix(in srgb, var(--oc-ink) 22%, transparent);
@@ -1883,7 +1886,7 @@ html.oc-menu-open .oc-menu-dim::after {
 	gap: 8px;
 	margin-block-start: 6px;
 	font-size: .86em;
-	color: var(--oc-ink-2, #6b7482);
+	color: var(--oc-ink-2, #666e7c);
 	text-decoration: none;
 }
 
@@ -1906,13 +1909,13 @@ html.oc-menu-open .oc-menu-dim::after {
 .oc-vp__fprice ins,
 .oc-mb__prod-price ins { color: var(--oc-sale, #b4453c); text-decoration: none; }
 
-.oc-vp__sku { font-size: .82em; color: var(--oc-ink-2, #6b7482); white-space: nowrap; }
+.oc-vp__sku { font-size: .82em; color: var(--oc-ink-2, #666e7c); white-space: nowrap; }
 
 .oc-vp__blurb {
 	margin-block-start: 10px;
 	font-size: .92em;
 	line-height: 1.65;
-	color: var(--oc-ink-2, #6b7482);
+	color: var(--oc-ink-2, #666e7c);
 }
 
 .oc-vp__blurb:empty { display: none; }
@@ -1930,7 +1933,7 @@ html.oc-menu-open .oc-menu-dim::after {
 	display: inline-block;
 	margin-block-start: 18px;
 	font-size: .86em;
-	color: var(--oc-ink-2, #6b7482);
+	color: var(--oc-ink-2, #666e7c);
 	text-decoration: underline;
 	text-underline-offset: 3px;
 }
@@ -2126,7 +2129,7 @@ html.oc-menu-open .oc-menu-dim::after {
 .oc-search-note {
 	margin: -6px 0 18px;
 	font-size: .92em;
-	color: var(--oc-ink-2, #6b7482);
+	color: var(--oc-ink-2, #666e7c);
 }
 
 .oc-nores { padding-block: 10px 30px; max-inline-size: 560px; }
@@ -2154,7 +2157,7 @@ html.oc-menu-open .oc-menu-dim::after {
 
 .oc-nores__pop { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-block-start: 18px; }
 
-.oc-nores__pop span { font-size: .88em; color: var(--oc-ink-2, #6b7482); }
+.oc-nores__pop span { font-size: .88em; color: var(--oc-ink-2, #666e7c); }
 
 .oc-nores__pop a {
 	padding: 7px 15px;
@@ -2280,7 +2283,7 @@ html[dir="ltr"] .oc-progress i { --oc-start: left; }
 	display: block;
 	font-size: .82em;
 	letter-spacing: .04em;
-	color: var(--oc-ink-2, #6b7482);
+	color: var(--oc-ink-2, #666e7c);
 	margin-block-end: 6px;
 }
 
@@ -2291,7 +2294,7 @@ html[dir="ltr"] .oc-progress i { --oc-start: left; }
 
 .oc-bpost__excerpt {
 	margin-block: 8px 0;
-	color: var(--oc-ink-2, #6b7482);
+	color: var(--oc-ink-2, #666e7c);
 	font-size: .95em;
 	line-height: 1.6;
 }
@@ -2302,7 +2305,7 @@ html[dir="ltr"] .oc-progress i { --oc-start: left; }
 	gap: 6px;
 	margin-block-start: 10px;
 	font-size: .85em;
-	color: var(--oc-ink-2, #6b7482);
+	color: var(--oc-ink-2, #666e7c);
 	text-decoration: none;
 }
 
@@ -2322,7 +2325,7 @@ html[dir="ltr"] .oc-progress i { --oc-start: left; }
 	margin: 0 0 12px;
 	font-size: .86em;
 	letter-spacing: .05em;
-	color: var(--oc-ink-2, #6b7482);
+	color: var(--oc-ink-2, #666e7c);
 }
 
 .oc-bsingle__kick a {
@@ -2386,7 +2389,7 @@ html[dir="ltr"] .oc-progress i { --oc-start: left; }
 	margin-block-start: .5em;
 	font-size: .82em;
 	font-style: normal;
-	color: var(--oc-ink-2, #6b7482);
+	color: var(--oc-ink-2, #666e7c);
 }
 
 .oc-bsingle .oc-content video,
@@ -2424,7 +2427,7 @@ html[dir="ltr"] .oc-progress i { --oc-start: left; }
 }
 
 .oc-bshare__word,
-.oc-bmeta__word { font-size: .88em; color: var(--oc-ink-2, #6b7482); margin-inline-end: 4px; }
+.oc-bmeta__word { font-size: .88em; color: var(--oc-ink-2, #666e7c); margin-inline-end: 4px; }
 
 .oc-bshare__btn {
 	display: grid;
@@ -2494,21 +2497,21 @@ html[dir="ltr"] .oc-progress i { --oc-start: left; }
 
 .oc-cmt__list a { text-decoration: none; }
 .oc-cmt__list .comment-metadata a:hover,
-.oc-cmt__list .comment-edit-link { color: var(--oc-ink-2, #6b7482); }
+.oc-cmt__list .comment-edit-link { color: var(--oc-ink-2, #666e7c); }
 
 .oc-cmt__list .comment-author .says { display: none; }
 
 .oc-cmt__list .comment-metadata { font-size: .8em; }
-.oc-cmt__list .comment-metadata a { color: var(--oc-ink-2, #6b7482); text-decoration: none; }
+.oc-cmt__list .comment-metadata a { color: var(--oc-ink-2, #666e7c); text-decoration: none; }
 
 .oc-cmt__list .comment-content { line-height: 1.65; }
 .oc-cmt__list .comment-content p:last-child { margin-block-end: 0; }
 
 .oc-cmt__list .reply { margin-block-start: 8px; font-size: .85em; }
-.oc-cmt__list .reply a { text-decoration: none; color: var(--oc-ink-2, #6b7482); }
+.oc-cmt__list .reply a { text-decoration: none; color: var(--oc-ink-2, #666e7c); }
 .oc-cmt__list .reply a:hover { color: var(--oc-primary); }
 
-.oc-cmt__list .comment-awaiting-moderation { font-size: .85em; color: var(--oc-ink-2, #6b7482); }
+.oc-cmt__list .comment-awaiting-moderation { font-size: .85em; color: var(--oc-ink-2, #666e7c); }
 
 /* The form. */
 .oc-cmt .comment-form { display: grid; gap: 12px; }
@@ -2539,7 +2542,7 @@ html[dir="ltr"] .oc-progress i { --oc-start: left; }
 .oc-cmt .oc-cmt__note {
 	font-size: .95em;
 	line-height: 1.65;
-	color: var(--oc-ink-2, #6b7482);
+	color: var(--oc-ink-2, #666e7c);
 }
 
 .oc-cmt .oc-cmt__note label {
@@ -3642,7 +3645,8 @@ html.oc-drw-open { overflow: hidden; }
 .oc-footer__tagline { margin: 12px 0 0; color: var(--f-ink-2); font-size: .88rem; line-height: 1.6; max-inline-size: 260px; }
 
 .oc-footer__social { display: flex; flex-wrap: wrap; gap: 14px; margin-block-start: 18px; }
-.oc-footer__social-link { color: var(--f-ink-2); display: inline-flex; transition: color .12s ease; }
+.oc-footer__social-link { color: var(--f-ink-2); display: inline-flex; align-items: center; justify-content: center;
+	min-inline-size: 24px; min-block-size: 24px; transition: color .12s ease; }
 .oc-footer__social-link:hover { color: var(--f-heading); }
 
 .oc-footer__col { flex: 1 1 130px; min-inline-size: 110px; }
@@ -6204,8 +6208,8 @@ html:not([dir]) .oc-cartup__items--h.oc-fade-end {
 .oc-topbar__msg.is-current { opacity: 1; pointer-events: auto; translate: 0 0; }
 
 .oc-topbar__nav {
-	inline-size: 22px;
-	block-size: 22px;
+	inline-size: 24px;
+	block-size: 24px;
 	padding: 0;
 	border: 0;
 	background: none;
@@ -6941,23 +6945,24 @@ table.variations td.value select:has(+ .oc-dd) {
 	.oc-gm-dots .oc-gdots {
 		display: flex;
 		justify-content: center;
-		gap: 7px;
+		gap: 0;
 		margin: 0;
 		padding: 10px 0 0;
 		list-style: none;
 	}
 
 	.oc-gdots button {
-		inline-size: 7px;
-		block-size: 7px;
-		padding: 0;
+		inline-size: 24px;
+		block-size: 24px;
+		padding: 8.5px;
+		background-clip: content-box;
 		border: 0;
 		border-radius: 50%;
-		background: color-mix(in srgb, var(--oc-ink) 25%, transparent);
+		background-color: color-mix(in srgb, var(--oc-ink) 25%, transparent);
 		cursor: pointer;
 	}
 
-	.oc-gdots button[aria-current="true"] { background: var(--oc-ink); }
+	.oc-gdots button[aria-current="true"] { background-color: var(--oc-ink); }
 
 	/* optional arrows, same bare chevrons as the cards */
 	.oc-gm-arrows .woocommerce-product-gallery { position: relative; }
@@ -10320,7 +10325,7 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 	margin: 12px 0 2px;
 	border: 0;
 	background: none;
-	color: var(--oc-ink-2, #6b7482);
+	color: var(--oc-ink-2, #666e7c);
 	font: inherit;
 	font-size: .88rem;
 	cursor: pointer;
@@ -10343,7 +10348,7 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 	transition: border-color .12s ease;
 }
 /* selected: a single, softer accent border — no doubled shadow */
-.oc-co-addrcard.is-on { border-color: var(--oc-ink-2, #6b7482); }
+.oc-co-addrcard.is-on { border-color: var(--oc-ink-2, #666e7c); }
 /* pin the radio: the theme sets input{width:100%}, which otherwise drops it
  * onto its own line above the text */
 .oc-co-addrcard input[type="radio"] {
@@ -10364,7 +10369,7 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 	flex: none;
 	border: 0;
 	background: none;
-	color: var(--oc-ink-2, #6b7482);
+	color: var(--oc-ink-2, #666e7c);
 	text-decoration: underline;
 	text-underline-offset: 3px;
 	font: inherit;
@@ -13045,7 +13050,7 @@ html[dir="rtl"] .oc-bye { translate: 50% 0; }
 	font-weight: 600;
 	letter-spacing: .04em;
 	text-transform: uppercase;
-	color: var(--oc-ink-2, #6b7482);
+	color: var(--oc-ink-2, #666e7c);
 	padding: 0 14px 12px;
 	border-block-end: 1px solid var(--oc-line, #e5e2dd);
 }
@@ -13063,12 +13068,12 @@ html[dir="rtl"] .oc-bye { translate: 50% 0; }
 
 .oc-onum { display: block; font-weight: 700; font-size: 1.02rem; color: var(--oc-primary, #03104c); text-decoration: none; letter-spacing: .01em; }
 .oc-onum:hover { text-decoration: underline; text-underline-offset: 3px; }
-.oc-odate { display: block; margin-block-start: 4px; font-size: .82rem; color: var(--oc-ink-2, #6b7482); font-variant-numeric: tabular-nums; }
+.oc-odate { display: block; margin-block-start: 4px; font-size: .82rem; color: var(--oc-ink-2, #666e7c); font-variant-numeric: tabular-nums; }
 
 /* total: the number carries weight */
 .woocommerce-orders-table__cell-order-total { font-size: 1.02rem; font-weight: 700; color: var(--oc-ink, #111); font-variant-numeric: tabular-nums; }
 /* the product count rides next to the total only on phones */
-.oc-ototal-count { display: none; font-weight: 400; font-size: .84rem; color: var(--oc-ink-2, #6b7482); }
+.oc-ototal-count { display: none; font-weight: 400; font-size: .84rem; color: var(--oc-ink-2, #666e7c); }
 
 /* product thumbnails: rounded app-icon squares, the count above them; the
  * whole block links to the order */
@@ -13095,9 +13100,9 @@ html[dir="rtl"] .oc-bye { translate: 50% 0; }
 	justify-content: center;
 	font-weight: 600;
 	font-size: .9rem;
-	color: var(--oc-ink-2, #6b7482);
+	color: var(--oc-ink-2, #666e7c);
 }
-.oc-oprods__count { font-size: .82rem; color: var(--oc-ink-2, #6b7482); }
+.oc-oprods__count { font-size: .82rem; color: var(--oc-ink-2, #666e7c); }
 .oc-oprods:hover .oc-oprods__count { text-decoration: underline; }
 
 /* status pill: an icon + label on a soft colour ellipse */
@@ -13116,7 +13121,7 @@ html[dir="rtl"] .oc-bye { translate: 50% 0; }
 .oc-ostatus--work { color: #b26a06; background: color-mix(in srgb, #e08707 20%, transparent); }
 .oc-ostatus--pend { color: #2b57a6; background: color-mix(in srgb, #2b57a6 15%, transparent); }
 .oc-ostatus--bad  { color: #c0392b; background: color-mix(in srgb, #c0392b 14%, transparent); }
-.oc-ostatus--muted { color: var(--oc-ink-2, #6b7482); background: color-mix(in srgb, var(--oc-ink-2, #6b7482) 13%, transparent); }
+.oc-ostatus--muted { color: var(--oc-ink-2, #666e7c); background: color-mix(in srgb, var(--oc-ink-2, #666e7c) 13%, transparent); }
 
 /* actions: the CELL stays a table cell (a flex <td> misaligns the row) — the
  * inner wrapper is the flex row with the gap */
@@ -13168,7 +13173,7 @@ html[dir="rtl"] .oc-bye { translate: 50% 0; }
 	box-shadow: 0 24px 60px rgba(0, 0, 0, .18);
 }
 .oc-reorder-box h4 { margin: 0 0 10px; font-size: 1.18rem; font-weight: 700; }
-.oc-reorder-box p { margin: 0 0 22px; color: var(--oc-ink-2, #6b7482); font-size: .92rem; line-height: 1.65; }
+.oc-reorder-box p { margin: 0 0 22px; color: var(--oc-ink-2, #666e7c); font-size: .92rem; line-height: 1.65; }
 .oc-reorder-acts { display: flex; flex-direction: column; gap: 10px; }
 .oc-reorder-acts .button {
 	inline-size: 100%;
@@ -13202,7 +13207,7 @@ html[dir="rtl"] .oc-bye { translate: 50% 0; }
 	font-size: 1.6rem;
 	line-height: 1;
 	cursor: pointer;
-	color: var(--oc-ink-2, #6b7482);
+	color: var(--oc-ink-2, #666e7c);
 }
 .oc-reorder-close:hover { color: var(--oc-ink, #111); }
 
@@ -13228,11 +13233,11 @@ html[dir="rtl"] .oc-bye { translate: 50% 0; }
 	font-weight: 600;
 	letter-spacing: .04em;
 	text-transform: uppercase;
-	color: var(--oc-ink-2, #6b7482);
+	color: var(--oc-ink-2, #666e7c);
 }
 .oc-ov__name { margin: 0 0 5px; font-weight: 600; font-size: 1rem; color: var(--oc-ink, #111); }
-.oc-ov__line { margin: 0 0 3px; font-size: .9rem; color: var(--oc-ink-2, #6b7482); }
-.oc-ov__recip { margin: 10px 0 0; font-size: .85rem; color: var(--oc-ink-2, #6b7482); }
+.oc-ov__line { margin: 0 0 3px; font-size: .9rem; color: var(--oc-ink-2, #666e7c); }
+.oc-ov__recip { margin: 10px 0 0; font-size: .85rem; color: var(--oc-ink-2, #666e7c); }
 
 .oc-ov__card--dest { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; }
 .oc-ov__dest-body { min-inline-size: 0; }
@@ -13287,7 +13292,7 @@ html[dir="rtl"] .oc-bye { translate: 50% 0; }
 }
 .oc-ov__phead-h { margin: 0; }
 .oc-ov__phead-meta { display: flex; align-items: center; gap: 12px; }
-.oc-ov__date { font-size: .85rem; color: var(--oc-ink-2, #6b7482); font-variant-numeric: tabular-nums; }
+.oc-ov__date { font-size: .85rem; color: var(--oc-ink-2, #666e7c); font-variant-numeric: tabular-nums; }
 
 @media (max-width: 640px) {
 	.oc-ov__cards { grid-template-columns: 1fr; }
@@ -13347,7 +13352,7 @@ html[dir="rtl"] .oc-bye { translate: 50% 0; }
 	.woocommerce-MyAccount-content .woocommerce-orders-table.shop_table_responsive td.woocommerce-orders-table__cell-order-total::before {
 		display: inline !important;
 		content: attr(data-title) ": ";
-		color: var(--oc-ink-2, #6b7482);
+		color: var(--oc-ink-2, #666e7c);
 		font-weight: 400;
 	}
 	.oc-ototal-count { display: inline; }
@@ -13587,14 +13592,14 @@ html[dir="rtl"] .oc-bye { translate: 50% 0; }
 	border-radius: 5px;
 	background: #fff;
 }
-.oc-abook__card.is-default { border-color: var(--oc-ink-2, #6b7482); }
+.oc-abook__card.is-default { border-color: var(--oc-ink-2, #666e7c); }
 .oc-abook__top { display: flex; align-items: center; gap: 8px; }
 .oc-abook__label { font-weight: 600; font-size: 1rem; }
 .oc-abook__pill {
 	font-size: .7rem;
 	font-weight: 600;
 	letter-spacing: .02em;
-	color: var(--oc-ink-2, #6b7482);
+	color: var(--oc-ink-2, #666e7c);
 	border: 1px solid var(--oc-line, #e5e2dd);
 	border-radius: 999px;
 	padding: 2px 9px;
@@ -13603,7 +13608,7 @@ html[dir="rtl"] .oc-bye { translate: 50% 0; }
 .oc-abook__acts { display: flex; flex-wrap: wrap; gap: 14px; margin-block-start: 4px; }
 .oc-abook__act {
 	font-size: .84rem;
-	color: var(--oc-ink-2, #6b7482);
+	color: var(--oc-ink-2, #666e7c);
 	text-decoration: underline;
 	text-underline-offset: 3px;
 }
@@ -13618,7 +13623,7 @@ html[dir="rtl"] .oc-bye { translate: 50% 0; }
 	min-block-size: 120px;
 	border: 1px dashed color-mix(in srgb, var(--oc-ink, #151a21) 26%, transparent);
 	border-radius: 5px;
-	color: var(--oc-ink-2, #6b7482);
+	color: var(--oc-ink-2, #666e7c);
 	text-decoration: none;
 	font-weight: 600;
 	font-size: .9rem;
@@ -13647,7 +13652,7 @@ html[dir="rtl"] .oc-bye { translate: 50% 0; }
 /* the display:block above would otherwise defeat the hidden attribute */
 .oc-abook__custom[hidden] { display: none; }
 .oc-abook__row { display: flex; flex-direction: column; gap: 5px; margin: 0 0 12px; min-inline-size: 0; }
-.oc-abook__row label { font-size: .84rem; color: var(--oc-ink-2, #6b7482); }
+.oc-abook__row label { font-size: .84rem; color: var(--oc-ink-2, #666e7c); }
 .oc-abook__row input {
 	block-size: 46px;
 	inline-size: 100%;
@@ -13676,7 +13681,7 @@ html[dir="rtl"] .oc-bye { translate: 50% 0; }
 	font-weight: 700;
 	cursor: pointer;
 }
-.oc-abook__cancel { font-size: .88rem; color: var(--oc-ink-2, #6b7482); text-decoration: underline; text-underline-offset: 3px; }
+.oc-abook__cancel { font-size: .88rem; color: var(--oc-ink-2, #666e7c); text-decoration: underline; text-underline-offset: 3px; }
 .oc-abook__cancel:hover { color: var(--oc-ink, #111); }
 .oc-abook__req { color: var(--oc-sale, #b4453c); }
 
@@ -13715,7 +13720,7 @@ html[dir="rtl"] .oc-bye { translate: 50% 0; }
 	margin: 0;
 	font-size: .84rem;
 	font-weight: 400;
-	color: var(--oc-ink-2, #6b7482);
+	color: var(--oc-ink-2, #666e7c);
 	white-space: normal;
 	overflow: visible;
 	pointer-events: auto;
@@ -13735,7 +13740,7 @@ html[dir="rtl"] .oc-bye { translate: 50% 0; }
 .woocommerce-MyAccount-content form.edit-account .form-row span.required { color: var(--oc-sale, #b4453c); text-decoration: none; }
 .woocommerce-MyAccount-content form.edit-account > p em,
 .woocommerce-MyAccount-content form.edit-account > .woocommerce-form-row + em,
-.woocommerce-MyAccount-content form.edit-account em { color: var(--oc-ink-2, #6b7482); font-size: .82rem; font-style: normal; }
+.woocommerce-MyAccount-content form.edit-account em { color: var(--oc-ink-2, #666e7c); font-size: .82rem; font-style: normal; }
 
 /* password change: a button reveals the fields past a divider; the fieldset
  * carries no border of its own — the fields already have theirs */
@@ -13869,7 +13874,7 @@ p.no-comments {
 	block-size: 28px;
 	border-radius: 50%;
 	background: color-mix(in srgb, var(--oc-ink, #151a21) 6%, transparent);
-	color: var(--oc-ink-2, #6b7482);
+	color: var(--oc-ink-2, #666e7c);
 }
 .oc-colog__head-ic::before,
 .oc-colog__head-ic::after {
