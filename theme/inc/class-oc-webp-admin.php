@@ -144,7 +144,7 @@ final class Webp_Admin {
 			box-shadow: 0 8px 28px rgba(0,0,0,.28); z-index: 9999;
 		}
 		/* display:flex above beats the hidden attribute on its own, which is
-		   why the bar used to stand there before anything was ticked. */
+		why the bar used to stand there before anything was ticked. */
 		.ocmc__float[hidden] { display: none; }
 		.ocmc__float b { font-size: 13px; font-weight: 600; padding-inline-start: 6px; }
 		.ocmc__float .button { border-radius: 999px; padding: 2px 16px; border: 0; }
