@@ -81,6 +81,7 @@ final class Admin {
 		// in an hour to find out whether the thing they just made works.
 		Build::start( $key );
 		Build::step( $key );
+		Feeds::book( $key );
 
 		wp_send_json_success( array( 'key' => $key ) );
 	}
@@ -114,6 +115,7 @@ final class Admin {
 		}
 
 		Build::step( $key );
+		Feeds::book( $key );
 
 		wp_send_json_success( self::state( $key ) );
 	}
