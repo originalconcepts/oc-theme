@@ -70,6 +70,7 @@ final class Feeds {
 	 * @return array<string,array<string,mixed>>
 	 */
 	public function schedules( array $in ): array {
+		// phpcs:ignore WordPress.WP.CronInterval.CronSchedulesInterval -- the tick only reads a timestamp and returns; it is what lets a build resume in small batches instead of one long request that a parallel run cuts off.
 		$in['oc_feeds_5min'] = array(
 			'interval' => 5 * MINUTE_IN_SECONDS,
 			'display'  => __( 'Every five minutes (OC feeds)', 'oc-theme' ),

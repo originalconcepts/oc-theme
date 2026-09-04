@@ -427,14 +427,14 @@ final class Admin {
 	 */
 	private static function script( string $nonce ): void {
 		$strings = array(
-			'making'  => __( 'Building the feed…', 'oc-theme' ),
+			'making'   => __( 'Building the feed…', 'oc-theme' ),
 			/* translators: 1: products done, 2: products in total. */
 			'progress' => __( 'Building — %1$d of %2$d products', 'oc-theme' ),
-			'ready'   => __( 'Ready.', 'oc-theme' ),
-			'failed'  => __( 'Something went wrong. Please try again.', 'oc-theme' ),
-			'copied'  => __( 'Copied', 'oc-theme' ),
-			'sure'    => __( 'Delete this feed? The address stops working.', 'oc-theme' ),
-			'newfeed' => __( 'New feed', 'oc-theme' ),
+			'ready'    => __( 'Ready.', 'oc-theme' ),
+			'failed'   => __( 'Something went wrong. Please try again.', 'oc-theme' ),
+			'copied'   => __( 'Copied', 'oc-theme' ),
+			'sure'     => __( 'Delete this feed? The address stops working.', 'oc-theme' ),
+			'newfeed'  => __( 'New feed', 'oc-theme' ),
 		);
 		?>
 		<script>

@@ -495,6 +495,7 @@ final class Build {
 		$picture = (int) $item->get_image_id();
 		$picture = $picture > 0 ? $picture : (int) $owner->get_image_id();
 		$image   = wp_get_attachment_url( $picture );
+
 		$more  = array();
 
 		foreach ( array_slice( $owner->get_gallery_image_ids(), 0, 10 ) as $gid ) {
