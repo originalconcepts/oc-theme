@@ -373,7 +373,14 @@ class Category {
 			$murl = (string) wp_get_attachment_image_url( $h['imgm'], 'full' );
 
 			if ( '' !== $murl ) {
-				return '<picture><source media="(max-width:700px)" srcset="' . esc_url( $murl ) . '">' . $img . '</picture>';
+				// The phone picture needs its own set of widths as much as
+				// the wide one does. Handed a bare src, a phone downloads
+				// the original — a banner exported at 2000px and several
+				// megabytes — for a screen 400px across.
+				$mset = (string) wp_get_attachment_image_srcset( $h['imgm'], 'full' );
+				$srcs = '' === $mset ? esc_url( $murl ) : esc_attr( $mset );
+
+				return '<picture><source media="(max-width:700px)" srcset="' . $srcs . '" sizes="100vw">' . $img . '</picture>';
 			}
 		}
 

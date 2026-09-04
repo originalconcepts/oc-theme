@@ -36,6 +36,14 @@ final class WooCommerce {
 	private static $slider_depth = 0;
 
 	/**
+	 * How many product cards this request has printed, so only the first
+	 * one on a catalogue page is allowed to load eagerly.
+	 *
+	 * @var int
+	 */
+	private static $cards = 0;
+
+	/**
 	 * Open or close a row of cards that scrolls sideways.
 	 *
 	 * @param bool $open Opening the row, or closing it.
@@ -1066,6 +1074,14 @@ final class WooCommerce {
 			echo '</figure>';
 		}
 
+		// Only the very first card of a catalogue page may load eagerly: it
+		// is the one the visitor is looking at, and it can be the LCP. Every
+		// other card waits its turn — a shelf of twenty eager pictures used
+		// to race the hero for the connection and lost it several seconds.
+		++self::$cards;
+		$eager = 1 === self::$cards && ! self::in_slider()
+			&& ( is_shop() || is_product_taxonomy() || is_search() );
+
 		foreach ( $ids as $i => $id ) {
 			printf( '<figure class="oc-card-media__item%s">', 0 === $i && '' === $card_video ? ' is-first' : '' );
 			echo $slide_open; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
@@ -1074,7 +1090,7 @@ final class WooCommerce {
 				'large',
 				false,
 				array(
-					'loading' => 0 === $i ? 'eager' : 'lazy',
+					'loading' => 0 === $i && $eager ? 'eager' : 'lazy',
 					'sizes'   => '(max-width: 900px) 50vw, 25vw',
 				)
 			);

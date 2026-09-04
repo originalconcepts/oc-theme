@@ -395,6 +395,21 @@ final class Render {
 		return '' === $text ? '' : '<h2 class="ocb__title">' . esc_html( $text ) . '</h2>';
 	}
 
+	/**
+	 * A `sizes` string for a card in a row of N: what share of the window
+	 * the picture really covers, phone and desktop apart. Slider layouts
+	 * pass the peek count, which is what a card measures there too.
+	 *
+	 * @param int $cols  Columns on a wide screen.
+	 * @param int $mcols Columns on a phone (a slider counts its peek).
+	 */
+	private static function slot_sizes( int $cols, int $mcols ): string {
+		$cols  = max( 1, $cols );
+		$mcols = max( 1, $mcols );
+
+		return '(max-width: 782px) ' . round( 100 / $mcols ) . 'vw, ' . round( 100 / $cols ) . 'vw';
+	}
+
 	/*
 	 * ------------------------------------------------------------- blocks
 	 */
@@ -956,6 +971,14 @@ final class Render {
 		// shelf can read "ספורטיבי" on the door.
 		$names = is_array( $s['names'] ?? null ) ? $s['names'] : array();
 
+		// The slot a card actually fills, so the browser fetches that size
+		// and not the widest file it can find. Without this WordPress says
+		// "100vw" and a phone downloads a picture five times too big.
+		$sizes = self::slot_sizes(
+			min( 8, max( 1, absint( $s['cols'] ) ) ),
+			(int) ( '' !== (string) ( $s['mlay'] ?? '' ) ? (string) $s['mlay'] : '2' )
+		);
+
 		$items = '';
 
 		foreach ( $ids as $id ) {
@@ -980,6 +1003,7 @@ final class Render {
 				array(
 					'loading' => 'lazy',
 					'alt'     => $label,
+					'sizes'   => $sizes,
 				)
 			) : '';
 			$link  = get_term_link( $term );
