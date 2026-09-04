@@ -86,10 +86,10 @@ final class Build {
 			return;
 		}
 
-		$began = microtime( true );
-		$part  = Feeds::path( $key, (string) $feed['format'] ) . '.part';
-		$at    = (int) $feed['cursor'];
-		$stop  = min( $at + Feeds::BATCH, count( $ids ) );
+		$began   = microtime( true );
+		$part    = Feeds::path( $key, (string) $feed['format'] ) . '.part';
+		$at      = (int) $feed['cursor'];
+		$stop    = min( $at + Feeds::BATCH, count( $ids ) );
 		$rows    = '';
 		$made    = 0;
 		$skipped = 0;
@@ -123,8 +123,8 @@ final class Build {
 		$feed['cursor']  = $at;
 		$feed['items']   = (int) $feed['items'] + $made;
 		$feed['skipped'] = (int) ( $feed['skipped'] ?? 0 ) + $skipped;
-		$feed['beat']   = time();
-		$feed['ms']     = (int) $feed['ms'] + (int) round( ( microtime( true ) - $began ) * 1000 );
+		$feed['beat']    = time();
+		$feed['ms']      = (int) $feed['ms'] + (int) round( ( microtime( true ) - $began ) * 1000 );
 
 		if ( $at >= count( $ids ) ) {
 			file_put_contents( $part, self::foot( $feed ), FILE_APPEND ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- closing this plugin's own feed file.
