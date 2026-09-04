@@ -76,8 +76,16 @@ final class Media_Clean_Admin {
 			<nav class="ocmc__tabs">
 				<button type="button" class="ocmc__tab is-on" data-ocmc-tab="clean"><?php esc_html_e( 'Cleanup', 'oc-theme' ); ?></button>
 				<button type="button" class="ocmc__tab" data-ocmc-tab="heavy"><?php esc_html_e( 'Heavy files', 'oc-theme' ); ?></button>
-				<button type="button" class="ocmc__tab" data-ocmc-tab="page"><?php esc_html_e( 'One page', 'oc-theme' ); ?></button>
 			</nav>
+
+			<p class="ocmc__webp">
+				<label>
+					<input type="checkbox" id="ocmc-webp" <?php checked( (bool) get_option( Media_Clean::WEBP, false ) ); ?>>
+					<b><?php esc_html_e( 'Build new pictures as WebP', 'oc-theme' ); ?></b>
+				</label>
+				<span><?php esc_html_e( 'From now on, every size WordPress makes from an uploaded picture is written as WebP — a quarter of the weight, same picture. The file you upload keeps its own format, and nothing already on the site changes.', 'oc-theme' ); ?></span>
+				<em id="ocmc-webp-said"></em>
+			</p>
 
 			<div class="ocmc__panel" data-ocmc-panel="clean">
 			<p>
@@ -121,7 +129,6 @@ final class Media_Clean_Admin {
 			</div>
 
 			<?php self::heavy_panel(); ?>
-			<?php self::page_panel(); ?>
 		</div>
 		<?php
 
@@ -283,44 +290,21 @@ final class Media_Clean_Admin {
 						<option value="video"><?php esc_html_e( 'Films', 'oc-theme' ); ?></option>
 					</select>
 				</label>
+				<label class="ocmc__url">
+					<?php esc_html_e( 'On one page (optional)', 'oc-theme' ); ?>
+					<input type="url" id="ocmc-url" placeholder="<?php echo esc_attr( home_url( '/' ) ); ?>" class="regular-text ltr">
+				</label>
 				<button type="button" class="button button-primary" id="ocmc-heavy"><?php esc_html_e( 'Find them', 'oc-theme' ); ?></button>
 			</p>
+			<p class="ocmc__hint"><?php esc_html_e( 'Leave the address empty to search the whole library. Fill it in and only what that page loads is weighed.', 'oc-theme' ); ?></p>
 
 			<div id="ocmc-heavy-out"></div>
-
-			<div class="ocmc__actions" id="ocmc-heavy-actions" hidden>
-				<button type="button" class="button button-primary" id="ocmc-heavy-shrink"><?php esc_html_e( 'Shrink the ticked ones', 'oc-theme' ); ?></button>
-				<button type="button" class="button" id="ocmc-heavy-delete"><?php esc_html_e( 'Delete the ticked ones', 'oc-theme' ); ?></button>
-				<span class="ocmc__warn"><?php esc_html_e( 'Deleting is permanent. Shrinking is not — the original is kept.', 'oc-theme' ); ?></span>
-			</div>
 		</div>
-		<?php
-	}
 
-	/**
-	 * One page: what a visitor to it actually downloads.
-	 */
-	private static function page_panel(): void {
-		?>
-		<div class="ocmc__panel" data-ocmc-panel="page" hidden>
-			<p class="ocmc__note">
-				<?php esc_html_e( 'Give it the address of any page on the site and it reads that page the way a browser does: every picture and film the page names, heaviest first. This is the weight a visitor to that page pays.', 'oc-theme' ); ?>
-			</p>
-
-			<p class="ocmc__controls">
-				<label class="ocmc__url">
-					<?php esc_html_e( 'The page', 'oc-theme' ); ?>
-					<input type="url" id="ocmc-url" value="<?php echo esc_url( home_url( '/' ) ); ?>" class="regular-text ltr">
-				</label>
-				<button type="button" class="button button-primary" id="ocmc-page"><?php esc_html_e( 'Check it', 'oc-theme' ); ?></button>
-			</p>
-
-			<div id="ocmc-page-out"></div>
-
-			<div class="ocmc__actions" id="ocmc-page-actions" hidden>
-				<button type="button" class="button button-primary" id="ocmc-page-shrink"><?php esc_html_e( 'Shrink the ticked ones', 'oc-theme' ); ?></button>
-				<span class="ocmc__warn"><?php esc_html_e( 'The original is kept, so this can always be undone.', 'oc-theme' ); ?></span>
-			</div>
+		<div class="ocmc__float" id="ocmc-float" hidden>
+			<b id="ocmc-float-n"></b>
+			<button type="button" class="button button-primary" id="ocmc-heavy-shrink"><?php esc_html_e( 'Shrink the ticked ones', 'oc-theme' ); ?></button>
+			<button type="button" class="button" id="ocmc-heavy-delete"><?php esc_html_e( 'Delete the ticked ones', 'oc-theme' ); ?></button>
 		</div>
 		<?php
 	}
@@ -390,6 +374,19 @@ final class Media_Clean_Admin {
 		.ocmc__used { color: #007017; font-size: 11px; }
 		.ocmc__orph { color: #b32d2e; font-size: 11px; }
 		.ocmc__hpick { margin: 0 0 10px; display: flex; gap: 14px; align-items: center; }
+		.ocmc__hint { margin: -8px 0 18px; font-size: 12px; color: #646970; }
+		.ocmc__pic { display: flex; align-items: center; gap: 10px; }
+		.ocmc__hcb { margin: 0; flex: 0 0 auto; }
+		.ocmc__float {
+			position: fixed; inset-block-end: 24px; inset-inline-start: 50%; transform: translateX(-50%);
+			display: flex; align-items: center; gap: 12px;
+			background: #1d2327; color: #fff; padding: 10px 16px; border-radius: 999px;
+			box-shadow: 0 8px 28px rgba(0,0,0,.28); z-index: 9999;
+		}
+		.ocmc__float b { font-size: 13px; font-weight: 600; }
+		.ocmc__webp { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; background: #fff; border: 1px solid #dcdcde; border-radius: 8px; padding: 12px 16px; margin: 0 0 18px; }
+		.ocmc__webp span { font-size: 12px; color: #646970; flex: 1 1 320px; }
+		.ocmc__webp em { font-style: normal; font-size: 12px; color: #007017; }
 		</style>
 		<?php
 	}
@@ -444,6 +441,11 @@ final class Media_Clean_Admin {
 			'preading' => __( 'Reading the page…', 'oc-theme' ),
 			'inuse'    => __( 'in use', 'oc-theme' ),
 			'notused'  => __( 'nothing points at it', 'oc-theme' ),
+			/* translators: %d: number of files ticked. */
+			'picked'   => __( '%d ticked', 'oc-theme' ),
+			/* translators: 1: number of files over the size, 2: their total size. */
+			'pover'    => __( '%1$d of them are over the size you asked for, %2$s.', 'oc-theme' ),
+			'saved'    => __( 'Saved.', 'oc-theme' ),
 		);
 		?>
 		<script>
@@ -606,6 +608,20 @@ final class Media_Clean_Admin {
 				} ).join( '' ) + '</ul>';
 			}
 
+			/* ---------- new uploads as WebP ---------- */
+
+			var webp = document.getElementById( 'ocmc-webp' );
+
+			if ( webp ) {
+				webp.addEventListener( 'change', function () {
+					var said = document.getElementById( 'ocmc-webp-said' );
+					said.textContent = '';
+					post( 'ocmc_webp', { on: webp.checked ? '1' : '0' } ).then( function ( r ) {
+						said.textContent = r && r.success ? T.saved : T.failed;
+					} ).catch( function () { said.textContent = T.failed; } );
+				} );
+			}
+
 			/* ---------- tabs ---------- */
 
 			document.querySelectorAll( '[data-ocmc-tab]' ).forEach( function ( tab ) {
@@ -679,6 +695,17 @@ final class Media_Clean_Admin {
 				next();
 			}
 
+			function floatBar() {
+				var bar = document.getElementById( 'ocmc-float' );
+				var n   = document.querySelectorAll( '.ocmc__hcb:checked' ).length;
+				bar.hidden = 0 === n;
+				document.getElementById( 'ocmc-float-n' ).textContent = sprintf( T.picked, n );
+			}
+
+			document.addEventListener( 'change', function ( e ) {
+				if ( e.target.classList && e.target.classList.contains( 'ocmc__hcb' ) ) { floatBar(); }
+			} );
+
 			function ticked( root ) {
 				return [].slice.call( root.querySelectorAll( '.ocmc__hcb:checked' ) ).map( function ( cb ) {
 					return cb.value;
@@ -698,6 +725,7 @@ final class Media_Clean_Admin {
 				all.closest( '[data-ocmc-panel]' ).querySelectorAll( '.ocmc__hcb' ).forEach( function ( cb ) {
 					if ( ! cb.closest( 'tr' ).hidden ) { cb.checked = on; }
 				} );
+				floatBar();
 			} );
 
 			function drawHeavy( d ) {
@@ -714,8 +742,9 @@ final class Media_Clean_Admin {
 					if ( it.backup ) {
 						act += ' <button type="button" class="button-link ocmc__hgo" data-ocmc-undo="' + it.id + '">' + esc( T.hundo ) + '</button>';
 					}
+					var cb = it.id ? '<input type="checkbox" class="ocmc__hcb" value="' + it.id + '">' : '';
 					return '<tr data-ocmc-row="' + it.id + '" data-ocmc-mime="' + esc( it.mime ) + '">'
-						+ '<td><input type="checkbox" class="ocmc__hcb" value="' + it.id + '">' + pic + '</td>'
+						+ '<td><span class="ocmc__pic">' + cb + pic + '</span></td>'
 						+ '<td><span class="ocmc__hname">' + ( it.link ? '<a href="' + esc( it.link ) + '">' + esc( it.name ) + '</a>' : esc( it.name ) ) + '</span>'
 						+ '<br><span class="ocmc__hdim">' + esc( dim ) + ' · ' + esc( it.mime ) + '</span></td>'
 						+ '<td class="ocmc__hbytes" data-ocmc-size>' + esc( kb( it.bytes ) ) + '</td>'
@@ -724,46 +753,16 @@ final class Media_Clean_Admin {
 						+ '</tr>';
 				} ).join( '' );
 
-				hOut.innerHTML = '<p class="ocmc__hsum">'
-					+ esc( sprintf( T.hsum, d.over, kb( d.bytes ), d.shown ) ) + '</p>'
+				var sum = d.page
+					? sprintf( T.psum, d.scanned, kb( d.total ) ) + ' ' + sprintf( T.pover, d.over, kb( d.bytes ) )
+					: sprintf( T.hsum, d.over, kb( d.bytes ), d.shown );
+
+				hOut.innerHTML = '<p class="ocmc__hsum">' + esc( sum ) + '</p>'
 					+ pickRow()
 					+ '<table class="ocmc__htable"><thead><tr><th></th><th>' + esc( T.hfile ) + '</th><th>'
 					+ esc( T.hsize ) + '</th><th>' + esc( T.hwhere ) + '</th><th>' + esc( T.hact )
 					+ '</th></tr></thead><tbody>' + rows + '</tbody></table>';
-				document.getElementById( 'ocmc-heavy-actions' ).hidden = false;
-			}
-
-			function drawPage( d ) {
-				var pOut = document.getElementById( 'ocmc-page-out' );
-				if ( ! d.items.length ) {
-					pOut.innerHTML = '<p class="ocmc__hsum">' + esc( T.pnone ) + '</p>';
-					document.getElementById( 'ocmc-page-actions' ).hidden = true;
-					return;
-				}
-				var rows = d.items.map( function ( it ) {
-					var pic = it.thumb ? '<img src="' + esc( it.thumb ) + '" alt="" loading="lazy">' : '<img alt="">';
-					var cb  = it.shrink ? '<input type="checkbox" class="ocmc__hcb" value="' + it.id + '">' : '';
-					var act = it.shrink
-						? '<button type="button" class="button ocmc__hgo" data-ocmc-shrink="' + it.id + '">' + esc( T.hshrink ) + '</button>'
-						: '<span class="ocmc__hdim">' + esc( T.pnotlib ) + '</span>';
-					if ( it.backup ) {
-						act += ' <button type="button" class="button-link ocmc__hgo" data-ocmc-undo="' + it.id + '">' + esc( T.hundo ) + '</button>';
-					}
-					var name = it.link ? '<a href="' + esc( it.link ) + '">' + esc( it.name ) + '</a>'
-						: '<a href="' + esc( it.url ) + '" target="_blank" rel="noopener">' + esc( it.name ) + '</a>';
-					return '<tr data-ocmc-row="' + ( it.id || 0 ) + '">'
-						+ '<td>' + cb + pic + '</td>'
-						+ '<td><span class="ocmc__hname">' + name + '</span><br>'
-						+ '<span class="ocmc__hdim">' + esc( it.mime ) + '</span></td>'
-						+ '<td class="ocmc__hbytes" data-ocmc-size>' + esc( kb( it.bytes ) ) + '</td>'
-						+ '<td>' + act + '<span class="ocmc__hmsg" data-ocmc-msg></span></td>'
-						+ '</tr>';
-				} ).join( '' );
-				pOut.innerHTML = '<p class="ocmc__hsum">' + esc( sprintf( T.psum, d.count, kb( d.bytes ) ) ) + '</p>'
-					+ pickRow()
-					+ '<table class="ocmc__htable"><thead><tr><th></th><th>' + esc( T.hfile ) + '</th><th>'
-					+ esc( T.hsize ) + '</th><th>' + esc( T.hact ) + '</th></tr></thead><tbody>' + rows + '</tbody></table>';
-				document.getElementById( 'ocmc-page-actions' ).hidden = false;
+				floatBar();
 			}
 
 			if ( hGo ) {
@@ -772,11 +771,12 @@ final class Media_Clean_Admin {
 					hOut.innerHTML = '<p class="ocmc__hsum">' + esc( T.looking ) + '</p>';
 					post( 'ocmc_heavy', {
 						min: document.getElementById( 'ocmc-min' ).value,
-						type: document.getElementById( 'ocmc-type' ).value
+						type: document.getElementById( 'ocmc-type' ).value,
+						url: document.getElementById( 'ocmc-url' ).value
 					} ).then( function ( r ) {
 						hGo.disabled = false;
-						if ( r && r.success ) { drawHeavy( r.data ); }
-						else { hOut.innerHTML = '<p class="ocmc__hsum">' + esc( T.failed ) + '</p>'; }
+						if ( r && r.success && ! r.data.why ) { drawHeavy( r.data ); }
+						else { hOut.innerHTML = '<p class="ocmc__hsum">' + esc( ( r && r.data && r.data.why ) || T.failed ) + '</p>'; floatBar(); }
 					} ).catch( function () {
 						hGo.disabled = false;
 						hOut.innerHTML = '<p class="ocmc__hsum">' + esc( T.failed ) + '</p>';
@@ -784,33 +784,15 @@ final class Media_Clean_Admin {
 				} );
 			}
 
-			var pGo = document.getElementById( 'ocmc-page' );
-
-			if ( pGo ) {
-				pGo.addEventListener( 'click', function () {
-					var pOut = document.getElementById( 'ocmc-page-out' );
-					pGo.disabled = true;
-					pOut.innerHTML = '<p class="ocmc__hsum">' + esc( T.preading ) + '</p>';
-					post( 'ocmc_page', { url: document.getElementById( 'ocmc-url' ).value } ).then( function ( r ) {
-						pGo.disabled = false;
-						if ( r && r.success && r.data.ok ) { drawPage( r.data ); }
-						else { pOut.innerHTML = '<p class="ocmc__hsum">' + esc( ( r && r.data && r.data.why ) || T.failed ) + '</p>'; }
-					} ).catch( function () {
-						pGo.disabled = false;
-						pOut.innerHTML = '<p class="ocmc__hsum">' + esc( T.failed ) + '</p>';
-					} );
-				} );
-			}
-
-			[ 'ocmc-heavy-shrink', 'ocmc-page-shrink' ].forEach( function ( id ) {
+			[ 'ocmc-heavy-shrink' ].forEach( function ( id ) {
 				var b = document.getElementById( id );
 				if ( ! b ) { return; }
 				b.addEventListener( 'click', function () {
-					var ids = ticked( b.closest( '[data-ocmc-panel]' ) );
+					var ids = ticked( document );
 					if ( ! ids.length ) { window.alert( T.none ); return; }
 					if ( ! window.confirm( sprintf( T.hmany, ids.length ) ) ) { return; }
 					b.disabled = true;
-					shrinkMany( ids, function () { b.disabled = false; } );
+					shrinkMany( ids, function () { b.disabled = false; floatBar(); } );
 				} );
 			} );
 
@@ -818,7 +800,7 @@ final class Media_Clean_Admin {
 
 			if ( hDel ) {
 				hDel.addEventListener( 'click', function () {
-					run( ticked( hDel.closest( '[data-ocmc-panel]' ) ) );
+					run( ticked( document ) );
 				} );
 			}
 

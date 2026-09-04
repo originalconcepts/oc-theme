@@ -6786,3 +6786,21 @@ msgstr "קורא את העמוד…"
 
 msgid "nothing points at it"
 msgstr "שום דבר לא מפנה אליו"
+
+msgid "Build new pictures as WebP"
+msgstr "יצירת תמונות חדשות כ‑WebP"
+
+msgid "From now on, every size WordPress makes from an uploaded picture is written as WebP — a quarter of the weight, same picture. The file you upload keeps its own format, and nothing already on the site changes."
+msgstr "מעכשיו, כל גודל שוורדפרס מייצר מתמונה שמעלים נכתב כ‑WebP — רבע מהמשקל, אותה תמונה. הקובץ שאתם מעלים נשאר בפורמט שלו, ושום דבר שכבר קיים באתר לא משתנה."
+
+msgid "On one page (optional)"
+msgstr "בעמוד מסוים (לא חובה)"
+
+msgid "Leave the address empty to search the whole library. Fill it in and only what that page loads is weighed."
+msgstr "השאירו את הכתובת ריקה כדי לחפש בכל ספריית המדיה. מלאו אותה — וייבדק רק מה שאותו עמוד טוען."
+
+msgid "%d ticked"
+msgstr "%d מסומנים"
+
+msgid "%1$d of them are over the size you asked for, %2$s."
+msgstr "%1$d מהם מעל הגודל שביקשתם, %2$s."

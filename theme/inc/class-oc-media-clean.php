@@ -74,6 +74,11 @@ final class Media_Clean {
 	private const BACKUP = '_oc_mclean_original';
 
 	/**
+	 * Whether new uploads have their sizes built as WebP.
+	 */
+	public const WEBP = 'oc_mclean_webp';
+
+	/**
 	 * Freshly uploaded media is never offered, in hours.
 	 *
 	 * Someone may be part-way through building a page with it.
@@ -153,7 +158,8 @@ final class Media_Clean {
 		add_action( 'wp_ajax_ocmc_step', array( $this, 'ajax_step' ) );
 		add_action( 'wp_ajax_ocmc_delete', array( $this, 'ajax_delete' ) );
 		add_action( 'wp_ajax_ocmc_heavy', array( $this, 'ajax_heavy' ) );
-		add_action( 'wp_ajax_ocmc_page', array( $this, 'ajax_page' ) );
+		add_action( 'wp_ajax_ocmc_webp', array( $this, 'ajax_webp' ) );
+		add_filter( 'image_editor_output_format', array( $this, 'webp_sizes' ) );
 		add_action( 'wp_ajax_ocmc_shrink', array( $this, 'ajax_shrink' ) );
 		add_action( 'wp_ajax_ocmc_restore', array( $this, 'ajax_restore' ) );
 		add_action( 'admin_post_ocmc_csv', array( $this, 'handle_csv' ) );
@@ -737,11 +743,16 @@ final class Media_Clean {
 	 *
 	 * @param int    $min   Smallest total size to report, in bytes.
 	 * @param string $type  'all', 'image' or 'video'.
+	 * @param string $url   One page to look at; empty means the whole library.
 	 * @param int    $limit Longest list to return.
 	 * @return array<string,mixed>
 	 */
-	public static function heavy( int $min, string $type, int $limit = 200 ): array {
+	public static function heavy( int $min, string $type, string $url = '', int $limit = 200 ): array {
 		global $wpdb;
+
+		if ( '' !== trim( $url ) ) {
+			return self::heavy_on_page( $min, $type, $url, $limit );
+		}
 
 		$sql = "SELECT p.ID, p.post_title, p.post_mime_type, p.post_parent, p.post_date_gmt, m.meta_value AS meta
 			 FROM {$wpdb->posts} p
@@ -856,6 +867,85 @@ final class Media_Clean {
 			'library' => $total,
 			'scanned' => $scanned,
 			'shown'   => count( $items ),
+		);
+	}
+
+	/**
+	 * The same list, narrowed to one page.
+	 *
+	 * @param int    $min   Smallest size to report, in bytes.
+	 * @param string $type  'all', 'image' or 'video'.
+	 * @param string $url   The page.
+	 * @param int    $limit Longest list to return.
+	 * @return array<string,mixed>
+	 */
+	private static function heavy_on_page( int $min, string $type, string $url, int $limit ): array {
+		$page = self::page_media( $url );
+
+		if ( empty( $page['ok'] ) ) {
+			return array(
+				'items'   => array(),
+				'over'    => 0,
+				'bytes'   => 0,
+				'shown'   => 0,
+				'scanned' => 0,
+				'why'     => (string) ( $page['why'] ?? '' ),
+			);
+		}
+
+		$refs  = self::reference_map();
+		$posts = self::parents();
+		$items = array();
+		$sum   = 0;
+
+		foreach ( (array) $page['items'] as $one ) {
+			$mime = (string) $one['mime'];
+
+			if ( 'image' === $type && 0 !== strpos( $mime, 'image/' ) ) {
+				continue;
+			}
+
+			if ( 'video' === $type && 0 !== strpos( $mime, 'video/' ) ) {
+				continue;
+			}
+
+			if ( (int) $one['bytes'] < $min ) {
+				continue;
+			}
+
+			$id   = (int) $one['id'];
+			$meta = $id > 0 ? (array) wp_get_attachment_metadata( $id ) : array();
+			$sum += (int) $one['bytes'];
+
+			$items[] = array(
+				'id'     => $id,
+				'bytes'  => (int) $one['bytes'],
+				'mime'   => $mime,
+				'w'      => (int) ( $meta['width'] ?? 0 ),
+				'h'      => (int) ( $meta['height'] ?? 0 ),
+				'name'   => (string) $one['name'],
+				'thumb'  => (string) $one['thumb'],
+				'link'   => (string) $one['link'],
+				'url'    => (string) $one['url'],
+				'used'   => $id > 0 ? self::used_by( $id, $refs, $posts, (int) get_post_field( 'post_parent', $id ) ) : array(),
+				'shrink' => (bool) $one['shrink'],
+				'backup' => (bool) $one['backup'],
+				'verd'   => $id > 0 ? 'used' : 'outside',
+			);
+
+			if ( count( $items ) >= $limit ) {
+				break;
+			}
+		}
+
+		return array(
+			'items'   => $items,
+			'over'    => count( $items ),
+			'bytes'   => $sum,
+			'shown'   => count( $items ),
+			'scanned' => (int) $page['count'],
+			'page'    => (string) $page['url'],
+			'total'   => (int) $page['bytes'],
 		);
 	}
 
@@ -1238,14 +1328,43 @@ final class Media_Clean {
 	}
 
 	/**
-	 * One page's media, over ajax.
+	 * Have WordPress build every new picture's sizes as WebP.
+	 *
+	 * Only the generated sizes change, and only for pictures uploaded from
+	 * now on: the original keeps its own format and its own address, and
+	 * nothing already in the shop is touched. It is the one place a format
+	 * can be changed without rewriting a single reference, because the
+	 * references are written afterwards.
+	 *
+	 * @param array<string,string> $formats Mime => mime.
+	 * @return array<string,string>
 	 */
-	public function ajax_page(): void {
+	public function webp_sizes( array $formats ): array {
+		if ( ! get_option( self::WEBP, false ) ) {
+			return $formats;
+		}
+
+		if ( ! wp_image_editor_supports( array( 'mime_type' => 'image/webp' ) ) ) {
+			return $formats;
+		}
+
+		$formats['image/jpeg'] = 'image/webp';
+		$formats['image/png']  = 'image/webp';
+
+		return $formats;
+	}
+
+	/**
+	 * Turn WebP sizes on or off, over ajax.
+	 */
+	public function ajax_webp(): void {
 		$this->guard();
 
-		$url = isset( $_POST['url'] ) ? esc_url_raw( wp_unslash( $_POST['url'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- guard() above ran check_ajax_referer().
+		$on = isset( $_POST['on'] ) && '1' === (string) wp_unslash( $_POST['on'] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- guard() above ran check_ajax_referer().
 
-		wp_send_json_success( self::page_media( $url ) );
+		update_option( self::WEBP, $on ? 1 : 0, false );
+
+		wp_send_json_success( array( 'on' => $on ) );
 	}
 
 	/**
@@ -1259,9 +1378,11 @@ final class Media_Clean {
 		$type = isset( $_POST['type'] ) ? sanitize_key( wp_unslash( $_POST['type'] ) ) : 'all';
 		// phpcs:enable
 
+		$url = isset( $_POST['url'] ) ? esc_url_raw( wp_unslash( $_POST['url'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- guard() above ran check_ajax_referer().
+
 		$type = in_array( $type, array( 'all', 'image', 'video' ), true ) ? $type : 'all';
 
-		wp_send_json_success( self::heavy( max( 1, $min ) * KB_IN_BYTES, $type ) );
+		wp_send_json_success( self::heavy( max( 1, $min ) * KB_IN_BYTES, $type, $url ) );
 	}
 
 	/**
