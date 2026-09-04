@@ -741,20 +741,18 @@ final class Media_Clean {
 	public static function heavy( int $min, string $type, int $limit = 200 ): array {
 		global $wpdb;
 
-		$where = "p.post_type = 'attachment'";
-
-		if ( 'image' === $type ) {
-			$where .= " AND p.post_mime_type LIKE 'image/%'";
-		} elseif ( 'video' === $type ) {
-			$where .= " AND p.post_mime_type LIKE 'video/%'";
-		}
-
-		$rows = (array) $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.NotPrepared -- maintenance scan; $where is built from a fixed set above.
-			"SELECT p.ID, p.post_title, p.post_mime_type, p.post_parent, m.meta_value AS meta
+		$sql = "SELECT p.ID, p.post_title, p.post_mime_type, p.post_parent, m.meta_value AS meta
 			 FROM {$wpdb->posts} p
 			 LEFT JOIN {$wpdb->postmeta} m ON m.post_id = p.ID AND m.meta_key = '_wp_attachment_metadata'
-			 WHERE {$where}"
-		);
+			 WHERE p.post_type = 'attachment'";
+
+		if ( 'image' === $type || 'video' === $type ) {
+			$rows = (array) $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery -- maintenance scan; live counts cannot cache.
+				$wpdb->prepare( $sql . ' AND p.post_mime_type LIKE %s', $wpdb->esc_like( $type . '/' ) . '%' ) // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $sql is a literal built above.
+			);
+		} else {
+			$rows = (array) $wpdb->get_results( $sql ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.NotPrepared -- $sql is a literal built above.
+		}
 
 		$found   = array();
 		$stats   = 0;
@@ -822,12 +820,12 @@ final class Media_Clean {
 			$items[] = array_merge(
 				$one,
 				array(
-					'thumb'   => wp_get_attachment_image_url( $id, 'thumbnail' ),
-					'name'    => '' === $file ? (string) get_the_title( $id ) : wp_basename( $file ),
-					'link'    => get_edit_post_link( $id, 'raw' ),
-					'used'    => self::used_by( $id, $refs, $posts ),
-					'shrink'  => self::shrinkable( $one['mime'], $one['w'], $one['h'] ),
-					'backup'  => '' !== (string) get_post_meta( $id, self::BACKUP, true ),
+					'thumb'  => wp_get_attachment_image_url( $id, 'thumbnail' ),
+					'name'   => '' === $file ? (string) get_the_title( $id ) : wp_basename( $file ),
+					'link'   => get_edit_post_link( $id, 'raw' ),
+					'used'   => self::used_by( $id, $refs, $posts ),
+					'shrink' => self::shrinkable( $one['mime'], $one['w'], $one['h'] ),
+					'backup' => '' !== (string) get_post_meta( $id, self::BACKUP, true ),
 				)
 			);
 		}
@@ -928,11 +926,17 @@ final class Media_Clean {
 		$mime = (string) get_post_mime_type( $id );
 
 		if ( '' === $file || ! file_exists( $file ) ) {
-			return array( 'ok' => false, 'why' => __( 'The file is not on the server.', 'oc-theme' ) );
+			return array(
+				'ok'  => false,
+				'why' => __( 'The file is not on the server.', 'oc-theme' ),
+			);
 		}
 
 		if ( ! in_array( $mime, array( 'image/jpeg', 'image/png' ), true ) ) {
-			return array( 'ok' => false, 'why' => __( 'Only JPEG and PNG pictures can be shrunk here.', 'oc-theme' ) );
+			return array(
+				'ok'  => false,
+				'why' => __( 'Only JPEG and PNG pictures can be shrunk here.', 'oc-theme' ),
+			);
 		}
 
 		$before = (int) filesize( $file );
@@ -944,7 +948,10 @@ final class Media_Clean {
 			$backup = $file . '.ocfull';
 
 			if ( ! copy( $file, $backup ) ) {
-				return array( 'ok' => false, 'why' => __( 'The original could not be copied aside, so nothing was changed.', 'oc-theme' ) );
+				return array(
+				'ok'  => false,
+				'why' => __( 'The original could not be copied aside, so nothing was changed.', 'oc-theme' ),
+			);
 			}
 
 			update_post_meta( $id, self::BACKUP, $backup );
@@ -953,7 +960,10 @@ final class Media_Clean {
 		$editor = wp_get_image_editor( $file );
 
 		if ( is_wp_error( $editor ) ) {
-			return array( 'ok' => false, 'why' => $editor->get_error_message() );
+			return array(
+				'ok'  => false,
+				'why' => $editor->get_error_message(),
+			);
 		}
 
 		$size = $editor->get_size();
@@ -966,7 +976,10 @@ final class Media_Clean {
 		$saved = $editor->save( $file, $mime );
 
 		if ( is_wp_error( $saved ) ) {
-			return array( 'ok' => false, 'why' => $saved->get_error_message() );
+			return array(
+				'ok'  => false,
+				'why' => $saved->get_error_message(),
+			);
 		}
 
 		clearstatcache( true, $file );
@@ -991,7 +1004,11 @@ final class Media_Clean {
 		require_once ABSPATH . 'wp-admin/includes/image.php';
 		wp_update_attachment_metadata( $id, wp_generate_attachment_metadata( $id, $file ) );
 
-		return array( 'ok' => true, 'before' => $before, 'after' => $after );
+		return array(
+			'ok'     => true,
+			'before' => $before,
+			'after'  => $after,
+		);
 	}
 
 	/**
@@ -1005,11 +1022,17 @@ final class Media_Clean {
 		$file   = (string) get_attached_file( $id );
 
 		if ( '' === $backup || ! file_exists( $backup ) || '' === $file ) {
-			return array( 'ok' => false, 'why' => __( 'There is no original kept for this one.', 'oc-theme' ) );
+			return array(
+				'ok'  => false,
+				'why' => __( 'There is no original kept for this one.', 'oc-theme' ),
+			);
 		}
 
 		if ( ! copy( $backup, $file ) ) {
-			return array( 'ok' => false, 'why' => __( 'The original could not be put back.', 'oc-theme' ) );
+			return array(
+				'ok'  => false,
+				'why' => __( 'The original could not be put back.', 'oc-theme' ),
+			);
 		}
 
 		wp_delete_file( $backup );
@@ -1019,7 +1042,10 @@ final class Media_Clean {
 		require_once ABSPATH . 'wp-admin/includes/image.php';
 		wp_update_attachment_metadata( $id, wp_generate_attachment_metadata( $id, $file ) );
 
-		return array( 'ok' => true, 'after' => (int) filesize( $file ) );
+		return array(
+			'ok'    => true,
+			'after' => (int) filesize( $file ),
+		);
 	}
 
 	/**
