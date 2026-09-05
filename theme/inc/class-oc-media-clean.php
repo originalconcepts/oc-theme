@@ -964,6 +964,7 @@ final class Media_Clean {
 			$items[] = array(
 				'id'     => $id,
 				'bytes'  => (int) $one['bytes'],
+				'eager'  => (bool) ( $one['eager'] ?? true ),
 				'mime'   => $mime,
 				'w'      => (int) ( $meta['width'] ?? 0 ),
 				'h'      => (int) ( $meta['height'] ?? 0 ),
@@ -1149,6 +1150,7 @@ final class Media_Clean {
 
 		$now   = 0;
 		$after = 0;
+		$eager = 0;
 		$n     = 0;
 
 		foreach ( $items as $one ) {
@@ -1159,9 +1161,18 @@ final class Media_Clean {
 				continue;
 			}
 
+			$cut = $bytes - (int) round( $bytes * $mid[ $mime ] );
+
 			++$n;
 			$now   += $bytes;
 			$after += (int) round( $bytes * $mid[ $mime ] );
+
+			// Only what the browser fetches straight away can move the
+			// moment the page finishes drawing. A picture waiting for a
+			// scroll saves the visitor's data, not their time.
+			if ( false !== ( $one['eager'] ?? true ) ) {
+				$eager += max( 0, $cut );
+			}
 		}
 
 		return array(
@@ -1170,6 +1181,7 @@ final class Media_Clean {
 			'now'     => $now,
 			'after'   => $after,
 			'saved'   => max( 0, $now - $after ),
+			'upfront' => $eager,
 			'samples' => array_map( 'count', $ratios ),
 			'ratio'   => $mid,
 		);
@@ -1236,7 +1248,7 @@ final class Media_Clean {
 	 * @param float $lcp   The page's LCP today, in seconds. 0 to skip.
 	 * @return array<string,mixed>
 	 */
-	public static function speed_gain( int $saved, float $lcp = 0.0 ): array {
+	public static function speed_gain( int $saved, float $lcp = 0.0, float $floor = 0.0 ): array {
 		// Lighthouse's simulated mobile link: 1.6 Mbit/s, less the 5% it
 		// holds back for protocol overhead.
 		$throughput = 1600 * 1024 / 8 * 0.95;
@@ -1248,13 +1260,21 @@ final class Media_Clean {
 			return $out;
 		}
 
-		$after = max( 0.1, $lcp - $seconds );
+		// Weight is not the only thing LCP waits for. The server still has
+		// to answer and the page still has to draw, and no amount of saved
+		// bytes goes below that. Without a measured First Contentful Paint
+		// to stand on, hold the forecast at a second and a half — near the
+		// best a WordPress page reaches on a phone — so the arithmetic can
+		// never promise an instant page.
+		$floor = $floor > 0 ? $floor : 1.5;
+		$after = max( $floor, $lcp - $seconds );
 
 		$was = self::lcp_score( $lcp );
 		$now = self::lcp_score( $after );
 
 		$out['lcp_now']   = round( $lcp, 1 );
 		$out['lcp_after'] = round( $after, 1 );
+		$out['floored']   = $lcp - $seconds < $floor;
 
 		// LCP carries a quarter of the performance score.
 		$out['points'] = (int) round( ( $now - $was ) * 25 );
@@ -1485,17 +1505,44 @@ final class Media_Clean {
 		// src, poster and the addresses inside inline styles. srcset is left
 		// alone on purpose: it offers a browser many widths and the browser
 		// takes one, so counting them all would invent weight nobody loads.
-		foreach ( array( '/<(?:img|video|source|iframe)\b[^>]*?\b(?:src|poster)\s*=\s*["\']([^"\']+)/i', '/url\(\s*["\']?([^"\')]+\.(?:jpe?g|png|gif|webp|avif|svg|mp4|webm))/i' ) as $pattern ) {
-			if ( preg_match_all( $pattern, $html, $m ) ) {
-				foreach ( $m[1] as $one ) {
-					$one = html_entity_decode( trim( $one ), ENT_QUOTES );
+		// A picture held back until the visitor scrolls is not what they
+		// wait for, so each address also remembers whether anything on the
+		// page asks for it straight away. Eager wins: one eager mention is
+		// enough, however many lazy ones sit beside it.
+		$eager = array();
 
-					if ( 0 === strpos( $one, 'data:' ) || '' === $one ) {
-						continue;
-					}
-
-					$hits[ strtok( $one, '?' ) ] = true;
+		if ( preg_match_all( '/<(?:img|video|source|iframe)\b[^>]*>/i', $html, $tags ) ) {
+			foreach ( $tags[0] as $tag ) {
+				if ( ! preg_match( '/\b(?:src|poster)\s*=\s*["\']([^"\']+)/i', $tag, $hit ) ) {
+					continue;
 				}
+
+				$one = html_entity_decode( trim( $hit[1] ), ENT_QUOTES );
+
+				if ( 0 === strpos( $one, 'data:' ) || '' === $one ) {
+					continue;
+				}
+
+				$key           = strtok( $one, '?' );
+				$hits[ $key ]  = true;
+				$lazy          = (bool) preg_match( '/\bloading\s*=\s*["\']?lazy/i', $tag );
+				$eager[ $key ] = ( $eager[ $key ] ?? false ) || ! $lazy;
+			}
+		}
+
+		// Backgrounds in inline styles: no loading attribute exists, and the
+		// browser fetches them as soon as the rule applies.
+		if ( preg_match_all( '/url\(\s*["\']?([^"\')]+\.(?:jpe?g|png|gif|webp|avif|svg|mp4|webm))/i', $html, $m ) ) {
+			foreach ( $m[1] as $one ) {
+				$one = html_entity_decode( trim( $one ), ENT_QUOTES );
+
+				if ( 0 === strpos( $one, 'data:' ) || '' === $one ) {
+					continue;
+				}
+
+				$key           = strtok( $one, '?' );
+				$hits[ $key ]  = true;
+				$eager[ $key ] = true;
 			}
 		}
 
@@ -1504,6 +1551,7 @@ final class Media_Clean {
 		$total   = 0;
 
 		foreach ( array_keys( $hits ) as $link ) {
+			$now  = (bool) ( $eager[ $link ] ?? true );
 			$full = 0 === strpos( $link, '//' ) ? 'https:' . $link : $link;
 
 			if ( 0 === strpos( $full, '/' ) ) {
@@ -1528,6 +1576,7 @@ final class Media_Clean {
 				'url'    => $full,
 				'name'   => wp_basename( $path ),
 				'bytes'  => $bytes,
+				'eager'  => $now,
 				'id'     => $id,
 				'mime'   => (string) ( wp_check_filetype( $path )['type'] ?? '' ),
 				'thumb'  => $id > 0 ? wp_get_attachment_image_url( $id, 'thumbnail' ) : '',
@@ -2105,7 +2154,10 @@ final class Media_Clean {
 		$min = 'avg' === $raw ? 0 : absint( $raw ) * KB_IN_BYTES;
 		$out = self::heavy( $min, $type, $url );
 
-		$out['speed'] = self::speed_gain( (int) ( $out['webp']['saved'] ?? 0 ), max( 0.0, min( 60.0, $lcp ) ) );
+		// The seconds come from the weight the visitor actually waits for.
+		$upfront = $out['webp']['upfront'] ?? $out['webp']['saved'] ?? 0;
+
+		$out['speed'] = self::speed_gain( (int) $upfront, max( 0.0, min( 60.0, $lcp ) ) );
 
 		wp_send_json_success( $out );
 	}

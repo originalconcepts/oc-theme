@@ -467,7 +467,9 @@ final class Media_Clean_Admin {
 			'wsec'     => __( 'About %s seconds off a phone on a slow connection.', 'oc-theme' ),
 			/* translators: 1: LCP now, 2: LCP after, 3: points gained. */
 			'wpoint'   => __( 'LCP %1$ss → about %2$ss, worth roughly +%3$d points.', 'oc-theme' ),
-			'wguess'   => __( 'The weight is measured. The seconds and the points are a forecast for this one metric — treat them as the direction, not the number.', 'oc-theme' ),
+			'wguess'   => __( 'The weight is measured. The seconds and the points are a forecast for one metric on a simulated phone — treat them as the direction, not the number.', 'oc-theme' ),
+			'wlazy'    => __( 'Only the pictures the page fetches straight away are counted towards the seconds. The ones held back until the visitor scrolls still save their data, but not their time.', 'oc-theme' ),
+			'wfloor'   => __( 'Held at 1.5s: below that the page is waiting on the server and its own drawing, not on pictures.', 'oc-theme' ),
 			'wcol'     => __( 'As WebP', 'oc-theme' ),
 			'wnone'    => __( 'This server cannot write WebP, so there is nothing to forecast.', 'oc-theme' ),
 			'wgo'      => __( 'Convert these to WebP', 'oc-theme' ),
@@ -772,9 +774,13 @@ final class Media_Clean_Admin {
 				}
 				if ( s.points > 0 ) {
 					out += '<p class="ocmc__fcbig">' + esc( sprintf( T.wpoint, s.lcp_now, s.lcp_after, s.points ) ) + '</p>';
+					if ( s.floored ) {
+						out += '<p class="ocmc__hint">' + esc( T.wfloor ) + '</p>';
+					}
 				}
 
-				out += '<p class="ocmc__hint">' + esc( sprintf( T.wtest, tested ) ) + ' ' + esc( T.wguess ) + '</p>';
+				out += '<p class="ocmc__hint">' + esc( sprintf( T.wtest, tested ) ) + ' '
+					+ ( d.page ? esc( T.wlazy ) + ' ' : '' ) + esc( T.wguess ) + '</p>';
 				out += '<p><button type="button" class="button button-primary" id="ocmc-towebp">' + esc( T.wgo ) + '</button></p>';
 
 				return out + '</div>';
