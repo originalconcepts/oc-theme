@@ -176,7 +176,7 @@ final class Build {
 		file_put_contents( $part, self::head( $feed ) ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- this plugin's own feed file.
 
 		foreach ( $files as $file ) {
-			$rows = (string) file_get_contents( (string) $file ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_get_contents -- this plugin's own batch file.
+			$rows = (string) file_get_contents( (string) $file ); // phpcs:ignore WordPress.WP.AlternativeFunctions -- a local batch file this class wrote a moment ago, not a URL.
 
 			if ( '' !== $rows ) {
 				file_put_contents( $part, $rows, FILE_APPEND ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- this plugin's own feed file.
@@ -205,8 +205,8 @@ final class Build {
 			return 0;
 		}
 
-		$mark  = 'csv' === $feed['format'] ? "\n" : ( 'zap' === $feed['target'] ? '<PRODUCT>' : '<item>' );
-		$count = 0;
+		$mark   = 'csv' === $feed['format'] ? "\n" : ( 'zap' === $feed['target'] ? '<PRODUCT>' : '<item>' );
+		$count  = 0;
 		$handle = fopen( $file, 'r' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- reading this plugin's own feed file in a stream.
 
 		if ( false === $handle ) {
