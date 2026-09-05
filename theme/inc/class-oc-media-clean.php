@@ -301,7 +301,7 @@ final class Media_Clean {
 		foreach ( $rows as $row ) {
 			if ( preg_match_all( '/wp-image-(\d+)|attachment_(\d+)|["\']?ids["\']?\s*[:=]\s*["\']?([\d,\s]+)|"id"\s*:\s*(\d+)/i', (string) $row->post_content, $m, PREG_SET_ORDER ) ) {
 				foreach ( $m as $hit ) {
-					$blob = trim( $hit[1] . $hit[2] . ( $hit[3] ?? '' ) . ( $hit[4] ?? '' ) );
+					$blob = trim( ( $hit[1] ?? '' ) . ( $hit[2] ?? '' ) . ( $hit[3] ?? '' ) . ( $hit[4] ?? '' ) );
 					foreach ( preg_split( '/[,\s]+/', $blob ) as $n ) {
 						$id = (int) $n;
 						if ( $id > 0 ) {
@@ -1203,11 +1203,7 @@ final class Media_Clean {
 			return null;
 		}
 
-		$tmp = wp_tempnam( 'ocwebp' );
-
-		if ( ! $tmp ) {
-			return null;
-		}
+		$tmp = get_temp_dir() . uniqid( 'ocwebp', true ) . '.webp';
 
 		$done = $editor->save( $tmp, 'image/webp' );
 
@@ -1219,7 +1215,9 @@ final class Media_Clean {
 			wp_delete_file( (string) $done['path'] );
 		}
 
-		wp_delete_file( $tmp );
+		if ( file_exists( $tmp ) ) {
+			wp_delete_file( $tmp );
+		}
 
 		return $now > 0 ? min( 1.0, $now / $was ) : null;
 	}
