@@ -23,7 +23,8 @@ final class Build {
 	 * The feed already in place is left exactly where it is until this run
 	 * finishes. A half-written feed is worse than an hour-old one.
 	 *
-	 * @param string $key Feed key.
+	 * @param string $key   Feed key.
+	 * @param bool   $force Take the lock from whoever holds it.
 	 */
 	public static function start( string $key, bool $force = false ): void {
 		$feed = Feeds::get( $key );
