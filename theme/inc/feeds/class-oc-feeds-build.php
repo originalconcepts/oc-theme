@@ -66,21 +66,19 @@ final class Build {
 
 		// One worker at a time. The screen drives batches while it is open
 		// and the schedule drives them in the background, and without this
-		// both appended the same products to the same file — a feed full of
-		// duplicate ids, which is the one thing a network refuses outright.
-		$lock = 'oc_feed_lock_' . $key;
-
-		if ( false !== get_transient( $lock ) ) {
+		// both read the same cursor and appended the same products — a feed
+		// with the same id in it twice, which is the one fault a network
+		// rejects a whole catalogue for.
+		if ( ! self::lock( $key ) ) {
 			return;
 		}
-
-		set_transient( $lock, 1, 2 * MINUTE_IN_SECONDS );
 
 		$ids = get_transient( 'oc_feed_ids_' . $key );
 
 		if ( ! is_array( $ids ) ) {
 			// The list expired mid-run; begin again rather than write a
 			// feed that is missing whatever the shop has since added.
+			self::unlock( $key );
 			self::start( $key );
 
 			return;
@@ -142,7 +140,41 @@ final class Build {
 		}
 
 		Feeds::put( $key, $feed );
-		delete_transient( $lock );
+		self::unlock( $key );
+	}
+
+	/**
+	 * Take the build lock, or say that somebody else has it.
+	 *
+	 * add_option() is the atomic part: the options table will not hold two
+	 * rows of the same name, so exactly one caller can create it. A check
+	 * followed by a write is not enough here — two workers both find it
+	 * free in the same millisecond and both carry on.
+	 *
+	 * @param string $key Feed key.
+	 */
+	private static function lock( string $key ): bool {
+		$name = 'oc_feed_lock_' . $key;
+		$held = (int) get_option( $name, 0 );
+
+		if ( $held > 0 && time() - $held < 2 * MINUTE_IN_SECONDS ) {
+			return false;
+		}
+
+		if ( $held > 0 ) {
+			delete_option( $name );
+		}
+
+		return add_option( $name, time(), '', false );
+	}
+
+	/**
+	 * Let the next worker in.
+	 *
+	 * @param string $key Feed key.
+	 */
+	private static function unlock( string $key ): void {
+		delete_option( 'oc_feed_lock_' . $key );
 	}
 
 	/*
