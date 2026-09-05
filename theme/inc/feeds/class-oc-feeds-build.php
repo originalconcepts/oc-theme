@@ -225,6 +225,17 @@ final class Build {
 		$part  = $final . '.part';
 		$files = (array) glob( self::parts_dir( $key, $run ) . '/*.txt' );
 
+		// A run that found nothing replaces a working feed with an empty one,
+		// and a network reading an empty catalogue takes the whole shop down
+		// from its listings. A shop really can empty — but when it does, the
+		// feed that was there yesterday is the safer thing to keep until
+		// somebody has looked.
+		if ( 0 === (int) $feed['items'] && (int) $feed['made'] > 0 && file_exists( $final ) ) {
+			self::sweep_parts( $key );
+
+			return;
+		}
+
 		sort( $files, SORT_STRING );
 
 		file_put_contents( $part, self::head( $feed ) ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- this plugin's own feed file.
@@ -241,6 +252,17 @@ final class Build {
 		rename( $part, $final ); // phpcs:ignore WordPress.WP.AlternativeFunctions.rename_rename -- moving this plugin's own file into place.
 
 		self::sweep_parts( $key );
+	}
+
+	/**
+	 * Throw away everything a feed left on disk.
+	 *
+	 * @param string $key Feed key.
+	 */
+	public static function forget( string $key ): void {
+		self::sweep_parts( $key );
+		self::unlock( $key );
+		delete_transient( 'oc_feed_ids_' . $key );
 	}
 
 	/**

@@ -276,6 +276,8 @@ final class Feeds {
 			wp_delete_file( $file );
 		}
 
+		Build::forget( $key );
+
 		unset( $all[ $key ] );
 		update_option( self::OPTION, $all, false );
 	}
@@ -304,9 +306,30 @@ final class Feeds {
 
 		if ( ! is_dir( $dir ) ) {
 			wp_mkdir_p( $dir );
+			self::shut( $dir );
 		}
 
 		return $dir . '/' . sanitize_key( $key ) . '.' . ( 'csv' === $format ? 'csv' : 'xml' );
+	}
+
+	/**
+	 * Close a folder to the outside.
+	 *
+	 * A feed has one address, and it is the one this plugin serves with the
+	 * right headers. A second way in — the file sitting in the uploads
+	 * folder — is how a network ends up reading a copy nobody is refreshing,
+	 * which is the fault that had a shop advertising deleted products.
+	 *
+	 * @param string $dir Directory.
+	 */
+	private static function shut( string $dir ): void {
+		if ( ! file_exists( $dir . '/index.php' ) ) {
+			file_put_contents( $dir . '/index.php', "<?php\n// Silence.\n" ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- this plugin's own folder.
+		}
+
+		if ( ! file_exists( $dir . '/.htaccess' ) ) {
+			file_put_contents( $dir . '/.htaccess', "Deny from all\n" ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- this plugin's own folder.
+		}
 	}
 
 	/**
