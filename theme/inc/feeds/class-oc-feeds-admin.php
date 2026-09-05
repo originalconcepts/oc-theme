@@ -607,18 +607,20 @@ final class Admin {
 				} ).catch( function () { said.textContent = T.failed; } );
 			} );
 
-			// A feed that was still building when the page opened keeps
-			// telling you where it has got to, and finishes on its own.
+			// A feed that was already building when the page opened is left to
+			// the schedule; this only reports where it has got to. Driving the
+			// batches from here as well would put the browser in a tight loop
+			// against a catalogue of thirty thousand.
 			document.querySelectorAll( '[data-ocfeed-state="running"]' ).forEach( function ( row ) {
 				var key = row.getAttribute( 'data-ocfeed-row' );
 				var meta = row.querySelector( '[data-ocfeed-meta]' );
 
-				( function tick() {
+				( function watch() {
 					post( 'ocfeed_state', { key: key } ).then( function ( r ) {
 						var d = r && r.data ? r.data : {};
 						if ( 'running' !== d.state ) { window.location.reload(); return; }
 						meta.textContent = sprintf( T.progress, d.done, d.total );
-						post( 'ocfeed_run', { key: key } ).then( tick );
+						window.setTimeout( watch, 4000 );
 					} ).catch( function () {} );
 				}() );
 			} );
