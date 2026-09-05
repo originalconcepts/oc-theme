@@ -124,7 +124,7 @@ final class Product {
 
 		$nonce = sanitize_text_field( wp_unslash( (string) $_POST['oc_feeds_product_nonce'] ) );
 
-		if ( ! wp_verify_nonce( $nonce, 'oc_feeds_product' ) || ! current_user_can( 'edit_product', $id ) ) {
+		if ( ! wp_verify_nonce( $nonce, 'oc_feeds_product' ) || ! current_user_can( 'edit_post', $id ) ) {
 			return;
 		}
 
