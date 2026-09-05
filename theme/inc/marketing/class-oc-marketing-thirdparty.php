@@ -60,8 +60,34 @@ final class Third_Party {
 			return false;
 		}
 
-		// Only when the plugin that prints the snippet is actually here.
-		return defined( 'FLASHY_VERSION' ) || class_exists( 'Flashy' ) || function_exists( 'flashy_init' );
+		return self::plugged();
+	}
+
+	/**
+	 * Is the plugin that prints the snippet actually active?
+	 *
+	 * It announces itself through no constant, class or function of its
+	 * own — checked, on the shop, and it defines none of them — so the
+	 * active list is what there is to go on. Matching the folder rather
+	 * than the exact file survives the plugin being updated or renamed.
+	 */
+	private static function plugged(): bool {
+		foreach ( (array) get_option( 'active_plugins', array() ) as $one ) {
+			if ( false !== stripos( (string) $one, 'flashy' ) ) {
+				return true;
+			}
+		}
+
+		// A network activation keeps its list somewhere else entirely.
+		if ( is_multisite() ) {
+			foreach ( array_keys( (array) get_site_option( 'active_sitewide_plugins', array() ) ) as $one ) {
+				if ( false !== stripos( (string) $one, 'flashy' ) ) {
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 
 	/**
