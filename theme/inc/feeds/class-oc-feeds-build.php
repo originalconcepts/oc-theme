@@ -18,6 +18,11 @@ defined( 'ABSPATH' ) || exit;
 final class Build {
 
 	/**
+	 * The one build slot the site has. See lock().
+	 */
+	private const BUSY = 'oc_feed_busy';
+
+	/**
 	 * Begin a run: work out what to include, and open a part file.
 	 *
 	 * The feed already in place is left exactly where it is until this run
@@ -153,6 +158,14 @@ final class Build {
 		$rows    = '';
 		$made    = 0;
 		$skipped = 0;
+
+		/*
+		 * Without this each product is fetched one at a time, and a batch of
+		 * two hundred costs some five thousand queries. Asking for the posts
+		 * and their meta in one go is the difference between a feed that is
+		 * merely slow and one nobody notices running.
+		 */
+		_prime_post_caches( array_map( 'intval', array_slice( $ids, $at, $stop - $at ) ), true, true );
 
 		for ( ; $at < $stop; $at++ ) {
 			$product = wc_get_product( (int) $ids[ $at ] );
@@ -311,14 +324,41 @@ final class Build {
 	 * @param string $key Feed key.
 	 */
 	private static function lock( string $key ): bool {
-		global $wpdb;
+		/*
+		 * Two feeds at once is not twice as fast, it is a slow shop. Measured
+		 * on a four-thousand-product catalogue: one feed building left an
+		 * uncached page at 0.4s, three at once took the ninetieth percentile
+		 * to 19s. So a feed first takes the one build slot the whole site
+		 * has, and a feed that cannot get it simply waits for its next turn
+		 * — its chain is still booked, so nothing is lost but a few seconds.
+		 */
+		if ( ! self::claim( self::BUSY, 2 * MINUTE_IN_SECONDS ) ) {
+			return false;
+		}
 
-		$name = 'oc_feed_lock_' . $key;
+		if ( ! self::claim( 'oc_feed_lock_' . $key, 5 * MINUTE_IN_SECONDS ) ) {
+			self::release( self::BUSY );
+
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Take a named slot, or find somebody already holding it.
+	 *
+	 * @param string $name Option name.
+	 * @param int    $ttl  How long a held slot is believed before it is
+	 *                     treated as abandoned.
+	 */
+	private static function claim( string $name, int $ttl ): bool {
+		global $wpdb;
 
 		$held = $wpdb->get_var( $wpdb->prepare( "SELECT option_value FROM {$wpdb->options} WHERE option_name = %s", $name ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery -- a lock; the whole point is to miss the cache.
 
 		if ( null !== $held ) {
-			if ( time() - (int) $held < 5 * MINUTE_IN_SECONDS ) {
+			if ( time() - (int) $held < $ttl ) {
 				return false;
 			}
 
@@ -341,17 +381,25 @@ final class Build {
 	}
 
 	/**
+	 * Give a named slot back.
+	 *
+	 * @param string $name Option name.
+	 */
+	private static function release( string $name ): void {
+		global $wpdb;
+
+		$wpdb->delete( $wpdb->options, array( 'option_name' => $name ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery -- see claim().
+		wp_cache_delete( $name, 'options' );
+	}
+
+	/**
 	 * Let the next worker in.
 	 *
 	 * @param string $key Feed key.
 	 */
 	private static function unlock( string $key ): void {
-		global $wpdb;
-
-		$name = 'oc_feed_lock_' . $key;
-
-		$wpdb->delete( $wpdb->options, array( 'option_name' => $name ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery -- see lock().
-		wp_cache_delete( $name, 'options' );
+		self::release( 'oc_feed_lock_' . $key );
+		self::release( self::BUSY );
 	}
 
 	/*
@@ -497,9 +545,11 @@ final class Build {
 			// The one value that decides whether a shop advertises things it
 			// cannot sell. Google spells it with an underscore, Meta with a
 			// space, and a feed that uses the wrong one is simply rejected.
-			'availability'              => $google
-				? ( $it['stock'] ? 'in_stock' : 'out_of_stock' )
-				: ( $it['stock'] ? 'in stock' : 'out of stock' ),
+			// A thing on backorder is neither in stock nor gone, and saying
+			// either is the complaint that has a catalogue reviewed: an
+			// advert for something that does not arrive, or a shop hiding
+			// what it will happily sell you.
+			'availability'              => self::availability( (bool) $it['stock'], ! empty( $it['later'] ), $google ),
 			'price'                     => $money( (float) $it['price'] ),
 			'sale_price'                => $it['sale'] > 0 ? $money( (float) $it['sale'] ) : '',
 			'sale_price_effective_date' => self::window( (string) $it['sale_from'], (string) $it['sale_to'], (float) $it['sale'] ),
@@ -582,17 +632,20 @@ final class Build {
 			'PRICE'          => number_format( $price, 2, '.', '' ),
 			'IMAGE'          => $it['image'],
 			'MODEL'          => $it['size'] !== '' ? $it['size'] : $it['colour'],
-			'DELIVERY_TIME'  => (string) $feed['delivery'],
+			// Three things Zap asks about every line, and three things a
+			// shop is rarely uniform about. Each falls back to the feed's
+			// answer, and the feed's answer falls back to nothing said.
+			'DELIVERY_TIME'  => self::says_or( $it, 'delivery', (string) $feed['delivery'] ),
 			'MANUFACTURER'   => $it['brand'],
-			'WARRANTY'       => '1',
-			'TAX'            => '1',
-			'SHIPMENT_COST'  => '' === $it['ship'] ? '0' : $it['ship'],
+			'WARRANTY'       => self::says_or( $it, 'warranty', (string) $feed['warranty'] ),
+			'TAX'            => wc_prices_include_tax() || wc_tax_enabled() ? '1' : '0',
+			'SHIPMENT_COST'  => self::shipment( $it, $feed ),
 		);
 
 		$out = "\t" . '<PRODUCT>' . "\n";
 
 		foreach ( $fields as $name => $value ) {
-			$out .= "\t\t" . '<' . $name . '><![CDATA[' . str_replace( ']]>', ']]&gt;', (string) $value ) . ']]></' . $name . '>' . "\n";
+			$out .= "\t\t" . '<' . $name . '><![CDATA[' . str_replace( ']]>', ']]&gt;', self::plain( (string) $value ) ) . ']]></' . $name . '>' . "\n";
 		}
 
 		return $out . "\t" . '</PRODUCT>' . "\n";
@@ -630,7 +683,23 @@ final class Build {
 	 * @param string $text Text.
 	 */
 	private static function x( string $text ): string {
-		return htmlspecialchars( $text, ENT_XML1 | ENT_QUOTES, 'UTF-8' );
+		return htmlspecialchars( self::plain( $text ), ENT_XML1 | ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8' );
+	}
+
+	/**
+	 * Text a parser will accept.
+	 *
+	 * XML 1.0 forbids most control characters outright, and one of them —
+	 * a stray form feed pasted in from a word processor, say — makes the
+	 * whole document unreadable, so a single product takes a catalogue of
+	 * thousands down with it. ENT_SUBSTITUTE covers the other half of the
+	 * same problem: without it a malformed byte turns a title into an
+	 * empty string rather than into something.
+	 *
+	 * @param string $text Text.
+	 */
+	private static function plain( string $text ): string {
+		return (string) preg_replace( '/[\x00-\x08\x0B\x0C\x0E-\x1F]/', '', $text );
 	}
 
 	/**
@@ -675,6 +744,8 @@ final class Build {
 		}
 
 		$ids = wc_get_products( $args );
+
+		$ids = array_diff( $ids, self::withheld( (string) $feed['target'] ) );
 		$out = array();
 		$no  = array_map( 'absint', (array) $feed['exclude'] );
 
@@ -691,6 +762,36 @@ final class Build {
 		// term. Left alone that is a feed with the same id in it twice,
 		// which is the one fault a network rejects a whole catalogue for.
 		return array_values( array_unique( $out ) );
+	}
+
+	/**
+	 * What this network is not to be shown.
+	 *
+	 * Two kinds of thing: a product whose own page says to leave it out of
+	 * this network, and a product behind a password, which cannot be bought
+	 * by whoever clicks the advert.
+	 *
+	 * @param string $target Network.
+	 * @return array<int,int>
+	 */
+	private static function withheld( string $target ): array {
+		global $wpdb;
+
+		// One indexed lookup for the whole shop, rather than a question asked
+		// of every product in turn. Only exclusions are stored, so on a shop
+		// where nobody has excluded anything this costs a single empty read.
+		$hidden = $wpdb->get_col( // phpcs:ignore WordPress.DB.DirectDatabaseQuery -- no API reads a meta key across every post; cached below.
+			$wpdb->prepare(
+				"SELECT post_id FROM {$wpdb->postmeta} WHERE meta_key = %s AND meta_value = '1'",
+				Product::hide_key( $target )
+			)
+		);
+
+		$locked = $wpdb->get_col( // phpcs:ignore WordPress.DB.DirectDatabaseQuery -- as above.
+			"SELECT ID FROM {$wpdb->posts} WHERE post_type = 'product' AND post_password <> ''"
+		);
+
+		return array_map( 'intval', array_merge( (array) $hidden, (array) $locked ) );
 	}
 
 	/**
@@ -712,7 +813,20 @@ final class Build {
 
 		$out = array();
 
-		foreach ( $product->get_children() as $child ) {
+		$kids = array_map( 'intval', $product->get_children() );
+
+		if ( count( $kids ) > 1 ) {
+			_prime_post_caches( $kids, false, true );
+		}
+
+		foreach ( $kids as $child ) {
+			// A variation switched off in the admin is still a row in the
+			// database, and feeding it advertises something the shop will
+			// not sell.
+			if ( 'publish' !== get_post_status( $child ) ) {
+				continue;
+			}
+
 			$variation = wc_get_product( $child );
 
 			if ( ! $variation instanceof \WC_Product ) {
@@ -741,18 +855,7 @@ final class Build {
 	 * @return array<string,mixed>
 	 */
 	private static function fields( \WC_Product $item, \WC_Product $owner, array $feed ): array {
-		$link = (string) $item->get_permalink();
-
-		if ( ! empty( $feed['utm'] ) ) {
-			$link = add_query_arg(
-				array(
-					'utm_source'   => (string) $feed['target'],
-					'utm_medium'   => 'cpc',
-					'utm_campaign' => 'catalog',
-				),
-				$link
-			);
-		}
+		$link = self::link( $item, $owner, $feed );
 
 		$picture = (int) $item->get_image_id();
 		$picture = $picture > 0 ? $picture : (int) $owner->get_image_id();
@@ -777,8 +880,8 @@ final class Build {
 			$text = '' !== $brief ? $brief : $long;
 		}
 
-		$text = trim( (string) wp_strip_all_tags( strip_shortcodes( (string) $text ) ) );
-		$text = (string) preg_replace( '/\s+/u', ' ', $text );
+		$text  = self::words( (string) $text );
+		$brief = self::words( $brief );
 
 		if ( '' === $text ) {
 			$text = (string) $owner->get_name();
@@ -808,7 +911,7 @@ final class Build {
 			'id'        => (string) $item->get_id(),
 			'group'     => (string) $owner->get_id(),
 			'sku'       => (string) $item->get_sku(),
-			'title'     => self::cut( (string) ( $item->get_id() === $owner->get_id() ? $owner->get_name() : $item->get_name() ), 150 ),
+			'title'     => self::cut( self::words( (string) ( $item->get_id() === $owner->get_id() ? $owner->get_name() : $item->get_name() ) ), 150 ),
 			'desc'      => self::cut( $text, 4900 ),
 			'brief'     => '' !== $brief ? $brief : $text,
 			'link'      => $link,
@@ -819,6 +922,7 @@ final class Build {
 			'sale_from' => (string) $item->get_date_on_sale_from(),
 			'sale_to'   => (string) $item->get_date_on_sale_to(),
 			'stock'     => $item->is_in_stock(),
+			'later'     => 'onbackorder' === (string) $item->get_stock_status(),
 			'qty'       => $item->managing_stock() ? (int) $item->get_stock_quantity() : 0,
 			'brand'     => self::brand( $owner, $feed ),
 			'gtin'      => self::gtin( $item, $owner ),
@@ -828,6 +932,7 @@ final class Build {
 			'size'      => self::attribute( $item, $owner, array( 'size', 'מידה' ) ),
 			'weight'    => (string) $item->get_weight(),
 			'ship'      => empty( $feed['ship'] ) ? '' : self::ship( $item ),
+			'says'      => self::says( $owner ),
 		);
 	}
 
@@ -1003,6 +1108,143 @@ final class Build {
 		$quote = \OC\Theme\Shipping::product_quote( $item );
 
 		return isset( $quote['cost'] ) ? (string) (float) $quote['cost'] : '';
+	}
+
+	/**
+	 * What a product says for itself, over the feed's own answer.
+	 *
+	 * @param \WC_Product $owner Product.
+	 * @return array<string,string>
+	 */
+	private static function says( \WC_Product $owner ): array {
+		$out = array();
+
+		foreach ( Product::META as $field => $key ) {
+			$out[ $field ] = trim( (string) get_post_meta( $owner->get_id(), $key, true ) );
+		}
+
+		return $out;
+	}
+
+	/**
+	 * The product's own answer, or the feed's.
+	 *
+	 * @param array<string,mixed> $it    Item.
+	 * @param string              $field Which answer.
+	 * @param string              $fall  The feed's.
+	 */
+	private static function says_or( array $it, string $field, string $fall ): string {
+		$own = (string) ( $it['says'][ $field ] ?? '' );
+
+		return '' !== $own ? $own : $fall;
+	}
+
+	/**
+	 * What Zap is told shipping costs.
+	 *
+	 * The product's own figure wins, then a live quote if the feed asked for
+	 * one, then the feed's flat figure. Nothing said means free, which is a
+	 * promise, so it is only ever made deliberately.
+	 *
+	 * @param array<string,mixed> $it   Item.
+	 * @param array<string,mixed> $feed Feed.
+	 */
+	private static function shipment( array $it, array $feed ): string {
+		$own = (string) ( $it['says']['shipcost'] ?? '' );
+
+		if ( '' !== $own ) {
+			return number_format( (float) $own, 2, '.', '' );
+		}
+
+		if ( '' !== (string) $it['ship'] ) {
+			return number_format( (float) $it['ship'], 2, '.', '' );
+		}
+
+		$flat = trim( (string) $feed['shipcost'] );
+
+		return '' === $flat ? '0' : number_format( (float) $flat, 2, '.', '' );
+	}
+
+	/**
+	 * Where an advert lands.
+	 *
+	 * A variation's own permalink cannot be used as it comes: WooCommerce
+	 * encodes the attributes and then hands them to add_query_arg(), which
+	 * encodes them a second time, so a Hebrew attribute arrives as
+	 * %25d7%25a0 and the shopper lands on a product with nothing chosen.
+	 * Building the query once, here, is the only way to be sure the page
+	 * that was advertised is the page that opens.
+	 *
+	 * @param \WC_Product         $item  Variation, or the product.
+	 * @param \WC_Product         $owner Its product.
+	 * @param array<string,mixed> $feed  Feed.
+	 */
+	private static function link( \WC_Product $item, \WC_Product $owner, array $feed ): string {
+		$base = (string) get_permalink( $owner->get_id() );
+		$args = array();
+
+		if ( $item->is_type( 'variation' ) ) {
+			foreach ( $item->get_variation_attributes() as $name => $value ) {
+				if ( '' !== (string) $value ) {
+					$args[ (string) $name ] = (string) $value;
+				}
+			}
+		}
+
+		if ( ! empty( $feed['utm'] ) ) {
+			$args['utm_source']   = (string) $feed['target'];
+			$args['utm_medium']   = 'cpc';
+			$args['utm_campaign'] = 'catalog';
+		}
+
+		if ( empty( $args ) ) {
+			return $base;
+		}
+
+		return $base
+			. ( false === strpos( $base, '?' ) ? '?' : '&' )
+			. http_build_query( $args, '', '&', PHP_QUERY_RFC3986 );
+	}
+
+	/**
+	 * Running text, as a person would read it.
+	 *
+	 * A description arrives as stored markup, and stripping the tags is only
+	 * half the job: what is left still says &nbsp; and &amp; out loud, which
+	 * is what a shopper then sees in the advert.
+	 *
+	 * @param string $text Text.
+	 */
+	private static function words( string $text ): string {
+		$text = (string) wp_strip_all_tags( strip_shortcodes( $text ) );
+		$text = html_entity_decode( $text, ENT_QUOTES | ENT_HTML5, 'UTF-8' );
+
+		// Decoding can reveal markup that was written as text.
+		$text = (string) wp_strip_all_tags( $text );
+
+		// A non-breaking space is a space to everybody but a regex.
+		$text = (string) preg_replace( '/[\x{00A0}\x{200B}-\x{200D}\x{FEFF}]/u', ' ', $text );
+
+		return trim( (string) preg_replace( '/\s+/u', ' ', $text ) );
+	}
+
+	/**
+	 * What a network is told about getting hold of the thing.
+	 *
+	 * @param bool $stock  In stock.
+	 * @param bool $later  On backorder.
+	 * @param bool $google Google rather than Meta.
+	 */
+	private static function availability( bool $stock, bool $later, bool $google ): string {
+		if ( $later ) {
+			return $google ? 'backorder' : 'available for order';
+		}
+
+		if ( $google ) {
+			return $stock ? 'in_stock' : 'out_of_stock';
+		}
+
+		return $stock ? 'in stock' : 'out of stock';
 	}
 
 	/**

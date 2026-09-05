@@ -282,9 +282,23 @@ final class Admin {
 							<input type="text" id="ocfeed-delivery" class="regular-text" placeholder="<?php esc_attr_e( 'e.g. 3-5 working days', 'oc-theme' ); ?>">
 						</label>
 
+						<label class="ocfeed__f" data-ocfeed-only="zap">
+							<span><?php esc_html_e( 'Who gives the warranty', 'oc-theme' ); ?>
+								<small><?php esc_html_e( 'A product can say otherwise on its own page.', 'oc-theme' ); ?></small>
+							</span>
+							<input type="text" id="ocfeed-warranty" class="regular-text" placeholder="<?php esc_attr_e( 'e.g. one year, importer', 'oc-theme' ); ?>">
+						</label>
+
+						<label class="ocfeed__f" data-ocfeed-only="zap">
+							<span><?php esc_html_e( 'Shipping price', 'oc-theme' ); ?>
+								<small><?php esc_html_e( 'Left empty and free shipping is declared.', 'oc-theme' ); ?></small>
+							</span>
+							<input type="text" id="ocfeed-shipcost" class="regular-text ltr" placeholder="<?php esc_attr_e( 'e.g. 49', 'oc-theme' ); ?>">
+						</label>
+
 						<label class="ocfeed__f ocfeed__check" data-ocfeed-only="zap">
 							<input type="checkbox" id="ocfeed-ship">
-							<span><?php esc_html_e( 'Include the shipping price', 'oc-theme' ); ?></span>
+							<span><?php esc_html_e( 'Work the shipping price out per product', 'oc-theme' ); ?></span>
 						</label>
 
 						<label class="ocfeed__f">
@@ -405,6 +419,8 @@ final class Admin {
 			'brand'    => (string) $feed['brand'],
 			'gcat'     => (string) $feed['gcat'],
 			'delivery' => (string) $feed['delivery'],
+			'warranty' => (string) $feed['warranty'],
+			'shipcost' => (string) $feed['shipcost'],
 			'in_stock' => (int) $feed['in_stock'],
 			'variants' => (int) $feed['variants'],
 			'ship'     => (int) $feed['ship'],
@@ -537,6 +553,8 @@ final class Admin {
 				document.getElementById( 'ocfeed-brand' ).value = feed.brand || '';
 				document.getElementById( 'ocfeed-gcat' ).value = feed.gcat || '';
 				document.getElementById( 'ocfeed-delivery' ).value = feed.delivery || '';
+				document.getElementById( 'ocfeed-warranty' ).value = feed.warranty || '';
+				document.getElementById( 'ocfeed-shipcost' ).value = feed.shipcost || '';
 				document.getElementById( 'ocfeed-instock' ).checked = !! Number( feed.in_stock );
 				document.getElementById( 'ocfeed-variants' ).checked = undefined === feed.variants ? true : !! Number( feed.variants );
 				document.getElementById( 'ocfeed-ship' ).checked = !! Number( feed.ship );
@@ -596,6 +614,8 @@ final class Admin {
 						brand: document.getElementById( 'ocfeed-brand' ).value,
 						gcat: document.getElementById( 'ocfeed-gcat' ).value,
 						delivery: document.getElementById( 'ocfeed-delivery' ).value,
+						warranty: document.getElementById( 'ocfeed-warranty' ).value,
+						shipcost: document.getElementById( 'ocfeed-shipcost' ).value,
 						in_stock: document.getElementById( 'ocfeed-instock' ).checked ? 1 : 0,
 						variants: document.getElementById( 'ocfeed-variants' ).checked ? 1 : 0,
 						ship: document.getElementById( 'ocfeed-ship' ).checked ? 1 : 0,

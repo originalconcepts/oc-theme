@@ -188,6 +188,8 @@ final class Feeds {
 			'desc'      => 'short',
 			'gcat'      => '',
 			'delivery'  => '',
+			'warranty'  => '',
+			'shipcost'  => '',
 			'made'      => 0,
 			'items'     => 0,
 			'skipped'   => 0,
@@ -229,6 +231,8 @@ final class Feeds {
 		$out['brand']     = sanitize_text_field( (string) ( $raw['brand'] ?? '' ) );
 		$out['gcat']      = sanitize_text_field( (string) ( $raw['gcat'] ?? '' ) );
 		$out['delivery']  = sanitize_text_field( (string) ( $raw['delivery'] ?? '' ) );
+		$out['warranty']  = sanitize_text_field( (string) ( $raw['warranty'] ?? '' ) );
+		$out['shipcost']  = sanitize_text_field( (string) ( $raw['shipcost'] ?? '' ) );
 		$out['error']     = sanitize_text_field( (string) ( $raw['error'] ?? '' ) );
 		$out['condition'] = in_array( (string) ( $raw['condition'] ?? '' ), array( 'new', 'refurbished', 'used' ), true ) ? (string) $raw['condition'] : 'new';
 		$out['desc']      = in_array( (string) ( $raw['desc'] ?? '' ), array( 'short', 'long' ), true ) ? (string) $raw['desc'] : 'short';
