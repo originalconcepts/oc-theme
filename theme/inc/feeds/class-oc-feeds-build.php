@@ -32,6 +32,12 @@ final class Build {
 			return;
 		}
 
+		// Wait for a batch in flight to finish before pulling the ground out
+		// from under it.
+		if ( ! self::lock( $key ) ) {
+			return;
+		}
+
 		$ids = self::ids( $feed );
 		$run = (string) time() . wp_generate_password( 4, false, false );
 
@@ -48,6 +54,7 @@ final class Build {
 		$feed['error']   = '';
 
 		Feeds::put( $key, $feed );
+		self::unlock( $key );
 	}
 
 	/**
@@ -112,12 +119,12 @@ final class Build {
 		}
 
 		// The screen drives batches while it is open and the schedule drives
-		// them in the background. The lock keeps them out of each other's way
-		// most of the time, but correctness does not rest on it: a batch is
-		// written to a file named after where it starts, so two workers that
-		// pick up the same range write the same file rather than the same
-		// products twice.
-		self::lock( $key );
+		// them in the background, and two workers on one feed ruin it either
+		// way: they repeat products, or one of them decides the run is over
+		// and clears away batches the other has not written yet.
+		if ( ! self::lock( $key ) ) {
+			return;
+		}
 
 		$ids = get_transient( 'oc_feed_ids_' . $key );
 
@@ -262,16 +269,45 @@ final class Build {
 	}
 
 	/**
-	 * Note that a build is going on.
+	 * Take the build lock, or say that somebody else holds it.
 	 *
-	 * Advisory only. WordPress has no lock this could be built on —
-	 * add_option() ends in ON DUPLICATE KEY UPDATE and happily succeeds
-	 * for the second caller — so the batch files carry the safety instead.
+	 * The options table's unique key on option_name is the only thing in
+	 * WordPress that can settle this: INSERT IGNORE either creates the row
+	 * or changes nothing, and the row count says which happened. The usual
+	 * candidates do not work — add_option() ends in ON DUPLICATE KEY UPDATE
+	 * and so succeeds for the second caller too, and a get-then-set on a
+	 * transient leaves a window both callers walk through.
 	 *
 	 * @param string $key Feed key.
 	 */
-	private static function lock( string $key ): void {
-		update_option( 'oc_feed_lock_' . $key, time(), false );
+	private static function lock( string $key ): bool {
+		global $wpdb;
+
+		$name = 'oc_feed_lock_' . $key;
+
+		$held = $wpdb->get_var( $wpdb->prepare( "SELECT option_value FROM {$wpdb->options} WHERE option_name = %s", $name ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery -- a lock; the whole point is to miss the cache.
+
+		if ( null !== $held ) {
+			if ( time() - (int) $held < 5 * MINUTE_IN_SECONDS ) {
+				return false;
+			}
+
+			// Whoever held it is long gone.
+			$wpdb->delete( $wpdb->options, array( 'option_name' => $name ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery -- as above.
+			wp_cache_delete( $name, 'options' );
+		}
+
+		$made = $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery -- as above.
+			$wpdb->prepare(
+				"INSERT IGNORE INTO {$wpdb->options} (option_name, option_value, autoload) VALUES (%s, %s, 'no')",
+				$name,
+				(string) time()
+			)
+		);
+
+		wp_cache_delete( $name, 'options' );
+
+		return 1 === (int) $made;
 	}
 
 	/**
@@ -280,7 +316,12 @@ final class Build {
 	 * @param string $key Feed key.
 	 */
 	private static function unlock( string $key ): void {
-		delete_option( 'oc_feed_lock_' . $key );
+		global $wpdb;
+
+		$name = 'oc_feed_lock_' . $key;
+
+		$wpdb->delete( $wpdb->options, array( 'option_name' => $name ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery -- see lock().
+		wp_cache_delete( $name, 'options' );
 	}
 
 	/*
