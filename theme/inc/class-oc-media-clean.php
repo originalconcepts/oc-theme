@@ -1985,6 +1985,7 @@ final class Media_Clean {
 	 * @param string $have  'no' for pictures still to convert, 'yes' for the converted.
 	 * @param string $url   One page to look at; empty means the whole library.
 	 * @param int    $limit Longest list to return.
+	 * @param int    $floor Smallest file to list, in bytes. 0 for all.
 	 * @return array<string,mixed>
 	 */
 	public static function by_format( string $have, string $url = '', int $limit = 300, int $floor = 0 ): array {

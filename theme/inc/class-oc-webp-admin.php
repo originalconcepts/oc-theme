@@ -496,9 +496,11 @@ final class Webp_Admin {
 			var rTimer = null;
 			var rLast  = null;
 
-			/* Built into the results, under the line the search prints. Only
-			   the to-convert list over the whole library can offer it: a run
-			   works on the library, not on one page. */
+			/*
+			 * Built into the results, under the line the search prints. Only
+			 * the to-convert list over the whole library can offer it: a run
+			 * works on the library, not on one page.
+			 */
 			function runBox( d ) {
 				if ( 'no' !== have || d.page || ! d.total ) { return ''; }
 
