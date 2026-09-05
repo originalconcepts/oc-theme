@@ -68,6 +68,7 @@ final class Feeds {
 		add_action( 'init', array( $this, 'rewrite' ) );
 		add_filter( 'query_vars', array( $this, 'query_var' ) );
 		add_action( 'init', array( $this, 'serve' ), 5 );
+		add_action( 'parse_request', array( $this, 'serve_request' ) );
 		add_action( 'admin_init', array( $this, 'once' ) );
 	}
 
@@ -369,14 +370,35 @@ final class Feeds {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- a public address, like any feed.
 		$key = isset( $_GET['oc_feed'] ) ? sanitize_key( wp_unslash( $_GET['oc_feed'] ) ) : '';
 
-		if ( '' === $key ) {
-			$key = sanitize_key( (string) get_query_var( 'oc_feed' ) );
+		if ( '' !== $key ) {
+			$this->send( $key );
 		}
+	}
 
-		if ( '' === $key ) {
-			return;
+	/**
+	 * The same, for the address with a name and an extension.
+	 *
+	 * It has to happen here rather than later: WordPress would otherwise
+	 * add a trailing slash to /oc-feed/meta-abc.xml on its way to the
+	 * canonical form, and the address a network was given would answer
+	 * with a redirect to a page instead of a feed.
+	 *
+	 * @param \WP $wp The request.
+	 */
+	public function serve_request( \WP $wp ): void {
+		$key = isset( $wp->query_vars['oc_feed'] ) ? sanitize_key( (string) $wp->query_vars['oc_feed'] ) : '';
+
+		if ( '' !== $key ) {
+			$this->send( $key );
 		}
+	}
 
+	/**
+	 * Hand one feed's file over.
+	 *
+	 * @param string $key Feed key.
+	 */
+	private function send( string $key ): void {
 		$feed = self::get( $key );
 
 		if ( null === $feed ) {
