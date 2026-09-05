@@ -7221,3 +7221,12 @@ msgstr "Flashy מושכת את הספרייה שלה בזמן שהעמוד עד�
 
 msgid "The cost is a visitor who opens the page and leaves within a couple of seconds without touching it — their page view may never be sent."
 msgstr "המחיר הוא מבקר שפותח את העמוד ועוזב תוך שניות ספורות בלי לגעת בו — צפיית העמוד שלו עלולה לא להישלח כלל."
+
+msgid "Wait before loading it anyway (milliseconds)"
+msgstr "המתנה לפני טעינה בכל מקרה (מילישניות)"
+
+msgid "Counted from the moment the page finishes. Any touch, scroll or key loads it at once and this never runs. Below about 6000 the tag lands back inside the window a speed test measures and the whole thing buys nothing."
+msgstr "נספר מהרגע שהעמוד מסיים. כל נגיעה, גלילה או הקשה טוענת אותה מיד וההמתנה לא רצה כלל. מתחת ל‑6000 בערך התגית חוזרת לתוך החלון שבדיקת מהירות מודדת, וכל העניין לא שווה כלום."
+
+msgid "The cost is a visitor who opens the page and leaves before the wait is out without touching it — their page view is never sent."
+msgstr "המחיר הוא מבקר שפותח את העמוד ועוזב לפני שההמתנה נגמרה בלי לגעת בו — צפיית העמוד שלו לא נשלחת כלל."

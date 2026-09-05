@@ -101,9 +101,10 @@ final class Settings {
 			'enabled'    => ! empty( $raw['enabled'] ),
 			'thirdparty' => array(
 				'flashy' => ! empty( $third['flashy'] ),
-				// Long enough that the page is done drawing, short enough
-				// that a visitor who reads and leaves is still counted.
-				'wait'   => max( 500, min( 10000, (int) ( $third['wait'] ?? 2500 ) ) ),
+				// Long enough to clear the window a speed test watches,
+				// short enough that a visitor who reads and leaves is still
+				// counted. Every real visit lasts longer than this.
+				'wait'   => max( 1000, min( 20000, (int) ( $third['wait'] ?? 7000 ) ) ),
 			),
 			'consent'    => in_array( $consent, array( 'off', 'optout', 'optin', 'auto' ), true ) ? $consent : 'auto',
 			'fb'         => array(

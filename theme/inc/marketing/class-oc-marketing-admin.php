@@ -92,7 +92,10 @@ final class Marketing_Admin {
 				<h2><?php esc_html_e( 'Other marketing tags', 'oc-theme' ); ?></h2>
 				<label class="ocmkt-check"><input type="checkbox" name="thirdparty[flashy]" value="1" <?php checked( $s['thirdparty']['flashy'] ); ?> /><span><?php esc_html_e( 'Hold the Flashy tag back until the page has drawn', 'oc-theme' ); ?></span></label>
 				<p class="description"><?php esc_html_e( 'Flashy fetches its library while the page is still painting, and running it is the heaviest thing on the phone at that moment. With this on, the tag is fetched once the page has finished and the visitor is idle — or the instant they touch anything. Nothing is dropped: the events queue up and are sent as soon as it arrives.', 'oc-theme' ); ?></p>
-				<p class="description"><?php esc_html_e( 'The cost is a visitor who opens the page and leaves within a couple of seconds without touching it — their page view may never be sent.', 'oc-theme' ); ?></p>
+				<p class="description"><?php esc_html_e( 'The cost is a visitor who opens the page and leaves before the wait is out without touching it — their page view is never sent.', 'oc-theme' ); ?></p>
+				<div class="ocmkt-grid">
+					<?php $field( 'thirdparty[wait]', (string) $s['thirdparty']['wait'], __( 'Wait before loading it anyway (milliseconds)', 'oc-theme' ), __( 'Counted from the moment the page finishes. Any touch, scroll or key loads it at once and this never runs. Below about 6000 the tag lands back inside the window a speed test measures and the whole thing buys nothing.', 'oc-theme' ), '7000' ); ?>
+				</div>
 			</div>
 
 			<div class="ocmkt-card">
@@ -225,6 +228,7 @@ final class Marketing_Admin {
 			'tiktok'     => array_map( 'sanitize_text_field', array_map( 'wp_unslash', (array) ( $_POST['tiktok'] ?? array() ) ) ),
 			'thirdparty' => array(
 				'flashy' => ! empty( $_POST['thirdparty']['flashy'] ),
+				'wait'   => (int) ( $_POST['thirdparty']['wait'] ?? 7000 ),
 			),
 			'events'     => array(
 				'scroll' => ! empty( $_POST['events']['scroll'] ),

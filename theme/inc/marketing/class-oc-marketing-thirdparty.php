@@ -154,16 +154,16 @@ final class Third_Party {
 				window.addEventListener( e, go, { passive: true, capture: true } );
 			} );
 
-			// And for the visitor who only reads: after the page has
-			// finished, at the first quiet moment, and in any case before
-			// the wait is out. Idle alone would fire inside the very window
-			// this is meant to keep clear, so it waits for load first.
+			// And for the visitor who only reads: a plain timer from the
+			// moment the page finished.
+			//
+			// This used to ask for an idle moment instead, which was the
+			// whole bug: on a page that has gone quiet the idle callback
+			// fires within milliseconds of load, so the tag still ran
+			// inside the window a speed test measures, and the deferral
+			// bought nothing. A timer is the only thing that really waits.
 			function arm() {
-				if ( window.requestIdleCallback ) {
-					window.requestIdleCallback( go, { timeout: wait } );
-				} else {
-					window.setTimeout( go, wait );
-				}
+				window.setTimeout( go, wait );
 			}
 
 			if ( 'complete' === document.readyState ) { arm(); }
