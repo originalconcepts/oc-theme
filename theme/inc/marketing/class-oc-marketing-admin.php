@@ -216,17 +216,17 @@ final class Marketing_Admin {
 
 		// phpcs:disable WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput -- check_admin_referer() ran; Settings::normalize() types and bounds every field.
 		$raw = array(
-			'enabled' => ! empty( $_POST['enabled'] ),
-			'consent' => sanitize_key( (string) wp_unslash( $_POST['consent'] ?? 'auto' ) ),
-			'fb'      => array_map( 'sanitize_text_field', array_map( 'wp_unslash', (array) ( $_POST['fb'] ?? array() ) ) ),
-			'ga4'     => array_map( 'sanitize_text_field', array_map( 'wp_unslash', (array) ( $_POST['ga4'] ?? array() ) ) ),
-			'gads'    => array_map( 'sanitize_text_field', array_map( 'wp_unslash', (array) ( $_POST['gads'] ?? array() ) ) ),
-			'gtm'     => array_map( 'sanitize_text_field', array_map( 'wp_unslash', (array) ( $_POST['gtm'] ?? array() ) ) ),
-			'tiktok'  => array_map( 'sanitize_text_field', array_map( 'wp_unslash', (array) ( $_POST['tiktok'] ?? array() ) ) ),
+			'enabled'    => ! empty( $_POST['enabled'] ),
+			'consent'    => sanitize_key( (string) wp_unslash( $_POST['consent'] ?? 'auto' ) ),
+			'fb'         => array_map( 'sanitize_text_field', array_map( 'wp_unslash', (array) ( $_POST['fb'] ?? array() ) ) ),
+			'ga4'        => array_map( 'sanitize_text_field', array_map( 'wp_unslash', (array) ( $_POST['ga4'] ?? array() ) ) ),
+			'gads'       => array_map( 'sanitize_text_field', array_map( 'wp_unslash', (array) ( $_POST['gads'] ?? array() ) ) ),
+			'gtm'        => array_map( 'sanitize_text_field', array_map( 'wp_unslash', (array) ( $_POST['gtm'] ?? array() ) ) ),
+			'tiktok'     => array_map( 'sanitize_text_field', array_map( 'wp_unslash', (array) ( $_POST['tiktok'] ?? array() ) ) ),
 			'thirdparty' => array(
 				'flashy' => ! empty( $_POST['thirdparty']['flashy'] ),
 			),
-			'events'  => array(
+			'events'     => array(
 				'scroll' => ! empty( $_POST['events']['scroll'] ),
 				'video'  => ! empty( $_POST['events']['video'] ),
 				'search' => ! empty( $_POST['events']['search'] ),
