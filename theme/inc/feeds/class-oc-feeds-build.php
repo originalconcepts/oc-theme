@@ -1183,7 +1183,7 @@ final class Build {
 		$base = (string) get_permalink( $owner->get_id() );
 		$args = array();
 
-		if ( $item->is_type( 'variation' ) ) {
+		if ( $item instanceof \WC_Product_Variation ) {
 			foreach ( $item->get_variation_attributes() as $name => $value ) {
 				if ( '' !== (string) $value ) {
 					$args[ (string) $name ] = (string) $value;
