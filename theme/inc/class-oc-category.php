@@ -206,6 +206,18 @@ class Category {
 		$hero_on = self::has_hero( $h );
 
 		if ( $hero_on ) {
+			// It is the page's largest paint, and the parser does not reach
+			// it until the stylesheets are done. Measured on a category of a
+			// live shop: unannounced, the hero finished at 19s, because a
+			// screenful of product thumbnails had the connection first.
+			add_action(
+				'wp_head',
+				function () use ( $h ): void {
+					self::rush( $h );
+				},
+				2
+			);
+
 			// The hero carries the H1 and the description, so hide Woo's own.
 			add_filter( 'woocommerce_show_page_title', '__return_false' );
 			remove_action( 'woocommerce_archive_description', 'woocommerce_taxonomy_archive_description', 10 );
@@ -343,6 +355,50 @@ class Category {
 			. '<div class="oc-chero__media">' . self::picture( $h, $term->name ) . $shade . '</div>'
 			. $words
 			. '</section>';
+	}
+
+	/**
+	 * Tell the browser about the hero before the parser reaches it.
+	 *
+	 * @param array<string,mixed> $h Hero settings.
+	 */
+	private static function rush( array $h ): void {
+		$wide = (string) wp_get_attachment_image_url( $h['img'], 'full' );
+
+		if ( '' === $wide ) {
+			return;
+		}
+
+		$phone = $h['imgm'] > 0 ? (string) wp_get_attachment_image_url( $h['imgm'], 'full' ) : '';
+
+		// With two pictures each has to name the screen it is for, or a
+		// phone fetches both and the announcement costs more than it saves.
+		if ( '' !== $phone ) {
+			self::rush_one( $phone, (int) $h['imgm'], '(max-width: 700px)' );
+			self::rush_one( $wide, (int) $h['img'], '(min-width: 701px)' );
+
+			return;
+		}
+
+		self::rush_one( $wide, (int) $h['img'], '' );
+	}
+
+	/**
+	 * One preload line.
+	 *
+	 * @param string $url   Picture.
+	 * @param int    $id    Attachment.
+	 * @param string $media Which screen it is for, or ''.
+	 */
+	private static function rush_one( string $url, int $id, string $media ): void {
+		$set = (string) wp_get_attachment_image_srcset( $id, 'full' );
+
+		printf(
+			'<link rel="preload" as="image" href="%s"%s%s fetchpriority="high">' . "\n",
+			esc_url( $url ),
+			'' === $media ? '' : ' media="' . esc_attr( $media ) . '"',
+			'' === $set ? '' : ' imagesrcset="' . esc_attr( $set ) . '" imagesizes="100vw"'
+		);
 	}
 
 	/**
