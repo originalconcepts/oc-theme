@@ -453,7 +453,11 @@ final class Build {
 			}
 		}
 
-		return $out;
+		// The visibility filter joins the product_visibility taxonomy, and a
+		// product carrying more than one of those terms comes back once per
+		// term. Left alone that is a feed with the same id in it twice,
+		// which is the one fault a network rejects a whole catalogue for.
+		return array_values( array_unique( $out ) );
 	}
 
 	/**
