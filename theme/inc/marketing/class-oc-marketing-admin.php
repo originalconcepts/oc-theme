@@ -89,6 +89,13 @@ final class Marketing_Admin {
 			</div>
 
 			<div class="ocmkt-card">
+				<h2><?php esc_html_e( 'Other marketing tags', 'oc-theme' ); ?></h2>
+				<label class="ocmkt-check"><input type="checkbox" name="thirdparty[flashy]" value="1" <?php checked( $s['thirdparty']['flashy'] ); ?> /><span><?php esc_html_e( 'Hold the Flashy tag back until the page has drawn', 'oc-theme' ); ?></span></label>
+				<p class="description"><?php esc_html_e( 'Flashy fetches its library while the page is still painting, and running it is the heaviest thing on the phone at that moment. With this on, the tag is fetched once the page has finished and the visitor is idle — or the instant they touch anything. Nothing is dropped: the events queue up and are sent as soon as it arrives.', 'oc-theme' ); ?></p>
+				<p class="description"><?php esc_html_e( 'The cost is a visitor who opens the page and leaves within a couple of seconds without touching it — their page view may never be sent.', 'oc-theme' ); ?></p>
+			</div>
+
+			<div class="ocmkt-card">
 				<h2><?php esc_html_e( 'Meta (Facebook / Instagram)', 'oc-theme' ); ?></h2>
 				<div class="ocmkt-grid">
 					<?php $field( 'fb[pixel]', $s['fb']['pixel'], __( 'Pixel ID', 'oc-theme' ), '', '1234567890123456' ); ?>
@@ -216,6 +223,9 @@ final class Marketing_Admin {
 			'gads'    => array_map( 'sanitize_text_field', array_map( 'wp_unslash', (array) ( $_POST['gads'] ?? array() ) ) ),
 			'gtm'     => array_map( 'sanitize_text_field', array_map( 'wp_unslash', (array) ( $_POST['gtm'] ?? array() ) ) ),
 			'tiktok'  => array_map( 'sanitize_text_field', array_map( 'wp_unslash', (array) ( $_POST['tiktok'] ?? array() ) ) ),
+			'thirdparty' => array(
+				'flashy' => ! empty( $_POST['thirdparty']['flashy'] ),
+			),
 			'events'  => array(
 				'scroll' => ! empty( $_POST['events']['scroll'] ),
 				'video'  => ! empty( $_POST['events']['video'] ),

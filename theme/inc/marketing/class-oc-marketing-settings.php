@@ -93,33 +93,40 @@ final class Settings {
 		$gtm     = (array) ( $raw['gtm'] ?? array() );
 		$tiktok  = (array) ( $raw['tiktok'] ?? array() );
 		$events  = (array) ( $raw['events'] ?? array() );
+		$third   = (array) ( $raw['thirdparty'] ?? array() );
 		$consent = (string) ( $raw['consent'] ?? 'auto' );
 
 		return array(
-			'version' => self::VERSION,
-			'enabled' => ! empty( $raw['enabled'] ),
-			'consent' => in_array( $consent, array( 'off', 'optout', 'optin', 'auto' ), true ) ? $consent : 'auto',
-			'fb'      => array(
+			'version'    => self::VERSION,
+			'enabled'    => ! empty( $raw['enabled'] ),
+			'thirdparty' => array(
+				'flashy' => ! empty( $third['flashy'] ),
+				// Long enough that the page is done drawing, short enough
+				// that a visitor who reads and leaves is still counted.
+				'wait'   => max( 500, min( 10000, (int) ( $third['wait'] ?? 2500 ) ) ),
+			),
+			'consent'    => in_array( $consent, array( 'off', 'optout', 'optin', 'auto' ), true ) ? $consent : 'auto',
+			'fb'         => array(
 				'pixel' => preg_replace( '/\D+/', '', $str( $fb['pixel'] ?? '' ) ),
 				'token' => $str( $fb['token'] ?? '' ),
 				'test'  => $str( $fb['test'] ?? '' ),
 			),
-			'ga4'     => array(
+			'ga4'        => array(
 				'id'     => strtoupper( $str( $ga4['id'] ?? '' ) ),
 				'secret' => $str( $ga4['secret'] ?? '' ),
 			),
-			'gads'    => array(
+			'gads'       => array(
 				'id'    => strtoupper( $str( $gads['id'] ?? '' ) ),
 				'label' => $str( $gads['label'] ?? '' ),
 			),
-			'gtm'     => array(
+			'gtm'        => array(
 				'id' => strtoupper( $str( $gtm['id'] ?? '' ) ),
 			),
-			'tiktok'  => array(
+			'tiktok'     => array(
 				'pixel' => $str( $tiktok['pixel'] ?? '' ),
 				'token' => $str( $tiktok['token'] ?? '' ),
 			),
-			'events'  => array(
+			'events'     => array(
 				'scroll' => ! isset( $events['scroll'] ) || ! empty( $events['scroll'] ),
 				'video'  => ! isset( $events['video'] ) || ! empty( $events['video'] ),
 				'search' => ! isset( $events['search'] ) || ! empty( $events['search'] ),
