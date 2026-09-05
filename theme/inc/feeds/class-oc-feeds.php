@@ -122,6 +122,13 @@ final class Feeds {
 		if ( '1' !== (string) get_option( 'oc_feeds_rules', '' ) ) {
 			self::flush();
 		}
+
+		// Also for folders made before there was anything guarding them.
+		$dir = wp_get_upload_dir()['basedir'] . '/oc-feeds';
+
+		if ( is_dir( $dir ) ) {
+			self::shut( $dir );
+		}
 	}
 
 	/**
