@@ -111,7 +111,7 @@ final class Admin {
 		// phpcs:enable
 
 		if ( $again ) {
-			Build::start( $key );
+			Build::start( $key, true );
 		}
 
 		Build::step( $key );
@@ -335,7 +335,7 @@ final class Admin {
 		foreach ( $feeds as $key => $feed ) {
 			$url = Feeds::url( $key );
 			?>
-			<div class="ocfeed__row" data-ocfeed-row="<?php echo esc_attr( $key ); ?>">
+			<div class="ocfeed__row" data-ocfeed-row="<?php echo esc_attr( $key ); ?>" data-ocfeed-state="<?php echo esc_attr( (string) $feed['state'] ); ?>">
 				<div class="ocfeed__who-tag ocfeed__who-tag--<?php echo esc_attr( (string) $feed['target'] ); ?>">
 					<?php echo esc_html( self::target_name( (string) $feed['target'] ) ); ?>
 				</div>
@@ -375,19 +375,41 @@ final class Admin {
 					<?php endif; ?>
 				</div>
 
-				<div class="ocfeed__link">
-					<input type="text" readonly value="<?php echo esc_url( $url ); ?>" class="ltr" data-ocfeed-url>
-				</div>
-
 				<div class="ocfeed__acts">
-					<button type="button" class="button" data-ocfeed-copy><?php esc_html_e( 'Copy', 'oc-theme' ); ?></button>
+					<input type="hidden" value="<?php echo esc_url( $url ); ?>" data-ocfeed-url>
+					<button type="button" class="button button-primary" data-ocfeed-copy><?php esc_html_e( 'Copy the address', 'oc-theme' ); ?></button>
 					<a class="button" href="<?php echo esc_url( $url ); ?>" download><?php esc_html_e( 'Download', 'oc-theme' ); ?></a>
+					<button type="button" class="button" data-ocfeed-edit
+						data-ocfeed-feed="<?php echo esc_attr( (string) wp_json_encode( self::settings_of( $feed ) ) ); ?>"><?php esc_html_e( 'Settings', 'oc-theme' ); ?></button>
 					<button type="button" class="button" data-ocfeed-rebuild><?php esc_html_e( 'Rebuild', 'oc-theme' ); ?></button>
 					<button type="button" class="button-link ocfeed__del" data-ocfeed-del><?php esc_html_e( 'Delete', 'oc-theme' ); ?></button>
 				</div>
 			</div>
 			<?php
 		}
+	}
+
+	/**
+	 * The settings the screen lets you change, for one feed.
+	 *
+	 * @param array<string,mixed> $feed Feed.
+	 * @return array<string,mixed>
+	 */
+	private static function settings_of( array $feed ): array {
+		return array(
+			'target'   => (string) $feed['target'],
+			'name'     => (string) $feed['name'],
+			'every'    => (string) $feed['every'],
+			'format'   => (string) $feed['format'],
+			'desc'     => (string) $feed['desc'],
+			'brand'    => (string) $feed['brand'],
+			'gcat'     => (string) $feed['gcat'],
+			'delivery' => (string) $feed['delivery'],
+			'in_stock' => (int) $feed['in_stock'],
+			'variants' => (int) $feed['variants'],
+			'ship'     => (int) $feed['ship'],
+			'cats'     => array_map( 'strval', (array) $feed['cats'] ),
+		);
 	}
 
 	/**
@@ -398,7 +420,7 @@ final class Admin {
 		<style>
 		.ocfeed__lede { max-inline-size: 780px; }
 		.ocfeed__empty { color: #646970; }
-		.ocfeed__row { display: grid; grid-template-columns: 150px minmax(180px, 1fr) minmax(220px, 1.2fr) auto; gap: 16px; align-items: center;
+		.ocfeed__row { display: grid; grid-template-columns: 150px minmax(220px, 1fr) auto; gap: 16px; align-items: center;
 			background: #fff; border: 1px solid #dcdcde; border-radius: 8px; padding: 14px 16px; margin-block-end: 10px; }
 		.ocfeed__who-tag { font-size: 12px; font-weight: 600; padding: 5px 10px; border-radius: 999px; text-align: center; }
 		.ocfeed__who-tag--meta { background: #e7f0fd; color: #0b5cd5; }
@@ -407,9 +429,9 @@ final class Admin {
 		.ocfeed__body b { display: block; font-size: 14px; }
 		.ocfeed__meta { font-size: 12px; color: #646970; }
 		.ocfeed__chip { display: inline-block; font-size: 11px; background: #f0f0f1; border-radius: 4px; padding: 1px 6px; margin-inline-start: 6px; color: #646970; }
-		.ocfeed__link input { inline-size: 100%; font-size: 12px; background: #f6f7f7; }
-		.ocfeed__acts { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+				.ocfeed__acts { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
 		.ocfeed__del { color: #b32d2e; }
+		.ocfeed__row[data-ocfeed-state="running"] { border-color: #2271b1; background: #f0f6fc; }
 		.ocfeed__sheet { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: grid; place-items: center; z-index: 9999; padding: 20px; }
 		.ocfeed__sheet[hidden] { display: none; }
 		.ocfeed__card { background: #fff; border-radius: 12px; padding: 26px 28px; inline-size: min(620px, 100%); max-block-size: 88vh; overflow: auto; }
@@ -446,13 +468,17 @@ final class Admin {
 			'copied'   => __( 'Copied', 'oc-theme' ),
 			'sure'     => __( 'Delete this feed? The address stops working.', 'oc-theme' ),
 			'newfeed'  => __( 'New feed', 'oc-theme' ),
+			'settings' => __( 'Feed settings', 'oc-theme' ),
+			'create'   => __( 'Create feed', 'oc-theme' ),
+			'save'     => __( 'Save and rebuild', 'oc-theme' ),
 		);
 		?>
 		<script>
 		( function () {
 			var nonce = <?php echo wp_json_encode( $nonce ); ?>,
 				T     = <?php echo wp_json_encode( $strings ); ?>,
-				who   = 'meta';
+				who     = 'meta',
+				editing = '';
 
 			function post( action, data ) {
 				var body = new FormData();
@@ -503,11 +529,37 @@ final class Admin {
 				} );
 			} );
 
+			function fill( feed ) {
+				document.getElementById( 'ocfeed-name' ).value = feed.name || '';
+				document.getElementById( 'ocfeed-every' ).value = feed.every || 'hourly';
+				document.getElementById( 'ocfeed-format' ).value = feed.format || 'xml';
+				document.getElementById( 'ocfeed-desc' ).value = feed.desc || 'short';
+				document.getElementById( 'ocfeed-brand' ).value = feed.brand || '';
+				document.getElementById( 'ocfeed-gcat' ).value = feed.gcat || '';
+				document.getElementById( 'ocfeed-delivery' ).value = feed.delivery || '';
+				document.getElementById( 'ocfeed-instock' ).checked = !! Number( feed.in_stock );
+				document.getElementById( 'ocfeed-variants' ).checked = undefined === feed.variants ? true : !! Number( feed.variants );
+				document.getElementById( 'ocfeed-ship' ).checked = !! Number( feed.ship );
+
+				var want = ( feed.cats || [] ).map( String );
+				[].slice.call( document.getElementById( 'ocfeed-cats' ).options ).forEach( function ( o ) {
+					o.selected = want.indexOf( o.value ) > -1;
+				} );
+
+				who = feed.target || 'meta';
+				document.querySelectorAll( '[data-ocfeed-who]' ).forEach( function ( o ) {
+					o.classList.toggle( 'is-on', o.getAttribute( 'data-ocfeed-who' ) === who );
+				} );
+				onlyFor();
+			}
+
 			document.getElementById( 'ocfeed-new' ).addEventListener( 'click', function () {
 				said.textContent = '';
+				editing = '';
 				document.getElementById( 'ocfeed-title' ).textContent = T.newfeed;
+				document.getElementById( 'ocfeed-make' ).textContent = T.create;
+				fill( { target: 'meta' } );
 				sheet.hidden = false;
-				onlyFor();
 			} );
 
 			document.getElementById( 'ocfeed-cancel' ).addEventListener( 'click', function () {
@@ -534,7 +586,7 @@ final class Admin {
 			document.getElementById( 'ocfeed-make' ).addEventListener( 'click', function () {
 				said.textContent = T.making;
 				post( 'ocfeed_save', {
-					key: '',
+					key: editing,
 					feed: {
 						target: who,
 						name: document.getElementById( 'ocfeed-name' ).value,
@@ -555,6 +607,22 @@ final class Admin {
 				} ).catch( function () { said.textContent = T.failed; } );
 			} );
 
+			// A feed that was still building when the page opened keeps
+			// telling you where it has got to, and finishes on its own.
+			document.querySelectorAll( '[data-ocfeed-state="running"]' ).forEach( function ( row ) {
+				var key = row.getAttribute( 'data-ocfeed-row' );
+				var meta = row.querySelector( '[data-ocfeed-meta]' );
+
+				( function tick() {
+					post( 'ocfeed_state', { key: key } ).then( function ( r ) {
+						var d = r && r.data ? r.data : {};
+						if ( 'running' !== d.state ) { window.location.reload(); return; }
+						meta.textContent = sprintf( T.progress, d.done, d.total );
+						post( 'ocfeed_run', { key: key } ).then( tick );
+					} ).catch( function () {} );
+				}() );
+			} );
+
 			document.addEventListener( 'click', function ( e ) {
 				var row = e.target.closest( '[data-ocfeed-row]' );
 				if ( ! row ) { return; }
@@ -565,6 +633,18 @@ final class Admin {
 					box.select();
 					navigator.clipboard.writeText( box.value );
 					e.target.textContent = T.copied;
+					return;
+				}
+
+				if ( e.target.closest( '[data-ocfeed-edit]' ) ) {
+					var box = e.target.closest( '[data-ocfeed-edit]' );
+					editing = key;
+					said.textContent = '';
+					document.getElementById( 'ocfeed-title' ).textContent = T.settings;
+					document.getElementById( 'ocfeed-make' ).textContent = T.save;
+					try { fill( JSON.parse( box.getAttribute( 'data-ocfeed-feed' ) ) ); } catch ( err ) {}
+					document.querySelector( '.ocfeed__more' ).open = true;
+					sheet.hidden = false;
 					return;
 				}
 

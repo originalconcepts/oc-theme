@@ -65,7 +65,10 @@ final class Feeds {
 		add_action( self::EVENT, array( $this, 'tick' ) );
 		add_action( self::STEP, array( self::class, 'run_step' ) );
 		add_action( 'init', array( $this, 'keep_scheduled' ) );
+		add_action( 'init', array( $this, 'rewrite' ) );
+		add_filter( 'query_vars', array( $this, 'query_var' ) );
 		add_action( 'init', array( $this, 'serve' ), 5 );
+		add_action( 'admin_init', array( $this, 'once' ) );
 	}
 
 	/**
@@ -108,6 +111,15 @@ final class Feeds {
 	public static function book( string $key ): void {
 		if ( ! wp_next_scheduled( self::STEP, array( $key ) ) ) {
 			wp_schedule_single_event( time() + 10, self::STEP, array( $key ) );
+		}
+	}
+
+	/**
+	 * Register the address once, and again after an upgrade.
+	 */
+	public function once(): void {
+		if ( '1' !== (string) get_option( 'oc_feeds_rules', '' ) ) {
+			self::flush();
 		}
 	}
 
@@ -307,7 +319,47 @@ final class Feeds {
 	 * @param string $key Feed key.
 	 */
 	public static function url( string $key ): string {
+		$feed = self::get( $key );
+
+		if ( null === $feed ) {
+			return add_query_arg( 'oc_feed', sanitize_key( $key ), home_url( '/' ) );
+		}
+
+		// The network is in the name and the file ends the way the file is,
+		// because both are read by a person pasting this into a form that
+		// asks for "the URL of your XML feed".
+		if ( '' !== (string) get_option( 'permalink_structure', '' ) ) {
+			return home_url( '/oc-feed/' . sanitize_key( (string) $feed['target'] ) . '-' . sanitize_key( $key ) . '.' . ( 'csv' === $feed['format'] ? 'csv' : 'xml' ) );
+		}
+
 		return add_query_arg( 'oc_feed', sanitize_key( $key ), home_url( '/' ) );
+	}
+
+	/**
+	 * The pretty address, so a feed can be asked for by name.
+	 */
+	public function rewrite(): void {
+		add_rewrite_rule( '^oc-feed/[a-z]+-([a-z0-9]+)\.(?:xml|csv)$', 'index.php?oc_feed=$matches[1]', 'top' );
+	}
+
+	/**
+	 * Let WordPress carry the feed's name through.
+	 *
+	 * @param array<int,string> $vars Query vars.
+	 * @return array<int,string>
+	 */
+	public function query_var( array $vars ): array {
+		$vars[] = 'oc_feed';
+
+		return $vars;
+	}
+
+	/**
+	 * Teach the rewrite to WordPress the first time it is needed.
+	 */
+	public static function flush(): void {
+		update_option( 'oc_feeds_rules', '1', false );
+		flush_rewrite_rules( false );
 	}
 
 	/**
@@ -316,6 +368,10 @@ final class Feeds {
 	public function serve(): void {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- a public address, like any feed.
 		$key = isset( $_GET['oc_feed'] ) ? sanitize_key( wp_unslash( $_GET['oc_feed'] ) ) : '';
+
+		if ( '' === $key ) {
+			$key = sanitize_key( (string) get_query_var( 'oc_feed' ) );
+		}
 
 		if ( '' === $key ) {
 			return;

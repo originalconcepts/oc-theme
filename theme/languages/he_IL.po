@@ -7071,3 +7071,12 @@ msgid "%d left out, with no picture or no price"
 msgid_plural "%d left out, with no picture or no price"
 msgstr[0] "%d הושמטו, בלי תמונה או בלי מחיר"
 msgstr[1] "%d הושמטו, בלי תמונה או בלי מחיר"
+
+msgid "Copy the address"
+msgstr "העתקת הכתובת"
+
+msgid "Feed settings"
+msgstr "הגדרות הפיד"
+
+msgid "Save and rebuild"
+msgstr "שמירה ובנייה מחדש"

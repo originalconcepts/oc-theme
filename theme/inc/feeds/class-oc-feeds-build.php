@@ -25,11 +25,18 @@ final class Build {
 	 *
 	 * @param string $key Feed key.
 	 */
-	public static function start( string $key ): void {
+	public static function start( string $key, bool $force = false ): void {
 		$feed = Feeds::get( $key );
 
 		if ( null === $feed ) {
 			return;
+		}
+
+		// Asked for by hand, a rebuild takes the lock away from whatever is
+		// holding it. That is the way out of a run that wedged: the button
+		// on the screen always works.
+		if ( $force ) {
+			self::unlock( $key );
 		}
 
 		// Wait for a batch in flight to finish before pulling the ground out
@@ -405,6 +412,10 @@ final class Build {
 				'google_product_category',
 				'product_type',
 				'shipping_weight',
+				'custom_label_0',
+				'custom_label_1',
+				'custom_label_2',
+				'custom_label_3',
 			);
 		}
 
@@ -429,6 +440,11 @@ final class Build {
 			'google_product_category',
 			'product_type',
 			'quantity_to_sell_on_facebook',
+			'short_description',
+			'custom_label_0',
+			'custom_label_1',
+			'custom_label_2',
+			'custom_label_3',
 		);
 	}
 
@@ -454,7 +470,7 @@ final class Build {
 			'description'               => $it['desc'],
 			'link'                      => $it['link'],
 			'image_link'                => $it['image'],
-			'additional_image_link'     => implode( ',', $it['gallery'] ),
+			'additional_image_link'     => $it['gallery'],
 			// The one value that decides whether a shop advertises things it
 			// cannot sell. Google spells it with an underscore, Meta with a
 			// space, and a feed that uses the wrong one is simply rejected.
@@ -473,6 +489,13 @@ final class Build {
 			'size'                      => $it['size'],
 			'google_product_category'   => (string) $feed['gcat'],
 			'product_type'              => $it['cats'][0] ?? '',
+			// The labels are what a campaign is split by later: the brand,
+			// the aisle, and whether a thing is on offer. Filling them now
+			// costs nothing and saves rebuilding the feed to get them.
+			'custom_label_0'            => $it['sale'] > 0 ? 'sale' : 'regular',
+			'custom_label_1'            => $it['stock'] ? 'in-stock' : 'out-of-stock',
+			'custom_label_2'            => $it['brand'],
+			'custom_label_3'            => $it['cats'][0] ?? '',
 		);
 
 		if ( $google ) {
@@ -482,13 +505,16 @@ final class Build {
 			$values['shipping_weight']   = '' === $it['weight'] ? '' : $it['weight'] . ' ' . get_option( 'woocommerce_weight_unit', 'kg' );
 		} else {
 			$values['quantity_to_sell_on_facebook'] = $it['qty'] > 0 ? (string) $it['qty'] : ( $it['stock'] ? '10' : '0' );
+			$values['short_description']            = self::cut( (string) $it['brief'], 999 );
 		}
 
 		if ( 'csv' === $feed['format'] ) {
 			$cells = array();
 
 			foreach ( self::columns( $feed ) as $column ) {
-				$cells[] = '"' . str_replace( '"', '""', (string) ( $values[ $column ] ?? '' ) ) . '"';
+				$cell    = $values[ $column ] ?? '';
+				$cell    = is_array( $cell ) ? implode( ',', $cell ) : (string) $cell;
+				$cells[] = '"' . str_replace( '"', '""', $cell ) . '"';
 			}
 
 			return implode( ',', $cells ) . "\n";
@@ -497,13 +523,18 @@ final class Build {
 		$out = '<item>' . "\n";
 
 		foreach ( $values as $name => $value ) {
-			$value = (string) $value;
+			// More than one picture means more than one element. Joining
+			// them with commas is accepted by Meta and quietly ignored by
+			// Google, which reads only the first.
+			foreach ( is_array( $value ) ? $value : array( $value ) as $one ) {
+				$one = (string) $one;
 
-			if ( '' === $value ) {
-				continue;
+				if ( '' === $one ) {
+					continue;
+				}
+
+				$out .= "\t" . '<g:' . $name . '>' . self::x( $one ) . '</g:' . $name . '>' . "\n";
 			}
-
-			$out .= "\t" . '<g:' . $name . '>' . self::x( $value ) . '</g:' . $name . '>' . "\n";
 		}
 
 		return $out . '</item>' . "\n";
@@ -740,6 +771,7 @@ final class Build {
 			'sku'       => (string) $item->get_sku(),
 			'title'     => self::cut( (string) ( $item->get_id() === $owner->get_id() ? $owner->get_name() : $item->get_name() ), 150 ),
 			'desc'      => self::cut( $text, 4900 ),
+			'brief'     => '' !== $brief ? $brief : $text,
 			'link'      => $link,
 			'image'     => is_string( $image ) ? $image : '',
 			'gallery'   => $more,
