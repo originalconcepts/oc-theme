@@ -7080,3 +7080,132 @@ msgstr "הגדרות הפיד"
 
 msgid "Save and rebuild"
 msgstr "שמירה ובנייה מחדש"
+
+msgid "After a conversion, remove the picture it replaced and its old sizes — unless that name is written somewhere on the site, in which case it is always kept. Clearing is what gives up the way back."
+msgstr "אחרי המרה, להסיר את התמונה שהוחלפה ואת הגדלים הישנים שלה — אלא אם השם הזה כתוב במקום כלשהו באתר, ואז הוא תמיד נשמר. הניקוי הוא מה שמוותר על הדרך חזרה."
+
+msgid "Heavier than"
+msgstr "כבד מ־"
+
+msgid "Looking…"
+msgstr "מחפש…"
+
+msgid "Working…"
+msgstr "עובד…"
+
+msgid "%1$s → %2$s"
+msgstr "%1$s ← %2$s"
+
+msgid "Converting — %1$d of %2$d"
+msgstr "ממיר — %1$d מתוך %2$d"
+
+msgid "Convert all of these on the server"
+msgstr "המרת כל אלה על השרת"
+
+msgid "Thousands of pictures is hours of work. Start it here and it carries on by itself — close the tab, come back whenever. Whatever is converted before you stop stays converted."
+msgstr "אלפי תמונות הן שעות עבודה. התחילו כאן והמרה תימשך מעצמה — אפשר לסגור את הלשונית ולחזור מתי שרוצים. כל מה שהומר עד שתעצרו נשאר מומר."
+
+msgid "Convert all %d in the background"
+msgstr "המר את כל %d ברקע"
+
+msgid "Running — %1$d of %2$d converted, %3$s lighter so far. You can close this page."
+msgstr "רץ — %1$d מתוך %2$d הומרו, %3$s נחסכו עד כה. אפשר לסגור את העמוד."
+
+msgid "Finished. %1$d pictures converted, %2$s lighter."
+msgstr "הסתיים. %1$d תמונות הומרו, %2$s נחסכו."
+
+msgid "Stopped after %1$d pictures, %2$s lighter. The ones already done stay done."
+msgstr "נעצר אחרי %1$d תמונות, %2$s נחסכו. מה שכבר הומר נשאר מומר."
+
+msgid "%d could not be converted and were passed over."
+msgstr "%d לא ניתנות להמרה ודולגו."
+
+msgid "Booked. The first batch starts within a minute."
+msgstr "נקבע. המנה הראשונה מתחילה בתוך דקה."
+
+msgid "Convert them in the background? It runs on the server for as long as it takes, and you can stop it at any time."
+msgstr "להמיר אותן ברקע? זה רץ על השרת כמה שצריך, ואפשר לעצור בכל רגע."
+
+msgid "Stop the run? Everything converted so far stays converted."
+msgstr "לעצור את הריצה? כל מה שהומר עד כה נשאר מומר."
+
+msgid "Everything in the library is already WebP."
+msgstr "כל מה שבספרייה כבר WebP."
+
+msgid "Finds pictures and videos nothing points at any more. A file is treated as in use if it hangs off a post, if it is named in content or in a setting, or if its name appears anywhere on the site."
+msgstr "מוצא תמונות וסרטונים שאף אחד כבר לא מפנה אליהם. קובץ נחשב בשימוש אם הוא תלוי בפוסט, אם הוא נזכר בתוכן או בהגדרה, או אם שמו מופיע במקום כלשהו באתר."
+
+msgid "Nothing to clean — every file in the library is spoken for."
+msgstr "אין מה לנקות — לכל קובץ בספרייה יש מי שמשתמש בו."
+
+msgid "Deleting is permanent — the files leave the server."
+msgstr "המחיקה סופית — הקבצים עוזבים את השרת."
+
+msgid "Which pictures and films weigh the most, and which pages they sit on. A heavy file is not a mistake — it is simply what every visitor to that page downloads."
+msgstr "אילו תמונות וסרטונים שוקלים הכי הרבה, ובאילו עמודים הם יושבים. קובץ כבד אינו טעות — הוא פשוט מה שכל מבקר בעמוד הזה מוריד."
+
+msgid "The average file"
+msgstr "הקובץ הממוצע"
+
+msgid "Its LCP today (seconds)"
+msgstr "ה‑LCP שלו היום (שניות)"
+
+msgid "Leave the address empty to search the whole library. Fill it in and only what that page loads is weighed. Choose \"the average file\" to see just the ones pulling that page down — on one page the average is the page's own, not the library's."
+msgstr "השאירו את הכתובת ריקה כדי לחפש בכל הספרייה. מלאו אותה ורק מה שהעמוד הזה טוען יישקל. בחרו ב״הקובץ הממוצע״ כדי לראות רק את אלה שמושכים את העמוד למטה — בעמוד בודד הממוצע הוא של העמוד עצמו, לא של הספרייה."
+
+msgid "The LCP is optional. Copy it from the speed report and the forecast can say what the saved weight is worth in points."
+msgstr "ה‑LCP הוא רשות. העתיקו אותו מדוח המהירות והתחזית תוכל לומר כמה שווה המשקל שנחסך בנקודות."
+
+msgid "Scanning…"
+msgstr "סורק…"
+
+msgid "Checking file names — %1$d of %2$d"
+msgstr "בודק שמות קבצים — %1$d מתוך %2$d"
+
+msgid "Deleting — %1$d of %2$d"
+msgstr "מוחק — %1$d מתוך %2$d"
+
+msgid "Shrinking — %1$d of %2$d"
+msgstr "מקטין — %1$d מתוך %2$d"
+
+msgid "Reading the page…"
+msgstr "קורא את העמוד…"
+
+msgid "If these became WebP"
+msgstr "אם אלה יהפכו ל‑WebP"
+
+msgid "%1$s → %2$s. That is %3$d%% less to download."
+msgstr "%1$s ← %2$s. זה %3$d%% פחות להורדה."
+
+msgid "Measured by really converting %d of them and applying what came out."
+msgstr "נמדד על ידי המרה אמיתית של %d מהן והחלת התוצאה על השאר."
+
+msgid "About %s seconds off a phone on a slow connection."
+msgstr "בערך %s שניות פחות בטלפון על חיבור איטי."
+
+msgid "LCP %1$ss → about %2$ss, worth roughly +%3$d points."
+msgstr "LCP %1$ss ← בערך %2$ss, שווה בקירוב +%3$d נקודות."
+
+msgid "The weight is measured. The seconds and the points are a forecast for one metric on a simulated phone — treat them as the direction, not the number."
+msgstr "המשקל נמדד. השניות והנקודות הן תחזית למדד אחד בטלפון מדומה — יש להתייחס אליהן ככיוון, לא כמספר."
+
+msgid "Only the pictures the page fetches straight away are counted towards the seconds. The ones held back until the visitor scrolls still save their data, but not their time."
+msgstr "רק התמונות שהעמוד מושך מיד נספרות לטובת השניות. אלה שמחכות לגלילה עדיין חוסכות למבקר דאטה, אבל לא זמן."
+
+msgid "Held at 1.5s: below that the page is waiting on the server and its own drawing, not on pictures."
+msgstr "מוחזק על 1.5 שניות: מתחת לזה העמוד מחכה לשרת ולציור של עצמו, לא לתמונות."
+
+msgid "As WebP"
+msgstr "כ‑WebP"
+
+msgid "This server cannot write WebP, so there is nothing to forecast."
+msgstr "השרת הזה אינו יודע לכתוב WebP, ולכן אין מה לחזות."
+
+msgid "Convert these to WebP"
+msgstr "המר את אלה ל‑WebP"
+
+msgid "Heavier than the average file, which is %s."
+msgstr "כבד מהקובץ הממוצע, שהוא %s."
+
+msgid "Convert %d pictures to WebP? Each is rebuilt at every size and the site starts serving those. The file it replaces is kept unless the WebP screen says otherwise, so this can be undone."
+msgstr "להמיר %d תמונות ל‑WebP? כל אחת נבנית מחדש בכל הגדלים והאתר מתחיל להגיש אותן. הקובץ שהוחלף נשמר אלא אם מסך ה‑WebP אומר אחרת, כך שאפשר לבטל."

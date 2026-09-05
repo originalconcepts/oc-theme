@@ -1987,7 +1987,7 @@ final class Media_Clean {
 	 * @param int    $limit Longest list to return.
 	 * @return array<string,mixed>
 	 */
-	public static function by_format( string $have, string $url = '', int $limit = 300 ): array {
+	public static function by_format( string $have, string $url = '', int $limit = 300, int $floor = 0 ): array {
 		global $wpdb;
 
 		$want = 'yes' === $have;
@@ -2069,6 +2069,15 @@ final class Media_Clean {
 				continue;
 			}
 
+			// The weight the row is judged and counted by. It comes from what
+			// the upload recorded, so asking for a whole library costs no
+			// disk at all; only the few that get listed are really weighed.
+			$weight = isset( $row->meta ) ? self::meta_bytes( (string) $row->meta, $id ) : self::bytes( $id );
+
+			if ( $floor > 0 && $weight < $floor ) {
+				continue;
+			}
+
 			++$total;
 
 			// Every row counts towards the weight, or the screen reports the
@@ -2077,7 +2086,7 @@ final class Media_Clean {
 			// upload already wrote down: asking the disk for a hundred
 			// thousand files is what a headline number is not worth.
 			if ( count( $items ) >= $limit ) {
-				$bytes += self::meta_bytes( isset( $row->meta ) ? (string) $row->meta : '', $id );
+				$bytes += $weight;
 				continue;
 			}
 
@@ -2108,6 +2117,7 @@ final class Media_Clean {
 			'bytes' => $bytes,
 			'shown' => count( $items ),
 			'page'  => trim( $url ),
+			'floor' => $floor,
 		);
 	}
 
@@ -2146,11 +2156,12 @@ final class Media_Clean {
 		$this->guard();
 
 		// phpcs:disable WordPress.Security.NonceVerification.Missing -- guard() above ran check_ajax_referer().
-		$have = isset( $_POST['have'] ) ? sanitize_key( wp_unslash( $_POST['have'] ) ) : 'no';
-		$url  = isset( $_POST['url'] ) ? esc_url_raw( wp_unslash( $_POST['url'] ) ) : '';
+		$have  = isset( $_POST['have'] ) ? sanitize_key( wp_unslash( $_POST['have'] ) ) : 'no';
+		$url   = isset( $_POST['url'] ) ? esc_url_raw( wp_unslash( $_POST['url'] ) ) : '';
+		$floor = isset( $_POST['floor'] ) ? absint( wp_unslash( $_POST['floor'] ) ) : 0;
 		// phpcs:enable
 
-		wp_send_json_success( self::by_format( 'yes' === $have ? 'yes' : 'no', $url ) );
+		wp_send_json_success( self::by_format( 'yes' === $have ? 'yes' : 'no', $url, 300, $floor * KB_IN_BYTES ) );
 	}
 
 	/**
