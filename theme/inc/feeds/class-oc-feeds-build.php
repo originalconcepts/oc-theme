@@ -33,10 +33,12 @@ final class Build {
 		}
 
 		$ids = self::ids( $feed );
+		$run = (string) time() . wp_generate_password( 4, false, false );
 
 		set_transient( 'oc_feed_ids_' . $key, $ids, DAY_IN_SECONDS );
-		self::clear_parts( $key );
+		self::sweep_parts( $key );
 
+		$feed['run']     = $run;
 		$feed['state']   = 'running';
 		$feed['skipped'] = 0;
 		$feed['cursor']  = 0;
@@ -53,8 +55,8 @@ final class Build {
 	 *
 	 * @param string $key Feed key.
 	 */
-	private static function parts_dir( string $key ): string {
-		$dir = wp_get_upload_dir()['basedir'] . '/oc-feeds/parts-' . sanitize_key( $key );
+	private static function parts_dir( string $key, string $run ): string {
+		$dir = wp_get_upload_dir()['basedir'] . '/oc-feeds/parts-' . sanitize_key( $key ) . '-' . sanitize_key( $run );
 
 		if ( ! is_dir( $dir ) ) {
 			wp_mkdir_p( $dir );
@@ -64,13 +66,35 @@ final class Build {
 	}
 
 	/**
-	 * Throw away whatever a previous run left behind.
+	 * Clear away every run of this feed, finished or abandoned.
+	 *
+	 * Each run keeps its batches in a folder of its own, so a worker still
+	 * finishing the previous run writes into a folder nobody will read.
+	 * Sharing one folder meant a batch that landed a moment after a rebuild
+	 * began was assembled into it, and the same products appeared twice.
 	 *
 	 * @param string $key Feed key.
 	 */
-	private static function clear_parts( string $key ): void {
-		foreach ( (array) glob( self::parts_dir( $key ) . '/*.txt' ) as $file ) {
+	private static function sweep_parts( string $key ): void {
+		$base = wp_get_upload_dir()['basedir'] . '/oc-feeds/parts-' . sanitize_key( $key ) . '-*';
+
+		foreach ( (array) glob( $base, GLOB_ONLYDIR ) as $dir ) {
+			self::wipe( (string) $dir );
+		}
+	}
+
+	/**
+	 * Remove one run's folder.
+	 *
+	 * @param string $dir Directory.
+	 */
+	private static function wipe( string $dir ): void {
+		foreach ( (array) glob( $dir . '/*.txt' ) as $file ) {
 			wp_delete_file( (string) $file );
+		}
+
+		if ( is_dir( $dir ) ) {
+			rmdir( $dir ); // phpcs:ignore WordPress.WP.AlternativeFunctions.rmdir_rmdir -- a folder this class made for one run.
 		}
 	}
 
@@ -105,6 +129,7 @@ final class Build {
 			return;
 		}
 
+		$run     = (string) ( $feed['run'] ?? '' );
 		$began   = microtime( true );
 		$at      = (int) $feed['cursor'];
 		$stop    = min( $at + Feeds::BATCH, count( $ids ) );
@@ -135,7 +160,19 @@ final class Build {
 			}
 		}
 
-		file_put_contents( self::parts_dir( $key ) . '/' . str_pad( (string) $from, 9, '0', STR_PAD_LEFT ) . '.txt', $rows ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- writing this plugin's own batch file.
+		file_put_contents( self::parts_dir( $key, $run ) . '/' . str_pad( (string) $from, 9, '0', STR_PAD_LEFT ) . '.txt', $rows ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- writing this plugin's own batch file.
+
+		// A rebuild may have begun while this batch was working. Its numbers
+		// belong to a run nobody is waiting for any more.
+		$now = Feeds::get( $key );
+
+		if ( null === $now || (string) ( $now['run'] ?? '' ) !== $run ) {
+			self::unlock( $key );
+
+			return;
+		}
+
+		$feed = $now;
 
 		$feed['cursor']  = $at;
 		$feed['items']   = (int) $feed['items'] + $made;
@@ -144,7 +181,7 @@ final class Build {
 		$feed['ms']      = (int) $feed['ms'] + (int) round( ( microtime( true ) - $began ) * 1000 );
 
 		if ( $at >= count( $ids ) ) {
-			self::assemble( $key, $feed );
+			self::assemble( $key, $feed, $run );
 
 			$feed['state'] = 'ready';
 			$feed['made']  = time();
@@ -165,11 +202,12 @@ final class Build {
 	 *
 	 * @param string              $key  Feed key.
 	 * @param array<string,mixed> $feed Feed.
+	 * @param string              $run  The run whose batches to use.
 	 */
-	private static function assemble( string $key, array $feed ): void {
+	private static function assemble( string $key, array $feed, string $run ): void {
 		$final = Feeds::path( $key, (string) $feed['format'] );
 		$part  = $final . '.part';
-		$files = (array) glob( self::parts_dir( $key ) . '/*.txt' );
+		$files = (array) glob( self::parts_dir( $key, $run ) . '/*.txt' );
 
 		sort( $files, SORT_STRING );
 
@@ -186,7 +224,7 @@ final class Build {
 		file_put_contents( $part, self::foot( $feed ), FILE_APPEND ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- this plugin's own feed file.
 		rename( $part, $final ); // phpcs:ignore WordPress.WP.AlternativeFunctions.rename_rename -- moving this plugin's own file into place.
 
-		self::clear_parts( $key );
+		self::sweep_parts( $key );
 	}
 
 	/**

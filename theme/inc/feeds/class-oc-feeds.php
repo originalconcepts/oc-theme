@@ -174,6 +174,7 @@ final class Feeds {
 			'ms'        => 0,
 			'state'     => 'new',
 			'cursor'    => 0,
+			'run'       => '',
 			'started'   => 0,
 			'beat'      => 0,
 			'error'     => '',
@@ -202,6 +203,7 @@ final class Feeds {
 		$out['skipped']   = absint( $raw['skipped'] ?? 0 );
 		$out['ms']        = absint( $raw['ms'] ?? 0 );
 		$out['cursor']    = absint( $raw['cursor'] ?? 0 );
+		$out['run']       = sanitize_key( (string) ( $raw['run'] ?? '' ) );
 		$out['started']   = absint( $raw['started'] ?? 0 );
 		$out['beat']      = absint( $raw['beat'] ?? 0 );
 		$out['brand']     = sanitize_text_field( (string) ( $raw['brand'] ?? '' ) );
