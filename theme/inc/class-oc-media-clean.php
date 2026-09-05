@@ -823,10 +823,6 @@ final class Media_Clean {
 
 			$total += $bytes;
 
-			if ( $bytes < $min ) {
-				continue;
-			}
-
 			$found[] = array(
 				'id'     => (int) $row->ID,
 				'bytes'  => $bytes,
@@ -837,6 +833,21 @@ final class Media_Clean {
 				'date'   => (string) $row->post_date_gmt,
 			);
 		}
+
+		// A threshold of zero means "heavier than the average file", which
+		// can only be known once every file has been weighed.
+		if ( $min < 1 ) {
+			$min = $scanned > 0 ? (int) round( $total / $scanned ) : 0;
+		}
+
+		$found = array_values(
+			array_filter(
+				$found,
+				static function ( array $one ) use ( $min ): bool {
+					return $one['bytes'] >= $min;
+				}
+			)
+		);
 
 		usort(
 			$found,
@@ -897,6 +908,9 @@ final class Media_Clean {
 			'library' => $total,
 			'scanned' => $scanned,
 			'shown'   => count( $items ),
+			'min'     => $min,
+			'avg'     => $scanned > 0 ? (int) round( $total / $scanned ) : 0,
+			'webp'    => self::webp_gain( $items ),
 		);
 	}
 
@@ -939,7 +953,7 @@ final class Media_Clean {
 				continue;
 			}
 
-			if ( (int) $one['bytes'] < $min ) {
+			if ( $min > 0 && (int) $one['bytes'] < $min ) {
 				continue;
 			}
 
@@ -968,6 +982,28 @@ final class Media_Clean {
 			}
 		}
 
+		// "Heavier than average" is measured against this page, not the
+		// library: on a page it is the page's own mix that matters.
+		if ( $min < 1 && $items ) {
+			$avg   = (int) round( $sum / count( $items ) );
+			$items = array_values(
+				array_filter(
+					$items,
+					static function ( array $one ) use ( $avg ): bool {
+						return (int) $one['bytes'] >= $avg;
+					}
+				)
+			);
+
+			$sum = 0;
+
+			foreach ( $items as $one ) {
+				$sum += (int) $one['bytes'];
+			}
+
+			$min = $avg;
+		}
+
 		return array(
 			'items'   => $items,
 			'over'    => count( $items ),
@@ -976,6 +1012,8 @@ final class Media_Clean {
 			'scanned' => (int) $page['count'],
 			'page'    => (string) $page['url'],
 			'total'   => (int) $page['bytes'],
+			'min'     => $min,
+			'webp'    => self::webp_gain( $items ),
 		);
 	}
 
@@ -1057,6 +1095,204 @@ final class Media_Clean {
 		}
 
 		return $out;
+	}
+
+	/**
+	 * What these pictures would weigh as WebP, and what that buys.
+	 *
+	 * The ratio is not guessed. A handful of the listed files are really
+	 * re-encoded in memory, at the quality WordPress would use, and the
+	 * middle result of each format is applied to the rest — so a library
+	 * of flat PNG illustrations and one of photographs get their own
+	 * honest number instead of a shared rule of thumb.
+	 *
+	 * @param array<int,array<string,mixed>> $items Rows from heavy().
+	 * @param int                            $per   Files to sample per format.
+	 * @return array<string,mixed>
+	 */
+	public static function webp_gain( array $items, int $per = 5 ): array {
+		if ( ! wp_image_editor_supports( array( 'mime_type' => 'image/webp' ) ) ) {
+			return array( 'able' => false );
+		}
+
+		$ratios = array();
+		$tried  = array();
+
+		foreach ( $items as $one ) {
+			$mime = (string) ( $one['mime'] ?? '' );
+
+			if ( ! in_array( $mime, array( 'image/jpeg', 'image/png' ), true ) ) {
+				continue;
+			}
+			if ( count( $tried[ $mime ] ?? array() ) >= $per ) {
+				continue;
+			}
+
+			$ratio = self::webp_ratio( (int) $one['id'] );
+
+			if ( null === $ratio ) {
+				continue;
+			}
+
+			$tried[ $mime ][]  = true;
+			$ratios[ $mime ][] = $ratio;
+		}
+
+		// The middle sample, not the mean: one pathological file cannot
+		// drag the forecast for a whole library.
+		$mid = array();
+
+		foreach ( $ratios as $mime => $list ) {
+			sort( $list );
+			$mid[ $mime ] = $list[ (int) floor( ( count( $list ) - 1 ) / 2 ) ];
+		}
+
+		$now   = 0;
+		$after = 0;
+		$n     = 0;
+
+		foreach ( $items as $one ) {
+			$mime  = (string) ( $one['mime'] ?? '' );
+			$bytes = (int) ( $one['bytes'] ?? 0 );
+
+			if ( ! isset( $mid[ $mime ] ) ) {
+				continue;
+			}
+
+			++$n;
+			$now   += $bytes;
+			$after += (int) round( $bytes * $mid[ $mime ] );
+		}
+
+		return array(
+			'able'    => true,
+			'n'       => $n,
+			'now'     => $now,
+			'after'   => $after,
+			'saved'   => max( 0, $now - $after ),
+			'samples' => array_map( 'count', $ratios ),
+			'ratio'   => $mid,
+		);
+	}
+
+	/**
+	 * How much of itself one picture keeps when written as WebP.
+	 *
+	 * Measured on the largest size the page would actually serve, not on
+	 * the untouched upload — that is the file the visitor waits for.
+	 *
+	 * @param int $id Attachment ID.
+	 * @return float|null Kept fraction, or null if it could not be read.
+	 */
+	private static function webp_ratio( int $id ): ?float {
+		$file = (string) get_attached_file( $id );
+
+		if ( '' === $file || ! file_exists( $file ) ) {
+			return null;
+		}
+
+		$was = (int) filesize( $file );
+
+		if ( $was < 1 ) {
+			return null;
+		}
+
+		$editor = wp_get_image_editor( $file );
+
+		if ( is_wp_error( $editor ) ) {
+			return null;
+		}
+
+		$tmp = wp_tempnam( 'ocwebp' );
+
+		if ( ! $tmp ) {
+			return null;
+		}
+
+		$done = $editor->save( $tmp, 'image/webp' );
+
+		$now = ! is_wp_error( $done ) && ! empty( $done['path'] ) && file_exists( $done['path'] )
+			? (int) filesize( $done['path'] )
+			: 0;
+
+		if ( ! is_wp_error( $done ) && ! empty( $done['path'] ) ) {
+			wp_delete_file( (string) $done['path'] );
+		}
+
+		wp_delete_file( $tmp );
+
+		return $now > 0 ? min( 1.0, $now / $was ) : null;
+	}
+
+	/**
+	 * What the saved weight is worth on the speed report.
+	 *
+	 * Two steps, both borrowed from the tool that will grade the page.
+	 * Lighthouse simulates a phone on 1.6 Mbit/s, so bytes divide straight
+	 * into seconds; and it grades Largest Contentful Paint on a published
+	 * log-normal curve, which is reproduced here exactly. Nothing is
+	 * invented — but it is still a forecast about one metric, and the
+	 * screen says so.
+	 *
+	 * @param int   $saved Bytes no longer downloaded.
+	 * @param float $lcp   The page's LCP today, in seconds. 0 to skip.
+	 * @return array<string,mixed>
+	 */
+	public static function speed_gain( int $saved, float $lcp = 0.0 ): array {
+		// Lighthouse's simulated mobile link: 1.6 Mbit/s, less the 5% it
+		// holds back for protocol overhead.
+		$throughput = 1600 * 1024 / 8 * 0.95;
+		$seconds    = $saved / max( 1.0, $throughput );
+
+		$out = array( 'seconds' => round( $seconds, 1 ) );
+
+		if ( $lcp <= 0 ) {
+			return $out;
+		}
+
+		$after = max( 0.1, $lcp - $seconds );
+
+		$was = self::lcp_score( $lcp );
+		$now = self::lcp_score( $after );
+
+		$out['lcp_now']   = round( $lcp, 1 );
+		$out['lcp_after'] = round( $after, 1 );
+
+		// LCP carries a quarter of the performance score.
+		$out['points'] = (int) round( ( $now - $was ) * 25 );
+
+		return $out;
+	}
+
+	/**
+	 * Lighthouse's LCP curve: p10 at 2.5s, median at 4s.
+	 *
+	 * @param float $seconds Largest Contentful Paint.
+	 * @return float 0 to 1.
+	 */
+	private static function lcp_score( float $seconds ): float {
+		$location = log( 4.0 );
+		$shape    = abs( log( 2.5 ) - $location ) / ( M_SQRT2 * 0.9061938024368232 );
+		$x        = ( log( max( 0.01, $seconds ) ) - $location ) / ( M_SQRT2 * $shape );
+
+		return max( 0.0, min( 1.0, ( 1 - self::erf( $x ) ) / 2 ) );
+	}
+
+	/**
+	 * The error function, to the accuracy the curve above needs.
+	 *
+	 * Abramowitz and Stegun 7.1.26.
+	 *
+	 * @param float $x Argument.
+	 */
+	private static function erf( float $x ): float {
+		$sign = $x < 0 ? -1 : 1;
+		$x    = abs( $x );
+
+		$t = 1 / ( 1 + 0.3275911 * $x );
+		$y = 1 - ( ( ( ( ( 1.061405429 * $t - 1.453152027 ) * $t ) + 1.421413741 ) * $t - 0.284496736 ) * $t + 0.254829592 ) * $t * exp( -$x * $x );
+
+		return $sign * $y;
 	}
 
 	/**
@@ -1858,15 +2094,22 @@ final class Media_Clean {
 		$this->guard();
 
 		// phpcs:disable WordPress.Security.NonceVerification.Missing -- guard() above ran check_ajax_referer().
-		$min  = isset( $_POST['min'] ) ? absint( wp_unslash( $_POST['min'] ) ) : 500;
+		$raw  = isset( $_POST['min'] ) ? sanitize_key( wp_unslash( $_POST['min'] ) ) : '500';
 		$type = isset( $_POST['type'] ) ? sanitize_key( wp_unslash( $_POST['type'] ) ) : 'all';
+		$lcp  = isset( $_POST['lcp'] ) ? (float) wp_unslash( $_POST['lcp'] ) : 0.0;
 		// phpcs:enable
 
 		$url = isset( $_POST['url'] ) ? esc_url_raw( wp_unslash( $_POST['url'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- guard() above ran check_ajax_referer().
 
 		$type = in_array( $type, array( 'all', 'image', 'video' ), true ) ? $type : 'all';
 
-		wp_send_json_success( self::heavy( max( 1, $min ) * KB_IN_BYTES, $type, $url ) );
+		// Zero is the signal for "heavier than average"; heavy() works it out.
+		$min = 'avg' === $raw ? 0 : absint( $raw ) * KB_IN_BYTES;
+		$out = self::heavy( $min, $type, $url );
+
+		$out['speed'] = self::speed_gain( (int) ( $out['webp']['saved'] ?? 0 ), max( 0.0, min( 60.0, $lcp ) ) );
+
+		wp_send_json_success( $out );
 	}
 
 	/**

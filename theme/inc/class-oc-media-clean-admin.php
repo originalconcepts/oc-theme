@@ -265,6 +265,7 @@ final class Media_Clean_Admin {
 				<label>
 					<?php esc_html_e( 'Larger than', 'oc-theme' ); ?>
 					<select id="ocmc-min">
+						<option value="avg"><?php esc_html_e( 'The average file', 'oc-theme' ); ?></option>
 						<option value="200">200 KB</option>
 						<option value="500" selected>500 KB</option>
 						<option value="1024">1 MB</option>
@@ -285,9 +286,14 @@ final class Media_Clean_Admin {
 					<?php esc_html_e( 'On one page (optional)', 'oc-theme' ); ?>
 					<input type="url" id="ocmc-url" placeholder="<?php echo esc_attr( home_url( '/' ) ); ?>" class="regular-text ltr">
 				</label>
+				<label class="ocmc__lcp">
+					<?php esc_html_e( 'Its LCP today (seconds)', 'oc-theme' ); ?>
+					<input type="number" id="ocmc-lcp" step="0.1" min="0" max="60" placeholder="13.1" class="small-text ltr">
+				</label>
 				<button type="button" class="button button-primary" id="ocmc-heavy"><?php esc_html_e( 'Find them', 'oc-theme' ); ?></button>
 			</p>
-			<p class="ocmc__hint"><?php esc_html_e( 'Leave the address empty to search the whole library. Fill it in and only what that page loads is weighed.', 'oc-theme' ); ?></p>
+			<p class="ocmc__hint"><?php esc_html_e( 'Leave the address empty to search the whole library. Fill it in and only what that page loads is weighed. Choose "the average file" to see just the ones pulling that page down — on one page the average is the page\'s own, not the library\'s.', 'oc-theme' ); ?></p>
+			<p class="ocmc__hint"><?php esc_html_e( 'The LCP is optional. Copy it from the speed report and the forecast can say what the saved weight is worth in points.', 'oc-theme' ); ?></p>
 
 			<div id="ocmc-heavy-out"></div>
 		</div>
@@ -338,6 +344,15 @@ final class Media_Clean_Admin {
 		.ocmc__bar { position: relative; block-size: 26px; background: #f0f0f1; border-radius: 13px; overflow: hidden; max-inline-size: 520px; margin: 14px 0; }
 		.ocmc__bar i { position: absolute; inset-block: 0; inset-inline-start: 0; inline-size: 0; background: #2271b1; transition: inline-size .2s; }
 		.ocmc__bar span { position: relative; display: grid; place-items: center; block-size: 100%; font-size: 12px; color: #1d2327; }
+		.ocmc__fc { margin: 18px 0; padding: 16px 18px; border: 1px solid #c3c4c7; border-inline-start: 4px solid #2271b1; background: #f6f7f7; border-radius: 4px; }
+		.ocmc__fc.is-off { border-inline-start-color: #dba617; }
+		.ocmc__fc > b { display: block; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: #50575e; }
+		.ocmc__fc p { margin: 8px 0 0; }
+		.ocmc__fcbig { font-size: 16px; font-weight: 600; color: #135e96; }
+		.ocmc__fc .ocmc__hint { font-size: 12px; color: #646970; font-weight: 400; }
+		.ocmc__lcp input { inline-size: 6em; }
+		.ocmc__hwebp { white-space: nowrap; color: #135e96; }
+		.ocmc__htable tr.is-done { background: #f0f6fc; }
 		.ocmc__heavy { margin-block-start: 44px; border-block-start: 1px solid #dcdcde; padding-block-start: 24px; }
 		.ocmc__controls { display: flex; align-items: end; gap: 14px; flex-wrap: wrap; margin: 14px 0 18px; }
 		.ocmc__controls label { display: grid; gap: 4px; font-size: 12px; color: #646970; }
@@ -443,6 +458,23 @@ final class Media_Clean_Admin {
 			'picked'   => __( '%d ticked', 'oc-theme' ),
 			/* translators: 1: number of files over the size, 2: their total size. */
 			'pover'    => __( '%1$d of them are over the size you asked for, %2$s.', 'oc-theme' ),
+			'wtitle'   => __( 'If these became WebP', 'oc-theme' ),
+			/* translators: 1: weight now, 2: weight after, 3: percent saved. */
+			'wsum'     => __( '%1$s → %2$s. That is %3$d%% less to download.', 'oc-theme' ),
+			/* translators: %d: number of files really re-encoded to measure the rest. */
+			'wtest'    => __( 'Measured by really converting %d of them and applying what came out.', 'oc-theme' ),
+			/* translators: %s: seconds, e.g. "4.2". */
+			'wsec'     => __( 'About %s seconds off a phone on a slow connection.', 'oc-theme' ),
+			/* translators: 1: LCP now, 2: LCP after, 3: points gained. */
+			'wpoint'   => __( 'LCP %1$ss → about %2$ss, worth roughly +%3$d points.', 'oc-theme' ),
+			'wguess'   => __( 'The weight is measured. The seconds and the points are a forecast for this one metric — treat them as the direction, not the number.', 'oc-theme' ),
+			'wcol'     => __( 'As WebP', 'oc-theme' ),
+			'wnone'    => __( 'This server cannot write WebP, so there is nothing to forecast.', 'oc-theme' ),
+			'wgo'      => __( 'Convert these to WebP', 'oc-theme' ),
+			/* translators: %s: the average file size, e.g. "412 KB". */
+			'wavg'     => __( 'Heavier than the average file, which is %s.', 'oc-theme' ),
+			/* translators: %d: number of pictures ticked. */
+			'wask'     => __( 'Convert %d pictures to WebP? Each is rebuilt at every size and the site starts serving those. The file it replaces is kept unless the WebP screen says otherwise, so this can be undone.', 'oc-theme' ),
 		);
 		?>
 		<script>
@@ -711,6 +743,43 @@ final class Media_Clean_Admin {
 				floatBar();
 			} );
 
+			/* What one row would weigh as WebP, at the ratio measured for its format. */
+			function webpCell( it, d ) {
+				var r = d.webp && d.webp.ratio ? d.webp.ratio[ it.mime ] : null;
+				if ( ! r ) { return '<span class="ocmc__hnone">—</span>'; }
+				var after = Math.round( it.bytes * r );
+				return '<b>' + esc( kb( after ) ) + '</b><br><span class="ocmc__hdim">−'
+					+ Math.round( 100 - r * 100 ) + '%</span>';
+			}
+
+			/* The forecast box above the table. */
+			function forecast( d ) {
+				var w = d.webp;
+				if ( ! w ) { return ''; }
+				if ( ! w.able ) { return '<p class="ocmc__fc is-off">' + esc( T.wnone ) + '</p>'; }
+				if ( ! w.n ) { return ''; }
+
+				var tested = 0;
+				Object.keys( w.samples || {} ).forEach( function ( k ) { tested += w.samples[ k ]; } );
+
+				var pct  = w.now ? Math.round( 100 - w.after / w.now * 100 ) : 0;
+				var out  = '<div class="ocmc__fc"><b>' + esc( T.wtitle ) + '</b>';
+				out += '<p class="ocmc__fcbig">' + esc( sprintf( T.wsum, kb( w.now ), kb( w.after ), pct ) ) + '</p>';
+
+				var s = d.speed || {};
+				if ( s.seconds ) {
+					out += '<p>' + esc( sprintf( T.wsec, s.seconds ) ) + '</p>';
+				}
+				if ( s.points > 0 ) {
+					out += '<p class="ocmc__fcbig">' + esc( sprintf( T.wpoint, s.lcp_now, s.lcp_after, s.points ) ) + '</p>';
+				}
+
+				out += '<p class="ocmc__hint">' + esc( sprintf( T.wtest, tested ) ) + ' ' + esc( T.wguess ) + '</p>';
+				out += '<p><button type="button" class="button button-primary" id="ocmc-towebp">' + esc( T.wgo ) + '</button></p>';
+
+				return out + '</div>';
+			}
+
 			function drawHeavy( d ) {
 				if ( ! d.items.length ) {
 					hOut.innerHTML = '<p class="ocmc__hsum">' + esc( T.hnone ) + '</p>';
@@ -731,6 +800,7 @@ final class Media_Clean_Admin {
 						+ '<td><span class="ocmc__hname">' + ( it.link ? '<a href="' + esc( it.link ) + '">' + esc( it.name ) + '</a>' : esc( it.name ) ) + '</span>'
 						+ '<br><span class="ocmc__hdim">' + esc( dim ) + ' · ' + esc( it.mime ) + '</span></td>'
 						+ '<td class="ocmc__hbytes" data-ocmc-size>' + esc( kb( it.bytes ) ) + '</td>'
+						+ '<td class="ocmc__hwebp">' + webpCell( it, d ) + '</td>'
 						+ '<td>' + usedCell( it ) + '</td>'
 						+ '<td>' + act + '<span class="ocmc__hmsg" data-ocmc-msg></span></td>'
 						+ '</tr>';
@@ -740,10 +810,15 @@ final class Media_Clean_Admin {
 					? sprintf( T.psum, d.scanned, kb( d.total ) ) + ' ' + sprintf( T.pover, d.over, kb( d.bytes ) )
 					: sprintf( T.hsum, d.over, kb( d.bytes ), d.shown );
 
+				if ( 'avg' === document.getElementById( 'ocmc-min' ).value && d.avg ) {
+					sum += ' ' + sprintf( T.wavg, kb( d.avg ) );
+				}
+
 				hOut.innerHTML = '<p class="ocmc__hsum">' + esc( sum ) + '</p>'
+					+ forecast( d )
 					+ pickRow()
 					+ '<table class="ocmc__htable"><thead><tr><th></th><th>' + esc( T.hfile ) + '</th><th>'
-					+ esc( T.hsize ) + '</th><th>' + esc( T.hwhere ) + '</th><th>' + esc( T.hact )
+					+ esc( T.hsize ) + '</th><th>' + esc( T.wcol ) + '</th><th>' + esc( T.hwhere ) + '</th><th>' + esc( T.hact )
 					+ '</th></tr></thead><tbody>' + rows + '</tbody></table>';
 				floatBar();
 			}
@@ -755,7 +830,8 @@ final class Media_Clean_Admin {
 					post( 'ocmc_heavy', {
 						min: document.getElementById( 'ocmc-min' ).value,
 						type: document.getElementById( 'ocmc-type' ).value,
-						url: document.getElementById( 'ocmc-url' ).value
+						url: document.getElementById( 'ocmc-url' ).value,
+						lcp: document.getElementById( 'ocmc-lcp' ).value
 					} ).then( function ( r ) {
 						hGo.disabled = false;
 						if ( r && r.success && ! r.data.why ) { drawHeavy( r.data ); }
@@ -777,6 +853,42 @@ final class Media_Clean_Admin {
 					b.disabled = true;
 					shrinkMany( ids, function () { b.disabled = false; floatBar(); } );
 				} );
+			} );
+
+			/* Convert to WebP, one at a time, so a big list cannot time out. */
+			function convertMany( ids, done ) {
+				var at = 0, was = 0, now = 0;
+				function next() {
+					if ( at >= ids.length ) {
+						progress( 100, sprintf( T.hsaved, kb( Math.max( 0, was - now ) ) ) );
+						if ( done ) { done(); }
+						return;
+					}
+					progress( Math.round( 100 * at / ids.length ), sprintf( T.hprog, at, ids.length ) );
+					var id = ids[ at++ ];
+					post( 'ocmc_convert', { id: id } ).then( function ( r ) {
+						if ( r && r.success && r.data && r.data.ok ) {
+							was += r.data.before || 0;
+							now += r.data.after || 0;
+							var row = document.querySelector( '[data-ocmc-row="' + id + '"]' );
+							if ( row ) {
+								var cell = row.querySelector( '[data-ocmc-size]' );
+								if ( cell ) { cell.textContent = kb( r.data.after || 0 ); }
+								row.classList.add( 'is-done' );
+							}
+						}
+						next();
+					} ).catch( next );
+				}
+				next();
+			}
+
+			document.addEventListener( 'click', function ( e ) {
+				if ( ! e.target.closest( '#ocmc-towebp' ) ) { return; }
+				var ids = ticked( document );
+				if ( ! ids.length ) { window.alert( T.none ); return; }
+				if ( ! window.confirm( sprintf( T.wask, ids.length ) ) ) { return; }
+				convertMany( ids, function () { floatBar(); } );
 			} );
 
 			var hDel = document.getElementById( 'ocmc-heavy-delete' );
