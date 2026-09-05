@@ -1180,12 +1180,13 @@ final class Build {
 	/**
 	 * Where an advert lands.
 	 *
-	 * A variation's own permalink cannot be used as it comes: WooCommerce
-	 * encodes the attributes and then hands them to add_query_arg(), which
-	 * encodes them a second time, so a Hebrew attribute arrives as
-	 * %25d7%25a0 and the shopper lands on a product with nothing chosen.
-	 * Building the query once, here, is the only way to be sure the page
-	 * that was advertised is the page that opens.
+	 * A variation's own permalink cannot be used as it comes. WordPress
+	 * stores a Hebrew term's slug already percent-encoded, and WooCommerce
+	 * encodes it again on its way into the URL, so the advert points at
+	 * %25d7%25a0 — checked against the live page, that opens the product
+	 * with nothing chosen at all. Decoding once before encoding once gives
+	 * the single-encoded address that does select the variation, which is
+	 * the whole point of advertising it.
 	 *
 	 * @param \WC_Product         $item  Variation, or the product.
 	 * @param \WC_Product         $owner Its product.
@@ -1213,9 +1214,15 @@ final class Build {
 			return $base;
 		}
 
+		$query = array();
+
+		foreach ( $args as $name => $value ) {
+			$query[] = rawurlencode( rawurldecode( $name ) ) . '=' . rawurlencode( rawurldecode( (string) $value ) );
+		}
+
 		return $base
 			. ( false === strpos( $base, '?' ) ? '?' : '&' )
-			. http_build_query( $args, '', '&', PHP_QUERY_RFC3986 );
+			. implode( '&', $query );
 	}
 
 	/**
