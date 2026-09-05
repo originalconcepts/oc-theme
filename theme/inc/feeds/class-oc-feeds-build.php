@@ -54,6 +54,7 @@ final class Build {
 	 * Where a run's batches are collected before they become a feed.
 	 *
 	 * @param string $key Feed key.
+	 * @param string $run The run.
 	 */
 	private static function parts_dir( string $key, string $run ): string {
 		$dir = wp_get_upload_dir()['basedir'] . '/oc-feeds/parts-' . sanitize_key( $key ) . '-' . sanitize_key( $run );
@@ -94,7 +95,7 @@ final class Build {
 		}
 
 		if ( is_dir( $dir ) ) {
-			rmdir( $dir ); // phpcs:ignore WordPress.WP.AlternativeFunctions.rmdir_rmdir -- a folder this class made for one run.
+			rmdir( $dir ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_rmdir -- a folder this class made for one run of one feed.
 		}
 	}
 
