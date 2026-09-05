@@ -7209,3 +7209,15 @@ msgstr "כבד מהקובץ הממוצע, שהוא %s."
 
 msgid "Convert %d pictures to WebP? Each is rebuilt at every size and the site starts serving those. The file it replaces is kept unless the WebP screen says otherwise, so this can be undone."
 msgstr "להמיר %d תמונות ל‑WebP? כל אחת נבנית מחדש בכל הגדלים והאתר מתחיל להגיש אותן. הקובץ שהוחלף נשמר אלא אם מסך ה‑WebP אומר אחרת, כך שאפשר לבטל."
+
+msgid "Other marketing tags"
+msgstr "תגיות שיווק נוספות"
+
+msgid "Hold the Flashy tag back until the page has drawn"
+msgstr "להחזיק את תגית Flashy עד שהעמוד יצויר"
+
+msgid "Flashy fetches its library while the page is still painting, and running it is the heaviest thing on the phone at that moment. With this on, the tag is fetched once the page has finished and the visitor is idle — or the instant they touch anything. Nothing is dropped: the events queue up and are sent as soon as it arrives."
+msgstr "Flashy מושכת את הספרייה שלה בזמן שהעמוד עדיין מצייר, וההרצה שלה היא הדבר הכבד ביותר בטלפון באותו רגע. כשזה דלוק, התגית נמשכת אחרי שהעמוד סיים והמבקר במנוחה — או ברגע שהוא נוגע במשהו. שום דבר לא הולך לאיבוד: האירועים נערמים בתור ונשלחים ברגע שהיא מגיעה."
+
+msgid "The cost is a visitor who opens the page and leaves within a couple of seconds without touching it — their page view may never be sent."
+msgstr "המחיר הוא מבקר שפותח את העמוד ועוזב תוך שניות ספורות בלי לגעת בו — צפיית העמוד שלו עלולה לא להישלח כלל."
