@@ -2032,10 +2032,16 @@ final class Media_Clean {
 				);
 			}
 		} else {
+			// The file name and the stored metadata come along with the row.
+			// Asking for them per picture is a query each, and on a library
+			// of seventeen thousand that alone is what made this screen slow.
 			$rows = (array) $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery -- maintenance scan; live counts cannot cache.
-				"SELECT ID, post_mime_type FROM {$wpdb->posts}
-				 WHERE post_type = 'attachment' AND post_mime_type LIKE 'image/%'
-				 ORDER BY ID DESC"
+				"SELECT p.ID, p.post_mime_type, f.meta_value AS file, d.meta_value AS meta
+				 FROM {$wpdb->posts} p
+				 INNER JOIN {$wpdb->postmeta} f ON f.post_id = p.ID AND f.meta_key = '_wp_attached_file'
+				 LEFT JOIN {$wpdb->postmeta} d ON d.post_id = p.ID AND d.meta_key = '_wp_attachment_metadata'
+				 WHERE p.post_type = 'attachment' AND p.post_mime_type LIKE 'image/%'
+				 ORDER BY p.ID DESC"
 			);
 		}
 
@@ -2045,7 +2051,7 @@ final class Media_Clean {
 
 		foreach ( $rows as $row ) {
 			$id   = (int) $row->ID;
-			$file = (string) get_post_meta( $id, '_wp_attached_file', true );
+			$file = isset( $row->file ) ? (string) $row->file : (string) get_post_meta( $id, '_wp_attached_file', true );
 			$ext  = strtolower( (string) pathinfo( $file, PATHINFO_EXTENSION ) );
 
 			if ( 'svg' === $ext || '' === $ext ) {
@@ -2065,7 +2071,13 @@ final class Media_Clean {
 
 			++$total;
 
+			// Every row counts towards the weight, or the screen reports the
+			// size of the page it is showing and calls it the library's.
+			// Beyond the listed few that figure comes from the metadata the
+			// upload already wrote down: asking the disk for a hundred
+			// thousand files is what a headline number is not worth.
 			if ( count( $items ) >= $limit ) {
+				$bytes += self::meta_bytes( isset( $row->meta ) ? (string) $row->meta : '', $id );
 				continue;
 			}
 
@@ -2097,6 +2109,34 @@ final class Media_Clean {
 			'shown' => count( $items ),
 			'page'  => trim( $url ),
 		);
+	}
+
+	/**
+	 * What one picture weighs according to what the upload wrote down.
+	 *
+	 * The stored metadata carries a filesize for the picture and for each
+	 * size made from it. Reading those is free; reaching for the disk is
+	 * not, so that is kept for the handful the screen actually lists.
+	 *
+	 * @param string $blob Serialised attachment metadata.
+	 * @param int    $id   Attachment id, for the fallback.
+	 */
+	private static function meta_bytes( string $blob, int $id ): int {
+		$meta = '' !== $blob ? maybe_unserialize( $blob ) : null;
+
+		if ( ! is_array( $meta ) ) {
+			return 0;
+		}
+
+		$total = (int) ( $meta['filesize'] ?? 0 );
+
+		foreach ( (array) ( $meta['sizes'] ?? array() ) as $size ) {
+			$total += (int) ( $size['filesize'] ?? 0 );
+		}
+
+		// Older uploads recorded no size at all. One look at the disk is
+		// better than a headline that quietly leaves them out.
+		return $total > 0 ? $total : self::bytes( $id );
 	}
 
 	/**

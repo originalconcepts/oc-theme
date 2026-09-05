@@ -47,6 +47,26 @@ final class Webp_Admin {
 				<button type="button" class="ocmc__tab" data-ocwp-tab="yes"><?php esc_html_e( 'Already WebP', 'oc-theme' ); ?></button>
 			</nav>
 
+			<div class="ocwp__run" id="ocwp-run">
+				<b><?php esc_html_e( 'Convert the whole library, without keeping this open', 'oc-theme' ); ?></b>
+				<p><?php esc_html_e( 'A library of many thousands is hours of work, so the run happens on the server. Start it, close the tab, come back later. Everything already converted stays converted if you stop it.', 'oc-theme' ); ?></p>
+				<p class="ocwp__runbar" hidden><i></i><span></span></p>
+				<p class="ocwp__runsaid" id="ocwp-run-said"></p>
+				<p>
+					<label>
+						<?php esc_html_e( 'Skip anything under', 'oc-theme' ); ?>
+						<select id="ocwp-run-floor">
+							<option value="0"><?php esc_html_e( 'Nothing — convert them all', 'oc-theme' ); ?></option>
+							<option value="100">100 KB</option>
+							<option value="200" selected>200 KB</option>
+							<option value="500">500 KB</option>
+						</select>
+					</label>
+					<button type="button" class="button button-primary" id="ocwp-run-go"><?php esc_html_e( 'Start the run', 'oc-theme' ); ?></button>
+					<button type="button" class="button" id="ocwp-run-stop" hidden><?php esc_html_e( 'Stop', 'oc-theme' ); ?></button>
+				</p>
+			</div>
+
 			<div data-ocwp-panel="set">
 				<p class="ocmc__webp">
 					<label>
@@ -154,6 +174,13 @@ final class Webp_Admin {
 		.ocmc__float .button:disabled { opacity: .45; }
 		.ocwp__spare { color: #996800; font-size: 12px; }
 		.ocwp__said { font-style: normal; color: #007017; font-size: 13px; margin-inline-start: 10px; }
+		.ocwp__run { margin: 18px 0 24px; padding: 16px 18px; border: 1px solid #c3c4c7; border-inline-start: 4px solid #2271b1; background: #f6f7f7; border-radius: 4px; }
+		.ocwp__run > b { display: block; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: #50575e; }
+		.ocwp__run p { margin: 8px 0 0; }
+		.ocwp__runbar { position: relative; block-size: 18px; background: #dcdcde; border-radius: 9px; overflow: hidden; }
+		.ocwp__runbar i { position: absolute; inset-block: 0; inset-inline-start: 0; inline-size: 0; background: #2271b1; transition: inline-size .4s ease; }
+		.ocwp__runbar span { position: relative; display: block; text-align: center; font-size: 11px; line-height: 18px; color: #1d2327; }
+		.ocwp__runsaid { font-weight: 600; color: #135e96; }
 		.ocwp__load { display: flex; align-items: center; gap: 10px; color: #646970; font-size: 13px; margin: 20px 0; }
 		.ocwp__spin { inline-size: 18px; block-size: 18px; border: 2px solid #dcdcde; border-block-start-color: #2271b1; border-radius: 50%; animation: ocwp-spin .8s linear infinite; }
 		@keyframes ocwp-spin { to { transform: rotate(360deg); } }
@@ -201,6 +228,17 @@ final class Webp_Admin {
 			'askdrop'  => __( 'Remove the files these %d replaced? Any name still written somewhere on the site is kept.', 'oc-theme' ),
 			/* translators: %s: disk space. */
 			'spare'    => __( '%s left over', 'oc-theme' ),
+			/* translators: 1: pictures done, 2: pictures in the run, 3: space saved. */
+			'rgoing'   => __( 'Running — %1$d of %2$d converted, %3$s lighter so far. You can close this page.', 'oc-theme' ),
+			/* translators: 1: pictures converted, 2: space saved. */
+			'rdone'    => __( 'Finished. %1$d pictures converted, %2$s lighter.', 'oc-theme' ),
+			/* translators: 1: pictures converted, 2: space saved. */
+			'rstop'    => __( 'Stopped after %1$d pictures, %2$s lighter. The ones already done stay done.', 'oc-theme' ),
+			/* translators: %d: number of pictures that could not be converted. */
+			'rfail'    => __( '%d could not be converted and were passed over.', 'oc-theme' ),
+			'rwait'    => __( 'Booked. The first batch starts within a minute.', 'oc-theme' ),
+			'rask'     => __( 'Convert the whole library in the background? It runs on the server for as long as it takes, and you can stop it at any time.', 'oc-theme' ),
+			'rstopask' => __( 'Stop the run? Everything converted so far stays converted.', 'oc-theme' ),
 			'nospare'  => __( 'nothing left over', 'oc-theme' ),
 			'kept'     => __( 'kept', 'oc-theme' ),
 			'settings' => __( 'Settings', 'oc-theme' ),
@@ -446,6 +484,95 @@ final class Webp_Admin {
 
 				next();
 			}
+
+			/* ---------- the background run ---------- */
+
+			var rGo    = document.getElementById( 'ocwp-run-go' );
+			var rStop  = document.getElementById( 'ocwp-run-stop' );
+			var rSaid  = document.getElementById( 'ocwp-run-said' );
+			var rBar   = document.querySelector( '.ocwp__runbar' );
+			var rTimer = null;
+
+			function runBar( pct, text ) {
+				rBar.hidden = false;
+				rBar.querySelector( 'i' ).style.inlineSize = Math.max( 0, Math.min( 100, pct ) ) + '%';
+				rBar.querySelector( 'span' ).textContent = text;
+			}
+
+			function runDraw( d ) {
+				if ( ! d || 'idle' === d.state ) {
+					rBar.hidden = true;
+					rSaid.textContent = '';
+					rGo.hidden = false;
+					rStop.hidden = true;
+					return;
+				}
+
+				var done  = d.done || 0;
+				var total = d.total || 0;
+				var pct   = total ? Math.round( 100 * ( d.cursor || 0 ) / total ) : 0;
+				var lite  = kb( d.saved || 0 );
+
+				if ( 'running' === d.state ) {
+					runBar( pct, pct + '%' );
+					rSaid.textContent = sprintf( T.rgoing, done, total, lite );
+					rGo.hidden = true;
+					rStop.hidden = false;
+				} else {
+					rBar.hidden = true;
+					rSaid.textContent = 'done' === d.state
+						? sprintf( T.rdone, done, lite )
+						: sprintf( T.rstop, done, lite );
+					rGo.hidden = false;
+					rStop.hidden = true;
+				}
+
+				if ( d.failed ) {
+					rSaid.textContent += ' ' + sprintf( T.rfail, d.failed );
+				}
+
+				// Poll only while there is something to watch.
+				if ( 'running' === d.state ) {
+					if ( ! rTimer ) { rTimer = window.setInterval( runPoll, 5000 ); }
+				} else if ( rTimer ) {
+					window.clearInterval( rTimer );
+					rTimer = null;
+				}
+			}
+
+			function runPoll() {
+				post( 'ocmc_run_state', {} )
+					.then( function ( r ) { if ( r && r.success ) { runDraw( r.data ); } } )
+					.catch( function () {} );
+			}
+
+			if ( rGo ) {
+				rGo.addEventListener( 'click', function () {
+					if ( ! window.confirm( T.rask ) ) { return; }
+					rGo.disabled = true;
+					rSaid.textContent = T.rwait;
+					post( 'ocmc_run_start', { floor: document.getElementById( 'ocwp-run-floor' ).value } )
+						.then( function ( r ) {
+							rGo.disabled = false;
+							if ( r && r.success ) { runDraw( r.data ); }
+							else { rSaid.textContent = ( r && r.data && r.data.why ) || T.failed; }
+						} )
+						.catch( function () { rGo.disabled = false; rSaid.textContent = T.failed; } );
+				} );
+			}
+
+			if ( rStop ) {
+				rStop.addEventListener( 'click', function () {
+					if ( ! window.confirm( T.rstopask ) ) { return; }
+					rStop.disabled = true;
+					post( 'ocmc_run_stop', {} ).then( function ( r ) {
+						rStop.disabled = false;
+						if ( r && r.success ) { runDraw( r.data ); }
+					} ).catch( function () { rStop.disabled = false; } );
+				} );
+			}
+
+			runPoll();
 
 			[ [ 'ocwp-convert', false, T.ask ], [ 'ocwp-drop', true, T.askdrop ] ].forEach( function ( pair ) {
 				document.getElementById( pair[ 0 ] ).addEventListener( 'click', function () {
