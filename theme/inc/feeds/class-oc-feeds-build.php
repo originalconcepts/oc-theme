@@ -35,11 +35,7 @@ final class Build {
 		$ids = self::ids( $feed );
 
 		set_transient( 'oc_feed_ids_' . $key, $ids, DAY_IN_SECONDS );
-
-		$part = Feeds::path( $key, (string) $feed['format'] ) . '.part';
-		$open = self::head( $feed );
-
-		file_put_contents( $part, $open ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- writing this plugin's own feed file.
+		self::clear_parts( $key );
 
 		$feed['state']   = 'running';
 		$feed['skipped'] = 0;
@@ -50,6 +46,32 @@ final class Build {
 		$feed['error']   = '';
 
 		Feeds::put( $key, $feed );
+	}
+
+	/**
+	 * Where a run's batches are collected before they become a feed.
+	 *
+	 * @param string $key Feed key.
+	 */
+	private static function parts_dir( string $key ): string {
+		$dir = wp_get_upload_dir()['basedir'] . '/oc-feeds/parts-' . sanitize_key( $key );
+
+		if ( ! is_dir( $dir ) ) {
+			wp_mkdir_p( $dir );
+		}
+
+		return $dir;
+	}
+
+	/**
+	 * Throw away whatever a previous run left behind.
+	 *
+	 * @param string $key Feed key.
+	 */
+	private static function clear_parts( string $key ): void {
+		foreach ( (array) glob( self::parts_dir( $key ) . '/*.txt' ) as $file ) {
+			wp_delete_file( (string) $file );
+		}
 	}
 
 	/**
@@ -64,14 +86,13 @@ final class Build {
 			return;
 		}
 
-		// One worker at a time. The screen drives batches while it is open
-		// and the schedule drives them in the background, and without this
-		// both read the same cursor and appended the same products — a feed
-		// with the same id in it twice, which is the one fault a network
-		// rejects a whole catalogue for.
-		if ( ! self::lock( $key ) ) {
-			return;
-		}
+		// The screen drives batches while it is open and the schedule drives
+		// them in the background. The lock keeps them out of each other's way
+		// most of the time, but correctness does not rest on it: a batch is
+		// written to a file named after where it starts, so two workers that
+		// pick up the same range write the same file rather than the same
+		// products twice.
+		self::lock( $key );
 
 		$ids = get_transient( 'oc_feed_ids_' . $key );
 
@@ -85,9 +106,9 @@ final class Build {
 		}
 
 		$began   = microtime( true );
-		$part    = Feeds::path( $key, (string) $feed['format'] ) . '.part';
 		$at      = (int) $feed['cursor'];
 		$stop    = min( $at + Feeds::BATCH, count( $ids ) );
+		$from    = $at;
 		$rows    = '';
 		$made    = 0;
 		$skipped = 0;
@@ -114,9 +135,7 @@ final class Build {
 			}
 		}
 
-		if ( '' !== $rows ) {
-			file_put_contents( $part, $rows, FILE_APPEND ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- appending to this plugin's own feed file.
-		}
+		file_put_contents( self::parts_dir( $key ) . '/' . str_pad( (string) $from, 9, '0', STR_PAD_LEFT ) . '.txt', $rows ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- writing this plugin's own batch file.
 
 		$feed['cursor']  = $at;
 		$feed['items']   = (int) $feed['items'] + $made;
@@ -125,16 +144,11 @@ final class Build {
 		$feed['ms']      = (int) $feed['ms'] + (int) round( ( microtime( true ) - $began ) * 1000 );
 
 		if ( $at >= count( $ids ) ) {
-			file_put_contents( $part, self::foot( $feed ), FILE_APPEND ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- closing this plugin's own feed file.
-
-			$final = Feeds::path( $key, (string) $feed['format'] );
-
-			// The swap is the last thing that happens, so the address never
-			// answers with a feed that is only half written.
-			rename( $part, $final ); // phpcs:ignore WordPress.WP.AlternativeFunctions.rename_rename -- moving this plugin's own file into place.
+			self::assemble( $key, $feed );
 
 			$feed['state'] = 'ready';
 			$feed['made']  = time();
+			$feed['items'] = self::count_items( $key, $feed );
 
 			delete_transient( 'oc_feed_ids_' . $key );
 		}
@@ -144,28 +158,81 @@ final class Build {
 	}
 
 	/**
-	 * Take the build lock, or say that somebody else has it.
+	 * Put the batches together, in order, and swap the result into place.
 	 *
-	 * The atomic part is add_option(): the options table will not hold two
-	 * rows of the same name, so exactly one caller can create it. A check
-	 * followed by a write is not enough here — two workers both find it
-	 * free in the same millisecond and both carry on.
+	 * The address keeps answering with the previous feed right up to the
+	 * rename, so nobody is ever handed a half-written catalogue.
+	 *
+	 * @param string              $key  Feed key.
+	 * @param array<string,mixed> $feed Feed.
+	 */
+	private static function assemble( string $key, array $feed ): void {
+		$final = Feeds::path( $key, (string) $feed['format'] );
+		$part  = $final . '.part';
+		$files = (array) glob( self::parts_dir( $key ) . '/*.txt' );
+
+		sort( $files, SORT_STRING );
+
+		file_put_contents( $part, self::head( $feed ) ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- this plugin's own feed file.
+
+		foreach ( $files as $file ) {
+			$rows = (string) file_get_contents( (string) $file ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_get_contents -- this plugin's own batch file.
+
+			if ( '' !== $rows ) {
+				file_put_contents( $part, $rows, FILE_APPEND ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- this plugin's own feed file.
+			}
+		}
+
+		file_put_contents( $part, self::foot( $feed ), FILE_APPEND ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- this plugin's own feed file.
+		rename( $part, $final ); // phpcs:ignore WordPress.WP.AlternativeFunctions.rename_rename -- moving this plugin's own file into place.
+
+		self::clear_parts( $key );
+	}
+
+	/**
+	 * How many lines the finished feed really holds.
+	 *
+	 * Counted from the file rather than tallied while building, so the
+	 * number on the screen is the number a network will read.
+	 *
+	 * @param string              $key  Feed key.
+	 * @param array<string,mixed> $feed Feed.
+	 */
+	private static function count_items( string $key, array $feed ): int {
+		$file = Feeds::path( $key, (string) $feed['format'] );
+
+		if ( ! file_exists( $file ) ) {
+			return 0;
+		}
+
+		$mark  = 'csv' === $feed['format'] ? "\n" : ( 'zap' === $feed['target'] ? '<PRODUCT>' : '<item>' );
+		$count = 0;
+		$handle = fopen( $file, 'r' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- reading this plugin's own feed file in a stream.
+
+		if ( false === $handle ) {
+			return 0;
+		}
+
+		while ( ! feof( $handle ) ) {
+			$count += substr_count( (string) fread( $handle, 1048576 ), $mark ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fread -- reading this plugin's own feed file in a stream.
+		}
+
+		fclose( $handle ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- closing this plugin's own file handle.
+
+		return 'csv' === $feed['format'] ? max( 0, $count - 1 ) : $count;
+	}
+
+	/**
+	 * Note that a build is going on.
+	 *
+	 * Advisory only. WordPress has no lock this could be built on —
+	 * add_option() ends in ON DUPLICATE KEY UPDATE and happily succeeds
+	 * for the second caller — so the batch files carry the safety instead.
 	 *
 	 * @param string $key Feed key.
 	 */
-	private static function lock( string $key ): bool {
-		$name = 'oc_feed_lock_' . $key;
-		$held = (int) get_option( $name, 0 );
-
-		if ( $held > 0 && time() - $held < 2 * MINUTE_IN_SECONDS ) {
-			return false;
-		}
-
-		if ( $held > 0 ) {
-			delete_option( $name );
-		}
-
-		return add_option( $name, time(), '', false );
+	private static function lock( string $key ): void {
+		update_option( 'oc_feed_lock_' . $key, time(), false );
 	}
 
 	/**
