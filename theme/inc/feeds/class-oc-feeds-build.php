@@ -762,9 +762,24 @@ final class Build {
 			$text = (string) $owner->get_name();
 		}
 
-		$regular = (float) $item->get_regular_price();
-		$now     = (float) $item->get_price();
-		$sale    = $now > 0 && $regular > $now ? $now : 0.0;
+		// The number a shopper sees, not the number in the database. Two
+		// things move between them, and getting either wrong is a price
+		// mismatch — the fault that has a network reject an item outright.
+		//
+		//  1. Tax. A shop that stores prices without VAT and shows them
+		//     with it would otherwise feed a price nobody is charged.
+		//  2. A discount plugin. Some change the price itself, which
+		//     get_price() already reflects; others only change what the
+		//     page prints, and have to be asked.
+		$regular = (float) wc_get_price_to_display( $item, array( 'price' => $item->get_regular_price() ) );
+		$now     = (float) wc_get_price_to_display( $item );
+
+		if ( $regular <= 0 ) {
+			$regular = $now;
+		}
+
+		$now  = self::discounted( $item, $now );
+		$sale = $now > 0 && $regular > $now ? $now : 0.0;
 
 		return array(
 			'id'        => (string) $item->get_id(),
@@ -791,6 +806,46 @@ final class Build {
 			'weight'    => (string) $item->get_weight(),
 			'ship'      => empty( $feed['ship'] ) ? '' : self::ship( $item ),
 		);
+	}
+
+	/**
+	 * The price after any discount the shop is showing but has not written
+	 * into the product.
+	 *
+	 * Plugins split into two kinds. One kind filters the price itself, and
+	 * `get_price()` has already told us. The other only rewrites the price
+	 * on the page and keeps the discount in the cart — for those the number
+	 * has to be asked for, and asking is always better than working it out
+	 * again here, because the rules are theirs and they change.
+	 *
+	 * @param \WC_Product $item Item.
+	 * @param float       $now  The price as WooCommerce reports it.
+	 */
+	private static function discounted( \WC_Product $item, float $now ): float {
+		// The OC promotion engine: an automatic catalogue discount lives in
+		// its display layer, and it answers for one product at a time.
+		if ( function_exists( 'PromoEngine' ) || class_exists( '\PromoEngine\Plugin' ) ) {
+			$engine = \PromoEngine\Plugin::instance();
+
+			if ( isset( $engine->catalog ) && method_exists( $engine->catalog, 'catalog_price' ) ) {
+				$asked = $engine->catalog->catalog_price( $item );
+
+				if ( is_numeric( $asked ) && (float) $asked > 0 && (float) $asked < $now ) {
+					$now = (float) $asked;
+				}
+			}
+		}
+
+		/**
+		 * The price one item goes into the feed with.
+		 *
+		 * The way to teach the feed about any other discount plugin: return
+		 * the number the shop actually shows.
+		 *
+		 * @param float       $now  Price so far.
+		 * @param \WC_Product $item The item.
+		 */
+		return (float) apply_filters( 'oc_feed_price', $now, $item );
 	}
 
 	/**
