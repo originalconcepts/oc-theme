@@ -837,6 +837,16 @@ final class Build {
 			}
 		}
 
+		// Woo Discount Rules keeps its discount in the cart as well, and
+		// offers this filter as the way to ask what a product really costs.
+		if ( class_exists( '\Wdr\App\Controllers\ManageDiscount' ) ) {
+			$asked = apply_filters( 'advanced_woo_discount_rules_get_product_discount_price', $now, $item, 1 );
+
+			if ( is_numeric( $asked ) && (float) $asked > 0 && (float) $asked < $now ) {
+				$now = (float) $asked;
+			}
+		}
+
 		/**
 		 * The price one item goes into the feed with.
 		 *
