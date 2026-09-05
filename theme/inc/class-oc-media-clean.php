@@ -1745,6 +1745,16 @@ final class Media_Clean {
 
 		wp_update_attachment_metadata( $id, $meta );
 
+		// The row still called itself a PNG. Anything that asks WordPress what
+		// this attachment is — the library's type filter, a block deciding
+		// what it may do with it — was being told the old answer.
+		wp_update_post(
+			array(
+				'ID'             => $id,
+				'post_mime_type' => 'image/webp',
+			)
+		);
+
 		$after = self::bytes( $id );
 
 		return array(
@@ -1907,6 +1917,20 @@ final class Media_Clean {
 
 		update_post_meta( $id, '_wp_attached_file', (string) $was['file'] );
 		wp_update_attachment_metadata( $id, (array) $was['meta'] );
+
+		// Put the row's own idea of its format back with the file, or the
+		// picture is a PNG again while WordPress still calls it a WebP.
+		$type = (string) ( wp_check_filetype( (string) $was['file'] )['type'] ?? '' );
+
+		if ( '' !== $type ) {
+			wp_update_post(
+				array(
+					'ID'             => $id,
+					'post_mime_type' => $type,
+				)
+			);
+		}
+
 		delete_post_meta( $id, self::PREWEBP );
 
 		return array(

@@ -71,6 +71,30 @@ final class Render {
 		// show (e.g. a new card image), so they must turn the cache too.
 		add_action( 'edited_product_cat', array( $this, 'flush' ) );
 		add_action( 'edited_category', array( $this, 'flush' ) );
+
+		// So does a picture changing underneath a page that already names it.
+		// Converting the library to WebP rewrites every address a block had
+		// cached, and without this the composed markup goes on asking for the
+		// .png for a whole day while the file it points at is the old one.
+		// This one is a filter, not an action: it must hand the metadata
+		// back untouched, or every attachment it passes through is emptied.
+		add_filter( 'wp_update_attachment_metadata', array( $this, 'flush_media' ), 10, 2 );
+		add_action( 'delete_attachment', array( $this, 'flush' ) );
+	}
+
+	/**
+	 * Turn the cache when a picture is rebuilt, and change nothing else.
+	 *
+	 * @param mixed $data Attachment metadata, returned untouched.
+	 * @param int   $id   Attachment id.
+	 * @return mixed The metadata exactly as it arrived.
+	 */
+	public function flush_media( $data, $id = 0 ) {
+		unset( $id );
+
+		$this->flush();
+
+		return $data;
 	}
 
 	/**
