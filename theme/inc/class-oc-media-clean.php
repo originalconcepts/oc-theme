@@ -2096,7 +2096,7 @@ final class Media_Clean {
 		// phpcs:disable WordPress.Security.NonceVerification.Missing -- guard() above ran check_ajax_referer().
 		$raw  = isset( $_POST['min'] ) ? sanitize_key( wp_unslash( $_POST['min'] ) ) : '500';
 		$type = isset( $_POST['type'] ) ? sanitize_key( wp_unslash( $_POST['type'] ) ) : 'all';
-		$lcp  = isset( $_POST['lcp'] ) ? (float) wp_unslash( $_POST['lcp'] ) : 0.0;
+		$lcp  = isset( $_POST['lcp'] ) ? (float) sanitize_text_field( wp_unslash( $_POST['lcp'] ) ) : 0.0;
 		// phpcs:enable
 
 		$url = isset( $_POST['url'] ) ? esc_url_raw( wp_unslash( $_POST['url'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- guard() above ran check_ajax_referer().
