@@ -762,15 +762,16 @@ final class Build {
 			$text = (string) $owner->get_name();
 		}
 
-		// The number a shopper sees, not the number in the database. Two
-		// things move between them, and getting either wrong is a price
-		// mismatch — the fault that has a network reject an item outright.
-		//
-		//  1. Tax. A shop that stores prices without VAT and shows them
-		//     with it would otherwise feed a price nobody is charged.
-		//  2. A discount plugin. Some change the price itself, which
-		//     get_price() already reflects; others only change what the
-		//     page prints, and have to be asked.
+		/*
+		 * The number a shopper sees, not the number in the database. Two
+		 * things move between them, and getting either wrong is a price
+		 * mismatch — the fault that has a network reject an item outright.
+		 * One is tax: a shop that stores prices without VAT and shows them
+		 * with it would otherwise feed a price nobody is charged. The other
+		 * is a discount plugin — some change the price itself, which
+		 * get_price() already reflects, and some only change what the page
+		 * prints, which has to be asked for.
+		 */
 		$regular = (float) wc_get_price_to_display( $item, array( 'price' => $item->get_regular_price() ) );
 		$now     = (float) wc_get_price_to_display( $item );
 
