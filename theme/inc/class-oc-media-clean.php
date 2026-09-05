@@ -1246,6 +1246,7 @@ final class Media_Clean {
 	 *
 	 * @param int   $saved Bytes no longer downloaded.
 	 * @param float $lcp   The page's LCP today, in seconds. 0 to skip.
+	 * @param float $floor Fastest LCP the forecast may claim. 0 for the default.
 	 * @return array<string,mixed>
 	 */
 	public static function speed_gain( int $saved, float $lcp = 0.0, float $floor = 0.0 ): array {
