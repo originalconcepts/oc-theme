@@ -191,6 +191,18 @@ final class Build {
 
 		file_put_contents( self::parts_dir( $key, $run ) . '/' . str_pad( (string) $from, 9, '0', STR_PAD_LEFT ) . '.txt', $rows ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- writing this plugin's own batch file.
 
+		/*
+		 * Two hundred products and their variations leave a great deal behind
+		 * in the runtime cache, and a worker that runs batch after batch in
+		 * one process grows until it is killed. In production every batch is
+		 * its own request and this costs nothing; it is what makes a long
+		 * loop behave the same way. Only the runtime cache goes — a real
+		 * object cache keeps everything it holds.
+		 */
+		if ( function_exists( 'wp_cache_flush_runtime' ) ) {
+			wp_cache_flush_runtime();
+		}
+
 		// A rebuild may have begun while this batch was working. Its numbers
 		// belong to a run nobody is waiting for any more.
 		$now = Feeds::get( $key );
