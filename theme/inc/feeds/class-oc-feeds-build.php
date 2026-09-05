@@ -146,7 +146,7 @@ final class Build {
 	/**
 	 * Take the build lock, or say that somebody else has it.
 	 *
-	 * add_option() is the atomic part: the options table will not hold two
+	 * The atomic part is add_option(): the options table will not hold two
 	 * rows of the same name, so exactly one caller can create it. A check
 	 * followed by a write is not enough here — two workers both find it
 	 * free in the same millisecond and both carry on.
