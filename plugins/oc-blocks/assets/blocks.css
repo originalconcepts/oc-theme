@@ -631,19 +631,15 @@
 }
 
 .ocb-shelf .ocb-arr--prev,
-.ocb-cats .ocb-arr--prev { left: -20px; }
+.ocb-cats .ocb-arr--prev,
+.ocb-brands .ocb-arr--prev { left: -20px; }
 
 .ocb-shelf .ocb-arr--next,
-.ocb-cats .ocb-arr--next { right: -20px; }
+.ocb-cats .ocb-arr--next,
+.ocb-brands .ocb-arr--next { right: -20px; }
 
-/* The brands row is the full width of the section, so an arrow hung
-   outside it lands under `.ocb`'s `overflow: clip` and loses its outer
-   half. These sit just inside the row instead — over the first and last
-   tile, which is where the eye looks for them anyway. */
-.ocb-brands .ocb-arr--prev { left: 6px; }
-.ocb-brands .ocb-arr--next { right: 6px; }
-
-/* A row of tiles is all picture: its middle is the middle of the row. */
+/* A row of tiles is all picture: its middle is the middle of the row, and
+   no measuring is needed to find it. */
 .ocb-brands .ocb-arr { inset-block-start: 50%; }
 
 @media (max-width: 782px) {
@@ -894,7 +890,15 @@
 
 /* ---------- brands ---------- */
 
-.ocb-brands { position: relative; --ocb-br-gap: 30px; }
+.ocb-brands {
+	position: relative;
+	--ocb-br-gap: 30px;
+	--ocb-br-logo: var(--ocb-br-mlogo, 100%);
+}
+
+@media (min-width: 783px) {
+	.ocb-brands { --ocb-br-logo: var(--ocb-br-dlogo, 100%); }
+}
 .ocb-brands--gap-small { --ocb-br-gap: 14px; }
 .ocb-brands--gap-large { --ocb-br-gap: 52px; }
 .ocb-brands--gap-none { --ocb-br-gap: 0px; }

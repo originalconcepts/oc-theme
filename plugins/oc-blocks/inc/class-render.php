@@ -1191,7 +1191,8 @@ final class Render {
 			'--ocb-cols:' . max( 1, absint( $s['cols'] ) ),
 			'--ocb-mcols:' . max( 1, absint( $s['mcols'] ?? 3 ) ),
 			'--ocb-br-pad:' . max( 0, absint( $s['pad'] ?? 0 ) ) . 'px',
-			'--ocb-br-logo:' . max( 10, min( 100, absint( $s['logo'] ?? 100 ) ) ) . '%',
+			'--ocb-br-dlogo:' . max( 10, min( 100, absint( $s['logo'] ?? 100 ) ) ) . '%',
+			'--ocb-br-mlogo:' . max( 10, min( 100, absint( $s['mlogo'] ?? ( $s['logo'] ?? 100 ) ) ) ) . '%',
 			'--ocb-br-h:' . max( 40, absint( $s['height'] ?? 120 ) ) . 'px',
 		);
 
