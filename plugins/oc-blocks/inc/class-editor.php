@@ -173,6 +173,10 @@ final class Editor {
 					'empty'    => __( 'The page is empty. Add your first section:', 'oc-blocks' ),
 					'devD'     => __( 'Desktop', 'oc-blocks' ),
 					'devM'     => __( 'Mobile', 'oc-blocks' ),
+					'noBrands' => __( 'This shop has no brands yet.', 'oc-blocks' ),
+					'brandsAll' => __( 'Nothing ticked — every brand with a product is shown.', 'oc-blocks' ),
+					/* translators: %d: how many brands are ticked. */
+					'brandsPicked' => __( '%d chosen, in the order they were ticked.', 'oc-blocks' ),
 					'select'   => __( 'Pick a section from the list to edit it.', 'oc-blocks' ),
 					'sections' => __( 'Sections', 'oc-blocks' ),
 					'content'  => __( 'Content', 'oc-blocks' ),
@@ -286,7 +290,7 @@ final class Editor {
 	 * Names for picked ids (products, posts, categories), for the chips.
 	 *
 	 * @param array<int,array<string,mixed>> $sections Sections.
-	 * @return array{ids: array<int|string, string>, cats: array<int, array{id: int, label: string, parent: int}>} Picked-id names keyed by id (categories under 'c' . id), plus the whole category tree.
+	 * @return array{ids: array<int|string, string>, cats: array<int, array{id: int, label: string, parent: int}>, brands: array<int, array{id: int, label: string, count: int}>} Picked-id names keyed by id (categories under 'c' . id), the whole category tree, and every brand.
 	 */
 	private static function names( array $sections ): array {
 		$out = array();
@@ -351,9 +355,34 @@ final class Editor {
 			}
 		}
 
+		// Every brand the shop has, for the picker on the brands block.
+		$brands = array();
+		$btax   = Render::brand_taxonomy();
+
+		if ( '' !== $btax ) {
+			$terms = get_terms(
+				array(
+					'taxonomy'   => $btax,
+					'hide_empty' => false,
+					'orderby'    => 'name',
+				)
+			);
+
+			if ( is_array( $terms ) ) {
+				foreach ( $terms as $term ) {
+					$brands[] = array(
+						'id'    => (int) $term->term_id,
+						'label' => $term->name,
+						'count' => (int) $term->count,
+					);
+				}
+			}
+		}
+
 		return array(
-			'ids'  => $out,
-			'cats' => $tree,
+			'ids'    => $out,
+			'cats'   => $tree,
+			'brands' => $brands,
 		);
 	}
 

@@ -20,6 +20,7 @@
 		draftTimer: null,
 		names: ( D.names && D.names.ids ) || {},
 		cats: ( D.names && D.names.cats ) || [],
+		brands: ( D.names && D.names.brands ) || [],
 		thumbs: D.thumbs || {}
 	};
 
@@ -107,6 +108,7 @@
 			case 'products':
 			case 'posts':
 			case 'cats':
+			case 'brands':
 				return [];
 			case 'category':
 				return 0;
@@ -469,6 +471,8 @@
 				return selectField( section, key, field );
 			case 'cats':
 				return catsField( section, key, field );
+			case 'brands':
+				return brandsField( section, key, field );
 			case 'labels':
 				return null;
 			case 'products':
@@ -535,15 +539,17 @@
 
 	function rangeField( section, key, field ) {
 		var current = undefined === section[ key ] ? ( field.def || 0 ) : section[ key ];
-		var shownV = el( 'span', { 'class': 'ocbe-f__v', text: current + '%' } );
+		var unit = field.unit || '%';
+		var shownV = el( 'span', { 'class': 'ocbe-f__v', text: current + unit } );
 		var input = el( 'input', {
 			type: 'range',
-			min: '0',
-			max: '100',
+			min: String( undefined === field.min ? 0 : field.min ),
+			max: String( undefined === field.max ? 100 : field.max ),
+			step: String( field.step || 1 ),
 			value: current,
 			oninput: function () {
 				section[ key ] = Number( input.value );
-				shownV.textContent = input.value + '%';
+				shownV.textContent = input.value + unit;
 				touch();
 			}
 		} );
@@ -743,6 +749,54 @@
 				treeWalk( cat.id, depth + 1, fn );
 			}
 		} );
+	}
+
+	/* Brands are a flat list, and the order they are ticked in is the order
+	   they are shown in — so a chosen few can be arranged deliberately. */
+	function brandsField( section, key, field ) {
+		var list = el( 'div', { 'class': 'ocbe-checks' } );
+		var all  = state.brands || [];
+
+		if ( ! all.length ) {
+			return el( 'p', { 'class': 'ocbe-f__hint', text: T.noBrands } );
+		}
+
+		var count = el( 'small', { 'class': 'ocbe-f__hint' } );
+
+		function say() {
+			var n = ( section[ key ] || [] ).length;
+			count.textContent = n ? T.brandsPicked.replace( '%d', n ) : T.brandsAll;
+		}
+
+		all.forEach( function ( brand ) {
+			var picked = ( section[ key ] || [] ).map( Number );
+
+			var input = el( 'input', {
+				type: 'checkbox',
+				checked: picked.indexOf( brand.id ) > -1 ? 'checked' : null,
+				onchange: function () {
+					var now = ( section[ key ] || [] ).map( Number );
+					var at  = now.indexOf( brand.id );
+
+					if ( at > -1 ) { now.splice( at, 1 ); }
+					else { now.push( brand.id ); }
+
+					section[ key ] = now;
+					say();
+					touch();
+				}
+			} );
+
+			list.appendChild( el( 'label', { 'class': 'ocbe-checks__row' }, [
+				input,
+				el( 'span', { text: brand.label } ),
+				el( 'em', { 'class': 'ocbe-checks__count', text: String( brand.count ) } )
+			] ) );
+		} );
+
+		say();
+
+		return labelWrap( field, [ list, count ], true );
 	}
 
 	function catsField( section, key, field ) {

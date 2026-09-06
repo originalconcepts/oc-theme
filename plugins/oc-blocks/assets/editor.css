@@ -718,3 +718,5 @@ html[dir="ltr"] .ocbe-switch input:checked + i::after { transform: translateX(16
 }
 
 .ocbe-devtab button.is-on { background: #fff; opacity: 1; box-shadow: 0 1px 4px rgb(0 0 0 / 10%); }
+
+.ocbe-checks__count { margin-inline-start: auto; font-style: normal; color: #a7aaad; font-size: 11px; }

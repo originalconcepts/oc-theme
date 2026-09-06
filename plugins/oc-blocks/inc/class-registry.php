@@ -835,30 +835,81 @@ final class Registry {
 				'blurb'  => __( 'The logos, in a quiet row.', 'oc-blocks' ),
 				'icon'   => '<svg viewBox="0 0 24 24"><rect x="2.5" y="8" width="5.5" height="8" rx="1" opacity=".45"/><rect x="9.5" y="8" width="5.5" height="8" rx="1" opacity=".45"/><rect x="16.5" y="8" width="5.5" height="8" rx="1" opacity=".45"/></svg>',
 				'fields' => array(
-					'heading' => array(
+					'heading'   => array(
 						'type'  => 'text',
 						'label' => __( 'Heading', 'oc-blocks' ),
 					),
-					'layout'  => array(
+					'picks'     => array(
+						'type'  => 'brands',
+						'label' => __( 'Which brands', 'oc-blocks' ),
+						'hint'  => __( 'Tick none and every brand with a product shows, by name.', 'oc-blocks' ),
+					),
+					'more'      => array(
+						'type'  => 'toggle',
+						'label' => __( 'A button to all the brands', 'oc-blocks' ),
+						'def'   => false,
+					),
+					'morelabel' => array(
+						'type'  => 'text',
+						'label' => __( 'The button says', 'oc-blocks' ),
+						'when'  => array( 'more' => array( '1', 1, true ) ),
+					),
+					'moreurl'   => array(
+						'type'  => 'text',
+						'label' => __( 'And goes to', 'oc-blocks' ),
+						'hint'  => __( 'Leave empty for the brands archive.', 'oc-blocks' ),
+						'when'  => array( 'more' => array( '1', 1, true ) ),
+					),
+					'shape'     => array(
 						'type'    => 'seg',
-						'label'   => __( 'Laid as', 'oc-blocks' ),
+						'label'   => __( 'Tile shape', 'oc-blocks' ),
 						'choices' => array(
-							'grid'   => __( 'Grid', 'oc-blocks' ),
-							'slider' => __( 'Slider', 'oc-blocks' ),
+							'free'   => __( 'By the logo', 'oc-blocks' ),
+							'square' => __( 'Square', 'oc-blocks' ),
+							'rect'   => __( 'Rectangle', 'oc-blocks' ),
 						),
-						'def'     => 'grid',
+						'def'     => 'free',
 						'group'   => 'design',
 					),
-					'cols'    => array(
-						'type'  => 'number',
-						'label' => __( 'Per row — desktop', 'oc-blocks' ),
-						'dev'   => 'd',
-						'def'   => 5,
-						'min'   => 2,
-						'max'   => 8,
+					'height'    => array(
+						'type'  => 'range',
+						'label' => __( 'Tile height', 'oc-blocks' ),
+						'def'   => 120,
+						'min'   => 60,
+						'max'   => 320,
+						'step'  => 4,
+						'unit'  => 'px',
+						'when'  => array( 'shape' => array( 'rect' ) ),
 						'group' => 'design',
 					),
-					'gap'     => array(
+					'bg'        => array(
+						'type'    => 'seg',
+						'label'   => __( 'Tile background', 'oc-blocks' ),
+						'choices' => array(
+							'none'   => __( 'None', 'oc-blocks' ),
+							'colour' => __( 'A colour', 'oc-blocks' ),
+						),
+						'def'     => 'none',
+						'group'   => 'design',
+					),
+					'bgc'       => array(
+						'type'  => 'color',
+						'label' => __( 'The colour', 'oc-blocks' ),
+						'def'   => '#f5f5f5',
+						'when'  => array( 'bg' => array( 'colour' ) ),
+						'group' => 'design',
+					),
+					'pad'       => array(
+						'type'  => 'range',
+						'label' => __( 'Space inside the tile', 'oc-blocks' ),
+						'def'   => 0,
+						'min'   => 0,
+						'max'   => 48,
+						'step'  => 2,
+						'unit'  => 'px',
+						'group' => 'design',
+					),
+					'gap'       => array(
 						'type'    => 'seg',
 						'label'   => __( 'Space between', 'oc-blocks' ),
 						'choices' => array(
@@ -869,6 +920,46 @@ final class Registry {
 						),
 						'def'     => 'normal',
 						'group'   => 'design',
+					),
+					'layout'    => array(
+						'type'    => 'seg',
+						'label'   => __( 'Laid as', 'oc-blocks' ),
+						'choices' => array(
+							'grid'   => __( 'Grid', 'oc-blocks' ),
+							'slider' => __( 'Slider', 'oc-blocks' ),
+						),
+						'def'     => 'grid',
+						'dev'     => 'd',
+						'group'   => 'design',
+					),
+					'cols'      => array(
+						'type'  => 'number',
+						'label' => __( 'Per row', 'oc-blocks' ),
+						'dev'   => 'd',
+						'def'   => 5,
+						'min'   => 1,
+						'max'   => 10,
+						'group' => 'design',
+					),
+					'mlayout'   => array(
+						'type'    => 'seg',
+						'label'   => __( 'Laid as', 'oc-blocks' ),
+						'choices' => array(
+							'grid'   => __( 'Grid', 'oc-blocks' ),
+							'slider' => __( 'Slider', 'oc-blocks' ),
+						),
+						'def'     => 'grid',
+						'dev'     => 'm',
+						'group'   => 'design',
+					),
+					'mcols'     => array(
+						'type'  => 'number',
+						'label' => __( 'Per row', 'oc-blocks' ),
+						'dev'   => 'm',
+						'def'   => 3,
+						'min'   => 1,
+						'max'   => 6,
+						'group' => 'design',
 					),
 				),
 			),
@@ -1784,7 +1875,12 @@ final class Registry {
 				return empty( $value ) ? 0 : 1;
 
 			case 'range':
-				return max( 0, min( 100, absint( is_scalar( $value ) ? $value : 0 ) ) );
+				// Percentages were all this held once, so a slider with no
+				// bounds of its own still means nought to a hundred.
+				$low  = (int) ( $field['min'] ?? 0 );
+				$high = (int) ( $field['max'] ?? 100 );
+
+				return max( $low, min( $high, absint( is_scalar( $value ) ? $value : $low ) ) );
 
 			case 'number':
 				$min = (int) ( $field['min'] ?? 0 );
@@ -1803,6 +1899,7 @@ final class Registry {
 			case 'products':
 			case 'posts':
 			case 'cats':
+			case 'brands':
 				$ids = array();
 
 				foreach ( (array) $value as $one ) {

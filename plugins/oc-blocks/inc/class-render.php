@@ -1095,32 +1095,50 @@ final class Render {
 	}
 
 	/**
-	 * Brands: the logos, in a quiet row.
+	 * Whichever brand taxonomy this shop happens to have.
+	 *
+	 * Public because the editor's brand picker has to offer the same list
+	 * the block will later render from.
+	 */
+	public static function brand_taxonomy(): string {
+		foreach ( array( 'product_brand', 'pwb-brand', 'oc_brand' ) as $tax ) {
+			if ( taxonomy_exists( $tax ) ) {
+				return $tax;
+			}
+		}
+
+		return '';
+	}
+
+	/**
+	 * The logos.
 	 *
 	 * @param array<string,mixed> $s Section.
 	 * @return string
 	 */
 	private static function brands( array $s ): string {
-		$taxonomy = '';
-
-		foreach ( array( 'product_brand', 'pwb-brand', 'oc_brand' ) as $tax ) {
-			if ( taxonomy_exists( $tax ) ) {
-				$taxonomy = $tax;
-				break;
-			}
-		}
+		$taxonomy = self::brand_taxonomy();
 
 		if ( '' === $taxonomy ) {
 			return '';
 		}
 
-		$terms = get_terms(
-			array(
-				'taxonomy'   => $taxonomy,
-				'hide_empty' => true,
-				'orderby'    => 'name',
-			)
+		$picks = array_values( array_filter( array_map( 'absint', (array) ( $s['picks'] ?? array() ) ) ) );
+
+		$args = array(
+			'taxonomy'   => $taxonomy,
+			'hide_empty' => empty( $picks ),
+			'orderby'    => 'name',
 		);
+
+		if ( ! empty( $picks ) ) {
+			// Chosen brands keep the order they were chosen in: the editor's
+			// list is the running order, not the alphabet.
+			$args['include'] = $picks;
+			$args['orderby'] = 'include';
+		}
+
+		$terms = get_terms( $args );
 
 		if ( ! is_array( $terms ) || empty( $terms ) ) {
 			return '';
@@ -1154,12 +1172,95 @@ final class Render {
 			return '';
 		}
 
+		$dlay = 'slider' === (string) $s['layout'] ? 'slider' : 'grid';
+		$mlay = 'slider' === (string) ( $s['mlayout'] ?? 'grid' ) ? 'slider' : 'grid';
+
+		$class = array(
+			'ocb-brands',
+			'ocb-brands--d-' . $dlay,
+			'ocb-brands--m-' . $mlay,
+			'ocb-brands--gap-' . (string) $s['gap'],
+			'ocb-brands--' . ( 'rect' === (string) ( $s['shape'] ?? 'free' ) ? 'rect' : ( 'square' === (string) ( $s['shape'] ?? 'free' ) ? 'square' : 'free' ) ),
+		);
+
+		if ( 'colour' === (string) ( $s['bg'] ?? 'none' ) ) {
+			$class[] = 'ocb-brands--tinted';
+		}
+
+		$style = array(
+			'--ocb-cols:' . max( 1, absint( $s['cols'] ) ),
+			'--ocb-mcols:' . max( 1, absint( $s['mcols'] ?? 3 ) ),
+			'--ocb-br-pad:' . max( 0, absint( $s['pad'] ?? 0 ) ) . 'px',
+			'--ocb-br-h:' . max( 40, absint( $s['height'] ?? 120 ) ) . 'px',
+		);
+
+		if ( 'colour' === (string) ( $s['bg'] ?? 'none' ) ) {
+			$style[] = '--ocb-br-bg:' . self::colour( (string) ( $s['bgc'] ?? '' ), '#f5f5f5' );
+		}
+
+		// A slider on one device and a grid on the other still needs the
+		// shelf script; it simply does nothing where the row is a grid.
+		$shelf = 'slider' === $dlay || 'slider' === $mlay;
+
+		$more = '';
+
+		if ( ! empty( $s['more'] ) ) {
+			$url = trim( (string) ( $s['moreurl'] ?? '' ) );
+
+			if ( '' === $url ) {
+				$url = self::brands_archive();
+			}
+
+			$label = trim( (string) ( $s['morelabel'] ?? '' ) );
+			$label = '' !== $label ? $label : __( 'All the brands', 'oc-blocks' );
+
+			if ( '' !== $url ) {
+				$more = '<p class="ocb-brands__more"><a class="ocb-btn ocb-btn--theme" href="' . esc_url( $url ) . '">'
+					. esc_html( $label ) . '</a></p>';
+			}
+		}
+
 		return self::heading( $s )
-			. '<div class="ocb-brands ocb-brands--' . esc_attr( (string) $s['layout'] ) . ' ocb-brands--gap-' . esc_attr( (string) $s['gap'] ) . '" style="--ocb-cols:' . absint( $s['cols'] ) . '"'
-			. ( 'slider' === $s['layout'] ? ' data-ocb-shelf' : '' ) . '>'
+			. '<div class="' . esc_attr( implode( ' ', $class ) ) . '" style="' . esc_attr( implode( ';', $style ) ) . '"'
+			. ( $shelf ? ' data-ocb-shelf' : '' ) . '>'
 			. '<div class="ocb-brands__row">' . $items . '</div>'
-			. ( 'slider' === $s['layout'] ? self::shelf_arrows() : '' )
-			. '</div>';
+			. ( $shelf ? self::shelf_arrows() : '' )
+			. '</div>'
+			. $more;
+	}
+
+	/**
+	 * Where "all the brands" goes when nothing was typed.
+	 *
+	 * The taxonomy's own archive if it has one; otherwise nowhere, and the
+	 * button is left off rather than pointing at a page that is not there.
+	 */
+	private static function brands_archive(): string {
+		$tax = self::brand_taxonomy();
+
+		if ( '' === $tax ) {
+			return '';
+		}
+
+		$object = get_taxonomy( $tax );
+
+		if ( ! $object || empty( $object->rewrite['slug'] ) ) {
+			return '';
+		}
+
+		return home_url( '/' . trim( (string) $object->rewrite['slug'], '/' ) . '/' );
+	}
+
+	/**
+	 * A colour from the editor, or the fallback when it is not one.
+	 *
+	 * @param string $value Raw value.
+	 * @param string $fallback Fallback colour.
+	 */
+	private static function colour( string $value, string $fallback ): string {
+		$value = trim( $value );
+
+		return preg_match( '/^#(?:[0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i', $value ) ? $value : $fallback;
 	}
 
 	/**

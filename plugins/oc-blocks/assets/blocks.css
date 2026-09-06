@@ -891,50 +891,108 @@
 .ocb-brands--gap-large { --ocb-br-gap: 52px; }
 .ocb-brands--gap-none { --ocb-br-gap: 0px; }
 
+/* The row is a grid or a track, decided per device further down. Both use
+   the same custom properties, so only the display switches. */
 .ocb-brands__row {
 	display: grid;
-	grid-template-columns: repeat(var(--ocb-cols, 5), minmax(0, 1fr));
+	grid-template-columns: repeat(var(--ocb-mcols, 3), minmax(0, 1fr));
 	gap: var(--ocb-br-gap);
 	align-items: center;
-}
-
-.ocb-brands--slider .ocb-brands__row {
-	display: flex;
-	overflow-x: auto;
-	overflow-y: hidden;
-	scrollbar-width: none;
-}
-
-.ocb-brands--slider .ocb-brands__row::-webkit-scrollbar { display: none; }
-
-.ocb-brands--slider .ocb-brand {
-	flex: 0 0 calc((100% - (var(--ocb-cols, 5) - 1) * var(--ocb-br-gap)) / var(--ocb-cols, 5));
 }
 
 .ocb-brand {
 	display: grid;
 	place-items: center;
 	min-block-size: 64px;
+	padding: var(--ocb-br-pad, 0px);
 	text-decoration: none;
 	color: inherit;
+	box-sizing: border-box;
+}
+
+/* A tile with a shape of its own. `free` keeps the old behaviour, where the
+   logo decides how tall the row is. */
+.ocb-brands--square .ocb-brand { aspect-ratio: 1 / 1; min-block-size: 0; }
+.ocb-brands--rect .ocb-brand { block-size: var(--ocb-br-h, 120px); min-block-size: 0; }
+
+.ocb-brands--tinted .ocb-brand {
+	background: var(--ocb-br-bg, #f5f5f5);
+	border-radius: 10px;
 }
 
 .ocb-brand img {
-	max-inline-size: 70%;
-	max-block-size: 54px;
+	max-inline-size: 100%;
+	max-block-size: 100%;
 	object-fit: contain;
 	filter: grayscale(1);
 	opacity: .7;
 	transition: filter .2s ease, opacity .2s ease;
 }
 
+/* Where the tile has no shape of its own the logo needs a ceiling, or one
+   tall picture sets the height of the whole row. */
+.ocb-brands--free .ocb-brand img { max-inline-size: 70%; max-block-size: 54px; }
+
 .ocb-brand:hover img { filter: none; opacity: 1; }
 
-.ocb-brand__name { font-weight: 600; }
+.ocb-brand__name { font-weight: 600; text-align: center; }
 
+.ocb-brands__more { margin-block-start: 26px; text-align: center; }
+
+/* ---------- grid or track, per device ---------- */
+
+/* A track: the row scrolls and each tile is a share of the width. */
+.ocb-brands--m-slider .ocb-brands__row {
+	display: flex;
+	overflow-x: auto;
+	overflow-y: hidden;
+	scrollbar-width: none;
+	scroll-snap-type: x proximity;
+}
+
+.ocb-brands--m-slider .ocb-brands__row::-webkit-scrollbar { display: none; }
+
+.ocb-brands--m-slider .ocb-brand {
+	flex: 0 0 calc((100% - (var(--ocb-mcols, 3) - 1) * var(--ocb-br-gap)) / var(--ocb-mcols, 3));
+	scroll-snap-align: start;
+}
+
+@media (min-width: 783px) {
+	.ocb-brands__row {
+		grid-template-columns: repeat(var(--ocb-cols, 5), minmax(0, 1fr));
+	}
+
+	/* Undo a mobile track when the desktop wants a grid. */
+	.ocb-brands--m-slider.ocb-brands--d-grid .ocb-brands__row {
+		display: grid;
+		overflow: visible;
+	}
+
+	.ocb-brands--m-slider.ocb-brands--d-grid .ocb-brand { flex: none; }
+
+	.ocb-brands--d-slider .ocb-brands__row {
+		display: flex;
+		overflow-x: auto;
+		overflow-y: hidden;
+		scrollbar-width: none;
+		scroll-snap-type: x proximity;
+	}
+
+	.ocb-brands--d-slider .ocb-brands__row::-webkit-scrollbar { display: none; }
+
+	.ocb-brands--d-slider .ocb-brand {
+		flex: 0 0 calc((100% - (var(--ocb-cols, 5) - 1) * var(--ocb-br-gap)) / var(--ocb-cols, 5));
+		scroll-snap-align: start;
+	}
+}
+
+/* The arrows belong to whichever device is actually showing a track. */
 @media (max-width: 782px) {
-	.ocb-brands__row { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-	.ocb-brands--slider .ocb-brand { flex-basis: 34%; }
+	.ocb-brands--m-grid .ocb-arr { display: none; }
+}
+
+@media (min-width: 783px) {
+	.ocb-brands--d-grid .ocb-arr { display: none; }
 }
 
 /* ---------- posts ---------- */
