@@ -14928,3 +14928,112 @@ p.no-comments {
 }
 .oc-consent__yes { background: var(--oc-primary, #111); color: var(--oc-on-primary, #fff); }
 .oc-consent__no { background: transparent; color: inherit; border-color: var(--oc-line, rgba(0, 0, 0, .18)); }
+
+/* ==========================================================================
+   Content we did not write
+   --------------------------------------------------------------------------
+   Product descriptions, category texts and posts arrive from suppliers,
+   from importers and from whatever editor typed them somewhere else. They
+   carry markup nobody here chose: `<table width="779">` pasted out of a Wix
+   page, images with pixel widths, part numbers with no spaces in them.
+
+   None of that can be fixed per case — the next import brings a new one, on
+   a different site. So the rule is that no imported content may ever be
+   wider than the column it sits in: a table too wide to fit scrolls by
+   itself rather than being cut off at the edge, and everything else is
+   simply capped.
+
+   Scoped to the places outside content actually lands. WooCommerce's own
+   tables — the variation picker, the attributes list — are laid out by hand
+   elsewhere in this file and are deliberately left alone.
+   ========================================================================== */
+
+.oc-content,
+.oc-tab-short,
+.oc-desc-below,
+.oc-chero__desc,
+.woocommerce-Tabs-panel,
+.ocb-br__body,
+.ocb-ed__text,
+.ocb-faq__body,
+.ocb-lead__text,
+.ocb-lead__ftext,
+.ocb-news__text,
+.ocb-words__text {
+	/* A part number or a bare URL with nothing to break on. */
+	overflow-wrap: break-word;
+	word-break: break-word;
+}
+
+/* A wide table keeps its shape and scrolls on its own. `display: block` is
+   what gives it a scroll box of its own; the rows inside still lay out as a
+   table, so columns stay aligned. */
+.oc-content table:not(.variations):not(.woocommerce-product-attributes),
+.oc-tab-short table:not(.variations):not(.woocommerce-product-attributes),
+.oc-desc-below table:not(.variations):not(.woocommerce-product-attributes),
+.oc-chero__desc table,
+.woocommerce-Tabs-panel table:not(.variations):not(.woocommerce-product-attributes),
+.ocb-br__body table,
+.ocb-ed__text table,
+.ocb-faq__body table,
+.ocb-lead__text table,
+.ocb-lead__ftext table,
+.ocb-news__text table,
+.ocb-words__text table {
+	display: block;
+	inline-size: auto;
+	max-inline-size: 100%;
+	overflow-x: auto;
+	/* Room for the scrollbar so the last row is never sliced. */
+	padding-block-end: 2px;
+}
+
+/* Anything else that carries a size from wherever it came from. */
+.oc-content :is(img, video, iframe, embed, object, svg, canvas, pre),
+.oc-tab-short :is(img, video, iframe, embed, object, svg, canvas, pre),
+.oc-desc-below :is(img, video, iframe, embed, object, svg, canvas, pre),
+.oc-chero__desc :is(img, video, iframe, embed, object, svg, canvas, pre),
+.woocommerce-Tabs-panel :is(img, video, iframe, embed, object, svg, canvas, pre),
+.ocb-br__body :is(img, video, iframe, embed, object, svg, canvas, pre),
+.ocb-ed__text :is(img, video, iframe, embed, object, svg, canvas, pre),
+.ocb-faq__body :is(img, video, iframe, embed, object, svg, canvas, pre),
+.ocb-lead__text :is(img, video, iframe, embed, object, svg, canvas, pre),
+.ocb-lead__ftext :is(img, video, iframe, embed, object, svg, canvas, pre),
+.ocb-news__text :is(img, video, iframe, embed, object, svg, canvas, pre),
+.ocb-words__text :is(img, video, iframe, embed, object, svg, canvas, pre) {
+	max-inline-size: 100%;
+}
+
+/* An `<img width="900">` also carries a height, and capping only the width
+   would squash it. Media alone: a table's height must not be touched. */
+.oc-content :is(img, video, svg),
+.oc-tab-short :is(img, video, svg),
+.oc-desc-below :is(img, video, svg),
+.oc-chero__desc :is(img, video, svg),
+.woocommerce-Tabs-panel :is(img, video, svg),
+.ocb-br__body :is(img, video, svg),
+.ocb-ed__text :is(img, video, svg),
+.ocb-faq__body :is(img, video, svg),
+.ocb-lead__text :is(img, video, svg),
+.ocb-lead__ftext :is(img, video, svg),
+.ocb-news__text :is(img, video, svg),
+.ocb-words__text :is(img, video, svg) {
+	block-size: auto;
+}
+
+/* A builder's own wrapper, pasted along with the text, holding a width in
+   an inline style. The cap wins without unpicking the markup. */
+.oc-content [style*="width"],
+.oc-tab-short [style*="width"],
+.oc-desc-below [style*="width"],
+.oc-chero__desc [style*="width"],
+.woocommerce-Tabs-panel [style*="width"]:not(.variations):not([class*="oc-"]),
+.ocb-br__body [style*="width"],
+.ocb-ed__text [style*="width"],
+.ocb-faq__body [style*="width"],
+.ocb-lead__text [style*="width"],
+.ocb-lead__ftext [style*="width"],
+.ocb-news__text [style*="width"],
+.ocb-words__text [style*="width"] {
+	max-inline-size: 100%;
+}
