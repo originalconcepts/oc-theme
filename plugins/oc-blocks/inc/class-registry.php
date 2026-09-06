@@ -899,6 +899,17 @@ final class Registry {
 						'when'  => array( 'bg' => array( 'colour' ) ),
 						'group' => 'design',
 					),
+					'logo'      => array(
+						'type'  => 'range',
+						'label' => __( 'Logo size', 'oc-blocks' ),
+						'hint'  => __( 'A share of the tile. The logo keeps its proportions and stays centred.', 'oc-blocks' ),
+						'def'   => 100,
+						'min'   => 30,
+						'max'   => 100,
+						'step'  => 5,
+						'unit'  => '%',
+						'group' => 'design',
+					),
 					'pad'       => array(
 						'type'  => 'range',
 						'label' => __( 'Space inside the tile', 'oc-blocks' ),

@@ -1486,3 +1486,192 @@ msgstr "מוצג רק אם מולא — ממש מעל השדות, בכל פרי�
 
 msgid "Name, phone and email are always required."
 msgstr "שם, טלפון ואימייל תמיד חובה."
+
+msgid "The default gallery — all stories, as circles"
+msgstr "גלריית ברירת המחדל — כל הסטוריז, כעיגולים"
+
+msgid "The galleries defined in OC Story. How it looks — circles, slider, grid — travels with the gallery."
+msgstr "הגלריות שהוגדרו ב‑OC Story. המראה — עיגולים, סליידר, גריד — נוסע עם הגלריה."
+
+msgid "— choose a region —"
+msgstr "— בחרו אזור —"
+
+msgid "Picture — desktop"
+msgstr "תמונה — דסקטופ"
+
+msgid "Picture — mobile (optional)"
+msgstr "תמונה — מובייל (רשות)"
+
+msgid "Second button — outline (optional)"
+msgstr "כפתור שני — מתאר (רשות)"
+
+msgid "Date and time, like: 2026-09-30 23:59 — a ticking clock joins the slide."
+msgstr "תאריך ושעה, למשל: 2026-09-30 23:59 — שעון מתקתק מצטרף לשקופית."
+
+msgid "Height — desktop (px)"
+msgstr "גובה — דסקטופ (px)"
+
+msgid "Height — mobile (px)"
+msgstr "גובה — מובייל (px)"
+
+msgid "Video stretches over the whole area (crop)"
+msgstr "הווידאו נמתח על כל השטח (חיתוך)"
+
+msgid "Off: the whole frame shows, with bars where the proportions differ."
+msgstr "כבוי: כל הפריים מוצג, עם פסים היכן שהיחס שונה."
+
+msgid "Per row — desktop"
+msgstr "בשורה — דסקטופ"
+
+msgid "Doors to the aisles — circles, cards, a slider."
+msgstr "דלתות למחלקות — עיגולים, כרטיסים, סליידר."
+
+msgid "Name style"
+msgstr "סגנון השם"
+
+msgid "Plain"
+msgstr "פשוט"
+
+msgid "On white, styled like the buttons"
+msgstr "על לבן, בעיצוב הכפתורים"
+
+msgid "Name size (px, 0 — as the design)"
+msgstr "גודל השם (px, 0 — לפי העיצוב)"
+
+msgid "Display names"
+msgstr "הצגת שמות"
+
+msgid "Letter size — desktop (px)"
+msgstr "גודל אות — דסקטופ (px)"
+
+msgid "Letter size — mobile (px)"
+msgstr "גודל אות — מובייל (px)"
+
+msgid "Rides the angle with the words — a diagonal ribbon."
+msgstr "נוסע בזווית עם המילים — סרט אלכסוני."
+
+msgid "Which brands"
+msgstr "אילו מותגים"
+
+msgid "Tick none and every brand with a product shows, by name."
+msgstr "אל תסמנו כלום וכל מותג שיש לו מוצר יוצג, לפי שם."
+
+msgid "A button to all the brands"
+msgstr "כפתור לכל המותגים"
+
+msgid "The button says"
+msgstr "הכפתור אומר"
+
+msgid "And goes to"
+msgstr "ומוביל אל"
+
+msgid "Leave empty for the brands archive."
+msgstr "השאירו ריק לארכיון המותגים."
+
+msgid "Tile shape"
+msgstr "צורת התיבה"
+
+msgid "By the logo"
+msgstr "לפי הלוגו"
+
+msgid "Square"
+msgstr "ריבוע"
+
+msgid "Rectangle"
+msgstr "מלבן"
+
+msgid "Tile height"
+msgstr "גובה התיבה"
+
+msgid "Tile background"
+msgstr "רקע התיבה"
+
+msgid "A colour"
+msgstr "צבע"
+
+msgid "The colour"
+msgstr "הצבע"
+
+msgid "Logo size"
+msgstr "גודל הלוגו"
+
+msgid "A share of the tile. The logo keeps its proportions and stays centred."
+msgstr "חלק מהתיבה. הלוגו שומר על היחס שלו ונשאר ממורכז."
+
+msgid "Space inside the tile"
+msgstr "ריווח בתוך התיבה"
+
+msgid "Per row"
+msgstr "בשורה"
+
+msgid "Shop the Look"
+msgstr "קנו את המראה"
+
+msgid "Rooms with tagged products — spots on the picture, cards beside it."
+msgstr "חדרים עם מוצרים מתויגים — נקודות על התמונה, כרטיסים לצידה."
+
+msgid "A collection name, a chapter — small letters over the heading."
+msgstr "שם קולקציה, פרק — אותיות קטנות מעל הכותרת."
+
+msgid "What buyers said — slider, grid or wall."
+msgstr "מה הקונים אמרו — סליידר, גריד או קיר."
+
+msgid "Name, phone, a message — straight into the Leads screen."
+msgstr "שם, טלפון, הודעה — ישר למסך הפניות."
+
+msgid "Shown only when filled — right over the fields, in every layout."
+msgstr "מוצג רק כשמולא — ממש מעל השדות, בכל פריסה."
+
+msgid "Two-column layouts put the form first in the reading direction — picture or details sit on the far side."
+msgstr "פריסות דו‑טוריות מציבות את הטופס ראשון בכיוון הקריאה — תמונה או פרטים יושבים בצד הרחוק."
+
+msgid "Empty shows \"Thank you — we will be in touch shortly.\""
+msgstr "ריק מציג ״תודה — נחזור אליכם בהקדם.״"
+
+msgid "Empty shows \"I have read and accept the privacy policy.\" — the policy words link to the privacy page."
+msgstr "ריק מציג ״קראתי ואני מסכים למדיניות הפרטיות.״ — המילים מקשרות לעמוד הפרטיות."
+
+msgid "Little promises in a row — shipping, returns, service."
+msgstr "הבטחות קטנות בשורה — משלוח, החזרות, שירות."
+
+msgid "This is built with the composer; its sections replace the content below."
+msgstr "זה נבנה עם הקומפוזר; הסקשנים שלו מחליפים את התוכן שלמטה."
+
+msgid "Build this from ready-made sections, with a live preview."
+msgstr "בנו את זה מסקשנים מוכנים, עם תצוגה מקדימה חיה."
+
+msgid "Saving…"
+msgstr "שומר…"
+
+msgid "This shop has no brands yet."
+msgstr "לחנות הזו אין עדיין מותגים."
+
+msgid "Nothing ticked — every brand with a product is shown."
+msgstr "לא סומן כלום — כל מותג שיש לו מוצר מוצג."
+
+msgid "%d chosen, in the order they were ticked."
+msgstr "%d נבחרו, לפי הסדר שסומנו."
+
+msgid "Type to search…"
+msgstr "הקלידו לחיפוש…"
+
+msgid "All the brands"
+msgstr "כל המותגים"
+
+msgid "Notify me when back"
+msgstr "עדכנו אותי כשחוזר למלאי"
+
+msgid "Add to cart"
+msgstr "הוספה לסל"
+
+msgid "Thank you — you are on the list."
+msgstr "תודה — אתם ברשימה."
+
+msgid "We could not find a branch by that name — but every one of ours is right here:"
+msgstr "לא מצאנו סניף בשם הזה — אבל כל הסניפים שלנו כאן:"
+
+msgid "Choose…"
+msgstr "בחרו…"
+
+msgid "Thank you — we will be in touch shortly."
+msgstr "תודה — נחזור אליכם בהקדם."

@@ -373,11 +373,20 @@
 				return;
 			}
 
-			var top = img.getBoundingClientRect().top - shelf.getBoundingClientRect().top + img.getBoundingClientRect().height / 2;
+			var box = shelf.getBoundingClientRect();
+			var pic = img.getBoundingClientRect();
+			var top = pic.top - box.top + pic.height / 2;
 
-			if ( top > 20 ) {
-				shelf.style.setProperty( '--ocb-arr-mid', top.toFixed( 0 ) + 'px' );
+			// A picture that spills out of its cell would put the middle
+			// somewhere below the row entirely, and the arrows with it.
+			// Anything outside the strip is not a midline at all.
+			if ( top <= 20 || top >= box.height ) {
+				shelf.style.removeProperty( '--ocb-arr-mid' );
+
+				return;
 			}
+
+			shelf.style.setProperty( '--ocb-arr-mid', top.toFixed( 0 ) + 'px' );
 		}
 
 		window.addEventListener( 'resize', midline, { passive: true } );

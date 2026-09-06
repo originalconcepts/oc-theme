@@ -631,12 +631,20 @@
 }
 
 .ocb-shelf .ocb-arr--prev,
-.ocb-cats .ocb-arr--prev,
-.ocb-brands .ocb-arr--prev { left: -20px; }
+.ocb-cats .ocb-arr--prev { left: -20px; }
 
 .ocb-shelf .ocb-arr--next,
-.ocb-cats .ocb-arr--next,
-.ocb-brands .ocb-arr--next { right: -20px; }
+.ocb-cats .ocb-arr--next { right: -20px; }
+
+/* The brands row is the full width of the section, so an arrow hung
+   outside it lands under `.ocb`'s `overflow: clip` and loses its outer
+   half. These sit just inside the row instead — over the first and last
+   tile, which is where the eye looks for them anyway. */
+.ocb-brands .ocb-arr--prev { left: 6px; }
+.ocb-brands .ocb-arr--next { right: 6px; }
+
+/* A row of tiles is all picture: its middle is the middle of the row. */
+.ocb-brands .ocb-arr { inset-block-start: 50%; }
 
 @media (max-width: 782px) {
 	.oc-compose .ocb-shelf ul.products { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -921,17 +929,33 @@
 }
 
 .ocb-brand img {
-	max-inline-size: 100%;
-	max-block-size: 100%;
 	object-fit: contain;
 	filter: grayscale(1);
 	opacity: .7;
 	transition: filter .2s ease, opacity .2s ease;
 }
 
-/* Where the tile has no shape of its own the logo needs a ceiling, or one
-   tall picture sets the height of the whole row. */
-.ocb-brands--free .ocb-brand img { max-inline-size: 70%; max-block-size: 54px; }
+/* Inside a tile with a shape of its own the logo is given the box to sit
+   in, not a ceiling to bump against. A share of the tile, centred by the
+   tile's own `place-items`, with `contain` keeping the logo's proportions
+   whatever shape it arrived in — so a wide logo and a tall one occupy the
+   same space and line up with each other.
+
+   The ceiling this replaces did not work: `max-block-size: 100%` against a
+   grid area went unresolved and a 204px logo sat in a 60px tile, spilling
+   out of the bottom and dragging the arrows down with it. */
+.ocb-brands--square .ocb-brand img,
+.ocb-brands--rect .ocb-brand img {
+	inline-size: var(--ocb-br-logo, 100%);
+	block-size: var(--ocb-br-logo, 100%);
+}
+
+/* Where the tile has no shape of its own the logo needs a ceiling instead,
+   or one tall picture sets the height of the whole row. */
+.ocb-brands--free .ocb-brand img {
+	max-inline-size: var(--ocb-br-logo, 70%);
+	max-block-size: 54px;
+}
 
 .ocb-brand:hover img { filter: none; opacity: 1; }
 
