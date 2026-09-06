@@ -1675,3 +1675,21 @@ msgstr "בחרו…"
 
 msgid "Thank you — we will be in touch shortly."
 msgstr "תודה — נחזור אליכם בהקדם."
+
+msgid "Logo colour"
+msgstr "צבע הלוגו"
+
+msgid "Grey"
+msgstr "אפור"
+
+msgid "Full colour"
+msgstr "צבע מלא"
+
+msgid "Grey lifts to full colour when the pointer rests on it."
+msgstr "אפור עולה לצבע מלא כשהסמן נח עליו."
+
+msgid "A touch screen has no hover, so this is how the logo stays."
+msgstr "למסך מגע אין ריחוף, אז כך הלוגו נשאר."
+
+msgid "Space around the logo"
+msgstr "מרווח סביב הלוגו"

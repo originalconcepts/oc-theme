@@ -890,14 +890,23 @@
 
 /* ---------- brands ---------- */
 
+/* Everything a device decides for itself is carried twice and picked here.
+   The block sets the two device values inline, and an inline custom
+   property would beat any media query trying to override it directly. */
 .ocb-brands {
 	position: relative;
 	--ocb-br-gap: 30px;
-	--ocb-br-logo: var(--ocb-br-mlogo, 100%);
+	--ocb-br-logo: var(--ocb-br-mlogo, 1);
+	--ocb-br-grey: var(--ocb-br-mgrey, 1);
+	--ocb-br-dim: var(--ocb-br-mdim, .7);
 }
 
 @media (min-width: 783px) {
-	.ocb-brands { --ocb-br-logo: var(--ocb-br-dlogo, 100%); }
+	.ocb-brands {
+		--ocb-br-logo: var(--ocb-br-dlogo, 1);
+		--ocb-br-grey: var(--ocb-br-dgrey, 1);
+		--ocb-br-dim: var(--ocb-br-ddim, .7);
+	}
 }
 .ocb-brands--gap-small { --ocb-br-gap: 14px; }
 .ocb-brands--gap-large { --ocb-br-gap: 52px; }
@@ -934,8 +943,8 @@
 
 .ocb-brand img {
 	object-fit: contain;
-	filter: grayscale(1);
-	opacity: .7;
+	filter: grayscale(var(--ocb-br-grey, 1));
+	opacity: var(--ocb-br-dim, .7);
 	transition: filter .2s ease, opacity .2s ease;
 }
 
@@ -955,22 +964,31 @@
 .ocb-brands--square .ocb-brand img,
 .ocb-brands--rect .ocb-brand img {
 	position: absolute;
-	inset: var(--ocb-br-pad, 0px);
+	inset: 0;
 	margin: auto;
 	inline-size: auto;
 	block-size: auto;
-	max-inline-size: var(--ocb-br-logo, 100%);
-	max-block-size: var(--ocb-br-logo, 100%);
+	/* The room the logo may take, spelled out rather than left to `inset`.
+	   A picture is a replaced element: `inline-size: auto` gives it its own
+	   width and the insets are then over-constrained and ignored, so a
+	   padding written as `inset` did nothing at all and the logos sat flat
+	   against the edge. Written into the maximum it holds. */
+	max-inline-size: calc((100% - var(--ocb-br-pad, 0px) * 2) * var(--ocb-br-logo, 1));
+	max-block-size: calc((100% - var(--ocb-br-pad, 0px) * 2) * var(--ocb-br-logo, 1));
 }
 
 /* Where the tile has no shape of its own the logo needs a ceiling instead,
    or one tall picture sets the height of the whole row. */
 .ocb-brands--free .ocb-brand img {
-	max-inline-size: var(--ocb-br-logo, 70%);
-	max-block-size: 54px;
+	max-inline-size: calc(70% * var(--ocb-br-logo, 1));
+	max-block-size: calc(54px * var(--ocb-br-logo, 1));
 }
 
-.ocb-brand:hover img { filter: none; opacity: 1; }
+/* Colour on hover is a desktop idea. A touch screen has no hover, so the
+   logo there is simply whatever the mobile setting says it is. */
+@media (hover: hover) {
+	.ocb-brand:hover img { filter: none; opacity: 1; }
+}
 
 .ocb-brand__name { font-weight: 600; text-align: center; }
 

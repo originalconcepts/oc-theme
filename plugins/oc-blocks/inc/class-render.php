@@ -1191,14 +1191,25 @@ final class Render {
 			'--ocb-cols:' . max( 1, absint( $s['cols'] ) ),
 			'--ocb-mcols:' . max( 1, absint( $s['mcols'] ?? 3 ) ),
 			'--ocb-br-pad:' . max( 0, absint( $s['pad'] ?? 0 ) ) . 'px',
-			'--ocb-br-dlogo:' . max( 10, min( 100, absint( $s['logo'] ?? 100 ) ) ) . '%',
-			'--ocb-br-mlogo:' . max( 10, min( 100, absint( $s['mlogo'] ?? ( $s['logo'] ?? 100 ) ) ) ) . '%',
+			// A share, not a length: the stylesheet multiplies it by what is
+			// left of the tile once the padding is taken off.
+			'--ocb-br-dlogo:' . round( max( 10, min( 100, absint( $s['logo'] ?? 100 ) ) ) / 100, 2 ),
+			'--ocb-br-mlogo:' . round( max( 10, min( 100, absint( $s['mlogo'] ?? ( $s['logo'] ?? 100 ) ) ) ) / 100, 2 ),
 			'--ocb-br-h:' . max( 40, absint( $s['height'] ?? 120 ) ) . 'px',
 		);
 
 		if ( 'colour' === (string) ( $s['bg'] ?? 'none' ) ) {
 			$style[] = '--ocb-br-bg:' . self::colour( (string) ( $s['bgc'] ?? '' ), '#f5f5f5' );
 		}
+
+		// Grey and a little faded, or the logo's own colours at full strength.
+		$dtone = 'colour' === (string) ( $s['tone'] ?? 'grey' );
+		$mtone = 'colour' === (string) ( $s['mtone'] ?? ( $s['tone'] ?? 'grey' ) );
+
+		$style[] = '--ocb-br-dgrey:' . ( $dtone ? '0' : '1' );
+		$style[] = '--ocb-br-ddim:' . ( $dtone ? '1' : '.7' );
+		$style[] = '--ocb-br-mgrey:' . ( $mtone ? '0' : '1' );
+		$style[] = '--ocb-br-mdim:' . ( $mtone ? '1' : '.7' );
 
 		// A slider on one device and a grid on the other still needs the
 		// shelf script; it simply does nothing where the row is a grid.
