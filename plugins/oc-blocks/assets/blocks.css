@@ -920,8 +920,8 @@
 
 /* A tile with a shape of its own. `free` keeps the old behaviour, where the
    logo decides how tall the row is. */
-.ocb-brands--square .ocb-brand { aspect-ratio: 1 / 1; min-block-size: 0; }
-.ocb-brands--rect .ocb-brand { block-size: var(--ocb-br-h, 120px); min-block-size: 0; }
+.ocb-brands--square .ocb-brand { aspect-ratio: 1 / 1; min-block-size: 0; padding: 0; }
+.ocb-brands--rect .ocb-brand { block-size: var(--ocb-br-h, 120px); min-block-size: 0; padding: 0; }
 
 .ocb-brands--tinted .ocb-brand {
 	background: var(--ocb-br-bg, #f5f5f5);
@@ -935,19 +935,28 @@
 	transition: filter .2s ease, opacity .2s ease;
 }
 
-/* Inside a tile with a shape of its own the logo is given the box to sit
-   in, not a ceiling to bump against. A share of the tile, centred by the
-   tile's own `place-items`, with `contain` keeping the logo's proportions
-   whatever shape it arrived in — so a wide logo and a tall one occupy the
-   same space and line up with each other.
+/* Inside a tile with a shape of its own the logo is given a box to sit in.
+   It is laid out against the tile rather than in it: a percentage height on
+   a grid item resolves against nothing here and quietly becomes `auto`, so
+   a 300px logo took its natural size in a 60px tile, hung out of the bottom
+   and dragged the arrows down with it. Measured against a positioned
+   ancestor the same percentage is definite, and `margin: auto` centres what
+   is left over on both axes at once.
 
-   The ceiling this replaces did not work: `max-block-size: 100%` against a
-   grid area went unresolved and a 204px logo sat in a 60px tile, spilling
-   out of the bottom and dragging the arrows down with it. */
+   `inset` is the padding, so the frame is real; the logo share then scales
+   the picture inside whatever frame remains. */
+.ocb-brands--square .ocb-brand,
+.ocb-brands--rect .ocb-brand { position: relative; }
+
 .ocb-brands--square .ocb-brand img,
 .ocb-brands--rect .ocb-brand img {
-	inline-size: var(--ocb-br-logo, 100%);
-	block-size: var(--ocb-br-logo, 100%);
+	position: absolute;
+	inset: var(--ocb-br-pad, 0px);
+	margin: auto;
+	inline-size: auto;
+	block-size: auto;
+	max-inline-size: var(--ocb-br-logo, 100%);
+	max-block-size: var(--ocb-br-logo, 100%);
 }
 
 /* Where the tile has no shape of its own the logo needs a ceiling instead,
