@@ -497,7 +497,7 @@ final class Cart {
 		if ( $left > 0 ) {
 			$template = '' !== (string) $s['ship_text'] ? (string) $s['ship_text'] : __( '[sum] left for free shipping', 'oc-theme' );
 			// The remaining amount carries the line — bold it.
-			$sum  = html_entity_decode( wp_strip_all_tags( wc_price( $left ) ), ENT_QUOTES, 'UTF-8' );
+			$sum  = self::plain_price( wc_price( $left ) );
 			$text = str_replace( '[sum]', '<strong>' . esc_html( $sum ) . '</strong>', esc_html( $template ) );
 		} else {
 			$text = esc_html( '' !== (string) $s['ship_done'] ? (string) $s['ship_done'] : __( 'You earned free shipping!', 'oc-theme' ) );
@@ -522,6 +522,25 @@ final class Cart {
 		}
 
 		return 0.0;
+	}
+
+	/**
+	 * A price as bare text that still reads the right way round.
+	 *
+	 * wc_price() wraps the amount in <bdi>, and that is what keeps "₪ 99.00"
+	 * in one piece inside Hebrew. Strip the tags for a button label and the
+	 * isolation goes with them: the symbol is a neutral, the digits run
+	 * left-to-right, and in a right-to-left sentence the bidi algorithm
+	 * hands the symbol to the other side of the number — the one place in
+	 * the shop where the currency sat on the wrong side. The Unicode
+	 * isolates put the wrapper back as characters, which survive esc_html().
+	 *
+	 * @param string $html Price markup from wc_price().
+	 */
+	private static function plain_price( string $html ): string {
+		$text = trim( html_entity_decode( wp_strip_all_tags( $html ), ENT_QUOTES, 'UTF-8' ) );
+
+		return "\u{2068}" . $text . "\u{2069}";
 	}
 
 	/**
@@ -612,7 +631,7 @@ final class Cart {
 		$label          = '' !== (string) $s['btn_text'] ? (string) $s['btn_text'] : __( 'Continue to checkout', 'oc-theme' );
 
 		if ( ! empty( $s['btn_total'] ) ) {
-			$label .= ' · ' . html_entity_decode( wp_strip_all_tags( $total ), ENT_QUOTES, 'UTF-8' );
+			$label .= ' · ' . self::plain_price( $total );
 		}
 
 		$html = '<footer class="oc-drawer__foot" data-oc-cart-foot>';
