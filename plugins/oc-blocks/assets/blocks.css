@@ -1278,10 +1278,28 @@
 
 .ocb-look__cimg { display: block; max-inline-size: 320px; margin-inline: auto; }
 
+/* The product card in a room follows the catalogue card's settings from the
+   Customizer — ratio, custom height, fill or whole — through the same
+   tokens and body classes the theme sets, so one choice rules every card. */
 .ocb-look__cimg img {
 	inline-size: 100%;
-	aspect-ratio: 4 / 5;
+	aspect-ratio: var(--oc-card-ratio, 4 / 5);
+	object-fit: cover;
+	object-position: 50% var(--oc-card-focus, 50%);
+}
+
+body.oc-card-fit-contain .ocb-look__cimg img {
 	object-fit: contain;
+	background: var(--oc-card-ground, color-mix(in srgb, var(--oc-ink, #1c1c1c) 4%, transparent));
+}
+
+body.oc-card-h-custom .ocb-look__cimg img {
+	aspect-ratio: auto;
+	block-size: var(--oc-card-h, 320px);
+}
+
+@media (max-width: 782px) {
+	body.oc-card-h-custom .ocb-look__cimg img { block-size: var(--oc-card-h-m, 220px); }
 }
 
 /* Desktop: the media box anchors the add-to-cart circle on the picture —
