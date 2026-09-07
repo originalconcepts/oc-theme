@@ -105,7 +105,10 @@ final class Render {
 			'woocommerce_prices_include_tax',
 		);
 
-		if ( in_array( (string) $option, $watched, true ) ) {
+		// Anything saved in the Customizer arrives as one theme_mods_* option:
+		// card ratio, card height, gallery sizes — all of it printed into the
+		// composed markup or the tokens around it.
+		if ( in_array( (string) $option, $watched, true ) || 0 === strpos( (string) $option, 'theme_mods_' ) ) {
 			$this->flush();
 		}
 	}
