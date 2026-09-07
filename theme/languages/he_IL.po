@@ -7251,3 +7251,21 @@ msgstr "גובה התמונה — דסקטופ (px)"
 
 msgid "Image height — mobile (px)"
 msgstr "גובה התמונה — מובייל (px)"
+
+msgid "Dropdown"
+msgstr "רשימה נפתחת"
+
+msgid "Add an attribute used for variations (for example: colour), save, and its values appear here."
+msgstr "הוסף למוצר תכונה שמשמשת לווריאציות (למשל: צבע), שמור, והערכים שלה יופיעו כאן."
+
+msgid "from the attribute settings"
+msgstr "מהגדרות התכונה"
+
+msgid "from the global attribute “%s”"
+msgstr "מהתכונה הגלובלית ״%s״"
+
+msgid "no global attribute of this name"
+msgstr "אין תכונה גלובלית בשם הזה"
+
+msgid "Default — %1$s (%2$s)"
+msgstr "ברירת מחדל — %1$s (%2$s)"

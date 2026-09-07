@@ -58,15 +58,10 @@ final class Variations {
 			return $out;
 		}
 
-		foreach ( array_keys( $product->get_attributes() ) as $attr_tax ) {
-			$attr_tax = rawurldecode( (string) $attr_tax );
+		$attr = self::$me->swatch_attr( $product );
 
-			if ( ! in_array( self::$me->attr_type( $attr_tax ), array( 'swatch', 'swatch_image' ), true ) ) {
-				continue;
-			}
-
-			$out['label'] = wc_attribute_label( $attr_tax );
-			break;
+		if ( null !== $attr ) {
+			$out['label'] = $attr['label'];
 		}
 
 		return $out;
@@ -119,6 +114,44 @@ final class Variations {
 		}
 
 		return self::$me->swatch_style( $product, $taxonomy, $term, $type );
+	}
+
+	/**
+	 * One attribute as the quick-pick panel draws it: the display type and,
+	 * per value the select can hold, its label and swatch — a local
+	 * attribute answering exactly like a taxonomy one.
+	 *
+	 * @param \WC_Product $product Product.
+	 * @param string      $attr    Attribute name, as get_variation_attributes() keys it.
+	 * @return array{type:string, options:array<string, array{label:string, swatch:string}>}
+	 */
+	public static function panel_attr( \WC_Product $product, string $attr ): array {
+		$out = array(
+			'type'    => 'select',
+			'options' => array(),
+		);
+
+		if ( ! self::$me instanceof self ) {
+			return $out;
+		}
+
+		$a = self::$me->product_attrs( $product )[ sanitize_title( $attr ) ] ?? null;
+
+		if ( null === $a ) {
+			return $out;
+		}
+
+		$out['type'] = $a['type'];
+		$is_swatch   = in_array( $a['type'], array( 'swatch', 'swatch_image' ), true );
+
+		foreach ( $a['values'] as $val ) {
+			$out['options'][ $val['value'] ] = array(
+				'label'  => $val['name'],
+				'swatch' => $is_swatch ? self::$me->value_style( $product, $a, $val, $a['type'] ) : '',
+			);
+		}
+
+		return $out;
 	}
 
 	/**
@@ -205,7 +238,7 @@ final class Variations {
 
 		$d = $this->default_term( $product );
 
-		return null === $d ? $link : add_query_arg( 'attribute_' . rawurlencode( sanitize_title( $d['tax'] ) ), $d['slug'], (string) $link );
+		return null === $d ? $link : add_query_arg( 'attribute_' . rawurlencode( $d['key'] ), $d['value'], (string) $link );
 	}
 
 	/**
@@ -246,7 +279,7 @@ final class Variations {
 	 * colours are not a swatch attribute.
 	 *
 	 * @param \WC_Product $product The product.
-	 * @return array{tax:string,slug:string}|null
+	 * @return array{key:string,value:string}|null
 	 */
 	private function default_term( \WC_Product $product ): ?array {
 		static $cache = array();
@@ -268,32 +301,21 @@ final class Variations {
 			return null;
 		}
 
-		foreach ( array_keys( $product->get_attributes() ) as $attr_tax ) {
-			$attr_tax = rawurldecode( (string) $attr_tax );
-			$type     = $this->attr_type( $attr_tax );
+		$attr = $this->swatch_attr( $product );
 
-			if ( ! in_array( $type, array( 'swatch', 'swatch_image' ), true ) ) {
-				continue;
-			}
-
-			$terms = wc_get_product_terms( $id, $attr_tax, array( 'fields' => 'all' ) );
-
-			if ( count( $terms ) < 2 ) {
-				return null;
-			}
-
-			foreach ( $terms as $term ) {
-				if ( '' !== $this->swatch_style( $product, $attr_tax, $term, $type ) ) {
-					$cache[ $id ] = array(
-						'tax'  => $attr_tax,
-						'slug' => $term->slug,
-					);
-
-					return $cache[ $id ];
-				}
-			}
-
+		if ( null === $attr || count( $attr['values'] ) < 2 ) {
 			return null;
+		}
+
+		foreach ( $attr['values'] as $val ) {
+			if ( '' !== $this->value_style( $product, $attr, $val, $attr['type'] ) ) {
+				$cache[ $id ] = array(
+					'key'   => $attr['key'],
+					'value' => $val['value'],
+				);
+
+				return $cache[ $id ];
+			}
 		}
 
 		return null;
@@ -383,6 +405,195 @@ final class Variations {
 		}
 
 		return 'select';
+	}
+
+	/**
+	 * The global attribute that stands in for a local one of the same name.
+	 *
+	 * An imported catalogue carries its colours as per-product attributes —
+	 * "צבע: לבן, שחור" typed into the product, no taxonomy behind them. The
+	 * shop owner still sets up a global "צבע" attribute as a swatch and
+	 * gives its values colours; that is the twin, and the local attribute
+	 * borrows its display type and, value by value, its swatches.
+	 *
+	 * @param string $name Local attribute name, as typed.
+	 * @return string Taxonomy, or '' when no global attribute matches.
+	 */
+	private function twin_taxonomy( string $name ): string {
+		static $twins = array();
+
+		$want = mb_strtolower( trim( $name ) );
+
+		if ( '' === $want ) {
+			return '';
+		}
+
+		if ( ! array_key_exists( $want, $twins ) ) {
+			$twins[ $want ] = '';
+
+			foreach ( wc_get_attribute_taxonomies() as $attribute ) {
+				if ( mb_strtolower( trim( (string) $attribute->attribute_label ) ) === $want
+					|| sanitize_title( $name ) === (string) $attribute->attribute_name ) {
+					$twins[ $want ] = 'pa_' . $attribute->attribute_name;
+					break;
+				}
+			}
+		}
+
+		return $twins[ $want ];
+	}
+
+	/**
+	 * The global term standing in for a local value: same name, or same slug.
+	 *
+	 * @param string $taxonomy Twin taxonomy.
+	 * @param string $value    Local value, as typed.
+	 */
+	private function twin_term( string $taxonomy, string $value ): ?\WP_Term {
+		if ( '' === $taxonomy || ! taxonomy_exists( $taxonomy ) ) {
+			return null;
+		}
+
+		$term = get_term_by( 'name', $value, $taxonomy );
+
+		if ( ! $term instanceof \WP_Term ) {
+			$term = get_term_by( 'slug', sanitize_title( $value ), $taxonomy );
+		}
+
+		return $term instanceof \WP_Term ? $term : null;
+	}
+
+	/**
+	 * Per-product display overrides, attribute key => type.
+	 *
+	 * @param int $product_id Product.
+	 * @return array<string,string>
+	 */
+	private function type_overrides( int $product_id ): array {
+		$raw = get_post_meta( $product_id, '_oc_attr_types', true );
+		$out = array();
+
+		foreach ( ( is_array( $raw ) ? $raw : array() ) as $key => $type ) {
+			if ( in_array( (string) $type, array( 'select', 'button', 'swatch', 'swatch_image' ), true ) ) {
+				$out[ (string) $key ] = (string) $type;
+			}
+		}
+
+		return $out;
+	}
+
+	/**
+	 * What an attribute shows with no per-product override: a taxonomy
+	 * answers for itself; a local attribute borrows from its twin.
+	 *
+	 * @param \WC_Product_Attribute $attribute The attribute.
+	 */
+	private function inherited_type( \WC_Product_Attribute $attribute ): string {
+		if ( $attribute->is_taxonomy() ) {
+			return $this->attr_type( (string) $attribute->get_name() );
+		}
+
+		$twin = $this->twin_taxonomy( (string) $attribute->get_name() );
+
+		return '' === $twin ? 'select' : $this->attr_type( $twin );
+	}
+
+	/**
+	 * The product's variation attributes, taxonomy and local alike, in one
+	 * shape — so every swatch, gallery and card row reads the same thing.
+	 *
+	 * Keyed by the sanitize_title form of the attribute name, which is what
+	 * Woo uses for the select (attribute_<key>) and the variation meta.
+	 * Each value carries `value` — what the select holds: a term slug for a
+	 * taxonomy, the typed text for a local attribute — and `slug`, the
+	 * sanitize_title form the galleries meta is keyed by.
+	 *
+	 * @param \WC_Product $product The product.
+	 * @return array<string, array{key:string,name:string,label:string,tax:string,twin:string,type:string,inherited:string,values:array<int,array{value:string,slug:string,name:string,term:?\WP_Term}>}>
+	 */
+	private function product_attrs( \WC_Product $product ): array {
+		static $cache = array();
+
+		$id = $product->get_id();
+
+		if ( isset( $cache[ $id ] ) ) {
+			return $cache[ $id ];
+		}
+
+		$overrides = $this->type_overrides( $id );
+		$out       = array();
+
+		foreach ( $product->get_attributes() as $attribute ) {
+			if ( ! $attribute instanceof \WC_Product_Attribute || ! $attribute->get_variation() ) {
+				continue;
+			}
+
+			$name      = (string) $attribute->get_name();
+			$key       = sanitize_title( $name );
+			$tax       = $attribute->is_taxonomy() ? $name : '';
+			$twin      = '' === $tax ? $this->twin_taxonomy( $name ) : '';
+			$inherited = $this->inherited_type( $attribute );
+			$values    = array();
+
+			if ( '' !== $tax ) {
+				foreach ( (array) wc_get_product_terms( $id, $tax, array( 'fields' => 'all' ) ) as $term ) {
+					if ( $term instanceof \WP_Term ) {
+						$values[] = array(
+							'value' => $term->slug,
+							'slug'  => $term->slug,
+							'name'  => $term->name,
+							'term'  => $term,
+						);
+					}
+				}
+			} else {
+				foreach ( (array) $attribute->get_options() as $option ) {
+					$option = trim( (string) $option );
+
+					if ( '' === $option ) {
+						continue;
+					}
+
+					$values[] = array(
+						'value' => $option,
+						'slug'  => sanitize_title( $option ),
+						'name'  => $option,
+						'term'  => $this->twin_term( $twin, $option ),
+					);
+				}
+			}
+
+			$out[ $key ] = array(
+				'key'       => $key,
+				'name'      => $name,
+				'label'     => wc_attribute_label( $name, $product ),
+				'tax'       => $tax,
+				'twin'      => $twin,
+				'type'      => $overrides[ $key ] ?? $inherited,
+				'inherited' => $inherited,
+				'values'    => $values,
+			);
+		}
+
+		$cache[ $id ] = $out;
+
+		return $out;
+	}
+
+	/**
+	 * The first attribute drawn as swatches — the product's colour.
+	 *
+	 * @param \WC_Product $product The product.
+	 * @return array|null
+	 */
+	private function swatch_attr( \WC_Product $product ): ?array {
+		foreach ( $this->product_attrs( $product ) as $attr ) {
+			if ( in_array( $attr['type'], array( 'swatch', 'swatch_image' ), true ) ) {
+				return $attr;
+			}
+		}
+
+		return null;
 	}
 
 	/**
@@ -585,18 +796,19 @@ final class Variations {
 	 * @return string
 	 */
 	public function variation_ui( $html, $args ): string {
-		$taxonomy = (string) $args['attribute'];
+		$product = $args['product'] ?? null;
 
-		if ( ! taxonomy_exists( $taxonomy ) ) {
+		if ( ! $product instanceof \WC_Product ) {
 			return (string) $html;
 		}
 
-		$type = $this->attr_type( $taxonomy );
+		$attr = $this->product_attrs( $product )[ sanitize_title( (string) $args['attribute'] ) ] ?? null;
 
-		if ( 'select' === $type ) {
+		if ( null === $attr || 'select' === $attr['type'] ) {
 			return (string) $html;
 		}
 
+		$type     = $attr['type'];
 		$options  = (array) $args['options'];
 		$selected = (string) $args['selected'];
 
@@ -607,57 +819,71 @@ final class Variations {
 		// A product whose colours live as linked sibling products must show one
 		// colour UI only: when its own colour attribute holds a single value,
 		// auto-select it and hide the row — the "Colours" thumbs take over.
-		if ( 1 === count( $options ) && 'select' !== $type && $args['product'] instanceof \WC_Product
-			&& ! empty( array_filter( array_map( 'absint', (array) get_post_meta( $args['product']->get_id(), '_oc_color_links', true ) ) ) ) ) {
+		if ( 1 === count( $options )
+			&& ! empty( array_filter( array_map( 'absint', (array) get_post_meta( $product->get_id(), '_oc_color_links', true ) ) ) ) ) {
 			return $html . sprintf(
 				'<div class="oc-var oc-var--auto" data-for="%s" data-auto="%s"></div>',
-				esc_attr( sanitize_title( $taxonomy ) ),
+				esc_attr( $attr['key'] ),
 				esc_attr( (string) reset( $options ) )
 			);
 		}
 
+		$by_value = array();
+
+		foreach ( $attr['values'] as $val ) {
+			$by_value[ $val['value'] ] = $val;
+		}
+
 		$items = '';
 
-		foreach ( $options as $slug ) {
-			$term = get_term_by( 'slug', $slug, $taxonomy );
+		foreach ( $options as $option ) {
+			$option = (string) $option;
+			$val    = $by_value[ $option ] ?? null;
 
-			if ( ! $term instanceof \WP_Term ) {
-				continue;
+			if ( null === $val ) {
+				// An option the attribute does not list any more (a term
+				// renamed under a live variation, say): still clickable.
+				$term = '' !== $attr['tax'] ? get_term_by( 'slug', $option, $attr['tax'] ) : null;
+				$val  = array(
+					'value' => $option,
+					'slug'  => sanitize_title( $option ),
+					'name'  => $term instanceof \WP_Term ? $term->name : $option,
+					'term'  => $term instanceof \WP_Term ? $term : null,
+				);
 			}
 
-			$is_sel = $selected === $slug ? ' is-selected' : '';
-			$label  = esc_html( $term->name );
+			$is_sel = $selected === $option ? ' is-selected' : '';
 
 			if ( in_array( $type, array( 'swatch', 'swatch_image' ), true ) ) {
-				$style = $this->swatch_style( $args['product'], $taxonomy, $term, $type );
+				$style = $this->value_style( $product, $attr, $val, $type );
 
 				if ( '' === $style ) {
-					// Nothing to draw — the term's initial stands in, so an
+					// Nothing to draw — the value's initial stands in, so an
 					// unfilled value is still clickable, never a grey mystery.
 					$items .= sprintf(
 						'<button type="button" class="oc-var__swatch oc-var__swatch--txt%s" data-value="%s" title="%s" aria-label="%s">%s</button>',
 						$is_sel,
-						esc_attr( $slug ),
-						esc_attr( $term->name ),
-						esc_attr( $term->name ),
-						esc_html( mb_substr( $term->name, 0, 1 ) )
+						esc_attr( $option ),
+						esc_attr( $val['name'] ),
+						esc_attr( $val['name'] ),
+						esc_html( mb_substr( $val['name'], 0, 1 ) )
 					);
 				} else {
 					$items .= sprintf(
 						'<button type="button" class="oc-var__swatch%s" data-value="%s" style="%s" title="%s" aria-label="%s"></button>',
 						$is_sel,
-						esc_attr( $slug ),
+						esc_attr( $option ),
 						$style,
-						esc_attr( $term->name ),
-						esc_attr( $term->name )
+						esc_attr( $val['name'] ),
+						esc_attr( $val['name'] )
 					);
 				}
 			} else {
 				$items .= sprintf(
 					'<button type="button" class="oc-var__btn%s" data-value="%s">%s</button>',
 					$is_sel,
-					esc_attr( $slug ),
-					$label
+					esc_attr( $option ),
+					esc_html( $val['name'] )
 				);
 			}
 		}
@@ -669,49 +895,49 @@ final class Variations {
 		return $html . sprintf(
 			'<div class="oc-var oc-var--%s" data-for="%s">%s</div>',
 			esc_attr( $type ),
-			esc_attr( sanitize_title( $taxonomy ) ),
+			esc_attr( $attr['key'] ),
 			$items
 		);
 	}
 
 	/**
 	 * Inline style for a swatch button, resolved in confidence order:
-	 * per-product override, then the term's leading medium (by attribute
-	 * type), the other medium, and finally the variation's own image.
+	 * per-product override, then the value's term (its own, or its twin's)
+	 * leading medium by attribute type, the other medium, and finally the
+	 * variation's own image.
 	 *
-	 * @param mixed    $product  Product, when the dropdown args carried one.
-	 * @param string   $taxonomy Attribute taxonomy.
-	 * @param \WP_Term $term     Term.
-	 * @param string   $type     swatch|swatch_image.
+	 * @param mixed  $product Product, when the caller carried one.
+	 * @param array  $attr    Attribute, from product_attrs().
+	 * @param array  $val     One of its values.
+	 * @param string $type    swatch|swatch_image.
 	 * @return string Empty when nothing is available.
 	 */
-	private function swatch_style( $product, string $taxonomy, \WP_Term $term, string $type ): string {
-		$image = '';
-		$color = (string) get_term_meta( $term->term_id, 'oc_swatch_color', true );
+	private function value_style( $product, array $attr, array $val, string $type ): string {
+		$term  = $val['term'] instanceof \WP_Term ? $val['term'] : null;
+		$color = $term ? (string) get_term_meta( $term->term_id, 'oc_swatch_color', true ) : '';
+		$image = $term ? (string) get_term_meta( $term->term_id, 'oc_swatch_image', true ) : '';
 
 		if ( $product instanceof \WC_Product ) {
 			$galleries = $this->galleries_meta( $product->get_id() );
 
 			// A per-product swatch image is an explicit choice for this very
 			// product — it wins over everything, whatever the attribute type.
-			$override = (string) ( $galleries[ $term->slug ]['swatch'] ?? '' );
+			$override = (string) ( $galleries[ $val['slug'] ]['swatch'] ?? '' );
 			if ( '' !== $override ) {
 				return 'background-image:url(' . esc_url( $override ) . ');background-size:cover;';
 			}
 
 			// A per-product shade replaces the value's store-wide colour.
-			$shade = (string) ( $galleries[ $term->slug ]['color'] ?? '' );
+			$shade = (string) ( $galleries[ $val['slug'] ]['color'] ?? '' );
 			if ( '' !== $shade ) {
 				$color = $shade;
 			}
 		}
 
-		$image = (string) get_term_meta( $term->term_id, 'oc_swatch_image', true );
-
 		$use_image = 'swatch_image' === $type ? '' !== $image : '' !== $image && '' === $color;
 
 		if ( ! $use_image && '' === $color && '' === $image && $product instanceof \WC_Product ) {
-			$image     = $this->variation_image( $product, $taxonomy, $term->slug );
+			$image     = $this->variation_image( $product, rawurldecode( $attr['key'] ), $val['value'] );
 			$use_image = '' !== $image;
 		}
 
@@ -727,13 +953,37 @@ final class Variations {
 	}
 
 	/**
+	 * The same chain for a taxonomy term, for the callers that hold one.
+	 *
+	 * @param mixed    $product  Product, when the dropdown args carried one.
+	 * @param string   $taxonomy Attribute taxonomy.
+	 * @param \WP_Term $term     Term.
+	 * @param string   $type     swatch|swatch_image.
+	 * @return string Empty when nothing is available.
+	 */
+	private function swatch_style( $product, string $taxonomy, \WP_Term $term, string $type ): string {
+		$attr = array(
+			'key' => sanitize_title( $taxonomy ),
+			'tax' => $taxonomy,
+		);
+		$val  = array(
+			'value' => $term->slug,
+			'slug'  => $term->slug,
+			'name'  => $term->name,
+			'term'  => $term,
+		);
+
+		return $this->value_style( $product, $attr, $val, $type );
+	}
+
+	/**
 	 * The image of a variation carrying this attribute value — saves the
 	 * admin a duplicate upload when the variation photos already exist.
 	 * One pass over the children per product, memoised for the request.
 	 *
 	 * @param \WC_Product $product  Variable product.
-	 * @param string      $taxonomy Attribute taxonomy.
-	 * @param string      $slug     Term slug.
+	 * @param string      $taxonomy Attribute key, decoded (taxonomy, or a local attribute's name).
+	 * @param string      $slug     The value as the variation stores it (term slug, or the typed text).
 	 * @param string      $size     Image size to resolve.
 	 * @return string Image URL or ''.
 	 */
@@ -947,85 +1197,117 @@ final class Variations {
 		global $post;
 
 		$product = wc_get_product( $post->ID );
-		$terms   = array();
+		$attrs   = $product instanceof \WC_Product ? $this->product_attrs( $product ) : array();
+		$saved   = $this->galleries_meta( $post->ID );
+		$types   = $this->type_overrides( $post->ID );
+		$names   = array(
+			'select'       => __( 'Dropdown', 'oc-theme' ),
+			'button'       => __( 'Buttons', 'oc-theme' ),
+			'swatch'       => __( 'Swatch — colour', 'oc-theme' ),
+			'swatch_image' => __( 'Swatch — image', 'oc-theme' ),
+		);
 
-		if ( $product instanceof \WC_Product ) {
-			foreach ( array_keys( $product->get_attributes() ) as $attr_tax ) {
-				// Keys arrive percent-encoded for Hebrew taxonomies.
-				$attr_tax = rawurldecode( (string) $attr_tax );
-
-				if ( ! in_array( $this->attr_type( $attr_tax ), array( 'swatch', 'swatch_image' ), true ) ) {
-					continue;
-				}
-
-				$product_terms = wc_get_product_terms( $post->ID, $attr_tax, array( 'fields' => 'all' ) );
-				foreach ( $product_terms as $term ) {
-					$terms[] = $term;
-				}
+		$any_swatch = false;
+		foreach ( $attrs as $attr ) {
+			if ( in_array( $attr['type'], array( 'swatch', 'swatch_image' ), true ) ) {
+				$any_swatch = true;
 			}
 		}
-
-		$saved = $this->galleries_meta( $post->ID );
 
 		wp_enqueue_media();
 		echo '<div id="oc_color_galleries_panel" class="panel woocommerce_options_panel">';
 
-		if ( empty( $terms ) ) {
-			echo '<p class="form-field">' . esc_html__( 'Give the product a swatch-type attribute (for example: colour) and its values appear here.', 'oc-theme' ) . '</p>';
+		if ( empty( $attrs ) ) {
+			echo '<p class="form-field">' . esc_html__( 'Add an attribute used for variations (for example: colour), save, and its values appear here.', 'oc-theme' ) . '</p>';
 		}
 
-		foreach ( $terms as $term ) {
-			$entry  = $saved[ $term->slug ] ?? array(
-				'imgs'   => array(),
-				'swatch' => '',
-				'color'  => '',
-			);
-			$swatch = (string) $entry['swatch'];
-			$color  = (string) ( $entry['color'] ?? '' );
+		$first = true;
 
-			$term_color = (string) get_term_meta( $term->term_id, 'oc_swatch_color', true );
-			$term_color = '' !== $term_color ? $term_color : '#cccccc';
+		foreach ( $attrs as $attr ) {
+			$is_swatch = in_array( $attr['type'], array( 'swatch', 'swatch_image' ), true );
+			$open      = $is_swatch || ( $first && ! $any_swatch );
+			$first     = false;
 
-			echo '<div class="oc-cgal" data-slug="' . esc_attr( $term->slug ) . '" style="border-block-end:1px solid #eee;padding:12px;">';
-			echo '<strong style="display:block;margin-block-end:8px;">' . esc_html( $term->name ) . '</strong>';
-
-			// Gallery ids + sortable previews: drag to reorder, × removes one,
-			// and the add button sits on its own line under the images.
-			echo '<input type="hidden" name="oc_cgal[' . esc_attr( $term->slug ) . '][imgs]" value="' . esc_attr( implode( ',', $entry['imgs'] ) ) . '" class="oc-cgal__ids" />';
-			echo '<span class="oc-cgal__thumbs" style="display:flex;flex-wrap:wrap;gap:6px;' . ( empty( $entry['imgs'] ) ? '' : 'margin-block-end:8px;' ) . '">';
-			foreach ( $entry['imgs'] as $img_id ) {
-				$url = wp_get_attachment_image_url( $img_id, 'thumbnail' );
-				if ( $url ) {
-					echo $this->gallery_chip( $img_id, $url ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
-				}
+			// Where the default display comes from, so the choice reads plainly.
+			if ( '' !== $attr['tax'] ) {
+				$source = __( 'from the attribute settings', 'oc-theme' );
+			} elseif ( '' !== $attr['twin'] ) {
+				/* translators: %s: global attribute label. */
+				$source = sprintf( __( 'from the global attribute “%s”', 'oc-theme' ), wc_attribute_label( $attr['twin'] ) );
+			} else {
+				$source = __( 'no global attribute of this name', 'oc-theme' );
 			}
-			echo '</span>';
-			echo '<span style="display:block;margin-block-start:10px;"><button type="button" class="button oc-cgal__pick">' . esc_html__( 'Add images', 'oc-theme' ) . '</button></span>';
 
-			// Optional colour-shade override for this product only: the value
-			// keeps its store-wide colour; this product may fine-tune it, and
-			// reset returns to the value's own colour.
-			echo '<span style="display:flex;align-items:center;gap:8px;margin-block-start:8px;">';
-			echo '<label style="float:none;inline-size:auto;margin:0;display:inline-block;">' . esc_html__( 'Colour shade (this product only)', 'oc-theme' ) . '</label>';
-			echo '<input type="hidden" name="oc_cgal[' . esc_attr( $term->slug ) . '][color]" value="' . esc_attr( $color ) . '" class="oc-cgal__colval" />';
-			echo '<input type="color" class="oc-cgal__color" value="' . esc_attr( '' !== $color ? $color : $term_color ) . '" data-def="' . esc_attr( $term_color ) . '" />';
-			echo '<button type="button" class="button oc-cgal__colreset"' . ( '' === $color ? ' style="display:none;"' : '' ) . '>' . esc_html__( 'Reset', 'oc-theme' ) . '</button>';
-			echo '</span>';
+			echo '<details class="oc-cgal-attr" data-attr="' . esc_attr( $attr['key'] ) . '"' . ( $open ? ' open' : '' ) . ' style="border-block-end:1px solid #ddd;">';
+			echo '<summary style="padding:10px 12px;cursor:pointer;font-weight:600;">' . esc_html( $attr['label'] ) . ' <span style="font-weight:400;color:#757575;">(' . esc_html( $names[ $attr['type'] ] ?? $attr['type'] ) . ')</span></summary>';
 
-			// Optional swatch override for this product only — the chosen image
-			// becomes a chip with the same red x as the gallery ones, and the
-			// choose button hides while an override is set.
-			echo '<span style="display:flex;align-items:center;gap:8px;margin-block-start:8px;">';
-			echo '<label style="float:none;inline-size:auto;margin:0;display:inline-block;">' . esc_html__( 'Swatch image (this product only)', 'oc-theme' ) . '</label>';
-			echo '<input type="hidden" name="oc_cgal[' . esc_attr( $term->slug ) . '][swatch]" value="' . esc_url( $swatch ) . '" class="oc-cgal__sw" />';
-			echo '<span class="oc-cgal__swchip" style="position:relative;display:' . ( '' === $swatch ? 'none' : 'inline-block' ) . ';">';
-			echo '<img class="oc-cgal__swprev" src="' . esc_url( $swatch ) . '" alt="" style="inline-size:28px;block-size:28px;border-radius:50%;object-fit:cover;border:1px solid #ccd0d4;display:block;" />';
-			echo '<button type="button" class="oc-cgal__swx" aria-label="' . esc_attr__( 'Remove', 'oc-theme' ) . '" style="position:absolute;inset-block-start:-6px;inset-inline-end:-6px;inline-size:18px;block-size:18px;border-radius:50%;border:none;background:#d63638;color:#fff;font-size:12px;line-height:1;cursor:pointer;padding:0;">&times;</button>';
-			echo '</span>';
-			echo '<button type="button" class="button oc-cgal__swpick"' . ( '' === $swatch ? '' : ' style="display:none;"' ) . '>' . esc_html__( 'Choose image', 'oc-theme' ) . '</button>';
-			echo '</span>';
+			// How this attribute is drawn on the product page. A local
+			// attribute has no settings screen of its own; this is it.
+			echo '<p class="form-field" style="display:flex;align-items:center;gap:8px;">';
+			echo '<label for="oc_attr_type_' . esc_attr( $attr['key'] ) . '" style="float:none;inline-size:auto;margin:0;">' . esc_html__( 'Display', 'oc-theme' ) . '</label>';
+			echo '<select id="oc_attr_type_' . esc_attr( $attr['key'] ) . '" name="oc_attr_type[' . esc_attr( $attr['key'] ) . ']" style="inline-size:auto;">';
+			/* translators: 1: display type, 2: where it comes from. */
+			echo '<option value="">' . esc_html( sprintf( __( 'Default — %1$s (%2$s)', 'oc-theme' ), $names[ $attr['inherited'] ] ?? $attr['inherited'], $source ) ) . '</option>';
+			foreach ( $names as $slug => $name ) {
+				echo '<option value="' . esc_attr( $slug ) . '"' . selected( $types[ $attr['key'] ] ?? '', $slug, false ) . '>' . esc_html( $name ) . '</option>';
+			}
+			echo '</select></p>';
 
-			echo '</div>';
+			foreach ( $attr['values'] as $val ) {
+				$entry  = $saved[ $val['slug'] ] ?? array(
+					'imgs'   => array(),
+					'swatch' => '',
+					'color'  => '',
+				);
+				$swatch = (string) $entry['swatch'];
+				$color  = (string) ( $entry['color'] ?? '' );
+
+				$term_color = $val['term'] instanceof \WP_Term ? (string) get_term_meta( $val['term']->term_id, 'oc_swatch_color', true ) : '';
+				$term_color = '' !== $term_color ? $term_color : '#cccccc';
+
+				echo '<div class="oc-cgal" data-slug="' . esc_attr( $val['slug'] ) . '" style="border-block-start:1px solid #eee;padding:12px;">';
+				echo '<strong style="display:block;margin-block-end:8px;">' . esc_html( $val['name'] ) . '</strong>';
+
+				// Gallery ids + sortable previews: drag to reorder, × removes one,
+				// and the add button sits on its own line under the images.
+				echo '<input type="hidden" name="oc_cgal[' . esc_attr( $val['slug'] ) . '][imgs]" value="' . esc_attr( implode( ',', $entry['imgs'] ) ) . '" class="oc-cgal__ids" />';
+				echo '<span class="oc-cgal__thumbs" style="display:flex;flex-wrap:wrap;gap:6px;' . ( empty( $entry['imgs'] ) ? '' : 'margin-block-end:8px;' ) . '">';
+				foreach ( $entry['imgs'] as $img_id ) {
+					$url = wp_get_attachment_image_url( $img_id, 'thumbnail' );
+					if ( $url ) {
+						echo $this->gallery_chip( $img_id, $url ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
+					}
+				}
+				echo '</span>';
+				echo '<span style="display:block;margin-block-start:10px;"><button type="button" class="button oc-cgal__pick">' . esc_html__( 'Add images', 'oc-theme' ) . '</button></span>';
+
+				// Optional colour-shade override for this product only: the value
+				// keeps its store-wide colour; this product may fine-tune it, and
+				// reset returns to the value's own colour.
+				echo '<span style="display:flex;align-items:center;gap:8px;margin-block-start:8px;">';
+				echo '<label style="float:none;inline-size:auto;margin:0;display:inline-block;">' . esc_html__( 'Colour shade (this product only)', 'oc-theme' ) . '</label>';
+				echo '<input type="hidden" name="oc_cgal[' . esc_attr( $val['slug'] ) . '][color]" value="' . esc_attr( $color ) . '" class="oc-cgal__colval" />';
+				echo '<input type="color" class="oc-cgal__color" value="' . esc_attr( '' !== $color ? $color : $term_color ) . '" data-def="' . esc_attr( $term_color ) . '" />';
+				echo '<button type="button" class="button oc-cgal__colreset"' . ( '' === $color ? ' style="display:none;"' : '' ) . '>' . esc_html__( 'Reset', 'oc-theme' ) . '</button>';
+				echo '</span>';
+
+				// Optional swatch override for this product only — the chosen image
+				// becomes a chip with the same red x as the gallery ones, and the
+				// choose button hides while an override is set.
+				echo '<span style="display:flex;align-items:center;gap:8px;margin-block-start:8px;">';
+				echo '<label style="float:none;inline-size:auto;margin:0;display:inline-block;">' . esc_html__( 'Swatch image (this product only)', 'oc-theme' ) . '</label>';
+				echo '<input type="hidden" name="oc_cgal[' . esc_attr( $val['slug'] ) . '][swatch]" value="' . esc_url( $swatch ) . '" class="oc-cgal__sw" />';
+				echo '<span class="oc-cgal__swchip" style="position:relative;display:' . ( '' === $swatch ? 'none' : 'inline-block' ) . ';">';
+				echo '<img class="oc-cgal__swprev" src="' . esc_url( $swatch ) . '" alt="" style="inline-size:28px;block-size:28px;border-radius:50%;object-fit:cover;border:1px solid #ccd0d4;display:block;" />';
+				echo '<button type="button" class="oc-cgal__swx" aria-label="' . esc_attr__( 'Remove', 'oc-theme' ) . '" style="position:absolute;inset-block-start:-6px;inset-inline-end:-6px;inline-size:18px;block-size:18px;border-radius:50%;border:none;background:#d63638;color:#fff;font-size:12px;line-height:1;cursor:pointer;padding:0;">&times;</button>';
+				echo '</span>';
+				echo '<button type="button" class="button oc-cgal__swpick"' . ( '' === $swatch ? '' : ' style="display:none;"' ) . '>' . esc_html__( 'Choose image', 'oc-theme' ) . '</button>';
+				echo '</span>';
+
+				echo '</div>';
+			}
+
+			echo '</details>';
 		}
 
 		$this->galleries_panel_script();
@@ -1198,6 +1480,22 @@ final class Variations {
 	 */
 	public function save_galleries( $post_id ): void {
 		// Woo verified its own nonce before this hook fires.
+		if ( isset( $_POST['oc_attr_type'] ) && is_array( $_POST['oc_attr_type'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			$types = array();
+
+			foreach ( wp_unslash( (array) $_POST['oc_attr_type'] ) as $key => $type ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+				if ( in_array( (string) $type, array( 'select', 'button', 'swatch', 'swatch_image' ), true ) ) {
+					$types[ sanitize_title( (string) $key ) ] = (string) $type;
+				}
+			}
+
+			if ( empty( $types ) ) {
+				delete_post_meta( $post_id, '_oc_attr_types' );
+			} else {
+				update_post_meta( $post_id, '_oc_attr_types', $types );
+			}
+		}
+
 		if ( ! isset( $_POST['oc_cgal'] ) || ! is_array( $_POST['oc_cgal'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			return;
 		}
@@ -1250,19 +1548,30 @@ final class Variations {
 		}
 
 		$galleries = $this->galleries_meta( $product->get_id() );
-		$map       = array();
 
-		foreach ( $galleries as $slug => $entry ) {
-			if ( empty( $entry['imgs'] ) ) {
-				continue;
+		if ( empty( $galleries ) ) {
+			return;
+		}
+
+		// Keyed by what the select holds — a term's slug, a local value's
+		// typed text — which is what the script looks up on every change.
+		$map = array();
+
+		foreach ( $this->product_attrs( $product ) as $attr ) {
+			foreach ( $attr['values'] as $val ) {
+				$entry = $galleries[ $val['slug'] ] ?? null;
+
+				if ( empty( $entry['imgs'] ) || isset( $map[ $val['value'] ] ) ) {
+					continue;
+				}
+
+				$slides = array();
+				foreach ( $entry['imgs'] as $i => $img_id ) {
+					$slides[] = self::strip_thumb_data( wc_get_gallery_image_html( $img_id, 0 === $i ) );
+				}
+
+				$map[ $val['value'] ] = $slides;
 			}
-
-			$slides = array();
-			foreach ( $entry['imgs'] as $i => $img_id ) {
-				$slides[] = self::strip_thumb_data( wc_get_gallery_image_html( $img_id, 0 === $i ) );
-			}
-
-			$map[ $slug ] = $slides;
 		}
 
 		if ( empty( $map ) ) {
@@ -1326,21 +1635,11 @@ final class Variations {
 		$label = __( 'Colours', 'oc-theme' );
 		$value = '';
 
-		foreach ( array_keys( $product->get_attributes() ) as $attr_tax ) {
-			// Keys arrive percent-encoded for Hebrew taxonomies.
-			$attr_tax = rawurldecode( (string) $attr_tax );
+		$attr = $this->swatch_attr( $product );
 
-			if ( ! in_array( $this->attr_type( $attr_tax ), array( 'swatch', 'swatch_image' ), true ) ) {
-				continue;
-			}
-
-			$terms = wc_get_product_terms( $product->get_id(), $attr_tax, array( 'fields' => 'names' ) );
-
-			if ( 1 === count( $terms ) ) {
-				$label = wc_attribute_label( $attr_tax );
-				$value = (string) $terms[0];
-			}
-			break;
+		if ( null !== $attr && 1 === count( $attr['values'] ) ) {
+			$label = $attr['label'];
+			$value = $attr['values'][0]['name'];
 		}
 
 		printf(
@@ -1385,84 +1684,73 @@ final class Variations {
 			return '';
 		}
 
-		foreach ( array_keys( $product->get_attributes() ) as $attr_tax ) {
-			// Keys arrive percent-encoded for Hebrew taxonomies.
-			$attr_tax = rawurldecode( (string) $attr_tax );
-			$type     = $this->attr_type( $attr_tax );
+		$attr = $this->swatch_attr( $product );
 
-			if ( ! in_array( $type, array( 'swatch', 'swatch_image' ), true ) ) {
+		if ( null === $attr || count( $attr['values'] ) < 2 ) {
+			return '';
+		}
+
+		$type      = $attr['type'];
+		$galleries = $this->galleries_meta( $product->get_id() );
+		// Same rule as the card itself: inside a sideways row there is one
+		// picture, so the swatch must not hand the script four to rebuild.
+		$max       = ( 'gallery' === get_theme_mod( 'oc_card_image_mode', 'single' ) && ! WooCommerce::in_slider() ) ? max( 2, (int) get_theme_mod( 'oc_card_gallery_max', 4 ) ) : 1;
+		$permalink = get_permalink( $product->get_id() );
+		$list      = array();
+
+		// Woo reads the preselection from the sanitize_title form of the
+		// attribute name — for a Hebrew attribute that means the
+		// percent-encoded key, not the readable one.
+		// rawurlencode keeps the sanitize_title percents literal in the
+		// URL, so PHP's own decode hands Woo exactly the key it expects.
+		$qkey = 'attribute_' . rawurlencode( $attr['key'] );
+
+		foreach ( $attr['values'] as $val ) {
+			$style = $this->value_style( $product, $attr, $val, $type );
+
+			if ( '' === $style ) {
 				continue;
 			}
 
-			$terms = wc_get_product_terms( $product->get_id(), $attr_tax, array( 'fields' => 'all' ) );
-
-			if ( count( $terms ) < 2 ) {
-				return '';
+			// The colour's own gallery drives the card; a variation image
+			// stands in when no gallery was attached.
+			$imgs = array();
+			foreach ( array_slice( $galleries[ $val['slug'] ]['imgs'] ?? array(), 0, $max ) as $img_id ) {
+				$img_url = wp_get_attachment_image_url( $img_id, 'large' );
+				if ( $img_url ) {
+					$imgs[] = $img_url;
+				}
 			}
 
-			$galleries = $this->galleries_meta( $product->get_id() );
-			// Same rule as the card itself: inside a sideways row there is one
-			// picture, so the swatch must not hand the script four to rebuild.
-			$max       = ( 'gallery' === get_theme_mod( 'oc_card_image_mode', 'single' ) && ! WooCommerce::in_slider() ) ? max( 2, (int) get_theme_mod( 'oc_card_gallery_max', 4 ) ) : 1;
-			$permalink = get_permalink( $product->get_id() );
-			$list      = array();
-
-			// Woo reads the preselection from the sanitize_title form of the
-			// attribute name — for a Hebrew attribute that means the
-			// percent-encoded key, not the readable one.
-			// rawurlencode keeps the sanitize_title percents literal in the
-			// URL, so PHP's own decode hands Woo exactly the key it expects.
-			$qkey = 'attribute_' . rawurlencode( sanitize_title( $attr_tax ) );
-
-			foreach ( $terms as $term ) {
-				$style = $this->swatch_style( $product, $attr_tax, $term, $type );
-
-				if ( '' === $style ) {
-					continue;
+			if ( empty( $imgs ) ) {
+				$var_img = $this->variation_image( $product, rawurldecode( $attr['key'] ), $val['value'], 'large' );
+				if ( '' !== $var_img ) {
+					$imgs[] = $var_img;
 				}
-
-				// The colour's own gallery drives the card; a variation image
-				// stands in when no gallery was attached.
-				$imgs = array();
-				foreach ( array_slice( $galleries[ $term->slug ]['imgs'] ?? array(), 0, $max ) as $img_id ) {
-					$img_url = wp_get_attachment_image_url( $img_id, 'large' );
-					if ( $img_url ) {
-						$imgs[] = $img_url;
-					}
-				}
-
-				if ( empty( $imgs ) ) {
-					$var_img = $this->variation_image( $product, $attr_tax, $term->slug, 'large' );
-					if ( '' !== $var_img ) {
-						$imgs[] = $var_img;
-					}
-				}
-
-				// The first colour is the card's default, pre-marked — the
-				// same one the card links carry into the product page.
-				$list[] = sprintf(
-					'<a class="oc-colors__item oc-colors__item--term%s" href="%s" style="%s" title="%s" aria-label="%s"%s data-url="%s" data-pid="%d" data-imgs="%s" data-slug="%s"></a>',
-					empty( $list ) ? ' is-current' : '',
-					esc_url( add_query_arg( $qkey, $term->slug, $permalink ) ),
-					$style, // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
-					esc_attr( $term->name ),
-					esc_attr( $term->name ),
-					empty( $list ) ? ' aria-current="true"' : '',
-					esc_url( add_query_arg( $qkey, $term->slug, $permalink ) ),
-					absint( $product->get_id() ),
-					esc_attr( (string) wp_json_encode( $imgs ) ),
-					esc_attr( $term->slug )
-				);
 			}
 
-			if ( empty( $list ) ) {
-				return '';
-			}
-
-			return '<div class="oc-colors oc-colors--loop">' . implode( '', self::capped( $list, 0, $permalink ) ) . '</div>';
+			// The first colour is the card's default, pre-marked — the
+			// same one the card links carry into the product page.
+			$list[] = sprintf(
+				'<a class="oc-colors__item oc-colors__item--term%s" href="%s" style="%s" title="%s" aria-label="%s"%s data-url="%s" data-pid="%d" data-imgs="%s" data-slug="%s"></a>',
+				empty( $list ) ? ' is-current' : '',
+				esc_url( add_query_arg( $qkey, $val['value'], $permalink ) ),
+				$style, // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
+				esc_attr( $val['name'] ),
+				esc_attr( $val['name'] ),
+				empty( $list ) ? ' aria-current="true"' : '',
+				esc_url( add_query_arg( $qkey, $val['value'], $permalink ) ),
+				absint( $product->get_id() ),
+				esc_attr( (string) wp_json_encode( $imgs ) ),
+				esc_attr( $val['value'] )
+			);
 		}
 
-		return '';
+		if ( empty( $list ) ) {
+			return '';
+		}
+
+		return '<div class="oc-colors oc-colors--loop">' . implode( '', self::capped( $list, 0, $permalink ) ) . '</div>';
 	}
 
 	/**
@@ -1587,21 +1875,10 @@ final class Variations {
 	 * @return string
 	 */
 	private function sibling_style( \WC_Product $sibling ): string {
-		foreach ( array_keys( $sibling->get_attributes() ) as $attr_tax ) {
-			// Keys arrive percent-encoded for Hebrew taxonomies.
-			$attr_tax = rawurldecode( (string) $attr_tax );
-			$type     = $this->attr_type( $attr_tax );
+		$attr = $this->swatch_attr( $sibling );
 
-			if ( ! in_array( $type, array( 'swatch', 'swatch_image' ), true ) ) {
-				continue;
-			}
-
-			$terms = wc_get_product_terms( $sibling->get_id(), $attr_tax, array( 'fields' => 'all' ) );
-
-			if ( 1 === count( $terms ) ) {
-				return $this->swatch_style( $sibling, $attr_tax, $terms[0], $type );
-			}
-			break;
+		if ( null !== $attr && 1 === count( $attr['values'] ) ) {
+			return $this->value_style( $sibling, $attr, $attr['values'][0], $attr['type'] );
 		}
 
 		return '';

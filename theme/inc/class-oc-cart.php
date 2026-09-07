@@ -1087,40 +1087,31 @@ final class Cart {
 
 			foreach ( $product->get_variation_attributes() as $attr => $options ) {
 				$attr = (string) $attr;
-				$type = Variations::display_type( $attr );
-				$opts = array();
+				$panel = Variations::panel_attr( $product, $attr );
+				$type  = $panel['type'];
+				$opts  = array();
 
 				foreach ( (array) $options as $slug ) {
-					$slug   = (string) $slug;
-					$label  = $slug;
-					$swatch = '';
-
-					if ( taxonomy_exists( $attr ) ) {
-						$term = get_term_by( 'slug', $slug, $attr );
-
-						if ( $term instanceof \WP_Term ) {
-							$label  = $term->name;
-							$swatch = Variations::swatch_css( $product, $attr, $term );
-						}
-					}
+					$slug  = (string) $slug;
+					$known = $panel['options'][ $slug ] ?? ( $panel['options'][ rawurldecode( $slug ) ] ?? null );
 
 					$opts[] = array(
 						'slug'   => $slug,
-						'label'  => $label,
-						'swatch' => $swatch,
+						'label'  => null !== $known ? $known['label'] : $slug,
+						'swatch' => null !== $known ? $known['swatch'] : '',
 					);
 				}
 
-				// The panel keeps the product page's order — terms, not the
-				// order the variations happen to be stored in. Variation
-				// slugs arrive percent-encoded for Hebrew, term slugs plain:
-				// the map answers to both spellings.
-				if ( taxonomy_exists( $attr ) && count( $opts ) > 1 ) {
+				// The panel keeps the product page's order — the attribute's
+				// own, not the order the variations happen to be stored in.
+				// Variation slugs arrive percent-encoded for Hebrew, the
+				// attribute's plain: the map answers to both spellings.
+				if ( count( $opts ) > 1 && ! empty( $panel['options'] ) ) {
 					$order = array();
 
-					foreach ( (array) wc_get_product_terms( $product->get_id(), $attr, array( 'fields' => 'slugs' ) ) as $i => $term_slug ) {
-						$order[ (string) $term_slug ]                 = $i;
-						$order[ rawurlencode( (string) $term_slug ) ] = $i;
+					foreach ( array_keys( $panel['options'] ) as $i => $value ) {
+						$order[ (string) $value ]                 = $i;
+						$order[ rawurlencode( (string) $value ) ] = $i;
 					}
 
 					usort(
