@@ -527,8 +527,8 @@ final class Cart {
 	/**
 	 * A price as bare text that still reads the right way round.
 	 *
-	 * wc_price() wraps the amount in <bdi>, and that is what keeps "₪ 99.00"
-	 * in one piece inside Hebrew. Strip the tags for a button label and the
+	 * The amount comes out of wc_price() wrapped in <bdi>, and that is what
+	 * keeps "₪ 99.00" in one piece inside Hebrew. Strip the tags for a button label and the
 	 * isolation goes with them: the symbol is a neutral, the digits run
 	 * left-to-right, and in a right-to-left sentence the bidi algorithm
 	 * hands the symbol to the other side of the number — the one place in
