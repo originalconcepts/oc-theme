@@ -5212,8 +5212,14 @@ html.oc-cart-lock body { position: fixed; inset-inline: 0; inline-size: 100%; }
 
 .oc-mcart__media img {
 	inline-size: 76px;
-	block-size: 92px;
-	object-fit: cover;
+	/* The width is the only thing fixed. The height follows the photo, so
+	   a portrait shot of a model is shown whole, just small — it used to be
+	   cut to 76×92 and lost her head. A cap keeps a very tall picture from
+	   stretching the row; inside the cap it still shows entire. */
+	block-size: auto;
+	max-block-size: 120px;
+	aspect-ratio: auto;
+	object-fit: contain;
 	border-radius: 6px;
 	display: block;
 }
@@ -10570,8 +10576,13 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 .oc-checkout td.product-name .oc-co-item__img,
 .oc-co-item__img {
 	inline-size: 56px;
-	block-size: 68px !important;
-	object-fit: cover;
+	/* The width is fixed and the height follows the photo, so a portrait
+	   shot stays a portrait shot — whole, just small. Capped so a very tall
+	   picture cannot stretch the row; inside the cap it still shows entire. */
+	block-size: auto !important;
+	max-block-size: 96px;
+	aspect-ratio: auto;
+	object-fit: contain;
 	border-radius: 6px;
 	flex: none;
 	background: #fff;

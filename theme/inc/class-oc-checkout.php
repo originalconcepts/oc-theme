@@ -1420,7 +1420,9 @@ final class Checkout {
 			return (string) $name;
 		}
 
-		$image = wp_get_attachment_image( (int) $product->get_image_id(), 'woocommerce_gallery_thumbnail', false, array( 'class' => 'oc-co-item__img' ) );
+		// The uncropped core size, for the same reason as the cart drawer: the
+		// gallery thumbnail is a 100px square and cut the picture before CSS.
+		$image = wp_get_attachment_image( (int) $product->get_image_id(), 'medium', false, array( 'class' => 'oc-co-item__img' ) );
 
 		// Chosen attributes exactly like the mini-cart rows (swatch dot,
 		// label: bold value); Woo's own dl.variation hides in CSS.

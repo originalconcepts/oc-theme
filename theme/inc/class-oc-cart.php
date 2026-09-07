@@ -300,9 +300,13 @@ final class Cart {
 			// engine wraps that one with its catalogue label, and a product
 			// already in the cart needs no label (the upsells keep theirs).
 			$image_id = (int) $product->get_image_id();
+			// `medium`, not WooCommerce's thumbnail: that one is cropped to the
+			// shop's square before it reaches the page, and a portrait photo
+			// of a model lost her head in the cart. The core size keeps the
+			// photo's own proportions; the stylesheet only sets the width.
 			$thumb    = $image_id
-				? wp_get_attachment_image( $image_id, 'woocommerce_thumbnail' )
-				: wc_placeholder_img( 'woocommerce_thumbnail' );
+				? wp_get_attachment_image( $image_id, 'medium' )
+				: wc_placeholder_img( 'medium' );
 			$thumb    = apply_filters( 'woocommerce_cart_item_thumbnail', $thumb, $item, $key );
 			$link     = apply_filters( 'woocommerce_cart_item_permalink', $product->is_visible() ? $product->get_permalink( $item ) : '', $item, $key );
 			$in_stock = $product->is_in_stock();
