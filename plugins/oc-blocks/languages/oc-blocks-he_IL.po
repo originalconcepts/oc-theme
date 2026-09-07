@@ -1714,3 +1714,9 @@ msgstr "כמה מהעמודה שלה תמונת החדר תופסת. היא לע
 
 msgid "How wide each room is in the phone strip. Under 100 the next room peeks in."
 msgstr "כמה רחב כל חדר ברצועת הטלפון. מתחת ל‑100 החדר הבא מציץ."
+
+msgid "Custom height"
+msgstr "גובה מותאם אישית"
+
+msgid "Tile height (px)"
+msgstr "גובה האריח (px)"

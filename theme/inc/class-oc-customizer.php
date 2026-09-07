@@ -1735,11 +1735,40 @@ final class Customizer {
 			'oc_card',
 			__( 'Image ratio', 'oc-theme' ),
 			array(
-				'1/1' => '1:1',
-				'3/4' => '3:4',
-				'4/3' => '4:3',
+				'1/1'    => '1:1',
+				'3/4'    => '3:4',
+				'4/3'    => '4:3',
+				'custom' => __( 'Custom height', 'oc-theme' ),
 			),
 			'1/1'
+		);
+
+		$this->number(
+			$c,
+			'oc_card_height_px',
+			'oc_card',
+			__( 'Image height — desktop (px)', 'oc-theme' ),
+			320,
+			80,
+			900,
+			array(
+				'setting' => 'oc_card_ratio',
+				'values'  => array( 'custom' ),
+			)
+		);
+
+		$this->number(
+			$c,
+			'oc_card_height_m_px',
+			'oc_card',
+			__( 'Image height — mobile (px)', 'oc-theme' ),
+			220,
+			60,
+			700,
+			array(
+				'setting' => 'oc_card_ratio',
+				'values'  => array( 'custom' ),
+			)
 		);
 
 		$this->choice(

@@ -748,6 +748,13 @@
 
 .ocb-cats--circle .ocb-cat__pic { border-radius: 50%; }
 .ocb-cats--portrait .ocb-cat__pic { aspect-ratio: 3 / 4; }
+
+/* The fourth shape is a height, not a ratio: set in pixels for each
+   device, the width still the column's. */
+.ocb-cats--custom .ocb-cat__pic { aspect-ratio: auto; block-size: var(--ocb-cat-hm, 220px); }
+@media (min-width: 783px) {
+	.ocb-cats--custom .ocb-cat__pic { block-size: var(--ocb-cat-h, 320px); }
+}
 .ocb-cats--c-soft .ocb-cat__pic { border-radius: 14px; }
 .ocb-cats--c-sharp .ocb-cat__pic { border-radius: 0; }
 

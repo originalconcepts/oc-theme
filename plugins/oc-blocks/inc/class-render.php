@@ -1097,7 +1097,8 @@ final class Render {
 			. ( 'circle' === $s['shape'] ? '' : ' ocb-cats--c-' . esc_attr( (string) $s['corners'] ) );
 
 		return self::heading( $s )
-			. '<div class="' . $classes . '" style="--ocb-cols:' . absint( $s['cols'] ) . ( absint( $s['wsize'] ?? 0 ) > 0 ? ';--ocb-cat-fs:' . absint( $s['wsize'] ) . 'px' : '' ) . '"'
+			. '<div class="' . $classes . '" style="--ocb-cols:' . absint( $s['cols'] ) . ( absint( $s['wsize'] ?? 0 ) > 0 ? ';--ocb-cat-fs:' . absint( $s['wsize'] ) . 'px' : '' )
+				. ( 'custom' === (string) $s['shape'] ? ';--ocb-cat-h:' . max( 80, absint( $s['h'] ?? 320 ) ) . 'px;--ocb-cat-hm:' . max( 60, absint( $s['hm'] ?? 220 ) ) . 'px' : '' ) . '"'
 			. ( 'slider' === $s['layout'] ? ' data-ocb-shelf' : '' ) . '>'
 			. '<div class="ocb-cats__row">' . $items . '</div>'
 			. ( 'slider' === $s['layout'] ? self::shelf_arrows() : '' )

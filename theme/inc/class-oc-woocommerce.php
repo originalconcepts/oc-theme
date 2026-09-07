@@ -829,6 +829,10 @@ final class WooCommerce {
 			$classes[] = 'oc-card-fit-contain';
 		}
 
+		if ( 'custom' === get_theme_mod( 'oc_card_ratio', '1/1' ) ) {
+			$classes[] = 'oc-card-h-custom';
+		}
+
 		if ( is_product() ) {
 			$classes[] = 'oc-gallery-' . sanitize_html_class( (string) get_theme_mod( 'oc_gallery_preset', 'thumbs-side' ) );
 			$classes[] = 'oc-side-' . sanitize_html_class( (string) get_theme_mod( 'oc_product_layout_side', 'gallery-start' ) );

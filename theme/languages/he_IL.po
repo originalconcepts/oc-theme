@@ -7242,3 +7242,12 @@ msgstr "מוצגת בשלמותה"
 
 msgid "Whole keeps every product photo complete inside the box, with a quiet ground where its proportions differ from the ratio above."
 msgstr "שלמה שומרת כל תמונת מוצר שלמה בתוך התיבה, עם רקע שקט היכן שהיחס שלה שונה מהיחס שלמעלה."
+
+msgid "Custom height"
+msgstr "גובה מותאם אישית"
+
+msgid "Image height — desktop (px)"
+msgstr "גובה התמונה — דסקטופ (px)"
+
+msgid "Image height — mobile (px)"
+msgstr "גובה התמונה — מובייל (px)"

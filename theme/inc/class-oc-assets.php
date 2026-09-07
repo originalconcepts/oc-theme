@@ -329,7 +329,9 @@ final class Assets {
 				'--oc-radius'             => get_theme_mod( 'oc_radius', '8px' ),
 				'--oc-density'            => get_theme_mod( 'oc_density', '1' ),
 				'--oc-content-width'      => absint( get_theme_mod( 'oc_content_width_px', 1280 ) ) . 'px',
-				'--oc-card-ratio'         => (string) get_theme_mod( 'oc_card_ratio', '1/1' ),
+				'--oc-card-ratio'         => 'custom' === get_theme_mod( 'oc_card_ratio', '1/1' ) ? 'auto' : (string) get_theme_mod( 'oc_card_ratio', '1/1' ),
+				'--oc-card-h'             => absint( get_theme_mod( 'oc_card_height_px', 320 ) ) . 'px',
+				'--oc-card-h-m'           => absint( get_theme_mod( 'oc_card_height_m_px', 220 ) ) . 'px',
 				// The same ratio as a bare number, so a tile that spans two
 				// columns can be given the height of a one-column tile.
 				'--oc-card-ratio-n'       => self::ratio_number( (string) get_theme_mod( 'oc_card_ratio', '1/1' ) ),
