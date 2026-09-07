@@ -15107,8 +15107,15 @@ body.oc-card-h-custom .woocommerce ul.products li.product .oc-card-media__item--
    Placed after the preset media queries so it has the last word.
    ========================================================================== */
 
-body.oc-card-h-custom.woocommerce ul.products li.product > .oc-card-media,
-body.oc-card-h-custom .woocommerce ul.products li.product > .oc-card-media,
+/* The ordinary card's own rule carries two :not() qualifiers and outweighs
+   a plain `li.product`; the same qualifiers are spelled out here so the
+   two tie and this one, being later, wins. Wide and big are named apart. */
+body.oc-card-h-custom.woocommerce ul.products li.product:not(.oc-tile--wide):not(.oc-tile--big) > .oc-card-media,
+body.oc-card-h-custom .woocommerce ul.products li.product:not(.oc-tile--wide):not(.oc-tile--big) > .oc-card-media,
+body.oc-card-h-custom.woocommerce ul.products li.product.oc-tile--wide > .oc-card-media,
+body.oc-card-h-custom .woocommerce ul.products li.product.oc-tile--wide > .oc-card-media,
+body.oc-card-h-custom.woocommerce ul.products li.product.oc-tile--big > .oc-card-media,
+body.oc-card-h-custom .woocommerce ul.products li.product.oc-tile--big > .oc-card-media,
 body.oc-card-h-custom.woocommerce ul.products li.product .oc-card-media__strip,
 body.oc-card-h-custom .woocommerce ul.products li.product .oc-card-media__strip,
 body.oc-card-h-custom.woocommerce ul.products li.product .oc-block__media,
@@ -15130,8 +15137,16 @@ body.oc-card-h-custom .woocommerce ul.products li.product .oc-card-media__item {
 }
 
 @media (max-width: 782px) {
-	body.oc-card-h-custom.woocommerce ul.products li.product > .oc-card-media,
-	body.oc-card-h-custom .woocommerce ul.products li.product > .oc-card-media,
+	body.oc-card-h-custom.woocommerce ul.products li.product:not(.oc-tile--wide):not(.oc-tile--big) > .oc-card-media,
+	body.oc-card-h-custom .woocommerce ul.products li.product:not(.oc-tile--wide):not(.oc-tile--big) > .oc-card-media,
+	body.oc-card-h-custom.woocommerce ul.products li.product.oc-tile--wide > .oc-card-media,
+	body.oc-card-h-custom .woocommerce ul.products li.product.oc-tile--wide > .oc-card-media,
+	body.oc-card-h-custom.woocommerce ul.products li.product.oc-tile--big > .oc-card-media,
+	body.oc-card-h-custom .woocommerce ul.products li.product.oc-tile--big > .oc-card-media,
+	body.oc-card-h-custom.woocommerce ul.products li.product.oc-tile--m-plain > .oc-card-media,
+	body.oc-card-h-custom .woocommerce ul.products li.product.oc-tile--m-plain > .oc-card-media,
+	body.oc-card-h-custom.woocommerce ul.products li.product.oc-tile--m-wide > .oc-card-media,
+	body.oc-card-h-custom .woocommerce ul.products li.product.oc-tile--m-wide > .oc-card-media,
 	body.oc-card-h-custom.woocommerce ul.products li.product .oc-card-media__strip,
 	body.oc-card-h-custom .woocommerce ul.products li.product .oc-card-media__strip,
 	body.oc-card-h-custom.woocommerce ul.products li.product .oc-block__media,
