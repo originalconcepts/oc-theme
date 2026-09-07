@@ -388,7 +388,7 @@ final class Registry {
 					'h'        => array(
 						'type'  => 'number',
 						'label' => __( 'Height — desktop (px)', 'oc-blocks' ),
-						'hint'  => __( '0 shows the picture at its natural height.', 'oc-blocks' ),
+						'hint'  => __( '0 is natural: the banner takes the shape of the picture or video, and nothing is cut off.', 'oc-blocks' ),
 						'def'   => 560,
 						'min'   => 0,
 						'max'   => 1200,
@@ -397,7 +397,7 @@ final class Registry {
 					'hm'       => array(
 						'type'  => 'number',
 						'label' => __( 'Height — mobile (px)', 'oc-blocks' ),
-						'hint'  => __( '0 shows the picture at its natural height.', 'oc-blocks' ),
+						'hint'  => __( '0 is natural: the banner takes the shape of the picture or video, and nothing is cut off.', 'oc-blocks' ),
 						'def'   => 440,
 						'min'   => 0,
 						'max'   => 900,

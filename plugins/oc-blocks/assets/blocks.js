@@ -1533,3 +1533,58 @@
 		setTimeout( laxDraw, 1200 );
 	}
 }() );
+
+/* ---------- natural height for a banner whose shape the server could not know ----------
+ * Height 0 makes the banner take its media's proportions. The server writes
+ * them for anything in the library; a film hosted elsewhere, or a picture
+ * with no recorded size, arrives without a ratio and would fall back to
+ * 16:9 — and be cropped after all. The media itself knows its size the
+ * moment its metadata loads, so it is read from there and written back. */
+( function () {
+	document.querySelectorAll( '.ocb-hero--hauto, .ocb-hero--hmauto' ).forEach( function ( hero ) {
+		var have  = hero.style.getPropertyValue( '--ocb-hero-ratio' ).trim();
+		var haveM = hero.style.getPropertyValue( '--ocb-hero-ratio-m' ).trim();
+
+		if ( have && haveM ) {
+			return;
+		}
+
+		var media = hero.querySelector( '.ocb-hero__slide .ocb-hero__media video, .ocb-hero__slide .ocb-hero__media img' );
+
+		if ( ! media ) {
+			return;
+		}
+
+		function write( w, h ) {
+			if ( ! ( w > 0 && h > 0 ) ) {
+				return;
+			}
+
+			var ratio = w + ' / ' + h;
+
+			if ( ! have ) {
+				hero.style.setProperty( '--ocb-hero-ratio', ratio );
+			}
+
+			if ( ! haveM ) {
+				hero.style.setProperty( '--ocb-hero-ratio-m', ratio );
+			}
+		}
+
+		if ( 'VIDEO' === media.tagName ) {
+			if ( media.readyState >= 1 ) {
+				write( media.videoWidth, media.videoHeight );
+			} else {
+				media.addEventListener( 'loadedmetadata', function () {
+					write( media.videoWidth, media.videoHeight );
+				}, { once: true } );
+			}
+		} else if ( media.complete && media.naturalWidth ) {
+			write( media.naturalWidth, media.naturalHeight );
+		} else {
+			media.addEventListener( 'load', function () {
+				write( media.naturalWidth, media.naturalHeight );
+			}, { once: true } );
+		}
+	} );
+}() );

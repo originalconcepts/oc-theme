@@ -604,6 +604,19 @@ final class Render {
 		$ratiom = '';
 
 		foreach ( (array) $s['slides'] as $slide ) {
+			// A video slide has proportions too. The slide keeps a URL, not
+			// an id, so it is looked up in the library; a film hosted
+			// elsewhere leaves this empty and the script measures it once
+			// its metadata arrives.
+			if ( '' !== (string) ( $slide['vid'] ?? '' ) && '' === $ratio ) {
+				$vid = attachment_url_to_postid( (string) $slide['vid'] );
+				$vm  = $vid > 0 ? (array) wp_get_attachment_metadata( $vid ) : array();
+
+				if ( ! empty( $vm['width'] ) && ! empty( $vm['height'] ) ) {
+					$ratio = absint( $vm['width'] ) . ' / ' . absint( $vm['height'] );
+				}
+			}
+
 			if ( absint( $slide['img'] ?? 0 ) > 0 && '' === $ratio ) {
 				$src = wp_get_attachment_image_src( absint( $slide['img'] ), 'full' );
 
@@ -637,7 +650,7 @@ final class Render {
 		// absent value means the old behaviour: the video covers the area.
 		$vcontain = isset( $s['vcover'] ) && ! $s['vcover'];
 
-		$html = '<div class="ocb-hero ocb-hero--' . esc_attr( (string) $s['effect'] ) . ' ocb-hero--pos-' . esc_attr( (string) $s['pos'] ) . ' ocb-hero--' . esc_attr( (string) $s['tone'] ) . ( $one ? ' ocb-hero--one' : '' ) . ( $vcontain ? ' ocb-hero--vcontain' : '' ) . ( 0 === absint( $s['h'] ) && '' !== $ratio ? ' ocb-hero--hauto' : '' ) . ( 0 === absint( $s['hm'] ) && '' !== $ratiom ? ' ocb-hero--hmauto' : '' ) . '"'
+		$html = '<div class="ocb-hero ocb-hero--' . esc_attr( (string) $s['effect'] ) . ' ocb-hero--pos-' . esc_attr( (string) $s['pos'] ) . ' ocb-hero--' . esc_attr( (string) $s['tone'] ) . ( $one ? ' ocb-hero--one' : '' ) . ( $vcontain ? ' ocb-hero--vcontain' : '' ) . ( 0 === absint( $s['h'] ) ? ' ocb-hero--hauto' : '' ) . ( 0 === absint( $s['hm'] ) ? ' ocb-hero--hmauto' : '' ) . '"'
 			. ' style="' . esc_attr( $style ) . '"'
 			. ( $one || empty( $s['auto'] ) ? '' : ' data-ocb-auto="' . absint( $s['auto'] ) . '"' ) . '>'
 			. '<div class="ocb-hero__strip">' . implode( '', $slides ) . '</div>'

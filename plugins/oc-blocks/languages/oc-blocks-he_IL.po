@@ -1693,3 +1693,6 @@ msgstr "למסך מגע אין ריחוף, אז כך הלוגו נשאר."
 
 msgid "Space around the logo"
 msgstr "מרווח סביב הלוגו"
+
+msgid "0 is natural: the banner takes the shape of the picture or video, and nothing is cut off."
+msgstr "0 = טבעי: הבאנר מקבל את צורת התמונה או הסרטון, ושום דבר לא נחתך."
