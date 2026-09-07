@@ -467,6 +467,15 @@ final class Assets {
 			if ( $gimg_m > 0 ) {
 				$out_extra = ( $out_extra ?? '' ) . '--oc-gimg-h-m:' . $gimg_m . 'px;';
 			}
+
+			// The grid gallery lines its cells up on the main picture's shape.
+			$shown = function_exists( 'wc_get_product' ) ? wc_get_product( get_queried_object_id() ) : null;
+			if ( $shown instanceof \WC_Product && $shown->get_image_id() ) {
+				$src = wp_get_attachment_image_src( (int) $shown->get_image_id(), 'full' );
+				if ( is_array( $src ) && (int) $src[1] > 0 && (int) $src[2] > 0 ) {
+					$out_extra = ( $out_extra ?? '' ) . '--oc-gal-ratio:' . (int) $src[1] . ' / ' . (int) $src[2] . ';';
+				}
+			}
 		} elseif ( function_exists( 'is_shop' ) && ( is_shop() || is_product_taxonomy() ) ) {
 			$width = absint( get_theme_mod( 'oc_catalog_width_px', 0 ) );
 			$bg    = (string) get_theme_mod( 'oc_catalog_bg', '' );

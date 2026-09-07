@@ -4604,6 +4604,24 @@ li.product:focus-within .oc-card-atc,
 	}
 }
 
+/* grid preset with original heights: two pictures of different shapes
+ * still line up — every cell takes the main picture's shape, and a picture
+ * of another shape shows whole inside it. "Uniform" keeps its centre-crop. */
+@media (min-width: 901px) {
+	.oc-gallery-grid:not(.oc-gimg-fixed) .woocommerce-product-gallery__wrapper .woocommerce-product-gallery__image {
+		aspect-ratio: var(--oc-gal-ratio, 3 / 4);
+	}
+	.oc-gallery-grid:not(.oc-gimg-fixed) .woocommerce-product-gallery__wrapper .woocommerce-product-gallery__image:not(.oc-vslide) > a {
+		display: block;
+		block-size: 100%;
+	}
+	.oc-gallery-grid:not(.oc-gimg-fixed) .woocommerce-product-gallery__wrapper .woocommerce-product-gallery__image img:not(.zoomImg) {
+		block-size: 100%;
+		inline-size: 100%;
+		object-fit: contain;
+	}
+}
+
 /* desktop arrows over the active image (thumbs presets) */
 .oc-gnav--desktop { display: none; }
 
