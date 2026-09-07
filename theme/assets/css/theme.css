@@ -5219,7 +5219,9 @@ html.oc-cart-lock body { position: fixed; inset-inline: 0; inline-size: 100%; }
 	   stretching the row; inside the cap it still shows entire. */
 	block-size: auto;
 	max-block-size: 120px;
-	aspect-ratio: auto;
+	/* No `aspect-ratio: auto` here: written out, it discards the ratio the
+	   browser takes from the image's own width/height attributes, and the
+	   picture then falls back to its file height and hits the cap. */
 	object-fit: contain;
 	border-radius: 6px;
 	display: block;
@@ -10582,7 +10584,6 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 	   picture cannot stretch the row; inside the cap it still shows entire. */
 	block-size: auto !important;
 	max-block-size: 96px;
-	aspect-ratio: auto;
 	object-fit: contain;
 	border-radius: 6px;
 	flex: none;
