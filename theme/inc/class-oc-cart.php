@@ -1086,7 +1086,7 @@ final class Cart {
 			$has_siblings = ! empty( array_filter( array_map( 'absint', (array) get_post_meta( $product->get_id(), '_oc_color_links', true ) ) ) );
 
 			foreach ( $product->get_variation_attributes() as $attr => $options ) {
-				$attr = (string) $attr;
+				$attr  = (string) $attr;
 				$panel = Variations::panel_attr( $product, $attr );
 				$type  = $panel['type'];
 				$opts  = array();
