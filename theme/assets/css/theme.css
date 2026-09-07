@@ -5208,7 +5208,8 @@ html.oc-cart-lock body { position: fixed; inset-inline: 0; inline-size: 100%; }
 
 .oc-mcart__item:first-child { padding-block-start: 4px; }
 
-.oc-mcart__media { flex: none; }
+/* Not stretched to the row: the picture ends where its own height ends. */
+.oc-mcart__media { flex: none; align-self: flex-start; }
 
 .oc-mcart__media img {
 	inline-size: 76px;
