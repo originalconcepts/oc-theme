@@ -15095,3 +15095,49 @@ body.oc-card-h-custom .woocommerce ul.products li.product .oc-card-media__item--
 		block-size: var(--oc-card-h-m, 220px);
 	}
 }
+
+/* ==========================================================================
+   Product cards: custom height — the box, not just the picture
+   --------------------------------------------------------------------------
+   The grid presets pin every card's media box to the ratio as a number
+   (`--oc-card-ratio-n`), which for "custom" is 1: a square. The picture
+   inside was told 600px and simply scrolled within the square. With a
+   custom height the box states that height outright and stops computing a
+   ratio at all — ordinary, wide and big tiles alike, on both devices.
+   Placed after the preset media queries so it has the last word.
+   ========================================================================== */
+
+body.oc-card-h-custom.woocommerce ul.products li.product > .oc-card-media,
+body.oc-card-h-custom .woocommerce ul.products li.product > .oc-card-media,
+body.oc-card-h-custom.woocommerce ul.products li.product .oc-card-media__strip,
+body.oc-card-h-custom .woocommerce ul.products li.product .oc-card-media__strip,
+body.oc-card-h-custom.woocommerce ul.products li.product .oc-block__media,
+body.oc-card-h-custom .woocommerce ul.products li.product .oc-block__media,
+body.oc-card-h-custom.woocommerce ul.products li.product .oc-block__img,
+body.oc-card-h-custom .woocommerce ul.products li.product .oc-block__img {
+	aspect-ratio: auto;
+	padding-block-start: 0;
+	min-block-size: 0;
+	block-size: var(--oc-card-h, 320px);
+}
+
+/* Inside the box, the strip and each slide fill it; the picture keeps the
+   height it was already given. */
+body.oc-card-h-custom.woocommerce ul.products li.product .oc-card-media__item,
+body.oc-card-h-custom .woocommerce ul.products li.product .oc-card-media__item {
+	aspect-ratio: auto;
+	block-size: 100%;
+}
+
+@media (max-width: 782px) {
+	body.oc-card-h-custom.woocommerce ul.products li.product > .oc-card-media,
+	body.oc-card-h-custom .woocommerce ul.products li.product > .oc-card-media,
+	body.oc-card-h-custom.woocommerce ul.products li.product .oc-card-media__strip,
+	body.oc-card-h-custom .woocommerce ul.products li.product .oc-card-media__strip,
+	body.oc-card-h-custom.woocommerce ul.products li.product .oc-block__media,
+	body.oc-card-h-custom .woocommerce ul.products li.product .oc-block__media,
+	body.oc-card-h-custom.woocommerce ul.products li.product .oc-block__img,
+	body.oc-card-h-custom .woocommerce ul.products li.product .oc-block__img {
+		block-size: var(--oc-card-h-m, 220px);
+	}
+}
