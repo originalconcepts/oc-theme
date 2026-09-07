@@ -907,11 +907,11 @@
    times the sine of the angle, and the section clips at its own edge, so
    the raised corner was being sliced off (12px on a phone at 3°, 42px on
    a desktop — measured). The strip claims that much room above and below. */
-.ocb-mq--tilt {
-	inline-size: 112%;
-	margin-inline: -6%;
-	margin-block: calc(56vw * sin(abs(var(--ocb-mq-angle, 0deg))));
-}
+.ocb-mq--tilt { inline-size: 112%; margin-inline: -6%; }
+
+/* Padding, not margin: a margin on the strip collapsed out through the
+   section's wrappers and left the corner clipped just the same. */
+.ocb-mq__room { padding-block: calc(56vw * sin(abs(var(--ocb-mq-angle, 0deg)))); }
 
 @keyframes ocb-mq { to { transform: translateX(-50%); } }
 @keyframes ocb-mq-r { to { transform: translateX(50%); } }

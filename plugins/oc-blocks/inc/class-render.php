@@ -1133,9 +1133,17 @@ final class Render {
 			? '<a class="ocb-mq__link" href="' . esc_url( $url ) . '">' . esc_html( $text ) . '</a>'
 			: '<span>' . esc_html( $text ) . '</span>';
 
-		return '<div class="ocb-mq ocb-mq--' . esc_attr( (string) $s['dir'] ) . ( 0 === (int) $s['angle'] ? '' : ' ocb-mq--tilt' ) . '" style="' . esc_attr( $style ) . '" data-ocb-mq>'
+		$strip = '<div class="ocb-mq ocb-mq--' . esc_attr( (string) $s['dir'] ) . ( 0 === (int) $s['angle'] ? '' : ' ocb-mq--tilt' ) . '" style="' . esc_attr( $style ) . '" data-ocb-mq>'
 			. '<div class="ocb-mq__track">' . str_repeat( $piece, 4 ) . '</div>'
 			. '</div>';
+
+		// A turned strip needs head-room the section will not give it: the
+		// section clips at its edge and a margin on the strip collapses out
+		// through the wrappers and buys nothing. Padding on a wrapper of
+		// its own cannot collapse.
+		return 0 === (int) $s['angle']
+			? $strip
+			: '<div class="ocb-mq__room" style="--ocb-mq-angle:' . (int) $s['angle'] . 'deg">' . $strip . '</div>';
 	}
 
 	/**
