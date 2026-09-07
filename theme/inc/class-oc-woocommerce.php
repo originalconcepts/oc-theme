@@ -1403,12 +1403,12 @@ final class WooCommerce {
 	 * so the page can swap it in the moment that variation is picked.
 	 *
 	 * @param array<string,mixed>   $data      Variation data for the form.
-	 * @param \WC_Product_Variable  $parent    Parent product.
+	 * @param \WC_Product_Variable  $variable  The parent product.
 	 * @param \WC_Product_Variation $variation The variation.
 	 * @return array<string,mixed>
 	 */
-	public function variation_stock_line( array $data, $parent, $variation ): array {
-		unset( $parent );
+	public function variation_stock_line( array $data, $variable, $variation ): array {
+		unset( $variable );
 
 		if ( $variation instanceof \WC_Product ) {
 			$data['oc_stockline'] = self::stock_line_html( $variation );
