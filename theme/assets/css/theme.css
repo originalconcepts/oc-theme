@@ -15037,10 +15037,17 @@ p.no-comments {
 
 /* Written at the weight of the card rules they override — those are
    `.woocommerce ul.products li.product …`, and a lighter selector lost. */
+/* On an archive `.woocommerce` is the body itself; on a composed page it
+   is a wrapper further down. Both shapes are named, so the rule outranks
+   the card rules wherever the shelf is drawn. */
 body.oc-card-fit-contain.woocommerce ul.products li.product .oc-card-media__item img,
 body.oc-card-fit-contain.woocommerce ul.products li.product .oc-card-media__strip > img,
 body.oc-card-fit-contain.woocommerce ul.products li.product img.wp-post-image,
-body.oc-card-fit-contain .oc-card-media__item img {
+body.oc-card-fit-contain.woocommerce ul.products li.product .oc-card-media img,
+body.oc-card-fit-contain .woocommerce ul.products li.product .oc-card-media__item img,
+body.oc-card-fit-contain .woocommerce ul.products li.product .oc-card-media__strip > img,
+body.oc-card-fit-contain .woocommerce ul.products li.product img.wp-post-image,
+body.oc-card-fit-contain .woocommerce ul.products li.product .oc-card-media img {
 	object-fit: contain;
 	object-position: 50% 50%;
 	background: var(--oc-card-ground, color-mix(in srgb, var(--oc-ink, #1c1c1c) 4%, transparent));
@@ -15048,8 +15055,8 @@ body.oc-card-fit-contain .oc-card-media__item img {
 
 body.oc-card-fit-contain.woocommerce ul.products li.product .oc-card-media__item--video video,
 body.oc-card-fit-contain.woocommerce ul.products li.product .oc-card-media__item--video iframe,
-body.oc-card-fit-contain .oc-card-media__item--video video,
-body.oc-card-fit-contain .oc-card-media__item--video iframe {
+body.oc-card-fit-contain .woocommerce ul.products li.product .oc-card-media__item--video video,
+body.oc-card-fit-contain .woocommerce ul.products li.product .oc-card-media__item--video iframe {
 	object-fit: contain;
 	background: var(--oc-card-ground, color-mix(in srgb, var(--oc-ink, #1c1c1c) 4%, transparent));
 }
