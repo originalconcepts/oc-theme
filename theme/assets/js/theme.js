@@ -5878,8 +5878,12 @@
 			} );
 		} );
 
+		// No variation is made in this combination at all. That is not a
+		// sold-out item — nothing to notify anyone about — and calling it
+		// "out of stock" sent shoppers looking for a back-in-stock signup
+		// on a product that was simply never created in that colour/size.
 		if ( ! cands.length ) {
-			return 'out';
+			return 'none';
 		}
 
 		var anyIn = cands.some( function ( v ) {
@@ -5958,6 +5962,9 @@
 
 		function stockFor( value ) {
 			var verdict = ocVarStock( ddForm, select, value );
+			if ( 'none' === verdict ) {
+				return { txt: L.unavail || 'Not available', off: true };
+			}
 			if ( 'out' === verdict ) {
 				return { txt: L.outStock || 'Out of stock', off: true };
 			}
@@ -8906,4 +8913,57 @@ window.__ocMoney = function ( n, money ) {
 			} );
 		}, 4000 );
 	} );
+}() );
+
+/* ---------- a variable product: what the picker says must be true ----------
+ * Two things went wrong on a product whose WooCommerce defaults named a
+ * combination that was never created (white + S, say). The pickers opened
+ * on it, and the stock line under them kept describing the parent — "in
+ * stock, ready to ship" beside two pickers reading "not available".
+ *
+ * So: a default that matches no variation is cleared before anyone sees
+ * it, and the stock line is written per variation by the server (see
+ * woocommerce_available_variation in class-oc-woocommerce.php) and only
+ * shown once a real one is chosen. */
+( function () {
+	var form = document.querySelector( 'form.variations_form' );
+	if ( ! form ) { return; }
+
+	var vars = null;
+	try { vars = JSON.parse( form.dataset.product_variations || 'null' ); } catch ( err ) { vars = null; }
+
+	var selects = Array.prototype.slice.call( form.querySelectorAll( 'table.variations select' ) );
+	var wrap = form.querySelector( '[data-oc-stockwrap]' );
+
+	function exists() {
+		if ( ! vars || ! vars.length ) { return true; }
+		var chosen = {};
+		selects.forEach( function ( s ) { chosen[ s.name ] = s.value; } );
+		if ( selects.some( function ( s ) { return '' === s.value; } ) ) { return true; }
+		return vars.some( function ( v ) {
+			var a = v.attributes || {};
+			return Object.keys( chosen ).every( function ( k ) {
+				return '' === ( a[ k ] || '' ) || a[ k ] === chosen[ k ];
+			} );
+		} );
+	}
+
+	if ( ! exists() ) {
+		selects.forEach( function ( s ) { s.value = ''; } );
+		if ( window.jQuery ) { window.jQuery( form ).trigger( 'reset_data' ); }
+		selects.forEach( function ( s ) { s.dispatchEvent( new Event( 'change', { bubbles: true } ) ); } );
+	}
+
+	if ( ! wrap || ! window.jQuery ) { return; }
+
+	window.jQuery( form )
+		.on( 'found_variation', function ( e, variation ) {
+			var html = variation && variation.oc_stockline ? variation.oc_stockline : '';
+			wrap.innerHTML = html;
+			wrap.hidden = '' === html;
+		} )
+		.on( 'reset_data hide_variation', function () {
+			wrap.innerHTML = '';
+			wrap.hidden = true;
+		} );
 }() );

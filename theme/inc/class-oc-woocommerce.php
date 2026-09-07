@@ -285,6 +285,7 @@ final class WooCommerce {
 		// The add-to-cart area: a stock line above the button, icon rows
 		// below the form.
 		add_action( 'woocommerce_before_add_to_cart_button', array( $this, 'stock_line' ) );
+		add_filter( 'woocommerce_available_variation', array( $this, 'variation_stock_line' ), 10, 3 );
 		add_action( 'woocommerce_after_add_to_cart_form', array( $this, 'atc_icons' ) );
 
 		// Sold-out products show a proper block instead of a bare summary:
@@ -1379,9 +1380,41 @@ final class WooCommerce {
 	public function stock_line(): void {
 		global $product;
 
-		if ( $product instanceof \WC_Product ) {
-			echo self::stock_line_html( $product ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
+		if ( ! $product instanceof \WC_Product ) {
+			return;
 		}
+
+		// A variable product's line belongs to the variation, not the parent:
+		// the parent is "in stock" whenever any child is, which told a shopper
+		// looking at a sold-out size that it was ready to ship. The wrapper
+		// stays empty until the picker lands on a real variation, and the
+		// script fills it from what variation_stock_line() sends along.
+		if ( $product->is_type( 'variable' ) ) {
+			echo '<div data-oc-stockwrap hidden></div>';
+
+			return;
+		}
+
+		echo self::stock_line_html( $product ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
+	}
+
+	/**
+	 * The stock line for one variation, carried in the form's variation data
+	 * so the page can swap it in the moment that variation is picked.
+	 *
+	 * @param array<string,mixed>   $data      Variation data for the form.
+	 * @param \WC_Product_Variable  $parent    Parent product.
+	 * @param \WC_Product_Variation $variation The variation.
+	 * @return array<string,mixed>
+	 */
+	public function variation_stock_line( array $data, $parent, $variation ): array {
+		unset( $parent );
+
+		if ( $variation instanceof \WC_Product ) {
+			$data['oc_stockline'] = self::stock_line_html( $variation );
+		}
+
+		return $data;
 	}
 
 	/**

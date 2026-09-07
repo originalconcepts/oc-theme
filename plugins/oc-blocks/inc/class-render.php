@@ -80,6 +80,34 @@ final class Render {
 		// back untouched, or every attachment it passes through is emptied.
 		add_filter( 'wp_update_attachment_metadata', array( $this, 'flush_media' ), 10, 2 );
 		add_action( 'delete_attachment', array( $this, 'flush' ) );
+
+		// And a shop setting that is printed into the markup — the currency
+		// and how a price is written. Moving the symbol to the other side
+		// changed the product page at once and left the home page's slider
+		// saying it the old way for a day.
+		add_action( 'updated_option', array( $this, 'flush_setting' ), 10, 1 );
+	}
+
+	/**
+	 * Turn the cache for the settings whose value is baked into a page.
+	 *
+	 * @param string $option Option name.
+	 */
+	public function flush_setting( $option ): void {
+		static $watched = array(
+			'woocommerce_currency',
+			'woocommerce_currency_pos',
+			'woocommerce_price_thousand_sep',
+			'woocommerce_price_decimal_sep',
+			'woocommerce_price_num_decimals',
+			'woocommerce_calc_taxes',
+			'woocommerce_tax_display_shop',
+			'woocommerce_prices_include_tax',
+		);
+
+		if ( in_array( (string) $option, $watched, true ) ) {
+			$this->flush();
+		}
 	}
 
 	/**

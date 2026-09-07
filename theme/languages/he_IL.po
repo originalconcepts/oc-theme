@@ -7230,3 +7230,6 @@ msgstr "נספר מהרגע שהעמוד מסיים. כל נגיעה, גלילה
 
 msgid "The cost is a visitor who opens the page and leaves before the wait is out without touching it — their page view is never sent."
 msgstr "המחיר הוא מבקר שפותח את העמוד ועוזב לפני שההמתנה נגמרה בלי לגעת בו — צפיית העמוד שלו לא נשלחת כלל."
+
+msgid "Not available"
+msgstr "לא זמין"

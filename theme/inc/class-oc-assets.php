@@ -205,6 +205,7 @@ final class Assets {
 				'vpGo'                 => __( 'To the product page', 'oc-theme' ),
 				'inStock'              => __( 'In stock', 'oc-theme' ),
 				'outStock'             => __( 'Out of stock', 'oc-theme' ),
+				'unavail'              => __( 'Not available', 'oc-theme' ),
 				/* translators: %s: attribute label. */
 				'varNeed'              => __( 'Please choose %s', 'oc-theme' ),
 				'coRequired'           => __( 'Required field', 'oc-theme' ),
