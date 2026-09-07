@@ -15035,16 +15035,21 @@ p.no-comments {
    box, a wide one in a square: each sits complete on a quiet ground.
    ========================================================================== */
 
-.oc-card-fit-contain .oc-card-media__item img,
-.oc-card-fit-contain.woocommerce ul.products li.product .oc-card-media__item img,
-.oc-card-fit-contain.woocommerce ul.products li.product img.wp-post-image {
+/* Written at the weight of the card rules they override — those are
+   `.woocommerce ul.products li.product …`, and a lighter selector lost. */
+body.oc-card-fit-contain.woocommerce ul.products li.product .oc-card-media__item img,
+body.oc-card-fit-contain.woocommerce ul.products li.product .oc-card-media__strip > img,
+body.oc-card-fit-contain.woocommerce ul.products li.product img.wp-post-image,
+body.oc-card-fit-contain .oc-card-media__item img {
 	object-fit: contain;
 	object-position: 50% 50%;
 	background: var(--oc-card-ground, color-mix(in srgb, var(--oc-ink, #1c1c1c) 4%, transparent));
 }
 
-.oc-card-fit-contain .oc-card-media__item--video video,
-.oc-card-fit-contain .oc-card-media__item--video iframe {
+body.oc-card-fit-contain.woocommerce ul.products li.product .oc-card-media__item--video video,
+body.oc-card-fit-contain.woocommerce ul.products li.product .oc-card-media__item--video iframe,
+body.oc-card-fit-contain .oc-card-media__item--video video,
+body.oc-card-fit-contain .oc-card-media__item--video iframe {
 	object-fit: contain;
 	background: var(--oc-card-ground, color-mix(in srgb, var(--oc-ink, #1c1c1c) 4%, transparent));
 }
