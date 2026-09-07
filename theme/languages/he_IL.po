@@ -7233,3 +7233,12 @@ msgstr "המחיר הוא מבקר שפותח את העמוד ועוזב לפנ�
 
 msgid "Not available"
 msgstr "לא זמין"
+
+msgid "Fills the box (crops)"
+msgstr "ממלאת את התיבה (חותכת)"
+
+msgid "Shows whole"
+msgstr "מוצגת בשלמותה"
+
+msgid "Whole keeps every product photo complete inside the box, with a quiet ground where its proportions differ from the ratio above."
+msgstr "שלמה שומרת כל תמונת מוצר שלמה בתוך התיבה, עם רקע שקט היכן שהיחס שלה שונה מהיחס שלמעלה."

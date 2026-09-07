@@ -1087,7 +1087,7 @@ final class Render {
 			return '';
 		}
 
-		$classes = 'ocb-cats ocb-cats--' . esc_attr( (string) $s['shape'] )
+		$classes = 'ocb-cats ocb-cats--' . esc_attr( (string) $s['shape'] ) . ' ocb-cats--fit-' . ( 'contain' === (string) ( $s['fit'] ?? 'cover' ) ? 'contain' : 'cover' )
 			. ' ocb-cats--w-' . esc_attr( (string) $s['words'] )
 			. ( 'chip' === (string) ( $s['wstyle'] ?? 'clean' ) ? ' ocb-cats--ws-chip' : '' )
 			. ' ocb-cats--m' . esc_attr( '' !== (string) ( $s['mlay'] ?? '' ) ? (string) $s['mlay'] : '2' )
@@ -1613,7 +1613,7 @@ final class Render {
 			: '';
 
 		return '<div class="ocb-look ocb-look--' . esc_attr( (string) $s['side'] ) . '" data-ocb-look>'
-			. '<div class="ocb-look__pic">' . $pics . $snav . '</div>'
+			. '<div class="ocb-look__pic" style="--ocb-look-w:' . max( 40, min( 100, absint( $s['size'] ?? 100 ) ) ) . '%;--ocb-look-mw:' . max( 50, min( 100, absint( $s['msize'] ?? 88 ) ) ) . '%">' . $pics . $snav . '</div>'
 			// The close stands outside the strip: fixed to the screen, so the
 			// strip's entry animation never drags it along.
 			. '<button type="button" class="ocb-look__close" data-ocb-look-close aria-label="' . esc_attr__( 'Close', 'oc-blocks' ) . '"><span class="ocb-look__grab" aria-hidden="true"></span></button>'

@@ -15026,3 +15026,25 @@ p.no-comments {
 ) :where([style*="width"]:not([class*="ocb-"]):not([class*="oc-"])) {
 	max-inline-size: 100%;
 }
+
+/* ==========================================================================
+   Product cards: "shows whole"
+   --------------------------------------------------------------------------
+   The card keeps the ratio chosen in the Customizer — a grid needs one
+   shape — but the photo is no longer cut to it. A square photo in a 3:4
+   box, a wide one in a square: each sits complete on a quiet ground.
+   ========================================================================== */
+
+.oc-card-fit-contain .oc-card-media__item img,
+.oc-card-fit-contain.woocommerce ul.products li.product .oc-card-media__item img,
+.oc-card-fit-contain.woocommerce ul.products li.product img.wp-post-image {
+	object-fit: contain;
+	object-position: 50% 50%;
+	background: var(--oc-card-ground, color-mix(in srgb, var(--oc-ink, #1c1c1c) 4%, transparent));
+}
+
+.oc-card-fit-contain .oc-card-media__item--video video,
+.oc-card-fit-contain .oc-card-media__item--video iframe {
+	object-fit: contain;
+	background: var(--oc-card-ground, color-mix(in srgb, var(--oc-ink, #1c1c1c) 4%, transparent));
+}

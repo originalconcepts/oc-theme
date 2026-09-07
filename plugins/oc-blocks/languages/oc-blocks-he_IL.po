@@ -1696,3 +1696,21 @@ msgstr "מרווח סביב הלוגו"
 
 msgid "0 is natural: the banner takes the shape of the picture or video, and nothing is cut off."
 msgstr "0 = טבעי: הבאנר מקבל את צורת התמונה או הסרטון, ושום דבר לא נחתך."
+
+msgid "Fills the shape"
+msgstr "ממלאת את הצורה"
+
+msgid "Shows whole"
+msgstr "מוצגת בשלמותה"
+
+msgid "Fill crops to the shape; whole shows all of it, with room around where the proportions differ."
+msgstr "מילוי חותך לצורה; שלמה מציגה את כולה, עם מרווח מסביב היכן שהיחס שונה."
+
+msgid "Picture size"
+msgstr "גודל התמונה"
+
+msgid "How much of its column the room picture takes. It is never cropped and never scaled up — smaller just leaves air around it."
+msgstr "כמה מהעמודה שלה תמונת החדר תופסת. היא לעולם לא נחתכת ולא מוגדלת — קטן יותר פשוט משאיר אוויר מסביב."
+
+msgid "How wide each room is in the phone strip. Under 100 the next room peeks in."
+msgstr "כמה רחב כל חדר ברצועת הטלפון. מתחת ל‑100 החדר הבא מציץ."

@@ -1744,6 +1744,20 @@ final class Customizer {
 
 		$this->choice(
 			$c,
+			'oc_card_fit',
+			'oc_card',
+			__( 'The picture', 'oc-theme' ),
+			array(
+				'cover'   => __( 'Fills the box (crops)', 'oc-theme' ),
+				'contain' => __( 'Shows whole', 'oc-theme' ),
+			),
+			'cover',
+			null,
+			__( 'Whole keeps every product photo complete inside the box, with a quiet ground where its proportions differ from the ratio above.', 'oc-theme' )
+		);
+
+		$this->choice(
+			$c,
 			'oc_card_atc',
 			'oc_card',
 			__( 'Add to cart button', 'oc-theme' ),

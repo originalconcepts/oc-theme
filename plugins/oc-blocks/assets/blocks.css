@@ -760,6 +760,10 @@
 
 .ocb-cats--hv-zoom .ocb-cat:hover .ocb-cat__pic img { transform: scale(1.06); }
 
+/* "Shows whole": the tile keeps its shape and the picture keeps its own,
+   sitting inside it on a quiet ground rather than being cut to fit. */
+.ocb-cats--fit-contain .ocb-cat__pic img { object-fit: contain; }
+
 .ocb-cat__name {
 	display: block;
 	margin-block-start: 10px;
@@ -1151,7 +1155,16 @@
 
 .ocb-look--end .ocb-look__pic { order: 2; }
 
-.ocb-look__pic { position: relative; overflow: hidden; border-radius: var(--oc-radius, 8px); }
+/* The picture column may be narrowed. The canvas keeps the photo's own
+   ratio inside it, so a smaller picture is a smaller whole picture —
+   nothing cut, nothing stretched, air around it instead. */
+.ocb-look__pic {
+	position: relative;
+	overflow: hidden;
+	border-radius: var(--oc-radius, 8px);
+	inline-size: var(--ocb-look-w, 100%);
+	margin-inline: auto;
+}
 
 .ocb-look__pic img { display: block; inline-size: 100%; block-size: auto; }
 
@@ -1356,9 +1369,10 @@ html.oc-look-lock body { overflow: hidden; }
 		scrollbar-width: none;
 	}
 	.ocb-look:not(.is-open):not(.is-closing) .ocb-look__pic::-webkit-scrollbar { display: none; }
+	.ocb-look:not(.is-open):not(.is-closing) .ocb-look__pic { inline-size: auto; }
 	.ocb-look:not(.is-open):not(.is-closing) .ocb-look__scene {
 		display: block;
-		flex: 0 0 88%;
+		flex: 0 0 var(--ocb-look-mw, 88%);
 		scroll-snap-align: start;
 		overflow: hidden;
 		border-radius: 0;
