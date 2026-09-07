@@ -561,7 +561,7 @@ final class Search_Panel {
 			(int) $product->get_id(),
 			self::thumb( $product ),
 			self::mark( $product->get_name(), $term ), // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside.
-			wp_kses_post( (string) $product->get_price_html() ),
+			self::price( $product ),
 			self::add_button( $product )
 		);
 	}
@@ -579,8 +579,23 @@ final class Search_Panel {
 			(int) $product->get_id(),
 			self::thumb( $product ),
 			self::mark( $product->get_name(), $term ), // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside.
-			wp_kses_post( (string) $product->get_price_html() ),
+			self::price( $product ),
 			self::add_button( $product )
 		);
+	}
+
+	/**
+	 * The price, still reading the right way round.
+	 *
+	 * WooCommerce wraps a price in <bdi> so "₪ 99.00" stays one piece inside
+	 * Hebrew. wp_kses_post() does not know <bdi> and strips it, and the
+	 * symbol then drifts to the far side of the number — the one place in
+	 * the shop where the currency sat on the wrong side. The wrapper goes
+	 * back on outside the filter.
+	 *
+	 * @param \WC_Product $product Product.
+	 */
+	private static function price( \WC_Product $product ): string {
+		return '<bdi>' . wp_kses_post( (string) $product->get_price_html() ) . '</bdi>';
 	}
 }

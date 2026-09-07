@@ -7425,9 +7425,16 @@ body:not(.oc-no-lightbox) .oc-vslide.is-playing {
 .woocommerce div.product form.cart .single_variation_wrap,
 .woocommerce div.product form.cart .woocommerce-variation,
 .woocommerce div.product form.cart .oc-colors-wrap,
-.oc-stockline {
+.oc-stockline,
+[data-oc-stockwrap] {
 	flex: 1 1 100%;
 }
+
+/* The per-variation stock line lives in a wrapper that arrives empty. As
+ * a plain flex item it sat in the button row and shoved the quantity pill
+ * along; it takes a full line like the line it holds, and is truly gone
+ * while empty. */
+[data-oc-stockwrap][hidden] { display: none; }
 
 .woocommerce div.product form.cart .woocommerce-variation-add-to-cart {
 	display: flex;

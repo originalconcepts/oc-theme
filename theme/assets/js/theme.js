@@ -5993,6 +5993,12 @@
 				// reaches the back-in-stock signup.
 				var off = ! avail[ o.value ];
 
+				// A value Woo pruned cannot be combined with what is already
+				// chosen — white has no S — so it is not offered at all.
+				if ( off ) {
+					return;
+				}
+
 				var row = document.createElement( 'button' );
 				row.type = 'button';
 				row.className = 'oc-dd__opt' + ( off ? ' is-off' : '' ) + ( st && st.off ? ' is-oos' : '' ) + ( select.value === o.value ? ' is-selected' : '' );
