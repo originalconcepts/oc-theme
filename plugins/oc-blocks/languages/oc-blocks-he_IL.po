@@ -1720,3 +1720,6 @@ msgstr "גובה מותאם אישית"
 
 msgid "Tile height (px)"
 msgstr "גובה האריח (px)"
+
+msgid "Shadow under the name on the picture"
+msgstr "צל מתחת לשם שעל התמונה"

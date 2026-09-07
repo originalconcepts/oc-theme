@@ -1094,10 +1094,12 @@ final class Render {
 			. ' ocb-cats--' . esc_attr( (string) $s['layout'] )
 			. ' ocb-cats--gap-' . esc_attr( (string) $s['gap'] )
 			. ' ocb-cats--hv-' . esc_attr( (string) $s['hover'] )
-			. ( 'circle' === $s['shape'] ? '' : ' ocb-cats--c-' . esc_attr( (string) $s['corners'] ) );
+			. ( 'circle' === $s['shape'] ? '' : ' ocb-cats--c-' . esc_attr( (string) $s['corners'] ) )
+			// The toggle arrived after pages were saved: absent means the shadow stays.
+			. ( isset( $s['wshadow'] ) && ! $s['wshadow'] ? ' ocb-cats--noshadow' : '' );
 
 		return self::heading( $s )
-			. '<div class="' . $classes . '" style="--ocb-cols:' . absint( $s['cols'] ) . ( absint( $s['wsize'] ?? 0 ) > 0 ? ';--ocb-cat-fs:' . absint( $s['wsize'] ) . 'px' : '' )
+			. '<div class="' . $classes . '" style="--ocb-cols:' . absint( $s['cols'] ) . ( absint( $s['wsize'] ?? 0 ) > 0 ? ';--ocb-cat-fs:' . absint( $s['wsize'] ) . 'px' : '' ) . ( absint( $s['wsizem'] ?? 0 ) > 0 ? ';--ocb-cat-fs-m:' . absint( $s['wsizem'] ) . 'px' : '' )
 				. ( 'custom' === (string) $s['shape'] ? ';--ocb-cat-h:' . max( 80, absint( $s['h'] ?? 320 ) ) . 'px;--ocb-cat-hm:' . max( 60, absint( $s['hm'] ?? 220 ) ) . 'px' : '' ) . '"'
 			. ( 'slider' === $s['layout'] ? ' data-ocb-shelf' : '' ) . '>'
 			. '<div class="ocb-cats__row">' . $items . '</div>'

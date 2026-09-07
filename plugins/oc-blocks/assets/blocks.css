@@ -805,6 +805,15 @@
 .ocb-cats--w-center .ocb-cat,
 .ocb-cats--w-bottom .ocb-cat { position: relative; }
 
+/* The shadow lifts white words off a busy photo; on a calm one it reads
+   as a smear, so it can be switched off. */
+.ocb-cats--noshadow .ocb-cat__name { text-shadow: none; }
+
+/* The phone may size the name on its own. */
+@media (max-width: 782px) {
+	.ocb-cat__name { font-size: var(--ocb-cat-fs-m, var(--ocb-cat-fs, inherit)); }
+}
+
 .ocb-cats--w-center .ocb-cat__name { inset-block-start: 50%; transform: translateY(-50%); }
 .ocb-cats--w-bottom .ocb-cat__name { inset-block-end: 6px; }
 
@@ -893,8 +902,16 @@
 /* a linked strip keeps the strip's own look — the words simply lead */
 .ocb-mq__link { color: inherit; text-decoration: none; }
 
-/* Angled, the strip stretches past both edges — a ribbon, not a box. */
-.ocb-mq--tilt { inline-size: 112%; margin-inline: -6%; }
+/* Angled, the strip stretches past both edges — a ribbon, not a box.
+   Turning a strip lifts one end and drops the other by half its width
+   times the sine of the angle, and the section clips at its own edge, so
+   the raised corner was being sliced off (12px on a phone at 3°, 42px on
+   a desktop — measured). The strip claims that much room above and below. */
+.ocb-mq--tilt {
+	inline-size: 112%;
+	margin-inline: -6%;
+	margin-block: calc(56vw * sin(abs(var(--ocb-mq-angle, 0deg))));
+}
 
 @keyframes ocb-mq { to { transform: translateX(-50%); } }
 @keyframes ocb-mq-r { to { transform: translateX(50%); } }
