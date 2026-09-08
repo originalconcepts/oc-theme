@@ -684,6 +684,19 @@ final class Registry {
 						'def'     => 'cover',
 						'group'   => 'design',
 					),
+					'anchor'  => array(
+						'type'    => 'seg',
+						'label'   => __( 'The crop keeps', 'oc-blocks' ),
+						'hint'    => __( 'Which end of a picture survives when it is taller than the tile. A category with its own picture position (on its edit screen) wins.', 'oc-blocks' ),
+						'choices' => array(
+							'center' => __( 'The middle', 'oc-blocks' ),
+							'top'    => __( 'The top', 'oc-blocks' ),
+							'bottom' => __( 'The bottom', 'oc-blocks' ),
+						),
+						'def'     => 'center',
+						'when'    => array( 'fit' => array( 'cover' ) ),
+						'group'   => 'design',
+					),
 					'corners' => array(
 						'type'    => 'seg',
 						'label'   => __( 'Corners', 'oc-blocks' ),

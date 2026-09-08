@@ -1723,3 +1723,18 @@ msgstr "גובה האריח (px)"
 
 msgid "Shadow under the name on the picture"
 msgstr "צל מתחת לשם שעל התמונה"
+
+msgid "The crop keeps"
+msgstr "החיתוך שומר על"
+
+msgid "Which end of a picture survives when it is taller than the tile. A category with its own picture position (on its edit screen) wins."
+msgstr "איזה קצה של התמונה נשאר כשהיא גבוהה מהאריח. לקטגוריה עם מיקום תמונה משלה (במסך העריכה שלה) יש עדיפות."
+
+msgid "The middle"
+msgstr "האמצע"
+
+msgid "The top"
+msgstr "החלק העליון"
+
+msgid "The bottom"
+msgstr "החלק התחתון"

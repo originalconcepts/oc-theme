@@ -3546,6 +3546,7 @@ html.oc-drw-open { overflow: hidden; }
 	block-size: 100%;
 	object-fit: cover;
 	transition: transform .4s ease;
+	object-position: 50% var(--oc-card-focus, 50%);
 }
 .oc-subcats__card:hover .oc-subcats__pic img { transform: scale(1.05); }
 .oc-subcats--shape-square .oc-subcats__pic { aspect-ratio: 1; }

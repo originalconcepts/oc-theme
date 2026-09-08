@@ -7269,3 +7269,6 @@ msgstr "אין תכונה גלובלית בשם הזה"
 
 msgid "Default — %1$s (%2$s)"
 msgstr "ברירת מחדל — %1$s (%2$s)"
+
+msgid "When the picture is taller than the tile it fills, this decides which part stays: 0 keeps the top (a head, a hat), 100 keeps the bottom."
+msgstr "כשהתמונה גבוהה מהאריח שהיא ממלאת, זה קובע איזה חלק נשאר: 0 שומר על החלק העליון (ראש, כובע), 100 על החלק התחתון."

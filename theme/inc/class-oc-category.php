@@ -106,6 +106,19 @@ class Category {
 	 * @param int $term_id Term id.
 	 * @return array<string,mixed>
 	 */
+	/**
+	 * Where the card image's interesting half is, 0 (top) to 100 (bottom).
+	 * Read wherever that picture is cut to a shape — the categories block,
+	 * the sub-category strip — so a hat is not lost to a square.
+	 *
+	 * @param int $term_id Term id.
+	 */
+	public static function card_focus( int $term_id ): int {
+		$v = get_term_meta( $term_id, '_oc_card_focus', true );
+
+		return '' === (string) $v ? 50 : max( 0, min( 100, (int) $v ) );
+	}
+
 	private static function hero( int $term_id ): array {
 		$get = static function ( string $key, string $def = '' ) use ( $term_id ): string {
 			$v = get_term_meta( $term_id, $key, true );
@@ -487,8 +500,10 @@ class Category {
 					)
 					: '';
 
+				$focus = self::card_focus( $child->term_id );
+
 				$items .= '<a class="oc-subcats__card" href="' . $link . '">'
-					. '<span class="oc-subcats__pic">' . $img . '</span>'
+					. '<span class="oc-subcats__pic"' . ( 50 !== $focus ? ' style="--oc-card-focus:' . esc_attr( (string) $focus ) . '%"' : '' ) . '>' . $img . '</span>'
 					. '<span class="oc-subcats__name">' . $name . '</span>'
 					. '</a>';
 			} elseif ( 'pill' === $style ) {
@@ -820,6 +835,7 @@ class Category {
 		<?php
 		$card = absint( get_term_meta( $term->term_id, '_oc_card_img', true ) );
 		$this->image_field( '_oc_card_img', $card, __( 'Image', 'oc-theme' ) );
+		$this->focus_field( $term->term_id );
 		?>
 
 		<tr class="form-field oc-cat-sec">
@@ -1030,6 +1046,15 @@ class Category {
 			}
 			$( document ).on( 'change', '[data-oc-field]', sync );
 			$( document ).on( 'change', '[data-oc-vpick]', vsel );
+			// The position slider: the number and the preview follow the thumb.
+			$( document ).on( 'input change', '[data-oc-focus]', function () {
+				$( '#_oc_card_focus_out' ).text( this.value + '%' );
+				$( '.oc-focus-prev img' ).css( 'object-position', '50% ' + this.value + '%' );
+			} );
+			$( document ).on( 'click', '[data-oc-focus-reset]', function ( e ) {
+				e.preventDefault();
+				$( '[data-oc-focus]' ).val( 50 ).trigger( 'change' );
+			} );
 			sync();
 			vsel();
 		} )( jQuery );
@@ -1100,6 +1125,7 @@ class Category {
 		</tr>
 		<?php
 		$this->image_field( '_oc_card_img', $card, __( 'Image', 'oc-theme' ) );
+		$this->focus_field( $term->term_id );
 		$this->admin_script();
 	}
 
@@ -1115,14 +1141,59 @@ class Category {
 
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- core verifies the term-edit nonce.
 		$this->save_int( $term_id, '_oc_card_img' );
+		$this->save_focus( $term_id );
 	}
 
 	/**
-	 * Save a whitelisted string, or delete when empty / off-list.
+	 * Save the card image's position, or delete it when it is the centre.
+	 *
+	 * @param int $term_id Term id.
+	 */
+	private function save_focus( int $term_id ): void {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- core verifies the term-edit nonce.
+		$raw = isset( $_POST['_oc_card_focus'] ) ? sanitize_text_field( wp_unslash( $_POST['_oc_card_focus'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+
+		if ( '' === $raw || 50 === (int) $raw ) {
+			delete_term_meta( $term_id, '_oc_card_focus' );
+		} else {
+			update_term_meta( $term_id, '_oc_card_focus', max( 0, min( 100, (int) $raw ) ) );
+		}
+	}
+
+	/**
+	 * The card image's position slider, with a live 3:4 preview — the same
+	 * control a product has for its tile.
+	 *
+	 * @param int $term_id Term id.
+	 */
+	private function focus_field( int $term_id ): void {
+		$focus = self::card_focus( $term_id );
+		$img   = self::card_image_id( $term_id );
+		$src   = $img > 0 ? (string) wp_get_attachment_image_url( $img, 'large' ) : '';
+		?>
+		<tr class="form-field">
+			<th scope="row"><label for="_oc_card_focus"><?php esc_html_e( 'Picture position', 'oc-theme' ); ?></label></th>
+			<td>
+				<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+					<input type="range" id="_oc_card_focus" name="_oc_card_focus" min="0" max="100" step="1" value="<?php echo esc_attr( (string) $focus ); ?>" style="inline-size:220px;" data-oc-focus />
+					<output id="_oc_card_focus_out" style="min-inline-size:44px;"><?php echo esc_html( (string) $focus ); ?>%</output>
+					<button type="button" class="button-link" data-oc-focus-reset><?php esc_html_e( 'Centre', 'oc-theme' ); ?></button>
+				</div>
+				<p class="description"><?php esc_html_e( 'When the picture is taller than the tile it fills, this decides which part stays: 0 keeps the top (a head, a hat), 100 keeps the bottom.', 'oc-theme' ); ?></p>
+				<div class="oc-focus-prev" style="inline-size:120px;aspect-ratio:3/4;overflow:hidden;border-radius:6px;margin-block-start:8px;background:#f0f0f1;<?php echo '' === $src ? 'display:none;' : ''; ?>">
+					<img src="<?php echo esc_url( $src ); ?>" alt="" style="inline-size:100%;block-size:100%;object-fit:cover;object-position:50% <?php echo esc_attr( (string) $focus ); ?>%;" />
+				</div>
+			</td>
+		</tr>
+		<?php
+	}
+
+	/**
+	 * Save one of a fixed set of values, or delete when not one of them.
 	 *
 	 * @param int      $term_id Term id.
 	 * @param string   $key     Meta key / POST key.
-	 * @param string[] $allowed Allowed values.
+	 * @param string[] $allowed Accepted values.
 	 */
 	private function save_enum( int $term_id, string $key, array $allowed ): void {
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- sanitised below.

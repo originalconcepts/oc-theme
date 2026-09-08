@@ -762,8 +762,14 @@
 	inline-size: 100%;
 	block-size: 100%;
 	object-fit: cover;
+	/* which end of a taller picture survives: the block's choice, or the
+	   category's own position written on the tile */
+	object-position: 50% var(--ocb-cat-focus, 50%);
 	transition: transform .55s cubic-bezier(.2, .7, .3, 1);
 }
+
+.ocb-cats--a-top .ocb-cat__pic { --ocb-cat-focus: 0%; }
+.ocb-cats--a-bottom .ocb-cat__pic { --ocb-cat-focus: 100%; }
 
 .ocb-cats--hv-zoom .ocb-cat:hover .ocb-cat__pic img { transform: scale(1.06); }
 

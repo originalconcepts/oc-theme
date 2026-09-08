@@ -1080,8 +1080,11 @@ final class Render {
 				continue;
 			}
 
+			// The category may say which half of its picture matters.
+			$focus = class_exists( '\OC\Theme\Category' ) ? \OC\Theme\Category::card_focus( $id ) : 50;
+
 			$items .= '<a class="ocb-cat" href="' . esc_url( (string) $link ) . '">'
-				. '<span class="ocb-cat__pic">' . $img . '</span>'
+				. '<span class="ocb-cat__pic"' . ( 50 !== $focus ? ' style="--ocb-cat-focus:' . esc_attr( (string) $focus ) . '%"' : '' ) . '>' . $img . '</span>'
 				. '<span class="ocb-cat__name">' . esc_html( $label ) . '</span>'
 				. '</a>';
 		}
@@ -1090,7 +1093,8 @@ final class Render {
 			return '';
 		}
 
-		$classes = 'ocb-cats ocb-cats--' . esc_attr( (string) $s['shape'] ) . ' ocb-cats--fit-' . ( 'contain' === (string) ( $s['fit'] ?? 'cover' ) ? 'contain' : 'cover' )
+		$anchor  = in_array( (string) ( $s['anchor'] ?? 'center' ), array( 'top', 'bottom' ), true ) ? ' ocb-cats--a-' . (string) $s['anchor'] : '';
+		$classes = 'ocb-cats ocb-cats--' . esc_attr( (string) $s['shape'] ) . ' ocb-cats--fit-' . ( 'contain' === (string) ( $s['fit'] ?? 'cover' ) ? 'contain' : 'cover' ) . $anchor
 			. ' ocb-cats--w-' . esc_attr( (string) $s['words'] )
 			. ( 'chip' === (string) ( $s['wstyle'] ?? 'clean' ) ? ' ocb-cats--ws-chip' : '' )
 			. ' ocb-cats--m' . esc_attr( '' !== (string) ( $s['mlay'] ?? '' ) ? (string) $s['mlay'] : '2' )
