@@ -15092,6 +15092,30 @@ body.oc-card-fit-contain .woocommerce ul.products li.product .oc-card-media__ite
 	background: var(--oc-card-ground, color-mix(in srgb, var(--oc-ink, #1c1c1c) 4%, transparent));
 }
 
+/* A custom height is a fixed number of pixels under a column that is as
+   wide as the screen allows — the box is a different shape on every
+   monitor, so "fill" would cut a different slice on each. The whole picture
+   is the only answer that looks the same everywhere: it stands at the set
+   height, centred, and the column's spare width stays empty. */
+body.oc-card-h-custom.woocommerce ul.products li.product .oc-card-media__item img,
+body.oc-card-h-custom.woocommerce ul.products li.product .oc-card-media__strip > img,
+body.oc-card-h-custom.woocommerce ul.products li.product img.wp-post-image,
+body.oc-card-h-custom.woocommerce ul.products li.product .oc-card-media img,
+body.oc-card-h-custom .woocommerce ul.products li.product .oc-card-media__item img,
+body.oc-card-h-custom .woocommerce ul.products li.product .oc-card-media__strip > img,
+body.oc-card-h-custom .woocommerce ul.products li.product img.wp-post-image,
+body.oc-card-h-custom .woocommerce ul.products li.product .oc-card-media img {
+	object-fit: contain;
+	object-position: 50% 50%;
+}
+
+body.oc-card-h-custom.woocommerce ul.products li.product .oc-card-media__item--video video,
+body.oc-card-h-custom.woocommerce ul.products li.product .oc-card-media__item--video iframe,
+body.oc-card-h-custom .woocommerce ul.products li.product .oc-card-media__item--video video,
+body.oc-card-h-custom .woocommerce ul.products li.product .oc-card-media__item--video iframe {
+	object-fit: contain;
+}
+
 /* ==========================================================================
    Product cards: custom height
    --------------------------------------------------------------------------
