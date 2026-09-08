@@ -6325,11 +6325,17 @@ html:not([dir]) .oc-cartup__items--h.oc-fade-end {
 	display: block;
 }
 
-/* Sized exactly like the regular logo. */
+/* Sized exactly like the regular logo — on both devices. It used to read
+ * only the desktop height, so on a phone it stood taller than the logo it
+ * replaces and the header jumped when the page scrolled. */
 .oc-header .oc-logo-tr {
 	block-size: var(--oc-logo-h, 48px);
 	max-block-size: none;
 	inline-size: auto;
+}
+
+@media (max-width: 900px) {
+	.oc-header .oc-logo-tr { block-size: var(--oc-logo-h-m, 40px); }
 }
 
 /* The sticky header must clear WordPress's own admin bar, or a signed-in
