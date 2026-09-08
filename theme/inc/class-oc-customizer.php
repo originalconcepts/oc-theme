@@ -1737,6 +1737,7 @@ final class Customizer {
 			array(
 				'1/1'    => '1:1',
 				'3/4'    => '3:4',
+				'2/3'    => '2:3',
 				'4/3'    => '4:3',
 				'custom' => __( 'Custom height', 'oc-theme' ),
 			),
