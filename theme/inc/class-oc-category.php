@@ -101,12 +101,6 @@ class Category {
 	}
 
 	/**
-	 * Read a term's hero settings into a tidy shape.
-	 *
-	 * @param int $term_id Term id.
-	 * @return array<string,mixed>
-	 */
-	/**
 	 * Where the card image's interesting half is, 0 (top) to 100 (bottom).
 	 * Read wherever that picture is cut to a shape — the categories block,
 	 * the sub-category strip — so a hat is not lost to a square.
@@ -119,6 +113,12 @@ class Category {
 		return '' === (string) $v ? 50 : max( 0, min( 100, (int) $v ) );
 	}
 
+	/**
+	 * Read a term's hero settings into a tidy shape.
+	 *
+	 * @param int $term_id Term id.
+	 * @return array<string,mixed>
+	 */
 	private static function hero( int $term_id ): array {
 		$get = static function ( string $key, string $def = '' ) use ( $term_id ): string {
 			$v = get_term_meta( $term_id, $key, true );
