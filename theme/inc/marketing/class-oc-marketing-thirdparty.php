@@ -54,6 +54,14 @@ final class Third_Party {
 			return false;
 		}
 
+		// `?oc_flashy=stock` hands one request back to the plugin's own
+		// snippet, untouched — so the vendor can measure their tag as it
+		// ships, on the same page, next to the deferred one.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- a read-only switch, no state changes.
+		if ( 'stock' === ( isset( $_GET['oc_flashy'] ) ? sanitize_key( wp_unslash( $_GET['oc_flashy'] ) ) : '' ) ) {
+			return false;
+		}
+
 		$s = Settings::get();
 
 		if ( empty( $s['thirdparty']['flashy'] ) ) {
