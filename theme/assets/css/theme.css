@@ -15016,14 +15016,16 @@ p.no-comments {
 /* A wide table keeps its shape and scrolls on its own. `display: block` is
    what gives it a scroll box of its own; the rows inside still lay out as a
    table, so columns stay aligned. WooCommerce's own tables — the variation
-   picker, the attributes list — are laid out by hand elsewhere in this file
-   and are left out of it. */
+   picker, the attributes list, and every `shop_table` (orders, cart,
+   checkout review) — are laid out by hand elsewhere in this file and are
+   left out of it: `display: block` on the orders list shrank it to its
+   columns' width inside a full-width page. */
 :where(
 	.oc-content, .oc-tab-short, .oc-desc-below, .oc-chero__desc,
 	.woocommerce-Tabs-panel,
 	.ocb-br__body, .ocb-ed__text, .ocb-faq__body,
 	.ocb-lead__text, .ocb-lead__ftext, .ocb-news__text, .ocb-words__text
-) :where(table:not(.variations):not(.woocommerce-product-attributes):not([class*="ocb-"]):not([class*="oc-"])) {
+) :where(table:not(.variations):not(.shop_table):not([class*="woocommerce"]):not([class*="ocb-"]):not([class*="oc-"])) {
 	display: block;
 	inline-size: auto;
 	max-inline-size: 100%;
