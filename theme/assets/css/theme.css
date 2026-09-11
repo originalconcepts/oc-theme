@@ -1838,19 +1838,21 @@ html.oc-menu-open .oc-menu-dim::after {
 
 .oc-vp__dot {
 	/* The dot is still 7px — the padding is what a finger lands on, and
-	   background-clip keeps the paint on the little core. */
+	   background-clip keeps the paint on the little core. The colour MUST
+	   be the longhand: the `background` shorthand resets background-clip
+	   to border-box and the whole 24px box fills in. */
 	inline-size: 24px;
 	block-size: 24px;
 	padding: 8.5px;
-	background-clip: content-box;
 	border: 0;
 	border-radius: 50%;
-	background: color-mix(in srgb, var(--oc-ink) 22%, transparent);
+	background-color: color-mix(in srgb, var(--oc-ink) 22%, transparent);
+	background-clip: content-box;
 	cursor: pointer;
-	transition: background .15s ease, transform .15s ease;
+	transition: background-color .15s ease, transform .15s ease;
 }
 
-.oc-vp__dot.is-on { background: var(--oc-ink, #151a21); transform: scale(1.2); }
+.oc-vp__dot.is-on { background-color: var(--oc-ink, #151a21); transform: scale(1.2); }
 
 /* ----- the words ----- */
 
