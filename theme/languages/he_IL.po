@@ -7272,3 +7272,57 @@ msgstr "ברירת מחדל — %1$s (%2$s)"
 
 msgid "When the picture is taller than the tile it fills, this decides which part stays: 0 keeps the top (a head, a hat), 100 keeps the bottom."
 msgstr "כשהתמונה גבוהה מהאריח שהיא ממלאת, זה קובע איזה חלק נשאר: 0 שומר על החלק העליון (ראש, כובע), 100 על החלק התחתון."
+
+msgid "Public holidays"
+msgstr "חגים ומועדים"
+
+msgid "None — I will list my own"
+msgstr "ללא — ארשום בעצמי"
+
+msgid "Days the country is closed are skipped, so no promise lands on one. They are worked out from the calendar and never need updating. Next: %s."
+msgstr "ימים שבהם המדינה סגורה מדולגים, כך ששום הבטחה לא נופלת עליהם. הם מחושבים מהלוח ולא דורשים עדכון לעולם. הקרובים: %s."
+
+msgid "Days the country is closed are skipped, so no promise lands on one. They are worked out from the calendar and never need updating."
+msgstr "ימים שבהם המדינה סגורה מדולגים, כך ששום הבטחה לא נופלת עליהם. הם מחושבים מהלוח ולא דורשים עדכון לעולם."
+
+msgid "Stop the day before a holiday too"
+msgstr "לעצור גם בערב החג"
+
+msgid "Half days, when a parcel sent in the morning often waits. Off by default."
+msgstr "ימים קצרים, שבהם חבילה שנשלחת בבוקר לרוב ממתינה. כבוי כברירת מחדל."
+
+msgid "Days of your own"
+msgstr "ימים משלך"
+
+msgid "One per line. 2026-12-25 closes that day once; 12-25 closes it every year. Anything after the date is its name — 08-09 Stocktaking."
+msgstr "שורה לכל יום. 2026-12-25 סוגר את היום הזה פעם אחת; 12-25 סוגר אותו בכל שנה. מה שנכתב אחרי התאריך הוא השם שלו — 08-09 ספירת מלאי."
+
+msgid "Closed"
+msgstr "סגור"
+
+msgid "Eve of %s"
+msgstr "ערב %s"
+
+msgid "Rosh Hashanah"
+msgstr "ראש השנה"
+
+msgid "Yom Kippur"
+msgstr "יום כיפור"
+
+msgid "Sukkot"
+msgstr "סוכות"
+
+msgid "Simchat Torah"
+msgstr "שמחת תורה"
+
+msgid "Passover"
+msgstr "פסח"
+
+msgid "Last day of Passover"
+msgstr "שביעי של פסח"
+
+msgid "Shavuot"
+msgstr "שבועות"
+
+msgid "Independence Day"
+msgstr "יום העצמאות"

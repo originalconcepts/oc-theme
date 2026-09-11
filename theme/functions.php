@@ -77,6 +77,7 @@ require_once OC_THEME_DIR . '/inc/class-oc-updater.php';
 require_once OC_THEME_DIR . '/inc/class-oc-assets.php';
 require_once OC_THEME_DIR . '/inc/class-oc-login.php';
 require_once OC_THEME_DIR . '/inc/class-oc-login-screen.php';
+require_once OC_THEME_DIR . '/inc/class-oc-holidays.php';
 require_once OC_THEME_DIR . '/inc/class-oc-woocommerce.php';
 require_once OC_THEME_DIR . '/inc/shipping/class-oc-shipping-quote.php';
 require_once OC_THEME_DIR . '/inc/shipping/class-oc-shipping-rules.php';

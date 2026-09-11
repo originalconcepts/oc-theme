@@ -8895,15 +8895,16 @@ window.__ocMoney = function ( n, money ) {
  * timing so the page has one rhythm rather than two. A visitor who has
  * asked for less motion gets the stock state and nothing moving. */
 ( function () {
-	var lines = document.querySelectorAll( '.oc-stockline--turns .oc-stockline__turns' );
-	if ( ! lines.length ) { return; }
-
 	var still = window.matchMedia && window.matchMedia( '(prefers-reduced-motion: reduce)' ).matches;
 	if ( still ) { return; }
 
-	Array.prototype.forEach.call( lines, function ( wrap ) {
+	function armOne( wrap ) {
+		if ( wrap.dataset.ocTurning ) { return; }
+
 		var msgs = wrap.querySelectorAll( '.oc-stockline__turn' );
 		if ( msgs.length < 2 ) { return; }
+
+		wrap.dataset.ocTurning = '1';
 
 		var at = 0;
 
@@ -8912,13 +8913,32 @@ window.__ocMoney = function ( n, money ) {
 			// to a half-finished transition looks like a fault.
 			if ( document.hidden ) { return; }
 
+			// A line replaced under us (a variation was picked) takes its
+			// own interval; this one has nothing left to turn.
+			if ( ! wrap.isConnected ) { return; }
+
 			at = ( at + 1 ) % msgs.length;
 
 			Array.prototype.forEach.call( msgs, function ( m, i ) {
 				m.classList.toggle( 'is-current', i === at );
 			} );
 		}, 4000 );
-	} );
+	}
+
+	// A variable product has no line at all until its picker lands on a
+	// variation — the server sends it with the variation and the script
+	// writes it in. Arming only what is on the page at load left those
+	// lines frozen on their first message, so the delivery date under a
+	// product with options never came round. Anything written later is
+	// armed when it appears.
+	window.ocArmStockTurns = function ( root ) {
+		var scope = root && root.querySelectorAll ? root : document;
+		var lines = scope.querySelectorAll( '.oc-stockline--turns .oc-stockline__turns' );
+
+		Array.prototype.forEach.call( lines, armOne );
+	};
+
+	window.ocArmStockTurns( document );
 }() );
 
 /* ---------- a variable product: what the picker says must be true ----------
@@ -8967,6 +8987,10 @@ window.__ocMoney = function ( n, money ) {
 			var html = variation && variation.oc_stockline ? variation.oc_stockline : '';
 			wrap.innerHTML = html;
 			wrap.hidden = '' === html;
+
+			if ( '' !== html && window.ocArmStockTurns ) {
+				window.ocArmStockTurns( wrap );
+			}
 		} )
 		.on( 'reset_data hide_variation', function () {
 			wrap.innerHTML = '';

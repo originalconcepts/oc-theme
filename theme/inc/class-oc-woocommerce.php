@@ -1438,6 +1438,7 @@ final class WooCommerce {
 	 * Wednesday". Ordered on Wednesday, with no Friday or Saturday runs:
 	 * Thursday, Sunday, Monday — the weekend is simply not counted, and the
 	 * window stretches to match rather than promising a day nobody works.
+	 * Public holidays drop out the same way — see the Holidays class.
 	 *
 	 * @return array{from:string,to:string,relative:bool,one_day:bool,from_ts:int,to_ts:int}|null
 	 */
@@ -1459,15 +1460,24 @@ final class WooCommerce {
 		$found = 0;
 		$clock = new \DateTimeImmutable( 'today', wp_timezone() );
 
-		// A fortnight of looking is more than enough for any sane lead time,
-		// and stops a shop that ships on no days at all spinning here.
-		for ( $step = 1; $step <= 60 && $found < $lead; $step++ ) {
+		// Three months of looking is more than enough for any sane lead time
+		// — a run of holidays can swallow a fortnight on its own — and it
+		// stops a shop that ships on no days at all spinning here.
+		for ( $step = 1; $step <= 120 && $found < $lead; $step++ ) {
 			$day = $clock->modify( '+' . $step . ' days' );
 
-			if ( in_array( (int) $day->format( 'w' ), $days, true ) ) {
-				$when[] = $day;
-				++$found;
+			if ( ! in_array( (int) $day->format( 'w' ), $days, true ) ) {
+				continue;
 			}
+
+			// A weekday the shop works is still not a day the couriers
+			// drive when the country is closed.
+			if ( Holidays::closed( $day ) ) {
+				continue;
+			}
+
+			$when[] = $day;
+			++$found;
 		}
 
 		if ( ! $when ) {

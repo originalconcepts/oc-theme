@@ -2224,6 +2224,53 @@ final class Customizer {
 			__( 'How many sending days it takes. Three, ordered on a Sunday with a Sunday-to-Thursday week, reads "arrives 2/12–4/12".', 'oc-theme' )
 		);
 
+		$upcoming = class_exists( '\OC\Theme\Holidays' ) ? \OC\Theme\Holidays::upcoming() : array();
+
+		$this->choice(
+			$c,
+			'oc_ship_holidays',
+			'oc_product',
+			__( 'Public holidays', 'oc-theme' ),
+			array(
+				'il'   => __( 'Israel', 'oc-theme' ),
+				'none' => __( 'None — I will list my own', 'oc-theme' ),
+			),
+			class_exists( '\OC\Theme\Holidays' ) ? \OC\Theme\Holidays::default_pack() : 'none',
+			array(
+				'setting' => 'oc_stock_indicator',
+				'values'  => array( '1' ),
+			),
+			$upcoming
+				/* translators: %s: a comma-separated list of dates. */
+				? sprintf( __( 'Days the country is closed are skipped, so no promise lands on one. They are worked out from the calendar and never need updating. Next: %s.', 'oc-theme' ), implode( ', ', $upcoming ) )
+				: __( 'Days the country is closed are skipped, so no promise lands on one. They are worked out from the calendar and never need updating.', 'oc-theme' )
+		);
+
+		$this->toggle(
+			$c,
+			'oc_ship_holiday_eves',
+			'oc_product',
+			__( 'Stop the day before a holiday too', 'oc-theme' ),
+			false,
+			array(
+				'setting' => 'oc_stock_indicator',
+				'values'  => array( '1' ),
+			),
+			__( 'Half days, when a parcel sent in the morning often waits. Off by default.', 'oc-theme' )
+		);
+
+		$this->textarea(
+			$c,
+			'oc_ship_holidays_extra',
+			'oc_product',
+			__( 'Days of your own', 'oc-theme' ),
+			array(
+				'setting' => 'oc_stock_indicator',
+				'values'  => array( '1' ),
+			),
+			__( 'One per line. 2026-12-25 closes that day once; 12-25 closes it every year. Anything after the date is its name — 08-09 Stocktaking.', 'oc-theme' )
+		);
+
 		$this->choice(
 			$c,
 			'oc_vpanel_side',
@@ -2891,6 +2938,39 @@ final class Customizer {
 			'type'    => 'text',
 			'section' => $section,
 			'label'   => $label,
+		);
+
+		if ( null !== $dep ) {
+			$args['active_callback'] = $this->depend( $id, $dep );
+		}
+
+		$c->add_control( $id, $args );
+	}
+
+	/**
+	 * Free-text setting over several lines.
+	 *
+	 * @param \WP_Customize_Manager $c       Manager.
+	 * @param string                $id      Setting id.
+	 * @param string                $section Section id.
+	 * @param string                $label   Label.
+	 * @param array|null            $dep     Optional visibility rule.
+	 * @param string                $hint    Helper text under the control.
+	 */
+	private function textarea( \WP_Customize_Manager $c, string $id, string $section, string $label, ?array $dep = null, string $hint = '' ): void {
+		$c->add_setting(
+			$id,
+			array(
+				'default'           => '',
+				'sanitize_callback' => 'sanitize_textarea_field',
+			)
+		);
+
+		$args = array(
+			'type'        => 'textarea',
+			'section'     => $section,
+			'label'       => $label,
+			'description' => $hint,
 		);
 
 		if ( null !== $dep ) {
