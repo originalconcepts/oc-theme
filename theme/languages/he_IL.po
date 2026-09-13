@@ -7497,3 +7497,9 @@ msgstr "לשנות טקסט, צבעים, גובה או פרלקס רק לקטג�
 
 msgid "Empty keeps Customize (%s)."
 msgstr "ריק = כמו בהתאמה אישית (%s)."
+
+msgid "Text alignment"
+msgstr "יישור הטקסט"
+
+msgid "Aligned to the side"
+msgstr "מיושר לצד"

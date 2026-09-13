@@ -35,6 +35,14 @@ final class Filters {
 	private $state = null;
 
 	/**
+	 * The archive the filters work inside when it is not a product
+	 * category — a brand, a tag, an attribute page: taxonomy and term id.
+	 *
+	 * @var array{tax:string,term:int}|null
+	 */
+	private $scope = null;
+
+	/**
 	 * Hook in.
 	 */
 	public function register(): void {
@@ -141,6 +149,80 @@ final class Filters {
 		}
 
 		return in_array( $layout, array( 'sidebar', 'topbar', 'drawer', 'none' ), true ) ? $layout : 'sidebar';
+	}
+
+	/**
+	 * The archive the filters narrow, beyond a product category.
+	 *
+	 * A brand page used to pass "no category", which the counts and the
+	 * filter request both read as the whole shop: every brand was listed
+	 * beside Blum, and clearing a value showed all 4,122 products under
+	 * Blum's address. The archive's own term now rides along wherever the
+	 * category does.
+	 *
+	 * @return array{tax:string,term:int}|null
+	 */
+	private static function page_scope(): ?array {
+		if ( ! is_product_taxonomy() ) {
+			return null;
+		}
+
+		$term = get_queried_object();
+
+		if ( ! $term instanceof \WP_Term || 'product_cat' === $term->taxonomy ) {
+			return null;
+		}
+
+		return array(
+			'tax'  => (string) $term->taxonomy,
+			'term' => (int) $term->term_id,
+		);
+	}
+
+	/**
+	 * The same scope as the filter request sends it, checked: a product
+	 * taxonomy other than categories, and a term that exists in it.
+	 *
+	 * @return array{tax:string,term:int}|null
+	 */
+	private static function request_scope(): ?array {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- public read-only endpoint.
+		$tax  = sanitize_text_field( wp_unslash( (string) ( $_GET['ctax'] ?? '' ) ) );
+		$term = absint( $_GET['cterm'] ?? 0 );
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+		if ( '' === $tax || ! $term || 'product_cat' === $tax || ! taxonomy_exists( $tax ) || ! is_object_in_taxonomy( 'product', $tax ) ) {
+			return null;
+		}
+
+		if ( ! get_term( $term, $tax ) instanceof \WP_Term ) {
+			return null;
+		}
+
+		return array(
+			'tax'  => $tax,
+			'term' => $term,
+		);
+	}
+
+	/**
+	 * The tax_query clause that keeps a count or a request inside the
+	 * archive, when there is one.
+	 *
+	 * @return array<int,array<string,mixed>>
+	 */
+	private function scope_clause(): array {
+		if ( null === $this->scope ) {
+			return array();
+		}
+
+		return array(
+			array(
+				'taxonomy' => $this->scope['tax'],
+				'field'    => 'term_id',
+				'terms'    => array( $this->scope['term'] ),
+			),
+		);
 	}
 
 	/* ------------------------------------------------------------- request */
@@ -893,7 +975,7 @@ final class Filters {
 			if ( 'attribute' === $row['type'] ) {
 				$attribute_id = (int) $row['id'];
 				$taxonomy     = $this->attr_taxonomy( $attribute_id );
-				if ( '' === $taxonomy ) {
+				if ( '' === $taxonomy || ( null !== $this->scope && $this->scope['tax'] === $taxonomy ) ) {
 					continue;
 				}
 
@@ -993,8 +1075,9 @@ final class Filters {
 			}
 		}
 
-		// Brands.
-		if ( ! empty( $settings['brands'] ) && '' !== $this->brand_tax() ) {
+		// Brands — not on a brand's own page: a product has one brand, so
+		// there is nothing to choose between there.
+		if ( ! empty( $settings['brands'] ) && '' !== $this->brand_tax() && ! ( null !== $this->scope && $this->scope['tax'] === $this->brand_tax() ) ) {
 			$counts = $this->term_counts( $category, $state, 'b', $this->brand_tax() );
 			$values = array();
 
@@ -1087,6 +1170,11 @@ final class Filters {
 					'include_children' => true,
 				);
 			}
+		}
+
+		// A brand (or tag, or attribute) page counts inside itself.
+		foreach ( $this->scope_clause() as $clause ) {
+			$args['tax_query'][] = $clause;
 		}
 
 		// Visibility: exclude hidden products the way the catalogue does.
@@ -1389,8 +1477,9 @@ final class Filters {
 			return;
 		}
 
-		$settings = self::settings();
-		$category = 0;
+		$settings    = self::settings();
+		$category    = 0;
+		$this->scope = self::page_scope();
 		if ( is_product_taxonomy() ) {
 			$term = get_queried_object();
 			if ( $term instanceof \WP_Term && 'product_cat' === $term->taxonomy ) {
@@ -1407,6 +1496,7 @@ final class Filters {
 
 		$config = array(
 			'category'   => $category,
+			'scope'      => $this->scope,
 			'layout'     => $layout,
 			'topbar'     => (string) $settings['topbar_style'],
 			'choice'     => (string) $settings['choice'],
@@ -1779,6 +1869,8 @@ final class Filters {
 		$orderby  = sanitize_text_field( wp_unslash( (string) ( $_GET['orderby'] ?? '' ) ) );
 		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
+		$this->scope = self::request_scope();
+
 		$state    = $this->state();
 		$settings = self::settings();
 
@@ -1811,6 +1903,10 @@ final class Filters {
 					'include_children' => true,
 				);
 			}
+		}
+
+		foreach ( $this->scope_clause() as $clause ) {
+			$args['tax_query'][] = $clause;
 		}
 
 		$args['tax_query'][] = array(

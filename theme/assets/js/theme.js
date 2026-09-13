@@ -1976,6 +1976,12 @@
 			var params = stateParams();
 			params.set( 'action', 'oc_filter' );
 			params.set( 'cat', String( cfg.category || 0 ) );
+			// A brand (or tag) page keeps its own products: without this the
+			// request read as the whole shop.
+			if ( cfg.scope && cfg.scope.tax ) {
+				params.set( 'ctax', cfg.scope.tax );
+				params.set( 'cterm', String( cfg.scope.term ) );
+			}
 			params.set( 'pg', String( toPage ) );
 			var ob = currentOrderby();
 			if ( ob ) {

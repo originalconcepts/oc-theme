@@ -3428,6 +3428,9 @@ html.oc-drw-open { overflow: hidden; }
 	padding: clamp(16px, 3vw, 26px) var(--oc-gap) 0;
 }
 
+/* words under the picture, centred when the shop chooses */
+.oc-chero--below-center .oc-chero__wordsin { text-align: center; margin-inline: auto; }
+
 /* ---- half-split ---- */
 .oc-chero--split {
 	display: grid;

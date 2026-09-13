@@ -1461,6 +1461,25 @@ final class Customizer {
 			$full
 		);
 
+		$this->choice(
+			$c,
+			'oc_chero_balign',
+			$hero,
+			__( 'Text alignment', 'oc-theme' ),
+			array(
+				'start'  => __( 'Aligned to the side', 'oc-theme' ),
+				'center' => __( 'Centred', 'oc-theme' ),
+			),
+			'start',
+			array(
+				$full,
+				array(
+					'setting' => 'oc_chero_text',
+					'values'  => array( 'below' ),
+				),
+			)
+		);
+
 		$this->choice( $c, 'oc_chero_pos', $hero, __( 'Text position', 'oc-theme' ), Category::positions(), 'bs', array( $full, $over ) );
 
 		$this->choice(

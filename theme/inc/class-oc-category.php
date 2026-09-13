@@ -323,6 +323,7 @@ class Category {
 		// Customize. The pictures are always the category's own.
 		$layout = '' !== $get( '_oc_hero_layout' ) ? $get( '_oc_hero_layout' ) : $d['layout'];
 		$lax    = $get( '_oc_hero_parallax' );
+		$balign = $get( '_oc_hero_balign' );
 
 		return array(
 			'layout'   => 'none' === $layout ? '' : $layout,
@@ -337,6 +338,7 @@ class Category {
 			'side'     => '' !== $get( '_oc_hero_side' ) ? $get( '_oc_hero_side' ) : $d['side'],
 			'cbg'      => '' !== $get( '_oc_hero_cbg' ) ? $get( '_oc_hero_cbg' ) : $d['cbg'],
 			'parallax' => in_array( $lax, array( 'none', 'soft', 'full' ), true ) ? $lax : $d['parallax'],
+			'balign'   => in_array( $balign, array( 'start', 'center' ), true ) ? $balign : $d['balign'],
 			'fx'       => $pct( $get( '_oc_hero_fx' ), 50 ),
 			'fy'       => $pct( $get( '_oc_hero_fy' ), 50 ),
 			'fxm'      => $pct( $get( '_oc_hero_fxm' ), -1 ),
@@ -348,7 +350,7 @@ class Category {
 	 * The hero every category takes unless it chooses otherwise — set once
 	 * in Customize › Catalogue page › Category hero.
 	 *
-	 * @return array{layout:string,h:int,hm:int,text:string,pos:string,tone:string,shade:int,side:string,cbg:string,parallax:string}
+	 * @return array{layout:string,h:int,hm:int,text:string,pos:string,tone:string,shade:int,side:string,cbg:string,parallax:string,balign:string}
 	 */
 	public static function hero_defaults(): array {
 		$pick = static function ( string $key, array $allowed, string $def ): string {
@@ -372,6 +374,7 @@ class Category {
 			'side'     => $pick( 'oc_chero_side', array( 'start', 'end' ), 'start' ),
 			'cbg'      => (string) sanitize_hex_color( (string) get_theme_mod( 'oc_chero_cbg', '' ) ),
 			'parallax' => $pick( 'oc_chero_parallax', array( 'none', 'soft', 'full' ), 'none' ),
+			'balign'   => $pick( 'oc_chero_balign', array( 'start', 'center' ), 'start' ),
 		);
 	}
 
@@ -658,6 +661,7 @@ class Category {
 		$over    = 'over' === $h['text'];
 		$classes = 'oc-chero oc-chero--full oc-chero--text-' . ( $over ? 'over' : 'below' )
 			. ( $over ? ' oc-chero--pos-' . esc_attr( $h['pos'] ) . ' oc-chero--' . esc_attr( $h['tone'] ) : '' )
+			. ( ! $over && 'center' === $h['balign'] ? ' oc-chero--below-center' : '' )
 			. ( '' !== $lax ? ' oc-chero--lax' : '' );
 
 		$shade = ( $over && $h['shade'] > 0 )
@@ -781,9 +785,12 @@ class Category {
 		}
 
 		if ( 'in' === $context ) {
-			$over = 'full' === $h['layout'] && 'over' === $h['text'];
+			if ( 'full' === $h['layout'] && 'over' === $h['text'] ) {
+				return in_array( $h['pos'], array( 'cc', 'bc' ), true ) ? 'center' : 'start';
+			}
 
-			return $over && in_array( $h['pos'], array( 'cc', 'bc' ), true ) ? 'center' : 'start';
+			// Under a full-width picture the words take the chosen alignment.
+			return 'full' === $h['layout'] && 'center' === ( $h['balign'] ?? 'start' ) ? 'center' : 'start';
 		}
 
 		return 'center' === get_theme_mod( 'oc_catalog_title_align', 'start' ) ? 'center' : 'start';
@@ -1079,6 +1086,10 @@ class Category {
 			'over'  => __( 'On the picture', 'oc-theme' ),
 			'below' => __( 'Under the picture', 'oc-theme' ),
 		);
+		$aligns  = array(
+			'start'  => __( 'Aligned to the side', 'oc-theme' ),
+			'center' => __( 'Centred', 'oc-theme' ),
+		);
 		$tones   = array(
 			'light' => __( 'Light (for a dark image)', 'oc-theme' ),
 			'dark'  => __( 'Dark (for a light image)', 'oc-theme' ),
@@ -1108,7 +1119,7 @@ class Category {
 		$mine    = '_oc_hero_custom:1,';
 
 		$custom = false;
-		foreach ( array( '_oc_hero_text', '_oc_hero_pos', '_oc_hero_tone', '_oc_hero_shade', '_oc_hero_side', '_oc_hero_cbg', '_oc_hero_h', '_oc_hero_hm', '_oc_hero_parallax' ) as $key ) {
+		foreach ( array( '_oc_hero_text', '_oc_hero_balign', '_oc_hero_pos', '_oc_hero_tone', '_oc_hero_shade', '_oc_hero_side', '_oc_hero_cbg', '_oc_hero_h', '_oc_hero_hm', '_oc_hero_parallax' ) as $key ) {
 			$custom = $custom || '' !== $raw( $key );
 		}
 		?>
@@ -1129,6 +1140,7 @@ class Category {
 		$this->toggle_field( '_oc_hero_custom', $custom, __( 'Its own look', 'oc-theme' ), __( 'Change the words, colours, height or parallax for this category only', 'oc-theme' ), $on );
 
 		$this->select_field( '_oc_hero_text', $raw( '_oc_hero_text' ), __( 'The words', 'oc-theme' ), $first( $texts, $g['text'] ), '', $mine . $full );
+		$this->select_field( '_oc_hero_balign', $raw( '_oc_hero_balign' ), __( 'Text alignment', 'oc-theme' ), $first( $aligns, $g['balign'] ), '', $mine . $full . ',' . $when( '_oc_hero_text', array( 'below' ), $g['text'] ) );
 		$this->select_field( '_oc_hero_pos', $raw( '_oc_hero_pos' ), __( 'Text position', 'oc-theme' ), $first( self::positions(), $g['pos'] ), '', $mine . $over );
 		$this->select_field( '_oc_hero_tone', $raw( '_oc_hero_tone' ), __( 'Text colour', 'oc-theme' ), $first( $tones, $g['tone'] ), '', $mine . $over );
 		$this->select_field( '_oc_hero_shade', $raw( '_oc_hero_shade' ), __( 'Darken the picture', 'oc-theme' ), $first( $shades, (string) $g['shade'] ), '', $mine . $over );
@@ -1556,8 +1568,9 @@ class Category {
 			$this->save_enum( $term_id, '_oc_hero_side', array( 'start', 'end' ) );
 			$this->save_colour( $term_id, '_oc_hero_cbg' );
 			$this->save_enum( $term_id, '_oc_hero_parallax', array( 'none', 'soft', 'full' ) );
+			$this->save_enum( $term_id, '_oc_hero_balign', array( 'start', 'center' ) );
 		} else {
-			foreach ( array( '_oc_hero_h', '_oc_hero_hm', '_oc_hero_text', '_oc_hero_pos', '_oc_hero_tone', '_oc_hero_shade', '_oc_hero_side', '_oc_hero_cbg', '_oc_hero_parallax' ) as $key ) {
+			foreach ( array( '_oc_hero_balign', '_oc_hero_h', '_oc_hero_hm', '_oc_hero_text', '_oc_hero_pos', '_oc_hero_tone', '_oc_hero_shade', '_oc_hero_side', '_oc_hero_cbg', '_oc_hero_parallax' ) as $key ) {
 				delete_term_meta( $term_id, $key );
 			}
 		}
