@@ -6259,14 +6259,17 @@ html:not([dir]) .oc-cartup__items--h.oc-fade-end {
 }
 .oc-pbrand:hover { color: var(--oc-ink, #151a21); }
 .oc-pbrand--before { margin-block-end: 8px; }
-.oc-pbrand__logo {
+/* Two classes deep: WooCommerce's ".woocommerce img { height: auto }"
+ * outranks a single class, and at the end of the title line the logo
+ * came out at its full 300px. */
+.oc-pbrand .oc-pbrand__logo {
 	display: block;
 	inline-size: auto;
 	max-inline-size: 150px;
 	block-size: 40px;
 	object-fit: contain;
 }
-.oc-pbrand--before .oc-pbrand__logo { block-size: 34px; }
+.oc-pbrand.oc-pbrand--before .oc-pbrand__logo { block-size: 34px; }
 
 .oc-ptitle-row {
 	display: flex;
@@ -6279,8 +6282,8 @@ html:not([dir]) .oc-cartup__items--h.oc-fade-end {
 .oc-ptitle-row .oc-pbrand { flex: none; }
 
 @media (max-width: 782px) {
-	.oc-pbrand__logo { block-size: 30px; max-inline-size: 110px; }
-	.oc-pbrand--before .oc-pbrand__logo { block-size: 28px; }
+	.oc-pbrand .oc-pbrand__logo { block-size: 30px; max-inline-size: 110px; }
+	.oc-pbrand.oc-pbrand--before .oc-pbrand__logo { block-size: 28px; }
 }
 
 /* ---------- top bar ---------- */
