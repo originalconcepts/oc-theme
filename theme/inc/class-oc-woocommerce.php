@@ -273,6 +273,14 @@ final class WooCommerce {
 		// SKU rides the price line's far end; a per-product checkbox next to
 		// the SKU field can hide it.
 		add_filter( 'woocommerce_get_price_html', array( $this, 'price_sku_html' ), 30, 2 );
+
+		// A variable product whose variations cost differently can read
+		// "From ₪X" instead of a range — set apart for the catalogue and the
+		// product page. On the product page the top price can follow the
+		// chosen variation, and the button can carry what it will cost.
+		add_filter( 'woocommerce_variable_price_html', array( $this, 'price_from_html' ), 10, 2 );
+		add_filter( 'woocommerce_get_price_html', array( $this, 'price_swap_wrap' ), 25, 2 );
+		add_action( 'woocommerce_after_add_to_cart_button', array( $this, 'atc_price_data' ) );
 		add_action( 'woocommerce_product_options_sku', array( $this, 'sku_toggle_field' ) );
 		add_action( 'woocommerce_admin_process_product_object', array( $this, 'sku_toggle_save' ) );
 		add_filter( 'woocommerce_breadcrumb_defaults', array( $this, 'breadcrumb_defaults' ) );
@@ -606,6 +614,94 @@ final class WooCommerce {
 	}
 
 	/**
+	 * Is this the product the product page is about, outside any loop?
+	 *
+	 * @param mixed $product Product.
+	 */
+	private function is_page_product( $product ): bool {
+		return $product instanceof \WC_Product
+			&& ! Cart::$in_upsells
+			&& is_product()
+			&& '' === wc_get_loop_prop( 'name', '' )
+			&& (int) $product->get_id() === (int) get_queried_object_id();
+	}
+
+	/**
+	 * "From ₪X" in place of a variable product's price range.
+	 *
+	 * The catalogue and the product page each keep their own setting. The
+	 * figure is the cheapest variation; when that one is on sale its old
+	 * price stays crossed out beside it, as a sale reads anywhere else.
+	 *
+	 * @param string $price   Range HTML.
+	 * @param mixed  $product Product.
+	 */
+	public function price_from_html( $price, $product ): string {
+		if ( ! $product instanceof \WC_Product_Variable ) {
+			return (string) $price;
+		}
+
+		$mod = $this->is_page_product( $product ) ? 'oc_product_price_range' : 'oc_card_price_range';
+
+		if ( 'from' !== get_theme_mod( $mod, 'range' ) ) {
+			return (string) $price;
+		}
+
+		$prices = $product->get_variation_prices( true );
+		$list   = array_map( 'floatval', (array) ( $prices['price'] ?? array() ) );
+
+		if ( count( $list ) < 2 || min( $list ) >= max( $list ) ) {
+			return (string) $price;
+		}
+
+		asort( $list );
+
+		$id      = array_key_first( $list );
+		$min     = (float) $list[ $id ];
+		$regular = (float) ( $prices['regular_price'][ $id ] ?? $min );
+		$amount  = $regular > $min ? wc_format_sale_price( wc_price( $regular ), wc_price( $min ) ) : wc_price( $min );
+
+		return '<span class="oc-price-from">' . esc_html_x( 'From', 'price of the cheapest variation', 'oc-theme' ) . '</span> ' . $amount . $product->get_price_suffix();
+	}
+
+	/**
+	 * Wrap the product page's own price so the script can swap the amount
+	 * for the chosen variation's and leave the SKU where it is.
+	 *
+	 * Runs after the sale badge joins the price and before the SKU does, so
+	 * the badge swaps along with the amount it belongs to.
+	 *
+	 * @param string $price   Price HTML.
+	 * @param mixed  $product Product.
+	 */
+	public function price_swap_wrap( $price, $product ): string {
+		if ( '' === (string) $price || ! get_theme_mod( 'oc_product_price_swap', false ) || ! $product instanceof \WC_Product_Variable || ! $this->is_page_product( $product ) ) {
+			return (string) $price;
+		}
+
+		return '<span class="oc-pp" data-oc-pp>' . $price . '</span>';
+	}
+
+	/**
+	 * What the add-to-cart button needs to name its own price: the product's
+	 * price (a variable product's comes with the chosen variation) and how
+	 * the shop writes money.
+	 */
+	public function atc_price_data(): void {
+		global $product;
+
+		if ( ! get_theme_mod( 'oc_atc_price', false ) || ! $product instanceof \WC_Product || ! $product->is_type( array( 'simple', 'variable' ) ) || ! $this->is_page_product( $product ) ) {
+			return;
+		}
+
+		printf(
+			'<span hidden data-oc-atc-price="%s" data-money="%s"></span>',
+			esc_attr( $product->is_type( 'variable' ) ? '' : (string) wc_get_price_to_display( $product ) ),
+			esc_attr( (string) wp_json_encode( Product_Linked::money() ) )
+		);
+	}
+
+	/**
 	 * Per-product "hide the SKU" checkbox, right under the SKU field.
 	 */
 	public function sku_toggle_field(): void {
@@ -774,6 +870,10 @@ final class WooCommerce {
 
 		if ( 'sharp' === get_theme_mod( 'oc_card_img_corners', 'card' ) ) {
 			$classes[] = 'oc-card-img-sharp';
+		}
+
+		if ( get_theme_mod( 'oc_product_price_swap', false ) ) {
+			$classes[] = 'oc-price-swap';
 		}
 		$classes[] = 'oc-atc-' . sanitize_html_class( (string) get_theme_mod( 'oc_card_atc', 'always' ) );
 		$classes[] = 'oc-btn-' . sanitize_html_class( (string) get_theme_mod( 'oc_button_style', 'filled' ) );

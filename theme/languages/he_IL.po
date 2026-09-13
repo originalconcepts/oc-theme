@@ -7539,3 +7539,26 @@ msgstr "חדות"
 
 msgid "The card’s own corners follow Global design › Corner rounding."
 msgstr "הפינות של הכרטיס עצמו נקבעות בעיצוב גלובלי › עיגול פינות."
+
+msgctxt "price of the cheapest variation"
+msgid "From"
+msgstr "החל מ־"
+
+msgid "Price of a product whose variations cost differently"
+msgstr "מחיר של מוצר עם וריאציות במחירים שונים"
+
+msgid "From the lowest price"
+msgstr "החל מ־ (המחיר הנמוך)"
+
+msgid "The price at the top follows the chosen variation"
+msgstr "המחיר העליון מתחלף לפי הווריאציה שנבחרה"
+
+msgid "Off: the chosen variation’s price shows above the button, as WooCommerce does."
+msgstr "כבוי: מחיר הווריאציה שנבחרה מופיע מעל הכפתור, כמו היום."
+
+msgid "Price on the add-to-cart button"
+msgstr "מחיר על כפתור ההוספה לסל"
+
+msgid "The button reads “Add to cart · ₪120” and follows the quantity and the chosen variation."
+msgstr "הכפתור יציג „הוספה לסל · ₪120” ויתעדכן לפי הכמות והווריאציה שנבחרה."
+

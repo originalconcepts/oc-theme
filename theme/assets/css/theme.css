@@ -9193,6 +9193,15 @@ body.oc-sort-open .oc-sortsheet__overlay[hidden] { display: block; }
 	flex-wrap: wrap;
 }
 
+/* The top price following the chosen variation: its wrapper stays out of
+ * the flex row, and Woo's second price above the button goes. Hidden, not
+ * removed: the linked-products total still reads its amount. */
+.oc-pp { display: contents; }
+.oc-price-swap div.product form.cart .woocommerce-variation-price { display: none; }
+
+/* "From" before the cheapest variation's price. */
+.oc-price-from { margin-inline-end: .3em; font-weight: 400; font-size: .85em; }
+
 .oc-sku {
 	margin-inline-start: auto;
 	align-self: center;

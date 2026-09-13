@@ -9045,3 +9045,93 @@ window.__ocMoney = function ( n, money ) {
 	draw();
 	setTimeout( draw, 400 );
 }() );
+
+/* ---------- product page: price follows the chosen variation ----------
+ * Two settings, one idea. The top price's amount sits in [data-oc-pp] (the
+ * SKU stays outside it): a complete choice writes that variation's price
+ * in, clearing the choice puts the range back. And the button can carry
+ * what pressing it costs — price times quantity. When the linked-products
+ * block keeps its own running total on the same button, the button is
+ * its. A choice made before this script ran (a default variation) is read
+ * back from the form, since Woo's event for it has already gone by. */
+( function () {
+	var form = document.querySelector( 'form.cart' ),
+		pp   = document.querySelector( '.summary [data-oc-pp]' ),
+		mark = document.querySelector( '[data-oc-atc-price]' );
+
+	if ( ! form || ( ! pp && ! mark ) ) { return; }
+
+	var isVariable = form.classList.contains( 'variations_form' );
+
+	var chosen = function () {
+		var idField = form.querySelector( 'input[name="variation_id"]' ),
+			id      = idField ? parseInt( idField.value, 10 ) : 0,
+			list    = [];
+
+		if ( ! id ) { return null; }
+
+		try { list = JSON.parse( form.dataset.product_variations || '[]' ) || []; } catch ( e ) { list = []; }
+
+		return list.filter( function ( v ) { return Number( v.variation_id ) === id; } )[ 0 ] || null;
+	};
+
+	var base = pp ? pp.innerHTML : '';
+
+	var swap = function ( v ) {
+		if ( ! pp ) { return; }
+
+		if ( ! v || ! v.price_html ) {
+			pp.innerHTML = base;
+			return;
+		}
+
+		var box = document.createElement( 'div' );
+		box.innerHTML = v.price_html;
+		box.querySelectorAll( '.oc-sku' ).forEach( function ( el ) { el.remove(); } );
+
+		var inner = box.querySelector( '.price' );
+		pp.innerHTML = ( inner || box ).innerHTML;
+	};
+
+	var btn   = mark && ! document.querySelector( '[data-oc-xs-total]' ) ? form.querySelector( '.single_add_to_cart_button' ) : null,
+		label = btn ? btn.textContent.trim() : '',
+		price = mark ? ( parseFloat( mark.dataset.ocAtcPrice ) || 0 ) : 0,
+		money = {};
+
+	if ( mark ) {
+		try { money = JSON.parse( mark.dataset.money || '{}' ); } catch ( e ) { money = {}; }
+	}
+
+	var paint = function () {
+		if ( ! btn ) { return; }
+
+		var qty = form.querySelector( 'input.qty' ),
+			n   = qty ? ( parseInt( qty.value, 10 ) || 1 ) : 1;
+
+		btn.textContent = price > 0 ? label + ' · ' + window.__ocMoney( price * n, money ) : label;
+	};
+
+	var apply = function ( v ) {
+		swap( v );
+
+		if ( isVariable ) {
+			price = v && v.display_price ? parseFloat( v.display_price ) || 0 : 0;
+		}
+
+		paint();
+	};
+
+	if ( btn ) {
+		form.addEventListener( 'input', paint );
+		form.addEventListener( 'change', function () { setTimeout( paint, 0 ); } );
+		form.addEventListener( 'click', function () { setTimeout( paint, 0 ); } );
+	}
+
+	if ( isVariable && window.jQuery ) {
+		window.jQuery( form )
+			.on( 'found_variation', function ( e, v ) { apply( v ); } )
+			.on( 'reset_data hide_variation', function () { apply( null ); } );
+	}
+
+	apply( isVariable ? chosen() : null );
+}() );

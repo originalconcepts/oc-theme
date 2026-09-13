@@ -2032,6 +2032,18 @@ final class Customizer {
 		$this->toggle( $c, 'oc_card_excerpt', 'oc_card', __( 'Show short description', 'oc-theme' ), false );
 		$this->toggle( $c, 'oc_card_brand', 'oc_card', __( 'Show the brand above the title', 'oc-theme' ), false );
 
+		$this->choice(
+			$c,
+			'oc_card_price_range',
+			'oc_card',
+			__( 'Price of a product whose variations cost differently', 'oc-theme' ),
+			array(
+				'range' => __( 'From price to price', 'oc-theme' ),
+				'from'  => __( 'From the lowest price', 'oc-theme' ),
+			),
+			'range'
+		);
+
 		$this->heading( $c, 'oc_h_card_lines', 'oc_card', __( 'Text lines', 'oc-theme' ) );
 		$this->number( $c, 'oc_card_title_lines', 'oc_card', __( 'Title — maximum lines', 'oc-theme' ), 2, 1, 5 );
 		$this->number(
@@ -2417,9 +2429,26 @@ final class Customizer {
 			)
 		);
 
+		$this->heading( $c, 'oc_h_prod_price', 'oc_product', __( 'Price', 'oc-theme' ) );
+
+		$this->choice(
+			$c,
+			'oc_product_price_range',
+			'oc_product',
+			__( 'Price of a product whose variations cost differently', 'oc-theme' ),
+			array(
+				'range' => __( 'From price to price', 'oc-theme' ),
+				'from'  => __( 'From the lowest price', 'oc-theme' ),
+			),
+			'range'
+		);
+
+		$this->toggle( $c, 'oc_product_price_swap', 'oc_product', __( 'The price at the top follows the chosen variation', 'oc-theme' ), false, null, __( 'Off: the chosen variation’s price shows above the button, as WooCommerce does.', 'oc-theme' ) );
+
 		$this->heading( $c, 'oc_h_prod_atc', 'oc_product', __( 'Add-to-cart area', 'oc-theme' ) );
 
 		$this->toggle( $c, 'oc_atc_qty', 'oc_product', __( 'Show the quantity beside the button', 'oc-theme' ), true );
+		$this->toggle( $c, 'oc_atc_price', 'oc_product', __( 'Price on the add-to-cart button', 'oc-theme' ), false, null, __( 'The button reads “Add to cart · ₪120” and follows the quantity and the chosen variation.', 'oc-theme' ) );
 		$this->toggle( $c, 'oc_stock_indicator', 'oc_product', __( 'Stock line above the button', 'oc-theme' ), true );
 
 		$this->days(
