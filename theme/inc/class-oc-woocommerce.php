@@ -548,13 +548,23 @@ final class WooCommerce {
 		$text = __( 'Sale!', 'oc-theme' );
 
 		if ( 'percent' === $mode ) {
-			$percent = $this->discount_percent( $product );
+			$discount = $this->discount_percent( $product );
 
-			if ( 0 === $percent ) {
+			// Beside "From ₪61" the badge speaks for that ₪61 alone: the
+			// cheapest variation's own discount, or none when it has none.
+			$cheapest = $product instanceof \WC_Product_Variable && 'from' === get_theme_mod( 'oc_product_price_range', 'range' ) && $this->is_page_product( $product )
+				? $this->cheapest_variation( $product )
+				: null;
+
+			if ( null !== $cheapest ) {
+				$discount = array( self::percent_off( $cheapest['regular'], $cheapest['price'] ), false );
+			}
+
+			if ( 0 === $discount[0] ) {
 				return (string) $price;
 			}
 
-			$text = sprintf( '‎-%s%%', $percent );
+			$text = $this->discount_label( $discount );
 		}
 
 		// The same label settings dress the product-page badge: plain style
@@ -647,21 +657,45 @@ final class WooCommerce {
 			return (string) $price;
 		}
 
+		$cheapest = $this->cheapest_variation( $product );
+
+		if ( null === $cheapest ) {
+			return (string) $price;
+		}
+
+		$amount = $cheapest['regular'] > $cheapest['price']
+			? wc_format_sale_price( wc_price( $cheapest['regular'] ), wc_price( $cheapest['price'] ) )
+			: wc_price( $cheapest['price'] );
+
+		return '<span class="oc-price-from">' . esc_html_x( 'From', 'price of the cheapest variation', 'oc-theme' ) . '</span> ' . $amount . $product->get_price_suffix();
+	}
+
+	/**
+	 * The cheapest variation, when the variations do not all cost the same.
+	 *
+	 * Display prices (tax as the shop shows it). Null when there is no range
+	 * to speak of — then no "From" is shown and no badge speaks for it.
+	 *
+	 * @param \WC_Product_Variable $product Product.
+	 * @return array{price:float,regular:float}|null
+	 */
+	private function cheapest_variation( \WC_Product_Variable $product ): ?array {
 		$prices = $product->get_variation_prices( true );
 		$list   = array_map( 'floatval', (array) ( $prices['price'] ?? array() ) );
 
 		if ( count( $list ) < 2 || min( $list ) >= max( $list ) ) {
-			return (string) $price;
+			return null;
 		}
 
 		asort( $list );
 
-		$id      = array_key_first( $list );
-		$min     = (float) $list[ $id ];
-		$regular = (float) ( $prices['regular_price'][ $id ] ?? $min );
-		$amount  = $regular > $min ? wc_format_sale_price( wc_price( $regular ), wc_price( $min ) ) : wc_price( $min );
+		$id  = array_key_first( $list );
+		$min = (float) $list[ $id ];
 
-		return '<span class="oc-price-from">' . esc_html_x( 'From', 'price of the cheapest variation', 'oc-theme' ) . '</span> ' . $amount . $product->get_price_suffix();
+		return array(
+			'price'   => $min,
+			'regular' => (float) ( $prices['regular_price'][ $id ] ?? $min ),
+		);
 	}
 
 	/**
@@ -2203,8 +2237,9 @@ final class WooCommerce {
 	}
 
 	/**
-	 * Sale badge: none, percent off, or WooCommerce's text. Variable products
-	 * report the best discount across their variations.
+	 * Sale badge: none, percent off, or WooCommerce's text. A variable product
+	 * whose variations are not all discounted alike says "Up to" its best
+	 * discount; one discount for all of them is stated plainly.
 	 *
 	 * @param string      $html    Badge markup.
 	 * @param \WP_Post    $post    Product post.
@@ -2225,14 +2260,14 @@ final class WooCommerce {
 		$style = self::flag_colors( 'oc_sale_badge_bg', 'oc_sale_badge_tx' );
 
 		if ( 'percent' === $mode && $product instanceof \WC_Product ) {
-			$percent = $this->discount_percent( $product );
+			$discount = $this->discount_percent( $product );
 
-			if ( $percent > 0 ) {
+			if ( $discount[0] > 0 ) {
 				return sprintf(
-					'<span class="%s oc-sale-percent" style="%s">‎-%s%%</span>',
+					'<span class="%s oc-sale-percent" style="%s">%s</span>',
 					esc_attr( $class ),
 					esc_attr( $style ),
-					esc_html( (string) $percent )
+					esc_html( $this->discount_label( $discount ) )
 				);
 			}
 		}
@@ -2250,32 +2285,62 @@ final class WooCommerce {
 	}
 
 	/**
-	 * Largest discount a product offers.
+	 * What a product's sale badge may truthfully claim.
+	 *
+	 * A simple product or a single variation: its own discount. A variable
+	 * product: the best discount among its variations, flagged as an "up to"
+	 * whenever the variations are not all discounted by the same amount — a
+	 * variation at 40% off must never sit under a badge promising 50%.
 	 *
 	 * @param \WC_Product $product Product.
-	 * @return int Percent, 0 when not computable.
+	 * @return array{0:int,1:bool} Percent (0 when none), and whether it is an "up to".
 	 */
-	private function discount_percent( \WC_Product $product ): int {
-		$pairs = array();
-
-		if ( $product->is_type( 'variable' ) && $product instanceof \WC_Product_Variable ) {
-			$prices = $product->get_variation_prices();
-			foreach ( (array) $prices['regular_price'] as $id => $regular ) {
-				$pairs[] = array( (float) $regular, (float) ( $prices['sale_price'][ $id ] ?? 0 ) );
-			}
-		} else {
-			$pairs[] = array( (float) $product->get_regular_price(), (float) $product->get_sale_price() );
+	private function discount_percent( \WC_Product $product ): array {
+		if ( ! $product instanceof \WC_Product_Variable ) {
+			return array( self::percent_off( (float) $product->get_regular_price(), (float) $product->get_price() ), false );
 		}
 
-		$best = 0;
-		foreach ( $pairs as $pair ) {
-			list( $regular, $sale ) = $pair;
-			if ( $regular > 0 && $sale > 0 && $sale < $regular ) {
-				$best = max( $best, (int) round( ( 1 - $sale / $regular ) * 100 ) );
-			}
+		$prices = $product->get_variation_prices();
+		$seen   = array();
+
+		foreach ( (array) $prices['regular_price'] as $id => $regular ) {
+			$seen[] = self::percent_off( (float) $regular, (float) ( $prices['price'][ $id ] ?? 0 ) );
 		}
 
-		return $best;
+		if ( empty( $seen ) ) {
+			return array( 0, false );
+		}
+
+		return array( max( $seen ), min( $seen ) !== max( $seen ) );
+	}
+
+	/**
+	 * One discount, in whole percent, never rounded up.
+	 *
+	 * The badge is a claim the shop answers for: 15.7% off reads 15%, not
+	 * 16%. The small epsilon only keeps an exact 50% from landing on 49.
+	 *
+	 * @param float $regular Regular price.
+	 * @param float $price   Price paid.
+	 */
+	public static function percent_off( float $regular, float $price ): int {
+		if ( $regular <= 0 || $price <= 0 || $price >= $regular ) {
+			return 0;
+		}
+
+		return (int) floor( ( 1 - $price / $regular ) * 100 + 1e-9 );
+	}
+
+	/**
+	 * The badge text for a discount: "-15%", or "Up to -15%".
+	 *
+	 * @param array{0:int,1:bool} $discount From discount_percent().
+	 */
+	private function discount_label( array $discount ): string {
+		$text = sprintf( '‎-%d%%', $discount[0] );
+
+		/* translators: %s: the best discount, e.g. -15%. */
+		return $discount[1] ? sprintf( __( 'Up to %s', 'oc-theme' ), $text ) : $text;
 	}
 
 	/**

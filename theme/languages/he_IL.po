@@ -7562,3 +7562,11 @@ msgstr "מחיר על כפתור ההוספה לסל"
 msgid "The button reads “Add to cart · ₪120” and follows the quantity and the chosen variation."
 msgstr "הכפתור יציג „הוספה לסל · ₪120” ויתעדכן לפי הכמות והווריאציה שנבחרה."
 
+#, php-format
+msgid "%1$s is not available with %2$s."
+msgstr "%1$s לא זמין בשילוב %2$s."
+
+#, php-format
+msgid "Choose %s anyway"
+msgstr "לבחור %s בכל זאת"
+

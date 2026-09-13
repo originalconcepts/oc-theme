@@ -844,7 +844,7 @@ final class Cart {
 				$regular_f = (float) $product->get_regular_price();
 				$price_f   = (float) $product->get_price();
 				if ( $regular_f > 0 && $price_f < $regular_f ) {
-					$flag = sprintf( '‎-%d%%', (int) round( ( 1 - $price_f / $regular_f ) * 100 ) );
+					$flag = sprintf( '‎-%d%%', WooCommerce::percent_off( $regular_f, $price_f ) );
 				}
 			}
 

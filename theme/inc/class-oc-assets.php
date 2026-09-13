@@ -208,6 +208,10 @@ final class Assets {
 				'unavail'              => __( 'Not available', 'oc-theme' ),
 				/* translators: %s: attribute label. */
 				'varNeed'              => __( 'Please choose %s', 'oc-theme' ),
+				/* translators: 1: the value that cannot be chosen, 2: what is already chosen. */
+				'varOff'               => __( '%1$s is not available with %2$s.', 'oc-theme' ),
+				/* translators: %s: the value. */
+				'varOffPick'           => __( 'Choose %s anyway', 'oc-theme' ),
 				'coRequired'           => __( 'Required field', 'oc-theme' ),
 				'coEmail'              => __( 'Please enter a valid email address', 'oc-theme' ),
 				'coPhone'              => __( 'Please enter a valid phone number', 'oc-theme' ),

@@ -6244,12 +6244,22 @@
 				} );
 
 				btn.classList.toggle( 'is-selected', select.value === btn.dataset.value && '' !== select.value );
-				btn.disabled = ! opt || opt.disabled;
-				btn.classList.toggle( 'is-off', btn.disabled );
+
+				// A value that exists but does not go with what is already
+				// chosen stays pressable: pressing it explains why, instead
+				// of a dead click that looks like a fault.
+				var off = ! opt || opt.disabled;
+				btn.disabled = ! opt;
+				btn.classList.toggle( 'is-off', off );
+				if ( off ) {
+					btn.setAttribute( 'aria-disabled', 'true' );
+				} else {
+					btn.removeAttribute( 'aria-disabled' );
+				}
 
 				// Certainly out of stock: the Lanvin slash. Still clickable —
 				// choosing it is the road to the back-in-stock signup.
-				btn.classList.toggle( 'is-oos', ! btn.disabled && syncForm && 'out' === ocVarStock( syncForm, select, btn.dataset.value ) );
+				btn.classList.toggle( 'is-oos', ! off && syncForm && 'out' === ocVarStock( syncForm, select, btn.dataset.value ) );
 			} );
 		}
 
@@ -6261,9 +6271,96 @@
 			} );
 		}
 
+		// "Titanium is not available with Load: 40 kg, Depth: 30 cm" — and a
+		// way to have it anyway: choosing it clears only the choices it
+		// cannot be combined with.
+		function explainOff( btn ) {
+			var form = box.closest( 'form.variations_form' ),
+				L    = window.ocL10n || {};
+
+			if ( ! form ) { return; }
+
+			var old = form.querySelector( '.oc-var-offmsg' );
+			if ( old ) { old.remove(); }
+
+			var want = btn.dataset.value,
+				opt  = Array.prototype.filter.call( select.options, function ( o ) { return o.value === want; } )[ 0 ],
+				name = opt ? opt.textContent.trim() : ( btn.getAttribute( 'aria-label' ) || want );
+
+			var others = Array.prototype.filter.call( form.querySelectorAll( 'table.variations select' ), function ( s ) {
+				return s !== select && '' !== s.value;
+			} );
+
+			var combo = others.map( function ( s ) {
+				var tr    = s.closest( 'tr' ),
+					label = tr ? tr.querySelector( 'th.label label' ) || tr.querySelector( 'th.label' ) : null,
+					text  = '';
+
+				if ( label ) {
+					var copy = label.cloneNode( true );
+					copy.querySelectorAll( '.oc-choice' ).forEach( function ( el ) { el.remove(); } );
+					text = copy.textContent.replace( /[:\s]+$/, '' ).trim();
+				}
+
+				var chosen = s.selectedOptions[ 0 ] ? s.selectedOptions[ 0 ].textContent.trim() : s.value;
+
+				return text ? text + ' ' + chosen : chosen;
+			} ).join( ', ' );
+
+			var msg = document.createElement( 'p' );
+			msg.className = 'oc-var-need oc-var-offmsg';
+			msg.setAttribute( 'role', 'status' );
+
+			var words = document.createElement( 'span' );
+			words.textContent = ( L.varOff || '%1$s is not available with %2$s.' ).replace( '%1$s', name ).replace( '%2$s', combo );
+			msg.appendChild( words );
+
+			var pick = document.createElement( 'button' );
+			pick.type = 'button';
+			pick.textContent = ( L.varOffPick || 'Choose %s anyway' ).replace( '%s', name );
+			msg.appendChild( pick );
+
+			pick.addEventListener( 'click', function () {
+				var list = [];
+
+				try { list = JSON.parse( form.dataset.product_variations || '[]' ) || []; } catch ( e ) { list = []; }
+
+				others.forEach( function ( s ) {
+					var fits = list.some( function ( v ) {
+						var a = v.attributes || {};
+						return ( '' === ( a[ select.name ] || '' ) || a[ select.name ] === want ) &&
+							( '' === ( a[ s.name ] || '' ) || a[ s.name ] === s.value );
+					} );
+
+					if ( ! fits ) {
+						s.value = '';
+						s.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+					}
+				} );
+
+				msg.remove();
+				select.value = want;
+				select.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+				sync();
+				ocMaybeSwapGallery( want );
+			} );
+
+			box.insertAdjacentElement( 'afterend', msg );
+
+			// Any other choice makes the explanation stale.
+			form.addEventListener( 'change', function gone() {
+				msg.remove();
+				form.removeEventListener( 'change', gone );
+			} );
+		}
+
 		buttons.forEach( function ( btn ) {
 			btn.addEventListener( 'click', function () {
 				if ( btn.disabled ) {
+					return;
+				}
+				if ( btn.classList.contains( 'is-off' ) ) {
+					explainOff( btn );
 					return;
 				}
 				select.value = select.value === btn.dataset.value ? '' : btn.dataset.value;

@@ -1686,7 +1686,33 @@ final class Variations {
 
 		$attr = $this->swatch_attr( $product );
 
-		if ( null === $attr || count( $attr['values'] ) < 2 ) {
+		if ( null === $attr ) {
+			return '';
+		}
+
+		// Only the colours a variation is actually sold in. A colour left
+		// attached to the product with no variation behind it showed on the
+		// card and then was nowhere on the product page. Woo answers this
+		// from the published variations, and folds an "any" into every value.
+		$used = array_map(
+			static function ( $v ) {
+				return rawurldecode( (string) $v );
+			},
+			(array) ( $product->get_variation_attributes()[ $attr['name'] ] ?? array() )
+		);
+
+		if ( ! empty( $used ) ) {
+			$attr['values'] = array_values(
+				array_filter(
+					$attr['values'],
+					static function ( $val ) use ( $used ) {
+						return in_array( rawurldecode( (string) $val['value'] ), $used, true ) || in_array( rawurldecode( (string) $val['slug'] ), $used, true );
+					}
+				)
+			);
+		}
+
+		if ( count( $attr['values'] ) < 2 ) {
 			return '';
 		}
 
