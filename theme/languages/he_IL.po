@@ -7503,3 +7503,24 @@ msgstr "יישור הטקסט"
 
 msgid "Aligned to the side"
 msgstr "מיושר לצד"
+
+msgid "Show the brand above the title"
+msgstr "הצגת המותג מעל שם המוצר"
+
+msgid "Show the brand"
+msgstr "הצגת המותג"
+
+msgid "Do not show"
+msgstr "לא להציג"
+
+msgid "As text"
+msgstr "כטקסט"
+
+msgid "As the brand logo"
+msgstr "כתמונה (לוגו המותג)"
+
+msgid "The logo is the brand’s own image. A brand without one shows its name."
+msgstr "הלוגו הוא התמונה של המותג עצמו. מותג בלי תמונה יוצג בשמו."
+
+msgid "At the far end of the title line"
+msgstr "בקצה השמאלי של שורת הכותרת"

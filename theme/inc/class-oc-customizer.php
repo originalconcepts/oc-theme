@@ -2003,6 +2003,7 @@ final class Customizer {
 		);
 
 		$this->toggle( $c, 'oc_card_excerpt', 'oc_card', __( 'Show short description', 'oc-theme' ), false );
+		$this->toggle( $c, 'oc_card_brand', 'oc_card', __( 'Show the brand above the title', 'oc-theme' ), false );
 
 		$this->heading( $c, 'oc_h_card_lines', 'oc_card', __( 'Text lines', 'oc-theme' ) );
 		$this->number( $c, 'oc_card_title_lines', 'oc_card', __( 'Title — maximum lines', 'oc-theme' ), 2, 1, 5 );
@@ -2354,6 +2355,39 @@ final class Customizer {
 				'1.75' => __( 'Loose', 'oc-theme' ),
 			),
 			'1.55'
+		);
+
+		$this->heading( $c, 'oc_h_prod_brand', 'oc_product', __( 'Brand', 'oc-theme' ) );
+
+		$this->choice(
+			$c,
+			'oc_product_brand',
+			'oc_product',
+			__( 'Show the brand', 'oc-theme' ),
+			array(
+				'none'  => __( 'Do not show', 'oc-theme' ),
+				'text'  => __( 'As text', 'oc-theme' ),
+				'image' => __( 'As the brand logo', 'oc-theme' ),
+			),
+			'none',
+			null,
+			__( 'The logo is the brand’s own image. A brand without one shows its name.', 'oc-theme' )
+		);
+
+		$this->choice(
+			$c,
+			'oc_product_brand_pos',
+			'oc_product',
+			__( 'Where', 'oc-theme' ),
+			array(
+				'before' => __( 'Above the title', 'oc-theme' ),
+				'end'    => __( 'At the far end of the title line', 'oc-theme' ),
+			),
+			'before',
+			array(
+				'setting' => 'oc_product_brand',
+				'values'  => array( 'text', 'image' ),
+			)
 		);
 
 		$this->heading( $c, 'oc_h_prod_atc', 'oc_product', __( 'Add-to-cart area', 'oc-theme' ) );

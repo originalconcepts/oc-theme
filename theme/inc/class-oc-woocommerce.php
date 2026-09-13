@@ -325,6 +325,11 @@ final class WooCommerce {
 		// close to its text instead of pushing it down to match a busier
 		// neighbour.
 		add_action( 'woocommerce_shop_loop_item_title', array( $this, 'card_text_open' ), 1 );
+
+		// The brand: above the card's title when switched on, and on the
+		// product page above the title or at the far end of its line.
+		add_action( 'woocommerce_shop_loop_item_title', array( $this, 'card_brand' ), 5 );
+		add_action( 'woocommerce_before_single_product', array( $this, 'product_brand_setup' ) );
 		add_action( 'woocommerce_after_shop_loop_item', array( $this, 'card_text_close' ), 999 );
 
 		// One markup path for every card image mode, including 'single'.
@@ -961,6 +966,133 @@ final class WooCommerce {
 	 * Closes the card's text box.
 	 */
 	public function card_text_close(): void {
+		echo '</div>';
+	}
+
+	/**
+	 * A product's brand, when the shop has a brand taxonomy and the product
+	 * carries one.
+	 *
+	 * @param \WC_Product $product Product.
+	 */
+	public static function product_brand( \WC_Product $product ): ?\WP_Term {
+		$taxonomy = class_exists( '\OC\Theme\Search' ) ? Search::brand_taxonomy() : '';
+
+		if ( '' === $taxonomy ) {
+			return null;
+		}
+
+		$terms = get_the_terms( $product->get_id(), $taxonomy );
+
+		return is_array( $terms ) && $terms && $terms[0] instanceof \WP_Term ? $terms[0] : null;
+	}
+
+	/**
+	 * The brand as a link: its name, or its logo when asked for one and it
+	 * has one — a brand without a picture always falls back to its name.
+	 *
+	 * @param \WP_Term $brand     Brand term.
+	 * @param bool     $logo      Prefer the logo.
+	 * @param string   $css_class Class on the link.
+	 */
+	private static function brand_link( \WP_Term $brand, bool $logo, string $css_class ): string {
+		$url   = get_term_link( $brand );
+		$thumb = $logo ? (int) get_term_meta( $brand->term_id, 'thumbnail_id', true ) : 0;
+		$face  = $thumb > 0
+			? wp_get_attachment_image(
+				$thumb,
+				'medium',
+				false,
+				array(
+					'class'   => 'oc-pbrand__logo',
+					'alt'     => $brand->name,
+					'loading' => 'eager',
+				)
+			)
+			: '';
+
+		if ( '' === $face ) {
+			$face = '<span class="oc-pbrand__name">' . esc_html( $brand->name ) . '</span>';
+		}
+
+		return sprintf(
+			'<a class="%s" href="%s">%s</a>',
+			esc_attr( $css_class . ( $thumb > 0 && str_contains( $face, '<img' ) ? ' has-logo' : '' ) ),
+			esc_url( is_wp_error( $url ) ? '' : (string) $url ),
+			$face // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- wp_get_attachment_image() or escaped text.
+		);
+	}
+
+	/**
+	 * The brand above a catalogue card's title, when switched on.
+	 */
+	public function card_brand(): void {
+		global $product;
+
+		if ( ! $product instanceof \WC_Product || ! get_theme_mod( 'oc_card_brand', false ) ) {
+			return;
+		}
+
+		$brand = self::product_brand( $product );
+
+		if ( $brand ) {
+			echo self::brand_link( $brand, false, 'oc-card-brand' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
+		}
+	}
+
+	/**
+	 * Decide, for this product page, where its brand goes. Read at render
+	 * time so the Customize preview shows a change straight away.
+	 */
+	public function product_brand_setup(): void {
+		global $product;
+
+		$show = (string) get_theme_mod( 'oc_product_brand', 'none' );
+
+		if ( ! $product instanceof \WC_Product || ! in_array( $show, array( 'text', 'image' ), true ) || ! self::product_brand( $product ) ) {
+			return;
+		}
+
+		if ( 'end' === get_theme_mod( 'oc_product_brand_pos', 'before' ) ) {
+			// The title and the brand share one line: WooCommerce's own title
+			// steps aside for one that carries the brand at its far end.
+			remove_action( 'woocommerce_single_product_summary', 'woocommerce_template_single_title', 5 );
+			add_action( 'woocommerce_single_product_summary', array( $this, 'product_title_row' ), 5 );
+
+			return;
+		}
+
+		add_action( 'woocommerce_single_product_summary', array( $this, 'product_brand_before' ), 4 );
+	}
+
+	/**
+	 * The brand above the product title.
+	 */
+	public function product_brand_before(): void {
+		global $product;
+
+		$brand = $product instanceof \WC_Product ? self::product_brand( $product ) : null;
+
+		if ( $brand ) {
+			echo self::brand_link( $brand, 'image' === get_theme_mod( 'oc_product_brand', 'none' ), 'oc-pbrand oc-pbrand--before' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
+		}
+	}
+
+	/**
+	 * The product title with the brand at the far end of the same line.
+	 */
+	public function product_title_row(): void {
+		global $product;
+
+		$brand = $product instanceof \WC_Product ? self::product_brand( $product ) : null;
+
+		echo '<div class="oc-ptitle-row">';
+		the_title( '<h1 class="product_title entry-title">', '</h1>' );
+
+		if ( $brand ) {
+			echo self::brand_link( $brand, 'image' === get_theme_mod( 'oc_product_brand', 'none' ), 'oc-pbrand oc-pbrand--end' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
+		}
+
 		echo '</div>';
 	}
 

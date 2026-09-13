@@ -6234,6 +6234,55 @@ html:not([dir]) .oc-cartup__items--h.oc-fade-end {
 /* tighter title-to-price rhythm */
 .woocommerce div.product .product_title { margin-block-end: 4px; }
 
+/* ---------- the brand ---------- */
+
+/* above a card's title: small, quiet, and aligned like the title */
+.oc-card-brand {
+	display: block;
+	margin-block-end: 2px;
+	color: var(--oc-ink-2, #666e7c);
+	font-size: .78rem;
+	letter-spacing: .04em;
+	text-decoration: none;
+}
+.oc-card-brand:hover { color: var(--oc-ink, #151a21); }
+
+/* on the product page: a name or a logo, above the title or at the far
+ * end of its line (the left, in Hebrew) */
+.oc-pbrand {
+	display: inline-flex;
+	align-items: center;
+	color: var(--oc-ink-2, #666e7c);
+	font-size: .86rem;
+	letter-spacing: .04em;
+	text-decoration: none;
+}
+.oc-pbrand:hover { color: var(--oc-ink, #151a21); }
+.oc-pbrand--before { margin-block-end: 8px; }
+.oc-pbrand__logo {
+	display: block;
+	inline-size: auto;
+	max-inline-size: 150px;
+	block-size: 40px;
+	object-fit: contain;
+}
+.oc-pbrand--before .oc-pbrand__logo { block-size: 34px; }
+
+.oc-ptitle-row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	margin-block-end: 4px;
+}
+.woocommerce div.product .oc-ptitle-row .product_title { margin-block-end: 0; min-inline-size: 0; }
+.oc-ptitle-row .oc-pbrand { flex: none; }
+
+@media (max-width: 782px) {
+	.oc-pbrand__logo { block-size: 30px; max-inline-size: 110px; }
+	.oc-pbrand--before .oc-pbrand__logo { block-size: 28px; }
+}
+
 /* ---------- top bar ---------- */
 
 .oc-topbar {
