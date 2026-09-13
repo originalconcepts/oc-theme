@@ -1680,7 +1680,7 @@ final class Variations {
 	 * @return string Empty when there is no swatch attribute with 2+ values.
 	 */
 	private function loop_term_colors( \WC_Product $product ): string {
-		if ( ! $product->is_type( 'variable' ) ) {
+		if ( ! $product instanceof \WC_Product_Variable ) {
 			return '';
 		}
 
