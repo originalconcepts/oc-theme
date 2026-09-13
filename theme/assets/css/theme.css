@@ -3989,10 +3989,18 @@ html.oc-drw-open { overflow: hidden; }
 	.oc-card-classic .woocommerce ul.products li.product::after,
 	.oc-card-card .woocommerce ul.products li.product::after { content: none; }
 
+	/* WooCommerce resets the margin with ul.products[class*="columns-"] —
+	 * as heavy as the rule above and later in the cascade — so the column
+	 * shape is named too. Measured live: 8px between rows, the same as
+	 * between columns, and nothing inside the card moves. */
 	.oc-card-classic.woocommerce ul.products li.product,
 	.oc-card-card.woocommerce ul.products li.product,
 	.oc-card-classic .woocommerce ul.products li.product,
-	.oc-card-card .woocommerce ul.products li.product { margin-block-end: var(--oc-gap-eff, 20px); }
+	.oc-card-card .woocommerce ul.products li.product,
+	.oc-card-classic.woocommerce ul.products[class*="columns-"] li.product,
+	.oc-card-card.woocommerce ul.products[class*="columns-"] li.product,
+	.oc-card-classic .woocommerce ul.products[class*="columns-"] li.product,
+	.oc-card-card .woocommerce ul.products[class*="columns-"] li.product { margin-block-end: var(--oc-gap-eff, 20px); }
 }
 
 /* add-to-cart behaviour */
