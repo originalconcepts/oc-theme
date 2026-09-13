@@ -3979,12 +3979,20 @@ html.oc-drw-open { overflow: hidden; }
  * rides a spacer track inside the card, and a border or a background paints
  * straight through it — rows of cards touched. Handed out as margin, it
  * falls outside the box and matches the gap between columns. */
+/* One class heavier than ".woocommerce ul.products li.product", in both
+ * shapes (body.woocommerce on an archive, a .woocommerce wrapper on a
+ * composed page): at equal weight the later "margin: 0" and the spacer's
+ * own "content" won, and the rows still touched. */
 @supports (grid-template-rows: subgrid) {
-	.oc-card-classic ul.products li.product::after,
-	.oc-card-card ul.products li.product::after { content: none; }
+	.oc-card-classic.woocommerce ul.products li.product::after,
+	.oc-card-card.woocommerce ul.products li.product::after,
+	.oc-card-classic .woocommerce ul.products li.product::after,
+	.oc-card-card .woocommerce ul.products li.product::after { content: none; }
 
-	.oc-card-classic ul.products li.product,
-	.oc-card-card ul.products li.product { margin-block-end: var(--oc-gap-eff, 20px); }
+	.oc-card-classic.woocommerce ul.products li.product,
+	.oc-card-card.woocommerce ul.products li.product,
+	.oc-card-classic .woocommerce ul.products li.product,
+	.oc-card-card .woocommerce ul.products li.product { margin-block-end: var(--oc-gap-eff, 20px); }
 }
 
 /* add-to-cart behaviour */
