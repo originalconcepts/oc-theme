@@ -578,8 +578,17 @@
 	function segField( section, key, field ) {
 		var wrap = el( 'div', { 'class': 'ocbe-seg' } );
 		var current = undefined === section[ key ] ? field.def : section[ key ];
+		var keys = Object.keys( field.choices );
 
-		Object.keys( field.choices ).forEach( function ( value ) {
+		// A number the old slider saved shows as the nearest step offered.
+		if ( undefined === field.choices[ current ] && ! isNaN( parseFloat( current ) ) && keys.every( function ( k ) { return ! isNaN( parseFloat( k ) ); } ) ) {
+			current = keys.reduce( function ( best, k ) {
+				return Math.abs( k - current ) < Math.abs( best - current ) ? k : best;
+			} );
+			section[ key ] = current;
+		}
+
+		keys.forEach( function ( value ) {
 			var btn = el( 'button', {
 				type: 'button',
 				'class': 'ocbe-seg__b' + ( String( current ) === String( value ) ? ' is-on' : '' ),

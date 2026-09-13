@@ -1738,3 +1738,15 @@ msgstr "החלק העליון"
 
 msgid "The bottom"
 msgstr "החלק התחתון"
+
+msgid "No parallax"
+msgstr "ללא"
+
+msgid "Gentle parallax"
+msgstr "עדין"
+
+msgid "Full parallax"
+msgstr "מלא"
+
+msgid "Gentle: the picture drifts slower than the page. Full: the picture stands still and the page glides over it."
+msgstr "עדין — התמונה זזה לאט יותר מהעמוד. מלא — התמונה עומדת במקום והעמוד גולש מעליה."

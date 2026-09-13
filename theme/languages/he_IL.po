@@ -7395,3 +7395,105 @@ msgstr "דף לובי מציג את העמוד שנבחר ב״עמוד לובי�
 
 msgid "Choose the page to show in “Lobby page”. Until then this category keeps showing its products."
 msgstr "בחרו ב״עמוד לובי״ את העמוד שיוצג. עד אז הקטגוריה ממשיכה להציג את המוצרים שלה."
+
+msgid "No parallax"
+msgstr "ללא"
+
+msgid "Gentle parallax"
+msgstr "עדין"
+
+msgid "Full parallax"
+msgstr "מלא"
+
+msgid "Parallax"
+msgstr "פרלקס"
+
+msgid "Gentle: the picture drifts slower than the page. Full: the picture stands still and the page glides over it."
+msgstr "עדין — התמונה זזה לאט יותר מהעמוד. מלא — התמונה עומדת במקום והעמוד גולש מעליה."
+
+msgid "Middle"
+msgstr "באמצע"
+
+msgid "Middle, at the side"
+msgstr "באמצע, בצד"
+
+msgid "Bottom, middle"
+msgstr "למטה, באמצע"
+
+msgid "Bottom, at the side"
+msgstr "למטה, בצד"
+
+msgid "Top, at the side"
+msgstr "למעלה, בצד"
+
+msgid "The banner at the top of every category page that has a banner picture. The picture itself is chosen on each category."
+msgstr "הבאנר בראש כל עמוד קטגוריה שיש לו תמונת באנר. את התמונה עצמה בוחרים בכל קטגוריה."
+
+msgid "No banner"
+msgstr "ללא באנר"
+
+msgid "Full-width picture"
+msgstr "תמונה לכל הרוחב"
+
+msgid "Half picture, half text"
+msgstr "חצי תמונה, חצי טקסט"
+
+msgid "The words"
+msgstr "הטקסט"
+
+msgid "On the picture"
+msgstr "על התמונה"
+
+msgid "Darken the picture"
+msgstr "הכהיית התמונה"
+
+msgid "No darkening"
+msgstr "ללא"
+
+msgid "Light darkening"
+msgstr "עדינה"
+
+msgid "Strong darkening"
+msgstr "חזקה"
+
+msgid "Automatic height"
+msgstr "אוטומטי"
+
+msgid "Fixed height"
+msgstr "קבוע"
+
+msgid "Height on desktop (px)"
+msgstr "גובה בדסקטופ (פיקסלים)"
+
+msgid "Height on mobile (px)"
+msgstr "גובה במובייל (פיקסלים)"
+
+msgid "Category banner"
+msgstr "באנר קטגוריה"
+
+msgid "A picture at the top of this category, with its name and description. How it looks is set once for every category in Customize › Catalogue page › Category hero."
+msgstr "תמונה בראש הקטגוריה, עם השם והתיאור שלה. העיצוב נקבע פעם אחת לכל הקטגוריות בהתאמה אישית › עמוד קטלוג › באנר קטגוריה."
+
+msgid "Banner picture"
+msgstr "תמונת באנר"
+
+msgid "No picture, no banner."
+msgstr "בלי תמונה אין באנר."
+
+msgid "Banner picture on mobile (optional)"
+msgstr "תמונת באנר למובייל (רשות)"
+
+msgid "Leave empty to use the one above."
+msgstr "ריק = אותה תמונה."
+
+msgid "As in Customize — %s"
+msgstr "כמו בהתאמה אישית — %s"
+
+msgid "Its own look"
+msgstr "עיצוב משלה"
+
+msgid "Change the words, colours, height or parallax for this category only"
+msgstr "לשנות טקסט, צבעים, גובה או פרלקס רק לקטגוריה הזו"
+
+msgid "Empty keeps Customize (%s)."
+msgstr "ריק = כמו בהתאמה אישית (%s)."

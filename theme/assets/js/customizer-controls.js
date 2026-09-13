@@ -13,16 +13,23 @@
 
 	api.bind( 'ready', function () {
 		Object.keys( deps ).forEach( function ( controlId ) {
-			var dep = deps[ controlId ];
+			// One rule, or several that must all hold.
+			var rules = deps[ controlId ].all || [ deps[ controlId ] ];
 
 			api.control( controlId, function ( control ) {
-				api( dep.setting, function ( setting ) {
-					var sync = function () {
-						control.active.set( dep.values.indexOf( String( setting.get() ) ) !== -1 );
-					};
+				var sync = function () {
+					control.active.set( rules.every( function ( rule ) {
+						var setting = api( rule.setting );
 
-					setting.bind( sync );
-					sync();
+						return !! setting && rule.values.indexOf( String( setting.get() ) ) !== -1;
+					} ) );
+				};
+
+				rules.forEach( function ( rule ) {
+					api( rule.setting, function ( setting ) {
+						setting.bind( sync );
+						sync();
+					} );
 				} );
 			} );
 		} );

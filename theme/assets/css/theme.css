@@ -3475,6 +3475,34 @@ html.oc-drw-open { overflow: hidden; }
 /* ---- entrance ---- */
 /* Image and background settle in with a soft fade; the words ease down
  * from just above. Runs once on load, purely in CSS. */
+/* Parallax. A banner that takes its picture's own height keeps that shape
+ * as a frame, so the moving picture never drags the frame along. */
+.oc-chero--lax.oc-chero--text-below .oc-chero__media {
+	position: relative;
+	aspect-ratio: var(--ch-ratio, 16 / 9);
+}
+.oc-chero--lax.oc-chero--text-below .oc-chero__img { position: absolute; inset: 0; block-size: 100%; }
+@media (max-width: 700px) {
+	.oc-chero--lax.oc-chero--text-below .oc-chero__media { aspect-ratio: var(--ch-ratio-m, var(--ch-ratio, 16 / 9)); }
+}
+.oc-chero__media[data-oc-parallax="30"] .oc-chero__img { will-change: transform; }
+
+/* Full: the picture stands still and the page glides over it — a layer
+ * fixed to the screen, clipped to the banner. No fade-in on it: a fixed
+ * layer is not painted inside a parent whose opacity is animating. */
+.oc-chero__media[data-oc-parallax="100"] { clip-path: inset(0); animation: none; }
+.oc-chero .oc-chero__media[data-oc-parallax="100"] .oc-chero__img {
+	position: fixed;
+	inset: 0;
+	inline-size: 100vw;
+	block-size: 100vh;
+	object-fit: cover;
+}
+@media (prefers-reduced-motion: reduce) {
+	.oc-chero__media[data-oc-parallax="100"] { clip-path: none; }
+	.oc-chero .oc-chero__media[data-oc-parallax="100"] .oc-chero__img { position: absolute; inline-size: 100%; block-size: 100%; }
+}
+
 @keyframes oc-chero-fade { from { opacity: 0; } to { opacity: 1; } }
 @keyframes oc-chero-drop {
 	from { opacity: 0; transform: translateY(-18px); }

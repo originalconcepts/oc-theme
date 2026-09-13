@@ -441,11 +441,17 @@ final class Registry {
 						'group' => 'design',
 					),
 					'parallax' => array(
-						'type'  => 'range',
-						'label' => __( 'Parallax strength', 'oc-blocks' ),
-						'hint'  => __( '0 is off; around 30 is gentle; at 100 the picture stands still and the page glides over it.', 'oc-blocks' ),
-						'def'   => 0,
-						'group' => 'design',
+						'type'    => 'seg',
+						'label'   => __( 'Parallax', 'oc-blocks' ),
+						'hint'    => __( 'Gentle: the picture drifts slower than the page. Full: the picture stands still and the page glides over it.', 'oc-blocks' ),
+						'choices' => array(
+							'0'   => __( 'No parallax', 'oc-blocks' ),
+							'30'  => __( 'Gentle parallax', 'oc-blocks' ),
+							'100' => __( 'Full parallax', 'oc-blocks' ),
+						),
+						'snap'    => array( 0, 30, 100 ),
+						'def'     => '0',
+						'group'   => 'design',
 					),
 					'txtc'     => array(
 						'type'  => 'color',
@@ -2056,6 +2062,11 @@ final class Registry {
 				$choices = (array) ( $field['choices'] ?? array() );
 				$def     = (string) ( $field['def'] ?? (string) array_key_first( $choices ) );
 
+				// A number from the old slider lands on the nearest step offered.
+				if ( ! empty( $field['snap'] ) && is_numeric( $value ) ) {
+					$value = (string) self::snap( (int) $value, (array) $field['snap'] );
+				}
+
 				return isset( $choices[ (string) ( is_scalar( $value ) ? $value : '' ) ] ) ? (string) $value : $def;
 
 			case 'spots':
@@ -2120,5 +2131,23 @@ final class Registry {
 		$raw = get_post_meta( $page_id, self::META, true );
 
 		return is_array( $raw ) ? self::clean( $raw ) : array();
+	}
+
+	/**
+	 * The step nearest a number — how an old slider value finds its button.
+	 *
+	 * @param int        $value Number.
+	 * @param array<int> $steps Allowed steps.
+	 */
+	public static function snap( int $value, array $steps ): int {
+		$best = (int) reset( $steps );
+
+		foreach ( $steps as $step ) {
+			if ( abs( (int) $step - $value ) < abs( $best - $value ) ) {
+				$best = (int) $step;
+			}
+		}
+
+		return $best;
 	}
 }

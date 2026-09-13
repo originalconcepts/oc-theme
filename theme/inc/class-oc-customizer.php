@@ -70,19 +70,28 @@ final class Customizer {
 	 * first paint and every later change agree.
 	 *
 	 * @param string $id  Control id.
-	 * @param array  $dep array{setting:string,values:array}.
+	 * @param array  $dep array{setting:string,values:array}, or a list of them that must all hold.
 	 */
 	private function depend( string $id, array $dep ): callable {
-		$setting = (string) $dep['setting'];
-		$values  = array_map( 'strval', (array) $dep['values'] );
+		$rules = array();
 
-		$this->deps[ $id ] = array(
-			'setting' => $setting,
-			'values'  => $values,
-		);
+		foreach ( isset( $dep['setting'] ) ? array( $dep ) : $dep as $rule ) {
+			$rules[] = array(
+				'setting' => (string) $rule['setting'],
+				'values'  => array_map( 'strval', (array) $rule['values'] ),
+			);
+		}
 
-		return static function () use ( $setting, $values ): bool {
-			return in_array( (string) self::setting_value( $setting ), $values, true );
+		$this->deps[ $id ] = 1 === count( $rules ) ? $rules[0] : array( 'all' => $rules );
+
+		return static function () use ( $rules ): bool {
+			foreach ( $rules as $rule ) {
+				if ( ! in_array( (string) self::setting_value( $rule['setting'] ), $rule['values'], true ) ) {
+					return false;
+				}
+			}
+
+			return true;
 		};
 	}
 
@@ -1398,10 +1407,32 @@ final class Customizer {
 			$hero,
 			array(
 				'title'       => __( 'Category hero', 'oc-theme' ),
-				'description' => __( 'The banner at the top of every category page. Each category can still choose its own on its edit screen.', 'oc-theme' ),
+				'description' => __( 'The banner at the top of every category page that has a banner picture. The picture itself is chosen on each category.', 'oc-theme' ),
 				'panel'       => 'oc_catalog_panel',
 				'priority'    => 12,
 			)
+		);
+
+		// Each control shows only while it can change something.
+		$on    = array(
+			'setting' => 'oc_chero_layout',
+			'values'  => array( 'full', 'split' ),
+		);
+		$full  = array(
+			'setting' => 'oc_chero_layout',
+			'values'  => array( 'full' ),
+		);
+		$split = array(
+			'setting' => 'oc_chero_layout',
+			'values'  => array( 'split' ),
+		);
+		$over  = array(
+			'setting' => 'oc_chero_text',
+			'values'  => array( 'over' ),
+		);
+		$fixed = array(
+			'setting' => 'oc_chero_hfix',
+			'values'  => array( 'fixed' ),
 		);
 
 		$this->choice(
@@ -1410,45 +1441,27 @@ final class Customizer {
 			$hero,
 			__( 'Layout', 'oc-theme' ),
 			array(
-				'none'  => __( 'None — plain title', 'oc-theme' ),
-				'full'  => __( 'Full-width image', 'oc-theme' ),
-				'split' => __( 'Half image · half content', 'oc-theme' ),
+				'none'  => __( 'No banner', 'oc-theme' ),
+				'full'  => __( 'Full-width picture', 'oc-theme' ),
+				'split' => __( 'Half picture, half text', 'oc-theme' ),
 			),
-			'none',
-			null,
-			__( 'Every category page takes this look. A category can choose its own on its edit screen; its pictures always come from the category.', 'oc-theme' )
+			'none'
 		);
-
-		$hero_any   = array(
-			'setting' => 'oc_chero_layout',
-			'values'  => array( 'full', 'split' ),
-		);
-		$hero_full  = array(
-			'setting' => 'oc_chero_layout',
-			'values'  => array( 'full' ),
-		);
-		$hero_split = array(
-			'setting' => 'oc_chero_layout',
-			'values'  => array( 'split' ),
-		);
-
-		$this->number( $c, 'oc_chero_h', $hero, __( 'Height — desktop (px, 0 = automatic)', 'oc-theme' ), 0, 0, 1200, $hero_any );
-		$this->number( $c, 'oc_chero_hm', $hero, __( 'Height — mobile (px, 0 = automatic)', 'oc-theme' ), 0, 0, 1200, $hero_any );
 
 		$this->choice(
 			$c,
 			'oc_chero_text',
 			$hero,
-			__( 'Text', 'oc-theme' ),
+			__( 'The words', 'oc-theme' ),
 			array(
-				'over'  => __( 'Over the image', 'oc-theme' ),
-				'below' => __( 'Below the image', 'oc-theme' ),
+				'over'  => __( 'On the picture', 'oc-theme' ),
+				'below' => __( 'Under the picture', 'oc-theme' ),
 			),
 			'over',
-			$hero_full
+			$full
 		);
 
-		$this->choice( $c, 'oc_chero_pos', $hero, __( 'Text position', 'oc-theme' ), Category::positions(), 'bs', $hero_full );
+		$this->choice( $c, 'oc_chero_pos', $hero, __( 'Text position', 'oc-theme' ), Category::positions(), 'bs', array( $full, $over ) );
 
 		$this->choice(
 			$c,
@@ -1460,10 +1473,22 @@ final class Customizer {
 				'dark'  => __( 'Dark (for a light image)', 'oc-theme' ),
 			),
 			'light',
-			$hero_full
+			array( $full, $over )
 		);
 
-		$this->number( $c, 'oc_chero_shade', $hero, __( 'Darken image (%)', 'oc-theme' ), 0, 0, 90, $hero_full );
+		$this->choice(
+			$c,
+			'oc_chero_shade',
+			$hero,
+			__( 'Darken the picture', 'oc-theme' ),
+			array(
+				'0'  => __( 'No darkening', 'oc-theme' ),
+				'30' => __( 'Light darkening', 'oc-theme' ),
+				'50' => __( 'Strong darkening', 'oc-theme' ),
+			),
+			'0',
+			array( $full, $over )
+		);
 
 		$this->choice(
 			$c,
@@ -1475,10 +1500,41 @@ final class Customizer {
 				'end'   => __( 'Opposite side', 'oc-theme' ),
 			),
 			'start',
-			$hero_split
+			$split
 		);
 
-		$this->color( $c, 'oc_chero_cbg', $hero, __( 'Content background', 'oc-theme' ), '', $hero_split );
+		$this->color( $c, 'oc_chero_cbg', $hero, __( 'Content background', 'oc-theme' ), '', $split );
+
+		$this->choice(
+			$c,
+			'oc_chero_parallax',
+			$hero,
+			__( 'Parallax', 'oc-theme' ),
+			array(
+				'none' => __( 'No parallax', 'oc-theme' ),
+				'soft' => __( 'Gentle parallax', 'oc-theme' ),
+				'full' => __( 'Full parallax', 'oc-theme' ),
+			),
+			'none',
+			$on,
+			__( 'Gentle: the picture drifts slower than the page. Full: the picture stands still and the page glides over it.', 'oc-theme' )
+		);
+
+		$this->choice(
+			$c,
+			'oc_chero_hfix',
+			$hero,
+			__( 'Height', 'oc-theme' ),
+			array(
+				'auto'  => __( 'Automatic height', 'oc-theme' ),
+				'fixed' => __( 'Fixed height', 'oc-theme' ),
+			),
+			Category::typed_heights() ? 'fixed' : 'auto',
+			$on
+		);
+
+		$this->number( $c, 'oc_chero_h', $hero, __( 'Height on desktop (px)', 'oc-theme' ), 420, 0, 1200, array( $on, $fixed ) );
+		$this->number( $c, 'oc_chero_hm', $hero, __( 'Height on mobile (px)', 'oc-theme' ), 340, 0, 1200, array( $on, $fixed ) );
 
 		$this->heading( $c, 'oc_h_cat_structure', $section, __( 'Page structure', 'oc-theme' ) );
 

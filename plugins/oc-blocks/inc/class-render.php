@@ -569,7 +569,8 @@ final class Render {
 			// over it: a fixed layer, clipped to its own slide. Not in fade
 			// mode — browsers refuse to paint a fixed layer inside a parent
 			// whose opacity is animating, and the slide went blank.
-			$fixed = 100 === (int) $s['parallax'] && 'fade' !== (string) $s['effect'];
+			$lax   = Registry::snap( (int) $s['parallax'], array( 0, 30, 100 ) );
+			$fixed = 100 === $lax && 'fade' !== (string) $s['effect'];
 
 			$open  = '' !== $slide['url'] && '' === $slide['cta']
 				? '<a class="ocb-hero__slide' . ( $fixed ? ' ocb-hero__slide--fixedbg' : '' ) . ( 0 === $at ? ' is-on' : '' ) . '" href="' . esc_url( (string) $slide['url'] ) . '">'
@@ -577,7 +578,7 @@ final class Render {
 			$close = '' !== $slide['url'] && '' === $slide['cta'] ? '</a>' : '</div>';
 
 			$slides[] = $open
-				. '<div class="ocb-hero__media' . ( $fixed ? ' ocb-hero__media--fixed' : '' ) . '"' . ( empty( $s['parallax'] ) || $fixed ? '' : ' data-ocb-parallax="' . absint( $s['parallax'] ) . '"' ) . '>' . $media . '</div>'
+				. '<div class="ocb-hero__media' . ( $fixed ? ' ocb-hero__media--fixed' : '' ) . '"' . ( 0 === $lax || $fixed ? '' : ' data-ocb-parallax="' . $lax . '"' ) . '>' . $media . '</div>'
 				. ( $s['shade'] > 0 ? '<div class="ocb-hero__shade" style="opacity:' . ( absint( $s['shade'] ) / 100 ) . '"></div>' : '' )
 				. $close;
 		}

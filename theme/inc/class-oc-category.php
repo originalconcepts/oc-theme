@@ -27,11 +27,11 @@ class Category {
 	 */
 	public static function positions(): array {
 		return array(
-			'cc' => __( 'Centre', 'oc-theme' ),
-			'cs' => __( 'Centre, reading side', 'oc-theme' ),
-			'bc' => __( 'Bottom centre', 'oc-theme' ),
-			'bs' => __( 'Bottom, reading side', 'oc-theme' ),
-			'ts' => __( 'Top, reading side', 'oc-theme' ),
+			'cc' => __( 'Middle', 'oc-theme' ),
+			'cs' => __( 'Middle, at the side', 'oc-theme' ),
+			'bc' => __( 'Bottom, middle', 'oc-theme' ),
+			'bs' => __( 'Bottom, at the side', 'oc-theme' ),
+			'ts' => __( 'Top, at the side', 'oc-theme' ),
 		);
 	}
 
@@ -322,31 +322,33 @@ class Category {
 		// Whatever the category leaves empty is the shop-wide choice made in
 		// Customize. The pictures are always the category's own.
 		$layout = '' !== $get( '_oc_hero_layout' ) ? $get( '_oc_hero_layout' ) : $d['layout'];
+		$lax    = $get( '_oc_hero_parallax' );
 
 		return array(
-			'layout' => 'none' === $layout ? '' : $layout,
-			'img'    => absint( $get( '_oc_hero_img' ) ),
-			'imgm'   => absint( $get( '_oc_hero_img_m' ) ),
-			'h'      => absint( $get( '_oc_hero_h' ) ) > 0 ? absint( $get( '_oc_hero_h' ) ) : $d['h'],
-			'hm'     => absint( $get( '_oc_hero_hm' ) ) > 0 ? absint( $get( '_oc_hero_hm' ) ) : $d['hm'],
-			'text'   => '' !== $get( '_oc_hero_text' ) ? $get( '_oc_hero_text' ) : $d['text'],
-			'pos'    => '' !== $get( '_oc_hero_pos' ) ? $get( '_oc_hero_pos' ) : $d['pos'],
-			'tone'   => '' !== $get( '_oc_hero_tone' ) ? $get( '_oc_hero_tone' ) : $d['tone'],
-			'shade'  => '' !== $get( '_oc_hero_shade' ) ? min( 90, absint( $get( '_oc_hero_shade' ) ) ) : $d['shade'],
-			'side'   => '' !== $get( '_oc_hero_side' ) ? $get( '_oc_hero_side' ) : $d['side'],
-			'cbg'    => '' !== $get( '_oc_hero_cbg' ) ? $get( '_oc_hero_cbg' ) : $d['cbg'],
-			'fx'     => $pct( $get( '_oc_hero_fx' ), 50 ),
-			'fy'     => $pct( $get( '_oc_hero_fy' ), 50 ),
-			'fxm'    => $pct( $get( '_oc_hero_fxm' ), -1 ),
-			'fym'    => $pct( $get( '_oc_hero_fym' ), -1 ),
+			'layout'   => 'none' === $layout ? '' : $layout,
+			'img'      => absint( $get( '_oc_hero_img' ) ),
+			'imgm'     => absint( $get( '_oc_hero_img_m' ) ),
+			'h'        => absint( $get( '_oc_hero_h' ) ) > 0 ? absint( $get( '_oc_hero_h' ) ) : $d['h'],
+			'hm'       => absint( $get( '_oc_hero_hm' ) ) > 0 ? absint( $get( '_oc_hero_hm' ) ) : $d['hm'],
+			'text'     => '' !== $get( '_oc_hero_text' ) ? $get( '_oc_hero_text' ) : $d['text'],
+			'pos'      => '' !== $get( '_oc_hero_pos' ) ? $get( '_oc_hero_pos' ) : $d['pos'],
+			'tone'     => '' !== $get( '_oc_hero_tone' ) ? $get( '_oc_hero_tone' ) : $d['tone'],
+			'shade'    => '' !== $get( '_oc_hero_shade' ) ? min( 90, absint( $get( '_oc_hero_shade' ) ) ) : $d['shade'],
+			'side'     => '' !== $get( '_oc_hero_side' ) ? $get( '_oc_hero_side' ) : $d['side'],
+			'cbg'      => '' !== $get( '_oc_hero_cbg' ) ? $get( '_oc_hero_cbg' ) : $d['cbg'],
+			'parallax' => in_array( $lax, array( 'none', 'soft', 'full' ), true ) ? $lax : $d['parallax'],
+			'fx'       => $pct( $get( '_oc_hero_fx' ), 50 ),
+			'fy'       => $pct( $get( '_oc_hero_fy' ), 50 ),
+			'fxm'      => $pct( $get( '_oc_hero_fxm' ), -1 ),
+			'fym'      => $pct( $get( '_oc_hero_fym' ), -1 ),
 		);
 	}
 
 	/**
 	 * The hero every category takes unless it chooses otherwise — set once
-	 * in Customize › Catalogue.
+	 * in Customize › Catalogue page › Category hero.
 	 *
-	 * @return array{layout:string,h:int,hm:int,text:string,pos:string,tone:string,shade:int,side:string,cbg:string}
+	 * @return array{layout:string,h:int,hm:int,text:string,pos:string,tone:string,shade:int,side:string,cbg:string,parallax:string}
 	 */
 	public static function hero_defaults(): array {
 		$pick = static function ( string $key, array $allowed, string $def ): string {
@@ -355,17 +357,29 @@ class Category {
 			return in_array( $v, $allowed, true ) ? $v : $def;
 		};
 
+		// Heights count only while "fixed height" is on; a shop that typed
+		// heights before that switch existed keeps them.
+		$fixed = 'fixed' === $pick( 'oc_chero_hfix', array( 'auto', 'fixed' ), self::typed_heights() ? 'fixed' : 'auto' );
+
 		return array(
-			'layout' => $pick( 'oc_chero_layout', array( 'none', 'full', 'split' ), 'none' ),
-			'h'      => absint( get_theme_mod( 'oc_chero_h', 0 ) ),
-			'hm'     => absint( get_theme_mod( 'oc_chero_hm', 0 ) ),
-			'text'   => $pick( 'oc_chero_text', array( 'over', 'below' ), 'over' ),
-			'pos'    => $pick( 'oc_chero_pos', array_keys( self::positions() ), 'bs' ),
-			'tone'   => $pick( 'oc_chero_tone', array( 'light', 'dark' ), 'light' ),
-			'shade'  => min( 90, absint( get_theme_mod( 'oc_chero_shade', 0 ) ) ),
-			'side'   => $pick( 'oc_chero_side', array( 'start', 'end' ), 'start' ),
-			'cbg'    => (string) sanitize_hex_color( (string) get_theme_mod( 'oc_chero_cbg', '' ) ),
+			'layout'   => $pick( 'oc_chero_layout', array( 'none', 'full', 'split' ), 'none' ),
+			'h'        => $fixed ? absint( get_theme_mod( 'oc_chero_h', 0 ) ) : 0,
+			'hm'       => $fixed ? absint( get_theme_mod( 'oc_chero_hm', 0 ) ) : 0,
+			'text'     => $pick( 'oc_chero_text', array( 'over', 'below' ), 'over' ),
+			'pos'      => $pick( 'oc_chero_pos', array_keys( self::positions() ), 'bs' ),
+			'tone'     => $pick( 'oc_chero_tone', array( 'light', 'dark' ), 'light' ),
+			'shade'    => (int) $pick( 'oc_chero_shade', array( '0', '30', '50' ), '0' ),
+			'side'     => $pick( 'oc_chero_side', array( 'start', 'end' ), 'start' ),
+			'cbg'      => (string) sanitize_hex_color( (string) get_theme_mod( 'oc_chero_cbg', '' ) ),
+			'parallax' => $pick( 'oc_chero_parallax', array( 'none', 'soft', 'full' ), 'none' ),
 		);
+	}
+
+	/**
+	 * Were banner heights typed into Customize before the switch existed?
+	 */
+	public static function typed_heights(): bool {
+		return absint( get_theme_mod( 'oc_chero_h', 0 ) ) + absint( get_theme_mod( 'oc_chero_hm', 0 ) ) > 0;
 	}
 
 	/**
@@ -607,13 +621,35 @@ class Category {
 			$style .= '--ch-fym:' . $h['fym'] . '%;';
 		}
 
+		// Parallax: gentle drifts in script, full is a layer fixed in CSS.
+		$lax = 'full' === $h['parallax'] ? '100' : ( 'soft' === $h['parallax'] ? '30' : '' );
+
+		if ( '' !== $lax ) {
+			// A banner that takes its picture's own height needs that shape
+			// written down, or the moving picture would drag its frame along.
+			$shapes = array(
+				'img'  => '--ch-ratio',
+				'imgm' => '--ch-ratio-m',
+			);
+
+			foreach ( $shapes as $key => $var ) {
+				$src = $h[ $key ] > 0 ? wp_get_attachment_image_src( (int) $h[ $key ], 'full' ) : false;
+
+				if ( is_array( $src ) && $src[1] > 0 && $src[2] > 0 ) {
+					$style .= $var . ':' . (int) $src[1] . ' / ' . (int) $src[2] . ';';
+				}
+			}
+		}
+
+		$media = '<div class="oc-chero__media"' . ( '' !== $lax ? ' data-oc-parallax="' . $lax . '"' : '' ) . '>';
+
 		$style = '' !== $style ? ' style="' . esc_attr( $style ) . '"' : '';
 
 		if ( 'split' === $h['layout'] ) {
-			$classes = 'oc-chero oc-chero--split oc-chero--img-' . esc_attr( $h['side'] );
+			$classes = 'oc-chero oc-chero--split oc-chero--img-' . esc_attr( $h['side'] ) . ( '' !== $lax ? ' oc-chero--lax' : '' );
 
 			return '<section class="' . $classes . '"' . $style . '>'
-				. '<div class="oc-chero__media">' . self::picture( $h, $term->name ) . '</div>'
+				. $media . self::picture( $h, $term->name ) . '</div>'
 				. '<div class="oc-chero__panel">' . $words . '</div>'
 				. '</section>';
 		}
@@ -621,14 +657,15 @@ class Category {
 		// Full-width.
 		$over    = 'over' === $h['text'];
 		$classes = 'oc-chero oc-chero--full oc-chero--text-' . ( $over ? 'over' : 'below' )
-			. ( $over ? ' oc-chero--pos-' . esc_attr( $h['pos'] ) . ' oc-chero--' . esc_attr( $h['tone'] ) : '' );
+			. ( $over ? ' oc-chero--pos-' . esc_attr( $h['pos'] ) . ' oc-chero--' . esc_attr( $h['tone'] ) : '' )
+			. ( '' !== $lax ? ' oc-chero--lax' : '' );
 
 		$shade = ( $over && $h['shade'] > 0 )
 			? '<span class="oc-chero__shade" style="opacity:' . esc_attr( (string) ( $h['shade'] / 100 ) ) . '"></span>'
 			: '';
 
 		return '<section class="' . $classes . '"' . $style . '>'
-			. '<div class="oc-chero__media">' . self::picture( $h, $term->name ) . $shade . '</div>'
+			. $media . self::picture( $h, $term->name ) . $shade . '</div>'
 			. $words
 			. '</section>';
 	}
@@ -1022,76 +1059,90 @@ class Category {
 			return (string) get_term_meta( $term->term_id, $key, true );
 		};
 
-		// A row that belongs to a layout shows for that layout — and for
-		// "Default" while the default is that layout.
-		$gate = static function ( array $layouts ) use ( $g ): string {
-			return '_oc_hero_layout:' . implode( '|', $layouts ) . ( in_array( $g['layout'], $layouts, true ) ? '|' : '' );
+		// "field:value|value" — and a trailing "|" also matches the empty
+		// "as in Customize" answer while Customize holds one of the values.
+		$when = static function ( string $key, array $values, string $default ): string {
+			return $key . ':' . implode( '|', $values ) . ( in_array( $default, $values, true ) ? '|' : '' );
 		};
 
 		$first = static function ( array $choices, string $current ): array {
 			/* translators: %s: the choice Customize holds for every category. */
-			return array( '' => sprintf( __( 'Default — %s', 'oc-theme' ), (string) ( $choices[ $current ] ?? '' ) ) ) + $choices;
+			return array( '' => sprintf( __( 'As in Customize — %s', 'oc-theme' ), (string) ( $choices[ $current ] ?? '' ) ) ) + $choices;
 		};
 
 		$layouts = array(
-			'none'  => __( 'None — plain title', 'oc-theme' ),
-			'full'  => __( 'Full-width image', 'oc-theme' ),
-			'split' => __( 'Half image · half content', 'oc-theme' ),
+			'none'  => __( 'No banner', 'oc-theme' ),
+			'full'  => __( 'Full-width picture', 'oc-theme' ),
+			'split' => __( 'Half picture, half text', 'oc-theme' ),
 		);
 		$texts   = array(
-			'over'  => __( 'Over the image', 'oc-theme' ),
-			'below' => __( 'Below the image', 'oc-theme' ),
+			'over'  => __( 'On the picture', 'oc-theme' ),
+			'below' => __( 'Under the picture', 'oc-theme' ),
 		);
 		$tones   = array(
 			'light' => __( 'Light (for a dark image)', 'oc-theme' ),
 			'dark'  => __( 'Dark (for a light image)', 'oc-theme' ),
 		);
+		$shades  = array(
+			'0'  => __( 'No darkening', 'oc-theme' ),
+			'30' => __( 'Light darkening', 'oc-theme' ),
+			'50' => __( 'Strong darkening', 'oc-theme' ),
+		);
 		$sides   = array(
 			'start' => __( 'Reading side (right in Hebrew)', 'oc-theme' ),
 			'end'   => __( 'Opposite side', 'oc-theme' ),
 		);
+		$laxes   = array(
+			'none' => __( 'No parallax', 'oc-theme' ),
+			'soft' => __( 'Gentle parallax', 'oc-theme' ),
+			'full' => __( 'Full parallax', 'oc-theme' ),
+		);
 		$auto    = __( 'automatic', 'oc-theme' );
+
+		// Nothing but the picture shows until there is a picture.
+		$has_img = '_oc_hero_img:*';
+		$on      = $has_img . ',' . $when( '_oc_hero_layout', array( 'full', 'split' ), $g['layout'] );
+		$full    = $has_img . ',' . $when( '_oc_hero_layout', array( 'full' ), $g['layout'] );
+		$split   = $has_img . ',' . $when( '_oc_hero_layout', array( 'split' ), $g['layout'] );
+		$over    = $full . ',' . $when( '_oc_hero_text', array( 'over' ), $g['text'] );
+		$mine    = '_oc_hero_custom:1,';
+
+		$custom = false;
+		foreach ( array( '_oc_hero_text', '_oc_hero_pos', '_oc_hero_tone', '_oc_hero_shade', '_oc_hero_side', '_oc_hero_cbg', '_oc_hero_h', '_oc_hero_hm', '_oc_hero_parallax' ) as $key ) {
+			$custom = $custom || '' !== $raw( $key );
+		}
 		?>
 		<tr class="form-field oc-cat-sec">
 			<th scope="row" colspan="2" style="padding-block-end:0">
-				<h2 style="margin:22px 0 0;font-size:1.15em"><?php esc_html_e( 'Category page — hero', 'oc-theme' ); ?></h2>
-				<p class="description" style="font-weight:400"><?php esc_html_e( 'A banner at the top of this category. The category name and description move onto it. “Default” follows Customize › Catalogue; pick anything else to give this category its own.', 'oc-theme' ); ?></p>
+				<h2 style="margin:22px 0 0;font-size:1.15em"><?php esc_html_e( 'Category banner', 'oc-theme' ); ?></h2>
+				<p class="description" style="font-weight:400"><?php esc_html_e( 'A picture at the top of this category, with its name and description. How it looks is set once for every category in Customize › Catalogue page › Category hero.', 'oc-theme' ); ?></p>
 			</th>
 		</tr>
 		<?php
-		$this->visual_field(
-			'_oc_hero_layout',
-			$raw( '_oc_hero_layout' ),
-			__( 'Layout', 'oc-theme' ),
-			array(
-				''      => array(
-					/* translators: %s: the layout Customize holds for every category. */
-					'label' => sprintf( __( 'Default — %s', 'oc-theme' ), $layouts[ $g['layout'] ] ),
-					'svg'   => self::icon( 'l-' . $g['layout'] ),
-				),
-				'none'  => array(
-					'label' => $layouts['none'],
-					'svg'   => self::icon( 'l-none' ),
-				),
-				'full'  => array(
-					'label' => $layouts['full'],
-					'svg'   => self::icon( 'l-full' ),
-				),
-				'split' => array(
-					'label' => $layouts['split'],
-					'svg'   => self::icon( 'l-split' ),
-				),
-			)
-		);
+		$this->image_field( '_oc_hero_img', $h['img'], __( 'Banner picture', 'oc-theme' ), __( 'No picture, no banner.', 'oc-theme' ) );
+		$this->image_field( '_oc_hero_img_m', $h['imgm'], __( 'Banner picture on mobile (optional)', 'oc-theme' ), __( 'Leave empty to use the one above.', 'oc-theme' ), $has_img );
 
-		$this->image_field( '_oc_hero_img', $h['img'], __( 'Hero image — desktop', 'oc-theme' ), __( 'Shown on the category page.', 'oc-theme' ), $gate( array( 'full', 'split' ) ) );
-		$this->image_field( '_oc_hero_img_m', $h['imgm'], __( 'Hero image — mobile (optional)', 'oc-theme' ), __( 'Used on phones. If empty, the desktop image is used.', 'oc-theme' ), $gate( array( 'full', 'split' ) ) );
+		$this->select_field( '_oc_hero_layout', $raw( '_oc_hero_layout' ), __( 'Layout', 'oc-theme' ), $first( $layouts, $g['layout'] ), '', $has_img );
 
-		$this->hero_focus_field( $term->term_id, $g, $gate( array( 'full', 'split' ) ) );
+		$this->hero_focus_field( $term->term_id, $g, $on );
 
-		// Heights.
+		$this->toggle_field( '_oc_hero_custom', $custom, __( 'Its own look', 'oc-theme' ), __( 'Change the words, colours, height or parallax for this category only', 'oc-theme' ), $on );
+
+		$this->select_field( '_oc_hero_text', $raw( '_oc_hero_text' ), __( 'The words', 'oc-theme' ), $first( $texts, $g['text'] ), '', $mine . $full );
+		$this->select_field( '_oc_hero_pos', $raw( '_oc_hero_pos' ), __( 'Text position', 'oc-theme' ), $first( self::positions(), $g['pos'] ), '', $mine . $over );
+		$this->select_field( '_oc_hero_tone', $raw( '_oc_hero_tone' ), __( 'Text colour', 'oc-theme' ), $first( $tones, $g['tone'] ), '', $mine . $over );
+		$this->select_field( '_oc_hero_shade', $raw( '_oc_hero_shade' ), __( 'Darken the picture', 'oc-theme' ), $first( $shades, (string) $g['shade'] ), '', $mine . $over );
+		$this->select_field( '_oc_hero_side', $raw( '_oc_hero_side' ), __( 'Image side', 'oc-theme' ), $first( $sides, $g['side'] ), '', $mine . $split );
+		$this->select_field( '_oc_hero_parallax', $raw( '_oc_hero_parallax' ), __( 'Parallax', 'oc-theme' ), $first( $laxes, $g['parallax'] ), '', $mine . $on );
 		?>
-		<tr class="form-field" data-oc-when="<?php echo esc_attr( $gate( array( 'full', 'split' ) ) ); ?>">
+		<tr class="form-field" data-oc-when="<?php echo esc_attr( $mine . $split ); ?>">
+			<th scope="row"><label for="_oc_hero_cbg"><?php esc_html_e( 'Content background', 'oc-theme' ); ?></label></th>
+			<td>
+				<input type="text" name="_oc_hero_cbg" id="_oc_hero_cbg" value="<?php echo esc_attr( $raw( '_oc_hero_cbg' ) ); ?>" placeholder="<?php echo esc_attr( '' !== $g['cbg'] ? $g['cbg'] : '#f4f1ec' ); ?>" class="ltr" style="inline-size:140px">
+				<p class="description"><?php esc_html_e( 'Background colour behind the content half. Leave empty for the page background.', 'oc-theme' ); ?></p>
+			</td>
+		</tr>
+		<tr class="form-field" data-oc-when="<?php echo esc_attr( $mine . $on ); ?>">
 			<th scope="row"><label><?php esc_html_e( 'Height', 'oc-theme' ); ?></label></th>
 			<td>
 				<label style="display:inline-block;min-inline-size:90px"><?php esc_html_e( 'Desktop', 'oc-theme' ); ?></label>
@@ -1100,40 +1151,10 @@ class Category {
 				<input type="number" min="0" max="1200" name="_oc_hero_hm" value="<?php echo esc_attr( $raw( '_oc_hero_hm' ) ); ?>" placeholder="<?php echo esc_attr( $g['hm'] > 0 ? (string) $g['hm'] : $auto ); ?>" style="inline-size:110px"> px
 				<p class="description">
 					<?php
-					/* translators: %s: the default heights, desktop / mobile. */
-					echo esc_html( sprintf( __( 'Empty follows the default (%s).', 'oc-theme' ), ( $g['h'] > 0 ? $g['h'] . 'px' : $auto ) . ' / ' . ( $g['hm'] > 0 ? $g['hm'] . 'px' : $auto ) ) );
+					/* translators: %s: the heights Customize holds, desktop / mobile. */
+					echo esc_html( sprintf( __( 'Empty keeps Customize (%s).', 'oc-theme' ), ( $g['h'] > 0 ? $g['h'] . 'px' : $auto ) . ' / ' . ( $g['hm'] > 0 ? $g['hm'] . 'px' : $auto ) ) );
 					?>
 				</p>
-			</td>
-		</tr>
-		<?php
-		// Full-width options.
-		$this->select_field( '_oc_hero_text', $raw( '_oc_hero_text' ), __( 'Text', 'oc-theme' ), $first( $texts, $g['text'] ), '', $gate( array( 'full' ) ) );
-		$this->select_field( '_oc_hero_pos', $raw( '_oc_hero_pos' ), __( 'Text position', 'oc-theme' ), $first( self::positions(), $g['pos'] ), '', $gate( array( 'full' ) ) );
-		$this->select_field( '_oc_hero_tone', $raw( '_oc_hero_tone' ), __( 'Text colour', 'oc-theme' ), $first( $tones, $g['tone'] ), '', $gate( array( 'full' ) ) );
-		?>
-		<tr class="form-field" data-oc-when="<?php echo esc_attr( $gate( array( 'full' ) ) ); ?>">
-			<th scope="row"><label for="_oc_hero_shade"><?php esc_html_e( 'Darken image', 'oc-theme' ); ?></label></th>
-			<td>
-				<input type="number" min="0" max="90" step="5" name="_oc_hero_shade" id="_oc_hero_shade" value="<?php echo esc_attr( $raw( '_oc_hero_shade' ) ); ?>" placeholder="<?php echo esc_attr( (string) $g['shade'] ); ?>" style="inline-size:80px"> %
-				<p class="description">
-					<?php esc_html_e( 'A dark veil over the image so light text stays readable. 0 = off.', 'oc-theme' ); ?>
-					<?php
-					/* translators: %s: the default shade. */
-					echo esc_html( sprintf( __( 'Empty follows the default (%s).', 'oc-theme' ), $g['shade'] . '%' ) );
-					?>
-				</p>
-			</td>
-		</tr>
-		<?php
-		// Split options.
-		$this->select_field( '_oc_hero_side', $raw( '_oc_hero_side' ), __( 'Image side', 'oc-theme' ), $first( $sides, $g['side'] ), '', $gate( array( 'split' ) ) );
-		?>
-		<tr class="form-field" data-oc-when="<?php echo esc_attr( $gate( array( 'split' ) ) ); ?>">
-			<th scope="row"><label for="_oc_hero_cbg"><?php esc_html_e( 'Content background', 'oc-theme' ); ?></label></th>
-			<td>
-				<input type="text" name="_oc_hero_cbg" id="_oc_hero_cbg" value="<?php echo esc_attr( $raw( '_oc_hero_cbg' ) ); ?>" placeholder="<?php echo esc_attr( '' !== $g['cbg'] ? $g['cbg'] : '#f4f1ec' ); ?>" class="ltr" style="inline-size:140px">
-				<p class="description"><?php esc_html_e( 'Background colour behind the content half. Leave empty for the page background.', 'oc-theme' ); ?></p>
 			</td>
 		</tr>
 
@@ -1377,8 +1398,9 @@ class Category {
 				$( '[data-oc-when]' ).each( function () {
 					var ok = true;
 					$( this ).data( 'oc-when' ).toString().split( ',' ).forEach( function ( cond ) {
-						var p = cond.split( ':' ), field = p[ 0 ], vals = ( p[ 1 ] || '' ).split( '|' );
-						if ( vals.indexOf( fval( field ) ) === -1 ) { ok = false; }
+						var p = cond.split( ':' ), field = p[ 0 ], vals = ( p[ 1 ] || '' ).split( '|' ), v = fval( field );
+						// "*" asks only that the field holds something — a picture chosen.
+						if ( '*' === vals[ 0 ] ? '' === v : vals.indexOf( v ) === -1 ) { ok = false; }
 					} );
 					$( this ).toggle( ok );
 				} );
@@ -1391,6 +1413,7 @@ class Category {
 				} );
 			}
 			$( document ).on( 'change', '[data-oc-field]', sync );
+			$( document ).on( 'oc:img', sync );
 			$( document ).on( 'change', '[data-oc-vpick]', vsel );
 			// The position slider: the number and the preview follow the thumb.
 			$( document ).on( 'input change', '[data-oc-focus]', function () {
@@ -1520,14 +1543,24 @@ class Category {
 		$this->save_enum( $term_id, '_oc_hero_layout', array( 'none', 'full', 'split' ) );
 		$this->save_int( $term_id, '_oc_hero_img' );
 		$this->save_int( $term_id, '_oc_hero_img_m' );
-		$this->save_int( $term_id, '_oc_hero_h' );
-		$this->save_int( $term_id, '_oc_hero_hm' );
-		$this->save_enum( $term_id, '_oc_hero_text', array( 'over', 'below' ) );
-		$this->save_enum( $term_id, '_oc_hero_pos', array_keys( self::positions() ) );
-		$this->save_enum( $term_id, '_oc_hero_tone', array( 'light', 'dark' ) );
-		$this->save_optional_int( $term_id, '_oc_hero_shade', 90 );
-		$this->save_enum( $term_id, '_oc_hero_side', array( 'start', 'end' ) );
-		$this->save_colour( $term_id, '_oc_hero_cbg' );
+		// "Its own look" off: whatever the rows below it held goes back to
+		// following Customize.
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- strict comparison against a literal.
+		if ( isset( $_POST['_oc_hero_custom'] ) && '1' === (string) wp_unslash( $_POST['_oc_hero_custom'] ) ) {
+			$this->save_int( $term_id, '_oc_hero_h' );
+			$this->save_int( $term_id, '_oc_hero_hm' );
+			$this->save_enum( $term_id, '_oc_hero_text', array( 'over', 'below' ) );
+			$this->save_enum( $term_id, '_oc_hero_pos', array_keys( self::positions() ) );
+			$this->save_enum( $term_id, '_oc_hero_tone', array( 'light', 'dark' ) );
+			$this->save_optional_int( $term_id, '_oc_hero_shade', 90 );
+			$this->save_enum( $term_id, '_oc_hero_side', array( 'start', 'end' ) );
+			$this->save_colour( $term_id, '_oc_hero_cbg' );
+			$this->save_enum( $term_id, '_oc_hero_parallax', array( 'none', 'soft', 'full' ) );
+		} else {
+			foreach ( array( '_oc_hero_h', '_oc_hero_hm', '_oc_hero_text', '_oc_hero_pos', '_oc_hero_tone', '_oc_hero_shade', '_oc_hero_side', '_oc_hero_cbg', '_oc_hero_parallax' ) as $key ) {
+				delete_term_meta( $term_id, $key );
+			}
+		}
 		$this->save_hero_focus( $term_id );
 
 		$this->save_int( $term_id, '_oc_card_img' );

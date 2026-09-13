@@ -8997,3 +8997,45 @@ window.__ocMoney = function ( n, money ) {
 			wrap.hidden = true;
 		} );
 }() );
+
+/* ---------- category banner: gentle parallax ----------
+ * The picture drifts at 30% of the page's speed. It is given just enough
+ * extra height, blending toward the screen's own, that no edge ever shows.
+ * Full parallax is CSS alone — a fixed layer — so nothing here touches it. */
+( function () {
+	var lax = document.querySelectorAll( '.oc-chero__media[data-oc-parallax="30"]' );
+
+	if ( ! lax.length || ( window.matchMedia && window.matchMedia( '(prefers-reduced-motion: reduce)' ).matches ) ) {
+		return;
+	}
+
+	var draw = function () {
+		Array.prototype.forEach.call( lax, function ( media ) {
+			var img = media.querySelector( '.oc-chero__img' );
+			var box = media.getBoundingClientRect();
+
+			if ( ! img || box.height < 4 || box.bottom < 0 || box.top > window.innerHeight ) {
+				return;
+			}
+
+			var f = 0.3;
+			var h = Math.round( box.height + f * ( window.innerHeight - box.height ) );
+			var y = ( -f * box.top ).toFixed( 1 );
+
+			if ( img.__ocH !== h ) {
+				img.__ocH = h;
+				img.style.blockSize = h + 'px';
+			}
+
+			if ( img.__ocY !== y ) {
+				img.__ocY = y;
+				img.style.transform = 'translate3d(0,' + y + 'px,0)';
+			}
+		} );
+	};
+
+	window.addEventListener( 'scroll', draw, { passive: true } );
+	window.addEventListener( 'resize', draw, { passive: true } );
+	draw();
+	setTimeout( draw, 400 );
+}() );
