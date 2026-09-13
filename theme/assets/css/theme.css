@@ -6265,11 +6265,11 @@ html:not([dir]) .oc-cartup__items--h.oc-fade-end {
 .oc-pbrand .oc-pbrand__logo {
 	display: block;
 	inline-size: auto;
-	max-inline-size: 150px;
-	block-size: 40px;
+	max-inline-size: 160px;
+	block-size: 52px;
 	object-fit: contain;
 }
-.oc-pbrand.oc-pbrand--before .oc-pbrand__logo { block-size: 34px; }
+.oc-pbrand.oc-pbrand--before .oc-pbrand__logo { block-size: 48px; }
 
 .oc-ptitle-row {
 	display: flex;
@@ -6282,8 +6282,8 @@ html:not([dir]) .oc-cartup__items--h.oc-fade-end {
 .oc-ptitle-row .oc-pbrand { flex: none; }
 
 @media (max-width: 782px) {
-	.oc-pbrand .oc-pbrand__logo { block-size: 30px; max-inline-size: 110px; }
-	.oc-pbrand.oc-pbrand--before .oc-pbrand__logo { block-size: 28px; }
+	.oc-pbrand .oc-pbrand__logo { block-size: 42px; max-inline-size: 120px; }
+	.oc-pbrand.oc-pbrand--before .oc-pbrand__logo { block-size: 40px; }
 }
 
 /* ---------- top bar ---------- */
