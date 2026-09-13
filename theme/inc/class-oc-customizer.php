@@ -1390,12 +1390,24 @@ final class Customizer {
 			);
 		}
 
-		$this->heading( $c, 'oc_h_cat_hero', $section, __( 'Category hero', 'oc-theme' ) );
+		// The category banner is part of the catalogue page, not a WooCommerce
+		// setting — it gets its own room in the theme's "Catalogue page" panel,
+		// beside the filters and the card, where the shop looks for it.
+		$hero = 'oc_catalog_hero';
+		$c->add_section(
+			$hero,
+			array(
+				'title'       => __( 'Category hero', 'oc-theme' ),
+				'description' => __( 'The banner at the top of every category page. Each category can still choose its own on its edit screen.', 'oc-theme' ),
+				'panel'       => 'oc_catalog_panel',
+				'priority'    => 12,
+			)
+		);
 
 		$this->choice(
 			$c,
 			'oc_chero_layout',
-			$section,
+			$hero,
 			__( 'Layout', 'oc-theme' ),
 			array(
 				'none'  => __( 'None — plain title', 'oc-theme' ),
@@ -1420,13 +1432,13 @@ final class Customizer {
 			'values'  => array( 'split' ),
 		);
 
-		$this->number( $c, 'oc_chero_h', $section, __( 'Height — desktop (px, 0 = automatic)', 'oc-theme' ), 0, 0, 1200, $hero_any );
-		$this->number( $c, 'oc_chero_hm', $section, __( 'Height — mobile (px, 0 = automatic)', 'oc-theme' ), 0, 0, 1200, $hero_any );
+		$this->number( $c, 'oc_chero_h', $hero, __( 'Height — desktop (px, 0 = automatic)', 'oc-theme' ), 0, 0, 1200, $hero_any );
+		$this->number( $c, 'oc_chero_hm', $hero, __( 'Height — mobile (px, 0 = automatic)', 'oc-theme' ), 0, 0, 1200, $hero_any );
 
 		$this->choice(
 			$c,
 			'oc_chero_text',
-			$section,
+			$hero,
 			__( 'Text', 'oc-theme' ),
 			array(
 				'over'  => __( 'Over the image', 'oc-theme' ),
@@ -1436,12 +1448,12 @@ final class Customizer {
 			$hero_full
 		);
 
-		$this->choice( $c, 'oc_chero_pos', $section, __( 'Text position', 'oc-theme' ), Category::positions(), 'bs', $hero_full );
+		$this->choice( $c, 'oc_chero_pos', $hero, __( 'Text position', 'oc-theme' ), Category::positions(), 'bs', $hero_full );
 
 		$this->choice(
 			$c,
 			'oc_chero_tone',
-			$section,
+			$hero,
 			__( 'Text colour', 'oc-theme' ),
 			array(
 				'light' => __( 'Light (for a dark image)', 'oc-theme' ),
@@ -1451,12 +1463,12 @@ final class Customizer {
 			$hero_full
 		);
 
-		$this->number( $c, 'oc_chero_shade', $section, __( 'Darken image (%)', 'oc-theme' ), 0, 0, 90, $hero_full );
+		$this->number( $c, 'oc_chero_shade', $hero, __( 'Darken image (%)', 'oc-theme' ), 0, 0, 90, $hero_full );
 
 		$this->choice(
 			$c,
 			'oc_chero_side',
-			$section,
+			$hero,
 			__( 'Image side', 'oc-theme' ),
 			array(
 				'start' => __( 'Reading side (right in Hebrew)', 'oc-theme' ),
@@ -1466,7 +1478,7 @@ final class Customizer {
 			$hero_split
 		);
 
-		$this->color( $c, 'oc_chero_cbg', $section, __( 'Content background', 'oc-theme' ), '', $hero_split );
+		$this->color( $c, 'oc_chero_cbg', $hero, __( 'Content background', 'oc-theme' ), '', $hero_split );
 
 		$this->heading( $c, 'oc_h_cat_structure', $section, __( 'Page structure', 'oc-theme' ) );
 

@@ -7371,3 +7371,6 @@ msgstr "מיקום נפרד למובייל"
 
 msgid "Follow desktop"
 msgstr "חזרה לדסקטופ"
+
+msgid "The banner at the top of every category page. Each category can still choose its own on its edit screen."
+msgstr "הבאנר בראש כל עמוד קטגוריה. כל קטגוריה עדיין יכולה לבחור מבנה משלה במסך העריכה שלה."
