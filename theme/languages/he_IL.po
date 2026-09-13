@@ -7524,3 +7524,18 @@ msgstr "הלוגו הוא התמונה של המותג עצמו. מותג בלי
 
 msgid "At the far end of the title line"
 msgstr "בקצה השמאלי של שורת הכותרת"
+
+msgid "Picture edge to edge"
+msgstr "תמונה מקצה לקצה"
+
+msgid "No margin around the picture: it meets the card’s edges, and its top corners follow the card."
+msgstr "בלי שוליים סביב התמונה: היא מגיעה עד קצוות הכרטיס, והפינות העליונות שלה לפי הכרטיס."
+
+msgid "Like the card"
+msgstr "כמו הכרטיס"
+
+msgid "Sharp corners"
+msgstr "חדות"
+
+msgid "The card’s own corners follow Global design › Corner rounding."
+msgstr "הפינות של הכרטיס עצמו נקבעות בעיצוב גלובלי › עיגול פינות."

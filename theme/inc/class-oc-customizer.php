@@ -1856,6 +1856,33 @@ final class Customizer {
 			'150px'
 		);
 
+		$this->toggle(
+			$c,
+			'oc_card_img_edge',
+			'oc_card',
+			__( 'Picture edge to edge', 'oc-theme' ),
+			false,
+			array(
+				'setting' => 'oc_card_preset',
+				'values'  => array( 'classic', 'card' ),
+			),
+			__( 'No margin around the picture: it meets the card’s edges, and its top corners follow the card.', 'oc-theme' )
+		);
+
+		$this->choice(
+			$c,
+			'oc_card_img_corners',
+			'oc_card',
+			__( 'Picture corners', 'oc-theme' ),
+			array(
+				'card'  => __( 'Like the card', 'oc-theme' ),
+				'sharp' => __( 'Sharp corners', 'oc-theme' ),
+			),
+			'card',
+			null,
+			__( 'The card’s own corners follow Global design › Corner rounding.', 'oc-theme' )
+		);
+
 		$this->preset(
 			$c,
 			'oc_card_image_mode',

@@ -328,7 +328,9 @@ final class WooCommerce {
 
 		// The brand: above the card's title when switched on, and on the
 		// product page above the title or at the far end of its line.
-		add_action( 'woocommerce_shop_loop_item_title', array( $this, 'card_brand' ), 5 );
+		// Priority 0: before the text box opens, so the brand is a track of the
+		// card's own and a row lines its titles up under it.
+		add_action( 'woocommerce_shop_loop_item_title', array( $this, 'card_brand' ), 0 );
 		add_action( 'woocommerce_before_single_product', array( $this, 'product_brand_setup' ) );
 		add_action( 'woocommerce_after_shop_loop_item', array( $this, 'card_text_close' ), 999 );
 
@@ -765,6 +767,14 @@ final class WooCommerce {
 		$classes[] = 'oc-cols-' . $this->columns();
 		$classes[] = 'oc-cols-m-' . max( 1, (int) get_theme_mod( 'oc_catalog_cols_mobile', 2 ) );
 		$classes[] = 'oc-card-' . sanitize_html_class( (string) get_theme_mod( 'oc_card_preset', 'classic' ) );
+
+		if ( get_theme_mod( 'oc_card_img_edge', false ) ) {
+			$classes[] = 'oc-card-edge';
+		}
+
+		if ( 'sharp' === get_theme_mod( 'oc_card_img_corners', 'card' ) ) {
+			$classes[] = 'oc-card-img-sharp';
+		}
 		$classes[] = 'oc-atc-' . sanitize_html_class( (string) get_theme_mod( 'oc_card_atc', 'always' ) );
 		$classes[] = 'oc-btn-' . sanitize_html_class( (string) get_theme_mod( 'oc_button_style', 'filled' ) );
 

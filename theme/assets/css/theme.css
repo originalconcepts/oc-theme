@@ -3930,7 +3930,7 @@ html.oc-drw-open { overflow: hidden; }
 	inline-size: 100%;
 	aspect-ratio: var(--oc-card-ratio, 1 / 1);
 	object-fit: cover;
-	border-radius: var(--oc-radius, 8px);
+	border-radius: var(--oc-card-img-r, var(--oc-radius, 8px));
 }
 
 /* classic: bordered box, centred info (default rules above already centre) */
@@ -3952,6 +3952,39 @@ html.oc-drw-open { overflow: hidden; }
 	border-radius: var(--oc-radius, 8px);
 	box-shadow: 0 1px 3px rgb(0 0 0 / 7%), 0 6px 18px rgb(0 0 0 / 6%);
 	padding: calc(12px * var(--oc-density, 1));
+}
+
+/* Picture corners of their own: sharp, while the card keeps its rounding. */
+.oc-card-img-sharp { --oc-card-img-r: 0px; }
+
+/* Card and classic, picture edge to edge: the card drops its inner padding,
+ * the picture meets the card's edges, and the words keep theirs. The card
+ * clips its own corners, so the picture's top follows the card's rounding
+ * and its bottom follows "picture corners". */
+.oc-card-edge.oc-card-classic ul.products li.product,
+.oc-card-edge.oc-card-card ul.products li.product {
+	padding: 0;
+	overflow: hidden;
+}
+.oc-card-edge.oc-card-classic ul.products li.product > :not(.oc-card-media),
+.oc-card-edge.oc-card-card ul.products li.product > :not(.oc-card-media) {
+	padding-inline: calc(12px * var(--oc-density, 1));
+}
+.oc-card-edge.oc-card-classic ul.products li.product > .oc-card-text,
+.oc-card-edge.oc-card-card ul.products li.product > .oc-card-text {
+	padding-block-end: calc(12px * var(--oc-density, 1));
+}
+
+/* A card with a box of its own keeps the row gap outside the box. The gap
+ * rides a spacer track inside the card, and a border or a background paints
+ * straight through it — rows of cards touched. Handed out as margin, it
+ * falls outside the box and matches the gap between columns. */
+@supports (grid-template-rows: subgrid) {
+	.oc-card-classic ul.products li.product::after,
+	.oc-card-card ul.products li.product::after { content: none; }
+
+	.oc-card-classic ul.products li.product,
+	.oc-card-card ul.products li.product { margin-block-end: var(--oc-gap-eff, 20px); }
 }
 
 /* add-to-cart behaviour */
@@ -4356,7 +4389,7 @@ li.product:focus-within .oc-card-atc,
 	object-fit: cover;
 	/* the product may name the half of the picture worth keeping */
 	object-position: 50% var(--oc-card-focus, 50%);
-	border-radius: var(--oc-radius, 8px);
+	border-radius: var(--oc-card-img-r, var(--oc-radius, 8px));
 	display: block;
 }
 
@@ -4399,7 +4432,7 @@ li.product:focus-within .oc-card-atc,
 	scroll-snap-type: x mandatory;
 	scrollbar-width: none;
 	aspect-ratio: var(--oc-card-ratio, 1 / 1);
-	border-radius: var(--oc-radius, 8px);
+	border-radius: var(--oc-card-img-r, var(--oc-radius, 8px));
 }
 .oc-card-media--gallery .oc-card-media__strip::-webkit-scrollbar { display: none; }
 
@@ -6239,7 +6272,10 @@ html:not([dir]) .oc-cartup__items--h.oc-fade-end {
 /* above a card's title: small, quiet, and aligned like the title */
 .oc-card-brand {
 	display: block;
-	margin-block-end: 2px;
+	/* it takes the title's 8px from the picture, and hands back most of the
+	 * title's own top margin so the two sit close together */
+	margin-block: 8px -6px;
+	line-height: 1.3;
 	color: var(--oc-ink-2, #666e7c);
 	font-size: .78rem;
 	letter-spacing: .04em;
@@ -7150,7 +7186,7 @@ table.variations td.value select:has(+ .oc-dd) {
 	position: relative;
 	aspect-ratio: var(--oc-card-ratio, 1 / 1);
 	overflow: hidden;
-	border-radius: var(--oc-radius, 8px);
+	border-radius: var(--oc-card-img-r, var(--oc-radius, 8px));
 }
 
 .oc-card-media__item--video video,
@@ -12344,18 +12380,21 @@ body.oc-checkout { overflow-x: clip; }
 		display: grid;
 		grid-template-rows: subgrid;
 		grid-template-columns: minmax(0, 1fr);
-		grid-row: span 4;
+		grid-row: span 5;
 		align-content: start;
 	}
 
 	/* Everything stacks in the one column; the row decides the heights. */
 	.woocommerce ul.products li.product > * { grid-column: 1; }
 
-	/* Three slots and a spacer. A row whose cards carry no swatches collapses
-	 * that track to nothing, so no card reserves room it does not use. */
+	/* Four slots and a spacer. A row whose cards carry no swatches — or no
+	 * brand — collapses that track to nothing, so no card reserves room it
+	 * does not use, and a row where one card names its brand starts every
+	 * title in it on the same line. */
 	.woocommerce ul.products li.product > .oc-card-media { grid-row: 1; }
 	.woocommerce ul.products li.product > .oc-colors { grid-row: 2; }
-	.woocommerce ul.products li.product > .oc-card-text { grid-row: 3; }
+	.woocommerce ul.products li.product > .oc-card-brand { grid-row: 3; }
+	.woocommerce ul.products li.product > .oc-card-text { grid-row: 4; }
 
 	/* The text box packs its own contents from the top, so a card with a
 	 * short description keeps its price right under it rather than holding it
@@ -12372,7 +12411,7 @@ body.oc-checkout { overflow-x: clip; }
 	.woocommerce ul.products li.product::after {
 		content: '';
 		grid-column: 1;
-		grid-row: 4;
+		grid-row: 5;
 		block-size: calc(var(--oc-gap-eff, 20px) + 16px);
 	}
 
@@ -12382,12 +12421,12 @@ body.oc-checkout { overflow-x: clip; }
 		display: grid;
 		grid-template-rows: subgrid;
 		grid-template-columns: minmax(0, 1fr);
-		grid-row: span 4;
+		grid-row: span 5;
 	}
 
 	.woocommerce ul.products li.oc-block > * {
 		grid-column: 1;
-		grid-row: 1 / 4;
+		grid-row: 1 / 5;
 		/* the caption anchors to the picture, not to the card: the card also
 		 * owns the spacer track, and the caption's gradient was spilling into
 		 * it as a grey band under the banner */
@@ -12397,7 +12436,7 @@ body.oc-checkout { overflow-x: clip; }
 	.woocommerce ul.products li.oc-block::after {
 		content: '';
 		grid-column: 1;
-		grid-row: 4;
+		grid-row: 5;
 		block-size: calc(var(--oc-gap-eff, 20px) + 16px);
 	}
 
@@ -12422,9 +12461,9 @@ body.oc-checkout { overflow-x: clip; }
 	 * keeps stating its own and takes the picture track alone. */
 	.woocommerce ul.products li.oc-block--row > * { grid-row: 1; }
 
-	.woocommerce ul.products li.oc-block--big { grid-row: span 8; }
-	.woocommerce ul.products li.oc-block--big > * { grid-row: 1 / 8; }
-	.woocommerce ul.products li.oc-block--big::after { grid-row: 8; }
+	.woocommerce ul.products li.oc-block--big { grid-row: span 10; }
+	.woocommerce ul.products li.oc-block--big > * { grid-row: 1 / 10; }
+	.woocommerce ul.products li.oc-block--big::after { grid-row: 10; }
 
 	/* A slider band paints a background, and the row spacer rides INSIDE the
 	 * item — so its gap came out painted band colour while the product row
@@ -12443,17 +12482,18 @@ body.oc-checkout { overflow-x: clip; }
 	 * row's picture track, which drops the text onto the second row's text
 	 * tracks. */
 	.woocommerce ul.products li.product.oc-tile--big {
-		grid-row: span 8;
+		grid-row: span 10;
 		/* outside this layer the tile is a flex column; here the row owns it */
 		display: grid;
 		grid-template-columns: minmax(0, 1fr);
 		align-content: start;
 	}
 
-	.woocommerce ul.products li.product.oc-tile--big > .oc-card-media { grid-row: 1 / 6; }
-	.woocommerce ul.products li.product.oc-tile--big > .oc-colors { grid-row: 6; }
-	.woocommerce ul.products li.product.oc-tile--big > .oc-card-text { grid-row: 7; }
-	.woocommerce ul.products li.product.oc-tile--big::after { grid-row: 8; }
+	.woocommerce ul.products li.product.oc-tile--big > .oc-card-media { grid-row: 1 / 7; }
+	.woocommerce ul.products li.product.oc-tile--big > .oc-colors { grid-row: 7; }
+	.woocommerce ul.products li.product.oc-tile--big > .oc-card-brand { grid-row: 8; }
+	.woocommerce ul.products li.product.oc-tile--big > .oc-card-text { grid-row: 9; }
+	.woocommerce ul.products li.product.oc-tile--big::after { grid-row: 10; }
 
 	/* The ordinary card states its ratio outright and does not stretch: the
 	 * height comes from the column width, and that is what pins the picture
@@ -12508,11 +12548,11 @@ body.oc-checkout { overflow-x: clip; }
 		 * A product that names a size for the phone overrides all of it. */
 
 		/* Ordinary on a phone. */
-		.woocommerce ul.products li.product.oc-tile--m-plain { grid-row: span 4; }
+		.woocommerce ul.products li.product.oc-tile--m-plain { grid-row: span 5; }
 		.woocommerce ul.products li.product.oc-tile--m-plain > .oc-card-media { grid-row: 1; }
 		.woocommerce ul.products li.product.oc-tile--m-plain > .oc-colors { grid-row: 2; }
-		.woocommerce ul.products li.product.oc-tile--m-plain > .oc-card-text { grid-row: 3; }
-		.woocommerce ul.products li.product.oc-tile--m-plain::after { grid-row: 4; }
+		.woocommerce ul.products li.product.oc-tile--m-plain > .oc-card-text { grid-row: 4; }
+		.woocommerce ul.products li.product.oc-tile--m-plain::after { grid-row: 5; }
 
 		.woocommerce ul.products li.product.oc-tile--m-plain > .oc-card-media {
 			align-self: start;
@@ -12523,11 +12563,11 @@ body.oc-checkout { overflow-x: clip; }
 		}
 
 		/* Two columns on a phone. */
-		.woocommerce ul.products li.product.oc-tile--m-wide { grid-row: span 4; }
+		.woocommerce ul.products li.product.oc-tile--m-wide { grid-row: span 5; }
 		.woocommerce ul.products li.product.oc-tile--m-wide > .oc-card-media { grid-row: 1; }
 		.woocommerce ul.products li.product.oc-tile--m-wide > .oc-colors { grid-row: 2; }
-		.woocommerce ul.products li.product.oc-tile--m-wide > .oc-card-text { grid-row: 3; }
-		.woocommerce ul.products li.product.oc-tile--m-wide::after { grid-row: 4; }
+		.woocommerce ul.products li.product.oc-tile--m-wide > .oc-card-text { grid-row: 4; }
+		.woocommerce ul.products li.product.oc-tile--m-wide::after { grid-row: 5; }
 
 		.woocommerce ul.products li.product.oc-tile--m-wide > .oc-card-media {
 			align-self: start;
@@ -12542,7 +12582,7 @@ body.oc-checkout { overflow-x: clip; }
 		 * height itself — nothing sits beside it to set the row. */
 		.woocommerce ul.products li.product.oc-tile--m-big,
 		.woocommerce ul.products li.product.oc-tile--big:not(.oc-tile--m-plain):not(.oc-tile--m-wide) {
-			grid-row: span 4;
+			grid-row: span 5;
 			display: grid;
 			grid-template-columns: minmax(0, 1fr);
 			align-content: start;
@@ -12553,9 +12593,9 @@ body.oc-checkout { overflow-x: clip; }
 		.woocommerce ul.products li.product.oc-tile--m-big > .oc-colors,
 		.woocommerce ul.products li.product.oc-tile--big:not(.oc-tile--m-plain):not(.oc-tile--m-wide) > .oc-colors { grid-row: 2; }
 		.woocommerce ul.products li.product.oc-tile--m-big > .oc-card-text,
-		.woocommerce ul.products li.product.oc-tile--big:not(.oc-tile--m-plain):not(.oc-tile--m-wide) > .oc-card-text { grid-row: 3; }
+		.woocommerce ul.products li.product.oc-tile--big:not(.oc-tile--m-plain):not(.oc-tile--m-wide) > .oc-card-text { grid-row: 4; }
 		.woocommerce ul.products li.product.oc-tile--m-big::after,
-		.woocommerce ul.products li.product.oc-tile--big:not(.oc-tile--m-plain):not(.oc-tile--m-wide)::after { grid-row: 4; }
+		.woocommerce ul.products li.product.oc-tile--big:not(.oc-tile--m-plain):not(.oc-tile--m-wide)::after { grid-row: 5; }
 
 		.woocommerce ul.products li.product.oc-tile--m-big > .oc-card-media,
 		.woocommerce ul.products li.product.oc-tile--big:not(.oc-tile--m-plain):not(.oc-tile--m-wide) > .oc-card-media {
@@ -12571,11 +12611,16 @@ body.oc-checkout { overflow-x: clip; }
 		 * the picture track. */
 		.woocommerce ul.products li.oc-block--wide,
 		.woocommerce ul.products li.oc-block--big,
-		.woocommerce ul.products li.oc-block--row { grid-row: span 4; }
+		.woocommerce ul.products li.oc-block--row { grid-row: span 5; }
 
 		.woocommerce ul.products li.oc-block > * { grid-row: 1; }
 		.woocommerce ul.products li.oc-block--big > * { grid-row: 1; }
-		.woocommerce ul.products li.oc-block--big::after { grid-row: 4; }
+		.woocommerce ul.products li.oc-block--big::after { grid-row: 5; }
+		/* on a phone every tile is one row again: the brand keeps track 3 */
+		.woocommerce ul.products li.product.oc-tile--m-plain > .oc-card-brand,
+		.woocommerce ul.products li.product.oc-tile--m-wide > .oc-card-brand,
+		.woocommerce ul.products li.product.oc-tile--m-big > .oc-card-brand,
+		.woocommerce ul.products li.product.oc-tile--big:not(.oc-tile--m-plain):not(.oc-tile--m-wide) > .oc-card-brand { grid-row: 3; }
 
 		.woocommerce ul.products li.oc-block:not(.oc-block--row) .oc-block__media {
 			position: relative;
