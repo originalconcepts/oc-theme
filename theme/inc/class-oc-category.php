@@ -91,9 +91,9 @@ class Category {
 			update_option( 'oc_chero_v2', 1 );
 		}
 
-		if ( ! get_option( 'oc_subalign_v2' ) ) {
+		if ( ! get_option( 'oc_subalign_v3' ) ) {
 			self::migrate_sub_align();
-			update_option( 'oc_subalign_v2', 1 );
+			update_option( 'oc_subalign_v3', 1 );
 		}
 	}
 
@@ -107,17 +107,21 @@ class Category {
 	 * until someone changes it.
 	 */
 	private static function migrate_sub_align(): void {
-		$ids = get_terms(
-			array(
-				'taxonomy'   => 'product_cat',
-				'hide_empty' => false,
-				'fields'     => 'ids',
-				'meta_key'   => '_oc_sub_show', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- once, on upgrade.
-				'meta_value' => '1', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- once, on upgrade.
-			)
+		global $wpdb;
+
+		// get_terms() with a meta filter came back empty for product
+		// categories on the live shops (v0.3.109 wrote nothing because of
+		// it), so the ids come straight from the meta table.
+		$ids = $wpdb->get_col( // phpcs:ignore WordPress.DB.DirectDatabaseQuery -- a one-time upgrade step.
+			"SELECT tm.term_id FROM {$wpdb->termmeta} tm INNER JOIN {$wpdb->term_taxonomy} tt ON tt.term_id = tm.term_id AND tt.taxonomy = 'product_cat' WHERE tm.meta_key = '_oc_sub_show' AND tm.meta_value = '1'"
 		);
 
 		foreach ( is_array( $ids ) ? $ids : array() as $id ) {
+			// Saved through the new screen already: that is a real choice.
+			if ( '' !== (string) get_term_meta( (int) $id, '_oc_sub_align_m', true ) ) {
+				continue;
+			}
+
 			$sub    = self::subs( (int) $id );
 			$h      = self::hero( (int) $id );
 			$old    = 'center' === $sub['align'] ? 'center' : 'start';
