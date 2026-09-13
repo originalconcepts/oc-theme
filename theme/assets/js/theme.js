@@ -6248,8 +6248,12 @@
 				// A value that exists but does not go with what is already
 				// chosen stays pressable: pressing it explains why, instead
 				// of a dead click that looks like a fault.
+				// Woo either disables such an option or drops it from the
+				// select altogether (it depends on the product), so both
+				// count. Every button is one of the product's own values,
+				// so none is ever truly dead.
 				var off = ! opt || opt.disabled;
-				btn.disabled = ! opt;
+				btn.disabled = false;
 				btn.classList.toggle( 'is-off', off );
 				if ( off ) {
 					btn.setAttribute( 'aria-disabled', 'true' );
@@ -6339,6 +6343,23 @@
 				} );
 
 				msg.remove();
+
+				// Clearing the conflicts lets Woo put the value back among the
+				// select's options. If a combination of the rest still keeps it
+				// out, every other choice goes.
+				var has = function () {
+					return Array.prototype.some.call( select.options, function ( o ) { return o.value === want && ! o.disabled; } );
+				};
+
+				if ( ! has() ) {
+					others.forEach( function ( s ) {
+						if ( '' !== s.value ) {
+							s.value = '';
+							s.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+						}
+					} );
+				}
+
 				select.value = want;
 				select.dispatchEvent( new Event( 'change', { bubbles: true } ) );
 				sync();
