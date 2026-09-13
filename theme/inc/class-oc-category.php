@@ -53,6 +53,11 @@ class Category {
 		// Old saves pinned every category to the dropdowns' first values.
 		add_action( 'init', array( $this, 'migrate' ), 30 );
 
+		// A category shown as a lobby: its chosen page instead of products.
+		add_action( 'pre_get_posts', array( $this, 'lobby_query' ), 99 );
+		add_action( 'product_cat_add_form_fields', array( $this, 'display_type_script' ), 99 );
+		add_action( 'product_cat_edit_form_fields', array( $this, 'display_type_script' ), 99 );
+
 		// Track product views for the "recently viewed" slider source.
 		add_action( 'template_redirect', array( $this, 'track_view' ), 20 );
 	}
@@ -70,23 +75,168 @@ class Category {
 	 * is kept as the category's own.
 	 */
 	public function migrate(): void {
-		if ( get_option( 'oc_chero_v2' ) ) {
+		if ( ! get_option( 'oc_chero_v2' ) ) {
+			$stale = array(
+				'_oc_hero_text'  => 'over',
+				'_oc_hero_pos'   => 'bs',
+				'_oc_hero_tone'  => 'light',
+				'_oc_hero_shade' => '0',
+				'_oc_hero_side'  => 'start',
+			);
+
+			foreach ( $stale as $key => $value ) {
+				delete_metadata( 'term', 0, $key, $value, true );
+			}
+
+			update_option( 'oc_chero_v2', 1 );
+		}
+
+		if ( ! get_option( 'oc_subalign_v2' ) ) {
+			self::migrate_sub_align();
+			update_option( 'oc_subalign_v2', 1 );
+		}
+	}
+
+	/**
+	 * Before alignment had a setting per screen, a strip riding a full-width
+	 * banner's text followed the banner, and every other strip followed one
+	 * "Alignment" value — hidden whenever the desktop strip sat with the
+	 * text, although the phone's strip below the banner still used it. That
+	 * is why a phone's pills could not be moved off the centre. Each screen
+	 * is written down exactly as it was drawn, so nothing moves on a page
+	 * until someone changes it.
+	 */
+	private static function migrate_sub_align(): void {
+		$ids = get_terms(
+			array(
+				'taxonomy'   => 'product_cat',
+				'hide_empty' => false,
+				'fields'     => 'ids',
+				'meta_key'   => '_oc_sub_show', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- once, on upgrade.
+				'meta_value' => '1', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- once, on upgrade.
+			)
+		);
+
+		foreach ( is_array( $ids ) ? $ids : array() as $id ) {
+			$sub    = self::subs( (int) $id );
+			$h      = self::hero( (int) $id );
+			$old    = 'center' === $sub['align'] ? 'center' : 'start';
+			$places = self::sub_places( self::has_hero( $h ), $sub );
+			$over   = 'full' === $h['layout'] && 'over' === $h['text'];
+
+			$d = ( 'in' === $places[0] && $over ) ? 'auto' : $old;
+			$m = ( 'in' === $places[1] && $over ) ? 'auto' : $old;
+
+			update_term_meta( (int) $id, '_oc_sub_align', $d );
+			update_term_meta( (int) $id, '_oc_sub_align_m', $m === $d ? 'same' : $m );
+		}
+	}
+
+	/**
+	 * The page a lobby category shows, or 0 when it is not a lobby — or is
+	 * one whose page is not built yet, which then keeps its products rather
+	 * than going blank.
+	 *
+	 * @param int $term_id Term id.
+	 */
+	public static function lobby_page( int $term_id ): int {
+		if ( 'lobby' !== get_term_meta( $term_id, 'display_type', true ) || ! class_exists( '\OC\Blocks\Render' ) ) {
+			return 0;
+		}
+
+		$page = absint( get_term_meta( $term_id, 'oc_lobby_page', true ) );
+
+		return $page > 0 && \OC\Blocks\Render::is_composed( $page ) ? $page : 0;
+	}
+
+	/**
+	 * A lobby asks the database for no products at all. WooCommerce then
+	 * takes its "nothing found" path, which setup() empties, so the page is
+	 * the lobby alone: no grid, no count, no sorting, no filters.
+	 *
+	 * @param mixed $q Query.
+	 */
+	public function lobby_query( $q ): void {
+		if ( is_admin() || ! $q instanceof \WP_Query || ! $q->is_main_query() || ! $q->is_tax( 'product_cat' ) ) {
 			return;
 		}
 
-		$stale = array(
-			'_oc_hero_text'  => 'over',
-			'_oc_hero_pos'   => 'bs',
-			'_oc_hero_tone'  => 'light',
-			'_oc_hero_shade' => '0',
-			'_oc_hero_side'  => 'start',
-		);
+		$term = $q->get_queried_object();
 
-		foreach ( $stale as $key => $value ) {
-			delete_metadata( 'term', 0, $key, $value, true );
+		if ( ! $term instanceof \WP_Term || 0 === self::lobby_page( (int) $term->term_id ) ) {
+			return;
 		}
 
-		update_option( 'oc_chero_v2', 1 );
+		$q->set( 'post__in', array( 0 ) );
+		$q->set( 'no_found_rows', true );
+	}
+
+	/**
+	 * WooCommerce's "Display type" gains a fourth answer — a lobby — and
+	 * moves up under the description, where a page's purpose is decided
+	 * before its details. The page picker follows it, and the settings that
+	 * only shape a product grid step aside while a lobby is chosen.
+	 *
+	 * WooCommerce stores the value as given and reads anything it does not
+	 * know as "products", so the choice needs no saving of its own.
+	 *
+	 * @param mixed $term The term on the edit screen; the taxonomy name on the add screen.
+	 */
+	public function display_type_script( $term = null ): void {
+		$current = $term instanceof \WP_Term ? (string) get_term_meta( $term->term_id, 'display_type', true ) : '';
+		?>
+		<script>
+		document.addEventListener( 'DOMContentLoaded', function () {
+			var sel = document.getElementById( 'display_type' );
+			if ( ! sel ) { return; }
+
+			if ( ! sel.querySelector( 'option[value="lobby"]' ) ) {
+				var opt = document.createElement( 'option' );
+				opt.value = 'lobby';
+				opt.textContent = <?php echo wp_json_encode( __( 'Lobby page', 'oc-theme' ) ); ?>;
+				sel.appendChild( opt );
+			}
+			if ( 'lobby' === <?php echo wp_json_encode( $current ); ?> ) { sel.value = 'lobby'; }
+
+			var row = function ( el ) { return el ? el.closest( 'table.form-table > tbody > tr, #addtag > .form-field' ) : null; };
+			var typeRow = row( sel );
+			var descRow = row( document.getElementById( 'description' ) || document.getElementById( 'tag-description' ) );
+			if ( typeRow && descRow && typeRow.parentNode === descRow.parentNode ) {
+				descRow.parentNode.insertBefore( typeRow, descRow.nextSibling );
+			}
+
+			var pageRow = row( document.getElementById( 'oc_lobby_page' ) );
+			if ( typeRow && pageRow && typeRow.parentNode === pageRow.parentNode ) {
+				typeRow.parentNode.insertBefore( pageRow, typeRow.nextSibling );
+			}
+
+			var note = document.createElement( 'p' );
+			note.className = 'description';
+			sel.parentNode.appendChild( note );
+
+			var quiet = [ 'oc_smart', 'oc_filter_layout', 'oc_rhythm[wide_every]', 'oc_places[0][block]' ].map( function ( name ) {
+				return row( document.querySelector( '[name="' + name + '"]' ) );
+			} ).filter( Boolean );
+
+			var sync = function () {
+				var lobby = 'lobby' === sel.value;
+				var page = document.getElementById( 'oc_lobby_page' );
+				var chosen = !! page && '0' !== page.value;
+				quiet.forEach( function ( r ) { r.style.display = lobby ? 'none' : ''; } );
+				note.hidden = ! lobby;
+				note.style.color = chosen ? '' : '#b32d2e';
+				note.textContent = chosen
+					? <?php echo wp_json_encode( __( 'A lobby shows the page chosen in “Lobby page” — no products, no filters.', 'oc-theme' ) ); ?>
+					: <?php echo wp_json_encode( __( 'Choose the page to show in “Lobby page”. Until then this category keeps showing its products.', 'oc-theme' ) ); ?>;
+			};
+			sel.addEventListener( 'change', sync );
+			document.addEventListener( 'change', function ( e ) {
+				if ( e.target && 'oc_lobby_page' === e.target.id ) { sync(); }
+			} );
+			sync();
+		} );
+		</script>
+		<?php
 	}
 
 	/**
@@ -246,7 +396,8 @@ class Category {
 			'slider_m' => $get( '_oc_sub_slider_m', 'same' ),    // same | yes | no — the phone's own answer.
 			'place'    => $get( '_oc_sub_place', 'out' ),         // out | in.
 			'place_m'  => $get( '_oc_sub_place_m', 'out' ),       // same | out | in — the phone's own answer.
-			'align'    => $get( '_oc_sub_align', 'start' ),       // start | center.
+			'align'    => $get( '_oc_sub_align', 'start' ),       // auto | start | center.
+			'align_m'  => $get( '_oc_sub_align_m', 'same' ),     // same | auto | start | center.
 		);
 	}
 
@@ -291,6 +442,30 @@ class Category {
 		$sub     = self::subs( $term->term_id );
 		$hero_on = self::has_hero( $h );
 
+		if ( self::lobby_page( $term->term_id ) > 0 ) {
+			// The lobby is the page. WooCommerce's "nothing found" note goes;
+			// without a banner of its own the title stays in the document for
+			// search engines while its pixels step aside, and the description
+			// moves below the blocks. A category banner keeps both, as ever.
+			remove_action( 'woocommerce_no_products_found', 'wc_no_products_found' );
+
+			add_filter(
+				'body_class',
+				static function ( array $classes ): array {
+					// No grid, so no filter layout to make room for.
+					$classes   = array_values( preg_grep( '/^oc-(flt|filter)/', $classes, PREG_GREP_INVERT ) );
+					$classes[] = 'oc-cat-lobby';
+
+					return $classes;
+				}
+			);
+
+			if ( ! $hero_on && ! has_action( 'woocommerce_after_main_content', 'woocommerce_taxonomy_archive_description' ) ) {
+				remove_action( 'woocommerce_archive_description', 'woocommerce_taxonomy_archive_description', 10 );
+				add_action( 'woocommerce_after_main_content', 'woocommerce_taxonomy_archive_description', 5 );
+			}
+		}
+
 		if ( $hero_on ) {
 			// It is the page's largest paint, and the parser does not reach
 			// it until the stylesheets are done. Measured on a category of a
@@ -327,13 +502,12 @@ class Category {
 		$places = self::sub_places( $hero_on, $sub );
 
 		if ( $sub['show'] && in_array( 'out', $places, true ) ) {
-			$align = 'center' === $sub['align'] ? 'center' : 'start';
-			$only  = self::only_for( 'out', $places );
+			$only = self::only_for( 'out', $places );
 
 			add_action(
 				'woocommerce_archive_description',
-				function () use ( $term, $sub, $align, $only ): void {
-					echo self::subcats_html( $term, $sub, 'out', $align, $only ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
+				function () use ( $term, $sub, $h, $only ): void {
+					echo self::subcats_html( $term, $sub, 'out', $h, $only ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
 				},
 				15
 			);
@@ -395,9 +569,7 @@ class Category {
 			$places = self::sub_places( true, $sub );
 
 			if ( in_array( 'in', $places, true ) ) {
-				$over  = 'full' === $h['layout'] && 'over' === $h['text'];
-				$align = $over ? ( in_array( $h['pos'], array( 'cc', 'bc' ), true ) ? 'center' : 'start' ) : ( 'center' === $sub['align'] ? 'center' : 'start' );
-				$subs  = self::subcats_html( $term, $sub, 'in', $align, self::only_for( 'in', $places ) );
+				$subs = self::subcats_html( $term, $sub, 'in', $h, self::only_for( 'in', $places ) );
 			}
 		}
 
@@ -544,16 +716,49 @@ class Category {
 	}
 
 	/**
+	 * How the strip lines up on one screen: its own choice, or the text it
+	 * sits with. "Follow the text" is the banner's words when the strip
+	 * rides a full-width banner with its text over the picture, the reading
+	 * side inside a split or below-the-picture banner, and the catalogue
+	 * title's alignment when the strip stands above the products.
+	 *
+	 * @param array<string,mixed> $sub     Sub-category settings.
+	 * @param array<string,mixed> $h       Hero settings.
+	 * @param string              $device  'd' | 'm'.
+	 * @param string              $context 'in' | 'out'.
+	 * @return string 'start' | 'center'
+	 */
+	private static function sub_align( array $sub, array $h, string $device, string $context ): string {
+		$pick = (string) $sub['align'];
+
+		if ( 'm' === $device && in_array( (string) ( $sub['align_m'] ?? 'same' ), array( 'auto', 'start', 'center' ), true ) ) {
+			$pick = (string) $sub['align_m'];
+		}
+
+		if ( in_array( $pick, array( 'start', 'center' ), true ) ) {
+			return $pick;
+		}
+
+		if ( 'in' === $context ) {
+			$over = 'full' === $h['layout'] && 'over' === $h['text'];
+
+			return $over && in_array( $h['pos'], array( 'cc', 'bc' ), true ) ? 'center' : 'start';
+		}
+
+		return 'center' === get_theme_mod( 'oc_catalog_title_align', 'start' ) ? 'center' : 'start';
+	}
+
+	/**
 	 * The strip of sub-categories under a category.
 	 *
 	 * @param \WP_Term            $term    Parent category.
 	 * @param array<string,mixed> $sub     Sub-category settings.
 	 * @param string              $context 'in' (with the hero's text) | 'out'.
-	 * @param string              $align   'start' | 'center'.
+	 * @param array<string,mixed> $h       Hero settings, for "follow the text".
 	 * @param string              $only    '' (both screens) | 'd' | 'm'.
 	 * @return string
 	 */
-	private static function subcats_html( \WP_Term $term, array $sub, string $context, string $align, string $only = '' ): string {
+	private static function subcats_html( \WP_Term $term, array $sub, string $context, array $h, string $only = '' ): string {
 		$children = self::children( $term->term_id );
 
 		if ( empty( $children ) ) {
@@ -605,7 +810,8 @@ class Category {
 		}
 
 		$classes = 'oc-subcats oc-subcats--' . $style
-			. ' oc-subcats--align-' . ( 'center' === $align ? 'center' : 'start' )
+			. ' oc-subcats--ad-' . self::sub_align( $sub, $h, 'd', $context )
+			. ' oc-subcats--am-' . self::sub_align( $sub, $h, 'm', $context )
 			. ' oc-subcats--' . ( 'in' === $context ? 'in' : 'out' )
 			. ( '' !== $only ? ' oc-subcats--dev-' . $only : '' );
 
@@ -1053,16 +1259,28 @@ class Category {
 			'_oc_sub_show:1'
 		);
 
+		$aligns = array(
+			'auto'   => __( 'Follow the text', 'oc-theme' ),
+			'start'  => __( 'Reading side', 'oc-theme' ),
+			'center' => __( 'Centre', 'oc-theme' ),
+		);
+
 		$this->select_field(
 			'_oc_sub_align',
 			$sub['align'],
-			__( 'Alignment', 'oc-theme' ),
-			array(
-				'start'  => __( 'Reading side', 'oc-theme' ),
-				'center' => __( 'Centre', 'oc-theme' ),
-			),
+			__( 'Alignment (desktop)', 'oc-theme' ),
+			$aligns,
+			__( 'Where the row lines up — also inside the banner. “Follow the text” keeps it with the banner’s words, or with the page title when it stands above the products.', 'oc-theme' ),
+			'_oc_sub_show:1'
+		);
+
+		$this->select_field(
+			'_oc_sub_align_m',
+			$sub['align_m'],
+			__( 'Alignment (mobile)', 'oc-theme' ),
+			array( 'same' => __( 'Same as desktop', 'oc-theme' ) ) + $aligns,
 			'',
-			'_oc_sub_show:1,_oc_sub_place:out'
+			'_oc_sub_show:1'
 		);
 
 		$this->admin_script();
@@ -1319,7 +1537,8 @@ class Category {
 		$this->save_enum( $term_id, '_oc_sub_slider_m', array( 'same', 'yes', 'no' ) );
 		$this->save_enum( $term_id, '_oc_sub_place', array( 'out', 'in' ) );
 		$this->save_enum( $term_id, '_oc_sub_place_m', array( 'out', 'in', 'same' ) );
-		$this->save_enum( $term_id, '_oc_sub_align', array( 'start', 'center' ) );
+		$this->save_enum( $term_id, '_oc_sub_align', array( 'auto', 'start', 'center' ) );
+		$this->save_enum( $term_id, '_oc_sub_align_m', array( 'same', 'auto', 'start', 'center' ) );
 
 		// phpcs:enable WordPress.Security.NonceVerification.Missing
 	}

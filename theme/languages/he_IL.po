@@ -7374,3 +7374,24 @@ msgstr "חזרה לדסקטופ"
 
 msgid "The banner at the top of every category page. Each category can still choose its own on its edit screen."
 msgstr "הבאנר בראש כל עמוד קטגוריה. כל קטגוריה עדיין יכולה לבחור מבנה משלה במסך העריכה שלה."
+
+msgid "Lobby page"
+msgstr "דף לובי"
+
+msgid "Follow the text"
+msgstr "לפי הטקסט"
+
+msgid "Alignment (desktop)"
+msgstr "יישור (דסקטופ)"
+
+msgid "Alignment (mobile)"
+msgstr "יישור (מובייל)"
+
+msgid "Where the row lines up — also inside the banner. “Follow the text” keeps it with the banner’s words, or with the page title when it stands above the products."
+msgstr "איפה השורה מתיישרת — גם בתוך הבאנר. ״לפי הטקסט״ מיישר אותה עם הטקסט של הבאנר, או עם כותרת העמוד כשהיא מעל המוצרים."
+
+msgid "A lobby shows the page chosen in “Lobby page” — no products, no filters."
+msgstr "דף לובי מציג את העמוד שנבחר ב״עמוד לובי״ — בלי מוצרים ובלי סינון."
+
+msgid "Choose the page to show in “Lobby page”. Until then this category keeps showing its products."
+msgstr "בחרו ב״עמוד לובי״ את העמוד שיוצג. עד אז הקטגוריה ממשיכה להציג את המוצרים שלה."

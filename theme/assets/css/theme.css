@@ -3505,8 +3505,27 @@ html.oc-drw-open { overflow: hidden; }
 
 /* The read-more inside a hero keeps the hero's own text colour. */
 .oc-chero .oc-readmore { color: inherit; text-decoration: underline; margin-block: 4px 0; }
-.oc-subcats--align-center { justify-content: center; }
-.oc-subcats--align-start { justify-content: flex-start; }
+.oc-subcats--ad-start, .oc-subcats--am-start { justify-content: flex-start; }
+/* each screen lines the strip up for itself */
+@media (min-width: 783px) {
+	.oc-subcats--ad-center { justify-content: center; }
+	.oc-subcats--ad-start { justify-content: flex-start; }
+}
+@media (max-width: 782px) {
+	.oc-subcats--am-center { justify-content: center; }
+	.oc-subcats--am-start { justify-content: flex-start; }
+}
+
+/* A lobby category: its banner is the heading. The title stays in the
+ * document for search engines and screen readers; only its pixels leave. */
+.oc-cat-lobby .woocommerce-products-header__title {
+	position: absolute;
+	inline-size: 1px;
+	block-size: 1px;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
+}
 
 /* clean — underlined links */
 .oc-subcats--clean { gap: 6px 20px; }
@@ -3581,7 +3600,7 @@ html.oc-drw-open { overflow: hidden; }
 	.oc-subcats--slider-d.is-drag { cursor: grabbing; scroll-behavior: auto; user-select: none; }
 	.oc-subcats--slider-d > a { flex: 0 0 auto; white-space: nowrap; }
 	/* a strip has no centre to hold */
-	.oc-subcats--slider-d.oc-subcats--align-center { justify-content: flex-start; }
+	.oc-subcats--slider-d.oc-subcats--ad-center { justify-content: flex-start; }
 }
 
 @media (max-width: 782px) {
@@ -3596,7 +3615,7 @@ html.oc-drw-open { overflow: hidden; }
 	}
 	.oc-subcats--slider-m::-webkit-scrollbar { display: none; }
 	.oc-subcats--slider-m > a { flex: 0 0 auto; white-space: nowrap; }
-	.oc-subcats--slider-m.oc-subcats--align-center { justify-content: flex-start; }
+	.oc-subcats--slider-m.oc-subcats--am-center { justify-content: flex-start; }
 
 	/* Below the hero the strip keeps its reading-side edge at the content
 	 * gutter and bleeds the trailing side out to the screen edge. */
