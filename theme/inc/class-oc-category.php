@@ -25,7 +25,7 @@ class Category {
 	 *
 	 * @return array<string,string>
 	 */
-	private static function positions(): array {
+	public static function positions(): array {
 		return array(
 			'cc' => __( 'Centre', 'oc-theme' ),
 			'cs' => __( 'Centre, reading side', 'oc-theme' ),
@@ -50,8 +50,43 @@ class Category {
 
 		add_action( 'wp', array( $this, 'setup' ) );
 
+		// Old saves pinned every category to the dropdowns' first values.
+		add_action( 'init', array( $this, 'migrate' ), 30 );
+
 		// Track product views for the "recently viewed" slider source.
 		add_action( 'template_redirect', array( $this, 'track_view' ), 20 );
+	}
+
+	/**
+	 * One-time tidy for the shop-wide hero defaults.
+	 *
+	 * The old category screen had no "default" choice, so every save wrote
+	 * the dropdowns' first values — text over the image, bottom on the
+	 * reading side, light, no shade, image on the reading side — whether
+	 * anyone chose them or not. Left in place they would pin every category
+	 * against the defaults in Customize. They are exactly those defaults, so
+	 * removing them changes nothing on a page until the shop changes the
+	 * defaults. A layout, a height or a colour was always a real choice and
+	 * is kept as the category's own.
+	 */
+	public function migrate(): void {
+		if ( get_option( 'oc_chero_v2' ) ) {
+			return;
+		}
+
+		$stale = array(
+			'_oc_hero_text'  => 'over',
+			'_oc_hero_pos'   => 'bs',
+			'_oc_hero_tone'  => 'light',
+			'_oc_hero_shade' => '0',
+			'_oc_hero_side'  => 'start',
+		);
+
+		foreach ( $stale as $key => $value ) {
+			delete_metadata( 'term', 0, $key, $value, true );
+		}
+
+		update_option( 'oc_chero_v2', 1 );
 	}
 
 	/**
@@ -120,24 +155,62 @@ class Category {
 	 * @return array<string,mixed>
 	 */
 	private static function hero( int $term_id ): array {
-		$get = static function ( string $key, string $def = '' ) use ( $term_id ): string {
-			$v = get_term_meta( $term_id, $key, true );
+		$get = static function ( string $key ) use ( $term_id ): string {
+			return (string) get_term_meta( $term_id, $key, true );
+		};
 
-			return '' !== (string) $v ? (string) $v : $def;
+		$pct = static function ( string $v, int $def ): int {
+			return '' === $v ? $def : max( 0, min( 100, (int) $v ) );
+		};
+
+		$d = self::hero_defaults();
+
+		// Whatever the category leaves empty is the shop-wide choice made in
+		// Customize. The pictures are always the category's own.
+		$layout = '' !== $get( '_oc_hero_layout' ) ? $get( '_oc_hero_layout' ) : $d['layout'];
+
+		return array(
+			'layout' => 'none' === $layout ? '' : $layout,
+			'img'    => absint( $get( '_oc_hero_img' ) ),
+			'imgm'   => absint( $get( '_oc_hero_img_m' ) ),
+			'h'      => absint( $get( '_oc_hero_h' ) ) > 0 ? absint( $get( '_oc_hero_h' ) ) : $d['h'],
+			'hm'     => absint( $get( '_oc_hero_hm' ) ) > 0 ? absint( $get( '_oc_hero_hm' ) ) : $d['hm'],
+			'text'   => '' !== $get( '_oc_hero_text' ) ? $get( '_oc_hero_text' ) : $d['text'],
+			'pos'    => '' !== $get( '_oc_hero_pos' ) ? $get( '_oc_hero_pos' ) : $d['pos'],
+			'tone'   => '' !== $get( '_oc_hero_tone' ) ? $get( '_oc_hero_tone' ) : $d['tone'],
+			'shade'  => '' !== $get( '_oc_hero_shade' ) ? min( 90, absint( $get( '_oc_hero_shade' ) ) ) : $d['shade'],
+			'side'   => '' !== $get( '_oc_hero_side' ) ? $get( '_oc_hero_side' ) : $d['side'],
+			'cbg'    => '' !== $get( '_oc_hero_cbg' ) ? $get( '_oc_hero_cbg' ) : $d['cbg'],
+			'fx'     => $pct( $get( '_oc_hero_fx' ), 50 ),
+			'fy'     => $pct( $get( '_oc_hero_fy' ), 50 ),
+			'fxm'    => $pct( $get( '_oc_hero_fxm' ), -1 ),
+			'fym'    => $pct( $get( '_oc_hero_fym' ), -1 ),
+		);
+	}
+
+	/**
+	 * The hero every category takes unless it chooses otherwise — set once
+	 * in Customize › Catalogue.
+	 *
+	 * @return array{layout:string,h:int,hm:int,text:string,pos:string,tone:string,shade:int,side:string,cbg:string}
+	 */
+	public static function hero_defaults(): array {
+		$pick = static function ( string $key, array $allowed, string $def ): string {
+			$v = (string) get_theme_mod( $key, $def );
+
+			return in_array( $v, $allowed, true ) ? $v : $def;
 		};
 
 		return array(
-			'layout' => $get( '_oc_hero_layout' ),                 // '' | full | split.
-			'img'    => absint( $get( '_oc_hero_img' ) ),
-			'imgm'   => absint( $get( '_oc_hero_img_m' ) ),
-			'h'      => absint( $get( '_oc_hero_h' ) ),
-			'hm'     => absint( $get( '_oc_hero_hm' ) ),
-			'text'   => $get( '_oc_hero_text', 'over' ),           // over | below.
-			'pos'    => $get( '_oc_hero_pos', 'bs' ),
-			'tone'   => $get( '_oc_hero_tone', 'light' ),          // light | dark.
-			'shade'  => (int) $get( '_oc_hero_shade', '0' ),
-			'side'   => $get( '_oc_hero_side', 'start' ),          // image reading-side | opposite.
-			'cbg'    => $get( '_oc_hero_cbg' ),
+			'layout' => $pick( 'oc_chero_layout', array( 'none', 'full', 'split' ), 'none' ),
+			'h'      => absint( get_theme_mod( 'oc_chero_h', 0 ) ),
+			'hm'     => absint( get_theme_mod( 'oc_chero_hm', 0 ) ),
+			'text'   => $pick( 'oc_chero_text', array( 'over', 'below' ), 'over' ),
+			'pos'    => $pick( 'oc_chero_pos', array_keys( self::positions() ), 'bs' ),
+			'tone'   => $pick( 'oc_chero_tone', array( 'light', 'dark' ), 'light' ),
+			'shade'  => min( 90, absint( get_theme_mod( 'oc_chero_shade', 0 ) ) ),
+			'side'   => $pick( 'oc_chero_side', array( 'start', 'end' ), 'start' ),
+			'cbg'    => (string) sanitize_hex_color( (string) get_theme_mod( 'oc_chero_cbg', '' ) ),
 		);
 	}
 
@@ -342,6 +415,20 @@ class Category {
 
 		if ( 'split' === $h['layout'] && '' !== $h['cbg'] ) {
 			$style .= '--ch-cbg:' . $h['cbg'] . ';';
+		}
+
+		// Where the picture sits inside a box that cuts it. Mobile follows
+		// desktop unless it was given a place of its own.
+		if ( 50 !== $h['fx'] || 50 !== $h['fy'] ) {
+			$style .= '--ch-fx:' . $h['fx'] . '%;--ch-fy:' . $h['fy'] . '%;';
+		}
+
+		if ( $h['fxm'] >= 0 ) {
+			$style .= '--ch-fxm:' . $h['fxm'] . '%;';
+		}
+
+		if ( $h['fym'] >= 0 ) {
+			$style .= '--ch-fym:' . $h['fym'] . '%;';
 		}
 
 		$style = '' !== $style ? ' style="' . esc_attr( $style ) . '"' : '';
@@ -589,7 +676,7 @@ class Category {
 			<th scope="row"><label><?php echo esc_html( $label ); ?></label></th>
 			<td>
 				<div class="oc-cat-img__view" style="margin-block-end:8px"><?php echo $preview; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- wp_get_attachment_image() is safe. ?></div>
-				<input type="hidden" name="<?php echo esc_attr( $name ); ?>" value="<?php echo esc_attr( (string) ( $id > 0 ? $id : '' ) ); ?>" data-oc-img-input>
+				<input type="hidden" name="<?php echo esc_attr( $name ); ?>" value="<?php echo esc_attr( (string) ( $id > 0 ? $id : '' ) ); ?>" data-url="<?php echo esc_url( $id > 0 ? (string) wp_get_attachment_image_url( $id, 'large' ) : '' ); ?>" data-oc-img-input>
 				<button type="button" class="button" data-oc-img-pick><?php esc_html_e( 'Choose image', 'oc-theme' ); ?></button>
 				<button type="button" class="button-link oc-cat-img__clear" data-oc-img-clear style="margin-inline-start:8px;<?php echo $id > 0 ? '' : 'display:none'; ?>"><?php esc_html_e( 'Remove', 'oc-theme' ); ?></button>
 				<?php if ( '' !== $hint ) : ?>
@@ -719,109 +806,123 @@ class Category {
 
 		$h   = self::hero( $term->term_id );
 		$sub = self::subs( $term->term_id );
+		$g   = self::hero_defaults();
+
+		$raw = static function ( string $key ) use ( $term ): string {
+			return (string) get_term_meta( $term->term_id, $key, true );
+		};
+
+		// A row that belongs to a layout shows for that layout — and for
+		// "Default" while the default is that layout.
+		$gate = static function ( array $layouts ) use ( $g ): string {
+			return '_oc_hero_layout:' . implode( '|', $layouts ) . ( in_array( $g['layout'], $layouts, true ) ? '|' : '' );
+		};
+
+		$first = static function ( array $choices, string $current ): array {
+			/* translators: %s: the choice Customize holds for every category. */
+			return array( '' => sprintf( __( 'Default — %s', 'oc-theme' ), (string) ( $choices[ $current ] ?? '' ) ) ) + $choices;
+		};
+
+		$layouts = array(
+			'none'  => __( 'None — plain title', 'oc-theme' ),
+			'full'  => __( 'Full-width image', 'oc-theme' ),
+			'split' => __( 'Half image · half content', 'oc-theme' ),
+		);
+		$texts   = array(
+			'over'  => __( 'Over the image', 'oc-theme' ),
+			'below' => __( 'Below the image', 'oc-theme' ),
+		);
+		$tones   = array(
+			'light' => __( 'Light (for a dark image)', 'oc-theme' ),
+			'dark'  => __( 'Dark (for a light image)', 'oc-theme' ),
+		);
+		$sides   = array(
+			'start' => __( 'Reading side (right in Hebrew)', 'oc-theme' ),
+			'end'   => __( 'Opposite side', 'oc-theme' ),
+		);
+		$auto    = __( 'automatic', 'oc-theme' );
 		?>
 		<tr class="form-field oc-cat-sec">
 			<th scope="row" colspan="2" style="padding-block-end:0">
 				<h2 style="margin:22px 0 0;font-size:1.15em"><?php esc_html_e( 'Category page — hero', 'oc-theme' ); ?></h2>
-				<p class="description" style="font-weight:400"><?php esc_html_e( 'A banner at the top of this category. The category name and description move onto it. Leave the layout on “None” to keep the plain title.', 'oc-theme' ); ?></p>
+				<p class="description" style="font-weight:400"><?php esc_html_e( 'A banner at the top of this category. The category name and description move onto it. “Default” follows Customize › Catalogue; pick anything else to give this category its own.', 'oc-theme' ); ?></p>
 			</th>
 		</tr>
 		<?php
 		$this->visual_field(
 			'_oc_hero_layout',
-			$h['layout'],
+			$raw( '_oc_hero_layout' ),
 			__( 'Layout', 'oc-theme' ),
 			array(
 				''      => array(
-					'label' => __( 'None — plain title', 'oc-theme' ),
+					/* translators: %s: the layout Customize holds for every category. */
+					'label' => sprintf( __( 'Default — %s', 'oc-theme' ), $layouts[ $g['layout'] ] ),
+					'svg'   => self::icon( 'l-' . $g['layout'] ),
+				),
+				'none'  => array(
+					'label' => $layouts['none'],
 					'svg'   => self::icon( 'l-none' ),
 				),
 				'full'  => array(
-					'label' => __( 'Full-width image', 'oc-theme' ),
+					'label' => $layouts['full'],
 					'svg'   => self::icon( 'l-full' ),
 				),
 				'split' => array(
-					'label' => __( 'Half image · half content', 'oc-theme' ),
+					'label' => $layouts['split'],
 					'svg'   => self::icon( 'l-split' ),
 				),
 			)
 		);
 
-		$this->image_field( '_oc_hero_img', $h['img'], __( 'Hero image — desktop', 'oc-theme' ), __( 'Shown on the category page.', 'oc-theme' ), '_oc_hero_layout:full|split' );
-		$this->image_field( '_oc_hero_img_m', $h['imgm'], __( 'Hero image — mobile (optional)', 'oc-theme' ), __( 'Used on phones. If empty, the desktop image is used.', 'oc-theme' ), '_oc_hero_layout:full|split' );
+		$this->image_field( '_oc_hero_img', $h['img'], __( 'Hero image — desktop', 'oc-theme' ), __( 'Shown on the category page.', 'oc-theme' ), $gate( array( 'full', 'split' ) ) );
+		$this->image_field( '_oc_hero_img_m', $h['imgm'], __( 'Hero image — mobile (optional)', 'oc-theme' ), __( 'Used on phones. If empty, the desktop image is used.', 'oc-theme' ), $gate( array( 'full', 'split' ) ) );
+
+		$this->hero_focus_field( $term->term_id, $g, $gate( array( 'full', 'split' ) ) );
 
 		// Heights.
 		?>
-		<tr class="form-field" data-oc-when="_oc_hero_layout:full|split">
+		<tr class="form-field" data-oc-when="<?php echo esc_attr( $gate( array( 'full', 'split' ) ) ); ?>">
 			<th scope="row"><label><?php esc_html_e( 'Height', 'oc-theme' ); ?></label></th>
 			<td>
 				<label style="display:inline-block;min-inline-size:90px"><?php esc_html_e( 'Desktop', 'oc-theme' ); ?></label>
-				<input type="number" min="0" max="1200" name="_oc_hero_h" value="<?php echo esc_attr( (string) ( $h['h'] > 0 ? $h['h'] : '' ) ); ?>" placeholder="<?php echo esc_attr( 'split' === $h['layout'] ? '440' : '420' ); ?>" style="inline-size:90px"> px<br>
+				<input type="number" min="0" max="1200" name="_oc_hero_h" value="<?php echo esc_attr( $raw( '_oc_hero_h' ) ); ?>" placeholder="<?php echo esc_attr( $g['h'] > 0 ? (string) $g['h'] : $auto ); ?>" style="inline-size:110px"> px<br>
 				<label style="display:inline-block;min-inline-size:90px;margin-block-start:6px"><?php esc_html_e( 'Mobile', 'oc-theme' ); ?></label>
-				<input type="number" min="0" max="1200" name="_oc_hero_hm" value="<?php echo esc_attr( (string) ( $h['hm'] > 0 ? $h['hm'] : '' ) ); ?>" placeholder="360" style="inline-size:90px"> px
-				<p class="description"><?php esc_html_e( 'Leave empty for the automatic height.', 'oc-theme' ); ?></p>
+				<input type="number" min="0" max="1200" name="_oc_hero_hm" value="<?php echo esc_attr( $raw( '_oc_hero_hm' ) ); ?>" placeholder="<?php echo esc_attr( $g['hm'] > 0 ? (string) $g['hm'] : $auto ); ?>" style="inline-size:110px"> px
+				<p class="description">
+					<?php
+					/* translators: %s: the default heights, desktop / mobile. */
+					echo esc_html( sprintf( __( 'Empty follows the default (%s).', 'oc-theme' ), ( $g['h'] > 0 ? $g['h'] . 'px' : $auto ) . ' / ' . ( $g['hm'] > 0 ? $g['hm'] . 'px' : $auto ) ) );
+					?>
+				</p>
 			</td>
 		</tr>
 		<?php
 		// Full-width options.
-		$this->select_field(
-			'_oc_hero_text',
-			$h['text'],
-			__( 'Text', 'oc-theme' ),
-			array(
-				'over'  => __( 'Over the image', 'oc-theme' ),
-				'below' => __( 'Below the image', 'oc-theme' ),
-			),
-			'',
-			'_oc_hero_layout:full'
-		);
-
-		$this->select_field(
-			'_oc_hero_pos',
-			$h['pos'],
-			__( 'Text position', 'oc-theme' ),
-			self::positions(),
-			'',
-			'_oc_hero_layout:full'
-		);
-
-		$this->select_field(
-			'_oc_hero_tone',
-			$h['tone'],
-			__( 'Text colour', 'oc-theme' ),
-			array(
-				'light' => __( 'Light (for a dark image)', 'oc-theme' ),
-				'dark'  => __( 'Dark (for a light image)', 'oc-theme' ),
-			),
-			'',
-			'_oc_hero_layout:full'
-		);
+		$this->select_field( '_oc_hero_text', $raw( '_oc_hero_text' ), __( 'Text', 'oc-theme' ), $first( $texts, $g['text'] ), '', $gate( array( 'full' ) ) );
+		$this->select_field( '_oc_hero_pos', $raw( '_oc_hero_pos' ), __( 'Text position', 'oc-theme' ), $first( self::positions(), $g['pos'] ), '', $gate( array( 'full' ) ) );
+		$this->select_field( '_oc_hero_tone', $raw( '_oc_hero_tone' ), __( 'Text colour', 'oc-theme' ), $first( $tones, $g['tone'] ), '', $gate( array( 'full' ) ) );
 		?>
-		<tr class="form-field" data-oc-when="_oc_hero_layout:full">
+		<tr class="form-field" data-oc-when="<?php echo esc_attr( $gate( array( 'full' ) ) ); ?>">
 			<th scope="row"><label for="_oc_hero_shade"><?php esc_html_e( 'Darken image', 'oc-theme' ); ?></label></th>
 			<td>
-				<input type="number" min="0" max="90" step="5" name="_oc_hero_shade" id="_oc_hero_shade" value="<?php echo esc_attr( (string) $h['shade'] ); ?>" style="inline-size:80px"> %
-				<p class="description"><?php esc_html_e( 'A dark veil over the image so light text stays readable. 0 = off.', 'oc-theme' ); ?></p>
+				<input type="number" min="0" max="90" step="5" name="_oc_hero_shade" id="_oc_hero_shade" value="<?php echo esc_attr( $raw( '_oc_hero_shade' ) ); ?>" placeholder="<?php echo esc_attr( (string) $g['shade'] ); ?>" style="inline-size:80px"> %
+				<p class="description">
+					<?php esc_html_e( 'A dark veil over the image so light text stays readable. 0 = off.', 'oc-theme' ); ?>
+					<?php
+					/* translators: %s: the default shade. */
+					echo esc_html( sprintf( __( 'Empty follows the default (%s).', 'oc-theme' ), $g['shade'] . '%' ) );
+					?>
+				</p>
 			</td>
 		</tr>
 		<?php
 		// Split options.
-		$this->select_field(
-			'_oc_hero_side',
-			$h['side'],
-			__( 'Image side', 'oc-theme' ),
-			array(
-				'start' => __( 'Reading side (right in Hebrew)', 'oc-theme' ),
-				'end'   => __( 'Opposite side', 'oc-theme' ),
-			),
-			'',
-			'_oc_hero_layout:split'
-		);
+		$this->select_field( '_oc_hero_side', $raw( '_oc_hero_side' ), __( 'Image side', 'oc-theme' ), $first( $sides, $g['side'] ), '', $gate( array( 'split' ) ) );
 		?>
-		<tr class="form-field" data-oc-when="_oc_hero_layout:split">
+		<tr class="form-field" data-oc-when="<?php echo esc_attr( $gate( array( 'split' ) ) ); ?>">
 			<th scope="row"><label for="_oc_hero_cbg"><?php esc_html_e( 'Content background', 'oc-theme' ); ?></label></th>
 			<td>
-				<input type="text" name="_oc_hero_cbg" id="_oc_hero_cbg" value="<?php echo esc_attr( $h['cbg'] ); ?>" placeholder="#f4f1ec" class="ltr" style="inline-size:140px">
+				<input type="text" name="_oc_hero_cbg" id="_oc_hero_cbg" value="<?php echo esc_attr( $raw( '_oc_hero_cbg' ) ); ?>" placeholder="<?php echo esc_attr( '' !== $g['cbg'] ? $g['cbg'] : '#f4f1ec' ); ?>" class="ltr" style="inline-size:140px">
 				<p class="description"><?php esc_html_e( 'Background colour behind the content half. Leave empty for the page background.', 'oc-theme' ); ?></p>
 			</td>
 		</tr>
@@ -989,6 +1090,27 @@ class Category {
 		.oc-vpick__art { inline-size: 100%; }
 		.oc-vpick__art svg { display: block; inline-size: 100%; block-size: 62px; }
 		.oc-vpick__lbl { font-size: 12px; font-weight: 600; line-height: 1.3; }
+		.oc-hfocus { display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start; }
+		.oc-hfocus__none { display: none; margin: 0; color: #646970; }
+		.oc-hfocus.is-empty .oc-hfocus__none { display: block; }
+		.oc-hfocus.is-empty .oc-hfocus__dev { display: none; }
+		.oc-hfocus__dev { display: flex; flex-direction: column; gap: 6px; }
+		.oc-hfocus__dev[data-dev="d"] { inline-size: min(440px, 100%); }
+		.oc-hfocus__dev[data-dev="m"] { inline-size: 190px; }
+		.oc-hfocus__cap { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px; font-weight: 600; }
+		.oc-hfocus__cap .oc-hfocus__same { font-weight: 400; color: #646970; }
+		.oc-hfocus__own, .oc-hfocus__follow, .oc-hfocus__same { display: none; }
+		.oc-hfocus__dev.is-mirror .oc-hfocus__own, .oc-hfocus__dev.is-mirror .oc-hfocus__same { display: inline; }
+		.oc-hfocus__dev[data-dev="m"]:not(.is-mirror) .oc-hfocus__follow { display: inline; }
+		.oc-hfocus__frame { position: relative; overflow: hidden; border-radius: 6px; background: #f0f0f1; cursor: grab; touch-action: none; box-shadow: inset 0 0 0 1px rgba(0,0,0,.1); }
+		.oc-hfocus__frame:active { cursor: grabbing; }
+		.oc-hfocus__frame img { position: absolute; inset: 0; inline-size: 100%; block-size: 100%; object-fit: cover; pointer-events: none; user-select: none; }
+		.oc-hfocus__dev.is-mirror .oc-hfocus__frame { opacity: .8; }
+		.oc-hfocus__row { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+		.oc-hfocus__row span { min-inline-size: 72px; }
+		.oc-hfocus__row input[type=range] { flex: 1; min-inline-size: 0; }
+		.oc-hfocus__row output { min-inline-size: 36px; text-align: end; font-variant-numeric: tabular-nums; }
+		.oc-hfocus__dev.no-x [data-row="x"], .oc-hfocus__dev.no-y [data-row="y"] { opacity: .4; }
 		</style>
 		<script>
 		( function ( $ ) {
@@ -1000,18 +1122,20 @@ class Category {
 				frame.on( 'select', function () {
 					var a = frame.state().get( 'selection' ).first().toJSON();
 					var u = ( a.sizes && a.sizes.thumbnail ) ? a.sizes.thumbnail.url : a.url;
-					$row.find( '[data-oc-img-input]' ).val( a.id );
+					$row.find( '[data-oc-img-input]' ).val( a.id ).attr( 'data-url', ( a.sizes && a.sizes.large ) ? a.sizes.large.url : a.url );
 					$row.find( '.oc-cat-img__view' ).html( '<img src="' + u + '" style="display:block;max-inline-size:120px;height:auto;border-radius:6px">' );
 					$row.find( '[data-oc-img-clear]' ).show();
+					$( document ).trigger( 'oc:img' );
 				} );
 				frame.open();
 			} );
 			$( document ).on( 'click', '[data-oc-img-clear]', function ( e ) {
 				e.preventDefault();
 				var $row = $( this ).closest( '[data-oc-imgfield]' );
-				$row.find( '[data-oc-img-input]' ).val( '' );
+				$row.find( '[data-oc-img-input]' ).val( '' ).attr( 'data-url', '' );
 				$row.find( '.oc-cat-img__view' ).empty();
 				$( this ).hide();
+				$( document ).trigger( 'oc:img' );
 			} );
 
 			// Conditional rows. data-oc-when="field:a|b,field2:c" — every
@@ -1055,6 +1179,100 @@ class Category {
 				e.preventDefault();
 				$( '[data-oc-focus]' ).val( 50 ).trigger( 'change' );
 			} );
+			// Hero picture position. Each frame takes the banner's real shape on
+			// its screen — the layout, the text placement and the heights,
+			// the category's own or the defaults — and cuts the picture the
+			// way the page will. Dragging moves the picture; so do the sliders.
+			var hf = document.querySelector( '[data-oc-hfocus]' );
+			if ( hf ) {
+				var G = { layout: hf.dataset.glayout, text: hf.dataset.gtext, h: parseInt( hf.dataset.gh, 10 ) || 0, hm: parseInt( hf.dataset.ghm, 10 ) || 0 };
+				var own = hf.querySelector( '[name="_oc_hero_fm"]' );
+				var eff = function ( name, def ) { var v = fval( name ); return '' === v ? def : v; };
+				var num = function ( name ) { var el = document.querySelector( '[name="' + name + '"]' ); return el ? ( parseInt( el.value, 10 ) || 0 ) : 0; };
+				var url = function ( name ) { var el = document.querySelector( '[name="' + name + '"]' ); return el ? ( el.getAttribute( 'data-url' ) || '' ) : ''; };
+				var parts = function ( dev ) {
+					var box = hf.querySelector( '[data-dev="' + dev + '"]' );
+					return { box: box, x: box.querySelector( '[data-axis="x"]' ), y: box.querySelector( '[data-axis="y"]' ), frame: box.querySelector( '[data-frame]' ), img: box.querySelector( '[data-frame] img' ) };
+				};
+				var shape = function ( dev, img ) {
+					var layout = eff( '_oc_hero_layout', G.layout );
+					var text = eff( '_oc_hero_text', G.text );
+					var natural = img && img.naturalWidth ? img.naturalWidth / img.naturalHeight : 16 / 9;
+					var h = 'd' === dev ? ( num( '_oc_hero_h' ) || G.h ) : ( num( '_oc_hero_hm' ) || G.hm );
+					var wide = 'd' === dev ? 1440 : 390;
+					if ( 'split' === layout ) { return 'd' === dev ? 720 / ( h || 440 ) : wide / ( h || 300 ); }
+					if ( 'below' === text && ! h ) { return natural; }
+					return wide / ( h || ( 'd' === dev ? 420 : 340 ) );
+				};
+				var draw = function () {
+					var dUrl = url( '_oc_hero_img' );
+					var mUrl = url( '_oc_hero_img_m' ) || dUrl;
+					hf.classList.toggle( 'is-empty', '' === dUrl );
+					[ 'd', 'm' ].forEach( function ( dev ) {
+						var p = parts( dev );
+						var src = 'd' === dev ? dUrl : mUrl;
+						if ( src && p.img.getAttribute( 'src' ) !== src ) { p.img.src = src; }
+						var mirror = 'm' === dev && '1' !== own.value;
+						if ( mirror ) { var d = parts( 'd' ); p.x.value = d.x.value; p.y.value = d.y.value; }
+						p.x.disabled = p.y.disabled = mirror;
+						p.box.classList.toggle( 'is-mirror', mirror );
+						p.frame.style.aspectRatio = String( shape( dev, p.img ) );
+						p.img.style.objectPosition = p.x.value + '% ' + p.y.value + '%';
+						p.box.querySelector( '[data-out="x"]' ).textContent = p.x.value + '%';
+						p.box.querySelector( '[data-out="y"]' ).textContent = p.y.value + '%';
+						// How far the picture overhangs the frame on each axis:
+						// an axis with nothing hidden has nothing to move.
+						var fw = p.frame.clientWidth, fh = p.frame.clientHeight, nw = p.img.naturalWidth, nh = p.img.naturalHeight, sx = 0, sy = 0;
+						if ( fw && fh && nw && nh ) { var k = Math.max( fw / nw, fh / nh ); sx = nw * k - fw; sy = nh * k - fh; }
+						p.frame.setAttribute( 'data-sx', sx );
+						p.frame.setAttribute( 'data-sy', sy );
+						p.box.classList.toggle( 'no-x', sx < 1 );
+						p.box.classList.toggle( 'no-y', sy < 1 );
+					} );
+				};
+				hf.addEventListener( 'pointerdown', function ( e ) {
+					var frame = e.target.closest( '[data-frame]' );
+					if ( ! frame ) { return; }
+					var dev = frame.closest( '[data-dev]' ).dataset.dev;
+					// Dragging the phone frame is asking for a place of its own.
+					if ( 'm' === dev && '1' !== own.value ) { own.value = '1'; draw(); }
+					var p = parts( dev ), sx = parseFloat( frame.getAttribute( 'data-sx' ) ) || 0, sy = parseFloat( frame.getAttribute( 'data-sy' ) ) || 0;
+					var x0 = e.clientX, y0 = e.clientY, vx = parseFloat( p.x.value ), vy = parseFloat( p.y.value );
+					e.preventDefault();
+					frame.setPointerCapture( e.pointerId );
+					var move = function ( ev ) {
+						// The picture follows the hand: dragging it right shows
+						// more of its left side, which is a smaller percentage.
+						if ( sx >= 1 ) { p.x.value = Math.round( Math.max( 0, Math.min( 100, vx - ( ev.clientX - x0 ) / sx * 100 ) ) ); }
+						if ( sy >= 1 ) { p.y.value = Math.round( Math.max( 0, Math.min( 100, vy - ( ev.clientY - y0 ) / sy * 100 ) ) ); }
+						draw();
+					};
+					var up = function () {
+						frame.removeEventListener( 'pointermove', move );
+						frame.removeEventListener( 'pointerup', up );
+						frame.removeEventListener( 'pointercancel', up );
+					};
+					frame.addEventListener( 'pointermove', move );
+					frame.addEventListener( 'pointerup', up );
+					frame.addEventListener( 'pointercancel', up );
+				} );
+				hf.addEventListener( 'input', function ( e ) { if ( e.target.hasAttribute( 'data-axis' ) ) { draw(); } } );
+				hf.addEventListener( 'click', function ( e ) {
+					var b = e.target.closest( '[data-hf]' );
+					if ( ! b ) { return; }
+					e.preventDefault();
+					var act = b.getAttribute( 'data-hf' ), dev = b.closest( '[data-dev]' ).dataset.dev, p = parts( dev );
+					if ( 'own' === act ) { own.value = '1'; }
+					if ( 'follow' === act ) { own.value = ''; }
+					if ( 'centre' === act ) { if ( 'm' === dev ) { own.value = '1'; } p.x.value = 50; p.y.value = 50; }
+					draw();
+				} );
+				hf.querySelectorAll( '[data-frame] img' ).forEach( function ( i ) { i.addEventListener( 'load', draw ); } );
+				$( document ).on( 'change input', '[name="_oc_hero_layout"], [name="_oc_hero_text"], [name="_oc_hero_h"], [name="_oc_hero_hm"]', draw );
+				$( document ).on( 'oc:img', draw );
+				window.addEventListener( 'resize', draw );
+				draw();
+			}
 			sync();
 			vsel();
 		} )( jQuery );
@@ -1077,7 +1295,7 @@ class Category {
 		// Core verifies the term-edit nonce before this fires.
 		// phpcs:disable WordPress.Security.NonceVerification.Missing
 
-		$this->save_enum( $term_id, '_oc_hero_layout', array( 'full', 'split' ) );
+		$this->save_enum( $term_id, '_oc_hero_layout', array( 'none', 'full', 'split' ) );
 		$this->save_int( $term_id, '_oc_hero_img' );
 		$this->save_int( $term_id, '_oc_hero_img_m' );
 		$this->save_int( $term_id, '_oc_hero_h' );
@@ -1085,9 +1303,10 @@ class Category {
 		$this->save_enum( $term_id, '_oc_hero_text', array( 'over', 'below' ) );
 		$this->save_enum( $term_id, '_oc_hero_pos', array_keys( self::positions() ) );
 		$this->save_enum( $term_id, '_oc_hero_tone', array( 'light', 'dark' ) );
-		$this->save_int( $term_id, '_oc_hero_shade', 0, 90 );
+		$this->save_optional_int( $term_id, '_oc_hero_shade', 90 );
 		$this->save_enum( $term_id, '_oc_hero_side', array( 'start', 'end' ) );
 		$this->save_colour( $term_id, '_oc_hero_cbg' );
+		$this->save_hero_focus( $term_id );
 
 		$this->save_int( $term_id, '_oc_card_img' );
 
@@ -1186,6 +1405,129 @@ class Category {
 			</td>
 		</tr>
 		<?php
+	}
+
+	/**
+	 * The hero picture's position: a frame cut to the banner's real shape
+	 * on each screen, the picture moving inside it as it is dragged or the
+	 * sliders move — so what the page will keep is what the screen shows.
+	 *
+	 * @param int                 $term_id Term id.
+	 * @param array<string,mixed> $g       Shop-wide hero defaults.
+	 * @param string              $gate    data-oc-when rule for the row.
+	 */
+	private function hero_focus_field( int $term_id, array $g, string $gate ): void {
+		$get = static function ( string $key ) use ( $term_id ): string {
+			return (string) get_term_meta( $term_id, $key, true );
+		};
+
+		$pct = static function ( string $v, int $def ): int {
+			return '' === $v ? $def : max( 0, min( 100, (int) $v ) );
+		};
+
+		$fx  = $pct( $get( '_oc_hero_fx' ), 50 );
+		$fy  = $pct( $get( '_oc_hero_fy' ), 50 );
+		$own = '' !== $get( '_oc_hero_fxm' ) || '' !== $get( '_oc_hero_fym' );
+
+		$screens = array(
+			'd' => array( __( 'Desktop', 'oc-theme' ), '_oc_hero_fx', '_oc_hero_fy', $fx, $fy ),
+			'm' => array( __( 'Mobile', 'oc-theme' ), '_oc_hero_fxm', '_oc_hero_fym', $pct( $get( '_oc_hero_fxm' ), $fx ), $pct( $get( '_oc_hero_fym' ), $fy ) ),
+		);
+		?>
+		<tr class="form-field" data-oc-when="<?php echo esc_attr( $gate ); ?>">
+			<th scope="row"><label><?php esc_html_e( 'Picture position', 'oc-theme' ); ?></label></th>
+			<td>
+				<div class="oc-hfocus" data-oc-hfocus data-glayout="<?php echo esc_attr( (string) $g['layout'] ); ?>" data-gtext="<?php echo esc_attr( (string) $g['text'] ); ?>" data-gh="<?php echo esc_attr( (string) $g['h'] ); ?>" data-ghm="<?php echo esc_attr( (string) $g['hm'] ); ?>">
+					<input type="hidden" name="_oc_hero_fm" value="<?php echo esc_attr( $own ? '1' : '' ); ?>">
+					<p class="oc-hfocus__none"><?php esc_html_e( 'Choose a hero image first.', 'oc-theme' ); ?></p>
+					<?php foreach ( $screens as $key => $screen ) : ?>
+						<div class="oc-hfocus__dev" data-dev="<?php echo esc_attr( $key ); ?>">
+							<div class="oc-hfocus__cap">
+								<?php echo esc_html( $screen[0] ); ?>
+								<?php if ( 'm' === $key ) : ?>
+									<span class="oc-hfocus__same"><?php esc_html_e( 'Same as desktop', 'oc-theme' ); ?></span>
+									<button type="button" class="button-link oc-hfocus__own" data-hf="own"><?php esc_html_e( 'Give mobile its own', 'oc-theme' ); ?></button>
+									<button type="button" class="button-link oc-hfocus__follow" data-hf="follow"><?php esc_html_e( 'Follow desktop', 'oc-theme' ); ?></button>
+								<?php endif; ?>
+							</div>
+							<div class="oc-hfocus__frame" data-frame><img alt="" draggable="false"></div>
+							<div class="oc-hfocus__row" data-row="x">
+								<span><?php esc_html_e( 'Side to side', 'oc-theme' ); ?></span>
+								<input type="range" dir="ltr" min="0" max="100" step="1" name="<?php echo esc_attr( $screen[1] ); ?>" value="<?php echo esc_attr( (string) $screen[3] ); ?>" data-axis="x">
+								<output data-out="x"></output>
+							</div>
+							<div class="oc-hfocus__row" data-row="y">
+								<span><?php esc_html_e( 'Up and down', 'oc-theme' ); ?></span>
+								<input type="range" dir="ltr" min="0" max="100" step="1" name="<?php echo esc_attr( $screen[2] ); ?>" value="<?php echo esc_attr( (string) $screen[4] ); ?>" data-axis="y">
+								<output data-out="y"></output>
+							</div>
+							<button type="button" class="button-link" data-hf="centre"><?php esc_html_e( 'Centre', 'oc-theme' ); ?></button>
+						</div>
+					<?php endforeach; ?>
+				</div>
+				<p class="description"><?php esc_html_e( 'Drag the picture, or use the sliders, to choose what stays in view. Each frame is cut to the banner’s real shape on that screen.', 'oc-theme' ); ?></p>
+			</td>
+		</tr>
+		<?php
+	}
+
+	/**
+	 * Save a number the category may leave to the default: empty deletes,
+	 * anything else — zero included — is kept.
+	 *
+	 * @param int    $term_id Term id.
+	 * @param string $key     Meta key / POST key.
+	 * @param int    $max     Largest kept value.
+	 */
+	private function save_optional_int( int $term_id, string $key, int $max ): void {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- cast below.
+		$raw = isset( $_POST[ $key ] ) ? trim( (string) wp_unslash( $_POST[ $key ] ) ) : '';
+
+		if ( '' === $raw || ! is_numeric( $raw ) ) {
+			delete_term_meta( $term_id, $key );
+		} else {
+			update_term_meta( $term_id, $key, (string) max( 0, min( $max, (int) $raw ) ) );
+		}
+	}
+
+	/**
+	 * Save the hero picture's position: desktop always, mobile only when it
+	 * was given a place of its own.
+	 *
+	 * @param int $term_id Term id.
+	 */
+	private function save_hero_focus( int $term_id ): void {
+		// phpcs:disable WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- core verified the term-edit nonce; values are cast.
+		$read = static function ( string $key ): ?int {
+			if ( ! isset( $_POST[ $key ] ) || ! is_numeric( wp_unslash( $_POST[ $key ] ) ) ) {
+				return null;
+			}
+
+			return max( 0, min( 100, (int) wp_unslash( $_POST[ $key ] ) ) );
+		};
+
+		$own = isset( $_POST['_oc_hero_fm'] ) && '1' === (string) wp_unslash( $_POST['_oc_hero_fm'] );
+		// phpcs:enable WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+
+		foreach ( array( '_oc_hero_fx', '_oc_hero_fy' ) as $key ) {
+			$v = $read( $key );
+
+			if ( null === $v || 50 === $v ) {
+				delete_term_meta( $term_id, $key );
+			} else {
+				update_term_meta( $term_id, $key, (string) $v );
+			}
+		}
+
+		foreach ( array( '_oc_hero_fxm', '_oc_hero_fym' ) as $key ) {
+			$v = $own ? $read( $key ) : null;
+
+			if ( null === $v ) {
+				delete_term_meta( $term_id, $key );
+			} else {
+				update_term_meta( $term_id, $key, (string) $v );
+			}
+		}
 	}
 
 	/**

@@ -7326,3 +7326,48 @@ msgstr "שבועות"
 
 msgid "Independence Day"
 msgstr "יום העצמאות"
+
+msgid "Category hero"
+msgstr "באנר קטגוריה"
+
+msgid "Every category page takes this look. A category can choose its own on its edit screen; its pictures always come from the category."
+msgstr "כל עמודי הקטגוריה מקבלים את המראה הזה. קטגוריה יכולה לבחור מבנה משלה במסך העריכה שלה; התמונות תמיד מגיעות מהקטגוריה עצמה."
+
+msgid "Height — desktop (px, 0 = automatic)"
+msgstr "גובה — דסקטופ (פיקסלים, 0 = אוטומטי)"
+
+msgid "Height — mobile (px, 0 = automatic)"
+msgstr "גובה — מובייל (פיקסלים, 0 = אוטומטי)"
+
+msgid "Darken image (%)"
+msgstr "הכהיית התמונה (%)"
+
+msgid "Default — %s"
+msgstr "ברירת מחדל — %s"
+
+msgid "A banner at the top of this category. The category name and description move onto it. “Default” follows Customize › Catalogue; pick anything else to give this category its own."
+msgstr "באנר בראש הקטגוריה. שם הקטגוריה והתיאור עוברים אליו. ״ברירת מחדל״ נלקחת מהתאמה אישית › קטלוג; כל בחירה אחרת נותנת לקטגוריה הזו מבנה משלה."
+
+msgid "Empty follows the default (%s)."
+msgstr "ריק = ברירת המחדל (%s)."
+
+msgid "automatic"
+msgstr "אוטומטי"
+
+msgid "Choose a hero image first."
+msgstr "בחרו קודם תמונת באנר."
+
+msgid "Drag the picture, or use the sliders, to choose what stays in view. Each frame is cut to the banner’s real shape on that screen."
+msgstr "גררו את התמונה או הזיזו את הסליידרים כדי לבחור מה יישאר בתמונה. כל מסגרת חתוכה בדיוק לצורת הבאנר באותו מסך."
+
+msgid "Side to side"
+msgstr "ימין–שמאל"
+
+msgid "Up and down"
+msgstr "למעלה–למטה"
+
+msgid "Give mobile its own"
+msgstr "מיקום נפרד למובייל"
+
+msgid "Follow desktop"
+msgstr "חזרה לדסקטופ"

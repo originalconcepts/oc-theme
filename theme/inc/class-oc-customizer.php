@@ -1390,6 +1390,84 @@ final class Customizer {
 			);
 		}
 
+		$this->heading( $c, 'oc_h_cat_hero', $section, __( 'Category hero', 'oc-theme' ) );
+
+		$this->choice(
+			$c,
+			'oc_chero_layout',
+			$section,
+			__( 'Layout', 'oc-theme' ),
+			array(
+				'none'  => __( 'None — plain title', 'oc-theme' ),
+				'full'  => __( 'Full-width image', 'oc-theme' ),
+				'split' => __( 'Half image · half content', 'oc-theme' ),
+			),
+			'none',
+			null,
+			__( 'Every category page takes this look. A category can choose its own on its edit screen; its pictures always come from the category.', 'oc-theme' )
+		);
+
+		$hero_any   = array(
+			'setting' => 'oc_chero_layout',
+			'values'  => array( 'full', 'split' ),
+		);
+		$hero_full  = array(
+			'setting' => 'oc_chero_layout',
+			'values'  => array( 'full' ),
+		);
+		$hero_split = array(
+			'setting' => 'oc_chero_layout',
+			'values'  => array( 'split' ),
+		);
+
+		$this->number( $c, 'oc_chero_h', $section, __( 'Height — desktop (px, 0 = automatic)', 'oc-theme' ), 0, 0, 1200, $hero_any );
+		$this->number( $c, 'oc_chero_hm', $section, __( 'Height — mobile (px, 0 = automatic)', 'oc-theme' ), 0, 0, 1200, $hero_any );
+
+		$this->choice(
+			$c,
+			'oc_chero_text',
+			$section,
+			__( 'Text', 'oc-theme' ),
+			array(
+				'over'  => __( 'Over the image', 'oc-theme' ),
+				'below' => __( 'Below the image', 'oc-theme' ),
+			),
+			'over',
+			$hero_full
+		);
+
+		$this->choice( $c, 'oc_chero_pos', $section, __( 'Text position', 'oc-theme' ), Category::positions(), 'bs', $hero_full );
+
+		$this->choice(
+			$c,
+			'oc_chero_tone',
+			$section,
+			__( 'Text colour', 'oc-theme' ),
+			array(
+				'light' => __( 'Light (for a dark image)', 'oc-theme' ),
+				'dark'  => __( 'Dark (for a light image)', 'oc-theme' ),
+			),
+			'light',
+			$hero_full
+		);
+
+		$this->number( $c, 'oc_chero_shade', $section, __( 'Darken image (%)', 'oc-theme' ), 0, 0, 90, $hero_full );
+
+		$this->choice(
+			$c,
+			'oc_chero_side',
+			$section,
+			__( 'Image side', 'oc-theme' ),
+			array(
+				'start' => __( 'Reading side (right in Hebrew)', 'oc-theme' ),
+				'end'   => __( 'Opposite side', 'oc-theme' ),
+			),
+			'start',
+			$hero_split
+		);
+
+		$this->color( $c, 'oc_chero_cbg', $section, __( 'Content background', 'oc-theme' ), '', $hero_split );
+
 		$this->heading( $c, 'oc_h_cat_structure', $section, __( 'Page structure', 'oc-theme' ) );
 
 		$this->number( $c, 'oc_catalog_width_px', $section, __( 'Page width override (0 = inherit)', 'oc-theme' ), 0, 0, 1920 );

@@ -3359,7 +3359,13 @@ html.oc-drw-open { overflow: hidden; }
 	inline-size: 100%;
 	margin-block-end: var(--oc-gap);
 }
-.oc-chero__img { display: block; inline-size: 100%; object-fit: cover; }
+.oc-chero__img {
+	display: block;
+	inline-size: 100%;
+	object-fit: cover;
+	/* the part of the picture the category chose to keep */
+	object-position: var(--ch-fx, 50%) var(--ch-fy, 50%);
+}
 .oc-chero picture { display: contents; }
 /* In the fixed-height layouts (text-over, split) the image fills its box by
  * being pinned to it — a percentage height would collapse to the image's
@@ -3456,6 +3462,7 @@ html.oc-drw-open { overflow: hidden; }
 .oc-chero--img-end .oc-chero__panel { order: 1; }
 
 @media (max-width: 700px) {
+	.oc-chero__img { object-position: var(--ch-fxm, var(--ch-fx, 50%)) var(--ch-fym, var(--ch-fy, 50%)); }
 	.oc-chero--text-over .oc-chero__media { block-size: var(--ch-hm, 340px); }
 	.oc-chero--text-below .oc-chero__media { block-size: var(--ch-hm); }
 	.oc-chero--text-below .oc-chero__img { block-size: var(--ch-hm, auto); }
