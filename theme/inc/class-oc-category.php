@@ -1061,8 +1061,8 @@ class Category {
 
 		// "field:value|value" — and a trailing "|" also matches the empty
 		// "as in Customize" answer while Customize holds one of the values.
-		$when = static function ( string $key, array $values, string $default ): string {
-			return $key . ':' . implode( '|', $values ) . ( in_array( $default, $values, true ) ? '|' : '' );
+		$when = static function ( string $key, array $values, string $customize ): string {
+			return $key . ':' . implode( '|', $values ) . ( in_array( $customize, $values, true ) ? '|' : '' );
 		};
 
 		$first = static function ( array $choices, string $current ): array {
