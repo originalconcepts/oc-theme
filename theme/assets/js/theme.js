@@ -1496,14 +1496,51 @@
 		}
 
 
+		// The card's own pictures, kept before anything reorders them, so a
+		// colour without pictures can put them back as they were.
+		var cardLi = media.closest( 'li.product' );
+		if ( cardLi && undefined === cardLi.__ocStrip ) {
+			cardLi.__ocStrip = strip.innerHTML;
+		}
+
+		// Endless both ways. Past either end the strip does not rewind across
+		// every picture to the other end: the picture from the far end is moved
+		// round to this side (the view held still on the current one), and the
+		// strip then slides a single step onto it — each arrow always moves one
+		// picture in its own direction.
 		media.querySelectorAll( '.oc-card-media__nav' ).forEach( function ( btn ) {
 			btn.addEventListener( 'click', function ( event ) {
 				event.preventDefault();
 				event.stopPropagation();
 
+				var n = count();
+
+				if ( n < 2 ) {
+					return;
+				}
+
 				var dir = btn.classList.contains( 'oc-card-media__nav--next' ) ? 1 : -1;
-				var target = ( currentIndex() + dir + count() ) % count();
-				goTo( target, Math.abs( target - currentIndex() ) > 1 );
+				var at  = currentIndex();
+
+				if ( dir < 0 && 0 === at ) {
+					strip.insertBefore( strip.lastElementChild, strip.firstElementChild );
+					goTo( 1, true );
+					requestAnimationFrame( function () {
+						goTo( 0, false );
+					} );
+					return;
+				}
+
+				if ( dir > 0 && n - 1 === at ) {
+					strip.appendChild( strip.firstElementChild );
+					goTo( n - 2, true );
+					requestAnimationFrame( function () {
+						goTo( n - 1, false );
+					} );
+					return;
+				}
+
+				goTo( at + dir, false );
 			} );
 		} );
 	}
@@ -1538,7 +1575,8 @@
 
 		var strip = li.querySelector( '.oc-card-media__strip' );
 
-		// The card's own pictures, kept from before the first swap.
+		// The card's own pictures, kept from before the first swap (the
+		// gallery keeps them at bind time; this covers a card without arrows).
 		if ( strip && undefined === li.__ocStrip ) {
 			li.__ocStrip = strip.innerHTML;
 		}
