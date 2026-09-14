@@ -688,6 +688,31 @@
 
 			window.addEventListener( 'scroll', updatePagingState, { passive: true } );
 
+			// A fetched page's grid exactly as the server laid it out: the
+			// products AND the blocks placed among them. Taking products alone
+			// dropped the first page's banner and slider rows, so every card
+			// after them came back a few places — a column — from where the
+			// visitor left it, and jumped there once the earlier pages arrived.
+			function gridItems( doc ) {
+				var grid = Array.prototype.filter.call( doc.querySelectorAll( 'ul.products' ), function ( u ) {
+					return ! u.closest( 'li' );
+				} )[ 0 ];
+
+				return grid ? Array.prototype.filter.call( grid.children, function ( el ) {
+					return 'LI' === el.tagName;
+				} ) : [];
+			}
+
+			// What an arriving grid item needs wired: card galleries, videos,
+			// and a block's deferred shelf, filled the way the page's own are.
+			function wireItem( node ) {
+				node.querySelectorAll( '.oc-card-media--gallery' ).forEach( bindCardGallery );
+				ocLazyVideos( node );
+				if ( window.OCB && 'function' === typeof window.OCB.fill ) {
+					window.OCB.fill( node );
+				}
+			}
+
 			// Landing mid-catalogue (back from a product on page N): quietly
 			// pull every earlier page in above the grid, keeping the view
 			// anchored, so scrolling up reaches the whole catalogue.
@@ -712,12 +737,11 @@
 						var beforeTop = anchor ? anchor.getBoundingClientRect().top : 0;
 						var firstExisting = pagingUl.firstChild;
 
-						doc.querySelectorAll( 'ul.products > li.product' ).forEach( function ( li ) {
+						gridItems( doc ).forEach( function ( li ) {
 							var node = document.importNode( li, true );
 							node.dataset.ocpg = prevUrl;
 							pagingUl.insertBefore( node, firstExisting );
-							node.querySelectorAll( '.oc-card-media--gallery' ).forEach( bindCardGallery );
-							ocLazyVideos( node );
+							wireItem( node );
 						} );
 
 						if ( anchor ) {
@@ -752,12 +776,11 @@
 					.then( function ( html ) {
 						var doc = new DOMParser().parseFromString( html, 'text/html' );
 
-						doc.querySelectorAll( 'ul.products > li.product' ).forEach( function ( li ) {
+						gridItems( doc ).forEach( function ( li ) {
 							var node = document.importNode( li, true );
 							node.dataset.ocpg = loadedUrl;
 							pagingUl.appendChild( node );
-							node.querySelectorAll( '.oc-card-media--gallery' ).forEach( bindCardGallery );
-							ocLazyVideos( node );
+							wireItem( node );
 						} );
 
 						pagingNext = doc.querySelector( '.woocommerce-pagination a.next' );

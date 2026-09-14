@@ -407,8 +407,14 @@
 
 	/* ---------- deferred shelves: filled in after load (cache-safe) ---------- */
 
-	document.querySelectorAll( '[data-oc-shelf]' ).forEach( function ( box ) {
+	function fillShelf( box ) {
 		var cfg;
+
+		if ( box.__ocbFilling ) {
+			return;
+		}
+
+		box.__ocbFilling = true;
 
 		try {
 			cfg = JSON.parse( box.getAttribute( 'data-oc-shelf' ) );
@@ -443,7 +449,15 @@
 				box.classList.add( 'is-in' );
 			} )
 			.catch( function () {} );
-	} );
+	}
+
+	document.querySelectorAll( '[data-oc-shelf]' ).forEach( fillShelf );
+
+	// A catalogue page the theme pulls in while paging brings its blocks
+	// along; their deferred shelves are filled the same way.
+	window.OCB.fill = function ( root ) {
+		( root || document ).querySelectorAll( '[data-oc-shelf]' ).forEach( fillShelf );
+	};
 
 	/* ---------- the marquee ---------- */
 
