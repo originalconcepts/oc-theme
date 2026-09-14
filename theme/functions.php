@@ -349,6 +349,20 @@ function oc_cart_icon_svg(): string {
 
 	return $oc_cart_icons[ $oc_style ] ?? $oc_cart_icons['cart'];
 }
+
+/**
+ * The same cart icon, dressed for a button: a class of its own and a size.
+ * The card's add-to-cart and the Shop the Look add wear the cart the header
+ * wears, whichever style was chosen there.
+ *
+ * @param string $css_class Class for the svg.
+ * @param int    $size      Width and height in pixels.
+ */
+function oc_cart_icon_mark( string $css_class, int $size = 18 ): string {
+	$svg = (string) preg_replace( '/width="20" height="20"/', 'width="' . $size . '" height="' . $size . '"', oc_cart_icon_svg(), 1 );
+
+	return (string) preg_replace( '/<svg /', '<svg class="' . esc_attr( $css_class ) . '" ', $svg, 1 );
+}
 add_action( 'oc_header_icons', 'oc_header_icons_render' );
 
 /**

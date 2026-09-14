@@ -2013,7 +2013,9 @@ final class Customizer {
 				'cart' => __( 'Cart', 'oc-theme' ),
 				'plus' => __( 'Plus', 'oc-theme' ),
 			),
-			'cart'
+			'cart',
+			null,
+			__( 'The cart is the same icon the header wears.', 'oc-theme' )
 		);
 
 		$this->choice(

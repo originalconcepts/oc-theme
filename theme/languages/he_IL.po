@@ -7581,3 +7581,6 @@ msgstr "שורות"
 
 msgid "Max swatches on the card — mobile (0 = as on desktop)"
 msgstr "מקסימום סוואטשים בכרטיס — מובייל (0 = כמו במחשב)"
+
+msgid "The cart is the same icon the header wears."
+msgstr "הסל הוא אותו אייקון שנבחר להדר."
