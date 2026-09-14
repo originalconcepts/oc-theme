@@ -1500,6 +1500,19 @@
 			strip.scrollLeft = 0;
 		}
 
+		// Every link on the card to the card's own product takes the new
+		// colour. Matched by the product's address, whatever the shop's
+		// permalinks look like: eden's are /shop/<category>/<product>/, and
+		// a test for "/product/" left its links on the first colour.
+		var bare = function ( u ) {
+			var x = document.createElement( 'a' );
+			x.href = u || '';
+			return x.href.split( '#' )[ 0 ].split( '?' )[ 0 ];
+		};
+		var was  = li.querySelector( '.oc-colors__item.is-current' );
+		var lead = li.querySelector( 'a.woocommerce-LoopProduct-link' );
+		var home = was && was.dataset.url ? bare( was.dataset.url ) : ( lead ? bare( lead.href ) : '' );
+
 		li.querySelectorAll( 'a[href]' ).forEach( function ( a ) {
 			if ( a.closest( '.oc-colors' ) ) {
 				return;
@@ -1511,7 +1524,7 @@
 				a.dataset.product_id = item.dataset.pid;
 				return;
 			}
-			if ( a.href.indexOf( '/product/' ) > -1 ) {
+			if ( a.classList.contains( 'woocommerce-LoopProduct-link' ) || ( home && bare( a.href ) === home ) ) {
 				a.href = item.dataset.url;
 			}
 		} );
