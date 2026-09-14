@@ -2884,14 +2884,22 @@
 				return;
 			}
 
-			var id = event.detail && event.detail.id;
-			var card = id && document.querySelector( '[data-oc-xs="' + id + '"]' );
-			var name = card && card.querySelector( '.oc-xsell__name' );
-			var pic = card && card.querySelector( 'img' );
+			// The sender says which product it was, with its name and picture
+			// when it has them. Otherwise the product is looked up on the page
+			// — in any goes-with shape, not only the ticked rows: the wide and
+			// row shapes carry no data-oc-xs, and their toast came up as a
+			// bare "added to cart" with no picture and no name.
+			var detail = event.detail || {};
+			var id     = detail.id;
+			var button = id && document.querySelector( '[data-oc-xs-add="' + id + '"]' );
+			var card   = ( button && button.closest( '[data-oc-xs], .oc-xsell__wide, .oc-xsell__square' ) ) ||
+				( id && document.querySelector( '[data-oc-xs="' + id + '"]' ) );
+			var name   = card && card.querySelector( '.oc-xsell__name, .oc-xsell__tilename' );
+			var pic    = card && card.querySelector( 'img' );
 
 			cartToast(
-				name ? name.textContent.trim() : '',
-				pic ? pic.currentSrc || pic.src : ''
+				detail.name || ( name ? name.textContent.trim() : '' ),
+				detail.img || ( pic ? pic.currentSrc || pic.src : '' )
 			);
 		} );
 
@@ -8933,9 +8941,17 @@ window.__ocMoney = function ( n, money ) {
 					// The shop decides what happens next: the drawer opens,
 					// or a toast says so. Both live in the cart's own script,
 					// which listens for this.
+					var item    = add.closest( '[data-oc-xs], .oc-xsell__wide, .oc-xsell__square' );
+					var itemPic = item && item.querySelector( 'img' );
+					var itemNm  = item && item.querySelector( '.oc-xsell__name' );
+
 					document.body.dispatchEvent( new CustomEvent( 'oc-added-to-cart', {
 						bubbles: true,
-						detail: { id: add.dataset.ocXsAdd }
+						detail: {
+							id: add.dataset.ocXsAdd,
+							name: itemNm ? itemNm.textContent.trim() : '',
+							img: itemPic ? itemPic.currentSrc || itemPic.src : ''
+						}
 					} ) );
 				} )
 				.catch( function () { add.classList.remove( 'is-loading' ); } );
