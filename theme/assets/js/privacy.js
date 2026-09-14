@@ -255,6 +255,8 @@
 		} else if ( t.closest( '[data-oc-privacy-manage]' ) ) {
 			if ( banner ) { banner.hidden = true; }
 			openPanel();
+		} else if ( t.closest( '[data-oc-privacy-open]' ) ) {
+			openPanel();
 		} else if ( t.closest( '[data-oc-privacy-close]' ) || t === veil ) {
 			closePanel();
 		}
