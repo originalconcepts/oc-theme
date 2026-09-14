@@ -222,6 +222,11 @@ final class Variations {
 		// And a product entered with nothing chosen still opens on its first
 		// variation — the same default the catalogue card shows.
 		add_filter( 'woocommerce_product_get_default_attributes', array( $this, 'first_variation_default' ), 10, 2 );
+
+		// A colour with its own gallery lends its first picture to the
+		// variation data, so Woo's own image update agrees with the gallery
+		// instead of putting the product's main photo back over it.
+		add_filter( 'woocommerce_available_variation', array( $this, 'variation_gallery_image' ), 20, 3 );
 	}
 
 	/**
@@ -242,9 +247,11 @@ final class Variations {
 	}
 
 	/**
-	 * A variable product with no chosen defaults opens on its first
-	 * variation, matching the swatch the catalogue pre-marks. A default the
-	 * shop owner set per product always wins.
+	 * A variable product with no chosen defaults opens on a real variation
+	 * in the colour the catalogue card pre-marks — the colour whose gallery
+	 * holds the product's main photo, else the first. A default the shop
+	 * owner set per product always wins, and a product marked "open with
+	 * nothing chosen" gets none.
 	 *
 	 * @param array $defaults Saved defaults.
 	 * @param mixed $product  The product.
@@ -260,13 +267,54 @@ final class Variations {
 
 		$id = $product->get_id();
 
-		if ( ! isset( $cache[ $id ] ) ) {
-			$cache[ $id ] = array();
+		if ( isset( $cache[ $id ] ) ) {
+			return $cache[ $id ];
+		}
 
-			foreach ( $product->get_variation_attributes() as $name => $options ) {
-				if ( ! empty( $options ) ) {
-					$cache[ $id ][ sanitize_title( (string) $name ) ] = (string) reset( $options );
-				}
+		$cache[ $id ] = array();
+
+		if ( self::no_default( $id ) ) {
+			return $cache[ $id ];
+		}
+
+		$lead = $this->default_term( $product );
+		$pick = array();
+
+		// A combination that exists: the first variation in the lead colour
+		// (or open to any colour), else simply the first variation.
+		foreach ( $product->get_visible_children() as $index => $child_id ) {
+			$attrs = wc_get_product_variation_attributes( (int) $child_id );
+
+			if ( 0 === $index ) {
+				$pick = $attrs;
+			}
+
+			if ( null === $lead ) {
+				break;
+			}
+
+			$have = (string) ( $attrs[ 'attribute_' . $lead['key'] ] ?? '' );
+
+			if ( '' === $have || $have === $lead['value'] ) {
+				$pick = $attrs;
+				break;
+			}
+		}
+
+		foreach ( $product->get_variation_attributes() as $name => $options ) {
+			$key   = sanitize_title( (string) $name );
+			$value = (string) ( $pick[ 'attribute_' . $key ] ?? '' );
+
+			if ( '' === $value && null !== $lead && $lead['key'] === $key ) {
+				$value = $lead['value'];
+			}
+
+			if ( '' === $value && ! empty( $options ) ) {
+				$value = (string) reset( $options );
+			}
+
+			if ( '' !== $value ) {
+				$cache[ $id ][ $key ] = $value;
 			}
 		}
 
@@ -301,24 +349,100 @@ final class Variations {
 			return null;
 		}
 
-		$attr = $this->swatch_attr( $product );
-
-		if ( null === $attr || count( $attr['values'] ) < 2 ) {
+		if ( self::no_default( $id ) ) {
 			return null;
 		}
 
-		foreach ( $attr['values'] as $val ) {
-			if ( '' !== $this->value_style( $product, $attr, $val, $attr['type'] ) ) {
-				$cache[ $id ] = array(
-					'key'   => $attr['key'],
-					'value' => $val['value'],
-				);
+		$attr = $this->swatch_attr( $product );
 
-				return $cache[ $id ];
+		if ( null === $attr ) {
+			return null;
+		}
+
+		$values = $this->sold_values( $product, $attr );
+
+		if ( count( $values ) < 2 ) {
+			return null;
+		}
+
+		// The colour the product's main photo belongs to leads: the card
+		// shows that photo, so it must mark that colour, and the product
+		// page opens on it. Otherwise the first colour that can be drawn.
+		$main      = (int) $product->get_image_id();
+		$galleries = $this->galleries_meta( $id );
+		$lead      = null;
+
+		foreach ( $values as $val ) {
+			if ( '' === $this->value_style( $product, $attr, $val, $attr['type'] ) ) {
+				continue;
+			}
+
+			if ( null === $lead ) {
+				$lead = $val;
+			}
+
+			if ( $main && in_array( $main, array_map( 'intval', $galleries[ $val['slug'] ]['imgs'] ?? array() ), true ) ) {
+				$lead = $val;
+				break;
 			}
 		}
 
-		return null;
+		if ( null === $lead ) {
+			return null;
+		}
+
+		$cache[ $id ] = array(
+			'key'   => $attr['key'],
+			'value' => $lead['value'],
+		);
+
+		return $cache[ $id ];
+	}
+
+	/**
+	 * The values of an attribute that a published variation is sold in.
+	 *
+	 * A value left attached to the product with no variation behind it would
+	 * show on the card and then be nowhere on the product page. Woo answers
+	 * from the published variations, and folds an "any" into every value.
+	 *
+	 * @param \WC_Product $product Product.
+	 * @param array       $attr    From product_attrs().
+	 * @return array<int,array{value:string,slug:string,name:string,term:?\WP_Term}>
+	 */
+	private function sold_values( \WC_Product $product, array $attr ): array {
+		if ( ! $product instanceof \WC_Product_Variable ) {
+			return $attr['values'];
+		}
+
+		$used = array_map(
+			static function ( $v ) {
+				return rawurldecode( (string) $v );
+			},
+			(array) ( $product->get_variation_attributes()[ $attr['name'] ] ?? array() )
+		);
+
+		if ( empty( $used ) ) {
+			return $attr['values'];
+		}
+
+		return array_values(
+			array_filter(
+				$attr['values'],
+				static function ( $val ) use ( $used ) {
+					return in_array( rawurldecode( (string) $val['value'] ), $used, true ) || in_array( rawurldecode( (string) $val['slug'] ), $used, true );
+				}
+			)
+		);
+	}
+
+	/**
+	 * Whether the shop asked this product to open with nothing chosen.
+	 *
+	 * @param int $product_id Product id.
+	 */
+	public static function no_default( int $product_id ): bool {
+		return 'yes' === get_post_meta( $product_id, '_oc_no_default', true );
 	}
 
 	/**
@@ -1217,6 +1341,19 @@ final class Variations {
 		wp_enqueue_media();
 		echo '<div id="oc_color_galleries_panel" class="panel woocommerce_options_panel">';
 
+		// Whether the page opens on a colour at all. With no default form
+		// values the theme opens on the colour of the main photo; this
+		// says "nothing".
+		echo '<input type="hidden" name="oc_no_default_seen" value="1" />';
+		woocommerce_wp_checkbox(
+			array(
+				'id'          => '_oc_no_default',
+				'label'       => __( 'Open with nothing chosen', 'oc-theme' ),
+				'description' => __( 'The product page opens with no colour or size selected, and catalogue cards mark no colour. Unticked, a product without default form values opens on the colour of its main photo.', 'oc-theme' ),
+				'value'       => self::no_default( (int) $post->ID ) ? 'yes' : 'no',
+			)
+		);
+
 		if ( empty( $attrs ) ) {
 			echo '<p class="form-field">' . esc_html__( 'Add an attribute used for variations (for example: colour), save, and its values appear here.', 'oc-theme' ) . '</p>';
 		}
@@ -1480,6 +1617,14 @@ final class Variations {
 	 */
 	public function save_galleries( $post_id ): void {
 		// Woo verified its own nonce before this hook fires.
+		if ( isset( $_POST['oc_no_default_seen'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			if ( isset( $_POST['_oc_no_default'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+				update_post_meta( $post_id, '_oc_no_default', 'yes' );
+			} else {
+				delete_post_meta( $post_id, '_oc_no_default' );
+			}
+		}
+
 		if ( isset( $_POST['oc_attr_type'] ) && is_array( $_POST['oc_attr_type'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			$types = array();
 
@@ -1555,7 +1700,8 @@ final class Variations {
 
 		// Keyed by what the select holds — a term's slug, a local value's
 		// typed text — which is what the script looks up on every change.
-		$map = array();
+		$map  = array();
+		$from = '';
 
 		foreach ( $this->product_attrs( $product ) as $attr ) {
 			foreach ( $attr['values'] as $val ) {
@@ -1563,6 +1709,10 @@ final class Variations {
 
 				if ( empty( $entry['imgs'] ) || isset( $map[ $val['value'] ] ) ) {
 					continue;
+				}
+
+				if ( '' === $from ) {
+					$from = $attr['key'];
 				}
 
 				$slides = array();
@@ -1579,9 +1729,51 @@ final class Variations {
 		}
 
 		printf(
-			'<script type="application/json" id="oc-color-galleries">%s</script>',
+			'<script type="application/json" id="oc-color-galleries" data-attr="%s">%s</script>',
+			esc_attr( 'attribute_' . $from ),
 			wp_json_encode( $map ) // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- JSON in a non-executed script tag.
 		);
+	}
+
+	/**
+	 * A colour with its own gallery lends its first picture to the variation.
+	 *
+	 * Woo writes the chosen variation's image into the gallery's first slide,
+	 * and a variation without an image inherits the product's main photo — so
+	 * a white variation put the yellow photo back over the white gallery the
+	 * moment it was chosen. The colour gallery is the shop's own answer to
+	 * "what does this colour look like", so it wins.
+	 *
+	 * @param mixed $data      Variation data for the form.
+	 * @param mixed $product   Parent product.
+	 * @param mixed $variation The variation.
+	 * @return mixed
+	 */
+	public function variation_gallery_image( $data, $product, $variation ) {
+		if ( ! is_array( $data ) || ! $product instanceof \WC_Product || ! $variation instanceof \WC_Product_Variation ) {
+			return $data;
+		}
+
+		$galleries = $this->galleries_meta( $product->get_id() );
+
+		if ( empty( $galleries ) ) {
+			return $data;
+		}
+
+		$chosen = $variation->get_attributes();
+
+		foreach ( $this->product_attrs( $product ) as $attr ) {
+			$value = (string) ( $chosen[ $attr['key'] ] ?? '' );
+			$img   = '' === $value ? 0 : (int) ( $galleries[ sanitize_title( $value ) ]['imgs'][0] ?? 0 );
+
+			if ( $img > 0 && wp_attachment_is_image( $img ) ) {
+				$data['image']    = wc_get_product_attachment_props( $img, $variation );
+				$data['image_id'] = $img;
+				break;
+			}
+		}
+
+		return $data;
 	}
 
 	/**
@@ -1690,27 +1882,8 @@ final class Variations {
 			return '';
 		}
 
-		// Only the colours a variation is actually sold in. A colour left
-		// attached to the product with no variation behind it showed on the
-		// card and then was nowhere on the product page. Woo answers this
-		// from the published variations, and folds an "any" into every value.
-		$used = array_map(
-			static function ( $v ) {
-				return rawurldecode( (string) $v );
-			},
-			(array) ( $product->get_variation_attributes()[ $attr['name'] ] ?? array() )
-		);
-
-		if ( ! empty( $used ) ) {
-			$attr['values'] = array_values(
-				array_filter(
-					$attr['values'],
-					static function ( $val ) use ( $used ) {
-						return in_array( rawurldecode( (string) $val['value'] ), $used, true ) || in_array( rawurldecode( (string) $val['slug'] ), $used, true );
-					}
-				)
-			);
-		}
+		// Only the colours a variation is actually sold in.
+		$attr['values'] = $this->sold_values( $product, $attr );
 
 		if ( count( $attr['values'] ) < 2 ) {
 			return '';
@@ -1730,6 +1903,12 @@ final class Variations {
 		// rawurlencode keeps the sanitize_title percents literal in the
 		// URL, so PHP's own decode hands Woo exactly the key it expects.
 		$qkey = 'attribute_' . rawurlencode( $attr['key'] );
+
+		// The lead colour is pre-marked (none for a product that opens with
+		// nothing chosen) — the same one the card links carry.
+		$lead = $this->default_term( $product );
+		$lead = null === $lead ? null : $lead['value'];
+		$at   = -1;
 
 		foreach ( $attr['values'] as $val ) {
 			$style = $this->value_style( $product, $attr, $val, $type );
@@ -1755,16 +1934,20 @@ final class Variations {
 				}
 			}
 
-			// The first colour is the card's default, pre-marked — the
-			// same one the card links carry into the product page.
+			$is_lead = null !== $lead && $val['value'] === $lead;
+
+			if ( $is_lead ) {
+				$at = count( $list );
+			}
+
 			$list[] = sprintf(
 				'<a class="oc-colors__item oc-colors__item--term%s" href="%s" style="%s" title="%s" aria-label="%s"%s data-url="%s" data-pid="%d" data-imgs="%s" data-slug="%s"></a>',
-				empty( $list ) ? ' is-current' : '',
+				$is_lead ? ' is-current' : '',
 				esc_url( add_query_arg( $qkey, $val['value'], $permalink ) ),
 				$style, // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
 				esc_attr( $val['name'] ),
 				esc_attr( $val['name'] ),
-				empty( $list ) ? ' aria-current="true"' : '',
+				$is_lead ? ' aria-current="true"' : '',
 				esc_url( add_query_arg( $qkey, $val['value'], $permalink ) ),
 				absint( $product->get_id() ),
 				esc_attr( (string) wp_json_encode( $imgs ) ),
@@ -1776,7 +1959,7 @@ final class Variations {
 			return '';
 		}
 
-		return '<div class="oc-colors oc-colors--loop">' . implode( '', self::capped( $list, 0, $permalink ) ) . '</div>';
+		return '<div class="oc-colors oc-colors--loop">' . implode( '', self::capped( $list, $at, $permalink ) ) . '</div>';
 	}
 
 	/**

@@ -4160,16 +4160,67 @@
 		window.dispatchEvent( new Event( 'resize' ) );
 	}
 
+	// The gallery on show, by colour value ('' = the product's own). A swap
+	// to what is already there is skipped, so a size change never rebuilds
+	// the slides under the visitor.
+	var ocGalleryShown = '';
+
 	function ocMaybeSwapGallery( value ) {
 		if ( ! ocColorGalleries ) {
 			return;
 		}
-		if ( value && ocColorGalleries[ value ] ) {
-			ocSwapGallery( ocColorGalleries[ value ] );
-		} else if ( ! value ) {
-			ocSwapGallery( null );
+
+		// A colour with no gallery of its own shows the product's gallery,
+		// not whichever colour was picked before it.
+		var key = value && ocColorGalleries[ value ] ? value : '';
+
+		if ( key === ocGalleryShown ) {
+			return;
 		}
+
+		ocGalleryShown = key;
+		ocSwapGallery( key ? ocColorGalleries[ key ] : null );
 	}
+
+	/* Every way of choosing a colour — swatches, buttons, the theme's
+	 * dropdown, Woo's plain select — ends in a change on the select the
+	 * galleries are keyed by, so the swap listens there and only there. It
+	 * runs after Woo's own variation events too, which write the variation's
+	 * image into the first slide. The first run waits a tick, so the video
+	 * module has wired its re-insert by then. */
+	( function () {
+		var form = document.querySelector( 'form.variations_form' );
+
+		if ( ! ocColorGalleries || ! form || ! ocGalleriesTag ) {
+			return;
+		}
+
+		var select = ocGalleriesTag.dataset.attr ? form.querySelector( 'select[name="' + ocGalleriesTag.dataset.attr + '"]' ) : null;
+
+		if ( ! select ) {
+			select = Array.prototype.filter.call( form.querySelectorAll( 'select[name^="attribute_"]' ), function ( s ) {
+				return Array.prototype.some.call( s.options, function ( o ) { return o.value && ocColorGalleries[ o.value ]; } );
+			} )[ 0 ];
+		}
+
+		if ( ! select ) {
+			return;
+		}
+
+		var apply = function () { ocMaybeSwapGallery( select.value ); };
+
+		form.addEventListener( 'change', function ( e ) {
+			if ( e.target === select ) {
+				setTimeout( apply, 0 );
+			}
+		} );
+
+		if ( window.jQuery ) {
+			window.jQuery( form ).on( 'show_variation reset_image', function () { setTimeout( apply, 0 ); } );
+		}
+
+		setTimeout( apply, 0 );
+	}() );
 
 	/* ---------- quantity pill: minus / value / plus ---------- */
 
@@ -6202,8 +6253,6 @@
 
 			select.value = box.dataset.auto;
 			select.dispatchEvent( new Event( 'change', { bubbles: true } ) );
-			// The auto-picked colour shows its own gallery too.
-			ocMaybeSwapGallery( select.value );
 
 			// Woo's "clear" link would empty the hidden row and strand the
 			// form, so re-apply after it runs.
@@ -6363,7 +6412,6 @@
 				select.value = want;
 				select.dispatchEvent( new Event( 'change', { bubbles: true } ) );
 				sync();
-				ocMaybeSwapGallery( want );
 			} );
 
 			box.insertAdjacentElement( 'afterend', msg );
@@ -6387,18 +6435,12 @@
 				select.value = select.value === btn.dataset.value ? '' : btn.dataset.value;
 				select.dispatchEvent( new Event( 'change', { bubbles: true } ) );
 				sync();
-				ocMaybeSwapGallery( select.value );
 			} );
 		} );
 
 		select.addEventListener( 'change', sync );
 		new MutationObserver( sync ).observe( select, { childList: true, subtree: true, attributes: true } );
 		sync();
-
-		// A default-selected colour shows its own gallery from the start.
-		if ( select.value ) {
-			ocMaybeSwapGallery( select.value );
-		}
 	} );
 
 	/* ---------- variation rows: "Label: value" ----------
