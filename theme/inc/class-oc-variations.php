@@ -277,7 +277,7 @@ final class Variations {
 			return $cache[ $id ];
 		}
 
-		$lead = $this->default_term( $product );
+		$lead = $this->default_term( $product ) ?? $this->gallery_lead( $product );
 		$pick = array();
 
 		// A combination that exists: the first variation in the lead colour
@@ -434,6 +434,36 @@ final class Variations {
 				}
 			)
 		);
+	}
+
+	/**
+	 * The value whose colour gallery holds the product's main photo, on any
+	 * attribute with galleries — so a colour drawn as a dropdown or buttons
+	 * opens on the photo's colour too, not only a swatch row.
+	 *
+	 * @param \WC_Product $product Product.
+	 * @return array{key:string,value:string}|null
+	 */
+	private function gallery_lead( \WC_Product $product ): ?array {
+		$main      = (int) $product->get_image_id();
+		$galleries = $this->galleries_meta( $product->get_id() );
+
+		if ( ! $main || empty( $galleries ) || self::no_default( $product->get_id() ) ) {
+			return null;
+		}
+
+		foreach ( $this->product_attrs( $product ) as $attr ) {
+			foreach ( $this->sold_values( $product, $attr ) as $val ) {
+				if ( in_array( $main, array_map( 'intval', $galleries[ $val['slug'] ]['imgs'] ?? array() ), true ) ) {
+					return array(
+						'key'   => $attr['key'],
+						'value' => $val['value'],
+					);
+				}
+			}
+		}
+
+		return null;
 	}
 
 	/**
