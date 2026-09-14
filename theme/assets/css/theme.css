@@ -3460,6 +3460,12 @@ html.oc-drw-open { overflow: hidden; }
 .oc-chero__wordsin { min-inline-size: 0; max-inline-size: 100%; }
 .oc-chero--split .oc-chero__wordsin { max-inline-size: min(520px, 100%); }
 .oc-chero .oc-subcats { inline-size: 100%; min-inline-size: 0; }
+/* The box that holds a desktop strip and its arrows takes the strip's place. */
+.oc-subcats-box { position: relative; inline-size: 100%; min-inline-size: 0; }
+@media (min-width: 783px) {
+	.oc-subcats-box .oc-subcats--slider-d { scroll-behavior: smooth; }
+	.oc-subcats-box .oc-subcats--slider-d.is-drag { scroll-behavior: auto; }
+}
 /* image on the reading side (default) or the opposite side */
 .oc-chero--img-end .oc-chero__media { order: 2; }
 .oc-chero--img-end .oc-chero__panel { order: 1; }
@@ -14556,14 +14562,15 @@ p.no-comments {
 .oc-xsell__wides--slide.is-drag { cursor: grabbing; scroll-behavior: auto; user-select: none; }
 .oc-xsell__wides--slide .oc-xsell__wide { flex: 0 0 min(100%, 460px); }
 
-/* Arrows for a mouse, on their physical sides. Only the way there is more to
- * see shows one; each press glides one product. A finger swipes instead, so
- * touch screens get none. */
+/* Arrows for a mouse, on their physical sides — the goes-with slider and
+ * the sub-category strip share them. Only the way there is more to see
+ * shows one; each press glides one item. A finger swipes instead, so touch
+ * screens get none. */
 .oc-xsell__slidebox { position: relative; }
 .oc-xsell__slidebox .oc-xsell__wides--slide { scroll-behavior: smooth; }
 .oc-xsell__slidebox .oc-xsell__wides--slide.is-drag { scroll-behavior: auto; }
 
-.oc-xsell__arr {
+.oc-sarr {
 	position: absolute;
 	inset-block-start: 50%;
 	translate: 0 -50%;
@@ -14582,13 +14589,13 @@ p.no-comments {
 	transition: background-color .15s ease, color .15s ease;
 }
 
-.oc-xsell__arr--left { left: 6px; }
-.oc-xsell__arr--right { right: 6px; }
-.oc-xsell__arr:hover { background: var(--oc-ink, #1c1c1c); color: #fff; }
-.oc-xsell__arr[hidden] { display: none; }
+.oc-sarr--left { left: 6px; }
+.oc-sarr--right { right: 6px; }
+.oc-sarr:hover { background: var(--oc-ink, #1c1c1c); color: #fff; }
+.oc-sarr[hidden] { display: none; }
 
 @media (hover: none) {
-	.oc-xsell__arr { display: none; }
+	.oc-sarr { display: none; }
 }
 
 .oc-xsell__wide {

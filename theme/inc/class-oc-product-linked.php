@@ -451,7 +451,7 @@ final class Product_Linked {
 		// A slider carries arrows for a mouse, beside it rather than inside
 		// the scroller, so a drag never starts on them.
 		if ( $many ) {
-			echo '<div class="oc-xsell__slidebox">';
+			echo '<div class="oc-xsell__slidebox" data-oc-arrows>';
 		}
 
 		echo '<div class="oc-xsell__wides' . ( $many ? ' oc-xsell__wides--slide' : '' ) . '"' . ( $many ? ' data-oc-slider' : '' ) . '>';
@@ -482,16 +482,17 @@ final class Product_Linked {
 	}
 
 	/**
-	 * A slider arrow on a physical side. The script shows it only while there
-	 * is more to see that way; in a right-to-left shop the left one leads on.
+	 * A slider arrow on a physical side, for any [data-oc-arrows] box. The
+	 * script shows it only while there is more to see that way; in a
+	 * right-to-left shop the left one leads on.
 	 *
 	 * @param string $side left or right.
 	 */
-	private static function arrow( string $side ): string {
+	public static function arrow( string $side ): string {
 		$onward = ( 'left' === $side ) === is_rtl();
 
 		return sprintf(
-			'<button type="button" class="oc-xsell__arr oc-xsell__arr--%1$s" data-oc-xs-arr="%1$s" aria-label="%2$s" hidden><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="%3$s"/></svg></button>',
+			'<button type="button" class="oc-sarr oc-sarr--%1$s oc-xsell__arr oc-xsell__arr--%1$s" data-oc-xs-arr="%1$s" aria-label="%2$s" hidden><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="%3$s"/></svg></button>',
 			esc_attr( $side ),
 			esc_attr( $onward ? __( 'Next', 'oc-theme' ) : __( 'Previous', 'oc-theme' ) ),
 			'left' === $side ? 'M15 5l-7 7 7 7' : 'M9 5l7 7-7 7'

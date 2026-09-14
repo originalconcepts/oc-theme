@@ -889,7 +889,16 @@ class Category {
 			$classes .= ' oc-subcats--slider-m';
 		}
 
-		return '<nav class="' . esc_attr( $classes ) . '"' . $attrs . ' aria-label="' . esc_attr__( 'Sub-categories', 'oc-theme' ) . '">' . $items . '</nav>';
+		$nav = '<nav class="' . esc_attr( $classes ) . '"' . $attrs . ' aria-label="' . esc_attr__( 'Sub-categories', 'oc-theme' ) . '">' . $items . '</nav>';
+
+		// The desktop strip carries arrows for a mouse — the same pair as
+		// the goes-with slider, beside the strip so a drag never starts on
+		// them. Only the side with more to see shows one.
+		if ( $slide_d ) {
+			return '<div class="oc-subcats-box" data-oc-arrows>' . $nav . Product_Linked::arrow( 'left' ) . Product_Linked::arrow( 'right' ) . '</div>';
+		}
+
+		return $nav;
 	}
 
 	/* ---------------------------------------------------------- admin — the category edit screen */

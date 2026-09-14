@@ -1509,6 +1509,11 @@ html.oc-look-lock body { overflow: hidden; }
 	.ocb-look.is-closing .ocb-look__pic {
 		position: absolute;
 		inset: 0;
+		/* The whole screen, whatever the desktop "Picture size" says: that
+		 * setting (79% on eden) narrowed the story's frame, and the photo,
+		 * sized to the screen, hung out of it to one side and was cut. */
+		inline-size: auto;
+		margin-inline: 0;
 		border-radius: 0;
 		overflow: hidden;
 	}

@@ -8788,12 +8788,13 @@
 	} );
 }() );
 
-/* -- products that go with it, across the width: arrows for a mouse. Only
- *    the side with more to see shows its arrow; a press glides one product,
- *    and once there is somewhere to come back to, the other arrow appears. -- */
+/* -- side-scrolling strips with arrows for a mouse: the goes-with slider and
+ *    the sub-category strip. Only the side with more to see shows its arrow;
+ *    a press glides one item, and once there is somewhere to come back to,
+ *    the other arrow appears. -- */
 ( function () {
-	document.querySelectorAll( '.oc-xsell__slidebox' ).forEach( function ( box ) {
-		var strip = box.querySelector( '.oc-xsell__wides--slide' );
+	document.querySelectorAll( '[data-oc-arrows]' ).forEach( function ( box ) {
+		var strip = box.querySelector( '[data-oc-slider]' );
 		var left  = box.querySelector( '[data-oc-xs-arr="left"]' );
 		var right = box.querySelector( '[data-oc-xs-arr="right"]' );
 
