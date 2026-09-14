@@ -2873,6 +2873,10 @@ final class Customizer {
 					'label' => __( 'Cards in a row', 'oc-theme' ),
 					'svg'   => self::wf( '0 0 132 52', self::rect( 8, 8, 26, 36, 'dt', 2 ) . self::rect( 38, 8, 26, 36, 'dt', 2 ) . self::rect( 68, 8, 26, 36, 'dt', 2 ) . self::rect( 98, 8, 26, 36, 'dt', 2 ) ),
 				),
+				'rows' => array(
+					'label' => __( 'Rows', 'oc-theme' ),
+					'svg'   => self::wf( '0 0 132 52', self::rect( 8, 5, 12, 12, 'dt', 2 ) . self::rect( 26, 9, 60, 4, 'ln' ) . self::rect( 100, 7, 24, 8, 'ac', 2 ) . self::rect( 8, 20, 12, 12, 'dt', 2 ) . self::rect( 26, 24, 60, 4, 'ln' ) . self::rect( 100, 22, 24, 8, 'ac', 2 ) . self::rect( 8, 35, 12, 12, 'dt', 2 ) . self::rect( 26, 39, 60, 4, 'ln' ) . self::rect( 100, 37, 24, 8, 'ac', 2 ) ),
+				),
 			),
 			'wide',
 			'150px',

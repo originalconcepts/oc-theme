@@ -8780,6 +8780,58 @@
 	} );
 }() );
 
+/* -- products that go with it, across the width: arrows for a mouse. Only
+ *    the side with more to see shows its arrow; a press glides one product,
+ *    and once there is somewhere to come back to, the other arrow appears. -- */
+( function () {
+	document.querySelectorAll( '.oc-xsell__slidebox' ).forEach( function ( box ) {
+		var strip = box.querySelector( '.oc-xsell__wides--slide' );
+		var left  = box.querySelector( '[data-oc-xs-arr="left"]' );
+		var right = box.querySelector( '[data-oc-xs-arr="right"]' );
+
+		if ( ! strip || ! left || ! right ) {
+			return;
+		}
+
+		// How far the strip can still travel toward each physical side. A
+		// right-to-left strip starts at its right edge and runs to the left.
+		var room = function () {
+			var max = strip.scrollWidth - strip.clientWidth;
+			var pos = Math.abs( strip.scrollLeft );
+
+			return 'rtl' === getComputedStyle( strip ).direction
+				? { left: max - pos, right: pos }
+				: { left: pos, right: max - pos };
+		};
+
+		var paint = function () {
+			var r = room();
+			left.hidden  = r.left < 2;
+			right.hidden = r.right < 2;
+		};
+
+		var step = function () {
+			var card = strip.firstElementChild;
+			var gap  = parseFloat( getComputedStyle( strip ).columnGap ) || 0;
+
+			return card ? card.getBoundingClientRect().width + gap : strip.clientWidth * 0.8;
+		};
+
+		left.addEventListener( 'click', function () {
+			strip.scrollBy( { left: -step(), behavior: 'smooth' } );
+		} );
+
+		right.addEventListener( 'click', function () {
+			strip.scrollBy( { left: step(), behavior: 'smooth' } );
+		} );
+
+		strip.addEventListener( 'scroll', paint, { passive: true } );
+		window.addEventListener( 'resize', paint );
+		window.addEventListener( 'load', paint );
+		paint();
+	} );
+}() );
+
 /* ---------- one way of writing an amount, shared ---------- */
 window.__ocMoney = function ( n, money ) {
 	money = money || {};

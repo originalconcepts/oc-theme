@@ -14556,6 +14556,41 @@ p.no-comments {
 .oc-xsell__wides--slide.is-drag { cursor: grabbing; scroll-behavior: auto; user-select: none; }
 .oc-xsell__wides--slide .oc-xsell__wide { flex: 0 0 min(100%, 460px); }
 
+/* Arrows for a mouse, on their physical sides. Only the way there is more to
+ * see shows one; each press glides one product. A finger swipes instead, so
+ * touch screens get none. */
+.oc-xsell__slidebox { position: relative; }
+.oc-xsell__slidebox .oc-xsell__wides--slide { scroll-behavior: smooth; }
+.oc-xsell__slidebox .oc-xsell__wides--slide.is-drag { scroll-behavior: auto; }
+
+.oc-xsell__arr {
+	position: absolute;
+	inset-block-start: 50%;
+	translate: 0 -50%;
+	z-index: 2;
+	display: grid;
+	place-items: center;
+	inline-size: 40px;
+	block-size: 40px;
+	padding: 0;
+	border: 1px solid var(--oc-line, #e5e5e5);
+	border-radius: 50%;
+	background: #fff;
+	color: var(--oc-ink, #1c1c1c);
+	box-shadow: 0 2px 10px rgb(0 0 0 / 12%);
+	cursor: pointer;
+	transition: background-color .15s ease, color .15s ease;
+}
+
+.oc-xsell__arr--left { left: 6px; }
+.oc-xsell__arr--right { right: 6px; }
+.oc-xsell__arr:hover { background: var(--oc-ink, #1c1c1c); color: #fff; }
+.oc-xsell__arr[hidden] { display: none; }
+
+@media (hover: none) {
+	.oc-xsell__arr { display: none; }
+}
+
 .oc-xsell__wide {
 	display: grid;
 	grid-template-columns: 96px 1fr auto;

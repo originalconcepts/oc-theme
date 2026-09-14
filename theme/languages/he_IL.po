@@ -7576,3 +7576,5 @@ msgstr "פתיחה ללא בחירה"
 msgid "The product page opens with no colour or size selected, and catalogue cards mark no colour. Unticked, a product without default form values opens on the colour of its main photo."
 msgstr "דף המוצר נפתח בלי צבע או מידה מסומנים, והכרטיס בקטלוג לא מסמן צבע. בלי הסימון, מוצר שלא הוגדרו לו ערכי ברירת מחדל נפתח על הצבע של התמונה הראשית."
 
+msgid "Rows"
+msgstr "שורות"
