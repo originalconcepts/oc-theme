@@ -15194,42 +15194,152 @@ p.no-comments {
 	.oc-stockline__turn { font-size: .92em; }
 }
 
-/* ---------- cookie consent ---------- */
+/* ---------- privacy: the consent banner, the panel, the badge ---------- */
 
-.oc-consent {
-	position: fixed;
-	inset-inline: 16px;
+/* The whole layer is fixed and hidden until the script decides, so it
+ * never moves the page (no layout shift) and never paints before the
+ * page's own content. Colours come from the theme's tokens: the banner
+ * looks like the shop, not like a bolt-on. */
+.oc-privacy[hidden] { display: none; }
+.oc-privacy { position: fixed; inset: 0; z-index: 95; pointer-events: none; font-size: .92rem; line-height: 1.5; color: var(--oc-ink, #111); }
+.oc-privacy > * { pointer-events: auto; }
+.oc-privacy [hidden] { display: none !important; }
+
+.oc-privacy__banner {
+	position: absolute;
 	inset-block-end: 16px;
-	z-index: 90;
+	inset-inline: 16px;
+	max-inline-size: 440px;
+	padding: 18px 20px;
+	border-radius: 16px;
+	background: var(--oc-surface, #fff);
+	box-shadow: 0 12px 44px rgba(0, 0, 0, .18), 0 0 0 1px rgba(0, 0, 0, .05);
+	animation: oc-privacy-in .35s ease-out both;
+}
+.oc-privacy--start .oc-privacy__banner { inset-inline-end: auto; }
+.oc-privacy--end .oc-privacy__banner { inset-inline-start: auto; }
+.oc-privacy--center .oc-privacy__banner { margin-inline: auto; }
+.oc-privacy--bar .oc-privacy__banner {
+	inset-inline: 0;
+	inset-block-end: 0;
+	max-inline-size: none;
+	border-radius: 0;
 	display: flex;
 	flex-wrap: wrap;
 	align-items: center;
 	justify-content: space-between;
-	gap: 12px 20px;
-	margin-inline: auto;
-	max-inline-size: 720px;
-	padding: 14px 18px;
-	border-radius: 14px;
-	background: var(--oc-surface, #fff);
-	color: var(--oc-ink, #111);
-	box-shadow: 0 10px 40px rgba(0, 0, 0, .18);
-	font-size: .92rem;
-	line-height: 1.5;
+	gap: 12px 28px;
+	padding-inline: max(20px, calc((100% - 1200px) / 2));
 }
-.oc-consent[hidden] { display: none; }
-.oc-consent__text { margin: 0; flex: 1 1 320px; }
-.oc-consent__text a { color: inherit; text-decoration: underline; margin-inline-start: 6px; }
-.oc-consent__acts { display: flex; gap: 8px; flex: 0 0 auto; }
-.oc-consent__yes,
-.oc-consent__no {
+.oc-privacy--bar .oc-privacy__words { flex: 1 1 420px; }
+
+@keyframes oc-privacy-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .oc-privacy__banner { animation: none; } }
+
+.oc-privacy__title { margin: 0 0 4px; font-weight: 700; font-size: 1.02rem; }
+.oc-privacy__text { margin: 0; color: var(--oc-ink-2, #666e7c); }
+.oc-privacy__policy { color: inherit; text-decoration: underline; margin-inline-start: 4px; }
+.oc-privacy__acts { display: flex; flex-wrap: wrap; gap: 8px; margin-block-start: 14px; }
+.oc-privacy--bar .oc-privacy__acts { margin-block-start: 0; }
+
+/* Equal buttons: accepting and declining weigh the same. */
+.oc-privacy__btn {
 	font: inherit;
+	font-weight: 600;
 	cursor: pointer;
 	border-radius: var(--oc-radius, 8px);
 	padding: 9px 16px;
 	border: 1px solid var(--oc-primary, #111);
+	min-block-size: 40px;
+	flex: 1 1 auto;
 }
-.oc-consent__yes { background: var(--oc-primary, #111); color: var(--oc-on-primary, #fff); }
-.oc-consent__no { background: transparent; color: inherit; border-color: var(--oc-line, rgba(0, 0, 0, .18)); }
+.oc-privacy__btn--solid { background: var(--oc-primary, #111); color: var(--oc-on-primary, #fff); }
+.oc-privacy__btn--ghost { background: transparent; color: inherit; border-color: var(--oc-line, rgba(0, 0, 0, .18)); }
+.oc-privacy__btn:hover { filter: brightness(.95); }
+.oc-privacy__btn:focus-visible { outline: 2px solid var(--oc-primary, #111); outline-offset: 2px; }
+
+/* The panel: a small dialog in the middle. */
+.oc-privacy__veil { position: absolute; inset: 0; background: rgba(0, 0, 0, .45); }
+.oc-privacy__panel {
+	position: absolute;
+	inset-inline: 0;
+	inset-block-end: 0;
+	margin-inline: auto;
+	inline-size: min(100%, 560px);
+	max-block-size: min(88vh, 88dvh);
+	overflow: auto;
+	background: var(--oc-surface, #fff);
+	border-radius: 18px 18px 0 0;
+	padding: 20px 22px 18px;
+	box-shadow: 0 -12px 44px rgba(0, 0, 0, .2);
+}
+@media (min-width: 640px) {
+	.oc-privacy__panel { inset-block: 50% auto; transform: translateY(-50%); border-radius: 18px; }
+}
+.oc-privacy-lock, .oc-privacy-lock body { overflow: hidden; }
+.oc-privacy__panel-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.oc-privacy__panel-title { margin: 0; font-size: 1.15rem; }
+.oc-privacy__close { font: inherit; font-size: 1.5rem; line-height: 1; background: none; border: 0; cursor: pointer; inline-size: 36px; block-size: 36px; border-radius: 50%; color: inherit; }
+.oc-privacy__close:hover { background: var(--oc-line, rgba(0, 0, 0, .08)); }
+.oc-privacy__panel-text { margin: 8px 0 14px; color: var(--oc-ink-2, #666e7c); }
+.oc-privacy__cats { list-style: none; margin: 0; padding: 0; border-block-start: 1px solid var(--oc-line, rgba(0, 0, 0, .1)); }
+.oc-privacy__cat { padding: 12px 0; border-block-end: 1px solid var(--oc-line, rgba(0, 0, 0, .1)); }
+.oc-privacy__cat-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.oc-privacy__cat-name { font-weight: 700; cursor: pointer; }
+.oc-privacy__cat-desc { margin: 4px 0 0; color: var(--oc-ink-2, #666e7c); font-size: .88rem; }
+.oc-privacy__always { font-size: .8rem; color: var(--oc-ink-2, #666e7c); }
+.oc-privacy__panel-acts { display: flex; flex-wrap: wrap; gap: 8px; margin-block-start: 16px; }
+
+/* A switch built from the checkbox itself, so it stays a real control. */
+.oc-privacy__switch { position: relative; display: inline-block; inline-size: 44px; block-size: 26px; flex: 0 0 auto; }
+.oc-privacy__switch input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: pointer; inline-size: 100%; block-size: 100%; z-index: 1; }
+.oc-privacy__knob { position: absolute; inset: 0; border-radius: 13px; background: var(--oc-line, rgba(0, 0, 0, .2)); transition: background .2s; }
+.oc-privacy__knob::after { content: ''; position: absolute; inset-block-start: 3px; inset-inline-start: 3px; inline-size: 20px; block-size: 20px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, .3); transition: transform .2s; }
+.oc-privacy__switch input:checked + .oc-privacy__knob { background: var(--oc-primary, #111); }
+.oc-privacy__switch input:checked + .oc-privacy__knob::after { transform: translateX(18px); }
+[dir="rtl"] .oc-privacy__switch input:checked + .oc-privacy__knob::after { transform: translateX(-18px); }
+.oc-privacy__switch input:focus-visible + .oc-privacy__knob { outline: 2px solid var(--oc-primary, #111); outline-offset: 2px; }
+
+/* The badge: small, quiet, out of the way — and gone while the banner
+ * or the panel is showing. */
+.oc-privacy__badge {
+	position: absolute;
+	inset-block-end: 14px;
+	inset-inline-start: 14px;
+	inline-size: 38px;
+	block-size: 38px;
+	border-radius: 50%;
+	border: 1px solid var(--oc-line, rgba(0, 0, 0, .12));
+	background: var(--oc-surface, #fff);
+	color: var(--oc-ink-2, #666e7c);
+	cursor: pointer;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	box-shadow: 0 4px 14px rgba(0, 0, 0, .12);
+	opacity: .85;
+}
+.oc-privacy__badge:hover, .oc-privacy__badge:focus-visible { opacity: 1; color: var(--oc-ink, #111); }
+.oc-privacy--end .oc-privacy__badge { inset-inline-start: auto; inset-inline-end: 14px; }
+.oc-privacy.is-asking .oc-privacy__badge, .oc-privacy.is-open .oc-privacy__badge { display: none; }
+
+/* The footer link and the policy page's button look like the links
+ * beside them. */
+.oc-footer__privacy { font: inherit; font-size: .82rem; background: none; border: 0; padding: 0; color: var(--f-ink-2); cursor: pointer; text-decoration: none; }
+.oc-footer__privacy:hover { color: var(--f-heading); }
+.oc-cookie-table { overflow-x: auto; margin-block: 12px 20px; }
+.oc-cookie-table table { inline-size: 100%; border-collapse: collapse; font-size: .9rem; }
+.oc-cookie-table th, .oc-cookie-table td { padding: 8px 10px; border-block-end: 1px solid var(--oc-line, rgba(0, 0, 0, .1)); text-align: start; vertical-align: top; }
+.oc-cookie-table__names { direction: ltr; text-align: left; font-family: monospace; font-size: .8rem; }
+.oc-cookie-table__open, .oc-privacy-req button { font: inherit; cursor: pointer; border-radius: var(--oc-radius, 8px); padding: 9px 16px; border: 1px solid var(--oc-primary, #111); background: var(--oc-primary, #111); color: var(--oc-on-primary, #fff); }
+.oc-privacy-req input[type="email"] { inline-size: min(100%, 360px); padding: 8px 10px; border: 1px solid var(--oc-line, rgba(0, 0, 0, .2)); border-radius: var(--oc-radius, 8px); }
+.oc-privacy-req__msg { padding: 10px 12px; border-inline-start: 3px solid var(--oc-primary, #111); background: var(--oc-surface-2, rgba(0, 0, 0, .04)); }
+
+@media (max-width: 480px) {
+	.oc-privacy__banner { inset-inline: 10px; inset-block-end: 10px; padding: 16px; }
+	.oc-privacy__btn { flex: 1 1 100%; }
+	.oc-privacy--bar .oc-privacy__banner { padding-inline: 16px; }
+}
 
 /* ==========================================================================
    Content we did not write

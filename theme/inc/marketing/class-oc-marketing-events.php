@@ -142,6 +142,15 @@ final class Events {
 	 * @param string               $url    Page.
 	 */
 	public static function server( string $name, array $data, string $id, array $user = array(), array $client = array(), string $url = '' ): void {
+		// The server tells the networks nothing the browser may not: a
+		// visitor who declined marketing is not matched from here either.
+		// A request with no visitor behind it (cron, a payment webhook)
+		// carries no cookie; there the order's own flag decides (see
+		// Page::order_paid).
+		if ( ! wp_doing_cron() && class_exists( '\OC\Theme\Privacy\Consent' ) && ! \OC\Theme\Privacy\Consent::allows( 'marketing' ) ) {
+			return;
+		}
+
 		$job = array(
 			'name'   => $name,
 			'data'   => $data,

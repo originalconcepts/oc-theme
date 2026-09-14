@@ -13,24 +13,25 @@
 	var cfg = window.ocMkt || {};
 	var q = window.ocq || [];
 	var loaded = false;
-	var consent = cfg.consentStored || ( 'optin' === cfg.consentMode ? 'denied' : 'granted' );
 	var pending = [];
 	var itemCache = {};
 
 	/* ---------- consent ---------- */
 
+	// The privacy layer (privacy.js) owns the visitor's choice and speaks
+	// to Google's Consent Mode itself. This script only asks it, per
+	// category, and listens for a change. Without the layer (switched
+	// off), everything is allowed.
 	window.dataLayer = window.dataLayer || [];
 	function gtag() { window.dataLayer.push( arguments ); }
 	window.gtag = window.gtag || gtag;
 
-	if ( 'off' !== cfg.consentMode ) {
-		var state = 'granted' === consent ? 'granted' : 'denied';
-		gtag( 'consent', 'default', { ad_storage: state, analytics_storage: state, ad_user_data: state, ad_personalization: state, wait_for_update: 500 } );
-		// Google's own guidance for a denied state: redact ad data, carry
-		// click ids through the URL instead of cookies.
-		gtag( 'set', 'ads_data_redaction', true );
-		gtag( 'set', 'url_passthrough', true );
+	function allows( cat ) {
+		return ! window.ocPrivacy || window.ocPrivacy.allows( cat );
 	}
+
+	// 'granted' is kept as a word for the code below: marketing consent.
+	var consent = allows( 'marketing' ) ? 'granted' : 'denied';
 
 	// Meta's click id rides the URL once; without the pixel loaded yet,
 	// nobody would turn it into the cookie the server matches on.
@@ -43,25 +44,16 @@
 		document.cookie = name + '=' + encodeURIComponent( value ) + ';path=/;max-age=' + ( days * 86400 ) + ';SameSite=Lax' + ( 'https:' === location.protocol ? ';Secure' : '' );
 	}
 
-	function decide( answer ) {
-		consent = answer;
-		setCookie( 'oc_consent', answer, 365 );
-		var state = 'granted' === answer ? 'granted' : 'denied';
-		gtag( 'consent', 'update', { ad_storage: state, analytics_storage: state, ad_user_data: state, ad_personalization: state } );
-		var box = document.querySelector( '[data-oc-consent]' );
-		if ( box ) { box.remove(); }
-		if ( 'granted' === answer && ! loaded ) { load(); }
-		// Pixels already on the page hear the answer too.
-		if ( window.fbq ) { window.fbq( 'consent', 'granted' === answer ? 'grant' : 'revoke' ); }
-		if ( window.ttq ) { 'granted' === answer ? window.ttq.grantConsent() : window.ttq.revokeConsent(); }
-	}
-
-	window.ocConsent = { grant: function () { decide( 'granted' ); }, deny: function () { decide( 'denied' ); }, state: function () { return consent; } };
-
-	document.addEventListener( 'click', function ( e ) {
-		if ( e.target.closest( '[data-oc-consent-grant]' ) ) { decide( 'granted' ); }
-		if ( e.target.closest( '[data-oc-consent-deny]' ) ) { decide( 'denied' ); }
+	// The visitor answered (or changed their answer): load what is now
+	// allowed and was not yet loaded. The privacy layer has already told
+	// gtag, fbq and ttq.
+	document.addEventListener( 'oc:consent', function () {
+		consent = allows( 'marketing' ) ? 'granted' : 'denied';
+		if ( started ) { load(); }
 	} );
+
+	// Kept for anything that still calls the old names.
+	window.ocConsent = { grant: function () { if ( window.ocPrivacy ) { window.ocPrivacy.accept(); } }, deny: function () { if ( window.ocPrivacy ) { window.ocPrivacy.reject(); } }, state: function () { return consent; } };
 
 	/* ---------- loading the networks, after the page ---------- */
 
@@ -73,30 +65,43 @@
 		document.head.appendChild( s );
 	}
 
+	var did = { google: false, fb: false, tiktok: false };
+
+	// Google's tags may load ahead of consent only when the site chose
+	// Advanced Consent Mode (they start in a denied state and store
+	// nothing); otherwise they wait for statistics or marketing consent.
+	function googleMay() {
+		return ( window.ocPrivacy && window.ocPrivacy.google ) || allows( 'analytics' ) || allows( 'marketing' );
+	}
+
 	function load() {
-		if ( loaded ) { return; }
 		loaded = true;
 
 		var adv = cfg.user || {};
 
-		if ( cfg.gtm ) {
-			window.dataLayer.push( { 'gtm.start': Date.now(), event: 'gtm.js' } );
-			script( 'https://www.googletagmanager.com/gtm.js?id=' + encodeURIComponent( cfg.gtm ) );
-		}
+		if ( ! did.google && googleMay() ) {
+			did.google = true;
 
-		var gid = cfg.ga4 || cfg.gads;
-
-		if ( gid ) {
-			script( 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent( gid ) );
-			gtag( 'js', new Date() );
-			if ( adv.em || adv.ph ) {
-				gtag( 'set', 'user_data', { email: adv.em || undefined, phone_number: adv.ph || undefined } );
+			if ( cfg.gtm ) {
+				window.dataLayer.push( { 'gtm.start': Date.now(), event: 'gtm.js' } );
+				script( 'https://www.googletagmanager.com/gtm.js?id=' + encodeURIComponent( cfg.gtm ) );
 			}
-			if ( cfg.ga4 ) { gtag( 'config', cfg.ga4, { send_page_view: true } ); }
-			if ( cfg.gads ) { gtag( 'config', cfg.gads, { allow_enhanced_conversions: true } ); }
+
+			var gid = cfg.ga4 || cfg.gads;
+
+			if ( gid ) {
+				script( 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent( gid ) );
+				gtag( 'js', new Date() );
+				if ( adv.em || adv.ph ) {
+					gtag( 'set', 'user_data', { email: adv.em || undefined, phone_number: adv.ph || undefined } );
+				}
+				if ( cfg.ga4 ) { gtag( 'config', cfg.ga4, { send_page_view: true } ); }
+				if ( cfg.gads ) { gtag( 'config', cfg.gads, { allow_enhanced_conversions: true } ); }
+			}
 		}
 
-		if ( cfg.fb && 'granted' === consent ) {
+		if ( cfg.fb && 'granted' === consent && ! did.fb ) {
+			did.fb = true;
 			/* eslint-disable */
 			!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
 			/* eslint-enable */
@@ -106,7 +111,8 @@
 			window.fbq( 'track', 'PageView', {}, { eventID: cfg.pageId } );
 		}
 
-		if ( cfg.tiktok && 'granted' === consent ) {
+		if ( cfg.tiktok && 'granted' === consent && ! did.tiktok ) {
+			did.tiktok = true;
 			/* eslint-disable */
 			!function(w,d,t){w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie","holdConsent","revokeConsent","grantConsent"],ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);ttq.instance=function(t){for(var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e},ttq.load=function(e,n){var r="https://analytics.tiktok.com/i18n/pixel/events.js";ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=r,ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._o=ttq._o||{},ttq._o[e]=n||{};n=document.createElement("script");n.type="text/javascript",n.async=!0,n.src=r+"?sdkid="+e+"&lib="+t;e=document.getElementsByTagName("script")[0];e.parentNode.insertBefore(n,e)};ttq.load(cfg.tiktok);ttq.page();}(window,document,'ttq');
 			/* eslint-enable */
@@ -347,10 +353,12 @@
 
 	/* ---------- go, after the page has painted ---------- */
 
+	var started = false;
+
 	function start() {
-		var banner = document.querySelector( '[data-oc-consent]' );
-		if ( banner ) { banner.hidden = false; }
-		if ( 'granted' === consent || 'off' === cfg.consentMode ) { load(); } else if ( cfg.ga4 || cfg.gads || cfg.gtm ) { load(); }
+		started = true;
+		consent = allows( 'marketing' ) ? 'granted' : 'denied';
+		load();
 	}
 
 	if ( 'complete' === document.readyState ) {

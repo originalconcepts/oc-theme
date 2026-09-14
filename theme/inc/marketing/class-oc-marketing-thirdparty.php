@@ -145,6 +145,14 @@ final class Third_Party {
 
 			function go() {
 				if ( went ) { return; }
+
+				// A marketing tag waits for marketing consent; the privacy
+				// layer says when that arrives.
+				if ( window.ocPrivacy && ! window.ocPrivacy.allows( 'marketing' ) ) {
+					document.addEventListener( 'oc:consent', go, { once: true } );
+					return;
+				}
+
 				went = true;
 
 				evs.forEach( function ( e ) {

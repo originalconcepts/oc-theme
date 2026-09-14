@@ -7587,3 +7587,345 @@ msgstr "הסל הוא אותו אייקון שנבחר להדר."
 
 msgid "%1$s: %2$s to the cart"
 msgstr "%1$s: %2$s לסל"
+
+msgid "Privacy"
+msgstr "פרטיות"
+
+msgid "Consent layer is on"
+msgstr "שכבת ההסכמה פעילה"
+
+msgid "Every visitor sees a short, honest notice with equal buttons to accept or decline, can change their mind at any time from the footer, and their choice is recorded. The marketing tags, Google Consent Mode and any snippet you park below all follow that choice."
+msgstr "כל מבקר רואה הודעה קצרה וכנה עם כפתורים שווים לאישור או לסירוב, יכול לשנות את דעתו בכל עת מהפוטר, והבחירה שלו נרשמת. תגי השיווק, Google Consent Mode וכל קטע קוד שתשימו למטה - כולם פועלים לפי הבחירה הזו."
+
+msgid "How consent starts"
+msgstr "איך ההסכמה מתחילה"
+
+msgid "By region — opt-in in the EU/UK/Switzerland, opt-out elsewhere (recommended)"
+msgstr "לפי אזור - הסכמה מראש באיחוד האירופי/בריטניה/שווייץ, ברירת מחדל פעילה בשאר העולם (מומלץ)"
+
+msgid "Opt-out everywhere — tags run until the visitor declines"
+msgstr "ברירת מחדל פעילה בכל מקום - התגים פועלים עד שהמבקר מסרב"
+
+msgid "Opt-in everywhere — nothing non-essential runs until accepted"
+msgstr "הסכמה מראש בכל מקום - שום דבר שאינו הכרחי לא פועל עד לאישור"
+
+msgid "Israeli law requires an informed notice and a real way to refuse; EU law requires a yes before anything runs. \"By region\" gives each visitor what their law asks."
+msgstr "החוק הישראלי דורש הודעה מיודעת ודרך אמיתית לסרב; החוק האירופי דורש אישור לפני שמשהו פועל. \"לפי אזור\" נותן לכל מבקר את מה שהחוק שלו מבקש."
+
+msgid "Banner"
+msgstr "באנר"
+
+msgid "A small card in a corner"
+msgstr "כרטיס קטן בפינה"
+
+msgid "A bar along the bottom"
+msgstr "פס לאורך התחתית"
+
+msgid "Card position"
+msgstr "מיקום הכרטיס"
+
+msgid "Start side (right in Hebrew)"
+msgstr "צד ההתחלה (ימין בעברית)"
+
+msgid "End side"
+msgstr "צד הסיום"
+
+msgid "Reopening the choice"
+msgstr "פתיחה מחדש של הבחירה"
+
+msgid "A small floating badge"
+msgstr "תג צף קטן"
+
+msgid "Footer link only"
+msgstr "קישור בפוטר בלבד"
+
+msgid "Neither (a menu link to #privacy-settings still works)"
+msgstr "אף אחד מהם (קישור בתפריט ל-#privacy-settings עדיין עובד)"
+
+msgid "The law asks that withdrawing consent is as easy as giving it."
+msgstr "החוק דורש שביטול ההסכמה יהיה קל כמו מתן ההסכמה."
+
+msgid "Add a \"Privacy settings\" link to the footer"
+msgstr "הוספת קישור \"הגדרות פרטיות\" לפוטר"
+
+msgid "Honour the browser's Global Privacy Control signal (start with marketing off)"
+msgstr "כיבוד אות Global Privacy Control של הדפדפן (התחלה עם שיווק כבוי)"
+
+msgid "YouTube embeds use the no-cookie player"
+msgstr "סרטוני YouTube מוטמעים בנגן ללא עוגיות"
+
+msgid "Advanced Consent Mode: load Google tags before consent, in denied state (cookieless pings)"
+msgstr "Consent Mode מתקדם: טעינת תגי גוגל לפני ההסכמה, במצב דחוי (פינגים ללא עוגיות)"
+
+msgid "Off, Google tags load only after a yes (the safest reading of EU law). On, they load at once but store nothing until allowed — Google's recommended setup, which lets it model the conversions it cannot see."
+msgstr "כבוי - תגי גוגל נטענים רק אחרי אישור (הפרשנות הבטוחה ביותר של החוק האירופי). פעיל - הם נטענים מיד אבל לא שומרים דבר עד שמותר - ההגדרה שגוגל ממליצה עליה, שמאפשרת לה למדל המרות שהיא לא רואה."
+
+msgid "Leave a field empty to use the built-in text in the site's language (Hebrew on a Hebrew site, English otherwise)."
+msgstr "השאירו שדה ריק כדי להשתמש בטקסט המובנה בשפת האתר (עברית באתר בעברית, אנגלית אחרת)."
+
+msgid "Title"
+msgstr "כותרת"
+
+msgid "Accept button"
+msgstr "כפתור אישור"
+
+msgid "Decline button"
+msgstr "כפתור סירוב"
+
+msgid "Choose button"
+msgstr "כפתור בחירה"
+
+msgid "Save button"
+msgstr "כפתור שמירה"
+
+msgid "Policy link"
+msgstr "קישור למדיניות"
+
+msgid "Badge / footer link"
+msgstr "תג / קישור בפוטר"
+
+msgid "Message"
+msgstr "הודעה"
+
+msgid "\"Necessary\" is always on and is not a choice. Switch off a category the site never uses and it disappears from the panel."
+msgstr "\"הכרחי\" תמיד פעיל ואינו בחירה. כבו קטגוריה שהאתר לא משתמש בה והיא תיעלם מהחלון."
+
+msgid "Label"
+msgstr "תווית"
+
+msgid "What already follows the choice"
+msgstr "מה כבר פועל לפי הבחירה"
+
+msgid "Google Analytics, Google Ads and Tag Manager — through Consent Mode v2."
+msgstr "Google Analytics, Google Ads ו-Tag Manager - דרך Consent Mode v2."
+
+msgid "configured"
+msgstr "מוגדר"
+
+msgid "not configured"
+msgstr "לא מוגדר"
+
+msgid "Meta pixel and TikTok pixel — loaded only with marketing consent; the Conversions APIs follow the same flag."
+msgstr "פיקסל Meta ופיקסל TikTok - נטענים רק עם הסכמה לשיווק; ה-Conversions API פועל לפי אותו דגל."
+
+msgid "Flashy — held back until marketing consent when its deferral is on in Settings → Marketing."
+msgstr "Flashy - מעוכב עד להסכמה לשיווק כשהדחייה שלו פעילה בהגדרות ← שיווק."
+
+msgid "WooCommerce cart and session cookies, sign-in — necessary, always on."
+msgstr "עוגיות הסל וה-session של WooCommerce, התחברות - הכרחיות, תמיד פעילות."
+
+msgid "The IDs themselves live in %s."
+msgstr "המזהים עצמם נמצאים ב%s."
+
+msgid "Settings → Marketing"
+msgstr "הגדרות ← שיווק"
+
+msgid "Other tags that must wait for a yes"
+msgstr "תגים נוספים שחייבים לחכות לאישור"
+
+msgid "Paste any tag a vendor gave you (a chat widget, a heatmap, another pixel), pick its category, and it will not load until the visitor allows that category. A \"necessary\" tag prints at once. The name appears in the policy's cookie table."
+msgstr "הדביקו כל תג שספק נתן לכם (צ'אט, מפת חום, פיקסל נוסף), בחרו את הקטגוריה שלו, והוא לא ייטען עד שהמבקר יאשר את הקטגוריה הזו. תג \"הכרחי\" מודפס מיד. השם מופיע בטבלת העוגיות במדיניות."
+
+msgid "Head"
+msgstr "Head"
+
+msgid "Leave the last one empty. To remove a tag, clear its code and save."
+msgstr "השאירו את האחרון ריק. כדי להסיר תג, נקו את הקוד שלו ושמרו."
+
+msgid "Consent log"
+msgstr "יומן הסכמות"
+
+msgid "Record every answer (id, time, choices, region, policy version — no names, no full addresses)"
+msgstr "רישום כל תשובה (מזהה, זמן, בחירות, אזור, גרסת מדיניות - בלי שמות, בלי כתובות מלאות)"
+
+msgid "Keep records for (days)"
+msgstr "שמירת רשומות למשך (ימים)"
+
+msgid "Privacy policy page"
+msgstr "עמוד מדיניות הפרטיות"
+
+msgid "The banner links to %1$s. Every site form and the checkout link there too."
+msgstr "הבאנר מקשר ל%1$s. כל טופס באתר והתשלום מקשרים לשם גם."
+
+msgid "No privacy policy page is set. The banner shows without a link until there is one."
+msgstr "לא הוגדר עמוד מדיניות פרטיות. הבאנר מוצג בלי קישור עד שיהיה כזה."
+
+msgid "Rewrite the generated policy page"
+msgstr "כתיבה מחדש של עמוד המדיניות שנוצר"
+
+msgid "Write a privacy policy page for this site"
+msgstr "כתיבת עמוד מדיניות פרטיות לאתר הזה"
+
+msgid "A complete policy in the site's language with the shop's name and contact details filled in, the live cookie table, and a form for data requests. It covers the Israeli Protection of Privacy Law (including the Amendment 13 notice at collection) and the GDPR for European visitors. Read it once before launch — a lawyer should confirm anything specific to your business."
+msgstr "מדיניות מלאה בשפת האתר עם שם החנות ופרטי הקשר ממולאים, טבלת העוגיות החיה, וטופס לבקשות מידע. היא מכסה את חוק הגנת הפרטיות הישראלי (כולל הודעת סעיף 11 לפי תיקון 13) ואת ה-GDPR למבקרים מאירופה. קראו אותה פעם אחת לפני העלייה לאוויר - עורך דין צריך לאשר כל דבר ספציפי לעסק שלכם."
+
+msgid "the live list of cookies and services, for any page."
+msgstr "רשימת העוגיות והשירותים החיה, לכל עמוד."
+
+msgid "a form to request a copy or deletion of personal data; requests arrive under Tools."
+msgstr "טופס לבקשת עותק או מחיקה של מידע אישי; הבקשות מגיעות תחת כלים."
+
+msgid "Ask everyone again"
+msgstr "לבקש מכולם שוב"
+
+msgid "After a material change to the policy or the tags, every visitor should choose again. Editing the policy page does this by itself; this button does it without an edit."
+msgstr "אחרי שינוי מהותי במדיניות או בתגים, כל מבקר צריך לבחור מחדש. עריכת עמוד המדיניות עושה זאת לבד; הכפתור הזה עושה זאת בלי עריכה."
+
+msgid "Ask all visitors again"
+msgstr "לבקש מכל המבקרים שוב"
+
+msgid "Current consent version: %s"
+msgstr "גרסת ההסכמה הנוכחית: %s"
+
+msgid "Recorded answers"
+msgstr "תשובות שנרשמו"
+
+msgid "Preferences"
+msgstr "העדפות"
+
+msgid "Statistics"
+msgstr "סטטיסטיקה"
+
+msgid "Version"
+msgstr "גרסה"
+
+msgid "Id"
+msgstr "מזהה"
+
+msgid "Download everything as CSV"
+msgstr "הורדת הכול כ-CSV"
+
+msgid "Delete every recorded answer?"
+msgstr "למחוק כל תשובה שנרשמה?"
+
+msgid "Empty the log"
+msgstr "ריקון היומן"
+
+msgid "Nothing recorded yet."
+msgstr "עדיין לא נרשם דבר."
+
+msgid "Requests for a copy or deletion of personal data arrive under %s."
+msgstr "בקשות לעותק או למחיקה של מידע אישי מגיעות תחת %s."
+
+msgid "Tools → Export / Erase personal data"
+msgstr "כלים ← ייצוא / מחיקת מידע אישי"
+
+msgid "The policy page is written and set as the site's privacy page. Read it once before launch."
+msgstr "עמוד המדיניות נכתב והוגדר כעמוד הפרטיות של האתר. קראו אותו פעם אחת לפני העלייה לאוויר."
+
+msgid "The page could not be written."
+msgstr "לא ניתן היה לכתוב את העמוד."
+
+msgid "Every visitor will be asked again on their next visit."
+msgstr "כל מבקר יישאל שוב בביקור הבא שלו."
+
+msgid "The log is empty."
+msgstr "היומן ריק."
+
+msgid "Your privacy"
+msgstr "הפרטיות שלך"
+
+msgid "We use cookies to run the shop, to understand how it is used and to show you relevant offers. You choose what to allow, and you can change your mind at any time."
+msgstr "אנחנו משתמשים בעוגיות כדי להפעיל את החנות, להבין איך משתמשים בה ולהציג לך הצעות רלוונטיות. אתם בוחרים מה לאפשר, ואפשר לשנות את הבחירה בכל עת."
+
+msgid "Accept all"
+msgstr "אישור הכול"
+
+msgid "Only necessary"
+msgstr "רק הכרחי"
+
+msgid "Save my choices"
+msgstr "שמירת הבחירות שלי"
+
+msgid "Privacy settings"
+msgstr "הגדרות פרטיות"
+
+msgid "Necessary"
+msgstr "הכרחי"
+
+msgid "Keeps the shop working: your cart, your sign-in and your choices in this form. Always on."
+msgstr "מאפשר לחנות לעבוד: הסל, ההתחברות והבחירות שלך בחלון הזה. תמיד פעיל."
+
+msgid "Remembers your settings, such as a language or a recently viewed product."
+msgstr "זוכר את ההגדרות שלך, כמו שפה או מוצר שצפית בו לאחרונה."
+
+msgid "Helps us understand how the site is used, so we can make it better. The data is aggregated."
+msgstr "עוזר לנו להבין איך משתמשים באתר, כדי שנוכל לשפר אותו. המידע מצטבר ואינו מזהה."
+
+msgid "Lets advertising networks show you offers that fit what you looked at here, and measure whether their ads work."
+msgstr "מאפשר לרשתות פרסום להציג לך הצעות שמתאימות למה שראית כאן, ולמדוד אם המודעות שלהן עובדות."
+
+msgid "Sign-in, the cart, the checkout, and remembering this very choice."
+msgstr "התחברות, הסל, התשלום, וזכירת הבחירה הזו עצמה."
+
+msgid "Session to 1 year"
+msgstr "מהביקור ועד שנה"
+
+msgid "Counts visits and pages, aggregated. With Google Consent Mode: nothing is stored without your permission."
+msgstr "סופר ביקורים ועמודים, באופן מצטבר. עם Google Consent Mode: שום דבר לא נשמר בלי הרשאתך."
+
+msgid "Up to 2 years"
+msgstr "עד שנתיים"
+
+msgid "Measures whether an ad led to a purchase and shows relevant ads on Google."
+msgstr "מודד אם מודעה הובילה לרכישה ומציג מודעות רלוונטיות בגוגל."
+
+msgid "Up to 13 months"
+msgstr "עד 13 חודשים"
+
+msgid "Measures ads on Facebook and Instagram and shows you relevant ones."
+msgstr "מודד מודעות בפייסבוק ובאינסטגרם ומציג לך מודעות רלוונטיות."
+
+msgid "Up to 3 months"
+msgstr "עד 3 חודשים"
+
+msgid "Measures ads on TikTok and shows you relevant ones."
+msgstr "מודד מודעות בטיקטוק ומציג לך מודעות רלוונטיות."
+
+msgid "Email and SMS marketing: remembers you between visits so messages match what you looked at."
+msgstr "שיווק במייל וב-SMS: זוכר אותך בין ביקורים כדי שההודעות יתאימו למה שראית."
+
+msgid "Up to 1 year"
+msgstr "עד שנה"
+
+msgid "Service"
+msgstr "שירות"
+
+msgid "Purpose"
+msgstr "מטרה"
+
+msgid "Cookies"
+msgstr "עוגיות"
+
+msgid "Kept for"
+msgstr "נשמר למשך"
+
+msgid "Thank you. We sent you an email — please confirm the request from there."
+msgstr "תודה. שלחנו לך מייל - יש לאשר את הבקשה משם."
+
+msgid "We could not file that request. Check the address and try again, or write to us directly."
+msgstr "לא הצלחנו לרשום את הבקשה. בדקו את הכתובת ונסו שוב, או כתבו לנו ישירות."
+
+msgid "Your email address"
+msgstr "כתובת המייל שלך"
+
+msgid "Send me a copy of the personal data you hold about me"
+msgstr "שלחו לי עותק של המידע האישי שאתם מחזיקים עליי"
+
+msgid "Delete the personal data you hold about me"
+msgstr "מחקו את המידע האישי שאתם מחזיקים עליי"
+
+msgid "Send the request"
+msgstr "שליחת הבקשה"
+
+msgid "Always on"
+msgstr "תמיד פעיל"
+
+msgid "Cookie consent — the banner, the categories, the log — lives in %s. Every tag here follows the visitor's choice through Google Consent Mode v2 and the marketing flag."
+msgstr "הסכמה לעוגיות - הבאנר, הקטגוריות, היומן - נמצאת ב%s. כל תג כאן פועל לפי בחירת המבקר דרך Google Consent Mode v2 ודגל השיווק."
+
+msgid "Settings → Privacy"
+msgstr "הגדרות ← פרטיות"
+
+msgid "Page"
+msgstr "עמוד"

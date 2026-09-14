@@ -129,16 +129,7 @@ final class Marketing_Admin {
 			<div class="ocmkt-card">
 				<h2><?php esc_html_e( 'Consent and events', 'oc-theme' ); ?></h2>
 				<div class="ocmkt-grid">
-					<label>
-						<span><?php esc_html_e( 'Cookie consent', 'oc-theme' ); ?></span>
-						<select name="consent">
-							<option value="auto" <?php selected( 'auto', $s['consent'] ); ?>><?php esc_html_e( 'Automatic — opt-in in Europe, opt-out elsewhere', 'oc-theme' ); ?></option>
-							<option value="optout" <?php selected( 'optout', $s['consent'] ); ?>><?php esc_html_e( 'Banner; tags run unless declined', 'oc-theme' ); ?></option>
-							<option value="optin" <?php selected( 'optin', $s['consent'] ); ?>><?php esc_html_e( 'Banner; nothing runs until accepted', 'oc-theme' ); ?></option>
-							<option value="off" <?php selected( 'off', $s['consent'] ); ?>><?php esc_html_e( 'No banner, no consent layer', 'oc-theme' ); ?></option>
-						</select>
-						<small><?php esc_html_e( 'Google Consent Mode v2 is always wired; the choice only sets what a visitor starts with.', 'oc-theme' ); ?></small>
-					</label>
+					<p class="description"><?php echo wp_kses_post( sprintf( /* translators: %s: link to the privacy screen. */ __( 'Cookie consent — the banner, the categories, the log — lives in %s. Every tag here follows the visitor\'s choice through Google Consent Mode v2 and the marketing flag.', 'oc-theme' ), '<a href="' . esc_url( admin_url( 'options-general.php?page=oc-privacy' ) ) . '">' . esc_html__( 'Settings → Privacy', 'oc-theme' ) . '</a>' ) ); ?></p>
 					<label class="ocmkt-check"><input type="checkbox" name="events[scroll]" value="1" <?php checked( $s['events']['scroll'] ); ?> /><span><?php esc_html_e( 'Scroll depth (25 / 50 / 75 / 100%)', 'oc-theme' ); ?></span></label>
 					<label class="ocmkt-check"><input type="checkbox" name="events[video]" value="1" <?php checked( $s['events']['video'] ); ?> /><span><?php esc_html_e( 'Video start and complete', 'oc-theme' ); ?></span></label>
 					<label class="ocmkt-check"><input type="checkbox" name="events[search]" value="1" <?php checked( $s['events']['search'] ); ?> /><span><?php esc_html_e( 'Searches', 'oc-theme' ); ?></span></label>
@@ -220,7 +211,6 @@ final class Marketing_Admin {
 		// phpcs:disable WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput -- check_admin_referer() ran; Settings::normalize() types and bounds every field.
 		$raw = array(
 			'enabled'    => ! empty( $_POST['enabled'] ),
-			'consent'    => sanitize_key( (string) wp_unslash( $_POST['consent'] ?? 'auto' ) ),
 			'fb'         => array_map( 'sanitize_text_field', array_map( 'wp_unslash', (array) ( $_POST['fb'] ?? array() ) ) ),
 			'ga4'        => array_map( 'sanitize_text_field', array_map( 'wp_unslash', (array) ( $_POST['ga4'] ?? array() ) ) ),
 			'gads'       => array_map( 'sanitize_text_field', array_map( 'wp_unslash', (array) ( $_POST['gads'] ?? array() ) ) ),

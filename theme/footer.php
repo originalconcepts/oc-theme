@@ -54,6 +54,7 @@ $oc_bottom = static function () use ( $oc_credit ) {
 					?>
 				</nav>
 			<?php endif; ?>
+			<?php do_action( 'oc_footer_legal' ); ?>
 		</div>
 
 		<div class="oc-footer__bottom-end">

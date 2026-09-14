@@ -25,6 +25,7 @@ final class Page {
 	const META_TY     = '_oc_mkt_ty';
 	const META_SRV    = '_oc_mkt_srv';
 	const META_CLIENT = '_oc_mkt_client';
+	const META_CONSENT = '_oc_mkt_consent';
 	const META_GA4    = '_oc_mkt_ga4_fallback';
 
 	/**
@@ -259,6 +260,10 @@ final class Page {
 	public function remember_client( $order ): void {
 		if ( $order instanceof \WC_Order ) {
 			$order->update_meta_data( self::META_CLIENT, Events::client() );
+			// The shopper's marketing consent at checkout rides with the
+			// order: the payment's webhook, which fires the purchase event,
+			// has no visitor cookie to read.
+			$order->update_meta_data( self::META_CONSENT, class_exists( '\OC\Theme\Privacy\Consent' ) && ! \OC\Theme\Privacy\Consent::allows( 'marketing' ) ? 'no' : 'yes' );
 		}
 	}
 
@@ -281,6 +286,10 @@ final class Page {
 
 		$order->update_meta_data( self::META_SRV, (string) time() );
 		$order->save();
+
+		if ( 'no' === (string) $order->get_meta( self::META_CONSENT ) ) {
+			return;
+		}
 
 		$client = (array) $order->get_meta( self::META_CLIENT );
 

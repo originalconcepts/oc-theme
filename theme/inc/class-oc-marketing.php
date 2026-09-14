@@ -14,7 +14,6 @@ declare( strict_types = 1 );
 
 namespace OC\Theme;
 
-use OC\Theme\Marketing\Consent;
 use OC\Theme\Marketing\Events;
 use OC\Theme\Marketing\Page;
 use OC\Theme\Marketing\Settings;
@@ -71,8 +70,6 @@ final class Marketing {
 				'gadsLabel'     => $s['gads']['label'],
 				'gtm'           => $s['gtm']['id'],
 				'tiktok'        => $s['tiktok']['pixel'],
-				'consentMode'   => Consent::mode(),
-				'consentStored' => Consent::stored(),
 				'events'        => $s['events'],
 				'currency'      => get_woocommerce_currency(),
 				'rest'          => esc_url_raw( rest_url() ),
@@ -148,7 +145,7 @@ final class Marketing {
 	}
 
 	/**
-	 * The queue and the banner.
+	 * The queue.
 	 */
 	public function footer(): void {
 		if ( is_admin() || ! Settings::live() ) {
@@ -161,6 +158,7 @@ final class Marketing {
 			echo '<script>window.ocq=(window.ocq||[]).concat(' . wp_json_encode( $queue ) . ');</script>' . "\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- wp_json_encode() is the escape.
 		}
 
-		Consent::banner();
+		// The consent banner belongs to the privacy layer now (Settings →
+		// Privacy); it prints on every page whether or not marketing runs.
 	}
 }
