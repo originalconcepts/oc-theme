@@ -4012,7 +4012,7 @@ html.oc-drw-open { overflow: hidden; }
 		transition: opacity .15s ease;
 	}
 	.oc-atc-hover ul.products li.product:hover .button,
-	.oc-atc-hover ul.products li.product:focus-within .button {
+	.oc-atc-hover ul.products li.product:has(:focus-visible) .button {
 		opacity: 1;
 	}
 }
@@ -4328,13 +4328,13 @@ textarea { border-radius: var(--oc-radius, 8px); }
 }
 
 li.product:hover .oc-card-atc,
-li.product:focus-within .oc-card-atc,
+li.product:has(:focus-visible) .oc-card-atc,
 .oc-atc-always li.product .oc-card-atc { opacity: 1; transform: translateY(0); }
 
 /* "always" shows it without hover; "hover" reveals; "none" handled in PHP */
 .oc-atc-hover li.product .oc-card-atc { opacity: 0; transform: translateY(8px); }
 .oc-atc-hover li.product:hover .oc-card-atc,
-.oc-atc-hover li.product:focus-within .oc-card-atc { opacity: 1; transform: translateY(0); }
+.oc-atc-hover li.product:has(:focus-visible) .oc-card-atc { opacity: 1; transform: translateY(0); }
 
 /* Said at li.product depth, because the desktop hover mode says opacity:0
  * at that depth and would outrank a shallower always. */
@@ -4427,7 +4427,7 @@ li.product:focus-within .oc-card-atc,
 
 @media (hover: hover) {
 	li.product:hover .oc-card-media--hover .oc-card-media__item:not(.is-first),
-	li.product:focus-within .oc-card-media--hover .oc-card-media__item:not(.is-first) {
+	li.product:has(:focus-visible) .oc-card-media--hover .oc-card-media__item:not(.is-first) {
 		opacity: 1;
 	}
 }
