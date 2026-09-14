@@ -1522,6 +1522,16 @@
 				var dir = btn.classList.contains( 'oc-card-media__nav--next' ) ? 1 : -1;
 				var at  = currentIndex();
 
+				// While the arrow's own scroll runs, the swipe ring stands
+				// aside (its settle would fire on the arrow's first, instant
+				// jump); once the slide has arrived it tidies the ends.
+				arrowBusy = true;
+				clearTimeout( arrowWait );
+				arrowWait = setTimeout( function () {
+					arrowBusy = false;
+					prepareRing();
+				}, 900 );
+
 				if ( dir < 0 && 0 === at ) {
 					strip.insertBefore( strip.lastElementChild, strip.firstElementChild );
 					goTo( 1, true );
@@ -1543,6 +1553,93 @@
 				goTo( at + dir, false );
 			} );
 		} );
+
+		// Endless by finger (and trackpad) too. Before a swipe can meet an
+		// end, the picture from the far end is moved round to that side with
+		// the view held still, so there is always a next picture both ways.
+		// It happens the moment a finger lands or a wheel turns, and again
+		// once a swipe settles — never mid-swipe. Two pictures cannot stand
+		// on both sides of one, so a pair is doubled first.
+		var ringBusy   = false;
+		var arrowBusy  = false;
+		var arrowWait  = 0;
+		var touching   = false;
+		var settleWait = 0;
+
+		// Stand on a slide by its place, not by adding a step: the browser's
+		// own scroll anchoring may already have moved the view when a slide
+		// changed sides, and a relative nudge on top of it landed two slides
+		// over.
+		function standOn( index ) {
+			var rtl = 'rtl' === getComputedStyle( strip ).direction;
+			strip.scrollTo( { left: ( rtl ? -1 : 1 ) * index * ( strip.clientWidth + slideGap ), behavior: 'instant' } );
+		}
+
+		function prepareRing() {
+			if ( ringBusy || arrowBusy || count() < 2 || ! strip.clientWidth ) {
+				return;
+			}
+
+			if ( 2 === count() && ! strip.querySelector( 'video, iframe' ) ) {
+				Array.prototype.slice.call( strip.children ).forEach( function ( slide ) {
+					var copy = slide.cloneNode( true );
+					copy.classList.remove( 'is-first' );
+					copy.setAttribute( 'data-oc-clone', '' );
+					strip.appendChild( copy );
+				} );
+			}
+
+			var n  = count();
+			var at = currentIndex();
+
+			if ( n < 3 || ( at > 0 && at < n - 1 ) ) {
+				return;
+			}
+
+			ringBusy = true;
+
+			if ( 0 === at ) {
+				strip.insertBefore( strip.lastElementChild, strip.firstElementChild );
+				standOn( 1 );
+			} else {
+				strip.appendChild( strip.firstElementChild );
+				standOn( n - 2 );
+			}
+
+			requestAnimationFrame( function () {
+				requestAnimationFrame( function () {
+					ringBusy = false;
+				} );
+			} );
+		}
+
+		function settleRing() {
+			if ( ! touching && ! arrowBusy ) {
+				prepareRing();
+			}
+		}
+
+		strip.addEventListener( 'touchstart', function () {
+			touching = true;
+			prepareRing();
+		}, { passive: true } );
+
+		[ 'touchend', 'touchcancel' ].forEach( function ( evt ) {
+			strip.addEventListener( evt, function () {
+				touching = false;
+			}, { passive: true } );
+		} );
+
+		strip.addEventListener( 'wheel', prepareRing, { passive: true } );
+
+		if ( 'onscrollend' in window ) {
+			strip.addEventListener( 'scrollend', settleRing );
+		} else {
+			strip.addEventListener( 'scroll', function () {
+				clearTimeout( settleWait );
+				settleWait = setTimeout( settleRing, 160 );
+			}, { passive: true } );
+		}
 	}
 
 	document.querySelectorAll( '.oc-card-media--gallery' ).forEach( bindCardGallery );

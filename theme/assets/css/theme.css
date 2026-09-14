@@ -4456,6 +4456,10 @@ li.product:has(:focus-visible) .oc-card-atc,
 }
 .oc-card-media--gallery .oc-card-media__strip::-webkit-scrollbar { display: none; }
 
+/* One picture per swipe: a quick flick used to fly past the middle picture
+ * straight to the end of the strip. */
+.oc-card-media--gallery .oc-card-media__item { scroll-snap-stop: always; }
+
 .oc-card-media--gallery .oc-card-media__item {
 	position: relative;
 	flex: 0 0 100%;
