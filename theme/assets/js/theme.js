@@ -4233,26 +4233,44 @@
 		window.dispatchEvent( new Event( 'resize' ) );
 	}
 
-	// The gallery on show, by colour value ('' = the product's own). A swap
-	// to what is already there is skipped, so a size change never rebuilds
-	// the slides under the visitor.
+	// The gallery on show: 'c:<colour>' for a colour gallery, 'v:<id>' for
+	// a variation's own gallery, '' for the product's. A swap to what is
+	// already there is skipped, so a size change never rebuilds the slides
+	// under the visitor. Answers whether anything changed.
 	var ocGalleryShown = '';
 
-	function ocMaybeSwapGallery( value ) {
-		if ( ! ocColorGalleries ) {
-			return;
-		}
-
-		// A colour with no gallery of its own shows the product's gallery,
-		// not whichever colour was picked before it.
-		var key = value && ocColorGalleries[ value ] ? value : '';
-
+	function ocShowGallery( key, slides ) {
 		if ( key === ocGalleryShown ) {
-			return;
+			return false;
 		}
 
 		ocGalleryShown = key;
-		ocSwapGallery( key ? ocColorGalleries[ key ] : null );
+		ocSwapGallery( key ? slides : null );
+
+		return true;
+	}
+
+	// Woo writes a chosen variation's image into the first slide itself, and
+	// back on reset. The rail was drawn from the slides before that, so its
+	// first thumb kept the old picture: a pink thumb under a grey main image.
+	// The first thumb follows whatever the first slide shows.
+	function ocSyncFirstThumb() {
+		if ( ! gRail || ! gSlides[ 0 ] ) {
+			return;
+		}
+
+		var img   = gSlides[ 0 ].querySelector( 'img' );
+		var thumb = gRail.querySelector( 'li:first-child img' );
+
+		if ( ! img || ! thumb ) {
+			return;
+		}
+
+		var src = gSlides[ 0 ].dataset.thumb || img.getAttribute( 'src' );
+
+		if ( src && thumb.getAttribute( 'src' ) !== src ) {
+			thumb.src = src;
+		}
 	}
 
 	/* Every way of choosing a colour — swatches, buttons, the theme's
@@ -4264,32 +4282,97 @@
 	( function () {
 		var form = document.querySelector( 'form.variations_form' );
 
-		if ( ! ocColorGalleries || ! form || ! ocGalleriesTag ) {
+		if ( ! form || ! galleryWrap ) {
 			return;
 		}
 
-		var select = ocGalleriesTag.dataset.attr ? form.querySelector( 'select[name="' + ocGalleriesTag.dataset.attr + '"]' ) : null;
+		var select = null;
 
-		if ( ! select ) {
-			select = Array.prototype.filter.call( form.querySelectorAll( 'select[name^="attribute_"]' ), function ( s ) {
-				return Array.prototype.some.call( s.options, function ( o ) { return o.value && ocColorGalleries[ o.value ]; } );
-			} )[ 0 ];
-		}
+		if ( ocColorGalleries && ocGalleriesTag ) {
+			select = ocGalleriesTag.dataset.attr ? form.querySelector( 'select[name="' + ocGalleriesTag.dataset.attr + '"]' ) : null;
 
-		if ( ! select ) {
-			return;
-		}
-
-		var apply = function () { ocMaybeSwapGallery( select.value ); };
-
-		form.addEventListener( 'change', function ( e ) {
-			if ( e.target === select ) {
-				setTimeout( apply, 0 );
+			if ( ! select ) {
+				select = Array.prototype.filter.call( form.querySelectorAll( 'select[name^="attribute_"]' ), function ( s ) {
+					return Array.prototype.some.call( s.options, function ( o ) { return o.value && ocColorGalleries[ o.value ]; } );
+				} )[ 0 ] || null;
 			}
+		}
+
+		// The chosen variation, read from the form rather than from the order
+		// Woo's events arrive in. Variations Woo loads over ajax are kept as
+		// they are found.
+		var seen = {};
+		var list = null;
+
+		var chosen = function () {
+			var idField = form.querySelector( 'input[name="variation_id"]' );
+			var id      = idField ? parseInt( idField.value, 10 ) : 0;
+
+			if ( ! id ) {
+				return null;
+			}
+
+			if ( seen[ id ] ) {
+				return seen[ id ];
+			}
+
+			if ( null === list ) {
+				try {
+					list = JSON.parse( form.dataset.product_variations || '[]' );
+				} catch ( e ) {
+					list = [];
+				}
+
+				list = Array.isArray( list ) ? list : [];
+			}
+
+			return list.filter( function ( v ) { return Number( v.variation_id ) === id; } )[ 0 ] || null;
+		};
+
+		var apply = function () {
+			var v       = chosen();
+			var value   = select ? select.value : '';
+			var changed;
+
+			if ( value && ocColorGalleries[ value ] ) {
+				changed = ocShowGallery( 'c:' + value, ocColorGalleries[ value ] );
+			} else if ( v && v.oc_gallery && v.oc_gallery.length ) {
+				changed = ocShowGallery( 'v:' + v.variation_id, v.oc_gallery );
+			} else {
+				changed = ocShowGallery( '', null );
+			}
+
+			// Fresh slides lost what Woo had written into the first one: have
+			// Woo write the chosen variation's image again, or put the
+			// product's own back.
+			if ( changed && window.jQuery ) {
+				var $form = window.jQuery( form );
+
+				if ( v && $form.wc_variations_image_update ) {
+					$form.wc_variations_image_update( v );
+				} else if ( ! v && $form.wc_variations_image_reset ) {
+					$form.wc_variations_image_reset();
+				}
+			}
+
+			ocSyncFirstThumb();
+		};
+
+		form.addEventListener( 'change', function () {
+			setTimeout( apply, 0 );
 		} );
 
 		if ( window.jQuery ) {
-			window.jQuery( form ).on( 'show_variation reset_image', function () { setTimeout( apply, 0 ); } );
+			window.jQuery( form )
+				.on( 'found_variation show_variation', function ( e, v ) {
+					if ( v && v.variation_id ) {
+						seen[ v.variation_id ] = v;
+					}
+					setTimeout( apply, 0 );
+				} )
+				.on( 'hide_variation reset_data reset_image', function () {
+					setTimeout( apply, 0 );
+				} );
 		}
 
 		setTimeout( apply, 0 );

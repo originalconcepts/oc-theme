@@ -1774,6 +1774,13 @@ final class Variations {
 	 * moment it was chosen. The colour gallery is the shop's own answer to
 	 * "what does this colour look like", so it wins.
 	 *
+	 * WooCommerce's own per-variation gallery is taken over here too. Woo
+	 * shows it by replacing the whole gallery element with its plain markup,
+	 * which drops the theme's layout, rail and active slide — the gallery
+	 * showed for a moment and vanished. The slides travel as `oc_gallery`
+	 * and the theme swaps them in the way it swaps a colour gallery; a
+	 * colour gallery set in the theme's tab still wins.
+	 *
 	 * @param mixed $data      Variation data for the form.
 	 * @param mixed $product   Parent product.
 	 * @param mixed $variation The variation.
@@ -1784,24 +1791,47 @@ final class Variations {
 			return $data;
 		}
 
-		$galleries = $this->galleries_meta( $product->get_id() );
+		$galleries   = $this->galleries_meta( $product->get_id() );
+		$from_colour = false;
 
-		if ( empty( $galleries ) ) {
+		if ( ! empty( $galleries ) ) {
+			$chosen = $variation->get_attributes();
+
+			foreach ( $this->product_attrs( $product ) as $attr ) {
+				$value = (string) ( $chosen[ $attr['key'] ] ?? '' );
+				$img   = '' === $value ? 0 : (int) ( $galleries[ sanitize_title( $value ) ]['imgs'][0] ?? 0 );
+
+				if ( $img > 0 && wp_attachment_is_image( $img ) ) {
+					$data['image']    = wc_get_product_attachment_props( $img, $variation );
+					$data['image_id'] = $img;
+					$from_colour      = true;
+					break;
+				}
+			}
+		}
+
+		$ids = array_values( array_filter( array_map( 'absint', (array) ( $data['gallery_image_ids'] ?? array() ) ) ) );
+
+		if ( empty( $data['gallery_images_html'] ) && empty( $ids ) ) {
 			return $data;
 		}
 
-		$chosen = $variation->get_attributes();
+		// Never let Woo replace the gallery element itself.
+		$data['gallery_images_html'] = '';
 
-		foreach ( $this->product_attrs( $product ) as $attr ) {
-			$value = (string) ( $chosen[ $attr['key'] ] ?? '' );
-			$img   = '' === $value ? 0 : (int) ( $galleries[ sanitize_title( $value ) ]['imgs'][0] ?? 0 );
-
-			if ( $img > 0 && wp_attachment_is_image( $img ) ) {
-				$data['image']    = wc_get_product_attachment_props( $img, $variation );
-				$data['image_id'] = $img;
-				break;
-			}
+		if ( $from_colour || empty( $ids ) ) {
+			return $data;
 		}
+
+		// As Woo shows it: the variation's image, then its own gallery.
+		$slides = array();
+		$order  = array_values( array_unique( array_filter( array_merge( array( (int) ( $data['image_id'] ?? 0 ) ), $ids ) ) ) );
+
+		foreach ( $order as $i => $img_id ) {
+			$slides[] = self::strip_thumb_data( wc_get_gallery_image_html( (int) $img_id, 0 === $i ) );
+		}
+
+		$data['oc_gallery'] = $slides;
 
 		return $data;
 	}
