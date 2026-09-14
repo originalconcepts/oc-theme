@@ -651,7 +651,9 @@
 .ocb-brands .ocb-arr { inset-block-start: 50%; }
 
 @media (max-width: 782px) {
-	.oc-compose .ocb-shelf ul.products { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+	/* Grid shelves only: a slider runs its cards in auto columns, and two
+	 * fixed ones here squeezed its first two cards to nothing. */
+	.oc-compose .ocb-shelf:not(.ocb-shelf--slider) ul.products { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 	.oc-compose .ocb-shelf--slider.ocb-shelf--m1 ul.products { grid-auto-columns: 82%; }
 	.oc-compose .ocb-shelf--slider.ocb-shelf--m2 ul.products { grid-auto-columns: 42%; }
 
@@ -700,7 +702,9 @@
 }
 .oc-block--slider .ocb-shelf--slider ul.products li.product .price { margin-block-start: 6px; }
 @media (max-width: 782px) {
-	.oc-block--slider .ocb-shelf ul.products { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+	/* Grid shelves only: a slider runs its cards in auto columns, and two
+	 * fixed ones here squeezed its first two cards to nothing. */
+	.oc-block--slider .ocb-shelf:not(.ocb-shelf--slider) ul.products { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 	.oc-block--slider .ocb-shelf--slider.ocb-shelf--m1 ul.products { grid-auto-columns: 82%; }
 	.oc-block--slider .ocb-shelf--slider.ocb-shelf--m2 ul.products { grid-auto-columns: 42%; }
 }
