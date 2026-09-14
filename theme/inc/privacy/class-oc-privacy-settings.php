@@ -260,7 +260,11 @@ final class Settings {
 			return (int) $s['policy'];
 		}
 
-		return (int) get_option( 'wp_page_for_privacy_policy', 0 );
+		// WordPress creates its privacy page as a DRAFT and points the
+		// option at it; a link to a draft is a 404 for every visitor.
+		$wp = (int) get_option( 'wp_page_for_privacy_policy', 0 );
+
+		return $wp > 0 && 'publish' === get_post_status( $wp ) ? $wp : 0;
 	}
 
 	/**
