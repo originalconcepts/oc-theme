@@ -15251,11 +15251,13 @@ p.no-comments {
 	cursor: pointer;
 	border-radius: var(--oc-radius, 8px);
 	padding: 9px 16px;
-	border: 1px solid var(--oc-primary, #111);
+	border: 1px solid var(--oc-ink, #111);
 	min-block-size: 40px;
 	flex: 1 1 auto;
 }
-.oc-privacy__btn--solid { background: var(--oc-primary, #111); color: var(--oc-on-primary, #fff); }
+/* Ink, not the brand colour: a light brand (one shop's beige) put white
+ * text under AA contrast, and this button must read on every site. */
+.oc-privacy__btn--solid { background: var(--oc-ink, #111); color: var(--oc-surface, #fff); border-color: var(--oc-ink, #111); }
 .oc-privacy__btn--ghost { background: transparent; color: inherit; border-color: var(--oc-line, rgba(0, 0, 0, .18)); }
 .oc-privacy__btn:hover { filter: brightness(.95); }
 .oc-privacy__btn:focus-visible { outline: 2px solid var(--oc-primary, #111); outline-offset: 2px; }
