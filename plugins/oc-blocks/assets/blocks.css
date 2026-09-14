@@ -1185,6 +1185,22 @@
 
 .ocb-look--end .ocb-look__pic { order: 2; }
 
+/* The picture column may be narrowed. The canvas keeps the photo's own
+   ratio inside it, so a smaller picture is a smaller whole picture —
+   nothing cut, nothing stretched, air around it instead. */
+.ocb-look__pic {
+	position: relative;
+	overflow: hidden;
+	border-radius: var(--oc-radius, 8px);
+	inline-size: var(--ocb-look-w, 100%);
+	margin-inline: auto;
+}
+
+.ocb-look__pic img { display: block; inline-size: 100%; block-size: auto; }
+
+/* Placed AFTER the base .ocb-look__pic rule on purpose: same specificity,
+ * so the later rule wins — above it, the base inline-size took over and the
+ * picture swelled to its whole share of the block. */
 /* Desktop: the picture and the product card stand together in the middle of
  * the block, a set space apart. As two grid halves each was centred in its
  * own half, and the card's 320px picture in a 600px column left 200-360px of
@@ -1209,19 +1225,6 @@
 		min-inline-size: 0;
 	}
 }
-
-/* The picture column may be narrowed. The canvas keeps the photo's own
-   ratio inside it, so a smaller picture is a smaller whole picture —
-   nothing cut, nothing stretched, air around it instead. */
-.ocb-look__pic {
-	position: relative;
-	overflow: hidden;
-	border-radius: var(--oc-radius, 8px);
-	inline-size: var(--ocb-look-w, 100%);
-	margin-inline: auto;
-}
-
-.ocb-look__pic img { display: block; inline-size: 100%; block-size: auto; }
 
 /* The rooms stand stacked; one is lit at a time. */
 .ocb-look__scene { position: relative; }
