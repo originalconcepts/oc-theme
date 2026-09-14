@@ -7584,3 +7584,6 @@ msgstr "מקסימום סוואטשים בכרטיס — מובייל (0 = כמ�
 
 msgid "The cart is the same icon the header wears."
 msgstr "הסל הוא אותו אייקון שנבחר להדר."
+
+msgid "%1$s: %2$s to the cart"
+msgstr "%1$s: %2$s לסל"

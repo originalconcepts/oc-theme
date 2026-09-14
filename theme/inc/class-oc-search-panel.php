@@ -520,10 +520,14 @@ final class Search_Panel {
 			return sprintf(
 				'<button type="button" class="oc-search__add" data-oc-search-add="%d" aria-label="%s">%s</button>',
 				(int) $product->get_id(),
+				// The spoken name opens with the visible word, as assistive
+				// technology expects — a name that merely paraphrases the
+				// label fails a voice-control user who says what they see.
 				esc_attr(
 					sprintf(
-						/* translators: %s: product name. */
-						__( 'Add %s to the cart', 'oc-theme' ),
+						/* translators: 1: the button's visible word, 2: product name. */
+						__( '%1$s: %2$s to the cart', 'oc-theme' ),
+						__( 'Add', 'oc-theme' ),
 						$product->get_name()
 					)
 				),

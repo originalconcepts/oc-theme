@@ -1757,3 +1757,8 @@ msgstr "רווח בין התמונה למוצרים"
 msgid "The picture and the product card stand together in the middle of the block, this far apart."
 msgstr "התמונה וכרטיס המוצר עומדים יחד במרכז הבלוק, במרחק הזה זה מזה."
 
+msgid "Slide %d"
+msgstr "שקופית %d"
+
+msgid "Video poster (a still shown until the film plays)"
+msgstr "תמונת פתיחה לסרטון (תמונה קבועה שמוצגת עד שהסרטון מתחיל)"

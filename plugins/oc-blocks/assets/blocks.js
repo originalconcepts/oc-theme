@@ -83,6 +83,7 @@
 						var d = document.createElement( 'button' );
 						d.type = 'button';
 						d.className = 'ocb-dots__dot';
+						d.setAttribute( 'aria-label', ( dots.getAttribute( 'data-ocb-dot-label' ) || 'Slide %d' ).replace( '%d', n + 1 ) );
 						d.addEventListener( 'click', function () {
 							go( n );
 						} );
@@ -201,6 +202,12 @@
 
 			head.setAttribute( 'aria-hidden', 'true' );
 			tail.setAttribute( 'aria-hidden', 'true' );
+			// A hidden copy must not be a tab stop either.
+			[ head, tail ].forEach( function ( ghost ) {
+				[].concat( ghost.matches( 'a,button' ) ? [ ghost ] : [], [].slice.call( ghost.querySelectorAll( 'a,button,[tabindex]' ) ) ).forEach( function ( el ) {
+					el.setAttribute( 'tabindex', '-1' );
+				} );
+			} );
 			strip.insertBefore( head, strip.firstChild );
 			strip.appendChild( tail );
 

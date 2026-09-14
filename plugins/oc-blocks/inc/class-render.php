@@ -198,7 +198,31 @@ final class Render {
 		$html      = self::page_html( (int) $page_id );
 		$composing = false;
 
+		// wpautop runs right after this (priority 10) and treats a linked
+		// slide — an <a> at the top level — as a line of text: it wrapped
+		// the slides in <p> and closed them in the wrong places, which
+		// broke the banner's markup and its accessibility tree. Composed
+		// markup is finished HTML; hold wpautop off for this one run and
+		// hand it back for whatever content the page filters next.
+		if ( false !== has_filter( 'the_content', 'wpautop' ) ) {
+			remove_filter( 'the_content', 'wpautop' );
+			add_filter( 'the_content', array( __CLASS__, 'restore_autop' ), 11 );
+		}
+
 		return $html;
+	}
+
+	/**
+	 * Puts wpautop back after a composed run (see compose()).
+	 *
+	 * @param string $content The content, untouched.
+	 * @return string
+	 */
+	public static function restore_autop( $content ) {
+		remove_filter( 'the_content', array( __CLASS__, 'restore_autop' ), 11 );
+		add_filter( 'the_content', 'wpautop' );
+
+		return $content;
 	}
 
 	/**
@@ -484,7 +508,12 @@ final class Render {
 			$media = '';
 
 			if ( '' !== $slide['vid'] ) {
-				$media = '<video src="' . esc_url( (string) $slide['vid'] ) . '" autoplay muted loop playsinline preload="metadata"></video>';
+				// A poster is the banner's first paint: without one the
+				// browser shows nothing until enough of the film has
+				// arrived to decode a frame, and on a phone that is the
+				// page's largest paint arriving many seconds late.
+				$poster = absint( $slide['poster'] ?? 0 ) > 0 ? (string) wp_get_attachment_image_url( (int) $slide['poster'], 'full' ) : '';
+				$media  = '<video src="' . esc_url( (string) $slide['vid'] ) . '"' . ( '' === $poster ? '' : ' poster="' . esc_url( $poster ) . '"' ) . ' autoplay muted loop playsinline preload="metadata"></video>';
 			} elseif ( $slide['img'] > 0 ) {
 				$meta = wp_get_attachment_image_src( (int) $slide['img'], 'full' );
 				$dsk  = is_array( $meta ) ? (string) $meta[0] : '';
@@ -514,6 +543,9 @@ final class Render {
 					. ( '' === $set ? '' : ' srcset="' . esc_attr( $set ) . '" sizes="100vw"' )
 					. $dims
 					. ( $lcp ? ' fetchpriority="high"' : '' )
+					// Slides after the first are out of sight until the
+					// strip moves; they need not race the first one.
+					. ( count( $slides ) > 0 ? ' loading="lazy" fetchpriority="low"' : '' )
 					. ' decoding="async" alt="' . esc_attr( (string) $slide['heading'] ) . '">'
 					. '</picture>';
 			} else {
@@ -572,8 +604,21 @@ final class Render {
 			$lax   = Registry::snap( (int) $s['parallax'], array( 0, 30, 100 ) );
 			$fixed = 100 === $lax && 'fade' !== (string) $s['effect'];
 
+			// A linked slide is a link with only a picture in it: it needs
+			// a name a screen reader can say.
+			$name = trim( (string) $slide['heading'] );
+
+			if ( '' === $name && $slide['img'] > 0 ) {
+				$name = trim( (string) get_post_meta( (int) $slide['img'], '_wp_attachment_image_alt', true ) );
+			}
+
+			if ( '' === $name ) {
+				/* translators: %d: slide number. */
+				$name = sprintf( __( 'Slide %d', 'oc-blocks' ), $at + 1 );
+			}
+
 			$open  = '' !== $slide['url'] && '' === $slide['cta']
-				? '<a class="ocb-hero__slide' . ( $fixed ? ' ocb-hero__slide--fixedbg' : '' ) . ( 0 === $at ? ' is-on' : '' ) . '" href="' . esc_url( (string) $slide['url'] ) . '">'
+				? '<a class="ocb-hero__slide' . ( $fixed ? ' ocb-hero__slide--fixedbg' : '' ) . ( 0 === $at ? ' is-on' : '' ) . '" href="' . esc_url( (string) $slide['url'] ) . '" aria-label="' . esc_attr( $name ) . '">'
 				: '<div class="ocb-hero__slide' . ( $fixed ? ' ocb-hero__slide--fixedbg' : '' ) . ( 0 === $at ? ' is-on' : '' ) . '">';
 			$close = '' !== $slide['url'] && '' === $slide['cta'] ? '</a>' : '</div>';
 
@@ -666,7 +711,8 @@ final class Render {
 		}
 
 		if ( ! $one && ! empty( $s['dots'] ) ) {
-			$html .= '<div class="ocb-dots" data-ocb-dots></div>';
+			/* translators: %d: slide number. */
+			$html .= '<div class="ocb-dots" data-ocb-dots data-ocb-dot-label="' . esc_attr( __( 'Slide %d', 'oc-blocks' ) ) . '"></div>';
 		}
 
 		return $html . '</div>';

@@ -331,6 +331,10 @@ final class Registry {
 								'type'  => 'video',
 								'label' => __( 'Or a video', 'oc-blocks' ),
 							),
+							'poster'  => array(
+								'type'  => 'image',
+								'label' => __( 'Video poster (a still shown until the film plays)', 'oc-blocks' ),
+							),
 							'heading' => array(
 								'type'  => 'text',
 								'label' => __( 'Heading', 'oc-blocks' ),

@@ -1357,7 +1357,11 @@ final class WooCommerce {
 			esc_attr( '' !== $card_video && empty( $ids ) ? 'single' : $mode ),
 			50 === $focus ? '' : ' style="--oc-card-focus:' . esc_attr( (string) $focus ) . '%"'
 		);
-		echo '<div class="oc-card-media__strip" aria-label="' . esc_attr__( 'Product images', 'oc-theme' ) . '">';
+		// A plain div may not carry aria-label; as a group it may, and
+		// only a gallery has anything to name.
+		echo 'gallery' === $mode
+			? '<div class="oc-card-media__strip" role="group" aria-label="' . esc_attr__( 'Product images', 'oc-theme' ) . '">'
+			: '<div class="oc-card-media__strip">';
 
 		// The picture is also a link to the product, and in a gallery the
 		// link WRAPS each slide's content rather than lying over it. Two

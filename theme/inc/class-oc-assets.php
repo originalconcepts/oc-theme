@@ -524,6 +524,13 @@ final class Assets {
 			return $html;
 		}
 
+		// The link's only content is a picture; when that picture is the
+		// header's hidden regular logo (a transparent header shows its own
+		// copy, with an empty alt), the link has no name at all.
+		if ( false === strpos( $html, 'aria-label=' ) ) {
+			$html = (string) preg_replace( '/<a /', '<a aria-label="' . esc_attr( get_bloginfo( 'name' ) ) . '" ', $html, 1 );
+		}
+
 		$id = (int) get_theme_mod( 'custom_logo' );
 
 		if ( $id < 1 ) {
