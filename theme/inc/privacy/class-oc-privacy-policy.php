@@ -204,7 +204,7 @@ final class Policy {
 		}
 
 		$email = sanitize_email( (string) wp_unslash( $_POST['em'] ?? '' ) );
-		$kind  = 'erase' === ( $_POST['kind'] ?? '' ) ? 'remove_personal_data' : 'export_personal_data';
+		$kind  = 'erase' === sanitize_key( (string) wp_unslash( $_POST['kind'] ?? '' ) ) ? 'remove_personal_data' : 'export_personal_data';
 		$back  = remove_query_arg( 'oc_privacy_req', wp_get_referer() ? wp_get_referer() : home_url( '/' ) );
 
 		// One request per address per hour, so the form cannot be used to

@@ -171,8 +171,13 @@ final class Admin {
 				<p class="description"><?php esc_html_e( 'Paste any tag a vendor gave you (a chat widget, a heatmap, another pixel), pick its category, and it will not load until the visitor allows that category. A "necessary" tag prints at once. The name appears in the policy\'s cookie table.', 'oc-theme' ); ?></p>
 				<div class="ocprv-scripts" data-ocprv-scripts>
 					<?php
-					$rows = $s['scripts'];
-					$rows[] = array( 'name' => '', 'cat' => 'marketing', 'where' => 'footer', 'code' => '' );
+					$rows   = $s['scripts'];
+					$rows[] = array(
+						'name'  => '',
+						'cat'   => 'marketing',
+						'where' => 'footer',
+						'code'  => '',
+					);
 					foreach ( $rows as $i => $row ) :
 						?>
 						<div class="ocprv-script">
@@ -321,8 +326,13 @@ final class Admin {
 	 * Save.
 	 */
 	public function handle_save(): void {
-		$this->guard();
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'Not allowed.', 'oc-theme' ) );
+		}
 
+		check_admin_referer( self::NONCE );
+
+		// phpcs:disable WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput -- check_admin_referer() ran; every field is unslashed and sanitized here or typed and bounded in Settings::normalize().
 		$scripts = array();
 
 		foreach ( (array) ( $_POST['scripts'] ?? array() ) as $row ) {
@@ -350,7 +360,7 @@ final class Admin {
 			'nocookie'  => ! empty( $_POST['nocookie'] ),
 			'google'    => ! empty( $_POST['google'] ),
 			'log'       => ! empty( $_POST['log'] ),
-			'log_days'  => (int) ( $_POST['log_days'] ?? 400 ),
+			'log_days'  => absint( wp_unslash( $_POST['log_days'] ?? 400 ) ),
 			'reconsent' => $was['reconsent'],
 			'policy'    => $was['policy'],
 			'texts'     => array_map( 'sanitize_text_field', array_map( 'wp_unslash', (array) ( $_POST['texts'] ?? array() ) ) ),
@@ -366,6 +376,8 @@ final class Admin {
 				'desc'  => sanitize_text_field( (string) wp_unslash( $one['desc'] ?? '' ) ),
 			);
 		}
+
+		// phpcs:enable
 
 		Settings::save( $raw );
 		$this->flush();

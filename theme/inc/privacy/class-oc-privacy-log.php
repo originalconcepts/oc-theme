@@ -190,7 +190,12 @@ final class Log {
 	 */
 	public function rest_record( \WP_REST_Request $req ): \WP_REST_Response {
 		if ( empty( Settings::get()['log'] ) ) {
-			return new \WP_REST_Response( array( 'ok' => true, 'logged' => false ) );
+			return new \WP_REST_Response(
+				array(
+					'ok'     => true,
+					'logged' => false,
+				)
+			);
 		}
 
 		$id = preg_replace( '/[^a-z0-9-]/i', '', (string) $req->get_param( 'id' ) );
@@ -224,7 +229,12 @@ final class Log {
 			array( '%s', '%s', '%d', '%d', '%d', '%s', '%s', '%s', '%s', '%s', '%s' )
 		);
 
-		$res = new \WP_REST_Response( array( 'ok' => true, 'logged' => true ) );
+		$res = new \WP_REST_Response(
+			array(
+				'ok'     => true,
+				'logged' => true,
+			)
+		);
 		$res->header( 'Cache-Control', 'no-store, private' );
 
 		return $res;

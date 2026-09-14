@@ -345,7 +345,12 @@ final class Render {
 			'ocb--dev-' . sanitize_html_class( (string) $s['dev'] ),
 		);
 
-		if ( 'none' !== $s['enter'] ) {
+		// An entrance animation is for a section scrolled into view. The
+		// page's first section is in view before anything runs, and a
+		// fade on it only holds the largest paint back until the script
+		// has loaded and the fade has finished — measured at three
+		// seconds of LCP on a phone.
+		if ( 'none' !== $s['enter'] && ! self::$first_section ) {
 			$classes[] = 'ocb--in-' . sanitize_html_class( (string) $s['enter'] );
 		}
 
