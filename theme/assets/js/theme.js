@@ -553,6 +553,12 @@
 		? document.querySelector( 'ul.products' )
 		: null;
 
+	// While Back is bringing the visitor to the card they left from: that
+	// card, and whether the visitor has taken over. The paging below reads
+	// it — earlier pages slide in above and must not move the card, nor
+	// rewrite the address, until the visitor scrolls on their own.
+	var ocHold = null;
+
 	if ( ocCatGrid ) {
 		// A deliberate click on the category link must open it from the top.
 		// The browser's automatic restoration drops the visitor back
@@ -582,21 +588,21 @@
 				var backTarget = ocCatGrid.querySelector( 'li.' + ocReturn.postClass );
 				if ( backTarget ) {
 					ocCatReturned = true;
+					ocHold = { el: backTarget, done: false };
 
 					// Images loading in above the card shift the layout after
 					// the first jump — especially on mobile — so the anchor
 					// re-asserts a few times, backing off the moment the
 					// visitor moves on their own.
-					var anchorDone = false;
-					[ 'touchstart', 'wheel', 'keydown' ].forEach( function ( evt ) {
+					[ 'touchstart', 'wheel', 'keydown', 'pointerdown' ].forEach( function ( evt ) {
 						window.addEventListener( evt, function () {
-							anchorDone = true;
+							ocHold.done = true;
 						}, { once: true, passive: true } );
 					} );
 
 					[ 150, 500, 1100, 2000 ].forEach( function ( delay ) {
 						setTimeout( function () {
-							if ( ! anchorDone ) {
+							if ( ! ocHold.done ) {
 								backTarget.scrollIntoView( { block: 'center' } );
 							}
 						}, delay );
@@ -627,6 +633,16 @@
 					postClass: postClass
 				} ) );
 			} catch ( e ) {}
+
+			// Back reloads whatever the address says. The address follows the
+			// rows in view, which can still be the page before the card's —
+			// then Back opened a page without the card and dropped the visitor
+			// at its top. Leaving from a card, the address becomes its page.
+			if ( li.dataset.ocpg && li.dataset.ocpg !== window.location.href && ! document.documentElement.dataset.ocFlt ) {
+				try {
+					window.history.replaceState( null, '', li.dataset.ocpg );
+				} catch ( e ) {}
+			}
 		} );
 	}
 
@@ -649,11 +665,17 @@
 			pagingNav.style.display = 'none';
 
 			// The address bar follows the page currently in view (cards carry
-			// their page URL from the restore module above).
+			// their page URL from the restore module above): the row across
+			// the middle of the screen, not a row half gone above it. Not
+			// while Back is still settling the visitor on their card.
 			function updatePagingState() {
+				if ( ocHold && ! ocHold.done ) {
+					return;
+				}
+				var mid = window.innerHeight / 2;
 				var lis = pagingUl.querySelectorAll( 'li.product' );
 				for ( var i = 0; i < lis.length; i++ ) {
-					if ( lis[ i ].getBoundingClientRect().bottom > 120 ) {
+					if ( lis[ i ].getBoundingClientRect().bottom > mid ) {
 						var url = lis[ i ].dataset.ocpg;
 						if ( url && url !== pagingState ) {
 							pagingState = url;
@@ -683,7 +705,10 @@
 					} )
 					.then( function ( html ) {
 						var doc = new DOMParser().parseFromString( html, 'text/html' );
-						var anchor = pagingUl.querySelector( 'li.product' );
+						// Returning to a card, that card is what must not move.
+						var anchor = ocHold && ! ocHold.done && ocHold.el.isConnected
+							? ocHold.el
+							: pagingUl.querySelector( 'li.product' );
 						var beforeTop = anchor ? anchor.getBoundingClientRect().top : 0;
 						var firstExisting = pagingUl.firstChild;
 
