@@ -1223,6 +1223,18 @@ final class Registry {
 						'dev'   => 'm',
 						'group' => 'design',
 					),
+					'gap'    => array(
+						'type'  => 'range',
+						'label' => __( 'Space between the picture and the products', 'oc-blocks' ),
+						'hint'  => __( 'The picture and the product card stand together in the middle of the block, this far apart.', 'oc-blocks' ),
+						'def'   => 32,
+						'min'   => 0,
+						'max'   => 120,
+						'step'  => 4,
+						'unit'  => 'px',
+						'dev'   => 'd',
+						'group' => 'design',
+					),
 					'side'   => array(
 						'type'    => 'seg',
 						'label'   => __( 'The picture stands', 'oc-blocks' ),

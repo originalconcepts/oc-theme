@@ -1631,7 +1631,9 @@ final class Render {
 			. '<button type="button" class="ocb-arr ocb-arr--next ocb-look__snav" data-ocb-scene-go="1" aria-label="next room"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 5l7 7-7 7"/></svg></button>'
 			: '';
 
-		return '<div class="ocb-look ocb-look--' . esc_attr( (string) $s['side'] ) . '" data-ocb-look>'
+		$gap = isset( $s['gap'] ) && '' !== (string) $s['gap'] ? max( 0, min( 120, absint( $s['gap'] ) ) ) : 32;
+
+		return '<div class="ocb-look ocb-look--' . esc_attr( (string) $s['side'] ) . '" style="--ocb-look-gap:' . $gap . 'px" data-ocb-look>'
 			. '<div class="ocb-look__pic" style="--ocb-look-w:' . max( 40, min( 100, absint( $s['size'] ?? 100 ) ) ) . '%;--ocb-look-mw:' . max( 50, min( 100, absint( $s['msize'] ?? 88 ) ) ) . '%">' . $pics . $snav . '</div>'
 			// The close stands outside the strip: fixed to the screen, so the
 			// strip's entry animation never drags it along.

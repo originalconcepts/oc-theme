@@ -1185,6 +1185,31 @@
 
 .ocb-look--end .ocb-look__pic { order: 2; }
 
+/* Desktop: the picture and the product card stand together in the middle of
+ * the block, a set space apart. As two grid halves each was centred in its
+ * own half, and the card's 320px picture in a 600px column left 200-360px of
+ * empty floor between the room and its product. The picture keeps the size
+ * it had (its share of the block times the "Picture size" setting). */
+@media (min-width: 783px) {
+	.ocb-look {
+		display: flex;
+		justify-content: center;
+		gap: var(--ocb-look-gap, 32px);
+	}
+
+	.ocb-look__pic {
+		flex: 0 1 auto;
+		inline-size: calc(var(--ocb-look-w, 100%) * .515);
+		margin-inline: 0;
+	}
+
+	/* As wide as the card's own picture, so the space set is the space seen. */
+	.ocb-look__side {
+		flex: 0 1 320px;
+		min-inline-size: 0;
+	}
+}
+
 /* The picture column may be narrowed. The canvas keeps the photo's own
    ratio inside it, so a smaller picture is a smaller whole picture —
    nothing cut, nothing stretched, air around it instead. */

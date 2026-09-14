@@ -1750,3 +1750,10 @@ msgstr "מלא"
 
 msgid "Gentle: the picture drifts slower than the page. Full: the picture stands still and the page glides over it."
 msgstr "עדין — התמונה זזה לאט יותר מהעמוד. מלא — התמונה עומדת במקום והעמוד גולש מעליה."
+
+msgid "Space between the picture and the products"
+msgstr "רווח בין התמונה למוצרים"
+
+msgid "The picture and the product card stand together in the middle of the block, this far apart."
+msgstr "התמונה וכרטיס המוצר עומדים יחד במרכז הבלוק, במרחק הזה זה מזה."
+
