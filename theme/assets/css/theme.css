@@ -6996,7 +6996,7 @@ table.variations td.value select:has(+ .oc-dd) {
 /* "Above" now lives inside the text box (first thing, before the title), so
  * only the cards that actually carry swatches spend the height on them —
  * with a breath of air from the picture. */
-.oc-card-text > .oc-colors--loop:first-child { margin-block: 12px 8px; }
+.oc-card-head > .oc-colors--loop { margin-block: 12px 8px; }
 
 /* The catalogue cap's tail: "+2" standing at the row's end, leading to the
  * product where every colour shows. */
@@ -12458,7 +12458,7 @@ body.oc-checkout { overflow-x: clip; }
 	 * title in it on the same line. */
 	.woocommerce ul.products li.product > .oc-card-media { grid-row: 1; }
 	.woocommerce ul.products li.product > .oc-colors { grid-row: 2; }
-	.woocommerce ul.products li.product > .oc-card-brand { grid-row: 3; }
+	.woocommerce ul.products li.product > .oc-card-head { grid-row: 3; }
 	.woocommerce ul.products li.product > .oc-card-text { grid-row: 4; }
 
 	/* The text box packs its own contents from the top, so a card with a
@@ -12556,7 +12556,7 @@ body.oc-checkout { overflow-x: clip; }
 
 	.woocommerce ul.products li.product.oc-tile--big > .oc-card-media { grid-row: 1 / 7; }
 	.woocommerce ul.products li.product.oc-tile--big > .oc-colors { grid-row: 7; }
-	.woocommerce ul.products li.product.oc-tile--big > .oc-card-brand { grid-row: 8; }
+	.woocommerce ul.products li.product.oc-tile--big > .oc-card-head { grid-row: 8; }
 	.woocommerce ul.products li.product.oc-tile--big > .oc-card-text { grid-row: 9; }
 	.woocommerce ul.products li.product.oc-tile--big::after { grid-row: 10; }
 
@@ -12682,10 +12682,10 @@ body.oc-checkout { overflow-x: clip; }
 		.woocommerce ul.products li.oc-block--big > * { grid-row: 1; }
 		.woocommerce ul.products li.oc-block--big::after { grid-row: 5; }
 		/* on a phone every tile is one row again: the brand keeps track 3 */
-		.woocommerce ul.products li.product.oc-tile--m-plain > .oc-card-brand,
-		.woocommerce ul.products li.product.oc-tile--m-wide > .oc-card-brand,
-		.woocommerce ul.products li.product.oc-tile--m-big > .oc-card-brand,
-		.woocommerce ul.products li.product.oc-tile--big:not(.oc-tile--m-plain):not(.oc-tile--m-wide) > .oc-card-brand { grid-row: 3; }
+		.woocommerce ul.products li.product.oc-tile--m-plain > .oc-card-head,
+		.woocommerce ul.products li.product.oc-tile--m-wide > .oc-card-head,
+		.woocommerce ul.products li.product.oc-tile--m-big > .oc-card-head,
+		.woocommerce ul.products li.product.oc-tile--big:not(.oc-tile--m-plain):not(.oc-tile--m-wide) > .oc-card-head { grid-row: 3; }
 
 		.woocommerce ul.products li.oc-block:not(.oc-block--row) .oc-block__media {
 			position: relative;
@@ -14332,15 +14332,23 @@ p.no-comments {
 /* A row that scrolls. The cards keep the width the grid gave them, so
  * nothing about the card has to know which row it landed in. */
 .woocommerce .oc-linked--slider ul.products {
-	display: flex;
-	flex-wrap: nowrap;
-	gap: var(--oc-gap, 20px);
+	/* A grid running sideways rather than a flex row: the cards keep their
+	 * subgrid rows, so a card with a brand or swatches starts every title in
+	 * the strip on the same line, as it does in the catalogue. */
+	display: grid;
+	grid-auto-flow: column;
+	grid-template-columns: none;
+	grid-template-rows: repeat(5, auto);
+	grid-auto-columns: calc((100% - (var(--oc-linked-cols, 4) - 1) * var(--oc-gap, 20px)) / var(--oc-linked-cols, 4));
+	column-gap: var(--oc-gap, 20px);
+	row-gap: 0;
+	min-inline-size: 0;
 	/* Sideways only. Setting one axis to auto turns the other from visible
 	 * into auto as well — the row then grew its own vertical scrollbar and
 	 * the cards had to be scrolled up and down to be read. */
 	overflow-x: auto;
 	overflow-y: hidden;
-	align-items: start;
+	align-items: stretch;
 	scroll-snap-type: none;          /* free scroll — the finger decides */
 	overscroll-behavior-inline: contain;
 	scrollbar-width: none;
@@ -14351,32 +14359,17 @@ p.no-comments {
 .woocommerce .oc-linked--slider ul.products::-webkit-scrollbar { display: none; }
 
 .woocommerce .oc-linked--slider ul.products li.product {
-	/* The card is built on subgrid: it takes its row tracks from the list
-	 * above it. A slider turns that list into a flex row, the card stops
-	 * being a grid item, and subgrid has no rows left to inherit — the text
-	 * track collapsed to nothing and the name and price spilled out below
-	 * the card, where the row's own clipping cut them off. That is the
-	 * cropping. Off the grid it lays itself out as a plain column and is
-	 * once again as tall as what is in it. */
-	display: flex;
-	flex-direction: column;
-	grid-template-rows: none;
-	grid-row: auto;
-	align-content: normal;
-
-	flex: 0 0 auto;
-	inline-size: calc((100% - (var(--oc-linked-cols, 4) - 1) * var(--oc-gap, 20px)) / var(--oc-linked-cols, 4));
-	/* No minimum width here. A card that cannot shrink makes the row's
-	 * min-content the whole row, and the section holding it is a grid item
-	 * that grows to its min-content — which dragged the product page, the
-	 * gallery included, to eight cards wide on a phone. */
-	block-size: auto;
-	align-self: start;
+	/* The strip is a grid again, so the card stays a subgrid item on its
+	 * rows (the columns are the strip's own). No minimum width: a card that
+	 * cannot shrink made the row's min-content the whole row, which once
+	 * dragged the product page to eight cards wide on a phone. */
+	inline-size: auto;
+	min-inline-size: 0;
 	margin: 0 !important;
-	clear: none;
 }
 
-/* The spacer row the grid used between cards has no job in a flex row. */
+/* One row of cards: the spacer track that separates catalogue rows has
+ * nothing to separate here. */
 .woocommerce .oc-linked--slider ul.products li.product::after { content: none; }
 
 .oc-linked--slider ul.products.is-drag {
@@ -14391,10 +14384,7 @@ p.no-comments {
 	.woocommerce .oc-linked--slider ul.products {
 		margin-inline: calc(-1 * var(--oc-gap, 20px));
 		padding-inline: var(--oc-gap, 20px);
-	}
-
-	.woocommerce .oc-linked--slider ul.products li.product {
-		inline-size: calc((100% - var(--oc-gap, 20px)) / 2);
+		grid-auto-columns: calc((100% - var(--oc-gap, 20px)) / 2);
 	}
 }
 

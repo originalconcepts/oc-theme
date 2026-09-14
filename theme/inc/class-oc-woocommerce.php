@@ -338,7 +338,13 @@ final class WooCommerce {
 		// product page above the title or at the far end of its line.
 		// Priority 0: before the text box opens, so the brand is a track of the
 		// card's own and a row lines its titles up under it.
-		add_action( 'woocommerce_shop_loop_item_title', array( $this, 'card_brand' ), 0 );
+		// The card's head — brand, then swatches set "above" — is one box on
+		// its own row track, so a row where any card carries either starts
+		// every title on the same line. Swatches used to sit inside the
+		// text box and pushed only their own card's title down.
+		add_action( 'woocommerce_shop_loop_item_title', array( $this, 'card_head_open' ), -3 );
+		add_action( 'woocommerce_shop_loop_item_title', array( $this, 'card_brand' ), -2 );
+		add_action( 'woocommerce_shop_loop_item_title', array( $this, 'card_head_close' ), 0 );
 		add_action( 'woocommerce_before_single_product', array( $this, 'product_brand_setup' ) );
 		add_action( 'woocommerce_after_shop_loop_item', array( $this, 'card_text_close' ), 999 );
 
@@ -1097,6 +1103,24 @@ final class WooCommerce {
 	 */
 	private static function card_link( \WC_Product $product ): string {
 		return (string) apply_filters( 'woocommerce_loop_product_link', get_permalink( $product->get_id() ), $product );
+	}
+
+	/**
+	 * Starts collecting the card's head (brand, swatches above the title).
+	 */
+	public function card_head_open(): void {
+		ob_start();
+	}
+
+	/**
+	 * Prints the head as one box — or nothing at all when it came out empty.
+	 */
+	public function card_head_close(): void {
+		$head = trim( (string) ob_get_clean() );
+
+		if ( '' !== $head ) {
+			echo '<div class="oc-card-head">' . $head . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped where each part was built.
+		}
 	}
 
 	/**

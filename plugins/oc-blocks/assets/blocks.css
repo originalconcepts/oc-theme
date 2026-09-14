@@ -582,7 +582,16 @@
 .oc-compose .ocb-shelf ul.products li.product { width: auto; margin: 0; }
 
 .oc-compose .ocb-shelf--slider ul.products {
-	display: flex;
+	/* A grid running sideways rather than a flex row: the theme's cards keep
+	 * their subgrid rows, so a card with a brand or swatches starts every
+	 * title in the strip on the same line, as it does in the catalogue. */
+	display: grid;
+	grid-auto-flow: column;
+	grid-template-columns: none;
+	grid-template-rows: repeat(5, auto);
+	grid-auto-columns: calc((100% - (var(--ocb-cols, 4) - 1) * var(--ocb-shelf-gap)) / var(--ocb-cols, 4));
+	column-gap: var(--ocb-shelf-gap);
+	row-gap: 0;
 	overflow-x: auto;
 	overflow-y: hidden;
 	/* free glide — no per-product snapping */
@@ -595,15 +604,14 @@
 .oc-compose .ocb-shelf--slider ul.products::-webkit-scrollbar { display: none; }
 
 .oc-compose .ocb-shelf--slider ul.products li.product {
-	flex: 0 0 calc((100% - (var(--ocb-cols, 4) - 1) * var(--ocb-shelf-gap)) / var(--ocb-cols, 4));
 	max-inline-size: none;
 	scroll-snap-align: start;
-	/* The theme's cards ride grid-template-rows: subgrid — meaningless
-	 * inside a flex strip, where it collapsed the words to zero height
-	 * and the title and price painted outside the clip. */
-	grid-template-rows: none;
-	align-content: start;
 }
+
+/* One row of cards: the spacer track that carries the gap between catalogue
+ * rows has nothing to separate here. */
+.oc-compose .ocb-shelf--slider ul.products li.product::after,
+.oc-block--slider .ocb-shelf--slider ul.products li.product::after { content: none; }
 
 /* Rows sized by content, the price stays close to the words instead of
  * drifting to the card's floor. */
@@ -644,8 +652,8 @@
 
 @media (max-width: 782px) {
 	.oc-compose .ocb-shelf ul.products { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-	.oc-compose .ocb-shelf--slider.ocb-shelf--m1 ul.products li.product { flex-basis: 82%; }
-	.oc-compose .ocb-shelf--slider.ocb-shelf--m2 ul.products li.product { flex-basis: 42%; }
+	.oc-compose .ocb-shelf--slider.ocb-shelf--m1 ul.products { grid-auto-columns: 82%; }
+	.oc-compose .ocb-shelf--slider.ocb-shelf--m2 ul.products { grid-auto-columns: 42%; }
 
 	/* The strip runs to the screen edge: break out of the section's inline
 	 * padding, keep the first card lined up with the heading, let the
@@ -670,7 +678,13 @@
 }
 .oc-block--slider .ocb-shelf ul.products li.product { width: auto; margin: 0; }
 .oc-block--slider .ocb-shelf--slider ul.products {
-	display: flex;
+	display: grid;
+	grid-auto-flow: column;
+	grid-template-columns: none;
+	grid-template-rows: repeat(5, auto);
+	grid-auto-columns: calc((100% - (var(--ocb-cols, 4) - 1) * var(--ocb-shelf-gap)) / var(--ocb-cols, 4));
+	column-gap: var(--ocb-shelf-gap);
+	row-gap: 0;
 	overflow-x: auto;
 	overflow-y: hidden;
 	/* free glide — no per-product snapping */
@@ -681,17 +695,14 @@
 }
 .oc-block--slider .ocb-shelf--slider ul.products::-webkit-scrollbar { display: none; }
 .oc-block--slider .ocb-shelf--slider ul.products li.product {
-	flex: 0 0 calc((100% - (var(--ocb-cols, 4) - 1) * var(--ocb-shelf-gap)) / var(--ocb-cols, 4));
 	max-inline-size: none;
 	scroll-snap-align: start;
-	grid-template-rows: none;
-	align-content: start;
 }
 .oc-block--slider .ocb-shelf--slider ul.products li.product .price { margin-block-start: 6px; }
 @media (max-width: 782px) {
 	.oc-block--slider .ocb-shelf ul.products { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-	.oc-block--slider .ocb-shelf--slider.ocb-shelf--m1 ul.products li.product { flex-basis: 82%; }
-	.oc-block--slider .ocb-shelf--slider.ocb-shelf--m2 ul.products li.product { flex-basis: 42%; }
+	.oc-block--slider .ocb-shelf--slider.ocb-shelf--m1 ul.products { grid-auto-columns: 82%; }
+	.oc-block--slider .ocb-shelf--slider.ocb-shelf--m2 ul.products { grid-auto-columns: 42%; }
 }
 
 /* On a phone the story and review strips run to the screen's trailing edge

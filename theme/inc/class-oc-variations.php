@@ -211,7 +211,8 @@ final class Variations {
 		// track made every card in the row reserve swatch height when one
 		// neighbour had swatches. Inside the box each card packs itself —
 		// the same decision the reviews row got.
-		add_action( 'woocommerce_shop_loop_item_title', array( $this, 'loop_colors_above' ), 2 );
+		// Inside the card's head, after the brand (see WooCommerce::card_head_open).
+		add_action( 'woocommerce_shop_loop_item_title', array( $this, 'loop_colors_above' ), -1 );
 		add_action( 'woocommerce_after_shop_loop_item_title', array( $this, 'loop_colors_below' ), 30 );
 
 		// The card's default colour travels: every card link carries the
