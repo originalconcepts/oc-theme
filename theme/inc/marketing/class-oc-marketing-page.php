@@ -22,11 +22,11 @@ defined( 'ABSPATH' ) || exit;
  */
 final class Page {
 
-	const META_TY     = '_oc_mkt_ty';
-	const META_SRV    = '_oc_mkt_srv';
-	const META_CLIENT = '_oc_mkt_client';
+	const META_TY      = '_oc_mkt_ty';
+	const META_SRV     = '_oc_mkt_srv';
+	const META_CLIENT  = '_oc_mkt_client';
 	const META_CONSENT = '_oc_mkt_consent';
-	const META_GA4    = '_oc_mkt_ga4_fallback';
+	const META_GA4     = '_oc_mkt_ga4_fallback';
 
 	/**
 	 * Hooks.
