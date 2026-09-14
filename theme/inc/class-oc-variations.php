@@ -1957,9 +1957,13 @@ final class Variations {
 				}
 			}
 
+			// A variation's own picture stands in when no gallery was attached.
+			// One it only inherits is the product's main photo: that is no
+			// picture of this colour, so the card shows the product's own
+			// gallery instead, as the product page does.
 			if ( empty( $imgs ) ) {
 				$var_img = $this->variation_image( $product, rawurldecode( $attr['key'] ), $val['value'], 'large' );
-				if ( '' !== $var_img ) {
+				if ( '' !== $var_img && wp_get_attachment_image_url( (int) $product->get_image_id(), 'large' ) !== $var_img ) {
 					$imgs[] = $var_img;
 				}
 			}

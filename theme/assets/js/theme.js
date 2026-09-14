@@ -1489,7 +1489,19 @@
 		}
 
 		var strip = li.querySelector( '.oc-card-media__strip' );
-		if ( strip && imgs.length ) {
+
+		// The card's own pictures, kept from before the first swap.
+		if ( strip && undefined === li.__ocStrip ) {
+			li.__ocStrip = strip.innerHTML;
+		}
+
+		if ( strip && ! imgs.length && item.classList.contains( 'oc-colors__item--term' ) ) {
+			// A colour with no pictures of its own shows the product's own
+			// gallery, as the product page does, instead of keeping the
+			// pictures of the colour picked before it.
+			strip.innerHTML = li.__ocStrip;
+			strip.scrollLeft = 0;
+		} else if ( strip && imgs.length ) {
 			// Each rebuilt slide keeps its wrapping link — without it, a
 			// colour-swapped card silently stopped leading anywhere.
 			strip.innerHTML = imgs.map( function ( src, i ) {

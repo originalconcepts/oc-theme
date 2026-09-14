@@ -4379,6 +4379,10 @@ li.product:focus-within .oc-card-atc,
 .oc-card-media__nav--prev { inset-inline-start: 2px; }
 .oc-card-media__nav--next { inset-inline-end: 2px; }
 
+/* Nothing to page through, no arrows. Read from the strip itself, so it
+ * holds after a colour dot swaps a one-picture gallery in or out. */
+.oc-card-media__strip:not(:has(> :nth-child(2))) ~ .oc-card-media__nav { display: none; }
+
 @media (hover: hover) {
 	li.product:hover .oc-card-media--gallery .oc-card-media__nav { opacity: .75; }
 	.oc-card-media--gallery .oc-card-media__nav:hover { opacity: 1; }
