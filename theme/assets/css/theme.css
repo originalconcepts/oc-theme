@@ -7016,6 +7016,18 @@ table.variations td.value select:has(+ .oc-dd) {
 
 .oc-colors__more:hover { color: var(--oc-ink); }
 
+/* Each screen keeps its own cap: a swatch past one screen's cap (and that
+ * screen's "+N") is drawn but shown only on the other. */
+@media (min-width: 783px) {
+	.oc-colors .oc-sw-hide-d,
+	.oc-colors .oc-sw-only-m { display: none; }
+}
+
+@media (max-width: 782px) {
+	.oc-colors .oc-sw-hide-m,
+	.oc-colors .oc-sw-only-d { display: none; }
+}
+
 .oc-card-minimal .oc-colors--loop { justify-content: flex-start; }
 
 /* Sits in the variations area, matching the attribute rows: label line
@@ -15465,3 +15477,7 @@ body.oc-card-h-custom .woocommerce ul.products li.product .oc-card-media__item {
 		block-size: var(--oc-card-h-m, 220px);
 	}
 }
+
+/* A panel whose only door is email and password opens on it; its own "Back"
+ * has nowhere to go. */
+.oc-auth[data-first="email"] [data-step="email"] [data-auth-change] { display: none; }

@@ -7973,12 +7973,15 @@
 		var backlink = el( '.oc-auth__backlink' );
 
 		if ( title && backlink ) {
-			title.hidden = 'phone' !== name;
+			var front = root.dataset.first || 'phone';
+
+			title.hidden = front !== name;
 
 			// The way back belongs to the screens the visitor CHOSE — signing
 			// up, or the password door. Typing the code is the phone journey
-			// carrying on, and it has its own way back already.
-			backlink.hidden = 'register' !== name && 'email' !== name && 'reset' !== name;
+			// carrying on, and it has its own way back already. The front
+			// screen, whichever it is, needs none.
+			backlink.hidden = front === name || ( 'register' !== name && 'email' !== name && 'reset' !== name );
 		}
 
 		if ( 'code' === name ) {
@@ -8043,7 +8046,7 @@
 		root.hidden = false;
 		void root.offsetWidth;
 		requestAnimationFrame( function () { root.classList.add( 'is-open' ); } );
-		step( 'phone' );
+		step( root.dataset.first || 'phone' );
 
 		// Desktop only: on a phone the keyboard would bury the other
 		// sign-in options the moment the drawer opens.
@@ -8161,7 +8164,7 @@
 
 		if ( e.target.closest( '[data-auth-change]' ) ) {
 			clearInterval( timer );
-			step( 'phone' );
+			step( root.dataset.first || 'phone' );
 			var tel = el( '[data-step="phone"] .oc-auth__tel' );
 			if ( tel ) { tel.focus(); tel.select && tel.select(); }
 		}

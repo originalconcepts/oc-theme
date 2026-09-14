@@ -1808,6 +1808,7 @@ final class Customizer {
 		);
 
 		$this->number( $c, 'oc_swatch_loop_max', 'oc_swatches_cat', __( 'Max swatches on the card (0 = all; the rest become +N)', 'oc-theme' ), 0, 0, 12 );
+		$this->number( $c, 'oc_swatch_loop_max_m', 'oc_swatches_cat', __( 'Max swatches on the card — mobile (0 = as on desktop)', 'oc-theme' ), 0, 0, 12 );
 	}
 
 	/**

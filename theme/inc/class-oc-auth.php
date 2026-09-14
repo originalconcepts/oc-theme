@@ -42,12 +42,10 @@ final class Auth {
 		add_action( 'wp_footer', array( $this, 'account_menu' ) );
 		add_action( 'init', array( $this, 'heal_display_name' ) );
 
-		$on = self::settings();
-
-		if ( empty( $on['sms_on'] ) && empty( $on['google_on'] ) && empty( $on['fb_on'] ) && empty( $on['apple_on'] ) && empty( $on['email_on'] ) ) {
-			return; // Nothing enabled — the account icon behaves as always.
-		}
-
+		// The account icon always opens the panel. A site that has not yet
+		// switched a way in on (eden and mg4 had never saved the sign-in
+		// settings) used to fall back to WooCommerce's login page; it gets
+		// the classic door inside the panel instead — see front().
 		add_action( 'wp_footer', array( $this, 'panel' ) );
 		add_filter( 'oc_header_account_attrs', array( $this, 'icon_attrs' ) );
 
@@ -109,6 +107,23 @@ final class Auth {
 				'apple_key'       => '',
 			)
 		);
+	}
+
+	/**
+	 * The settings as the front end uses them. With no way in switched on,
+	 * the email-and-password door stands in, so the panel is never empty and
+	 * the account icon never throws the visitor out to a login page.
+	 *
+	 * @return array<string,mixed>
+	 */
+	public static function front(): array {
+		$s = self::settings();
+
+		if ( empty( $s['sms_on'] ) && empty( $s['google_on'] ) && empty( $s['fb_on'] ) && empty( $s['apple_on'] ) && empty( $s['email_on'] ) ) {
+			$s['email_on'] = 1;
+		}
+
+		return $s;
 	}
 
 	/*
@@ -572,7 +587,7 @@ final class Auth {
 	public function auth_email_login(): void {
 		$this->guard();
 
-		if ( empty( self::settings()['email_on'] ) ) {
+		if ( empty( self::front()['email_on'] ) ) {
 			wp_send_json_error( array( 'msg' => __( 'Email sign-in is not available right now.', 'oc-theme' ) ) );
 		}
 
@@ -1522,7 +1537,7 @@ final class Auth {
 			return;
 		}
 
-		$s     = self::settings();
+		$s     = self::front();
 		$side  = get_theme_mod( 'oc_login_side', 'right' );
 		$width = absint( get_theme_mod( 'oc_login_width', 480 ) );
 		$title = trim( (string) get_theme_mod( 'oc_login_title', '' ) );
@@ -1564,6 +1579,10 @@ final class Auth {
 		<div class="oc-auth oc-auth--<?php echo esc_attr( 'left' === $side ? 'left' : 'right' ); ?> oc-auth--a-<?php echo esc_attr( 'center' === $align ? 'c' : 's' ); ?><?php echo 'inherit' === $shape ? '' : ' oc-auth--b-' . esc_attr( $shape ); ?>"
 			hidden
 			data-nonce="<?php echo esc_attr( wp_create_nonce( 'oc_auth' ) ); ?>"
+			<?php
+			// Only the email door on offer: the panel opens straight onto it.
+			echo empty( $s['sms_on'] ) && empty( $s['google_on'] ) && empty( $s['fb_on'] ) && empty( $s['apple_on'] ) ? 'data-first="email"' : '';
+			?>
 			style="--oc-auth-w:<?php echo esc_attr( (string) max( 320, $width ) ); ?>px">
 			<div class="oc-auth__dim" data-auth-close></div>
 			<aside class="oc-auth__panel" role="dialog" aria-modal="true" aria-label="<?php esc_attr_e( 'Sign in', 'oc-theme' ); ?>">

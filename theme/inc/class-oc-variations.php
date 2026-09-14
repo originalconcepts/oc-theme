@@ -486,22 +486,60 @@ final class Variations {
 	 * @return array<int,string>
 	 */
 	private static function capped( array $anchors, int $at_current, string $permalink ): array {
-		$max = absint( get_theme_mod( 'oc_swatch_loop_max', 0 ) );
+		$count = count( $anchors );
+		$desk  = absint( get_theme_mod( 'oc_swatch_loop_max', 0 ) );
+		$phone = absint( get_theme_mod( 'oc_swatch_loop_max_m', 0 ) );
 
-		if ( $max < 1 || count( $anchors ) <= $max ) {
+		// 0 on the desktop means every colour; 0 on the phone means "as on
+		// the desktop".
+		$desk  = $desk > 0 ? $desk : $count;
+		$phone = $phone > 0 ? $phone : $desk;
+
+		if ( $count <= $desk && $count <= $phone ) {
 			return $anchors;
 		}
 
-		$extra = count( $anchors ) - $max;
+		// The current colour never disappears: past the smaller cap it swaps
+		// into that cap's last slot, so every screen still shows it.
+		$least = min( $desk, $phone );
 
-		if ( $at_current >= $max ) {
-			$anchors[ $max - 1 ] = $anchors[ $at_current ];
+		if ( $at_current >= $least && isset( $anchors[ $at_current ] ) ) {
+			$moved                  = $anchors[ $least - 1 ];
+			$anchors[ $least - 1 ]  = $anchors[ $at_current ];
+			$anchors[ $at_current ] = $moved;
 		}
 
-		$anchors   = array_slice( $anchors, 0, $max );
-		$anchors[] = '<a class="oc-colors__more" href="' . esc_url( $permalink ) . '">+' . (int) $extra . '</a>';
+		$out = array();
 
-		return $anchors;
+		foreach ( $anchors as $i => $html ) {
+			if ( $i >= max( $desk, $phone ) ) {
+				break;
+			}
+
+			// Past one screen's cap but inside the other's: drawn, and hidden
+			// on the screen that has no room for it.
+			$hide = trim( ( $i >= $desk ? 'oc-sw-hide-d ' : '' ) . ( $i >= $phone ? 'oc-sw-hide-m' : '' ) );
+
+			$out[] = '' === $hide ? $html : (string) preg_replace( '/class="/', 'class="' . $hide . ' ', $html, 1 );
+		}
+
+		$more = static function ( int $extra, string $only ) use ( $permalink ): string {
+			return '<a class="oc-colors__more' . ( '' !== $only ? ' ' . $only : '' ) . '" href="' . esc_url( $permalink ) . '">+' . $extra . '</a>';
+		};
+
+		if ( $desk === $phone ) {
+			$out[] = $more( $count - $desk, '' );
+		} else {
+			if ( $count > $desk ) {
+				$out[] = $more( $count - $desk, 'oc-sw-only-d' );
+			}
+
+			if ( $count > $phone ) {
+				$out[] = $more( $count - $phone, 'oc-sw-only-m' );
+			}
+		}
+
+		return $out;
 	}
 
 	/**

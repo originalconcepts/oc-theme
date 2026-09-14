@@ -7578,3 +7578,6 @@ msgstr "דף המוצר נפתח בלי צבע או מידה מסומנים, ו�
 
 msgid "Rows"
 msgstr "שורות"
+
+msgid "Max swatches on the card — mobile (0 = as on desktop)"
+msgstr "מקסימום סוואטשים בכרטיס — מובייל (0 = כמו במחשב)"
