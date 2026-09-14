@@ -6993,9 +6993,18 @@ table.variations td.value select:has(+ .oc-dd) {
 	block-size: var(--oc-swatch-cat, 22px);
 }
 
-/* "Above" now lives inside the text box (first thing, before the title), so
- * only the cards that actually carry swatches spend the height on them —
- * with a breath of air from the picture. */
+/* The card's head — brand, then swatches set "above" — shares one row track
+ * with the heads of the cards beside it, so every title starts on the same
+ * line. Its lines stack down onto the title rather than hanging from the
+ * picture: swatches always sit on the swatch line just above the title, a
+ * brand keeps its usual small distance from what follows it, and the spare
+ * height a shorter head leaves goes above it, under the picture. */
+.oc-card-head {
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-end;
+}
+
 .oc-card-head > .oc-colors--loop { margin-block: 12px 8px; }
 
 /* The catalogue cap's tail: "+2" standing at the row's end, leading to the
