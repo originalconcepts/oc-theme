@@ -367,18 +367,21 @@
 			then();
 		}
 
-		// If the server does not answer quickly, the time zone is a fair
-		// hint: a European clock means opt-in, anything else opt-out.
-		var timer = setTimeout( function () {
+		// If the server does not answer (quickly, or at all), the time
+		// zone is a fair hint: a European clock means opt-in, anything
+		// else opt-out.
+		function guess() {
 			var tz = '';
 			try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch ( e ) {}
 			settle( '', /^Europe\//.test( tz ) ? 'optin' : 'optout' );
-		}, 2500 );
+		}
+
+		var timer = setTimeout( guess, 2500 );
 
 		fetch( cfg.rest + '/region?_t=' + encodeURIComponent( cfg.token ), { credentials: 'omit', cache: 'no-store' } )
-			.then( function ( r ) { return r.json(); } )
+			.then( function ( r ) { if ( ! r.ok ) { throw new Error( 'no' ); } return r.json(); } )
 			.then( function ( d ) { clearTimeout( timer ); settle( ( d && d.country ) || '', ( d && d.mode ) || 'optout' ); } )
-			.catch( function () { clearTimeout( timer ); settle( '', 'optout' ); } );
+			.catch( function () { clearTimeout( timer ); guess(); } );
 	}
 
 	// A stored choice needs no region; only a first visit does.

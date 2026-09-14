@@ -150,10 +150,13 @@ final class Log {
 			return false;
 		}
 
+		// Per network, not per address: an office or a campus shares one,
+		// so the ceiling is generous — it only stops a script hammering
+		// the table, never a busy hour.
 		$key = 'oc_consent_rl_' . md5( self::net() );
 		$n   = (int) get_transient( $key );
 
-		if ( $n >= 30 ) {
+		if ( $n >= 600 ) {
 			return false;
 		}
 

@@ -15201,7 +15201,9 @@ p.no-comments {
  * page's own content. Colours come from the theme's tokens: the banner
  * looks like the shop, not like a bolt-on. */
 .oc-privacy[hidden] { display: none; }
-.oc-privacy { position: fixed; inset: 0; z-index: 95; pointer-events: none; font-size: .92rem; line-height: 1.5; color: var(--oc-ink, #111); }
+/* Above everything else that floats — drawers, story bubbles, sticky bars:
+ * the choice must be reachable whatever else is open. */
+.oc-privacy { position: fixed; inset: 0; z-index: 10000; pointer-events: none; font-size: .92rem; line-height: 1.5; color: var(--oc-ink, #111); }
 .oc-privacy > * { pointer-events: auto; }
 .oc-privacy [hidden] { display: none !important; }
 
