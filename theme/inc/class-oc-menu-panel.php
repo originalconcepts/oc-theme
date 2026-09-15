@@ -750,7 +750,7 @@ final class Menu_Panel {
 			}
 
 			$part = array(
-				'track' => (string) $widths[ $block['w'] ]['track'],
+				'track' => 'products' === $block['type'] ? self::products_track( $block ) : (string) $widths[ $block['w'] ]['track'],
 				'class' => $piece['class'],
 				'inner' => $piece['inner'],
 				'band'  => ! empty( $piece['band'] ),
@@ -846,6 +846,31 @@ final class Menu_Panel {
 		}
 
 		return $piece;
+	}
+
+	/**
+	 * The grid track a products block asks for: fit-content() of the row it
+	 * draws, so with three products at 150px it takes 482px and not the
+	 * fr share the panel's spacer happened to leave it — which on a panel
+	 * with three menu columns squeezed the products to stamps while a
+	 * third of the panel stood empty. Tighter than that, the track still
+	 * shrinks with the products rather than overflowing the panel.
+	 *
+	 * @param array<string,mixed> $block Block.
+	 * @return string
+	 */
+	private static function products_track( array $block ): string {
+		$count = max( 1, min( 6, (int) ( $block['count'] ?? 3 ) ) );
+
+		if ( 'manual' === (string) ( $block['mode'] ?? 'sales' ) ) {
+			$count = max( 1, min( $count, count( (array) ( $block['picks'] ?? array() ) ) ) );
+		}
+
+		$large = 'large' === (string) ( $block['size'] ?? 'regular' );
+		$width = $large ? 210 : 150;
+		$gap   = $large ? 20 : 16;
+
+		return 'fit-content(' . ( $count * $width + ( $count - 1 ) * $gap ) . 'px)';
 	}
 
 	/**

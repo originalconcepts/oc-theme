@@ -1643,6 +1643,9 @@ html.oc-menu-open .oc-menu-dim::after {
 	align-items: flex-start;
 }
 
+/* The block's grid track is fit-content() of exactly this row (see
+ * Menu_Panel::block_track), so the products stand at full size whenever
+ * the panel has the room and only give width up when it truly has not. */
 .oc-mb__prod {
 	flex: 0 1 150px;
 	min-inline-size: 0;
