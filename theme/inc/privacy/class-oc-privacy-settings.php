@@ -129,6 +129,10 @@ final class Settings {
 			'log_days'  => max( 30, min( 3650, (int) ( $raw['log_days'] ?? 400 ) ) ),
 			'reconsent' => max( 0, (int) ( $raw['reconsent'] ?? 0 ) ),
 			'policy'    => max( 0, (int) ( $raw['policy'] ?? 0 ) ),
+			// Empty = the theme's call-to-action colour (which itself falls
+			// back to the primary colour), and white words on it.
+			'accent'    => self::hex( (string) ( $raw['accent'] ?? '' ) ),
+			'accent_tx' => self::hex( (string) ( $raw['accent_tx'] ?? '' ) ),
 			'texts'     => array(
 				'title'  => $str( $texts['title'] ?? '' ),
 				'text'   => $str( $texts['text'] ?? '' ),
@@ -154,6 +158,17 @@ final class Settings {
 		}
 
 		return $out;
+	}
+
+	/**
+	 * A colour as #rgb or #rrggbb, or '' for anything else.
+	 *
+	 * @param string $v Raw value.
+	 */
+	public static function hex( string $v ): string {
+		$v = trim( $v );
+
+		return preg_match( '/^#([0-9a-f]{3}|[0-9a-f]{6})$/i', $v ) ? strtolower( $v ) : '';
 	}
 
 	/**

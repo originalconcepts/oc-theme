@@ -138,6 +138,17 @@ final class Admin {
 					<?php $text( 'texts[policy]', $s['texts']['policy'], __( 'Policy link', 'oc-theme' ), $d['policy'] ); ?>
 					<?php $text( 'texts[badge]', $s['texts']['badge'], __( 'Badge / footer link', 'oc-theme' ), $d['badge'] ); ?>
 				</div>
+				<div class="ocprv-grid">
+					<label>
+						<span><?php esc_html_e( 'Accept button colour', 'oc-theme' ); ?></span>
+						<span class="ocprv-color"><input type="color" value="<?php echo esc_attr( '' !== $s['accent'] ? $s['accent'] : '#2f4e7a' ); ?>" data-ocprv-pick /><input type="text" name="accent" class="ltr" value="<?php echo esc_attr( $s['accent'] ); ?>" placeholder="#" data-ocprv-hex /><button type="button" class="button-link" data-ocprv-clear><?php esc_html_e( 'Theme colour', 'oc-theme' ); ?></button></span>
+						<small><?php esc_html_e( 'Empty = the theme\'s call-to-action colour (Customizer → Design); when that is empty too, the primary colour.', 'oc-theme' ); ?></small>
+					</label>
+					<label>
+						<span><?php esc_html_e( 'Accept button text colour', 'oc-theme' ); ?></span>
+						<span class="ocprv-color"><input type="color" value="<?php echo esc_attr( '' !== $s['accent_tx'] ? $s['accent_tx'] : '#ffffff' ); ?>" data-ocprv-pick /><input type="text" name="accent_tx" class="ltr" value="<?php echo esc_attr( $s['accent_tx'] ); ?>" placeholder="#" data-ocprv-hex /><button type="button" class="button-link" data-ocprv-clear><?php esc_html_e( 'White', 'oc-theme' ); ?></button></span>
+					</label>
+				</div>
 				<label class="ocprv-wide"><span><?php esc_html_e( 'Message', 'oc-theme' ); ?></span><textarea name="texts[text]" rows="3" placeholder="<?php echo esc_attr( $d['text'] ); ?>"><?php echo esc_textarea( $s['texts']['text'] ); ?></textarea></label>
 			</div>
 
@@ -296,7 +307,23 @@ final class Admin {
 			.ocprv-danger { color: #b32d2e; border-color: #b32d2e; }
 			.ocprv-count { font-weight: 400; color: #646970; font-size: .9em; }
 			.ocprv code { background: none; padding: 0; font-size: 12px; }
+			.ocprv-color { display: flex; align-items: center; gap: 8px; }
+			.ocprv-color input[type="color"] { inline-size: 40px; block-size: 32px; padding: 2px; border: 1px solid #dcdcde; border-radius: 4px; background: #fff; }
+			.ocprv-color input[type="text"] { flex: 1; }
 		</style>
+		<script>
+		( function () {
+			// The swatch and the hex field are one control: either writes
+			// the other; "theme colour" empties both.
+			document.querySelectorAll( '.ocprv-color' ).forEach( function ( box ) {
+				var pick = box.querySelector( '[data-ocprv-pick]' );
+				var hex = box.querySelector( '[data-ocprv-hex]' );
+				pick.addEventListener( 'input', function () { hex.value = pick.value; } );
+				hex.addEventListener( 'input', function () { if ( /^#[0-9a-f]{6}$/i.test( hex.value ) ) { pick.value = hex.value; } } );
+				box.querySelector( '[data-ocprv-clear]' ).addEventListener( 'click', function () { hex.value = ''; } );
+			} );
+		}() );
+		</script>
 		</div>
 		<?php
 	}
@@ -364,6 +391,8 @@ final class Admin {
 			'reconsent' => $was['reconsent'],
 			'policy'    => $was['policy'],
 			'texts'     => array_map( 'sanitize_text_field', array_map( 'wp_unslash', (array) ( $_POST['texts'] ?? array() ) ) ),
+			'accent'    => sanitize_text_field( (string) wp_unslash( $_POST['accent'] ?? '' ) ),
+			'accent_tx' => sanitize_text_field( (string) wp_unslash( $_POST['accent_tx'] ?? '' ) ),
 			'cats'      => array(),
 			'scripts'   => $scripts,
 		);

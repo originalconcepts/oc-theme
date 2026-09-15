@@ -145,7 +145,10 @@ final class Front {
 			return Settings::text( $key );
 		};
 		?>
-		<div class="oc-privacy oc-privacy--<?php echo esc_attr( $s['layout'] ); ?> oc-privacy--<?php echo esc_attr( $s['position'] ); ?>" data-oc-privacy="<?php echo esc_attr( (string) wp_json_encode( $cfg ) ); ?>" hidden>
+		<?php
+		$style = ( '' !== $s['accent'] ? '--oc-privacy-accent:' . $s['accent'] . ';' : '' ) . ( '' !== $s['accent_tx'] ? '--oc-privacy-accent-tx:' . $s['accent_tx'] . ';' : '' );
+		?>
+		<div class="oc-privacy oc-privacy--<?php echo esc_attr( $s['layout'] ); ?> oc-privacy--<?php echo esc_attr( $s['position'] ); ?>" data-oc-privacy="<?php echo esc_attr( (string) wp_json_encode( $cfg ) ); ?>"<?php echo '' !== $style ? ' style="' . esc_attr( $style ) . '"' : ''; ?> hidden>
 			<section class="oc-privacy__banner" role="region" aria-label="<?php echo esc_attr( $t( 'title' ) ); ?>" data-oc-privacy-banner hidden>
 				<div class="oc-privacy__words">
 					<p class="oc-privacy__title"><?php echo esc_html( $t( 'title' ) ); ?></p>

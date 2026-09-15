@@ -15255,9 +15255,16 @@ p.no-comments {
 	min-block-size: 40px;
 	flex: 1 1 auto;
 }
-/* Ink, not the brand colour: a light brand (one shop's beige) put white
- * text under AA contrast, and this button must read on every site. */
-.oc-privacy__btn--solid { background: var(--oc-ink, #111); color: var(--oc-surface, #fff); border-color: var(--oc-ink, #111); }
+/* The accept button is a call-to-action and wears the theme's colour for
+ * one (which falls back to the primary colour), or the colour chosen in
+ * Settings → Privacy. Words are white unless the screen says otherwise. */
+.oc-privacy__btn--solid,
+.oc-cookie-table__open,
+.oc-privacy-req button {
+	background: var(--oc-privacy-accent, var(--oc-cta, var(--oc-primary, #111)));
+	color: var(--oc-privacy-accent-tx, #fff);
+	border-color: var(--oc-privacy-accent, var(--oc-cta, var(--oc-primary, #111)));
+}
 .oc-privacy__btn--ghost { background: transparent; color: inherit; border-color: var(--oc-line, rgba(0, 0, 0, .18)); }
 .oc-privacy__btn:hover { filter: brightness(.95); }
 .oc-privacy__btn:focus-visible { outline: 2px solid var(--oc-primary, #111); outline-offset: 2px; }
@@ -15335,7 +15342,7 @@ p.no-comments {
 .oc-cookie-table table { inline-size: 100%; border-collapse: collapse; font-size: .9rem; }
 .oc-cookie-table th, .oc-cookie-table td { padding: 8px 10px; border-block-end: 1px solid var(--oc-line, rgba(0, 0, 0, .1)); text-align: start; vertical-align: top; }
 .oc-cookie-table__names { direction: ltr; text-align: left; font-family: monospace; font-size: .8rem; }
-.oc-cookie-table__open, .oc-privacy-req button { font: inherit; cursor: pointer; border-radius: var(--oc-radius, 8px); padding: 9px 16px; border: 1px solid var(--oc-primary, #111); background: var(--oc-primary, #111); color: var(--oc-on-primary, #fff); }
+.oc-cookie-table__open, .oc-privacy-req button { font: inherit; cursor: pointer; border-radius: var(--oc-radius, 8px); padding: 9px 16px; border: 1px solid transparent; }
 .oc-privacy-req input[type="email"] { inline-size: min(100%, 360px); padding: 8px 10px; border: 1px solid var(--oc-line, rgba(0, 0, 0, .2)); border-radius: var(--oc-radius, 8px); }
 .oc-privacy-req__msg { padding: 10px 12px; border-inline-start: 3px solid var(--oc-primary, #111); background: var(--oc-surface-2, rgba(0, 0, 0, .04)); }
 

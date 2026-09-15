@@ -7929,3 +7929,18 @@ msgstr "הגדרות ← פרטיות"
 
 msgid "Page"
 msgstr "עמוד"
+
+msgid "Accept button colour"
+msgstr "צבע כפתור האישור"
+
+msgid "Theme colour"
+msgstr "צבע התבנית"
+
+msgid "Empty = the theme's call-to-action colour (Customizer → Design); when that is empty too, the primary colour."
+msgstr "ריק = צבע ההנעה לפעולה של התבנית (התאמה אישית ← עיצוב); כשגם הוא ריק, הצבע הראשי."
+
+msgid "Accept button text colour"
+msgstr "צבע הטקסט בכפתור האישור"
+
+msgid "White"
+msgstr "לבן"

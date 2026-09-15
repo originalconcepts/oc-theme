@@ -93,6 +93,13 @@ final class ConsentTest extends TestCase {
 		$this->assertNull( Consent::parse( '{"a":1}', '' ) );
 	}
 
+	public function test_accent_colours_are_hex_or_nothing(): void {
+		$this->assertSame( '#a1b2c3', Settings::normalize( array( 'accent' => ' #A1B2C3 ' ) )['accent'] );
+		$this->assertSame( '#fff', Settings::normalize( array( 'accent_tx' => '#fff' ) )['accent_tx'] );
+		$this->assertSame( '', Settings::normalize( array( 'accent' => 'red' ) )['accent'] );
+		$this->assertSame( '', Settings::normalize( array() )['accent'] );
+	}
+
 	public function test_regions(): void {
 		$this->assertSame( 'optin', Consent::mode_for( 'DE' ) );
 		$this->assertSame( 'optin', Consent::mode_for( 'gb' ) );
