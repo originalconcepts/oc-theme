@@ -1732,9 +1732,23 @@ final class Media_Clean {
 
 		require_once ABSPATH . 'wp-admin/includes/image.php';
 
+		// The WebP takes the source's own name with the extension swapped —
+		// and "bin.jpg" and "trivet.png" in the same folder both want
+		// "bin.webp". An import that flattened years of uploads into one
+		// folder had hundreds of such pairs; the second conversion wrote
+		// over the first, and the host's Accept swap then served the
+		// trivet for every request of bin.jpg. So when that name is taken
+		// by anything that is not this attachment's own file, the picture
+		// is converted from a copy under a free name, and the copy goes.
+		$copy = self::free_source( $source, $id );
+
 		add_filter( 'image_editor_output_format', $force, 99 );
-		$meta = wp_create_image_subsizes( $source, $id );
+		$meta = wp_create_image_subsizes( $copy, $id );
 		remove_filter( 'image_editor_output_format', $force, 99 );
+
+		if ( $copy !== $source ) {
+			wp_delete_file( $copy );
+		}
 
 		if ( empty( $meta['file'] ) || 'webp' !== strtolower( (string) pathinfo( (string) $meta['file'], PATHINFO_EXTENSION ) ) ) {
 			return array(
@@ -1764,6 +1778,66 @@ final class Media_Clean {
 			'name'   => wp_basename( (string) $meta['file'] ),
 			'olds'   => count( self::old_files( $id ) ),
 		);
+	}
+
+	/**
+	 * A path to convert from whose WebP name is free.
+	 *
+	 * The source itself when "{name}.webp" does not exist yet or is this
+	 * attachment's own earlier conversion; otherwise a copy of the source
+	 * as "{name}-2.jpg", "-3" and so on, the first whose ".webp" is free
+	 * and whose own name no file holds either.
+	 *
+	 * @param string $source Absolute path of the picture.
+	 * @param int    $id     Attachment ID.
+	 * @return string Absolute path to convert from.
+	 */
+	private static function free_source( string $source, int $id ): string {
+		$dir  = dirname( $source );
+		$name = pathinfo( $source, PATHINFO_FILENAME );
+		$ext  = pathinfo( $source, PATHINFO_EXTENSION );
+		$webp = $dir . '/' . $name . '.webp';
+
+		if ( ! file_exists( $webp ) || self::owns( $id, $webp ) ) {
+			return $source;
+		}
+
+		for ( $n = 2; $n < 1000; $n++ ) {
+			$try = $dir . '/' . $name . '-' . $n;
+
+			if ( file_exists( $try . '.webp' ) || file_exists( $try . '.' . $ext ) ) {
+				continue;
+			}
+
+			if ( copy( $source, $try . '.' . $ext ) ) {
+				return $try . '.' . $ext;
+			}
+
+			break;
+		}
+
+		return $source;
+	}
+
+	/**
+	 * Is this file one the attachment itself serves (its current file, or
+	 * one it converted before)?
+	 *
+	 * @param int    $id   Attachment ID.
+	 * @param string $path Absolute path.
+	 */
+	private static function owns( int $id, string $path ): bool {
+		$mine = (string) get_attached_file( $id );
+
+		if ( '' !== $mine && wp_normalize_path( $mine ) === wp_normalize_path( $path ) ) {
+			return true;
+		}
+
+		$was = get_post_meta( $id, self::PREWEBP, true );
+
+		// Converted before and being converted again: the WebP under this
+		// name is the attachment's own.
+		return is_array( $was ) && 'webp' === strtolower( pathinfo( $mine, PATHINFO_EXTENSION ) );
 	}
 
 	/**
