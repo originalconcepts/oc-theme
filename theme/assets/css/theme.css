@@ -1185,8 +1185,12 @@ html.oc-search-open { overflow: hidden; }
 	margin: 0;
 	padding: 8px 0;
 	list-style: none;
-	background: var(--oc-surface);
-	border: 1px solid var(--oc-line);
+	/* The plain drop-down wears the mega panel's colours: one setting in
+	 * the Customizer governs both, so an item that loses its picture and
+	 * falls back to a drop-down keeps looking like its neighbours. */
+	background: var(--oc-mega-bg, var(--oc-surface));
+	color: var(--oc-mega-tx, var(--oc-ink));
+	border: 1px solid var(--oc-mega-line-b, var(--oc-line));
 	border-radius: var(--oc-radius, 8px);
 	box-shadow: 0 8px 28px rgb(0 0 0 / 10%);
 	opacity: 0;
@@ -1210,7 +1214,17 @@ html.oc-search-open { overflow: hidden; }
 	transition: opacity .22s ease, transform .22s ease, visibility 0s;
 }
 
-.oc-nav__list .sub-menu a { padding: 8px 16px; font-size: var(--oc-mega-fs, 15px); }
+.oc-nav__list .sub-menu a {
+	padding: 8px 16px;
+	font-size: var(--oc-mega-fs, 15px);
+	font-weight: 400;
+	color: var(--oc-mega-tx, var(--oc-ink));
+	transition: color .18s ease, transform .18s cubic-bezier(.2, .7, .3, 1);
+}
+.oc-nav__list .sub-menu a:hover {
+	color: var(--oc-mega-tx-h, var(--oc-primary));
+	transform: translateX(calc(var(--oc-mega-hov, 3px) * var(--oc-fwd, 1)));
+}
 
 /* Piece by piece: each row arrives a beat after the one before it. The delay
  * comes from --i, and twelve is where the effect stops being a rhythm and
