@@ -850,11 +850,12 @@ final class Product_Linked {
 
 		update_object_term_cache( $ids, 'product' );
 
-		$name  = self::name_tokens( $product->get_name() );
-		$price = (float) $product->get_price();
-		$tags  = self::term_ids( $product_id, 'product_tag' );
-		$attrs = self::attr_values( $product );
-		$out   = array();
+		$name   = self::name_tokens( $product->get_name() );
+		$price  = (float) $product->get_price();
+		$litres = self::litres( $product->get_name() );
+		$tags   = self::term_ids( $product_id, 'product_tag' );
+		$attrs  = self::attr_values( $product );
+		$out    = array();
 
 		// Load the candidates once; the names feed the word weights below.
 		$others = array();
@@ -895,6 +896,15 @@ final class Product_Linked {
 			if ( $price > 0 && $op > 0 ) {
 				// Same price 1, three times the price 0.
 				$score += 1.0 * max( 0.0, 1 - abs( log( $op / $price ) ) / log( 3 ) );
+			}
+
+			// Size, when both names state one: a 3-litre bin and a 30-litre
+			// bin are not alike whatever else they share. Same size 1,
+			// three times the size 0.
+			$ol = self::litres( $other->get_name() );
+
+			if ( $litres > 0 && $ol > 0 ) {
+				$score += 1.0 * max( 0.0, 1 - abs( log( $ol / $litres ) ) / log( 3 ) );
 			}
 
 			$otags = self::term_ids( $id, 'product_tag' );
@@ -1004,6 +1014,22 @@ final class Product_Linked {
 		}
 
 		return array_unique( $out );
+	}
+
+	/**
+	 * The litres a name states — "30 ליטר", "3.5 L", "ליטר 20" — or 0.
+	 *
+	 * @param string $name Product name.
+	 */
+	private static function litres( string $name ): float {
+		$name = html_entity_decode( $name, ENT_QUOTES, 'UTF-8' );
+
+		if ( preg_match( '/(\d+(?:[.,]\d+)?)\s*(?:ליטר|liter|litre|\bl\b)/iu', $name, $m )
+			|| preg_match( '/(?:ליטר|liter|litre)\s*(\d+(?:[.,]\d+)?)/iu', $name, $m ) ) {
+			return (float) str_replace( ',', '.', $m[1] );
+		}
+
+		return 0.0;
 	}
 
 	/**
