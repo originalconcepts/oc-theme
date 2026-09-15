@@ -140,6 +140,26 @@ final class Menu_Panel {
 						'label' => __( 'The category', 'oc-theme' ),
 						'when'  => array( 'mode' => array( 'cat' ) ),
 					),
+					'size'  => array(
+						'type'    => 'select',
+						'label'   => __( 'Size', 'oc-theme' ),
+						'choices' => array(
+							'regular' => __( 'Regular', 'oc-theme' ),
+							'large'   => __( 'Large', 'oc-theme' ),
+						),
+						'def'     => 'regular',
+					),
+					'shape' => array(
+						'type'    => 'select',
+						'label'   => __( 'Picture shape', 'oc-theme' ),
+						'choices' => array(
+							'card' => __( 'Like the product cards', 'oc-theme' ),
+							'sq'   => __( 'Square', 'oc-theme' ),
+							'wide' => __( 'Landscape', 'oc-theme' ),
+							'tall' => __( 'Portrait', 'oc-theme' ),
+						),
+						'def'     => 'card',
+					),
 				),
 			),
 			'brands'   => array(
@@ -882,20 +902,21 @@ final class Menu_Panel {
 			return '';
 		}
 
-		// No shape or fit of its own. A product in the menu is the same
-		// product the catalogue is showing, so it wears the shape the shop
-		// chose for its cards — set that once and the two can never disagree.
-		// Blocks saved when this was a per-panel choice keep the value in the
-		// database; it is simply not read any more.
-		$out = '<div class="oc-mb__prods">';
+		// By default a product in the menu wears the shape the shop chose for
+		// its cards, so the two agree; a panel may ask for its own — square,
+		// landscape, upright — and for the larger size.
+		$shape = (string) ( $block['shape'] ?? 'card' );
+		$large = 'large' === (string) ( $block['size'] ?? 'regular' );
+		$out   = '<div class="oc-mb__prods'
+			. ( $large ? ' oc-mb__prods--lg' : '' )
+			. ( 'card' !== $shape ? ' oc-mb__prods--' . esc_attr( $shape ) : '' )
+			. '">';
 
 		// WooCommerce's own thumbnail is cropped square by the server, which
-		// makes it the right file exactly when the card is square — the shape
-		// this picture now takes. So the size follows the card ratio too,
-		// rather than a pair of settings that no longer exist.
-		$size = '1/1' === (string) get_theme_mod( 'oc_card_ratio', '1/1' )
-			? 'woocommerce_thumbnail'
-			: 'large';
+		// makes it the right file exactly when the picture is square and
+		// regular sized; anything else takes the large file.
+		$square = 'sq' === $shape || ( 'card' === $shape && '1/1' === (string) get_theme_mod( 'oc_card_ratio', '1/1' ) );
+		$size   = $square && ! $large ? 'woocommerce_thumbnail' : 'large';
 
 		foreach ( $products as $product ) {
 			$image = $product->get_image( $size, array( 'loading' => 'lazy' ) );

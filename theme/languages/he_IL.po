@@ -3856,6 +3856,9 @@ msgstr "חיפוש לפי שם."
 msgid "Picture shape"
 msgstr "צורת התמונה"
 
+msgid "Like the product cards"
+msgstr "כמו כרטיסי המוצר"
+
 msgid "The picture"
 msgstr "התמונה"
 

@@ -1651,6 +1651,15 @@ html.oc-menu-open .oc-menu-dim::after {
 	color: inherit;
 }
 
+/* the panel's own choices: a larger product, and a picture shape of its
+ * own instead of the catalogue card's */
+.oc-mb__prods--lg { gap: 20px; }
+.oc-mb__prods--lg .oc-mb__prod { flex-basis: 210px; }
+.oc-mb__prods--lg .oc-mb__prod-name { font-size: calc(var(--oc-mega-fs, 15px) * 1.08); }
+.oc-mb__prods--sq { --oc-mb-ratio: 1 / 1; }
+.oc-mb__prods--wide { --oc-mb-ratio: 4 / 3; }
+.oc-mb__prods--tall { --oc-mb-ratio: 3 / 4; }
+
 /* The card's labels ride the picture's corners, exactly as they do on the
  * catalogue cards. */
 .oc-mb__prod-img { position: relative; display: block; }
@@ -1695,7 +1704,7 @@ html.oc-menu-open .oc-menu-dim::after {
 	 * same way — down to the focal point. A product in the menu is the same
 	 * product the catalogue is showing, and two settings for one picture is
 	 * how they came to disagree: one panel upright, another square. */
-	aspect-ratio: var(--oc-card-ratio, 1 / 1);
+	aspect-ratio: var(--oc-mb-ratio, var(--oc-card-ratio, 1 / 1));
 	object-fit: cover;
 	object-position: 50% var(--oc-card-focus, 50%);
 	border-radius: 10px;
