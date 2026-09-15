@@ -4077,6 +4077,16 @@
 				thumb.src = thumbSrc;
 				thumb.alt = '';
 				thumb.loading = 'lazy';
+
+				// The rail thumb sits in the same frame policy as the big
+				// picture: whole on its own ground, or filled and cropped.
+				if ( src && src.classList.contains( 'oc-fit' ) ) {
+					thumb.className = 'oc-fit oc-fit--' + ( src.classList.contains( 'oc-fit--contain' ) ? 'contain' : 'cover' );
+					var ground = src.style.getPropertyValue( '--oc-fit-bg' );
+					if ( ground ) {
+						thumb.style.setProperty( '--oc-fit-bg', ground );
+					}
+				}
 			}
 
 			btn.appendChild( thumb );
@@ -4366,53 +4376,6 @@
 				mgGallery.appendChild( btn );
 			} );
 		}
-	}
-
-	/* ---------- uniform height, "automatic" fit ----------
-	 * A picture the frame would crop by more than a slice shows whole
-	 * instead: compare the picture's own proportions with the frame's and
-	 * flip the slide to contain when more than 12% of it would be lost.
-	 * Measured live — the frame's width follows the screen — and again on
-	 * resize and whenever a picture (or a swapped colour gallery) loads. */
-	var gFitTimer = 0;
-
-	function gFitImages() {
-		var gallery = galleryWrap && galleryWrap.closest( '.woocommerce-product-gallery' );
-
-		if ( ! gallery || ! document.body.classList.contains( 'oc-gfit-auto' ) ) {
-			return;
-		}
-
-		gallery.querySelectorAll( '.woocommerce-product-gallery__image' ).forEach( function ( slide ) {
-			var img = slide.querySelector( 'img:not(.zoomImg)' );
-
-			if ( ! img || ! img.naturalWidth || ! img.naturalHeight ) {
-				return;
-			}
-
-			var box = img.getBoundingClientRect();
-
-			if ( ! box.width || ! box.height ) {
-				return;
-			}
-
-			var frame = box.width / box.height;
-			var own   = img.naturalWidth / img.naturalHeight;
-			var loss  = 1 - Math.min( frame / own, own / frame );
-
-			slide.classList.toggle( 'is-contain', loss > 0.12 );
-		} );
-	}
-
-	function gFitSoon() {
-		clearTimeout( gFitTimer );
-		gFitTimer = setTimeout( gFitImages, 60 );
-	}
-
-	if ( galleryWrap && document.body.classList.contains( 'oc-gfit-auto' ) ) {
-		gFitImages();
-		galleryWrap.parentElement.addEventListener( 'load', gFitSoon, true );
-		window.addEventListener( 'resize', gFitSoon );
 	}
 
 	if ( mgWrap && document.body.classList.contains( 'oc-gm-dots' ) ) {

@@ -2397,17 +2397,17 @@ final class Customizer {
 
 		$this->choice(
 			$c,
-			'oc_gallery_img_fit',
+			'oc_image_fit',
 			'oc_product',
-			__( 'A picture that does not match the uniform frame', 'oc-theme' ),
+			__( 'Product pictures in a frame — whole site', 'oc-theme' ),
 			array(
-				'cover'   => __( 'Fill the frame (crop)', 'oc-theme' ),
-				'contain' => __( 'Show it whole', 'oc-theme' ),
-				'auto'    => __( 'Automatic', 'oc-theme' ),
+				'smart'   => __( 'Smart: whole on a plain ground, cropped when the scene allows', 'oc-theme' ),
+				'contain' => __( 'Always whole', 'oc-theme' ),
+				'cover'   => __( 'Always fill the frame (crop)', 'oc-theme' ),
 			),
-			'cover',
+			'smart',
 			null,
-			__( 'Automatic fills the frame when the crop is slight and shows the picture whole when more than about an eighth of it would be cut — landscape photos in an upright frame, for instance.', 'oc-theme' )
+			__( 'Every frame — catalogue card, gallery at a uniform height, thumbnail rail, search, cart — decides once per picture, on the server. Smart looks at the picture\'s edges: a product on a plain ground (white, grey, transparent) is shown whole with the frame painted in that same ground, so nothing looks padded; a room or a model fills the frame and is cropped, which a scene survives and a product does not.', 'oc-theme' )
 		);
 
 		$this->heading( $c, 'oc_h_prod_text', 'oc_product', __( 'Text', 'oc-theme' ) );

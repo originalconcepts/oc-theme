@@ -7576,14 +7576,26 @@ body:not(.oc-no-lightbox) .oc-vslide.is-playing {
 	}
 }
 
-/* Uniform height, but the whole picture: "show whole" keeps every slide
- * inside the frame; "automatic" lets theme.js flip only the slides the
- * frame would crop by more than a slice (is-contain). The frame behind a
- * contained picture reads as its own margin, in the gallery's ground. */
-.oc-gfit-contain .woocommerce-product-gallery__wrapper .woocommerce-product-gallery__image img:not(.zoomImg),
-.oc-gfit-auto .woocommerce-product-gallery__wrapper .woocommerce-product-gallery__image.is-contain img:not(.zoomImg) {
-	object-fit: contain;
-	background: var(--oc-gal-bg, var(--oc-surface, #fff));
+/* ==========================================================================
+   Picture fit — decided per picture on the server (Image_Fit)
+   --------------------------------------------------------------------------
+   Every attachment <img> carries oc-fit--contain or oc-fit--cover, and a
+   contained one carries the colour of its own ground in --oc-fit-bg. In
+   any product frame the contained picture sits whole, the frame painted
+   in that ground, so a handle keeps its ends and a lamp its shade with no
+   visible padding. Scoped to the product frames — a hero or a banner is
+   a scene and keeps filling its box. !important on purpose: this is the
+   one policy every frame's own object-fit: cover must yield to.
+   ========================================================================== */
+:is(
+	ul.products, .woocommerce-product-gallery, .oc-thumbs,
+	.oc-search__live, .oc-search__main, .oc-search__hist,
+	.oc-cartpage, .oc-drawer, .oc-cartup, .oc-co-review, .oc-co-items, .oc-ty,
+	.oc-xsell, .oc-bt, .oc-mb__prods, .oc-vp, .oc-look, .ocb-look, .oc-mini
+) img.oc-fit--contain {
+	object-fit: contain !important;
+	object-position: 50% 50% !important;
+	background-color: var(--oc-fit-bg, var(--oc-surface, #fff));
 }
 
 /* Rail-thumb badge: always on the video's thumbnail, whatever the autoplay

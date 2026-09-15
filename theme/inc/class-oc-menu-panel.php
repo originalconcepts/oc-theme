@@ -957,7 +957,13 @@ final class Menu_Panel {
 				$src = function_exists( 'wc_placeholder_img_src' ) ? (string) wc_placeholder_img_src( $size ) : '';
 			}
 
-			$image = '<img src="' . esc_url( $src ) . '" alt="' . esc_attr( $product->get_name() ) . '" loading="lazy" decoding="async">';
+			$fit   = $image_id > 0 ? Image_Fit::attrs( $image_id ) : array(
+				'class' => '',
+				'style' => '',
+			);
+			$image = '<img src="' . esc_url( $src ) . '" alt="' . esc_attr( $product->get_name() ) . '" loading="lazy" decoding="async"'
+				. ( '' !== $fit['class'] ? ' class="' . esc_attr( $fit['class'] ) . '"' : '' )
+				. ( '' !== $fit['style'] ? ' style="' . esc_attr( $fit['style'] ) . '"' : '' ) . '>';
 
 			// The percent badge and the SKU that the product page's own price
 			// filters append: the panel's picture already wears the label,

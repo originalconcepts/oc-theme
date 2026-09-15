@@ -165,6 +165,21 @@ msgstr "ממלאת את המסגרת (חיתוך)"
 msgid "Show it whole"
 msgstr "מוצגת במלואה"
 
+msgid "Product pictures in a frame — whole site"
+msgstr "תמונות מוצר בתוך מסגרת – בכל האתר"
+
+msgid "Smart: whole on a plain ground, cropped when the scene allows"
+msgstr "חכם: במלואה על רקע אחיד, חיתוך כשזו סצנה"
+
+msgid "Always whole"
+msgstr "תמיד במלואה"
+
+msgid "Always fill the frame (crop)"
+msgstr "תמיד ממלאת את המסגרת (חיתוך)"
+
+msgid "Every frame — catalogue card, gallery at a uniform height, thumbnail rail, search, cart — decides once per picture, on the server. Smart looks at the picture's edges: a product on a plain ground (white, grey, transparent) is shown whole with the frame painted in that same ground, so nothing looks padded; a room or a model fills the frame and is cropped, which a scene survives and a product does not."
+msgstr "כל מסגרת, כרטיס בקטלוג, גלריה בגובה אחיד, פס תמונות ממוזערות, חיפוש, סל, מחליטה פעם אחת לכל תמונה, בשרת. חכם בוחן את שולי התמונה: מוצר על רקע אחיד (לבן, אפור, שקוף) מוצג במלואו והמסגרת נצבעת באותו רקע, כך ששום דבר לא נראה מרופד; חדר או דוגמנית ממלאים את המסגרת ונחתכים, מה שסצנה סופגת ומוצר לא."
+
 msgid "Automatic fills the frame when the crop is slight and shows the picture whole when more than about an eighth of it would be cut — landscape photos in an upright frame, for instance."
 msgstr "אוטומטי ממלא את המסגרת כשהחיתוך קל, ומציג את התמונה במלואה כשהיה נחתך ממנה יותר מכשמינית, למשל תמונות לרוחב במסגרת גבוהה."
 
