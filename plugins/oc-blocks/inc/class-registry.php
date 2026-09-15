@@ -1093,6 +1093,14 @@ final class Registry {
 						'max'   => 6,
 						'group' => 'design',
 					),
+					'mpeek'     => array(
+						'type'  => 'toggle',
+						'label' => __( 'Hint that there are more: a slice of the next tile shows', 'oc-blocks' ),
+						'def'   => false,
+						'when'  => array( 'mlayout' => array( 'slider' ) ),
+						'dev'   => 'm',
+						'group' => 'design',
+					),
 				),
 			),
 

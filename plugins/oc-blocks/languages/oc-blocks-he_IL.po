@@ -1771,3 +1771,6 @@ msgstr "על התמונה"
 
 msgid "Under it"
 msgstr "מתחתיה"
+
+msgid "Hint that there are more: a slice of the next tile shows"
+msgstr "רמז שיש עוד: פיסה מהאריח הבא מוצגת"

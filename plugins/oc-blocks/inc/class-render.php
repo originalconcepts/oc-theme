@@ -1298,6 +1298,10 @@ final class Render {
 			$class[] = 'ocb-brands--tinted';
 		}
 
+		if ( 'slider' === $mlay && ! empty( $s['mpeek'] ) ) {
+			$class[] = 'ocb-brands--m-peek';
+		}
+
 		$style = array(
 			'--ocb-cols:' . max( 1, absint( $s['cols'] ) ),
 			'--ocb-mcols:' . max( 1, absint( $s['mcols'] ?? 3 ) ),

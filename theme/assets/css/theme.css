@@ -4537,7 +4537,10 @@ li.product:has(:focus-visible) .oc-card-atc,
 .oc-side-gallery-end.single-product div.product div.summary { grid-column: 1; }
 
 @media (max-width: 900px) {
-	.single-product div.product { grid-template-columns: 1fr; }
+	/* One column: the row gap is what stands between the picture and the
+	 * words, and the column gap (80px on a wide screen) is far too much
+	 * for that. The sections further down keep their own top margins. */
+	.single-product div.product { grid-template-columns: 1fr; row-gap: 22px; }
 	.single-product div.product div.images,
 	.single-product div.product div.summary,
 	.oc-side-gallery-end.single-product div.product div.images,

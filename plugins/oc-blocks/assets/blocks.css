@@ -1073,6 +1073,14 @@
 	scroll-snap-align: start;
 }
 
+/* "There is more": the tiles are cut so that a slice of the next one
+ * shows at the edge — the row reads as a track, not a finished set. */
+@media (max-width: 782px) {
+	.ocb-brands--m-peek .ocb-brand {
+		flex-basis: calc((100% - var(--ocb-mcols, 3) * var(--ocb-br-gap)) / (var(--ocb-mcols, 3) + .4));
+	}
+}
+
 @media (min-width: 783px) {
 	.ocb-brands__row {
 		grid-template-columns: repeat(var(--ocb-cols, 5), minmax(0, 1fr));
