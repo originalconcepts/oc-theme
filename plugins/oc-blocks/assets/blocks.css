@@ -209,6 +209,18 @@
 
 .ocb-dots__dot.is-on { background: #fff; transform: scale(1.25); }
 
+/* On a phone the dots may stand under the banner instead of on it: a
+ * row of their own, in the page's ink rather than white. */
+@media (max-width: 782px) {
+	.ocb-dots--below-m {
+		position: static;
+		inset: auto;
+		padding-block: 12px 2px;
+	}
+	.ocb-dots--below-m .ocb-dots__dot { background: color-mix(in srgb, var(--oc-ink, #111) 28%, transparent); }
+	.ocb-dots--below-m .ocb-dots__dot.is-on { background: var(--oc-ink, #111); }
+}
+
 /* ---------- hero ---------- */
 
 .ocb-hero { position: relative; }

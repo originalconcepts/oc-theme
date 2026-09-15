@@ -1762,3 +1762,12 @@ msgstr "שקופית %d"
 
 msgid "Video poster (a still shown until the film plays)"
 msgstr "תמונת פתיחה לסרטון (תמונה קבועה שמוצגת עד שהסרטון מתחיל)"
+
+msgid "Dots on phones"
+msgstr "נקודות בטלפון"
+
+msgid "On the picture"
+msgstr "על התמונה"
+
+msgid "Under it"
+msgstr "מתחתיה"

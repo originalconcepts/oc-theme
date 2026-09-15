@@ -444,6 +444,17 @@ final class Registry {
 						'def'   => 1,
 						'group' => 'design',
 					),
+					'dotsm'    => array(
+						'type'    => 'seg',
+						'label'   => __( 'Dots on phones', 'oc-blocks' ),
+						'choices' => array(
+							'on'    => __( 'On the picture', 'oc-blocks' ),
+							'below' => __( 'Under it', 'oc-blocks' ),
+						),
+						'def'     => 'on',
+						'when'    => array( 'dots' => array( '1', 1, true ) ),
+						'group'   => 'design',
+					),
 					'parallax' => array(
 						'type'    => 'seg',
 						'label'   => __( 'Parallax', 'oc-blocks' ),

@@ -717,7 +717,7 @@ final class Render {
 
 		if ( ! $one && ! empty( $s['dots'] ) ) {
 			/* translators: %d: slide number. */
-			$html .= '<div class="ocb-dots" data-ocb-dots data-ocb-dot-label="' . esc_attr( __( 'Slide %d', 'oc-blocks' ) ) . '"></div>';
+			$html .= '<div class="ocb-dots' . ( 'below' === (string) ( $s['dotsm'] ?? 'on' ) ? ' ocb-dots--below-m' : '' ) . '" data-ocb-dots data-ocb-dot-label="' . esc_attr( __( 'Slide %d', 'oc-blocks' ) ) . '"></div>';
 		}
 
 		return $html . '</div>';
