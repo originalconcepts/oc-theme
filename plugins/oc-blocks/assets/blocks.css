@@ -1076,6 +1076,14 @@
 /* "There is more": the tiles are cut so that a slice of the next one
  * shows at the edge — the row reads as a track, not a finished set. */
 @media (max-width: 782px) {
+	/* The track breaks out of the section's padding and runs to the screen
+	 * edge, the first tile still lined up with the heading, so the slice of
+	 * the next tile is cut by the screen itself. */
+	.ocb-brands--m-peek { margin-inline: calc(50% - 50vw); }
+	.ocb-brands--m-peek .ocb-brands__row {
+		padding-inline: clamp(16px, 3vw, 32px) 0;
+		scroll-padding-inline-start: clamp(16px, 3vw, 32px);
+	}
 	.ocb-brands--m-peek .ocb-brand {
 		flex-basis: calc((100% - var(--ocb-mcols, 3) * var(--ocb-br-gap)) / (var(--ocb-mcols, 3) + .4));
 	}

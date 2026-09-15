@@ -797,7 +797,10 @@ final class Menu_Panel {
 		}
 
 		$piece = array(
-			'class' => 'oc-mb oc-mb--' . sanitize_html_class( $type ),
+			// The width rides along as a class: a picture sized by height
+			// alone ignored its column, and every width choice looked the
+			// same (see the mega CSS).
+			'class' => 'oc-mb oc-mb--' . sanitize_html_class( $type ) . ' oc-mb--w-' . sanitize_html_class( (string) ( $block['w'] ?? 'normal' ) ),
 			'inner' => $inner,
 		);
 

@@ -1483,6 +1483,19 @@ html.oc-menu-open .oc-menu-dim::after {
 	border-radius: inherit;
 }
 
+/* A picture given a width (narrow / regular / wide / double) fills its
+ * column and takes its height from the shape. Only "as wide as it needs"
+ * keeps the height-led sizing above — for years every choice here drew
+ * the same 360px picture, because the height rule never let the column
+ * reach it. */
+.oc-mega:not(.oc-mega--drawer) .oc-mb--image:not(.oc-mb--w-auto) .oc-mb__fig,
+.oc-mega:not(.oc-mega--drawer) .oc-mb--image:not(.oc-mb--w-auto) .oc-mb__fig--under .oc-mb__img {
+	inline-size: 100%;
+	block-size: auto;
+}
+.oc-mega:not(.oc-mega--drawer) .oc-mb--image:not(.oc-mb--w-auto) .oc-mb__fig--under { inline-size: 100%; }
+.oc-nav--imgfit .oc-mega--cols .oc-mb--image:not(.oc-mb--w-auto) .oc-mb__fig { inline-size: 100%; block-size: 100%; aspect-ratio: auto; }
+
 /* Set to zero, the height instead matches the columns: the figure leaves
  * the flow so it cannot be the tallest thing in the row it is measured
  * against, and simply fills whatever the lists decide. */
@@ -8436,6 +8449,17 @@ body.oc-no-qty.single-product div.product form.cart .woocommerce-variation-add-t
 }
 
 .oc-flt--side { position: sticky; top: calc(var(--oc-header-h, 72px) + 16px); }
+
+/* A long list (fifty brands) scrolls inside its own box: the side panel
+ * is sticky, so a list taller than the screen could only be reached by
+ * scrolling the whole page. */
+.oc-flt--side .oc-flt__values {
+	max-block-size: min(46vh, 380px);
+	overflow-y: auto;
+	overscroll-behavior: contain;
+	scrollbar-width: thin;
+	padding-inline-end: 6px;
+}
 
 .oc-flt__head {
 	display: flex;
