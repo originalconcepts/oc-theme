@@ -856,22 +856,45 @@ final class Product_Linked {
 		$attrs = self::attr_values( $product );
 		$out   = array();
 
+		// Load the candidates once; the names feed the word weights below.
+		$others = array();
+
 		foreach ( $ids as $id ) {
 			$other = wc_get_product( $id );
 
-			if ( ! $other instanceof \WC_Product || ! $other->is_visible() ) {
-				continue;
+			if ( $other instanceof \WC_Product && $other->is_visible() ) {
+				$others[ $id ] = $other;
 			}
+		}
 
+		// A word that nearly every candidate carries — "bin", "litre", the
+		// brand — says nothing about which two are alike; "3", "hanging" or
+		// "bathroom" says a lot. Each word weighs log(pool / carriers).
+		$df = array();
+
+		foreach ( $others as $other ) {
+			foreach ( self::name_tokens( $other->get_name() ) as $word ) {
+				$df[ $word ] = ( $df[ $word ] ?? 0 ) + 1;
+			}
+		}
+
+		$pool = count( $others ) + 1;
+		$idf  = array();
+
+		foreach ( $name as $word ) {
+			$idf[ $word ] = log( $pool / ( ( $df[ $word ] ?? 0 ) + 1 ) );
+		}
+
+		foreach ( $others as $id => $other ) {
 			$score = 2.0 * self::weighted_jaccard( $cats, self::cat_weights( $id ) );
 
-			$score += 1.0 * self::jaccard( $name, self::name_tokens( $other->get_name() ) );
+			$score += 1.2 * self::idf_jaccard( $idf, self::name_tokens( $other->get_name() ), $df, $pool );
 
 			$op = (float) $other->get_price();
 
 			if ( $price > 0 && $op > 0 ) {
 				// Same price 1, three times the price 0.
-				$score += 0.7 * max( 0.0, 1 - abs( log( $op / $price ) ) / log( 3 ) );
+				$score += 1.0 * max( 0.0, 1 - abs( log( $op / $price ) ) / log( 3 ) );
 			}
 
 			$otags = self::term_ids( $id, 'product_tag' );
@@ -997,6 +1020,30 @@ final class Product_Linked {
 		$union = count( array_unique( array_merge( $a, $b ) ) );
 
 		return $union > 0 ? count( array_intersect( $a, $b ) ) / $union : 0.0;
+	}
+
+	/**
+	 * Name similarity where every word weighs its rarity: shared weight over
+	 * the weight of every word either name has.
+	 *
+	 * @param array<string,float> $idf   This product's words => weight.
+	 * @param string[]            $words The other product's words.
+	 * @param array<string,int>   $df    How many candidates carry each word.
+	 * @param int                 $pool  Candidates counted, plus one.
+	 */
+	private static function idf_jaccard( array $idf, array $words, array $df, int $pool ): float {
+		$shared = 0.0;
+		$total  = array_sum( $idf );
+
+		foreach ( $words as $word ) {
+			if ( isset( $idf[ $word ] ) ) {
+				$shared += $idf[ $word ];
+			} else {
+				$total += log( $pool / ( ( $df[ $word ] ?? 0 ) + 1 ) );
+			}
+		}
+
+		return $total > 0 ? $shared / $total : 0.0;
 	}
 
 	/**
