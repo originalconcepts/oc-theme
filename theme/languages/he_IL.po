@@ -7956,3 +7956,12 @@ msgstr "עמודות הקישורים בטלפון - יישור"
 
 msgid "By language (right in Hebrew)"
 msgstr "לפי השפה (ימין בעברית)"
+
+msgid "Panel width"
+msgstr "רוחב הפאנל"
+
+msgid "As set for the site (Customizer → Menu)"
+msgstr "כמו שהוגדר לאתר (התאמה אישית ← תפריט)"
+
+msgid "As wide as its content, under the link"
+msgstr "ברוחב התוכן שלו, מתחת לקישור"

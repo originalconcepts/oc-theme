@@ -454,6 +454,10 @@ final class Menu {
 		// stylesheet needs to know before it decides what to show.
 		if ( 0 === (int) $depth && ! empty( $args->oc_panels ) && Menu_Panel::is_panel( (int) $item->ID ) ) {
 			$classes[] = 'oc-has-panel';
+
+			if ( 'fit' === Menu_Panel::fit( (int) $item->ID ) ) {
+				$classes[] = 'oc-has-panel--fit';
+			}
 		}
 
 		if ( 'desktop' === $hide ) {

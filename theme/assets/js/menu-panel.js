@@ -931,6 +931,7 @@
 		body.append( 'nonce', D.nonce );
 		body.append( 'item', state.item );
 		body.append( 'blocks', JSON.stringify( state.blocks ) );
+		body.append( 'fit', state.fit || 'site' );
 
 		fetch( D.ajax, { method: 'POST', body: body, credentials: 'same-origin' } )
 			.then( function ( r ) { return r.json(); } )
@@ -938,6 +939,7 @@
 				if ( ! r.success ) {
 					throw new Error();
 				}
+				if ( state.button ) { state.button.dataset.ocFit = state.fit || 'site'; }
 
 				state.dirty = false;
 				setStatus( T.saved, 'ok' );
@@ -1054,6 +1056,18 @@
 
 	root.appendChild( els.strip );
 	root.appendChild( els.settings );
+	// How wide this item's panel opens: the site's setting, or its own
+	// content. A panel-level dial, so it lives beside the save button.
+	els.fit = el( 'select', {
+		onchange: function () {
+			state.fit = els.fit.value;
+			state.dirty = true;
+			preview();
+		}
+	} );
+	els.fit.appendChild( el( 'option', { value: 'site', text: T.fitSite || 'site' } ) );
+	els.fit.appendChild( el( 'option', { value: 'fit', text: T.fitContent || 'fit' } ) );
+
 	root.appendChild( el( 'p', { 'class': 'oc-mp__bar' }, [
 		el( 'button', {
 			type: 'button',
@@ -1061,6 +1075,7 @@
 			text: T.save,
 			onclick: save
 		} ),
+		el( 'label', { 'class': 'oc-mp__fit' }, [ el( 'span', { text: T.fit || '' } ), els.fit ] ),
 		els.status
 	] ) );
 	root.appendChild( el( 'h2', { 'class': 'oc-mp__ph', text: T.preview } ) );
@@ -1072,6 +1087,8 @@
 		state.blocks = JSON.parse( button.dataset.ocBlocks || '[]' );
 		state.open = state.blocks.length ? 0 : null;
 		state.dirty = false;
+		state.fit = 'fit' === button.dataset.ocFit ? 'fit' : 'site';
+		if ( els.fit ) { els.fit.value = state.fit; }
 
 		D.thumbs = JSON.parse( button.dataset.ocThumbs || '{}' );
 		D.names = JSON.parse( button.dataset.ocNames || '{}' );

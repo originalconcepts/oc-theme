@@ -31,6 +31,21 @@ final class Menu_Panel {
 	public const META = '_oc_panel';
 
 	/**
+	 * Per item: how wide its panel opens. 'site' follows the Customizer
+	 * (page / content / under the link); 'fit' hugs its own content.
+	 */
+	public const META_FIT = '_oc_panel_fit';
+
+	/**
+	 * One item's width mode: 'site' or 'fit'.
+	 *
+	 * @param int $item_id Menu item id.
+	 */
+	public static function fit( int $item_id ): string {
+		return 'fit' === (string) get_post_meta( $item_id, self::META_FIT, true ) ? 'fit' : 'site';
+	}
+
+	/**
 	 * How many blocks one panel may hold.
 	 *
 	 * Not a technical limit. A panel with twelve blocks is a page, and nobody
@@ -529,7 +544,7 @@ final class Menu_Panel {
 		//
 		// Whether there are columns IS written in: a picture measures its
 		// height against them, and against nothing when there are none.
-		$class = 'oc-mega' . ( empty( $columns ) ? '' : ' oc-mega--cols' );
+		$class = 'oc-mega' . ( empty( $columns ) ? '' : ' oc-mega--cols' ) . ( 'nav' === $where && $item_id > 0 && 'fit' === self::fit( $item_id ) ? ' oc-mega--fit' : '' );
 
 		$under = '';
 

@@ -295,6 +295,9 @@ body.oc-mp-locked { overflow: hidden; }
 	padding-block-start: 14px;
 	border-block-start: 1px solid #f0f0f1;
 }
+.oc-mp__fit { display: inline-flex; align-items: center; gap: 8px; margin-inline-start: 14px; }
+.oc-mp__fit span { font-weight: 600; }
+
 
 .oc-mp__status { font-size: 13px; color: #787c82; }
 .oc-mp__status.is-ok { color: #007017; }

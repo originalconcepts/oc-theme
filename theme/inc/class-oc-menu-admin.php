@@ -75,14 +75,15 @@ final class Menu_Admin {
 		$blocks = Menu_Panel::blocks( $id );
 
 		printf(
-			'<p class="oc-mi__panel"><span class="oc-mi__state">%1$s</span> <button type="button" class="button button-small oc-mi__edit" data-oc-panel="%2$d" data-oc-name="%3$s" data-oc-blocks="%4$s" data-oc-thumbs="%5$s" data-oc-names="%6$s">%7$s</button></p>',
+			'<p class="oc-mi__panel"><span class="oc-mi__state">%1$s</span> <button type="button" class="button button-small oc-mi__edit" data-oc-panel="%2$d" data-oc-name="%3$s" data-oc-blocks="%4$s" data-oc-thumbs="%5$s" data-oc-names="%6$s" data-oc-fit="%8$s">%7$s</button></p>',
 			esc_html( self::state_line( $id ) ),
 			(int) $id,
 			esc_attr( wp_strip_all_tags( (string) $item->title ) ),
 			esc_attr( (string) wp_json_encode( $blocks ) ),
 			esc_attr( (string) wp_json_encode( self::thumbs( $blocks ) ) ),
 			esc_attr( (string) wp_json_encode( self::product_names( $blocks ) ) ),
-			esc_html__( 'Edit panel', 'oc-theme' )
+			esc_html__( 'Edit panel', 'oc-theme' ),
+			esc_attr( Menu_Panel::fit( $id ) )
 		);
 	}
 
@@ -184,6 +185,7 @@ final class Menu_Admin {
 		$blocks = self::posted_blocks();
 
 		Menu_Panel::save( $item, $blocks );
+		update_post_meta( $item, Menu_Panel::META_FIT, 'fit' === sanitize_key( (string) wp_unslash( $_POST['fit'] ?? 'site' ) ) ? 'fit' : 'site' );
 
 		$blocks = Menu_Panel::blocks( $item );
 
@@ -313,6 +315,9 @@ final class Menu_Admin {
 				'width'        => __( 'Width', 'oc-theme' ),
 				'device'       => __( 'Shown', 'oc-theme' ),
 				'push'         => __( 'Leave the spare width in front of it', 'oc-theme' ),
+				'fit'          => __( 'Panel width', 'oc-theme' ),
+				'fitSite'      => __( 'As set for the site (Customizer → Menu)', 'oc-theme' ),
+				'fitContent'   => __( 'As wide as its content, under the link', 'oc-theme' ),
 				'addProduct'   => __( 'Add a product', 'oc-theme' ),
 				'searchProd'   => __( 'Search a product by name', 'oc-theme' ),
 				'noBrands'     => __( 'No brands exist yet on this site.', 'oc-theme' ),
