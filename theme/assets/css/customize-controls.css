@@ -305,3 +305,20 @@ body.rtl .customize-section-back::before {
 }
 
 .oc-days__day input:focus-visible + span { outline: 2px solid #2271b1; outline-offset: 2px; }
+
+/* ---------- from–to pair: two numbers on one line ---------- */
+
+.oc-range {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	margin-block: 4px 6px;
+}
+
+.oc-range__field {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.oc-range__field input[type="number"] { inline-size: 5.5em; }

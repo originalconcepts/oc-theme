@@ -996,6 +996,9 @@ msgstr "הזמנה מאובטחת"
 msgid "Newsletter discount"
 msgstr "הנחה בהרשמה לניוזלטר"
 
+msgid "Payments"
+msgstr "תשלומים"
+
 #. translators: %d: icon slot number.
 msgid "Icon %d"
 msgstr "אייקון %d"
@@ -6120,8 +6123,16 @@ msgstr "שורת המלאי מתחלפת בין מצב המלאי לבין מו�
 msgid "Delivery days"
 msgstr "ימי אספקה"
 
-msgid "How many sending days it takes. Three, ordered on a Sunday with a Sunday-to-Thursday week, reads \"arrives 2/12–4/12\"."
-msgstr "כמה ימי משלוח לוקח. שלושה, בהזמנה ביום ראשון ובשבוע ראשון–חמישי, יוצגו כ״יסופק 2/12–4/12״."
+msgid "How many sending days it takes, at the least and at the most. 1 to 3, ordered on a Sunday with a Sunday-to-Thursday week, reads \"arrives 2/12–4/12\"; 3 to 7 opens the window on the third day."
+msgstr "כמה ימי משלוח זה לוקח, לכל הפחות ולכל היותר. 1 עד 3, בהזמנה ביום ראשון ובשבוע ראשון–חמישי, יוצגו כ״יסופק 2/12–4/12״; 3 עד 7 פותח את החלון ביום השלישי."
+
+msgctxt "a range of days: from X to Y"
+msgid "from"
+msgstr "מ־"
+
+msgctxt "a range of days: from X to Y"
+msgid "to"
+msgstr "עד"
 
 msgid "Sunday"
 msgstr "ראשון"

@@ -2482,19 +2482,20 @@ final class Customizer {
 			)
 		);
 
-		$this->number(
+		$this->range_pair(
 			$c,
+			'oc_ship_lead_min',
 			'oc_ship_lead',
 			'oc_product',
 			__( 'Delivery days', 'oc-theme' ),
-			3,
 			1,
+			3,
 			30,
 			array(
 				'setting' => 'oc_stock_indicator',
 				'values'  => array( '1' ),
 			),
-			__( 'How many sending days it takes. Three, ordered on a Sunday with a Sunday-to-Thursday week, reads "arrives 2/12–4/12".', 'oc-theme' )
+			__( 'How many sending days it takes, at the least and at the most. 1 to 3, ordered on a Sunday with a Sunday-to-Thursday week, reads "arrives 2/12–4/12"; 3 to 7 opens the window on the third day.', 'oc-theme' )
 		);
 
 		$upcoming = class_exists( '\OC\Theme\Holidays' ) ? \OC\Theme\Holidays::upcoming() : array();
@@ -2608,6 +2609,7 @@ final class Customizer {
 			'gift'     => __( 'Gift wrap', 'oc-theme' ),
 			'secure'   => __( 'Secure order', 'oc-theme' ),
 			'discount' => __( 'Newsletter discount', 'oc-theme' ),
+			'payments' => __( 'Payments', 'oc-theme' ),
 		);
 
 		for ( $i = 1; $i <= 4; $i++ ) {
@@ -3369,6 +3371,60 @@ final class Customizer {
 		}
 
 		$c->add_control( $id, $args );
+	}
+
+	/**
+	 * Two whole numbers on one line — "from … to …" — each its own setting.
+	 *
+	 * @param \WP_Customize_Manager $c       Customizer manager.
+	 * @param string                $id_from Setting holding the lower number.
+	 * @param string                $id_to   Setting holding the higher one.
+	 * @param string                $section Section.
+	 * @param string                $label   Label.
+	 * @param int                   $def_from Default lower number.
+	 * @param int                   $def_to  Default higher number.
+	 * @param int                   $max     Largest value either may take.
+	 * @param array|null            $dep     Show only when another setting has one of these values.
+	 * @param string                $hint    Description under the fields.
+	 */
+	private function range_pair( \WP_Customize_Manager $c, string $id_from, string $id_to, string $section, string $label, int $def_from, int $def_to, int $max, ?array $dep = null, string $hint = '' ): void {
+		require_once __DIR__ . '/class-oc-range-control.php';
+
+		$pair = array(
+			$id_from => $def_from,
+			$id_to   => $def_to,
+		);
+
+		foreach ( $pair as $id => $def ) {
+			$c->add_setting(
+				$id,
+				array(
+					'default'           => (string) $def,
+					'sanitize_callback' => static function ( $value ) use ( $max ): int {
+						return (int) min( max( (int) $value, 1 ), $max );
+					},
+				)
+			);
+		}
+
+		$args = array(
+			'settings'    => array(
+				'from' => $id_from,
+				'to'   => $id_to,
+			),
+			'section'     => $section,
+			'label'       => $label,
+			'description' => $hint,
+			'input_attrs' => array(
+				'min' => 1,
+				'max' => $max,
+			),
+		);
+		if ( null !== $dep ) {
+			$args['active_callback'] = $this->depend( $id_from, $dep );
+		}
+
+		$c->add_control( new Customize\Range_Control( $c, $id_from, $args ) );
 	}
 
 	/*

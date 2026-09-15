@@ -163,7 +163,7 @@ final class Tabs {
 				'callback' => static function () use ( $product, $short_title ) {
 					// The heading feeds the accordion's title (CSS hides it).
 					echo '<h2>' . esc_html( $short_title ) . '</h2>';
-					echo '<div class="oc-tab-short">' . wp_kses_post( wpautop( do_shortcode( $product->get_short_description() ) ) ) . '</div>';
+					echo '<div class="oc-tab-short">' . wp_kses_post( Content_Tables::wrap( wpautop( do_shortcode( $product->get_short_description() ) ) ) ) . '</div>';
 				},
 			);
 		}
@@ -186,7 +186,7 @@ final class Tabs {
 					'callback' => static function () use ( $content, $title ) {
 						// The heading feeds the accordion's title (CSS hides it).
 						echo '<h2>' . esc_html( $title ) . '</h2>';
-						echo '<div class="oc-tab-custom">' . wp_kses_post( wpautop( do_shortcode( $content ) ) ) . '</div>';
+						echo '<div class="oc-tab-custom">' . wp_kses_post( Content_Tables::wrap( wpautop( do_shortcode( $content ) ) ) ) . '</div>';
 					},
 				);
 			}
@@ -210,7 +210,7 @@ final class Tabs {
 					'callback' => static function () use ( $content, $title ) {
 						// The heading feeds the accordion's title (CSS hides it).
 						echo '<h2>' . esc_html( $title ) . '</h2>';
-						echo '<div class="oc-tab-custom">' . wp_kses_post( wpautop( do_shortcode( $content ) ) ) . '</div>';
+						echo '<div class="oc-tab-custom">' . wp_kses_post( Content_Tables::wrap( wpautop( do_shortcode( $content ) ) ) ) . '</div>';
 					},
 				);
 			}
@@ -299,7 +299,7 @@ final class Tabs {
 		if ( '' !== $heading ) {
 			echo '<h2 class="oc-desc-below__title">' . esc_html( $heading ) . '</h2>';
 		}
-		echo wp_kses_post( wpautop( do_shortcode( (string) $content ) ) );
+		echo wp_kses_post( Content_Tables::wrap( wpautop( do_shortcode( (string) $content ) ) ) );
 		echo '</div>';
 	}
 

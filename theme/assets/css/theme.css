@@ -6423,8 +6423,8 @@ html:not([dir]) .oc-cartup__items--h.oc-fade-end {
 .oc-ptitle-row .oc-pbrand { flex: none; }
 
 @media (max-width: 782px) {
-	.oc-pbrand .oc-pbrand__logo { block-size: 42px; max-inline-size: 120px; }
-	.oc-pbrand.oc-pbrand--before .oc-pbrand__logo { block-size: 40px; }
+	.oc-pbrand .oc-pbrand__logo { block-size: 54px; max-inline-size: 154px; }
+	.oc-pbrand.oc-pbrand--before .oc-pbrand__logo { block-size: 51px; }
 }
 
 /* ---------- top bar ---------- */
@@ -7265,7 +7265,10 @@ table.variations td.value select:has(+ .oc-dd) {
 		border-radius: 0;
 	}
 
-	/* pager dots */
+	/* pager dots. A gallery of thirty pictures showed thirty dots and the
+	 * row ran off the screen; now only a window of seven shows, sliding
+	 * with the current slide, and the dot or two at an edge with more
+	 * beyond it shrink — the way a story strip hints at what follows. */
 	.oc-gm-dots .oc-gdots {
 		display: flex;
 		justify-content: center;
@@ -7273,7 +7276,11 @@ table.variations td.value select:has(+ .oc-dd) {
 		margin: 0;
 		padding: 10px 0 0;
 		list-style: none;
+		max-inline-size: 100%;
+		overflow: hidden;
 	}
+
+	.oc-gdots li.is-out { display: none; }
 
 	.oc-gdots button {
 		inline-size: 24px;
@@ -7284,7 +7291,11 @@ table.variations td.value select:has(+ .oc-dd) {
 		border-radius: 50%;
 		background-color: color-mix(in srgb, var(--oc-ink) 25%, transparent);
 		cursor: pointer;
+		transition: transform .2s ease;
 	}
+
+	.oc-gdots li.is-small button { transform: scale(.72); }
+	.oc-gdots li.is-tiny button { transform: scale(.48); }
 
 	.oc-gdots button[aria-current="true"] { background-color: var(--oc-ink); }
 
@@ -15475,6 +15486,48 @@ p.no-comments {
 	overflow-wrap: break-word;
 	word-break: break-word;
 }
+
+/* A pasted table, wrapped server-side (Content_Tables) in a scroll box of
+   its own. The table itself fills the column — the 50% it was given on
+   the page it came from means nothing here — rows lose their fixed
+   heights, cells their <hr> rulers, and a first row set entirely in bold
+   reads as the heading it was meant to be. Wider than the phone, the box
+   scrolls sideways and the columns keep their shape. */
+.oc-tbl {
+	overflow-x: auto;
+	margin-block: 16px 20px;
+	-webkit-overflow-scrolling: touch;
+}
+.oc-tbl > table {
+	display: table;
+	inline-size: 100% !important;
+	min-inline-size: 100%;
+	max-inline-size: none !important;
+	block-size: auto !important;
+	margin: 0;
+	border-collapse: collapse;
+	border-spacing: 0;
+	font-size: .94em;
+	line-height: 1.45;
+}
+.oc-tbl > table th,
+.oc-tbl > table td {
+	block-size: auto !important;
+	min-inline-size: 5.5em;
+	padding: 10px 12px;
+	border: 1px solid var(--oc-line, #e6e8ec);
+	vertical-align: top;
+	text-align: start;
+}
+.oc-tbl > table th,
+.oc-tbl--h1 > table > tbody > tr:first-child > td {
+	background: var(--oc-surface-2, #f5f6f8);
+	font-weight: 600;
+}
+.oc-tbl > table p { margin: 0; }
+.oc-tbl > table p + p { margin-block-start: 4px; }
+.oc-tbl > table hr { display: none; }
+.oc-tbl > table img { display: inline-block; }
 
 /* A wide table keeps its shape and scrolls on its own. `display: block` is
    what gives it a scroll box of its own; the rows inside still lay out as a

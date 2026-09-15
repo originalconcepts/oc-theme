@@ -4228,12 +4228,45 @@
 			Math.round( Math.abs( mgWrap.scrollLeft ) / mgWrap.clientWidth );
 	}
 
+	// Seven dots show at most. The window slides only when the current dot
+	// reaches its edge, so paging through the middle does not make the row
+	// twitch; where more dots lie beyond an edge, the last one there is
+	// small and the one at the very edge smaller still.
+	var MG_WINDOW = 7;
+	var mgWinStart = 0;
+
 	function mgUpdateDots( idx ) {
 		if ( ! mgDots ) {
 			return;
 		}
-		mgDots.querySelectorAll( 'button' ).forEach( function ( b, i ) {
+		var items = mgDots.children;
+		var count = items.length;
+		var last  = Math.max( 0, count - MG_WINDOW );
+
+		if ( count > MG_WINDOW ) {
+			if ( idx >= mgWinStart + MG_WINDOW - 2 && mgWinStart < last ) {
+				mgWinStart = Math.min( idx - ( MG_WINDOW - 3 ), last );
+			} else if ( idx <= mgWinStart + 1 && mgWinStart > 0 ) {
+				mgWinStart = Math.max( idx - 2, 0 );
+			}
+			// The very last slide sits flush at the edge, the first as well.
+			if ( idx === count - 1 ) {
+				mgWinStart = last;
+			} else if ( 0 === idx ) {
+				mgWinStart = 0;
+			}
+		} else {
+			mgWinStart = 0;
+		}
+
+		var end = mgWinStart + MG_WINDOW - 1;
+
+		[].forEach.call( items, function ( li, i ) {
+			var b = li.firstElementChild;
 			b.setAttribute( 'aria-current', i === idx ? 'true' : 'false' );
+			li.classList.toggle( 'is-out', count > MG_WINDOW && ( i < mgWinStart || i > end ) );
+			li.classList.toggle( 'is-tiny', count > MG_WINDOW && ( ( i === mgWinStart && mgWinStart > 0 ) || ( i === end && end < count - 1 ) ) );
+			li.classList.toggle( 'is-small', count > MG_WINDOW && ( ( i === mgWinStart + 1 && mgWinStart > 0 ) || ( i === end - 1 && end < count - 1 ) ) );
 		} );
 
 		if ( ocPauseManualVideo && mgWrap ) {
@@ -4311,6 +4344,8 @@
 		} );
 
 		mgGallery.appendChild( mgDots );
+		mgWinStart = 0;
+		mgUpdateDots( mgIndex() );
 
 		if ( document.body.classList.contains( 'oc-gm-arrows' ) ) {
 			var mgLeft = '<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M 70,0 L 20,50 L 70,100 L 80,90 L 40,50 L 80,10 Z"/></svg>';

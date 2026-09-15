@@ -1756,6 +1756,10 @@ final class WooCommerce {
 		$days = array_values( array_unique( array_map( 'intval', $days ) ) );
 		$lead = max( 1, min( 30, (int) get_theme_mod( 'oc_ship_lead', 3 ) ) );
 
+		// "3 to 7 working days": the window opens on the third sending day,
+		// not the first. One, the default, keeps the old "by the third".
+		$first = max( 1, min( $lead, (int) get_theme_mod( 'oc_ship_lead_min', 1 ) ) );
+
 		if ( ! $days ) {
 			return null;
 		}
@@ -1787,6 +1791,10 @@ final class WooCommerce {
 		if ( ! $when ) {
 			return null;
 		}
+
+		// A run of holidays can leave fewer days than asked for; the window
+		// then opens on the last one found rather than on nothing.
+		$when = array_slice( $when, min( $first, count( $when ) ) - 1 );
 
 		$format = (string) apply_filters( 'oc_delivery_date_format', 'j/n' );
 		$last   = end( $when );
@@ -2017,6 +2025,7 @@ final class WooCommerce {
 			'gift'     => '<svg' . $w . '><path d="M3.5 8h17v4h-17zM5 12h14v8.5H5z"/><path d="M12 8v12.5M12 8s-1-4-4-4a2 2 0 0 0 0 4M12 8s1-4 4-4a2 2 0 0 1 0 4"/></svg>',
 			'secure'   => '<svg' . $w . '><rect x="4.5" y="10" width="15" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/><path d="M12 14v2.5"/></svg>',
 			'discount' => '<svg' . $w . '><path d="M3.5 12l8.5-8.5 8.5.1.1 8.4L12 20.5z"/><circle cx="15.2" cy="8.8" r="1.4"/></svg>',
+			'payments' => '<svg' . $w . '><rect x="3" y="5.5" width="18" height="13" rx="2"/><path d="M3 10h18"/><path d="M7 14.8h3.6"/></svg>',
 		);
 
 		return $icons[ $key ] ?? '';

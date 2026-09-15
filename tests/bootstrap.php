@@ -16,3 +16,4 @@ require_once __DIR__ . '/../theme/inc/marketing/class-oc-marketing-settings.php'
 require_once __DIR__ . '/../theme/inc/marketing/class-oc-marketing-payload.php';
 require_once __DIR__ . '/../theme/inc/privacy/class-oc-privacy-settings.php';
 require_once __DIR__ . '/../theme/inc/privacy/class-oc-privacy-consent.php';
+require_once __DIR__ . '/../theme/inc/class-oc-content-tables.php';
