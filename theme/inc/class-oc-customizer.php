@@ -1199,11 +1199,24 @@ final class Customizer {
 		$this->text( $c, 'oc_footer_tagline', 'oc_footer', __( 'Tagline under the logo', 'oc-theme' ) );
 
 		// Column headings.
-		$this->heading( $c, 'oc_h_ft_cols', 'oc_footer', __( 'Link-column headings', 'oc-theme' ) );
+		$this->heading( $c, 'oc_h_ft_cols', 'oc_footer', __( 'Link columns', 'oc-theme' ) );
 		for ( $i = 1; $i <= 4; $i++ ) {
 			/* translators: %d: column number. */
 			$this->text( $c, 'oc_footer_col' . $i . '_h', 'oc_footer', sprintf( __( 'Column %d heading', 'oc-theme' ), $i ) );
+			/* translators: %d: column number. */
+			$this->toggle( $c, 'oc_footer_col' . $i . '_hide_m', 'oc_footer', sprintf( __( 'Column %d: hide on phones', 'oc-theme' ), $i ), false );
 		}
+		$this->choice(
+			$c,
+			'oc_footer_m_align',
+			'oc_footer',
+			__( 'Link columns on phones — alignment', 'oc-theme' ),
+			array(
+				'start'  => __( 'By language (right in Hebrew)', 'oc-theme' ),
+				'center' => __( 'Centred', 'oc-theme' ),
+			),
+			'start'
+		);
 
 		// Newsletter.
 		$this->heading( $c, 'oc_h_ft_news', 'oc_footer', __( 'Newsletter column', 'oc-theme' ) );

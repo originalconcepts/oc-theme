@@ -84,7 +84,7 @@ $oc_bottom = static function () use ( $oc_credit ) {
 	<?php
 };
 ?>
-<footer class="oc-footer oc-footer--<?php echo esc_attr( $oc_preset ); ?> oc-footer--bar-<?php echo esc_attr( $oc_layout ); ?> oc-footer--m-<?php echo esc_attr( $oc_mobile ); ?><?php echo $oc_dark ? ' oc-footer--dark' : ''; ?>">
+<footer class="oc-footer oc-footer--<?php echo esc_attr( $oc_preset ); ?> oc-footer--bar-<?php echo esc_attr( $oc_layout ); ?> oc-footer--m-<?php echo esc_attr( $oc_mobile ); ?><?php echo 'center' === get_theme_mod( 'oc_footer_m_align', 'start' ) ? ' oc-footer--m-center' : ''; ?><?php echo $oc_dark ? ' oc-footer--dark' : ''; ?>">
 
 <?php if ( 'minimal' === $oc_preset ) : ?>
 
@@ -170,7 +170,7 @@ $oc_bottom = static function () use ( $oc_credit ) {
 			<?php endif; ?>
 
 			<?php foreach ( $oc_cols as $oc_i => $oc_heading ) : ?>
-				<div class="oc-footer__col">
+				<div class="oc-footer__col<?php echo get_theme_mod( 'oc_footer_col' . $oc_i . '_hide_m', false ) ? ' oc-footer__col--hide-m' : ''; ?>">
 					<?php if ( '' !== $oc_heading ) : ?>
 						<h2 class="oc-footer__col-h"><?php echo esc_html( $oc_heading ); ?></h2>
 					<?php endif; ?>

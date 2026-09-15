@@ -7944,3 +7944,15 @@ msgstr "צבע הטקסט בכפתור האישור"
 
 msgid "White"
 msgstr "לבן"
+
+msgid "Link columns"
+msgstr "עמודות קישורים"
+
+msgid "Column %d: hide on phones"
+msgstr "עמודה %d: הסתרה בטלפון"
+
+msgid "Link columns on phones — alignment"
+msgstr "עמודות הקישורים בטלפון - יישור"
+
+msgid "By language (right in Hebrew)"
+msgstr "לפי השפה (ימין בעברית)"

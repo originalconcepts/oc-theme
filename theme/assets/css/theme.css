@@ -3827,6 +3827,13 @@ html.oc-drw-open { overflow: hidden; }
 	.oc-footer__news { margin-block-start: 22px; }
 	.oc-footer__tagline { max-inline-size: none; margin-inline: auto; }
 	.oc-footer__col { flex: 1 1 auto; border-block-start: 1px solid var(--f-line); }
+	/* A column the Customizer marked "hide on phones". */
+	.oc-footer__col--hide-m { display: none; }
+	/* Every column centred, heading and links alike — the accordion's
+	 * arrow then stands beside the heading rather than at the far edge. */
+	.oc-footer--m-center .oc-footer__col { text-align: center; }
+	.oc-footer--m-center .oc-footer__col-h { justify-content: center; gap: 10px; }
+	.oc-footer--m-center .oc-footer__col-list { padding-inline: 0; }
 
 	.oc-footer__bottom { flex-direction: column; align-items: flex-start; }
 
