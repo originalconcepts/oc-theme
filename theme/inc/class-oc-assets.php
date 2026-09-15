@@ -467,6 +467,16 @@ final class Assets {
 				$out_extra = '--oc-prod-colgap:' . $colgap . 'px;';
 			}
 
+			// The title's size, per device; 0 leaves the theme's own.
+			$tfs   = absint( get_theme_mod( 'oc_product_title_fs', 0 ) );
+			$tfs_m = absint( get_theme_mod( 'oc_product_title_fs_m', 0 ) );
+			if ( $tfs > 0 ) {
+				$out_extra = ( $out_extra ?? '' ) . '--oc-prod-title-fs:' . $tfs . 'px;';
+			}
+			if ( $tfs_m > 0 ) {
+				$out_extra = ( $out_extra ?? '' ) . '--oc-prod-title-fs-m:' . $tfs_m . 'px;';
+			}
+
 			$gimg_m = absint( get_theme_mod( 'oc_gallery_img_height_mobile_px', 0 ) );
 			if ( $gimg_m > 0 ) {
 				$out_extra = ( $out_extra ?? '' ) . '--oc-gimg-h-m:' . $gimg_m . 'px;';

@@ -6367,7 +6367,10 @@ html:not([dir]) .oc-cartup__items--h.oc-fade-end {
 }
 
 /* tighter title-to-price rhythm */
-.woocommerce div.product .product_title { margin-block-end: 4px; }
+.woocommerce div.product .product_title { margin-block-end: 4px; font-size: var(--oc-prod-title-fs, 2em); }
+@media (max-width: 782px) {
+	.woocommerce div.product .product_title { font-size: var(--oc-prod-title-fs-m, var(--oc-prod-title-fs, 2em)); }
+}
 
 /* ---------- the brand ---------- */
 

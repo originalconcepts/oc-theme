@@ -7965,3 +7965,9 @@ msgstr "כמו שהוגדר לאתר (התאמה אישית ← תפריט)"
 
 msgid "As wide as its content, under the link"
 msgstr "ברוחב התוכן שלו, מתחת לקישור"
+
+msgid "Title size — desktop (px, 0 = theme default)"
+msgstr "גודל הכותרת - דסקטופ (px, 0 = ברירת המחדל של התבנית)"
+
+msgid "Title size — mobile (px, 0 = same as desktop)"
+msgstr "גודל הכותרת - מובייל (px, 0 = כמו בדסקטופ)"

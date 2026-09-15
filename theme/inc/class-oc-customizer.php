@@ -2397,6 +2397,8 @@ final class Customizer {
 
 		$this->heading( $c, 'oc_h_prod_text', 'oc_product', __( 'Text', 'oc-theme' ) );
 
+		$this->number( $c, 'oc_product_title_fs', 'oc_product', __( 'Title size — desktop (px, 0 = theme default)', 'oc-theme' ), 0, 0, 72 );
+		$this->number( $c, 'oc_product_title_fs_m', 'oc_product', __( 'Title size — mobile (px, 0 = same as desktop)', 'oc-theme' ), 0, 0, 60 );
 		$this->number( $c, 'oc_product_fs', 'oc_product', __( 'Body text size (px)', 'oc-theme' ), 16, 12, 20 );
 
 		$this->choice(
