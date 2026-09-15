@@ -3853,6 +3853,10 @@ html.oc-drw-open { overflow: hidden; }
 	.oc-footer--m-accordion .oc-footer__col.is-open .oc-footer__col-h::after { rotate: -135deg; }
 	.oc-footer--m-accordion .oc-footer__col-list { display: none; }
 	.oc-footer--m-accordion .oc-footer__col.is-open .oc-footer__col-list { display: block; padding-block-end: 10px; }
+	/* No heading, nothing to press: a column without one has no accordion
+	 * to open, so its links stay in sight. (Seventeen links vanished from a
+	 * phone this way once — three bare lines where the columns were.) */
+	.oc-footer--m-accordion .oc-footer__col:not(:has(> .oc-footer__col-h)) .oc-footer__col-list { display: block; padding-block: 14px 10px; }
 
 	/* --- open: everything visible, stacked --- */
 	.oc-footer--m-open .oc-footer__col-h { padding-block-start: 18px; margin-block-end: 12px; }
