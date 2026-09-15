@@ -939,12 +939,34 @@ final class Menu_Panel {
 
 		// WooCommerce's own thumbnail is cropped square by the server, which
 		// makes it the right file exactly when the picture is square and
-		// regular sized; anything else takes the large file.
+		// regular sized — 300px, the 150px box at double density; anything
+		// else takes the large file.
 		$square = 'sq' === $shape || ( 'card' === $shape && '1/1' === (string) get_theme_mod( 'oc_card_ratio', '1/1' ) );
 		$size   = $square && ! $large ? 'woocommerce_thumbnail' : 'large';
 
 		foreach ( $products as $product ) {
-			$image = $product->get_image( $size, array( 'loading' => 'lazy' ) );
+			// One src, no srcset — the same trap the picture block fell
+			// into: with a candidate set, a lazy picture inside a closed
+			// panel measures a layout width of nothing, and the browser
+			// picks the 150px candidate for a 210px box on a Retina screen.
+			// The file chosen here is big enough on its own.
+			$image_id = (int) $product->get_image_id();
+			$src      = $image_id > 0 ? wp_get_attachment_image_url( $image_id, $size ) : '';
+
+			if ( ! is_string( $src ) || '' === $src ) {
+				$src = function_exists( 'wc_placeholder_img_src' ) ? (string) wc_placeholder_img_src( $size ) : '';
+			}
+
+			$image = '<img src="' . esc_url( $src ) . '" alt="' . esc_attr( $product->get_name() ) . '" loading="lazy" decoding="async">';
+
+			// The percent badge and the SKU that the product page's own price
+			// filters append: the panel's picture already wears the label,
+			// and a menu has no room for a part number.
+			$price = (string) preg_replace(
+				array( '#\s*<span class="oc-price-badge[^"]*"[^>]*>.*?</span>#s', '#\s*<span class="oc-sku"[^>]*>.*?</span>#s' ),
+				'',
+				(string) $product->get_price_html()
+			);
 
 			$out .= '<a class="oc-mb__prod" href="' . esc_url( (string) $product->get_permalink() ) . '">';
 			// The same focal point the catalogue crops to. Set per product, as
@@ -956,7 +978,7 @@ final class Menu_Panel {
 				. ( 50 === $focus ? '' : ' style="--oc-card-focus:' . esc_attr( (string) $focus ) . '%"' )
 				. '>' . $image . WooCommerce::flags_html( $product ) . '</span>';
 			$out .= '<span class="oc-mb__prod-name">' . esc_html( $product->get_name() ) . '</span>';
-			$out .= '<span class="oc-mb__prod-price">' . $product->get_price_html() . '</span>';
+			$out .= '<span class="oc-mb__prod-price">' . $price . '</span>';
 			$out .= '</a>';
 		}
 
@@ -1242,10 +1264,15 @@ final class Menu_Panel {
 		// this picture as a white box while every DOM measurement insisted
 		// it was fine — the responsive machinery (lazy + WordPress's
 		// sizes="auto") sizes candidates by layout width, and inside a
-		// closed drawer that width is zero. A single "large" file covers a
-		// 480px card at double density, always paints, and a menu picture
-		// does not need more.
-		$src = wp_get_attachment_image_url( $id, 'large' );
+		// closed drawer that width is zero. So the one file has to be big
+		// enough by itself: a block set wide, double or as-wide-as-it-needs
+		// can run past 700px on a Retina screen, where "large" (1024px)
+		// went soft. WordPress's 1536 and 2048 sizes cover that, and each
+		// falls back to the original when the upload was smaller.
+		$src = wp_get_attachment_image_url(
+			$id,
+			in_array( (string) ( $block['w'] ?? 'normal' ), array( 'wide', 'double', 'auto' ), true ) ? '2048x2048' : '1536x1536'
+		);
 
 		if ( ! is_string( $src ) || '' === $src ) {
 			return '';
