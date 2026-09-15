@@ -964,6 +964,14 @@
 			} );
 
 			if ( open ) {
+				// Opened from the header while the page is scrolled: the panel
+				// sits under the header in the flow, which is off the top of
+				// the screen. It comes to the viewport instead, pinned to its
+				// top, until it closes.
+				var header = searchPanel.closest( '.oc-header' );
+				var afloat = !! header && header.getBoundingClientRect().bottom < 0;
+
+				searchPanel.classList.toggle( 'is-afloat', afloat );
 				searchPanel.hidden = false;
 				histPaint();
 
@@ -992,6 +1000,7 @@
 			// Let it fold away before it leaves the page.
 			sCloseTimer = setTimeout( function () {
 				searchPanel.hidden = true;
+				searchPanel.classList.remove( 'is-afloat' );
 			}, 220 );
 		}
 
@@ -1392,13 +1401,38 @@
 							if ( j && j.success ) {
 								button.classList.add( 'is-done' );
 								button.textContent = ocSL.searchAdded || 'Added';
-								document.body.dispatchEvent( new CustomEvent( 'oc:cart-changed' ) );
 
-								if ( j.data && 'undefined' !== typeof j.data.count ) {
+								// The drawer's own pieces arrive with the answer; put
+								// them in place before the drawer opens, so it shows
+								// the product that was just added and not the cart as
+								// it was before.
+								var frags = j.data && j.data.fragments;
+
+								if ( frags ) {
+									Object.keys( frags ).forEach( function ( selector ) {
+										document.querySelectorAll( selector ).forEach( function ( el ) {
+											var box = document.createElement( 'div' );
+											box.innerHTML = frags[ selector ];
+
+											if ( box.firstElementChild ) {
+												el.replaceWith( box.firstElementChild );
+											}
+										} );
+									} );
+								} else if ( j.data && 'undefined' !== typeof j.data.count ) {
 									document.querySelectorAll( '.oc-cart-count' ).forEach( function ( el ) {
 										el.textContent = j.data.count;
 									} );
 								}
+
+								document.body.dispatchEvent( new CustomEvent( 'oc:cart-changed' ) );
+								document.body.dispatchEvent( new CustomEvent( 'oc-added-to-cart', {
+									detail: {
+										id: id,
+										name: j.data && j.data.name,
+										img: j.data && j.data.img
+									}
+								} ) );
 							} else {
 								button.disabled = false;
 							}

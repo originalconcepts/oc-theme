@@ -1541,10 +1541,18 @@ final class Search {
 			wp_send_json_error( array( 'message' => __( 'It could not be added.', 'oc-theme' ) ) );
 		}
 
+		// The same fragments WooCommerce's own add hands back, so the drawer
+		// that opens next shows the product already in it — it used to
+		// show the cart as it was, until a reload.
+		$image_id = (int) $product->get_image_id();
+
 		wp_send_json_success(
 			array(
-				'count' => WC()->cart->get_cart_contents_count(),
-				'total' => WC()->cart->get_cart_total(),
+				'count'     => WC()->cart->get_cart_contents_count(),
+				'total'     => WC()->cart->get_cart_total(),
+				'fragments' => apply_filters( 'woocommerce_add_to_cart_fragments', array() ),
+				'name'      => $product->get_name(),
+				'img'       => $image_id > 0 ? (string) wp_get_attachment_image_url( $image_id, 'medium' ) : '',
 			)
 		);
 	}
