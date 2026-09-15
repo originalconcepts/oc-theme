@@ -12749,13 +12749,26 @@ body.oc-checkout { overflow-x: clip; }
 		padding-block-start: calc((100% - var(--oc-gap-eff, 20px)) / 2 / var(--oc-card-ratio-n, 1));
 	}
 
-	/* Big asks for nothing and fills the two rows it was given. */
+	/* Big fills the two rows it was given — and states a height of its own
+	 * for the row where there is nothing to give it one. Two large tiles
+	 * side by side fill a four-column grid between them, so no ordinary
+	 * card sizes those tracks; every child of the media is out of flow, so
+	 * the media asked for nothing, the tracks collapsed and the picture
+	 * came out at no height at all — a wide card of title and price with
+	 * nowhere for the photograph. The ratio is what a 2x2 tile is: as tall
+	 * as it is wide. Where a card beside it does size the row, stretch
+	 * still wins and the picture fills the rectangle exactly as before. */
 	.woocommerce ul.products li.product.oc-tile--big > .oc-card-media {
 		align-self: stretch;
+		/* The width is stated outright, because a ratio works both ways: on
+		 * a row an ordinary card does size, stretch makes the height
+		 * definite and the ratio then drove the WIDTH instead — a 529px
+		 * tile holding a 715px picture, spilling over its neighbours. */
+		inline-size: 100%;
 		block-size: auto;
 		min-block-size: 0;
 		padding-block-start: 0;
-		aspect-ratio: auto;
+		aspect-ratio: var(--oc-card-ratio-n, 1);
 	}
 
 	.woocommerce ul.products li.product.oc-tile--big > .oc-card-media > * { min-block-size: 0; }
