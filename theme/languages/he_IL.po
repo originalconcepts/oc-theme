@@ -156,6 +156,18 @@ msgstr "אחיד (חיתוך מהמרכז)"
 msgid "Uniform height (px)"
 msgstr "גובה אחיד (px)"
 
+msgid "A picture that does not match the uniform frame"
+msgstr "תמונה שלא בפרופורציה של המסגרת האחידה"
+
+msgid "Fill the frame (crop)"
+msgstr "ממלאת את המסגרת (חיתוך)"
+
+msgid "Show it whole"
+msgstr "מוצגת במלואה"
+
+msgid "Automatic fills the frame when the crop is slight and shows the picture whole when more than about an eighth of it would be cut — landscape photos in an upright frame, for instance."
+msgstr "אוטומטי ממלא את המסגרת כשהחיתוך קל, ומציג את התמונה במלואה כשהיה נחתך ממנה יותר מכשמינית, למשל תמונות לרוחב במסגרת גבוהה."
+
 msgid "Page margins, grid gaps and card padding. Text size is not affected."
 msgstr "שוליים, מרווחי רשת וריפוד כרטיסים. גודל הטקסט לא מושפע."
 

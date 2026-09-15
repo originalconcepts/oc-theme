@@ -4228,11 +4228,13 @@
 			Math.round( Math.abs( mgWrap.scrollLeft ) / mgWrap.clientWidth );
 	}
 
-	// Seven dots show at most. The window slides only when the current dot
-	// reaches its edge, so paging through the middle does not make the row
-	// twitch; where more dots lie beyond an edge, the last one there is
-	// small and the one at the very edge smaller still.
+	// Seven dots show at most, in a strip that slides under a fixed window
+	// — the way a story bar does. Moving forward, the current dot walks to
+	// the fifth place and stays there while the strip slides beneath it;
+	// moving back, it stops at the third. The dot or two at an edge with
+	// more beyond shrink, and every move is a transition, never a jump.
 	var MG_WINDOW = 7;
+	var MG_DOT = 24;
 	var mgWinStart = 0;
 
 	function mgUpdateDots( idx ) {
@@ -4244,27 +4246,24 @@
 		var last  = Math.max( 0, count - MG_WINDOW );
 
 		if ( count > MG_WINDOW ) {
-			if ( idx >= mgWinStart + MG_WINDOW - 2 && mgWinStart < last ) {
-				mgWinStart = Math.min( idx - ( MG_WINDOW - 3 ), last );
-			} else if ( idx <= mgWinStart + 1 && mgWinStart > 0 ) {
-				mgWinStart = Math.max( idx - 2, 0 );
+			if ( idx >= mgWinStart + MG_WINDOW - 2 ) {
+				mgWinStart = idx - ( MG_WINDOW - 3 );
+			} else if ( idx <= mgWinStart + 1 ) {
+				mgWinStart = idx - 2;
 			}
-			// The very last slide sits flush at the edge, the first as well.
-			if ( idx === count - 1 ) {
-				mgWinStart = last;
-			} else if ( 0 === idx ) {
-				mgWinStart = 0;
-			}
+			mgWinStart = Math.max( 0, Math.min( mgWinStart, last ) );
 		} else {
 			mgWinStart = 0;
 		}
 
 		var end = mgWinStart + MG_WINDOW - 1;
+		var rtl = getComputedStyle( mgDots ).direction === 'rtl';
+
+		mgDots.style.transform = 'translateX(' + ( ( rtl ? 1 : -1 ) * mgWinStart * MG_DOT ) + 'px)';
 
 		[].forEach.call( items, function ( li, i ) {
 			var b = li.firstElementChild;
 			b.setAttribute( 'aria-current', i === idx ? 'true' : 'false' );
-			li.classList.toggle( 'is-out', count > MG_WINDOW && ( i < mgWinStart || i > end ) );
 			li.classList.toggle( 'is-tiny', count > MG_WINDOW && ( ( i === mgWinStart && mgWinStart > 0 ) || ( i === end && end < count - 1 ) ) );
 			li.classList.toggle( 'is-small', count > MG_WINDOW && ( ( i === mgWinStart + 1 && mgWinStart > 0 ) || ( i === end - 1 && end < count - 1 ) ) );
 		} );
@@ -4315,7 +4314,7 @@
 		}
 
 		var mgGallery = mgWrap.parentElement;
-		mgGallery.querySelectorAll( '.oc-gdots, .oc-gnav:not(.oc-gnav--desktop)' ).forEach( function ( node ) {
+		mgGallery.querySelectorAll( '.oc-gdots-box, .oc-gnav:not(.oc-gnav--desktop)' ).forEach( function ( node ) {
 			node.remove();
 		} );
 		mgDots = null;
@@ -4343,7 +4342,11 @@
 			mgDots.appendChild( li );
 		} );
 
-		mgGallery.appendChild( mgDots );
+		var mgBox = document.createElement( 'div' );
+		mgBox.className = 'oc-gdots-box';
+		mgBox.style.setProperty( '--oc-gdots-n', String( Math.min( mgCount, MG_WINDOW ) ) );
+		mgBox.appendChild( mgDots );
+		mgGallery.appendChild( mgBox );
 		mgWinStart = 0;
 		mgUpdateDots( mgIndex() );
 
@@ -4363,6 +4366,53 @@
 				mgGallery.appendChild( btn );
 			} );
 		}
+	}
+
+	/* ---------- uniform height, "automatic" fit ----------
+	 * A picture the frame would crop by more than a slice shows whole
+	 * instead: compare the picture's own proportions with the frame's and
+	 * flip the slide to contain when more than 12% of it would be lost.
+	 * Measured live — the frame's width follows the screen — and again on
+	 * resize and whenever a picture (or a swapped colour gallery) loads. */
+	var gFitTimer = 0;
+
+	function gFitImages() {
+		var gallery = galleryWrap && galleryWrap.closest( '.woocommerce-product-gallery' );
+
+		if ( ! gallery || ! document.body.classList.contains( 'oc-gfit-auto' ) ) {
+			return;
+		}
+
+		gallery.querySelectorAll( '.woocommerce-product-gallery__image' ).forEach( function ( slide ) {
+			var img = slide.querySelector( 'img:not(.zoomImg)' );
+
+			if ( ! img || ! img.naturalWidth || ! img.naturalHeight ) {
+				return;
+			}
+
+			var box = img.getBoundingClientRect();
+
+			if ( ! box.width || ! box.height ) {
+				return;
+			}
+
+			var frame = box.width / box.height;
+			var own   = img.naturalWidth / img.naturalHeight;
+			var loss  = 1 - Math.min( frame / own, own / frame );
+
+			slide.classList.toggle( 'is-contain', loss > 0.12 );
+		} );
+	}
+
+	function gFitSoon() {
+		clearTimeout( gFitTimer );
+		gFitTimer = setTimeout( gFitImages, 60 );
+	}
+
+	if ( galleryWrap && document.body.classList.contains( 'oc-gfit-auto' ) ) {
+		gFitImages();
+		galleryWrap.parentElement.addEventListener( 'load', gFitSoon, true );
+		window.addEventListener( 'resize', gFitSoon );
 	}
 
 	if ( mgWrap && document.body.classList.contains( 'oc-gm-dots' ) ) {

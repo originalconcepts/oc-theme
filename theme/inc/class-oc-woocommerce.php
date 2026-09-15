@@ -1012,6 +1012,16 @@ final class WooCommerce {
 				$classes[] = 'oc-gimg-m-fixed';
 			}
 
+			// A frame of a set height crops; whether it may, and how much, is
+			// the fit setting — read only when some frame is fixed at all.
+			if ( in_array( 'oc-gimg-fixed', $classes, true ) || in_array( 'oc-gimg-m-fixed', $classes, true ) ) {
+				$fit = (string) get_theme_mod( 'oc_gallery_img_fit', 'cover' );
+
+				if ( in_array( $fit, array( 'contain', 'auto' ), true ) ) {
+					$classes[] = 'oc-gfit-' . $fit;
+				}
+			}
+
 			if ( get_theme_mod( 'oc_gallery_zoom', true ) ) {
 				$classes[] = 'oc-zoom';
 			}

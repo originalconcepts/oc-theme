@@ -2395,6 +2395,21 @@ final class Customizer {
 
 		$this->number( $c, 'oc_gallery_img_height_mobile_px', 'oc_product', __( 'Uniform height — mobile (px, 0 = auto)', 'oc-theme' ), 0, 0, 900 );
 
+		$this->choice(
+			$c,
+			'oc_gallery_img_fit',
+			'oc_product',
+			__( 'A picture that does not match the uniform frame', 'oc-theme' ),
+			array(
+				'cover'   => __( 'Fill the frame (crop)', 'oc-theme' ),
+				'contain' => __( 'Show it whole', 'oc-theme' ),
+				'auto'    => __( 'Automatic', 'oc-theme' ),
+			),
+			'cover',
+			null,
+			__( 'Automatic fills the frame when the crop is slight and shows the picture whole when more than about an eighth of it would be cut — landscape photos in an upright frame, for instance.', 'oc-theme' )
+		);
+
 		$this->heading( $c, 'oc_h_prod_text', 'oc_product', __( 'Text', 'oc-theme' ) );
 
 		$this->number( $c, 'oc_product_title_fs', 'oc_product', __( 'Title size — desktop (px, 0 = theme default)', 'oc-theme' ), 0, 0, 72 );

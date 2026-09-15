@@ -44,6 +44,34 @@ final class Tabs {
 	}
 
 	/**
+	 * Post kses plus the two tags a [video] shortcode prints inside its
+	 * <video> — <source> and <track> — which the post list leaves out; a
+	 * video in a product tab came out as a player with nothing to play.
+	 *
+	 * @param string $html Rendered tab content.
+	 */
+	public static function kses( string $html ): string {
+		$allowed = wp_kses_allowed_html( 'post' );
+
+		$allowed['source'] = array(
+			'src'    => true,
+			'type'   => true,
+			'srcset' => true,
+			'sizes'  => true,
+			'media'  => true,
+		);
+		$allowed['track']  = array(
+			'src'     => true,
+			'kind'    => true,
+			'srclang' => true,
+			'label'   => true,
+			'default' => true,
+		);
+
+		return wp_kses( $html, $allowed );
+	}
+
+	/**
 	 * Settings with defaults.
 	 *
 	 * @return array<string,mixed>
@@ -163,7 +191,7 @@ final class Tabs {
 				'callback' => static function () use ( $product, $short_title ) {
 					// The heading feeds the accordion's title (CSS hides it).
 					echo '<h2>' . esc_html( $short_title ) . '</h2>';
-					echo '<div class="oc-tab-short">' . wp_kses_post( Content_Tables::wrap( wpautop( do_shortcode( $product->get_short_description() ) ) ) ) . '</div>';
+					echo '<div class="oc-tab-short">' . self::kses( Content_Tables::wrap( wpautop( do_shortcode( $product->get_short_description() ) ) ) ) . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- kses() is wp_kses with video sources allowed.
 				},
 			);
 		}
@@ -186,7 +214,7 @@ final class Tabs {
 					'callback' => static function () use ( $content, $title ) {
 						// The heading feeds the accordion's title (CSS hides it).
 						echo '<h2>' . esc_html( $title ) . '</h2>';
-						echo '<div class="oc-tab-custom">' . wp_kses_post( Content_Tables::wrap( wpautop( do_shortcode( $content ) ) ) ) . '</div>';
+						echo '<div class="oc-tab-custom">' . self::kses( Content_Tables::wrap( wpautop( do_shortcode( $content ) ) ) ) . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- kses() is wp_kses with video sources allowed.
 					},
 				);
 			}
@@ -210,7 +238,7 @@ final class Tabs {
 					'callback' => static function () use ( $content, $title ) {
 						// The heading feeds the accordion's title (CSS hides it).
 						echo '<h2>' . esc_html( $title ) . '</h2>';
-						echo '<div class="oc-tab-custom">' . wp_kses_post( Content_Tables::wrap( wpautop( do_shortcode( $content ) ) ) ) . '</div>';
+						echo '<div class="oc-tab-custom">' . self::kses( Content_Tables::wrap( wpautop( do_shortcode( $content ) ) ) ) . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- kses() is wp_kses with video sources allowed.
 					},
 				);
 			}
@@ -299,7 +327,7 @@ final class Tabs {
 		if ( '' !== $heading ) {
 			echo '<h2 class="oc-desc-below__title">' . esc_html( $heading ) . '</h2>';
 		}
-		echo wp_kses_post( Content_Tables::wrap( wpautop( do_shortcode( (string) $content ) ) ) );
+		echo self::kses( Content_Tables::wrap( wpautop( do_shortcode( (string) $content ) ) ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- kses() is wp_kses with video sources allowed.
 		echo '</div>';
 	}
 

@@ -200,7 +200,9 @@ a { color: inherit; }
 	background: none;
 	font: inherit;
 	font-size: .9rem;
-	color: inherit;
+	/* what the shopper types is body text, not a header accent */
+	color: var(--oc-ink);
+	caret-color: var(--oc-ink);
 	outline: none;
 }
 
@@ -7215,7 +7217,7 @@ table.variations td.value select:has(+ .oc-dd) {
 }
 
 /* mobile gallery: a swipe strip instead of the desktop presets */
-.oc-gdots,
+.oc-gdots-box,
 .oc-gnav { display: none; }
 
 @media (max-width: 900px) {
@@ -7228,7 +7230,7 @@ table.variations td.value select:has(+ .oc-dd) {
 	.oc-thumbscol { display: none; }
 
 	/* breathing room between the pager dots and the title */
-	.oc-gm-dots .oc-gdots { margin-block-end: 12px; }
+	.oc-gm-dots .oc-gdots-box { margin-block-end: 12px; }
 
 	.oc-gm-dots .woocommerce-product-gallery__wrapper,
 	.oc-gm-peek .woocommerce-product-gallery__wrapper {
@@ -7278,21 +7280,29 @@ table.variations td.value select:has(+ .oc-dd) {
 	}
 
 	/* pager dots. A gallery of thirty pictures showed thirty dots and the
-	 * row ran off the screen; now only a window of seven shows, sliding
-	 * with the current slide, and the dot or two at an edge with more
-	 * beyond it shrink — the way a story strip hints at what follows. */
-	.oc-gm-dots .oc-gdots {
-		display: flex;
-		justify-content: center;
-		gap: 0;
-		margin: 0;
-		padding: 10px 0 0;
-		list-style: none;
+	 * row ran off the screen; now a window of seven shows and the strip
+	 * of dots slides beneath it (theme.js sets the translate), the dot or
+	 * two at an edge with more beyond shrinking — a story bar's hint. */
+	.oc-gm-dots .oc-gdots-box {
+		display: block;
+		inline-size: calc(var(--oc-gdots-n, 7) * 24px);
 		max-inline-size: 100%;
+		margin: 0 auto;
+		padding: 10px 0 0;
 		overflow: hidden;
 	}
 
-	.oc-gdots li.is-out { display: none; }
+	.oc-gm-dots .oc-gdots {
+		display: flex;
+		gap: 0;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		inline-size: max-content;
+		transition: transform .28s cubic-bezier(.2, .7, .2, 1);
+	}
+
+	.oc-gdots li { flex: 0 0 24px; }
 
 	.oc-gdots button {
 		inline-size: 24px;
@@ -7303,7 +7313,7 @@ table.variations td.value select:has(+ .oc-dd) {
 		border-radius: 50%;
 		background-color: color-mix(in srgb, var(--oc-ink) 25%, transparent);
 		cursor: pointer;
-		transition: transform .2s ease;
+		transition: transform .28s ease, background-color .2s ease;
 	}
 
 	.oc-gdots li.is-small button { transform: scale(.72); }
@@ -7564,6 +7574,16 @@ body:not(.oc-no-lightbox) .oc-vslide.is-playing {
 		aspect-ratio: auto;
 		block-size: var(--oc-gimg-h-m, auto);
 	}
+}
+
+/* Uniform height, but the whole picture: "show whole" keeps every slide
+ * inside the frame; "automatic" lets theme.js flip only the slides the
+ * frame would crop by more than a slice (is-contain). The frame behind a
+ * contained picture reads as its own margin, in the gallery's ground. */
+.oc-gfit-contain .woocommerce-product-gallery__wrapper .woocommerce-product-gallery__image img:not(.zoomImg),
+.oc-gfit-auto .woocommerce-product-gallery__wrapper .woocommerce-product-gallery__image.is-contain img:not(.zoomImg) {
+	object-fit: contain;
+	background: var(--oc-gal-bg, var(--oc-surface, #fff));
 }
 
 /* Rail-thumb badge: always on the video's thumbnail, whatever the autoplay
