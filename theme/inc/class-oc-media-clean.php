@@ -1796,27 +1796,58 @@ final class Media_Clean {
 		$dir  = dirname( $source );
 		$name = pathinfo( $source, PATHINFO_FILENAME );
 		$ext  = pathinfo( $source, PATHINFO_EXTENSION );
-		$webp = $dir . '/' . $name . '.webp';
 
-		if ( ! file_exists( $webp ) || self::owns( $id, $webp ) ) {
+		if ( self::name_free( $dir, $name, $source, $id ) ) {
 			return $source;
 		}
 
 		for ( $n = 2; $n < 1000; $n++ ) {
-			$try = $dir . '/' . $name . '-' . $n;
-
-			if ( file_exists( $try . '.webp' ) || file_exists( $try . '.' . $ext ) ) {
+			if ( ! self::name_free( $dir, $name . '-' . $n, '', $id ) ) {
 				continue;
 			}
 
-			if ( copy( $source, $try . '.' . $ext ) ) {
-				return $try . '.' . $ext;
+			$try = $dir . '/' . $name . '-' . $n . '.' . $ext;
+
+			if ( copy( $source, $try ) ) {
+				return $try;
 			}
 
 			break;
 		}
 
 		return $source;
+	}
+
+	/**
+	 * May "{name}.webp" be written here?
+	 *
+	 * Not when a WebP of that name already exists and is another
+	 * attachment's — and not when a JPEG or PNG of that name belongs to
+	 * another picture either: the host's Accept swap serves "{name}.webp"
+	 * for every request of "{name}.jpg", so a WebP may not share a base
+	 * name with any other picture in the folder, whatever its format.
+	 *
+	 * @param string $dir    Folder.
+	 * @param string $name   Base name, no extension.
+	 * @param string $source This attachment's own source path, or ''.
+	 * @param int    $id     Attachment ID.
+	 */
+	private static function name_free( string $dir, string $name, string $source, int $id ): bool {
+		$webp = $dir . '/' . $name . '.webp';
+
+		if ( file_exists( $webp ) && ! self::owns( $id, $webp ) ) {
+			return false;
+		}
+
+		foreach ( array( 'jpg', 'jpeg', 'png' ) as $ext ) {
+			$path = $dir . '/' . $name . '.' . $ext;
+
+			if ( file_exists( $path ) && wp_normalize_path( $path ) !== wp_normalize_path( $source ) ) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	/**
