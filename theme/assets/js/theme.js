@@ -964,15 +964,27 @@
 			} );
 
 			if ( open ) {
-				// Opened from the header while the page is scrolled: the panel
-				// sits under the header in the flow, which is off the top of
-				// the screen. It comes to the viewport instead, pinned to its
-				// top, until it closes.
-				var header = searchPanel.closest( '.oc-header' );
-				var afloat = !! header && header.getBoundingClientRect().bottom < 0;
-
-				searchPanel.classList.toggle( 'is-afloat', afloat );
+				// Opened while the page is scrolled: the panel sits under the
+				// header in the flow, which is off the top of the screen. It
+				// comes to the viewport instead, pinned to its top — or just
+				// under a sticky header that is still showing — until it
+				// closes. Measured on the panel itself, which need not be
+				// inside the header.
+				searchPanel.classList.remove( 'is-afloat' );
+				searchPanel.style.removeProperty( '--oc-afloat-top' );
 				searchPanel.hidden = false;
+
+				var header = document.querySelector( '.oc-header' );
+				var hb     = header ? header.getBoundingClientRect().bottom : 0;
+
+				if ( searchPanel.getBoundingClientRect().top < 0 ) {
+					searchPanel.classList.add( 'is-afloat' );
+
+					if ( hb > 0 ) {
+						searchPanel.style.setProperty( '--oc-afloat-top', Math.round( hb ) + 'px' );
+					}
+				}
+
 				histPaint();
 
 				// Read a layout value first: that settles the closed state as the
@@ -1001,6 +1013,7 @@
 			sCloseTimer = setTimeout( function () {
 				searchPanel.hidden = true;
 				searchPanel.classList.remove( 'is-afloat' );
+				searchPanel.style.removeProperty( '--oc-afloat-top' );
 			}, 220 );
 		}
 

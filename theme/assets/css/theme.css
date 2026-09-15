@@ -266,16 +266,16 @@ a { color: inherit; }
  * of the viewport instead of sitting under a header that is off screen. */
 .oc-searchbox.is-afloat {
 	position: fixed;
-	inset-block-start: 0;
+	inset-block-start: var(--oc-afloat-top, 0px);
 	inset-inline: 0;
-	max-block-size: 100dvh;
+	max-block-size: calc(100dvh - var(--oc-afloat-top, 0px));
 	overflow-y: auto;
 }
 
-.admin-bar .oc-searchbox.is-afloat { inset-block-start: 32px; }
+.admin-bar .oc-searchbox.is-afloat { inset-block-start: var(--oc-afloat-top, 32px); }
 
 @media (max-width: 782px) {
-	.admin-bar .oc-searchbox.is-afloat { inset-block-start: 46px; }
+	.admin-bar .oc-searchbox.is-afloat { inset-block-start: var(--oc-afloat-top, 46px); }
 }
 
 .oc-searchbox .oc-search__bar {
