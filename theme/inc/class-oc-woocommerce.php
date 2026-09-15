@@ -1392,7 +1392,9 @@ final class WooCommerce {
 			// so a catalogue full of videos stays light.
 			echo '<figure class="oc-card-media__item oc-card-media__item--video is-first">';
 			echo $slide_open; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
-			echo Video::loop_html( $card_video, 'oc-card-video', true ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
+			$poster_id = ! empty( $ids ) ? (int) $ids[0] : (int) $product->get_image_id();
+			$poster    = $poster_id > 0 ? (string) wp_get_attachment_image_url( $poster_id, 'large' ) : '';
+			echo Video::loop_html( $card_video, 'oc-card-video', true, $poster ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
 			echo $slide_close; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
 			echo '</figure>';
 		}

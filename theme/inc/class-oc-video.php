@@ -104,24 +104,32 @@ final class Video {
 	 * @param string $css_class Element class.
 	 * @param bool   $lazy  Defer loading until the element nears the viewport
 	 *                      (catalogue cards) — the front script wires it up.
+	 * @param string $poster Picture shown until the video plays (file videos).
 	 * @return string
 	 */
-	public static function loop_html( string $url, string $css_class, bool $lazy = false ): string {
+	public static function loop_html( string $url, string $css_class, bool $lazy = false, string $poster = '' ): string {
 		$source = self::source( $url, true );
 
 		if ( 'file' === $source['kind'] ) {
+			// The poster is the product's own picture. A phone that refuses
+			// autoplay — iOS in low power mode, data saver — then shows the
+			// picture where a blank white box stood before.
+			$poster_attr = '' !== $poster ? ' poster="' . esc_url( $poster ) . '"' : '';
+
 			if ( $lazy ) {
 				return sprintf(
-					'<video class="%s" data-oc-vsrc="%s" muted loop playsinline preload="none"></video>',
+					'<video class="%s" data-oc-vsrc="%s"%s muted loop playsinline preload="none"></video>',
 					esc_attr( $css_class ),
-					esc_url( $source['src'] )
+					esc_url( $source['src'] ),
+					$poster_attr
 				);
 			}
 
 			return sprintf(
-				'<video class="%s" src="%s" autoplay muted loop playsinline preload="metadata"></video>',
+				'<video class="%s" src="%s"%s autoplay muted loop playsinline preload="metadata"></video>',
 				esc_attr( $css_class ),
-				esc_url( $source['src'] )
+				esc_url( $source['src'] ),
+				$poster_attr
 			);
 		}
 

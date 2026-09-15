@@ -6078,8 +6078,11 @@ msgstr[1] "%d מוצרים נוספו"
 msgid "The category shown in its path"
 msgstr "הקטגוריה שמופיעה בנתיב שלו"
 
-msgid "A product sits in several categories at once — its own, its parent, and shelves like NEW. WooCommerce draws neighbours from all of them, so the loosest wins. The second option uses the single category shown in the product's path: for Sofas and armchairs / Sofas, that is Sofas."
-msgstr "מוצר יושב בכמה קטגוריות בו-זמנית — שלו, של האב, ומדפים כמו NEW. ווקומרס שואבת מכולן, ולכן הרחבה מנצחת. האפשרות השנייה משתמשת בקטגוריה היחידה שמופיעה בנתיב של המוצר: עבור ספות וכורסאות / ספות — זו ספות."
+msgid "Truly similar: categories, name, price, tags and attributes"
+msgstr "דומים באמת: קטגוריות, שם, מחיר, תגיות ומאפיינים"
+
+msgid "A product sits in several categories at once — its own, its parent, and shelves like NEW. WooCommerce draws neighbours from all of them, so the loosest wins. The second option uses the single category shown in the product's path: for Sofas and armchairs / Sofas, that is Sofas. The third scores every product that shares a category on what it shares with this one — the categories (a deep one counts more), the words in the name, the price, tags and attribute values — so a 30-litre kitchen bin gets other large bins and a 3-litre bathroom bin gets small ones, with nothing to fill in."
+msgstr "מוצר יושב בכמה קטגוריות בבת אחת: שלו, של ההורה, ומדפים כמו חדש. ווקומרס שואב שכנים מכולן, ולכן הרופפת ביותר מנצחת. האפשרות השנייה משתמשת בקטגוריה היחידה שמופיעה בנתיב המוצר: עבור ספות וכורסאות / ספות, זו ספות. השלישית מדרגת כל מוצר שחולק קטגוריה לפי מה שמשותף לו עם המוצר הזה: הקטגוריות (עמוקה שווה יותר), המילים בשם, המחיר, התגיות וערכי המאפיינים. כך פח מטבח 30 ליטר מקבל פחים גדולים אחרים ופח אמבטיה 3 ליטר מקבל קטנים, בלי למלא דבר."
 
 msgid "Products that go with it"
 msgstr "השלמת הלוק/חלל"

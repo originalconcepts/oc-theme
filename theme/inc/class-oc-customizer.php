@@ -2694,15 +2694,16 @@ final class Customizer {
 			'oc_linked',
 			__( 'Which products count as similar', 'oc-theme' ),
 			array(
-				'all'  => __( 'Every category the product is in', 'oc-theme' ),
-				'leaf' => __( 'The category shown in its path', 'oc-theme' ),
+				'all'   => __( 'Every category the product is in', 'oc-theme' ),
+				'leaf'  => __( 'The category shown in its path', 'oc-theme' ),
+				'smart' => __( 'Truly similar: categories, name, price, tags and attributes', 'oc-theme' ),
 			),
 			'leaf',
 			array(
 				'setting' => 'oc_product_related',
 				'values'  => array( '1' ),
 			),
-			__( 'A product sits in several categories at once — its own, its parent, and shelves like NEW. WooCommerce draws neighbours from all of them, so the loosest wins. The second option uses the single category shown in the product\'s path: for Sofas and armchairs / Sofas, that is Sofas.', 'oc-theme' )
+			__( 'A product sits in several categories at once — its own, its parent, and shelves like NEW. WooCommerce draws neighbours from all of them, so the loosest wins. The second option uses the single category shown in the product\'s path: for Sofas and armchairs / Sofas, that is Sofas. The third scores every product that shares a category on what it shares with this one — the categories (a deep one counts more), the words in the name, the price, tags and attribute values — so a 30-litre kitchen bin gets other large bins and a 3-litre bathroom bin gets small ones, with nothing to fill in.', 'oc-theme' )
 		);
 
 		$this->preset(

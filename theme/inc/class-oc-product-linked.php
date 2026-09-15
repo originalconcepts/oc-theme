@@ -37,6 +37,7 @@ final class Product_Linked {
 		}
 
 		add_filter( 'woocommerce_get_related_product_cat_terms', array( $this, 'related_terms' ), 10, 2 );
+		add_filter( 'woocommerce_related_products', array( $this, 'smart_related' ), 20, 3 );
 		add_filter( 'woocommerce_output_related_products_args', array( $this, 'related_args' ) );
 		add_filter( 'woocommerce_breadcrumb_main_term', array( $this, 'breadcrumb_term' ), 10, 2 );
 
@@ -753,6 +754,277 @@ final class Product_Linked {
 	}
 
 	/**
+	 * Similar products that are actually similar.
+	 *
+	 * Categories alone cannot tell a 30-litre kitchen pedal bin from a
+	 * 3-litre bathroom one: both sit in "Pedal bins". So on the "truly
+	 * similar" setting every product that shares a category is scored
+	 * against this one, on five signals nobody has to fill in by hand —
+	 * the categories they share (a deep one counts more than a hub), the
+	 * words their names share ("30 litre", "pedal", "BO"), how close the
+	 * prices are, shared tags, and shared attribute values (volume, brand,
+	 * material). The best scores make the row, cached for a day.
+	 *
+	 * @param int[]               $related    WooCommerce's own pick.
+	 * @param int                 $product_id The product.
+	 * @param array<string,mixed> $args       limit, excluded_ids.
+	 * @return int[]
+	 */
+	public function smart_related( $related, $product_id, $args ) {
+		if ( 'smart' !== (string) get_theme_mod( 'oc_related_scope', 'leaf' ) ) {
+			return $related;
+		}
+
+		$product_id = (int) $product_id;
+		$limit      = max( 1, (int) ( $args['limit'] ?? 4 ) );
+		$key        = 'oc_similar_' . $product_id;
+		$cached     = get_transient( $key );
+
+		if ( is_array( $cached ) && count( $cached ) >= $limit ) {
+			return array_slice( array_map( 'intval', $cached ), 0, $limit );
+		}
+
+		$ranked = self::rank_similar( $product_id, max( $limit, 24 ) );
+
+		if ( ! $ranked ) {
+			return $related;
+		}
+
+		set_transient( $key, $ranked, DAY_IN_SECONDS );
+
+		return array_slice( $ranked, 0, $limit );
+	}
+
+	/**
+	 * Score every product sharing a category with this one; best first.
+	 *
+	 * @param int $product_id The product.
+	 * @param int $count      How many ids to return.
+	 * @return int[]
+	 */
+	public static function rank_similar( int $product_id, int $count ): array {
+		$product = wc_get_product( $product_id );
+
+		if ( ! $product instanceof \WC_Product ) {
+			return array();
+		}
+
+		$cats = self::cat_weights( $product_id );
+
+		if ( ! $cats ) {
+			return array();
+		}
+
+		// The pool: everything in any of its categories except the very top
+		// ones — a hub like "Home & lighting" holds half the shop.
+		$pool_terms = array_keys( array_filter( $cats, static fn( $w ) => $w > 1 ) );
+
+		if ( ! $pool_terms ) {
+			$pool_terms = array_keys( $cats );
+		}
+
+		$ids = get_posts(
+			array(
+				'post_type'      => 'product',
+				'post_status'    => 'publish',
+				'posts_per_page' => 240, // phpcs:ignore WordPress.WP.PostsPerPage.posts_per_page_posts_per_page -- ids only, once a day per product.
+				'post__not_in'   => array( $product_id ),
+				'fields'         => 'ids',
+				'orderby'        => 'rand',
+				'no_found_rows'  => true,
+				'tax_query'      => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query -- the related pool is by nature a term query; cached for a day.
+					array(
+						'taxonomy' => 'product_cat',
+						'field'    => 'term_id',
+						'terms'    => $pool_terms,
+					),
+				),
+			)
+		);
+
+		$ids = array_map( 'intval', (array) $ids );
+
+		if ( ! $ids ) {
+			return array();
+		}
+
+		update_object_term_cache( $ids, 'product' );
+
+		$name  = self::name_tokens( $product->get_name() );
+		$price = (float) $product->get_price();
+		$tags  = self::term_ids( $product_id, 'product_tag' );
+		$attrs = self::attr_values( $product );
+		$out   = array();
+
+		foreach ( $ids as $id ) {
+			$other = wc_get_product( $id );
+
+			if ( ! $other instanceof \WC_Product || ! $other->is_visible() ) {
+				continue;
+			}
+
+			$score = 2.0 * self::weighted_jaccard( $cats, self::cat_weights( $id ) );
+
+			$score += 1.0 * self::jaccard( $name, self::name_tokens( $other->get_name() ) );
+
+			$op = (float) $other->get_price();
+
+			if ( $price > 0 && $op > 0 ) {
+				// Same price 1, three times the price 0.
+				$score += 0.7 * max( 0.0, 1 - abs( log( $op / $price ) ) / log( 3 ) );
+			}
+
+			$otags = self::term_ids( $id, 'product_tag' );
+
+			if ( $tags && $otags ) {
+				$score += 0.5 * self::jaccard( $tags, $otags );
+			}
+
+			$score += 0.4 * count( array_intersect( $attrs, self::attr_values( $other ) ) );
+
+			$out[ $id ] = $score;
+		}
+
+		arsort( $out, SORT_NUMERIC );
+
+		return array_slice( array_map( 'intval', array_keys( $out ) ), 0, $count );
+	}
+
+	/**
+	 * A product's categories, each weighted by depth: a hub counts 1, its
+	 * child 2, a grandchild 3 — the deeper, the more it says.
+	 *
+	 * @param int $product_id The product.
+	 * @return array<int,int> term id => weight.
+	 */
+	private static function cat_weights( int $product_id ): array {
+		$terms = get_the_terms( $product_id, 'product_cat' );
+		$out   = array();
+
+		if ( ! is_array( $terms ) ) {
+			return $out;
+		}
+
+		foreach ( $terms as $term ) {
+			if ( $term instanceof \WP_Term ) {
+				$out[ (int) $term->term_id ] = 1 + count( (array) get_ancestors( $term->term_id, 'product_cat', 'taxonomy' ) );
+			}
+		}
+
+		return $out;
+	}
+
+	/**
+	 * Term ids of one taxonomy.
+	 *
+	 * @param int    $product_id The product.
+	 * @param string $taxonomy   Taxonomy.
+	 * @return int[]
+	 */
+	private static function term_ids( int $product_id, string $taxonomy ): array {
+		$terms = get_the_terms( $product_id, $taxonomy );
+
+		return is_array( $terms ) ? array_map( static fn( $t ) => (int) $t->term_id, $terms ) : array();
+	}
+
+	/**
+	 * Attribute values as "attribute=value" strings, global and local alike.
+	 *
+	 * @param \WC_Product $product The product.
+	 * @return string[]
+	 */
+	private static function attr_values( \WC_Product $product ): array {
+		$out = array();
+
+		foreach ( $product->get_attributes() as $attribute ) {
+			if ( ! $attribute instanceof \WC_Product_Attribute ) {
+				continue;
+			}
+
+			$name = strtolower( (string) $attribute->get_name() );
+
+			if ( $attribute->is_taxonomy() ) {
+				foreach ( (array) $attribute->get_terms() as $term ) {
+					if ( $term instanceof \WP_Term ) {
+						$out[] = $name . '=' . strtolower( $term->slug );
+					}
+				}
+			} else {
+				foreach ( (array) $attribute->get_options() as $option ) {
+					$out[] = $name . '=' . strtolower( trim( (string) $option ) );
+				}
+			}
+		}
+
+		return array_unique( $out );
+	}
+
+	/**
+	 * The words of a name worth comparing: two letters or more, numbers
+	 * kept ("30" tells a 30-litre bin from a 3-litre one), punctuation and
+	 * the geresh dropped.
+	 *
+	 * @param string $name Product name.
+	 * @return string[]
+	 */
+	private static function name_tokens( string $name ): array {
+		$name = html_entity_decode( $name, ENT_QUOTES, 'UTF-8' );
+		$name = mb_strtolower( preg_replace( '/[\x{05F3}\x{05F4}\'"’`.,;:()\[\]\/+\-–—]+/u', ' ', $name ) ?? '' );
+		$out  = array();
+
+		$words = preg_split( '/\s+/u', $name );
+
+		foreach ( is_array( $words ) ? $words : array() as $word ) {
+			if ( mb_strlen( $word ) >= 2 ) {
+				$out[] = $word;
+			}
+		}
+
+		return array_unique( $out );
+	}
+
+	/**
+	 * Jaccard similarity of two lists.
+	 *
+	 * @param array<int|string> $a One list.
+	 * @param array<int|string> $b The other.
+	 */
+	private static function jaccard( array $a, array $b ): float {
+		if ( ! $a || ! $b ) {
+			return 0.0;
+		}
+
+		$union = count( array_unique( array_merge( $a, $b ) ) );
+
+		return $union > 0 ? count( array_intersect( $a, $b ) ) / $union : 0.0;
+	}
+
+	/**
+	 * Jaccard over weighted sets: shared weight over total weight.
+	 *
+	 * @param array<int,int> $a term => weight.
+	 * @param array<int,int> $b term => weight.
+	 */
+	private static function weighted_jaccard( array $a, array $b ): float {
+		if ( ! $a || ! $b ) {
+			return 0.0;
+		}
+
+		$shared = 0;
+		$total  = 0;
+
+		foreach ( $a + $b as $term => $w ) {
+			$total += max( $a[ $term ] ?? 0, $b[ $term ] ?? 0 );
+
+			if ( isset( $a[ $term ], $b[ $term ] ) ) {
+				$shared += min( $a[ $term ], $b[ $term ] );
+			}
+		}
+
+		return $total > 0 ? $shared / $total : 0.0;
+	}
+
+	/**
 	 * The breadcrumb names the same category.
 	 *
 	 * WooCommerce picks whichever term sorts first by parent, which on this
@@ -796,7 +1068,7 @@ final class Product_Linked {
 		// cache holding them is cleared too, rather than only the rows.
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery -- maintenance purge; the live transient names cannot themselves be cached.
 		$names = (array) $wpdb->get_col(
-			"SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE '\_transient\_wc\_related\_%'"
+			"SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE '\_transient\_wc\_related\_%' OR option_name LIKE '\_transient\_oc\_similar\_%'"
 		);
 		// phpcs:enable WordPress.DB.DirectDatabaseQuery
 
