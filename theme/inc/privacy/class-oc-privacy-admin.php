@@ -118,6 +118,19 @@ final class Admin {
 						</select>
 						<small><?php esc_html_e( 'The law asks that withdrawing consent is as easy as giving it.', 'oc-theme' ); ?></small>
 					</label>
+					<label>
+						<span><?php esc_html_e( 'Badge position', 'oc-theme' ); ?></span>
+						<select name="badge_pos">
+							<option value="start" <?php selected( 'start', $s['badge_pos'] ); ?>><?php esc_html_e( 'Start side (right in Hebrew)', 'oc-theme' ); ?></option>
+							<option value="end" <?php selected( 'end', $s['badge_pos'] ); ?>><?php esc_html_e( 'End side', 'oc-theme' ); ?></option>
+							<option value="center" <?php selected( 'center', $s['badge_pos'] ); ?>><?php esc_html_e( 'Centre', 'oc-theme' ); ?></option>
+						</select>
+					</label>
+					<label>
+						<span><?php esc_html_e( 'Badge distance from the bottom (px)', 'oc-theme' ); ?></span>
+						<input type="number" name="badge_gap" min="0" max="200" value="<?php echo esc_attr( (string) $s['badge_gap'] ); ?>" />
+						<small><?php esc_html_e( 'Raise it above a sticky bar or a chat button.', 'oc-theme' ); ?></small>
+					</label>
 				</div>
 				<label class="ocprv-check"><input type="checkbox" name="footer" value="1" <?php checked( $s['footer'] ); ?> /><span><?php esc_html_e( 'Add a "Privacy settings" link to the footer', 'oc-theme' ); ?></span></label>
 				<label class="ocprv-check"><input type="checkbox" name="gpc" value="1" <?php checked( $s['gpc'] ); ?> /><span><?php esc_html_e( 'Honour the browser\'s Global Privacy Control signal (start with marketing off)', 'oc-theme' ); ?></span></label>
@@ -381,7 +394,9 @@ final class Admin {
 			'mode'      => sanitize_key( (string) wp_unslash( $_POST['mode'] ?? 'auto' ) ),
 			'layout'    => sanitize_key( (string) wp_unslash( $_POST['layout'] ?? 'card' ) ),
 			'position'  => sanitize_key( (string) wp_unslash( $_POST['position'] ?? 'start' ) ),
-			'reopen'    => sanitize_key( (string) wp_unslash( $_POST['reopen'] ?? 'badge' ) ),
+			'reopen'    => sanitize_key( (string) wp_unslash( $_POST['reopen'] ?? 'none' ) ),
+			'badge_pos' => sanitize_key( (string) wp_unslash( $_POST['badge_pos'] ?? 'start' ) ),
+			'badge_gap' => absint( wp_unslash( $_POST['badge_gap'] ?? 14 ) ),
 			'footer'    => ! empty( $_POST['footer'] ),
 			'gpc'       => ! empty( $_POST['gpc'] ),
 			'nocookie'  => ! empty( $_POST['nocookie'] ),

@@ -44,7 +44,9 @@ final class ConsentTest extends TestCase {
 
 		$this->assertSame( 'auto', $s['mode'] );
 		$this->assertSame( 'card', $s['layout'] );
-		$this->assertSame( 'badge', $s['reopen'] );
+		$this->assertSame( 'none', $s['reopen'] );
+		$this->assertSame( 'start', $s['badge_pos'] );
+		$this->assertSame( 14, $s['badge_gap'] );
 		$this->assertSame( 30, $s['log_days'] );
 		$this->assertCount( 1, $s['scripts'] );
 		$this->assertSame( 'marketing', $s['scripts'][0]['cat'] );

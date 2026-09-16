@@ -96,6 +96,7 @@ final class Product_Contact {
 			'focus'    => max( 0, min( 100, (int) $mod( 'focus', 35 ) ) ),
 			'now'      => (string) $mod( 'now', '' ),
 			'tel'      => (bool) $mod( 'show_phone', true ),
+			'hide'     => (bool) $mod( 'hide_off', false ),
 		);
 	}
 
@@ -361,9 +362,12 @@ final class Product_Contact {
 		$faces = '';
 
 		foreach ( $s['images'] as $id ) {
+			// The 'medium' size, never 'thumbnail': WordPress crops the
+			// thumbnail to a square from the centre, and a portrait's face
+			// was gone before any focus could keep it.
 			$faces .= wp_get_attachment_image(
 				$id,
-				'thumbnail',
+				'medium',
 				false,
 				array(
 					'class'   => 'oc-pcon__face',
@@ -384,18 +388,23 @@ final class Product_Contact {
 			'wa'       => $wa,
 			'tel'      => $tel,
 			'labels'   => $labels,
+			'hide'     => $s['hide'],
 			'rest'     => esc_url_raw( rest_url( 'oc/v1/contact-click' ) ),
 			'token'    => self::token(),
 			'id'       => (int) $product->get_id(),
 		);
 
+		// Outside the hours a shop may want no card at all. It is still
+		// printed, hidden, so the script can bring it back when the day
+		// starts without a reload — and a cached page shows it right.
 		printf(
-			'<div class="oc-pcon oc-pcon--%1$s oc-pcon--%2$s%3$s" style="%4$s" data-oc-pcon="%5$s">',
+			'<div class="oc-pcon oc-pcon--%1$s oc-pcon--%2$s%3$s" style="%4$s" data-oc-pcon="%5$s"%6$s>',
 			esc_attr( $s['frame'] ),
 			esc_attr( $s['place'] ),
 			$open && $s['online'] ? ' is-open' : '',
 			esc_attr( $style ),
-			esc_attr( (string) wp_json_encode( $config ) )
+			esc_attr( (string) wp_json_encode( $config ) ),
+			$s['hide'] && ! $open ? ' hidden' : ''
 		);
 
 		if ( '' !== $title ) {

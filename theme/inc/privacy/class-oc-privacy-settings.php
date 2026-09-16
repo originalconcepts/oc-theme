@@ -90,7 +90,8 @@ final class Settings {
 		$mode  = $str( $raw['mode'] ?? 'auto' );
 		$look  = $str( $raw['layout'] ?? 'card' );
 		$where = $str( $raw['position'] ?? 'start' );
-		$open  = $str( $raw['reopen'] ?? 'badge' );
+		$open  = $str( $raw['reopen'] ?? 'none' );
+		$bpos  = $str( $raw['badge_pos'] ?? 'start' );
 
 		$scripts = array();
 
@@ -120,7 +121,11 @@ final class Settings {
 			'mode'      => in_array( $mode, array( 'auto', 'optin', 'optout' ), true ) ? $mode : 'auto',
 			'layout'    => in_array( $look, array( 'card', 'bar' ), true ) ? $look : 'card',
 			'position'  => in_array( $where, array( 'start', 'end', 'center' ), true ) ? $where : 'start',
-			'reopen'    => in_array( $open, array( 'badge', 'link', 'none' ), true ) ? $open : 'badge',
+			// The floating badge is off unless asked for: it sat on every
+			// page like a stain. The footer link is what reopens the choice.
+			'reopen'    => in_array( $open, array( 'badge', 'link', 'none' ), true ) ? $open : 'none',
+			'badge_pos' => in_array( $bpos, array( 'start', 'end', 'center' ), true ) ? $bpos : 'start',
+			'badge_gap' => max( 0, min( 200, (int) ( $raw['badge_gap'] ?? 14 ) ) ),
 			'footer'    => ! isset( $raw['footer'] ) || ! empty( $raw['footer'] ),
 			'google'    => ! empty( $raw['google'] ),
 			'gpc'       => ! isset( $raw['gpc'] ) || ! empty( $raw['gpc'] ),

@@ -7050,6 +7050,9 @@
 				return;
 			}
 			box.classList.toggle( 'is-open', !! ( o && cfg.online ) );
+			if ( cfg.hide ) {
+				box.hidden = ! o;
+			}
 
 			if ( btn && 'phone' === cfg.channel && cfg.fallback ) {
 				var ch = o ? 'phone' : 'whatsapp';

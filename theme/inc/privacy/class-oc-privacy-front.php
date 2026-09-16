@@ -146,9 +146,10 @@ final class Front {
 		};
 		?>
 		<?php
-		$style = ( '' !== $s['accent'] ? '--oc-privacy-accent:' . $s['accent'] . ';' : '' ) . ( '' !== $s['accent_tx'] ? '--oc-privacy-accent-tx:' . $s['accent_tx'] . ';' : '' );
+		$style = ( '' !== $s['accent'] ? '--oc-privacy-accent:' . $s['accent'] . ';' : '' ) . ( '' !== $s['accent_tx'] ? '--oc-privacy-accent-tx:' . $s['accent_tx'] . ';' : '' )
+			. '--oc-privacy-badge-gap:' . (int) $s['badge_gap'] . 'px;';
 		?>
-		<div class="oc-privacy oc-privacy--<?php echo esc_attr( $s['layout'] ); ?> oc-privacy--<?php echo esc_attr( $s['position'] ); ?>" data-oc-privacy="<?php echo esc_attr( (string) wp_json_encode( $cfg ) ); ?>"<?php echo '' !== $style ? ' style="' . esc_attr( $style ) . '"' : ''; ?> hidden>
+		<div class="oc-privacy oc-privacy--<?php echo esc_attr( $s['layout'] ); ?> oc-privacy--<?php echo esc_attr( $s['position'] ); ?> oc-privacy--badge-<?php echo esc_attr( $s['badge_pos'] ); ?>" data-oc-privacy="<?php echo esc_attr( (string) wp_json_encode( $cfg ) ); ?>" style="<?php echo esc_attr( $style ); ?>" hidden>
 			<section class="oc-privacy__banner" role="region" aria-label="<?php echo esc_attr( $t( 'title' ) ); ?>" data-oc-privacy-banner hidden>
 				<div class="oc-privacy__words">
 					<p class="oc-privacy__title"><?php echo esc_html( $t( 'title' ) ); ?></p>

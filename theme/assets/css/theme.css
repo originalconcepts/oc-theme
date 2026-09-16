@@ -15644,7 +15644,7 @@ p.no-comments {
  * or the panel is showing. */
 .oc-privacy__badge {
 	position: absolute;
-	inset-block-end: 14px;
+	inset-block-end: var(--oc-privacy-badge-gap, 14px);
 	inset-inline-start: 14px;
 	inline-size: 38px;
 	block-size: 38px;
@@ -15660,7 +15660,8 @@ p.no-comments {
 	opacity: .85;
 }
 .oc-privacy__badge:hover, .oc-privacy__badge:focus-visible { opacity: 1; color: var(--oc-ink, #111); }
-.oc-privacy--end .oc-privacy__badge { inset-inline-start: auto; inset-inline-end: 14px; }
+.oc-privacy--badge-end .oc-privacy__badge { inset-inline-start: auto; inset-inline-end: 14px; }
+.oc-privacy--badge-center .oc-privacy__badge { inset-inline-start: 50%; transform: translateX(-50%); }
 .oc-privacy.is-asking .oc-privacy__badge, .oc-privacy.is-open .oc-privacy__badge { display: none; }
 
 /* The footer link and the policy page's button look like the links
@@ -15675,8 +15676,10 @@ p.no-comments {
 .oc-privacy-req input[type="email"] { inline-size: min(100%, 360px); padding: 8px 10px; border: 1px solid var(--oc-line, rgba(0, 0, 0, .2)); border-radius: var(--oc-radius, 8px); }
 .oc-privacy-req__msg { padding: 10px 12px; border-inline-start: 3px solid var(--oc-primary, #111); background: var(--oc-surface-2, rgba(0, 0, 0, .04)); }
 
+/* A phone has no corner to favour: the card is centred whatever the
+ * desktop position says. */
 @media (max-width: 480px) {
-	.oc-privacy__banner { inset-inline: 10px; inset-block-end: 10px; padding: 16px; }
+	.oc-privacy__banner { inset-inline: 10px !important; inset-block-end: 10px; padding: 16px; max-inline-size: none; margin-inline: auto; }
 	.oc-privacy__btn { flex: 1 1 100%; }
 	.oc-privacy--bar .oc-privacy__banner { padding-inline: 16px; }
 }

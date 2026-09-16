@@ -3539,6 +3539,7 @@ final class Customizer {
 		$this->heading( $c, 'oc_h_contact_when', $sec, __( 'Hours', 'oc-theme' ), $on );
 
 		$this->toggle( $c, 'oc_contact_online', $sec, __( 'A green dot while someone is there', 'oc-theme' ), true, $on, __( 'Outside the hours the dot simply goes; nothing says "unavailable".', 'oc-theme' ) );
+		$this->toggle( $c, 'oc_contact_hide_off', $sec, __( 'Hide the whole card outside the hours', 'oc-theme' ), false, $on );
 		$this->text(
 			$c,
 			'oc_contact_now',

@@ -8189,3 +8189,15 @@ msgstr "הצג את המספר בכרטיס"
 
 msgid "The words beside the dot (empty = \"Online now\")"
 msgstr "הטקסט ליד הנקודה (ריק = ״זמינים עכשיו״)"
+
+msgid "Hide the whole card outside the hours"
+msgstr "הסתר את הכרטיס כולו מחוץ לשעות הפעילות"
+
+msgid "Badge position"
+msgstr "מיקום התג"
+
+msgid "Badge distance from the bottom (px)"
+msgstr "מרחק התג מהתחתית (px)"
+
+msgid "Raise it above a sticky bar or a chat button."
+msgstr "הרם אותו מעל סרגל דביק או כפתור צ׳אט."
