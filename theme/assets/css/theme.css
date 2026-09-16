@@ -12842,6 +12842,9 @@ body.oc-checkout { overflow-x: clip; }
 		grid-column: 1;
 		grid-row: 1 / 6;
 		margin-block-end: var(--oc-gap-eff, 20px);
+		/* stretch, not "100%": a percentage fills the whole area and the
+		 * margin above is silently lost (8px over the cards, measured) */
+		block-size: auto;
 		/* the caption anchors to the box, not to the card: the card also
 		 * owns the spacer track, and the caption's gradient was spilling into
 		 * it as a grey band under the banner */
@@ -12887,8 +12890,8 @@ body.oc-checkout { overflow-x: clip; }
 	.woocommerce ul.products li.oc-block--big .oc-block__media {
 		position: relative;
 		inset: auto;
-		block-size: 100%;
 	}
+	.woocommerce ul.products li.oc-block--big .oc-block__media { block-size: 100%; }
 
 	/* A slider band paints a background, and the row spacer rides INSIDE the
 	 * item — so its gap came out painted band colour while the product row
@@ -13059,17 +13062,12 @@ body.oc-checkout { overflow-x: clip; }
 		.woocommerce ul.products li.oc-block--big > * { grid-row: 1; margin-block-end: 0; }
 		.woocommerce ul.products li.oc-block--big::after { grid-row: 5; }
 
-		/* A 2x2 on a phone is one full-width square: the desktop's absolute
-		 * picture left it a 24px sliver. */
+		/* A 2x2 on a phone is one full-width banner like the wide one: the
+		 * desktop's absolute picture left it a 24px sliver. */
 		.woocommerce ul.products li.oc-block--big .oc-block__link,
 		.woocommerce ul.products li.oc-block--big .oc-block__media {
 			position: relative;
 			inset: auto;
-			block-size: auto;
-		}
-		.woocommerce ul.products li.oc-block--big .oc-block__img {
-			aspect-ratio: 1 / 1;
-			block-size: auto;
 		}
 		/* on a phone every tile is one row again: the brand keeps track 3 */
 		.woocommerce ul.products li.product.oc-tile--m-plain > .oc-card-head,
@@ -13077,13 +13075,18 @@ body.oc-checkout { overflow-x: clip; }
 		.woocommerce ul.products li.product.oc-tile--m-big > .oc-card-head,
 		.woocommerce ul.products li.product.oc-tile--big:not(.oc-tile--m-plain):not(.oc-tile--m-wide) > .oc-card-head { grid-row: 3; }
 
-		.woocommerce ul.products li.oc-block:not(.oc-block--row) .oc-block__media {
+		/* Only the full-width blocks state their own 2:1 here; the one-cell
+		 * block keeps filling the rows it shares with the product beside it
+		 * (it was a 190px square beside a 352px card). */
+		.woocommerce ul.products li.oc-block.oc-block--wide .oc-block__media,
+		.woocommerce ul.products li.oc-block.oc-block--big .oc-block__media {
 			position: relative;
 			block-size: auto;
 			padding-block-start: 0;
 		}
 
-		.woocommerce ul.products li.oc-block:not(.oc-block--row) .oc-block__img {
+		.woocommerce ul.products li.oc-block.oc-block--wide .oc-block__img,
+		.woocommerce ul.products li.oc-block.oc-block--big .oc-block__img {
 			position: static;
 			block-size: auto;
 			aspect-ratio: calc(var(--oc-card-ratio-n, 1) * 2);
