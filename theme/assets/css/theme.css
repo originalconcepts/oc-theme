@@ -7595,7 +7595,7 @@ body:not(.oc-no-lightbox) .oc-vslide.is-playing {
 /* ---------- product contact card: a person to ask ---------- */
 
 .oc-pcon {
-	margin-block-start: 18px;
+	margin-block: 18px 24px;
 	color: var(--oc-pcon-tx, var(--oc-ink, #111));
 }
 
@@ -7645,6 +7645,12 @@ body:not(.oc-no-lightbox) .oc-vslide.is-playing {
 }
 
 .oc-pcon .oc-pcon__face + .oc-pcon__face { margin-inline-start: -14px; }
+
+/* One face alone has the room to be a portrait; a row of them stays small. */
+.oc-pcon .oc-pcon__faces--1 .oc-pcon__face {
+	inline-size: 74px !important;
+	block-size: 74px !important;
+}
 
 .oc-pcon__who {
 	display: flex;
@@ -7738,6 +7744,7 @@ body:not(.oc-no-lightbox) .oc-vslide.is-playing {
 @media (max-width: 600px) {
 	.oc-pcon__card { gap: 10px; padding: 10px 12px; }
 	.oc-pcon .oc-pcon__face { inline-size: 48px !important; block-size: 48px !important; }
+	.oc-pcon .oc-pcon__faces--1 .oc-pcon__face { inline-size: 62px !important; block-size: 62px !important; }
 	.oc-pcon .oc-pcon__face + .oc-pcon__face { margin-inline-start: -12px; }
 	.oc-pcon__name { font-size: .98rem; }
 	.oc-pcon__btn { padding: 9px 14px; font-size: .92rem; }
