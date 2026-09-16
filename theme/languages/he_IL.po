@@ -8201,3 +8201,24 @@ msgstr "מרחק התג מהתחתית (px)"
 
 msgid "Raise it above a sticky bar or a chat button."
 msgstr "הרם אותו מעל סרגל דביק או כפתור צ׳אט."
+
+msgid "A colour of my own"
+msgstr "צבע משלי"
+
+msgid "Shade behind the words"
+msgstr "הצללה מאחורי הטקסט"
+
+msgid "Automatic — a dark fade under light words"
+msgstr "אוטומטי – דעיכה כהה מתחת לטקסט בהיר"
+
+msgid "A fade in a colour of my own"
+msgstr "דעיכה בצבע משלי"
+
+msgid "Shade colour"
+msgstr "צבע ההצללה"
+
+msgid "Where the words sit"
+msgstr "מיקום הטקסט"
+
+msgid "In the centre, everything centred"
+msgstr "במרכז, הכול ממורכז"

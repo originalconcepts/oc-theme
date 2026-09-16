@@ -296,7 +296,11 @@ final class Blocks {
 			'alt'     => (string) get_post_meta( $id, '_oc_block_alt', true ),
 			'heading' => (string) get_post_meta( $id, '_oc_block_heading', true ),
 			'cta'     => (string) get_post_meta( $id, '_oc_block_cta', true ),
-			'ink'     => 'dark' === get_post_meta( $id, '_oc_block_ink', true ) ? 'dark' : 'light',
+			'ink'     => in_array( (string) get_post_meta( $id, '_oc_block_ink', true ), array( 'dark', 'custom' ), true ) ? (string) get_post_meta( $id, '_oc_block_ink', true ) : 'light',
+			'color'   => (string) sanitize_hex_color( (string) get_post_meta( $id, '_oc_block_color', true ) ),
+			'shade'   => in_array( (string) get_post_meta( $id, '_oc_block_shade', true ), array( 'none', 'custom' ), true ) ? (string) get_post_meta( $id, '_oc_block_shade', true ) : 'auto',
+			'shade_c' => (string) sanitize_hex_color( (string) get_post_meta( $id, '_oc_block_shade_color', true ) ),
+			'valign'  => 'center' === get_post_meta( $id, '_oc_block_valign', true ) ? 'center' : 'bottom',
 			'from'    => (string) get_post_meta( $id, '_oc_block_from', true ),
 			'to'      => (string) get_post_meta( $id, '_oc_block_to', true ),
 			'focus'   => self::read_focus( $id ),
@@ -500,6 +504,24 @@ final class Blocks {
 				<select id="oc_block_ink" name="oc_block_ink" class="widefat">
 					<option value="light" <?php selected( 'light', $b['ink'] ); ?>><?php esc_html_e( 'Light — for a dark image', 'oc-theme' ); ?></option>
 					<option value="dark" <?php selected( 'dark', $b['ink'] ); ?>><?php esc_html_e( 'Dark — for a light image', 'oc-theme' ); ?></option>
+					<option value="custom" <?php selected( 'custom', $b['ink'] ); ?>><?php esc_html_e( 'A colour of my own', 'oc-theme' ); ?></option>
+				</select>
+				<input type="color" id="oc_block_color" name="oc_block_color" value="<?php echo esc_attr( '' !== $b['color'] ? $b['color'] : '#ffffff' ); ?>" style="margin-block-start:6px;" aria-label="<?php esc_attr_e( 'Text colour', 'oc-theme' ); ?>" />
+			</div>
+			<div>
+				<label for="oc_block_shade"><?php esc_html_e( 'Shade behind the words', 'oc-theme' ); ?></label>
+				<select id="oc_block_shade" name="oc_block_shade" class="widefat">
+					<option value="auto" <?php selected( 'auto', $b['shade'] ); ?>><?php esc_html_e( 'Automatic — a dark fade under light words', 'oc-theme' ); ?></option>
+					<option value="none" <?php selected( 'none', $b['shade'] ); ?>><?php esc_html_e( 'None', 'oc-theme' ); ?></option>
+					<option value="custom" <?php selected( 'custom', $b['shade'] ); ?>><?php esc_html_e( 'A fade in a colour of my own', 'oc-theme' ); ?></option>
+				</select>
+				<input type="color" id="oc_block_shade_color" name="oc_block_shade_color" value="<?php echo esc_attr( '' !== $b['shade_c'] ? $b['shade_c'] : '#000000' ); ?>" style="margin-block-start:6px;" aria-label="<?php esc_attr_e( 'Shade colour', 'oc-theme' ); ?>" />
+			</div>
+			<div>
+				<label for="oc_block_valign"><?php esc_html_e( 'Where the words sit', 'oc-theme' ); ?></label>
+				<select id="oc_block_valign" name="oc_block_valign" class="widefat">
+					<option value="bottom" <?php selected( 'bottom', $b['valign'] ); ?>><?php esc_html_e( 'At the bottom', 'oc-theme' ); ?></option>
+					<option value="center" <?php selected( 'center', $b['valign'] ); ?>><?php esc_html_e( 'In the centre, everything centred', 'oc-theme' ); ?></option>
 				</select>
 			</div>
 		</div>
@@ -786,7 +808,13 @@ final class Blocks {
 		update_post_meta( $id, '_oc_block_alt', sanitize_text_field( wp_unslash( $_POST['oc_block_alt'] ?? '' ) ) );
 		update_post_meta( $id, '_oc_block_heading', sanitize_text_field( wp_unslash( $_POST['oc_block_heading'] ?? '' ) ) );
 		update_post_meta( $id, '_oc_block_cta', sanitize_text_field( wp_unslash( $_POST['oc_block_cta'] ?? '' ) ) );
-		update_post_meta( $id, '_oc_block_ink', 'dark' === ( $_POST['oc_block_ink'] ?? '' ) ? 'dark' : 'light' ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- strict comparison stores a literal.
+		$ink = sanitize_key( (string) wp_unslash( $_POST['oc_block_ink'] ?? 'light' ) );
+		update_post_meta( $id, '_oc_block_ink', in_array( $ink, array( 'dark', 'custom' ), true ) ? $ink : 'light' );
+		update_post_meta( $id, '_oc_block_color', (string) sanitize_hex_color( (string) wp_unslash( $_POST['oc_block_color'] ?? '' ) ) );
+		$shade = sanitize_key( (string) wp_unslash( $_POST['oc_block_shade'] ?? 'auto' ) );
+		update_post_meta( $id, '_oc_block_shade', in_array( $shade, array( 'none', 'custom' ), true ) ? $shade : 'auto' );
+		update_post_meta( $id, '_oc_block_shade_color', (string) sanitize_hex_color( (string) wp_unslash( $_POST['oc_block_shade_color'] ?? '' ) ) );
+		update_post_meta( $id, '_oc_block_valign', 'center' === ( $_POST['oc_block_valign'] ?? '' ) ? 'center' : 'bottom' ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- strict comparison stores a literal.
 		update_post_meta( $id, '_oc_block_from', sanitize_text_field( wp_unslash( $_POST['oc_block_from'] ?? '' ) ) );
 		update_post_meta( $id, '_oc_block_to', sanitize_text_field( wp_unslash( $_POST['oc_block_to'] ?? '' ) ) );
 
@@ -1035,6 +1063,12 @@ final class Blocks {
 		$class .= 'desktop' === $devices ? ' oc-block--desk' : '';
 		$class .= 'mobile' === $devices ? ' oc-block--mob' : '';
 		$class .= ' oc-block--' . $b['ink'];
+		$class .= 'auto' !== $b['shade'] ? ' oc-block--shade-' . $b['shade'] : '';
+		$class .= 'center' === $b['valign'] ? ' oc-block--mid' : '';
+
+		// The words' own colour and the fade's, as tokens the stylesheet reads.
+		$style = ( 'custom' === $b['ink'] && '' !== $b['color'] ? '--oc-block-tx:' . $b['color'] . ';' : '' )
+			. ( 'custom' === $b['shade'] && '' !== $b['shade_c'] ? '--oc-block-shade:' . $b['shade_c'] . ';' : '' );
 
 		$alt   = '' !== $b['alt'] ? $b['alt'] : get_the_title( $id );
 		$attrs = array(
@@ -1062,12 +1096,17 @@ final class Blocks {
 			. ( 50 === $b['focus'] ? '' : ' style="--oc-block-focus:' . esc_attr( (string) $b['focus'] ) . '%"' )
 			. '>' . $img . '</span>' . $body;
 
+		// One shape whether or not there is a link: the box that fills the
+		// rows, the picture inside it, the words anchored to it. Without
+		// the wrapper the words landed at the top of a linkless block.
 		if ( '' !== $b['link'] ) {
 			$inner = '<a class="oc-block__link" href="' . esc_url( $b['link'] ) . '"'
 				. ( $b['blank'] ? ' target="_blank" rel="noopener"' : '' ) . '>' . $inner . '</a>';
+		} else {
+			$inner = '<span class="oc-block__link oc-block__link--still">' . $inner . '</span>';
 		}
 
-		return '<li class="' . esc_attr( $class ) . '">' . $inner . '</li>';
+		return '<li class="' . esc_attr( $class ) . '"' . ( '' !== $style ? ' style="' . esc_attr( $style ) . '"' : '' ) . '>' . $inner . '</li>';
 	}
 
 	/**
