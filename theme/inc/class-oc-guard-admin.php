@@ -143,7 +143,15 @@ final class Guard_Admin {
 
 		update_option( Guard::OPTION, $out, false );
 
-		wp_safe_redirect( add_query_arg( array( 'page' => 'oc-guard', 'saved' => '1' ), admin_url( 'options-general.php' ) ) );
+		wp_safe_redirect(
+			add_query_arg(
+				array(
+					'page'  => 'oc-guard',
+					'saved' => '1',
+				),
+				admin_url( 'options-general.php' )
+			)
+		);
 		exit;
 	}
 }
