@@ -5,6 +5,105 @@
  * ships with each block via block.json viewScript, so this file stays small:
  * mobile menu, card-gallery dots, tabs→accordion, sticky add-to-cart.
  */
+
+/* ---------- spam guard ----------
+ * The trap field and the signed timestamp come from the server on every
+ * form it prints; forms this script builds get them from here. Cloudflare
+ * Turnstile, when a form has it, is rendered explicitly — also inside the
+ * drawer and the card that open later — and renewed after every use, since
+ * a token is good once. */
+( function () {
+	var L = window.ocL10n || {};
+	var G = L.guard || {};
+
+	function render( root ) {
+		if ( ! window.turnstile || ! G.site ) {
+			return;
+		}
+
+		( root || document ).querySelectorAll( '.oc-guard-ts:not([data-widget])' ).forEach( function ( el ) {
+			try {
+				el.dataset.widget = window.turnstile.render( el, {
+					sitekey: G.site,
+					action: el.dataset.action || '',
+					appearance: 'interaction-only',
+					theme: 'light',
+					language: document.documentElement.lang || 'auto',
+					'refresh-expired': 'auto'
+				} );
+			} catch ( e ) {
+				el.removeAttribute( 'data-widget' );
+			}
+		} );
+	}
+
+	function reset( root ) {
+		if ( ! window.turnstile ) {
+			return;
+		}
+
+		( root || document ).querySelectorAll( '.oc-guard-ts[data-widget]' ).forEach( function ( el ) {
+			try {
+				window.turnstile.reset( el.dataset.widget );
+			} catch ( e ) {}
+		} );
+	}
+
+	function token( form ) {
+		var el = form ? form.querySelector( '.oc-guard-ts[data-widget]' ) : null;
+
+		if ( ! el || ! window.turnstile ) {
+			return '';
+		}
+
+		try {
+			return window.turnstile.getResponse( el.dataset.widget ) || '';
+		} catch ( e ) {
+			return '';
+		}
+	}
+
+	// The fields for a form this script builds: the timestamp the server
+	// signed for it, the trap, the Turnstile slot when the form has one.
+	function fields( form ) {
+		var t = ( G.t && G.t[ form ] ) || '';
+
+		return '<p class="oc-guard-hp" aria-hidden="true"><label><span>&nbsp;</span><input type="text" name="oc_hp" value="" tabindex="-1" autocomplete="off"></label></p>'
+			+ '<input type="hidden" name="oc_t" value="' + t.replace( /[^0-9a-f.]/g, '' ) + '">'
+			+ ( G.ts && G.ts[ form ] ? '<div class="oc-guard-ts" data-action="' + form + '"></div>' : '' );
+	}
+
+	// Copy a form's guard fields into a FormData built by hand.
+	function append( body, form ) {
+		if ( ! form ) {
+			return;
+		}
+
+		var hp = form.querySelector( 'input[name="oc_hp"]' );
+		var t = form.querySelector( 'input[name="oc_t"]' );
+
+		body.append( 'oc_hp', hp ? hp.value : '' );
+		body.append( 'oc_t', t ? t.value : '' );
+
+		var tok = token( form );
+
+		if ( tok ) {
+			body.append( 'cf-turnstile-response', tok );
+		}
+	}
+
+	window.ocGuard = { render: render, reset: reset, token: token, fields: fields, append: append };
+	window.ocTurnstileReady = function () { render( document ); };
+
+	if ( window.turnstile ) {
+		render( document );
+	}
+
+	// A refused checkout used its token up.
+	if ( window.jQuery ) {
+		window.jQuery( document.body ).on( 'checkout_error', function () { reset( document ); } );
+	}
+}() );
 ( function () {
 	'use strict';
 
@@ -4961,6 +5060,7 @@
 				( 'email' === channel ? '' : '<input type="tel" name="phone" placeholder="' + ( L.notifyPhone || 'Phone' ) + '" />' ) +
 				( 'whatsapp' === channel ? '' : '<input type="email" name="email" placeholder="' + ( L.notifyEmail || 'Email' ) + '" />' ) +
 				'<label class="oc-nmodal__consent"><input type="checkbox" name="consent" /><span>' + consentText + '</span></label>' +
+				( window.ocGuard ? window.ocGuard.fields( 'notify' ) : '' ) +
 				'<p class="oc-nmodal__error" hidden>' + ( L.notifyMissing || '' ) + '</p>' +
 				'<button type="submit">' + ( L.notifyButton || 'Notify me' ) + '</button>' +
 				'</form>' +
@@ -4982,6 +5082,10 @@
 				'</div>' +
 				'</div>';
 			document.body.appendChild( ocNotifyModal );
+
+			if ( window.ocGuard ) {
+				window.ocGuard.render( ocNotifyModal );
+			}
 
 			ocNotifyModal.addEventListener( 'click', function ( event ) {
 				if ( event.target === ocNotifyModal || event.target.closest( '.oc-nmodal__close' ) ) {
@@ -5034,6 +5138,9 @@
 				if ( varsEl ) {
 					data.append( 'variation', varsEl.value );
 				}
+				if ( window.ocGuard ) {
+					window.ocGuard.append( data, form );
+				}
 
 				var submit = form.querySelector( 'button' );
 				submit.disabled = true;
@@ -5076,6 +5183,14 @@
 
 							ocMarkSigned( ocNotifyModal.dataset.product, varsEl ? varsEl.value : 0, res.data && res.data.key ? res.data.key : '', res.data && res.data.token ? res.data.token : '' );
 							ocRefreshSigned();
+						} else {
+							// A refusal used the challenge token up; the
+							// guard's own sentence, when it sent one.
+							if ( window.ocGuard ) {
+								window.ocGuard.reset( form );
+							}
+							error.textContent = ( res && res.data && res.data.msg ) || L.notifyMissing || '';
+							error.hidden = false;
 						}
 					} )
 					.catch( function () {
@@ -8254,8 +8369,23 @@
 		body.append( 'nonce', root.dataset.nonce );
 		Object.keys( data ).forEach( function ( k ) { body.append( k, data[ k ] ); } );
 
+		// The steps that send a code carry the spam guard's fields from
+		// the start form; a used challenge token is renewed after each.
+		var sends = 'oc_auth_start' === action || 'oc_auth_email_code' === action;
+		var startForm = root.querySelector( 'form[data-auth-form="start"]' );
+
+		if ( sends && window.ocGuard ) {
+			window.ocGuard.append( body, startForm );
+		}
+
 		return fetch( L.ajaxUrl || '/wp-admin/admin-ajax.php', { method: 'POST', credentials: 'same-origin', body: body } )
-			.then( function ( r ) { return r.json(); } );
+			.then( function ( r ) { return r.json(); } )
+			.then( function ( out ) {
+				if ( sends && window.ocGuard ) {
+					window.ocGuard.reset( startForm );
+				}
+				return out;
+			} );
 	}
 
 	function countdown( seconds ) {
@@ -8290,6 +8420,10 @@
 		void root.offsetWidth;
 		requestAnimationFrame( function () { root.classList.add( 'is-open' ); } );
 		step( root.dataset.first || 'phone' );
+
+		if ( window.ocGuard ) {
+			window.ocGuard.render( root );
+		}
 
 		// Desktop only: on a phone the keyboard would bury the other
 		// sign-in options the moment the drawer opens.

@@ -106,6 +106,11 @@ final class Checkout {
 		add_filter( 'woocommerce_order_button_text', array( $this, 'button_text' ) );
 
 		add_action( 'woocommerce_after_checkout_validation', array( $this, 'validate' ), 10, 2 );
+
+		// The guard's fields sit outside the order-review fragment, which
+		// Woo redraws on every address change: a widget inside it would be
+		// torn down each time.
+		add_action( 'woocommerce_checkout_after_customer_details', array( $this, 'guard_fields' ) );
 		add_action( 'woocommerce_checkout_update_order_meta', array( $this, 'save_meta' ) );
 		add_action( 'woocommerce_admin_order_data_after_billing_address', array( $this, 'admin_meta' ) );
 		add_action( 'woocommerce_email_order_meta', array( $this, 'email_meta' ), 10, 3 );
@@ -870,6 +875,13 @@ final class Checkout {
 	}
 
 	/**
+	 * The spam guard's fields, inside the checkout form.
+	 */
+	public function guard_fields(): void {
+		echo Guard::fields( 'checkout' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
+	}
+
+	/**
 	 * Our own quiet shipping row: chosen method at the start, its price (or
 	 * "Free") at the price side. The native row — whose hidden radios fight
 	 * the form's cards over the checked state — hides entirely.
@@ -1169,6 +1181,12 @@ final class Checkout {
 	 */
 	public function validate( $data, $errors ): void {
 		$s = self::settings();
+
+		$why = Guard::check( 'checkout' );
+
+		if ( '' !== $why ) {
+			$errors->add( 'oc_guard', $why );
+		}
 
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- inside Woo's own checkout submit.
 		if ( empty( $_POST['oc_privacy_consent'] ) ) {

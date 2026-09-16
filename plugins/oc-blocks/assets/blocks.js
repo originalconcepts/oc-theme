@@ -1366,6 +1366,10 @@
 					} else {
 						go.disabled = false;
 
+						if ( window.ocGuard ) {
+							window.ocGuard.reset( form );
+						}
+
 						var mail = form.querySelector( '.ocb-news__mail' );
 						mail.setCustomValidity( ( data && data.data && data.data.msg ) || '…' );
 						mail.reportValidity();
@@ -1481,6 +1485,24 @@
 				} )
 				.then( function ( data ) {
 					go.disabled = false;
+
+					var fail = form.querySelector( '.ocb-lead__fail' );
+
+					if ( fail ) {
+						fail.hidden = true;
+					}
+
+					if ( ! ( data && data.success ) ) {
+						// A refusal used the challenge token up; the
+						// server's sentence, when it sent one.
+						if ( window.ocGuard ) {
+							window.ocGuard.reset( form );
+						}
+						if ( fail && data && data.data && data.data.msg ) {
+							fail.textContent = data.data.msg;
+							fail.hidden = false;
+						}
+					}
 
 					if ( data && data.success ) {
 						// The form stays, empty and ready; the word of

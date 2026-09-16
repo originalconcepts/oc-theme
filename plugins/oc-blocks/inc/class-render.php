@@ -2076,7 +2076,9 @@ final class Render {
 			$out .= '<p class="ocb-news__text">' . esc_html( $text ) . '</p>';
 		}
 
-		$out .= '<form class="ocb-news" method="post" action="' . esc_url( admin_url( 'admin-ajax.php' ) ) . '" data-ocb-news>'
+		$guard = class_exists( '\\OC\\Theme\\Guard' ) ? \OC\Theme\Guard::fields( 'newsletter' ) : '';
+		$out  .= '<form class="ocb-news" method="post" action="' . esc_url( admin_url( 'admin-ajax.php' ) ) . '" data-ocb-news>'
+			. $guard
 			. '<input type="hidden" name="action" value="oc_blocks_subscribe">'
 			. '<input class="ocb-news__trap" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">'
 			. '<input class="ocb-news__mail" type="email" name="email" required placeholder="' . esc_attr( '' === $placeholder ? __( 'Your email', 'oc-blocks' ) : $placeholder ) . '" aria-label="' . esc_attr__( 'Email', 'oc-blocks' ) . '">'
@@ -2353,10 +2355,12 @@ final class Render {
 			. '<input type="hidden" name="page" value="' . absint( get_the_ID() ) . '">'
 			. '<input type="hidden" name="sec" value="' . (int) self::$at . '">'
 			. '<input class="ocb-news__trap" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">'
+			. ( class_exists( '\\OC\\Theme\\Guard' ) ? \OC\Theme\Guard::fields( 'leads' ) : '' )
 			. $fields
 			. $consent
 			. '<button class="ocb-lead__go ocb-btn ocb-btn--theme" type="submit">' . esc_html( '' === $button ? __( 'Send', 'oc-blocks' ) : $button ) . '</button>'
 			. '<p class="ocb-lead__thanks" hidden>' . esc_html( '' === $thanks ? __( 'Thank you — we will be in touch shortly.', 'oc-blocks' ) : $thanks ) . '</p>'
+			. '<p class="ocb-lead__fail" hidden></p>'
 			. '</form>';
 
 		if ( 'image' === $layout ) {

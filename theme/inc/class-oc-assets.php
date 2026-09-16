@@ -170,6 +170,7 @@ final class Assets {
 				'readMore'             => __( 'Read more', 'oc-theme' ),
 				'readLess'             => __( 'Read less', 'oc-theme' ),
 				'ajaxUrl'              => admin_url( 'admin-ajax.php' ),
+				'guard'                => Guard::for_script(),
 				/* translators: %d: seconds. */
 				'authResend'           => __( 'Resend in another %ds', 'oc-theme' ),
 				'authMailed'           => __( 'The code is in your inbox.', 'oc-theme' ),

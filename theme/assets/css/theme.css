@@ -2666,13 +2666,19 @@ html[dir="ltr"] .oc-progress i { --oc-start: left; }
 .oc-cmt .form-submit .submit:hover { opacity: .85; }
 
 /* The trap: unseen by people, irresistible to robots. */
-.oc-cmt-trap {
+.oc-cmt-trap,
+.oc-guard-hp {
 	position: absolute !important;
 	inline-size: 1px;
 	block-size: 1px;
+	margin: 0;
 	overflow: hidden;
 	clip-path: inset(50%);
 }
+
+/* Turnstile's container: empty until a challenge is needed */
+.oc-guard-ts:empty { display: none; }
+.oc-guard-ts { margin-block: 8px; }
 
 /* =====================================================================
    The brands page — /brands/

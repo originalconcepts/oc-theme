@@ -2172,6 +2172,12 @@ final class WooCommerce {
 	public function notify_signup(): void {
 		check_ajax_referer( 'oc_notify', 'nonce' );
 
+		$why = Guard::check( 'notify' );
+
+		if ( '' !== $why ) {
+			wp_send_json_error( array( 'msg' => $why ) );
+		}
+
 		$product_id = absint( $_POST['product'] ?? 0 );
 		$email      = sanitize_email( wp_unslash( (string) ( $_POST['email'] ?? '' ) ) );
 		$phone      = preg_replace( '/[^0-9+\-]/', '', wp_unslash( (string) ( $_POST['phone'] ?? '' ) ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- reduced to phone characters by the preg_replace.

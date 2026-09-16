@@ -237,11 +237,7 @@ final class Blog {
 	 * under a second).
 	 */
 	public function trap_fields(): void {
-		echo '<p class="oc-cmt-trap" aria-hidden="true"><label>' .
-			'<span>' . esc_html__( 'Leave this empty', 'oc-theme' ) . '</span>' .
-			'<input type="text" name="oc_hp" value="" tabindex="-1" autocomplete="off" />' .
-			'</label></p>';
-		echo '<input type="hidden" name="oc_t" value="' . esc_attr( (string) time() ) . '" />';
+		echo Guard::fields( 'comments' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
 	}
 
 	/**
@@ -251,14 +247,11 @@ final class Blog {
 	 * @return array<string,mixed>
 	 */
 	public function check_traps( array $data ): array {
-		// phpcs:disable WordPress.Security.NonceVerification.Missing -- spam traps, deliberately nonce-free.
-		$honey = isset( $_POST['oc_hp'] ) ? (string) wp_unslash( $_POST['oc_hp'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- honeypot; only compared against the empty string, never stored.
-		$since = isset( $_POST['oc_t'] ) ? time() - (int) $_POST['oc_t'] : 999;
-		// phpcs:enable
+		$why = Guard::check( 'comments' );
 
-		if ( '' !== $honey || $since < 3 ) {
+		if ( '' !== $why ) {
 			wp_die(
-				esc_html__( 'Your comment could not be posted.', 'oc-theme' ),
+				esc_html( $why ),
 				'',
 				array(
 					'response'  => 403,

@@ -170,6 +170,16 @@ final class Leads {
 			wp_send_json_success(); // A bot told "thank you" moves on.
 		}
 
+		// The theme's guard, when the theme is there: signed timestamp,
+		// Turnstile if the shop switched it on.
+		if ( class_exists( '\\OC\\Theme\\Guard' ) ) {
+			$why = \OC\Theme\Guard::check( 'leads' );
+
+			if ( '' !== $why ) {
+				wp_send_json_error( array( 'msg' => $why ) );
+			}
+		}
+
 		$section = $this->section_of( $page, $at );
 		$kinds   = Registry::field_kinds();
 		$core    = array(

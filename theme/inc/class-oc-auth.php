@@ -479,11 +479,23 @@ final class Auth {
 	}
 
 	/**
+	 * The spam guard, on the steps that send a code: a message costs money.
+	 */
+	private function guard_spam(): void {
+		$why = Guard::check( 'login' );
+
+		if ( '' !== $why ) {
+			wp_send_json_error( array( 'msg' => $why ) );
+		}
+	}
+
+	/**
 	 * Step one: a phone arrives. Recognised → code sent. New → the
 	 * registration step (the owner chose: no code for new customers).
 	 */
 	public function auth_start(): void {
 		$this->guard();
+		$this->guard_spam();
 
 		$phone = self::normalize_phone( (string) wp_unslash( $_POST['phone'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput -- guard() checked the nonce; normalize_phone() reduces to digits.
 
@@ -545,6 +557,7 @@ final class Auth {
 	 */
 	public function auth_email_code(): void {
 		$this->guard();
+		$this->guard_spam();
 
 		$phone = self::normalize_phone( (string) wp_unslash( $_POST['phone'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput -- guard() checked the nonce; normalize_phone() reduces to digits.
 		$user  = '' === $phone ? null : self::user_by_phone( $phone );
@@ -1600,6 +1613,7 @@ final class Auth {
 					<?php if ( ! empty( $s['sms_on'] ) ) : ?>
 						<form class="oc-auth__form" data-auth-form="start" novalidate>
 							<input class="oc-auth__tel" type="tel" name="phone" inputmode="tel" autocomplete="tel" placeholder="<?php esc_attr_e( 'Enter phone number', 'oc-theme' ); ?>" required>
+							<?php echo Guard::fields( 'login' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts. ?>
 							<p class="oc-auth__err" hidden></p>
 							<button type="submit" class="oc-auth__cta"><?php esc_html_e( 'Send code', 'oc-theme' ); ?></button>
 						</form>

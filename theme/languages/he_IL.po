@@ -8240,3 +8240,75 @@ msgstr "צבעים עם גלריה"
 
 msgid "None — every main photo belongs to a colour."
 msgstr "אין – כל תמונה ראשית שייכת לצבע."
+
+msgid "Comments and product reviews"
+msgstr "תגובות וביקורות מוצר"
+
+msgid "Back-in-stock signup"
+msgstr "הרשמה ל\"חוזר למלאי\""
+
+msgid "Sign-in (sending the code)"
+msgstr "התחברות (שליחת הקוד)"
+
+msgid "Newsletter block"
+msgstr "בלוק ניוזלטר"
+
+msgid "Contact form block"
+msgstr "בלוק טופס יצירת קשר"
+
+msgid "That was quick — please take a moment and send again."
+msgstr "זה היה מהיר – רגע, ואז לשלוח שוב."
+
+msgid "The page went stale — refresh it and try again."
+msgstr "העמוד התיישן – רעננו ונסו שוב."
+
+msgid "Too many attempts from your connection — try again in about an hour."
+msgstr "יותר מדי ניסיונות מהחיבור שלכם – נסו שוב בעוד כשעה."
+
+msgid "Something went wrong — please try again."
+msgstr "משהו השתבש – נסו שוב."
+
+msgid "Spam protection"
+msgstr "הגנה מספאם"
+
+msgid "Every public form already carries three quiet checks no visitor sees: a trap field robots fill in, a signed timestamp (a form sent under three seconds after it was printed was not filled by a person), and a cap on submissions per hour from one connection. Cloudflare Turnstile adds an invisible challenge on top — no pictures to solve — for the forms you switch it on for."
+msgstr "בכל טופס ציבורי כבר פועלות שלוש בדיקות שקטות שאף מבקר לא רואה: שדה מלכודת שרובוטים ממלאים, חותמת זמן חתומה (טופס שנשלח פחות משלוש שניות אחרי שהודפס לא מולא על ידי אדם), ותקרה לשליחות בשעה מחיבור אחד. Cloudflare Turnstile מוסיף מעליהן אימות בלתי נראה – בלי תמונות לפתור – לטפסים שתפעילו אותו עבורם."
+
+msgid "Cloudflare Turnstile"
+msgstr "Cloudflare Turnstile"
+
+msgid "Free. Create a widget at %s (type: Managed, or Invisible), add this site's domains, and paste the two keys here."
+msgstr "חינם. צרו ווידג׳ט ב־%s (סוג: Managed או Invisible), הוסיפו את הדומיינים של האתר, והדביקו כאן את שני המפתחות."
+
+msgid "Keys are in place."
+msgstr "המפתחות במקום."
+
+msgid "No keys yet — Turnstile stays off until both are saved."
+msgstr "עדיין אין מפתחות – Turnstile כבוי עד ששניהם יישמרו."
+
+msgid "Site key"
+msgstr "מפתח אתר (Site key)"
+
+msgid "Secret key"
+msgstr "מפתח סודי (Secret key)"
+
+msgid "Leave empty to keep the saved key. Type \"clear\" to remove it."
+msgstr "השאירו ריק כדי לשמור על המפתח הקיים. הקלידו clear כדי להסיר אותו."
+
+msgid "Per form"
+msgstr "לפי טופס"
+
+msgid "Form"
+msgstr "טופס"
+
+msgid "Turnstile"
+msgstr "Turnstile"
+
+msgid "Max per hour, per connection"
+msgstr "מקסימום לשעה, לחיבור"
+
+msgid "0 = no cap"
+msgstr "0 = ללא תקרה"
+
+msgid "Sign-in already limits code sends per phone and per connection on its own; the contact form block keeps its own hourly cap. The trap field and the timestamp are always on."
+msgstr "ההתחברות כבר מגבילה שליחת קודים לכל טלפון ולכל חיבור בעצמה; בלוק טופס יצירת הקשר שומר על התקרה השעתית שלו. שדה המלכודת וחותמת הזמן פועלים תמיד."

@@ -62,6 +62,16 @@ final class Newsletter {
 			wp_send_json_error( array( 'msg' => __( 'That does not look like an email address.', 'oc-blocks' ) ) );
 		}
 
+		// The theme's guard, when the theme is there: signed timestamp,
+		// per-connection cap, Turnstile if the shop switched it on.
+		if ( class_exists( '\\OC\\Theme\\Guard' ) ) {
+			$why = \OC\Theme\Guard::check( 'newsletter' );
+
+			if ( '' !== $why ) {
+				wp_send_json_error( array( 'msg' => $why ) );
+			}
+		}
+
 		$gate = 'oc_blocks_sub_' . md5( strtolower( $email ) );
 
 		if ( false === get_transient( $gate ) ) {
