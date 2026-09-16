@@ -417,10 +417,16 @@ final class Product_Contact {
 		// Both icons ride along; the stylesheet shows the one the button's
 		// class names, so the script can turn a call into WhatsApp at
 		// closing time by changing a class.
+		// The WhatsApp address is escaped as an attribute, not as a URL:
+		// esc_url() strips %0A out of any address (a header-injection
+		// guard), and %0A is exactly the line break between the message
+		// and the link. The address is ours end to end — https://wa.me/,
+		// digits, and a raw-url-encoded text — so there is nothing in it
+		// for the URL cleaner to catch.
 		printf(
 			'<a class="oc-pcon__btn oc-pcon__btn--%1$s" href="%2$s"%3$s data-oc-pcon-go="%1$s">%4$s<span>%5$s</span></a>',
 			esc_attr( $channel ),
-			esc_url( 'whatsapp' === $channel ? $wa : $tel ),
+			'whatsapp' === $channel ? esc_attr( $wa ) : esc_url( $tel ),
 			'whatsapp' === $channel ? ' target="_blank" rel="noopener"' : '',
 			self::icon( 'whatsapp' ) . self::icon( 'phone' ), // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static SVG.
 			esc_html( $labels[ $channel ] )
