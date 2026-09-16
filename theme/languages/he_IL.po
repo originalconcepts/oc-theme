@@ -8177,3 +8177,15 @@ msgstr "עריכה"
 
 msgid "Today"
 msgstr "היום"
+
+msgid "Where the face sits in the circle (0 = top, 100 = bottom)"
+msgstr "איפה הפנים יושבות בעיגול (0 = למעלה, 100 = למטה)"
+
+msgid "A tall photo is cropped to a circle; this picks which part stays. Faces usually sit high, so 35 keeps them whole."
+msgstr "תמונה גבוהה נחתכת לעיגול; כאן בוחרים איזה חלק נשאר. פנים בדרך כלל גבוה בתמונה, אז 35 שומר עליהן שלמות."
+
+msgid "Show the number on the card"
+msgstr "הצג את המספר בכרטיס"
+
+msgid "The words beside the dot (empty = \"Online now\")"
+msgstr "הטקסט ליד הנקודה (ריק = ״זמינים עכשיו״)"

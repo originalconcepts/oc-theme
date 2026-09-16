@@ -7599,10 +7599,10 @@ body:not(.oc-no-lightbox) .oc-vslide.is-playing {
 	color: var(--oc-pcon-tx, var(--oc-ink, #111));
 }
 
-.oc-pcon--tabs {
-	max-inline-size: 640px;
-	margin-block: 28px;
-}
+/* Under tabs that run the full width: a card, not a banner. Inside a
+ * tabs box that sits in a column, the box itself is the width. */
+.oc-pcon--tabs { margin-block: 28px; max-inline-size: 640px; }
+.woocommerce-tabs .oc-pcon--tabs { margin-block: 22px 0; max-inline-size: none; }
 
 .oc-pcon__title {
 	margin: 0 0 10px;
@@ -7624,41 +7624,32 @@ body:not(.oc-no-lightbox) .oc-vslide.is-playing {
 .oc-pcon--line .oc-pcon__card { border: 1px solid var(--oc-line, #e6e8ec); }
 
 .oc-pcon__faces {
-	position: relative;
 	display: flex;
 	flex: none;
 }
 
-.oc-pcon__face {
-	inline-size: 56px;
-	block-size: 56px;
+/* A circle, whatever the photo's shape: the page's own image rules set
+ * height to auto and turned the circle into an egg. The focus is where
+ * the face is — high in a portrait — so the crop keeps it. */
+.oc-pcon .oc-pcon__face {
+	inline-size: 56px !important;
+	block-size: 56px !important;
+	aspect-ratio: 1 / 1 !important;
 	border-radius: 50%;
 	object-fit: cover !important;
+	object-position: 50% var(--oc-pcon-focus, 35%) !important;
 	border: 2px solid #fff;
 	box-shadow: 0 0 0 1px rgba(0, 0, 0, .06);
 	background: #fff;
+	max-inline-size: none;
 }
 
-.oc-pcon__face + .oc-pcon__face { margin-inline-start: -14px; }
-
-/* the green dot: only while someone is there */
-.oc-pcon__dot {
-	position: absolute;
-	inset-block-end: 1px;
-	inset-inline-end: 1px;
-	inline-size: 13px;
-	block-size: 13px;
-	border-radius: 50%;
-	background: #22c55e;
-	border: 2px solid #fff;
-	display: none;
-}
-
-.oc-pcon.is-open .oc-pcon__dot { display: block; }
+.oc-pcon .oc-pcon__face + .oc-pcon__face { margin-inline-start: -14px; }
 
 .oc-pcon__who {
 	display: flex;
 	flex-direction: column;
+	align-items: flex-start;
 	flex: 1 1 auto;
 	min-inline-size: 0;
 	line-height: 1.25;
@@ -7667,14 +7658,59 @@ body:not(.oc-no-lightbox) .oc-vslide.is-playing {
 .oc-pcon__name { font-weight: 700; font-size: 1.05rem; }
 .oc-pcon__role { opacity: .7; font-size: .9rem; }
 
-.oc-pcon__now {
-	display: none;
-	font-size: .78rem;
-	color: #16a34a;
+.oc-pcon__tel {
+	font-size: .92rem;
+	opacity: .8;
+	color: inherit;
+	text-decoration: none;
+	direction: ltr;
+	unicode-bidi: isolate;
 	margin-block-start: 2px;
 }
 
-.oc-pcon.is-open .oc-pcon__now { display: block; }
+.oc-pcon__tel:hover { opacity: 1; color: inherit; }
+
+/* "available now", with the dot beside it — only while the hours say so */
+.oc-pcon__now {
+	display: none;
+	align-items: center;
+	gap: 7px;
+	font-size: .8rem;
+	color: #16a34a;
+	margin-block-start: 4px;
+}
+
+.oc-pcon.is-open .oc-pcon__now { display: inline-flex; }
+
+.oc-pcon__dot {
+	position: relative;
+	display: inline-block;
+	inline-size: 9px;
+	block-size: 9px;
+	border-radius: 50%;
+	background: #22c55e;
+	flex: none;
+}
+
+/* the quiet breathing ring that says "here, right now" */
+.oc-pcon__dot::after {
+	content: '';
+	position: absolute;
+	inset: -3px;
+	border-radius: 50%;
+	border: 2px solid #22c55e;
+	opacity: 0;
+	animation: oc-pcon-pulse 2s ease-out infinite;
+}
+
+@keyframes oc-pcon-pulse {
+	0% { transform: scale(.55); opacity: .9; }
+	100% { transform: scale(1.7); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.oc-pcon__dot::after { animation: none; }
+}
 
 .oc-pcon__btn {
 	display: inline-flex;
@@ -7697,9 +7733,14 @@ body:not(.oc-no-lightbox) .oc-vslide.is-playing {
 .oc-pcon__btn--whatsapp .oc-pcon__ico--phone,
 .oc-pcon__btn--phone .oc-pcon__ico--whatsapp { display: none; }
 
+/* A phone keeps the same row — faces, words, button at the far end —
+ * just tighter, so the button stays where the eye expects it. */
 @media (max-width: 600px) {
-	.oc-pcon__card { flex-wrap: wrap; }
-	.oc-pcon__btn { flex: 1 1 100%; justify-content: center; }
+	.oc-pcon__card { gap: 10px; padding: 10px 12px; }
+	.oc-pcon .oc-pcon__face { inline-size: 48px !important; block-size: 48px !important; }
+	.oc-pcon .oc-pcon__face + .oc-pcon__face { margin-inline-start: -12px; }
+	.oc-pcon__name { font-size: .98rem; }
+	.oc-pcon__btn { padding: 9px 14px; font-size: .92rem; }
 }
 
 /* ==========================================================================

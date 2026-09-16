@@ -93,6 +93,9 @@ final class Product_Contact {
 			'frame'    => in_array( (string) $mod( 'frame', 'shadow' ), array( 'shadow', 'line', 'none' ), true ) ? (string) $mod( 'frame', 'shadow' ) : 'shadow',
 			'bg'       => (string) $mod( 'bg', '' ),
 			'tx'       => (string) $mod( 'tx', '' ),
+			'focus'    => max( 0, min( 100, (int) $mod( 'focus', 35 ) ) ),
+			'now'      => (string) $mod( 'now', '' ),
+			'tel'      => (bool) $mod( 'show_phone', true ),
 		);
 	}
 
@@ -240,7 +243,15 @@ final class Product_Contact {
 		}
 
 		if ( 'tabs' === $s['place'] ) {
-			add_action( 'woocommerce_after_single_product_summary', array( $this, 'render' ), 16 );
+			// Tabs laid out below everything: the card follows them and the
+			// upsells that come after. Tabs beside the gallery or under it
+			// sit in a column of their own — there the card rides inside the
+			// tabs box, so it keeps to that column wherever the column is.
+			if ( 'below' === get_theme_mod( 'oc_product_tabs_pos', 'below' ) ) {
+				add_action( 'woocommerce_after_single_product_summary', array( $this, 'render' ), 16 );
+			} else {
+				add_action( 'woocommerce_product_after_tabs', array( $this, 'render' ) );
+			}
 			return;
 		}
 
@@ -345,6 +356,8 @@ final class Product_Contact {
 			$style .= '--oc-pcon-tx:' . $s['tx'] . ';';
 		}
 
+		$style .= '--oc-pcon-focus:' . $s['focus'] . '%;';
+
 		$faces = '';
 
 		foreach ( $s['images'] as $id ) {
@@ -377,11 +390,11 @@ final class Product_Contact {
 		);
 
 		printf(
-			'<div class="oc-pcon oc-pcon--%1$s oc-pcon--%2$s%3$s"%4$s data-oc-pcon="%5$s">',
+			'<div class="oc-pcon oc-pcon--%1$s oc-pcon--%2$s%3$s" style="%4$s" data-oc-pcon="%5$s">',
 			esc_attr( $s['frame'] ),
 			esc_attr( $s['place'] ),
 			$open && $s['online'] ? ' is-open' : '',
-			'' !== $style ? ' style="' . esc_attr( $style ) . '"' : '',
+			esc_attr( $style ),
 			esc_attr( (string) wp_json_encode( $config ) )
 		);
 
@@ -392,27 +405,32 @@ final class Product_Contact {
 		echo '<div class="oc-pcon__card">';
 
 		if ( '' !== $faces ) {
-			echo '<span class="oc-pcon__faces oc-pcon__faces--' . count( $s['images'] ) . '">' . $faces // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- core image markup.
-				. '<span class="oc-pcon__dot" aria-hidden="true"></span></span>';
+			echo '<span class="oc-pcon__faces oc-pcon__faces--' . count( $s['images'] ) . '">' . $faces . '</span>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- core image markup.
 		}
 
-		if ( '' !== $s['name'] || '' !== $s['role'] ) {
-			echo '<span class="oc-pcon__who">';
+		echo '<span class="oc-pcon__who">';
 
-			if ( '' !== $s['name'] ) {
-				echo '<span class="oc-pcon__name">' . esc_html( $s['name'] ) . '</span>';
-			}
-
-			if ( '' !== $s['role'] ) {
-				echo '<span class="oc-pcon__role">' . esc_html( $s['role'] ) . '</span>';
-			}
-
-			if ( $s['online'] ) {
-				echo '<span class="oc-pcon__now">' . esc_html__( 'Online now', 'oc-theme' ) . '</span>';
-			}
-
-			echo '</span>';
+		if ( '' !== $s['name'] ) {
+			echo '<span class="oc-pcon__name">' . esc_html( $s['name'] ) . '</span>';
 		}
+
+		if ( '' !== $s['role'] ) {
+			echo '<span class="oc-pcon__role">' . esc_html( $s['role'] ) . '</span>';
+		}
+
+		if ( $s['tel'] ) {
+			echo '<a class="oc-pcon__tel" href="' . esc_url( $tel ) . '" dir="ltr">' . esc_html( $s['phone'] ) . '</a>';
+		}
+
+		// The green dot lives beside the words, and both show only while
+		// the hours say someone is there. The words are the shop's: one
+		// adviser is "available", a desk is "we are available".
+		if ( $s['online'] ) {
+			echo '<span class="oc-pcon__now"><i class="oc-pcon__dot" aria-hidden="true"></i>'
+				. esc_html( '' !== $s['now'] ? $s['now'] : __( 'Online now', 'oc-theme' ) ) . '</span>';
+		}
+
+		echo '</span>';
 
 		// Both icons ride along; the stylesheet shows the one the button's
 		// class names, so the script can turn a call into WhatsApp at

@@ -3505,6 +3505,9 @@ final class Customizer {
 			$this->image( $c, 'oc_contact_img_' . $i, $sec, sprintf( __( 'Photo %d', 'oc-theme' ), $i ), 1 === $i ? __( 'One photo shows alone; two or three sit side by side.', 'oc-theme' ) : '', $on );
 		}
 
+		$this->number( $c, 'oc_contact_focus', $sec, __( 'Where the face sits in the circle (0 = top, 100 = bottom)', 'oc-theme' ), 35, 0, 100, $on, __( 'A tall photo is cropped to a circle; this picks which part stays. Faces usually sit high, so 35 keeps them whole.', 'oc-theme' ) );
+		$this->toggle( $c, 'oc_contact_show_phone', $sec, __( 'Show the number on the card', 'oc-theme' ), true, $on );
+
 		$this->heading( $c, 'oc_h_contact_how', $sec, __( 'The button', 'oc-theme' ), $on );
 
 		$this->text( $c, 'oc_contact_phone', $sec, __( 'Phone / WhatsApp number', 'oc-theme' ), $on );
@@ -3536,6 +3539,16 @@ final class Customizer {
 		$this->heading( $c, 'oc_h_contact_when', $sec, __( 'Hours', 'oc-theme' ), $on );
 
 		$this->toggle( $c, 'oc_contact_online', $sec, __( 'A green dot while someone is there', 'oc-theme' ), true, $on, __( 'Outside the hours the dot simply goes; nothing says "unavailable".', 'oc-theme' ) );
+		$this->text(
+			$c,
+			'oc_contact_now',
+			$sec,
+			__( 'The words beside the dot (empty = "Online now")', 'oc-theme' ),
+			array(
+				'setting' => 'oc_contact_online',
+				'values'  => array( '1' ),
+			)
+		);
 		$this->clock( $c, 'oc_contact_from', $sec, __( 'From', 'oc-theme' ), '09:00', $on );
 		$this->clock( $c, 'oc_contact_to', $sec, __( 'To', 'oc-theme' ), '18:00', $on );
 		$this->days( $c, 'oc_contact_days', $sec, __( 'Days', 'oc-theme' ), '0,1,2,3,4', '', $on );
