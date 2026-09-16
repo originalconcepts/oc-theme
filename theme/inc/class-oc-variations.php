@@ -2060,7 +2060,7 @@ final class Variations {
 			array(
 				'post_type'      => 'product',
 				'post_status'    => array( 'publish', 'draft', 'pending', 'private' ),
-				'posts_per_page' => 3000,
+				'posts_per_page' => 3000, // phpcs:ignore WordPress.WP.PostsPerPage.posts_per_page_posts_per_page -- an admin report, run on request.
 				'fields'         => 'ids',
 				'no_found_rows'  => true,
 				'tax_query'      => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query -- an admin report, run on request.
