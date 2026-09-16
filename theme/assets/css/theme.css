@@ -11413,9 +11413,14 @@ body.oc-checkout { overflow-x: clip; }
 	color: var(--oc-sale, #b4453c);
 }
 
+/* "incl. VAT" sits right under the total: the total row's own bottom
+ * padding was the gap between them (a margin does nothing on a cell) */
+.oc-checkout #order_review tr.order-total th,
+.oc-checkout #order_review tr.order-total td { padding-block-end: 2px; }
+
 .oc-checkout #order_review table.shop_table tr.oc-co-vat td {
 	padding-block: 0 !important;
-	margin-block-start: -4px;
+	line-height: 1.2;
 	font-size: .8rem;
 	font-weight: 400 !important;
 	color: var(--oc-ink-2, #777);
