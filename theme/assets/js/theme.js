@@ -590,6 +590,27 @@
 					ocCatReturned = true;
 					ocHold = { el: backTarget, done: false };
 
+					// Back to the view they left, not to a re-centred one:
+					// the card goes back exactly as far down the screen as it
+					// was when they clicked it.
+					var ocPlace = function () {
+						if ( 'number' === typeof ocReturn.off ) {
+							window.scrollTo( 0, Math.max( 0, backTarget.getBoundingClientRect().top + window.scrollY - ocReturn.off ) );
+							return;
+						}
+
+						backTarget.scrollIntoView( { block: 'center' } );
+					};
+
+					// At once, not on a timer. This script is deferred, so it
+					// runs before the first paint, and every card states its
+					// picture's ratio — the rows already have their heights
+					// with not one image loaded. The visitor never sees the
+					// top of the catalogue, so there is nothing to jump from:
+					// the old first pass ran 150 ms in, which is long enough
+					// to paint the top and then yank the page down.
+					ocPlace();
+
 					// Images loading in above the card shift the layout after
 					// the first jump — especially on mobile — so the anchor
 					// re-asserts a few times, backing off the moment the
@@ -603,7 +624,7 @@
 					[ 150, 500, 1100, 2000 ].forEach( function ( delay ) {
 						setTimeout( function () {
 							if ( ! ocHold.done ) {
-								backTarget.scrollIntoView( { block: 'center' } );
+								ocPlace();
 							}
 						}, delay );
 					} );
@@ -630,7 +651,10 @@
 			try {
 				sessionStorage.setItem( 'ocReturn', JSON.stringify( {
 					url: li.dataset.ocpg || window.location.href,
-					postClass: postClass
+					postClass: postClass,
+					// where on the screen the card was, so the way back lands
+					// on the same view rather than near it
+					off: Math.round( li.getBoundingClientRect().top )
 				} ) );
 			} catch ( e ) {}
 
