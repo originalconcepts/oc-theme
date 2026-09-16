@@ -6996,6 +6996,99 @@
 		updateStickCols();
 	}
 
+	/* ---------- product contact card ----------
+	 * The hours are judged again on the visitor's clock, in the shop's
+	 * time zone — a page out of a cache is right anyway, and the dot goes
+	 * out on its own when the day ends. Every press is counted. */
+	document.querySelectorAll( '[data-oc-pcon]' ).forEach( function ( box ) {
+		var cfg;
+		try {
+			cfg = JSON.parse( box.getAttribute( 'data-oc-pcon' ) || '' );
+		} catch ( e ) {
+			return;
+		}
+		var btn = box.querySelector( '[data-oc-pcon-go]' );
+
+		function mins( hm ) {
+			var p = String( hm || '0:0' ).split( ':' );
+			return ( parseInt( p[ 0 ], 10 ) || 0 ) * 60 + ( parseInt( p[ 1 ], 10 ) || 0 );
+		}
+
+		function nowThere() {
+			try {
+				var parts = new Intl.DateTimeFormat( 'en-GB', { timeZone: cfg.tz, hour: '2-digit', minute: '2-digit', weekday: 'short', hourCycle: 'h23' } ).formatToParts( new Date() );
+				var o = {};
+				parts.forEach( function ( x ) { o[ x.type ] = x.value; } );
+				var wd = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 }[ o.weekday ];
+				return { m: mins( o.hour + ':' + o.minute ), wd: wd };
+			} catch ( e ) {
+				return null;
+			}
+		}
+
+		function open() {
+			var n = nowThere();
+			if ( ! n || 'undefined' === typeof n.wd ) {
+				return null;
+			}
+			var f = mins( cfg.from ), t = mins( cfg.to ), days = cfg.days || [];
+			if ( f === t ) {
+				return false;
+			}
+			if ( f < t ) {
+				return days.indexOf( n.wd ) > -1 && n.m >= f && n.m < t;
+			}
+			if ( n.m >= f ) {
+				return days.indexOf( n.wd ) > -1;
+			}
+			return n.m < t && days.indexOf( ( n.wd + 6 ) % 7 ) > -1;
+		}
+
+		function apply() {
+			var o = open();
+			if ( null === o ) {
+				return;
+			}
+			box.classList.toggle( 'is-open', !! ( o && cfg.online ) );
+
+			if ( btn && 'phone' === cfg.channel && cfg.fallback ) {
+				var ch = o ? 'phone' : 'whatsapp';
+				if ( btn.getAttribute( 'data-oc-pcon-go' ) !== ch ) {
+					btn.setAttribute( 'data-oc-pcon-go', ch );
+					btn.href = 'phone' === ch ? cfg.tel : cfg.wa;
+					btn.className = 'oc-pcon__btn oc-pcon__btn--' + ch;
+					if ( 'whatsapp' === ch ) {
+						btn.target = '_blank';
+						btn.rel = 'noopener';
+					} else {
+						btn.removeAttribute( 'target' );
+						btn.removeAttribute( 'rel' );
+					}
+					var label = btn.querySelector( 'span' );
+					if ( label && cfg.labels ) {
+						label.textContent = cfg.labels[ ch ] || label.textContent;
+					}
+				}
+			}
+		}
+
+		apply();
+		setInterval( apply, 60000 );
+
+		if ( btn ) {
+			btn.addEventListener( 'click', function () {
+				try {
+					var body = JSON.stringify( { p: cfg.id, c: 'phone' === btn.getAttribute( 'data-oc-pcon-go' ) ? 'phone' : 'whatsapp', _t: cfg.token } );
+					if ( navigator.sendBeacon ) {
+						navigator.sendBeacon( cfg.rest, new Blob( [ body ], { type: 'application/json' } ) );
+					} else {
+						fetch( cfg.rest, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: body, keepalive: true } );
+					}
+				} catch ( e ) {}
+			} );
+		}
+	} );
+
 	/* ---------- sticky add-to-cart ---------- */
 
 	var bar = document.querySelector( '[data-oc-sticky-atc]' );

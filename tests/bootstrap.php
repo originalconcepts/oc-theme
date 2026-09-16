@@ -18,3 +18,5 @@ require_once __DIR__ . '/../theme/inc/privacy/class-oc-privacy-settings.php';
 require_once __DIR__ . '/../theme/inc/privacy/class-oc-privacy-consent.php';
 require_once __DIR__ . '/../theme/inc/class-oc-content-tables.php';
 require_once __DIR__ . '/../theme/inc/class-oc-image-fit.php';
+
+require_once __DIR__ . '/../theme/inc/class-oc-product-contact.php';

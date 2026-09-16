@@ -8015,3 +8015,162 @@ msgstr "גודל הכותרת - דסקטופ (px, 0 = ברירת המחדל של
 
 msgid "Title size — mobile (px, 0 = same as desktop)"
 msgstr "גודל הכותרת - מובייל (px, 0 = כמו בדסקטופ)"
+
+msgid "A person to ask, right on the product page: a face, a name, and one button — WhatsApp with the message already written, or a call."
+msgstr "מישהו לשאול, ממש בדף המוצר: פנים, שם וכפתור אחד. וואטסאפ עם הודעה כתובה מראש, או שיחה."
+
+msgid "Show a contact card on the product page"
+msgstr "הצג כרטיס יצירת קשר בדף המוצר"
+
+msgid "Who answers"
+msgstr "מי עונה"
+
+msgid "\"Have a question?\""
+msgstr "״יש לך שאלה?״"
+
+msgid "\"Have a question about [product]?\""
+msgstr "״יש לך שאלה על [product]?״"
+
+msgid "My own words"
+msgstr "ניסוח משלי"
+
+msgid "No title"
+msgstr "בלי כותרת"
+
+msgid "Title text — [product] becomes the product name"
+msgstr "טקסט הכותרת. [product] הופך לשם המוצר"
+
+msgid "Role"
+msgstr "תפקיד"
+
+msgid "Photo %d"
+msgstr "תמונה %d"
+
+msgid "One photo shows alone; two or three sit side by side."
+msgstr "תמונה אחת מוצגת לבד; שתיים או שלוש זו לצד זו."
+
+msgid "The button"
+msgstr "הכפתור"
+
+msgid "Phone / WhatsApp number"
+msgstr "מספר טלפון / וואטסאפ"
+
+msgid "The button opens"
+msgstr "הכפתור פותח"
+
+msgid "A call"
+msgstr "שיחה"
+
+msgid "Button text (empty = \"WhatsApp\" / \"Call now\")"
+msgstr "טקסט הכפתור (ריק = ״וואטסאפ״ / ״חייג עכשיו״)"
+
+msgid "WhatsApp message"
+msgstr "הודעת וואטסאפ"
+
+msgid "Written into the chat before the shopper sends. [product] becomes the product name and [link] its address. Empty: \"Hi, I'd like some help with [product] / Link: [link]\"."
+msgstr "נכתבת בצ׳אט לפני שהלקוח שולח. [product] הופך לשם המוצר ו־[link] לכתובת שלו. אפשר גם [שם המוצר] ו־[קישור]. ריק: ״היי, אני מעוניין לקבל עזרה על מוצר [product] / קישור: [link]״."
+
+msgid "Hours"
+msgstr "שעות"
+
+msgid "A green dot while someone is there"
+msgstr "עיגול ירוק כשמישהו זמין"
+
+msgid "Outside the hours the dot simply goes; nothing says \"unavailable\"."
+msgstr "מחוץ לשעות העיגול פשוט נעלם; שום דבר לא אומר ״לא זמין״."
+
+msgid "Days"
+msgstr "ימים"
+
+msgid "Outside the hours, offer WhatsApp instead of a call"
+msgstr "מחוץ לשעות, הצג וואטסאפ במקום שיחה"
+
+msgid "Placement & look"
+msgstr "מיקום ומראה"
+
+msgid "Under the icons below add-to-cart"
+msgstr "מתחת לאייקונים שמתחת להוספה לסל"
+
+msgid "Under the tabs (after the upsells)"
+msgstr "מתחת לטאבים (אחרי האפסייל)"
+
+msgid "Frame"
+msgstr "מסגרת"
+
+msgid "Soft shadow"
+msgstr "צל עדין"
+
+msgid "Thin line"
+msgstr "קו עדין"
+
+msgid "Background (empty = the page's)"
+msgstr "רקע (ריק = של העמוד)"
+
+msgid "Text colour (empty = the text colour of the site)"
+msgstr "צבע טקסט (ריק = צבע הטקסט של האתר)"
+
+msgid "Hi, I'd like some help with [product]\nLink: [link]"
+msgstr "היי, אני מעוניין לקבל עזרה על מוצר [product]\nקישור: [link]"
+
+msgid "Have a question about %s?"
+msgstr "יש לך שאלה על %s?"
+
+msgid "Have a question?"
+msgstr "יש לך שאלה?"
+
+msgid "Online now"
+msgstr "זמינים עכשיו"
+
+msgid "Call now"
+msgstr "חייג עכשיו"
+
+msgid "Product contact"
+msgstr "יצירת קשר במוצר"
+
+msgid "Every press of the WhatsApp or call button on a product page, by product."
+msgstr "כל לחיצה על כפתור הוואטסאפ או השיחה בדף מוצר, לפי מוצר."
+
+msgid "The block is switched off right now — turn it on under Customize → Product page → Contact."
+msgstr "הכרטיס כבוי כרגע. מפעילים אותו בהתאמה אישית ← דף מוצר ← יצירת קשר."
+
+msgid "Edit the block"
+msgstr "עריכת הכרטיס"
+
+msgid "Last 7 days"
+msgstr "7 הימים האחרונים"
+
+msgid "Last 30 days"
+msgstr "30 הימים האחרונים"
+
+msgid "Last 90 days"
+msgstr "90 הימים האחרונים"
+
+msgid "Last year"
+msgstr "השנה האחרונה"
+
+msgid "All time"
+msgstr "כל הזמן"
+
+msgid "Between dates"
+msgstr "בין תאריכים"
+
+msgid "All presses"
+msgstr "כל הלחיצות"
+
+msgid "Calls"
+msgstr "שיחות"
+
+msgid "Products pressed on"
+msgstr "מוצרים שנלחצו"
+
+msgid "Presses per day"
+msgstr "לחיצות ליום"
+
+msgid "No presses in this period."
+msgstr "אין לחיצות בתקופה הזו."
+
+msgid "edit"
+msgstr "עריכה"
+
+msgid "Today"
+msgstr "היום"

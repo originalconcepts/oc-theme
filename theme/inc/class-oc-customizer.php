@@ -2225,6 +2225,18 @@ final class Customizer {
 		);
 
 		$c->add_section(
+			'oc_contact',
+			array(
+				'title'       => __( 'Contact', 'oc-theme' ),
+				'description' => __( 'A person to ask, right on the product page: a face, a name, and one button — WhatsApp with the message already written, or a call.', 'oc-theme' ),
+				'panel'       => 'oc_product_panel',
+				'priority'    => 35,
+			)
+		);
+
+		$this->contact_section( $c );
+
+		$c->add_section(
 			'oc_product',
 			array(
 				'title'    => __( 'General', 'oc-theme' ),
@@ -3441,6 +3453,203 @@ final class Customizer {
 		}
 
 		$c->add_control( new Customize\Range_Control( $c, $id_from, $args ) );
+	}
+
+	/**
+	 * The contact card on the product page.
+	 *
+	 * @param \WP_Customize_Manager $c Customizer manager.
+	 */
+	private function contact_section( \WP_Customize_Manager $c ): void {
+		$sec = 'oc_contact';
+		$on  = array(
+			'setting' => 'oc_contact_on',
+			'values'  => array( '1' ),
+		);
+
+		$this->toggle( $c, 'oc_contact_on', $sec, __( 'Show a contact card on the product page', 'oc-theme' ), false );
+
+		$this->heading( $c, 'oc_h_contact_who', $sec, __( 'Who answers', 'oc-theme' ), $on );
+
+		$this->choice(
+			$c,
+			'oc_contact_title',
+			$sec,
+			__( 'Title', 'oc-theme' ),
+			array(
+				'plain'   => __( '"Have a question?"', 'oc-theme' ),
+				'product' => __( '"Have a question about [product]?"', 'oc-theme' ),
+				'custom'  => __( 'My own words', 'oc-theme' ),
+				'none'    => __( 'No title', 'oc-theme' ),
+			),
+			'plain',
+			$on
+		);
+
+		$this->text(
+			$c,
+			'oc_contact_title_text',
+			$sec,
+			__( 'Title text — [product] becomes the product name', 'oc-theme' ),
+			array(
+				'setting' => 'oc_contact_title',
+				'values'  => array( 'custom' ),
+			)
+		);
+
+		$this->text( $c, 'oc_contact_name', $sec, __( 'Name', 'oc-theme' ), $on );
+		$this->text( $c, 'oc_contact_role', $sec, __( 'Role', 'oc-theme' ), $on );
+
+		foreach ( array( 1, 2, 3 ) as $i ) {
+			/* translators: %d: photo number. */
+			$this->image( $c, 'oc_contact_img_' . $i, $sec, sprintf( __( 'Photo %d', 'oc-theme' ), $i ), 1 === $i ? __( 'One photo shows alone; two or three sit side by side.', 'oc-theme' ) : '', $on );
+		}
+
+		$this->heading( $c, 'oc_h_contact_how', $sec, __( 'The button', 'oc-theme' ), $on );
+
+		$this->text( $c, 'oc_contact_phone', $sec, __( 'Phone / WhatsApp number', 'oc-theme' ), $on );
+
+		$this->choice(
+			$c,
+			'oc_contact_channel',
+			$sec,
+			__( 'The button opens', 'oc-theme' ),
+			array(
+				'whatsapp' => __( 'WhatsApp', 'oc-theme' ),
+				'phone'    => __( 'A call', 'oc-theme' ),
+			),
+			'whatsapp',
+			$on
+		);
+
+		$this->text( $c, 'oc_contact_btn', $sec, __( 'Button text (empty = "WhatsApp" / "Call now")', 'oc-theme' ), $on );
+
+		$this->textarea(
+			$c,
+			'oc_contact_msg',
+			$sec,
+			__( 'WhatsApp message', 'oc-theme' ),
+			$on,
+			__( 'Written into the chat before the shopper sends. [product] becomes the product name and [link] its address. Empty: "Hi, I\'d like some help with [product] / Link: [link]".', 'oc-theme' )
+		);
+
+		$this->heading( $c, 'oc_h_contact_when', $sec, __( 'Hours', 'oc-theme' ), $on );
+
+		$this->toggle( $c, 'oc_contact_online', $sec, __( 'A green dot while someone is there', 'oc-theme' ), true, $on, __( 'Outside the hours the dot simply goes; nothing says "unavailable".', 'oc-theme' ) );
+		$this->clock( $c, 'oc_contact_from', $sec, __( 'From', 'oc-theme' ), '09:00', $on );
+		$this->clock( $c, 'oc_contact_to', $sec, __( 'To', 'oc-theme' ), '18:00', $on );
+		$this->days( $c, 'oc_contact_days', $sec, __( 'Days', 'oc-theme' ), '0,1,2,3,4', '', $on );
+
+		$this->toggle(
+			$c,
+			'oc_contact_fallback',
+			$sec,
+			__( 'Outside the hours, offer WhatsApp instead of a call', 'oc-theme' ),
+			true,
+			array(
+				'setting' => 'oc_contact_channel',
+				'values'  => array( 'phone' ),
+			)
+		);
+
+		$this->heading( $c, 'oc_h_contact_look', $sec, __( 'Placement & look', 'oc-theme' ), $on );
+
+		$this->choice(
+			$c,
+			'oc_contact_place',
+			$sec,
+			__( 'Where', 'oc-theme' ),
+			array(
+				'atc'  => __( 'Under the icons below add-to-cart', 'oc-theme' ),
+				'tabs' => __( 'Under the tabs (after the upsells)', 'oc-theme' ),
+			),
+			'atc',
+			$on
+		);
+
+		$this->choice(
+			$c,
+			'oc_contact_frame',
+			$sec,
+			__( 'Frame', 'oc-theme' ),
+			array(
+				'shadow' => __( 'Soft shadow', 'oc-theme' ),
+				'line'   => __( 'Thin line', 'oc-theme' ),
+				'none'   => __( 'None', 'oc-theme' ),
+			),
+			'shadow',
+			$on
+		);
+
+		$this->color( $c, 'oc_contact_bg', $sec, __( 'Background (empty = the page\'s)', 'oc-theme' ), '', $on );
+		$this->color( $c, 'oc_contact_tx', $sec, __( 'Text colour (empty = the text colour of the site)', 'oc-theme' ), '', $on );
+	}
+
+	/**
+	 * A picture from the library, stored as its attachment id.
+	 *
+	 * @param \WP_Customize_Manager $c       Customizer manager.
+	 * @param string                $id      Setting id.
+	 * @param string                $section Section.
+	 * @param string                $label   Label.
+	 * @param string                $hint    Helper text.
+	 * @param array|null            $dep     Visibility rule.
+	 */
+	private function image( \WP_Customize_Manager $c, string $id, string $section, string $label, string $hint = '', ?array $dep = null ): void {
+		$c->add_setting(
+			$id,
+			array(
+				'default'           => '0',
+				'sanitize_callback' => 'absint',
+			)
+		);
+
+		$args = array(
+			'section'     => $section,
+			'label'       => $label,
+			'description' => $hint,
+			'mime_type'   => 'image',
+		);
+
+		if ( null !== $dep ) {
+			$args['active_callback'] = $this->depend( $id, $dep );
+		}
+
+		$c->add_control( new \WP_Customize_Media_Control( $c, $id, $args ) );
+	}
+
+	/**
+	 * A time of day, HH:MM.
+	 *
+	 * @param \WP_Customize_Manager $c       Customizer manager.
+	 * @param string                $id      Setting id.
+	 * @param string                $section Section.
+	 * @param string                $label   Label.
+	 * @param string                $def     Default, HH:MM.
+	 * @param array|null            $dep     Visibility rule.
+	 */
+	private function clock( \WP_Customize_Manager $c, string $id, string $section, string $label, string $def, ?array $dep = null ): void {
+		$c->add_setting(
+			$id,
+			array(
+				'default'           => $def,
+				'sanitize_callback' => static function ( $value ) use ( $def ): string {
+					return preg_match( '/^([01]\d|2[0-3]):[0-5]\d$/', (string) $value ) ? (string) $value : $def;
+				},
+			)
+		);
+
+		$args = array(
+			'type'    => 'time',
+			'section' => $section,
+			'label'   => $label,
+		);
+
+		if ( null !== $dep ) {
+			$args['active_callback'] = $this->depend( $id, $dep );
+		}
+
+		$c->add_control( $id, $args );
 	}
 
 	/*
