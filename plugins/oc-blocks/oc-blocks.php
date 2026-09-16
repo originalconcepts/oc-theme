@@ -20,7 +20,7 @@ declare( strict_types = 1 );
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'OC_BLOCKS_VERSION', '0.3.174' );
+define( 'OC_BLOCKS_VERSION', '0.3.175' );
 define( 'OC_BLOCKS_DIR', plugin_dir_path( __FILE__ ) );
 define( 'OC_BLOCKS_URI', plugin_dir_url( __FILE__ ) );
 
