@@ -11193,9 +11193,11 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 /* Woo's own variation list yields to ours */
 .oc-checkout td.product-name .variation { display: none; }
 
-/* prices hug the left edge */
+/* prices hug the left edge, and never break inside a number: the total
+ * came out as "3,797.1" over a lone "0", pushing "incl. VAT" away */
 .oc-checkout #order_review table.shop_table td.product-total,
-.oc-checkout #order_review table.shop_table tfoot td { text-align: left; }
+.oc-checkout #order_review table.shop_table tfoot td { text-align: left; white-space: nowrap; }
+.oc-checkout #order_review table.shop_table tfoot th { inline-size: auto; }
 
 .oc-checkout #order_review tr.woocommerce-shipping-totals { display: none; }
 
