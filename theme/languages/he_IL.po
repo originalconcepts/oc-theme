@@ -8109,8 +8109,11 @@ msgstr "רקע (ריק = של העמוד)"
 msgid "Text colour (empty = the text colour of the site)"
 msgstr "צבע טקסט (ריק = צבע הטקסט של האתר)"
 
-msgid "Hi, I'd like some help with [product]\nLink: [link]"
-msgstr "היי, אני מעוניין לקבל עזרה על מוצר [product]\nקישור: [link]"
+msgid "Hi, I'd like some help with [product]"
+msgstr "היי, אני מעוניין לקבל עזרה על מוצר [product]"
+
+msgid "Link: [link]"
+msgstr "קישור: [link]"
 
 msgid "Have a question about %s?"
 msgstr "יש לך שאלה על %s?"

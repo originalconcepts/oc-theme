@@ -288,7 +288,15 @@ final class Product_Contact {
 		$url  = (string) $product->get_permalink();
 		$cc   = self::cc();
 
-		$text = self::message( '' !== $s['msg'] ? $s['msg'] : __( "Hi, I'd like some help with [product]\nLink: [link]", 'oc-theme' ), $name, $url );
+		// The default is two lines, joined here rather than in one string:
+		// a newline inside a translated string is one escaping mishap away
+		// from vanishing, and it did. A backslash-n typed into the field by
+		// hand becomes a real line break too.
+		$template = '' !== $s['msg']
+			? str_replace( '\\n', "\n", $s['msg'] )
+			: __( "Hi, I'd like some help with [product]", 'oc-theme' ) . "\n" . __( 'Link: [link]', 'oc-theme' );
+
+		$text = self::message( $template, $name, $url );
 		$wa   = self::wa_link( $s['phone'], $text, $cc );
 		$tel  = self::tel_link( $s['phone'], $cc );
 
