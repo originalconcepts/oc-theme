@@ -4606,7 +4606,7 @@
 	// a variation's own gallery, '' for the product's. A swap to what is
 	// already there is skipped, so a size change never rebuilds the slides
 	// under the visitor. Answers whether anything changed.
-	var ocGalleryShown = ocGalleriesTag && ocGalleriesTag.dataset.open ? 'c:' + ocGalleriesTag.dataset.open : '';
+	var ocGalleryShown = ocGalleriesTag && ocGalleriesTag.dataset.open ? ocGalleriesTag.dataset.open : '';
 
 	function ocShowGallery( key, slides ) {
 		if ( key === ocGalleryShown ) {
@@ -4703,10 +4703,17 @@
 			var value   = select ? select.value : '';
 			var changed;
 
+			var opening = ocGalleriesTag && ocGalleriesTag.dataset.open ? ocGalleriesTag.dataset.open : '';
+
 			if ( value && ocColorGalleries[ value ] ) {
 				changed = ocShowGallery( 'c:' + value, ocColorGalleries[ value ] );
 			} else if ( v && v.oc_gallery && v.oc_gallery.length ) {
 				changed = ocShowGallery( 'v:' + v.variation_id, v.oc_gallery );
+			} else if ( value && opening && ocGalleryShown === opening && ( ! v || 'v:' + v.variation_id === opening ) ) {
+				// Still on the picture the page opened with: the server
+				// drew this variation's own image first. Woo has not
+				// resolved the variation yet, or resolved to this one.
+				changed = false;
 			} else {
 				changed = ocShowGallery( '', null );
 			}

@@ -291,9 +291,9 @@ final class Variations {
 		$lead = $this->default_term( $product ) ?? $this->gallery_lead( $product );
 		$pick = array();
 
-		// A main photo that belongs to none of the colour galleries: the
-		// page shows that photo and marks no colour (see default_term()).
-		if ( null === $lead && self::galleries_have_pictures( $this->galleries_meta( $id ) ) ) {
+		// A main photo that is none of the colours' own pictures: the page
+		// shows that photo and marks no colour (see default_term()).
+		if ( null === $lead && ! empty( $this->colour_pictures( $product ) ) ) {
 			return $cache[ $id ];
 		}
 
@@ -385,10 +385,10 @@ final class Variations {
 		// The colour the product's main photo belongs to leads: the card
 		// shows that photo, so it must mark that colour, and the product
 		// page opens on it. Otherwise the first colour that can be drawn.
-		$main      = (int) $product->get_image_id();
-		$galleries = $this->galleries_meta( $id );
-		$lead      = null;
-		$owned     = false;
+		$main  = (int) $product->get_image_id();
+		$pics  = $this->colour_pictures( $product );
+		$lead  = null;
+		$owned = false;
 
 		foreach ( $values as $val ) {
 			if ( '' === $this->value_style( $product, $attr, $val, $attr['type'] ) ) {
@@ -399,19 +399,20 @@ final class Variations {
 				$lead = $val;
 			}
 
-			if ( $main && in_array( $main, array_map( 'intval', $galleries[ $val['slug'] ]['imgs'] ?? array() ), true ) ) {
+			if ( $main && in_array( $main, $pics[ $val['slug'] ]['imgs'] ?? array(), true ) ) {
 				$lead  = $val;
 				$owned = true;
 				break;
 			}
 		}
 
-		// The card shows the main photo. When colour galleries exist and
-		// none of them holds that photo, marking a colour beside it says
-		// "this is what you see" about a colour it is not — the black bin
-		// with a grey dot. No mark, then; the product page opens with
-		// nothing chosen, and the photo stays the product's own.
-		if ( null === $lead || ( ! $owned && self::galleries_have_pictures( $galleries ) ) ) {
+		// The card shows the main photo. When the colours have pictures of
+		// their own — a gallery, or the variation's own image — and none
+		// of them is that photo, marking a colour beside it says "this is
+		// what you see" about a colour it is not: the black bin with a grey
+		// dot. No mark, then; the product page opens with nothing chosen,
+		// and the photo stays the product's own.
+		if ( null === $lead || ( ! $owned && ! empty( $pics ) ) ) {
 			return null;
 		}
 
@@ -469,16 +470,16 @@ final class Variations {
 	 * @return array{key:string,value:string}|null
 	 */
 	private function gallery_lead( \WC_Product $product ): ?array {
-		$main      = (int) $product->get_image_id();
-		$galleries = $this->galleries_meta( $product->get_id() );
+		$main = (int) $product->get_image_id();
+		$pics = $this->colour_pictures( $product );
 
-		if ( ! $main || empty( $galleries ) || self::no_default( $product->get_id() ) ) {
+		if ( ! $main || empty( $pics ) || self::no_default( $product->get_id() ) ) {
 			return null;
 		}
 
 		foreach ( $this->product_attrs( $product ) as $attr ) {
 			foreach ( $this->sold_values( $product, $attr ) as $val ) {
-				if ( in_array( $main, array_map( 'intval', $galleries[ $val['slug'] ]['imgs'] ?? array() ), true ) ) {
+				if ( in_array( $main, $pics[ $val['slug'] ]['imgs'] ?? array(), true ) ) {
 					return array(
 						'key'   => $attr['key'],
 						'value' => $val['value'],
@@ -1785,15 +1786,16 @@ final class Variations {
 		}
 
 		$galleries = $this->galleries_meta( $product->get_id() );
+		$open      = $this->opening_gallery( $product );
 
-		if ( empty( $galleries ) ) {
+		if ( empty( $galleries ) && null === $open ) {
 			return;
 		}
 
 		// Keyed by what the select holds — a term's slug, a local value's
 		// typed text — which is what the script looks up on every change.
 		$map  = array();
-		$from = '';
+		$from = null === $open ? '' : $open['attr'];
 
 		foreach ( $this->product_attrs( $product ) as $attr ) {
 			foreach ( $attr['values'] as $val ) {
@@ -1816,15 +1818,13 @@ final class Variations {
 			}
 		}
 
-		if ( empty( $map ) ) {
+		if ( empty( $map ) && null === $open ) {
 			return;
 		}
 
-		// The page's markup already holds the opening colour's gallery, so
+		// The page's markup already holds the opening colour's pictures, so
 		// the product's own slides travel here under '' — the answer to
 		// "nothing chosen" — and the script starts from that colour.
-		$open = $this->opening_gallery( $product );
-
 		if ( null !== $open ) {
 			$own    = array_filter( array_merge( array( (int) $product->get_image_id() ), array_map( 'intval', $product->get_gallery_image_ids() ) ) );
 			$slides = array();
@@ -1839,32 +1839,82 @@ final class Variations {
 		printf(
 			'<script type="application/json" id="oc-color-galleries" data-attr="%s"%s>%s</script>',
 			esc_attr( 'attribute_' . $from ),
-			null === $open ? '' : ' data-open="' . esc_attr( $open['value'] ) . '"',
+			null === $open ? '' : ' data-open="' . esc_attr( $open['key'] ) . '"',
 			wp_json_encode( $map ) // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- JSON in a non-executed script tag.
 		);
 	}
 
 	/**
-	 * Whether any colour gallery actually holds pictures.
+	 * Every colour's own pictures: its gallery, else its variation's own
+	 * image (not the parent's, which a variation without one inherits)
+	 * followed by that variation's own gallery, with the variation's id.
+	 * Keyed by the value's slug, the way the galleries meta is.
 	 *
-	 * @param array<string,array{imgs:array<int,int>,swatch:string,color:string}> $galleries From galleries_meta().
+	 * @param \WC_Product $product The product.
+	 * @return array<string,array{imgs:array<int,int>,var:int}>
 	 */
-	private static function galleries_have_pictures( array $galleries ): bool {
-		foreach ( $galleries as $entry ) {
+	private function colour_pictures( \WC_Product $product ): array {
+		static $cache = array();
+
+		$id = $product->get_id();
+
+		if ( isset( $cache[ $id ] ) ) {
+			return $cache[ $id ];
+		}
+
+		$out = array();
+
+		foreach ( $this->galleries_meta( $id ) as $slug => $entry ) {
 			if ( ! empty( $entry['imgs'] ) ) {
-				return true;
+				$out[ (string) $slug ] = array(
+					'imgs' => array_values( array_map( 'intval', $entry['imgs'] ) ),
+					'var'  => 0,
+				);
 			}
 		}
 
-		return false;
+		if ( $product instanceof \WC_Product_Variable ) {
+			foreach ( $product->get_visible_children() as $child_id ) {
+				$variation = wc_get_product( $child_id );
+
+				if ( ! $variation instanceof \WC_Product_Variation ) {
+					continue;
+				}
+
+				$own = (int) $variation->get_image_id( 'edit' );
+
+				if ( ! $own ) {
+					continue;
+				}
+
+				$imgs = array_values( array_unique( array_filter( array_merge( array( $own ), array_map( 'intval', (array) $variation->get_gallery_image_ids( 'edit' ) ) ) ) ) );
+
+				foreach ( $variation->get_attributes() as $attr_val ) {
+					$slug = sanitize_title( (string) $attr_val );
+
+					if ( '' !== $slug && ! isset( $out[ $slug ] ) ) {
+						$out[ $slug ] = array(
+							'imgs' => $imgs,
+							'var'  => (int) $child_id,
+						);
+					}
+				}
+			}
+		}
+
+		$cache[ $id ] = $out;
+
+		return $out;
 	}
 
 	/**
-	 * The colour the product page opens on, when it has a gallery: the one
-	 * in the address (a card swatch, a shared link), else the default.
+	 * The colour the product page opens on, when it has pictures of its
+	 * own: the one in the address (a card swatch, a shared link), else the
+	 * default. The key is what the script keeps as "the gallery on show":
+	 * 'c:<value>' for a colour gallery, 'v:<id>' for a variation's picture.
 	 *
 	 * @param \WC_Product $product The product.
-	 * @return array{value:string,imgs:array<int,int>}|null
+	 * @return array{attr:string,value:string,key:string,imgs:array<int,int>}|null
 	 */
 	private function opening_gallery( \WC_Product $product ): ?array {
 		static $cache = array();
@@ -1876,9 +1926,9 @@ final class Variations {
 		}
 
 		$cache[ $id ] = null;
-		$galleries    = $this->galleries_meta( $id );
+		$pics         = $this->colour_pictures( $product );
 
-		if ( ! $product instanceof \WC_Product_Variable || ! self::galleries_have_pictures( $galleries ) ) {
+		if ( ! $product instanceof \WC_Product_Variable || empty( $pics ) ) {
 			return null;
 		}
 
@@ -1894,20 +1944,27 @@ final class Variations {
 			}
 
 			foreach ( $attr['values'] as $val ) {
-				if ( ! self::same_value( $asked, $val ) ) {
+				if ( ! self::same_value( $asked, $val ) || empty( $pics[ $val['slug'] ] ) ) {
 					continue;
 				}
 
-				$imgs = array_values( array_filter( array_map( 'intval', $galleries[ $val['slug'] ]['imgs'] ?? array() ) ) );
+				$pic  = $pics[ $val['slug'] ];
+				$imgs = $pic['imgs'];
 
-				if ( $imgs ) {
-					$cache[ $id ] = array(
-						'value' => $val['value'],
-						'imgs'  => $imgs,
-					);
-
-					return $cache[ $id ];
+				// A variation's lone picture takes the product's gallery
+				// after it — as Woo shows a chosen variation.
+				if ( $pic['var'] > 0 && 1 === count( $imgs ) ) {
+					$imgs = array_values( array_unique( array_merge( $imgs, array_map( 'intval', $product->get_gallery_image_ids() ) ) ) );
 				}
+
+				$cache[ $id ] = array(
+					'attr'  => $attr['key'],
+					'value' => $val['value'],
+					'key'   => $pic['var'] > 0 ? 'v:' . $pic['var'] : 'c:' . $val['value'],
+					'imgs'  => $imgs,
+				);
+
+				return $cache[ $id ];
 			}
 		}
 
@@ -1993,7 +2050,8 @@ final class Variations {
 	}
 
 	/**
-	 * Products with colour galleries whose main photo sits in none of them.
+	 * Variable products whose colours have pictures of their own — a
+	 * gallery or a variation image — none of which is the main photo.
 	 *
 	 * @return array<int,array{id:int,colours:array<int,string>}>
 	 */
@@ -2002,35 +2060,43 @@ final class Variations {
 			array(
 				'post_type'      => 'product',
 				'post_status'    => array( 'publish', 'draft', 'pending', 'private' ),
-				'posts_per_page' => -1,
+				'posts_per_page' => 3000,
 				'fields'         => 'ids',
-				'meta_key'       => '_oc_color_galleries', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- an admin report, run on request.
 				'no_found_rows'  => true,
+				'tax_query'      => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query -- an admin report, run on request.
+					array(
+						'taxonomy' => 'product_type',
+						'field'    => 'slug',
+						'terms'    => 'variable',
+					),
+				),
 			)
 		);
 
 		$out = array();
 
 		foreach ( $ids as $id ) {
-			$id        = (int) $id;
-			$galleries = $this->galleries_meta( $id );
-			$main      = (int) get_post_thumbnail_id( $id );
+			$id      = (int) $id;
+			$product = wc_get_product( $id );
 
-			if ( ! self::galleries_have_pictures( $galleries ) ) {
+			if ( ! $product instanceof \WC_Product ) {
+				continue;
+			}
+
+			$pics = $this->colour_pictures( $product );
+			$main = (int) get_post_thumbnail_id( $id );
+
+			if ( empty( $pics ) ) {
 				continue;
 			}
 
 			$colours = array();
 			$owned   = false;
 
-			foreach ( $galleries as $slug => $entry ) {
-				if ( empty( $entry['imgs'] ) ) {
-					continue;
-				}
-
+			foreach ( $pics as $slug => $pic ) {
 				$colours[] = rawurldecode( (string) $slug );
 
-				if ( $main && in_array( $main, $entry['imgs'], true ) ) {
+				if ( $main && in_array( $main, $pic['imgs'], true ) ) {
 					$owned = true;
 				}
 			}
@@ -2059,7 +2125,7 @@ final class Variations {
 		<div class="wrap">
 			<h1><?php esc_html_e( 'Main photo without a colour', 'oc-theme' ); ?></h1>
 			<p class="description" style="max-width:720px;">
-				<?php esc_html_e( 'These products have colour galleries, but their main photo sits in none of them. Their catalogue card marks no colour and the product page opens with nothing chosen, so the photo never contradicts the swatch. To have a colour marked again, add the main photo to that colour\'s gallery (Product data → Colour galleries), or make one of the gallery pictures the main photo.', 'oc-theme' ); ?>
+				<?php esc_html_e( 'The colours of these products have pictures of their own — a colour gallery or a variation image — and the main photo is none of them. Their catalogue card marks no colour and the product page opens with nothing chosen, so the photo never contradicts the swatch. To have a colour marked again, make the main photo one of that colour\'s pictures: add it to the colour\'s gallery (Product data → Colour galleries), set it as that variation\'s image, or make one of the colour\'s pictures the main photo.', 'oc-theme' ); ?>
 			</p>
 			<p>
 				<?php

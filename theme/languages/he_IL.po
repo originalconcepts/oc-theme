@@ -8312,3 +8312,6 @@ msgstr "0 = ללא תקרה"
 
 msgid "Sign-in already limits code sends per phone and per connection on its own; the contact form block keeps its own hourly cap. The trap field and the timestamp are always on."
 msgstr "ההתחברות כבר מגבילה שליחת קודים לכל טלפון ולכל חיבור בעצמה; בלוק טופס יצירת הקשר שומר על התקרה השעתית שלו. שדה המלכודת וחותמת הזמן פועלים תמיד."
+
+msgid "The colours of these products have pictures of their own — a colour gallery or a variation image — and the main photo is none of them. Their catalogue card marks no colour and the product page opens with nothing chosen, so the photo never contradicts the swatch. To have a colour marked again, make the main photo one of that colour's pictures: add it to the colour's gallery (Product data → Colour galleries), set it as that variation's image, or make one of the colour's pictures the main photo."
+msgstr "לצבעים של המוצרים האלה יש תמונות משלהם – גלריית צבע או תמונת וריאציה – והתמונה הראשית אינה אחת מהן. הכרטיס בקטלוג לא מסמן צבע ודף המוצר נפתח בלי צבע נבחר, כך שהתמונה לעולם לא סותרת את הסוואטש. כדי שיסומן צבע שוב, הפכו את התמונה הראשית לאחת מתמונות אותו צבע: הוסיפו אותה לגלריית הצבע (נתוני מוצר ← גלריות צבע), הגדירו אותה כתמונת הווריאציה, או הפכו אחת מתמונות הצבע לתמונה הראשית."
