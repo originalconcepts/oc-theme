@@ -294,6 +294,7 @@ final class WooCommerce {
 		// below the form.
 		add_action( 'woocommerce_before_add_to_cart_button', array( $this, 'stock_line' ) );
 		add_filter( 'woocommerce_available_variation', array( $this, 'variation_stock_line' ), 10, 3 );
+		add_action( 'woocommerce_after_add_to_cart_form', array( $this, 'oos_watch' ), 5 );
 		add_action( 'woocommerce_after_add_to_cart_form', array( $this, 'atc_icons' ) );
 
 		// Sold-out products show a proper block instead of a bare summary:
@@ -2045,17 +2046,38 @@ final class WooCommerce {
 			return;
 		}
 
-		$in_stock = $product->is_in_stock();
-
-		// In-stock variable products carry a hidden copy: it surfaces the
-		// moment the shopper picks a variation that happens to be sold out.
-		if ( $in_stock && ! $product->is_type( 'variable' ) ) {
+		// An in-stock product prints nothing here: the variable one's
+		// hidden copy is printed by oos_watch() straight after the form,
+		// where the add-to-cart row it replaces stood.
+		if ( $product->is_in_stock() ) {
 			return;
 		}
 		?>
-		<div class="oc-oos<?php echo $in_stock ? ' oc-oos--watch' : ''; ?>"<?php echo $in_stock ? ' hidden' : ''; ?>>
+		<div class="oc-oos">
 			<button type="button" class="oc-oos__soldout" disabled><?php esc_html_e( 'Out of stock', 'oc-theme' ); ?></button>
 			<button type="button" class="oc-oos__notify oc-notify-open" data-product="<?php echo absint( $product->get_id() ); ?>" data-name="<?php echo esc_attr( $product->get_name() ); ?>"<?php echo $product->is_type( 'variable' ) ? ' data-variable="1"' : ''; ?>><?php esc_html_e( 'Notify me when it is back', 'oc-theme' ); ?></button>
+		</div>
+		<?php
+	}
+
+	/**
+	 * The hidden sold-out copy of an in-stock variable product. It sits
+	 * right after the form — where the add-to-cart row it swaps out was —
+	 * and surfaces the moment the shopper picks a variation that happens to
+	 * be sold out. It used to print after the whole summary, which put it
+	 * under the icons and the contact card, far from the row it stands in
+	 * for.
+	 */
+	public function oos_watch(): void {
+		global $product;
+
+		if ( ! $product instanceof \WC_Product || ! $product->is_type( 'variable' ) || ! $product->is_in_stock() ) {
+			return;
+		}
+		?>
+		<div class="oc-oos oc-oos--watch" hidden>
+			<button type="button" class="oc-oos__soldout" disabled><?php esc_html_e( 'Out of stock', 'oc-theme' ); ?></button>
+			<button type="button" class="oc-oos__notify oc-notify-open" data-product="<?php echo absint( $product->get_id() ); ?>" data-name="<?php echo esc_attr( $product->get_name() ); ?>" data-variable="1"><?php esc_html_e( 'Notify me when it is back', 'oc-theme' ); ?></button>
 		</div>
 		<?php
 	}

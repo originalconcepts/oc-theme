@@ -4631,6 +4631,22 @@
 						seen[ v.variation_id ] = v;
 					}
 					setTimeout( apply, 0 );
+
+					// Woo writes the variation's picture into the FIRST slide.
+					// A shopper standing on the third saw only a thumbnail
+					// change and the big picture stay put. The first slide is
+					// brought forward and its thumb marked, on the rail and on
+					// the phone's strip alike.
+					if ( v && v.image && v.image.src ) {
+						setTimeout( function () {
+							if ( gSlides && gSlides.length && galleryMode ) {
+								activateSlide( 0 );
+							}
+							if ( mgWrap && mgWrap.clientWidth && document.body.classList.contains( 'oc-gm-dots' ) ) {
+								mgGoTo( 0 );
+							}
+						}, 30 );
+					}
 				} )
 				.on( 'hide_variation reset_data reset_image', function () {
 					setTimeout( apply, 0 );
