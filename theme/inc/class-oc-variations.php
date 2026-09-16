@@ -228,6 +228,16 @@ final class Variations {
 		// variation data, so Woo's own image update agrees with the gallery
 		// instead of putting the product's main photo back over it.
 		add_filter( 'woocommerce_available_variation', array( $this, 'variation_gallery_image' ), 20, 3 );
+
+		// The page opens straight on the colour it was entered with — the
+		// card's swatch, the address, the default — with that colour's gallery
+		// in the markup itself. Before, the product's own gallery showed
+		// first and the script swapped the colour's in: a visible jump.
+		add_action( 'woocommerce_before_single_product_summary', array( $this, 'open_gallery_on' ), 19 );
+		add_action( 'woocommerce_before_single_product_summary', array( $this, 'open_gallery_off' ), 21 );
+
+		// Products whose main photo belongs to no colour gallery, listed.
+		add_action( 'admin_menu', array( $this, 'report_menu' ), 60 );
 	}
 
 	/**
@@ -280,6 +290,12 @@ final class Variations {
 
 		$lead = $this->default_term( $product ) ?? $this->gallery_lead( $product );
 		$pick = array();
+
+		// A main photo that belongs to none of the colour galleries: the
+		// page shows that photo and marks no colour (see default_term()).
+		if ( null === $lead && self::galleries_have_pictures( $this->galleries_meta( $id ) ) ) {
+			return $cache[ $id ];
+		}
 
 		// A combination that exists: the first variation in the lead colour
 		// (or open to any colour), else simply the first variation.
@@ -372,6 +388,7 @@ final class Variations {
 		$main      = (int) $product->get_image_id();
 		$galleries = $this->galleries_meta( $id );
 		$lead      = null;
+		$owned     = false;
 
 		foreach ( $values as $val ) {
 			if ( '' === $this->value_style( $product, $attr, $val, $attr['type'] ) ) {
@@ -383,12 +400,18 @@ final class Variations {
 			}
 
 			if ( $main && in_array( $main, array_map( 'intval', $galleries[ $val['slug'] ]['imgs'] ?? array() ), true ) ) {
-				$lead = $val;
+				$lead  = $val;
+				$owned = true;
 				break;
 			}
 		}
 
-		if ( null === $lead ) {
+		// The card shows the main photo. When colour galleries exist and
+		// none of them holds that photo, marking a colour beside it says
+		// "this is what you see" about a colour it is not — the black bin
+		// with a grey dot. No mark, then; the product page opens with
+		// nothing chosen, and the photo stays the product's own.
+		if ( null === $lead || ( ! $owned && self::galleries_have_pictures( $galleries ) ) ) {
 			return null;
 		}
 
@@ -1797,11 +1820,279 @@ final class Variations {
 			return;
 		}
 
+		// The page's markup already holds the opening colour's gallery, so
+		// the product's own slides travel here under '' — the answer to
+		// "nothing chosen" — and the script starts from that colour.
+		$open = $this->opening_gallery( $product );
+
+		if ( null !== $open ) {
+			$own    = array_filter( array_merge( array( (int) $product->get_image_id() ), array_map( 'intval', $product->get_gallery_image_ids() ) ) );
+			$slides = array();
+
+			foreach ( array_values( $own ) as $i => $img_id ) {
+				$slides[] = self::strip_thumb_data( wc_get_gallery_image_html( $img_id, 0 === $i ) );
+			}
+
+			$map[''] = $slides;
+		}
+
 		printf(
-			'<script type="application/json" id="oc-color-galleries" data-attr="%s">%s</script>',
+			'<script type="application/json" id="oc-color-galleries" data-attr="%s"%s>%s</script>',
 			esc_attr( 'attribute_' . $from ),
+			null === $open ? '' : ' data-open="' . esc_attr( $open['value'] ) . '"',
 			wp_json_encode( $map ) // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- JSON in a non-executed script tag.
 		);
+	}
+
+	/**
+	 * Whether any colour gallery actually holds pictures.
+	 *
+	 * @param array<string,array{imgs:array<int,int>,swatch:string,color:string}> $galleries From galleries_meta().
+	 */
+	private static function galleries_have_pictures( array $galleries ): bool {
+		foreach ( $galleries as $entry ) {
+			if ( ! empty( $entry['imgs'] ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * The colour the product page opens on, when it has a gallery: the one
+	 * in the address (a card swatch, a shared link), else the default.
+	 *
+	 * @param \WC_Product $product The product.
+	 * @return array{value:string,imgs:array<int,int>}|null
+	 */
+	private function opening_gallery( \WC_Product $product ): ?array {
+		static $cache = array();
+
+		$id = $product->get_id();
+
+		if ( array_key_exists( $id, $cache ) ) {
+			return $cache[ $id ];
+		}
+
+		$cache[ $id ] = null;
+		$galleries    = $this->galleries_meta( $id );
+
+		if ( ! $product instanceof \WC_Product_Variable || ! self::galleries_have_pictures( $galleries ) ) {
+			return null;
+		}
+
+		$defaults = (array) $product->get_default_attributes();
+
+		foreach ( $this->product_attrs( $product ) as $attr ) {
+			$field = 'attribute_' . $attr['key'];
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- a colour in the address, read the way Woo reads it.
+			$asked = isset( $_REQUEST[ $field ] ) ? wc_clean( wp_unslash( (string) $_REQUEST[ $field ] ) ) : (string) ( $defaults[ $attr['key'] ] ?? '' );
+
+			if ( '' === $asked ) {
+				continue;
+			}
+
+			foreach ( $attr['values'] as $val ) {
+				if ( ! self::same_value( $asked, $val ) ) {
+					continue;
+				}
+
+				$imgs = array_values( array_filter( array_map( 'intval', $galleries[ $val['slug'] ]['imgs'] ?? array() ) ) );
+
+				if ( $imgs ) {
+					$cache[ $id ] = array(
+						'value' => $val['value'],
+						'imgs'  => $imgs,
+					);
+
+					return $cache[ $id ];
+				}
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Whether an asked-for value names this attribute value — as the term
+	 * slug, its percent-decoded form, or the typed text of a local value.
+	 *
+	 * @param string $asked The value asked for.
+	 * @param array  $val   One of product_attrs()' values.
+	 */
+	private static function same_value( string $asked, array $val ): bool {
+		$a = rawurldecode( $asked );
+
+		return $a === rawurldecode( (string) $val['value'] )
+			|| $a === rawurldecode( (string) $val['slug'] )
+			|| sanitize_title( $a ) === (string) $val['slug'];
+	}
+
+	/**
+	 * Before the gallery renders: the opening colour's pictures stand in
+	 * for the product's own, for the gallery template alone.
+	 */
+	public function open_gallery_on(): void {
+		global $product;
+
+		if ( ! $product instanceof \WC_Product || null === $this->opening_gallery( $product ) ) {
+			return;
+		}
+
+		add_filter( 'woocommerce_product_get_image_id', array( $this, 'open_image_id' ), 10, 2 );
+		add_filter( 'woocommerce_product_get_gallery_image_ids', array( $this, 'open_gallery_ids' ), 10, 2 );
+	}
+
+	/**
+	 * After the gallery rendered: the product's own pictures again.
+	 */
+	public function open_gallery_off(): void {
+		remove_filter( 'woocommerce_product_get_image_id', array( $this, 'open_image_id' ), 10 );
+		remove_filter( 'woocommerce_product_get_gallery_image_ids', array( $this, 'open_gallery_ids' ), 10 );
+	}
+
+	/**
+	 * The opening colour's first picture as the main image.
+	 *
+	 * @param mixed $value   Stored image id.
+	 * @param mixed $product The product.
+	 * @return mixed
+	 */
+	public function open_image_id( $value, $product ) {
+		$open = $product instanceof \WC_Product ? $this->opening_gallery( $product ) : null;
+
+		return null === $open ? $value : $open['imgs'][0];
+	}
+
+	/**
+	 * The opening colour's other pictures as the gallery.
+	 *
+	 * @param mixed $ids     Stored gallery ids.
+	 * @param mixed $product The product.
+	 * @return mixed
+	 */
+	public function open_gallery_ids( $ids, $product ) {
+		$open = $product instanceof \WC_Product ? $this->opening_gallery( $product ) : null;
+
+		return null === $open ? $ids : array_slice( $open['imgs'], 1 );
+	}
+
+	/**
+	 * Under Products: the report.
+	 */
+	public function report_menu(): void {
+		add_submenu_page(
+			'edit.php?post_type=product',
+			__( 'Main photo without a colour', 'oc-theme' ),
+			__( 'Main photo without a colour', 'oc-theme' ),
+			'manage_woocommerce',
+			'oc-color-report',
+			array( $this, 'report_page' )
+		);
+	}
+
+	/**
+	 * Products with colour galleries whose main photo sits in none of them.
+	 *
+	 * @return array<int,array{id:int,colours:array<int,string>}>
+	 */
+	private function unowned_products(): array {
+		$ids = get_posts(
+			array(
+				'post_type'      => 'product',
+				'post_status'    => array( 'publish', 'draft', 'pending', 'private' ),
+				'posts_per_page' => -1,
+				'fields'         => 'ids',
+				'meta_key'       => '_oc_color_galleries', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- an admin report, run on request.
+				'no_found_rows'  => true,
+			)
+		);
+
+		$out = array();
+
+		foreach ( $ids as $id ) {
+			$id        = (int) $id;
+			$galleries = $this->galleries_meta( $id );
+			$main      = (int) get_post_thumbnail_id( $id );
+
+			if ( ! self::galleries_have_pictures( $galleries ) ) {
+				continue;
+			}
+
+			$colours = array();
+			$owned   = false;
+
+			foreach ( $galleries as $slug => $entry ) {
+				if ( empty( $entry['imgs'] ) ) {
+					continue;
+				}
+
+				$colours[] = rawurldecode( (string) $slug );
+
+				if ( $main && in_array( $main, $entry['imgs'], true ) ) {
+					$owned = true;
+				}
+			}
+
+			if ( ! $owned ) {
+				$out[] = array(
+					'id'      => $id,
+					'colours' => $colours,
+				);
+			}
+		}
+
+		return $out;
+	}
+
+	/**
+	 * The report screen.
+	 */
+	public function report_page(): void {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			wp_die( esc_html__( 'Not allowed.', 'oc-theme' ) );
+		}
+
+		$rows = $this->unowned_products();
+		?>
+		<div class="wrap">
+			<h1><?php esc_html_e( 'Main photo without a colour', 'oc-theme' ); ?></h1>
+			<p class="description" style="max-width:720px;">
+				<?php esc_html_e( 'These products have colour galleries, but their main photo sits in none of them. Their catalogue card marks no colour and the product page opens with nothing chosen, so the photo never contradicts the swatch. To have a colour marked again, add the main photo to that colour\'s gallery (Product data → Colour galleries), or make one of the gallery pictures the main photo.', 'oc-theme' ); ?>
+			</p>
+			<p>
+				<?php
+				/* translators: %s: how many products. */
+				echo esc_html( sprintf( __( 'Products found: %s', 'oc-theme' ), number_format_i18n( count( $rows ) ) ) );
+				?>
+			</p>
+			<table class="widefat striped" style="max-width:960px;">
+				<thead>
+					<tr>
+						<th style="width:70px;"><?php esc_html_e( 'Main photo', 'oc-theme' ); ?></th>
+						<th><?php esc_html_e( 'Product', 'oc-theme' ); ?></th>
+						<th><?php esc_html_e( 'Colours with a gallery', 'oc-theme' ); ?></th>
+					</tr>
+				</thead>
+				<tbody>
+					<?php if ( ! $rows ) : ?>
+						<tr><td colspan="3"><?php esc_html_e( 'None — every main photo belongs to a colour.', 'oc-theme' ); ?></td></tr>
+					<?php endif; ?>
+					<?php foreach ( $rows as $row ) : ?>
+						<tr>
+							<td><?php echo get_the_post_thumbnail( $row['id'], array( 56, 56 ) ); ?></td>
+							<td>
+								<a href="<?php echo esc_url( (string) get_edit_post_link( $row['id'] ) ); ?>"><strong><?php echo esc_html( get_the_title( $row['id'] ) ); ?></strong></a>
+								<a href="<?php echo esc_url( (string) get_permalink( $row['id'] ) ); ?>" target="_blank" rel="noopener" style="margin-inline-start:8px;font-size:12px;"><?php esc_html_e( 'view', 'oc-theme' ); ?></a>
+							</td>
+							<td><?php echo esc_html( implode( ', ', $row['colours'] ) ); ?></td>
+						</tr>
+					<?php endforeach; ?>
+				</tbody>
+			</table>
+		</div>
+		<?php
 	}
 
 	/**

@@ -8222,3 +8222,21 @@ msgstr "מיקום הטקסט"
 
 msgid "In the centre, everything centred"
 msgstr "במרכז, הכול ממורכז"
+
+msgid "Main photo without a colour"
+msgstr "תמונה ראשית ללא צבע"
+
+msgid "These products have colour galleries, but their main photo sits in none of them. Their catalogue card marks no colour and the product page opens with nothing chosen, so the photo never contradicts the swatch. To have a colour marked again, add the main photo to that colour's gallery (Product data → Colour galleries), or make one of the gallery pictures the main photo."
+msgstr "למוצרים האלה יש גלריות צבע, אבל התמונה הראשית שלהם לא נמצאת באף אחת מהן. הכרטיס בקטלוג לא מסמן צבע ודף המוצר נפתח בלי צבע נבחר, כך שהתמונה לעולם לא סותרת את הסוואטש. כדי שיסומן צבע שוב, הוסיפו את התמונה הראשית לגלריה של אותו צבע (נתוני מוצר ← גלריות צבע), או הפכו אחת מתמונות הגלריה לתמונה הראשית."
+
+msgid "Products found: %s"
+msgstr "מוצרים שנמצאו: %s"
+
+msgid "Main photo"
+msgstr "תמונה ראשית"
+
+msgid "Colours with a gallery"
+msgstr "צבעים עם גלריה"
+
+msgid "None — every main photo belongs to a colour."
+msgstr "אין – כל תמונה ראשית שייכת לצבע."

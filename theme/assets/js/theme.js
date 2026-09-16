@@ -4473,6 +4473,14 @@
 		}
 	}
 
+	// The page opened on a colour's gallery (data-open on the tag): the
+	// product's own slides came along under '' and stand in for "nothing
+	// chosen", since the markup no longer holds them.
+	if ( ocColorGalleries && ocColorGalleries[ '' ] ) {
+		ocGalleryOriginal = ocColorGalleries[ '' ].join( '' );
+		delete ocColorGalleries[ '' ];
+	}
+
 	// Assigned by the video module: re-inserts the gallery video slide after
 	// a colour-gallery swap replaces the slides.
 	var ocReinsertVideo = null;
@@ -4499,7 +4507,7 @@
 	// a variation's own gallery, '' for the product's. A swap to what is
 	// already there is skipped, so a size change never rebuilds the slides
 	// under the visitor. Answers whether anything changed.
-	var ocGalleryShown = '';
+	var ocGalleryShown = ocGalleriesTag && ocGalleriesTag.dataset.open ? 'c:' + ocGalleriesTag.dataset.open : '';
 
 	function ocShowGallery( key, slides ) {
 		if ( key === ocGalleryShown ) {
