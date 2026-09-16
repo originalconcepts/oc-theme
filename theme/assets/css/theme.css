@@ -11199,19 +11199,7 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 
 .oc-checkout #order_review tr.woocommerce-shipping-totals { display: none; }
 
-.oc-co-shiprow2__in {
-	display: flex;
-	justify-content: space-between;
-	gap: 10px;
-	align-items: baseline;
-	font-size: .95rem;
-}
-
-.oc-checkout tr.oc-co-shiprow2 td { text-align: left; }
-.oc-co-shiprow2__in > span { font-weight: 400; }
-
-/* a method with no price: its name takes the price column */
-.oc-co-shiprow2__in > span:only-child { margin-inline-start: auto; }
+.oc-checkout tr.oc-co-shiprow2 td { text-align: left; white-space: nowrap; }
 
 /* the promotion engine's nudge panel belongs to the cart, not here */
 .oc-checkout .promeng-cart-messages { display: none; }

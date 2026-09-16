@@ -894,15 +894,14 @@ final class Checkout {
 			$rate = $rates[ $current ];
 			$cost = (float) $rate->get_cost() + array_sum( array_map( 'floatval', $rate->get_taxes() ) );
 
-			// phpcs:ignore WordPress.WP.I18n.TextDomainMismatch -- Woo's own row label; reuse its translation.
-			echo '<tr class="oc-co-shiprow2"><th>' . esc_html__( 'Shipping', 'woocommerce' ) . '</th><td>';
-			echo '<span class="oc-co-shiprow2__in"><span>' . esc_html( $rate->get_label() ) . '</span>';
+			// The chosen method's own name is the row's label — "Shipping"
+			// beside "Home delivery" read as two names on one line.
+			echo '<tr class="oc-co-shiprow2"><th>' . esc_html( $rate->get_label() ) . '</th><td>';
 			if ( $cost > 0 ) {
 				echo '<strong>' . wp_kses_post( wc_price( $cost ) ) . '</strong>';
 			} elseif ( 'free_shipping' !== $rate->get_method_id() ) {
 				echo '<strong>' . esc_html__( 'Free', 'oc-theme' ) . '</strong>';
 			}
-			echo '</span>';
 			echo '</td></tr>';
 		}
 	}

@@ -4637,12 +4637,16 @@
 					// change and the big picture stay put. The first slide is
 					// brought forward and its thumb marked, on the rail and on
 					// the phone's strip alike.
+					// Only when the shopper is NOT on the first slide already:
+					// Woo raises both events a second apart, and re-marking
+					// the slide that is already active replayed its fade —
+					// the picture blinked twice on every colour choice.
 					if ( v && v.image && v.image.src ) {
 						setTimeout( function () {
-							if ( gSlides && gSlides.length && galleryMode ) {
+							if ( gSlides && gSlides.length && galleryMode && ! gSlides[ 0 ].classList.contains( 'is-active' ) ) {
 								activateSlide( 0 );
 							}
-							if ( mgWrap && mgWrap.clientWidth && document.body.classList.contains( 'oc-gm-dots' ) ) {
+							if ( mgWrap && mgWrap.clientWidth && Math.abs( mgWrap.scrollLeft ) > 2 && document.body.classList.contains( 'oc-gm-dots' ) ) {
 								mgGoTo( 0 );
 							}
 						}, 30 );
