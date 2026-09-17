@@ -345,7 +345,7 @@ final class Admin {
 				'permission_callback' => static function (): bool {
 					return current_user_can( self::cap() );
 				},
-				'callback' => array( $this, 'rest_stats' ),
+				'callback'            => array( $this, 'rest_stats' ),
 			)
 		);
 
@@ -357,7 +357,7 @@ final class Admin {
 				'permission_callback' => static function (): bool {
 					return current_user_can( self::cap() );
 				},
-				'callback' => static function ( \WP_REST_Request $req ) {
+				'callback'            => static function ( \WP_REST_Request $req ) {
 					Insights::dismiss( sanitize_key( (string) $req->get_param( 'key' ) ) );
 
 					return new \WP_REST_Response( array( 'ok' => true ) );
