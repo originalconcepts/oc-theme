@@ -632,6 +632,9 @@ final class Query {
 
 	/**
 	 * The first day of the month that holds $day, moved by whole months.
+	 *
+	 * @param string $day    Y-m-d.
+	 * @param int    $months Months to move, negative for back.
 	 */
 	public static function month_start( string $day, int $months = 0 ): string {
 		$t = strtotime( substr( $day, 0, 7 ) . '-01 UTC' );
@@ -640,6 +643,8 @@ final class Query {
 
 	/**
 	 * The last day of the month that holds $day.
+	 *
+	 * @param string $day Y-m-d.
 	 */
 	public static function month_end( string $day ): string {
 		return gmdate( 'Y-m-t', (int) strtotime( substr( $day, 0, 7 ) . '-01 UTC' ) );
