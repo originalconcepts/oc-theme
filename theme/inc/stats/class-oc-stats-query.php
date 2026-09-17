@@ -350,7 +350,8 @@ final class Query {
 
 				// An order counts once per product, however many of its variations it holds.
 				if ( ! isset( $seen[ $pid ] ) ) {
-					$seen[ $pid ]                = true;
+					$seen[ $pid ] = true;
+
 					$m['product_orders'][ $pid ] = ( $m['product_orders'][ $pid ] ?? 0 ) + 1;
 				}
 				$m['product_qty'][ $pid ]    = ( $m['product_qty'][ $pid ] ?? 0 ) + $qty;
