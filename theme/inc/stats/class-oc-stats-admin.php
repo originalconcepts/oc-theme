@@ -393,8 +393,10 @@ final class Admin {
 			return (float) $m[ $b ] > 0 ? (float) $m[ $a ] / (float) $m[ $b ] : 0.0;
 		};
 
-		$conv  = $rate( $cur, 'orders', 'sessions' ) * 100;
-		$pconv = $rate( $prev, 'orders', 'sessions' ) * 100;
+		// A conversion rate needs visits behind it: fewer visits than orders
+		// means the counter started after those orders, not a 1,400% shop.
+		$conv  = (float) $cur['sessions'] >= (float) $cur['orders'] ? $rate( $cur, 'orders', 'sessions' ) * 100 : null;
+		$pconv = (float) $prev['sessions'] >= (float) $prev['orders'] ? $rate( $prev, 'orders', 'sessions' ) * 100 : null;
 		$aov   = $rate( $cur, 'gross', 'orders' );
 		$paov  = $rate( $prev, 'gross', 'orders' );
 		$ret   = (float) $cur['new_customers'] + (float) $cur['returning_customers'];
@@ -406,7 +408,7 @@ final class Admin {
 			array( 'sales', round( (float) $cur['gross'], 2 ), 'money', Query::change( (float) $cur['gross'], (float) $prev['gross'] ) ),
 			array( 'orders', (int) $cur['orders'], 'int', Query::change( (float) $cur['orders'], (float) $prev['orders'] ) ),
 			array( 'visits', (int) $cur['sessions'], 'int', Query::change( (float) $cur['sessions'], (float) $prev['sessions'] ) ),
-			array( 'conv', round( $conv, 2 ), 'pct', $pconv > 0 ? round( $conv - $pconv, 2 ) : null ),
+			array( 'conv', null === $conv ? null : round( $conv, 2 ), 'pct', null !== $conv && null !== $pconv && $pconv > 0 ? round( $conv - $pconv, 2 ) : null ),
 			array( 'aov', round( $aov, 2 ), 'money', Query::change( $aov, $paov ) ),
 			array( 'returning', round( $rets, 1 ), 'pct', $prets > 0 ? round( $rets - $prets, 1 ) : null ),
 		);

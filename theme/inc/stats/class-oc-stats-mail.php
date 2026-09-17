@@ -116,8 +116,8 @@ final class Mail {
 				(int) $cur['orders']
 			);
 
-		$conv  = (int) $cur['sessions'] > 0 ? (float) $cur['orders'] / (float) $cur['sessions'] * 100 : 0;
-		$pconv = (int) $prev['sessions'] > 0 ? (float) $prev['orders'] / (float) $prev['sessions'] * 100 : 0;
+		$conv  = (int) $cur['sessions'] >= (int) $cur['orders'] && (int) $cur['sessions'] > 0 ? (float) $cur['orders'] / (float) $cur['sessions'] * 100 : null;
+		$pconv = (int) $prev['sessions'] >= (int) $prev['orders'] && (int) $prev['sessions'] > 0 ? (float) $prev['orders'] / (float) $prev['sessions'] * 100 : null;
 		$aov   = (int) $cur['orders'] > 0 ? (float) $cur['gross'] / (float) $cur['orders'] : 0;
 		$paov  = (int) $prev['orders'] > 0 ? (float) $prev['gross'] / (float) $prev['orders'] : 0;
 
@@ -125,7 +125,7 @@ final class Mail {
 			array( __( 'Sales', 'oc-theme' ), self::money( (float) $cur['gross'] ), Query::change( (float) $cur['gross'], (float) $prev['gross'] ) ),
 			array( __( 'Orders', 'oc-theme' ), number_format_i18n( (int) $cur['orders'] ), Query::change( (float) $cur['orders'], (float) $prev['orders'] ) ),
 			array( __( 'Visits', 'oc-theme' ), number_format_i18n( (int) $cur['sessions'] ), Query::change( (float) $cur['sessions'], (float) $prev['sessions'] ) ),
-			array( __( 'Conversion', 'oc-theme' ), number_format_i18n( $conv, 2 ) . '%', $pconv > 0 ? round( $conv - $pconv, 2 ) : null ),
+			array( __( 'Conversion', 'oc-theme' ), null === $conv ? '—' : number_format_i18n( $conv, 2 ) . '%', null !== $conv && null !== $pconv && $pconv > 0 ? round( $conv - $pconv, 2 ) : null ),
 			array( __( 'Average order', 'oc-theme' ), self::money( $aov ), Query::change( $aov, $paov ) ),
 			array( __( 'Cancelled and failed', 'oc-theme' ), number_format_i18n( (int) $cur['cancelled_n'] + (int) $cur['failed_n'] ), null ),
 		);

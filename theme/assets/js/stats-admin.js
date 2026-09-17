@@ -38,6 +38,7 @@
 	}
 
 	function fmt( v, kind ) {
+		if ( v === null || v === undefined ) { return '—'; }
 		if ( kind === 'money' ) { return fmtMoney( v ); }
 		if ( kind === 'pct' ) { return Number( v ).toLocaleString( 'en-US', { maximumFractionDigits: 2 } ) + '%'; }
 		return fmtInt( v );
