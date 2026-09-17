@@ -33,6 +33,7 @@ final class Menu {
 		add_filter( 'nav_menu_item_title', array( $this, 'item_title' ), 10, 2 );
 		add_filter( 'walker_nav_menu_start_el', array( $this, 'panel' ), 10, 4 );
 		add_filter( 'wp_nav_menu_objects', array( $this, 'drop_hidden' ), 10, 2 );
+		add_filter( 'wp_nav_menu_objects', array( $this, 'prime' ), 11 );
 
 		// Deleting an item, or reordering the menu, can leave a panel cached
 		// for something that is no longer there. And the row limit is baked
@@ -413,6 +414,53 @@ final class Menu {
 		}
 
 		return true;
+	}
+
+	/**
+	 * One trip for what every item of a menu reads while it is walked: the
+	 * panel transients and the item pictures. Without it each panel costs
+	 * two option reads and each picture two post reads.
+	 *
+	 * @param array $items Menu items.
+	 * @return array
+	 */
+	public function prime( $items ) {
+		if ( ! is_array( $items ) || ! $items ) {
+			return $items;
+		}
+
+		$ids = array_map( 'intval', wp_list_pluck( $items, 'ID' ) );
+		update_meta_cache( 'post', $ids );
+
+		$pictures = array();
+
+		foreach ( $ids as $id ) {
+			$img = (int) get_post_meta( $id, '_oc_img', true );
+
+			if ( $img ) {
+				$pictures[] = $img;
+			}
+		}
+
+		if ( $pictures ) {
+			_prime_post_caches( array_values( array_unique( $pictures ) ), false, true );
+		}
+
+		if ( function_exists( 'wp_prime_option_caches' ) && class_exists( __NAMESPACE__ . '\\Menu_Panel' ) ) {
+			$ver   = Menu_Panel::version();
+			$names = array();
+
+			foreach ( $ids as $id ) {
+				foreach ( array( 'nav', 'drawer' ) as $where ) {
+					$names[] = '_transient_oc_mpanel_' . $id . '_' . $where . '_' . $ver;
+					$names[] = '_transient_timeout_oc_mpanel_' . $id . '_' . $where . '_' . $ver;
+				}
+			}
+
+			wp_prime_option_caches( $names );
+		}
+
+		return $items;
 	}
 
 	/**

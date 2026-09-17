@@ -101,7 +101,30 @@ final class Search_Panel {
 	 * Popular searches, history and popular products.
 	 */
 	public static function idle_html(): string {
-		$s     = Search::settings();
+		$s = Search::settings();
+
+		// Drawn on every page, so it is built once and kept for a quarter of
+		// an hour; a change in the search settings or the look starts fresh.
+		$look = array_filter( (array) get_theme_mods(), static fn( $k ) => 0 === strpos( (string) $k, 'oc_search' ), ARRAY_FILTER_USE_KEY );
+		$key  = 'oc_search_idle_' . substr( md5( wp_json_encode( array( $s, $look, get_locale(), defined( 'OC_THEME_VERSION' ) ? OC_THEME_VERSION : '' ) ) ), 0, 12 );
+		$html = get_transient( $key );
+
+		if ( is_string( $html ) ) {
+			return $html;
+		}
+
+		$html = self::build_idle( $s );
+		set_transient( $key, $html, 15 * MINUTE_IN_SECONDS );
+
+		return $html;
+	}
+
+	/**
+	 * The idle panel itself.
+	 *
+	 * @param array<string,mixed> $s Search settings.
+	 */
+	private static function build_idle( array $s ): string {
 		$terms = Search::popular_terms( (int) $s['pop_days'], (int) $s['pop_count'] );
 		$prods = Search::popular_products();
 

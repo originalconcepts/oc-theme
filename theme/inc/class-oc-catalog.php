@@ -316,11 +316,14 @@ final class Catalog {
 	/* ------------------------------------------------------------ archive */
 
 	/**
-	 * One query for every catalogue image on the page.
+	 * One query for everything a page of cards reads, before the first card.
 	 *
-	 * Without this, a listing where each product carries its own catalogue
-	 * image asks the database for each attachment separately — the classic
-	 * N+1, and the fastest way to undo the work of the performance passes.
+	 * Without this a listing asks the database for each product's pictures,
+	 * each variation and each variable product's price and children
+	 * transients separately — the classic N+1, some 700 small queries on a
+	 * page of 48 cards. Here they become a handful: the products' meta, the
+	 * variations (posts, meta, terms), the transients WooCommerce reads for
+	 * every variable product, and every picture the cards will draw.
 	 *
 	 * @param array $posts Posts.
 	 */
@@ -329,24 +332,73 @@ final class Catalog {
 			return $posts;
 		}
 
-		$ids = wp_list_pluck( $posts, 'ID' );
+		$ids = array_map( 'intval', wp_list_pluck( $posts, 'ID' ) );
 		update_meta_cache( 'post', $ids );
+		update_object_term_cache( $ids, 'product' );
 
-		$images = array();
+		$images   = array();
+		$variable = array();
 
 		foreach ( $ids as $id ) {
-			$image = (int) get_post_meta( $id, '_oc_tile_image', true );
+			$images = array_merge( $images, self::picture_ids( $id ) );
+			$types  = get_the_terms( $id, 'product_type' );
 
-			if ( $image ) {
-				$images[] = $image;
+			if ( is_array( $types ) && in_array( 'variable', wp_list_pluck( $types, 'slug' ), true ) ) {
+				$variable[] = $id;
+			}
+		}
+
+		if ( $variable ) {
+			global $wpdb;
+
+			$in       = implode( ',', $variable );
+			$children = array_map( 'intval', (array) $wpdb->get_col( "SELECT ID FROM {$wpdb->posts} WHERE post_parent IN ( $in ) AND post_type = 'product_variation' AND post_status = 'publish'" ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- integers, joined above.
+
+			if ( $children ) {
+				_prime_post_caches( $children, true, true );
+
+				foreach ( $children as $child ) {
+					$images = array_merge( $images, self::picture_ids( $child ) );
+				}
+			}
+
+			if ( function_exists( 'wp_prime_option_caches' ) ) {
+				$names = array();
+
+				foreach ( $variable as $id ) {
+					foreach ( array( 'wc_product_children_' . $id, 'wc_var_prices_' . $id ) as $t ) {
+						$names[] = '_transient_' . $t;
+						$names[] = '_transient_timeout_' . $t;
+					}
+				}
+
+				wp_prime_option_caches( $names );
 			}
 		}
 
 		if ( $images ) {
-			_prime_post_caches( array_unique( $images ), false, true );
+			_prime_post_caches( array_values( array_unique( $images ) ), false, true );
 		}
 
 		return $posts;
+	}
+
+	/**
+	 * The attachment ids a product or variation can show on a card: its
+	 * catalogue picture, its main picture and its gallery. Meta is cached
+	 * by the time this runs, so it costs nothing.
+	 *
+	 * @param int $id Product or variation.
+	 * @return int[]
+	 */
+	private static function picture_ids( int $id ): array {
+		$out = array( (int) get_post_meta( $id, '_oc_tile_image', true ), (int) get_post_meta( $id, '_thumbnail_id', true ) );
+
+		foreach ( explode( ',', (string) get_post_meta( $id, '_product_image_gallery', true ) ) as $g ) {
+			$out[] = (int) $g;
+		}
+
+		return array_values( array_filter( $out ) );
 	}
 
 	/**
