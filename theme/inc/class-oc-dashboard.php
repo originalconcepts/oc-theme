@@ -266,9 +266,9 @@ class Dashboard {
 		$rows   = array();
 
 		foreach ( $latest as $lead ) {
-			$st    = class_exists( '\\OC\\Blocks\\Leads' ) ? \OC\Blocks\Leads::status( (int) $lead->ID ) : 'new';
-			$label = $labels[ $st ] ?? $st;
-			$when  = mysql2date( 'j.n', $lead->post_date );
+			$st     = class_exists( '\\OC\\Blocks\\Leads' ) ? \OC\Blocks\Leads::status( (int) $lead->ID ) : 'new';
+			$label  = $labels[ $st ] ?? $st;
+			$when   = mysql2date( 'j.n', $lead->post_date );
 			$rows[] = array(
 				'<span class="ocd__when">' . esc_html( $when ) . '</span> <a href="' . esc_url( (string) get_edit_post_link( (int) $lead->ID, 'raw' ) ) . '">' . esc_html( '' === $lead->post_title ? '#' . $lead->ID : $lead->post_title ) . '</a>',
 				'<i class="ocd__chip ocd__chip--' . esc_attr( $st ) . '">' . esc_html( $label ) . '</i>',

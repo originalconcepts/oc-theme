@@ -553,7 +553,7 @@ final class Leads {
 	 */
 	public function columns( array $columns ): array {
 		return array(
-			'cb'       => $columns['cb'] ?? '',
+			'cb'        => $columns['cb'] ?? '',
 			'title'     => __( 'Name', 'oc-blocks' ),
 			'oc_status' => __( 'Status', 'oc-blocks' ),
 			'oc_phone'  => __( 'Phone', 'oc-blocks' ),
