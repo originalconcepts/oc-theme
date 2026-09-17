@@ -335,6 +335,8 @@ final class Query {
 				++$m['new_customers'];
 			}
 
+			$seen = array();
+
 			foreach ( $order->get_items( 'line_item' ) as $item ) {
 				if ( ! $item instanceof \WC_Order_Item_Product ) {
 					continue;
@@ -346,7 +348,11 @@ final class Query {
 
 				$m['items'] += $qty;
 
-				$m['product_orders'][ $pid ] = ( $m['product_orders'][ $pid ] ?? 0 ) + 1;
+				// An order counts once per product, however many of its variations it holds.
+				if ( ! isset( $seen[ $pid ] ) ) {
+					$seen[ $pid ]                = true;
+					$m['product_orders'][ $pid ] = ( $m['product_orders'][ $pid ] ?? 0 ) + 1;
+				}
 				$m['product_qty'][ $pid ]    = ( $m['product_qty'][ $pid ] ?? 0 ) + $qty;
 				$m['product_gross'][ $pid ]  = ( $m['product_gross'][ $pid ] ?? 0 ) + $sum;
 

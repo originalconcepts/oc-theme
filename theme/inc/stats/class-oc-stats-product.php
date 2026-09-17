@@ -118,7 +118,7 @@ class Product {
 		?>
 		<table class="ocst-p">
 			<thead>
-				<tr><th></th><th><?php esc_html_e( 'Last 30 days', 'oc-theme' ); ?></th><th><?php esc_html_e( 'All time', 'oc-theme' ); ?></th></tr>
+				<tr><th></th><th><?php esc_html_e( 'Last 30 days', 'oc-theme' ); ?></th><th><?php echo esc_html( _x( 'All time', 'product sales', 'oc-theme' ) ); ?></th></tr>
 			</thead>
 			<tbody>
 				<?php foreach ( $rows as $r ) : ?>
@@ -129,7 +129,7 @@ class Product {
 		<p class="ocst-p__last">
 			<?php esc_html_e( 'Last ordered', 'oc-theme' ); ?>:
 			<?php
-			$when = mysql2date( (string) get_option( 'date_format' ), $all['last_at'] );
+			$when = mysql2date( 'j.n.Y', $all['last_at'] );
 			$edit = $all['last_id'] > 0 ? get_edit_post_link( $all['last_id'] ) : '';
 			if ( $edit ) {
 				echo '<a href="' . esc_url( $edit ) . '">' . esc_html( $when ) . ' · #' . esc_html( (string) $all['last_id'] ) . '</a>';

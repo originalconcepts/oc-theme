@@ -8786,3 +8786,7 @@ msgstr "הוזמן לאחרונה"
 
 msgid "Paid orders and orders in hand, including VAT; refunds are left out."
 msgstr "הזמנות ששולמו והזמנות בטיפול, כולל מע״מ; החזרים לא נספרים."
+
+msgctxt "product sales"
+msgid "All time"
+msgstr "מאז ומתמיד"
