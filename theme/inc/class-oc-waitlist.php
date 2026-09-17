@@ -246,6 +246,7 @@ final class Waitlist {
 				array(
 					'page'     => 'oc-waitlist',
 					'oc_saved' => 1,
+					'tab'      => 'settings',
 				),
 				admin_url( 'admin.php' )
 			)
@@ -531,6 +532,7 @@ final class Waitlist {
 				array(
 					'page'    => 'oc-waitlist',
 					'oc_test' => $ok ? 1 : 0,
+					'tab'     => 'settings',
 				),
 				admin_url( 'admin.php' )
 			)
@@ -565,6 +567,7 @@ final class Waitlist {
 				array(
 					'page'          => 'oc-waitlist',
 					'oc_test_email' => $ok ? 1 : 0,
+					'tab'           => 'settings',
 				),
 				admin_url( 'admin.php' )
 			)
@@ -688,14 +691,16 @@ final class Waitlist {
 		?>
 		<div class="wrap">
 			<h1><?php esc_html_e( 'Back-in-stock waitlist', 'oc-theme' ); ?></h1>
-			<p>
-				<?php
-				/* translators: %d: number of signups. */
-				echo esc_html( sprintf( __( '%d signups are waiting for products to return.', 'oc-theme' ), count( $rows ) ) );
-				?>
-			</p>
+			<?php
+			$tab  = isset( $_GET['tab'] ) && 'settings' === $_GET['tab'] ? 'settings' : 'waiting'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- which tab.
+			$base = admin_url( 'admin.php?page=oc-waitlist' );
+			?>
+			<nav class="nav-tab-wrapper" style="margin-block-end:16px;">
+				<a href="<?php echo esc_url( $base . '&tab=waiting' ); ?>" class="nav-tab<?php echo 'waiting' === $tab ? ' nav-tab-active' : ''; ?>"><?php esc_html_e( 'Waiting', 'oc-theme' ); ?> <span class="count">(<?php echo esc_html( number_format_i18n( count( $rows ) ) ); ?>)</span></a>
+				<a href="<?php echo esc_url( $base . '&tab=settings' ); ?>" class="nav-tab<?php echo 'settings' === $tab ? ' nav-tab-active' : ''; ?>"><?php esc_html_e( 'Settings', 'oc-theme' ); ?></a>
+			</nav>
 
-			<div class="card" style="max-width:640px;margin-block-end:20px;padding:4px 20px 16px;">
+			<div<?php echo 'settings' === $tab ? '' : ' hidden'; ?> class="card" style="max-width:640px;margin-block-end:20px;padding:4px 20px 16px;">
 				<h2><?php esc_html_e( 'Sending settings', 'oc-theme' ); ?></h2>
 				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 					<input type="hidden" name="action" value="oc_waitlist_settings" />
@@ -759,7 +764,15 @@ final class Waitlist {
 				</form>
 			</div>
 
-			<?php if ( $rows ) : ?>
+			<?php if ( 'settings' === $tab ) : ?>
+				<?php // The list lives on the Waiting tab. ?>
+			<?php elseif ( $rows ) : ?>
+				<p>
+					<?php
+					/* translators: %d: number of signups. */
+					echo esc_html( sprintf( __( '%d signups are waiting for products to return.', 'oc-theme' ), count( $rows ) ) );
+					?>
+				</p>
 				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="margin-block-end:12px;">
 					<input type="hidden" name="action" value="oc_waitlist_export" />
 					<?php wp_nonce_field( 'oc_waitlist_export' ); ?>

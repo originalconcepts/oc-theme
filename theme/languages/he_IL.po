@@ -8929,3 +8929,6 @@ msgstr "לחיצות ב־30 הימים האחרונים · וואטסאפ %1$s �
 
 msgid "No taps in the last 30 days."
 msgstr "לא היו לחיצות ב־30 הימים האחרונים."
+
+msgid "Waiting"
+msgstr "ממתינים"

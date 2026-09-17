@@ -82,7 +82,6 @@ class Dashboard {
 			.ocd__when{color:#8c8f94;font-size:12px;font-variant-numeric:tabular-nums}
 			.ocd__stars{color:#e0a100;letter-spacing:1px;font-size:13px}
 			.ocd__stars i{font-style:normal;color:#dcdcde}
-			.ocd__has-note{font-size:11px}
 			.ocd__chip{font-style:normal;display:inline-block;padding:1px 8px;border-radius:99px;font-size:11.5px;font-weight:600;background:#f0f0f1;color:#50575e}
 			.ocd__chip--new{background:#e5f0ff;color:#0a4b94}.ocd__chip--progress{background:#fff4d6;color:#7a4b00}.ocd__chip--waiting{background:#f3e8ff;color:#5b2c8f}.ocd__chip--done{background:#e3f6e8;color:#1e6b34}.ocd__chip--irrelevant{background:#f0f0f1;color:#646970}
 			.ocd__rows li span{color:#3c434a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -113,9 +112,7 @@ class Dashboard {
 		$metas    = (array) $wpdb->get_results( $wpdb->prepare( "SELECT post_id, meta_value FROM {$wpdb->postmeta} WHERE meta_key = %s", '_oc_notify_list' ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery -- one indexed read on the dashboard.
 		$people   = 0;
 		$products = 0;
-		$recent   = 0;
 		$per      = array();
-		$since    = time() - self::DAYS * DAY_IN_SECONDS;
 
 		foreach ( $metas as $m ) {
 			$list = maybe_unserialize( $m->meta_value );
@@ -127,14 +124,7 @@ class Dashboard {
 			++$products;
 			$per[ (int) $m->post_id ] = count( $list );
 
-			foreach ( $list as $entry ) {
-				++$people;
-				$t = is_int( $entry ) ? $entry : (int) ( $entry['time'] ?? 0 );
-
-				if ( $t >= $since ) {
-					++$recent;
-				}
-			}
+			$people += count( $list );
 		}
 
 		arsort( $per );
@@ -152,10 +142,9 @@ class Dashboard {
 
 		$this->tile(
 			$people,
-			/* translators: %s: how many of them signed up in the last 30 days */
-			sprintf( __( 'people waiting · %s in the last 30 days', 'oc-theme' ), number_format_i18n( $recent ) ),
+			__( 'people waiting', 'oc-theme' ),
 			$rows,
-			admin_url( 'admin.php?page=oc-waitlist' ),
+			admin_url( 'admin.php?page=oc-waitlist&tab=waiting' ),
 			$people ? '' : __( 'Nobody is waiting right now.', 'oc-theme' ),
 			true
 		);
@@ -201,7 +190,7 @@ class Dashboard {
 				$comment = trim( (string) $order->get_meta( '_oc_ty_comment' ) );
 				$when    = $order->get_date_created() ? $order->get_date_created()->date_i18n( 'j.n' ) : '';
 				$rows[]  = array(
-					'<span class="ocd__when">' . esc_html( $when ) . '</span> <a href="' . esc_url( (string) $order->get_edit_order_url() ) . '"' . ( '' !== $comment ? ' title="' . esc_attr( $comment ) . '"' : '' ) . '>' . esc_html( '' === $name ? '#' . $order->get_order_number() : $name ) . '</a>' . ( '' !== $comment ? ' <span class="ocd__has-note" aria-hidden="true">💬</span>' : '' ),
+					'<span class="ocd__when">' . esc_html( $when ) . '</span> <a href="' . esc_url( (string) $order->get_edit_order_url() ) . '"' . ( '' !== $comment ? ' title="' . esc_attr( $comment ) . '"' : '' ) . '>' . esc_html( '' === $name ? '#' . $order->get_order_number() : $name ) . '</a>',
 					'<span class="ocd__stars" title="' . esc_attr( (string) $v ) . '/5">' . str_repeat( '★', $v ) . '<i>' . str_repeat( '★', 5 - $v ) . '</i></span>',
 				);
 			}
@@ -247,8 +236,8 @@ class Dashboard {
 			$title  = get_the_title( $pid );
 			$when   = '' !== (string) $r['last'] ? wp_date( 'j.n', strtotime( $r['last'] . ' UTC' ) ) : '';
 			$list[] = array(
-				'<a href="' . esc_url( (string) get_edit_post_link( $pid, 'raw' ) ) . '">' . esc_html( '' === $title ? '#' . $pid : $title ) . '</a>',
-				esc_html( number_format_i18n( (int) $r['total'] ) ) . ( '' !== $when ? ' <span class="ocd__when">' . esc_html( $when ) . '</span>' : '' ),
+				( '' !== $when ? '<span class="ocd__when">' . esc_html( $when ) . '</span> ' : '' ) . '<a href="' . esc_url( (string) get_edit_post_link( $pid, 'raw' ) ) . '">' . esc_html( '' === $title ? '#' . $pid : $title ) . '</a>',
+				esc_html( number_format_i18n( (int) $r['total'] ) ),
 			);
 		}
 
@@ -257,7 +246,7 @@ class Dashboard {
 			/* translators: 1: WhatsApp taps, 2: phone taps */
 			sprintf( __( 'taps in the last 30 days · WhatsApp %1$s · phone %2$s', 'oc-theme' ), number_format_i18n( $wa ), number_format_i18n( $tel ) ),
 			$list,
-			admin_url( 'options-general.php?page=oc-contact' ),
+			admin_url( 'options-general.php?page=oc-product-contact' ),
 			$on ? ( $list ? '' : __( 'No taps in the last 30 days.', 'oc-theme' ) ) : __( 'The contact card is not switched on.', 'oc-theme' ),
 			true
 		);

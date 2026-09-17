@@ -606,6 +606,15 @@ final class Admin {
 	}
 
 	/**
+	 * The orders list, wherever WooCommerce keeps it on this site.
+	 */
+	public static function orders_url(): string {
+		$hpos = class_exists( '\\Automattic\\WooCommerce\\Utilities\\OrderUtil' ) && \Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled();
+
+		return admin_url( $hpos ? 'admin.php?page=wc-orders' : 'edit.php?post_type=shop_order' );
+	}
+
+	/**
 	 * Today against yesterday to the same hour, in four numbers.
 	 */
 	public function render_widget(): void {
@@ -625,7 +634,7 @@ final class Admin {
 			$tile( __( 'Cancelled + failed', 'oc-theme' ), number_format_i18n( (int) $cur['cancelled_n'] + (int) $cur['failed_n'] ), null );
 			?>
 		</div>
-		<p class="ocst-w__note"><?php esc_html_e( 'Against yesterday, up to the same hour.', 'oc-theme' ); ?> <a href="<?php echo esc_url( admin_url( 'admin.php?page=' . self::PAGE ) ); ?>"><?php esc_html_e( 'All the statistics', 'oc-theme' ); ?></a></p>
+		<p class="ocst-w__note"><?php esc_html_e( 'Against yesterday, up to the same hour.', 'oc-theme' ); ?> <a href="<?php echo esc_url( admin_url( 'admin.php?page=' . self::PAGE ) ); ?>"><?php esc_html_e( 'All the statistics', 'oc-theme' ); ?></a> &nbsp;·&nbsp; <a href="<?php echo esc_url( self::orders_url() ); ?>"><?php esc_html_e( 'The orders', 'oc-theme' ); ?></a></p>
 		<style>
 			.ocst-w{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
 			.ocst-w__tile{background:#f6f7f7;border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}

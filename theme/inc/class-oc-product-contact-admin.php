@@ -27,7 +27,7 @@ final class Product_Contact_Admin {
 	 * Under Settings.
 	 */
 	public function menu(): void {
-		add_options_page( __( 'Product contact', 'oc-theme' ), __( 'Product contact', 'oc-theme' ), 'manage_woocommerce', 'oc-contact', array( $this, 'render' ) );
+		add_options_page( __( 'Product contact', 'oc-theme' ), __( 'Product contact', 'oc-theme' ), 'manage_woocommerce', 'oc-product-contact', array( $this, 'render' ) );
 	}
 
 	/**
@@ -120,7 +120,7 @@ final class Product_Contact_Admin {
 			</p>
 
 			<form method="get" class="occon-filter">
-				<input type="hidden" name="page" value="oc-contact">
+				<input type="hidden" name="page" value="oc-product-contact">
 				<select name="period">
 					<?php foreach ( $presets as $k => $label ) : ?>
 						<option value="<?php echo esc_attr( $k ); ?>" <?php selected( $p['preset'], $k ); ?>><?php echo esc_html( $label ); ?></option>
