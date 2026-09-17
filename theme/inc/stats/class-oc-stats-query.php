@@ -208,7 +208,14 @@ final class Query {
 		$m['sessions'] = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(DISTINCT sid) FROM {$t} WHERE t >= %s AND t < %s AND type <> 'purchase'", $from, $to ) );
 		$m['views']    = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$t} WHERE t >= %s AND t < %s AND type IN ('view','product','cat')", $from, $to ) );
 
-		foreach ( array( 'product' => 'product_sessions', 'atc' => 'atc_sessions', 'checkout' => 'checkout_sessions', 'purchase' => 'purchase_sessions' ) as $type => $key ) {
+		$per_type = array(
+			'product'  => 'product_sessions',
+			'atc'      => 'atc_sessions',
+			'checkout' => 'checkout_sessions',
+			'purchase' => 'purchase_sessions',
+		);
+
+		foreach ( $per_type as $type => $key ) {
 			$m[ $key ] = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(DISTINCT sid) FROM {$t} WHERE t >= %s AND t < %s AND type = %s AND sid <> ''", $from, $to, $type ) );
 		}
 
@@ -308,8 +315,8 @@ final class Query {
 			$dev = (string) $order->get_meta( Track::META_DEV );
 			$dev = in_array( $dev, array( 'm', 't', 'd' ), true ) ? $dev : 'd';
 
-			$m['orders_ch'][ $ch ]  = ( $m['orders_ch'][ $ch ] ?? 0 ) + 1;
-			$m['gross_ch'][ $ch ]   = ( $m['gross_ch'][ $ch ] ?? 0 ) + $total;
+			$m['orders_ch'][ $ch ]   = ( $m['orders_ch'][ $ch ] ?? 0 ) + 1;
+			$m['gross_ch'][ $ch ]    = ( $m['gross_ch'][ $ch ] ?? 0 ) + $total;
 			$m['orders_dev'][ $dev ] = ( $m['orders_dev'][ $dev ] ?? 0 ) + 1;
 			$m['gross_dev'][ $dev ]  = ( $m['gross_dev'][ $dev ] ?? 0 ) + $total;
 
@@ -337,7 +344,8 @@ final class Query {
 				$qty = (int) $item->get_quantity();
 				$sum = (float) $item->get_total() + (float) $item->get_total_tax();
 
-				$m['items']               += $qty;
+				$m['items'] += $qty;
+
 				$m['product_orders'][ $pid ] = ( $m['product_orders'][ $pid ] ?? 0 ) + 1;
 				$m['product_qty'][ $pid ]    = ( $m['product_qty'][ $pid ] ?? 0 ) + $qty;
 				$m['product_gross'][ $pid ]  = ( $m['product_gross'][ $pid ] ?? 0 ) + $sum;
@@ -425,7 +433,7 @@ final class Query {
 		}
 
 		foreach ( array_chunk( $rows, 400 ) as $chunk ) {
-			$wpdb->query( "INSERT INTO {$t} (day, metric, k, v) VALUES " . implode( ',', $chunk ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.NotPrepared -- every row was prepared above.
+			$wpdb->query( "INSERT INTO {$t} (day, metric, k, v) VALUES " . implode( ',', $chunk ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- every row was prepared above; the table is our own.
 		}
 	}
 

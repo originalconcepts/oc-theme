@@ -120,7 +120,12 @@ final class Insights {
 		usort(
 			$out,
 			static function ( array $a, array $b ): int {
-				$sev = array( 'crit' => 0, 'warn' => 1, 'good' => 2, 'info' => 3 );
+				$sev = array(
+					'crit' => 0,
+					'warn' => 1,
+					'good' => 2,
+					'info' => 3,
+				);
 				$sa  = $sev[ $a['sev'] ] ?? 3;
 				$sb  = $sev[ $b['sev'] ] ?? 3;
 
@@ -149,7 +154,16 @@ final class Insights {
 	 * @return array<string,mixed>
 	 */
 	private static function one( string $key, string $sev, string $kind, string $title, string $body, float $value, array $actions, string $why ): array {
-		return compact( 'key', 'sev', 'kind', 'title', 'body', 'value', 'actions', 'why' );
+		return array(
+			'key'     => $key,
+			'sev'     => $sev,
+			'kind'    => $kind,
+			'title'   => $title,
+			'body'    => $body,
+			'value'   => $value,
+			'actions' => $actions,
+			'why'     => $why,
+		);
 	}
 
 	/**
@@ -203,8 +217,9 @@ final class Insights {
 		$win = array();
 
 		foreach ( (array) $rows as $r ) {
-			$hour  = (int) substr( (string) $r->h, 11, 2 );
-			$slot  = substr( (string) $r->h, 0, 10 ) . ' ' . sprintf( '%02d', intdiv( $hour, 3 ) * 3 );
+			$hour = (int) substr( (string) $r->h, 11, 2 );
+			$slot = substr( (string) $r->h, 0, 10 ) . ' ' . sprintf( '%02d', intdiv( $hour, 3 ) * 3 );
+
 			$win[ $slot ]['checkout'] = ( $win[ $slot ]['checkout'] ?? 0 ) + ( 'checkout' === $r->type ? (int) $r->n : 0 );
 			$win[ $slot ]['purchase'] = ( $win[ $slot ]['purchase'] ?? 0 ) + ( 'purchase' === $r->type ? (int) $r->n : 0 );
 		}
@@ -645,9 +660,10 @@ final class Insights {
 
 			$ids = array_values( array_unique( array_filter( $ids ) ) );
 			sort( $ids );
+			$total = count( $ids );
 
-			for ( $i = 0; $i < count( $ids ); $i++ ) {
-				for ( $j = $i + 1; $j < count( $ids ); $j++ ) {
+			for ( $i = 0; $i < $total; $i++ ) {
+				for ( $j = $i + 1; $j < $total; $j++ ) {
 					$k           = $ids[ $i ] . '|' . $ids[ $j ];
 					$count[ $k ] = ( $count[ $k ] ?? 0 ) + 1;
 				}

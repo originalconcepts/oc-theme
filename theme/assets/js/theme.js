@@ -166,7 +166,7 @@
 		if ( 'atc' === type && recent[ k ] && Date.now() - recent[ k ] < 1500 ) { return; }
 		recent[ k ] = Date.now();
 
-		var d = { sid: sid, t: type, o: obj };
+		var d = { _t: S.t, sid: sid, t: type, o: obj };
 
 		if ( first ) {
 			d.f = 1;

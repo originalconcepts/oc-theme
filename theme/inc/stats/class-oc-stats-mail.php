@@ -66,9 +66,9 @@ final class Mail {
 	/**
 	 * Build and send one report.
 	 *
-	 * @param string             $from Y-m-d.
-	 * @param string             $to   Y-m-d.
-	 * @param string             $kind daily | weekly.
+	 * @param string            $from Y-m-d.
+	 * @param string            $to   Y-m-d.
+	 * @param string            $kind daily | weekly.
 	 * @param array<int,string> $rcpt Recipients.
 	 */
 	public static function send( string $from, string $to, string $kind, array $rcpt ): bool {
@@ -132,7 +132,7 @@ final class Mail {
 
 		$compare = 'daily' === $kind ? __( 'against the day before', 'oc-theme' ) : __( 'against the previous week', 'oc-theme' );
 
-		$o = '';
+		$o  = '';
 		$o .= '<div style="font-family:Arial,Helvetica,sans-serif;background:#f3f4f6;padding:24px 12px;direction:' . ( $rtl ? 'rtl' : 'ltr' ) . ';">';
 		$o .= '<table role="presentation" cellpadding="0" cellspacing="0" style="max-width:640px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #e5e7eb;">';
 		$o .= '<tr><td style="padding:22px 24px 6px;">';
@@ -211,7 +211,7 @@ final class Mail {
 			$o .= '<tr><td style="padding:6px 24px 4px;">' . self::h( __( 'Best sellers', 'oc-theme' ) ) . '<table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="font-size:13px;">';
 
 			foreach ( $top as $pid => $sum ) {
-				$p = wc_get_product( (int) $pid );
+				$p  = wc_get_product( (int) $pid );
 				$o .= '<tr><td style="padding:5px 0;border-bottom:1px solid #f3f4f6;color:#374151;">' . esc_html( $p ? $p->get_name() : '#' . $pid ) . '</td>';
 				$o .= '<td style="padding:5px 0;border-bottom:1px solid #f3f4f6;color:#6b7280;">' . esc_html( sprintf( /* translators: %d: units. */ _n( '%d unit', '%d units', (int) ( $cur['product_qty'][ $pid ] ?? 0 ), 'oc-theme' ), (int) ( $cur['product_qty'][ $pid ] ?? 0 ) ) ) . '</td>';
 				$o .= '<td style="padding:5px 0;border-bottom:1px solid #f3f4f6;text-align:' . ( $rtl ? 'left' : 'right' ) . ';direction:ltr;font-weight:700;color:#111827;">' . esc_html( self::money( (float) $sum ) ) . '</td></tr>';

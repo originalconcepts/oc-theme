@@ -292,15 +292,36 @@ final class Track {
 			'/hit',
 			array(
 				'methods'             => 'POST',
-				'permission_callback' => '__return_true',
+				'permission_callback' => array( __CLASS__, 'permit' ),
 				'callback'            => array( $this, 'rest_hit' ),
 			)
 		);
 	}
 
 	/**
-	 * What the page script tells the server: the visitor's address, hashed,
-	 * for a per-network ceiling.
+	 * A day token, so only pages this site served can report a hit.
+	 *
+	 * @param int $shift Days back.
+	 */
+	public static function token( int $shift = 0 ): string {
+		$day = gmdate( 'Y-m-d', time() - $shift * DAY_IN_SECONDS );
+
+		return substr( hash_hmac( 'sha256', 'oc_stats|' . $day, wp_salt( 'nonce' ) ), 0, 20 );
+	}
+
+	/**
+	 * Today's or yesterday's token.
+	 *
+	 * @param \WP_REST_Request $req Request.
+	 */
+	public static function permit( \WP_REST_Request $req ): bool {
+		$t = (string) $req->get_param( '_t' );
+
+		return '' !== $t && ( hash_equals( self::token(), $t ) || hash_equals( self::token( 1 ), $t ) );
+	}
+
+	/**
+	 * The visitor's address, hashed by the caller, for a per-network ceiling.
 	 */
 	public static function net(): string {
 		return class_exists( '\OC\Theme\Privacy\Log' ) ? \OC\Theme\Privacy\Log::net() : (string) ( $_SERVER['REMOTE_ADDR'] ?? '' ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- hashed by the caller.
@@ -464,6 +485,7 @@ final class Track {
 
 		return array(
 			'url'   => rest_url( 'oc/v1/hit' ),
+			't'     => self::token(),
 			'p'     => $product,
 			'c'     => $cat,
 			'co'    => $co,
