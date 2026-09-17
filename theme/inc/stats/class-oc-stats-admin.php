@@ -146,12 +146,12 @@ final class Admin {
 						'referral'    => __( 'Referrals', 'oc-theme' ),
 						'direct'      => __( 'Direct', 'oc-theme' ),
 					),
-					'updated'   => __( 'Updated just now', 'oc-theme' ),
-					'exportCsv' => __( 'Export CSV', 'oc-theme' ),
-					'from'      => __( 'From', 'oc-theme' ),
-					'to'        => __( 'To', 'oc-theme' ),
-					'show'      => __( 'Show', 'oc-theme' ),
-					'grossNote' => __( 'What customers paid, including shipping and VAT, for paid orders and orders in hand.', 'oc-theme' ),
+					'updated'     => __( 'Updated just now', 'oc-theme' ),
+					'exportCsv'   => __( 'Export CSV', 'oc-theme' ),
+					'from'        => __( 'From', 'oc-theme' ),
+					'to'          => __( 'To', 'oc-theme' ),
+					'show'        => __( 'Show', 'oc-theme' ),
+					'grossNote'   => __( 'What customers paid, including shipping and VAT, for paid orders and orders in hand.', 'oc-theme' ),
 				),
 			)
 		);
