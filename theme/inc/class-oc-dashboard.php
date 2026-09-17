@@ -243,9 +243,9 @@ class Dashboard {
 		$list = array();
 
 		foreach ( array_slice( $rows, 0, 6 ) as $r ) {
-			$pid   = (int) $r['product_id'];
-			$title = get_the_title( $pid );
-			$when  = '' !== (string) $r['last'] ? wp_date( 'j.n', strtotime( $r['last'] . ' UTC' ) ) : '';
+			$pid    = (int) $r['product_id'];
+			$title  = get_the_title( $pid );
+			$when   = '' !== (string) $r['last'] ? wp_date( 'j.n', strtotime( $r['last'] . ' UTC' ) ) : '';
 			$list[] = array(
 				'<a href="' . esc_url( (string) get_edit_post_link( $pid, 'raw' ) ) . '">' . esc_html( '' === $title ? '#' . $pid : $title ) . '</a>',
 				esc_html( number_format_i18n( (int) $r['total'] ) ) . ( '' !== $when ? ' <span class="ocd__when">' . esc_html( $when ) . '</span>' : '' ),

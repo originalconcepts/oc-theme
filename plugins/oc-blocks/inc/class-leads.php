@@ -611,9 +611,9 @@ final class Leads {
 			static function ( \WP_Post $lead ): void {
 				$rows = array(
 					__( 'Customer', 'oc-blocks' ) => (string) $lead->post_title,
-					__( 'Phone', 'oc-blocks' )   => (string) get_post_meta( $lead->ID, '_oc_lead_phone', true ),
-					__( 'Email', 'oc-blocks' )   => (string) get_post_meta( $lead->ID, '_oc_lead_email', true ),
-					__( 'Message', 'oc-blocks' ) => (string) get_post_meta( $lead->ID, '_oc_lead_msg', true ),
+					__( 'Phone', 'oc-blocks' )    => (string) get_post_meta( $lead->ID, '_oc_lead_phone', true ),
+					__( 'Email', 'oc-blocks' )    => (string) get_post_meta( $lead->ID, '_oc_lead_email', true ),
+					__( 'Message', 'oc-blocks' )  => (string) get_post_meta( $lead->ID, '_oc_lead_msg', true ),
 				);
 
 				foreach ( (array) get_post_meta( $lead->ID, '_oc_lead_extra', true ) as $pair ) {
