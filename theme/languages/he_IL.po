@@ -8790,3 +8790,86 @@ msgstr "הזמנות ששולמו והזמנות בטיפול, כולל מע״מ
 msgctxt "product sales"
 msgid "All time"
 msgstr "מאז ומתמיד"
+
+msgid "Thank-you page ratings"
+msgstr "חוות דעת מדף התודה"
+
+msgid "Form leads"
+msgstr "פניות מטפסים"
+
+msgid "Heavy pictures"
+msgstr "תמונות כבדות"
+
+msgid "people waiting"
+msgstr "ממתינים למלאי"
+
+msgid "Products waited for"
+msgstr "מוצרים שמחכים להם"
+
+msgid "Signed up in the last 30 days"
+msgstr "נרשמו ב־30 הימים האחרונים"
+
+msgid "Nobody is waiting right now."
+msgstr "אין ממתינים כרגע."
+
+msgid "%s rating"
+msgid_plural "%s ratings"
+msgstr[0] "דירוג %s"
+msgstr[1] "%s דירוגים"
+
+msgid "With a comment, last 30 days"
+msgstr "עם מילים, 30 יום אחרונים"
+
+msgid "No ratings yet. Switch the survey on in Thank-you page settings."
+msgstr "אין דירוגים עדיין. מפעילים את הסקר בהגדרות דף התודה."
+
+msgid "taps in the last 30 days"
+msgstr "לחיצות ב־30 הימים האחרונים"
+
+msgid "Products asked about"
+msgstr "מוצרים שהתעניינו בהם"
+
+msgid "The contact card is not switched on."
+msgstr "כרטיס יצירת הקשר במוצר לא מופעל."
+
+msgid "leads in the last 30 days"
+msgstr "פניות ב־30 הימים האחרונים"
+
+msgid "Searched, found nothing"
+msgstr "חיפשו ולא מצאו"
+
+msgid "searches for the top terms, last 30 days"
+msgstr "חיפושים למונחים המובילים, 30 יום אחרונים"
+
+msgid "No searches recorded in the last 30 days."
+msgstr "לא נרשמו חיפושים ב־30 הימים האחרונים."
+
+msgid "pictures nothing uses"
+msgstr "תמונות שלא בשימוש"
+
+msgid "Used only by drafts"
+msgstr "בשימוש רק בטיוטות"
+
+msgid "Used only by trashed items"
+msgstr "בשימוש רק בפריטים שבפח"
+
+msgid "In use"
+msgstr "בשימוש"
+
+msgid "Run a scan on the Media cleanup screen to see what can go."
+msgstr "מריצים סריקה במסך ניקוי מדיה כדי לראות מה אפשר למחוק."
+
+msgid "pictures over 500 KB"
+msgstr "תמונות מעל 500KB"
+
+msgid "Over 1 MB"
+msgstr "מעל 1MB"
+
+msgid "Not yet WebP (JPEG / PNG)"
+msgstr "עדיין לא WebP (JPEG / PNG)"
+
+msgid "Pictures in the library"
+msgstr "תמונות בספרייה"
+
+msgid "Open the screen"
+msgstr "לעמוד"

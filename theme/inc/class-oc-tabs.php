@@ -31,6 +31,7 @@ final class Tabs {
 		}
 
 		add_action( 'admin_menu', array( $this, 'menu' ), 55 );
+		add_action( 'admin_menu', array( $this, 'order' ), 999 );
 		add_action( 'admin_post_oc_tabs_save', array( $this, 'save_settings' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_assets' ) );
 
@@ -356,6 +357,46 @@ final class Tabs {
 			self::MENU,
 			array( $this, 'admin_screen' )
 		);
+	}
+
+	/**
+	 * The order of the screens under Theme settings, whatever the order in
+	 * which the classes registered them. The first entry is also where the
+	 * parent link goes.
+	 */
+	const ORDER = array( 'oc-contact', 'oc-announce', 'oc-tabs', 'oc-layout', 'oc-filters', 'oc-search', 'oc-cart', 'oc-thankyou', 'oc-waitlist' );
+
+	/**
+	 * Put the submenu in that order; screens not named keep their place after it.
+	 */
+	public function order(): void {
+		global $submenu;
+
+		if ( empty( $submenu[ self::MENU ] ) || ! is_array( $submenu[ self::MENU ] ) ) {
+			return;
+		}
+
+		$rank = array_flip( self::ORDER );
+		$rows = array_values( $submenu[ self::MENU ] );
+		$keys = array_keys( $rows );
+
+		usort(
+			$keys,
+			static function ( int $a, int $b ) use ( $rows, $rank ): int {
+				$ra = $rank[ (string) ( $rows[ $a ][2] ?? '' ) ] ?? 100 + $a;
+				$rb = $rank[ (string) ( $rows[ $b ][2] ?? '' ) ] ?? 100 + $b;
+
+				return $ra <=> $rb;
+			}
+		);
+
+		$sorted = array();
+
+		foreach ( $keys as $k ) {
+			$sorted[] = $rows[ $k ];
+		}
+
+		$submenu[ self::MENU ] = $sorted; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- the point of the method.
 	}
 
 	/**
