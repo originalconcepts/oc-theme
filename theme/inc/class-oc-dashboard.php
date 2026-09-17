@@ -395,16 +395,16 @@ class Dashboard {
 	 * @param string     $label What it counts.
 	 * @param array      $rows  [label, value] pairs.
 	 * @param string     $url   The screen.
-	 * @param string     $empty A sentence instead of rows when there is nothing.
+	 * @param string     $none A sentence instead of rows when there is nothing.
 	 * @param bool       $raw   Rows carry markup of their own.
 	 * @param array      $links Extra [label, url] links instead of the single one.
 	 */
-	private function tile( $big, string $label, array $rows, string $url, string $empty = '', bool $raw = false, array $links = array() ): void {
+	private function tile( $big, string $label, array $rows, string $url, string $none = '', bool $raw = false, array $links = array() ): void {
 		echo '<div class="ocd">';
 		echo '<div class="ocd__big"><b class="ocd__n">' . esc_html( is_int( $big ) ? number_format_i18n( $big ) : (string) $big ) . '</b><span class="ocd__l">' . esc_html( $label ) . '</span></div>';
 
-		if ( '' !== $empty ) {
-			echo '<p class="ocd__note">' . esc_html( $empty ) . '</p>';
+		if ( '' !== $none ) {
+			echo '<p class="ocd__note">' . esc_html( $none ) . '</p>';
 		} elseif ( $rows ) {
 			echo '<ul class="ocd__rows">';
 
