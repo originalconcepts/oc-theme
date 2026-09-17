@@ -605,7 +605,7 @@ final class Product_Contact {
 	 *
 	 * @param string $from Y-m-d (site time), inclusive.
 	 * @param string $to   Y-m-d (site time), inclusive.
-	 * @return array<int,array{product_id:int,whatsapp:int,phone:int,total:int}>
+	 * @return array<int,array{product_id:int,whatsapp:int,phone:int,total:int,last:string}> last = UTC time of the latest tap.
 	 */
 	public static function stats( string $from, string $to ): array {
 		if ( '1' !== (string) get_option( 'oc_contact_table', '' ) ) {
@@ -622,7 +622,7 @@ final class Product_Contact {
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- own table, name from the prefix.
 		$rows = (array) $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT product_id, channel, COUNT(*) AS n FROM {$table} WHERE t BETWEEN %s AND %s GROUP BY product_id, channel",
+				"SELECT product_id, channel, COUNT(*) AS n, MAX(t) AS last FROM {$table} WHERE t BETWEEN %s AND %s GROUP BY product_id, channel",
 				$start,
 				$end
 			),
@@ -641,8 +641,11 @@ final class Product_Contact {
 					'whatsapp'   => 0,
 					'phone'      => 0,
 					'total'      => 0,
+					'last'       => '',
 				);
 			}
+
+			$out[ $pid ]['last'] = max( (string) $out[ $pid ]['last'], (string) $r['last'] );
 
 			$out[ $pid ][ 'phone' === $r['channel'] ? 'phone' : 'whatsapp' ] += (int) $r['n'];
 			$out[ $pid ]['total'] += (int) $r['n'];

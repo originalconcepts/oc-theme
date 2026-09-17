@@ -554,11 +554,11 @@ final class Leads {
 	public function columns( array $columns ): array {
 		return array(
 			'cb'        => $columns['cb'] ?? '',
-			'title'     => __( 'Name', 'oc-blocks' ),
+			'title'     => __( 'Customer', 'oc-blocks' ),
 			'oc_status' => __( 'Status', 'oc-blocks' ),
 			'oc_phone'  => __( 'Phone', 'oc-blocks' ),
 			'oc_email'  => __( 'Email', 'oc-blocks' ),
-			'oc_msg'    => __( 'Message', 'oc-blocks' ),
+			'oc_note'   => __( 'Handling', 'oc-blocks' ),
 			'oc_page'   => __( 'From the page', 'oc-blocks' ),
 			'date'      => __( 'Arrived', 'oc-blocks' ),
 		);
@@ -587,10 +587,9 @@ final class Leads {
 				echo '' === $email ? '—' : '<a href="mailto:' . esc_attr( $email ) . '">' . esc_html( $email ) . '</a>';
 				break;
 
-			case 'oc_msg':
-				$text = (string) get_post_meta( $post_id, '_oc_lead_msg', true );
-				$more = self::extra_text( get_post_meta( $post_id, '_oc_lead_extra', true ) );
-				echo esc_html( wp_html_excerpt( trim( $text . ( '' === $more ? '' : ' · ' . $more ) ), 90, '…' ) );
+			case 'oc_note':
+				$note = trim( (string) get_post_meta( $post_id, '_oc_lead_note', true ) );
+				echo '' === $note ? '<span style="color:#8c8f94">—</span>' : esc_html( wp_html_excerpt( $note, 90, '…' ) );
 				break;
 
 			case 'oc_page':
@@ -611,6 +610,7 @@ final class Leads {
 			__( 'The lead', 'oc-blocks' ),
 			static function ( \WP_Post $lead ): void {
 				$rows = array(
+					__( 'Customer', 'oc-blocks' ) => (string) $lead->post_title,
 					__( 'Phone', 'oc-blocks' )   => (string) get_post_meta( $lead->ID, '_oc_lead_phone', true ),
 					__( 'Email', 'oc-blocks' )   => (string) get_post_meta( $lead->ID, '_oc_lead_email', true ),
 					__( 'Message', 'oc-blocks' ) => (string) get_post_meta( $lead->ID, '_oc_lead_msg', true ),

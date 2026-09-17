@@ -80,6 +80,9 @@ class Dashboard {
 			.ocd__rows li b{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
 			.ocd__rows li span a{text-decoration:none}
 			.ocd__when{color:#8c8f94;font-size:12px;font-variant-numeric:tabular-nums}
+			.ocd__stars{color:#e0a100;letter-spacing:1px;font-size:13px}
+			.ocd__stars i{font-style:normal;color:#dcdcde}
+			.ocd__has-note{font-size:11px}
 			.ocd__chip{font-style:normal;display:inline-block;padding:1px 8px;border-radius:99px;font-size:11.5px;font-weight:600;background:#f0f0f1;color:#50575e}
 			.ocd__chip--new{background:#e5f0ff;color:#0a4b94}.ocd__chip--progress{background:#fff4d6;color:#7a4b00}.ocd__chip--waiting{background:#f3e8ff;color:#5b2c8f}.ocd__chip--done{background:#e3f6e8;color:#1e6b34}.ocd__chip--irrelevant{background:#f0f0f1;color:#646970}
 			.ocd__rows li span{color:#3c434a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -159,26 +162,22 @@ class Dashboard {
 	}
 
 	/**
-	 * The stars left on the thank-you page.
+	 * The stars left on the thank-you page, and who left the latest ones.
 	 */
 	public function ratings(): void {
 		$agg   = get_option( 'oc_ty_survey' );
 		$count = is_array( $agg ) ? (int) ( $agg['count'] ?? 0 ) : 0;
 		$sum   = is_array( $agg ) ? (int) ( $agg['sum'] ?? 0 ) : 0;
 		$avg   = $count > 0 ? $sum / $count : 0;
-
-		$r_n   = 0;
-		$r_sum = 0;
-		$words = 0;
+		$rows  = array();
 
 		if ( function_exists( 'wc_get_orders' ) ) {
 			$orders = wc_get_orders(
 				array(
-					'limit'        => 200,
-					'orderby'      => 'date',
-					'order'        => 'DESC',
-					'date_created' => '>' . ( time() - self::DAYS * DAY_IN_SECONDS ),
-					'meta_query'   => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- an admin tile.
+					'limit'      => 6,
+					'orderby'    => 'date',
+					'order'      => 'DESC',
+					'meta_query' => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- an admin tile.
 						array(
 							'key'     => '_oc_ty_rating',
 							'compare' => 'EXISTS',
@@ -192,16 +191,19 @@ class Dashboard {
 					continue;
 				}
 
-				$v = (int) $order->get_meta( '_oc_ty_rating' );
+				$v = max( 0, min( 5, (int) $order->get_meta( '_oc_ty_rating' ) ) );
 
-				if ( $v > 0 ) {
-					++$r_n;
-					$r_sum += $v;
+				if ( 0 === $v ) {
+					continue;
 				}
 
-				if ( '' !== trim( (string) $order->get_meta( '_oc_ty_comment' ) ) ) {
-					++$words;
-				}
+				$name    = trim( (string) $order->get_billing_first_name() . ' ' . (string) $order->get_billing_last_name() );
+				$comment = trim( (string) $order->get_meta( '_oc_ty_comment' ) );
+				$when    = $order->get_date_created() ? $order->get_date_created()->date_i18n( 'j.n' ) : '';
+				$rows[]  = array(
+					'<span class="ocd__when">' . esc_html( $when ) . '</span> <a href="' . esc_url( (string) $order->get_edit_order_url() ) . '"' . ( '' !== $comment ? ' title="' . esc_attr( $comment ) . '"' : '' ) . '>' . esc_html( '' === $name ? '#' . $order->get_order_number() : $name ) . '</a>' . ( '' !== $comment ? ' <span class="ocd__has-note" aria-hidden="true">💬</span>' : '' ),
+					'<span class="ocd__stars" title="' . esc_attr( (string) $v ) . '/5">' . str_repeat( '★', $v ) . '<i>' . str_repeat( '★', 5 - $v ) . '</i></span>',
+				);
 			}
 		}
 
@@ -209,17 +211,16 @@ class Dashboard {
 			$count > 0 ? number_format_i18n( $avg, 1 ) . ' ★' : '—',
 			/* translators: %s: number of ratings */
 			sprintf( _n( '%s rating', '%s ratings', $count, 'oc-theme' ), number_format_i18n( $count ) ),
-			array(
-				array( __( 'Last 30 days', 'oc-theme' ), $r_n > 0 ? number_format_i18n( $r_sum / $r_n, 1 ) . ' ★ · ' . number_format_i18n( $r_n ) : '—' ),
-				array( __( 'With a comment, last 30 days', 'oc-theme' ), number_format_i18n( $words ) ),
-			),
+			$rows,
 			admin_url( 'admin.php?page=oc-thankyou&tab=ratings' ),
-			$count > 0 ? '' : __( 'No ratings yet. Switch the survey on in Thank-you page settings.', 'oc-theme' )
+			$count > 0 ? '' : __( 'No ratings yet. Switch the survey on in Thank-you page settings.', 'oc-theme' ),
+			true
 		);
 	}
 
 	/**
-	 * WhatsApp and phone taps on product pages.
+	 * WhatsApp and phone taps on product pages: which products, most
+	 * pressed first, with the day of the latest tap.
 	 */
 	public function contact(): void {
 		$on   = class_exists( __NAMESPACE__ . '\\Product_Contact' ) && '1' === (string) get_option( 'oc_contact_table', '' );
@@ -232,15 +233,33 @@ class Dashboard {
 			$tel += (int) $r['phone'];
 		}
 
+		usort(
+			$rows,
+			static function ( array $a, array $b ): int {
+				return array( (int) $b['total'], (string) $b['last'] ) <=> array( (int) $a['total'], (string) $a['last'] );
+			}
+		);
+
+		$list = array();
+
+		foreach ( array_slice( $rows, 0, 6 ) as $r ) {
+			$pid   = (int) $r['product_id'];
+			$title = get_the_title( $pid );
+			$when  = '' !== (string) $r['last'] ? wp_date( 'j.n', strtotime( $r['last'] . ' UTC' ) ) : '';
+			$list[] = array(
+				'<a href="' . esc_url( (string) get_edit_post_link( $pid, 'raw' ) ) . '">' . esc_html( '' === $title ? '#' . $pid : $title ) . '</a>',
+				esc_html( number_format_i18n( (int) $r['total'] ) ) . ( '' !== $when ? ' <span class="ocd__when">' . esc_html( $when ) . '</span>' : '' ),
+			);
+		}
+
 		$this->tile(
 			$wa + $tel,
-			__( 'taps in the last 30 days', 'oc-theme' ),
-			array(
-				array( __( 'WhatsApp', 'oc-theme' ), number_format_i18n( $wa ) ),
-				array( __( 'Phone', 'oc-theme' ), number_format_i18n( $tel ) ),
-			),
+			/* translators: 1: WhatsApp taps, 2: phone taps */
+			sprintf( __( 'taps in the last 30 days · WhatsApp %1$s · phone %2$s', 'oc-theme' ), number_format_i18n( $wa ), number_format_i18n( $tel ) ),
+			$list,
 			admin_url( 'options-general.php?page=oc-contact' ),
-			$on ? '' : __( 'The contact card is not switched on.', 'oc-theme' )
+			$on ? ( $list ? '' : __( 'No taps in the last 30 days.', 'oc-theme' ) ) : __( 'The contact card is not switched on.', 'oc-theme' ),
+			true
 		);
 	}
 

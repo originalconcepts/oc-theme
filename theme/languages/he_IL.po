@@ -8923,3 +8923,9 @@ msgstr "סריקת המדיה רצה ברקע; הקוביה תתעדכן כשה�
 
 msgid "the period before"
 msgstr "התקופה הקודמת"
+
+msgid "taps in the last 30 days · WhatsApp %1$s · phone %2$s"
+msgstr "לחיצות ב־30 הימים האחרונים · וואטסאפ %1$s · טלפון %2$s"
+
+msgid "No taps in the last 30 days."
+msgstr "לא היו לחיצות ב־30 הימים האחרונים."

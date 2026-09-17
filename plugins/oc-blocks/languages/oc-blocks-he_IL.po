@@ -1804,3 +1804,6 @@ msgstr "הערה"
 
 msgid "What was said, what was promised, when to call back. Saved with the Update button."
 msgstr "מה נאמר, מה הובטח, מתי לחזור. נשמר עם כפתור העדכון."
+
+msgid "Customer"
+msgstr "שם הלקוח"
