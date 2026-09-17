@@ -614,7 +614,7 @@ final class Admin {
 		$prev = $r['prev'];
 		$tile = static function ( string $label, string $value, ?float $delta ): void {
 			$cls = null === $delta ? 'flat' : ( $delta > 0 ? 'up' : ( $delta < 0 ? 'down' : 'flat' ) );
-			echo '<div class="ocst-w__tile"><span>' . esc_html( $label ) . '</span><b>' . esc_html( $value ) . '</b><i class="ocst-w__d ocst-w__d--' . esc_attr( $cls ) . '">' . ( null === $delta ? '—' : esc_html( ( $delta > 0 ? '+' : '' ) . number_format_i18n( $delta, 0 ) . '%' ) ) . '</i></div>';
+			echo '<div class="ocst-w__tile"><span>' . esc_html( $label ) . '</span><b><bdi dir="ltr">' . esc_html( $value ) . '</bdi></b><i class="ocst-w__d ocst-w__d--' . esc_attr( $cls ) . '">' . ( null === $delta ? '—' : esc_html( ( $delta > 0 ? '+' : '' ) . number_format_i18n( $delta, 0 ) . '%' ) ) . '</i></div>';
 		};
 		?>
 		<div class="ocst-w">
@@ -630,7 +630,7 @@ final class Admin {
 			.ocst-w{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
 			.ocst-w__tile{background:#f6f7f7;border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
 			.ocst-w__tile span{font-size:12px;color:#646970}
-			.ocst-w__tile b{font-size:28px;line-height:1.1;font-weight:600;font-variant-numeric:tabular-nums;direction:ltr;unicode-bidi:isolate}
+			.ocst-w__tile b{font-size:28px;line-height:1.1;font-weight:600;font-variant-numeric:tabular-nums}
 			.ocst-w__d{font-style:normal;font-size:12px;font-weight:600}
 			.ocst-w__d--up{color:#1e7d46}.ocst-w__d--down{color:#b32d2e}.ocst-w__d--flat{color:#8c8f94}
 			.ocst-w__note{margin:10px 0 0;color:#646970;font-size:12px}

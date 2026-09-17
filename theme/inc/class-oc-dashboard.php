@@ -73,11 +73,11 @@ class Dashboard {
 		echo '<style>
 			.ocd{display:flex;flex-direction:column;gap:6px}
 			.ocd__big{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
-			.ocd__n{font-size:28px;line-height:1.1;font-weight:600;font-variant-numeric:tabular-nums;direction:ltr;unicode-bidi:isolate}
+			.ocd__n{font-size:28px;line-height:1.1;font-weight:600;font-variant-numeric:tabular-nums}
 			.ocd__l{color:#646970}
 			.ocd__rows{margin:2px 0 0;padding:0;list-style:none;display:grid;gap:3px}
 			.ocd__rows li{display:flex;justify-content:space-between;gap:12px;font-size:13px}
-			.ocd__rows li b{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap;direction:ltr;unicode-bidi:isolate}
+			.ocd__rows li b{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
 			.ocd__rows li span a{text-decoration:none}
 			.ocd__when{color:#8c8f94;font-size:12px;font-variant-numeric:tabular-nums}
 			.ocd__chip{font-style:normal;display:inline-block;padding:1px 8px;border-radius:99px;font-size:11.5px;font-weight:600;background:#f0f0f1;color:#50575e}
@@ -505,7 +505,7 @@ class Dashboard {
 	 */
 	private function tile( $big, string $label, array $rows, string $url, string $none = '', bool $raw = false, array $links = array(), string $after = '' ): void {
 		echo '<div class="ocd">';
-		echo '<div class="ocd__big"><b class="ocd__n">' . esc_html( is_int( $big ) ? number_format_i18n( $big ) : (string) $big ) . '</b><span class="ocd__l">' . esc_html( $label ) . '</span></div>';
+		echo '<div class="ocd__big"><b class="ocd__n"><bdi dir="ltr">' . esc_html( is_int( $big ) ? number_format_i18n( $big ) : (string) $big ) . '</bdi></b><span class="ocd__l">' . esc_html( $label ) . '</span></div>';
 
 		if ( '' !== $none ) {
 			echo '<p class="ocd__note">' . esc_html( $none ) . '</p>';
@@ -513,7 +513,7 @@ class Dashboard {
 			echo '<ul class="ocd__rows">';
 
 			foreach ( $rows as $r ) {
-				echo '<li><span>' . ( $raw ? wp_kses_post( (string) $r[0] ) : esc_html( (string) $r[0] ) ) . '</span><b>' . ( $raw ? wp_kses_post( (string) $r[1] ) : esc_html( (string) $r[1] ) ) . '</b></li>';
+				echo '<li><span>' . ( $raw ? wp_kses_post( (string) $r[0] ) : esc_html( (string) $r[0] ) ) . '</span><b>' . ( $raw ? wp_kses_post( (string) $r[1] ) : '<bdi dir="ltr">' . esc_html( (string) $r[1] ) . '</bdi>' ) . '</b></li>';
 			}
 
 			echo '</ul>';

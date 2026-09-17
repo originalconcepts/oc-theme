@@ -692,6 +692,9 @@ final class Media_Clean {
 		);
 	}
 
+	/**
+	 * One step of the scan, over ajax.
+	 */
 	public function ajax_step(): void {
 		$this->guard();
 
