@@ -140,6 +140,8 @@ final class Admin {
 					'customers'   => __( 'Customers', 'oc-theme' ),
 					'loading'     => __( 'Loading…', 'oc-theme' ),
 					'noVisits'    => __( 'Visits are counted from the day the statistics were switched on; earlier days show orders only.', 'oc-theme' ),
+					/* translators: %s: a date */
+					'sinceNote'   => __( 'Visits have been counted since %s; orders before that date are counted, their visits are not — so the funnel and the rates are only complete from that date on.', 'oc-theme' ),
 					'm'           => __( 'Mobile', 'oc-theme' ),
 					'd'           => __( 'Desktop', 'oc-theme' ),
 					't'           => __( 'Tablet', 'oc-theme' ),
@@ -452,7 +454,8 @@ final class Admin {
 			$s = (int) ( $cur['sessions_dev'][ $dv ] ?? 0 );
 			$n = (int) ( $cur['orders_dev'][ $dv ] ?? 0 );
 
-			$devices[] = array( $dv, $n, $s > 0 ? round( $n / $s * 100, 2 ) : null, round( $s / $dev_all * 100 ), $s );
+			// A rate needs visits behind it: orders can come from before the counter, or from people who declined analytics.
+			$devices[] = array( $dv, $n, $s > 0 && $s >= $n ? round( $n / $s * 100, 2 ) : null, round( $s / $dev_all * 100 ), $s );
 		}
 
 		$gross = (array) $cur['product_gross'];
@@ -499,6 +502,7 @@ final class Admin {
 			'customers'   => array( (int) $cur['new_customers'], (int) $cur['returning_customers'] ),
 			'insights'    => Insights::top(),
 			'tracking'    => '2' === (string) get_option( 'oc_stats_tables', '' ),
+			'since'       => Track::since(),
 		);
 	}
 
@@ -593,7 +597,7 @@ final class Admin {
 			.ocst-w{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
 			.ocst-w__tile{background:#f6f7f7;border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
 			.ocst-w__tile span{font-size:12px;color:#646970}
-			.ocst-w__tile b{font-size:20px;line-height:1.1;font-variant-numeric:tabular-nums}
+			.ocst-w__tile b{font-size:28px;line-height:1.1;font-weight:600;font-variant-numeric:tabular-nums;direction:ltr;unicode-bidi:isolate}
 			.ocst-w__d{font-style:normal;font-size:12px;font-weight:600}
 			.ocst-w__d--up{color:#1e7d46}.ocst-w__d--down{color:#b32d2e}.ocst-w__d--flat{color:#8c8f94}
 			.ocst-w__note{margin:10px 0 0;color:#646970;font-size:12px}

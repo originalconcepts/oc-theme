@@ -153,7 +153,7 @@ class Product {
 			.ocst-p th,.ocst-p td{padding:5px 0;text-align:start;font-variant-numeric:tabular-nums}
 			.ocst-p thead th{font-size:11px;color:#646970;font-weight:600;border-bottom:1px solid #dcdcde}
 			.ocst-p tbody th{font-weight:400;color:#1d2327}
-			.ocst-p tbody td{font-weight:600}
+			.ocst-p tbody td{font-weight:600;direction:ltr;unicode-bidi:isolate;text-align:start}
 			.ocst-p__last{margin:0 0 6px}
 			.ocst-p__none{margin:0 0 6px;color:#646970}
 			.ocst-p__note{margin:0;color:#646970;font-size:12px}

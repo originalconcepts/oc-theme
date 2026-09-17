@@ -38,6 +38,10 @@ final class Leads {
 		add_filter( 'manage_' . self::CPT . '_posts_columns', array( $this, 'columns' ) );
 		add_action( 'manage_' . self::CPT . '_posts_custom_column', array( $this, 'column' ), 10, 2 );
 		add_action( 'add_meta_boxes_' . self::CPT, array( $this, 'boxes' ) );
+		add_action( 'save_post_' . self::CPT, array( $this, 'save_crm' ), 10, 2 );
+		add_action( 'restrict_manage_posts', array( $this, 'status_filter' ) );
+		add_action( 'admin_head-edit.php', array( $this, 'list_styles' ) );
+		add_action( 'pre_get_posts', array( $this, 'apply_status_filter' ) );
 		add_action( 'admin_menu', array( $this, 'settings_page' ) );
 		add_action( 'admin_post_oc_blocks_leads_csv', array( $this, 'csv' ) );
 	}
@@ -431,6 +435,117 @@ final class Leads {
 	}
 
 	/**
+	 * Where a lead stands. The keys are stored; the labels are shown.
+	 *
+	 * @return array<string,string>
+	 */
+	public static function statuses(): array {
+		return array(
+			'new'        => __( 'New', 'oc-blocks' ),
+			'progress'   => __( 'In progress', 'oc-blocks' ),
+			'waiting'    => __( 'Waiting for the customer', 'oc-blocks' ),
+			'done'       => __( 'Done', 'oc-blocks' ),
+			'irrelevant' => __( 'Not relevant', 'oc-blocks' ),
+		);
+	}
+
+	/**
+	 * A lead's status key; a lead never touched is new.
+	 *
+	 * @param int $lead_id Lead.
+	 */
+	public static function status( int $lead_id ): string {
+		$s = (string) get_post_meta( $lead_id, '_oc_lead_status', true );
+
+		return isset( self::statuses()[ $s ] ) ? $s : 'new';
+	}
+
+	/**
+	 * Status and the team's note, saved from the lead's screen.
+	 *
+	 * @param int      $post_id Lead.
+	 * @param \WP_Post $post    Lead.
+	 */
+	public function save_crm( int $post_id, \WP_Post $post ): void { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- hook signature.
+		if ( ! isset( $_POST['oc_lead_crm_nonce'] ) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['oc_lead_crm_nonce'] ) ), 'oc_lead_crm' ) || ! current_user_can( 'edit_post', $post_id ) ) {
+			return;
+		}
+
+		$status = isset( $_POST['oc_lead_status'] ) ? sanitize_key( wp_unslash( $_POST['oc_lead_status'] ) ) : 'new';
+		$note   = isset( $_POST['oc_lead_note'] ) ? sanitize_textarea_field( wp_unslash( $_POST['oc_lead_note'] ) ) : '';
+
+		update_post_meta( $post_id, '_oc_lead_status', isset( self::statuses()[ $status ] ) ? $status : 'new' );
+		update_post_meta( $post_id, '_oc_lead_note', $note );
+	}
+
+	/**
+	 * The status chips on the list.
+	 */
+	public function list_styles(): void {
+		$screen = get_current_screen();
+
+		if ( $screen && self::CPT === $screen->post_type ) {
+			echo '<style>.oc-lead-st{display:inline-block;padding:2px 8px;border-radius:99px;font-size:12px;background:#f0f0f1}.oc-lead-st--new{background:#e5f0ff;color:#0a4b94}.oc-lead-st--progress{background:#fff4d6;color:#7a4b00}.oc-lead-st--waiting{background:#f3e8ff;color:#5b2c8f}.oc-lead-st--done{background:#e3f6e8;color:#1e6b34}.oc-lead-st--irrelevant{background:#f0f0f1;color:#646970}</style>';
+		}
+	}
+
+	/**
+	 * A status dropdown above the leads list.
+	 *
+	 * @param string $post_type Screen's post type.
+	 */
+	public function status_filter( string $post_type ): void {
+		if ( self::CPT !== $post_type ) {
+			return;
+		}
+
+		$now = isset( $_GET['oc_status'] ) ? sanitize_key( wp_unslash( $_GET['oc_status'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- a list filter.
+
+		echo '<select name="oc_status"><option value="">' . esc_html__( 'Every status', 'oc-blocks' ) . '</option>';
+
+		foreach ( self::statuses() as $key => $label ) {
+			echo '<option value="' . esc_attr( $key ) . '"' . selected( $now, $key, false ) . '>' . esc_html( $label ) . '</option>';
+		}
+
+		echo '</select>';
+	}
+
+	/**
+	 * The dropdown at work. "New" also means leads never given a status.
+	 *
+	 * @param \WP_Query $query The list's query.
+	 */
+	public function apply_status_filter( \WP_Query $query ): void {
+		if ( ! is_admin() || ! $query->is_main_query() || self::CPT !== $query->get( 'post_type' ) ) {
+			return;
+		}
+
+		$now = isset( $_GET['oc_status'] ) ? sanitize_key( wp_unslash( $_GET['oc_status'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- a list filter.
+
+		if ( '' === $now || ! isset( self::statuses()[ $now ] ) ) {
+			return;
+		}
+
+		$clause = array(
+			'key'   => '_oc_lead_status',
+			'value' => $now,
+		);
+
+		if ( 'new' === $now ) {
+			$clause = array(
+				'relation' => 'OR',
+				$clause,
+				array(
+					'key'     => '_oc_lead_status',
+					'compare' => 'NOT EXISTS',
+				),
+			);
+		}
+
+		$query->set( 'meta_query', array( $clause ) ); // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- an admin list.
+	}
+
+	/**
 	 * The list's columns.
 	 *
 	 * @param array<string,string> $columns Columns.
@@ -439,12 +554,13 @@ final class Leads {
 	public function columns( array $columns ): array {
 		return array(
 			'cb'       => $columns['cb'] ?? '',
-			'title'    => __( 'Name', 'oc-blocks' ),
-			'oc_phone' => __( 'Phone', 'oc-blocks' ),
-			'oc_email' => __( 'Email', 'oc-blocks' ),
-			'oc_msg'   => __( 'Message', 'oc-blocks' ),
-			'oc_page'  => __( 'From the page', 'oc-blocks' ),
-			'date'     => __( 'Arrived', 'oc-blocks' ),
+			'title'     => __( 'Name', 'oc-blocks' ),
+			'oc_status' => __( 'Status', 'oc-blocks' ),
+			'oc_phone'  => __( 'Phone', 'oc-blocks' ),
+			'oc_email'  => __( 'Email', 'oc-blocks' ),
+			'oc_msg'    => __( 'Message', 'oc-blocks' ),
+			'oc_page'   => __( 'From the page', 'oc-blocks' ),
+			'date'      => __( 'Arrived', 'oc-blocks' ),
 		);
 	}
 
@@ -456,6 +572,11 @@ final class Leads {
 	 */
 	public function column( string $column, int $post_id ): void {
 		switch ( $column ) {
+			case 'oc_status':
+				$st = self::status( $post_id );
+				echo '<span class="oc-lead-st oc-lead-st--' . esc_attr( $st ) . '">' . esc_html( self::statuses()[ $st ] ) . '</span>';
+				break;
+
 			case 'oc_phone':
 				$phone = (string) get_post_meta( $post_id, '_oc_lead_phone', true );
 				echo '' === $phone ? '—' : '<a href="tel:' . esc_attr( (string) preg_replace( '/[^0-9+]/', '', $phone ) ) . '">' . esc_html( $phone ) . '</a>';
@@ -513,6 +634,30 @@ final class Leads {
 			},
 			self::CPT,
 			'normal',
+			'high'
+		);
+
+		add_meta_box(
+			'oc-lead-crm',
+			__( 'Handling', 'oc-blocks' ),
+			static function ( \WP_Post $lead ): void {
+				$st   = self::status( $lead->ID );
+				$note = (string) get_post_meta( $lead->ID, '_oc_lead_note', true );
+
+				wp_nonce_field( 'oc_lead_crm', 'oc_lead_crm_nonce' );
+				echo '<p><label for="oc_lead_status"><strong>' . esc_html__( 'Status', 'oc-blocks' ) . '</strong></label><br><select id="oc_lead_status" name="oc_lead_status" style="width:100%">';
+
+				foreach ( self::statuses() as $key => $label ) {
+					echo '<option value="' . esc_attr( $key ) . '"' . selected( $st, $key, false ) . '>' . esc_html( $label ) . '</option>';
+				}
+
+				echo '</select></p>';
+				echo '<p><label for="oc_lead_note"><strong>' . esc_html__( 'Note', 'oc-blocks' ) . '</strong></label><br><textarea id="oc_lead_note" name="oc_lead_note" rows="6" style="width:100%">' . esc_textarea( $note ) . '</textarea></p>';
+				echo '<p class="description">' . esc_html__( 'What was said, what was promised, when to call back. Saved with the Update button.', 'oc-blocks' ) . '</p>';
+				echo '<style>.oc-lead-st{display:inline-block;padding:2px 8px;border-radius:99px;font-size:12px;background:#f0f0f1}.oc-lead-st--new{background:#e5f0ff;color:#0a4b94}.oc-lead-st--progress{background:#fff4d6;color:#7a4b00}.oc-lead-st--waiting{background:#f3e8ff;color:#5b2c8f}.oc-lead-st--done{background:#e3f6e8;color:#1e6b34}.oc-lead-st--irrelevant{background:#f0f0f1;color:#646970}</style>';
+			},
+			self::CPT,
+			'side',
 			'high'
 		);
 	}

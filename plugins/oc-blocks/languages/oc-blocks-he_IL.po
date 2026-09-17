@@ -1774,3 +1774,33 @@ msgstr "מתחתיה"
 
 msgid "Hint that there are more: a slice of the next tile shows"
 msgstr "רמז שיש עוד: פיסה מהאריח הבא מוצגת"
+
+msgid "New"
+msgstr "חדש"
+
+msgid "In progress"
+msgstr "בטיפול"
+
+msgid "Waiting for the customer"
+msgstr "ממתין ללקוח"
+
+msgid "Done"
+msgstr "טופל"
+
+msgid "Not relevant"
+msgstr "לא רלוונטי"
+
+msgid "Every status"
+msgstr "כל הסטטוסים"
+
+msgid "Status"
+msgstr "סטטוס"
+
+msgid "Handling"
+msgstr "טיפול"
+
+msgid "Note"
+msgstr "הערה"
+
+msgid "What was said, what was promised, when to call back. Saved with the Update button."
+msgstr "מה נאמר, מה הובטח, מתי לחזור. נשמר עם כפתור העדכון."

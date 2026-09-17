@@ -234,12 +234,35 @@ final class Track {
 	}
 
 	/**
+	 * The first day visits were counted on this site. Recorded when the
+	 * tables are made; for a site that had them before this was recorded,
+	 * the earliest day in the events table.
+	 */
+	public static function since(): string {
+		$day = (string) get_option( 'oc_stats_since', '' );
+
+		if ( '' !== $day ) {
+			return $day;
+		}
+
+		global $wpdb;
+
+		$day = '2' === (string) get_option( 'oc_stats_tables', '' ) ? (string) $wpdb->get_var( 'SELECT MIN(day) FROM ' . self::events_table() ) : ''; // phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.NotPrepared -- own table, once.
+		$day = preg_match( '/^\d{4}-\d{2}-\d{2}$/', $day ) ? $day : (string) wp_date( 'Y-m-d' );
+		update_option( 'oc_stats_since', $day, false );
+
+		return $day;
+	}
+
+	/**
 	 * Creates both tables once.
 	 */
 	public static function install(): void {
 		if ( '2' === (string) get_option( 'oc_stats_tables', '' ) ) {
 			return;
 		}
+
+		add_option( 'oc_stats_since', (string) wp_date( 'Y-m-d' ), '', false );
 
 		global $wpdb;
 

@@ -8884,3 +8884,21 @@ msgstr "המרה"
 msgctxt "part of the visits"
 msgid "Share"
 msgstr "נתח"
+
+msgid "Leads"
+msgstr "לידים"
+
+msgid "… and %s more products"
+msgstr "… ועוד %s מוצרים"
+
+msgid "people waiting · %s in the last 30 days"
+msgstr "ממתינים למלאי · %s נרשמו ב־30 הימים האחרונים"
+
+msgid "leads in the last 30 days · %s this week"
+msgstr "לידים ב־30 הימים האחרונים · %s השבוע"
+
+msgid "No leads yet."
+msgstr "אין לידים עדיין."
+
+msgid "Visits have been counted since %s; orders before that date are counted, their visits are not — so the funnel and the rates are only complete from that date on."
+msgstr "הכניסות נספרות מ־%s. הזמנות מלפני התאריך הזה נספרות, אבל הכניסות שלהן לא, ולכן המשפך ויחסי ההמרה מלאים רק מהתאריך הזה והלאה."

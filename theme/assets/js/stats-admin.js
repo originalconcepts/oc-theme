@@ -280,6 +280,7 @@
 		sub.textContent = dateLabel + ' · ' + vs + ' · ' + T.updated;
 
 		if ( ! data.tracking ) { body.appendChild( el( 'p', 'ocst__note', esc( T.noVisits ) ) ); }
+		else if ( data.since && data.from < data.since ) { body.appendChild( el( 'p', 'ocst__note', esc( T.sinceNote ).replace( '%s', '<b>' + esc( data.since.split( '-' ).reverse().join( '.' ) ) + '</b>' ) ) ); }
 
 		body.appendChild( kpis( data ) );
 

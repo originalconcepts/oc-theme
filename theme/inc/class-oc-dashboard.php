@@ -51,7 +51,7 @@ class Dashboard {
 		}
 
 		if ( current_user_can( 'manage_options' ) && post_type_exists( 'oc_lead' ) ) {
-			wp_add_dashboard_widget( 'oc_dash_leads', __( 'Form leads', 'oc-theme' ), array( $this, 'leads' ), null, null, 'side', 'high' );
+			wp_add_dashboard_widget( 'oc_dash_leads', __( 'Leads', 'oc-theme' ), array( $this, 'leads' ), null, null, 'side', 'high' );
 		}
 
 		if ( current_user_can( 'manage_woocommerce' ) ) {
@@ -72,11 +72,15 @@ class Dashboard {
 		echo '<style>
 			.ocd{display:flex;flex-direction:column;gap:6px}
 			.ocd__big{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
-			.ocd__n{font-size:28px;line-height:1.1;font-weight:600;font-variant-numeric:tabular-nums}
+			.ocd__n{font-size:28px;line-height:1.1;font-weight:600;font-variant-numeric:tabular-nums;direction:ltr;unicode-bidi:isolate}
 			.ocd__l{color:#646970}
 			.ocd__rows{margin:2px 0 0;padding:0;list-style:none;display:grid;gap:3px}
 			.ocd__rows li{display:flex;justify-content:space-between;gap:12px;font-size:13px}
-			.ocd__rows li b{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+			.ocd__rows li b{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap;direction:ltr;unicode-bidi:isolate}
+			.ocd__rows li span a{text-decoration:none}
+			.ocd__when{color:#8c8f94;font-size:12px;font-variant-numeric:tabular-nums}
+			.ocd__chip{font-style:normal;display:inline-block;padding:1px 8px;border-radius:99px;font-size:11.5px;font-weight:600;background:#f0f0f1;color:#50575e}
+			.ocd__chip--new{background:#e5f0ff;color:#0a4b94}.ocd__chip--progress{background:#fff4d6;color:#7a4b00}.ocd__chip--waiting{background:#f3e8ff;color:#5b2c8f}.ocd__chip--done{background:#e3f6e8;color:#1e6b34}.ocd__chip--irrelevant{background:#f0f0f1;color:#646970}
 			.ocd__rows li span{color:#3c434a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 			.ocd__note{margin:0;color:#646970;font-size:12px}
 			.ocd__wrap{overflow-wrap:anywhere;line-height:1.5}
@@ -97,6 +101,7 @@ class Dashboard {
 		$people   = 0;
 		$products = 0;
 		$recent   = 0;
+		$per      = array();
 		$since    = time() - self::DAYS * DAY_IN_SECONDS;
 
 		foreach ( $metas as $m ) {
@@ -107,6 +112,7 @@ class Dashboard {
 			}
 
 			++$products;
+			$per[ (int) $m->post_id ] = count( $list );
 
 			foreach ( $list as $entry ) {
 				++$people;
@@ -118,15 +124,27 @@ class Dashboard {
 			}
 		}
 
+		arsort( $per );
+		$rows = array();
+
+		foreach ( array_slice( $per, 0, 6, true ) as $pid => $n ) {
+			$title  = get_the_title( (int) $pid );
+			$rows[] = array( '<a href="' . esc_url( (string) get_edit_post_link( (int) $pid, 'raw' ) ) . '">' . esc_html( '' === $title ? '#' . $pid : $title ) . '</a>', number_format_i18n( $n ) );
+		}
+
+		if ( count( $per ) > 6 ) {
+			/* translators: %s: number of further products */
+			$rows[] = array( esc_html( sprintf( __( '… and %s more products', 'oc-theme' ), number_format_i18n( count( $per ) - 6 ) ) ), '' );
+		}
+
 		$this->tile(
 			$people,
-			__( 'people waiting', 'oc-theme' ),
-			array(
-				array( __( 'Products waited for', 'oc-theme' ), number_format_i18n( $products ) ),
-				array( __( 'Signed up in the last 30 days', 'oc-theme' ), number_format_i18n( $recent ) ),
-			),
+			/* translators: %s: how many of them signed up in the last 30 days */
+			sprintf( __( 'people waiting · %s in the last 30 days', 'oc-theme' ), number_format_i18n( $recent ) ),
+			$rows,
 			admin_url( 'admin.php?page=oc-waitlist' ),
-			$people ? '' : __( 'Nobody is waiting right now.', 'oc-theme' )
+			$people ? '' : __( 'Nobody is waiting right now.', 'oc-theme' ),
+			true
 		);
 	}
 
@@ -218,7 +236,7 @@ class Dashboard {
 	}
 
 	/**
-	 * Leads from the forms.
+	 * The latest leads and where each one stands.
 	 */
 	public function leads(): void {
 		$count = static function ( int $days ): int {
@@ -235,16 +253,38 @@ class Dashboard {
 			return (int) $q->found_posts;
 		};
 
+		$labels = class_exists( '\\OC\\Blocks\\Leads' ) ? \OC\Blocks\Leads::statuses() : array();
+		$latest = get_posts(
+			array(
+				'post_type'      => 'oc_lead',
+				'post_status'    => 'publish',
+				'posts_per_page' => 6,
+				'orderby'        => 'date',
+				'order'          => 'DESC',
+			)
+		);
+		$rows   = array();
+
+		foreach ( $latest as $lead ) {
+			$st    = class_exists( '\\OC\\Blocks\\Leads' ) ? \OC\Blocks\Leads::status( (int) $lead->ID ) : 'new';
+			$label = $labels[ $st ] ?? $st;
+			$when  = mysql2date( 'j.n', $lead->post_date );
+			$rows[] = array(
+				'<span class="ocd__when">' . esc_html( $when ) . '</span> <a href="' . esc_url( (string) get_edit_post_link( (int) $lead->ID, 'raw' ) ) . '">' . esc_html( '' === $lead->post_title ? '#' . $lead->ID : $lead->post_title ) . '</a>',
+				'<i class="ocd__chip ocd__chip--' . esc_attr( $st ) . '">' . esc_html( $label ) . '</i>',
+			);
+		}
+
 		$month = $count( self::DAYS );
 
 		$this->tile(
 			$month,
-			__( 'leads in the last 30 days', 'oc-theme' ),
-			array(
-				array( __( 'Last 7 days', 'oc-theme' ), number_format_i18n( $count( 7 ) ) ),
-				array( __( 'All time', 'oc-theme' ), number_format_i18n( $count( 0 ) ) ),
-			),
-			admin_url( 'edit.php?post_type=oc_lead' )
+			/* translators: %s: leads in the last 7 days */
+			sprintf( __( 'leads in the last 30 days · %s this week', 'oc-theme' ), number_format_i18n( $count( 7 ) ) ),
+			$rows,
+			admin_url( 'edit.php?post_type=oc_lead' ),
+			$rows ? '' : __( 'No leads yet.', 'oc-theme' ),
+			true
 		);
 	}
 
@@ -281,7 +321,7 @@ class Dashboard {
 			$total,
 			__( 'searches for the top terms, last 30 days', 'oc-theme' ),
 			$list,
-			admin_url( 'admin.php?page=oc-search&tab=popular' ),
+			admin_url( 'admin.php?page=oc-search&tab=reports' ),
 			$rows ? '' : __( 'No searches recorded in the last 30 days.', 'oc-theme' ),
 			false,
 			array(),
