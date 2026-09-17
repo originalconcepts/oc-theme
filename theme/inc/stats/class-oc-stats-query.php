@@ -354,8 +354,8 @@ final class Query {
 
 					$m['product_orders'][ $pid ] = ( $m['product_orders'][ $pid ] ?? 0 ) + 1;
 				}
-				$m['product_qty'][ $pid ]    = ( $m['product_qty'][ $pid ] ?? 0 ) + $qty;
-				$m['product_gross'][ $pid ]  = ( $m['product_gross'][ $pid ] ?? 0 ) + $sum;
+				$m['product_qty'][ $pid ]   = ( $m['product_qty'][ $pid ] ?? 0 ) + $qty;
+				$m['product_gross'][ $pid ] = ( $m['product_gross'][ $pid ] ?? 0 ) + $sum;
 
 				foreach ( (array) wp_get_post_terms( $pid, 'product_cat', array( 'fields' => 'ids' ) ) as $tid ) {
 					$m['cat_gross'][ (int) $tid ] = ( $m['cat_gross'][ (int) $tid ] ?? 0 ) + $sum;
