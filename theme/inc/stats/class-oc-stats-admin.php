@@ -460,7 +460,7 @@ final class Admin {
 				(int) ( $cur['product_atc'][ $pid ] ?? 0 ),
 				(int) ( $cur['product_orders'][ $pid ] ?? 0 ),
 				round( (float) $sum, 2 ),
-				$p ? (string) $p->get_image( array( 48, 48 ) ) : '',
+				$p ? (string) $p->get_image( 'thumbnail', array( 'class' => 'ocst__thumb' ) ) : '',
 			);
 		}
 

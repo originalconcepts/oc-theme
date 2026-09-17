@@ -225,8 +225,8 @@ final class Insights {
 		}
 
 		foreach ( $win as $slot => $w ) {
-			$c = (int) ( $w['checkout'] ?? 0 );
-			$p = (int) ( $w['purchase'] ?? 0 );
+			$c = (int) $w['checkout'];
+			$p = (int) $w['purchase'];
 
 			if ( $c < 10 ) {
 				continue;
