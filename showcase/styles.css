@@ -6,8 +6,8 @@
   --accent:#E0482A; --accent-2:#FBE3DC;
   --good:#1D6A4A; --good-2:#DDEEE5;
   --dark:#141412; --dark-2:#1D1D1A; --dark-line:rgba(243,241,236,.14); --dark-ink-2:#B4B1A7;
-  --serif:"Open Sans Hebrew", "Open Sans", Arial, sans-serif;
-  --sans:"Open Sans Hebrew", "Open Sans", Arial, sans-serif;
+  --serif:"Open Sans", "Open Sans Hebrew", Arial, sans-serif;
+  --sans:"Open Sans", "Open Sans Hebrew", Arial, sans-serif;
   --mono:"IBM Plex Mono", ui-monospace, Menlo, monospace;
   --wrap:1240px; --gut:clamp(18px,4vw,40px);
   --r:14px;
