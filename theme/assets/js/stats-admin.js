@@ -52,7 +52,7 @@
 	}
 
 	/* ---------- pickers ---------- */
-	var RANGES = [ 'today', 'yesterday', 'd7', 'd30', 'd90', 'custom' ];
+	var RANGES = [ 'today', 'yesterday', 'd7', 'd30', 'month', 'lmonth', 'd90', 'custom' ];
 
 	function drawPickers() {
 		pickers.innerHTML = '';
@@ -236,7 +236,8 @@
 		var total = data.kpis[ 0 ][ 1 ];
 
 		var dateLabel = data.range === 'today' ? T.today : ( data.range === 'yesterday' ? T.yesterday : data.from.split( '-' ).reverse().join( '.' ) + ' – ' + data.to.split( '-' ).reverse().join( '.' ) );
-		sub.textContent = dateLabel + ' · ' + ( data.range === 'today' ? T.vsYesterday : T.vsPrev ) + ' · ' + T.updated;
+		var vs = { today: T.vsYesterday, month: T.vsMonth, lmonth: T.vsLmonth }[ data.range ] || T.vsPrev;
+		sub.textContent = dateLabel + ' · ' + vs + ' · ' + T.updated;
 
 		if ( ! data.tracking ) { body.appendChild( el( 'p', 'ocst__note', esc( T.noVisits ) ) ); }
 

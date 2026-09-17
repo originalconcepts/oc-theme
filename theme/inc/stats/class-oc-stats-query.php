@@ -530,7 +530,7 @@ final class Query {
 	/**
 	 * The dashboard's answer for a range: current, previous, and a series.
 	 *
-	 * @param string $range today | d7 | d30 | d90 | custom.
+	 * @param string $range today | yesterday | d7 | d30 | d90 | month | lmonth | custom.
 	 * @param string $from  Y-m-d for custom.
 	 * @param string $to    Y-m-d for custom.
 	 * @return array<string,mixed>
@@ -568,6 +568,18 @@ final class Query {
 		} elseif ( 'yesterday' === $range ) {
 			$to   = self::shift( $today, -1 );
 			$from = $to;
+		} elseif ( 'month' === $range ) {
+			// This month so far, against last month up to the same day.
+			$from      = substr( $today, 0, 7 ) . '-01';
+			$to        = $today;
+			$prev_from = self::month_start( $from, -1 );
+			$prev_to   = min( self::shift( $prev_from, (int) substr( $today, 8, 2 ) - 1 ), self::month_end( $prev_from ) );
+		} elseif ( 'lmonth' === $range ) {
+			// The whole of last month, against the month before it.
+			$from      = self::month_start( $today, -1 );
+			$to        = self::month_end( $from );
+			$prev_from = self::month_start( $from, -1 );
+			$prev_to   = self::month_end( $prev_from );
 		} else {
 			$range = 'custom';
 			$from  = preg_match( '/^\d{4}-\d{2}-\d{2}$/', $from ) ? $from : self::shift( $today, -29 );
@@ -580,10 +592,12 @@ final class Query {
 			}
 		}
 
-		$days      = self::days( $from, $to );
-		$n         = count( $days );
-		$prev_to   = self::shift( $from, -1 );
-		$prev_from = self::shift( $prev_to, -( $n - 1 ) );
+		$days = self::days( $from, $to );
+
+		if ( ! isset( $prev_from, $prev_to ) ) {
+			$prev_to   = self::shift( $from, -1 );
+			$prev_from = self::shift( $prev_to, -( count( $days ) - 1 ) );
+		}
 
 		$series      = array();
 		$prev_series = array();
@@ -614,6 +628,21 @@ final class Query {
 			'prev_series' => $prev_series,
 			'granularity' => 'day',
 		);
+	}
+
+	/**
+	 * The first day of the month that holds $day, moved by whole months.
+	 */
+	public static function month_start( string $day, int $months = 0 ): string {
+		$t = strtotime( substr( $day, 0, 7 ) . '-01 UTC' );
+		return gmdate( 'Y-m-01', strtotime( ( $months >= 0 ? '+' : '' ) . $months . ' month', (int) $t ) );
+	}
+
+	/**
+	 * The last day of the month that holds $day.
+	 */
+	public static function month_end( string $day ): string {
+		return gmdate( 'Y-m-t', (int) strtotime( substr( $day, 0, 7 ) . '-01 UTC' ) );
 	}
 
 	/**

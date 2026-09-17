@@ -8751,3 +8751,38 @@ msgid "%1$d person is waiting for %2$s, and the stock is zero"
 msgid_plural "%1$d people are waiting for %2$s, and the stock is zero"
 msgstr[0] "אדם %1$d מחכה ל‑%2$s, והמלאי אפס"
 msgstr[1] "%1$d אנשים מחכים ל‑%2$s, והמלאי אפס"
+
+msgctxt "date range"
+msgid "From"
+msgstr "מתאריך"
+
+msgctxt "date range"
+msgid "To"
+msgstr "עד תאריך"
+
+msgid "This month"
+msgstr "החודש"
+
+msgid "Last month"
+msgstr "חודש שעבר"
+
+msgid "against last month, up to the same day"
+msgstr "לעומת החודש שעבר, עד אותו יום"
+
+msgid "against the month before"
+msgstr "לעומת החודש שלפניו"
+
+msgid "This product has not sold yet."
+msgstr "המוצר עדיין לא נמכר."
+
+msgid "Units"
+msgstr "יחידות"
+
+msgid "Revenue"
+msgstr "הכנסות"
+
+msgid "Last ordered"
+msgstr "הוזמן לאחרונה"
+
+msgid "Paid orders and orders in hand, including VAT; refunds are left out."
+msgstr "הזמנות ששולמו והזמנות בטיפול, כולל מע״מ; החזרים לא נספרים."

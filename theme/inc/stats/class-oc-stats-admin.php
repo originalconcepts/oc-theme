@@ -88,8 +88,12 @@ final class Admin {
 					'd7'          => __( '7 days', 'oc-theme' ),
 					'd30'         => __( '30 days', 'oc-theme' ),
 					'd90'         => __( '90 days', 'oc-theme' ),
+					'month'       => __( 'This month', 'oc-theme' ),
+					'lmonth'      => __( 'Last month', 'oc-theme' ),
 					'custom'      => __( 'Between dates', 'oc-theme' ),
 					'vsYesterday' => __( 'against yesterday, up to the same hour', 'oc-theme' ),
+					'vsMonth'     => __( 'against last month, up to the same day', 'oc-theme' ),
+					'vsLmonth'    => __( 'against the month before', 'oc-theme' ),
 					'vsPrev'      => __( 'against the previous period', 'oc-theme' ),
 					'sales'       => __( 'Sales', 'oc-theme' ),
 					'orders'      => __( 'Orders', 'oc-theme' ),
@@ -148,8 +152,8 @@ final class Admin {
 					),
 					'updated'     => __( 'Updated just now', 'oc-theme' ),
 					'exportCsv'   => __( 'Export CSV', 'oc-theme' ),
-					'from'        => __( 'From', 'oc-theme' ),
-					'to'          => __( 'To', 'oc-theme' ),
+					'from'        => _x( 'From', 'date range', 'oc-theme' ),
+					'to'          => _x( 'To', 'date range', 'oc-theme' ),
 					'show'        => __( 'Show', 'oc-theme' ),
 					'grossNote'   => __( 'What customers paid, including shipping and VAT, for paid orders and orders in hand.', 'oc-theme' ),
 				),
@@ -176,8 +180,8 @@ final class Admin {
 				<div class="ocst__pickers" data-pickers></div>
 			</div>
 			<div class="ocst__custom" data-custom hidden>
-				<label><?php esc_html_e( 'From', 'oc-theme' ); ?> <input type="date" data-from></label>
-				<label><?php esc_html_e( 'To', 'oc-theme' ); ?> <input type="date" data-to></label>
+				<label><?php echo esc_html( _x( 'From', 'date range', 'oc-theme' ) ); ?> <input type="date" data-from></label>
+				<label><?php echo esc_html( _x( 'To', 'date range', 'oc-theme' ) ); ?> <input type="date" data-to></label>
 				<button type="button" class="button" data-go><?php esc_html_e( 'Show', 'oc-theme' ); ?></button>
 			</div>
 			<div class="ocst__body" data-body><p class="ocst__loading"><?php esc_html_e( 'Loading…', 'oc-theme' ); ?></p></div>
