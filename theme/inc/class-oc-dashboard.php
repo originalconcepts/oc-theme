@@ -31,7 +31,7 @@ class Dashboard {
 	 * Hook in.
 	 */
 	public function register(): void {
-		add_action( 'wp_dashboard_setup', array( $this, 'widgets' ) );
+		add_action( 'wp_dashboard_setup', array( $this, 'widgets' ), 11 ); // After the statistics widget, so Sales today leads the column.
 		add_action( 'admin_print_styles-index.php', array( $this, 'styles' ) );
 		add_action( 'add_attachment', array( __CLASS__, 'forget_heavy' ) );
 		add_action( 'delete_attachment', array( __CLASS__, 'forget_heavy' ) );
