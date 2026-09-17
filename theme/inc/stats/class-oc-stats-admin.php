@@ -124,7 +124,7 @@ final class Admin {
 					'devices'     => __( 'Devices', 'oc-theme' ),
 					'brands'      => __( 'Brands', 'oc-theme' ),
 					'units'       => __( 'Units', 'oc-theme' ),
-					'conv'        => _x( 'Conversion', 'column header', 'oc-theme' ),
+					'convH'       => _x( 'Conversion', 'column header', 'oc-theme' ),
 					'share'       => _x( 'Share', 'part of the visits', 'oc-theme' ),
 					'products'    => __( 'Products driving revenue', 'oc-theme' ),
 					'byGross'     => __( 'by sales', 'oc-theme' ),

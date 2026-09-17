@@ -199,7 +199,7 @@
 		var chan, dev;
 		if ( pairMode === 'orders' ) {
 			chan = rows( data.channels, function ( r ) { return ( T.ch && T.ch[ r[ 0 ] ] ) || r[ 0 ]; }, function ( r ) { return fmtInt( r[ 1 ] ); }, function ( r ) { return fmtMoney( r[ 2 ] ); }, function ( r ) { return r[ 2 ]; }, [ T.orders, T.sales ] );
-			dev = rows( data.devices, function ( r ) { return T[ r[ 0 ] ] || r[ 0 ]; }, function ( r ) { return fmtInt( r[ 1 ] ); }, function ( r ) { return r[ 2 ] === null ? '—' : r[ 2 ] + '%'; }, function ( r ) { return r[ 1 ]; }, [ T.orders, T.conv ] );
+			dev = rows( data.devices, function ( r ) { return T[ r[ 0 ] ] || r[ 0 ]; }, function ( r ) { return fmtInt( r[ 1 ] ); }, function ( r ) { return r[ 2 ] === null ? '—' : r[ 2 ] + '%'; }, function ( r ) { return r[ 1 ]; }, [ T.orders, T.convH ] );
 		} else {
 			var byVisits = data.channels.slice().sort( function ( a, b ) { return ( b[ 3 ] || 0 ) - ( a[ 3 ] || 0 ); } );
 			chan = rows( byVisits, function ( r ) { return ( T.ch && T.ch[ r[ 0 ] ] ) || r[ 0 ]; }, function ( r ) { return fmtInt( r[ 3 ] || 0 ); }, function ( r ) { return Math.round( ( r[ 3 ] || 0 ) / visitsAll * 100 ) + '%'; }, function ( r ) { return r[ 3 ] || 0; }, [ T.visits, T.share ] );
