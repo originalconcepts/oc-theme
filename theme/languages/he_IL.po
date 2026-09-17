@@ -8902,3 +8902,24 @@ msgstr "אין לידים עדיין."
 
 msgid "Visits have been counted since %s; orders before that date are counted, their visits are not — so the funnel and the rates are only complete from that date on."
 msgstr "הכניסות נספרות מ־%s. הזמנות מלפני התאריך הזה נספרות, אבל הכניסות שלהן לא, ולכן המשפך ויחסי ההמרה מלאים רק מהתאריך הזה והלאה."
+
+msgid "Scanned %s"
+msgstr "נסרק ב־%s"
+
+msgid "A scan is running in the background…"
+msgstr "סריקה רצה ברקע…"
+
+msgid "Scan now"
+msgstr "סרוק עכשיו"
+
+msgid "The first scan runs by itself within the hour, in the background."
+msgstr "הסריקה הראשונה תרוץ לבד תוך שעה, ברקע."
+
+msgid "new leads to handle · %1$s in progress · %2$s waiting for the customer"
+msgstr "לידים חדשים לטיפול · %1$s בטיפול · %2$s ממתינים ללקוח"
+
+msgid "The media scan is running in the background; the tile updates when it finishes."
+msgstr "סריקת המדיה רצה ברקע; הקוביה תתעדכן כשהיא תסתיים."
+
+msgid "the period before"
+msgstr "התקופה הקודמת"

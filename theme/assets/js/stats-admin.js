@@ -305,7 +305,8 @@
 		var two = el( 'div', 'ocst__grid ocst__grid--two' );
 		two.appendChild( card( T.breakdown, '', breakdown( data.breakdown ) ) );
 		var cust = el( 'div', 'ocst__bd' );
-		cust.innerHTML = '<div><span>' + esc( T.newCust ) + '</span><b>' + fmtInt( data.customers[ 0 ] ) + '</b></div><div><span>' + esc( T.returning ) + '</span><b>' + fmtInt( data.customers[ 1 ] ) + '</b></div>';
+		cust.innerHTML = '<div><span>' + esc( T.newCust ) + '</span><b>' + fmtInt( data.customers[ 0 ] ) + '</b></div><div><span>' + esc( T.returning ) + '</span><b>' + fmtInt( data.customers[ 1 ] ) + '</b></div>'
+			+ ( data.leads ? '<div><span>' + esc( T.leads ) + '</span><b>' + fmtInt( data.leads[ 0 ] ) + '</b><small>' + esc( T.leadsPrev ) + ': ' + fmtInt( data.leads[ 1 ] ) + '</small></div>' : '' );
 		two.appendChild( card( T.customers, '', cust ) );
 		body.appendChild( two );
 

@@ -33,6 +33,7 @@ class Dashboard {
 	public function register(): void {
 		add_action( 'wp_dashboard_setup', array( $this, 'widgets' ), 11 ); // After the statistics widget, so Sales today leads the column.
 		add_action( 'admin_print_styles-index.php', array( $this, 'styles' ) );
+		add_action( 'admin_notices', array( $this, 'notice' ) );
 		add_action( 'add_attachment', array( __CLASS__, 'forget_heavy' ) );
 		add_action( 'delete_attachment', array( __CLASS__, 'forget_heavy' ) );
 		add_filter( 'wp_update_attachment_metadata', array( __CLASS__, 'forget_heavy_meta' ), 20 );
@@ -87,6 +88,15 @@ class Dashboard {
 			.ocd__go{margin-top:4px;font-size:13px;text-decoration:none}
 			.ocd__ok{color:#1e7d46}.ocd__warn{color:#b32d2e}
 		</style>';
+	}
+
+	/**
+	 * After "Scan now": say the scan is under way.
+	 */
+	public function notice(): void {
+		if ( isset( $_GET['ocmc_scan'] ) && function_exists( 'get_current_screen' ) && get_current_screen() && 'dashboard' === get_current_screen()->id ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- a notice only.
+			echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'The media scan is running in the background; the tile updates when it finishes.', 'oc-theme' ) . '</p></div>';
+		}
 	}
 
 	/* ------------------------------------------------------------- tiles */
@@ -228,7 +238,6 @@ class Dashboard {
 			array(
 				array( __( 'WhatsApp', 'oc-theme' ), number_format_i18n( $wa ) ),
 				array( __( 'Phone', 'oc-theme' ), number_format_i18n( $tel ) ),
-				array( __( 'Products asked about', 'oc-theme' ), number_format_i18n( count( $rows ) ) ),
 			),
 			admin_url( 'options-general.php?page=oc-contact' ),
 			$on ? '' : __( 'The contact card is not switched on.', 'oc-theme' )
@@ -239,20 +248,6 @@ class Dashboard {
 	 * The latest leads and where each one stands.
 	 */
 	public function leads(): void {
-		$count = static function ( int $days ): int {
-			$q = new \WP_Query(
-				array(
-					'post_type'      => 'oc_lead',
-					'post_status'    => 'publish',
-					'posts_per_page' => 1,
-					'fields'         => 'ids',
-					'date_query'     => $days > 0 ? array( array( 'after' => $days . ' days ago' ) ) : array(),
-				)
-			);
-
-			return (int) $q->found_posts;
-		};
-
 		$labels = class_exists( '\\OC\\Blocks\\Leads' ) ? \OC\Blocks\Leads::statuses() : array();
 		$latest = get_posts(
 			array(
@@ -275,14 +270,52 @@ class Dashboard {
 			);
 		}
 
-		$month = $count( self::DAYS );
+		$by = static function ( array $clause ): int {
+			$q = new \WP_Query(
+				array(
+					'post_type'      => 'oc_lead',
+					'post_status'    => 'publish',
+					'posts_per_page' => 1,
+					'fields'         => 'ids',
+					'meta_query'     => array( $clause ), // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- a dashboard tile.
+				)
+			);
+
+			return (int) $q->found_posts;
+		};
+
+		$fresh = $by(
+			array(
+				'relation' => 'OR',
+				array(
+					'key'   => '_oc_lead_status',
+					'value' => 'new',
+				),
+				array(
+					'key'     => '_oc_lead_status',
+					'compare' => 'NOT EXISTS',
+				),
+			)
+		);
+		$open  = $by(
+			array(
+				'key'   => '_oc_lead_status',
+				'value' => 'progress',
+			)
+		);
+		$wait  = $by(
+			array(
+				'key'   => '_oc_lead_status',
+				'value' => 'waiting',
+			)
+		);
 
 		$this->tile(
-			$month,
-			/* translators: %s: leads in the last 7 days */
-			sprintf( __( 'leads in the last 30 days · %s this week', 'oc-theme' ), number_format_i18n( $count( 7 ) ) ),
+			$fresh,
+			/* translators: 1: leads in progress, 2: leads waiting for the customer */
+			sprintf( __( 'new leads to handle · %1$s in progress · %2$s waiting for the customer', 'oc-theme' ), number_format_i18n( $open ), number_format_i18n( $wait ) ),
 			$rows,
-			admin_url( 'edit.php?post_type=oc_lead' ),
+			admin_url( 'edit.php?post_type=oc_lead&oc_status=new' ),
 			$rows ? '' : __( 'No leads yet.', 'oc-theme' ),
 			true
 		);
@@ -330,26 +363,40 @@ class Dashboard {
 	}
 
 	/**
-	 * Pictures nothing uses, from the last cleanup scan.
+	 * Pictures nothing uses, from the last scan — which runs by itself
+	 * once a week in the background.
 	 */
 	public function media(): void {
-		$state = get_transient( 'oc_mclean_scan' );
-		$done  = is_array( $state ) && isset( $state['done'], $state['queue'] ) && (int) $state['done'] >= count( (array) $state['queue'] );
-		$rep   = $done ? (array) ( $state['report'] ?? array() ) : array();
-		$orph  = count( (array) ( $rep['orphan'] ?? array() ) );
-		$draft = count( (array) ( $rep['draft'] ?? array() ) );
-		$trash = count( (array) ( $rep['trash'] ?? array() ) );
+		$last    = class_exists( __NAMESPACE__ . '\\Media_Clean' ) ? Media_Clean::last() : null;
+		$running = class_exists( __NAMESPACE__ . '\\Media_Clean' ) && Media_Clean::running();
+		$rows    = array();
+
+		if ( $last ) {
+			$rows = array(
+				array( __( 'Used only by drafts', 'oc-theme' ), number_format_i18n( (int) $last['draft'] ) ),
+				array( __( 'Used only by trashed items', 'oc-theme' ), number_format_i18n( (int) $last['trash'] ) ),
+				array( __( 'In use', 'oc-theme' ), number_format_i18n( (int) $last['used'] ) ),
+				/* translators: %s: date and time */
+				array( sprintf( __( 'Scanned %s', 'oc-theme' ), wp_date( 'j.n.Y H:i', (int) $last['when'] ) ), '' ),
+			);
+		}
+
+		$links = array( array( __( 'Open the screen', 'oc-theme' ), admin_url( 'upload.php?page=oc-media-clean' ) ) );
+
+		if ( $running ) {
+			$rows[] = array( '<i class="ocd__ok">' . esc_html__( 'A scan is running in the background…', 'oc-theme' ) . '</i>', '' );
+		} else {
+			$links[] = array( __( 'Scan now', 'oc-theme' ), wp_nonce_url( admin_url( 'admin-post.php?action=ocmc_scan_now' ), 'ocmc_scan_now' ) );
+		}
 
 		$this->tile(
-			$done ? $orph : '—',
+			$last ? (int) $last['orphan'] : '—',
 			__( 'pictures nothing uses', 'oc-theme' ),
-			$done ? array(
-				array( __( 'Used only by drafts', 'oc-theme' ), number_format_i18n( $draft ) ),
-				array( __( 'Used only by trashed items', 'oc-theme' ), number_format_i18n( $trash ) ),
-				array( __( 'In use', 'oc-theme' ), number_format_i18n( (int) count( (array) ( $rep['used'] ?? array() ) ) ) ),
-			) : array(),
+			$rows,
 			admin_url( 'upload.php?page=oc-media-clean' ),
-			$done ? '' : __( 'Run a scan on the Media cleanup screen to see what can go.', 'oc-theme' )
+			$last || $running ? '' : __( 'The first scan runs by itself within the hour, in the background.', 'oc-theme' ),
+			true,
+			$links
 		);
 	}
 

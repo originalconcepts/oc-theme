@@ -102,6 +102,8 @@ final class Admin {
 					'aov'         => __( 'Average order', 'oc-theme' ),
 					'returning'   => __( 'Returning customers', 'oc-theme' ),
 					'newCust'     => __( 'New customers', 'oc-theme' ),
+					'leads'       => __( 'Leads', 'oc-theme' ),
+					'leadsPrev'   => __( 'the period before', 'oc-theme' ),
 					'cancelled'   => __( 'Cancelled', 'oc-theme' ),
 					'failed'      => __( 'Failed', 'oc-theme' ),
 					'refunds'     => __( 'Refunds', 'oc-theme' ),
@@ -500,6 +502,7 @@ final class Admin {
 			'products'    => $products,
 			'breakdown'   => $breakdown,
 			'customers'   => array( (int) $cur['new_customers'], (int) $cur['returning_customers'] ),
+			'leads'       => post_type_exists( 'oc_lead' ) ? array( self::leads_between( (string) $r['from'], (string) $r['to'] ), self::leads_between( (string) ( $r['prev_from'] ?? '' ), (string) ( $r['prev_to'] ?? '' ) ) ) : null,
 			'insights'    => Insights::top(),
 			'tracking'    => '2' === (string) get_option( 'oc_stats_tables', '' ),
 			'since'       => Track::since(),
@@ -507,6 +510,36 @@ final class Admin {
 	}
 
 	/* ------------------------------------------------------------ csv */
+
+	/**
+	 * Leads that arrived between two days, inclusive.
+	 *
+	 * @param string $from Y-m-d.
+	 * @param string $to   Y-m-d.
+	 */
+	private static function leads_between( string $from, string $to ): int {
+		if ( '' === $from || '' === $to ) {
+			return 0;
+		}
+
+		$q = new \WP_Query(
+			array(
+				'post_type'      => 'oc_lead',
+				'post_status'    => 'publish',
+				'posts_per_page' => 1,
+				'fields'         => 'ids',
+				'date_query'     => array(
+					array(
+						'after'     => $from . ' 00:00:00',
+						'before'    => $to . ' 23:59:59',
+						'inclusive' => true,
+					),
+				),
+			)
+		);
+
+		return (int) $q->found_posts;
+	}
 
 	/**
 	 * A day-by-day CSV of the range.

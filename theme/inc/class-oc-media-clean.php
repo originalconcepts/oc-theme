@@ -84,6 +84,12 @@ final class Media_Clean {
 	public const DROP = 'oc_mclean_drop';
 
 	/**
+	 * The background scan's event, and the option its last result lives in.
+	 */
+	public const CRON = 'oc_media_scan';
+	public const LAST = 'oc_mclean_last';
+
+	/**
 	 * Where a converted picture's previous shape is remembered.
 	 */
 	private const PREWEBP = '_oc_mclean_prewebp';
@@ -177,6 +183,10 @@ final class Media_Clean {
 		add_action( 'wp_ajax_ocmc_shrink', array( $this, 'ajax_shrink' ) );
 		add_action( 'wp_ajax_ocmc_restore', array( $this, 'ajax_restore' ) );
 		add_action( 'admin_post_ocmc_csv', array( $this, 'handle_csv' ) );
+		add_action( 'admin_post_ocmc_scan_now', array( $this, 'scan_now' ) );
+		add_action( 'init', array( $this, 'schedule' ) );
+		add_action( self::CRON, array( __CLASS__, 'cron_scan' ) );
+		add_action( self::CRON . '_more', array( __CLASS__, 'cron_scan' ) );
 	}
 
 	/**
@@ -623,7 +633,16 @@ final class Media_Clean {
 	 */
 	public function ajax_start(): void {
 		$this->guard();
+		wp_send_json_success( self::start() );
+	}
 
+	/**
+	 * Begin a scan: sort every attachment into a bucket, queue the ones
+	 * whose name still needs checking.
+	 *
+	 * @return array{total:int,used:int,held:int}
+	 */
+	public static function start(): array {
 		$refs   = self::reference_map();
 		$posts  = self::parents();
 		$rows   = self::attachments();
@@ -662,24 +681,39 @@ final class Media_Clean {
 			HOUR_IN_SECONDS
 		);
 
-		wp_send_json_success(
-			array(
-				'total' => count( $queue ),
-				'used'  => count( $report['used'] ),
-				'held'  => count( $report['recent'] ),
-			)
+		if ( ! $queue ) {
+			self::remember();
+		}
+
+		return array(
+			'total' => count( $queue ),
+			'used'  => count( $report['used'] ),
+			'held'  => count( $report['recent'] ),
 		);
 	}
 
-	/**
-	 * One step: check the next batch of candidates by file name.
-	 */
 	public function ajax_step(): void {
 		$this->guard();
 
-		$state = get_transient( self::STORE );
-		if ( ! is_array( $state ) ) {
+		$out = self::step();
+
+		if ( null === $out ) {
 			wp_send_json_error( array( 'message' => __( 'The scan expired. Please run it again.', 'oc-theme' ) ) );
+		}
+
+		wp_send_json_success( $out );
+	}
+
+	/**
+	 * One step of the scan; null when there is no scan to step.
+	 *
+	 * @return array{done:int,total:int,ready:bool}|null
+	 */
+	public static function step(): ?array {
+		$state = get_transient( self::STORE );
+
+		if ( ! is_array( $state ) ) {
+			return null;
 		}
 
 		$queue = (array) $state['queue'];
@@ -704,13 +738,112 @@ final class Media_Clean {
 		$state['done'] = $done;
 		set_transient( self::STORE, $state, HOUR_IN_SECONDS );
 
-		wp_send_json_success(
-			array(
-				'done'  => $done,
-				'total' => count( $queue ),
-				'ready' => $done >= count( $queue ),
-			)
+		$ready = $done >= count( $queue );
+
+		if ( $ready ) {
+			self::remember();
+		}
+
+		return array(
+			'done'  => $done,
+			'total' => count( $queue ),
+			'ready' => $ready,
 		);
+	}
+
+	/**
+	 * Keep a finished scan's counts where the dashboard can read them long
+	 * after the working state has expired.
+	 */
+	private static function remember(): void {
+		$state = get_transient( self::STORE );
+
+		if ( ! is_array( $state ) ) {
+			return;
+		}
+
+		$r = (array) ( $state['report'] ?? array() );
+
+		update_option(
+			self::LAST,
+			array(
+				'when'   => time(),
+				'orphan' => count( (array) ( $r['orphan'] ?? array() ) ),
+				'draft'  => count( (array) ( $r['draft'] ?? array() ) ),
+				'trash'  => count( (array) ( $r['trash'] ?? array() ) ),
+				'used'   => count( (array) ( $r['used'] ?? array() ) ),
+				'recent' => count( (array) ( $r['recent'] ?? array() ) ),
+			),
+			false
+		);
+	}
+
+	/**
+	 * The last finished scan's counts, or null when none has finished.
+	 *
+	 * @return array{when:int,orphan:int,draft:int,trash:int,used:int,recent:int}|null
+	 */
+	public static function last(): ?array {
+		$l = get_option( self::LAST );
+
+		return is_array( $l ) && isset( $l['when'] ) ? $l : null;
+	}
+
+	/**
+	 * Is a scan under way right now?
+	 */
+	public static function running(): bool {
+		$state = get_transient( self::STORE );
+
+		return is_array( $state ) && (int) $state['done'] < count( (array) $state['queue'] );
+	}
+
+	/**
+	 * A scan once a week, in the background, so the dashboard has a fresh
+	 * answer without anyone pressing anything.
+	 */
+	public function schedule(): void {
+		if ( ! wp_next_scheduled( self::CRON ) ) {
+			wp_schedule_event( time() + 10 * MINUTE_IN_SECONDS, 'weekly', self::CRON );
+		}
+	}
+
+	/**
+	 * The background scan: begin (or carry on), work for a short while,
+	 * and if there is more to do come back in two minutes. Each visit is
+	 * short so no request ever waits on it.
+	 */
+	public static function cron_scan(): void {
+		$t0 = microtime( true );
+
+		if ( ! self::running() ) {
+			self::start();
+		}
+
+		while ( self::running() && microtime( true ) - $t0 < 20 ) {
+			self::step();
+		}
+
+		if ( self::running() && ! wp_next_scheduled( self::CRON . '_more' ) ) {
+			wp_schedule_single_event( time() + 2 * MINUTE_IN_SECONDS, self::CRON . '_more' );
+		}
+	}
+
+	/**
+	 * "Scan now" from the dashboard: queue the background scan and go back.
+	 */
+	public function scan_now(): void {
+		if ( ! current_user_can( 'manage_options' ) || ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_GET['_wpnonce'] ) ), 'ocmc_scan_now' ) ) {
+			wp_die( esc_html__( 'Not allowed.', 'oc-theme' ) );
+		}
+
+		if ( ! self::running() ) {
+			wp_schedule_single_event( time(), self::CRON . '_more' );
+			spawn_cron();
+		}
+
+		wp_safe_redirect( admin_url( 'index.php?ocmc_scan=1' ) );
+		exit;
 	}
 
 	/**
