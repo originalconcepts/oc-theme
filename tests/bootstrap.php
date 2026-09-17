@@ -21,3 +21,4 @@ require_once __DIR__ . '/../theme/inc/class-oc-image-fit.php';
 
 require_once __DIR__ . '/../theme/inc/class-oc-product-contact.php';
 require_once __DIR__ . '/../theme/inc/class-oc-guard.php';
+require_once __DIR__ . '/../theme/inc/stats/class-oc-stats-track.php';
