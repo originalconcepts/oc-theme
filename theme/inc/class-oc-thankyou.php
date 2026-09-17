@@ -905,6 +905,55 @@ final class Thankyou {
 	}
 
 	/**
+	 * How many of the orders placed in a window came back with a rating.
+	 * The thank-you page is where the stars are asked for, so the orders
+	 * themselves are the fair denominator; orders that never got that far
+	 * (cancelled, failed) are left out.
+	 *
+	 * @param int $days How far back to look; 0 for every order.
+	 * @return array{orders:int,rated:int,rate:float|null}
+	 */
+	public static function response_rate( int $days = 30 ): array {
+		$out = array(
+			'orders' => 0,
+			'rated'  => 0,
+			'rate'   => null,
+		);
+
+		if ( ! function_exists( 'wc_get_orders' ) ) {
+			return $out;
+		}
+
+		$args = array(
+			'limit'    => 1,
+			'return'   => 'ids',
+			'paginate' => true,
+			'status'   => array( 'on-hold', 'pending', 'processing', 'completed', 'refunded' ),
+		);
+
+		if ( $days > 0 ) {
+			$args['date_created'] = '>' . ( time() - $days * DAY_IN_SECONDS );
+		}
+
+		$all = wc_get_orders( $args );
+
+		$args['meta_query'] = array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- an admin count.
+			array(
+				'key'     => '_oc_ty_rating',
+				'compare' => 'EXISTS',
+			),
+		);
+
+		$rated = wc_get_orders( $args );
+
+		$out['orders'] = is_object( $all ) ? (int) $all->total : 0;
+		$out['rated']  = is_object( $rated ) ? (int) $rated->total : 0;
+		$out['rate']   = $out['orders'] > 0 ? round( $out['rated'] / $out['orders'] * 100, 1 ) : null;
+
+		return $out;
+	}
+
+	/**
 	 * Every rating a customer left, newest first.
 	 */
 	private function ratings_tab(): void {
@@ -921,6 +970,20 @@ final class Thankyou {
 					number_format_i18n( (int) $agg['count'] )
 				)
 			) . '</b></p>';
+		}
+
+		$r = self::response_rate( 30 );
+
+		if ( null !== $r['rate'] ) {
+			echo '<p style="margin:-8px 0 16px;color:#646970;">' . esc_html(
+				sprintf(
+					/* translators: 1: a percentage, 2: how many left a rating, 3: how many orders there were. */
+					__( '%1$s%% of the orders in the last 30 days left a rating — %2$s out of %3$s.', 'oc-theme' ),
+					number_format_i18n( (float) $r['rate'], 1 ),
+					number_format_i18n( (int) $r['rated'] ),
+					number_format_i18n( (int) $r['orders'] )
+				)
+			) . '</p>';
 		}
 
 		$per   = 30;

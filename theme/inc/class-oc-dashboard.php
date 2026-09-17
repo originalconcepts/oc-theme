@@ -196,10 +196,18 @@ class Dashboard {
 			}
 		}
 
+		$rate  = class_exists( __NAMESPACE__ . '\\Thankyou' ) ? Thankyou::response_rate( self::DAYS ) : array( 'rate' => null );
+		/* translators: %s: number of ratings */
+		$label = sprintf( _n( '%s rating', '%s ratings', $count, 'oc-theme' ), number_format_i18n( $count ) );
+
+		if ( null !== $rate['rate'] ) {
+			/* translators: 1: how many ratings in all, 2: a percentage of the orders */
+			$label = sprintf( __( '%1$s in all · %2$s%% of the orders this month left one', 'oc-theme' ), $label, number_format_i18n( (float) $rate['rate'], 1 ) );
+		}
+
 		$this->tile(
 			$count > 0 ? number_format_i18n( $avg, 1 ) . ' ★' : '—',
-			/* translators: %s: number of ratings */
-			sprintf( _n( '%s rating', '%s ratings', $count, 'oc-theme' ), number_format_i18n( $count ) ),
+			$label,
 			$rows,
 			admin_url( 'admin.php?page=oc-thankyou&tab=ratings' ),
 			$count > 0 ? '' : __( 'No ratings yet. Switch the survey on in Thank-you page settings.', 'oc-theme' ),
