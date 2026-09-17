@@ -16,8 +16,32 @@
 	var L = window.ocL10n || {};
 	var G = L.guard || {};
 
+	// Cloudflare's file, loaded once, late: after the page has loaded, or
+	// at the first touch of a guarded form — never in the way of the
+	// page's own pictures on a slow connection.
+	var loading = false;
+
+	function loadTurnstile() {
+		if ( loading || window.turnstile || ! G.site ) {
+			return;
+		}
+
+		loading = true;
+		var s = document.createElement( 'script' );
+		s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?onload=ocTurnstileReady&render=explicit';
+		s.async = true;
+		document.head.appendChild( s );
+	}
+
 	function render( root ) {
-		if ( ! window.turnstile || ! G.site ) {
+		if ( ! G.site ) {
+			return;
+		}
+
+		if ( ! window.turnstile ) {
+			if ( ( root || document ).querySelector( '.oc-guard-ts' ) ) {
+				loadTurnstile();
+			}
 			return;
 		}
 
@@ -95,8 +119,19 @@
 	window.ocGuard = { render: render, reset: reset, token: token, fields: fields, append: append };
 	window.ocTurnstileReady = function () { render( document ); };
 
-	if ( window.turnstile ) {
-		render( document );
+	if ( G.site ) {
+		var wake = function () { if ( document.querySelector( '.oc-guard-ts' ) ) { loadTurnstile(); } };
+
+		// The first touch of any form with a slot.
+		document.addEventListener( 'focusin', function ( e ) { if ( e.target.closest && e.target.closest( 'form' ) && e.target.closest( 'form' ).querySelector( '.oc-guard-ts' ) ) { loadTurnstile(); } }, true );
+		document.addEventListener( 'pointerdown', function ( e ) { if ( e.target.closest && e.target.closest( 'form' ) && e.target.closest( 'form' ).querySelector( '.oc-guard-ts' ) ) { loadTurnstile(); } }, true );
+
+		// Otherwise a moment after the page has fully loaded.
+		if ( 'complete' === document.readyState ) {
+			setTimeout( wake, 1500 );
+		} else {
+			window.addEventListener( 'load', function () { setTimeout( wake, 1500 ); } );
+		}
 	}
 
 	// A refused checkout used its token up.

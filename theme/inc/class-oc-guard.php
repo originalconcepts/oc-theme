@@ -344,28 +344,20 @@ final class Guard {
 	}
 
 	/**
-	 * Cloudflare's script, only on pages that carry a widget: one printed
-	 * on the page, the sign-in drawer (printed after this hook), or the
-	 * back-in-stock card the page script builds on a product page.
+	 * Whether any form on this page, or one the script builds later, has
+	 * Turnstile. The page script loads Cloudflare's file itself — after the
+	 * page has finished loading, or at the first touch of a guarded form,
+	 * whichever comes first — so the challenge never competes with the
+	 * page's own pictures on a slow connection.
 	 */
-	public function script(): void {
-		$wanted = self::$need
+	public static function wanted(): bool {
+		return self::$need
 			|| self::turnstile_on( 'login' )
 			|| ( self::turnstile_on( 'notify' ) && function_exists( 'is_product' ) && is_product() );
-
-		if ( ! $wanted ) {
-			return;
-		}
-
-		wp_enqueue_script(
-			'cf-turnstile',
-			'https://challenges.cloudflare.com/turnstile/v0/api.js?onload=ocTurnstileReady&render=explicit',
-			array(),
-			null, // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion -- Cloudflare's own, always current.
-			array(
-				'in_footer' => true,
-				'strategy'  => 'async',
-			)
-		);
 	}
+
+	/**
+	 * Kept for the hook; the page script loads the file now.
+	 */
+	public function script(): void {}
 }
