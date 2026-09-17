@@ -120,10 +120,12 @@ final class Admin {
 					'drop'        => __( 'drop', 'oc-theme' ),
 					/* translators: %s: the step, e.g. "Visits → Viewed a product". */
 					'biggestDrop' => __( 'The biggest drop is %s. That is the step to work on first.', 'oc-theme' ),
-					'channels'    => __( 'Where orders came from', 'oc-theme' ),
-					'ordersSales' => __( 'orders · sales', 'oc-theme' ),
+					'channels'    => __( 'Where they came from', 'oc-theme' ),
 					'devices'     => __( 'Devices', 'oc-theme' ),
-					'ordersConv'  => __( 'orders · conversion', 'oc-theme' ),
+					'brands'      => __( 'Brands', 'oc-theme' ),
+					'units'       => __( 'Units', 'oc-theme' ),
+					'conv'        => _x( 'Conversion', 'column header', 'oc-theme' ),
+					'share'       => _x( 'Share', 'part of the visits', 'oc-theme' ),
 					'products'    => __( 'Products driving revenue', 'oc-theme' ),
 					'byGross'     => __( 'by sales', 'oc-theme' ),
 					'product'     => __( 'Product', 'oc-theme' ),
@@ -450,7 +452,7 @@ final class Admin {
 			$s = (int) ( $cur['sessions_dev'][ $dv ] ?? 0 );
 			$n = (int) ( $cur['orders_dev'][ $dv ] ?? 0 );
 
-			$devices[] = array( $dv, $n, $s > 0 ? round( $n / $s * 100, 2 ) : null, round( $s / $dev_all * 100 ) );
+			$devices[] = array( $dv, $n, $s > 0 ? round( $n / $s * 100, 2 ) : null, round( $s / $dev_all * 100 ), $s );
 		}
 
 		$gross = (array) $cur['product_gross'];
@@ -491,6 +493,7 @@ final class Admin {
 			'funnel'      => $funnel,
 			'channels'    => $channels,
 			'devices'     => $devices,
+			'brands'      => Query::brands( (string) $r['from'], (string) $r['to'] ),
 			'products'    => $products,
 			'breakdown'   => $breakdown,
 			'customers'   => array( (int) $cur['new_customers'], (int) $cur['returning_customers'] ),
@@ -562,7 +565,7 @@ final class Admin {
 			return;
 		}
 
-		wp_add_dashboard_widget( 'oc_stats_widget', __( 'Sales today', 'oc-theme' ), array( $this, 'render_widget' ) );
+		wp_add_dashboard_widget( 'oc_stats_widget', __( 'Sales today', 'oc-theme' ), array( $this, 'render_widget' ), null, null, 'normal', 'high' );
 	}
 
 	/**

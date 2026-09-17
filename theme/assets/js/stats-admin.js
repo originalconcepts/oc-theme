@@ -176,13 +176,53 @@
 		return box;
 	}
 
-	function rows( list, labelOf, valueOf, moneyOf, barOf ) {
+	function rows( list, labelOf, valueOf, moneyOf, barOf, heads, hrefOf ) {
 		var box = el( 'div', 'ocst__rows' );
 		var max = Math.max.apply( null, list.map( barOf ).concat( [ 1 ] ) );
+		if ( heads && list.length ) {
+			box.appendChild( el( 'div', 'ocst__row ocst__row--h', '<span></span><span class="n">' + esc( heads[ 0 ] ) + '</span><span class="m">' + esc( heads[ 1 ] ) + '</span>' ) );
+		}
 		list.forEach( function ( r ) {
-			box.appendChild( el( 'div', 'ocst__row', '<span>' + esc( labelOf( r ) ) + '</span><span class="n">' + esc( valueOf( r ) ) + '</span><span class="m">' + esc( moneyOf( r ) ) + '</span><span class="ocst__bar"><span style="width:' + Math.max( 3, Math.round( barOf( r ) / max * 100 ) ) + '%"></span></span>' ) );
+			var label = hrefOf && hrefOf( r ) ? '<a href="' + esc( hrefOf( r ) ) + '">' + esc( labelOf( r ) ) + '</a>' : esc( labelOf( r ) );
+			box.appendChild( el( 'div', 'ocst__row', '<span>' + label + '</span><span class="n">' + esc( valueOf( r ) ) + '</span><span class="m">' + esc( moneyOf( r ) ) + '</span><span class="ocst__bar"><span style="width:' + Math.max( 3, Math.round( barOf( r ) / max * 100 ) ) + '%"></span></span>' ) );
 		} );
 		if ( ! list.length ) { box.appendChild( el( 'p', 'ocst__empty', '—' ) ); }
+		return box;
+	}
+
+	/* Where they came from + devices: one switch, orders or visits. */
+	var pairMode = 'orders';
+
+	function pair( data ) {
+		var box = el( 'div', 'ocst__pair' );
+		var visitsAll = data.channels.reduce( function ( a, r ) { return a + ( r[ 3 ] || 0 ); }, 0 ) || 1;
+		var chan, dev;
+		if ( pairMode === 'orders' ) {
+			chan = rows( data.channels, function ( r ) { return ( T.ch && T.ch[ r[ 0 ] ] ) || r[ 0 ]; }, function ( r ) { return fmtInt( r[ 1 ] ); }, function ( r ) { return fmtMoney( r[ 2 ] ); }, function ( r ) { return r[ 2 ]; }, [ T.orders, T.sales ] );
+			dev = rows( data.devices, function ( r ) { return T[ r[ 0 ] ] || r[ 0 ]; }, function ( r ) { return fmtInt( r[ 1 ] ); }, function ( r ) { return r[ 2 ] === null ? '—' : r[ 2 ] + '%'; }, function ( r ) { return r[ 1 ]; }, [ T.orders, T.conv ] );
+		} else {
+			var byVisits = data.channels.slice().sort( function ( a, b ) { return ( b[ 3 ] || 0 ) - ( a[ 3 ] || 0 ); } );
+			chan = rows( byVisits, function ( r ) { return ( T.ch && T.ch[ r[ 0 ] ] ) || r[ 0 ]; }, function ( r ) { return fmtInt( r[ 3 ] || 0 ); }, function ( r ) { return Math.round( ( r[ 3 ] || 0 ) / visitsAll * 100 ) + '%'; }, function ( r ) { return r[ 3 ] || 0; }, [ T.visits, T.share ] );
+			dev = rows( data.devices, function ( r ) { return T[ r[ 0 ] ] || r[ 0 ]; }, function ( r ) { return fmtInt( r[ 4 ] || 0 ); }, function ( r ) { return ( r[ 3 ] || 0 ) + '%'; }, function ( r ) { return r[ 4 ] || 0; }, [ T.visits, T.share ] );
+		}
+		var scroll = el( 'div', 'ocst__scroll' );
+		scroll.appendChild( chan );
+		var c1 = card( T.channels, '', scroll );
+		var c2 = card( T.devices, '', dev );
+		[ c1, c2 ].forEach( function ( c ) {
+			var tabs = el( 'span', 'ocst__tabs', '<button type="button" data-mode="orders" aria-pressed="' + ( pairMode === 'orders' ) + '">' + esc( T.orders ) + '</button><button type="button" data-mode="visits" aria-pressed="' + ( pairMode === 'visits' ) + '">' + esc( T.visits ) + '</button>' );
+			tabs.querySelectorAll( 'button' ).forEach( function ( b ) {
+				b.addEventListener( 'click', function () {
+					if ( b.dataset.mode === pairMode ) { return; }
+					pairMode = b.dataset.mode;
+					var fresh = pair( data );
+					box.replaceWith( fresh );
+				} );
+			} );
+			c.querySelector( '.ocst__card-h' ).appendChild( tabs );
+		} );
+		box.appendChild( c1 );
+		box.appendChild( c2 );
 		return box;
 	}
 
@@ -256,8 +296,8 @@
 		chart( svg, data.series, data.prev_series, hourly );
 
 		var three = el( 'div', 'ocst__grid ocst__grid--three' );
-		three.appendChild( card( T.channels, T.ordersSales, rows( data.channels, function ( r ) { return ( T.ch && T.ch[ r[ 0 ] ] ) || r[ 0 ]; }, function ( r ) { return fmtInt( r[ 1 ] ); }, function ( r ) { return fmtMoney( r[ 2 ] ); }, function ( r ) { return r[ 2 ]; } ) ) );
-		three.appendChild( card( T.devices, T.ordersConv, rows( data.devices, function ( r ) { return T[ r[ 0 ] ] || r[ 0 ]; }, function ( r ) { return fmtInt( r[ 1 ] ); }, function ( r ) { return r[ 2 ] === null ? '—' : r[ 2 ] + '%'; }, function ( r ) { return r[ 3 ]; } ) ) );
+		three.appendChild( pair( data ) );
+		three.appendChild( card( T.brands, T.byGross, rows( data.brands || [], function ( r ) { return r[ 0 ]; }, function ( r ) { return fmtInt( r[ 3 ] ); }, function ( r ) { return fmtMoney( r[ 4 ] ); }, function ( r ) { return r[ 4 ]; }, [ T.units, T.sales ], function ( r ) { return r[ 1 ]; } ) ) );
 		three.appendChild( card( T.products, T.byGross, products( data.products ) ) );
 		body.appendChild( three );
 

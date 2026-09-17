@@ -8873,3 +8873,14 @@ msgstr "תמונות בספרייה"
 
 msgid "Open the screen"
 msgstr "לעמוד"
+
+msgid "Where they came from"
+msgstr "מאיפה הגיעו"
+
+msgctxt "column header"
+msgid "Conversion"
+msgstr "המרה"
+
+msgctxt "part of the visits"
+msgid "Share"
+msgstr "נתח"

@@ -42,20 +42,26 @@ class Dashboard {
 	 * Register the tiles, for those who may see the screens behind them.
 	 */
 	public function widgets(): void {
+		// Three columns, ahead of WordPress's own boxes: sales and traffic
+		// first, then what customers did, then the library. Anyone who has
+		// dragged the boxes keeps their own arrangement.
 		if ( current_user_can( 'manage_woocommerce' ) ) {
-			wp_add_dashboard_widget( 'oc_dash_waitlist', __( 'Back-in-stock waitlist', 'oc-theme' ), array( $this, 'waitlist' ) );
-			wp_add_dashboard_widget( 'oc_dash_ratings', __( 'Thank-you page ratings', 'oc-theme' ), array( $this, 'ratings' ) );
-			wp_add_dashboard_widget( 'oc_dash_contact', __( 'Product contact', 'oc-theme' ), array( $this, 'contact' ) );
-			wp_add_dashboard_widget( 'oc_dash_search', __( 'Popular searches', 'oc-theme' ), array( $this, 'searches' ) );
+			wp_add_dashboard_widget( 'oc_dash_search', __( 'Popular searches', 'oc-theme' ), array( $this, 'searches' ), null, null, 'normal', 'high' );
+			wp_add_dashboard_widget( 'oc_dash_waitlist', __( 'Back-in-stock waitlist', 'oc-theme' ), array( $this, 'waitlist' ), null, null, 'side', 'high' );
+		}
+
+		if ( current_user_can( 'manage_options' ) && post_type_exists( 'oc_lead' ) ) {
+			wp_add_dashboard_widget( 'oc_dash_leads', __( 'Form leads', 'oc-theme' ), array( $this, 'leads' ), null, null, 'side', 'high' );
+		}
+
+		if ( current_user_can( 'manage_woocommerce' ) ) {
+			wp_add_dashboard_widget( 'oc_dash_contact', __( 'Product contact', 'oc-theme' ), array( $this, 'contact' ), null, null, 'side', 'high' );
+			wp_add_dashboard_widget( 'oc_dash_ratings', __( 'Thank-you page ratings', 'oc-theme' ), array( $this, 'ratings' ), null, null, 'column3', 'high' );
 		}
 
 		if ( current_user_can( 'manage_options' ) ) {
-			if ( post_type_exists( 'oc_lead' ) ) {
-				wp_add_dashboard_widget( 'oc_dash_leads', __( 'Form leads', 'oc-theme' ), array( $this, 'leads' ) );
-			}
-
-			wp_add_dashboard_widget( 'oc_dash_media', __( 'Media cleanup', 'oc-theme' ), array( $this, 'media' ) );
-			wp_add_dashboard_widget( 'oc_dash_heavy', __( 'Heavy pictures', 'oc-theme' ), array( $this, 'heavy' ) );
+			wp_add_dashboard_widget( 'oc_dash_media', __( 'Media cleanup', 'oc-theme' ), array( $this, 'media' ), null, null, 'column3', 'high' );
+			wp_add_dashboard_widget( 'oc_dash_heavy', __( 'Heavy pictures', 'oc-theme' ), array( $this, 'heavy' ), null, null, 'column3', 'high' );
 		}
 	}
 
@@ -73,6 +79,7 @@ class Dashboard {
 			.ocd__rows li b{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
 			.ocd__rows li span{color:#3c434a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 			.ocd__note{margin:0;color:#646970;font-size:12px}
+			.ocd__wrap{overflow-wrap:anywhere;line-height:1.5}
 			.ocd__go{margin-top:4px;font-size:13px;text-decoration:none}
 			.ocd__ok{color:#1e7d46}.ocd__warn{color:#b32d2e}
 		</style>';
@@ -256,11 +263,18 @@ class Dashboard {
 
 		foreach ( $rows as $r ) {
 			$total += (int) $r->searches;
-			$list[] = array( (string) $r->term, number_format_i18n( (int) $r->searches ) );
+			$t      = (string) $r->term;
+			$list[] = array( mb_strlen( $t ) > 28 ? mb_substr( $t, 0, 27 ) . '…' : $t, number_format_i18n( (int) $r->searches ) );
 		}
 
+		$after = '';
+
 		if ( $misses ) {
-			$list[] = array( '<i class="ocd__warn">' . esc_html__( 'Searched, found nothing', 'oc-theme' ) . '</i>', implode( ' · ', array_map( static fn( $m ) => esc_html( (string) $m->term ), $misses ) ) );
+			$short = static function ( $m ): string {
+				$t = (string) $m->term;
+				return mb_strlen( $t ) > 22 ? mb_substr( $t, 0, 21 ) . '…' : $t;
+			};
+			$after = '<p class="ocd__note ocd__wrap"><i class="ocd__warn">' . esc_html__( 'Searched, found nothing', 'oc-theme' ) . ':</i> ' . esc_html( implode( ' · ', array_map( $short, $misses ) ) ) . '</p>';
 		}
 
 		$this->tile(
@@ -269,7 +283,9 @@ class Dashboard {
 			$list,
 			admin_url( 'admin.php?page=oc-search&tab=popular' ),
 			$rows ? '' : __( 'No searches recorded in the last 30 days.', 'oc-theme' ),
-			true
+			false,
+			array(),
+			$after
 		);
 	}
 
@@ -398,8 +414,9 @@ class Dashboard {
 	 * @param string     $none A sentence instead of rows when there is nothing.
 	 * @param bool       $raw   Rows carry markup of their own.
 	 * @param array      $links Extra [label, url] links instead of the single one.
+	 * @param string     $after Markup after the rows, already escaped.
 	 */
-	private function tile( $big, string $label, array $rows, string $url, string $none = '', bool $raw = false, array $links = array() ): void {
+	private function tile( $big, string $label, array $rows, string $url, string $none = '', bool $raw = false, array $links = array(), string $after = '' ): void {
 		echo '<div class="ocd">';
 		echo '<div class="ocd__big"><b class="ocd__n">' . esc_html( is_int( $big ) ? number_format_i18n( $big ) : (string) $big ) . '</b><span class="ocd__l">' . esc_html( $label ) . '</span></div>';
 
@@ -413,6 +430,10 @@ class Dashboard {
 			}
 
 			echo '</ul>';
+		}
+
+		if ( '' !== $after ) {
+			echo $after; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped by the caller.
 		}
 
 		if ( $links ) {

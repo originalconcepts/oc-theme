@@ -638,6 +638,61 @@ final class Query {
 	}
 
 	/**
+	 * The brands that sold in a period: orders, units and money, best first.
+	 * Read from WooCommerce's order lookup tables joined to the brand
+	 * taxonomy, so it needs no rollup and is right for any range.
+	 *
+	 * @param string $from  Y-m-d, inclusive.
+	 * @param string $to    Y-m-d, inclusive.
+	 * @param int    $limit Longest list.
+	 * @return array<int,array{0:string,1:string,2:int,3:int,4:float}> name, link, orders, units, gross.
+	 */
+	public static function brands( string $from, string $to, int $limit = 8 ): array {
+		$tax = class_exists( '\OC\Theme\Search' ) ? \OC\Theme\Search::brand_taxonomy() : '';
+
+		if ( '' === $tax ) {
+			return array();
+		}
+
+		global $wpdb;
+
+		$statuses = array_map( static fn( string $s ): string => 'wc-' . $s, self::SALE_STATUSES );
+		$in       = implode( ',', array_fill( 0, count( $statuses ), '%s' ) );
+		$sql      = "SELECT tt.term_id, COUNT( DISTINCT l.order_id ) AS orders, COALESCE( SUM( l.product_qty ), 0 ) AS qty, COALESCE( SUM( l.product_net_revenue + l.tax_amount ), 0 ) AS gross
+			FROM {$wpdb->prefix}wc_order_product_lookup l
+			INNER JOIN {$wpdb->prefix}wc_order_stats s ON s.order_id = l.order_id
+			INNER JOIN {$wpdb->term_relationships} tr ON tr.object_id = l.product_id
+			INNER JOIN {$wpdb->term_taxonomy} tt ON tt.term_taxonomy_id = tr.term_taxonomy_id AND tt.taxonomy = %s
+			WHERE s.parent_id = 0 AND s.status IN ( $in ) AND l.date_created BETWEEN %s AND %s
+			GROUP BY tt.term_id
+			ORDER BY gross DESC
+			LIMIT %d";
+		$args     = array_merge( array( $tax ), $statuses, array( $from . ' 00:00:00', $to . ' 23:59:59', max( 1, $limit ) ) );
+
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery
+		$rows = (array) $wpdb->get_results( $wpdb->prepare( $sql, $args ), ARRAY_A );
+		$out  = array();
+
+		foreach ( $rows as $row ) {
+			$term = get_term( (int) $row['term_id'], $tax );
+
+			if ( ! $term instanceof \WP_Term ) {
+				continue;
+			}
+
+			$out[] = array(
+				$term->name,
+				admin_url( 'edit.php?post_type=product&' . rawurlencode( $tax ) . '=' . rawurlencode( $term->slug ) ),
+				(int) $row['orders'],
+				(int) $row['qty'],
+				round( (float) $row['gross'], 2 ),
+			);
+		}
+
+		return $out;
+	}
+
+	/**
 	 * The first day of the month that holds $day, moved by whole months.
 	 *
 	 * @param string $day    Y-m-d.

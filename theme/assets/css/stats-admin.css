@@ -26,7 +26,7 @@
 
 .ocst__grid{display:grid;gap:10px;margin-top:10px}
 .ocst__grid--main{grid-template-columns:minmax(0,1.62fr) minmax(0,1fr)}
-.ocst__grid--three{grid-template-columns:minmax(0,1fr) minmax(0,.92fr) minmax(0,1.3fr)}
+.ocst__grid--three{grid-template-columns:minmax(0,1.5fr) minmax(0,.9fr) minmax(0,1.3fr)}
 .ocst__grid--two{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
 .ocst__card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 15px 15px;min-width:0}
 .ocst__card-h{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:10px}
@@ -46,6 +46,15 @@
 .ocst__row .m{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:13px;text-align:end;direction:ltr}
 .ocst__bar{grid-column:1/-1;height:5px;border-radius:99px;background:var(--bg);overflow:hidden;margin-top:-4px}
 .ocst__bar span{display:block;height:100%;background:var(--accent);border-radius:99px}
+.ocst__row--h{font-size:11.5px;font-weight:600;color:var(--ink3);margin-bottom:-3px}
+.ocst__row--h .n,.ocst__row--h .m{font-family:inherit;font-size:11.5px;color:var(--ink3)}
+.ocst__row a{color:inherit;text-decoration:none}
+.ocst__row a:hover{text-decoration:underline}
+.ocst__pair{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;min-width:0}
+.ocst__scroll{max-height:236px;overflow:auto;padding-inline-end:4px;scrollbar-width:thin}
+.ocst__tabs{display:inline-flex;gap:2px;background:var(--bg);border-radius:7px;padding:2px;flex:none}
+.ocst__tabs button{border:0;background:transparent;font:inherit;font-size:12px;padding:2px 9px;border-radius:5px;cursor:pointer;color:var(--ink2);line-height:1.5}
+.ocst__tabs button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.1)}
 
 .ocst__funnel{display:flex;flex-direction:column;gap:2px}
 .ocst__step{position:relative;background:var(--bg);border-radius:8px;padding:9px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px;overflow:hidden}
@@ -95,5 +104,5 @@
 .ocst__bd b{display:block;font-family:var(--mono);font-size:16px;margin-top:2px;direction:ltr;text-align:start}
 .ocst__bd small{display:block;font-family:var(--mono);font-size:11.5px;color:var(--ink3);direction:ltr;text-align:start}
 
-@media (max-width:1100px){.ocst__kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.ocst__grid--main,.ocst__grid--three,.ocst__grid--two{grid-template-columns:1fr}.ocst__bd{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:1100px){.ocst__kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.ocst__grid--main,.ocst__grid--three,.ocst__grid--two{grid-template-columns:1fr}.ocst__pair{grid-template-columns:1fr}.ocst__bd{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media (max-width:640px){.ocst__kpis{grid-template-columns:1fr 1fr}.ocst__bd{grid-template-columns:1fr 1fr}}
