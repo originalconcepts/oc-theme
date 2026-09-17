@@ -196,7 +196,7 @@ class Dashboard {
 			}
 		}
 
-		$rate  = class_exists( __NAMESPACE__ . '\\Thankyou' ) ? Thankyou::response_rate( self::DAYS ) : array( 'rate' => null );
+		$rate = class_exists( __NAMESPACE__ . '\\Thankyou' ) ? Thankyou::response_rate( self::DAYS ) : array( 'rate' => null );
 		/* translators: %s: number of ratings */
 		$label = sprintf( _n( '%s rating', '%s ratings', $count, 'oc-theme' ), number_format_i18n( $count ) );
 
