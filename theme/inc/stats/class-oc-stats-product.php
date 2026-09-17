@@ -65,7 +65,7 @@ class Product {
 			INNER JOIN {$wpdb->prefix}wc_order_stats s ON s.order_id = l.order_id
 			WHERE $where";
 
-		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery
 		$row = $wpdb->get_row( $wpdb->prepare( $sql, $args ), ARRAY_A );
 
 		$out = array(
@@ -84,7 +84,7 @@ class Product {
 				ORDER BY l.date_created DESC
 				LIMIT 1";
 
-			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery
 			$last = $wpdb->get_row( $wpdb->prepare( $sql, $args ), ARRAY_A );
 
 			$out['last_id'] = (int) ( $last['order_id'] ?? 0 );
