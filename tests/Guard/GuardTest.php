@@ -45,6 +45,8 @@ final class GuardTest extends TestCase {
 	public function test_defaults_cover_every_form(): void {
 		$d = Guard::defaults();
 
+		$this->assertSame( 1, $d['on'], 'the master switch is on until someone turns it off' );
+
 		foreach ( Guard::FORMS as $form ) {
 			$this->assertArrayHasKey( $form, $d['ts'] );
 			$this->assertArrayHasKey( $form, $d['limits'] );

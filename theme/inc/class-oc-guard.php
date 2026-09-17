@@ -70,10 +70,11 @@ final class Guard {
 	 * Defaults: no Turnstile anywhere, sensible hourly limits. Sign-in
 	 * and the contact block carry limits of their own, so zero here.
 	 *
-	 * @return array{site:string,secret:string,ts:array<string,int>,limits:array<string,int>}
+	 * @return array{on:int,site:string,secret:string,ts:array<string,int>,limits:array<string,int>}
 	 */
 	public static function defaults(): array {
 		return array(
+			'on'     => 1,
 			'site'   => '',
 			'secret' => '',
 			'ts'     => array_fill_keys( self::FORMS, 0 ),
@@ -91,7 +92,7 @@ final class Guard {
 	/**
 	 * Saved settings over the defaults.
 	 *
-	 * @return array{site:string,secret:string,ts:array<string,int>,limits:array<string,int>}
+	 * @return array{on:int,site:string,secret:string,ts:array<string,int>,limits:array<string,int>}
 	 */
 	public static function settings(): array {
 		$d = self::defaults();
@@ -99,6 +100,7 @@ final class Guard {
 		$o = is_array( $o ) ? $o : array();
 
 		$out = array(
+			'on'     => isset( $o['on'] ) && empty( $o['on'] ) ? 0 : 1,
 			'site'   => sanitize_text_field( (string) ( $o['site'] ?? '' ) ),
 			'secret' => (string) ( $o['secret'] ?? '' ),
 			'ts'     => $d['ts'],
@@ -182,15 +184,16 @@ final class Guard {
 	/* ------------------------------------------------------------ live */
 
 	/**
-	 * Whether Turnstile stands in front of a form: switched on for it,
-	 * with both keys in place.
+	 * Whether Turnstile stands in front of a form: the master switch on,
+	 * switched on for this form, with both keys in place. Off, nothing
+	 * renders and nothing is verified; the quiet checks stay.
 	 *
 	 * @param string $form Which form.
 	 */
 	public static function turnstile_on( string $form ): bool {
 		$s = self::settings();
 
-		return ! empty( $s['ts'][ $form ] ) && '' !== $s['site'] && '' !== $s['secret'];
+		return ! empty( $s['on'] ) && ! empty( $s['ts'][ $form ] ) && '' !== $s['site'] && '' !== $s['secret'];
 	}
 
 	/**

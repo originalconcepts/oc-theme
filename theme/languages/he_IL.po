@@ -8315,3 +8315,9 @@ msgstr "ההתחברות כבר מגבילה שליחת קודים לכל טלפ
 
 msgid "The colours of these products have pictures of their own — a colour gallery or a variation image — and the main photo is none of them. Their catalogue card marks no colour and the product page opens with nothing chosen, so the photo never contradicts the swatch. To have a colour marked again, make the main photo one of that colour's pictures: add it to the colour's gallery (Product data → Colour galleries), set it as that variation's image, or make one of the colour's pictures the main photo."
 msgstr "לצבעים של המוצרים האלה יש תמונות משלהם – גלריית צבע או תמונת וריאציה – והתמונה הראשית אינה אחת מהן. הכרטיס בקטלוג לא מסמן צבע ודף המוצר נפתח בלי צבע נבחר, כך שהתמונה לעולם לא סותרת את הסוואטש. כדי שיסומן צבע שוב, הפכו את התמונה הראשית לאחת מתמונות אותו צבע: הוסיפו אותה לגלריית הצבע (נתוני מוצר ← גלריות צבע), הגדירו אותה כתמונת הווריאציה, או הפכו אחת מתמונות הצבע לתמונה הראשית."
+
+msgid "Turnstile active"
+msgstr "Turnstile פעיל"
+
+msgid "Off: no challenge on any form, nothing to verify. The choices below are kept for when it comes back on. The trap field, the timestamp and the hourly caps stay either way."
+msgstr "כבוי: אין אימות באף טופס ואין מה לבדוק. הבחירות למטה נשמרות לרגע שיופעל שוב. שדה המלכודת, חותמת הזמן והתקרות לשעה נשארים בכל מקרה."

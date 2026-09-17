@@ -56,6 +56,24 @@ final class Guard_Admin {
 				<?php wp_nonce_field( 'oc_guard_save' ); ?>
 
 				<h2><?php esc_html_e( 'Cloudflare Turnstile', 'oc-theme' ); ?></h2>
+				<p>
+					<label class="oc-guard-toggle">
+						<input type="checkbox" name="on" value="1" <?php checked( 1, $s['on'] ); ?>>
+						<span class="oc-guard-toggle__track" aria-hidden="true"></span>
+						<strong><?php esc_html_e( 'Turnstile active', 'oc-theme' ); ?></strong>
+						<span class="description"><?php esc_html_e( 'Off: no challenge on any form, nothing to verify. The choices below are kept for when it comes back on. The trap field, the timestamp and the hourly caps stay either way.', 'oc-theme' ); ?></span>
+					</label>
+				</p>
+				<style>
+					.oc-guard-toggle { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; max-width: 760px; }
+					.oc-guard-toggle input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+					.oc-guard-toggle__track { flex: none; width: 40px; height: 22px; border-radius: 11px; background: #c3c4c7; position: relative; transition: background .15s; }
+					.oc-guard-toggle__track::after { content: ""; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: transform .15s; }
+					.oc-guard-toggle input:checked + .oc-guard-toggle__track { background: #2271b1; }
+					.oc-guard-toggle input:checked + .oc-guard-toggle__track::after { transform: translateX(18px); }
+					.oc-guard-toggle input:focus-visible + .oc-guard-toggle__track { box-shadow: 0 0 0 2px #fff, 0 0 0 4px #2271b1; }
+					.oc-guard-toggle .description { flex-basis: 100%; }
+				</style>
 				<p class="description" style="max-width:720px;">
 					<?php
 					printf(
@@ -130,6 +148,7 @@ final class Guard_Admin {
 		$secret = trim( (string) ( $post['secret'] ?? '' ) );
 
 		$out = array(
+			'on'     => empty( $post['on'] ) ? 0 : 1,
 			'site'   => sanitize_text_field( (string) ( $post['site'] ?? '' ) ),
 			'secret' => '' === $secret ? $was['secret'] : ( 'clear' === $secret ? '' : sanitize_text_field( $secret ) ),
 			'ts'     => array(),
