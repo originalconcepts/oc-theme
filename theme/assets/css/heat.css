@@ -1,0 +1,111 @@
+/* The heat map viewer: a sheet over the shop, with the page inside it. */
+html.ocheat-on,
+html.ocheat-on body { overflow: hidden !important; }
+
+.ocheat {
+	position: fixed;
+	inset: 0;
+	z-index: 100000;
+	display: flex;
+	flex-direction: column;
+	background: #eef0f3;
+	font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+	color: #111827;
+}
+
+.ocheat__head {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	flex-wrap: wrap;
+	padding: 10px 16px;
+	background: #fff;
+	border-block-end: 1px solid #dfe3e8;
+	box-shadow: 0 1px 3px rgb(0 0 0 / 6%);
+}
+
+.ocheat__title { font-size: 15px; }
+.ocheat__note { font-size: 13px; color: #6b7280; font-variant-numeric: tabular-nums; direction: ltr; }
+.ocheat__tools { display: flex; gap: 10px; flex-wrap: wrap; margin-inline-start: auto; }
+
+.ocheat__tabs {
+	display: inline-flex;
+	gap: 2px;
+	background: #f1f3f5;
+	border-radius: 8px;
+	padding: 3px;
+}
+
+.ocheat__tabs button {
+	border: 0;
+	background: transparent;
+	font: inherit;
+	font-size: 12.5px;
+	padding: 3px 10px;
+	border-radius: 6px;
+	cursor: pointer;
+	color: #4b5563;
+	line-height: 1.6;
+}
+
+.ocheat__tabs button[aria-pressed="true"] {
+	background: #fff;
+	color: #111827;
+	box-shadow: 0 1px 2px rgb(0 0 0 / 12%);
+	font-weight: 600;
+}
+
+.ocheat__close {
+	border: 1px solid #d1d5db;
+	background: #fff;
+	border-radius: 8px;
+	padding: 5px 14px;
+	font: inherit;
+	font-size: 13px;
+	cursor: pointer;
+}
+
+.ocheat__body { flex: 1; display: flex; min-height: 0; }
+
+.ocheat__stage {
+	flex: 1;
+	overflow: auto;
+	padding: 12px;
+	display: flex;
+	justify-content: center;
+	align-items: flex-start;
+}
+
+.ocheat__wrap { position: relative; flex: none; background: #fff; box-shadow: 0 6px 24px rgb(0 0 0 / 14%); }
+.ocheat__frame { display: block; border: 0; width: 100%; }
+.ocheat__canvas { position: absolute; inset-block-start: 0; inset-inline-start: 0; pointer-events: none; }
+
+.ocheat__side {
+	inline-size: 300px;
+	flex: none;
+	background: #fff;
+	border-inline-start: 1px solid #dfe3e8;
+	padding: 16px;
+	overflow: auto;
+}
+
+.ocheat__side h3 { margin: 0 0 10px; font-size: 14px; }
+.ocheat__hint { margin: 8px 0 0; font-size: 12.5px; color: #6b7280; line-height: 1.5; }
+.ocheat__spots { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+
+.ocheat__spots li {
+	display: flex;
+	justify-content: space-between;
+	gap: 10px;
+	font-size: 13px;
+	padding-block-end: 6px;
+	border-block-end: 1px solid #f1f3f5;
+}
+
+.ocheat__spots span { color: #6b7280; direction: ltr; font-variant-numeric: tabular-nums; }
+.ocheat__spots b { font-variant-numeric: tabular-nums; direction: ltr; }
+.ocheat__spots i { font-style: normal; color: #6b7280; font-weight: 400; }
+
+@media (max-width: 860px) {
+	.ocheat__side { display: none; }
+}

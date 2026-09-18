@@ -249,6 +249,183 @@
 		form.addEventListener( 'submit', function () { hit( 'atc', S.p ); } );
 	}
 }() );
+
+/* ---------- heat map ----------
+ * Where people click on a watched page, how far down they get and where
+ * they linger. Nothing leaves the browser while the visitor is reading:
+ * marks are counted in memory and sent once, as the page goes away. A
+ * page that is not watched costs one property read and stops here. */
+( function () {
+	var L = window.ocL10n || {};
+	var H = L.heat;
+
+	if ( ! H || ! H.url || navigator.webdriver ) {
+		return;
+	}
+
+	var KEEP = 'ocHeat';
+
+	function post( body ) {
+		try {
+			var blob = new Blob( [ JSON.stringify( body ) ], { type: 'application/json' } );
+
+			if ( navigator.sendBeacon && navigator.sendBeacon( H.url, blob ) ) {
+				return;
+			}
+		} catch ( e ) {}
+
+		try {
+			fetch( H.url, { method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify( body ) } );
+		} catch ( e ) {}
+	}
+
+	// The thank-you page: hand over what the visit kept on its way here.
+	if ( H.flush ) {
+		try {
+			var kept = JSON.parse( sessionStorage.getItem( KEEP ) || '[]' );
+			sessionStorage.removeItem( KEEP );
+			kept.slice( 0, 12 ).forEach( function ( one ) {
+				one._t = H.t;
+				one.seg = 'b';
+				post( one );
+			} );
+		} catch ( e ) {}
+
+		return;
+	}
+
+	var marks = {};
+	var bands = {};
+	var count = 0;
+	var last = { x: 0, y: 0, at: 0, n: 0 };
+	var sent = false;
+
+	function add( kind, xp, y, n ) {
+		var key = kind + '|' + xp + '|' + y;
+		marks[ key ] = ( marks[ key ] || 0 ) + n;
+	}
+
+	// Anything a person could reasonably expect to do something.
+	function live( el ) {
+		for ( var i = 0; el && i < 6; i++ ) {
+			var tag = ( el.tagName || '' ).toLowerCase();
+
+			if ( 'a' === tag || 'button' === tag || 'input' === tag || 'select' === tag || 'textarea' === tag || 'label' === tag || 'summary' === tag ) {
+				return true;
+			}
+
+			if ( el.onclick || ( el.getAttribute && ( el.hasAttribute( 'data-oc-open' ) || 'button' === el.getAttribute( 'role' ) || el.hasAttribute( 'tabindex' ) ) ) ) {
+				return true;
+			}
+
+			el = el.parentElement;
+		}
+
+		return false;
+	}
+
+	document.addEventListener( 'click', function ( e ) {
+		if ( count >= ( H.max || 60 ) || ! e.isTrusted ) {
+			return;
+		}
+
+		var w = document.documentElement.clientWidth || 1;
+		var xp = Math.max( 0, Math.min( 100, Math.round( ( e.clientX / w ) * 100 ) ) );
+		var y = Math.max( 0, Math.round( e.pageY ) );
+		var now = Date.now();
+
+		++count;
+		add( live( e.target ) ? 'c' : 'd', xp, y, 1 );
+
+		// Three quick hits in one spot is not enthusiasm, it is frustration.
+		if ( now - last.at < 1000 && Math.abs( y - last.y ) < 30 && Math.abs( xp - last.x ) < 6 ) {
+			last.n++;
+
+			if ( 3 === last.n ) {
+				add( 'r', xp, y, 1 );
+			}
+		} else {
+			last.n = 1;
+		}
+
+		last.x = xp;
+		last.y = y;
+		last.at = now;
+	}, true );
+
+	// Once a second, which fifth of the page is on screen.
+	var timer = setInterval( function () {
+		if ( document.hidden ) {
+			return;
+		}
+
+		var tall = Math.max( 1, document.documentElement.scrollHeight );
+		var from = Math.floor( Math.min( 1, Math.max( 0, window.scrollY / tall ) ) * 20 );
+		var to = Math.min( 19, Math.floor( Math.min( 1, ( window.scrollY + window.innerHeight ) / tall ) * 20 ) );
+
+		for ( var b = from; b <= to; b++ ) {
+			bands[ b ] = ( bands[ b ] || 0 ) + 1;
+		}
+	}, 1000 );
+
+	function body() {
+		var list = [];
+
+		Object.keys( marks ).forEach( function ( k ) {
+			var p = k.split( '|' );
+			list.push( [ p[ 0 ], Number( p[ 1 ] ), Number( p[ 2 ] ), marks[ k ] ] );
+		} );
+
+		var depth = [];
+
+		for ( var b = 0; b < 20; b++ ) {
+			depth.push( bands[ b ] || 0 );
+		}
+
+		return {
+			_t: H.t,
+			path: location.pathname,
+			kind: H.kind,
+			label: H.label || '',
+			seg: 'a',
+			marks: list,
+			depth: depth
+		};
+	}
+
+	function done() {
+		if ( sent ) {
+			return;
+		}
+
+		sent = true;
+		clearInterval( timer );
+
+		var b = body();
+		var any = false;
+
+		for ( var i = 0; i < b.depth.length; i++ ) {
+			if ( b.depth[ i ] ) { any = true; }
+		}
+
+		if ( ! b.marks.length && ! any ) {
+			return;
+		}
+
+		post( b );
+
+		// Kept in case this visit ends in an order; the thank-you page
+		// sends it again, and then it counts as a buyer's page.
+		try {
+			var kept = JSON.parse( sessionStorage.getItem( KEEP ) || '[]' );
+			kept.push( b );
+			sessionStorage.setItem( KEEP, JSON.stringify( kept.slice( -12 ) ) );
+		} catch ( e ) {}
+	}
+
+	addEventListener( 'pagehide', done );
+	addEventListener( 'visibilitychange', function () { if ( document.hidden ) { done(); } } );
+}() );
 ( function () {
 	'use strict';
 

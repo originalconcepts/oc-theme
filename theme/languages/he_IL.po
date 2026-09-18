@@ -8938,3 +8938,87 @@ msgstr "%1$s%% מההזמנות ב־30 הימים האחרונים השאירו 
 
 msgid "%1$s in all · %2$s%% of the orders this month left one"
 msgstr "%1$s בסך הכול · %2$s%% מההזמנות החודש השאירו דירוג"
+
+msgid "Heat maps"
+msgstr "מפות חום"
+
+msgid "Heat map"
+msgstr "מפת חום"
+
+msgid "See where people click on this page"
+msgstr "לראות איפה לוחצים בעמוד הזה"
+
+msgid "Where people look, and where they click. Only the pages below are recorded, and the visitor pays nothing for it: the marks are counted in the browser and sent once, as the page closes."
+msgstr "איפה מסתכלים ואיפה לוחצים. רק העמודים שלמטה נרשמים, והגולש לא משלם על זה כלום: הסימונים נספרים בדפדפן ונשלחים פעם אחת, כשהעמוד נסגר."
+
+msgid "Nothing recorded in this period yet. The pages below are the ones being watched; a map appears once people have visited them."
+msgstr "עדיין לא נרשם דבר בתקופה הזאת. העמודים שלמטה הם אלה שבמעקב, ומפה תופיע אחרי שיבקרו בהם."
+
+msgid "The list of watched pages was last worked out at %s."
+msgstr "רשימת העמודים במעקב חושבה לאחרונה ב־%s."
+
+msgid "View the heat map"
+msgstr "צפייה במפת חום"
+
+msgid "What is recorded"
+msgstr "מה נרשם"
+
+msgid "Record heat maps"
+msgstr "רישום מפות חום"
+
+msgid "Switching this off stops the recording everywhere at once. What was gathered stays."
+msgstr "כיבוי עוצר את הרישום בכל האתר מיד. מה שנאסף נשאר."
+
+msgid "Pages"
+msgstr "עמודים"
+
+msgid "The most visited products"
+msgstr "המוצרים הנצפים ביותר"
+
+msgid "Products many look at and few buy"
+msgstr "מוצרים שרבים מסתכלים ומעטים קונים"
+
+msgid "The most visited categories"
+msgstr "הקטגוריות הנצפות ביותר"
+
+msgid "How many of each"
+msgstr "כמה מכל סוג"
+
+msgid "Products and categories are chosen by traffic and worked out again every hour."
+msgstr "מוצרים וקטגוריות נבחרים לפי התנועה ומחושבים מחדש כל שעה."
+
+msgid "Home page"
+msgstr "דף הבית"
+
+msgid "Dead clicks"
+msgstr "לחיצות מתות"
+
+msgid "Rage clicks"
+msgstr "לחיצות זעם"
+
+msgid "Attention"
+msgstr "קשב"
+
+msgid "Everyone"
+msgstr "כולם"
+
+msgid "Visits that bought"
+msgstr "ביקורים שקנו"
+
+msgid "views"
+msgstr "צפיות"
+
+msgid "of the clicks on this page"
+msgstr "מכלל הלחיצות בעמוד"
+
+msgid "Half the visitors never go below this line"
+msgstr "מחצית מהמבקרים לא יורדים מתחת לקו הזה"
+
+msgid "Nothing recorded for this page, device and period yet."
+msgstr "עדיין לא נרשם דבר לעמוד, למכשיר ולתקופה האלה."
+
+msgid "The places people press"
+msgstr "המקומות שלוחצים בהם"
+
+msgid "A click on something that does nothing. Where people expected a link and did not find one."
+msgstr "לחיצה על משהו שלא עושה כלום. איפה שציפו לקישור ולא מצאו."

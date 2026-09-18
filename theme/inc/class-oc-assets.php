@@ -172,6 +172,7 @@ final class Assets {
 				'ajaxUrl'              => admin_url( 'admin-ajax.php' ),
 				'guard'                => Guard::for_script(),
 				'stats'                => class_exists( 'WooCommerce' ) ? Stats\Track::for_script() : array(),
+				'heat'                 => class_exists( 'WooCommerce' ) ? Stats\Heat::for_script() : array(),
 				/* translators: %d: seconds. */
 				'authResend'           => __( 'Resend in another %ds', 'oc-theme' ),
 				'authMailed'           => __( 'The code is in your inbox.', 'oc-theme' ),

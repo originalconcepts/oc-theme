@@ -344,6 +344,24 @@ final class Track {
 	}
 
 	/**
+	 * Whether this visit may be counted at all: the shop's own consent
+	 * layer where there is one, and a filter for anything else.
+	 */
+	public static function may_count(): bool {
+		if ( class_exists( '\\OC\\Theme\\Privacy\\Consent' ) && ! \OC\Theme\Privacy\Consent::allows( 'analytics' ) ) {
+			return false;
+		}
+
+		/**
+		 * Whether this visit may be counted. A consent plugin returns false
+		 * to keep a visitor out of the statistics.
+		 *
+		 * @param bool $may Allowed so far.
+		 */
+		return (bool) apply_filters( 'oc_stats_may_track', true );
+	}
+
+	/**
 	 * The visitor's address, hashed by the caller, for a per-network ceiling.
 	 */
 	public static function net(): string {
@@ -366,7 +384,7 @@ final class Track {
 			return $res;
 		}
 
-		if ( class_exists( '\OC\Theme\Privacy\Consent' ) && ! \OC\Theme\Privacy\Consent::allows( 'analytics' ) ) {
+		if ( ! self::may_count() ) {
 			return $res;
 		}
 

@@ -72,6 +72,9 @@ final class Rollup {
 			update_option( 'oc_stats_rolled_on', $today, false );
 			self::sweep();
 			Insights::forget();
+			Heat::install();
+			Heat::refresh();
+			Heat::sweep();
 		}
 
 		self::backfill();
