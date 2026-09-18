@@ -38,7 +38,7 @@ class Heat {
 	/**
 	 * Bumped whenever the tables change, so install() runs again.
 	 */
-	const SCHEMA_V = '2';
+	const SCHEMA_V = '3';
 
 	/**
 	 * Settings.
@@ -406,8 +406,10 @@ class Heat {
 
 		$t = $wpdb->prefix . self::VIEWS;
 
+		$one = $height > 0 ? 1 : 0;
+
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- own table, values prepared.
-		$wpdb->query( $wpdb->prepare( "INSERT INTO {$t} (day, page_id, device, seg, views, hsum) VALUES (%s, %d, %s, %s, 1, %d) ON DUPLICATE KEY UPDATE views = views + 1, hsum = hsum + %d", $day, $page, $device, $seg, $height, $height ) );
+		$wpdb->query( $wpdb->prepare( "INSERT INTO {$t} (day, page_id, device, seg, views, hsum, hn) VALUES (%s, %d, %s, %s, 1, %d, %d) ON DUPLICATE KEY UPDATE views = views + 1, hsum = hsum + %d, hn = hn + %d", $day, $page, $device, $seg, $height, $one, $height, $one ) );
 	}
 
 	/**
@@ -525,6 +527,7 @@ class Heat {
 				seg char(1) NOT NULL DEFAULT 'a',
 				views int(10) unsigned NOT NULL DEFAULT 0,
 				hsum bigint(20) unsigned NOT NULL DEFAULT 0,
+				hn int(10) unsigned NOT NULL DEFAULT 0,
 				PRIMARY KEY (day, page_id, device, seg)
 			) {$collate};"
 		);
@@ -768,11 +771,16 @@ class Heat {
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- own tables.
 		$marks = (array) $wpdb->get_results( $wpdb->prepare( "SELECT kind, xb, yb, SUM(n) AS n FROM {$g} WHERE page_id = %d AND device = %s AND seg = %s AND day BETWEEN %s AND %s GROUP BY kind, xb, yb ORDER BY n DESC LIMIT 4000", $page, $device, $seg, $from, $to ), ARRAY_A );
 		$bands = (array) $wpdb->get_results( $wpdb->prepare( "SELECT band, SUM(reached) AS reached, SUM(secs) AS secs FROM {$d} WHERE page_id = %d AND device = %s AND seg = %s AND day BETWEEN %s AND %s GROUP BY band ORDER BY band", $page, $device, $seg, $from, $to ), ARRAY_A );
-		$sums  = (array) $wpdb->get_row( $wpdb->prepare( "SELECT SUM(views) AS views, SUM(hsum) AS hsum FROM {$v} WHERE page_id = %d AND device = %s AND seg = %s AND day BETWEEN %s AND %s", $page, $device, $seg, $from, $to ), ARRAY_A );
+		$sums  = (array) $wpdb->get_row( $wpdb->prepare( "SELECT SUM(views) AS views, SUM(hsum) AS hsum, SUM(hn) AS hn FROM {$v} WHERE page_id = %d AND device = %s AND seg = %s AND day BETWEEN %s AND %s", $page, $device, $seg, $from, $to ), ARRAY_A );
 		// phpcs:enable
 
 		$views = (int) ( $sums['views'] ?? 0 );
 		$hsum  = (int) ( $sums['hsum'] ?? 0 );
+
+		// Only the visits that said how tall the page was for them count
+		// towards the average, so a view recorded before this was asked
+		// for cannot drag the whole map short.
+		$hn = (int) ( $sums['hn'] ?? 0 );
 
 		$clicks = 0;
 
@@ -785,7 +793,7 @@ class Heat {
 		return array(
 			'views'  => $views,
 			'clicks' => $clicks,
-			'height' => $views > 0 ? (int) round( $hsum / $views ) : 0,
+			'height' => $hn > 0 ? (int) round( $hsum / $hn ) : 0,
 			'marks'  => array_map(
 				static function ( array $m ): array {
 					return array( (string) $m['kind'], (int) $m['xb'], (int) $m['yb'], (int) $m['n'] );
