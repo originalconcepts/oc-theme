@@ -153,6 +153,7 @@ final class Order_Admin {
 						'failed'   => __( 'Could not save. Nothing was changed.', 'oc-theme' ),
 						'empty'    => __( 'Nothing here yet.', 'oc-theme' ),
 						'loading'  => __( 'Loading…', 'oc-theme' ),
+						/* translators: 1: how many are shown, 2: how many there are */
 						'count'    => __( 'Showing %1$s of %2$s', 'oc-theme' ),
 						'sure'     => __( 'Forget the order for this category? The shop goes back to its usual one.', 'oc-theme' ),
 						'forgot'   => __( 'Forgotten.', 'oc-theme' ),
@@ -184,16 +185,16 @@ final class Order_Admin {
 			return array();
 		}
 
-		$by_parent = array();
+		$nest = array();
 
 		foreach ( $terms as $t ) {
-			$by_parent[ (int) $t->parent ][] = $t;
+			$nest[ (int) $t->parent ][] = $t;
 		}
 
 		$out = array();
 
-		$walk = static function ( int $parent, string $trail ) use ( &$walk, &$out, $by_parent ) {
-			foreach ( $by_parent[ $parent ] ?? array() as $t ) {
+		$walk = static function ( int $under, string $trail ) use ( &$walk, &$out, $nest ) {
+			foreach ( $nest[ $under ] ?? array() as $t ) {
 				$name  = '' === $trail ? $t->name : $trail . ' › ' . $t->name;
 				$out[] = array(
 					'id'    => (int) $t->term_id,
@@ -270,7 +271,8 @@ final class Order_Admin {
 	public function read( \WP_REST_Request $req ) {
 		$term   = absint( $req->get_param( 'term' ) );
 		$offset = max( 0, absint( $req->get_param( 'offset' ) ) );
-		$limit  = min( 200, max( 1, absint( $req->get_param( 'limit' ) ) ?: self::PER ) );
+		$want   = absint( $req->get_param( 'limit' ) );
+		$limit  = min( 200, max( 1, $want > 0 ? $want : self::PER ) );
 		$find   = sanitize_text_field( (string) $req->get_param( 'q' ) );
 
 		$ids   = self::ids( $term, $offset, $limit, $find );
@@ -359,8 +361,8 @@ final class Order_Admin {
 		$args = array();
 
 		if ( $term > 0 ) {
-			$join .= " INNER JOIN {$wpdb->term_relationships} tr ON tr.object_id = p.ID";
-			$join .= " INNER JOIN {$wpdb->term_taxonomy} tt ON tt.term_taxonomy_id = tr.term_taxonomy_id AND tt.taxonomy = 'product_cat' AND tt.term_id = %d";
+			$join  .= " INNER JOIN {$wpdb->term_relationships} tr ON tr.object_id = p.ID";
+			$join  .= " INNER JOIN {$wpdb->term_taxonomy} tt ON tt.term_taxonomy_id = tr.term_taxonomy_id AND tt.taxonomy = 'product_cat' AND tt.term_id = %d";
 			$args[] = $term;
 		}
 
@@ -394,8 +396,11 @@ final class Order_Admin {
 		$args[] = $limit;
 		$args[] = $offset;
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- own table and core tables; every value is a placeholder.
-		return array_map( 'intval', (array) $wpdb->get_col( $wpdb->prepare( "SELECT DISTINCT p.ID FROM {$wpdb->posts} p" . $tail, $args ) ) );
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL, WordPress.DB.PreparedSQLPlaceholders -- own table and core tables; every value is a placeholder, and the clauses are built above from literals only.
+		$rows = (array) $wpdb->get_col( $wpdb->prepare( "SELECT DISTINCT p.ID FROM {$wpdb->posts} p" . $tail, $args ) );
+		// phpcs:enable
+
+		return array_map( 'intval', $rows );
 	}
 
 	/**
@@ -409,8 +414,11 @@ final class Order_Admin {
 
 		list( $tail, $args ) = self::sql( $term, $find, '', '' );
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- own table and core tables; every value is a placeholder.
-		return (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(DISTINCT p.ID) FROM {$wpdb->posts} p" . $tail, $args ) );
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL, WordPress.DB.PreparedSQLPlaceholders -- own table and core tables; every value is a placeholder, and the clauses are built above from literals only.
+		$n = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(DISTINCT p.ID) FROM {$wpdb->posts} p" . $tail, $args ) );
+		// phpcs:enable
+
+		return $n;
 	}
 
 	/**
@@ -452,8 +460,11 @@ final class Order_Admin {
 		// The meta join has to sit with the others, before the WHERE.
 		$tail = preg_replace( '/ WHERE /', $meta . ' WHERE ', $tail, 1 );
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- own table and core tables; every value is a placeholder.
-		return array_map( 'intval', (array) $wpdb->get_col( $wpdb->prepare( "SELECT DISTINCT p.ID FROM {$wpdb->posts} p" . $tail . ' ORDER BY ' . $order . ' LIMIT 2000', $args ) ) );
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL, WordPress.DB.PreparedSQLPlaceholders -- own table and core tables; every value is a placeholder, and the ordering is chosen from a fixed list above.
+		$rows = (array) $wpdb->get_col( $wpdb->prepare( "SELECT DISTINCT p.ID FROM {$wpdb->posts} p" . $tail . ' ORDER BY ' . $order . ' LIMIT 2000', $args ) );
+		// phpcs:enable
+
+		return array_map( 'intval', $rows );
 	}
 
 	/**
