@@ -529,6 +529,17 @@ final class Admin {
 			return array();
 		}
 
+		// The grouping walks every line item in the range against the
+		// taxonomy, which on a shop with tens of thousands of orders is
+		// seconds rather than milliseconds. A range that has ended cannot
+		// change; today's is worth keeping for a few minutes.
+		$key    = 'oc_stats_grp_' . substr( md5( $tax . '|' . $from . '|' . $to . '|' . wp_json_encode( $views ) ), 0, 20 );
+		$cached = get_transient( $key );
+
+		if ( is_array( $cached ) ) {
+			return $cached;
+		}
+
 		$out  = array();
 		$seen = array();
 
@@ -556,6 +567,8 @@ final class Admin {
 				++$added;
 			}
 		}
+
+		set_transient( $key, $out, $to < gmdate( 'Y-m-d' ) ? 12 * HOUR_IN_SECONDS : 10 * MINUTE_IN_SECONDS );
 
 		return $out;
 	}
