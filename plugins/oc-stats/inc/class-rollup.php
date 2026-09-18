@@ -71,7 +71,7 @@ final class Rollup {
 
 			update_option( 'oc_stats_rolled_on', $today, false );
 			self::sweep();
-			delete_transient( 'oc_stats_insights' );
+			Insights::forget();
 		}
 
 		self::backfill();

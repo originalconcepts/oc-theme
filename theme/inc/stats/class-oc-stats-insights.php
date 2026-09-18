@@ -27,6 +27,21 @@ final class Insights {
 	const CACHE = 'oc_stats_insights';
 
 	/**
+	 * The cache key, carrying the version: a release that changes the
+	 * wording shows it at once instead of six hours later.
+	 */
+	public static function key(): string {
+		return self::CACHE . '_' . ( defined( 'OC_THEME_VERSION' ) ? OC_THEME_VERSION : '1' );
+	}
+
+	/**
+	 * Work them out again next time.
+	 */
+	public static function forget(): void {
+		delete_transient( self::key() );
+	}
+
+	/**
 	 * Option holding dismissed keys and until when.
 	 */
 	const DISMISSED = 'oc_stats_dismissed';
@@ -43,11 +58,12 @@ final class Insights {
 	 * @return array<int,array<string,mixed>>
 	 */
 	public static function top( bool $fresh = false ): array {
-		$all = $fresh ? false : get_transient( self::CACHE );
+		$key = self::key();
+		$all = $fresh ? false : get_transient( $key );
 
 		if ( ! is_array( $all ) ) {
 			$all = self::build();
-			set_transient( self::CACHE, $all, 6 * HOUR_IN_SECONDS );
+			set_transient( $key, $all, 6 * HOUR_IN_SECONDS );
 		}
 
 		$dismissed = self::dismissed();

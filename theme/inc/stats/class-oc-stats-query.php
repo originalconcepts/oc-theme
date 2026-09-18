@@ -704,7 +704,9 @@ final class Query {
 			return null;
 		}
 
-		return array( $term_id, $term->name, admin_url( 'edit.php?post_type=product&' . rawurlencode( $tax ) . '=' . rawurlencode( $term->slug ) ) );
+		// A Hebrew slug is already stored percent-encoded; encoding it again
+		// would give the admin list a name it cannot find.
+		return array( $term_id, $term->name, admin_url( 'edit.php?post_type=product&' . rawurlencode( $tax ) . '=' . rawurlencode( urldecode( $term->slug ) ) ) );
 	}
 
 	/**
