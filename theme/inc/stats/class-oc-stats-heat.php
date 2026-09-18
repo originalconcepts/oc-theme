@@ -148,7 +148,7 @@ class Heat {
 		}
 
 		$per   = self::settings()['per'];
-		$range = Query::range( 'd30' );
+		$range = Query::range( 'd7' );
 		$cur   = $range['cur'];
 
 		$views = (array) $cur['product_views'];
@@ -332,7 +332,7 @@ class Heat {
 			return new \WP_REST_Response( null, 204 );
 		}
 
-		$page = self::page_id( $path, $kind, sanitize_text_field( (string) $req->get_param( 'label' ) ) );
+		$page = self::page_id( self::key( $path, $kind ), $kind, sanitize_text_field( (string) $req->get_param( 'label' ) ) );
 
 		if ( ! $page ) {
 			return new \WP_REST_Response( null, 204 );
@@ -355,6 +355,28 @@ class Heat {
 		self::count_depth( $day, $page, $device, $seg, (array) $req->get_param( 'depth' ), (array) $req->get_param( 'fresh' ) );
 
 		return new \WP_REST_Response( null, 204 );
+	}
+
+	/**
+	 * What a page is filed under. Almost always its path — but the results
+	 * of a search and a page that was not found both live at the shop's
+	 * root with only a query string to tell them apart, and the query is
+	 * thrown away. Filed under the path alone they would pile onto the
+	 * home page: its views, its clicks, even its name.
+	 *
+	 * @param string $path The path, as path() gives it.
+	 * @param string $kind One of KINDS.
+	 */
+	public static function key( string $path, string $kind ): string {
+		if ( 'search' === $kind ) {
+			return '/?s';
+		}
+
+		if ( 'e404' === $kind ) {
+			return '/?404';
+		}
+
+		return $path;
 	}
 
 	/**

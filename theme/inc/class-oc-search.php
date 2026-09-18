@@ -259,16 +259,29 @@ final class Search {
 		$union_values = array();
 
 		foreach ( $groups as $i => $spellings ) {
-			$likes = implode( ' OR ', array_fill( 0, count( $spellings ), 'token LIKE %s' ) );
+			$tests  = array();
+			$values = array();
+
+			foreach ( $spellings as $n => $spelling ) {
+				// The word as typed is always a beginning: someone still
+				// typing "שול" is asking for "שולחן". A stem we invented by
+				// taking a prefix letter off is not — "שטיח" without its ש
+				// leaves "טיח", and as a beginning that would drag in every
+				// "בטיחות" in the shop. A short stem has to be the whole word.
+				if ( $n > 0 && mb_strlen( $spelling, 'UTF-8' ) < 4 ) {
+					$tests[]  = 'token = %s';
+					$values[] = $spelling;
+					continue;
+				}
+
+				$tests[]  = 'token LIKE %s';
+				$values[] = $wpdb->esc_like( $spelling ) . '%';
+			}
 
 			$parts[]        = "SELECT object_id, %d AS grp, MAX(({$weights}) + IF(pos = 1, 3, 0)) AS score"
-				. " FROM {$words} WHERE kind IN ({$kinds_in}) AND ({$likes}) GROUP BY object_id";
+				. " FROM {$words} WHERE kind IN ({$kinds_in}) AND (" . implode( ' OR ', $tests ) . ') GROUP BY object_id';
 			$union_values[] = $i;
-			$union_values   = array_merge( $union_values, $args['kinds'] );
-
-			foreach ( $spellings as $spelling ) {
-				$union_values[] = $wpdb->esc_like( $spelling ) . '%';
-			}
+			$union_values   = array_merge( $union_values, $args['kinds'], $values );
 		}
 
 		$union = implode( ' UNION ALL ', $parts );

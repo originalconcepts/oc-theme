@@ -168,9 +168,9 @@ class Heat_Admin {
 										'd' => __( 'Desktop', 'oc-stats' ),
 									);
 
-									$live = home_url( $row['path'] );
+									$live = self::live_url( $row['path'] );
 									$view = self::map_url( $row['path'], $row['id'], $now, $best );
-									$nice = urldecode( $row['path'] );
+									$nice = 0 === strpos( $row['path'], '/?' ) ? self::kind_label( $row['kind'] ) : urldecode( $row['path'] );
 									$part = $row['views'] > 0 ? round( $row[ $best ] / $row['views'] * 100 ) : 0;
 									?>
 									<tr>
@@ -222,8 +222,50 @@ class Heat_Admin {
 				'hr'      => $range,
 				'hd'      => $device,
 			),
-			home_url( $path )
+			self::live_url( $path )
 		);
+	}
+
+	/**
+	 * The address a filed page is actually read at. A search and a page
+	 * that was not found are filed under a key rather than a path, so they
+	 * have to be turned back into something a browser can open: a search
+	 * for whatever the shop is searched for most, and an address that is
+	 * certain not to exist.
+	 *
+	 * @param string $path The stored path, or a key beginning "/?".
+	 */
+	public static function live_url( string $path ): string {
+		if ( '/?s' === $path ) {
+			$term = '';
+
+			if ( class_exists( '\OC\Theme\Search' ) ) {
+				$top = (array) \OC\Theme\Search::popular_terms( 30, 1 );
+				$one = reset( $top );
+
+				if ( is_object( $one ) ) {
+					$term = (string) ( $one->term ?? '' );
+				} elseif ( is_array( $one ) ) {
+					$term = (string) ( $one['term'] ?? '' );
+				} elseif ( is_string( $one ) ) {
+					$term = $one;
+				}
+			}
+
+			return add_query_arg(
+				array(
+					's'         => '' === $term ? 'a' : $term,
+					'post_type' => 'product',
+				),
+				home_url( '/' )
+			);
+		}
+
+		if ( '/?404' === $path ) {
+			return home_url( '/oc-page-that-is-not-here/' );
+		}
+
+		return home_url( $path );
 	}
 
 	/**
@@ -395,7 +437,7 @@ class Heat_Admin {
 		// instead of going back to the table and starting again.
 		$r    = Query::range( 'd30' );
 		$list = array();
-		$here = Heat::path( (string) wp_parse_url( home_url( add_query_arg( array() ) ), PHP_URL_PATH ) );
+		$here = Heat::key( Heat::path( (string) wp_parse_url( home_url( add_query_arg( array() ) ), PHP_URL_PATH ) ), Heat::surface() );
 
 		foreach ( Heat::top_pages( (string) $r['from'], (string) $r['to'], 30 ) as $row ) {
 			$best = 'd';
@@ -407,6 +449,7 @@ class Heat_Admin {
 			}
 
 			$name = '' === $row['label'] ? urldecode( $row['path'] ) : $row['label'];
+			$name = 0 === strpos( $row['path'], '/?' ) && '' === $row['label'] ? self::kind_label( $row['kind'] ) : $name;
 			$sort = self::kind_label( $row['kind'] );
 
 			$list[] = array(
@@ -424,7 +467,7 @@ class Heat_Admin {
 					'rest'    => rest_url( 'oc/v1/heat/map' ),
 					'pages'   => $list,
 					'nonce'   => wp_create_nonce( 'wp_rest' ),
-					'path'    => Heat::path( (string) wp_parse_url( home_url( add_query_arg( array() ) ), PHP_URL_PATH ) ),
+					'path'    => Heat::key( Heat::path( (string) wp_parse_url( home_url( add_query_arg( array() ) ), PHP_URL_PATH ) ), Heat::surface() ),
 					'page'    => $page,
 					'range'   => $rng,
 					'device'  => isset( self::WIDTHS[ $dev ] ) ? $dev : 'm',
