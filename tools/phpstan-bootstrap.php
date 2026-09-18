@@ -16,3 +16,7 @@ define( 'OC_LOGIN_SLUG', 'ocadmin' );
 define( 'OC_BLOCKS_VERSION', '0.0.0' );
 define( 'OC_BLOCKS_DIR', __DIR__ );
 define( 'OC_BLOCKS_URI', 'https://example.invalid' );
+define( 'OC_STATS_VERSION', '0.0.0' );
+define( 'OC_STATS_FILE', __FILE__ );
+define( 'OC_STATS_DIR', __DIR__ );
+define( 'OC_STATS_URL', 'https://example.invalid/' );
