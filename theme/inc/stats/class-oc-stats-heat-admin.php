@@ -415,16 +415,16 @@ class Heat_Admin {
 			'oc-heat',
 			'window.ocHeatView = ' . wp_json_encode(
 				array(
-					'rest'   => rest_url( 'oc/v1/heat/map' ),
-					'pages'  => $list,
-					'nonce'  => wp_create_nonce( 'wp_rest' ),
-					'path'   => Heat::path( (string) wp_parse_url( home_url( add_query_arg( array() ) ), PHP_URL_PATH ) ),
-					'page'   => $page,
-					'range'  => $rng,
-					'device' => isset( self::WIDTHS[ $dev ] ) ? $dev : 'm',
-					'widths' => self::WIDTHS,
+					'rest'    => rest_url( 'oc/v1/heat/map' ),
+					'pages'   => $list,
+					'nonce'   => wp_create_nonce( 'wp_rest' ),
+					'path'    => Heat::path( (string) wp_parse_url( home_url( add_query_arg( array() ) ), PHP_URL_PATH ) ),
+					'page'    => $page,
+					'range'   => $rng,
+					'device'  => isset( self::WIDTHS[ $dev ] ) ? $dev : 'm',
+					'widths'  => self::WIDTHS,
 					'heights' => self::HEIGHTS,
-					'i18n'   => array(
+					'i18n'    => array(
 						'title'    => __( 'Heat map', 'oc-theme' ),
 						'clicks'   => __( 'Clicks', 'oc-theme' ),
 						'dead'     => __( 'Dead clicks', 'oc-theme' ),
