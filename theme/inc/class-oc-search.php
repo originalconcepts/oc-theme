@@ -255,6 +255,26 @@ final class Search {
 
 		$kinds_in = implode( ',', array_fill( 0, count( $args['kinds'] ), '%s' ) );
 
+		// "Where to look" has to hold at the moment of looking. It used to
+		// decide only what went into the index, so a shop that switched a
+		// field off went on getting results from it until the whole index
+		// had been built again — which is not what the switch says.
+		$fields = array( Search_Index::F_TITLE, Search_Index::F_CAT, Search_Index::F_SYN, Search_Index::F_BRAND );
+
+		foreach ( array(
+			'f_sku'   => Search_Index::F_SKU,
+			'f_attr'  => Search_Index::F_ATTR,
+			'f_tag'   => Search_Index::F_TAG,
+			'f_desc'  => Search_Index::F_DESC,
+			'f_posts' => Search_Index::F_POST,
+		) as $flag => $field ) {
+			if ( ! empty( $s[ $flag ] ) ) {
+				$fields[] = $field;
+			}
+		}
+
+		$fields_in = implode( ',', array_fill( 0, count( $fields ), '%d' ) );
+
 		$parts        = array();
 		$union_values = array();
 
@@ -279,9 +299,10 @@ final class Search {
 			}
 
 			$parts[]        = "SELECT object_id, %d AS grp, MAX(({$weights}) + IF(pos = 1, 3, 0)) AS score"
-				. " FROM {$words} WHERE kind IN ({$kinds_in}) AND (" . implode( ' OR ', $tests ) . ') GROUP BY object_id';
+				. " FROM {$words} WHERE kind IN ({$kinds_in}) AND field IN ({$fields_in}) AND ("
+				. implode( ' OR ', $tests ) . ') GROUP BY object_id';
 			$union_values[] = $i;
-			$union_values   = array_merge( $union_values, $args['kinds'], $values );
+			$union_values   = array_merge( $union_values, $args['kinds'], $fields, $values );
 		}
 
 		$union = implode( ' UNION ALL ', $parts );
