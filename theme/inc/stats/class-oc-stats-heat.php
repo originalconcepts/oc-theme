@@ -706,7 +706,7 @@ class Heat {
 		// phpcs:enable
 
 		foreach ( $clicks as $r ) {
-			$id = (int) $r['page_id'];
+			$id         = (int) $r['page_id'];
 			$out[ $id ] = $out[ $id ] ?? array(
 				'c'    => 0,
 				'dead' => 0,
@@ -724,8 +724,8 @@ class Heat {
 		$tops = array();
 
 		foreach ( $bands as $r ) {
-			$id           = (int) $r['page_id'];
-			$tops[ $id ]  = max( $tops[ $id ] ?? 0, (int) $r['reached'] );
+			$id          = (int) $r['page_id'];
+			$tops[ $id ] = max( $tops[ $id ] ?? 0, (int) $r['reached'] );
 		}
 
 		foreach ( $bands as $r ) {

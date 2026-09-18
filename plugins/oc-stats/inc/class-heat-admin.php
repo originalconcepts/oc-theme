@@ -379,9 +379,9 @@ class Heat_Admin {
 
 		// The other pages with a map, so one can be walked to from here
 		// instead of going back to the table and starting again.
-		$r     = Query::range( 'd30' );
-		$list  = array();
-		$here  = Heat::path( (string) wp_parse_url( home_url( add_query_arg( array() ) ), PHP_URL_PATH ) );
+		$r    = Query::range( 'd30' );
+		$list = array();
+		$here = Heat::path( (string) wp_parse_url( home_url( add_query_arg( array() ) ), PHP_URL_PATH ) );
 
 		foreach ( Heat::top_pages( (string) $r['from'], (string) $r['to'], 30 ) as $row ) {
 			$best = 'd';
