@@ -561,6 +561,13 @@
 			html += '<p class="ocheat__hint">' + esc( T.ofClicks || '' ) + '</p>';
 		}
 
+		html += '<div class="ocheat__key">';
+		html += '<h4>' + esc( T.keyTitle || '' ) + '</h4>';
+		html += '<div class="ocheat__ramp"></div>';
+		html += '<div class="ocheat__ends"><span>' + esc( T.few || '' ) + '</span><span>' + esc( T.many || '' ) + '</span></div>';
+		html += '<p class="ocheat__hint">' + esc( 'a' === state.layer ? ( T.keyAttn || '' ) : ( T.keyClicks || '' ) ) + '</p>';
+		html += '</div>';
+
 		html += '<p class="ocheat__hint">' + esc( T.frozen || '' ) + '</p>';
 		sideBox.innerHTML = html;
 	}

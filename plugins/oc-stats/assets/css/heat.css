@@ -135,3 +135,21 @@ html.ocheat-on body { overflow: hidden !important; }
 @media (max-width: 860px) {
 	.ocheat__side { display: none; }
 }
+
+/* What the colours mean, in the same ramp the canvas is painted with. */
+.ocheat__key { margin-block-start: 18px; padding-block-start: 14px; border-block-start: 1px solid #e5e7eb; }
+.ocheat__key h4 { margin: 0 0 8px; font-size: 13px; }
+
+.ocheat__ramp {
+	block-size: 10px;
+	border-radius: 999px;
+	background: linear-gradient(to right, #005aff, #00c8ff, #00e600, #fae600, #ff1900);
+}
+
+.ocheat__ends {
+	display: flex;
+	justify-content: space-between;
+	margin-block-start: 4px;
+	font-size: 12px;
+	color: #6b7280;
+}

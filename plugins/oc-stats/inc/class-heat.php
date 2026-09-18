@@ -379,12 +379,23 @@ class Heat {
 	private static function page_id( string $path, string $kind, string $label ): int {
 		global $wpdb;
 
-		$t  = $wpdb->prefix . self::PAGES;
-		$id = (int) $wpdb->get_var( $wpdb->prepare( "SELECT id FROM {$t} WHERE path = %s", $path ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- own table.
+		$t   = $wpdb->prefix . self::PAGES;
+		$row = $wpdb->get_row( $wpdb->prepare( "SELECT id, label FROM {$t} WHERE path = %s", $path ), ARRAY_A ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- own table.
+		$id  = (int) ( $row['id'] ?? 0 );
 
 		if ( $id > 0 ) {
+			$now  = '' === $label ? $path : mb_substr( $label, 0, 180 );
+			$keep = array( 'seen' => Query::today() );
+
+			// A page that has been renamed — or that was first seen when
+			// the name was read from the wrong place — says so on the next
+			// visit rather than carrying the old one for ninety days.
+			if ( '' !== $label && $now !== (string) ( $row['label'] ?? '' ) ) {
+				$keep['label'] = $now;
+			}
+
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery -- own table.
-			$wpdb->update( $t, array( 'seen' => Query::today() ), array( 'id' => $id ), array( '%s' ), array( '%d' ) );
+			$wpdb->update( $t, $keep, array( 'id' => $id ), array_fill( 0, count( $keep ), '%s' ), array( '%d' ) );
 
 			return $id;
 		}

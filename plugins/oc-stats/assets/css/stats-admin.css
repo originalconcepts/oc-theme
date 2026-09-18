@@ -108,7 +108,7 @@
 @media (max-width:640px){.ocst__kpis{grid-template-columns:1fr 1fr}.ocst__bd{grid-template-columns:1fr 1fr}}
 
 /* The heat map table: a name you can press, and a path that stays put. */
-.ocheat__list td { vertical-align: top; }
+.ocheat__list td { vertical-align: middle; }
 .ocheat__list .ocheat__name { font-weight: 600; text-decoration: none; }
 
 .ocheat__list .ocheat__kind {
@@ -124,7 +124,9 @@
 
 .ocheat__list .ocheat__path {
 	display: block;
+	inline-size: fit-content;
 	max-inline-size: 420px;
+	margin-inline-end: auto;
 	overflow: hidden;
 	white-space: nowrap;
 	text-overflow: ellipsis;

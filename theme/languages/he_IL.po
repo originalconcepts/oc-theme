@@ -9049,3 +9049,18 @@ msgstr "לחיצות מתות הן לחיצות על משהו שאינו עוש�
 
 msgid "Share of views"
 msgstr "חלק מהצפיות"
+
+msgid "What the colours mean"
+msgstr "מה הצבעים אומרים"
+
+msgid "A few"
+msgstr "מעט"
+
+msgid "A lot"
+msgstr "הרבה"
+
+msgid "Blue is a few presses, green and yellow more, red the most pressed place on the page. Somewhere with no colour at all is somewhere nobody pressed."
+msgstr "כחול — מעט לחיצות, ירוק וצהוב — יותר, אדום — המקום הכי נלחץ בעמוד. אזור בלי צבע כלל הוא אזור שאף אחד לא לחץ בו."
+
+msgid "Blue is a little time, green and yellow more, red where people stayed longest. The dashed line is as far down as half the visitors got."
+msgstr "כחול — מעט זמן, ירוק וצהוב — יותר, אדום — האזור שבו נשארו הכי הרבה. הקו המקווקו מסמן עד לאן הגיעה מחצית מהגולשים."
