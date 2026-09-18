@@ -9046,3 +9046,6 @@ msgstr "עדיין לא נרשם דבר בתקופה הזאת. עמוד מופי
 
 msgid "Dead clicks are presses on something that does nothing. Read depth is how far down the page half the visitors reached."
 msgstr "לחיצות מתות הן לחיצות על משהו שאינו עושה דבר. עומק קריאה הוא כמה למטה בעמוד הגיעו מחצית מהגולשים."
+
+msgid "Share of views"
+msgstr "חלק מהצפיות"

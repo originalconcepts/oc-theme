@@ -143,7 +143,7 @@ class Heat_Admin {
 								<tr>
 									<th><?php esc_html_e( 'Page', 'oc-stats' ); ?></th>
 									<th class="n"><?php esc_html_e( 'Views', 'oc-stats' ); ?></th>
-									<th class="n"><?php esc_html_e( 'Share', 'oc-stats' ); ?></th>
+									<th class="n"><?php esc_html_e( 'Share of views', 'oc-stats' ); ?></th>
 									<th class="n"><?php esc_html_e( 'Clicks', 'oc-stats' ); ?></th>
 									<th class="n"><?php esc_html_e( 'Dead clicks', 'oc-stats' ); ?></th>
 									<th class="n"><?php esc_html_e( 'Read depth', 'oc-stats' ); ?></th>
@@ -175,8 +175,11 @@ class Heat_Admin {
 									?>
 									<tr>
 										<td>
-											<a class="ocheat__name" href="<?php echo esc_url( $view ); ?>"><?php echo esc_html( '' === $row['label'] ? $nice : $row['label'] ); ?></a>
-											<span class="ocheat__kind"><?php echo esc_html( self::kind_label( $row['kind'] ) ); ?></span>
+											<?php $name = '' === $row['label'] ? $nice : $row['label']; ?>
+											<a class="ocheat__name" href="<?php echo esc_url( $view ); ?>"><?php echo esc_html( $name ); ?></a>
+											<?php if ( $name !== self::kind_label( $row['kind'] ) ) : ?>
+												<span class="ocheat__kind"><?php echo esc_html( self::kind_label( $row['kind'] ) ); ?></span>
+											<?php endif; ?>
 											<a class="ocheat__path" href="<?php echo esc_url( $live ); ?>" target="_blank" rel="noopener" title="<?php echo esc_attr( $nice ); ?>"><?php echo esc_html( $nice ); ?></a>
 										</td>
 										<td class="n"><bdi dir="ltr"><?php echo esc_html( number_format_i18n( $row['views'] ) ); ?></bdi></td>
@@ -403,9 +406,12 @@ class Heat_Admin {
 				$best = 't';
 			}
 
+			$name = '' === $row['label'] ? urldecode( $row['path'] ) : $row['label'];
+			$sort = self::kind_label( $row['kind'] );
+
 			$list[] = array(
 				'id'    => $row['id'],
-				'label' => ( '' === $row['label'] ? urldecode( $row['path'] ) : $row['label'] ) . ' · ' . self::kind_label( $row['kind'] ),
+				'label' => $name === $sort ? $name : $name . ' · ' . $sort,
 				'url'   => self::map_url( $row['path'], $row['id'], $rng, $best ),
 				'on'    => $row['path'] === $here ? 1 : 0,
 			);
