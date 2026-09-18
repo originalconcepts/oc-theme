@@ -189,6 +189,10 @@
 	var startX = 0;
 	var moved = false;
 
+	function rtl() {
+		return 'rtl' === ( document.documentElement.dir || getComputedStyle( document.documentElement ).direction );
+	}
+
 	function cardAt( x, y ) {
 		var el = document.elementFromPoint( x, y );
 
@@ -251,7 +255,19 @@
 
 		if ( over && over !== held ) {
 			var r = over.getBoundingClientRect();
-			var after = ( e.clientY - r.top ) > r.height / 2 || ( e.clientX - r.left ) > r.width / 2;
+			var midX = r.left + r.width / 2;
+			var midY = r.top + r.height / 2;
+			var after;
+
+			// Later in reading order, which in Hebrew runs right to left.
+			// A clear step up or down settles it; otherwise the side does.
+			if ( e.clientY > midY + 6 ) {
+				after = true;
+			} else if ( e.clientY < midY - 6 ) {
+				after = false;
+			} else {
+				after = rtl() ? e.clientX < midX : e.clientX > midX;
+			}
 
 			grid.insertBefore( held, after ? over.nextSibling : over );
 			renumber();
@@ -307,7 +323,7 @@
 
 		e.preventDefault();
 
-		var back = ( 'ArrowRight' === e.key ) === ( 'rtl' !== document.documentElement.dir );
+		var back = ( 'ArrowRight' === e.key ) === rtl();
 
 		if ( back && el.previousElementSibling ) {
 			grid.insertBefore( el, el.previousElementSibling );
