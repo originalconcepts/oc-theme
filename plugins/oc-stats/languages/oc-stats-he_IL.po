@@ -1,0 +1,580 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: OC Statistics\n"
+"Language: he_IL\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "%d order"
+msgid_plural "%d orders"
+msgstr[0] "הזמנה אחת"
+msgstr[1] "%d הזמנות"
+
+msgid "%d unit"
+msgid_plural "%d units"
+msgstr[0] "יחידה %d"
+msgstr[1] "%d יחידות"
+
+msgid "%1$d person is waiting for %2$s, and the stock is zero"
+msgid_plural "%1$d people are waiting for %2$s, and the stock is zero"
+msgstr[0] "אדם %1$d מחכה ל‑%2$s, והמלאי אפס"
+msgstr[1] "%1$d אנשים מחכים ל‑%2$s, והמלאי אפס"
+
+msgctxt "product sales"
+msgid "All time"
+msgstr "מאז ומתמיד"
+
+msgctxt "column header"
+msgid "Conversion"
+msgstr "המרה"
+
+msgctxt "part of the visits"
+msgid "Share"
+msgstr "נתח"
+
+msgctxt "date range"
+msgid "From"
+msgstr "מתאריך"
+
+msgctxt "date range"
+msgid "To"
+msgstr "עד תאריך"
+
+msgid "OC Statistics needs WooCommerce. Activate WooCommerce and the statistics appear on their own."
+msgstr "לסטטיסטיקה דרוש ווקומרס. הפעילו את ווקומרס והסטטיסטיקה תופיע מעצמה."
+
+msgid "The OC theme already carries these statistics, so the plugin is not needed here and has switched itself off."
+msgstr "תבנית OC כוללת כבר את הסטטיסטיקה הזאת, ולכן התוסף מיותר כאן וכיבה את עצמו."
+
+msgid "Statistics"
+msgstr "סטטיסטיקה"
+
+msgid "Settings"
+msgstr "הגדרות"
+
+msgid "Sales"
+msgstr "מכירות"
+
+msgid "This product has not sold yet."
+msgstr "המוצר עדיין לא נמכר."
+
+msgid "Orders"
+msgstr "הזמנות"
+
+msgid "Units"
+msgstr "יחידות"
+
+msgid "Revenue"
+msgstr "הכנסות"
+
+msgid "Last 30 days"
+msgstr "30 הימים האחרונים"
+
+msgid "Last ordered"
+msgstr "הוזמן לאחרונה"
+
+msgid "Paid orders and orders in hand, including VAT; refunds are left out."
+msgstr "הזמנות ששולמו והזמנות בטיפול, כולל מע״מ; החזרים לא נספרים."
+
+msgid "All the statistics"
+msgstr "לכל הסטטיסטיקה"
+
+msgid "%1$s yesterday: %2$s in %3$d orders"
+msgstr "%1$s אתמול: %2$s ב‑%3$d הזמנות"
+
+msgid "%1$s this week: %2$s in %3$d orders"
+msgstr "%1$s השבוע: %2$s ב‑%3$d הזמנות"
+
+msgid "Visits"
+msgstr "כניסות"
+
+msgid "Conversion"
+msgstr "יחס המרה"
+
+msgid "Average order"
+msgstr "ממוצע הזמנה"
+
+msgid "Cancelled and failed"
+msgstr "בוטלו ונכשלו"
+
+msgid "against the day before"
+msgstr "מול היום שלפניו"
+
+msgid "against the previous week"
+msgstr "מול השבוע שלפניו"
+
+msgid "Daily report"
+msgstr "דוח יומי"
+
+msgid "Weekly report"
+msgstr "דוח שבועי"
+
+msgid "Changes are %s."
+msgstr "השינויים הם %s."
+
+msgid "Same weekday last week (%1$s): %2$s in %3$d orders."
+msgstr "אותו יום בשבוע שעבר (%1$s): %2$s ב‑%3$d הזמנות."
+
+msgid "Day by day"
+msgstr "יום אחר יום"
+
+msgid "The orders"
+msgstr "ההזמנות"
+
+msgid "Best sellers"
+msgstr "הכי נמכר"
+
+msgid "%1$d cancelled (%2$s)"
+msgstr "%1$d בוטלו (%2$s)"
+
+msgid "%1$d failed (%2$s)"
+msgstr "%1$d נכשלו (%2$s)"
+
+msgid "refunds %s"
+msgstr "החזרים %s"
+
+msgid "%1$d awaiting payment (%2$s)"
+msgstr "%1$d ממתינות לתשלום (%2$s)"
+
+msgid "Did not become sales"
+msgstr "לא הפכו למכירה"
+
+msgid "Worth doing now"
+msgstr "כדאי לעשות עכשיו"
+
+msgid "Open the statistics"
+msgstr "לפתיחת הסטטיסטיקה"
+
+msgid "Sales count paid orders and orders in hand, at what the customer paid. Visits are measured by the shop itself; people who declined statistics cookies are not counted."
+msgstr "מכירות סופרות הזמנות ששולמו ובטיפול, לפי מה שהלקוח שילם. הכניסות נמדדות על ידי החנות עצמה; מי שסירב לעוגיות סטטיסטיקה לא נספר."
+
+msgid "Overview"
+msgstr "סקירה"
+
+msgid "Reports & settings"
+msgstr "דוחות והגדרות"
+
+msgid "Today"
+msgstr "היום"
+
+msgid "Yesterday"
+msgstr "אתמול"
+
+msgid "7 days"
+msgstr "7 ימים"
+
+msgid "30 days"
+msgstr "30 ימים"
+
+msgid "90 days"
+msgstr "90 ימים"
+
+msgid "This month"
+msgstr "החודש"
+
+msgid "Last month"
+msgstr "חודש שעבר"
+
+msgid "Between dates"
+msgstr "בין תאריכים"
+
+msgid "against yesterday, up to the same hour"
+msgstr "מול אתמול, עד אותה שעה"
+
+msgid "against last month, up to the same day"
+msgstr "לעומת החודש שעבר, עד אותו יום"
+
+msgid "against the month before"
+msgstr "לעומת החודש שלפניו"
+
+msgid "against the previous period"
+msgstr "מול התקופה הקודמת"
+
+msgid "Returning customers"
+msgstr "לקוחות חוזרים"
+
+msgid "New customers"
+msgstr "לקוחות חדשים"
+
+msgid "Leads"
+msgstr "לידים"
+
+msgid "the period before"
+msgstr "התקופה הקודמת"
+
+msgid "Cancelled"
+msgstr "בוטלו"
+
+msgid "Failed"
+msgstr "נכשלו"
+
+msgid "Refunds"
+msgstr "החזרים"
+
+msgid "Awaiting payment"
+msgstr "ממתינות לתשלום"
+
+msgid "On hold"
+msgstr "בהמתנה"
+
+msgid "Sales by day"
+msgstr "מכירות לפי יום"
+
+msgid "Sales by hour"
+msgstr "מכירות לפי שעה"
+
+msgid "This period"
+msgstr "התקופה הנוכחית"
+
+msgid "Previous period"
+msgstr "התקופה הקודמת"
+
+msgid "Where shoppers drop off"
+msgstr "איפה הקונים נוטשים"
+
+msgid "Viewed a product"
+msgstr "צפו במוצר"
+
+msgid "Added to cart"
+msgstr "נוסף לסל"
+
+msgid "Reached the checkout"
+msgstr "הגיעו לקופה"
+
+msgid "Completed an order"
+msgstr "השלימו הזמנה"
+
+msgid "drop"
+msgstr "נשירה"
+
+msgid "The biggest drop is %s. That is the step to work on first."
+msgstr "הנשירה הגדולה ביותר היא %s. זה השלב שכדאי לטפל בו קודם."
+
+msgid "Where they came from"
+msgstr "מאיפה הגיעו"
+
+msgid "Devices"
+msgstr "מכשירים"
+
+msgid "Brands"
+msgstr "מותגים"
+
+msgid "Products driving revenue"
+msgstr "המוצרים שמניעים את ההכנסה"
+
+msgid "by sales"
+msgstr "לפי מכירות"
+
+msgid "Product"
+msgstr "מוצר"
+
+msgid "Views"
+msgstr "צפיות"
+
+msgid "To cart"
+msgstr "לסל"
+
+msgid "What to do now"
+msgstr "מה כדאי לעשות עכשיו"
+
+msgid "The five insights that matter, refreshed every morning"
+msgstr "חמש התובנות המשמעותיות, מתעדכנות כל בוקר"
+
+msgid "Nothing needs your attention right now. The rules run again every morning."
+msgstr "אין כרגע משהו שדורש טיפול. החוקים רצים שוב כל בוקר."
+
+msgid "How this was worked out"
+msgstr "איך חושב המספר"
+
+msgid "Not relevant"
+msgstr "לא רלוונטי"
+
+msgid "What did not become sales"
+msgstr "מה לא הפך למכירה"
+
+msgid "Customers"
+msgstr "לקוחות"
+
+msgid "Loading…"
+msgstr "טוען…"
+
+msgid "Visits are counted from the day the statistics were switched on; earlier days show orders only."
+msgstr "כניסות נספרות מהיום שבו הופעלה הסטטיסטיקה; ימים מוקדמים יותר מציגים הזמנות בלבד."
+
+msgid "Visits have been counted since %s; orders before that date are counted, their visits are not — so the funnel and the rates are only complete from that date on."
+msgstr "הכניסות נספרות מ־%s. הזמנות מלפני התאריך הזה נספרות, אבל הכניסות שלהן לא, ולכן המשפך ויחסי ההמרה מלאים רק מהתאריך הזה והלאה."
+
+msgid "Mobile"
+msgstr "מובייל"
+
+msgid "Desktop"
+msgstr "דסקטופ"
+
+msgid "Tablet"
+msgstr "טאבלט"
+
+msgid "Organic search"
+msgstr "חיפוש אורגני"
+
+msgid "Google Ads"
+msgstr "גוגל ממומן"
+
+msgid "Social"
+msgstr "רשתות חברתיות"
+
+msgid "Paid social"
+msgstr "רשתות ממומן"
+
+msgid "Email & SMS"
+msgstr "מייל וסמס"
+
+msgid "Referrals"
+msgstr "הפניות"
+
+msgid "Direct"
+msgstr "ישיר"
+
+msgid "Updated just now"
+msgstr "עודכן עכשיו"
+
+msgid "Export CSV"
+msgstr "ייצוא CSV"
+
+msgid "Show"
+msgstr "הצגה"
+
+msgid "What customers paid, including shipping and VAT, for paid orders and orders in hand."
+msgstr "מה שהלקוחות שילמו, כולל משלוח ומע״מ, בהזמנות ששולמו ובטיפול."
+
+msgid "Not allowed."
+msgstr "אין הרשאה."
+
+msgid "Saved."
+msgstr "נשמר."
+
+msgid "The test report was sent."
+msgstr "דוח הבדיקה נשלח."
+
+msgid "Nothing was sent — add at least one recipient and save first."
+msgstr "לא נשלח דבר – הוסיפו לפחות נמען אחד ושמרו קודם."
+
+msgid "Report by email"
+msgstr "דוח במייל"
+
+msgid "The daily report goes out in the morning about the whole of yesterday, with the orders themselves; the weekly report goes out on Sunday morning about the week that ended. Both compare to the period before."
+msgstr "הדוח היומי יוצא בבוקר על כל יום אתמול, כולל ההזמנות עצמן; הדוח השבועי יוצא ביום ראשון בבוקר על השבוע שהסתיים. שניהם מושווים לתקופה שלפניהם."
+
+msgid "Send"
+msgstr "שליחה"
+
+msgid "A daily report, every morning"
+msgstr "דוח יומי, כל בוקר"
+
+msgid "A weekly report, Sunday morning"
+msgstr "דוח שבועי, ביום ראשון בבוקר"
+
+msgid "Recipients"
+msgstr "נמענים"
+
+msgid "One or more addresses, separated by commas."
+msgstr "כתובת אחת או יותר, מופרדות בפסיקים."
+
+msgid "Send at"
+msgstr "שעת שליחה"
+
+msgid "Shop time. The report is sent within the hour."
+msgstr "לפי שעון החנות. הדוח נשלח במהלך אותה שעה."
+
+msgid "Measurement"
+msgstr "מדידה"
+
+msgid "Addresses that never count"
+msgstr "כתובות שלא נספרות"
+
+msgid "Your office, for instance. Signed-in staff are never counted anyway, and neither are robots."
+msgstr "למשל המשרד. צוות מחובר ממילא לא נספר, וגם לא רובוטים."
+
+msgid "History"
+msgstr "היסטוריה"
+
+msgid "A year of orders is summarised. Visits are counted from the day the statistics were switched on."
+msgstr "שנה של הזמנות סוכמה. כניסות נספרות מהיום שבו הופעלה הסטטיסטיקה."
+
+msgid "Older orders are being summarised in the background, a month at a time."
+msgstr "הזמנות ישנות מסוכמות ברקע, חודש בכל פעם."
+
+msgid "Older orders are being summarised in the background; done back to %s so far."
+msgstr "הזמנות ישנות מסוכמות ברקע; עד כה הושלם אחורה עד %s."
+
+msgid "Send yesterday's report now, as a test"
+msgstr "שלחו עכשיו את דוח אתמול, כבדיקה"
+
+msgid "Day"
+msgstr "יום"
+
+msgid "Sales today"
+msgstr "מכירות היום"
+
+msgid "Cancelled + failed"
+msgstr "בוטלו + נכשלו"
+
+msgid "Against yesterday, up to the same hour."
+msgstr "מול אתמול, עד אותה שעה."
+
+msgid "on %1$s between %2$02d:00 and %3$02d:00"
+msgstr "ב‑%1$s בין %2$02d:00 ל‑%3$02d:00"
+
+msgid "Checkout drop"
+msgstr "נטישה בקופה"
+
+msgid "Almost nobody completed the checkout %s"
+msgstr "כמעט אף אחד לא השלים את הקופה %s"
+
+msgid "%1$d reached the checkout, %2$d completed. The usual rate is %3$d%%. A sign of a payment or shipping failure."
+msgstr "%1$d הגיעו לקופה, %2$d השלימו. השיעור הרגיל הוא %3$d%%. סימן לתקלה בתשלום או במשלוח."
+
+msgid "Check payment methods"
+msgstr "בדיקת שיטות תשלום"
+
+msgid "Failed orders"
+msgstr "הזמנות שנכשלו"
+
+msgid "Rule: in a three-hour window with at least 10 checkouts, completion fell more than 15 points below the 30-day average. Worth: the orders that window would usually have produced, at the average order value."
+msgstr "החוק: בחלון של שלוש שעות עם לפחות 10 כניסות לקופה, ההשלמה ירדה ביותר מ‑15 נקודות מתחת לממוצע של 30 יום. השווי: ההזמנות שהחלון הזה מייצר בדרך כלל, לפי ממוצע ההזמנה."
+
+msgid "Out of stock"
+msgstr "אזל מהמלאי"
+
+msgid "%s is out of stock and people keep looking at it"
+msgstr "%s אזל מהמלאי ואנשים ממשיכים לצפות בו"
+
+msgid "Viewed %1$d times in the last 30 days. At its usual pace, restocking is worth about %2$s a month."
+msgstr "נצפה %1$d פעמים ב‑30 הימים האחרונים. בקצב הרגיל שלו, חידוש מלאי שווה כ‑%2$s בחודש."
+
+msgid "Update stock"
+msgstr "עדכון מלאי"
+
+msgid "The waiting list"
+msgstr "רשימת הממתינים"
+
+msgid "Rule: at least 40 product views in 30 days, no stock, and optionally people on the back-in-stock list. Worth: the product's sales over the last 90 days, divided by three."
+msgstr "החוק: לפחות 40 צפיות במוצר ב‑30 יום, בלי מלאי, ואולי גם ממתינים ברשימת החזרה למלאי. השווי: מכירות המוצר ב‑90 הימים האחרונים, חלקי שלוש."
+
+msgid "Visits to the category held; the drop is inside it — stock that ran out, a price that changed, or a lead product that fell off the first row."
+msgstr "הכניסות לקטגוריה נשמרו; הירידה היא בתוכה – מלאי שאזל, מחיר שהשתנה, או מוצר מוביל שירד מהשורה הראשונה."
+
+msgid "Visits to the category fell too — fewer people reach it. Worth a place on the home page or in the menu."
+msgstr "גם הכניסות לקטגוריה ירדו – פחות אנשים מגיעים אליה. שווה מקום בדף הבית או בתפריט."
+
+msgid "Category"
+msgstr "קטגוריה"
+
+msgid "Sales in %1$s fell %2$d%% against the previous 30 days"
+msgstr "המכירות ב‑%1$s ירדו ב‑%2$d%% מול 30 הימים הקודמים"
+
+msgid "%1$s before, %2$s now. "
+msgstr "%1$s לפני, %2$s עכשיו. "
+
+msgid "Open the category"
+msgstr "לפתיחת הקטגוריה"
+
+msgid "Its products"
+msgstr "המוצרים שלה"
+
+msgid "Rule: a category with at least 1,000 in sales in the previous 30 days whose sales fell by 25% or more. The note reads the category's own visits to tell traffic from conversion."
+msgstr "החוק: קטגוריה עם לפחות 1,000 במכירות ב‑30 הימים הקודמים, שהמכירות בה ירדו ב‑25% או יותר. ההערה קוראת את הכניסות לקטגוריה כדי להבחין בין תנועה להמרה."
+
+msgid "Catalogue order"
+msgstr "סדר בקטלוג"
+
+msgid "%1$s converts better than the shop, and sits past the first rows of %2$s"
+msgstr "%1$s ממיר טוב יותר מהחנות, ויושב אחרי השורות הראשונות של %2$s"
+
+msgid "Its views turn into orders at %1$.1f%% against %2$.1f%% shop-wide. Moving it up, or making it a large tile, is worth about %3$s a month."
+msgstr "הצפיות בו הופכות להזמנות ב‑%1$.1f%% מול %2$.1f%% בכל החנות. העלאה שלו למעלה, או הגדלה לאריח גדול, שווה כ‑%3$s בחודש."
+
+msgid "Edit the product"
+msgstr "עריכת המוצר"
+
+msgid "Rule: at least 100 views and 5 orders in 30 days, a view-to-order rate 40% above the shop's, and not among the first 12 products of its category in the shop's default order. Worth: 60% of its current monthly sales, the usual lift from the first rows."
+msgstr "החוק: לפחות 100 צפיות ו‑5 הזמנות ב‑30 יום, יחס צפייה‑להזמנה גבוה ב‑40% מהחנות, ולא בין 12 המוצרים הראשונים בקטגוריה שלו בסדר ברירת המחדל. השווי: 60% מהמכירות החודשיות הנוכחיות שלו, העלייה המקובלת מהשורות הראשונות."
+
+msgid "Picture or price"
+msgstr "תמונה או מחיר"
+
+msgid "%s is viewed a lot, but hardly added to the cart"
+msgstr "%s נצפה הרבה, אבל כמעט לא מוסיפים אותו לסל"
+
+msgid "%1$d views and %2$.1f%% added to cart, against %3$.1f%% shop-wide. Usually the main photo, the price against competitors, or a thin description."
+msgstr "%1$d צפיות ו‑%2$.1f%% הוספה לסל, מול %3$.1f%% בכל החנות. בדרך כלל התמונה הראשית, המחיר מול המתחרים, או תיאור דל."
+
+msgid "See it as a shopper"
+msgstr "לראות כמו קונה"
+
+msgid "Rule: at least 100 views in 30 days and an add-to-cart rate under half the shop's. Worth: the adds the shop average would have produced, at the average order value, times the usual 30% that go on to buy."
+msgstr "החוק: לפחות 100 צפיות ב‑30 יום ויחס הוספה לסל נמוך מחצי מהממוצע בחנות. השווי: ההוספות שממוצע החנות היה מייצר, לפי ממוצע ההזמנה, כפול 30% שממשיכים לקנות."
+
+msgid "Hidden demand"
+msgstr "ביקוש נסתר"
+
+msgid "%1$d searched for \"%2$s\" this week and found nothing"
+msgstr "%1$d חיפשו \"%2$s\" השבוע ולא מצאו"
+
+msgid "Either the product is missing, or it is called something else in the shop. A synonym fixes the second case in one click."
+msgstr "או שהמוצר חסר, או שהוא נקרא אחרת בחנות. מילה נרדפת פותרת את המקרה השני בלחיצה."
+
+msgid "Search reports"
+msgstr "דוחות חיפוש"
+
+msgid "Rule: a search term with no results, typed at least 10 times in the last 7 days, from the theme's own search log."
+msgstr "החוק: מילת חיפוש בלי תוצאות, שהוקלדה לפחות 10 פעמים ב‑7 הימים האחרונים, מיומן החיפוש של התבנית."
+
+msgid "Opportunity"
+msgstr "הזדמנות"
+
+msgid "Two products were bought together in %d orders, and are not a bundle"
+msgstr "שני מוצרים נקנו יחד ב‑%d הזמנות, ואינם מוגדרים כחבילה"
+
+msgid "%1$s and %2$s. Offering them as \"bought together\" with a small discount is worth about %3$s a month."
+msgstr "%1$s ו‑%2$s. הצעה שלהם כ\"נקנים יחד\" עם הנחה קטנה שווה כ‑%3$s בחודש."
+
+msgid "Set up the bundle"
+msgstr "הגדרת החבילה"
+
+msgid "Rule: a pair of products in at least 15 paid orders over 30 days, neither listing the other under \"bought together\". Worth: 10% of the pair's sales, the usual lift of a visible bundle."
+msgstr "החוק: זוג מוצרים בלפחות 15 הזמנות ששולמו ב‑30 יום, כשאף אחד מהם לא מציג את השני תחת \"נקנים יחד\". השווי: 10% ממכירות הזוג, העלייה המקובלת מחבילה גלויה."
+
+msgid "Sunday"
+msgstr "ראשון"
+
+msgid "Monday"
+msgstr "שני"
+
+msgid "Tuesday"
+msgstr "שלישי"
+
+msgid "Wednesday"
+msgstr "רביעי"
+
+msgid "Thursday"
+msgstr "חמישי"
+
+msgid "Friday"
+msgstr "שישי"
+
+msgid "Saturday"
+msgstr "שבת"
+
+msgid "Timing"
+msgstr "תזמון"
+
+msgid "Your buyers buy most on %1$s between %2$02d:00 and %3$02d:00"
+msgstr "הקונים שלכם קונים הכי הרבה ב‑%1$s בין %2$02d:00 ל‑%3$02d:00"
+
+msgid "That window alone holds %s%% of the last 90 days' orders. A campaign or a message that lands an hour before it works harder."
+msgstr "החלון הזה לבדו מחזיק %s%% מההזמנות של 90 הימים האחרונים. קמפיין או הודעה שמגיעים שעה לפניו עובדים חזק יותר."
+
+msgid "Rule: paid orders over 90 days, by weekday and hour; the strongest three-hour window."
+msgstr "החוק: הזמנות ששולמו ב‑90 יום, לפי יום בשבוע ושעה; חלון שלוש השעות החזק ביותר."
