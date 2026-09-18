@@ -209,6 +209,21 @@
 
 .ocb-dots__dot.is-on { background: #fff; transform: scale(1.25); }
 
+/* A dot is 8px because that is what it should look like; a finger needs 24.
+ * On a touch screen the button keeps its size and grows an invisible tap
+ * area around itself, and the row opens up so two targets never overlap. */
+.ocb-dots__dot { position: relative; }
+
+@media (pointer: coarse) {
+	.ocb-dots { gap: 18px; }
+
+	.ocb-dots__dot::after {
+		content: "";
+		position: absolute;
+		inset: -8px;
+	}
+}
+
 /* On a phone the dots may stand under the banner instead of on it: a
  * row of their own, in the page's ink rather than white. */
 @media (max-width: 782px) {

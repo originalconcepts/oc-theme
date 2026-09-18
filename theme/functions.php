@@ -339,10 +339,13 @@ function oc_header_icons_render(): void {
 		$oc_count = $oc_cart ? $oc_cart->get_cart_contents_count() : 0;
 
 		printf(
-			'<a class="oc-hicon oc-cart-link" href="%s" aria-label="%s">%s<span class="oc-cart-count">%d</span></a>',
+			// The word is read, not shown, and it sits before the count so the
+			// name a screen reader announces contains the number on screen —
+			// an aria-label of its own would replace that number and fail.
+			'<a class="oc-hicon oc-cart-link" href="%s">%s<span class="screen-reader-text">%s</span><span class="oc-cart-count">%d</span></a>',
 			esc_url( wc_get_cart_url() ),
-			esc_attr__( 'Cart', 'oc-theme' ),
 			oc_cart_icon_svg(), // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static SVG.
+			esc_html__( 'Cart', 'oc-theme' ),
 			absint( $oc_count )
 		);
 	}
