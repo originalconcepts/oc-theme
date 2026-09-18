@@ -518,9 +518,9 @@ final class Admin {
 	 * how many visits its own page had. Terms people visited but nobody
 	 * bought from are kept too — an empty category is worth seeing.
 	 *
-	 * @param string              $tax   Taxonomy, '' for none.
-	 * @param string              $from  Y-m-d.
-	 * @param string              $to    Y-m-d.
+	 * @param string                $tax   Taxonomy, '' for none.
+	 * @param string                $from  Y-m-d.
+	 * @param string                $to    Y-m-d.
 	 * @param array<int|string,int> $views Visits by term id.
 	 * @return array<int,array{0:string,1:string,2:int,3:int,4:float,5:int}> name, link, orders, units, gross, visits.
 	 */
