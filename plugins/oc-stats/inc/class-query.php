@@ -68,6 +68,7 @@ final class Query {
 		'product_views',
 		'product_atc',
 		'cat_views',
+		'brand_views',
 		'orders_ch',
 		'gross_ch',
 		'orders_dev',
@@ -237,6 +238,10 @@ final class Query {
 
 		foreach ( (array) $wpdb->get_results( $wpdb->prepare( "SELECT obj, COUNT(*) n FROM {$t} WHERE t >= %s AND t < %s AND type = 'cat' AND obj > 0 GROUP BY obj", $from, $to ) ) as $r ) {
 			$m['cat_views'][ (int) $r->obj ] = (int) $r->n;
+		}
+
+		foreach ( (array) $wpdb->get_results( $wpdb->prepare( "SELECT obj, COUNT(*) n FROM {$t} WHERE t >= %s AND t < %s AND type = 'brand' AND obj > 0 GROUP BY obj", $from, $to ) ) as $r ) {
+			$m['brand_views'][ (int) $r->obj ] = (int) $r->n;
 		}
 		// phpcs:enable
 
@@ -638,42 +643,19 @@ final class Query {
 	}
 
 	/**
-	 * The taxonomy this shop keeps its brands in. WooCommerce ships one of
-	 * its own now; the older brand plugins each brought their own, and the
-	 * shop may have made one by hand. The first that exists wins, and a
-	 * filter settles it for anything unusual.
-	 */
-	public static function brand_taxonomy(): string {
-		$known = array( 'product_brand', 'pwb-brand', 'yith_product_brand', 'berocket_brand', 'pa_brand', 'oc_brand' );
-
-		/**
-		 * The brand taxonomies to look for, best first.
-		 *
-		 * @param string[] $known Taxonomy names.
-		 */
-		foreach ( (array) apply_filters( 'oc_stats_brand_taxonomies', $known ) as $tax ) {
-			if ( taxonomy_exists( (string) $tax ) ) {
-				return (string) $tax;
-			}
-		}
-
-		return '';
-	}
-
-	/**
-	 * The brands that sold in a period: orders, units and money, best first.
-	 * Read from WooCommerce's order lookup tables joined to the brand
-	 * taxonomy, so it needs no rollup and is right for any range.
+	 * What sold in a period, grouped by a taxonomy: orders, units and
+	 * money for every term, best first. Read from WooCommerce's own order
+	 * lookup tables joined to the taxonomy, so it needs no rollup and is
+	 * right for any range.
 	 *
+	 * @param string $tax   Taxonomy name.
 	 * @param string $from  Y-m-d, inclusive.
 	 * @param string $to    Y-m-d, inclusive.
 	 * @param int    $limit Longest list.
-	 * @return array<int,array{0:string,1:string,2:int,3:int,4:float}> name, link, orders, units, gross.
+	 * @return array<int,array{0:int,1:string,2:string,3:int,4:int,5:float}> id, name, link, orders, units, gross.
 	 */
-	public static function brands( string $from, string $to, int $limit = 8 ): array {
-		$tax = self::brand_taxonomy();
-
-		if ( '' === $tax ) {
+	public static function by_taxonomy( string $tax, string $from, string $to, int $limit = 15 ): array {
+		if ( '' === $tax || ! taxonomy_exists( $tax ) ) {
 			return array();
 		}
 
@@ -697,22 +679,68 @@ final class Query {
 		$out  = array();
 
 		foreach ( $rows as $row ) {
-			$term = get_term( (int) $row['term_id'], $tax );
+			$one = self::term_row( (int) $row['term_id'], $tax );
 
-			if ( ! $term instanceof \WP_Term ) {
-				continue;
+			if ( $one ) {
+				$out[] = array_merge( $one, array( (int) $row['orders'], (int) $row['qty'], round( (float) $row['gross'], 2 ) ) );
 			}
-
-			$out[] = array(
-				$term->name,
-				admin_url( 'edit.php?post_type=product&' . rawurlencode( $tax ) . '=' . rawurlencode( $term->slug ) ),
-				(int) $row['orders'],
-				(int) $row['qty'],
-				round( (float) $row['gross'], 2 ),
-			);
 		}
 
 		return $out;
+	}
+
+	/**
+	 * A term's id, name and the admin list of its products; null when the
+	 * term has since been deleted.
+	 *
+	 * @param int    $term_id Term.
+	 * @param string $tax     Taxonomy.
+	 * @return array{0:int,1:string,2:string}|null
+	 */
+	public static function term_row( int $term_id, string $tax ): ?array {
+		$term = get_term( $term_id, $tax );
+
+		if ( ! $term instanceof \WP_Term ) {
+			return null;
+		}
+
+		return array( $term_id, $term->name, admin_url( 'edit.php?post_type=product&' . rawurlencode( $tax ) . '=' . rawurlencode( $term->slug ) ) );
+	}
+
+	/**
+	 * The brands that sold in a period.
+	 *
+	 * @param string $from  Y-m-d, inclusive.
+	 * @param string $to    Y-m-d, inclusive.
+	 * @param int    $limit Longest list.
+	 * @return array<int,array{0:int,1:string,2:string,3:int,4:int,5:float}>
+	 */
+	public static function brands( string $from, string $to, int $limit = 15 ): array {
+		return self::by_taxonomy( self::brand_taxonomy(), $from, $to, $limit );
+	}
+
+	/**
+	 * The taxonomy this shop keeps its brands in. WooCommerce ships one of
+	 * its own now; the older brand plugins each brought their own, and the
+	 * shop may have made one by hand. The first that exists wins.
+	 */
+	public static function brand_taxonomy(): string {
+		$known = array( 'product_brand', 'pwb-brand', 'yith_product_brand', 'berocket_brand', 'pa_brand', 'oc_brand' );
+
+		/**
+		 * The brand taxonomies to look for, best first.
+		 *
+		 * @param string[] $known Taxonomy names.
+		 */
+		foreach ( (array) apply_filters( 'oc_stats_brand_taxonomies', $known ) as $tax ) {
+			$tax = (string) $tax;
+
+			if ( taxonomy_exists( $tax ) ) {
+				return $tax;
+			}
+		}
+
+		return '';
 	}
 
 	/**

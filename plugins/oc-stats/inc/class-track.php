@@ -49,7 +49,7 @@ final class Track {
 	/**
 	 * Hit types the beacon may send.
 	 */
-	const TYPES = array( 'view', 'product', 'cat', 'atc', 'checkout' );
+	const TYPES = array( 'view', 'product', 'cat', 'brand', 'atc', 'checkout' );
 
 	/**
 	 * Channels, in display order.
@@ -539,11 +539,15 @@ final class Track {
 		$cat     = function_exists( 'is_product_category' ) && is_product_category() ? (int) get_queried_object_id() : 0;
 		$co      = function_exists( 'is_checkout' ) && is_checkout() && ! is_order_received_page() ? 1 : 0;
 
+		$tax   = Query::brand_taxonomy();
+		$brand = '' !== $tax && function_exists( 'is_tax' ) && is_tax( $tax ) ? (int) get_queried_object_id() : 0;
+
 		return array(
 			'url'   => rest_url( 'oc/v1/hit' ),
 			't'     => self::token(),
 			'p'     => $product,
 			'c'     => $cat,
+			'b'     => $brand,
 			'co'    => $co,
 			'staff' => current_user_can( 'edit_posts' ) ? 1 : 0,
 		);

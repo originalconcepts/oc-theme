@@ -269,6 +269,52 @@
 		return c;
 	}
 
+	/* Categories, or brands where the shop keeps them: sales or visits.
+	   name, link, orders, units, gross, visits. */
+	var groupWhat = 'cats';
+	var groupHow = 'gross';
+
+	function switcher( pairs, now, pick ) {
+		var box = el( 'span', 'ocst__tabs', pairs.map( function ( p ) {
+			return '<button type="button" data-v="' + esc( p[ 0 ] ) + '" aria-pressed="' + ( p[ 0 ] === now ) + '">' + esc( p[ 1 ] ) + '</button>';
+		} ).join( '' ) );
+		box.querySelectorAll( 'button' ).forEach( function ( b ) {
+			b.addEventListener( 'click', function () { if ( b.dataset.v !== now ) { pick( b.dataset.v ); } } );
+		} );
+		return box;
+	}
+
+	function grouping( data ) {
+		var box = el( 'div', '' );
+		var has = ( data.brands || [] ).length > 0;
+
+		if ( 'brands' === groupWhat && ! has ) { groupWhat = 'cats'; }
+
+		var list = ( 'brands' === groupWhat ? data.brands : data.cats ) || [];
+		var body_;
+
+		if ( 'visits' === groupHow ) {
+			var seen = list.filter( function ( r ) { return r[ 5 ] > 0; } ).sort( function ( a, b ) { return b[ 5 ] - a[ 5 ]; } ).slice( 0, 8 );
+			var all = seen.reduce( function ( a, r ) { return a + r[ 5 ]; }, 0 ) || 1;
+			body_ = rows( seen, function ( r ) { return r[ 0 ]; }, function ( r ) { return fmtInt( r[ 5 ] ); }, function ( r ) { return Math.round( r[ 5 ] / all * 100 ) + '%'; }, function ( r ) { return r[ 5 ]; }, [ T.visits, T.share ], function ( r ) { return r[ 1 ]; } );
+		} else {
+			var top = list.filter( function ( r ) { return r[ 4 ] > 0; } ).sort( function ( a, b ) { return b[ 4 ] - a[ 4 ]; } ).slice( 0, 8 );
+			body_ = rows( top, function ( r ) { return r[ 0 ]; }, function ( r ) { return fmtInt( r[ 3 ] ); }, function ( r ) { return fmtMoney( r[ 4 ] ); }, function ( r ) { return r[ 4 ]; }, [ T.units, T.sales ], function ( r ) { return r[ 1 ]; } );
+		}
+
+		var c = card( 'brands' === groupWhat ? T.brands : T.cats, '', body_ );
+		var head = c.querySelector( '.ocst__card-h' );
+		var redraw = function () { box.replaceWith( grouping( data ) ); };
+
+		if ( has ) {
+			head.appendChild( switcher( [ [ 'cats', T.cats ], [ 'brands', T.brands ] ], groupWhat, function ( v ) { groupWhat = v; redraw(); } ) );
+		}
+
+		head.appendChild( switcher( [ [ 'gross', T.sales ], [ 'visits', T.visits ] ], groupHow, function ( v ) { groupHow = v; redraw(); } ) );
+		box.appendChild( c );
+		return box;
+	}
+
 	/* ---------- draw ---------- */
 	function draw( data ) {
 		body.innerHTML = '';
@@ -298,7 +344,7 @@
 
 		var three = el( 'div', 'ocst__grid ocst__grid--three' );
 		three.appendChild( pair( data ) );
-		three.appendChild( card( T.brands, T.byGross, rows( data.brands || [], function ( r ) { return r[ 0 ]; }, function ( r ) { return fmtInt( r[ 3 ] ); }, function ( r ) { return fmtMoney( r[ 4 ] ); }, function ( r ) { return r[ 4 ]; }, [ T.units, T.sales ], function ( r ) { return r[ 1 ]; } ) ) );
+		three.appendChild( grouping( data ) );
 		three.appendChild( card( T.products, T.byGross, products( data.products ) ) );
 		body.appendChild( three );
 

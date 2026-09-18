@@ -172,7 +172,9 @@ final class Insights {
 	 * @param float $n Amount.
 	 */
 	private static function money( float $n ): string {
-		return wp_strip_all_tags( wc_price( round( $n ), array( 'decimals' => 0 ) ) );
+		// The currency sign arrives as an HTML entity; decode it, or the
+		// sentence carries a literal &#8362; to wherever it is escaped next.
+		return wp_strip_all_tags( html_entity_decode( wc_price( round( $n ), array( 'decimals' => 0 ) ), ENT_QUOTES, 'UTF-8' ) );
 	}
 
 	/**

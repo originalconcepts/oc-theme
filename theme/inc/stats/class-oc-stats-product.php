@@ -109,7 +109,7 @@ class Product {
 		}
 
 		$m30   = self::totals( (int) $post->ID, Query::shift( Query::today(), -29 ) );
-		$money = static fn( float $n ): string => wp_strip_all_tags( wc_price( $n, array( 'decimals' => (float) (int) $n === $n ? 0 : 2 ) ) );
+		$money = static fn( float $n ): string => wp_strip_all_tags( html_entity_decode( wc_price( $n, array( 'decimals' => (float) (int) $n === $n ? 0 : 2 ) ), ENT_QUOTES, 'UTF-8' ) );
 		$rows  = array(
 			array( __( 'Orders', 'oc-theme' ), number_format_i18n( $m30['orders'] ), number_format_i18n( $all['orders'] ) ),
 			array( __( 'Units', 'oc-theme' ), number_format_i18n( $m30['qty'] ), number_format_i18n( $all['qty'] ) ),

@@ -29,7 +29,7 @@
 .ocst__grid--three{grid-template-columns:minmax(0,1.5fr) minmax(0,.9fr) minmax(0,1.3fr)}
 .ocst__grid--two{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
 .ocst__card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 15px 15px;min-width:0}
-.ocst__card-h{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:10px}
+.ocst__card-h{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:10px;flex-wrap:wrap}
 .ocst__card-h h2{margin:0;font-size:14.5px;font-weight:600;padding:0}
 .ocst__card-h .ocst__side{font-size:12.5px;color:var(--ink3)}
 .ocst__big{font-family:var(--mono);font-size:26px;font-weight:600;letter-spacing:-.02em;direction:ltr;unicode-bidi:isolate}

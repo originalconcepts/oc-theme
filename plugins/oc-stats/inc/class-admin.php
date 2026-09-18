@@ -125,6 +125,7 @@ final class Admin {
 					'channels'    => __( 'Where they came from', 'oc-stats' ),
 					'devices'     => __( 'Devices', 'oc-stats' ),
 					'brands'      => __( 'Brands', 'oc-stats' ),
+					'cats'        => __( 'Categories', 'oc-stats' ),
 					'units'       => __( 'Units', 'oc-stats' ),
 					'convH'       => _x( 'Conversion', 'column header', 'oc-stats' ),
 					'share'       => _x( 'Share', 'part of the visits', 'oc-stats' ),
@@ -498,7 +499,8 @@ final class Admin {
 			'funnel'      => $funnel,
 			'channels'    => $channels,
 			'devices'     => $devices,
-			'brands'      => Query::brands( (string) $r['from'], (string) $r['to'] ),
+			'cats'        => self::group_rows( 'product_cat', (string) $r['from'], (string) $r['to'], (array) $cur['cat_views'] ),
+			'brands'      => self::group_rows( Query::brand_taxonomy(), (string) $r['from'], (string) $r['to'], (array) $cur['brand_views'] ),
 			'products'    => $products,
 			'breakdown'   => $breakdown,
 			'customers'   => array( (int) $cur['new_customers'], (int) $cur['returning_customers'] ),
@@ -510,6 +512,53 @@ final class Admin {
 	}
 
 	/* ------------------------------------------------------------ csv */
+
+	/**
+	 * One grouping for the screen: what every term sold in the range and
+	 * how many visits its own page had. Terms people visited but nobody
+	 * bought from are kept too — an empty category is worth seeing.
+	 *
+	 * @param string              $tax   Taxonomy, '' for none.
+	 * @param string              $from  Y-m-d.
+	 * @param string              $to    Y-m-d.
+	 * @param array<int|string,int> $views Visits by term id.
+	 * @return array<int,array{0:string,1:string,2:int,3:int,4:float,5:int}> name, link, orders, units, gross, visits.
+	 */
+	private static function group_rows( string $tax, string $from, string $to, array $views ): array {
+		if ( '' === $tax ) {
+			return array();
+		}
+
+		$out  = array();
+		$seen = array();
+
+		foreach ( Query::by_taxonomy( $tax, $from, $to ) as $row ) {
+			$seen[ (int) $row[0] ] = true;
+			$out[]                 = array( $row[1], $row[2], (int) $row[3], (int) $row[4], (float) $row[5], (int) ( $views[ (int) $row[0] ] ?? 0 ) );
+		}
+
+		arsort( $views );
+		$added = 0;
+
+		foreach ( $views as $tid => $n ) {
+			if ( $added >= 10 ) {
+				break;
+			}
+
+			if ( isset( $seen[ (int) $tid ] ) ) {
+				continue;
+			}
+
+			$one = Query::term_row( (int) $tid, $tax );
+
+			if ( $one ) {
+				$out[] = array( $one[1], $one[2], 0, 0, 0.0, (int) $n );
+				++$added;
+			}
+		}
+
+		return $out;
+	}
 
 	/**
 	 * Leads that arrived between two days, inclusive.
@@ -628,7 +677,7 @@ final class Admin {
 		?>
 		<div class="ocst-w">
 			<?php
-			$tile( __( 'Sales', 'oc-stats' ), wp_strip_all_tags( wc_price( (float) $cur['gross'], array( 'decimals' => 0 ) ) ), Query::change( (float) $cur['gross'], (float) $prev['gross'] ) );
+			$tile( __( 'Sales', 'oc-stats' ), wp_strip_all_tags( html_entity_decode( wc_price( (float) $cur['gross'], array( 'decimals' => 0 ) ), ENT_QUOTES, 'UTF-8' ) ), Query::change( (float) $cur['gross'], (float) $prev['gross'] ) );
 			$tile( __( 'Orders', 'oc-stats' ), number_format_i18n( (int) $cur['orders'] ), Query::change( (float) $cur['orders'], (float) $prev['orders'] ) );
 			$tile( __( 'Visits', 'oc-stats' ), number_format_i18n( (int) $cur['sessions'] ), Query::change( (float) $cur['sessions'], (float) $prev['sessions'] ) );
 			$tile( __( 'Cancelled + failed', 'oc-stats' ), number_format_i18n( (int) $cur['cancelled_n'] + (int) $cur['failed_n'] ), null );

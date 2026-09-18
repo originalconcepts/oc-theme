@@ -261,6 +261,9 @@ msgstr "מכשירים"
 msgid "Brands"
 msgstr "מותגים"
 
+msgid "Categories"
+msgstr "קטגוריות"
+
 msgid "Products driving revenue"
 msgstr "המוצרים שמניעים את ההכנסה"
 

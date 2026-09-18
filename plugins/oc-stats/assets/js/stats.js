@@ -87,6 +87,7 @@
 	hit( 'view', S.p || S.c || 0 );
 	if ( S.p ) { hit( 'product', S.p ); }
 	if ( S.c ) { hit( 'cat', S.c ); }
+	if ( S.b ) { hit( 'brand', S.b ); }
 	if ( S.co ) { hit( 'checkout', 0 ); }
 
 	document.addEventListener( 'oc:added', function ( e ) { hit( 'atc', e.detail && e.detail.productId ); } );
