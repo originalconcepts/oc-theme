@@ -157,6 +157,7 @@
 	var count = 0;
 	var last = { x: 0, y: 0, at: 0, n: 0 };
 	var first = true;
+	var high = 0;
 
 	// A logged-in visitor has the toolbar, which pushes the whole document
 	// down. The map is drawn without it, so take it off here or every mark
@@ -167,11 +168,21 @@
 		return b ? ( b.offsetHeight || 0 ) : 0;
 	}
 
-	// How tall the page was for this visitor. Sent with the marks so the
+	// How tall the page is for this visitor. Sent with the marks so the
 	// map can stretch them onto the page as it stands now: a lazy image
 	// that had not arrived, or a narrower phone, changes every distance.
 	function tall() {
 		return Math.max( 1, Math.round( ( document.body ? document.body.scrollHeight : 0 ) || document.documentElement.scrollHeight ) - bar() );
+	}
+
+	// The tallest it has been, taken again every second. A page measured
+	// the moment someone arrives is only as long as the pictures that have
+	// come in so far, and a mark made later would then sit far below what
+	// it was aimed at.
+	function grew() {
+		high = Math.max( high, tall() );
+
+		return high;
 	}
 
 	function add( kind, xp, y, n ) {
@@ -226,6 +237,8 @@
 		var y = Math.max( 0, Math.round( e.pageY - bar() ) );
 		var now = Date.now();
 
+		grew();
+
 		++count;
 		add( live( e.target ) ? 'c' : 'd', xp, y, 1 );
 
@@ -255,9 +268,9 @@
 			return;
 		}
 
-		var high = tall();
-		var from = Math.floor( Math.min( 1, Math.max( 0, window.scrollY / high ) ) * 20 );
-		var to = Math.min( 19, Math.floor( Math.min( 1, ( window.scrollY + window.innerHeight ) / high ) * 20 ) );
+		var deep = grew();
+		var from = Math.floor( Math.min( 1, Math.max( 0, window.scrollY / deep ) ) * 20 );
+		var to = Math.min( 19, Math.floor( Math.min( 1, ( window.scrollY + window.innerHeight ) / deep ) * 20 ) );
 
 		for ( var b = from; b <= to; b++ ) {
 			bands[ b ] = ( bands[ b ] || 0 ) + 1;
@@ -300,7 +313,7 @@
 			label: H.label || '',
 			seg: 'a',
 			first: first ? 1 : 0,
-			h: tall(),
+			h: grew(),
 			marks: list,
 			depth: depth,
 			fresh: fresh
