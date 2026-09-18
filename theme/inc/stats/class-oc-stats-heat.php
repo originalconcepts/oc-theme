@@ -441,7 +441,7 @@ class Heat {
 			return;
 		}
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- every value is prepared above.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders -- every value is prepared above; the placeholders sit inside the row list.
 		$wpdb->query( $wpdb->prepare( "INSERT INTO {$t} (day, page_id, device, seg, kind, xb, yb, n) VALUES " . implode( ',', $rows ) . ' ON DUPLICATE KEY UPDATE n = n + VALUES(n)', $args ) );
 	}
 
@@ -472,7 +472,7 @@ class Heat {
 			array_push( $args, $day, $page, $device, $seg, (int) $band, $secs );
 		}
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- every value is prepared above.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders -- every value is prepared above; the placeholders sit inside the row list.
 		$wpdb->query( $wpdb->prepare( "INSERT INTO {$t} (day, page_id, device, seg, band, reached, secs) VALUES " . implode( ',', $rows ) . ' ON DUPLICATE KEY UPDATE reached = reached + 1, secs = secs + VALUES(secs)', $args ) );
 	}
 
@@ -597,7 +597,7 @@ class Heat {
 		$v = $wpdb->prefix . self::VIEWS;
 		$p = $wpdb->prefix . self::PAGES;
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- own tables.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared -- own tables; every value is a placeholder.
 		$rows = (array) $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT v.page_id, p.path, p.label, p.kind,

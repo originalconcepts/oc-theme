@@ -368,7 +368,14 @@ class Heat_Admin {
 		}
 
 		if ( ! $page ) {
-			return rest_ensure_response( array( 'views' => 0, 'clicks' => 0, 'marks' => array(), 'bands' => array() ) );
+			return rest_ensure_response(
+				array(
+					'views'  => 0,
+					'clicks' => 0,
+					'marks'  => array(),
+					'bands'  => array(),
+				)
+			);
 		}
 
 		$r   = Query::range( sanitize_key( (string) $req->get_param( 'range' ) ) );
