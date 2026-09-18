@@ -3,7 +3,7 @@
  * Plugin Name:       OC Statistics for WooCommerce
  * Plugin URI:        https://onlinestore.co.il
  * Description:       Sales, visits and what to do about them, inside the WordPress dashboard. Counts visits itself, with no third party and no account to open.
- * Version:           0.3.209
+ * Version:           0.3.210
  * Requires at least: 6.5
  * Requires PHP:      8.0
  * Requires Plugins:  woocommerce
@@ -20,7 +20,7 @@ namespace OC\Stats;
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'OC_STATS_VERSION', '0.3.209' );
+define( 'OC_STATS_VERSION', '0.3.210' );
 define( 'OC_STATS_FILE', __FILE__ );
 define( 'OC_STATS_DIR', plugin_dir_path( __FILE__ ) );
 define( 'OC_STATS_URL', plugin_dir_url( __FILE__ ) );
