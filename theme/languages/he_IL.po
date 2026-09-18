@@ -9064,3 +9064,72 @@ msgstr "כחול — מעט לחיצות, ירוק וצהוב — יותר, אד
 
 msgid "Blue is a little time, green and yellow more, red where people stayed longest. The dashed line is as far down as half the visitors got."
 msgstr "כחול — מעט זמן, ירוק וצהוב — יותר, אדום — האזור שבו נשארו הכי הרבה. הקו המקווקו מסמן עד לאן הגיעה מחצית מהגולשים."
+
+msgid "Product order"
+msgstr "סידור מוצרים"
+
+msgid "Drag a product to where it should be. The order is saved as you go, and it holds for this category only — a product can be first here and anywhere else in another. It is used when the shopper has not chosen an order of their own."
+msgstr "גררו מוצר למקום שבו הוא צריך להיות. הסדר נשמר תוך כדי, והוא תקף לקטגוריה הזאת בלבד — מוצר יכול להיות ראשון כאן ובמקום אחר לגמרי בקטגוריה אחרת. הוא בתוקף כל עוד הגולש לא בחר מיון משלו."
+
+msgid "Find a product"
+msgstr "חיפוש מוצר"
+
+msgid "Find a product…"
+msgstr "חיפוש מוצר…"
+
+msgid "Put in order by"
+msgstr "סידור אוטומטי לפי"
+
+msgid "Put in order by…"
+msgstr "סידור אוטומטי לפי…"
+
+msgid "Name, A to Z"
+msgstr "שם, א׳ עד ת׳"
+
+msgid "Price, low to high"
+msgstr "מחיר, מהנמוך לגבוה"
+
+msgid "Price, high to low"
+msgstr "מחיר, מהגבוה לנמוך"
+
+msgid "Best selling first"
+msgstr "הנמכרים ביותר קודם"
+
+msgid "In stock first"
+msgstr "מה שבמלאי קודם"
+
+msgid "Forget this order"
+msgstr "ביטול הסדר הידני"
+
+msgid "Products, in the order they are shown"
+msgstr "מוצרים, בסדר שבו הם מוצגים"
+
+msgid "Could not save. Nothing was changed."
+msgstr "השמירה נכשלה. שום דבר לא השתנה."
+
+msgid "Nothing here yet."
+msgstr "אין כאן עדיין כלום."
+
+msgid "Showing %1$s of %2$s"
+msgstr "מוצגים %1$s מתוך %2$s"
+
+msgid "Forget the order for this category? The shop goes back to its usual one."
+msgstr "לבטל את הסדר הידני של הקטגוריה הזאת? החנות תחזור לסדר הרגיל שלה."
+
+msgid "Forgotten."
+msgstr "בוטל."
+
+msgid "This category has an order of its own."
+msgstr "לקטגוריה הזאת יש סדר משלה."
+
+msgid "This category has no order of its own yet — drag a product and it will have one."
+msgstr "לקטגוריה הזאת עדיין אין סדר משלה — גררו מוצר אחד ויהיה לה."
+
+msgid "While you are searching, the order cannot be changed. Clear the box to go back to it."
+msgstr "בזמן חיפוש אי אפשר לשנות את הסדר. נקו את תיבת החיפוש כדי לחזור אליו."
+
+msgid "Too many at once."
+msgstr "יותר מדי בבת אחת."
+
+msgid "Nothing to put in order."
+msgstr "אין מה לסדר."

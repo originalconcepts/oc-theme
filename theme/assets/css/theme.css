@@ -9222,6 +9222,11 @@ ul.products.oc-flt-loading { opacity: .45; pointer-events: none; transition: opa
 	body.oc-flt-m-open .oc-flt--side,
 	body.oc-flt-m-open .oc-flt--top { transform: none; }
 
+	/* The side panel is capped on a desktop so a sticky column cannot run
+	 * under the header. As a drawer it owns the whole screen, and that cap
+	 * left a band of page showing under it. */
+	.oc-flt--side { max-block-size: none; padding-inline-end: 22px; }
+
 	.oc-flt--top .oc-flt__group { border-block-end: 1px solid var(--oc-line, #e5e5e5); position: static; }
 	.oc-flt--top .oc-flt__title { inline-size: 100%; padding-block: 14px; }
 	.oc-flt--top .oc-flt__body { position: static; box-shadow: none; border: 0; padding: 0 0 14px; min-inline-size: 0; }
