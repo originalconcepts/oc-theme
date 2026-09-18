@@ -273,7 +273,13 @@ final class Search {
 			}
 		}
 
-		$fields_in = implode( ',', array_fill( 0, count( $fields ), '%d' ) );
+		// The description is long, unwritten prose; the rest are short and
+		// chosen. Three letters against a title is someone still typing,
+		// three letters against every description in the shop is noise —
+		// "שטי" reaching "שטיפת כלים" in a paragraph nobody reads.
+		$prose      = in_array( Search_Index::F_DESC, $fields, true );
+		$curated    = array_values( array_diff( $fields, array( Search_Index::F_DESC ) ) );
+		$curated_in = implode( ',', array_fill( 0, count( $curated ), '%d' ) );
 
 		$parts        = array();
 		$union_values = array();
@@ -281,28 +287,47 @@ final class Search {
 		foreach ( $groups as $i => $spellings ) {
 			$tests  = array();
 			$values = array();
+			$whole  = array();
+			$wholes = array();
 
 			foreach ( $spellings as $n => $spelling ) {
+				$long = mb_strlen( $spelling, 'UTF-8' ) >= 4;
+
 				// The word as typed is always a beginning: someone still
 				// typing "שול" is asking for "שולחן". A stem we invented by
 				// taking a prefix letter off is not — "שטיח" without its ש
 				// leaves "טיח", and as a beginning that would drag in every
 				// "בטיחות" in the shop. A short stem has to be the whole word.
-				if ( $n > 0 && mb_strlen( $spelling, 'UTF-8' ) < 4 ) {
+				if ( $n > 0 && ! $long ) {
 					$tests[]  = 'token = %s';
 					$values[] = $spelling;
-					continue;
+				} else {
+					$tests[]  = 'token LIKE %s';
+					$values[] = $wpdb->esc_like( $spelling ) . '%';
 				}
 
-				$tests[]  = 'token LIKE %s';
-				$values[] = $wpdb->esc_like( $spelling ) . '%';
+				// In prose, a short word has to be the whole word.
+				if ( $long ) {
+					$whole[]  = 'token LIKE %s';
+					$wholes[] = $wpdb->esc_like( $spelling ) . '%';
+				} else {
+					$whole[]  = 'token = %s';
+					$wholes[] = $spelling;
+				}
+			}
+
+			$where = "field IN ({$curated_in}) AND (" . implode( ' OR ', $tests ) . ')';
+			$bind  = array_merge( $curated, $values );
+
+			if ( $prose ) {
+				$where .= ' OR ( field = %d AND (' . implode( ' OR ', $whole ) . ') )';
+				$bind   = array_merge( $bind, array( Search_Index::F_DESC ), $wholes );
 			}
 
 			$parts[]        = "SELECT object_id, %d AS grp, MAX(({$weights}) + IF(pos = 1, 3, 0)) AS score"
-				. " FROM {$words} WHERE kind IN ({$kinds_in}) AND field IN ({$fields_in}) AND ("
-				. implode( ' OR ', $tests ) . ') GROUP BY object_id';
+				. " FROM {$words} WHERE kind IN ({$kinds_in}) AND ({$where}) GROUP BY object_id";
 			$union_values[] = $i;
-			$union_values   = array_merge( $union_values, $args['kinds'], $fields, $values );
+			$union_values   = array_merge( $union_values, $args['kinds'], $bind );
 		}
 
 		$union = implode( ' UNION ALL ', $parts );
