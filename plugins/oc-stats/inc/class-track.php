@@ -92,7 +92,11 @@ final class Track {
 		}
 
 		wp_enqueue_script( 'oc-stats', OC_STATS_URL . 'assets/js/stats.js', array(), OC_STATS_VERSION, true );
-		wp_localize_script( 'oc-stats', 'ocStatsHit', self::for_script() );
+
+		// Written as JSON rather than localised: wp_localize_script() turns
+		// every value into a string, and the string "0" is true in
+		// JavaScript — which would make every visitor look like staff.
+		wp_add_inline_script( 'oc-stats', 'window.ocStatsHit = ' . wp_json_encode( self::for_script() ) . ';', 'before' );
 	}
 
 	/* ------------------------------------------------------------ pure */
