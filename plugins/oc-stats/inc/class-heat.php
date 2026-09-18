@@ -399,6 +399,7 @@ class Heat {
 	 * @param int    $page   Page.
 	 * @param string $device m, t or d.
 	 * @param string $seg    a for everyone, b for a visit that bought.
+	 * @param int    $height How tall the page was for this visitor.
 	 */
 	private static function count_view( string $day, int $page, string $device, string $seg, int $height ): void {
 		global $wpdb;
