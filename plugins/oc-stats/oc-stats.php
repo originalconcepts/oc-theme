@@ -33,6 +33,8 @@ require_once OC_STATS_DIR . 'inc/class-rollup.php';
 require_once OC_STATS_DIR . 'inc/class-mail.php';
 require_once OC_STATS_DIR . 'inc/class-admin.php';
 require_once OC_STATS_DIR . 'inc/class-product.php';
+require_once OC_STATS_DIR . 'inc/class-heat.php';
+require_once OC_STATS_DIR . 'inc/class-heat-admin.php';
 
 /**
  * Everything this plugin needs before it will run: WooCommerce, and no
@@ -67,6 +69,8 @@ function start(): void {
 	( new Rollup() )->register();
 	( new Admin() )->register();
 	( new Product() )->register();
+	( new Heat() )->register();
+	( new Heat_Admin() )->register();
 }
 add_action( 'init', __NAMESPACE__ . '\\start', 1 );
 
@@ -108,6 +112,7 @@ register_activation_hook(
 	static function (): void {
 		if ( class_exists( 'WooCommerce' ) && ! class_exists( '\OC\Theme\Stats\Track' ) ) {
 			Track::install();
+			Heat::install();
 			( new Rollup() )->schedule();
 		}
 	}

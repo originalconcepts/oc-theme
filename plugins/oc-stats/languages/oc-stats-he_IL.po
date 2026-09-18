@@ -150,11 +150,11 @@ msgstr "לפתיחת הסטטיסטיקה"
 msgid "Sales count paid orders and orders in hand, at what the customer paid. Visits are measured by the shop itself; people who declined statistics cookies are not counted."
 msgstr "מכירות סופרות הזמנות ששולמו ובטיפול, לפי מה שהלקוח שילם. הכניסות נמדדות על ידי החנות עצמה; מי שסירב לעוגיות סטטיסטיקה לא נספר."
 
-msgid "Overview"
-msgstr "סקירה"
+msgid "Heat maps"
+msgstr "מפות חום"
 
-msgid "Reports & settings"
-msgstr "דוחות והגדרות"
+msgid "Not allowed."
+msgstr "אין הרשאה."
 
 msgid "Today"
 msgstr "היום"
@@ -170,6 +170,132 @@ msgstr "30 ימים"
 
 msgid "90 days"
 msgstr "90 ימים"
+
+msgid "Where people look, and where they click. Only the pages below are recorded, and the visitor pays nothing for it: the marks are counted in the browser and sent once, as the page closes."
+msgstr "איפה מסתכלים ואיפה לוחצים. רק העמודים שלמטה נרשמים, והגולש לא משלם על זה כלום: הסימונים נספרים בדפדפן ונשלחים פעם אחת, כשהעמוד נסגר."
+
+msgid "Nothing recorded in this period yet. The pages below are the ones being watched; a map appears once people have visited them."
+msgstr "עדיין לא נרשם דבר בתקופה הזאת. העמודים שלמטה הם אלה שבמעקב, ומפה תופיע אחרי שיבקרו בהם."
+
+msgid "The list of watched pages was last worked out at %s."
+msgstr "רשימת העמודים במעקב חושבה לאחרונה ב־%s."
+
+msgid "Page"
+msgstr "עמוד"
+
+msgid "Views"
+msgstr "צפיות"
+
+msgid "Share"
+msgstr "שיתוף"
+
+msgid "Mobile"
+msgstr "מובייל"
+
+msgid "Tablet"
+msgstr "טאבלט"
+
+msgid "Desktop"
+msgstr "דסקטופ"
+
+msgid "View the heat map"
+msgstr "צפייה במפת חום"
+
+msgid "What is recorded"
+msgstr "מה נרשם"
+
+msgid "Record heat maps"
+msgstr "רישום מפות חום"
+
+msgid "Switching this off stops the recording everywhere at once. What was gathered stays."
+msgstr "כיבוי עוצר את הרישום בכל האתר מיד. מה שנאסף נשאר."
+
+msgid "Pages"
+msgstr "עמודים"
+
+msgid "Home page"
+msgstr "דף הבית"
+
+msgid "The most visited products"
+msgstr "המוצרים הנצפים ביותר"
+
+msgid "Products many look at and few buy"
+msgstr "מוצרים שרבים מסתכלים ומעטים קונים"
+
+msgid "The most visited categories"
+msgstr "הקטגוריות הנצפות ביותר"
+
+msgid "Cart"
+msgstr "עגלת קניות"
+
+msgid "Checkout"
+msgstr "לתשלום"
+
+msgid "Search results"
+msgstr "תוצאות חיפוש"
+
+msgid "Page not found"
+msgstr "העמוד לא נמצא"
+
+msgid "How many of each"
+msgstr "כמה מכל סוג"
+
+msgid "Products and categories are chosen by traffic and worked out again every hour."
+msgstr "מוצרים וקטגוריות נבחרים לפי התנועה ומחושבים מחדש כל שעה."
+
+msgid "Save"
+msgstr "שמירה"
+
+msgid "Heat map"
+msgstr "מפת חום"
+
+msgid "See where people click on this page"
+msgstr "לראות איפה לוחצים בעמוד הזה"
+
+msgid "Clicks"
+msgstr "לחיצות"
+
+msgid "Dead clicks"
+msgstr "לחיצות מתות"
+
+msgid "Rage clicks"
+msgstr "לחיצות זעם"
+
+msgid "Attention"
+msgstr "קשב"
+
+msgid "Everyone"
+msgstr "כולם"
+
+msgid "Visits that bought"
+msgstr "ביקורים שקנו"
+
+msgid "views"
+msgstr "צפיות"
+
+msgid "of the clicks on this page"
+msgstr "מכלל הלחיצות בעמוד"
+
+msgid "Half the visitors never go below this line"
+msgstr "מחצית מהמבקרים לא יורדים מתחת לקו הזה"
+
+msgid "Nothing recorded for this page, device and period yet."
+msgstr "עדיין לא נרשם דבר לעמוד, למכשיר ולתקופה האלה."
+
+msgid "Close"
+msgstr "סגירה"
+
+msgid "The places people press"
+msgstr "המקומות שלוחצים בהם"
+
+msgid "A click on something that does nothing. Where people expected a link and did not find one."
+msgstr "לחיצה על משהו שלא עושה כלום. איפה שציפו לקישור ולא מצאו."
+
+msgid "Overview"
+msgstr "סקירה"
+
+msgid "Reports & settings"
+msgstr "דוחות והגדרות"
 
 msgid "This month"
 msgstr "החודש"
@@ -273,9 +399,6 @@ msgstr "לפי מכירות"
 msgid "Product"
 msgstr "מוצר"
 
-msgid "Views"
-msgstr "צפיות"
-
 msgid "To cart"
 msgstr "לסל"
 
@@ -309,15 +432,6 @@ msgstr "כניסות נספרות מהיום שבו הופעלה הסטטיסט�
 msgid "Visits have been counted since %s; orders before that date are counted, their visits are not — so the funnel and the rates are only complete from that date on."
 msgstr "הכניסות נספרות מ־%s. הזמנות מלפני התאריך הזה נספרות, אבל הכניסות שלהן לא, ולכן המשפך ויחסי ההמרה מלאים רק מהתאריך הזה והלאה."
 
-msgid "Mobile"
-msgstr "מובייל"
-
-msgid "Desktop"
-msgstr "דסקטופ"
-
-msgid "Tablet"
-msgstr "טאבלט"
-
 msgid "Organic search"
 msgstr "חיפוש אורגני"
 
@@ -350,9 +464,6 @@ msgstr "הצגה"
 
 msgid "What customers paid, including shipping and VAT, for paid orders and orders in hand."
 msgstr "מה שהלקוחות שילמו, כולל משלוח ומע״מ, בהזמנות ששולמו ובטיפול."
-
-msgid "Not allowed."
-msgstr "אין הרשאה."
 
 msgid "Saved."
 msgstr "נשמר."

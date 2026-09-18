@@ -31,7 +31,7 @@ final class Insights {
 	 * wording shows it at once instead of six hours later.
 	 */
 	public static function key(): string {
-		return self::CACHE . '_' . ( defined( 'OC_STATS_VERSION' ) ? OC_STATS_VERSION : '1' );
+		return self::CACHE . '_' . ( defined( 'OC_THEME_VERSION' ) ? OC_THEME_VERSION : '1' );
 	}
 
 	/**

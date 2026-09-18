@@ -9022,3 +9022,6 @@ msgstr "המקומות שלוחצים בהם"
 
 msgid "A click on something that does nothing. Where people expected a link and did not find one."
 msgstr "לחיצה על משהו שלא עושה כלום. איפה שציפו לקישור ולא מצאו."
+
+msgid "Clicks"
+msgstr "לחיצות"

@@ -97,6 +97,7 @@ final class Track {
 		// every value into a string, and the string "0" is true in
 		// JavaScript — which would make every visitor look like staff.
 		wp_add_inline_script( 'oc-stats', 'window.ocStatsHit = ' . wp_json_encode( self::for_script() ) . ';', 'before' );
+		wp_add_inline_script( 'oc-stats', 'window.ocHeatHit = ' . wp_json_encode( Heat::for_script() ) . ';', 'before' );
 	}
 
 	/* ------------------------------------------------------------ pure */
@@ -362,10 +363,28 @@ final class Track {
 	}
 
 	/**
+	 * Whether this visit may be counted at all: the shop's own consent
+	 * layer where there is one, and a filter for anything else.
+	 */
+	public static function may_count(): bool {
+		if ( class_exists( '\\OC\\Theme\\Privacy\\Consent' ) && ! \OC\Theme\Privacy\Consent::allows( 'analytics' ) ) {
+			return false;
+		}
+
+		/**
+		 * Whether this visit may be counted. A consent plugin returns false
+		 * to keep a visitor out of the statistics.
+		 *
+		 * @param bool $may Allowed so far.
+		 */
+		return (bool) apply_filters( 'oc_stats_may_track', true );
+	}
+
+	/**
 	 * The visitor's address, hashed by the caller, for a per-network ceiling.
 	 */
 	public static function net(): string {
-		$ip = isset( $_SERVER['REMOTE_ADDR'] ) ? (string) $_SERVER['REMOTE_ADDR'] : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- hashed by the caller.
+$ip = isset( $_SERVER['REMOTE_ADDR'] ) ? (string) $_SERVER['REMOTE_ADDR'] : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- hashed by the caller.
 
 		// The network rather than the address: /24 for IPv4, /64 for IPv6.
 		if ( false !== strpos( $ip, ':' ) ) {
@@ -393,13 +412,7 @@ final class Track {
 			return $res;
 		}
 
-		/**
-		 * Whether this visit may be counted. A consent plugin returns false
-		 * to keep a visitor out of the statistics.
-		 *
-		 * @param bool $may Allowed so far.
-		 */
-		if ( ! (bool) apply_filters( 'oc_stats_may_track', true ) ) {
+		if ( ! self::may_count() ) {
 			return $res;
 		}
 
