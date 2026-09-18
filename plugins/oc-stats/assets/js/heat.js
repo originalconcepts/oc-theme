@@ -24,6 +24,10 @@
 	var stage = null;
 	var sideBox = null;
 	var headNote = null;
+	var tip = null;
+	var groups = [];
+	var spots = [];
+	var scale = 1;
 
 	function el( tag, cls, html ) {
 		var n = document.createElement( tag );
@@ -40,20 +44,45 @@
 		} );
 	}
 
-	function pills( items, now, pick ) {
+	function num( n ) {
+		return Number( n || 0 ).toLocaleString();
+	}
+
+	/* A group of pills. The pressed one is read from the state every time
+	 * something changes, so the toolbar always says what is being shown —
+	 * and every pill stays clickable, including the one you started on. */
+	function pills( items, get, pick ) {
 		var box = el( 'span', 'ocheat__tabs' );
+		var btns = [];
 
 		items.forEach( function ( it ) {
 			var b = el( 'button', '', esc( it[ 1 ] ) );
+
 			b.type = 'button';
-			b.setAttribute( 'aria-pressed', it[ 0 ] === now ? 'true' : 'false' );
+			b.setAttribute( 'data-v', it[ 0 ] );
 			b.addEventListener( 'click', function () {
-				if ( it[ 0 ] !== now ) { pick( it[ 0 ] ); }
+				if ( it[ 0 ] === get() ) {
+					return;
+				}
+
+				pick( it[ 0 ] );
+				sync();
 			} );
+			btns.push( b );
 			box.appendChild( b );
 		} );
 
+		groups.push( function () {
+			btns.forEach( function ( b ) {
+				b.setAttribute( 'aria-pressed', b.getAttribute( 'data-v' ) === get() ? 'true' : 'false' );
+			} );
+		} );
+
 		return box;
+	}
+
+	function sync() {
+		groups.forEach( function ( f ) { f(); } );
 	}
 
 	/* ---------- the shell ---------- */
@@ -66,32 +95,63 @@
 		headNote = el( 'span', 'ocheat__note', '' );
 		head.appendChild( headNote );
 
+		// Walk to another page that has a map, without going back first.
+		if ( C.pages && C.pages.length > 1 ) {
+			var sel = el( 'select', 'ocheat__pick' );
+
+			sel.setAttribute( 'aria-label', T.pick || '' );
+			C.pages.forEach( function ( p ) {
+				var o = document.createElement( 'option' );
+
+				o.value = p.url;
+				o.textContent = p.label;
+
+				if ( p.on ) { o.selected = true; }
+
+				sel.appendChild( o );
+			} );
+			sel.addEventListener( 'change', function () {
+				location.href = sel.value + '&hr=' + encodeURIComponent( state.range ) + '&hd=' + encodeURIComponent( state.device );
+			} );
+			head.appendChild( sel );
+		}
+
 		var tools = el( 'div', 'ocheat__tools' );
 
-		tools.appendChild( pills( [ [ 'today', T.today ], [ 'd7', T.d7 ], [ 'd30', T.d30 ], [ 'd90', T.d90 ] ], state.range, function ( v ) {
-			state.range = v;
-			redraw( true );
-		} ) );
+		tools.appendChild( pills( [ [ 'today', T.today ], [ 'd7', T.d7 ], [ 'd30', T.d30 ], [ 'd90', T.d90 ] ],
+			function () { return state.range; },
+			function ( v ) {
+				state.range = v;
+				redraw( true );
+			} ) );
 
-		tools.appendChild( pills( [ [ 'm', T.mobile ], [ 't', T.tablet ], [ 'd', T.desktop ] ], state.device, function ( v ) {
-			state.device = v;
-			reframe();
-		} ) );
+		tools.appendChild( pills( [ [ 'm', T.mobile ], [ 't', T.tablet ], [ 'd', T.desktop ] ],
+			function () { return state.device; },
+			function ( v ) {
+				state.device = v;
+				reframe();
+			} ) );
 
-		tools.appendChild( pills( [ [ 'c', T.clicks ], [ 'd', T.dead ], [ 'r', T.rage ], [ 'a', T.attn ] ], state.layer, function ( v ) {
-			state.layer = v;
-			paint();
-		} ) );
+		tools.appendChild( pills( [ [ 'c', T.clicks ], [ 'd', T.dead ], [ 'r', T.rage ], [ 'a', T.attn ] ],
+			function () { return state.layer; },
+			function ( v ) {
+				state.layer = v;
+				paint();
+			} ) );
 
-		tools.appendChild( pills( [ [ 'a', T.everyone ], [ 'b', T.buyers ] ], state.seg, function ( v ) {
-			state.seg = v;
-			redraw( true );
-		} ) );
+		tools.appendChild( pills( [ [ 'a', T.everyone ], [ 'b', T.buyers ] ],
+			function () { return state.seg; },
+			function ( v ) {
+				state.seg = v;
+				redraw( true );
+			} ) );
 
 		var close = el( 'button', 'ocheat__close', esc( T.close || 'Close' ) );
+
 		close.type = 'button';
 		close.addEventListener( 'click', function () {
 			var u = new URL( location.href );
+
 			[ 'oc_heat', 'hp', 'hr', 'hd' ].forEach( function ( k ) { u.searchParams.delete( k ); } );
 			location.href = u.toString();
 		} );
@@ -101,6 +161,7 @@
 		root.appendChild( head );
 
 		var body = el( 'div', 'ocheat__body' );
+
 		stage = el( 'div', 'ocheat__stage' );
 		body.appendChild( stage );
 
@@ -108,18 +169,53 @@
 		body.appendChild( sideBox );
 		root.appendChild( body );
 
+		tip = el( 'div', 'ocheat__tip' );
+		tip.hidden = true;
+		root.appendChild( tip );
+
 		document.documentElement.appendChild( root );
 		document.documentElement.classList.add( 'ocheat-on' );
+		sync();
 	}
 
 	/* ---------- the page, at the device's width ---------- */
 
+	/* The frame is a fresh load of the page, so nothing below the fold has
+	 * arrived yet and it would measure far too short — every mark would
+	 * then sit below the thing it was aimed at. Give it a tall viewport,
+	 * turn the lazy images eager, and wait for the height to settle. */
+	function ready( d, done ) {
+		var was = -1;
+		var still = 0;
+		var tries = 0;
+
+		function look() {
+			var h = Math.max( d.body ? d.body.scrollHeight : 0, d.body ? d.body.offsetHeight : 0 );
+
+			still = h === was ? still + 1 : 0;
+			was = h;
+			++tries;
+
+			if ( ( still >= 2 && h > 0 ) || tries > 24 ) {
+				done( h || 800 );
+				return;
+			}
+
+			setTimeout( look, 150 );
+		}
+
+		look();
+	}
+
 	function reframe() {
 		var w = ( C.widths && C.widths[ state.device ] ) || 390;
 
+		hideTip();
 		stage.innerHTML = '';
+		spots = [];
 
 		var wrap = el( 'div', 'ocheat__wrap' );
+
 		wrap.style.width = w + 'px';
 
 		frame = document.createElement( 'iframe' );
@@ -128,6 +224,7 @@
 		frame.width = w;
 
 		var u = new URL( location.href );
+
 		[ 'oc_heat', 'hp', 'hr', 'hd' ].forEach( function ( k ) { u.searchParams.delete( k ); } );
 		u.searchParams.set( 'oc_heat_frame', '1' );
 		frame.src = u.toString();
@@ -140,31 +237,66 @@
 
 		// Fit the chosen width into whatever room the screen has.
 		var room = stage.clientWidth - 24;
-		var scale = Math.min( 1, room / w );
+
+		scale = Math.min( 1, room / w );
 		wrap.style.transform = 'scale(' + scale + ')';
 		wrap.style.transformOrigin = 'top center';
 
 		frame.addEventListener( 'load', function () {
-			var h = 800;
+			var d = null;
 
 			try {
-				var d = frame.contentDocument;
-				var style = d.createElement( 'style' );
-				style.textContent = '#wpadminbar{display:none!important}html{margin-top:0!important}';
-				d.head.appendChild( style );
-				h = Math.max( d.body.scrollHeight, d.documentElement.scrollHeight );
+				d = frame.contentDocument;
 			} catch ( e ) {}
 
-			frame.style.height = h + 'px';
-			wrap.style.height = ( h * scale ) + 'px';
-			canvas.width = w;
-			canvas.height = h;
-			canvas.style.width = w + 'px';
-			canvas.style.height = h + 'px';
-			paint();
+			if ( ! d || ! d.body ) {
+				fit( wrap, w, 800 );
+				return;
+			}
+
+			var style = d.createElement( 'style' );
+
+			style.textContent = '#wpadminbar{display:none!important}html{margin-top:0!important}';
+			d.head.appendChild( style );
+
+			// A tall viewport, so nothing counts as below the fold.
+			frame.style.height = '30000px';
+
+			Array.prototype.forEach.call( d.querySelectorAll( 'img[loading="lazy"],iframe[loading="lazy"]' ), function ( n ) {
+				n.loading = 'eager';
+			} );
+
+			// The page inside is a picture, not a way out: a link would
+			// carry the map off to a page that has none.
+			[ 'click', 'submit', 'keydown' ].forEach( function ( ev ) {
+				d.addEventListener( ev, function ( e ) {
+					if ( 'keydown' === ev && 'Enter' !== e.key ) {
+						return;
+					}
+
+					e.preventDefault();
+					e.stopPropagation();
+				}, true );
+			} );
+
+			ready( d, function ( h ) {
+				fit( wrap, w, h );
+			} );
 		} );
 
 		redraw( true );
+	}
+
+	function fit( wrap, w, h ) {
+		frame.style.height = h + 'px';
+		wrap.style.height = ( h * scale ) + 'px';
+		canvas.width = w;
+		canvas.height = h;
+		canvas.style.width = w + 'px';
+		canvas.style.height = h + 'px';
+		canvas.addEventListener( 'mousemove', look );
+		canvas.addEventListener( 'mouseleave', hideTip );
+		paint();
 	}
 
 	/* ---------- the numbers ---------- */
@@ -201,13 +333,28 @@
 		return [ 255, Math.round( 200 - ( a - 0.75 ) * 700 ), 0 ];
 	}
 
+	/* The page was not exactly this tall when the marks were made — a lazy
+	 * image, a narrower phone, a line of text that wrapped. Stretch the
+	 * marks onto the page as it stands, within reason. */
+	function stretch() {
+		var was = data && data.height ? data.height : 0;
+
+		if ( ! was || ! canvas || ! canvas.height ) {
+			return 1;
+		}
+
+		return Math.max( 0.5, Math.min( 2, canvas.height / was ) );
+	}
+
 	function paint() {
 		if ( ! canvas || ! data ) {
 			return;
 		}
 
 		var ctx = canvas.getContext( '2d' );
+
 		ctx.clearRect( 0, 0, canvas.width, canvas.height );
+		spots = [];
 
 		if ( 'a' === state.layer ) {
 			bands( ctx );
@@ -216,6 +363,7 @@
 		}
 
 		side();
+		hideTip();
 	}
 
 	function marksOf( kind ) {
@@ -230,13 +378,17 @@
 		}
 
 		var top = list.reduce( function ( a, m ) { return Math.max( a, m[ 3 ] ); }, 1 );
+		var all = list.reduce( function ( a, m ) { return a + m[ 3 ]; }, 0 ) || 1;
 		var r = 'd' === state.device ? 44 : 30;
+		var ky = stretch();
 
 		list.forEach( function ( m ) {
 			var x = ( m[ 1 ] / 100 ) * canvas.width;
-			var y = m[ 2 ];
+			var y = m[ 2 ] * ky;
 			var a = Math.min( 1, 0.25 + ( m[ 3 ] / top ) * 0.75 );
 			var g = ctx.createRadialGradient( x, y, 0, x, y, r );
+
+			spots.push( { x: x, y: y, n: m[ 3 ], pct: Math.round( ( m[ 3 ] / all ) * 100 ) } );
 
 			g.addColorStop( 0, 'rgba(0,0,0,' + a + ')' );
 			g.addColorStop( 1, 'rgba(0,0,0,0)' );
@@ -256,6 +408,7 @@
 			if ( ! a ) { continue; }
 
 			var c = ramp( Math.min( 1, a ) );
+
 			px[ i ] = c[ 0 ];
 			px[ i + 1 ] = c[ 1 ];
 			px[ i + 2 ] = c[ 2 ];
@@ -308,16 +461,61 @@
 		}
 	}
 
+	/* ---------- what is under the pointer ---------- */
+
+	function look( e ) {
+		if ( ! spots.length ) {
+			hideTip();
+			return;
+		}
+
+		var rect = canvas.getBoundingClientRect();
+		var x = ( e.clientX - rect.left ) * ( canvas.width / rect.width );
+		var y = ( e.clientY - rect.top ) * ( canvas.height / rect.height );
+		var reach = 'd' === state.device ? 44 : 30;
+		var near = null;
+		var best = reach * reach;
+
+		spots.forEach( function ( s ) {
+			var dx = s.x - x;
+			var dy = s.y - y;
+			var far = dx * dx + dy * dy;
+
+			if ( far <= best ) {
+				best = far;
+				near = s;
+			}
+		} );
+
+		if ( ! near ) {
+			hideTip();
+			return;
+		}
+
+		tip.textContent = num( near.n ) + ' ' + ( T.press || '' ) + ' · ' + near.pct + '%';
+		tip.hidden = false;
+		tip.style.insetInlineStart = 'auto';
+		tip.style.left = Math.round( e.clientX + 14 ) + 'px';
+		tip.style.top = Math.round( e.clientY + 14 ) + 'px';
+	}
+
+	function hideTip() {
+		if ( tip ) {
+			tip.hidden = true;
+		}
+	}
+
 	/* ---------- the list beside it ---------- */
 
 	function side() {
 		var views = data.views || 0;
 		var clicks = data.clicks || 0;
 
-		headNote.textContent = views.toLocaleString() + ' ' + ( T.views || '' ) + ' · ' + clicks.toLocaleString() + ' ' + ( T.clicks || '' );
+		headNote.textContent = num( views ) + ' ' + ( T.views || '' ) + ' · ' + num( clicks ) + ' ' + ( T.clicks || '' );
 
 		var list = marksOf( 'a' === state.layer ? 'c' : state.layer ).slice().sort( function ( a, b ) { return b[ 3 ] - a[ 3 ]; } ).slice( 0, 12 );
 		var total = marksOf( 'c' ).reduce( function ( a, m ) { return a + m[ 3 ]; }, 0 ) || 1;
+		var ky = stretch();
 
 		var html = '<h3>' + esc( T.spots || '' ) + '</h3>';
 
@@ -330,13 +528,14 @@
 		} else {
 			html += '<ol class="ocheat__spots">';
 			list.forEach( function ( m ) {
-				html += '<li><span>' + Math.round( m[ 1 ] ) + '% · ' + m[ 2 ] + 'px</span><b>' + m[ 3 ].toLocaleString() +
+				html += '<li><span>' + Math.round( m[ 1 ] ) + '% · ' + Math.round( m[ 2 ] * ky ) + 'px</span><b>' + num( m[ 3 ] ) +
 					' <i>' + Math.round( ( m[ 3 ] / total ) * 100 ) + '%</i></b></li>';
 			} );
 			html += '</ol>';
 			html += '<p class="ocheat__hint">' + esc( T.ofClicks || '' ) + '</p>';
 		}
 
+		html += '<p class="ocheat__hint">' + esc( T.frozen || '' ) + '</p>';
 		sideBox.innerHTML = html;
 	}
 

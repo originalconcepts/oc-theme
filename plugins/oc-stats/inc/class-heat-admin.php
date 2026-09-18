@@ -77,17 +77,27 @@ class Heat_Admin {
 			'd90'       => __( '90 days', 'oc-stats' ),
 		);
 
-		$now = isset( $_GET['range'] ) ? sanitize_key( wp_unslash( $_GET['range'] ) ) : 'd7'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- a range picker.
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- a range and a tab.
+		$now = isset( $_GET['range'] ) ? sanitize_key( wp_unslash( $_GET['range'] ) ) : 'd7';
+		$tab = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'pages';
+		// phpcs:enable
+
 		$now = isset( $ranges[ $now ] ) ? $now : 'd7';
+		$tab = 'settings' === $tab ? 'settings' : 'pages';
 		$r   = Query::range( $now );
 		$set = Heat::set();
 		$s   = Heat::settings();
-		$top = Heat::top_pages( (string) $r['from'], (string) $r['to'] );
+		$top = 'pages' === $tab ? Heat::top_pages( (string) $r['from'], (string) $r['to'] ) : array();
 		$all = 0;
 
 		foreach ( $top as $row ) {
 			$all += $row['views'];
 		}
+
+		$tabs = array(
+			'pages'    => __( 'Pages', 'oc-stats' ),
+			'settings' => __( 'Settings', 'oc-stats' ),
+		);
 		?>
 		<div class="wrap ocst">
 			<h1><?php esc_html_e( 'Heat maps', 'oc-stats' ); ?></h1>
@@ -95,112 +105,181 @@ class Heat_Admin {
 				<?php esc_html_e( 'Where people look, and where they click. Only the pages below are recorded, and the visitor pays nothing for it: the marks are counted in the browser and sent once, as the page closes.', 'oc-stats' ); ?>
 			</p>
 
-			<div class="ocst__pickers" style="margin-block-end:14px;">
-				<?php foreach ( $ranges as $key => $label ) : ?>
-					<a class="ocst__pill" aria-pressed="<?php echo $key === $now ? 'true' : 'false'; ?>" href="<?php echo esc_url( admin_url( 'admin.php?page=' . self::PAGE . '&range=' . $key ) ); ?>"><?php echo esc_html( $label ); ?></a>
+			<h2 class="nav-tab-wrapper">
+				<?php foreach ( $tabs as $key => $label ) : ?>
+					<a class="nav-tab <?php echo $key === $tab ? 'nav-tab-active' : ''; ?>" href="<?php echo esc_url( admin_url( 'admin.php?page=' . self::PAGE . '&tab=' . $key . '&range=' . $now ) ); ?>"><?php echo esc_html( $label ); ?></a>
 				<?php endforeach; ?>
-			</div>
+			</h2>
 
-			<?php if ( ! $top ) : ?>
-				<div class="ocst__card">
-					<p><?php esc_html_e( 'Nothing recorded in this period yet. The pages below are the ones being watched; a map appears once people have visited them.', 'oc-stats' ); ?></p>
-					<p class="ocst__note"><?php echo esc_html( sprintf( /* translators: %s: a date and time */ __( 'The list of watched pages was last worked out at %s.', 'oc-stats' ), '' === $set['when'] ? '—' : $set['when'] ) ); ?></p>
-				</div>
+			<?php if ( 'settings' === $tab ) : ?>
+				<?php $this->settings_card( $s ); ?>
 			<?php else : ?>
-				<div class="ocst__card">
-					<table class="ocst__tbl">
-						<thead>
-							<tr>
-								<th><?php esc_html_e( 'Page', 'oc-stats' ); ?></th>
-								<th class="n"><?php esc_html_e( 'Views', 'oc-stats' ); ?></th>
-								<th class="n"><?php esc_html_e( 'Share', 'oc-stats' ); ?></th>
-								<th class="n"><?php esc_html_e( 'Mobile', 'oc-stats' ); ?></th>
-								<th class="n"><?php esc_html_e( 'Tablet', 'oc-stats' ); ?></th>
-								<th class="n"><?php esc_html_e( 'Desktop', 'oc-stats' ); ?></th>
-								<th></th>
-							</tr>
-						</thead>
-						<tbody>
-							<?php foreach ( $top as $row ) : ?>
-								<?php
-								$best = 'd';
-
-								if ( $row['m'] >= $row['t'] && $row['m'] >= $row['d'] ) {
-									$best = 'm';
-								} elseif ( $row['t'] >= $row['d'] ) {
-									$best = 't';
-								}
-
-								$view = add_query_arg(
-									array(
-										'oc_heat' => 1,
-										'hp'      => $row['id'],
-										'hr'      => $now,
-										'hd'      => $best,
-									),
-									home_url( $row['path'] )
-								);
-								?>
-								<tr>
-									<td>
-										<strong><?php echo esc_html( '' === $row['label'] ? $row['path'] : $row['label'] ); ?></strong><br>
-										<a href="<?php echo esc_url( home_url( $row['path'] ) ); ?>" class="ocst__note" target="_blank" rel="noopener"><?php echo esc_html( $row['path'] ); ?></a>
-									</td>
-									<td class="n"><bdi dir="ltr"><?php echo esc_html( number_format_i18n( $row['views'] ) ); ?></bdi></td>
-									<td class="n"><bdi dir="ltr"><?php echo esc_html( $all > 0 ? round( $row['views'] / $all * 100 ) . '%' : '—' ); ?></bdi></td>
-									<td class="n"><bdi dir="ltr"><?php echo esc_html( number_format_i18n( $row['m'] ) ); ?></bdi></td>
-									<td class="n"><bdi dir="ltr"><?php echo esc_html( number_format_i18n( $row['t'] ) ); ?></bdi></td>
-									<td class="n"><bdi dir="ltr"><?php echo esc_html( number_format_i18n( $row['d'] ) ); ?></bdi></td>
-									<td class="n"><a class="button button-primary" href="<?php echo esc_url( $view ); ?>" target="_blank" rel="noopener"><?php esc_html_e( 'View the heat map', 'oc-stats' ); ?></a></td>
-								</tr>
-							<?php endforeach; ?>
-						</tbody>
-					</table>
+				<div class="ocst__pickers" style="margin-block:14px;">
+					<?php foreach ( $ranges as $key => $label ) : ?>
+						<a class="ocst__pill" aria-pressed="<?php echo $key === $now ? 'true' : 'false'; ?>" href="<?php echo esc_url( admin_url( 'admin.php?page=' . self::PAGE . '&tab=pages&range=' . $key ) ); ?>"><?php echo esc_html( $label ); ?></a>
+					<?php endforeach; ?>
 				</div>
+
+				<?php if ( ! $top ) : ?>
+					<div class="ocst__card">
+						<p><?php esc_html_e( 'Nothing recorded in this period yet. A page appears here once people have visited it.', 'oc-stats' ); ?></p>
+						<p class="ocst__note"><?php echo esc_html( sprintf( /* translators: %s: a date and time */ __( 'The list of watched pages was last worked out at %s.', 'oc-stats' ), '' === $set['when'] ? '—' : $set['when'] ) ); ?></p>
+					</div>
+				<?php else : ?>
+					<div class="ocst__card">
+						<table class="ocst__tbl ocheat__list">
+							<thead>
+								<tr>
+									<th><?php esc_html_e( 'Page', 'oc-stats' ); ?></th>
+									<th class="n"><?php esc_html_e( 'Views', 'oc-stats' ); ?></th>
+									<th class="n"><?php esc_html_e( 'Share', 'oc-stats' ); ?></th>
+									<th class="n"><?php esc_html_e( 'Clicks', 'oc-stats' ); ?></th>
+									<th class="n"><?php esc_html_e( 'Dead clicks', 'oc-stats' ); ?></th>
+									<th class="n"><?php esc_html_e( 'Read depth', 'oc-stats' ); ?></th>
+									<th><?php esc_html_e( 'Mostly on', 'oc-stats' ); ?></th>
+									<th></th>
+								</tr>
+							</thead>
+							<tbody>
+								<?php foreach ( $top as $row ) : ?>
+									<?php
+									$best = 'd';
+
+									if ( $row['m'] >= $row['t'] && $row['m'] >= $row['d'] ) {
+										$best = 'm';
+									} elseif ( $row['t'] >= $row['d'] ) {
+										$best = 't';
+									}
+
+									$devices = array(
+										'm' => __( 'Mobile', 'oc-stats' ),
+										't' => __( 'Tablet', 'oc-stats' ),
+										'd' => __( 'Desktop', 'oc-stats' ),
+									);
+
+									$live = home_url( $row['path'] );
+									$view = self::map_url( $row['path'], $row['id'], $now, $best );
+									$nice = urldecode( $row['path'] );
+									$part = $row['views'] > 0 ? round( $row[ $best ] / $row['views'] * 100 ) : 0;
+									?>
+									<tr>
+										<td>
+											<a class="ocheat__name" href="<?php echo esc_url( $view ); ?>"><?php echo esc_html( '' === $row['label'] ? $nice : $row['label'] ); ?></a>
+											<span class="ocheat__kind"><?php echo esc_html( self::kind_label( $row['kind'] ) ); ?></span>
+											<a class="ocheat__path" href="<?php echo esc_url( $live ); ?>" target="_blank" rel="noopener" title="<?php echo esc_attr( $nice ); ?>"><?php echo esc_html( $nice ); ?></a>
+										</td>
+										<td class="n"><bdi dir="ltr"><?php echo esc_html( number_format_i18n( $row['views'] ) ); ?></bdi></td>
+										<td class="n"><bdi dir="ltr"><?php echo esc_html( $all > 0 ? round( $row['views'] / $all * 100 ) . '%' : '—' ); ?></bdi></td>
+										<td class="n"><bdi dir="ltr"><?php echo esc_html( number_format_i18n( $row['c'] ) ); ?></bdi></td>
+										<td class="n"><bdi dir="ltr"><?php echo esc_html( number_format_i18n( $row['dead'] ) ); ?></bdi></td>
+										<td class="n"><bdi dir="ltr"><?php echo esc_html( $row['read'] > 0 ? $row['read'] . '%' : '—' ); ?></bdi></td>
+										<td>
+											<?php echo esc_html( $devices[ $best ] ); ?>
+											<span class="ocst__note"><bdi dir="ltr"><?php echo esc_html( $part . '%' ); ?></bdi></span>
+										</td>
+										<td class="n"><a class="button button-primary" href="<?php echo esc_url( $view ); ?>"><?php esc_html_e( 'Heat map', 'oc-stats' ); ?></a></td>
+									</tr>
+								<?php endforeach; ?>
+							</tbody>
+						</table>
+						<p class="ocst__note" style="margin-block-start:10px;">
+							<?php esc_html_e( 'Dead clicks are presses on something that does nothing. Read depth is how far down the page half the visitors reached.', 'oc-stats' ); ?>
+						</p>
+					</div>
+				<?php endif; ?>
 			<?php endif; ?>
+		</div>
+		<?php
+	}
 
-			<div class="ocst__card" style="margin-block-start:16px;">
-				<h2><?php esc_html_e( 'What is recorded', 'oc-stats' ); ?></h2>
-				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
-					<input type="hidden" name="action" value="oc_heat_save">
-					<?php wp_nonce_field( 'oc_heat_save' ); ?>
-					<p>
-						<label><input type="checkbox" name="on" value="1" <?php checked( 1, $s['on'] ); ?>> <strong><?php esc_html_e( 'Record heat maps', 'oc-stats' ); ?></strong></label>
-					</p>
-					<p class="ocst__note"><?php esc_html_e( 'Switching this off stops the recording everywhere at once. What was gathered stays.', 'oc-stats' ); ?></p>
-					<table class="form-table" role="presentation">
-						<tr>
-							<th scope="row"><?php esc_html_e( 'Pages', 'oc-stats' ); ?></th>
-							<td>
-								<?php
-								$names = array(
-									'home'     => __( 'Home page', 'oc-stats' ),
-									'product'  => __( 'The most visited products', 'oc-stats' ),
-									'slow'     => __( 'Products many look at and few buy', 'oc-stats' ),
-									'cat'      => __( 'The most visited categories', 'oc-stats' ),
-									'cart'     => __( 'Cart', 'oc-stats' ),
-									'checkout' => __( 'Checkout', 'oc-stats' ),
-									'search'   => __( 'Search results', 'oc-stats' ),
-									'e404'     => __( 'Page not found', 'oc-stats' ),
-								);
+	/**
+	 * The link that opens one page's map.
+	 *
+	 * @param string $path   The page.
+	 * @param int    $id     Its row.
+	 * @param string $range  Range key.
+	 * @param string $device m, t or d.
+	 */
+	public static function map_url( string $path, int $id, string $range, string $device ): string {
+		return add_query_arg(
+			array(
+				'oc_heat' => 1,
+				'hp'      => $id,
+				'hr'      => $range,
+				'hd'      => $device,
+			),
+			home_url( $path )
+		);
+	}
 
-								foreach ( $names as $key => $label ) {
-									echo '<label style="display:block;margin-block-end:4px"><input type="checkbox" name="kinds[]" value="' . esc_attr( $key ) . '" ' . checked( 1, $s['kinds'][ $key ] ?? 0, false ) . '> ' . esc_html( $label ) . '</label>';
-								}
-								?>
-							</td>
-						</tr>
-						<tr>
-							<th scope="row"><label for="oc-heat-per"><?php esc_html_e( 'How many of each', 'oc-stats' ); ?></label></th>
-							<td>
-								<input type="number" id="oc-heat-per" name="per" min="1" max="20" value="<?php echo esc_attr( (string) $s['per'] ); ?>" class="small-text">
-								<p class="description"><?php esc_html_e( 'Products and categories are chosen by traffic and worked out again every hour.', 'oc-stats' ); ?></p>
-							</td>
-						</tr>
-					</table>
-					<p><button class="button button-primary"><?php esc_html_e( 'Save', 'oc-stats' ); ?></button></p>
-				</form>
-			</div>
+	/**
+	 * What kind of page this is, in words.
+	 *
+	 * @param string $kind One of Heat::KINDS.
+	 */
+	public static function kind_label( string $kind ): string {
+		$names = array(
+			'home'     => __( 'Home page', 'oc-stats' ),
+			'product'  => __( 'Product', 'oc-stats' ),
+			'slow'     => __( 'Product', 'oc-stats' ),
+			'cat'      => __( 'Category', 'oc-stats' ),
+			'cart'     => __( 'Cart', 'oc-stats' ),
+			'checkout' => __( 'Checkout', 'oc-stats' ),
+			'search'   => __( 'Search results', 'oc-stats' ),
+			'e404'     => __( 'Page not found', 'oc-stats' ),
+		);
+
+		return $names[ $kind ] ?? $kind;
+	}
+
+	/**
+	 * What is recorded, and how much of it.
+	 *
+	 * @param array<string,mixed> $s Settings.
+	 */
+	private function settings_card( array $s ): void {
+		?>
+		<div class="ocst__card" style="margin-block-start:16px;">
+			<h2><?php esc_html_e( 'What is recorded', 'oc-stats' ); ?></h2>
+			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+				<input type="hidden" name="action" value="oc_heat_save">
+				<?php wp_nonce_field( 'oc_heat_save' ); ?>
+				<p>
+					<label><input type="checkbox" name="on" value="1" <?php checked( 1, $s['on'] ); ?>> <strong><?php esc_html_e( 'Record heat maps', 'oc-stats' ); ?></strong></label>
+				</p>
+				<p class="ocst__note"><?php esc_html_e( 'Switching this off stops the recording everywhere at once. What was gathered stays.', 'oc-stats' ); ?></p>
+				<table class="form-table" role="presentation">
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Pages', 'oc-stats' ); ?></th>
+						<td>
+							<?php
+							$names = array(
+								'home'     => __( 'Home page', 'oc-stats' ),
+								'product'  => __( 'The most visited products', 'oc-stats' ),
+								'slow'     => __( 'Products many look at and few buy', 'oc-stats' ),
+								'cat'      => __( 'The most visited categories', 'oc-stats' ),
+								'cart'     => __( 'Cart', 'oc-stats' ),
+								'checkout' => __( 'Checkout', 'oc-stats' ),
+								'search'   => __( 'Search results', 'oc-stats' ),
+								'e404'     => __( 'Page not found', 'oc-stats' ),
+							);
+
+							foreach ( $names as $key => $label ) {
+								echo '<label style="display:block;margin-block-end:4px"><input type="checkbox" name="kinds[]" value="' . esc_attr( $key ) . '" ' . checked( 1, $s['kinds'][ $key ] ?? 0, false ) . '> ' . esc_html( $label ) . '</label>';
+							}
+							?>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="oc-heat-per"><?php esc_html_e( 'How many of each', 'oc-stats' ); ?></label></th>
+						<td>
+							<input type="number" id="oc-heat-per" name="per" min="1" max="20" value="<?php echo esc_attr( (string) $s['per'] ); ?>" class="small-text">
+							<p class="description"><?php esc_html_e( 'Products and categories are chosen by traffic and worked out again every hour.', 'oc-stats' ); ?></p>
+						</td>
+					</tr>
+				</table>
+				<p><button class="button button-primary"><?php esc_html_e( 'Save', 'oc-stats' ); ?></button></p>
+			</form>
 		</div>
 		<?php
 	}
@@ -231,7 +310,7 @@ class Heat_Admin {
 		);
 
 		Heat::refresh();
-		wp_safe_redirect( admin_url( 'admin.php?page=' . self::PAGE . '&saved=1' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=' . self::PAGE . '&tab=settings&saved=1' ) );
 		exit;
 	}
 
@@ -298,11 +377,35 @@ class Heat_Admin {
 		$dev  = isset( $_GET['hd'] ) ? sanitize_key( wp_unslash( $_GET['hd'] ) ) : 'm';
 		// phpcs:enable
 
+		// The other pages with a map, so one can be walked to from here
+		// instead of going back to the table and starting again.
+		$r     = Query::range( 'd30' );
+		$list  = array();
+		$here  = Heat::path( (string) wp_parse_url( home_url( add_query_arg( array() ) ), PHP_URL_PATH ) );
+
+		foreach ( Heat::top_pages( (string) $r['from'], (string) $r['to'], 30 ) as $row ) {
+			$best = 'd';
+
+			if ( $row['m'] >= $row['t'] && $row['m'] >= $row['d'] ) {
+				$best = 'm';
+			} elseif ( $row['t'] >= $row['d'] ) {
+				$best = 't';
+			}
+
+			$list[] = array(
+				'id'    => $row['id'],
+				'label' => ( '' === $row['label'] ? urldecode( $row['path'] ) : $row['label'] ) . ' · ' . self::kind_label( $row['kind'] ),
+				'url'   => self::map_url( $row['path'], $row['id'], $rng, $best ),
+				'on'    => $row['path'] === $here ? 1 : 0,
+			);
+		}
+
 		wp_add_inline_script(
 			'oc-heat',
 			'window.ocHeatView = ' . wp_json_encode(
 				array(
 					'rest'   => rest_url( 'oc/v1/heat/map' ),
+					'pages'  => $list,
 					'nonce'  => wp_create_nonce( 'wp_rest' ),
 					'path'   => Heat::path( (string) wp_parse_url( home_url( add_query_arg( array() ) ), PHP_URL_PATH ) ),
 					'page'   => $page,
@@ -331,6 +434,9 @@ class Heat_Admin {
 						'close'    => __( 'Close', 'oc-stats' ),
 						'spots'    => __( 'The places people press', 'oc-stats' ),
 						'deadNote' => __( 'A click on something that does nothing. Where people expected a link and did not find one.', 'oc-stats' ),
+						'pick'     => __( 'Another page', 'oc-stats' ),
+						'press'    => __( 'presses here', 'oc-stats' ),
+						'frozen'   => __( 'Links are off inside the map.', 'oc-stats' ),
 					),
 				)
 			) . ';',
@@ -372,6 +478,7 @@ class Heat_Admin {
 				array(
 					'views'  => 0,
 					'clicks' => 0,
+					'height' => 0,
 					'marks'  => array(),
 					'bands'  => array(),
 				)

@@ -77,8 +77,34 @@ html.ocheat-on body { overflow: hidden !important; }
 }
 
 .ocheat__wrap { position: relative; flex: none; background: #fff; box-shadow: 0 6px 24px rgb(0 0 0 / 14%); }
-.ocheat__frame { display: block; border: 0; width: 100%; }
-.ocheat__canvas { position: absolute; inset-block-start: 0; inset-inline-start: 0; pointer-events: none; }
+/* The page inside the frame is a picture: the canvas takes every press,
+ * so a link cannot carry the map away to a page that has none. */
+.ocheat__frame { display: block; border: 0; width: 100%; pointer-events: none; }
+.ocheat__canvas { position: absolute; inset-block-start: 0; inset-inline-start: 0; cursor: crosshair; }
+
+.ocheat__pick {
+	max-inline-size: 260px;
+	font: inherit;
+	font-size: 12.5px;
+	padding: 4px 8px;
+	border: 1px solid #d1d5db;
+	border-radius: 8px;
+	background: #fff;
+	color: #111827;
+}
+
+.ocheat__tip {
+	position: fixed;
+	z-index: 100001;
+	background: #111827;
+	color: #fff;
+	font-size: 12.5px;
+	padding: 4px 9px;
+	border-radius: 6px;
+	pointer-events: none;
+	white-space: nowrap;
+	box-shadow: 0 2px 8px rgb(0 0 0 / 25%);
+}
 
 .ocheat__side {
 	inline-size: 300px;

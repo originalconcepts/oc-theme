@@ -36,6 +36,11 @@ class Heat {
 	const SET    = 'oc_stats_heat_set';
 
 	/**
+	 * Bumped whenever the tables change, so install() runs again.
+	 */
+	const SCHEMA_V = '2';
+
+	/**
 	 * Settings.
 	 */
 	const OPTION = 'oc_stats_heat';
@@ -102,7 +107,7 @@ class Heat {
 	 * Is the whole thing on?
 	 */
 	public static function on(): bool {
-		return 1 === self::settings()['on'] && '1' === (string) get_option( self::SCHEMA, '' );
+		return 1 === self::settings()['on'] && self::SCHEMA_V === (string) get_option( self::SCHEMA, '' );
 	}
 
 	/* ------------------------------------------------- the watched pages */
@@ -329,7 +334,10 @@ class Heat {
 		$seg    = 'b' === sanitize_key( (string) $req->get_param( 'seg' ) ) ? 'b' : 'a';
 		$day    = Query::today();
 
-		self::count_view( $day, $page, $device, $seg );
+		// A page taller than this is a runaway loop, not a page.
+		$height = min( 200000, max( 0, absint( $req->get_param( 'h' ) ) ) );
+
+		self::count_view( $day, $page, $device, $seg, $height );
 		self::count_marks( $day, $page, $device, $seg, (array) $req->get_param( 'marks' ) );
 		self::count_depth( $day, $page, $device, $seg, (array) $req->get_param( 'depth' ) );
 
@@ -392,13 +400,13 @@ class Heat {
 	 * @param string $device m, t or d.
 	 * @param string $seg    a for everyone, b for a visit that bought.
 	 */
-	private static function count_view( string $day, int $page, string $device, string $seg ): void {
+	private static function count_view( string $day, int $page, string $device, string $seg, int $height ): void {
 		global $wpdb;
 
 		$t = $wpdb->prefix . self::VIEWS;
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- own table, values prepared.
-		$wpdb->query( $wpdb->prepare( "INSERT INTO {$t} (day, page_id, device, seg, views) VALUES (%s, %d, %s, %s, 1) ON DUPLICATE KEY UPDATE views = views + 1", $day, $page, $device, $seg ) );
+		$wpdb->query( $wpdb->prepare( "INSERT INTO {$t} (day, page_id, device, seg, views, hsum) VALUES (%s, %d, %s, %s, 1, %d) ON DUPLICATE KEY UPDATE views = views + 1, hsum = hsum + %d", $day, $page, $device, $seg, $height, $height ) );
 	}
 
 	/**
@@ -482,7 +490,7 @@ class Heat {
 	 * Four small tables, made once.
 	 */
 	public static function install(): void {
-		if ( '1' === (string) get_option( self::SCHEMA, '' ) ) {
+		if ( self::SCHEMA_V === (string) get_option( self::SCHEMA, '' ) ) {
 			return;
 		}
 
@@ -515,6 +523,7 @@ class Heat {
 				device char(1) NOT NULL DEFAULT 'd',
 				seg char(1) NOT NULL DEFAULT 'a',
 				views int(10) unsigned NOT NULL DEFAULT 0,
+				hsum bigint(20) unsigned NOT NULL DEFAULT 0,
 				PRIMARY KEY (day, page_id, device, seg)
 			) {$collate};"
 		);
@@ -546,7 +555,7 @@ class Heat {
 			) {$collate};"
 		);
 
-		update_option( self::SCHEMA, '1', false );
+		update_option( self::SCHEMA, self::SCHEMA_V, false );
 	}
 
 	/**
@@ -554,7 +563,7 @@ class Heat {
 	 * of history costs about a month of rows.
 	 */
 	public static function sweep(): void {
-		if ( '1' !== (string) get_option( self::SCHEMA, '' ) ) {
+		if ( self::SCHEMA_V !== (string) get_option( self::SCHEMA, '' ) ) {
 			return;
 		}
 
@@ -618,7 +627,8 @@ class Heat {
 		);
 		// phpcs:enable
 
-		return array_map(
+		$ids  = array();
+		$list = array_map(
 			static function ( array $r ): array {
 				return array(
 					'id'    => (int) $r['page_id'],
@@ -629,10 +639,111 @@ class Heat {
 					'm'     => (int) $r['m'],
 					't'     => (int) $r['t'],
 					'd'     => (int) $r['d'],
+					'c'     => 0,
+					'dead'  => 0,
+					'read'  => 0,
 				);
 			},
 			$rows
 		);
+
+		foreach ( $list as $row ) {
+			$ids[] = $row['id'];
+		}
+
+		$extra = self::page_stats( $ids, $from, $to );
+
+		foreach ( $list as $i => $row ) {
+			if ( isset( $extra[ $row['id'] ] ) ) {
+				$list[ $i ] = array_merge( $row, $extra[ $row['id'] ] );
+			}
+		}
+
+		return $list;
+	}
+
+	/**
+	 * The clicks and the reading depth behind a list of pages, so the table
+	 * can say more than how many came. One query each, on the admin screen
+	 * only, over the same range.
+	 *
+	 * @param int[]  $ids  Page ids.
+	 * @param string $from Y-m-d.
+	 * @param string $to   Y-m-d.
+	 * @return array<int,array<string,int>>
+	 */
+	private static function page_stats( array $ids, string $from, string $to ): array {
+		if ( ! $ids ) {
+			return array();
+		}
+
+		global $wpdb;
+
+		$g   = $wpdb->prefix . self::GRID;
+		$d   = $wpdb->prefix . self::DEPTH;
+		$in  = implode( ',', array_map( 'absint', $ids ) );
+		$out = array();
+
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL -- own tables; the ids are integers of our own making.
+		$clicks = (array) $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT page_id, kind, SUM(n) AS n FROM {$g} WHERE page_id IN ({$in}) AND seg = 'a' AND day BETWEEN %s AND %s GROUP BY page_id, kind",
+				$from,
+				$to
+			),
+			ARRAY_A
+		);
+
+		$bands = (array) $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT page_id, band, SUM(reached) AS reached FROM {$d} WHERE page_id IN ({$in}) AND seg = 'a' AND day BETWEEN %s AND %s GROUP BY page_id, band",
+				$from,
+				$to
+			),
+			ARRAY_A
+		);
+		// phpcs:enable
+
+		foreach ( $clicks as $r ) {
+			$id = (int) $r['page_id'];
+			$out[ $id ] = $out[ $id ] ?? array(
+				'c'    => 0,
+				'dead' => 0,
+				'read' => 0,
+			);
+
+			if ( 'c' === $r['kind'] ) {
+				$out[ $id ]['c'] = (int) $r['n'];
+			} elseif ( 'd' === $r['kind'] ) {
+				$out[ $id ]['dead'] = (int) $r['n'];
+			}
+		}
+
+		// How far down half of them got, as a share of the page.
+		$tops = array();
+
+		foreach ( $bands as $r ) {
+			$id           = (int) $r['page_id'];
+			$tops[ $id ]  = max( $tops[ $id ] ?? 0, (int) $r['reached'] );
+		}
+
+		foreach ( $bands as $r ) {
+			$id   = (int) $r['page_id'];
+			$half = ( $tops[ $id ] ?? 0 ) / 2;
+
+			if ( $half <= 0 || (int) $r['reached'] < $half ) {
+				continue;
+			}
+
+			$out[ $id ]         = $out[ $id ] ?? array(
+				'c'    => 0,
+				'dead' => 0,
+				'read' => 0,
+			);
+			$out[ $id ]['read'] = max( $out[ $id ]['read'], (int) round( ( (int) $r['band'] + 1 ) / 20 * 100 ) );
+		}
+
+		return $out;
 	}
 
 	/**
@@ -656,8 +767,11 @@ class Heat {
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- own tables.
 		$marks = (array) $wpdb->get_results( $wpdb->prepare( "SELECT kind, xb, yb, SUM(n) AS n FROM {$g} WHERE page_id = %d AND device = %s AND seg = %s AND day BETWEEN %s AND %s GROUP BY kind, xb, yb ORDER BY n DESC LIMIT 4000", $page, $device, $seg, $from, $to ), ARRAY_A );
 		$bands = (array) $wpdb->get_results( $wpdb->prepare( "SELECT band, SUM(reached) AS reached, SUM(secs) AS secs FROM {$d} WHERE page_id = %d AND device = %s AND seg = %s AND day BETWEEN %s AND %s GROUP BY band ORDER BY band", $page, $device, $seg, $from, $to ), ARRAY_A );
-		$views = (int) $wpdb->get_var( $wpdb->prepare( "SELECT SUM(views) FROM {$v} WHERE page_id = %d AND device = %s AND seg = %s AND day BETWEEN %s AND %s", $page, $device, $seg, $from, $to ) );
+		$sums  = (array) $wpdb->get_row( $wpdb->prepare( "SELECT SUM(views) AS views, SUM(hsum) AS hsum FROM {$v} WHERE page_id = %d AND device = %s AND seg = %s AND day BETWEEN %s AND %s", $page, $device, $seg, $from, $to ), ARRAY_A );
 		// phpcs:enable
+
+		$views = (int) ( $sums['views'] ?? 0 );
+		$hsum  = (int) ( $sums['hsum'] ?? 0 );
 
 		$clicks = 0;
 
@@ -670,6 +784,7 @@ class Heat {
 		return array(
 			'views'  => $views,
 			'clicks' => $clicks,
+			'height' => $views > 0 ? (int) round( $hsum / $views ) : 0,
 			'marks'  => array_map(
 				static function ( array $m ): array {
 					return array( (string) $m['kind'], (int) $m['xb'], (int) $m['yb'], (int) $m['n'] );

@@ -156,6 +156,22 @@
 	var last = { x: 0, y: 0, at: 0, n: 0 };
 	var sent = false;
 
+	// A logged-in visitor has the toolbar, which pushes the whole document
+	// down. The map is drawn without it, so take it off here or every mark
+	// lands a bar's height too low.
+	function bar() {
+		var b = document.getElementById( 'wpadminbar' );
+
+		return b ? ( b.offsetHeight || 0 ) : 0;
+	}
+
+	// How tall the page was for this visitor. Sent with the marks so the
+	// map can stretch them onto the page as it stands now: a lazy image
+	// that had not arrived, or a narrower phone, changes every distance.
+	function tall() {
+		return Math.max( 1, Math.round( ( document.body ? document.body.scrollHeight : 0 ) || document.documentElement.scrollHeight ) - bar() );
+	}
+
 	function add( kind, xp, y, n ) {
 		var key = kind + '|' + xp + '|' + y;
 		marks[ key ] = ( marks[ key ] || 0 ) + n;
@@ -187,7 +203,7 @@
 
 		var w = document.documentElement.clientWidth || 1;
 		var xp = Math.max( 0, Math.min( 100, Math.round( ( e.clientX / w ) * 100 ) ) );
-		var y = Math.max( 0, Math.round( e.pageY ) );
+		var y = Math.max( 0, Math.round( e.pageY - bar() ) );
 		var now = Date.now();
 
 		++count;
@@ -215,9 +231,9 @@
 			return;
 		}
 
-		var tall = Math.max( 1, document.documentElement.scrollHeight );
-		var from = Math.floor( Math.min( 1, Math.max( 0, window.scrollY / tall ) ) * 20 );
-		var to = Math.min( 19, Math.floor( Math.min( 1, ( window.scrollY + window.innerHeight ) / tall ) * 20 ) );
+		var high = tall();
+		var from = Math.floor( Math.min( 1, Math.max( 0, window.scrollY / high ) ) * 20 );
+		var to = Math.min( 19, Math.floor( Math.min( 1, ( window.scrollY + window.innerHeight ) / high ) * 20 ) );
 
 		for ( var b = from; b <= to; b++ ) {
 			bands[ b ] = ( bands[ b ] || 0 ) + 1;
@@ -244,6 +260,7 @@
 			kind: H.kind,
 			label: H.label || '',
 			seg: 'a',
+			h: tall(),
 			marks: list,
 			depth: depth
 		};

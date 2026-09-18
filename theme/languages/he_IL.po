@@ -9025,3 +9025,24 @@ msgstr "לחיצה על משהו שלא עושה כלום. איפה שציפו �
 
 msgid "Clicks"
 msgstr "לחיצות"
+
+msgid "Read depth"
+msgstr "עומק קריאה"
+
+msgid "Mostly on"
+msgstr "בעיקר ב־"
+
+msgid "Another page"
+msgstr "עמוד אחר"
+
+msgid "presses here"
+msgstr "לחיצות כאן"
+
+msgid "Links are off inside the map."
+msgstr "הקישורים מנוטרלים בתוך המפה, כדי שלא תועבר לעמוד שאין לו מפה."
+
+msgid "Nothing recorded in this period yet. A page appears here once people have visited it."
+msgstr "עדיין לא נרשם דבר בתקופה הזאת. עמוד מופיע כאן אחרי שגולשים ביקרו בו."
+
+msgid "Dead clicks are presses on something that does nothing. Read depth is how far down the page half the visitors reached."
+msgstr "לחיצות מתות הן לחיצות על משהו שאינו עושה דבר. עומק קריאה הוא כמה למטה בעמוד הגיעו מחצית מהגולשים."
