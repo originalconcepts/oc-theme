@@ -56,10 +56,14 @@ class Heat {
 	const DAILY = 30;
 
 	/**
-	 * The grid: x in whole per cent steps of this size, y in pixels.
+	 * The grid a click is folded into: x in whole per cent steps of this
+	 * size, y in pixels. One per cent is about 4px on a phone and 13px on
+	 * a desktop, so a mark lands on the thing it was aimed at; rows are
+	 * only ever made where somebody actually pressed, so a finer grid
+	 * costs nothing on a page nobody touches.
 	 */
-	const XSTEP = 2;
-	const YSTEP = 40;
+	const XSTEP = 1;
+	const YSTEP = 20;
 
 	/**
 	 * The kinds of page that may be watched, and how many of the ones that
