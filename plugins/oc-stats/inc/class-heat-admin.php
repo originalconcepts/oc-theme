@@ -35,6 +35,17 @@ class Heat_Admin {
 	);
 
 	/**
+	 * The screen heights those widths go with. The frame is held at one of
+	 * these while it is read, so a section sized to the screen is the size
+	 * the visitor saw.
+	 */
+	const HEIGHTS = array(
+		'm' => 844,
+		't' => 1024,
+		'd' => 800,
+	);
+
+	/**
 	 * Hook in.
 	 */
 	public function register(): void {
@@ -412,6 +423,7 @@ class Heat_Admin {
 					'range'  => $rng,
 					'device' => isset( self::WIDTHS[ $dev ] ) ? $dev : 'm',
 					'widths' => self::WIDTHS,
+					'heights' => self::HEIGHTS,
 					'i18n'   => array(
 						'title'    => __( 'Heat map', 'oc-stats' ),
 						'clicks'   => __( 'Clicks', 'oc-stats' ),

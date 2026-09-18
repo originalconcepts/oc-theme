@@ -181,30 +181,63 @@
 	/* ---------- the page, at the device's width ---------- */
 
 	/* The frame is a fresh load of the page, so nothing below the fold has
-	 * arrived yet and it would measure far too short — every mark would
-	 * then sit below the thing it was aimed at. Give it a tall viewport,
-	 * turn the lazy images eager, and wait for the height to settle. */
+	 * arrived and it measures far too short — that is what puts a mark
+	 * below the thing it was aimed at. Read it the way a visitor does:
+	 * keep the frame at the device's own height, so a section sized to the
+	 * screen is still the right size, walk the whole way down to bring the
+	 * lazy images in, come back to the top, and only then measure. */
 	function ready( d, done ) {
+		var tall = ( C.heights && C.heights[ state.device ] ) || 844;
+		var win = frame.contentWindow;
+
+		frame.style.height = tall + 'px';
+
+		Array.prototype.forEach.call( d.querySelectorAll( 'img[loading="lazy"],iframe[loading="lazy"]' ), function ( n ) {
+			n.loading = 'eager';
+		} );
+
+		var at = 0;
 		var was = -1;
 		var still = 0;
-		var tries = 0;
+		var steps = 0;
 
-		function look() {
-			var h = Math.max( d.body ? d.body.scrollHeight : 0, d.body ? d.body.offsetHeight : 0 );
+		function walk() {
+			var h = Math.max( d.body.scrollHeight, d.body.offsetHeight );
 
-			still = h === was ? still + 1 : 0;
-			was = h;
-			++tries;
+			if ( at < h && steps < 120 ) {
+				at += Math.round( tall * 0.9 );
+				++steps;
 
-			if ( ( still >= 2 && h > 0 ) || tries > 24 ) {
-				done( h || 800 );
+				try {
+					win.scrollTo( 0, at );
+				} catch ( e ) {}
+
+				setTimeout( walk, 90 );
 				return;
 			}
 
-			setTimeout( look, 150 );
+			try {
+				win.scrollTo( 0, 0 );
+			} catch ( e ) {}
+
+			settle();
 		}
 
-		look();
+		function settle() {
+			var h = Math.max( d.body.scrollHeight, d.body.offsetHeight );
+
+			still = h === was ? still + 1 : 0;
+			was = h;
+
+			if ( still >= 2 && h > 0 ) {
+				done( h );
+				return;
+			}
+
+			setTimeout( settle, 150 );
+		}
+
+		walk();
 	}
 
 	function reframe() {
@@ -258,13 +291,6 @@
 
 			style.textContent = '#wpadminbar{display:none!important}html{margin-top:0!important}';
 			d.head.appendChild( style );
-
-			// A tall viewport, so nothing counts as below the fold.
-			frame.style.height = '30000px';
-
-			Array.prototype.forEach.call( d.querySelectorAll( 'img[loading="lazy"],iframe[loading="lazy"]' ), function ( n ) {
-				n.loading = 'eager';
-			} );
 
 			// The page inside is a picture, not a way out: a link would
 			// carry the map off to a page that has none.
