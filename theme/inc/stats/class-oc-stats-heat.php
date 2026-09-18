@@ -279,6 +279,10 @@ class Heat {
 				return __( 'Search results', 'oc-theme' );
 			case 'e404':
 				return __( 'Page not found', 'oc-theme' );
+			case 'cat':
+				$term = get_queried_object();
+
+				return $term instanceof \WP_Term ? wp_strip_all_tags( $term->name ) : '';
 			default:
 				return wp_strip_all_tags( (string) get_the_title( get_queried_object_id() ) );
 		}
@@ -337,9 +341,17 @@ class Heat {
 		// A page taller than this is a runaway loop, not a page.
 		$height = min( 200000, max( 0, absint( $req->get_param( 'h' ) ) ) );
 
-		self::count_view( $day, $page, $device, $seg, $height );
+		// A visit is sent in pieces, so that a browser leaving the page
+		// cannot take the whole of it with it. Only the first piece is a
+		// view; the rest only add to what that view has already done.
+		$one = null === $req->get_param( 'first' ) || 1 === absint( $req->get_param( 'first' ) );
+
+		if ( $one ) {
+			self::count_view( $day, $page, $device, $seg, $height );
+		}
+
 		self::count_marks( $day, $page, $device, $seg, (array) $req->get_param( 'marks' ) );
-		self::count_depth( $day, $page, $device, $seg, (array) $req->get_param( 'depth' ) );
+		self::count_depth( $day, $page, $device, $seg, (array) $req->get_param( 'depth' ), (array) $req->get_param( 'fresh' ) );
 
 		return new \WP_REST_Response( null, 204 );
 	}
@@ -463,10 +475,11 @@ class Heat {
 	 * @param int    $page   Page.
 	 * @param string $device m, t or d.
 	 * @param string $seg    a or b.
-	 * @param array  $depth  Seconds per band, twenty bands of five per cent.
+	 * @param array  $depth  Seconds added to each of twenty bands of five per cent.
+	 * @param array  $fresh  The bands this visit reached for the first time.
 	 */
-	private static function count_depth( string $day, int $page, string $device, string $seg, array $depth ): void {
-		if ( ! $depth ) {
+	private static function count_depth( string $day, int $page, string $device, string $seg, array $depth, array $fresh ): void {
+		if ( ! $depth && ! $fresh ) {
 			return;
 		}
 
@@ -475,16 +488,33 @@ class Heat {
 		$t    = $wpdb->prefix . self::DEPTH;
 		$rows = array();
 		$args = array();
+		$new  = array();
+
+		foreach ( $fresh as $band ) {
+			$new[ (int) $band ] = 1;
+		}
 
 		foreach ( array_slice( $depth, 0, 20 ) as $band => $secs ) {
+			$band = (int) $band;
 			$secs = max( 0, min( 600, (int) $secs ) );
+			$got  = isset( $new[ $band ] ) ? 1 : 0;
 
-			$rows[] = '(%s, %d, %s, %s, %d, 1, %d)';
-			array_push( $args, $day, $page, $device, $seg, (int) $band, $secs );
+			// A band nobody was in, on a send that did not reach it either,
+			// would only add a row saying nothing.
+			if ( ! $secs && ! $got ) {
+				continue;
+			}
+
+			$rows[] = '(%s, %d, %s, %s, %d, %d, %d)';
+			array_push( $args, $day, $page, $device, $seg, $band, $got, $secs );
+		}
+
+		if ( ! $rows ) {
+			return;
 		}
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders -- every value is prepared above; the placeholders sit inside the row list.
-		$wpdb->query( $wpdb->prepare( "INSERT INTO {$t} (day, page_id, device, seg, band, reached, secs) VALUES " . implode( ',', $rows ) . ' ON DUPLICATE KEY UPDATE reached = reached + 1, secs = secs + VALUES(secs)', $args ) );
+		$wpdb->query( $wpdb->prepare( "INSERT INTO {$t} (day, page_id, device, seg, band, reached, secs) VALUES " . implode( ',', $rows ) . ' ON DUPLICATE KEY UPDATE reached = reached + VALUES(reached), secs = secs + VALUES(secs)', $args ) );
 	}
 
 	/* ------------------------------------------------------------ tables */

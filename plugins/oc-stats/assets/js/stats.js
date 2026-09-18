@@ -150,11 +150,13 @@
 		return;
 	}
 
+	var PATH = location.pathname;
 	var marks = {};
 	var bands = {};
+	var seen = {};
 	var count = 0;
 	var last = { x: 0, y: 0, at: 0, n: 0 };
-	var sent = false;
+	var first = true;
 
 	// A logged-in visitor has the toolbar, which pushes the whole document
 	// down. The map is drawn without it, so take it off here or every mark
@@ -174,6 +176,7 @@
 
 	function add( kind, xp, y, n ) {
 		var key = kind + '|' + xp + '|' + y;
+
 		marks[ key ] = ( marks[ key ] || 0 ) + n;
 	}
 
@@ -188,6 +191,23 @@
 
 			if ( el.onclick || ( el.getAttribute && ( el.hasAttribute( 'data-oc-open' ) || 'button' === el.getAttribute( 'role' ) || el.hasAttribute( 'tabindex' ) ) ) ) {
 				return true;
+			}
+
+			el = el.parentElement;
+		}
+
+		return false;
+	}
+
+	// A click that is about to take the visitor off this page. The browser
+	// does not reliably deliver a beacon queued while it is leaving, so
+	// what is held is sent now, while the page is still alive.
+	function leaving( el ) {
+		for ( var i = 0; el && i < 6; i++ ) {
+			if ( 'A' === el.tagName && el.getAttribute( 'href' ) ) {
+				var href = el.getAttribute( 'href' );
+
+				return '#' !== href.charAt( 0 ) && 0 !== href.indexOf( 'javascript:' ) && '_blank' !== el.getAttribute( 'target' );
 			}
 
 			el = el.parentElement;
@@ -223,10 +243,14 @@
 		last.x = xp;
 		last.y = y;
 		last.at = now;
+
+		if ( leaving( e.target ) ) {
+			flush();
+		}
 	}, true );
 
 	// Once a second, which fifth of the page is on screen.
-	var timer = setInterval( function () {
+	setInterval( function () {
 		if ( document.hidden ) {
 			return;
 		}
@@ -240,62 +264,83 @@
 		}
 	}, 1000 );
 
+	function waiting() {
+		var k;
+
+		for ( k in marks ) { return true; }
+		for ( k in bands ) { return true; }
+
+		return false;
+	}
+
 	function body() {
 		var list = [];
 
 		Object.keys( marks ).forEach( function ( k ) {
 			var p = k.split( '|' );
+
 			list.push( [ p[ 0 ], Number( p[ 1 ] ), Number( p[ 2 ] ), marks[ k ] ] );
 		} );
 
 		var depth = [];
+		var fresh = [];
 
 		for ( var b = 0; b < 20; b++ ) {
 			depth.push( bands[ b ] || 0 );
+
+			if ( bands[ b ] && ! seen[ b ] ) {
+				fresh.push( b );
+			}
 		}
 
 		return {
 			_t: H.t,
-			path: location.pathname,
+			path: PATH,
 			kind: H.kind,
 			label: H.label || '',
 			seg: 'a',
+			first: first ? 1 : 0,
 			h: tall(),
 			marks: list,
-			depth: depth
+			depth: depth,
+			fresh: fresh
 		};
 	}
 
-	function done() {
-		if ( sent ) {
+	// What has happened since the last time, and nothing twice: only the
+	// first send of a visit counts as a view, and a band counts as reached
+	// the first time it is seen.
+	function flush() {
+		if ( ! waiting() ) {
 			return;
 		}
-
-		sent = true;
-		clearInterval( timer );
 
 		var b = body();
-		var any = false;
 
-		for ( var i = 0; i < b.depth.length; i++ ) {
-			if ( b.depth[ i ] ) { any = true; }
-		}
-
-		if ( ! b.marks.length && ! any ) {
-			return;
-		}
-
+		b.fresh.forEach( function ( n ) { seen[ n ] = 1; } );
+		marks = {};
+		bands = {};
+		first = false;
 		post( b );
 
 		// Kept in case this visit ends in an order; the thank-you page
 		// sends it again, and then it counts as a buyer's page.
 		try {
 			var kept = JSON.parse( sessionStorage.getItem( KEEP ) || '[]' );
+
 			kept.push( b );
-			sessionStorage.setItem( KEEP, JSON.stringify( kept.slice( -12 ) ) );
+
+			if ( kept.length > 12 ) {
+				kept = [ kept[ 0 ] ].concat( kept.slice( -11 ) );
+			}
+
+			sessionStorage.setItem( KEEP, JSON.stringify( kept ) );
 		} catch ( e ) {}
 	}
 
-	addEventListener( 'pagehide', done );
-	addEventListener( 'visibilitychange', function () { if ( document.hidden ) { done(); } } );
+	// A visit that reads for a while is sent in pieces, so nothing is lost
+	// if the browser drops the last beacon on the way out.
+	setInterval( flush, 20000 );
+	addEventListener( 'pagehide', flush );
+	addEventListener( 'visibilitychange', function () { if ( document.hidden ) { flush(); } } );
 }() );
