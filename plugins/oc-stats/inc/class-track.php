@@ -384,7 +384,7 @@ final class Track {
 	 * The visitor's address, hashed by the caller, for a per-network ceiling.
 	 */
 	public static function net(): string {
-$ip = isset( $_SERVER['REMOTE_ADDR'] ) ? (string) $_SERVER['REMOTE_ADDR'] : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- hashed by the caller.
+		$ip = isset( $_SERVER['REMOTE_ADDR'] ) ? (string) $_SERVER['REMOTE_ADDR'] : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- hashed by the caller.
 
 		// The network rather than the address: /24 for IPv4, /64 for IPv6.
 		if ( false !== strpos( $ip, ':' ) ) {
