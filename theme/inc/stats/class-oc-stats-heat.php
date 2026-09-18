@@ -597,7 +597,7 @@ class Heat {
 		$v = $wpdb->prefix . self::VIEWS;
 		$p = $wpdb->prefix . self::PAGES;
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared -- own tables; every value is a placeholder.
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL -- own tables; every value is a placeholder.
 		$rows = (array) $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT v.page_id, p.path, p.label, p.kind,
@@ -616,6 +616,7 @@ class Heat {
 			),
 			ARRAY_A
 		);
+		// phpcs:enable
 
 		return array_map(
 			static function ( array $r ): array {
