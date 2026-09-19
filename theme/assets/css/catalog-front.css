@@ -49,9 +49,25 @@ li.product:focus-within .octile { opacity: 1; }
 /* A card is the frame the strip hangs in. */
 .ocsort__list li.product { position: relative; }
 
+/* A card on a phone is about 180px across and the strip is seven controls
+ * wide, so the last of them — the one saying where the picture sits — was
+ * cut off at the edge. The gap between the two groups takes a whole line,
+ * which puts the sizes on one row and the picture's position on the next. */
 @media (max-width: 600px) {
-	.octile { opacity: 1; transform: none; inset-block-end: 4px; inset-inline: 4px; padding: 3px; }
+	.octile {
+		opacity: 1;
+		transform: none;
+		inset-block-end: 4px;
+		inset-inline: 4px;
+		padding: 3px;
+		flex-wrap: wrap;
+		justify-content: center;
+		row-gap: 1px;
+	}
+
+	.octile__gap { flex-basis: 100%; block-size: 0; }
 	.octile svg { inline-size: 16px; block-size: 16px; }
+	.octile__at { min-inline-size: 34px; }
 }
 
 /* The phone preview: this page, in a frame the width of a phone, because a
