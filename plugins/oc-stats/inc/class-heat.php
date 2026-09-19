@@ -167,7 +167,8 @@ class Heat {
 
 			return;
 		}
-		$cur   = $range['cur'];
+
+		$cur = $range['cur'];
 
 		$views = (array) $cur['product_views'];
 		arsort( $views );
