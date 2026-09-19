@@ -99,6 +99,11 @@ html.ocphone-on .oc-flt-wrap { visibility: hidden; }
 
 .ocsort__dev:hover { background: rgb(255 255 255 / 12%); }
 
-/* Inside the frame the toolbar belongs to the page outside it. */
+/* Inside the frame the toolbar belongs to the page outside it, and a
+ * consent banner is for shoppers — it would sit over the very products
+ * being arranged. */
 html.ocphone-frame #wpadminbar { display: none !important; }
 html.ocphone-frame { margin-block-start: 0 !important; }
+html.ocphone-frame .oc-privacy__banner,
+html.ocphone-frame .oc-sticky-atc,
+html.ocphone-frame .oc-mb { display: none !important; }
