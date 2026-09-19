@@ -68,12 +68,6 @@ final class Catalog_Front {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- the phone preview loads the same page inside a frame.
 		if ( isset( $_GET['oc_frame'] ) ) {
 			add_filter( 'show_admin_bar', '__return_false' );
-			add_filter(
-				'language_attributes',
-				static function ( $out ) {
-					return $out . ' class="ocphone-frame"';
-				}
-			);
 		}
 		wp_enqueue_script( 'oc-catalog-front', $dir . '/js/catalog-front.js', array( 'oc-order-front' ), $ver, true );
 

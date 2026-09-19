@@ -21,6 +21,12 @@
 
 	var MOBILE = 'm' === C.dev;
 
+	// Said here rather than on the server: a theme may already be putting a
+	// class on <html>, and a second attribute is simply ignored.
+	if ( C.frame ) {
+		document.documentElement.classList.add( 'ocphone-frame' );
+	}
+
 	/* ---------- the phone preview ----------
 	 *
 	 * A media query answers to the window, not to a box inside it, so a
