@@ -12,13 +12,14 @@
 	background: rgb(29 35 39 / 92%);
 	backdrop-filter: blur(4px);
 	box-shadow: 0 4px 14px rgb(0 0 0 / 28%);
-	opacity: 0;
-	transform: translateY(6px);
-	transition: opacity .14s ease, transform .14s ease;
+	opacity: .82;
+	transition: opacity .14s ease;
 }
 
+/* Always there while the shop is being arranged — a control nobody can see
+ * is a control nobody uses — and fully itself under the pointer. */
 li.product:hover .octile,
-li.product:focus-within .octile { opacity: 1; transform: none; }
+li.product:focus-within .octile { opacity: 1; }
 
 .octile__gap { flex: 1; }
 
