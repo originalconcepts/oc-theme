@@ -2068,6 +2068,7 @@
 		var cardLi = media.closest( 'li.product' );
 		if ( cardLi && undefined === cardLi.__ocStrip ) {
 			cardLi.__ocStrip = strip.innerHTML;
+			ocCardFit( cardLi );
 		}
 
 		// Endless both ways. Past either end the strip does not rewind across
@@ -2216,6 +2217,28 @@
 	 * the sibling's — so the visitor flips through colours without leaving the
 	 * catalogue. Delegated, so cards loaded by the infinite scroll join in. */
 
+	/* The fit of a card's own picture — contain or cover, decided per picture
+	 * on the server — and the ground a contained one sits on. A colour swap
+	 * rebuilds the slides, and without this the rebuilt picture lost the
+	 * class and fell back to the default: the main picture whole, every
+	 * other one cropped. */
+	function ocCardFit( li ) {
+		if ( ! li ) {
+			return { cls: '', style: '' };
+		}
+
+		if ( undefined === li.__ocFit ) {
+			var img = li.querySelector( '.oc-card-media__item img, .oc-card-media img' );
+
+			li.__ocFit = {
+				cls: img ? ( ( img.className || '' ).match( /oc-fit\S*/g ) || [] ).join( ' ' ) : '',
+				style: img ? ( img.getAttribute( 'style' ) || '' ) : ''
+			};
+		}
+
+		return li.__ocFit;
+	}
+
 	document.addEventListener( 'click', function ( event ) {
 		var item = event.target.closest( '.oc-colors--loop .oc-colors__item' );
 
@@ -2245,6 +2268,8 @@
 			li.__ocStrip = strip.innerHTML;
 		}
 
+		var fit = ocCardFit( li );
+
 		if ( strip && ! imgs.length && item.classList.contains( 'oc-colors__item--term' ) ) {
 			// A colour with no pictures of its own shows the product's own
 			// gallery, as the product page does, instead of keeping the
@@ -2257,7 +2282,10 @@
 			strip.innerHTML = imgs.map( function ( src, i ) {
 				return '<figure class="oc-card-media__item' + ( 0 === i ? ' is-first' : '' ) + '">' +
 					'<a class="oc-card-media__link woocommerce-LoopProduct-link" href="' + item.dataset.url + '" aria-hidden="true" tabindex="-1">' +
-					'<img src="' + src + '" alt="" loading="' + ( 0 === i ? 'eager' : 'lazy' ) + '" sizes="(max-width: 900px) 50vw, 25vw"></a></figure>';
+					'<img src="' + src + '" alt=""' +
+					( fit.cls ? ' class="' + fit.cls + '"' : '' ) +
+					( fit.style ? ' style="' + fit.style.replace( /"/g, '&quot;' ) + '"' : '' ) +
+					' loading="' + ( 0 === i ? 'eager' : 'lazy' ) + '" sizes="(max-width: 900px) 50vw, 25vw"></a></figure>';
 			} ).join( '' );
 			strip.scrollLeft = 0;
 		}
