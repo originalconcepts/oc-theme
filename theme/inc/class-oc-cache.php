@@ -43,10 +43,14 @@ final class Cache {
 			return;
 		}
 
+		// Named rather than written out: it belongs to the host, not to us,
+		// and it is only there on some of them.
+		$host = array( '\Proginter_Optimizer_MU', 'purge_uri' );
+		$has  = is_callable( $host );
+
 		foreach ( $urls as $url ) {
-			// The host's own optimiser, when this shop is on one.
-			if ( is_callable( array( '\Proginter_Optimizer_MU', 'purge_uri' ) ) ) {
-				\Proginter_Optimizer_MU::purge_uri( (string) wp_parse_url( $url, PHP_URL_PATH ) );
+			if ( $has ) {
+				call_user_func( $host, (string) wp_parse_url( $url, PHP_URL_PATH ) );
 			}
 
 			// What the rest of the world listens for. A host that mirrors
