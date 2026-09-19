@@ -9166,3 +9166,27 @@ msgstr "סיום"
 
 msgid "%d chosen"
 msgstr "%d נבחרו"
+
+msgid "How big in the catalogue"
+msgstr "גודל בקטלוג"
+
+msgid "One cell"
+msgstr "תא אחד"
+
+msgid "Two across"
+msgstr "שני טורים"
+
+msgid "Two by two"
+msgstr "שניים על שניים"
+
+msgid "Move the picture up"
+msgstr "הזזת התמונה למעלה"
+
+msgid "Move the picture down"
+msgstr "הזזת התמונה למטה"
+
+msgid "Back to the middle"
+msgstr "חזרה למרכז"
+
+msgid "No such product."
+msgstr "אין מוצר כזה."

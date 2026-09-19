@@ -159,14 +159,23 @@
 		return null;
 	}
 
+	function mine( e ) {
+		return e.target && e.target.closest && e.target.closest( '[data-oc-keep]' );
+	}
+
 	wrap.addEventListener( 'click', function ( e ) {
-		// While arranging, a product is something to move, not to open.
+		// While arranging, a product is something to move, not to open —
+		// unless it is a control that asked to keep its own clicks.
+		if ( mine( e ) ) {
+			return;
+		}
+
 		e.preventDefault();
 		e.stopPropagation();
 	}, true );
 
 	wrap.addEventListener( 'pointerdown', function ( e ) {
-		if ( e.button > 0 ) {
+		if ( e.button > 0 || mine( e ) ) {
 			return;
 		}
 
