@@ -7785,6 +7785,25 @@ body:not(.oc-no-lightbox) .oc-vslide.is-playing {
 	background-color: var(--oc-fit-bg, var(--oc-surface, #fff));
 }
 
+/* A product may overrule the verdict for its own card. Said on the card
+ * itself while arranging the catalogue, because the verdict is about the
+ * picture and the exception is about this product: a packshot on white
+ * that should fill its tile anyway, a scene that must keep its ends.
+ * Outranks the rule above on specificity alone, so the two agree on which
+ * wins whatever order they are written in. */
+ul.products li.oc-tile--fit-contain .oc-card-media img {
+	object-fit: contain !important;
+	object-position: 50% 50% !important;
+	background-color: var(--oc-fit-bg, var(--oc-surface, #fff));
+}
+
+ul.products li.oc-tile--fit-cover .oc-card-media img {
+	object-fit: cover !important;
+	/* only now does the half worth keeping mean anything */
+	object-position: 50% var(--oc-card-focus, 50%) !important;
+	background-color: transparent;
+}
+
 /* Rail-thumb badge: always on the video's thumbnail, whatever the autoplay
  * setting — the shopper should know it is a video before choosing it. */
 .oc-thumbs button { position: relative; }

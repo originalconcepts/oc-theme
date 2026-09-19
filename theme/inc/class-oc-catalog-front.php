@@ -5,9 +5,10 @@
  * The size of a tile and how its picture is cropped are set on the product
  * edit screen, which means changing one and seeing what it did is a walk
  * between two screens. In arranging mode the catalogue says it about itself:
- * three sizes on every card, the one it is now marked, and two arrows that
- * move the picture inside its frame. Every change shows at once and is kept
- * straight away.
+ * three sizes on every card, the one it is now marked, whether the picture
+ * is shown whole or cropped, and — for a cropped one, which is the only kind
+ * there is anything to choose about — two arrows that move it in its frame.
+ * Every change shows at once and is kept straight away.
  *
  * Nothing here reaches a shopper. The script and the stylesheet are put on
  * the page only for somebody who can manage the shop and has asked to arrange
@@ -87,6 +88,8 @@ final class Catalog_Front {
 						'plain'  => __( 'One cell', 'oc-theme' ),
 						'wide'   => __( 'Two across', 'oc-theme' ),
 						'big'    => __( 'Two by two', 'oc-theme' ),
+						'whole'  => __( 'Show the whole picture', 'oc-theme' ),
+						'crop'   => __( 'Fill the card and crop', 'oc-theme' ),
 						'up'     => __( 'Move the picture up', 'oc-theme' ),
 						'down'   => __( 'Move the picture down', 'oc-theme' ),
 						'middle' => __( 'Back to the middle', 'oc-theme' ),
@@ -159,6 +162,19 @@ final class Catalog_Front {
 			delete_post_meta( $id, '_oc_tile_flat_m' );
 		}
 
+		// Whether the card shows the whole picture or crops it. Empty puts
+		// the product back under the theme's own judgement.
+		if ( null !== $req->get_param( 'fit' ) ) {
+			$fit = sanitize_key( (string) $req->get_param( 'fit' ) );
+			$fit = array_key_exists( $fit, Catalog::fits() ) ? $fit : '';
+
+			if ( '' === $fit ) {
+				delete_post_meta( $id, '_oc_tile_fit' );
+			} else {
+				update_post_meta( $id, '_oc_tile_fit', $fit );
+			}
+		}
+
 		if ( null !== $req->get_param( 'focus' ) ) {
 			$focus = max( 0, min( 100, absint( $req->get_param( 'focus' ) ) ) );
 
@@ -178,6 +194,7 @@ final class Catalog_Front {
 				'size'   => $tile['size'],
 				'size_m' => $tile['size_m'],
 				'focus'  => $tile['focus'],
+				'fit'    => $tile['fit'],
 			)
 		);
 	}

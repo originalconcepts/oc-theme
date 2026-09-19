@@ -1,7 +1,8 @@
 /* How big a product is in the catalogue, said on the catalogue.
  *
- * Rides along with arranging mode: every card gets three sizes and a pair of
- * arrows for its picture. A choice shows at once — the class and the crop are
+ * Rides along with arranging mode: every card gets three sizes, a say in
+ * whether its picture is shown whole or cropped, and — on a cropped one,
+ * where there is something to choose — a pair of arrows to move it. A choice shows at once — the class and the crop are
  * the same ones the theme renders with — and is kept straight away. */
 ( function () {
 	'use strict';
@@ -72,6 +73,14 @@
 			[ 'big', T.big, 'M4 4h16v16H4z' ]
 		];
 
+	// Whole or cropped, said on the card. Two buttons rather than one that
+	// flips, so the strip reads the same way as the sizes beside it: the one
+	// that is true now is the one that is marked.
+	var FITS = [
+		[ 'contain', T.whole, 'M21 3H3v18h18V3zm-2 16H5V5h14v14zM7.5 7.5h9v9h-9z' ],
+		[ 'cover', T.crop, 'M17 15h2V7c0-1.1-.9-2-2-2H9v2h8v8zM7 17V1H5v4H1v2h4v10c0 1.1.9 2 2 2h10v4h2v-4h4v-2H7z' ]
+	];
+
 	function idOf( el ) {
 		var m = /post-(\d+)/.exec( el.className || '' );
 
@@ -107,6 +116,32 @@
 		var v = m ? ( m.style.getPropertyValue( '--oc-card-focus' ) || '' ).trim() : '';
 
 		return v ? parseInt( v, 10 ) : 50;
+	}
+
+	// How this card's picture sits right now: what the product was told, or
+	// failing that the verdict the theme reached about the picture itself,
+	// which travels on the <img> as a class. A picture nobody has looked at
+	// falls to the frame's own rule, which crops.
+	function fitOf( el ) {
+		if ( el.classList.contains( 'oc-tile--fit-contain' ) ) {
+			return 'contain';
+		}
+
+		if ( el.classList.contains( 'oc-tile--fit-cover' ) ) {
+			return 'cover';
+		}
+
+		var img = el.querySelector( '.oc-card-media img' );
+
+		return img && img.classList.contains( 'oc-fit--contain' ) ? 'contain' : 'cover';
+	}
+
+	function setFit( el, fit ) {
+		el.classList.remove( 'oc-tile--fit-contain', 'oc-tile--fit-cover' );
+		el.classList.add( 'oc-tile--fit-' + fit );
+
+		mark( el );
+		keep( el, { fit: fit } );
 	}
 
 	function say( text, kind ) {
@@ -180,6 +215,21 @@
 			b.setAttribute( 'aria-pressed', b.getAttribute( 'data-size' ) === now ? 'true' : 'false' );
 		} );
 
+		var fit = fitOf( el );
+
+		Array.prototype.forEach.call( el.querySelectorAll( '.octile__fit' ), function ( b ) {
+			b.setAttribute( 'aria-pressed', b.getAttribute( 'data-fit' ) === fit ? 'true' : 'false' );
+		} );
+
+		// A whole picture has no overflow, so there is no half to keep and
+		// nothing for an arrow to do. Offering them there was the control
+		// saying it works when it does not: they belong to a crop.
+		var moves = 'cover' === fit;
+
+		Array.prototype.forEach.call( el.querySelectorAll( '.octile__move, .octile__at, .octile__gap--end' ), function ( b ) {
+			b.hidden = ! moves;
+		} );
+
 		var out = el.querySelector( '.octile__at' );
 
 		if ( out ) {
@@ -238,6 +288,12 @@
 		} );
 
 		html += '<span class="octile__gap"></span>';
+
+		FITS.forEach( function ( f ) {
+			html += '<button type="button" class="octile__fit" data-fit="' + f[ 0 ] + '" title="' + f[ 1 ] + '" aria-label="' + f[ 1 ] + '" aria-pressed="false">' + icon( f[ 2 ] ) + '</button>';
+		} );
+
+		html += '<span class="octile__gap octile__gap--end"></span>';
 		html += '<button type="button" class="octile__move" data-by="-10" title="' + T.up + '" aria-label="' + T.up + '">' + icon( 'M12 5l7 8h-4v6h-6v-6H5z' ) + '</button>';
 		html += '<button type="button" class="octile__at" title="' + T.middle + '">50%</button>';
 		html += '<button type="button" class="octile__move" data-by="10" title="' + T.down + '" aria-label="' + T.down + '">' + icon( 'M12 19l-7-8h4V5h6v6h4z' ) + '</button>';
@@ -256,6 +312,8 @@
 
 			if ( b.classList.contains( 'octile__size' ) ) {
 				setSize( el, b.getAttribute( 'data-size' ) );
+			} else if ( b.classList.contains( 'octile__fit' ) ) {
+				setFit( el, b.getAttribute( 'data-fit' ) );
 			} else if ( b.classList.contains( 'octile__move' ) ) {
 				nudge( el, Number( b.getAttribute( 'data-by' ) ) );
 			} else {

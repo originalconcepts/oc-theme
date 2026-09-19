@@ -9223,3 +9223,24 @@ msgstr "תצוגת מובייל"
 
 msgid "Back to the desktop view"
 msgstr "חזרה לתצוגת דסקטופ"
+
+msgid "Whatever suits the picture"
+msgstr "לפי התמונה"
+
+msgid "The whole picture"
+msgstr "התמונה במלואה"
+
+msgid "Fill the card, crop"
+msgstr "למלא את הכרטיס, חיתוך"
+
+msgid "Picture in the card"
+msgstr "התמונה בכרטיס"
+
+msgid "A whole picture keeps its ends and sits on its own ground. Only a cropped picture fills the card, and only a cropped picture can be moved."
+msgstr "תמונה מלאה שומרת על הקצוות שלה ויושבת על הרקע שלה עצמה. רק תמונה חתוכה ממלאת את הכרטיס, ורק תמונה חתוכה אפשר להזיז."
+
+msgid "Show the whole picture"
+msgstr "להציג את התמונה במלואה"
+
+msgid "Fill the card and crop"
+msgstr "למלא את הכרטיס ולחתוך"

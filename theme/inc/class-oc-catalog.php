@@ -83,15 +83,31 @@ final class Catalog {
 	}
 
 	/**
+	 * How a product's picture sits in its catalogue card. Empty means the
+	 * theme's own judgement, picture by picture: a packshot on a plain
+	 * ground is shown whole, a room is cropped. A product may overrule it.
+	 *
+	 * @return array<string,string>
+	 */
+	public static function fits(): array {
+		return array(
+			''        => __( 'Whatever suits the picture', 'oc-theme' ),
+			'contain' => __( 'The whole picture', 'oc-theme' ),
+			'cover'   => __( 'Fill the card, crop', 'oc-theme' ),
+		);
+	}
+
+	/**
 	 * A product's tile settings.
 	 *
 	 * @param int $product_id Product id.
-	 * @return array{size:string,size_m:string,image:int,focus:int}
+	 * @return array{size:string,size_m:string,image:int,focus:int,fit:string}
 	 */
 	public static function tile( int $product_id ): array {
 		$size   = (string) get_post_meta( $product_id, '_oc_tile_size', true );
 		$size_m = (string) get_post_meta( $product_id, '_oc_tile_size_m', true );
 		$focus  = get_post_meta( $product_id, '_oc_tile_focus', true );
+		$fit    = (string) get_post_meta( $product_id, '_oc_tile_fit', true );
 
 		// Products saved before the phone gained its own list of sizes carry a
 		// tick-box that meant one thing only: stay ordinary.
@@ -104,6 +120,7 @@ final class Catalog {
 			'size_m' => array_key_exists( $size_m, self::sizes_m() ) ? $size_m : '',
 			'image'  => (int) get_post_meta( $product_id, '_oc_tile_image', true ),
 			'focus'  => '' === $focus ? 50 : max( 0, min( 100, (int) $focus ) ),
+			'fit'    => in_array( $fit, array( 'contain', 'cover' ), true ) ? $fit : '',
 		);
 	}
 
@@ -211,6 +228,17 @@ final class Catalog {
 				$focus_id  = $tile['image'] ? $tile['image'] : (int) get_post_thumbnail_id( (int) $post->ID );
 				$focus_src = $focus_id ? (string) wp_get_attachment_image_url( $focus_id, 'large' ) : '';
 				?>
+				<p style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:18px 0 4px;">
+					<label style="float:none;inline-size:auto;margin:0;" for="oc_tile_fit"><?php esc_html_e( 'Picture in the card', 'oc-theme' ); ?></label>
+					<select name="oc_tile_fit" id="oc_tile_fit" style="inline-size:260px;">
+						<?php foreach ( self::fits() as $value => $label ) : ?>
+							<option value="<?php echo esc_attr( $value ); ?>" <?php selected( $tile['fit'], $value ); ?>><?php echo esc_html( $label ); ?></option>
+						<?php endforeach; ?>
+					</select>
+				</p>
+				<p class="description" style="margin:0 0 8px;"><?php esc_html_e( 'A whole picture keeps its ends and sits on its own ground. Only a cropped picture fills the card, and only a cropped picture can be moved.', 'oc-theme' ); ?></p>
+
+				<div id="oc_tile_focus_row">
 				<p style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:18px 0 4px;">
 					<label style="float:none;inline-size:auto;margin:0;" for="oc_tile_focus"><?php esc_html_e( 'Picture position', 'oc-theme' ); ?></label>
 					<input type="range" id="oc_tile_focus" name="oc_tile_focus" min="0" max="100" step="1" value="<?php echo esc_attr( (string) $tile['focus'] ); ?>" style="inline-size:220px;" />
@@ -241,6 +269,7 @@ final class Catalog {
 						<?php endforeach; ?>
 					</div>
 				<?php endif; ?>
+				</div>
 			</div>
 		</div>
 		<script>
@@ -263,6 +292,28 @@ final class Catalog {
 					focus.value = 50;
 					paint();
 				} );
+			}
+
+			// Moving a whole picture inside its frame does nothing at all —
+			// there is no overflow to choose from. Say so instead of
+			// offering a control that quietly ignores every press.
+			var fit = document.getElementById( 'oc_tile_fit' ),
+				row = document.getElementById( 'oc_tile_focus_row' );
+
+			function able() {
+				var off = fit && 'contain' === fit.value;
+
+				row.style.opacity = off ? '.4' : '';
+				row.style.pointerEvents = off ? 'none' : '';
+
+				if ( focus ) {
+					focus.disabled = !! off;
+				}
+			}
+
+			if ( fit && row ) {
+				fit.addEventListener( 'change', able );
+				able();
 			}
 		}() );
 		( function () {
@@ -310,6 +361,9 @@ final class Catalog {
 
 		$focus = max( 0, min( 100, absint( $_POST['oc_tile_focus'] ?? 50 ) ) );
 		update_post_meta( $product_id, '_oc_tile_focus', 50 === $focus ? '' : $focus );
+
+		$fit = sanitize_key( wp_unslash( $_POST['oc_tile_fit'] ?? '' ) );
+		update_post_meta( $product_id, '_oc_tile_fit', array_key_exists( $fit, self::fits() ) ? $fit : '' );
 		// phpcs:enable WordPress.Security.NonceVerification.Missing
 	}
 
@@ -412,6 +466,14 @@ final class Catalog {
 			return $classes;
 		}
 
+		$tile = self::tile( $product->get_id() );
+
+		// How the picture sits is about the picture, not about the listing,
+		// so it holds wherever the card is drawn — results included.
+		if ( '' !== $tile['fit'] ) {
+			$classes[] = 'oc-tile--fit-' . $tile['fit'];
+		}
+
 		// Results answer a question, and an answer reads best as a plain,
 		// even list. An enlarged tile says "look here" — which is right when
 		// someone is browsing a category and wrong when they asked for
@@ -419,8 +481,6 @@ final class Catalog {
 		if ( is_search() ) {
 			return $classes;
 		}
-
-		$tile = self::tile( $product->get_id() );
 
 		if ( '' !== $tile['size'] ) {
 			$classes[] = 'oc-tile--' . $tile['size'];

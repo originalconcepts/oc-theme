@@ -43,16 +43,24 @@ li.product:focus-within .octile { opacity: 1; }
 .octile button:focus-visible { outline: 2px solid #72aee6; outline-offset: 1px; }
 .octile svg { inline-size: 18px; block-size: 18px; fill: currentColor; display: block; }
 
-.octile__size[aria-pressed="true"] { background: #fff; color: #1d2327; }
+.octile__size[aria-pressed="true"],
+.octile__fit[aria-pressed="true"] { background: #fff; color: #1d2327; }
 .octile__at { min-inline-size: 38px; font-variant-numeric: tabular-nums; direction: ltr; }
+
+/* The arrows and the percentage step out entirely on a card showing its
+ * picture whole: there is no overflow there, so there is no half to keep.
+ * !important because the rule above gives every button in the strip a
+ * display of its own, and a plain [hidden] loses to it. */
+.octile [hidden] { display: none !important; }
 
 /* A card is the frame the strip hangs in. */
 .ocsort__list li.product { position: relative; }
 
-/* A card on a phone is about 180px across and the strip is seven controls
+/* A card on a phone is about 180px across and the strip is nine controls
  * wide, so the last of them — the one saying where the picture sits — was
- * cut off at the edge. The gap between the two groups takes a whole line,
- * which puts the sizes on one row and the picture's position on the next. */
+ * cut off at the edge. Each gap takes a whole line instead, which puts the
+ * sizes on one row, whole-or-cropped on the next and, where there is one to
+ * make, the picture's position on a third. */
 @media (max-width: 600px) {
 	.octile {
 		opacity: 1;
