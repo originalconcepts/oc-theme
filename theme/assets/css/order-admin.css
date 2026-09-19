@@ -171,6 +171,10 @@
 	padding: 2px 8px;
 }
 
+/* The card is mostly picture now, and a browser would rather drag the
+ * picture than let us drag the card. Nothing inside takes the pointer. */
+.ocord__card * { pointer-events: none; -webkit-user-drag: none; user-select: none; }
+
 body.ocord-dragging { cursor: grabbing; user-select: none; }
 body.ocord-dragging .ocord__card { cursor: grabbing; }
 

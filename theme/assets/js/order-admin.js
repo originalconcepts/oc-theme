@@ -184,7 +184,7 @@
 		el.innerHTML =
 			'<span class="ocord__n"></span>' +
 			'<span class="ocord__tick"></span>' +
-			( it.img ? '<img class="ocord__img" src="' + esc( it.img ) + '" alt="" loading="lazy">' : '<span class="ocord__img ocord__img--none"></span>' ) +
+			( it.img ? '<img class="ocord__img" src="' + esc( it.img ) + '" alt="" loading="lazy" draggable="false">' : '<span class="ocord__img ocord__img--none"></span>' ) +
 			'<span class="ocord__name">' + esc( it.name ) + '</span>' +
 			'<span class="ocord__meta"><b>' + esc( it.price ) + '</b>' + ( it.out ? '<em>' + esc( T.nostock || '' ) + '</em>' : '' ) + '</span>';
 

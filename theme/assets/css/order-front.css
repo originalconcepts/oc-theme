@@ -46,7 +46,7 @@ body.ocsort-on { padding-block-end: 64px; }
 	border-radius: 6px;
 }
 
-.ocsort__list li.product * { pointer-events: none; }
+.ocsort__list li.product * { pointer-events: none; -webkit-user-drag: none; user-select: none; }
 .ocsort__list li.product.is-held { opacity: .3; }
 
 .ocsort__list li.product.is-picked {
