@@ -38,6 +38,8 @@ final class Order_Admin {
 		}
 
 		add_action( 'admin_menu', array( $this, 'menu' ) );
+		add_action( 'admin_bar_menu', array( $this, 'toolbar' ), 81 );
+		add_action( 'wp_enqueue_scripts', array( $this, 'front_assets' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'assets' ) );
 		add_action( 'rest_api_init', array( $this, 'rest' ) );
 	}
@@ -82,14 +84,22 @@ final class Order_Admin {
 			</p>
 
 			<div class="ocord__bar">
-				<label class="ocord__pick">
-					<span class="screen-reader-text"><?php esc_html_e( 'Category', 'oc-theme' ); ?></span>
-					<select id="ocord-term"></select>
-				</label>
+				<div class="ocord__pick">
+					<label class="screen-reader-text" for="ocord-term"><?php esc_html_e( 'Category', 'oc-theme' ); ?></label>
+					<input type="text" id="ocord-term" role="combobox" aria-expanded="false" aria-controls="ocord-list" aria-autocomplete="list" autocomplete="off" placeholder="<?php esc_attr_e( 'Type to find a category…', 'oc-theme' ); ?>">
+					<ul id="ocord-list" class="ocord__list" role="listbox" hidden></ul>
+				</div>
 
-				<label class="ocord__find">
-					<span class="screen-reader-text"><?php esc_html_e( 'Find a product', 'oc-theme' ); ?></span>
-					<input type="search" id="ocord-q" placeholder="<?php esc_attr_e( 'Find a product…', 'oc-theme' ); ?>">
+				<label class="ocord__row">
+					<span><?php esc_html_e( 'Per row', 'oc-theme' ); ?></span>
+					<select id="ocord-row">
+						<option value="0"><?php esc_html_e( 'Fit', 'oc-theme' ); ?></option>
+						<option value="2">2</option>
+						<option value="3">3</option>
+						<option value="4">4</option>
+						<option value="5">5</option>
+						<option value="6">6</option>
+					</select>
 				</label>
 
 				<span class="ocord__spacer"></span>
@@ -107,8 +117,8 @@ final class Order_Admin {
 					</select>
 				</label>
 
-				<button type="button" class="button" id="ocord-clear"><?php esc_html_e( 'Forget this order', 'oc-theme' ); ?></button>
 				<span class="ocord__said" id="ocord-said" role="status" aria-live="polite"></span>
+				<button type="button" class="button" id="ocord-clear"><?php esc_html_e( 'Forget this order', 'oc-theme' ); ?></button>
 			</div>
 
 			<div class="ocord__note" id="ocord-note" hidden></div>
@@ -160,7 +170,8 @@ final class Order_Admin {
 						'ownOrder' => __( 'This category has an order of its own.', 'oc-theme' ),
 						'noOrder'  => __( 'This category has no order of its own yet — drag a product and it will have one.', 'oc-theme' ),
 						'nostock'  => __( 'Out of stock', 'oc-theme' ),
-						'searchOn' => __( 'While you are searching, the order cannot be changed. Clear the box to go back to it.', 'oc-theme' ),
+						'picked'   => __( '%d chosen. Drag one of them and they all move, in the order you chose them.', 'oc-theme' ),
+						'nocat'    => __( 'No category by that name.', 'oc-theme' ),
 					),
 				)
 			) . ';',
@@ -273,10 +284,8 @@ final class Order_Admin {
 		$offset = max( 0, absint( $req->get_param( 'offset' ) ) );
 		$want   = absint( $req->get_param( 'limit' ) );
 		$limit  = min( 200, max( 1, $want > 0 ? $want : self::PER ) );
-		$find   = sanitize_text_field( (string) $req->get_param( 'q' ) );
-
-		$ids   = self::ids( $term, $offset, $limit, $find );
-		$total = self::total( $term, $find );
+		$ids   = self::ids( $term, $offset, $limit );
+		$total = self::total( $term );
 
 		return rest_ensure_response(
 			array(
@@ -301,6 +310,13 @@ final class Order_Admin {
 
 		if ( count( $ids ) > 400 ) {
 			return new \WP_Error( 'oc_order_too_many', __( 'Too many at once.', 'oc-theme' ), array( 'status' => 400 ) );
+		}
+
+		// Saving the third page of a category that has never been ordered
+		// would put that page in front of the two before it. Give those
+		// their natural places first, once.
+		if ( $from > 0 && ! Order::has( $term ) ) {
+			Order::save( $term, self::ids( $term, 0, $from ), 0 );
 		}
 
 		$n = Order::save( $term, $ids, $from );
@@ -342,18 +358,119 @@ final class Order_Admin {
 		return rest_ensure_response( array( 'cleared' => true ) );
 	}
 
+	/* -------------------------------------------------- from the shop itself */
+
+	/**
+	 * Which list the page being looked at belongs to, or null.
+	 *
+	 * @return array{term:int,from:int}|null
+	 */
+	private function here(): ?array {
+		if ( is_admin() || ! function_exists( 'is_shop' ) ) {
+			return null;
+		}
+
+		$term = null;
+
+		if ( is_product_category() ) {
+			$term = (int) get_queried_object_id();
+		} elseif ( is_shop() ) {
+			$term = Order::SHOP;
+		}
+
+		if ( null === $term ) {
+			return null;
+		}
+
+		global $wp_query;
+
+		$page = max( 1, (int) $wp_query->get( 'paged' ) );
+		$per  = max( 1, (int) $wp_query->get( 'posts_per_page' ) );
+
+		return array(
+			'term' => $term,
+			'from' => ( $page - 1 ) * $per,
+		);
+	}
+
+	/**
+	 * A way into the order from the catalogue itself, for an administrator
+	 * standing on it.
+	 *
+	 * @param \WP_Admin_Bar $bar The toolbar.
+	 */
+	public function toolbar( $bar ): void {
+		if ( ! current_user_can( self::cap() ) || ! $bar instanceof \WP_Admin_Bar || null === $this->here() ) {
+			return;
+		}
+
+		$bar->add_node(
+			array(
+				'id'    => 'oc-order',
+				'title' => __( 'Arrange products', 'oc-theme' ),
+				'href'  => add_query_arg( 'oc_sort', 1 ),
+				'meta'  => array( 'title' => __( 'Drag the products on this page into the order you want', 'oc-theme' ) ),
+			)
+		);
+	}
+
+	/**
+	 * The catalogue, made draggable — for an administrator who asked, and
+	 * for nobody else. A shopper never loads a byte of this.
+	 */
+	public function front_assets(): void {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- a view of your own catalogue, gated on the capability.
+		if ( ! isset( $_GET['oc_sort'] ) || ! current_user_can( self::cap() ) ) {
+			return;
+		}
+
+		$where = $this->here();
+
+		if ( null === $where ) {
+			return;
+		}
+
+		$dir = get_template_directory_uri() . '/assets';
+		$ver = defined( 'OC_THEME_VERSION' ) ? OC_THEME_VERSION : '1';
+
+		wp_enqueue_style( 'oc-order-front', $dir . '/css/order-front.css', array(), $ver );
+		wp_enqueue_script( 'oc-order-front', $dir . '/js/order-front.js', array(), $ver, true );
+
+		wp_add_inline_script(
+			'oc-order-front',
+			'window.ocOrderFront = ' . wp_json_encode(
+				array(
+					'rest'  => rest_url( 'oc/v1/order' ),
+					'nonce' => wp_create_nonce( 'wp_rest' ),
+					'term'  => $where['term'],
+					'from'  => $where['from'],
+					'i18n'  => array(
+						'title'  => __( 'Arranging', 'oc-theme' ),
+						'help'   => __( 'Drag a product to where it should be. Click one, then another, to move several together.', 'oc-theme' ),
+						'done'   => __( 'Finish', 'oc-theme' ),
+						'saved'  => __( 'Saved', 'oc-theme' ),
+						'saving' => __( 'Saving…', 'oc-theme' ),
+						'failed' => __( 'Could not save. Nothing was changed.', 'oc-theme' ),
+						/* translators: %d: how many were chosen */
+						'picked' => __( '%d chosen', 'oc-theme' ),
+					),
+				)
+			) . ';',
+			'before'
+		);
+	}
+
 	/* ------------------------------------------------------------ reading */
 
 	/**
 	 * The SQL that both the window and the whole list are built from.
 	 *
 	 * @param int    $term  Category, or 0 for the whole shop.
-	 * @param string $find  A word to look for in the name, or ''.
 	 * @param string $order The ORDER BY, without the words.
 	 * @param string $limit The LIMIT, without the word.
 	 * @return array{0:string,1:array}
 	 */
-	private static function sql( int $term, string $find, string $order, string $limit ): array {
+	private static function sql( int $term, string $order, string $limit ): array {
 		global $wpdb;
 
 		$t    = Order::table();
@@ -371,27 +488,21 @@ final class Order_Admin {
 
 		$where = " WHERE p.post_type = 'product' AND p.post_status = 'publish'";
 
-		if ( '' !== $find ) {
-			$where .= ' AND p.post_title LIKE %s';
-			$args[] = '%' . $wpdb->esc_like( $find ) . '%';
-		}
-
 		return array( $join . $where . ( '' === $order ? '' : ' ORDER BY ' . $order ) . ( '' === $limit ? '' : ' LIMIT ' . $limit ), $args );
 	}
 
 	/**
 	 * The ids of one window, in the order they are shown.
 	 *
-	 * @param int    $term   Category, or 0.
-	 * @param int    $offset Where the window starts.
-	 * @param int    $limit  How many.
-	 * @param string $find   A word to look for, or ''.
+	 * @param int $term   Category, or 0.
+	 * @param int $offset Where the window starts.
+	 * @param int $limit  How many.
 	 * @return int[]
 	 */
-	private static function ids( int $term, int $offset, int $limit, string $find = '' ): array {
+	private static function ids( int $term, int $offset, int $limit ): array {
 		global $wpdb;
 
-		list( $tail, $args ) = self::sql( $term, $find, 'o.pos IS NULL ASC, o.pos ASC, p.menu_order ASC, p.post_title ASC', '%d OFFSET %d' );
+		list( $tail, $args ) = self::sql( $term, 'o.pos IS NULL ASC, o.pos ASC, p.menu_order ASC, p.post_title ASC', '%d OFFSET %d' );
 
 		$args[] = $limit;
 		$args[] = $offset;
@@ -406,13 +517,12 @@ final class Order_Admin {
 	/**
 	 * How many there are altogether.
 	 *
-	 * @param int    $term Category, or 0.
-	 * @param string $find A word to look for, or ''.
+	 * @param int $term Category, or 0.
 	 */
-	private static function total( int $term, string $find = '' ): int {
+	private static function total( int $term ): int {
 		global $wpdb;
 
-		list( $tail, $args ) = self::sql( $term, $find, '', '' );
+		list( $tail, $args ) = self::sql( $term, '', '' );
 
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL, WordPress.DB.PreparedSQLPlaceholders -- own table and core tables; every value is a placeholder, and the clauses are built above from literals only.
 		$n = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(DISTINCT p.ID) FROM {$wpdb->posts} p" . $tail, $args ) );
@@ -445,7 +555,7 @@ final class Order_Admin {
 			return array();
 		}
 
-		list( $tail, $args ) = self::sql( $term, '', '', '' );
+		list( $tail, $args ) = self::sql( $term, '', '' );
 
 		$meta = '';
 
@@ -503,7 +613,7 @@ final class Order_Admin {
 
 			$out[] = array(
 				'id'    => $id,
-				'name'  => wp_strip_all_tags( (string) get_the_title( $id ) ),
+				'name'  => html_entity_decode( wp_strip_all_tags( (string) get_the_title( $id ) ), ENT_QUOTES, 'UTF-8' ),
 				'img'   => $thumb ? (string) wp_get_attachment_image_url( $thumb, 'thumbnail' ) : '',
 				'price' => '' === $price ? '' : html_entity_decode( wp_strip_all_tags( (string) wc_price( (float) $price ) ), ENT_QUOTES, 'UTF-8' ),
 				'out'   => 'outofstock' === (string) get_post_meta( $id, '_stock_status', true ) ? 1 : 0,

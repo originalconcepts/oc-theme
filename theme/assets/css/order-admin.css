@@ -13,14 +13,42 @@
 	margin-block-end: 12px;
 	position: sticky;
 	inset-block-start: 46px;
-	z-index: 5;
+	z-index: 20;
 }
 
-.ocord__bar select,
-.ocord__bar input[type="search"] { max-inline-size: 320px; }
 .ocord__spacer { flex: 1; }
+.ocord__row { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #50575e; }
+.ocord__row select { min-inline-size: 84px; }
 
-.ocord__said { font-size: 13px; color: #50575e; min-inline-size: 90px; }
+/* A category is typed for, not hunted through. */
+.ocord__pick { position: relative; }
+.ocord__pick input { inline-size: 340px; max-inline-size: 60vw; }
+
+.ocord__list {
+	position: absolute;
+	inset-block-start: calc(100% + 4px);
+	inset-inline-start: 0;
+	inline-size: 380px;
+	max-inline-size: 80vw;
+	max-block-size: 320px;
+	overflow-y: auto;
+	margin: 0;
+	padding: 4px;
+	list-style: none;
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	border-radius: 8px;
+	box-shadow: 0 6px 18px rgb(0 0 0 / 12%);
+	z-index: 30;
+}
+
+.ocord__list li { margin: 0; padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 13px; }
+.ocord__list li:hover,
+.ocord__list li.is-on { background: #f0f6fc; }
+.ocord__list .ocord__none { color: #8c8f94; cursor: default; }
+.ocord__list[hidden] { display: none; }
+
+.ocord__said { font-size: 13px; color: #50575e; }
 .ocord__said.is-saved { color: #007017; font-weight: 600; }
 .ocord__said.is-bad { color: #b32d2e; font-weight: 600; }
 
@@ -34,22 +62,22 @@
 	margin-block-end: 14px;
 }
 
-.ocord__note.is-warn { background: #fcf9e8; border-inline-start-color: #dba617; color: #3c434a; }
+.ocord__note.is-pick { background: #f0f6fc; border-inline-start-color: #2271b1; color: #1d2327; font-weight: 600; }
 
+/* The grid stands in for the catalogue, so a card is shaped like one. */
 .ocord__grid {
 	display: grid;
 	grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-	gap: 10px;
-	align-items: stretch;
+	gap: 12px;
+	align-items: start;
 }
 
 .ocord__card {
 	position: relative;
-	display: grid;
-	grid-template-columns: 80px 1fr;
-	grid-template-rows: auto auto;
-	gap: 2px 10px;
-	padding: 10px 12px 10px 10px;
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	padding: 10px;
 	background: #fff;
 	border: 1px solid #dcdcde;
 	border-radius: 10px;
@@ -61,19 +89,18 @@
 
 .ocord__card:hover { border-color: #8c8f94; box-shadow: 0 1px 4px rgb(0 0 0 / 8%); }
 .ocord__card:focus-visible { outline: 2px solid #2271b1; outline-offset: 2px; }
-.ocord__card.is-held { opacity: .35; }
-.ocord__card.is-out { background: #fcf7f7; }
+.ocord__card.is-held { opacity: .3; }
+.ocord__card.is-out { background: #fdf8f8; }
+.ocord__card.is-picked { border-color: #2271b1; box-shadow: 0 0 0 2px rgb(34 113 177 / 25%); }
 
 .ocord__img {
-	grid-row: 1 / span 2;
-	inline-size: 80px;
-	block-size: 80px;
-	object-fit: cover;
+	inline-size: 100%;
+	aspect-ratio: 1;
+	object-fit: contain;
+	background: #f6f7f7;
 	border-radius: 6px;
-	background: #f0f0f1;
+	display: block;
 }
-
-.ocord__img--none { display: block; }
 
 .ocord__name {
 	font-weight: 600;
@@ -83,31 +110,43 @@
 	-webkit-line-clamp: 2;
 	-webkit-box-orient: vertical;
 	overflow: hidden;
-	align-self: end;
+	min-block-size: 2.7em;
 }
 
-.ocord__meta { font-size: 12.5px; color: #50575e; display: flex; gap: 8px; align-items: baseline; align-self: start; }
+.ocord__meta { font-size: 12.5px; color: #50575e; display: flex; gap: 8px; align-items: baseline; }
 .ocord__meta b { font-weight: 600; color: #1d2327; direction: ltr; }
 .ocord__meta em { font-style: normal; color: #b32d2e; }
 
 .ocord__n {
 	position: absolute;
 	inset-block-start: 6px;
-	inset-inline-end: 8px;
+	inset-inline-start: 8px;
 	font-size: 11px;
 	color: #787c82;
 	font-variant-numeric: tabular-nums;
+	background: rgb(255 255 255 / 85%);
+	border-radius: 4px;
+	padding: 0 4px;
+	z-index: 1;
 }
 
-.ocord__grip {
+.ocord__tick:empty { display: none; }
+
+.ocord__tick {
 	position: absolute;
-	inset-block-end: 6px;
-	inset-inline-end: 8px;
-	inline-size: 14px;
-	block-size: 10px;
-	background:
-		linear-gradient(#c3c4c7 2px, transparent 2px) 0 0 / 14px 4px repeat-y;
-	opacity: .8;
+	inset-block-start: 6px;
+	inset-inline-end: 6px;
+	z-index: 1;
+	min-inline-size: 20px;
+	block-size: 20px;
+	border-radius: 999px;
+	background: #2271b1;
+	color: #fff;
+	font-size: 11px;
+	font-weight: 700;
+	display: grid;
+	place-items: center;
+	padding: 0 5px;
 }
 
 .ocord__ghost {
@@ -117,7 +156,19 @@
 	box-shadow: 0 8px 24px rgb(0 0 0 / 22%);
 	transform: rotate(1.5deg);
 	opacity: .96;
-	cursor: grabbing;
+}
+
+.ocord__ghost[data-many]::after {
+	content: '+' attr(data-many);
+	position: absolute;
+	inset-block-end: -8px;
+	inset-inline-start: -8px;
+	background: #2271b1;
+	color: #fff;
+	font-size: 11px;
+	font-weight: 700;
+	border-radius: 999px;
+	padding: 2px 8px;
 }
 
 body.ocord-dragging { cursor: grabbing; user-select: none; }
@@ -127,7 +178,12 @@ body.ocord-dragging .ocord__card { cursor: grabbing; }
 .ocord__more { margin-block-start: 16px; display: flex; align-items: center; gap: 12px; }
 .ocord__count { font-size: 13px; color: #50575e; }
 
+/* The admin stylesheet gives every .button a display of its own, which beats
+ * the browser's rule for [hidden]. Say it again, louder. */
+.ocord__more .button[hidden] { display: none !important; }
+
 @media (max-width: 782px) {
 	.ocord__bar { inset-block-start: 0; }
-	.ocord__grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+	.ocord__pick input { inline-size: 100%; }
+	.ocord__grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
 }

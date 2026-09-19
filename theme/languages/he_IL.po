@@ -9133,3 +9133,36 @@ msgstr "יותר מדי בבת אחת."
 
 msgid "Nothing to put in order."
 msgstr "אין מה לסדר."
+
+msgid "Per row"
+msgstr "בשורה"
+
+msgid "Fit"
+msgstr "אוטומטי"
+
+msgid "Type to find a category…"
+msgstr "הקלידו כדי למצוא קטגוריה…"
+
+msgid "%d chosen. Drag one of them and they all move, in the order you chose them."
+msgstr "%d נבחרו. גררו אחד מהם וכולם יזוזו, בסדר שבו בחרתם אותם."
+
+msgid "No category by that name."
+msgstr "אין קטגוריה בשם הזה."
+
+msgid "Arrange products"
+msgstr "סדר מוצרים"
+
+msgid "Drag the products on this page into the order you want"
+msgstr "גררו את המוצרים בעמוד הזה לסדר שאתם רוצים"
+
+msgid "Arranging"
+msgstr "מסדרים מוצרים"
+
+msgid "Drag a product to where it should be. Click one, then another, to move several together."
+msgstr "גררו מוצר למקום שבו הוא צריך להיות. לחיצה על מוצר ואז על עוד אחד מזיזה כמה יחד."
+
+msgid "Finish"
+msgstr "סיום"
+
+msgid "%d chosen"
+msgstr "%d נבחרו"
