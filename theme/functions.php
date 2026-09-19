@@ -136,6 +136,7 @@ require_once OC_THEME_DIR . '/inc/class-oc-thankyou.php';
 require_once OC_THEME_DIR . '/inc/class-oc-performance.php';
 require_once OC_THEME_DIR . '/inc/class-oc-search-index.php';
 require_once OC_THEME_DIR . '/inc/class-oc-search.php';
+require_once OC_THEME_DIR . '/inc/class-oc-cache.php';
 require_once OC_THEME_DIR . '/inc/class-oc-order.php';
 require_once OC_THEME_DIR . '/inc/class-oc-order-admin.php';
 require_once OC_THEME_DIR . '/inc/class-oc-catalog-front.php';

@@ -405,12 +405,19 @@ final class Order_Admin {
 			return;
 		}
 
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- reading which way the toolbar entry should point.
+		$on = isset( $_GET['oc_sort'] );
+
 		$bar->add_node(
 			array(
 				'id'    => 'oc-order',
-				'title' => __( 'Arrange products', 'oc-theme' ),
-				'href'  => add_query_arg( 'oc_sort', 1 ),
-				'meta'  => array( 'title' => __( 'Drag the products on this page into the order you want', 'oc-theme' ) ),
+				'title' => $on ? __( 'Leave arranging', 'oc-theme' ) : __( 'Arrange products', 'oc-theme' ),
+				'href'  => $on ? remove_query_arg( 'oc_sort' ) : add_query_arg( 'oc_sort', 1 ),
+				'meta'  => array(
+					'title' => $on
+						? __( 'Go back to the shop as a shopper sees it', 'oc-theme' )
+						: __( 'Drag the products on this page into the order you want', 'oc-theme' ),
+				),
 			)
 		);
 	}
@@ -447,7 +454,7 @@ final class Order_Admin {
 					'from'  => $where['from'],
 					'i18n'  => array(
 						'title'  => __( 'Arranging', 'oc-theme' ),
-						'help'   => __( 'Drag a product to where it should be. Click one, then another, to move several together.', 'oc-theme' ),
+						'help'   => __( 'Drag a product to where it should be. Click one, then another, to move several together. Everything you change is kept as you go — there is nothing to save.', 'oc-theme' ),
 						'done'   => __( 'Finish', 'oc-theme' ),
 						'saved'  => __( 'Saved', 'oc-theme' ),
 						'saving' => __( 'Saving…', 'oc-theme' ),

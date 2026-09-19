@@ -329,8 +329,13 @@ class Heat_Admin {
 					<tr>
 						<th scope="row"><label for="oc-heat-per"><?php esc_html_e( 'How many of each', 'oc-stats' ); ?></label></th>
 						<td>
-							<input type="number" id="oc-heat-per" name="per" min="1" max="20" value="<?php echo esc_attr( (string) $s['per'] ); ?>" class="small-text">
-							<p class="description"><?php esc_html_e( 'Products and categories are chosen by traffic and worked out again every hour.', 'oc-stats' ); ?></p>
+							<input type="number" id="oc-heat-per" name="per" min="0" max="20" value="<?php echo esc_attr( (string) $s['per'] ); ?>" class="small-text">
+							<p class="description">
+								<?php esc_html_e( 'Products and categories are chosen by how much they were looked at in the last week, and worked out again every hour.', 'oc-stats' ); ?>
+								<br>
+								<strong><?php esc_html_e( 'Put 0 to record every product page and every category page.', 'oc-stats' ); ?></strong>
+								<?php esc_html_e( 'Nothing is stored for a page nobody visits, so a big shop costs no more than a small one until people actually look — but the list of pages grows with the shop.', 'oc-stats' ); ?>
+							</p>
 						</td>
 					</tr>
 				</table>
@@ -360,7 +365,7 @@ class Heat_Admin {
 			array(
 				'on'    => isset( $_POST['on'] ) ? 1 : 0,
 				'kinds' => $kinds,
-				'per'   => isset( $_POST['per'] ) ? max( 1, min( 20, absint( wp_unslash( $_POST['per'] ) ) ) ) : 5,
+				'per'   => isset( $_POST['per'] ) ? max( 0, min( 20, absint( wp_unslash( $_POST['per'] ) ) ) ) : 5,
 			),
 			false
 		);
@@ -392,6 +397,12 @@ class Heat_Admin {
 	 */
 	public function toolbar( $bar ): void {
 		if ( is_admin() || ! current_user_can( Admin::cap() ) || ! Heat::on() || ! $bar instanceof \WP_Admin_Bar ) {
+			return;
+		}
+
+		// Only where there is a map to see. Offering one on every page of the
+		// shop and then showing an empty screen is a promise not kept.
+		if ( '' === Heat::surface() ) {
 			return;
 		}
 

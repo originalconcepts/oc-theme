@@ -103,7 +103,7 @@ class Heat {
 		return array(
 			'on'    => isset( $s['on'] ) ? (int) $s['on'] : 1,
 			'kinds' => $kinds,
-			'per'   => max( 1, min( 20, (int) ( $s['per'] ?? 5 ) ) ),
+			'per'   => max( 0, min( 20, (int) ( $s['per'] ?? 5 ) ) ),
 		);
 	}
 
@@ -149,6 +149,24 @@ class Heat {
 
 		$per   = self::settings()['per'];
 		$range = Query::range( 'd7' );
+
+		// Nought means the shop wants the lot. There is nothing to work out:
+		// every product page and every category page is watched, and the
+		// front end decides that without looking anything up.
+		if ( 0 === $per ) {
+			update_option(
+				self::SET,
+				array(
+					'products' => array(),
+					'cats'     => array(),
+					'all'      => 1,
+					'when'     => gmdate( 'Y-m-d H:i' ),
+				),
+				false
+			);
+
+			return;
+		}
 		$cur   = $range['cur'];
 
 		$views = (array) $cur['product_views'];
@@ -218,11 +236,13 @@ class Heat {
 			return 'e404';
 		}
 
-		if ( function_exists( 'is_product' ) && is_product() && in_array( (int) get_queried_object_id(), $set['products'], true ) ) {
+		$all = ! empty( $set['all'] );
+
+		if ( function_exists( 'is_product' ) && is_product() && ( $all || in_array( (int) get_queried_object_id(), $set['products'], true ) ) ) {
 			return empty( $k['product'] ) ? '' : 'product';
 		}
 
-		if ( function_exists( 'is_product_category' ) && is_product_category() && in_array( (int) get_queried_object_id(), $set['cats'], true ) ) {
+		if ( function_exists( 'is_product_category' ) && is_product_category() && ( $all || in_array( (int) get_queried_object_id(), $set['cats'], true ) ) ) {
 			return empty( $k['cat'] ) ? '' : 'cat';
 		}
 

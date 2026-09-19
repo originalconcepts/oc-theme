@@ -9190,3 +9190,21 @@ msgstr "חזרה למרכז"
 
 msgid "No such product."
 msgstr "אין מוצר כזה."
+
+msgid "Leave arranging"
+msgstr "יציאה מסידור"
+
+msgid "Go back to the shop as a shopper sees it"
+msgstr "חזרה לחנות כפי שהלקוח רואה אותה"
+
+msgid "Drag a product to where it should be. Click one, then another, to move several together. Everything you change is kept as you go — there is nothing to save."
+msgstr "גררו מוצר למקום שבו הוא צריך להיות. לחיצה על מוצר ואז על עוד אחד מזיזה כמה יחד. כל שינוי נשמר תוך כדי — אין מה לשמור."
+
+msgid "Products and categories are chosen by how much they were looked at in the last week, and worked out again every hour."
+msgstr "מוצרים וקטגוריות נבחרים לפי כמה צפו בהם בשבוע האחרון, ומחושבים מחדש כל שעה."
+
+msgid "Put 0 to record every product page and every category page."
+msgstr "הזינו 0 כדי לרשום כל עמוד מוצר וכל עמוד קטגוריה."
+
+msgid "Nothing is stored for a page nobody visits, so a big shop costs no more than a small one until people actually look — but the list of pages grows with the shop."
+msgstr "לא נשמר דבר עבור עמוד שאיש לא ביקר בו, כך שחנות גדולה לא עולה יותר מקטנה עד שגולשים באמת מסתכלים — אבל רשימת העמודים גדלה עם החנות."

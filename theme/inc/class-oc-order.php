@@ -182,6 +182,11 @@ final class Order {
 
 		self::mark( $term_id, true );
 
+		// The shopper is behind a page cache that knows nothing of this.
+		if ( class_exists( '\\OC\\Theme\\Cache' ) ) {
+			Cache::forget_archive( $term_id );
+		}
+
 		return count( $ids );
 	}
 
@@ -199,6 +204,10 @@ final class Order {
 		$wpdb->query( $wpdb->prepare( "DELETE FROM {$t} WHERE term_id = %d", $term_id ) );
 
 		self::mark( $term_id, false );
+
+		if ( class_exists( '\\OC\\Theme\\Cache' ) ) {
+			Cache::forget_archive( $term_id );
+		}
 	}
 
 	/**

@@ -139,6 +139,8 @@ final class Catalog_Front {
 			}
 		}
 
+		Cache::forget_product( $id );
+
 		$tile = Catalog::tile( $id );
 
 		return rest_ensure_response(
