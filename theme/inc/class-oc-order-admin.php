@@ -170,6 +170,7 @@ final class Order_Admin {
 						'ownOrder' => __( 'This category has an order of its own.', 'oc-theme' ),
 						'noOrder'  => __( 'This category has no order of its own yet — drag a product and it will have one.', 'oc-theme' ),
 						'nostock'  => __( 'Out of stock', 'oc-theme' ),
+						/* translators: %d: how many products were chosen */
 						'picked'   => __( '%d chosen. Drag one of them and they all move, in the order you chose them.', 'oc-theme' ),
 						'nocat'    => __( 'No category by that name.', 'oc-theme' ),
 					),
@@ -284,8 +285,8 @@ final class Order_Admin {
 		$offset = max( 0, absint( $req->get_param( 'offset' ) ) );
 		$want   = absint( $req->get_param( 'limit' ) );
 		$limit  = min( 200, max( 1, $want > 0 ? $want : self::PER ) );
-		$ids   = self::ids( $term, $offset, $limit );
-		$total = self::total( $term );
+		$ids    = self::ids( $term, $offset, $limit );
+		$total  = self::total( $term );
 
 		return rest_ensure_response(
 			array(
