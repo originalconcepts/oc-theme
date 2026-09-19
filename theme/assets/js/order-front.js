@@ -297,6 +297,12 @@
 	wrap.addEventListener( 'pointerup', letGo );
 	wrap.addEventListener( 'pointercancel', letGo );
 
-	bar();
+	// Inside the phone preview the bar belongs to the page holding the frame.
+	if ( ! C.frame ) {
+		bar();
+	} else {
+		said = document.createElement( 'span' );
+	}
+
 	wrap.classList.add( 'ocsort__list' );
 }() );

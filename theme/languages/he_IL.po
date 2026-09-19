@@ -9208,3 +9208,18 @@ msgstr "הזינו 0 כדי לרשום כל עמוד מוצר וכל עמוד ק
 
 msgid "Nothing is stored for a page nobody visits, so a big shop costs no more than a small one until people actually look — but the list of pages grows with the shop."
 msgstr "לא נשמר דבר עבור עמוד שאיש לא ביקר בו, כך שחנות גדולה לא עולה יותר מקטנה עד שגולשים באמת מסתכלים — אבל רשימת העמודים גדלה עם החנות."
+
+msgid "On a desktop"
+msgstr "בדסקטופ"
+
+msgid "On a phone"
+msgstr "במובייל"
+
+msgid "Same as the desktop"
+msgstr "כמו בדסקטופ"
+
+msgid "Phone view"
+msgstr "תצוגת מובייל"
+
+msgid "Back to the desktop view"
+msgstr "חזרה לתצוגת דסקטופ"

@@ -64,6 +64,17 @@ final class Catalog_Front {
 		$ver = defined( 'OC_THEME_VERSION' ) ? OC_THEME_VERSION : '1';
 
 		wp_enqueue_style( 'oc-catalog-front', $dir . '/css/catalog-front.css', array( 'oc-order-front' ), $ver );
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- the phone preview loads the same page inside a frame.
+		if ( isset( $_GET['oc_frame'] ) ) {
+			add_filter( 'show_admin_bar', '__return_false' );
+			add_filter(
+				'language_attributes',
+				static function ( $out ) {
+					return $out . ' class="ocphone-frame"';
+				}
+			);
+		}
 		wp_enqueue_script( 'oc-catalog-front', $dir . '/js/catalog-front.js', array( 'oc-order-front' ), $ver, true );
 
 		wp_add_inline_script(
@@ -72,6 +83,11 @@ final class Catalog_Front {
 				array(
 					'rest'  => rest_url( 'oc/v1/tile' ),
 					'nonce' => wp_create_nonce( 'wp_rest' ),
+					// phpcs:disable WordPress.Security.NonceVerification.Recommended -- which view of your own catalogue you asked for.
+					'dev'   => isset( $_GET['oc_dev'] ) && 'm' === $_GET['oc_dev'] ? 'm' : 'd',
+					'frame' => isset( $_GET['oc_frame'] ) ? 1 : 0,
+					// phpcs:enable
+					'width' => 390,
 					'i18n'  => array(
 						'size'   => __( 'How big in the catalogue', 'oc-theme' ),
 						'plain'  => __( 'One cell', 'oc-theme' ),
@@ -80,6 +96,11 @@ final class Catalog_Front {
 						'up'     => __( 'Move the picture up', 'oc-theme' ),
 						'down'   => __( 'Move the picture down', 'oc-theme' ),
 						'middle' => __( 'Back to the middle', 'oc-theme' ),
+						'onD'    => __( 'On a desktop', 'oc-theme' ),
+						'onM'    => __( 'On a phone', 'oc-theme' ),
+						'same'   => __( 'Same as the desktop', 'oc-theme' ),
+						'phone'  => __( 'Phone view', 'oc-theme' ),
+						'leaveP' => __( 'Back to the desktop view', 'oc-theme' ),
 						'saved'  => __( 'Saved', 'oc-theme' ),
 						'failed' => __( 'Could not save. Nothing was changed.', 'oc-theme' ),
 					),
@@ -129,6 +150,21 @@ final class Catalog_Front {
 			}
 		}
 
+		// A phone may be told something of its own, and "" there means it
+		// simply does whatever the desktop does.
+		if ( null !== $req->get_param( 'size_m' ) ) {
+			$size_m = sanitize_key( (string) $req->get_param( 'size_m' ) );
+			$size_m = array_key_exists( $size_m, Catalog::sizes_m() ) ? $size_m : '';
+
+			if ( '' === $size_m ) {
+				delete_post_meta( $id, '_oc_tile_size_m' );
+			} else {
+				update_post_meta( $id, '_oc_tile_size_m', $size_m );
+			}
+
+			delete_post_meta( $id, '_oc_tile_flat_m' );
+		}
+
 		if ( null !== $req->get_param( 'focus' ) ) {
 			$focus = max( 0, min( 100, absint( $req->get_param( 'focus' ) ) ) );
 
@@ -145,8 +181,9 @@ final class Catalog_Front {
 
 		return rest_ensure_response(
 			array(
-				'size'  => $tile['size'],
-				'focus' => $tile['focus'],
+				'size'   => $tile['size'],
+				'size_m' => $tile['size_m'],
+				'focus'  => $tile['focus'],
 			)
 		);
 	}

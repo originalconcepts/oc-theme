@@ -19,11 +19,52 @@
 		return;
 	}
 
-	var SIZES = [
-		[ '', T.plain, 'M7 7h10v10H7z' ],
-		[ 'wide', T.wide, 'M3 8h18v8H3z' ],
-		[ 'big', T.big, 'M4 4h16v16H4z' ]
-	];
+	var MOBILE = 'm' === C.dev;
+
+	/* ---------- the phone preview ----------
+	 *
+	 * A media query answers to the window, not to a box inside it, so a
+	 * catalogue squeezed into a narrow column still lays itself out like a
+	 * desktop and would lie about what a phone shows. The page is put in a
+	 * frame the width of a phone instead, where the real rules apply — and
+	 * because the frame loads the same address, the dragging and these very
+	 * controls are inside it, working as they always do. */
+	function preview() {
+		var u = new URL( location.href );
+
+		u.searchParams.set( 'oc_sort', '1' );
+		u.searchParams.set( 'oc_dev', 'm' );
+		u.searchParams.set( 'oc_frame', '1' );
+
+		var box = document.createElement( 'div' );
+
+		box.className = 'ocphone';
+		box.innerHTML = '<div class="ocphone__shell"><iframe class="ocphone__frame" src="' + u.toString().replace( /"/g, '&quot;' ) + '" title="' + ( T.phone || '' ) + '"></iframe></div>';
+		document.body.appendChild( box );
+		document.documentElement.classList.add( 'ocphone-on' );
+	}
+
+	function leavePreview() {
+		var u = new URL( location.href );
+
+		u.searchParams.delete( 'oc_dev' );
+		location.href = u.toString();
+	}
+
+	/* ---------- which of the two sizes is being set ---------- */
+
+	var SIZES = MOBILE
+		? [
+			[ '', T.same, 'M5 11h14v2H5z' ],
+			[ 'plain', T.plain, 'M7 7h10v10H7z' ],
+			[ 'wide', T.wide, 'M3 8h18v8H3z' ],
+			[ 'big', T.big, 'M4 4h16v16H4z' ]
+		]
+		: [
+			[ '', T.plain, 'M7 7h10v10H7z' ],
+			[ 'wide', T.wide, 'M3 8h18v8H3z' ],
+			[ 'big', T.big, 'M4 4h16v16H4z' ]
+		];
 
 	function idOf( el ) {
 		var m = /post-(\d+)/.exec( el.className || '' );
@@ -32,6 +73,18 @@
 	}
 
 	function sizeOf( el ) {
+		if ( MOBILE ) {
+			if ( el.classList.contains( 'oc-tile--m-big' ) ) {
+				return 'big';
+			}
+
+			if ( el.classList.contains( 'oc-tile--m-wide' ) ) {
+				return 'wide';
+			}
+
+			return el.classList.contains( 'oc-tile--m-plain' ) ? 'plain' : '';
+		}
+
 		if ( el.classList.contains( 'oc-tile--big' ) ) {
 			return 'big';
 		}
@@ -129,6 +182,19 @@
 	}
 
 	function setSize( el, size ) {
+		if ( MOBILE ) {
+			el.classList.remove( 'oc-tile--m-plain', 'oc-tile--m-wide', 'oc-tile--m-big' );
+
+			if ( size ) {
+				el.classList.add( 'oc-tile--m-' + size );
+			}
+
+			mark( el );
+			keep( el, { size_m: size } );
+
+			return;
+		}
+
 		el.classList.remove( 'oc-tile--wide', 'oc-tile--big' );
 
 		if ( size ) {
@@ -202,6 +268,36 @@
 		mark( el );
 	}
 
+	function deviceSwitch() {
+		var bar = document.querySelector( '.ocsort__bar' );
+
+		if ( ! bar ) {
+			return;
+		}
+
+		var b = document.createElement( 'button' );
+
+		b.type = 'button';
+		b.className = 'ocsort__dev';
+		b.textContent = MOBILE ? T.leaveP : T.phone;
+		b.addEventListener( 'click', MOBILE ? leavePreview : function () {
+			var u = new URL( location.href );
+
+			u.searchParams.set( 'oc_dev', 'm' );
+			location.href = u.toString();
+		} );
+
+		bar.insertBefore( b, bar.querySelector( '.ocsort__done' ) );
+	}
+
+	// The page holding the frame draws no catalogue of its own.
+	if ( MOBILE && ! C.frame ) {
+		preview();
+		deviceSwitch();
+
+		return;
+	}
+
 	Array.prototype.forEach.call( wrap.querySelectorAll( 'li.product' ), function ( el ) {
 		if ( idOf( el ) ) {
 			strip( el );
@@ -209,4 +305,8 @@
 	} );
 
 	wrap.classList.add( 'octile-on' );
+
+	if ( ! C.frame ) {
+		deviceSwitch();
+	}
 }() );

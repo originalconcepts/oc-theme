@@ -53,3 +53,52 @@ li.product:focus-within .octile { opacity: 1; }
 	.octile { opacity: 1; transform: none; inset-block-end: 4px; inset-inline: 4px; padding: 3px; }
 	.octile svg { inline-size: 16px; block-size: 16px; }
 }
+
+/* The phone preview: this page, in a frame the width of a phone, because a
+ * media query answers to the window and not to a box inside it. */
+html.ocphone-on,
+html.ocphone-on body { overflow: hidden; }
+html.ocphone-on .site-content,
+html.ocphone-on .woocommerce-products-header,
+html.ocphone-on ul.products,
+html.ocphone-on .oc-flt-wrap { visibility: hidden; }
+
+.ocphone {
+	position: fixed;
+	inset: 0;
+	z-index: 99990;
+	display: grid;
+	place-items: start center;
+	padding: 24px 0 84px;
+	background: #eef0f3;
+	overflow: auto;
+}
+
+.ocphone__shell {
+	inline-size: 390px;
+	max-inline-size: 100vw;
+	block-size: calc(100vh - 108px);
+	background: #fff;
+	border-radius: 18px;
+	overflow: hidden;
+	box-shadow: 0 10px 40px rgb(0 0 0 / 22%);
+}
+
+.ocphone__frame { inline-size: 100%; block-size: 100%; border: 0; display: block; }
+
+.ocsort__dev {
+	border: 1px solid rgb(255 255 255 / 35%);
+	border-radius: 8px;
+	background: transparent;
+	color: #fff;
+	font: inherit;
+	font-weight: 600;
+	padding: 6px 14px;
+	cursor: pointer;
+}
+
+.ocsort__dev:hover { background: rgb(255 255 255 / 12%); }
+
+/* Inside the frame the toolbar belongs to the page outside it. */
+html.ocphone-frame #wpadminbar { display: none !important; }
+html.ocphone-frame { margin-block-start: 0 !important; }

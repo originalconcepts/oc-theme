@@ -452,6 +452,8 @@ final class Order_Admin {
 					'nonce' => wp_create_nonce( 'wp_rest' ),
 					'term'  => $where['term'],
 					'from'  => $where['from'],
+					// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- the phone preview loads the same page inside a frame.
+					'frame' => isset( $_GET['oc_frame'] ) ? 1 : 0,
 					'i18n'  => array(
 						'title'  => __( 'Arranging', 'oc-theme' ),
 						'help'   => __( 'Drag a product to where it should be. Click one, then another, to move several together. Everything you change is kept as you go — there is nothing to save.', 'oc-theme' ),

@@ -4559,6 +4559,13 @@ li.product:has(:focus-visible) .oc-card-atc,
 	 * none, fractional widths let one of its pixels bleed in at rest */
 	gap: 2px;
 	overflow-x: auto;
+
+	/* Only sideways. Setting one axis to auto makes the other compute to
+	 * auto as well, and on an enlarged tile — where the picture is told to
+	 * be twice as wide and as tall as it likes — that left the strip free
+	 * to scroll up and down inside the card, showing empty space under the
+	 * picture to anyone who swiped vertically over it. */
+	overflow-y: hidden;
 	scroll-behavior: smooth;
 	scroll-snap-type: x mandatory;
 	scrollbar-width: none;
