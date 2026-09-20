@@ -60,7 +60,10 @@ final class Branch_Orders {
 	 * nothing to filter by is furniture.
 	 */
 	public function dropdown(): void {
-		$branches = \OC\Blocks\Branches::for_pickup();
+		// Every branch, not only the ones collection is offered from today:
+		// a branch taken off that list keeps the orders it already has, and
+		// they still have to be findable.
+		$branches = \OC\Blocks\Branches::all();
 
 		if ( ! $branches ) {
 			return;

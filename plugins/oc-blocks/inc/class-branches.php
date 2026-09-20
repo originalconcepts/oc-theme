@@ -94,6 +94,41 @@ final class Branches {
 	}
 
 	/**
+	 * Every branch, offered for collection or not, by the name it is known
+	 * by at the checkout.
+	 *
+	 * What is offered today and what an order was collected from are two
+	 * different questions: a branch taken off the list still has its orders
+	 * behind it, and they still have to be findable.
+	 *
+	 * @return array<int,array{id:int,name:string}>
+	 */
+	public static function all(): array {
+		if ( ! post_type_exists( self::CPT ) ) {
+			return array();
+		}
+
+		$out = array();
+
+		foreach ( get_posts(
+			array(
+				'post_type'      => self::CPT,
+				'posts_per_page' => 100,
+				'orderby'        => 'title',
+				'order'          => 'ASC',
+				'fields'         => 'ids',
+			)
+		) as $id ) {
+			$out[] = array(
+				'id'   => (int) $id,
+				'name' => self::pickup_name( (int) $id ),
+			);
+		}
+
+		return $out;
+	}
+
+	/**
 	 * May this branch be collected from?
 	 *
 	 * @param int $branch_id Branch id.
