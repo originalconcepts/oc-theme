@@ -11,7 +11,7 @@ if ( ! class_exists( '\OC\Theme\Emails' ) || ! isset( $order ) || ! $order insta
 	return;
 }
 
-echo \OC\Theme\Emails::body( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
+$oc_email = \OC\Theme\Emails::body(
 	$order,
 	$email ?? null,
 	2,
@@ -22,3 +22,5 @@ echo \OC\Theme\Emails::body( // phpcs:ignore WordPress.Security.EscapeOutput.Out
 		'intro_pickup'   => __( "Good news — your order is ready and waiting for you.\nCome whenever it suits you; the details are below. Thank you for shopping with us.", 'oc-theme' ),
 	)
 );
+
+echo $oc_email; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- an email built entirely from escaped parts.

@@ -163,7 +163,7 @@ final class Emails {
 		$id   = (int) get_theme_mod( 'custom_logo' );
 
 		if ( $id ) {
-			$src = wp_get_attachment_image_url( $id, 'medium' );
+			$src  = wp_get_attachment_image_url( $id, 'medium' );
 			$meta = wp_get_attachment_image_src( $id, 'medium' );
 
 			if ( $src ) {
@@ -402,7 +402,15 @@ final class Emails {
 				$pic = '<div style="width:64px;height:64px;border-radius:8px;background:' . esc_attr( $p['panel'] ) . ';"></div>';
 			}
 
-			$meta = wc_display_item_meta( $item, array( 'echo' => false, 'separator' => ' · ', 'before' => '', 'after' => '' ) );
+			$meta = wc_display_item_meta(
+				$item,
+				array(
+					'echo'      => false,
+					'separator' => ' · ',
+					'before'    => '',
+					'after'     => '',
+				)
+			);
 
 			$rows .= '<tr>'
 				. '<td width="64" valign="top" style="padding:12px 0;">' . $pic . '</td>'
