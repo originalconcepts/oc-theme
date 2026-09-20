@@ -9309,3 +9309,96 @@ msgstr "ברוב החנויות זה כבוי, וכך גם מלכתחילה. מ�
 
 msgid "Turning it off hides the screen and the question — it deletes nothing. The branches you have keep their pages, and the branches block goes on working, which makes it just as useful for \"where to find our products\"."
 msgstr "כיבוי מסתיר את המסך ואת השאלה — הוא לא מוחק כלום. הסניפים הקיימים שומרים על העמודים שלהם, והבלוק של הסניפים ממשיך לעבוד — מה שהופך אותו מתאים בדיוק באותה מידה ל״איפה אפשר למצוא את המוצרים שלנו״."
+
+msgid "Heading — collection"
+msgstr "כותרת — איסוף עצמי"
+
+msgid "Used instead of the heading above when the order is being collected rather than delivered."
+msgstr "מוצגת במקום הכותרת שלמעלה כשההזמנה נאספת ולא נשלחת."
+
+msgid "Opening words — delivery"
+msgstr "פתיח — משלוח"
+
+msgid "The paragraph under the heading. One line per paragraph."
+msgstr "הפסקה שמתחת לכותרת. כל שורה היא פסקה."
+
+msgid "Opening words — collection"
+msgstr "פתיח — איסוף עצמי"
+
+msgid "The same, for an order being collected. Left empty, the delivery wording is used."
+msgstr "אותו הדבר להזמנה שנאספת. אם ריק, יוצג הנוסח של המשלוח."
+
+msgid "Received"
+msgstr "התקבלה"
+
+msgid "On its way"
+msgstr "יצאה אליך"
+
+msgid "Ready for collection"
+msgstr "מוכנה לאיסוף"
+
+msgid "With you"
+msgstr "אצלך"
+
+msgid "Collected"
+msgstr "נאספה"
+
+msgid "Collection"
+msgstr "איסוף עצמי"
+
+msgid "Collection in person"
+msgstr "איסוף עצמי"
+
+msgid "Quantity: %d"
+msgstr "כמות: %d"
+
+msgid "Any questions?"
+msgstr "יש לכם שאלה?"
+
+msgid "We are here — whichever way suits you."
+msgstr "אנחנו כאן, בכל דרך שנוחה לכם."
+
+msgid "Call"
+msgstr "טלפון"
+
+msgid "Follow us"
+msgstr "עוקבים אחרינו"
+
+msgid "Your order has been received"
+msgstr "הזמנתך התקבלה"
+
+msgid ""
+"Thank you — your order has been received.\n"
+"It is expected to reach you between [from] and [to].\n"
+"We will email you again the moment it leaves us."
+msgstr ""
+"הזמנתך התקבלה בהצלחה, תודה רבה.\n"
+"ההזמנה צפויה להגיע אליך בין [from] ועד [to].\n"
+"נודיע לך במייל נוסף ברגע שהמשלוח יצא אליך."
+
+msgid ""
+"Thank you — your order has been received.\n"
+"We are getting it ready, and we will email you the moment it is waiting for you."
+msgstr ""
+"הזמנתך התקבלה בהצלחה, תודה רבה.\n"
+"אנחנו מכינים אותה, ונעדכן אותך במייל ברגע שהיא תחכה לך."
+
+msgid "Your order is on its way"
+msgstr "הזמנתך יצאה אליך"
+
+msgid "Your order is ready for collection"
+msgstr "הזמנתך מוכנה לאיסוף"
+
+msgid ""
+"Good news — your order has left us and is on its way to you.\n"
+"We will be in touch if anything changes. Thank you for shopping with us."
+msgstr ""
+"בשורה טובה — הזמנתך ארוזה, יצאה אלינו לדרך והיא בדרך אליך.\n"
+"אם משהו ישתנה נעדכן אותך. תודה שקנית אצלנו."
+
+msgid ""
+"Good news — your order is ready and waiting for you.\n"
+"Come whenever it suits you; the details are below. Thank you for shopping with us."
+msgstr ""
+"בשורה טובה — הזמנתך מוכנה ומחכה לך.\n"
+"אפשר להגיע בכל זמן שנוח לך; כל הפרטים למטה. תודה שקנית אצלנו."

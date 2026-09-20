@@ -166,6 +166,7 @@ require_once OC_THEME_DIR . '/inc/class-oc-auth.php';
 require_once OC_THEME_DIR . '/inc/class-oc-auth-admin.php';
 require_once OC_THEME_DIR . '/inc/class-oc-2fa.php';
 require_once OC_THEME_DIR . '/inc/class-oc-branch-orders.php';
+require_once OC_THEME_DIR . '/inc/class-oc-emails.php';
 
 /**
  * Cache-busting version for a theme-relative asset.
@@ -534,6 +535,7 @@ add_action( 'admin_notices', 'oc_dependency_notice' );
 ( new OC\Theme\Contact() )->register();
 ( new OC\Theme\Thankyou() )->register();
 ( new OC\Theme\Branch_Orders() )->register();
+( new OC\Theme\Emails() )->register();
 ( new OC\Theme\Performance() )->register();
 ( new OC\Theme\Search() )->register();
 ( new OC\Theme\Order() )->register();
