@@ -11267,6 +11267,17 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 
 .oc-checkout tr.oc-co-shiprow2 td { text-align: left; white-space: nowrap; }
 
+/* Waiting for an address: a reason, not a figure. Quieter than a price and
+ * allowed to wrap, because it is a sentence. */
+.oc-co-shipwait {
+	font-style: normal;
+	font-size: .86em;
+	font-weight: 400;
+	color: var(--oc-ink-2, #666);
+}
+
+.oc-checkout tr.oc-co-shiprow2--wait td { white-space: normal; }
+
 /* the promotion engine's nudge panel belongs to the cart, not here */
 .oc-checkout .promeng-cart-messages { display: none; }
 

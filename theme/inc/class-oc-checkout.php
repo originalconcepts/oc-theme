@@ -935,23 +935,25 @@ final class Checkout {
 	}
 
 	/**
-	 * Can the price of delivery change with where it is going?
+	 * Can the price of delivery still change with where it is going — really,
+	 * for this cart?
 	 *
-	 * Two things make it able to: more than one shipping zone carrying
-	 * places, so which zone the shopper falls in decides the method and the
-	 * price; and, in our own engine, a region — a region exists for no other
-	 * reason than to be priced differently from everywhere else.
+	 * Having regions set up is not the same as the answer depending on them.
+	 * Our engine gives a region exactly two levers: a price of its own in
+	 * place of the base, and the right to say free delivery is not earned
+	 * here. So a region priced like everywhere else, which lets free delivery
+	 * be earned like everywhere else, changes nothing and is not worth
+	 * waiting for.
 	 *
-	 * A shop with one zone and no regions charges the same everywhere, and
-	 * there is nothing to wait for.
+	 * The cart matters too. Once free delivery has been earned, a region's
+	 * price never comes into it — only a region that can take the free
+	 * delivery away still makes the address count. That is the difference
+	 * between honestly saying "free" and stalling over a price that cannot
+	 * change.
+	 *
+	 * @param \WC_Shipping_Rate $rate The rate as quoted against the shop's own address.
 	 */
-	private function shipping_varies(): bool {
-		static $varies = null;
-
-		if ( null !== $varies ) {
-			return $varies;
-		}
-
+	private function shipping_varies( \WC_Shipping_Rate $rate ): bool {
 		$zones = 0;
 
 		foreach ( \WC_Shipping_Zones::get_zones() as $zone ) {
@@ -960,17 +962,34 @@ final class Checkout {
 			}
 		}
 
+		// Separate zones can carry different methods entirely.
 		if ( $zones > 1 ) {
-			$varies = true;
-
-			return $varies;
+			return true;
 		}
 
-		$varies = class_exists( '\\OC\\Theme\\Shipping\\Rules' )
-			&& Shipping\Rules::enabled()
-			&& ! empty( Shipping\Rules::get()['regions'] );
+		if ( ! class_exists( '\\OC\\Theme\\Shipping\\Rules' ) || ! Shipping\Rules::enabled() ) {
+			return false;
+		}
 
-		return $varies;
+		$rules     = Shipping\Rules::get();
+		$base      = (float) ( $rules['base'] ?? 0 );
+		$free_over = (float) ( $rules['free_over'] ?? 0 );
+		$free_now  = 0.0 === round( (float) $rate->get_cost(), 2 );
+
+		foreach ( (array) ( $rules['regions'] ?? array() ) as $region ) {
+			// A region that refuses free delivery charges where everywhere
+			// else is free — that counts whatever the cart holds.
+			if ( 'no' === ( $region['free'] ?? 'inherit' ) && $free_over > 0 ) {
+				return true;
+			}
+
+			// Its own price only ever applies when nothing is free.
+			if ( ! $free_now && abs( (float) ( $region['price'] ?? 0 ) - $base ) >= 0.005 ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**
@@ -1017,11 +1036,17 @@ final class Checkout {
 
 			$rate = $rates[ $current ];
 
-			// Collection is free wherever the shopper lives, so it never has
-			// to wait; anything carried does.
+			// Before an address there is nothing to price against but the
+			// shop's own, so where the answer can still change the row says
+			// so rather than naming a figure. Naming one — "Free" above all —
+			// reads as a promise. Collection never waits: it costs nothing
+			// wherever the shopper lives.
 			if ( 'local_pickup' !== $rate->get_method_id()
-				&& $this->shipping_varies()
-				&& ! $this->dest_given( (array) $package ) ) {
+				&& ! $this->dest_given( (array) $package )
+				&& $this->shipping_varies( $rate ) ) {
+				echo '<tr class="oc-co-shiprow2 oc-co-shiprow2--wait"><th>' . esc_html( $rate->get_label() ) . '</th>'
+					. '<td><em class="oc-co-shipwait">' . esc_html__( 'Worked out from your address', 'oc-theme' ) . '</em></td></tr>';
+
 				continue;
 			}
 

@@ -9244,3 +9244,6 @@ msgstr "להציג את התמונה במלואה"
 
 msgid "Fill the card and crop"
 msgstr "למלא את הכרטיס ולחתוך"
+
+msgid "Worked out from your address"
+msgstr "מחושב לפי הכתובת"
