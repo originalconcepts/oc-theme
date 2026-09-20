@@ -1562,7 +1562,7 @@ final class Checkout {
 
 			foreach ( $this->branches() as $one ) {
 				if ( $one['id'] === $branch ) {
-					$order->update_meta_data( '_oc_branch', $branch );
+					$order->update_meta_data( '_oc_branch', (string) $branch );
 					$order->update_meta_data( '_oc_branch_name', $one['name'] );
 					break;
 				}
