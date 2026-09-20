@@ -2906,3 +2906,25 @@ html.oc-look-lock body { overflow: hidden; }
 .ocb-lead__fail { margin: 10px 0 0; font-size: .9rem; color: #b4453c; }
 .ocb-lead .oc-guard-ts, .ocb-news .oc-guard-ts { margin-block: 8px; }
 .ocb-lead .oc-guard-ts:empty, .ocb-news .oc-guard-ts:empty { display: none; }
+
+/* The spam guard's box is a child of the form, which makes it a grid item in
+ * the lead form and a flex item in the newsletter's single row — but only
+ * from the moment Turnstile draws itself, because until then the box is
+ * empty and the rule above hides it. That is why both forms looked right
+ * until somebody touched them: the box then claimed the first cell, the name
+ * jumped to the other column and the phone dropped to a line of its own,
+ * under the visitor's hands. A challenge belongs on a line of its own, just
+ * above the button. */
+.ocb-lead .oc-guard-ts { grid-column: 1 / -1; justify-self: center; order: 2; }
+.ocb-lead__consent { order: 1; }
+.ocb-lead__go { order: 3; }
+.ocb-lead__thanks,
+.ocb-lead__fail { order: 4; }
+
+/* The newsletter is one row, so the box has to be allowed to break it: a
+ * basis of 100% cannot share a line with anything. Wrapping changes nothing
+ * else — the field's min-inline-size is 0, so it and the button stay
+ * together until the button alone no longer fits. */
+.ocb-news { flex-wrap: wrap; }
+.ocb-news .oc-guard-ts { flex: 1 0 100%; order: 1; }
+.ocb-news__thanks { order: 2; }
