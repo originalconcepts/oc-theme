@@ -10913,34 +10913,76 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 	flex: none;
 }
 
-/* "Collect from" — a row of the same group, under the collection card it
- * belongs to, set in from the radio so it reads as that card's business. */
+/* "Collect from" — part of the collection card rather than a row of its
+ * own: no rule above it, and set in from the radio so it lines up under the
+ * method's name. The control is only as wide as the branch it names, so the
+ * name reads as the end of the sentence the label starts instead of sitting
+ * across the room from it.
+ *
+ * Everything about its shape has to be said at the strength below. The
+ * picker lives inside Woo's .form-row — the pseudo-field carrying the
+ * delivery block — and this stylesheet gives every field in a checkout
+ * form-row the metrics of a floating-label box: full width, 50px tall,
+ * 21px of padding above the text to leave room for a label that rides up.
+ * Right for an address field; for a word at the end of a sentence it is a
+ * large empty box with the words at the bottom of it. */
 .oc-co-branch {
 	display: flex;
 	align-items: center;
-	gap: 10px;
+	gap: 9px;
 	flex-wrap: wrap;
-	padding: 10px 15px 12px 43px;
-	border-block-start: 1px dashed rgb(228 230 234);
+	padding: 0 43px 11px 15px;
+	margin-block-start: -3px;
 }
 
-.oc-co-branch__lab { font-size: .86rem; color: var(--oc-ink-2, #666); flex: none; }
+.oc-co-branch__lab { font-size: .88rem; color: var(--oc-ink-2, #666); flex: none; }
 
 .oc-co-branch__sel {
-	flex: 1 1 200px;
-	min-inline-size: 0;
-	padding: 8px 12px;
-	border: 1.5px solid color-mix(in srgb, currentColor 22%, transparent);
-	border-radius: var(--oc-cta-r, 8px);
-	background: var(--oc-surface, #fff);
+	appearance: none;
+	-webkit-appearance: none;
+	flex: 0 1 auto;
+	font-weight: 500;
 	color: var(--oc-ink, #1c1c1c);
-	font: inherit;
-	font-size: .9rem;
+	cursor: pointer;
+	text-overflow: ellipsis;
 }
 
-.oc-co-branch__sel:focus { outline: none; border-color: currentColor; }
+.oc-checkout form.checkout .form-row select.oc-co-branch__sel {
+	inline-size: auto;
+	max-inline-size: 100%;
+	min-inline-size: 0;
+	min-block-size: 0;
+	block-size: auto;
+	padding-block: 7px;
+	padding-inline: 12px 32px;
+	border: 1px solid rgb(228 230 234);
+	border-radius: 8px;
+	background-color: var(--oc-surface, #fff);
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+	background-repeat: no-repeat;
+	background-position: left 11px center;
+	background-size: 13px;
+	font-size: .9rem;
+	line-height: 1.35;
+	transition: border-color .14s ease;
+}
 
-[dir="ltr"] .oc-co-branch { padding: 10px 43px 12px 15px; }
+[dir="ltr"] .oc-checkout form.checkout .form-row select.oc-co-branch__sel {
+	padding-inline: 32px 12px;
+	background-position: right 11px center;
+}
+
+.oc-checkout form.checkout .form-row select.oc-co-branch__sel:hover {
+	border-color: color-mix(in srgb, currentColor 28%, transparent);
+}
+
+.oc-checkout form.checkout .form-row select.oc-co-branch__sel:focus,
+.oc-checkout form.checkout .form-row select.oc-co-branch__sel:focus-visible {
+	outline: none;
+	border-color: var(--oc-cta, var(--oc-ink, #111));
+}
+
+[dir="ltr"] .oc-co-branch { padding: 0 15px 11px 43px; }
 
 .oc-co-rate__name { font-weight: 500; font-size: .92rem; margin-inline-end: auto; }
 .oc-co-rate__cost { font-weight: 600; font-size: .9rem; flex: none; }

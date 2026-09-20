@@ -9285,7 +9285,7 @@ msgid "Left empty, the branch's own name is used."
 msgstr "אם השדה ריק, יוצג שם הסניף עצמו."
 
 msgid "Collect from"
-msgstr "איסוף מהסניף"
+msgstr "איסוף מסניף"
 
 msgid "Please choose the branch to collect from."
 msgstr "נא לבחור את הסניף שממנו תאספו את ההזמנה."
