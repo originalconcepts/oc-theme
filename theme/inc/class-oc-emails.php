@@ -200,23 +200,20 @@ final class Emails {
 
 		if ( $id ) {
 			// The FULL file, not a resized one. A logo shown at 170px from a
-			// 300px "medium" is already soft; on the retina screen every phone
-			// has, it is visibly rough. The browser downsamples a large file
-			// beautifully and upsamples a small one badly.
+			// 300px "medium" is already soft, and on the retina screen every
+			// phone has it is visibly rough.
 			$src = wp_get_attachment_image_url( $id, 'full' );
-			$raw = wp_get_attachment_image_src( $id, 'full' );
 
 			if ( $src ) {
-				$wide = $raw && ! empty( $raw[1] ) && ! empty( $raw[2] ) && (int) $raw[1] >= (int) $raw[2];
-				$cap  = $wide ? 168 : 62;
-
-				// One dimension only. Give both and the first non-square logo
-				// somebody uploads comes out stretched.
+				// Bounded on BOTH axes and sized on neither. A width alone is
+				// no cap at all for an SVG, which is what a smart shop uploads
+				// and which carries no pixel size to reason from — the first
+				// version of this let the demo's wordmark run the full width
+				// of the email. Two maximums with auto on both dimensions can
+				// overflow nothing, whatever the file turns out to be.
 				return '<img src="' . esc_url( $src ) . '" alt="' . esc_attr( $name ) . '"'
-					. ( $wide ? ' width="' . $cap . '"' : '' )
-					. ' style="display:block;border:0;outline:none;text-decoration:none;'
-					. ( $wide ? 'width:' . $cap . 'px;max-width:' . $cap . 'px;height:auto;' : 'height:' . $cap . 'px;width:auto;' )
-					. '" />';
+					. ' style="display:block;margin:0 auto;border:0;outline:none;text-decoration:none;'
+					. 'width:auto;height:auto;max-width:180px;max-height:54px;" />';
 			}
 		}
 
@@ -402,13 +399,20 @@ final class Emails {
 			return '<div style="margin:0 0 8px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:' . esc_attr( $p['soft'] ) . ';">' . esc_html( $text ) . '</div>';
 		};
 
+		// A phone number or an address reads left to right even in Hebrew,
+		// but the LINE it sits on belongs to the block. dir on the div moves
+		// the whole line to the other side of the card; dir on a span inside
+		// it turns the digits round and leaves the line where it was.
 		$line = static function ( string $text, bool $ltr = false ) use ( $p ): string {
 			if ( '' === trim( $text ) ) {
 				return '';
 			}
 
-			return '<div' . ( $ltr ? ' dir="ltr"' : '' ) . ' style="font-size:14px;line-height:1.65;color:' . esc_attr( $p['ink'] ) . ';'
-				. ( $ltr ? 'unicode-bidi:plaintext;' : '' ) . '">' . esc_html( $text ) . '</div>';
+			$value = $ltr
+				? '<span dir="ltr" style="unicode-bidi:plaintext;">' . esc_html( $text ) . '</span>'
+				: esc_html( $text );
+
+			return '<div style="font-size:14.5px;line-height:1.7;color:' . esc_attr( $p['ink'] ) . ';">' . $value . '</div>';
 		};
 
 		$who = $h( __( 'Orderer details', 'oc-theme' ) )
@@ -594,8 +598,8 @@ final class Emails {
 				. '<td valign="middle" style="padding-inline-start:11px;padding-right:11px;">'
 				. '<span style="display:block;font-size:14.5px;font-weight:700;line-height:1.3;color:' . esc_attr( $p['ink'] ) . ';">'
 				. esc_html( $c[1] ) . '</span>'
-				. '<span dir="ltr" style="display:block;margin-top:2px;font-size:13px;line-height:1.4;color:' . esc_attr( $p['soft'] ) . ';unicode-bidi:plaintext;">'
-				. esc_html( $c[2] ) . '</span>'
+				. '<span style="display:block;margin-top:2px;font-size:13px;line-height:1.4;color:' . esc_attr( $p['soft'] ) . ';">'
+				. '<span dir="ltr" style="unicode-bidi:plaintext;">' . esc_html( $c[2] ) . '</span></span>'
 				. '</td></tr></table></a>';
 		};
 
