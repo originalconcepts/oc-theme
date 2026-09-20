@@ -687,6 +687,8 @@ final class Emails {
 	 * The tint sits on a table CELL. Gmail will not let an anchor be a block
 	 * with a background around a table, and the first version came out as a
 	 * grey bar floating above the words.
+	 *
+	 * @param \WC_Email|null $email The email being sent, when there is one.
 	 */
 	public static function help( $email = null ): string {
 		// Off is a real answer: a shop with a busy inbox may not want three
