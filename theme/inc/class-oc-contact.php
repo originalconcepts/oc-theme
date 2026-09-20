@@ -295,6 +295,27 @@ final class Contact {
 					</tr>
 				</table>
 
+				<?php if ( class_exists( '\\OC\\Blocks\\Branches' ) ) : ?>
+					<h2><?php esc_html_e( 'Branches', 'oc-theme' ); ?></h2>
+					<table class="form-table" role="presentation">
+						<tr>
+							<th scope="row"><?php esc_html_e( 'Branches module', 'oc-theme' ); ?></th>
+							<td>
+								<label>
+									<input type="checkbox" name="oc_branches_menu" value="1" <?php checked( \OC\Blocks\Branches::menu_on() ); ?> />
+									<?php esc_html_e( 'This store has branches', 'oc-theme' ); ?>
+								</label>
+								<p class="description">
+									<?php esc_html_e( 'Off for most stores, and off to begin with. Turn it on and the Branches screen joins the menu, and a shopper who chooses collection at the checkout is asked which branch to collect from.', 'oc-theme' ); ?>
+								</p>
+								<p class="description">
+									<?php esc_html_e( 'Turning it off hides the screen and the question — it deletes nothing. The branches you have keep their pages, and the branches block goes on working, which makes it just as useful for "where to find our products".', 'oc-theme' ); ?>
+								</p>
+							</td>
+						</tr>
+					</table>
+				<?php endif; ?>
+
 				<h2><?php esc_html_e( 'Social profiles', 'oc-theme' ); ?></h2>
 				<table class="form-table" role="presentation">
 					<?php foreach ( self::networks() as $field => $label ) : ?>
@@ -335,6 +356,17 @@ final class Contact {
 		// phpcs:enable WordPress.Security.NonceVerification.Missing
 
 		update_option( 'oc_contact', $s );
+
+		// The branches module rides on this screen rather than earning a link
+		// of its own: it is one switch, and this is where the shop describes
+		// itself. The option belongs to the blocks plugin, which owns the
+		// branches; only the switch lives here.
+		if ( class_exists( '\\OC\\Blocks\\Branches' ) ) {
+			update_option(
+				\OC\Blocks\Branches::OPTION,
+				array( 'menu' => empty( $_POST['oc_branches_menu'] ) ? 0 : 1 ) // phpcs:ignore WordPress.Security.NonceVerification.Missing -- verified above.
+			);
+		}
 
 		wp_safe_redirect( add_query_arg( 'oc_saved', '1', admin_url( 'admin.php?page=oc-contact' ) ) );
 		exit;

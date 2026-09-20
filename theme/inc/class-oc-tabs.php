@@ -364,7 +364,7 @@ final class Tabs {
 	 * which the classes registered them. The first entry is also where the
 	 * parent link goes.
 	 */
-	const ORDER = array( 'oc-contact', 'oc-announce', 'oc-tabs', 'oc-layout', 'oc-filters', 'oc-search', 'oc-cart', 'oc-branches', 'oc-thankyou', 'oc-waitlist' );
+	const ORDER = array( 'oc-contact', 'oc-announce', 'oc-tabs', 'oc-layout', 'oc-filters', 'oc-search', 'oc-cart', 'oc-thankyou', 'oc-waitlist' );
 
 	/**
 	 * Put the submenu in that order; screens not named keep their place after it.

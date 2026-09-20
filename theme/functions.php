@@ -165,7 +165,6 @@ require_once OC_THEME_DIR . '/inc/class-oc-seo-admin.php';
 require_once OC_THEME_DIR . '/inc/class-oc-auth.php';
 require_once OC_THEME_DIR . '/inc/class-oc-auth-admin.php';
 require_once OC_THEME_DIR . '/inc/class-oc-2fa.php';
-require_once OC_THEME_DIR . '/inc/class-oc-branches-admin.php';
 require_once OC_THEME_DIR . '/inc/class-oc-branch-orders.php';
 
 /**
@@ -534,7 +533,6 @@ add_action( 'admin_notices', 'oc_dependency_notice' );
 ( new OC\Theme\Announce() )->register();
 ( new OC\Theme\Contact() )->register();
 ( new OC\Theme\Thankyou() )->register();
-( new OC\Theme\Branches_Admin() )->register();
 ( new OC\Theme\Branch_Orders() )->register();
 ( new OC\Theme\Performance() )->register();
 ( new OC\Theme\Search() )->register();

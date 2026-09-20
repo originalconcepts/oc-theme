@@ -42,9 +42,9 @@ final class Branches {
 		$saved = get_option( self::OPTION );
 
 		return array(
-			// Shown unless the shop says otherwise: a shop that has branches
-			// today should not lose the screen to a new release.
-			'menu' => isset( $saved['menu'] ) ? (int) $saved['menu'] : 1,
+			// Off until a shop says it has branches. Most do not, and a screen
+			// for something you do not have is clutter in the way of the work.
+			'menu' => isset( $saved['menu'] ) ? (int) $saved['menu'] : 0,
 		);
 	}
 
@@ -65,7 +65,11 @@ final class Branches {
 	 * @return array<int,array{id:int,name:string}>
 	 */
 	public static function for_pickup(): array {
-		if ( ! post_type_exists( self::CPT ) ) {
+		// The module is one switch over the whole feature: with it off there
+		// is no Branches screen and no branch to choose at the checkout. A
+		// shop that had neither yesterday should not be asked the question
+		// today because a stray branch exists somewhere.
+		if ( ! self::menu_on() || ! post_type_exists( self::CPT ) ) {
 			return array();
 		}
 

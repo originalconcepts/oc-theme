@@ -9297,3 +9297,15 @@ msgid "%d branch is offered when a shopper chooses collection."
 msgid_plural "%d branches are offered when a shopper chooses collection."
 msgstr[0] "סניף אחד מוצע ללקוח שבוחר איסוף עצמי."
 msgstr[1] "%d סניפים מוצעים ללקוח שבוחר איסוף עצמי."
+
+msgid "Branches module"
+msgstr "מודול סניפים"
+
+msgid "This store has branches"
+msgstr "לחנות הזאת יש סניפים"
+
+msgid "Off for most stores, and off to begin with. Turn it on and the Branches screen joins the menu, and a shopper who chooses collection at the checkout is asked which branch to collect from."
+msgstr "ברוב החנויות זה כבוי, וכך גם מלכתחילה. מפעילים — ומסך הסניפים מצטרף לתפריט, ולקוח שבוחר איסוף עצמי בקופה נשאל מאיזה סניף לאסוף."
+
+msgid "Turning it off hides the screen and the question — it deletes nothing. The branches you have keep their pages, and the branches block goes on working, which makes it just as useful for \"where to find our products\"."
+msgstr "כיבוי מסתיר את המסך ואת השאלה — הוא לא מוחק כלום. הסניפים הקיימים שומרים על העמודים שלהם, והבלוק של הסניפים ממשיך לעבוד — מה שהופך אותו מתאים בדיוק באותה מידה ל״איפה אפשר למצוא את המוצרים שלנו״."
