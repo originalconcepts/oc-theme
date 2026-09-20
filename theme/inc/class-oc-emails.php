@@ -259,7 +259,7 @@ final class Emails {
 		$css = '@media only screen and (max-width:620px){'
 			. '.oc-pad{padding:26px 18px !important}'
 			. '.oc-h1{font-size:23px !important}'
-			. '.oc-step-l{font-size:12px !important}'
+			. '.oc-h1{font-size:24px !important}'
 			. '.oc-card{display:block !important;width:100% !important;max-width:100% !important}'
 			. '.oc-col{display:block !important;width:100% !important;padding:0 0 18px !important}'
 			. '.oc-gap{display:none !important}'
@@ -300,10 +300,14 @@ final class Emails {
 	 *
 	 * Three stops, and only the first two can ever be ticked. Nothing tells
 	 * the shop that a parcel was handed over or that somebody walked in and
-	 * collected it — the carrier does not say so and marking it by hand is
-	 * work the shop did not ask for. So the last stop is drawn as what it
-	 * honestly is: the one still to come, with the date it is expected on.
-	 * Pretending to know is worse than an open circle.
+	 * collected it, so the last stop is drawn as what it honestly is: the
+	 * one still to come, with the date it is expected on.
+	 *
+	 * Built as ONE row of circle, line, circle, line, circle, all vertically
+	 * centred, so the line runs through the middle of the circles by
+	 * construction rather than by a negative margin that each mail client
+	 * honours differently. The tick is a glyph, not an image: a tick that
+	 * vanishes when a client hides pictures is a stop that looks undone.
 	 *
 	 * @param \WC_Order $order Order.
 	 * @param int       $done  How many stops are behind us (1 or 2).
@@ -329,51 +333,52 @@ final class Emails {
 			array( $pickup ? __( 'Collected', 'oc-theme' ) : __( 'With you', 'oc-theme' ), $due ),
 		);
 
-		$tick  = self::icon_url( 'tick' );
-		$cells = '';
+		$size = 38;
+		$dots = '';
+		$labs = '';
 
 		foreach ( $stops as $i => $stop ) {
 			$on = $i < $done;
 
-			// The circle is a cell with a background rather than a div with a
-			// border-radius, because Outlook rounds nothing — it simply comes
-			// out square there, which is fine, and round everywhere else.
-			$dot = '<table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center"><tr>'
-				. '<td align="center" valign="middle" width="30" height="30" style="width:30px;height:30px;line-height:30px;'
-				. 'border-radius:15px;background:' . esc_attr( $on ? $p['cta'] : '#ffffff' ) . ';'
-				. 'border:2px solid ' . esc_attr( $on ? $p['cta'] : '#d6dae0' ) . ';">'
+			// A div, because a table cell with a radius comes out as a
+			// rounded square in more than one client; a div with a radius of
+			// half its width is a circle everywhere that draws radii at all.
+			$circle = '<div style="width:' . $size . 'px;height:' . $size . 'px;line-height:' . ( $size - ( $on ? 0 : 4 ) ) . 'px;'
+				. 'border-radius:' . ( $size / 2 ) . 'px;margin:0 auto;text-align:center;'
 				. ( $on
-					? '<img src="' . esc_url( $tick ) . '" width="13" height="13" alt="" style="display:block;border:0;width:13px;height:13px;margin:0 auto;" />'
-					: '&nbsp;' )
-				. '</td></tr></table>';
+					? 'background:' . esc_attr( $p['cta'] ) . ';color:#ffffff;font-size:21px;font-weight:700;'
+					: 'background:#ffffff;border:2px solid #cfd4db;color:#cfd4db;font-size:20px;' )
+				. '">' . ( $on ? '&#10003;' : '&nbsp;' ) . '</div>';
 
-			$cells .= '<td align="center" width="33.33%" valign="top" style="padding:0 3px;">'
-				. $dot
-				. '<div class="oc-step-l" style="margin:9px 0 0;font-size:13px;font-weight:700;line-height:1.35;color:'
-				. esc_attr( $on ? $p['ink'] : '#98a0aa' ) . ';">' . esc_html( $stop[0] ) . '</div>'
+			$dots .= '<td align="center" valign="middle" width="' . $size . '" style="width:' . $size . 'px;padding:0;">' . $circle . '</td>';
+
+			if ( $i < 2 ) {
+				$dots .= '<td valign="middle" style="padding:0 6px;">'
+					. '<div style="height:3px;line-height:3px;font-size:0;border-radius:2px;background:'
+					. esc_attr( $i + 1 < $done ? $p['cta'] : '#dfe3e8' ) . ';">&nbsp;</div></td>';
+			}
+
+			$labs .= '<td align="center" valign="top" width="33%" style="padding:10px 4px 0;">'
+				. '<div style="font-size:14px;font-weight:700;line-height:1.35;color:' . esc_attr( $on ? $p['ink'] : '#8f97a1' ) . ';">'
+				. esc_html( $stop[0] ) . '</div>'
 				. ( '' !== $stop[1]
-					? '<div style="margin:3px 0 0;font-size:11.5px;line-height:1.4;color:#98a0aa;">' . esc_html( $stop[1] ) . '</div>'
+					? '<div style="margin:3px 0 0;font-size:13px;line-height:1.4;color:#8f97a1;">' . esc_html( $stop[1] ) . '</div>'
 					: '' )
 				. '</td>';
 		}
 
-		// The rule sits behind the circles: two halves, each coloured by
-		// whether the stop it leads to has happened.
-		$rule = '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>'
-			. '<td width="17%" style="font-size:0;line-height:0;">&nbsp;</td>'
-			. '<td height="3" style="height:3px;line-height:3px;font-size:0;border-radius:2px;background:' . esc_attr( $done > 1 ? $p['cta'] : '#e2e6ea' ) . ';">&nbsp;</td>'
-			. '<td width="6" style="font-size:0;line-height:0;">&nbsp;</td>'
-			. '<td height="3" style="height:3px;line-height:3px;font-size:0;border-radius:2px;background:#e2e6ea;">&nbsp;</td>'
-			. '<td width="17%" style="font-size:0;line-height:0;">&nbsp;</td>'
-			. '</tr></table>';
-
-		return '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:24px 0 0;'
-			. 'background:' . esc_attr( $p['panel'] ) . ';border-radius:12px;">'
-			. '<tr><td style="padding:20px 14px 18px;">'
-			. '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">'
-			. '<tr><td style="padding:0 0 -1px;">' . $rule . '</td></tr>'
-			. '<tr><td style="padding:0;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:-16px;"><tr>' . $cells . '</tr></table></td></tr>'
-			. '</table>'
+		// The circle row is narrower than the label row: circles at the two
+		// ends sit above the CENTRE of the outer label cells, so the row is
+		// inset by half a label cell on each side.
+		return '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:26px 0 0;'
+			. 'background:' . esc_attr( $p['panel'] ) . ';border-radius:14px;">'
+			. '<tr><td style="padding:24px 16px 20px;">'
+			. '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>'
+			. '<td width="16.66%" style="padding:0;"></td>'
+			. '<td style="padding:0;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>' . $dots . '</tr></table></td>'
+			. '<td width="16.66%" style="padding:0;"></td>'
+			. '</tr></table>'
+			. '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>' . $labs . '</tr></table>'
 			. '</td></tr></table>';
 	}
 
@@ -387,15 +392,15 @@ final class Emails {
 
 		return '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:22px 0 0;"><tr>'
 			. '<td align="center" style="border-radius:10px;background:' . esc_attr( $p['cta'] ) . ';">'
-			. '<a href="' . esc_url( $order->get_view_order_url() ) . '" style="display:block;padding:16px 24px;font-size:16px;font-weight:700;'
+			. '<a href="' . esc_url( $order->get_view_order_url() ) . '" style="display:block;padding:17px 24px;font-size:16.5px;font-weight:700;'
 			. 'color:#ffffff;text-decoration:none;border-radius:10px;letter-spacing:.01em;">'
 			. esc_html__( 'View your order', 'oc-theme' ) . '</a>'
 			. '</td></tr></table>';
 	}
 
 	/**
-	 * Who ordered, and where it is going — side by side, and stacked on a
-	 * phone because the cells are given percentage widths on one row.
+	 * Who ordered, and where it is going — side by side, stacking on a
+	 * phone.
 	 *
 	 * @param \WC_Order $order Order.
 	 */
@@ -404,28 +409,31 @@ final class Emails {
 		$pickup = self::is_pickup( $order );
 
 		$h = static function ( string $text ) use ( $p ): string {
-			return '<div style="margin:0 0 8px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:' . esc_attr( $p['soft'] ) . ';">' . esc_html( $text ) . '</div>';
+			return '<div style="margin:0 0 8px;font-size:13px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:' . esc_attr( $p['soft'] ) . ';">' . esc_html( $text ) . '</div>';
 		};
 
-		// A phone number or an address reads left to right even in Hebrew,
-		// but the LINE it sits on belongs to the block. dir on the div moves
-		// the whole line to the other side of the card; dir on a span inside
-		// it turns the digits round and leaves the line where it was.
-		$line = static function ( string $text, bool $ltr = false ) use ( $p ): string {
+		// Gmail turns anything that looks like an address, a phone number or
+		// an email into a blue underlined link of its own. It cannot be
+		// stopped, but the span inside it can insist on its own colour and no
+		// underline, and Gmail's link then shows as plain text. A number reads
+		// left to right on its own span, so the LINE stays where the block
+		// put it.
+		$line = static function ( string $text, bool $ltr = false, bool $bold = false ) use ( $p ): string {
 			if ( '' === trim( $text ) ) {
 				return '';
 			}
 
-			$value = $ltr
-				? '<span dir="ltr" style="unicode-bidi:plaintext;">' . esc_html( $text ) . '</span>'
-				: esc_html( $text );
+			$inner = '<span style="color:' . esc_attr( $p['ink'] ) . ';text-decoration:none;">' . esc_html( $text ) . '</span>';
 
-			return '<div style="font-size:14.5px;line-height:1.7;color:' . esc_attr( $p['ink'] ) . ';">' . $value . '</div>';
+			if ( $ltr ) {
+				$inner = '<span dir="ltr" style="unicode-bidi:plaintext;">' . $inner . '</span>';
+			}
+
+			return '<div style="font-size:15.5px;line-height:1.7;' . ( $bold ? 'font-weight:600;' : '' ) . 'color:' . esc_attr( $p['ink'] ) . ';">' . $inner . '</div>';
 		};
 
 		$who = $h( __( 'Orderer details', 'oc-theme' ) )
-			. '<div style="font-size:14.5px;font-weight:600;line-height:1.65;color:' . esc_attr( $p['ink'] ) . ';">'
-			. esc_html( trim( $order->get_billing_first_name() . ' ' . $order->get_billing_last_name() ) ) . '</div>'
+			. $line( trim( $order->get_billing_first_name() . ' ' . $order->get_billing_last_name() ), false, true )
 			. $line( (string) $order->get_billing_phone(), true )
 			. $line( (string) $order->get_billing_email(), true );
 
@@ -434,7 +442,7 @@ final class Emails {
 			$branch = (string) $order->get_meta( '_oc_branch_name' );
 
 			if ( '' !== $branch ) {
-				$where .= '<div style="font-size:14.5px;font-weight:600;line-height:1.65;color:' . esc_attr( $p['ink'] ) . ';">' . esc_html( $branch ) . '</div>';
+				$where .= $line( $branch, false, true );
 
 				$id = (int) $order->get_meta( '_oc_branch' );
 
@@ -448,33 +456,50 @@ final class Emails {
 				$where .= $line( __( 'Collection in person', 'oc-theme' ) );
 			}
 		} else {
-			$bits = array_filter(
-				array(
-					trim( (string) $order->get_billing_address_1() . ' ' . (string) $order->get_billing_address_2() ),
-					(string) $order->get_billing_city(),
-				),
-				static function ( $v ) {
-					return '' !== trim( (string) $v );
-				}
-			);
+			// The street on its own line, the flat and floor and entry code
+			// named for what they are, the city last. Woo's "address 2" is
+			// this theme's flat number, and a bare "3" glued to the street was
+			// what the first version printed.
+			$extra = array();
+			$apt   = trim( (string) $order->get_billing_address_2() );
+			$floor = trim( (string) $order->get_meta( '_oc_floor' ) );
+			$entry = trim( (string) $order->get_meta( '_oc_entry' ) );
 
-			$where = $h( __( 'Delivery address', 'oc-theme' ) );
-
-			foreach ( $bits as $bit ) {
-				$where .= $line( (string) $bit );
+			if ( '' !== $apt ) {
+				/* translators: %s: apartment number. */
+				$extra[] = sprintf( __( 'Apt %s', 'oc-theme' ), $apt );
 			}
+
+			if ( '' !== $floor ) {
+				/* translators: %s: floor. */
+				$extra[] = sprintf( __( 'Floor %s', 'oc-theme' ), $floor );
+			}
+
+			if ( '' !== $entry ) {
+				/* translators: %s: entry code. */
+				$extra[] = sprintf( __( 'Entry %s', 'oc-theme' ), $entry );
+			}
+
+			$where = $h( __( 'Delivery address', 'oc-theme' ) )
+				. $line( trim( (string) $order->get_billing_address_1() ), false, true )
+				. $line( implode( ' · ', $extra ) )
+				. $line( trim( (string) $order->get_billing_city() ) );
 		}
 
-		return '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:24px 0 0;">'
+		return '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:26px 0 0;">'
 			. '<tr>'
 			. '<td class="oc-col" width="50%" valign="top" style="padding:0 0 14px;">' . $who . '</td>'
-			. '<td class="oc-gap" width="18" style="width:18px;">&nbsp;</td>'
+			. '<td class="oc-gap" width="20" style="width:20px;">&nbsp;</td>'
 			. '<td class="oc-col" valign="top" style="padding:0 0 14px;">' . $where . '</td>'
 			. '</tr></table>';
 	}
 
 	/**
 	 * What was bought, with the pictures — the part a shopper scrolls to.
+	 *
+	 * Three columns: the picture, the words, the price on the far side —
+	 * where a price is looked for. The gutter between picture and words is
+	 * the thing that makes a row read as a row rather than a pile.
 	 *
 	 * @param \WC_Order $order Order.
 	 */
@@ -495,15 +520,14 @@ final class Emails {
 					$src = wp_get_attachment_image_url( $id, 'woocommerce_thumbnail' );
 
 					if ( $src ) {
-						$pic = '<img src="' . esc_url( $src ) . '" width="70" height="70" alt=""'
-							. ' style="display:block;border:0;width:70px;height:70px;border-radius:10px;background:' . esc_attr( $p['panel'] ) . ';" />';
+						$pic = '<img src="' . esc_url( $src ) . '" width="72" height="72" alt="' . esc_attr( $item->get_name() ) . '"'
+							. ' style="display:block;border:0;width:72px;height:72px;border-radius:10px;background:' . esc_attr( $p['panel'] ) . ';" />';
 					}
 				}
 			}
 
 			if ( '' === $pic ) {
-				$pic = '<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td width="70" height="70"'
-					. ' style="width:70px;height:70px;border-radius:10px;background:' . esc_attr( $p['panel'] ) . ';">&nbsp;</td></tr></table>';
+				$pic = '<div style="width:72px;height:72px;border-radius:10px;background:' . esc_attr( $p['panel'] ) . ';"></div>';
 			}
 
 			$meta = wc_display_item_meta(
@@ -516,22 +540,20 @@ final class Emails {
 				)
 			);
 
-			// Two columns, never three. A price in a column of its own is the
-			// first thing to collapse on a phone, and the name is what gets
-			// squeezed to make room for it.
 			$rows .= '<tr>'
-				. '<td width="70" valign="top" style="width:70px;padding:14px 0;">' . $pic . '</td>'
-				. '<td valign="top" style="padding:14px 0;padding-inline-start:14px;">'
-				. '<div style="font-size:15px;font-weight:600;line-height:1.45;color:' . esc_attr( $p['ink'] ) . ';">'
+				. '<td width="72" valign="top" style="width:72px;padding:16px 0;">' . $pic . '</td>'
+				. '<td valign="top" style="padding:16px 18px;">'
+				. '<div style="font-size:15.5px;font-weight:600;line-height:1.45;color:' . esc_attr( $p['ink'] ) . ';">'
 				. esc_html( $item->get_name() ) . '</div>'
 				. ( $meta
-					? '<div style="margin:4px 0 0;font-size:13px;line-height:1.55;color:' . esc_attr( $p['soft'] ) . ';">' . wp_kses_post( $meta ) . '</div>'
+					? '<div style="margin:5px 0 0;font-size:13.5px;line-height:1.6;color:' . esc_attr( $p['soft'] ) . ';">' . wp_kses_post( $meta ) . '</div>'
 					: '' )
 				. '<div style="margin:6px 0 0;font-size:13.5px;line-height:1.5;color:' . esc_attr( $p['soft'] ) . ';">'
 				/* translators: %d: how many of this item. */
-				. esc_html( sprintf( __( 'Quantity: %d', 'oc-theme' ), (int) $item->get_quantity() ) )
-				. ' &nbsp;·&nbsp; <span style="font-weight:700;color:' . esc_attr( $p['ink'] ) . ';">'
-				. wp_kses_post( $order->get_formatted_line_subtotal( $item ) ) . '</span></div>'
+				. esc_html( sprintf( __( 'Quantity: %d', 'oc-theme' ), (int) $item->get_quantity() ) ) . '</div>'
+				. '</td>'
+				. '<td valign="top" align="left" style="padding:16px 0;white-space:nowrap;font-size:15.5px;font-weight:700;color:' . esc_attr( $p['ink'] ) . ';">'
+				. wp_kses_post( $order->get_formatted_line_subtotal( $item ) )
 				. '</td></tr>';
 		}
 
@@ -548,29 +570,32 @@ final class Emails {
 		foreach ( array_merge( $rows_in, $grand ) as $key => $total ) {
 			$last    = 'order_total' === $key;
 			$totals .= '<tr>'
-				. '<td style="padding:' . ( $last ? '13px 0 0' : '6px 0' ) . ';font-size:' . ( $last ? '15.5px' : '14px' ) . ';'
+				. '<td style="padding:' . ( $last ? '14px 0 0' : '7px 0' ) . ';font-size:' . ( $last ? '16px' : '14.5px' ) . ';'
 				. 'font-weight:' . ( $last ? '700' : '400' ) . ';color:' . esc_attr( $last ? $p['ink'] : $p['soft'] ) . ';'
 				. ( $last ? 'border-top:1px solid ' . esc_attr( $p['line'] ) . ';' : '' ) . '">'
 				. wp_kses_post( (string) $total['label'] ) . '</td>'
-				. '<td align="left" style="padding:' . ( $last ? '13px 0 0' : '6px 0' ) . ';font-size:' . ( $last ? '18px' : '14px' ) . ';'
+				. '<td align="left" style="padding:' . ( $last ? '14px 0 0' : '7px 0' ) . ';font-size:' . ( $last ? '19px' : '14.5px' ) . ';'
 				. 'font-weight:' . ( $last ? '700' : '600' ) . ';color:' . esc_attr( $p['ink'] ) . ';white-space:nowrap;'
 				. ( $last ? 'border-top:1px solid ' . esc_attr( $p['line'] ) . ';' : '' ) . '">'
 				. wp_kses_post( (string) $total['value'] ) . '</td>'
 				. '</tr>';
 		}
 
-		return '<div style="margin:26px 0 0;padding:22px 0 0;border-top:1px solid ' . esc_attr( $p['line'] ) . ';">'
-			. '<div style="margin:0;font-size:16px;font-weight:700;color:' . esc_attr( $p['ink'] ) . ';">'
+		return '<div style="margin:28px 0 0;padding:24px 0 0;border-top:1px solid ' . esc_attr( $p['line'] ) . ';">'
+			. '<div style="margin:0 0 4px;font-size:17px;font-weight:700;color:' . esc_attr( $p['ink'] ) . ';">'
 			. esc_html__( 'Order details', 'oc-theme' ) . '</div>'
 			. '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">' . $rows . '</table>'
-			. '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:8px 0 0;padding-top:10px;border-top:1px solid ' . esc_attr( $p['line'] ) . ';">'
+			. '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:10px 0 0;padding-top:12px;border-top:1px solid ' . esc_attr( $p['line'] ) . ';">'
 			. $totals . '</table></div>';
 	}
-
 
 	/**
 	 * "Need a hand?" — the shop's own channels as cards, two to a row, and
 	 * nothing that has not been filled in.
+	 *
+	 * The tint sits on a table CELL. Gmail will not let an anchor be a block
+	 * with a background around a table, and the first version came out as a
+	 * grey bar floating above the words.
 	 */
 	public static function help(): string {
 		$p     = self::palette();
@@ -597,37 +622,39 @@ final class Emails {
 		}
 
 		$one = static function ( array $c ) use ( $p ): string {
-			return '<a href="' . esc_url( $c[3] ) . '" style="display:block;text-decoration:none;background:' . esc_attr( $p['panel'] ) . ';'
-				. 'border-radius:12px;padding:15px 16px;">'
+			return '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">'
+				. '<tr><td style="background:' . esc_attr( $p['panel'] ) . ';border-radius:12px;padding:16px 18px;">'
 				. '<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>'
-				. '<td valign="middle" width="24" style="width:24px;">'
-				. '<img src="' . esc_url( self::icon_url( $c[0] ) ) . '" width="22" height="22" alt=""'
-				. ' style="display:block;border:0;width:22px;height:22px;" /></td>'
-				. '<td valign="middle" style="padding-inline-start:11px;padding-right:11px;">'
-				. '<span style="display:block;font-size:14.5px;font-weight:700;line-height:1.3;color:' . esc_attr( $p['ink'] ) . ';">'
+				. '<td valign="middle" width="26" style="width:26px;">'
+				. '<a href="' . esc_url( $c[3] ) . '" style="text-decoration:none;">'
+				. '<img src="' . esc_url( self::icon_url( $c[0] ) ) . '" width="24" height="24" alt=""'
+				. ' style="display:block;border:0;width:24px;height:24px;" /></a></td>'
+				. '<td valign="middle" style="padding:0 12px;">'
+				. '<a href="' . esc_url( $c[3] ) . '" style="text-decoration:none;color:' . esc_attr( $p['ink'] ) . ';">'
+				. '<span style="display:block;font-size:15.5px;font-weight:700;line-height:1.3;color:' . esc_attr( $p['ink'] ) . ';">'
 				. esc_html( $c[1] ) . '</span>'
-				. '<span style="display:block;margin-top:2px;font-size:13px;line-height:1.4;color:' . esc_attr( $p['soft'] ) . ';">'
-				. '<span dir="ltr" style="unicode-bidi:plaintext;">' . esc_html( $c[2] ) . '</span></span>'
-				. '</td></tr></table></a>';
+				. '<span style="display:block;margin-top:3px;font-size:14px;line-height:1.4;color:' . esc_attr( $p['soft'] ) . ';">'
+				. '<span dir="ltr" style="unicode-bidi:plaintext;color:' . esc_attr( $p['soft'] ) . ';text-decoration:none;">' . esc_html( $c[2] ) . '</span></span>'
+				. '</a></td></tr></table>'
+				. '</td></tr></table>';
 		};
 
-		// Two to a row, stacking on a phone. Any odd one out simply takes the
-		// row it is on rather than being stretched across it.
+		// Two to a row, stacking on a phone.
 		$rows  = '';
 		$pairs = array_chunk( $cards, 2 );
 
 		foreach ( $pairs as $pair ) {
 			$rows .= '<tr>';
-			$rows .= '<td class="oc-card" width="50%" valign="top" style="padding:0 0 10px;">' . $one( $pair[0] ) . '</td>';
-			$rows .= '<td class="oc-gap" width="10" style="width:10px;">&nbsp;</td>';
+			$rows .= '<td class="oc-card" width="50%" valign="top" style="padding:0 0 12px;">' . $one( $pair[0] ) . '</td>';
+			$rows .= '<td class="oc-gap" width="12" style="width:12px;">&nbsp;</td>';
 			$rows .= isset( $pair[1] )
-				? '<td class="oc-card" width="50%" valign="top" style="padding:0 0 10px;">' . $one( $pair[1] ) . '</td>'
+				? '<td class="oc-card" width="50%" valign="top" style="padding:0 0 12px;">' . $one( $pair[1] ) . '</td>'
 				: '<td class="oc-card" width="50%">&nbsp;</td>';
 			$rows .= '</tr>';
 		}
 
-		return '<div style="margin:28px 0 0;padding:22px 0 0;border-top:1px solid ' . esc_attr( $p['line'] ) . ';">'
-			. '<div style="margin:0 0 14px;font-size:16px;font-weight:700;color:' . esc_attr( $p['ink'] ) . ';">'
+		return '<div style="margin:30px 0 0;padding:24px 0 0;border-top:1px solid ' . esc_attr( $p['line'] ) . ';">'
+			. '<div style="margin:0 0 14px;font-size:17px;font-weight:700;color:' . esc_attr( $p['ink'] ) . ';">'
 			. esc_html__( 'Need a hand?', 'oc-theme' ) . '</div>'
 			. '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">' . $rows . '</table>'
 			. '</div>';
@@ -722,12 +749,12 @@ final class Emails {
 		$text = preg_replace( '/<p[^>]*>[\s\p{P}]*<\/p>/u', '', (string) $text );
 
 		$out  = '<div class="oc-pad" style="padding:34px 32px 30px;">';
-		$out .= '<h1 class="oc-h1" style="margin:0 0 14px;font-size:26px;line-height:1.3;font-weight:700;color:' . esc_attr( $p['ink'] ) . ';">'
+		$out .= '<h1 class="oc-h1" style="margin:0 0 14px;font-size:27px;line-height:1.3;font-weight:700;color:' . esc_attr( $p['ink'] ) . ';">'
 			. esc_html( $head ) . '</h1>';
 		$out .= (string) $text;
 		$out .= self::steps( $order, $done, $due );
 		$out .= self::button( $order );
-		$out .= '<div style="margin:26px 0 0;padding:16px 0 0;border-top:1px solid ' . esc_attr( $p['line'] ) . ';font-size:13.5px;font-weight:600;color:' . esc_attr( $p['soft'] ) . ';">'
+		$out .= '<div style="margin:26px 0 0;padding:16px 0 0;border-top:1px solid ' . esc_attr( $p['line'] ) . ';font-size:14.5px;font-weight:600;color:' . esc_attr( $p['soft'] ) . ';">'
 			/* translators: %s: the order number. */
 			. esc_html( sprintf( __( 'Order %s', 'oc-theme' ), '#' . $order->get_order_number() ) ) . '</div>';
 		$out .= self::parties( $order );
@@ -758,7 +785,7 @@ final class Emails {
 
 			$line = strtr( $line, $swap );
 
-			$out .= '<p style="margin:0 0 10px;font-size:15px;line-height:1.7;color:' . esc_attr( $p['soft'] ) . ';">'
+			$out .= '<p style="margin:0 0 10px;font-size:16px;line-height:1.75;color:' . esc_attr( $p['soft'] ) . ';">'
 				. esc_html( $line ) . '</p>';
 		}
 
