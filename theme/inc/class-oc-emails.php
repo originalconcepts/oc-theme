@@ -369,7 +369,8 @@ final class Emails {
 		return '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:24px 0 0;">'
 			. '<tr>'
 			. '<td width="50%" valign="top" style="padding:0 0 14px;">' . $who . '</td>'
-			. '<td width="50%" valign="top" style="padding:0 0 14px;">' . $where . '</td>'
+			. '<td width="18" style="width:18px;">&nbsp;</td>'
+			. '<td valign="top" style="padding:0 0 14px;">' . $where . '</td>'
 			. '</tr></table>';
 	}
 
@@ -429,9 +430,17 @@ final class Emails {
 				. '</td></tr>';
 		}
 
+		// Woo hands these over in its own order, and on some shops the
+		// payment method lands after the grand total — which reads as if the
+		// sum were not the end of the sum. The total goes last.
+		$rows_in = (array) $order->get_order_item_totals();
+		$grand   = isset( $rows_in['order_total'] ) ? array( 'order_total' => $rows_in['order_total'] ) : array();
+
+		unset( $rows_in['order_total'] );
+
 		$totals = '';
 
-		foreach ( $order->get_order_item_totals() as $key => $total ) {
+		foreach ( array_merge( $rows_in, $grand ) as $key => $total ) {
 			$last    = 'order_total' === $key;
 			$totals .= '<tr>'
 				. '<td style="padding:' . ( $last ? '12px 0 0' : '5px 0' ) . ';font-size:' . ( $last ? '15px' : '13.5px' ) . ';'
