@@ -139,7 +139,15 @@ final class Branches_Admin {
 			array( 'menu' => empty( $_POST['oc_branches_menu'] ) ? 0 : 1 )
 		);
 
-		wp_safe_redirect( add_query_arg( array( 'page' => self::PAGE, 'oc_saved' => 1 ), admin_url( 'admin.php' ) ) );
+		wp_safe_redirect(
+			add_query_arg(
+				array(
+					'page'     => self::PAGE,
+					'oc_saved' => 1,
+				),
+				admin_url( 'admin.php' )
+			)
+		);
 		exit;
 	}
 }

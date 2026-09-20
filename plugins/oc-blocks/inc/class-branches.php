@@ -198,16 +198,16 @@ final class Branches {
 		$access = get_post_meta( $branch_id, '_oc_br_access', true );
 
 		return array(
-			'address' => (string) get_post_meta( $branch_id, '_oc_br_address', true ),
-			'city'    => (string) get_post_meta( $branch_id, '_oc_br_city', true ),
-			'phone'   => (string) get_post_meta( $branch_id, '_oc_br_phone', true ),
-			'phone2'  => (string) get_post_meta( $branch_id, '_oc_br_phone2', true ),
-			'hours'   => (string) get_post_meta( $branch_id, '_oc_br_hours', true ),
-			'pickup'  => self::pickup_on( $branch_id ),
+			'address'     => (string) get_post_meta( $branch_id, '_oc_br_address', true ),
+			'city'        => (string) get_post_meta( $branch_id, '_oc_br_city', true ),
+			'phone'       => (string) get_post_meta( $branch_id, '_oc_br_phone', true ),
+			'phone2'      => (string) get_post_meta( $branch_id, '_oc_br_phone2', true ),
+			'hours'       => (string) get_post_meta( $branch_id, '_oc_br_hours', true ),
+			'pickup'      => self::pickup_on( $branch_id ),
 			'pickup_name' => (string) get_post_meta( $branch_id, '_oc_br_pickup_name', true ),
-			'access'  => is_array( $access ) ? $access : array(),
-			'gallery' => array_filter( array_map( 'absint', explode( ',', (string) get_post_meta( $branch_id, '_oc_br_gallery', true ) ) ) ),
-			'video'   => (string) get_post_meta( $branch_id, '_oc_br_video', true ),
+			'access'      => is_array( $access ) ? $access : array(),
+			'gallery'     => array_filter( array_map( 'absint', explode( ',', (string) get_post_meta( $branch_id, '_oc_br_gallery', true ) ) ) ),
+			'video'       => (string) get_post_meta( $branch_id, '_oc_br_video', true ),
 		);
 	}
 
