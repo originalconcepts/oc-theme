@@ -63,7 +63,8 @@ final class Emails {
 	/**
 	 * The words, added to the email's own settings screen.
 	 *
-	 * @param array $fields Woo's fields.
+	 * @param array  $fields Woo's fields.
+	 * @param string $id     Which email these belong to.
 	 * @return array
 	 */
 	public function fields( $fields, string $id = '' ) {
