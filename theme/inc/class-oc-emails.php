@@ -205,15 +205,23 @@ final class Emails {
 			$src = wp_get_attachment_image_url( $id, 'full' );
 
 			if ( $src ) {
-				// Bounded on BOTH axes and sized on neither. A width alone is
-				// no cap at all for an SVG, which is what a smart shop uploads
-				// and which carries no pixel size to reason from — the first
+				// Bounded on BOTH axes. A width alone is no cap at all for an
+				// SVG, which carries no pixel size to argue with — the first
 				// version of this let the demo's wordmark run the full width
-				// of the email. Two maximums with auto on both dimensions can
-				// overflow nothing, whatever the file turns out to be.
+				// of the email.
+				//
+				// Whether it may GROW into that box depends on what it is. A
+				// vector can be drawn at any size and stay sharp, so it fills
+				// the space rather than sitting at whatever the file happens
+				// to call its natural size — the demo's is 109px across, lost
+				// in a 600px email. A photograph enlarged past its own pixels
+				// only looks worse, so that one is bounded and left alone.
+				$vector = 'image/svg+xml' === get_post_mime_type( $id );
+
 				return '<img src="' . esc_url( $src ) . '" alt="' . esc_attr( $name ) . '"'
 					. ' style="display:block;margin:0 auto;border:0;outline:none;text-decoration:none;'
-					. 'width:auto;height:auto;max-width:180px;max-height:54px;" />';
+					. ( $vector ? 'width:180px;' : 'width:auto;' )
+					. 'height:auto;max-width:180px;max-height:54px;" />';
 			}
 		}
 
