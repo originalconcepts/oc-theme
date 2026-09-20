@@ -19,12 +19,7 @@ $oc_email = \OC\Theme\Emails::body(
 	$order,
 	$email ?? null,
 	1,
-	array(
-		'heading'        => __( 'Your order has been received', 'oc-theme' ),
-		'heading_pickup' => __( 'Your order has been received', 'oc-theme' ),
-		'intro'          => __( "Thank you — your order has been received.\nIt is expected to reach you between [from] and [to].\nWe will email you again the moment it leaves us.", 'oc-theme' ),
-		'intro_pickup'   => __( "Thank you — your order has been received.\nWe are getting it ready, and we will email you the moment it is waiting for you.", 'oc-theme' ),
-	)
+	\OC\Theme\Emails::wording( 'customer_processing_order' )
 );
 
 echo $oc_email; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- an email built entirely from escaped parts.

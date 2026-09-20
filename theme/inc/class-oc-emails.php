@@ -49,7 +49,12 @@ final class Emails {
 		}
 
 		foreach ( self::OURS as $id ) {
-			add_filter( 'woocommerce_settings_api_form_fields_' . $id, array( $this, 'fields' ) );
+			add_filter(
+				'woocommerce_settings_api_form_fields_' . $id,
+				function ( $fields ) use ( $id ) {
+					return $this->fields( $fields, $id );
+				}
+			);
 		}
 	}
 
@@ -61,7 +66,7 @@ final class Emails {
 	 * @param array $fields Woo's fields.
 	 * @return array
 	 */
-	public function fields( $fields ) {
+	public function fields( $fields, string $id = '' ) {
 		$fields = (array) $fields;
 
 		// Woo's own "additional content" is the last thing on the screen and
@@ -69,35 +74,65 @@ final class Emails {
 		$tail = isset( $fields['additional_content'] ) ? array( 'additional_content' => $fields['additional_content'] ) : array();
 		unset( $fields['additional_content'] );
 
+		$words = self::wording( $id );
+
+		// The defaults are the real, written text rather than an empty box.
+		// A shop opening this screen should see what its customers are being
+		// told and change a word of it — not face three blank fields and have
+		// to guess what belongs in them.
 		$fields['oc_heading_pickup'] = array(
 			'title'       => __( 'Heading — collection', 'oc-theme' ),
 			'type'        => 'text',
-			'desc_tip'    => __( 'Used instead of the heading above when the order is being collected rather than delivered.', 'oc-theme' ),
-			'placeholder' => '',
-			'default'     => '',
+			'description' => __( 'Shown instead of the heading above when the order is being collected.', 'oc-theme' ),
+			'desc_tip'    => true,
+			'default'     => $words['heading_pickup'],
 		);
 
 		$fields['oc_intro'] = array(
 			'title'       => __( 'Opening words — delivery', 'oc-theme' ),
 			'type'        => 'textarea',
-			'css'         => 'width:100%;height:90px;',
-			'desc_tip'    => __( 'The paragraph under the heading. One line per paragraph.', 'oc-theme' ),
-			'default'     => '',
-			'placeholder' => '',
+			'css'         => 'width:100%;height:110px;',
+			'description' => __( 'The paragraph under the heading. Each line is its own paragraph. [from] and [to] become the estimated arrival dates — delete that line to leave the estimate out.', 'oc-theme' ),
+			'default'     => $words['intro'],
 		);
 
 		$fields['oc_intro_pickup'] = array(
 			'title'       => __( 'Opening words — collection', 'oc-theme' ),
 			'type'        => 'textarea',
-			'css'         => 'width:100%;height:90px;',
-			'desc_tip'    => __( 'The same, for an order being collected. Left empty, the delivery wording is used.', 'oc-theme' ),
-			'default'     => '',
-			'placeholder' => '',
+			'css'         => 'width:100%;height:110px;',
+			'description' => __( 'The same, for an order being collected rather than delivered.', 'oc-theme' ),
+			'default'     => $words['intro_pickup'],
 		);
 
-		$fields = array_merge( $fields, $tail );
+		return array_merge( $fields, $tail );
+	}
 
-		return $fields;
+	/**
+	 * The shop's words for one email, before it has changed any of them.
+	 *
+	 * Kept here rather than in the templates so the settings screen and the
+	 * email itself can never drift apart: what the field shows is what goes
+	 * out.
+	 *
+	 * @param string $id Which email.
+	 * @return array<string,string>
+	 */
+	public static function wording( string $id ): array {
+		if ( 'customer_completed_order' === $id ) {
+			return array(
+				'heading'        => __( 'Your order is on its way', 'oc-theme' ),
+				'heading_pickup' => __( 'Your order is ready for you', 'oc-theme' ),
+				'intro'          => __( "Your order is packed and has left us — it is on its way to you.\nWe will be in touch if anything changes. Thank you for shopping with us.", 'oc-theme' ),
+				'intro_pickup'   => __( "Your order is ready and waiting for you.\nCome whenever it suits you — the details are below. Thank you for shopping with us.", 'oc-theme' ),
+			);
+		}
+
+		return array(
+			'heading'        => __( 'Your order has been received', 'oc-theme' ),
+			'heading_pickup' => __( 'Your order has been received', 'oc-theme' ),
+			'intro'          => __( "Thank you — your order has been received.\nIt is expected to reach you between [from] and [to].\nWe will email you again the moment it leaves us.", 'oc-theme' ),
+			'intro_pickup'   => __( "Thank you — your order has been received.\nWe are getting it ready, and we will email you the moment it is waiting for you.", 'oc-theme' ),
+		);
 	}
 
 	/**
@@ -163,23 +198,42 @@ final class Emails {
 		$id   = (int) get_theme_mod( 'custom_logo' );
 
 		if ( $id ) {
-			$src  = wp_get_attachment_image_url( $id, 'medium' );
-			$meta = wp_get_attachment_image_src( $id, 'medium' );
+			// The FULL file, not a resized one. A logo shown at 170px from a
+			// 300px "medium" is already soft; on the retina screen every phone
+			// has, it is visibly rough. The browser downsamples a large file
+			// beautifully and upsamples a small one badly.
+			$src = wp_get_attachment_image_url( $id, 'full' );
+			$raw = wp_get_attachment_image_src( $id, 'full' );
 
 			if ( $src ) {
-				// A height only, and a width the client can work out for
-				// itself: a logo scaled by a fixed width goes wrong the first
-				// time somebody uploads a square one.
-				$h = 46;
-				$w = ( $meta && ! empty( $meta[1] ) && ! empty( $meta[2] ) ) ? (int) round( $h * ( (int) $meta[1] / max( 1, (int) $meta[2] ) ) ) : 0;
+				$wide = $raw && ! empty( $raw[1] ) && ! empty( $raw[2] ) && (int) $raw[1] >= (int) $raw[2];
+				$cap  = $wide ? 168 : 62;
 
+				// One dimension only. Give both and the first non-square logo
+				// somebody uploads comes out stretched.
 				return '<img src="' . esc_url( $src ) . '" alt="' . esc_attr( $name ) . '"'
-					. ( $w ? ' width="' . $w . '"' : '' ) . ' height="' . $h . '"'
-					. ' style="display:block;border:0;outline:none;text-decoration:none;height:' . $h . 'px;width:auto;max-width:220px;" />';
+					. ( $wide ? ' width="' . $cap . '"' : '' )
+					. ' style="display:block;border:0;outline:none;text-decoration:none;'
+					. ( $wide ? 'width:' . $cap . 'px;max-width:' . $cap . 'px;height:auto;' : 'height:' . $cap . 'px;width:auto;' )
+					. '" />';
 			}
 		}
 
-		return '<span style="font-size:20px;font-weight:700;letter-spacing:.02em;color:' . esc_attr( $p['primary'] ) . ';">' . esc_html( $name ) . '</span>';
+		return '<span style="font-size:21px;font-weight:700;letter-spacing:.04em;color:' . esc_attr( $p['primary'] ) . ';">' . esc_html( $name ) . '</span>';
+	}
+
+	/**
+	 * A file from the email icon set, as an absolute URL.
+	 *
+	 * Drawn as PNGs on purpose: Gmail throws away inline SVG and SVG files
+	 * alike, so a vector icon in an email is an icon half the world does not
+	 * see. These are 96px square and shown at 22, which is sharp on any
+	 * screen anybody owns.
+	 *
+	 * @param string $name File name without the extension.
+	 */
+	public static function icon_url( string $name ): string {
+		return get_template_directory_uri() . '/assets/img/email/' . sanitize_file_name( $name ) . '.png';
 	}
 
 	/* --------------------------------------------------------------- shell */
@@ -191,26 +245,45 @@ final class Emails {
 		$p   = self::palette();
 		$dir = is_rtl() ? 'rtl' : 'ltr';
 
+		// The widths are percentages and the type is sized for a phone from
+		// the start, because that is where most of these are read and because
+		// a media query is a suggestion — Outlook ignores them and Gmail
+		// honours them only sometimes. The query below only makes a good
+		// layout roomier; it is never what rescues it.
+		$css = '@media only screen and (max-width:620px){'
+			. '.oc-pad{padding:26px 18px !important}'
+			. '.oc-h1{font-size:23px !important}'
+			. '.oc-step-l{font-size:12px !important}'
+			. '.oc-card{display:block !important;width:100% !important;max-width:100% !important}'
+			. '.oc-col{display:block !important;width:100% !important;padding:0 0 18px !important}'
+			. '.oc-gap{display:none !important}'
+			. '}';
+
 		return '<!DOCTYPE html><html dir="' . $dir . '" lang="' . esc_attr( get_bloginfo( 'language' ) ) . '">'
 			. '<head><meta charset="utf-8" /><meta name="viewport" content="width=device-width,initial-scale=1" />'
-			. '<meta name="x-apple-disable-message-reformatting" /><title>' . esc_html( get_bloginfo( 'name' ) ) . '</title></head>'
-			. '<body dir="' . $dir . '" style="margin:0;padding:0;background:' . esc_attr( $p['page'] ) . ';">'
+			. '<meta name="x-apple-disable-message-reformatting" />'
+			. '<title>' . esc_html( get_bloginfo( 'name' ) ) . '</title>'
+			. '<style>' . $css . '</style></head>'
+			. '<body dir="' . $dir . '" style="margin:0;padding:0;width:100%;background:' . esc_attr( $p['page'] ) . ';'
+			. '-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;">'
 			. '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:' . esc_attr( $p['page'] ) . ';">'
-			. '<tr><td align="center" style="padding:28px 14px;">'
-			. '<table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px;max-width:100%;">'
-			. '<tr><td align="center" style="padding:0 0 20px;">' . self::logo_html() . '</td></tr>'
-			. '<tr><td style="background:#ffffff;border-radius:14px;overflow:hidden;">';
+			. '<tr><td align="center" style="padding:26px 12px 32px;">'
+			. '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;">'
+			. '<tr><td align="center" style="padding:0 0 18px;">' . self::logo_html() . '</td></tr>'
+			. '<tr><td style="background:#ffffff;border-radius:16px;">';
 	}
 
 	/**
 	 * Everything below it.
 	 */
 	public static function close(): string {
-		$p = self::palette();
+		$p    = self::palette();
+		$name = wp_specialchars_decode( (string) get_bloginfo( 'name' ), ENT_QUOTES );
 
 		return '</td></tr>'
-			. '<tr><td align="center" style="padding:18px 10px 0;font-size:12px;line-height:1.7;color:' . esc_attr( $p['soft'] ) . ';">'
-			. esc_html( wp_specialchars_decode( (string) get_bloginfo( 'name' ), ENT_QUOTES ) )
+			. '<tr><td align="center" style="padding:20px 14px 0;font-size:12.5px;line-height:1.8;color:' . esc_attr( $p['soft'] ) . ';">'
+			. '<a href="' . esc_url( home_url( '/' ) ) . '" style="color:' . esc_attr( $p['soft'] ) . ';text-decoration:none;font-weight:600;">'
+			. esc_html( $name ) . '</a>'
 			. '</td></tr></table></td></tr></table></body></html>';
 	}
 
@@ -246,44 +319,56 @@ final class Emails {
 
 		$stops = array(
 			array( __( 'Received', 'oc-theme' ), $when ),
-			array( $pickup ? __( 'Ready for collection', 'oc-theme' ) : __( 'On its way', 'oc-theme' ), $done > 1 ? $out : '' ),
-			array( $pickup ? __( 'Collected', 'oc-theme' ) : __( 'With you', 'oc-theme' ), $done > 2 ? '' : $due ),
+			array( $pickup ? __( 'Ready', 'oc-theme' ) : __( 'On its way', 'oc-theme' ), $done > 1 ? $out : '' ),
+			array( $pickup ? __( 'Collected', 'oc-theme' ) : __( 'With you', 'oc-theme' ), $due ),
 		);
 
+		$tick  = self::icon_url( 'tick' );
 		$cells = '';
 
 		foreach ( $stops as $i => $stop ) {
-			$on   = $i < $done;
-			$fill = $on ? $p['cta'] : '#ffffff';
-			$edge = $on ? $p['cta'] : '#cdd2d8';
-			$mark = $on
-				? '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#ffffff;"></span>'
-				: '';
+			$on = $i < $done;
 
-			$cells .= '<td align="center" width="33%" style="padding:0 2px;">'
-				. '<table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center"><tr>'
-				. '<td align="center" valign="middle" width="22" height="22" style="width:22px;height:22px;line-height:22px;'
-				. 'border:2px solid ' . esc_attr( $edge ) . ';border-radius:50%;background:' . esc_attr( $fill ) . ';">'
-				. $mark . '</td></tr></table>'
-				. '<div style="margin:7px 0 0;font-size:12.5px;font-weight:600;color:' . esc_attr( $on ? $p['ink'] : $p['soft'] ) . ';">'
-				. esc_html( $stop[0] ) . '</div>'
-				. ( '' !== $stop[1] ? '<div style="margin:2px 0 0;font-size:11.5px;color:' . esc_attr( $p['soft'] ) . ';">' . esc_html( $stop[1] ) . '</div>' : '' )
+			// The circle is a cell with a background rather than a div with a
+			// border-radius, because Outlook rounds nothing — it simply comes
+			// out square there, which is fine, and round everywhere else.
+			$dot = '<table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center"><tr>'
+				. '<td align="center" valign="middle" width="30" height="30" style="width:30px;height:30px;line-height:30px;'
+				. 'border-radius:15px;background:' . esc_attr( $on ? $p['cta'] : '#ffffff' ) . ';'
+				. 'border:2px solid ' . esc_attr( $on ? $p['cta'] : '#d6dae0' ) . ';">'
+				. ( $on
+					? '<img src="' . esc_url( $tick ) . '" width="13" height="13" alt="" style="display:block;border:0;width:13px;height:13px;margin:0 auto;" />'
+					: '&nbsp;' )
+				. '</td></tr></table>';
+
+			$cells .= '<td align="center" width="33.33%" valign="top" style="padding:0 3px;">'
+				. $dot
+				. '<div class="oc-step-l" style="margin:9px 0 0;font-size:13px;font-weight:700;line-height:1.35;color:'
+				. esc_attr( $on ? $p['ink'] : '#98a0aa' ) . ';">' . esc_html( $stop[0] ) . '</div>'
+				. ( '' !== $stop[1]
+					? '<div style="margin:3px 0 0;font-size:11.5px;line-height:1.4;color:#98a0aa;">' . esc_html( $stop[1] ) . '</div>'
+					: '' )
 				. '</td>';
 		}
 
-		// The rule behind the circles, drawn as two halves so the colour can
-		// change where the progress does.
-		$bar = '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 -11px;"><tr>'
-			. '<td width="17%"></td>'
-			. '<td height="2" style="height:2px;line-height:2px;font-size:0;background:' . esc_attr( $done > 1 ? $p['cta'] : '#cdd2d8' ) . ';">&nbsp;</td>'
-			. '<td height="2" style="height:2px;line-height:2px;font-size:0;background:#cdd2d8;">&nbsp;</td>'
-			. '<td width="17%"></td>'
+		// The rule sits behind the circles: two halves, each coloured by
+		// whether the stop it leads to has happened.
+		$rule = '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>'
+			. '<td width="17%" style="font-size:0;line-height:0;">&nbsp;</td>'
+			. '<td height="3" style="height:3px;line-height:3px;font-size:0;border-radius:2px;background:' . esc_attr( $done > 1 ? $p['cta'] : '#e2e6ea' ) . ';">&nbsp;</td>'
+			. '<td width="6" style="font-size:0;line-height:0;">&nbsp;</td>'
+			. '<td height="3" style="height:3px;line-height:3px;font-size:0;border-radius:2px;background:#e2e6ea;">&nbsp;</td>'
+			. '<td width="17%" style="font-size:0;line-height:0;">&nbsp;</td>'
 			. '</tr></table>';
 
-		return '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:22px 0 4px;">'
-			. '<tr><td>' . $bar . '</td></tr>'
-			. '<tr><td><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>' . $cells . '</tr></table></td></tr>'
-			. '</table>';
+		return '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:24px 0 0;'
+			. 'background:' . esc_attr( $p['panel'] ) . ';border-radius:12px;">'
+			. '<tr><td style="padding:20px 14px 18px;">'
+			. '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">'
+			. '<tr><td style="padding:0 0 -1px;">' . $rule . '</td></tr>'
+			. '<tr><td style="padding:0;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:-16px;"><tr>' . $cells . '</tr></table></td></tr>'
+			. '</table>'
+			. '</td></tr></table>';
 	}
 
 	/**
@@ -294,10 +379,11 @@ final class Emails {
 	public static function button( $order ): string {
 		$p = self::palette();
 
-		return '<table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:22px auto 4px;"><tr>'
-			. '<td align="center" style="border-radius:8px;background:' . esc_attr( $p['cta'] ) . ';">'
-			. '<a href="' . esc_url( $order->get_view_order_url() ) . '" style="display:inline-block;padding:13px 34px;font-size:15px;font-weight:700;'
-			. 'color:#ffffff;text-decoration:none;border-radius:8px;">' . esc_html__( 'View your order', 'oc-theme' ) . '</a>'
+		return '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:22px 0 0;"><tr>'
+			. '<td align="center" style="border-radius:10px;background:' . esc_attr( $p['cta'] ) . ';">'
+			. '<a href="' . esc_url( $order->get_view_order_url() ) . '" style="display:block;padding:16px 24px;font-size:16px;font-weight:700;'
+			. 'color:#ffffff;text-decoration:none;border-radius:10px;letter-spacing:.01em;">'
+			. esc_html__( 'View your order', 'oc-theme' ) . '</a>'
 			. '</td></tr></table>';
 	}
 
@@ -368,9 +454,9 @@ final class Emails {
 
 		return '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:24px 0 0;">'
 			. '<tr>'
-			. '<td width="50%" valign="top" style="padding:0 0 14px;">' . $who . '</td>'
-			. '<td width="18" style="width:18px;">&nbsp;</td>'
-			. '<td valign="top" style="padding:0 0 14px;">' . $where . '</td>'
+			. '<td class="oc-col" width="50%" valign="top" style="padding:0 0 14px;">' . $who . '</td>'
+			. '<td class="oc-gap" width="18" style="width:18px;">&nbsp;</td>'
+			. '<td class="oc-col" valign="top" style="padding:0 0 14px;">' . $where . '</td>'
 			. '</tr></table>';
 	}
 
@@ -396,14 +482,15 @@ final class Emails {
 					$src = wp_get_attachment_image_url( $id, 'woocommerce_thumbnail' );
 
 					if ( $src ) {
-						$pic = '<img src="' . esc_url( $src ) . '" width="64" height="64" alt=""'
-							. ' style="display:block;border:0;width:64px;height:64px;object-fit:cover;border-radius:8px;background:' . esc_attr( $p['panel'] ) . ';" />';
+						$pic = '<img src="' . esc_url( $src ) . '" width="70" height="70" alt=""'
+							. ' style="display:block;border:0;width:70px;height:70px;border-radius:10px;background:' . esc_attr( $p['panel'] ) . ';" />';
 					}
 				}
 			}
 
 			if ( '' === $pic ) {
-				$pic = '<div style="width:64px;height:64px;border-radius:8px;background:' . esc_attr( $p['panel'] ) . ';"></div>';
+				$pic = '<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td width="70" height="70"'
+					. ' style="width:70px;height:70px;border-radius:10px;background:' . esc_attr( $p['panel'] ) . ';">&nbsp;</td></tr></table>';
 			}
 
 			$meta = wc_display_item_meta(
@@ -416,17 +503,22 @@ final class Emails {
 				)
 			);
 
+			// Two columns, never three. A price in a column of its own is the
+			// first thing to collapse on a phone, and the name is what gets
+			// squeezed to make room for it.
 			$rows .= '<tr>'
-				. '<td width="64" valign="top" style="padding:12px 0;">' . $pic . '</td>'
-				. '<td valign="top" style="padding:12px 12px;">'
-				. '<div style="font-size:14px;font-weight:600;line-height:1.5;color:' . esc_attr( $p['ink'] ) . ';">' . esc_html( $item->get_name() ) . '</div>'
-				. ( $meta ? '<div style="margin:3px 0 0;font-size:12.5px;line-height:1.6;color:' . esc_attr( $p['soft'] ) . ';">' . wp_kses_post( $meta ) . '</div>' : '' )
-				. '<div style="margin:3px 0 0;font-size:12.5px;color:' . esc_attr( $p['soft'] ) . ';">'
+				. '<td width="70" valign="top" style="width:70px;padding:14px 0;">' . $pic . '</td>'
+				. '<td valign="top" style="padding:14px 0;padding-inline-start:14px;">'
+				. '<div style="font-size:15px;font-weight:600;line-height:1.45;color:' . esc_attr( $p['ink'] ) . ';">'
+				. esc_html( $item->get_name() ) . '</div>'
+				. ( $meta
+					? '<div style="margin:4px 0 0;font-size:13px;line-height:1.55;color:' . esc_attr( $p['soft'] ) . ';">' . wp_kses_post( $meta ) . '</div>'
+					: '' )
+				. '<div style="margin:6px 0 0;font-size:13.5px;line-height:1.5;color:' . esc_attr( $p['soft'] ) . ';">'
 				/* translators: %d: how many of this item. */
-				. esc_html( sprintf( __( 'Quantity: %d', 'oc-theme' ), (int) $item->get_quantity() ) ) . '</div>'
-				. '</td>'
-				. '<td valign="top" align="left" style="padding:12px 0;white-space:nowrap;font-size:14px;font-weight:600;color:' . esc_attr( $p['ink'] ) . ';">'
-				. wp_kses_post( $order->get_formatted_line_subtotal( $item ) )
+				. esc_html( sprintf( __( 'Quantity: %d', 'oc-theme' ), (int) $item->get_quantity() ) )
+				. ' &nbsp;·&nbsp; <span style="font-weight:700;color:' . esc_attr( $p['ink'] ) . ';">'
+				. wp_kses_post( $order->get_formatted_line_subtotal( $item ) ) . '</span></div>'
 				. '</td></tr>';
 		}
 
@@ -443,27 +535,29 @@ final class Emails {
 		foreach ( array_merge( $rows_in, $grand ) as $key => $total ) {
 			$last    = 'order_total' === $key;
 			$totals .= '<tr>'
-				. '<td style="padding:' . ( $last ? '12px 0 0' : '5px 0' ) . ';font-size:' . ( $last ? '15px' : '13.5px' ) . ';'
+				. '<td style="padding:' . ( $last ? '13px 0 0' : '6px 0' ) . ';font-size:' . ( $last ? '15.5px' : '14px' ) . ';'
 				. 'font-weight:' . ( $last ? '700' : '400' ) . ';color:' . esc_attr( $last ? $p['ink'] : $p['soft'] ) . ';'
 				. ( $last ? 'border-top:1px solid ' . esc_attr( $p['line'] ) . ';' : '' ) . '">'
 				. wp_kses_post( (string) $total['label'] ) . '</td>'
-				. '<td align="left" style="padding:' . ( $last ? '12px 0 0' : '5px 0' ) . ';font-size:' . ( $last ? '17px' : '13.5px' ) . ';'
-				. 'font-weight:' . ( $last ? '700' : '600' ) . ';color:' . esc_attr( $last ? $p['ink'] : $p['ink'] ) . ';white-space:nowrap;'
+				. '<td align="left" style="padding:' . ( $last ? '13px 0 0' : '6px 0' ) . ';font-size:' . ( $last ? '18px' : '14px' ) . ';'
+				. 'font-weight:' . ( $last ? '700' : '600' ) . ';color:' . esc_attr( $p['ink'] ) . ';white-space:nowrap;'
 				. ( $last ? 'border-top:1px solid ' . esc_attr( $p['line'] ) . ';' : '' ) . '">'
 				. wp_kses_post( (string) $total['value'] ) . '</td>'
 				. '</tr>';
 		}
 
-		return '<div style="margin:26px 0 0;padding:2px 0 0;border-top:1px solid ' . esc_attr( $p['line'] ) . ';">'
-			. '<div style="margin:16px 0 0;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:' . esc_attr( $p['soft'] ) . ';">'
+		return '<div style="margin:26px 0 0;padding:22px 0 0;border-top:1px solid ' . esc_attr( $p['line'] ) . ';">'
+			. '<div style="margin:0;font-size:16px;font-weight:700;color:' . esc_attr( $p['ink'] ) . ';">'
 			. esc_html__( 'Order details', 'oc-theme' ) . '</div>'
 			. '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">' . $rows . '</table>'
-			. '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:6px 0 0;padding-top:8px;border-top:1px solid ' . esc_attr( $p['line'] ) . ';">'
+			. '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:8px 0 0;padding-top:10px;border-top:1px solid ' . esc_attr( $p['line'] ) . ';">'
 			. $totals . '</table></div>';
 	}
 
+
 	/**
-	 * "A question?" — the shop's own channels, and nothing that is not set.
+	 * "Need a hand?" — the shop's own channels as cards, two to a row, and
+	 * nothing that has not been filled in.
 	 */
 	public static function help(): string {
 		$p     = self::palette();
@@ -471,46 +565,63 @@ final class Emails {
 		$mail  = Contact::email();
 		$wa    = Contact::whatsapp();
 
-		$links = array();
+		$cards = array();
 
 		if ( '' !== $phone ) {
-			$links[] = array( __( 'Call', 'oc-theme' ), 'tel:' . preg_replace( '/[^0-9+]/', '', $phone ), $phone );
+			$cards[] = array( 'phone', __( 'Call us', 'oc-theme' ), $phone, 'tel:' . preg_replace( '/[^0-9+]/', '', $phone ) );
 		}
 
 		if ( '' !== $wa ) {
-			$links[] = array( __( 'WhatsApp', 'oc-theme' ), 'https://wa.me/' . Contact::wa_digits( $wa ), $wa );
+			$cards[] = array( 'chat', __( 'WhatsApp', 'oc-theme' ), $wa, 'https://wa.me/' . Contact::wa_digits( $wa ) );
 		}
 
 		if ( '' !== $mail ) {
-			$links[] = array( __( 'Email', 'oc-theme' ), 'mailto:' . $mail, $mail );
+			$cards[] = array( 'mail', __( 'Email us', 'oc-theme' ), $mail, 'mailto:' . $mail );
 		}
 
-		if ( ! $links ) {
+		if ( ! $cards ) {
 			return '';
 		}
 
-		$cells = '';
+		$one = static function ( array $c ) use ( $p ): string {
+			return '<a href="' . esc_url( $c[3] ) . '" style="display:block;text-decoration:none;background:' . esc_attr( $p['panel'] ) . ';'
+				. 'border-radius:12px;padding:15px 16px;">'
+				. '<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>'
+				. '<td valign="middle" width="24" style="width:24px;">'
+				. '<img src="' . esc_url( self::icon_url( $c[0] ) ) . '" width="22" height="22" alt=""'
+				. ' style="display:block;border:0;width:22px;height:22px;" /></td>'
+				. '<td valign="middle" style="padding-inline-start:11px;padding-right:11px;">'
+				. '<span style="display:block;font-size:14.5px;font-weight:700;line-height:1.3;color:' . esc_attr( $p['ink'] ) . ';">'
+				. esc_html( $c[1] ) . '</span>'
+				. '<span dir="ltr" style="display:block;margin-top:2px;font-size:13px;line-height:1.4;color:' . esc_attr( $p['soft'] ) . ';unicode-bidi:plaintext;">'
+				. esc_html( $c[2] ) . '</span>'
+				. '</td></tr></table></a>';
+		};
 
-		foreach ( $links as $one ) {
-			$cells .= '<td align="center" style="padding:4px 6px;">'
-				. '<a href="' . esc_url( $one[1] ) . '" style="display:block;padding:10px 14px;border:1px solid ' . esc_attr( $p['line'] ) . ';'
-				. 'border-radius:8px;text-decoration:none;background:#ffffff;">'
-				. '<span style="display:block;font-size:12px;color:' . esc_attr( $p['soft'] ) . ';">' . esc_html( $one[0] ) . '</span>'
-				. '<span dir="ltr" style="display:block;margin-top:2px;font-size:13.5px;font-weight:600;color:' . esc_attr( $p['ink'] ) . ';unicode-bidi:plaintext;">'
-				. esc_html( $one[2] ) . '</span></a></td>';
+		// Two to a row, stacking on a phone. Any odd one out simply takes the
+		// row it is on rather than being stretched across it.
+		$rows  = '';
+		$pairs = array_chunk( $cards, 2 );
+
+		foreach ( $pairs as $pair ) {
+			$rows .= '<tr>';
+			$rows .= '<td class="oc-card" width="50%" valign="top" style="padding:0 0 10px;">' . $one( $pair[0] ) . '</td>';
+			$rows .= '<td class="oc-gap" width="10" style="width:10px;">&nbsp;</td>';
+			$rows .= isset( $pair[1] )
+				? '<td class="oc-card" width="50%" valign="top" style="padding:0 0 10px;">' . $one( $pair[1] ) . '</td>'
+				: '<td class="oc-card" width="50%">&nbsp;</td>';
+			$rows .= '</tr>';
 		}
 
-		return '<div style="margin:26px 0 0;padding:18px 0 0;border-top:1px solid ' . esc_attr( $p['line'] ) . ';">'
-			. '<div style="text-align:center;font-size:15px;font-weight:700;color:' . esc_attr( $p['ink'] ) . ';">'
-			. esc_html__( 'Any questions?', 'oc-theme' ) . '</div>'
-			. '<div style="margin:4px 0 12px;text-align:center;font-size:13px;color:' . esc_attr( $p['soft'] ) . ';">'
-			. esc_html__( 'We are here — whichever way suits you.', 'oc-theme' ) . '</div>'
-			. '<table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center"><tr>' . $cells . '</tr></table>'
+		return '<div style="margin:28px 0 0;padding:22px 0 0;border-top:1px solid ' . esc_attr( $p['line'] ) . ';">'
+			. '<div style="margin:0 0 14px;font-size:16px;font-weight:700;color:' . esc_attr( $p['ink'] ) . ';">'
+			. esc_html__( 'Need a hand?', 'oc-theme' ) . '</div>'
+			. '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">' . $rows . '</table>'
 			. '</div>';
 	}
 
 	/**
-	 * "Follow us" — only the profiles the shop has actually filled in.
+	 * "Follow us" — a round button per profile the shop has filled in.
 	 */
 	public static function social(): string {
 		$p     = self::palette();
@@ -523,13 +634,19 @@ final class Emails {
 		$cells = '';
 
 		foreach ( $links as $net => $url ) {
-			$cells .= '<td style="padding:0 7px;">'
-				. '<a href="' . esc_url( $url ) . '" style="font-size:13px;font-weight:600;color:' . esc_attr( $p['primary'] ) . ';text-decoration:none;">'
-				. esc_html( ucfirst( (string) $net ) ) . '</a></td>';
+			$cells .= '<td style="padding:0 5px;">'
+				. '<a href="' . esc_url( $url ) . '" style="display:block;text-decoration:none;">'
+				. '<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>'
+				. '<td align="center" valign="middle" width="40" height="40" style="width:40px;height:40px;line-height:40px;'
+				. 'border-radius:20px;background:' . esc_attr( $p['panel'] ) . ';">'
+				. '<img src="' . esc_url( self::icon_url( (string) $net ) ) . '" width="19" height="19"'
+				. ' alt="' . esc_attr( ucfirst( (string) $net ) ) . '" style="display:block;border:0;width:19px;height:19px;margin:0 auto;" />'
+				. '</td></tr></table></a></td>';
 		}
 
-		return '<div style="margin:22px 0 0;padding:16px 0 2px;border-top:1px solid ' . esc_attr( $p['line'] ) . ';text-align:center;">'
-			. '<div style="margin:0 0 8px;font-size:13px;color:' . esc_attr( $p['soft'] ) . ';">' . esc_html__( 'Follow us', 'oc-theme' ) . '</div>'
+		return '<div style="margin:24px 0 0;padding:20px 0 4px;border-top:1px solid ' . esc_attr( $p['line'] ) . ';text-align:center;">'
+			. '<div style="margin:0 0 12px;font-size:13.5px;font-weight:600;color:' . esc_attr( $p['soft'] ) . ';">'
+			. esc_html__( 'Follow us', 'oc-theme' ) . '</div>'
 			. '<table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center"><tr>' . $cells . '</tr></table>'
 			. '</div>';
 	}
@@ -574,7 +691,7 @@ final class Emails {
 				$swap['[to]']   = (string) $window['to'];
 				$due            = $window['one_day']
 					? (string) $window['from']
-					: sprintf( '%s – %s', (string) $window['from'], (string) $window['to'] );
+					: sprintf( '%s–%s', (string) $window['from'], (string) $window['to'] );
 			}
 		}
 
@@ -589,15 +706,15 @@ final class Emails {
 
 		// A line left holding nothing but punctuation once the dates came
 		// out empty is worse than no line.
-		$text = preg_replace( '/<p[^>]*>[\s\p{P}]*<\/p>/u', '', $text );
+		$text = preg_replace( '/<p[^>]*>[\s\p{P}]*<\/p>/u', '', (string) $text );
 
-		$out  = '<div style="padding:30px 28px 26px;">';
-		$out .= '<h1 style="margin:0 0 12px;font-size:23px;line-height:1.35;font-weight:700;color:' . esc_attr( $p['ink'] ) . ';">'
+		$out  = '<div class="oc-pad" style="padding:34px 32px 30px;">';
+		$out .= '<h1 class="oc-h1" style="margin:0 0 14px;font-size:26px;line-height:1.3;font-weight:700;color:' . esc_attr( $p['ink'] ) . ';">'
 			. esc_html( $head ) . '</h1>';
 		$out .= (string) $text;
 		$out .= self::steps( $order, $done, $due );
 		$out .= self::button( $order );
-		$out .= '<div style="margin:22px 0 0;padding:14px 0 0;border-top:1px solid ' . esc_attr( $p['line'] ) . ';font-size:13px;color:' . esc_attr( $p['soft'] ) . ';">'
+		$out .= '<div style="margin:26px 0 0;padding:16px 0 0;border-top:1px solid ' . esc_attr( $p['line'] ) . ';font-size:13.5px;font-weight:600;color:' . esc_attr( $p['soft'] ) . ';">'
 			/* translators: %s: the order number. */
 			. esc_html( sprintf( __( 'Order %s', 'oc-theme' ), '#' . $order->get_order_number() ) ) . '</div>';
 		$out .= self::parties( $order );

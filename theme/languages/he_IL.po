@@ -9353,16 +9353,16 @@ msgid "Quantity: %d"
 msgstr "כמות: %d"
 
 msgid "Any questions?"
-msgstr "יש לכם שאלה?"
+msgstr "יש לך שאלה?"
 
 msgid "We are here — whichever way suits you."
-msgstr "אנחנו כאן, בכל דרך שנוחה לכם."
+msgstr "אנחנו כאן, בכל דרך שנוחה לך."
 
 msgid "Call"
 msgstr "טלפון"
 
 msgid "Follow us"
-msgstr "עוקבים אחרינו"
+msgstr "עקבו אחרינו"
 
 msgid "Your order has been received"
 msgstr "הזמנתך התקבלה"
@@ -9372,39 +9372,68 @@ msgid ""
 "It is expected to reach you between [from] and [to].\n"
 "We will email you again the moment it leaves us."
 msgstr ""
-"הזמנתך התקבלה בהצלחה, תודה רבה.\n"
-"ההזמנה צפויה להגיע אליך בין [from] ועד [to].\n"
+"ההזמנה שלך התקבלה, תודה רבה.\n"
+"ההזמנה צפויה להגיע אליך בין [from] ל‑[to].\n"
 "נודיע לך במייל נוסף ברגע שהמשלוח יצא אליך."
 
 msgid ""
 "Thank you — your order has been received.\n"
 "We are getting it ready, and we will email you the moment it is waiting for you."
 msgstr ""
-"הזמנתך התקבלה בהצלחה, תודה רבה.\n"
-"אנחנו מכינים אותה, ונעדכן אותך במייל ברגע שהיא תחכה לך."
+"ההזמנה שלך התקבלה, תודה רבה.\n"
+"אנחנו מכינים אותה ונעדכן אותך במייל ברגע שהיא תחכה לך."
 
-msgid "Your order is on its way"
-msgstr "הזמנתך יצאה אליך"
 
-msgid "Your order is ready for collection"
-msgstr "הזמנתך מוכנה לאיסוף"
 
-msgid ""
-"Good news — your order has left us and is on its way to you.\n"
-"We will be in touch if anything changes. Thank you for shopping with us."
-msgstr ""
-"בשורה טובה — הזמנתך ארוזה, יצאה אלינו לדרך והיא בדרך אליך.\n"
-"אם משהו ישתנה נעדכן אותך. תודה שקנית אצלנו."
 
-msgid ""
-"Good news — your order is ready and waiting for you.\n"
-"Come whenever it suits you; the details are below. Thank you for shopping with us."
-msgstr ""
-"בשורה טובה — הזמנתך מוכנה ומחכה לך.\n"
-"אפשר להגיע בכל זמן שנוח לך; כל הפרטים למטה. תודה שקנית אצלנו."
+
+
+
+
 
 msgid "View your order"
 msgstr "לצפייה בהזמנה"
 
 msgid "Order details"
 msgstr "פרטי ההזמנה"
+
+msgid "Your order is on its way"
+msgstr "ההזמנה שלך בדרך אליך"
+
+msgid "Your order is ready for you"
+msgstr "ההזמנה שלך מחכה לך"
+
+msgid ""
+"Your order is packed and has left us — it is on its way to you.\n"
+"We will be in touch if anything changes. Thank you for shopping with us."
+msgstr ""
+"ההזמנה שלך ארוזה ויצאה לדרך — היא בדרך אליך.\n"
+"אם משהו ישתנה נעדכן אותך. תודה שקנית אצלנו."
+
+msgid ""
+"Your order is ready and waiting for you.\n"
+"Come whenever it suits you — the details are below. Thank you for shopping with us."
+msgstr ""
+"ההזמנה שלך מוכנה ומחכה לך.\n"
+"אפשר להגיע בכל שעה שנוחה לך — כל הפרטים למטה. תודה שקנית אצלנו."
+
+msgid "Need a hand?"
+msgstr "צריך עזרה?"
+
+msgid "Call us"
+msgstr "שיחת טלפון"
+
+msgid "Email us"
+msgstr "אימייל"
+
+msgid "Ready"
+msgstr "מוכנה"
+
+msgid "Shown instead of the heading above when the order is being collected."
+msgstr "מוצגת במקום הכותרת שלמעלה כשההזמנה נאספת."
+
+msgid "The paragraph under the heading. Each line is its own paragraph. [from] and [to] become the estimated arrival dates — delete that line to leave the estimate out."
+msgstr "הפסקה שמתחת לכותרת. כל שורה היא פסקה נפרדת. [from] ו‑[to] מוחלפים בתאריכי ההגעה המשוערים — מחיקת השורה הזאת מסתירה את ההערכה."
+
+msgid "The same, for an order being collected rather than delivered."
+msgstr "אותו הדבר, להזמנה שנאספת במקום נשלחת."
