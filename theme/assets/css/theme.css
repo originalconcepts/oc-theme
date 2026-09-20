@@ -10869,7 +10869,11 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 	border-block-start: 1px solid rgb(228 230 234);
 }
 
-.oc-co-rate:first-child { border-block-start: 0; }
+/* The rule that draws this hairline is `.oc-checkout .oc-co-rates .oc-co-rate`
+ * — three classes — so taking it off the first row has to be said at least as
+ * loudly, or the row keeps its line directly under the group's own and the
+ * top of the box is drawn twice. */
+.oc-checkout .oc-co-rates .oc-co-rate:first-child { border-block-start: 0; }
 .oc-co-rate.is-on { background: rgb(0 0 0 / 4%); }
 
 .oc-co-rate input {
@@ -11698,7 +11702,10 @@ body.oc-checkout { overflow-x: clip; }
 	display: flex;
 	flex-wrap: wrap;
 	align-items: center;
-	gap: 10px;
+	/* Across only. The row gap was also being counted below the last line,
+	 * which left the description sitting 10px lower than the space above it;
+	 * the note says its own distance instead. */
+	gap: 0 10px;
 }
 
 .oc-checkout #payment ul.payment_methods > li:first-child { border-block-start: 0; }
@@ -11749,17 +11756,30 @@ body.oc-checkout { overflow-x: clip; }
 .oc-checkout #payment ul.payment_methods > li.woocommerce-PaymentMethod,
 .oc-checkout #payment ul.payment_methods > li { background: none; }
 
+/* What a gateway says about itself sits under its name as a note, not as a
+ * panel: a white slab inside a row that is not white reads as a second,
+ * emptier box, and the row's own padding is all the room the words need.
+ * The 10/2 padding it used to carry put 24px above the words and 2 below,
+ * which is what left them sitting on the floor of the slab. */
 .oc-checkout #payment ul.payment_methods > li .payment_box {
 	flex: 1 1 100%;
-	margin: 0;
-	padding: 10px 0 2px;
+	margin-block-start: 8px;
+	margin-inline: 0;
+	margin-block-end: 0;
+	padding: 0;
 }
 
 .oc-checkout #payment div.payment_box {
-	background: var(--oc-surface, #fff);
-	border-radius: var(--oc-radius, 8px);
+	background: none;
+	border-radius: 0;
 	font-size: .88rem;
+	line-height: 1.55;
+	color: var(--oc-ink-2, #666);
 }
+
+/* Woo's own paragraph margins are what pushed the words off centre. */
+.oc-checkout #payment div.payment_box > :first-child { margin-block-start: 0; }
+.oc-checkout #payment div.payment_box > :last-child { margin-block-end: 0; }
 
 .oc-checkout #payment div.payment_box::before { display: none; }
 
