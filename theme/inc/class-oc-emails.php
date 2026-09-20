@@ -340,9 +340,10 @@ final class Emails {
 				$id = (int) $order->get_meta( '_oc_branch' );
 
 				if ( $id && class_exists( '\\OC\\Blocks\\Branches' ) ) {
-					$d = \OC\Blocks\Branches::details( $id );
-					$where .= $line( (string) ( $d['address'] ?? '' ) );
-					$where .= $line( (string) ( $d['phone'] ?? '' ), true );
+					$at = \OC\Blocks\Branches::details( $id );
+
+					$where .= $line( (string) ( $at['address'] ?? '' ) );
+					$where .= $line( (string) ( $at['phone'] ?? '' ), true );
 				}
 			} else {
 				$where .= $line( __( 'Collection in person', 'oc-theme' ) );
