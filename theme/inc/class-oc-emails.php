@@ -383,7 +383,9 @@ final class Emails {
 		$rows = '';
 
 		foreach ( $order->get_items() as $item ) {
-			$product = $item->get_product();
+			// get_items() is typed as the base item; only a line item knows
+			// which product it is.
+			$product = $item instanceof \WC_Order_Item_Product ? $item->get_product() : null;
 			$pic     = '';
 
 			if ( $product ) {
