@@ -131,7 +131,7 @@ final class Emails {
 			return array(
 				'heading'        => __( 'Your order is on its way', 'oc-theme' ),
 				'heading_pickup' => __( 'Your order is ready for you', 'oc-theme' ),
-				'intro'          => __( "Your order is packed and has left us — it is on its way to you.\nWe will be in touch if anything changes. Thank you for shopping with us.", 'oc-theme' ),
+				'intro'          => __( "Your order is packed and has left us — it is on its way to you.\nIt should reach you between [from] and [to].\nWe will be in touch if anything changes. Thank you for shopping with us.", 'oc-theme' ),
 				'intro_pickup'   => __( "Your order is ready and waiting for you.\nCome whenever it suits you — the details are below. Thank you for shopping with us.", 'oc-theme' ),
 			);
 		}
@@ -327,13 +327,17 @@ final class Emails {
 		$pickup = self::is_pickup( $order );
 		$made   = $order->get_date_created();
 
-		$when = $made ? wp_date( 'j.n', $made->getTimestamp() ) : '';
+		// The same format the arrival window is written in, so the three
+		// dates under the bar are read as one set rather than as two.
+		$fmt = (string) apply_filters( 'oc_delivery_date_format', 'j/n' );
+
+		$when = $made ? wp_date( $fmt, $made->getTimestamp() ) : '';
 		$paid = $order->get_date_paid();
-		$out  = $paid ? wp_date( 'j.n', $paid->getTimestamp() ) : '';
+		$out  = $paid ? wp_date( $fmt, $paid->getTimestamp() ) : '';
 
 		if ( $done > 1 && '' === $out ) {
 			$mod = $order->get_date_modified();
-			$out = $mod ? wp_date( 'j.n', $mod->getTimestamp() ) : '';
+			$out = $mod ? wp_date( $fmt, $mod->getTimestamp() ) : '';
 		}
 
 		$stops = array(
@@ -378,7 +382,10 @@ final class Emails {
 				. '<div style="margin:10px 0 0;text-align:center;font-size:14px;font-weight:700;line-height:1.35;color:'
 				. esc_attr( $on ? $p['ink'] : '#8f97a1' ) . ';">' . esc_html( $stop[0] ) . '</div>'
 				. ( '' !== $stop[1]
-					? '<div style="margin:3px 0 0;text-align:center;font-size:13px;line-height:1.4;color:#8f97a1;">' . esc_html( $stop[1] ) . '</div>'
+					// A range of two dates is two number runs with a dash
+					// between them, and in a right-to-left email the dash is
+					// neutral: left alone, "22/9–24/9" comes out backwards.
+					? '<div dir="ltr" style="margin:3px 0 0;text-align:center;font-size:13px;line-height:1.4;unicode-bidi:plaintext;color:#8f97a1;">' . esc_html( $stop[1] ) . '</div>'
 					: '' )
 				. '</td>';
 		}
