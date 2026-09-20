@@ -9437,3 +9437,27 @@ msgstr "הפסקה שמתחת לכותרת. כל שורה היא פסקה נפר
 
 msgid "The same, for an order being collected rather than delivered."
 msgstr "אותו הדבר, להזמנה שנאספת במקום נשלחת."
+
+msgid "Here for any question"
+msgstr "כאן לכל שאלה"
+
+msgid "Location on the map"
+msgstr "מיקום במפה"
+
+msgid "Contact block"
+msgstr "אזור יצירת קשר"
+
+msgid "Show \"Here for any question\" with the shop's phone, WhatsApp and email"
+msgstr "להציג את ״כאן לכל שאלה״ עם הטלפון, הוואטסאפ והאימייל של החנות"
+
+msgid "The details themselves come from Theme settings → Store details. Anything left empty there simply does not appear."
+msgstr "הפרטים עצמם מגיעים מהגדרות תבנית ← פרטי החנות. מה שריק שם פשוט לא מוצג."
+
+msgid ""
+"Your order is packed and has left us — it is on its way to you.\n"
+"It should reach you between [from] and [to].\n"
+"We will be in touch if anything changes. Thank you for shopping with us."
+msgstr ""
+"ההזמנה שלך ארוזה ויצאה לדרך — היא בדרך אליך.\n"
+"היא אמורה להגיע אליך בין [from] ל‑[to].\n"
+"אם משהו ישתנה נעדכן אותך. תודה שקנית אצלנו."

@@ -97,6 +97,14 @@ final class Emails {
 			'default'     => $words['intro'],
 		);
 
+		$fields['oc_show_help'] = array(
+			'title'       => __( 'Contact block', 'oc-theme' ),
+			'type'        => 'checkbox',
+			'label'       => __( 'Show "Here for any question" with the shop\'s phone, WhatsApp and email', 'oc-theme' ),
+			'description' => __( 'The details themselves come from Theme settings → Store details. Anything left empty there simply does not appear.', 'oc-theme' ),
+			'default'     => 'yes',
+		);
+
 		$fields['oc_intro_pickup'] = array(
 			'title'       => __( 'Opening words — collection', 'oc-theme' ),
 			'type'        => 'textarea',
@@ -303,11 +311,12 @@ final class Emails {
 	 * collected it, so the last stop is drawn as what it honestly is: the
 	 * one still to come, with the date it is expected on.
 	 *
-	 * Built as ONE row of circle, line, circle, line, circle, all vertically
-	 * centred, so the line runs through the middle of the circles by
-	 * construction rather than by a negative margin that each mail client
-	 * honours differently. The tick is a glyph, not an image: a tick that
-	 * vanishes when a client hides pictures is a stop that looks undone.
+	 * Each stop owns a third of the width and centres its own circle inside
+	 * it, with the connecting line drawn as two half-rules either side of
+	 * that circle within the same cell. The label then sits in the same
+	 * third, so it is under the circle's centre by construction. Insetting
+	 * the circles by a percentage and the labels by another — which is what
+	 * the last version did — leaves the two off by half a circle.
 	 *
 	 * @param \WC_Order $order Order.
 	 * @param int       $done  How many stops are behind us (1 or 2).
@@ -333,52 +342,51 @@ final class Emails {
 			array( $pickup ? __( 'Collected', 'oc-theme' ) : __( 'With you', 'oc-theme' ), $due ),
 		);
 
-		$size = 38;
-		$dots = '';
-		$labs = '';
+		$size  = 38;
+		$grey  = '#dfe3e8';
+		$cells = '';
 
 		foreach ( $stops as $i => $stop ) {
 			$on = $i < $done;
 
-			// A div, because a table cell with a radius comes out as a
-			// rounded square in more than one client; a div with a radius of
-			// half its width is a circle everywhere that draws radii at all.
-			$circle = '<div style="width:' . $size . 'px;height:' . $size . 'px;line-height:' . ( $size - ( $on ? 0 : 4 ) ) . 'px;'
-				. 'border-radius:' . ( $size / 2 ) . 'px;margin:0 auto;text-align:center;'
+			// A div with a radius of half its width. A table cell with a
+			// radius comes out as a rounded square in more than one client.
+			$circle = '<div style="width:' . $size . 'px;height:' . $size . 'px;line-height:' . ( $on ? $size : $size - 4 ) . 'px;'
+				. 'border-radius:' . ( $size / 2 ) . 'px;text-align:center;'
 				. ( $on
 					? 'background:' . esc_attr( $p['cta'] ) . ';color:#ffffff;font-size:21px;font-weight:700;'
 					: 'background:#ffffff;border:2px solid #cfd4db;color:#cfd4db;font-size:20px;' )
 				. '">' . ( $on ? '&#10003;' : '&nbsp;' ) . '</div>';
 
-			$dots .= '<td align="center" valign="middle" width="' . $size . '" style="width:' . $size . 'px;padding:0;">' . $circle . '</td>';
+			// The half-rule leading INTO this stop is lit once this stop has
+			// been reached; the one leading out of it, once the next has.
+			$before = $i > 0 ? ( $i < $done ? $p['cta'] : $grey ) : 'transparent';
+			$after  = $i < 2 ? ( $i + 1 < $done ? $p['cta'] : $grey ) : 'transparent';
 
-			if ( $i < 2 ) {
-				$dots .= '<td valign="middle" style="padding:0 6px;">'
-					. '<div style="height:3px;line-height:3px;font-size:0;border-radius:2px;background:'
-					. esc_attr( $i + 1 < $done ? $p['cta'] : '#dfe3e8' ) . ';">&nbsp;</div></td>';
-			}
+			$rule = static function ( string $colour ): string {
+				return '<td valign="middle" style="padding:0;">'
+					. '<div style="height:3px;line-height:3px;font-size:0;border-radius:2px;background:' . esc_attr( $colour ) . ';">&nbsp;</div>'
+					. '</td>';
+			};
 
-			$labs .= '<td align="center" valign="top" width="33%" style="padding:10px 4px 0;">'
-				. '<div style="font-size:14px;font-weight:700;line-height:1.35;color:' . esc_attr( $on ? $p['ink'] : '#8f97a1' ) . ';">'
-				. esc_html( $stop[0] ) . '</div>'
+			$cells .= '<td width="33.33%" valign="top" style="padding:0;">'
+				. '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>'
+				. $rule( $before )
+				. '<td width="' . $size . '" valign="middle" style="width:' . $size . 'px;padding:0;">' . $circle . '</td>'
+				. $rule( $after )
+				. '</tr></table>'
+				. '<div style="margin:10px 0 0;text-align:center;font-size:14px;font-weight:700;line-height:1.35;color:'
+				. esc_attr( $on ? $p['ink'] : '#8f97a1' ) . ';">' . esc_html( $stop[0] ) . '</div>'
 				. ( '' !== $stop[1]
-					? '<div style="margin:3px 0 0;font-size:13px;line-height:1.4;color:#8f97a1;">' . esc_html( $stop[1] ) . '</div>'
+					? '<div style="margin:3px 0 0;text-align:center;font-size:13px;line-height:1.4;color:#8f97a1;">' . esc_html( $stop[1] ) . '</div>'
 					: '' )
 				. '</td>';
 		}
 
-		// The circle row is narrower than the label row: circles at the two
-		// ends sit above the CENTRE of the outer label cells, so the row is
-		// inset by half a label cell on each side.
 		return '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:26px 0 0;'
 			. 'background:' . esc_attr( $p['panel'] ) . ';border-radius:14px;">'
-			. '<tr><td style="padding:24px 16px 20px;">'
-			. '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>'
-			. '<td width="16.66%" style="padding:0;"></td>'
-			. '<td style="padding:0;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>' . $dots . '</tr></table></td>'
-			. '<td width="16.66%" style="padding:0;"></td>'
-			. '</tr></table>'
-			. '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>' . $labs . '</tr></table>'
+			. '<tr><td style="padding:24px 14px 20px;">'
+			. '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>' . $cells . '</tr></table>'
 			. '</td></tr></table>';
 	}
 
@@ -412,18 +420,12 @@ final class Emails {
 			return '<div style="margin:0 0 8px;font-size:13px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:' . esc_attr( $p['soft'] ) . ';">' . esc_html( $text ) . '</div>';
 		};
 
-		// Gmail turns anything that looks like an address, a phone number or
-		// an email into a blue underlined link of its own. It cannot be
-		// stopped, but the span inside it can insist on its own colour and no
-		// underline, and Gmail's link then shows as plain text. A number reads
-		// left to right on its own span, so the LINE stays where the block
-		// put it.
 		$line = static function ( string $text, bool $ltr = false, bool $bold = false ) use ( $p ): string {
 			if ( '' === trim( $text ) ) {
 				return '';
 			}
 
-			$inner = '<span style="color:' . esc_attr( $p['ink'] ) . ';text-decoration:none;">' . esc_html( $text ) . '</span>';
+			$inner = self::plain( $text );
 
 			if ( $ltr ) {
 				$inner = '<span dir="ltr" style="unicode-bidi:plaintext;">' . $inner . '</span>';
@@ -440,6 +442,7 @@ final class Emails {
 		if ( $pickup ) {
 			$where  = $h( __( 'Collection', 'oc-theme' ) );
 			$branch = (string) $order->get_meta( '_oc_branch_name' );
+			$find   = '';
 
 			if ( '' !== $branch ) {
 				$where .= $line( $branch, false, true );
@@ -451,13 +454,16 @@ final class Emails {
 
 					$where .= $line( (string) ( $at['address'] ?? '' ) );
 					$where .= $line( (string) ( $at['phone'] ?? '' ), true );
+					$find   = trim( (string) ( $at['address'] ?? '' ) . ' ' . (string) ( $at['city'] ?? '' ) );
 				}
 			} else {
 				$where .= $line( __( 'Collection in person', 'oc-theme' ) );
 			}
+
+			$where .= self::map_link( $find );
 		} else {
-			// The street on its own line, the flat and floor and entry code
-			// named for what they are, the city last. Woo's "address 2" is
+			// The street on its own line, then the flat, floor and entry code
+			// named for what they are, then the city. Woo's "address 2" is
 			// this theme's flat number, and a bare "3" glued to the street was
 			// what the first version printed.
 			$extra = array();
@@ -480,10 +486,14 @@ final class Emails {
 				$extra[] = sprintf( __( 'Entry %s', 'oc-theme' ), $entry );
 			}
 
+			$street = trim( (string) $order->get_billing_address_1() );
+			$city   = trim( (string) $order->get_billing_city() );
+
 			$where = $h( __( 'Delivery address', 'oc-theme' ) )
-				. $line( trim( (string) $order->get_billing_address_1() ), false, true )
+				. $line( $street, false, true )
 				. $line( implode( ' · ', $extra ) )
-				. $line( trim( (string) $order->get_billing_city() ) );
+				. $line( $city )
+				. self::map_link( trim( $street . ' ' . $city ) );
 		}
 
 		return '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:26px 0 0;">'
@@ -492,6 +502,67 @@ final class Emails {
 			. '<td class="oc-gap" width="20" style="width:20px;">&nbsp;</td>'
 			. '<td class="oc-col" valign="top" style="padding:0 0 14px;">' . $where . '</td>'
 			. '</tr></table>';
+	}
+
+	/**
+	 * Text a mail client will not turn into a link of its own.
+	 *
+	 * Gmail hunts for anything shaped like an address, a phone number or an
+	 * email and wraps it in its own blue underlined anchor. Styling the span
+	 * around it does nothing, because the colour it sets is on the anchor it
+	 * inserted INSIDE that span. A zero-width space breaks the shape it is
+	 * matching on while leaving the words identical to read — and it is the
+	 * only thing that leaves the text as text rather than as somebody else's
+	 * link.
+	 *
+	 * @param string $text Raw text.
+	 */
+	public static function plain( string $text ): string {
+		$text = trim( $text );
+
+		if ( '' === $text ) {
+			return '';
+		}
+
+		$out   = '';
+		$chars = preg_split( '//u', $text, -1, PREG_SPLIT_NO_EMPTY );
+
+		foreach ( (array) $chars as $i => $char ) {
+			$out .= $char;
+
+			// After the first character, and before any run of digits: the
+			// two places a "street + number" or a bare number is recognised.
+			$next = $chars[ $i + 1 ] ?? '';
+
+			if ( 0 === $i || ( '' !== $next && preg_match( '/\d/', $next ) && ! preg_match( '/\d/', $char ) ) ) {
+				$out .= "\u{200B}";
+			}
+		}
+
+		return '<span style="color:inherit;text-decoration:none;">' . esc_html( $out ) . '</span>';
+	}
+
+	/**
+	 * A small, deliberate link to the place on a map.
+	 *
+	 * The address itself stays text. One short link says what it is and goes
+	 * where it says, which is what an address in an email is actually for.
+	 *
+	 * @param string $where Street and city.
+	 */
+	public static function map_link( string $where ): string {
+		$where = trim( $where );
+
+		if ( '' === $where ) {
+			return '';
+		}
+
+		$p   = self::palette();
+		$url = 'https://www.google.com/maps/search/?api=1&query=' . rawurlencode( $where );
+
+		return '<div style="margin:8px 0 0;">'
+			. '<a href="' . esc_url( $url ) . '" style="font-size:13.5px;font-weight:600;color:' . esc_attr( $p['cta'] ) . ';text-decoration:none;">'
+			. '&#9679;&nbsp;' . esc_html__( 'Location on the map', 'oc-theme' ) . '</a></div>';
 	}
 
 	/**
@@ -520,7 +591,7 @@ final class Emails {
 					$src = wp_get_attachment_image_url( $id, 'woocommerce_thumbnail' );
 
 					if ( $src ) {
-						$pic = '<img src="' . esc_url( $src ) . '" width="72" height="72" alt="' . esc_attr( $item->get_name() ) . '"'
+						$pic = '<img src="' . esc_url( $src ) . '" width="72" height="72" alt=""'
 							. ' style="display:block;border:0;width:72px;height:72px;border-radius:10px;background:' . esc_attr( $p['panel'] ) . ';" />';
 					}
 				}
@@ -530,23 +601,43 @@ final class Emails {
 				$pic = '<div style="width:72px;height:72px;border-radius:10px;background:' . esc_attr( $p['panel'] ) . ';"></div>';
 			}
 
-			$meta = wc_display_item_meta(
-				$item,
-				array(
-					'echo'      => false,
-					'separator' => ' · ',
-					'before'    => '',
-					'after'     => '',
-				)
-			);
+			// A variation's own name carries its attributes — "BALL TABLE -
+			// עץ-חום" — and they are listed again underneath. The parent's
+			// title is the product; the attributes are the detail.
+			$title = (string) $item->get_name();
+
+			if ( $product && $product->is_type( 'variation' ) ) {
+				$parent = wc_get_product( $product->get_parent_id() );
+
+				if ( $parent ) {
+					$title = (string) $parent->get_name();
+				}
+			}
+
+			// Woo's own meta renderer puts the label in a <strong> and the
+			// value in a <p>, which is a block and drops to the next line.
+			// The pairs are read off directly and set as one line each.
+			$bits = array();
+
+			foreach ( $item->get_formatted_meta_data() as $meta ) {
+				$label = trim( wp_strip_all_tags( (string) $meta->display_key ) );
+				$value = trim( wp_strip_all_tags( (string) $meta->display_value ) );
+
+				if ( '' === $label || '' === $value ) {
+					continue;
+				}
+
+				$bits[] = '<span style="color:' . esc_attr( $p['soft'] ) . ';">' . esc_html( rtrim( $label, ':' ) ) . ':</span> '
+					. '<span style="color:' . esc_attr( $p['ink'] ) . ';">' . esc_html( $value ) . '</span>';
+			}
 
 			$rows .= '<tr>'
 				. '<td width="72" valign="top" style="width:72px;padding:16px 0;">' . $pic . '</td>'
 				. '<td valign="top" style="padding:16px 18px;">'
 				. '<div style="font-size:15.5px;font-weight:600;line-height:1.45;color:' . esc_attr( $p['ink'] ) . ';">'
-				. esc_html( $item->get_name() ) . '</div>'
-				. ( $meta
-					? '<div style="margin:5px 0 0;font-size:13.5px;line-height:1.6;color:' . esc_attr( $p['soft'] ) . ';">' . wp_kses_post( $meta ) . '</div>'
+				. esc_html( $title ) . '</div>'
+				. ( $bits
+					? '<div style="margin:5px 0 0;font-size:13.5px;line-height:1.7;">' . implode( '<br />', $bits ) . '</div>'
 					: '' )
 				. '<div style="margin:6px 0 0;font-size:13.5px;line-height:1.5;color:' . esc_attr( $p['soft'] ) . ';">'
 				/* translators: %d: how many of this item. */
@@ -597,7 +688,13 @@ final class Emails {
 	 * with a background around a table, and the first version came out as a
 	 * grey bar floating above the words.
 	 */
-	public static function help(): string {
+	public static function help( $email = null ): string {
+		// Off is a real answer: a shop with a busy inbox may not want three
+		// invitations to write to it at the foot of every order.
+		if ( null !== $email && 'yes' !== self::opt( $email, 'oc_show_help', 'yes' ) ) {
+			return '';
+		}
+
 		$p     = self::palette();
 		$phone = Contact::phone();
 		$mail  = Contact::email();
@@ -655,7 +752,7 @@ final class Emails {
 
 		return '<div style="margin:30px 0 0;padding:24px 0 0;border-top:1px solid ' . esc_attr( $p['line'] ) . ';">'
 			. '<div style="margin:0 0 14px;font-size:17px;font-weight:700;color:' . esc_attr( $p['ink'] ) . ';">'
-			. esc_html__( 'Need a hand?', 'oc-theme' ) . '</div>'
+			. esc_html__( 'Here for any question', 'oc-theme' ) . '</div>'
 			. '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">' . $rows . '</table>'
 			. '</div>';
 	}
@@ -718,12 +815,13 @@ final class Emails {
 			? self::opt( $email, 'oc_intro_pickup', self::opt( $email, 'oc_intro', (string) ( $words['intro_pickup'] ?? '' ) ) )
 			: self::opt( $email, 'oc_intro', (string) ( $words['intro'] ?? '' ) );
 
-		// The window is only a promise worth making while the order is still
-		// being prepared, and only where something is being carried.
 		$due  = '';
 		$swap = array();
 
-		if ( 1 === $done && ! $pickup ) {
+		// Both emails: "when will it come" is the question the second one is
+		// opened to answer, and leaving it out there was the whole reason to
+		// send it.
+		if ( ! $pickup ) {
 			$window = WooCommerce::delivery_window();
 
 			if ( $window ) {
@@ -759,7 +857,7 @@ final class Emails {
 			. esc_html( sprintf( __( 'Order %s', 'oc-theme' ), '#' . $order->get_order_number() ) ) . '</div>';
 		$out .= self::parties( $order );
 		$out .= self::items( $order );
-		$out .= self::help();
+		$out .= self::help( $email );
 		$out .= self::social();
 		$out .= '</div>';
 
