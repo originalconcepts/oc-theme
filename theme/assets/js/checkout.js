@@ -388,6 +388,30 @@
 		 * the observer sits on the FORM (stable) and everything is re-queried
 		 * fresh on each pass. -- */
 
+		/* -- a price put into a line of Hebrew --
+		 *
+		 * Hebrew runs right to left, and to the bidi algorithm the shekel
+		 * sign and the space after it are "neutral": on their own they take
+		 * the direction of the line around them, which lands the symbol on
+		 * the far side of the number. The shop is set to ₪ 1,592 and the
+		 * line paints 1,592 ₪. WooCommerce isolates every price it prints
+		 * in a <bdi>, which is exactly what stops this — so a price we copy
+		 * out of Woo's markup, or build ourselves, has to carry its own. */
+		function coMoney( el, words, money ) {
+			el.textContent = '';
+
+			if ( words ) {
+				el.appendChild( document.createTextNode( money ? words + ' · ' : words ) );
+			}
+
+			if ( money ) {
+				var bdi = document.createElement( 'bdi' );
+
+				bdi.textContent = money;
+				el.appendChild( bdi );
+			}
+		}
+
 		function coPaintButton() {
 			var btn = document.getElementById( 'place_order' );
 			if ( ! btn || '1' !== coL.coBtnTotal ) {
@@ -400,10 +424,11 @@
 
 			var review = document.getElementById( 'order_review' );
 			var amount = review ? review.querySelector( 'tr.order-total .woocommerce-Price-amount' ) : null;
-			var label = btn.dataset.ocBase + ( amount ? ' · ' + amount.textContent.trim() : '' );
+			var money = amount ? amount.textContent.trim() : '';
+			var label = btn.dataset.ocBase + ( money ? ' · ' + money : '' );
 
 			if ( btn.textContent.trim() !== label ) {
-				btn.textContent = label;
+				coMoney( btn, btn.dataset.ocBase, money );
 			}
 		}
 
@@ -755,7 +780,7 @@
 
 			var review = document.getElementById( 'order_review' );
 			var amount = review ? review.querySelector( 'tr.order-total .woocommerce-Price-amount' ) : null;
-			tot.textContent = amount ? amount.textContent.trim() : '';
+			coMoney( tot, '', amount ? amount.textContent.trim() : '' );
 		}
 
 		if ( sumHead ) {

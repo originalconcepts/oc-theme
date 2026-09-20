@@ -7764,6 +7764,33 @@ body:not(.oc-no-lightbox) .oc-vslide.is-playing {
 }
 
 /* ==========================================================================
+   Prices in a right-to-left shop
+   --------------------------------------------------------------------------
+   The shekel sign, and the space the shop's "symbol, then the amount"
+   setting puts after it, are both "neutral" to the bidirectional algorithm:
+   with nothing strong beside them they take the direction of the line around
+   them, and in Hebrew that throws the symbol to the far side of the number.
+   A shop set to ₪ 1,592 then paints 1,592 ₪.
+
+   WooCommerce stops this by isolating every price it prints in a <bdi>. Its
+   own Cart and Checkout BLOCKS do not — they write the amount as plain text
+   — so on a Hebrew shop every price on the cart page came out reversed.
+   `plaintext` is what <bdi> does: isolate the run and take its direction
+   from the first strong character, of which a price has none, so it reads
+   left to right as a number should.
+   ========================================================================== */
+:is(
+	.wc-block-formatted-money-amount,
+	.wc-block-components-formatted-money-amount,
+	.wc-block-components-product-price__value,
+	.wc-block-components-product-price__regular,
+	.wc-block-components-totals-item__value,
+	.oc-co-sumtotal
+) {
+	unicode-bidi: plaintext;
+}
+
+/* ==========================================================================
    Picture fit — decided per picture on the server (Image_Fit)
    --------------------------------------------------------------------------
    Every attachment <img> carries oc-fit--contain or oc-fit--cover, and a

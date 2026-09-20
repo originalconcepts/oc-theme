@@ -252,19 +252,77 @@ final class Checkout {
 	}
 
 	/**
-	 * Is the packed logged-in experience in play for this render? (Feature on
-	 * and the visitor signed in — contact details always come packed then.)
+	 * The contact fields the checkout will not go through without. Kept
+	 * beside fields(), which is where they are made required.
+	 */
+	private const CONTACT = array( 'billing_first_name', 'billing_last_name', 'billing_email', 'billing_phone' );
+
+	/**
+	 * Is the packed logged-in experience available at all — the feature on
+	 * and the visitor signed in?
+	 */
+	private function packing(): bool {
+		return Addresses::enabled() && is_user_logged_in();
+	}
+
+	/**
+	 * Does this account already hold every contact detail the checkout asks
+	 * for? Read from the customer object, which is the very thing the fields
+	 * render from, so the card and the fields can never disagree.
+	 *
+	 * An account can be short of them — one opened for somebody by the shop,
+	 * with a name and an email and nothing else, is the ordinary case. Its
+	 * display name is not a billing name: folding the fields away then hides
+	 * empty required boxes behind a card that looks complete, and the first
+	 * the shopper hears of it is the form refusing to submit.
+	 */
+	private function contact_ready(): bool {
+		static $ready = null;
+
+		if ( null !== $ready ) {
+			return $ready;
+		}
+
+		$customer = WC()->customer;
+
+		if ( ! $customer instanceof \WC_Customer ) {
+			$ready = false;
+
+			return $ready;
+		}
+
+		foreach ( self::CONTACT as $key ) {
+			$get = 'get_' . $key;
+
+			if ( ! is_callable( array( $customer, $get ) ) || '' === trim( (string) $customer->$get() ) ) {
+				$ready = false;
+
+				return $ready;
+			}
+		}
+
+		$ready = true;
+
+		return $ready;
+	}
+
+	/**
+	 * Is the packed logged-in experience in play for this render? Only when
+	 * there is a complete set of details to pack — otherwise the block opens
+	 * and the shopper fills in what is missing.
 	 */
 	private function orderer_packed(): bool {
-		return Addresses::enabled() && is_user_logged_in();
+		return $this->packing() && $this->contact_ready();
 	}
 
 	/**
 	 * Should the delivery address arrive packed — i.e. the signed-in visitor
 	 * already has at least one saved (or billing-seeded) address to pick from?
+	 * Independent of the contact details: somebody may well have addresses
+	 * saved and still be missing a phone number.
 	 */
 	private function addr_packed(): bool {
-		if ( ! $this->orderer_packed() ) {
+		if ( ! $this->packing() ) {
 			return false;
 		}
 
@@ -785,23 +843,18 @@ final class Checkout {
 			return;
 		}
 
-		$uid   = get_current_user_id();
-		$user  = wp_get_current_user();
-		$first = get_user_meta( $uid, 'billing_first_name', true );
-		$last  = get_user_meta( $uid, 'billing_last_name', true );
-		$phone = get_user_meta( $uid, 'billing_phone', true );
-		$email = get_user_meta( $uid, 'billing_email', true );
-
-		$first = '' !== (string) $first ? $first : $user->first_name;
-		$last  = '' !== (string) $last ? $last : $user->last_name;
-		$email = '' !== (string) $email ? $email : $user->user_email;
+		// The very values the fields below are rendering, so the card can
+		// never claim a detail the form does not actually hold. The display
+		// name is deliberately NOT a fallback: it is not a billing name, and
+		// standing in for one is what made an empty form look filled in.
+		$customer = WC()->customer;
+		$first    = (string) $customer->get_billing_first_name();
+		$last     = (string) $customer->get_billing_last_name();
+		$phone    = (string) $customer->get_billing_phone();
+		$email    = (string) $customer->get_billing_email();
 
 		$name = trim( $first . ' ' . $last );
-		if ( '' === $name ) {
-			$name = $user->display_name;
-		}
-
-		$sub = implode( ' · ', array_filter( array( (string) $phone, (string) $email ) ) );
+		$sub  = implode( ' · ', array_filter( array( $phone, $email ) ) );
 		?>
 		<div class="oc-copack-card oc-copack-card--orderer">
 			<div class="oc-copack-card__body">
@@ -822,7 +875,7 @@ final class Checkout {
 	 * address is picked rather than a new one, folds away with the fields.
 	 */
 	public function address_labels(): void {
-		if ( ! $this->orderer_packed() ) {
+		if ( ! $this->packing() ) {
 			return;
 		}
 

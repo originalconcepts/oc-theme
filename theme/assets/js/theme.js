@@ -9671,11 +9671,33 @@ window.__ocMoney = function ( n, money ) {
 
 	var out = whole + ( frac ? ( money.dot || '.' ) + frac : '' );
 
+	// A no-break space, as WooCommerce itself uses: to the bidi algorithm an
+	// ordinary space between the symbol and the number is a break, and the
+	// symbol then drifts to the far side of the number in a Hebrew line.
 	switch ( money.format ) {
 		case 'right':       return out + sym;
-		case 'left_space':  return sym + ' ' + out;
-		case 'right_space': return out + ' ' + sym;
+		case 'left_space':  return sym + '\u00a0' + out;
+		case 'right_space': return out + '\u00a0' + sym;
 		default:            return sym + out;
+	}
+};
+
+/* A price put into a line of Hebrew. The currency sign is a bidi "neutral",
+ * so on its own it takes the direction of the line around it and ends up on
+ * the wrong side of the number. WooCommerce isolates every price it prints
+ * in a <bdi>; a price we write ourselves needs the same. */
+window.__ocMoneyInto = function ( el, words, money ) {
+	el.textContent = '';
+
+	if ( words ) {
+		el.appendChild( document.createTextNode( money ? words + ' · ' : words ) );
+	}
+
+	if ( money ) {
+		var bdi = document.createElement( 'bdi' );
+
+		bdi.textContent = money;
+		el.appendChild( bdi );
 	}
 };
 
@@ -9855,9 +9877,11 @@ window.__ocMoney = function ( n, money ) {
 							}
 						);
 
-						btn.textContent = sum > 0
-							? btn.dataset.ocLabel + ' · ' + window.__ocMoney( sum, money )
-							: btn.dataset.ocLabel;
+						window.__ocMoneyInto(
+							btn,
+							btn.dataset.ocLabel,
+							sum > 0 ? window.__ocMoney( sum, money ) : ''
+						);
 					};
 
 					block.addEventListener( 'change', function () { setTimeout( paint, 0 ); } );
@@ -10071,16 +10095,28 @@ window.__ocMoney = function ( n, money ) {
 
 		var pay = full - off;
 
-		nowEl.textContent = price( pay );
+		window.__ocMoneyInto( nowEl, '', price( pay ) );
 
 		// The block wears a class while a discount is running, which is what
 		// lets the payable total take the shop's sale colour.
 		block.classList.toggle( 'is-off', off > 0 );
 
 		if ( off > 0 ) {
-			wasEl.textContent = price( full );
+			window.__ocMoneyInto( wasEl, '', price( full ) );
 			wasEl.hidden = false;
-			savedEl.textContent = ( L.btSaved || 'You save %s' ).replace( '%s', price( off ) );
+
+			// "You save %s" is a sentence with a price in it, so the two
+			// halves go in separately and only the price is isolated.
+			var saved = ( L.btSaved || 'You save %s' ).split( '%s' );
+
+			savedEl.textContent = '';
+			savedEl.appendChild( document.createTextNode( saved[ 0 ] ) );
+
+			var savedBdi = document.createElement( 'bdi' );
+
+			savedBdi.textContent = price( off );
+			savedEl.appendChild( savedBdi );
+			savedEl.appendChild( document.createTextNode( saved[ 1 ] || '' ) );
 			savedEl.hidden = false;
 		} else {
 			wasEl.hidden = true;
@@ -10440,7 +10476,7 @@ window.__ocMoney = function ( n, money ) {
 		var qty = form.querySelector( 'input.qty' ),
 			n   = qty ? ( parseInt( qty.value, 10 ) || 1 ) : 1;
 
-		btn.textContent = price > 0 ? label + ' · ' + window.__ocMoney( price * n, money ) : label;
+		window.__ocMoneyInto( btn, label, price > 0 ? window.__ocMoney( price * n, money ) : '' );
 	};
 
 	var apply = function ( v ) {
