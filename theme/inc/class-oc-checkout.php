@@ -71,6 +71,7 @@ final class Checkout {
 		add_filter( 'woocommerce_checkout_get_value', array( $this, 'pin_country' ), 20, 2 );
 		add_filter( 'woocommerce_form_field_oc_co_shipping', array( $this, 'shipping_section' ) );
 		add_filter( 'woocommerce_update_order_review_fragments', array( $this, 'rates_fragment' ) );
+		add_action( 'woocommerce_checkout_update_order_review', array( $this, 'branch_seen' ) );
 		add_filter( 'woocommerce_cart_shipping_method_full_label', array( $this, 'free_label' ), 10, 2 );
 		add_filter( 'body_class', array( $this, 'body_class' ) );
 		add_filter( 'woocommerce_checkout_get_value', array( $this, 'prefill_value' ), 20, 2 );
@@ -748,6 +749,88 @@ final class Checkout {
 	}
 
 	/**
+	 * The branches a shopper may collect from, or nothing at all when the
+	 * shop keeps none.
+	 *
+	 * @return array<int,array{id:int,name:string}>
+	 */
+	private function branches(): array {
+		return class_exists( '\\OC\\Blocks\\Branches' ) ? \OC\Blocks\Branches::for_pickup() : array();
+	}
+
+	/**
+	 * The branch the shopper has settled on, as an id, or 0.
+	 *
+	 * Held in the session because the method cards are re-drawn on every
+	 * review refresh, and a choice that vanished each time the cart changed
+	 * would be no choice at all.
+	 */
+	private function branch_chosen(): int {
+		$id = WC()->session ? absint( WC()->session->get( 'oc_branch' ) ) : 0;
+
+		foreach ( $this->branches() as $branch ) {
+			if ( $branch['id'] === $id ) {
+				return $id;
+			}
+		}
+
+		// Nothing chosen yet, or a branch that has since stopped offering
+		// collection: fall to the first, so the row is never empty.
+		$first = $this->branches();
+
+		return $first ? (int) $first[0]['id'] : 0;
+	}
+
+	/**
+	 * "Collect from" — one row under the collection card.
+	 */
+	private function branch_picker(): string {
+		$branches = $this->branches();
+
+		if ( ! $branches ) {
+			return '';
+		}
+
+		$chosen = $this->branch_chosen();
+
+		ob_start();
+		?>
+		<div class="oc-co-branch" data-oc-co-branch>
+			<label class="oc-co-branch__lab" for="oc_branch"><?php esc_html_e( 'Collect from', 'oc-theme' ); ?></label>
+			<select class="oc-co-branch__sel" name="oc_branch" id="oc_branch">
+				<?php foreach ( $branches as $branch ) : ?>
+					<option value="<?php echo absint( $branch['id'] ); ?>" <?php selected( $branch['id'], $chosen ); ?>>
+						<?php echo esc_html( $branch['name'] ); ?>
+					</option>
+				<?php endforeach; ?>
+			</select>
+		</div>
+		<?php
+
+		return (string) ob_get_clean();
+	}
+
+	/**
+	 * Remember the branch while the shopper moves about the checkout. Woo
+	 * hands the whole form over on every review refresh; this reads the one
+	 * field out of it.
+	 *
+	 * @param string $posted The serialised checkout form.
+	 */
+	public function branch_seen( $posted ): void {
+		if ( ! WC()->session ) {
+			return;
+		}
+
+		$data = array();
+		parse_str( (string) $posted, $data );
+
+		if ( isset( $data['oc_branch'] ) ) {
+			WC()->session->set( 'oc_branch', absint( $data['oc_branch'] ) );
+		}
+	}
+
+	/**
 	 * The method cards — also served as an update_order_review fragment, so
 	 * a threshold crossing (free shipping appearing mid-checkout) re-renders
 	 * them live.
@@ -778,6 +861,14 @@ final class Checkout {
 							<span class="oc-co-rate__cost"><?php echo wp_kses_post( wc_price( $cost ) ); ?></span>
 						<?php endif; ?>
 					</label>
+					<?php
+					// Which branch to collect from belongs to the collection
+					// row and to no other, so it is drawn under that row and
+					// only while it is the chosen one.
+					if ( 'local_pickup' === $rate->get_method_id() && $rate->get_id() === $current ) {
+						echo $this->branch_picker(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
+					}
+					?>
 				<?php endforeach; ?>
 			<?php endforeach; ?>
 		</div>
@@ -1358,6 +1449,21 @@ final class Checkout {
 			$errors->add( 'oc_privacy', __( 'Please confirm the privacy policy notice.', 'oc-theme' ) );
 		}
 
+		// A shop with branches must be told which one; the picker defaults to
+		// the first, so this only ever catches a form that lost the field.
+		if ( $this->is_pickup() && $this->branches() ) {
+			$branch = absint( $_POST['oc_branch'] ?? 0 ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- inside Woo's own checkout submit.
+			$known  = false;
+
+			foreach ( $this->branches() as $one ) {
+				$known = $known || $one['id'] === $branch;
+			}
+
+			if ( ! $known ) {
+				$errors->add( 'oc_branch', __( 'Please choose the branch to collect from.', 'oc-theme' ) );
+			}
+		}
+
 		$phone = (string) ( $data['billing_phone'] ?? '' );
 		if ( '' !== $phone && ! $this->phone_ok( $phone ) ) {
 			$errors->add( 'oc_phone', $this->phone_error( __( 'Phone', 'oc-theme' ) ) );
@@ -1446,6 +1552,21 @@ final class Checkout {
 			$order->update_meta_data( '_oc_recipient_last', sanitize_text_field( wp_unslash( $_POST['oc_recip_last'] ?? '' ) ) );
 			$order->update_meta_data( '_oc_recipient_phone', sanitize_text_field( wp_unslash( $_POST['oc_recip_phone'] ?? '' ) ) );
 			$order->update_meta_data( '_oc_recipient_phone2', sanitize_text_field( wp_unslash( $_POST['oc_recip_phone2'] ?? '' ) ) );
+		}
+
+		// Which branch it is being collected from. The name is written down
+		// beside the id on purpose: a branch can be renamed, or stop being a
+		// branch, and an order is a record of what was agreed at the time.
+		if ( $this->is_pickup() ) {
+			$branch = absint( $_POST['oc_branch'] ?? 0 );
+
+			foreach ( $this->branches() as $one ) {
+				if ( $one['id'] === $branch ) {
+					$order->update_meta_data( '_oc_branch', $branch );
+					$order->update_meta_data( '_oc_branch_name', $one['name'] );
+					break;
+				}
+			}
 		}
 
 		if ( ! empty( $_POST['oc_marketing_consent'] ) ) {
@@ -1552,6 +1673,13 @@ final class Checkout {
 	 */
 	private function meta_rows( $order ): array {
 		$rows = array();
+
+		// Where it is being collected from, first: on a collection order it
+		// is the one thing the shop and the shopper both need to have read.
+		$branch = (string) $order->get_meta( '_oc_branch_name' );
+		if ( '' !== $branch ) {
+			$rows[ __( 'Collect from', 'oc-theme' ) ] = $branch;
+		}
 
 		$first = (string) $order->get_meta( '_oc_recipient_first' );
 		if ( '' !== $first ) {

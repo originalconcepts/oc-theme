@@ -29,6 +29,92 @@ final class Branches {
 	const TAX = 'oc_branch_region';
 
 	/**
+	 * Where the shop says whether it has branches at all.
+	 */
+	const OPTION = 'oc_branches';
+
+	/**
+	 * Settings, with their defaults.
+	 *
+	 * @return array<string,int>
+	 */
+	public static function settings(): array {
+		$saved = get_option( self::OPTION );
+
+		return array(
+			// Shown unless the shop says otherwise: a shop that has branches
+			// today should not lose the screen to a new release.
+			'menu' => isset( $saved['menu'] ) ? (int) $saved['menu'] : 1,
+		);
+	}
+
+	/**
+	 * Is the Branches screen in the admin menu?
+	 */
+	public static function menu_on(): bool {
+		return 1 === self::settings()['menu'];
+	}
+
+	/**
+	 * The branches a shopper may collect from, in the order they are shown.
+	 *
+	 * A branch is offered unless it has been told not to be — a shop that
+	 * adds a branch means it, and having to go and tick a box before it
+	 * appears is a trap rather than a safeguard.
+	 *
+	 * @return array<int,array{id:int,name:string}>
+	 */
+	public static function for_pickup(): array {
+		if ( ! post_type_exists( self::CPT ) ) {
+			return array();
+		}
+
+		$out = array();
+
+		foreach ( get_posts(
+			array(
+				'post_type'      => self::CPT,
+				'posts_per_page' => 100,
+				'orderby'        => 'title',
+				'order'          => 'ASC',
+				'fields'         => 'ids',
+			)
+		) as $id ) {
+			if ( ! self::pickup_on( (int) $id ) ) {
+				continue;
+			}
+
+			$out[] = array(
+				'id'   => (int) $id,
+				'name' => self::pickup_name( (int) $id ),
+			);
+		}
+
+		return $out;
+	}
+
+	/**
+	 * May this branch be collected from?
+	 *
+	 * @param int $branch_id Branch id.
+	 */
+	public static function pickup_on( int $branch_id ): bool {
+		return '0' !== (string) get_post_meta( $branch_id, '_oc_br_pickup', true );
+	}
+
+	/**
+	 * What to call this branch at the checkout: its own wording where the
+	 * shop gave one, the branch's name otherwise.
+	 *
+	 * @param int $branch_id Branch id.
+	 */
+	public static function pickup_name( int $branch_id ): string {
+		$own = trim( (string) get_post_meta( $branch_id, '_oc_br_pickup_name', true ) );
+
+		return '' !== $own ? $own : wp_strip_all_tags( (string) get_the_title( $branch_id ) );
+	}
+
+	/**
 	 * The accessibility checklist, key => label.
 	 *
 	 * @return array<string,string>
@@ -72,6 +158,10 @@ final class Branches {
 				),
 				'public'        => true,
 				'has_archive'   => false,
+				// A shop without branches does not want the screen in its way.
+				// The type itself stays registered either way, so the pages
+				// that exist keep working and the block keeps its content.
+				'show_in_menu'  => self::menu_on(),
 				'menu_position' => 25,
 				'menu_icon'     => 'dashicons-store',
 				'supports'      => array( 'title', 'editor', 'thumbnail' ),
@@ -113,6 +203,8 @@ final class Branches {
 			'phone'   => (string) get_post_meta( $branch_id, '_oc_br_phone', true ),
 			'phone2'  => (string) get_post_meta( $branch_id, '_oc_br_phone2', true ),
 			'hours'   => (string) get_post_meta( $branch_id, '_oc_br_hours', true ),
+			'pickup'  => self::pickup_on( $branch_id ),
+			'pickup_name' => (string) get_post_meta( $branch_id, '_oc_br_pickup_name', true ),
 			'access'  => is_array( $access ) ? $access : array(),
 			'gallery' => array_filter( array_map( 'absint', explode( ',', (string) get_post_meta( $branch_id, '_oc_br_gallery', true ) ) ) ),
 			'video'   => (string) get_post_meta( $branch_id, '_oc_br_video', true ),
@@ -124,6 +216,7 @@ final class Branches {
 	 */
 	public function boxes(): void {
 		add_meta_box( 'oc-branch-details', __( 'Branch details', 'oc-blocks' ), array( $this, 'box_details' ), self::CPT, 'normal', 'high' );
+		add_meta_box( 'oc-branch-pickup', __( 'Collection at the checkout', 'oc-blocks' ), array( $this, 'box_pickup' ), self::CPT, 'side', 'default' );
 		add_meta_box( 'oc-branch-access', __( 'Accessibility', 'oc-blocks' ), array( $this, 'box_access' ), self::CPT, 'normal', 'default' );
 		add_meta_box( 'oc-branch-media', __( 'Gallery & video', 'oc-blocks' ), array( $this, 'box_media' ), self::CPT, 'normal', 'default' );
 	}
@@ -159,6 +252,34 @@ final class Branches {
 				<td><textarea class="large-text" rows="4" id="oc_br_hours" name="oc_br_hours" placeholder="<?php esc_attr_e( 'One line per day or range', 'oc-blocks' ); ?>"><?php echo esc_textarea( $d['hours'] ); ?></textarea></td>
 			</tr>
 		</table>
+		<?php
+	}
+
+	/**
+	 * Whether shoppers may collect from here, and what to call it when they
+	 * are choosing.
+	 *
+	 * @param \WP_Post $post Branch.
+	 */
+	public function box_pickup( \WP_Post $post ): void {
+		$on   = self::pickup_on( $post->ID );
+		$name = (string) get_post_meta( $post->ID, '_oc_br_pickup_name', true );
+		?>
+		<p>
+			<label>
+				<input type="checkbox" name="oc_br_pickup" value="1" <?php checked( $on ); ?> />
+				<?php esc_html_e( 'Offer this branch for collection at the checkout', 'oc-blocks' ); ?>
+			</label>
+		</p>
+		<p class="description" style="margin-block-end:12px;">
+			<?php esc_html_e( 'A shopper who chooses collection picks the branch to collect from. Untick to leave this one out.', 'oc-blocks' ); ?>
+		</p>
+		<p>
+			<label for="oc_br_pickup_name"><strong><?php esc_html_e( 'Name at the checkout', 'oc-blocks' ); ?></strong></label>
+			<input type="text" class="widefat" id="oc_br_pickup_name" name="oc_br_pickup_name" value="<?php echo esc_attr( $name ); ?>"
+				placeholder="<?php echo esc_attr( wp_strip_all_tags( (string) get_the_title( $post->ID ) ) ); ?>" />
+		</p>
+		<p class="description"><?php esc_html_e( 'Left empty, the branch\'s own name is used.', 'oc-blocks' ); ?></p>
 		<?php
 	}
 
@@ -256,6 +377,12 @@ final class Branches {
 		}
 
 		update_post_meta( $post_id, '_oc_br_hours', sanitize_textarea_field( wp_unslash( $_POST['oc_br_hours'] ?? '' ) ) );
+
+		// '0' rather than an absent meta, so "not offered" is a thing the
+		// branch says rather than something missing — which is how a branch
+		// nobody has edited still comes out offered.
+		update_post_meta( $post_id, '_oc_br_pickup', empty( $_POST['oc_br_pickup'] ) ? '0' : '1' );
+		update_post_meta( $post_id, '_oc_br_pickup_name', sanitize_text_field( wp_unslash( $_POST['oc_br_pickup_name'] ?? '' ) ) );
 		update_post_meta( $post_id, '_oc_br_video', esc_url_raw( wp_unslash( $_POST['oc_br_video'] ?? '' ) ) );
 
 		$gallery = implode( ',', array_filter( array_map( 'absint', explode( ',', (string) wp_unslash( $_POST['oc_br_gallery'] ?? '' ) ) ) ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- every id is absint-ed.

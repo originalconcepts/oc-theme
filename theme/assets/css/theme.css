@@ -10913,6 +10913,35 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 	flex: none;
 }
 
+/* "Collect from" — a row of the same group, under the collection card it
+ * belongs to, set in from the radio so it reads as that card's business. */
+.oc-co-branch {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	flex-wrap: wrap;
+	padding: 10px 15px 12px 43px;
+	border-block-start: 1px dashed rgb(228 230 234);
+}
+
+.oc-co-branch__lab { font-size: .86rem; color: var(--oc-ink-2, #666); flex: none; }
+
+.oc-co-branch__sel {
+	flex: 1 1 200px;
+	min-inline-size: 0;
+	padding: 8px 12px;
+	border: 1.5px solid color-mix(in srgb, currentColor 22%, transparent);
+	border-radius: var(--oc-cta-r, 8px);
+	background: var(--oc-surface, #fff);
+	color: var(--oc-ink, #1c1c1c);
+	font: inherit;
+	font-size: .9rem;
+}
+
+.oc-co-branch__sel:focus { outline: none; border-color: currentColor; }
+
+[dir="ltr"] .oc-co-branch { padding: 10px 43px 12px 15px; }
+
 .oc-co-rate__name { font-weight: 500; font-size: .92rem; margin-inline-end: auto; }
 .oc-co-rate__cost { font-weight: 600; font-size: .9rem; flex: none; }
 

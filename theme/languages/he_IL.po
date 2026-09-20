@@ -9250,3 +9250,50 @@ msgstr "מחושב לפי הכתובת"
 
 msgid "Delivery"
 msgstr "משלוח"
+
+msgid "Branches"
+msgstr "סניפים"
+
+msgid "This shop has branches"
+msgstr "לחנות הזאת יש סניפים"
+
+msgid "Show the Branches screen in the menu"
+msgstr "להציג את מסך הסניפים בתפריט"
+
+msgid "Turn this off in a shop with no branches and the screen steps out of the menu. Nothing is deleted: the branch pages that exist keep working, and the branches block stays available — it is just as useful for \"where to find our products\"."
+msgstr "בחנות בלי סניפים אפשר לכבות, והמסך יוצא מהתפריט. שום דבר לא נמחק: עמודי הסניפים הקיימים ממשיכים לעבוד, והבלוק של הסניפים נשאר זמין — הוא מתאים בדיוק באותה מידה ל״איפה אפשר למצוא את המוצרים שלנו״."
+
+msgid "Collection at the checkout"
+msgstr "איסוף עצמי בקופה"
+
+msgid "Every branch is offered unless its own screen says otherwise, where you can also give it the name shoppers see. The branch a shopper picks travels onto the order, shows on the order screen and in the emails, and the orders list can be narrowed to one branch."
+msgstr "כל סניף מוצע לאיסוף אלא אם נקבע אחרת בעמוד שלו, ושם אפשר גם לקבוע את השם שהלקוח רואה. הסניף שהלקוח בוחר נשמר בהזמנה, מוצג במסך ההזמנה ובמיילים, ואפשר לסנן את רשימת ההזמנות לפי סניף."
+
+msgid "No branches yet. Add one and it is offered at the checkout to anyone choosing collection."
+msgstr "עדיין אין סניפים. הוסיפו סניף והוא יוצע בקופה לכל מי שבוחר איסוף עצמי."
+
+msgid "Offer this branch for collection at the checkout"
+msgstr "לאפשר בחירת הסניף הזה לאיסוף בקופה"
+
+msgid "A shopper who chooses collection picks the branch to collect from. Untick to leave this one out."
+msgstr "לקוח שבוחר איסוף עצמי בוחר מאיזה סניף לאסוף. הסירו את הסימון כדי להשמיט את הסניף הזה."
+
+msgid "Name at the checkout"
+msgstr "השם בקופה"
+
+msgid "Left empty, the branch's own name is used."
+msgstr "אם השדה ריק, יוצג שם הסניף עצמו."
+
+msgid "Collect from"
+msgstr "איסוף מהסניף"
+
+msgid "Please choose the branch to collect from."
+msgstr "נא לבחור את הסניף שממנו תאספו את ההזמנה."
+
+msgid "All branches"
+msgstr "כל הסניפים"
+
+msgid "%d branch is offered when a shopper chooses collection."
+msgid_plural "%d branches are offered when a shopper chooses collection."
+msgstr[0] "סניף אחד מוצע ללקוח שבוחר איסוף עצמי."
+msgstr[1] "%d סניפים מוצעים ללקוח שבוחר איסוף עצמי."

@@ -1807,3 +1807,18 @@ msgstr "מה נאמר, מה הובטח, מתי לחזור. נשמר עם כפת�
 
 msgid "Customer"
 msgstr "שם הלקוח"
+
+msgid "Collection at the checkout"
+msgstr "איסוף עצמי בקופה"
+
+msgid "Offer this branch for collection at the checkout"
+msgstr "לאפשר בחירת הסניף הזה לאיסוף בקופה"
+
+msgid "A shopper who chooses collection picks the branch to collect from. Untick to leave this one out."
+msgstr "לקוח שבוחר איסוף עצמי בוחר מאיזה סניף לאסוף. הסירו את הסימון כדי להשמיט את הסניף הזה."
+
+msgid "Name at the checkout"
+msgstr "השם בקופה"
+
+msgid "Left empty, the branch's own name is used."
+msgstr "אם השדה ריק, יוצג שם הסניף עצמו."
