@@ -935,9 +935,68 @@ final class Checkout {
 	}
 
 	/**
+	 * Can the price of delivery change with where it is going?
+	 *
+	 * Two things make it able to: more than one shipping zone carrying
+	 * places, so which zone the shopper falls in decides the method and the
+	 * price; and, in our own engine, a region — a region exists for no other
+	 * reason than to be priced differently from everywhere else.
+	 *
+	 * A shop with one zone and no regions charges the same everywhere, and
+	 * there is nothing to wait for.
+	 */
+	private function shipping_varies(): bool {
+		static $varies = null;
+
+		if ( null !== $varies ) {
+			return $varies;
+		}
+
+		$zones = 0;
+
+		foreach ( \WC_Shipping_Zones::get_zones() as $zone ) {
+			if ( ! empty( $zone['zone_locations'] ) ) {
+				++$zones;
+			}
+		}
+
+		if ( $zones > 1 ) {
+			$varies = true;
+
+			return $varies;
+		}
+
+		$varies = class_exists( '\\OC\\Theme\\Shipping\\Rules' )
+			&& Shipping\Rules::enabled()
+			&& ! empty( Shipping\Rules::get()['regions'] );
+
+		return $varies;
+	}
+
+	/**
+	 * Has the shopper said where it is going? The package's own destination
+	 * is what the quote was worked out from, so it is the thing to ask.
+	 *
+	 * @param array $package One shipping package.
+	 */
+	private function dest_given( array $package ): bool {
+		$dest = (array) ( $package['destination'] ?? array() );
+
+		return '' !== trim( (string) ( $dest['city'] ?? '' ) )
+			|| '' !== trim( (string) ( $dest['postcode'] ?? '' ) );
+	}
+
+	/**
 	 * Our own quiet shipping row: chosen method at the start, its price (or
 	 * "Free") at the price side. The native row — whose hidden radios fight
 	 * the form's cards over the checked state — hides entirely.
+	 *
+	 * Before an address is given, WooCommerce quotes against the shop's own
+	 * address, because it has nothing else to quote against. Where the price
+	 * can change with the destination that answer is a guess, and a guess of
+	 * "Free" printed in the totals is worse than no line at all — the shopper
+	 * reads it as a promise. So the row waits until there is an address to
+	 * price, and where the price cannot change it shows straight away.
 	 */
 	public function shipping_row(): void {
 		$packages = WC()->shipping()->get_packages();
@@ -957,6 +1016,15 @@ final class Checkout {
 			}
 
 			$rate = $rates[ $current ];
+
+			// Collection is free wherever the shopper lives, so it never has
+			// to wait; anything carried does.
+			if ( 'local_pickup' !== $rate->get_method_id()
+				&& $this->shipping_varies()
+				&& ! $this->dest_given( (array) $package ) ) {
+				continue;
+			}
+
 			$cost = (float) $rate->get_cost() + array_sum( array_map( 'floatval', $rate->get_taxes() ) );
 
 			// The chosen method's own name is the row's label — "Shipping"

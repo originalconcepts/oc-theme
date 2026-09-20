@@ -395,6 +395,37 @@ function oc_cart_icon_mark( string $css_class, int $size = 18 ): string {
 add_action( 'oc_header_icons', 'oc_header_icons_render' );
 
 /**
+ * Let a price keep its <bdi>.
+ *
+ * WooCommerce wraps every price it prints in a <bdi>, and in a right-to-left
+ * shop that wrapper is what holds the currency symbol on the side the shop
+ * asked for: the symbol, and the space the "symbol then amount" setting puts
+ * beside it, are "neutral" to the bidirectional algorithm, so with nothing
+ * isolating them they take the direction of the Hebrew around them and the
+ * symbol lands past the far end of the number.
+ *
+ * WordPress's allowed-tags list for post content carries <bdo> but not <bdi>,
+ * so every price passed through wp_kses_post() came out stripped of the one
+ * tag that mattered and a shop set to "₪ 39.00" printed "39.00 ₪". The tag
+ * has no behaviour and no attribute worth policing, so it is simply allowed.
+ *
+ * @param array  $tags    Allowed tags.
+ * @param string $context Which list this is.
+ * @return array
+ */
+function oc_allow_bdi( $tags, $context ) {
+	if ( is_array( $tags ) && in_array( $context, array( 'post', 'pre_user_description' ), true ) ) {
+		$tags['bdi'] = array(
+			'dir'   => true,
+			'class' => true,
+		);
+	}
+
+	return $tags;
+}
+add_filter( 'wp_kses_allowed_html', 'oc_allow_bdi', 10, 2 );
+
+/**
  * SVG media: preview in the media modal (core shows a blank file icon) and
  * uploads for administrators.
  *
