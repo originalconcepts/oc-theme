@@ -9247,3 +9247,6 @@ msgstr "למלא את הכרטיס ולחתוך"
 
 msgid "Worked out from your address"
 msgstr "מחושב לפי הכתובת"
+
+msgid "Delivery"
+msgstr "משלוח"

@@ -993,6 +993,25 @@ final class Checkout {
 	}
 
 	/**
+	 * What to call delivery on a row that has no price yet.
+	 *
+	 * Not the rate's own label: quoted against the shop's own address a cart
+	 * over the threshold comes back as "Free delivery", and that name beside
+	 * "worked out from your address" still reads as the promise the row is
+	 * there to avoid making. The shop's plain name for delivery, or the plain
+	 * word, says only what is known.
+	 */
+	private function waiting_label(): string {
+		$label = '';
+
+		if ( class_exists( '\\OC\\Theme\\Shipping\\Rules' ) && Shipping\Rules::enabled() ) {
+			$label = trim( (string) ( Shipping\Rules::get()['label'] ?? '' ) );
+		}
+
+		return '' !== $label ? $label : __( 'Delivery', 'oc-theme' );
+	}
+
+	/**
 	 * Has the shopper said where it is going? The package's own destination
 	 * is what the quote was worked out from, so it is the thing to ask.
 	 *
@@ -1044,7 +1063,7 @@ final class Checkout {
 			if ( 'local_pickup' !== $rate->get_method_id()
 				&& ! $this->dest_given( (array) $package )
 				&& $this->shipping_varies( $rate ) ) {
-				echo '<tr class="oc-co-shiprow2 oc-co-shiprow2--wait"><th>' . esc_html( $rate->get_label() ) . '</th>'
+				echo '<tr class="oc-co-shiprow2 oc-co-shiprow2--wait"><th>' . esc_html( $this->waiting_label() ) . '</th>'
 					. '<td><em class="oc-co-shipwait">' . esc_html__( 'Worked out from your address', 'oc-theme' ) . '</em></td></tr>';
 
 				continue;
