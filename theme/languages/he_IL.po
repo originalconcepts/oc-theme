@@ -9539,10 +9539,13 @@ msgid "It is back in stock"
 msgstr "המוצר חזר למלאי"
 
 msgid "You asked us to tell you when %s came back — it is here."
-msgstr "ביקשת שנעדכן אותך כשהמוצר %s יחזור למלאי — הוא חזר."
+msgstr "ביקשת שנעדכן אותך כשהוא יחזור — %s חזר למלאי."
 
 msgid "It can be ordered right now, and it does not usually stay long."
 msgstr "אפשר להזמין אותו עכשיו, והוא בדרך כלל לא נשאר הרבה זמן."
 
 msgid "Order it now"
 msgstr "להזמנת המוצר"
+
+msgid "You are receiving this email because you asked %s to tell you when this came back."
+msgstr "קיבלת את המייל הזה כי ביקשת מ־%s לעדכן אותך כשהמוצר יחזור למלאי."

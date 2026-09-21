@@ -320,8 +320,11 @@ final class Emails {
 
 	/**
 	 * Everything below it.
+	 *
+	 * @param string $why Why this person is being written to, when it is not
+	 *                    an order. Empty means it is.
 	 */
-	public static function close(): string {
+	public static function close( string $why = '' ): string {
 		$p    = self::palette();
 		$name = wp_specialchars_decode( (string) get_bloginfo( 'name' ), ENT_QUOTES );
 
@@ -348,10 +351,12 @@ final class Emails {
 			$out .= '<div style="margin:4px 0 0;">' . self::plain( implode( ', ', $at ) ) . '</div>';
 		}
 
-		$out .= '<div style="margin:12px 0 0;">'
+		if ( '' === trim( $why ) ) {
 			/* translators: %s: the shop name. */
-			. esc_html( sprintf( __( 'You are receiving this email because an order was placed at %s.', 'oc-theme' ), $name ) )
-			. '</div>';
+			$why = sprintf( __( 'You are receiving this email because an order was placed at %s.', 'oc-theme' ), $name );
+		}
+
+		$out .= '<div style="margin:12px 0 0;">' . esc_html( $why ) . '</div>';
 
 		$out .= '<div style="margin:4px 0 0;">'
 			/* translators: 1: year, 2: the shop name. */
@@ -1078,7 +1083,10 @@ final class Emails {
 		$out .= self::social();
 		$out .= '</div>';
 
-		return self::open() . $out . self::close();
+		return self::open() . $out . self::close(
+			/* translators: %s: the shop name. */
+			sprintf( __( 'You are receiving this email because you asked %s to tell you when this came back.', 'oc-theme' ), wp_specialchars_decode( (string) get_bloginfo( 'name' ), ENT_QUOTES ) )
+		);
 	}
 
 	/**
