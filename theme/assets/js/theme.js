@@ -3463,6 +3463,16 @@
 		} )();
 
 		syncUi();
+
+		// Arriving already filtered — a shared link, a refresh, a Back —
+		// the cards came from the server wearing their own lead colour,
+		// and nobody ticked anything for syncCardColors() to answer. The
+		// same flip, for the path that never ticked.
+		if ( Object.keys( state.attrs ).some( function ( id ) {
+			return state.attrs[ id ].length;
+		} ) ) {
+			window.requestAnimationFrame( syncCardColors );
+		}
 	} )();
 
 	/* ---------- card add-to-cart icon → cart drawer ---------- */
