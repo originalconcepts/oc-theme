@@ -38,7 +38,15 @@ final class Emails {
 	 * The emails this takes over. Admin notices keep WooCommerce's own look —
 	 * they go to the shop, which has no need to be sold to.
 	 */
-	const OURS = array( 'customer_processing_order', 'customer_completed_order' );
+	const OURS = array(
+		'customer_processing_order',
+		'customer_completed_order',
+		'customer_on_hold_order',
+		'customer_cancelled_order',
+		'customer_refunded_order',
+		'customer_reset_password',
+		'customer_new_account',
+	);
 
 	/**
 	 * How the written parts of the email being rendered are aligned.
@@ -99,19 +107,25 @@ final class Emails {
 		// A shop opening this screen should see what its customers are being
 		// told and change a word of it — not face three blank fields and have
 		// to guess what belongs in them.
-		$fields['oc_heading_pickup'] = array(
-			'title'       => __( 'Heading — collection', 'oc-theme' ),
-			'type'        => 'text',
-			'description' => __( 'Shown instead of the heading above when the order is being collected.', 'oc-theme' ),
-			'desc_tip'    => true,
-			'default'     => $words['heading_pickup'],
-		);
+		if ( isset( $words['heading_pickup'] ) ) {
+			$fields['oc_heading_pickup'] = array(
+				'title'       => __( 'Heading — collection', 'oc-theme' ),
+				'type'        => 'text',
+				'description' => __( 'Shown instead of the heading above when the order is being collected.', 'oc-theme' ),
+				'desc_tip'    => true,
+				'default'     => $words['heading_pickup'],
+			);
+		}
 
 		$fields['oc_intro'] = array(
-			'title'       => __( 'Opening words — delivery', 'oc-theme' ),
+			'title'       => isset( $words['intro_pickup'] )
+				? __( 'Opening words — delivery', 'oc-theme' )
+				: __( 'Opening words', 'oc-theme' ),
 			'type'        => 'textarea',
 			'css'         => 'width:100%;height:110px;',
-			'description' => __( 'The paragraph under the heading. Each line is its own paragraph. [from] and [to] become the estimated arrival dates — delete that line to leave the estimate out.', 'oc-theme' ),
+			'description' => isset( $words['intro_pickup'] )
+				? __( 'The paragraph under the heading. Each line is its own paragraph. [from] and [to] become the estimated arrival dates — delete that line to leave the estimate out.', 'oc-theme' )
+				: __( 'The paragraph under the heading. Each line is its own paragraph. [shop], [name] and [login] become the shop name, the person\'s name and their username.', 'oc-theme' ),
 			'default'     => $words['intro'],
 		);
 
@@ -123,13 +137,15 @@ final class Emails {
 			'default'     => 'yes',
 		);
 
-		$fields['oc_intro_pickup'] = array(
-			'title'       => __( 'Opening words — collection', 'oc-theme' ),
-			'type'        => 'textarea',
-			'css'         => 'width:100%;height:110px;',
-			'description' => __( 'The same, for an order being collected rather than delivered.', 'oc-theme' ),
-			'default'     => $words['intro_pickup'],
-		);
+		if ( isset( $words['intro_pickup'] ) ) {
+			$fields['oc_intro_pickup'] = array(
+				'title'       => __( 'Opening words — collection', 'oc-theme' ),
+				'type'        => 'textarea',
+				'css'         => 'width:100%;height:110px;',
+				'description' => __( 'The same, for an order being collected rather than delivered.', 'oc-theme' ),
+				'default'     => $words['intro_pickup'],
+			);
+		}
 
 		$fields['oc_align'] = array(
 			'title'       => __( 'Text alignment', 'oc-theme' ),
@@ -158,6 +174,47 @@ final class Emails {
 	 * @return array<string,string>
 	 */
 	public static function wording( string $id ): array {
+		if ( 'customer_on_hold_order' === $id ) {
+			return array(
+				'heading'        => __( 'Your order is waiting for payment', 'oc-theme' ),
+				'heading_pickup' => __( 'Your order is waiting for payment', 'oc-theme' ),
+				'intro'          => __( "We have your order, and it is waiting for the payment to come through.\nThe moment it does we will start getting it ready and email you again.\nEverything you ordered is listed below.", 'oc-theme' ),
+				'intro_pickup'   => __( "We have your order, and it is waiting for the payment to come through.\nThe moment it does we will get it ready and email you when it is waiting at the branch.\nEverything you ordered is listed below.", 'oc-theme' ),
+			);
+		}
+
+		if ( 'customer_cancelled_order' === $id ) {
+			return array(
+				'heading'        => __( 'Your order has been cancelled', 'oc-theme' ),
+				'heading_pickup' => __( 'Your order has been cancelled', 'oc-theme' ),
+				'intro'          => __( "Your order has been cancelled and nothing further will be charged for it.\nIf it was already paid for, we are taking care of the refund.\nIf this is not what you expected, talk to us — our details are at the foot of this email.", 'oc-theme' ),
+				'intro_pickup'   => __( "Your order has been cancelled and nothing further will be charged for it.\nIf it was already paid for, we are taking care of the refund.\nIf this is not what you expected, talk to us — our details are at the foot of this email.", 'oc-theme' ),
+			);
+		}
+
+		if ( 'customer_refunded_order' === $id ) {
+			return array(
+				'heading'        => __( 'Your refund is on its way', 'oc-theme' ),
+				'heading_pickup' => __( 'Your refund is on its way', 'oc-theme' ),
+				'intro'          => __( "We have refunded your order.\nThe money goes back the way it was paid, and it usually takes a few working days to show up.\nThe amount and the order are below.", 'oc-theme' ),
+				'intro_pickup'   => __( "We have refunded your order.\nThe money goes back the way it was paid, and it usually takes a few working days to show up.\nThe amount and the order are below.", 'oc-theme' ),
+			);
+		}
+
+		if ( 'customer_reset_password' === $id ) {
+			return array(
+				'heading' => __( 'Reset your password', 'oc-theme' ),
+				'intro'   => __( "Hi [name], somebody asked to reset the password for your account at [shop].\nIf it was not you, ignore this email — nothing changes until the button below is used.\nThe link is only good for a short while.", 'oc-theme' ),
+			);
+		}
+
+		if ( 'customer_new_account' === $id ) {
+			return array(
+				'heading' => __( 'Welcome to [shop]', 'oc-theme' ),
+				'intro'   => __( "Hi [name], your account is ready.\nFrom it you can follow your orders and keep your addresses in one place, so the next checkout is a few taps.\nWelcome — we are glad you are here.", 'oc-theme' ),
+			);
+		}
+
 		if ( 'customer_completed_order' === $id ) {
 			return array(
 				'heading'        => __( 'Your order is on its way', 'oc-theme' ),
@@ -899,10 +956,11 @@ final class Emails {
 	 *
 	 * @param \WC_Order $order Order.
 	 * @param mixed     $email The WC_Email being sent, for its wording.
-	 * @param int       $done  Stops behind us: 1 while it is being prepared, 2 once it has left.
+	 * @param int       $done  Stops behind us: 1 while it is being prepared, 2 once it has left, 0 for no progress bar at all.
 	 * @param array     $words Defaults: heading, heading_pickup, intro, intro_pickup.
+	 * @param string    $extra Anything that belongs under the order, already marked up.
 	 */
-	public static function body( $order, $email, int $done, array $words ): string {
+	public static function body( $order, $email, int $done, array $words, string $extra = '' ): string {
 		$p           = self::palette();
 		$pickup      = self::is_pickup( $order );
 		self::$align = self::opt( $email, 'oc_align', 'center' );
@@ -939,7 +997,10 @@ final class Emails {
 		// Both emails: "when will it come" is the question the second one is
 		// opened to answer, and leaving it out there was the whole reason to
 		// send it.
-		if ( ! $pickup ) {
+		// Only where there is something still to arrive. An order on hold, an
+		// order cancelled and an order refunded have no arrival to estimate,
+		// and a date on one of those would be a lie in a kind voice.
+		if ( ! $pickup && $done > 0 ) {
 			$window = WooCommerce::delivery_window();
 
 			if ( $window ) {
@@ -981,7 +1042,11 @@ final class Emails {
 		$out .= '<h1 class="oc-h1" style="margin:0 0 8px;font-size:27px;line-height:1.3;font-weight:700;text-align:' . self::align() . ';color:' . esc_attr( $p['ink'] ) . ';">'
 			. esc_html( $head ) . '</h1>';
 		$out .= (string) $text;
-		$out .= self::steps( $order, $done, $due );
+
+		if ( $done > 0 ) {
+			$out .= self::steps( $order, $done, $due );
+		}
+
 		$out .= self::button( $order );
 		$out .= '<div style="margin:26px 0 0;padding:16px 0 0;border-top:1px solid ' . esc_attr( $p['line'] ) . ';">'
 			. '<div style="font-size:14.5px;font-weight:700;color:' . esc_attr( $p['ink'] ) . ';">'
@@ -995,6 +1060,7 @@ final class Emails {
 			. '</div>';
 		$out .= self::parties( $order );
 		$out .= self::items( $order );
+		$out .= $extra;
 
 		$out .= self::help( $email );
 		$out .= self::social();
@@ -1087,6 +1153,106 @@ final class Emails {
 			/* translators: %s: the shop name. */
 			sprintf( __( 'You are receiving this email because you asked %s to tell you when this came back.', 'oc-theme' ), wp_specialchars_decode( (string) get_bloginfo( 'name' ), ENT_QUOTES ) )
 		);
+	}
+
+	/**
+	 * How much came back, said plainly.
+	 *
+	 * WooCommerce sends the same email for a full refund and a part of one,
+	 * and the wording cannot tell them apart. The number can: a part refund
+	 * says what it was a part of.
+	 *
+	 * @param \WC_Order $order Order.
+	 */
+	public static function refunded( $order ): string {
+		$p    = self::palette();
+		$back = (float) $order->get_total_refunded();
+
+		if ( $back <= 0 ) {
+			return '';
+		}
+
+		$total = (float) $order->get_total();
+		$part  = $back + 0.01 < $total;
+
+		$sum = $part
+			/* translators: 1: amount refunded, 2: the order total. */
+			? sprintf( __( '%1$s of %2$s', 'oc-theme' ), wc_price( $back, array( 'currency' => $order->get_currency() ) ), wc_price( $total, array( 'currency' => $order->get_currency() ) ) )
+			: wc_price( $back, array( 'currency' => $order->get_currency() ) );
+
+		return '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:18px 0 0;'
+			. 'background:' . esc_attr( $p['panel'] ) . ';border-radius:12px;"><tr><td style="padding:18px 20px;text-align:' . self::align() . ';">'
+			. '<div style="font-size:13px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:' . esc_attr( $p['soft'] ) . ';">'
+			. esc_html__( 'Refunded', 'oc-theme' ) . '</div>'
+			. '<div style="margin:6px 0 0;font-size:20px;font-weight:700;unicode-bidi:plaintext;color:' . esc_attr( $p['ink'] ) . ';">'
+			. wp_kses_post( $sum ) . '</div>'
+			. '</td></tr></table>';
+	}
+
+	/**
+	 * An email about the account rather than about an order — the password
+	 * reset and the welcome.
+	 *
+	 * No order, so no items, no totals and no progress: a heading, the words,
+	 * one button, and the same contact block and footer as everything else.
+	 *
+	 * @param mixed  $email The WC_Email being sent.
+	 * @param array  $words Defaults: heading, intro.
+	 * @param array  $swap  Placeholder => value, for both heading and words.
+	 * @param string $url   Where the button goes, or '' for no button.
+	 * @param string $label What the button says.
+	 * @param string $why   The footer line saying why this arrived.
+	 * @param string $panel Anything to show between words and button.
+	 */
+	public static function account( $email, array $words, array $swap, string $url, string $label, string $why, string $panel = '' ): string {
+		$p           = self::palette();
+		self::$align = self::opt( $email, 'oc_align', 'center' );
+
+		$own = is_object( $email ) && method_exists( $email, 'get_option' ) ? trim( (string) $email->get_option( 'heading' ) ) : '';
+		$def = is_object( $email ) && method_exists( $email, 'get_default_heading' ) ? trim( (string) $email->get_default_heading() ) : '';
+
+		$head = ( '' !== $own && $own !== $def ) ? $own : (string) ( $words['heading'] ?? '' );
+		$head = strtr( $head, $swap );
+
+		$intro = self::opt( $email, 'oc_intro', (string) ( $words['intro'] ?? '' ) );
+
+		$out  = '<div class="oc-pad" style="padding:34px 32px 30px;">';
+		$out .= '<h1 class="oc-h1" style="margin:0 0 8px;font-size:27px;line-height:1.3;font-weight:700;text-align:' . self::align() . ';color:' . esc_attr( $p['ink'] ) . ';">'
+			. esc_html( $head ) . '</h1>';
+		$out .= self::paragraphs( $intro, $swap );
+		$out .= $panel;
+
+		if ( '' !== trim( $url ) ) {
+			$out .= self::cta( $url, $label );
+		}
+
+		$out .= self::help( $email );
+		$out .= self::social();
+		$out .= '</div>';
+
+		return self::open() . $out . self::close( $why );
+	}
+
+	/**
+	 * The "this is you" box: the username, in a shape a mail client will not
+	 * turn into a link of its own.
+	 *
+	 * @param string $login The username.
+	 */
+	public static function who( string $login ): string {
+		if ( '' === trim( $login ) ) {
+			return '';
+		}
+
+		$p = self::palette();
+
+		return '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:20px 0 0;'
+			. 'background:' . esc_attr( $p['panel'] ) . ';border-radius:12px;"><tr><td style="padding:16px 20px;text-align:' . self::align() . ';">'
+			. '<div style="font-size:13px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:' . esc_attr( $p['soft'] ) . ';">'
+			. esc_html__( 'Username', 'oc-theme' ) . '</div>'
+			. '<div style="margin:4px 0 0;font-size:16px;font-weight:700;color:' . esc_attr( $p['ink'] ) . ';">'
+			. '<span dir="ltr" style="unicode-bidi:plaintext;">' . self::plain( $login ) . '</span></div>'
+			. '</td></tr></table>';
 	}
 
 	/**

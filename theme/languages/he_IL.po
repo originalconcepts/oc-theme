@@ -9549,3 +9549,102 @@ msgstr "להזמנת המוצר"
 
 msgid "You are receiving this email because you asked %s to tell you when this came back."
 msgstr "קיבלת את המייל הזה כי ביקשת מ־%s לעדכן אותך כשהמוצר יחזור למלאי."
+
+msgid "Your order is waiting for payment"
+msgstr "ההזמנה שלך ממתינה לתשלום"
+
+msgid ""
+"We have your order, and it is waiting for the payment to come through.\n"
+"The moment it does we will start getting it ready and email you again.\n"
+"Everything you ordered is listed below."
+msgstr ""
+"ההזמנה שלך אצלנו, והיא ממתינה לאישור התשלום.\n"
+"ברגע שהוא יתקבל נתחיל להכין אותה ונעדכן אותך במייל.\n"
+"כל מה שהזמנת מופיע למטה."
+
+msgid ""
+"We have your order, and it is waiting for the payment to come through.\n"
+"The moment it does we will get it ready and email you when it is waiting at the branch.\n"
+"Everything you ordered is listed below."
+msgstr ""
+"ההזמנה שלך אצלנו, והיא ממתינה לאישור התשלום.\n"
+"ברגע שהוא יתקבל נכין אותה ונעדכן אותך במייל כשהיא מחכה לך בסניף.\n"
+"כל מה שהזמנת מופיע למטה."
+
+msgid "Your order has been cancelled"
+msgstr "ההזמנה שלך בוטלה"
+
+msgid ""
+"Your order has been cancelled and nothing further will be charged for it.\n"
+"If it was already paid for, we are taking care of the refund.\n"
+"If this is not what you expected, talk to us — our details are at the foot of this email."
+msgstr ""
+"ההזמנה שלך בוטלה ולא ייגבה עבורה תשלום נוסף.\n"
+"אם כבר שולמה, אנחנו מטפלים בהחזר.\n"
+"אם זה לא מה שציפית לו, דבר איתנו — הפרטים שלנו בתחתית המייל."
+
+msgid "Your refund is on its way"
+msgstr "ההחזר בדרך אליך"
+
+msgid ""
+"We have refunded your order.\n"
+"The money goes back the way it was paid, and it usually takes a few working days to show up.\n"
+"The amount and the order are below."
+msgstr ""
+"ביצענו החזר עבור ההזמנה שלך.\n"
+"הכסף חוזר באותו אמצעי שבו שולם, ובדרך כלל לוקח כמה ימי עסקים עד שהוא מופיע.\n"
+"הסכום ופרטי ההזמנה מופיעים למטה."
+
+msgid "Reset your password"
+msgstr "איפוס הסיסמה"
+
+msgid ""
+"Hi [name], somebody asked to reset the password for your account at [shop].\n"
+"If it was not you, ignore this email — nothing changes until the button below is used.\n"
+"The link is only good for a short while."
+msgstr ""
+"היי [name], מישהו ביקש לאפס את הסיסמה לחשבון שלך ב־[shop].\n"
+"אם זה לא אתה, אפשר פשוט להתעלם מהמייל — שום דבר לא משתנה עד שלוחצים על הכפתור שלמטה.\n"
+"הקישור תקף לזמן קצר."
+
+msgid "Welcome to [shop]"
+msgstr "ברוך הבא ל־[shop]"
+
+msgid ""
+"Hi [name], your account is ready.\n"
+"From it you can follow your orders and keep your addresses in one place, so the next checkout is a few taps.\n"
+"Welcome — we are glad you are here."
+msgstr ""
+"היי [name], החשבון שלך מוכן.\n"
+"ממנו אפשר לעקוב אחרי ההזמנות ולשמור את הכתובות במקום אחד, כך שהקנייה הבאה היא עניין של כמה הקשות.\n"
+"ברוך הבא — טוב שאתה כאן."
+
+msgid "Refunded"
+msgstr "הוחזר"
+
+msgid "%1$s of %2$s"
+msgstr "%1$s מתוך %2$s"
+
+msgid "Username"
+msgstr "שם משתמש"
+
+msgid "Choose a new password"
+msgstr "לבחירת סיסמה חדשה"
+
+msgid "You are receiving this email because a password reset was asked for on your account at %s."
+msgstr "קיבלת את המייל הזה כי התבקש איפוס סיסמה לחשבון שלך ב־%s."
+
+msgid "Set your password"
+msgstr "להגדרת הסיסמה"
+
+msgid "Go to your account"
+msgstr "לאזור האישי"
+
+msgid "You are receiving this email because an account was opened at %s."
+msgstr "קיבלת את המייל הזה כי נפתח חשבון ב־%s."
+
+msgid "Opening words"
+msgstr "מילות פתיחה"
+
+msgid "The paragraph under the heading. Each line is its own paragraph. [shop], [name] and [login] become the shop name, the person's name and their username."
+msgstr "הפסקה שמתחת לכותרת. כל שורה היא פסקה בפני עצמה. [shop], [name] ו־[login] מוחלפים בשם החנות, בשם הלקוח ובשם המשתמש שלו."
