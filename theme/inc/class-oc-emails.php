@@ -959,8 +959,18 @@ final class Emails {
 		// out empty is worse than no line.
 		$text = preg_replace( '/<p[^>]*>[\s\p{P}]*<\/p>/u', '', (string) $text );
 
+		// The shop's own date format, unless it is still WordPress's English
+		// default — which on a Hebrew shop writes "ספטמבר 9, 2026", the month
+		// and the day the wrong way round.
+		$fmt = trim( (string) get_option( 'date_format' ) );
+
+		if ( '' === $fmt || 'F j, Y' === $fmt ) {
+			/* translators: PHP date format for the date an order was placed. See https://www.php.net/date */
+			$fmt = _x( 'F j, Y', 'the date an order was placed', 'oc-theme' );
+		}
+
 		$made = $order->get_date_created();
-		$day  = $made ? wc_format_datetime( $made, (string) get_option( 'date_format', 'j F Y' ) ) : '';
+		$day  = $made ? wc_format_datetime( $made, $fmt ) : '';
 
 		$note = trim( self::opt( $email, 'oc_note', (string) ( $words['note'] ?? '' ) ) );
 

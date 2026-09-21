@@ -9527,3 +9527,7 @@ msgstr "קיבלת את המייל הזה בעקבות הזמנה שבוצעה �
 
 msgid "© %1$s %2$s. All rights reserved."
 msgstr "© %1$s %2$s. כל הזכויות שמורות."
+
+msgctxt "the date an order was placed"
+msgid "F j, Y"
+msgstr "j בF Y"
