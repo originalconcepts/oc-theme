@@ -9646,5 +9646,5 @@ msgstr "קיבלת את המייל הזה כי נפתח חשבון ב־%s."
 msgid "Opening words"
 msgstr "מילות פתיחה"
 
-msgid "The paragraph under the heading. Each line is its own paragraph. [shop], [name] and [login] become the shop name, the person's name and their username."
-msgstr "הפסקה שמתחת לכותרת. כל שורה היא פסקה בפני עצמה. [shop], [name] ו־[login] מוחלפים בשם החנות, בשם הלקוח ובשם המשתמש שלו."
+msgid "The paragraph under the heading. Each line is its own paragraph. [shop] and [name] become the shop name and the person's name."
+msgstr "הפסקה שמתחת לכותרת. כל שורה היא פסקה בפני עצמה. [shop] ו־[name] מוחלפים בשם החנות ובשם הלקוח."

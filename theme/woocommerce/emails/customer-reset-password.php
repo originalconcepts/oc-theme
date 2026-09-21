@@ -42,8 +42,7 @@ $oc_email = \OC\Theme\Emails::account(
 	(string) $oc_link,
 	__( 'Choose a new password', 'oc-theme' ),
 	/* translators: %s: the shop name. */
-	sprintf( __( 'You are receiving this email because a password reset was asked for on your account at %s.', 'oc-theme' ), $oc_shop ),
-	\OC\Theme\Emails::who( $oc_login )
+	sprintf( __( 'You are receiving this email because a password reset was asked for on your account at %s.', 'oc-theme' ), $oc_shop )
 );
 
 echo $oc_email; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- an email built entirely from escaped parts.

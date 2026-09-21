@@ -32,8 +32,7 @@ $oc_email = \OC\Theme\Emails::account(
 	'' !== $oc_set ? $oc_set : (string) wc_get_page_permalink( 'myaccount' ),
 	'' !== $oc_set ? __( 'Set your password', 'oc-theme' ) : __( 'Go to your account', 'oc-theme' ),
 	/* translators: %s: the shop name. */
-	sprintf( __( 'You are receiving this email because an account was opened at %s.', 'oc-theme' ), $oc_shop ),
-	\OC\Theme\Emails::who( $oc_login )
+	sprintf( __( 'You are receiving this email because an account was opened at %s.', 'oc-theme' ), $oc_shop )
 );
 
 echo $oc_email; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- an email built entirely from escaped parts.

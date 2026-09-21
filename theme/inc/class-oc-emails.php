@@ -125,7 +125,7 @@ final class Emails {
 			'css'         => 'width:100%;height:110px;',
 			'description' => isset( $words['intro_pickup'] )
 				? __( 'The paragraph under the heading. Each line is its own paragraph. [from] and [to] become the estimated arrival dates — delete that line to leave the estimate out.', 'oc-theme' )
-				: __( 'The paragraph under the heading. Each line is its own paragraph. [shop], [name] and [login] become the shop name, the person\'s name and their username.', 'oc-theme' ),
+				: __( 'The paragraph under the heading. Each line is its own paragraph. [shop] and [name] become the shop name and the person\'s name.', 'oc-theme' ),
 			'default'     => $words['intro'],
 		);
 
@@ -230,6 +230,21 @@ final class Emails {
 			'intro'          => __( "We have received your order and we are already getting it ready.\nIt is expected to reach you between [from] and [to].\nWe will email you again the moment it leaves us, so you know exactly where it is.", 'oc-theme' ),
 			'intro_pickup'   => __( "We have received your order and we are already getting it ready.\nWe will email you the moment it is waiting for you at the branch.\nEverything you ordered is listed below.", 'oc-theme' ),
 		);
+	}
+
+	/**
+	 * One of our settings read straight out of an email's stored options,
+	 * for the emails this theme sends without a WC_Email behind them.
+	 *
+	 * @param string $id       Which email's settings to read.
+	 * @param string $key      Setting key.
+	 * @param string $fallback Used when the shop has left it empty.
+	 */
+	public static function saved( string $id, string $key, string $fallback = '' ): string {
+		$all = get_option( 'woocommerce_' . $id . '_settings' );
+		$val = is_array( $all ) && isset( $all[ $key ] ) ? trim( (string) $all[ $key ] ) : '';
+
+		return '' !== $val ? $val : $fallback;
 	}
 
 	/**
@@ -852,7 +867,16 @@ final class Emails {
 	public static function help( $email = null ): string {
 		// Off is a real answer: a shop with a busy inbox may not want three
 		// invitations to write to it at the foot of every order.
-		if ( null !== $email && 'yes' !== self::opt( $email, 'oc_show_help', 'yes' ) ) {
+		//
+		// The email this theme sends itself — the back-in-stock one — has no
+		// settings screen of its own, so it follows the switch on the first
+		// order email. One switch, every email, which is what a shop means
+		// when it turns the block off.
+		$on = null !== $email
+			? self::opt( $email, 'oc_show_help', 'yes' )
+			: self::saved( 'customer_processing_order', 'oc_show_help', 'yes' );
+
+		if ( 'yes' !== $on ) {
 			return '';
 		}
 
@@ -932,14 +956,32 @@ final class Emails {
 		$cells = '';
 
 		foreach ( $links as $net => $url ) {
+			// A profile with nothing behind it is not a profile. esc_url()
+			// hands back an empty string for anything that is not a real
+			// address, and an icon that goes nowhere is worse than one icon
+			// fewer.
+			$href = esc_url( (string) $url );
+
+			if ( '' === $href ) {
+				continue;
+			}
+
+			// The anchor sits INSIDE the cell, around the picture. An
+			// <a style="display:block"> wrapped around a table collapses in
+			// Gmail — the circles drew, and not one of them was clickable.
 			$cells .= '<td style="padding:0 5px;">'
-				. '<a href="' . esc_url( $url ) . '" style="display:block;text-decoration:none;">'
 				. '<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>'
 				. '<td align="center" valign="middle" width="40" height="40" style="width:40px;height:40px;line-height:40px;'
 				. 'border-radius:20px;background:' . esc_attr( $p['panel'] ) . ';">'
+				. '<a href="' . $href . '" style="text-decoration:none;border:0;">'
 				. '<img src="' . esc_url( self::icon_url( (string) $net ) ) . '" width="19" height="19"'
-				. ' alt="' . esc_attr( ucfirst( (string) $net ) ) . '" style="display:block;border:0;width:19px;height:19px;margin:0 auto;" />'
-				. '</td></tr></table></a></td>';
+				. ' alt="' . esc_attr( ucfirst( (string) $net ) ) . '" style="display:inline-block;border:0;width:19px;height:19px;vertical-align:middle;" />'
+				. '</a>'
+				. '</td></tr></table></td>';
+		}
+
+		if ( '' === $cells ) {
+			return '';
 		}
 
 		return '<div style="margin:24px 0 0;padding:20px 0 4px;border-top:1px solid ' . esc_attr( $p['line'] ) . ';text-align:center;">'
@@ -1231,28 +1273,6 @@ final class Emails {
 		$out .= '</div>';
 
 		return self::open() . $out . self::close( $why );
-	}
-
-	/**
-	 * The "this is you" box: the username, in a shape a mail client will not
-	 * turn into a link of its own.
-	 *
-	 * @param string $login The username.
-	 */
-	public static function who( string $login ): string {
-		if ( '' === trim( $login ) ) {
-			return '';
-		}
-
-		$p = self::palette();
-
-		return '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:20px 0 0;'
-			. 'background:' . esc_attr( $p['panel'] ) . ';border-radius:12px;"><tr><td style="padding:16px 20px;text-align:' . self::align() . ';">'
-			. '<div style="font-size:13px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:' . esc_attr( $p['soft'] ) . ';">'
-			. esc_html__( 'Username', 'oc-theme' ) . '</div>'
-			. '<div style="margin:4px 0 0;font-size:16px;font-weight:700;color:' . esc_attr( $p['ink'] ) . ';">'
-			. '<span dir="ltr" style="unicode-bidi:plaintext;">' . self::plain( $login ) . '</span></div>'
-			. '</td></tr></table>';
 	}
 
 	/**
