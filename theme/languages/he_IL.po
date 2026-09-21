@@ -9648,3 +9648,39 @@ msgstr "מילות פתיחה"
 
 msgid "The paragraph under the heading. Each line is its own paragraph. [shop] and [name] become the shop name and the person's name."
 msgstr "הפסקה שמתחת לכותרת. כל שורה היא פסקה בפני עצמה. [shop] ו־[name] מוחלפים בשם החנות ובשם הלקוח."
+
+msgid "Frank Ruhl Libre (serif)"
+msgstr "Frank Ruhl Libre (סריף)"
+
+msgid "Bellefair (serif)"
+msgstr "Bellefair (סריף)"
+
+msgid "Suez One (display)"
+msgstr "Suez One (תצוגה)"
+
+msgid "Varela Round (headings)"
+msgstr "Varela Round (לכותרות)"
+
+msgid "Secular One (headings)"
+msgstr "Secular One (לכותרות)"
+
+msgid "%s (uploaded)"
+msgstr "%s (הועלה)"
+
+msgid "Uploaded font — name"
+msgstr "פונט שהועלה — שם"
+
+msgid "For a typeface the shop has bought. Give it a name, upload the files below, then publish and reopen this panel — the name appears in the two lists above."
+msgstr "לפונט מסחרי שרכשתם. תנו לו שם, העלו את הקבצים למטה, פרסמו ופתחו מחדש את המקטע — השם יופיע בשתי הרשימות שלמעלה."
+
+msgid "Uploaded font — regular"
+msgstr "פונט שהועלה — רגיל"
+
+msgid "Uploaded font — medium"
+msgstr "פונט שהועלה — בינוני"
+
+msgid "Uploaded font — bold"
+msgstr "פונט שהועלה — מודגש"
+
+msgid "A .woff2 file, ideally. A weight left empty is one the browser will imitate, and imitated bold looks like imitated bold."
+msgstr "רצוי קובץ ‎.woff2‎. משקל שנשאר ריק הוא משקל שהדפדפן יחקה, והדגשה מחוקה נראית כמו הדגשה מחוקה."

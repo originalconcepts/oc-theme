@@ -1379,18 +1379,82 @@ final class Customizer {
 		// Every one of these is self-hosted in assets/fonts — a family added
 		// here without its woff2 files and its .css beside them simply does
 		// not load, and the site quietly falls back to the system face.
+		// scripts/getfont.py fetches and writes both.
 		$fonts = array(
 			''                 => __( 'System', 'oc-theme' ),
 			'Assistant'        => 'Assistant',
 			'Heebo'            => 'Heebo',
 			'Noto Sans Hebrew' => 'Noto Sans Hebrew',
 			'Rubik'            => 'Rubik',
-			'Varela Round'     => 'Varela Round',
-			'Secular One'      => 'Secular One',
+			'Alef'             => 'Alef',
+			'Frank Ruhl Libre' => __( 'Frank Ruhl Libre (serif)', 'oc-theme' ),
+			'Bellefair'        => __( 'Bellefair (serif)', 'oc-theme' ),
+			'Suez One'         => __( 'Suez One (display)', 'oc-theme' ),
+			'Varela Round'     => __( 'Varela Round (headings)', 'oc-theme' ),
+			'Secular One'      => __( 'Secular One (headings)', 'oc-theme' ),
 		);
+
+		// A bought typeface cannot ship inside the theme — the licence is
+		// per site — so it is uploaded here and joins the two lists above.
+		$own = Assets::font_name( (string) get_theme_mod( 'oc_font_custom_name', '' ) );
+
+		if ( '' !== $own ) {
+			/* translators: %s: the name the shop gave its uploaded font. */
+			$fonts[ $own ] = sprintf( __( '%s (uploaded)', 'oc-theme' ), $own );
+		}
 
 		$this->select( $c, 'oc_font_display', 'oc_design', __( 'Heading font', 'oc-theme' ), $fonts );
 		$this->select( $c, 'oc_font_body', 'oc_design', __( 'Body font', 'oc-theme' ), $fonts );
+
+		$c->add_setting(
+			'oc_font_custom_name',
+			array(
+				'default'           => '',
+				'sanitize_callback' => array( Assets::class, 'font_name' ),
+			)
+		);
+
+		$c->add_control(
+			'oc_font_custom_name',
+			array(
+				'type'        => 'text',
+				'section'     => 'oc_design',
+				'label'       => __( 'Uploaded font — name', 'oc-theme' ),
+				'description' => __( 'For a typeface the shop has bought. Give it a name, upload the files below, then publish and reopen this panel — the name appears in the two lists above.', 'oc-theme' ),
+			)
+		);
+
+		$weights = array(
+			'400' => __( 'Uploaded font — regular', 'oc-theme' ),
+			'600' => __( 'Uploaded font — medium', 'oc-theme' ),
+			'700' => __( 'Uploaded font — bold', 'oc-theme' ),
+		);
+
+		foreach ( $weights as $weight => $label ) {
+			$id = 'oc_font_custom_' . $weight;
+
+			$c->add_setting(
+				$id,
+				array(
+					'default'           => '',
+					'sanitize_callback' => 'esc_url_raw',
+				)
+			);
+
+			$c->add_control(
+				new \WP_Customize_Upload_Control(
+					$c,
+					$id,
+					array(
+						'section'     => 'oc_design',
+						'label'       => $label,
+						'description' => '400' === $weight
+							? __( 'A .woff2 file, ideally. A weight left empty is one the browser will imitate, and imitated bold looks like imitated bold.', 'oc-theme' )
+							: '',
+					)
+				)
+			);
+		}
 	}
 
 	/**

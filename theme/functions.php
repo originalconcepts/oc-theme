@@ -474,11 +474,57 @@ add_filter( 'wp_prepare_attachment_for_js', 'oc_svg_media_preview', 10, 2 );
 function oc_svg_mimes( array $mimes ): array {
 	if ( current_user_can( 'manage_options' ) ) {
 		$mimes['svg'] = 'image/svg+xml';
+
+		// A shop that has bought a typeface has to be able to put it in.
+		// Fonts are not executable and WordPress serves them as downloads,
+		// so the risk is the licence, not the file — and the licence is the
+		// shop's own business.
+		$mimes['woff2'] = 'font/woff2';
+		$mimes['woff']  = 'font/woff';
+		$mimes['ttf']   = 'font/ttf';
+		$mimes['otf']   = 'font/otf';
 	}
 
 	return $mimes;
 }
 add_filter( 'upload_mimes', 'oc_svg_mimes' );
+
+/**
+ * Let a font file through the upload check.
+ *
+ * WordPress does not trust the extension alone: it sniffs the file and, for
+ * anything it cannot name, hands back nothing at all — which is what happens
+ * to every woff2, because finfo reports it as a plain stream of bytes. The
+ * extension is checked against our own list here instead, and only for the
+ * people who are allowed to upload one in the first place.
+ *
+ * @param array  $check    ext, type and proper_filename as WordPress found them.
+ * @param string $file     Path to the uploaded file.
+ * @param string $filename Its name.
+ * @return array
+ */
+function oc_font_filetype( array $check, string $file, string $filename ): array {
+	if ( ! empty( $check['type'] ) || ! current_user_can( 'manage_options' ) ) {
+		return $check;
+	}
+
+	$fonts = array(
+		'woff2' => 'font/woff2',
+		'woff'  => 'font/woff',
+		'ttf'   => 'font/ttf',
+		'otf'   => 'font/otf',
+	);
+
+	$ext = strtolower( (string) pathinfo( $filename, PATHINFO_EXTENSION ) );
+
+	if ( isset( $fonts[ $ext ] ) ) {
+		$check['ext']  = $ext;
+		$check['type'] = $fonts[ $ext ];
+	}
+
+	return $check;
+}
+add_filter( 'wp_check_filetype_and_ext', 'oc_font_filetype', 10, 3 );
 
 /**
  * Tell the shop owner what is missing instead of dying silently.

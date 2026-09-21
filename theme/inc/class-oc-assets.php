@@ -636,6 +636,32 @@ final class Assets {
 			$rel  = '/assets/fonts/' . $slug . '.css';
 
 			if ( ! file_exists( OC_THEME_DIR . $rel ) ) {
+				// Not one of ours: the shop has uploaded a typeface of its
+				// own. A bought font cannot ship in the theme — the licence
+				// is per site — so it lives in the media library and its
+				// @font-face is written here from what was uploaded.
+				$face = self::custom_face( $family );
+
+				if ( '' !== $face ) {
+					wp_add_inline_style( 'oc-theme', $face );
+
+					if ( ! $preloaded ) {
+						$first = esc_url_raw( (string) get_theme_mod( 'oc_font_custom_400', '' ) );
+
+						if ( '' !== $first ) {
+							$preloaded = true;
+							$mime      = self::font_mime( $first );
+							add_action(
+								'wp_head',
+								static function () use ( $first, $mime ): void {
+									echo '<link rel="preload" href="' . esc_url( $first ) . '" as="font" type="' . esc_attr( $mime ) . '" crossorigin>' . "\n";
+								},
+								2
+							);
+						}
+					}
+				}
+
 				continue;
 			}
 
@@ -662,6 +688,77 @@ final class Assets {
 				);
 			}
 		}
+	}
+
+	/**
+	 * A family name that is safe to put in a stylesheet.
+	 *
+	 * The shop types this one, and it ends up inside quotes in a CSS
+	 * declaration. Letters, digits, spaces and hyphens — Hebrew included —
+	 * are all a font name ever needs; a quote or a brace is somebody trying
+	 * something.
+	 *
+	 * @param string $raw What the shop typed.
+	 * @return string
+	 */
+	public static function font_name( string $raw ): string {
+		$name = (string) preg_replace( '/[^\p{L}\p{N} \-]/u', '', $raw );
+
+		return trim( (string) preg_replace( '/\s+/', ' ', $name ) );
+	}
+
+	/**
+	 * The media type of an uploaded font, from its name.
+	 *
+	 * @param string $url File URL.
+	 * @return string
+	 */
+	private static function font_mime( string $url ): string {
+		$ext = strtolower( (string) pathinfo( (string) wp_parse_url( $url, PHP_URL_PATH ), PATHINFO_EXTENSION ) );
+
+		$known = array(
+			'woff2' => 'font/woff2',
+			'woff'  => 'font/woff',
+			'ttf'   => 'font/ttf',
+			'otf'   => 'font/otf',
+		);
+
+		return $known[ $ext ] ?? 'font/woff2';
+	}
+
+	/**
+	 * The @font-face rules for the shop's own uploaded family.
+	 *
+	 * One file per weight, and only the weights that were actually uploaded:
+	 * a family declared at a weight it does not have is a family the browser
+	 * will never fake, and the bold text comes out thin.
+	 *
+	 * @param string $family The family being asked for.
+	 * @return string
+	 */
+	public static function custom_face( string $family ): string {
+		$name = self::font_name( (string) get_theme_mod( 'oc_font_custom_name', '' ) );
+
+		if ( '' === $name || $name !== self::font_name( $family ) ) {
+			return '';
+		}
+
+		$css = '';
+
+		foreach ( array( 400, 600, 700 ) as $weight ) {
+			$url = esc_url_raw( (string) get_theme_mod( 'oc_font_custom_' . $weight, '' ) );
+
+			if ( '' === $url ) {
+				continue;
+			}
+
+			$format = 'font/woff2' === self::font_mime( $url ) ? 'woff2' : str_replace( 'font/', '', self::font_mime( $url ) );
+
+			$css .= "@font-face{font-family:'" . $name . "';font-style:normal;font-weight:" . $weight
+				. ";font-display:swap;src:url(" . $url . ") format('" . $format . "');}";
+		}
+
+		return $css;
 	}
 
 	/**
