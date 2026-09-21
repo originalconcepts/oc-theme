@@ -453,64 +453,17 @@ final class Waitlist {
 	 */
 	private function send_email( string $email, \WC_Product $target, string $person = '' ): bool {
 		$name = $target->get_name();
-		$url  = (string) $target->get_permalink();
-
-		$image_id = (int) $target->get_image_id();
-		if ( ! $image_id && $target->get_parent_id() ) {
-			$image_id = (int) get_post_thumbnail_id( $target->get_parent_id() );
-		}
-		$image = $image_id ? (string) wp_get_attachment_image_url( $image_id, 'woocommerce_single' ) : (string) wc_placeholder_img_src();
-
-		$logo_id = (int) get_theme_mod( 'custom_logo' );
-		$logo    = $logo_id ? (string) wp_get_attachment_image_url( $logo_id, 'medium' ) : '';
-		$store   = (string) get_bloginfo( 'name' );
-		$home    = (string) home_url( '/' );
-
-		$cta     = (string) get_theme_mod( 'oc_cta_color', '' );
-		$primary = (string) get_theme_mod( 'oc_color_primary', '' );
-		$cta     = '' !== $cta ? $cta : ( $primary ? $primary : '#1f2937' );
-		$radius  = (string) get_theme_mod( 'oc_cta_radius', '8px' );
 
 		/* translators: %s: product name. */
 		$subject = sprintf( __( 'Good news — %s is back in stock!', 'oc-theme' ), $name );
 
-		$brand = $logo
-			? '<a href="' . esc_url( $home ) . '"><img src="' . esc_url( $logo ) . '" alt="' . esc_attr( $store ) . '" style="max-height:52px;max-width:200px;border:0;" /></a>'
-			: '<a href="' . esc_url( $home ) . '" style="font-size:20px;font-weight:bold;color:#111111;text-decoration:none;letter-spacing:.08em;">' . esc_html( $store ) . '</a>';
-
-		$greeting = '' !== $person
-			/* translators: %s: recipient name. */
-			? sprintf( __( 'Hi %s, we have good news!', 'oc-theme' ), $person )
-			: __( 'Hi, we have good news!', 'oc-theme' );
-
-		/* translators: %s: product name. */
-		$asked = sprintf( esc_html__( 'You asked us to let you know when %s returns to stock.', 'oc-theme' ), '<strong style="color:#111111;">' . esc_html( $name ) . '</strong>' );
-
-		$body =
-			'<div dir="' . ( is_rtl() ? 'rtl' : 'ltr' ) . '" style="background:#f6f6f4;margin:0;padding:36px 16px;">' .
-			'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;margin:0 auto;background:#ffffff;border-radius:16px;font-family:Arial,Helvetica,sans-serif;">' .
-			'<tr><td align="center" style="padding:32px 36px 4px;text-align:center;">' . $brand . '</td></tr>' .
-			'<tr><td align="center" style="padding:22px 36px 0;text-align:center;">' .
-			'<h1 align="center" style="margin:0;font-size:24px;color:#111111;text-align:center;">' . esc_html( $greeting ) . '</h1>' .
-			'</td></tr>' .
-			'<tr><td align="center" style="padding:14px 36px 0;text-align:center;font-size:15px;line-height:1.9;color:#5a5a55;">' .
-			$asked . '<br />' .
-			esc_html__( 'It is back — available to order right now.', 'oc-theme' ) . '<br />' .
-			'<strong style="color:#111111;">' . esc_html__( 'It sells fast, so it is worth hurrying.', 'oc-theme' ) . '</strong>' .
-			'</td></tr>' .
-			'<tr><td align="center" style="padding:24px 36px 0;text-align:center;">' .
-			'<a href="' . esc_url( $url ) . '"><img src="' . esc_url( $image ) . '" alt="' . esc_attr( $name ) . '" width="360" style="width:100%;max-width:360px;border-radius:12px;border:0;" /></a>' .
-			'</td></tr>' .
-			'<tr><td align="center" style="padding:26px 36px 34px;text-align:center;">' .
-			'<a href="' . esc_url( $url ) . '" style="display:inline-block;background:' . esc_attr( $cta ) . ';color:#ffffff;text-decoration:none;font-weight:bold;font-size:15px;padding:15px 44px;border-radius:' . esc_attr( $radius ) . ';">' .
-			esc_html__( 'Order the product ›', 'oc-theme' ) .
-			'</a></td></tr>' .
-			'</table>' .
-			'<p style="max-width:560px;margin:18px auto 0;text-align:center;font-size:12px;color:#9a9a94;">' .
-			'<a href="' . esc_url( wc_get_endpoint_url( 'stock-alerts', '', wc_get_page_permalink( 'myaccount' ) ) ) . '" style="color:#9a9a94;text-decoration:underline;">' . esc_html__( 'Manage your stock alerts', 'oc-theme' ) . '</a>' .
-			' &nbsp;·&nbsp; ' .
-			'<a href="' . esc_url( $home ) . '" style="color:#9a9a94;text-decoration:underline;">' . esc_html( $store ) . '</a></p>' .
-			'</div>';
+		// The same shell as the order emails. This one used to be built here,
+		// in its own markup, and looked like a different shop's email.
+		$body = \OC\Theme\Emails::restock(
+			$target,
+			$person,
+			(string) wc_get_endpoint_url( 'stock-alerts', '', wc_get_page_permalink( 'myaccount' ) )
+		);
 
 		return (bool) WC()->mailer()->send( $email, $subject, $body );
 	}

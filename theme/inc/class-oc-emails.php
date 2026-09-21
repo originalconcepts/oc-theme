@@ -131,14 +131,6 @@ final class Emails {
 			'default'     => $words['intro_pickup'],
 		);
 
-		$fields['oc_note'] = array(
-			'title'       => __( 'Closing note', 'oc-theme' ),
-			'type'        => 'textarea',
-			'css'         => 'width:100%;height:70px;',
-			'description' => __( 'A short line under the order details — what to do if something needs changing, for instance. Leave it empty and it does not appear.', 'oc-theme' ),
-			'default'     => $words['note'],
-		);
-
 		$fields['oc_align'] = array(
 			'title'       => __( 'Text alignment', 'oc-theme' ),
 			'type'        => 'select',
@@ -172,7 +164,6 @@ final class Emails {
 				'heading_pickup' => __( 'Your order is ready for you', 'oc-theme' ),
 				'intro'          => __( "It is packed, it has left us, and it is on its way to you.\nIt should reach you between [from] and [to].\nEverything you ordered is listed below, and we are here if anything needs looking at.", 'oc-theme' ),
 				'intro_pickup'   => __( "It is packed and waiting for you at the branch.\nCome whenever it suits you — the address and the opening details are below.\nPlease bring the order number with you, and we will have it ready.", 'oc-theme' ),
-				'note'           => __( 'Keep this email — it holds everything about the order in one place.', 'oc-theme' ),
 			);
 		}
 
@@ -181,7 +172,6 @@ final class Emails {
 			'heading_pickup' => __( 'Thank you for your order', 'oc-theme' ),
 			'intro'          => __( "We have received your order and we are already getting it ready.\nIt is expected to reach you between [from] and [to].\nWe will email you again the moment it leaves us, so you know exactly where it is.", 'oc-theme' ),
 			'intro_pickup'   => __( "We have received your order and we are already getting it ready.\nWe will email you the moment it is waiting for you at the branch.\nEverything you ordered is listed below.", 'oc-theme' ),
-			'note'           => __( 'Something to change? Reply to this email with the order number and we will take care of it.', 'oc-theme' ),
 		);
 	}
 
@@ -480,19 +470,29 @@ final class Emails {
 	}
 
 	/**
+	 * The one thing the email is asking to be clicked.
+	 *
+	 * @param string $url   Where it goes.
+	 * @param string $label What it says.
+	 */
+	public static function cta( string $url, string $label ): string {
+		$p = self::palette();
+
+		return '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:22px 0 0;"><tr>'
+			. '<td align="center" style="border-radius:10px;background:' . esc_attr( $p['cta'] ) . ';">'
+			. '<a href="' . esc_url( $url ) . '" style="display:block;padding:17px 24px;font-size:16.5px;font-weight:700;'
+			. 'color:#ffffff;text-decoration:none;border-radius:10px;letter-spacing:.01em;">'
+			. esc_html( $label ) . '</a>'
+			. '</td></tr></table>';
+	}
+
+	/**
 	 * The button onto the order's own page.
 	 *
 	 * @param \WC_Order $order Order.
 	 */
 	public static function button( $order ): string {
-		$p = self::palette();
-
-		return '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:22px 0 0;"><tr>'
-			. '<td align="center" style="border-radius:10px;background:' . esc_attr( $p['cta'] ) . ';">'
-			. '<a href="' . esc_url( $order->get_view_order_url() ) . '" style="display:block;padding:17px 24px;font-size:16.5px;font-weight:700;'
-			. 'color:#ffffff;text-decoration:none;border-radius:10px;letter-spacing:.01em;">'
-			. esc_html__( 'View your order', 'oc-theme' ) . '</a>'
-			. '</td></tr></table>';
+		return self::cta( (string) $order->get_view_order_url(), __( 'View your order', 'oc-theme' ) );
 	}
 
 	/**
@@ -972,10 +972,8 @@ final class Emails {
 		$made = $order->get_date_created();
 		$day  = $made ? wc_format_datetime( $made, $fmt ) : '';
 
-		$note = trim( self::opt( $email, 'oc_note', (string) ( $words['note'] ?? '' ) ) );
-
 		$out  = '<div class="oc-pad" style="padding:34px 32px 30px;">';
-		$out .= '<h1 class="oc-h1" style="margin:0 0 14px;font-size:27px;line-height:1.3;font-weight:700;text-align:' . self::align() . ';color:' . esc_attr( $p['ink'] ) . ';">'
+		$out .= '<h1 class="oc-h1" style="margin:0 0 8px;font-size:27px;line-height:1.3;font-weight:700;text-align:' . self::align() . ';color:' . esc_attr( $p['ink'] ) . ';">'
 			. esc_html( $head ) . '</h1>';
 		$out .= (string) $text;
 		$out .= self::steps( $order, $done, $due );
@@ -993,15 +991,90 @@ final class Emails {
 		$out .= self::parties( $order );
 		$out .= self::items( $order );
 
-		// A line the shop can write for itself, under the numbers, where a
-		// question about the order is actually asked.
-		if ( '' !== $note ) {
-			$out .= '<div style="margin:18px 0 0;padding:14px 16px;background:' . esc_attr( $p['panel'] ) . ';border-radius:12px;'
-				. 'font-size:14px;line-height:1.7;text-align:' . self::align() . ';color:' . esc_attr( $p['soft'] ) . ';">'
-				. esc_html( $note ) . '</div>';
+		$out .= self::help( $email );
+		$out .= self::social();
+		$out .= '</div>';
+
+		return self::open() . $out . self::close();
+	}
+
+	/**
+	 * "It is back" — the email a shopper who asked to be told gets.
+	 *
+	 * The same shell as the order emails on purpose: a shop that sends one
+	 * good-looking email and one built in another decade has not branded
+	 * anything. There is no progress bar here — there is nothing in
+	 * progress — so the picture of the thing itself carries the email.
+	 *
+	 * @param \WC_Product $product The product, or the variation, that is back.
+	 * @param string      $person  The shopper's first name, if we know it.
+	 * @param string      $manage  URL of their stock-alert list, if there is one.
+	 */
+	public static function restock( $product, string $person = '', string $manage = '' ): string {
+		$p           = self::palette();
+		self::$align = 'center';
+
+		$name = (string) $product->get_name();
+		$url  = (string) $product->get_permalink();
+
+		$head = '' !== trim( $person )
+			/* translators: %s: the shopper's first name. */
+			? sprintf( __( '%s, it is back in stock', 'oc-theme' ), trim( $person ) )
+			: __( 'It is back in stock', 'oc-theme' );
+
+		/* translators: %s: product name. */
+		$text = sprintf( __( 'You asked us to tell you when %s came back — it is here.', 'oc-theme' ), $name )
+			. "\n" . __( 'It can be ordered right now, and it does not usually stay long.', 'oc-theme' );
+
+		// A variation shows its own picture when it has one and the parent's
+		// when it does not — which is most of the time.
+		$pic = (int) $product->get_image_id();
+
+		if ( ! $pic && $product->get_parent_id() ) {
+			$pic = (int) get_post_thumbnail_id( $product->get_parent_id() );
 		}
 
-		$out .= self::help( $email );
+		$src = $pic ? (string) wp_get_attachment_image_url( $pic, 'woocommerce_single' ) : '';
+
+		$card = '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:24px 0 0;'
+			. 'background:' . esc_attr( $p['panel'] ) . ';border-radius:14px;"><tr><td align="center" style="padding:24px 20px;">';
+
+		if ( '' !== $src ) {
+			$card .= '<a href="' . esc_url( $url ) . '" style="text-decoration:none;">'
+				. '<img src="' . esc_url( $src ) . '" alt="' . esc_attr( $name ) . '" width="320"'
+				. ' style="display:block;margin:0 auto;width:100%;max-width:320px;height:auto;border:0;border-radius:12px;" /></a>';
+		}
+
+		$card .= '<div style="margin:16px 0 0;font-size:18px;font-weight:700;line-height:1.4;color:' . esc_attr( $p['ink'] ) . ';">'
+			. '<a href="' . esc_url( $url ) . '" style="color:' . esc_attr( $p['ink'] ) . ';text-decoration:none;">'
+			. esc_html( $name ) . '</a></div>';
+
+		$price = (string) $product->get_price_html();
+
+		if ( '' !== trim( $price ) ) {
+			// The price comes out of WooCommerce as markup, and the currency
+			// sign in it is a neutral character: without plaintext bidi it
+			// lands on the wrong side of the number in a Hebrew email.
+			$card .= '<div style="margin:6px 0 0;font-size:16px;font-weight:700;unicode-bidi:plaintext;color:' . esc_attr( $p['ink'] ) . ';">'
+				. wp_kses_post( $price ) . '</div>';
+		}
+
+		$card .= '</td></tr></table>';
+
+		$out  = '<div class="oc-pad" style="padding:34px 32px 30px;">';
+		$out .= '<h1 class="oc-h1" style="margin:0 0 8px;font-size:27px;line-height:1.3;font-weight:700;text-align:' . self::align() . ';color:' . esc_attr( $p['ink'] ) . ';">'
+			. esc_html( $head ) . '</h1>';
+		$out .= self::paragraphs( $text );
+		$out .= $card;
+		$out .= self::cta( $url, __( 'Order it now', 'oc-theme' ) );
+
+		if ( '' !== trim( $manage ) ) {
+			$out .= '<div style="margin:14px 0 0;text-align:center;font-size:13px;line-height:1.6;">'
+				. '<a href="' . esc_url( $manage ) . '" style="color:' . esc_attr( $p['soft'] ) . ';text-decoration:underline;">'
+				. esc_html__( 'Manage your stock alerts', 'oc-theme' ) . '</a></div>';
+		}
+
+		$out .= self::help();
 		$out .= self::social();
 		$out .= '</div>';
 
@@ -1027,7 +1100,7 @@ final class Emails {
 
 			$line = strtr( $line, $swap );
 
-			$out .= '<p style="margin:0 0 10px;font-size:16px;line-height:1.75;text-align:' . self::align() . ';color:' . esc_attr( $p['soft'] ) . ';">'
+			$out .= '<p style="margin:0 0 6px;font-size:16px;line-height:1.6;text-align:' . self::align() . ';color:' . esc_attr( $p['soft'] ) . ';">'
 				. esc_html( $line ) . '</p>';
 		}
 

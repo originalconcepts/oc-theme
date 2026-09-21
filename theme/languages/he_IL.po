@@ -9531,3 +9531,18 @@ msgstr "© %1$s %2$s. כל הזכויות שמורות."
 msgctxt "the date an order was placed"
 msgid "F j, Y"
 msgstr "j בF Y"
+
+msgid "%s, it is back in stock"
+msgstr "%s, המוצר חזר למלאי"
+
+msgid "It is back in stock"
+msgstr "המוצר חזר למלאי"
+
+msgid "You asked us to tell you when %s came back — it is here."
+msgstr "ביקשת שנעדכן אותך כשהמוצר %s יחזור למלאי — הוא חזר."
+
+msgid "It can be ordered right now, and it does not usually stay long."
+msgstr "אפשר להזמין אותו עכשיו, והוא בדרך כלל לא נשאר הרבה זמן."
+
+msgid "Order it now"
+msgstr "להזמנת המוצר"
