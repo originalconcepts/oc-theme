@@ -1192,6 +1192,14 @@
 				if ( ocHold && ! ocHold.done ) {
 					return;
 				}
+
+				// While a filter is on, the address belongs to the filter.
+				// This used to overwrite it with a /page/N/ of the unfiltered
+				// catalogue on the next scroll — so a refresh, a share or a
+				// Back came back to everything, with the chosen values gone.
+				if ( document.documentElement.dataset.ocFlt ) {
+					return;
+				}
 				var mid = window.innerHeight / 2;
 				var lis = pagingUl.querySelectorAll( 'li.product' );
 				for ( var i = 0; i < lis.length; i++ ) {
@@ -2759,6 +2767,14 @@
 		}
 
 		function apply( keepPage ) {
+			// From the moment a value is touched, not from the moment the
+			// results come back: the click itself changes the height of the
+			// panel, and a visitor sitting at the foot of the page is moved
+			// by that — which fires a scroll, which used to let the paging
+			// tracker write a /page/N/ address over the filter's own.
+			engaged = true;
+			document.documentElement.dataset.ocFlt = '1';
+
 			clearTimeout( applyTimer );
 			applyTimer = setTimeout( function () {
 				run( keepPage ? page : 1, false );
@@ -2842,6 +2858,10 @@
 					updateFacets( res.data.facets || {} );
 					manageMore();
 
+					if ( ! append ) {
+						showResults();
+					}
+
 					document.querySelectorAll( '[data-flt-rescount]' ).forEach( function ( el ) {
 						el.textContent = ( L.fltResults || '%s results' ).replace( '%s', res.data.found );
 					} );
@@ -2862,6 +2882,44 @@
 					busy = false;
 					grid.classList.remove( 'oc-flt-loading' );
 				} );
+		}
+
+		/* Put the results where they can be read.
+		 *
+		 * A filter applied from halfway down the page leaves the visitor
+		 * exactly where they were — and the page has just got shorter, so
+		 * "where they were" is usually the footer, with the results they
+		 * asked for somewhere above their head. The browser has no reason to
+		 * move: nothing navigated.
+		 *
+		 * So: when the top of the results is above the fold, walk up to it.
+		 * When it is already on screen — someone ticking boxes in the side
+		 * panel with the grid beside them — nothing moves, because moving
+		 * the page under a person who can already see what they changed is
+		 * its own kind of rude. */
+		function showResults() {
+			// Not while the phone's filter panel is over the page: the body
+			// does not scroll then, and the visitor is looking at the panel
+			// anyway. It runs when they close it.
+			if ( document.body.classList.contains( 'oc-flt-m-open' ) ) {
+				return;
+			}
+
+			var anchor = grid.closest( '.oc-flt-main' ) || grid;
+			var sticky = document.querySelector( '.oc-header.is-sticky' );
+			var off = ( sticky ? sticky.offsetHeight : 0 ) + 14;
+			var top = anchor.getBoundingClientRect().top;
+
+			if ( top >= off - 1 ) {
+				return;
+			}
+
+			var still = window.matchMedia( '(prefers-reduced-motion: reduce)' ).matches;
+
+			window.scrollTo( {
+				top: Math.max( 0, top + window.scrollY - off ),
+				behavior: still ? 'auto' : 'smooth'
+			} );
 		}
 
 		function manageMore() {
@@ -3237,6 +3295,14 @@
 
 			if ( event.target.closest( '[data-flt-close]' ) || event.target.closest( '[data-flt-overlay]' ) || event.target.closest( '[data-flt-close-apply]' ) ) {
 				document.body.classList.remove( 'oc-flt-m-open' );
+
+				// "View results" means exactly that. The results were
+				// re-rendered while the panel was open; this is the moment
+				// the visitor is meant to see them.
+				if ( engaged ) {
+					showResults();
+				}
+
 				return;
 			}
 
