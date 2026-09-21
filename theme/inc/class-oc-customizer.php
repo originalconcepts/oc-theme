@@ -1376,13 +1376,17 @@ final class Customizer {
 			'faded'
 		);
 
+		// Every one of these is self-hosted in assets/fonts — a family added
+		// here without its woff2 files and its .css beside them simply does
+		// not load, and the site quietly falls back to the system face.
 		$fonts = array(
-			''             => __( 'System', 'oc-theme' ),
-			'Assistant'    => 'Assistant',
-			'Heebo'        => 'Heebo',
-			'Rubik'        => 'Rubik',
-			'Varela Round' => 'Varela Round',
-			'Secular One'  => 'Secular One',
+			''                 => __( 'System', 'oc-theme' ),
+			'Assistant'        => 'Assistant',
+			'Heebo'            => 'Heebo',
+			'Noto Sans Hebrew' => 'Noto Sans Hebrew',
+			'Rubik'            => 'Rubik',
+			'Varela Round'     => 'Varela Round',
+			'Secular One'      => 'Secular One',
 		);
 
 		$this->select( $c, 'oc_font_display', 'oc_design', __( 'Heading font', 'oc-theme' ), $fonts );

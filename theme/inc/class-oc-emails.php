@@ -356,6 +356,21 @@ final class Emails {
 	/* --------------------------------------------------------------- shell */
 
 	/**
+	 * The typeface for an email, as a ready-made declaration.
+	 */
+	public static function type(): string {
+		// The shop's own face first, for the few machines that happen to have
+		// it: a webfont cannot be loaded in an email — Gmail drops @font-face
+		// and every <link> to one — so what follows it is what almost
+		// everybody actually sees. Each of those has real Hebrew: Segoe UI on
+		// Windows, Helvetica Neue on Apple, Roboto on Android.
+		$own   = trim( (string) get_theme_mod( 'oc_font_body', '' ) );
+		$stack = "'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif";
+
+		return 'font-family:' . ( '' !== $own ? "'" . $own . "'," : '' ) . $stack . ';';
+	}
+
+	/**
 	 * Everything above the message: the page, the card, the logo.
 	 */
 	public static function open(): string {
@@ -367,7 +382,12 @@ final class Emails {
 		// a media query is a suggestion — Outlook ignores them and Gmail
 		// honours them only sometimes. The query below only makes a good
 		// layout roomier; it is never what rescues it.
-		$css = '@media only screen and (max-width:620px){'
+		// An email that sets no family at all is drawn in the client's default
+		// — a serif, in every one that matters. This rule reaches everything
+		// in clients that read the <style> block; the inline copies below it
+		// carry the rest.
+		$css = 'body,table,td,div,p,h1,a,span{' . self::type() . '}'
+			. '@media only screen and (max-width:620px){'
 			. '.oc-pad{padding:26px 18px !important}'
 			. '.oc-h1{font-size:23px !important}'
 			. '.oc-h1{font-size:24px !important}'
@@ -381,10 +401,10 @@ final class Emails {
 			. '<meta name="x-apple-disable-message-reformatting" />'
 			. '<title>' . esc_html( get_bloginfo( 'name' ) ) . '</title>'
 			. '<style>' . $css . '</style></head>'
-			. '<body dir="' . $dir . '" style="margin:0;padding:0;width:100%;background:' . esc_attr( $p['page'] ) . ';'
+			. '<body dir="' . $dir . '" style="margin:0;padding:0;width:100%;' . self::type() . 'background:' . esc_attr( $p['page'] ) . ';'
 			. '-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;">'
 			. '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:' . esc_attr( $p['page'] ) . ';">'
-			. '<tr><td align="center" style="padding:26px 12px 32px;">'
+			. '<tr><td align="center" style="' . self::type() . 'padding:26px 12px 32px;">'
 			. '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;">'
 			. '<tr><td align="center" style="padding:0 0 18px;">' . self::logo_html() . '</td></tr>'
 			. '<tr><td style="background:#ffffff;border-radius:16px;">';
@@ -436,7 +456,7 @@ final class Emails {
 			. '</div>';
 
 		return '</td></tr>'
-			. '<tr><td align="center" style="padding:22px 18px 0;font-size:12.5px;line-height:1.85;text-align:center;color:' . esc_attr( $p['soft'] ) . ';">'
+			. '<tr><td align="center" style="' . self::type() . 'padding:22px 18px 0;font-size:12.5px;line-height:1.85;text-align:center;color:' . esc_attr( $p['soft'] ) . ';">'
 			. $out
 			. '</td></tr></table></td></tr></table></body></html>';
 	}
@@ -1080,7 +1100,7 @@ final class Emails {
 		$made = $order->get_date_created();
 		$day  = $made ? wc_format_datetime( $made, $fmt ) : '';
 
-		$out  = '<div class="oc-pad" style="padding:34px 32px 30px;">';
+		$out  = '<div class="oc-pad" style="' . self::type() . 'padding:34px 32px 30px;">';
 		$out .= '<h1 class="oc-h1" style="margin:0 0 8px;font-size:27px;line-height:1.3;font-weight:700;text-align:' . self::align() . ';color:' . esc_attr( $p['ink'] ) . ';">'
 			. esc_html( $head ) . '</h1>';
 		$out .= (string) $text;
@@ -1174,7 +1194,7 @@ final class Emails {
 
 		$card .= '</td></tr></table>';
 
-		$out  = '<div class="oc-pad" style="padding:34px 32px 30px;">';
+		$out  = '<div class="oc-pad" style="' . self::type() . 'padding:34px 32px 30px;">';
 		$out .= '<h1 class="oc-h1" style="margin:0 0 8px;font-size:27px;line-height:1.3;font-weight:700;text-align:' . self::align() . ';color:' . esc_attr( $p['ink'] ) . ';">'
 			. esc_html( $head ) . '</h1>';
 		$out .= self::paragraphs( $text );
@@ -1258,7 +1278,7 @@ final class Emails {
 
 		$intro = self::opt( $email, 'oc_intro', (string) ( $words['intro'] ?? '' ) );
 
-		$out  = '<div class="oc-pad" style="padding:34px 32px 30px;">';
+		$out  = '<div class="oc-pad" style="' . self::type() . 'padding:34px 32px 30px;">';
 		$out .= '<h1 class="oc-h1" style="margin:0 0 8px;font-size:27px;line-height:1.3;font-weight:700;text-align:' . self::align() . ';color:' . esc_attr( $p['ink'] ) . ';">'
 			. esc_html( $head ) . '</h1>';
 		$out .= self::paragraphs( $intro, $swap );
