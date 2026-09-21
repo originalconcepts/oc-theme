@@ -755,7 +755,7 @@ final class Assets {
 			$format = 'font/woff2' === self::font_mime( $url ) ? 'woff2' : str_replace( 'font/', '', self::font_mime( $url ) );
 
 			$css .= "@font-face{font-family:'" . $name . "';font-style:normal;font-weight:" . $weight
-				. ";font-display:swap;src:url(" . $url . ") format('" . $format . "');}";
+				. ';font-display:swap;src:url(' . $url . ") format('" . $format . "');}";
 		}
 
 		return $css;
