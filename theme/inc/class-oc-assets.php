@@ -650,7 +650,7 @@ final class Assets {
 
 						if ( '' !== $first ) {
 							$preloaded = true;
-							$mime      = self::font_mime( $first );
+							$mime      = self::font_kind( $first )['mime'];
 							add_action(
 								'wp_head',
 								static function () use ( $first, $mime ): void {
@@ -708,22 +708,39 @@ final class Assets {
 	}
 
 	/**
-	 * The media type of an uploaded font, from its name.
+	 * What an uploaded font file is, from its name: the media type for the
+	 * preload tag, and the keyword CSS wants in format().
+	 *
+	 * They are not the same word. A .otf is font/otf to a server and
+	 * "opentype" to a stylesheet, and a stylesheet given "otf" ignores the
+	 * whole src and loads nothing.
 	 *
 	 * @param string $url File URL.
-	 * @return string
+	 * @return array{mime:string,format:string}
 	 */
-	private static function font_mime( string $url ): string {
+	private static function font_kind( string $url ): array {
 		$ext = strtolower( (string) pathinfo( (string) wp_parse_url( $url, PHP_URL_PATH ), PATHINFO_EXTENSION ) );
 
 		$known = array(
-			'woff2' => 'font/woff2',
-			'woff'  => 'font/woff',
-			'ttf'   => 'font/ttf',
-			'otf'   => 'font/otf',
+			'woff2' => array(
+				'mime'   => 'font/woff2',
+				'format' => 'woff2',
+			),
+			'woff'  => array(
+				'mime'   => 'font/woff',
+				'format' => 'woff',
+			),
+			'ttf'   => array(
+				'mime'   => 'font/ttf',
+				'format' => 'truetype',
+			),
+			'otf'   => array(
+				'mime'   => 'font/otf',
+				'format' => 'opentype',
+			),
 		);
 
-		return $known[ $ext ] ?? 'font/woff2';
+		return $known[ $ext ] ?? $known['woff2'];
 	}
 
 	/**
@@ -752,10 +769,10 @@ final class Assets {
 				continue;
 			}
 
-			$format = 'font/woff2' === self::font_mime( $url ) ? 'woff2' : str_replace( 'font/', '', self::font_mime( $url ) );
+			$kind = self::font_kind( $url );
 
 			$css .= "@font-face{font-family:'" . $name . "';font-style:normal;font-weight:" . $weight
-				. ';font-display:swap;src:url(' . $url . ") format('" . $format . "');}";
+				. ';font-display:swap;src:url(' . $url . ") format('" . $kind['format'] . "');}";
 		}
 
 		return $css;
