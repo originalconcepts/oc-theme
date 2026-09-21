@@ -41,6 +41,24 @@ final class Emails {
 	const OURS = array( 'customer_processing_order', 'customer_completed_order' );
 
 	/**
+	 * How the written parts of the email being rendered are aligned.
+	 *
+	 * Set once, at the top of body(), and read by the pieces below it. The
+	 * order details are not in it: a table of prices reads along the
+	 * language whatever the heading above it does.
+	 *
+	 * @var string
+	 */
+	private static $align = '';
+
+	/**
+	 * That alignment as a CSS value.
+	 */
+	public static function align(): string {
+		return 'center' === self::$align ? 'center' : ( is_rtl() ? 'right' : 'left' );
+	}
+
+	/**
 	 * Hook in.
 	 */
 	public function register(): void {
@@ -113,6 +131,27 @@ final class Emails {
 			'default'     => $words['intro_pickup'],
 		);
 
+		$fields['oc_note'] = array(
+			'title'       => __( 'Closing note', 'oc-theme' ),
+			'type'        => 'textarea',
+			'css'         => 'width:100%;height:70px;',
+			'description' => __( 'A short line under the order details — what to do if something needs changing, for instance. Leave it empty and it does not appear.', 'oc-theme' ),
+			'default'     => $words['note'],
+		);
+
+		$fields['oc_align'] = array(
+			'title'       => __( 'Text alignment', 'oc-theme' ),
+			'type'        => 'select',
+			'class'       => 'wc-enhanced-select',
+			'description' => __( 'How the heading, the opening words and the closing lines sit. The order details themselves always follow the shop language.', 'oc-theme' ),
+			'desc_tip'    => true,
+			'default'     => 'center',
+			'options'     => array(
+				'center' => __( 'Centred', 'oc-theme' ),
+				'start'  => __( 'Along the text direction', 'oc-theme' ),
+			),
+		);
+
 		return array_merge( $fields, $tail );
 	}
 
@@ -131,16 +170,18 @@ final class Emails {
 			return array(
 				'heading'        => __( 'Your order is on its way', 'oc-theme' ),
 				'heading_pickup' => __( 'Your order is ready for you', 'oc-theme' ),
-				'intro'          => __( "Your order is packed and has left us — it is on its way to you.\nIt should reach you between [from] and [to].\nWe will be in touch if anything changes. Thank you for shopping with us.", 'oc-theme' ),
-				'intro_pickup'   => __( "Your order is ready and waiting for you.\nCome whenever it suits you — the details are below. Thank you for shopping with us.", 'oc-theme' ),
+				'intro'          => __( "It is packed, it has left us, and it is on its way to you.\nIt should reach you between [from] and [to].\nEverything you ordered is listed below, and we are here if anything needs looking at.", 'oc-theme' ),
+				'intro_pickup'   => __( "It is packed and waiting for you at the branch.\nCome whenever it suits you — the address and the opening details are below.\nPlease bring the order number with you, and we will have it ready.", 'oc-theme' ),
+				'note'           => __( 'Keep this email — it holds everything about the order in one place.', 'oc-theme' ),
 			);
 		}
 
 		return array(
-			'heading'        => __( 'Your order has been received', 'oc-theme' ),
-			'heading_pickup' => __( 'Your order has been received', 'oc-theme' ),
-			'intro'          => __( "Thank you — your order has been received.\nIt is expected to reach you between [from] and [to].\nWe will email you again the moment it leaves us.", 'oc-theme' ),
-			'intro_pickup'   => __( "Thank you — your order has been received.\nWe are getting it ready, and we will email you the moment it is waiting for you.", 'oc-theme' ),
+			'heading'        => __( 'Thank you for your order', 'oc-theme' ),
+			'heading_pickup' => __( 'Thank you for your order', 'oc-theme' ),
+			'intro'          => __( "We have received your order and we are already getting it ready.\nIt is expected to reach you between [from] and [to].\nWe will email you again the moment it leaves us, so you know exactly where it is.", 'oc-theme' ),
+			'intro_pickup'   => __( "We have received your order and we are already getting it ready.\nWe will email you the moment it is waiting for you at the branch.\nEverything you ordered is listed below.", 'oc-theme' ),
+			'note'           => __( 'Something to change? Reply to this email with the order number and we will take care of it.', 'oc-theme' ),
 		);
 	}
 
@@ -294,10 +335,42 @@ final class Emails {
 		$p    = self::palette();
 		$name = wp_specialchars_decode( (string) get_bloginfo( 'name' ), ENT_QUOTES );
 
+		// The shop's own address, from where WooCommerce already keeps it.
+		// A trading address under a commercial email is what tells a reader
+		// — and a spam filter — that a real business sent it.
+		$at = array();
+
+		if ( function_exists( 'WC' ) && WC() && WC()->countries ) {
+			foreach ( array( 'get_base_address', 'get_base_address_2', 'get_base_city', 'get_base_postcode' ) as $get ) {
+				$bit = trim( (string) WC()->countries->$get() );
+
+				if ( '' !== $bit ) {
+					$at[] = $bit;
+				}
+			}
+		}
+
+		$out = '<div style="font-size:13.5px;font-weight:700;color:' . esc_attr( $p['ink'] ) . ';">'
+			. '<a href="' . esc_url( home_url( '/' ) ) . '" style="color:' . esc_attr( $p['ink'] ) . ';text-decoration:none;">'
+			. esc_html( $name ) . '</a></div>';
+
+		if ( $at ) {
+			$out .= '<div style="margin:4px 0 0;">' . self::plain( implode( ', ', $at ) ) . '</div>';
+		}
+
+		$out .= '<div style="margin:12px 0 0;">'
+			/* translators: %s: the shop name. */
+			. esc_html( sprintf( __( 'You are receiving this email because an order was placed at %s.', 'oc-theme' ), $name ) )
+			. '</div>';
+
+		$out .= '<div style="margin:4px 0 0;">'
+			/* translators: 1: year, 2: the shop name. */
+			. esc_html( sprintf( __( '© %1$s %2$s. All rights reserved.', 'oc-theme' ), wp_date( 'Y' ), $name ) )
+			. '</div>';
+
 		return '</td></tr>'
-			. '<tr><td align="center" style="padding:20px 14px 0;font-size:12.5px;line-height:1.8;color:' . esc_attr( $p['soft'] ) . ';">'
-			. '<a href="' . esc_url( home_url( '/' ) ) . '" style="color:' . esc_attr( $p['soft'] ) . ';text-decoration:none;font-weight:600;">'
-			. esc_html( $name ) . '</a>'
+			. '<tr><td align="center" style="padding:22px 18px 0;font-size:12.5px;line-height:1.85;text-align:center;color:' . esc_attr( $p['soft'] ) . ';">'
+			. $out
 			. '</td></tr></table></td></tr></table></body></html>';
 	}
 
@@ -346,20 +419,29 @@ final class Emails {
 			array( $pickup ? __( 'Collected', 'oc-theme' ) : __( 'With you', 'oc-theme' ), $due ),
 		);
 
-		$size  = 38;
+		// One outer box for every circle, filled or empty. A border is drawn
+		// OUTSIDE the box in email, so a 38px circle with a 2px border is
+		// 42px wide inside a 38px cell — squeezed on one axis only, which is
+		// how a circle comes out an oval. The empty one is drawn smaller by
+		// exactly its border so both are the same 40px square, and so every
+		// cell in the row is the same height and the rules either side of
+		// them line up.
+		$size  = 40;
 		$grey  = '#dfe3e8';
 		$cells = '';
 
 		foreach ( $stops as $i => $stop ) {
-			$on = $i < $done;
+			$on   = $i < $done;
+			$in   = $on ? $size : $size - 4;
+			$edge = $on ? '' : 'border:2px solid #cfd4db;';
 
 			// A div with a radius of half its width. A table cell with a
 			// radius comes out as a rounded square in more than one client.
-			$circle = '<div style="width:' . $size . 'px;height:' . $size . 'px;line-height:' . ( $on ? $size : $size - 4 ) . 'px;'
-				. 'border-radius:' . ( $size / 2 ) . 'px;text-align:center;'
+			$circle = '<div style="width:' . $in . 'px;height:' . $in . 'px;line-height:' . $in . 'px;'
+				. 'border-radius:' . ( $size / 2 ) . 'px;text-align:center;' . $edge
 				. ( $on
 					? 'background:' . esc_attr( $p['cta'] ) . ';color:#ffffff;font-size:21px;font-weight:700;'
-					: 'background:#ffffff;border:2px solid #cfd4db;color:#cfd4db;font-size:20px;' )
+					: 'background:#ffffff;color:#cfd4db;font-size:20px;' )
 				. '">' . ( $on ? '&#10003;' : '&nbsp;' ) . '</div>';
 
 			// The half-rule leading INTO this stop is lit once this stop has
@@ -367,16 +449,16 @@ final class Emails {
 			$before = $i > 0 ? ( $i < $done ? $p['cta'] : $grey ) : 'transparent';
 			$after  = $i < 2 ? ( $i + 1 < $done ? $p['cta'] : $grey ) : 'transparent';
 
-			$rule = static function ( string $colour ): string {
-				return '<td valign="middle" style="padding:0;">'
-					. '<div style="height:3px;line-height:3px;font-size:0;border-radius:2px;background:' . esc_attr( $colour ) . ';">&nbsp;</div>'
+			$rule = static function ( string $colour ) use ( $size ): string {
+				return '<td valign="middle" height="' . $size . '" style="height:' . $size . 'px;padding:0;font-size:0;line-height:0;">'
+					. '<div style="height:3px;line-height:3px;font-size:0;background:' . esc_attr( $colour ) . ';">&nbsp;</div>'
 					. '</td>';
 			};
 
 			$cells .= '<td width="33.33%" valign="top" style="padding:0;">'
 				. '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>'
 				. $rule( $before )
-				. '<td width="' . $size . '" valign="middle" style="width:' . $size . 'px;padding:0;">' . $circle . '</td>'
+				. '<td width="' . $size . '" height="' . $size . '" valign="middle" align="center" style="width:' . $size . 'px;height:' . $size . 'px;padding:0;">' . $circle . '</td>'
 				. $rule( $after )
 				. '</tr></table>'
 				. '<div style="margin:10px 0 0;text-align:center;font-size:14px;font-weight:700;line-height:1.35;color:'
@@ -539,9 +621,17 @@ final class Emails {
 
 			// After the first character, and before any run of digits: the
 			// two places a "street + number" or a bare number is recognised.
+			// An email address is matched on its own shape, so the @ and the
+			// dots in the domain are broken as well — without them Gmail
+			// still turns the orderer's own address into a blue link.
 			$next = $chars[ $i + 1 ] ?? '';
 
-			if ( 0 === $i || ( '' !== $next && preg_match( '/\d/', $next ) && ! preg_match( '/\d/', $char ) ) ) {
+			$break = 0 === $i
+				|| ( '' !== $next && preg_match( '/\d/', $next ) && ! preg_match( '/\d/', $char ) )
+				|| '@' === $next
+				|| '.' === $next;
+
+			if ( $break ) {
 				$out .= "\u{200B}";
 			}
 		}
@@ -760,7 +850,7 @@ final class Emails {
 		}
 
 		return '<div style="margin:30px 0 0;padding:24px 0 0;border-top:1px solid ' . esc_attr( $p['line'] ) . ';">'
-			. '<div style="margin:0 0 14px;font-size:17px;font-weight:700;color:' . esc_attr( $p['ink'] ) . ';">'
+			. '<div style="margin:0 0 14px;font-size:17px;font-weight:700;text-align:' . self::align() . ';color:' . esc_attr( $p['ink'] ) . ';">'
 			. esc_html__( 'Here for any question', 'oc-theme' ) . '</div>'
 			. '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">' . $rows . '</table>'
 			. '</div>';
@@ -808,16 +898,30 @@ final class Emails {
 	 * @param array     $words Defaults: heading, heading_pickup, intro, intro_pickup.
 	 */
 	public static function body( $order, $email, int $done, array $words ): string {
-		$p      = self::palette();
-		$pickup = self::is_pickup( $order );
+		$p            = self::palette();
+		$pickup       = self::is_pickup( $order );
+		self::$align  = self::opt( $email, 'oc_align', 'center' );
 
 		$head = $pickup
 			? self::opt( $email, 'oc_heading_pickup', (string) ( $words['heading_pickup'] ?? '' ) )
 			: '';
 
 		if ( '' === $head ) {
-			$head = is_object( $email ) && method_exists( $email, 'get_heading' ) ? (string) $email->get_heading() : '';
-			$head = '' !== trim( $head ) ? $head : (string) ( $words['heading'] ?? '' );
+			// Woo's own heading field, but only if the shop actually wrote in
+			// it. Asking get_heading() hands back WooCommerce's stock line
+			// ("Thanks for shopping with us") even when nobody has touched
+			// the box, and ours — the one the settings screen shows as the
+			// default — would then never be seen.
+			$own = is_object( $email ) && method_exists( $email, 'get_option' ) ? trim( (string) $email->get_option( 'heading' ) ) : '';
+			$def = is_object( $email ) && method_exists( $email, 'get_default_heading' ) ? trim( (string) $email->get_default_heading() ) : '';
+
+			$head = ( '' !== $own && $own !== $def )
+				? $own
+				: (string) ( $words['heading'] ?? '' );
+
+			if ( '' === trim( $head ) ) {
+				$head = $own;
+			}
 		}
 
 		$intro = $pickup
@@ -855,17 +959,38 @@ final class Emails {
 		// out empty is worse than no line.
 		$text = preg_replace( '/<p[^>]*>[\s\p{P}]*<\/p>/u', '', (string) $text );
 
+		$made = $order->get_date_created();
+		$day  = $made ? wc_format_datetime( $made, (string) get_option( 'date_format', 'j F Y' ) ) : '';
+
+		$note = trim( self::opt( $email, 'oc_note', (string) ( $words['note'] ?? '' ) ) );
+
 		$out  = '<div class="oc-pad" style="padding:34px 32px 30px;">';
-		$out .= '<h1 class="oc-h1" style="margin:0 0 14px;font-size:27px;line-height:1.3;font-weight:700;color:' . esc_attr( $p['ink'] ) . ';">'
+		$out .= '<h1 class="oc-h1" style="margin:0 0 14px;font-size:27px;line-height:1.3;font-weight:700;text-align:' . self::align() . ';color:' . esc_attr( $p['ink'] ) . ';">'
 			. esc_html( $head ) . '</h1>';
 		$out .= (string) $text;
 		$out .= self::steps( $order, $done, $due );
 		$out .= self::button( $order );
-		$out .= '<div style="margin:26px 0 0;padding:16px 0 0;border-top:1px solid ' . esc_attr( $p['line'] ) . ';font-size:14.5px;font-weight:600;color:' . esc_attr( $p['soft'] ) . ';">'
+		$out .= '<div style="margin:26px 0 0;padding:16px 0 0;border-top:1px solid ' . esc_attr( $p['line'] ) . ';">'
+			. '<div style="font-size:14.5px;font-weight:700;color:' . esc_attr( $p['ink'] ) . ';">'
 			/* translators: %s: the order number. */
-			. esc_html( sprintf( __( 'Order %s', 'oc-theme' ), '#' . $order->get_order_number() ) ) . '</div>';
+			. esc_html( sprintf( __( 'Order %s', 'oc-theme' ), '#' . $order->get_order_number() ) ) . '</div>'
+			. ( '' !== $day
+				? '<div style="margin:3px 0 0;font-size:13.5px;line-height:1.5;color:' . esc_attr( $p['soft'] ) . ';">'
+					/* translators: %s: the date the order was placed. */
+					. esc_html( sprintf( __( 'Placed on %s', 'oc-theme' ), $day ) ) . '</div>'
+				: '' )
+			. '</div>';
 		$out .= self::parties( $order );
 		$out .= self::items( $order );
+
+		// A line the shop can write for itself, under the numbers, where a
+		// question about the order is actually asked.
+		if ( '' !== $note ) {
+			$out .= '<div style="margin:18px 0 0;padding:14px 16px;background:' . esc_attr( $p['panel'] ) . ';border-radius:12px;'
+				. 'font-size:14px;line-height:1.7;text-align:' . self::align() . ';color:' . esc_attr( $p['soft'] ) . ';">'
+				. esc_html( $note ) . '</div>';
+		}
+
 		$out .= self::help( $email );
 		$out .= self::social();
 		$out .= '</div>';
@@ -892,7 +1017,7 @@ final class Emails {
 
 			$line = strtr( $line, $swap );
 
-			$out .= '<p style="margin:0 0 10px;font-size:16px;line-height:1.75;color:' . esc_attr( $p['soft'] ) . ';">'
+			$out .= '<p style="margin:0 0 10px;font-size:16px;line-height:1.75;text-align:' . self::align() . ';color:' . esc_attr( $p['soft'] ) . ';">'
 				. esc_html( $line ) . '</p>';
 		}
 

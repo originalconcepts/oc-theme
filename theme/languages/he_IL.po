@@ -9461,3 +9461,69 @@ msgstr ""
 "ההזמנה שלך ארוזה ויצאה לדרך — היא בדרך אליך.\n"
 "היא אמורה להגיע אליך בין [from] ל‑[to].\n"
 "אם משהו ישתנה נעדכן אותך. תודה שקנית אצלנו."
+
+msgid "Closing note"
+msgstr "הערת סיום"
+
+msgid "A short line under the order details — what to do if something needs changing, for instance. Leave it empty and it does not appear."
+msgstr "שורה קצרה מתחת לפרטי ההזמנה — למשל מה לעשות אם צריך לשנות משהו. השאירו ריק והיא לא תופיע."
+
+msgid "How the heading, the opening words and the closing lines sit. The order details themselves always follow the shop language."
+msgstr "איך יושבים הכותרת, מילות הפתיחה ושורות הסיום. פרטי ההזמנה עצמם תמיד לפי שפת החנות."
+
+msgid "Along the text direction"
+msgstr "לפי כיוון הכתיבה"
+
+msgid ""
+"It is packed, it has left us, and it is on its way to you.\n"
+"It should reach you between [from] and [to].\n"
+"Everything you ordered is listed below, and we are here if anything needs looking at."
+msgstr ""
+"ההזמנה ארוזה, יצאה מאיתנו, והיא בדרך אליך.\n"
+"היא אמורה להגיע אליך בין [from] ל־[to].\n"
+"כל מה שהזמנת מופיע למטה, ואנחנו כאן אם משהו דורש בדיקה."
+
+msgid ""
+"It is packed and waiting for you at the branch.\n"
+"Come whenever it suits you — the address and the opening details are below.\n"
+"Please bring the order number with you, and we will have it ready."
+msgstr ""
+"ההזמנה ארוזה ומחכה לך בסניף.\n"
+"אפשר להגיע מתי שנוח לך — הכתובת ופרטי הסניף מופיעים למטה.\n"
+"כדאי להביא את מספר ההזמנה, ונוציא אותה מוכנה."
+
+msgid "Keep this email — it holds everything about the order in one place."
+msgstr "שמור את המייל הזה — הוא מרכז את כל פרטי ההזמנה במקום אחד."
+
+msgid "Thank you for your order"
+msgstr "תודה על ההזמנה"
+
+msgid ""
+"We have received your order and we are already getting it ready.\n"
+"It is expected to reach you between [from] and [to].\n"
+"We will email you again the moment it leaves us, so you know exactly where it is."
+msgstr ""
+"קיבלנו את ההזמנה שלך ואנחנו כבר מכינים אותה.\n"
+"היא צפויה להגיע אליך בין [from] ל־[to].\n"
+"נעדכן אותך במייל ברגע שהיא יוצאת לדרך, כדי שתדע בדיוק איפה היא."
+
+msgid ""
+"We have received your order and we are already getting it ready.\n"
+"We will email you the moment it is waiting for you at the branch.\n"
+"Everything you ordered is listed below."
+msgstr ""
+"קיבלנו את ההזמנה שלך ואנחנו כבר מכינים אותה.\n"
+"נעדכן אותך במייל ברגע שהיא מחכה לך בסניף.\n"
+"כל מה שהזמנת מופיע למטה."
+
+msgid "Something to change? Reply to this email with the order number and we will take care of it."
+msgstr "צריך לשנות משהו? השב למייל הזה עם מספר ההזמנה ונטפל בזה."
+
+msgid "Placed on %s"
+msgstr "בוצעה ב־%s"
+
+msgid "You are receiving this email because an order was placed at %s."
+msgstr "קיבלת את המייל הזה בעקבות הזמנה שבוצעה ב־%s."
+
+msgid "© %1$s %2$s. All rights reserved."
+msgstr "© %1$s %2$s. כל הזכויות שמורות."
