@@ -898,9 +898,9 @@ final class Emails {
 	 * @param array     $words Defaults: heading, heading_pickup, intro, intro_pickup.
 	 */
 	public static function body( $order, $email, int $done, array $words ): string {
-		$p            = self::palette();
-		$pickup       = self::is_pickup( $order );
-		self::$align  = self::opt( $email, 'oc_align', 'center' );
+		$p           = self::palette();
+		$pickup      = self::is_pickup( $order );
+		self::$align = self::opt( $email, 'oc_align', 'center' );
 
 		$head = $pickup
 			? self::opt( $email, 'oc_heading_pickup', (string) ( $words['heading_pickup'] ?? '' ) )
