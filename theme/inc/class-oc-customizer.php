@@ -1448,7 +1448,9 @@ final class Customizer {
 					array(
 						'section'     => 'oc_design',
 						'label'       => $label,
-						'description' => '400' === $weight
+						// PHP turns a numeric array key into an int on the
+						// way in, whatever it was written as.
+						'description' => 400 === $weight
 							? __( 'A .woff2 file, ideally. A weight left empty is one the browser will imitate, and imitated bold looks like imitated bold.', 'oc-theme' )
 							: '',
 					)
