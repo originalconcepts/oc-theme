@@ -11455,13 +11455,22 @@ body.oc-checkout { overflow-x: clip; }
 	opacity: 1 !important;
 }
 
+/* WooCommerce draws its own loader — the black disc with a white dot —
+   as ::before on the same overlay, at 2em, dead centre: exactly where our
+   ring sits, and large enough to hide it. Ours is the ring on the
+   add-to-cart button, and it is the only one that draws. */
+.oc-checkout .blockUI.blockOverlay::before {
+	display: none !important;
+	content: none !important;
+}
+
 .oc-checkout .blockUI.blockOverlay::after {
 	content: "";
 	position: absolute;
-	inset-block-start: calc(50% - 11px);
-	inset-inline-start: calc(50% - 11px);
-	inline-size: 22px;
-	block-size: 22px;
+	inset-block-start: calc(50% - 9px);
+	inset-inline-start: calc(50% - 9px);
+	inline-size: 18px;
+	block-size: 18px;
 	border: 2px solid var(--oc-ink, #111);
 	border-block-start-color: transparent;
 	border-radius: 50%;
