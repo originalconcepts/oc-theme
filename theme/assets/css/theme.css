@@ -10893,14 +10893,14 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 	background: var(--oc-surface, #fff);
 }
 
-.oc-co-rate input:checked { border-color: var(--oc-cta, var(--oc-ink, #111)); }
-
-.oc-co-rate input:checked::after {
-	content: "";
-	inline-size: 9px;
-	block-size: 9px;
-	border-radius: 50%;
-	background: var(--oc-cta, var(--oc-ink, #111));
+/* The dot is painted on the ring's own box, not as a ::after box of its
+ * own: Chrome snaps a separate box to whole pixels by itself, and when the
+ * ring sits on a fractional origin the two round differently — the dot
+ * came out half a pixel right and half a pixel up. One box, one origin,
+ * one rounding. */
+.oc-co-rate input:checked {
+	border-color: var(--oc-cta, var(--oc-ink, #111));
+	background: radial-gradient(circle at center, var(--oc-cta, var(--oc-ink, #111)) 4.5px, transparent 4.9px) center / 100% 100% no-repeat border-box, var(--oc-surface, #fff);
 }
 
 /* the chosen row is marked by its radio and a hairline, never a fill */
@@ -11822,14 +11822,10 @@ body.oc-checkout { overflow-x: clip; }
 	background: var(--oc-surface, #fff);
 }
 
-.oc-checkout #payment ul.payment_methods > li input[type="radio"]:checked { border-color: var(--oc-cta, var(--oc-ink, #111)); }
-
-.oc-checkout #payment ul.payment_methods > li input[type="radio"]:checked::after {
-	content: "";
-	inline-size: 9px;
-	block-size: 9px;
-	border-radius: 50%;
-	background: var(--oc-cta, var(--oc-ink, #111));
+/* same dot, same reason — see .oc-co-rate input:checked */
+.oc-checkout #payment ul.payment_methods > li input[type="radio"]:checked {
+	border-color: var(--oc-cta, var(--oc-ink, #111));
+	background: radial-gradient(circle at center, var(--oc-cta, var(--oc-ink, #111)) 4.5px, transparent 4.9px) center / 100% 100% no-repeat border-box, var(--oc-surface, #fff);
 }
 
 /* Woo tints the chosen gateway row — the radio says it instead */
