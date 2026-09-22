@@ -127,6 +127,14 @@ final class Marketing_Admin {
 			</div>
 
 			<div class="ocmkt-card">
+				<h2><?php esc_html_e( 'ChatGPT ads (OpenAI)', 'oc-theme' ); ?></h2>
+				<div class="ocmkt-grid">
+					<?php $field( 'openai[pixel]', $s['openai']['pixel'], __( 'Pixel ID', 'oc-theme' ), __( 'Ads Manager → Conversions → the data source you created for the website.', 'oc-theme' ) ); ?>
+					<?php $field( 'openai[key]', $s['openai']['key'], __( 'Conversions API key', 'oc-theme' ), __( 'Ads Manager → Conversions → API keys. Stays on the server; the browser only ever sees the pixel id.', 'oc-theme' ) ); ?>
+				</div>
+			</div>
+
+			<div class="ocmkt-card">
 				<h2><?php esc_html_e( 'Consent and events', 'oc-theme' ); ?></h2>
 				<div class="ocmkt-grid">
 					<p class="description"><?php echo wp_kses_post( sprintf( /* translators: %s: link to the privacy screen. */ __( 'Cookie consent — the banner, the categories, the log — lives in %s. Every tag here follows the visitor\'s choice through Google Consent Mode v2 and the marketing flag.', 'oc-theme' ), '<a href="' . esc_url( admin_url( 'options-general.php?page=oc-privacy' ) ) . '">' . esc_html__( 'Settings → Privacy', 'oc-theme' ) . '</a>' ) ); ?></p>
@@ -141,7 +149,7 @@ final class Marketing_Admin {
 
 		<div class="ocmkt-card">
 			<h2><?php esc_html_e( 'Server events', 'oc-theme' ); ?></h2>
-			<p class="description"><?php esc_html_e( 'The last calls the server made to Meta, TikTok and GA4, and what they answered. “Send a test event” fires a PageView through the server with the saved keys.', 'oc-theme' ); ?></p>
+			<p class="description"><?php esc_html_e( 'The last calls the server made to Meta, TikTok, ChatGPT ads and GA4, and what they answered. “Send a test event” fires a PageView through the server with the saved keys.', 'oc-theme' ); ?></p>
 			<p><button type="button" class="button" data-ocmkt-test><?php esc_html_e( 'Send a test event', 'oc-theme' ); ?></button> <span data-ocmkt-test-out></span></p>
 			<?php $log = Dispatch::recent(); ?>
 			<?php if ( $log ) : ?>
@@ -216,6 +224,7 @@ final class Marketing_Admin {
 			'gads'       => array_map( 'sanitize_text_field', array_map( 'wp_unslash', (array) ( $_POST['gads'] ?? array() ) ) ),
 			'gtm'        => array_map( 'sanitize_text_field', array_map( 'wp_unslash', (array) ( $_POST['gtm'] ?? array() ) ) ),
 			'tiktok'     => array_map( 'sanitize_text_field', array_map( 'wp_unslash', (array) ( $_POST['tiktok'] ?? array() ) ) ),
+			'openai'     => array_map( 'sanitize_text_field', array_map( 'wp_unslash', (array) ( $_POST['openai'] ?? array() ) ) ),
 			'thirdparty' => array(
 				'flashy' => ! empty( $_POST['thirdparty']['flashy'] ),
 				'wait'   => (int) ( $_POST['thirdparty']['wait'] ?? 7000 ),

@@ -49,6 +49,9 @@
 	// gtag, fbq and ttq.
 	document.addEventListener( 'oc:consent', function () {
 		consent = allows( 'marketing' ) ? 'granted' : 'denied';
+		// ChatGPT's pixel has a switch of its own; the others are simply
+		// no longer spoken to.
+		if ( did.openai && window.oaiq ) { window.oaiq( 'consent', 'granted' === consent ); }
 		if ( started ) { load(); }
 	} );
 
@@ -65,7 +68,7 @@
 		document.head.appendChild( s );
 	}
 
-	var did = { google: false, fb: false, tiktok: false };
+	var did = { google: false, fb: false, tiktok: false, openai: false };
 
 	// Google's tags may load ahead of consent only when the site chose
 	// Advanced Consent Mode (they start in a denied state and store
@@ -121,6 +124,21 @@
 			}
 		}
 
+		if ( cfg.openai && 'granted' === consent && ! did.openai ) {
+			did.openai = true;
+			// ChatGPT's pixel. It reads the oppref click reference off the
+			// landing address itself and keeps it in a first-party cookie;
+			// the server reads that cookie back for the Conversions API.
+			// Consent is told to it before init, so a "no" is never a
+			// ping that then has to be taken back.
+			/* eslint-disable */
+			!function(w,d,s,u){if(w.oaiq)return;var q=function(){q.q.push(arguments)};q.q=[];w.oaiq=q;var js=d.createElement(s);js.async=true;js.src=u;var f=d.getElementsByTagName(s)[0];f.parentNode.insertBefore(js,f)}(window,document,'script','https://bzrcdn.openai.com/sdk/oaiq.min.js');
+			/* eslint-enable */
+			window.oaiq( 'consent', true );
+			window.oaiq( 'init', { pixelId: cfg.openai } );
+			window.oaiq( 'measure', 'page_viewed', { type: 'contents' }, { event_id: cfg.pageId } );
+		}
+
 		pending.forEach( function ( ev ) { send( ev.n, ev.d, ev.id ); } );
 		pending = [];
 	}
@@ -129,9 +147,39 @@
 
 	var FB = { PageView: 'PageView', ViewContent: 'ViewContent', Search: 'Search', AddToCart: 'AddToCart', InitiateCheckout: 'InitiateCheckout', AddPaymentInfo: 'AddPaymentInfo', Purchase: 'Purchase', Lead: 'Lead', CompleteRegistration: 'CompleteRegistration', Subscribe: 'Subscribe', Contact: 'Contact' };
 	var TT = { ViewContent: 'ViewContent', Search: 'Search', AddToCart: 'AddToCart', InitiateCheckout: 'InitiateCheckout', AddPaymentInfo: 'AddPaymentInfo', PlaceOrder: 'PlaceAnOrder', Purchase: 'CompletePayment', CompleteRegistration: 'CompleteRegistration', Subscribe: 'Subscribe', Contact: 'Contact', Lead: 'SubmitForm' };
+	// ChatGPT ads: the standard events it will optimise towards; anything
+	// else goes as a custom event under our own name.
+	var OA = { ViewContent: 'contents_viewed', AddToCart: 'items_added', InitiateCheckout: 'checkout_started', Purchase: 'order_created', CompleteRegistration: 'registration_completed', Lead: 'lead_created', Subscribe: 'lead_created' };
 	var GA = { ViewContent: 'view_item', ViewCategory: 'view_item_list', Search: 'search', AddToCart: 'add_to_cart', RemoveFromCart: 'remove_from_cart', InitiateCheckout: 'begin_checkout', AddPaymentInfo: 'add_payment_info', Purchase: 'purchase', Lead: 'generate_lead', CompleteRegistration: 'sign_up', Login: 'login', Subscribe: 'subscribe', Contact: 'contact', SelectItem: 'select_item', ScrollDepth: 'scroll_depth', VideoStart: 'video_start', VideoComplete: 'video_complete' };
 
 	function items( d ) { return ( d && d.items ) || []; }
+
+	// Money for ChatGPT ads is an integer in the smallest unit: 42.50 → 4250.
+	// The few currencies with no smaller unit are whole.
+	function minor( v, cur ) {
+		var whole = [ 'JPY', 'KRW', 'VND', 'CLP', 'ISK', 'UGX', 'XAF', 'XOF' ].indexOf( String( cur || '' ).toUpperCase() ) > -1;
+		return Math.round( Number( v || 0 ) * ( whole ? 1 : 100 ) );
+	}
+
+	function oaParams( d, kind ) {
+		var p = { type: kind };
+		var cur = d.currency || cfg.currency;
+
+		if ( d.value !== undefined && cur ) {
+			p.amount = minor( d.value, cur );
+			p.currency = cur;
+		}
+
+		if ( 'customer_action' !== kind && items( d ).length ) {
+			p.contents = items( d ).map( function ( i ) {
+				var one = { id: String( i.id ), name: i.name || '', content_type: 'product', quantity: Math.max( 1, Number( i.qty || 1 ) ) };
+				if ( i.price !== undefined && cur ) { one.amount = minor( i.price, cur ); one.currency = cur; }
+				return one;
+			} );
+		}
+
+		return p;
+	}
 
 	function fbParams( n, d ) {
 		var p = {};
@@ -197,6 +245,12 @@
 
 		if ( window.ttq && cfg.tiktok && 'granted' === consent && TT[ n ] ) {
 			window.ttq.track( TT[ n ], ttParams( d ), { event_id: id } );
+		}
+
+		if ( window.oaiq && cfg.openai && 'granted' === consent && 'PageView' !== n ) {
+			var oaName = OA[ n ];
+			var oaKind = ! oaName ? 'custom' : ( ( 'registration_completed' === oaName || 'lead_created' === oaName ) ? 'customer_action' : 'contents' );
+			window.oaiq( 'measure', oaName || 'custom', oaParams( d, oaKind ), oaName ? { event_id: id } : { event_id: id, custom_event_name: n.replace( /(?!^)[A-Z]/g, '_$&' ).toLowerCase() } );
 		}
 
 		if ( cfg.ga4 && GA[ n ] ) {

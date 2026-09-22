@@ -73,7 +73,7 @@ final class Settings {
 	 * @param array<string,mixed> $s Settings.
 	 */
 	public static function any( array $s ): bool {
-		return '' !== $s['fb']['pixel'] || '' !== $s['ga4']['id'] || '' !== $s['gads']['id'] || '' !== $s['gtm']['id'] || '' !== $s['tiktok']['pixel'];
+		return '' !== $s['fb']['pixel'] || '' !== $s['ga4']['id'] || '' !== $s['gads']['id'] || '' !== $s['gtm']['id'] || '' !== $s['tiktok']['pixel'] || '' !== $s['openai']['pixel'];
 	}
 
 	/**
@@ -92,6 +92,7 @@ final class Settings {
 		$gads    = (array) ( $raw['gads'] ?? array() );
 		$gtm     = (array) ( $raw['gtm'] ?? array() );
 		$tiktok  = (array) ( $raw['tiktok'] ?? array() );
+		$openai  = (array) ( $raw['openai'] ?? array() );
 		$events  = (array) ( $raw['events'] ?? array() );
 		$third   = (array) ( $raw['thirdparty'] ?? array() );
 		$consent = (string) ( $raw['consent'] ?? 'auto' );
@@ -126,6 +127,12 @@ final class Settings {
 			'tiktok'     => array(
 				'pixel' => $str( $tiktok['pixel'] ?? '' ),
 				'token' => $str( $tiktok['token'] ?? '' ),
+			),
+			// ChatGPT ads. The pixel id goes to the browser; the Conversions
+			// API key never does — it is a bearer token for their server.
+			'openai'     => array(
+				'pixel' => $str( $openai['pixel'] ?? '' ),
+				'key'   => $str( $openai['key'] ?? '' ),
 			),
 			'events'     => array(
 				'scroll' => ! isset( $events['scroll'] ) || ! empty( $events['scroll'] ),

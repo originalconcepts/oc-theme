@@ -13,7 +13,7 @@ namespace OC\Theme\Feeds;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * The writer for all three networks.
+ * The writer for every network: Meta, Google, TikTok and Zap.
  */
 final class Build {
 
@@ -472,6 +472,38 @@ final class Build {
 	 * @return array<int,string>
 	 */
 	private static function columns( array $feed ): array {
+		// TikTok's template, in TikTok's order. Its nine required columns
+		// come first; sku_id is what it calls the id.
+		if ( 'tiktok' === $feed['target'] ) {
+			return array(
+				'sku_id',
+				'title',
+				'description',
+				'availability',
+				'condition',
+				'price',
+				'link',
+				'image_link',
+				'brand',
+				'sale_price',
+				'sale_price_effective_date',
+				'additional_image_link',
+				'item_group_id',
+				'google_product_category',
+				'product_type',
+				'color',
+				'size',
+				'gtin',
+				'mpn',
+				'shipping_weight',
+				'custom_label_0',
+				'custom_label_1',
+				'custom_label_2',
+				'custom_label_3',
+				'custom_label_4',
+			);
+		}
+
 		if ( 'google' === $feed['target'] ) {
 			return array(
 				'id',
@@ -543,9 +575,19 @@ final class Build {
 		}
 
 		$google = 'google' === $feed['target'];
+		$tiktok = 'tiktok' === $feed['target'];
 		$money  = static function ( float $n ): string {
 			return number_format( $n, 2, '.', '' ) . ' ' . get_woocommerce_currency();
 		};
+
+		// TikTok will not take an item without a brand — it is one of its
+		// nine required fields — and a shop selling its own goods has none
+		// on the product. The shop's name is what the brand is, then.
+		$brand = $it['brand'];
+
+		if ( $tiktok && '' === $brand ) {
+			$brand = wp_specialchars_decode( (string) get_bloginfo( 'name' ), ENT_QUOTES );
+		}
 
 		$values = array(
 			'id'                        => $it['sku'] !== '' ? $it['sku'] . '-' . $it['id'] : $it['id'],
@@ -565,7 +607,7 @@ final class Build {
 			'price'                     => $money( (float) $it['price'] ),
 			'sale_price'                => $it['sale'] > 0 ? $money( (float) $it['sale'] ) : '',
 			'sale_price_effective_date' => self::window( (string) $it['sale_from'], (string) $it['sale_to'], (float) $it['sale'] ),
-			'brand'                     => $it['brand'],
+			'brand'                     => $brand,
 			'gtin'                      => $it['gtin'],
 			'mpn'                       => $it['mpn'],
 			'condition'                 => (string) $feed['condition'],
@@ -588,6 +630,22 @@ final class Build {
 			// for a missing identifier. Saying so plainly is the fix.
 			$values['identifier_exists'] = ( '' === $it['gtin'] && '' === $it['brand'] ) ? 'no' : 'yes';
 			$values['shipping_weight']   = '' === $it['weight'] ? '' : $it['weight'] . ' ' . get_option( 'woocommerce_weight_unit', 'kg' );
+		} elseif ( $tiktok ) {
+			// TikTok's catalogue speaks Meta's dialect — the same
+			// availability words, the same price shape — under its own
+			// names. The id is sku_id; it is written first, and kept as id
+			// as well, so a catalogue told to read this as a Google feed
+			// finds what it expects too. Extra pictures are one field,
+			// comma-joined, which is the form its own template documents.
+			$values = array_merge(
+				array( 'sku_id' => $values['id'] ),
+				$values,
+				array(
+					'additional_image_link' => implode( ',', (array) $it['gallery'] ),
+					'shipping_weight'       => '' === $it['weight'] ? '' : $it['weight'] . ' ' . get_option( 'woocommerce_weight_unit', 'kg' ),
+					'custom_label_4'        => $it['later'] ? 'backorder' : '',
+				)
+			);
 		} else {
 			$values['quantity_to_sell_on_facebook'] = $it['qty'] > 0 ? (string) $it['qty'] : ( $it['stock'] ? '10' : '0' );
 			$values['short_description']            = self::cut( (string) $it['brief'], 999 );

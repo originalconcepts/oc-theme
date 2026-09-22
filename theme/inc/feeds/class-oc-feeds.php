@@ -213,7 +213,7 @@ final class Feeds {
 		$out = self::defaults();
 
 		$out['name']      = sanitize_text_field( (string) ( $raw['name'] ?? '' ) );
-		$out['target']    = in_array( (string) ( $raw['target'] ?? '' ), array( 'meta', 'google', 'zap' ), true ) ? (string) $raw['target'] : 'meta';
+		$out['target']    = in_array( (string) ( $raw['target'] ?? '' ), array( 'meta', 'google', 'tiktok', 'zap' ), true ) ? (string) $raw['target'] : 'meta';
 		$out['format']    = in_array( (string) ( $raw['format'] ?? '' ), array( 'xml', 'csv' ), true ) ? (string) $raw['format'] : 'xml';
 		$out['every']     = in_array( (string) ( $raw['every'] ?? '' ), array( 'hourly', 'four', 'daily' ), true ) ? (string) $raw['every'] : 'hourly';
 		$out['in_stock']  = empty( $raw['in_stock'] ) ? 0 : 1;

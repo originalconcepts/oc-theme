@@ -168,6 +168,7 @@ final class Admin {
 		$names = array(
 			'meta'   => __( 'Meta catalogue', 'oc-theme' ),
 			'google' => __( 'Google Merchant Center', 'oc-theme' ),
+			'tiktok' => __( 'TikTok catalogue', 'oc-theme' ),
 			'zap'    => __( 'Zap', 'oc-theme' ),
 		);
 
@@ -216,6 +217,7 @@ final class Admin {
 						<span class="ocfeed__pick">
 							<button type="button" class="ocfeed__who is-on" data-ocfeed-who="meta"><?php esc_html_e( 'Meta', 'oc-theme' ); ?></button>
 							<button type="button" class="ocfeed__who" data-ocfeed-who="google"><?php esc_html_e( 'Google', 'oc-theme' ); ?></button>
+							<button type="button" class="ocfeed__who" data-ocfeed-who="tiktok"><?php esc_html_e( 'TikTok', 'oc-theme' ); ?></button>
 							<button type="button" class="ocfeed__who" data-ocfeed-who="zap"><?php esc_html_e( 'Zap', 'oc-theme' ); ?></button>
 						</span>
 					</label>
@@ -251,7 +253,7 @@ final class Admin {
 							</span>
 						</label>
 
-						<label class="ocfeed__f" data-ocfeed-only="meta google">
+						<label class="ocfeed__f" data-ocfeed-only="meta google tiktok">
 							<span><?php esc_html_e( 'Format', 'oc-theme' ); ?></span>
 							<select id="ocfeed-format">
 								<option value="xml"><?php esc_html_e( 'XML', 'oc-theme' ); ?></option>
@@ -272,7 +274,7 @@ final class Admin {
 							<input type="text" id="ocfeed-brand" class="regular-text" placeholder="<?php echo esc_attr( wp_specialchars_decode( (string) get_bloginfo( 'name' ), ENT_QUOTES ) ); ?>">
 						</label>
 
-						<label class="ocfeed__f" data-ocfeed-only="meta google">
+						<label class="ocfeed__f" data-ocfeed-only="meta google tiktok">
 							<span><?php esc_html_e( 'Google product category', 'oc-theme' ); ?></span>
 							<input type="text" id="ocfeed-gcat" class="regular-text ltr" placeholder="<?php esc_attr_e( 'e.g. 604', 'oc-theme' ); ?>">
 						</label>

@@ -9684,3 +9684,21 @@ msgstr "פונט שהועלה — מודגש"
 
 msgid "A .woff2 file, ideally. A weight left empty is one the browser will imitate, and imitated bold looks like imitated bold."
 msgstr "רצוי קובץ ‎.woff2‎. משקל שנשאר ריק הוא משקל שהדפדפן יחקה, והדגשה מחוקה נראית כמו הדגשה מחוקה."
+
+msgid "TikTok catalogue"
+msgstr "קטלוג טיקטוק"
+
+msgid "ChatGPT ads (OpenAI)"
+msgstr "פרסום ב‑ChatGPT (OpenAI)"
+
+msgid "Ads Manager → Conversions → the data source you created for the website."
+msgstr "Ads Manager ← המרות ← מקור הנתונים שיצרת לאתר."
+
+msgid "Conversions API key"
+msgstr "מפתח Conversions API"
+
+msgid "Ads Manager → Conversions → API keys. Stays on the server; the browser only ever sees the pixel id."
+msgstr "Ads Manager ← המרות ← מפתחות API. נשאר בשרת; הדפדפן רואה רק את מזהה הפיקסל."
+
+msgid "The last calls the server made to Meta, TikTok, ChatGPT ads and GA4, and what they answered. “Send a test event” fires a PageView through the server with the saved keys."
+msgstr "הקריאות האחרונות שהשרת ביצע ל‑Meta, TikTok, פרסום ב‑ChatGPT ו‑GA4, ומה הן ענו. ״שלח אירוע בדיקה״ שולח PageView דרך השרת עם המפתחות השמורים."

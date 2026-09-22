@@ -211,6 +211,10 @@ final class Events {
 			'ttp'    => $cookie( '_ttp' ),
 			'ttclid' => $cookie( 'oc_ttclid' ),
 			'ga_cid' => $ga,
+			// ChatGPT's pixel writes both: the click reference from the
+			// landing address, and a browser reference of its own.
+			'oppref' => $cookie( '__oppref' ),
+			'obref'  => $cookie( '__obref' ),
 		);
 		// phpcs:enable
 	}

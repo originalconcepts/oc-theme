@@ -771,8 +771,12 @@ final class Assets {
 
 			$kind = self::font_kind( $url );
 
+			// The address sits inside url(): a quote or a bracket in it would
+			// end the declaration early, so those four are percent-encoded.
+			$safe = str_replace( array( '"', "'", '(', ')' ), array( '%22', '%27', '%28', '%29' ), $url );
+
 			$css .= "@font-face{font-family:'" . $name . "';font-style:normal;font-weight:" . $weight
-				. ';font-display:swap;src:url(' . $url . ") format('" . $kind['format'] . "');}";
+				. ';font-display:swap;src:url("' . $safe . '") format(\'' . $kind['format'] . '\');}';
 		}
 
 		return $css;

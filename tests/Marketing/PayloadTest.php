@@ -99,6 +99,78 @@ final class PayloadTest extends TestCase {
 		$this->assertNull( Payload::tiktok( 'Login', array(), 'x', array(), array(), '/', 1 ) );
 	}
 
+	public function test_openai_purchase_is_order_created_in_minor_units(): void {
+		$ev = Payload::openai(
+			'Purchase',
+			$this->order(),
+			'order_5001',
+			array( 'em' => 'A@B.co ', 'ph' => '050-1234567', 'fn' => 'Yossi', 'ln' => "O'Brien", 'ct' => 'תל אביב', 'zp' => '6100000', 'country' => 'il', 'external_id' => '7' ),
+			array( 'ip' => '1.2.3.4', 'ua' => 'UA', 'oppref' => 'oppref_abc', 'obref' => 'b-ref' ),
+			'https://x/thanks',
+			1700000000
+		);
+
+		$this->assertSame( 'order_created', $ev['type'] );
+		$this->assertSame( 'order_5001', $ev['id'] );
+		$this->assertSame( 1700000000000, $ev['timestamp_ms'] );
+		$this->assertSame( 'web', $ev['action_source'] );
+		$this->assertSame( 'https://x/thanks', $ev['source_url'] );
+		$this->assertSame( 'oppref_abc', $ev['oppref'] );
+		$this->assertArrayNotHasKey( 'custom_event_name', $ev );
+
+		// Money: an integer in agorot, on the order and on every line.
+		$this->assertSame( 'contents', $ev['data']['type'] );
+		$this->assertSame( 123450, $ev['data']['amount'] );
+		$this->assertSame( 'ILS', $ev['data']['currency'] );
+		$this->assertSame( '31963', $ev['data']['contents'][0]['id'] );
+		$this->assertSame( 19500, $ev['data']['contents'][0]['amount'] );
+		$this->assertSame( 2, $ev['data']['contents'][0]['quantity'] );
+
+		// Matching: hashed where they hash, plain where they do not.
+		$u = $ev['user'];
+		$this->assertSame( array( hash( 'sha256', 'a@b.co' ) ), $u['emails_sha256'] );
+		$this->assertSame( array( hash( 'sha256', '972501234567' ) ), $u['phone_numbers_sha256'] );
+		$this->assertSame( array( hash( 'sha256', 'yossi' ) ), $u['first_names_sha256'] );
+		$this->assertSame( array( hash( 'sha256', 'obrien' ) ), $u['last_names_sha256'] );
+		$this->assertSame( array( hash( 'sha256', '7' ) ), $u['external_ids_sha256'] );
+		$this->assertSame( array( 'IL' ), $u['countries'] );
+		$this->assertSame( array( 'תל אביב' ), $u['cities'] );
+		$this->assertSame( 'b-ref', $u['obref'] );
+		$this->assertSame( '1.2.3.4', $u['ip_address'] );
+	}
+
+	public function test_openai_names_hash_keep_hebrew_and_drop_punctuation(): void {
+		$this->assertSame( 'יוסי', Payload::norm_name( ' יוסי ' ) );
+		$this->assertSame( 'obrien', Payload::norm_name( "O'Brien" ) );
+		$this->assertSame( 'annelise', Payload::norm_name( 'Anne-Lise' ) );
+	}
+
+	public function test_openai_minor_units_know_which_currencies_are_whole(): void {
+		$this->assertSame( 4250, Payload::minor( 42.5, 'ILS' ) );
+		$this->assertSame( 4200, Payload::minor( 42.0, 'usd' ) );
+		$this->assertSame( 4250, Payload::minor( 4250.0, 'JPY' ) );
+		$this->assertSame( 1, Payload::minor( 0.005, 'ILS' ) );
+	}
+
+	public function test_openai_registration_is_a_customer_action_without_contents(): void {
+		$ev = Payload::openai( 'CompleteRegistration', array( 'items' => array( array( 'id' => '1' ) ) ), 'r1', array( 'em' => 'a@b.co' ), array(), 'https://x/', 1 );
+
+		$this->assertSame( 'registration_completed', $ev['type'] );
+		$this->assertSame( 'customer_action', $ev['data']['type'] );
+		$this->assertArrayNotHasKey( 'contents', $ev['data'] );
+		$this->assertArrayNotHasKey( 'amount', $ev['data'] );
+	}
+
+	public function test_openai_unknown_events_go_as_custom_in_snake_case(): void {
+		$ev = Payload::openai( 'AddPaymentInfo', array(), 'p1', array(), array(), 'https://x/', 1 );
+
+		$this->assertSame( 'custom', $ev['type'] );
+		$this->assertSame( 'add_payment_info', $ev['custom_event_name'] );
+		$this->assertSame( 'custom', $ev['data']['type'] );
+		$this->assertArrayNotHasKey( 'user', $ev );
+		$this->assertArrayNotHasKey( 'oppref', $ev );
+	}
+
 	public function test_ga4_purchase_is_the_ecommerce_schema(): void {
 		$ev = Payload::ga4( 'Purchase', $this->order() );
 

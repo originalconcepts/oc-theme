@@ -70,6 +70,7 @@ final class Marketing {
 				'gadsLabel' => $s['gads']['label'],
 				'gtm'       => $s['gtm']['id'],
 				'tiktok'    => $s['tiktok']['pixel'],
+				'openai'    => $s['openai']['pixel'],
 				'events'    => $s['events'],
 				'currency'  => get_woocommerce_currency(),
 				'rest'      => esc_url_raw( rest_url() ),

@@ -79,6 +79,22 @@ final class Dispatch {
 			}
 		}
 
+		if ( '' !== $s['openai']['pixel'] && '' !== $s['openai']['key'] ) {
+			// Every event has a shape here — an unknown one goes as custom —
+			// so there is nothing to skip.
+			self::post(
+				'openai',
+				$name,
+				'https://bzr.openai.com/v1/events?pid=' . rawurlencode( $s['openai']['pixel'] ),
+				array(
+					'integration_source' => 'oc-theme',
+					'events'             => array( Payload::openai( $name, $data, $id, $user, $client, $url, $time ) ),
+				),
+				array( 'Authorization' => 'Bearer ' . $s['openai']['key'] ),
+				$wait
+			);
+		}
+
 		if ( ! empty( $job['ga4'] ) && '' !== $s['ga4']['id'] && '' !== $s['ga4']['secret'] ) {
 			$event = Payload::ga4( $name, $data );
 			$cid   = (string) ( $client['ga_cid'] ?? '' );
