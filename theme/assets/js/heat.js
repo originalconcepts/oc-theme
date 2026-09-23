@@ -575,8 +575,15 @@
 
 		var html = '<h3>' + esc( T.spots || '' ) + '</h3>';
 
-		if ( 'd' === state.layer ) {
-			html += '<p class="ocheat__hint">' + esc( T.deadNote || '' ) + '</p>';
+		// What this layer is, in a line — and who is being counted.
+		var about = { c: T.whyClicks, d: T.deadNote, r: T.whyRage, a: T.whyAttn }[ state.layer ];
+
+		if ( about ) {
+			html += '<p class="ocheat__hint">' + esc( about ) + '</p>';
+		}
+
+		if ( 'b' === state.seg && T.whyBuyers ) {
+			html += '<p class="ocheat__hint">' + esc( T.whyBuyers ) + '</p>';
 		}
 
 		if ( ! list.length ) {

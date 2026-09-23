@@ -9023,6 +9023,18 @@ msgstr "המקומות שלוחצים בהם"
 msgid "A click on something that does nothing. Where people expected a link and did not find one."
 msgstr "לחיצה על משהו שלא עושה כלום. איפה שציפו לקישור ולא מצאו."
 
+msgid "Every press on something that does something: a link, a button, a picture that leads somewhere."
+msgstr "כל לחיצה על משהו שעושה משהו: קישור, כפתור, תמונה שמובילה למקום."
+
+msgid "Three quick presses on the same spot. Someone pressed, nothing happened, and they pressed again and again: a control that does not answer, or something that only looks like one."
+msgstr "שלוש לחיצות מהירות באותו מקום. מישהו לחץ, שום דבר לא קרה, והוא לחץ שוב ושוב: כפתור שלא מגיב, או משהו שרק נראה כמו כפתור."
+
+msgid "How long each part of the page was on screen, over all the visits. Red is where people stopped and read; blue is what they glanced at and passed."
+msgstr "כמה זמן כל חלק בעמוד היה על המסך, בכל הביקורים יחד. אדום הוא המקום שבו עצרו וקראו; כחול הוא מה שראו לרגע והמשיכו."
+
+msgid "Only visits that ended in an order: what buyers did on their way to buying."
+msgstr "רק ביקורים שהסתיימו בהזמנה: מה שקונים עשו בדרך לקנייה."
+
 msgid "Clicks"
 msgstr "לחיצות"
 

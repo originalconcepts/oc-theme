@@ -342,7 +342,12 @@
 		marks[ key ] = ( marks[ key ] || 0 ) + n;
 	}
 
-	// Anything a person could reasonably expect to do something.
+	// Anything a person could reasonably expect to do something. A video
+	// with controls counts; so does anything that can take the keyboard's
+	// focus — but not a section-sized wrapper: themes put tabindex="-1"
+	// on the whole content area as a skip-link target, and with it every
+	// press on a banner read as a press on a control, so the map of dead
+	// presses stayed empty.
 	function live( el ) {
 		for ( var i = 0; el && i < 6; i++ ) {
 			var tag = ( el.tagName || '' ).toLowerCase();
@@ -351,14 +356,29 @@
 				return true;
 			}
 
-			if ( el.onclick || ( el.getAttribute && ( el.hasAttribute( 'data-oc-open' ) || 'button' === el.getAttribute( 'role' ) || el.hasAttribute( 'tabindex' ) ) ) ) {
-				return true;
+			if ( 'video' === tag || 'audio' === tag ) {
+				return el.controls;
+			}
+
+			if ( el.onclick || ( el.getAttribute && ( el.hasAttribute( 'data-oc-open' ) || 'button' === el.getAttribute( 'role' ) ) ) ) {
+				return ! wide( el );
+			}
+
+			if ( el.getAttribute && el.hasAttribute( 'tabindex' ) && parseInt( el.getAttribute( 'tabindex' ), 10 ) >= 0 ) {
+				return ! wide( el );
 			}
 
 			el = el.parentElement;
 		}
 
 		return false;
+	}
+
+	// A box the size of a section, not of a control.
+	function wide( el ) {
+		var r = el.getBoundingClientRect();
+
+		return r.width * r.height > window.innerWidth * window.innerHeight * 0.4;
 	}
 
 	// A bar that rides along with the scroll — a fixed or sticky header —

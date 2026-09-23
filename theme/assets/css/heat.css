@@ -235,6 +235,12 @@ html[dir="rtl"] .ocheat .ocheat__pick {
 	background: linear-gradient(to right, #005aff, #00c8ff, #00e600, #fae600, #ff1900);
 }
 
+/* The labels under it read start-to-end, so in a right-to-left screen
+ * the ramp runs the other way too: "a few" is blue on both sides. */
+html[dir="rtl"] .ocheat__ramp {
+	background: linear-gradient(to left, #005aff, #00c8ff, #00e600, #fae600, #ff1900);
+}
+
 .ocheat__ends {
 	display: flex;
 	justify-content: space-between;
