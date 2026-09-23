@@ -1,17 +1,27 @@
-/* The heat map viewer: a sheet over the shop, with the page inside it. */
+/* The heat map viewer: a sheet over the shop, with the page inside it.
+ * It is mounted on <html>, next to <body>, so everything the page or the
+ * admin floats over itself (chat bubbles, accessibility icons, sticky bars)
+ * goes quiet while the sheet is open, and nothing can sit on top of it. */
 html.ocheat-on,
 html.ocheat-on body { overflow: hidden !important; }
+html.ocheat-on body,
+html.ocheat-on body > * { visibility: hidden !important; }
 
 .ocheat {
 	position: fixed;
 	inset: 0;
-	z-index: 100000;
+	z-index: 2147483646;
 	display: flex;
 	flex-direction: column;
 	background: #eef0f3;
 	font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+	font-size: 14px;
+	line-height: 1.5;
 	color: #111827;
+	visibility: visible;
 }
+
+.ocheat * { box-sizing: border-box; }
 
 .ocheat__head {
 	display: flex;
@@ -36,34 +46,77 @@ html.ocheat-on body { overflow: hidden !important; }
 	padding: 3px;
 }
 
-.ocheat__tabs button {
-	border: 0;
-	background: transparent;
-	font: inherit;
-	font-size: 12.5px;
-	padding: 3px 10px;
-	border-radius: 6px;
-	cursor: pointer;
-	color: #4b5563;
-	line-height: 1.6;
+/* Some themes push their front-end button rules into wp-admin as well
+ * ("button { background: var(--brand) … }"), and wp-admin styles every
+ * <select> itself. Every control on the sheet starts from nothing and
+ * states its whole look, with weight, so that a stylesheet we have never
+ * seen cannot recolour it. */
+.ocheat .ocheat__tabs > button,
+.ocheat .ocheat__close,
+.ocheat .ocheat__pick {
+	all: unset;
+	box-sizing: border-box !important;
+	display: inline-block !important;
+	position: static !important;
+	margin: 0 !important;
+	min-width: 0 !important;
+	min-height: 0 !important;
+	width: auto !important;
+	height: auto !important;
+	font: inherit !important;
+	font-weight: 400 !important;
+	line-height: 1.6 !important;
+	letter-spacing: normal !important;
+	text-transform: none !important;
+	text-decoration: none !important;
+	text-shadow: none !important;
+	text-align: center !important;
+	white-space: nowrap !important;
+	box-shadow: none !important;
+	transition: none !important;
+	transform: none !important;
+	cursor: pointer !important;
+	-webkit-appearance: none !important;
+	appearance: none !important;
 }
 
-.ocheat__tabs button[aria-pressed="true"] {
-	background: #fff;
-	color: #111827;
-	box-shadow: 0 1px 2px rgb(0 0 0 / 12%);
-	font-weight: 600;
+.ocheat .ocheat__tabs > button::before,
+.ocheat .ocheat__tabs > button::after,
+.ocheat .ocheat__close::before,
+.ocheat .ocheat__close::after { content: none !important; display: none !important; }
+
+.ocheat .ocheat__tabs > button {
+	border: 0 !important;
+	background: transparent !important;
+	color: #4b5563 !important;
+	font-size: 12.5px !important;
+	padding: 3px 10px !important;
+	border-radius: 6px !important;
 }
 
-.ocheat__close {
-	border: 1px solid #d1d5db;
-	background: #fff;
-	border-radius: 8px;
-	padding: 5px 14px;
-	font: inherit;
-	font-size: 13px;
-	cursor: pointer;
+.ocheat .ocheat__tabs > button:hover { color: #111827 !important; }
+
+.ocheat .ocheat__tabs > button[aria-pressed="true"] {
+	background: #fff !important;
+	color: #111827 !important;
+	box-shadow: 0 1px 2px rgb(0 0 0 / 12%) !important;
+	font-weight: 600 !important;
 }
+
+.ocheat .ocheat__close {
+	border: 1px solid #d1d5db !important;
+	background: #fff !important;
+	color: #111827 !important;
+	border-radius: 8px !important;
+	padding: 5px 14px !important;
+	font-size: 13px !important;
+}
+
+.ocheat .ocheat__close:hover { background: #f8f9fa !important; border-color: #9ca3af !important; }
+
+.ocheat .ocheat__tabs > button:focus-visible,
+.ocheat .ocheat__close:focus-visible,
+.ocheat .ocheat__pick:focus-visible { outline: 2px solid #2563eb !important; outline-offset: 1px !important; }
 
 .ocheat__body { flex: 1; display: flex; min-height: 0; }
 
@@ -82,20 +135,27 @@ html.ocheat-on body { overflow: hidden !important; }
 .ocheat__frame { display: block; border: 0; width: 100%; pointer-events: none; }
 .ocheat__canvas { position: absolute; inset-block-start: 0; inset-inline-start: 0; cursor: crosshair; }
 
-.ocheat__pick {
-	max-inline-size: 260px;
-	font: inherit;
-	font-size: 12.5px;
-	padding: 4px 8px;
-	border: 1px solid #d1d5db;
-	border-radius: 8px;
-	background: #fff;
-	color: #111827;
+.ocheat .ocheat__pick {
+	max-inline-size: 260px !important;
+	text-align: start !important;
+	text-overflow: ellipsis !important;
+	overflow: hidden !important;
+	font-size: 12.5px !important;
+	padding: 4px 28px 4px 8px !important;
+	border: 1px solid #d1d5db !important;
+	border-radius: 8px !important;
+	background: #fff url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5' fill='none' stroke='%236b7280' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 9px center !important;
+	color: #111827 !important;
+}
+
+html[dir="rtl"] .ocheat .ocheat__pick {
+	padding: 4px 8px 4px 28px !important;
+	background-position: left 9px center !important;
 }
 
 .ocheat__tip {
 	position: fixed;
-	z-index: 100001;
+	z-index: 2147483647;
 	background: #111827;
 	color: #fff;
 	font-size: 12.5px;
@@ -115,11 +175,13 @@ html.ocheat-on body { overflow: hidden !important; }
 	overflow: auto;
 }
 
-.ocheat__side h3 { margin: 0 0 10px; font-size: 14px; }
+.ocheat__side h3 { margin: 0 0 10px !important; padding: 0 !important; font: inherit !important; font-size: 14px !important; font-weight: 600 !important; line-height: 1.4 !important; color: #111827 !important; text-transform: none !important; }
 .ocheat__hint { margin: 8px 0 0; font-size: 12.5px; color: #6b7280; line-height: 1.5; }
-.ocheat__spots { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.ocheat__spots { margin: 0 !important; padding: 0 !important; list-style: none !important; display: grid; gap: 6px; }
 
 .ocheat__spots li {
+	margin: 0 !important;
+	list-style: none !important;
 	display: flex;
 	justify-content: space-between;
 	gap: 10px;
@@ -138,7 +200,7 @@ html.ocheat-on body { overflow: hidden !important; }
 
 /* What the colours mean, in the same ramp the canvas is painted with. */
 .ocheat__key { margin-block-start: 18px; padding-block-start: 14px; border-block-start: 1px solid #e5e7eb; }
-.ocheat__key h4 { margin: 0 0 8px; font-size: 13px; }
+.ocheat__key h4 { margin: 0 0 8px !important; padding: 0 !important; font: inherit !important; font-size: 13px !important; font-weight: 600 !important; line-height: 1.4 !important; color: #111827 !important; text-transform: none !important; }
 
 .ocheat__ramp {
 	block-size: 10px;
