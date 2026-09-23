@@ -211,7 +211,7 @@ final class Query {
 		// and a category page ALSO sends 'cat' — those are what the per-
 		// product and per-category counts are made of, not extra views.
 		// Counting all three read 329 views on a day with 190 page loads.
-		$m['views']    = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$t} WHERE t >= %s AND t < %s AND type = 'view'", $from, $to ) );
+		$m['views'] = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$t} WHERE t >= %s AND t < %s AND type = 'view'", $from, $to ) );
 
 		$per_type = array(
 			'product'  => 'product_sessions',
