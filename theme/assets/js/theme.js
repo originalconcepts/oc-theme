@@ -360,6 +360,12 @@
 				return el.controls;
 			}
 
+			// A hand cursor is the page's own promise that this does something —
+			// the one sign left by a handler bound from a script.
+			if ( 'pointer' === getComputedStyle( el ).cursor ) {
+				return ! wide( el );
+			}
+
 			if ( el.onclick || ( el.getAttribute && ( el.hasAttribute( 'data-oc-open' ) || 'button' === el.getAttribute( 'role' ) ) ) ) {
 				return ! wide( el );
 			}
