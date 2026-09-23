@@ -28,6 +28,7 @@
 	var groups = [];
 	var spots = [];
 	var scale = 1;
+	var veil = null;
 
 	function el( tag, cls, html ) {
 		var n = document.createElement( tag );
@@ -242,6 +243,7 @@
 
 	function reframe() {
 		var w = ( C.widths && C.widths[ state.device ] ) || 390;
+		var tall = ( C.heights && C.heights[ state.device ] ) || 844;
 
 		hideTip();
 		stage.innerHTML = '';
@@ -256,6 +258,15 @@
 		frame.setAttribute( 'scrolling', 'no' );
 		frame.width = w;
 
+		// A frame is a short strip until it is told otherwise. Give it the
+		// device's screen from the first moment, and a veil over it while
+		// the page loads and is read, so what shows is "a phone, loading"
+		// and not a sliver of page with marks in the wrong places.
+		frame.style.height = tall + 'px';
+		wrap.style.height = ( tall * scale ) + 'px';
+		veil = el( 'div', 'ocheat__veil', '<span>' + esc( T.loading || '' ) + '</span>' );
+		wrap.appendChild( veil );
+
 		var u = new URL( location.href );
 
 		[ 'oc_heat', 'hp', 'hr', 'hd' ].forEach( function ( k ) { u.searchParams.delete( k ); } );
@@ -263,6 +274,7 @@
 		frame.src = u.toString();
 
 		canvas = el( 'canvas', 'ocheat__canvas' );
+		canvas.hidden = true;
 
 		wrap.appendChild( frame );
 		wrap.appendChild( canvas );
@@ -274,6 +286,7 @@
 		scale = Math.min( 1, room / w );
 		wrap.style.transform = 'scale(' + scale + ')';
 		wrap.style.transformOrigin = 'top center';
+		wrap.style.height = ( tall * scale ) + 'px';
 
 		frame.addEventListener( 'load', function () {
 			var d = null;
@@ -320,8 +333,15 @@
 		canvas.height = h;
 		canvas.style.width = w + 'px';
 		canvas.style.height = h + 'px';
+		canvas.hidden = false;
 		canvas.addEventListener( 'mousemove', look );
 		canvas.addEventListener( 'mouseleave', hideTip );
+
+		if ( veil && veil.parentNode ) {
+			veil.parentNode.removeChild( veil );
+		}
+
+		veil = null;
 		paint();
 	}
 
@@ -362,14 +382,26 @@
 	/* The page was not exactly this tall when the marks were made — a lazy
 	 * image, a narrower phone, a line of text that wrapped. Stretch the
 	 * marks onto the page as it stands, within reason. */
-	function stretch() {
+	/* Where a mark goes on the page as it stands now. The page a visitor
+	 * saw was rarely the height this frame measures — a lazy image that had
+	 * not arrived, a narrower phone — so the marks are stretched onto it.
+	 * The first screen is left exactly as recorded: the header, the hero,
+	 * the strip under it sit at the same place whatever loads further
+	 * down, and stretching them along with the rest is what put a press on
+	 * the menu a finger's width above the menu. Only what lies below the
+	 * first screen is stretched, by how much the rest of the page differs. */
+	function place( y ) {
 		var was = data && data.height ? data.height : 0;
+		var now = canvas ? canvas.height : 0;
+		var top = ( C.heights && C.heights[ state.device ] ) || 844;
 
-		if ( ! was || ! canvas || ! canvas.height ) {
-			return 1;
+		if ( ! was || ! now || y <= top || was <= top || now <= top ) {
+			return Math.min( y, now || y );
 		}
 
-		return Math.max( 0.5, Math.min( 2, canvas.height / was ) );
+		var k = Math.max( 0.5, Math.min( 2, ( now - top ) / ( was - top ) ) );
+
+		return top + ( y - top ) * k;
 	}
 
 	function paint() {
@@ -406,11 +438,10 @@
 		var top = list.reduce( function ( a, m ) { return Math.max( a, m[ 3 ] ); }, 1 );
 		var all = list.reduce( function ( a, m ) { return a + m[ 3 ]; }, 0 ) || 1;
 		var r = 'd' === state.device ? 44 : 30;
-		var ky = stretch();
 
 		list.forEach( function ( m ) {
 			var x = ( m[ 1 ] / 100 ) * canvas.width;
-			var y = m[ 2 ] * ky;
+			var y = place( m[ 2 ] );
 			var a = Math.min( 1, 0.25 + ( m[ 3 ] / top ) * 0.75 );
 			var g = ctx.createRadialGradient( x, y, 0, x, y, r );
 
@@ -541,7 +572,6 @@
 
 		var list = marksOf( 'a' === state.layer ? 'c' : state.layer ).slice().sort( function ( a, b ) { return b[ 3 ] - a[ 3 ]; } ).slice( 0, 12 );
 		var total = marksOf( 'c' ).reduce( function ( a, m ) { return a + m[ 3 ]; }, 0 ) || 1;
-		var ky = stretch();
 
 		var html = '<h3>' + esc( T.spots || '' ) + '</h3>';
 
@@ -554,7 +584,7 @@
 		} else {
 			html += '<ol class="ocheat__spots">';
 			list.forEach( function ( m ) {
-				html += '<li><span>' + Math.round( m[ 1 ] ) + '% · ' + Math.round( m[ 2 ] * ky ) + 'px</span><b>' + num( m[ 3 ] ) +
+				html += '<li><span>' + Math.round( m[ 1 ] ) + '% · ' + Math.round( place( m[ 2 ] ) ) + 'px</span><b>' + num( m[ 3 ] ) +
 					' <i>' + Math.round( ( m[ 3 ] / total ) * 100 ) + '%</i></b></li>';
 			} );
 			html += '</ol>';

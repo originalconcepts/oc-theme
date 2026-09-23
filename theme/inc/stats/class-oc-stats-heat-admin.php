@@ -58,6 +58,14 @@ class Heat_Admin {
 		add_action( 'rest_api_init', array( $this, 'rest' ) );
 		add_action( 'admin_bar_menu', array( $this, 'toolbar' ), 80 );
 		add_action( 'wp_enqueue_scripts', array( $this, 'viewer_assets' ) );
+
+		// The page inside the map is loaded by someone logged in, and the
+		// toolbar they get pushes the whole page down a bar's height — every
+		// mark then sits that much above what it was aimed at. The frame
+		// gets the page as a visitor sees it.
+		if ( isset( $_GET['oc_heat_frame'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- a flag on a read-only view.
+			add_filter( 'show_admin_bar', '__return_false' );
+		}
 		add_action( 'admin_post_oc_heat_save', array( $this, 'save' ) );
 	}
 
@@ -509,6 +517,7 @@ class Heat_Admin {
 						'pick'      => __( 'Another page', 'oc-theme' ),
 						'press'     => __( 'presses here', 'oc-theme' ),
 						'frozen'    => __( 'Links are off inside the map.', 'oc-theme' ),
+						'loading'   => __( 'Loading the page…', 'oc-theme' ),
 						'keyTitle'  => __( 'What the colours mean', 'oc-theme' ),
 						'few'       => __( 'A few', 'oc-theme' ),
 						'many'      => __( 'A lot', 'oc-theme' ),

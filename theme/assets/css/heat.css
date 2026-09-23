@@ -130,6 +130,33 @@ html.ocheat-on body > * { visibility: hidden !important; }
 }
 
 .ocheat__wrap { position: relative; flex: none; background: #fff; box-shadow: 0 6px 24px rgb(0 0 0 / 14%); }
+
+/* Over the frame while the page loads and is read. */
+.ocheat__veil {
+	position: absolute;
+	inset: 0;
+	z-index: 2;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: rgb(238 240 243 / 92%);
+	color: #4b5563;
+	font-size: 13px;
+}
+
+.ocheat__veil span { display: inline-flex; align-items: center; gap: 10px; }
+
+.ocheat__veil span::before {
+	content: "";
+	inline-size: 18px;
+	block-size: 18px;
+	border-radius: 50%;
+	border: 2px solid #c7ccd3;
+	border-block-start-color: #4b5563;
+	animation: ocheat-spin 0.8s linear infinite;
+}
+
+@keyframes ocheat-spin { to { transform: rotate(360deg); } }
 /* The page inside the frame is a picture: the canvas takes every press,
  * so a link cannot carry the map away to a page that has none. */
 .ocheat__frame { display: block; border: 0; width: 100%; pointer-events: none; }

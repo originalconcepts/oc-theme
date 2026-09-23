@@ -9041,6 +9041,9 @@ msgstr "לחיצות כאן"
 msgid "Links are off inside the map."
 msgstr "הקישורים מנוטרלים בתוך המפה, כדי שלא תועבר לעמוד שאין לו מפה."
 
+msgid "Loading the page…"
+msgstr "טוען את העמוד…"
+
 msgid "Nothing recorded in this period yet. A page appears here once people have visited it."
 msgstr "עדיין לא נרשם דבר בתקופה הזאת. עמוד מופיע כאן אחרי שגולשים ביקרו בו."
 

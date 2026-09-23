@@ -361,6 +361,35 @@
 		return false;
 	}
 
+	// A bar that rides along with the scroll — a fixed or sticky header —
+	// is at the same place on every screen, however far down the page the
+	// visitor was. Recorded by document position, a press on it while
+	// scrolled would land thousands of pixels below the bar. Its place on
+	// the map is where the bar sits when the page is at the top: for a
+	// fixed bar that is its place on the screen, for a sticky one where it
+	// stands in the flow before it sticks.
+	function rest( el, clientY ) {
+		for ( var i = 0; el && el !== document.body && i < 8; i++ ) {
+			var pos = getComputedStyle( el ).position;
+
+			if ( 'fixed' === pos || 'sticky' === pos ) {
+				var top = 0;
+				var p = el;
+
+				while ( p ) {
+					top += p.offsetTop || 0;
+					p = p.offsetParent;
+				}
+
+				return Math.round( top + ( clientY - el.getBoundingClientRect().top ) );
+			}
+
+			el = el.parentElement;
+		}
+
+		return null;
+	}
+
 	// A click that is about to take the visitor off this page. The browser
 	// does not reliably deliver a beacon queued while it is leaving, so
 	// what is held is sent now, while the page is still alive.
@@ -385,7 +414,8 @@
 
 		var w = document.documentElement.clientWidth || 1;
 		var xp = Math.max( 0, Math.min( 100, Math.round( ( e.clientX / w ) * 100 ) ) );
-		var y = Math.max( 0, Math.round( e.pageY - bar() ) );
+		var held = rest( e.target, e.clientY );
+		var y = Math.max( 0, Math.round( ( null === held ? e.pageY : held ) - bar() ) );
 		var now = Date.now();
 
 		grew();
