@@ -133,6 +133,26 @@ final class Insights {
 			}
 		}
 
+		// A shop with a few dozen visits a month has nothing for these rules
+		// to read yet, and "nothing needs your attention" would be the
+		// wrong thing to say about it. Say what is actually happening.
+		if ( ! $out && (int) $cur['sessions'] < 100 ) {
+			$out[] = self::one(
+				'warming_up',
+				'info',
+				__( 'Statistics', 'oc-theme' ),
+				__( 'Still gathering data', 'oc-theme' ),
+				sprintf(
+					/* translators: %s: number of visits in the last 30 days. */
+					__( '%s visits in the last 30 days. The rules here need a few hundred before a pattern means anything — they run every morning and will speak up when there is something to say.', 'oc-theme' ),
+					number_format_i18n( (int) $cur['sessions'] )
+				),
+				0,
+				array(),
+				__( 'Shown while the last 30 days hold fewer than 100 visits and no rule has anything to report.', 'oc-theme' )
+			);
+		}
+
 		usort(
 			$out,
 			static function ( array $a, array $b ): int {
@@ -376,6 +396,14 @@ final class Insights {
 	 */
 	private static function category_down( array $cur, array $prev, array $d90 ): array { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter -- one signature for every rule.
 		$out = array();
+
+		// A month with a handful of orders has no trend in it. One console
+		// sold in August and none in September is "sales fell 100%" by
+		// arithmetic and nothing at all by sense — the demo said exactly
+		// that. Ten orders in the month before is the floor.
+		if ( (int) $prev['orders'] < 10 ) {
+			return $out;
+		}
 
 		foreach ( (array) $prev['cat_gross'] as $tid => $before ) {
 			$tid   = (int) $tid;

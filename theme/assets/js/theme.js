@@ -263,6 +263,13 @@
 		return;
 	}
 
+	// A viewport no screen has — a full-page screenshot, a test harness
+	// emulating a very tall window — measures the page at a height no
+	// visitor sees, and one such visit stretches the map for everybody.
+	if ( window.innerHeight > 1800 || window.innerHeight > window.innerWidth * 2.6 ) {
+		return;
+	}
+
 	var KEEP = 'ocHeat';
 
 	function post( body ) {
@@ -406,19 +413,30 @@
 		}
 	}, true );
 
+	// Which fifths of the page are on screen right now.
+	function onScreen( secs ) {
+		var deep = grew();
+		var from = Math.floor( Math.min( 1, Math.max( 0, window.scrollY / deep ) ) * 20 );
+		var to = Math.min( 19, Math.floor( Math.min( 1, ( window.scrollY + window.innerHeight ) / deep ) * 20 ) );
+
+		for ( var b = from; b <= to; b++ ) {
+			bands[ b ] = ( bands[ b ] || 0 ) + secs;
+		}
+	}
+
+	// The first screen counts as reached the moment the page is there. It
+	// used to be marked only by the once-a-second tick, so a visitor who
+	// clicked a link inside the first second sent a view with no bands —
+	// and the top of the page read as reached by half its visitors.
+	onScreen( 0 );
+
 	// Once a second, which fifth of the page is on screen.
 	setInterval( function () {
 		if ( document.hidden ) {
 			return;
 		}
 
-		var deep = grew();
-		var from = Math.floor( Math.min( 1, Math.max( 0, window.scrollY / deep ) ) * 20 );
-		var to = Math.min( 19, Math.floor( Math.min( 1, ( window.scrollY + window.innerHeight ) / deep ) * 20 ) );
-
-		for ( var b = from; b <= to; b++ ) {
-			bands[ b ] = ( bands[ b ] || 0 ) + 1;
-		}
+		onScreen( 1 );
 	}, 1000 );
 
 	function waiting() {

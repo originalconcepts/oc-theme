@@ -207,7 +207,11 @@ final class Query {
 
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- our own table; the window is prepared.
 		$m['sessions'] = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(DISTINCT sid) FROM {$t} WHERE t >= %s AND t < %s AND type <> 'purchase'", $from, $to ) );
-		$m['views']    = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$t} WHERE t >= %s AND t < %s AND type IN ('view','product','cat')", $from, $to ) );
+		// One page load is one 'view'. A product page ALSO sends 'product'
+		// and a category page ALSO sends 'cat' — those are what the per-
+		// product and per-category counts are made of, not extra views.
+		// Counting all three read 329 views on a day with 190 page loads.
+		$m['views']    = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$t} WHERE t >= %s AND t < %s AND type = 'view'", $from, $to ) );
 
 		$per_type = array(
 			'product'  => 'product_sessions',
