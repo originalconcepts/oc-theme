@@ -510,7 +510,8 @@ final class Render {
 		$sets   = array();
 
 		foreach ( (array) $s['slides'] as $slide ) {
-			$media = '';
+			$media  = '';
+			$arrive = '';
 
 			if ( '' !== $slide['vid'] ) {
 				// A poster is the banner's first paint: without one the
@@ -542,6 +543,15 @@ final class Render {
 					$mob_set = (string) wp_get_attachment_image_srcset( (int) $slide['imgm'], 'full' );
 				}
 
+				// The first picture fades in the moment it has arrived — the
+				// way things further down the page appear as they scroll into
+				// view — instead of popping in whole. The handler rides on the
+				// element itself, so it works before any script has loaded
+				// and costs the largest paint nothing but the first frame.
+				$arrive = 0 === count( $slides )
+					? ' onload="this.closest(\'.ocb-hero__media\').classList.add(\'is-ready\')" onerror="this.closest(\'.ocb-hero__media\').classList.add(\'is-ready\')"'
+					: '';
+
 				$media = '<picture>'
 					. ( '' === $mob ? '' : '<source media="(max-width: 782px)" srcset="' . esc_attr( '' !== $mob_set ? $mob_set : esc_url( $mob ) ) . '"' . ( '' === $mob_set ? '' : ' sizes="100vw"' ) . '>' )
 					. '<img src="' . esc_url( $dsk ) . '"'
@@ -551,6 +561,7 @@ final class Render {
 					// Slides after the first are out of sight until the
 					// strip moves; they need not race the first one.
 					. ( count( $slides ) > 0 ? ' loading="lazy" fetchpriority="low"' : '' )
+					. $arrive
 					. ' decoding="async" alt="' . esc_attr( (string) $slide['heading'] ) . '">'
 					. '</picture>';
 			} else {
@@ -628,7 +639,7 @@ final class Render {
 			$close = '' !== $slide['url'] && '' === $slide['cta'] ? '</a>' : '</div>';
 
 			$slides[] = $open
-				. '<div class="ocb-hero__media' . ( $fixed ? ' ocb-hero__media--fixed' : '' ) . '"' . ( 0 === $lax || $fixed ? '' : ' data-ocb-parallax="' . $lax . '"' ) . '>' . $media . '</div>'
+				. '<div class="ocb-hero__media' . ( $fixed ? ' ocb-hero__media--fixed' : '' ) . ( '' !== $arrive ? ' ocb-hero__media--first' : '' ) . '"' . ( 0 === $lax || $fixed ? '' : ' data-ocb-parallax="' . $lax . '"' ) . '>' . $media . '</div>'
 				. ( $s['shade'] > 0 ? '<div class="ocb-hero__shade" style="opacity:' . ( absint( $s['shade'] ) / 100 ) . '"></div>' : '' )
 				. $close;
 		}

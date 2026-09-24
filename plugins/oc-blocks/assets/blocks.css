@@ -287,8 +287,21 @@
 
 .ocb-hero--fade .ocb-hero__slide .ocb-hero__media { will-change: transform; }
 
-.ocb-hero--fade .ocb-hero__slide.is-on .ocb-hero__media {
+.ocb-hero--fade.is-live .ocb-hero__slide.is-on .ocb-hero__media {
 	animation: ocb-hero-settle 1.5s cubic-bezier(.19, .6, .32, 1) .35s backwards;
+}
+
+/* The settle above is a flourish for a slide that has just taken over —
+ * so it waits for the first turn (.is-live). Run on the page's first
+ * paint it read as a fault: the picture stood a fifth too large for a
+ * second and shrank. The first picture instead fades in as it arrives;
+ * the class comes from the image's own load handler, before any script. */
+.ocb-hero__media--first { opacity: 0; }
+.ocb-hero__media--first.is-ready { opacity: 1; transition: opacity .6s ease; }
+
+@media (prefers-reduced-motion: reduce) {
+	.ocb-hero__media--first { opacity: 1; transition: none; }
+	.ocb-hero--fade.is-live .ocb-hero__slide.is-on .ocb-hero__media { animation: none; }
 }
 
 @keyframes ocb-hero-settle {

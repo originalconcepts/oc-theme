@@ -105,6 +105,8 @@
 
 		function turn( wrapForward, wrapBack ) {
 			if ( fade ) {
+				// From the first turn on, the arriving slide settles in.
+				hero.classList.add( 'is-live' );
 				[].forEach.call( slides, function ( sl, i ) {
 					sl.classList.toggle( 'is-on', i === at );
 				} );
