@@ -603,8 +603,7 @@ final class Render {
 					. '<div class="ocb-hero__words">'
 					. ( '' === $slide['heading'] ? '' : '<h2>' . esc_html( (string) $slide['heading'] ) . '</h2>' )
 					. ( '' === $slide['text'] ? '' : '<p>' . esc_html( (string) $slide['text'] ) . '</p>' )
-				. ( '' === $slide['cta'] || '' === $slide['url'] ? '' : '<a class="ocb-hero__cta" href="' . esc_url( (string) $slide['url'] ) . '">' . esc_html( (string) $slide['cta'] ) . '</a>' )
-					. ( '' === trim( (string) ( $slide['cta2'] ?? '' ) ) || '' === (string) ( $slide['url2'] ?? '' ) ? '' : '<a class="ocb-hero__cta ocb-hero__cta--ghost" href="' . esc_url( (string) $slide['url2'] ) . '">' . esc_html( (string) $slide['cta2'] ) . '</a>' )
+				. self::hero_ctas( $slide )
 					. $under
 					. '</div>'
 					. $aside
@@ -748,6 +747,24 @@ final class Render {
 		return $html;
 	}
 
+
+	/**
+	 * The slide's one or two calls, side by side in a row of their own —
+	 * the words column stacks its children, so two buttons left loose in it
+	 * stood one under the other.
+	 *
+	 * @param array<string,mixed> $slide Slide.
+	 */
+	private static function hero_ctas( array $slide ): string {
+		$one = '' === $slide['cta'] || '' === $slide['url']
+			? ''
+			: '<a class="ocb-hero__cta" href="' . esc_url( (string) $slide['url'] ) . '">' . esc_html( (string) $slide['cta'] ) . '</a>';
+		$two = '' === trim( (string) ( $slide['cta2'] ?? '' ) ) || '' === (string) ( $slide['url2'] ?? '' )
+			? ''
+			: '<a class="ocb-hero__cta ocb-hero__cta--ghost" href="' . esc_url( (string) $slide['url2'] ) . '">' . esc_html( (string) $slide['cta2'] ) . '</a>';
+
+		return '' === $one . $two ? '' : '<div class="ocb-hero__ctas">' . $one . $two . '</div>';
+	}
 
 	/**
 	 * Words: a heading, a few lines, a button.

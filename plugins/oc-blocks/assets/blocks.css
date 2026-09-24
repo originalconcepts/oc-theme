@@ -570,6 +570,21 @@
 	margin-inline-start: 12px;
 }
 
+/* The calls share one row, wrapping on a narrow screen, and follow the
+ * words' alignment. The loose margins above stay for markup still cached
+ * from before the row existed. */
+.ocb-hero__ctas {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 12px;
+	margin-block-start: 18px;
+}
+.ocb-hero__ctas .ocb-hero__cta { margin: 0; }
+.ocb-hero--pos-cs .ocb-hero__ctas,
+.ocb-hero--pos-bs .ocb-hero__ctas,
+.ocb-hero--pos-ts .ocb-hero__ctas { justify-content: flex-start; }
+
 
 .ocb-hero__cta { animation-delay: .24s; }
 
