@@ -25,7 +25,7 @@ final class Media_Clean_Admin {
 	 * Draw it.
 	 */
 	public static function render(): void {
-		if ( ! current_user_can( 'manage_options' ) ) {
+		if ( ! current_user_can( Media_Clean::CAP ) ) {
 			wp_die( esc_html__( 'Not allowed.', 'oc-theme' ) );
 		}
 

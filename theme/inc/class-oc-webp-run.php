@@ -279,7 +279,7 @@ final class Webp_Run {
 	private function guard(): void {
 		check_ajax_referer( 'ocmc', 'nonce' );
 
-		if ( ! current_user_can( 'manage_options' ) ) {
+		if ( ! current_user_can( Media_Clean::CAP ) ) {
 			wp_send_json_error( array( 'why' => __( 'Not allowed.', 'oc-theme' ) ), 403 );
 		}
 	}

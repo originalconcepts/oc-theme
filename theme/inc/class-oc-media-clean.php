@@ -76,6 +76,14 @@ final class Media_Clean {
 	/**
 	 * Whether new uploads have their sizes built as WebP.
 	 */
+	/**
+	 * Who may open the two Media screens and run their jobs. The shop's
+	 * managers, as for every other screen of the theme: a shop manager can
+	 * already delete pictures one by one in the Library, so the cleanup
+	 * room hands them nothing they did not have — only a faster way.
+	 */
+	public const CAP = 'manage_woocommerce';
+
 	public const WEBP = 'oc_mclean_webp';
 
 	/**
@@ -206,7 +214,7 @@ final class Media_Clean {
 			'upload.php',
 			__( 'Media cleanup', 'oc-theme' ),
 			__( 'Media cleanup', 'oc-theme' ),
-			'manage_options',
+			Media_Clean::CAP,
 			'oc-media-clean',
 			array( $this, 'render' )
 		);
@@ -215,7 +223,7 @@ final class Media_Clean {
 			'upload.php',
 			__( 'Convert to WebP', 'oc-theme' ),
 			__( 'Convert to WebP', 'oc-theme' ),
-			'manage_options',
+			Media_Clean::CAP,
 			'oc-media-webp',
 			array( $this, 'render_webp' )
 		);
@@ -836,7 +844,7 @@ final class Media_Clean {
 	 * "Scan now" from the dashboard: queue the background scan and go back.
 	 */
 	public function scan_now(): void {
-		if ( ! current_user_can( 'manage_options' ) || ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_GET['_wpnonce'] ) ), 'ocmc_scan_now' ) ) {
+		if ( ! current_user_can( Media_Clean::CAP ) || ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_GET['_wpnonce'] ) ), 'ocmc_scan_now' ) ) {
 			wp_die( esc_html__( 'Not allowed.', 'oc-theme' ) );
 		}
 
@@ -2605,7 +2613,7 @@ final class Media_Clean {
 	 * The record of what was removed, as a spreadsheet.
 	 */
 	public function handle_csv(): void {
-		if ( ! current_user_can( 'manage_options' ) ) {
+		if ( ! current_user_can( Media_Clean::CAP ) ) {
 			wp_die( esc_html__( 'Not allowed.', 'oc-theme' ) );
 		}
 		check_admin_referer( 'ocmc_csv' );
@@ -2648,7 +2656,7 @@ final class Media_Clean {
 	 * Administrators only, and only with a fresh nonce.
 	 */
 	private function guard(): void {
-		if ( ! current_user_can( 'manage_options' ) ) {
+		if ( ! current_user_can( Media_Clean::CAP ) ) {
 			wp_send_json_error( array( 'message' => __( 'Not allowed.', 'oc-theme' ) ), 403 );
 		}
 		check_ajax_referer( 'ocmc' );
