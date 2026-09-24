@@ -256,17 +256,17 @@ final class Brand_Page {
 	/**
 	 * The description, or '' when the brand has none.
 	 *
-	 * @param \WP_Term $term  Brand.
-	 * @param string   $class Classes on the box.
+	 * @param \WP_Term $term Brand.
+	 * @param string   $css  Classes on the box.
 	 */
-	private static function description( \WP_Term $term, string $class ): string {
+	private static function description( \WP_Term $term, string $css ): string {
 		$desc = trim( (string) term_description( $term->term_id ) );
 
 		if ( '' === $desc ) {
 			return '';
 		}
 
-		return '<div class="' . esc_attr( $class ) . '">' . wp_kses_post( $desc ) . '</div>';
+		return '<div class="' . esc_attr( $css ) . '">' . wp_kses_post( $desc ) . '</div>';
 	}
 
 	/* ---------------------------------------------------------- admin */
@@ -324,10 +324,10 @@ final class Brand_Page {
 	/**
 	 * The description-placement row, shared with the category screen.
 	 *
-	 * @param string $current The term's own value, '' = as in Customize.
-	 * @param string $default What Customize says, for the first option.
+	 * @param string $current  The term's own value, '' = as in Customize.
+	 * @param string $fallback What Customize says, for the first option.
 	 */
-	public static function pos_row( string $current, string $default ): void {
+	public static function pos_row( string $current, string $fallback ): void {
 		?>
 		<tr class="form-field">
 			<th scope="row"><label for="_oc_desc_pos"><?php esc_html_e( 'Description position', 'oc-theme' ); ?></label></th>
@@ -336,7 +336,7 @@ final class Brand_Page {
 					<option value="" <?php selected( '', $current ); ?>>
 						<?php
 						/* translators: %s: the value Customize holds. */
-						echo esc_html( sprintf( __( 'As in Customize (%s)', 'oc-theme' ), $default ) );
+						echo esc_html( sprintf( __( 'As in Customize (%s)', 'oc-theme' ), $fallback ) );
 						?>
 					</option>
 					<option value="top" <?php selected( 'top', $current ); ?>><?php esc_html_e( 'Under the title', 'oc-theme' ); ?></option>

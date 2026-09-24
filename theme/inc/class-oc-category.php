@@ -635,9 +635,10 @@ class Category {
 	/**
 	 * Build the hero markup.
 	 *
-	 * @param \WP_Term            $term Category.
-	 * @param array<string,mixed> $h    Hero settings.
-	 * @param array<string,mixed> $sub  Sub-category settings.
+	 * @param \WP_Term            $term      Category.
+	 * @param array<string,mixed> $h         Hero settings.
+	 * @param array<string,mixed> $sub       Sub-category settings.
+	 * @param bool                $with_desc Description on the banner (false: it goes under the products).
 	 * @return string
 	 */
 	private static function render( \WP_Term $term, array $h, array $sub = array(), bool $with_desc = true ): string {
