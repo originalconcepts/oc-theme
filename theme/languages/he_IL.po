@@ -9778,3 +9778,84 @@ msgstr "מחליפה את הזמנה #%d שלא שולמה, שבוטלה כדי 
 
 msgid "How the checkout is laid out. Which fields are required, the phone rule and the stock hold are under Theme settings → Checkout."
 msgstr "איך הקופה מסודרת. אילו שדות חובה, כלל הטלפון ושריון המלאי נמצאים בהגדרות תבנית ← קופה."
+
+msgid "Description position"
+msgstr "מיקום התיאור"
+
+msgid "As in Customize (%s)"
+msgstr "כמו בהתאמה אישית (%s)"
+
+msgid "Text meant for search engines usually goes under the products, where it does not push them down."
+msgstr "טקסט שמיועד למנועי חיפוש בדרך כלל הולך מתחת למוצרים, שם הוא לא דוחף אותם למטה."
+
+msgid "Cut to %1$dpx on desktop and %2$dpx on phones, as set in Customize → Brand page."
+msgstr "נחתך ל‑%1$dpx בדסקטופ ו‑%2$dpx בנייד, כפי שנקבע בהתאמה אישית ← עמוד מותג."
+
+msgid "Shown whole, at its own height, as set in Customize → Brand page."
+msgstr "מוצג במלואו, בגובה שלו, כפי שנקבע בהתאמה אישית ← עמוד מותג."
+
+msgid "Brand page — banner"
+msgstr "עמוד מותג — באנר"
+
+msgid "Banner — desktop"
+msgstr "באנר — דסקטופ"
+
+msgid "Above everything on the brand page, edge to edge."
+msgstr "מעל הכל בעמוד המותג, מקצה לקצה."
+
+msgid "Banner — phone"
+msgstr "באנר — נייד"
+
+msgid "Optional. Without it, phones show the desktop picture."
+msgstr "לא חובה. בלעדיו הנייד מציג את תמונת הדסקטופ."
+
+msgid "The rule for every category; a category can choose for itself on its own screen. Brand pages have their own rule under Brand page."
+msgstr "הכלל לכל הקטגוריות; קטגוריה יכולה לבחור לעצמה במסך שלה. לעמודי מותג יש כלל משלהם תחת עמוד מותג."
+
+msgid "Brand page"
+msgstr "עמוד מותג"
+
+msgid "The page of one brand: its products, with its logo, its description and, when it has one, its banner. The pictures are chosen on each brand."
+msgstr "העמוד של מותג אחד: המוצרים שלו, עם הלוגו, התיאור, וכשיש — הבאנר. התמונות נבחרות בכל מותג."
+
+msgid "Logo and text"
+msgstr "לוגו וטקסט"
+
+msgid "Brand logo"
+msgstr "לוגו המותג"
+
+msgid "Above the text"
+msgstr "מעל הטקסט"
+
+msgid "Beside the text"
+msgstr "לצד הטקסט"
+
+msgid "Beside: the logo on the reading side and the name and description next to it; on a phone the text drops under the logo."
+msgstr "לצד: הלוגו בצד הקריאה והשם והתיאור לידו; בנייד הטקסט יורד מתחת ללוגו."
+
+msgid "Logo height (px)"
+msgstr "גובה הלוגו (px)"
+
+msgid "As the catalogue title"
+msgstr "כמו כותרת הקטלוג"
+
+msgid "The rule for every brand; a brand can choose for itself on its own screen. Long text folds to two lines with \"Read more\" either way."
+msgstr "הכלל לכל המותגים; מותג יכול לבחור לעצמו במסך שלו. טקסט ארוך מתקפל לשתי שורות עם \"קרא עוד\" בכל מקרה."
+
+msgid "The banner picture"
+msgstr "תמונת הבאנר"
+
+msgid "Shown whole, at its own height"
+msgstr "מוצגת במלואה, בגובה שלה"
+
+msgid "Cut to a fixed height"
+msgstr "נחתכת לגובה קבוע"
+
+msgid "Always above everything on the page, edge to edge. Each brand uploads a desktop picture and, if it likes, one for phones."
+msgstr "תמיד מעל הכל בעמוד, מקצה לקצה. כל מותג מעלה תמונה לדסקטופ, ואם רוצה — גם לנייד."
+
+msgid "Height — desktop (px)"
+msgstr "גובה — דסקטופ (px)"
+
+msgid "Height — phone (px)"
+msgstr "גובה — נייד (px)"

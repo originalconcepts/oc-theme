@@ -162,6 +162,7 @@ final class Customizer {
 		$this->cart_section( $wp_customize );
 		$this->search_section( $wp_customize );
 		$this->brands_section( $wp_customize );
+		$this->brand_page_section( $wp_customize );
 		$this->blog_section( $wp_customize );
 		$this->login_section( $wp_customize );
 	}
@@ -439,6 +440,107 @@ final class Customizer {
 
 		$this->number( $c, 'oc_brands_cols', 'oc_brands', __( 'Brands per row — desktop', 'oc-theme' ), 4, 1, 8 );
 		$this->number( $c, 'oc_brands_cols_m', 'oc_brands', __( 'Brands per row — phone', 'oc-theme' ), 2, 1, 4 );
+	}
+
+	/**
+	 * A brand's own page: the logo, the description, the banner.
+	 *
+	 * @param \WP_Customize_Manager $c     Customizer manager.
+	 */
+	private function brand_page_section( \WP_Customize_Manager $c ): void {
+		$sec = 'oc_brand_page';
+
+		$c->add_section(
+			$sec,
+			array(
+				'title'       => __( 'Brand page', 'oc-theme' ),
+				'description' => __( 'The page of one brand: its products, with its logo, its description and, when it has one, its banner. The pictures are chosen on each brand.', 'oc-theme' ),
+				'panel'       => 'oc_catalog_panel',
+				'priority'    => 13,
+			)
+		);
+
+		$this->heading( $c, 'oc_h_bp_head', $sec, __( 'Logo and text', 'oc-theme' ) );
+
+		$this->choice(
+			$c,
+			'oc_brand_logo_pos',
+			$sec,
+			__( 'Brand logo', 'oc-theme' ),
+			array(
+				'above'  => __( 'Above the text', 'oc-theme' ),
+				'beside' => __( 'Beside the text', 'oc-theme' ),
+				'hidden' => __( 'Hidden', 'oc-theme' ),
+			),
+			'above',
+			null,
+			__( 'Beside: the logo on the reading side and the name and description next to it; on a phone the text drops under the logo.', 'oc-theme' )
+		);
+
+		$this->number(
+			$c,
+			'oc_brand_logo_h',
+			$sec,
+			__( 'Logo height (px)', 'oc-theme' ),
+			72,
+			24,
+			300,
+			array(
+				'setting' => 'oc_brand_logo_pos',
+				'values'  => array( 'above', 'beside' ),
+			)
+		);
+
+		$this->choice(
+			$c,
+			'oc_brand_align',
+			$sec,
+			__( 'Alignment', 'oc-theme' ),
+			array(
+				'inherit' => __( 'As the catalogue title', 'oc-theme' ),
+				'start'   => __( 'Start', 'oc-theme' ),
+				'center'  => __( 'Centre', 'oc-theme' ),
+			),
+			'inherit'
+		);
+
+		$this->choice(
+			$c,
+			'oc_brand_desc_pos',
+			$sec,
+			__( 'Description position', 'oc-theme' ),
+			array(
+				'top'    => __( 'Under the title', 'oc-theme' ),
+				'bottom' => __( 'Under the products', 'oc-theme' ),
+			),
+			'top',
+			null,
+			__( 'The rule for every brand; a brand can choose for itself on its own screen. Long text folds to two lines with "Read more" either way.', 'oc-theme' )
+		);
+
+		$this->heading( $c, 'oc_h_bp_banner', $sec, __( 'Banner', 'oc-theme' ) );
+
+		$crop = array(
+			'setting' => 'oc_brand_banner_fit',
+			'values'  => array( 'crop' ),
+		);
+
+		$this->choice(
+			$c,
+			'oc_brand_banner_fit',
+			$sec,
+			__( 'The banner picture', 'oc-theme' ),
+			array(
+				'whole' => __( 'Shown whole, at its own height', 'oc-theme' ),
+				'crop'  => __( 'Cut to a fixed height', 'oc-theme' ),
+			),
+			'whole',
+			null,
+			__( 'Always above everything on the page, edge to edge. Each brand uploads a desktop picture and, if it likes, one for phones.', 'oc-theme' )
+		);
+
+		$this->number( $c, 'oc_brand_banner_h', $sec, __( 'Height — desktop (px)', 'oc-theme' ), 360, 100, 1200, $crop );
+		$this->number( $c, 'oc_brand_banner_hm', $sec, __( 'Height — phone (px)', 'oc-theme' ), 220, 80, 900, $crop );
 	}
 
 	/**
@@ -1677,7 +1779,9 @@ final class Customizer {
 				'top'    => __( 'Under the title', 'oc-theme' ),
 				'bottom' => __( 'Under the products', 'oc-theme' ),
 			),
-			'top'
+			'top',
+			null,
+			__( 'The rule for every category; a category can choose for itself on its own screen. Brand pages have their own rule under Brand page.', 'oc-theme' )
 		);
 
 		$this->number( $c, 'oc_catalog_fs', $section, __( 'Body text size (px)', 'oc-theme' ), 16, 12, 20 );

@@ -429,7 +429,9 @@ final class WooCommerce {
 		}
 
 		// Category description below the products instead of under the title.
-		if ( 'bottom' === get_theme_mod( 'oc_catalog_desc_pos', 'top' ) ) {
+		// A category may choose for itself (Category::place_desc) and a brand
+		// page has a rule of its own (Brand_Page).
+		if ( 'bottom' === get_theme_mod( 'oc_catalog_desc_pos', 'top' ) && ! Brand_Page::is_brand() ) {
 			remove_action( 'woocommerce_archive_description', 'woocommerce_taxonomy_archive_description', 10 );
 			remove_action( 'woocommerce_archive_description', 'woocommerce_product_archive_description', 10 );
 			add_action( 'woocommerce_after_main_content', 'woocommerce_taxonomy_archive_description', 5 );

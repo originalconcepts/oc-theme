@@ -39,6 +39,7 @@ class Category {
 	 * Wire the admin fields and the front-end hero.
 	 */
 	public function register(): void {
+		add_action( 'product_cat_edit_form_fields', array( $this, 'pos_field' ), 5 );
 		add_action( 'product_cat_edit_form_fields', array( $this, 'fields' ), 20 );
 		add_action( 'edited_product_cat', array( $this, 'save' ) );
 
@@ -48,7 +49,9 @@ class Category {
 
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_assets' ) );
 
-		add_action( 'wp', array( $this, 'setup' ) );
+		// After WooCommerce::runtime_hooks (priority 10), whose catalogue-wide
+		// description rule this page may overrule.
+		add_action( 'wp', array( $this, 'setup' ), 11 );
 
 		// Old saves pinned every category to the dropdowns' first values.
 		add_action( 'init', array( $this, 'migrate' ), 30 );
@@ -462,6 +465,16 @@ class Category {
 		$h       = self::hero( $term->term_id );
 		$sub     = self::subs( $term->term_id );
 		$hero_on = self::has_hero( $h );
+		$pos     = self::desc_pos( $term->term_id );
+
+		// Where the description goes: this category's own choice, else the
+		// catalogue's. Without a banner it is WooCommerce's own block that
+		// moves; with one, the banner keeps or gives up the text.
+		if ( ! $hero_on ) {
+			self::place_desc( $pos );
+		} elseif ( 'bottom' === $pos ) {
+			add_action( 'woocommerce_after_main_content', 'woocommerce_taxonomy_archive_description', 5 );
+		}
 
 		if ( self::lobby_page( $term->term_id ) > 0 ) {
 			// The lobby is the page. WooCommerce's "nothing found" note goes;
@@ -509,8 +522,8 @@ class Category {
 			// is priority 10 on the same hook).
 			add_action(
 				'woocommerce_before_main_content',
-				function () use ( $term, $h, $sub ): void {
-					echo self::render( $term, $h, $sub ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
+				function () use ( $term, $h, $sub, $pos ): void {
+					echo self::render( $term, $h, $sub, 'bottom' !== $pos ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
 				},
 				5
 			);
@@ -533,6 +546,55 @@ class Category {
 				15
 			);
 		}
+	}
+
+	/**
+	 * Where this category's description goes: its own choice, else the
+	 * catalogue's ("Category description position" in Customize).
+	 *
+	 * @param int $term_id Category.
+	 */
+	public static function desc_pos( int $term_id ): string {
+		$own = (string) get_term_meta( $term_id, '_oc_desc_pos', true );
+
+		if ( in_array( $own, array( 'top', 'bottom' ), true ) ) {
+			return $own;
+		}
+
+		return 'bottom' === get_theme_mod( 'oc_catalog_desc_pos', 'top' ) ? 'bottom' : 'top';
+	}
+
+	/**
+	 * Put WooCommerce's description block where this page wants it,
+	 * whatever the catalogue-wide rule did to it before.
+	 *
+	 * @param string $pos top|bottom.
+	 */
+	private static function place_desc( string $pos ): void {
+		remove_action( 'woocommerce_archive_description', 'woocommerce_taxonomy_archive_description', 10 );
+		remove_action( 'woocommerce_after_main_content', 'woocommerce_taxonomy_archive_description', 5 );
+
+		if ( 'bottom' === $pos ) {
+			add_action( 'woocommerce_after_main_content', 'woocommerce_taxonomy_archive_description', 5 );
+		} else {
+			add_action( 'woocommerce_archive_description', 'woocommerce_taxonomy_archive_description', 10 );
+		}
+	}
+
+	/**
+	 * Description under the title or under the products, right under the
+	 * description itself on the edit screen.
+	 *
+	 * @param \WP_Term $term The category.
+	 */
+	public function pos_field( $term ): void {
+		if ( ! $term instanceof \WP_Term ) {
+			return;
+		}
+
+		$default = 'bottom' === get_theme_mod( 'oc_catalog_desc_pos', 'top' ) ? __( 'Under the products', 'oc-theme' ) : __( 'Under the title', 'oc-theme' );
+
+		Brand_Page::pos_row( (string) get_term_meta( $term->term_id, '_oc_desc_pos', true ), $default );
 	}
 
 	/**
@@ -578,9 +640,9 @@ class Category {
 	 * @param array<string,mixed> $sub  Sub-category settings.
 	 * @return string
 	 */
-	private static function render( \WP_Term $term, array $h, array $sub = array() ): string {
+	private static function render( \WP_Term $term, array $h, array $sub = array(), bool $with_desc = true ): string {
 		$title = '<h1 class="oc-chero__title">' . esc_html( $term->name ) . '</h1>';
-		$desc  = trim( (string) term_description( $term->term_id ) );
+		$desc  = $with_desc ? trim( (string) term_description( $term->term_id ) ) : '';
 		$desc  = '' !== $desc ? '<div class="oc-chero__desc">' . wp_kses_post( $desc ) . '</div>' : '';
 
 		// Sub-categories with the text: they follow its alignment.
@@ -1561,6 +1623,7 @@ class Category {
 		// Core verifies the term-edit nonce before this fires.
 		// phpcs:disable WordPress.Security.NonceVerification.Missing
 
+		$this->save_enum( $term_id, '_oc_desc_pos', array( 'top', 'bottom' ) );
 		$this->save_enum( $term_id, '_oc_hero_layout', array( 'none', 'full', 'split' ) );
 		$this->save_int( $term_id, '_oc_hero_img' );
 		$this->save_int( $term_id, '_oc_hero_img_m' );
