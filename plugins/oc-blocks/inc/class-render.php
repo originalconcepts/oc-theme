@@ -731,7 +731,21 @@ final class Render {
 			$html .= '<div class="ocb-dots' . ( 'below' === (string) ( $s['dotsm'] ?? 'on' ) ? ' ocb-dots--below-m' : '' ) . '" data-ocb-dots data-ocb-dot-label="' . esc_attr( __( 'Slide %d', 'oc-blocks' ) ) . '"></div>';
 		}
 
-		return $html . '</div>';
+		$html .= '</div>';
+
+		// The gentle parallax gives the picture extra height and a small
+		// shift, worked out from the viewport. Left to blocks.js, which
+		// runs after the parse, that arrived as a jump on a warm cache: the
+		// picture stood at its plain size for a moment, then grew a fifth.
+		// A line run right here, while the page is still being parsed,
+		// draws the first frame the way the script will keep it.
+		$drift = Registry::snap( (int) $s['parallax'], array( 0, 30, 100 ) );
+
+		if ( $drift > 0 && ( 100 !== $drift || 'fade' === (string) $s['effect'] ) ) {
+			$html .= '<script>(function(h){if(!h||matchMedia("(prefers-reduced-motion: reduce)").matches){return;}h.querySelectorAll("[data-ocb-parallax]").forEach(function(m){if("fixed"===getComputedStyle(m).position){return;}var b=m.parentElement.getBoundingClientRect();if(b.height<4){return;}var f=(parseInt(m.dataset.ocbParallax,10)||30)/100,H=Math.round(b.height+f*(innerHeight-b.height)),y=(-f*b.top).toFixed(1),mv=m.firstElementChild||m;mv.__ocbH=H;mv.style.blockSize=H+"px";mv.__ocbY=y;mv.style.transform="translate3d(0,"+y+"px,0)";});})(document.currentScript.previousElementSibling);</script>';
+		}
+
+		return $html;
 	}
 
 
