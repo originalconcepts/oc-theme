@@ -6720,7 +6720,8 @@ html:not([dir]) .oc-cartup__items--h.oc-fade-end {
 	gap: 14px;
 	margin-block-end: var(--oc-gap);
 }
-.oc-bhead__logo-img { display: block; block-size: var(--bh-logo, 72px); inline-size: auto; max-inline-size: 100%; }
+/* Two classes deep: WooCommerce's ".woocommerce img { height: auto }" outranks one. */
+.oc-bhead .oc-bhead__logo-img { display: block; block-size: var(--bh-logo, 72px); inline-size: auto; max-inline-size: 100%; }
 .oc-bhead__words { min-inline-size: 0; }
 .oc-bhead__title { margin: 0 0 .35em; }
 .oc-bhead__words .oc-archive-desc { margin-block-start: 0; }
