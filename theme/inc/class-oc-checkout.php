@@ -53,6 +53,7 @@ final class Checkout {
 				'help_text'       => '',      // Header help line ("Need help? 077…").
 				'multi_address'   => 0,       // Packed logged-in checkout + address book.
 				'reorder'         => 1,       // "Order again" button on the orders list.
+				'hold_guard'      => 1,       // The shopper's own unpaid order gives way (Checkout_Hold).
 			)
 		);
 	}
@@ -129,8 +130,9 @@ final class Checkout {
 
 		add_action( 'wp_enqueue_scripts', array( $this, 'side_bg_css' ), 40 );
 
-		// The knobs live in the Customizer (Customizer::checkout_section);
-		// this class only reads what they store.
+		// The knobs live in the Customizer (Customizer::checkout_section) and
+		// under Theme settings → Checkout (Checkout_Admin); this class only
+		// reads what they store.
 	}
 
 	/**

@@ -9726,3 +9726,55 @@ msgstr "%s ביקורים ב‑30 הימים האחרונים. הכללים כא
 
 msgid "Shown while the last 30 days hold fewer than 100 visits and no rule has anything to report."
 msgstr "מוצג כל עוד ב‑30 הימים האחרונים יש פחות מ‑100 ביקורים ואף כלל לא מצא דבר."
+
+msgctxt "settings screen"
+msgid "Checkout"
+msgstr "קופה"
+
+msgid "How the checkout looks — the summary column, the coupon field, the button — is set in %s."
+msgstr "איך הקופה נראית — עמודת הסיכום, שדה הקופון, הכפתור — נקבע ב%s."
+
+msgid "Customize → Checkout page"
+msgstr "התאמה אישית ← קופה"
+
+msgid "Required for delivery"
+msgstr "חובה במשלוח"
+
+msgid "The fields are always shown; this is only whether they may be left empty. Collecting from a branch never requires them."
+msgstr "השדות תמיד מוצגים; כאן נקבע רק אם מותר להשאיר אותם ריקים. באיסוף מסניף הם אף פעם לא חובה."
+
+msgid "Digits"
+msgstr "ספרות"
+
+msgid "Counted after everything that is not a digit is dropped, so \"052-123 4567\" is ten digits. 0 on either side means no limit there. Applies to the shopper's phone and to a recipient's phones."
+msgstr "נספרות אחרי שמורידים כל מה שאינו ספרה, כך ש\"052-123 4567\" הן עשר ספרות. 0 בצד כלשהו = בלי מגבלה שם. חל על הטלפון של המזמין ועל הטלפונים של הנמען."
+
+msgid "Stock held by an unpaid order"
+msgstr "מלאי שמוחזק על ידי הזמנה שלא שולמה"
+
+msgid "The shopper's own hold"
+msgstr "השריון של הלקוח עצמו"
+
+msgid "A shopper's own unpaid order never blocks them from ordering again"
+msgstr "הזמנה שלא שולמה של הלקוח לעולם לא חוסמת אותו מלהזמין שוב"
+
+msgid "When \"place order\" is pressed, WooCommerce creates an unpaid order and holds its stock for a while. A shopper who comes back from the payment page to add something to the cart is still holding that stock through their own order, and with one unit left WooCommerce refuses the new order: \"not enough in stock\". With this on, the earlier unpaid order of the same shopper is cancelled quietly (no e-mail) the moment the new one is created, and its hold is released. Works with every payment method, since it happens before payment."
+msgstr "בלחיצה על \"שליחת הזמנה\" ווקומרס יוצר הזמנה שלא שולמה ומשריין לה מלאי לזמן מוגבל. לקוח שחוזר מעמוד התשלום כדי להוסיף משהו לסל עדיין מחזיק את המלאי הזה דרך ההזמנה שלו עצמו, וכשנשארה יחידה אחת ווקומרס מסרב להזמנה החדשה: \"אין מספיק במלאי\". כשזה פעיל, ההזמנה הקודמת שלא שולמה של אותו לקוח מבוטלת בשקט (בלי מייל) ברגע שהחדשה נוצרת, והשריון שלה משתחרר. עובד עם כל שיטת תשלום, כי זה קורה לפני התשלום."
+
+msgid "WooCommerce holds stock for %1$d minutes per unpaid order (%2$s)."
+msgstr "ווקומרס משריין מלאי למשך %1$d דקות לכל הזמנה שלא שולמה (%2$s)."
+
+msgid "WooCommerce → Settings → Products → Inventory"
+msgstr "ווקומרס ← הגדרות ← מוצרים ← מלאי"
+
+msgid "Stock management is off in WooCommerce, so no stock is held and this setting has nothing to do."
+msgstr "ניהול מלאי כבוי בווקומרס, ולכן שום מלאי לא משוריין ולהגדרה הזו אין מה לעשות."
+
+msgid "Replaced by order #%d: the shopper changed the cart before paying. The stock this order held is released."
+msgstr "הוחלפה בהזמנה #%d: הלקוח שינה את הסל לפני התשלום. המלאי שההזמנה הזו שריינה שוחרר."
+
+msgid "Takes the place of unpaid order #%d, cancelled so that its stock hold would not block this one."
+msgstr "מחליפה את הזמנה #%d שלא שולמה, שבוטלה כדי ששריון המלאי שלה לא יחסום את ההזמנה הזו."
+
+msgid "How the checkout is laid out. Which fields are required, the phone rule and the stock hold are under Theme settings → Checkout."
+msgstr "איך הקופה מסודרת. אילו שדות חובה, כלל הטלפון ושריון המלאי נמצאים בהגדרות תבנית ← קופה."

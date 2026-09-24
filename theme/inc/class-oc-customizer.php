@@ -3787,7 +3787,7 @@ final class Customizer {
 	 * Checkout: the flow's shape, which is decided when the shop is built.
 	 *
 	 * Every control here binds straight into the existing `oc_checkout`
-	 * option — the same array the Checkout admin screen reads and writes. The
+	 * option — the same array the Checkout settings screen reads and writes. The
 	 * storage does not move, so nothing needs migrating and no saved value is
 	 * at risk; only where the knobs live changes.
 	 *
@@ -3798,7 +3798,7 @@ final class Customizer {
 			'oc_checkout',
 			array(
 				'title'       => __( 'Checkout page', 'oc-theme' ),
-				'description' => __( 'How the checkout is laid out. Texts the shop edits day to day stay under Theme settings.', 'oc-theme' ),
+				'description' => __( 'How the checkout is laid out. Which fields are required, the phone rule and the stock hold are under Theme settings → Checkout.', 'oc-theme' ),
 				'priority'    => 20,
 				'panel'       => 'oc_checkout_panel',
 			)
@@ -3862,18 +3862,9 @@ final class Customizer {
 			)
 		);
 
-		$this->heading( $c, 'oc_h_ck_addr', 'oc_checkout', __( 'Address fields', 'oc-theme' ) );
-		$this->opt_toggle( $c, $o, 'apt_required', 'oc_checkout', __( 'Apartment is required', 'oc-theme' ), false );
-		$this->opt_toggle( $c, $o, 'floor_required', 'oc_checkout', __( 'Floor is required', 'oc-theme' ), false );
-		$this->opt_toggle( $c, $o, 'entry_required', 'oc_checkout', __( 'Entry code is required', 'oc-theme' ), false );
-
 		$this->heading( $c, 'oc_h_ck_pack', 'oc_checkout', __( 'Signed-in checkout & address book', 'oc-theme' ) );
 		$this->opt_toggle( $c, $o, 'multi_address', 'oc_checkout', __( 'Pack a signed-in shopper\'s details and let them keep several saved addresses', 'oc-theme' ), false );
 		$this->opt_toggle( $c, $o, 'reorder', 'oc_checkout', __( 'Show an "Order again" button on the orders list', 'oc-theme' ), true );
-
-		$this->heading( $c, 'oc_h_ck_phone', 'oc_checkout', __( 'Phone validation', 'oc-theme' ) );
-		$this->opt_number( $c, $o, 'phone_min', 'oc_checkout', __( 'Digits from', 'oc-theme' ), 9, 0, 20 );
-		$this->opt_number( $c, $o, 'phone_max', 'oc_checkout', __( 'Digits to', 'oc-theme' ), 10, 0, 20 );
 
 		$this->heading( $c, 'oc_h_ck_fields', 'oc_checkout', __( 'Fields & extras', 'oc-theme' ) );
 		$this->opt_toggle( $c, $o, 'notes', 'oc_checkout', __( 'Order notes', 'oc-theme' ), true );
