@@ -212,16 +212,16 @@ final class Checkout_Hold {
 	 * failed), and belongs to the same shopper: the same signed-in
 	 * customer, or the same billing e-mail for a guest.
 	 *
-	 * @param int[]                                        $ids  Candidate order ids, zeros allowed.
-	 * @param array{id:int,status:string,customer:int,email:string} $new  The new order's facts.
-	 * @param callable(int):(array|null)                    $load Loads the same facts for an id, or null.
+	 * @param int[]               $ids   Candidate order ids, zeros allowed.
+	 * @param array<string,mixed> $fresh The new order's facts: id, status, customer, email.
+	 * @param callable            $load  Loads the same facts for an id, or null.
 	 * @return int[] Ids to cancel, each once, in the order given.
 	 */
-	public static function stale( array $ids, array $new, callable $load ): array {
+	public static function stale( array $ids, array $fresh, callable $load ): array {
 		$out = array();
 
 		foreach ( array_unique( array_filter( array_map( 'intval', $ids ) ) ) as $id ) {
-			if ( $id === (int) $new['id'] ) {
+			if ( $id === (int) $fresh['id'] ) {
 				continue;
 			}
 
@@ -231,8 +231,8 @@ final class Checkout_Hold {
 				continue;
 			}
 
-			$same = ( $old['customer'] > 0 && $old['customer'] === (int) $new['customer'] )
-				|| ( '' !== $old['email'] && strtolower( $old['email'] ) === strtolower( (string) $new['email'] ) );
+			$same = ( $old['customer'] > 0 && $old['customer'] === (int) $fresh['customer'] )
+				|| ( '' !== $old['email'] && strtolower( $old['email'] ) === strtolower( (string) $fresh['email'] ) );
 
 			if ( $same ) {
 				$out[] = $id;
