@@ -214,7 +214,7 @@ final class Media_Clean {
 			'upload.php',
 			__( 'Media cleanup', 'oc-theme' ),
 			__( 'Media cleanup', 'oc-theme' ),
-			Media_Clean::CAP,
+			self::CAP,
 			'oc-media-clean',
 			array( $this, 'render' )
 		);
@@ -223,7 +223,7 @@ final class Media_Clean {
 			'upload.php',
 			__( 'Convert to WebP', 'oc-theme' ),
 			__( 'Convert to WebP', 'oc-theme' ),
-			Media_Clean::CAP,
+			self::CAP,
 			'oc-media-webp',
 			array( $this, 'render_webp' )
 		);
@@ -844,7 +844,7 @@ final class Media_Clean {
 	 * "Scan now" from the dashboard: queue the background scan and go back.
 	 */
 	public function scan_now(): void {
-		if ( ! current_user_can( Media_Clean::CAP ) || ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_GET['_wpnonce'] ) ), 'ocmc_scan_now' ) ) {
+		if ( ! current_user_can( self::CAP ) || ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_GET['_wpnonce'] ) ), 'ocmc_scan_now' ) ) {
 			wp_die( esc_html__( 'Not allowed.', 'oc-theme' ) );
 		}
 
@@ -2613,7 +2613,7 @@ final class Media_Clean {
 	 * The record of what was removed, as a spreadsheet.
 	 */
 	public function handle_csv(): void {
-		if ( ! current_user_can( Media_Clean::CAP ) ) {
+		if ( ! current_user_can( self::CAP ) ) {
 			wp_die( esc_html__( 'Not allowed.', 'oc-theme' ) );
 		}
 		check_admin_referer( 'ocmc_csv' );
@@ -2656,7 +2656,7 @@ final class Media_Clean {
 	 * Administrators only, and only with a fresh nonce.
 	 */
 	private function guard(): void {
-		if ( ! current_user_can( Media_Clean::CAP ) ) {
+		if ( ! current_user_can( self::CAP ) ) {
 			wp_send_json_error( array( 'message' => __( 'Not allowed.', 'oc-theme' ) ), 403 );
 		}
 		check_ajax_referer( 'ocmc' );
