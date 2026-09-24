@@ -232,22 +232,8 @@
 	if ( S.b ) { hit( 'brand', S.b ); }
 	if ( S.co ) { hit( 'checkout', 0 ); }
 
-	document.addEventListener( 'oc:added', function ( e ) { hit( 'atc', e.detail && e.detail.productId ); } );
-	document.body.addEventListener( 'oc-added-to-cart', function ( e ) { hit( 'atc', e.detail && e.detail.id ); } );
-
-	if ( window.jQuery ) {
-		window.jQuery( document.body ).on( 'added_to_cart', function ( e, fragments, hash, btn ) {
-			var b = btn && btn.jquery ? btn : window.jQuery( btn );
-			hit( 'atc', b && b.data ? b.data( 'product_id' ) : 0 );
-		} );
-	}
-
-	// The classic add-to-cart form on a product page submits the page.
-	var form = document.querySelector( 'form.cart' );
-
-	if ( form && S.p ) {
-		form.addEventListener( 'submit', function () { hit( 'atc', S.p ); } );
-	}
+	// Adding to the cart is counted on the server (Track::added), whatever
+	// put it there; the page script no longer reports it.
 }() );
 
 /* ---------- heat map ----------

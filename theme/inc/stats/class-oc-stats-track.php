@@ -79,6 +79,13 @@ final class Track {
 		// A sale is a hit too, once, when the order is paid or in hand.
 		add_action( 'woocommerce_order_status_processing', array( $this, 'purchase' ) );
 		add_action( 'woocommerce_order_status_completed', array( $this, 'purchase' ) );
+
+		// Adding to the cart is counted here, on the server, whatever put it
+		// there: the shop's own button, a theme's quick-add, a form the
+		// theme submits itself, the Store API. Counted in the page script it
+		// hung on events a theme may never fire — one shop reached 87
+		// checkouts in a day with two add-to-carts on record.
+		add_action( 'woocommerce_add_to_cart', array( $this, 'added' ), 10, 4 );
 	}
 
 	/* ------------------------------------------------------------ pure */
@@ -450,6 +457,53 @@ final class Track {
 		);
 
 		return $res;
+	}
+
+	/**
+	 * Something went into the cart: one 'atc' event for the session that
+	 * did it, against the product (the parent, for a variation).
+	 *
+	 * @param string $key          Cart item key.
+	 * @param int    $product_id   Product.
+	 * @param int    $quantity     Quantity.
+	 * @param int    $variation_id Variation, or 0.
+	 */
+	public function added( $key, $product_id, $quantity = 1, $variation_id = 0 ): void {
+		unset( $key, $quantity, $variation_id );
+
+		$sid = isset( $_COOKIE[ self::SID ] ) ? strtolower( sanitize_text_field( wp_unslash( $_COOKIE[ self::SID ] ) ) ) : '';
+
+		if ( ! preg_match( '/^[a-f0-9]{24}$/', $sid ) ) {
+			return;
+		}
+
+		$ua = isset( $_SERVER['HTTP_USER_AGENT'] ) ? (string) wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- only matched against patterns, never stored.
+		$ip = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
+
+		if ( self::is_bot( $ua ) || in_array( $ip, Settings::excluded_ips(), true ) || ! self::may_count() ) {
+			return;
+		}
+
+		$channel = isset( $_COOKIE[ self::SRC ] ) ? sanitize_text_field( wp_unslash( $_COOKIE[ self::SRC ] ) ) : '';
+
+		self::install();
+
+		global $wpdb;
+
+		$wpdb->insert( // phpcs:ignore WordPress.DB.DirectDatabaseQuery -- our own table.
+			self::events_table(),
+			array(
+				'day'     => wp_date( 'Y-m-d' ),
+				't'       => wp_date( 'Y-m-d H:i:s' ),
+				'sid'     => $sid,
+				'type'    => 'atc',
+				'obj'     => absint( $product_id ),
+				'device'  => self::device( $ua ),
+				'channel' => in_array( $channel, self::CHANNELS, true ) ? $channel : 'direct',
+				'val'     => 0,
+			),
+			array( '%s', '%s', '%s', '%s', '%d', '%s', '%s', '%f' )
+		);
 	}
 
 	/* ------------------------------------------------------------ orders */
