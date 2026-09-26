@@ -580,6 +580,10 @@ final class Search_Index {
 			self::add( $bag, self::F_SYN, (string) $word );
 		}
 
+		foreach ( self::extra_texts( $product_id, 'product', $s ) as $extra ) {
+			self::add( $bag, $extra['field'], $extra['text'], $extra['limit'] );
+		}
+
 		$wpdb->delete( self::words(), array( 'object_id' => $product_id ), array( '%d' ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 
 		self::write_words( $product_id, 'product', $bag );
@@ -637,6 +641,10 @@ final class Search_Index {
 		self::add( $bag, self::F_POST, $post->post_excerpt, 40 );
 		self::add( $bag, self::F_POST, $post->post_content, 120 );
 
+		foreach ( self::extra_texts( $post_id, $kind, $s ) as $extra ) {
+			self::add( $bag, $extra['field'], $extra['text'], $extra['limit'] );
+		}
+
 		$wpdb->delete( self::words(), array( 'object_id' => $post_id ), array( '%d' ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 
 		self::write_words( $post_id, $kind, $bag );
@@ -659,6 +667,51 @@ final class Search_Index {
 			),
 			array( '%d', '%s', '%s', '%s', '%f', '%d', '%d', '%d', '%d', '%d', '%d', '%d' )
 		);
+	}
+
+	/**
+	 * Words another plugin wants findable for an object, beside its own.
+	 * OC Lang answers with every translation of the title, the text and
+	 * the category names, so a shopper searching in English finds the
+	 * product whose stored title is Hebrew. Each entry is checked: a known
+	 * field, a string, a limit.
+	 *
+	 * @param int                 $object_id Post id.
+	 * @param string              $kind      product, post or page.
+	 * @param array<string,mixed> $settings  Search settings, so a caller can honour "where to look".
+	 * @return array<int,array{field:int,text:string,limit:int}>
+	 */
+	private static function extra_texts( int $object_id, string $kind, array $settings ): array {
+		$known = array( self::F_TITLE, self::F_SKU, self::F_CAT, self::F_ATTR, self::F_TAG, self::F_DESC, self::F_SYN, self::F_BRAND, self::F_POST );
+		$out   = array();
+
+		/**
+		 * Extra texts to index for an object.
+		 *
+		 * @param array<int,array{field:int,text:string,limit?:int}> $texts     Entries to add.
+		 * @param int                                                 $object_id Post id.
+		 * @param string                                              $kind      product, post or page.
+		 * @param array<string,mixed>                                 $settings  Search settings.
+		 */
+		foreach ( (array) apply_filters( 'oc_search_extra_texts', array(), $object_id, $kind, $settings ) as $extra ) {
+			if ( ! is_array( $extra ) || ! isset( $extra['field'], $extra['text'] ) || ! is_string( $extra['text'] ) ) {
+				continue;
+			}
+
+			$field = (int) $extra['field'];
+
+			if ( '' === trim( $extra['text'] ) || ! in_array( $field, $known, true ) ) {
+				continue;
+			}
+
+			$out[] = array(
+				'field' => $field,
+				'text'  => $extra['text'],
+				'limit' => max( 0, (int) ( $extra['limit'] ?? 0 ) ),
+			);
+		}
+
+		return $out;
 	}
 
 	/**
