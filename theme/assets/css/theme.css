@@ -8324,8 +8324,8 @@ body.oc-no-qty.single-product div.product form.cart .woocommerce-variation-add-t
 .oc-flags--left { left: 10px; }
 .oc-flags--right { right: 10px; }
 
-.oc-flags--left > * { margin-right: auto; }
-.oc-flags--right > * { margin-left: auto; }
+.oc-flags--left > * { margin-right: auto; } /* guard-ok: a physical side the admin picked */
+.oc-flags--right > * { margin-left: auto; } /* guard-ok: a physical side the admin picked */
 
 .woocommerce ul.products li.product .oc-flags .onsale,
 .oc-flags .onsale {
@@ -11366,15 +11366,15 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 /* Woo's own variation list yields to ours */
 .oc-checkout td.product-name .variation { display: none; }
 
-/* prices hug the left edge, and never break inside a number: the total
+/* prices hug the end edge (left in Hebrew, right in English), and never break inside a number: the total
  * came out as "3,797.1" over a lone "0", pushing "incl. VAT" away */
 .oc-checkout #order_review table.shop_table td.product-total,
-.oc-checkout #order_review table.shop_table tfoot td { text-align: left; white-space: nowrap; }
+.oc-checkout #order_review table.shop_table tfoot td { text-align: end; white-space: nowrap; }
 .oc-checkout #order_review table.shop_table tfoot th { inline-size: auto; }
 
 .oc-checkout #order_review tr.woocommerce-shipping-totals { display: none; }
 
-.oc-checkout tr.oc-co-shiprow2 td { text-align: left; white-space: nowrap; }
+.oc-checkout tr.oc-co-shiprow2 td { text-align: end; white-space: nowrap; }
 
 /* Waiting for an address: a reason, not a figure. Quieter than a price and
  * allowed to wrap, because it is a sentence. */
@@ -11411,7 +11411,7 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 }
 
 .oc-checkout tr.oc-co-disc td,
-.oc-checkout tr.fee td { text-align: left; }
+.oc-checkout tr.fee td { text-align: end; }
 
 .oc-co-disc__x {
 	border: 0;
@@ -15723,7 +15723,7 @@ p.no-comments {
 }
 
 .oc-checkout .woocommerce-checkout-review-order-table tr.fee th { text-align: start !important; }
-.oc-checkout .woocommerce-checkout-review-order-table tr.fee td { text-align: left !important; }
+.oc-checkout .woocommerce-checkout-review-order-table tr.fee td { text-align: end !important; }
 
 /* The amount keeps its own direction so the currency sits where it
  * should, but not the plugin's size and weight. */
@@ -15933,7 +15933,7 @@ p.no-comments {
 .oc-cookie-table { overflow-x: auto; margin-block: 12px 20px; }
 .oc-cookie-table table { inline-size: 100%; border-collapse: collapse; font-size: .9rem; }
 .oc-cookie-table th, .oc-cookie-table td { padding: 8px 10px; border-block-end: 1px solid var(--oc-line, rgba(0, 0, 0, .1)); text-align: start; vertical-align: top; }
-.oc-cookie-table__names { direction: ltr; text-align: left; font-family: monospace; font-size: .8rem; }
+.oc-cookie-table__names { direction: ltr; text-align: left; font-family: monospace; font-size: .8rem; } /* guard-ok: forced-LTR content */
 .oc-cookie-table__open, .oc-privacy-req button { font: inherit; cursor: pointer; border-radius: var(--oc-radius, 8px); padding: 9px 16px; border: 1px solid transparent; }
 .oc-privacy-req input[type="email"] { inline-size: min(100%, 360px); padding: 8px 10px; border: 1px solid var(--oc-line, rgba(0, 0, 0, .2)); border-radius: var(--oc-radius, 8px); }
 .oc-privacy-req__msg { padding: 10px 12px; border-inline-start: 3px solid var(--oc-primary, #111); background: var(--oc-surface-2, rgba(0, 0, 0, .04)); }
