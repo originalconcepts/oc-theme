@@ -2286,7 +2286,7 @@ final class Registry {
 	}
 
 	/**
-	 * Give every composed post its identities, two hundred per admin request
+	 * Give every composed post its identities, a hundred per admin request
 	 * until none are left. A page read on the front end heals itself anyway;
 	 * this reaches the ones nobody has opened since the ids arrived.
 	 */
@@ -2295,12 +2295,13 @@ final class Registry {
 			return;
 		}
 
+		$batch  = 100;
 		$offset = (int) get_option( 'oc_blocks_uids_offset', 0 );
 		$ids    = get_posts(
 			array(
 				'post_type'        => Render::composable_types(),
 				'post_status'      => 'any',
-				'posts_per_page'   => 200,
+				'posts_per_page'   => $batch,
 				'offset'           => $offset,
 				'orderby'          => 'ID',
 				'order'            => 'ASC',
@@ -2320,14 +2321,14 @@ final class Registry {
 			}
 		}
 
-		if ( count( $ids ) < 200 ) {
+		if ( count( $ids ) < $batch ) {
 			update_option( 'oc_blocks_uids', '1', true );
 			delete_option( 'oc_blocks_uids_offset' );
 
 			return;
 		}
 
-		update_option( 'oc_blocks_uids_offset', $offset + 200, false );
+		update_option( 'oc_blocks_uids_offset', $offset + $batch, false );
 	}
 
 	/**
