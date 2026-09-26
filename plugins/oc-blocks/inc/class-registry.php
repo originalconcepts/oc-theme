@@ -26,6 +26,53 @@ final class Registry {
 	public const META = '_oc_sections';
 
 	/**
+	 * The key a section's identity is stored under: 32 hex characters,
+	 * minted the first time the section is saved and kept for as long as it
+	 * exists. Editing, reordering and re-saving never touch it. Anything that
+	 * needs to point at "this section" — a translation of its heading, say —
+	 * points at the uid, never at its position in the list, which moves the
+	 * moment someone drags a card.
+	 */
+	public const UID = 'uid';
+
+	/**
+	 * Whether a value is a uid we minted.
+	 *
+	 * @param mixed $value Candidate.
+	 */
+	public static function is_uid( $value ): bool {
+		return is_string( $value ) && 1 === preg_match( '/^[0-9a-f]{32}$/', $value );
+	}
+
+	/**
+	 * A fresh identity.
+	 */
+	public static function mint(): string {
+		return str_replace( '-', '', wp_generate_uuid4() );
+	}
+
+	/**
+	 * A section's or row's uid: its own when it carries a valid one nobody
+	 * else on the page has claimed, a fresh one otherwise. The second case
+	 * is how a new section gets its identity, and how a pasted copy of an
+	 * existing one gets its own instead of sharing.
+	 *
+	 * @param array<string,mixed> $item Section or row, raw.
+	 * @param array<string,true>  $seen Uids already claimed on this page; updated.
+	 */
+	private static function uid_for( array $item, array &$seen ): string {
+		$uid = $item[ self::UID ] ?? '';
+
+		if ( ! self::is_uid( $uid ) || isset( $seen[ $uid ] ) ) {
+			$uid = self::mint();
+		}
+
+		$seen[ $uid ] = true;
+
+		return $uid;
+	}
+
+	/**
 	 * The shell every section wears: visibility, width, background, spacing
 	 * and entrance. Declared once, inherited by every type.
 	 *
@@ -1976,7 +2023,8 @@ final class Registry {
 
 	/**
 	 * Bring a stored or posted structure back to something the renderer can
-	 * trust: known types, known values, and nothing else.
+	 * trust: known types, known values, and nothing else — plus a uid on
+	 * every section and repeater row, kept when it arrives, minted when not.
 	 *
 	 * @param array<int|string,mixed> $raw Sections.
 	 * @return array<int,array<string,mixed>>
@@ -1985,6 +2033,7 @@ final class Registry {
 		$types = self::types();
 		$shell = self::shell();
 		$out   = array();
+		$seen  = array();
 
 		foreach ( $raw as $section ) {
 			if ( ! is_array( $section ) ) {
@@ -1997,7 +2046,10 @@ final class Registry {
 				continue;
 			}
 
-			$clean = array( 'type' => $type );
+			$clean = array(
+				'type'    => $type,
+				self::UID => self::uid_for( $section, $seen ),
+			);
 
 			foreach ( $shell as $key => $field ) {
 				$clean[ $key ] = self::clean_field( $field, $section[ $key ] ?? ( $field['def'] ?? '' ) );
@@ -2127,13 +2179,16 @@ final class Registry {
 
 			case 'slides':
 				$rows = array();
+				$seen = array();
 
 				foreach ( (array) $value as $row ) {
 					if ( ! is_array( $row ) ) {
 						continue;
 					}
 
-					$clean = array();
+					// A row keeps its identity through edits and reorders,
+					// exactly as a section does.
+					$clean = array( self::UID => self::uid_for( $row, $seen ) );
 
 					foreach ( (array) ( $field['sub'] ?? array() ) as $key => $sub ) {
 						$clean[ $key ] = self::clean_field( $sub, $row[ $key ] ?? ( $sub['def'] ?? '' ) );
@@ -2157,15 +2212,140 @@ final class Registry {
 	}
 
 	/**
-	 * A page's sections, cleaned.
+	 * A page's sections for the front end: stored, cleaned, then offered to
+	 * whoever wants to rewrite them on the way out — a translation plugin
+	 * swapping a heading for its English, say. The editor never comes
+	 * through here; it works on stored(), so it only ever sees the original.
 	 *
 	 * @param int $page_id Page id.
 	 * @return array<int,array<string,mixed>>
 	 */
 	public static function sections( int $page_id ): array {
+		/**
+		 * The cleaned sections of a page, on their way to the renderer.
+		 *
+		 * @param array<int,array<string,mixed>> $sections Sections, each carrying its uid.
+		 * @param int                             $page_id  Page id.
+		 */
+		return (array) apply_filters( 'oc_blocks_sections', self::stored( $page_id ), $page_id );
+	}
+
+	/**
+	 * A page's sections as stored, cleaned — the composer's copy.
+	 *
+	 * A page saved before sections had identities gets them the first time
+	 * it is read, and they are written back at once, so every read after
+	 * sees the same ids. Nothing else about the stored page changes.
+	 *
+	 * @param int $page_id Page id.
+	 * @return array<int,array<string,mixed>>
+	 */
+	public static function stored( int $page_id ): array {
 		$raw = get_post_meta( $page_id, self::META, true );
 
-		return is_array( $raw ) ? self::clean( $raw ) : array();
+		return is_array( $raw ) ? self::clean( self::heal( $page_id, $raw ) ) : array();
+	}
+
+	/**
+	 * The stored structure with a uid on every section and every repeater
+	 * row that lacks one. Everything else is left byte for byte as it was,
+	 * so writing the result back changes nothing but the identities.
+	 *
+	 * @param array<int|string,mixed> $raw Stored sections.
+	 * @return array<int|string,mixed>
+	 */
+	public static function ensure_uids( array $raw ): array {
+		$types = self::types();
+		$seen  = array();
+
+		foreach ( $raw as $i => $section ) {
+			if ( ! is_array( $section ) ) {
+				continue;
+			}
+
+			$raw[ $i ][ self::UID ] = self::uid_for( $section, $seen );
+
+			$type = isset( $section['type'] ) ? (string) $section['type'] : '';
+
+			foreach ( (array) ( $types[ $type ]['fields'] ?? array() ) as $key => $field ) {
+				if ( 'slides' !== ( $field['type'] ?? '' ) || ! isset( $section[ $key ] ) || ! is_array( $section[ $key ] ) ) {
+					continue;
+				}
+
+				$rows = array();
+
+				foreach ( $section[ $key ] as $j => $row ) {
+					if ( is_array( $row ) ) {
+						$raw[ $i ][ $key ][ $j ][ self::UID ] = self::uid_for( $row, $rows );
+					}
+				}
+			}
+		}
+
+		return $raw;
+	}
+
+	/**
+	 * Give every composed post its identities, two hundred per admin request
+	 * until none are left. A page read on the front end heals itself anyway;
+	 * this reaches the ones nobody has opened since the ids arrived.
+	 */
+	public static function sweep(): void {
+		if ( '1' === get_option( 'oc_blocks_uids' ) ) {
+			return;
+		}
+
+		$offset = (int) get_option( 'oc_blocks_uids_offset', 0 );
+		$ids    = get_posts(
+			array(
+				'post_type'        => Render::composable_types(),
+				'post_status'      => 'any',
+				'posts_per_page'   => 200,
+				'offset'           => $offset,
+				'orderby'          => 'ID',
+				'order'            => 'ASC',
+				'fields'           => 'ids',
+				'meta_key'         => self::META, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- a one-off, bounded migration.
+				'no_found_rows'    => true,
+				'suppress_filters' => true,
+			)
+		);
+
+		foreach ( $ids as $id ) {
+			$id  = absint( $id );
+			$raw = get_post_meta( $id, self::META, true );
+
+			if ( is_array( $raw ) ) {
+				self::heal( $id, $raw );
+			}
+		}
+
+		if ( count( $ids ) < 200 ) {
+			update_option( 'oc_blocks_uids', '1', true );
+			delete_option( 'oc_blocks_uids_offset' );
+
+			return;
+		}
+
+		update_option( 'oc_blocks_uids_offset', $offset + 200, false );
+	}
+
+	/**
+	 * Identities written back where they were missing; the structure
+	 * returned either way.
+	 *
+	 * @param int                     $page_id Page id.
+	 * @param array<int|string,mixed> $raw     Stored sections.
+	 * @return array<int|string,mixed>
+	 */
+	private static function heal( int $page_id, array $raw ): array {
+		$with = self::ensure_uids( $raw );
+
+		if ( $with !== $raw ) {
+			update_post_meta( $page_id, self::META, $with );
+		}
+
+		return $with;
 	}
 
 	/**

@@ -32,6 +32,10 @@ final class Editor {
 		add_action( 'admin_bar_menu', array( $this, 'admin_bar' ), 81 );
 		add_action( 'admin_enqueue_scripts', array( $this, 'assets' ) );
 
+		// Pages composed before sections carried identities get them here,
+		// a batch per admin request, until none are left.
+		add_action( 'admin_init', array( Registry::class, 'sweep' ) );
+
 		add_action( 'wp_ajax_oc_blocks_save', array( $this, 'ajax_save' ) );
 		add_action( 'wp_ajax_oc_blocks_draft', array( $this, 'ajax_draft' ) );
 		add_action( 'wp_ajax_oc_blocks_search', array( $this, 'ajax_search' ) );
@@ -148,6 +152,11 @@ final class Editor {
 		wp_enqueue_style( 'oc-blocks-editor', OC_BLOCKS_URI . $css, array(), (string) filemtime( OC_BLOCKS_DIR . $css ) );
 		wp_enqueue_script( 'oc-blocks-editor', OC_BLOCKS_URI . $js, array( 'jquery' ), (string) filemtime( OC_BLOCKS_DIR . $js ), true );
 
+		// The composer edits what is stored, never what the front end shows:
+		// a plugin rewriting sections on the way out (a translation) must
+		// not be what the editor hands back on save.
+		$sections = $page_id ? Registry::stored( $page_id ) : array();
+
 		wp_localize_script(
 			'oc-blocks-editor',
 			'ocBlocks',
@@ -161,9 +170,9 @@ final class Editor {
 				'nonce'    => wp_create_nonce( 'oc_blocks' ),
 				'types'    => self::types_for_js(),
 				'shell'    => self::fields_for_js( Registry::shell() ),
-				'sections' => $page_id ? Registry::sections( $page_id ) : array(),
-				'thumbs'   => $page_id ? self::thumbs( Registry::sections( $page_id ) ) : array(),
-				'names'    => $page_id ? self::names( Registry::sections( $page_id ) ) : array(),
+				'sections' => $sections,
+				'thumbs'   => $page_id ? self::thumbs( $sections ) : array(),
+				'names'    => $page_id ? self::names( $sections ) : array(),
 				'i18n'     => array(
 					'save'         => __( 'Save', 'oc-blocks' ),
 					'saved'        => __( 'Saved', 'oc-blocks' ),
