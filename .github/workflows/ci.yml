@@ -2,7 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    # Every branch, not only main: the demo site pulls feature branches,
+    # so a red check has to land before the demo does.
+    branches: ['**']
   pull_request:
 
 # A red check here is the whole point of stage 1. Nothing merges past it.
