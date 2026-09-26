@@ -184,3 +184,31 @@ immediately, without file access.
 
 Both track `main`. The demo carries content precisely so that a broken block
 shows up there before it reaches a client.
+
+---
+
+## 14. Sections and repeater rows carry an identity
+
+**Decision.** Every section a page is composed of, and every row of a
+repeater inside it, carries a `uid`: 32 hex characters minted once and kept
+for as long as it exists. Reordering, editing and re-saving never change it.
+
+**Replaces.** An indexed list. Anything that pointed at a section — a
+translation of its heading, say — pointed at "position 3", and moved to a
+different section the moment someone dragged a card. OC Lang needs a target
+that stays put; so does anything else that will ever refer to a section.
+
+**Where it lives.** `Registry::clean()` keeps a valid uid and mints a
+missing one, so a new section gets its identity on first save and a pasted
+copy gets its own instead of sharing. `Registry::stored()` writes identities
+back into a page saved before they existed, once, the first time it is read;
+`Registry::sweep()` reaches the pages nobody has opened, two hundred per
+admin request. The front end reads `Registry::sections()`, which runs the
+`oc_blocks_sections` filter; the editor reads `stored()` and never sees what
+a filter did to the page on its way out.
+
+**Compiled catalogues.** The same change adds `.l10n.php` next to every
+`.mo` — the format WordPress 6.5 loads first, an array OPcache keeps between
+requests where a 337 KB `.mo` was parsed on every uncached one. Both are
+generated from the `.po` by `scripts/po2mo.py` and `scripts/po2php.py`, and
+both are committed.
