@@ -404,6 +404,7 @@ final class Render {
 
 		return '<section class="' . esc_attr( implode( ' ', $classes ) ) . '"'
 			. ( $at < 0 ? '' : ' data-ocb-n="' . $at . '"' )
+			. ( empty( $s[ Registry::UID ] ) ? '' : ' data-ocb-uid="' . esc_attr( (string) $s[ Registry::UID ] ) . '"' )
 			. ( '' === $style ? '' : ' style="' . esc_attr( $style ) . '"' ) . '>'
 			. $bg
 			. '<div class="ocb__in">' . $inner . '</div>'
