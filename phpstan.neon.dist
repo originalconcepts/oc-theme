@@ -10,6 +10,8 @@ parameters:
         - */vendor/*
         - */node_modules/*
         - */build/*
+        # Compiled catalogues (.l10n.php): one array literal each, nothing to analyse.
+        - */languages/*
     bootstrapFiles:
         - tools/phpstan-bootstrap.php
         - vendor/php-stubs/woocommerce-stubs/woocommerce-stubs.php
