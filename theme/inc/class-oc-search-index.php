@@ -42,6 +42,21 @@ final class Search_Index {
 	const F_POST  = 9;
 
 	/**
+	 * How many products a changed term rewrites in the request that changed
+	 * it. Beyond this the rest go through the queue, sixty at a time on
+	 * cron, the way a rebuild does: a category that sits on half the shop
+	 * must not hang the save that renamed it.
+	 */
+	const TOUCH_NOW = 20;
+
+	/**
+	 * Products touch_term() has rewritten in this request, against TOUCH_NOW.
+	 *
+	 * @var int
+	 */
+	private static int $touched = 0;
+
+	/**
 	 * Words that carry no meaning in a product search.
 	 *
 	 * @var string[]
@@ -504,13 +519,21 @@ final class Search_Index {
 			return;
 		}
 
+		// The product's own words, as they were written. A translation
+		// plugin filters what the getters and the terms return; while the
+		// index reads, it stands aside, and its languages come in through
+		// extra_texts() below — so the row holds every language, and the
+		// source is never lost to the language the request happened to be in.
+		self::reading( true );
+
 		$s     = Search::settings();
 		$bag   = array();
 		$syn   = array();
 		$brand = 0;
+		$name  = $product->get_name();
 
-		self::add( $bag, self::F_TITLE, $product->get_name() );
-		$syn = array_merge( $syn, self::expand( $product->get_name() ), self::product_synonyms( $product_id ) );
+		self::add( $bag, self::F_TITLE, $name );
+		$syn = array_merge( $syn, self::expand( $name ), self::product_synonyms( $product_id ) );
 
 		if ( ! empty( $s['f_sku'] ) ) {
 			self::add( $bag, self::F_SKU, (string) $product->get_sku() );
@@ -580,6 +603,8 @@ final class Search_Index {
 			self::add( $bag, self::F_SYN, (string) $word );
 		}
 
+		self::reading( false );
+
 		foreach ( self::extra_texts( $product_id, 'product', $s ) as $extra ) {
 			self::add( $bag, $extra['field'], $extra['text'], $extra['limit'] );
 		}
@@ -593,8 +618,8 @@ final class Search_Index {
 			array(
 				'object_id' => $product_id,
 				'kind'      => 'product',
-				'title'     => $product->get_name(),
-				'title_n'   => mb_substr( self::normalise( $product->get_name() ), 0, 191, 'UTF-8' ),
+				'title'     => $name,
+				'title_n'   => mb_substr( self::normalise( $name ), 0, 191, 'UTF-8' ),
 				'price'     => (float) $product->get_price(),
 				'in_stock'  => $product->is_in_stock() ? 1 : 0,
 				'sales'     => (int) get_post_meta( $product_id, 'total_sales', true ),
@@ -637,9 +662,13 @@ final class Search_Index {
 
 		$bag = array();
 
+		self::reading( true );
+
 		self::add( $bag, self::F_TITLE, $post->post_title );
 		self::add( $bag, self::F_POST, $post->post_excerpt, 40 );
 		self::add( $bag, self::F_POST, $post->post_content, 120 );
+
+		self::reading( false );
 
 		foreach ( self::extra_texts( $post_id, $kind, $s ) as $extra ) {
 			self::add( $bag, $extra['field'], $extra['text'], $extra['limit'] );
@@ -667,6 +696,76 @@ final class Search_Index {
 			),
 			array( '%d', '%s', '%s', '%s', '%f', '%d', '%d', '%d', '%d', '%d', '%d', '%d' )
 		);
+	}
+
+	/**
+	 * A term changed — renamed, or given its name in another language — so
+	 * the products under it carry a word the index does not have. A few are
+	 * rewritten now; more go through the queue the cron rebuild drains.
+	 *
+	 * @param int    $term_id  Term id.
+	 * @param string $taxonomy Taxonomy.
+	 */
+	public static function touch_term( int $term_id, string $taxonomy ): void {
+		if ( $term_id < 1 || ! in_array( $taxonomy, self::indexed_taxonomies(), true ) ) {
+			return;
+		}
+
+		$ids = get_objects_in_term( $term_id, $taxonomy );
+
+		if ( is_wp_error( $ids ) || ! $ids ) {
+			return;
+		}
+
+		$ids = array_values( array_unique( array_map( 'intval', $ids ) ) );
+
+		if ( self::$touched + count( $ids ) <= self::TOUCH_NOW ) {
+			self::$touched += count( $ids );
+
+			foreach ( $ids as $id ) {
+				self::index_product( $id );
+			}
+
+			return;
+		}
+
+		self::maybe_install();
+
+		$queue = get_option( 'oc_search_queue' );
+		$queue = array_values( array_unique( array_merge( is_array( $queue ) ? $queue : array(), $ids ) ) );
+
+		update_option( 'oc_search_queue', $queue, false );
+		update_option( 'oc_search_total', max( (int) get_option( 'oc_search_total', 0 ), count( $queue ) ), false );
+
+		if ( ! wp_next_scheduled( 'oc_search_rebuild' ) ) {
+			wp_schedule_single_event( time() + 20, 'oc_search_rebuild' );
+		}
+	}
+
+	/**
+	 * The taxonomies whose term names the index reads.
+	 *
+	 * @return string[]
+	 */
+	private static function indexed_taxonomies(): array {
+		$s   = Search::settings();
+		$out = array( 'product_cat' );
+
+		if ( ! empty( $s['f_tag'] ) ) {
+			$out[] = 'product_tag';
+		}
+
+		$brand = Search::brand_taxonomy();
+
+		if ( '' !== $brand ) {
+			$out[] = $brand;
+		}
+
+		if ( ! empty( $s['f_attr'] ) && function_exists( 'wc_get_attribute_taxonomy_names' ) ) {
+			$out = array_merge( $out, array_map( 'strval', (array) wc_get_attribute_taxonomy_names() ) );
+		}
+
+		return $out;
 	}
 
 	/**
@@ -712,6 +811,25 @@ final class Search_Index {
 		}
 
 		return $out;
+	}
+
+	/**
+	 * Tell a translation plugin that the index is reading an object's own
+	 * words, or that it is done. OC Lang answers every read with the source
+	 * while this is on and hands its languages over afterwards, through
+	 * `oc_search_extra_texts`.
+	 *
+	 * @param bool $on True before the reads, false after them.
+	 */
+	private static function reading( bool $on ): void {
+		/**
+		 * The index starts (true) or stops (false) reading an object's own
+		 * words. A plugin that translates on the way out stands aside in
+		 * between: what the index holds of the object itself is the source.
+		 *
+		 * @param bool $on True while reading.
+		 */
+		do_action( 'oc_search_reading', $on );
 	}
 
 	/**

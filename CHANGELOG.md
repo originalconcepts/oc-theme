@@ -32,3 +32,9 @@ Format follows [Keep a Changelog](https://keepachangelog.com/); versioning is
   CSS, no hardcoded `he_IL`, no `switch_to_locale` outside OC Lang, no locale
   cached in a static. Checkout price cells moved from `text-align: left` to
   `end` to pass the first.
+- Search: the live panel's category, brand and tag names go through
+  `get_term`, so a translation plugin's name shows; `oc_search_reading` fires
+  around the index's own reads, so what it holds of a product is the source;
+  `Search_Index::touch_term()` rewrites a term's products — a few now, the
+  rest queued for the cron rebuild — on `edited_term` and on
+  `oc_search_touch_term`.

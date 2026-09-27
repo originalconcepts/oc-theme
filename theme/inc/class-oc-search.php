@@ -134,6 +134,10 @@ final class Search {
 		add_action( 'woocommerce_update_product', array( $this, 'touch_product' ), 20 );
 		add_action( 'save_post_post', array( $this, 'touch_post' ), 20 );
 		add_action( 'save_post_page', array( $this, 'touch_post' ), 20 );
+		// A term's name sits in its products' rows: a rename reaches them
+		// the way a saved product does, and so does a translation of it.
+		add_action( 'edited_term', array( $this, 'edited_term' ), 20, 3 );
+		add_action( 'oc_search_touch_term', array( $this, 'touch_term' ), 10, 2 );
 		add_action( 'before_delete_post', array( $this, 'drop' ) );
 		add_action( 'wp_trash_post', array( $this, 'drop' ) );
 
@@ -182,6 +186,27 @@ final class Search {
 		}
 
 		Search_Index::index_post( (int) $post_id );
+	}
+
+	/**
+	 * A term was edited — renamed, most likely.
+	 *
+	 * @param int    $term_id  Term id.
+	 * @param int    $tt_id    Term taxonomy id, not needed here.
+	 * @param string $taxonomy Taxonomy.
+	 */
+	public function edited_term( $term_id, $tt_id, $taxonomy ): void {
+		Search_Index::touch_term( (int) $term_id, (string) $taxonomy );
+	}
+
+	/**
+	 * Another plugin gave a term a new name: OC Lang, saving a translation.
+	 *
+	 * @param int    $term_id  Term id.
+	 * @param string $taxonomy Taxonomy.
+	 */
+	public function touch_term( $term_id, $taxonomy ): void {
+		Search_Index::touch_term( (int) $term_id, (string) $taxonomy );
 	}
 
 	/**
@@ -1188,7 +1213,22 @@ final class Search {
 			);
 		}
 
-		return array_slice( $rows, 0, max( 1, $limit ) );
+		$rows = array_slice( $rows, 0, max( 1, $limit ) );
+
+		// The names as the site shows them: a translation plugin filters
+		// `get_term`, and a row straight off the table never met it. The
+		// slug stays the stored one; the narrowed page looks the term up by it.
+		_prime_term_caches( array_map( 'intval', wp_list_pluck( $rows, 'term_id' ) ) );
+
+		foreach ( $rows as $row ) {
+			$term = get_term( (int) $row->term_id, $taxonomy );
+
+			if ( $term instanceof \WP_Term ) {
+				$row->name = $term->name;
+			}
+		}
+
+		return $rows;
 	}
 
 	/**
