@@ -153,7 +153,7 @@ final class Translatable {
 	 * by row so a translation stays with the tab it was written for.
 	 *
 	 * @param array<string,array<string,string>>|mixed $map     Meta key => ( path => label ).
-	 * @param int|mixed                               $post_id Post id.
+	 * @param int|mixed                                $post_id Post id.
 	 * @return array<string,array<string,string>>
 	 */
 	public function post_meta( $map, $post_id ): array {
