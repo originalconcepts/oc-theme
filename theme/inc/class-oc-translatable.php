@@ -37,6 +37,12 @@ final class Translatable {
 	}
 
 	/**
+	 * The theme mods that are the small labels on a product card: their
+	 * own kind of text on the Translations screen, not settings prose.
+	 */
+	private const LABEL_MODS = array( 'oc_label_new_text', 'oc_label_stock_last', 'oc_label_stock_low', 'oc_label_stock_out', 'oc_label_strip_buy_text', 'oc_label_strip_cart_text' );
+
+	/**
 	 * The option theme mods live in: one per stylesheet.
 	 */
 	private static function mods_option(): string {
@@ -148,15 +154,21 @@ final class Translatable {
 
 	/**
 	 * Where the theme's own settings belong on the Translations screen.
-	 * The words inside each customer email stay with the emails.
+	 * The labels on a product card are their own kind; the rest of the
+	 * theme's words are the site's texts.
 	 *
-	 * @param array<string,string>|mixed $groups Option name => group slug.
-	 * @return array<string,string>
+	 * @param array<string,string|array<string,string>>|mixed $groups Option name => slug, or key => slug.
+	 * @return array<string,string|array<string,string>>
 	 */
 	public function groups( $groups ): array {
 		$groups = is_array( $groups ) ? $groups : array();
+		$mods   = array( '' => 'theme' );
 
-		$groups[ self::mods_option() ] = 'theme';
+		foreach ( self::LABEL_MODS as $key ) {
+			$mods[ $key ] = 'labels';
+		}
+
+		$groups[ self::mods_option() ] = $mods;
 		$groups['oc_tabs']             = 'theme';
 		$groups['oc_cart']             = 'theme';
 
