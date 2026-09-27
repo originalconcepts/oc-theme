@@ -371,6 +371,13 @@ final class Checkout {
 	private function sending_to_other(): bool {
 		$s = self::settings();
 
+		// A collected order has no recipient block: the whole address
+		// section is off the screen, and a toggle left on from before the
+		// shopper switched to collection must not demand fields it hid.
+		if ( $this->is_pickup() ) {
+			return false;
+		}
+
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- flag only, validated with the rest of checkout.
 		return ! empty( $s['send_other'] ) && ! empty( $_POST['oc_send_other'] );
 	}

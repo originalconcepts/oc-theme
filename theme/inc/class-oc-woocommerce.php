@@ -1484,7 +1484,7 @@ final class WooCommerce {
 			'right' => '',
 		);
 
-		$sale_side = 'right' === get_theme_mod( 'oc_label_sale_pos', 'left' ) ? 'right' : 'left';
+		$sale_side = Assets::side( 'right' === get_theme_mod( 'oc_label_sale_pos', 'left' ) ? 'right' : 'left' );
 
 		if ( $product->is_on_sale() ) {
 			// phpcs:ignore WordPress.WP.I18n.TextDomainMismatch -- Woo's own badge string; reuse its translation.
@@ -1522,7 +1522,7 @@ final class WooCommerce {
 			}
 
 			if ( '' !== $text ) {
-				$stock_side            = 'right' === get_theme_mod( 'oc_label_stock_pos', 'left' ) ? 'right' : 'left';
+				$stock_side            = Assets::side( 'right' === get_theme_mod( 'oc_label_stock_pos', 'left' ) ? 'right' : 'left' );
 				$sides[ $stock_side ] .= sprintf(
 					'<span class="oc-flag%s" style="%s">%s</span>',
 					$is_oos ? ' oc-flag--oos' : '',

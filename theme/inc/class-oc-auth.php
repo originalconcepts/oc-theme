@@ -1551,7 +1551,7 @@ final class Auth {
 		}
 
 		$s     = self::front();
-		$side  = get_theme_mod( 'oc_login_side', 'right' );
+		$side  = Assets::side( 'left' === get_theme_mod( 'oc_login_side', 'right' ) ? 'left' : 'right' );
 		$width = absint( get_theme_mod( 'oc_login_width', 480 ) );
 		$title = trim( (string) get_theme_mod( 'oc_login_title', '' ) );
 		$title = '' !== $title ? $title : __( 'Phone number and off we go :)', 'oc-theme' );

@@ -32,6 +32,48 @@ final class Assets {
 		add_action( 'wp_head', array( $this, 'design_tokens' ), 1 );
 		add_action( 'wp_head', array( $this, 'seo_fallback' ), 2 );
 		add_filter( 'get_custom_logo', array( $this, 'logo_dimensions' ) );
+		add_filter( 'language_attributes', array( $this, 'direction_attribute' ) );
+	}
+
+	/**
+	 * `dir="ltr"` on the html tag when the page runs left to right.
+	 * WordPress writes dir="rtl" for a right-to-left locale and nothing
+	 * otherwise, so the stylesheet's `[dir="ltr"]` rules matched nothing
+	 * on an English page — a toggle's knob slid out of its track.
+	 *
+	 * @param string|mixed $output The attributes so far.
+	 * @return string
+	 */
+	public function direction_attribute( $output ): string {
+		$output = (string) $output;
+
+		if ( is_rtl() || false !== strpos( $output, 'dir=' ) ) {
+			return $output;
+		}
+
+		return trim( $output . ' dir="ltr"' );
+	}
+
+	/**
+	 * A side, as the current language sees it. The sides in the settings
+	 * were chosen looking at the site in its own direction; a language
+	 * that runs the other way sees the whole page mirrored, so a drawer
+	 * that opened from the right opens from the left. A plugin that knows
+	 * the site's languages says when to mirror through `oc_mirror_sides`;
+	 * without one, the theme's Hebrew-first assumption holds and
+	 * left-to-right is the mirrored case.
+	 *
+	 * @param string $side left or right, as set.
+	 * @return string left or right, as shown.
+	 */
+	public static function side( string $side ): string {
+		$mirror = (bool) apply_filters( 'oc_mirror_sides', ! is_rtl() );
+
+		if ( ! $mirror ) {
+			return $side;
+		}
+
+		return 'left' === $side ? 'right' : 'left';
 	}
 
 	/**
@@ -198,7 +240,7 @@ final class Assets {
 				/* translators: %s: an amount of money. */
 				'btSaved'              => __( 'You save %s', 'oc-theme' ),
 				'cartVarPick'          => __( 'Choose an option', 'oc-theme' ),
-				'vpSide'               => 'left' === get_theme_mod( 'oc_vpanel_side', 'right' ) ? 'left' : 'right',
+				'vpSide'               => self::side( 'left' === get_theme_mod( 'oc_vpanel_side', 'right' ) ? 'left' : 'right' ),
 				'vpCorners'            => (string) get_theme_mod( 'oc_vpanel_corners', 'soft' ),
 				'vpGallery'            => (string) get_theme_mod( 'oc_vpanel_gallery', 'peek' ),
 				'vpSku'                => __( 'SKU:', 'oc-theme' ),
@@ -280,7 +322,7 @@ final class Assets {
 				// The colour-sibling card swap rebuilds the sold-out pieces.
 				'oosFlagText'          => get_theme_mod( 'oc_label_stock', false ) ? (string) get_theme_mod( 'oc_label_stock_out', __( 'Out of stock', 'oc-theme' ) ) : '',
 				'oosFlagStyle'         => WooCommerce::flag_colors( 'oc_label_stock_bg', 'oc_label_stock_tx' ),
-				'oosFlagSide'          => 'right' === get_theme_mod( 'oc_label_stock_pos', 'left' ) ? 'right' : 'left',
+				'oosFlagSide'          => self::side( 'right' === get_theme_mod( 'oc_label_stock_pos', 'left' ) ? 'right' : 'left' ),
 				/* translators: %d: seconds until the popup closes itself. */
 				'notifyClosing'        => __( 'Closes automatically in %d seconds', 'oc-theme' ),
 			)

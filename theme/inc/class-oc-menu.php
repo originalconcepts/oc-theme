@@ -643,7 +643,7 @@ final class Menu {
 	 * @return string
 	 */
 	public static function drawer_class(): string {
-		$side   = 'left' === get_theme_mod( 'oc_drw_side', 'right' ) ? 'left' : 'right';
+		$side   = Assets::side( 'left' === get_theme_mod( 'oc_drw_side', 'right' ) ? 'left' : 'right' );
 		$sub    = 'slide' === get_theme_mod( 'oc_drw_sub', 'accordion' ) ? 'slide' : 'accordion';
 		$motion = (string) get_theme_mod( 'oc_menu_motion', 'stagger' );
 

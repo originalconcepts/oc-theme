@@ -32,6 +32,24 @@ Format follows [Keep a Changelog](https://keepachangelog.com/); versioning is
   CSS, no hardcoded `he_IL`, no `switch_to_locale` outside OC Lang, no locale
   cached in a static. Checkout price cells moved from `text-align: left` to
   `end` to pass the first.
+- An English page carries `dir="ltr"` on its html tag, so the
+  stylesheet's left-to-right rules apply: the checkout's "sending to
+  someone else" toggle kept its knob, and the branch picker its padding.
+- The checkout's payment column no longer forces right-to-left flow; on an
+  English page the gateways and the consent rows sit where the text does.
+- A collected order never asks for recipient details: the toggle is hidden
+  with the address, and what is hidden is not required.
+- The checkout's error box goes beside the place-order button rather than
+  to the foot of the details column, and the page scrolls to it.
+- Sides mirror with the language: the menu drawer, the cart drawer, the
+  login drawer, the vertical panel and the labels on a product card open
+  or sit on the opposite side when the page runs the other way. The
+  Customizer's sides are read as chosen for the site's own direction; a
+  languages plugin can decide through `oc_mirror_sides`.
+- Declared for translation: the branches (their names, regions, address,
+  city, hours and checkout name), the thank-you page's lines, the
+  checkout's typed lines, the announcement bar, the footer's texts and
+  the bundle heading.
 - The tabs a product carries itself are translatable: the theme declares
   them through the plugin's `oclang_post_meta`, row by row, and the front
   end reads them through `get_post_meta` so the translation can reach them.

@@ -107,7 +107,7 @@ final class Cart {
 
 		$s     = self::settings();
 		$title = '' !== (string) $s['title'] ? (string) $s['title'] : __( 'My cart', 'oc-theme' );
-		$side  = 'right' === $s['side'] ? 'right' : 'left';
+		$side  = Assets::side( 'right' === $s['side'] ? 'right' : 'left' );
 		?>
 		<div class="oc-drawer oc-drawer--<?php echo esc_attr( $side ); ?><?php echo 'side' === $s['up_style'] && $s['up_show'] ? ' oc-drawer--upside' : ''; ?>" data-oc-cart-drawer hidden style="--oc-drawer-w:<?php echo absint( $s['width'] ); ?>px">
 			<div class="oc-drawer__overlay" data-oc-drawer-close tabindex="-1"></div>

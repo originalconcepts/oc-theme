@@ -31,6 +31,8 @@ final class Translatable {
 	 * Hook in.
 	 */
 	public function register(): void {
+		add_filter( 'oclang_post_types', array( $this, 'post_types' ) );
+		add_filter( 'oclang_taxonomies', array( $this, 'taxonomies' ) );
 		add_filter( 'oclang_post_meta', array( $this, 'post_meta' ), 10, 2 );
 		add_filter( 'oclang_options', array( $this, 'options' ) );
 		add_filter( 'oclang_option_labels', array( $this, 'labels' ) );
@@ -75,6 +77,14 @@ final class Translatable {
 			'oc_atc_icon_text_2'       => __( 'Under Add to cart — second message', 'oc-theme' ),
 			'oc_atc_icon_text_3'       => __( 'Under Add to cart — third message', 'oc-theme' ),
 			'oc_atc_icon_text_4'       => __( 'Under Add to cart — fourth message', 'oc-theme' ),
+			'oc_topbar_msg1'           => __( 'Announcement bar — line 1', 'oc-theme' ),
+			'oc_topbar_msg2'           => __( 'Announcement bar — line 2', 'oc-theme' ),
+			'oc_topbar_msg3'           => __( 'Announcement bar — line 3', 'oc-theme' ),
+			'oc_footer_tagline'        => __( 'Footer — tagline', 'oc-theme' ),
+			'oc_footer_news_h'         => __( 'Footer — newsletter heading', 'oc-theme' ),
+			'oc_footer_news_t'         => __( 'Footer — newsletter text', 'oc-theme' ),
+			'oc_footer_credit'         => __( 'Footer — credit line', 'oc-theme' ),
+			'oc_bt_title'              => __( 'Bundle — heading', 'oc-theme' ),
 			'oc_contact_title_text'    => __( 'Product contact — title', 'oc-theme' ),
 			'oc_contact_name'          => __( 'Product contact — name', 'oc-theme' ),
 			'oc_contact_role'          => __( 'Product contact — role', 'oc-theme' ),
@@ -136,6 +146,33 @@ final class Translatable {
 	}
 
 	/**
+	 * The thank-you page's typed lines.
+	 *
+	 * @return array<string,string>
+	 */
+	private static function thankyou(): array {
+		return array(
+			'content'      => __( 'The service line', 'oc-theme' ),
+			'social_title' => __( 'Follow us — title', 'oc-theme' ),
+			'survey_q'     => __( 'Survey — question', 'oc-theme' ),
+			'survey_sub'   => __( 'Survey — line under it', 'oc-theme' ),
+		);
+	}
+
+	/**
+	 * The checkout's typed lines.
+	 *
+	 * @return array<string,string>
+	 */
+	private static function checkout(): array {
+		return array(
+			'btn_text'     => __( 'Place-order button', 'oc-theme' ),
+			'consent_text' => __( 'Marketing consent line', 'oc-theme' ),
+			'help_text'    => __( 'Help line in the header', 'oc-theme' ),
+		);
+	}
+
+	/**
 	 * The opening words the theme adds to each customer email's settings.
 	 *
 	 * @return array<string,string>
@@ -149,17 +186,61 @@ final class Translatable {
 	}
 
 	/**
+	 * The branches are posts too: their names, and what they say about
+	 * themselves, are read by shoppers at the checkout and on the map.
+	 *
+	 * @param string[]|mixed $types Post types the plugin translates.
+	 * @return string[]
+	 */
+	public function post_types( $types ): array {
+		$types = is_array( $types ) ? $types : array();
+
+		if ( class_exists( '\\OC\\Blocks\\Branches' ) ) {
+			$types[] = \OC\Blocks\Branches::CPT;
+		}
+
+		return array_values( array_unique( $types ) );
+	}
+
+	/**
+	 * A branch's region is a heading on the branches page.
+	 *
+	 * @param string[]|mixed $taxonomies Taxonomies the plugin translates.
+	 * @return string[]
+	 */
+	public function taxonomies( $taxonomies ): array {
+		$taxonomies = is_array( $taxonomies ) ? $taxonomies : array();
+
+		if ( class_exists( '\\OC\\Blocks\\Branches' ) ) {
+			$taxonomies[] = \OC\Blocks\Branches::TAX;
+		}
+
+		return array_values( array_unique( $taxonomies ) );
+	}
+
+	/**
 	 * A product's own tabs — the ones typed on its edit screen — named row
-	 * by row so a translation stays with the tab it was written for.
+	 * by row so a translation stays with the tab it was written for; and
+	 * a branch's typed details.
 	 *
 	 * @param array<string,array<string,string>>|mixed $map     Meta key => ( path => label ).
 	 * @param int|mixed                                $post_id Post id.
 	 * @return array<string,array<string,string>>
 	 */
 	public function post_meta( $map, $post_id ): array {
-		$map = is_array( $map ) ? $map : array();
+		$map  = is_array( $map ) ? $map : array();
+		$type = get_post_type( (int) $post_id );
 
-		if ( 'product' !== get_post_type( (int) $post_id ) ) {
+		if ( class_exists( '\\OC\\Blocks\\Branches' ) && \OC\Blocks\Branches::CPT === $type ) {
+			$map['_oc_br_pickup_name'] = array( '' => __( 'Name at the checkout', 'oc-theme' ) );
+			$map['_oc_br_address']     = array( '' => __( 'Address', 'oc-theme' ) );
+			$map['_oc_br_city']        = array( '' => __( 'City', 'oc-theme' ) );
+			$map['_oc_br_hours']       = array( '' => __( 'Opening hours', 'oc-theme' ) );
+
+			return $map;
+		}
+
+		if ( 'product' !== $type ) {
 			return $map;
 		}
 
@@ -206,6 +287,8 @@ final class Translatable {
 		$out[ self::mods_option() ] = array_keys( self::mods() );
 		$out['oc_tabs']             = array_keys( self::tabs() );
 		$out['oc_cart']             = array_keys( self::cart() );
+		$out['oc_thankyou']         = array_keys( self::thankyou() );
+		$out['oc_checkout']         = array_keys( self::checkout() );
 
 		foreach ( self::EMAILS as $id ) {
 			$name         = 'woocommerce_' . $id . '_settings';
@@ -234,6 +317,8 @@ final class Translatable {
 		$groups[ self::mods_option() ] = $mods;
 		$groups['oc_tabs']             = 'theme';
 		$groups['oc_cart']             = 'theme';
+		$groups['oc_thankyou']         = 'theme';
+		$groups['oc_checkout']         = 'theme';
 
 		return $groups;
 	}
@@ -250,6 +335,8 @@ final class Translatable {
 		$labels[ self::mods_option() ] = array( '' => __( 'Theme settings', 'oc-theme' ) ) + self::mods();
 		$labels['oc_tabs']             = array( '' => __( 'Product tabs', 'oc-theme' ) ) + self::tabs();
 		$labels['oc_cart']             = array( '' => __( 'Cart drawer', 'oc-theme' ) ) + self::cart();
+		$labels['oc_thankyou']         = array( '' => __( 'Thank-you page', 'oc-theme' ) ) + self::thankyou();
+		$labels['oc_checkout']         = array( '' => __( 'Checkout', 'oc-theme' ) ) + self::checkout();
 
 		foreach ( self::EMAILS as $id ) {
 			$name            = 'woocommerce_' . $id . '_settings';

@@ -39,6 +39,27 @@
 			}
 		} );
 
+		/* -- Woo prepends its error box to the form, which in this layout is
+		 * the foot of the details column: far from the button just pressed,
+		 * and below the fold. It goes beside the button instead. -- */
+		function coPlaceNotice() {
+			var notice = coForm.querySelector( '.woocommerce-NoticeGroup-checkout' );
+			var place = coForm.querySelector( '#payment .place-order' );
+
+			if ( ! notice || ! place || notice.parentElement === place.parentElement ) {
+				return;
+			}
+
+			place.parentElement.insertBefore( notice, place );
+			notice.scrollIntoView( { block: 'center', behavior: 'smooth' } );
+		}
+
+		if ( window.jQuery ) {
+			window.jQuery( document.body ).on( 'checkout_error', function () {
+				window.setTimeout( coPlaceNotice, 0 );
+			} );
+		}
+
 		/* -- pickup hides the address; method cards mark their state. The
 		 * cards are proxies: Woo's real (hidden) shipping_method radios in
 		 * the review get checked programmatically, so the two groups never

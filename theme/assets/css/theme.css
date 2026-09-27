@@ -11436,10 +11436,11 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 
 .oc-checkout #payment .place-order .oc-f-msg { margin-block-start: 4px; }
 
-/* payment area: rtl flow, full column width, identical checkbox rows */
+/* payment area: the page's own flow, full column width, identical
+ * checkbox rows. (It used to force rtl; an English page then had its
+ * gateways and consent rows hugging the wrong edge.) */
 .oc-checkout #payment,
 .oc-checkout #payment .place-order {
-	direction: rtl;
 	inline-size: 100%;
 	max-inline-size: none;
 	margin: 0;

@@ -9974,3 +9974,63 @@ msgstr "%s — תוכן הטאב"
 #: theme/inc/class-oc-translatable.php
 msgid "Custom tab %d"
 msgstr "טאב מותאם %d"
+
+#: theme/inc/class-oc-translatable.php
+msgid "Opening hours"
+msgstr "שעות פתיחה"
+
+#: theme/inc/class-oc-translatable.php
+msgid "The service line"
+msgstr "שורת השירות"
+
+#: theme/inc/class-oc-translatable.php
+msgid "Follow us — title"
+msgstr "עקבו אחרינו — כותרת"
+
+#: theme/inc/class-oc-translatable.php
+msgid "Survey — question"
+msgstr "סקר — שאלה"
+
+#: theme/inc/class-oc-translatable.php
+msgid "Survey — line under it"
+msgstr "סקר — השורה שמתחת"
+
+#: theme/inc/class-oc-translatable.php
+msgid "Place-order button"
+msgstr "כפתור ביצוע ההזמנה"
+
+#: theme/inc/class-oc-translatable.php
+msgid "Marketing consent line"
+msgstr "שורת ההסכמה לדיוור"
+
+#: theme/inc/class-oc-translatable.php
+msgid "Announcement bar — line 1"
+msgstr "שורת ההודעות — שורה 1"
+
+#: theme/inc/class-oc-translatable.php
+msgid "Announcement bar — line 2"
+msgstr "שורת ההודעות — שורה 2"
+
+#: theme/inc/class-oc-translatable.php
+msgid "Announcement bar — line 3"
+msgstr "שורת ההודעות — שורה 3"
+
+#: theme/inc/class-oc-translatable.php
+msgid "Footer — tagline"
+msgstr "פוטר — טאגליין"
+
+#: theme/inc/class-oc-translatable.php
+msgid "Footer — newsletter heading"
+msgstr "פוטר — כותרת הניוזלטר"
+
+#: theme/inc/class-oc-translatable.php
+msgid "Footer — newsletter text"
+msgstr "פוטר — טקסט הניוזלטר"
+
+#: theme/inc/class-oc-translatable.php
+msgid "Footer — credit line"
+msgstr "פוטר — שורת הקרדיט"
+
+#: theme/inc/class-oc-translatable.php
+msgid "Bundle — heading"
+msgstr "מארז — כותרת"
