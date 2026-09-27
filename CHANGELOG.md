@@ -32,6 +32,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/); versioning is
   CSS, no hardcoded `he_IL`, no `switch_to_locale` outside OC Lang, no locale
   cached in a static. Checkout price cells moved from `text-align: left` to
   `end` to pass the first.
+- The theme's typed texts say which group of the Translations screen they
+  belong to (`oclang_option_groups`).
 - Search: the live panel's category, brand and tag names go through
   `get_term`, so a translation plugin's name shows; `oc_search_reading` fires
   around the index's own reads, so what it holds of a product is the source;

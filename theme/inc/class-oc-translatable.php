@@ -33,6 +33,7 @@ final class Translatable {
 	public function register(): void {
 		add_filter( 'oclang_options', array( $this, 'options' ) );
 		add_filter( 'oclang_option_labels', array( $this, 'labels' ) );
+		add_filter( 'oclang_option_groups', array( $this, 'groups' ) );
 	}
 
 	/**
@@ -143,6 +144,23 @@ final class Translatable {
 		}
 
 		return $out;
+	}
+
+	/**
+	 * Where the theme's own settings belong on the Translations screen.
+	 * The words inside each customer email stay with the emails.
+	 *
+	 * @param array<string,string>|mixed $groups Option name => group slug.
+	 * @return array<string,string>
+	 */
+	public function groups( $groups ): array {
+		$groups = is_array( $groups ) ? $groups : array();
+
+		$groups[ self::mods_option() ] = 'theme';
+		$groups['oc_tabs']             = 'theme';
+		$groups['oc_cart']             = 'theme';
+
+		return $groups;
 	}
 
 	/**
