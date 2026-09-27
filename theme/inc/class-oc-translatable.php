@@ -31,6 +31,7 @@ final class Translatable {
 	 * Hook in.
 	 */
 	public function register(): void {
+		add_filter( 'oclang_post_meta', array( $this, 'post_meta' ), 10, 2 );
 		add_filter( 'oclang_options', array( $this, 'options' ) );
 		add_filter( 'oclang_option_labels', array( $this, 'labels' ) );
 		add_filter( 'oclang_option_groups', array( $this, 'groups' ) );
@@ -145,6 +146,52 @@ final class Translatable {
 			'oc_heading_pickup' => __( 'Heading — collection', 'oc-theme' ),
 			'oc_intro_pickup'   => __( 'Opening words — collection', 'oc-theme' ),
 		);
+	}
+
+	/**
+	 * A product's own tabs — the ones typed on its edit screen — named row
+	 * by row so a translation stays with the tab it was written for.
+	 *
+	 * @param array<string,array<string,string>>|mixed $map     Meta key => ( path => label ).
+	 * @param int|mixed                               $post_id Post id.
+	 * @return array<string,array<string,string>>
+	 */
+	public function post_meta( $map, $post_id ): array {
+		$map = is_array( $map ) ? $map : array();
+
+		if ( 'product' !== get_post_type( (int) $post_id ) ) {
+			return $map;
+		}
+
+		$rows   = get_post_meta( (int) $post_id, '_oc_product_tabs', true );
+		$fields = array();
+		$n      = 0;
+
+		foreach ( is_array( $rows ) ? $rows : array() as $key => $row ) {
+			++$n;
+
+			if ( ! is_array( $row ) ) {
+				continue;
+			}
+
+			$title = trim( (string) ( $row['title'] ?? '' ) );
+
+			if ( '' === $title ) {
+				/* translators: %d: the tab's place in the list */
+				$title = sprintf( __( 'Custom tab %d', 'oc-theme' ), $n );
+			}
+
+			/* translators: %s: the tab's own title */
+			$fields[ $key . '/title' ] = sprintf( __( '%s — tab title', 'oc-theme' ), $title );
+			/* translators: %s: the tab's own title */
+			$fields[ $key . '/content' ] = sprintf( __( '%s — tab content', 'oc-theme' ), $title );
+		}
+
+		if ( ! empty( $fields ) ) {
+			$map['_oc_product_tabs'] = $fields;
+		}
+
+		return $map;
 	}
 
 	/**

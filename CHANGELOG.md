@@ -32,6 +32,9 @@ Format follows [Keep a Changelog](https://keepachangelog.com/); versioning is
   CSS, no hardcoded `he_IL`, no `switch_to_locale` outside OC Lang, no locale
   cached in a static. Checkout price cells moved from `text-align: left` to
   `end` to pass the first.
+- The tabs a product carries itself are translatable: the theme declares
+  them through the plugin's `oclang_post_meta`, row by row, and the front
+  end reads them through `get_post_meta` so the translation can reach them.
 - A custom product tab is named by a minted key rather than by its place
   in the list, so deleting or reordering tabs no longer moves their
   translations onto the wrong tab; tabs saved before this are given their

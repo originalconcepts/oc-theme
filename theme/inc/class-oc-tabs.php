@@ -98,14 +98,74 @@ final class Tabs {
 	public function name_the_tabs(): void {
 		$saved = get_option( 'oc_tabs' );
 
-		if ( ! is_array( $saved ) || ! isset( $saved['custom'] ) || ! is_array( $saved['custom'] ) ) {
+		if ( is_array( $saved ) && isset( $saved['custom'] ) && is_array( $saved['custom'] ) ) {
+			$named = self::named( $saved['custom'] );
+
+			if ( null !== $named ) {
+				$saved['custom'] = $named;
+
+				update_option( 'oc_tabs', $saved, false );
+			}
+		}
+
+		self::name_the_product_tabs();
+	}
+
+	/**
+	 * The same for the tabs products carry themselves, a few products per
+	 * admin request until there are none left to name.
+	 */
+	private static function name_the_product_tabs(): void {
+		if ( get_option( 'oc_tabs_named' ) ) {
 			return;
 		}
 
-		$custom  = array();
+		$ids = get_posts(
+			array(
+				'post_type'      => 'product',
+				'post_status'    => 'any',
+				'posts_per_page' => 40,
+				'fields'         => 'ids',
+				'meta_key'       => '_oc_product_tabs', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- once, in the admin, to give the rows their names.
+				'no_found_rows'  => true,
+			)
+		);
+
+		$left = false;
+
+		foreach ( (array) $ids as $id ) {
+			$rows = get_post_meta( (int) $id, '_oc_product_tabs', true );
+
+			if ( ! is_array( $rows ) ) {
+				continue;
+			}
+
+			$named = self::named( $rows );
+
+			if ( null !== $named ) {
+				update_post_meta( (int) $id, '_oc_product_tabs', $named );
+
+				$left = true;
+			}
+		}
+
+		// A pass that renamed nothing means every product is done.
+		if ( ! $left ) {
+			update_option( 'oc_tabs_named', 1, false );
+		}
+	}
+
+	/**
+	 * Rows keyed by name, or null when they already are.
+	 *
+	 * @param array<int|string,mixed> $rows Tab rows.
+	 * @return array<string,mixed>|null
+	 */
+	private static function named( array $rows ): ?array {
+		$out     = array();
 		$changed = false;
 
-		foreach ( $saved['custom'] as $key => $row ) {
+		foreach ( $rows as $key => $row ) {
 			if ( ! is_array( $row ) ) {
 				continue;
 			}
@@ -116,14 +176,10 @@ final class Tabs {
 				$changed = true;
 			}
 
-			$custom[ $uid ] = $row;
+			$out[ $uid ] = $row;
 		}
 
-		if ( $changed ) {
-			$saved['custom'] = $custom;
-
-			update_option( 'oc_tabs', $saved, false );
-		}
+		return $changed ? $out : null;
 	}
 
 	/**
@@ -275,7 +331,9 @@ final class Tabs {
 			}
 
 			// This product's own tabs, saved on its edit screen.
-			$own = $product->get_meta( '_oc_product_tabs' );
+			// Through get_post_meta, not the product object: that is where a
+			// translation plugin hands back this language's rows.
+			$own = get_post_meta( $product->get_id(), '_oc_product_tabs', true );
 			foreach ( ( is_array( $own ) ? $own : array() ) as $index => $tab ) {
 				if ( ! is_array( $tab ) ) {
 					continue;
@@ -1020,7 +1078,11 @@ final class Tabs {
 				continue;
 			}
 
-			$rows[] = array(
+			// As with the shop's tabs, the row's key is its name and it
+			// keeps it: a translation is tied to the name, not to a place.
+			$uid = self::is_uid( $i ) ? (string) $i : self::mint();
+
+			$rows[ $uid ] = array(
 				'title'   => $title,
 				'order'   => (int) ( $_POST['pt_order'][ $i ] ?? 30 ), // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- cast to int.
 				'content' => $body,
