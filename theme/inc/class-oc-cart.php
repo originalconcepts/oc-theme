@@ -161,7 +161,9 @@ final class Cart {
 
 		$html = '<div class="oc-cartpage">' . $notices;
 
-		if ( WC()->cart->is_empty() ) {
+		// A request with no cart at all — a crawler, a REST call rendering
+		// the page — reads as an empty one rather than a fatal.
+		if ( ! WC()->cart || WC()->cart->is_empty() ) {
 			$empty = (string) $s['empty_text'];
 
 			$html .= '<div class="oc-cartpage__empty">';
