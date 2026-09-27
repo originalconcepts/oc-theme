@@ -9946,3 +9946,31 @@ msgstr "טאב מותאם %d — תוכן"
 
 msgid "Cart drawer"
 msgstr "מגירת העגלה"
+
+#: theme/inc/class-oc-translatable.php
+msgid "Under Add to cart — first message"
+msgstr "מתחת להוספה לסל — מסר ראשון"
+
+#: theme/inc/class-oc-translatable.php
+msgid "Under Add to cart — second message"
+msgstr "מתחת להוספה לסל — מסר שני"
+
+#: theme/inc/class-oc-translatable.php
+msgid "Under Add to cart — third message"
+msgstr "מתחת להוספה לסל — מסר שלישי"
+
+#: theme/inc/class-oc-translatable.php
+msgid "Under Add to cart — fourth message"
+msgstr "מתחת להוספה לסל — מסר רביעי"
+
+#: theme/inc/class-oc-translatable.php
+msgid "%s — tab title"
+msgstr "%s — כותרת הטאב"
+
+#: theme/inc/class-oc-translatable.php
+msgid "%s — tab content"
+msgstr "%s — תוכן הטאב"
+
+#: theme/inc/class-oc-translatable.php
+msgid "Custom tab %d"
+msgstr "טאב מותאם %d"

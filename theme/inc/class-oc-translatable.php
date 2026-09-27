@@ -70,6 +70,10 @@ final class Translatable {
 			'oc_login_reg_perks'       => __( 'Login — registration perks', 'oc-theme' ),
 			'oc_login_club_text'       => __( 'Login — club pitch', 'oc-theme' ),
 			'oc_blog_disclaimer'       => __( 'Blog disclaimer', 'oc-theme' ),
+			'oc_atc_icon_text_1'       => __( 'Under Add to cart — first message', 'oc-theme' ),
+			'oc_atc_icon_text_2'       => __( 'Under Add to cart — second message', 'oc-theme' ),
+			'oc_atc_icon_text_3'       => __( 'Under Add to cart — third message', 'oc-theme' ),
+			'oc_atc_icon_text_4'       => __( 'Under Add to cart — fourth message', 'oc-theme' ),
 			'oc_contact_title_text'    => __( 'Product contact — title', 'oc-theme' ),
 			'oc_contact_name'          => __( 'Product contact — name', 'oc-theme' ),
 			'oc_contact_role'          => __( 'Product contact — role', 'oc-theme' ),
@@ -107,12 +111,24 @@ final class Translatable {
 		);
 		$saved = get_option( 'oc_tabs' );
 		$rows  = is_array( $saved ) && isset( $saved['custom'] ) && is_array( $saved['custom'] ) ? $saved['custom'] : array();
+		$n     = 0;
 
-		foreach ( array_keys( $rows ) as $i ) {
-			/* translators: %d: the tab's number */
-			$out[ 'custom/' . $i . '/title' ] = sprintf( __( 'Custom tab %d — title', 'oc-theme' ), (int) $i + 1 );
-			/* translators: %d: the tab's number */
-			$out[ 'custom/' . $i . '/content' ] = sprintf( __( 'Custom tab %d — content', 'oc-theme' ), (int) $i + 1 );
+		// A tab is named by its own key, which it keeps for life; the label
+		// is its title, because "Custom tab 2" tells a translator nothing.
+		foreach ( $rows as $key => $row ) {
+			++$n;
+
+			$title = is_array( $row ) ? trim( (string) ( $row['title'] ?? '' ) ) : '';
+
+			if ( '' === $title ) {
+				/* translators: %d: the tab's place in the list */
+				$title = sprintf( __( 'Custom tab %d', 'oc-theme' ), $n );
+			}
+
+			/* translators: %s: the tab's own title */
+			$out[ 'custom/' . $key . '/title' ] = sprintf( __( '%s — tab title', 'oc-theme' ), $title );
+			/* translators: %s: the tab's own title */
+			$out[ 'custom/' . $key . '/content' ] = sprintf( __( '%s — tab content', 'oc-theme' ), $title );
 		}
 
 		return $out;

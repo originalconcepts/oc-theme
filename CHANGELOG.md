@@ -32,6 +32,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/); versioning is
   CSS, no hardcoded `he_IL`, no `switch_to_locale` outside OC Lang, no locale
   cached in a static. Checkout price cells moved from `text-align: left` to
   `end` to pass the first.
+- A custom product tab is named by a minted key rather than by its place
+  in the list, so deleting or reordering tabs no longer moves their
+  translations onto the wrong tab; tabs saved before this are given their
+  names once, in the admin.
+- The messages under Add to cart are typed texts like the rest, and say so.
 - The theme's typed texts say which kind of text they are for the
   Translations screen (`oclang_option_groups`): the labels on a product
   card are their own kind, the rest are the site's texts.

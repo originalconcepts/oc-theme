@@ -30,6 +30,7 @@ final class Tabs {
 			return;
 		}
 
+		add_action( 'admin_init', array( $this, 'name_the_tabs' ) );
 		add_action( 'admin_menu', array( $this, 'menu' ), 55 );
 		add_action( 'admin_menu', array( $this, 'order' ), 999 );
 		add_action( 'admin_post_oc_tabs_save', array( $this, 'save_settings' ) );
@@ -70,6 +71,59 @@ final class Tabs {
 		);
 
 		return wp_kses( $html, $allowed );
+	}
+
+	/**
+	 * A custom tab's own name, which nothing but itself may take. The rows
+	 * used to be a plain list, so a tab's place in it was its name — and
+	 * deleting the first one silently moved every translation onto the
+	 * wrong tab. A minted name survives deleting, adding and reordering.
+	 */
+	public static function mint(): string {
+		return str_replace( '-', '', wp_generate_uuid4() );
+	}
+
+	/**
+	 * Whether a key is one of those names.
+	 *
+	 * @param int|string $key Array key.
+	 */
+	public static function is_uid( $key ): bool {
+		return is_string( $key ) && 1 === preg_match( '/^[0-9a-f]{32}$/', $key );
+	}
+
+	/**
+	 * Give the tabs saved before this their names, once.
+	 */
+	public function name_the_tabs(): void {
+		$saved = get_option( 'oc_tabs' );
+
+		if ( ! is_array( $saved ) || ! isset( $saved['custom'] ) || ! is_array( $saved['custom'] ) ) {
+			return;
+		}
+
+		$custom  = array();
+		$changed = false;
+
+		foreach ( $saved['custom'] as $key => $row ) {
+			if ( ! is_array( $row ) ) {
+				continue;
+			}
+
+			$uid = self::is_uid( $key ) ? (string) $key : self::mint();
+
+			if ( (string) $key !== $uid ) {
+				$changed = true;
+			}
+
+			$custom[ $uid ] = $row;
+		}
+
+		if ( $changed ) {
+			$saved['custom'] = $custom;
+
+			update_option( 'oc_tabs', $saved, false );
+		}
 	}
 
 	/**
@@ -724,7 +778,11 @@ final class Tabs {
 				continue;
 			}
 
-			$custom[] = array(
+			// The row's key is its name: an existing tab keeps the one it
+			// came with, a new one is given its own.
+			$uid = self::is_uid( $i ) ? (string) $i : self::mint();
+
+			$custom[ $uid ] = array(
 				'on'      => empty( $_POST['ct_on'][ $i ] ) ? 0 : 1,
 				'order'   => (int) ( $_POST['ct_order'][ $i ] ?? 30 ), // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- cast to int.
 				'title'   => $title,
