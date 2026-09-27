@@ -232,7 +232,9 @@ final class Render {
 	 * @return string
 	 */
 	public static function page_html( int $page_id ): string {
-		$key    = 'oc_compose_' . $page_id . '_' . self::version();
+		// One cache per language: the sections carry their translations, so
+		// the page /en/ serves is not the page / serves.
+		$key    = 'oc_compose_' . $page_id . '_' . determine_locale() . '_' . self::version();
 		$cached = get_transient( $key );
 
 		if ( is_string( $cached ) ) {
