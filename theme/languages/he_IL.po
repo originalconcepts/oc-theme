@@ -9859,3 +9859,90 @@ msgstr "גובה — דסקטופ (px)"
 
 msgid "Height — phone (px)"
 msgstr "גובה — נייד (px)"
+
+msgid "Related products — heading"
+msgstr "מוצרים דומים — כותרת"
+
+msgid "Complementary products — heading"
+msgstr "מוצרים משלימים — כותרת"
+
+msgid "Cross-sells — heading"
+msgstr "מוצרים נלווים — כותרת"
+
+msgid "Last-one label"
+msgstr "תווית \"אחרון במלאי\""
+
+msgid "Last-items label"
+msgstr "תווית \"נשארו אחרונים\""
+
+msgid "Out-of-stock label"
+msgstr "תווית \"אזל מהמלאי\""
+
+msgid "\"In demand\" strip"
+msgstr "פס \"מבוקש\""
+
+msgid "\"Great choice\" strip"
+msgstr "פס \"בחירה מצוינת\""
+
+msgid "Login — title"
+msgstr "התחברות — כותרת"
+
+msgid "Login — registration line"
+msgstr "התחברות — שורת ההרשמה"
+
+msgid "Login — registration perks"
+msgstr "התחברות — יתרונות ההרשמה"
+
+msgid "Login — club pitch"
+msgstr "התחברות — פסקת המועדון"
+
+msgid "Blog disclaimer"
+msgstr "הבהרה בבלוג"
+
+msgid "Product contact — title"
+msgstr "יצירת קשר במוצר — כותרת"
+
+msgid "Product contact — name"
+msgstr "יצירת קשר במוצר — שם"
+
+msgid "Product contact — role"
+msgstr "יצירת קשר במוצר — תפקיד"
+
+msgid "Product contact — message"
+msgstr "יצירת קשר במוצר — הודעה"
+
+msgid "Product contact — button"
+msgstr "יצירת קשר במוצר — כפתור"
+
+msgid "Cart — title"
+msgstr "עגלה — כותרת"
+
+msgid "Cart — empty text"
+msgstr "עגלה — טקסט עגלה ריקה"
+
+msgid "Cart — free-shipping progress"
+msgstr "עגלה — התקדמות למשלוח חינם"
+
+msgid "Cart — free-shipping reached"
+msgstr "עגלה — הגעתם למשלוח חינם"
+
+msgid "Cart — upsells title"
+msgstr "עגלה — כותרת המוצרים המשלימים"
+
+msgid "Cart — checkout button"
+msgstr "עגלה — כפתור התשלום"
+
+msgid "Short description tab — title"
+msgstr "טאב תיאור קצר — כותרת"
+
+msgid "Description tab — title"
+msgstr "טאב תיאור — כותרת"
+
+msgid "Custom tab %d — title"
+msgstr "טאב מותאם %d — כותרת"
+
+msgid "Custom tab %d — content"
+msgstr "טאב מותאם %d — תוכן"
+
+msgid "Cart drawer"
+msgstr "מגירת העגלה"

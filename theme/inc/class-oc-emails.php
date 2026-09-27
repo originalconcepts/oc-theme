@@ -255,8 +255,12 @@ final class Emails {
 	 * @param string $fallback Used when the shop has left it empty.
 	 */
 	public static function opt( $email, string $key, string $fallback = '' ): string {
-		$value = is_object( $email ) && method_exists( $email, 'get_option' ) ? (string) $email->get_option( $key, '' ) : '';
-		$value = trim( $value );
+		// The option itself, not the copy the email took when it was built:
+		// a translation plugin reaches these words by filtering the option,
+		// and it may only know the customer's language by the time the
+		// email is made.
+		$all   = is_object( $email ) && method_exists( $email, 'get_option_key' ) ? get_option( (string) $email->get_option_key() ) : array();
+		$value = is_array( $all ) && isset( $all[ $key ] ) && is_scalar( $all[ $key ] ) ? trim( (string) $all[ $key ] ) : '';
 
 		return '' !== $value ? $value : $fallback;
 	}
@@ -1037,7 +1041,7 @@ final class Emails {
 			// ("Thanks for shopping with us") even when nobody has touched
 			// the box, and ours — the one the settings screen shows as the
 			// default — would then never be seen.
-			$own = is_object( $email ) && method_exists( $email, 'get_option' ) ? trim( (string) $email->get_option( 'heading' ) ) : '';
+			$own = self::opt( $email, 'heading' );
 			$def = is_object( $email ) && method_exists( $email, 'get_default_heading' ) ? trim( (string) $email->get_default_heading() ) : '';
 
 			$head = ( '' !== $own && $own !== $def )
@@ -1270,7 +1274,7 @@ final class Emails {
 		$p           = self::palette();
 		self::$align = self::opt( $email, 'oc_align', 'center' );
 
-		$own = is_object( $email ) && method_exists( $email, 'get_option' ) ? trim( (string) $email->get_option( 'heading' ) ) : '';
+		$own = self::opt( $email, 'heading' );
 		$def = is_object( $email ) && method_exists( $email, 'get_default_heading' ) ? trim( (string) $email->get_default_heading() ) : '';
 
 		$head = ( '' !== $own && $own !== $def ) ? $own : (string) ( $words['heading'] ?? '' );
