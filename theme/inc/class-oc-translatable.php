@@ -37,6 +37,12 @@ final class Translatable {
 		add_filter( 'oclang_options', array( $this, 'options' ) );
 		add_filter( 'oclang_option_labels', array( $this, 'labels' ) );
 		add_filter( 'oclang_option_groups', array( $this, 'groups' ) );
+
+		// A saved translation changes what a cached menu panel says: the
+		// category names in it, the product names, the addresses.
+		if ( class_exists( __NAMESPACE__ . '\\Menu_Panel' ) ) {
+			add_action( 'oclang_saved', array( __NAMESPACE__ . '\\Menu_Panel', 'flush' ) );
+		}
 	}
 
 	/**
@@ -84,6 +90,10 @@ final class Translatable {
 			'oc_footer_news_h'         => __( 'Footer — newsletter heading', 'oc-theme' ),
 			'oc_footer_news_t'         => __( 'Footer — newsletter text', 'oc-theme' ),
 			'oc_footer_credit'         => __( 'Footer — credit line', 'oc-theme' ),
+			'oc_footer_col1_h'         => __( 'Footer — column 1 heading', 'oc-theme' ),
+			'oc_footer_col2_h'         => __( 'Footer — column 2 heading', 'oc-theme' ),
+			'oc_footer_col3_h'         => __( 'Footer — column 3 heading', 'oc-theme' ),
+			'oc_footer_col4_h'         => __( 'Footer — column 4 heading', 'oc-theme' ),
 			'oc_bt_title'              => __( 'Bundle — heading', 'oc-theme' ),
 			'oc_contact_title_text'    => __( 'Product contact — title', 'oc-theme' ),
 			'oc_contact_name'          => __( 'Product contact — name', 'oc-theme' ),
@@ -146,6 +156,21 @@ final class Translatable {
 	}
 
 	/**
+	 * The typed words of the catalogue filters. A filter group's own title
+	 * is not here: the groups are a list the admin reorders, and a
+	 * translation tied to a place in a list lands on the wrong group the
+	 * day the list moves. An untitled group shows the attribute's name,
+	 * which is translated as an attribute.
+	 *
+	 * @return array<string,string>
+	 */
+	private static function filters(): array {
+		return array(
+			'brands_title' => __( 'Brand filter — title', 'oc-theme' ),
+		);
+	}
+
+	/**
 	 * The thank-you page's typed lines.
 	 *
 	 * @return array<string,string>
@@ -199,6 +224,11 @@ final class Translatable {
 			$types[] = \OC\Blocks\Branches::CPT;
 		}
 
+		// The catalogue's own blocks: a banner's words are typed on the block.
+		if ( class_exists( __NAMESPACE__ . '\\Blocks' ) ) {
+			$types[] = Blocks::TYPE;
+		}
+
 		return array_values( array_unique( $types ) );
 	}
 
@@ -236,6 +266,21 @@ final class Translatable {
 			$map['_oc_br_address']     = array( '' => __( 'Address', 'oc-theme' ) );
 			$map['_oc_br_city']        = array( '' => __( 'City', 'oc-theme' ) );
 			$map['_oc_br_hours']       = array( '' => __( 'Opening hours', 'oc-theme' ) );
+
+			return $map;
+		}
+
+		if ( 'nav_menu_item' === $type ) {
+			$map['_oc_badge'] = array( '' => __( 'Menu badge', 'oc-theme' ) );
+
+			return $map;
+		}
+
+		if ( class_exists( __NAMESPACE__ . '\\Blocks' ) && Blocks::TYPE === $type ) {
+			$map['_oc_block_heading']    = array( '' => __( 'Heading', 'oc-theme' ) );
+			$map['_oc_block_cta']        = array( '' => __( 'Button text', 'oc-theme' ) );
+			$map['_oc_block_alt']        = array( '' => __( 'Image description (alt)', 'oc-theme' ) );
+			$map['_oc_block_ps_heading'] = array( '' => __( 'Product slider — heading', 'oc-theme' ) );
 
 			return $map;
 		}
@@ -289,6 +334,7 @@ final class Translatable {
 		$out['oc_cart']             = array_keys( self::cart() );
 		$out['oc_thankyou']         = array_keys( self::thankyou() );
 		$out['oc_checkout']         = array_keys( self::checkout() );
+		$out['oc_filters']          = array_keys( self::filters() );
 
 		foreach ( self::EMAILS as $id ) {
 			$name         = 'woocommerce_' . $id . '_settings';
@@ -319,6 +365,7 @@ final class Translatable {
 		$groups['oc_cart']             = 'theme';
 		$groups['oc_thankyou']         = 'theme';
 		$groups['oc_checkout']         = 'theme';
+		$groups['oc_filters']          = 'theme';
 
 		return $groups;
 	}
@@ -337,6 +384,7 @@ final class Translatable {
 		$labels['oc_cart']             = array( '' => __( 'Cart drawer', 'oc-theme' ) ) + self::cart();
 		$labels['oc_thankyou']         = array( '' => __( 'Thank-you page', 'oc-theme' ) ) + self::thankyou();
 		$labels['oc_checkout']         = array( '' => __( 'Checkout', 'oc-theme' ) ) + self::checkout();
+		$labels['oc_filters']          = array( '' => __( 'Catalogue filters', 'oc-theme' ) ) + self::filters();
 
 		foreach ( self::EMAILS as $id ) {
 			$name            = 'woocommerce_' . $id . '_settings';

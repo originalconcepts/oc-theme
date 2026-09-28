@@ -50,6 +50,15 @@ Format follows [Keep a Changelog](https://keepachangelog.com/); versioning is
   city, hours and checkout name), the thank-you page's lines, the
   checkout's typed lines, the announcement bar, the footer's texts and
   the bundle heading.
+- A mega-menu panel is cached per language and forgotten when a
+  translation is saved: `/en/` used to show the Hebrew panel, category
+  names, product names and addresses included.
+- The composer says when it saved a page (`oc_blocks_saved`), so a
+  translation plugin can translate what is new on it.
+- More of the theme's typed words are declared translatable: the
+  catalogue's own blocks (heading, button, image description, slider
+  heading), the footer's column headings, a menu item's badge, the brand
+  filter's title.
 - The tabs a product carries itself are translatable: the theme declares
   them through the plugin's `oclang_post_meta`, row by row, and the front
   end reads them through `get_post_meta` so the translation can reach them.

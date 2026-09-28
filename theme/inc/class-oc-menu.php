@@ -447,13 +447,13 @@ final class Menu {
 		}
 
 		if ( function_exists( 'wp_prime_option_caches' ) && class_exists( __NAMESPACE__ . '\\Menu_Panel' ) ) {
-			$ver   = Menu_Panel::version();
 			$names = array();
 
 			foreach ( $ids as $id ) {
 				foreach ( array( 'nav', 'drawer' ) as $where ) {
-					$names[] = '_transient_oc_mpanel_' . $id . '_' . $where . '_' . $ver;
-					$names[] = '_transient_timeout_oc_mpanel_' . $id . '_' . $where . '_' . $ver;
+					$key     = Menu_Panel::cache_key( $id, $where );
+					$names[] = '_transient_' . $key;
+					$names[] = '_transient_timeout_' . $key;
 				}
 			}
 

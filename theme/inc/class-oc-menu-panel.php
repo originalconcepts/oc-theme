@@ -449,7 +449,7 @@ final class Menu_Panel {
 	 * @return string
 	 */
 	public static function html( int $item_id, string $where = 'nav' ): string {
-		$key    = 'oc_mpanel_' . $item_id . '_' . $where . '_' . self::version();
+		$key    = self::cache_key( $item_id, $where );
 		$cached = get_transient( $key );
 
 		if ( is_string( $cached ) ) {
@@ -1316,6 +1316,19 @@ final class Menu_Panel {
 	/*
 	 * Cache.
 	 */
+
+	/**
+	 * Where one panel's HTML is kept. One cache per language: a panel
+	 * carries category names, product names and their addresses, and the
+	 * ones /en/ shows are not the ones / shows. A translation plugin that
+	 * saves something bumps the version through `oclang_saved`.
+	 *
+	 * @param int    $item_id Menu item id.
+	 * @param string $where   Either 'nav' or 'drawer'.
+	 */
+	public static function cache_key( int $item_id, string $where ): string {
+		return 'oc_mpanel_' . $item_id . '_' . $where . '_' . determine_locale() . '_' . self::version();
+	}
 
 	/**
 	 * A token that changes whenever any panel does. Keying the transients by

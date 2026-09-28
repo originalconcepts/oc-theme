@@ -10034,3 +10034,27 @@ msgstr "פוטר — שורת הקרדיט"
 #: theme/inc/class-oc-translatable.php
 msgid "Bundle — heading"
 msgstr "מארז — כותרת"
+
+msgid "Footer — column 1 heading"
+msgstr "פוטר — כותרת עמודה 1"
+
+msgid "Footer — column 2 heading"
+msgstr "פוטר — כותרת עמודה 2"
+
+msgid "Footer — column 3 heading"
+msgstr "פוטר — כותרת עמודה 3"
+
+msgid "Footer — column 4 heading"
+msgstr "פוטר — כותרת עמודה 4"
+
+msgid "Image description (alt)"
+msgstr "תיאור התמונה (alt)"
+
+msgid "Product slider — heading"
+msgstr "סליידר מוצרים — כותרת"
+
+msgid "Brand filter — title"
+msgstr "מסנן מותגים — כותרת"
+
+msgid "Menu badge"
+msgstr "תג בתפריט"

@@ -430,6 +430,15 @@ final class Editor {
 
 		update_option( 'oc_blocks_ver', (int) get_option( 'oc_blocks_ver', 0 ) + 1, false );
 
+		/**
+		 * The sections of a composed page were saved. A translation plugin
+		 * listens, to translate what is new on the page.
+		 *
+		 * @param int   $page_id The page.
+		 * @param array $list    Its sections, cleaned.
+		 */
+		do_action( 'oc_blocks_saved', $page_id, $list );
+
 		wp_send_json_success( array( 'sections' => $list ) );
 	}
 
