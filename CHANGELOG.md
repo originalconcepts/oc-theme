@@ -55,7 +55,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/); versioning is
   names, product names and addresses included.
 - The header settings say where the language switcher goes, once for a
   desk and once for a phone: beside the icons, at the end of the menu, in
-  the menu drawer beside the close, starting where the rows start (the
+  the menu drawer beside the close, starting where the rows start and
+  answering the first touch like the rows do (the
   phone's default — in the header bar it pushed the icons aside), in the
   footer, floating, or nowhere but
   the `[oclang_switcher]` shortcode. The plugin's own placement setting

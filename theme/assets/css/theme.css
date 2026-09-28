@@ -3021,6 +3021,7 @@ html.oc-drw-open { overflow: hidden; }
 .oc-drw__top .oc-lang { flex: 1 1 auto; justify-content: flex-start; margin-inline-start: calc(var(--oc-gap, 16px) - 12px - 38px); padding-inline-end: 6px; }
 .oc-drw--slide.oc-drw--in .oc-drw__top .oc-lang { margin-inline-start: 8px; }
 .oc-drw__top .oclang-switcher { font-size: .95rem; }
+.oc-drw__top .oc-lang a { touch-action: manipulation; }
 @media (max-width: 900px) { .oc-lang--desk { display: none !important; } }
 @media (min-width: 901px) { .oc-lang--mob { display: none !important; } }
 

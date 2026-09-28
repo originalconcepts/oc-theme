@@ -879,7 +879,9 @@
 				return;
 			}
 
-			drwTap = event.target.closest( '.oc-drw__a, .oc-drw__title, .oc-drw__all, .oc-drw__more' );
+			// The language switcher's links ride the top bar and lose their
+			// first tap the same way the rows did; they get the same answer.
+			drwTap = event.target.closest( '.oc-drw__a, .oc-drw__title, .oc-drw__all, .oc-drw__more, .oc-lang a' );
 			drwTapX = event.clientX;
 			drwTapY = event.clientY;
 			drwTapMoved = false;
