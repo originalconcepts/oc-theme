@@ -6411,6 +6411,8 @@ html:not([dir]) .oc-cartup__items--h.oc-fade-end {
 	 * pulled a fifth of the way towards the text ink (5.1:1 there) */
 	color: var(--oc-ink-2);
 	color: color-mix(in srgb, var(--oc-ink-2) 80%, var(--oc-ink));
+	/* WooCommerce's sheet also fades span.price del — the same override as on the cards */
+	opacity: 1;
 }
 
 /* the badge box rides the price line's height; the text inside stays
