@@ -53,6 +53,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/); versioning is
 - A mega-menu panel is cached per language and forgotten when a
   translation is saved: `/en/` used to show the Hebrew panel, category
   names, product names and addresses included.
+- A post card on a composed page asks for the post's words through
+  `oc_blocks_post_text`, so a translated excerpt reaches the card.
 - The composer says when it saved a page (`oc_blocks_saved`), so a
   translation plugin can translate what is new on it.
 - More of the theme's typed words are declared translatable: the

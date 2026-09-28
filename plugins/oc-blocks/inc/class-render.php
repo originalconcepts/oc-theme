@@ -1496,7 +1496,19 @@ final class Render {
 	 * @param int      $words How many words.
 	 */
 	public static function post_excerpt( \WP_Post $post, int $words ): string {
-		$text = '' !== trim( (string) $post->post_excerpt ) ? (string) $post->post_excerpt : (string) $post->post_content;
+		$field = '' !== trim( (string) $post->post_excerpt ) ? 'excerpt' : 'content';
+		$text  = 'excerpt' === $field ? (string) $post->post_excerpt : (string) $post->post_content;
+
+		/**
+		 * A post's words as a card shows them. The card reads the post
+		 * itself, past the filters a loop would run, so a translation
+		 * plugin hands the field back here in the page's language.
+		 *
+		 * @param string   $text  The excerpt, or the content when there is none.
+		 * @param \WP_Post $post  The post.
+		 * @param string   $field 'excerpt' or 'content'.
+		 */
+		$text = (string) apply_filters( 'oc_blocks_post_text', $text, $post, $field );
 		$text = wp_strip_all_tags( strip_shortcodes( excerpt_remove_blocks( $text ) ) );
 
 		return wp_trim_words( $text, $words );
