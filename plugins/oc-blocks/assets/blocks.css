@@ -1472,7 +1472,7 @@ body.oc-card-h-custom .ocb-look__cimg img {
 .ocb-look__cname a { text-decoration: none; color: inherit; }
 
 .ocb-look__cprice { margin-block-start: 6px; font-weight: 600; }
-.ocb-look__cprice del { opacity: .55; margin-inline-end: 6px; font-weight: 400; }
+.ocb-look__cprice del { color: var(--oc-ink-2, #666e7c); margin-inline-end: 6px; font-weight: 400; }
 .ocb-look__cprice ins { text-decoration: none; color: var(--oc-sale, #b4453c); }
 
 .ocb-look__cgo { margin-block-start: 16px; }

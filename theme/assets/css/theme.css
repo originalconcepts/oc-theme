@@ -4300,7 +4300,8 @@ textarea { border-radius: var(--oc-radius, 8px); }
 	margin-block: 2px 0;
 }
 /* Full strength: at .8 the struck price fell under AA contrast on white. */
-.woocommerce ul.products li.product .price del { color: var(--oc-ink-2); }
+/* WooCommerce's own sheet fades this del (opacity) on top of the colour — 2.8:1 on white. Opaque; the strike carries the meaning. */
+.woocommerce ul.products li.product .price del { color: var(--oc-ink-2); opacity: 1; }
 .woocommerce ul.products li.product .price ins { text-decoration: none; }
 
 /* ---------- card media: hover swap + scroll-snap gallery ---------- */
