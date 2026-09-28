@@ -10274,3 +10274,21 @@ msgstr "לקופה כבר יש עמוד תקנון שלא נכתב על ידי �
 
 msgid "There is already an accessibility page the theme did not write: %s. It is not touched. If it is complete, link it from the footer menu and skip this button; writing ours adds a second page and the footer link points at ours."
 msgstr "כבר קיים עמוד נגישות שלא נכתב על ידי התבנית: %s. הוא לא ייגע. אם הוא שלם — קשרו אותו מתפריט הפוטר ודלגו על הכפתור; כתיבת העמוד שלנו מוסיפה עמוד שני והקישור בפוטר יצביע על שלנו."
+
+msgid "This page is a general template drafted with the help of artificial intelligence by the theme's makers. It is a starting point for inspiration only — not legal advice, and not tailored to your business. Before publishing, have the text reviewed by a lawyer and adapted to your business, and read every line yourself. Using the page is the sole responsibility of the site owner; the theme's makers bear no responsibility for its content or for any claim that may arise from it. Clicking \"Create the page\" confirms that you have read and understood this."
+msgstr "עמוד זה הוא טמפלט כללי שנוסח בעזרת בינה מלאכותית על ידי יוצרי התבנית. הוא נקודת פתיחה והשראה בלבד — לא ייעוץ משפטי, ולא מותאם לעסק שלכם. לפני הפרסום יש להעביר את הטקסט לעיון עורך/ת דין ולהתאימו לעסק, ולקרוא כל שורה בעצמכם. השימוש בעמוד הוא באחריות בעל האתר בלבד; יוצרי התבנית אינם נושאים באחריות לתוכנו או לכל טענה שתנבע ממנו. לחיצה על \"צור את העמוד\" מאשרת שקראתם והבנתם זאת."
+
+msgid "I have read and understood: this is a template, not legal advice, and using it is my responsibility."
+msgstr "קראתי והבנתי: זהו טמפלט, לא ייעוץ משפטי, והשימוש בו באחריותי."
+
+msgid "Create the page"
+msgstr "צור את העמוד"
+
+msgid "The page was not written: the confirmation box was not ticked."
+msgstr "העמוד לא נכתב: תיבת האישור לא סומנה."
+
+msgid "Legal page templates"
+msgstr "טמפלט עמודים משפטיים"
+
+msgid "Each button writes a page from a general template built into the theme. The facts on the page (company, address, hours, coordinator, branches) are read live from this screen, so save first, and later edits here show on the page by themselves. Rewriting a page replaces what you edited on it. Before the page is written you confirm that it is a template and not legal advice."
+msgstr "כל כפתור כותב עמוד מטמפלט כללי המובנה בתבנית. הפרטים בעמוד (חברה, כתובת, שעות, רכז/ת, סניפים) נקראים חי מהמסך הזה — לכן קודם שומרים, ושינוי כאן בהמשך יופיע בעמוד מעצמו. כתיבה מחדש מחליפה מה שערכתם בעמוד. לפני שהעמוד נכתב אתם מאשרים שזהו טמפלט ולא ייעוץ משפטי."

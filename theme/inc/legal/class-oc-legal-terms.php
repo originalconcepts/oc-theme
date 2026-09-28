@@ -87,6 +87,23 @@ final class Terms {
 
 		check_admin_referer( 'oc_legal_terms' );
 
+		// The kind of store and the extra clauses are chosen in the dialog,
+		// with the disclaimer in view, and kept with the other store details.
+		// phpcs:disable WordPress.Security.NonceVerification.Missing -- verified above.
+		$options = array(
+			'terms_kind'   => 'food' === sanitize_key( wp_unslash( $_POST['terms_kind'] ?? '' ) ) ? 'food' : 'general',
+			'terms_custom' => empty( $_POST['terms_custom'] ) ? 0 : 1,
+			'terms_bulky'  => empty( $_POST['terms_bulky'] ) ? 0 : 1,
+		);
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
+
+		if ( ! Consent::confirmed( 'terms', $options ) ) {
+			wp_safe_redirect( add_query_arg( 'oc_consent', '0', admin_url( 'admin.php?page=oc-contact' ) ) );
+			exit;
+		}
+
+		update_option( 'oc_contact', array_merge( Contact::settings(), $options ) );
+
 		$id = self::create_page();
 
 		wp_safe_redirect(

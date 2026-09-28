@@ -93,6 +93,7 @@ require_once OC_THEME_DIR . '/inc/marketing/class-oc-marketing-admin.php';
 require_once OC_THEME_DIR . '/inc/marketing/class-oc-marketing-thirdparty.php';
 require_once OC_THEME_DIR . '/inc/class-oc-marketing.php';
 require_once OC_THEME_DIR . '/inc/privacy/class-oc-privacy-settings.php';
+require_once OC_THEME_DIR . '/inc/legal/class-oc-legal-consent.php';
 require_once OC_THEME_DIR . '/inc/legal/class-oc-legal-terms.php';
 require_once OC_THEME_DIR . '/inc/legal/class-oc-legal-accessibility.php';
 require_once OC_THEME_DIR . '/inc/privacy/class-oc-privacy-consent.php';

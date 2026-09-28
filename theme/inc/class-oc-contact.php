@@ -532,6 +532,10 @@ final class Contact {
 			echo '<div class="notice notice-success"><p>' . esc_html__( 'Settings saved.', 'oc-theme' ) . '</p></div>';
 		}
 
+		if ( isset( $_GET['oc_consent'] ) ) {
+			echo '<div class="notice notice-error"><p>' . esc_html__( 'The page was not written: the confirmation box was not ticked.', 'oc-theme' ) . '</p></div>';
+		}
+
 		if ( isset( $_GET['oc_page'] ) ) {
 			$which = sanitize_key( wp_unslash( (string) $_GET['oc_page'] ) );
 			$ok    = ! empty( $_GET['ok'] );
@@ -676,39 +680,16 @@ final class Contact {
 								</p>
 							<?php else : ?>
 								<label>
-									<input type="checkbox" name="a11y_physical" value="1" <?php checked( ! empty( $s['a11y_physical'] ) ); ?> />
+									<input type="checkbox" name="a11y_physical" value="1" id="oc-a11y-physical" <?php checked( ! empty( $s['a11y_physical'] ) ); ?> onchange="document.getElementById('oc-a11y-items').hidden=!this.checked" />
 									<?php esc_html_e( 'The business has a store or showroom open to the public', 'oc-theme' ); ?>
 								</label>
 								<p class="description"><?php esc_html_e( 'Off = the statement says the service is online only. On = tick what the premises offer; anything left unticked shows as "no".', 'oc-theme' ); ?></p>
-								<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:6px 20px;margin-top:8px">
+								<div id="oc-a11y-items" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:6px 20px;margin-top:8px" <?php echo empty( $s['a11y_physical'] ) ? 'hidden' : ''; ?>>
 									<?php foreach ( self::access_items() as $key => $label ) : ?>
 										<label style="display:flex;gap:8px;align-items:center"><input type="checkbox" name="a11y_access[<?php echo esc_attr( $key ); ?>]" value="1" <?php checked( ! empty( $s['a11y_access'][ $key ] ) ); ?> /> <?php echo esc_html( $label ); ?></label>
 									<?php endforeach; ?>
 								</div>
 							<?php endif; ?>
-						</td>
-					</tr>
-				</table>
-
-				<h2><?php esc_html_e( 'Terms of sale', 'oc-theme' ); ?></h2>
-				<p class="description"><?php esc_html_e( 'How the generated terms page is written. The cancellation, fee and warranty figures are the ones the Consumer Protection Law sets and are not settings.', 'oc-theme' ); ?></p>
-				<table class="form-table" role="presentation">
-					<tr>
-						<th scope="row"><?php esc_html_e( 'Kind of store', 'oc-theme' ); ?></th>
-						<td>
-							<fieldset>
-								<label><input type="radio" name="terms_kind" value="general" <?php checked( 'food' !== $s['terms_kind'] ); ?> /> <?php esc_html_e( 'General — clothing, furniture, home, gifts, electronics', 'oc-theme' ); ?></label><br />
-								<label><input type="radio" name="terms_kind" value="food" <?php checked( 'food' === $s['terms_kind'] ); ?> /> <?php esc_html_e( 'Food — adds perishables, weight variance, allergens and cold-chain delivery', 'oc-theme' ); ?></label>
-							</fieldset>
-						</td>
-					</tr>
-					<tr>
-						<th scope="row"><?php esc_html_e( 'Extra clauses', 'oc-theme' ); ?></th>
-						<td>
-							<fieldset>
-								<label><input type="checkbox" name="terms_custom" value="1" <?php checked( ! empty( $s['terms_custom'] ) ); ?> /> <?php esc_html_e( 'Made-to-order products — no cancellation once production has begun', 'oc-theme' ); ?></label><br />
-								<label><input type="checkbox" name="terms_bulky" value="1" <?php checked( ! empty( $s['terms_bulky'] ) ); ?> /> <?php esc_html_e( 'Large items — access, stairs, crane, assembly and acceptance on delivery', 'oc-theme' ); ?></label>
-							</fieldset>
 						</td>
 					</tr>
 				</table>
@@ -726,8 +707,8 @@ final class Contact {
 				<?php submit_button( __( 'Save settings', 'oc-theme' ) ); ?>
 			</form>
 
-			<h2><?php esc_html_e( 'Legal pages', 'oc-theme' ); ?></h2>
-			<p class="description"><?php esc_html_e( 'Each button writes a ready-made page from a template built into the theme — no AI, no outside service, nothing leaves the site. The facts on the page (company, address, hours, coordinator, branches) are read live from this screen, so save first, and later edits here show on the page by themselves. Rewriting a page replaces what you edited on it. Read every page once before publishing — a lawyer should confirm anything specific to your business.', 'oc-theme' ); ?></p>
+			<h2><?php esc_html_e( 'Legal page templates', 'oc-theme' ); ?></h2>
+			<p class="description"><?php esc_html_e( 'Each button writes a page from a general template built into the theme. The facts on the page (company, address, hours, coordinator, branches) are read live from this screen, so save first, and later edits here show on the page by themselves. Rewriting a page replaces what you edited on it. Before the page is written you confirm that it is a template and not legal advice.', 'oc-theme' ); ?></p>
 			<?php
 			$link  = static function ( int $id ): string {
 				return '<a href="' . esc_url( (string) get_permalink( $id ) ) . '" target="_blank" rel="noopener">' . esc_html( (string) get_the_title( $id ) ) . '</a>';
@@ -751,11 +732,20 @@ final class Contact {
 			foreach ( $pages as $which => $page ) :
 				?>
 				<div style="margin:0 0 18px;max-width:760px">
-					<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display:inline">
-						<input type="hidden" name="action" value="oc_legal_<?php echo esc_attr( $which ); ?>" />
-						<?php wp_nonce_field( 'oc_legal_' . $which ); ?>
-						<button type="submit" class="button button-secondary"><?php echo esc_html( $page['id'] ? $page['again'] : $page['write'] ); ?></button>
-					</form>
+					<?php
+					$extra = '';
+
+					if ( 'terms' === $which ) {
+						$extra = '<fieldset><legend>' . esc_html__( 'Kind of store', 'oc-theme' ) . '</legend>'
+							. '<label><input type="radio" name="terms_kind" value="general" ' . checked( 'food' !== $s['terms_kind'], true, false ) . ' /> ' . esc_html__( 'General — clothing, furniture, home, gifts, electronics', 'oc-theme' ) . '</label><br />'
+							. '<label><input type="radio" name="terms_kind" value="food" ' . checked( 'food' === $s['terms_kind'], true, false ) . ' /> ' . esc_html__( 'Food — adds perishables, weight variance, allergens and cold-chain delivery', 'oc-theme' ) . '</label></fieldset>'
+							. '<fieldset><legend>' . esc_html__( 'Extra clauses', 'oc-theme' ) . '</legend>'
+							. '<label><input type="checkbox" name="terms_custom" value="1" ' . checked( ! empty( $s['terms_custom'] ), true, false ) . ' /> ' . esc_html__( 'Made-to-order products — no cancellation once production has begun', 'oc-theme' ) . '</label><br />'
+							. '<label><input type="checkbox" name="terms_bulky" value="1" ' . checked( ! empty( $s['terms_bulky'] ), true, false ) . ' /> ' . esc_html__( 'Large items — access, stairs, crane, assembly and acceptance on delivery', 'oc-theme' ) . '</label></fieldset>';
+					}
+
+					Legal\Consent::button( 'oc_legal_' . $which, 'oc_legal_' . $which, $page['id'] ? $page['again'] : $page['write'], $extra );
+					?>
 					<?php if ( $page['id'] ) : ?>
 						<a href="<?php echo esc_url( (string) get_permalink( $page['id'] ) ); ?>" target="_blank" rel="noopener" style="margin-inline-start:10px"><?php esc_html_e( 'View', 'oc-theme' ); ?></a>
 						· <a href="<?php echo esc_url( (string) get_edit_post_link( $page['id'] ) ); ?>"><?php esc_html_e( 'Edit', 'oc-theme' ); ?></a>
@@ -791,9 +781,6 @@ final class Contact {
 			'company_id'    => sanitize_text_field( wp_unslash( $_POST['company_id'] ?? '' ) ),
 			'address'       => sanitize_text_field( wp_unslash( $_POST['address'] ?? '' ) ),
 			'hours'         => sanitize_textarea_field( wp_unslash( $_POST['hours'] ?? '' ) ),
-			'terms_kind'    => 'food' === sanitize_key( wp_unslash( $_POST['terms_kind'] ?? '' ) ) ? 'food' : 'general',
-			'terms_custom'  => empty( $_POST['terms_custom'] ) ? 0 : 1,
-			'terms_bulky'   => empty( $_POST['terms_bulky'] ) ? 0 : 1,
 			'a11y_name'     => sanitize_text_field( wp_unslash( $_POST['a11y_name'] ?? '' ) ),
 			'a11y_phone'    => sanitize_text_field( wp_unslash( $_POST['a11y_phone'] ?? '' ) ),
 			'a11y_email'    => sanitize_email( wp_unslash( $_POST['a11y_email'] ?? '' ) ),
@@ -803,8 +790,13 @@ final class Contact {
 		);
 
 		// With branches the premises checklist lives on each branch; the
-		// site-level one is not shown, so keep what was saved before.
+		// site-level one is not shown, so keep what was saved before. The
+		// terms options are chosen in the terms dialog, not here.
 		$before = self::settings();
+
+		foreach ( array( 'terms_kind', 'terms_custom', 'terms_bulky' ) as $key ) {
+			$s[ $key ] = $before[ $key ];
+		}
 
 		if ( self::branches() ) {
 			$s['a11y_physical'] = (int) $before['a11y_physical'];

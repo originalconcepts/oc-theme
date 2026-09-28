@@ -99,6 +99,11 @@ final class Accessibility {
 
 		check_admin_referer( 'oc_legal_a11y' );
 
+		if ( ! Consent::confirmed( 'accessibility' ) ) {
+			wp_safe_redirect( add_query_arg( 'oc_consent', '0', admin_url( 'admin.php?page=oc-contact' ) ) );
+			exit;
+		}
+
 		$id = self::create_page();
 
 		wp_safe_redirect(

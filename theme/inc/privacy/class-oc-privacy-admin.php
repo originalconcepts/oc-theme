@@ -247,11 +247,18 @@ final class Admin {
 			<?php else : ?>
 				<p class="ocprv-warn"><?php esc_html_e( 'No privacy policy page is set. The banner shows without a link until there is one.', 'oc-theme' ); ?></p>
 			<?php endif; ?>
-			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="ocprv-inline">
-				<input type="hidden" name="action" value="ocprv_page" />
-				<?php wp_nonce_field( self::NONCE ); ?>
-				<button type="submit" class="button"><?php echo (int) get_option( 'oc_privacy_page', 0 ) > 0 ? esc_html__( 'Rewrite the generated policy page', 'oc-theme' ) : esc_html__( 'Write a privacy policy page for this site', 'oc-theme' ); ?></button>
-			</form>
+			<?php if ( isset( $_GET['oc_consent'] ) ) : // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- notice only. ?>
+				<p class="ocprv-warn"><?php esc_html_e( 'The page was not written: the confirmation box was not ticked.', 'oc-theme' ); ?></p>
+			<?php endif; ?>
+			<div class="ocprv-inline">
+				<?php
+				\OC\Theme\Legal\Consent::button(
+					'ocprv_page',
+					self::NONCE,
+					(int) get_option( 'oc_privacy_page', 0 ) > 0 ? __( 'Rewrite the generated policy page', 'oc-theme' ) : __( 'Write a privacy policy page for this site', 'oc-theme' )
+				);
+				?>
+			</div>
 			<p class="description"><?php esc_html_e( 'A complete policy in the site\'s language with the shop\'s name and contact details filled in, the live cookie table, and a form for data requests. It covers the Israeli Protection of Privacy Law (including the Amendment 13 notice at collection) and the GDPR for European visitors. Read it once before launch — a lawyer should confirm anything specific to your business.', 'oc-theme' ); ?></p>
 			<p class="description"><code>[oc_cookie_table]</code> — <?php esc_html_e( 'the live list of cookies and services, for any page.', 'oc-theme' ); ?> <code>[oc_privacy_request]</code> — <?php esc_html_e( 'a form to request a copy or deletion of personal data; requests arrive under Tools.', 'oc-theme' ); ?></p>
 		</div>
@@ -433,6 +440,11 @@ final class Admin {
 	 */
 	public function handle_page(): void {
 		$this->guard();
+
+		if ( ! \OC\Theme\Legal\Consent::confirmed( 'privacy' ) ) {
+			wp_safe_redirect( add_query_arg( 'oc_consent', '0', admin_url( 'options-general.php?page=oc-privacy' ) ) );
+			exit;
+		}
 
 		$id = Policy::create_page();
 		$this->flush();
