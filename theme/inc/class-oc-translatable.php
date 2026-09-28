@@ -37,6 +37,7 @@ final class Translatable {
 		add_filter( 'oclang_options', array( $this, 'options' ) );
 		add_filter( 'oclang_option_labels', array( $this, 'labels' ) );
 		add_filter( 'oclang_option_groups', array( $this, 'groups' ) );
+		add_filter( 'oclang_menu_item_meta', array( $this, 'menu_item_meta' ) );
 
 		// A saved translation changes what a cached menu panel says: the
 		// category names in it, the product names, the addresses.
@@ -342,6 +343,24 @@ final class Translatable {
 		}
 
 		return $map;
+	}
+
+	/**
+	 * Where a menu item keeps typed words of its own, so the plugin lists
+	 * the items that carry any: the badge, the panel's blocks.
+	 *
+	 * @param string[]|mixed $keys Meta keys.
+	 * @return string[]
+	 */
+	public function menu_item_meta( $keys ): array {
+		$keys   = is_array( $keys ) ? $keys : array();
+		$keys[] = '_oc_badge';
+
+		if ( class_exists( __NAMESPACE__ . '\\Menu_Panel' ) ) {
+			$keys[] = Menu_Panel::META;
+		}
+
+		return array_values( array_unique( $keys ) );
 	}
 
 	/**

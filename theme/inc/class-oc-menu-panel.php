@@ -1357,29 +1357,36 @@ final class Menu_Panel {
 			return;
 		}
 
-		$ids = get_posts(
-			array(
-				'post_type'      => 'nav_menu_item',
-				'post_status'    => 'any',
-				'posts_per_page' => 200,
-				'fields'         => 'ids',
-				'meta_key'       => self::META, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- once, in the admin, to name the blocks.
-				'no_found_rows'  => true,
-			)
-		);
+		for ( $page = 1; $page <= 20; $page++ ) {
+			$ids = get_posts(
+				array(
+					'post_type'      => 'nav_menu_item',
+					'post_status'    => 'any',
+					'posts_per_page' => 100,
+					'paged'          => $page,
+					'fields'         => 'ids',
+					'meta_key'       => self::META, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- once, in the admin, to name the blocks.
+					'no_found_rows'  => true,
+				)
+			);
 
-		foreach ( (array) $ids as $id ) {
-			$raw = get_post_meta( (int) $id, self::META, true );
+			foreach ( (array) $ids as $id ) {
+				$raw = get_post_meta( (int) $id, self::META, true );
 
-			if ( ! is_array( $raw ) ) {
-				continue;
+				if ( ! is_array( $raw ) ) {
+					continue;
+				}
+
+				foreach ( $raw as $block ) {
+					if ( ! is_array( $block ) || empty( $block['uid'] ) ) {
+						self::save( (int) $id, $raw );
+						break;
+					}
+				}
 			}
 
-			foreach ( $raw as $block ) {
-				if ( ! is_array( $block ) || empty( $block['uid'] ) ) {
-					self::save( (int) $id, $raw );
-					break;
-				}
+			if ( count( (array) $ids ) < 100 ) {
+				break;
 			}
 		}
 
