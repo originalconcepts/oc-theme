@@ -89,3 +89,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/); versioning is
   `Search_Index::touch_term()` rewrites a term's products — a few now, the
   rest queued for the cron rebuild — on `edited_term` and on
   `oc_search_touch_term`.
+- The cart drawer's promotion lines — the per-deal savings and the row under
+  an item — pass the promotion's name through the engine's own
+  `promeng_product_label` filter, so a translated name reads the same there
+  as on the product card.

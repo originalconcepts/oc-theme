@@ -584,7 +584,10 @@ final class Cart {
 			if ( is_array( $summary ) ) {
 				foreach ( (array) ( $summary['items'] ?? array() ) as $row ) {
 					$promo_saved += (float) $row['saved'];
-					$rows[]       = '<div class="oc-drawer__discount"><span>' . esc_html( (string) $row['name'] ) . '</span><strong>&minus;' . wc_price( (float) $row['saved'] ) . '</strong></div>';
+					// The engine's own label filter, so whoever translates the card
+					// badge translates this line the same.
+					$name         = (string) apply_filters( 'promeng_product_label', (string) $row['name'], 0 );
+					$rows[]       = '<div class="oc-drawer__discount"><span>' . esc_html( $name ) . '</span><strong>&minus;' . wc_price( (float) $row['saved'] ) . '</strong></div>';
 				}
 			}
 		}
@@ -740,6 +743,9 @@ final class Cart {
 			: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 5L5 19M7.5 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM16.5 18a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/></svg>';
 
 		$name = '' !== (string) ( $msg['name'] ?? '' ) ? (string) $msg['name'] : (string) $msg['text'];
+		// The engine's own label filter: a translated name reads the same
+		// here as on the product card.
+		$name = (string) apply_filters( 'promeng_product_label', $name, 0 );
 
 		$html = '<div class="oc-mcart__promo' . ( $msg['applied'] ? ' oc-mcart__promo--applied' : '' ) . '">' . $icon . '<span>' . esc_html( $name ) . '</span>';
 
