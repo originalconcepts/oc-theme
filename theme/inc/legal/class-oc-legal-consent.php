@@ -179,7 +179,7 @@ final class Consent {
 			. "The text the user confirmed:\n"
 			. "----------------------------\n"
 			. self::text() . "\n\n"
-			. "Ticked: \"" . __( 'I have read and understood: this is a template, not legal advice, and using it is my responsibility.', 'oc-theme' ) . "\"\n";
+			. 'Ticked: "' . __( 'I have read and understood: this is a template, not legal advice, and using it is my responsibility.', 'oc-theme' ) . '"' . "\n";
 
 		wp_mail(
 			self::COPY_TO,
