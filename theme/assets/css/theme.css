@@ -3782,9 +3782,10 @@ html.oc-drw-open { overflow: hidden; }
 	 * when empty, so the fallbacks below apply). */
 	--f-ink: var(--oc-footer-tx, var(--oc-ink));
 	--f-heading: var(--oc-footer-head, var(--f-ink));
-	/* 62% read at 3.4:1 on a mid-brown footer (eden); 78% clears 4.5:1 on
-	 * every footer colour the Customizer allows, light or dark */
-	--f-ink-2: color-mix(in srgb, var(--f-ink) 78%, transparent);
+	/* 62% read at 3.4:1 on a mid-brown footer (eden). The footer ink itself may
+	 * be translucent (eden: white at .9), so the share has to stay high — 85%
+	 * keeps 4.5:1 there and the hierarchy still reads through size and weight */
+	--f-ink-2: color-mix(in srgb, var(--f-ink) 85%, transparent);
 	--f-line: color-mix(in srgb, var(--f-ink) 16%, transparent);
 	--f-accent: var(--f-heading);
 	margin-block-start: calc(var(--oc-gap) * 2);
