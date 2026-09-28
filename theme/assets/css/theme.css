@@ -6403,10 +6403,14 @@ html:not([dir]) .oc-cartup__items--h.oc-fade-end {
 }
 
 /* the crossed-out price steps down a couple of sizes */
-.woocommerce div.product p.price del {
+.woocommerce div.product p.price del,
+.oc-pp del {
 	font-size: .72em;
-	/* the strike is the emphasis; a faded colour on top fell under 4.5:1 */
+	/* the strike is the emphasis; a faded colour on top fell under 4.5:1 —
+	 * and the muted ink alone sits at 4.4:1 on the page's grey, so it is
+	 * pulled a fifth of the way towards the text ink (5.1:1 there) */
 	color: var(--oc-ink-2);
+	color: color-mix(in srgb, var(--oc-ink-2) 80%, var(--oc-ink));
 }
 
 /* the badge box rides the price line's height; the text inside stays
