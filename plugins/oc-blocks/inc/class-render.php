@@ -2573,12 +2573,15 @@ final class Render {
 			return '';
 		}
 
+		/* translators: %d: the item's number in the carousel, read to screen-reader users from its dot. */
+		$dot_label = __( 'Item %d', 'oc-blocks' );
+
 		$style = '--ocb-ico-n:' . $count . ';'
 			. ( '' === ( $s['bgc'] ?? '' ) ? '' : '--ocb-ico-bg:' . $s['bgc'] . ';' )
 			. ( '' === ( $s['ic'] ?? '' ) ? '' : '--ocb-ico-color:' . $s['ic'] . ';' );
 
 		return self::heading( $s )
-			. '<div class="ocb-ico ocb-ico--' . esc_attr( (string) $s['size'] ) . ' ocb-ico--m' . esc_attr( '' !== (string) ( $s['mlay'] ?? '' ) ? (string) $s['mlay'] : '1' ) . ( empty( $s['bg'] ) ? '' : ' ocb-ico--bg' ) . '" style="' . esc_attr( $style ) . '" data-ocb-dot-label="' . esc_attr( __( 'Item %d', 'oc-blocks' ) ) . '">'
+			. '<div class="ocb-ico ocb-ico--' . esc_attr( (string) $s['size'] ) . ' ocb-ico--m' . esc_attr( '' !== (string) ( $s['mlay'] ?? '' ) ? (string) $s['mlay'] : '1' ) . ( empty( $s['bg'] ) ? '' : ' ocb-ico--bg' ) . '" style="' . esc_attr( $style ) . '" data-ocb-dot-label="' . esc_attr( $dot_label ) . '">'
 			. $items
 			. '</div>';
 	}
