@@ -10091,3 +10091,177 @@ msgstr "בסרגל ההדר"
 
 msgid "\"Nowhere\" leaves it to you: the [oclang_switcher] shortcode puts it in any text, widget or block. How the languages are shown — names, codes, flags — is set under Languages → Switcher."
 msgstr "״בלי מיקום קבוע״ משאיר את זה לך: השורטקוד [oclang_switcher] שם אותו בכל טקסט, ווידג׳ט או בלוק. איך השפות מוצגות — שמות, קודים, דגלים — נקבע תחת שפות ← מחליף שפה."
+
+msgid "Disabled parking"
+msgstr "חניית נכים"
+
+msgid "Accessible path from the parking to the door"
+msgstr "דרך נגישה מהחניה לדלת"
+
+msgid "Accessible entrance door"
+msgstr "דלת כניסה נגישה"
+
+msgid "Hearing assistance device"
+msgstr "מערכת עזר לשמיעה"
+
+msgid "Accessible checkout"
+msgstr "קופה נגישה"
+
+msgid "Accessible toilets in the branch or mall"
+msgstr "שירותים נגישים בסניף או בקניון"
+
+msgid "Accessible seat"
+msgstr "מקום ישיבה נגיש"
+
+msgid "Elevator"
+msgstr "מעלית"
+
+msgid "company no. %s"
+msgstr "ח.פ./ע.מ. %s"
+
+msgid "the accessibility coordinator"
+msgstr "רכז/ת הנגישות"
+
+msgid "Opening hours:"
+msgstr "שעות פעילות:"
+
+msgid "Phone:"
+msgstr "טלפון:"
+
+msgid "Email:"
+msgstr "דוא\"ל:"
+
+msgid "WhatsApp:"
+msgstr "וואטסאפ:"
+
+msgid "The terms page is written and set as the checkout terms page. Read it once before publishing."
+msgstr "עמוד התקנון נכתב והוגדר כעמוד התקנון של הקופה. קראו אותו פעם אחת לפני הפרסום."
+
+msgid "The accessibility statement is written and linked from the footer. Read it once before publishing."
+msgstr "הצהרת הנגישות נכתבה ומקושרת מהפוטר. קראו אותה פעם אחת לפני הפרסום."
+
+msgid "View"
+msgstr "צפייה"
+
+msgid "The store described once. Every page that shows these details reads from here — the checkout help line, the thank-you page, the emails, the generated terms and accessibility pages, and any text where you write {phone}, {email}, {whatsapp}, {company}, {address} or {hours}. An empty field simply does not appear."
+msgstr "החנות מתוארת פעם אחת. כל עמוד שמציג את הפרטים קורא מכאן — שורת העזרה בקופה, עמוד התודה, המיילים, עמודי התקנון והנגישות שנכתבים מכאן, וכל טקסט שבו כותבים {phone}, {email}, {whatsapp}, {company}, {address} או {hours}. שדה ריק פשוט לא מופיע."
+
+msgid "The business"
+msgstr "העסק"
+
+msgid "Legal name"
+msgstr "שם משפטי"
+
+msgid "The company or business that operates the store, as registered. Empty = the site name."
+msgstr "החברה או העסק שמפעילים את החנות, כפי שרשום. ריק = שם האתר."
+
+msgid "Company / business number"
+msgstr "ח.פ. / עוסק מורשה"
+
+msgid "Empty = the store address from WooCommerce → Settings → General."
+msgstr "ריק = כתובת החנות מהגדרות ווקומרס ← כללי."
+
+msgid "Sunday–Thursday 9:00–19:00&#10;Friday 9:00–14:00"
+msgstr "ימים א׳–ה׳ 9:00–19:00&#10;יום ו׳ 9:00–14:00"
+
+msgid "One line per entry, exactly as it should read on the site."
+msgstr "שורה לכל פריט, בדיוק כפי שצריך להופיע באתר."
+
+msgid "Accessibility"
+msgstr "נגישות"
+
+msgid "The law asks every business site for an accessibility statement naming a coordinator and stating what the premises offer. The coordinator's channels fall back to the store's own when empty."
+msgstr "החוק דורש מכל אתר עסקי הצהרת נגישות שמציינת רכז/ת ומה יש בחנות הפיזית. ערוצי הרכז/ת ריקים = ערוצי החנות."
+
+msgid "Accessibility coordinator"
+msgstr "רכז/ת נגישות"
+
+msgid "Full name"
+msgstr "שם מלא"
+
+msgid "Coordinator phone"
+msgstr "טלפון הרכז/ת"
+
+msgid "Coordinator email"
+msgstr "דוא\"ל הרכז/ת"
+
+msgid "Coordinator WhatsApp"
+msgstr "וואטסאפ הרכז/ת"
+
+msgid "Premises"
+msgstr "החנות הפיזית"
+
+msgid "The business has a store or showroom open to the public"
+msgstr "לעסק יש חנות או אולם תצוגה הפתוחים לקהל"
+
+msgid "Off = the statement says the service is online only. On = tick what the premises offer; anything left unticked shows as \"no\"."
+msgstr "כבוי = ההצהרה אומרת שהשירות מקוון בלבד. דלוק = סמנו מה יש בחנות; מה שלא סומן יוצג כ\"לא\"."
+
+msgid "Terms of sale"
+msgstr "תקנון"
+
+msgid "How the generated terms page is written. The cancellation, fee and warranty figures are the ones the Consumer Protection Law sets and are not settings."
+msgstr "איך נכתב עמוד התקנון. מספרי הביטול, דמי הביטול והאחריות הם אלה שקובע חוק הגנת הצרכן ואינם הגדרות."
+
+msgid "Kind of store"
+msgstr "סוג החנות"
+
+msgid "General — clothing, furniture, home, gifts, electronics"
+msgstr "כללי — אופנה, ריהוט, בית, מתנות, אלקטרוניקה"
+
+msgid "Food — adds perishables, weight variance, allergens and cold-chain delivery"
+msgstr "מזון — מוסיף מוצרים מתכלים, סטיית משקל, אלרגנים ומשלוח מקורר"
+
+msgid "Extra clauses"
+msgstr "סעיפים נוספים"
+
+msgid "Made-to-order products — no cancellation once production has begun"
+msgstr "מוצרים בהזמנה אישית — אין ביטול משהחל הייצור"
+
+msgid "Large items — access, stairs, crane, assembly and acceptance on delivery"
+msgstr "פריטים גדולים — גישה, מדרגות, מנוף, הרכבה וקבלה במסירה"
+
+msgid "Legal pages"
+msgstr "עמודים משפטיים"
+
+msgid "Each button writes a ready-made page from a template built into the theme — no AI, no outside service, nothing leaves the site. The facts on the page (company, address, hours, coordinator, branches) are read live from this screen, so save first, and later edits here show on the page by themselves. Rewriting a page replaces what you edited on it. Read every page once before publishing — a lawyer should confirm anything specific to your business."
+msgstr "כל כפתור כותב עמוד מוכן מתבנית מובנית בתבנית — בלי AI, בלי שירות חיצוני, שום דבר לא יוצא מהאתר. הפרטים בעמוד (חברה, כתובת, שעות, רכז/ת, סניפים) נקראים חי מהמסך הזה — לכן קודם שומרים, ושינוי כאן בהמשך יופיע בעמוד מעצמו. כתיבה מחדש מחליפה מה שערכתם בעמוד. קראו כל עמוד פעם אחת לפני הפרסום — עורך דין צריך לאשר כל דבר ייחודי לעסק שלכם."
+
+msgid "Write the terms page"
+msgstr "כתוב עמוד תקנון"
+
+msgid "Rewrite the terms page"
+msgstr "כתוב מחדש את עמוד התקנון"
+
+msgid "Terms of sale in the site's language: orders and payment, delivery, cancellation and returns per the Consumer Protection Law (14 days, 4 months for eligible customers, 5% or ₪100 fee, the exceptions), warranty, privacy, liability and jurisdiction — written for the kind of store chosen above. Set as the WooCommerce terms page, so the checkout consent and the checkout side panel link to it."
+msgstr "תקנון בשפת האתר: הזמנה ותשלום, אספקה, ביטול והחזרות לפי חוק הגנת הצרכן (14 יום, 4 חודשים לזכאים, דמי ביטול 5% או 100 ₪, החריגים), אחריות, פרטיות, הגבלת אחריות וסמכות שיפוט — לפי סוג החנות שנבחר למעלה. מוגדר כעמוד התקנון של ווקומרס, כך שאישור התקנון בקופה והפאנל הצדדי בקופה מקשרים אליו."
+
+msgid "Write the accessibility statement"
+msgstr "כתוב הצהרת נגישות"
+
+msgid "Rewrite the accessibility statement"
+msgstr "כתוב מחדש את הצהרת הנגישות"
+
+msgid "The statement regulation 35 requires: the standard the site follows, the adaptations the theme really provides, how to enlarge text and raise contrast from the browser, the premises table, the coordinator and how to report a problem. Linked from the footer next to the privacy link."
+msgstr "ההצהרה שתקנה 35 דורשת: התקן שהאתר עומד בו, ההתאמות שהתבנית באמת מספקת, איך להגדיל טקסט ולהגביר ניגודיות מהדפדפן, טבלת החנות הפיזית, הרכז/ת ואיך מדווחים על בעיה. מקושרת מהפוטר ליד קישור הפרטיות."
+
+msgid "The privacy policy page has its own button under %s."
+msgstr "לעמוד מדיניות הפרטיות יש כפתור משלו תחת %s."
+
+msgid "the same facts, for any page or block."
+msgstr "אותם פרטים, לכל עמוד או בלוק."
+
+msgid "The statement lists the branches (%d now) in a table, one row per branch. Tick what each branch offers on its own screen, under Branches → Accessibility."
+msgstr "ההצהרה מציגה את הסניפים (%d כרגע) בטבלה, שורה לכל סניף. מה יש בכל סניף מסמנים במסך שלו, תחת סניפים ← נגישות."
+
+msgid "Accessibility statement"
+msgstr "הצהרת נגישות"
+
+msgid "The service is provided online only; the business has no store open to the public."
+msgstr "השירות ניתן באופן מקוון בלבד; לעסק אין חנות הפתוחה לקהל."
+
+msgid "Accessibility of the premises"
+msgstr "נגישות החנות הפיזית"
+
+msgid "Branch"
+msgstr "סניף"

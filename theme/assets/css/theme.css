@@ -15955,6 +15955,29 @@ p.no-comments {
  * beside them. */
 .oc-footer__privacy { font: inherit; font-size: .82rem; background: none; border: 0; padding: 0; color: var(--f-ink-2); cursor: pointer; text-decoration: none; }
 .oc-footer__privacy:hover { color: var(--f-heading); }
+.oc-footer__a11y { font-size: .82rem; color: var(--f-ink-2); text-decoration: none; }
+.oc-footer__a11y:hover { color: var(--f-heading); text-decoration: underline; }
+
+/* The accessibility statement's premises table: one row per branch, every
+ * item a column — wide, so it scrolls inside itself on a phone. */
+.oc-a11y-table { overflow-x: auto; margin: 1rem 0 1.5rem; -webkit-overflow-scrolling: touch; }
+.oc-a11y-table table { border-collapse: collapse; min-inline-size: 100%; font-size: .92rem; }
+.oc-a11y-table th, .oc-a11y-table td { border: 1px solid var(--oc-line, #e2e5ea); padding: .55rem .7rem; text-align: start; vertical-align: top; }
+.oc-a11y-table thead th { background: var(--oc-surface-2, #f2f4f7); font-weight: 600; }
+.oc-a11y-table tbody th { font-weight: 600; white-space: nowrap; }
+.oc-a11y-table td { white-space: nowrap; }
+.oc-a11y-table td i { font-style: normal; font-weight: 700; margin-inline-end: .2em; }
+.oc-a11y-table td.is-yes i { color: #0e7d54; }
+.oc-a11y-table td.is-no i { color: var(--oc-ink-2, #666e7c); }
+
+/* Windows high-contrast / forced colours: the system paints text and
+ * backgrounds; what we draw with borders and outlines must stay drawn. */
+@media (forced-colors: active) {
+	:focus-visible { outline: 3px solid Highlight; outline-offset: 2px; }
+	.oc-a11y-table th, .oc-a11y-table td { border-color: CanvasText; }
+	.oc-swatch, .oc-mcart__attr-swatch { forced-color-adjust: none; border: 2px solid CanvasText; }
+	.oc-drawer__panel, .oc-vp__panel, .oc-drw { border: 1px solid CanvasText; }
+}
 .oc-cookie-table { overflow-x: auto; margin-block: 12px 20px; }
 .oc-cookie-table table { inline-size: 100%; border-collapse: collapse; font-size: .9rem; }
 .oc-cookie-table th, .oc-cookie-table td { padding: 8px 10px; border-block-end: 1px solid var(--oc-line, rgba(0, 0, 0, .1)); text-align: start; vertical-align: top; }
