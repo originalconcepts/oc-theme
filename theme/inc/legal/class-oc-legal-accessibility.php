@@ -59,12 +59,29 @@ final class Accessibility {
 	public static function foreign_id(): int {
 		$ours = self::page_id();
 
-		foreach ( get_pages( array( 'post_status' => 'publish', 'number' => 200 ) ) as $page ) {
-			if ( (int) $page->ID === $ours ) {
+		return self::find_page( '/נגישות|accessib/iu', $ours );
+	}
+
+	/**
+	 * The first published page whose title or slug matches, other than one.
+	 *
+	 * @param string $pattern Regex on title + decoded slug.
+	 * @param int    $except  Page to skip (ours).
+	 */
+	public static function find_page( string $pattern, int $except ): int {
+		$pages = get_pages(
+			array(
+				'post_status' => 'publish',
+				'number'      => 200,
+			)
+		);
+
+		foreach ( $pages as $page ) {
+			if ( (int) $page->ID === $except ) {
 				continue;
 			}
 
-			if ( preg_match( '/נגישות|accessib/iu', $page->post_title . ' ' . urldecode( $page->post_name ) ) ) {
+			if ( preg_match( $pattern, $page->post_title . ' ' . urldecode( $page->post_name ) ) ) {
 				return (int) $page->ID;
 			}
 		}

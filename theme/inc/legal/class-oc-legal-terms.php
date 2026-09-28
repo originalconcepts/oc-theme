@@ -60,14 +60,21 @@ final class Terms {
 	}
 
 	/**
-	 * A checkout terms page somebody else wrote — the customer's own, or a
-	 * lawyer's. Ours never replaces it: writing ours adds a page next to it
-	 * and the checkout stays where it was until a person switches it.
+	 * A terms page somebody else wrote — the customer's own, or a lawyer's —
+	 * whether the checkout points at it or it just exists. Ours never
+	 * replaces it: writing ours adds a page next to it, and the checkout is
+	 * left as it was until a person switches it.
 	 */
 	public static function foreign_id(): int {
 		$current = self::current_id();
 
-		return $current && $current !== self::page_id() ? $current : 0;
+		if ( $current ) {
+			return $current !== self::page_id() ? $current : 0;
+		}
+
+		// Nothing wired into the checkout yet — a terms page may still be
+		// sitting there under its own name (most imported sites have one).
+		return Accessibility::find_page( '/תקנון|תנאי שימוש|terms/iu', self::page_id() );
 	}
 
 	/**
