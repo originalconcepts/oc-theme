@@ -10064,3 +10064,30 @@ msgstr "בלוק %1$d בפאנל (%2$s) — %3$s"
 
 msgid "Pinned searches (one per line)"
 msgstr "חיפושים מוצמדים (אחד בכל שורה)"
+
+msgid "Language switcher"
+msgstr "מחליף שפה"
+
+msgid "On desktop"
+msgstr "במחשב"
+
+msgid "Beside the icons"
+msgstr "ליד האייקונים"
+
+msgid "End of the menu"
+msgstr "בסוף התפריט"
+
+msgid "Floating"
+msgstr "צף בפינה"
+
+msgid "Nowhere"
+msgstr "בלי מיקום קבוע"
+
+msgid "In the menu drawer"
+msgstr "בתפריט ההמבורגר, ליד ה‑X"
+
+msgid "In the header bar"
+msgstr "בסרגל ההדר"
+
+msgid "\"Nowhere\" leaves it to you: the [oclang_switcher] shortcode puts it in any text, widget or block. How the languages are shown — names, codes, flags — is set under Languages → Switcher."
+msgstr "״בלי מיקום קבוע״ משאיר את זה לך: השורטקוד [oclang_switcher] שם אותו בכל טקסט, ווידג׳ט או בלוק. איך השפות מוצגות — שמות, קודים, דגלים — נקבע תחת שפות ← מחליף שפה."

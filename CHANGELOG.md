@@ -53,6 +53,13 @@ Format follows [Keep a Changelog](https://keepachangelog.com/); versioning is
 - A mega-menu panel is cached per language and forgotten when a
   translation is saved: `/en/` used to show the Hebrew panel, category
   names, product names and addresses included.
+- The header settings say where the language switcher goes, once for a
+  desk and once for a phone: beside the icons, at the end of the menu, in
+  the menu drawer beside the close (the phone's default — in the header
+  bar it pushed the icons aside), in the footer, floating, or nowhere but
+  the `[oclang_switcher]` shortcode. The plugin's own placement setting
+  steps aside (`oclang_switcher_placement`); the drawer's top bar takes
+  what hooks `oc_drawer_top`.
 - A post card on a composed page asks for the post's words through
   `oc_blocks_post_text`, so a translated excerpt reaches the card.
 - The composer says when it saved a page (`oc_blocks_saved`), so a

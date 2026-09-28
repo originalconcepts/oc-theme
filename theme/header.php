@@ -155,13 +155,20 @@ if ( has_nav_menu( 'primary' ) ) {
 	$oc_drawer = OC\Theme\Menu::drawer_html();
 
 	if ( '' !== $oc_drawer ) {
+		// The top bar's middle, between the way back and the close: the
+		// language switcher sits there when the header settings say so.
+		ob_start();
+		do_action( 'oc_drawer_top' );
+		$oc_drawer_top = (string) ob_get_clean();
+
 		printf(
-			'<div id="oc-mobile-menu" class="%1$s" hidden><div class="oc-drw__scrim" data-oc-drw-close></div><div class="oc-drw__panel" role="dialog" aria-modal="true" aria-label="%2$s"><div class="oc-drw__top"><button type="button" class="oc-drw__topback" data-oc-drw-back aria-label="%5$s"><span aria-hidden="true"></span></button><button type="button" class="oc-drw__x" data-oc-drw-close aria-label="%3$s">&times;</button></div><div class="oc-drw__body">%4$s</div></div></div>',
+			'<div id="oc-mobile-menu" class="%1$s" hidden><div class="oc-drw__scrim" data-oc-drw-close></div><div class="oc-drw__panel" role="dialog" aria-modal="true" aria-label="%2$s"><div class="oc-drw__top"><button type="button" class="oc-drw__topback" data-oc-drw-back aria-label="%5$s"><span aria-hidden="true"></span></button>%6$s<button type="button" class="oc-drw__x" data-oc-drw-close aria-label="%3$s">&times;</button></div><div class="oc-drw__body">%4$s</div></div></div>',
 			esc_attr( OC\Theme\Menu::drawer_class() ),
 			esc_attr__( 'Menu', 'oc-theme' ),
 			esc_attr__( 'Close menu', 'oc-theme' ),
 			$oc_drawer, // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
-			esc_attr__( 'Back', 'oc-theme' )
+			esc_attr__( 'Back', 'oc-theme' ),
+			$oc_drawer_top // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
 		);
 	}
 }

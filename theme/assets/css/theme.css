@@ -3011,6 +3011,15 @@ html.oc-drw-open { overflow: hidden; }
 
 .oc-drw--slide.oc-drw--in .oc-drw__topback { visibility: visible; }
 
+/* The language switcher, placed by the header settings: one copy where
+ * both kinds of screen agree, a copy per kind where they differ. In the
+ * drawer it rides the top bar between the way back and the close. */
+.oc-lang { display: inline-flex; align-items: center; }
+.oc-drw__top .oc-lang { flex: 1 1 auto; justify-content: flex-start; padding-inline: 6px; }
+.oc-drw__top .oclang-switcher { font-size: .95rem; }
+@media (max-width: 900px) { .oc-lang--desk { display: none !important; } }
+@media (min-width: 901px) { .oc-lang--mob { display: none !important; } }
+
 .oc-drw__topback span {
 	inline-size: 10px;
 	block-size: 10px;

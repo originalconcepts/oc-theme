@@ -800,6 +800,42 @@ final class Customizer {
 		$this->toggle( $c, 'oc_header_account', 'oc_header', __( 'Account icon', 'oc-theme' ), true );
 		$this->toggle( $c, 'oc_header_cart', 'oc_header', __( 'Cart icon with counter', 'oc-theme' ), true );
 
+		// The language switcher, when the translation plugin is here to
+		// draw one: the theme says where, the plugin says how it looks.
+		if ( Language_Switch::available() ) {
+			$this->heading( $c, 'oc_h_lang', 'oc_header', __( 'Language switcher', 'oc-theme' ) );
+			$this->choice(
+				$c,
+				'oc_lang_desk',
+				'oc_header',
+				__( 'On desktop', 'oc-theme' ),
+				array(
+					'icons'    => __( 'Beside the icons', 'oc-theme' ),
+					'menu'     => __( 'End of the menu', 'oc-theme' ),
+					'footer'   => __( 'Footer', 'oc-theme' ),
+					'floating' => __( 'Floating', 'oc-theme' ),
+					'none'     => __( 'Nowhere', 'oc-theme' ),
+				),
+				'icons'
+			);
+			$this->choice(
+				$c,
+				'oc_lang_mob',
+				'oc_header',
+				__( 'On a phone', 'oc-theme' ),
+				array(
+					'drawer'   => __( 'In the menu drawer', 'oc-theme' ),
+					'bar'      => __( 'In the header bar', 'oc-theme' ),
+					'footer'   => __( 'Footer', 'oc-theme' ),
+					'floating' => __( 'Floating', 'oc-theme' ),
+					'none'     => __( 'Nowhere', 'oc-theme' ),
+				),
+				'drawer',
+				null,
+				__( '"Nowhere" leaves it to you: the [oclang_switcher] shortcode puts it in any text, widget or block. How the languages are shown — names, codes, flags — is set under Languages → Switcher.', 'oc-theme' )
+			);
+		}
+
 		$this->preset(
 			$c,
 			'oc_header_cart_icon',
