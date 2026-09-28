@@ -47,6 +47,7 @@ final class Menu {
 
 		add_action( 'wp_nav_menu_item_custom_fields', array( $this, 'item_fields' ) );
 		add_action( 'wp_update_nav_menu_item', array( $this, 'save_item' ), 10, 2 );
+		add_action( 'admin_init', array( 'OC\\Theme\\Menu_Panel', 'name_the_blocks' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_assets' ) );
 	}
 

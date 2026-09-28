@@ -171,6 +171,18 @@ final class Translatable {
 	}
 
 	/**
+	 * The typed words of the search: the searches pinned under the box,
+	 * one per line, each a word shoppers might look for.
+	 *
+	 * @return array<string,string>
+	 */
+	private static function search(): array {
+		return array(
+			'pinned' => __( 'Pinned searches (one per line)', 'oc-theme' ),
+		);
+	}
+
+	/**
 	 * The thank-you page's typed lines.
 	 *
 	 * @return array<string,string>
@@ -245,6 +257,12 @@ final class Translatable {
 			$taxonomies[] = \OC\Blocks\Branches::TAX;
 		}
 
+		// The brands: a name typed in Hebrew is read in Hebrew on /en/
+		// until someone writes it the way the brand writes it.
+		if ( class_exists( '\\OC\\Blocks\\Render' ) && '' !== \OC\Blocks\Render::brand_taxonomy() ) {
+			$taxonomies[] = \OC\Blocks\Render::brand_taxonomy();
+		}
+
 		return array_values( array_unique( $taxonomies ) );
 	}
 
@@ -272,6 +290,12 @@ final class Translatable {
 
 		if ( 'nav_menu_item' === $type ) {
 			$map['_oc_badge'] = array( '' => __( 'Menu badge', 'oc-theme' ) );
+
+			$panel = self::panel_fields( (int) $post_id );
+
+			if ( ! empty( $panel ) ) {
+				$map[ Menu_Panel::META ] = $panel;
+			}
 
 			return $map;
 		}
@@ -321,6 +345,44 @@ final class Translatable {
 	}
 
 	/**
+	 * The typed words of an item's mega-menu panel, block by block: each
+	 * block is found by its name (`#<uid>`) wherever it was dragged to.
+	 *
+	 * @param int $item_id Menu item id.
+	 * @return array<string,string> Path => label.
+	 */
+	private static function panel_fields( int $item_id ): array {
+		if ( ! class_exists( __NAMESPACE__ . '\\Menu_Panel' ) ) {
+			return array();
+		}
+
+		$types  = Menu_Panel::types();
+		$fields = array();
+		$n      = 0;
+
+		foreach ( Menu_Panel::blocks( $item_id ) as $block ) {
+			++$n;
+
+			$type = (string) ( $block['type'] ?? '' );
+
+			if ( empty( $block['uid'] ) || ! isset( $types[ $type ] ) ) {
+				continue;
+			}
+
+			foreach ( (array) ( $types[ $type ]['fields'] ?? array() ) as $key => $field ) {
+				if ( 'text' !== (string) ( $field['type'] ?? '' ) ) {
+					continue;
+				}
+
+				/* translators: 1: the block's place in the panel, 2: the kind of block, 3: the field */
+				$fields[ '#' . $block['uid'] . '/' . $key ] = sprintf( __( 'Panel block %1$d (%2$s) — %3$s', 'oc-theme' ), $n, (string) ( $types[ $type ]['label'] ?? $type ), (string) ( $field['label'] ?? $key ) );
+			}
+		}
+
+		return $fields;
+	}
+
+	/**
 	 * The theme's settings, added to the plugin's manifest.
 	 *
 	 * @param array<string,string[]>|mixed $out Option name => the keys that hold text.
@@ -335,6 +397,7 @@ final class Translatable {
 		$out['oc_thankyou']         = array_keys( self::thankyou() );
 		$out['oc_checkout']         = array_keys( self::checkout() );
 		$out['oc_filters']          = array_keys( self::filters() );
+		$out['oc_search']           = array_keys( self::search() );
 
 		foreach ( self::EMAILS as $id ) {
 			$name         = 'woocommerce_' . $id . '_settings';
@@ -366,6 +429,7 @@ final class Translatable {
 		$groups['oc_thankyou']         = 'theme';
 		$groups['oc_checkout']         = 'theme';
 		$groups['oc_filters']          = 'theme';
+		$groups['oc_search']           = 'theme';
 
 		return $groups;
 	}
@@ -385,6 +449,7 @@ final class Translatable {
 		$labels['oc_thankyou']         = array( '' => __( 'Thank-you page', 'oc-theme' ) ) + self::thankyou();
 		$labels['oc_checkout']         = array( '' => __( 'Checkout', 'oc-theme' ) ) + self::checkout();
 		$labels['oc_filters']          = array( '' => __( 'Catalogue filters', 'oc-theme' ) ) + self::filters();
+		$labels['oc_search']           = array( '' => __( 'Search', 'oc-theme' ) ) + self::search();
 
 		foreach ( self::EMAILS as $id ) {
 			$name            = 'woocommerce_' . $id . '_settings';

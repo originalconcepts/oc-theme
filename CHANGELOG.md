@@ -58,7 +58,9 @@ Format follows [Keep a Changelog](https://keepachangelog.com/); versioning is
 - More of the theme's typed words are declared translatable: the
   catalogue's own blocks (heading, button, image description, slider
   heading), the footer's column headings, a menu item's badge, the brand
-  filter's title.
+  filter's title, the pinned searches, the brands, and the words typed
+  into a mega-menu panel's blocks — each block now carries a name, so a
+  translation stays with it when the blocks are reordered.
 - The tabs a product carries itself are translatable: the theme declares
   them through the plugin's `oclang_post_meta`, row by row, and the front
   end reads them through `get_post_meta` so the translation can reach them.

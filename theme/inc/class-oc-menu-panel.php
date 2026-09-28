@@ -355,8 +355,11 @@ final class Menu_Panel {
 				continue;
 			}
 
+			// Named, so a translation of its words stays with it however the
+			// list is reordered; a block that came without a name gets one.
 			$clean = array(
 				'type' => $type,
+				'uid'  => isset( $block['uid'] ) && Tabs::is_uid( $block['uid'] ) ? (string) $block['uid'] : Tabs::mint(),
 				'w'    => isset( $block['w'], $widths[ $block['w'] ] ) ? (string) $block['w'] : 'normal',
 				'dev'  => isset( $block['dev'], $devices[ $block['dev'] ] ) ? (string) $block['dev'] : 'both',
 				'push' => empty( $block['push'] ) ? 0 : 1,
@@ -1343,6 +1346,44 @@ final class Menu_Panel {
 		// leaves every cached panel drawn the old way, and nothing about
 		// saving a menu would ever notice.
 		return (int) get_option( 'oc_menu_panel_ver', 1 ) . '.' . (int) filemtime( __FILE__ );
+	}
+
+	/**
+	 * Blocks stored before they carried names get theirs, once: a
+	 * translation hangs on the name, not on the place in the list.
+	 */
+	public static function name_the_blocks(): void {
+		if ( get_option( 'oc_panel_named' ) ) {
+			return;
+		}
+
+		$ids = get_posts(
+			array(
+				'post_type'      => 'nav_menu_item',
+				'post_status'    => 'any',
+				'posts_per_page' => 200,
+				'fields'         => 'ids',
+				'meta_key'       => self::META, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- once, in the admin, to name the blocks.
+				'no_found_rows'  => true,
+			)
+		);
+
+		foreach ( (array) $ids as $id ) {
+			$raw = get_post_meta( (int) $id, self::META, true );
+
+			if ( ! is_array( $raw ) ) {
+				continue;
+			}
+
+			foreach ( $raw as $block ) {
+				if ( ! is_array( $block ) || empty( $block['uid'] ) ) {
+					self::save( (int) $id, $raw );
+					break;
+				}
+			}
+		}
+
+		update_option( 'oc_panel_named', 1, false );
 	}
 
 	/**

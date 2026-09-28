@@ -10058,3 +10058,9 @@ msgstr "מסנן מותגים — כותרת"
 
 msgid "Menu badge"
 msgstr "תג בתפריט"
+
+msgid "Panel block %1$d (%2$s) — %3$s"
+msgstr "בלוק %1$d בפאנל (%2$s) — %3$s"
+
+msgid "Pinned searches (one per line)"
+msgstr "חיפושים מוצמדים (אחד בכל שורה)"
