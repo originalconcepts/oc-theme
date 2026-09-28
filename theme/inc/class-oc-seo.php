@@ -542,6 +542,59 @@ final class Seo {
 	}
 
 	/**
+	 * Organization JSON-LD on the front page: who runs the store, from the
+	 * store details screen — name, logo, channels, address, profiles. One
+	 * block, once; every other page's schema is its own concern.
+	 */
+	private static function organization(): void {
+		if ( ! class_exists( __NAMESPACE__ . '\\Contact' ) ) {
+			return;
+		}
+
+		$org = array(
+			'@context' => 'https://schema.org',
+			'@type'    => 'Organization',
+			'name'     => Contact::company(),
+			'url'      => home_url( '/' ),
+		);
+
+		if ( Contact::company() !== (string) get_bloginfo( 'name' ) ) {
+			$org['alternateName'] = (string) get_bloginfo( 'name' );
+		}
+
+		$logo_id = (int) get_theme_mod( 'custom_logo', 0 );
+		$logo    = $logo_id ? (string) wp_get_attachment_image_url( $logo_id, 'full' ) : '';
+
+		if ( '' !== $logo ) {
+			$org['logo'] = $logo;
+		}
+
+		if ( '' !== Contact::phone() ) {
+			$org['telephone'] = Contact::phone();
+		}
+
+		if ( '' !== Contact::email() ) {
+			$org['email'] = Contact::email();
+		}
+
+		if ( '' !== Contact::address() ) {
+			$org['address'] = array(
+				'@type'          => 'PostalAddress',
+				'streetAddress'  => Contact::address(),
+				'addressCountry' => class_exists( 'WooCommerce' ) && WC()->countries ? WC()->countries->get_base_country() : 'IL',
+			);
+		}
+
+		$same = array_values( Contact::social_links() );
+
+		if ( $same ) {
+			$org['sameAs'] = $same;
+		}
+
+		echo '<script type="application/ld+json">' . wp_json_encode( $org, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) . '</script>' . "\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- JSON.
+	}
+
+	/**
 	 * Description, canonical, Open Graph, Twitter — one pass, no leftovers.
 	 */
 	public function head(): void {
@@ -642,6 +695,10 @@ final class Seo {
 
 		if ( '' !== $fb_app ) {
 			printf( '<meta property="fb:app_id" content="%s">' . "\n", esc_attr( $fb_app ) );
+		}
+
+		if ( is_front_page() ) {
+			self::organization();
 		}
 
 		// Twitter falls back to OG, per the spec: most sites never touch it.

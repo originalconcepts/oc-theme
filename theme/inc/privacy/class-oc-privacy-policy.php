@@ -296,12 +296,13 @@ final class Policy {
 		$name    = get_bloginfo( 'name' );
 		$email   = class_exists( '\OC\Theme\Contact' ) ? Contact::email() : (string) get_option( 'admin_email' );
 		$phone   = class_exists( '\OC\Theme\Contact' ) ? Contact::phone() : '';
-		$address = trim( implode( ', ', array_filter( array( (string) get_option( 'woocommerce_store_address' ), (string) get_option( 'woocommerce_store_city' ) ) ) ) );
+		$address = class_exists( '\OC\Theme\Contact' ) ? Contact::address() : trim( implode( ', ', array_filter( array( (string) get_option( 'woocommerce_store_address' ), (string) get_option( 'woocommerce_store_city' ) ) ) ) );
 		$hebrew  = 0 === strpos( get_locale(), 'he' );
 		$date    = wp_date( $hebrew ? 'j.n.Y' : 'F j, Y' );
 		$table   = $guide ? '' : "\n\n[oc_cookie_table]\n\n";
 		$form    = $guide ? '' : "\n\n[oc_privacy_request]\n\n";
-		$contact = $email . ( '' !== $phone ? ' · ' . $phone : '' ) . ( '' !== $address ? ' · ' . $address : '' );
+		$company = class_exists( '\OC\Theme\Contact' ) ? Contact::fact( 'operator' ) : '';
+		$contact = ( '' !== $company && $company !== $name ? $company . ' · ' : '' ) . $email . ( '' !== $phone ? ' · ' . $phone : '' ) . ( '' !== $address && false === strpos( $company, $address ) ? ' · ' . $address : '' );
 
 		if ( $hebrew ) {
 			return self::hebrew( $name, $contact, $date, $table, $form );
