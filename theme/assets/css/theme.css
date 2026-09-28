@@ -644,7 +644,7 @@ a { color: inherit; }
 	color: var(--oc-ink-2);
 }
 
-.oc-search__prod-p del { opacity: .6; margin-inline-end: 5px; }
+.oc-search__prod-p del { color: var(--oc-ink-2); margin-inline-end: 5px; }
 
 /* the card shape puts the picture on top, like the catalogue */
 
@@ -1748,7 +1748,7 @@ html.oc-menu-open .oc-menu-dim::after {
 	opacity: .85;
 }
 
-.oc-mb__prod-price del { opacity: .6; margin-inline-end: 6px; }
+.oc-mb__prod-price del { color: var(--oc-ink-2); margin-inline-end: 6px; }
 .oc-mb__prod-price ins { text-decoration: none; }
 
 .oc-mb__prod:hover .oc-mb__prod-name { color: var(--oc-mega-tx-h, var(--oc-primary)); }
@@ -1991,7 +1991,7 @@ html.oc-menu-open .oc-menu-dim::after {
 }
 
 .oc-vp__price { font-size: 1.12em; font-weight: 700; }
-.oc-vp__price del { opacity: .55; margin-inline-end: 6px; font-weight: 400; }
+.oc-vp__price del { color: var(--oc-ink-2); margin-inline-end: 6px; font-weight: 400; }
 
 /* The sale price carries the sale colour, exactly as the pages do. */
 .oc-vp__price ins,
@@ -5283,7 +5283,7 @@ body.oc-tabs-tabs.woocommerce div.product .woocommerce-tabs ul.tabs li.active a,
 	margin-inline-end: 4px;
 }
 
-.oc-sticky-atc__buy del { opacity: .6; margin-inline-end: 6px; }
+.oc-sticky-atc__buy del { color: var(--oc-ink-2); margin-inline-end: 6px; }
 .oc-sticky-atc__buy ins { text-decoration: none; }
 
 /* Both add buttons show a spinner while the ajax add is in flight. */
@@ -6404,8 +6404,8 @@ html:not([dir]) .oc-cartup__items--h.oc-fade-end {
 /* the crossed-out price steps down a couple of sizes */
 .woocommerce div.product p.price del {
 	font-size: .72em;
+	/* the strike is the emphasis; a faded colour on top fell under 4.5:1 */
 	color: var(--oc-ink-2);
-	opacity: .85;
 }
 
 /* the badge box rides the price line's height; the text inside stays
@@ -7793,7 +7793,7 @@ body:not(.oc-no-lightbox) .oc-vslide.is-playing {
 	transition: filter .12s ease, transform .12s ease;
 }
 
-.oc-pcon__btn--whatsapp { background: #25d366; }
+.oc-pcon__btn--whatsapp { background: #0e7d54; } /* WhatsApp's brand green reads 2:1 under white text; this deeper green 5.2:1 */
 .oc-pcon__btn:hover { filter: brightness(.94); color: #fff; }
 .oc-pcon__btn:active { transform: translateY(1px); }
 
@@ -12535,7 +12535,7 @@ body.oc-checkout { overflow-x: clip; }
 	inline-size: 44px;
 	block-size: 44px;
 	border-radius: 50%;
-	background: #25d366;
+	background: #0e7d54;
 	color: #fff;
 }
 
@@ -15117,7 +15117,7 @@ p.no-comments {
 
 .oc-xsell__name:hover { text-decoration: underline; }
 .oc-xsell__price { font-size: 14px; }
-.oc-xsell__price del { opacity: .55; }
+.oc-xsell__price del { color: var(--oc-ink-2); }
 
 .oc-xsell__opts { display: flex; flex-wrap: wrap; gap: 6px; margin-block-start: 6px; }
 

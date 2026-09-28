@@ -3619,7 +3619,7 @@ window.ocA11y = ( function () {
 		drawer.hidden = false;
 		setTimeout( function () {
 			drawer.classList.add( 'is-open' );
-			window.ocA11y.enter( drawer, '[data-oc-drawer-close]' );
+			window.ocA11y.enter( drawer, 'button[data-oc-drawer-close]' );
 		}, 10 );
 
 		drawerY = window.scrollY || window.pageYOffset || 0;
@@ -4869,6 +4869,9 @@ window.ocA11y = ( function () {
 			var li = document.createElement( 'li' );
 			var btn = document.createElement( 'button' );
 			btn.type = 'button';
+			// The thumbnail's picture is decorative (alt=""), so the button
+			// itself says which picture it shows.
+			btn.setAttribute( 'aria-label', ( ( window.ocL10n || {} ).vpImage || 'Image %d' ).replace( '%d', i + 1 ) );
 			btn.setAttribute( 'aria-current', 0 === i ? 'true' : 'false' );
 
 			var thumb;
@@ -5149,7 +5152,7 @@ window.ocA11y = ( function () {
 			var li = document.createElement( 'li' );
 			var b = document.createElement( 'button' );
 			b.type = 'button';
-			b.setAttribute( 'aria-label', String( i + 1 ) );
+			b.setAttribute( 'aria-label', ( ( window.ocL10n || {} ).vpImage || 'Image %d' ).replace( '%d', i + 1 ) );
 			b.setAttribute( 'aria-current', 0 === i ? 'true' : 'false' );
 			b.addEventListener( 'click', function () {
 				mgGoTo( i );
