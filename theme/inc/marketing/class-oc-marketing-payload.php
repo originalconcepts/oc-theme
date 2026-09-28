@@ -258,7 +258,7 @@ final class Payload {
 			$custom['num_items']    = array_sum( array_map( static fn( $i ) => (int) ( $i['qty'] ?? 1 ), $items ) );
 		}
 
-		foreach ( array( 'order_id', 'content_name', 'content_category' ) as $k ) {
+		foreach ( array( 'order_id', 'content_name', 'content_category', 'site_language' ) as $k ) {
 			if ( '' !== (string) ( $data[ $k ] ?? '' ) ) {
 				$custom[ $k ] = (string) $data[ $k ];
 			}
@@ -572,6 +572,10 @@ final class Payload {
 
 		if ( isset( $data['tax'] ) ) {
 			$params['tax'] = round( (float) $data['tax'], 2 );
+		}
+
+		if ( '' !== (string) ( $data['site_language'] ?? '' ) ) {
+			$params['site_language'] = (string) $data['site_language'];
 		}
 
 		if ( '' !== (string) ( $data['search'] ?? '' ) ) {

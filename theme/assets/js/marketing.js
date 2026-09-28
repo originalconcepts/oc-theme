@@ -196,6 +196,7 @@
 		if ( d.content_category ) { p.content_category = d.content_category; }
 		if ( d.search ) { p.search_string = d.search; }
 		if ( d.order_id ) { p.order_id = d.order_id; }
+		if ( d.site_language ) { p.site_language = d.site_language; }
 		return p;
 	}
 
@@ -218,6 +219,7 @@
 		if ( d.currency ) { p.currency = d.currency; }
 		if ( 'undefined' !== typeof d.value ) { p.value = Number( d.value ); }
 		if ( d.order_id ) { p.transaction_id = d.order_id; }
+		if ( d.site_language ) { p.site_language = d.site_language; }
 		if ( 'undefined' !== typeof d.shipping ) { p.shipping = Number( d.shipping ); }
 		if ( 'undefined' !== typeof d.tax ) { p.tax = Number( d.tax ); }
 		if ( d.search ) { p.search_term = d.search; }
@@ -233,6 +235,9 @@
 
 	function send( n, d, id ) {
 		d = d || {};
+
+		// Every event says which language the shopper was in.
+		if ( cfg.lang && ! d.site_language ) { d.site_language = cfg.lang; }
 
 		if ( ! loaded ) { pending.push( { n: n, d: d, id: id } ); return; }
 

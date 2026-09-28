@@ -217,13 +217,15 @@ final class Page {
 				}
 			}
 
+			$name = self::term_name( $term );
+
 			Events::queue(
 				'ViewCategory',
 				array(
 					'currency'         => get_woocommerce_currency(),
 					'items'            => $items,
-					'content_name'     => $term instanceof \WP_Term ? $term->name : '',
-					'content_category' => $term instanceof \WP_Term ? $term->name : '',
+					'content_name'     => $name,
+					'content_category' => $name,
 				)
 			);
 
@@ -419,11 +421,18 @@ final class Page {
 	 */
 	public static function item( \WC_Product $product, int $qty = 1 ): array {
 		$parent = $product->get_parent_id() > 0 ? wc_get_product( $product->get_parent_id() ) : $product;
-		$cats   = $parent instanceof \WC_Product ? wp_get_post_terms( $parent->get_id(), 'product_cat', array( 'fields' => 'names' ) ) : array();
+
+		// Reports group items by name: one name per product, the shop's own,
+		// whatever language the page is in. A translation plugin listens and
+		// lets the stored words through while this reads.
+		do_action( 'oc_source_reading', true );
+		$name = (string) $product->get_name();
+		$cats = $parent instanceof \WC_Product ? wp_get_post_terms( $parent->get_id(), 'product_cat', array( 'fields' => 'names' ) ) : array();
+		do_action( 'oc_source_reading', false );
 
 		return array(
 			'id'       => (string) $product->get_id(),
-			'name'     => (string) $product->get_name(),
+			'name'     => $name,
 			'price'    => round( (float) wc_get_price_to_display( $product ), 2 ),
 			'qty'      => $qty,
 			'category' => is_array( $cats ) && $cats ? (string) reset( $cats ) : '',
@@ -474,14 +483,41 @@ final class Page {
 			}
 		}
 
+		/**
+		 * The language the order was placed in, for the events that report it
+		 * — a webhook or a cron tick has no page to read it from.
+		 *
+		 * @param string    $language The page's language, or the site's.
+		 * @param \WC_Order $order    The order.
+		 */
+		$language = (string) apply_filters( 'oc_order_language', Events::language(), $order );
+
 		return array(
-			'currency' => $order->get_currency(),
-			'value'    => round( (float) $order->get_total(), 2 ),
-			'shipping' => round( (float) $order->get_shipping_total(), 2 ),
-			'tax'      => round( (float) $order->get_total_tax(), 2 ),
-			'items'    => $items,
-			'order_id' => (string) $order->get_id(),
+			'currency'      => $order->get_currency(),
+			'value'         => round( (float) $order->get_total(), 2 ),
+			'shipping'      => round( (float) $order->get_shipping_total(), 2 ),
+			'tax'           => round( (float) $order->get_total_tax(), 2 ),
+			'items'         => $items,
+			'order_id'      => (string) $order->get_id(),
+			'site_language' => $language,
 		);
+	}
+
+	/**
+	 * A term's name in the shop's own language, whatever the page speaks.
+	 *
+	 * @param mixed $term The queried term, if any.
+	 */
+	private static function term_name( $term ): string {
+		if ( ! $term instanceof \WP_Term ) {
+			return '';
+		}
+
+		do_action( 'oc_source_reading', true );
+		$fresh = get_term( $term->term_id, $term->taxonomy );
+		do_action( 'oc_source_reading', false );
+
+		return $fresh instanceof \WP_Term ? (string) $fresh->name : (string) $term->name;
 	}
 
 	/**

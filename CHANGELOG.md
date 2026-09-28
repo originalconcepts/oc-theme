@@ -96,3 +96,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/); versioning is
 - The cart drawer and the header's text cart link no longer die on a request
   WooCommerce gives no cart object to (a REST-shaped address answered with
   the theme's 404 page, cron): the drawer stays out and the count reads 0.
+- Every marketing event says which language the shopper was in:
+  `site_language` (he, en, ar) on the browser's events, in GA4's parameters
+  and Meta's custom data, in every dataLayer push and on the server's
+  mirror — an order carrying the language it was placed in, whatever
+  reports it (`oc_site_language`, `oc_order_language`). Items are named in
+  the shop's own language on every page (`oc_source_reading` around the
+  read), so a report groups one product under one name.

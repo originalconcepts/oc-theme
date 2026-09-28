@@ -55,7 +55,7 @@ final class Events {
 
 		self::$queue[] = array(
 			'n'  => $name,
-			'd'  => $data,
+			'd'  => self::tagged( $data ),
 			'id' => $id,
 		);
 
@@ -72,7 +72,7 @@ final class Events {
 	public static function later( string $name, array $data = array(), string $id = '' ): void {
 		$item = array(
 			'n'  => $name,
-			'd'  => $data,
+			'd'  => self::tagged( $data ),
 			'id' => '' !== $id ? $id : self::id(),
 		);
 
@@ -153,7 +153,7 @@ final class Events {
 
 		$job = array(
 			'name'   => $name,
-			'data'   => $data,
+			'data'   => self::tagged( $data ),
 			'id'     => '' !== $id ? $id : self::id(),
 			'user'   => $user,
 			'client' => $client ? $client : self::client(),
@@ -217,6 +217,36 @@ final class Events {
 			'obref'  => $cookie( '__obref' ),
 		);
 		// phpcs:enable
+	}
+
+	/**
+	 * The language the page is in, as a short code: he, en, ar. The locale's
+	 * first letters, unless a translation plugin answers with its own code.
+	 */
+	public static function language(): string {
+		$guess = strtolower( substr( (string) get_locale(), 0, 2 ) );
+
+		/**
+		 * The language of the page, for the marketing events.
+		 *
+		 * @param string $guess The locale's language part.
+		 */
+		return (string) apply_filters( 'oc_site_language', $guess );
+	}
+
+	/**
+	 * Event data with the language on it, unless it says one already (an
+	 * order carries the language it was placed in, whatever page reports it).
+	 *
+	 * @param array<string,mixed> $data Event data.
+	 * @return array<string,mixed>
+	 */
+	private static function tagged( array $data ): array {
+		if ( ! isset( $data['site_language'] ) ) {
+			$data['site_language'] = self::language();
+		}
+
+		return $data;
 	}
 
 	/**

@@ -73,6 +73,7 @@ final class Marketing {
 				'openai'    => $s['openai']['pixel'],
 				'events'    => $s['events'],
 				'currency'  => get_woocommerce_currency(),
+				'lang'      => Events::language(),
 				'rest'      => esc_url_raw( rest_url() ),
 				'nonce'     => wp_create_nonce( 'oc_mkt' ),
 				'pageId'    => Events::id( 'pv' ),
