@@ -307,7 +307,7 @@ function oc_header_icons_render(): void {
 				'<a class="oc-htext__link oc-cart-link" href="%s">%s <span class="oc-cart-count">%d</span></a>',
 				esc_url( wc_get_cart_url() ),
 				esc_html__( 'Shopping cart', 'oc-theme' ),
-				absint( WC()->cart->get_cart_contents_count() )
+				absint( WC()->cart ? WC()->cart->get_cart_contents_count() : 0 )
 			);
 		}
 

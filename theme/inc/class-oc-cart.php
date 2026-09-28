@@ -101,7 +101,10 @@ final class Cart {
 	 * every add/remove/quantity change refreshes it without a reload.
 	 */
 	public function drawer(): void {
-		if ( is_admin() || is_cart() || is_checkout() ) {
+		// No cart object on a request WooCommerce does not treat as the shop
+		// front (a REST-shaped address answered with the theme's 404, cron):
+		// nothing to draw, and nothing to crash on.
+		if ( is_admin() || is_cart() || is_checkout() || ! WC()->cart ) {
 			return;
 		}
 

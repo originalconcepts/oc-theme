@@ -93,3 +93,6 @@ Format follows [Keep a Changelog](https://keepachangelog.com/); versioning is
   an item — pass the promotion's name through the engine's own
   `promeng_product_label` filter, so a translated name reads the same there
   as on the product card.
+- The cart drawer and the header's text cart link no longer die on a request
+  WooCommerce gives no cart object to (a REST-shaped address answered with
+  the theme's 404 page, cron): the drawer stays out and the count reads 0.
