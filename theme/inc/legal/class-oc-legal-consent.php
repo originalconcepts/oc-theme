@@ -102,8 +102,8 @@ final class Consent {
 	 * In a handler, after the nonce: was the box ticked? If so, record it.
 	 * The caller has verified the nonce and the capability.
 	 *
-	 * @param string               $kind    terms | accessibility | privacy.
-	 * @param array<string,mixed>  $options Choices made in the dialog.
+	 * @param string              $kind    terms | accessibility | privacy.
+	 * @param array<string,mixed> $options Choices made in the dialog.
 	 */
 	public static function confirmed( string $kind, array $options = array() ): bool {
 		if ( empty( $_POST['oc_consent'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing -- verified by the caller.
