@@ -586,8 +586,8 @@ final class Cart {
 					$promo_saved += (float) $row['saved'];
 					// The engine's own label filter, so whoever translates the card
 					// badge translates this line the same.
-					$name         = (string) apply_filters( 'promeng_product_label', (string) $row['name'], 0 );
-					$rows[]       = '<div class="oc-drawer__discount"><span>' . esc_html( $name ) . '</span><strong>&minus;' . wc_price( (float) $row['saved'] ) . '</strong></div>';
+					$name   = (string) apply_filters( 'promeng_product_label', (string) $row['name'], 0 );
+					$rows[] = '<div class="oc-drawer__discount"><span>' . esc_html( $name ) . '</span><strong>&minus;' . wc_price( (float) $row['saved'] ) . '</strong></div>';
 				}
 			}
 		}
