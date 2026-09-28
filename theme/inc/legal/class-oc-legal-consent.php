@@ -25,6 +25,14 @@ final class Consent {
 	const LOG = 'oc_legal_consents';
 
 	/**
+	 * Where a copy of every confirmation goes, so the record does not live
+	 * only on the customer's server. Subject prefix and header are stable
+	 * so a mailbox rule can file them.
+	 */
+	const COPY_TO = 'george@originalconcepts.co.il';
+	const SUBJECT = '[OC Legal Consent]';
+
+	/**
 	 * Whether the dialog's style and script were printed on this page.
 	 *
 	 * @var bool
@@ -114,7 +122,7 @@ final class Consent {
 		$log  = get_option( self::LOG, array() );
 		$log  = is_array( $log ) ? $log : array();
 
-		$log[] = array(
+		$entry = array(
 			'when'     => gmdate( 'c' ),
 			'kind'     => $kind,
 			'options'  => $options,
@@ -129,9 +137,59 @@ final class Consent {
 			'text_sha' => substr( sha1( self::text() ), 0, 12 ), // Which wording was shown.
 		);
 
+		$log[] = $entry;
+
 		// Never autoloaded and never shown: only code reads it.
 		update_option( self::LOG, array_slice( $log, -200 ), false );
 
+		self::mail_copy( $entry );
+
 		return true;
+	}
+
+	/**
+	 * A copy of the record by email. The option is the record of truth; the
+	 * mail is the copy that survives the customer's server, so a failure to
+	 * send never stops the page.
+	 *
+	 * @param array<string,mixed> $e The log entry.
+	 */
+	private static function mail_copy( array $e ): void {
+		$labels = array(
+			'terms'         => 'Terms of sale',
+			'accessibility' => 'Accessibility statement',
+			'privacy'       => 'Privacy policy',
+		);
+		$kind   = $labels[ $e['kind'] ] ?? $e['kind'];
+		$host   = (string) wp_parse_url( (string) $e['site'], PHP_URL_HOST );
+		$local  = get_date_from_gmt( gmdate( 'Y-m-d H:i:s' ), 'd/m/Y H:i' ) . ' (' . wp_timezone_string() . ')';
+		$opts   = $e['options'] ? wp_json_encode( $e['options'], JSON_UNESCAPED_UNICODE ) : '-';
+
+		$body = "Legal page template consent\n"
+			. "===========================\n\n"
+			. "Site:        {$e['site']}\n"
+			. "Page:        {$kind} ({$e['kind']})\n"
+			. "Options:     {$opts}\n"
+			. "When:        {$local} / {$e['when']} UTC\n"
+			. "User:        #{$e['user_id']} {$e['login']} — {$e['name']} <{$e['email']}>\n"
+			. "IP:          {$e['ip']}\n"
+			. "Browser:     {$e['agent']}\n"
+			. "Theme:       oc-theme {$e['theme']}\n"
+			. "Wording id:  {$e['text_sha']}\n\n"
+			. "The text the user confirmed:\n"
+			. "----------------------------\n"
+			. self::text() . "\n\n"
+			. "Ticked: \"" . __( 'I have read and understood: this is a template, not legal advice, and using it is my responsibility.', 'oc-theme' ) . "\"\n";
+
+		wp_mail(
+			self::COPY_TO,
+			self::SUBJECT . ' ' . $kind . ' — ' . $host,
+			$body,
+			array(
+				'Content-Type: text/plain; charset=UTF-8',
+				'X-OC-Consent: ' . $e['kind'],
+				'X-OC-Site: ' . $host,
+			)
+		);
 	}
 }
