@@ -52,6 +52,27 @@ final class Accessibility {
 	}
 
 	/**
+	 * A published page that reads like an accessibility statement and is
+	 * not ours — the customer's own. Never touched; the screen points it out
+	 * so nobody writes a second statement by accident.
+	 */
+	public static function foreign_id(): int {
+		$ours = self::page_id();
+
+		foreach ( get_pages( array( 'post_status' => 'publish', 'number' => 200 ) ) as $page ) {
+			if ( (int) $page->ID === $ours ) {
+				continue;
+			}
+
+			if ( preg_match( '/נגישות|accessib/iu', $page->post_title . ' ' . urldecode( $page->post_name ) ) ) {
+				return (int) $page->ID;
+			}
+		}
+
+		return 0;
+	}
+
+	/**
 	 * The button on the store details screen.
 	 */
 	public function handle(): void {

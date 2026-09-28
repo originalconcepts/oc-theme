@@ -276,10 +276,17 @@ final class Policy {
 		}
 
 		update_option( 'oc_privacy_page', (int) $id, false );
-		update_option( 'wp_page_for_privacy_policy', (int) $id );
+
+		// The site's privacy page becomes ours unless a person already set
+		// one we did not write — a customer's own policy stays theirs.
+		$current = (int) get_option( 'wp_page_for_privacy_policy', 0 );
+
+		if ( $current < 1 || $current === (int) $id || 'publish' !== get_post_status( $current ) ) {
+			update_option( 'wp_page_for_privacy_policy', (int) $id );
+		}
 
 		$s           = Settings::get();
-		$s['policy'] = (int) $id;
+		$s['policy'] = (int) get_option( 'wp_page_for_privacy_policy', (int) $id );
 		Settings::save( $s );
 
 		return (int) $id;

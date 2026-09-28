@@ -540,7 +540,11 @@ final class Contact {
 
 			echo '<div class="notice notice-' . ( $ok ? 'success' : 'error' ) . '"><p>';
 			if ( $ok && $url ) {
-				echo esc_html( 'terms' === $which ? __( 'The terms page is written and set as the checkout terms page. Read it once before publishing.', 'oc-theme' ) : __( 'The accessibility statement is written and linked from the footer. Read it once before publishing.', 'oc-theme' ) );
+				if ( 'terms' === $which && ! empty( $_GET['kept'] ) ) {
+					esc_html_e( 'The terms page is written. The checkout keeps the terms page it already had, which the theme did not write — switch it under WooCommerce → Settings → Advanced only if you decide to.', 'oc-theme' );
+				} else {
+					echo esc_html( 'terms' === $which ? __( 'The terms page is written and set as the checkout terms page. Read it once before publishing.', 'oc-theme' ) : __( 'The accessibility statement is written and linked from the footer. Read it once before publishing.', 'oc-theme' ) );
+				}
 				echo ' <a href="' . esc_url( $url ) . '" target="_blank" rel="noopener">' . esc_html__( 'View', 'oc-theme' ) . '</a> · <a href="' . esc_url( (string) get_edit_post_link( $id ) ) . '">' . esc_html__( 'Edit', 'oc-theme' ) . '</a>';
 			} else {
 				esc_html_e( 'The page could not be written.', 'oc-theme' );
@@ -725,15 +729,20 @@ final class Contact {
 			<h2><?php esc_html_e( 'Legal pages', 'oc-theme' ); ?></h2>
 			<p class="description"><?php esc_html_e( 'Each button writes a ready-made page from a template built into the theme — no AI, no outside service, nothing leaves the site. The facts on the page (company, address, hours, coordinator, branches) are read live from this screen, so save first, and later edits here show on the page by themselves. Rewriting a page replaces what you edited on it. Read every page once before publishing — a lawyer should confirm anything specific to your business.', 'oc-theme' ); ?></p>
 			<?php
+			$link  = static function ( int $id ): string {
+				return '<a href="' . esc_url( (string) get_permalink( $id ) ) . '" target="_blank" rel="noopener">' . esc_html( (string) get_the_title( $id ) ) . '</a>';
+			};
 			$pages = array(
 				'terms' => array(
 					'id'    => Legal\Terms::page_id(),
+					'other' => Legal\Terms::foreign_id() ? sprintf( /* translators: %s: page title link. */ __( 'The checkout already uses a terms page the theme did not write: %s. It is not touched. Writing ours adds a page next to it, and the checkout stays on the existing one — switch it under WooCommerce → Settings → Advanced only if you decide to.', 'oc-theme' ), $link( Legal\Terms::foreign_id() ) ) : '',
 					'write' => __( 'Write the terms page', 'oc-theme' ),
 					'again' => __( 'Rewrite the terms page', 'oc-theme' ),
 					'what'  => __( 'Terms of sale in the site\'s language: orders and payment, delivery, cancellation and returns per the Consumer Protection Law (14 days, 4 months for eligible customers, 5% or ₪100 fee, the exceptions), warranty, privacy, liability and jurisdiction — written for the kind of store chosen above. Set as the WooCommerce terms page, so the checkout consent and the checkout side panel link to it.', 'oc-theme' ),
 				),
 				'a11y'  => array(
 					'id'    => Legal\Accessibility::page_id(),
+					'other' => Legal\Accessibility::foreign_id() ? sprintf( /* translators: %s: page title link. */ __( 'There is already an accessibility page the theme did not write: %s. It is not touched. If it is complete, link it from the footer menu and skip this button; writing ours adds a second page and the footer link points at ours.', 'oc-theme' ), $link( Legal\Accessibility::foreign_id() ) ) : '',
 					'write' => __( 'Write the accessibility statement', 'oc-theme' ),
 					'again' => __( 'Rewrite the accessibility statement', 'oc-theme' ),
 					'what'  => __( 'The statement regulation 35 requires: the standard the site follows, the adaptations the theme really provides, how to enlarge text and raise contrast from the browser, the premises table, the coordinator and how to report a problem. Linked from the footer next to the privacy link.', 'oc-theme' ),
@@ -752,6 +761,9 @@ final class Contact {
 						· <a href="<?php echo esc_url( (string) get_edit_post_link( $page['id'] ) ); ?>"><?php esc_html_e( 'Edit', 'oc-theme' ); ?></a>
 					<?php endif; ?>
 					<p class="description"><?php echo esc_html( $page['what'] ); ?></p>
+					<?php if ( '' !== $page['other'] ) : ?>
+						<p class="description" style="color:#b32d2e"><?php echo wp_kses_post( $page['other'] ); ?></p>
+					<?php endif; ?>
 				</div>
 			<?php endforeach; ?>
 			<p class="description"><?php echo wp_kses_post( sprintf( /* translators: %s: link to the privacy screen. */ __( 'The privacy policy page has its own button under %s.', 'oc-theme' ), '<a href="' . esc_url( admin_url( 'options-general.php?page=oc-privacy' ) ) . '">' . esc_html__( 'Settings → Privacy', 'oc-theme' ) . '</a>' ) ); ?> <code>[oc_site company]</code> <code>[oc_site address]</code> <code>[oc_site hours]</code> <code>[oc_a11y_table]</code> — <?php esc_html_e( 'the same facts, for any page or block.', 'oc-theme' ); ?></p>

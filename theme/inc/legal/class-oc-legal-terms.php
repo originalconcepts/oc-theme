@@ -51,6 +51,26 @@ final class Terms {
 	}
 
 	/**
+	 * The page the checkout uses now, whoever wrote it.
+	 */
+	public static function current_id(): int {
+		$id = function_exists( 'wc_terms_and_conditions_page_id' ) ? (int) wc_terms_and_conditions_page_id() : (int) get_option( 'woocommerce_terms_page_id', 0 );
+
+		return $id > 0 && 'publish' === get_post_status( $id ) ? $id : 0;
+	}
+
+	/**
+	 * A checkout terms page somebody else wrote — the customer's own, or a
+	 * lawyer's. Ours never replaces it: writing ours adds a page next to it
+	 * and the checkout stays where it was until a person switches it.
+	 */
+	public static function foreign_id(): int {
+		$current = self::current_id();
+
+		return $current && $current !== self::page_id() ? $current : 0;
+	}
+
+	/**
 	 * The button on the store details screen.
 	 */
 	public function handle(): void {
@@ -67,6 +87,7 @@ final class Terms {
 				array(
 					'oc_page' => 'terms',
 					'ok'      => $id > 0 ? 1 : 0,
+					'kept'    => self::foreign_id() ? 1 : 0,
 				),
 				admin_url( 'admin.php?page=oc-contact' )
 			)
@@ -76,8 +97,9 @@ final class Terms {
 
 	/**
 	 * Writes the terms page (or rewrites the one we wrote before) and makes
-	 * it the WooCommerce terms page, so the checkout consent box and the
-	 * checkout side panel point at it without another setting.
+	 * it the WooCommerce terms page — so the checkout consent box and the
+	 * side panel point at it — unless the checkout already has a page we
+	 * did not write, which stays.
 	 *
 	 * @return int The page id, 0 on failure.
 	 */
@@ -103,7 +125,10 @@ final class Terms {
 		}
 
 		update_option( self::OPTION, (int) $id, false );
-		update_option( 'woocommerce_terms_page_id', (int) $id );
+
+		if ( ! self::foreign_id() ) {
+			update_option( 'woocommerce_terms_page_id', (int) $id );
+		}
 
 		return (int) $id;
 	}

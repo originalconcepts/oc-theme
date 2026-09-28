@@ -10265,3 +10265,12 @@ msgstr "נגישות החנות הפיזית"
 
 msgid "Branch"
 msgstr "סניף"
+
+msgid "The terms page is written. The checkout keeps the terms page it already had, which the theme did not write — switch it under WooCommerce → Settings → Advanced only if you decide to."
+msgstr "עמוד התקנון נכתב. הקופה נשארת עם עמוד התקנון שכבר היה לה, שלא נכתב על ידי התבנית — להחליף תחת ווקומרס ← הגדרות ← מתקדם, רק אם תחליטו."
+
+msgid "The checkout already uses a terms page the theme did not write: %s. It is not touched. Writing ours adds a page next to it, and the checkout stays on the existing one — switch it under WooCommerce → Settings → Advanced only if you decide to."
+msgstr "לקופה כבר יש עמוד תקנון שלא נכתב על ידי התבנית: %s. הוא לא ייגע. כתיבת העמוד שלנו מוסיפה עמוד לצידו, והקופה נשארת על הקיים — להחליף תחת ווקומרס ← הגדרות ← מתקדם, רק אם תחליטו."
+
+msgid "There is already an accessibility page the theme did not write: %s. It is not touched. If it is complete, link it from the footer menu and skip this button; writing ours adds a second page and the footer link points at ours."
+msgstr "כבר קיים עמוד נגישות שלא נכתב על ידי התבנית: %s. הוא לא ייגע. אם הוא שלם — קשרו אותו מתפריט הפוטר ודלגו על הכפתור; כתיבת העמוד שלנו מוסיפה עמוד שני והקישור בפוטר יצביע על שלנו."
