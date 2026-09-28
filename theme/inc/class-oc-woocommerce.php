@@ -1360,10 +1360,15 @@ final class WooCommerce {
 			esc_attr( '' !== $card_video && empty( $ids ) ? 'single' : $mode ),
 			50 === $focus ? '' : ' style="--oc-card-focus:' . esc_attr( (string) $focus ) . '%"'
 		);
-		// A plain div may not carry aria-label; as a group it may, and
-		// only a gallery has anything to name.
+		// The strip is a sideways scroller of decorative pictures: every
+		// slide is wrapped in a link the screen reader is already told to
+		// skip, and the card's title link is the one that names the product.
+		// Hidden from assistive technology as a whole, so a keyboard user is
+		// not told about a region that scrolls but holds nothing to reach —
+		// the arrow buttons beside it, which do have names, stay in the tab
+		// order and turn the pictures.
 		echo 'gallery' === $mode
-			? '<div class="oc-card-media__strip" role="group" aria-label="' . esc_attr__( 'Product images', 'oc-theme' ) . '">'
+			? '<div class="oc-card-media__strip" aria-hidden="true">'
 			: '<div class="oc-card-media__strip">';
 
 		// The picture is also a link to the product, and in a gallery the

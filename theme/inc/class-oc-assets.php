@@ -248,6 +248,12 @@ final class Assets {
 				'vpReviews'            => __( '%s reviews', 'oc-theme' ),
 				'vpAdd'                => __( 'Add to cart', 'oc-theme' ),
 				'vpGo'                 => __( 'To the product page', 'oc-theme' ),
+				'vpClose'              => __( 'Close', 'oc-theme' ),
+				'vpPrev'               => __( 'Previous image', 'oc-theme' ),
+				'vpNext'               => __( 'Next image', 'oc-theme' ),
+				'vpQty'                => __( 'Quantity', 'oc-theme' ),
+				/* translators: %d: the picture's number in the panel's gallery. */
+				'vpImage'              => __( 'Image %d', 'oc-theme' ),
 				'inStock'              => __( 'In stock', 'oc-theme' ),
 				'outStock'             => __( 'Out of stock', 'oc-theme' ),
 				'unavail'              => __( 'Not available', 'oc-theme' ),

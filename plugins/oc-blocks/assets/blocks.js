@@ -1102,6 +1102,8 @@
 			var d = document.createElement( 'button' );
 
 			d.type = 'button';
+			// A dot is a button with nothing written on it — it says which item it turns to.
+			d.setAttribute( 'aria-label', ( ico.getAttribute( 'data-ocb-dot-label' ) || 'Item %d' ).replace( '%d', i + 1 ) );
 			d.addEventListener( 'click', function () {
 				show( i );
 				arm();
@@ -1137,6 +1139,7 @@
 
 			[].forEach.call( dots.children, function ( d, i ) {
 				d.classList.toggle( 'is-on', i === at );
+				if ( i === at ) { d.setAttribute( 'aria-current', 'true' ); } else { d.removeAttribute( 'aria-current' ); }
 			} );
 		}
 

@@ -6,6 +6,59 @@
  * mobile menu, card-gallery dots, tabs→accordion, sticky add-to-cart.
  */
 
+/* ---------- keyboard or pointer, and the rules of an open panel ----------
+ * A panel that opens under a keyboard must take focus, keep Tab inside and
+ * give focus back when it closes; one that opens under a finger must NOT
+ * pull focus — Safari spends the first tap settling it, and the visitor
+ * presses twice. Every drawer and sheet in this file asks the same two
+ * questions, so they are answered once, here. */
+window.ocA11y = ( function () {
+	var viaKey = false;
+
+	document.addEventListener( 'keydown', function () { viaKey = true; }, true );
+	document.addEventListener( 'pointerdown', function () { viaKey = false; }, true );
+
+	var FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+	function focusable( root ) {
+		return [].filter.call( root.querySelectorAll( FOCUSABLE ), function ( el ) {
+			return el.offsetWidth > 0 || el.offsetHeight > 0 || el.getClientRects().length;
+		} );
+	}
+
+	function put( el ) {
+		try { el.focus( { preventScroll: true } ); } catch ( e ) { el.focus(); }
+	}
+
+	return {
+		viaKey: function () { return viaKey; },
+
+		/* Tab past the last control lands on the first, Shift+Tab before the
+		 * first lands on the last; a Tab from outside the panel steps in. */
+		trap: function ( root, event ) {
+			if ( ! root || event.key !== 'Tab' ) { return; }
+			var list = focusable( root );
+			if ( ! list.length ) { event.preventDefault(); return; }
+			var first = list[ 0 ], last = list[ list.length - 1 ], at = document.activeElement;
+			if ( event.shiftKey && ( at === first || ! root.contains( at ) ) ) { event.preventDefault(); put( last ); }
+			else if ( ! event.shiftKey && ( at === last || ! root.contains( at ) ) ) { event.preventDefault(); put( first ); }
+		},
+
+		/* Focus the preferred control, else the first — for a keyboard arrival only. */
+		enter: function ( root, prefer ) {
+			if ( ! root || ! viaKey ) { return; }
+			var el = ( prefer && root.querySelector( prefer ) ) || focusable( root )[ 0 ] || root;
+			if ( el === root && ! root.hasAttribute( 'tabindex' ) ) { root.setAttribute( 'tabindex', '-1' ); }
+			put( el );
+		},
+
+		/* Focus goes back to where it was, without scrolling the page there. */
+		leave: function ( last ) {
+			if ( last && last.focus && document.contains( last ) ) { put( last ); }
+		}
+	};
+} )();
+
 /* ---------- spam guard ----------
  * The trap field and the signed timestamp come from the server on every
  * form it prints; forms this script builds get them from here. Cloudflare
@@ -990,7 +1043,17 @@
 		} );
 
 		document.addEventListener( 'keydown', function ( event ) {
-			if ( event.key !== 'Escape' || drw.hidden ) {
+			if ( drw.hidden ) {
+				return;
+			}
+
+			/* Tab stays inside the open drawer. */
+			if ( event.key === 'Tab' ) {
+				window.ocA11y.trap( drw, event );
+				return;
+			}
+
+			if ( event.key !== 'Escape' ) {
 				return;
 			}
 
@@ -3546,14 +3609,17 @@
 	// as a huge stray scroll under the panel — so the body is pinned at its
 	// place and released to the same spot.
 	var drawerY = 0;
+	var drawerLast = null;
 
 	function openDrawer() {
 		if ( ! drawer ) {
 			return;
 		}
+		drawerLast = document.activeElement;
 		drawer.hidden = false;
 		setTimeout( function () {
 			drawer.classList.add( 'is-open' );
+			window.ocA11y.enter( drawer, '[data-oc-drawer-close]' );
 		}, 10 );
 
 		drawerY = window.scrollY || window.pageYOffset || 0;
@@ -3572,6 +3638,8 @@
 		setTimeout( function () {
 			drawer.hidden = true;
 		}, 220 );
+		window.ocA11y.leave( drawerLast );
+		drawerLast = null;
 	}
 
 	// The same machinery serves the drawer AND the full cart page — the
@@ -3596,9 +3664,14 @@
 			} );
 
 			document.addEventListener( 'keydown', function ( event ) {
-				if ( event.key === 'Escape' && ! drawer.hidden ) {
-					closeDrawer();
+				if ( drawer.hidden ) {
+					return;
 				}
+				if ( event.key === 'Escape' ) {
+					closeDrawer();
+					return;
+				}
+				window.ocA11y.trap( drawer, event );
 			} );
 		}
 
@@ -8072,6 +8145,11 @@
 		var vp = null;
 		var st = null;
 		var vpWant = '';
+		var vpLast = null;
+
+		function vpAttr( s ) {
+			return String( s ).replace( /&/g, '&amp;' ).replace( /"/g, '&quot;' );
+		}
 
 		function vpEl( tag, cls, text ) {
 			var n = document.createElement( tag );
@@ -8085,8 +8163,8 @@
 			vp.hidden = true;
 			vp.innerHTML =
 				'<div class="oc-vp__dim" data-vp-close></div>' +
-				'<aside class="oc-vp__panel" role="dialog" aria-modal="true">' +
-					'<button type="button" class="oc-vp__close" data-vp-close aria-label="close">&times;</button>' +
+				'<aside class="oc-vp__panel" role="dialog" aria-modal="true" aria-labelledby="oc-vp-name">' +
+					'<button type="button" class="oc-vp__close" data-vp-close aria-label="' + vpAttr( L.vpClose || 'Close' ) + '">&times;</button>' +
 					'<div class="oc-vp__skel" aria-hidden="true">' +
 						'<div class="oc-vp__skel-img"></div>' +
 						'<div class="oc-vp__skel-line" style="inline-size:60%"></div>' +
@@ -8096,8 +8174,8 @@
 					'<div class="oc-vp__scroll">' +
 						'<div class="oc-vp__gal">' +
 							'<div class="oc-vp__strip"></div>' +
-							'<button type="button" class="oc-vp__arr oc-vp__arr--prev" data-vp-go="-1" aria-label="prev"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>' +
-							'<button type="button" class="oc-vp__arr oc-vp__arr--next" data-vp-go="1" aria-label="next"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>' +
+							'<button type="button" class="oc-vp__arr oc-vp__arr--prev" data-vp-go="-1" aria-label="' + vpAttr( L.vpPrev || 'Previous image' ) + '"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>' +
+							'<button type="button" class="oc-vp__arr oc-vp__arr--next" data-vp-go="1" aria-label="' + vpAttr( L.vpNext || 'Next image' ) + '"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>' +
 							'<div class="oc-vp__dots"></div>' +
 						'</div>' +
 						'<div class="oc-vp__body">' +
@@ -8105,7 +8183,7 @@
 							'<img class="oc-vp__thumb" alt="" hidden />' +
 							'<div class="oc-vp__idcol">' +
 							'<div class="oc-vp__flags"></div>' +
-							'<a class="oc-vp__name" href="#"></a>' +
+							'<a class="oc-vp__name" id="oc-vp-name" href="#"></a>' +
 							'<a class="oc-vp__stars" href="#"></a>' +
 							'<div class="oc-vp__priceline">' +
 								'<div class="oc-vp__price"></div>' +
@@ -8125,7 +8203,7 @@
 							'<div class="oc-vp__fprice"></div>' +
 							'<div class="oc-vp__qty" hidden>' +
 								'<button type="button" class="oc-qty-btn" data-vp-q="-1">&minus;</button>' +
-								'<input type="number" class="qty" min="1" value="1" inputmode="numeric" />' +
+								'<input type="number" class="qty" min="1" value="1" inputmode="numeric" aria-label="' + vpAttr( L.vpQty || 'Quantity' ) + '" />' +
 								'<button type="button" class="oc-qty-btn" data-vp-q="1">+</button>' +
 							'</div>' +
 							'<button type="button" class="oc-vp__add"></button>' +
@@ -8182,9 +8260,14 @@
 			}, { passive: true } );
 
 			document.addEventListener( 'keydown', function ( e ) {
-				if ( e.key === 'Escape' && vp && ! vp.hidden ) {
-					vpClose();
+				if ( ! vp || vp.hidden ) {
+					return;
 				}
+				if ( e.key === 'Escape' ) {
+					vpClose();
+					return;
+				}
+				window.ocA11y.trap( vp.querySelector( '.oc-vp__panel' ), e );
 			} );
 
 			vp.querySelector( '.oc-vp__add' ).addEventListener( 'click', function () {
@@ -8283,6 +8366,8 @@
 			if ( vp ) {
 				vp.classList.remove( 'is-open' );
 				setTimeout( function () { vp.hidden = true; }, 240 );
+				window.ocA11y.leave( vpLast );
+				vpLast = null;
 			}
 		}
 
@@ -8311,6 +8396,7 @@
 				slides.forEach( function ( sl, i ) {
 					var d = vpEl( 'button', 'oc-vp__dot' );
 					d.type = 'button';
+					d.setAttribute( 'aria-label', ( L.vpImage || 'Image %d' ).replace( '%d', i + 1 ) );
 					d.addEventListener( 'click', function () {
 						var rtl = getComputedStyle( strip ).direction === 'rtl';
 						strip.scrollTo( { left: ( rtl ? -1 : 1 ) * i * vpStep(), behavior: 'smooth' } );
@@ -8322,7 +8408,9 @@
 			var at = Math.round( Math.abs( strip.scrollLeft ) / Math.max( 1, vpStep() ) );
 
 			[].forEach.call( dots.children, function ( d, i ) {
-				d.classList.toggle( 'is-on', i === Math.min( at, dots.children.length - 1 ) );
+				var on = i === Math.min( at, dots.children.length - 1 );
+				d.classList.toggle( 'is-on', on );
+				if ( on ) { d.setAttribute( 'aria-current', 'true' ); } else { d.removeAttribute( 'aria-current' ); }
 			} );
 
 			vp.querySelector( '.oc-vp__gal' ).classList.toggle( 'oc-vp__gal--one', slides.length < 2 );
@@ -8762,12 +8850,16 @@
 				vpWant = preSlug;
 			}
 
+			vpLast = document.activeElement;
 			vp.hidden = false;
 			vpOpenedAt = Date.now();
 			// A freshly appended panel must be laid out once before the
 			// class flips, or the first entrance jumps instead of gliding.
 			void vp.offsetWidth;
-			requestAnimationFrame( function () { vp.classList.add( 'is-open' ); } );
+			requestAnimationFrame( function () {
+				vp.classList.add( 'is-open' );
+				window.ocA11y.enter( vp.querySelector( '.oc-vp__panel' ), '.oc-vp__close' );
+			} );
 			vpLoad( productId );
 		}
 

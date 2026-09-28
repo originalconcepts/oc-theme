@@ -724,8 +724,8 @@ final class Render {
 			. '<div class="ocb-hero__sets">' . implode( '', $sets ) . '</div>';
 
 		if ( ! $one && ! empty( $s['arrows'] ) ) {
-			$html .= '<button type="button" class="ocb-arr ocb-arr--prev" data-ocb-go="-1" aria-label="prev"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5l-7 7 7 7"/></svg></button>'
-				. '<button type="button" class="ocb-arr ocb-arr--next" data-ocb-go="1" aria-label="next"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 5l7 7-7 7"/></svg></button>';
+			$html .= '<button type="button" class="ocb-arr ocb-arr--prev" data-ocb-go="-1" aria-label="' . esc_attr__( 'Previous', 'oc-blocks' ) . '"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5l-7 7 7 7"/></svg></button>'
+				. '<button type="button" class="ocb-arr ocb-arr--next" data-ocb-go="1" aria-label="' . esc_attr__( 'Next', 'oc-blocks' ) . '"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 5l7 7-7 7"/></svg></button>';
 		}
 
 		if ( ! $one && ! empty( $s['dots'] ) ) {
@@ -1115,8 +1115,8 @@ final class Render {
 	 * The arrows a shelf-slider wears.
 	 */
 	private static function shelf_arrows(): string {
-		return '<button type="button" class="ocb-arr ocb-arr--prev" data-ocb-go="-1" aria-label="prev"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5l-7 7 7 7"/></svg></button>'
-			. '<button type="button" class="ocb-arr ocb-arr--next" data-ocb-go="1" aria-label="next"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 5l7 7-7 7"/></svg></button>';
+		return '<button type="button" class="ocb-arr ocb-arr--prev" data-ocb-go="-1" aria-label="' . esc_attr__( 'Previous', 'oc-blocks' ) . '"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5l-7 7 7 7"/></svg></button>'
+			. '<button type="button" class="ocb-arr ocb-arr--next" data-ocb-go="1" aria-label="' . esc_attr__( 'Next', 'oc-blocks' ) . '"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 5l7 7-7 7"/></svg></button>';
 	}
 
 	/**
@@ -1757,9 +1757,9 @@ final class Render {
 			. '<div class="ocb-look__cards">' . $cards . '</div>'
 			. ( $at > 1
 				? '<div class="ocb-look__nav">'
-					. '<button type="button" class="ocb-arr ocb-arr--prev" data-ocb-go="-1" aria-label="prev"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5l-7 7 7 7"/></svg></button>'
+					. '<button type="button" class="ocb-arr ocb-arr--prev" data-ocb-go="-1" aria-label="' . esc_attr__( 'Previous', 'oc-blocks' ) . '"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5l-7 7 7 7"/></svg></button>'
 					. '<span class="ocb-look__count"><b>1</b> / ' . $at . '</span>'
-					. '<button type="button" class="ocb-arr ocb-arr--next" data-ocb-go="1" aria-label="next"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 5l7 7-7 7"/></svg></button>'
+					. '<button type="button" class="ocb-arr ocb-arr--next" data-ocb-go="1" aria-label="' . esc_attr__( 'Next', 'oc-blocks' ) . '"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 5l7 7-7 7"/></svg></button>'
 					. '</div>'
 				: '' )
 			. '</div>'
@@ -2578,7 +2578,7 @@ final class Render {
 			. ( '' === ( $s['ic'] ?? '' ) ? '' : '--ocb-ico-color:' . $s['ic'] . ';' );
 
 		return self::heading( $s )
-			. '<div class="ocb-ico ocb-ico--' . esc_attr( (string) $s['size'] ) . ' ocb-ico--m' . esc_attr( '' !== (string) ( $s['mlay'] ?? '' ) ? (string) $s['mlay'] : '1' ) . ( empty( $s['bg'] ) ? '' : ' ocb-ico--bg' ) . '" style="' . esc_attr( $style ) . '">'
+			. '<div class="ocb-ico ocb-ico--' . esc_attr( (string) $s['size'] ) . ' ocb-ico--m' . esc_attr( '' !== (string) ( $s['mlay'] ?? '' ) ? (string) $s['mlay'] : '1' ) . ( empty( $s['bg'] ) ? '' : ' ocb-ico--bg' ) . '" style="' . esc_attr( $style ) . '" data-ocb-dot-label="' . esc_attr( __( 'Item %d', 'oc-blocks' ) ) . '">'
 			. $items
 			. '</div>';
 	}

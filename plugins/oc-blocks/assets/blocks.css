@@ -2728,7 +2728,8 @@ html.oc-look-lock body { overflow: hidden; }
 	display: block;
 	font-size: .82em;
 	letter-spacing: .08em;
-	opacity: .55;
+	/* dimmed, but never below 4.5:1 on white — .55 read at 3.9:1 */
+	opacity: .72;
 	margin-block-end: 2px;
 }
 
@@ -2757,7 +2758,7 @@ html.oc-look-lock body { overflow: hidden; }
 	display: inline-block;
 	margin-block-start: 4px;
 	font-size: .85em;
-	opacity: .65;
+	opacity: .72;
 	border-block-end: 1px solid currentColor;
 }
 
@@ -2776,7 +2777,7 @@ html.oc-look-lock body { overflow: hidden; }
 	padding: 10px 14px;
 	border-radius: 10px;
 	background: color-mix(in srgb, currentColor 4%, transparent);
-	opacity: .55;
+	opacity: .72;
 }
 
 .ocb-brs__acc.is-yes { opacity: 1; }

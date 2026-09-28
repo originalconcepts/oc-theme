@@ -1822,3 +1822,12 @@ msgstr "השם בקופה"
 
 msgid "Left empty, the branch's own name is used."
 msgstr "אם השדה ריק, יוצג שם הסניף עצמו."
+
+msgid "Previous"
+msgstr "הקודם"
+
+msgid "Next"
+msgstr "הבא"
+
+msgid "Item %d"
+msgstr "פריט %d"
