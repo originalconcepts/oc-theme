@@ -3015,7 +3015,11 @@ html.oc-drw-open { overflow: hidden; }
  * both kinds of screen agree, a copy per kind where they differ. In the
  * drawer it rides the top bar between the way back and the close. */
 .oc-lang { display: inline-flex; align-items: center; }
-.oc-drw__top .oc-lang { flex: 1 1 auto; justify-content: flex-start; padding-inline: 6px; }
+/* It starts where the rows start — the list's own inset from the edge —
+ * pulled back over the space the hidden way-back keeps; once that shows,
+ * it steps aside. */
+.oc-drw__top .oc-lang { flex: 1 1 auto; justify-content: flex-start; margin-inline-start: calc(var(--oc-gap, 16px) - 12px - 38px); padding-inline-end: 6px; }
+.oc-drw--slide.oc-drw--in .oc-drw__top .oc-lang { margin-inline-start: 8px; }
 .oc-drw__top .oclang-switcher { font-size: .95rem; }
 @media (max-width: 900px) { .oc-lang--desk { display: none !important; } }
 @media (min-width: 901px) { .oc-lang--mob { display: none !important; } }
