@@ -4,7 +4,7 @@ Tags: woocommerce, analytics, statistics, reports, dashboard
 Requires at least: 6.5
 Tested up to: 6.7
 Requires PHP: 8.0
-Stable tag: 0.3.277
+Stable tag: 0.3.278
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
