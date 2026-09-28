@@ -62,7 +62,15 @@ final class Terms {
 
 		$id = self::create_page();
 
-		wp_safe_redirect( add_query_arg( array( 'oc_page' => 'terms', 'ok' => $id > 0 ? 1 : 0 ), admin_url( 'admin.php?page=oc-contact' ) ) );
+		wp_safe_redirect(
+			add_query_arg(
+				array(
+					'oc_page' => 'terms',
+					'ok'      => $id > 0 ? 1 : 0,
+				),
+				admin_url( 'admin.php?page=oc-contact' )
+			)
+		);
 		exit;
 	}
 
@@ -126,13 +134,13 @@ final class Terms {
 	private static function hebrew( array $o ): string {
 		$pickup = $o['branches'] ? 'או ייאספו על ידי הלקוח מאחד מסניפי העסק, ' : 'או ייאספו על ידי הלקוח, ';
 
-		$bulky = $o['bulky'] ? <<<HTML
+		$bulky = $o['bulky'] ? <<<'HTML'
 
 <p><strong>פריטים גדולים:</strong> על הלקוח לוודא לפני ההזמנה שניתן להכניס את המוצר לבית — דרך הגישה, חדר המדרגות, המעלית ופתחי הדלתות. המשלוח כולל הובלה עד לדירת הלקוח עד לקומה שלישית ללא מעלית; מעבר לכך, או כשנדרשת הובלה בעזרת מנוף או אמצעי מיוחד, ייגבה תשלום נוסף בתיאום מראש. הרכבה אינה כלולה במחיר אלא אם צוין אחרת בעמוד המוצר. עם קבלת המוצר על הלקוח לבדוק אותו ולציין כל פגם או נזק על תעודת המשלוח; חתימה על תעודת המשלוח ללא הערה מעידה על קבלת המוצר תקין ושלם. מוצר שנקבע לו איסוף עצמי ייאסף בתוך 14 ימי עסקים ממועד ההודעה שהוא מוכן.</p>
 HTML
 		: '';
 
-		$food_delivery = $o['food'] ? <<<HTML
+		$food_delivery = $o['food'] ? <<<'HTML'
 
 <p><strong>מוצרי מזון ומוצרים מקוררים:</strong> מוצרים הדורשים קירור נשלחים בהובלה מקוררת או באריזה שומרת קור, ויש להיות זמינים לקבלתם בטווח השעות שתואם. עם המסירה יש להעביר את המוצרים לקירור בהתאם להוראות שעל האריזה; העסק אינו אחראי לאחסון המוצרים לאחר מסירתם.</p>
 HTML
@@ -157,19 +165,19 @@ HTML
 			$no_cancel_html .= '<li>' . $item . '</li>';
 		}
 
-		$custom = $o['custom'] ? <<<HTML
+		$custom = $o['custom'] ? <<<'HTML'
 
 <p><strong>מוצרים בהזמנה אישית:</strong> מוצר המיוצר או מותאם לפי הזמנת הלקוח (מידות, צבע, בד, חריטה וכיוצא באלה) הוא מוצר שיוצר במיוחד בעבורו כמשמעותו בחוק. ניתן לבטל את הזמנתו כל עוד לא החלה הכנתו; משהחלה — לא ניתן לבטל את העסקה, אלא אם נמצא במוצר פגם או שאינו תואם את ההזמנה. מועד תחילת ההכנה יימסר ללקוח באישור ההזמנה או בתיאום.</p>
 HTML
 		: '';
 
-		$physical = $o['physical'] ? <<<HTML
+		$physical = $o['physical'] ? <<<'HTML'
 
 <p>רכישה בחנות הפיזית של העסק כפופה לתקנות הגנת הצרכן (ביטול עסקה), התשע"א-2010, ולמדיניות ההחזרות המוצגת בחנות.</p>
 HTML
 		: '';
 
-		$food_more = $o['food'] ? <<<HTML
+		$food_more = $o['food'] ? <<<'HTML'
 
 <p><strong>מוצרים הנמכרים במשקל:</strong> ייתכנו סטיות של עד 10% בין המשקל שהוזמן למשקל שסופק בפועל, והחיוב ייעשה לפי המשקל בפועל. <strong>אלרגנים ורכיבים:</strong> המידע המלא על רכיבי המוצר, האלרגנים והערכים התזונתיים מופיע על אריזת המוצר ובעמוד המוצר; באחריות הלקוח לבדוק את התאמת המוצר לצרכיו לפני הצריכה.</p>
 HTML
@@ -233,13 +241,13 @@ HTML;
 	private static function english( array $o ): string {
 		$pickup = $o['branches'] ? 'or collected by the customer from one of the business\'s branches, ' : 'or collected by the customer, ';
 
-		$bulky = $o['bulky'] ? <<<HTML
+		$bulky = $o['bulky'] ? <<<'HTML'
 
 <p><strong>Large items:</strong> before ordering, the customer must make sure the product can be brought into the home — the access path, the stairwell, the lift and the doorways. Delivery includes carrying the product to the customer's home up to the third floor without a lift; beyond that, or where a crane or special equipment is needed, an extra charge applies and is agreed in advance. Assembly is not included unless the product page says so. On delivery the customer must inspect the product and note any defect or damage on the delivery note; signing the note without a remark confirms the product was received sound and complete. A product set for self-collection must be collected within 14 business days of the notice that it is ready.</p>
 HTML
 		: '';
 
-		$food_delivery = $o['food'] ? <<<HTML
+		$food_delivery = $o['food'] ? <<<'HTML'
 
 <p><strong>Food and chilled products:</strong> products that need refrigeration are shipped in a refrigerated vehicle or in cold-keeping packaging, and the customer must be available to receive them within the agreed time window. On delivery the products must be refrigerated as the packaging instructs; the business is not responsible for storage after delivery.</p>
 HTML
@@ -264,19 +272,19 @@ HTML
 			$no_cancel_html .= '<li>' . $item . '</li>';
 		}
 
-		$custom = $o['custom'] ? <<<HTML
+		$custom = $o['custom'] ? <<<'HTML'
 
 <p><strong>Made-to-order products:</strong> a product made or adapted to the customer's order (dimensions, colour, fabric, engraving and the like) is a product made specially for the customer within the meaning of the law. Its order may be cancelled as long as its preparation has not begun; once it has, the transaction cannot be cancelled unless the product is defective or does not match the order. The customer is told when preparation begins in the order confirmation or by arrangement.</p>
 HTML
 		: '';
 
-		$physical = $o['physical'] ? <<<HTML
+		$physical = $o['physical'] ? <<<'HTML'
 
 <p>A purchase in the business's physical store is subject to the Consumer Protection (Cancellation of a Transaction) Regulations, 5771-2010, and to the returns policy displayed in the store.</p>
 HTML
 		: '';
 
-		$food_more = $o['food'] ? <<<HTML
+		$food_more = $o['food'] ? <<<'HTML'
 
 <p><strong>Products sold by weight:</strong> the weight delivered may differ by up to 10% from the weight ordered, and the charge follows the weight actually delivered. <strong>Allergens and ingredients:</strong> the full information on ingredients, allergens and nutritional values appears on the product's packaging and on its page; it is the customer's responsibility to check that the product suits their needs before consuming it.</p>
 HTML

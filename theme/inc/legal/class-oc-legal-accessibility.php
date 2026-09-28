@@ -63,7 +63,15 @@ final class Accessibility {
 
 		$id = self::create_page();
 
-		wp_safe_redirect( add_query_arg( array( 'oc_page' => 'a11y', 'ok' => $id > 0 ? 1 : 0 ), admin_url( 'admin.php?page=oc-contact' ) ) );
+		wp_safe_redirect(
+			add_query_arg(
+				array(
+					'oc_page' => 'a11y',
+					'ok'      => $id > 0 ? 1 : 0,
+				),
+				admin_url( 'admin.php?page=oc-contact' )
+			)
+		);
 		exit;
 	}
 

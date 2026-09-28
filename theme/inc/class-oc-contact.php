@@ -779,7 +779,7 @@ final class Contact {
 			'company_id'    => sanitize_text_field( wp_unslash( $_POST['company_id'] ?? '' ) ),
 			'address'       => sanitize_text_field( wp_unslash( $_POST['address'] ?? '' ) ),
 			'hours'         => sanitize_textarea_field( wp_unslash( $_POST['hours'] ?? '' ) ),
-			'terms_kind'    => 'food' === ( $_POST['terms_kind'] ?? '' ) ? 'food' : 'general',
+			'terms_kind'    => 'food' === sanitize_key( wp_unslash( $_POST['terms_kind'] ?? '' ) ) ? 'food' : 'general',
 			'terms_custom'  => empty( $_POST['terms_custom'] ) ? 0 : 1,
 			'terms_bulky'   => empty( $_POST['terms_bulky'] ) ? 0 : 1,
 			'a11y_name'     => sanitize_text_field( wp_unslash( $_POST['a11y_name'] ?? '' ) ),
