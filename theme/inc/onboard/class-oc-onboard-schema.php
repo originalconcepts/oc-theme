@@ -106,7 +106,7 @@ final class Schema {
 					array(
 						'id'     => '2b',
 						'title'  => __( 'Legal pages', 'oc-theme' ),
-						'intro'  => __( 'Terms of sale, privacy policy and accessibility statement. For each one: upload your own file, or use the wording we prepared. Nothing here holds you up — you can send a file later.', 'oc-theme' ),
+						'intro'  => __( 'Terms of sale, privacy policy and accessibility statement. For each one: upload your own file, take it from the site you have today, or use the wording we prepared.', 'oc-theme' ),
 						'fields' => array( 'terms_mode', 'terms_url', 'terms_file', 'terms_kind', 'terms_custom', 'terms_bulky', 'terms_consent', 'privacy_mode', 'privacy_url', 'privacy_file', 'privacy_consent', 'a11y_mode', 'a11y_url', 'a11y_file', 'a11y_consent' ),
 					),
 				),

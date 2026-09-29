@@ -11193,3 +11193,6 @@ msgstr "העמוד הזה הוא נוסח כללי שנוסח בעזרת בינ�
 
 msgid "Clicking \"%s\" confirms that you have read and understood this."
 msgstr "לחיצה על \"%s\" מהווה אישור שקראתם והבנתם."
+
+msgid "Terms of sale, privacy policy and accessibility statement. For each one: upload your own file, take it from the site you have today, or use the wording we prepared."
+msgstr "תקנון, מדיניות פרטיות והצהרת נגישות. לכל אחד מהם: להעלות את הקובץ שלכם, לקחת אותו מהאתר שיש לכם היום, או להשתמש בנוסח שהכנו."

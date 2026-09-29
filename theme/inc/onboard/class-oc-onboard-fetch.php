@@ -240,7 +240,14 @@ final class Fetch {
 		$heads = $doc->getElementsByTagName( 'h1' );
 
 		if ( $heads->length ) {
-			$title = trim( (string) $heads->item( 0 )->textContent );
+			$first = $heads->item( 0 );
+			$title = trim( (string) $first->textContent );
+
+			// The page prints its own title above the content, so the
+			// heading the article opens with would say it twice.
+			if ( $first->parentNode ) {
+				$first->parentNode->removeChild( $first );
+			}
 		}
 
 		$tries = array(
