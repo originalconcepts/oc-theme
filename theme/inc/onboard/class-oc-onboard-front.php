@@ -98,7 +98,7 @@ final class Front {
 				'name' => (string) get_bloginfo( 'name' ),
 				'home' => home_url( '/' ),
 			),
-			'i18n' => array(
+			'i18n'       => array(
 				'welcome_title'   => __( 'Online store questionnaire', 'oc-theme' ),
 				'welcome_text'    => __( 'The first step is filling in this questionnaire. It is a series of questions, most of them multiple choice and a few open ones. Everything is saved as you go.', 'oc-theme' ),
 				'start'           => __( 'Let\'s start', 'oc-theme' ),
@@ -132,14 +132,14 @@ final class Front {
 					__( 'Next we go through the home page, the category page and the product page together — that part opens at this same link, and we let you know when it is ready.', 'oc-theme' ),
 					__( 'Meanwhile you can start gathering your products and their pictures.', 'oc-theme' ),
 				),
-				'done_again'    => __( 'You can reopen this link any time to change an answer.', 'oc-theme' ),
-				'submit_failed' => __( 'Something went wrong. Nothing was lost — try again in a moment.', 'oc-theme' ),
-				'not_answered'  => __( 'Not answered', 'oc-theme' ),
-				'yes'           => __( 'Yes', 'oc-theme' ),
-				'no'            => __( 'No', 'oc-theme' ),
-				'edit'          => __( 'Edit', 'oc-theme' ),
-				'rows'          => /* translators: %d: rows */ __( '%d entries', 'oc-theme' ),
-				'consent_read'  => __( 'Read the full text', 'oc-theme' ),
+				'done_again'      => __( 'You can reopen this link any time to change an answer.', 'oc-theme' ),
+				'submit_failed'   => __( 'Something went wrong. Nothing was lost — try again in a moment.', 'oc-theme' ),
+				'not_answered'    => __( 'Not answered', 'oc-theme' ),
+				'yes'             => __( 'Yes', 'oc-theme' ),
+				'no'              => __( 'No', 'oc-theme' ),
+				'edit'            => __( 'Edit', 'oc-theme' ),
+				'rows'            => /* translators: %d: rows */ __( '%d entries', 'oc-theme' ),
+				'consent_read'    => __( 'Read the full text', 'oc-theme' ),
 			),
 		);
 	}
