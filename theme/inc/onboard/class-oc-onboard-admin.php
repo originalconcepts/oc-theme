@@ -106,7 +106,7 @@ final class Admin {
 				'reapply'  => __( 'The answers were applied again.', 'oc-theme' ),
 				'settings' => __( 'Settings saved.', 'oc-theme' ),
 				'keygone'  => __( 'The AI key was deleted from this site.', 'oc-theme' ),
-					'curtain'  => __( 'Saved.', 'oc-theme' ),
+				'curtain'  => __( 'Saved.', 'oc-theme' ),
 			);
 			$key  = sanitize_key( wp_unslash( (string) $_GET['oc_done'] ) );
 

@@ -142,6 +142,7 @@ final class Curtain {
 			. '<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
 			. '<meta name="robots" content="noindex, nofollow">'
 			. '<title>' . esc_html( $title . ' · ' . get_bloginfo( 'name' ) ) . '</title>'
+			// phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedStylesheet -- a page of its own, printed outside wp_head.
 			. '<link rel="stylesheet" href="' . esc_url( OC_THEME_URI . '/assets/fonts/assistant.css' ) . '">'
 			. '<style>'
 			. 'body{margin:0;min-height:100dvh;display:grid;place-items:center;padding:32px;'

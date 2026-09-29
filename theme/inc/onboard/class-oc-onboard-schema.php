@@ -274,9 +274,6 @@ final class Schema {
 			'target'   => array( 'option', 'oc_contact', 'wa_group' ),
 		);
 
-
-
-
 		/* ---- 1b: accessibility ---- */
 
 		$f['branches_mode'] = array(
