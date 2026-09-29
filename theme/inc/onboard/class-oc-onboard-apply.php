@@ -601,7 +601,7 @@ final class Apply {
 
 		update_option( 'oc_contact', array_merge( Contact::settings(), $options ) );
 
-		Legal\Consent::record( 'terms', $options, $this->actor() );
+		$this->consent( 'terms', $options );
 
 		$id = Legal\Terms::create_page();
 
@@ -628,7 +628,7 @@ final class Apply {
 			return;
 		}
 
-		Legal\Consent::record( 'privacy', array(), $this->actor() );
+		$this->consent( 'privacy', array() );
 
 		$id = Privacy\Policy::create_page();
 
@@ -655,7 +655,7 @@ final class Apply {
 			return;
 		}
 
-		Legal\Consent::record( 'accessibility', array(), $this->actor() );
+		$this->consent( 'accessibility', array() );
 
 		$id = Legal\Accessibility::create_page();
 
@@ -663,6 +663,24 @@ final class Apply {
 	}
 
 	/* ------------------------------------------------------------ helpers */
+
+	/**
+	 * The customer's confirmation, recorded once per questionnaire: a
+	 * second apply rewrites the page but does not log a second consent.
+	 *
+	 * @param string              $kind    terms | privacy | accessibility.
+	 * @param array<string,mixed> $options Choices made with it.
+	 */
+	private function consent( string $kind, array $options ): void {
+		$lk = 'consent:' . $kind;
+
+		if ( ! empty( $this->log[ $lk ] ) ) {
+			return;
+		}
+
+		Legal\Consent::record( $kind, $options, $this->actor() );
+		$this->remember( $lk, time() );
+	}
 
 	/**
 	 * Who confirmed: the customer, as they introduced themselves.
