@@ -10276,10 +10276,10 @@ msgid "There is already an accessibility page the theme did not write: %s. It is
 msgstr "כבר קיים עמוד נגישות שלא נכתב על ידי התבנית: %s. הוא לא ייגע. אם הוא שלם — קשרו אותו מתפריט הפוטר ודלגו על הכפתור; כתיבת העמוד שלנו מוסיפה עמוד שני והקישור בפוטר יצביע על שלנו."
 
 msgid "This page is a general template drafted with the help of artificial intelligence by the theme's makers. It is a starting point for inspiration only — not legal advice, and not tailored to your business. Before publishing, have the text reviewed by a lawyer and adapted to your business, and read every line yourself. Using the page is the sole responsibility of the site owner; the theme's makers bear no responsibility for its content or for any claim that may arise from it. Clicking \"Create the page\" confirms that you have read and understood this."
-msgstr "עמוד זה הוא טמפלט כללי שנוסח בעזרת בינה מלאכותית על ידי יוצרי התבנית. הוא נקודת פתיחה והשראה בלבד — לא ייעוץ משפטי, ולא מותאם לעסק שלכם. לפני הפרסום יש להעביר את הטקסט לעיון עורך/ת דין ולהתאימו לעסק, ולקרוא כל שורה בעצמכם. השימוש בעמוד הוא באחריות בעל האתר בלבד; יוצרי התבנית אינם נושאים באחריות לתוכנו או לכל טענה שתנבע ממנו. לחיצה על \"צור את העמוד\" מאשרת שקראתם והבנתם זאת."
+msgstr "עמוד זה הוא נוסח כללי מוכן שנכתב בעזרת בינה מלאכותית על ידי יוצרי התבנית. הוא נקודת פתיחה והשראה בלבד — לא ייעוץ משפטי, ולא מותאם לעסק שלכם. לפני הפרסום יש להעביר את הטקסט לעיון עורך/ת דין ולהתאימו לעסק, ולקרוא כל שורה בעצמכם. השימוש בעמוד הוא באחריות בעל האתר בלבד; יוצרי התבנית אינם נושאים באחריות לתוכנו או לכל טענה שתנבע ממנו. לחיצה על \"צור את העמוד\" מאשרת שקראתם והבנתם זאת."
 
 msgid "I have read and understood: this is a template, not legal advice, and using it is my responsibility."
-msgstr "קראתי והבנתי: זהו טמפלט, לא ייעוץ משפטי, והשימוש בו באחריותי."
+msgstr "קראתי והבנתי: זהו נוסח מוכן, לא ייעוץ משפטי, והשימוש בו באחריותי."
 
 msgid "Create the page"
 msgstr "צור את העמוד"
@@ -10355,7 +10355,7 @@ msgid "A few lines about who you are. This becomes the About page and the short 
 msgstr "כמה שורות על מי אתם. זה הופך לעמוד האודות ולטקסט הקצר בעמוד הבית."
 
 msgid "Terms of sale, privacy policy and accessibility statement. For each one: use our template, or upload your own."
-msgstr "תקנון, מדיניות פרטיות והצהרת נגישות. לכל אחד מהם: שימוש בטמפלט שלנו, או העלאה של הקובץ שלכם."
+msgstr "תקנון, מדיניות פרטיות והצהרת נגישות. לכל אחד מהם: להעלות את הקובץ שלכם, או להשתמש בנוסח המוכן שהכנו."
 
 msgid "After the order"
 msgstr "אחרי ההזמנה"
@@ -11054,3 +11054,12 @@ msgstr "בשלב הבא נעבור יחד על עמוד הבית, עמוד הק�
 
 msgid "Meanwhile you can start gathering your products and their pictures."
 msgstr "בינתיים אפשר להתחיל לאסוף את המוצרים והתמונות שלהם."
+
+msgid "I will send it later"
+msgstr "אשלח בהמשך"
+
+msgid "The customer will send the file later."
+msgstr "הלקוח ישלח את הקובץ בהמשך."
+
+msgid "Terms of sale, privacy policy and accessibility statement. For each one: upload your own file, or use the wording we prepared. Nothing here holds you up — you can send a file later."
+msgstr "תקנון, מדיניות פרטיות והצהרת נגישות. לכל אחד מהם: להעלות את הקובץ שלכם, או להשתמש בנוסח שהכנו. שום דבר כאן לא מעכב אתכם — אפשר לשלוח קובץ בהמשך."

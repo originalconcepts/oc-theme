@@ -577,6 +577,11 @@ final class Apply {
 	 * record, or the file they uploaded as a page.
 	 */
 	private function apply_legal_terms(): void {
+		if ( 'later' === $this->v['terms_mode'] ) {
+			$this->row( 'terms_mode', __( 'Terms page', 'oc-theme' ), 'check', __( 'The customer will send the file later.', 'oc-theme' ) );
+			return;
+		}
+
 		if ( 'upload' === $this->v['terms_mode'] ) {
 			$id = $this->page_from_file( 'terms', __( 'Terms of sale', 'oc-theme' ), $this->v['terms_file'] );
 
@@ -612,6 +617,11 @@ final class Apply {
 	 * The privacy policy.
 	 */
 	private function apply_legal_privacy(): void {
+		if ( 'later' === $this->v['privacy_mode'] ) {
+			$this->row( 'privacy_mode', __( 'Privacy page', 'oc-theme' ), 'check', __( 'The customer will send the file later.', 'oc-theme' ) );
+			return;
+		}
+
 		if ( 'upload' === $this->v['privacy_mode'] ) {
 			$id = $this->page_from_file( 'privacy-policy', __( 'Privacy policy', 'oc-theme' ), $this->v['privacy_file'] );
 
@@ -639,6 +649,11 @@ final class Apply {
 	 * The accessibility statement.
 	 */
 	private function apply_legal_a11y(): void {
+		if ( 'later' === $this->v['a11y_mode'] ) {
+			$this->row( 'a11y_mode', __( 'Accessibility page', 'oc-theme' ), 'check', __( 'The customer will send the file later.', 'oc-theme' ) );
+			return;
+		}
+
 		if ( 'upload' === $this->v['a11y_mode'] ) {
 			$id = $this->page_from_file( 'accessibility-statement', __( 'Accessibility statement', 'oc-theme' ), $this->v['a11y_file'] );
 

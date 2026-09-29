@@ -79,7 +79,7 @@ final class Schema {
 					array(
 						'id'     => '2b',
 						'title'  => __( 'Legal pages', 'oc-theme' ),
-						'intro'  => __( 'Terms of sale, privacy policy and accessibility statement. For each one: use our template, or upload your own.', 'oc-theme' ),
+						'intro'  => __( 'Terms of sale, privacy policy and accessibility statement. For each one: upload your own file, or use the wording we prepared. Nothing here holds you up — you can send a file later.', 'oc-theme' ),
 						'fields' => array( 'terms_mode', 'terms_kind', 'terms_custom', 'terms_bulky', 'terms_file', 'terms_consent', 'privacy_mode', 'privacy_file', 'privacy_consent', 'a11y_mode', 'a11y_file', 'a11y_consent' ),
 					),
 				),
@@ -429,6 +429,7 @@ final class Schema {
 		$legal_mode = array(
 			'upload'   => __( 'I have my own — I will upload the file', 'oc-theme' ),
 			'template' => __( 'Use the ready-made wording you prepared', 'oc-theme' ),
+			'later'    => __( 'I will send it later', 'oc-theme' ),
 		);
 
 		$f['terms_mode'] = array(
