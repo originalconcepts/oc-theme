@@ -732,7 +732,16 @@ final class Apply {
 	 * @param int $id The page.
 	 */
 	private function terms_page_wired( int $id ): void {
-		if ( $id && ! (int) get_option( 'woocommerce_terms_page_id' ) ) {
+		if ( ! $id ) {
+			return;
+		}
+
+		// The theme keeps its own note of which page is the terms page: the
+		// settings screen reads it, and without it the screen would offer to
+		// write a second one next to the page we just made.
+		update_option( Legal\Terms::OPTION, $id, false );
+
+		if ( ! (int) get_option( 'woocommerce_terms_page_id' ) ) {
 			update_option( 'woocommerce_terms_page_id', $id );
 		}
 	}
