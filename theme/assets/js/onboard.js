@@ -270,20 +270,32 @@
 		return wrap;
 	}
 
-	function render_file( id, f ) {
+	var fileSeq = 0;
+
+	/**
+	 * A file control. `o` says where the answer goes: nothing for a plain
+	 * field, or { row, sub, value, onChange } for one inside a repeater row.
+	 */
+	function render_file( id, f, o ) {
+		o = o || {};
 		var wrap = el( 'div', { 'class': 'oc-onb-file' } );
 		var accept = f.accept === 'image' ? 'image/jpeg,image/png,image/webp,image/gif,image/svg+xml' : '.pdf,.docx,.doc,.txt';
-		var inp = el( 'input', { type: 'file', accept: accept, 'class': 'oc-onb-file__in', id: 'file_' + id } );
-		var btn = el( 'label', { 'class': 'oc-onb-btn oc-onb-btn--ghost', 'for': 'file_' + id, text: I.choose_file } );
+		var dom = 'ocfile_' + ( ++fileSeq );
+		var inp = el( 'input', { type: 'file', accept: accept, 'class': 'oc-onb-file__in', id: dom } );
+		var btn = el( 'label', { 'class': 'oc-onb-btn oc-onb-btn--ghost', 'for': dom, text: I.choose_file } );
 		var show = el( 'div', { 'class': 'oc-onb-file__show' } );
+		var mine = o.value || null;
 
 		function paint() {
-			var v = val( id );
+			var v = o.sub ? mine : val( id );
 			show.innerHTML = '';
 			if ( ! v || ! v.url ) { return; }
 			if ( f.accept === 'image' ) { show.appendChild( el( 'img', { src: v.thumb || v.url, alt: '' } ) ); }
 			show.appendChild( el( 'span', { text: v.name || '' } ) );
-			show.appendChild( el( 'button', { type: 'button', 'class': 'oc-onb-link', text: I.remove, onclick: function () { set( id, null ); paint(); } } ) );
+			show.appendChild( el( 'button', { type: 'button', 'class': 'oc-onb-link', text: I.remove, onclick: function () {
+				if ( o.sub ) { mine = null; o.onChange( null ); } else { set( id, null ); }
+				paint();
+			} } ) );
 		}
 
 		inp.addEventListener( 'change', function () {
@@ -291,11 +303,13 @@
 			var fd = new FormData();
 			fd.append( 'file', inp.files[0] );
 			fd.append( 'field', id );
+			if ( o.sub ) { fd.append( 'row', o.row ); fd.append( 'sub', o.sub ); }
 			note( I.uploading, 'busy' );
 			api( '/upload', { body: fd } ).then( function ( r ) {
 				if ( ! r.ok || ! r.data.file ) { throw new Error( 'up' ); }
-				values[ id ] = r.data.file;
-				values[ id ].thumb = r.data.thumb;
+				var file = r.data.file;
+				file.thumb = r.data.thumb;
+				if ( o.sub ) { mine = file; o.onChange( file, true ); } else { values[ id ] = file; }
 				note( I.saved, 'ok' );
 				paint();
 				refreshVisibility();
@@ -307,6 +321,35 @@
 		wrap.appendChild( inp );
 		wrap.appendChild( btn );
 		wrap.appendChild( show );
+		return wrap;
+	}
+
+	/**
+	 * The accessibility checklist, one group per branch the customer named.
+	 */
+	function render_branch_access( id, f ) {
+		var rows = val( f.of ) || [];
+		var cur = val( id ) || {};
+
+		if ( ! rows.length ) {
+			return el( 'p', { 'class': 'oc-onb-f__help', text: I.branches_first } );
+		}
+
+		var wrap = el( 'div', { 'class': 'oc-onb-bacc' } );
+
+		rows.forEach( function ( row, i ) {
+			var ticked = cur[ i ] || cur[ String( i ) ] || [];
+			var name = row.name || '';
+			var one = el( 'div', { 'class': 'oc-onb-bacc__one' } );
+			one.appendChild( el( 'h3', { 'class': 'oc-onb-bacc__n', text: ( name || ( I.rowword || '' ) + ' ' + ( i + 1 ) ) + ( row.city ? ' · ' + row.city : '' ) } ) );
+			one.appendChild( render_checks( id + '_' + i, f, ticked, function ( v ) {
+				var all = val( id ) || {};
+				all[ i ] = v;
+				set( id, all );
+			} ) );
+			wrap.appendChild( one );
+		} );
+
 		return wrap;
 	}
 
@@ -375,6 +418,7 @@
 					var onChange = function ( v ) { r[ k ] = v; commit(); };
 					if ( sf.type === 'textarea' ) { inner = render_textarea( id + '.' + k, sf, r[ k ] || '', onChange ); }
 					else if ( sf.type === 'checks' ) { inner = render_checks( id + '.' + k, sf, r[ k ] || [], onChange ); }
+					else if ( sf.type === 'file' ) { inner = render_file( id, sf, { row: ri, sub: k, value: r[ k ] || null, onChange: function ( v, saved ) { r[ k ] = v; if ( saved ) { values[ id ] = rows; } else { commit(); } } } ); }
 					else { inner = inputFor( id + '.' + k, sf, r[ k ] || '', onChange ); }
 					var box = el( 'div', { 'class': 'oc-onb-f oc-onb-f--sub' }, [
 						el( 'div', { 'class': 'oc-onb-f__label' }, [ el( 'span', { text: sf.label } ), sf.required ? el( 'span', { 'class': 'oc-onb-f__req', text: ' *' } ) : null ] ),
@@ -403,6 +447,7 @@
 			case 'checks':   inner = render_checks( id, f ); break;
 			case 'consent':  inner = render_consent( id, f ); break;
 			case 'file':     inner = render_file( id, f ); break;
+			case 'branch_access': inner = render_branch_access( id, f ); break;
 			case 'hours':    inner = render_hours( id, f ); break;
 			case 'repeater': inner = render_repeater( id, f ); break;
 			case 'info':     return el( 'div', { 'class': 'oc-onb-info', text: f.label } );
