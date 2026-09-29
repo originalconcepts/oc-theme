@@ -106,6 +106,7 @@ final class Admin {
 				'reapply'  => __( 'The answers were applied again.', 'oc-theme' ),
 				'settings' => __( 'Settings saved.', 'oc-theme' ),
 				'keygone'  => __( 'The AI key was deleted from this site.', 'oc-theme' ),
+					'curtain'  => __( 'Saved.', 'oc-theme' ),
 			);
 			$key  = sanitize_key( wp_unslash( (string) $_GET['oc_done'] ) );
 
@@ -199,6 +200,8 @@ final class Admin {
 					</table>
 				</div>
 			<?php endif; ?>
+
+			<?php Curtain::card(); ?>
 
 			<div class="card">
 				<h2><?php esc_html_e( 'Keys', 'oc-theme' ); ?></h2>

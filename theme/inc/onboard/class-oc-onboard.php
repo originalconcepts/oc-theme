@@ -47,6 +47,7 @@ final class Onboard {
 		( new Rest() )->register();
 		( new Front() )->register();
 		( new Mail() )->register();
+		( new Curtain() )->register();
 
 		if ( is_admin() ) {
 			( new Admin() )->register();

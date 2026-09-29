@@ -11101,3 +11101,32 @@ msgstr "הסניפים שלנו"
 
 msgid "Branches page"
 msgstr "עמוד הסניפים"
+
+# --- The construction curtain (2026-09-30) ---
+
+msgid "The site is being built"
+msgstr "האתר בהקמה"
+
+msgid "We are putting the finishing touches on the new store. Come back soon."
+msgstr "אנחנו נותנים את הנגיעות האחרונות בחנות החדשה. חזרו אלינו בקרוב."
+
+msgid "While the site is being built"
+msgstr "בזמן שהאתר בהקמה"
+
+msgid "A visitor who reaches the address sees a friendly screen instead of an empty shop. Everyone who can edit the site sees the real thing, and the questionnaire link keeps working. Switch it off on the day the shop opens."
+msgstr "מבקר שמגיע לכתובת רואה מסך ידידותי במקום חנות ריקה. כל מי שיכול לערוך את האתר רואה את האתר עצמו, וקישור השאלון ממשיך לעבוד. כבו את זה ביום שהחנות נפתחת."
+
+msgid "The screen"
+msgstr "המסך"
+
+msgid "Show it to everyone who is not signed in as staff"
+msgstr "להציג לכל מי שלא מחובר כצוות"
+
+msgid "Headline"
+msgstr "כותרת"
+
+msgid "The line under it"
+msgstr "השורה שמתחתיה"
+
+msgid "See it"
+msgstr "לראות אותו"
