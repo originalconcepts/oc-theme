@@ -11063,3 +11063,41 @@ msgstr "הלקוח ישלח את הקובץ בהמשך."
 
 msgid "Terms of sale, privacy policy and accessibility statement. For each one: upload your own file, or use the wording we prepared. Nothing here holds you up — you can send a file later."
 msgstr "תקנון, מדיניות פרטיות והצהרת נגישות. לכל אחד מהם: להעלות את הקובץ שלכם, או להשתמש בנוסח שהכנו. שום דבר כאן לא מעכב אתכם — אפשר לשלוח קובץ בהמשך."
+
+# --- Branches on the business screen (2026-09-30) ---
+
+msgid "With more than one we build a branches page: every branch gets its own page with its address, hours and a map, and customers can pick one for collection at the checkout."
+msgstr "כשיש יותר מאחד אנחנו בונים עמוד סניפים: לכל סניף עמוד משלו עם הכתובת, השעות ומפה, והלקוחות יכולים לבחור סניף לאיסוף בקופה."
+
+msgid "One card per branch. A picture is not required now, but a branch with one looks far better on the site."
+msgstr "כרטיס לכל סניף. תמונה אינה חובה עכשיו, אבל סניף עם תמונה נראה הרבה יותר טוב באתר."
+
+msgid "A line about this branch"
+msgstr "שורה על הסניף הזה"
+
+msgid "Optional. For example: parking in the building, or the branch with the workshop."
+msgstr "לא חובה. למשל: חניה בבניין, או הסניף עם הסדנה."
+
+msgid "A picture of the branch"
+msgstr "תמונה של הסניף"
+
+msgid "Sunday–Thursday 9:00–19:00"
+msgstr "ראשון–חמישי 9:00–19:00"
+
+msgid "Accessibility arrangements at each branch"
+msgstr "הסדרי הנגישות בכל סניף"
+
+msgid "Tick per branch. Each one shows its own row in the statement."
+msgstr "סמנו לכל סניף בנפרד. לכל אחד תהיה שורה משלו בהצהרה."
+
+msgid "Add your branches on the previous screen and they will appear here."
+msgstr "הוסיפו את הסניפים במסך הקודם והם יופיעו כאן."
+
+msgid "This link is no longer active. Open the newest link we sent you, and nothing you filled in will be lost."
+msgstr "הקישור הזה כבר לא פעיל. פתחו את הקישור העדכני ששלחנו לכם, ושום דבר שמילאתם לא ילך לאיבוד."
+
+msgid "Our branches"
+msgstr "הסניפים שלנו"
+
+msgid "Branches page"
+msgstr "עמוד הסניפים"

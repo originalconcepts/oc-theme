@@ -103,7 +103,7 @@ final class Rest {
 	 * @param \WP_REST_Request $req Request.
 	 */
 	public static function permit_provision( \WP_REST_Request $req ): bool {
-		return self::rate_ok( 'prov', 30 ) && Onboard::provision_ok( (string) $req->get_header( 'x-oc-provision' ) );
+		return self::rate_ok( 'prov', 60 ) && Onboard::provision_ok( (string) $req->get_header( 'x-oc-provision' ) );
 	}
 
 	/**
@@ -112,7 +112,11 @@ final class Rest {
 	 * @param \WP_REST_Request $req Request.
 	 */
 	public static function permit_token( \WP_REST_Request $req ): bool {
-		return self::rate_ok( 'tok', 600 ) && Onboard::token_ok( Onboard::request_token( $req ) );
+		// The token is the guard; the ceiling only stops a script hammering.
+		// It has to be generous: the page saves on every change, a customer
+		// may fill the questionnaire twice, and a whole office shares one
+		// address — a real customer must never meet it.
+		return Onboard::token_ok( Onboard::request_token( $req ) ) && self::rate_ok( 'tok', 5000 );
 	}
 
 	/**
@@ -137,13 +141,26 @@ final class Rest {
 	private static function rate_ok( string $bucket, int $limit ): bool {
 		$ip  = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( (string) $_SERVER['REMOTE_ADDR'] ) ) : '';
 		$key = 'oc_onb_rl_' . $bucket . '_' . md5( $ip );
-		$n   = (int) get_transient( $key );
+		$now = time();
+		$bag = get_transient( $key );
 
-		if ( $n >= $limit ) {
+		// The window is anchored to its first request. Extending the life on
+		// every hit, as this did at first, means the count never rolls over:
+		// a busy hour locks the address out until a full quiet one passes.
+		if ( ! is_array( $bag ) || empty( $bag['from'] ) || $now - (int) $bag['from'] >= HOUR_IN_SECONDS ) {
+			$bag = array(
+				'from' => $now,
+				'n'    => 0,
+			);
+		}
+
+		if ( (int) $bag['n'] >= $limit ) {
 			return false;
 		}
 
-		set_transient( $key, $n + 1, HOUR_IN_SECONDS );
+		++$bag['n'];
+
+		set_transient( $key, $bag, HOUR_IN_SECONDS - ( $now - (int) $bag['from'] ) );
 
 		return true;
 	}
@@ -244,9 +261,22 @@ final class Rest {
 	 */
 	public function upload( \WP_REST_Request $req ): \WP_REST_Response {
 		$field = sanitize_key( (string) $req->get_param( 'field' ) );
+		$sub   = sanitize_key( (string) $req->get_param( 'sub' ) );
+		$row   = (int) $req->get_param( 'row' );
 		$f     = Schema::field( $field );
 
-		if ( ! $f || 'file' !== $f['type'] ) {
+		if ( ! $f ) {
+			return self::answer( array( 'error' => 'field' ), 400 );
+		}
+
+		// A picture inside a repeater row names the row and the sub-field.
+		if ( '' !== $sub ) {
+			if ( 'repeater' !== $f['type'] || empty( $f['fields'][ $sub ] ) || 'file' !== ( $f['fields'][ $sub ]['type'] ?? '' ) ) {
+				return self::answer( array( 'error' => 'field' ), 400 );
+			}
+
+			$f = $f['fields'][ $sub ];
+		} elseif ( 'file' !== $f['type'] ) {
 			return self::answer( array( 'error' => 'field' ), 400 );
 		}
 
@@ -308,15 +338,27 @@ final class Rest {
 			return self::answer( array( 'error' => $id->get_error_message() ), 415 );
 		}
 
-		$id    = (int) $id;
-		$value = Draft::set(
-			array(
-				$field => array(
-					'id'   => $id,
-					'name' => (string) ( $file['name'] ?? '' ),
-				),
-			)
+		$id   = (int) $id;
+		$one  = array(
+			'id'   => $id,
+			'name' => (string) ( $file['name'] ?? '' ),
 		);
+		$kept = null;
+
+		if ( '' !== $sub ) {
+			$rows = (array) Draft::value( $field );
+
+			if ( ! isset( $rows[ $row ] ) || ! is_array( $rows[ $row ] ) ) {
+				$rows[ $row ] = array();
+			}
+
+			$rows[ $row ][ $sub ] = $one;
+			$saved                = Draft::set( array( $field => $rows ) );
+			$kept                 = $saved[ $field ][ $row ][ $sub ] ?? null;
+		} else {
+			$saved = Draft::set( array( $field => $one ) );
+			$kept  = $saved[ $field ] ?? null;
+		}
 
 		Onboard::touch();
 
@@ -324,7 +366,7 @@ final class Rest {
 
 		return self::answer(
 			array(
-				'file'  => $value[ $field ] ?? null,
+				'file'  => $kept,
 				'thumb' => $thumb ? $thumb : '',
 			)
 		);

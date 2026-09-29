@@ -431,22 +431,6 @@ final class Apply {
 		return implode( "\n", $lines );
 	}
 
-	/**
-	 * Who we are talking to: kept on the invitation only.
-	 */
-	private function apply_client(): void {
-		Onboard::patch_state(
-			array(
-				'client' => array(
-					'name'  => (string) $this->v['contact_name'],
-					'phone' => (string) $this->v['contact_phone'],
-					'email' => (string) $this->v['contact_email'],
-				),
-			)
-		);
-
-		$this->row( 'contact_name', __( 'Invitation record', 'oc-theme' ), 'applied' );
-	}
 
 	/**
 	 * One store: the premises checklist on the store details.
@@ -484,9 +468,10 @@ final class Apply {
 
 		update_option( \OC\Blocks\Branches::OPTION, array( 'menu' => 1 ) );
 
-		$made = 0;
-		$kept = (array) ( $this->log['branches:ids'] ?? array() );
-		$ids  = array();
+		$made       = 0;
+		$kept       = (array) ( $this->log['branches:ids'] ?? array() );
+		$ids        = array();
+		$per_branch = (array) $this->v['branch_access'];
 
 		foreach ( $rows as $i => $row ) {
 			$name = trim( (string) ( $row['name'] ?? '' ) );
@@ -516,16 +501,26 @@ final class Apply {
 				);
 			}
 
+			if ( ! is_wp_error( $id ) && '' !== trim( (string) ( $row['about'] ?? '' ) ) ) {
+				wp_update_post(
+					array(
+						'ID'           => (int) $id,
+						'post_content' => wpautop( esc_html( (string) $row['about'] ) ),
+					)
+				);
+			}
+
 			if ( is_wp_error( $id ) || (int) $id < 1 ) {
 				continue;
 			}
 
 			$id     = (int) $id;
 			$ids[]  = $id;
+			$ticked = (array) ( $per_branch[ $i ] ?? $per_branch[ (string) $i ] ?? array() );
 			$access = array();
 
 			foreach ( array_keys( Contact::access_items() ) as $key ) {
-				$access[ $key ] = in_array( $key, (array) ( $row['access'] ?? array() ), true ) ? 1 : 0;
+				$access[ $key ] = in_array( $key, $ticked, true ) ? 1 : 0;
 			}
 
 			update_post_meta( $id, '_oc_br_address', (string) ( $row['address'] ?? '' ) );
@@ -535,11 +530,19 @@ final class Apply {
 			update_post_meta( $id, '_oc_br_access', $access );
 			update_post_meta( $id, '_oc_br_pickup', '1' );
 
+			$picture = $row['image'] ?? null;
+
+			if ( is_array( $picture ) && ! empty( $picture['id'] ) ) {
+				set_post_thumbnail( $id, (int) $picture['id'] );
+			}
+
 			++$made;
 		}
 
 		$this->remember( 'branches:ids', $ids );
 		$this->row( 'branches', 'oc_branch', 'applied', sprintf( /* translators: %d: number of branches */ _n( '%d branch', '%d branches', $made, 'oc-theme' ), $made ) );
+
+		$this->branches_page();
 	}
 
 	/**
@@ -677,6 +680,38 @@ final class Apply {
 		$this->row( 'a11y_consent', __( 'Accessibility page', 'oc-theme' ), $id ? 'check' : 'error', __( 'Template written; read it once before going live.', 'oc-theme' ) );
 	}
 
+	/**
+	 * The page that shows them all, built from the branches block so the
+	 * team can rearrange it in the composer like any other page.
+	 */
+	private function branches_page(): void {
+		if ( ! class_exists( '\\OC\\Blocks\\Registry' ) ) {
+			return;
+		}
+
+		$id = $this->page( 'branches', __( 'Our branches', 'oc-theme' ), '' );
+
+		if ( ! $id ) {
+			return;
+		}
+
+		$sections = \OC\Blocks\Registry::clean(
+			array(
+				array(
+					'type'    => 'branches',
+					'heading' => __( 'Our branches', 'oc-theme' ),
+					'source'  => 'all',
+					'map'     => 1,
+					'search'  => 1,
+				),
+			)
+		);
+
+		update_post_meta( $id, \OC\Blocks\Registry::META, $sections );
+
+		$this->row( 'branches', __( 'Branches page', 'oc-theme' ), 'applied' );
+	}
+
 	/* ------------------------------------------------------------ helpers */
 
 	/**
@@ -703,10 +738,12 @@ final class Apply {
 	 * @return array<string,string>
 	 */
 	private function actor(): array {
+		$client = (array) Onboard::state()['client'];
+
 		return array(
-			'name'  => (string) $this->v['contact_name'],
-			'email' => (string) $this->v['contact_email'],
-			'phone' => (string) $this->v['contact_phone'],
+			'name'  => (string) ( $client['name'] ?? '' ),
+			'email' => (string) ( $client['email'] ?? '' ),
+			'phone' => (string) ( $client['phone'] ?? '' ),
 			'via'   => 'questionnaire',
 		);
 	}

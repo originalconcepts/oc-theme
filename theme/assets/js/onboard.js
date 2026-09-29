@@ -128,11 +128,12 @@
 		var step = at >= 0 && at < screens.length ? screens[ at ].id : ( at >= screens.length ? 'summary' : '' );
 		return api( '/draft', { body: JSON.stringify( { fields: batch, step: step } ) } )
 			.then( function ( r ) {
-				if ( ! r.ok ) { throw new Error( 'save' ); }
+				if ( ! r.ok ) { var err = new Error( 'save' ); err.stale = ( r.status === 401 || r.status === 403 ); throw err; }
 				note( I.saved, 'ok' );
 			} )
-			.catch( function () {
+			.catch( function ( e ) {
 				Object.keys( batch ).forEach( function ( k ) { if ( ! ( k in pending ) ) { pending[ k ] = batch[ k ]; } } );
+				if ( e && e.stale ) { note( I.link_stale, 'err' ); return; }
 				note( I.save_failed, 'err' );
 				setTimeout( queueSave, 5000 );
 			} );
@@ -492,7 +493,8 @@
 			case 'consent':  return v ? I.yes : I.no;
 			case 'file':     return v.name || '';
 			case 'hours':    return v.map( function ( r ) { return r.days.map( function ( d ) { return C.days[ d ] ? C.days[ d ].label : d; } ).join( ' ' ) + ' ' + r.from + '–' + r.to; } ).join( ' · ' );
-			case 'repeater': return fmt( I.rows, v.length );
+			case 'repeater': return v.map( function ( r ) { return r.name || ''; } ).filter( Boolean ).join( ' · ' ) || fmt( I.rows, v.length );
+			case 'branch_access': return Object.keys( v ).map( function ( k ) { return ( v[ k ] || [] ).length; } ).join( ' · ' );
 			default:         return String( v );
 		}
 	}

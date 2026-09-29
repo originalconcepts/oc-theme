@@ -56,13 +56,13 @@ final class Schema {
 						'id'     => '1a',
 						'title'  => __( 'The business', 'oc-theme' ),
 						'intro'  => __( 'These details appear on the site, in the emails customers receive and on the legal pages. Everything can be changed later.', 'oc-theme' ),
-						'fields' => array( 'existing_has', 'existing_url', 'brand_name', 'legal_name', 'company_id', 'domain', 'phone', 'whatsapp', 'email_service', 'email_orders', 'has_store', 'address_street', 'address_city', 'hours', 'instagram', 'facebook', 'tiktok', 'youtube', 'contact_name', 'contact_phone', 'contact_email' ),
+						'fields' => array( 'existing_has', 'existing_url', 'brand_name', 'legal_name', 'company_id', 'domain', 'phone', 'whatsapp', 'email_service', 'email_orders', 'has_store', 'branches_mode', 'address_street', 'address_city', 'hours', 'branches', 'instagram', 'facebook', 'tiktok', 'youtube' ),
 					),
 					array(
 						'id'     => '1b',
 						'title'  => __( 'Accessibility', 'oc-theme' ),
 						'intro'  => __( 'The law requires every site to publish the accessibility arrangements of the business. Tick what you have; we write the statement.', 'oc-theme' ),
-						'fields' => array( 'branches_mode', 'branches', 'a11y_access', 'a11y_name', 'a11y_phone', 'a11y_email' ),
+						'fields' => array( 'a11y_access', 'branch_access', 'a11y_name', 'a11y_phone', 'a11y_email' ),
 					),
 				),
 			),
@@ -222,7 +222,10 @@ final class Schema {
 		$f['address_street'] = array(
 			'type'     => 'text',
 			'label'    => __( 'Street and number', 'oc-theme' ),
-			'when'     => array( 'has_store', array( 'yes' ) ),
+			'when'     => array(
+				array( 'has_store', array( 'yes' ) ),
+				array( 'branches_mode', array( 'one' ) ),
+			),
 			'required' => true,
 			'target'   => array( 'call', 'address' ),
 		);
@@ -230,7 +233,10 @@ final class Schema {
 		$f['address_city'] = array(
 			'type'     => 'text',
 			'label'    => __( 'City', 'oc-theme' ),
-			'when'     => array( 'has_store', array( 'yes' ) ),
+			'when'     => array(
+				array( 'has_store', array( 'yes' ) ),
+				array( 'branches_mode', array( 'one' ) ),
+			),
 			'required' => true,
 			'target'   => array( 'call', 'address' ),
 		);
@@ -239,7 +245,10 @@ final class Schema {
 			'type'   => 'hours',
 			'label'  => __( 'Opening hours', 'oc-theme' ),
 			'help'   => __( 'Pick the days, then the hours. Add a line for days with different hours.', 'oc-theme' ),
-			'when'   => array( 'has_store', array( 'yes' ) ),
+			'when'   => array(
+				array( 'has_store', array( 'yes' ) ),
+				array( 'branches_mode', array( 'one' ) ),
+			),
 			'target' => array( 'call', 'hours' ),
 		);
 
@@ -265,39 +274,15 @@ final class Schema {
 			'target'   => array( 'option', 'oc_contact', 'wa_group' ),
 		);
 
-		$f['contact_name'] = array(
-			'type'     => 'text',
-			'label'    => __( 'Your name', 'oc-theme' ),
-			'help'     => __( 'Who we call about the site, where the reminders go, and the name on the record of the wording you approve on the next screen. Usually already filled in — just check it.', 'oc-theme' ),
-			'group'    => __( 'Who are we talking to', 'oc-theme' ),
-			'required' => true,
-			'default'  => static fn(): string => (string) ( Onboard::state()['client']['name'] ?? '' ),
-			'target'   => array( 'call', 'client' ),
-		);
 
-		$f['contact_phone'] = array(
-			'type'     => 'phone',
-			'label'    => __( 'Your mobile', 'oc-theme' ),
-			'group'    => __( 'Who are we talking to', 'oc-theme' ),
-			'required' => true,
-			'default'  => static fn(): string => (string) ( Onboard::state()['client']['phone'] ?? '' ),
-			'target'   => array( 'call', 'client' ),
-		);
 
-		$f['contact_email'] = array(
-			'type'     => 'email',
-			'label'    => __( 'Your email', 'oc-theme' ),
-			'group'    => __( 'Who are we talking to', 'oc-theme' ),
-			'required' => true,
-			'default'  => static fn(): string => (string) ( Onboard::state()['client']['email'] ?? '' ),
-			'target'   => array( 'call', 'client' ),
-		);
 
 		/* ---- 1b: accessibility ---- */
 
 		$f['branches_mode'] = array(
 			'type'    => 'choice',
 			'label'   => __( 'How many branches?', 'oc-theme' ),
+			'help'    => __( 'With more than one we build a branches page: every branch gets its own page with its address, hours and a map, and customers can pick one for collection at the checkout.', 'oc-theme' ),
 			'options' => array(
 				'one'  => __( 'One store', 'oc-theme' ),
 				'many' => __( 'More than one', 'oc-theme' ),
@@ -310,7 +295,7 @@ final class Schema {
 		$f['branches'] = array(
 			'type'     => 'repeater',
 			'label'    => __( 'The branches', 'oc-theme' ),
-			'help'     => __( 'Each branch gets its own page, and customers can choose it for collection at the checkout.', 'oc-theme' ),
+			'help'     => __( 'One card per branch. A picture is not required now, but a branch with one looks far better on the site.', 'oc-theme' ),
 			'when'     => array( 'branches_mode', array( 'many' ) ),
 			'required' => true,
 			'row'      => __( 'Branch', 'oc-theme' ),
@@ -323,25 +308,33 @@ final class Schema {
 					'required' => true,
 				),
 				'address' => array(
-					'type'  => 'text',
-					'label' => __( 'Street and number', 'oc-theme' ),
+					'type'     => 'text',
+					'label'    => __( 'Street and number', 'oc-theme' ),
+					'required' => true,
 				),
 				'city'    => array(
-					'type'  => 'text',
-					'label' => __( 'City', 'oc-theme' ),
+					'type'     => 'text',
+					'label'    => __( 'City', 'oc-theme' ),
+					'required' => true,
 				),
 				'phone'   => array(
 					'type'  => 'phone',
 					'label' => __( 'Phone', 'oc-theme' ),
 				),
 				'hours'   => array(
-					'type'  => 'textarea',
-					'label' => __( 'Opening hours', 'oc-theme' ),
+					'type'        => 'textarea',
+					'label'       => __( 'Opening hours', 'oc-theme' ),
+					'placeholder' => __( 'Sunday–Thursday 9:00–19:00', 'oc-theme' ),
 				),
-				'access'  => array(
-					'type'    => 'checks',
-					'label'   => __( 'Accessibility arrangements at this branch', 'oc-theme' ),
-					'options' => Contact::access_items(),
+				'about'   => array(
+					'type'  => 'text',
+					'label' => __( 'A line about this branch', 'oc-theme' ),
+					'help'  => __( 'Optional. For example: parking in the building, or the branch with the workshop.', 'oc-theme' ),
+				),
+				'image'   => array(
+					'type'   => 'file',
+					'accept' => 'image',
+					'label'  => __( 'A picture of the branch', 'oc-theme' ),
 				),
 			),
 			'target'   => array( 'call', 'branches' ),
@@ -355,6 +348,16 @@ final class Schema {
 			'when'    => array( 'branches_mode', array( 'one' ) ),
 			'default' => array_keys( array_filter( is_array( $contact['a11y_access'] ) ? $contact['a11y_access'] : array() ) ),
 			'target'  => array( 'call', 'a11y_access' ),
+		);
+
+		$f['branch_access'] = array(
+			'type'    => 'branch_access',
+			'label'   => __( 'Accessibility arrangements at each branch', 'oc-theme' ),
+			'help'    => __( 'Tick per branch. Each one shows its own row in the statement.', 'oc-theme' ),
+			'options' => Contact::access_items(),
+			'of'      => 'branches',
+			'when'    => array( 'branches_mode', array( 'many' ) ),
+			'target'  => array( 'call', 'branches' ),
 		);
 
 		$f['a11y_name'] = array(
@@ -740,6 +743,7 @@ final class Schema {
 			case 'checks':
 			case 'hours':
 			case 'repeater':
+			case 'branch_access':
 				return array();
 			case 'file':
 				return null;
@@ -1010,6 +1014,27 @@ final class Schema {
 						);
 					}
 				}
+
+				return $out;
+
+			case 'branch_access':
+				$out = array();
+
+				foreach ( (array) $raw as $row => $ticked ) {
+					$keys = array();
+
+					foreach ( (array) $ticked as $v ) {
+						$v = (string) ( is_scalar( $v ) ? $v : '' );
+
+						if ( isset( $f['options'][ $v ] ) ) {
+							$keys[] = $v;
+						}
+					}
+
+					$out[ (int) $row ] = array_values( array_unique( $keys ) );
+				}
+
+				ksort( $out );
 
 				return $out;
 

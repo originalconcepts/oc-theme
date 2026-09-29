@@ -140,6 +140,8 @@ final class Front {
 				'edit'            => __( 'Edit', 'oc-theme' ),
 				'rows'            => /* translators: %d: rows */ __( '%d entries', 'oc-theme' ),
 				'consent_read'    => __( 'Read the full text', 'oc-theme' ),
+				'link_stale'      => __( 'This link is no longer active. Open the newest link we sent you, and nothing you filled in will be lost.', 'oc-theme' ),
+				'branches_first'  => __( 'Add your branches on the previous screen and they will appear here.', 'oc-theme' ),
 			),
 		);
 	}

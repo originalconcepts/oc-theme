@@ -205,3 +205,6 @@ html { -webkit-text-size-adjust: 100%; }
 @media (prefers-reduced-motion: reduce) {
 	.oc-onb-prog__bar i { transition: none; }
 }
+
+.oc-onb-bacc__one { border: 1px solid var(--onb-line); border-radius: 10px; padding: 4px 14px 10px; margin-bottom: 12px; }
+.oc-onb-bacc__n { font-size: 15px; margin: 10px 0 4px; }
