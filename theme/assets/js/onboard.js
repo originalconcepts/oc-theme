@@ -109,6 +109,28 @@
 		return ruleHolds( f.when );
 	}
 
+	/**
+	 * Is this one of a choice's options on offer? An option may carry a rule
+	 * of its own, in the same shape as a field's.
+	 *
+	 * @param {Object} f The field.
+	 * @param {string} k The option key.
+	 */
+	function optionShown( f, k ) {
+		var rule = f.options_when && f.options_when[ k ];
+
+		if ( ! rule ) { return true; }
+
+		if ( Array.isArray( rule[0] ) ) {
+			for ( var i = 0; i < rule.length; i++ ) {
+				if ( ! ruleHolds( rule[ i ] ) ) { return false; }
+			}
+			return true;
+		}
+
+		return ruleHolds( rule );
+	}
+
 	function missingIn( ids ) {
 		var out = [];
 		ids.forEach( function ( id ) {
@@ -304,9 +326,17 @@
 	}
 
 	function render_choice( id, f ) {
-		var cur = String( val( id ) );
+		var cur  = String( val( id ) );
+		var keys = Object.keys( f.options ).filter( function ( k ) { return optionShown( f, k ); } );
 		var wrap = el( 'div', { 'class': 'oc-onb-choices', role: 'radiogroup' } );
-		Object.keys( f.options ).forEach( function ( k ) {
+
+		// An option that is not on offer cannot be the answer either: taking
+		// the page from a site they do not have, for instance.
+		if ( keys.indexOf( cur ) === -1 ) {
+			cur = String( f['default'] );
+		}
+
+		keys.forEach( function ( k ) {
 			var lab = el( 'label', { 'class': 'oc-onb-choice' + ( cur === k ? ' is-on' : '' ) } );
 			var inp = el( 'input', { type: 'radio', name: 'f_' + id, value: k } );
 			inp.checked = cur === k;

@@ -413,15 +413,16 @@ final class Schema {
 		/* ---- 2a: about ---- */
 
 		$f['about_mode'] = array(
-			'type'    => 'choice',
-			'label'   => __( 'The About text', 'oc-theme' ),
-			'options' => array(
+			'type'         => 'choice',
+			'label'        => __( 'The About text', 'oc-theme' ),
+			'options'      => array(
 				'paste' => __( 'I have a text, I will paste it', 'oc-theme' ),
 				'link'  => __( 'It is on my current site — take it from there', 'oc-theme' ),
 				'write' => __( 'Write it for me from a few points', 'oc-theme' ),
 			),
-			'default' => 'paste',
-			'target'  => array( 'call', 'about' ),
+			'options_when' => array( 'link' => array( 'existing_has', array( 'yes' ) ) ),
+			'default'      => 'paste',
+			'target'       => array( 'call', 'about' ),
 		);
 
 		$f['about_url'] = array(
@@ -471,11 +472,12 @@ final class Schema {
 		);
 
 		$f['terms_mode'] = array(
-			'type'    => 'choice',
-			'label'   => __( 'Terms of sale', 'oc-theme' ),
-			'options' => $legal_mode,
-			'default' => 'upload',
-			'target'  => array( 'call', 'legal_terms' ),
+			'type'         => 'choice',
+			'label'        => __( 'Terms of sale', 'oc-theme' ),
+			'options'      => $legal_mode,
+			'options_when' => array( 'link' => array( 'existing_has', array( 'yes' ) ) ),
+			'default'      => 'upload',
+			'target'       => array( 'call', 'legal_terms' ),
 		);
 
 		$f['terms_kind'] = array(
@@ -545,11 +547,12 @@ final class Schema {
 		);
 
 		$f['privacy_mode'] = array(
-			'type'    => 'choice',
-			'label'   => __( 'Privacy policy', 'oc-theme' ),
-			'options' => $legal_mode,
-			'default' => 'upload',
-			'target'  => array( 'call', 'legal_privacy' ),
+			'type'         => 'choice',
+			'label'        => __( 'Privacy policy', 'oc-theme' ),
+			'options'      => $legal_mode,
+			'options_when' => array( 'link' => array( 'existing_has', array( 'yes' ) ) ),
+			'default'      => 'upload',
+			'target'       => array( 'call', 'legal_privacy' ),
 		);
 
 		$f['privacy_url'] = array(
@@ -581,11 +584,12 @@ final class Schema {
 		);
 
 		$f['a11y_mode'] = array(
-			'type'    => 'choice',
-			'label'   => __( 'Accessibility statement', 'oc-theme' ),
-			'options' => $legal_mode,
-			'default' => 'upload',
-			'target'  => array( 'call', 'legal_a11y' ),
+			'type'         => 'choice',
+			'label'        => __( 'Accessibility statement', 'oc-theme' ),
+			'options'      => $legal_mode,
+			'options_when' => array( 'link' => array( 'existing_has', array( 'yes' ) ) ),
+			'default'      => 'upload',
+			'target'       => array( 'call', 'legal_a11y' ),
 		);
 
 		$f['a11y_url'] = array(
@@ -708,16 +712,17 @@ final class Schema {
 			$f[ $id ] = wp_parse_args(
 				$def,
 				array(
-					'type'        => 'text',
-					'label'       => '',
-					'help'        => '',
-					'placeholder' => '',
-					'group'       => '',
-					'options'     => array(),
-					'default'     => null,
-					'when'        => null,
-					'required'    => false,
-					'target'      => null,
+					'type'         => 'text',
+					'label'        => '',
+					'help'         => '',
+					'placeholder'  => '',
+					'group'        => '',
+					'options'      => array(),
+					'options_when' => array(),
+					'default'      => null,
+					'when'         => null,
+					'required'     => false,
+					'target'       => null,
 				)
 			);
 		}
