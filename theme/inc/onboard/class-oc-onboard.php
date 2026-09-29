@@ -145,7 +145,7 @@ final class Onboard {
 	 * @return string The full link.
 	 */
 	public static function invite( array $client, array $monday = array() ): string {
-		$token = rtrim( strtr( base64_encode( random_bytes( 24 ) ), '+/', '-_' ), '=' );
+		$token = bin2hex( random_bytes( 20 ) ); // 40 url-safe characters.
 		$state = self::state();
 		$fresh = in_array( $state['status'], array( 'none', 'cancelled', 'applied' ), true );
 
