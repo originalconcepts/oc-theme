@@ -122,8 +122,10 @@ final class Draft {
 		$total  = 0;
 		$done   = 0;
 
+		$asked = Schema::asked();
+
 		foreach ( Schema::fields() as $id => $f ) {
-			if ( 'info' === $f['type'] || ! Schema::shown( $id, $values ) ) {
+			if ( 'info' === $f['type'] || empty( $asked[ $id ] ) || ! Schema::shown( $id, $values ) ) {
 				continue;
 			}
 

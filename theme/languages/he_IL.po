@@ -10989,3 +10989,68 @@ msgstr "שאלון אתר מכירות"
 
 msgid "Let's start"
 msgstr "בואו נתחיל"
+
+# --- Onboarding round 2 (2026-09-30) ---
+
+msgid "The thank-you page"
+msgstr "דף התודה"
+
+msgid "The page a customer lands on the moment the order goes through. It already shows the order and what happens next; here you choose what else it carries."
+msgstr "העמוד שהלקוח מגיע אליו ברגע שההזמנה עוברת. הוא כבר מציג את ההזמנה ואת מה שקורה הלאה; כאן בוחרים מה עוד יהיה בו."
+
+msgid "The name of the company or business as registered with the tax authority and, for a company, the companies registrar."
+msgstr "שם החברה או העסק כפי שרשום ברשויות המס, ולחברה — גם ברשם החברות."
+
+msgid "The group invite link"
+msgstr "קישור ההזמנה לקבוצה"
+
+msgid "In WhatsApp: the group → Invite via link → Copy link."
+msgstr "בוואטסאפ: הקבוצה ← הזמנה באמצעות קישור ← העתקת קישור."
+
+msgid "Who we call about the site, where the reminders go, and the name on the record of the wording you approve on the next screen. Usually already filled in — just check it."
+msgstr "למי אנחנו מתקשרים בענייני האתר, לאן נשלחות התזכורות, ומי השם שנרשם באישור הנוסחים במסך הבא. בדרך כלל כבר מלא — רק לוודא."
+
+msgid "I have my own — I will upload the file"
+msgstr "יש לי משלי — אעלה קובץ"
+
+msgid "Use the ready-made wording you prepared"
+msgstr "להשתמש בנוסח המוכן שהכנתם"
+
+msgid "Do not have one? Pick the ready-made wording above and we write the page for you."
+msgstr "אין לכם? בחרו למעלה בנוסח המוכן ואנחנו נכתוב את העמוד."
+
+msgid "Show your phone, email and WhatsApp on it?"
+msgstr "להציג בו את הטלפון, המייל והוואטסאפ שלכם?"
+
+msgid "Under the thank-you message, so a customer with a question does not have to look for you."
+msgstr "מתחת להודעת התודה, כדי שלקוח עם שאלה לא יצטרך לחפש אתכם."
+
+msgid "On the thank-you page we encourage customers to join your WhatsApp group — the moment they are happiest with you."
+msgstr "בדף התודה נעודד לקוחות להצטרף לקבוצת הוואטסאפ שלכם — הרגע שבו הם הכי מרוצים מכם."
+
+msgid "The wording on the invitation"
+msgstr "הניסוח על ההזמנה"
+
+msgid "Leave it empty to use the wording shown here."
+msgstr "השאירו ריק כדי להשתמש בניסוח שמופיע כאן."
+
+msgid "We show the links to your social profiles and invite the buyer to follow you."
+msgstr "נציג את הקישורים לרשתות החברתיות שלכם ונעודד את הקונה לעקוב אחריכם."
+
+msgid "Thank you! Everything you filled in is already on your site. Next we go through the home page, the category page and the product page together — that part opens at the same link, and we let you know when it is ready."
+msgstr "תודה! כל מה שמילאתם כבר באתר שלכם. בשלב הבא נעבור יחד על עמוד הבית, עמוד הקטגוריה ועמוד המוצר — החלק הזה ייפתח באותו קישור, ונעדכן אתכם כשהוא מוכן."
+
+msgid "The first part is in: your business details, your content pages and the thank-you page. They are already written into your site."
+msgstr "החלק הראשון נקלט: פרטי העסק, דפי התוכן ודף התודה. הם כבר כתובים באתר שלכם."
+
+msgid "What happens now"
+msgstr "מה קורה עכשיו"
+
+msgid "We go over your answers and set up the shell of the site."
+msgstr "אנחנו עוברים על התשובות שלכם ומקימים את שלד האתר."
+
+msgid "Next we go through the home page, the category page and the product page together — that part opens at this same link, and we let you know when it is ready."
+msgstr "בשלב הבא נעבור יחד על עמוד הבית, עמוד הקטגוריה ועמוד המוצר — החלק הזה ייפתח באותו קישור בדיוק, ונעדכן אתכם כשהוא מוכן."
+
+msgid "Meanwhile you can start gathering your products and their pictures."
+msgstr "בינתיים אפשר להתחיל לאסוף את המוצרים והתמונות שלהם."

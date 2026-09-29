@@ -41,6 +41,7 @@ final class Thankyou {
 				'contact'        => 1,    // Phone / email / WhatsApp icon links.
 				'summary'        => 1,    // Order summary with images.
 				'wa_group'       => 0,    // "Join our WhatsApp group" widget.
+				'wa_title'       => '',   // Its wording; empty = the default line.
 				'social'         => 0,    // Follow buttons.
 				'social_title'   => '',
 				'survey'         => 0,
@@ -734,7 +735,9 @@ final class Thankyou {
 		echo '<a class="oc-ty__box oc-ty__wagroup" href="' . esc_url( $url ) . '" target="_blank" rel="noopener">';
 		echo '<span class="oc-ty__wagroup-i" aria-hidden="true">' . Contact::icon( 'whatsapp' ) . '</span>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static svg.
 		echo '<span class="oc-ty__wagroup-t">';
-		echo '<b>' . esc_html__( 'Join our WhatsApp group', 'oc-theme' ) . '</b>';
+		$title = trim( (string) self::settings()['wa_title'] );
+
+		echo '<b>' . esc_html( '' !== $title ? $title : __( 'Join our WhatsApp group', 'oc-theme' ) ) . '</b>';
 		echo '<em>' . esc_html__( 'News and offers first', 'oc-theme' ) . '</em>';
 		echo '</span>';
 		echo '<span class="oc-ty__wagroup-go" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 6l6 6-6 6"/><path d="M20 12H4"/></svg></span>';
@@ -854,6 +857,7 @@ final class Thankyou {
 					<th scope="row"><?php esc_html_e( 'WhatsApp group', 'oc-theme' ); ?></th>
 					<td>
 						<label><input type="checkbox" name="wa_group" value="1" <?php checked( 1, (int) $s['wa_group'] ); ?> /> <?php esc_html_e( 'Invite to join the group', 'oc-theme' ); ?></label>
+						<p><input type="text" name="wa_title" class="regular-text" value="<?php echo esc_attr( (string) $s['wa_title'] ); ?>" placeholder="<?php esc_attr_e( 'Join our WhatsApp group', 'oc-theme' ); ?>" /></p>
 						<?php
 						if ( ! $has_wa ) {
 							echo wp_kses_post( $missing );
@@ -1078,6 +1082,7 @@ final class Thankyou {
 		$s = array(
 			'content'        => $content,
 			'wa_group'       => empty( $_POST['wa_group'] ) ? 0 : 1,
+			'wa_title'       => sanitize_text_field( wp_unslash( $_POST['wa_title'] ?? '' ) ),
 			'social'         => empty( $_POST['social'] ) ? 0 : 1,
 			'social_title'   => sanitize_text_field( wp_unslash( $_POST['social_title'] ?? '' ) ),
 			'survey'         => empty( $_POST['survey'] ) ? 0 : 1,

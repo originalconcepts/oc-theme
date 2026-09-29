@@ -160,7 +160,7 @@ final class Mail {
 				$to,
 				__( 'We got it — your site is being built', 'oc-theme' ),
 				self::greeting( (string) $state['client']['name'] )
-				. '<p>' . esc_html__( 'Thank you! Everything you filled in is already on your site. Our team goes over it and comes back to you with the next step: the products.', 'oc-theme' ) . '</p>'
+				. '<p>' . esc_html__( 'Thank you! Everything you filled in is already on your site. Next we go through the home page, the category page and the product page together — that part opens at the same link, and we let you know when it is ready.', 'oc-theme' ) . '</p>'
 				. '<p class="small">' . esc_html__( 'You can reopen the questionnaire link any time to change an answer.', 'oc-theme' ) . '</p>'
 			);
 		}

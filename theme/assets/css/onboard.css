@@ -186,6 +186,11 @@ html { -webkit-text-size-adjust: 100%; }
 .oc-onb-sum dd.is-empty { color: var(--onb-ink-2); font-style: italic; }
 .oc-onb-sum dd.is-missing { color: var(--onb-err); font-weight: 600; }
 
+.oc-onb-next__h { font-size: 17px; margin: 26px 0 8px; }
+.oc-onb-next { margin: 0 auto; padding: 0; list-style: none; max-width: 44ch; text-align: start; }
+.oc-onb-next li { position: relative; padding-inline-start: 26px; margin-bottom: 8px; color: var(--onb-ink-2); }
+.oc-onb-next li::before { content: ""; position: absolute; inset-inline-start: 6px; top: .62em; width: 7px; height: 7px; border-radius: 50%; background: var(--onb-primary); }
+
 .oc-onb-done__tick { width: 64px; height: 64px; margin: 0 auto 12px; border-radius: 50%; background: var(--onb-ok); color: #fff; font-size: 34px; line-height: 64px; }
 
 .oc-onb--static .oc-onb__card { text-align: center; }

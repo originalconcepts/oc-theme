@@ -45,11 +45,9 @@
 		return String( v ).trim() === '';
 	}
 
-	function shown( id ) {
-		var f = F[ id ];
-		if ( ! f || ! f.when ) { return true; }
-		var deps = String( f.when[0] ).split( '|' );
-		var want = f.when[1];
+	function ruleHolds( rule ) {
+		var deps = String( rule[0] ).split( '|' );
+		var want = rule[1];
 		for ( var i = 0; i < deps.length; i++ ) {
 			var d = deps[ i ];
 			if ( ! shown( d ) ) { continue; }
@@ -62,6 +60,18 @@
 			if ( list.map( String ).indexOf( String( has ) ) !== -1 ) { return true; }
 		}
 		return false;
+	}
+
+	function shown( id ) {
+		var f = F[ id ];
+		if ( ! f || ! f.when ) { return true; }
+		if ( Array.isArray( f.when[0] ) ) {
+			for ( var r = 0; r < f.when.length; r++ ) {
+				if ( ! ruleHolds( f.when[ r ] ) ) { return false; }
+			}
+			return true;
+		}
+		return ruleHolds( f.when );
 	}
 
 	function missingIn( ids ) {
@@ -185,6 +195,7 @@
 		if ( f.type === 'phone' || f.type === 'email' || f.type === 'url' ) { attrs.dir = 'ltr'; }
 		if ( f.type === 'number' ) { if ( f.min !== undefined ) { attrs.min = f.min; } if ( f.max !== undefined ) { attrs.max = f.max; } attrs.inputmode = 'numeric'; }
 		if ( f.type === 'phone' ) { attrs.inputmode = 'tel'; }
+		if ( f.placeholder ) { attrs.placeholder = f.placeholder; }
 		var e = el( 'input', attrs );
 		var commit = function () { onChange( f.type === 'number' ? Number( e.value ) : e.value ); };
 		e.addEventListener( 'input', function () { clearTimeout( e._t ); e._t = setTimeout( commit, 400 ); } );
@@ -545,10 +556,14 @@
 
 	function renderDone() {
 		root.innerHTML = '';
+		var next = el( 'ul', { 'class': 'oc-onb-next' } );
+		( I.done_next_items || [] ).forEach( function ( t ) { next.appendChild( el( 'li', { text: t } ) ); } );
 		root.appendChild( el( 'div', { 'class': 'oc-onb__card oc-onb__card--hello' }, [
 			el( 'div', { 'class': 'oc-onb-done__tick', 'aria-hidden': 'true', text: '✓' } ),
 			el( 'h1', { text: I.done_title } ),
 			el( 'p', { text: I.done_text } ),
+			el( 'h2', { 'class': 'oc-onb-next__h', text: I.done_next_title } ),
+			next,
 			el( 'p', { 'class': 'oc-onb__small', text: I.done_again } )
 		] ) );
 		note( '', 'ok' );

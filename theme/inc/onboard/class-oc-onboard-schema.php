@@ -56,7 +56,7 @@ final class Schema {
 						'id'     => '1a',
 						'title'  => __( 'The business', 'oc-theme' ),
 						'intro'  => __( 'These details appear on the site, in the emails customers receive and on the legal pages. Everything can be changed later.', 'oc-theme' ),
-						'fields' => array( 'existing_has', 'existing_url', 'brand_name', 'legal_name', 'company_id', 'domain', 'phone', 'whatsapp', 'email_service', 'email_orders', 'has_store', 'address_street', 'address_city', 'hours', 'instagram', 'facebook', 'tiktok', 'youtube', 'wa_group', 'contact_name', 'contact_phone', 'contact_email' ),
+						'fields' => array( 'existing_has', 'existing_url', 'brand_name', 'legal_name', 'company_id', 'domain', 'phone', 'whatsapp', 'email_service', 'email_orders', 'has_store', 'address_street', 'address_city', 'hours', 'instagram', 'facebook', 'tiktok', 'youtube', 'contact_name', 'contact_phone', 'contact_email' ),
 					),
 					array(
 						'id'     => '1b',
@@ -90,9 +90,9 @@ final class Schema {
 				'screens' => array(
 					array(
 						'id'     => '8a',
-						'title'  => __( 'After the order', 'oc-theme' ),
-						'intro'  => __( 'What the customer sees right after paying.', 'oc-theme' ),
-						'fields' => array( 'ty_layout', 'ty_contact', 'ty_summary', 'ty_wa_group', 'ty_social', 'ty_survey', 'ty_survey_q', 'ty_referral', 'ty_ref_friend', 'ty_ref_reward' ),
+						'title'  => __( 'The thank-you page', 'oc-theme' ),
+						'intro'  => __( 'The page a customer lands on the moment the order goes through. It already shows the order and what happens next; here you choose what else it carries.', 'oc-theme' ),
+						'fields' => array( 'ty_contact', 'ty_wa_group', 'wa_group', 'ty_wa_title', 'ty_social', 'ty_survey', 'ty_survey_q', 'ty_referral', 'ty_ref_friend', 'ty_ref_reward' ),
 					),
 				),
 			),
@@ -156,7 +156,7 @@ final class Schema {
 		$f['legal_name'] = array(
 			'type'    => 'text',
 			'label'   => __( 'Registered name, if different', 'oc-theme' ),
-			'help'    => __( 'The company or business name as registered. Appears on the legal pages only.', 'oc-theme' ),
+			'help'    => __( 'The name of the company or business as registered with the tax authority and, for a company, the companies registrar.', 'oc-theme' ),
 			'default' => (string) $contact['company'],
 			'target'  => array( 'option', 'oc_contact', 'company' ),
 		);
@@ -175,6 +175,7 @@ final class Schema {
 			'label'  => __( 'The site address you want (domain)', 'oc-theme' ),
 			'help'   => __( 'For example www.example.co.il. Leave empty if you have not decided yet.', 'oc-theme' ),
 			'dir'    => 'ltr',
+			'when'   => array( 'existing_has', array( 'no' ) ),
 			'target' => array( 'state', 'domain' ),
 		);
 
@@ -214,7 +215,7 @@ final class Schema {
 			'type'    => 'choice',
 			'label'   => __( 'Do you have a store or showroom open to the public?', 'oc-theme' ),
 			'options' => $yesno,
-			'default' => (int) $contact['a11y_physical'] ? 'yes' : 'no',
+			'default' => 'yes',
 			'target'  => array( 'call', 'has_store' ),
 		);
 
@@ -254,18 +255,20 @@ final class Schema {
 		}
 
 		$f['wa_group'] = array(
-			'type'    => 'url',
-			'label'   => __( 'WhatsApp group invite link', 'oc-theme' ),
-			'help'    => __( 'If you run a customers\' group, the thank-you page can invite buyers to join.', 'oc-theme' ),
-			'group'   => __( 'Social profiles', 'oc-theme' ),
-			'dir'     => 'ltr',
-			'default' => (string) $contact['wa_group'],
-			'target'  => array( 'option', 'oc_contact', 'wa_group' ),
+			'type'     => 'url',
+			'label'    => __( 'The group invite link', 'oc-theme' ),
+			'help'     => __( 'In WhatsApp: the group → Invite via link → Copy link.', 'oc-theme' ),
+			'dir'      => 'ltr',
+			'default'  => (string) $contact['wa_group'],
+			'when'     => array( 'ty_wa_group', array( 'yes' ) ),
+			'required' => true,
+			'target'   => array( 'option', 'oc_contact', 'wa_group' ),
 		);
 
 		$f['contact_name'] = array(
 			'type'     => 'text',
 			'label'    => __( 'Your name', 'oc-theme' ),
+			'help'     => __( 'Who we call about the site, where the reminders go, and the name on the record of the wording you approve on the next screen. Usually already filled in — just check it.', 'oc-theme' ),
 			'group'    => __( 'Who are we talking to', 'oc-theme' ),
 			'required' => true,
 			'default'  => static fn(): string => (string) ( Onboard::state()['client']['name'] ?? '' ),
@@ -424,15 +427,15 @@ final class Schema {
 		/* ---- 2b: legal ---- */
 
 		$legal_mode = array(
-			'template' => __( 'Use the template', 'oc-theme' ),
-			'upload'   => __( 'Upload my own', 'oc-theme' ),
+			'upload'   => __( 'I have my own — I will upload the file', 'oc-theme' ),
+			'template' => __( 'Use the ready-made wording you prepared', 'oc-theme' ),
 		);
 
 		$f['terms_mode'] = array(
 			'type'    => 'choice',
 			'label'   => __( 'Terms of sale', 'oc-theme' ),
 			'options' => $legal_mode,
-			'default' => 'template',
+			'default' => 'upload',
 			'target'  => array( 'call', 'legal_terms' ),
 		);
 
@@ -454,7 +457,10 @@ final class Schema {
 			'help'    => __( 'Custom furniture, engraving, sizes made for the customer. The terms then say there is no cancellation once production began.', 'oc-theme' ),
 			'options' => $yesno,
 			'default' => (int) $contact['terms_custom'] ? 'yes' : 'no',
-			'when'    => array( 'terms_mode', array( 'template' ) ),
+			'when'    => array(
+				array( 'terms_mode', array( 'template' ) ),
+				array( 'terms_kind', array( 'general' ) ),
+			),
 			'target'  => array( 'call', 'legal_terms' ),
 		);
 
@@ -464,7 +470,10 @@ final class Schema {
 			'help'    => __( 'Furniture, appliances: the terms then cover access, stairs, a crane and assembly.', 'oc-theme' ),
 			'options' => $yesno,
 			'default' => (int) $contact['terms_bulky'] ? 'yes' : 'no',
-			'when'    => array( 'terms_mode', array( 'template' ) ),
+			'when'    => array(
+				array( 'terms_mode', array( 'template' ) ),
+				array( 'terms_kind', array( 'general' ) ),
+			),
 			'target'  => array( 'call', 'legal_terms' ),
 		);
 
@@ -472,6 +481,7 @@ final class Schema {
 			'type'     => 'file',
 			'accept'   => 'doc',
 			'label'    => __( 'Your terms (Word or PDF)', 'oc-theme' ),
+			'help'     => __( 'Do not have one? Pick the ready-made wording above and we write the page for you.', 'oc-theme' ),
 			'when'     => array( 'terms_mode', array( 'upload' ) ),
 			'required' => true,
 			'target'   => array( 'call', 'legal_terms' ),
@@ -489,7 +499,7 @@ final class Schema {
 			'type'    => 'choice',
 			'label'   => __( 'Privacy policy', 'oc-theme' ),
 			'options' => $legal_mode,
-			'default' => 'template',
+			'default' => 'upload',
 			'target'  => array( 'call', 'legal_privacy' ),
 		);
 
@@ -497,6 +507,7 @@ final class Schema {
 			'type'     => 'file',
 			'accept'   => 'doc',
 			'label'    => __( 'Your privacy policy (Word or PDF)', 'oc-theme' ),
+			'help'     => __( 'Do not have one? Pick the ready-made wording above and we write the page for you.', 'oc-theme' ),
 			'when'     => array( 'privacy_mode', array( 'upload' ) ),
 			'required' => true,
 			'target'   => array( 'call', 'legal_privacy' ),
@@ -514,7 +525,7 @@ final class Schema {
 			'type'    => 'choice',
 			'label'   => __( 'Accessibility statement', 'oc-theme' ),
 			'options' => $legal_mode,
-			'default' => 'template',
+			'default' => 'upload',
 			'target'  => array( 'call', 'legal_a11y' ),
 		);
 
@@ -522,6 +533,7 @@ final class Schema {
 			'type'     => 'file',
 			'accept'   => 'doc',
 			'label'    => __( 'Your accessibility statement (Word or PDF)', 'oc-theme' ),
+			'help'     => __( 'Do not have one? Pick the ready-made wording above and we write the page for you.', 'oc-theme' ),
 			'when'     => array( 'a11y_mode', array( 'upload' ) ),
 			'required' => true,
 			'target'   => array( 'call', 'legal_a11y' ),
@@ -537,45 +549,37 @@ final class Schema {
 
 		/* ---- 8a: thank-you ---- */
 
-		$f['ty_layout'] = array(
-			'type'    => 'choice',
-			'label'   => __( 'Layout', 'oc-theme' ),
-			'options' => array(
-				'stack' => __( 'One column — everything under the greeting', 'oc-theme' ),
-				'split' => __( 'Two columns — greeting and summary on one side', 'oc-theme' ),
-			),
-			'default' => (string) $ty['layout'],
-			'target'  => array( 'option', 'oc_thankyou', 'layout' ),
-		);
-
 		$f['ty_contact'] = array(
 			'type'    => 'choice',
-			'label'   => __( 'Show phone, email and WhatsApp under the greeting?', 'oc-theme' ),
+			'label'   => __( 'Show your phone, email and WhatsApp on it?', 'oc-theme' ),
+			'help'    => __( 'Under the thank-you message, so a customer with a question does not have to look for you.', 'oc-theme' ),
 			'options' => $yesno,
-			'default' => (int) $ty['contact'] ? 'yes' : 'no',
+			'default' => 'yes',
 			'target'  => array( 'option', 'oc_thankyou', 'contact' ),
-		);
-
-		$f['ty_summary'] = array(
-			'type'    => 'choice',
-			'label'   => __( 'Show the order summary with pictures?', 'oc-theme' ),
-			'options' => $yesno,
-			'default' => (int) $ty['summary'] ? 'yes' : 'no',
-			'target'  => array( 'option', 'oc_thankyou', 'summary' ),
 		);
 
 		$f['ty_wa_group'] = array(
 			'type'    => 'choice',
 			'label'   => __( 'Invite the buyer to your WhatsApp group?', 'oc-theme' ),
+			'help'    => __( 'On the thank-you page we encourage customers to join your WhatsApp group — the moment they are happiest with you.', 'oc-theme' ),
 			'options' => $yesno,
 			'default' => 'yes',
-			'when'    => array( 'wa_group', 'filled' ),
 			'target'  => array( 'option', 'oc_thankyou', 'wa_group' ),
+		);
+
+		$f['ty_wa_title'] = array(
+			'type'        => 'text',
+			'label'       => __( 'The wording on the invitation', 'oc-theme' ),
+			'placeholder' => __( 'Join our WhatsApp group', 'oc-theme' ),
+			'help'        => __( 'Leave it empty to use the wording shown here.', 'oc-theme' ),
+			'when'        => array( 'ty_wa_group', array( 'yes' ) ),
+			'target'      => array( 'option', 'oc_thankyou', 'wa_title' ),
 		);
 
 		$f['ty_social'] = array(
 			'type'    => 'choice',
 			'label'   => __( '"Follow us" buttons?', 'oc-theme' ),
+			'help'    => __( 'We show the links to your social profiles and invite the buyer to follow you.', 'oc-theme' ),
 			'options' => $yesno,
 			'default' => 'yes',
 			'when'    => array( 'instagram|facebook|tiktok|youtube', 'filled' ),
@@ -587,7 +591,7 @@ final class Schema {
 			'label'   => __( 'A one-question satisfaction survey?', 'oc-theme' ),
 			'help'    => __( 'Stars from 1 to 5 and a free line. The answers show on your dashboard.', 'oc-theme' ),
 			'options' => $yesno,
-			'default' => (int) $ty['survey'] ? 'yes' : 'no',
+			'default' => 'yes',
 			'target'  => array( 'option', 'oc_thankyou', 'survey' ),
 		);
 
@@ -633,15 +637,16 @@ final class Schema {
 			$f[ $id ] = wp_parse_args(
 				$def,
 				array(
-					'type'     => 'text',
-					'label'    => '',
-					'help'     => '',
-					'group'    => '',
-					'options'  => array(),
-					'default'  => null,
-					'when'     => null,
-					'required' => false,
-					'target'   => null,
+					'type'        => 'text',
+					'label'       => '',
+					'help'        => '',
+					'placeholder' => '',
+					'group'       => '',
+					'options'     => array(),
+					'default'     => null,
+					'when'        => null,
+					'required'    => false,
+					'target'      => null,
 				)
 			);
 		}
@@ -649,6 +654,33 @@ final class Schema {
 		self::$fields = $f;
 
 		return $f;
+	}
+
+	/**
+	 * Every field that actually stands on a screen. A field the steps do
+	 * not name is not asked, so it never counts towards the progress and
+	 * never holds the submit back.
+	 *
+	 * @return array<string,bool>
+	 */
+	public static function asked(): array {
+		static $asked = null;
+
+		if ( null !== $asked ) {
+			return $asked;
+		}
+
+		$asked = array();
+
+		foreach ( self::steps() as $step ) {
+			foreach ( $step['screens'] as $screen ) {
+				foreach ( $screen['fields'] as $id ) {
+					$asked[ (string) $id ] = true;
+				}
+			}
+		}
+
+		return $asked;
 	}
 
 	/**
@@ -753,7 +785,29 @@ final class Schema {
 			return true;
 		}
 
-		list( $dep, $want ) = $f['when'];
+		// A list of rules: every one of them must hold.
+		if ( isset( $f['when'][0] ) && is_array( $f['when'][0] ) ) {
+			foreach ( $f['when'] as $rule ) {
+				if ( ! self::rule_holds( $rule, $values ) ) {
+					return false;
+				}
+			}
+
+			return true;
+		}
+
+		return self::rule_holds( $f['when'], $values );
+	}
+
+	/**
+	 * One condition: [ field, values ] — the field's answer is one of them;
+	 * or [ 'a|b|c', 'filled' ] — any of those is not empty.
+	 *
+	 * @param array<int,mixed>    $rule   The condition.
+	 * @param array<string,mixed> $values id => value.
+	 */
+	private static function rule_holds( array $rule, array $values ): bool {
+		list( $dep, $want ) = $rule;
 
 		foreach ( explode( '|', (string) $dep ) as $d ) {
 			$has = array_key_exists( $d, $values ) ? $values[ $d ] : self::default_of( $d );
@@ -786,8 +840,10 @@ final class Schema {
 	public static function missing( array $values ): array {
 		$out = array();
 
+		$asked = self::asked();
+
 		foreach ( self::fields() as $id => $f ) {
-			if ( ! $f['required'] || ! self::shown( $id, $values ) ) {
+			if ( ! $f['required'] || empty( $asked[ $id ] ) || ! self::shown( $id, $values ) ) {
 				continue;
 			}
 
