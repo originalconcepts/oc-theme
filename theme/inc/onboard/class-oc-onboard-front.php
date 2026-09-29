@@ -154,7 +154,8 @@ final class Front {
 		$logo_id = (int) get_theme_mod( 'custom_logo', 0 );
 		$logo    = $logo_id ? (string) wp_get_attachment_image_url( $logo_id, 'medium' ) : '';
 		$dir     = is_rtl() ? 'rtl' : 'ltr';
-		$ver     = defined( 'OC_THEME_VERSION' ) ? OC_THEME_VERSION : '1';
+		$css     = oc_asset_min( '/assets/css/onboard.css' );
+		$js      = oc_asset_min( '/assets/js/onboard.js' );
 		$fonts   = OC_THEME_URI . '/assets/fonts/assistant.css';
 		?>
 <!doctype html>
@@ -165,7 +166,7 @@ final class Front {
 	<meta name="robots" content="noindex, nofollow">
 	<title><?php echo esc_html( sprintf( /* translators: %s: site name */ __( 'Setting up %s', 'oc-theme' ), (string) get_bloginfo( 'name' ) ) ); ?></title>
 	<link rel="stylesheet" href="<?php echo esc_url( $fonts ); ?>"><?php // phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedStylesheet -- a page of its own, outside wp_head. ?>
-	<link rel="stylesheet" href="<?php echo esc_url( OC_THEME_URI . oc_asset_min( '/assets/css/onboard.css' ) . '?v=' . $ver ); ?>"><?php // phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedStylesheet -- same. ?>
+	<link rel="stylesheet" href="<?php echo esc_url( OC_THEME_URI . $css . '?v=' . self::stamp( $css ) ); ?>"><?php // phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedStylesheet -- same. ?>
 	<style>:root{--onb-primary:#0143a5;--onb-cta:#0143a5}</style>
 </head>
 <body class="oc-onb-body">
@@ -181,11 +182,24 @@ final class Front {
 		<?php echo $body; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts. ?>
 		<?php if ( null !== $config ) : ?>
 		<script>window.ocOnboard = <?php echo wp_json_encode( $config, JSON_UNESCAPED_UNICODE ); ?>;</script>
-		<script src="<?php echo esc_url( OC_THEME_URI . oc_asset_min( '/assets/js/onboard.js' ) . '?v=' . $ver ); ?>" defer></script><?php // phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedScript -- a page of its own, outside wp_footer. ?>
+		<script src="<?php echo esc_url( OC_THEME_URI . $js . '?v=' . self::stamp( $js ) ); ?>" defer></script><?php // phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedScript -- a page of its own, outside wp_footer. ?>
 		<?php endif; ?>
 </body>
 </html>
 		<?php
+	}
+
+	/**
+	 * An asset's own age as its version. The theme version does not move
+	 * between two builds of the same release, and a customer holding this
+	 * page open for days must not be served yesterday's script.
+	 *
+	 * @param string $relative Path relative to the theme root.
+	 */
+	private static function stamp( string $relative ): string {
+		$path = OC_THEME_DIR . $relative;
+
+		return (string) ( file_exists( $path ) ? filemtime( $path ) : ( defined( 'OC_THEME_VERSION' ) ? OC_THEME_VERSION : '1' ) );
 	}
 
 	/**
