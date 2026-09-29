@@ -806,8 +806,9 @@ final class Apply {
 	 * After a pass: the composer's cache, the page cache in front of us.
 	 */
 	public static function flush_caches(): void {
-		if ( class_exists( '\\OC\\Blocks\\Render' ) && method_exists( '\\OC\\Blocks\\Render', 'flush' ) ) {
-			\OC\Blocks\Render::flush();
+		// The composer's cache generation, the way its own save turns it.
+		if ( class_exists( '\\OC\\Blocks\\Render' ) ) {
+			update_option( 'oc_blocks_ver', (int) get_option( 'oc_blocks_ver', 0 ) + 1, false );
 		}
 
 		if ( function_exists( 'wp_cache_flush' ) ) {
