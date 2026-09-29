@@ -168,8 +168,29 @@
 	function set( id, v ) {
 		values[ id ] = v;
 		pending[ id ] = v;
+		fixChoices();
 		queueSave();
 		refreshVisibility();
+	}
+
+	/**
+	 * An answer whose option has just stopped being on offer goes back to the
+	 * default: a customer who says the old site is gone should not be left
+	 * with "take it from my site" as their answer.
+	 */
+	function fixChoices() {
+		Object.keys( F ).forEach( function ( id ) {
+			var f = F[ id ];
+
+			if ( 'choice' !== f.type || ! f.options_when ) { return; }
+
+			var cur = String( val( id ) );
+
+			if ( '' !== cur && f.options[ cur ] && ! optionShown( f, cur ) ) {
+				values[ id ]  = f['default'];
+				pending[ id ] = f['default'];
+			}
+		} );
 	}
 
 	function queueSave() {
