@@ -246,9 +246,6 @@ final class Accessibility {
 <li><strong>קורא מסך:</strong> האתר פועל עם NVDA ו-JAWS ב-Windows, עם VoiceOver במק ובאייפון, ועם TalkBack באנדרואיד.</li>
 </ul>
 
-<h2>מה עדיין לא נגיש במלואו</h2>
-<p>למרות מאמצינו ייתכן שחלקים מסוימים באתר אינם נגישים עדיין, ובהם תכנים של צדדים שלישיים המוטמעים בו (מפות, סרטונים, עמוד התשלום של חברת הסליקה), קבצים שהועלו לאתר לפני מועד ההנגשה ותוכן שכתבו גולשים. אם נתקלתם בקושי — נשמח שתדווחו לנו ונטפל בכך.</p>
-
 <h2>נגישות השירות בחנות</h2>
 [oc_a11y_table]
 
@@ -294,9 +291,6 @@ HTML;
 <li><strong>High contrast:</strong> on Windows turn on high-contrast mode (Alt + Shift + Print Screen); on a Mac, System Settings → Accessibility → Display → "Increase contrast". The site shows the system colours.</li>
 <li><strong>Screen readers:</strong> the site works with NVDA and JAWS on Windows, VoiceOver on Mac and iPhone, and TalkBack on Android.</li>
 </ul>
-
-<h2>What may not be fully accessible yet</h2>
-<p>Despite our efforts, some parts of the site may not be fully accessible yet, among them third-party content embedded in it (maps, videos, the payment provider's page), files uploaded before the site was made accessible, and content written by visitors. If you run into a difficulty, please tell us and we will take care of it.</p>
 
 <h2>Accessibility of the premises</h2>
 [oc_a11y_table]
