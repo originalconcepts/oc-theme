@@ -11158,12 +11158,6 @@ msgstr "כתובת העמוד באתר שלכם"
 msgid "Paste the address of the page and we take the text from it. Nothing to download and nothing to upload."
 msgstr "הדביקו את כתובת העמוד ואנחנו ניקח ממנו את התוכן. אין מה להוריד ואין מה להעלות."
 
-msgid "What the customer is asked"
-msgstr "מה שואלים את הלקוח"
-
-msgid "The line above the stars. Leave it empty for the wording shown here."
-msgstr "השורה שמעל הכוכבים. אם תשאירו ריק, יופיע הנוסח שמוצג כאן."
-
 msgid "Taken from the current site; read it over once."
 msgstr "נלקח מהאתר הקיים; כדאי לעבור על זה פעם אחת."
 

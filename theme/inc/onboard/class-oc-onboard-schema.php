@@ -120,7 +120,7 @@ final class Schema {
 						'id'     => '8a',
 						'title'  => __( 'The thank-you page', 'oc-theme' ),
 						'intro'  => __( 'The page a customer lands on the moment the order goes through. It already shows the order and what happens next; here you choose what else it carries.', 'oc-theme' ),
-						'fields' => array( 'ty_contact', 'ty_wa_group', 'wa_group', 'ty_wa_title', 'ty_social', 'ty_survey', 'ty_survey_q', 'ty_referral', 'ty_ref_friend', 'ty_ref_reward' ),
+						'fields' => array( 'ty_contact', 'ty_wa_group', 'wa_group', 'ty_wa_title', 'ty_social', 'ty_survey', 'ty_referral', 'ty_ref_friend', 'ty_ref_reward' ),
 					),
 				),
 			),
@@ -666,16 +666,6 @@ final class Schema {
 			'options' => $yesno,
 			'default' => 'yes',
 			'target'  => array( 'option', 'oc_thankyou', 'survey' ),
-		);
-
-		$f['ty_survey_q'] = array(
-			'type'        => 'text',
-			'label'       => __( 'What the customer is asked', 'oc-theme' ),
-			'help'        => __( 'The line above the stars. Leave it empty for the wording shown here.', 'oc-theme' ),
-			'placeholder' => __( 'How was your purchase experience?', 'oc-theme' ),
-			'default'     => (string) $ty['survey_q'],
-			'when'        => array( 'ty_survey', array( 'yes' ) ),
-			'target'      => array( 'option', 'oc_thankyou', 'survey_q' ),
 		);
 
 		$f['ty_referral'] = array(
