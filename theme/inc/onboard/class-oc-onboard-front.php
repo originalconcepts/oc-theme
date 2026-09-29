@@ -99,9 +99,9 @@ final class Front {
 				'home' => home_url( '/' ),
 			),
 			'i18n'       => array(
-				'welcome_title' => __( 'Let\'s set up your store', 'oc-theme' ),
-				'welcome_text'  => __( 'A few screens about your business, your pages and your preferences. Everything is saved as you go — close the page and come back whenever you like, from any device.', 'oc-theme' ),
-				'start'         => __( 'Start', 'oc-theme' ),
+				'welcome_title' => __( 'Online store questionnaire', 'oc-theme' ),
+				'welcome_text'  => __( 'The first step is filling in this questionnaire. It is a series of questions, most of them multiple choice and a few open ones. Everything is saved as you go.', 'oc-theme' ),
+				'start'         => __( 'Let\'s start', 'oc-theme' ),
 				'continue'      => __( 'Continue where I stopped', 'oc-theme' ),
 				'next'          => __( 'Next', 'oc-theme' ),
 				'back'          => __( 'Back', 'oc-theme' ),
@@ -145,8 +145,6 @@ final class Front {
 	 * @param array<string,mixed>|null $config Config for the script, or null for a static page.
 	 */
 	private function shell( string $body, ?array $config ): void {
-		$primary = sanitize_hex_color( (string) get_theme_mod( 'oc_color_primary', '' ) );
-		$cta     = sanitize_hex_color( (string) get_theme_mod( 'oc_cta_color', '' ) );
 		$logo_id = (int) get_theme_mod( 'custom_logo', 0 );
 		$logo    = $logo_id ? (string) wp_get_attachment_image_url( $logo_id, 'medium' ) : '';
 		$dir     = is_rtl() ? 'rtl' : 'ltr';
@@ -162,15 +160,16 @@ final class Front {
 	<title><?php echo esc_html( sprintf( /* translators: %s: site name */ __( 'Setting up %s', 'oc-theme' ), (string) get_bloginfo( 'name' ) ) ); ?></title>
 	<link rel="stylesheet" href="<?php echo esc_url( $fonts ); ?>"><?php // phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedStylesheet -- a page of its own, outside wp_head. ?>
 	<link rel="stylesheet" href="<?php echo esc_url( OC_THEME_URI . oc_asset_min( '/assets/css/onboard.css' ) . '?v=' . $ver ); ?>"><?php // phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedStylesheet -- same. ?>
-	<style>:root{--onb-primary:<?php echo esc_html( $primary ? $primary : '#1d1d1f' ); ?>;--onb-cta:<?php echo esc_html( $cta ? $cta : ( $primary ? $primary : '#1d1d1f' ) ); ?>}</style>
+	<style>:root{--onb-primary:#0143a5;--onb-cta:#0143a5}</style>
 </head>
 <body class="oc-onb-body">
 	<header class="oc-onb-top">
-		<?php if ( $logo ) : ?>
-			<img class="oc-onb-top__logo" src="<?php echo esc_url( $logo ); ?>" alt="">
-		<?php else : ?>
-			<span class="oc-onb-top__name"><?php echo esc_html( (string) get_bloginfo( 'name' ) ); ?></span>
-		<?php endif; ?>
+		<span class="oc-onb-top__brand">
+			<img class="oc-onb-top__oc" src="<?php echo esc_url( OC_THEME_URI . '/assets/img/oc-credit.svg' ); ?>" alt="Original Concepts" width="88" height="46">
+			<?php if ( $logo ) : ?>
+				<img class="oc-onb-top__logo" src="<?php echo esc_url( $logo ); ?>" alt="">
+			<?php endif; ?>
+		</span>
 		<span class="oc-onb-top__save" id="oc-onb-save" aria-live="polite"></span>
 	</header>
 		<?php echo $body; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts. ?>

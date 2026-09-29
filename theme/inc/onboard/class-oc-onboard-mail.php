@@ -208,8 +208,11 @@ final class Mail {
 			$headers[] = 'Cc: ' . Onboard::COPY_TO;
 		}
 
-		$html = '<!doctype html><html dir="' . ( is_rtl() ? 'rtl' : 'ltr' ) . '"><body style="margin:0;padding:24px;background:#f5f5f5;font-family:Arial,Helvetica,sans-serif;color:#1d1d1f">'
-			. '<div style="max-width:560px;margin:0 auto;background:#fff;border-radius:12px;padding:28px 28px 20px;line-height:1.6;font-size:16px">'
+		// Mail clients ignore dir on <html>; the direction rides the body and the card as inline style.
+		$dir  = is_rtl() || 0 === strpos( get_locale(), 'he' ) ? 'rtl' : 'ltr';
+		$al   = 'rtl' === $dir ? 'right' : 'left';
+		$html = '<!doctype html><html dir="' . $dir . '" lang="' . esc_attr( get_bloginfo( 'language' ) ) . '"><body dir="' . $dir . '" style="margin:0;padding:24px;background:#f5f5f5;font-family:Arial,Helvetica,sans-serif;color:#1d1d1f;direction:' . $dir . ';text-align:' . $al . '">'
+			. '<div dir="' . $dir . '" style="max-width:560px;margin:0 auto;background:#fff;border-radius:12px;padding:28px 28px 20px;line-height:1.6;font-size:16px;direction:' . $dir . ';text-align:' . $al . '">'
 			. '<p style="margin:0 0 18px;font-weight:700;font-size:18px">' . esc_html( (string) get_bloginfo( 'name' ) ) . '</p>'
 			. $body
 			. '</div><style>.small{font-size:13px;color:#666}</style></body></html>';
@@ -233,7 +236,7 @@ final class Mail {
 	 * @param string $label Words.
 	 */
 	private static function button( string $url, string $label ): string {
-		return '<p style="margin:22px 0"><a href="' . esc_url( $url ) . '" style="display:inline-block;background:#1d1d1f;color:#fff;text-decoration:none;padding:12px 22px;border-radius:8px;font-weight:600">' . esc_html( $label ) . '</a></p>';
+		return '<p style="margin:22px 0"><a href="' . esc_url( $url ) . '" style="display:inline-block;background:#0143a5;color:#fff;text-decoration:none;padding:12px 22px;border-radius:8px;font-weight:600">' . esc_html( $label ) . '</a></p>';
 	}
 
 	/**

@@ -36,7 +36,9 @@ html { -webkit-text-size-adjust: 100%; }
 	z-index: 2;
 }
 
-.oc-onb-top__logo { max-height: 36px; max-width: 160px; object-fit: contain; }
+.oc-onb-top__brand { display: flex; align-items: center; gap: 16px; }
+.oc-onb-top__oc { height: 34px; width: auto; }
+.oc-onb-top__logo { max-height: 36px; max-width: 160px; object-fit: contain; padding-inline-start: 16px; border-inline-start: 1px solid var(--onb-line); }
 .oc-onb-top__name { font-weight: 700; font-size: 18px; }
 
 .oc-onb-top__save {

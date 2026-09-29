@@ -10804,8 +10804,8 @@ msgstr "שלום %s,"
 msgid "Hi,"
 msgstr "שלום,"
 
-msgid "A few screens about your business, your pages and your preferences. Everything is saved as you go — close the page and come back whenever you like, from any device."
-msgstr "כמה מסכים על העסק, על העמודים ועל ההעדפות שלכם. הכל נשמר תוך כדי — סגרו את הדף וחזרו מתי שתרצו, מכל מכשיר."
+msgid "The first step is filling in this questionnaire. It is a series of questions, most of them multiple choice and a few open ones. Everything is saved as you go."
+msgstr "השלב הראשון בתהליך הוא מילוי טופס השאלון. הטופס בנוי מסדרת שאלות, רוב השאלות הן שאלות אמריקאיות ומעט שאלות פתוחות. הכל נשמר תוך כדי."
 
 msgid "Continue where I stopped"
 msgstr "להמשיך מאיפה שעצרתי"
@@ -10983,3 +10983,9 @@ msgstr "תיאור קצר — מקסימום שורות"
 
 msgid "A ready-made footer preset — pick it, then fill the blanks. Link columns are menus (Appearance → Menus → assign to \"Footer column 1–4\"); each column's heading is set below. The bottom bar uses the \"Footer menu\" for its legal links."
 msgstr "פוטר מוכן — בוחרים אותו וממלאים את החסר. עמודות הקישורים הן תפריטים (עיצוב ← תפריטים ← שיבוץ ל\"עמודת פוטר 1–4\"); הכותרת של כל עמודה נקבעת למטה. השורה התחתונה משתמשת ב\"תפריט הפוטר\" לקישורים המשפטיים."
+
+msgid "Online store questionnaire"
+msgstr "שאלון אתר מכירות"
+
+msgid "Let's start"
+msgstr "בואו נתחיל"
