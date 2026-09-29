@@ -20,6 +20,9 @@ namespace OC\Theme\Onboard;
 
 defined( 'ABSPATH' ) || exit;
 
+// The DOM's own properties are camelCase; that is their name, not our style.
+// phpcs:disable WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+
 /**
  * Fetching and reading a page from somewhere else.
  */
@@ -287,3 +290,5 @@ final class Fetch {
 		return $out;
 	}
 }
+
+// phpcs:enable WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase

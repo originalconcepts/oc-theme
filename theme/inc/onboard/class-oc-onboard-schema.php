@@ -670,8 +670,8 @@ final class Schema {
 			'help'        => __( 'The line above the stars. Leave it empty for the wording shown here.', 'oc-theme' ),
 			'placeholder' => __( 'How was your purchase experience?', 'oc-theme' ),
 			'default'     => (string) $ty['survey_q'],
-			'when'    => array( 'ty_survey', array( 'yes' ) ),
-			'target'  => array( 'option', 'oc_thankyou', 'survey_q' ),
+			'when'        => array( 'ty_survey', array( 'yes' ) ),
+			'target'      => array( 'option', 'oc_thankyou', 'survey_q' ),
 		);
 
 		$f['ty_referral'] = array(
