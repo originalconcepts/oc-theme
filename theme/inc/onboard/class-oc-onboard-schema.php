@@ -40,6 +40,31 @@ final class Schema {
 	private static $fields = null;
 
 	/**
+	 * The two halves of the questionnaire. The first is everything the site
+	 * needs in order to speak in the customer's name; the second is how it
+	 * looks. Between them the customer gets a word of encouragement, which is
+	 * what these lines are for.
+	 *
+	 * 'soon' is what we say while the second half is not open yet.
+	 *
+	 * @return array<int,array<string,string>>
+	 */
+	public static function parts(): array {
+		return array(
+			1 => array(
+				'title' => __( 'Your details', 'oc-theme' ),
+				'done'  => __( 'The first part is done', 'oc-theme' ),
+				'text'  => __( 'Everything the site needs in order to speak in your name is in. The second part is the look of the site: the home page, the catalogue, the product page and the way an order is placed.', 'oc-theme' ),
+				'soon'  => __( 'Everything the site needs in order to speak in your name is in. The second part, the look of the site, opens as soon as your site is up, and you will get it in a link of its own. Now we will go over what you filled in and send it.', 'oc-theme' ),
+				'next'  => __( 'Come on, keep going', 'oc-theme' ),
+			),
+			2 => array(
+				'title' => __( 'The look of the site', 'oc-theme' ),
+			),
+		);
+	}
+
+	/**
 	 * The steps in order, each with its screens. Only the steps that exist
 	 * in this build are listed; the numbering follows the spec so a later
 	 * build can slot 3–7 in between.
@@ -50,6 +75,7 @@ final class Schema {
 		return array(
 			array(
 				'n'       => 1,
+				'part'    => 1,
 				'title'   => __( 'About the business', 'oc-theme' ),
 				'screens' => array(
 					array(
@@ -68,24 +94,26 @@ final class Schema {
 			),
 			array(
 				'n'       => 2,
+				'part'    => 1,
 				'title'   => __( 'Content pages', 'oc-theme' ),
 				'screens' => array(
 					array(
 						'id'     => '2a',
 						'title'  => __( 'About us', 'oc-theme' ),
 						'intro'  => __( 'A few lines about who you are. This becomes the About page and the short text on the home page.', 'oc-theme' ),
-						'fields' => array( 'about_mode', 'about_text', 'about_points', 'about_image' ),
+						'fields' => array( 'about_mode', 'about_url', 'about_text', 'about_points', 'about_image' ),
 					),
 					array(
 						'id'     => '2b',
 						'title'  => __( 'Legal pages', 'oc-theme' ),
 						'intro'  => __( 'Terms of sale, privacy policy and accessibility statement. For each one: upload your own file, or use the wording we prepared. Nothing here holds you up — you can send a file later.', 'oc-theme' ),
-						'fields' => array( 'terms_mode', 'terms_kind', 'terms_custom', 'terms_bulky', 'terms_file', 'terms_consent', 'privacy_mode', 'privacy_file', 'privacy_consent', 'a11y_mode', 'a11y_file', 'a11y_consent' ),
+						'fields' => array( 'terms_mode', 'terms_url', 'terms_file', 'terms_kind', 'terms_custom', 'terms_bulky', 'terms_consent', 'privacy_mode', 'privacy_url', 'privacy_file', 'privacy_consent', 'a11y_mode', 'a11y_url', 'a11y_file', 'a11y_consent' ),
 					),
 				),
 			),
 			array(
 				'n'       => 8,
+				'part'    => 1,
 				'title'   => __( 'Thank-you page', 'oc-theme' ),
 				'screens' => array(
 					array(
@@ -389,11 +417,21 @@ final class Schema {
 			'label'   => __( 'The About text', 'oc-theme' ),
 			'options' => array(
 				'paste' => __( 'I have a text, I will paste it', 'oc-theme' ),
+				'link'  => __( 'It is on my current site — take it from there', 'oc-theme' ),
 				'write' => __( 'Write it for me from a few points', 'oc-theme' ),
-				'later' => __( 'Later', 'oc-theme' ),
 			),
 			'default' => 'paste',
 			'target'  => array( 'call', 'about' ),
+		);
+
+		$f['about_url'] = array(
+			'type'     => 'url',
+			'label'    => __( 'The address of the page on your site', 'oc-theme' ),
+			'help'     => __( 'Paste the address of the page and we take the text from it. Nothing to download and nothing to upload.', 'oc-theme' ),
+			'dir'      => 'ltr',
+			'when'     => array( 'about_mode', array( 'link' ) ),
+			'required' => true,
+			'target'   => array( 'call', 'about' ),
 		);
 
 		$f['about_text'] = array(
@@ -428,8 +466,8 @@ final class Schema {
 
 		$legal_mode = array(
 			'upload'   => __( 'I have my own — I will upload the file', 'oc-theme' ),
+			'link'     => __( 'It is on my current site — take it from there', 'oc-theme' ),
 			'template' => __( 'Use the ready-made wording you prepared', 'oc-theme' ),
-			'later'    => __( 'I will send it later', 'oc-theme' ),
 		);
 
 		$f['terms_mode'] = array(
@@ -478,6 +516,16 @@ final class Schema {
 			'target'  => array( 'call', 'legal_terms' ),
 		);
 
+		$f['terms_url'] = array(
+			'type'     => 'url',
+			'label'    => __( 'The address of the page on your site', 'oc-theme' ),
+			'help'     => __( 'Paste the address of the page and we take the text from it. Nothing to download and nothing to upload.', 'oc-theme' ),
+			'dir'      => 'ltr',
+			'when'     => array( 'terms_mode', array( 'link' ) ),
+			'required' => true,
+			'target'   => array( 'call', 'legal_terms' ),
+		);
+
 		$f['terms_file'] = array(
 			'type'     => 'file',
 			'accept'   => 'doc',
@@ -504,6 +552,16 @@ final class Schema {
 			'target'  => array( 'call', 'legal_privacy' ),
 		);
 
+		$f['privacy_url'] = array(
+			'type'     => 'url',
+			'label'    => __( 'The address of the page on your site', 'oc-theme' ),
+			'help'     => __( 'Paste the address of the page and we take the text from it. Nothing to download and nothing to upload.', 'oc-theme' ),
+			'dir'      => 'ltr',
+			'when'     => array( 'privacy_mode', array( 'link' ) ),
+			'required' => true,
+			'target'   => array( 'call', 'legal_privacy' ),
+		);
+
 		$f['privacy_file'] = array(
 			'type'     => 'file',
 			'accept'   => 'doc',
@@ -528,6 +586,16 @@ final class Schema {
 			'options' => $legal_mode,
 			'default' => 'upload',
 			'target'  => array( 'call', 'legal_a11y' ),
+		);
+
+		$f['a11y_url'] = array(
+			'type'     => 'url',
+			'label'    => __( 'The address of the page on your site', 'oc-theme' ),
+			'help'     => __( 'Paste the address of the page and we take the text from it. Nothing to download and nothing to upload.', 'oc-theme' ),
+			'dir'      => 'ltr',
+			'when'     => array( 'a11y_mode', array( 'link' ) ),
+			'required' => true,
+			'target'   => array( 'call', 'legal_a11y' ),
 		);
 
 		$f['a11y_file'] = array(
@@ -597,9 +665,11 @@ final class Schema {
 		);
 
 		$f['ty_survey_q'] = array(
-			'type'    => 'text',
-			'label'   => __( 'The question', 'oc-theme' ),
-			'default' => (string) $ty['survey_q'],
+			'type'        => 'text',
+			'label'       => __( 'What the customer is asked', 'oc-theme' ),
+			'help'        => __( 'The line above the stars. Leave it empty for the wording shown here.', 'oc-theme' ),
+			'placeholder' => __( 'How was your purchase experience?', 'oc-theme' ),
+			'default'     => (string) $ty['survey_q'],
 			'when'    => array( 'ty_survey', array( 'yes' ) ),
 			'target'  => array( 'option', 'oc_thankyou', 'survey_q' ),
 		);
@@ -1064,7 +1134,7 @@ final class Schema {
 	 * The schema as the browser needs it: labels resolved, defaults
 	 * evaluated, targets left out.
 	 *
-	 * @return array{steps:array<int,array<string,mixed>>,fields:array<string,array<string,mixed>>}
+	 * @return array{steps:array<int,array<string,mixed>>,parts:array<int,array<string,string>>,fields:array<string,array<string,mixed>>}
 	 */
 	public static function for_js(): array {
 		$fields = array();
@@ -1100,6 +1170,7 @@ final class Schema {
 
 		return array(
 			'steps'  => self::steps(),
+			'parts'  => self::parts(),
 			'fields' => $fields,
 		);
 	}

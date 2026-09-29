@@ -21,13 +21,48 @@
 	var screens = [];
 	var pending = {};
 	var saveTimer = null;
+	var looked  = false; // Whether we already went looking on their old site.
+	var foundIn = {};    // Fields whose address we found rather than asked for.
 	var at = -1; // -1 welcome, 0..n-1 screens, n summary, n+1 done.
 
+	var parts = C.schema.parts || {};
+
 	C.schema.steps.forEach( function ( step, si ) {
+		var part = step.part || 1;
+
+		// The half that just ended gets a word of its own before the next one.
+		if ( screens.length && part !== screens[ screens.length - 1 ].part ) {
+			addGate( screens[ screens.length - 1 ].part, true );
+		}
+
 		step.screens.forEach( function ( sc ) {
-			screens.push( { step: step, stepIndex: si, id: sc.id, title: sc.title, intro: sc.intro, fields: sc.fields } );
+			screens.push( { part: part, step: step, stepIndex: si, id: sc.id, title: sc.title, intro: sc.intro, fields: sc.fields } );
 		} );
 	} );
+
+	if ( screens.length ) {
+		addGate( screens[ screens.length - 1 ].part, false );
+	}
+
+	function addGate( part, more ) {
+		var p = parts[ part ] || parts[ String( part ) ];
+		var text = p ? ( more ? p.text : p.soon ) : '';
+
+		if ( ! p || ! text ) { return; }
+
+		screens.push( {
+			part: part,
+			gate: true,
+			id: 'gate-' + part,
+			title: p.done || '',
+			intro: text,
+			fields: [],
+			next: p.next || I.next
+		} );
+	}
+
+	// The gates are not questions, so they are not counted as steps.
+	var asked = screens.filter( function ( s ) { return ! s.gate; } );
 
 	/* ------------------------------------------------------------ values */
 
@@ -146,6 +181,56 @@
 		return p;
 	}
 
+	/* -------------------------------------------------- their current site */
+
+	/**
+	 * When the customer has a site already, their four pages are usually a
+	 * click away on its home page. We look for them once, fill the addresses
+	 * in, and say so. Anything the customer has already touched is left alone.
+	 */
+	function maybeDiscover() {
+		if ( looked || String( val( 'existing_has' ) ) !== 'yes' || isEmpty( val( 'existing_url' ) ) ) { return; }
+
+		looked = true;
+
+		( flush() || Promise.resolve() )
+			.then( function () { return api( '/discover', { body: '{}' } ); } )
+			.then( function ( r ) {
+				if ( ! r.ok || ! r.data || ! r.data.found || ! prefill( r.data.found ) ) { return; }
+				note( I.found_pages, 'ok' );
+				if ( at >= 0 && at < screens.length ) { renderScreen( at ); }
+			} )
+			.catch( function () {} );
+	}
+
+	/**
+	 * Put the addresses we found into the pages that have not been answered.
+	 *
+	 * @param {Object} hit kind → address.
+	 * @return {boolean} Whether anything was filled in.
+	 */
+	function prefill( hit ) {
+		var any = false;
+
+		[ 'about', 'terms', 'privacy', 'a11y' ].forEach( function ( kind ) {
+			var url  = hit[ kind ];
+			var mode = kind + '_mode';
+			var uid  = kind + '_url';
+
+			if ( ! url || ! F[ mode ] || ! F[ uid ] ) { return; }
+
+			// Never argue with an answer the customer has already given.
+			if ( Object.prototype.hasOwnProperty.call( values, mode ) || ! isEmpty( val( uid ) ) ) { return; }
+
+			set( mode, 'link' );
+			set( uid, url );
+			foundIn[ uid ] = true;
+			any = true;
+		} );
+
+		return any;
+	}
+
 	function note( text, cls ) {
 		if ( ! saveEl ) { return; }
 		saveEl.textContent = text;
@@ -183,6 +268,7 @@
 		] );
 		box.appendChild( lab );
 		if ( f.help ) { box.appendChild( el( 'p', { 'class': 'oc-onb-f__help', text: f.help } ) ); }
+		if ( foundIn[ id ] ) { box.appendChild( el( 'p', { 'class': 'oc-onb-f__found', text: I.found_hint } ) ); }
 		box.appendChild( inner );
 		box.appendChild( el( 'p', { 'class': 'oc-onb-f__err', text: I.required } ) );
 		if ( ! shown( id ) ) { box.hidden = true; }
@@ -228,6 +314,12 @@
 				wrap.querySelectorAll( '.oc-onb-choice' ).forEach( function ( c ) { c.classList.remove( 'is-on' ); } );
 				lab.classList.add( 'is-on' );
 				set( id, k );
+
+				var consentId = id.replace( /_mode$/, '_consent' );
+
+				if ( 'template' === k && F[ consentId ] && val( consentId ) !== true ) {
+					askConsent( id, consentId );
+				}
 			} );
 			lab.appendChild( inp );
 			lab.appendChild( el( 'span', { 'class': 'oc-onb-choice__t', text: f.options[ k ] } ) );
@@ -256,18 +348,81 @@
 	}
 
 	function render_consent( id, f ) {
-		var on = val( id ) === true;
 		var wrap = el( 'div', { 'class': 'oc-onb-consent' } );
-		var det = el( 'details', { 'class': 'oc-onb-consent__more' }, [ el( 'summary', { text: I.consent_read } ), el( 'p', { text: C.disclaimer } ) ] );
-		var lab = el( 'label', { 'class': 'oc-onb-check oc-onb-check--big' + ( on ? ' is-on' : '' ) } );
-		var inp = el( 'input', { type: 'checkbox' } );
-		inp.checked = on;
-		inp.addEventListener( 'change', function () { lab.classList.toggle( 'is-on', inp.checked ); set( id, inp.checked ); } );
-		lab.appendChild( inp );
-		lab.appendChild( el( 'span', { text: f.label } ) );
-		wrap.appendChild( det );
-		wrap.appendChild( lab );
+		var mode = id.replace( /_consent$/, '_mode' );
+
+		function paint() {
+			wrap.innerHTML = '';
+
+			if ( val( id ) === true ) {
+				wrap.appendChild( el( 'p', { 'class': 'oc-onb-agreed' }, [
+					el( 'span', { 'class': 'oc-onb-agreed__v', 'aria-hidden': 'true', text: '✓' } ),
+					el( 'span', { text: f.label } )
+				] ) );
+				return;
+			}
+
+			// Waiting on the dialog — which is also how a reopened link
+			// gets back to it.
+			wrap.appendChild( el( 'button', {
+				type: 'button',
+				'class': 'oc-onb-btn oc-onb-btn--ghost',
+				text: I.consent_open,
+				onclick: function () { askConsent( mode, id ); }
+			} ) );
+		}
+
+		wrap.__paint = paint;
+		paint();
 		return wrap;
+	}
+
+	/**
+	 * The disclaimer, as a dialog there is no way past: either the customer
+	 * confirms it, or the choice goes back to uploading their own.
+	 */
+	function askConsent( modeId, consentId ) {
+		if ( document.querySelector( '.oc-onb-modal' ) ) { return; }
+
+		var card = el( 'div', { 'class': 'oc-onb-modal__card', role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'oc-onb-modal-h' } );
+		var back = el( 'div', { 'class': 'oc-onb-modal' }, [ card ] );
+
+		function close() {
+			document.removeEventListener( 'keydown', trap, true );
+			back.remove();
+		}
+
+		function trap( e ) {
+			if ( e.key === 'Escape' ) { e.preventDefault(); e.stopPropagation(); }
+		}
+
+		card.appendChild( el( 'h2', { id: 'oc-onb-modal-h', text: I.consent_title } ) );
+		card.appendChild( el( 'p', { 'class': 'oc-onb-modal__warn', text: C.disclaimer } ) );
+
+		var ok = el( 'button', { type: 'button', 'class': 'oc-onb-btn', text: F[ consentId ] ? F[ consentId ].label : I.consent_ok } );
+		ok.addEventListener( 'click', function () {
+			set( consentId, true );
+			var box = root.querySelector( '[data-field="' + consentId + '"] .oc-onb-consent' );
+			if ( box && box.__paint ) { box.__paint(); }
+			close();
+		} );
+
+		var no = el( 'button', { type: 'button', 'class': 'oc-onb-btn oc-onb-btn--ghost', text: I.consent_upload } );
+		no.addEventListener( 'click', function () {
+			set( consentId, false );
+			set( modeId, 'upload' );
+			var pick = root.querySelector( '[data-field="' + modeId + '"] input[value="upload"]' );
+			if ( pick ) { pick.checked = true; }
+			root.querySelectorAll( '[data-field="' + modeId + '"] .oc-onb-choice' ).forEach( function ( c ) {
+				c.classList.toggle( 'is-on', !! c.querySelector( 'input:checked' ) );
+			} );
+			close();
+		} );
+
+		card.appendChild( el( 'div', { 'class': 'oc-onb-modal__btns' }, [ ok, no ] ) );
+		document.body.appendChild( back );
+		document.addEventListener( 'keydown', trap, true );
+		ok.focus();
 	}
 
 	var fileSeq = 0;
@@ -465,11 +620,12 @@
 	/* ------------------------------------------------------------ screens */
 
 	function progressBar( index ) {
-		var total = screens.length;
-		var wrap = el( 'div', { 'class': 'oc-onb-prog' } );
-		wrap.appendChild( el( 'div', { 'class': 'oc-onb-prog__t', text: fmt( I.step_of, index + 1, total ) } ) );
+		var total = asked.length;
+		var n     = asked.indexOf( screens[ index ] ) + 1;
+		var wrap  = el( 'div', { 'class': 'oc-onb-prog' } );
+		wrap.appendChild( el( 'div', { 'class': 'oc-onb-prog__t', text: fmt( I.step_of, n, total ) } ) );
 		var bar = el( 'div', { 'class': 'oc-onb-prog__bar' } );
-		bar.appendChild( el( 'i', { style: 'inline-size:' + Math.round( ( index + 1 ) / ( total + 1 ) * 100 ) + '%' } ) );
+		bar.appendChild( el( 'i', { style: 'inline-size:' + Math.round( n / ( total + 1 ) * 100 ) + '%' } ) );
 		wrap.appendChild( bar );
 		return wrap;
 	}
@@ -488,8 +644,31 @@
 		] ) );
 	}
 
+	/**
+	 * The screen between the two halves: what is behind us, what is ahead.
+	 *
+	 * @param {number} index Where it sits.
+	 */
+	function renderGate( index ) {
+		var sc = screens[ index ];
+		root.innerHTML = '';
+		root.appendChild( el( 'div', { 'class': 'oc-onb__card oc-onb__card--hello oc-onb__card--gate' }, [
+			el( 'div', { 'class': 'oc-onb-done__tick', 'aria-hidden': 'true', text: '✓' } ),
+			el( 'h1', { text: sc.title } ),
+			el( 'p', { text: sc.intro } ),
+			el( 'div', { 'class': 'oc-onb-nav oc-onb-nav--one' }, [
+				el( 'button', { type: 'button', 'class': 'oc-onb-btn oc-onb-btn--big', text: sc.next, onclick: function () { go( index + 1 ); } } ),
+				el( 'button', { type: 'button', 'class': 'oc-onb-link', text: I.back, onclick: function () { go( index - 1 ); } } )
+			] )
+		] ) );
+		window.scrollTo( { top: 0, behavior: 'smooth' } );
+	}
+
 	function renderScreen( index ) {
 		var sc = screens[ index ];
+
+		if ( sc.gate ) { renderGate( index ); return; }
+
 		root.innerHTML = '';
 		var card = el( 'div', { 'class': 'oc-onb__card' } );
 		card.appendChild( progressBar( index ) );
@@ -552,6 +731,7 @@
 
 		var allMissing = [];
 		screens.forEach( function ( sc, si ) {
+			if ( sc.gate ) { return; }
 			var sec = el( 'section', { 'class': 'oc-onb-sum' } );
 			var miss = missingIn( sc.fields );
 			allMissing = allMissing.concat( miss );
@@ -617,6 +797,7 @@
 	}
 
 	function go( index ) {
+		maybeDiscover();
 		if ( index < 0 ) { at = -1; renderWelcome(); return; }
 		if ( index >= screens.length ) { at = screens.length; renderSummary(); saveStep(); return; }
 		at = index;
@@ -627,6 +808,7 @@
 	/* ------------------------------------------------------------ start */
 
 	root.removeAttribute( 'data-loading' );
+	maybeDiscover();
 
 	if ( C.status === 'applied' && C.step === 'summary' ) {
 		go( screens.length );

@@ -43,7 +43,19 @@ final class Consent {
 	 * The disclaimer, as the owner reads it.
 	 */
 	public static function text(): string {
-		return __( 'This page is a general template drafted with the help of artificial intelligence by the theme\'s makers. It is a starting point for inspiration only — not legal advice, and not tailored to your business. Before publishing, have the text reviewed by a lawyer and adapted to your business, and read every line yourself. Using the page is the sole responsibility of the site owner; the theme\'s makers bear no responsibility for its content or for any claim that may arise from it. Clicking "Create the page" confirms that you have read and understood this.', 'oc-theme' );
+		return __( 'This page is a general template drafted with the help of artificial intelligence by the theme\'s makers. It is a starting point for inspiration only — not legal advice, and not tailored to your business. Before publishing, have the text reviewed by a lawyer and adapted to your business, and read every line yourself. Using the page is the sole responsibility of the site owner; the theme\'s makers bear no responsibility for its content or for any claim that may arise from it.', 'oc-theme' );
+	}
+
+	/**
+	 * The same, with the sentence that ties it to the button in front of the
+	 * reader. The questionnaire's dialog says it in its own words, so it asks
+	 * for the text above on its own.
+	 *
+	 * @param string $button What the button says.
+	 */
+	public static function text_at( string $button ): string {
+		/* translators: %s: the label of the button that confirms. */
+		return self::text() . ' ' . sprintf( __( 'Clicking "%s" confirms that you have read and understood this.', 'oc-theme' ), $button );
 	}
 
 	/**
@@ -94,7 +106,7 @@ final class Consent {
 				<input type="hidden" name="action" value="<?php echo esc_attr( $action ); ?>" />
 				<?php wp_nonce_field( $nonce ); ?>
 				<h2 id="<?php echo esc_attr( $id ); ?>-h"><?php echo esc_html( $label ); ?></h2>
-				<p class="oc-legal-warn"><?php echo esc_html( self::text() ); ?></p>
+				<p class="oc-legal-warn"><?php echo esc_html( self::text_at( $label ) ); ?></p>
 				<?php echo $extra; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts by the caller. ?>
 				<label class="oc-legal-ok"><input type="checkbox" name="oc_consent" value="1" /> <span><?php esc_html_e( 'I have read and understood: this is a template, not legal advice, and using it is my responsibility.', 'oc-theme' ); ?></span></label>
 				<p class="oc-legal-btns">

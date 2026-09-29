@@ -85,6 +85,7 @@ html { -webkit-text-size-adjust: 100%; }
 .oc-onb-f__req { color: var(--onb-err); }
 .oc-onb-f__help { margin: -2px 0 8px; font-size: 14px; color: var(--onb-ink-2); }
 .oc-onb-f__err { display: none; margin: 6px 0 0; font-size: 13px; color: var(--onb-err); }
+.oc-onb-f__found { margin: -2px 0 8px; font-size: 13px; color: var(--onb-ok); }
 .oc-onb-f.is-missing .oc-onb-f__err { display: block; }
 .oc-onb-f.is-missing .oc-onb-in, .oc-onb-f.is-missing .oc-onb-choice, .oc-onb-f.is-missing .oc-onb-check--big { border-color: var(--onb-err); }
 
@@ -123,9 +124,33 @@ html { -webkit-text-size-adjust: 100%; }
 .oc-onb-check--big { padding: 12px 14px; border: 1.5px solid var(--onb-line); border-radius: 10px; font-weight: 600; }
 .oc-onb-check--big.is-on { border-color: var(--onb-primary); }
 
-.oc-onb-consent__more { margin-bottom: 10px; font-size: 14px; color: var(--onb-ink-2); }
-.oc-onb-consent__more summary { cursor: pointer; color: var(--onb-ink); }
-.oc-onb-consent__more p { background: #fcf9e8; border-inline-start: 4px solid #dba617; padding: 10px 14px; margin: 8px 0 0; line-height: 1.6; }
+.oc-onb-agreed { display: flex; align-items: flex-start; gap: 8px; margin: 0; font-size: 14px; color: var(--onb-ink-2); }
+.oc-onb-agreed__v { color: var(--onb-ok); font-weight: 700; }
+
+/* The disclaimer, as a dialog there is no way past. */
+.oc-onb-modal {
+	position: fixed;
+	inset: 0;
+	z-index: 40;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 20px;
+	background: rgba(15, 20, 30, .55);
+	overflow: auto;
+}
+.oc-onb-modal__card {
+	background: var(--onb-card);
+	border-radius: var(--onb-r);
+	padding: 26px 24px;
+	max-width: 520px;
+	width: 100%;
+	box-shadow: 0 20px 50px rgba(0, 0, 0, .25);
+}
+.oc-onb-modal__card h2 { margin: 0 0 12px; font-size: 20px; }
+.oc-onb-modal__warn { background: #fcf9e8; border-inline-start: 4px solid #dba617; padding: 12px 14px; margin: 0; line-height: 1.6; font-size: 15px; }
+.oc-onb-modal__btns { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+.oc-onb-modal__btns .oc-onb-btn { width: 100%; }
 
 .oc-onb-file__in { position: absolute; width: 1px; height: 1px; opacity: 0; }
 .oc-onb-file__show { display: flex; align-items: center; gap: 12px; margin-top: 10px; font-size: 14px; }
@@ -176,6 +201,7 @@ html { -webkit-text-size-adjust: 100%; }
 .oc-onb-link { font: inherit; font-size: 14px; background: none; border: 0; padding: 0; color: var(--onb-primary); text-decoration: underline; cursor: pointer; }
 
 .oc-onb-nav { display: flex; justify-content: space-between; gap: 12px; margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--onb-line); }
+.oc-onb-nav--one { flex-direction: column; align-items: center; border-top: 0; gap: 16px; }
 
 /* summary */
 .oc-onb-sum { margin-top: 22px; }

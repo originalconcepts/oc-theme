@@ -76,6 +76,16 @@ final class Rest {
 
 		register_rest_route(
 			self::NS,
+			'/onboard/discover',
+			array(
+				'methods'             => 'POST',
+				'permission_callback' => array( __CLASS__, 'permit_token' ),
+				'callback'            => array( $this, 'discover' ),
+			)
+		);
+
+		register_rest_route(
+			self::NS,
 			'/onboard/submit',
 			array(
 				'methods'             => 'POST',
@@ -370,6 +380,30 @@ final class Rest {
 				'thumb' => $thumb ? $thumb : '',
 			)
 		);
+	}
+
+	/**
+	 * The four content pages, found on the site the customer already has,
+	 * so nobody has to hunt for an address.
+	 *
+	 * @param \WP_REST_Request $req Request.
+	 */
+	public function discover( \WP_REST_Request $req ): \WP_REST_Response { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- WordPress's signature.
+		$home = (string) Draft::value( 'existing_url' );
+
+		if ( '' === trim( $home ) ) {
+			return self::answer( array( 'found' => array() ) );
+		}
+
+		$key   = 'oc_onb_disc_' . md5( $home );
+		$found = get_transient( $key );
+
+		if ( ! is_array( $found ) ) {
+			$found = Fetch::discover( $home );
+			set_transient( $key, $found, DAY_IN_SECONDS );
+		}
+
+		return self::answer( array( 'found' => $found ) );
 	}
 
 	/**

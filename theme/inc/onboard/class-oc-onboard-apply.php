@@ -551,8 +551,15 @@ final class Apply {
 	private function apply_about(): void {
 		$mode = (string) $this->v['about_mode'];
 
-		if ( 'later' === $mode ) {
-			$this->row( 'about_mode', __( 'About page', 'oc-theme' ), 'check', __( 'The customer will send the text later.', 'oc-theme' ) );
+		if ( 'link' === $mode ) {
+			$id = $this->page_from_url( 'about', __( 'About us', 'oc-theme' ), (string) $this->v['about_url'] );
+
+			$this->row( 'about_url', __( 'About page', 'oc-theme' ), $id ? 'check' : 'error', $id ? __( 'Taken from the current site; read it over once.', 'oc-theme' ) : __( 'The page could not be read from that address.', 'oc-theme' ) );
+
+			if ( $id ) {
+				Onboard::patch_state( array( 'about_page' => $id ) );
+			}
+
 			return;
 		}
 
@@ -580,8 +587,12 @@ final class Apply {
 	 * record, or the file they uploaded as a page.
 	 */
 	private function apply_legal_terms(): void {
-		if ( 'later' === $this->v['terms_mode'] ) {
-			$this->row( 'terms_mode', __( 'Terms page', 'oc-theme' ), 'check', __( 'The customer will send the file later.', 'oc-theme' ) );
+		if ( 'link' === $this->v['terms_mode'] ) {
+			$id = $this->page_from_url( 'terms', __( 'Terms of sale', 'oc-theme' ), (string) $this->v['terms_url'] );
+
+			$this->terms_page_wired( $id );
+			$this->row( 'terms_url', __( 'Terms page', 'oc-theme' ), $id ? 'check' : 'error', $id ? __( 'Taken from the current site; read it over once.', 'oc-theme' ) : __( 'The page could not be read from that address.', 'oc-theme' ) );
+
 			return;
 		}
 
@@ -620,8 +631,12 @@ final class Apply {
 	 * The privacy policy.
 	 */
 	private function apply_legal_privacy(): void {
-		if ( 'later' === $this->v['privacy_mode'] ) {
-			$this->row( 'privacy_mode', __( 'Privacy page', 'oc-theme' ), 'check', __( 'The customer will send the file later.', 'oc-theme' ) );
+		if ( 'link' === $this->v['privacy_mode'] ) {
+			$id = $this->page_from_url( 'privacy-policy', __( 'Privacy policy', 'oc-theme' ), (string) $this->v['privacy_url'] );
+
+			$this->privacy_page_wired( $id );
+			$this->row( 'privacy_url', __( 'Privacy page', 'oc-theme' ), $id ? 'check' : 'error', $id ? __( 'Taken from the current site; read it over once.', 'oc-theme' ) : __( 'The page could not be read from that address.', 'oc-theme' ) );
+
 			return;
 		}
 
@@ -652,8 +667,12 @@ final class Apply {
 	 * The accessibility statement.
 	 */
 	private function apply_legal_a11y(): void {
-		if ( 'later' === $this->v['a11y_mode'] ) {
-			$this->row( 'a11y_mode', __( 'Accessibility page', 'oc-theme' ), 'check', __( 'The customer will send the file later.', 'oc-theme' ) );
+		if ( 'link' === $this->v['a11y_mode'] ) {
+			$id = $this->page_from_url( 'accessibility-statement', __( 'Accessibility statement', 'oc-theme' ), (string) $this->v['a11y_url'] );
+
+			$this->a11y_page_wired( $id );
+			$this->row( 'a11y_url', __( 'Accessibility page', 'oc-theme' ), $id ? 'check' : 'error', $id ? __( 'Taken from the current site; read it over once.', 'oc-theme' ) : __( 'The page could not be read from that address.', 'oc-theme' ) );
+
 			return;
 		}
 
@@ -710,6 +729,62 @@ final class Apply {
 		update_post_meta( $id, \OC\Blocks\Registry::META, $sections );
 
 		$this->row( 'branches', __( 'Branches page', 'oc-theme' ), 'applied' );
+	}
+
+	/**
+	 * A terms page, wherever it came from, becomes the checkout's terms page
+	 * unless the shop already points at one we did not write.
+	 *
+	 * @param int $id The page.
+	 */
+	private function terms_page_wired( int $id ): void {
+		if ( $id && ! (int) get_option( 'woocommerce_terms_page_id' ) ) {
+			update_option( 'woocommerce_terms_page_id', $id );
+		}
+	}
+
+	/**
+	 * The privacy page WordPress itself points at.
+	 *
+	 * @param int $id The page.
+	 */
+	private function privacy_page_wired( int $id ): void {
+		if ( $id ) {
+			update_option( 'wp_page_for_privacy_policy', $id );
+		}
+	}
+
+	/**
+	 * The statement the footer links to.
+	 *
+	 * @param int $id The page.
+	 */
+	private function a11y_page_wired( int $id ): void {
+		if ( $id ) {
+			update_option( Legal\Accessibility::OPTION, $id, false );
+		}
+	}
+
+	/**
+	 * A page whose body is read off the customer's current site.
+	 *
+	 * @param string $slug  Page slug.
+	 * @param string $title Title.
+	 * @param string $url   The address on their site.
+	 * @return int The page id, 0 when nothing could be read.
+	 */
+	private function page_from_url( string $slug, string $title, string $url ): int {
+		if ( '' === trim( $url ) ) {
+			return 0;
+		}
+
+		$got = Fetch::article( $url );
+
+		if ( '' === trim( (string) $got['html'] ) ) {
+			return 0;
+		}
+
+		return $this->page( $slug, '' !== $got['title'] ? $got['title'] : $title, $got['html'] );
 	}
 
 	/* ------------------------------------------------------------ helpers */
