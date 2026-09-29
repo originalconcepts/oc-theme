@@ -119,17 +119,45 @@ final class Consent {
 		}
 
 		$user = wp_get_current_user();
-		$log  = get_option( self::LOG, array() );
-		$log  = is_array( $log ) ? $log : array();
+
+		self::record(
+			$kind,
+			$options,
+			array(
+				'user_id' => (int) $user->ID,
+				'login'   => (string) $user->user_login,
+				'name'    => (string) $user->display_name,
+				'email'   => (string) $user->user_email,
+				'via'     => 'admin',
+			)
+		);
+
+		return true;
+	}
+
+	/**
+	 * Write one confirmation to the log and mail the copy. The admin
+	 * button and the onboarding questionnaire both come through here;
+	 * the questionnaire names the customer, who has no user account.
+	 *
+	 * @param string              $kind    terms | accessibility | privacy.
+	 * @param array<string,mixed> $options Choices made with the confirmation.
+	 * @param array<string,mixed> $actor   user_id, login, name, email, phone, via.
+	 */
+	public static function record( string $kind, array $options, array $actor ): void {
+		$log = get_option( self::LOG, array() );
+		$log = is_array( $log ) ? $log : array();
 
 		$entry = array(
 			'when'     => gmdate( 'c' ),
 			'kind'     => $kind,
 			'options'  => $options,
-			'user_id'  => (int) $user->ID,
-			'login'    => (string) $user->user_login,
-			'name'     => (string) $user->display_name,
-			'email'    => (string) $user->user_email,
+			'user_id'  => (int) ( $actor['user_id'] ?? 0 ),
+			'login'    => (string) ( $actor['login'] ?? '' ),
+			'name'     => (string) ( $actor['name'] ?? '' ),
+			'email'    => (string) ( $actor['email'] ?? '' ),
+			'phone'    => (string) ( $actor['phone'] ?? '' ),
+			'via'      => (string) ( $actor['via'] ?? 'admin' ),
 			'ip'       => isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( (string) $_SERVER['REMOTE_ADDR'] ) ) : '',
 			'agent'    => isset( $_SERVER['HTTP_USER_AGENT'] ) ? substr( sanitize_text_field( wp_unslash( (string) $_SERVER['HTTP_USER_AGENT'] ) ), 0, 200 ) : '',
 			'site'     => home_url( '/' ),
@@ -143,8 +171,6 @@ final class Consent {
 		update_option( self::LOG, array_slice( $log, -200 ), false );
 
 		self::mail_copy( $entry );
-
-		return true;
 	}
 
 	/**
@@ -171,7 +197,8 @@ final class Consent {
 			. "Page:        {$kind} ({$e['kind']})\n"
 			. "Options:     {$opts}\n"
 			. "When:        {$local} / {$e['when']} UTC\n"
-			. "User:        #{$e['user_id']} {$e['login']} — {$e['name']} <{$e['email']}>\n"
+			. "User:        #{$e['user_id']} {$e['login']} — {$e['name']} <{$e['email']}> {$e['phone']}\n"
+			. "Via:         {$e['via']}\n"
 			. "IP:          {$e['ip']}\n"
 			. "Browser:     {$e['agent']}\n"
 			. "Theme:       oc-theme {$e['theme']}\n"

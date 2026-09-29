@@ -10292,3 +10292,694 @@ msgstr "טמפלט עמודים משפטיים"
 
 msgid "Each button writes a page from a general template built into the theme. The facts on the page (company, address, hours, coordinator, branches) are read live from this screen, so save first, and later edits here show on the page by themselves. Rewriting a page replaces what you edited on it. Before the page is written you confirm that it is a template and not legal advice."
 msgstr "כל כפתור כותב עמוד מטמפלט כללי המובנה בתבנית. הפרטים בעמוד (חברה, כתובת, שעות, רכז/ת, סניפים) נקראים חי מהמסך הזה — לכן קודם שומרים, ושינוי כאן בהמשך יופיע בעמוד מעצמו. כתיבה מחדש מחליפה מה שערכתם בעמוד. לפני שהעמוד נכתב אתם מאשרים שזהו טמפלט ולא ייעוץ משפטי."
+
+# --- Onboarding questionnaire (2026-09-30) ---
+
+msgid "Invitation record"
+msgstr "רשומת ההזמנה"
+
+msgid "Changed by hand since the last apply; left as it is."
+msgstr "שונה ידנית מאז ההחלה הקודמת; נשאר כפי שהוא."
+
+msgid "The branches module is not installed; the branches were not created."
+msgstr "מודול הסניפים לא מותקן; הסניפים לא נוצרו."
+
+msgid "%d branch"
+msgid_plural "%d branches"
+msgstr[0] "סניף %d"
+msgstr[1] "%d סניפים"
+
+msgid "About page"
+msgstr "עמוד אודות"
+
+msgid "The customer will send the text later."
+msgstr "הלקוח ישלח את הטקסט מאוחר יותר."
+
+msgid "About us"
+msgstr "אודות"
+
+msgid "The customer gave points, not a text: the page holds the points and needs writing."
+msgstr "הלקוח נתן נקודות ולא טקסט: העמוד מכיל את הנקודות וצריך ניסוח."
+
+msgid "Terms page"
+msgstr "עמוד התקנון"
+
+msgid "Written from the uploaded file; check the layout once."
+msgstr "נכתב מהקובץ שהועלה; לבדוק פעם אחת את העימוד."
+
+msgid "The customer did not confirm the template terms."
+msgstr "הלקוח לא אישר את תנאי הטמפלט."
+
+msgid "Template written; read it once before going live."
+msgstr "הטמפלט נכתב; לקרוא פעם אחת לפני העלייה לאוויר."
+
+msgid "Privacy page"
+msgstr "עמוד הפרטיות"
+
+msgid "Accessibility page"
+msgstr "עמוד הנגישות"
+
+msgid "About the business"
+msgstr "על העסק"
+
+msgid "These details appear on the site, in the emails customers receive and on the legal pages. Everything can be changed later."
+msgstr "הפרטים האלה מופיעים באתר, במיילים שהלקוחות מקבלים ובעמודים המשפטיים. הכל ניתן לשינוי אחר כך."
+
+msgid "The law requires every site to publish the accessibility arrangements of the business. Tick what you have; we write the statement."
+msgstr "החוק מחייב כל אתר לפרסם את הסדרי הנגישות של העסק. סמנו מה יש אצלכם; אנחנו כותבים את ההצהרה."
+
+msgid "Content pages"
+msgstr "דפי תוכן"
+
+msgid "A few lines about who you are. This becomes the About page and the short text on the home page."
+msgstr "כמה שורות על מי אתם. זה הופך לעמוד האודות ולטקסט הקצר בעמוד הבית."
+
+msgid "Terms of sale, privacy policy and accessibility statement. For each one: use our template, or upload your own."
+msgstr "תקנון, מדיניות פרטיות והצהרת נגישות. לכל אחד מהם: שימוש בטמפלט שלנו, או העלאה של הקובץ שלכם."
+
+msgid "After the order"
+msgstr "אחרי ההזמנה"
+
+msgid "What the customer sees right after paying."
+msgstr "מה הלקוח רואה מיד אחרי התשלום."
+
+msgid "Do you have a website today?"
+msgstr "יש לכם אתר היום?"
+
+msgid "No, this is a new site"
+msgstr "לא, זה אתר חדש"
+
+msgid "Yes, we are upgrading it"
+msgstr "כן, אנחנו משדרגים אותו"
+
+msgid "The address of your current site"
+msgstr "הכתובת של האתר הנוכחי שלכם"
+
+msgid "We will bring the content over from there. The questionnaire does not wait for it — fill it in and we do the rest."
+msgstr "אנחנו נעביר משם את התוכן. השאלון לא מחכה לזה — מלאו אותו ואנחנו נעשה את השאר."
+
+msgid "Brand name"
+msgstr "שם המותג"
+
+msgid "As it should appear on the site and in emails to customers."
+msgstr "כפי שיופיע באתר ובמיילים ללקוחות."
+
+msgid "Registered name, if different"
+msgstr "שם רשום, אם שונה"
+
+msgid "The company or business name as registered. Appears on the legal pages only."
+msgstr "שם החברה או העסק כפי שרשום. מופיע בעמודים המשפטיים בלבד."
+
+msgid "The site address you want (domain)"
+msgstr "כתובת האתר הרצויה (דומיין)"
+
+msgid "For example www.example.co.il. Leave empty if you have not decided yet."
+msgstr "לדוגמה www.example.co.il. אפשר להשאיר ריק אם עוד לא החלטתם."
+
+msgid "Phone number shown on the site"
+msgstr "מספר טלפון שיוצג באתר"
+
+msgid "Business WhatsApp number"
+msgstr "מספר וואטסאפ עסקי"
+
+msgid "Customers can open a chat with you from the site. Leave empty if there is none."
+msgstr "לקוחות יוכלו לפתוח איתכם שיחה מהאתר. השאירו ריק אם אין."
+
+msgid "Customer service email"
+msgstr "מייל שירות לקוחות"
+
+msgid "Shown on the site, and the sender of the emails customers receive."
+msgstr "מוצג באתר, וממנו נשלחים המיילים ללקוחות."
+
+msgid "Where should new-order notices go?"
+msgstr "לאיזה מייל לשלוח עדכון על הזמנה חדשה?"
+
+msgid "Every order sends a notice here. Empty = the customer service email."
+msgstr "כל הזמנה שולחת לכאן הודעה. ריק = מייל שירות הלקוחות."
+
+msgid "Do you have a store or showroom open to the public?"
+msgstr "יש לכם חנות או אולם תצוגה פתוחים לקהל?"
+
+msgid "Street and number"
+msgstr "רחוב ומספר"
+
+msgid "Pick the days, then the hours. Add a line for days with different hours."
+msgstr "בחרו ימים, ואז שעות. הוסיפו שורה לימים עם שעות שונות."
+
+msgid "WhatsApp group invite link"
+msgstr "קישור הזמנה לקבוצת וואטסאפ"
+
+msgid "If you run a customers' group, the thank-you page can invite buyers to join."
+msgstr "אם יש לכם קבוצת לקוחות, דף התודה יכול להזמין את הקונים להצטרף."
+
+msgid "Who are we talking to"
+msgstr "עם מי אנחנו מדברים"
+
+msgid "Your mobile"
+msgstr "הנייד שלך"
+
+msgid "How many branches?"
+msgstr "כמה סניפים?"
+
+msgid "One store"
+msgstr "חנות אחת"
+
+msgid "More than one"
+msgstr "יותר מאחת"
+
+msgid "The branches"
+msgstr "הסניפים"
+
+msgid "Each branch gets its own page, and customers can choose it for collection at the checkout."
+msgstr "כל סניף מקבל עמוד משלו, ולקוחות יכולים לבחור בו לאיסוף בקופה."
+
+msgid "Add a branch"
+msgstr "הוספת סניף"
+
+msgid "Branch name"
+msgstr "שם הסניף"
+
+msgid "Accessibility arrangements at this branch"
+msgstr "הסדרי נגישות בסניף הזה"
+
+msgid "Accessibility arrangements in the store"
+msgstr "הסדרי נגישות בחנות"
+
+msgid "Tick everything you have. Nothing ticked is fine too; the statement says so honestly."
+msgstr "סמנו כל מה שיש. גם בלי סימון זה בסדר; ההצהרה תגיד את זה בכנות."
+
+msgid "Accessibility coordinator — full name"
+msgstr "רכז/ת נגישות — שם מלא"
+
+msgid "The person customers can turn to about accessibility. It can be the owner."
+msgstr "האדם שלקוחות יכולים לפנות אליו בנושא נגישות. יכול להיות בעל העסק."
+
+msgid "Empty = the store phone."
+msgstr "ריק = הטלפון של החנות."
+
+msgid "Empty = the customer service email."
+msgstr "ריק = מייל שירות הלקוחות."
+
+msgid "The About text"
+msgstr "טקסט האודות"
+
+msgid "I have a text, I will paste it"
+msgstr "יש לי טקסט, אדביק אותו"
+
+msgid "Write it for me from a few points"
+msgstr "כתבו לי מכמה נקודות"
+
+msgid "Later"
+msgstr "מאוחר יותר"
+
+msgid "A few points about the business"
+msgstr "כמה נקודות על העסק"
+
+msgid "Since when, what you sell, who it is for, what makes you different, a word about the team. One point per line."
+msgstr "מאיזו שנה, מה מוכרים, למי, מה מייחד אתכם, מילה על הצוות. נקודה בכל שורה."
+
+msgid "A picture for the About page"
+msgstr "תמונה לעמוד האודות"
+
+msgid "The store, the team, the workshop. Optional."
+msgstr "החנות, הצוות, הסדנה. לא חובה."
+
+msgid "Use the template"
+msgstr "שימוש בטמפלט"
+
+msgid "Upload my own"
+msgstr "העלאה של שלי"
+
+msgid "What kind of store?"
+msgstr "איזה סוג חנות?"
+
+msgid "General — clothing, furniture, gifts, anything shipped"
+msgstr "כללי — ביגוד, ריהוט, מתנות, כל מה שנשלח"
+
+msgid "Food — perishables, cold chain, weight"
+msgstr "מזון — מוצרים מתכלים, שרשרת קירור, משקל"
+
+msgid "Do you sell made-to-order products?"
+msgstr "אתם מוכרים מוצרים בהזמנה אישית?"
+
+msgid "Custom furniture, engraving, sizes made for the customer. The terms then say there is no cancellation once production began."
+msgstr "ריהוט בהתאמה, חריטה, מידות שנעשות ללקוח. התקנון יאמר אז שאין ביטול משהחל הייצור."
+
+msgid "Do you deliver large items?"
+msgstr "אתם מספקים פריטים גדולים?"
+
+msgid "Furniture, appliances: the terms then cover access, stairs, a crane and assembly."
+msgstr "ריהוט, מכשירי חשמל: התקנון יכסה אז גישה, מדרגות, מנוף והרכבה."
+
+msgid "Your terms (Word or PDF)"
+msgstr "התקנון שלכם (Word או PDF)"
+
+msgid "Your privacy policy (Word or PDF)"
+msgstr "מדיניות הפרטיות שלכם (Word או PDF)"
+
+msgid "Your accessibility statement (Word or PDF)"
+msgstr "הצהרת הנגישות שלכם (Word או PDF)"
+
+msgid "Two columns — greeting and summary on one side"
+msgstr "שתי עמודות — הברכה והסיכום בצד אחד"
+
+msgid "Show phone, email and WhatsApp under the greeting?"
+msgstr "להציג טלפון, מייל ווואטסאפ מתחת לברכה?"
+
+msgid "Show the order summary with pictures?"
+msgstr "להציג את סיכום ההזמנה עם תמונות?"
+
+msgid "Invite the buyer to your WhatsApp group?"
+msgstr "להזמין את הקונה לקבוצת הוואטסאפ שלכם?"
+
+msgid "\"Follow us\" buttons?"
+msgstr "כפתורי \"עקבו אחרינו\"?"
+
+msgid "A one-question satisfaction survey?"
+msgstr "סקר שביעות רצון של שאלה אחת?"
+
+msgid "Stars from 1 to 5 and a free line. The answers show on your dashboard."
+msgstr "כוכבים מ-1 עד 5 ושורה חופשית. התשובות מופיעות בלוח הבקרה שלכם."
+
+msgid "The question"
+msgstr "השאלה"
+
+msgid "Refer a friend?"
+msgstr "חבר מביא חבר?"
+
+msgid "The buyer gets a coupon to share; the friend gets a discount and the buyer a reward."
+msgstr "הקונה מקבל קופון לשיתוף; החבר מקבל הנחה והקונה תגמול."
+
+msgid "Friend's discount (%)"
+msgstr "הנחה לחבר (%)"
+
+msgid "Buyer's reward (%)"
+msgstr "תגמול לקונה (%)"
+
+msgid "Onboarding questionnaire"
+msgstr "שאלון התנעה"
+
+msgid "Onboarding"
+msgstr "שאלון התנעה"
+
+msgid "No link yet"
+msgstr "עדיין אין קישור"
+
+msgid "Waiting for the customer"
+msgstr "ממתין ללקוח"
+
+msgid "Being applied"
+msgstr "בהחלה"
+
+msgid "Done and applied"
+msgstr "הושלם והוחל"
+
+msgid "The link is ready."
+msgstr "הקישור מוכן."
+
+msgid "The invitation was sent."
+msgstr "ההזמנה נשלחה."
+
+msgid "No customer email on the invitation, so nothing was sent. Copy the link instead."
+msgstr "אין מייל לקוח בהזמנה, אז לא נשלח דבר. העתיקו את הקישור במקום."
+
+msgid "The link is cancelled."
+msgstr "הקישור בוטל."
+
+msgid "The answers were applied again."
+msgstr "התשובות הוחלו מחדש."
+
+msgid "The AI key was deleted from this site."
+msgstr "מפתח ה-AI נמחק מהאתר הזה."
+
+msgid "The customer fills the questionnaire on this site, at a personal link. When they finish, the answers are written into the settings and the pages, and a report lands here and in your mail."
+msgstr "הלקוח ממלא את השאלון באתר הזה, בקישור אישי. כשהוא מסיים, התשובות נכתבות להגדרות ולעמודים, ודוח מגיע לכאן ולמייל שלכם."
+
+msgid "Answered"
+msgstr "נענו"
+
+msgid "Last activity"
+msgstr "פעילות אחרונה"
+
+msgid "Not opened yet"
+msgstr "עדיין לא נפתח"
+
+msgid "Link valid until"
+msgstr "הקישור בתוקף עד"
+
+msgid "Open"
+msgstr "פתיחה"
+
+msgid "Send the link by email"
+msgstr "שליחת הקישור במייל"
+
+msgid "Apply the answers again"
+msgstr "להחיל את התשובות מחדש"
+
+msgid "Cancel the link"
+msgstr "ביטול הקישור"
+
+msgid "Create the link"
+msgstr "יצירת הקישור"
+
+msgid "Issue a new link"
+msgstr "הנפקת קישור חדש"
+
+msgid "Usually Monday does this when the site is cloned. Do it here when it did not, or to replace the link. The answers already given stay."
+msgstr "בדרך כלל Monday עושה את זה כשהאתר משוכפל. עשו את זה כאן כשזה לא קרה, או כדי להחליף את הקישור. התשובות שכבר ניתנו נשארות."
+
+msgid "Customer name"
+msgstr "שם הלקוח"
+
+msgid "Send the link by email now"
+msgstr "לשלוח את הקישור במייל עכשיו"
+
+msgid "Apply report"
+msgstr "דוח ההחלה"
+
+msgid "Applied on %s. Rows marked \"check\" need a human eye; \"left as is\" means someone changed that setting by hand after an earlier apply, so it was not touched."
+msgstr "הוחל ב-%s. שורות המסומנות \"לבדיקה\" צריכות עין אנושית; \"נשאר כפי שהוא\" אומר שמישהו שינה את ההגדרה ידנית אחרי החלה קודמת, ולכן לא נגענו בה."
+
+msgid "The answers so far"
+msgstr "התשובות עד כה"
+
+msgid "Keys"
+msgstr "מפתחות"
+
+msgid "Filled once on the base site and cloned with it. The AI key is deleted from a customer site when the apply finishes; delete it here too when the site is handed over."
+msgstr "ממולאים פעם אחת באתר ה-base ומשוכפלים איתו. מפתח ה-AI נמחק מאתר הלקוח כשההחלה מסתיימת; מחקו אותו גם כאן כשהאתר נמסר."
+
+msgid "Monday API token"
+msgstr "טוקן API של Monday"
+
+msgid "Monday board id"
+msgstr "מזהה לוח ב-Monday"
+
+msgid "Claude API key"
+msgstr "מפתח API של Claude"
+
+msgid "Delete the key"
+msgstr "מחיקת המפתח"
+
+msgid "Save keys"
+msgstr "שמירת מפתחות"
+
+msgid "The provisioning secret is set in wp-config.php."
+msgstr "סוד ההקמה מוגדר ב-wp-config.php."
+
+msgid "OC_PROVISION_KEY is not defined in wp-config.php: the invite route is closed until it is."
+msgstr "OC_PROVISION_KEY לא מוגדר ב-wp-config.php: נקודת ההזמנה סגורה עד שיוגדר."
+
+msgid "Cancel the link? The customer will not be able to open it. The answers stay."
+msgstr "לבטל את הקישור? הלקוח לא יוכל לפתוח אותו. התשובות נשארות."
+
+msgid "Applied"
+msgstr "הוחל"
+
+msgid "Check"
+msgstr "לבדיקה"
+
+msgid "Left as is"
+msgstr "נשאר כפי שהוא"
+
+msgid "Skipped"
+msgstr "דולג"
+
+msgid "Error"
+msgstr "שגיאה"
+
+msgid "Field"
+msgstr "שדה"
+
+msgid "Target"
+msgstr "יעד"
+
+msgid "Result"
+msgstr "תוצאה"
+
+msgid "Confirmed"
+msgstr "אושר"
+
+msgid "Not confirmed"
+msgstr "לא אושר"
+
+msgid "%s ago"
+msgstr "לפני %s"
+
+msgid "Answered %1$d of %2$d"
+msgstr "נענו %1$d מתוך %2$d"
+
+msgid "%1$d rows to check, %2$d errors"
+msgstr "%1$d שורות לבדיקה, %2$d שגיאות"
+
+msgid "We are starting on your new store. The first step is a short questionnaire about your business, your pages and how you would like things to look."
+msgstr "אנחנו יוצאים לדרך עם החנות החדשה שלכם. הצעד הראשון הוא שאלון קצר על העסק, על העמודים ועל איך תרצו שהדברים ייראו."
+
+msgid "Everything is saved as you go, so you can stop and come back whenever you like, from your phone or your computer."
+msgstr "הכל נשמר תוך כדי, כך שאפשר לעצור ולחזור מתי שתרצו, מהטלפון או מהמחשב."
+
+msgid "Open the questionnaire"
+msgstr "פתיחת השאלון"
+
+msgid "The link is personal; please do not forward it."
+msgstr "הקישור אישי; נא לא להעביר אותו הלאה."
+
+msgid "Let's set up your store"
+msgstr "בואו נקים את החנות שלכם"
+
+msgid "You have answered %1$d of %2$d questions — a few minutes more and your site can be built."
+msgstr "עניתם על %1$d מתוך %2$d שאלות — עוד כמה דקות והאתר שלכם יכול להיבנות."
+
+msgid "The questionnaire is waiting for you. It takes about fifteen minutes, and everything is saved as you go."
+msgstr "השאלון מחכה לכם. הוא לוקח כרבע שעה, והכל נשמר תוך כדי."
+
+msgid "Continue the questionnaire"
+msgstr "המשך השאלון"
+
+msgid "Stuck on a question? Reply to this email and we will help."
+msgstr "נתקעתם על שאלה? השיבו למייל הזה ונעזור."
+
+msgid "Your store is waiting for a few answers"
+msgstr "החנות שלכם מחכה לכמה תשובות"
+
+msgid "A reminder: the questionnaire for your new store"
+msgstr "תזכורת: השאלון לחנות החדשה שלכם"
+
+msgid "%1$s has not progressed with the questionnaire on %2$s for four days."
+msgstr "%1$s לא התקדם/ה בשאלון של %2$s כבר ארבעה ימים."
+
+msgid "Answered: %1$d of %2$d."
+msgstr "נענו: %1$d מתוך %2$d."
+
+msgid "Open the onboarding screen"
+msgstr "פתיחת מסך ההתנעה"
+
+msgid "No progress: %s"
+msgstr "אין התקדמות: %s"
+
+msgid "We got it — your site is being built"
+msgstr "קיבלנו — האתר שלכם בבנייה"
+
+msgid "Thank you! Everything you filled in is already on your site. Our team goes over it and comes back to you with the next step: the products."
+msgstr "תודה! כל מה שמילאתם כבר באתר שלכם. הצוות שלנו עובר על הכל וחוזר אליכם עם השלב הבא: המוצרים."
+
+msgid "You can reopen the questionnaire link any time to change an answer."
+msgstr "אפשר לפתוח שוב את קישור השאלון בכל עת כדי לשנות תשובה."
+
+msgid "%1$s finished the questionnaire on %2$s. The answers are applied."
+msgstr "%1$s סיים/ה את השאלון של %2$s. התשובות הוחלו."
+
+msgid "Applied %1$d · to check %2$d · left as is %3$d · skipped %4$d · errors %5$d"
+msgstr "הוחלו %1$d · לבדיקה %2$d · נשארו כפי שהם %3$d · דולגו %4$d · שגיאות %5$d"
+
+msgid "The full report"
+msgstr "הדוח המלא"
+
+msgid "Questionnaire done: %s"
+msgstr "השאלון הושלם: %s"
+
+msgid "Hi %s,"
+msgstr "שלום %s,"
+
+msgid "Hi,"
+msgstr "שלום,"
+
+msgid "A few screens about your business, your pages and your preferences. Everything is saved as you go — close the page and come back whenever you like, from any device."
+msgstr "כמה מסכים על העסק, על העמודים ועל ההעדפות שלכם. הכל נשמר תוך כדי — סגרו את הדף וחזרו מתי שתרצו, מכל מכשיר."
+
+msgid "Continue where I stopped"
+msgstr "להמשיך מאיפה שעצרתי"
+
+msgid "Could not save. Check the connection and try again."
+msgstr "לא הצלחנו לשמור. בדקו את החיבור ונסו שוב."
+
+msgid "Step %1$s of %2$s"
+msgstr "שלב %1$s מתוך %2$s"
+
+msgid "Required"
+msgstr "חובה"
+
+msgid "A few required fields are still empty."
+msgstr "כמה שדות חובה עדיין ריקים."
+
+msgid "Optional"
+msgstr "לא חובה"
+
+msgid "Choose a file"
+msgstr "בחירת קובץ"
+
+msgid "Uploading…"
+msgstr "מעלה…"
+
+msgid "The file could not be uploaded. Allowed: images up to 8MB, or Word / PDF."
+msgstr "לא הצלחנו להעלות את הקובץ. מותר: תמונות עד 8MB, או Word / PDF."
+
+msgid "Add a line"
+msgstr "הוספת שורה"
+
+msgid "Almost done"
+msgstr "כמעט סיימנו"
+
+msgid "Here is everything you told us. Anything missing is marked; tap it to go back."
+msgstr "הנה כל מה שסיפרתם לנו. מה שחסר מסומן; לחצו עליו כדי לחזור."
+
+msgid "I'm done, build my site"
+msgstr "סיימתי, בנו לי את האתר"
+
+msgid "Setting things up…"
+msgstr "מגדירים…"
+
+msgid "Your details are in. Our team goes over everything and comes back to you with the next step: the products."
+msgstr "הפרטים שלכם נקלטו. הצוות שלנו עובר על הכל וחוזר אליכם עם השלב הבא: המוצרים."
+
+msgid "You can reopen this link any time to change an answer."
+msgstr "אפשר לפתוח שוב את הקישור הזה בכל עת כדי לשנות תשובה."
+
+msgid "Something went wrong. Nothing was lost — try again in a moment."
+msgstr "משהו השתבש. שום דבר לא אבד — נסו שוב בעוד רגע."
+
+msgid "Not answered"
+msgstr "לא נענה"
+
+msgid "%d entries"
+msgstr "%d רשומות"
+
+msgid "Read the full text"
+msgstr "לקריאת הטקסט המלא"
+
+msgid "Setting up %s"
+msgstr "הקמת %s"
+
+msgid "This link is no longer active"
+msgstr "הקישור הזה כבר לא פעיל"
+
+msgid "It may have expired or been replaced. Write to us and we will send a fresh one."
+msgstr "ייתכן שפג תוקפו או שהוחלף. כתבו לנו ונשלח חדש."
+
+msgid "Show the SKU"
+msgstr "הצגת מק\"ט"
+
+msgid "The catalogue number under the price. A product can also hide its own."
+msgstr "מספר הקטלוג מתחת למחיר. מוצר יכול גם להסתיר את שלו."
+
+msgid "Behaviour"
+msgstr "התנהגות"
+
+msgid "Tall"
+msgstr "גבוה"
+
+msgid "Mega panel — link colour"
+msgstr "מגה־פאנל — צבע הקישורים"
+
+msgid "Mega panel — link colour on hover"
+msgstr "מגה־פאנל — צבע הקישורים בריחוף"
+
+msgid "The links inside the open panel, not the menu bar above it."
+msgstr "הקישורים בתוך הפאנל הפתוח, לא שורת התפריט שמעליו."
+
+msgid "Footer preset"
+msgstr "פריסט פוטר"
+
+msgid "Columns — brand, link columns, newsletter"
+msgstr "עמודות — מותג, עמודות קישורים, ניוזלטר"
+
+msgid "Minimal — menu and credit only"
+msgstr "מינימלי — תפריט וקרדיט בלבד"
+
+msgid "Brand column"
+msgstr "עמודת המותג"
+
+msgid "Regular site logo"
+msgstr "הלוגו הרגיל של האתר"
+
+msgid "Transparent-header logo (usually the light one)"
+msgstr "הלוגו של ההדר השקוף (בדרך כלל הבהיר)"
+
+msgid "A custom logo (upload below)"
+msgstr "לוגו מותאם (העלאה למטה)"
+
+msgid "No logo"
+msgstr "ללא לוגו"
+
+msgid "Custom footer logo"
+msgstr "לוגו מותאם לפוטר"
+
+msgid "Tagline under the logo"
+msgstr "שורת טאגליין מתחת ללוגו"
+
+msgid "Column %d heading"
+msgstr "כותרת עמודה %d"
+
+msgid "Newsletter column"
+msgstr "עמודת הניוזלטר"
+
+msgid "Show the newsletter sign-up"
+msgstr "הצגת ההרשמה לניוזלטר"
+
+msgid "Colours & bottom bar"
+msgstr "צבעים ושורה תחתונה"
+
+msgid "Light text (quick preset for a dark background)"
+msgstr "טקסט בהיר (פריסט מהיר לרקע כהה)"
+
+msgid "Text & icons colour"
+msgstr "צבע טקסט ואייקונים"
+
+msgid "Overrides the preset above."
+msgstr "גובר על הפריסט שלמעלה."
+
+msgid "Heading colour (empty = same as text)"
+msgstr "צבע כותרות (ריק = כמו הטקסט)"
+
+msgid "Builder credit link (Original Concepts)"
+msgstr "קישור קרדיט הבונה (Original Concepts)"
+
+msgid "Show the country / currency in the bottom bar"
+msgstr "הצגת מדינה / מטבע בשורה התחתונה"
+
+msgid "On one line"
+msgstr "בשורה אחת"
+
+msgid "Link columns on phones"
+msgstr "עמודות הקישורים בטלפון"
+
+msgid "Accordion — tap a heading to open"
+msgstr "אקורדיון — לחיצה על כותרת פותחת"
+
+msgid "Open — stacked, all visible"
+msgstr "פתוח — זו מתחת לזו, הכל גלוי"
+
+msgid "Two per row"
+msgstr "שתיים בשורה"
+
+msgid "Text lines"
+msgstr "שורות טקסט"
+
+msgid "Title — maximum lines"
+msgstr "כותרת — מקסימום שורות"
+
+msgid "Short description — maximum lines"
+msgstr "תיאור קצר — מקסימום שורות"
+
+msgid "A ready-made footer preset — pick it, then fill the blanks. Link columns are menus (Appearance → Menus → assign to \"Footer column 1–4\"); each column's heading is set below. The bottom bar uses the \"Footer menu\" for its legal links."
+msgstr "פוטר מוכן — בוחרים אותו וממלאים את החסר. עמודות הקישורים הן תפריטים (עיצוב ← תפריטים ← שיבוץ ל\"עמודת פוטר 1–4\"); הכותרת של כל עמודה נקבעת למטה. השורה התחתונה משתמשת ב\"תפריט הפוטר\" לקישורים המשפטיים."

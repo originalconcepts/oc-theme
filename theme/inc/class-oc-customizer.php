@@ -2684,6 +2684,8 @@ final class Customizer {
 			)
 		);
 
+		$this->toggle( $c, 'oc_product_sku', 'oc_product', __( 'Show the SKU', 'oc-theme' ), true, null, __( 'The catalogue number under the price. A product can also hide its own.', 'oc-theme' ) );
+
 		$this->heading( $c, 'oc_h_prod_price', 'oc_product', __( 'Price', 'oc-theme' ) );
 
 		$this->choice(

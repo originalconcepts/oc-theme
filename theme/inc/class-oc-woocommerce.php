@@ -613,7 +613,7 @@ final class WooCommerce {
 			return (string) $price;
 		}
 
-		if ( ! wc_product_sku_enabled() || 'yes' === $product->get_meta( '_oc_sku_hide' ) ) {
+		if ( ! wc_product_sku_enabled() || ! get_theme_mod( 'oc_product_sku', true ) || 'yes' === $product->get_meta( '_oc_sku_hide' ) ) {
 			return (string) $price;
 		}
 
