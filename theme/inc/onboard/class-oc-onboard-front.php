@@ -141,8 +141,8 @@ final class Front {
 	/**
 	 * The HTML around the app.
 	 *
-	 * @param string                    $body   The inner HTML.
-	 * @param array<string,mixed>|null  $config Config for the script, or null for a static page.
+	 * @param string                   $body   The inner HTML.
+	 * @param array<string,mixed>|null $config Config for the script, or null for a static page.
 	 */
 	private function shell( string $body, ?array $config ): void {
 		$primary = sanitize_hex_color( (string) get_theme_mod( 'oc_color_primary', '' ) );
@@ -160,8 +160,8 @@ final class Front {
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<meta name="robots" content="noindex, nofollow">
 	<title><?php echo esc_html( sprintf( /* translators: %s: site name */ __( 'Setting up %s', 'oc-theme' ), (string) get_bloginfo( 'name' ) ) ); ?></title>
-	<link rel="stylesheet" href="<?php echo esc_url( $fonts ); ?>">
-	<link rel="stylesheet" href="<?php echo esc_url( OC_THEME_URI . oc_asset_min( '/assets/css/onboard.css' ) . '?v=' . $ver ); ?>">
+	<link rel="stylesheet" href="<?php echo esc_url( $fonts ); ?>"><?php // phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedStylesheet -- a page of its own, outside wp_head. ?>
+	<link rel="stylesheet" href="<?php echo esc_url( OC_THEME_URI . oc_asset_min( '/assets/css/onboard.css' ) . '?v=' . $ver ); ?>"><?php // phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedStylesheet -- same. ?>
 	<style>:root{--onb-primary:<?php echo esc_html( $primary ? $primary : '#1d1d1f' ); ?>;--onb-cta:<?php echo esc_html( $cta ? $cta : ( $primary ? $primary : '#1d1d1f' ) ); ?>}</style>
 </head>
 <body class="oc-onb-body">
@@ -173,11 +173,11 @@ final class Front {
 		<?php endif; ?>
 		<span class="oc-onb-top__save" id="oc-onb-save" aria-live="polite"></span>
 	</header>
-	<?php echo $body; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts. ?>
-	<?php if ( null !== $config ) : ?>
+		<?php echo $body; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts. ?>
+		<?php if ( null !== $config ) : ?>
 		<script>window.ocOnboard = <?php echo wp_json_encode( $config, JSON_UNESCAPED_UNICODE ); ?>;</script>
-		<script src="<?php echo esc_url( OC_THEME_URI . oc_asset_min( '/assets/js/onboard.js' ) . '?v=' . $ver ); ?>" defer></script>
-	<?php endif; ?>
+		<script src="<?php echo esc_url( OC_THEME_URI . oc_asset_min( '/assets/js/onboard.js' ) . '?v=' . $ver ); ?>" defer></script><?php // phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedScript -- a page of its own, outside wp_footer. ?>
+		<?php endif; ?>
 </body>
 </html>
 		<?php

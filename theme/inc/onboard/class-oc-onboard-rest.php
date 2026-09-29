@@ -17,7 +17,7 @@ namespace OC\Theme\Onboard;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * oc/v1/onboard/*
+ * Routes under oc/v1/onboard.
  */
 final class Rest {
 
@@ -336,7 +336,7 @@ final class Rest {
 	 * @param \WP_REST_Request $req Request.
 	 */
 	public function submit( \WP_REST_Request $req ): \WP_REST_Response { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- WordPress's signature.
-		$values  = array();
+		$values = array();
 
 		foreach ( Schema::fields() as $id => $f ) {
 			$values[ $id ] = Draft::value( $id );

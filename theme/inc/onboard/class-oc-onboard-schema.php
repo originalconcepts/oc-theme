@@ -204,10 +204,10 @@ final class Schema {
 		);
 
 		$f['email_orders'] = array(
-			'type'    => 'email',
-			'label'   => __( 'Where should new-order notices go?', 'oc-theme' ),
-			'help'    => __( 'Every order sends a notice here. Empty = the customer service email.', 'oc-theme' ),
-			'target'  => array( 'call', 'email_orders' ),
+			'type'   => 'email',
+			'label'  => __( 'Where should new-order notices go?', 'oc-theme' ),
+			'help'   => __( 'Every order sends a notice here. Empty = the customer service email.', 'oc-theme' ),
+			'target' => array( 'call', 'email_orders' ),
 		);
 
 		$f['has_store'] = array(

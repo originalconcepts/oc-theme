@@ -412,7 +412,7 @@ final class Admin {
 		$this->guard( 'oc_onboard_settings' );
 
 		// phpcs:disable WordPress.Security.NonceVerification.Missing -- verified in guard().
-		$s = array(
+		$s    = array(
 			'monday_token' => sanitize_text_field( wp_unslash( $_POST['monday_token'] ?? '' ) ),
 			'monday_board' => sanitize_text_field( wp_unslash( $_POST['monday_board'] ?? '' ) ),
 			'claude_key'   => sanitize_text_field( wp_unslash( $_POST['claude_key'] ?? '' ) ),

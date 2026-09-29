@@ -737,9 +737,9 @@ final class Apply {
 	 * A page whose body is a document the customer uploaded: Word is read
 	 * into paragraphs, a PDF is embedded with a download link.
 	 *
-	 * @param string     $slug  Page slug.
-	 * @param string     $title Title.
-	 * @param mixed      $file  The file value {id,url,name,type}.
+	 * @param string $slug  Page slug.
+	 * @param string $title Title.
+	 * @param mixed  $file  The file value {id,url,name,type}.
 	 * @return int Page id, 0 when there is no file.
 	 */
 	private function page_from_file( string $slug, string $title, $file ): int {

@@ -92,8 +92,8 @@ final class Draft {
 				continue;
 			}
 
-			$value       = Schema::sanitize( $id, $raw );
-			$all[ $id ]  = array(
+			$value         = Schema::sanitize( $id, $raw );
+			$all[ $id ]    = array(
 				'v' => $value,
 				't' => $now,
 			);
