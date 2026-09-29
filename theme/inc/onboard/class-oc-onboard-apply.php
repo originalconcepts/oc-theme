@@ -599,9 +599,7 @@ final class Apply {
 		if ( 'upload' === $this->v['terms_mode'] ) {
 			$id = $this->page_from_file( 'terms', __( 'Terms of sale', 'oc-theme' ), $this->v['terms_file'] );
 
-			if ( $id && ! (int) get_option( 'woocommerce_terms_page_id' ) ) {
-				update_option( 'woocommerce_terms_page_id', $id );
-			}
+			$this->terms_page_wired( $id );
 
 			$this->row( 'terms_file', __( 'Terms page', 'oc-theme' ), $id ? 'check' : 'error', __( 'Written from the uploaded file; check the layout once.', 'oc-theme' ) );
 			return;
@@ -643,9 +641,7 @@ final class Apply {
 		if ( 'upload' === $this->v['privacy_mode'] ) {
 			$id = $this->page_from_file( 'privacy-policy', __( 'Privacy policy', 'oc-theme' ), $this->v['privacy_file'] );
 
-			if ( $id ) {
-				update_option( 'wp_page_for_privacy_policy', $id );
-			}
+			$this->privacy_page_wired( $id );
 
 			$this->row( 'privacy_file', __( 'Privacy page', 'oc-theme' ), $id ? 'check' : 'error', __( 'Written from the uploaded file; check the layout once.', 'oc-theme' ) );
 			return;
@@ -679,9 +675,7 @@ final class Apply {
 		if ( 'upload' === $this->v['a11y_mode'] ) {
 			$id = $this->page_from_file( 'accessibility-statement', __( 'Accessibility statement', 'oc-theme' ), $this->v['a11y_file'] );
 
-			if ( $id ) {
-				update_option( Legal\Accessibility::OPTION, $id, false );
-			}
+			$this->a11y_page_wired( $id );
 
 			$this->row( 'a11y_file', __( 'Accessibility page', 'oc-theme' ), $id ? 'check' : 'error', __( 'Written from the uploaded file; check the layout once.', 'oc-theme' ) );
 			return;
