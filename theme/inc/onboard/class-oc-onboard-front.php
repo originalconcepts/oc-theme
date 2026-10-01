@@ -142,6 +142,7 @@ final class Front {
 				'consent_title'   => __( 'Before we write the page for you', 'oc-theme' ),
 				'consent_ok'      => __( 'I have read and understood', 'oc-theme' ),
 				'consent_open'    => __( 'Read and confirm', 'oc-theme' ),
+				'suggested'       => __( 'Our suggestion', 'oc-theme' ),
 				'consent_upload'  => __( 'I will upload my own instead', 'oc-theme' ),
 				'found_pages'     => __( 'We found these pages on your current site and filled the addresses in. Have a look that they are the right ones.', 'oc-theme' ),
 				'found_hint'      => __( 'We found this address on your site. Change it if it is the wrong page.', 'oc-theme' ),

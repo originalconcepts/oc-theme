@@ -30,9 +30,9 @@
 	C.schema.steps.forEach( function ( step, si ) {
 		var part = step.part || 1;
 
-		// The half that just ended gets a word of its own before the next one.
+		// The part that just ended gets a word of its own before the next one.
 		if ( screens.length && part !== screens[ screens.length - 1 ].part ) {
-			addGate( screens[ screens.length - 1 ].part, true );
+			addGate( screens[ screens.length - 1 ].part );
 		}
 
 		step.screens.forEach( function ( sc ) {
@@ -40,22 +40,24 @@
 		} );
 	} );
 
-	if ( screens.length ) {
-		addGate( screens[ screens.length - 1 ].part, false );
-	}
-
-	function addGate( part, more ) {
+	/**
+	 * The screen that hands one part over to the next. There is no such
+	 * screen after the last part: what follows the final question is the
+	 * review, and a button promising more would be a lie.
+	 *
+	 * @param {number} part The part that just ended.
+	 */
+	function addGate( part ) {
 		var p = parts[ part ] || parts[ String( part ) ];
-		var text = p ? ( more ? p.text : p.soon ) : '';
 
-		if ( ! p || ! text ) { return; }
+		if ( ! p || ! p.text ) { return; }
 
 		screens.push( {
 			part: part,
 			gate: true,
 			id: 'gate-' + part,
 			title: p.done || '',
-			intro: text,
+			intro: p.text,
 			fields: [],
 			next: p.next || I.next
 		} );
@@ -304,12 +306,17 @@
 	/* ------------------------------------------------------------ fields */
 
 	function fieldBox( id, f, inner ) {
-		var box = el( 'div', { 'class': 'oc-onb-f oc-onb-f--' + f.type, 'data-field': id } );
-		var lab = el( 'div', { 'class': 'oc-onb-f__label' }, [
-			el( 'span', { text: f.label } ),
-			f.required ? el( 'span', { 'class': 'oc-onb-f__req', text: ' *', 'aria-label': I.required } ) : null
-		] );
-		box.appendChild( lab );
+		// A field that only appears because of the answer above it is drawn
+		// as part of that answer, not as a question of its own.
+		var dep = f.when ? ' is-dep' : '';
+		var box = el( 'div', { 'class': 'oc-onb-f oc-onb-f--' + f.type + dep, 'data-field': id } );
+
+		if ( 'consent' !== f.type ) {
+			box.appendChild( el( 'div', { 'class': 'oc-onb-f__label' }, [
+				el( 'span', { text: f.label } ),
+				f.required ? el( 'span', { 'class': 'oc-onb-f__req', text: ' *', 'aria-label': I.required } ) : null
+			] ) );
+		}
 		if ( f.help ) { box.appendChild( el( 'p', { 'class': 'oc-onb-f__help', text: f.help } ) ); }
 		if ( foundIn[ id ] ) { box.appendChild( el( 'p', { 'class': 'oc-onb-f__found', text: I.found_hint } ) ); }
 		box.appendChild( inner );
@@ -349,7 +356,12 @@
 	function render_choice( id, f ) {
 		var cur  = String( val( id ) );
 		var keys = Object.keys( f.options ).filter( function ( k ) { return optionShown( f, k ); } );
-		var wrap = el( 'div', { 'class': 'oc-onb-choices', role: 'radiogroup' } );
+		var wide = keys.length === 2 && keys.every( function ( k ) { return String( f.options[ k ] ).length <= 24; } );
+		var wrap = el( 'div', { 'class': 'oc-onb-choices' + ( wide ? ' oc-onb-choices--two' : '' ), role: 'radiogroup' } );
+
+		// Has the customer actually answered this one, or is what they see
+		// only our suggestion? The two should not look the same.
+		var answered = Object.prototype.hasOwnProperty.call( values, id );
 
 		// An option that is not on offer cannot be the answer either: taking
 		// the page from a site they do not have, for instance.
@@ -358,11 +370,13 @@
 		}
 
 		keys.forEach( function ( k ) {
-			var lab = el( 'label', { 'class': 'oc-onb-choice' + ( cur === k ? ' is-on' : '' ) } );
+			var on  = cur === k;
+			var lab = el( 'label', { 'class': 'oc-onb-choice' + ( on ? ( answered ? ' is-on' : ' is-default' ) : '' ) } );
 			var inp = el( 'input', { type: 'radio', name: 'f_' + id, value: k } );
-			inp.checked = cur === k;
+			inp.checked = on;
 			inp.addEventListener( 'change', function () {
-				wrap.querySelectorAll( '.oc-onb-choice' ).forEach( function ( c ) { c.classList.remove( 'is-on' ); } );
+				wrap.querySelectorAll( '.oc-onb-choice' ).forEach( function ( c ) { c.classList.remove( 'is-on', 'is-default' ); } );
+				wrap.querySelectorAll( '.oc-onb-choice__tag' ).forEach( function ( t ) { t.remove(); } );
 				lab.classList.add( 'is-on' );
 				set( id, k );
 
@@ -374,6 +388,11 @@
 			} );
 			lab.appendChild( inp );
 			lab.appendChild( el( 'span', { 'class': 'oc-onb-choice__t', text: f.options[ k ] } ) );
+
+			if ( on && ! answered ) {
+				lab.appendChild( el( 'span', { 'class': 'oc-onb-choice__tag', text: I.suggested } ) );
+			}
+
 			wrap.appendChild( lab );
 		} );
 		return wrap;
@@ -666,6 +685,17 @@
 		root.querySelectorAll( '[data-field]' ).forEach( function ( box ) {
 			box.hidden = ! shown( box.getAttribute( 'data-field' ) );
 		} );
+
+		// A heading with nothing under it is noise.
+		root.querySelectorAll( '.oc-onb-grp' ).forEach( function ( grp ) {
+			var any = false;
+
+			grp.querySelectorAll( '[data-field]' ).forEach( function ( box ) {
+				if ( ! box.hidden ) { any = true; }
+			} );
+
+			grp.hidden = ! any;
+		} );
 	}
 
 	/* ------------------------------------------------------------ screens */
@@ -727,14 +757,28 @@
 		card.appendChild( el( 'h1', { text: sc.title } ) );
 		if ( sc.intro ) { card.appendChild( el( 'p', { 'class': 'oc-onb__intro', text: sc.intro } ) ); }
 
-		var lastGroup = '';
+		var lastGroup = null;
+		var holder    = card;
+
 		sc.fields.forEach( function ( id ) {
 			var f = F[ id ];
 			if ( ! f ) { return; }
-			if ( f.group && f.group !== lastGroup ) { card.appendChild( el( 'h2', { 'class': 'oc-onb__group', text: f.group } ) ); }
-			lastGroup = f.group || lastGroup;
+
+			var group = f.group || lastGroup || '';
+
+			if ( group !== lastGroup ) {
+				lastGroup = group;
+				holder    = el( 'section', { 'class': 'oc-onb-grp' + ( group ? '' : ' oc-onb-grp--bare' ) } );
+
+				if ( group ) {
+					holder.appendChild( el( 'h2', { 'class': 'oc-onb-grp__h', text: group } ) );
+				}
+
+				card.appendChild( holder );
+			}
+
 			var box = renderField( id );
-			if ( box ) { card.appendChild( box ); }
+			if ( box ) { holder.appendChild( box ); }
 		} );
 
 		var nav = el( 'div', { 'class': 'oc-onb-nav' } );
@@ -746,6 +790,7 @@
 		} } ) );
 		card.appendChild( nav );
 		root.appendChild( card );
+		refreshVisibility();
 		window.scrollTo( { top: 0, behavior: 'smooth' } );
 	}
 

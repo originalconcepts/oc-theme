@@ -45,7 +45,8 @@ final class Schema {
 	 * looks. Between them the customer gets a word of encouragement, which is
 	 * what these lines are for.
 	 *
-	 * 'soon' is what we say while the second half is not open yet.
+	 * A part with no 'text' hands over to nothing: the questionnaire then
+	 * goes straight from its last question to the review.
 	 *
 	 * @return array<int,array<string,string>>
 	 */
@@ -53,10 +54,9 @@ final class Schema {
 		return array(
 			1 => array(
 				'title' => __( 'Your details', 'oc-theme' ),
-				'done'  => __( 'The first part is done', 'oc-theme' ),
-				'text'  => __( 'Everything the site needs in order to speak in your name is in. The second part is the look of the site: the home page, the catalogue, the product page and the way an order is placed.', 'oc-theme' ),
-				'soon'  => __( 'Everything the site needs in order to speak in your name is in. The second part, the look of the site, opens as soon as your site is up, and you will get it in a link of its own. Now we will go over what you filled in and send it.', 'oc-theme' ),
-				'next'  => __( 'Come on, keep going', 'oc-theme' ),
+				'done'  => __( 'Part one is done', 'oc-theme' ),
+				'text'  => __( 'Everything the site needs in order to speak in your name is in. Part two, the last one, is the look of the site: the home page, the catalogue, the product page and the way an order is placed.', 'oc-theme' ),
+				'next'  => __( 'Continue to part 2, the last part of the questionnaire', 'oc-theme' ),
 			),
 			2 => array(
 				'title' => __( 'The look of the site', 'oc-theme' ),
@@ -150,6 +150,7 @@ final class Schema {
 
 		$f['existing_has'] = array(
 			'type'    => 'choice',
+			'group'   => __( 'The site you have today', 'oc-theme' ),
 			'label'   => __( 'Do you have a website today?', 'oc-theme' ),
 			'options' => array(
 				'no'  => __( 'No, this is a new site', 'oc-theme' ),
@@ -170,6 +171,7 @@ final class Schema {
 
 		$f['brand_name'] = array(
 			'type'     => 'text',
+			'group'   => __( 'The business', 'oc-theme' ),
 			'label'    => __( 'Brand name', 'oc-theme' ),
 			'help'     => __( 'As it should appear on the site and in emails to customers.', 'oc-theme' ),
 			'required' => true,
@@ -209,6 +211,7 @@ final class Schema {
 
 		$f['phone'] = array(
 			'type'     => 'phone',
+			'group'   => __( 'How customers reach you', 'oc-theme' ),
 			'label'    => __( 'Phone number shown on the site', 'oc-theme' ),
 			'required' => true,
 			'default'  => (string) $contact['phone'],
@@ -241,6 +244,7 @@ final class Schema {
 
 		$f['has_store'] = array(
 			'type'    => 'choice',
+			'group'   => __( 'Store and branches', 'oc-theme' ),
 			'label'   => __( 'Do you have a store or showroom open to the public?', 'oc-theme' ),
 			'options' => $yesno,
 			'default' => 'yes',
@@ -367,6 +371,7 @@ final class Schema {
 
 		$f['a11y_access'] = array(
 			'type'    => 'checks',
+			'group'   => __( 'The premises', 'oc-theme' ),
 			'label'   => __( 'Accessibility arrangements in the store', 'oc-theme' ),
 			'help'    => __( 'Tick everything you have. Nothing ticked is fine too; the statement says so honestly.', 'oc-theme' ),
 			'options' => Contact::access_items(),
@@ -387,6 +392,7 @@ final class Schema {
 
 		$f['a11y_name'] = array(
 			'type'     => 'text',
+			'group'   => __( 'The accessibility officer', 'oc-theme' ),
 			'label'    => __( 'Accessibility coordinator — full name', 'oc-theme' ),
 			'help'     => __( 'The person customers can turn to about accessibility. It can be the owner.', 'oc-theme' ),
 			'required' => true,
@@ -473,7 +479,8 @@ final class Schema {
 
 		$f['terms_mode'] = array(
 			'type'         => 'choice',
-			'label'        => __( 'Terms of sale', 'oc-theme' ),
+			'group'        => __( 'Terms of sale', 'oc-theme' ),
+			'label'        => __( 'Where should the terms come from?', 'oc-theme' ),
 			'options'      => $legal_mode,
 			'options_when' => array( 'link' => array( 'existing_has', array( 'yes' ) ) ),
 			'default'      => 'upload',
@@ -548,7 +555,8 @@ final class Schema {
 
 		$f['privacy_mode'] = array(
 			'type'         => 'choice',
-			'label'        => __( 'Privacy policy', 'oc-theme' ),
+			'group'        => __( 'Privacy policy', 'oc-theme' ),
+			'label'        => __( 'Where should the privacy policy come from?', 'oc-theme' ),
 			'options'      => $legal_mode,
 			'options_when' => array( 'link' => array( 'existing_has', array( 'yes' ) ) ),
 			'default'      => 'upload',
@@ -585,7 +593,8 @@ final class Schema {
 
 		$f['a11y_mode'] = array(
 			'type'         => 'choice',
-			'label'        => __( 'Accessibility statement', 'oc-theme' ),
+			'group'        => __( 'Accessibility statement', 'oc-theme' ),
+			'label'        => __( 'Where should the accessibility statement come from?', 'oc-theme' ),
 			'options'      => $legal_mode,
 			'options_when' => array( 'link' => array( 'existing_has', array( 'yes' ) ) ),
 			'default'      => 'upload',
@@ -624,6 +633,7 @@ final class Schema {
 
 		$f['ty_contact'] = array(
 			'type'    => 'choice',
+			'group'   => __( 'Getting in touch', 'oc-theme' ),
 			'label'   => __( 'Show your phone, email and WhatsApp on it?', 'oc-theme' ),
 			'help'    => __( 'Under the thank-you message, so a customer with a question does not have to look for you.', 'oc-theme' ),
 			'options' => $yesno,
@@ -651,6 +661,7 @@ final class Schema {
 
 		$f['ty_social'] = array(
 			'type'    => 'choice',
+			'group'   => __( 'What else the page offers', 'oc-theme' ),
 			'label'   => __( '"Follow us" buttons?', 'oc-theme' ),
 			'help'    => __( 'We show the links to your social profiles and invite the buyer to follow you.', 'oc-theme' ),
 			'options' => $yesno,

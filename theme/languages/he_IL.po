@@ -11190,3 +11190,48 @@ msgstr "לחיצה על \"%s\" מהווה אישור שקראתם והבנתם."
 
 msgid "Terms of sale, privacy policy and accessibility statement. For each one: upload your own file, take it from the site you have today, or use the wording we prepared."
 msgstr "תקנון, מדיניות פרטיות והצהרת נגישות. לכל אחד מהם: להעלות את הקובץ שלכם, לקחת אותו מהאתר שיש לכם היום, או להשתמש בנוסח שהכנו."
+
+msgid "The site you have today"
+msgstr "האתר שיש לכם היום"
+
+msgid "The business"
+msgstr "פרטי העסק"
+
+msgid "How customers reach you"
+msgstr "איך פונים אליכם"
+
+msgid "Store and branches"
+msgstr "חנות וסניפים"
+
+msgid "The premises"
+msgstr "מה יש בעסק"
+
+msgid "The accessibility officer"
+msgstr "רכז הנגישות"
+
+msgid "Getting in touch"
+msgstr "יצירת קשר"
+
+msgid "What else the page offers"
+msgstr "מה עוד יופיע בעמוד"
+
+msgid "Where should the terms come from?"
+msgstr "מאיפה ניקח את התקנון?"
+
+msgid "Where should the privacy policy come from?"
+msgstr "מאיפה ניקח את מדיניות הפרטיות?"
+
+msgid "Where should the accessibility statement come from?"
+msgstr "מאיפה ניקח את הצהרת הנגישות?"
+
+msgid "Our suggestion"
+msgstr "ההצעה שלנו"
+
+msgid "Part one is done"
+msgstr "סיימנו את החלק הראשון"
+
+msgid "Everything the site needs in order to speak in your name is in. Part two, the last one, is the look of the site: the home page, the catalogue, the product page and the way an order is placed."
+msgstr "כל מה שהאתר צריך כדי לדבר בשמכם נמצא אצלנו. החלק השני, והאחרון, הוא נראות האתר: דף הבית, הקטלוג, עמוד המוצר והדרך שבה מבצעים הזמנה."
+
+msgid "Continue to part 2, the last part of the questionnaire"
+msgstr "המשך לשלב 2 ואחרון של השאלון ←"

@@ -71,6 +71,19 @@ html { -webkit-text-size-adjust: 100%; }
 .oc-onb__eyebrow { margin: 14px 0 0; font-size: 13px; letter-spacing: .04em; text-transform: uppercase; color: var(--onb-ink-2); }
 .oc-onb__intro { margin: 0 0 22px; color: var(--onb-ink-2); }
 .oc-onb__group { font-size: 15px; margin: 30px 0 4px; padding-top: 18px; border-top: 1px solid var(--onb-line); color: var(--onb-ink-2); }
+
+/* blocks of questions */
+.oc-onb-grp {
+	margin: 22px 0;
+	padding: 18px;
+	border: 1px solid var(--onb-line);
+	border-radius: 14px;
+	background: #fbfbfd;
+}
+.oc-onb-grp--bare { margin: 0; padding: 0; border: 0; background: none; }
+.oc-onb-grp__h { margin: 0 0 4px; font-size: 16px; }
+.oc-onb-grp > .oc-onb-f:first-of-type { margin-top: 10px; }
+.oc-onb-grp > .oc-onb-f:last-child { margin-bottom: 0; }
 .oc-onb__small { font-size: 13px; color: var(--onb-ink-2); }
 
 /* progress */
@@ -86,6 +99,13 @@ html { -webkit-text-size-adjust: 100%; }
 .oc-onb-f__help { margin: -2px 0 8px; font-size: 14px; color: var(--onb-ink-2); }
 .oc-onb-f__err { display: none; margin: 6px 0 0; font-size: 13px; color: var(--onb-err); }
 .oc-onb-f__found { margin: -2px 0 8px; font-size: 13px; color: var(--onb-ok); }
+
+/* a field that hangs off the answer above it */
+.oc-onb-f.is-dep {
+	margin-inline-start: 10px;
+	padding-inline-start: 14px;
+	border-inline-start: 2px solid var(--onb-line);
+}
 .oc-onb-f.is-missing .oc-onb-f__err { display: block; }
 .oc-onb-f.is-missing .oc-onb-in, .oc-onb-f.is-missing .oc-onb-choice, .oc-onb-f.is-missing .oc-onb-check--big { border-color: var(--onb-err); }
 
@@ -104,6 +124,7 @@ html { -webkit-text-size-adjust: 100%; }
 .oc-onb-in--time { width: auto; min-width: 110px; }
 
 .oc-onb-choices { display: grid; gap: 8px; }
+.oc-onb-choices--two { grid-template-columns: 1fr 1fr; }
 .oc-onb-choice {
 	display: flex;
 	align-items: center;
@@ -116,6 +137,19 @@ html { -webkit-text-size-adjust: 100%; }
 }
 .oc-onb-choice input { width: 20px; height: 20px; margin: 0; accent-color: var(--onb-primary); flex: none; }
 .oc-onb-choice.is-on { border-color: var(--onb-primary); background: color-mix(in srgb, var(--onb-primary) 6%, #fff); }
+
+/* our suggestion, which nobody has confirmed yet */
+.oc-onb-choice.is-default { border-style: dashed; border-color: var(--onb-ink-2); }
+.oc-onb-choice.is-default input { accent-color: var(--onb-ink-2); }
+.oc-onb-choice__tag {
+	margin-inline-start: auto;
+	font-size: 12px;
+	white-space: nowrap;
+	color: var(--onb-ink-2);
+	background: var(--onb-bg);
+	border-radius: 99px;
+	padding: 2px 10px;
+}
 .oc-onb-choice:focus-within { outline: 2px solid var(--onb-primary); outline-offset: 1px; }
 
 .oc-onb-checks { display: grid; gap: 6px; }
@@ -222,6 +256,8 @@ html { -webkit-text-size-adjust: 100%; }
 .oc-onb--static .oc-onb__card { text-align: center; }
 
 @media (max-width: 480px) {
+	.oc-onb-choices--two { grid-template-columns: 1fr; }
+	.oc-onb-grp { padding: 14px; }
 	.oc-onb-nav { flex-direction: column-reverse; }
 	.oc-onb-nav .oc-onb-btn { width: 100%; }
 	.oc-onb-sum dl { grid-template-columns: 1fr; gap: 0 0; }
