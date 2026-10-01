@@ -527,7 +527,6 @@
 	 * @param {string} k    Which option.
 	 */
 	function previewFor2( kind, k ) {
-		if ( 'home' === kind ) { return previewHome( k ); }
 		if ( 'header' === kind ) {
 			var was = values.home_header;
 			values.home_header = k;
@@ -579,6 +578,209 @@
 		}
 
 		paint();
+
+		return out;
+	}
+
+	/**
+	 * The home page, as a list of its parts.
+	 *
+	 * Every row is one band of the page. A row can be hidden, moved, copied
+	 * or thrown away, and the drawing beside the list follows every change.
+	 * Anything deeper than a name — the pictures, the words — is asked on the
+	 * screens that come after the arranging, so this screen stays a list of
+	 * what the page is made of rather than a form.
+	 *
+	 * @param {string} id Field id.
+	 * @param {Object} f  Field.
+	 */
+	function render_layout( id, f ) {
+		var blocks = f.blocks || {};
+		var wrap   = el( 'div', { 'class': 'oc-onb-lay' } );
+		var list   = el( 'div', { 'class': 'oc-onb-lay__rows' } );
+
+		function rows() {
+			var v = val( id );
+			return Array.isArray( v ) ? v : [];
+		}
+
+		function save( next ) {
+			set( id, next );
+			draw();
+		}
+
+		function move( from, to ) {
+			var r = rows().slice();
+
+			if ( to < 0 || to >= r.length ) { return; }
+
+			r.splice( to, 0, r.splice( from, 1 )[0] );
+			save( r );
+		}
+
+		function draw() {
+			var r = rows();
+
+			list.innerHTML = '';
+
+			r.forEach( function ( row, i ) {
+				var b = blocks[ row.type ] || { label: row.type };
+				var line = el( 'div', { 'class': 'oc-onb-row' + ( row.on ? '' : ' is-off' ), draggable: 'true', 'data-i': i } );
+
+				line.addEventListener( 'dragstart', function ( e ) {
+					e.dataTransfer.setData( 'text/plain', String( i ) );
+					line.classList.add( 'is-dragging' );
+				} );
+				line.addEventListener( 'dragend', function () { line.classList.remove( 'is-dragging' ); } );
+				line.addEventListener( 'dragover', function ( e ) { e.preventDefault(); line.classList.add( 'is-over' ); } );
+				line.addEventListener( 'dragleave', function () { line.classList.remove( 'is-over' ); } );
+				line.addEventListener( 'drop', function ( e ) {
+					e.preventDefault();
+					line.classList.remove( 'is-over' );
+					move( parseInt( e.dataTransfer.getData( 'text/plain' ), 10 ), i );
+				} );
+
+				var head = el( 'div', { 'class': 'oc-onb-row__head' } );
+
+				head.appendChild( el( 'span', { 'class': 'oc-onb-row__grip', 'aria-hidden': 'true', text: '⠿' } ) );
+				head.appendChild( el( 'span', { 'class': 'oc-onb-row__name', text: b.label } ) );
+
+				var tools = el( 'div', { 'class': 'oc-onb-row__tools' } );
+
+				tools.appendChild( tool( '↑', I.row_up, function () { move( i, i - 1 ); }, i === 0 ) );
+				tools.appendChild( tool( '↓', I.row_down, function () { move( i, i + 1 ); }, i === r.length - 1 ) );
+				tools.appendChild( tool( row.on ? '◉' : '◌', row.on ? I.row_hide : I.row_show, function () {
+					var n = rows().slice();
+					n[ i ] = merge( n[ i ], { on: n[ i ].on ? 0 : 1 } );
+					save( n );
+				} ) );
+
+				if ( ! b.once ) {
+					tools.appendChild( tool( '⧉', I.row_copy, function () {
+						var n = rows().slice();
+						n.splice( i + 1, 0, merge( n[ i ], {} ) );
+						save( n );
+					} ) );
+				}
+
+				tools.appendChild( tool( '✕', I.row_drop, function () {
+					var n = rows().slice();
+					n.splice( i, 1 );
+					save( n );
+				} ) );
+
+				head.appendChild( tools );
+				line.appendChild( head );
+
+				// What a row lets you say from here: its own heading, the
+				// words that run across, or which shape a content area takes.
+				if ( b.title || b.text ) {
+					var key = b.title ? 'title' : 'text';
+					var inp = el( 'input', {
+						type: 'text',
+						'class': 'oc-onb-in oc-onb-row__in',
+						value: row[ key ] || '',
+						placeholder: b.title ? I.row_title : I.row_text
+					} );
+
+					inp.addEventListener( 'input', function () {
+						clearTimeout( inp._t );
+						inp._t = setTimeout( function () {
+							var n = rows().slice();
+							var patch = {};
+							patch[ key ] = inp.value;
+							n[ i ] = merge( n[ i ], patch );
+							set( id, n );
+						}, 150 );
+					} );
+
+					line.appendChild( inp );
+				}
+
+				if ( b.variants ) {
+					var sel = el( 'select', { 'class': 'oc-onb-in oc-onb-row__sel' } );
+
+					Object.keys( b.variants ).forEach( function ( k ) {
+						var o = el( 'option', { value: k, text: b.variants[ k ] } );
+						if ( k === row.variant ) { o.selected = 'selected'; }
+						sel.appendChild( o );
+					} );
+
+					sel.addEventListener( 'change', function () {
+						var n = rows().slice();
+						n[ i ] = merge( n[ i ], { variant: sel.value } );
+						save( n );
+					} );
+
+					line.appendChild( sel );
+				}
+
+				if ( b.note ) {
+					line.appendChild( el( 'p', { 'class': 'oc-onb-row__note', text: b.note } ) );
+				}
+
+				list.appendChild( line );
+			} );
+
+			paintPreview();
+		}
+
+		function tool( glyph, label, onclick, off ) {
+			var b = el( 'button', { type: 'button', 'class': 'oc-onb-row__b', title: label, 'aria-label': label, text: glyph } );
+
+			if ( off ) { b.disabled = 'disabled'; }
+
+			b.addEventListener( 'click', onclick );
+
+			return b;
+		}
+
+		// Adding a part: a quiet row of everything on offer.
+		var add = el( 'div', { 'class': 'oc-onb-lay__add' } );
+
+		add.appendChild( el( 'span', { 'class': 'oc-onb-lay__addt', text: I.row_add } ) );
+
+		Object.keys( blocks ).forEach( function ( type ) {
+			var b = blocks[ type ];
+			var btn = el( 'button', { type: 'button', 'class': 'oc-onb-chip', text: b.label } );
+
+			btn.addEventListener( 'click', function () {
+				var n = rows().slice();
+
+				if ( b.once && n.some( function ( r ) { return r.type === type; } ) ) { return; }
+
+				var row = { type: type, on: 1 };
+
+				if ( b.title ) { row.title = ''; }
+				if ( b.text ) { row.text = ''; }
+				if ( b.variants ) { row.variant = Object.keys( b.variants )[0]; }
+
+				n.push( row );
+				save( n );
+			} );
+
+			add.appendChild( btn );
+		} );
+
+		wrap.appendChild( list );
+		wrap.appendChild( add );
+
+		draw();
+
+		return wrap;
+	}
+
+	/**
+	 * A row with a change on top of it.
+	 *
+	 * @param {Object} row   The row.
+	 * @param {Object} patch What changed.
+	 */
+	function merge( row, patch ) {
+		var out = {};
+
+		Object.keys( row || {} ).forEach( function ( k ) { out[ k ] = row[ k ]; } );
+		Object.keys( patch || {} ).forEach( function ( k ) { out[ k ] = patch[ k ]; } );
 
 		return out;
 	}
@@ -857,6 +1059,7 @@
 			case 'pick':     inner = render_pick( id, f ); break;
 			case 'gallery':  inner = render_gallery( id, f ); break;
 			case 'stepper':  inner = render_stepper( id, f ); break;
+			case 'layout':   inner = render_layout( id, f ); break;
 			case 'checks':   inner = render_checks( id, f ); break;
 			case 'consent':  inner = render_consent( id, f ); break;
 			case 'file':     inner = render_file( id, f ); break;
@@ -978,6 +1181,7 @@
 	function wPage( kids, opts ) {
 		opts = opts || {};
 
+		var top = w( 'wf-top', null, I.wf_top );
 		var bar = w( 'wf-bar' + ( opts.over ? ' wf-bar--over' : '' ), [
 			w( 'wf-bar__logo', null, C.site && C.site.name ? C.site.name : I.wf_logo ),
 			w( 'wf-bar__nav', [ wLine( '34px' ), wLine( '28px' ), wLine( '40px' ), wLine( '24px' ) ] ),
@@ -986,7 +1190,9 @@
 
 		var foot = w( 'wf-foot', [ wLine( '60px' ), wLine( '40px' ), wLine( '52px' ) ] );
 
-		return w( 'wf' + ( opts.over ? ' wf--over' : '' ), [ bar ].concat( kids ).concat( [ foot ] ) );
+		var head = opts.over ? w( 'wf-head wf-head--over', [ bar ] ) : bar;
+
+		return w( 'wf' + ( opts.over ? ' wf--over' : '' ), [ top, head ].concat( kids ).concat( [ foot ] ) );
 	}
 
 	/**
@@ -1025,46 +1231,136 @@
 	}
 
 	/**
-	 * The home page, drawn for one of the three ways of building it.
-	 *
-	 * @param {string} recipe classic | sales | look.
+	 * A styled room with the products marked on it, the way the Shop the
+	 * Look band really reads: a photograph you can press.
 	 */
-	function previewHome( recipe ) {
-		var over = 'home' === String( val( 'home_header' ) );
-		var mid  = [];
+	function wLook() {
+		var scene = w( 'wf-room', [
+			w( 'wf-room__wall' ),
+			w( 'wf-room__art' ),
+			w( 'wf-room__lamp', [ w( 'wf-room__shade' ), w( 'wf-room__stem' ) ] ),
+			w( 'wf-room__sofa', [ w( 'wf-room__cushion' ), w( 'wf-room__cushion' ) ] ),
+			w( 'wf-room__table', [ w( 'wf-room__leg' ), w( 'wf-room__leg wf-room__leg--b' ) ] ),
+			w( 'wf-room__plant' ),
+			el( 'span', { 'class': 'wf-spot wf-spot--sofa is-live' } ),
+			el( 'span', { 'class': 'wf-spot wf-spot--table' } ),
+			el( 'span', { 'class': 'wf-spot wf-spot--lamp' } )
+		] );
 
-		mid.push( wBanner( 'look' === recipe ) );
+		return w( 'wf-look', [ scene, w( 'wf-look__side', [ wCard( 1 ) ] ) ] );
+	}
 
-		if ( 'sales' === recipe ) {
-			mid.push( w( 'wf-mq', null, I.wf_marquee ) );
-			mid.push( wHeading( I.wf_sale_h ) );
-			mid.push( wRow( 4, 1 ) );
-			mid.push( wHeading( I.wf_cats_h ) );
-			mid.push( wCats() );
-			mid.push( wHeading( I.wf_best_h ) );
-			mid.push( wRow( 4, 5 ) );
-		} else if ( 'look' === recipe ) {
-			mid.push( wHeading( I.wf_look_h ) );
-			mid.push( w( 'wf-look', [ wImg( 'wf-look__img' ), w( 'wf-look__side', [ wCard( 1 ), wCard( 2 ) ] ) ] ) );
-			mid.push( wHeading( I.wf_cats_h ) );
-			mid.push( wCats() );
-			mid.push( wHeading( I.wf_new_h ) );
-			mid.push( wRow( 4, 3 ) );
-		} else {
-			mid.push( wHeading( I.wf_cats_h ) );
-			mid.push( wCats() );
-			mid.push( wHeading( I.wf_new_h ) );
-			mid.push( wRow( 4, 1 ) );
-			mid.push( w( 'wf-trust', [
+	/**
+	 * One band of the home page, drawn.
+	 *
+	 * @param {Object} row The row the customer arranged.
+	 */
+	function wBand( row ) {
+		var title = String( row.title || '' ).trim();
+
+		if ( 'banner' === row.type ) { return wBanner( false ); }
+
+		if ( 'marquee' === row.type ) {
+			var words = String( row.text || '' ).trim() || I.wf_marquee;
+			return w( 'wf-mq', [ el( 'div', { 'class': 'wf-mq__t', text: words + ' | ' + words } ) ] );
+		}
+
+		if ( 'products' === row.type ) {
+			return w( 'wf-band', [ wHeading( title || I.wf_new_h ), wRow( 4, 1 ) ] );
+		}
+
+		if ( 'categories' === row.type ) {
+			return w( 'wf-band', [ wHeading( title || I.wf_cats_h ), wCats() ] );
+		}
+
+		if ( 'look' === row.type ) {
+			return w( 'wf-band', [ wHeading( title || I.wf_look_h ), wLook() ] );
+		}
+
+		if ( 'posts' === row.type ) {
+			return w( 'wf-band', [ wHeading( title || I.wf_posts_h ), wPosts() ] );
+		}
+
+		if ( 'icons' === row.type ) {
+			return w( 'wf-trust', [
 				w( 'wf-trust__i', [ el( 'div', { 'class': 'wf-trust__h', text: I.wf_trust1 } ), wLine( '80%' ) ] ),
 				w( 'wf-trust__i', [ el( 'div', { 'class': 'wf-trust__h', text: I.wf_trust2 } ), wLine( '80%' ) ] ),
 				w( 'wf-trust__i', [ el( 'div', { 'class': 'wf-trust__h', text: I.wf_trust3 } ), wLine( '80%' ) ] )
-			] ) );
-			mid.push( w( 'wf-about', [
-				wImg( 'wf-about__img' ),
-				w( 'wf-about__t', [ wHeading( I.wf_about_h ), wLine( '100%' ), wLine( '92%' ), wLine( '70%' ) ] )
+			] );
+		}
+
+		return wContent( String( row.variant || 'words' ) );
+	}
+
+	/**
+	 * A content area, in whichever shape was chosen for it.
+	 *
+	 * @param {string} kind words | video | two | sticky.
+	 */
+	function wContent( kind ) {
+		if ( 'words' === kind ) {
+			return w( 'wf-words', [
+				wHeading( I.wf_about_h ),
+				w( 'wf-words__p', [ wLine( '100%' ), wLine( '94%' ), wLine( '60%' ) ] )
+			] );
+		}
+
+		if ( 'two' === kind ) {
+			return w( 'wf-two', [
+				wImg( 'wf-two__img' ),
+				w( 'wf-two__t', [ wHeading( I.wf_about_h ), wLine( '100%' ), wLine( '90%' ), wLine( '55%' ) ] ),
+				wImg( 'wf-two__img' )
+			] );
+		}
+
+		if ( 'sticky' === kind ) {
+			return w( 'wf-sticky', [
+				w( 'wf-sticky__t', [ wHeading( I.wf_about_h ), wLine( '100%' ), wLine( '80%' ) ] ),
+				w( 'wf-sticky__m', [ wImg( 'wf-sticky__img' ), wImg( 'wf-sticky__img' ) ] )
+			] );
+		}
+
+		var film = wImg( 'wf-about__img' );
+
+		film.appendChild( el( 'span', { 'class': 'wf-play', 'aria-hidden': 'true', text: '▶' } ) );
+
+		return w( 'wf-about', [
+			film,
+			w( 'wf-about__t', [ wHeading( I.wf_about_h ), wLine( '100%' ), wLine( '92%' ), wLine( '70%' ) ] )
+		] );
+	}
+
+	/**
+	 * Three cards from the magazine.
+	 */
+	function wPosts() {
+		var row = el( 'div', { 'class': 'wf-grid', style: '--wf-cols:3' } );
+
+		for ( var i = 1; i <= 3; i++ ) {
+			row.appendChild( w( 'wf-post', [
+				wImg( 'wf-post__img' ),
+				el( 'div', { 'class': 'wf-post__d', text: '02.10.2026' } ),
+				el( 'div', { 'class': 'wf-card__t', text: fmt( I.wf_post, i ) } ),
+				wLine( '90%' ),
+				wLine( '70%' )
 			] ) );
 		}
+
+		return row;
+	}
+
+	/**
+	 * The home page, drawn from the rows the customer arranged.
+	 */
+	function previewHome() {
+		var rows = val( 'home_layout' );
+		var over = 'home' === String( val( 'home_header' ) );
+		var mid  = [];
+
+		( Array.isArray( rows ) ? rows : [] ).forEach( function ( row ) {
+			if ( ! row.on ) { return; }
+			mid.push( wBand( row ) );
+		} );
 
 		return wPage( mid, { over: over } );
 	}
@@ -1148,13 +1444,44 @@
 	/* ------------------------------------------------------------ screens */
 
 	function progressBar( index ) {
-		var total = asked.length;
-		var n     = asked.indexOf( screens[ index ] ) + 1;
+		var here  = screens[ index ];
 		var wrap  = el( 'div', { 'class': 'oc-onb-prog' } );
-		wrap.appendChild( el( 'div', { 'class': 'oc-onb-prog__t', text: fmt( I.step_of, n, total ) } ) );
-		var bar = el( 'div', { 'class': 'oc-onb-prog__bar' } );
-		bar.appendChild( el( 'i', { style: 'inline-size:' + Math.round( n / ( total + 1 ) * 100 ) + '%' } ) );
+		var chips = el( 'div', { 'class': 'oc-onb-steps' } );
+		var seen  = [];
+
+		// The journey reads as the pages of the shop, not as a count of
+		// screens: the step you are on, and where you are inside it.
+		asked.forEach( function ( s ) {
+			if ( seen.indexOf( s.step ) === -1 ) { seen.push( s.step ); }
+		} );
+
+		var pos = asked.indexOf( here );
+
+		seen.forEach( function ( step ) {
+			var at   = step === here.step;
+			var last = 0;
+
+			asked.forEach( function ( s, i ) { if ( s.step === step ) { last = i; } } );
+
+			chips.appendChild( el( 'span', {
+				'class': 'oc-onb-steps__i' + ( at ? ' is-on' : ( last < pos ? ' is-done' : '' ) ),
+				text: step.title
+			} ) );
+		} );
+
+		var mine  = asked.filter( function ( s ) { return s.step === here.step; } );
+		var n     = mine.indexOf( here ) + 1;
+
+		wrap.appendChild( chips );
+		wrap.appendChild( el( 'div', { 'class': 'oc-onb-prog__t', text: mine.length > 1 ? fmt( I.screen_of, n, mine.length ) : here.step.title } ) );
+
+		var bar  = el( 'div', { 'class': 'oc-onb-prog__bar' } );
+		var all  = asked.length;
+		var done = asked.indexOf( here ) + 1;
+
+		bar.appendChild( el( 'i', { style: 'inline-size:' + Math.round( done / all * 100 ) + '%' } ) );
 		wrap.appendChild( bar );
+
 		return wrap;
 	}
 
@@ -1216,7 +1543,6 @@
 		root.innerHTML = '';
 		var card = el( 'div', { 'class': 'oc-onb__card' + ( sc.preview ? ' oc-onb__card--wide' : '' ) } );
 		card.appendChild( progressBar( index ) );
-		card.appendChild( el( 'p', { 'class': 'oc-onb__eyebrow', text: sc.step.title } ) );
 		card.appendChild( el( 'h1', { text: sc.title } ) );
 		if ( sc.intro ) { card.appendChild( el( 'p', { 'class': 'oc-onb__intro', text: sc.intro } ) ); }
 
@@ -1228,13 +1554,35 @@
 		if ( sc.preview ) {
 			qcol = el( 'div', { 'class': 'oc-onb-split__q' } );
 
-			card.appendChild( el( 'div', { 'class': 'oc-onb-split' }, [
-				qcol,
-				el( 'div', { 'class': 'oc-onb-split__p' }, [
-					el( 'p', { 'class': 'oc-onb-side__t', text: I.sketch } ),
-					el( 'div', { 'class': 'oc-onb-side', 'data-preview': sc.preview } )
-				] )
-			] ) );
+			var pane  = el( 'div', { 'class': 'oc-onb-split__p' }, [
+				el( 'p', { 'class': 'oc-onb-side__t', text: I.sketch } ),
+				el( 'div', { 'class': 'oc-onb-side', 'data-preview': sc.preview } )
+			] );
+			var split = el( 'div', { 'class': 'oc-onb-split is-q' }, [ qcol, pane ] );
+
+			// On a phone the two do not fit side by side, so one strip at the
+			// top switches between them and stays in reach.
+			var tabs = el( 'div', { 'class': 'oc-onb-tabs' } );
+			var tq   = el( 'button', { type: 'button', 'class': 'oc-onb-tabs__b is-on', text: I.tab_fields } );
+			var tp   = el( 'button', { type: 'button', 'class': 'oc-onb-tabs__b', text: I.tab_sketch } );
+
+			tq.addEventListener( 'click', function () {
+				split.classList.add( 'is-q' );
+				tq.classList.add( 'is-on' );
+				tp.classList.remove( 'is-on' );
+			} );
+
+			tp.addEventListener( 'click', function () {
+				split.classList.remove( 'is-q' );
+				tp.classList.add( 'is-on' );
+				tq.classList.remove( 'is-on' );
+			} );
+
+			tabs.appendChild( tq );
+			tabs.appendChild( tp );
+
+			card.appendChild( tabs );
+			card.appendChild( split );
 		}
 
 		var holder = qcol;
@@ -1297,6 +1645,7 @@
 			case 'hours':    return v.map( function ( r ) { return r.days.map( function ( d ) { return C.days[ d ] ? C.days[ d ].label : d; } ).join( ' ' ) + ' ' + r.from + '–' + r.to; } ).join( ' · ' );
 			case 'repeater': return v.map( function ( r ) { return r.name || ''; } ).filter( Boolean ).join( ' · ' ) || fmt( I.rows, v.length );
 			case 'branch_access': return Object.keys( v ).map( function ( k ) { return ( v[ k ] || [] ).length; } ).join( ' · ' );
+			case 'layout':   return v.filter( function ( r ) { return r.on; } ).length + ' ' + I.rows_kept;
 			default:         return String( v );
 		}
 	}

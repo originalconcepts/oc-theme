@@ -132,10 +132,11 @@ final class Schema {
 				'title'   => __( 'The home page', 'oc-theme' ),
 				'screens' => array(
 					array(
-						'id'     => '3a',
-						'title'  => __( 'How the home page is built', 'oc-theme' ),
-						'intro'  => __( 'Three ways to lay out the same shop. Look through them and take the one you like — nothing here is final, and every part of it can be moved later.', 'oc-theme' ),
-						'fields' => array( 'home_recipe' ),
+						'id'      => '3a',
+						'title'   => __( 'What stands on the home page', 'oc-theme' ),
+						'intro'   => __( 'This is the page, from top to bottom. Move a part, hide one you do not need, or add another of the same kind. The drawing beside you is the page as you are arranging it.', 'oc-theme' ),
+						'preview' => 'home',
+						'fields'  => array( 'home_layout' ),
 					),
 					array(
 						'id'      => '3b',
@@ -191,6 +192,57 @@ final class Schema {
 						'fields' => array( 'brands_has', 'brand_logo', 'brand_card', 'brand_product' ),
 					),
 				),
+			),
+		);
+	}
+
+	/**
+	 * The parts a home page can be built from, and what each one lets the
+	 * customer set from the list itself. Anything deeper is asked later, on
+	 * the screens that follow the arranging.
+	 *
+	 * @return array<string,array<string,mixed>>
+	 */
+	public static function home_blocks(): array {
+		return array(
+			'banner'     => array(
+				'label' => __( 'Main banner', 'oc-theme' ),
+				'once'  => true,
+				'note'  => __( 'The big picture at the top. Its contents come on the next screen.', 'oc-theme' ),
+			),
+			'content'    => array(
+				'label'    => __( 'A content area', 'oc-theme' ),
+				'variants' => array(
+					'words'  => __( 'A heading and words', 'oc-theme' ),
+					'video'  => __( 'Words, a picture, and a film over it', 'oc-theme' ),
+					'two'    => __( 'Words and two pictures', 'oc-theme' ),
+					'sticky' => __( 'Words that stay while the pictures move', 'oc-theme' ),
+				),
+			),
+			'products'   => array(
+				'label' => __( 'A row of products', 'oc-theme' ),
+				'title' => true,
+			),
+			'marquee'    => array(
+				'label' => __( 'A line of messages running across', 'oc-theme' ),
+				'text'  => true,
+			),
+			'categories' => array(
+				'label' => __( 'The categories', 'oc-theme' ),
+				'title' => true,
+			),
+			'look'       => array(
+				'label' => __( 'Shop the look', 'oc-theme' ),
+				'title' => true,
+				'note'  => __( 'A styled photograph with the products marked on it.', 'oc-theme' ),
+			),
+			'posts'      => array(
+				'label' => __( 'From the magazine', 'oc-theme' ),
+				'title' => true,
+			),
+			'icons'      => array(
+				'label' => __( 'Reasons to buy', 'oc-theme' ),
+				'note'  => __( 'Delivery, returns, a secure purchase. You fill these in later.', 'oc-theme' ),
 			),
 		);
 	}
@@ -778,16 +830,55 @@ final class Schema {
 
 		/* ---- 3a: the home page ---- */
 
-		$f['home_recipe'] = array(
-			'type'    => 'gallery',
+		$f['home_layout'] = array(
+			'type'    => 'layout',
 			'label'   => '',
-			'show'    => 'home',
-			'options' => array(
-				'classic' => __( 'Option 1', 'oc-theme' ),
-				'sales'   => __( 'Option 2', 'oc-theme' ),
-				'look'    => __( 'Option 3', 'oc-theme' ),
+			'blocks'  => self::home_blocks(),
+			'default' => array(
+				array(
+					'type' => 'banner',
+					'on'   => 1,
+				),
+				array(
+					'type'    => 'content',
+					'on'      => 1,
+					'variant' => 'words',
+				),
+				array(
+					'type'  => 'products',
+					'on'    => 1,
+					'title' => __( 'New in', 'oc-theme' ),
+				),
+				array(
+					'type' => 'marquee',
+					'on'   => 1,
+					'text' => __( 'Free delivery over 400 ILS | 12 payments, no interest | Never tested on animals', 'oc-theme' ),
+				),
+				array(
+					'type'  => 'categories',
+					'on'    => 1,
+					'title' => __( 'Our categories', 'oc-theme' ),
+				),
+				array(
+					'type'  => 'look',
+					'on'    => 1,
+					'title' => __( 'Get the look', 'oc-theme' ),
+				),
+				array(
+					'type'  => 'products',
+					'on'    => 1,
+					'title' => __( 'Best sellers', 'oc-theme' ),
+				),
+				array(
+					'type'  => 'posts',
+					'on'    => 1,
+					'title' => __( 'From the magazine', 'oc-theme' ),
+				),
+				array(
+					'type' => 'icons',
+					'on'   => 1,
+				),
 			),
-			'default' => 'classic',
 			'target'  => array( 'call', 'home' ),
 		);
 
@@ -1101,6 +1192,7 @@ final class Schema {
 					'notes'        => array(),
 					'show'         => '',
 					'suffix'       => '',
+					'blocks'       => array(),
 					'default'      => null,
 					'when'         => null,
 					'required'     => false,
@@ -1197,6 +1289,7 @@ final class Schema {
 			case 'checks':
 			case 'hours':
 			case 'repeater':
+			case 'layout':
 			case 'branch_access':
 				return array();
 			case 'file':
@@ -1405,6 +1498,48 @@ final class Schema {
 				$v = (string) ( is_scalar( $raw ) ? $raw : '' );
 
 				return isset( $f['options'][ $v ] ) ? $v : '';
+
+			case 'layout':
+				$blocks = self::home_blocks();
+				$rows   = array();
+
+				foreach ( (array) ( is_array( $raw ) ? $raw : array() ) as $row ) {
+					if ( ! is_array( $row ) ) {
+						continue;
+					}
+
+					$type = (string) ( $row['type'] ?? '' );
+
+					if ( ! isset( $blocks[ $type ] ) ) {
+						continue;
+					}
+
+					$keep = array(
+						'type' => $type,
+						'on'   => empty( $row['on'] ) ? 0 : 1,
+					);
+
+					if ( ! empty( $blocks[ $type ]['title'] ) ) {
+						$keep['title'] = sanitize_text_field( (string) ( $row['title'] ?? '' ) );
+					}
+
+					if ( ! empty( $blocks[ $type ]['text'] ) ) {
+						$keep['text'] = sanitize_text_field( (string) ( $row['text'] ?? '' ) );
+					}
+
+					if ( ! empty( $blocks[ $type ]['variants'] ) ) {
+						$v             = (string) ( $row['variant'] ?? '' );
+						$keep['variant'] = isset( $blocks[ $type ]['variants'][ $v ] ) ? $v : (string) array_key_first( $blocks[ $type ]['variants'] );
+					}
+
+					$rows[] = $keep;
+
+					if ( count( $rows ) >= 24 ) {
+						break;
+					}
+				}
+
+				return $rows;
 
 			case 'stepper':
 				$n   = (int) ( is_scalar( $raw ) ? $raw : 0 );

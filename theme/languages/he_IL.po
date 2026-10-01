@@ -11702,3 +11702,102 @@ msgstr "כמה זמן המוצר נחשב חדש?"
 
 msgid "days from the day it went up"
 msgstr "ימים מרגע העלייה לאתר"
+
+msgid "Free delivery over 400 ILS · 12 payments, no interest"
+msgstr "משלוח חינם בקנייה מעל 400 ש״ח · 12 תשלומים ללא ריבית"
+
+msgid "Free delivery over 400 ILS | 12 payments, no interest | Never tested on animals"
+msgstr "משלוח חינם בקנייה מעל 400 ש״ח | 12 תשלומים ללא ריבית | לא נוסה על בעלי חיים"
+
+msgid "From the magazine"
+msgstr "בלוג / מגזין"
+
+msgid "Article %1$s"
+msgstr "כותרת מספר %1$s"
+
+msgid "Move up"
+msgstr "להזיז למעלה"
+
+msgid "Move down"
+msgstr "להזיז למטה"
+
+msgid "Hide this part"
+msgstr "להסתיר את האזור"
+
+msgid "Show this part"
+msgstr "להציג את האזור"
+
+msgid "Another one like it"
+msgstr "עוד אחד כזה"
+
+msgid "Remove"
+msgstr "להסיר"
+
+msgid "The heading above it"
+msgstr "הכותרת מעליו"
+
+msgid "The words that run across"
+msgstr "הטקסט שרץ"
+
+msgid "Add:"
+msgstr "להוסיף:"
+
+msgid "Settings"
+msgstr "הגדרות"
+
+msgid "The sketch"
+msgstr "סקיצה"
+
+msgid "Screen %1$s of %2$s"
+msgstr "מסך %1$s מתוך %2$s"
+
+msgid "What stands on the home page"
+msgstr "מה עומד בדף הבית"
+
+msgid "This is the page, from top to bottom. Move a part, hide one you do not need, or add another of the same kind. The drawing beside you is the page as you are arranging it."
+msgstr "זה העמוד, מלמעלה למטה. אפשר להזיז אזור, להסתיר אזור שלא צריך, או להוסיף עוד אחד כזה. הסקיצה שלצידכם היא העמוד כפי שאתם מסדרים אותו."
+
+msgid "Main banner"
+msgstr "באנר ראשי"
+
+msgid "The big picture at the top. Its contents come on the next screen."
+msgstr "התמונה הגדולה בראש העמוד. התוכן שלה במסך הבא."
+
+msgid "A content area"
+msgstr "אזור תוכן"
+
+msgid "A heading and words"
+msgstr "כותרת וטקסט"
+
+msgid "Words, a picture, and a film over it"
+msgstr "טקסט, תמונה וסרטון עליה"
+
+msgid "Words and two pictures"
+msgstr "טקסט ושתי תמונות"
+
+msgid "Words that stay while the pictures move"
+msgstr "תוכן סטיקי — הטקסט נשאר והתמונות זזות"
+
+msgid "A row of products"
+msgstr "סליידר מוצרים"
+
+msgid "A line of messages running across"
+msgstr "פס מסרים רץ"
+
+msgid "The categories"
+msgstr "קטגוריות"
+
+msgid "Shop the look"
+msgstr "Shop the Look"
+
+msgid "A styled photograph with the products marked on it."
+msgstr "תמונת סצנה מעוצבת עם המוצרים מסומנים עליה."
+
+msgid "Reasons to buy"
+msgstr "אזור אייקונים — מחזקי קנייה"
+
+msgid "Delivery, returns, a secure purchase. You fill these in later."
+msgstr "משלוחים, החזרות, קנייה מאובטחת. ממלאים אותם בהמשך."
+
+msgid "parts on the page"
+msgstr "אזורים בעמוד"

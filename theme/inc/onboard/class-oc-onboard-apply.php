@@ -797,27 +797,26 @@ final class Apply {
 
 	/**
 	 * The home page: a front page, composed of blocks, from the recipe the
-	 * customer picked. The pictures are not here yet — the sections are laid
-	 * out so that dropping a picture in is the only thing left to do.
+	 * customer arranged. The pictures and the words are asked for on the
+	 * screens after it; this is the shape of the page.
 	 */
 	private function apply_home(): void {
 		if ( ! class_exists( '\\OC\\Blocks\\Registry' ) ) {
-			$this->row( 'home_recipe', __( 'Home page', 'oc-theme' ), 'skipped', __( 'The blocks plugin is not active on this site.', 'oc-theme' ) );
+			$this->row( 'home_layout', __( 'Home page', 'oc-theme' ), 'skipped', __( 'The blocks plugin is not active on this site.', 'oc-theme' ) );
 			return;
 		}
 
-		$recipe = (string) $this->v['home_recipe'];
-		$id     = $this->front_page();
+		$id = $this->front_page();
 
 		if ( ! $id ) {
-			$this->row( 'home_recipe', __( 'Home page', 'oc-theme' ), 'error' );
+			$this->row( 'home_layout', __( 'Home page', 'oc-theme' ), 'error' );
 			return;
 		}
 
-		$sections = \OC\Blocks\Registry::clean( $this->recipe( $recipe ) );
+		$sections = \OC\Blocks\Registry::clean( $this->recipe() );
 
 		if ( $this->changed_by_hand( 'home:sections', wp_json_encode( (array) get_post_meta( $id, \OC\Blocks\Registry::META, true ) ) ) ) {
-			$this->row( 'home_recipe', __( 'Home page', 'oc-theme' ), 'manual', __( 'The home page was edited by hand since the last apply; left as it is.', 'oc-theme' ) );
+			$this->row( 'home_layout', __( 'Home page', 'oc-theme' ), 'manual', __( 'The home page was edited by hand since the last apply; left as it is.', 'oc-theme' ) );
 			return;
 		}
 
@@ -826,7 +825,7 @@ final class Apply {
 
 		update_option( 'oc_blocks_ver', (int) get_option( 'oc_blocks_ver', 0 ) + 1, false );
 
-		$this->row( 'home_recipe', __( 'Home page', 'oc-theme' ), 'check', __( 'The page is laid out and waiting for its pictures.', 'oc-theme' ) );
+		$this->row( 'home_layout', __( 'Home page', 'oc-theme' ), 'check', __( 'The page is laid out and waiting for its pictures.', 'oc-theme' ) );
 	}
 
 	/**
@@ -850,12 +849,125 @@ final class Apply {
 	}
 
 	/**
-	 * The sections of one recipe.
+	 * The page, as the customer arranged it: one oc-blocks section per row
+	 * they kept, in their order. A row they hid is left out rather than
+	 * written switched off, so the page stays as short as they made it.
 	 *
-	 * @param string $recipe classic | sales | look.
 	 * @return array<int,array<string,mixed>>
 	 */
-	private function recipe( string $recipe ): array {
+	private function recipe(): array {
+		$rows = $this->v['home_layout'];
+		$rows = is_array( $rows ) ? $rows : array();
+		$out  = array();
+
+		foreach ( $rows as $row ) {
+			if ( empty( $row['on'] ) ) {
+				continue;
+			}
+
+			$made = $this->band( (array) $row );
+
+			if ( $made ) {
+				$out[] = $made;
+			}
+		}
+
+		return $out;
+	}
+
+	/**
+	 * One row of the arrangement, as a section.
+	 *
+	 * @param array<string,mixed> $row The row.
+	 * @return array<string,mixed>|null
+	 */
+	private function band( array $row ) {
+		$type  = (string) ( $row['type'] ?? '' );
+		$title = trim( (string) ( $row['title'] ?? '' ) );
+
+		if ( 'banner' === $type ) {
+			return $this->hero_section();
+		}
+
+		if ( 'marquee' === $type ) {
+			return array(
+				'type' => 'marquee',
+				'text' => trim( (string) ( $row['text'] ?? '' ) ),
+			);
+		}
+
+		if ( 'products' === $type ) {
+			return array(
+				'type'    => 'products',
+				'heading' => $title,
+				'mode'    => 'new',
+				'count'   => 8,
+				'layout'  => 'slider',
+			);
+		}
+
+		if ( 'categories' === $type ) {
+			return array(
+				'type'    => 'categories',
+				'heading' => $title,
+				'layout'  => 'slider',
+			);
+		}
+
+		if ( 'look' === $type ) {
+			return array(
+				'type'   => 'look',
+				'scenes' => array(
+					array( 'heading' => $title ),
+				),
+			);
+		}
+
+		if ( 'posts' === $type ) {
+			return array(
+				'type'    => 'posts',
+				'heading' => $title,
+				'mode'    => 'latest',
+				'count'   => 3,
+			);
+		}
+
+		if ( 'icons' === $type ) {
+			return array(
+				'type'  => 'icons',
+				'items' => array(
+					array(
+						'icon'    => 'truck',
+						'heading' => __( 'Delivery across the country', 'oc-theme' ),
+						'text'    => __( 'Write here how long it takes and from what amount it is free.', 'oc-theme' ),
+					),
+					array(
+						'icon'    => 'returns',
+						'heading' => __( 'Returns within 14 days', 'oc-theme' ),
+						'text'    => __( 'The short version of what your terms say.', 'oc-theme' ),
+					),
+					array(
+						'icon'    => 'shield',
+						'heading' => __( 'A secure purchase', 'oc-theme' ),
+						'text'    => __( 'Payment through a certified clearing house.', 'oc-theme' ),
+					),
+				),
+			);
+		}
+
+		if ( 'content' === $type ) {
+			return $this->content_section( (string) ( $row['variant'] ?? 'words' ) );
+		}
+
+		return null;
+	}
+
+	/**
+	 * The banner, from the answers given on its own screen.
+	 *
+	 * @return array<string,mixed>
+	 */
+	private function hero_section(): array {
 		$brand = trim( (string) $this->v['brand_name'] );
 		$shot  = $this->v['home_banner'];
 		$film  = 'video' === $this->v['banner_media'] ? trim( (string) $this->v['banner_video'] ) : '';
@@ -864,7 +976,7 @@ final class Apply {
 		$head  = trim( (string) $this->v['banner_title'] );
 		$press = trim( (string) $this->v['banner_cta'] );
 
-		$hero = array(
+		return array(
 			'type'   => 'hero',
 			'slides' => array(
 				array(
@@ -876,125 +988,50 @@ final class Apply {
 				),
 			),
 			'pos'    => 'cc',
-			'h'      => 'look' === $recipe ? 680 : 560,
-			'hm'     => 'look' === $recipe ? 560 : 440,
-		);
-
-		$cats = array(
-			'type'    => 'categories',
-			'heading' => __( 'What we sell', 'oc-theme' ),
-			'layout'  => 'slider',
-		);
-
-		$trust = array(
-			'type'    => 'icons',
-			'heading' => '',
-			'items'   => array(
-				array(
-					'icon'    => 'truck',
-					'heading' => __( 'Delivery across the country', 'oc-theme' ),
-					'text'    => __( 'Write here how long it takes and from what amount it is free.', 'oc-theme' ),
-				),
-				array(
-					'icon'    => 'returns',
-					'heading' => __( 'Returns within 14 days', 'oc-theme' ),
-					'text'    => __( 'The short version of what your terms say.', 'oc-theme' ),
-				),
-				array(
-					'icon'    => 'shield',
-					'heading' => __( 'A secure purchase', 'oc-theme' ),
-					'text'    => __( 'Payment through a certified clearing house.', 'oc-theme' ),
-				),
-			),
-		);
-
-		$about = array(
-			'type'    => 'media',
-			'preset'  => 'overlap',
-			'heading' => '' !== $brand ? sprintf( /* translators: %s: the brand name. */ __( 'About %s', 'oc-theme' ), $brand ) : __( 'About us', 'oc-theme' ),
-			'text'    => wp_trim_words( wp_strip_all_tags( (string) $this->v['about_text'] ), 45 ),
-			'cta'     => __( 'Read more', 'oc-theme' ),
-		);
-
-		if ( 'sales' === $recipe ) {
-			return array(
-				$hero,
-				array(
-					'type' => 'marquee',
-					'text' => __( 'Free delivery over a certain amount · New arrivals every week', 'oc-theme' ),
-				),
-				array(
-					'type'    => 'products',
-					'heading' => __( 'On offer', 'oc-theme' ),
-					'mode'    => 'sale',
-					'count'   => 8,
-					'layout'  => 'slider',
-				),
-				$cats,
-				array(
-					'type'    => 'products',
-					'heading' => __( 'Our best sellers', 'oc-theme' ),
-					'mode'    => 'sales',
-					'count'   => 8,
-					'layout'  => 'slider',
-				),
-				$trust,
-			);
-		}
-
-		if ( 'look' === $recipe ) {
-			return array(
-				$hero,
-				array(
-					'type'   => 'look',
-					'scenes' => array(
-						array( 'heading' => __( 'Get the look', 'oc-theme' ) ),
-					),
-				),
-				$cats,
-				array(
-					'type'    => 'products',
-					'heading' => __( 'New in', 'oc-theme' ),
-					'mode'    => 'new',
-					'count'   => 8,
-					'layout'  => 'slider',
-				),
-				$about,
-			);
-		}
-
-		return array(
-			$hero,
-			$cats,
-			array(
-				'type'    => 'products',
-				'heading' => __( 'New in', 'oc-theme' ),
-				'mode'    => 'new',
-				'count'   => 8,
-				'layout'  => 'slider',
-			),
-			$trust,
-			$about,
+			'h'      => 560,
+			'hm'     => 440,
 		);
 	}
 
 	/**
-	 * Where the catalogue's filter stands, and whether it stands at all.
+	 * A content area, in the shape the customer chose for it. The words and
+	 * the pictures are asked for on a later screen; this lays out the band.
+	 *
+	 * @param string $kind words | video | two | sticky.
+	 * @return array<string,mixed>
 	 */
-	private function apply_filters(): void {
-		$where = (string) $this->v['cat_filters'];
-		$all   = get_option( 'oc_filters' );
-		$all   = is_array( $all ) ? $all : array();
+	private function content_section( string $kind ): array {
+		$brand = trim( (string) $this->v['brand_name'] );
+		$head  = '' !== $brand ? sprintf( /* translators: %s: the brand name. */ __( 'About %s', 'oc-theme' ), $brand ) : __( 'About us', 'oc-theme' );
+		$text  = wp_trim_words( wp_strip_all_tags( (string) $this->v['about_text'] ), 45 );
 
-		$all['enabled'] = 'off' === $where ? 0 : 1;
-
-		if ( 'off' !== $where ) {
-			$all['layout'] = $where;
+		if ( 'words' === $kind ) {
+			return array(
+				'type'    => 'content',
+				'heading' => $head,
+				'text'    => $text,
+				'align'   => 'center',
+			);
 		}
 
-		update_option( 'oc_filters', $all );
+		if ( 'sticky' === $kind ) {
+			return array(
+				'type'  => 'scrolly',
+				'steps' => array(
+					array(
+						'heading' => $head,
+						'text'    => $text,
+					),
+				),
+			);
+		}
 
-		$this->row( 'cat_filters', 'oc_filters', 'applied' );
+		return array(
+			'type'    => 'media',
+			'preset'  => 'two' === $kind ? 'duo' : 'single',
+			'heading' => $head,
+			'text'    => $text,
+		);
 	}
 
 	/**
