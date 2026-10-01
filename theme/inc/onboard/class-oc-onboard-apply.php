@@ -897,10 +897,12 @@ final class Apply {
 		}
 
 		if ( 'products' === $type ) {
+			$mode = (string) ( $row['variant'] ?? 'new' );
+
 			return array(
 				'type'    => 'products',
 				'heading' => $title,
-				'mode'    => 'new',
+				'mode'    => in_array( $mode, array( 'new', 'sale', 'sales' ), true ) ? $mode : 'new',
 				'count'   => 8,
 				'layout'  => 'slider',
 			);

@@ -234,8 +234,13 @@ final class Schema {
 				),
 			),
 			'products'   => array(
-				'label' => __( 'A row of products', 'oc-theme' ),
-				'title' => true,
+				'label'    => __( 'A row of products', 'oc-theme' ),
+				'title'    => true,
+				'variants' => array(
+					'new'   => __( 'The newest', 'oc-theme' ),
+					'sale'  => __( 'Whatever is on offer', 'oc-theme' ),
+					'sales' => __( 'The best sellers', 'oc-theme' ),
+				),
 			),
 			'marquee'    => array(
 				'label' => __( 'A line of messages running across', 'oc-theme' ),
@@ -866,39 +871,46 @@ final class Schema {
 					'on'   => 1,
 				),
 				array(
-					'type'    => 'content',
-					'on'      => 1,
-					'variant' => 'words',
-				),
-				array(
-					'type'  => 'products',
+					'type'  => 'brands',
 					'on'    => 1,
-					'title' => __( 'New in', 'oc-theme' ),
-				),
-				array(
-					'type' => 'marquee',
-					'on'   => 1,
-					'text' => __( 'Free delivery over 400 ILS | 12 payments, no interest | Never tested on animals', 'oc-theme' ),
+					'title' => '',
 				),
 				array(
 					'type'  => 'categories',
 					'on'    => 1,
-					'title' => __( 'Our categories', 'oc-theme' ),
+					'title' => '',
+				),
+				array(
+					'type' => 'marquee',
+					'on'   => 1,
+					'text' => '',
+				),
+				array(
+					'type'    => 'products',
+					'on'      => 1,
+					'title'   => '',
+					'variant' => 'new',
+				),
+				array(
+					'type'    => 'products',
+					'on'      => 1,
+					'title'   => '',
+					'variant' => 'sale',
 				),
 				array(
 					'type'  => 'look',
 					'on'    => 1,
-					'title' => __( 'Get the look', 'oc-theme' ),
-				),
-				array(
-					'type'  => 'products',
-					'on'    => 1,
-					'title' => __( 'Best sellers', 'oc-theme' ),
+					'title' => '',
 				),
 				array(
 					'type'  => 'posts',
 					'on'    => 1,
-					'title' => __( 'From the magazine', 'oc-theme' ),
+					'title' => '',
+				),
+				array(
+					'type'    => 'content',
+					'on'      => 1,
+					'variant' => 'duo',
 				),
 				array(
 					'type' => 'icons',

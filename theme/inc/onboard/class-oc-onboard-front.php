@@ -193,6 +193,7 @@ final class Front {
 				'wf_faq_2'        => __( 'Can I return a product?', 'oc-theme' ),
 				'wf_faq_3'        => __( 'Do you have a shop I can visit?', 'oc-theme' ),
 				'wf_story_h'      => __( 'Our story', 'oc-theme' ),
+				'wf_sofa'         => __( 'Nordic three-seater sofa', 'oc-theme' ),
 				/* translators: %1$s: this screen's number, %2$s: how many in this step. */
 				'screen_of'       => __( 'Screen %1$s of %2$s', 'oc-theme' ),
 				'wf_filters'      => __( 'Filter', 'oc-theme' ),

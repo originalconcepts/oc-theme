@@ -418,8 +418,8 @@ html { -webkit-text-size-adjust: 100%; }
 	font-size: 13px;
 	font-weight: 700;
 	letter-spacing: .04em;
-	transform: rotate(-3deg) scale(1.06);
-	margin: 18px 0;
+	transform: rotate(-2deg) scale(1.05);
+	margin: 20px 0;
 }
 .wf-h { font-size: 14px; font-weight: 700; color: #5b6271; text-align: center; margin: 14px 0 10px; }
 .wf-h--s { font-size: 12px; text-align: start; margin: 0 0 8px; }
@@ -562,8 +562,9 @@ html { -webkit-text-size-adjust: 100%; }
 .wf--over .wf-hero { padding-top: 0; }
 
 .wf-mq { overflow: hidden; }
-.wf-mq__t { display: inline-block; white-space: nowrap; animation: wf-run 18s linear infinite; }
-@keyframes wf-run { from { transform: translateX(-50%); } to { transform: translateX(0); } }
+.wf-mq__t { display: flex; width: max-content; animation: wf-run 11s linear infinite; }
+.wf-mq__t span { white-space: pre; }
+@keyframes wf-run { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 @media (prefers-reduced-motion: reduce) { .wf-mq__t { animation: none; } }
 
 .wf-band { padding-bottom: 10px; }
@@ -597,15 +598,46 @@ html { -webkit-text-size-adjust: 100%; }
 .wf-post__d { font-size: 9px; font-style: italic; color: #a9aebb; }
 .wf-post .wf-ln { margin-top: 4px; }
 
-/* the styled room: as quiet as it can be and still say Shop the Look */
+/* the styled room: the sketch's own greys, and furniture you can name */
 .wf-look { display: grid; grid-template-columns: 2.4fr 1fr; gap: 12px; padding: 0 12px; align-items: center; }
-.wf-room { position: relative; aspect-ratio: 4 / 3; border-radius: 4px; overflow: hidden; background: #f7f4ef; }
-.wf-room::after { content: ""; position: absolute; inset: 72% 0 0; background: #efe9e0; }
-.wf-room__frame { position: absolute; top: 14%; inset-inline-end: 18%; width: 20%; height: 24%; border: 2px solid #ded5c8; border-radius: 2px; }
-.wf-room__plant { position: absolute; bottom: 22%; inset-inline-start: 8%; width: 9%; height: 22%; background: #cfd8cb; border-radius: 50% 50% 0 0; }
-.wf-room__pot { position: absolute; bottom: -22%; inset-inline-start: 14%; width: 72%; height: 26%; background: #ded5c8; border-radius: 0 0 3px 3px; }
-.wf-room__sofa { position: absolute; bottom: 22%; inset-inline-start: 26%; width: 44%; height: 20%; background: #e6ddd0; border-radius: 10px 10px 3px 3px; z-index: 1; }
-.wf-room__table { position: absolute; bottom: 14%; inset-inline-start: 38%; width: 22%; height: 7%; background: #d8c6ad; border-radius: 40%; z-index: 2; }
+.wf-room { position: relative; aspect-ratio: 4 / 3; border-radius: 4px; overflow: hidden; background: #eef0f4; }
+.wf-room::after { content: ""; position: absolute; inset: 70% 0 0; background: #e3e6ed; }
+.wf-room__art { position: absolute; top: 12%; inset-inline-end: 16%; width: 19%; height: 23%; border: 2px solid #ced4e0; border-radius: 2px; }
+
+.wf-f { position: absolute; }
+.wf-f__back, .wf-f__seat, .wf-f__arm, .wf-f__foot,
+.wf-f__shade, .wf-f__stem, .wf-f__base,
+.wf-f__leaf, .wf-f__pot { position: absolute; background: #c3c8d4; }
+
+/* a sofa: a back, a seat, two arms, two feet */
+.wf-f--sofa { inset-inline-start: 24%; bottom: 20%; width: 44%; aspect-ratio: 5 / 3; z-index: 1; }
+.wf-f--sofa .wf-f__back { inset-inline: 6%; top: 8%; height: 46%; border-radius: 7px 7px 0 0; background: #b4bbcb; }
+.wf-f--sofa .wf-f__seat { inset-inline: 0; top: 44%; height: 34%; border-radius: 6px; }
+.wf-f--sofa .wf-f__arm { top: 30%; width: 9%; height: 48%; border-radius: 5px; background: #aeb6c7; }
+.wf-f--sofa .wf-f__arm--a { inset-inline-start: 0; }
+.wf-f--sofa .wf-f__arm--b { inset-inline-end: 0; }
+.wf-f--sofa .wf-f__foot { bottom: 4%; width: 4%; height: 14%; background: #9aa2b4; }
+.wf-f--sofa .wf-f__foot--a { inset-inline-start: 10%; }
+.wf-f--sofa .wf-f__foot--b { inset-inline-end: 10%; }
+
+/* a standing lamp: a shade, a stem, a foot */
+.wf-f--lamp { inset-inline-end: 8%; bottom: 20%; width: 13%; aspect-ratio: 1 / 3; }
+.wf-f--lamp .wf-f__shade { inset-inline: 0; top: 0; height: 26%; background: #b4bbcb; clip-path: polygon(20% 0, 80% 0, 100% 100%, 0 100%); }
+.wf-f--lamp .wf-f__stem { inset-inline-start: 46%; top: 26%; width: 8%; height: 62%; }
+.wf-f--lamp .wf-f__base { inset-inline-start: 26%; bottom: 0; width: 48%; height: 6%; border-radius: 2px; background: #9aa2b4; }
+
+/* a plant: three leaves in a pot */
+.wf-f--plant { inset-inline-start: 6%; bottom: 20%; width: 12%; aspect-ratio: 2 / 3; }
+.wf-f--plant .wf-f__leaf { width: 34%; height: 54%; border-radius: 50% 50% 50% 0; background: #b4bbcb; }
+.wf-f--plant .wf-f__leaf--a { inset-inline-start: 8%; top: 8%; transform: rotate(-25deg); }
+.wf-f--plant .wf-f__leaf--b { inset-inline-start: 33%; top: 0; }
+.wf-f--plant .wf-f__leaf--c { inset-inline-end: 6%; top: 10%; transform: rotate(25deg); }
+.wf-f--plant .wf-f__pot { inset-inline-start: 22%; bottom: 0; width: 56%; height: 30%; border-radius: 0 0 4px 4px; background: #aeb6c7; clip-path: polygon(0 0, 100% 0, 86% 100%, 14% 100%); }
+
+/* the same drawing again, standing in a product card */
+.wf-card__img--draw { position: relative; background: #f3f5f9; background-image: none; }
+.wf-f--card { position: absolute; inset-inline-start: 50%; bottom: 16%; width: 72%; transform: translateX(50%); }
+
 .wf-spot {
 	position: absolute;
 	z-index: 3;
@@ -617,8 +649,8 @@ html { -webkit-text-size-adjust: 100%; }
 	box-shadow: 0 1px 4px rgba(0, 0, 0, .3);
 	border: 3px solid var(--onb-primary);
 }
-.wf-spot--sofa { inset-inline-start: 46%; top: 66%; }
-.wf-spot--table { inset-inline-start: 48%; top: 82%; }
+.wf-spot--sofa { inset-inline-start: 46%; top: 62%; }
+.wf-spot--lamp { inset-inline-end: 14%; top: 46%; }
 .wf-spot.is-live::after {
 	content: "";
 	position: absolute;

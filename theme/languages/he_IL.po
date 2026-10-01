@@ -11915,3 +11915,15 @@ msgstr "התמונה הגדולה בראש דף הבית. כאן מציעים מ
 
 msgid "The page a customer lands on from the menu. Every answer here changes the sketch."
 msgstr "העמוד שאליו מגיע לקוח מהתפריט. כל תשובה כאן משנה את הסקיצה."
+
+msgid "Nordic three-seater sofa"
+msgstr "ספה תלת מושבית נורדית"
+
+msgid "The newest"
+msgstr "החדשים"
+
+msgid "Whatever is on offer"
+msgstr "מה שבמבצע"
+
+msgid "The best sellers"
+msgstr "הנמכרים ביותר"

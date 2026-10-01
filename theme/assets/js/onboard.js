@@ -22,6 +22,7 @@
 	var pending = {};
 	var saveTimer = null;
 	var cameFrom = 0;    // The screen the review was opened from.
+	var waiting = [];    // Typing that has not reached the draft yet.
 	var looked  = false; // Whether we already went looking on their old site.
 	var foundIn = {};    // Fields whose address we found rather than asked for.
 	var at = -1; // -1 welcome, 0..n-1 screens, n summary, n+1 done.
@@ -206,6 +207,8 @@
 	}
 
 	function flush() {
+		commitAll();
+
 		var batch = pending;
 		pending = {};
 		if ( Object.keys( batch ).length === 0 && ! flush.stepOnly ) { return; }
@@ -280,6 +283,36 @@
 		return any;
 	}
 
+	/**
+	 * Hand over everything that is still being typed.
+	 *
+	 * A field waits a moment after the last keystroke before it saves, so
+	 * that one word is not four requests. That moment is also a hole: press
+	 * Next inside it and the last thing typed never reaches the draft. So
+	 * anything mid-flight is written down first, by anyone about to leave
+	 * the screen or send.
+	 */
+	function commitAll() {
+		waiting.slice().forEach( function ( fn ) {
+			try { fn(); } catch ( e ) {}
+		} );
+	}
+
+	/**
+	 * Remember a field's way of writing itself down now.
+	 *
+	 * @param {Function} fn Commit.
+	 * @return {Function} How to forget it.
+	 */
+	function awaits( fn ) {
+		waiting.push( fn );
+
+		return function () {
+			var i = waiting.indexOf( fn );
+			if ( i > -1 ) { waiting.splice( i, 1 ); }
+		};
+	}
+
 	function note( text, cls ) {
 		if ( ! saveEl ) { return; }
 		saveEl.textContent = text;
@@ -341,9 +374,21 @@
 
 		if ( f.suffix ) { e.classList.add( 'oc-onb-in--unit' ); }
 
-		var commit = function () { onChange( f.type === 'number' ? Number( e.value ) : e.value ); };
+		var seen   = String( value === null || value === undefined ? '' : value );
+		var commit = function () {
+			clearTimeout( e._t );
+
+			if ( String( e.value ) === seen ) { return; }
+
+			seen = String( e.value );
+			onChange( f.type === 'number' ? Number( e.value ) : e.value );
+		};
+
 		e.addEventListener( 'input', function () { clearTimeout( e._t ); e._t = setTimeout( commit, 150 ); } );
 		e.addEventListener( 'change', commit );
+		e.addEventListener( 'blur', commit );
+
+		awaits( commit );
 
 		if ( f.suffix ) {
 			return el( 'div', { 'class': 'oc-onb-unit' }, [ e, el( 'span', { 'class': 'oc-onb-unit__t', text: f.suffix } ) ] );
@@ -358,10 +403,25 @@
 
 	function render_textarea( id, f, value, onChange ) {
 		var e = el( 'textarea', { 'class': 'oc-onb-in oc-onb-ta', rows: f.rows || 5 } );
+
 		e.value = value === undefined ? ( val( id ) || '' ) : ( value || '' );
-		var commit = function () { ( onChange || function ( v ) { set( id, v ); } )( e.value ); };
-		e.addEventListener( 'input', function () { clearTimeout( e._t ); e._t = setTimeout( commit, 500 ); } );
+
+		var seen   = String( e.value );
+		var commit = function () {
+			clearTimeout( e._t );
+
+			if ( String( e.value ) === seen ) { return; }
+
+			seen = String( e.value );
+			( onChange || function ( v ) { set( id, v ); } )( e.value );
+		};
+
+		e.addEventListener( 'input', function () { clearTimeout( e._t ); e._t = setTimeout( commit, 400 ); } );
 		e.addEventListener( 'change', commit );
+		e.addEventListener( 'blur', commit );
+
+		awaits( commit );
+
 		return e;
 	}
 
@@ -678,16 +738,30 @@
 						placeholder: b.title ? I.row_title : I.row_text
 					} );
 
+					var was = String( row[ key ] || '' );
+					var put = function () {
+						clearTimeout( inp._t );
+
+						if ( String( inp.value ) === was ) { return; }
+
+						was = String( inp.value );
+
+						var n     = rows().slice();
+						var patch = {};
+
+						patch[ key ] = inp.value;
+						n[ i ]       = merge( n[ i ], patch );
+
+						set( id, n );
+					};
+
 					inp.addEventListener( 'input', function () {
 						clearTimeout( inp._t );
-						inp._t = setTimeout( function () {
-							var n = rows().slice();
-							var patch = {};
-							patch[ key ] = inp.value;
-							n[ i ] = merge( n[ i ], patch );
-							set( id, n );
-						}, 150 );
+						inp._t = setTimeout( put, 150 );
 					} );
+					inp.addEventListener( 'blur', put );
+
+					awaits( put );
 
 					line.appendChild( inp );
 				}
@@ -1259,17 +1333,56 @@
 	 * A styled room with the products marked on it, the way the Shop the
 	 * Look band really reads: a photograph you can press.
 	 */
+	function wSofa( cls ) {
+		return w( 'wf-f wf-f--sofa ' + ( cls || '' ), [
+			w( 'wf-f__back' ),
+			w( 'wf-f__seat' ),
+			w( 'wf-f__arm wf-f__arm--a' ),
+			w( 'wf-f__arm wf-f__arm--b' ),
+			w( 'wf-f__foot wf-f__foot--a' ),
+			w( 'wf-f__foot wf-f__foot--b' )
+		] );
+	}
+
+	function wLamp( cls ) {
+		return w( 'wf-f wf-f--lamp ' + ( cls || '' ), [
+			w( 'wf-f__shade' ),
+			w( 'wf-f__stem' ),
+			w( 'wf-f__base' )
+		] );
+	}
+
+	function wPlant( cls ) {
+		return w( 'wf-f wf-f--plant ' + ( cls || '' ), [
+			w( 'wf-f__leaf wf-f__leaf--a' ),
+			w( 'wf-f__leaf wf-f__leaf--b' ),
+			w( 'wf-f__leaf wf-f__leaf--c' ),
+			w( 'wf-f__pot' )
+		] );
+	}
+
+	/**
+	 * A room with the things in it marked, and the marked thing standing
+	 * beside it as the product it is — the same drawing, so the eye joins
+	 * the two without being told.
+	 */
 	function wLook() {
 		var scene = w( 'wf-room', [
-			w( 'wf-room__frame' ),
-			w( 'wf-room__plant', [ w( 'wf-room__pot' ) ] ),
-			w( 'wf-room__sofa' ),
-			w( 'wf-room__table' ),
+			w( 'wf-room__art' ),
+			wPlant( 'wf-room__plant' ),
+			wLamp( 'wf-room__lamp' ),
+			wSofa( 'wf-room__sofa' ),
 			el( 'span', { 'class': 'wf-spot wf-spot--sofa is-live' } ),
-			el( 'span', { 'class': 'wf-spot wf-spot--table' } )
+			el( 'span', { 'class': 'wf-spot wf-spot--lamp' } )
 		] );
 
-		return w( 'wf-look', [ scene, w( 'wf-look__side', [ wCard( 2 ) ] ) ] );
+		var card = w( 'wf-card', [
+			w( 'wf-card__img wf-card__img--draw', [ wSofa( 'wf-f--card' ) ] ),
+			el( 'div', { 'class': 'wf-card__t', text: I.wf_sofa } ),
+			el( 'div', { 'class': 'wf-card__p', text: '₪1,890.00' } )
+		] );
+
+		return w( 'wf-look', [ scene, w( 'wf-look__side', [ card ] ) ] );
 	}
 
 	/**
@@ -1284,11 +1397,21 @@
 
 		if ( 'marquee' === row.type ) {
 			var words = String( row.text || '' ).trim() || I.wf_marquee;
-			return w( 'wf-mq', [ el( 'div', { 'class': 'wf-mq__t', text: words + ' | ' + words } ) ] );
+			var once  = words + '  |  ' + words + '  |  ';
+			var track = el( 'div', { 'class': 'wf-mq__t' } );
+
+			// Two identical halves, and the strip slides by exactly one of
+			// them: the line never shows its end.
+			track.appendChild( el( 'span', { text: once } ) );
+			track.appendChild( el( 'span', { text: once } ) );
+
+			return w( 'wf-mq', [ track ] );
 		}
 
 		if ( 'products' === row.type ) {
-			return w( 'wf-band', [ wHeading( title || I.wf_new_h ), wRow( 4, 1 ) ] );
+			var fall = { sale: I.wf_sale_h, sales: I.wf_best_h }[ row.variant ] || I.wf_new_h;
+
+			return w( 'wf-band', [ wHeading( title || fall ), wRow( 4, 'sale' === row.variant ? 5 : 1 ) ] );
 		}
 
 		if ( 'categories' === row.type ) {
@@ -1383,7 +1506,7 @@
 			media.appendChild( one );
 		}
 
-		return w( 'wf-ed wf-ed--' + kind, [ media, words ] );
+		return w( 'wf-ed wf-ed--' + kind, [ words, media ] );
 	}
 
 	/**
@@ -1810,6 +1933,8 @@
 	}
 
 	function go( index, from ) {
+		commitAll();
+		waiting = [];
 		maybeDiscover();
 		if ( index < 0 ) { at = -1; renderWelcome(); return; }
 		if ( index >= screens.length ) {
@@ -1845,6 +1970,8 @@
 	}
 
 	window.addEventListener( 'beforeunload', function () {
+		commitAll();
+
 		if ( Object.keys( pending ).length ) {
 			clearTimeout( saveTimer );
 			var step = at >= 0 && at < screens.length ? screens[ at ].id : '';
