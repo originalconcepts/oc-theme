@@ -151,6 +151,7 @@ final class Front {
 				'less'            => __( 'One fewer', 'oc-theme' ),
 				'more'            => __( 'One more', 'oc-theme' ),
 				'wf_logo'         => __( 'Your shop', 'oc-theme' ),
+				/* translators: %1$s: a stand-in number, so the sketch's product names differ. */
 				'wf_product'      => __( 'Product %1$s', 'oc-theme' ),
 				'wf_excerpt'      => __( 'A short line about the product', 'oc-theme' ),
 				'wf_sale'         => __( 'SALE', 'oc-theme' ),
