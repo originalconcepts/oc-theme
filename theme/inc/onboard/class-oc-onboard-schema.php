@@ -1528,7 +1528,7 @@ final class Schema {
 					}
 
 					if ( ! empty( $blocks[ $type ]['variants'] ) ) {
-						$v             = (string) ( $row['variant'] ?? '' );
+						$v               = (string) ( $row['variant'] ?? '' );
 						$keep['variant'] = isset( $blocks[ $type ]['variants'][ $v ] ) ? $v : (string) array_key_first( $blocks[ $type ]['variants'] );
 					}
 
