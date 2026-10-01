@@ -857,10 +857,12 @@ final class Apply {
 	 */
 	private function recipe( string $recipe ): array {
 		$brand = trim( (string) $this->v['brand_name'] );
+		$shot  = $this->v['home_banner'];
 		$hero  = array(
 			'type'   => 'hero',
 			'slides' => array(
 				array(
+					'img'     => is_array( $shot ) ? (int) $shot['id'] : 0,
 					'heading' => $brand,
 					'text'    => __( 'A line about what you sell and for whom.', 'oc-theme' ),
 					'cta'     => __( 'To the shop', 'oc-theme' ),

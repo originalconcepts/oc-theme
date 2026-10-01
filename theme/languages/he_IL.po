@@ -11501,3 +11501,9 @@ msgstr "נכתבה עם טקסט כללי — עברו עליו והתאימו �
 
 msgid "The classic one"
 msgstr "קלאסית"
+
+msgid "The picture for the banner"
+msgstr "התמונה לבאנר"
+
+msgid "The widest, best picture you have — 1920 pixels across or more. Without it the home page opens with no banner, and you can always add it later."
+msgstr "התמונה הרחבה והטובה ביותר שיש לכם, ברוחב 1920 פיקסלים ומעלה. בלעדיה דף הבית ייפתח בלי באנר, ותמיד אפשר להוסיף אותה בהמשך."

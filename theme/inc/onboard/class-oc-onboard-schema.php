@@ -135,7 +135,7 @@ final class Schema {
 						'id'     => '3a',
 						'title'  => __( 'How the home page is built', 'oc-theme' ),
 						'intro'  => __( 'Three ways to lay out the same shop. Pick the one that looks like you — nothing here is final, and every part of it can be moved later.', 'oc-theme' ),
-						'fields' => array( 'home_recipe', 'home_header' ),
+						'fields' => array( 'home_recipe', 'home_banner', 'home_header' ),
 					),
 				),
 			),
@@ -784,6 +784,14 @@ final class Schema {
 			),
 			'default' => 'classic',
 			'target'  => array( 'call', 'home' ),
+		);
+
+		$f['home_banner'] = array(
+			'type'   => 'file',
+			'accept' => 'image',
+			'label'  => __( 'The picture for the banner', 'oc-theme' ),
+			'help'   => __( 'The widest, best picture you have — 1920 pixels across or more. Without it the home page opens with no banner, and you can always add it later.', 'oc-theme' ),
+			'target' => array( 'call', 'home' ),
 		);
 
 		$f['home_header'] = array(
