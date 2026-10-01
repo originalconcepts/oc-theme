@@ -11194,7 +11194,7 @@ msgstr "תקנון, מדיניות פרטיות והצהרת נגישות. לכ�
 msgid "The site you have today"
 msgstr "האתר שיש לכם היום"
 
-msgid "The business"
+msgid "Business details"
 msgstr "פרטי העסק"
 
 msgid "How customers reach you"

@@ -171,7 +171,7 @@ final class Schema {
 
 		$f['brand_name'] = array(
 			'type'     => 'text',
-			'group'    => __( 'The business', 'oc-theme' ),
+			'group'    => __( 'Business details', 'oc-theme' ),
 			'label'    => __( 'Brand name', 'oc-theme' ),
 			'help'     => __( 'As it should appear on the site and in emails to customers.', 'oc-theme' ),
 			'required' => true,
