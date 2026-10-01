@@ -11507,3 +11507,198 @@ msgstr "התמונה לבאנר"
 
 msgid "The widest, best picture you have — 1920 pixels across or more. Without it the home page opens with no banner, and you can always add it later."
 msgstr "התמונה הרחבה והטובה ביותר שיש לכם, ברוחב 1920 פיקסלים ומעלה. בלעדיה דף הבית ייפתח בלי באנר, ותמיד אפשר להוסיף אותה בהמשך."
+
+msgid "A sketch of the page — it changes as you answer"
+msgstr "סקיצה של העמוד — היא משתנה לפי התשובות"
+
+msgid "Great, take this one"
+msgstr "מצוין, בחרו את זו"
+
+msgid "This is your choice"
+msgstr "זו הבחירה שלכם"
+
+msgid "Show me another"
+msgstr "תראו לי אפשרות נוספת"
+
+msgid "One fewer"
+msgstr "אחד פחות"
+
+msgid "One more"
+msgstr "אחד יותר"
+
+msgid "Your shop"
+msgstr "החנות שלכם"
+
+msgid "Product %1$s"
+msgstr "מוצר מספר %1$s"
+
+msgid "A short line about the product"
+msgstr "שורת תיאור קצרה על המוצר"
+
+msgid "SALE"
+msgstr "מבצע"
+
+msgid "NEW"
+msgstr "חדש"
+
+msgid "Free delivery over a certain amount · New every week"
+msgstr "משלוח חינם מעל סכום מסוים · חדשים בכל שבוע"
+
+msgid "Best sellers"
+msgstr "הנמכרים ביותר"
+
+msgid "Our categories"
+msgstr "הקטגוריות שלנו"
+
+msgid "About the shop"
+msgstr "אודות החנות"
+
+msgid "Category name"
+msgstr "שם הקטגוריה"
+
+msgid "Filter"
+msgstr "סינון"
+
+msgid "Loading more…"
+msgstr "נטענים עוד מוצרים…"
+
+msgid "Category 1"
+msgstr "קטגוריה 1"
+
+msgid "Category 2"
+msgstr "קטגוריה 2"
+
+msgid "Category 3"
+msgstr "קטגוריה 3"
+
+msgid "Category 4"
+msgstr "קטגוריה 4"
+
+msgid "Option 1"
+msgstr "אפשרות 1"
+
+msgid "Option 2"
+msgstr "אפשרות 2"
+
+msgid "Option 3"
+msgstr "אפשרות 3"
+
+msgid "The main banner"
+msgstr "באנר ראשי בעמוד הבית"
+
+msgid "The big picture at the top of the home page. This is where an offer goes, or a launch, or a new collection. Everything you type here appears on the drawing beside you."
+msgstr "התמונה הגדולה בראש דף הבית. כאן מציעים מבצע, השקה, קולקציה חדשה. כל מה שתקלידו כאן מופיע על הסקיצה שלצידכם."
+
+msgid "The menu and the banner"
+msgstr "התפריט והבאנר"
+
+msgid "Two ways the menu can meet the picture under it. Which one do you like more?"
+msgstr "שתי דרכים שבהן התפריט נפגש עם התמונה שמתחתיו. לאיזו מהן אתם מתחברים יותר?"
+
+msgid "What stands in the banner?"
+msgstr "מה עומד בבאנר?"
+
+msgid "A picture"
+msgstr "תמונה"
+
+msgid "A short film"
+msgstr "סרטון קצר"
+
+msgid "The picture"
+msgstr "התמונה"
+
+msgid "The widest, best one you have — 1920 pixels across or more. It can be changed later."
+msgstr "הרחבה והטובה ביותר שיש לכם, ברוחב 1920 פיקסלים ומעלה. אפשר להחליף בהמשך."
+
+msgid "The address of the film"
+msgstr "כתובת הסרטון"
+
+msgid "An mp4 file. A film plays without sound and repeats itself, so keep it short."
+msgstr "קובץ mp4. סרטון מתנגן בלי קול וחוזר על עצמו, אז כדאי שיהיה קצר."
+
+msgid "The headline on the picture"
+msgstr "הכותרת על התמונה"
+
+msgid "What the button says"
+msgstr "הטקסט על הכפתור"
+
+msgid "Where does the button lead?"
+msgstr "לאיזה עמוד הכפתור מוביל?"
+
+msgid "To the shop, all the products"
+msgstr "לחנות, כל המוצרים"
+
+msgid "To another page — I will give the address"
+msgstr "לעמוד אחר — אני אתן את הכתובת"
+
+msgid "The address"
+msgstr "הכתובת"
+
+msgid "The menu sits on the picture"
+msgstr "התפריט יושב על התמונה"
+
+msgid "The menu sits above the picture"
+msgstr "התפריט יושב מעל התמונה"
+
+msgid "Three ways to lay out the same shop. Look through them and take the one you like — nothing here is final, and every part of it can be moved later."
+msgstr "שלוש דרכים לסדר את אותה חנות. עברו ביניהן וקחו את זו שמוצאת חן בעיניכם — שום דבר כאן אינו סופי, וכל חלק ניתן להזזה בהמשך."
+
+msgid "The page a customer lands on from the menu. Every answer here changes the drawing beside you."
+msgstr "העמוד שאליו מגיע לקוח מהתפריט. כל תשובה כאן משנה את הסקיצה שלצידכם."
+
+msgid "The top of the page"
+msgstr "ראש העמוד"
+
+msgid "The shelf of products"
+msgstr "מדף המוצרים"
+
+msgid "What a product card carries"
+msgstr "מה מופיע על כרטיס המוצר"
+
+msgid "A picture across the whole width"
+msgstr "תמונה לכל הרוחב"
+
+msgid "How many on a page?"
+msgstr "כמה מוצרים בעמוד?"
+
+msgid "products"
+msgstr "מוצרים"
+
+msgid "Where does the filter sit?"
+msgstr "איפה יושב הסינון?"
+
+msgid "Down the side"
+msgstr "בצד"
+
+msgid "Above the products"
+msgstr "מעל המוצרים"
+
+msgid "No filter"
+msgstr "בלי סינון"
+
+msgid "How does a customer reach the next page?"
+msgstr "איך הלקוח מגיע לעמוד הבא?"
+
+msgid "It opens by itself as they scroll"
+msgstr "העמוד נפתח מעצמו בגלילה"
+
+msgid "They see page numbers and press one"
+msgstr "רואים מספרי עמודים ולוחצים"
+
+msgid "How is a discount marked?"
+msgstr "איך מסומנת הנחה?"
+
+msgid "How many percent off"
+msgstr "כמה אחוזי הנחה"
+
+msgid "The word Sale"
+msgstr "המילה מבצע"
+
+msgid "Not marked"
+msgstr "לא מסומנת"
+
+msgid "For how long does it count as new?"
+msgstr "כמה זמן המוצר נחשב חדש?"
+
+msgid "days from the day it went up"
+msgstr "ימים מרגע העלייה לאתר"

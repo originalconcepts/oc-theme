@@ -134,8 +134,21 @@ final class Schema {
 					array(
 						'id'     => '3a',
 						'title'  => __( 'How the home page is built', 'oc-theme' ),
-						'intro'  => __( 'Three ways to lay out the same shop. Pick the one that looks like you — nothing here is final, and every part of it can be moved later.', 'oc-theme' ),
-						'fields' => array( 'home_recipe', 'home_banner', 'home_header' ),
+						'intro'  => __( 'Three ways to lay out the same shop. Look through them and take the one you like — nothing here is final, and every part of it can be moved later.', 'oc-theme' ),
+						'fields' => array( 'home_recipe' ),
+					),
+					array(
+						'id'      => '3b',
+						'title'   => __( 'The main banner', 'oc-theme' ),
+						'intro'   => __( 'The big picture at the top of the home page. This is where an offer goes, or a launch, or a new collection. Everything you type here appears on the drawing beside you.', 'oc-theme' ),
+						'preview' => 'banner',
+						'fields'  => array( 'banner_media', 'home_banner', 'banner_video', 'banner_title', 'banner_cta', 'banner_link', 'banner_url' ),
+					),
+					array(
+						'id'     => '3c',
+						'title'  => __( 'The menu and the banner', 'oc-theme' ),
+						'intro'  => __( 'Two ways the menu can meet the picture under it. Which one do you like more?', 'oc-theme' ),
+						'fields' => array( 'home_header' ),
 					),
 				),
 			),
@@ -145,10 +158,11 @@ final class Schema {
 				'title'   => __( 'The catalogue', 'oc-theme' ),
 				'screens' => array(
 					array(
-						'id'     => '4a',
-						'title'  => __( 'The category page', 'oc-theme' ),
-						'intro'  => __( 'The page a customer lands on from the menu: a shelf of products, and whatever stands above it.', 'oc-theme' ),
-						'fields' => array( 'cat_hero', 'cat_cols', 'card_preset', 'card_sale', 'card_excerpt', 'card_new' ),
+						'id'      => '4a',
+						'title'   => __( 'The category page', 'oc-theme' ),
+						'intro'   => __( 'The page a customer lands on from the menu. Every answer here changes the drawing beside you.', 'oc-theme' ),
+						'preview' => 'category',
+						'fields'  => array( 'cat_hero', 'cat_cols', 'cat_per_page', 'cat_filters', 'card_sale', 'card_new', 'card_new_days', 'card_excerpt', 'cat_paging' ),
 					),
 				),
 			),
@@ -204,8 +218,8 @@ final class Schema {
 
 		$f['existing_has'] = array(
 			'type'    => 'choice',
-			'group'   => __( 'The site you have today', 'oc-theme' ),
-			'label'   => __( 'Do you have a website today?', 'oc-theme' ),
+			'group'   => __( 'Do you have a website today?', 'oc-theme' ),
+			'label'   => '',
 			'options' => array(
 				'no'  => __( 'No, this is a new site', 'oc-theme' ),
 				'yes' => __( 'Yes, we are upgrading it', 'oc-theme' ),
@@ -765,46 +779,93 @@ final class Schema {
 		/* ---- 3a: the home page ---- */
 
 		$f['home_recipe'] = array(
-			'type'    => 'pick',
-			'label'   => __( 'How should the home page be laid out?', 'oc-theme' ),
+			'type'    => 'gallery',
+			'label'   => '',
+			'show'    => 'home',
 			'options' => array(
-				'classic' => __( 'The classic one', 'oc-theme' ),
-				'sales'   => __( 'Built to sell', 'oc-theme' ),
-				'look'    => __( 'Styled', 'oc-theme' ),
-			),
-			'notes'   => array(
-				'classic' => __( 'A banner, your categories, a shelf of products and a few words about you.', 'oc-theme' ),
-				'sales'   => __( 'A banner, a line of news across the page, what is on offer and what sells most.', 'oc-theme' ),
-				'look'    => __( 'A tall banner and a styled scene with the products marked on it.', 'oc-theme' ),
-			),
-			'art'     => array(
-				'classic' => 'home_classic',
-				'sales'   => 'home_sales',
-				'look'    => 'home_look',
+				'classic' => __( 'Option 1', 'oc-theme' ),
+				'sales'   => __( 'Option 2', 'oc-theme' ),
+				'look'    => __( 'Option 3', 'oc-theme' ),
 			),
 			'default' => 'classic',
+			'target'  => array( 'call', 'home' ),
+		);
+
+		/* ---- 3b: the banner ---- */
+
+		$f['banner_media'] = array(
+			'type'    => 'choice',
+			'label'   => __( 'What stands in the banner?', 'oc-theme' ),
+			'options' => array(
+				'image' => __( 'A picture', 'oc-theme' ),
+				'video' => __( 'A short film', 'oc-theme' ),
+			),
+			'default' => 'image',
 			'target'  => array( 'call', 'home' ),
 		);
 
 		$f['home_banner'] = array(
 			'type'   => 'file',
 			'accept' => 'image',
-			'label'  => __( 'The picture for the banner', 'oc-theme' ),
-			'help'   => __( 'The widest, best picture you have — 1920 pixels across or more. Without it the home page opens with no banner, and you can always add it later.', 'oc-theme' ),
+			'label'  => __( 'The picture', 'oc-theme' ),
+			'help'   => __( 'The widest, best one you have — 1920 pixels across or more. It can be changed later.', 'oc-theme' ),
+			'when'   => array( 'banner_media', array( 'image' ) ),
 			'target' => array( 'call', 'home' ),
 		);
 
-		$f['home_header'] = array(
-			'type'    => 'pick',
-			'label'   => __( 'Where does the menu sit over the banner?', 'oc-theme' ),
-			'help'    => __( 'Over the picture it feels taller and more designed; above it the picture stays whole.', 'oc-theme' ),
+		$f['banner_video'] = array(
+			'type'        => 'url',
+			'label'       => __( 'The address of the film', 'oc-theme' ),
+			'help'        => __( 'An mp4 file. A film plays without sound and repeats itself, so keep it short.', 'oc-theme' ),
+			'placeholder' => 'https://',
+			'dir'         => 'ltr',
+			'when'        => array( 'banner_media', array( 'video' ) ),
+			'target'      => array( 'call', 'home' ),
+		);
+
+		$f['banner_title'] = array(
+			'type'        => 'text',
+			'label'       => __( 'The headline on the picture', 'oc-theme' ),
+			'placeholder' => 'NEW COLLECTION',
+			'target'      => array( 'call', 'home' ),
+		);
+
+		$f['banner_cta'] = array(
+			'type'        => 'text',
+			'label'       => __( 'What the button says', 'oc-theme' ),
+			'placeholder' => 'SHOP NOW',
+			'target'      => array( 'call', 'home' ),
+		);
+
+		$f['banner_link'] = array(
+			'type'    => 'choice',
+			'label'   => __( 'Where does the button lead?', 'oc-theme' ),
 			'options' => array(
-				'home' => __( 'Over the picture', 'oc-theme' ),
-				'none' => __( 'Above it', 'oc-theme' ),
+				'shop' => __( 'To the shop, all the products', 'oc-theme' ),
+				'url'  => __( 'To another page — I will give the address', 'oc-theme' ),
 			),
-			'art'     => array(
-				'home' => 'head_over',
-				'none' => 'head_above',
+			'default' => 'shop',
+			'target'  => array( 'call', 'home' ),
+		);
+
+		$f['banner_url'] = array(
+			'type'        => 'url',
+			'label'       => __( 'The address', 'oc-theme' ),
+			'placeholder' => 'https://',
+			'dir'         => 'ltr',
+			'when'        => array( 'banner_link', array( 'url' ) ),
+			'target'      => array( 'call', 'home' ),
+		);
+
+		/* ---- 3c: the menu over the banner ---- */
+
+		$f['home_header'] = array(
+			'type'    => 'gallery',
+			'label'   => '',
+			'show'    => 'header',
+			'options' => array(
+				'home' => __( 'The menu sits on the picture', 'oc-theme' ),
+				'none' => __( 'The menu sits above the picture', 'oc-theme' ),
 			),
 			'default' => 'home',
 			'target'  => array( 'mod', 'oc_header_transparent' ),
@@ -813,67 +874,94 @@ final class Schema {
 		/* ---- 4a: the category page ---- */
 
 		$f['cat_hero'] = array(
-			'type'    => 'pick',
+			'type'    => 'choice',
+			'group'   => __( 'The top of the page', 'oc-theme' ),
 			'label'   => __( 'What stands above the products?', 'oc-theme' ),
 			'options' => array(
 				'none'  => __( 'Nothing — straight to the products', 'oc-theme' ),
-				'full'  => __( 'A band across the page', 'oc-theme' ),
+				'full'  => __( 'A picture across the whole width', 'oc-theme' ),
 				'split' => __( 'Half picture, half words', 'oc-theme' ),
-			),
-			'art'     => array(
-				'none'  => 'cat_hero_none',
-				'full'  => 'cat_hero_full',
-				'split' => 'cat_hero_split',
 			),
 			'default' => 'none',
 			'target'  => array( 'mod', 'oc_chero_layout' ),
 		);
 
 		$f['cat_cols'] = array(
-			'type'    => 'pick',
+			'type'    => 'stepper',
+			'group'   => __( 'The shelf of products', 'oc-theme' ),
 			'label'   => __( 'How many products in a row?', 'oc-theme' ),
 			'help'    => __( 'On a phone it is always two. This is the computer.', 'oc-theme' ),
-			'options' => array(
-				'2' => __( 'Two — big pictures', 'oc-theme' ),
-				'3' => __( 'Three', 'oc-theme' ),
-				'4' => __( 'Four — more on the screen', 'oc-theme' ),
-			),
-			'art'     => array(
-				'2' => 'grid_2',
-				'3' => 'grid_3',
-				'4' => 'grid_4',
-			),
-			'default' => '4',
+			'min'     => 2,
+			'max'     => 5,
+			'default' => '3',
 			'target'  => array( 'mod', 'oc_catalog_cols' ),
 		);
 
-		$f['card_preset'] = array(
-			'type'    => 'pick',
-			'label'   => __( 'How should a product card look?', 'oc-theme' ),
+		$f['cat_per_page'] = array(
+			'type'        => 'number',
+			'label'       => __( 'How many on a page?', 'oc-theme' ),
+			'placeholder' => '40',
+			'suffix'      => __( 'products', 'oc-theme' ),
+			'min'         => 6,
+			'max'         => 200,
+			'default'     => 40,
+			'target'      => array( 'mod', 'oc_catalog_per_page' ),
+		);
+
+		$f['cat_filters'] = array(
+			'type'    => 'choice',
+			'label'   => __( 'Where does the filter sit?', 'oc-theme' ),
 			'options' => array(
-				'minimal' => __( 'Bare — picture, name, price', 'oc-theme' ),
-				'classic' => __( 'With a buy button on the card', 'oc-theme' ),
-				'card'    => __( 'Inside a framed box', 'oc-theme' ),
+				'sidebar' => __( 'Down the side', 'oc-theme' ),
+				'topbar'  => __( 'Above the products', 'oc-theme' ),
+				'off'     => __( 'No filter', 'oc-theme' ),
 			),
-			'art'     => array(
-				'minimal' => 'card_minimal',
-				'classic' => 'card_classic',
-				'card'    => 'card_boxed',
+			'default' => 'sidebar',
+			'target'  => array( 'call', 'filters' ),
+		);
+
+		$f['cat_paging'] = array(
+			'type'    => 'choice',
+			'label'   => __( 'How does a customer reach the next page?', 'oc-theme' ),
+			'options' => array(
+				'infinite' => __( 'It opens by itself as they scroll', 'oc-theme' ),
+				'numbers'  => __( 'They see page numbers and press one', 'oc-theme' ),
 			),
-			'default' => 'classic',
-			'target'  => array( 'mod', 'oc_card_preset' ),
+			'default' => 'infinite',
+			'target'  => array( 'mod', 'oc_catalog_paging' ),
 		);
 
 		$f['card_sale'] = array(
 			'type'    => 'choice',
-			'label'   => __( 'Mark a discount on the card?', 'oc-theme' ),
+			'group'   => __( 'What a product card carries', 'oc-theme' ),
+			'label'   => __( 'How is a discount marked?', 'oc-theme' ),
 			'options' => array(
-				'percent' => __( 'Yes, how many percent off', 'oc-theme' ),
-				'text'    => __( 'Yes, just the word Sale', 'oc-theme' ),
-				'none'    => __( 'No', 'oc-theme' ),
+				'percent' => __( 'How many percent off', 'oc-theme' ),
+				'text'    => __( 'The word Sale', 'oc-theme' ),
+				'none'    => __( 'Not marked', 'oc-theme' ),
 			),
 			'default' => 'percent',
 			'target'  => array( 'mod', 'oc_card_sale_badge' ),
+		);
+
+		$f['card_new'] = array(
+			'type'    => 'choice',
+			'label'   => __( 'A "new" label on a product that just arrived?', 'oc-theme' ),
+			'options' => $yesno,
+			'default' => 'yes',
+			'target'  => array( 'mod', 'oc_label_new' ),
+		);
+
+		$f['card_new_days'] = array(
+			'type'        => 'number',
+			'label'       => __( 'For how long does it count as new?', 'oc-theme' ),
+			'placeholder' => '30',
+			'suffix'      => __( 'days from the day it went up', 'oc-theme' ),
+			'min'         => 1,
+			'max'         => 365,
+			'default'     => 30,
+			'when'        => array( 'card_new', array( 'yes' ) ),
+			'target'      => array( 'mod', 'oc_label_new_days' ),
 		);
 
 		$f['card_excerpt'] = array(
@@ -883,14 +971,6 @@ final class Schema {
 			'options' => $yesno,
 			'default' => 'no',
 			'target'  => array( 'mod', 'oc_card_excerpt' ),
-		);
-
-		$f['card_new'] = array(
-			'type'    => 'choice',
-			'label'   => __( 'A "new" label on a product that just arrived?', 'oc-theme' ),
-			'options' => $yesno,
-			'default' => 'yes',
-			'target'  => array( 'mod', 'oc_label_new' ),
 		);
 
 		/* ---- 5a: the product page ---- */
@@ -1019,6 +1099,8 @@ final class Schema {
 					'options_when' => array(),
 					'art'          => array(),
 					'notes'        => array(),
+					'show'         => '',
+					'suffix'       => '',
 					'default'      => null,
 					'when'         => null,
 					'required'     => false,
@@ -1319,9 +1401,17 @@ final class Schema {
 
 			case 'choice':
 			case 'pick':
+			case 'gallery':
 				$v = (string) ( is_scalar( $raw ) ? $raw : '' );
 
 				return isset( $f['options'][ $v ] ) ? $v : '';
+
+			case 'stepper':
+				$n   = (int) ( is_scalar( $raw ) ? $raw : 0 );
+				$min = isset( $f['min'] ) ? (int) $f['min'] : 1;
+				$max = isset( $f['max'] ) ? (int) $f['max'] : 10;
+
+				return (string) max( $min, min( $max, $n ) );
 
 			case 'checks':
 				$out = array();

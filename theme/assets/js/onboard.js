@@ -176,6 +176,7 @@
 		fixChoices();
 		queueSave();
 		refreshVisibility();
+		paintPreview();
 	}
 
 	/**
@@ -314,7 +315,7 @@
 		var dep = f.when ? ' is-dep' : '';
 		var box = el( 'div', { 'class': 'oc-onb-f oc-onb-f--' + f.type + dep, 'data-field': id } );
 
-		if ( 'consent' !== f.type ) {
+		if ( 'consent' !== f.type && '' !== String( f.label || '' ) ) {
 			box.appendChild( el( 'div', { 'class': 'oc-onb-f__label' }, [
 				el( 'span', { text: f.label } ),
 				f.required ? el( 'span', { 'class': 'oc-onb-f__req', text: ' *', 'aria-label': I.required } ) : null
@@ -337,9 +338,17 @@
 		if ( f.type === 'phone' ) { attrs.inputmode = 'tel'; }
 		if ( f.placeholder ) { attrs.placeholder = f.placeholder; }
 		var e = el( 'input', attrs );
+
+		if ( f.suffix ) { e.classList.add( 'oc-onb-in--unit' ); }
+
 		var commit = function () { onChange( f.type === 'number' ? Number( e.value ) : e.value ); };
-		e.addEventListener( 'input', function () { clearTimeout( e._t ); e._t = setTimeout( commit, 400 ); } );
+		e.addEventListener( 'input', function () { clearTimeout( e._t ); e._t = setTimeout( commit, 150 ); } );
 		e.addEventListener( 'change', commit );
+
+		if ( f.suffix ) {
+			return el( 'div', { 'class': 'oc-onb-unit' }, [ e, el( 'span', { 'class': 'oc-onb-unit__t', text: f.suffix } ) ] );
+		}
+
 		return e;
 	}
 
@@ -443,6 +452,135 @@
 		} );
 
 		return wrap;
+	}
+
+	/**
+	 * One example at a time, as big as the card allows, with a way to flip
+	 * through them. Three small pictures side by side are too small to tell
+	 * apart; this is the same question asked so it can be answered.
+	 *
+	 * @param {string} id Field id.
+	 * @param {Object} f  Field.
+	 */
+	function render_gallery( id, f ) {
+		var keys = Object.keys( f.options ).filter( function ( k ) { return optionShown( f, k ); } );
+		var wrap = el( 'div', { 'class': 'oc-onb-gal' } );
+		var at   = Math.max( 0, keys.indexOf( String( val( id ) ) ) );
+		var stage = el( 'div', { 'class': 'oc-onb-gal__stage' } );
+		var name  = el( 'div', { 'class': 'oc-onb-gal__name' } );
+		var dots  = el( 'div', { 'class': 'oc-onb-gal__dots' } );
+
+		function show( i ) {
+			at = ( i + keys.length ) % keys.length;
+
+			var k = keys[ at ];
+
+			stage.innerHTML = '';
+			stage.appendChild( f.show ? previewFor2( f.show, k ) : el( 'div', { 'class': 'oc-onb-pick__art', html: ( C.art || {} )[ ( f.art || {} )[ k ] ] || '' } ) );
+
+			name.textContent = f.options[ k ];
+			wrap.classList.toggle( 'is-chosen', String( val( id ) ) === k );
+
+			dots.innerHTML = '';
+			keys.forEach( function ( kk, j ) {
+				dots.appendChild( el( 'span', { 'class': 'oc-onb-gal__dot' + ( j === at ? ' is-on' : '' ) + ( String( val( id ) ) === kk ? ' is-picked' : '' ) } ) );
+			} );
+
+			take.textContent = String( val( id ) ) === k ? I.gal_taken : I.gal_take;
+			take.disabled    = String( val( id ) ) === k ? 'disabled' : null;
+			take.classList.toggle( 'is-taken', String( val( id ) ) === k );
+		}
+
+		var take = el( 'button', { type: 'button', 'class': 'oc-onb-btn', text: I.gal_take } );
+
+		take.addEventListener( 'click', function () {
+			set( id, keys[ at ] );
+			show( at );
+		} );
+
+		var skip = el( 'button', { type: 'button', 'class': 'oc-onb-btn oc-onb-btn--ghost', text: I.gal_next } );
+
+		skip.addEventListener( 'click', function () {
+			show( at + 1 );
+			wrap.scrollIntoView( { behavior: 'smooth', block: 'start' } );
+		} );
+
+		var prev = el( 'button', { type: 'button', 'class': 'oc-onb-gal__arrow oc-onb-gal__arrow--prev', 'aria-label': I.back, text: '›' } );
+		var nextB = el( 'button', { type: 'button', 'class': 'oc-onb-gal__arrow oc-onb-gal__arrow--next', 'aria-label': I.next, text: '‹' } );
+
+		prev.addEventListener( 'click', function () { show( at - 1 ); } );
+		nextB.addEventListener( 'click', function () { show( at + 1 ); } );
+
+		wrap.appendChild( el( 'div', { 'class': 'oc-onb-gal__frame' }, [ prev, stage, nextB ] ) );
+		wrap.appendChild( el( 'div', { 'class': 'oc-onb-gal__bar' }, [ name, dots ] ) );
+		wrap.appendChild( el( 'div', { 'class': 'oc-onb-gal__btns' }, [ take, skip ] ) );
+
+		show( at );
+
+		return wrap;
+	}
+
+	/**
+	 * A drawing of one option, for the gallery.
+	 *
+	 * @param {string} kind What to draw.
+	 * @param {string} k    Which option.
+	 */
+	function previewFor2( kind, k ) {
+		if ( 'home' === kind ) { return previewHome( k ); }
+		if ( 'header' === kind ) {
+			var was = values.home_header;
+			values.home_header = k;
+			var out = previewBanner();
+			values.home_header = was;
+			return out;
+		}
+		return el( 'div' );
+	}
+
+	/**
+	 * A number with a minus and a plus. For a small range — how many
+	 * products stand in a row — this is quicker than typing and it cannot
+	 * be answered with nonsense.
+	 *
+	 * @param {string} id Field id.
+	 * @param {Object} f  Field.
+	 */
+	function render_stepper( id, f ) {
+		var min  = f.min === undefined ? 1 : Number( f.min );
+		var max  = f.max === undefined ? 10 : Number( f.max );
+		var out  = el( 'div', { 'class': 'oc-onb-step' } );
+		var now  = el( 'span', { 'class': 'oc-onb-step__n' } );
+		var less = el( 'button', { type: 'button', 'class': 'oc-onb-step__b', 'aria-label': I.less, text: '−' } );
+		var more = el( 'button', { type: 'button', 'class': 'oc-onb-step__b', 'aria-label': I.more, text: '+' } );
+
+		function paint() {
+			var v = Math.max( min, Math.min( max, Number( val( id ) ) || min ) );
+			now.textContent = String( v );
+			less.disabled = v <= min ? 'disabled' : null;
+			more.disabled = v >= max ? 'disabled' : null;
+		}
+
+		function step( by ) {
+			var v = Math.max( min, Math.min( max, ( Number( val( id ) ) || min ) + by ) );
+			set( id, String( v ) );
+			paint();
+		}
+
+		less.addEventListener( 'click', function () { step( -1 ); } );
+		more.addEventListener( 'click', function () { step( 1 ); } );
+
+		out.appendChild( less );
+		out.appendChild( now );
+		out.appendChild( more );
+
+		if ( f.suffix ) {
+			out.appendChild( el( 'span', { 'class': 'oc-onb-step__u', text: f.suffix } ) );
+		}
+
+		paint();
+
+		return out;
 	}
 
 	function render_checks( id, f, value, onChange ) {
@@ -717,6 +855,8 @@
 			case 'textarea': inner = render_textarea( id, f ); break;
 			case 'choice':   inner = render_choice( id, f ); break;
 			case 'pick':     inner = render_pick( id, f ); break;
+			case 'gallery':  inner = render_gallery( id, f ); break;
+			case 'stepper':  inner = render_stepper( id, f ); break;
 			case 'checks':   inner = render_checks( id, f ); break;
 			case 'consent':  inner = render_consent( id, f ); break;
 			case 'file':     inner = render_file( id, f ); break;
@@ -744,6 +884,265 @@
 
 			grp.hidden = ! any;
 		} );
+	}
+
+
+	/* ------------------------------------------------------- the sketch */
+
+	/**
+	 * A drawing of the site that answers back. Every screen in part two
+	 * shows one beside the questions, and it redraws on every change, so a
+	 * customer sees what they are choosing instead of reading about it.
+	 *
+	 * Deliberately a sketch and not a screenshot: grey boxes, crossed
+	 * rectangles where pictures go, and stand-in words. Nobody mistakes it
+	 * for the finished site, and nothing in it has to be kept up to date.
+	 */
+
+	function w( cls, children, text ) {
+		return el( 'div', { 'class': cls, text: text === undefined ? null : text }, children || [] );
+	}
+
+	/**
+	 * A crossed rectangle: here a picture will go.
+	 *
+	 * @param {string} cls  Extra classes.
+	 * @param {string} src  A real picture to show instead, if there is one.
+	 */
+	function wImg( cls, src ) {
+		var box = el( 'div', { 'class': 'wf-img ' + ( cls || '' ) } );
+
+		if ( src ) {
+			box.classList.add( 'is-real' );
+			box.style.backgroundImage = 'url(' + src + ')';
+		}
+
+		return box;
+	}
+
+	function wLine( width, cls ) {
+		return el( 'div', { 'class': 'wf-ln ' + ( cls || '' ), style: 'width:' + width } );
+	}
+
+	/**
+	 * One product card, with the labels the catalogue answers ask about.
+	 *
+	 * @param {number} n Which one, so the stand-in names differ.
+	 */
+	function wCard( n ) {
+		var kids = [];
+		var art  = wImg( 'wf-card__img' );
+
+		if ( 'none' !== String( val( 'card_sale' ) ) ) {
+			art.appendChild( el( 'span', { 'class': 'wf-tag wf-tag--sale', text: 'text' === String( val( 'card_sale' ) ) ? I.wf_sale : '20%-' } ) );
+		}
+
+		if ( 'yes' === String( val( 'card_new' ) ) ) {
+			art.appendChild( el( 'span', { 'class': 'wf-tag wf-tag--new', text: I.wf_new } ) );
+		}
+
+		kids.push( art );
+		kids.push( el( 'div', { 'class': 'wf-card__t', text: fmt( I.wf_product, n ) } ) );
+
+		if ( 'yes' === String( val( 'card_excerpt' ) ) ) {
+			kids.push( el( 'div', { 'class': 'wf-card__x', text: I.wf_excerpt } ) );
+		}
+
+		kids.push( el( 'div', { 'class': 'wf-card__p', text: '₪' + ( 80 + ( n * 35 ) ) + '.00' } ) );
+
+		return w( 'wf-card', kids );
+	}
+
+	/**
+	 * A row of product cards.
+	 *
+	 * @param {number} cols How many across.
+	 * @param {number} from The first stand-in number.
+	 */
+	function wRow( cols, from ) {
+		var row = el( 'div', { 'class': 'wf-grid', style: '--wf-cols:' + cols } );
+
+		for ( var i = 0; i < cols; i++ ) {
+			row.appendChild( wCard( from + i ) );
+		}
+
+		return row;
+	}
+
+	/**
+	 * The page's own furniture: a top bar and a foot.
+	 *
+	 * @param {Array}  kids  What sits between them.
+	 * @param {Object} opts  over: the bar sits on the picture.
+	 */
+	function wPage( kids, opts ) {
+		opts = opts || {};
+
+		var bar = w( 'wf-bar' + ( opts.over ? ' wf-bar--over' : '' ), [
+			w( 'wf-bar__logo', null, C.site && C.site.name ? C.site.name : I.wf_logo ),
+			w( 'wf-bar__nav', [ wLine( '34px' ), wLine( '28px' ), wLine( '40px' ), wLine( '24px' ) ] ),
+			w( 'wf-bar__icons', [ wLine( '12px' ), wLine( '12px' ), wLine( '12px' ) ] )
+		] );
+
+		var foot = w( 'wf-foot', [ wLine( '60px' ), wLine( '40px' ), wLine( '52px' ) ] );
+
+		return w( 'wf' + ( opts.over ? ' wf--over' : '' ), [ bar ].concat( kids ).concat( [ foot ] ) );
+	}
+
+	/**
+	 * The banner, as the customer is filling it in.
+	 */
+	function wBanner( tall ) {
+		var pic   = val( 'home_banner' );
+		var hero  = wImg( 'wf-hero' + ( tall ? ' wf-hero--tall' : '' ), pic && pic.url ? pic.url : '' );
+		var title = String( val( 'banner_title' ) || '' ).trim() || 'NEW COLLECTION';
+		var cta   = String( val( 'banner_cta' ) || '' ).trim() || 'SHOP NOW';
+
+		hero.appendChild( w( 'wf-hero__in', [
+			el( 'div', { 'class': 'wf-hero__h', text: title } ),
+			el( 'div', { 'class': 'wf-hero__b', text: cta } )
+		] ) );
+
+		return hero;
+	}
+
+	/**
+	 * A strip of category tiles.
+	 */
+	function wCats() {
+		var names = I.wf_cats || [];
+		var row   = el( 'div', { 'class': 'wf-grid wf-grid--cats', style: '--wf-cols:4' } );
+
+		names.forEach( function ( name ) {
+			row.appendChild( w( 'wf-cat', [ wImg( 'wf-cat__img' ), el( 'div', { 'class': 'wf-cat__t', text: name } ) ] ) );
+		} );
+
+		return row;
+	}
+
+	function wHeading( text ) {
+		return el( 'div', { 'class': 'wf-h', text: text } );
+	}
+
+	/**
+	 * The home page, drawn for one of the three ways of building it.
+	 *
+	 * @param {string} recipe classic | sales | look.
+	 */
+	function previewHome( recipe ) {
+		var over = 'home' === String( val( 'home_header' ) );
+		var mid  = [];
+
+		mid.push( wBanner( 'look' === recipe ) );
+
+		if ( 'sales' === recipe ) {
+			mid.push( w( 'wf-mq', null, I.wf_marquee ) );
+			mid.push( wHeading( I.wf_sale_h ) );
+			mid.push( wRow( 4, 1 ) );
+			mid.push( wHeading( I.wf_cats_h ) );
+			mid.push( wCats() );
+			mid.push( wHeading( I.wf_best_h ) );
+			mid.push( wRow( 4, 5 ) );
+		} else if ( 'look' === recipe ) {
+			mid.push( wHeading( I.wf_look_h ) );
+			mid.push( w( 'wf-look', [ wImg( 'wf-look__img' ), w( 'wf-look__side', [ wCard( 1 ), wCard( 2 ) ] ) ] ) );
+			mid.push( wHeading( I.wf_cats_h ) );
+			mid.push( wCats() );
+			mid.push( wHeading( I.wf_new_h ) );
+			mid.push( wRow( 4, 3 ) );
+		} else {
+			mid.push( wHeading( I.wf_cats_h ) );
+			mid.push( wCats() );
+			mid.push( wHeading( I.wf_new_h ) );
+			mid.push( wRow( 4, 1 ) );
+			mid.push( w( 'wf-trust', [
+				w( 'wf-trust__i', [ el( 'div', { 'class': 'wf-trust__h', text: I.wf_trust1 } ), wLine( '80%' ) ] ),
+				w( 'wf-trust__i', [ el( 'div', { 'class': 'wf-trust__h', text: I.wf_trust2 } ), wLine( '80%' ) ] ),
+				w( 'wf-trust__i', [ el( 'div', { 'class': 'wf-trust__h', text: I.wf_trust3 } ), wLine( '80%' ) ] )
+			] ) );
+			mid.push( w( 'wf-about', [
+				wImg( 'wf-about__img' ),
+				w( 'wf-about__t', [ wHeading( I.wf_about_h ), wLine( '100%' ), wLine( '92%' ), wLine( '70%' ) ] )
+			] ) );
+		}
+
+		return wPage( mid, { over: over } );
+	}
+
+	/**
+	 * The banner on its own, large.
+	 */
+	function previewBanner() {
+		return wPage( [ wBanner( false ), wHeading( I.wf_cats_h ), wCats() ], { over: 'home' === String( val( 'home_header' ) ) } );
+	}
+
+	/**
+	 * The category page, as its answers describe it.
+	 */
+	function previewCategory() {
+		var kind  = String( val( 'cat_hero' ) );
+		var cols  = Math.max( 2, Math.min( 5, parseInt( val( 'cat_cols' ), 10 ) || 3 ) );
+		var side  = 'sidebar' === String( val( 'cat_filters' ) );
+		var top   = 'topbar' === String( val( 'cat_filters' ) );
+		var mid   = [];
+
+		if ( 'full' === kind ) {
+			mid.push( w( 'wf-chero', [ wImg( 'wf-chero__img' ), w( 'wf-chero__in', [ el( 'div', { 'class': 'wf-hero__h', text: I.wf_cat_name } ) ] ) ] ) );
+		} else if ( 'split' === kind ) {
+			mid.push( w( 'wf-chero wf-chero--split', [
+				wImg( 'wf-chero__img' ),
+				w( 'wf-chero__words', [ el( 'div', { 'class': 'wf-h', text: I.wf_cat_name } ), wLine( '90%' ), wLine( '60%' ) ] )
+			] ) );
+		} else {
+			mid.push( wHeading( I.wf_cat_name ) );
+		}
+
+		if ( top ) {
+			mid.push( w( 'wf-filters wf-filters--top', [ wLine( '60px' ), wLine( '48px' ), wLine( '70px' ), wLine( '40px' ) ] ) );
+		}
+
+		var shelf = w( 'wf-shelf', [ wRow( cols, 1 ), wRow( cols, cols + 1 ) ] );
+
+		if ( side ) {
+			mid.push( w( 'wf-withside', [
+				w( 'wf-filters wf-filters--side', [
+					el( 'div', { 'class': 'wf-h wf-h--s', text: I.wf_filters } ),
+					wLine( '100%' ), wLine( '80%' ), wLine( '90%' ), wLine( '60%' ), wLine( '85%' )
+				] ),
+				shelf
+			] ) );
+		} else {
+			mid.push( shelf );
+		}
+
+		mid.push( 'numbers' === String( val( 'cat_paging' ) )
+			? w( 'wf-pages', [ w( 'wf-pg is-on', null, '1' ), w( 'wf-pg', null, '2' ), w( 'wf-pg', null, '3' ) ] )
+			: w( 'wf-more', null, I.wf_more ) );
+
+		return wPage( mid, {} );
+	}
+
+	/**
+	 * Which drawing a screen asks for.
+	 *
+	 * @param {string} kind home | banner | category.
+	 */
+	function previewFor( kind ) {
+		if ( 'banner' === kind ) { return previewBanner(); }
+		if ( 'category' === kind ) { return previewCategory(); }
+		return previewHome( String( val( 'home_recipe' ) ) );
+	}
+
+	/**
+	 * Draw it again, wherever it is standing.
+	 */
+	function paintPreview() {
+		var holder = root.querySelector( '[data-preview]' );
+
+		if ( ! holder ) { return; }
+
+		holder.innerHTML = '';
+		holder.appendChild( previewFor( holder.getAttribute( 'data-preview' ) ) );
 	}
 
 	/* ------------------------------------------------------------ screens */
@@ -815,14 +1214,30 @@
 		if ( sc.gate ) { renderGate( index ); return; }
 
 		root.innerHTML = '';
-		var card = el( 'div', { 'class': 'oc-onb__card' } );
+		var card = el( 'div', { 'class': 'oc-onb__card' + ( sc.preview ? ' oc-onb__card--wide' : '' ) } );
 		card.appendChild( progressBar( index ) );
 		card.appendChild( el( 'p', { 'class': 'oc-onb__eyebrow', text: sc.step.title } ) );
 		card.appendChild( el( 'h1', { text: sc.title } ) );
 		if ( sc.intro ) { card.appendChild( el( 'p', { 'class': 'oc-onb__intro', text: sc.intro } ) ); }
 
 		var lastGroup = null;
-		var holder    = card;
+		var qcol      = card;
+
+		// On a screen that carries a drawing, the questions take one column
+		// and the drawing the other, and it stays in view while you answer.
+		if ( sc.preview ) {
+			qcol = el( 'div', { 'class': 'oc-onb-split__q' } );
+
+			card.appendChild( el( 'div', { 'class': 'oc-onb-split' }, [
+				qcol,
+				el( 'div', { 'class': 'oc-onb-split__p' }, [
+					el( 'p', { 'class': 'oc-onb-side__t', text: I.sketch } ),
+					el( 'div', { 'class': 'oc-onb-side', 'data-preview': sc.preview } )
+				] )
+			] ) );
+		}
+
+		var holder = qcol;
 
 		sc.fields.forEach( function ( id ) {
 			var f = F[ id ];
@@ -838,7 +1253,7 @@
 					holder.appendChild( el( 'h2', { 'class': 'oc-onb-grp__h', text: group } ) );
 				}
 
-				card.appendChild( holder );
+				qcol.appendChild( holder );
 			}
 
 			var box = renderField( id );
@@ -852,9 +1267,10 @@
 			if ( miss.length ) { mark( miss ); return; }
 			go( index + 1 );
 		} } ) );
-		card.appendChild( nav );
+		qcol.appendChild( nav );
 		root.appendChild( card );
 		refreshVisibility();
+		paintPreview();
 		window.scrollTo( { top: 0, behavior: 'smooth' } );
 	}
 
@@ -873,7 +1289,8 @@
 		if ( isEmpty( v ) ) { return ''; }
 		switch ( f.type ) {
 			case 'choice':
-			case 'pick':     return f.options[ v ] || String( v );
+			case 'pick':
+			case 'gallery':  return f.options[ v ] || String( v );
 			case 'checks':   return v.map( function ( k ) { return f.options[ k ] || k; } ).join( ', ' );
 			case 'consent':  return v ? I.yes : I.no;
 			case 'file':     return v.name || '';
@@ -977,7 +1394,16 @@
 	root.removeAttribute( 'data-loading' );
 	maybeDiscover();
 
-	if ( C.status === 'applied' && C.step === 'summary' ) {
+	var asked_at = ( window.location.search.match( /[?&]at=([a-z0-9-]+)/i ) || [] )[1];
+	var jump     = -1;
+
+	if ( asked_at ) {
+		screens.forEach( function ( s, i ) { if ( s.id === asked_at ) { jump = i; } } );
+	}
+
+	if ( jump >= 0 ) {
+		go( jump );
+	} else if ( C.status === 'applied' && C.step === 'summary' ) {
 		go( screens.length );
 	} else {
 		renderWelcome();

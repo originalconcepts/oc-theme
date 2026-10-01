@@ -858,15 +858,21 @@ final class Apply {
 	private function recipe( string $recipe ): array {
 		$brand = trim( (string) $this->v['brand_name'] );
 		$shot  = $this->v['home_banner'];
-		$hero  = array(
+		$film  = 'video' === $this->v['banner_media'] ? trim( (string) $this->v['banner_video'] ) : '';
+		$shop  = function_exists( 'wc_get_page_permalink' ) ? (string) wc_get_page_permalink( 'shop' ) : home_url( '/' );
+		$where = 'url' === $this->v['banner_link'] ? trim( (string) $this->v['banner_url'] ) : '';
+		$head  = trim( (string) $this->v['banner_title'] );
+		$press = trim( (string) $this->v['banner_cta'] );
+
+		$hero = array(
 			'type'   => 'hero',
 			'slides' => array(
 				array(
-					'img'     => is_array( $shot ) ? (int) $shot['id'] : 0,
-					'heading' => $brand,
-					'text'    => __( 'A line about what you sell and for whom.', 'oc-theme' ),
-					'cta'     => __( 'To the shop', 'oc-theme' ),
-					'url'     => function_exists( 'wc_get_page_permalink' ) ? (string) wc_get_page_permalink( 'shop' ) : home_url( '/' ),
+					'img'     => '' === $film && is_array( $shot ) ? (int) $shot['id'] : 0,
+					'vid'     => $film,
+					'heading' => '' !== $head ? $head : $brand,
+					'cta'     => '' !== $press ? $press : __( 'To the shop', 'oc-theme' ),
+					'url'     => '' !== $where ? $where : $shop,
 				),
 			),
 			'pos'    => 'cc',
@@ -970,6 +976,25 @@ final class Apply {
 			$trust,
 			$about,
 		);
+	}
+
+	/**
+	 * Where the catalogue's filter stands, and whether it stands at all.
+	 */
+	private function apply_filters(): void {
+		$where = (string) $this->v['cat_filters'];
+		$all   = get_option( 'oc_filters' );
+		$all   = is_array( $all ) ? $all : array();
+
+		$all['enabled'] = 'off' === $where ? 0 : 1;
+
+		if ( 'off' !== $where ) {
+			$all['layout'] = $where;
+		}
+
+		update_option( 'oc_filters', $all );
+
+		$this->row( 'cat_filters', 'oc_filters', 'applied' );
 	}
 
 	/**
