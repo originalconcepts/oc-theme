@@ -2124,7 +2124,7 @@ return array(
 		"Panels" => "פאנלים",
 		"Parallax" => "פרלקס",
 		"Parsed — review below." => "נקרא — עברו למטה.",
-		"Part one is done" => "סיימנו את החלק הראשון",
+		"Part one is done" => "סיימנו את שלב 1",
 		"Participating products" => "למוצרים המשתתפים",
 		"Passover" => "פסח",
 		"Password" => "סיסמא",

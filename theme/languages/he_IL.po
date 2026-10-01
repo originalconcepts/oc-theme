@@ -11222,7 +11222,7 @@ msgid "Our suggestion"
 msgstr "ההצעה שלנו"
 
 msgid "Part one is done"
-msgstr "סיימנו את החלק הראשון"
+msgstr "סיימנו את שלב 1"
 
 msgid "Everything the site needs in order to speak in your name is in. Part two, the last one, is the look of the site: the home page, the catalogue, the product page and the way an order is placed."
 msgstr "כל מה שהאתר צריך כדי לדבר בשמכם נמצא אצלנו. החלק השני, והאחרון, הוא נראות האתר: דף הבית, הקטלוג, עמוד המוצר והדרך שבה מבצעים הזמנה."
