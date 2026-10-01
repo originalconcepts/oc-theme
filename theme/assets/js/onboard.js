@@ -683,6 +683,12 @@
 
 			list.innerHTML = '';
 
+			// An empty page is a real answer, so there has to be a way back
+			// from it: a customer who clears the list is not stranded.
+			if ( ! r.length ) {
+				list.appendChild( el( 'p', { 'class': 'oc-onb-lay__none', text: I.row_none } ) );
+			}
+
 			r.forEach( function ( row, i ) {
 				var b = blocks[ row.type ] || { label: row.type };
 				var line = el( 'div', { 'class': 'oc-onb-row' + ( row.on ? '' : ' is-off' ), draggable: 'true', 'data-i': i } );
@@ -839,6 +845,14 @@
 
 			add.appendChild( btn );
 		} );
+
+		var back = el( 'button', { type: 'button', 'class': 'oc-onb-link oc-onb-lay__back', text: I.row_reset } );
+
+		back.addEventListener( 'click', function () {
+			save( ( f['default'] || [] ).map( function ( row ) { return merge( row, {} ); } ) );
+		} );
+
+		add.appendChild( back );
 
 		wrap.appendChild( list );
 		wrap.appendChild( add );

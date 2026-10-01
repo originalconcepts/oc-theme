@@ -181,6 +181,8 @@ final class Front {
 				'row_text'        => __( 'The words that run across', 'oc-theme' ),
 				'row_add'         => __( 'Add:', 'oc-theme' ),
 				'rows_kept'       => __( 'parts on the page', 'oc-theme' ),
+				'row_none'        => __( 'The page is empty. Add a part, or put our order back.', 'oc-theme' ),
+				'row_reset'       => __( 'Put our order back', 'oc-theme' ),
 				'tab_fields'      => __( 'Settings', 'oc-theme' ),
 				'tab_sketch_d'    => __( 'The sketch (desktop)', 'oc-theme' ),
 				'tab_sketch_m'    => __( 'The sketch (phone)', 'oc-theme' ),

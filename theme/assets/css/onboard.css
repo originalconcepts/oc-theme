@@ -727,3 +727,6 @@ button.oc-onb-steps__i { cursor: pointer; }
 .oc-onb-steps__i.is-later { opacity: .55; }
 .oc-onb-steps__v { color: var(--onb-ok); font-weight: 700; }
 .oc-onb-steps__i.is-done:hover { background: #e8f3ec; }
+
+.oc-onb-lay__none { margin: 0; padding: 18px; text-align: center; color: var(--onb-ink-2); background: var(--onb-bg); border-radius: 10px; }
+.oc-onb-lay__back { margin-inline-start: auto; }

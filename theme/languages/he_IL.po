@@ -11927,3 +11927,9 @@ msgstr "מה שבמבצע"
 
 msgid "The best sellers"
 msgstr "הנמכרים ביותר"
+
+msgid "The page is empty. Add a part, or put our order back."
+msgstr "העמוד ריק. אפשר להוסיף אזור, או להחזיר את הסידור שלנו."
+
+msgid "Put our order back"
+msgstr "להחזיר את הסידור שלנו"
