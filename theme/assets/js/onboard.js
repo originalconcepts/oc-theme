@@ -37,7 +37,7 @@
 		}
 
 		step.screens.forEach( function ( sc ) {
-			screens.push( { part: part, step: step, stepIndex: si, id: sc.id, title: sc.title, intro: sc.intro, fields: sc.fields } );
+			screens.push( { part: part, step: step, stepIndex: si, id: sc.id, title: sc.title, intro: sc.intro, preview: sc.preview || '', fields: sc.fields } );
 		} );
 	} );
 
