@@ -782,6 +782,8 @@
 		var sc   = screens[ index ];
 		var card = el( 'div', { 'class': 'oc-onb__card oc-onb__card--hello oc-onb__card--gate' } );
 
+		root.innerHTML = '';
+
 		card.appendChild( el( 'div', { 'class': 'oc-onb-done__tick', 'aria-hidden': 'true', text: '✓' } ) );
 		card.appendChild( el( 'h1', { text: sc.title } ) );
 		card.appendChild( el( 'p', { text: sc.intro } ) );
