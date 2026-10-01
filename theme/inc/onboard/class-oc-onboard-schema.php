@@ -171,7 +171,7 @@ final class Schema {
 
 		$f['brand_name'] = array(
 			'type'     => 'text',
-			'group'   => __( 'The business', 'oc-theme' ),
+			'group'    => __( 'The business', 'oc-theme' ),
 			'label'    => __( 'Brand name', 'oc-theme' ),
 			'help'     => __( 'As it should appear on the site and in emails to customers.', 'oc-theme' ),
 			'required' => true,
@@ -211,7 +211,7 @@ final class Schema {
 
 		$f['phone'] = array(
 			'type'     => 'phone',
-			'group'   => __( 'How customers reach you', 'oc-theme' ),
+			'group'    => __( 'How customers reach you', 'oc-theme' ),
 			'label'    => __( 'Phone number shown on the site', 'oc-theme' ),
 			'required' => true,
 			'default'  => (string) $contact['phone'],
@@ -392,7 +392,7 @@ final class Schema {
 
 		$f['a11y_name'] = array(
 			'type'     => 'text',
-			'group'   => __( 'The accessibility officer', 'oc-theme' ),
+			'group'    => __( 'The accessibility officer', 'oc-theme' ),
 			'label'    => __( 'Accessibility coordinator — full name', 'oc-theme' ),
 			'help'     => __( 'The person customers can turn to about accessibility. It can be the owner.', 'oc-theme' ),
 			'required' => true,
