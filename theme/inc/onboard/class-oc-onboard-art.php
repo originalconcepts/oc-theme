@@ -164,6 +164,116 @@ final class Art {
 			. self::box( 190, 166, 118, 38 )
 		);
 
+		/* ---- the category page ---- */
+
+		// A band across the top with the category's name on it.
+		$art['cat_hero_full'] = self::svg(
+			self::box( 0, 18, self::W, 54, 'strong', 0 )
+			. self::lines( 118, 36, 84, 2, 'brand' )
+			. self::row( 12, 82, 296, 46, 3 )
+			. self::row( 12, 134, 296, 46, 3 )
+			. self::row( 12, 186, 296, 20, 3 )
+		);
+
+		// Half picture, half words.
+		$art['cat_hero_split'] = self::svg(
+			self::box( 0, 18, 160, 54, 'strong', 0 )
+			. self::box( 160, 18, 160, 54, 'faint', 0 )
+			. self::lines( 180, 34, 110, 3, 'brand' )
+			. self::row( 12, 82, 296, 46, 3 )
+			. self::row( 12, 134, 296, 46, 3 )
+			. self::row( 12, 186, 296, 20, 3 )
+		);
+
+		// Straight to the goods.
+		$art['cat_hero_none'] = self::svg(
+			self::lines( 12, 30, 90, 1, 'brand' )
+			. self::row( 12, 48, 296, 50, 3 )
+			. self::row( 12, 104, 296, 50, 3 )
+			. self::row( 12, 160, 296, 46, 3 )
+		);
+
+		/* ---- the strip of sub-categories ---- */
+
+		$art['strip_clean'] = self::svg(
+			self::lines( 12, 30, 90, 1, 'brand' )
+			. self::row( 12, 46, 200, 5, 4 )
+			. self::row( 12, 62, 296, 52, 3 )
+			. self::row( 12, 120, 296, 52, 3 )
+		);
+
+		$art['strip_pill'] = self::svg(
+			self::lines( 12, 30, 90, 1, 'brand' )
+			. self::row( 12, 44, 230, 14, 4, 'strong' )
+			. self::row( 12, 66, 296, 52, 3 )
+			. self::row( 12, 124, 296, 52, 3 )
+		);
+
+		$art['strip_card'] = self::svg(
+			self::lines( 12, 30, 90, 1, 'brand' )
+			. self::row( 12, 44, 296, 34, 4, 'strong' )
+			. self::row( 12, 84, 296, 54, 3 )
+			. self::row( 12, 144, 296, 54, 3 )
+		);
+
+		/* ---- how many products in a row ---- */
+
+		$art['grid_2'] = self::svg(
+			self::row( 12, 30, 296, 76, 2 )
+			. self::row( 12, 112, 296, 76, 2 )
+		);
+
+		$art['grid_3'] = self::svg(
+			self::row( 12, 30, 296, 54, 3 )
+			. self::row( 12, 90, 296, 54, 3 )
+			. self::row( 12, 150, 296, 54, 3 )
+		);
+
+		$art['grid_4'] = self::svg(
+			self::row( 12, 30, 296, 42, 4 )
+			. self::row( 12, 78, 296, 42, 4 )
+			. self::row( 12, 126, 296, 42, 4 )
+			. self::row( 12, 174, 296, 32, 4 )
+		);
+
+		/* ---- the product page ---- */
+
+		// The picture beside what you need to know.
+		$art['prod_side'] = self::svg(
+			self::box( 164, 30, 144, 128, 'strong' )
+			. self::lines( 12, 34, 130, 2, 'base' )
+			. self::lines( 12, 58, 70, 1, 'brand' )
+			. self::lines( 12, 76, 130, 3, 'base' )
+			. self::box( 12, 110, 130, 16, 'brand', 8 )
+			. self::row( 164, 164, 144, 24, 4 )
+			. self::row( 12, 172, 130, 14, 2 )
+		);
+
+		// The picture first, the words under it.
+		$art['prod_below'] = self::svg(
+			self::box( 12, 30, 296, 92, 'strong' )
+			. self::lines( 12, 132, 150, 2, 'base' )
+			. self::lines( 12, 156, 70, 1, 'brand' )
+			. self::box( 12, 176, 130, 16, 'brand', 8 )
+			. self::lines( 164, 132, 144, 4, 'base' )
+		);
+
+		/* ---- the brand page ---- */
+
+		$art['brand_above'] = self::svg(
+			self::box( 130, 32, 60, 30, 'strong' )
+			. self::lines( 90, 72, 140, 2, 'base' )
+			. self::row( 12, 100, 296, 50, 3 )
+			. self::row( 12, 156, 296, 50, 3 )
+		);
+
+		$art['brand_beside'] = self::svg(
+			self::box( 12, 32, 60, 30, 'strong' )
+			. self::lines( 86, 34, 222, 3, 'base' )
+			. self::row( 12, 76, 296, 58, 3 )
+			. self::row( 12, 140, 296, 58, 3 )
+		);
+
 		return $art;
 	}
 }
