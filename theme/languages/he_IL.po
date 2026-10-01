@@ -11235,3 +11235,12 @@ msgstr "כל מה שהאתר צריך כדי לדבר בשמכם נמצא אצל
 
 msgid "Continue to part 2, the last part of the questionnaire"
 msgstr "המשך לשלב 2 ואחרון של השאלון ←"
+
+msgid "Everything the site needs in order to speak in your name is already with us: the business, the ways customers reach you, the legal pages and the thank-you page."
+msgstr "כל מה שהאתר צריך כדי לדבר בשמכם כבר אצלנו: העסק, הדרכים לפנות אליכם, העמודים המשפטיים ודף התודה."
+
+msgid "Look over what you answered"
+msgstr "לעבור על מה שמילאתם בשלב 1"
+
+msgid "Now comes part two, the last one, and it is the nice part: how the site looks. The home page, the catalogue, the product page and the way an order is placed. Mostly pictures — you pick what you like."
+msgstr "עכשיו מגיע שלב 2, האחרון, והוא גם הנעים: איך האתר ייראה. דף הבית, הקטלוג, עמוד המוצר והדרך שבה מבצעים הזמנה. רובו תמונות, ואתם פשוט בוחרים מה מוצא חן בעיניכם."

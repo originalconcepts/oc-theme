@@ -55,7 +55,9 @@ final class Schema {
 			1 => array(
 				'title' => __( 'Your details', 'oc-theme' ),
 				'done'  => __( 'Part one is done', 'oc-theme' ),
-				'text'  => __( 'Everything the site needs in order to speak in your name is in. Part two, the last one, is the look of the site: the home page, the catalogue, the product page and the way an order is placed.', 'oc-theme' ),
+				'text'  => __( 'Everything the site needs in order to speak in your name is already with us: the business, the ways customers reach you, the legal pages and the thank-you page.', 'oc-theme' ),
+				'link'  => __( 'Look over what you answered', 'oc-theme' ),
+				'ahead' => __( 'Now comes part two, the last one, and it is the nice part: how the site looks. The home page, the catalogue, the product page and the way an order is placed. Mostly pictures — you pick what you like.', 'oc-theme' ),
 				'next'  => __( 'Continue to part 2, the last part of the questionnaire', 'oc-theme' ),
 			),
 			2 => array(
@@ -720,6 +722,8 @@ final class Schema {
 					'group'        => '',
 					'options'      => array(),
 					'options_when' => array(),
+					'art'          => array(),
+					'notes'        => array(),
 					'default'      => null,
 					'when'         => null,
 					'required'     => false,
@@ -1019,6 +1023,7 @@ final class Schema {
 				return $n;
 
 			case 'choice':
+			case 'pick':
 				$v = (string) ( is_scalar( $raw ) ? $raw : '' );
 
 				return isset( $f['options'][ $v ] ) ? $v : '';

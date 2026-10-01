@@ -21,6 +21,7 @@
 	var screens = [];
 	var pending = {};
 	var saveTimer = null;
+	var cameFrom = 0;    // The screen the review was opened from.
 	var looked  = false; // Whether we already went looking on their old site.
 	var foundIn = {};    // Fields whose address we found rather than asked for.
 	var at = -1; // -1 welcome, 0..n-1 screens, n summary, n+1 done.
@@ -58,6 +59,8 @@
 			id: 'gate-' + part,
 			title: p.done || '',
 			intro: p.text,
+			link: p.link || '',
+			ahead: p.ahead || '',
 			fields: [],
 			next: p.next || I.next
 		} );
@@ -398,6 +401,50 @@
 		return wrap;
 	}
 
+	/**
+	 * A choice made of drawings. Same answer as a radio group, except that
+	 * the customer is looking at the thing rather than reading about it.
+	 *
+	 * @param {string} id Field id.
+	 * @param {Object} f  Field.
+	 */
+	function render_pick( id, f ) {
+		var cur  = String( val( id ) );
+		var keys = Object.keys( f.options ).filter( function ( k ) { return optionShown( f, k ); } );
+		var wrap = el( 'div', { 'class': 'oc-onb-picks', role: 'radiogroup' } );
+
+		if ( keys.indexOf( cur ) === -1 ) { cur = String( f['default'] ); }
+
+		keys.forEach( function ( k ) {
+			var on  = cur === k;
+			var lab = el( 'label', { 'class': 'oc-onb-pick' + ( on ? ' is-on' : '' ) } );
+			var inp = el( 'input', { type: 'radio', name: 'f_' + id, value: k } );
+			var art = ( C.art || {} )[ ( f.art || {} )[ k ] ] || '';
+
+			inp.checked = on;
+			inp.addEventListener( 'change', function () {
+				wrap.querySelectorAll( '.oc-onb-pick' ).forEach( function ( c ) { c.classList.remove( 'is-on' ); } );
+				lab.classList.add( 'is-on' );
+				set( id, k );
+			} );
+
+			lab.appendChild( inp );
+			lab.appendChild( el( 'span', { 'class': 'oc-onb-pick__art', html: art, 'aria-hidden': 'true' } ) );
+			lab.appendChild( el( 'span', { 'class': 'oc-onb-pick__t' }, [
+				el( 'span', { 'class': 'oc-onb-pick__dot', 'aria-hidden': 'true' } ),
+				el( 'span', { text: f.options[ k ] } )
+			] ) );
+
+			if ( f.notes && f.notes[ k ] ) {
+				lab.appendChild( el( 'span', { 'class': 'oc-onb-pick__n', text: f.notes[ k ] } ) );
+			}
+
+			wrap.appendChild( lab );
+		} );
+
+		return wrap;
+	}
+
 	function render_checks( id, f, value, onChange ) {
 		var cur = ( value === undefined ? val( id ) : value ) || [];
 		var wrap = el( 'div', { 'class': 'oc-onb-checks' } );
@@ -669,6 +716,7 @@
 		switch ( f.type ) {
 			case 'textarea': inner = render_textarea( id, f ); break;
 			case 'choice':   inner = render_choice( id, f ); break;
+			case 'pick':     inner = render_pick( id, f ); break;
 			case 'checks':   inner = render_checks( id, f ); break;
 			case 'consent':  inner = render_consent( id, f ); break;
 			case 'file':     inner = render_file( id, f ); break;
@@ -731,17 +779,31 @@
 	 * @param {number} index Where it sits.
 	 */
 	function renderGate( index ) {
-		var sc = screens[ index ];
-		root.innerHTML = '';
-		root.appendChild( el( 'div', { 'class': 'oc-onb__card oc-onb__card--hello oc-onb__card--gate' }, [
-			el( 'div', { 'class': 'oc-onb-done__tick', 'aria-hidden': 'true', text: '✓' } ),
-			el( 'h1', { text: sc.title } ),
-			el( 'p', { text: sc.intro } ),
-			el( 'div', { 'class': 'oc-onb-nav oc-onb-nav--one' }, [
-				el( 'button', { type: 'button', 'class': 'oc-onb-btn oc-onb-btn--big', text: sc.next, onclick: function () { go( index + 1 ); } } ),
-				el( 'button', { type: 'button', 'class': 'oc-onb-link', text: I.back, onclick: function () { go( index - 1 ); } } )
-			] )
+		var sc   = screens[ index ];
+		var card = el( 'div', { 'class': 'oc-onb__card oc-onb__card--hello oc-onb__card--gate' } );
+
+		card.appendChild( el( 'div', { 'class': 'oc-onb-done__tick', 'aria-hidden': 'true', text: '✓' } ) );
+		card.appendChild( el( 'h1', { text: sc.title } ) );
+		card.appendChild( el( 'p', { text: sc.intro } ) );
+
+		// A quiet way to look back over what was just answered. The review
+		// remembers where it was opened from, so Back returns here.
+		if ( sc.link ) {
+			card.appendChild( el( 'p', { 'class': 'oc-onb-gate__look' }, [
+				el( 'button', { type: 'button', 'class': 'oc-onb-link', text: sc.link, onclick: function () { go( screens.length, index ); } } )
+			] ) );
+		}
+
+		if ( sc.ahead ) {
+			card.appendChild( el( 'p', { 'class': 'oc-onb-gate__ahead', text: sc.ahead } ) );
+		}
+
+		card.appendChild( el( 'div', { 'class': 'oc-onb-nav oc-onb-nav--one' }, [
+			el( 'button', { type: 'button', 'class': 'oc-onb-btn oc-onb-btn--big', text: sc.next, onclick: function () { go( index + 1 ); } } ),
+			el( 'button', { type: 'button', 'class': 'oc-onb-link', text: I.back, onclick: function () { go( index - 1 ); } } )
 		] ) );
+
+		root.appendChild( card );
 		window.scrollTo( { top: 0, behavior: 'smooth' } );
 	}
 
@@ -808,7 +870,8 @@
 	function showValue( f, v ) {
 		if ( isEmpty( v ) ) { return ''; }
 		switch ( f.type ) {
-			case 'choice':   return f.options[ v ] || String( v );
+			case 'choice':
+			case 'pick':     return f.options[ v ] || String( v );
 			case 'checks':   return v.map( function ( k ) { return f.options[ k ] || k; } ).join( ', ' );
 			case 'consent':  return v ? I.yes : I.no;
 			case 'file':     return v.name || '';
@@ -849,7 +912,7 @@
 		} );
 
 		var nav = el( 'div', { 'class': 'oc-onb-nav' } );
-		nav.appendChild( el( 'button', { type: 'button', 'class': 'oc-onb-btn oc-onb-btn--ghost', text: I.back, onclick: function () { go( screens.length - 1 ); } } ) );
+		nav.appendChild( el( 'button', { type: 'button', 'class': 'oc-onb-btn oc-onb-btn--ghost', text: I.back, onclick: function () { go( cameFrom ); } } ) );
 		var submit = el( 'button', { type: 'button', 'class': 'oc-onb-btn oc-onb-btn--big', text: I.submit, disabled: allMissing.length ? 'disabled' : null } );
 		submit.addEventListener( 'click', function () {
 			submit.disabled = true;
@@ -892,10 +955,16 @@
 		note( '', 'ok' );
 	}
 
-	function go( index ) {
+	function go( index, from ) {
 		maybeDiscover();
 		if ( index < 0 ) { at = -1; renderWelcome(); return; }
-		if ( index >= screens.length ) { at = screens.length; renderSummary(); saveStep(); return; }
+		if ( index >= screens.length ) {
+			at       = screens.length;
+			cameFrom = from === undefined ? screens.length - 1 : from;
+			renderSummary();
+			saveStep();
+			return;
+		}
 		at = index;
 		renderScreen( index );
 		saveStep();

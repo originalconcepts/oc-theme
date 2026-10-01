@@ -94,6 +94,7 @@ final class Front {
 			'values'     => Draft::values(),
 			'days'       => $days,
 			'disclaimer' => Consent::text(),
+			'art'        => Art::all(),
 			'site'       => array(
 				'name' => (string) get_bloginfo( 'name' ),
 				'home' => home_url( '/' ),
