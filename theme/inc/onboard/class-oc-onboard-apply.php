@@ -955,6 +955,39 @@ final class Apply {
 			);
 		}
 
+		if ( 'brands' === $type ) {
+			return array(
+				'type'    => 'brands',
+				'heading' => $title,
+			);
+		}
+
+		if ( 'faq' === $type ) {
+			return array(
+				'type'    => 'faq',
+				'heading' => $title,
+				'items'   => array(
+					array(
+						'q' => __( 'How long does delivery take?', 'oc-theme' ),
+						'a' => '',
+					),
+					array(
+						'q' => __( 'Can I return a product?', 'oc-theme' ),
+						'a' => '',
+					),
+				),
+			);
+		}
+
+		if ( 'scrolly' === $type ) {
+			return array(
+				'type'  => 'scrolly',
+				'steps' => array(
+					array( 'heading' => $title ),
+				),
+			);
+		}
+
 		if ( 'content' === $type ) {
 			return $this->content_section( (string) ( $row['variant'] ?? 'words' ) );
 		}
@@ -997,7 +1030,7 @@ final class Apply {
 	 * A content area, in the shape the customer chose for it. The words and
 	 * the pictures are asked for on a later screen; this lays out the band.
 	 *
-	 * @param string $kind words | video | two | sticky.
+	 * @param string $kind words | single | overlap | duo | canvas.
 	 * @return array<string,mixed>
 	 */
 	private function content_section( string $kind ): array {
@@ -1014,21 +1047,9 @@ final class Apply {
 			);
 		}
 
-		if ( 'sticky' === $kind ) {
-			return array(
-				'type'  => 'scrolly',
-				'steps' => array(
-					array(
-						'heading' => $head,
-						'text'    => $text,
-					),
-				),
-			);
-		}
-
 		return array(
 			'type'    => 'media',
-			'preset'  => 'two' === $kind ? 'duo' : 'single',
+			'preset'  => in_array( $kind, array( 'single', 'overlap', 'duo', 'canvas' ), true ) ? $kind : 'overlap',
 			'heading' => $head,
 			'text'    => $text,
 		);

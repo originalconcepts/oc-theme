@@ -11801,3 +11801,117 @@ msgstr "משלוחים, החזרות, קנייה מאובטחת. ממלאים א
 
 msgid "parts on the page"
 msgstr "אזורים בעמוד"
+
+msgid "The sketch (desktop)"
+msgstr "סקיצה (דסקטופ)"
+
+msgid "The sketch (phone)"
+msgstr "סקיצה (מובייל)"
+
+msgid "The page as a phone shows it — it changes as you answer"
+msgstr "העמוד כפי שהוא נראה בטלפון — משתנה לפי התשובות"
+
+msgid "A SMALL HEADING"
+msgstr "כותרת קטנה"
+
+msgid "The brands we carry"
+msgstr "המותגים שלנו"
+
+msgid "Questions and answers"
+msgstr "שאלות ותשובות"
+
+msgid "How long does delivery take?"
+msgstr "כמה זמן לוקח המשלוח?"
+
+msgid "Can I return a product?"
+msgstr "אפשר להחזיר מוצר?"
+
+msgid "Do you have a shop I can visit?"
+msgstr "יש לכם חנות שאפשר לבקר בה?"
+
+msgid "Our story"
+msgstr "הסיפור שלנו"
+
+msgid "A row of brands"
+msgstr "שורת מותגים"
+
+msgid "A story that unrolls as you scroll"
+msgstr "תוכן נגלל"
+
+msgid "One picture or film"
+msgstr "תמונה או וידאו אחד"
+
+msgid "Picture with a little film"
+msgstr "תמונה עם סרטון קטן"
+
+msgid "Two pictures, staggered"
+msgstr "שתי תמונות במדורג"
+
+msgid "Wide picture, small guest"
+msgstr "תמונה רחבה ואורחת קטנה"
+
+msgid "Cart and checkout"
+msgstr "סל וקופה"
+
+msgid "The cart and the checkout"
+msgstr "הסל והקופה"
+
+msgid "The last stretch, where a visitor becomes a customer. Few questions on purpose — everything here is set to what works for most shops."
+msgstr "הקטע האחרון, שבו מבקר הופך ללקוח. מעט שאלות בכוונה — הכול כאן מכוון למה שעובד לרוב החנויות."
+
+msgid "The cart panel"
+msgstr "חלונית הסל"
+
+msgid "Which side does the cart slide out from?"
+msgstr "מאיזה צד נפתחת חלונית הסל?"
+
+msgid "The right"
+msgstr "מימין"
+
+msgid "The left"
+msgstr "משמאל"
+
+msgid "Does it open the moment something is added?"
+msgstr "להיפתח ברגע שמוסיפים מוצר?"
+
+msgid "It opens, shows what went in, and the shopper carries on."
+msgstr "היא נפתחת, מראה מה נכנס, והקונה ממשיך."
+
+msgid "Show how far they are from free delivery?"
+msgstr "להציג כמה חסר למשלוח חינם?"
+
+msgid "A line that says how much more is needed. Only worth it if you offer free delivery over an amount."
+msgstr "שורה שאומרת כמה עוד חסר. שווה רק אם יש אצלכם משלוח חינם מעל סכום."
+
+msgid "The checkout"
+msgstr "הקופה"
+
+msgid "Show the list of products beside the form?"
+msgstr "להציג את רשימת המוצרים לצד הטופס?"
+
+msgid "The coupon field"
+msgstr "שדה הקופון"
+
+msgid "\"Have a coupon?\" opens it"
+msgstr "״יש לכם קופון?״ פותח אותו"
+
+msgid "Always open"
+msgstr "פתוח תמיד"
+
+msgid "Not shown at all"
+msgstr "לא מוצג בכלל"
+
+msgid "Offer \"I am sending to someone else\"?"
+msgstr "להציע ״אני שולח למישהו אחר״?"
+
+msgid "A gift, or an order sent to the office. The buyer fills in a different address and name."
+msgstr "מתנה, או הזמנה שנשלחת למשרד. הקונה ממלא כתובת ושם אחרים."
+
+msgid "This is the page, from top to bottom. Move a part, throw one away, or add another of the same kind. Switch to the sketch at any moment to see the page as you are arranging it."
+msgstr "זה העמוד, מלמעלה למטה. אפשר להזיז אזור, להסיר אזור שלא צריך, או להוסיף עוד אחד כזה. אפשר לעבור לסקיצה בכל רגע ולראות את העמוד כפי שאתם מסדרים אותו."
+
+msgid "The big picture at the top of the home page. This is where an offer goes, or a launch, or a new collection. Everything you type here appears on the sketch."
+msgstr "התמונה הגדולה בראש דף הבית. כאן מציעים מבצע, השקה, קולקציה חדשה. כל מה שתקלידו כאן מופיע בסקיצה."
+
+msgid "The page a customer lands on from the menu. Every answer here changes the sketch."
+msgstr "העמוד שאליו מגיע לקוח מהתפריט. כל תשובה כאן משנה את הסקיצה."

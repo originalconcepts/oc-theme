@@ -114,19 +114,6 @@ final class Schema {
 				),
 			),
 			array(
-				'n'       => 8,
-				'part'    => 1,
-				'title'   => __( 'Thank-you page', 'oc-theme' ),
-				'screens' => array(
-					array(
-						'id'     => '8a',
-						'title'  => __( 'The thank-you page', 'oc-theme' ),
-						'intro'  => __( 'The page a customer lands on the moment the order goes through. It already shows the order and what happens next; here you choose what else it carries.', 'oc-theme' ),
-						'fields' => array( 'ty_contact', 'ty_wa_group', 'wa_group', 'ty_wa_title', 'ty_social', 'ty_survey', 'ty_referral', 'ty_ref_friend', 'ty_ref_reward' ),
-					),
-				),
-			),
-			array(
 				'n'       => 3,
 				'part'    => 2,
 				'title'   => __( 'The home page', 'oc-theme' ),
@@ -134,14 +121,14 @@ final class Schema {
 					array(
 						'id'      => '3a',
 						'title'   => __( 'What stands on the home page', 'oc-theme' ),
-						'intro'   => __( 'This is the page, from top to bottom. Move a part, hide one you do not need, or add another of the same kind. The drawing beside you is the page as you are arranging it.', 'oc-theme' ),
+						'intro'   => __( 'This is the page, from top to bottom. Move a part, throw one away, or add another of the same kind. Switch to the sketch at any moment to see the page as you are arranging it.', 'oc-theme' ),
 						'preview' => 'home',
 						'fields'  => array( 'home_layout' ),
 					),
 					array(
 						'id'      => '3b',
 						'title'   => __( 'The main banner', 'oc-theme' ),
-						'intro'   => __( 'The big picture at the top of the home page. This is where an offer goes, or a launch, or a new collection. Everything you type here appears on the drawing beside you.', 'oc-theme' ),
+						'intro'   => __( 'The big picture at the top of the home page. This is where an offer goes, or a launch, or a new collection. Everything you type here appears on the sketch.', 'oc-theme' ),
 						'preview' => 'banner',
 						'fields'  => array( 'banner_media', 'home_banner', 'banner_video', 'banner_title', 'banner_cta', 'banner_link', 'banner_url' ),
 					),
@@ -161,7 +148,7 @@ final class Schema {
 					array(
 						'id'      => '4a',
 						'title'   => __( 'The category page', 'oc-theme' ),
-						'intro'   => __( 'The page a customer lands on from the menu. Every answer here changes the drawing beside you.', 'oc-theme' ),
+						'intro'   => __( 'The page a customer lands on from the menu. Every answer here changes the sketch.', 'oc-theme' ),
 						'preview' => 'category',
 						'fields'  => array( 'cat_hero', 'cat_cols', 'cat_per_page', 'cat_filters', 'card_sale', 'card_new', 'card_new_days', 'card_excerpt', 'cat_paging' ),
 					),
@@ -193,6 +180,32 @@ final class Schema {
 					),
 				),
 			),
+			array(
+				'n'       => 7,
+				'part'    => 2,
+				'title'   => __( 'Cart and checkout', 'oc-theme' ),
+				'screens' => array(
+					array(
+						'id'     => '7a',
+						'title'  => __( 'The cart and the checkout', 'oc-theme' ),
+						'intro'  => __( 'The last stretch, where a visitor becomes a customer. Few questions on purpose — everything here is set to what works for most shops.', 'oc-theme' ),
+						'fields' => array( 'cart_side', 'cart_open', 'cart_ship_bar', 'ck_summary', 'ck_coupon', 'ck_other' ),
+					),
+				),
+			),
+			array(
+				'n'       => 8,
+				'part'    => 2,
+				'title'   => __( 'Thank-you page', 'oc-theme' ),
+				'screens' => array(
+					array(
+						'id'     => '8a',
+						'title'  => __( 'The thank-you page', 'oc-theme' ),
+						'intro'  => __( 'The page a customer lands on the moment the order goes through. It already shows the order and what happens next; here you choose what else it carries.', 'oc-theme' ),
+						'fields' => array( 'ty_contact', 'ty_wa_group', 'wa_group', 'ty_wa_title', 'ty_social', 'ty_survey', 'ty_referral', 'ty_ref_friend', 'ty_ref_reward' ),
+					),
+				),
+			),
 		);
 	}
 
@@ -213,10 +226,11 @@ final class Schema {
 			'content'    => array(
 				'label'    => __( 'A content area', 'oc-theme' ),
 				'variants' => array(
-					'words'  => __( 'A heading and words', 'oc-theme' ),
-					'video'  => __( 'Words, a picture, and a film over it', 'oc-theme' ),
-					'two'    => __( 'Words and two pictures', 'oc-theme' ),
-					'sticky' => __( 'Words that stay while the pictures move', 'oc-theme' ),
+					'words'   => __( 'A heading and words', 'oc-theme' ),
+					'single'  => __( 'One picture or film', 'oc-theme' ),
+					'overlap' => __( 'Picture with a little film', 'oc-theme' ),
+					'duo'     => __( 'Two pictures, staggered', 'oc-theme' ),
+					'canvas'  => __( 'Wide picture, small guest', 'oc-theme' ),
 				),
 			),
 			'products'   => array(
@@ -243,6 +257,18 @@ final class Schema {
 			'icons'      => array(
 				'label' => __( 'Reasons to buy', 'oc-theme' ),
 				'note'  => __( 'Delivery, returns, a secure purchase. You fill these in later.', 'oc-theme' ),
+			),
+			'brands'     => array(
+				'label' => __( 'A row of brands', 'oc-theme' ),
+				'title' => true,
+			),
+			'faq'        => array(
+				'label' => __( 'Questions and answers', 'oc-theme' ),
+				'title' => true,
+			),
+			'scrolly'    => array(
+				'label' => __( 'A story that unrolls as you scroll', 'oc-theme' ),
+				'title' => true,
 			),
 		);
 	}
@@ -1062,6 +1088,68 @@ final class Schema {
 			'options' => $yesno,
 			'default' => 'no',
 			'target'  => array( 'mod', 'oc_card_excerpt' ),
+		);
+
+		/* ---- 7a: the cart and the checkout ---- */
+
+		$f['cart_side'] = array(
+			'type'    => 'choice',
+			'group'   => __( 'The cart panel', 'oc-theme' ),
+			'label'   => __( 'Which side does the cart slide out from?', 'oc-theme' ),
+			'options' => array(
+				'right' => __( 'The right', 'oc-theme' ),
+				'left'  => __( 'The left', 'oc-theme' ),
+			),
+			'default' => 'right',
+			'target'  => array( 'option', 'oc_cart', 'side' ),
+		);
+
+		$f['cart_open'] = array(
+			'type'    => 'choice',
+			'label'   => __( 'Does it open the moment something is added?', 'oc-theme' ),
+			'help'    => __( 'It opens, shows what went in, and the shopper carries on.', 'oc-theme' ),
+			'options' => $yesno,
+			'default' => 'yes',
+			'target'  => array( 'option', 'oc_cart', 'open_on_add' ),
+		);
+
+		$f['cart_ship_bar'] = array(
+			'type'    => 'choice',
+			'label'   => __( 'Show how far they are from free delivery?', 'oc-theme' ),
+			'help'    => __( 'A line that says how much more is needed. Only worth it if you offer free delivery over an amount.', 'oc-theme' ),
+			'options' => $yesno,
+			'default' => 'yes',
+			'target'  => array( 'option', 'oc_cart', 'ship_bar' ),
+		);
+
+		$f['ck_summary'] = array(
+			'type'    => 'choice',
+			'group'   => __( 'The checkout', 'oc-theme' ),
+			'label'   => __( 'Show the list of products beside the form?', 'oc-theme' ),
+			'options' => $yesno,
+			'default' => 'yes',
+			'target'  => array( 'option', 'oc_checkout', 'summary' ),
+		);
+
+		$f['ck_coupon'] = array(
+			'type'    => 'choice',
+			'label'   => __( 'The coupon field', 'oc-theme' ),
+			'options' => array(
+				'button' => __( '"Have a coupon?" opens it', 'oc-theme' ),
+				'open'   => __( 'Always open', 'oc-theme' ),
+				'hide'   => __( 'Not shown at all', 'oc-theme' ),
+			),
+			'default' => 'button',
+			'target'  => array( 'option', 'oc_checkout', 'coupon' ),
+		);
+
+		$f['ck_other'] = array(
+			'type'    => 'choice',
+			'label'   => __( 'Offer "I am sending to someone else"?', 'oc-theme' ),
+			'help'    => __( 'A gift, or an order sent to the office. The buyer fills in a different address and name.', 'oc-theme' ),
+			'options' => $yesno,
+			'default' => 'yes',
+			'target'  => array( 'option', 'oc_checkout', 'send_other' ),
 		);
 
 		/* ---- 5a: the product page ---- */

@@ -649,21 +649,16 @@
 
 				tools.appendChild( tool( '↑', I.row_up, function () { move( i, i - 1 ); }, i === 0 ) );
 				tools.appendChild( tool( '↓', I.row_down, function () { move( i, i + 1 ); }, i === r.length - 1 ) );
-				tools.appendChild( tool( row.on ? '◉' : '◌', row.on ? I.row_hide : I.row_show, function () {
-					var n = rows().slice();
-					n[ i ] = merge( n[ i ], { on: n[ i ].on ? 0 : 1 } );
-					save( n );
-				} ) );
 
 				if ( ! b.once ) {
-					tools.appendChild( tool( '⧉', I.row_copy, function () {
+					tools.appendChild( tool( 'copy', I.row_copy, function () {
 						var n = rows().slice();
 						n.splice( i + 1, 0, merge( n[ i ], {} ) );
 						save( n );
 					} ) );
 				}
 
-				tools.appendChild( tool( '✕', I.row_drop, function () {
+				tools.appendChild( tool( 'bin', I.row_drop, function () {
 					var n = rows().slice();
 					n.splice( i, 1 );
 					save( n );
@@ -678,7 +673,7 @@
 					var key = b.title ? 'title' : 'text';
 					var inp = el( 'input', {
 						type: 'text',
-						'class': 'oc-onb-in oc-onb-row__in',
+						'class': 'oc-onb-row__in',
 						value: row[ key ] || '',
 						placeholder: b.title ? I.row_title : I.row_text
 					} );
@@ -726,7 +721,16 @@
 		}
 
 		function tool( glyph, label, onclick, off ) {
-			var b = el( 'button', { type: 'button', 'class': 'oc-onb-row__b', title: label, 'aria-label': label, text: glyph } );
+			var b = el( 'button', { type: 'button', 'class': 'oc-onb-row__b', title: label, 'aria-label': label } );
+
+			if ( 'bin' === glyph || 'copy' === glyph ) {
+				b.classList.add( 'oc-onb-row__b--' + glyph );
+				b.innerHTML = 'bin' === glyph
+					? '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7 3h6l.6 2H18v2H2V5h4.4L7 3Zm-2.3 6h10.6l-.8 9.2a1 1 0 0 1-1 .8H6.5a1 1 0 0 1-1-.8L4.7 9Z"/></svg>'
+					: '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7 2h8a2 2 0 0 1 2 2v9h-2V4H7V2Z"/><path d="M4 6h8a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1Z"/></svg>';
+			} else {
+				b.textContent = glyph;
+			}
 
 			if ( off ) { b.disabled = 'disabled'; }
 
@@ -1163,9 +1167,10 @@
 	 * @param {number} from The first stand-in number.
 	 */
 	function wRow( cols, from ) {
-		var row = el( 'div', { 'class': 'wf-grid', style: '--wf-cols:' + cols } );
+		var n   = onPhone() ? Math.min( 2, cols ) : cols;
+		var row = el( 'div', { 'class': 'wf-grid', style: '--wf-cols:' + n } );
 
-		for ( var i = 0; i < cols; i++ ) {
+		for ( var i = 0; i < n; i++ ) {
 			row.appendChild( wCard( from + i ) );
 		}
 
@@ -1216,14 +1221,34 @@
 	 * A strip of category tiles.
 	 */
 	function wCats() {
-		var names = I.wf_cats || [];
-		var row   = el( 'div', { 'class': 'wf-grid wf-grid--cats', style: '--wf-cols:4' } );
+		var names = ( I.wf_cats || [] ).slice( 0, onPhone() ? 2 : 4 );
+		var row   = el( 'div', { 'class': 'wf-grid wf-grid--cats', style: '--wf-cols:' + ( onPhone() ? 2 : 4 ) } );
 
 		names.forEach( function ( name ) {
 			row.appendChild( w( 'wf-cat', [ wImg( 'wf-cat__img' ), el( 'div', { 'class': 'wf-cat__t', text: name } ) ] ) );
 		} );
 
 		return row;
+	}
+
+	/**
+	 * One reason to buy: a mark, a line, a word under it.
+	 *
+	 * @param {string} kind truck | returns | shield.
+	 * @param {string} text What it says.
+	 */
+	function wTrust( kind, text ) {
+		var art = {
+			truck: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h10v9H3V6Zm11 3h3.6l2.4 3v3h-6V9Z" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/></svg>',
+			returns: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M20 3v5h-5" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>',
+			shield: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 4.2-2.9 7.8-7 9-4.1-1.2-7-4.8-7-9V6l7-3Z" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="m8.6 11.8 2.3 2.3 4.3-4.3" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>'
+		}[ kind ];
+
+		return w( 'wf-trust__i', [
+			el( 'span', { 'class': 'wf-trust__ic', html: art, 'aria-hidden': 'true' } ),
+			el( 'div', { 'class': 'wf-trust__h', text: text } ),
+			wLine( '70%' )
+		] );
 	}
 
 	function wHeading( text ) {
@@ -1236,18 +1261,15 @@
 	 */
 	function wLook() {
 		var scene = w( 'wf-room', [
-			w( 'wf-room__wall' ),
-			w( 'wf-room__art' ),
-			w( 'wf-room__lamp', [ w( 'wf-room__shade' ), w( 'wf-room__stem' ) ] ),
-			w( 'wf-room__sofa', [ w( 'wf-room__cushion' ), w( 'wf-room__cushion' ) ] ),
-			w( 'wf-room__table', [ w( 'wf-room__leg' ), w( 'wf-room__leg wf-room__leg--b' ) ] ),
-			w( 'wf-room__plant' ),
+			w( 'wf-room__frame' ),
+			w( 'wf-room__plant', [ w( 'wf-room__pot' ) ] ),
+			w( 'wf-room__sofa' ),
+			w( 'wf-room__table' ),
 			el( 'span', { 'class': 'wf-spot wf-spot--sofa is-live' } ),
-			el( 'span', { 'class': 'wf-spot wf-spot--table' } ),
-			el( 'span', { 'class': 'wf-spot wf-spot--lamp' } )
+			el( 'span', { 'class': 'wf-spot wf-spot--table' } )
 		] );
 
-		return w( 'wf-look', [ scene, w( 'wf-look__side', [ wCard( 1 ) ] ) ] );
+		return w( 'wf-look', [ scene, w( 'wf-look__side', [ wCard( 2 ) ] ) ] );
 	}
 
 	/**
@@ -1283,10 +1305,34 @@
 
 		if ( 'icons' === row.type ) {
 			return w( 'wf-trust', [
-				w( 'wf-trust__i', [ el( 'div', { 'class': 'wf-trust__h', text: I.wf_trust1 } ), wLine( '80%' ) ] ),
-				w( 'wf-trust__i', [ el( 'div', { 'class': 'wf-trust__h', text: I.wf_trust2 } ), wLine( '80%' ) ] ),
-				w( 'wf-trust__i', [ el( 'div', { 'class': 'wf-trust__h', text: I.wf_trust3 } ), wLine( '80%' ) ] )
+				wTrust( 'truck', I.wf_trust1 ),
+				wTrust( 'returns', I.wf_trust2 ),
+				wTrust( 'shield', I.wf_trust3 )
 			] );
+		}
+
+		if ( 'brands' === row.type ) {
+			var logos = el( 'div', { 'class': 'wf-logos' } );
+
+			for ( var b = 0; b < 5; b++ ) { logos.appendChild( w( 'wf-logo' ) ); }
+
+			return w( 'wf-band', [ wHeading( title || I.wf_brands_h ), logos ] );
+		}
+
+		if ( 'faq' === row.type ) {
+			return w( 'wf-band', [ wHeading( title || I.wf_faq_h ), w( 'wf-faq', [
+				w( 'wf-faq__q is-open', [ el( 'span', { text: I.wf_faq_1 } ), el( 'span', { 'class': 'wf-faq__s', text: '−' } ) ] ),
+				w( 'wf-faq__a', [ wLine( '100%' ), wLine( '80%' ) ] ),
+				w( 'wf-faq__q', [ el( 'span', { text: I.wf_faq_2 } ), el( 'span', { 'class': 'wf-faq__s', text: '+' } ) ] ),
+				w( 'wf-faq__q', [ el( 'span', { text: I.wf_faq_3 } ), el( 'span', { 'class': 'wf-faq__s', text: '+' } ) ] )
+			] ) ] );
+		}
+
+		if ( 'scrolly' === row.type ) {
+			return w( 'wf-band', [ wHeading( title || I.wf_story_h ), w( 'wf-sticky', [
+				w( 'wf-sticky__t', [ el( 'div', { 'class': 'wf-ed__eye', text: I.wf_eyebrow } ), wLine( '100%' ), wLine( '80%' ) ] ),
+				w( 'wf-sticky__m', [ wImg( 'wf-sticky__img' ), wImg( 'wf-sticky__img' ) ] )
+			] ) ] );
 		}
 
 		return wContent( String( row.variant || 'words' ) );
@@ -1305,38 +1351,49 @@
 			] );
 		}
 
-		if ( 'two' === kind ) {
-			return w( 'wf-two', [
-				wImg( 'wf-two__img' ),
-				w( 'wf-two__t', [ wHeading( I.wf_about_h ), wLine( '100%' ), wLine( '90%' ), wLine( '55%' ) ] ),
-				wImg( 'wf-two__img' )
-			] );
-		}
-
-		if ( 'sticky' === kind ) {
-			return w( 'wf-sticky', [
-				w( 'wf-sticky__t', [ wHeading( I.wf_about_h ), wLine( '100%' ), wLine( '80%' ) ] ),
-				w( 'wf-sticky__m', [ wImg( 'wf-sticky__img' ), wImg( 'wf-sticky__img' ) ] )
-			] );
-		}
-
-		var film = wImg( 'wf-about__img' );
-
-		film.appendChild( el( 'span', { 'class': 'wf-play', 'aria-hidden': 'true', text: '▶' } ) );
-
-		return w( 'wf-about', [
-			film,
-			w( 'wf-about__t', [ wHeading( I.wf_about_h ), wLine( '100%' ), wLine( '92%' ), wLine( '70%' ) ] )
+		var words = w( 'wf-ed__t', [
+			el( 'div', { 'class': 'wf-ed__eye', text: I.wf_eyebrow } ),
+			wHeading( I.wf_about_h ),
+			wLine( '100%' ),
+			wLine( '92%' ),
+			wLine( '64%' ),
+			w( 'wf-ed__btn', null, I.wf_read )
 		] );
+		var media = w( 'wf-ed__m' );
+
+		if ( 'duo' === kind ) {
+			media.appendChild( wImg( 'wf-ed__tall' ) );
+			media.appendChild( wImg( 'wf-ed__tall wf-ed__tall--step' ) );
+		} else if ( 'canvas' === kind ) {
+			var wide = wImg( 'wf-ed__wide' );
+
+			wide.appendChild( wImg( 'wf-ed__guest' ) );
+			media.appendChild( wide );
+		} else if ( 'overlap' === kind ) {
+			var tall = wImg( 'wf-ed__tall wf-ed__tall--off' );
+			var film = wImg( 'wf-ed__film' );
+
+			film.appendChild( el( 'span', { 'class': 'wf-play', 'aria-hidden': 'true', text: '▶' } ) );
+			tall.appendChild( film );
+			media.appendChild( tall );
+		} else {
+			var one = wImg( 'wf-ed__tall wf-ed__tall--one' );
+
+			one.appendChild( el( 'span', { 'class': 'wf-play', 'aria-hidden': 'true', text: '▶' } ) );
+			media.appendChild( one );
+		}
+
+		return w( 'wf-ed wf-ed--' + kind, [ media, words ] );
 	}
 
 	/**
 	 * Three cards from the magazine.
 	 */
 	function wPosts() {
-		var row = el( 'div', { 'class': 'wf-grid', style: '--wf-cols:3' } );
+		var n   = onPhone() ? 1 : 3;
+		var row = el( 'div', { 'class': 'wf-grid', style: '--wf-cols:' + n } );
 
-		for ( var i = 1; i <= 3; i++ ) {
+		for ( var i = 1; i <= n; i++ ) {
 			row.appendChild( w( 'wf-post', [
 				wImg( 'wf-post__img' ),
 				el( 'div', { 'class': 'wf-post__d', text: '02.10.2026' } ),
@@ -1437,8 +1494,18 @@
 
 		if ( ! holder ) { return; }
 
+		holder.classList.toggle( 'is-phone', onPhone() );
 		holder.innerHTML = '';
 		holder.appendChild( previewFor( holder.getAttribute( 'data-preview' ) ) );
+	}
+
+	/**
+	 * Is the questionnaire being filled in on a phone? The drawing then shows
+	 * the phone's own page — a shrunken desktop would be a lie about what
+	 * their customers will see.
+	 */
+	function onPhone() {
+		return window.matchMedia && window.matchMedia( '(max-width: 900px)' ).matches;
 	}
 
 	/* ------------------------------------------------------------ screens */
@@ -1458,15 +1525,34 @@
 		var pos = asked.indexOf( here );
 
 		seen.forEach( function ( step ) {
-			var at   = step === here.step;
-			var last = 0;
+			var at    = step === here.step;
+			var last  = 0;
+			var first = -1;
 
-			asked.forEach( function ( s, i ) { if ( s.step === step ) { last = i; } } );
+			asked.forEach( function ( s, i ) {
+				if ( s.step !== step ) { return; }
+				if ( first < 0 ) { first = i; }
+				last = i;
+			} );
 
-			chips.appendChild( el( 'span', {
-				'class': 'oc-onb-steps__i' + ( at ? ' is-on' : ( last < pos ? ' is-done' : '' ) ),
-				text: step.title
-			} ) );
+			var done = last < pos;
+			var chip = el( at || done ? 'button' : 'span', {
+				type: at || done ? 'button' : null,
+				'class': 'oc-onb-steps__i' + ( at ? ' is-on' : ( done ? ' is-done' : ' is-later' ) )
+			} );
+
+			if ( done ) {
+				chip.appendChild( el( 'span', { 'class': 'oc-onb-steps__v', 'aria-hidden': 'true', text: '✓' } ) );
+			}
+
+			chip.appendChild( el( 'span', { text: step.title } ) );
+
+			// A step behind you can be reopened; one ahead cannot be jumped to.
+			if ( done ) {
+				chip.addEventListener( 'click', function () { go( screens.indexOf( asked[ first ] ) ); } );
+			}
+
+			chips.appendChild( chip );
 		} );
 
 		var mine  = asked.filter( function ( s ) { return s.step === here.step; } );
@@ -1555,7 +1641,7 @@
 			qcol = el( 'div', { 'class': 'oc-onb-split__q' } );
 
 			var pane  = el( 'div', { 'class': 'oc-onb-split__p' }, [
-				el( 'p', { 'class': 'oc-onb-side__t', text: I.sketch } ),
+				el( 'p', { 'class': 'oc-onb-side__t', text: onPhone() ? I.sketch_m : I.sketch } ),
 				el( 'div', { 'class': 'oc-onb-side', 'data-preview': sc.preview } )
 			] );
 			var split = el( 'div', { 'class': 'oc-onb-split is-q' }, [ qcol, pane ] );
@@ -1564,7 +1650,7 @@
 			// top switches between them and stays in reach.
 			var tabs = el( 'div', { 'class': 'oc-onb-tabs' } );
 			var tq   = el( 'button', { type: 'button', 'class': 'oc-onb-tabs__b is-on', text: I.tab_fields } );
-			var tp   = el( 'button', { type: 'button', 'class': 'oc-onb-tabs__b', text: I.tab_sketch } );
+			var tp   = el( 'button', { type: 'button', 'class': 'oc-onb-tabs__b', text: onPhone() ? I.tab_sketch_m : I.tab_sketch_d } );
 
 			tq.addEventListener( 'click', function () {
 				split.classList.add( 'is-q' );
