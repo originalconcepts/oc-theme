@@ -205,6 +205,11 @@ final class Apply {
 	private function write_mod( string $id, string $key, $value ): void {
 		$lk = 'mod:' . $key;
 
+		// Yes/no choices land in flag mods as 1/0.
+		if ( 'yes' === $value || 'no' === $value ) {
+			$value = 'yes' === $value ? 1 : 0;
+		}
+
 		if ( $this->changed_by_hand( $lk, get_theme_mod( $key ) ) ) {
 			$this->row( $id, $key, 'manual', __( 'Changed by hand since the last apply; left as it is.', 'oc-theme' ) );
 			return;
@@ -788,6 +793,225 @@ final class Apply {
 		}
 
 		return $this->page( $slug, '' !== $got['title'] ? $got['title'] : $title, $got['html'] );
+	}
+
+	/**
+	 * The home page: a front page, composed of blocks, from the recipe the
+	 * customer picked. The pictures are not here yet — the sections are laid
+	 * out so that dropping a picture in is the only thing left to do.
+	 */
+	private function apply_home(): void {
+		if ( ! class_exists( '\\OC\\Blocks\\Registry' ) ) {
+			$this->row( 'home_recipe', __( 'Home page', 'oc-theme' ), 'skipped', __( 'The blocks plugin is not active on this site.', 'oc-theme' ) );
+			return;
+		}
+
+		$recipe = (string) $this->v['home_recipe'];
+		$id     = $this->front_page();
+
+		if ( ! $id ) {
+			$this->row( 'home_recipe', __( 'Home page', 'oc-theme' ), 'error' );
+			return;
+		}
+
+		$sections = \OC\Blocks\Registry::clean( $this->recipe( $recipe ) );
+
+		if ( $this->changed_by_hand( 'home:sections', wp_json_encode( (array) get_post_meta( $id, \OC\Blocks\Registry::META, true ) ) ) ) {
+			$this->row( 'home_recipe', __( 'Home page', 'oc-theme' ), 'manual', __( 'The home page was edited by hand since the last apply; left as it is.', 'oc-theme' ) );
+			return;
+		}
+
+		update_post_meta( $id, \OC\Blocks\Registry::META, $sections );
+		$this->remember( 'home:sections', wp_json_encode( $sections ) );
+
+		update_option( 'oc_blocks_ver', (int) get_option( 'oc_blocks_ver', 0 ) + 1, false );
+
+		$this->row( 'home_recipe', __( 'Home page', 'oc-theme' ), 'check', __( 'The page is laid out and waiting for its pictures.', 'oc-theme' ) );
+	}
+
+	/**
+	 * The page the site opens on, made if there is none.
+	 */
+	private function front_page(): int {
+		$id = (int) get_option( 'page_on_front' );
+
+		if ( $id && 'page' === get_post_type( $id ) && 'trash' !== get_post_status( $id ) ) {
+			return $id;
+		}
+
+		$id = $this->page( 'home', __( 'Home', 'oc-theme' ), '' );
+
+		if ( $id ) {
+			update_option( 'show_on_front', 'page' );
+			update_option( 'page_on_front', $id );
+		}
+
+		return $id;
+	}
+
+	/**
+	 * The sections of one recipe.
+	 *
+	 * @param string $recipe classic | sales | look.
+	 * @return array<int,array<string,mixed>>
+	 */
+	private function recipe( string $recipe ): array {
+		$brand = trim( (string) $this->v['brand_name'] );
+		$hero  = array(
+			'type'   => 'hero',
+			'slides' => array(
+				array(
+					'heading' => $brand,
+					'text'    => __( 'A line about what you sell and for whom.', 'oc-theme' ),
+					'cta'     => __( 'To the shop', 'oc-theme' ),
+					'url'     => function_exists( 'wc_get_page_permalink' ) ? (string) wc_get_page_permalink( 'shop' ) : home_url( '/' ),
+				),
+			),
+			'pos'    => 'cc',
+			'h'      => 'look' === $recipe ? 680 : 560,
+			'hm'     => 'look' === $recipe ? 560 : 440,
+		);
+
+		$cats = array(
+			'type'    => 'categories',
+			'heading' => __( 'What we sell', 'oc-theme' ),
+			'layout'  => 'slider',
+		);
+
+		$trust = array(
+			'type'    => 'icons',
+			'heading' => '',
+			'items'   => array(
+				array(
+					'icon'    => 'truck',
+					'heading' => __( 'Delivery across the country', 'oc-theme' ),
+					'text'    => __( 'Write here how long it takes and from what amount it is free.', 'oc-theme' ),
+				),
+				array(
+					'icon'    => 'returns',
+					'heading' => __( 'Returns within 14 days', 'oc-theme' ),
+					'text'    => __( 'The short version of what your terms say.', 'oc-theme' ),
+				),
+				array(
+					'icon'    => 'shield',
+					'heading' => __( 'A secure purchase', 'oc-theme' ),
+					'text'    => __( 'Payment through a certified clearing house.', 'oc-theme' ),
+				),
+			),
+		);
+
+		$about = array(
+			'type'    => 'media',
+			'preset'  => 'overlap',
+			'heading' => '' !== $brand ? sprintf( /* translators: %s: the brand name. */ __( 'About %s', 'oc-theme' ), $brand ) : __( 'About us', 'oc-theme' ),
+			'text'    => wp_trim_words( wp_strip_all_tags( (string) $this->v['about_text'] ), 45 ),
+			'cta'     => __( 'Read more', 'oc-theme' ),
+		);
+
+		if ( 'sales' === $recipe ) {
+			return array(
+				$hero,
+				array(
+					'type' => 'marquee',
+					'text' => __( 'Free delivery over a certain amount · New arrivals every week', 'oc-theme' ),
+				),
+				array(
+					'type'    => 'products',
+					'heading' => __( 'On offer', 'oc-theme' ),
+					'mode'    => 'sale',
+					'count'   => 8,
+					'layout'  => 'slider',
+				),
+				$cats,
+				array(
+					'type'    => 'products',
+					'heading' => __( 'Our best sellers', 'oc-theme' ),
+					'mode'    => 'sales',
+					'count'   => 8,
+					'layout'  => 'slider',
+				),
+				$trust,
+			);
+		}
+
+		if ( 'look' === $recipe ) {
+			return array(
+				$hero,
+				array(
+					'type'   => 'look',
+					'scenes' => array(
+						array( 'heading' => __( 'Get the look', 'oc-theme' ) ),
+					),
+				),
+				$cats,
+				array(
+					'type'    => 'products',
+					'heading' => __( 'New in', 'oc-theme' ),
+					'mode'    => 'new',
+					'count'   => 8,
+					'layout'  => 'slider',
+				),
+				$about,
+			);
+		}
+
+		return array(
+			$hero,
+			$cats,
+			array(
+				'type'    => 'products',
+				'heading' => __( 'New in', 'oc-theme' ),
+				'mode'    => 'new',
+				'count'   => 8,
+				'layout'  => 'slider',
+			),
+			$trust,
+			$about,
+		);
+	}
+
+	/**
+	 * A "delivery and returns" tab on every product, opened with a short
+	 * text the shop can rewrite. One row in the tabs option, written once.
+	 */
+	private function apply_ship_tab(): void {
+		if ( 'yes' !== $this->v['prod_ship_tab'] || ! class_exists( '\\OC\\Theme\\Tabs' ) ) {
+			return;
+		}
+
+		$all    = \OC\Theme\Tabs::settings();
+		$custom = isset( $all['custom'] ) && is_array( $all['custom'] ) ? $all['custom'] : array();
+		$uid    = (string) ( $this->log['tab:ship'] ?? '' );
+
+		if ( '' !== $uid && isset( $custom[ $uid ] ) ) {
+			$this->row( 'prod_ship_tab', __( 'Delivery and returns tab', 'oc-theme' ), 'skipped', __( 'The tab is already there.', 'oc-theme' ) );
+			return;
+		}
+
+		$uid = bin2hex( random_bytes( 16 ) );
+
+		$custom[ $uid ] = array(
+			'on'      => 1,
+			'order'   => 30,
+			'title'   => __( 'Delivery and returns', 'oc-theme' ),
+			'content' => wpautop(
+				__( 'Delivery across the country. Write here how long an order takes to arrive and from what amount delivery is free.', 'oc-theme' ) . "\n\n" .
+				__( 'Returns within 14 days of receiving the order, as long as the product has not been used and its packaging is whole. The full details are in the terms of sale.', 'oc-theme' )
+			),
+			'scope'   => 'all',
+			'ids'     => '',
+			'cats'    => array(),
+			'attrs'   => array(),
+			'ex_cats' => array(),
+			'ex_ids'  => '',
+		);
+
+		$all['custom'] = $custom;
+
+		update_option( 'oc_tabs', $all );
+		$this->remember( 'tab:ship', $uid );
+
+		$this->row( 'prod_ship_tab', __( 'Delivery and returns tab', 'oc-theme' ), 'check', __( 'Written with a general text — read it over and make it yours.', 'oc-theme' ) );
 	}
 
 	/* ------------------------------------------------------------ helpers */

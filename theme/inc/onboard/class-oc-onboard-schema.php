@@ -126,6 +126,58 @@ final class Schema {
 					),
 				),
 			),
+			array(
+				'n'       => 3,
+				'part'    => 2,
+				'title'   => __( 'The home page', 'oc-theme' ),
+				'screens' => array(
+					array(
+						'id'     => '3a',
+						'title'  => __( 'How the home page is built', 'oc-theme' ),
+						'intro'  => __( 'Three ways to lay out the same shop. Pick the one that looks like you — nothing here is final, and every part of it can be moved later.', 'oc-theme' ),
+						'fields' => array( 'home_recipe', 'home_header' ),
+					),
+				),
+			),
+			array(
+				'n'       => 4,
+				'part'    => 2,
+				'title'   => __( 'The catalogue', 'oc-theme' ),
+				'screens' => array(
+					array(
+						'id'     => '4a',
+						'title'  => __( 'The category page', 'oc-theme' ),
+						'intro'  => __( 'The page a customer lands on from the menu: a shelf of products, and whatever stands above it.', 'oc-theme' ),
+						'fields' => array( 'cat_hero', 'cat_cols', 'card_preset', 'card_sale', 'card_excerpt', 'card_new' ),
+					),
+				),
+			),
+			array(
+				'n'       => 5,
+				'part'    => 2,
+				'title'   => __( 'The product page', 'oc-theme' ),
+				'screens' => array(
+					array(
+						'id'     => '5a',
+						'title'  => __( 'The product page', 'oc-theme' ),
+						'intro'  => __( 'Where the decision is made. The pictures on one side, everything the buyer needs on the other.', 'oc-theme' ),
+						'fields' => array( 'prod_side', 'prod_gallery', 'prod_qty', 'prod_sku', 'prod_ship_tab' ),
+					),
+				),
+			),
+			array(
+				'n'       => 6,
+				'part'    => 2,
+				'title'   => __( 'Brands', 'oc-theme' ),
+				'screens' => array(
+					array(
+						'id'     => '6a',
+						'title'  => __( 'Brands', 'oc-theme' ),
+						'intro'  => __( 'Only worth filling in if you sell goods of brands with a name of their own.', 'oc-theme' ),
+						'fields' => array( 'brands_has', 'brand_logo', 'brand_card', 'brand_product' ),
+					),
+				),
+			),
 		);
 	}
 
@@ -708,6 +760,241 @@ final class Schema {
 			'max'     => 50,
 			'when'    => array( 'ty_referral', array( 'yes' ) ),
 			'target'  => array( 'option', 'oc_thankyou', 'ref_reward_pct' ),
+		);
+
+		/* ---- 3a: the home page ---- */
+
+		$f['home_recipe'] = array(
+			'type'    => 'pick',
+			'label'   => __( 'How should the home page be laid out?', 'oc-theme' ),
+			'options' => array(
+				'classic' => __( 'The classic one', 'oc-theme' ),
+				'sales'   => __( 'Built to sell', 'oc-theme' ),
+				'look'    => __( 'Styled', 'oc-theme' ),
+			),
+			'notes'   => array(
+				'classic' => __( 'A banner, your categories, a shelf of products and a few words about you.', 'oc-theme' ),
+				'sales'   => __( 'A banner, a line of news across the page, what is on offer and what sells most.', 'oc-theme' ),
+				'look'    => __( 'A tall banner and a styled scene with the products marked on it.', 'oc-theme' ),
+			),
+			'art'     => array(
+				'classic' => 'home_classic',
+				'sales'   => 'home_sales',
+				'look'    => 'home_look',
+			),
+			'default' => 'classic',
+			'target'  => array( 'call', 'home' ),
+		);
+
+		$f['home_header'] = array(
+			'type'    => 'pick',
+			'label'   => __( 'Where does the menu sit over the banner?', 'oc-theme' ),
+			'help'    => __( 'Over the picture it feels taller and more designed; above it the picture stays whole.', 'oc-theme' ),
+			'options' => array(
+				'home' => __( 'Over the picture', 'oc-theme' ),
+				'none' => __( 'Above it', 'oc-theme' ),
+			),
+			'art'     => array(
+				'home' => 'head_over',
+				'none' => 'head_above',
+			),
+			'default' => 'home',
+			'target'  => array( 'mod', 'oc_header_transparent' ),
+		);
+
+		/* ---- 4a: the category page ---- */
+
+		$f['cat_hero'] = array(
+			'type'    => 'pick',
+			'label'   => __( 'What stands above the products?', 'oc-theme' ),
+			'options' => array(
+				'none'  => __( 'Nothing — straight to the products', 'oc-theme' ),
+				'full'  => __( 'A band across the page', 'oc-theme' ),
+				'split' => __( 'Half picture, half words', 'oc-theme' ),
+			),
+			'art'     => array(
+				'none'  => 'cat_hero_none',
+				'full'  => 'cat_hero_full',
+				'split' => 'cat_hero_split',
+			),
+			'default' => 'none',
+			'target'  => array( 'mod', 'oc_chero_layout' ),
+		);
+
+		$f['cat_cols'] = array(
+			'type'    => 'pick',
+			'label'   => __( 'How many products in a row?', 'oc-theme' ),
+			'help'    => __( 'On a phone it is always two. This is the computer.', 'oc-theme' ),
+			'options' => array(
+				'2' => __( 'Two — big pictures', 'oc-theme' ),
+				'3' => __( 'Three', 'oc-theme' ),
+				'4' => __( 'Four — more on the screen', 'oc-theme' ),
+			),
+			'art'     => array(
+				'2' => 'grid_2',
+				'3' => 'grid_3',
+				'4' => 'grid_4',
+			),
+			'default' => '4',
+			'target'  => array( 'mod', 'oc_catalog_cols' ),
+		);
+
+		$f['card_preset'] = array(
+			'type'    => 'pick',
+			'label'   => __( 'How should a product card look?', 'oc-theme' ),
+			'options' => array(
+				'minimal' => __( 'Bare — picture, name, price', 'oc-theme' ),
+				'classic' => __( 'With a buy button on the card', 'oc-theme' ),
+				'card'    => __( 'Inside a framed box', 'oc-theme' ),
+			),
+			'art'     => array(
+				'minimal' => 'card_minimal',
+				'classic' => 'card_classic',
+				'card'    => 'card_boxed',
+			),
+			'default' => 'classic',
+			'target'  => array( 'mod', 'oc_card_preset' ),
+		);
+
+		$f['card_sale'] = array(
+			'type'    => 'choice',
+			'label'   => __( 'Mark a discount on the card?', 'oc-theme' ),
+			'options' => array(
+				'percent' => __( 'Yes, how many percent off', 'oc-theme' ),
+				'text'    => __( 'Yes, just the word Sale', 'oc-theme' ),
+				'none'    => __( 'No', 'oc-theme' ),
+			),
+			'default' => 'percent',
+			'target'  => array( 'mod', 'oc_card_sale_badge' ),
+		);
+
+		$f['card_excerpt'] = array(
+			'type'    => 'choice',
+			'label'   => __( 'A line of description under the name?', 'oc-theme' ),
+			'help'    => __( 'Helpful when the name alone does not say what it is.', 'oc-theme' ),
+			'options' => $yesno,
+			'default' => 'no',
+			'target'  => array( 'mod', 'oc_card_excerpt' ),
+		);
+
+		$f['card_new'] = array(
+			'type'    => 'choice',
+			'label'   => __( 'A "new" label on a product that just arrived?', 'oc-theme' ),
+			'options' => $yesno,
+			'default' => 'yes',
+			'target'  => array( 'mod', 'oc_label_new' ),
+		);
+
+		/* ---- 5a: the product page ---- */
+
+		$f['prod_side'] = array(
+			'type'    => 'pick',
+			'label'   => __( 'Which side are the pictures on?', 'oc-theme' ),
+			'options' => array(
+				'gallery-start' => __( 'The side the page starts from', 'oc-theme' ),
+				'gallery-end'   => __( 'The other side', 'oc-theme' ),
+			),
+			'art'     => array(
+				'gallery-start' => 'prod_right',
+				'gallery-end'   => 'prod_left',
+			),
+			'default' => 'gallery-start',
+			'target'  => array( 'mod', 'oc_product_layout_side' ),
+		);
+
+		$f['prod_gallery'] = array(
+			'type'    => 'pick',
+			'label'   => __( 'Where do the small pictures sit?', 'oc-theme' ),
+			'options' => array(
+				'thumbs-side'  => __( 'Beside the big one', 'oc-theme' ),
+				'thumbs-under' => __( 'Under it', 'oc-theme' ),
+				'grid'         => __( 'All of them, one under the other', 'oc-theme' ),
+			),
+			'art'     => array(
+				'thumbs-side'  => 'gal_side',
+				'thumbs-under' => 'gal_under',
+				'grid'         => 'gal_grid',
+			),
+			'default' => 'thumbs-side',
+			'target'  => array( 'mod', 'oc_gallery_preset' ),
+		);
+
+		$f['prod_qty'] = array(
+			'type'    => 'choice',
+			'label'   => __( 'A quantity box beside the buy button?', 'oc-theme' ),
+			'help'    => __( 'Worth it when people buy several of the same thing. A buyer can change the quantity in the cart either way.', 'oc-theme' ),
+			'options' => $yesno,
+			'default' => 'yes',
+			'target'  => array( 'mod', 'oc_atc_qty' ),
+		);
+
+		$f['prod_sku'] = array(
+			'type'    => 'choice',
+			'label'   => __( 'Show the product code?', 'oc-theme' ),
+			'help'    => __( 'The number you use in the warehouse. Shoppers rarely need it; a trade customer does.', 'oc-theme' ),
+			'options' => $yesno,
+			'default' => 'no',
+			'target'  => array( 'mod', 'oc_product_sku' ),
+		);
+
+		$f['prod_ship_tab'] = array(
+			'type'    => 'choice',
+			'label'   => __( 'A "delivery and returns" tab on every product?', 'oc-theme' ),
+			'help'    => __( 'We open it with a short text drawn from your terms. You can rewrite it whenever you like.', 'oc-theme' ),
+			'options' => $yesno,
+			'default' => 'yes',
+			'target'  => array( 'call', 'ship_tab' ),
+		);
+
+		/* ---- 6a: brands ---- */
+
+		$f['brands_has'] = array(
+			'type'    => 'choice',
+			'label'   => __( 'Do you sell goods of brands with a name of their own?', 'oc-theme' ),
+			'help'    => __( 'Not your own name — the makers whose products you stock.', 'oc-theme' ),
+			'options' => $yesno,
+			'default' => 'no',
+			'target'  => array( 'state', 'brands' ),
+		);
+
+		$f['brand_logo'] = array(
+			'type'    => 'pick',
+			'label'   => __( 'The brand\'s page, at the top', 'oc-theme' ),
+			'options' => array(
+				'above'  => __( 'Logo above the words', 'oc-theme' ),
+				'beside' => __( 'Logo beside them', 'oc-theme' ),
+				'hidden' => __( 'No logo', 'oc-theme' ),
+			),
+			'art'     => array(
+				'above'  => 'brand_above',
+				'beside' => 'brand_beside',
+				'hidden' => 'brand_none',
+			),
+			'default' => 'above',
+			'when'    => array( 'brands_has', array( 'yes' ) ),
+			'target'  => array( 'mod', 'oc_brand_logo_pos' ),
+		);
+
+		$f['brand_card'] = array(
+			'type'    => 'choice',
+			'label'   => __( 'Show the brand name on a product card?', 'oc-theme' ),
+			'options' => $yesno,
+			'default' => 'yes',
+			'when'    => array( 'brands_has', array( 'yes' ) ),
+			'target'  => array( 'mod', 'oc_card_brand' ),
+		);
+
+		$f['brand_product'] = array(
+			'type'    => 'choice',
+			'label'   => __( 'And on the product page itself?', 'oc-theme' ),
+			'options' => array(
+				'text'  => __( 'The name', 'oc-theme' ),
+				'image' => __( 'The logo', 'oc-theme' ),
+				'none'  => __( 'Neither', 'oc-theme' ),
+			),
+			'default' => 'text',
+			'when'    => array( 'brands_has', array( 'yes' ) ),
+			'target'  => array( 'mod', 'oc_product_brand' ),
 		);
 
 		// Every field carries every key, so readers never test for presence.

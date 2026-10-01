@@ -98,6 +98,56 @@ final class Art {
 	}
 
 	/**
+	 * One product card: the picture, the name, the price, and whatever the
+	 * preset adds under them.
+	 *
+	 * @param float  $x    Left.
+	 * @param float  $y    Top.
+	 * @param float  $w    Width.
+	 * @param string $kind minimal | classic | boxed.
+	 */
+	private static function card( float $x, float $y, float $w, string $kind ): string {
+		$pad = 'boxed' === $kind ? 6 : 0;
+		$out = 'boxed' === $kind ? self::box( $x, $y, $w, 90, 'faint', 4 ) : '';
+
+		$out .= self::box( $x + $pad, $y + $pad, $w - ( $pad * 2 ), 56 - ( 'boxed' === $kind ? 6 : 0 ), 'strong' );
+		$out .= self::lines( $x + $pad, $y + 62, $w - ( $pad * 2 ), 1, 'base' );
+		$out .= self::box( $x + $pad, $y + 70, 30, 3.5, 'brand', 1.75 );
+
+		if ( 'classic' === $kind ) {
+			$out .= self::box( $x + $w - 18, $y + 40, 14, 14, 'brand', 7 );
+		}
+
+		return $out;
+	}
+
+	/**
+	 * The right-hand column of a product page: name, price, button.
+	 *
+	 * @param float $x Left.
+	 */
+	private static function detail( float $x ): string {
+		return self::lines( $x, 34, 130, 2, 'base' )
+			. self::lines( $x, 58, 70, 1, 'brand' )
+			. self::lines( $x, 76, 130, 3, 'base' )
+			. self::box( $x, 112, 120, 16, 'brand', 8 );
+	}
+
+	/**
+	 * A whole product page, with the gallery on one side or the other.
+	 *
+	 * @param bool $right Pictures on the right.
+	 */
+	private static function product( bool $right ): string {
+		$gx = $right ? 164 : 12;
+		$tx = $right ? 12 : 176;
+
+		return self::box( $gx, 30, 144, 118, 'strong' )
+			. self::row( $gx, 154, 144, 24, 4 )
+			. self::detail( $tx );
+	}
+
+	/**
 	 * The furniture every drawing shares: a header with a logo and a menu,
 	 * and a footer band. Drawn faintly — it is never what is being asked.
 	 */
@@ -164,6 +214,24 @@ final class Art {
 			. self::box( 190, 166, 118, 38 )
 		);
 
+		/* ---- the header over the banner ---- */
+
+		$art['head_over'] = self::svg(
+			self::box( 0, 0, self::W, 96, 'strong', 0 )
+			. self::box( 12, 6, 34, 6, 'brand', 2 )
+			. self::row( 180, 7, 128, 4, 4, 'brand' )
+			. self::lines( 110, 44, 100, 2, 'brand' )
+			. self::row( 12, 108, 296, 44, 3 )
+			. self::row( 12, 160, 296, 44, 3 )
+		);
+
+		$art['head_above'] = self::svg(
+			self::box( 0, 18, self::W, 78, 'strong', 0 )
+			. self::lines( 110, 44, 100, 2, 'brand' )
+			. self::row( 12, 108, 296, 44, 3 )
+			. self::row( 12, 160, 296, 44, 3 )
+		);
+
 		/* ---- the category page ---- */
 
 		// A band across the top with the category's name on it.
@@ -193,29 +261,6 @@ final class Art {
 			. self::row( 12, 160, 296, 46, 3 )
 		);
 
-		/* ---- the strip of sub-categories ---- */
-
-		$art['strip_clean'] = self::svg(
-			self::lines( 12, 30, 90, 1, 'brand' )
-			. self::row( 12, 46, 200, 5, 4 )
-			. self::row( 12, 62, 296, 52, 3 )
-			. self::row( 12, 120, 296, 52, 3 )
-		);
-
-		$art['strip_pill'] = self::svg(
-			self::lines( 12, 30, 90, 1, 'brand' )
-			. self::row( 12, 44, 230, 14, 4, 'strong' )
-			. self::row( 12, 66, 296, 52, 3 )
-			. self::row( 12, 124, 296, 52, 3 )
-		);
-
-		$art['strip_card'] = self::svg(
-			self::lines( 12, 30, 90, 1, 'brand' )
-			. self::row( 12, 44, 296, 34, 4, 'strong' )
-			. self::row( 12, 84, 296, 54, 3 )
-			. self::row( 12, 144, 296, 54, 3 )
-		);
-
 		/* ---- how many products in a row ---- */
 
 		$art['grid_2'] = self::svg(
@@ -236,26 +281,64 @@ final class Art {
 			. self::row( 12, 174, 296, 32, 4 )
 		);
 
-		/* ---- the product page ---- */
+		/* ---- what a product card carries ---- */
 
-		// The picture beside what you need to know.
-		$art['prod_side'] = self::svg(
-			self::box( 164, 30, 144, 128, 'strong' )
-			. self::lines( 12, 34, 130, 2, 'base' )
-			. self::lines( 12, 58, 70, 1, 'brand' )
-			. self::lines( 12, 76, 130, 3, 'base' )
-			. self::box( 12, 110, 130, 16, 'brand', 8 )
-			. self::row( 164, 164, 144, 24, 4 )
-			. self::row( 12, 172, 130, 14, 2 )
+		// Picture, name, price. Nothing else.
+		$art['card_minimal'] = self::svg(
+			self::card( 12, 30, 90, 'minimal' )
+			. self::card( 115, 30, 90, 'minimal' )
+			. self::card( 218, 30, 90, 'minimal' )
+			. self::card( 12, 130, 90, 'minimal' )
+			. self::card( 115, 130, 90, 'minimal' )
+			. self::card( 218, 130, 90, 'minimal' )
 		);
 
-		// The picture first, the words under it.
-		$art['prod_below'] = self::svg(
-			self::box( 12, 30, 296, 92, 'strong' )
-			. self::lines( 12, 132, 150, 2, 'base' )
-			. self::lines( 12, 156, 70, 1, 'brand' )
-			. self::box( 12, 176, 130, 16, 'brand', 8 )
-			. self::lines( 164, 132, 144, 4, 'base' )
+		// The same, with a button that appears on the card.
+		$art['card_classic'] = self::svg(
+			self::card( 12, 30, 90, 'classic' )
+			. self::card( 115, 30, 90, 'classic' )
+			. self::card( 218, 30, 90, 'classic' )
+			. self::card( 12, 130, 90, 'classic' )
+			. self::card( 115, 130, 90, 'classic' )
+			. self::card( 218, 130, 90, 'classic' )
+		);
+
+		// Everything inside a framed box.
+		$art['card_boxed'] = self::svg(
+			self::card( 12, 30, 90, 'boxed' )
+			. self::card( 115, 30, 90, 'boxed' )
+			. self::card( 218, 30, 90, 'boxed' )
+			. self::card( 12, 130, 90, 'boxed' )
+			. self::card( 115, 130, 90, 'boxed' )
+			. self::card( 218, 130, 90, 'boxed' )
+		);
+
+		/* ---- the product page ---- */
+
+		// Which side of the page the pictures sit on.
+		$art['prod_right'] = self::svg( self::product( true ) );
+		$art['prod_left']  = self::svg( self::product( false ) );
+
+		// Where the small pictures sit.
+		$art['gal_side'] = self::svg(
+			self::box( 44, 30, 120, 118, 'strong' )
+			. self::box( 12, 30, 26, 26, 'base' )
+			. self::box( 12, 62, 26, 26, 'base' )
+			. self::box( 12, 94, 26, 26, 'base' )
+			. self::detail( 176 )
+		);
+
+		$art['gal_under'] = self::svg(
+			self::box( 12, 30, 152, 104, 'strong' )
+			. self::row( 12, 140, 152, 26, 4 )
+			. self::detail( 176 )
+		);
+
+		$art['gal_grid'] = self::svg(
+			self::box( 12, 30, 152, 74, 'strong' )
+			. self::box( 12, 110, 74, 56, 'strong' )
+			. self::box( 90, 110, 74, 56, 'strong' )
+			. self::detail( 176 )
 		);
 
 		/* ---- the brand page ---- */
@@ -272,6 +355,12 @@ final class Art {
 			. self::lines( 86, 34, 222, 3, 'base' )
 			. self::row( 12, 76, 296, 58, 3 )
 			. self::row( 12, 140, 296, 58, 3 )
+		);
+
+		$art['brand_none'] = self::svg(
+			self::lines( 12, 32, 150, 2, 'base' )
+			. self::row( 12, 60, 296, 66, 3 )
+			. self::row( 12, 132, 296, 66, 3 )
 		);
 
 		return $art;
