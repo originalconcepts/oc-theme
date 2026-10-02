@@ -871,7 +871,7 @@ final class Schema {
 			'label'    => '',
 			'blocks'   => self::home_blocks(),
 			'required' => true,
-			'default' => array(
+			'default'  => array(
 				array(
 					'type' => 'banner',
 					'on'   => 1,
@@ -923,7 +923,7 @@ final class Schema {
 					'on'   => 1,
 				),
 			),
-			'target'  => array( 'call', 'home' ),
+			'target'   => array( 'call', 'home' ),
 		);
 
 		/* ---- 3b: the banner ---- */
