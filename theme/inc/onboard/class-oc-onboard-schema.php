@@ -911,6 +911,7 @@ final class Schema {
 			'group'       => __( 'The strip above the header', 'oc-theme' ),
 			'label'       => __( 'What it says', 'oc-theme' ),
 			'placeholder' => __( 'Free delivery on orders over 400 ILS', 'oc-theme' ),
+			'required'    => true,
 			'when'        => array( 'top_bar', array( 'yes' ) ),
 			'target'      => array( 'mod', 'oc_topbar_msg1' ),
 		);
@@ -972,7 +973,7 @@ final class Schema {
 			'help'    => __( 'Not your own name — the makers whose products you stock.', 'oc-theme' ),
 			'options' => array(
 				'yes' => __( 'Yes', 'oc-theme' ),
-				'no'  => __( 'No, this is not a brand shop', 'oc-theme' ),
+				'no'  => __( 'No, not a brand shop', 'oc-theme' ),
 			),
 			'default' => 'no',
 			'target'  => array( 'state', 'brands' ),

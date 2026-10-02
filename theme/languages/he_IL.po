@@ -12064,8 +12064,8 @@ msgstr "יותר משורה אחת והן מתחלפות."
 msgid "No departments yet. Add the first one and the menu above fills in."
 msgstr "אין עדיין מחלקות. הוסיפו את הראשונה והתפריט שלמעלה יתמלא."
 
-msgid "No, this is not a brand shop"
-msgstr "לא, זו לא חנות מותגים"
+msgid "No, not a brand shop"
+msgstr "לא, לא חנות מותגים"
 
 msgid "OUR STORY"
 msgstr "הסיפור שלנו"
@@ -12210,3 +12210,6 @@ msgid "%d brand opened."
 msgid_plural "%d brands opened."
 msgstr[0] "נפתח מותג אחד."
 msgstr[1] "נפתחו %d מותגים."
+
+msgid "No file was uploaded, so the page was not written."
+msgstr "לא הועלה קובץ, ולכן העמוד לא נכתב."

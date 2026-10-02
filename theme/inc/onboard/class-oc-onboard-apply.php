@@ -613,7 +613,7 @@ final class Apply {
 
 			$this->terms_page_wired( $id );
 
-			$this->row( 'terms_file', __( 'Terms page', 'oc-theme' ), $id ? 'check' : 'error', __( 'Written from the uploaded file; check the layout once.', 'oc-theme' ) );
+			$this->row( 'terms_file', __( 'Terms page', 'oc-theme' ), $id ? 'check' : 'error', $id ? __( 'Written from the uploaded file; check the layout once.', 'oc-theme' ) : __( 'No file was uploaded, so the page was not written.', 'oc-theme' ) );
 			return;
 		}
 
@@ -655,7 +655,7 @@ final class Apply {
 
 			$this->privacy_page_wired( $id );
 
-			$this->row( 'privacy_file', __( 'Privacy page', 'oc-theme' ), $id ? 'check' : 'error', __( 'Written from the uploaded file; check the layout once.', 'oc-theme' ) );
+			$this->row( 'privacy_file', __( 'Privacy page', 'oc-theme' ), $id ? 'check' : 'error', $id ? __( 'Written from the uploaded file; check the layout once.', 'oc-theme' ) : __( 'No file was uploaded, so the page was not written.', 'oc-theme' ) );
 			return;
 		}
 
@@ -689,7 +689,7 @@ final class Apply {
 
 			$this->a11y_page_wired( $id );
 
-			$this->row( 'a11y_file', __( 'Accessibility page', 'oc-theme' ), $id ? 'check' : 'error', __( 'Written from the uploaded file; check the layout once.', 'oc-theme' ) );
+			$this->row( 'a11y_file', __( 'Accessibility page', 'oc-theme' ), $id ? 'check' : 'error', $id ? __( 'Written from the uploaded file; check the layout once.', 'oc-theme' ) : __( 'No file was uploaded, so the page was not written.', 'oc-theme' ) );
 			return;
 		}
 
