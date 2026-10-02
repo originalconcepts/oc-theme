@@ -1697,7 +1697,9 @@
 
 			if ( ! track || ! track.firstChild ) { return; }
 
-			var want = strip.clientWidth * 2.2;
+			// A sketch that is drawn while its tab is hidden measures zero;
+			// a sensible floor keeps those strips long enough to loop.
+			var want = Math.max( strip.clientWidth, 380 ) * 2.2;
 
 			for ( var n = 0; n < 24 && track.scrollWidth < want; n++ ) {
 				track.appendChild( track.firstChild.cloneNode( true ) );
