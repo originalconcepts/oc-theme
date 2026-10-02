@@ -1282,7 +1282,7 @@ final class Apply {
 		}
 
 		if ( 'content' === $type ) {
-			return $this->content_section( (string) ( $row['variant'] ?? 'words' ), $nth );
+			return $this->content_section( (string) ( $row['variant'] ?? 'words' ), $nth, (string) ( $row['uid'] ?? '' ) );
 		}
 
 		return null;
@@ -1381,16 +1381,32 @@ final class Apply {
 	 *
 	 * @param string $kind words | single | overlap | duo | canvas.
 	 * @param int    $nth  Which content area on the page this is, from one.
+	 * @param string $uid  The area's own mark, where it has one.
 	 * @return array<string,mixed>
 	 */
-	private function content_section( string $kind, int $nth = 1 ): array {
+	private function content_section( string $kind, int $nth = 1, string $uid = '' ): array {
 		$brand = trim( (string) $this->v['brand_name'] );
 		$head  = '' !== $brand ? sprintf( /* translators: %s: the brand name. */ __( 'About %s', 'oc-theme' ), $brand ) : __( 'About us', 'oc-theme' );
 		$text  = wp_trim_words( wp_strip_all_tags( (string) $this->v['about_text'] ), 45 );
 
 		// What they wrote for this area beats the words we borrowed from
 		// the About page — those are only there so the page is never bare.
-		$mine  = is_array( $this->v['home_content'] ) ? ( $this->v['home_content'][ $nth - 1 ] ?? array() ) : array();
+		// The block is found by the area's own mark where there is one, so
+		// a page rearranged after the words were written still pairs them
+		// with the area they were written for.
+		$said = is_array( $this->v['home_content'] ) ? $this->v['home_content'] : array();
+		$mine = array();
+
+		foreach ( $said as $block ) {
+			if ( is_array( $block ) && '' !== (string) ( $block['uid'] ?? '' ) && (string) $block['uid'] === $uid ) {
+				$mine = $block;
+				break;
+			}
+		}
+
+		if ( ! $mine && '' === $uid ) {
+			$mine = (array) ( $said[ $nth - 1 ] ?? array() );
+		}
 		$brow  = trim( (string) ( $mine['eyebrow'] ?? '' ) );
 		$said  = trim( (string) ( $mine['heading'] ?? '' ) );
 		$words = trim( (string) ( $mine['text'] ?? '' ) );

@@ -131,9 +131,33 @@
 
 		if ( ! kind ) { return false; }
 
-		var mine = ( val( 'home_layout' ) || [] ).filter( function ( r ) { return r && r.on && r.type === kind; } )[ row ];
+		var mine = partsOf( kind )[ row ];
 
 		return !! mine && [ 'duo', 'canvas' ].indexOf( String( mine.variant || '' ) ) !== -1;
+	}
+
+	/**
+	 * The parts of that kind still standing on the page, in their order.
+	 *
+	 * @param {string} kind The block type.
+	 */
+	function partsOf( kind ) {
+		return ( val( 'home_layout' ) || [] ).filter( function ( r ) { return r && r.on && r.type === kind; } );
+	}
+
+	/**
+	 * How many have to be ticked. Never more than there are to tick: a shop
+	 * with three departments cannot be asked for four, and a question with
+	 * no possible answer is a wall.
+	 *
+	 * @param {Object} f The field.
+	 */
+	function floorOf( f ) {
+		var all = 'from_brands' === f.type
+			? String( val( 'brand_list' ) || '' ).split( /\r?\n/ ).filter( function ( n ) { return n.trim(); } ).length
+			: ( f.deep ? menuAll().length : menuNames().length );
+
+		return Math.max( 1, Math.min( f.min || 1, all ) );
 	}
 
 	function isEmpty( v ) {
@@ -210,7 +234,7 @@
 			if ( f.type === 'from_menu' || f.type === 'from_brands' ) {
 				var picked = Array.isArray( v ) ? v.length : ( String( v || '' ).trim() ? 1 : 0 );
 
-				if ( picked < ( f.min || 1 ) ) { out.push( id ); }
+				if ( picked < floorOf( f ) ) { out.push( id ); }
 				return;
 			}
 			if ( f.type === 'menu' ) {
@@ -434,7 +458,7 @@
 				f.required ? el( 'span', { 'class': 'oc-onb-f__req', text: ' *', 'aria-label': I.required } ) : null,
 				// How many have to be ticked is part of the demand, so it
 				// stands with it and in its colour.
-				f.min ? el( 'span', { 'class': 'oc-onb-f__req oc-onb-f__min', text: fmt( I.pick_at_least, f.min ) } ) : null
+				f.min ? el( 'span', { 'class': 'oc-onb-f__req oc-onb-f__min', text: fmt( I.pick_at_least, floorOf( f ) ) } ) : null
 			] ) );
 		}
 		if ( f.help ) { box.appendChild( el( 'p', { 'class': 'oc-onb-f__help', text: f.help } ) ); }
@@ -913,7 +937,9 @@
 				if ( ! b.once ) {
 					tools.appendChild( tool( 'copy', I.row_copy, function () {
 						edit( function ( n ) {
-							n.splice( i + 1, 0, merge( n[ i ], {} ) );
+							// A copy is a part of its own, so it starts with
+							// a mark of its own and inherits no answers.
+							n.splice( i + 1, 0, merge( n[ i ], { uid: mark() } ) );
 
 							return n;
 						} );
@@ -1039,7 +1065,7 @@
 				edit( function ( n ) {
 					if ( b.once && n.some( function ( r ) { return r.type === type; } ) ) { return null; }
 
-					var row = { type: type, on: 1 };
+					var row = { type: type, uid: mark(), on: 1 };
 
 					if ( b.title ) { row.title = ''; }
 					if ( b.text ) { row.text = ''; }
@@ -1480,6 +1506,14 @@
 	}
 
 	/**
+	 * A short mark for a row of the arrangement, so what is said about it
+	 * later can find it again.
+	 */
+	function mark() {
+		return Math.random().toString( 36 ).slice( 2, 10 );
+	}
+
+	/**
 	 * A row with a change on top of it.
 	 *
 	 * @param {Object} row   The row.
@@ -1761,11 +1795,22 @@
 		var wrap = el( 'div', { 'class': 'oc-onb-rep' } );
 		var rows = ( val( id ) || [] ).map( function ( r ) { return Object.assign( {}, r ); } );
 
-		// A block of questions for every part of that kind they kept: three
-		// content areas on the page, three blocks here, in their order.
-		var want = f.grow ? ( val( 'home_layout' ) || [] ).filter( function ( r ) { return r && r.on && r.type === f.grow; } ).length : 0;
+		// A block of questions for every part of that kind they kept, and
+		// each block holds the mark of the part it belongs to: words given
+		// to a content area follow that area when the page is rearranged,
+		// instead of staying behind for whoever takes its place.
+		if ( f.grow ) {
+			var parts = partsOf( f.grow );
+			var kept  = [];
 
-		while ( rows.length < Math.min( want, f.max || 20 ) ) { rows.push( {} ); }
+			parts.slice( 0, f.max || 20 ).forEach( function ( part, i ) {
+				var was = rows.filter( function ( r ) { return r.uid && r.uid === part.uid; } )[0];
+
+				kept.push( Object.assign( {}, was || ( part.uid ? {} : rows[ i ] ) || {}, { uid: part.uid || '' } ) );
+			} );
+
+			rows = kept;
+		}
 
 		if ( rows.length === 0 ) { rows.push( {} ); }
 
@@ -2247,7 +2292,9 @@
 	 */
 	function wContent( kind, nth ) {
 		// What they wrote for this area, and the pictures they gave it.
-		var said  = ( val( 'home_content' ) || [] )[ ( nth || 1 ) - 1 ] || {};
+		var all   = val( 'home_content' ) || [];
+		var part  = partsOf( 'content' )[ ( nth || 1 ) - 1 ] || {};
+		var said  = all.filter( function ( r ) { return r && r.uid && r.uid === part.uid; } )[0] || ( part.uid ? {} : all[ ( nth || 1 ) - 1 ] ) || {};
 		var brow  = String( said.eyebrow || '' ).trim() || I.wf_eyebrow;
 		var head  = String( said.heading || '' ).trim() || I.wf_about_h;
 		var story = String( said.text || '' ).trim();

@@ -1888,6 +1888,72 @@ final class Schema {
 	}
 
 	/**
+	 * The parts of that kind still standing on the page, in their order.
+	 *
+	 * @param string              $kind   Block type.
+	 * @param array<string,mixed> $values All the answers.
+	 * @return array<int,array<string,mixed>>
+	 */
+	public static function parts_of( string $kind, array $values ): array {
+		$rows = array_key_exists( 'home_layout', $values ) ? $values['home_layout'] : self::default_of( 'home_layout' );
+		$out  = array();
+
+		foreach ( (array) $rows as $row ) {
+			if ( is_array( $row ) && ! empty( $row['on'] ) && $kind === (string) ( $row['type'] ?? '' ) ) {
+				$out[] = $row;
+			}
+		}
+
+		return $out;
+	}
+
+	/**
+	 * How many have to be ticked — never more than there are to tick.
+	 *
+	 * @param array<string,mixed> $f      The field.
+	 * @param array<string,mixed> $values All the answers.
+	 */
+	private static function floor_of( array $f, array $values ): int {
+		$want = max( 1, (int) ( $f['min'] ?? 1 ) );
+
+		if ( 'from_brands' === $f['type'] ) {
+			$lines = preg_split( '/\r\n|\r|\n/', (string) ( $values['brand_list'] ?? '' ) );
+			$have  = count( array_filter( array_map( 'trim', (array) $lines ) ) );
+		} else {
+			$rows = array_key_exists( 'site_menu', $values ) ? $values['site_menu'] : array();
+			$have = self::menu_count( (array) $rows, ! empty( $f['deep'] ) );
+		}
+
+		return max( 1, min( $want, $have ) );
+	}
+
+	/**
+	 * How many names the menu holds — the departments, or everything in it.
+	 *
+	 * @param array<int,mixed> $rows The menu, at this level.
+	 * @param bool             $deep Whether what is inside counts too.
+	 */
+	private static function menu_count( array $rows, bool $deep ): int {
+		$n = 0;
+
+		foreach ( $rows as $row ) {
+			$row = is_scalar( $row ) ? array( 'name' => (string) $row ) : (array) $row;
+
+			if ( '' === trim( (string) ( $row['name'] ?? '' ) ) ) {
+				continue;
+			}
+
+			++$n;
+
+			if ( $deep ) {
+				$n += self::menu_count( (array) ( $row['subs'] ?? array() ), true );
+			}
+		}
+
+		return $n;
+	}
+
+	/**
 	 * Does this block of questions want its second picture? Only where the
 	 * content area it belongs to stands on two of them.
 	 *
@@ -1902,14 +1968,7 @@ final class Schema {
 			return false;
 		}
 
-		$rows = array_key_exists( 'home_layout', $values ) ? $values['home_layout'] : self::default_of( 'home_layout' );
-		$mine = array();
-
-		foreach ( (array) $rows as $row ) {
-			if ( is_array( $row ) && ! empty( $row['on'] ) && $kind === (string) ( $row['type'] ?? '' ) ) {
-				$mine[] = $row;
-			}
-		}
+		$mine = self::parts_of( $kind, $values );
 
 		return isset( $mine[ $nth ] ) && in_array( (string) ( $mine[ $nth ]['variant'] ?? '' ), array( 'duo', 'canvas' ), true );
 	}
@@ -1942,7 +2001,7 @@ final class Schema {
 			if ( 'from_menu' === $f['type'] || 'from_brands' === $f['type'] ) {
 				$picked = is_array( $v ) ? count( $v ) : ( '' === trim( (string) $v ) ? 0 : 1 );
 
-				if ( $picked < max( 1, (int) ( $f['min'] ?? 1 ) ) ) {
+				if ( $picked < self::floor_of( $f, $values ) ) {
 					$out[] = $id;
 				}
 
@@ -2083,8 +2142,14 @@ final class Schema {
 						continue;
 					}
 
+					// A row carries a mark of its own so the answers given
+					// about it later follow it, rather than following the
+					// place it happened to stand in.
+					$uid = preg_replace( '/[^a-z0-9]/', '', strtolower( (string) ( $row['uid'] ?? '' ) ) );
+
 					$keep = array(
 						'type' => $type,
+						'uid'  => '' !== (string) $uid ? substr( (string) $uid, 0, 12 ) : substr( md5( uniqid( (string) count( $rows ), true ) ), 0, 8 ),
 						'on'   => empty( $row['on'] ) ? 0 : 1,
 					);
 
