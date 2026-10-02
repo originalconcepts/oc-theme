@@ -2567,7 +2567,16 @@ final class Render {
 			// A drawing of their own stands in place of ours: it is why
 			// they uploaded it.
 			$mark = $own
-				? wp_get_attachment_image( $own, 'thumbnail', false, array( 'class' => 'ocb-ico__img', 'alt' => '', 'loading' => 'lazy' ) )
+				? wp_get_attachment_image(
+					$own,
+					'thumbnail',
+					false,
+					array(
+						'class'   => 'ocb-ico__img',
+						'alt'     => '',
+						'loading' => 'lazy',
+					)
+				)
 				: ( '' === $icon ? '' : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' . $icon . '</svg>' );
 
 			++$count;

@@ -916,18 +916,18 @@ final class Apply {
 	 *
 	 * @param string $name     What it is called.
 	 * @param string $taxonomy Which family.
-	 * @param int    $parent   Under which term, or 0.
+	 * @param int    $under    Which term it hangs under, or 0.
 	 * @param int    $made     Counter, raised when a term is new.
 	 * @return int The term id, or 0.
 	 */
-	private function term( string $name, string $taxonomy, int $parent, int &$made ): int {
+	private function term( string $name, string $taxonomy, int $under, int &$made ): int {
 		$found = get_term_by( 'name', $name, $taxonomy );
 
 		if ( $found instanceof \WP_Term ) {
 			return (int) $found->term_id;
 		}
 
-		$new = wp_insert_term( $name, $taxonomy, array( 'parent' => $parent ) );
+		$new = wp_insert_term( $name, $taxonomy, array( 'parent' => $under ) );
 
 		if ( is_wp_error( $new ) ) {
 			// A slug clash means something of that name is already there.
@@ -1002,13 +1002,13 @@ final class Apply {
 	/**
 	 * One link in the menu, pointing at a category.
 	 *
-	 * @param int $menu   The menu.
-	 * @param int $term   The category.
-	 * @param int $parent The link it hangs under, or 0.
-	 * @param int $order  Where it stands.
+	 * @param int $menu  The menu.
+	 * @param int $term  The category.
+	 * @param int $under The link it hangs under, or 0.
+	 * @param int $order Where it stands.
 	 * @return int The new link's id.
 	 */
-	private function menu_item( int $menu, int $term, int $parent, int $order ): int {
+	private function menu_item( int $menu, int $term, int $under, int $order ): int {
 		$id = wp_update_nav_menu_item(
 			$menu,
 			0,
@@ -1016,7 +1016,7 @@ final class Apply {
 				'menu-item-type'      => 'taxonomy',
 				'menu-item-object'    => 'product_cat',
 				'menu-item-object-id' => $term,
-				'menu-item-parent-id' => $parent,
+				'menu-item-parent-id' => $under,
 				'menu-item-position'  => $order,
 				'menu-item-status'    => 'publish',
 			)
@@ -1270,6 +1270,7 @@ final class Apply {
 	 * the pictures are asked for on a later screen; this lays out the band.
 	 *
 	 * @param string $kind words | single | overlap | duo | canvas.
+	 * @param int    $nth  Which content area on the page this is, from one.
 	 * @return array<string,mixed>
 	 */
 	private function content_section( string $kind, int $nth = 1 ): array {
