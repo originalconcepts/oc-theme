@@ -968,8 +968,11 @@ final class Apply {
 		}
 
 		$have = wp_get_nav_menu_items( $menu->term_id );
+		$were = implode( ' | ', array_map( function ( $one ) { return $one->title; }, (array) $have ) );
 
-		if ( ! empty( $have ) && $this->changed_by_hand( 'menu:items', count( $have ) ) ) {
+		// The names in their order, not how many there are: somebody who
+		// renamed or reordered one link has still worked on this menu.
+		if ( ! empty( $have ) && $this->changed_by_hand( 'menu:items', $were ) ) {
 			$this->row( 'site_menu', __( 'The menu', 'oc-theme' ), 'manual', __( 'The menu was edited by hand since the last apply; left as it is.', 'oc-theme' ) );
 			return;
 		}
@@ -978,17 +981,22 @@ final class Apply {
 			wp_delete_post( (int) $old->ID, true );
 		}
 
-		$n = 0;
+		$n     = 0;
+		$named = array();
 
 		foreach ( $tree as $pair ) {
 			$top = $this->menu_item( (int) $menu->term_id, $pair[0], 0, ++$n );
 
+			$named[] = $this->term_name( $pair[0] );
+
 			foreach ( $pair[1] as $kid ) {
 				$this->menu_item( (int) $menu->term_id, $kid, $top, ++$n );
+
+				$named[] = $this->term_name( $kid );
 			}
 		}
 
-		$this->remember( 'menu:items', $n );
+		$this->remember( 'menu:items', implode( ' | ', $named ) );
 
 		$spots              = (array) get_theme_mod( 'nav_menu_locations', array() );
 		$spots['primary']   = (int) $menu->term_id;
@@ -997,6 +1005,17 @@ final class Apply {
 		set_theme_mod( 'nav_menu_locations', $spots );
 
 		$this->row( 'site_menu', __( 'The menu', 'oc-theme' ), 'applied', sprintf( /* translators: %d: how many links the menu holds. */ _n( '%d link in the menu.', '%d links in the menu.', $n, 'oc-theme' ), $n ) );
+	}
+
+	/**
+	 * What a term is called, for the fingerprint of the menu.
+	 *
+	 * @param int $term The term.
+	 */
+	private function term_name( int $term ): string {
+		$one = get_term( $term );
+
+		return $one instanceof \WP_Term ? $one->name : '';
 	}
 
 	/**

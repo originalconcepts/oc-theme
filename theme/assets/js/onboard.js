@@ -765,6 +765,8 @@
 		var wrap   = el( 'div', { 'class': 'oc-onb-lay' } );
 		var list   = el( 'div', { 'class': 'oc-onb-lay__rows' } );
 
+		var held = [];   // The typing in this list that has not landed yet.
+
 		function rows() {
 			var v = val( id );
 			return Array.isArray( v ) ? v : [];
@@ -775,13 +777,29 @@
 			draw();
 		}
 
+		/**
+		 * Any change to the shape of the list. Whatever is half-typed is
+		 * written first: a row that moves or goes must take the words that
+		 * were being put into it, not the ones from before.
+		 *
+		 * @param {Function} fn Given the rows, returns the new ones.
+		 */
+		function edit( fn ) {
+			commitAll();
+
+			var next = fn( rows().slice() );
+
+			if ( next ) { save( next ); }
+		}
+
 		function move( from, to ) {
-			var r = rows().slice();
+			edit( function ( r ) {
+				if ( to < 0 || to >= r.length ) { return null; }
 
-			if ( to < 0 || to >= r.length ) { return; }
+				r.splice( to, 0, r.splice( from, 1 )[0] );
 
-			r.splice( to, 0, r.splice( from, 1 )[0] );
-			save( r );
+				return r;
+			} );
 		}
 
 		/**
@@ -800,6 +818,12 @@
 			var r   = rows();
 			var nth = {};
 			var box = root.querySelector( '[data-field="' + id + '"]' );
+
+			// The boxes about to be thrown away stop promising anything:
+			// a promise about a row that no longer stands there would write
+			// into whatever took its place.
+			held.forEach( function ( free ) { free(); } );
+			held = [];
 
 			// Once every row has what it needs, the red goes: an answered
 			// screen should not keep wearing the complaint.
@@ -833,7 +857,10 @@
 				line.addEventListener( 'drop', function ( e ) {
 					e.preventDefault();
 					line.classList.remove( 'is-over' );
-					move( parseInt( e.dataTransfer.getData( 'text/plain' ), 10 ), i );
+
+					var from = parseInt( e.dataTransfer.getData( 'text/plain' ), 10 );
+
+					if ( ! isNaN( from ) ) { move( from, i ); }
 				} );
 
 				var head = el( 'div', { 'class': 'oc-onb-row__head' } );
@@ -848,16 +875,20 @@
 
 				if ( ! b.once ) {
 					tools.appendChild( tool( 'copy', I.row_copy, function () {
-						var n = rows().slice();
-						n.splice( i + 1, 0, merge( n[ i ], {} ) );
-						save( n );
+						edit( function ( n ) {
+							n.splice( i + 1, 0, merge( n[ i ], {} ) );
+
+							return n;
+						} );
 					} ) );
 				}
 
 				tools.appendChild( tool( 'bin', I.row_drop, function () {
-					var n = rows().slice();
-					n.splice( i, 1 );
-					save( n );
+					edit( function ( n ) {
+						n.splice( i, 1 );
+
+						return n;
+					} );
 				} ) );
 
 				head.appendChild( tools );
@@ -898,7 +929,7 @@
 					} );
 					inp.addEventListener( 'blur', put );
 
-					awaits( put );
+					held.push( awaits( put ) );
 
 					line.appendChild( inp );
 				}
@@ -919,9 +950,11 @@
 					} );
 
 					sel.addEventListener( 'change', function () {
-						var n = rows().slice();
-						n[ i ] = merge( n[ i ], { variant: sel.value } );
-						save( n );
+						edit( function ( n ) {
+							n[ i ] = merge( n[ i ], { variant: sel.value } );
+
+							return n;
+						} );
 					} );
 
 					line.appendChild( sel );
@@ -966,18 +999,19 @@
 			var btn = el( 'button', { type: 'button', 'class': 'oc-onb-chip', text: b.label } );
 
 			btn.addEventListener( 'click', function () {
-				var n = rows().slice();
+				edit( function ( n ) {
+					if ( b.once && n.some( function ( r ) { return r.type === type; } ) ) { return null; }
 
-				if ( b.once && n.some( function ( r ) { return r.type === type; } ) ) { return; }
+					var row = { type: type, on: 1 };
 
-				var row = { type: type, on: 1 };
+					if ( b.title ) { row.title = ''; }
+					if ( b.text ) { row.text = ''; }
+					if ( b.variants ) { row.variant = b.blank ? '' : Object.keys( b.variants )[0]; }
 
-				if ( b.title ) { row.title = ''; }
-				if ( b.text ) { row.text = ''; }
-				if ( b.variants ) { row.variant = b.blank ? '' : Object.keys( b.variants )[0]; }
+					n.push( row );
 
-				n.push( row );
-				save( n );
+					return n;
+				} );
 			} );
 
 			add.appendChild( btn );
@@ -1016,6 +1050,7 @@
 	function render_menu( id, f ) {
 		var wrap = el( 'div', { 'class': 'oc-onb-menu' } );
 		var list = el( 'div', { 'class': 'oc-onb-menu__rows' } );
+		var held = [];   // The typing in this menu that has not landed yet.
 
 		function rows() {
 			var v = val( id );
@@ -1030,13 +1065,29 @@
 			draw();
 		}
 
+		/**
+		 * Any change to the shape of the menu. Half-typed words are written
+		 * first, so a department that moves or goes takes the name that was
+		 * being given to it.
+		 *
+		 * @param {Function} fn Given the rows, returns the new ones.
+		 */
+		function edit( fn ) {
+			commitAll();
+
+			var next = fn( rows() );
+
+			if ( next ) { save( next ); }
+		}
+
 		function move( from, to ) {
-			var r = rows();
+			edit( function ( r ) {
+				if ( to < 0 || to >= r.length ) { return null; }
 
-			if ( to < 0 || to >= r.length ) { return; }
+				r.splice( to, 0, r.splice( from, 1 )[0] );
 
-			r.splice( to, 0, r.splice( from, 1 )[0] );
-			save( r );
+				return r;
+			} );
 		}
 
 		/**
@@ -1064,13 +1115,19 @@
 			inp.addEventListener( 'blur', send );
 			inp.addEventListener( 'keydown', function ( e ) { if ( 'Enter' === e.key ) { e.preventDefault(); send(); } } );
 
-			awaits( send );
+			held.push( awaits( send ) );
 
 			return inp;
 		}
 
 		function draw() {
 			var r = rows();
+
+			// The boxes about to go stop promising anything: a promise about
+			// a row that no longer stands there would write into its
+			// neighbour.
+			held.forEach( function ( free ) { free(); } );
+			held = [];
 
 			list.innerHTML = '';
 
@@ -1093,9 +1150,11 @@
 				tools.appendChild( tool( '↑', I.row_up, function () { move( i, i - 1 ); }, 0 === i ) );
 				tools.appendChild( tool( '↓', I.row_down, function () { move( i, i + 1 ); }, i === r.length - 1 ) );
 				tools.appendChild( tool( 'bin', I.menu_drop, function () {
-					var n = rows();
-					n.splice( i, 1 );
-					save( n );
+					edit( function ( n ) {
+						n.splice( i, 1 );
+
+						return n;
+					} );
 				} ) );
 
 				head.appendChild( tools );
@@ -1113,9 +1172,11 @@
 					}, 'oc-onb-menu__subin' ) );
 
 					one.appendChild( tool( 'bin', I.menu_drop, function () {
-						var n = rows();
-						n[ i ].subs.splice( si, 1 );
-						save( n );
+						edit( function ( n ) {
+							n[ i ].subs.splice( si, 1 );
+
+							return n;
+						} );
 					} ) );
 
 					subs.appendChild( one );
@@ -1126,9 +1187,11 @@
 					'class': 'oc-onb-link oc-onb-menu__add',
 					text: I.menu_add_sub,
 					onclick: function () {
-						var n = rows();
-						n[ i ].subs.push( '' );
-						save( n );
+						edit( function ( n ) {
+							n[ i ].subs.push( '' );
+
+							return n;
+						} );
 					}
 				} ) );
 
@@ -1165,12 +1228,13 @@
 		var add = el( 'button', { type: 'button', 'class': 'oc-onb-btn oc-onb-btn--ghost', text: I.menu_add } );
 
 		add.addEventListener( 'click', function () {
-			var n = rows();
+			edit( function ( n ) {
+				if ( n.length >= 20 ) { return null; }
 
-			if ( n.length >= 20 ) { return; }
+				n.push( { name: '', subs: [] } );
 
-			n.push( { name: '', subs: [] } );
-			save( n );
+				return n;
+			} );
 
 			var all = list.querySelectorAll( '.oc-onb-menu__name' );
 
