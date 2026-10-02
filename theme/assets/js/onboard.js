@@ -26,6 +26,7 @@
 	var looked  = false; // Whether we already went looking on their old site.
 	var foundIn = {};    // Fields whose address we found rather than asked for.
 	var at = -1; // -1 welcome, 0..n-1 screens, n summary, n+1 done.
+	var far = -1; // The furthest screen they have opened in this sitting.
 
 	var parts = C.schema.parts || {};
 
@@ -69,6 +70,31 @@
 
 	// The gates are not questions, so they are not counted as steps.
 	var asked = screens.filter( function ( s ) { return ! s.gate; } );
+
+	/**
+	 * The furthest screen the questionnaire has been taken to. Steps up to
+	 * there can be reopened; nothing past it can be jumped to. A sitting
+	 * that resumes an older one counts the screens that already hold
+	 * answers, so going back does not wall off work already done.
+	 *
+	 * @return {number} The screen index.
+	 */
+	function reach() {
+		var top = Math.max( far, at );
+
+		screens.forEach( function ( s, i ) {
+			if ( i <= top ) { return; }
+
+			for ( var k = 0; k < s.fields.length; k++ ) {
+				if ( Object.prototype.hasOwnProperty.call( values, s.fields[ k ] ) ) {
+					top = i;
+					return;
+				}
+			}
+		} );
+
+		return top;
+	}
 
 	/* ------------------------------------------------------------ values */
 
@@ -775,6 +801,12 @@
 				if ( b.variants ) {
 					var sel = el( 'select', { 'class': 'oc-onb-in oc-onb-row__sel' } );
 
+					// A block that starts blank leads with the question, so
+					// the list never answers it for them.
+					if ( b.blank ) {
+						sel.appendChild( el( 'option', { value: '', text: I.row_which, selected: '' === String( row.variant || '' ) ? 'selected' : null } ) );
+					}
+
 					Object.keys( b.variants ).forEach( function ( k ) {
 						var o = el( 'option', { value: k, text: b.variants[ k ] } );
 						if ( k === row.variant ) { o.selected = 'selected'; }
@@ -837,7 +869,7 @@
 
 				if ( b.title ) { row.title = ''; }
 				if ( b.text ) { row.text = ''; }
-				if ( b.variants ) { row.variant = Object.keys( b.variants )[0]; }
+				if ( b.variants ) { row.variant = b.blank ? '' : Object.keys( b.variants )[0]; }
 
 				n.push( row );
 				save( n );
@@ -1403,29 +1435,37 @@
 	 * One band of the home page, drawn.
 	 *
 	 * @param {Object} row The row the customer arranged.
+	 * @param {number} nth Which one of its kind this is, counting from one.
 	 */
-	function wBand( row ) {
+	function wBand( row, nth ) {
 		var title = String( row.title || '' ).trim();
 
 		if ( 'banner' === row.type ) { return wBanner( false ); }
 
 		if ( 'marquee' === row.type ) {
 			var words = String( row.text || '' ).trim() || I.wf_marquee;
-			var once  = words + '  |  ' + words + '  |  ';
 			var track = el( 'div', { 'class': 'wf-mq__t' } );
 
-			// Two identical halves, and the strip slides by exactly one of
-			// them: the line never shows its end.
-			track.appendChild( el( 'span', { text: once } ) );
-			track.appendChild( el( 'span', { text: once } ) );
+			// The same words over and over, the way the real strip is built:
+			// the track slides by whole copies, so the line has no end to
+			// show. How many copies it takes to cover the strip twice is a
+			// question of width, and fillMarquees() tops them up once the
+			// sketch is on the page.
+			for ( var c = 0; c < 4; c++ ) {
+				track.appendChild( el( 'span', { text: words } ) );
+			}
 
 			return w( 'wf-mq', [ track ] );
 		}
 
 		if ( 'products' === row.type ) {
-			var fall = { sale: I.wf_sale_h, sales: I.wf_best_h }[ row.variant ] || I.wf_new_h;
+			// Named by the shelf they chose; and while they have not chosen,
+			// by where the shelf stands, so two rows never read as twins.
+			var named = { sale: I.wf_sale_h, sales: I.wf_best_h, manual: I.wf_pick_h, 'new': I.wf_new_h };
+			var fall  = named[ row.variant ] || ( nth > 1 ? I.wf_sale_h : I.wf_new_h );
+			var other = 'sale' === row.variant || ( ! row.variant && nth > 1 );
 
-			return w( 'wf-band', [ wHeading( title || fall ), wRow( 4, 'sale' === row.variant ? 5 : 1 ) ] );
+			return w( 'wf-band', [ wHeading( title || fall ), wRow( 4, other ? 5 : 1 ) ] );
 		}
 
 		if ( 'categories' === row.type ) {
@@ -1551,9 +1591,12 @@
 		var over = 'home' === String( val( 'home_header' ) );
 		var mid  = [];
 
+		var nth = {};
+
 		( Array.isArray( rows ) ? rows : [] ).forEach( function ( row ) {
 			if ( ! row.on ) { return; }
-			mid.push( wBand( row ) );
+			nth[ row.type ] = ( nth[ row.type ] || 0 ) + 1;
+			mid.push( wBand( row, nth[ row.type ] ) );
 		} );
 
 		return wPage( mid, { over: over } );
@@ -1634,6 +1677,37 @@
 		holder.classList.toggle( 'is-phone', onPhone() );
 		holder.innerHTML = '';
 		holder.appendChild( previewFor( holder.getAttribute( 'data-preview' ) ) );
+		fillMarquees( holder );
+	}
+
+	/**
+	 * A running line loops without a seam only while the track is wider
+	 * than two strips: it slides by half of itself, and whatever stands
+	 * where it started has to be there again at the end. Short words need
+	 * more copies than long ones, and only the page knows how wide they
+	 * came out, so the copies are topped up here rather than guessed.
+	 *
+	 * @param {HTMLElement} holder The sketch, already on the page.
+	 */
+	function fillMarquees( holder ) {
+		var strips = holder.querySelectorAll( '.wf-mq' );
+
+		Array.prototype.forEach.call( strips, function ( strip ) {
+			var track = strip.querySelector( '.wf-mq__t' );
+
+			if ( ! track || ! track.firstChild ) { return; }
+
+			var want = strip.clientWidth * 2.2;
+
+			for ( var n = 0; n < 24 && track.scrollWidth < want; n++ ) {
+				track.appendChild( track.firstChild.cloneNode( true ) );
+			}
+
+			// Half a track has to be whole copies, or the loop lands mid-word.
+			if ( track.children.length % 2 ) {
+				track.appendChild( track.firstChild.cloneNode( true ) );
+			}
+		} );
 	}
 
 	/**
@@ -1659,7 +1733,8 @@
 			if ( seen.indexOf( s.step ) === -1 ) { seen.push( s.step ); }
 		} );
 
-		var pos = asked.indexOf( here );
+		var pos  = asked.indexOf( here );
+		var high = reach();
 
 		seen.forEach( function ( step ) {
 			var at    = step === here.step;
@@ -1672,10 +1747,14 @@
 				last = i;
 			} );
 
-			var done = last < pos;
-			var chip = el( at || done ? 'button' : 'span', {
-				type: at || done ? 'button' : null,
-				'class': 'oc-onb-steps__i' + ( at ? ' is-on' : ( done ? ' is-done' : ' is-later' ) )
+			// Behind you, or as far forward as you have already been: either
+			// way the step is yours to reopen. Beyond that there is nothing
+			// to go back to, so the chip is only a label.
+			var done = ! at && ( last < pos || screens.indexOf( asked[ last ] ) < high );
+			var open = ! at && ( done || screens.indexOf( asked[ first ] ) <= high );
+			var chip = el( at || open ? 'button' : 'span', {
+				type: at || open ? 'button' : null,
+				'class': 'oc-onb-steps__i' + ( at ? ' is-on' : ( done ? ' is-done' : ( open ? ' is-open' : ' is-later' ) ) )
 			} );
 
 			if ( done ) {
@@ -1684,8 +1763,7 @@
 
 			chip.appendChild( el( 'span', { text: step.title } ) );
 
-			// A step behind you can be reopened; one ahead cannot be jumped to.
-			if ( done ) {
+			if ( open ) {
 				chip.addEventListener( 'click', function () { go( screens.indexOf( asked[ first ] ) ); } );
 			}
 
@@ -1958,7 +2036,8 @@
 			saveStep();
 			return;
 		}
-		at = index;
+		at  = index;
+		far = Math.max( far, index );
 		renderScreen( index );
 		saveStep();
 	}

@@ -561,10 +561,15 @@ html { -webkit-text-size-adjust: 100%; }
 .wf-head--over { position: absolute; inset-inline: 0; top: 24px; z-index: 2; }
 .wf--over .wf-hero { padding-top: 0; }
 
-.wf-mq { overflow: hidden; }
-.wf-mq__t { display: flex; width: max-content; animation: wf-run 11s linear infinite; }
+/* The running line, built the way the real one is: an inline track of
+   identical copies that slides by half of itself. On a page that reads
+   right to left the track spills past the left edge, so the loop has to
+   run towards the right — the other way round and the strip runs out of
+   words and shows the hole where its end is. */
+.wf-mq { overflow: hidden; white-space: nowrap; }
+.wf-mq__t { display: inline-flex; gap: .5em; padding-inline-end: .5em; animation: wf-run 8s linear infinite; }
 .wf-mq__t span { white-space: pre; }
-@keyframes wf-run { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@keyframes wf-run { from { transform: translateX(0); } to { transform: translateX(50%); } }
 @media (prefers-reduced-motion: reduce) { .wf-mq__t { animation: none; } }
 
 .wf-band { padding-bottom: 10px; }
@@ -725,6 +730,8 @@ html { -webkit-text-size-adjust: 100%; }
 .oc-onb-steps__i { display: inline-flex; align-items: center; gap: 5px; border: 0; font: inherit; font-size: 12px; }
 button.oc-onb-steps__i { cursor: pointer; }
 .oc-onb-steps__i.is-later { opacity: .55; }
+.oc-onb-steps__i.is-open { opacity: .8; }
+.oc-onb-steps__i.is-open:hover { opacity: 1; background: #eef1f6; }
 .oc-onb-steps__v { color: var(--onb-ok); font-weight: 700; }
 .oc-onb-steps__i.is-done:hover { background: #e8f3ec; }
 

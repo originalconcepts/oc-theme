@@ -236,10 +236,14 @@ final class Schema {
 			'products'   => array(
 				'label'    => __( 'A row of products', 'oc-theme' ),
 				'title'    => true,
+				// Nothing is chosen for them: which shelf this is, is a
+				// decision about the shop, not a default we can guess.
+				'blank'    => true,
 				'variants' => array(
-					'new'   => __( 'The newest', 'oc-theme' ),
-					'sale'  => __( 'Whatever is on offer', 'oc-theme' ),
-					'sales' => __( 'The best sellers', 'oc-theme' ),
+					'new'    => __( 'The newest', 'oc-theme' ),
+					'sale'   => __( 'Whatever is on offer', 'oc-theme' ),
+					'sales'  => __( 'The best sellers', 'oc-theme' ),
+					'manual' => __( 'I will choose them myself', 'oc-theme' ),
 				),
 			),
 			'marquee'    => array(
@@ -889,13 +893,13 @@ final class Schema {
 					'type'    => 'products',
 					'on'      => 1,
 					'title'   => '',
-					'variant' => 'new',
+					'variant' => '',
 				),
 				array(
 					'type'    => 'products',
 					'on'      => 1,
 					'title'   => '',
-					'variant' => 'sale',
+					'variant' => '',
 				),
 				array(
 					'type'  => 'look',
@@ -1628,8 +1632,10 @@ final class Schema {
 					}
 
 					if ( ! empty( $blocks[ $type ]['variants'] ) ) {
-						$v               = (string) ( $row['variant'] ?? '' );
-						$keep['variant'] = isset( $blocks[ $type ]['variants'][ $v ] ) ? $v : (string) array_key_first( $blocks[ $type ]['variants'] );
+						$v    = (string) ( $row['variant'] ?? '' );
+						$fall = empty( $blocks[ $type ]['blank'] ) ? (string) array_key_first( $blocks[ $type ]['variants'] ) : '';
+
+						$keep['variant'] = isset( $blocks[ $type ]['variants'][ $v ] ) ? $v : $fall;
 					}
 
 					$rows[] = $keep;

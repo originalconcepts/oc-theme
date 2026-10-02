@@ -11469,14 +11469,26 @@ msgstr "על %s"
 msgid "Free delivery over a certain amount · New arrivals every week"
 msgstr "משלוח חינם מעל סכום מסוים · מוצרים חדשים בכל שבוע"
 
-msgid "On offer"
-msgstr "במבצע"
-
 msgid "Our best sellers"
 msgstr "הנמכרים ביותר שלנו"
 
 msgid "Get the look"
 msgstr "להשלים את הלוק"
+
+msgid "Hot offers"
+msgstr "מבצעים חמים"
+
+msgid "The best sellers of all"
+msgstr "הנמכרים ביותר"
+
+msgid "A choice of ours"
+msgstr "מוצרים נבחרים"
+
+msgid "Which products?"
+msgstr "אילו מוצרים?"
+
+msgid "I will choose them myself"
+msgstr "אבחר בעצמי"
 
 msgid "New in"
 msgstr "חדש בחנות"
@@ -11543,9 +11555,6 @@ msgstr "חדש"
 
 msgid "Free delivery over a certain amount · New every week"
 msgstr "משלוח חינם מעל סכום מסוים · חדשים בכל שבוע"
-
-msgid "Best sellers"
-msgstr "הנמכרים ביותר"
 
 msgid "Our categories"
 msgstr "הקטגוריות שלנו"

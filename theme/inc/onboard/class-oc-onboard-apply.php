@@ -859,13 +859,17 @@ final class Apply {
 		$rows = $this->v['home_layout'];
 		$rows = is_array( $rows ) ? $rows : array();
 		$out  = array();
+		$nth  = array();
 
 		foreach ( $rows as $row ) {
 			if ( empty( $row['on'] ) ) {
 				continue;
 			}
 
-			$made = $this->band( (array) $row );
+			$type         = (string) ( $row['type'] ?? '' );
+			$nth[ $type ] = ( $nth[ $type ] ?? 0 ) + 1;
+
+			$made = $this->band( (array) $row, $nth[ $type ] );
 
 			if ( $made ) {
 				$out[] = $made;
@@ -879,9 +883,10 @@ final class Apply {
 	 * One row of the arrangement, as a section.
 	 *
 	 * @param array<string,mixed> $row The row.
+	 * @param int                 $nth Which one of its kind this is, from one.
 	 * @return array<string,mixed>|null
 	 */
-	private function band( array $row ) {
+	private function band( array $row, int $nth = 1 ) {
 		$type  = (string) ( $row['type'] ?? '' );
 		$title = trim( (string) ( $row['title'] ?? '' ) );
 
@@ -897,12 +902,16 @@ final class Apply {
 		}
 
 		if ( 'products' === $type ) {
-			$mode = (string) ( $row['variant'] ?? 'new' );
+			// Which shelf this is, is theirs to say. Said nothing, they get
+			// the shelf the sketch showed them in that place on the page:
+			// the newest first, then whatever is on offer.
+			$mode = (string) ( $row['variant'] ?? '' );
+			$fall = $nth > 1 ? 'sale' : 'new';
 
 			return array(
 				'type'    => 'products',
 				'heading' => $title,
-				'mode'    => in_array( $mode, array( 'new', 'sale', 'sales' ), true ) ? $mode : 'new',
+				'mode'    => in_array( $mode, array( 'new', 'sale', 'sales', 'manual' ), true ) ? $mode : $fall,
 				'count'   => 8,
 				'layout'  => 'slider',
 			);
