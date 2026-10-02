@@ -68,8 +68,29 @@
 		} );
 	}
 
-	// The gates are not questions, so they are not counted as steps.
-	var asked = screens.filter( function ( s ) { return ! s.gate; } );
+	/**
+	 * Is this screen worth stopping at? A screen whose every question is
+	 * about a part of the page they threw away has nothing to ask, so it
+	 * is not shown, not counted and not walked through.
+	 *
+	 * @param {Object} s The screen.
+	 */
+	function live( s ) {
+		if ( s.gate || ! s.fields.length ) { return true; }
+
+		return s.fields.some( shown );
+	}
+
+	/**
+	 * The screens that are questions and still have something to ask. It is
+	 * worked out afresh every time: the arrangement decides it, and the
+	 * arrangement can change at any moment.
+	 *
+	 * @return {Array} The screens.
+	 */
+	function asked() {
+		return screens.filter( function ( s ) { return ! s.gate && live( s ); } );
+	}
 
 	// How far the customer has ever walked, kept across sittings by the
 	// site itself. Only screens they actually opened count: a field that
@@ -112,6 +133,12 @@
 			var d = deps[ i ];
 			if ( ! shown( d ) ) { continue; }
 			var has = val( d );
+			// has:<kind> — is such a part still on the page, and switched on?
+			if ( typeof want === 'string' && want.indexOf( 'has:' ) === 0 ) {
+				var kind = want.slice( 4 );
+				if ( ( Array.isArray( has ) ? has : [] ).some( function ( r ) { return r && r.on && r.type === kind; } ) ) { return true; }
+				continue;
+			}
 			if ( want === 'filled' ) {
 				if ( ! isEmpty( has ) ) { return true; }
 				continue;
@@ -163,6 +190,10 @@
 			if ( ! f || ! f.required || ! shown( id ) ) { return; }
 			var v = val( id );
 			if ( f.type === 'consent' ) { if ( v !== true ) { out.push( id ); } return; }
+			if ( f.type === 'menu' ) {
+				if ( ! ( v || [] ).some( function ( r ) { return r && String( r.name || '' ).trim(); } ) ) { out.push( id ); }
+				return;
+			}
 			if ( f.type === 'layout' ) {
 				// An arrangement is answered row by row: a part that cannot
 				// be built without a word or a choice has to have it.
@@ -970,6 +1001,273 @@
 		return wrap;
 	}
 
+
+	/**
+	 * The shop's own menu, built by the person who knows the shop.
+	 *
+	 * Every row is an aisle, and an aisle can hold a few of its own. The
+	 * names become categories and the menu at the top of every page, so
+	 * this one answer is worth more than any other on the screen — and the
+	 * drawing beside it fills with their words as they type.
+	 *
+	 * @param {string} id Field id.
+	 * @param {Object} f  Field.
+	 */
+	function render_menu( id, f ) {
+		var wrap = el( 'div', { 'class': 'oc-onb-menu' } );
+		var list = el( 'div', { 'class': 'oc-onb-menu__rows' } );
+
+		function rows() {
+			var v = val( id );
+
+			return Array.isArray( v ) ? v.map( function ( r ) {
+				return { name: r.name || '', subs: ( r.subs || [] ).slice() };
+			} ) : [];
+		}
+
+		function save( next ) {
+			set( id, next );
+			draw();
+		}
+
+		function move( from, to ) {
+			var r = rows();
+
+			if ( to < 0 || to >= r.length ) { return; }
+
+			r.splice( to, 0, r.splice( from, 1 )[0] );
+			save( r );
+		}
+
+		/**
+		 * One box of words. It writes into the answer as it settles, and
+		 * never redraws the list under the cursor.
+		 *
+		 * @param {string}   start What it holds now.
+		 * @param {string}   hint  The grey word behind it.
+		 * @param {Function} put   Takes the new words.
+		 * @param {string}   extra A class of its own.
+		 */
+		function words( start, hint, put, extra ) {
+			var inp  = el( 'input', { type: 'text', 'class': 'oc-onb-in ' + extra, value: start, placeholder: hint } );
+			var seen = String( start );
+			var send = function () {
+				clearTimeout( inp._t );
+
+				if ( String( inp.value ) === seen ) { return; }
+
+				seen = String( inp.value );
+				put( inp.value );
+			};
+
+			inp.addEventListener( 'input', function () { clearTimeout( inp._t ); inp._t = setTimeout( send, 200 ); } );
+			inp.addEventListener( 'blur', send );
+			inp.addEventListener( 'keydown', function ( e ) { if ( 'Enter' === e.key ) { e.preventDefault(); send(); } } );
+
+			awaits( send );
+
+			return inp;
+		}
+
+		function draw() {
+			var r = rows();
+
+			list.innerHTML = '';
+
+			if ( ! r.length ) {
+				list.appendChild( el( 'p', { 'class': 'oc-onb-lay__none', text: I.menu_none } ) );
+			}
+
+			r.forEach( function ( row, i ) {
+				var line = el( 'div', { 'class': 'oc-onb-menu__row' } );
+				var head = el( 'div', { 'class': 'oc-onb-menu__head' } );
+
+				head.appendChild( words( row.name, I.menu_name, function ( v ) {
+					var n = rows();
+					n[ i ].name = v;
+					set( id, n );
+				}, 'oc-onb-menu__name' ) );
+
+				var tools = el( 'div', { 'class': 'oc-onb-row__tools' } );
+
+				tools.appendChild( tool( '↑', I.row_up, function () { move( i, i - 1 ); }, 0 === i ) );
+				tools.appendChild( tool( '↓', I.row_down, function () { move( i, i + 1 ); }, i === r.length - 1 ) );
+				tools.appendChild( tool( 'bin', I.menu_drop, function () {
+					var n = rows();
+					n.splice( i, 1 );
+					save( n );
+				} ) );
+
+				head.appendChild( tools );
+				line.appendChild( head );
+
+				var subs = el( 'div', { 'class': 'oc-onb-menu__subs' } );
+
+				( row.subs || [] ).forEach( function ( sub, si ) {
+					var one = el( 'div', { 'class': 'oc-onb-menu__sub' } );
+
+					one.appendChild( words( sub, I.menu_sub, function ( v ) {
+						var n = rows();
+						n[ i ].subs[ si ] = v;
+						set( id, n );
+					}, 'oc-onb-menu__subin' ) );
+
+					one.appendChild( tool( 'bin', I.menu_drop, function () {
+						var n = rows();
+						n[ i ].subs.splice( si, 1 );
+						save( n );
+					} ) );
+
+					subs.appendChild( one );
+				} );
+
+				subs.appendChild( el( 'button', {
+					type: 'button',
+					'class': 'oc-onb-link oc-onb-menu__add',
+					text: I.menu_add_sub,
+					onclick: function () {
+						var n = rows();
+						n[ i ].subs.push( '' );
+						save( n );
+					}
+				} ) );
+
+				line.appendChild( subs );
+				list.appendChild( line );
+			} );
+		}
+
+		/**
+		 * A tool button, the same one the arranging screen uses.
+		 *
+		 * @param {string}   glyph   The sign, or 'bin'.
+		 * @param {string}   label   What it does.
+		 * @param {Function} onclick The doing.
+		 * @param {boolean}  off     Whether it is spent.
+		 */
+		function tool( glyph, label, onclick, off ) {
+			var b = el( 'button', { type: 'button', 'class': 'oc-onb-row__b', title: label, 'aria-label': label } );
+
+			if ( 'bin' === glyph ) {
+				b.classList.add( 'oc-onb-row__b--bin' );
+				b.innerHTML = '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7 3h6l.6 2H18v2H2V5h4.4L7 3Zm-2.3 6h10.6l-.8 9.2a1 1 0 0 1-1 .8H6.5a1 1 0 0 1-1-.8L4.7 9Z"/></svg>';
+			} else {
+				b.textContent = glyph;
+			}
+
+			if ( off ) { b.disabled = 'disabled'; }
+
+			b.addEventListener( 'click', onclick );
+
+			return b;
+		}
+
+		var add = el( 'button', { type: 'button', 'class': 'oc-onb-btn oc-onb-btn--ghost', text: I.menu_add } );
+
+		add.addEventListener( 'click', function () {
+			var n = rows();
+
+			if ( n.length >= 20 ) { return; }
+
+			n.push( { name: '', subs: [] } );
+			save( n );
+
+			var all = list.querySelectorAll( '.oc-onb-menu__name' );
+
+			if ( all.length ) { all[ all.length - 1 ].focus(); }
+		} );
+
+		wrap.appendChild( list );
+		wrap.appendChild( add );
+
+		draw();
+
+		return wrap;
+	}
+
+	/**
+	 * The aisles they just named, as things to tick. There is nothing to
+	 * choose from until the menu has names, and saying so is kinder than
+	 * an empty box.
+	 *
+	 * @param {string} id Field id.
+	 * @param {Object} f  Field.
+	 */
+	function render_from_menu( id, f ) {
+		var names = menuNames();
+		var cur   = ( val( id ) || [] ).filter( function ( n ) { return names.indexOf( n ) !== -1; } );
+		var wrap  = el( 'div', { 'class': 'oc-onb-checks' } );
+
+		if ( ! names.length ) {
+			return el( 'p', { 'class': 'oc-onb-lay__none', text: I.menu_first } );
+		}
+
+		names.forEach( function ( name ) {
+			var lab = el( 'label', { 'class': 'oc-onb-check' + ( cur.indexOf( name ) !== -1 ? ' is-on' : '' ) } );
+			var inp = el( 'input', { type: 'checkbox', value: name } );
+
+			inp.checked = cur.indexOf( name ) !== -1;
+			inp.addEventListener( 'change', function () {
+				lab.classList.toggle( 'is-on', inp.checked );
+				set( id, Array.prototype.slice.call( wrap.querySelectorAll( 'input:checked' ) ).map( function ( i ) { return i.value; } ) );
+			} );
+
+			lab.appendChild( inp );
+			lab.appendChild( el( 'span', { text: name } ) );
+			wrap.appendChild( lab );
+		} );
+
+		return wrap;
+	}
+
+	/**
+	 * The names in the menu, top level only, in their order.
+	 *
+	 * @return {Array} The names.
+	 */
+	function menuNames() {
+		return ( val( 'site_menu' ) || [] ).map( function ( r ) {
+			return String( ( r && r.name ) || '' ).trim();
+		} ).filter( Boolean );
+	}
+
+	/**
+	 * The drawings to pick a reason's icon from: the page's own library,
+	 * shown rather than named, because nobody knows what 'badge' means.
+	 *
+	 * @param {string}   value    The chosen one.
+	 * @param {Function} onChange Takes the new one.
+	 */
+	function render_iconpick( value, onChange ) {
+		var icons = C.icons || {};
+		var wrap  = el( 'div', { 'class': 'oc-onb-icons' } );
+
+		Object.keys( icons ).forEach( function ( k ) {
+			var b = el( 'button', {
+				type: 'button',
+				'class': 'oc-onb-icons__b' + ( k === value ? ' is-on' : '' ),
+				title: icons[ k ].label,
+				'aria-label': icons[ k ].label,
+				'aria-pressed': k === value ? 'true' : 'false'
+			} );
+
+			b.innerHTML = icons[ k ].svg;
+			b.addEventListener( 'click', function () {
+				wrap.querySelectorAll( '.oc-onb-icons__b' ).forEach( function ( o ) {
+					o.classList.remove( 'is-on' );
+					o.setAttribute( 'aria-pressed', 'false' );
+				} );
+				b.classList.add( 'is-on' );
+				b.setAttribute( 'aria-pressed', 'true' );
+				onChange( k );
+			} );
+
+			wrap.appendChild( b );
+		} );
+
+		return wrap;
+	}
+
 	/**
 	 * A row with a change on top of it.
 	 *
@@ -1251,6 +1549,13 @@
 	function render_repeater( id, f ) {
 		var wrap = el( 'div', { 'class': 'oc-onb-rep' } );
 		var rows = ( val( id ) || [] ).map( function ( r ) { return Object.assign( {}, r ); } );
+
+		// A block of questions for every part of that kind they kept: three
+		// content areas on the page, three blocks here, in their order.
+		var want = f.grow ? ( val( 'home_layout' ) || [] ).filter( function ( r ) { return r && r.on && r.type === f.grow; } ).length : 0;
+
+		while ( rows.length < Math.min( want, f.max || 20 ) ) { rows.push( {} ); }
+
 		if ( rows.length === 0 ) { rows.push( {} ); }
 
 		function commit() { set( id, rows ); }
@@ -1270,6 +1575,7 @@
 					if ( sf.type === 'textarea' ) { inner = render_textarea( id + '.' + k, sf, r[ k ] || '', onChange ); }
 					else if ( sf.type === 'checks' ) { inner = render_checks( id + '.' + k, sf, r[ k ] || [], onChange ); }
 					else if ( sf.type === 'file' ) { inner = render_file( id, sf, { row: ri, sub: k, value: r[ k ] || null, onChange: function ( v, saved ) { r[ k ] = v; if ( saved ) { values[ id ] = rows; } else { commit(); } } } ); }
+					else if ( sf.type === 'iconpick' ) { inner = render_iconpick( r[ k ] || '', onChange ); }
 					else { inner = inputFor( id + '.' + k, sf, r[ k ] || '', onChange ); }
 					var box = el( 'div', { 'class': 'oc-onb-f oc-onb-f--sub' }, [
 						el( 'div', { 'class': 'oc-onb-f__label' }, [ el( 'span', { text: sf.label } ), sf.required ? el( 'span', { 'class': 'oc-onb-f__req', text: ' *' } ) : null ] ),
@@ -1299,6 +1605,8 @@
 			case 'gallery':  inner = render_gallery( id, f ); break;
 			case 'stepper':  inner = render_stepper( id, f ); break;
 			case 'layout':   inner = render_layout( id, f ); break;
+			case 'menu':     inner = render_menu( id, f ); break;
+			case 'from_menu': inner = render_from_menu( id, f ); break;
 			case 'checks':   inner = render_checks( id, f ); break;
 			case 'consent':  inner = render_consent( id, f ); break;
 			case 'file':     inner = render_file( id, f ); break;
@@ -1418,21 +1726,73 @@
 	 * @param {Array}  kids  What sits between them.
 	 * @param {Object} opts  over: the bar sits on the picture.
 	 */
+	/**
+	 * The strip above the header, in their own words — or not at all, if
+	 * they said they did not want one.
+	 */
+	function wTop() {
+		if ( 'yes' !== String( val( 'top_bar' ) ) ) { return null; }
+
+		var said = [ 'top_bar_1', 'top_bar_2', 'top_bar_3' ].map( function ( id ) {
+			return String( val( id ) || '' ).trim();
+		} ).filter( Boolean );
+
+		var hint = F.top_bar_1 && F.top_bar_1.placeholder ? F.top_bar_1.placeholder : I.wf_top;
+
+		return w( 'wf-top', null, said.length ? said.join( '   ·   ' ) : hint );
+	}
+
+	/**
+	 * The words of the menu, theirs if they have named any.
+	 */
+	function wNav() {
+		var names = menuNames();
+
+		if ( ! names.length ) {
+			return w( 'wf-bar__nav', [ wLine( '34px' ), wLine( '28px' ), wLine( '40px' ), wLine( '24px' ) ] );
+		}
+
+		return w( 'wf-bar__nav', names.slice( 0, 6 ).map( function ( n ) {
+			return el( 'span', { 'class': 'wf-bar__i', text: n } );
+		} ) );
+	}
+
+	/**
+	 * The header, standing the way they asked it to stand.
+	 *
+	 * @param {boolean} over Whether it sits on the picture.
+	 */
+	function wBar( over ) {
+		var look = String( val( 'header_look' ) || 'classic' );
+		var logo = w( 'wf-bar__logo', null, C.site && C.site.name ? C.site.name : I.wf_logo );
+		var nav  = wNav();
+		var ico  = w( 'wf-bar__icons', [ wLine( '12px' ), wLine( '12px' ), wLine( '12px' ) ] );
+		var cls  = 'wf-bar wf-bar--' + look + ( over ? ' wf-bar--over' : '' );
+
+		if ( 'burger' === look ) {
+			return w( cls, [ w( 'wf-bar__bur', [ wLine( '14px' ), wLine( '14px' ), wLine( '14px' ) ] ), logo, ico ] );
+		}
+
+		if ( 'split' === look ) {
+			return w( cls, [ nav, logo, ico ] );
+		}
+
+		if ( 'centred' === look ) {
+			return w( cls, [ w( 'wf-bar__one', [ logo, ico ] ), nav ] );
+		}
+
+		return w( cls, [ logo, nav, ico ] );
+	}
+
 	function wPage( kids, opts ) {
 		opts = opts || {};
 
-		var top = w( 'wf-top', null, I.wf_top );
-		var bar = w( 'wf-bar' + ( opts.over ? ' wf-bar--over' : '' ), [
-			w( 'wf-bar__logo', null, C.site && C.site.name ? C.site.name : I.wf_logo ),
-			w( 'wf-bar__nav', [ wLine( '34px' ), wLine( '28px' ), wLine( '40px' ), wLine( '24px' ) ] ),
-			w( 'wf-bar__icons', [ wLine( '12px' ), wLine( '12px' ), wLine( '12px' ) ] )
-		] );
-
+		var top  = wTop();
+		var bar  = wBar( opts.over );
 		var foot = w( 'wf-foot', [ wLine( '60px' ), wLine( '40px' ), wLine( '52px' ) ] );
-
 		var head = opts.over ? w( 'wf-head wf-head--over', [ bar ] ) : bar;
 
-		return w( 'wf' + ( opts.over ? ' wf--over' : '' ), [ top, head ].concat( kids ).concat( [ foot ] ) );
+		return w( 'wf' + ( opts.over ? ' wf--over' : '' ), [ top, head ].concat( kids ).concat( [ foot ] ).filter( Boolean ) );
 	}
 
 	/**
@@ -1776,7 +2136,15 @@
 	function previewFor( kind ) {
 		if ( 'banner' === kind ) { return previewBanner(); }
 		if ( 'category' === kind ) { return previewCategory(); }
+		if ( 'top' === kind ) { return previewTop(); }
 		return previewHome( String( val( 'home_recipe' ) ) );
+	}
+
+	/**
+	 * The page from the top down to where the header stops mattering.
+	 */
+	function previewTop() {
+		return wPage( [ wBanner( false ), wBand( { type: 'categories', on: 1, title: '' }, 1 ) ], { over: false } );
 	}
 
 	/**
@@ -1844,7 +2212,9 @@
 
 		// The journey reads as the pages of the shop, not as a count of
 		// screens: the step you are on, and where you are inside it.
-		asked.forEach( function ( s ) {
+		var here_asked = asked();
+
+		here_asked.forEach( function ( s ) {
 			if ( seen.indexOf( s.step ) === -1 ) { seen.push( s.step ); }
 		} );
 
@@ -1854,14 +2224,14 @@
 			var at    = step === here.step;
 			var first = -1;
 
-			asked.forEach( function ( s, i ) {
+			here_asked.forEach( function ( s, i ) {
 				if ( s.step === step && first < 0 ) { first = i; }
 			} );
 
 			// A step you have already been inside is finished: it carries the
 			// tick and its name reopens it, wherever you are standing now. A
 			// step you have never reached is a label and nothing more.
-			var done = ! at && screens.indexOf( asked[ first ] ) <= high;
+			var done = ! at && screens.indexOf( here_asked[ first ] ) <= high;
 			var chip = el( at || done ? 'button' : 'span', {
 				type: at || done ? 'button' : null,
 				'class': 'oc-onb-steps__i' + ( at ? ' is-on' : ( done ? ' is-done' : ' is-later' ) )
@@ -1874,21 +2244,21 @@
 			chip.appendChild( el( 'span', { text: step.title } ) );
 
 			if ( done ) {
-				chip.addEventListener( 'click', function () { go( screens.indexOf( asked[ first ] ) ); } );
+				chip.addEventListener( 'click', function () { go( screens.indexOf( here_asked[ first ] ) ); } );
 			}
 
 			chips.appendChild( chip );
 		} );
 
-		var mine  = asked.filter( function ( s ) { return s.step === here.step; } );
+		var mine  = here_asked.filter( function ( s ) { return s.step === here.step; } );
 		var n     = mine.indexOf( here ) + 1;
 
 		wrap.appendChild( chips );
 		wrap.appendChild( el( 'div', { 'class': 'oc-onb-prog__t', text: mine.length > 1 ? fmt( I.screen_of, n, mine.length ) : here.step.title } ) );
 
 		var bar  = el( 'div', { 'class': 'oc-onb-prog__bar' } );
-		var all  = asked.length;
-		var done = asked.indexOf( here ) + 1;
+		var all  = here_asked.length;
+		var done = here_asked.indexOf( here ) + 1;
 
 		bar.appendChild( el( 'i', { style: 'inline-size:' + Math.round( done / all * 100 ) + '%' } ) );
 		wrap.appendChild( bar );
@@ -2076,6 +2446,8 @@
 			case 'repeater': return v.map( function ( r ) { return r.name || ''; } ).filter( Boolean ).join( ' · ' ) || fmt( I.rows, v.length );
 			case 'branch_access': return Object.keys( v ).map( function ( k ) { return ( v[ k ] || [] ).length; } ).join( ' · ' );
 			case 'layout':   return v.filter( function ( r ) { return r.on; } ).length + ' ' + I.rows_kept;
+			case 'menu':     return v.map( function ( r ) { return r.name + ( r.subs && r.subs.length ? ' (' + r.subs.length + ')' : '' ); } ).join( ' · ' );
+			case 'from_menu': return v.join( ' · ' );
 			default:         return String( v );
 		}
 	}
@@ -2088,7 +2460,7 @@
 
 		var allMissing = [];
 		screens.forEach( function ( sc, si ) {
-			if ( sc.gate ) { return; }
+			if ( sc.gate || ! live( sc ) ) { return; }
 			var sec = el( 'section', { 'class': 'oc-onb-sum' } );
 			var miss = missingIn( sc.fields );
 			allMissing = allMissing.concat( miss );
@@ -2157,6 +2529,15 @@
 		commitAll();
 		waiting = [];
 		maybeDiscover();
+
+		// Walk on in the direction of travel until a screen has something
+		// to ask. Going back from one dead screen must not stop on another.
+		var way = index >= at ? 1 : -1;
+
+		while ( index >= 0 && index < screens.length && ! live( screens[ index ] ) ) {
+			index += way;
+		}
+
 		if ( index < 0 ) { at = -1; renderWelcome(); return; }
 		if ( index >= screens.length ) {
 			at       = screens.length;

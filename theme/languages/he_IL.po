@@ -11952,3 +11952,261 @@ msgstr "מה שבמבצע"
 msgid "The best sellers"
 msgstr "הנמכרים ביותר"
 
+
+msgid "A button opens the menu, logo in the middle"
+msgstr "כפתור פותח את התפריט, הלוגו באמצע"
+
+msgid "A content area is a few words and a picture, standing between the shelves: your story, a promise, a collection. One block of questions for each one you kept."
+msgstr "אזור תוכן הוא כמה מילים ותמונה, שעומדים בין המדפים: הסיפור שלכם, הבטחה, קולקציה. יש כאן בלוק שאלות אחד לכל אזור ששמרתם."
+
+msgid "A department — Sofas, Lighting, Dining"
+msgstr "מחלקה — ספות, תאורה, פינות אוכל"
+
+msgid "A few lines"
+msgstr "כמה שורות"
+
+msgid "A gift"
+msgstr "מתנה"
+
+msgid "A promise"
+msgstr "הבטחה"
+
+msgid "A safe purchase"
+msgstr "קנייה בטוחה"
+
+msgid "A small line above"
+msgstr "שורה קטנה מעל"
+
+msgid "A small square picture, better with a see-through background. It stands in place of the one above."
+msgstr "תמונה קטנה ומרובעת, עדיף עם רקע שקוף. היא תעמוד במקום זו שלמעלה."
+
+msgid "A thin strip at the very top, with a line of news?"
+msgstr "פס דק בראש העמוד, עם שורת מסרים?"
+
+msgid "Add a department"
+msgstr "הוספת מחלקה"
+
+msgid "And a line explaining"
+msgstr "ושורה שמסבירה"
+
+msgid "And a second line, if you have one"
+msgstr "ושורה שנייה, אם יש לכם"
+
+msgid "And a third"
+msgstr "ושלישית"
+
+msgid "Another content area"
+msgstr "עוד אזור תוכן"
+
+msgid "Another question"
+msgstr "עוד שאלה"
+
+msgid "Another reason"
+msgstr "עוד סיבה"
+
+msgid "Assembly"
+msgstr "הרכבה"
+
+msgid "By telephone"
+msgstr "בטלפון"
+
+msgid "Can I return something?"
+msgstr "אפשר להחזיר מוצר?"
+
+msgid "Content area"
+msgstr "אזור תוכן"
+
+msgid "Free delivery on orders over 400 ILS"
+msgstr "משלוח חינם בקנייה מעל ₪400"
+
+msgid "Furniture"
+msgstr "ריהוט"
+
+msgid "Furniture that lasts"
+msgstr "רהיטים שנשארים"
+
+msgid "Highly rated"
+msgstr "מדורג גבוה"
+
+msgid "In a few words"
+msgstr "בכמה מילים"
+
+msgid "Inside it — Three-seaters, Armchairs"
+msgstr "ומה בתוכה — תלת מושבית, כורסאות"
+
+msgid "Kind to the world"
+msgstr "ידידותי לסביבה"
+
+msgid "Logo in the middle, menu under it"
+msgstr "לוגו באמצע, התפריט מתחתיו"
+
+msgid "Logo on the side, menu beside it"
+msgstr "לוגו בצד, התפריט לצידו"
+
+msgid "Logo on the side, menu in the middle"
+msgstr "לוגו בצד, התפריט באמצע"
+
+msgid "Loved"
+msgstr "אהוב"
+
+msgid "Made to measure"
+msgstr "בהתאמה אישית"
+
+msgid "Main menu"
+msgstr "תפריט ראשי"
+
+msgid "Menu, logo in the middle, icons"
+msgstr "תפריט, לוגו באמצע, אייקונים"
+
+msgid "More than one line and they take turns."
+msgstr "יותר משורה אחת והן מתחלפות."
+
+msgid "No departments yet. Add the first one and the menu above fills in."
+msgstr "אין עדיין מחלקות. הוסיפו את הראשונה והתפריט שלמעלה יתמלא."
+
+msgid "No, this is not a brand shop"
+msgstr "לא, זו לא חנות מותגים"
+
+msgid "OUR STORY"
+msgstr "הסיפור שלנו"
+
+msgid "On a phone the two do not fit side by side, so the two buttons above switch between the questions and the drawing."
+msgstr "בטלפון אין מקום לשניהם זה לצד זה, ולכן שני הכפתורים שלמעלה מחליפים בין השאלות לבין הסקיצה."
+
+msgid "One name per line. We open a page for each of them; the logos can be added later."
+msgstr "שם אחד בכל שורה. אנחנו פותחים עמוד לכל אחד מהם; הלוגואים אפשר להוסיף בהמשך."
+
+msgid "Or a drawing of your own"
+msgstr "או אייקון משלכם"
+
+msgid "Out of the menu you just built, which aisles are worth a place of their own on the front page."
+msgstr "מתוך התפריט שבניתם, אילו מחלקות שוות מקום משלהן בעמוד הבית."
+
+msgid "Packed well"
+msgstr "ארוז היטב"
+
+msgid "Payment"
+msgstr "תשלום"
+
+msgid "Question"
+msgstr "שאלה"
+
+msgid "Quick"
+msgstr "מהיר"
+
+msgid "Reason"
+msgstr "סיבה"
+
+msgid "Reasons to buy from you"
+msgstr "מחזקי קנייה"
+
+msgid "Someone to talk to"
+msgstr "יש עם מי לדבר"
+
+msgid "Something inside it"
+msgstr "משהו בתוכה"
+
+msgid "Something special"
+msgstr "משהו מיוחד"
+
+msgid "Take it out"
+msgstr "להסיר"
+
+msgid "The aisles of your shop, in the order you want them read. Each one can hold a few of its own. We open the categories and the menu for you; the products come later."
+msgstr "המחלקות של החנות שלכם, בסדר שבו תרצו שייקראו. בכל אחת אפשר לשים כמה תתי-מחלקות. אנחנו פותחים את הקטגוריות ואת התפריט; המוצרים מגיעים בהמשך."
+
+msgid "The answer"
+msgstr "התשובה"
+
+msgid "The big picture at the top of the home page: an offer, a launch, a new collection. First, where the menu stands over it."
+msgstr "התמונה הגדולה בראש עמוד הבית: מבצע, השקה, קולקציה חדשה. קודם כל, איפה התפריט עומד מעליה."
+
+msgid "The brands you carry"
+msgstr "המותגים שאתם מוכרים"
+
+msgid "The categories on the home page"
+msgstr "הקטגוריות בעמוד הבית"
+
+msgid "The content areas"
+msgstr "אזורי התוכן"
+
+msgid "The drawing"
+msgstr "האייקון"
+
+msgid "The header and the menu"
+msgstr "ההדר והתפריט"
+
+msgid "The header itself"
+msgstr "ההדר עצמו"
+
+msgid "The heading"
+msgstr "הכותרת"
+
+msgid "The little row of promises near the bottom: a drawing, two or three words, and a line explaining. Four at the most — fewer and stronger reads better."
+msgstr "שורת ההבטחות הקטנה בתחתית: אייקון, שתיים-שלוש מילים ושורת הסבר. עד ארבע — פחות וחזק יותר נקרא טוב יותר."
+
+msgid "The menu"
+msgstr "התפריט"
+
+msgid "The menu is still empty — go back a screen and name your departments first."
+msgstr "התפריט עדיין ריק — חזרו מסך אחורה ותנו שמות למחלקות קודם."
+
+msgid "The menu of the shop"
+msgstr "תפריט החנות"
+
+msgid "The menu was edited by hand since the last apply; left as it is."
+msgstr "התפריט נערך ידנית מאז ההחלה האחרונה; נשאר כפי שהוא."
+
+msgid "The picture beside the words"
+msgstr "התמונה שלצד הטקסט"
+
+msgid "The strip above the header"
+msgstr "הפס שמעל ההדר"
+
+msgid "The strip every page of the shop wears. Whatever you write here, the sketch beside you puts in its place."
+msgstr "הפס שכל עמוד בחנות לובש. כל מה שתכתבו כאן, הסקיצה שלצידכם שמה במקומו."
+
+msgid "This is where free delivery, payments without interest or an opening offer goes."
+msgstr "כאן נכנסים משלוח חינם, תשלומים ללא ריבית או מבצע פתיחה."
+
+msgid "This site has nowhere to keep brands yet."
+msgstr "לאתר הזה אין עדיין איפה לשמור מותגים."
+
+msgid "Tick the ones worth the front row. Nothing ticked and we show them all."
+msgstr "סמנו את אלה ששוות את השורה הראשונה. בלי סימון — נציג את כולן."
+
+msgid "Up to 12 payments, no interest"
+msgstr "עד 12 תשלומים ללא ריבית"
+
+msgid "Up to 7 working days, free over 400 ILS"
+msgstr "עד 7 ימי עסקים, חינם מעל ₪400"
+
+msgid "What it says"
+msgstr "מה כתוב בו"
+
+msgid "What people ask you before they buy. Leave an answer empty and the question waits for you in the editor."
+msgstr "מה שואלים אתכם לפני שקונים. אפשר להשאיר תשובה ריקה והשאלה תחכה לכם בעורך."
+
+msgid "Where the logo and the menu stand"
+msgstr "איפה עומדים הלוגו והתפריט"
+
+msgid "Which of them stand on the home page"
+msgstr "אילו מהן יעמדו בעמוד הבית"
+
+msgid "WooCommerce is not active on this site yet."
+msgstr "ווקומרס עדיין לא פעיל באתר הזה."
+
+msgid "%d category opened."
+msgid_plural "%d categories opened."
+msgstr[0] "נפתחה קטגוריה אחת."
+msgstr[1] "נפתחו %d קטגוריות."
+
+msgid "%d link in the menu."
+msgid_plural "%d links in the menu."
+msgstr[0] "קישור אחד בתפריט."
+msgstr[1] "%d קישורים בתפריט."
+
+msgid "%d brand opened."
+msgid_plural "%d brands opened."
+msgstr[0] "נפתח מותג אחד."
+msgstr[1] "נפתחו %d מותגים."

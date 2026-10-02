@@ -172,6 +172,19 @@ final class Art {
 	}
 
 	/**
+	 * A drawing of a header alone: no page under it, so the eye has only
+	 * the strip to compare.
+	 *
+	 * @param string $body The shapes.
+	 */
+	private static function head( string $body ): string {
+		return '<svg viewBox="0 0 320 90" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg">'
+			. self::box( 0, 0, self::W, 90, 'faint', 0 )
+			. $body
+			. '</svg>';
+	}
+
+	/**
 	 * Every drawing, keyed by the name a field refers to.
 	 *
 	 * @return array<string,string>
@@ -363,6 +376,103 @@ final class Art {
 			. self::row( 12, 132, 296, 66, 3 )
 		);
 
+		/* ---- where the logo and the menu stand ---- */
+
+		// Drawn on their own, at the size of a header: the logo, the words
+		// of the menu, and the icons that always sit on the far side.
+		$art['head_classic'] = self::head(
+			self::box( 14, 36, 44, 16, 'brand', 2 )
+			. self::row( 72, 42, 112, 5, 4, 'base' )
+			. self::box( 258, 38, 12, 12, 'base', 6 )
+			. self::box( 276, 38, 12, 12, 'base', 6 )
+			. self::box( 294, 38, 12, 12, 'base', 6 )
+		);
+
+		$art['head_mcenter'] = self::head(
+			self::box( 14, 36, 44, 16, 'brand', 2 )
+			. self::row( 104, 42, 112, 5, 4, 'base' )
+			. self::box( 258, 38, 12, 12, 'base', 6 )
+			. self::box( 276, 38, 12, 12, 'base', 6 )
+			. self::box( 294, 38, 12, 12, 'base', 6 )
+		);
+
+		$art['head_centred'] = self::head(
+			self::box( 138, 18, 44, 16, 'brand', 2 )
+			. self::row( 90, 58, 140, 5, 4, 'base' )
+			. self::box( 276, 20, 12, 12, 'base', 6 )
+			. self::box( 294, 20, 12, 12, 'base', 6 )
+		);
+
+		$art['head_split'] = self::head(
+			self::row( 14, 42, 104, 5, 3, 'base' )
+			. self::box( 138, 36, 44, 16, 'brand', 2 )
+			. self::box( 258, 38, 12, 12, 'base', 6 )
+			. self::box( 276, 38, 12, 12, 'base', 6 )
+			. self::box( 294, 38, 12, 12, 'base', 6 )
+		);
+
+		$art['head_burger'] = self::head(
+			self::box( 14, 36, 18, 3, 'base', 1.5 )
+			. self::box( 14, 42, 18, 3, 'base', 1.5 )
+			. self::box( 14, 48, 18, 3, 'base', 1.5 )
+			. self::box( 138, 36, 44, 16, 'brand', 2 )
+			. self::box( 276, 38, 12, 12, 'base', 6 )
+			. self::box( 294, 38, 12, 12, 'base', 6 )
+		);
+
 		return $art;
+	}
+
+	/**
+	 * The little drawings a reason-to-buy can wear. They are the blocks
+	 * plugin's own library: the questionnaire shows exactly what the page
+	 * will draw, and there is only ever one copy of each line.
+	 *
+	 * @return array<string,array{label:string,svg:string}>
+	 */
+	public static function icons(): array {
+		static $out = null;
+
+		if ( null !== $out ) {
+			return $out;
+		}
+
+		$out   = array();
+		$lines = class_exists( '\\OC\\Blocks\\Render' ) && method_exists( '\\OC\\Blocks\\Render', 'icon_library' )
+			? \OC\Blocks\Render::icon_library()
+			: array();
+
+		$names = array(
+			'truck'    => __( 'Delivery', 'oc-theme' ),
+			'returns'  => __( 'Returns', 'oc-theme' ),
+			'shield'   => __( 'A safe purchase', 'oc-theme' ),
+			'card'     => __( 'Payment', 'oc-theme' ),
+			'support'  => __( 'Someone to talk to', 'oc-theme' ),
+			'badge'    => __( 'A promise', 'oc-theme' ),
+			'gift'     => __( 'A gift', 'oc-theme' ),
+			'star'     => __( 'Highly rated', 'oc-theme' ),
+			'heart'    => __( 'Loved', 'oc-theme' ),
+			'leaf'     => __( 'Kind to the world', 'oc-theme' ),
+			'clock'    => __( 'Quick', 'oc-theme' ),
+			'box'      => __( 'Packed well', 'oc-theme' ),
+			'phone'    => __( 'By telephone', 'oc-theme' ),
+			'tools'    => __( 'Assembly', 'oc-theme' ),
+			'armchair' => __( 'Furniture', 'oc-theme' ),
+			'ruler'    => __( 'Made to measure', 'oc-theme' ),
+			'sparkle'  => __( 'Something special', 'oc-theme' ),
+		);
+
+		foreach ( $names as $id => $label ) {
+			if ( empty( $lines[ $id ] ) ) {
+				continue;
+			}
+
+			$out[ $id ] = array(
+				'label' => $label,
+				'svg'   => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' . $lines[ $id ] . '</svg>',
+			);
+		}
+
+		return $out;
 	}
 }

@@ -128,16 +128,46 @@ final class Schema {
 					),
 					array(
 						'id'      => '3b',
-						'title'   => __( 'The main banner', 'oc-theme' ),
-						'intro'   => __( 'The big picture at the top of the home page. This is where an offer goes, or a launch, or a new collection. Everything you type here appears on the sketch.', 'oc-theme' ),
-						'preview' => 'banner',
-						'fields'  => array( 'banner_media', 'home_banner', 'banner_video', 'banner_title', 'banner_cta', 'banner_link', 'banner_url' ),
+						'title'   => __( 'The header and the menu', 'oc-theme' ),
+						'intro'   => __( 'The strip every page of the shop wears. Whatever you write here, the sketch beside you puts in its place.', 'oc-theme' ),
+						'intro_m' => __( 'On a phone the two do not fit side by side, so the two buttons above switch between the questions and the drawing.', 'oc-theme' ),
+						'preview' => 'top',
+						'fields'  => array( 'top_bar', 'top_bar_1', 'top_bar_2', 'top_bar_3', 'header_look', 'site_menu', 'brands_has', 'brand_list' ),
 					),
 					array(
-						'id'     => '3c',
-						'title'  => __( 'The menu and the banner', 'oc-theme' ),
-						'intro'  => __( 'Two ways the menu can meet the picture under it. Which one do you like more?', 'oc-theme' ),
-						'fields' => array( 'home_header' ),
+						'id'      => '3c',
+						'title'   => __( 'The main banner', 'oc-theme' ),
+						'intro'   => __( 'The big picture at the top of the home page: an offer, a launch, a new collection. First, where the menu stands over it.', 'oc-theme' ),
+						'preview' => 'banner',
+						'fields'  => array( 'home_header', 'banner_media', 'home_banner', 'banner_video', 'banner_title', 'banner_cta', 'banner_link', 'banner_url' ),
+					),
+					array(
+						'id'      => '3d',
+						'title'   => __( 'The categories on the home page', 'oc-theme' ),
+						'intro'   => __( 'Out of the menu you just built, which aisles are worth a place of their own on the front page.', 'oc-theme' ),
+						'preview' => 'home',
+						'fields'  => array( 'home_cats' ),
+					),
+					array(
+						'id'      => '3e',
+						'title'   => __( 'The content areas', 'oc-theme' ),
+						'intro'   => __( 'A content area is a few words and a picture, standing between the shelves: your story, a promise, a collection. One block of questions for each one you kept.', 'oc-theme' ),
+						'preview' => 'home',
+						'fields'  => array( 'home_content' ),
+					),
+					array(
+						'id'      => '3f',
+						'title'   => __( 'Reasons to buy from you', 'oc-theme' ),
+						'intro'   => __( 'The little row of promises near the bottom: a drawing, two or three words, and a line explaining. Four at the most — fewer and stronger reads better.', 'oc-theme' ),
+						'preview' => 'home',
+						'fields'  => array( 'home_icons' ),
+					),
+					array(
+						'id'      => '3g',
+						'title'   => __( 'Questions and answers', 'oc-theme' ),
+						'intro'   => __( 'What people ask you before they buy. Leave an answer empty and the question waits for you in the editor.', 'oc-theme' ),
+						'preview' => 'home',
+						'fields'  => array( 'home_faq' ),
 					),
 				),
 			),
@@ -864,6 +894,102 @@ final class Schema {
 			'target'  => array( 'option', 'oc_thankyou', 'ref_reward_pct' ),
 		);
 
+		/* ---- 3b: the header, the menu and the brands ---- */
+
+		$f['top_bar'] = array(
+			'type'    => 'choice',
+			'group'   => __( 'The strip above the header', 'oc-theme' ),
+			'label'   => __( 'A thin strip at the very top, with a line of news?', 'oc-theme' ),
+			'help'    => __( 'This is where free delivery, payments without interest or an opening offer goes.', 'oc-theme' ),
+			'options' => $yesno,
+			'default' => 'yes',
+			'target'  => array( 'mod', 'oc_topbar' ),
+		);
+
+		$f['top_bar_1'] = array(
+			'type'        => 'text',
+			'group'       => __( 'The strip above the header', 'oc-theme' ),
+			'label'       => __( 'What it says', 'oc-theme' ),
+			'placeholder' => __( 'Free delivery on orders over 400 ILS', 'oc-theme' ),
+			'when'        => array( 'top_bar', array( 'yes' ) ),
+			'target'      => array( 'mod', 'oc_topbar_msg1' ),
+		);
+
+		$f['top_bar_2'] = array(
+			'type'        => 'text',
+			'group'       => __( 'The strip above the header', 'oc-theme' ),
+			'label'       => __( 'And a second line, if you have one', 'oc-theme' ),
+			'help'        => __( 'More than one line and they take turns.', 'oc-theme' ),
+			'placeholder' => __( 'Up to 12 payments, no interest', 'oc-theme' ),
+			'when'        => array( 'top_bar', array( 'yes' ) ),
+			'target'      => array( 'mod', 'oc_topbar_msg2' ),
+		);
+
+		$f['top_bar_3'] = array(
+			'type'        => 'text',
+			'group'       => __( 'The strip above the header', 'oc-theme' ),
+			'label'       => __( 'And a third', 'oc-theme' ),
+			'placeholder' => __( 'Returns within 14 days', 'oc-theme' ),
+			'when'        => array( 'top_bar', array( 'yes' ) ),
+			'target'      => array( 'mod', 'oc_topbar_msg3' ),
+		);
+
+		$f['header_look'] = array(
+			'type'    => 'pick',
+			'group'   => __( 'The header itself', 'oc-theme' ),
+			'label'   => __( 'Where the logo and the menu stand', 'oc-theme' ),
+			'options' => array(
+				'classic'     => __( 'Logo on the side, menu beside it', 'oc-theme' ),
+				'menu-center' => __( 'Logo on the side, menu in the middle', 'oc-theme' ),
+				'centred'     => __( 'Logo in the middle, menu under it', 'oc-theme' ),
+				'split'       => __( 'Menu, logo in the middle, icons', 'oc-theme' ),
+				'burger'      => __( 'A button opens the menu, logo in the middle', 'oc-theme' ),
+			),
+			'art'     => array(
+				'classic'     => 'head_classic',
+				'menu-center' => 'head_mcenter',
+				'centred'     => 'head_centred',
+				'split'       => 'head_split',
+				'burger'      => 'head_burger',
+			),
+			'default' => 'classic',
+			'target'  => array( 'mod', 'oc_header_preset' ),
+		);
+
+		$f['site_menu'] = array(
+			'type'     => 'menu',
+			'group'    => __( 'The menu of the shop', 'oc-theme' ),
+			'label'    => '',
+			'help'     => __( 'The aisles of your shop, in the order you want them read. Each one can hold a few of its own. We open the categories and the menu for you; the products come later.', 'oc-theme' ),
+			'required' => true,
+			'target'   => array( 'call', 'menu' ),
+		);
+
+		$f['brands_has'] = array(
+			'type'    => 'choice',
+			'group'   => __( 'Brands', 'oc-theme' ),
+			'label'   => __( 'Do you sell goods of brands with a name of their own?', 'oc-theme' ),
+			'help'    => __( 'Not your own name — the makers whose products you stock.', 'oc-theme' ),
+			'options' => array(
+				'yes' => __( 'Yes', 'oc-theme' ),
+				'no'  => __( 'No, this is not a brand shop', 'oc-theme' ),
+			),
+			'default' => 'no',
+			'target'  => array( 'state', 'brands' ),
+		);
+
+		$f['brand_list'] = array(
+			'type'        => 'textarea',
+			'group'       => __( 'Brands', 'oc-theme' ),
+			'label'       => __( 'The brands you carry', 'oc-theme' ),
+			'help'        => __( 'One name per line. We open a page for each of them; the logos can be added later.', 'oc-theme' ),
+			'placeholder' => "IKEA\nHAY\nMuuto",
+			'rows'        => 6,
+			'required'    => true,
+			'when'        => array( 'brands_has', array( 'yes' ) ),
+			'target'      => array( 'call', 'menu' ),
+		);
+
 		/* ---- 3a: the home page ---- */
 
 		$f['home_layout'] = array(
@@ -1004,6 +1130,133 @@ final class Schema {
 			),
 			'default' => 'home',
 			'target'  => array( 'mod', 'oc_header_transparent' ),
+		);
+
+		/* ---- 3d-3g: what the parts of the page say ---- */
+
+		$f['home_cats'] = array(
+			'type'   => 'from_menu',
+			'label'  => __( 'Which of them stand on the home page', 'oc-theme' ),
+			'help'   => __( 'Tick the ones worth the front row. Nothing ticked and we show them all.', 'oc-theme' ),
+			'when'   => array( 'home_layout', 'has:categories' ),
+			'target' => array( 'call', 'home' ),
+		);
+
+		$f['home_content'] = array(
+			'type'   => 'repeater',
+			'label'  => '',
+			'row'    => __( 'Content area', 'oc-theme' ),
+			'add'    => __( 'Another content area', 'oc-theme' ),
+			'max'    => 6,
+			'fields' => array(
+				'eyebrow' => array(
+					'type'        => 'text',
+					'label'       => __( 'A small line above', 'oc-theme' ),
+					'placeholder' => __( 'OUR STORY', 'oc-theme' ),
+				),
+				'heading' => array(
+					'type'        => 'text',
+					'label'       => __( 'The heading', 'oc-theme' ),
+					'placeholder' => __( 'Furniture that lasts', 'oc-theme' ),
+				),
+				'text'    => array(
+					'type'  => 'textarea',
+					'label' => __( 'A few lines', 'oc-theme' ),
+					'rows'  => 4,
+				),
+				'media'   => array(
+					'type'   => 'file',
+					'accept' => 'image',
+					'label'  => __( 'The picture beside the words', 'oc-theme' ),
+				),
+			),
+			'grow'   => 'content',
+			'when'   => array( 'home_layout', 'has:content' ),
+			'target' => array( 'call', 'home' ),
+		);
+
+		$f['home_icons'] = array(
+			'type'    => 'repeater',
+			'label'   => '',
+			'row'     => __( 'Reason', 'oc-theme' ),
+			'add'     => __( 'Another reason', 'oc-theme' ),
+			'max'     => 4,
+			'fields'  => array(
+				'icon'    => array(
+					'type'  => 'iconpick',
+					'label' => __( 'The drawing', 'oc-theme' ),
+				),
+				'img'     => array(
+					'type'   => 'file',
+					'accept' => 'image',
+					'label'  => __( 'Or a drawing of your own', 'oc-theme' ),
+					'help'   => __( 'A small square picture, better with a see-through background. It stands in place of the one above.', 'oc-theme' ),
+				),
+				'heading' => array(
+					'type'        => 'text',
+					'label'       => __( 'In a few words', 'oc-theme' ),
+					'placeholder' => __( 'Delivery across the country', 'oc-theme' ),
+				),
+				'text'    => array(
+					'type'        => 'text',
+					'label'       => __( 'And a line explaining', 'oc-theme' ),
+					'placeholder' => __( 'Up to 7 working days, free over 400 ILS', 'oc-theme' ),
+				),
+			),
+			'default' => array(
+				array(
+					'icon'    => 'truck',
+					'heading' => '',
+					'text'    => '',
+				),
+				array(
+					'icon'    => 'returns',
+					'heading' => '',
+					'text'    => '',
+				),
+				array(
+					'icon'    => 'shield',
+					'heading' => '',
+					'text'    => '',
+				),
+			),
+			'when'    => array( 'home_layout', 'has:icons' ),
+			'target'  => array( 'call', 'home' ),
+		);
+
+		$f['home_faq'] = array(
+			'type'    => 'repeater',
+			'label'   => '',
+			'row'     => __( 'Question', 'oc-theme' ),
+			'add'     => __( 'Another question', 'oc-theme' ),
+			'max'     => 10,
+			'fields'  => array(
+				'q' => array(
+					'type'  => 'text',
+					'label' => __( 'The question', 'oc-theme' ),
+				),
+				'a' => array(
+					'type'  => 'textarea',
+					'label' => __( 'The answer', 'oc-theme' ),
+					'rows'  => 3,
+				),
+			),
+			'default' => array(
+				array(
+					'q' => __( 'How long does delivery take?', 'oc-theme' ),
+					'a' => '',
+				),
+				array(
+					'q' => __( 'Can I return something?', 'oc-theme' ),
+					'a' => '',
+				),
+				array(
+					'q' => __( 'Do you have a shop I can visit?', 'oc-theme' ),
+					'a' => '',
+				),
+			),
+			'when'    => array( 'home_layout', 'has:faq' ),
+			'target'  => array( 'call', 'home' ),
 		);
 
 		/* ---- 4a: the category page ---- */
@@ -1232,15 +1485,6 @@ final class Schema {
 		);
 
 		/* ---- 6a: brands ---- */
-
-		$f['brands_has'] = array(
-			'type'    => 'choice',
-			'label'   => __( 'Do you sell goods of brands with a name of their own?', 'oc-theme' ),
-			'help'    => __( 'Not your own name — the makers whose products you stock.', 'oc-theme' ),
-			'options' => $yesno,
-			'default' => 'no',
-			'target'  => array( 'state', 'brands' ),
-		);
 
 		$f['brand_logo'] = array(
 			'type'    => 'pick',
@@ -1498,6 +1742,21 @@ final class Schema {
 				continue;
 			}
 
+			// has:<kind> — does the arrangement still hold such a part, and
+			// is it switched on? This is how a screen about one part of the
+			// page knows whether that part is on the page at all.
+			if ( is_string( $want ) && 0 === strpos( $want, 'has:' ) ) {
+				$kind = substr( $want, 4 );
+
+				foreach ( (array) $has as $row ) {
+					if ( is_array( $row ) && ! empty( $row['on'] ) && $kind === (string) ( $row['type'] ?? '' ) ) {
+						return true;
+					}
+				}
+
+				continue;
+			}
+
 			if ( 'filled' === $want ) {
 				if ( ! self::empty_value( $has ) ) {
 					return true;
@@ -1568,6 +1827,23 @@ final class Schema {
 				if ( true !== $v ) {
 					$out[] = $id;
 				}
+				continue;
+			}
+
+			if ( 'menu' === $f['type'] ) {
+				$named = false;
+
+				foreach ( (array) $v as $row ) {
+					if ( is_array( $row ) && '' !== trim( (string) ( $row['name'] ?? '' ) ) ) {
+						$named = true;
+						break;
+					}
+				}
+
+				if ( ! $named ) {
+					$out[] = $id;
+				}
+
 				continue;
 			}
 
@@ -1712,6 +1988,64 @@ final class Schema {
 				}
 
 				return $rows;
+
+			case 'menu':
+				$menu = array();
+
+				foreach ( (array) $raw as $row ) {
+					if ( ! is_array( $row ) ) {
+						continue;
+					}
+
+					$name = sanitize_text_field( (string) ( $row['name'] ?? '' ) );
+
+					if ( '' === trim( $name ) ) {
+						continue;
+					}
+
+					$subs = array();
+
+					foreach ( (array) ( $row['subs'] ?? array() ) as $sub ) {
+						$sub = sanitize_text_field( (string) ( is_scalar( $sub ) ? $sub : '' ) );
+
+						if ( '' !== trim( $sub ) && ! in_array( $sub, $subs, true ) ) {
+							$subs[] = $sub;
+						}
+
+						if ( count( $subs ) >= 20 ) {
+							break;
+						}
+					}
+
+					$menu[] = array(
+						'name' => $name,
+						'subs' => $subs,
+					);
+
+					if ( count( $menu ) >= 20 ) {
+						break;
+					}
+				}
+
+				return $menu;
+
+			case 'from_menu':
+				$out = array();
+
+				foreach ( (array) $raw as $v ) {
+					$v = sanitize_text_field( (string) ( is_scalar( $v ) ? $v : '' ) );
+
+					if ( '' !== trim( $v ) && ! in_array( $v, $out, true ) ) {
+						$out[] = $v;
+					}
+				}
+
+				return $out;
+
+			case 'iconpick':
+				$v = (string) ( is_scalar( $raw ) ? $raw : '' );
+
+				return isset( Art::icons()[ $v ] ) ? $v : '';
 
 			case 'stepper':
 				$n   = (int) ( is_scalar( $raw ) ? $raw : 0 );

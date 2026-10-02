@@ -1831,3 +1831,9 @@ msgstr "הבא"
 
 msgid "Item %d"
 msgstr "פריט %d"
+
+msgid "A small square picture. It stands in place of the icon above."
+msgstr "תמונה קטנה ומרובעת. היא תעמוד במקום האייקון שלמעלה."
+
+msgid "Or a drawing of your own"
+msgstr "או אייקון משלכם"

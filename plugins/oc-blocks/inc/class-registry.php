@@ -1958,6 +1958,12 @@ final class Registry {
 								'choices' => self::icon_choices(),
 								'def'     => 'truck',
 							),
+							'img'     => array(
+								'type'  => 'image',
+								'label' => __( 'Or a drawing of your own', 'oc-blocks' ),
+								'hint'  => __( 'A small square picture. It stands in place of the icon above.', 'oc-blocks' ),
+								'def'   => 0,
+							),
 							'heading' => array(
 								'type'  => 'text',
 								'label' => __( 'Little heading', 'oc-blocks' ),

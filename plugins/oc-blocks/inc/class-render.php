@@ -2513,11 +2513,13 @@ final class Render {
 
 	/**
 	 * The outline icon library — one hand, drawn to match the Bricks-style
-	 * promise rows: quiet strokes, no fills.
+	 * promise rows: quiet strokes, no fills. Public because the onboarding
+	 * questionnaire shows the same drawings when it asks which one to use;
+	 * two copies of a drawing would drift apart.
 	 *
 	 * @return array<string,string> Icon id => inner SVG.
 	 */
-	private static function icon_library(): array {
+	public static function icon_library(): array {
 		return array(
 			'truck'    => '<path d="M2.5 6.5h11V16h-11zM13.5 9.5h3.6l3.4 3.4V16h-7z"/><circle cx="6.8" cy="17.6" r="1.9"/><circle cx="16.6" cy="17.6" r="1.9"/><path d="M4.8 9.5h4M4.8 12h2.6"/>',
 			'returns'  => '<path d="M4 9a8.3 8.3 0 0 1 14.6-2.5L20.5 9M20.5 3.8V9h-5.2M20 15a8.3 8.3 0 0 1-14.6 2.5L3.5 15M3.5 20.2V15h5.2"/>',
@@ -2556,14 +2558,21 @@ final class Render {
 			$head = trim( (string) ( $row['heading'] ?? '' ) );
 			$text = trim( (string) ( $row['text'] ?? '' ) );
 			$icon = $library[ (string) ( $row['icon'] ?? '' ) ] ?? '';
+			$own  = absint( $row['img'] ?? 0 );
 
 			if ( '' === $head && '' === $text ) {
 				continue;
 			}
 
+			// A drawing of their own stands in place of ours: it is why
+			// they uploaded it.
+			$mark = $own
+				? wp_get_attachment_image( $own, 'thumbnail', false, array( 'class' => 'ocb-ico__img', 'alt' => '', 'loading' => 'lazy' ) )
+				: ( '' === $icon ? '' : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' . $icon . '</svg>' );
+
 			++$count;
 			$items .= '<div class="ocb-ico__one">'
-				. ( '' === $icon ? '' : '<i class="ocb-ico__pic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' . $icon . '</svg></i>' )
+				. ( '' === $mark ? '' : '<i class="ocb-ico__pic" aria-hidden="true">' . $mark . '</i>' )
 				. ( '' === $head ? '' : '<h3 class="ocb-ico__h">' . esc_html( $head ) . '</h3>' )
 				. ( '' === $text ? '' : '<p class="ocb-ico__t">' . esc_html( $text ) . '</p>' )
 				. '</div>';

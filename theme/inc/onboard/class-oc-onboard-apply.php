@@ -58,6 +58,13 @@ final class Apply {
 	private $ran = array();
 
 	/**
+	 * The categories the menu opened, name => term id.
+	 *
+	 * @var array<string,int>
+	 */
+	private $cats = array();
+
+	/**
 	 * Run the whole thing.
 	 *
 	 * @return array<int,array<string,string>> The report rows.
@@ -849,6 +856,207 @@ final class Apply {
 	}
 
 	/**
+	 * The shop's own aisles: a product category for every department they
+	 * named, one for every thing inside it, and a menu that walks them in
+	 * the order they gave. Nothing is renamed and nothing is removed — a
+	 * category that already exists is used as it stands.
+	 */
+	private function apply_menu(): void {
+		$rows = is_array( $this->v['site_menu'] ) ? $this->v['site_menu'] : array();
+
+		$this->brand_terms();
+
+		if ( ! $rows ) {
+			return;
+		}
+
+		if ( ! taxonomy_exists( 'product_cat' ) ) {
+			$this->row( 'site_menu', __( 'The menu', 'oc-theme' ), 'skipped', __( 'WooCommerce is not active on this site yet.', 'oc-theme' ) );
+			return;
+		}
+
+		$tree = array();
+		$made = 0;
+
+		foreach ( $rows as $row ) {
+			$name = trim( (string) ( $row['name'] ?? '' ) );
+
+			if ( '' === $name ) {
+				continue;
+			}
+
+			$top = $this->term( $name, 'product_cat', 0, $made );
+
+			if ( ! $top ) {
+				continue;
+			}
+
+			$kids = array();
+
+			foreach ( (array) ( $row['subs'] ?? array() ) as $sub ) {
+				$sub = trim( (string) $sub );
+				$kid = '' === $sub ? 0 : $this->term( $sub, 'product_cat', $top, $made );
+
+				if ( $kid ) {
+					$kids[] = $kid;
+				}
+			}
+
+			$tree[]              = array( $top, $kids );
+			$this->cats[ $name ] = $top;
+		}
+
+		$this->row( 'site_menu', __( 'Product categories', 'oc-theme' ), 'applied', sprintf( /* translators: %d: how many categories were opened. */ _n( '%d category opened.', '%d categories opened.', $made, 'oc-theme' ), $made ) );
+
+		$this->nav_menu( $tree );
+	}
+
+	/**
+	 * One term, made only if the shop does not already have it.
+	 *
+	 * @param string $name     What it is called.
+	 * @param string $taxonomy Which family.
+	 * @param int    $parent   Under which term, or 0.
+	 * @param int    $made     Counter, raised when a term is new.
+	 * @return int The term id, or 0.
+	 */
+	private function term( string $name, string $taxonomy, int $parent, int &$made ): int {
+		$found = get_term_by( 'name', $name, $taxonomy );
+
+		if ( $found instanceof \WP_Term ) {
+			return (int) $found->term_id;
+		}
+
+		$new = wp_insert_term( $name, $taxonomy, array( 'parent' => $parent ) );
+
+		if ( is_wp_error( $new ) ) {
+			// A slug clash means something of that name is already there.
+			$data = $new->get_error_data();
+
+			return is_array( $data ) && isset( $data['term_id'] ) ? (int) $data['term_id'] : 0;
+		}
+
+		++$made;
+
+		return (int) $new['term_id'];
+	}
+
+	/**
+	 * The menu at the top of every page. A menu the shop already has with
+	 * items in it is left alone: it is somebody's work.
+	 *
+	 * @param array<int,array{0:int,1:array<int,int>}> $tree Term id, then the ids under it.
+	 */
+	private function nav_menu( array $tree ): void {
+		$name = __( 'Main menu', 'oc-theme' );
+		$menu = wp_get_nav_menu_object( $name );
+
+		if ( ! $menu ) {
+			$id = wp_create_nav_menu( $name );
+
+			if ( is_wp_error( $id ) ) {
+				$this->row( 'site_menu', __( 'The menu', 'oc-theme' ), 'error', $id->get_error_message() );
+				return;
+			}
+
+			$menu = wp_get_nav_menu_object( (int) $id );
+		}
+
+		if ( ! $menu ) {
+			$this->row( 'site_menu', __( 'The menu', 'oc-theme' ), 'error' );
+			return;
+		}
+
+		$have = wp_get_nav_menu_items( $menu->term_id );
+
+		if ( ! empty( $have ) && $this->changed_by_hand( 'menu:items', count( $have ) ) ) {
+			$this->row( 'site_menu', __( 'The menu', 'oc-theme' ), 'manual', __( 'The menu was edited by hand since the last apply; left as it is.', 'oc-theme' ) );
+			return;
+		}
+
+		foreach ( (array) $have as $old ) {
+			wp_delete_post( (int) $old->ID, true );
+		}
+
+		$n = 0;
+
+		foreach ( $tree as $pair ) {
+			$top = $this->menu_item( (int) $menu->term_id, $pair[0], 0, ++$n );
+
+			foreach ( $pair[1] as $kid ) {
+				$this->menu_item( (int) $menu->term_id, $kid, $top, ++$n );
+			}
+		}
+
+		$this->remember( 'menu:items', $n );
+
+		$spots              = (array) get_theme_mod( 'nav_menu_locations', array() );
+		$spots['primary']   = (int) $menu->term_id;
+		$spots['secondary'] = isset( $spots['secondary'] ) ? $spots['secondary'] : (int) $menu->term_id;
+
+		set_theme_mod( 'nav_menu_locations', $spots );
+
+		$this->row( 'site_menu', __( 'The menu', 'oc-theme' ), 'applied', sprintf( /* translators: %d: how many links the menu holds. */ _n( '%d link in the menu.', '%d links in the menu.', $n, 'oc-theme' ), $n ) );
+	}
+
+	/**
+	 * One link in the menu, pointing at a category.
+	 *
+	 * @param int $menu   The menu.
+	 * @param int $term   The category.
+	 * @param int $parent The link it hangs under, or 0.
+	 * @param int $order  Where it stands.
+	 * @return int The new link's id.
+	 */
+	private function menu_item( int $menu, int $term, int $parent, int $order ): int {
+		$id = wp_update_nav_menu_item(
+			$menu,
+			0,
+			array(
+				'menu-item-type'      => 'taxonomy',
+				'menu-item-object'    => 'product_cat',
+				'menu-item-object-id' => $term,
+				'menu-item-parent-id' => $parent,
+				'menu-item-position'  => $order,
+				'menu-item-status'    => 'publish',
+			)
+		);
+
+		return is_wp_error( $id ) ? 0 : (int) $id;
+	}
+
+	/**
+	 * A page for every brand they carry. Only the names: a logo is a
+	 * picture, and pictures are not what a questionnaire is good at.
+	 */
+	private function brand_terms(): void {
+		if ( 'yes' !== (string) $this->v['brands_has'] ) {
+			return;
+		}
+
+		$taxonomy = method_exists( '\OC\Theme\Search', 'brand_taxonomy' ) ? \OC\Theme\Search::brand_taxonomy() : '';
+
+		if ( '' === $taxonomy ) {
+			$this->row( 'brand_list', __( 'Brands', 'oc-theme' ), 'skipped', __( 'This site has nowhere to keep brands yet.', 'oc-theme' ) );
+			return;
+		}
+
+		$made = 0;
+
+		foreach ( preg_split( '/\r\n|\r|\n/', (string) $this->v['brand_list'] ) as $line ) {
+			$line = trim( (string) $line );
+
+			if ( '' === $line ) {
+				continue;
+			}
+
+			$this->term( $line, $taxonomy, 0, $made );
+		}
+
+		$this->row( 'brand_list', __( 'Brands', 'oc-theme' ), 'applied', sprintf( /* translators: %d: how many brands were opened. */ _n( '%d brand opened.', '%d brands opened.', $made, 'oc-theme' ), $made ) );
+	}
+
+	/**
 	 * The page, as the customer arranged it: one oc-blocks section per row
 	 * they kept, in their order. A row they hid is left out rather than
 	 * written switched off, so the page stays as short as they made it.
@@ -921,6 +1129,7 @@ final class Apply {
 			return array(
 				'type'    => 'categories',
 				'heading' => $title,
+				'cats'    => $this->chosen_cats(),
 				'layout'  => 'slider',
 			);
 		}
@@ -944,6 +1153,15 @@ final class Apply {
 		}
 
 		if ( 'icons' === $type ) {
+			$mine = $this->icon_items();
+
+			if ( $mine ) {
+				return array(
+					'type'  => 'icons',
+					'items' => $mine,
+				);
+			}
+
 			return array(
 				'type'  => 'icons',
 				'items' => array(
@@ -974,6 +1192,16 @@ final class Apply {
 		}
 
 		if ( 'faq' === $type ) {
+			$asked = $this->faq_items();
+
+			if ( $asked ) {
+				return array(
+					'type'    => 'faq',
+					'heading' => $title,
+					'items'   => $asked,
+				);
+			}
+
 			return array(
 				'type'    => 'faq',
 				'heading' => $title,
@@ -1000,7 +1228,7 @@ final class Apply {
 		}
 
 		if ( 'content' === $type ) {
-			return $this->content_section( (string) ( $row['variant'] ?? 'words' ) );
+			return $this->content_section( (string) ( $row['variant'] ?? 'words' ), $nth );
 		}
 
 		return null;
@@ -1044,14 +1272,31 @@ final class Apply {
 	 * @param string $kind words | single | overlap | duo | canvas.
 	 * @return array<string,mixed>
 	 */
-	private function content_section( string $kind ): array {
+	private function content_section( string $kind, int $nth = 1 ): array {
 		$brand = trim( (string) $this->v['brand_name'] );
 		$head  = '' !== $brand ? sprintf( /* translators: %s: the brand name. */ __( 'About %s', 'oc-theme' ), $brand ) : __( 'About us', 'oc-theme' );
 		$text  = wp_trim_words( wp_strip_all_tags( (string) $this->v['about_text'] ), 45 );
 
+		// What they wrote for this area beats the words we borrowed from
+		// the About page — those are only there so the page is never bare.
+		$mine  = is_array( $this->v['home_content'] ) ? ( $this->v['home_content'][ $nth - 1 ] ?? array() ) : array();
+		$brow  = trim( (string) ( $mine['eyebrow'] ?? '' ) );
+		$said  = trim( (string) ( $mine['heading'] ?? '' ) );
+		$words = trim( (string) ( $mine['text'] ?? '' ) );
+		$shot  = is_array( $mine['media'] ?? null ) ? (int) ( $mine['media']['id'] ?? 0 ) : 0;
+
+		if ( '' !== $said ) {
+			$head = $said;
+		}
+
+		if ( '' !== $words ) {
+			$text = $words;
+		}
+
 		if ( 'words' === $kind ) {
 			return array(
 				'type'    => 'content',
+				'eyebrow' => $brow,
 				'heading' => $head,
 				'text'    => $text,
 				'align'   => 'center',
@@ -1061,9 +1306,94 @@ final class Apply {
 		return array(
 			'type'    => 'media',
 			'preset'  => in_array( $kind, array( 'single', 'overlap', 'duo', 'canvas' ), true ) ? $kind : 'overlap',
+			'eyebrow' => $brow,
 			'heading' => $head,
 			'text'    => $text,
+			'img1'    => $shot,
+			'side'    => 'end',
 		);
+	}
+
+	/**
+	 * The categories they singled out for the front page, as term ids and
+	 * in the order they named them. Nothing singled out means all of them,
+	 * which is what the block does with an empty list.
+	 *
+	 * @return array<int,int>
+	 */
+	private function chosen_cats(): array {
+		$want = is_array( $this->v['home_cats'] ) ? $this->v['home_cats'] : array();
+		$out  = array();
+
+		foreach ( $want as $name ) {
+			$name = trim( (string) $name );
+			$id   = $this->cats[ $name ] ?? 0;
+
+			if ( ! $id && taxonomy_exists( 'product_cat' ) ) {
+				$found = get_term_by( 'name', $name, 'product_cat' );
+				$id    = $found instanceof \WP_Term ? (int) $found->term_id : 0;
+			}
+
+			if ( $id ) {
+				$out[] = (int) $id;
+			}
+		}
+
+		return $out;
+	}
+
+	/**
+	 * Their reasons to buy, as the icons block keeps them. A row with
+	 * nothing written in it is not a reason, so it is left out.
+	 *
+	 * @return array<int,array<string,mixed>>
+	 */
+	private function icon_items(): array {
+		$out = array();
+
+		foreach ( (array) $this->v['home_icons'] as $row ) {
+			$row  = (array) $row;
+			$head = trim( (string) ( $row['heading'] ?? '' ) );
+			$text = trim( (string) ( $row['text'] ?? '' ) );
+
+			if ( '' === $head && '' === $text ) {
+				continue;
+			}
+
+			$out[] = array(
+				'icon'    => (string) ( $row['icon'] ?? 'truck' ),
+				'img'     => is_array( $row['img'] ?? null ) ? (int) ( $row['img']['id'] ?? 0 ) : 0,
+				'heading' => $head,
+				'text'    => $text,
+			);
+		}
+
+		return $out;
+	}
+
+	/**
+	 * Their questions. An answer can wait — a question cannot.
+	 *
+	 * @return array<int,array<string,string>>
+	 */
+	private function faq_items(): array {
+		$out = array();
+
+		foreach ( (array) $this->v['home_faq'] as $row ) {
+			$row = (array) $row;
+			$q   = trim( (string) ( $row['q'] ?? '' ) );
+
+			if ( '' === $q ) {
+				continue;
+			}
+
+			$out[] = array(
+				'q' => $q,
+				'a' => trim( (string) ( $row['a'] ?? '' ) ),
+			);
+		}
+
+		return $out;
 	}
 
 	/**

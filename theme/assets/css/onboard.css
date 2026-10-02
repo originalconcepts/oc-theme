@@ -748,3 +748,44 @@ button.oc-onb-steps__i { cursor: pointer; }
 
 /* A row still waiting for a word or a choice. */
 .oc-onb-row.is-missing { border-color: var(--onb-err, #c0392b); box-shadow: 0 0 0 1px var(--onb-err, #c0392b); }
+
+/* ------------------------------------------------- the menu, as they build it */
+
+.oc-onb-menu__rows { display: grid; gap: 10px; margin-bottom: 12px; }
+.oc-onb-menu__row { border: 1px solid var(--onb-line); border-radius: 10px; padding: 10px 12px; background: #fff; }
+.oc-onb-menu__head { display: flex; align-items: center; gap: 8px; }
+.oc-onb-menu__name { flex: 1; font-weight: 600; }
+.oc-onb-menu__subs { display: grid; gap: 6px; margin: 8px 0 0; padding-inline-start: 18px; border-inline-start: 2px solid var(--onb-line); }
+.oc-onb-menu__sub { display: flex; align-items: center; gap: 6px; }
+.oc-onb-menu__subin { flex: 1; font-size: 13px; padding-block: 7px; }
+.oc-onb-menu__add { justify-self: start; font-size: 12px; }
+
+/* The drawings a reason-to-buy can wear. */
+.oc-onb-icons { display: flex; flex-wrap: wrap; gap: 6px; }
+.oc-onb-icons__b {
+	inline-size: 42px;
+	block-size: 42px;
+	display: grid;
+	place-items: center;
+	border: 1px solid var(--onb-line);
+	border-radius: 9px;
+	background: #fff;
+	color: var(--onb-ink-2);
+	cursor: pointer;
+	padding: 0;
+}
+.oc-onb-icons__b svg { inline-size: 22px; block-size: 22px; }
+.oc-onb-icons__b:hover { border-color: var(--onb-primary); color: var(--onb-primary); }
+.oc-onb-icons__b.is-on { border-color: var(--onb-primary); color: var(--onb-primary); box-shadow: 0 0 0 1px var(--onb-primary); }
+
+/* The header, standing the way they asked it to. */
+.wf-bar__i { font-size: 10px; color: #6c7382; white-space: nowrap; }
+.wf-bar--over .wf-bar__i { color: rgba(255, 255, 255, .85); }
+.wf-bar--menu-center .wf-bar__nav { position: absolute; inset-inline: 0; justify-content: center; pointer-events: none; }
+.wf-bar--menu-center { position: relative; }
+.wf-bar--centred { flex-direction: column; gap: 6px; }
+.wf-bar--centred .wf-bar__one { display: flex; align-items: center; justify-content: center; gap: 8px; position: relative; inline-size: 100%; }
+.wf-bar--centred .wf-bar__icons { position: absolute; inset-inline-end: 0; }
+.wf-bar--centred .wf-bar__nav { justify-content: center; }
+.wf-bar--split .wf-bar__nav { flex: 1; }
+.wf-bar__bur { display: grid; gap: 3px; }

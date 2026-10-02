@@ -2860,6 +2860,10 @@ html.oc-look-lock body { overflow: hidden; }
 
 .ocb-ico__pic svg { inline-size: var(--ocb-ico-size, 40px); block-size: var(--ocb-ico-size, 40px); }
 
+/* A drawing of their own wears the same size as ours, whatever it was
+   uploaded at, and keeps its proportions inside it. */
+.ocb-ico__img { inline-size: var(--ocb-ico-size, 40px); block-size: var(--ocb-ico-size, 40px); object-fit: contain; }
+
 .ocb-ico--s { --ocb-ico-size: 30px; }
 .ocb-ico--l { --ocb-ico-size: 54px; }
 
