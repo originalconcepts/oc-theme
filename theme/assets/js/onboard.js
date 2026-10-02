@@ -939,7 +939,7 @@
 						edit( function ( n ) {
 							// A copy is a part of its own, so it starts with
 							// a mark of its own and inherits no answers.
-							n.splice( i + 1, 0, merge( n[ i ], { uid: mark() } ) );
+							n.splice( i + 1, 0, merge( n[ i ], { uid: stamp() } ) );
 
 							return n;
 						} );
@@ -1065,7 +1065,7 @@
 				edit( function ( n ) {
 					if ( b.once && n.some( function ( r ) { return r.type === type; } ) ) { return null; }
 
-					var row = { type: type, uid: mark(), on: 1 };
+					var row = { type: type, uid: stamp(), on: 1 };
 
 					if ( b.title ) { row.title = ''; }
 					if ( b.text ) { row.text = ''; }
@@ -1506,10 +1506,10 @@
 	}
 
 	/**
-	 * A short mark for a row of the arrangement, so what is said about it
+	 * A short stamp for a row of the arrangement, so what is said about it
 	 * later can find it again.
 	 */
-	function mark() {
+	function stamp() {
 		return Math.random().toString( 36 ).slice( 2, 10 );
 	}
 
@@ -2918,6 +2918,19 @@
 
 	root.removeAttribute( 'data-loading' );
 	maybeDiscover();
+
+	// Give the parts of the page their marks the first time anyone opens
+	// the questionnaire, so the answers written about them later have
+	// something steady to hold on to.
+	( function () {
+		var rows = val( 'home_layout' );
+
+		if ( ! Array.isArray( rows ) || ! rows.length ) { return; }
+
+		if ( rows.every( function ( r ) { return r && r.uid; } ) ) { return; }
+
+		set( 'home_layout', rows.map( function ( r ) { return merge( r, { uid: r.uid || stamp() } ); } ) );
+	}() );
 
 	var asked_at = ( window.location.search.match( /[?&]at=([a-z0-9-]+)/i ) || [] )[1];
 	var jump     = -1;
