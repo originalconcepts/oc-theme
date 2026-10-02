@@ -2317,8 +2317,36 @@
 		var mine  = here_asked.filter( function ( s ) { return s.step === here.step; } );
 		var n     = mine.indexOf( here ) + 1;
 
+		var line = el( 'div', { 'class': 'oc-onb-prog__t' }, [
+			el( 'span', { text: mine.length > 1 ? fmt( I.screen_of, n, mine.length ) : here.step.title } )
+		] );
+
+		// A step with several screens gets a dot for each of them: a way
+		// back to the arranging from the fourth question about it, without
+		// pressing Back four times.
+		if ( mine.length > 1 ) {
+			var dots = el( 'div', { 'class': 'oc-onb-dots' } );
+
+			mine.forEach( function ( sc ) {
+				var idx  = screens.indexOf( sc );
+				var open = idx <= high && sc !== here;
+				var dot  = el( open ? 'button' : 'span', {
+					type: open ? 'button' : null,
+					'class': 'oc-onb-dots__d' + ( sc === here ? ' is-on' : ( open ? '' : ' is-later' ) ),
+					title: sc.title,
+					'aria-label': sc.title
+				} );
+
+				if ( open ) { dot.addEventListener( 'click', function () { go( idx ); } ); }
+
+				dots.appendChild( dot );
+			} );
+
+			line.appendChild( dots );
+		}
+
 		wrap.appendChild( chips );
-		wrap.appendChild( el( 'div', { 'class': 'oc-onb-prog__t', text: mine.length > 1 ? fmt( I.screen_of, n, mine.length ) : here.step.title } ) );
+		wrap.appendChild( line );
 
 		var bar  = el( 'div', { 'class': 'oc-onb-prog__bar' } );
 		var all  = here_asked.length;

@@ -87,7 +87,23 @@ html { -webkit-text-size-adjust: 100%; }
 .oc-onb__small { font-size: 13px; color: var(--onb-ink-2); }
 
 /* progress */
-.oc-onb-prog__t { font-size: 13px; color: var(--onb-ink-2); margin-bottom: 6px; }
+.oc-onb-prog__t { font-size: 13px; color: var(--onb-ink-2); margin-bottom: 6px; display: flex; align-items: center; gap: 10px; }
+
+/* One dot per screen of this step: where you are inside it, and a way
+   back to any of them you have already seen. */
+.oc-onb-dots { display: flex; align-items: center; gap: 5px; }
+.oc-onb-dots__d {
+	inline-size: 8px;
+	block-size: 8px;
+	border-radius: 50%;
+	border: 0;
+	padding: 0;
+	background: var(--onb-line);
+}
+button.oc-onb-dots__d { cursor: pointer; }
+button.oc-onb-dots__d:hover { background: var(--onb-ink-2); }
+.oc-onb-dots__d.is-on { background: var(--onb-primary); inline-size: 18px; border-radius: 4px; }
+.oc-onb-dots__d.is-later { opacity: .5; }
 .oc-onb-prog__bar { height: 6px; border-radius: 3px; background: var(--onb-line); overflow: hidden; }
 .oc-onb-prog__bar i { display: block; height: 100%; background: var(--onb-primary); transition: inline-size .4s; }
 
