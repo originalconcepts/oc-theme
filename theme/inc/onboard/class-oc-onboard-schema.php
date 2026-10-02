@@ -2305,6 +2305,14 @@ final class Schema {
 
 					$clean = array();
 
+					// The mark that ties this block to the part of the page
+					// it is about is not a question, but it has to survive.
+					$uid = preg_replace( '/[^a-z0-9]/', '', strtolower( (string) ( $row['uid'] ?? '' ) ) );
+
+					if ( '' !== (string) $uid ) {
+						$clean['uid'] = substr( (string) $uid, 0, 12 );
+					}
+
 					foreach ( (array) $f['fields'] as $sub_id => $sub ) {
 						$clean[ $sub_id ] = self::sanitize_typed( $sub, $row[ $sub_id ] ?? null );
 					}

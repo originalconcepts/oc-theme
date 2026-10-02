@@ -170,6 +170,12 @@ final class Apply {
 			return false;
 		}
 
+		// A memory written by an older version of the engine in a different
+		// shape says nothing about whether a person touched anything.
+		if ( is_string( $current ) && ! is_string( $this->log[ $key ] ) ) {
+			return false;
+		}
+
 		return self::norm( $this->log[ $key ] ) !== self::norm( $current );
 	}
 
