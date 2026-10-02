@@ -39,7 +39,7 @@
 		}
 
 		step.screens.forEach( function ( sc ) {
-			screens.push( { part: part, step: step, stepIndex: si, id: sc.id, title: sc.title, intro: sc.intro, preview: sc.preview || '', fields: sc.fields } );
+			screens.push( { part: part, step: step, stepIndex: si, id: sc.id, title: sc.title, intro: sc.intro, intro_m: sc.intro_m || '', preview: sc.preview || '', fields: sc.fields } );
 		} );
 	} );
 
@@ -170,6 +170,12 @@
 			if ( ! f || ! f.required || ! shown( id ) ) { return; }
 			var v = val( id );
 			if ( f.type === 'consent' ) { if ( v !== true ) { out.push( id ); } return; }
+			if ( f.type === 'layout' ) {
+				// An arrangement is answered row by row: a part that cannot
+				// be built without a word or a choice has to have it.
+				if ( layoutGaps( f, v ).length ) { out.push( id ); }
+				return;
+			}
 			if ( f.type === 'repeater' ) {
 				if ( isEmpty( v ) ) { out.push( id ); return; }
 				for ( var r = 0; r < v.length; r++ ) {
@@ -669,6 +675,56 @@
 	}
 
 	/**
+	 * The heading a band shows when the customer has written none. The list
+	 * offers it as the grey placeholder, the sketch draws it and the page is
+	 * built with it, so the three never disagree.
+	 *
+	 * @param {Object} row The row.
+	 * @param {number} nth Which one of its kind it is, counting from one.
+	 * @return {string} The heading, or '' where a band has none.
+	 */
+	function bandTitle( row, nth ) {
+		if ( 'products' === row.type ) {
+			var named = { sale: I.wf_sale_h, sales: I.wf_best_h, manual: I.wf_pick_h, 'new': I.wf_new_h };
+
+			return named[ row.variant ] || ( nth > 1 ? I.wf_sale_h : I.wf_new_h );
+		}
+
+		return {
+			categories: I.wf_cats_h,
+			look: I.wf_look_h,
+			posts: I.wf_posts_h,
+			brands: I.wf_brands_h,
+			faq: I.wf_faq_h,
+			scrolly: I.wf_story_h
+		}[ row.type ] || '';
+	}
+
+	/**
+	 * Which rows of an arrangement are still waiting for an answer: a
+	 * running line with nothing to say, or a shelf with no shelf chosen.
+	 *
+	 * @param {Object} f The field.
+	 * @param {Array}  v The rows.
+	 * @return {Array} Their places in the list.
+	 */
+	function layoutGaps( f, v ) {
+		var blocks = ( f || {} ).blocks || {};
+		var gaps   = [];
+
+		( Array.isArray( v ) ? v : [] ).forEach( function ( row, i ) {
+			var b = blocks[ row.type ];
+
+			if ( ! b || ! row.on ) { return; }
+
+			if ( b.text && '' === String( row.text || '' ).trim() ) { gaps.push( i ); return; }
+			if ( b.variants && b.blank && '' === String( row.variant || '' ) ) { gaps.push( i ); }
+		} );
+
+		return gaps;
+	}
+
+	/**
 	 * The home page, as a list of its parts.
 	 *
 	 * Every row is one band of the page. A row can be hidden, moved, copied
@@ -704,8 +760,25 @@
 			save( r );
 		}
 
+		/**
+		 * The arrangement as one line of text, for telling it apart from
+		 * the one we handed them.
+		 *
+		 * @param {Array} v The rows.
+		 */
+		function shape( v ) {
+			return ( Array.isArray( v ) ? v : [] ).map( function ( row ) {
+				return [ row.type, row.on ? 1 : 0, row.title || '', row.text || '', row.variant || '' ].join( '\u0001' );
+			} ).join( '\u0002' );
+		}
+
 		function draw() {
-			var r = rows();
+			var r   = rows();
+			var nth = {};
+
+			// Nothing has been moved: there is nothing to put back, and an
+			// offer to undo work nobody did is only a worry.
+			back.hidden = shape( r ) === shape( f['default'] );
 
 			list.innerHTML = '';
 
@@ -717,7 +790,9 @@
 
 			r.forEach( function ( row, i ) {
 				var b = blocks[ row.type ] || { label: row.type };
-				var line = el( 'div', { 'class': 'oc-onb-row' + ( row.on ? '' : ' is-off' ), draggable: 'true', 'data-i': i } );
+				var line = el( 'div', { 'class': 'oc-onb-row' + ( row.on ? '' : ' is-off' ), draggable: 'true', 'data-i': i, 'data-row': i } );
+
+				nth[ row.type ] = ( nth[ row.type ] || 0 ) + 1;
 
 				line.addEventListener( 'dragstart', function ( e ) {
 					e.dataTransfer.setData( 'text/plain', String( i ) );
@@ -767,7 +842,7 @@
 						type: 'text',
 						'class': 'oc-onb-row__in',
 						value: row[ key ] || '',
-						placeholder: b.title ? I.row_title : I.row_text
+						placeholder: b.title ? ( bandTitle( row, nth[ row.type ] ) || I.row_title ) : I.row_text
 					} );
 
 					var was = String( row[ key ] || '' );
@@ -789,6 +864,7 @@
 
 					inp.addEventListener( 'input', function () {
 						clearTimeout( inp._t );
+						line.classList.remove( 'is-missing' );
 						inp._t = setTimeout( put, 150 );
 					} );
 					inp.addEventListener( 'blur', put );
@@ -881,7 +957,9 @@
 		var back = el( 'button', { type: 'button', 'class': 'oc-onb-link oc-onb-lay__back', text: I.row_reset } );
 
 		back.addEventListener( 'click', function () {
-			save( ( f['default'] || [] ).map( function ( row ) { return merge( row, {} ); } ) );
+			confirmBox( I.row_reset, I.row_reset_warn, I.row_reset_go, function () {
+				save( ( f['default'] || [] ).map( function ( row ) { return merge( row, {} ); } ) );
+			} );
 		} );
 
 		add.appendChild( back );
@@ -956,6 +1034,45 @@
 		wrap.__paint = paint;
 		paint();
 		return wrap;
+	}
+
+	/**
+	 * A question with a way out of it. Used where a press undoes work the
+	 * customer has already done, so the undoing is never a surprise.
+	 *
+	 * @param {string}   title The heading.
+	 * @param {string}   text  What is about to happen.
+	 * @param {string}   okay  The word on the button that does it.
+	 * @param {Function} then  What to do once they say yes.
+	 */
+	function confirmBox( title, text, okay, then ) {
+		if ( document.querySelector( '.oc-onb-modal' ) ) { return; }
+
+		var card = el( 'div', { 'class': 'oc-onb-modal__card', role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'oc-onb-modal-h' } );
+		var back = el( 'div', { 'class': 'oc-onb-modal' }, [ card ] );
+
+		function close() {
+			document.removeEventListener( 'keydown', key, true );
+			back.remove();
+		}
+
+		function key( e ) {
+			if ( e.key === 'Escape' ) { e.preventDefault(); e.stopPropagation(); close(); }
+		}
+
+		card.appendChild( el( 'h2', { id: 'oc-onb-modal-h', text: title } ) );
+		card.appendChild( el( 'p', { 'class': 'oc-onb-modal__warn', text: text } ) );
+
+		var yes = el( 'button', { type: 'button', 'class': 'oc-onb-btn', text: okay } );
+		yes.addEventListener( 'click', function () { close(); then(); } );
+
+		var no = el( 'button', { type: 'button', 'class': 'oc-onb-btn oc-onb-btn--ghost', text: I.cancel } );
+		no.addEventListener( 'click', close );
+
+		card.appendChild( el( 'div', { 'class': 'oc-onb-modal__btns' }, [ yes, no ] ) );
+		document.body.appendChild( back );
+		document.addEventListener( 'keydown', key, true );
+		no.focus();
 	}
 
 	/**
@@ -1459,13 +1576,9 @@
 		}
 
 		if ( 'products' === row.type ) {
-			// Named by the shelf they chose; and while they have not chosen,
-			// by where the shelf stands, so two rows never read as twins.
-			var named = { sale: I.wf_sale_h, sales: I.wf_best_h, manual: I.wf_pick_h, 'new': I.wf_new_h };
-			var fall  = named[ row.variant ] || ( nth > 1 ? I.wf_sale_h : I.wf_new_h );
 			var other = 'sale' === row.variant || ( ! row.variant && nth > 1 );
 
-			return w( 'wf-band', [ wHeading( title || fall ), wRow( 4, other ? 5 : 1 ) ] );
+			return w( 'wf-band', [ wHeading( title || bandTitle( row, nth ) ), wRow( 4, other ? 5 : 1 ) ] );
 		}
 
 		if ( 'categories' === row.type ) {
@@ -1594,8 +1707,10 @@
 		var nth = {};
 
 		( Array.isArray( rows ) ? rows : [] ).forEach( function ( row ) {
-			if ( ! row.on ) { return; }
 			nth[ row.type ] = ( nth[ row.type ] || 0 ) + 1;
+
+			if ( ! row.on ) { return; }
+
 			mid.push( wBand( row, nth[ row.type ] ) );
 		} );
 
@@ -1735,28 +1850,23 @@
 			if ( seen.indexOf( s.step ) === -1 ) { seen.push( s.step ); }
 		} );
 
-		var pos  = asked.indexOf( here );
 		var high = reach();
 
 		seen.forEach( function ( step ) {
 			var at    = step === here.step;
-			var last  = 0;
 			var first = -1;
 
 			asked.forEach( function ( s, i ) {
-				if ( s.step !== step ) { return; }
-				if ( first < 0 ) { first = i; }
-				last = i;
+				if ( s.step === step && first < 0 ) { first = i; }
 			} );
 
-			// Behind you, or as far forward as you have already been: either
-			// way the step is yours to reopen. Beyond that there is nothing
-			// to go back to, so the chip is only a label.
-			var done = ! at && ( last < pos || screens.indexOf( asked[ last ] ) < high );
-			var open = ! at && ( done || screens.indexOf( asked[ first ] ) <= high );
-			var chip = el( at || open ? 'button' : 'span', {
-				type: at || open ? 'button' : null,
-				'class': 'oc-onb-steps__i' + ( at ? ' is-on' : ( done ? ' is-done' : ( open ? ' is-open' : ' is-later' ) ) )
+			// A step you have already been inside is finished: it carries the
+			// tick and its name reopens it, wherever you are standing now. A
+			// step you have never reached is a label and nothing more.
+			var done = ! at && screens.indexOf( asked[ first ] ) <= high;
+			var chip = el( at || done ? 'button' : 'span', {
+				type: at || done ? 'button' : null,
+				'class': 'oc-onb-steps__i' + ( at ? ' is-on' : ( done ? ' is-done' : ' is-later' ) )
 			} );
 
 			if ( done ) {
@@ -1765,7 +1875,7 @@
 
 			chip.appendChild( el( 'span', { text: step.title } ) );
 
-			if ( open ) {
+			if ( done ) {
 				chip.addEventListener( 'click', function () { go( screens.indexOf( asked[ first ] ) ); } );
 			}
 
@@ -1849,6 +1959,10 @@
 		card.appendChild( el( 'h1', { text: sc.title } ) );
 		if ( sc.intro ) { card.appendChild( el( 'p', { 'class': 'oc-onb__intro', text: sc.intro } ) ); }
 
+		// The half of the explanation that is only true on a phone, where
+		// the list and the drawing take turns instead of standing together.
+		if ( sc.intro_m ) { card.appendChild( el( 'p', { 'class': 'oc-onb__intro oc-onb__intro--m', text: sc.intro_m } ) ); }
+
 		var lastGroup = null;
 		var qcol      = card;
 
@@ -1927,10 +2041,25 @@
 
 	function mark( ids ) {
 		root.querySelectorAll( '.oc-onb-f.is-missing' ).forEach( function ( b ) { b.classList.remove( 'is-missing' ); } );
+		root.querySelectorAll( '.oc-onb-row.is-missing' ).forEach( function ( b ) { b.classList.remove( 'is-missing' ); } );
 		var first = null;
 		ids.forEach( function ( id ) {
 			var box = root.querySelector( '[data-field="' + id + '"]' );
-			if ( box ) { box.classList.add( 'is-missing' ); if ( ! first ) { first = box; } }
+			if ( ! box ) { return; }
+
+			box.classList.add( 'is-missing' );
+
+			// A whole arrangement in red says nothing: the rows that are
+			// waiting are the ones to point at.
+			if ( F[ id ] && 'layout' === F[ id ].type ) {
+				layoutGaps( F[ id ], val( id ) ).forEach( function ( i ) {
+					var line = box.querySelector( '.oc-onb-row[data-row="' + i + '"]' );
+
+					if ( line ) { line.classList.add( 'is-missing' ); if ( ! first ) { first = line; } }
+				} );
+			}
+
+			if ( ! first ) { first = box; }
 		} );
 		note( I.fill_required, 'err' );
 		if ( first ) { first.scrollIntoView( { behavior: 'smooth', block: 'center' } ); }

@@ -121,7 +121,8 @@ final class Schema {
 					array(
 						'id'      => '3a',
 						'title'   => __( 'What stands on the home page', 'oc-theme' ),
-						'intro'   => __( 'This is the page, from top to bottom. Move a part, throw one away, or add another of the same kind. Switch to the sketch at any moment to see the page as you are arranging it.', 'oc-theme' ),
+						'intro'   => __( 'Here you decide what your home page offers a visitor. On this side stands everything the page is made of: give a part its heading, move it up or down, throw one away, add another. Beside it the page draws itself as you go. Walk down the list, give every part its heading or its words, and carry on.', 'oc-theme' ),
+						'intro_m' => __( 'On a phone the two do not fit side by side, so the two buttons above switch between the list and the drawing.', 'oc-theme' ),
 						'preview' => 'home',
 						'fields'  => array( 'home_layout' ),
 					),
@@ -866,9 +867,10 @@ final class Schema {
 		/* ---- 3a: the home page ---- */
 
 		$f['home_layout'] = array(
-			'type'    => 'layout',
-			'label'   => '',
-			'blocks'  => self::home_blocks(),
+			'type'     => 'layout',
+			'label'    => '',
+			'blocks'   => self::home_blocks(),
+			'required' => true,
 			'default' => array(
 				array(
 					'type' => 'banner',
@@ -1488,6 +1490,39 @@ final class Schema {
 	}
 
 	/**
+	 * The rows of an arrangement that are still waiting for an answer: a
+	 * running line with no words, or a shelf with no shelf chosen. A row
+	 * that is switched off is not asked anything.
+	 *
+	 * @param array<int,mixed> $rows The arrangement.
+	 * @return array<int,int> Their places in the list.
+	 */
+	public static function layout_gaps( array $rows ): array {
+		$blocks = self::home_blocks();
+		$gaps   = array();
+
+		foreach ( array_values( $rows ) as $i => $row ) {
+			$row  = (array) $row;
+			$type = (string) ( $row['type'] ?? '' );
+
+			if ( ! isset( $blocks[ $type ] ) || empty( $row['on'] ) ) {
+				continue;
+			}
+
+			if ( ! empty( $blocks[ $type ]['text'] ) && '' === trim( (string) ( $row['text'] ?? '' ) ) ) {
+				$gaps[] = $i;
+				continue;
+			}
+
+			if ( ! empty( $blocks[ $type ]['variants'] ) && ! empty( $blocks[ $type ]['blank'] ) && '' === (string) ( $row['variant'] ?? '' ) ) {
+				$gaps[] = $i;
+			}
+		}
+
+		return $gaps;
+	}
+
+	/**
 	 * The required fields that are shown and still empty.
 	 *
 	 * @param array<string,mixed> $values id => value.
@@ -1507,6 +1542,13 @@ final class Schema {
 
 			if ( 'consent' === $f['type'] ) {
 				if ( true !== $v ) {
+					$out[] = $id;
+				}
+				continue;
+			}
+
+			if ( 'layout' === $f['type'] ) {
+				if ( self::layout_gaps( (array) $v ) ) {
 					$out[] = $id;
 				}
 				continue;

@@ -11490,6 +11490,27 @@ msgstr "אילו מוצרים?"
 msgid "I will choose them myself"
 msgstr "אבחר בעצמי"
 
+msgid "Here you decide what your home page offers a visitor. On this side stands everything the page is made of: give a part its heading, move it up or down, throw one away, add another. Beside it the page draws itself as you go. Walk down the list, give every part its heading or its words, and carry on."
+msgstr "כאן אתם מחליטים מה עמוד הבית יציע לגולש. בצד הזה עומד כל מה שהעמוד עשוי ממנו: אפשר לתת לאזור כותרת, להזיז אותו למעלה או למטה, להסיר אותו או להוסיף עוד אחד. לצידו העמוד מצייר את עצמו תוך כדי. עברו על הרשימה מלמעלה למטה, תנו לכל אזור את הכותרת או התוכן שלו, והמשיכו הלאה."
+
+msgid "On a phone the two do not fit side by side, so the two buttons above switch between the list and the drawing."
+msgstr "בטלפון אין מקום לשניהם זה לצד זה, ולכן שני הכפתורים שלמעלה מחליפים בין הרשימה לבין הסקיצה."
+
+msgid "The page is empty. Add a part, or go back to the arrangement we suggest."
+msgstr "העמוד ריק. אפשר להוסיף אזור, או לאפס לברירת המחדל."
+
+msgid "Back to the standard arrangement"
+msgstr "אפס לברירת מחדל"
+
+msgid "The page goes back to the arrangement we suggest, and everything you changed here is written over."
+msgstr "העמוד יחזור לסידור המקורי, וכל השינויים שביצעתם כאן יידרסו."
+
+msgid "Yes, put it back"
+msgstr "כן, לאפס"
+
+msgid "Leave it as it is"
+msgstr "להשאיר כמו שזה"
+
 msgid "New in"
 msgstr "חדש בחנות"
 
@@ -11763,9 +11784,6 @@ msgstr "מסך %1$s מתוך %2$s"
 msgid "What stands on the home page"
 msgstr "מה עומד בדף הבית"
 
-msgid "This is the page, from top to bottom. Move a part, hide one you do not need, or add another of the same kind. The drawing beside you is the page as you are arranging it."
-msgstr "זה העמוד, מלמעלה למטה. אפשר להזיז אזור, להסתיר אזור שלא צריך, או להוסיף עוד אחד כזה. הסקיצה שלצידכם היא העמוד כפי שאתם מסדרים אותו."
-
 msgid "Main banner"
 msgstr "באנר ראשי"
 
@@ -11916,9 +11934,6 @@ msgstr "להציע ״אני שולח למישהו אחר״?"
 msgid "A gift, or an order sent to the office. The buyer fills in a different address and name."
 msgstr "מתנה, או הזמנה שנשלחת למשרד. הקונה ממלא כתובת ושם אחרים."
 
-msgid "This is the page, from top to bottom. Move a part, throw one away, or add another of the same kind. Switch to the sketch at any moment to see the page as you are arranging it."
-msgstr "זה העמוד, מלמעלה למטה. אפשר להזיז אזור, להסיר אזור שלא צריך, או להוסיף עוד אחד כזה. אפשר לעבור לסקיצה בכל רגע ולראות את העמוד כפי שאתם מסדרים אותו."
-
 msgid "The big picture at the top of the home page. This is where an offer goes, or a launch, or a new collection. Everything you type here appears on the sketch."
 msgstr "התמונה הגדולה בראש דף הבית. כאן מציעים מבצע, השקה, קולקציה חדשה. כל מה שתקלידו כאן מופיע בסקיצה."
 
@@ -11937,8 +11952,3 @@ msgstr "מה שבמבצע"
 msgid "The best sellers"
 msgstr "הנמכרים ביותר"
 
-msgid "The page is empty. Add a part, or put our order back."
-msgstr "העמוד ריק. אפשר להוסיף אזור, או להחזיר את הסידור שלנו."
-
-msgid "Put our order back"
-msgstr "להחזיר את הסידור שלנו"

@@ -534,7 +534,7 @@ html { -webkit-text-size-adjust: 100%; }
 
 /* ------------------------------------------------- settings or sketch, on a phone */
 
-.oc-onb-tabs { display: none; gap: 6px; margin-bottom: 14px; background: var(--onb-bg); padding: 4px; border-radius: 10px; }
+.oc-onb-tabs { display: none; gap: 6px; margin-bottom: 14px; background: var(--onb-bg); padding: 4px; border-radius: 10px; border: 1px solid var(--onb-line); }
 .oc-onb-tabs__b {
 	flex: 1;
 	font: inherit;
@@ -546,7 +546,9 @@ html { -webkit-text-size-adjust: 100%; }
 	color: var(--onb-ink-2);
 	cursor: pointer;
 }
-.oc-onb-tabs__b.is-on { background: #fff; color: var(--onb-ink); box-shadow: 0 1px 4px rgba(0, 0, 0, .08); }
+/* The tab you are on is the one piece of this screen a phone cannot show
+   twice, so it says plainly which half you are looking at. */
+.oc-onb-tabs__b.is-on { background: var(--onb-primary); color: #fff; box-shadow: 0 2px 8px rgba(0, 0, 0, .14); }
 
 @media (max-width: 900px) {
 	.oc-onb-tabs { display: flex; position: sticky; top: 56px; z-index: 5; }
@@ -730,10 +732,19 @@ html { -webkit-text-size-adjust: 100%; }
 .oc-onb-steps__i { display: inline-flex; align-items: center; gap: 5px; border: 0; font: inherit; font-size: 12px; }
 button.oc-onb-steps__i { cursor: pointer; }
 .oc-onb-steps__i.is-later { opacity: .55; }
-.oc-onb-steps__i.is-open { opacity: .8; }
-.oc-onb-steps__i.is-open:hover { opacity: 1; background: #eef1f6; }
 .oc-onb-steps__v { color: var(--onb-ok); font-weight: 700; }
 .oc-onb-steps__i.is-done:hover { background: #e8f3ec; }
 
 .oc-onb-lay__none { margin: 0; padding: 18px; text-align: center; color: var(--onb-ink-2); background: var(--onb-bg); border-radius: 10px; }
 .oc-onb-lay__back { margin-inline-start: auto; }
+
+/* An introduction's phone half: the part that is only true where the two
+   columns cannot stand side by side. */
+.oc-onb__intro--m { display: none; }
+
+@media (max-width: 900px) {
+	.oc-onb__intro--m { display: block; }
+}
+
+/* A row still waiting for a word or a choice. */
+.oc-onb-row.is-missing { border-color: var(--onb-err, #c0392b); box-shadow: 0 0 0 1px var(--onb-err, #c0392b); }
