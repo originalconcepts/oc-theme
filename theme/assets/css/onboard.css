@@ -841,7 +841,7 @@ button.oc-onb-steps__i { cursor: pointer; }
 .oc-onb-checks--deep { display: grid; gap: 4px; }
 .oc-onb-check--d1 { margin-inline-start: 18px; }
 .oc-onb-check--d2 { margin-inline-start: 36px; font-size: 12px; }
-.oc-onb-checks__n { margin: 8px 0 0; font-size: 12px; color: var(--onb-ink-2); }
+.oc-onb-f__min { font-weight: 600; margin-inline-start: 6px; }
 
 /* A sketch of one band stands on its own, with no page around it. */
 .wf--bare { padding-block: 10px; }

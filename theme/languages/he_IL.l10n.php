@@ -317,6 +317,7 @@ return array(
 		"Add as well" => "הוספה בנוסף",
 		"Add images" => "הוספת תמונות",
 		"Add it as a synonym" => "הוספה כמילה נרדפת",
+		"Add one inside this" => "להוסיף אחת בתוך זו",
 		"Add redirect" => "הוספת הפניה",
 		"Add rule" => "הוספת כלל",
 		"Add these products as well, or empty the cart and add only them?" => "להוסיף את המוצרים האלה בנוסף, או לרוקן את הסל ולהוסיף רק אותם?",

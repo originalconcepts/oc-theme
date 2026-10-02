@@ -12273,3 +12273,6 @@ msgstr "איזו"
 
 msgid "Write something now — it is on the page from the first day, and it can be changed at any time."
 msgstr "כתבו משהו עכשיו — זה מה שיעמוד בעמוד מהיום הראשון, ותמיד אפשר לשנות."
+
+msgid "Add one inside this"
+msgstr "להוסיף אחת בתוך זו"

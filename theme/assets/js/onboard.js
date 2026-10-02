@@ -431,7 +431,10 @@
 		if ( 'consent' !== f.type && '' !== String( f.label || '' ) ) {
 			box.appendChild( el( 'div', { 'class': 'oc-onb-f__label' }, [
 				el( 'span', { text: f.label } ),
-				f.required ? el( 'span', { 'class': 'oc-onb-f__req', text: ' *', 'aria-label': I.required } ) : null
+				f.required ? el( 'span', { 'class': 'oc-onb-f__req', text: ' *', 'aria-label': I.required } ) : null,
+				// How many have to be ticked is part of the demand, so it
+				// stands with it and in its colour.
+				f.min ? el( 'span', { 'class': 'oc-onb-f__req oc-onb-f__min', text: fmt( I.pick_at_least, f.min ) } ) : null
 			] ) );
 		}
 		if ( f.help ) { box.appendChild( el( 'p', { 'class': 'oc-onb-f__help', text: f.help } ) ); }
@@ -1210,6 +1213,21 @@
 
 				var tools = el( 'div', { 'class': 'oc-onb-row__tools' } );
 
+				function inside() {
+					edit( function ( n ) {
+						at( n, mine ).subs.push( { name: '', subs: [] } );
+
+						return n;
+					} );
+				}
+
+				// The third level is offered as a sign rather than a line of
+				// words: a link under every shelf turned the list into a
+				// wall of invitations.
+				if ( 1 === deep ) {
+					tools.appendChild( tool( '+', I.menu_add_sub2, inside ) );
+				}
+
 				tools.appendChild( tool( '↑', I.row_up, function () { move( mine, -1 ); }, 0 === i ) );
 				tools.appendChild( tool( '↓', I.row_down, function () { move( mine, 1 ); }, i === kids.length - 1 ) );
 				tools.appendChild( tool( 'bin', I.menu_drop, function () {
@@ -1224,23 +1242,19 @@
 				line.appendChild( head );
 
 				// Three levels is where a menu stops being a menu.
-				if ( deep < 2 ) {
+				if ( 0 === deep || ( 1 === deep && ( row.subs || [] ).length ) ) {
 					var subs = el( 'div', { 'class': 'oc-onb-menu__subs' } );
 
 					branch( subs, row.subs || [], mine );
 
-					subs.appendChild( el( 'button', {
-						type: 'button',
-						'class': 'oc-onb-link oc-onb-menu__add',
-						text: deep ? I.menu_add_sub2 : I.menu_add_sub,
-						onclick: function () {
-							edit( function ( n ) {
-								at( n, mine ).subs.push( { name: '', subs: [] } );
-
-								return n;
-							} );
-						}
-					} ) );
+					if ( 0 === deep ) {
+						subs.appendChild( el( 'button', {
+							type: 'button',
+							'class': 'oc-onb-link oc-onb-menu__add',
+							text: I.menu_add_sub,
+							onclick: inside
+						} ) );
+					}
 
 					line.appendChild( subs );
 				}
@@ -1397,12 +1411,6 @@
 			lab.appendChild( el( 'span', { text: row.name } ) );
 			wrap.appendChild( lab );
 		} );
-
-		// How many are wanted is part of the question, so it is written
-		// where the answer is given rather than only when it is refused.
-		if ( f.min ) {
-			wrap.appendChild( el( 'p', { 'class': 'oc-onb-checks__n', text: fmt( I.pick_at_least, f.min ) } ) );
-		}
 
 		return wrap;
 	}

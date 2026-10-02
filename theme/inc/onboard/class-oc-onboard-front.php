@@ -189,7 +189,7 @@ final class Front {
 				'menu_add'        => __( 'Add a department', 'oc-theme' ),
 				'menu_add_sub'    => __( 'Something inside it', 'oc-theme' ),
 				'menu_sub2'       => __( 'And inside that — Leather, Fabric', 'oc-theme' ),
-				'menu_add_sub2'   => __( 'Something inside this one', 'oc-theme' ),
+				'menu_add_sub2'   => __( 'Add one inside this', 'oc-theme' ),
 				'menu_drop'       => __( 'Take it out', 'oc-theme' ),
 				'menu_none'       => __( 'No departments yet. Add the first one and the menu above fills in.', 'oc-theme' ),
 				'brands_first'    => __( 'No brands listed yet — go back and write them, one per line.', 'oc-theme' ),
