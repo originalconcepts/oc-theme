@@ -84,6 +84,7 @@ final class Onboard {
 				'opened'     => 0,        // First time the link was opened.
 				'activity'   => 0,        // Last change to the draft.
 				'step'       => '',       // Last screen the customer was on.
+				'far'        => '',       // Furthest screen they ever opened.
 				'reminders'  => array(),  // r1 | r2 | g => unix.
 				'submitted'  => 0,
 				'applied'    => 0,
@@ -170,6 +171,7 @@ final class Onboard {
 		if ( $fresh ) {
 			$state['activity']  = 0;
 			$state['step']      = '';
+			$state['far']       = '';
 			$state['submitted'] = 0;
 			$state['applied']   = 0;
 			$state['report']    = array();
@@ -318,6 +320,17 @@ final class Onboard {
 
 		if ( '' !== $step ) {
 			$state['step'] = $step;
+
+			// How far they have been is not the same as where they are: a
+			// customer who walks back to an early screen has still seen
+			// everything up to here, and the menu says so.
+			$order = Schema::screen_order();
+			$here  = array_search( $step, $order, true );
+			$was   = array_search( (string) ( $state['far'] ?? '' ), $order, true );
+
+			if ( false !== $here && ( false === $was || $here > $was ) ) {
+				$state['far'] = $step;
+			}
 		}
 
 		self::save_state( $state );

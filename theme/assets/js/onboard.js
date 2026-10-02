@@ -71,29 +71,22 @@
 	// The gates are not questions, so they are not counted as steps.
 	var asked = screens.filter( function ( s ) { return ! s.gate; } );
 
+	// How far the customer has ever walked, kept across sittings by the
+	// site itself. Only screens they actually opened count: a field that
+	// happens to hold a value is not a screen anybody visited.
+	screens.forEach( function ( s, i ) {
+		if ( s.id === C.far ) { far = i; }
+	} );
+
 	/**
 	 * The furthest screen the questionnaire has been taken to. Steps up to
-	 * there can be reopened; nothing past it can be jumped to. A sitting
-	 * that resumes an older one counts the screens that already hold
-	 * answers, so going back does not wall off work already done.
+	 * there are finished and can be reopened; nothing past it can be
+	 * jumped to.
 	 *
 	 * @return {number} The screen index.
 	 */
 	function reach() {
-		var top = Math.max( far, at );
-
-		screens.forEach( function ( s, i ) {
-			if ( i <= top ) { return; }
-
-			for ( var k = 0; k < s.fields.length; k++ ) {
-				if ( Object.prototype.hasOwnProperty.call( values, s.fields[ k ] ) ) {
-					top = i;
-					return;
-				}
-			}
-		} );
-
-		return top;
+		return Math.max( far, at );
 	}
 
 	/* ------------------------------------------------------------ values */

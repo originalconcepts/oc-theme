@@ -90,6 +90,7 @@ final class Front {
 			'token'      => $token,
 			'status'     => (string) $state['status'],
 			'step'       => (string) $state['step'],
+			'far'        => (string) ( $state['far'] ?? '' ),
 			'schema'     => Schema::for_js(),
 			'values'     => Draft::values(),
 			'days'       => $days,

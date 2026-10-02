@@ -1340,6 +1340,30 @@ final class Schema {
 	}
 
 	/**
+	 * The screens in the order they are asked, by id. Used to tell which of
+	 * two screens the customer reached later.
+	 *
+	 * @return array<int,string>
+	 */
+	public static function screen_order(): array {
+		static $order = null;
+
+		if ( null !== $order ) {
+			return $order;
+		}
+
+		$order = array();
+
+		foreach ( self::steps() as $step ) {
+			foreach ( $step['screens'] as $screen ) {
+				$order[] = (string) $screen['id'];
+			}
+		}
+
+		return $order;
+	}
+
+	/**
 	 * Is there such a field?
 	 *
 	 * @param string $id Field id.
