@@ -856,6 +856,17 @@ final class Apply {
 	}
 
 	/**
+	 * How many products a page of the catalogue holds. Never asked: a
+	 * number that does not divide by the width of the row leaves a hole in
+	 * the last line of it, so it is twelve rows of whatever they chose.
+	 */
+	private function apply_per_page(): void {
+		$cols = max( 2, min( 5, (int) $this->v['cat_cols'] ) );
+
+		$this->write_mod( 'cat_per_page', 'oc_catalog_per_page', $cols * 12 );
+	}
+
+	/**
 	 * The shop's own aisles: a product category for every department they
 	 * named, one for every thing inside it, and a menu that walks them in
 	 * the order they gave. Nothing is renamed and nothing is removed — a
@@ -875,40 +886,48 @@ final class Apply {
 			return;
 		}
 
-		$tree = array();
 		$made = 0;
+		$tree = $this->cat_level( $rows, 0, $made );
+
+		$this->row( 'site_menu', __( 'Product categories', 'oc-theme' ), 'applied', sprintf( /* translators: %d: how many categories were opened. */ _n( '%d category opened.', '%d categories opened.', $made, 'oc-theme' ), $made ) );
+
+		$this->nav_menu( $tree );
+	}
+
+	/**
+	 * One level of the menu as categories, and whatever hangs under it.
+	 *
+	 * @param array<int,mixed> $rows  The level.
+	 * @param int              $under The category it all sits under, or 0.
+	 * @param int              $made  Counter, raised for every new category.
+	 * @return array<int,array{id:int,subs:array<int,mixed>}>
+	 */
+	private function cat_level( array $rows, int $under, int &$made ): array {
+		$out = array();
 
 		foreach ( $rows as $row ) {
+			$row  = is_scalar( $row ) ? array( 'name' => (string) $row ) : (array) $row;
 			$name = trim( (string) ( $row['name'] ?? '' ) );
 
 			if ( '' === $name ) {
 				continue;
 			}
 
-			$top = $this->term( $name, 'product_cat', 0, $made );
+			$id = $this->term( $name, 'product_cat', $under, $made );
 
-			if ( ! $top ) {
+			if ( ! $id ) {
 				continue;
 			}
 
-			$kids = array();
+			$this->cats[ $name ] = $id;
 
-			foreach ( (array) ( $row['subs'] ?? array() ) as $sub ) {
-				$sub = trim( (string) $sub );
-				$kid = '' === $sub ? 0 : $this->term( $sub, 'product_cat', $top, $made );
-
-				if ( $kid ) {
-					$kids[] = $kid;
-				}
-			}
-
-			$tree[]              = array( $top, $kids );
-			$this->cats[ $name ] = $top;
+			$out[] = array(
+				'id'   => $id,
+				'subs' => $this->cat_level( (array) ( $row['subs'] ?? array() ), $id, $made ),
+			);
 		}
 
-		$this->row( 'site_menu', __( 'Product categories', 'oc-theme' ), 'applied', sprintf( /* translators: %d: how many categories were opened. */ _n( '%d category opened.', '%d categories opened.', $made, 'oc-theme' ), $made ) );
-
-		$this->nav_menu( $tree );
+		return $out;
 	}
 
 	/**
@@ -945,7 +964,7 @@ final class Apply {
 	 * The menu at the top of every page. A menu the shop already has with
 	 * items in it is left alone: it is somebody's work.
 	 *
-	 * @param array<int,array{0:int,1:array<int,int>}> $tree Term id, then the ids under it.
+	 * @param array<int,array{id:int,subs:array<int,mixed>}> $tree The categories, as they hang.
 	 */
 	private function nav_menu( array $tree ): void {
 		$name = __( 'Main menu', 'oc-theme' );
@@ -988,17 +1007,7 @@ final class Apply {
 		$n     = 0;
 		$named = array();
 
-		foreach ( $tree as $pair ) {
-			$top = $this->menu_item( (int) $menu->term_id, $pair[0], 0, ++$n );
-
-			$named[] = $this->term_name( $pair[0] );
-
-			foreach ( $pair[1] as $kid ) {
-				$this->menu_item( (int) $menu->term_id, $kid, $top, ++$n );
-
-				$named[] = $this->term_name( $kid );
-			}
-		}
+		$this->menu_level( (int) $menu->term_id, $tree, 0, $n, $named );
 
 		$this->remember( 'menu:items', implode( ' | ', $named ) );
 
@@ -1009,6 +1018,27 @@ final class Apply {
 		set_theme_mod( 'nav_menu_locations', $spots );
 
 		$this->row( 'site_menu', __( 'The menu', 'oc-theme' ), 'applied', sprintf( /* translators: %d: how many links the menu holds. */ _n( '%d link in the menu.', '%d links in the menu.', $n, 'oc-theme' ), $n ) );
+	}
+
+	/**
+	 * One level of links, and the level under it.
+	 *
+	 * @param int                $menu  The menu.
+	 * @param array<int,mixed>   $tree  The categories at this level.
+	 * @param int                $under The link they hang under, or 0.
+	 * @param int                $n     Running position.
+	 * @param array<int,string>  $named The names, in order, for the fingerprint.
+	 */
+	private function menu_level( int $menu, array $tree, int $under, int &$n, array &$named ): void {
+		foreach ( $tree as $one ) {
+			$link = $this->menu_item( $menu, (int) $one['id'], $under, ++$n );
+
+			$named[] = $this->term_name( (int) $one['id'] );
+
+			if ( $link && ! empty( $one['subs'] ) ) {
+				$this->menu_level( $menu, (array) $one['subs'], $link, $n, $named );
+			}
+		}
 	}
 
 	/**
@@ -1211,6 +1241,7 @@ final class Apply {
 			return array(
 				'type'    => 'brands',
 				'heading' => $title,
+				'picks'   => $this->chosen_brands(),
 			);
 		}
 
@@ -1264,10 +1295,21 @@ final class Apply {
 	 */
 	private function hero_section(): array {
 		$brand = trim( (string) $this->v['brand_name'] );
-		$shot  = $this->v['home_banner'];
-		$film  = 'video' === $this->v['banner_media'] ? trim( (string) $this->v['banner_video'] ) : '';
-		$shop  = function_exists( 'wc_get_page_permalink' ) ? (string) wc_get_page_permalink( 'shop' ) : home_url( '/' );
-		$where = 'url' === $this->v['banner_link'] ? trim( (string) $this->v['banner_url'] ) : '';
+		$shot  = is_array( $this->v['home_banner'] ) ? $this->v['home_banner'] : null;
+		$reel  = 'video' === $this->v['banner_media'] && is_array( $this->v['banner_video'] ) ? $this->v['banner_video'] : null;
+		$film  = '';
+
+		// They were told that a picture is welcome where the film is not
+		// ready yet, so the field may hold either, and the page uses it
+		// for what it actually is.
+		if ( $reel ) {
+			if ( 0 === strpos( (string) ( $reel['type'] ?? '' ), 'video/' ) ) {
+				$film = (string) $reel['url'];
+			} else {
+				$shot = $reel;
+			}
+		}
+
 		$head  = trim( (string) $this->v['banner_title'] );
 		$press = trim( (string) $this->v['banner_cta'] );
 
@@ -1275,17 +1317,68 @@ final class Apply {
 			'type'   => 'hero',
 			'slides' => array(
 				array(
-					'img'     => '' === $film && is_array( $shot ) ? (int) $shot['id'] : 0,
+					'img'     => $shot ? (int) $shot['id'] : 0,
 					'vid'     => $film,
 					'heading' => '' !== $head ? $head : $brand,
+					'text'    => trim( (string) $this->v['banner_sub'] ),
 					'cta'     => '' !== $press ? $press : __( 'To the shop', 'oc-theme' ),
-					'url'     => '' !== $where ? $where : $shop,
+					'url'     => $this->banner_url(),
 				),
 			),
 			'pos'    => 'cc',
 			'h'      => 560,
 			'hm'     => 440,
 		);
+	}
+
+	/**
+	 * Where the banner's button leads: the shop, one of the departments the
+	 * menu opened, or an address they gave.
+	 */
+	private function banner_url(): string {
+		$shop = function_exists( 'wc_get_page_permalink' ) ? (string) wc_get_page_permalink( 'shop' ) : home_url( '/' );
+		$kind = (string) $this->v['banner_link'];
+
+		if ( 'url' === $kind ) {
+			$where = trim( (string) $this->v['banner_url'] );
+
+			return '' !== $where ? $where : $shop;
+		}
+
+		if ( 'cat' === $kind ) {
+			$id = $this->cat_id( (string) $this->v['banner_cat'] );
+			$to = $id ? get_term_link( $id, 'product_cat' ) : '';
+
+			return is_string( $to ) && '' !== $to ? $to : $shop;
+		}
+
+		return $shop;
+	}
+
+	/**
+	 * The category of that name, whether this pass opened it or it was
+	 * already there.
+	 *
+	 * @param string $name What they called it.
+	 */
+	private function cat_id( string $name ): int {
+		$name = trim( $name );
+
+		if ( '' === $name ) {
+			return 0;
+		}
+
+		if ( ! empty( $this->cats[ $name ] ) ) {
+			return (int) $this->cats[ $name ];
+		}
+
+		if ( ! taxonomy_exists( 'product_cat' ) ) {
+			return 0;
+		}
+
+		$found = get_term_by( 'name', $name, 'product_cat' );
+
+		return $found instanceof \WP_Term ? (int) $found->term_id : 0;
 	}
 
 	/**
@@ -1308,6 +1401,7 @@ final class Apply {
 		$said  = trim( (string) ( $mine['heading'] ?? '' ) );
 		$words = trim( (string) ( $mine['text'] ?? '' ) );
 		$shot  = is_array( $mine['media'] ?? null ) ? (int) ( $mine['media']['id'] ?? 0 ) : 0;
+		$twin  = is_array( $mine['media2'] ?? null ) ? (int) ( $mine['media2']['id'] ?? 0 ) : 0;
 
 		if ( '' !== $said ) {
 			$head = $said;
@@ -1334,6 +1428,7 @@ final class Apply {
 			'heading' => $head,
 			'text'    => $text,
 			'img1'    => $shot,
+			'img2'    => $twin,
 			'side'    => 'end',
 		);
 	}
@@ -1350,16 +1445,35 @@ final class Apply {
 		$out  = array();
 
 		foreach ( $want as $name ) {
-			$name = trim( (string) $name );
-			$id   = $this->cats[ $name ] ?? 0;
-
-			if ( ! $id && taxonomy_exists( 'product_cat' ) ) {
-				$found = get_term_by( 'name', $name, 'product_cat' );
-				$id    = $found instanceof \WP_Term ? (int) $found->term_id : 0;
-			}
+			$id = $this->cat_id( (string) $name );
 
 			if ( $id ) {
-				$out[] = (int) $id;
+				$out[] = $id;
+			}
+		}
+
+		return $out;
+	}
+
+	/**
+	 * The brands they picked for the home page, as term ids.
+	 *
+	 * @return array<int,int>
+	 */
+	private function chosen_brands(): array {
+		$want = is_array( $this->v['home_brands'] ) ? $this->v['home_brands'] : array();
+		$tax  = method_exists( '\OC\Theme\Search', 'brand_taxonomy' ) ? \OC\Theme\Search::brand_taxonomy() : '';
+		$out  = array();
+
+		if ( '' === $tax ) {
+			return $out;
+		}
+
+		foreach ( $want as $name ) {
+			$found = get_term_by( 'name', trim( (string) $name ), $tax );
+
+			if ( $found instanceof \WP_Term ) {
+				$out[] = (int) $found->term_id;
 			}
 		}
 

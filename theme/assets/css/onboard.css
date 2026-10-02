@@ -326,12 +326,19 @@ button.oc-onb-dots__d:hover { background: var(--onb-ink-2); }
 
 .oc-onb__card--wide { max-width: 1180px; }
 .oc-onb-split { display: grid; grid-template-columns: minmax(300px, 420px) 1fr; gap: 28px; align-items: start; }
-.oc-onb-split__p { position: sticky; top: 76px; }
+
+/* Both columns stick. Whichever is taller has no room to move inside its
+   own share of the row, so nothing happens to it; the shorter one rides
+   along instead of scrolling off the top while the other is still going. */
+.oc-onb-split__p,
+.oc-onb-split__q { position: sticky; top: 76px; align-self: start; }
 .oc-onb-side__t { margin: 0 0 8px; font-size: 13px; color: var(--onb-ink-2); }
 
 @media (max-width: 900px) {
 	.oc-onb-split { grid-template-columns: 1fr; }
-	.oc-onb-split__p { position: static; order: -1; }
+	.oc-onb-split__p,
+	.oc-onb-split__q { position: static; }
+	.oc-onb-split__p { order: -1; }
 }
 
 /* ------------------------------------------------- one example at a time */
@@ -445,9 +452,12 @@ button.oc-onb-dots__d:hover { background: var(--onb-ink-2); }
 .wf-card__t { margin-top: 5px; color: #6c7382; }
 .wf-card__x { font-size: 10px; color: #a9aebb; }
 .wf-card__p { font-weight: 700; color: #5b6271; }
-.wf-tag { position: absolute; top: 5px; font-size: 9px; padding: 2px 6px; border-radius: 2px; color: #fff; }
-.wf-tag--sale { inset-inline-start: 5px; background: #c0392b; }
-.wf-tag--new { inset-inline-end: 5px; background: #1a7f37; }
+/* The shop pins both labels to the physical left, one under the other.
+   The sketch does the same, so nobody is surprised later. */
+.wf-tags { position: absolute; top: 5px; left: 5px; display: grid; gap: 3px; justify-items: start; } /* guard-ok: the side the theme itself pins them to */
+.wf-tag { font-size: 9px; padding: 2px 6px; border-radius: 2px; color: #fff; }
+.wf-tag--sale { background: #c0392b; }
+.wf-tag--new { background: #1a7f37; }
 
 .wf-grid--cats .wf-cat__img { aspect-ratio: 1 / 1; border-radius: 50%; }
 .wf-cat__t { text-align: center; margin-top: 5px; color: #6c7382; }
@@ -473,9 +483,11 @@ button.oc-onb-dots__d:hover { background: var(--onb-ink-2); }
 .wf-chero--split .wf-chero__img { aspect-ratio: 4 / 3; }
 .wf-chero__words { display: grid; gap: 6px; padding: 0 14px; }
 
-.wf-withside { display: grid; grid-template-columns: 150px 1fr; gap: 12px; }
+.wf-withside { display: grid; grid-template-columns: 150px 1fr; gap: 12px; margin-top: 14px; }
 .wf-filters--side { display: grid; gap: 7px; padding: 10px 12px; background: #f7f8fa; border-radius: 4px; margin-inline-start: 12px; }
-.wf-filters--top { display: flex; gap: 8px; padding: 8px 12px; margin: 0 12px 10px; background: #f7f8fa; border-radius: 4px; }
+/* The strip of filters needs air on both sides of it: as much above, where
+   the page it follows ends, as below, where the products begin. */
+.wf-filters--top { display: flex; gap: 8px; padding: 8px 12px; margin: 14px 12px 10px; background: #f7f8fa; border-radius: 4px; }
 .wf-filters--top .wf-ln { height: 9px; border-radius: 4px; }
 .wf-shelf { display: grid; gap: 10px; }
 .wf-withside .wf-shelf { padding-inline-end: 12px; }
@@ -771,9 +783,10 @@ button.oc-onb-steps__i { cursor: pointer; }
 .oc-onb-menu__row { border: 1px solid var(--onb-line); border-radius: 10px; padding: 10px 12px; background: #fff; }
 .oc-onb-menu__head { display: flex; align-items: center; gap: 8px; }
 .oc-onb-menu__name { flex: 1; font-weight: 600; }
-.oc-onb-menu__subs { display: grid; gap: 6px; margin: 8px 0 0; padding-inline-start: 18px; border-inline-start: 2px solid var(--onb-line); }
-.oc-onb-menu__sub { display: flex; align-items: center; gap: 6px; }
+.oc-onb-menu__subs { display: grid; gap: 6px; margin: 8px 0 0; padding-inline-start: 16px; border-inline-start: 2px solid var(--onb-line); }
+.oc-onb-menu__row--1, .oc-onb-menu__row--2 { border: 0; padding: 0; background: none; }
 .oc-onb-menu__subin { flex: 1; font-size: 13px; padding-block: 7px; }
+.oc-onb-menu__row--2 .oc-onb-in { font-size: 12px; padding-block: 6px; }
 .oc-onb-menu__add { justify-self: start; font-size: 12px; }
 
 /* The drawings a reason-to-buy can wear. */
@@ -794,14 +807,46 @@ button.oc-onb-steps__i { cursor: pointer; }
 .oc-onb-icons__b:hover { border-color: var(--onb-primary); color: var(--onb-primary); }
 .oc-onb-icons__b.is-on { border-color: var(--onb-primary); color: var(--onb-primary); box-shadow: 0 0 0 1px var(--onb-primary); }
 
-/* The header, standing the way they asked it to. */
+/* The header, standing the way they asked it to. Each arrangement has to
+   look unlike the others at a glance, or the question is unanswerable. */
 .wf-bar__i { font-size: 10px; color: #6c7382; white-space: nowrap; }
 .wf-bar--over .wf-bar__i { color: rgba(255, 255, 255, .85); }
-.wf-bar--menu-center .wf-bar__nav { position: absolute; inset-inline: 0; justify-content: center; pointer-events: none; }
+
+/* Beside the logo: the words hug it and the icons are pushed away. */
+.wf-bar--classic .wf-bar__nav { margin-inline-end: auto; }
+
+/* In the middle: the words sit across the whole strip, centred, whatever
+   the logo and the icons are doing on either side of them. */
 .wf-bar--menu-center { position: relative; }
+.wf-bar--menu-center .wf-bar__nav { position: absolute; inset-inline: 0; justify-content: center; pointer-events: none; }
+
+/* Logo in the middle, menu under it. */
 .wf-bar--centred { flex-direction: column; gap: 6px; }
 .wf-bar--centred .wf-bar__one { display: flex; align-items: center; justify-content: center; gap: 8px; position: relative; inline-size: 100%; }
-.wf-bar--centred .wf-bar__icons { position: absolute; inset-inline-end: 0; }
+.wf-bar--centred .wf-bar__icons { position: absolute; inset-inline-start: 0; }
 .wf-bar--centred .wf-bar__nav { justify-content: center; }
-.wf-bar--split .wf-bar__nav { flex: 1; }
-.wf-bar__bur { display: grid; gap: 3px; }
+
+/* A logo in the middle only stays in the middle if the two sides are given
+   the same room — otherwise it drifts towards the shorter one. */
+.wf-bar--split,
+.wf-bar--burger { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; }
+.wf-bar--split .wf-bar__nav { justify-content: start; }
+.wf-bar--split .wf-bar__icons,
+.wf-bar--burger .wf-bar__icons { justify-content: end; }
+.wf-bar--split .wf-bar__logo,
+.wf-bar--burger .wf-bar__logo { text-align: center; }
+.wf-bar__bur { display: grid; gap: 3px; justify-items: start; }
+
+/* A list of names to tick, with what is inside them set in a step. */
+.oc-onb-checks--deep { display: grid; gap: 4px; }
+.oc-onb-check--d1 { margin-inline-start: 18px; }
+.oc-onb-check--d2 { margin-inline-start: 36px; font-size: 12px; }
+.oc-onb-checks__n { margin: 8px 0 0; font-size: 12px; color: var(--onb-ink-2); }
+
+/* A sketch of one band stands on its own, with no page around it. */
+.wf--bare { padding-block: 10px; }
+
+/* Their own words, in the sketch, where grey lines used to stand. */
+.wf-ed__p { margin: 0; font-size: 11px; line-height: 1.6; color: #6c7382; white-space: pre-line; }
+.wf-trust__t { font-size: 10px; color: #8a90a0; margin-top: 2px; }
+.wf-trust__ic img { inline-size: 26px; block-size: 26px; object-fit: contain; }

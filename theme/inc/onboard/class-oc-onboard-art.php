@@ -380,44 +380,47 @@ final class Art {
 
 		// Drawn on their own, at the size of a header: the logo, the words
 		// of the menu, and the icons that always sit on the far side.
+		// Drawn the way a Hebrew shop reads: the logo on the right, the
+		// icons on the far left. A customer judging these from a mirror
+		// image would be choosing a header they will never see.
+		$icons_left = self::box( 14, 38, 12, 12, 'base', 6 )
+			. self::box( 32, 38, 12, 12, 'base', 6 )
+			. self::box( 50, 38, 12, 12, 'base', 6 );
+
+		// Beside the logo: the words start where the logo ends.
 		$art['head_classic'] = self::head(
-			self::box( 14, 36, 44, 16, 'brand', 2 )
-			. self::row( 72, 42, 112, 5, 4, 'base' )
-			. self::box( 258, 38, 12, 12, 'base', 6 )
-			. self::box( 276, 38, 12, 12, 'base', 6 )
-			. self::box( 294, 38, 12, 12, 'base', 6 )
+			self::box( 262, 36, 44, 16, 'brand', 2 )
+			. self::row( 142, 42, 112, 5, 4, 'base' )
+			. $icons_left
 		);
 
+		// The same logo, but the words sit in the middle of the strip.
 		$art['head_mcenter'] = self::head(
-			self::box( 14, 36, 44, 16, 'brand', 2 )
+			self::box( 262, 36, 44, 16, 'brand', 2 )
 			. self::row( 104, 42, 112, 5, 4, 'base' )
-			. self::box( 258, 38, 12, 12, 'base', 6 )
-			. self::box( 276, 38, 12, 12, 'base', 6 )
-			. self::box( 294, 38, 12, 12, 'base', 6 )
+			. $icons_left
 		);
 
 		$art['head_centred'] = self::head(
-			self::box( 138, 18, 44, 16, 'brand', 2 )
-			. self::row( 90, 58, 140, 5, 4, 'base' )
-			. self::box( 276, 20, 12, 12, 'base', 6 )
-			. self::box( 294, 20, 12, 12, 'base', 6 )
+			self::box( 138, 16, 44, 16, 'brand', 2 )
+			. self::row( 90, 56, 140, 5, 4, 'base' )
+			. self::box( 14, 18, 12, 12, 'base', 6 )
+			. self::box( 32, 18, 12, 12, 'base', 6 )
 		);
 
 		$art['head_split'] = self::head(
-			self::row( 14, 42, 104, 5, 3, 'base' )
+			self::row( 202, 42, 104, 5, 3, 'base' )
 			. self::box( 138, 36, 44, 16, 'brand', 2 )
-			. self::box( 258, 38, 12, 12, 'base', 6 )
-			. self::box( 276, 38, 12, 12, 'base', 6 )
-			. self::box( 294, 38, 12, 12, 'base', 6 )
+			. $icons_left
 		);
 
 		$art['head_burger'] = self::head(
-			self::box( 14, 36, 18, 3, 'base', 1.5 )
-			. self::box( 14, 42, 18, 3, 'base', 1.5 )
-			. self::box( 14, 48, 18, 3, 'base', 1.5 )
+			self::box( 288, 36, 18, 3, 'base', 1.5 )
+			. self::box( 288, 42, 18, 3, 'base', 1.5 )
+			. self::box( 288, 48, 18, 3, 'base', 1.5 )
 			. self::box( 138, 36, 44, 16, 'brand', 2 )
-			. self::box( 276, 38, 12, 12, 'base', 6 )
-			. self::box( 294, 38, 12, 12, 'base', 6 )
+			. self::box( 14, 38, 12, 12, 'base', 6 )
+			. self::box( 32, 38, 12, 12, 'base', 6 )
 		);
 
 		return $art;

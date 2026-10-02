@@ -119,6 +119,23 @@
 		return F[ id ] ? F[ id ]['default'] : '';
 	}
 
+	/**
+	 * Does this row of a repeater want its twin picture? Only the content
+	 * areas that stand on two do: the arrangement says which.
+	 *
+	 * @param {string} id  Field id.
+	 * @param {number} row Which block of questions.
+	 */
+	function twinWanted( id, row ) {
+		var kind = ( F[ id ] || {} ).grow;
+
+		if ( ! kind ) { return false; }
+
+		var mine = ( val( 'home_layout' ) || [] ).filter( function ( r ) { return r && r.on && r.type === kind; } )[ row ];
+
+		return !! mine && [ 'duo', 'canvas' ].indexOf( String( mine.variant || '' ) ) !== -1;
+	}
+
 	function isEmpty( v ) {
 		if ( v === null || v === undefined || v === false ) { return true; }
 		if ( Array.isArray( v ) ) { return v.length === 0; }
@@ -190,6 +207,12 @@
 			if ( ! f || ! f.required || ! shown( id ) ) { return; }
 			var v = val( id );
 			if ( f.type === 'consent' ) { if ( v !== true ) { out.push( id ); } return; }
+			if ( f.type === 'from_menu' || f.type === 'from_brands' ) {
+				var picked = Array.isArray( v ) ? v.length : ( String( v || '' ).trim() ? 1 : 0 );
+
+				if ( picked < ( f.min || 1 ) ) { out.push( id ); }
+				return;
+			}
 			if ( f.type === 'menu' ) {
 				if ( ! ( v || [] ).some( function ( r ) { return r && String( r.name || '' ).trim(); } ) ) { out.push( id ); }
 				return;
@@ -204,6 +227,7 @@
 				if ( isEmpty( v ) ) { out.push( id ); return; }
 				for ( var r = 0; r < v.length; r++ ) {
 					for ( var k in f.fields ) {
+						if ( f.fields[ k ].twin && ! twinWanted( id, r ) ) { continue; }
 						if ( f.fields[ k ].required && isEmpty( v[ r ][ k ] ) ) { out.push( id ); return; }
 					}
 				}
@@ -517,7 +541,7 @@
 			lab.appendChild( inp );
 			lab.appendChild( el( 'span', { 'class': 'oc-onb-choice__t', text: f.options[ k ] } ) );
 
-			if ( on && ! answered ) {
+			if ( on && ! answered && ! f.quiet ) {
 				lab.appendChild( el( 'span', { 'class': 'oc-onb-choice__tag', text: I.suggested } ) );
 			}
 
@@ -792,13 +816,23 @@
 			if ( next ) { save( next ); }
 		}
 
-		function move( from, to ) {
-			edit( function ( r ) {
-				if ( to < 0 || to >= r.length ) { return null; }
+		/**
+		 * A row swaps places with its neighbour at its own level.
+		 *
+		 * @param {Array}  path Which row.
+		 * @param {number} by   -1 up, 1 down.
+		 */
+		function move( path, by ) {
+			edit( function ( n ) {
+				var list_of = parentOf( n, path );
+				var from    = path[ path.length - 1 ];
+				var to      = from + by;
 
-				r.splice( to, 0, r.splice( from, 1 )[0] );
+				if ( to < 0 || to >= list_of.length ) { return null; }
 
-				return r;
+				list_of.splice( to, 0, list_of.splice( from, 1 )[0] );
+
+				return n;
 			} );
 		}
 
@@ -1052,12 +1086,23 @@
 		var list = el( 'div', { 'class': 'oc-onb-menu__rows' } );
 		var held = [];   // The typing in this menu that has not landed yet.
 
-		function rows() {
-			var v = val( id );
+		/**
+		 * The menu as a tree of its own, copied so nothing edits the answer
+		 * in place.
+		 *
+		 * @param {Array} v Whatever is saved at this level.
+		 */
+		function tree( v ) {
+			return ( Array.isArray( v ) ? v : [] ).map( function ( r ) {
+				// An older answer kept this level as plain names.
+				if ( 'string' === typeof r ) { return { name: r, subs: [] }; }
 
-			return Array.isArray( v ) ? v.map( function ( r ) {
-				return { name: r.name || '', subs: ( r.subs || [] ).slice() };
-			} ) : [];
+				return { name: ( r && r.name ) || '', subs: tree( r && r.subs ) };
+			} );
+		}
+
+		function rows() {
+			return tree( val( id ) );
 		}
 
 		function save( next ) {
@@ -1135,23 +1180,41 @@
 				list.appendChild( el( 'p', { 'class': 'oc-onb-lay__none', text: I.menu_none } ) );
 			}
 
-			r.forEach( function ( row, i ) {
-				var line = el( 'div', { 'class': 'oc-onb-menu__row' } );
-				var head = el( 'div', { 'class': 'oc-onb-menu__head' } );
+			branch( list, r, [] );
+		}
 
-				head.appendChild( words( row.name, I.menu_name, function ( v ) {
+		/**
+		 * One level of the menu, drawn, and the level under it drawn inside
+		 * it. A path of indexes says which row of which level is being
+		 * written to, so the three levels need no code of their own.
+		 *
+		 * @param {HTMLElement} into Where the rows go.
+		 * @param {Array}       kids The rows at this level.
+		 * @param {Array}       path Which row of which level we are inside.
+		 */
+		function branch( into, kids, path ) {
+			var deep = path.length;
+
+			kids.forEach( function ( row, i ) {
+				var mine = path.concat( [ i ] );
+				var line = el( 'div', { 'class': 'oc-onb-menu__row oc-onb-menu__row--' + deep } );
+				var head = el( 'div', { 'class': 'oc-onb-menu__head' } );
+				var hint = [ I.menu_name, I.menu_sub, I.menu_sub2 ][ deep ] || I.menu_sub;
+
+				head.appendChild( words( row.name, hint, function ( v ) {
 					var n = rows();
-					n[ i ].name = v;
+
+					at( n, mine ).name = v;
 					set( id, n );
-				}, 'oc-onb-menu__name' ) );
+				}, deep ? 'oc-onb-menu__subin' : 'oc-onb-menu__name' ) );
 
 				var tools = el( 'div', { 'class': 'oc-onb-row__tools' } );
 
-				tools.appendChild( tool( '↑', I.row_up, function () { move( i, i - 1 ); }, 0 === i ) );
-				tools.appendChild( tool( '↓', I.row_down, function () { move( i, i + 1 ); }, i === r.length - 1 ) );
+				tools.appendChild( tool( '↑', I.row_up, function () { move( mine, -1 ); }, 0 === i ) );
+				tools.appendChild( tool( '↓', I.row_down, function () { move( mine, 1 ); }, i === kids.length - 1 ) );
 				tools.appendChild( tool( 'bin', I.menu_drop, function () {
 					edit( function ( n ) {
-						n.splice( i, 1 );
+						parentOf( n, mine ).splice( i, 1 );
 
 						return n;
 					} );
@@ -1160,44 +1223,54 @@
 				head.appendChild( tools );
 				line.appendChild( head );
 
-				var subs = el( 'div', { 'class': 'oc-onb-menu__subs' } );
+				// Three levels is where a menu stops being a menu.
+				if ( deep < 2 ) {
+					var subs = el( 'div', { 'class': 'oc-onb-menu__subs' } );
 
-				( row.subs || [] ).forEach( function ( sub, si ) {
-					var one = el( 'div', { 'class': 'oc-onb-menu__sub' } );
+					branch( subs, row.subs || [], mine );
 
-					one.appendChild( words( sub, I.menu_sub, function ( v ) {
-						var n = rows();
-						n[ i ].subs[ si ] = v;
-						set( id, n );
-					}, 'oc-onb-menu__subin' ) );
+					subs.appendChild( el( 'button', {
+						type: 'button',
+						'class': 'oc-onb-link oc-onb-menu__add',
+						text: deep ? I.menu_add_sub2 : I.menu_add_sub,
+						onclick: function () {
+							edit( function ( n ) {
+								at( n, mine ).subs.push( { name: '', subs: [] } );
 
-					one.appendChild( tool( 'bin', I.menu_drop, function () {
-						edit( function ( n ) {
-							n[ i ].subs.splice( si, 1 );
-
-							return n;
-						} );
+								return n;
+							} );
+						}
 					} ) );
 
-					subs.appendChild( one );
-				} );
+					line.appendChild( subs );
+				}
 
-				subs.appendChild( el( 'button', {
-					type: 'button',
-					'class': 'oc-onb-link oc-onb-menu__add',
-					text: I.menu_add_sub,
-					onclick: function () {
-						edit( function ( n ) {
-							n[ i ].subs.push( '' );
-
-							return n;
-						} );
-					}
-				} ) );
-
-				line.appendChild( subs );
-				list.appendChild( line );
+				into.appendChild( line );
 			} );
+		}
+
+		/**
+		 * The row a path points at.
+		 *
+		 * @param {Array} n    The whole tree.
+		 * @param {Array} path Indexes, outermost first.
+		 */
+		function at( n, path ) {
+			var row = { subs: n };
+
+			path.forEach( function ( i ) { row = row.subs[ i ]; } );
+
+			return row;
+		}
+
+		/**
+		 * The list a path's row stands in.
+		 *
+		 * @param {Array} n    The whole tree.
+		 * @param {Array} path Indexes, outermost first.
+		 */
+		function parentOf( n, path ) {
+			return at( n, path.slice( 0, -1 ) ).subs;
 		}
 
 		/**
@@ -1258,28 +1331,78 @@
 	 * @param {Object} f  Field.
 	 */
 	function render_from_menu( id, f ) {
-		var names = menuNames();
-		var cur   = ( val( id ) || [] ).filter( function ( n ) { return names.indexOf( n ) !== -1; } );
-		var wrap  = el( 'div', { 'class': 'oc-onb-checks' } );
+		var all = f.deep ? menuAll() : menuNames().map( function ( n ) { return { name: n, deep: 0 }; } );
 
-		if ( ! names.length ) {
+		if ( ! all.length ) {
 			return el( 'p', { 'class': 'oc-onb-lay__none', text: I.menu_first } );
 		}
 
-		names.forEach( function ( name ) {
-			var lab = el( 'label', { 'class': 'oc-onb-check' + ( cur.indexOf( name ) !== -1 ? ' is-on' : '' ) } );
-			var inp = el( 'input', { type: 'checkbox', value: name } );
+		return ticks( id, f, all );
+	}
 
-			inp.checked = cur.indexOf( name ) !== -1;
+	/**
+	 * The brands they listed, as things to tick. The list is theirs, typed
+	 * a screen or two ago, so there is nothing to look up.
+	 *
+	 * @param {string} id Field id.
+	 * @param {Object} f  Field.
+	 */
+	function render_from_brands( id, f ) {
+		var all = String( val( 'brand_list' ) || '' ).split( /\r?\n/ ).map( function ( n ) {
+			return { name: n.trim(), deep: 0 };
+		} ).filter( function ( r ) { return r.name; } );
+
+		if ( ! all.length ) {
+			return el( 'p', { 'class': 'oc-onb-lay__none', text: I.brands_first } );
+		}
+
+		return ticks( id, f, all );
+	}
+
+	/**
+	 * A list of names to tick — or, where only one may be chosen, to pick.
+	 *
+	 * @param {string} id  Field id.
+	 * @param {Object} f   Field.
+	 * @param {Array}  all { name, deep } in order.
+	 */
+	function ticks( id, f, all ) {
+		var here = val( id );
+		var cur  = ( f.one ? [ String( here || '' ) ] : ( here || [] ) ).filter( function ( n ) {
+			return all.some( function ( r ) { return r.name === n; } );
+		} );
+		var wrap = el( 'div', { 'class': 'oc-onb-checks' + ( f.deep ? ' oc-onb-checks--deep' : '' ) } );
+
+		all.forEach( function ( row ) {
+			var on  = cur.indexOf( row.name ) !== -1;
+			var lab = el( 'label', { 'class': 'oc-onb-check oc-onb-check--d' + row.deep + ( on ? ' is-on' : '' ) } );
+			var inp = el( 'input', f.one
+				? { type: 'radio', name: 'f_' + id, value: row.name }
+				: { type: 'checkbox', value: row.name } );
+
+			inp.checked = on;
 			inp.addEventListener( 'change', function () {
+				if ( f.one ) {
+					wrap.querySelectorAll( '.oc-onb-check' ).forEach( function ( c ) { c.classList.remove( 'is-on' ); } );
+					lab.classList.add( 'is-on' );
+					set( id, inp.value );
+					return;
+				}
+
 				lab.classList.toggle( 'is-on', inp.checked );
 				set( id, Array.prototype.slice.call( wrap.querySelectorAll( 'input:checked' ) ).map( function ( i ) { return i.value; } ) );
 			} );
 
 			lab.appendChild( inp );
-			lab.appendChild( el( 'span', { text: name } ) );
+			lab.appendChild( el( 'span', { text: row.name } ) );
 			wrap.appendChild( lab );
 		} );
+
+		// How many are wanted is part of the question, so it is written
+		// where the answer is given rather than only when it is refused.
+		if ( f.min ) {
+			wrap.appendChild( el( 'p', { 'class': 'oc-onb-checks__n', text: fmt( I.pick_at_least, f.min ) } ) );
+		}
 
 		return wrap;
 	}
@@ -1291,8 +1414,33 @@
 	 */
 	function menuNames() {
 		return ( val( 'site_menu' ) || [] ).map( function ( r ) {
-			return String( ( r && r.name ) || '' ).trim();
+			return String( ( 'string' === typeof r ? r : ( r && r.name ) ) || '' ).trim();
 		} ).filter( Boolean );
+	}
+
+	/**
+	 * Every name in the menu, each with how deep it sits, in the order they
+	 * are read. A screen that asks which of them to show needs the shelves
+	 * as well as the departments.
+	 *
+	 * @return {Array} { name, deep } in order.
+	 */
+	function menuAll() {
+		var out = [];
+
+		( function walk( list, deep ) {
+			( Array.isArray( list ) ? list : [] ).forEach( function ( r ) {
+				var name = String( ( 'string' === typeof r ? r : ( r && r.name ) ) || '' ).trim();
+
+				if ( ! name ) { return; }
+
+				out.push( { name: name, deep: deep } );
+
+				if ( r && r.subs ) { walk( r.subs, deep + 1 ); }
+			} );
+		}( val( 'site_menu' ), 0 ) );
+
+		return out;
 	}
 
 	/**
@@ -1492,7 +1640,7 @@
 	function render_file( id, f, o ) {
 		o = o || {};
 		var wrap = el( 'div', { 'class': 'oc-onb-file' } );
-		var accept = f.accept === 'image' ? 'image/jpeg,image/png,image/webp,image/gif,image/svg+xml' : '.pdf,.docx,.doc,.txt';
+		var accept = { image: 'image/jpeg,image/png,image/webp,image/gif,image/svg+xml', video: 'video/mp4,video/webm,image/jpeg,image/png,image/webp' }[ f.accept ] || '.pdf,.docx,.doc,.txt';
 		var dom = 'ocfile_' + ( ++fileSeq );
 		var inp = el( 'input', { type: 'file', accept: accept, 'class': 'oc-onb-file__in', id: dom } );
 		var btn = el( 'label', { 'class': 'oc-onb-btn oc-onb-btn--ghost', 'for': dom, text: I.choose_file } );
@@ -1503,7 +1651,7 @@
 			var v = o.sub ? mine : val( id );
 			show.innerHTML = '';
 			if ( ! v || ! v.url ) { return; }
-			if ( f.accept === 'image' ) { show.appendChild( el( 'img', { src: v.thumb || v.url, alt: '' } ) ); }
+			if ( ( 'image' === f.accept || 'video' === f.accept ) && ( v.thumb || /\.(jpe?g|png|webp|gif|svg)$/i.test( String( v.url || '' ) ) ) ) { show.appendChild( el( 'img', { src: v.thumb || v.url, alt: '' } ) ); }
 			show.appendChild( el( 'span', { text: v.name || '' } ) );
 			show.appendChild( el( 'button', { type: 'button', 'class': 'oc-onb-link', text: I.remove, onclick: function () {
 				if ( o.sub ) { mine = null; o.onChange( null ); } else { set( id, null ); }
@@ -1630,11 +1778,14 @@
 				var card = el( 'div', { 'class': 'oc-onb-rep__row' } );
 				card.appendChild( el( 'div', { 'class': 'oc-onb-rep__h' }, [
 					el( 'b', { text: ( f.row || '' ) + ' ' + ( ri + 1 ) } ),
-					rows.length > 1 ? el( 'button', { type: 'button', 'class': 'oc-onb-link', text: I.remove, onclick: function () { rows.splice( ri, 1 ); commit(); paint(); } } ) : null
+					! f.fixed && rows.length > 1 ? el( 'button', { type: 'button', 'class': 'oc-onb-link', text: I.remove, onclick: function () { rows.splice( ri, 1 ); commit(); paint(); } } ) : null
 				] ) );
 				Object.keys( f.fields ).forEach( function ( k ) {
 					var sf = f.fields[ k ];
 					var inner;
+
+					// A picture nobody will see is not a question.
+					if ( sf.twin && ! twinWanted( id, ri ) ) { return; }
 					var onChange = function ( v ) { r[ k ] = v; commit(); };
 					if ( sf.type === 'textarea' ) { inner = render_textarea( id + '.' + k, sf, r[ k ] || '', onChange ); }
 					else if ( sf.type === 'checks' ) { inner = render_checks( id + '.' + k, sf, r[ k ] || [], onChange ); }
@@ -1649,7 +1800,9 @@
 				} );
 				wrap.appendChild( card );
 			} );
-			if ( rows.length < ( f.max || 20 ) ) {
+			// A list whose length is decided elsewhere does not grow here:
+			// the arranging screen is where parts are added and removed.
+			if ( ! f.fixed && rows.length < ( f.max || 20 ) ) {
 				wrap.appendChild( el( 'button', { type: 'button', 'class': 'oc-onb-btn oc-onb-btn--ghost', text: f.add || '+', onclick: function () { rows.push( {} ); commit(); paint(); } } ) );
 			}
 		}
@@ -1671,6 +1824,7 @@
 			case 'layout':   inner = render_layout( id, f ); break;
 			case 'menu':     inner = render_menu( id, f ); break;
 			case 'from_menu': inner = render_from_menu( id, f ); break;
+			case 'from_brands': inner = render_from_brands( id, f ); break;
 			case 'checks':   inner = render_checks( id, f ); break;
 			case 'consent':  inner = render_consent( id, f ); break;
 			case 'file':     inner = render_file( id, f ); break;
@@ -1743,16 +1897,25 @@
 	 *
 	 * @param {number} n Which one, so the stand-in names differ.
 	 */
-	function wCard( n ) {
+	function wCard( n, tags ) {
 		var kids = [];
 		var art  = wImg( 'wf-card__img' );
 
-		if ( 'none' !== String( val( 'card_sale' ) ) ) {
-			art.appendChild( el( 'span', { 'class': 'wf-tag wf-tag--sale', text: 'text' === String( val( 'card_sale' ) ) ? I.wf_sale : '20%-' } ) );
-		}
+		// The labels stand where the shop really puts them — left, one under
+		// the other — and on one card only: a shelf where every product
+		// shouts is not what the question is about.
+		if ( tags ) {
+			var flags = w( 'wf-tags' );
 
-		if ( 'yes' === String( val( 'card_new' ) ) ) {
-			art.appendChild( el( 'span', { 'class': 'wf-tag wf-tag--new', text: I.wf_new } ) );
+			if ( 'none' !== String( val( 'card_sale' ) ) ) {
+				flags.appendChild( el( 'span', { 'class': 'wf-tag wf-tag--sale', text: 'text' === String( val( 'card_sale' ) ) ? I.wf_sale : '20%-' } ) );
+			}
+
+			if ( 'yes' === String( val( 'card_new' ) ) ) {
+				flags.appendChild( el( 'span', { 'class': 'wf-tag wf-tag--new', text: I.wf_new } ) );
+			}
+
+			if ( flags.childNodes.length ) { art.appendChild( flags ); }
 		}
 
 		kids.push( art );
@@ -1773,12 +1936,12 @@
 	 * @param {number} cols How many across.
 	 * @param {number} from The first stand-in number.
 	 */
-	function wRow( cols, from ) {
+	function wRow( cols, from, tags ) {
 		var n   = onPhone() ? Math.min( 2, cols ) : cols;
 		var row = el( 'div', { 'class': 'wf-grid', style: '--wf-cols:' + n } );
 
 		for ( var i = 0; i < n; i++ ) {
-			row.appendChild( wCard( from + i ) );
+			row.appendChild( wCard( from + i, tags && 0 === i ) );
 		}
 
 		return row;
@@ -1896,17 +2059,20 @@
 	 * @param {string} kind truck | returns | shield.
 	 * @param {string} text What it says.
 	 */
-	function wTrust( kind, text ) {
-		var art = {
-			truck: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h10v9H3V6Zm11 3h3.6l2.4 3v3h-6V9Z" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/></svg>',
-			returns: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M20 3v5h-5" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>',
-			shield: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 4.2-2.9 7.8-7 9-4.1-1.2-7-4.8-7-9V6l7-3Z" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="m8.6 11.8 2.3 2.3 4.3-4.3" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>'
-		}[ kind ];
+	function wTrust( kind, text, under, own ) {
+		var icons = C.icons || {};
+		var mark  = el( 'span', { 'class': 'wf-trust__ic', 'aria-hidden': 'true' } );
+
+		if ( own ) {
+			mark.appendChild( el( 'img', { src: own, alt: '' } ) );
+		} else {
+			mark.innerHTML = icons[ kind ] ? icons[ kind ].svg : ( icons.truck ? icons.truck.svg : '' );
+		}
 
 		return w( 'wf-trust__i', [
-			el( 'span', { 'class': 'wf-trust__ic', html: art, 'aria-hidden': 'true' } ),
+			mark,
 			el( 'div', { 'class': 'wf-trust__h', text: text } ),
-			wLine( '70%' )
+			under === undefined ? wLine( '70%' ) : ( under ? el( 'div', { 'class': 'wf-trust__t', text: under } ) : wLine( '70%' ) )
 		] );
 	}
 
@@ -2016,6 +2182,16 @@
 		}
 
 		if ( 'icons' === row.type ) {
+			var mine = ( val( 'home_icons' ) || [] ).filter( function ( r ) {
+				return r && ( String( r.heading || '' ).trim() || String( r.text || '' ).trim() );
+			} );
+
+			if ( mine.length ) {
+				return w( 'wf-trust', mine.map( function ( r ) {
+					return wTrust( String( r.icon || 'truck' ), String( r.heading || '' ).trim(), String( r.text || '' ).trim(), r.img && r.img.url ? r.img.url : '' );
+				} ) );
+			}
+
 			return w( 'wf-trust', [
 				wTrust( 'truck', I.wf_trust1 ),
 				wTrust( 'returns', I.wf_trust2 ),
@@ -2047,7 +2223,7 @@
 			] ) ] );
 		}
 
-		return wContent( String( row.variant || 'words' ) );
+		return wContent( String( row.variant || 'words' ), nth );
 	}
 
 	/**
@@ -2055,41 +2231,50 @@
 	 *
 	 * @param {string} kind words | video | two | sticky.
 	 */
-	function wContent( kind ) {
+	function wContent( kind, nth ) {
+		// What they wrote for this area, and the pictures they gave it.
+		var said  = ( val( 'home_content' ) || [] )[ ( nth || 1 ) - 1 ] || {};
+		var brow  = String( said.eyebrow || '' ).trim() || I.wf_eyebrow;
+		var head  = String( said.heading || '' ).trim() || I.wf_about_h;
+		var story = String( said.text || '' ).trim();
+		var pic1  = said.media && said.media.url ? said.media.url : '';
+		var pic2  = said.media2 && said.media2.url ? said.media2.url : '';
+
+		function body() {
+			if ( ! story ) { return [ wLine( '100%' ), wLine( '92%' ), wLine( '64%' ) ]; }
+
+			return [ el( 'p', { 'class': 'wf-ed__p', text: story } ) ];
+		}
+
 		if ( 'words' === kind ) {
 			return w( 'wf-words', [
-				wHeading( I.wf_about_h ),
-				w( 'wf-words__p', [ wLine( '100%' ), wLine( '94%' ), wLine( '60%' ) ] )
+				wHeading( head ),
+				w( 'wf-words__p', story ? [ el( 'p', { 'class': 'wf-ed__p', text: story } ) ] : [ wLine( '100%' ), wLine( '94%' ), wLine( '60%' ) ] )
 			] );
 		}
 
-		var words = w( 'wf-ed__t', [
-			el( 'div', { 'class': 'wf-ed__eye', text: I.wf_eyebrow } ),
-			wHeading( I.wf_about_h ),
-			wLine( '100%' ),
-			wLine( '92%' ),
-			wLine( '64%' ),
-			w( 'wf-ed__btn', null, I.wf_read )
-		] );
+		var words = w( 'wf-ed__t', [ el( 'div', { 'class': 'wf-ed__eye', text: brow } ), wHeading( head ) ]
+			.concat( body() )
+			.concat( [ w( 'wf-ed__btn', null, I.wf_read ) ] ) );
 		var media = w( 'wf-ed__m' );
 
 		if ( 'duo' === kind ) {
-			media.appendChild( wImg( 'wf-ed__tall' ) );
-			media.appendChild( wImg( 'wf-ed__tall wf-ed__tall--step' ) );
+			media.appendChild( wImg( 'wf-ed__tall', pic1 ) );
+			media.appendChild( wImg( 'wf-ed__tall wf-ed__tall--step', pic2 ) );
 		} else if ( 'canvas' === kind ) {
-			var wide = wImg( 'wf-ed__wide' );
+			var wide = wImg( 'wf-ed__wide', pic1 );
 
-			wide.appendChild( wImg( 'wf-ed__guest' ) );
+			wide.appendChild( wImg( 'wf-ed__guest', pic2 ) );
 			media.appendChild( wide );
 		} else if ( 'overlap' === kind ) {
-			var tall = wImg( 'wf-ed__tall wf-ed__tall--off' );
+			var tall = wImg( 'wf-ed__tall wf-ed__tall--off', pic1 );
 			var film = wImg( 'wf-ed__film' );
 
 			film.appendChild( el( 'span', { 'class': 'wf-play', 'aria-hidden': 'true', text: '▶' } ) );
 			tall.appendChild( film );
 			media.appendChild( tall );
 		} else {
-			var one = wImg( 'wf-ed__tall wf-ed__tall--one' );
+			var one = wImg( 'wf-ed__tall wf-ed__tall--one', pic1 );
 
 			one.appendChild( el( 'span', { 'class': 'wf-play', 'aria-hidden': 'true', text: '▶' } ) );
 			media.appendChild( one );
@@ -2160,8 +2345,8 @@
 			mid.push( w( 'wf-chero', [ wImg( 'wf-chero__img' ), w( 'wf-chero__in', [ el( 'div', { 'class': 'wf-hero__h', text: I.wf_cat_name } ) ] ) ] ) );
 		} else if ( 'split' === kind ) {
 			mid.push( w( 'wf-chero wf-chero--split', [
-				wImg( 'wf-chero__img' ),
-				w( 'wf-chero__words', [ el( 'div', { 'class': 'wf-h', text: I.wf_cat_name } ), wLine( '90%' ), wLine( '60%' ) ] )
+				w( 'wf-chero__words', [ el( 'div', { 'class': 'wf-h', text: I.wf_cat_name } ), wLine( '90%' ), wLine( '60%' ) ] ),
+				wImg( 'wf-chero__img' )
 			] ) );
 		} else {
 			mid.push( wHeading( I.wf_cat_name ) );
@@ -2171,7 +2356,7 @@
 			mid.push( w( 'wf-filters wf-filters--top', [ wLine( '60px' ), wLine( '48px' ), wLine( '70px' ), wLine( '40px' ) ] ) );
 		}
 
-		var shelf = w( 'wf-shelf', [ wRow( cols, 1 ), wRow( cols, cols + 1 ) ] );
+		var shelf = w( 'wf-shelf', [ wRow( cols, 1, true ), wRow( cols, cols + 1 ) ] );
 
 		if ( side ) {
 			mid.push( w( 'wf-withside', [
@@ -2201,7 +2386,30 @@
 		if ( 'banner' === kind ) { return previewBanner(); }
 		if ( 'category' === kind ) { return previewCategory(); }
 		if ( 'top' === kind ) { return previewTop(); }
+		if ( 0 === String( kind ).indexOf( 'band:' ) ) { return previewBands( String( kind ).slice( 5 ).split( ',' ) ); }
 		return previewHome( String( val( 'home_recipe' ) ) );
+	}
+
+	/**
+	 * Only the parts of the page this screen is about. A question about the
+	 * reasons to buy is not helped by the whole page around them.
+	 *
+	 * @param {Array} kinds The block types to draw.
+	 */
+	function previewBands( kinds ) {
+		var rows = val( 'home_layout' );
+		var nth  = {};
+		var mid  = [];
+
+		( Array.isArray( rows ) ? rows : [] ).forEach( function ( row ) {
+			nth[ row.type ] = ( nth[ row.type ] || 0 ) + 1;
+
+			if ( ! row.on || kinds.indexOf( row.type ) === -1 ) { return; }
+
+			mid.push( wBand( row, nth[ row.type ] ) );
+		} );
+
+		return w( 'wf wf--bare', mid.length ? mid : [ w( 'wf-band', [ wHeading( I.wf_nothing ) ] ) ] );
 	}
 
 	/**
@@ -2539,7 +2747,8 @@
 			case 'branch_access': return Object.keys( v ).map( function ( k ) { return ( v[ k ] || [] ).length; } ).join( ' · ' );
 			case 'layout':   return v.filter( function ( r ) { return r.on; } ).length + ' ' + I.rows_kept;
 			case 'menu':     return v.map( function ( r ) { return r.name + ( r.subs && r.subs.length ? ' (' + r.subs.length + ')' : '' ); } ).join( ' · ' );
-			case 'from_menu': return v.join( ' · ' );
+			case 'from_menu':
+			case 'from_brands': return Array.isArray( v ) ? v.join( ' · ' ) : String( v );
 			default:         return String( v );
 		}
 	}

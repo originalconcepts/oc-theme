@@ -12213,3 +12213,63 @@ msgstr[1] "נפתחו %d מותגים."
 
 msgid "No file was uploaded, so the page was not written."
 msgstr "לא הועלה קובץ, ולכן העמוד לא נכתב."
+
+msgid "A line under the headline"
+msgstr "שורה מתחת לכותרת"
+
+msgid "Above the picture"
+msgstr "מעל התמונה"
+
+msgid "An mp4 file, up to 32MB. It plays without sound and repeats itself, so keep it short. No film ready yet? Put a picture here instead — a film can take its place at any time."
+msgstr "קובץ mp4, עד 32MB. הוא מתנגן בלי קול וחוזר על עצמו, אז כדאי שיהיה קצר. אין לכם וידאו כרגע? העלו כאן תמונה — תמיד אפשר להחליף אותה בוידאו בהמשך."
+
+msgid "And inside that — Leather, Fabric"
+msgstr "ומה בתוכה — עור, בד"
+
+msgid "And which brands"
+msgstr "ואילו מותגים"
+
+msgid "Choose at least %1$s."
+msgstr "יש לבחור לפחות %1$s."
+
+msgid "Departments and what is inside them — tick the ones worth the front row."
+msgstr "מחלקות ומה שבתוכן — סמנו את אלה ששוות את השורה הראשונה."
+
+msgid "No brands listed yet — go back and write them, one per line."
+msgstr "עדיין לא נרשמו מותגים — חזרו אחורה וכתבו אותם, שם בכל שורה."
+
+msgid "Something inside this one"
+msgstr "משהו בתוך זו"
+
+msgid "The film"
+msgstr "הוידאו"
+
+msgid "The new season, in the shop now"
+msgstr "העונה החדשה, כבר בחנות"
+
+msgid "The ones whose logos stand on the home page."
+msgstr "אלה שהלוגו שלהם יעמוד בעמוד הבית."
+
+msgid "The second picture"
+msgstr "התמונה השנייה"
+
+msgid "This part is not on the page"
+msgstr "האזור הזה לא נמצא בעמוד"
+
+msgid "To one of the departments"
+msgstr "לאחת המחלקות"
+
+msgid "Upload the best one you have today — the widest, 1920 pixels across or more. You can always change it later."
+msgstr "העלו את הטובה ביותר שיש לכם היום — הרחבה ביותר, 1920 פיקסלים לרוחב ומעלה. תמיד אפשר להחליף אותה בהמשך."
+
+msgid "What will be in the main banner?"
+msgstr "מה יהיה בבאנר הראשי?"
+
+msgid "Where does the menu stand over the banner?"
+msgstr "איפה עומד התפריט מעל הבאנר?"
+
+msgid "Which one"
+msgstr "איזו"
+
+msgid "Write something now — it is on the page from the first day, and it can be changed at any time."
+msgstr "כתבו משהו עכשיו — זה מה שיעמוד בעמוד מהיום הראשון, ותמיד אפשר לשנות."

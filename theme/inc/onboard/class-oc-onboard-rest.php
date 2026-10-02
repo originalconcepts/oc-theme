@@ -298,24 +298,42 @@ final class Rest {
 
 		$file = $files['file'];
 
-		if ( (int) ( $file['size'] ?? 0 ) > 8 * MB_IN_BYTES ) {
+		// A film is heavier than anything else a questionnaire asks for.
+		$cap = 'video' === $f['accept'] ? 32 : 8;
+
+		if ( (int) ( $file['size'] ?? 0 ) > $cap * MB_IN_BYTES ) {
 			return self::answer( array( 'error' => 'size' ), 413 );
 		}
 
-		$mimes = 'image' === $f['accept']
-			? array(
-				'jpg|jpeg' => 'image/jpeg',
-				'png'      => 'image/png',
-				'webp'     => 'image/webp',
-				'gif'      => 'image/gif',
-				'svg'      => 'image/svg+xml',
-			)
-			: array(
+		$images = array(
+			'jpg|jpeg' => 'image/jpeg',
+			'png'      => 'image/png',
+			'webp'     => 'image/webp',
+			'gif'      => 'image/gif',
+			'svg'      => 'image/svg+xml',
+		);
+
+		if ( 'image' === $f['accept'] ) {
+			$mimes = $images;
+		} elseif ( 'video' === $f['accept'] ) {
+			// A customer with no film yet is told to put a picture here, so
+			// the field takes both and the page uses whichever it was given.
+			$mimes = array_merge(
+				$images,
+				array(
+					'mp4'  => 'video/mp4',
+					'm4v'  => 'video/mp4',
+					'webm' => 'video/webm',
+				)
+			);
+		} else {
+			$mimes = array(
 				'pdf'  => 'application/pdf',
 				'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
 				'doc'  => 'application/msword',
 				'txt'  => 'text/plain',
 			);
+		}
 
 		require_once ABSPATH . 'wp-admin/includes/file.php';
 		require_once ABSPATH . 'wp-admin/includes/media.php';

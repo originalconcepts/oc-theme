@@ -696,23 +696,23 @@ final class Customizer {
 			array(
 				'classic'     => array(
 					'label' => __( 'Logo and menu together', 'oc-theme' ),
-					'svg'   => self::wf( '0 0 132 36', self::rect( 4, 12, 26, 12, 'ac', 2 ) . self::rect( 36, 15, 14, 5, 'ln' ) . self::rect( 54, 15, 14, 5, 'ln' ) . self::rect( 72, 15, 14, 5, 'ln' ) . self::rect( 112, 14, 7, 7, 'dt', 3.5 ) . self::rect( 122, 14, 7, 7, 'dt', 3.5 ) ),
+					'svg'   => self::wf( '0 0 132 36', self::rect( 4, 12, 26, 12, 'ac', 2 ) . self::rect( 36, 15, 14, 5, 'ln' ) . self::rect( 54, 15, 14, 5, 'ln' ) . self::rect( 72, 15, 14, 5, 'ln' ) . self::rect( 112, 14, 7, 7, 'dt', 3.5 ) . self::rect( 122, 14, 7, 7, 'dt', 3.5 ), true ),
 				),
 				'menu-center' => array(
 					'label' => __( 'Menu in the centre', 'oc-theme' ),
-					'svg'   => self::wf( '0 0 132 36', self::rect( 4, 12, 26, 12, 'ac', 2 ) . self::rect( 48, 15, 12, 5, 'ln' ) . self::rect( 64, 15, 12, 5, 'ln' ) . self::rect( 80, 15, 12, 5, 'ln' ) . self::rect( 112, 14, 7, 7, 'dt', 3.5 ) . self::rect( 122, 14, 7, 7, 'dt', 3.5 ) ),
+					'svg'   => self::wf( '0 0 132 36', self::rect( 4, 12, 26, 12, 'ac', 2 ) . self::rect( 48, 15, 12, 5, 'ln' ) . self::rect( 64, 15, 12, 5, 'ln' ) . self::rect( 80, 15, 12, 5, 'ln' ) . self::rect( 112, 14, 7, 7, 'dt', 3.5 ) . self::rect( 122, 14, 7, 7, 'dt', 3.5 ), true ),
 				),
 				'centred'     => array(
 					'label' => __( 'Logo above the menu', 'oc-theme' ),
-					'svg'   => self::wf( '0 0 132 36', self::rect( 53, 3, 26, 11, 'ac', 2 ) . self::rect( 36, 22, 14, 5, 'ln' ) . self::rect( 54, 22, 14, 5, 'ln' ) . self::rect( 72, 22, 14, 5, 'ln' ) . self::rect( 92, 22, 14, 5, 'ln' ) ),
+					'svg'   => self::wf( '0 0 132 36', self::rect( 53, 3, 26, 11, 'ac', 2 ) . self::rect( 36, 22, 14, 5, 'ln' ) . self::rect( 54, 22, 14, 5, 'ln' ) . self::rect( 72, 22, 14, 5, 'ln' ) . self::rect( 92, 22, 14, 5, 'ln' ), true ),
 				),
 				'split'       => array(
 					'label' => __( 'Menu, logo in the centre, icons', 'oc-theme' ),
-					'svg'   => self::wf( '0 0 132 36', self::rect( 4, 15, 12, 5, 'ln' ) . self::rect( 20, 15, 12, 5, 'ln' ) . self::rect( 36, 15, 12, 5, 'ln' ) . self::rect( 53, 12, 26, 12, 'ac', 2 ) . self::rect( 112, 14, 7, 7, 'dt', 3.5 ) . self::rect( 122, 14, 7, 7, 'dt', 3.5 ) ),
+					'svg'   => self::wf( '0 0 132 36', self::rect( 4, 15, 12, 5, 'ln' ) . self::rect( 20, 15, 12, 5, 'ln' ) . self::rect( 36, 15, 12, 5, 'ln' ) . self::rect( 53, 12, 26, 12, 'ac', 2 ) . self::rect( 112, 14, 7, 7, 'dt', 3.5 ) . self::rect( 122, 14, 7, 7, 'dt', 3.5 ), true ),
 				),
 				'burger'      => array(
 					'label' => __( 'Hamburger, logo in the centre', 'oc-theme' ),
-					'svg'   => self::wf( '0 0 132 36', self::rect( 5, 12, 12, 2.4, 'ln' ) . self::rect( 5, 17, 12, 2.4, 'ln' ) . self::rect( 5, 22, 12, 2.4, 'ln' ) . self::rect( 53, 12, 26, 12, 'ac', 2 ) . self::rect( 112, 14, 7, 7, 'dt', 3.5 ) . self::rect( 122, 14, 7, 7, 'dt', 3.5 ) ),
+					'svg'   => self::wf( '0 0 132 36', self::rect( 5, 12, 12, 2.4, 'ln' ) . self::rect( 5, 17, 12, 2.4, 'ln' ) . self::rect( 5, 22, 12, 2.4, 'ln' ) . self::rect( 53, 12, 26, 12, 'ac', 2 ) . self::rect( 112, 14, 7, 7, 'dt', 3.5 ) . self::rect( 122, 14, 7, 7, 'dt', 3.5 ), true ),
 				),
 			),
 			'classic',
@@ -727,11 +727,11 @@ final class Customizer {
 			array(
 				'plain'    => array(
 					'label' => __( 'Hamburger and logo together', 'oc-theme' ),
-					'svg'   => self::wf( '0 0 132 36', self::rect( 118, 12, 9, 2.2, 'ln' ) . self::rect( 118, 16.5, 9, 2.2, 'ln' ) . self::rect( 118, 21, 9, 2.2, 'ln' ) . self::rect( 88, 12, 24, 11, 'ac', 2 ) . self::rect( 6, 14, 7, 7, 'dt', 3.5 ) . self::rect( 16, 14, 7, 7, 'dt', 3.5 ) ),
+					'svg'   => self::wf( '0 0 132 36', self::rect( 118, 12, 9, 2.2, 'ln' ) . self::rect( 118, 16.5, 9, 2.2, 'ln' ) . self::rect( 118, 21, 9, 2.2, 'ln' ) . self::rect( 88, 12, 24, 11, 'ac', 2 ) . self::rect( 6, 14, 7, 7, 'dt', 3.5 ) . self::rect( 16, 14, 7, 7, 'dt', 3.5 ), true ),
 				),
 				'centered' => array(
 					'label' => __( 'Logo in the centre', 'oc-theme' ),
-					'svg'   => self::wf( '0 0 132 36', self::rect( 118, 12, 9, 2.2, 'ln' ) . self::rect( 118, 16.5, 9, 2.2, 'ln' ) . self::rect( 118, 21, 9, 2.2, 'ln' ) . self::rect( 105, 14, 7, 7, 'dt', 3.5 ) . self::rect( 54, 12, 24, 11, 'ac', 2 ) . self::rect( 6, 14, 7, 7, 'dt', 3.5 ) . self::rect( 16, 14, 7, 7, 'dt', 3.5 ) ),
+					'svg'   => self::wf( '0 0 132 36', self::rect( 118, 12, 9, 2.2, 'ln' ) . self::rect( 118, 16.5, 9, 2.2, 'ln' ) . self::rect( 118, 21, 9, 2.2, 'ln' ) . self::rect( 105, 14, 7, 7, 'dt', 3.5 ) . self::rect( 54, 12, 24, 11, 'ac', 2 ) . self::rect( 6, 14, 7, 7, 'dt', 3.5 ) . self::rect( 16, 14, 7, 7, 'dt', 3.5 ), true ),
 				),
 			),
 			'plain',
@@ -3889,7 +3889,15 @@ final class Customizer {
 	 * @param string $body    Shape markup.
 	 * @return string
 	 */
-	private static function wf( string $viewbox, string $body ): string {
+	private static function wf( string $viewbox, string $body, bool $sided = false ): string {
+		// A drawing of a layout has a side to it. On a right-to-left site
+		// the logo belongs on the right, so the picture is turned over
+		// rather than redrawn — the shapes are the same ones.
+		if ( $sided && is_rtl() ) {
+			$box  = explode( ' ', $viewbox );
+			$body = '<g transform="translate(' . ( (float) ( $box[2] ?? 0 ) ) . ' 0) scale(-1 1)">' . $body . '</g>';
+		}
+
 		return '<svg class="oc-wf" viewBox="' . $viewbox . '" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true">' . $body . '</svg>';
 	}
 
