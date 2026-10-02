@@ -1221,11 +1221,12 @@
 					} );
 				}
 
-				// The third level is offered as a sign rather than a line of
-				// words: a link under every shelf turned the list into a
-				// wall of invitations.
-				if ( 1 === deep ) {
-					tools.appendChild( tool( '+', I.menu_add_sub2, inside ) );
+				// Going deeper is offered as a sign rather than a line of
+				// words: a link under every row turned the list into a wall
+				// of invitations, and the deeper ones read as if they
+				// belonged to whatever row they happened to sit beneath.
+				if ( deep < 2 ) {
+					tools.appendChild( tool( '+', deep ? I.menu_add_sub2 : I.menu_add_sub, inside ) );
 				}
 
 				tools.appendChild( tool( '↑', I.row_up, function () { move( mine, -1 ); }, 0 === i ) );
@@ -1242,20 +1243,10 @@
 				line.appendChild( head );
 
 				// Three levels is where a menu stops being a menu.
-				if ( 0 === deep || ( 1 === deep && ( row.subs || [] ).length ) ) {
+				if ( deep < 2 && ( row.subs || [] ).length ) {
 					var subs = el( 'div', { 'class': 'oc-onb-menu__subs' } );
 
-					branch( subs, row.subs || [], mine );
-
-					if ( 0 === deep ) {
-						subs.appendChild( el( 'button', {
-							type: 'button',
-							'class': 'oc-onb-link oc-onb-menu__add',
-							text: I.menu_add_sub,
-							onclick: inside
-						} ) );
-					}
-
+					branch( subs, row.subs, mine );
 					line.appendChild( subs );
 				}
 
@@ -1296,7 +1287,7 @@
 		 * @param {boolean}  off     Whether it is spent.
 		 */
 		function tool( glyph, label, onclick, off ) {
-			var b = el( 'button', { type: 'button', 'class': 'oc-onb-row__b', title: label, 'aria-label': label } );
+			var b = el( 'button', { type: 'button', 'class': 'oc-onb-row__b' + ( '+' === glyph ? ' oc-onb-row__b--plus' : '' ), title: label, 'aria-label': label } );
 
 			if ( 'bin' === glyph ) {
 				b.classList.add( 'oc-onb-row__b--bin' );

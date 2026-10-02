@@ -787,7 +787,8 @@ button.oc-onb-steps__i { cursor: pointer; }
 .oc-onb-menu__row--1, .oc-onb-menu__row--2 { border: 0; padding: 0; background: none; }
 .oc-onb-menu__subin { flex: 1; font-size: 13px; padding-block: 7px; }
 .oc-onb-menu__row--2 .oc-onb-in { font-size: 12px; padding-block: 6px; }
-.oc-onb-menu__add { justify-self: start; font-size: 12px; }
+/* The sign that opens a level is quieter than the one that clears a row. */
+.oc-onb-row__b--plus { font-size: 17px; line-height: 1; }
 
 /* The drawings a reason-to-buy can wear. */
 .oc-onb-icons { display: flex; flex-wrap: wrap; gap: 6px; }
