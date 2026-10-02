@@ -775,6 +775,11 @@
 		function draw() {
 			var r   = rows();
 			var nth = {};
+			var box = root.querySelector( '[data-field="' + id + '"]' );
+
+			// Once every row has what it needs, the red goes: an answered
+			// screen should not keep wearing the complaint.
+			if ( box && ! layoutGaps( f, r ).length ) { box.classList.remove( 'is-missing' ); }
 
 			// Nothing has been moved: there is nothing to put back, and an
 			// offer to undo work nobody did is only a worry.
