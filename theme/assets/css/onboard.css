@@ -718,7 +718,7 @@ button.oc-onb-dots__d:hover { background: var(--onb-ink-2); }
 
 /* a row of brand marks, questions and answers */
 .wf-logos { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; padding: 6px 14px 14px; align-items: center; }
-.wf-logo { height: 26px; border-radius: 3px; background: #eef0f4; }
+.wf-logo { height: 26px; border-radius: 3px; background: #eef0f4; display: grid; place-items: center; font-size: 10px; color: #8a90a0; padding-inline: 6px; }
 .wf-faq { padding: 0 14px 10px; display: grid; gap: 6px; }
 .wf-faq__q { display: flex; justify-content: space-between; gap: 10px; padding: 9px 12px; border: 1px solid #eef0f4; border-radius: 4px; color: #6c7382; }
 .wf-faq__q.is-open { border-color: #dfe2ea; font-weight: 600; }
@@ -823,7 +823,7 @@ button.oc-onb-steps__i { cursor: pointer; }
 /* Logo in the middle, menu under it. */
 .wf-bar--centred { flex-direction: column; gap: 6px; }
 .wf-bar--centred .wf-bar__one { display: flex; align-items: center; justify-content: center; gap: 8px; position: relative; inline-size: 100%; }
-.wf-bar--centred .wf-bar__icons { position: absolute; inset-inline-start: 0; }
+.wf-bar--centred .wf-bar__icons { position: absolute; inset-inline-end: 0; }
 .wf-bar--centred .wf-bar__nav { justify-content: center; }
 
 /* A logo in the middle only stays in the middle if the two sides are given

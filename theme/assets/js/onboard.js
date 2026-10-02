@@ -2043,8 +2043,11 @@
 	 * A strip of category tiles.
 	 */
 	function wCats() {
-		var names = ( I.wf_cats || [] ).slice( 0, onPhone() ? 2 : 4 );
-		var row   = el( 'div', { 'class': 'wf-grid wf-grid--cats', style: '--wf-cols:' + ( onPhone() ? 2 : 4 ) } );
+		// Whatever they ticked for the front page, by name; and while they
+		// have ticked nothing, our stand-ins.
+		var mine  = ( val( 'home_cats' ) || [] ).filter( Boolean );
+		var names = ( mine.length ? mine : ( I.wf_cats || [] ) ).slice( 0, onPhone() ? 2 : 4 );
+		var row   = el( 'div', { 'class': 'wf-grid wf-grid--cats', style: '--wf-cols:' + ( onPhone() ? 2 : Math.max( 2, names.length ) ) } );
 
 		names.forEach( function ( name ) {
 			row.appendChild( w( 'wf-cat', [ wImg( 'wf-cat__img' ), el( 'div', { 'class': 'wf-cat__t', text: name } ) ] ) );
@@ -2201,8 +2204,13 @@
 
 		if ( 'brands' === row.type ) {
 			var logos = el( 'div', { 'class': 'wf-logos' } );
+			var picks = ( val( 'home_brands' ) || [] ).filter( Boolean ).slice( 0, 6 );
 
-			for ( var b = 0; b < 5; b++ ) { logos.appendChild( w( 'wf-logo' ) ); }
+			if ( picks.length ) {
+				picks.forEach( function ( name ) { logos.appendChild( w( 'wf-logo', null, name ) ); } );
+			} else {
+				for ( var b = 0; b < 5; b++ ) { logos.appendChild( w( 'wf-logo' ) ); }
+			}
 
 			return w( 'wf-band', [ wHeading( title || I.wf_brands_h ), logos ] );
 		}
