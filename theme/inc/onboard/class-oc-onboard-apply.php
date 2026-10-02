@@ -968,11 +968,15 @@ final class Apply {
 		}
 
 		$have = wp_get_nav_menu_items( $menu->term_id );
-		$were = implode( ' | ', array_map( function ( $one ) { return $one->title; }, (array) $have ) );
+		$were = array();
+
+		foreach ( (array) $have as $one ) {
+			$were[] = (string) $one->title;
+		}
 
 		// The names in their order, not how many there are: somebody who
 		// renamed or reordered one link has still worked on this menu.
-		if ( ! empty( $have ) && $this->changed_by_hand( 'menu:items', $were ) ) {
+		if ( ! empty( $have ) && $this->changed_by_hand( 'menu:items', implode( ' | ', $were ) ) ) {
 			$this->row( 'site_menu', __( 'The menu', 'oc-theme' ), 'manual', __( 'The menu was edited by hand since the last apply; left as it is.', 'oc-theme' ) );
 			return;
 		}
