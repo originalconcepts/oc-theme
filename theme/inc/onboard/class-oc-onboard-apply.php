@@ -1023,11 +1023,11 @@ final class Apply {
 	/**
 	 * One level of links, and the level under it.
 	 *
-	 * @param int                $menu  The menu.
-	 * @param array<int,mixed>   $tree  The categories at this level.
-	 * @param int                $under The link they hang under, or 0.
-	 * @param int                $n     Running position.
-	 * @param array<int,string>  $named The names, in order, for the fingerprint.
+	 * @param int               $menu  The menu.
+	 * @param array<int,mixed>  $tree  The categories at this level.
+	 * @param int               $under The link they hang under, or 0.
+	 * @param int               $n     Running position.
+	 * @param array<int,string> $named The names, in order, for the fingerprint.
 	 */
 	private function menu_level( int $menu, array $tree, int $under, int &$n, array &$named ): void {
 		foreach ( $tree as $one ) {

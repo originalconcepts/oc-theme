@@ -1257,7 +1257,7 @@ final class Schema {
 					'required'    => true,
 				),
 			),
-			'default' => array(
+			'default'  => array(
 				array(
 					'icon'    => 'truck',
 					'heading' => '',
@@ -1274,8 +1274,8 @@ final class Schema {
 					'text'    => '',
 				),
 			),
-			'when'    => array( 'home_layout', 'has:icons' ),
-			'target'  => array( 'call', 'home' ),
+			'when'     => array( 'home_layout', 'has:icons' ),
+			'target'   => array( 'call', 'home' ),
 		);
 
 		$f['home_faq'] = array(

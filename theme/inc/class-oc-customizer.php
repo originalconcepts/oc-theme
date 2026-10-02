@@ -3887,6 +3887,7 @@ final class Customizer {
 	 *
 	 * @param string $viewbox ViewBox.
 	 * @param string $body    Shape markup.
+	 * @param bool   $sided   Whether the drawing has a side, and so turns over on a right-to-left site.
 	 * @return string
 	 */
 	private static function wf( string $viewbox, string $body, bool $sided = false ): string {
