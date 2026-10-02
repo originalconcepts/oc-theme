@@ -2025,15 +2025,22 @@
 	 * The banner, as the customer is filling it in.
 	 */
 	function wBanner( tall ) {
+		// A film in the picture's place is still a picture here: what the
+		// sketch can show of it is its first frame, and a grey box where it
+		// cannot.
 		var pic   = val( 'home_banner' );
-		var hero  = wImg( 'wf-hero' + ( tall ? ' wf-hero--tall' : '' ), pic && pic.url ? pic.url : '' );
+		var reel  = 'video' === String( val( 'banner_media' ) ) ? val( 'banner_video' ) : null;
+		var shot  = reel && reel.url && 0 !== String( reel.type || '' ).indexOf( 'video/' ) ? reel : pic;
+		var hero  = wImg( 'wf-hero' + ( tall ? ' wf-hero--tall' : '' ), shot && shot.url ? shot.url : '' );
 		var title = String( val( 'banner_title' ) || '' ).trim() || 'NEW COLLECTION';
+		var under = String( val( 'banner_sub' ) || '' ).trim();
 		var cta   = String( val( 'banner_cta' ) || '' ).trim() || 'SHOP NOW';
 
 		hero.appendChild( w( 'wf-hero__in', [
 			el( 'div', { 'class': 'wf-hero__h', text: title } ),
+			under ? el( 'div', { 'class': 'wf-hero__s', text: under } ) : null,
 			el( 'div', { 'class': 'wf-hero__b', text: cta } )
-		] ) );
+		].filter( Boolean ) ) );
 
 		return hero;
 	}

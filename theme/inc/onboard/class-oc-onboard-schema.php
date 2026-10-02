@@ -139,7 +139,7 @@ final class Schema {
 						'title'   => __( 'The main banner', 'oc-theme' ),
 						'intro'   => __( 'The big picture at the top of the home page: an offer, a launch, a new collection. First, where the menu stands over it.', 'oc-theme' ),
 						'preview' => 'banner',
-						'fields'  => array( 'home_header', 'banner_media', 'home_banner', 'banner_video', 'banner_title', 'banner_sub', 'banner_cta', 'banner_link', 'banner_cat', 'banner_url' ),
+						'fields'  => array( 'home_header', 'banner_media', 'home_banner', 'banner_video', 'banner_title', 'banner_sub', 'banner_cta', 'banner_link', 'banner_cat' ),
 					),
 					array(
 						'id'      => '3d',
@@ -1116,7 +1116,6 @@ final class Schema {
 			'options' => array(
 				'shop' => __( 'To the shop, all the products', 'oc-theme' ),
 				'cat'  => __( 'To one of the departments', 'oc-theme' ),
-				'url'  => __( 'To another page — I will give the address', 'oc-theme' ),
 			),
 			'default' => 'shop',
 			'target'  => array( 'call', 'home' ),
@@ -1129,16 +1128,6 @@ final class Schema {
 			'required' => true,
 			'when'     => array( 'banner_link', array( 'cat' ) ),
 			'target'   => array( 'call', 'home' ),
-		);
-
-		$f['banner_url'] = array(
-			'type'        => 'url',
-			'label'       => __( 'The address', 'oc-theme' ),
-			'placeholder' => 'https://',
-			'dir'         => 'ltr',
-			'required'    => true,
-			'when'        => array( 'banner_link', array( 'url' ) ),
-			'target'      => array( 'call', 'home' ),
 		);
 
 		/* ---- 3c: the menu over the banner ---- */

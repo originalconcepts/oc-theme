@@ -1332,18 +1332,12 @@ final class Apply {
 	}
 
 	/**
-	 * Where the banner's button leads: the shop, one of the departments the
-	 * menu opened, or an address they gave.
+	 * Where the banner's button leads: the shop, or one of the departments
+	 * the menu opened.
 	 */
 	private function banner_url(): string {
 		$shop = function_exists( 'wc_get_page_permalink' ) ? (string) wc_get_page_permalink( 'shop' ) : home_url( '/' );
 		$kind = (string) $this->v['banner_link'];
-
-		if ( 'url' === $kind ) {
-			$where = trim( (string) $this->v['banner_url'] );
-
-			return '' !== $where ? $where : $shop;
-		}
 
 		if ( 'cat' === $kind ) {
 			$id = $this->cat_id( (string) $this->v['banner_cat'] );
