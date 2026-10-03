@@ -2797,13 +2797,30 @@
 			: [];
 
 		var all = 'tab' === String( val( 'prod_short' ) ) ? tabs.concat( [ I.wf_tab_about ] ) : [ I.wf_tab_about ].concat( tabs );
-		var where = String( val( 'prod_tabs_pos' ) || 'below' );
-		var strip = [
-			w( 'wf-pp__tabs', all.map( function ( t, i ) {
-				return w( 'wf-pp__tab' + ( i ? '' : ' is-on' ), null, t );
-			} ) ),
-			w( 'wf-pp__body', [ wLine( '100%' ), wLine( '92%' ), wLine( '70%' ) ] )
-		];
+		var where = String( val( 'prod_tabs_pos' ) || 'side' );
+		var body  = w( 'wf-pp__body', [ wLine( '100%' ), wLine( '92%' ), wLine( '70%' ) ] );
+
+		// An accordion is the headings one under the other, the first of
+		// them open; tabs put the headings in a row instead.
+		var strip = 'tabs' === String( val( 'prod_tabs_style' ) )
+			? [
+				w( 'wf-pp__tabs', all.map( function ( t, i ) {
+					return w( 'wf-pp__tab' + ( i ? '' : ' is-on' ), null, t );
+				} ) ),
+				body
+			]
+			: [ w( 'wf-pp__acc', all.map( function ( t, i ) {
+				var one = w( 'wf-pp__accone' + ( i ? '' : ' is-on' ), [
+					w( 'wf-pp__acch', [
+						el( 'span', { text: t } ),
+						el( 'span', { 'class': 'wf-pp__accv', 'aria-hidden': 'true', text: i ? '\u2304' : '\u2303' } )
+					] )
+				] );
+
+				if ( ! i ) { one.appendChild( body ); }
+
+				return one;
+			} ) ) ];
 
 		// Beside the gallery they belong to the buying column; under the
 		// pictures they belong to the gallery; otherwise they run the whole
@@ -2844,7 +2861,7 @@
 		var who = w( 'wf-pp__cc__w', [
 			el( 'b', { text: said( 'contact_name' ) } ),
 			el( 'span', { text: said( 'contact_role' ) } ),
-			el( 'span', { 'class': 'wf-pp__cc__p', dir: 'ltr', text: said( 'contact_phone' ) } ),
+			el( 'span', { 'class': 'wf-pp__cc__p', text: said( 'contact_phone' ) } ),
 			w( 'wf-pp__cc__n', [
 				el( 'span', { 'class': 'wf-pp__dot', 'aria-hidden': 'true' } ),
 				el( 'span', { text: I.wf_now } )
@@ -2853,7 +2870,7 @@
 
 		card.appendChild( face );
 		card.appendChild( who );
-		card.appendChild( w( 'wf-pp__cc__b', null, 'phone' === String( val( 'contact_channel' ) ) ? I.wf_call : I.wf_whats ) );
+		card.appendChild( w( 'wf-pp__cc__b', null, I.wf_whats ) );
 
 		return card;
 	}

@@ -12842,3 +12842,15 @@ msgstr "איסוף מ%1$s"
 
 msgid "%1$s branches"
 msgstr "%1$s סניפים"
+
+msgid "Talk to a person"
+msgstr "דבר עם נציג"
+
+msgid "How do they open?"
+msgstr "איך הם נפתחים?"
+
+msgid "An accordion — each heading opens under itself"
+msgstr "אקורדיון — כל כותרת נפתחת מתחתיה"
+
+msgid "Tabs — the headings in a row, one open underneath"
+msgstr "טאבים — הכותרות בשורה, אחת פתוחה מתחת"

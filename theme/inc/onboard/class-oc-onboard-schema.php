@@ -217,7 +217,7 @@ final class Schema {
 						'intro'   => __( 'Where the decision is made. The pictures on one side, everything the buyer needs on the other. Every answer here changes the drawing beside you.', 'oc-theme' ),
 						'intro_m' => __( 'On a phone the two do not fit side by side, so the two buttons above switch between the questions and the drawing.', 'oc-theme' ),
 						'preview' => 'product',
-						'fields'  => array( 'prod_side', 'prod_gallery', 'prod_sku', 'prod_qty', 'prod_short', 'prod_stock', 'prod_ship_days', 'prod_lead_min', 'prod_lead_max', 'prod_price_btn', 'prod_icons_lay', 'prod_icons', 'prod_tabs_pos', 'prod_ship_tab', 'prod_ship_title', 'prod_ship_text', 'prod_tabs', 'prod_contact', 'contact_name', 'contact_role', 'contact_photo', 'contact_phone', 'contact_channel', 'contact_from', 'contact_to' ),
+						'fields'  => array( 'prod_side', 'prod_gallery', 'prod_sku', 'prod_short', 'prod_stock', 'prod_ship_days', 'prod_lead_min', 'prod_lead_max', 'prod_qty', 'prod_price_btn', 'prod_icons_lay', 'prod_icons', 'prod_tabs_style', 'prod_tabs_pos', 'prod_ship_tab', 'prod_ship_title', 'prod_ship_text', 'prod_tabs', 'prod_contact', 'contact_name', 'contact_role', 'contact_photo', 'contact_phone', 'contact_from', 'contact_to' ),
 					),
 				),
 			),
@@ -2079,17 +2079,29 @@ final class Schema {
 			'target'  => array( 'call', 'ship_tab' ),
 		);
 
+		$f['prod_tabs_style'] = array(
+			'type'    => 'choice',
+			'group'   => __( 'Tabs on the product page', 'oc-theme' ),
+			'label'   => __( 'How do they open?', 'oc-theme' ),
+			'options' => array(
+				'accordion' => __( 'An accordion — each heading opens under itself', 'oc-theme' ),
+				'tabs'      => __( 'Tabs — the headings in a row, one open underneath', 'oc-theme' ),
+			),
+			'default' => 'accordion',
+			'quiet'   => true,
+			'target'  => array( 'mod', 'oc_product_tabs' ),
+		);
+
 		$f['prod_tabs_pos'] = array(
 			'type'    => 'choice',
 			'group'   => __( 'Tabs on the product page', 'oc-theme' ),
 			'label'   => __( 'Where do they sit?', 'oc-theme' ),
-			'help'    => __( 'They open one at a time wherever they stand.', 'oc-theme' ),
 			'options' => array(
-				'below'   => __( 'Below the whole buying area, across the page', 'oc-theme' ),
 				'side'    => __( 'Under the buying reasons, in the buying column', 'oc-theme' ),
+				'below'   => __( 'Below the whole buying area, across the page', 'oc-theme' ),
 				'gallery' => __( 'Under the pictures', 'oc-theme' ),
 			),
-			'default' => 'below',
+			'default' => 'side',
 			'quiet'   => true,
 			'target'  => array( 'mod', 'oc_product_tabs_pos' ),
 		);
@@ -2151,7 +2163,7 @@ final class Schema {
 
 		$f['prod_contact'] = array(
 			'type'    => 'choice',
-			'group'   => __( 'Talking to a person', 'oc-theme' ),
+			'group'   => __( 'Talk to a person', 'oc-theme' ),
 			'label'   => __( 'Offer a way to reach someone from the product page?', 'oc-theme' ),
 			'help'    => __( 'A face, a name and a button that opens WhatsApp or dials. On goods people hesitate over it is often what settles it.', 'oc-theme' ),
 			'options' => $yesno,
@@ -2161,7 +2173,7 @@ final class Schema {
 
 		$f['contact_name'] = array(
 			'type'        => 'text',
-			'group'       => __( 'Talking to a person', 'oc-theme' ),
+			'group'       => __( 'Talk to a person', 'oc-theme' ),
 			'label'       => __( 'Who answers', 'oc-theme' ),
 			'placeholder' => __( 'Israel Israeli', 'oc-theme' ),
 			'required'    => true,
@@ -2171,7 +2183,7 @@ final class Schema {
 
 		$f['contact_role'] = array(
 			'type'        => 'text',
-			'group'       => __( 'Talking to a person', 'oc-theme' ),
+			'group'       => __( 'Talk to a person', 'oc-theme' ),
 			'label'       => __( 'And what they do', 'oc-theme' ),
 			'placeholder' => __( 'Sales adviser', 'oc-theme' ),
 			'when'        => array( 'prod_contact', array( 'yes' ) ),
@@ -2181,7 +2193,7 @@ final class Schema {
 		$f['contact_photo'] = array(
 			'type'   => 'file',
 			'accept' => 'image',
-			'group'  => __( 'Talking to a person', 'oc-theme' ),
+			'group'  => __( 'Talk to a person', 'oc-theme' ),
 			'label'  => __( 'A photograph of them', 'oc-theme' ),
 			'help'   => __( 'A real face does more here than a logo. It is cropped to a circle.', 'oc-theme' ),
 			'when'   => array( 'prod_contact', array( 'yes' ) ),
@@ -2190,7 +2202,7 @@ final class Schema {
 
 		$f['contact_phone'] = array(
 			'type'        => 'phone',
-			'group'       => __( 'Talking to a person', 'oc-theme' ),
+			'group'       => __( 'Talk to a person', 'oc-theme' ),
 			'label'       => __( 'The number', 'oc-theme' ),
 			'placeholder' => '0544-123456',
 			'required'    => true,
@@ -2198,25 +2210,12 @@ final class Schema {
 			'target'      => array( 'mod', 'oc_contact_phone' ),
 		);
 
-		$f['contact_channel'] = array(
-			'type'    => 'choice',
-			'group'   => __( 'Talking to a person', 'oc-theme' ),
-			'label'   => __( 'The button opens', 'oc-theme' ),
-			'options' => array(
-				'whatsapp' => __( 'WhatsApp', 'oc-theme' ),
-				'phone'    => __( 'A call', 'oc-theme' ),
-			),
-			'default' => 'whatsapp',
-			'when'    => array( 'prod_contact', array( 'yes' ) ),
-			'target'  => array( 'mod', 'oc_contact_channel' ),
-		);
-
 		// "Available now" is a promise, so the card only makes it while
 		// someone is really there. Outside the hours the green dot simply
 		// goes; nothing announces that the shop is shut.
 		$f['contact_from'] = array(
 			'type'    => 'time',
-			'group'   => __( 'Talking to a person', 'oc-theme' ),
+			'group'   => __( 'Talk to a person', 'oc-theme' ),
 			'label'   => __( 'Available from', 'oc-theme' ),
 			'help'    => __( 'Between these hours the card says "available now". Outside them it says nothing of the kind.', 'oc-theme' ),
 			'default' => '09:00',
@@ -2226,7 +2225,7 @@ final class Schema {
 
 		$f['contact_to'] = array(
 			'type'    => 'time',
-			'group'   => __( 'Talking to a person', 'oc-theme' ),
+			'group'   => __( 'Talk to a person', 'oc-theme' ),
 			'label'   => __( 'And until', 'oc-theme' ),
 			'default' => '18:00',
 			'when'    => array( 'prod_contact', array( 'yes' ) ),

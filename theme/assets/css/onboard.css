@@ -963,9 +963,11 @@ button.oc-onb-steps__i { cursor: pointer; }
 .wf-pp__cc__f.is-real { background-size: cover; background-position: center; }
 .wf-pp__cc__w { display: grid; gap: 1px; font-size: 9px; color: #6c7382; min-inline-size: 0; }
 .wf-pp__cc__w b { font-size: 10px; color: #4a5160; }
-.wf-pp__cc__p { color: #8d93a1; }
+/* A number reads left to right, but it stands at the start of the line
+   with the name above it. */
+.wf-pp__cc__p { color: #8d93a1; direction: ltr; text-align: right; }
 .wf-pp__cc__n { display: flex; align-items: center; gap: 4px; }
-.wf-pp__cc__b { background: var(--onb-primary); color: #fff; font-size: 9px; padding: 6px 10px; border-radius: 4px; white-space: nowrap; }
+.wf-pp__cc__b { background: #0e7d54; color: #fff; font-size: 9px; padding: 6px 10px; border-radius: 4px; white-space: nowrap; }
 
 .wf-pp__tabs { display: flex; gap: 14px; margin: 16px 12px 0; border-bottom: 1px solid #eef0f4; }
 .wf-pp__tab { font-size: 10px; color: #9aa0ad; padding-bottom: 7px; white-space: nowrap; }
@@ -989,6 +991,8 @@ button.oc-onb-steps__i { cursor: pointer; }
 /* The product's name and its code share a line, as they do in the shop. */
 .wf-pp__line { display: flex; align-items: baseline; gap: 8px; }
 .wf-pp__line .wf-pp__h { flex: 1; }
+/* The code stands at the far end of the price's line. */
+.wf-pp__line .wf-pp__sku { margin-inline-start: auto; }
 .wf-pp__short { margin: 0; font-size: 11px; line-height: 1.6; color: #6c7382; }
 .wf-pp__ics--row { grid-auto-flow: column; grid-auto-columns: 1fr; gap: 8px; }
 .wf-pp__ics--row .wf-pp__ic { flex-direction: column; text-align: center; gap: 3px; font-size: 9px; }
@@ -1091,3 +1095,13 @@ button.oc-onb-steps__i { cursor: pointer; }
 /* A branch, and what collection from it is called. */
 .oc-onb-bpick { display: grid; gap: 10px; }
 .oc-onb-bpick__one { display: grid; gap: 6px; }
+
+/* The same headings, stacked and opening under themselves. */
+.wf-pp__acc { margin: 16px 12px 0; display: grid; }
+.wf-pp--inside .wf-pp__acc { margin: 12px 0 0; }
+.wf-pp__accone { border-top: 1px solid #eef0f4; }
+.wf-pp__accone:last-child { border-bottom: 1px solid #eef0f4; }
+.wf-pp__acch { display: flex; align-items: center; gap: 8px; padding: 8px 0; font-size: 10px; color: #9aa0ad; }
+.wf-pp__accone.is-on .wf-pp__acch { color: var(--onb-ink); }
+.wf-pp__accv { margin-inline-start: auto; }
+.wf-pp__accone .wf-pp__body { padding: 0 0 10px; }
