@@ -190,6 +190,8 @@ final class Front {
 				'wf_eta_on'       => __( 'Delivery on %s', 'oc-theme' ),
 				'kept_secret'     => __( 'Already saved. The box stays empty on purpose — type here only to replace it.', 'oc-theme' ),
 				'attr_add'        => __( 'Add', 'oc-theme' ),
+				/* translators: a comma-separated list of words that mean colour, so a new attribute with one of them in its name starts as a circle of colour. Translate the words, keep the commas. */
+				'attr_colour_words' => __( 'colour,color', 'oc-theme' ),
 				'wf_at_more'      => __( 'More information', 'oc-theme' ),
 				'wf_at_value'     => __( 'what it says here', 'oc-theme' ),
 				/* translators: %1$s: the name of the choice, e.g. Colour. */

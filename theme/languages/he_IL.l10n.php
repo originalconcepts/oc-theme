@@ -4142,6 +4142,7 @@ return array(
 		"by sales" => "לפי מכירות",
 		"can be freed" => "ניתן לפנות",
 		"characters" => "תווים",
+		"colour,color" => "צבע,גוון",
 		"column header\x04Conversion" => "המרה",
 		"company no. %s" => "ח.פ./ע.מ. %s",
 		"configured" => "מוגדר",

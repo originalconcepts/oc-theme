@@ -13048,3 +13048,6 @@ msgstr "אפשרות %1$s"
 
 msgid "The attribute is already there."
 msgstr "התכונה כבר קיימת."
+
+msgid "colour,color"
+msgstr "צבע,גוון"

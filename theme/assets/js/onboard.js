@@ -1812,12 +1812,35 @@
 			return rows.some( function ( r ) { return String( r.name || '' ).toLowerCase() === String( name ).toLowerCase(); } );
 		}
 
+		/**
+		 * What a new one starts as. A circle of colour is right for a
+		 * colour and wrong for everything else, so only a colour gets it;
+		 * the rest start as buttons, which read at a glance.
+		 *
+		 * @param {string} name What they called it.
+		 */
+		function firstType( name ) {
+			if ( ! kinds.length ) { return ''; }
+
+			var colour = I.attr_colour_words || '';
+			var mine   = String( name ).toLowerCase();
+			var is     = colour.split( ',' ).some( function ( w ) {
+				w = w.trim().toLowerCase();
+
+				return '' !== w && mine.indexOf( w ) !== -1;
+			} );
+
+			if ( is && kinds.indexOf( 'swatch' ) !== -1 ) { return 'swatch'; }
+
+			return kinds.indexOf( 'button' ) !== -1 ? 'button' : kinds[0];
+		}
+
 		function add( name ) {
 			name = String( name || '' ).trim();
 
 			if ( '' === name || has( name ) || rows.length >= ( f.max || 10 ) ) { return; }
 
-			rows.push( { name: name, type: kinds[0] || '' } );
+			rows.push( { name: name, type: firstType( name ) } );
 			commit();
 			paint();
 		}
