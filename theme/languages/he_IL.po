@@ -12382,6 +12382,9 @@ msgstr "היא מתחלפת בין מצב המלאי לבין מתי החביל�
 msgid "Leave it empty and we write a general text you can rewrite later."
 msgstr "אפשר להשאיר ריק ונכתוב טקסט כללי שתוכלו לשכתב בהמשך."
 
+msgid "Beside — and the big ones run one under the other"
+msgstr "בצד — והגדולות אחת מתחת לשנייה"
+
 msgid "No small ones — two in a row, all of them"
 msgstr "בלי קטנות — שתיים בשורה, כולן"
 

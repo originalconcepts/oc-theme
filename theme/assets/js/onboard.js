@@ -2618,13 +2618,19 @@
 
 			pics.appendChild( pair );
 		} else {
+			var small = 'stacked' === kind ? 3 : 4;
 			var thumbs = w( 'wf-pp__th' );
 
-			for ( var t = 0; t < 4; t++ ) { thumbs.appendChild( wImg( 'wf-pp__t' ) ); }
+			for ( var t = 0; t < small; t++ ) { thumbs.appendChild( wImg( 'wf-pp__t' ) ); }
 
 			if ( 'thumbs-under' === kind ) {
 				pics.appendChild( wImg( 'wf-pp__big' ) );
 				pics.appendChild( thumbs );
+			} else if ( 'stacked' === kind ) {
+				var column = w( 'wf-pp__col', [ wImg( 'wf-pp__big' ), wImg( 'wf-pp__big' ) ] );
+
+				pics.appendChild( thumbs );
+				pics.appendChild( column );
 			} else {
 				pics.appendChild( thumbs );
 				pics.appendChild( wImg( 'wf-pp__big' ) );

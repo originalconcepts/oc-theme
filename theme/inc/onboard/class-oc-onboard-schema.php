@@ -1530,6 +1530,7 @@ final class Schema {
 			'options' => array(
 				'thumbs-side'  => __( 'Beside the big one', 'oc-theme' ),
 				'thumbs-under' => __( 'Under it', 'oc-theme' ),
+				'stacked'      => __( 'Beside — and the big ones run one under the other', 'oc-theme' ),
 				'grid'         => __( 'No small ones — two in a row, all of them', 'oc-theme' ),
 			),
 			'default' => 'thumbs-side',

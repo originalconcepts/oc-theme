@@ -585,6 +585,7 @@ return array(
 		"Beside the icons" => "ליד האייקונים",
 		"Beside the products" => "לצד המוצרים",
 		"Beside the text" => "לצד הטקסט",
+		"Beside — and the big ones run one under the other" => "בצד — והגדולות אחת מתחת לשנייה",
 		"Beside: the logo on the reading side and the name and description next to it; on a phone the text drops under the logo." => "לצד: הלוגו בצד הקריאה והשם והתיאור לידו; בנייד הטקסט יורד מתחת ללוגו.",
 		"Best match" => "הכי מתאים",
 		"Best sellers" => "הכי נמכר",

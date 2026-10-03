@@ -928,6 +928,7 @@ button.oc-onb-steps__i { cursor: pointer; }
 /* ------------------------------------------------- the product page, drawn */
 
 .wf-pp { display: grid; grid-template-columns: 1.1fr 1fr; gap: 14px; padding: 14px 12px 0; }
+.wf-pp > * { min-inline-size: 0; }
 /* The other side: the two columns swap places, without turning the page
    over — text that reads right to left still does. */
 .wf-pp--end .wf-pp__g { order: 2; }
@@ -935,6 +936,10 @@ button.oc-onb-steps__i { cursor: pointer; }
 .wf-pp__g--thumbs-side { grid-template-columns: 34px 1fr; align-items: start; }
 .wf-pp__g--thumbs-side .wf-pp__th { display: grid; gap: 6px; }
 .wf-pp__g--thumbs-under .wf-pp__th { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.wf-pp__g--stacked { grid-template-columns: 34px 1fr; align-items: start; }
+.wf-pp__g--stacked .wf-pp__th { display: grid; gap: 6px; }
+.wf-pp__col { display: grid; gap: 8px; }
+.wf-pp__g--stacked .wf-pp__big { aspect-ratio: 4 / 3; }
 .wf-pp__th .wf-img { aspect-ratio: 1 / 1; }
 .wf-pp__big { aspect-ratio: 4 / 5; }
 .wf-pp__pair { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
@@ -957,8 +962,10 @@ button.oc-onb-steps__i { cursor: pointer; }
 .wf-pp__body { display: grid; gap: 6px; padding: 10px 12px 0; }
 
 .oc-onb-side.is-phone .wf-pp { grid-template-columns: 1fr; }
-.oc-onb-side.is-phone .wf-pp__g--thumbs-side { grid-template-columns: 1fr; }
+.oc-onb-side.is-phone .wf-pp__g--thumbs-side,
+.oc-onb-side.is-phone .wf-pp__g--stacked { grid-template-columns: 1fr; }
 .oc-onb-side.is-phone .wf-pp__g--thumbs-side .wf-pp__th { grid-template-columns: repeat(4, 1fr); }
+.oc-onb-side.is-phone .wf-pp__g--stacked .wf-pp__th { grid-template-columns: repeat(3, 1fr); }
 
 /* The product's name and its code share a line, as they do in the shop. */
 .wf-pp__line { display: flex; align-items: baseline; gap: 8px; }
