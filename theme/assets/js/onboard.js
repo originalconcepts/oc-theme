@@ -1822,7 +1822,7 @@
 		function firstType( name ) {
 			if ( ! kinds.length ) { return ''; }
 
-			var colour = I.attr_colour_words || '';
+			var colour = I.attr_colours || '';
 			var mine   = String( name ).toLowerCase();
 			var is     = colour.split( ',' ).some( function ( w ) {
 				w = w.trim().toLowerCase();
