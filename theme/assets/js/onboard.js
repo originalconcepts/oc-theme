@@ -1789,6 +1789,150 @@
 	}
 
 	/**
+	 * A list of attributes: the usual ones to press, a box to write your
+	 * own, and — where the list is about choosing — how each one is picked.
+	 * Everything lands on the drawing as it is added, so the shop sees the
+	 * thing it is describing rather than a word for it.
+	 *
+	 * @param {string} id Field id.
+	 * @param {Object} f  Field definition.
+	 */
+	function render_attrs( id, f ) {
+		var wrap  = el( 'div', { 'class': 'oc-onb-attrs' } );
+		var shows = f.shows || {};
+		var kinds = Object.keys( shows );
+		var rows  = ( val( id ) || [] ).map( function ( r ) { return { name: r.name, type: r.type }; } );
+		var box   = el( 'div', { 'class': 'oc-onb-attrs__rows' } );
+		var chips = el( 'div', { 'class': 'oc-onb-attrs__chips' } );
+		var typed = el( 'input', { type: 'text', 'class': 'oc-onb-in', placeholder: f.add, autocomplete: 'off' } );
+
+		function commit() { set( id, rows ); }
+
+		function has( name ) {
+			return rows.some( function ( r ) { return String( r.name || '' ).toLowerCase() === String( name ).toLowerCase(); } );
+		}
+
+		function add( name ) {
+			name = String( name || '' ).trim();
+
+			if ( '' === name || has( name ) || rows.length >= ( f.max || 10 ) ) { return; }
+
+			rows.push( { name: name, type: kinds[0] || '' } );
+			commit();
+			paint();
+		}
+
+		function paint() {
+			box.innerHTML = '';
+			rows.forEach( function ( r, i ) {
+				var row   = el( 'div', { 'class': 'oc-onb-attrs__row' } );
+				var tools = el( 'span', { 'class': 'oc-onb-row__tools' } );
+
+				row.appendChild( el( 'b', { 'class': 'oc-onb-attrs__n', text: r.name } ) );
+
+				// How it is picked sits on the same line as the name: one
+				// thing being described, one line describing it.
+				if ( kinds.length ) {
+					var how = el( 'div', { 'class': 'oc-onb-attrs__how' } );
+
+					kinds.forEach( function ( k ) {
+						var b = el( 'button', {
+							type: 'button',
+							'class': 'oc-onb-attrs__k' + ( r.type === k ? ' is-on' : '' ),
+							text: shows[ k ],
+							'aria-pressed': r.type === k ? 'true' : 'false'
+						} );
+
+						b.addEventListener( 'click', function () {
+							r.type = k;
+							commit();
+							paint();
+						} );
+						how.appendChild( b );
+					} );
+
+					row.appendChild( how );
+				}
+
+				tools.appendChild( tool( '↑', I.row_up, function () { swap( i, i - 1 ); }, 0 === i ) );
+				tools.appendChild( tool( '↓', I.row_down, function () { swap( i, i + 1 ); }, i === rows.length - 1 ) );
+				tools.appendChild( tool( 'bin', I.remove, function () {
+					rows.splice( i, 1 );
+					commit();
+					paint();
+				}, false ) );
+				row.appendChild( tools );
+				box.appendChild( row );
+			} );
+
+			// A suggestion already taken is not a suggestion any more.
+			chips.innerHTML = '';
+			( f.chips || [] ).forEach( function ( name ) {
+				if ( has( name ) ) { return; }
+
+				chips.appendChild( el( 'button', {
+					type: 'button',
+					'class': 'oc-onb-attrs__chip',
+					text: '＋ ' + name,
+					onclick: function () { add( name ); }
+				} ) );
+			} );
+		}
+
+		function swap( from, to ) {
+			if ( to < 0 || to >= rows.length ) { return; }
+
+			rows.splice( to, 0, rows.splice( from, 1 )[0] );
+			commit();
+			paint();
+		}
+
+		/**
+		 * The same tool button the arranging screen uses.
+		 *
+		 * @param {string}   glyph   The sign, or 'bin'.
+		 * @param {string}   label   What it does.
+		 * @param {Function} onclick The doing.
+		 * @param {boolean}  off     Whether it is spent.
+		 */
+		function tool( glyph, label, onclick, off ) {
+			var b = el( 'button', { type: 'button', 'class': 'oc-onb-row__b' + ( 'bin' === glyph ? ' oc-onb-row__b--bin' : '' ), title: label, 'aria-label': label } );
+
+			if ( 'bin' === glyph ) {
+				b.innerHTML = '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7 3h6l.6 2H18v2H2V5h4.4L7 3Zm-2.3 6h10.6l-.8 9.2a1 1 0 0 1-1 .8H6.5a1 1 0 0 1-1-.8L4.7 9Z"/></svg>';
+			} else {
+				b.textContent = glyph;
+			}
+
+			if ( off ) { b.disabled = 'disabled'; }
+
+			b.addEventListener( 'click', onclick );
+
+			return b;
+		}
+
+		typed.addEventListener( 'keydown', function ( e ) {
+			if ( 'Enter' !== e.key ) { return; }
+
+			e.preventDefault();
+			add( typed.value );
+			typed.value = '';
+		} );
+
+		var go = el( 'button', { type: 'button', 'class': 'oc-onb-btn oc-onb-btn--ghost', text: I.attr_add, onclick: function () {
+			add( typed.value );
+			typed.value = '';
+		} } );
+
+		paint();
+		wrap.appendChild( box );
+		wrap.appendChild( chips );
+		wrap.appendChild( el( 'div', { 'class': 'oc-onb-attrs__new' }, [ typed, go ] ) );
+
+		return wrap;
+	}
+
+	/**
 	 * Which branches a buyer may collect from, and what each one is called
 	 * at the checkout. All of them to begin with: a shop that opened a
 	 * branch means people to walk into it.
@@ -2107,6 +2251,7 @@
 			case 'file':     inner = render_file( id, f ); break;
 			case 'branch_access': inner = render_branch_access( id, f ); break;
 			case 'branch_pick': inner = render_branch_pick( id, f ); break;
+			case 'attrs':    inner = render_attrs( id, f ); break;
 			case 'hours':    inner = render_hours( id, f ); break;
 			case 'repeater': inner = render_repeater( id, f ); break;
 			case 'info':     {
@@ -2694,6 +2839,7 @@
 		if ( 'cart' === kind ) { return previewCart(); }
 		if ( 'linked' === kind ) { return previewProduct( true ); }
 		if ( 'thanks' === kind ) { return previewThanks(); }
+		if ( 'attrs' === kind ) { return previewAttrs(); }
 		if ( 'checkout' === kind ) { return previewCheckout(); }
 		if ( 0 === String( kind ).indexOf( 'band:' ) ) { return previewBands( String( kind ).slice( 5 ).split( ',' ) ); }
 		return previewHome( String( val( 'home_recipe' ) ) );
@@ -2947,6 +3093,81 @@
 		card.appendChild( w( 'wf-pp__cc__b', null, I.wf_whats ) );
 
 		return card;
+	}
+
+	/**
+	 * Only the part of the product page these questions are about: what the
+	 * buyer picks, and the table of what the thing is. No pictures and no
+	 * other products — they would only be in the way of the point.
+	 */
+	function previewAttrs() {
+		var mid  = [];
+		var head = w( 'wf-pp__line', [ el( 'div', { 'class': 'wf-pp__h', text: I.wf_prod_name } ) ] );
+		var col  = w( 'wf-at__col', [ head, w( 'wf-pp__line', [ el( 'div', { 'class': 'wf-pp__price', text: MONEY } ) ] ) ] );
+
+		if ( 'yes' === String( val( 'attr_vary' ) ) ) {
+			( val( 'attr_list' ) || [] ).forEach( function ( r ) {
+				col.appendChild( wChoice( r ) );
+			} );
+		}
+
+		col.appendChild( w( 'wf-pp__buy', [ w( 'wf-pp__qty', null, '1' ), w( 'wf-pp__btn', null, I.wf_atc ) ] ) );
+		mid.push( col );
+
+		// The details stand in the table the "more information" tab carries.
+		var specs = 'yes' === String( val( 'attr_spec' ) ) ? ( val( 'attr_specs' ) || [] ) : [];
+
+		mid.push( w( 'wf-pp__tabs', [
+			w( 'wf-pp__tab' + ( specs.length ? '' : ' is-on' ), null, I.wf_tab_about ),
+			w( 'wf-pp__tab' + ( specs.length ? ' is-on' : '' ), null, I.wf_at_more )
+		] ) );
+
+		if ( specs.length ) {
+			mid.push( w( 'wf-at__table', specs.map( function ( r, i ) {
+				return w( 'wf-at__tr' + ( i % 2 ? ' is-alt' : '' ), [
+					el( 'span', { 'class': 'wf-at__th', text: r.name } ),
+					el( 'span', { 'class': 'wf-at__td', text: I.wf_at_value } )
+				] );
+			} ) ) );
+		} else {
+			mid.push( w( 'wf-pp__body', [ wLine( '100%' ), wLine( '92%' ), wLine( '70%' ) ] ) );
+		}
+
+		return wPage( mid, {} );
+	}
+
+	/**
+	 * One thing the buyer picks, drawn the way they will pick it.
+	 *
+	 * @param {Object} r The attribute: its name and how it shows.
+	 */
+	function wChoice( r ) {
+		var box  = w( 'wf-at', [ el( 'div', { 'class': 'wf-at__h', text: r.name } ) ] );
+		var list = w( 'wf-at__opts wf-at__opts--' + ( r.type || 'select' ) );
+		var i;
+
+		if ( 'select' === r.type ) {
+			list.appendChild( w( 'wf-at__sel', [
+				el( 'span', { text: fmt( I.wf_at_pick, r.name ) } ),
+				el( 'span', { 'aria-hidden': 'true', text: '⌄' } )
+			] ) );
+		} else if ( 'swatch' === r.type ) {
+			// The circles carry no real colours yet; what they say is that
+			// this is the shape the choice takes.
+			var tint = [ '#c9ccd4', '#8d93a1', '#5b6271' ];
+
+			for ( i = 0; i < 3; i++ ) {
+				list.appendChild( el( 'span', { 'class': 'wf-at__dot' + ( i ? '' : ' is-on' ), style: 'background:' + tint[ i ] } ) );
+			}
+		} else {
+			for ( i = 0; i < 3; i++ ) {
+				list.appendChild( w( 'wf-at__btn' + ( i ? '' : ' is-on' ), null, fmt( I.wf_at_opt, i + 1 ) ) );
+			}
+		}
+
+		box.appendChild( list );
+
+		return box;
 	}
 
 	/**

@@ -189,6 +189,13 @@ final class Front {
 				/* translators: %s: a short date like 2 Sep. */
 				'wf_eta_on'       => __( 'Delivery on %s', 'oc-theme' ),
 				'kept_secret'     => __( 'Already saved. The box stays empty on purpose — type here only to replace it.', 'oc-theme' ),
+				'attr_add'        => __( 'Add', 'oc-theme' ),
+				'wf_at_more'      => __( 'More information', 'oc-theme' ),
+				'wf_at_value'     => __( 'what it says here', 'oc-theme' ),
+				/* translators: %1$s: the name of the choice, e.g. Colour. */
+				'wf_at_pick'      => __( 'Choose a %1$s', 'oc-theme' ),
+				/* translators: %1$s: a stand-in number, so the options differ. */
+				'wf_at_opt'       => __( 'Option %1$s', 'oc-theme' ),
 				'wf_now'          => __( 'Online now', 'oc-theme' ),
 				'wf_rel_h'        => __( 'Similar products', 'oc-theme' ),
 				'wf_ty_thanks'    => __( 'Thank you, Dana', 'oc-theme' ),

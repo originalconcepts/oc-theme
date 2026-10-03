@@ -1824,6 +1824,98 @@ final class Apply {
 	}
 
 	/**
+	 * The attributes themselves, opened in WooCommerce so the shop can
+	 * start hanging values on them the moment the questionnaire ends.
+	 *
+	 * The ones a buyer chooses from carry the look that was picked for them
+	 * — a circle of colour, a button, a list. The ones that merely describe
+	 * the product are plain, and show in the table under it, so the tab that
+	 * holds that table is switched on with them.
+	 *
+	 * Values are not asked for and not invented: an empty attribute is a
+	 * shelf waiting for the catalogue, which is what this is.
+	 */
+	private function apply_attrs(): void {
+		if ( ! function_exists( 'wc_create_attribute' ) ) {
+			return;
+		}
+
+		$made = 0;
+		$want = array();
+
+		if ( 'yes' === (string) $this->v['attr_vary'] ) {
+			foreach ( (array) $this->v['attr_list'] as $row ) {
+				$want[] = array(
+					'id'   => 'attr_list',
+					'name' => (string) ( $row['name'] ?? '' ),
+					'type' => (string) ( $row['type'] ?? 'select' ),
+				);
+			}
+		}
+
+		if ( 'yes' === (string) $this->v['attr_spec'] ) {
+			foreach ( (array) $this->v['attr_specs'] as $row ) {
+				$want[] = array(
+					'id'   => 'attr_specs',
+					'name' => (string) ( $row['name'] ?? '' ),
+					'type' => 'select',
+				);
+			}
+		}
+
+		foreach ( $want as $one ) {
+			$name = trim( $one['name'] );
+
+			if ( '' === $name ) {
+				continue;
+			}
+
+			$slug = wc_sanitize_taxonomy_name( $name );
+
+			// Already there, by ours or by anyone's hand: left alone, so a
+			// second run never doubles a shop's own attribute.
+			if ( $slug && wc_attribute_taxonomy_id_by_name( $slug ) ) {
+				$this->row( $one['id'], $name, 'skipped', __( 'The attribute is already there.', 'oc-theme' ) );
+				continue;
+			}
+
+			$id = wc_create_attribute(
+				array(
+					'name'         => $name,
+					'slug'         => $slug,
+					'type'         => $one['type'],
+					'order_by'     => 'menu_order',
+					'has_archives' => false,
+				)
+			);
+
+			if ( is_wp_error( $id ) ) {
+				$this->row( $one['id'], $name, 'failed', $id->get_error_message() );
+				continue;
+			}
+
+			++$made;
+
+			$this->row( $one['id'], $name, 'applied' );
+		}
+
+		// The table of details lives in a tab, and a shop that named details
+		// means to show them.
+		if ( 'yes' === (string) $this->v['attr_spec'] && class_exists( '\\OC\\Theme\\Tabs' ) ) {
+			$all = \OC\Theme\Tabs::settings();
+
+			$all['additional'] = 1;
+
+			update_option( 'oc_tabs', $all );
+		}
+
+		if ( $made ) {
+			// A taxonomy registered mid-request is not yet on this one.
+			delete_transient( 'wc_attribute_taxonomies' );
+		}
+	}
+
+	/**
 	 * The thank-you page: whether it carries a way to reach the shop, and
 	 * the shape it stands in. On a wide screen one column leaves the
 	 * greeting, the order, the survey and the rest in a single long run, so

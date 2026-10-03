@@ -496,7 +496,9 @@ button.oc-onb-dots__d:hover { background: var(--onb-ink-2); }
    whether there are any. */
 .wf-shelf { display: grid; gap: 10px; margin-top: 14px; }
 .wf-filters--top + .wf-shelf { margin-top: 0; }
-.wf-withside { margin-top: 0; }
+/* Filters down the side keep that same air above them — only the top bar,
+   which carries its own margin, takes it away. */
+.wf-filters--top + .wf-withside { margin-top: 0; }
 .wf-withside .wf-shelf { padding-inline-end: 12px; }
 .wf-withside .wf-grid { padding-inline-start: 0; }
 
@@ -1191,3 +1193,36 @@ button.oc-onb-steps__i { cursor: pointer; }
 .wf-ty__field { inline-size: 100%; border: 1px solid var(--onb-line); border-radius: 4px; padding: 7px 8px; font-size: 10px; color: #b2b7c2; }
 .wf-ty__dot { inline-size: 22px; block-size: 22px; border-radius: 50%; background: #eef0f4; }
 .oc-onb-f__kept { color: var(--onb-ok); }
+
+/* ------------------------------------------- choices and details, asked */
+
+.oc-onb-attrs { display: grid; gap: 10px; }
+.oc-onb-attrs__rows { display: grid; gap: 8px; }
+.oc-onb-attrs__row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; border: 1px solid var(--onb-line); border-radius: 8px; padding: 8px 10px; }
+.oc-onb-attrs__n { font-size: 15px; color: var(--onb-ink); }
+.oc-onb-attrs__how { display: flex; gap: 4px; margin-inline-start: auto; }
+.oc-onb-attrs__k { border: 1px solid var(--onb-line); background: none; border-radius: 20px; padding: 5px 11px; font: inherit; font-size: 12px; color: var(--onb-ink-2); cursor: pointer; }
+.oc-onb-attrs__k.is-on { border-color: var(--onb-primary); color: var(--onb-primary); background: var(--onb-bg); }
+.oc-onb-attrs__row .oc-onb-row__tools { display: flex; gap: 2px; }
+.oc-onb-attrs__chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.oc-onb-attrs__chip { border: 1px dashed var(--onb-line); background: none; border-radius: 20px; padding: 6px 12px; font: inherit; font-size: 13px; color: var(--onb-ink-2); cursor: pointer; }
+.oc-onb-attrs__chip:hover { border-color: var(--onb-primary); color: var(--onb-primary); }
+.oc-onb-attrs__new { display: flex; gap: 8px; }
+.oc-onb-attrs__new .oc-onb-in { flex: 1; }
+
+/* ------------------------------------------- choices and details, drawn */
+
+.wf-at__col { display: grid; gap: 9px; align-content: start; padding: 16px 14px 12px; }
+.wf-at { display: grid; gap: 6px; margin-top: 2px; }
+.wf-at__h { font-size: 10px; color: #6c7382; }
+.wf-at__opts { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.wf-at__dot { inline-size: 18px; block-size: 18px; border-radius: 50%; border: 1px solid #e7e9ef; }
+.wf-at__dot.is-on { box-shadow: 0 0 0 2px #fff, 0 0 0 3px var(--onb-primary); }
+.wf-at__btn { border: 1px solid var(--onb-line); border-radius: 4px; padding: 5px 11px; font-size: 9px; color: #6c7382; }
+.wf-at__btn.is-on { border-color: var(--onb-primary); color: var(--onb-primary); }
+.wf-at__sel { display: flex; align-items: center; justify-content: space-between; gap: 10px; inline-size: 170px; border: 1px solid var(--onb-line); border-radius: 4px; padding: 7px 9px; font-size: 10px; color: #b2b7c2; }
+.wf-at__table { display: grid; padding: 10px 14px 0; }
+.wf-at__tr { display: grid; grid-template-columns: 1fr 1.4fr; gap: 10px; padding: 7px 8px; font-size: 10px; }
+.wf-at__tr.is-alt { background: #f7f8fa; }
+.wf-at__th { color: #4a5160; font-weight: 700; }
+.wf-at__td { color: #b2b7c2; }

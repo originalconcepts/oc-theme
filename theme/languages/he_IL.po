@@ -12944,3 +12944,107 @@ msgstr "הצטרפות"
 
 msgid "Already saved. The box stays empty on purpose — type here only to replace it."
 msgstr "כבר נשמר. התיבה ריקה בכוונה — הקלידו כאן רק כדי להחליף."
+
+msgctxt "product attribute"
+msgid "Colour"
+msgstr "צבע"
+
+msgctxt "product attribute"
+msgid "Size"
+msgstr "מידה"
+
+msgctxt "product attribute"
+msgid "Length"
+msgstr "אורך"
+
+msgctxt "product attribute"
+msgid "Width"
+msgstr "רוחב"
+
+msgctxt "product attribute"
+msgid "Flavour"
+msgstr "טעם"
+
+msgctxt "product attribute"
+msgid "Material"
+msgstr "חומר"
+
+msgctxt "product attribute"
+msgid "Measurements"
+msgstr "מידות"
+
+msgctxt "product attribute"
+msgid "Weight"
+msgstr "משקל"
+
+msgctxt "product attribute"
+msgid "Country of origin"
+msgstr "ארץ ייצור"
+
+msgctxt "product attribute"
+msgid "Warranty"
+msgstr "אחריות"
+
+msgctxt "product attribute"
+msgid "Care"
+msgstr "הוראות טיפול"
+
+msgid "Choices and details"
+msgstr "בחירות ופרטים"
+
+msgid "Two different things, and the drawing beside you shows both. A choice is something the buyer picks before buying — a colour, a size. A detail is something the product simply has, and it sits in a table further down."
+msgstr "שני דברים שונים, והסקיצה לצידכם מראה את שניהם. בחירה היא משהו שהקונה בוחר לפני הקנייה — צבע, מידה. פרט הוא משהו שלמוצר פשוט יש, והוא יושב בטבלה נמוך יותר."
+
+msgid "Choices on the product page"
+msgstr "בחירות בדף המוצר"
+
+msgid "Does a buyer choose something before buying?"
+msgstr "הקונה בוחר משהו לפני הקנייה?"
+
+msgid "A colour, a size, a length. One product, several versions of it — each with its own stock and, if you like, its own price."
+msgstr "צבע, מידה, אורך. מוצר אחד, כמה גרסאות שלו — לכל אחת מלאי משלה, ואם תרצו גם מחיר משלה."
+
+msgid "Press one of the usual ones, or write your own. Beside each, how the buyer picks it — the drawing changes as you go."
+msgstr "לחצו על אחת המקובלות, או כתבו משלכם. ליד כל אחת, איך הקונה בוחר אותה — הסקיצה משתנה תוך כדי."
+
+msgid "A circle of colour"
+msgstr "עיגול צבע"
+
+msgid "A button"
+msgstr "כפתור"
+
+msgid "A list to open"
+msgstr "רשימה נפתחת"
+
+msgid "Another choice"
+msgstr "בחירה נוספת"
+
+msgid "Details of the product"
+msgstr "פרטי המוצר"
+
+msgid "Does your product have details worth listing?"
+msgstr "יש למוצר שלכם פרטים ששווה לפרט?"
+
+msgid "Not something to choose — something the product has. A television has a screen size and a resolution; a sofa has a fabric and a depth. They stand in a table under the product, in the \"More information\" tab."
+msgstr "לא משהו לבחור — משהו שלמוצר יש. לטלוויזיה יש גודל מסך ורזולוציה; לספה יש בד ועומק. הם עומדים בטבלה מתחת למוצר, בלשונית ״מידע נוסף״."
+
+msgid "The names only. What each product says for them you fill in on the product itself."
+msgstr "רק השמות. מה שכל מוצר אומר בהם ממלאים על המוצר עצמו."
+
+msgid "Another detail"
+msgstr "פרט נוסף"
+
+msgid "More information"
+msgstr "מידע נוסף"
+
+msgid "what it says here"
+msgstr "מה שכתוב כאן"
+
+msgid "Choose a %1$s"
+msgstr "בחרו %1$s"
+
+msgid "Option %1$s"
+msgstr "אפשרות %1$s"
+
+msgid "The attribute is already there."
+msgstr "התכונה כבר קיימת."

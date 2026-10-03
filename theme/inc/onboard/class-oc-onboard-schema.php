@@ -221,6 +221,14 @@ final class Schema {
 					),
 					array(
 						'id'      => '6b',
+						'title'   => __( 'Choices and details', 'oc-theme' ),
+						'intro'   => __( 'Two different things, and the drawing beside you shows both. A choice is something the buyer picks before buying — a colour, a size. A detail is something the product simply has, and it sits in a table further down.', 'oc-theme' ),
+						'intro_m' => __( 'On a phone the two do not fit side by side, so the two buttons above switch between the questions and the drawing.', 'oc-theme' ),
+						'preview' => 'attrs',
+						'fields'  => array( 'attr_vary', 'attr_list', 'attr_spec', 'attr_specs' ),
+					),
+					array(
+						'id'      => '6c',
 						'title'   => __( 'More products on the product page', 'oc-theme' ),
 						'intro'   => __( 'What else the page offers after the product itself. Four things, each with its own job — the drawing shows where each lands.', 'oc-theme' ),
 						'intro_m' => __( 'On a phone the two do not fit side by side, so the two buttons above switch between the questions and the drawing.', 'oc-theme' ),
@@ -1475,7 +1483,72 @@ final class Schema {
 
 		/* ---- 7a: the cart and the checkout ---- */
 
-		/* ---- 6b: the other products on the product page ---- */
+		/* ---- 6b: choices and details ---- */
+
+		$f['attr_vary'] = array(
+			'type'    => 'choice',
+			'group'   => __( 'Choices on the product page', 'oc-theme' ),
+			'label'   => __( 'Does a buyer choose something before buying?', 'oc-theme' ),
+			'help'    => __( 'A colour, a size, a length. One product, several versions of it — each with its own stock and, if you like, its own price.', 'oc-theme' ),
+			'options' => $yesno,
+			'default' => 'no',
+			'target'  => array( 'call', 'attrs' ),
+		);
+
+		$f['attr_list'] = array(
+			'type'    => 'attrs',
+			'group'   => __( 'Choices on the product page', 'oc-theme' ),
+			'label'   => '',
+			'help'    => __( 'Press one of the usual ones, or write your own. Beside each, how the buyer picks it — the drawing changes as you go.', 'oc-theme' ),
+			'chips'   => array(
+				_x( 'Colour', 'product attribute', 'oc-theme' ),
+				_x( 'Size', 'product attribute', 'oc-theme' ),
+				_x( 'Length', 'product attribute', 'oc-theme' ),
+				_x( 'Width', 'product attribute', 'oc-theme' ),
+				_x( 'Flavour', 'product attribute', 'oc-theme' ),
+				_x( 'Material', 'product attribute', 'oc-theme' ),
+			),
+			'shows'   => array(
+				'swatch' => __( 'A circle of colour', 'oc-theme' ),
+				'button' => __( 'A button', 'oc-theme' ),
+				'select' => __( 'A list to open', 'oc-theme' ),
+			),
+			'add'     => __( 'Another choice', 'oc-theme' ),
+			'max'     => 6,
+			'when'    => array( 'attr_vary', array( 'yes' ) ),
+			'target'  => array( 'call', 'attrs' ),
+		);
+
+		$f['attr_spec'] = array(
+			'type'    => 'choice',
+			'group'   => __( 'Details of the product', 'oc-theme' ),
+			'label'   => __( 'Does your product have details worth listing?', 'oc-theme' ),
+			'help'    => __( 'Not something to choose — something the product has. A television has a screen size and a resolution; a sofa has a fabric and a depth. They stand in a table under the product, in the "More information" tab.', 'oc-theme' ),
+			'options' => $yesno,
+			'default' => 'no',
+			'target'  => array( 'call', 'attrs' ),
+		);
+
+		$f['attr_specs'] = array(
+			'type'   => 'attrs',
+			'group'  => __( 'Details of the product', 'oc-theme' ),
+			'label'  => '',
+			'help'   => __( 'The names only. What each product says for them you fill in on the product itself.', 'oc-theme' ),
+			'chips'  => array(
+				_x( 'Material', 'product attribute', 'oc-theme' ),
+				_x( 'Measurements', 'product attribute', 'oc-theme' ),
+				_x( 'Weight', 'product attribute', 'oc-theme' ),
+				_x( 'Country of origin', 'product attribute', 'oc-theme' ),
+				_x( 'Warranty', 'product attribute', 'oc-theme' ),
+				_x( 'Care', 'product attribute', 'oc-theme' ),
+			),
+			'add'    => __( 'Another detail', 'oc-theme' ),
+			'max'    => 10,
+			'when'   => array( 'attr_spec', array( 'yes' ) ),
+			'target' => array( 'call', 'attrs' ),
+		);
+
+		/* ---- 6c: the other products on the product page ---- */
 
 		$f['xs_on'] = array(
 			'type'    => 'choice',
@@ -2543,6 +2616,7 @@ final class Schema {
 			case 'layout':
 			case 'branch_access':
 			case 'branch_pick':
+			case 'attrs':
 				return array();
 			case 'file':
 				return null;
@@ -3143,6 +3217,32 @@ final class Schema {
 							'to'   => $to,
 						);
 					}
+				}
+
+				return $out;
+
+			case 'attrs':
+				$out  = array();
+				$seen = array();
+				$max  = (int) ( $f['max'] ?? 10 );
+				$kinds = array_keys( (array) ( $f['shows'] ?? array() ) );
+
+				foreach ( (array) $raw as $row ) {
+					$row  = (array) $row;
+					$name = trim( sanitize_text_field( (string) ( is_scalar( $row['name'] ?? '' ) ? $row['name'] : '' ) ) );
+
+					// Two attributes of the same name are one attribute.
+					if ( '' === $name || isset( $seen[ mb_strtolower( $name ) ] ) || count( $out ) >= $max ) {
+						continue;
+					}
+
+					$seen[ mb_strtolower( $name ) ] = true;
+					$type = (string) ( is_scalar( $row['type'] ?? '' ) ? $row['type'] : '' );
+
+					$out[] = array(
+						'name' => mb_substr( $name, 0, 60 ),
+						'type' => $kinds && in_array( $type, $kinds, true ) ? $type : (string) ( $kinds[0] ?? '' ),
+					);
 				}
 
 				return $out;
