@@ -924,8 +924,9 @@ button.oc-onb-steps__i { cursor: pointer; }
 /* ------------------------------------------------- the product page, drawn */
 
 .wf-pp { display: grid; grid-template-columns: 1.1fr 1fr; gap: 14px; padding: 14px 12px 0; }
-.wf-pp--end { direction: ltr; }
-.wf-pp--end > * { direction: rtl; }
+/* The other side: the two columns swap places, without turning the page
+   over — text that reads right to left still does. */
+.wf-pp--end .wf-pp__g { order: 2; }
 .wf-pp__g { display: grid; gap: 8px; }
 .wf-pp__g--thumbs-side { grid-template-columns: 34px 1fr; align-items: start; }
 .wf-pp__g--thumbs-side .wf-pp__th { display: grid; gap: 6px; }
