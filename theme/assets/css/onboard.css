@@ -1087,3 +1087,7 @@ button.oc-onb-steps__i { cursor: pointer; }
 
 .oc-onb-side.is-phone .wf-ck { grid-template-columns: 1fr; }
 .oc-onb-side.is-phone .wf-cart { inline-size: auto; inset-inline: 10px; }
+
+/* A branch, and what collection from it is called. */
+.oc-onb-bpick { display: grid; gap: 10px; }
+.oc-onb-bpick__one { display: grid; gap: 6px; }

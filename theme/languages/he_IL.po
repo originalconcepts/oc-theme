@@ -12710,3 +12710,135 @@ msgstr "שליח עד הבית"
 
 msgid "Products that go with what is in the cart"
 msgstr "מוצרים נלווים למוצרים שבסל"
+
+msgid "Delivery, collection and payment"
+msgstr "משלוח, איסוף ותשלום"
+
+msgid "What it costs to send, whether people can come and collect, and who takes the money. No drawing here — none of it shows on a page."
+msgstr "כמה עולה לשלוח, האם אפשר לבוא לאסוף, ומי לוקח את הכסף. אין כאן סקיצה — שום דבר מזה לא מופיע על עמוד."
+
+msgid "What a courier to the door costs"
+msgstr "כמה עולה שליח עד הבית"
+
+msgid "Zero means you deliver for nothing, always."
+msgstr "אפס אומר שאתם שולחים חינם, תמיד."
+
+msgid "What to call it at the checkout"
+msgstr "איך זה ייקרא בקופה"
+
+msgid "Leave it empty and there is no free delivery. It is offered under the same name with \"free\" at the end."
+msgstr "השאירו ריק ואין משלוח חינם. הוא מוצע באותו שם עם ״חינם״ בסוף."
+
+msgid "Can people come and collect?"
+msgstr "אפשר לבוא לאסוף?"
+
+msgid "Collection from Allenby 1, Tel Aviv — by arrangement only"
+msgstr "איסוף עצמי מאלנבי 1 ת״א - בתיאום מראש בלבד"
+
+msgid "Which branches can be collected from"
+msgstr "מאילו סניפים אפשר לאסוף"
+
+msgid "All of them to begin with. A branch can be given its own wording."
+msgstr "כולם להתחלה. אפשר לתת לכל סניף ניסוח משלו."
+
+msgid "Taking the money"
+msgstr "גביית הכסף"
+
+msgid "Who clears your card payments?"
+msgstr "מי מסלק לכם את התשלומים בכרטיס?"
+
+msgid "I do not have one yet"
+msgstr "עדיין אין לי"
+
+msgid "Someone else"
+msgstr "מישהו אחר"
+
+msgid "No problem — nothing here waits for it. At the end of the questionnaire we hand you a link to PayPlus; leave your details there and they come back to you. The shop is built either way, and the card payments switch on the day you have an account."
+msgstr "אין בעיה — שום דבר כאן לא מחכה לזה. בסוף השאלון נמסור לכם קישור לפייפלוס; תשאירו שם פרטים והם יחזרו אליכם. החנות נבנית כך או כך, והתשלומים בכרטיס נדלקים ביום שיהיה לכם חשבון."
+
+msgid "Do you have the details to hand?"
+msgstr "הפרטים נמצאים אצלכם עכשיו?"
+
+msgid "Yes, I will write them now"
+msgstr "כן, אכתוב אותם עכשיו"
+
+msgid "I will fill them in later"
+msgstr "אמלא אותם בהמשך"
+
+msgid "Terminal number"
+msgstr "מספר מסוף"
+
+msgid "User name"
+msgstr "שם משתמש"
+
+msgid "It is kept on your own site and never shown again on this screen."
+msgstr "היא נשמרת באתר שלכם ולא מוצגת שוב במסך הזה."
+
+msgid "API key"
+msgstr "מפתח API"
+
+msgid "All three sit in your PayPlus account, under the terminal."
+msgstr "שלושתם נמצאים בחשבון הפייפלוס שלכם, תחת המסוף."
+
+msgid "Payment page UID"
+msgstr "מזהה עמוד תשלום"
+
+msgid "What are they called?"
+msgstr "איך הם נקראים?"
+
+msgid "How they pay"
+msgstr "איך משלמים"
+
+msgid "Offer payment in instalments?"
+msgstr "להציע תשלומים?"
+
+msgid "Up to how many"
+msgstr "עד כמה"
+
+msgid "Is the card charged at once, or held?"
+msgstr "הכרטיס מחויב מיד, או נתפס?"
+
+msgid "Charged at once, the money moves when the order is placed. Held, the sum is set aside on the card and only taken when you approve the order — which suits a shop that cannot always promise the stock."
+msgstr "בחיוב מיידי הכסף עובר ברגע ההזמנה. בחיוב מושהה הסכום נתפס בכרטיס ויורד רק כשאתם מאשרים את ההזמנה — מתאים לחנות שלא תמיד יכולה להבטיח את המלאי."
+
+msgid "Charged at once"
+msgstr "חיוב מיידי"
+
+msgid "Held until I approve"
+msgstr "חיוב מושהה עד לאישור שלי"
+
+msgid "What else can they pay with?"
+msgstr "באילו אמצעים נוספים אפשר לשלם?"
+
+msgid "Apple Pay and Google Pay"
+msgstr "אפל פיי וגוגל פיי"
+
+msgid "A bank transfer"
+msgstr "העברה בנקאית"
+
+msgid "Cash"
+msgstr "מזומן"
+
+msgid "Cash only when they come and collect?"
+msgstr "מזומן רק באיסוף עצמי?"
+
+msgid "%1$s free"
+msgstr "%1$s חינם"
+
+msgid "The method is already there."
+msgstr "שיטת המשלוח כבר קיימת."
+
+msgid "WooCommerce would not add the method."
+msgstr "ווקומרס לא הוסיף את שיטת המשלוח."
+
+msgid "No clearing company yet — we send the PayPlus link."
+msgstr "עדיין אין חברת סליקה — נשלח את הקישור לפייפלוס."
+
+msgid "Kept on the site for whoever installs the gateway. Nothing of it is in this report or in any email."
+msgstr "נשמר באתר עבור מי שיתקין את הסולק. שום דבר מזה לא נמצא בדוח הזה ולא באף מייל."
+
+msgid "Collection from %1$s"
+msgstr "איסוף מ%1$s"
+
+msgid "%1$s branches"
+msgstr "%1$s סניפים"

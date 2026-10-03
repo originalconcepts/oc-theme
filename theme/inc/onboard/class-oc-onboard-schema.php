@@ -242,6 +242,12 @@ final class Schema {
 						'preview' => 'checkout',
 						'fields'  => array( 'ck_multi', 'ck_other', 'ck_phone2', 'ck_req', 'ck_summary', 'ck_fold', 'ck_coupon', 'ck_btn_total' ),
 					),
+					array(
+						'id'      => '7c',
+						'title'   => __( 'Delivery, collection and payment', 'oc-theme' ),
+						'intro'   => __( 'What it costs to send, whether people can come and collect, and who takes the money. No drawing here — none of it shows on a page.', 'oc-theme' ),
+						'fields'  => array( 'ship_price', 'ship_title', 'ship_free_over', 'pickup_on', 'pickup_title', 'pickup_branches', 'pay_gw', 'pay_none', 'pay_when', 'cc_terminal', 'cc_user', 'cc_pass', 'pp_api', 'pp_secret', 'pp_page', 'pay_other', 'pay_split', 'pay_max', 'pay_charge', 'pay_more', 'pay_cash_pickup' ),
+					),
 				),
 			),
 			array(
@@ -1670,6 +1676,223 @@ final class Schema {
 			'target'  => array( 'option', 'oc_checkout', 'btn_total' ),
 		);
 
+		/* ---- 7c: delivery, collection and payment ---- */
+
+		$f['ship_price'] = array(
+			'type'     => 'number',
+			'group'    => __( 'Delivery', 'oc-theme' ),
+			'label'    => __( 'What a courier to the door costs', 'oc-theme' ),
+			'help'     => __( 'Zero means you deliver for nothing, always.', 'oc-theme' ),
+			'min'      => 0,
+			'max'      => 2000,
+			'suffix'   => '₪',
+			'required' => true,
+			'target'   => array( 'call', 'shipping' ),
+		);
+
+		$f['ship_title'] = array(
+			'type'        => 'text',
+			'group'       => __( 'Delivery', 'oc-theme' ),
+			'label'       => __( 'What to call it at the checkout', 'oc-theme' ),
+			'placeholder' => __( 'Courier to the door', 'oc-theme' ),
+			'target'      => array( 'call', 'shipping' ),
+		);
+
+		$f['ship_free_over'] = array(
+			'type'   => 'number',
+			'group'  => __( 'Delivery', 'oc-theme' ),
+			'label'  => __( 'Free delivery over', 'oc-theme' ),
+			'help'   => __( 'Leave it empty and there is no free delivery. It is offered under the same name with "free" at the end.', 'oc-theme' ),
+			'min'    => 0,
+			'max'    => 100000,
+			'suffix' => '₪',
+			'target' => array( 'call', 'shipping' ),
+		);
+
+		$f['pickup_on'] = array(
+			'type'    => 'choice',
+			'group'   => __( 'Collection in person', 'oc-theme' ),
+			'label'   => __( 'Can people come and collect?', 'oc-theme' ),
+			'options' => $yesno,
+			'default' => 'yes',
+			'target'  => array( 'call', 'shipping' ),
+		);
+
+		$f['pickup_title'] = array(
+			'type'        => 'text',
+			'group'       => __( 'Collection in person', 'oc-theme' ),
+			'label'       => __( 'What to call it at the checkout', 'oc-theme' ),
+			'placeholder' => __( 'Collection from Allenby 1, Tel Aviv — by arrangement only', 'oc-theme' ),
+			'when'        => array( 'pickup_on', array( 'yes' ) ),
+			'target'      => array( 'call', 'shipping' ),
+		);
+
+		$f['pickup_branches'] = array(
+			'type'   => 'branch_pick',
+			'group'  => __( 'Collection in person', 'oc-theme' ),
+			'label'  => __( 'Which branches can be collected from', 'oc-theme' ),
+			'help'   => __( 'All of them to begin with. A branch can be given its own wording.', 'oc-theme' ),
+			'of'     => 'branches',
+			'when'   => array( 'pickup_on', array( 'yes' ) ),
+			'target' => array( 'call', 'shipping' ),
+		);
+
+		$f['pay_gw'] = array(
+			'type'    => 'choice',
+			'group'   => __( 'Taking the money', 'oc-theme' ),
+			'label'   => __( 'Who clears your card payments?', 'oc-theme' ),
+			'options' => array(
+				'none'    => __( 'I do not have one yet', 'oc-theme' ),
+				'cardcom' => 'Cardcom',
+				'payplus' => 'PayPlus',
+				'other'   => __( 'Someone else', 'oc-theme' ),
+			),
+			'default' => 'none',
+			'quiet'   => true,
+			'target'  => array( 'call', 'payments' ),
+		);
+
+		$f['pay_none'] = array(
+			'type'  => 'info',
+			'group' => __( 'Taking the money', 'oc-theme' ),
+			'label' => __( 'No problem — nothing here waits for it. At the end of the questionnaire we hand you a link to PayPlus; leave your details there and they come back to you. The shop is built either way, and the card payments switch on the day you have an account.', 'oc-theme' ),
+			'when'  => array( 'pay_gw', array( 'none' ) ),
+		);
+
+		$f['pay_when'] = array(
+			'type'    => 'choice',
+			'group'   => __( 'Taking the money', 'oc-theme' ),
+			'label'   => __( 'Do you have the details to hand?', 'oc-theme' ),
+			'options' => array(
+				'now'   => __( 'Yes, I will write them now', 'oc-theme' ),
+				'later' => __( 'I will fill them in later', 'oc-theme' ),
+			),
+			'default' => 'now',
+			'quiet'   => true,
+			'when'    => array( 'pay_gw', array( 'cardcom', 'payplus' ) ),
+			'target'  => array( 'call', 'payments' ),
+		);
+
+		$f['cc_terminal'] = array(
+			'type'   => 'text',
+			'group'  => __( 'Taking the money', 'oc-theme' ),
+			'label'  => __( 'Terminal number', 'oc-theme' ),
+			'dir'    => 'ltr',
+			'when'   => array( array( 'pay_gw', array( 'cardcom' ) ), array( 'pay_when', array( 'now' ) ) ),
+			'target' => array( 'call', 'payments' ),
+		);
+
+		$f['cc_user'] = array(
+			'type'   => 'text',
+			'group'  => __( 'Taking the money', 'oc-theme' ),
+			'label'  => __( 'User name', 'oc-theme' ),
+			'dir'    => 'ltr',
+			'when'   => array( array( 'pay_gw', array( 'cardcom' ) ), array( 'pay_when', array( 'now' ) ) ),
+			'target' => array( 'call', 'payments' ),
+		);
+
+		$f['cc_pass'] = array(
+			'type'   => 'secret',
+			'group'  => __( 'Taking the money', 'oc-theme' ),
+			'label'  => __( 'Password', 'oc-theme' ),
+			'help'   => __( 'It is kept on your own site and never shown again on this screen.', 'oc-theme' ),
+			'when'   => array( array( 'pay_gw', array( 'cardcom' ) ), array( 'pay_when', array( 'now' ) ) ),
+			'target' => array( 'call', 'payments' ),
+		);
+
+		$f['pp_api'] = array(
+			'type'   => 'secret',
+			'group'  => __( 'Taking the money', 'oc-theme' ),
+			'label'  => __( 'API key', 'oc-theme' ),
+			'help'   => __( 'All three sit in your PayPlus account, under the terminal.', 'oc-theme' ),
+			'when'   => array( array( 'pay_gw', array( 'payplus' ) ), array( 'pay_when', array( 'now' ) ) ),
+			'target' => array( 'call', 'payments' ),
+		);
+
+		$f['pp_secret'] = array(
+			'type'   => 'secret',
+			'group'  => __( 'Taking the money', 'oc-theme' ),
+			'label'  => __( 'Secret key', 'oc-theme' ),
+			'when'   => array( array( 'pay_gw', array( 'payplus' ) ), array( 'pay_when', array( 'now' ) ) ),
+			'target' => array( 'call', 'payments' ),
+		);
+
+		$f['pp_page'] = array(
+			'type'   => 'text',
+			'group'  => __( 'Taking the money', 'oc-theme' ),
+			'label'  => __( 'Payment page UID', 'oc-theme' ),
+			'dir'    => 'ltr',
+			'when'   => array( array( 'pay_gw', array( 'payplus' ) ), array( 'pay_when', array( 'now' ) ) ),
+			'target' => array( 'call', 'payments' ),
+		);
+
+		$f['pay_other'] = array(
+			'type'     => 'text',
+			'group'    => __( 'Taking the money', 'oc-theme' ),
+			'label'    => __( 'What are they called?', 'oc-theme' ),
+			'required' => true,
+			'when'     => array( 'pay_gw', array( 'other' ) ),
+			'target'   => array( 'call', 'payments' ),
+		);
+
+		$f['pay_split'] = array(
+			'type'    => 'choice',
+			'group'   => __( 'How they pay', 'oc-theme' ),
+			'label'   => __( 'Offer payment in instalments?', 'oc-theme' ),
+			'options' => $yesno,
+			'default' => 'yes',
+			'target'  => array( 'call', 'payments' ),
+		);
+
+		$f['pay_max'] = array(
+			'type'    => 'stepper',
+			'group'   => __( 'How they pay', 'oc-theme' ),
+			'label'   => __( 'Up to how many', 'oc-theme' ),
+			'min'     => 2,
+			'max'     => 12,
+			'default' => '3',
+			'when'    => array( 'pay_split', array( 'yes' ) ),
+			'target'  => array( 'call', 'payments' ),
+		);
+
+		$f['pay_charge'] = array(
+			'type'    => 'choice',
+			'group'   => __( 'How they pay', 'oc-theme' ),
+			'label'   => __( 'Is the card charged at once, or held?', 'oc-theme' ),
+			'help'    => __( 'Charged at once, the money moves when the order is placed. Held, the sum is set aside on the card and only taken when you approve the order — which suits a shop that cannot always promise the stock.', 'oc-theme' ),
+			'options' => array(
+				'now'  => __( 'Charged at once', 'oc-theme' ),
+				'hold' => __( 'Held until I approve', 'oc-theme' ),
+			),
+			'default' => 'now',
+			'quiet'   => true,
+			'target'  => array( 'call', 'payments' ),
+		);
+
+		$f['pay_more'] = array(
+			'type'    => 'checks',
+			'group'   => __( 'How they pay', 'oc-theme' ),
+			'label'   => __( 'What else can they pay with?', 'oc-theme' ),
+			'options' => array(
+				'wallets'  => __( 'Apple Pay and Google Pay', 'oc-theme' ),
+				'bit'      => 'bit',
+				'transfer' => __( 'A bank transfer', 'oc-theme' ),
+				'cash'     => __( 'Cash', 'oc-theme' ),
+			),
+			'default' => array(),
+			'target'  => array( 'call', 'payments' ),
+		);
+
+		$f['pay_cash_pickup'] = array(
+			'type'    => 'choice',
+			'group'   => __( 'How they pay', 'oc-theme' ),
+			'label'   => __( 'Cash only when they come and collect?', 'oc-theme' ),
+			'options' => $yesno,
+			'default' => 'yes',
+			'when'    => array( 'pay_more', array( 'cash' ) ),
+			'target'  => array( 'call', 'payments' ),
+		);
+
 		/* ---- 5a: the product page ---- */
 
 		$f['prod_side'] = array(
@@ -2194,6 +2417,7 @@ final class Schema {
 			case 'repeater':
 			case 'layout':
 			case 'branch_access':
+			case 'branch_pick':
 				return array();
 			case 'file':
 				return null;
@@ -2293,7 +2517,19 @@ final class Schema {
 				continue;
 			}
 
-			if ( in_array( (string) $has, array_map( 'strval', (array) $want ), true ) ) {
+			$wants = array_map( 'strval', (array) $want );
+
+			// A list of ticks answers whether one of them is ticked; every
+			// other kind of answer answers whether it is one of them.
+			if ( is_array( $has ) ) {
+				if ( array_intersect( array_map( 'strval', $has ), $wants ) ) {
+					return true;
+				}
+
+				continue;
+			}
+
+			if ( in_array( (string) $has, $wants, true ) ) {
 				return true;
 			}
 		}
@@ -2588,6 +2824,11 @@ final class Schema {
 
 				return preg_match( '/^([01][0-9]|2[0-3]):[0-5][0-9]$/', $v ) ? $v : '';
 
+			// A key or a password: whatever they pasted, with nothing
+			// stripped out of the middle of it.
+			case 'secret':
+				return mb_substr( trim( (string) ( is_scalar( $raw ) ? $raw : '' ) ), 0, 400 );
+
 			case 'email':
 				return sanitize_email( (string) ( is_scalar( $raw ) ? $raw : '' ) );
 
@@ -2778,6 +3019,22 @@ final class Schema {
 						);
 					}
 				}
+
+				return $out;
+
+			case 'branch_pick':
+				$out = array();
+
+				foreach ( (array) $raw as $row => $one ) {
+					$one = (array) $one;
+
+					$out[ (int) $row ] = array(
+						'on'    => empty( $one['on'] ) ? 0 : 1,
+						'title' => mb_substr( sanitize_text_field( (string) ( is_scalar( $one['title'] ?? '' ) ? $one['title'] : '' ) ), 0, 120 ),
+					);
+				}
+
+				ksort( $out );
 
 				return $out;
 

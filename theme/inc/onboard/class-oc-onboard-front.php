@@ -292,6 +292,11 @@ final class Front {
 				'found_hint'      => __( 'We found this address on your site. Change it if it is the wrong page.', 'oc-theme' ),
 				'link_stale'      => __( 'This link is no longer active. Open the newest link we sent you, and nothing you filled in will be lost.', 'oc-theme' ),
 				'branches_first'  => __( 'Add your branches on the previous screen and they will appear here.', 'oc-theme' ),
+				'branch_word'     => __( 'Branch', 'oc-theme' ),
+				/* translators: %1$s: the branch's name. */
+				'pick_from'       => __( 'Collection from %1$s', 'oc-theme' ),
+				/* translators: %1$s: how many branches. */
+				'branches_on'     => __( '%1$s branches', 'oc-theme' ),
 			),
 		);
 	}

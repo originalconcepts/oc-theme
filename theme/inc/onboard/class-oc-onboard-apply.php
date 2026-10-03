@@ -1617,6 +1617,181 @@ final class Apply {
 	}
 
 	/**
+	 * What it costs to send and whether people may come and collect: real
+	 * WooCommerce methods in the shop's own zone, so the checkout has
+	 * something to offer the moment the questionnaire ends.
+	 *
+	 * Written once. A rate the shop has since edited by hand is left where
+	 * it stands — the log remembers what we put there, and a value that no
+	 * longer matches it is somebody's decision.
+	 */
+	private function apply_shipping(): void {
+		if ( ! class_exists( '\WC_Shipping_Zones' ) ) {
+			return;
+		}
+
+		$zone  = $this->ship_zone();
+		$named = trim( (string) $this->v['ship_title'] );
+		$name  = '' !== $named ? $named : __( 'Courier to the door', 'oc-theme' );
+		$cost  = max( 0, (float) $this->v['ship_price'] );
+
+		$this->rate(
+			$zone,
+			'flat_rate',
+			'ship_price',
+			array(
+				'title'      => $name,
+				'tax_status' => 'none',
+				'cost'       => (string) $cost,
+			)
+		);
+
+		$over = (float) $this->v['ship_free_over'];
+
+		if ( $over > 0 ) {
+			$this->rate(
+				$zone,
+				'free_shipping',
+				'ship_free_over',
+				array(
+					/* translators: %1$s: what the paid delivery is called. */
+					'title'      => sprintf( __( '%1$s free', 'oc-theme' ), $name ),
+					'requires'   => 'min_amount',
+					'min_amount' => (string) $over,
+				)
+			);
+		}
+
+		if ( 'yes' !== (string) $this->v['pickup_on'] ) {
+			return;
+		}
+
+		$said = trim( (string) $this->v['pickup_title'] );
+
+		$this->rate(
+			$zone,
+			'local_pickup',
+			'pickup_on',
+			array(
+				'title'      => '' !== $said ? $said : __( 'Collection in person', 'oc-theme' ),
+				'tax_status' => 'none',
+				'cost'       => '0',
+			)
+		);
+	}
+
+	/**
+	 * The zone the shop's own country sits in, opened if it is not there.
+	 */
+	private function ship_zone(): \WC_Shipping_Zone {
+		$want = (int) ( $this->log['ship:zone'] ?? 0 );
+
+		if ( $want ) {
+			$zone = \WC_Shipping_Zones::get_zone( $want );
+
+			if ( $zone instanceof \WC_Shipping_Zone ) {
+				return $zone;
+			}
+		}
+
+		$land = explode( ':', (string) get_option( 'woocommerce_default_country', 'IL' ) );
+		$land = (string) ( $land[0] ?? 'IL' );
+
+		foreach ( \WC_Shipping_Zones::get_zones() as $row ) {
+			foreach ( (array) ( $row['zone_locations'] ?? array() ) as $where ) {
+				if ( 'country' === (string) $where->type && $land === (string) $where->code ) {
+					$this->remember( 'ship:zone', (int) $row['zone_id'] );
+
+					return \WC_Shipping_Zones::get_zone( (int) $row['zone_id'] );
+				}
+			}
+		}
+
+		$zone = new \WC_Shipping_Zone();
+
+		$zone->set_zone_name( (string) ( WC()->countries->countries[ $land ] ?? $land ) );
+		$zone->add_location( $land, 'country' );
+		$zone->save();
+		$this->remember( 'ship:zone', (int) $zone->get_id() );
+
+		return $zone;
+	}
+
+	/**
+	 * One shipping method in that zone, added once and then left alone.
+	 *
+	 * @param \WC_Shipping_Zone    $zone  The zone.
+	 * @param string               $kind  flat_rate | free_shipping | local_pickup.
+	 * @param string               $id    The field the report should name.
+	 * @param array<string,string> $sets  The method's own settings.
+	 */
+	private function rate( \WC_Shipping_Zone $zone, string $kind, string $id, array $sets ): void {
+		$lk  = 'ship:' . $kind;
+		$was = (int) ( $this->log[ $lk ] ?? 0 );
+
+		if ( $was && isset( $zone->get_shipping_methods()[ $was ] ) ) {
+			$this->row( $id, $sets['title'], 'skipped', __( 'The method is already there.', 'oc-theme' ) );
+
+			return;
+		}
+
+		$made = $zone->add_shipping_method( $kind );
+
+		if ( ! $made ) {
+			$this->row( $id, $sets['title'], 'failed', __( 'WooCommerce would not add the method.', 'oc-theme' ) );
+
+			return;
+		}
+
+		update_option( 'woocommerce_' . $kind . '_' . $made . '_settings', $sets );
+		$this->remember( $lk, (int) $made );
+		$this->row( $id, $sets['title'], 'applied' );
+	}
+
+	/**
+	 * Who takes the money. The gateway plugin is not on the site yet, so
+	 * the answers are kept on the site itself, under one option, for
+	 * whoever installs it. Keys and passwords are never written into the
+	 * report, and never leave the shop.
+	 */
+	private function apply_payments(): void {
+		$gw   = (string) $this->v['pay_gw'];
+		$kept = array(
+			'gateway'      => $gw,
+			'other'        => trim( (string) $this->v['pay_other'] ),
+			'fill_later'   => 'later' === (string) $this->v['pay_when'] ? 1 : 0,
+			'instalments'  => 'yes' === (string) $this->v['pay_split'] ? max( 2, (int) $this->v['pay_max'] ) : 0,
+			'charge'       => (string) $this->v['pay_charge'],
+			'methods'      => is_array( $this->v['pay_more'] ) ? array_values( $this->v['pay_more'] ) : array(),
+			'cash_pickup'  => 'yes' === (string) $this->v['pay_cash_pickup'] ? 1 : 0,
+		);
+
+		if ( 'cardcom' === $gw ) {
+			$kept['cardcom'] = array(
+				'terminal' => trim( (string) $this->v['cc_terminal'] ),
+				'user'     => trim( (string) $this->v['cc_user'] ),
+				'pass'     => (string) $this->v['cc_pass'],
+			);
+		}
+
+		if ( 'payplus' === $gw ) {
+			$kept['payplus'] = array(
+				'api'    => (string) $this->v['pp_api'],
+				'secret' => (string) $this->v['pp_secret'],
+				'page'   => trim( (string) $this->v['pp_page'] ),
+			);
+		}
+
+		update_option( 'oc_onboard_pay', $kept, false );
+
+		$told = 'none' === $gw
+			? __( 'No clearing company yet — we send the PayPlus link.', 'oc-theme' )
+			: __( 'Kept on the site for whoever installs the gateway. Nothing of it is in this report or in any email.', 'oc-theme' );
+
+		$this->row( 'pay_gw', __( 'Taking the money', 'oc-theme' ), 'check', $told );
+	}
+
+	/**
 	 * The category the cart panel offers from, as a term id — the panel
 	 * stores a number, and the questionnaire only ever knew a name.
 	 */

@@ -186,8 +186,16 @@
 				if ( ! isEmpty( has ) ) { return true; }
 				continue;
 			}
-			var list = Array.isArray( want ) ? want : [ want ];
-			if ( list.map( String ).indexOf( String( has ) ) !== -1 ) { return true; }
+			var list = ( Array.isArray( want ) ? want : [ want ] ).map( String );
+
+			// A list of ticks answers whether one of them is ticked; every
+			// other kind of answer answers whether it is one of them.
+			if ( Array.isArray( has ) ) {
+				if ( has.map( String ).some( function ( v ) { return list.indexOf( v ) !== -1; } ) ) { return true; }
+				continue;
+			}
+
+			if ( list.indexOf( String( has ) ) !== -1 ) { return true; }
 		}
 		return false;
 	}
@@ -482,10 +490,10 @@
 	}
 
 	function inputFor( id, f, value, onChange ) {
-		var type = { phone: 'tel', email: 'email', url: 'url', number: 'number', time: 'time' }[ f.type ] || 'text';
+		var type = { phone: 'tel', email: 'email', url: 'url', number: 'number', time: 'time', secret: 'password' }[ f.type ] || 'text';
 		var attrs = { type: type, value: value === null || value === undefined ? '' : value, 'class': 'oc-onb-in', autocomplete: 'off' };
 		if ( f.dir ) { attrs.dir = f.dir; }
-		if ( f.type === 'phone' || f.type === 'email' || f.type === 'url' ) { attrs.dir = 'ltr'; }
+		if ( f.type === 'phone' || f.type === 'email' || f.type === 'url' || f.type === 'secret' ) { attrs.dir = 'ltr'; }
 		if ( f.type === 'number' ) { if ( f.min !== undefined ) { attrs.min = f.min; } if ( f.max !== undefined ) { attrs.max = f.max; } attrs.inputmode = 'numeric'; }
 		if ( f.type === 'time' ) { attrs['class'] += ' oc-onb-in--time'; }
 		if ( f.type === 'phone' ) { attrs.inputmode = 'tel'; }
@@ -1761,6 +1769,54 @@
 	}
 
 	/**
+	 * Which branches a buyer may collect from, and what each one is called
+	 * at the checkout. All of them to begin with: a shop that opened a
+	 * branch means people to walk into it.
+	 *
+	 * @param {string} id Field id.
+	 * @param {Object} f  Field definition.
+	 */
+	function render_branch_pick( id, f ) {
+		var rows = val( f.of ) || [];
+		var cur  = val( id ) || {};
+
+		if ( ! rows.length ) {
+			return el( 'p', { 'class': 'oc-onb-f__help', text: I.branches_first } );
+		}
+
+		var wrap = el( 'div', { 'class': 'oc-onb-bpick' } );
+
+		rows.forEach( function ( row, i ) {
+			var mine = cur[ i ] || cur[ String( i ) ] || {};
+			var name = String( row.name || '' ).trim() || ( I.branch_word + ' ' + ( i + 1 ) );
+			var on   = undefined === mine.on ? 1 : mine.on;
+			var one  = el( 'div', { 'class': 'oc-onb-bpick__one' } );
+			var keep = function ( k, v ) {
+				var all = val( id ) || {};
+
+				all[ i ] = Object.assign( {}, all[ i ] || all[ String( i ) ] || { on: 1 }, {} );
+				all[ i ][ k ] = v;
+				set( id, all );
+			};
+			var box = el( 'input', { type: 'checkbox', 'class': 'oc-onb-check__i' } );
+
+			box.checked = !! on;
+			box.addEventListener( 'change', function () { keep( 'on', box.checked ? 1 : 0 ); } );
+
+			one.appendChild( el( 'label', { 'class': 'oc-onb-check' }, [ box, el( 'span', { text: name + ( row.city ? ' \u00b7 ' + row.city : '' ) } ) ] ) );
+			one.appendChild( inputFor(
+				id + '.' + i,
+				{ type: 'text', placeholder: fmt( I.pick_from, name ) },
+				mine.title || '',
+				function ( v ) { keep( 'title', v ); }
+			) );
+			wrap.appendChild( one );
+		} );
+
+		return wrap;
+	}
+
+	/**
 	 * The days of the week, as the chips the opening hours use. The same
 	 * question deserves the same shape wherever it is asked.
 	 *
@@ -2030,9 +2086,20 @@
 			case 'consent':  inner = render_consent( id, f ); break;
 			case 'file':     inner = render_file( id, f ); break;
 			case 'branch_access': inner = render_branch_access( id, f ); break;
+			case 'branch_pick': inner = render_branch_pick( id, f ); break;
 			case 'hours':    inner = render_hours( id, f ); break;
 			case 'repeater': inner = render_repeater( id, f ); break;
-			case 'info':     return el( 'div', { 'class': 'oc-onb-info', text: f.label } );
+			case 'info':     {
+				// A told thing, not an asked one — but it still answers to a
+				// "when", so it is wrapped like every other field.
+				var said = el( 'div', { 'class': 'oc-onb-f oc-onb-f--info', 'data-field': id }, [
+					el( 'div', { 'class': 'oc-onb-info', text: f.label } )
+				] );
+
+				if ( ! shown( id ) ) { said.hidden = true; }
+
+				return said;
+			}
 			default:         inner = render_text( id, f );
 		}
 		return fieldBox( id, f, inner );
@@ -3464,6 +3531,9 @@
 			case 'pick':
 			case 'gallery':  return f.options[ v ] || String( v );
 			case 'checks':   return v.map( function ( k ) { return f.options[ k ] || k; } ).join( ', ' );
+			// A key is never read back on this screen — only that it is there.
+			case 'secret':   return '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022';
+			case 'branch_pick': return fmt( I.branches_on, Object.keys( v ).filter( function ( k ) { return v[ k ] && v[ k ].on; } ).length );
 			case 'consent':  return v ? I.yes : I.no;
 			case 'file':     return v.name || '';
 			case 'hours':    return v.map( function ( r ) { return r.days.map( function ( d ) { return C.days[ d ] ? C.days[ d ].label : d; } ).join( ' ' ) + ' ' + r.from + '–' + r.to; } ).join( ' · ' );
