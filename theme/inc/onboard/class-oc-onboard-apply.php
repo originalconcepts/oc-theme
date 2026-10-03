@@ -1839,6 +1839,10 @@ final class Apply {
 			return;
 		}
 
+		// The questionnaire promises WhatsApp, so it says so outright rather
+		// than trusting whatever the site happens to hold.
+		$this->write_mod( 'prod_contact', 'oc_contact_channel', 'whatsapp' );
+
 		$shot = is_array( $this->v['contact_photo'] ) ? (int) ( $this->v['contact_photo']['id'] ?? 0 ) : 0;
 
 		if ( ! $shot ) {
