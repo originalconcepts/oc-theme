@@ -124,11 +124,43 @@ final class Apply {
 			}
 		}
 
+		$this->promised();
+
 		update_option( self::LOG, $this->log, false );
 
 		self::flush_caches();
 
 		return $this->report;
+	}
+
+	/**
+	 * The settings the questionnaire promises without asking about them.
+	 *
+	 * A question we took away does not take its answer with it: a site this
+	 * engine ran on before still holds whatever it was told then, and a
+	 * screen that says the panel opens from the left, or that the card opens
+	 * WhatsApp, has to be true on that site too. So the promises are written
+	 * outright rather than left to the theme's defaults — and a value
+	 * somebody has since changed by hand is still left alone, because
+	 * write_mod and write_option_key both check the log first.
+	 */
+	private function promised(): void {
+		// The cart panel slides out from the left, and the buying bar follows
+		// a phone down. Both were questions once; neither is now.
+		$this->write_option_key( 'cart_open', 'oc_cart', 'side', 'left' );
+		$this->write_mod( 'prod_side', 'oc_product_sticky_atc', 1 );
+
+		// Similar products: shown, and picked the way that works — by what a
+		// product shares with this one, not by the loosest category it is in.
+		$this->write_mod( 'rel_title', 'oc_product_related', 1 );
+		$this->write_mod( 'rel_title', 'oc_related_scope', 'smart' );
+		$this->write_mod( 'rel_title', 'oc_related_layout', 'grid' );
+
+		// After the tabs the row is the width of the page, so it is a grid of
+		// products like the similar ones.
+		if ( 'yes' === (string) $this->v['xs_on'] ) {
+			$this->write_mod( 'xs_on', 'oc_xsell_style_tabs', 'grid' );
+		}
 	}
 
 	/* ------------------------------------------------------------ report */
