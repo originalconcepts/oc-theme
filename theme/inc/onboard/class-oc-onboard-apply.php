@@ -1594,11 +1594,43 @@ final class Apply {
 			);
 		}
 
-		$title = trim( (string) $this->v['prod_tab2_title'] );
+		foreach ( array_values( (array) $this->v['prod_tabs'] ) as $i => $row ) {
+			$row   = (array) $row;
+			$title = trim( (string) ( $row['title'] ?? '' ) );
 
-		if ( '' !== $title ) {
-			$this->tab( 'extra', 'prod_tab2_title', $title, trim( (string) $this->v['prod_tab2_text'] ), 40, false );
+			if ( '' === $title ) {
+				continue;
+			}
+
+			$this->tab( 'extra' . $i, 'prod_tabs', $title, trim( (string) ( $row['text'] ?? '' ) ), 40 + $i, false );
 		}
+
+		// Where the short description reads: under the heading, or as the
+		// first tab and open to begin with.
+		$all = \OC\Theme\Tabs::settings();
+
+		$all['short_tab'] = 'tab' === (string) $this->v['prod_short'] ? 1 : 0;
+
+		update_option( 'oc_tabs', $all );
+		$this->row( 'prod_short', __( 'The short description', 'oc-theme' ), 'applied' );
+	}
+
+	/**
+	 * The face on the contact card. Everything else about it is a mod of
+	 * its own; a photograph is an attachment, so it comes through here.
+	 */
+	private function apply_contact(): void {
+		if ( 'yes' !== (string) $this->v['prod_contact'] ) {
+			return;
+		}
+
+		$shot = is_array( $this->v['contact_photo'] ) ? (int) ( $this->v['contact_photo']['id'] ?? 0 ) : 0;
+
+		if ( ! $shot ) {
+			return;
+		}
+
+		$this->write_mod( 'contact_photo', 'oc_contact_img_1', $shot );
 	}
 
 	/**

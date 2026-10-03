@@ -217,7 +217,7 @@ final class Schema {
 						'intro'   => __( 'Where the decision is made. The pictures on one side, everything the buyer needs on the other. Every answer here changes the drawing beside you.', 'oc-theme' ),
 						'intro_m' => __( 'On a phone the two do not fit side by side, so the two buttons above switch between the questions and the drawing.', 'oc-theme' ),
 						'preview' => 'product',
-						'fields'  => array( 'prod_side', 'prod_gallery', 'prod_qty', 'prod_sku', 'prod_stock', 'prod_ship_days', 'prod_lead_min', 'prod_lead_max', 'prod_icons', 'prod_ship_tab', 'prod_ship_text', 'prod_tab2_title', 'prod_tab2_text' ),
+						'fields'  => array( 'prod_side', 'prod_gallery', 'prod_qty', 'prod_sku', 'prod_price_btn', 'prod_sticky', 'prod_stock', 'prod_ship_days', 'prod_lead_min', 'prod_lead_max', 'prod_icons_lay', 'prod_icons', 'prod_short', 'prod_ship_tab', 'prod_ship_text', 'prod_tabs', 'prod_contact', 'contact_name', 'contact_role', 'contact_photo', 'contact_phone', 'contact_channel' ),
 					),
 				),
 			),
@@ -1556,6 +1556,26 @@ final class Schema {
 			'target'  => array( 'mod', 'oc_product_sku' ),
 		);
 
+		$f['prod_price_btn'] = array(
+			'type'    => 'choice',
+			'group'   => __( 'The buying area', 'oc-theme' ),
+			'label'   => __( 'The price on the button itself?', 'oc-theme' ),
+			'help'    => __( 'The button reads "Add to cart · 1,890" and follows the quantity and the chosen option.', 'oc-theme' ),
+			'options' => $yesno,
+			'default' => 'no',
+			'target'  => array( 'mod', 'oc_atc_price' ),
+		);
+
+		$f['prod_sticky'] = array(
+			'type'    => 'choice',
+			'group'   => __( 'The buying area', 'oc-theme' ),
+			'label'   => __( 'A buying bar that follows down a phone?', 'oc-theme' ),
+			'help'    => __( 'On a long product page the price and the button stay within reach instead of waiting at the top.', 'oc-theme' ),
+			'options' => $yesno,
+			'default' => 'yes',
+			'target'  => array( 'mod', 'oc_product_sticky_atc' ),
+		);
+
 		$f['prod_stock'] = array(
 			'type'    => 'choice',
 			'group'   => __( 'The buying area', 'oc-theme' ),
@@ -1567,7 +1587,7 @@ final class Schema {
 		);
 
 		$f['prod_ship_days'] = array(
-			'type'    => 'checks',
+			'type'    => 'days',
 			'group'   => __( 'The buying area', 'oc-theme' ),
 			'label'   => __( 'Which days do orders go out?', 'oc-theme' ),
 			'help'    => __( 'Counting starts the day after the order and skips the days you do not send, and the holidays.', 'oc-theme' ),
@@ -1608,6 +1628,18 @@ final class Schema {
 			'target'  => array( 'mod', 'oc_ship_lead' ),
 		);
 
+		$f['prod_icons_lay'] = array(
+			'type'    => 'choice',
+			'group'   => __( 'Under the button', 'oc-theme' ),
+			'label'   => __( 'How do they stand?', 'oc-theme' ),
+			'options' => array(
+				'stack' => __( 'One under the other', 'oc-theme' ),
+				'row'   => __( 'All in one row', 'oc-theme' ),
+			),
+			'default' => 'stack',
+			'target'  => array( 'mod', 'oc_atc_icons_layout' ),
+		);
+
 		$f['prod_icons'] = array(
 			'type'    => 'repeater',
 			'group'   => __( 'Under the button', 'oc-theme' ),
@@ -1642,6 +1674,19 @@ final class Schema {
 			'target'  => array( 'call', 'prod_icons' ),
 		);
 
+		$f['prod_short'] = array(
+			'type'    => 'choice',
+			'group'   => __( 'What else the page tells', 'oc-theme' ),
+			'label'   => __( 'Where does the short description go?', 'oc-theme' ),
+			'help'    => __( 'The line or two that sum the product up. Under the heading it is read by everyone; as the first tab it waits for whoever wants it.', 'oc-theme' ),
+			'options' => array(
+				'under' => __( 'Under the heading, beside the price', 'oc-theme' ),
+				'tab'   => __( 'As the first tab, open to begin with', 'oc-theme' ),
+			),
+			'default' => 'under',
+			'target'  => array( 'call', 'ship_tab' ),
+		);
+
 		$f['prod_ship_tab'] = array(
 			'type'    => 'choice',
 			'group'   => __( 'What else the page tells', 'oc-theme' ),
@@ -1661,22 +1706,93 @@ final class Schema {
 			'target' => array( 'call', 'ship_tab' ),
 		);
 
-		$f['prod_tab2_title'] = array(
-			'type'        => 'text',
-			'group'       => __( 'What else the page tells', 'oc-theme' ),
-			'label'       => __( 'One more tab, if you want one', 'oc-theme' ),
-			'help'        => __( 'The same words on every product — care instructions, a size guide, a warranty.', 'oc-theme' ),
-			'placeholder' => __( 'Care instructions', 'oc-theme' ),
-			'target'      => array( 'call', 'ship_tab' ),
+		$f['prod_tabs'] = array(
+			'type'   => 'repeater',
+			'group'  => __( 'What else the page tells', 'oc-theme' ),
+			'label'  => '',
+			'help'   => __( 'The same words on every product — care instructions, a size guide, a warranty.', 'oc-theme' ),
+			'row'    => __( 'Tab', 'oc-theme' ),
+			'add'    => __( 'Another tab', 'oc-theme' ),
+			'max'    => 4,
+			'empty'  => true,
+			'fold'   => true,
+			'fields' => array(
+				'title' => array(
+					'type'        => 'text',
+					'label'       => __( 'What it is called', 'oc-theme' ),
+					'placeholder' => __( 'Care instructions', 'oc-theme' ),
+					'required'    => true,
+				),
+				'text'  => array(
+					'type'     => 'textarea',
+					'label'    => __( 'And what it says', 'oc-theme' ),
+					'rows'     => 4,
+					'required' => true,
+				),
+			),
+			'target' => array( 'call', 'ship_tab' ),
 		);
 
-		$f['prod_tab2_text'] = array(
-			'type'   => 'textarea',
-			'group'  => __( 'What else the page tells', 'oc-theme' ),
-			'label'  => __( 'And what it says', 'oc-theme' ),
-			'rows'   => 4,
-			'when'   => array( 'prod_tab2_title', 'filled' ),
-			'target' => array( 'call', 'ship_tab' ),
+		$f['prod_contact'] = array(
+			'type'    => 'choice',
+			'group'   => __( 'Someone to talk to', 'oc-theme' ),
+			'label'   => __( 'A contact card on the product page?', 'oc-theme' ),
+			'help'    => __( 'A face, a name and a button that opens WhatsApp or dials. On goods people hesitate over it is often what settles it.', 'oc-theme' ),
+			'options' => $yesno,
+			'default' => 'no',
+			'target'  => array( 'mod', 'oc_contact_on' ),
+		);
+
+		$f['contact_name'] = array(
+			'type'        => 'text',
+			'group'       => __( 'Someone to talk to', 'oc-theme' ),
+			'label'       => __( 'Who answers', 'oc-theme' ),
+			'placeholder' => __( 'Sarah', 'oc-theme' ),
+			'required'    => true,
+			'when'        => array( 'prod_contact', array( 'yes' ) ),
+			'target'      => array( 'mod', 'oc_contact_name' ),
+		);
+
+		$f['contact_role'] = array(
+			'type'        => 'text',
+			'group'       => __( 'Someone to talk to', 'oc-theme' ),
+			'label'       => __( 'And what they do', 'oc-theme' ),
+			'placeholder' => __( 'Sales and advice', 'oc-theme' ),
+			'when'        => array( 'prod_contact', array( 'yes' ) ),
+			'target'      => array( 'mod', 'oc_contact_role' ),
+		);
+
+		$f['contact_photo'] = array(
+			'type'   => 'file',
+			'accept' => 'image',
+			'group'  => __( 'Someone to talk to', 'oc-theme' ),
+			'label'  => __( 'A photograph of them', 'oc-theme' ),
+			'help'   => __( 'A real face does more here than a logo. It is cropped to a circle.', 'oc-theme' ),
+			'when'   => array( 'prod_contact', array( 'yes' ) ),
+			'target' => array( 'call', 'contact' ),
+		);
+
+		$f['contact_phone'] = array(
+			'type'        => 'phone',
+			'group'       => __( 'Someone to talk to', 'oc-theme' ),
+			'label'       => __( 'The number', 'oc-theme' ),
+			'placeholder' => '050-0000000',
+			'required'    => true,
+			'when'        => array( 'prod_contact', array( 'yes' ) ),
+			'target'      => array( 'mod', 'oc_contact_phone' ),
+		);
+
+		$f['contact_channel'] = array(
+			'type'    => 'choice',
+			'group'   => __( 'Someone to talk to', 'oc-theme' ),
+			'label'   => __( 'The button opens', 'oc-theme' ),
+			'options' => array(
+				'whatsapp' => __( 'WhatsApp', 'oc-theme' ),
+				'phone'    => __( 'A call', 'oc-theme' ),
+			),
+			'default' => 'whatsapp',
+			'when'    => array( 'prod_contact', array( 'yes' ) ),
+			'target'  => array( 'mod', 'oc_contact_channel' ),
 		);
 
 		/* ---- 6a: brands ---- */
@@ -2362,6 +2478,21 @@ final class Schema {
 				$max = isset( $f['max'] ) ? (int) $f['max'] : 10;
 
 				return (string) max( $min, min( $max, $n ) );
+
+			case 'days':
+				$out = array();
+
+				foreach ( (array) $raw as $d ) {
+					$d = (string) ( is_scalar( $d ) ? $d : '' );
+
+					if ( preg_match( '/^[0-6]$/', $d ) && ! in_array( $d, $out, true ) ) {
+						$out[] = $d;
+					}
+				}
+
+				sort( $out );
+
+				return $out;
 
 			case 'checks':
 				$out = array();

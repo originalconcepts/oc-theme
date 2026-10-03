@@ -176,6 +176,11 @@ final class Front {
 				'wf_stock'        => __( 'In stock · arrives 2/12–4/12', 'oc-theme' ),
 				'wf_atc'          => __( 'Add to cart', 'oc-theme' ),
 				'wf_sku'          => __( 'Code: 10482', 'oc-theme' ),
+				'wf_short'        => __( 'Solid oak, woven fabric, and a frame meant to outlast the fashion.', 'oc-theme' ),
+				/* translators: %1$s: how many days at the least, %2$s: at the most. */
+				'lead_span'       => __( 'It will say: arrives in %1$s to %2$s sending days.', 'oc-theme' ),
+				/* translators: %1$s: how many days. */
+				'lead_one'        => __( 'It will say: arrives in %1$s sending days.', 'oc-theme' ),
 				'wf_tab_about'    => __( 'About the product', 'oc-theme' ),
 				'wf_tab_ship'     => __( 'Delivery and returns', 'oc-theme' ),
 				'wf_top'          => __( 'Free delivery over 400 ILS · 12 payments, no interest', 'oc-theme' ),

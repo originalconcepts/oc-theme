@@ -12428,3 +12428,81 @@ msgid "%d promise."
 msgid_plural "%d promises."
 msgstr[0] "הבטחה אחת."
 msgstr[1] "%d הבטחות."
+
+msgid "A buying bar that follows down a phone?"
+msgstr "סרגל קנייה שנוסע עם הגלילה בטלפון?"
+
+msgid "A contact card on the product page?"
+msgstr "כרטיס יצירת קשר בעמוד המוצר?"
+
+msgid "A face, a name and a button that opens WhatsApp or dials. On goods people hesitate over it is often what settles it."
+msgstr "פנים, שם וכפתור שפותח וואטסאפ או מחייג. במוצרים שמתלבטים עליהם זה לא פעם מה שסוגר את העסקה."
+
+msgid "A photograph of them"
+msgstr "תמונה שלו או שלה"
+
+msgid "A real face does more here than a logo. It is cropped to a circle."
+msgstr "פנים אמיתיות עובדות כאן יותר מלוגו. התמונה תיחתך לעיגול."
+
+msgid "All in one row"
+msgstr "כולן בשורה אחת"
+
+msgid "And what they do"
+msgstr "ומה התפקיד"
+
+msgid "Another tab"
+msgstr "לשונית נוספת"
+
+msgid "As the first tab, open to begin with"
+msgstr "כלשונית ראשונה, פתוחה כברירת מחדל"
+
+msgid "How do they stand?"
+msgstr "איך הן עומדות?"
+
+msgid "It will say: arrives in %1$s sending days."
+msgstr "ייכתב: מגיע תוך %1$s ימי משלוח."
+
+msgid "It will say: arrives in %1$s to %2$s sending days."
+msgstr "ייכתב: מגיע תוך %1$s עד %2$s ימי משלוח."
+
+msgid "On a long product page the price and the button stay within reach instead of waiting at the top."
+msgstr "בעמוד מוצר ארוך המחיר והכפתור נשארים בהישג יד במקום לחכות למעלה."
+
+msgid "One under the other"
+msgstr "אחת מתחת לשנייה"
+
+msgid "Sales and advice"
+msgstr "מכירות וייעוץ"
+
+msgid "Sarah"
+msgstr "שרה"
+
+msgid "Solid oak, woven fabric, and a frame meant to outlast the fashion."
+msgstr "עץ אלון מלא, בד ארוג, ומסגרת שנבנתה כדי להחזיק מעמד הרבה אחרי האופנה."
+
+msgid "Tab"
+msgstr "לשונית"
+
+msgid "The button reads \"Add to cart · 1,890\" and follows the quantity and the chosen option."
+msgstr "על הכפתור ייכתב ״הוספה לסל · 1,890״ והוא עוקב אחרי הכמות ואחרי האפשרות שנבחרה."
+
+msgid "The line or two that sum the product up. Under the heading it is read by everyone; as the first tab it waits for whoever wants it."
+msgstr "השורה או שתיים שמסכמות את המוצר. מתחת לכותרת כולם קוראים אותן; כלשונית ראשונה הן מחכות למי שרוצה."
+
+msgid "The number"
+msgstr "המספר"
+
+msgid "The price on the button itself?"
+msgstr "המחיר על הכפתור עצמו?"
+
+msgid "The short description"
+msgstr "התיאור הקצר"
+
+msgid "Under the heading, beside the price"
+msgstr "מתחת לכותרת, לצד המחיר"
+
+msgid "What it is called"
+msgstr "איך היא נקראת"
+
+msgid "Where does the short description go?"
+msgstr "איפה יושב התיאור הקצר?"

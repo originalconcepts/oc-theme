@@ -913,12 +913,16 @@ button.oc-onb-steps__i { cursor: pointer; }
 .oc-onb-rep__mark { inline-size: 26px; block-size: 26px; display: grid; place-items: center; color: var(--onb-ink-2); flex: 0 0 auto; }
 .oc-onb-rep__mark svg, .oc-onb-rep__mark img { inline-size: 22px; block-size: 22px; object-fit: contain; }
 .oc-onb-rep__row--fold.is-shut { background: #fff; }
-.oc-onb-rep__tools { display: flex; align-items: center; gap: 14px; flex: 0 0 auto; }
+.oc-onb-rep__tools { display: flex; align-items: center; gap: 14px; flex: 0 0 auto; margin-inline-start: auto; }
 .oc-onb-rep__v { font-size: 16px; line-height: 1; color: var(--onb-ink-2); transition: transform .15s ease; }
 .oc-onb-rep__v.is-open { transform: rotate(180deg); }
 
 /* Asking on the row itself, where the press happened. */
+/* The question only exists after the bin is pressed, and it stands where
+   the bin stood. A class that says "flex" beats the browser's own rule for
+   a hidden element, so it has to say otherwise itself. */
 .oc-onb-rep__ask { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--onb-ink-2); }
+.oc-onb-rep__ask[hidden], .oc-onb-rep__tools[hidden] { display: none; }
 .oc-onb-rep__yes { color: var(--onb-err); }
 
 /* ------------------------------------------------- the product page, drawn */
@@ -955,3 +959,11 @@ button.oc-onb-steps__i { cursor: pointer; }
 .oc-onb-side.is-phone .wf-pp { grid-template-columns: 1fr; }
 .oc-onb-side.is-phone .wf-pp__g--thumbs-side { grid-template-columns: 1fr; }
 .oc-onb-side.is-phone .wf-pp__g--thumbs-side .wf-pp__th { grid-template-columns: repeat(4, 1fr); }
+
+/* The product's name and its code share a line, as they do in the shop. */
+.wf-pp__line { display: flex; align-items: baseline; gap: 8px; }
+.wf-pp__line .wf-pp__h { flex: 1; }
+.wf-pp__short { margin: 0; font-size: 11px; line-height: 1.6; color: #6c7382; }
+.wf-pp__ics--row { grid-auto-flow: column; grid-auto-columns: 1fr; gap: 8px; }
+.wf-pp__ics--row .wf-pp__ic { flex-direction: column; text-align: center; gap: 3px; font-size: 9px; }
+.wf-pp__ic--hint { color: #b2b7c2; }

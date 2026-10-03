@@ -292,6 +292,7 @@
 		queueSave();
 		refreshVisibility();
 		paintPreview();
+		leadLine();
 	}
 
 	/**
@@ -468,7 +469,7 @@
 				f.required ? el( 'span', { 'class': 'oc-onb-f__req', text: ' *', 'aria-label': I.required } ) : null,
 				// How many have to be ticked is part of the demand, so it
 				// stands with it and in its colour.
-				f.min ? el( 'span', { 'class': 'oc-onb-f__req oc-onb-f__min', text: fmt( I.pick_at_least, floorOf( f ) ) } ) : null
+				f.min && ( 'from_menu' === f.type || 'from_brands' === f.type ) ? el( 'span', { 'class': 'oc-onb-f__req oc-onb-f__min', text: fmt( I.pick_at_least, floorOf( f ) ) } ) : null
 			] ) );
 		}
 		if ( f.help ) { box.appendChild( el( 'p', { 'class': 'oc-onb-f__help', text: f.help } ) ); }
@@ -1757,6 +1758,43 @@
 		return wrap;
 	}
 
+	/**
+	 * The days of the week, as the chips the opening hours use. The same
+	 * question deserves the same shape wherever it is asked.
+	 *
+	 * @param {string} id Field id.
+	 * @param {Object} f  Field.
+	 */
+	function render_days( id, f ) {
+		var cur  = ( val( id ) || [] ).map( String );
+		var wrap = el( 'div', { 'class': 'oc-onb-days', 'aria-label': I.days } );
+
+		C.days.forEach( function ( d ) {
+			var on = cur.indexOf( String( d.n ) ) !== -1;
+			var b  = el( 'button', {
+				type: 'button',
+				'class': 'oc-onb-day' + ( on ? ' is-on' : '' ),
+				text: d.label,
+				title: d.full,
+				'aria-pressed': on ? 'true' : 'false'
+			} );
+
+			b.addEventListener( 'click', function () {
+				var i = cur.indexOf( String( d.n ) );
+
+				if ( i === -1 ) { cur.push( String( d.n ) ); } else { cur.splice( i, 1 ); }
+
+				b.classList.toggle( 'is-on', i === -1 );
+				b.setAttribute( 'aria-pressed', i === -1 ? 'true' : 'false' );
+				set( id, cur.slice().sort() );
+			} );
+
+			wrap.appendChild( b );
+		} );
+
+		return wrap;
+	}
+
 	function render_hours( id, f ) {
 		var wrap = el( 'div', { 'class': 'oc-onb-hours' } );
 		var rows = ( val( id ) || [] ).map( function ( r ) { return { days: r.days.slice(), from: r.from, to: r.to }; } );
@@ -1822,7 +1860,7 @@
 			rows = kept;
 		}
 
-		if ( rows.length === 0 ) { rows.push( {} ); }
+		if ( rows.length === 0 && ! f.empty ) { rows.push( {} ); }
 
 		function commit() { set( id, rows ); }
 
@@ -1950,6 +1988,7 @@
 			// A list whose length is decided elsewhere does not grow here:
 			// the arranging screen is where parts are added and removed.
 			if ( ! f.fixed && rows.length < ( f.max || 20 ) ) {
+				/* The button is the only way in when the list starts empty. */
 				wrap.appendChild( el( 'button', { type: 'button', 'class': 'oc-onb-btn oc-onb-btn--ghost', text: f.add || '+', onclick: function () {
 					commitAll();
 					rows.push( {} );
@@ -1979,6 +2018,7 @@
 			case 'from_menu': inner = render_from_menu( id, f ); break;
 			case 'from_brands': inner = render_from_brands( id, f ); break;
 			case 'checks':   inner = render_checks( id, f ); break;
+			case 'days':     inner = render_days( id, f ); break;
 			case 'consent':  inner = render_consent( id, f ); break;
 			case 'file':     inner = render_file( id, f ); break;
 			case 'branch_access': inner = render_branch_access( id, f ); break;
@@ -2607,17 +2647,20 @@
 		row.appendChild( w( 'wf-pp__btn', null, I.wf_atc ) );
 		buy.push( row );
 
-		// The promises under the button, drawn with the drawings they chose.
-		var said = ( val( 'prod_icons' ) || [] ).filter( function ( r ) { return r && String( r.text || '' ).trim(); } );
+		// The promises under the button. Before a word is written they stand
+		// as the grey example, so nobody wonders where that row went.
+		var mine = ( val( 'prod_icons' ) || [] ).filter( function ( r ) { return r && ( r.icon || String( r.text || '' ).trim() ); } );
+		var hint = ( F.prod_icons && F.prod_icons.fields && F.prod_icons.fields.text.placeholder ) || '';
 
-		if ( said.length ) {
-			buy.push( w( 'wf-pp__ics', said.map( function ( r ) {
-				var one = w( 'wf-pp__ic' );
-				var art = ( C.atc_icons || {} )[ r.icon || '' ];
+		if ( mine.length ) {
+			buy.push( w( 'wf-pp__ics wf-pp__ics--' + String( val( 'prod_icons_lay' ) || 'stack' ), mine.map( function ( r ) {
+				var one  = w( 'wf-pp__ic' );
+				var art  = ( C.atc_icons || {} )[ r.icon || '' ];
+				var says = String( r.text || '' ).trim();
 
 				if ( art ) { one.innerHTML = art.svg; }
 
-				one.appendChild( el( 'span', { text: String( r.text ).trim() } ) );
+				one.appendChild( el( 'span', { 'class': says ? '' : 'wf-pp__ic--hint', text: says || hint } ) );
 
 				return one;
 			} ) ) );
@@ -2631,14 +2674,21 @@
 
 		if ( more ) { tabs.push( more ); }
 
-		var words = w( 'wf-pp__d', [
-			el( 'div', { 'class': 'wf-pp__h', text: I.wf_prod_name } ),
-			w( 'wf-pp__price', null, '₪1,890.00' ),
-			wLine( '100%' ),
-			wLine( '86%' )
-		].concat(
-			'yes' === String( val( 'prod_sku' ) ) ? [ el( 'div', { 'class': 'wf-pp__sku', text: I.wf_sku } ) ] : []
-		).concat( buy ) );
+		// The code sits at the far end of the name's line, where the shop
+		// really puts it.
+		var head = w( 'wf-pp__line', [ el( 'div', { 'class': 'wf-pp__h', text: I.wf_prod_name } ) ] );
+
+		if ( 'yes' === String( val( 'prod_sku' ) ) ) {
+			head.appendChild( el( 'span', { 'class': 'wf-pp__sku', text: I.wf_sku } ) );
+		}
+
+		var short = 'under' === String( val( 'prod_short' ) )
+			? [ el( 'p', { 'class': 'wf-pp__short', text: I.wf_short } ) ]
+			: [];
+
+		var words = w( 'wf-pp__d', [ head, w( 'wf-pp__price', null, '₪1,890.00' ) ]
+			.concat( short )
+			.concat( buy ) );
 
 		var mid = [ w( 'wf-pp' + ( 'gallery-end' === String( val( 'prod_side' ) ) ? ' wf-pp--end' : '' ), phone ? [ pics, words ] : [ pics, words ] ) ];
 
@@ -2648,6 +2698,25 @@
 		mid.push( w( 'wf-pp__body', [ wLine( '100%' ), wLine( '92%' ), wLine( '70%' ) ] ) );
 
 		return wPage( mid, {} );
+	}
+
+	/**
+	 * The delivery window in words, under the two numbers that make it.
+	 * Two steppers are an instruction; "between 1 and 3 working days" is
+	 * the promise the shop is about to print.
+	 */
+	function leadLine() {
+		var box = root.querySelector( '[data-field="prod_lead_max"]' );
+
+		if ( ! box ) { return; }
+
+		var say = box.querySelector( '.oc-onb-f__say' ) || el( 'p', { 'class': 'oc-onb-f__help oc-onb-f__say' } );
+		var min = Math.max( 1, Number( val( 'prod_lead_min' ) ) || 1 );
+		var max = Math.max( min, Number( val( 'prod_lead_max' ) ) || min );
+
+		say.textContent = min === max ? fmt( I.lead_one, max ) : fmt( I.lead_span, min, max );
+
+		if ( ! say.parentNode ) { box.appendChild( say ); }
 	}
 
 	/**
@@ -2992,6 +3061,7 @@
 		root.appendChild( card );
 		refreshVisibility();
 		paintPreview();
+		leadLine();
 		window.scrollTo( { top: 0, behavior: 'smooth' } );
 	}
 
