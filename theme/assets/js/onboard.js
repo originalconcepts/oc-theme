@@ -461,7 +461,12 @@
 
 	function fmt( s ) {
 		var args = Array.prototype.slice.call( arguments, 1 );
-		return s.replace( /%(\d)\$[sd]|%[sd]/g, function ( m, n ) { return n ? args[ n - 1 ] : args.shift(); } );
+
+		// %% is how a translator writes a literal per-cent sign beside a
+		// placeholder; PHP collapses it, and so must we.
+		return s
+			.replace( /%(\d)\$[sd]|%[sd]/g, function ( m, n ) { return n ? args[ n - 1 ] : args.shift(); } )
+			.replace( /%%/g, '%' );
 	}
 
 	/* ------------------------------------------------------------ fields */
