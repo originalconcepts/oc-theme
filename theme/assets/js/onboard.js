@@ -876,22 +876,19 @@
 		}
 
 		/**
-		 * A row swaps places with its neighbour at its own level.
+		 * A part swaps places with its neighbour. The page is one flat list,
+		 * so a part is named by where it stands in it.
 		 *
-		 * @param {Array}  path Which row.
-		 * @param {number} by   -1 up, 1 down.
+		 * @param {number} from Where it stands.
+		 * @param {number} to   Where it goes.
 		 */
-		function move( path, by ) {
-			edit( function ( n ) {
-				var list_of = parentOf( n, path );
-				var from    = path[ path.length - 1 ];
-				var to      = from + by;
+		function move( from, to ) {
+			edit( function ( r ) {
+				if ( to < 0 || to >= r.length ) { return null; }
 
-				if ( to < 0 || to >= list_of.length ) { return null; }
+				r.splice( to, 0, r.splice( from, 1 )[0] );
 
-				list_of.splice( to, 0, list_of.splice( from, 1 )[0] );
-
-				return n;
+				return r;
 			} );
 		}
 
@@ -1186,13 +1183,25 @@
 			if ( next ) { save( next ); }
 		}
 
-		function move( from, to ) {
-			edit( function ( r ) {
-				if ( to < 0 || to >= r.length ) { return null; }
+		/**
+		 * A department swaps places with its neighbour, at whatever level it
+		 * stands: the menu is a tree, so a row is named by its path and
+		 * moves only among its own brothers.
+		 *
+		 * @param {Array}  path Which row.
+		 * @param {number} by   -1 up, 1 down.
+		 */
+		function move( path, by ) {
+			edit( function ( n ) {
+				var kids = parentOf( n, path );
+				var from = path[ path.length - 1 ];
+				var to   = from + by;
 
-				r.splice( to, 0, r.splice( from, 1 )[0] );
+				if ( to < 0 || to >= kids.length ) { return null; }
 
-				return r;
+				kids.splice( to, 0, kids.splice( from, 1 )[0] );
+
+				return n;
 			} );
 		}
 
