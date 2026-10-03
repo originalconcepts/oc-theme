@@ -581,6 +581,21 @@ button.oc-onb-dots__d:hover { background: var(--onb-ink-2); }
 .oc-onb-tabs__b.is-on { background: var(--onb-primary); color: #fff; box-shadow: 0 2px 8px rgba(0, 0, 0, .14); }
 
 @media (max-width: 900px) {
+	/* On a phone the eight steps took three rows before the first question
+	   came into view. One row that slides sideways gives the screen back,
+	   and the step you are on is scrolled into the middle of it. */
+	.oc-onb-steps {
+		flex-wrap: nowrap;
+		overflow-x: auto;
+		scrollbar-width: none;
+		-ms-overflow-style: none;
+		margin-inline: -4px;
+		padding-inline: 4px;
+		scroll-padding-inline: 20px;
+	}
+	.oc-onb-steps::-webkit-scrollbar { display: none; }
+	.oc-onb-steps__i { flex: 0 0 auto; }
+
 	.oc-onb-tabs { display: flex; position: sticky; top: 56px; z-index: 5; }
 	.oc-onb-split.is-q .oc-onb-split__p { display: none; }
 	.oc-onb-split:not(.is-q) .oc-onb-split__q { display: none; }
@@ -853,3 +868,44 @@ button.oc-onb-steps__i { cursor: pointer; }
 .wf-ed__p { margin: 0; font-size: 11px; line-height: 1.6; color: #6c7382; white-space: pre-line; }
 .wf-trust__t { font-size: 10px; color: #8a90a0; margin-top: 2px; }
 .wf-trust__ic img { inline-size: 26px; block-size: 26px; object-fit: contain; }
+
+/* The promise that nothing can be lost, where it is needed: before the
+   first question is asked. */
+.oc-onb__keep {
+	display: flex;
+	gap: 8px;
+	align-items: flex-start;
+	margin: 22px 0 0;
+	padding: 12px 14px;
+	border-radius: 10px;
+	background: color-mix(in srgb, var(--onb-ok) 8%, #fff);
+	color: var(--onb-ink-2);
+	font-size: 13px;
+	line-height: 1.6;
+	text-align: start;
+}
+.oc-onb__keep-i { color: var(--onb-ok); font-weight: 700; }
+
+/* A folded block of questions: a line you can press, and what it says is
+   enough to know which one it is. */
+.oc-onb-rep__row--fold { padding: 0; overflow: hidden; }
+.oc-onb-rep__row--fold > .oc-onb-rep__h {
+	inline-size: 100%;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 12px 14px;
+	border: 0;
+	background: none;
+	font: inherit;
+	text-align: start;
+	cursor: pointer;
+}
+.oc-onb-rep__row--fold > .oc-onb-rep__h:hover { background: var(--onb-bg); }
+.oc-onb-rep__row--fold > .oc-onb-rep__h b { flex: 1; }
+.oc-onb-rep__row--fold .oc-onb-f--sub { padding-inline: 14px; }
+.oc-onb-rep__row--fold .oc-onb-f--sub:last-of-type { padding-bottom: 14px; }
+.oc-onb-rep__mark { inline-size: 26px; block-size: 26px; display: grid; place-items: center; color: var(--onb-ink-2); flex: 0 0 auto; }
+.oc-onb-rep__mark svg, .oc-onb-rep__mark img { inline-size: 22px; block-size: 22px; object-fit: contain; }
+.oc-onb-rep__row--fold.is-shut { background: #fff; }
+.oc-onb-rep__drop { flex: 0 0 auto; }

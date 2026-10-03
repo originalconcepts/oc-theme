@@ -184,6 +184,7 @@ final class Front {
 				'row_text'        => __( 'The words that run across', 'oc-theme' ),
 				'row_add'         => __( 'Add:', 'oc-theme' ),
 				'row_which'       => __( 'Which products?', 'oc-theme' ),
+				'kept'            => __( 'Every answer is kept the moment you give it. You can close this and come back whenever you like — the same link brings you back to where you stopped.', 'oc-theme' ),
 				'menu_name'       => __( 'A department — Sofas, Lighting, Dining', 'oc-theme' ),
 				'menu_sub'        => __( 'Inside it — Three-seaters, Armchairs', 'oc-theme' ),
 				'menu_add'        => __( 'Add a department', 'oc-theme' ),

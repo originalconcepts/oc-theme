@@ -12276,3 +12276,15 @@ msgstr "כתבו משהו עכשיו — זה מה שיעמוד בעמוד מה�
 
 msgid "Add one inside this"
 msgstr "להוסיף אחת בתוך זו"
+
+msgid "A photograph of the real thing, where several of your products stand together. A visitor presses what they like on it and reaches the product."
+msgstr "תמונה אמיתית שבה כמה מהמוצרים שלכם עומדים יחד. הגולש לוחץ על מה שמצא חן בעיניו ומגיע למוצר."
+
+msgid "Every answer is kept the moment you give it. You can close this and come back whenever you like — the same link brings you back to where you stopped."
+msgstr "כל תשובה נשמרת ברגע שנתתם אותה. אפשר לסגור ולחזור מתי שרוצים — אותו קישור יחזיר אתכם בדיוק למקום שבו עצרתם."
+
+msgid "One picture with the whole scene in it. In a clothes shop that is a model wearing a complete look; in a furniture shop, a living room where the sofa, the table, the armchair and the lamp all stand together. Marking which product is which comes later, with us."
+msgstr "תמונה אחת עם כל הסצנה בתוכה. בחנות אופנה זו דוגמנית או דוגמן בלוק שלם; בחנות רהיטים זה סלון שבו הספה, השולחן, הכורסה והמנורה עומדים יחד. סימון המוצרים על התמונה ייעשה בהמשך, יחד איתנו."
+
+msgid "The photograph"
+msgstr "התמונה"

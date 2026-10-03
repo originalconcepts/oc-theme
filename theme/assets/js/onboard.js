@@ -1816,14 +1816,77 @@
 
 		function commit() { set( id, rows ); }
 
+		// A list of four blocks of questions is a wall. Folded, it is a list
+		// of four things with one of them open — and what each closed one
+		// says is enough to know which is which.
+		var open = 0;
+
+		function title( r, ri ) {
+			var said = String( r.heading || r.q || r.name || '' ).trim();
+
+			return said || ( f.row || '' ) + ' ' + ( ri + 1 );
+		}
+
 		function paint() {
 			wrap.innerHTML = '';
 			rows.forEach( function ( r, ri ) {
-				var card = el( 'div', { 'class': 'oc-onb-rep__row' } );
-				card.appendChild( el( 'div', { 'class': 'oc-onb-rep__h' }, [
-					el( 'b', { text: ( f.row || '' ) + ' ' + ( ri + 1 ) } ),
-					! f.fixed && rows.length > 1 ? el( 'button', { type: 'button', 'class': 'oc-onb-link', text: I.remove, onclick: function () { rows.splice( ri, 1 ); commit(); paint(); } } ) : null
-				] ) );
+				var shut = f.fold && ri !== open;
+				var card = el( 'div', { 'class': 'oc-onb-rep__row' + ( f.fold ? ' oc-onb-rep__row--fold' : '' ) + ( shut ? ' is-shut' : '' ) } );
+				var name = el( 'b', { text: f.fold ? title( r, ri ) : ( f.row || '' ) + ' ' + ( ri + 1 ) } );
+				var head = el( f.fold ? 'button' : 'div', {
+					type: f.fold ? 'button' : null,
+					'class': 'oc-onb-rep__h',
+					'aria-expanded': f.fold ? ( shut ? 'false' : 'true' ) : null
+				} );
+
+				if ( f.fold ) {
+					var mark = el( 'span', { 'class': 'oc-onb-rep__mark', 'aria-hidden': 'true' } );
+
+					if ( 'iconpick' === ( f.fields.icon || {} ).type ) {
+						var art = ( C.icons || {} )[ r.icon || '' ];
+
+						if ( r.img && r.img.url ) {
+							mark.appendChild( el( 'img', { src: r.img.url, alt: '' } ) );
+						} else if ( art ) {
+							mark.innerHTML = art.svg;
+						}
+					}
+
+					head.appendChild( mark );
+					head.addEventListener( 'click', function () {
+						commitAll();
+						open = shut ? ri : -1;
+						paint();
+					} );
+				}
+
+				head.appendChild( name );
+
+				if ( ! f.fixed && rows.length > 1 ) {
+					head.appendChild( el( f.fold ? 'span' : 'button', {
+						type: f.fold ? null : 'button',
+						'class': 'oc-onb-link oc-onb-rep__drop',
+						text: I.remove,
+						role: f.fold ? 'button' : null,
+						tabindex: f.fold ? '0' : null,
+						onclick: function ( e ) {
+							e.stopPropagation();
+							commitAll();
+							rows.splice( ri, 1 );
+							open = Math.min( open, rows.length - 1 );
+							commit();
+							paint();
+						}
+					} ) );
+				}
+
+				card.appendChild( head );
+
+				if ( shut ) {
+					wrap.appendChild( card );
+					return;
+				}
+
 				Object.keys( f.fields ).forEach( function ( k ) {
 					var sf = f.fields[ k ];
 					var inner;
@@ -1842,12 +1905,19 @@
 					] );
 					card.appendChild( box );
 				} );
+
 				wrap.appendChild( card );
 			} );
 			// A list whose length is decided elsewhere does not grow here:
 			// the arranging screen is where parts are added and removed.
 			if ( ! f.fixed && rows.length < ( f.max || 20 ) ) {
-				wrap.appendChild( el( 'button', { type: 'button', 'class': 'oc-onb-btn oc-onb-btn--ghost', text: f.add || '+', onclick: function () { rows.push( {} ); commit(); paint(); } } ) );
+				wrap.appendChild( el( 'button', { type: 'button', 'class': 'oc-onb-btn oc-onb-btn--ghost', text: f.add || '+', onclick: function () {
+					commitAll();
+					rows.push( {} );
+					open = rows.length - 1;
+					commit();
+					paint();
+				} } ) );
 			}
 		}
 
@@ -2617,6 +2687,16 @@
 		wrap.appendChild( chips );
 		wrap.appendChild( line );
 
+		// The strip slides sideways on a phone, so the step you are on has
+		// to be brought into the middle of it rather than left off the end.
+		setTimeout( function () {
+			var on = chips.querySelector( '.is-on' );
+
+			if ( on && chips.scrollWidth > chips.clientWidth ) {
+				chips.scrollLeft = on.offsetLeft - ( chips.clientWidth - on.offsetWidth ) / 2;
+			}
+		}, 0 );
+
 		var bar  = el( 'div', { 'class': 'oc-onb-prog__bar' } );
 		var all  = here_asked.length;
 		var done = here_asked.indexOf( here ) + 1;
@@ -2637,7 +2717,13 @@
 				var idx = 0;
 				if ( started && C.step ) { screens.forEach( function ( s, i ) { if ( s.id === C.step ) { idx = i; } } ); }
 				go( idx );
-			} } )
+			} } ),
+			// The one thing worth knowing before the first question: nobody
+			// can lose this by closing the tab.
+			el( 'p', { 'class': 'oc-onb__keep' }, [
+				el( 'span', { 'class': 'oc-onb__keep-i', 'aria-hidden': 'true', text: '✓' } ),
+				el( 'span', { text: I.kept } )
+			] )
 		] ) );
 	}
 
@@ -2806,7 +2892,11 @@
 			case 'hours':    return v.map( function ( r ) { return r.days.map( function ( d ) { return C.days[ d ] ? C.days[ d ].label : d; } ).join( ' ' ) + ' ' + r.from + '–' + r.to; } ).join( ' · ' );
 			case 'repeater': return v.map( function ( r ) { return r.name || ''; } ).filter( Boolean ).join( ' · ' ) || fmt( I.rows, v.length );
 			case 'branch_access': return Object.keys( v ).map( function ( k ) { return ( v[ k ] || [] ).length; } ).join( ' · ' );
-			case 'layout':   return v.filter( function ( r ) { return r.on; } ).length + ' ' + I.rows_kept;
+			case 'layout':   return v.filter( function ( r ) { return r.on; } ).map( function ( r ) {
+				var b = ( f.blocks || {} )[ r.type ] || {};
+
+				return String( r.title || '' ).trim() || b.label || r.type;
+			} ).join( ' · ' );
 			case 'menu':     return v.map( function ( r ) { return r.name + ( r.subs && r.subs.length ? ' (' + r.subs.length + ')' : '' ); } ).join( ' · ' );
 			case 'from_menu':
 			case 'from_brands': return Array.isArray( v ) ? v.join( ' · ' ) : String( v );

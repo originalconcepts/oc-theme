@@ -1194,10 +1194,15 @@ final class Apply {
 		}
 
 		if ( 'look' === $type ) {
+			$scene = is_array( $this->v['look_shot'] ) ? (int) ( $this->v['look_shot']['id'] ?? 0 ) : 0;
+
 			return array(
 				'type'   => 'look',
 				'scenes' => array(
-					array( 'heading' => $title ),
+					array(
+						'heading' => $title,
+						'img'     => $scene,
+					),
 				),
 			);
 		}

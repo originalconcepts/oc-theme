@@ -150,20 +150,27 @@ final class Schema {
 					),
 					array(
 						'id'      => '3e',
+						'title'   => __( 'Shop the Look', 'oc-theme' ),
+						'intro'   => __( 'A photograph of the real thing, where several of your products stand together. A visitor presses what they like on it and reaches the product.', 'oc-theme' ),
+						'preview' => 'band:look',
+						'fields'  => array( 'look_shot' ),
+					),
+					array(
+						'id'      => '3f',
 						'title'   => __( 'The content areas', 'oc-theme' ),
 						'intro'   => __( 'A content area is a few words and a picture, standing between the shelves: your story, a promise, a collection. One block of questions for each one you kept.', 'oc-theme' ),
 						'preview' => 'band:content',
 						'fields'  => array( 'home_content' ),
 					),
 					array(
-						'id'      => '3f',
+						'id'      => '3g',
 						'title'   => __( 'Reasons to buy from you', 'oc-theme' ),
 						'intro'   => __( 'The little row of promises near the bottom: a drawing, two or three words, and a line explaining. Four at the most — fewer and stronger reads better.', 'oc-theme' ),
 						'preview' => 'band:icons',
 						'fields'  => array( 'home_icons' ),
 					),
 					array(
-						'id'      => '3g',
+						'id'      => '3h',
 						'title'   => __( 'Questions and answers', 'oc-theme' ),
 						'intro'   => __( 'What people ask you before they buy. Leave an answer empty and the question waits for you in the editor.', 'oc-theme' ),
 						'preview' => 'band:faq',
@@ -1145,6 +1152,16 @@ final class Schema {
 
 		/* ---- 3d-3g: what the parts of the page say ---- */
 
+		$f['look_shot'] = array(
+			'type'     => 'file',
+			'accept'   => 'image',
+			'label'    => __( 'The photograph', 'oc-theme' ),
+			'help'     => __( 'One picture with the whole scene in it. In a clothes shop that is a model wearing a complete look; in a furniture shop, a living room where the sofa, the table, the armchair and the lamp all stand together. Marking which product is which comes later, with us.', 'oc-theme' ),
+			'required' => true,
+			'when'     => array( 'home_layout', 'has:look' ),
+			'target'   => array( 'call', 'home' ),
+		);
+
 		$f['home_cats'] = array(
 			'type'     => 'from_menu',
 			'label'    => __( 'Which of them stand on the home page', 'oc-theme' ),
@@ -1175,6 +1192,7 @@ final class Schema {
 			'row'      => __( 'Content area', 'oc-theme' ),
 			'max'      => 6,
 			'fixed'    => true,
+			'fold'     => true,
 			'fields'   => array(
 				'eyebrow' => array(
 					'type'        => 'text',
@@ -1220,6 +1238,7 @@ final class Schema {
 			'row'      => __( 'Reason', 'oc-theme' ),
 			'add'      => __( 'Another reason', 'oc-theme' ),
 			'max'      => 4,
+			'fold'     => true,
 			'required' => true,
 			'fields'   => array(
 				'icon'    => array(
@@ -1273,6 +1292,7 @@ final class Schema {
 			'row'     => __( 'Question', 'oc-theme' ),
 			'add'     => __( 'Another question', 'oc-theme' ),
 			'max'     => 10,
+			'fold'    => true,
 			'fields'  => array(
 				'q' => array(
 					'type'  => 'text',
