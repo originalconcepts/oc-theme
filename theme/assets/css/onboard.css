@@ -963,9 +963,7 @@ button.oc-onb-steps__i { cursor: pointer; }
 .wf-pp__cc__f.is-real { background-size: cover; background-position: center; }
 .wf-pp__cc__w { display: grid; gap: 1px; font-size: 9px; color: #6c7382; min-inline-size: 0; }
 .wf-pp__cc__w b { font-size: 10px; color: #4a5160; }
-/* A number reads left to right, but it stands at the start of the line
-   with the name above it. */
-.wf-pp__cc__p { color: #8d93a1; direction: ltr; text-align: right; }
+.wf-pp__cc__p { color: #8d93a1; }
 .wf-pp__cc__n { display: flex; align-items: center; gap: 4px; }
 .wf-pp__cc__b { background: #0e7d54; color: #fff; font-size: 9px; padding: 6px 10px; border-radius: 4px; white-space: nowrap; }
 

@@ -2861,7 +2861,10 @@
 		var who = w( 'wf-pp__cc__w', [
 			el( 'b', { text: said( 'contact_name' ) } ),
 			el( 'span', { text: said( 'contact_role' ) } ),
-			el( 'span', { 'class': 'wf-pp__cc__p', text: said( 'contact_phone' ) } ),
+			// bdi, not a direction of its own: the digits read left to
+			// right inside it while the line still begins where the name
+			// above it begins.
+			el( 'span', { 'class': 'wf-pp__cc__p' }, [ el( 'bdi', { text: said( 'contact_phone' ) } ) ] ),
 			w( 'wf-pp__cc__n', [
 				el( 'span', { 'class': 'wf-pp__dot', 'aria-hidden': 'true' } ),
 				el( 'span', { text: I.wf_now } )
