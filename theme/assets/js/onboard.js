@@ -2940,8 +2940,11 @@
 	 * page should also carry.
 	 */
 	function previewThanks() {
-		var yes = function ( id ) { return 'yes' === String( val( id ) ); };
-		var mid = [];
+		var yes  = function ( id ) { return 'yes' === String( val( id ) ); };
+		// The greeting and what was bought on one side; everything that asks
+		// something of the buyer on the other, as the wide screen lays it.
+		var main = [];
+		var side = [];
 		var tick = w( 'wf-ty__tick' );
 
 		tick.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
@@ -2964,7 +2967,7 @@
 			] ) );
 		}
 
-		mid.push( hero );
+		main.push( hero );
 
 		// The order itself, which the page always shows.
 		var sum = w( 'wf-ty__sum', [ el( 'div', { 'class': 'wf-ty__t', text: I.wf_ck_sum } ) ] );
@@ -2983,13 +2986,13 @@
 		}
 
 		sum.appendChild( w( 'wf-cart__sum wf-cart__sum--big', [ el( 'span', { text: I.wf_total } ), el( 'b', { text: MONEY } ) ] ) );
-		mid.push( sum );
+		main.push( sum );
 
 		if ( yes( 'ty_referral' ) ) {
 			var friend = Number( val( 'ty_ref_friend' ) ) || 10;
 			var reward = Number( val( 'ty_ref_reward' ) ) || 10;
 
-			mid.push( w( 'wf-ty__box', [
+			side.push( w( 'wf-ty__box', [
 				el( 'div', { 'class': 'wf-ty__t', text: I.wf_ty_ref } ),
 				el( 'p', { 'class': 'wf-ty__p', text: fmt( I.wf_ty_ref_say, friend, reward ) } ),
 				w( 'wf-ty__code', [ el( 'b', { text: 'FRIEND-4821' } ), w( 'wf-ty__copy', null, I.wf_ty_copy ) ] )
@@ -3001,7 +3004,7 @@
 
 			for ( var n = 0; n < 5; n++ ) { stars.appendChild( el( 'span', { 'class': 'wf-ty__star', 'aria-hidden': 'true', text: '★' } ) ); }
 
-			mid.push( w( 'wf-ty__box', [
+			side.push( w( 'wf-ty__box', [
 				el( 'div', { 'class': 'wf-ty__t', text: I.wf_ty_survey } ),
 				stars,
 				w( 'wf-ty__field', null, I.wf_ty_words )
@@ -3009,14 +3012,14 @@
 		}
 
 		if ( yes( 'ty_wa_group' ) ) {
-			mid.push( w( 'wf-ty__box wf-ty__box--wa', [
+			side.push( w( 'wf-ty__box wf-ty__box--wa', [
 				el( 'div', { 'class': 'wf-ty__t', text: String( val( 'ty_wa_title' ) || '' ).trim() || I.wf_ty_wa } ),
 				w( 'wf-ty__pill wf-ty__pill--wa', null, I.wf_ty_join )
 			] ) );
 		}
 
 		if ( yes( 'ty_social' ) ) {
-			mid.push( w( 'wf-ty__box', [
+			side.push( w( 'wf-ty__box', [
 				el( 'div', { 'class': 'wf-ty__t', text: I.wf_ty_follow } ),
 				w( 'wf-ty__row', [
 					w( 'wf-ty__dot' ),
@@ -3026,7 +3029,10 @@
 			] ) );
 		}
 
-		return wPage( [ w( 'wf-ty', mid ) ], {} );
+		return wPage( [ w( 'wf-ty', [
+			w( 'wf-ty__col', main ),
+			w( 'wf-ty__col', side )
+		] ) ], {} );
 	}
 
 	/**
@@ -3215,7 +3221,10 @@
 		var said = String( val( 'cart_up_title' ) || '' ).trim() || I.wf_upsell;
 		var box  = w( 'wf-up wf-up--' + style, [ el( 'div', { 'class': 'wf-up__h', text: said } ) ] );
 		var list = w( 'wf-up__list' );
-		var many = Math.max( 1, Math.min( 'list' === style ? 2 : 3, Number( val( 'cart_up_max' ) ) || 3 ) );
+		// A slider draws a fourth one cut off at the edge: that, and not the
+		// arrows, is what tells a shopper there is more to the side.
+		var most = 'list' === style ? 2 : ( 'slider' === style ? 4 : 3 );
+		var many = Math.max( 1, Math.min( most, Number( val( 'cart_up_max' ) ) || most ) );
 
 		for ( var i = 0; i < many; i++ ) {
 			// A list reads like the cart's own rows: a small picture, a name

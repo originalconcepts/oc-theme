@@ -1792,6 +1792,18 @@ final class Apply {
 	}
 
 	/**
+	 * The thank-you page: whether it carries a way to reach the shop, and
+	 * the shape it stands in. On a wide screen one column leaves the
+	 * greeting, the order, the survey and the rest in a single long run, so
+	 * it is built in two — the order on one side, whatever asks something of
+	 * the buyer on the other.
+	 */
+	private function apply_thanks(): void {
+		$this->write_option_key( 'ty_contact', 'oc_thankyou', 'contact', (string) $this->v['ty_contact'] );
+		$this->write_option_key( 'ty_contact', 'oc_thankyou', 'layout', 'split' );
+	}
+
+	/**
 	 * The category the cart panel offers from, as a term id — the panel
 	 * stores a number, and the questionnaire only ever knew a name.
 	 */

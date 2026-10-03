@@ -1052,7 +1052,9 @@ button.oc-onb-steps__i { cursor: pointer; }
 .wf-up__thumb { inline-size: 26px; block-size: 32px; border-radius: 3px; }
 .wf-up__add { border: 1px solid var(--onb-line); border-radius: 3px; text-align: center; font-size: 11px; color: #6c7382; line-height: 16px; }
 /* A slider is a row that runs off the edge, so it has to look like one. */
-.wf-up--slider .wf-up__list { grid-auto-columns: 44%; overflow: hidden; }
+/* Three whole ones and the edge of a fourth: the cut is the hint that
+   there is more to the side. */
+.wf-up--slider .wf-up__list { grid-auto-columns: 27%; overflow: hidden; }
 .wf-up--collapse { padding: 8px 12px; background: #f7f8fa; border-top: 1px solid #eef0f4; }
 
 /* ------------------------------------------------- the checkout, drawn */
@@ -1163,15 +1165,19 @@ button.oc-onb-steps__i { cursor: pointer; }
 
 /* ------------------------------------------------- the thank-you page */
 
-.wf-ty { padding: 16px 12px; display: grid; gap: 10px; }
-.wf-ty__hero { display: grid; gap: 6px; justify-items: center; text-align: center; padding: 6px 0 10px; }
+/* Two columns, as a wide screen lays it: the greeting and the order on
+   one side, everything that asks something of the buyer on the other. */
+.wf-ty { padding: 16px 12px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px 16px; align-items: start; }
+.wf-ty__col { display: grid; gap: 10px; align-content: start; min-inline-size: 0; }
+.oc-onb-side.is-phone .wf-ty { grid-template-columns: 1fr; }
+.wf-ty__hero { display: grid; gap: 6px; justify-items: start; text-align: start; padding: 2px 0 6px; }
 .wf-ty__tick { inline-size: 34px; block-size: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--onb-ok); color: #fff; }
 .wf-ty__tick svg { inline-size: 18px; block-size: 18px; }
 .wf-ty__h { font-size: 15px; font-weight: 700; color: #4a5160; }
 .wf-ty__sub { font-size: 10px; color: #8d93a1; }
 .wf-ty__num { display: flex; align-items: baseline; gap: 5px; font-size: 10px; color: #6c7382; }
 .wf-ty__num b { font-size: 12px; color: var(--onb-primary); }
-.wf-ty__row { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; margin-top: 4px; }
+.wf-ty__row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
 .wf-ty__pill { border: 1px solid var(--onb-line); border-radius: 20px; padding: 5px 12px; font-size: 9px; color: #6c7382; }
 .wf-ty__pill--wa { background: #0e7d54; border-color: #0e7d54; color: #fff; }
 .wf-ty__sum { border: 1px solid #eef0f4; border-radius: 6px; padding: 10px; display: grid; gap: 8px; }

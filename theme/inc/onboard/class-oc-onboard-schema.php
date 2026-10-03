@@ -859,7 +859,7 @@ final class Schema {
 			'help'    => __( 'Under the thank-you message, so a customer with a question does not have to look for you.', 'oc-theme' ),
 			'options' => $yesno,
 			'default' => 'yes',
-			'target'  => array( 'option', 'oc_thankyou', 'contact' ),
+			'target'  => array( 'call', 'thanks' ),
 		);
 
 		$f['ty_wa_group'] = array(
