@@ -12920,3 +12920,9 @@ msgstr "להציע חבילה של המוצר הזה עם אחרים?"
 
 msgid "This product and whatever you tie to it, as one add to the cart, with a discount if you want one. It only shows on a product you have built a bundle for."
 msgstr "המוצר הזה ומה שתקשרו אליו, כהוספה אחת לסל, עם הנחה אם תרצו. מופיע רק על מוצר שבניתם לו חבילה."
+
+msgid "Before the buy button — ticked, they go into the cart with it"
+msgstr "לפני כפתור הקנייה — מה שמסומן נכנס לסל יחד איתו"
+
+msgid "They stand at the foot of the page, and the shop picks them itself — by what they share with this one: the category, the name, the price, the tags."
+msgstr "הם עומדים בתחתית העמוד, והחנות בוחרת אותם לבד — לפי מה שמשותף להם ולמוצר הזה: הקטגוריה, השם, המחיר, התגיות."

@@ -744,7 +744,7 @@ final class Product_Linked {
 	public function related_terms( $terms, $product_id ) {
 		$terms = array_values( array_unique( array_map( 'intval', (array) $terms ) ) );
 
-		if ( 'leaf' !== (string) get_theme_mod( 'oc_related_scope', 'leaf' ) || count( $terms ) < 2 ) {
+		if ( 'leaf' !== (string) get_theme_mod( 'oc_related_scope', 'smart' ) || count( $terms ) < 2 ) {
 			return $terms;
 		}
 
@@ -771,7 +771,7 @@ final class Product_Linked {
 	 * @return int[]
 	 */
 	public function smart_related( $related, $product_id, $args ) {
-		if ( 'smart' !== (string) get_theme_mod( 'oc_related_scope', 'leaf' ) ) {
+		if ( 'smart' !== (string) get_theme_mod( 'oc_related_scope', 'smart' ) ) {
 			return $related;
 		}
 

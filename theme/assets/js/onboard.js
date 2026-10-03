@@ -2672,7 +2672,7 @@
 		if ( 'top' === kind ) { return previewTop(); }
 		if ( 'product' === kind ) { return previewProduct(); }
 		if ( 'cart' === kind ) { return previewCart(); }
-		if ( 'linked' === kind ) { return previewLinked(); }
+		if ( 'linked' === kind ) { return previewProduct( true ); }
 		if ( 'checkout' === kind ) { return previewCheckout(); }
 		if ( 0 === String( kind ).indexOf( 'band:' ) ) { return previewBands( String( kind ).slice( 5 ).split( ',' ) ); }
 		return previewHome( String( val( 'home_recipe' ) ) );
@@ -2684,7 +2684,7 @@
 	 * they chose, the small ones where they put them, and under the button
 	 * whatever they promised.
 	 */
-	function previewProduct() {
+	function previewProduct( more ) {
 		var phone = onPhone();
 		var kind  = String( val( 'prod_gallery' ) );
 		var pics  = w( 'wf-pp__g wf-pp__g--' + kind );
@@ -2731,6 +2731,14 @@
 				el( 'span', { 'class': 'wf-pp__dot', 'aria-hidden': 'true' } ),
 				el( 'span', { text: says } )
 			] ) );
+		}
+
+		var at = String( val( 'xs_place' ) || 'cart' );
+
+		// Before the buying row, where the theme hangs it: whatever is
+		// ticked travels into the cart with the product itself.
+		if ( more && 'yes' === String( val( 'xs_on' ) ) && 'cart' === at ) {
+			buy.push( xsBlock( String( val( 'xs_style_cart' ) || 'rows' ) ) );
 		}
 
 		var row = w( 'wf-pp__buy' );
@@ -2836,7 +2844,48 @@
 
 		if ( 'below' === where || phone ) { strip.forEach( function ( part ) { mid.push( part ); } ); }
 
+		if ( more ) { linkedBands( mid, words, at, 'side' === where && ! phone ); }
+
 		return wPage( mid, {} );
+	}
+
+	/**
+	 * The rest of the product page, in the order the page builds it: the
+	 * bundle, then whatever goes with it, then the upgrades, then the
+	 * neighbours at the foot.
+	 *
+	 * @param {Array}   mid   The page's own stack.
+	 * @param {Node}    words The buying column, for the one that follows the
+	 *                        tabs when the tabs live in that column.
+	 * @param {string}  at    Where the goes-with block was put.
+	 * @param {boolean} inCol Whether the tabs stand in the buying column.
+	 */
+	function linkedBands( mid, words, at, inCol ) {
+		var yes = function ( id ) { return 'yes' === String( val( id ) ); };
+		var xs  = yes( 'xs_on' );
+		var say = function ( id, fallback ) {
+			return String( val( id ) || '' ).trim() || fallback;
+		};
+
+		if ( yes( 'bt_on' ) ) { mid.push( wLinked( say( 'bt_title', I.wf_bt_h ), 'bt' ) ); }
+
+		// After the tabs it follows them: into the buying column when they
+		// stand there, and otherwise across the page as a grid.
+		if ( xs && 'tabs' === at ) {
+			if ( inCol ) {
+				words.appendChild( wLinked( say( 'xs_title', I.wf_xs_h ), 'xs-wide' ) );
+			} else {
+				mid.push( wLinked( say( 'xs_title', I.wf_xs_h ), 'grid' ) );
+			}
+		}
+
+		if ( xs && 'summary' === at ) {
+			mid.push( wLinked( say( 'xs_title', I.wf_xs_h ), String( val( 'xs_style_sum' ) || 'grid' ) ) );
+		}
+
+		if ( yes( 'ups_on' ) ) { mid.push( wLinked( say( 'ups_title', I.wf_ups_h ), 'grid' ) ); }
+
+		mid.push( wLinked( say( 'rel_title', I.wf_rel_h ), 'grid' ) );
 	}
 
 	/**
@@ -2877,50 +2926,6 @@
 		card.appendChild( w( 'wf-pp__cc__b', null, I.wf_whats ) );
 
 		return card;
-	}
-
-	/**
-	 * Everything the product page offers after the product itself, in the
-	 * order the page really builds it: the ticked ones beside the button,
-	 * then the bundle, then whatever goes with it, then the upgrades, then
-	 * the neighbours.
-	 */
-	function previewLinked() {
-		var yes = function ( id ) { return 'yes' === String( val( id ) ); };
-		var at  = String( val( 'xs_place' ) || 'cart' );
-		var mid = [];
-
-		// The top of the page, shortened: enough of it to see what sits
-		// beside the button and what does not.
-		var buy = [
-			w( 'wf-pp__line', [ el( 'div', { 'class': 'wf-pp__h', text: I.wf_prod_name } ) ] ),
-			w( 'wf-pp__line', [ el( 'div', { 'class': 'wf-pp__price', text: MONEY } ) ] )
-		];
-
-		if ( yes( 'xs_on' ) && 'cart' === at ) { buy.push( xsBlock( String( val( 'xs_style_cart' ) || 'rows' ) ) ); }
-
-		buy.push( w( 'wf-pp__buy', [ w( 'wf-pp__qty', null, '1' ), w( 'wf-pp__btn', null, I.wf_atc ) ] ) );
-
-		mid.push( w( 'wf-pp', [
-			w( 'wf-pp__g wf-pp__g--thumbs-side', [ wImg( 'wf-pp__big' ) ] ),
-			w( 'wf-pp__d', buy )
-		] ) );
-
-		if ( yes( 'bt_on' ) ) { mid.push( wLinked( I.wf_bt_h, 'bt' ) ); }
-
-		// The tabs are not this screen's business, but the page has them and
-		// two of the three places are named after them.
-		mid.push( w( 'wf-pp__tabs', [ w( 'wf-pp__tab is-on', null, I.wf_tab_about ), w( 'wf-pp__tab', null, I.wf_tab_ship ) ] ) );
-
-		if ( yes( 'xs_on' ) && 'tabs' === at ) { mid.push( wLinked( I.wf_xs_h, 'xs-' + String( val( 'xs_style_tabs' ) || 'wide' ) ) ); }
-
-		if ( yes( 'xs_on' ) && 'summary' === at ) { mid.push( wLinked( I.wf_xs_h, 'xs-' + String( val( 'xs_style_sum' ) || 'grid' ) ) ); }
-
-		if ( yes( 'ups_on' ) ) { mid.push( wLinked( I.wf_ups_h, 'grid' ) ); }
-
-		if ( yes( 'rel_on' ) ) { mid.push( wLinked( I.wf_rel_h, String( val( 'rel_layout' ) || 'grid' ) ) ); }
-
-		return wPage( mid, {} );
 	}
 
 	/**

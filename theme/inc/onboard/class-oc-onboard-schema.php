@@ -225,7 +225,7 @@ final class Schema {
 						'intro'   => __( 'What else the page offers after the product itself. Four things, each with its own job — the drawing shows where each lands.', 'oc-theme' ),
 						'intro_m' => __( 'On a phone the two do not fit side by side, so the two buttons above switch between the questions and the drawing.', 'oc-theme' ),
 						'preview' => 'linked',
-						'fields'  => array( 'rel_on', 'rel_scope', 'rel_layout', 'ups_on', 'xs_on', 'xs_place', 'xs_style_cart', 'xs_style_tabs', 'xs_style_sum', 'bt_on' ),
+						'fields'  => array( 'xs_on', 'xs_title', 'xs_place', 'xs_style_cart', 'xs_style_sum', 'bt_on', 'bt_title', 'ups_on', 'ups_title', 'rel_title' ),
 					),
 				),
 			),
@@ -1475,55 +1475,6 @@ final class Schema {
 
 		/* ---- 6b: the other products on the product page ---- */
 
-		$f['rel_on'] = array(
-			'type'    => 'choice',
-			'group'   => __( 'Similar products', 'oc-theme' ),
-			'label'   => __( 'Show a row of similar products?', 'oc-theme' ),
-			'help'    => __( 'The shop picks these itself — you choose nothing per product. A shopper who did not find it here finds the neighbour.', 'oc-theme' ),
-			'options' => $yesno,
-			'default' => 'yes',
-			'target'  => array( 'mod', 'oc_product_related' ),
-		);
-
-		$f['rel_scope'] = array(
-			'type'    => 'choice',
-			'group'   => __( 'Similar products', 'oc-theme' ),
-			'label'   => __( 'How does it decide what is similar?', 'oc-theme' ),
-			'options' => array(
-				'leaf'  => __( 'The category shown in the product\'s path', 'oc-theme' ),
-				'smart' => __( 'Truly similar — the category, the name, the price, the tags', 'oc-theme' ),
-				'all'   => __( 'Anything from any category it is in', 'oc-theme' ),
-			),
-			'default' => 'leaf',
-			'quiet'   => true,
-			'when'    => array( 'rel_on', array( 'yes' ) ),
-			'target'  => array( 'mod', 'oc_related_scope' ),
-		);
-
-		$f['rel_layout'] = array(
-			'type'    => 'choice',
-			'group'   => __( 'Similar products', 'oc-theme' ),
-			'label'   => __( 'How do they stand?', 'oc-theme' ),
-			'options' => array(
-				'grid'   => __( 'A grid', 'oc-theme' ),
-				'slider' => __( 'A slider', 'oc-theme' ),
-			),
-			'default' => 'grid',
-			'quiet'   => true,
-			'when'    => array( 'rel_on', array( 'yes' ) ),
-			'target'  => array( 'mod', 'oc_related_layout' ),
-		);
-
-		$f['ups_on'] = array(
-			'type'    => 'choice',
-			'group'   => __( 'Upgrades', 'oc-theme' ),
-			'label'   => __( 'Show upgrades?', 'oc-theme' ),
-			'help'    => __( 'The better version of the thing being looked at. You pick them per product, in the shop, under Linked products → Upsells. With none picked the row simply does not appear.', 'oc-theme' ),
-			'options' => $yesno,
-			'default' => 'yes',
-			'target'  => array( 'mod', 'oc_product_upsells' ),
-		);
-
 		$f['xs_on'] = array(
 			'type'    => 'choice',
 			'group'   => __( 'Goes with it', 'oc-theme' ),
@@ -1534,12 +1485,21 @@ final class Schema {
 			'target'  => array( 'mod', 'oc_xsell_on' ),
 		);
 
+		$f['xs_title'] = array(
+			'type'        => 'text',
+			'group'       => __( 'Goes with it', 'oc-theme' ),
+			'label'       => __( 'The heading above them', 'oc-theme' ),
+			'placeholder' => __( 'Goes well with', 'oc-theme' ),
+			'when'        => array( 'xs_on', array( 'yes' ) ),
+			'target'      => array( 'mod', 'oc_xsell_title' ),
+		);
+
 		$f['xs_place'] = array(
 			'type'    => 'choice',
 			'group'   => __( 'Goes with it', 'oc-theme' ),
 			'label'   => __( 'Where do they stand?', 'oc-theme' ),
 			'options' => array(
-				'cart'    => __( 'Beside the buy button — ticked, they go into the cart with it', 'oc-theme' ),
+				'cart'    => __( 'Before the buy button — ticked, they go into the cart with it', 'oc-theme' ),
 				'tabs'    => __( 'After the tabs, each with a button of its own', 'oc-theme' ),
 				'summary' => __( 'Lower down the page, under the product itself', 'oc-theme' ),
 			),
@@ -1563,21 +1523,8 @@ final class Schema {
 			'target'  => array( 'mod', 'oc_xsell_style_cart' ),
 		);
 
-		$f['xs_style_tabs'] = array(
-			'type'    => 'choice',
-			'group'   => __( 'Goes with it', 'oc-theme' ),
-			'label'   => __( 'In what shape?', 'oc-theme' ),
-			'options' => array(
-				'wide' => __( 'One across the width, with arrows', 'oc-theme' ),
-				'grid' => __( 'Cards in a row', 'oc-theme' ),
-				'rows' => __( 'One under the other', 'oc-theme' ),
-			),
-			'default' => 'wide',
-			'quiet'   => true,
-			'when'    => array( array( 'xs_on', array( 'yes' ) ), array( 'xs_place', array( 'tabs' ) ) ),
-			'target'  => array( 'mod', 'oc_xsell_style_tabs' ),
-		);
-
+		// After the tabs there is nothing to choose: that row is the width of
+		// the page, so it is a grid of products like the similar ones.
 		$f['xs_style_sum'] = array(
 			'type'    => 'choice',
 			'group'   => __( 'Goes with it', 'oc-theme' ),
@@ -1600,6 +1547,46 @@ final class Schema {
 			'options' => $yesno,
 			'default' => 'yes',
 			'target'  => array( 'mod', 'oc_bt_on' ),
+		);
+
+		$f['bt_title'] = array(
+			'type'        => 'text',
+			'group'       => __( 'Bought together', 'oc-theme' ),
+			'label'       => __( 'The heading above it', 'oc-theme' ),
+			'placeholder' => __( 'Bought together', 'oc-theme' ),
+			'when'        => array( 'bt_on', array( 'yes' ) ),
+			'target'      => array( 'mod', 'oc_bt_title' ),
+		);
+
+		$f['ups_on'] = array(
+			'type'    => 'choice',
+			'group'   => __( 'Upgrades', 'oc-theme' ),
+			'label'   => __( 'Show upgrades?', 'oc-theme' ),
+			'help'    => __( 'The better version of the thing being looked at. You pick them per product, in the shop, under Linked products → Upsells. With none picked the row simply does not appear.', 'oc-theme' ),
+			'options' => $yesno,
+			'default' => 'yes',
+			'target'  => array( 'mod', 'oc_product_upsells' ),
+		);
+
+		$f['ups_title'] = array(
+			'type'        => 'text',
+			'group'       => __( 'Upgrades', 'oc-theme' ),
+			'label'       => __( 'The heading above them', 'oc-theme' ),
+			'placeholder' => __( 'You may also like', 'oc-theme' ),
+			'when'        => array( 'ups_on', array( 'yes' ) ),
+			'target'      => array( 'mod', 'oc_upsells_title' ),
+		);
+
+		// Nothing to decide here: the shop picks them itself, and it picks
+		// them the way that works — the heading is the only thing that is
+		// yours.
+		$f['rel_title'] = array(
+			'type'        => 'text',
+			'group'       => __( 'Similar products', 'oc-theme' ),
+			'label'       => __( 'The heading above them', 'oc-theme' ),
+			'help'        => __( 'They stand at the foot of the page, and the shop picks them itself — by what they share with this one: the category, the name, the price, the tags.', 'oc-theme' ),
+			'placeholder' => __( 'Similar products', 'oc-theme' ),
+			'target'      => array( 'mod', 'oc_related_title' ),
 		);
 
 		/* ---- 7a: the cart panel ---- */

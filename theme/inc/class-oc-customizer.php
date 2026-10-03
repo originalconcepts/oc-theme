@@ -2922,7 +2922,7 @@ final class Customizer {
 				'leaf'  => __( 'The category shown in its path', 'oc-theme' ),
 				'smart' => __( 'Truly similar: categories, name, price, tags and attributes', 'oc-theme' ),
 			),
-			'leaf',
+			'smart',
 			array(
 				'setting' => 'oc_product_related',
 				'values'  => array( '1' ),
