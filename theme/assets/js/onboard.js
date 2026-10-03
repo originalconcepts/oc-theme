@@ -2940,7 +2940,10 @@
 	 * page should also carry.
 	 */
 	function previewThanks() {
-		var yes  = function ( id ) { return 'yes' === String( val( id ) ); };
+		// A question that is not on the screen is never applied either — the
+		// follow buttons wait on social addresses nobody gave — so the
+		// drawing must not promise what the page will not carry.
+		var yes  = function ( id ) { return shown( id ) && 'yes' === String( val( id ) ); };
 		// The greeting and what was bought on one side; everything that asks
 		// something of the buyer on the other, as the wide screen lays it.
 		var main = [];
@@ -3263,11 +3266,19 @@
 		form.appendChild( w( 'wf-ck__two', [ line( I.wf_ck_first, true ), line( I.wf_ck_last, true ) ] ) );
 		form.appendChild( w( 'wf-ck__two', [ line( I.wf_ck_mail, true ), line( I.wf_ck_phone, true ) ] ) );
 
+		// The two ways of getting it there, under the names they were given
+		// on the delivery screen.
+		var said = function ( id, fallback ) {
+			return String( val( id ) || '' ).trim() || fallback;
+		};
+		var ways = [ wRate( said( 'ship_title', I.wf_ck_courier ), true ) ];
+
+		if ( 'no' !== String( val( 'pickup_on' ) ) ) {
+			ways.push( wRate( said( 'pickup_title', I.wf_ck_pickup ), false ) );
+		}
+
 		form.appendChild( el( 'div', { 'class': 'wf-ck__h', text: I.wf_ck_how } ) );
-		form.appendChild( w( 'wf-ck__rates', [
-			wRate( I.wf_ck_courier, true ),
-			wRate( I.wf_ck_pickup, false )
-		] ) );
+		form.appendChild( w( 'wf-ck__rates', ways ) );
 
 		form.appendChild( el( 'div', { 'class': 'wf-ck__h', text: I.wf_ck_where } ) );
 
