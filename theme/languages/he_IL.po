@@ -12291,3 +12291,6 @@ msgstr "התמונה"
 
 msgid "Do you carry goods of makers with a name of their own? Say no and there is nothing more to answer here."
 msgstr "אתם מחזיקים מוצרים של יצרנים בעלי שם משלהם? אם לא — אין כאן מה למלא."
+
+msgid "The first step is filling in this questionnaire. It is a series of questions, most of them multiple choice and a few open ones. It takes about twenty minutes."
+msgstr "השלב הראשון בתהליך הוא מילוי טופס השאלון. הטופס בנוי כמסדרת שאלות, רוב השאלות הן אמריקאיות ומעט שאלות פתוחות. זה לוקח בערך עשרים דקות."

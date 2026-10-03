@@ -103,7 +103,7 @@ final class Front {
 			),
 			'i18n'       => array(
 				'welcome_title'   => __( 'Online store questionnaire', 'oc-theme' ),
-				'welcome_text'    => __( 'The first step is filling in this questionnaire. It is a series of questions, most of them multiple choice and a few open ones. Everything is saved as you go.', 'oc-theme' ),
+				'welcome_text'    => __( 'The first step is filling in this questionnaire. It is a series of questions, most of them multiple choice and a few open ones. It takes about twenty minutes.', 'oc-theme' ),
 				'start'           => __( 'Let\'s start', 'oc-theme' ),
 				'continue'        => __( 'Continue where I stopped', 'oc-theme' ),
 				'next'            => __( 'Next', 'oc-theme' ),

@@ -2768,27 +2768,37 @@
 
 		if ( sc.gate ) { renderGate( index ); return; }
 
+		// A drawing of a part that is not on the page is not a drawing. The
+		// screen then has nothing to show and keeps its one column.
+		var draw = sc.preview;
+
+		if ( 0 === String( draw ).indexOf( 'band:' ) && ! String( draw ).slice( 5 ).split( ',' ).some( function ( k ) {
+			return ( val( 'home_layout' ) || [] ).some( function ( r ) { return r && r.on && r.type === k; } );
+		} ) ) {
+			draw = '';
+		}
+
 		root.innerHTML = '';
-		var card = el( 'div', { 'class': 'oc-onb__card' + ( sc.preview ? ' oc-onb__card--wide' : '' ) } );
+		var card = el( 'div', { 'class': 'oc-onb__card' + ( draw ? ' oc-onb__card--wide' : '' ) } );
 		card.appendChild( progressBar( index ) );
 		card.appendChild( el( 'h1', { text: sc.title } ) );
 		if ( sc.intro ) { card.appendChild( el( 'p', { 'class': 'oc-onb__intro', text: sc.intro } ) ); }
 
 		// The half of the explanation that is only true on a phone, where
 		// the list and the drawing take turns instead of standing together.
-		if ( sc.intro_m ) { card.appendChild( el( 'p', { 'class': 'oc-onb__intro oc-onb__intro--m', text: sc.intro_m } ) ); }
+		if ( sc.intro_m && draw ) { card.appendChild( el( 'p', { 'class': 'oc-onb__intro oc-onb__intro--m', text: sc.intro_m } ) ); }
 
 		var lastGroup = null;
 		var qcol      = card;
 
 		// On a screen that carries a drawing, the questions take one column
 		// and the drawing the other, and it stays in view while you answer.
-		if ( sc.preview ) {
+		if ( draw ) {
 			qcol = el( 'div', { 'class': 'oc-onb-split__q' } );
 
 			var pane  = el( 'div', { 'class': 'oc-onb-split__p' }, [
 				el( 'p', { 'class': 'oc-onb-side__t', text: onPhone() ? I.sketch_m : I.sketch } ),
-				el( 'div', { 'class': 'oc-onb-side', 'data-preview': sc.preview } )
+				el( 'div', { 'class': 'oc-onb-side', 'data-preview': draw } )
 			] );
 			var split = el( 'div', { 'class': 'oc-onb-split is-q' }, [ qcol, pane ] );
 
