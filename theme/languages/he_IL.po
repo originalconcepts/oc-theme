@@ -12705,3 +12705,8 @@ msgstr "מקופלת, העין נוחתת על הטופס; הסכום נראה �
 msgid "The sum on the order button?"
 msgstr "הסכום על כפתור ביצוע ההזמנה?"
 
+msgid "Courier to the door"
+msgstr "שליח עד הבית"
+
+msgid "Products that go with what is in the cart"
+msgstr "מוצרים נלווים למוצרים שבסל"

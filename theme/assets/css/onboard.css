@@ -998,9 +998,13 @@ button.oc-onb-steps__i { cursor: pointer; }
 
 /* The drawer sits at the physical left whatever the writing direction,
    because that is where the theme puts it. */
-.wf-cart__stage { position: relative; min-block-size: 330px; }
+.wf-cart__stage { position: relative; min-block-size: 330px; display: flex; }
 .wf-cart__dim { position: absolute; inset: 0; background: rgba(21, 26, 33, .28); }
-.wf-cart { position: absolute; inset-block: 0; left: 0; inline-size: 300px; display: flex; background: #fff; box-shadow: 0 0 24px rgba(21, 26, 33, .18); }
+/* The drawer is a real item in the row, so the frame grows to hold all of
+   it — whatever is inside, nothing is cut off at the bottom. It sits at the
+   physical left, which is the side the theme opens from. */
+.wf-cart { position: relative; margin-inline-end: auto; inline-size: 300px; display: flex; background: #fff; box-shadow: 0 0 24px rgba(21, 26, 33, .18); }
+[dir="rtl"] .wf-cart { margin-inline-end: 0; margin-inline-start: auto; }
 .wf-cart--wide { inline-size: 380px; }
 .wf-cart__panel { flex: 1; display: flex; flex-direction: column; min-inline-size: 0; }
 .wf-cart__head { display: flex; align-items: center; gap: 6px; padding: 10px 12px; border-bottom: 1px solid #eef0f4; font-size: 12px; color: #4a5160; }
@@ -1010,11 +1014,16 @@ button.oc-onb-steps__i { cursor: pointer; }
 .wf-cart__track { block-size: 4px; border-radius: 3px; background: #e7e9ef; }
 .wf-cart__fill { inline-size: 62%; block-size: 100%; border-radius: 3px; background: var(--onb-primary); }
 .wf-cart__scroll { flex: 1; display: grid; gap: 8px; align-content: start; padding: 10px 12px; }
-.wf-cart__row { display: grid; grid-template-columns: 34px 1fr auto; gap: 8px; align-items: center; }
+.wf-cart__row { display: grid; grid-template-columns: 34px 1fr; gap: 8px; align-items: center; }
+/* The name and its price share a line; the quantity sits under them, the
+   way the panel itself lays a row out. */
+.wf-cart__line { display: flex; align-items: baseline; gap: 8px; }
+.wf-cart__line b { flex: 1; min-inline-size: 0; }
+.wf-cart__price { margin-inline-start: auto; white-space: nowrap; }
 .wf-cart__pic { inline-size: 34px; block-size: 42px; border-radius: 3px; }
 .wf-cart__w { display: grid; gap: 2px; font-size: 10px; color: #8d93a1; min-inline-size: 0; }
 .wf-cart__w b { font-size: 10px; color: #4a5160; }
-.wf-cart__qty { inline-size: 24px; text-align: center; font-size: 10px; color: #6c7382; border: 1px solid var(--onb-line); border-radius: 3px; padding: 3px 0; }
+.wf-cart__qty { inline-size: 24px; text-align: center; font-size: 10px; color: #6c7382; border: 1px solid var(--onb-line); border-radius: 3px; padding: 2px 0; justify-self: start; }
 .wf-cart__foot { display: grid; gap: 7px; padding: 10px 12px; border-top: 1px solid #eef0f4; }
 .wf-cart__coupon { display: grid; grid-template-columns: 1fr auto; gap: 6px; }
 .wf-cart__in { border: 1px solid var(--onb-line); border-radius: 4px; padding: 6px 8px; font-size: 10px; color: #b2b7c2; }
@@ -1029,11 +1038,16 @@ button.oc-onb-steps__i { cursor: pointer; }
 .wf-up__one { display: grid; gap: 3px; font-size: 9px; color: #8d93a1; text-align: center; }
 .wf-up__pic { aspect-ratio: 1 / 1; border-radius: 3px; }
 .wf-up--side { inline-size: 80px; flex: 0 0 80px; padding: 10px 8px; background: #f7f8fa; border-inline-start: 1px solid #eef0f4; }
-.wf-up--list .wf-up__list,
 .wf-up--collapse .wf-up__list,
 .wf-up--slider .wf-up__list { grid-auto-flow: column; grid-auto-columns: 1fr; }
 .wf-up--list,
 .wf-up--slider { padding-top: 8px; border-top: 1px dashed #eef0f4; }
+.wf-up__row { display: grid; grid-template-columns: 26px 1fr 18px; gap: 7px; align-items: center; font-size: 10px; color: #8d93a1; }
+.wf-up__row b { font-size: 10px; color: #4a5160; }
+.wf-up__thumb { inline-size: 26px; block-size: 32px; border-radius: 3px; }
+.wf-up__add { border: 1px solid var(--onb-line); border-radius: 3px; text-align: center; font-size: 11px; color: #6c7382; line-height: 16px; }
+/* A slider is a row that runs off the edge, so it has to look like one. */
+.wf-up--slider .wf-up__list { grid-auto-columns: 44%; overflow: hidden; }
 .wf-up--collapse { padding: 8px 12px; background: #f7f8fa; border-top: 1px solid #eef0f4; }
 
 /* ------------------------------------------------- the checkout, drawn */
@@ -1052,7 +1066,18 @@ button.oc-onb-steps__i { cursor: pointer; }
 .wf-ck__ship { display: grid; gap: 6px; font-size: 10px; color: #4a5160; margin-top: 4px; }
 .wf-ck__opt { border: 1px solid var(--onb-line); border-radius: 4px; padding: 7px 8px; font-size: 10px; color: #6c7382; }
 .wf-ck__opt.is-on { border-color: var(--onb-primary); }
+.wf-ck__h { font-size: 11px; font-weight: 700; color: #4a5160; margin-top: 6px; }
+.wf-ck__rates { display: grid; gap: 6px; }
+.wf-ck__rate { display: flex; align-items: center; gap: 7px; border: 1px solid var(--onb-line); border-radius: 5px; padding: 8px; font-size: 10px; color: #6c7382; }
+.wf-ck__rate svg { inline-size: 17px; block-size: 17px; flex: 0 0 auto; }
+.wf-ck__rate.is-on { border-color: var(--onb-primary); color: var(--onb-ink); box-shadow: inset 0 0 0 1px var(--onb-primary); }
 .wf-ck__side { display: grid; gap: 8px; align-content: start; padding: 10px; border-radius: 6px; background: #f7f8fa; }
+/* Folded, the whole order is one bordered line that still says the sum. */
+.wf-ck__fold { display: flex; align-items: center; gap: 8px; background: #fff; border: 1px solid #e4e6ea; border-radius: 5px; padding: 10px 11px; }
+.wf-ck__foldw { display: grid; gap: 1px; line-height: 1.25; font-size: 11px; color: #4a5160; }
+.wf-ck__foldw span { font-size: 9px; color: #9aa0ad; }
+.wf-ck__foldt { margin-inline-start: auto; font-size: 11px; color: #4a5160; }
+.wf-ck__chev { color: #9aa0ad; font-size: 13px; line-height: 1; }
 .wf-ck__sh { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #4a5160; }
 .wf-ck__n { font-size: 9px; color: #9aa0ad; }
 .wf-ck__show { margin-inline-start: auto; font-size: 9px; color: var(--onb-primary); }

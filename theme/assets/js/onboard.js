@@ -2821,10 +2821,12 @@
 			scroll.appendChild( w( 'wf-cart__row', [
 				wImg( 'wf-cart__pic' ),
 				w( 'wf-cart__w', [
-					el( 'b', { text: fmt( I.wf_product, i + 1 ) } ),
-					el( 'span', { text: MONEY } )
-				] ),
-				w( 'wf-cart__qty', null, '1' )
+					w( 'wf-cart__line', [
+						el( 'b', { text: fmt( I.wf_product, i + 1 ) } ),
+						el( 'span', { 'class': 'wf-cart__price', text: MONEY } )
+					] ),
+					w( 'wf-cart__qty', null, '1' )
+				] )
 			] ) );
 		}
 
@@ -2850,9 +2852,13 @@
 
 		panel.appendChild( foot );
 
-		var drawer = w( 'wf-cart' + ( more && 'side' === style ? ' wf-cart--wide' : '' ), [ panel ] );
+		var drawer = w( 'wf-cart' + ( more && 'side' === style ? ' wf-cart--wide' : '' ) );
 
+		// The strip stands on the inner side of the panel, towards the page
+		// — not out at the edge of the screen.
 		if ( more && 'side' === style ) { drawer.appendChild( upBlock( 'side' ) ); }
+
+		drawer.appendChild( panel );
 
 		return wPage( [ w( 'wf-cart__stage', [ w( 'wf-cart__dim' ), drawer ] ) ], {} );
 	}
@@ -2866,10 +2872,21 @@
 		var said = String( val( 'cart_up_title' ) || '' ).trim() || I.wf_upsell;
 		var box  = w( 'wf-up wf-up--' + style, [ el( 'div', { 'class': 'wf-up__h', text: said } ) ] );
 		var list = w( 'wf-up__list' );
-		var many = Math.max( 1, Math.min( 4, Number( val( 'cart_up_max' ) ) || 3 ) );
+		var many = Math.max( 1, Math.min( 'list' === style ? 2 : 3, Number( val( 'cart_up_max' ) ) || 3 ) );
 
-		for ( var i = 0; i < Math.min( many, 'side' === style ? 3 : 3 ); i++ ) {
-			list.appendChild( w( 'wf-up__one', [ wImg( 'wf-up__pic' ), el( 'span', { text: MONEY } ) ] ) );
+		for ( var i = 0; i < many; i++ ) {
+			// A list reads like the cart's own rows: a small picture, a name
+			// and a price beside it. The others are cards.
+			list.appendChild( 'list' === style
+				? w( 'wf-up__row', [
+					wImg( 'wf-up__thumb' ),
+					w( 'wf-cart__line', [
+						el( 'b', { text: fmt( I.wf_product, i + 3 ) } ),
+						el( 'span', { 'class': 'wf-cart__price', text: MONEY } )
+					] ),
+					w( 'wf-up__add', null, '+' )
+				] )
+				: w( 'wf-up__one', [ wImg( 'wf-up__pic' ), el( 'span', { text: MONEY } ) ] ) );
 		}
 
 		box.appendChild( list );
@@ -2889,25 +2906,33 @@
 			return w( 'wf-ck__f', [ el( 'span', { text: label + ( star ? ' *' : '' ) } ) ] );
 		};
 
+		// The order of the real page: who is buying, then how it reaches
+		// them, then where to.
+		form.appendChild( w( 'wf-ck__two', [ line( I.wf_ck_first, true ), line( I.wf_ck_last, true ) ] ) );
+		form.appendChild( w( 'wf-ck__two', [ line( I.wf_ck_mail, true ), line( I.wf_ck_phone, true ) ] ) );
+
+		form.appendChild( el( 'div', { 'class': 'wf-ck__h', text: I.wf_ck_how } ) );
+		form.appendChild( w( 'wf-ck__rates', [
+			wRate( I.wf_ck_courier, true ),
+			wRate( I.wf_ck_pickup, false )
+		] ) );
+
+		form.appendChild( el( 'div', { 'class': 'wf-ck__h', text: I.wf_ck_where } ) );
+
 		if ( yes( 'ck_multi' ) ) {
 			form.appendChild( w( 'wf-ck__addr', [
 				w( 'wf-ck__chip is-on', null, I.wf_ck_home ),
 				w( 'wf-ck__chip', null, I.wf_ck_work ),
-				w( 'wf-ck__chip', null, '+ ' + I.wf_ck_addr_new )
+				w( 'wf-ck__chip', null, '＋ ' + I.wf_ck_addr_new )
 			] ) );
 		}
 
-		form.appendChild( w( 'wf-ck__two', [ line( I.wf_ck_name, true ), line( I.wf_ck_phone, true ) ] ) );
-		form.appendChild( line( I.wf_ck_mail, true ) );
-
+		// Ticked, the box opens a second set of fields. The sketch says the
+		// offer is there and leaves it at that.
 		if ( yes( 'ck_other' ) ) {
 			form.appendChild( w( 'wf-ck__tick', [
 				el( 'span', { 'class': 'wf-ck__box', 'aria-hidden': 'true' } ),
 				el( 'span', { text: I.wf_ck_other } )
-			] ) );
-			form.appendChild( w( 'wf-ck__two', [
-				line( I.wf_ck_rec, false ),
-				line( I.wf_ck_rec_phone, yes( 'ck_phone2' ) )
 			] ) );
 		}
 
@@ -2917,29 +2942,45 @@
 			line( I.wf_ck_floor, need.indexOf( 'floor' ) !== -1 ),
 			line( I.wf_ck_entry, need.indexOf( 'entry' ) !== -1 )
 		] ) );
-		form.appendChild( w( 'wf-ck__ship', [
-			el( 'b', { text: I.wf_ck_ship } ),
-			w( 'wf-ck__opt is-on', null, I.wf_ck_ship + ' · ₪0' )
-		] ) );
 
-		var side = w( 'wf-ck__side', [ w( 'wf-ck__sh', [
-			el( 'b', { text: I.wf_ck_sum } ),
-			el( 'span', { 'class': 'wf-ck__n', text: I.wf_cart_n } )
-		] ) ] );
+		var side = w( 'wf-ck__side' );
 
-		// The list is there, or folded away behind one line, or not there
-		// at all — and the sum stands under it either way.
-		if ( yes( 'ck_summary' ) ) {
-			if ( yes( 'ck_fold' ) ) {
-				side.querySelector( '.wf-ck__sh' ).appendChild( el( 'span', { 'class': 'wf-ck__show', text: I.wf_ck_show + ' ⌄' } ) );
-			} else {
+		if ( yes( 'ck_summary' ) && yes( 'ck_fold' ) ) {
+			// Folded, the heading is a box of its own that says the total and
+			// how many things are in it — exactly as the checkout draws it.
+			side.appendChild( w( 'wf-ck__fold', [
+				w( 'wf-ck__foldw', [
+					el( 'b', { text: I.wf_total } ),
+					el( 'span', { text: I.wf_cart_n } )
+				] ),
+				el( 'b', { 'class': 'wf-ck__foldt', text: MONEY } ),
+				el( 'span', { 'class': 'wf-ck__chev', 'aria-hidden': 'true', text: '⌄' } )
+			] ) );
+		} else {
+			side.appendChild( w( 'wf-ck__sh', [
+				el( 'b', { text: I.wf_ck_sum } ),
+				el( 'span', { 'class': 'wf-ck__n', text: I.wf_cart_n } )
+			] ) );
+
+			if ( yes( 'ck_summary' ) ) {
 				for ( var i = 0; i < 2; i++ ) {
 					side.appendChild( w( 'wf-ck__row', [
 						wImg( 'wf-cart__pic' ),
-						w( 'wf-cart__w', [ el( 'b', { text: fmt( I.wf_product, i + 1 ) } ), el( 'span', { text: MONEY } ) ] )
+						w( 'wf-cart__w', [
+							w( 'wf-cart__line', [
+								el( 'b', { text: fmt( I.wf_product, i + 1 ) } ),
+								el( 'span', { 'class': 'wf-cart__price', text: MONEY } )
+							] ),
+							w( 'wf-cart__qty', null, '1' )
+						] )
 					] ) );
 				}
 			}
+
+			side.appendChild( w( 'wf-ck__sums', [
+				w( 'wf-cart__sum', [ el( 'span', { text: I.wf_subtotal } ), el( 'span', { text: MONEY } ) ] ),
+				w( 'wf-cart__sum wf-cart__sum--big', [ el( 'span', { text: I.wf_total } ), el( 'b', { text: MONEY } ) ] )
+			] ) );
 		}
 
 		var coupon = String( val( 'ck_coupon' ) || 'open' );
@@ -2950,14 +2991,29 @@
 			side.appendChild( w( 'wf-ck__has', null, I.wf_ck_has ) );
 		}
 
-		side.appendChild( w( 'wf-ck__sums', [
-			w( 'wf-cart__sum', [ el( 'span', { text: I.wf_subtotal } ), el( 'span', { text: MONEY } ) ] ),
-			w( 'wf-cart__sum', [ el( 'span', { text: I.wf_shipping } ), el( 'span', { text: '₪0' } ) ] ),
-			w( 'wf-cart__sum wf-cart__sum--big', [ el( 'span', { text: I.wf_total } ), el( 'b', { text: MONEY } ) ] )
-		] ) );
 		side.appendChild( w( 'wf-pp__btn', null, yes( 'ck_btn_total' ) ? I.wf_ck_pay + ' · ' + MONEY : I.wf_ck_pay ) );
 
 		return wPage( [ w( 'wf-ck', [ form, side ] ) ], {} );
+	}
+
+	/**
+	 * One way of getting the order there, drawn as the card the checkout
+	 * draws: a little picture of the thing, its name, and a ring round it
+	 * while it is the chosen one.
+	 *
+	 * @param {string}  name What it is called.
+	 * @param {boolean} on   Whether it is the chosen one.
+	 */
+	function wRate( name, on ) {
+		var card = w( 'wf-ck__rate' + ( on ? ' is-on' : '' ) );
+
+		card.innerHTML = on
+			? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 7.2A1.2 1.2 0 0 1 3.7 6h9.1A1.2 1.2 0 0 1 14 7.2v7.8H2.5z"/><path d="M14 9.5h3.3a1 1 0 0 1 .77.36l2.2 2.64a1 1 0 0 1 .23.64V15h-2.1"/><circle cx="7" cy="16.6" r="1.7"/><circle cx="16.3" cy="16.6" r="1.7"/></svg>'
+			: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 7.5l8.5-4 8.5 4v9l-8.5 4-8.5-4z"/><path d="M3.5 7.5L12 11.5l8.5-4M12 11.5v9"/></svg>';
+
+		card.appendChild( el( 'span', { text: name } ) );
+
+		return card;
 	}
 
 	/**

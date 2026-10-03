@@ -1523,7 +1523,7 @@ final class Schema {
 			'group'   => __( 'Offering more in the panel', 'oc-theme' ),
 			'label'   => __( 'Which products are offered?', 'oc-theme' ),
 			'options' => array(
-				'items'    => __( 'Whatever each product in the cart recommends', 'oc-theme' ),
+				'items'    => __( 'Products that go with what is in the cart', 'oc-theme' ),
 				'category' => __( 'One category, the same for everyone', 'oc-theme' ),
 			),
 			'default' => 'items',
