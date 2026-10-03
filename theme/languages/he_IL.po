@@ -12926,3 +12926,18 @@ msgstr "לפני כפתור הקנייה — מה שמסומן נכנס לסל �
 
 msgid "They stand at the foot of the page, and the shop picks them itself — by what they share with this one: the category, the name, the price, the tags."
 msgstr "הם עומדים בתחתית העמוד, והחנות בוחרת אותם לבד — לפי מה שמשותף להם ולמוצר הזה: הקטגוריה, השם, המחיר, התגיות."
+
+msgid "Thank you, Dana"
+msgstr "תודה, דנה"
+
+msgid "Your friend gets %1$s%% off, and you get %2$s%% on your next order."
+msgstr "החבר מקבל %1$s%% הנחה, ואתם מקבלים %2$s%% על ההזמנה הבאה."
+
+msgid "How did it go?"
+msgstr "איך היה?"
+
+msgid "A word or two, if you feel like it"
+msgstr "מילה או שתיים, אם בא לכם"
+
+msgid "Join"
+msgstr "הצטרפות"

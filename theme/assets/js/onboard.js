@@ -2673,6 +2673,7 @@
 		if ( 'product' === kind ) { return previewProduct(); }
 		if ( 'cart' === kind ) { return previewCart(); }
 		if ( 'linked' === kind ) { return previewProduct( true ); }
+		if ( 'thanks' === kind ) { return previewThanks(); }
 		if ( 'checkout' === kind ) { return previewCheckout(); }
 		if ( 0 === String( kind ).indexOf( 'band:' ) ) { return previewBands( String( kind ).slice( 5 ).split( ',' ) ); }
 		return previewHome( String( val( 'home_recipe' ) ) );
@@ -2929,6 +2930,101 @@
 	}
 
 	/**
+	 * The page the order lands on. The thanks, the number and the order
+	 * itself are always there; under them stands whatever they said the
+	 * page should also carry.
+	 */
+	function previewThanks() {
+		var yes = function ( id ) { return 'yes' === String( val( id ) ); };
+		var mid = [];
+		var tick = w( 'wf-ty__tick' );
+
+		tick.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+
+		var hero = w( 'wf-ty__hero', [
+			tick,
+			el( 'div', { 'class': 'wf-ty__h', text: I.wf_ty_thanks } ),
+			el( 'div', { 'class': 'wf-ty__sub', text: I.wf_ty_said } ),
+			w( 'wf-ty__num', [ el( 'span', { text: I.wf_ty_num } ), el( 'b', { text: '1042' } ) ] ),
+			el( 'div', { 'class': 'wf-ty__sub', text: I.wf_ty_mail } )
+		] );
+
+		// Where to find you, right under the thanks — a customer with a
+		// question should not have to go looking.
+		if ( yes( 'ty_contact' ) ) {
+			hero.appendChild( w( 'wf-ty__row', [
+				w( 'wf-ty__pill', null, I.wf_ty_call ),
+				w( 'wf-ty__pill', null, I.wf_ty_mailus ),
+				w( 'wf-ty__pill wf-ty__pill--wa', null, I.wf_whats )
+			] ) );
+		}
+
+		mid.push( hero );
+
+		// The order itself, which the page always shows.
+		var sum = w( 'wf-ty__sum', [ el( 'div', { 'class': 'wf-ty__t', text: I.wf_ck_sum } ) ] );
+
+		for ( var i = 0; i < 2; i++ ) {
+			sum.appendChild( w( 'wf-cart__row', [
+				wImg( 'wf-cart__pic' ),
+				w( 'wf-cart__w', [
+					w( 'wf-cart__line', [
+						el( 'b', { text: fmt( I.wf_product, i + 1 ) } ),
+						el( 'span', { 'class': 'wf-cart__price', text: MONEY } )
+					] ),
+					w( 'wf-cart__qty', null, '1' )
+				] )
+			] ) );
+		}
+
+		sum.appendChild( w( 'wf-cart__sum wf-cart__sum--big', [ el( 'span', { text: I.wf_total } ), el( 'b', { text: MONEY } ) ] ) );
+		mid.push( sum );
+
+		if ( yes( 'ty_referral' ) ) {
+			var friend = Number( val( 'ty_ref_friend' ) ) || 10;
+			var reward = Number( val( 'ty_ref_reward' ) ) || 10;
+
+			mid.push( w( 'wf-ty__box', [
+				el( 'div', { 'class': 'wf-ty__t', text: I.wf_ty_ref } ),
+				el( 'p', { 'class': 'wf-ty__p', text: fmt( I.wf_ty_ref_say, friend, reward ) } ),
+				w( 'wf-ty__code', [ el( 'b', { text: 'FRIEND-4821' } ), w( 'wf-ty__copy', null, I.wf_ty_copy ) ] )
+			] ) );
+		}
+
+		if ( yes( 'ty_survey' ) ) {
+			var stars = w( 'wf-ty__stars' );
+
+			for ( var n = 0; n < 5; n++ ) { stars.appendChild( el( 'span', { 'class': 'wf-ty__star', 'aria-hidden': 'true', text: '★' } ) ); }
+
+			mid.push( w( 'wf-ty__box', [
+				el( 'div', { 'class': 'wf-ty__t', text: I.wf_ty_survey } ),
+				stars,
+				w( 'wf-ty__field', null, I.wf_ty_words )
+			] ) );
+		}
+
+		if ( yes( 'ty_wa_group' ) ) {
+			mid.push( w( 'wf-ty__box wf-ty__box--wa', [
+				el( 'div', { 'class': 'wf-ty__t', text: String( val( 'ty_wa_title' ) || '' ).trim() || I.wf_ty_wa } ),
+				w( 'wf-ty__pill wf-ty__pill--wa', null, I.wf_ty_join )
+			] ) );
+		}
+
+		if ( yes( 'ty_social' ) ) {
+			mid.push( w( 'wf-ty__box', [
+				el( 'div', { 'class': 'wf-ty__t', text: I.wf_ty_follow } ),
+				w( 'wf-ty__row', [
+					w( 'wf-ty__dot' ),
+					w( 'wf-ty__dot' ),
+					w( 'wf-ty__dot' )
+				] )
+			] ) );
+		}
+
+		return wPage( [ w( 'wf-ty', mid ) ], {} );
+	}
+
+	/**
 	 * One band of other products under the product: a heading and the shape
 	 * it was asked for.
 	 *
@@ -2989,7 +3085,19 @@
 			return box;
 		}
 
-		box.appendChild( wRow( 'slider' === shape ? many + 1 : many, 1, false ) );
+		// A slider holds the same four across; what says it is a slider is
+		// the pair of arrows that can move them.
+		if ( 'slider' === shape ) {
+			box.appendChild( w( 'wf-lk__slide', [
+				el( 'span', { 'class': 'wf-lk__arr', 'aria-hidden': 'true', text: '\u2039' } ),
+				wRow( many, 1, false ),
+				el( 'span', { 'class': 'wf-lk__arr', 'aria-hidden': 'true', text: '\u203a' } )
+			] ) );
+
+			return box;
+		}
+
+		box.appendChild( wRow( many, 1, false ) );
 
 		return box;
 	}

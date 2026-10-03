@@ -264,10 +264,12 @@ final class Schema {
 				'title'   => __( 'Thank-you page', 'oc-theme' ),
 				'screens' => array(
 					array(
-						'id'     => '8a',
-						'title'  => __( 'The thank-you page', 'oc-theme' ),
-						'intro'  => __( 'The page a customer lands on the moment the order goes through. It already shows the order and what happens next; here you choose what else it carries.', 'oc-theme' ),
-						'fields' => array( 'ty_contact', 'ty_wa_group', 'wa_group', 'ty_wa_title', 'ty_social', 'ty_survey', 'ty_referral', 'ty_ref_friend', 'ty_ref_reward' ),
+						'id'      => '8a',
+						'title'   => __( 'The thank-you page', 'oc-theme' ),
+						'intro'   => __( 'The page a customer lands on the moment the order goes through. It already shows the order and what happens next; here you choose what else it carries.', 'oc-theme' ),
+						'intro_m' => __( 'On a phone the two do not fit side by side, so the two buttons above switch between the questions and the drawing.', 'oc-theme' ),
+						'preview' => 'thanks',
+						'fields'  => array( 'ty_contact', 'ty_wa_group', 'wa_group', 'ty_wa_title', 'ty_social', 'ty_survey', 'ty_referral', 'ty_ref_friend', 'ty_ref_reward' ),
 					),
 				),
 			),

@@ -929,6 +929,9 @@ button.oc-onb-steps__i { cursor: pointer; }
 
 .wf-pp { display: grid; grid-template-columns: 1.1fr 1fr; gap: 14px; padding: 14px 12px 0; }
 .wf-pp > * { min-inline-size: 0; }
+/* The pictures keep the height their own shape asks for: a buying column
+   that grows must not stretch them with it. */
+.wf-pp__g { align-self: start; }
 /* The other side: the two columns swap places, without turning the page
    over — text that reads right to left still does. */
 .wf-pp--end .wf-pp__g { order: 2; }
@@ -1112,7 +1115,8 @@ button.oc-onb-steps__i { cursor: pointer; }
 .wf-pp__d .wf-lk__wide,
 .wf-pp__d .wf-lk__rows,
 .wf-pp__d .wf-lk__bt { margin-inline: 0; padding-inline: 0; }
-.wf-lk .wf-h { margin-bottom: 8px; }
+.wf-lk .wf-h { margin-bottom: 8px; text-align: start; padding-inline: 12px; }
+.wf-pp__d .wf-lk .wf-h { padding-inline: 0; }
 .wf-lk__pic { aspect-ratio: 1 / 1; border-radius: 3px; }
 .wf-lk__w { display: grid; gap: 2px; font-size: 10px; color: #8d93a1; min-inline-size: 0; }
 .wf-lk__w b { font-size: 10px; color: #4a5160; }
@@ -1150,3 +1154,33 @@ button.oc-onb-steps__i { cursor: pointer; }
 .wf-xs--grid .wf-xs__pic { inline-size: 48px; block-size: auto; aspect-ratio: 1 / 1; }
 .wf-xs--grid .wf-cart__line { flex-direction: column; align-items: center; gap: 1px; }
 .wf-xs--grid .wf-cart__price { margin-inline-start: 0; }
+
+/* Four across with an arrow at each end: what makes it a slider is that
+   they can be moved, not that one of them is cut in half. */
+.wf-lk__slide { display: flex; align-items: center; gap: 4px; }
+.wf-lk__slide .wf-grid { flex: 1; min-inline-size: 0; padding: 0; }
+.wf-lk__slide .wf-lk__arr { flex: 0 0 auto; padding: 0 4px; }
+
+/* ------------------------------------------------- the thank-you page */
+
+.wf-ty { padding: 16px 12px; display: grid; gap: 10px; }
+.wf-ty__hero { display: grid; gap: 6px; justify-items: center; text-align: center; padding: 6px 0 10px; }
+.wf-ty__tick { inline-size: 34px; block-size: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--onb-ok); color: #fff; }
+.wf-ty__tick svg { inline-size: 18px; block-size: 18px; }
+.wf-ty__h { font-size: 15px; font-weight: 700; color: #4a5160; }
+.wf-ty__sub { font-size: 10px; color: #8d93a1; }
+.wf-ty__num { display: flex; align-items: baseline; gap: 5px; font-size: 10px; color: #6c7382; }
+.wf-ty__num b { font-size: 12px; color: var(--onb-primary); }
+.wf-ty__row { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; margin-top: 4px; }
+.wf-ty__pill { border: 1px solid var(--onb-line); border-radius: 20px; padding: 5px 12px; font-size: 9px; color: #6c7382; }
+.wf-ty__pill--wa { background: #0e7d54; border-color: #0e7d54; color: #fff; }
+.wf-ty__sum { border: 1px solid #eef0f4; border-radius: 6px; padding: 10px; display: grid; gap: 8px; }
+.wf-ty__t { font-size: 11px; font-weight: 700; color: #4a5160; }
+.wf-ty__box { border: 1px solid #eef0f4; border-radius: 6px; padding: 10px; display: grid; gap: 7px; justify-items: start; }
+.wf-ty__box--wa { background: #f3faf7; border-color: #cfe9de; }
+.wf-ty__p { margin: 0; font-size: 10px; color: #6c7382; }
+.wf-ty__code { display: flex; align-items: center; gap: 8px; border: 1px dashed var(--onb-line); border-radius: 4px; padding: 6px 10px; font-size: 10px; color: #4a5160; }
+.wf-ty__copy { color: var(--onb-primary); font-size: 9px; }
+.wf-ty__stars { display: flex; gap: 3px; color: var(--onb-secondary, #d9a441); font-size: 13px; }
+.wf-ty__field { inline-size: 100%; border: 1px solid var(--onb-line); border-radius: 4px; padding: 7px 8px; font-size: 10px; color: #b2b7c2; }
+.wf-ty__dot { inline-size: 22px; block-size: 22px; border-radius: 50%; background: #eef0f4; }
