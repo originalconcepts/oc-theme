@@ -920,3 +920,37 @@ button.oc-onb-steps__i { cursor: pointer; }
 /* Asking on the row itself, where the press happened. */
 .oc-onb-rep__ask { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--onb-ink-2); }
 .oc-onb-rep__yes { color: var(--onb-err); }
+
+/* ------------------------------------------------- the product page, drawn */
+
+.wf-pp { display: grid; grid-template-columns: 1.1fr 1fr; gap: 14px; padding: 14px 12px 0; }
+.wf-pp--end { direction: ltr; }
+.wf-pp--end > * { direction: rtl; }
+.wf-pp__g { display: grid; gap: 8px; }
+.wf-pp__g--thumbs-side { grid-template-columns: 34px 1fr; align-items: start; }
+.wf-pp__g--thumbs-side .wf-pp__th { display: grid; gap: 6px; }
+.wf-pp__g--thumbs-under .wf-pp__th { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.wf-pp__th .wf-img { aspect-ratio: 1 / 1; }
+.wf-pp__big { aspect-ratio: 4 / 5; }
+.wf-pp__pair { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.wf-pp__one { aspect-ratio: 1 / 1; }
+.wf-pp__d { display: grid; gap: 8px; align-content: start; }
+.wf-pp__h { font-size: 14px; font-weight: 700; color: #4a5160; }
+.wf-pp__price { font-size: 13px; font-weight: 700; color: var(--onb-primary); }
+.wf-pp__sku { font-size: 10px; color: #9aa0ad; }
+.wf-pp__stock { display: flex; align-items: center; gap: 6px; font-size: 10px; color: #5b6271; margin-top: 4px; }
+.wf-pp__dot { inline-size: 7px; block-size: 7px; border-radius: 50%; background: var(--onb-ok); }
+.wf-pp__buy { display: flex; gap: 6px; align-items: stretch; margin-top: 2px; }
+.wf-pp__qty { inline-size: 34px; display: grid; place-items: center; border: 1px solid var(--onb-line); border-radius: 4px; font-size: 11px; color: #5b6271; }
+.wf-pp__btn { flex: 1; background: var(--onb-primary); color: #fff; font-size: 11px; letter-spacing: .04em; padding: 9px 0; border-radius: 4px; text-align: center; }
+.wf-pp__ics { display: grid; gap: 5px; margin-top: 4px; }
+.wf-pp__ic { display: flex; align-items: center; gap: 6px; font-size: 10px; color: #6c7382; }
+.wf-pp__ic svg { inline-size: 15px; block-size: 15px; flex: 0 0 auto; }
+.wf-pp__tabs { display: flex; gap: 14px; margin: 16px 12px 0; border-bottom: 1px solid #eef0f4; }
+.wf-pp__tab { font-size: 10px; color: #9aa0ad; padding-bottom: 7px; white-space: nowrap; }
+.wf-pp__tab.is-on { color: var(--onb-ink); border-bottom: 2px solid var(--onb-primary); }
+.wf-pp__body { display: grid; gap: 6px; padding: 10px 12px 0; }
+
+.oc-onb-side.is-phone .wf-pp { grid-template-columns: 1fr; }
+.oc-onb-side.is-phone .wf-pp__g--thumbs-side { grid-template-columns: 1fr; }
+.oc-onb-side.is-phone .wf-pp__g--thumbs-side .wf-pp__th { grid-template-columns: repeat(4, 1fr); }

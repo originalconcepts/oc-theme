@@ -212,10 +212,12 @@ final class Schema {
 				'title'   => __( 'The product page', 'oc-theme' ),
 				'screens' => array(
 					array(
-						'id'     => '6a',
-						'title'  => __( 'The product page', 'oc-theme' ),
-						'intro'  => __( 'Where the decision is made. The pictures on one side, everything the buyer needs on the other.', 'oc-theme' ),
-						'fields' => array( 'prod_side', 'prod_gallery', 'prod_qty', 'prod_sku', 'prod_ship_tab' ),
+						'id'      => '6a',
+						'title'   => __( 'The product page', 'oc-theme' ),
+						'intro'   => __( 'Where the decision is made. The pictures on one side, everything the buyer needs on the other. Every answer here changes the drawing beside you.', 'oc-theme' ),
+						'intro_m' => __( 'On a phone the two do not fit side by side, so the two buttons above switch between the questions and the drawing.', 'oc-theme' ),
+						'preview' => 'product',
+						'fields'  => array( 'prod_side', 'prod_gallery', 'prod_qty', 'prod_sku', 'prod_stock', 'prod_ship_days', 'prod_lead_min', 'prod_lead_max', 'prod_icons', 'prod_ship_tab', 'prod_ship_text', 'prod_tab2_title', 'prod_tab2_text' ),
 					),
 				),
 			),
@@ -1510,32 +1512,25 @@ final class Schema {
 		/* ---- 5a: the product page ---- */
 
 		$f['prod_side'] = array(
-			'type'    => 'pick',
+			'type'    => 'choice',
+			'group'   => __( 'The pictures', 'oc-theme' ),
 			'label'   => __( 'Which side are the pictures on?', 'oc-theme' ),
 			'options' => array(
 				'gallery-start' => __( 'The side the page starts from', 'oc-theme' ),
 				'gallery-end'   => __( 'The other side', 'oc-theme' ),
-			),
-			'art'     => array(
-				'gallery-start' => 'prod_right',
-				'gallery-end'   => 'prod_left',
 			),
 			'default' => 'gallery-start',
 			'target'  => array( 'mod', 'oc_product_layout_side' ),
 		);
 
 		$f['prod_gallery'] = array(
-			'type'    => 'pick',
+			'type'    => 'choice',
+			'group'   => __( 'The pictures', 'oc-theme' ),
 			'label'   => __( 'Where do the small pictures sit?', 'oc-theme' ),
 			'options' => array(
 				'thumbs-side'  => __( 'Beside the big one', 'oc-theme' ),
 				'thumbs-under' => __( 'Under it', 'oc-theme' ),
-				'grid'         => __( 'All of them, one under the other', 'oc-theme' ),
-			),
-			'art'     => array(
-				'thumbs-side'  => 'gal_side',
-				'thumbs-under' => 'gal_under',
-				'grid'         => 'gal_grid',
+				'grid'         => __( 'No small ones — two in a row, all of them', 'oc-theme' ),
 			),
 			'default' => 'thumbs-side',
 			'target'  => array( 'mod', 'oc_gallery_preset' ),
@@ -1543,6 +1538,7 @@ final class Schema {
 
 		$f['prod_qty'] = array(
 			'type'    => 'choice',
+			'group'   => __( 'The buying area', 'oc-theme' ),
 			'label'   => __( 'A quantity box beside the buy button?', 'oc-theme' ),
 			'help'    => __( 'Worth it when people buy several of the same thing. A buyer can change the quantity in the cart either way.', 'oc-theme' ),
 			'options' => $yesno,
@@ -1552,6 +1548,7 @@ final class Schema {
 
 		$f['prod_sku'] = array(
 			'type'    => 'choice',
+			'group'   => __( 'The buying area', 'oc-theme' ),
 			'label'   => __( 'Show the product code?', 'oc-theme' ),
 			'help'    => __( 'The number you use in the warehouse. Shoppers rarely need it; a trade customer does.', 'oc-theme' ),
 			'options' => $yesno,
@@ -1559,13 +1556,127 @@ final class Schema {
 			'target'  => array( 'mod', 'oc_product_sku' ),
 		);
 
+		$f['prod_stock'] = array(
+			'type'    => 'choice',
+			'group'   => __( 'The buying area', 'oc-theme' ),
+			'label'   => __( 'A line above the button saying how the stock is?', 'oc-theme' ),
+			'help'    => __( 'It takes turns between what the stock is doing and when the parcel would arrive — "in stock, arrives 2/12–4/12".', 'oc-theme' ),
+			'options' => $yesno,
+			'default' => 'yes',
+			'target'  => array( 'mod', 'oc_stock_indicator' ),
+		);
+
+		$f['prod_ship_days'] = array(
+			'type'    => 'checks',
+			'group'   => __( 'The buying area', 'oc-theme' ),
+			'label'   => __( 'Which days do orders go out?', 'oc-theme' ),
+			'help'    => __( 'Counting starts the day after the order and skips the days you do not send, and the holidays.', 'oc-theme' ),
+			'options' => array(
+				'0' => __( 'Sunday', 'oc-theme' ),
+				'1' => __( 'Monday', 'oc-theme' ),
+				'2' => __( 'Tuesday', 'oc-theme' ),
+				'3' => __( 'Wednesday', 'oc-theme' ),
+				'4' => __( 'Thursday', 'oc-theme' ),
+				'5' => __( 'Friday', 'oc-theme' ),
+				'6' => __( 'Saturday', 'oc-theme' ),
+			),
+			'default' => array( '0', '1', '2', '3', '4' ),
+			'when'    => array( 'prod_stock', array( 'yes' ) ),
+			'target'  => array( 'mod', 'oc_ship_days' ),
+			'as'      => 'csv',
+		);
+
+		$f['prod_lead_min'] = array(
+			'type'    => 'stepper',
+			'group'   => __( 'The buying area', 'oc-theme' ),
+			'label'   => __( 'At the quickest, how many sending days', 'oc-theme' ),
+			'min'     => 1,
+			'max'     => 30,
+			'default' => '1',
+			'when'    => array( 'prod_stock', array( 'yes' ) ),
+			'target'  => array( 'mod', 'oc_ship_lead_min' ),
+		);
+
+		$f['prod_lead_max'] = array(
+			'type'    => 'stepper',
+			'group'   => __( 'The buying area', 'oc-theme' ),
+			'label'   => __( 'And at the slowest', 'oc-theme' ),
+			'min'     => 1,
+			'max'     => 30,
+			'default' => '3',
+			'when'    => array( 'prod_stock', array( 'yes' ) ),
+			'target'  => array( 'mod', 'oc_ship_lead' ),
+		);
+
+		$f['prod_icons'] = array(
+			'type'    => 'repeater',
+			'group'   => __( 'Under the button', 'oc-theme' ),
+			'label'   => '',
+			'help'    => __( 'The short promises that sit under the buy button. Up to four; leave them empty and none show.', 'oc-theme' ),
+			'row'     => __( 'Promise', 'oc-theme' ),
+			'add'     => __( 'Another promise', 'oc-theme' ),
+			'max'     => 4,
+			'fold'    => true,
+			'fields'  => array(
+				'icon' => array(
+					'type'  => 'iconpick',
+					'from'  => 'atc',
+					'label' => __( 'The drawing', 'oc-theme' ),
+				),
+				'text' => array(
+					'type'        => 'text',
+					'label'       => __( 'What it says', 'oc-theme' ),
+					'placeholder' => __( 'Free delivery over 400 ILS', 'oc-theme' ),
+				),
+			),
+			'default' => array(
+				array(
+					'icon' => 'truck',
+					'text' => '',
+				),
+				array(
+					'icon' => 'returns',
+					'text' => '',
+				),
+			),
+			'target'  => array( 'call', 'prod_icons' ),
+		);
+
 		$f['prod_ship_tab'] = array(
 			'type'    => 'choice',
+			'group'   => __( 'What else the page tells', 'oc-theme' ),
 			'label'   => __( 'A "delivery and returns" tab on every product?', 'oc-theme' ),
-			'help'    => __( 'We open it with a short text drawn from your terms. You can rewrite it whenever you like.', 'oc-theme' ),
 			'options' => $yesno,
 			'default' => 'yes',
 			'target'  => array( 'call', 'ship_tab' ),
+		);
+
+		$f['prod_ship_text'] = array(
+			'type'   => 'textarea',
+			'group'  => __( 'What else the page tells', 'oc-theme' ),
+			'label'  => __( 'What the tab says', 'oc-theme' ),
+			'help'   => __( 'Leave it empty and we write a general text you can rewrite later.', 'oc-theme' ),
+			'rows'   => 4,
+			'when'   => array( 'prod_ship_tab', array( 'yes' ) ),
+			'target' => array( 'call', 'ship_tab' ),
+		);
+
+		$f['prod_tab2_title'] = array(
+			'type'        => 'text',
+			'group'       => __( 'What else the page tells', 'oc-theme' ),
+			'label'       => __( 'One more tab, if you want one', 'oc-theme' ),
+			'help'        => __( 'The same words on every product — care instructions, a size guide, a warranty.', 'oc-theme' ),
+			'placeholder' => __( 'Care instructions', 'oc-theme' ),
+			'target'      => array( 'call', 'ship_tab' ),
+		);
+
+		$f['prod_tab2_text'] = array(
+			'type'   => 'textarea',
+			'group'  => __( 'What else the page tells', 'oc-theme' ),
+			'label'  => __( 'And what it says', 'oc-theme' ),
+			'rows'   => 4,
+			'when'   => array( 'prod_tab2_title', 'filled' ),
+			'target' => array( 'call', 'ship_tab' ),
 		);
 
 		/* ---- 6a: brands ---- */
@@ -1629,6 +1740,7 @@ final class Schema {
 					'show'         => '',
 					'suffix'       => '',
 					'blocks'       => array(),
+					'as'           => '',
 					'default'      => null,
 					'when'         => null,
 					'required'     => false,
@@ -2239,9 +2351,10 @@ final class Schema {
 				return $out;
 
 			case 'iconpick':
-				$v = (string) ( is_scalar( $raw ) ? $raw : '' );
+				$v   = (string) ( is_scalar( $raw ) ? $raw : '' );
+				$set = 'atc' === ( $f['from'] ?? '' ) ? Art::atc_icons() : Art::icons();
 
-				return isset( Art::icons()[ $v ] ) ? $v : '';
+				return isset( $set[ $v ] ) ? $v : '';
 
 			case 'stepper':
 				$n   = (int) ( is_scalar( $raw ) ? $raw : 0 );
@@ -2397,6 +2510,7 @@ final class Schema {
 							'type'     => 'text',
 							'label'    => '',
 							'help'     => '',
+							'from'     => '',
 							'options'  => array(),
 							'required' => false,
 						)

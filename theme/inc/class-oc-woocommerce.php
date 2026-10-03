@@ -2022,7 +2022,7 @@ final class WooCommerce {
 	 * @param string $key Icon key.
 	 * @return string SVG or ''.
 	 */
-	private static function atc_icon_svg( string $key ): string {
+	public static function atc_icon_svg( string $key ): string {
 		$w     = ' width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"';
 		$icons = array(
 			'truck'    => '<svg' . $w . '><path d="M2.5 7.2A1.2 1.2 0 0 1 3.7 6h9.1A1.2 1.2 0 0 1 14 7.2v7.8H2.5z"/><path d="M14 9.5h3.3a1 1 0 0 1 .77.36l2.2 2.64a1 1 0 0 1 .23.64V15h-2.1"/><path d="M2.5 15h2.3M9.3 15H14"/><circle cx="7" cy="16.6" r="1.7"/><circle cx="16.3" cy="16.6" r="1.7"/></svg>',

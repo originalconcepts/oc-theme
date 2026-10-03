@@ -86,6 +86,11 @@ final class Apply {
 			$target = (array) $f['target'];
 			$kind   = (string) ( $target[0] ?? '' );
 
+			// A few mods keep a list as one comma-separated string.
+			if ( 'csv' === ( $f['as'] ?? '' ) && is_array( $this->v[ $id ] ) ) {
+				$this->v[ $id ] = implode( ',', $this->v[ $id ] );
+			}
+
 			try {
 				switch ( $kind ) {
 					case 'mod':
@@ -1569,16 +1574,51 @@ final class Apply {
 	 * text the shop can rewrite. One row in the tabs option, written once.
 	 */
 	private function apply_ship_tab(): void {
-		if ( 'yes' !== $this->v['prod_ship_tab'] || ! class_exists( '\\OC\\Theme\\Tabs' ) ) {
+		if ( ! class_exists( '\\OC\\Theme\\Tabs' ) ) {
 			return;
 		}
 
+		$said = trim( (string) $this->v['prod_ship_text'] );
+
+		if ( 'yes' === $this->v['prod_ship_tab'] ) {
+			$this->tab(
+				'ship',
+				'prod_ship_tab',
+				__( 'Delivery and returns', 'oc-theme' ),
+				'' !== $said ? $said : (
+					__( 'Delivery across the country. Write here how long an order takes to arrive and from what amount delivery is free.', 'oc-theme' ) . "\n\n" .
+					__( 'Returns within 14 days of receiving the order, as long as the product has not been used and its packaging is whole. The full details are in the terms of sale.', 'oc-theme' )
+				),
+				30,
+				'' === $said
+			);
+		}
+
+		$title = trim( (string) $this->v['prod_tab2_title'] );
+
+		if ( '' !== $title ) {
+			$this->tab( 'extra', 'prod_tab2_title', $title, trim( (string) $this->v['prod_tab2_text'] ), 40, false );
+		}
+	}
+
+	/**
+	 * One tab on every product, written once. A tab this engine already
+	 * opened is left alone: whatever it says now is somebody's writing.
+	 *
+	 * @param string $key   Which tab, in the log.
+	 * @param string $id    The field the report should name.
+	 * @param string $title What it is called.
+	 * @param string $text  What it says.
+	 * @param int    $order Where it stands among the tabs.
+	 * @param bool   $ours  Whether the words are ours rather than theirs.
+	 */
+	private function tab( string $key, string $id, string $title, string $text, int $order, bool $ours ): void {
 		$all    = \OC\Theme\Tabs::settings();
 		$custom = isset( $all['custom'] ) && is_array( $all['custom'] ) ? $all['custom'] : array();
-		$uid    = (string) ( $this->log['tab:ship'] ?? '' );
+		$uid    = (string) ( $this->log[ 'tab:' . $key ] ?? '' );
 
 		if ( '' !== $uid && isset( $custom[ $uid ] ) ) {
-			$this->row( 'prod_ship_tab', __( 'Delivery and returns tab', 'oc-theme' ), 'skipped', __( 'The tab is already there.', 'oc-theme' ) );
+			$this->row( $id, $title, 'skipped', __( 'The tab is already there.', 'oc-theme' ) );
 			return;
 		}
 
@@ -1586,12 +1626,9 @@ final class Apply {
 
 		$custom[ $uid ] = array(
 			'on'      => 1,
-			'order'   => 30,
-			'title'   => __( 'Delivery and returns', 'oc-theme' ),
-			'content' => wpautop(
-				__( 'Delivery across the country. Write here how long an order takes to arrive and from what amount delivery is free.', 'oc-theme' ) . "\n\n" .
-				__( 'Returns within 14 days of receiving the order, as long as the product has not been used and its packaging is whole. The full details are in the terms of sale.', 'oc-theme' )
-			),
+			'order'   => $order,
+			'title'   => $title,
+			'content' => wpautop( $text ),
 			'scope'   => 'all',
 			'ids'     => '',
 			'cats'    => array(),
@@ -1603,9 +1640,33 @@ final class Apply {
 		$all['custom'] = $custom;
 
 		update_option( 'oc_tabs', $all );
-		$this->remember( 'tab:ship', $uid );
+		$this->remember( 'tab:' . $key, $uid );
 
-		$this->row( 'prod_ship_tab', __( 'Delivery and returns tab', 'oc-theme' ), 'check', __( 'Written with a general text — read it over and make it yours.', 'oc-theme' ) );
+		$this->row( $id, $title, $ours ? 'check' : 'applied', $ours ? __( 'Written with a general text — read it over and make it yours.', 'oc-theme' ) : '' );
+	}
+
+	/**
+	 * The promises under the buy button: four slots in the theme, filled in
+	 * the order they were given and emptied where they were not.
+	 */
+	private function apply_prod_icons(): void {
+		$rows = is_array( $this->v['prod_icons'] ) ? array_values( $this->v['prod_icons'] ) : array();
+		$said = 0;
+
+		for ( $i = 1; $i <= 4; $i++ ) {
+			$row  = (array) ( $rows[ $i - 1 ] ?? array() );
+			$text = trim( (string) ( $row['text'] ?? '' ) );
+			$icon = '' === $text ? '' : (string) ( $row['icon'] ?? '' );
+
+			if ( '' !== $text ) {
+				++$said;
+			}
+
+			$this->write_mod( 'prod_icons', 'oc_atc_icon_' . $i, $icon );
+			$this->write_mod( 'prod_icons', 'oc_atc_icon_text_' . $i, '' === $text ? '' : $text );
+		}
+
+		$this->row( 'prod_icons', __( 'Under the buy button', 'oc-theme' ), 'applied', sprintf( /* translators: %d: how many promises were written. */ _n( '%d promise.', '%d promises.', $said, 'oc-theme' ), $said ) );
 	}
 
 	/* ------------------------------------------------------------ helpers */

@@ -1485,8 +1485,8 @@
 	 * @param {string}   value    The chosen one.
 	 * @param {Function} onChange Takes the new one.
 	 */
-	function render_iconpick( value, onChange ) {
-		var icons = C.icons || {};
+	function render_iconpick( value, onChange, from ) {
+		var icons = ( 'atc' === from ? C.atc_icons : C.icons ) || {};
 		var wrap  = el( 'div', { 'class': 'oc-onb-icons' } );
 
 		Object.keys( icons ).forEach( function ( k ) {
@@ -1853,7 +1853,8 @@
 					var face = el( 'span', { 'class': 'oc-onb-rep__mark', 'aria-hidden': 'true' } );
 
 					if ( 'iconpick' === ( f.fields.icon || {} ).type ) {
-						var art = ( C.icons || {} )[ r.icon || '' ];
+						var set = ( 'atc' === f.fields.icon.from ? C.atc_icons : C.icons ) || {};
+						var art = set[ r.icon || '' ];
 
 						if ( r.img && r.img.url ) {
 							face.appendChild( el( 'img', { src: r.img.url, alt: '' } ) );
@@ -1935,7 +1936,7 @@
 					if ( sf.type === 'textarea' ) { inner = render_textarea( id + '.' + k, sf, r[ k ] || '', onChange ); }
 					else if ( sf.type === 'checks' ) { inner = render_checks( id + '.' + k, sf, r[ k ] || [], onChange ); }
 					else if ( sf.type === 'file' ) { inner = render_file( id, sf, { row: ri, sub: k, value: r[ k ] || null, onChange: function ( v, saved ) { r[ k ] = v; if ( saved ) { values[ id ] = rows; } else { commit(); } } } ); }
-					else if ( sf.type === 'iconpick' ) { inner = render_iconpick( r[ k ] || '', onChange ); }
+					else if ( sf.type === 'iconpick' ) { inner = render_iconpick( r[ k ] || '', onChange, sf.from ); }
 					else { inner = inputFor( id + '.' + k, sf, r[ k ] || '', onChange ); }
 					var box = el( 'div', { 'class': 'oc-onb-f oc-onb-f--sub' }, [
 						el( 'div', { 'class': 'oc-onb-f__label' }, [ el( 'span', { text: sf.label } ), sf.required ? el( 'span', { 'class': 'oc-onb-f__req', text: ' *' } ) : null ] ),
@@ -2554,8 +2555,99 @@
 		if ( 'banner' === kind ) { return previewBanner(); }
 		if ( 'category' === kind ) { return previewCategory(); }
 		if ( 'top' === kind ) { return previewTop(); }
+		if ( 'product' === kind ) { return previewProduct(); }
 		if ( 0 === String( kind ).indexOf( 'band:' ) ) { return previewBands( String( kind ).slice( 5 ).split( ',' ) ); }
 		return previewHome( String( val( 'home_recipe' ) ) );
+	}
+
+
+	/**
+	 * The product page as they are setting it up: the pictures on the side
+	 * they chose, the small ones where they put them, and under the button
+	 * whatever they promised.
+	 */
+	function previewProduct() {
+		var phone = onPhone();
+		var kind  = String( val( 'prod_gallery' ) );
+		var pics  = w( 'wf-pp__g wf-pp__g--' + kind );
+
+		if ( 'grid' === kind ) {
+			var pair = w( 'wf-pp__pair' );
+
+			for ( var g = 0; g < 4; g++ ) { pair.appendChild( wImg( 'wf-pp__one' ) ); }
+
+			pics.appendChild( pair );
+		} else {
+			var thumbs = w( 'wf-pp__th' );
+
+			for ( var t = 0; t < 4; t++ ) { thumbs.appendChild( wImg( 'wf-pp__t' ) ); }
+
+			if ( 'thumbs-under' === kind ) {
+				pics.appendChild( wImg( 'wf-pp__big' ) );
+				pics.appendChild( thumbs );
+			} else {
+				pics.appendChild( thumbs );
+				pics.appendChild( wImg( 'wf-pp__big' ) );
+			}
+		}
+
+		var buy = [];
+
+		if ( 'yes' === String( val( 'prod_stock' ) ) ) {
+			buy.push( w( 'wf-pp__stock', [
+				el( 'span', { 'class': 'wf-pp__dot', 'aria-hidden': 'true' } ),
+				el( 'span', { text: I.wf_stock } )
+			] ) );
+		}
+
+		var row = w( 'wf-pp__buy' );
+
+		if ( 'yes' === String( val( 'prod_qty' ) ) ) { row.appendChild( w( 'wf-pp__qty', null, '1' ) ); }
+
+		row.appendChild( w( 'wf-pp__btn', null, I.wf_atc ) );
+		buy.push( row );
+
+		// The promises under the button, drawn with the drawings they chose.
+		var said = ( val( 'prod_icons' ) || [] ).filter( function ( r ) { return r && String( r.text || '' ).trim(); } );
+
+		if ( said.length ) {
+			buy.push( w( 'wf-pp__ics', said.map( function ( r ) {
+				var one = w( 'wf-pp__ic' );
+				var art = ( C.atc_icons || {} )[ r.icon || '' ];
+
+				if ( art ) { one.innerHTML = art.svg; }
+
+				one.appendChild( el( 'span', { text: String( r.text ).trim() } ) );
+
+				return one;
+			} ) ) );
+		}
+
+		var tabs = [];
+
+		if ( 'yes' === String( val( 'prod_ship_tab' ) ) ) { tabs.push( I.wf_tab_ship ); }
+
+		var more = String( val( 'prod_tab2_title' ) || '' ).trim();
+
+		if ( more ) { tabs.push( more ); }
+
+		var words = w( 'wf-pp__d', [
+			el( 'div', { 'class': 'wf-pp__h', text: I.wf_prod_name } ),
+			w( 'wf-pp__price', null, '₪1,890.00' ),
+			wLine( '100%' ),
+			wLine( '86%' )
+		].concat(
+			'yes' === String( val( 'prod_sku' ) ) ? [ el( 'div', { 'class': 'wf-pp__sku', text: I.wf_sku } ) ] : []
+		).concat( buy ) );
+
+		var mid = [ w( 'wf-pp' + ( 'gallery-end' === String( val( 'prod_side' ) ) ? ' wf-pp--end' : '' ), phone ? [ pics, words ] : [ pics, words ] ) ];
+
+		mid.push( w( 'wf-pp__tabs', [ w( 'wf-pp__tab is-on', null, I.wf_tab_about ) ].concat( tabs.map( function ( t ) {
+			return w( 'wf-pp__tab', null, t );
+		} ) ) ) );
+		mid.push( w( 'wf-pp__body', [ wLine( '100%' ), wLine( '92%' ), wLine( '70%' ) ] ) );
+
+		return wPage( mid, {} );
 	}
 
 	/**

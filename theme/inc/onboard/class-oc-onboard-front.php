@@ -97,6 +97,7 @@ final class Front {
 			'disclaimer' => Consent::text(),
 			'art'        => Art::all(),
 			'icons'      => Art::icons(),
+			'atc_icons'  => Art::atc_icons(),
 			'site'       => array(
 				'name' => (string) get_bloginfo( 'name' ),
 				'home' => home_url( '/' ),
@@ -171,6 +172,12 @@ final class Front {
 				'wf_trust2'       => __( 'Returns within 14 days', 'oc-theme' ),
 				'wf_trust3'       => __( 'A secure purchase', 'oc-theme' ),
 				'wf_cat_name'     => __( 'Category name', 'oc-theme' ),
+				'wf_prod_name'    => __( 'Nordic three-seater sofa', 'oc-theme' ),
+				'wf_stock'        => __( 'In stock · arrives 2/12–4/12', 'oc-theme' ),
+				'wf_atc'          => __( 'Add to cart', 'oc-theme' ),
+				'wf_sku'          => __( 'Code: 10482', 'oc-theme' ),
+				'wf_tab_about'    => __( 'About the product', 'oc-theme' ),
+				'wf_tab_ship'     => __( 'Delivery and returns', 'oc-theme' ),
 				'wf_top'          => __( 'Free delivery over 400 ILS · 12 payments, no interest', 'oc-theme' ),
 				'wf_posts_h'      => __( 'From the magazine', 'oc-theme' ),
 				/* translators: %1$s: a stand-in number, so the sketch's article names differ. */

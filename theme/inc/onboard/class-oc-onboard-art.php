@@ -427,6 +427,47 @@ final class Art {
 	}
 
 	/**
+	 * The drawings that can sit under the buy button. They are the theme's
+	 * own, so the questionnaire shows exactly what the page will draw.
+	 *
+	 * @return array<string,array{label:string,svg:string}>
+	 */
+	public static function atc_icons(): array {
+		$names = array(
+			'truck'    => __( 'Delivery — truck', 'oc-theme' ),
+			'scooter'  => __( 'Delivery — scooter', 'oc-theme' ),
+			'plane'    => __( 'Delivery — abroad', 'oc-theme' ),
+			'box'      => __( 'Packed well', 'oc-theme' ),
+			'returns'  => __( 'Returns', 'oc-theme' ),
+			'warranty' => __( 'Warranty', 'oc-theme' ),
+			'secure'   => __( 'A safe purchase', 'oc-theme' ),
+			'payments' => __( 'Payments', 'oc-theme' ),
+			'question' => __( 'Someone to ask', 'oc-theme' ),
+			'gift'     => __( 'Gift wrapping', 'oc-theme' ),
+			'discount' => __( 'A discount', 'oc-theme' ),
+		);
+
+		$out = array();
+
+		foreach ( $names as $id => $label ) {
+			$svg = class_exists( '\\OC\\Theme\\WooCommerce' ) && method_exists( '\\OC\\Theme\\WooCommerce', 'atc_icon_svg' )
+				? \OC\Theme\WooCommerce::atc_icon_svg( $id )
+				: '';
+
+			if ( '' === $svg ) {
+				continue;
+			}
+
+			$out[ $id ] = array(
+				'label' => $label,
+				'svg'   => $svg,
+			);
+		}
+
+		return $out;
+	}
+
+	/**
 	 * The little drawings a reason-to-buy can wear. They are the blocks
 	 * plugin's own library: the questionnaire shows exactly what the page
 	 * will draw, and there is only ever one copy of each line.

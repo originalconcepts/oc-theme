@@ -12327,3 +12327,104 @@ msgstr "מה שאפשר לקנות עומד ראשון, ומה שאי אפשר �
 
 msgid "Yes, always showing"
 msgstr "כן, מוצג תמיד"
+
+msgid "A discount"
+msgstr "הנחה"
+
+msgid "A line above the button saying how the stock is?"
+msgstr "שורה מעל הכפתור שמספרת על המלאי?"
+
+msgid "About the product"
+msgstr "על המוצר"
+
+msgid "And at the slowest"
+msgstr "ולכל היותר"
+
+msgid "And what it says"
+msgstr "ומה כתוב בה"
+
+msgid "Another promise"
+msgstr "עוד הבטחה"
+
+msgid "At the quickest, how many sending days"
+msgstr "לכל הפחות, כמה ימי משלוח"
+
+msgid "Care instructions"
+msgstr "הוראות טיפול"
+
+msgid "Code: 10482"
+msgstr "מק״ט: 10482"
+
+msgid "Counting starts the day after the order and skips the days you do not send, and the holidays."
+msgstr "הספירה מתחילה למחרת ההזמנה ומדלגת על הימים שבהם אינכם שולחים, וגם על החגים."
+
+msgid "Delivery — abroad"
+msgstr "משלוח — לחו״ל"
+
+msgid "Delivery — scooter"
+msgstr "משלוח — שליח"
+
+msgid "Delivery — truck"
+msgstr "משלוח — משאית"
+
+msgid "Free delivery over 400 ILS"
+msgstr "משלוח חינם מעל ₪400"
+
+msgid "Gift wrapping"
+msgstr "אריזת מתנה"
+
+msgid "In stock · arrives 2/12–4/12"
+msgstr "במלאי · מגיע 2/12–4/12"
+
+msgid "It takes turns between what the stock is doing and when the parcel would arrive — \"in stock, arrives 2/12–4/12\"."
+msgstr "היא מתחלפת בין מצב המלאי לבין מתי החבילה תגיע — ״במלאי, מגיע 2/12–4/12״."
+
+msgid "Leave it empty and we write a general text you can rewrite later."
+msgstr "אפשר להשאיר ריק ונכתוב טקסט כללי שתוכלו לשכתב בהמשך."
+
+msgid "No small ones — two in a row, all of them"
+msgstr "בלי קטנות — שתיים בשורה, כולן"
+
+msgid "One more tab, if you want one"
+msgstr "עוד לשונית, אם רוצים"
+
+msgid "Promise"
+msgstr "הבטחה"
+
+msgid "Someone to ask"
+msgstr "יש את מי לשאול"
+
+msgid "The buying area"
+msgstr "אזור הקנייה"
+
+msgid "The pictures"
+msgstr "התמונות"
+
+msgid "The same words on every product — care instructions, a size guide, a warranty."
+msgstr "אותו טקסט בכל מוצר — הוראות טיפול, טבלת מידות, אחריות."
+
+msgid "The short promises that sit under the buy button. Up to four; leave them empty and none show."
+msgstr "ההבטחות הקצרות שיושבות מתחת לכפתור הקנייה. עד ארבע; אם נשאיר ריק — לא תוצג אף אחת."
+
+msgid "Under the button"
+msgstr "מתחת לכפתור"
+
+msgid "Under the buy button"
+msgstr "מתחת לכפתור הקנייה"
+
+msgid "What else the page tells"
+msgstr "מה עוד העמוד מספר"
+
+msgid "What the tab says"
+msgstr "מה כתוב בלשונית"
+
+msgid "Where the decision is made. The pictures on one side, everything the buyer needs on the other. Every answer here changes the drawing beside you."
+msgstr "כאן מתקבלת ההחלטה. התמונות בצד אחד, וכל מה שהקונה צריך בצד השני. כל תשובה כאן משנה את הסקיצה שלצידכם."
+
+msgid "Which days do orders go out?"
+msgstr "באילו ימים יוצאות ההזמנות?"
+
+msgid "%d promise."
+msgid_plural "%d promises."
+msgstr[0] "הבטחה אחת."
+msgstr[1] "%d הבטחות."
