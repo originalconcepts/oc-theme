@@ -1496,11 +1496,11 @@ final class Schema {
 		);
 
 		$f['attr_list'] = array(
-			'type'    => 'attrs',
-			'group'   => __( 'Choices on the product page', 'oc-theme' ),
-			'label'   => '',
-			'help'    => __( 'Press one of the usual ones, or write your own. Beside each, how the buyer picks it — the drawing changes as you go.', 'oc-theme' ),
-			'chips'   => array(
+			'type'   => 'attrs',
+			'group'  => __( 'Choices on the product page', 'oc-theme' ),
+			'label'  => '',
+			'help'   => __( 'Press one of the usual ones, or write your own. Beside each, how the buyer picks it — the drawing changes as you go.', 'oc-theme' ),
+			'chips'  => array(
 				_x( 'Colour', 'product attribute', 'oc-theme' ),
 				_x( 'Size', 'product attribute', 'oc-theme' ),
 				_x( 'Length', 'product attribute', 'oc-theme' ),
@@ -1508,15 +1508,15 @@ final class Schema {
 				_x( 'Flavour', 'product attribute', 'oc-theme' ),
 				_x( 'Material', 'product attribute', 'oc-theme' ),
 			),
-			'shows'   => array(
+			'shows'  => array(
 				'swatch' => __( 'A circle of colour', 'oc-theme' ),
 				'button' => __( 'A button', 'oc-theme' ),
 				'select' => __( 'A list to open', 'oc-theme' ),
 			),
-			'add'     => __( 'Another choice', 'oc-theme' ),
-			'max'     => 6,
-			'when'    => array( 'attr_vary', array( 'yes' ) ),
-			'target'  => array( 'call', 'attrs' ),
+			'add'    => __( 'Another choice', 'oc-theme' ),
+			'max'    => 6,
+			'when'   => array( 'attr_vary', array( 'yes' ) ),
+			'target' => array( 'call', 'attrs' ),
 		);
 
 		$f['attr_spec'] = array(
@@ -3222,9 +3222,9 @@ final class Schema {
 				return $out;
 
 			case 'attrs':
-				$out  = array();
-				$seen = array();
-				$max  = (int) ( $f['max'] ?? 10 );
+				$out   = array();
+				$seen  = array();
+				$max   = (int) ( $f['max'] ?? 10 );
 				$kinds = array_keys( (array) ( $f['shows'] ?? array() ) );
 
 				foreach ( (array) $raw as $row ) {
