@@ -173,14 +173,23 @@ final class Front {
 				'wf_trust3'       => __( 'A secure purchase', 'oc-theme' ),
 				'wf_cat_name'     => __( 'Category name', 'oc-theme' ),
 				'wf_prod_name'    => __( 'Nordic three-seater sofa', 'oc-theme' ),
-				'wf_stock'        => __( 'In stock · arrives 2/12–4/12', 'oc-theme' ),
+				'wf_stock'        => __( 'In stock', 'oc-theme' ),
 				'wf_atc'          => __( 'Add to cart', 'oc-theme' ),
 				'wf_sku'          => __( 'Code: 10482', 'oc-theme' ),
 				'wf_short'        => __( 'Solid oak, woven fabric, and a frame meant to outlast the fashion.', 'oc-theme' ),
-				/* translators: %1$s: how many days at the least, %2$s: at the most. */
-				'lead_span'       => __( 'It will say: arrives in %1$s to %2$s sending days.', 'oc-theme' ),
-				/* translators: %1$s: how many days. */
-				'lead_one'        => __( 'It will say: arrives in %1$s sending days.', 'oc-theme' ),
+				/* translators: %1$s: the earliest date, %2$s: the latest, both short like 2 Sep. */
+				'lead_between'    => __( 'Ordered today it will say: delivery between %1$s - %2$s.', 'oc-theme' ),
+				/* translators: %1$s: a short date like 2 Sep. */
+				'lead_on'         => __( 'Ordered today it will say: delivery on %1$s.', 'oc-theme' ),
+				'lead_nodays'     => __( 'Pick at least one day you send orders out, and the dates appear here.', 'oc-theme' ),
+				'months'          => self::months(),
+				/* translators: 1: earliest date. 2: latest date, both short like 2 Sep. */
+				'wf_eta'          => __( 'Delivery between %1$s - %2$s', 'oc-theme' ),
+				/* translators: %s: a short date like 2 Sep. */
+				'wf_eta_on'       => __( 'Delivery on %s', 'oc-theme' ),
+				'wf_now'          => __( 'Online now', 'oc-theme' ),
+				'wf_whats'        => __( 'WhatsApp', 'oc-theme' ),
+				'wf_call'         => __( 'Call now', 'oc-theme' ),
 				'wf_tab_about'    => __( 'About the product', 'oc-theme' ),
 				'wf_tab_ship'     => __( 'Delivery and returns', 'oc-theme' ),
 				'wf_tab_short'    => __( 'In short', 'oc-theme' ),
@@ -306,6 +315,34 @@ final class Front {
 		$path = OC_THEME_DIR . $relative;
 
 		return (string) ( file_exists( $path ) ? filemtime( $path ) : ( defined( 'OC_THEME_VERSION' ) ? OC_THEME_VERSION : '1' ) );
+	}
+
+	/**
+	 * The twelve months the short way the shop writes them, so the sketch's
+	 * delivery dates read exactly like the ones the product page prints.
+	 *
+	 * Hebrew abbreviates a month with a geresh — ספט׳, not ספט — which
+	 * WordPress's own short names leave off. A month that is not shortened
+	 * at all (מאי, מרץ) takes none.
+	 *
+	 * @return array<int,string>
+	 */
+	private static function months(): array {
+		$out = array();
+		$he  = 0 === strpos( get_locale(), 'he' );
+
+		for ( $m = 1; $m <= 12; $m++ ) {
+			$when  = mktime( 12, 0, 0, $m, 1, (int) gmdate( 'Y' ) );
+			$short = (string) wp_date( 'M', $when );
+
+			if ( $he && $short !== (string) wp_date( 'F', $when ) && '׳' !== mb_substr( $short, -1 ) ) {
+				$short .= '׳';
+			}
+
+			$out[] = $short;
+		}
+
+		return $out;
 	}
 
 	/**

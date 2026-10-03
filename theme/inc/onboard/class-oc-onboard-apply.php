@@ -1578,13 +1578,14 @@ final class Apply {
 			return;
 		}
 
-		$said = trim( (string) $this->v['prod_ship_text'] );
+		$said  = trim( (string) $this->v['prod_ship_text'] );
+		$named = trim( (string) $this->v['prod_ship_title'] );
 
 		if ( 'yes' === $this->v['prod_ship_tab'] ) {
 			$this->tab(
 				'ship',
 				'prod_ship_tab',
-				__( 'Delivery and returns', 'oc-theme' ),
+				'' !== $named ? $named : __( 'Delivery and returns', 'oc-theme' ),
 				'' !== $said ? $said : (
 					__( 'Delivery across the country. Write here how long an order takes to arrive and from what amount delivery is free.', 'oc-theme' ) . "\n\n" .
 					__( 'Returns within 14 days of receiving the order, as long as the product has not been used and its packaging is whole. The full details are in the terms of sale.', 'oc-theme' )

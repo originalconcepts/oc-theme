@@ -28,6 +28,7 @@
 	var at = -1; // -1 welcome, 0..n-1 screens, n summary, n+1 done.
 	var far = -1; // The furthest screen they have opened in this sitting.
 	var focus = ''; // What the drawing beside the questions is about.
+	var MONEY = '₪1,890.00'; // The stand-in price the sketch carries throughout.
 
 	var parts = C.schema.parts || {};
 
@@ -481,11 +482,12 @@
 	}
 
 	function inputFor( id, f, value, onChange ) {
-		var type = { phone: 'tel', email: 'email', url: 'url', number: 'number' }[ f.type ] || 'text';
+		var type = { phone: 'tel', email: 'email', url: 'url', number: 'number', time: 'time' }[ f.type ] || 'text';
 		var attrs = { type: type, value: value === null || value === undefined ? '' : value, 'class': 'oc-onb-in', autocomplete: 'off' };
 		if ( f.dir ) { attrs.dir = f.dir; }
 		if ( f.type === 'phone' || f.type === 'email' || f.type === 'url' ) { attrs.dir = 'ltr'; }
 		if ( f.type === 'number' ) { if ( f.min !== undefined ) { attrs.min = f.min; } if ( f.max !== undefined ) { attrs.max = f.max; } attrs.inputmode = 'numeric'; }
+		if ( f.type === 'time' ) { attrs['class'] += ' oc-onb-in--time'; }
 		if ( f.type === 'phone' ) { attrs.inputmode = 'tel'; }
 		if ( f.placeholder ) { attrs.placeholder = f.placeholder; }
 		var e = el( 'input', attrs );
@@ -1968,6 +1970,12 @@
 					var sf = f.fields[ k ];
 					var inner;
 
+					// Three grey lines all saying the same thing teach
+					// nothing. Each row gets its own example instead.
+					if ( f.hints && f.hints[ k ] && f.hints[ k ][ ri ] ) {
+						sf = Object.assign( {}, sf, { placeholder: f.hints[ k ][ ri ] } );
+					}
+
 					// A picture nobody will see is not a question.
 					if ( sf.twin && ! twinWanted( id, ri ) ) { return; }
 					var onChange = function ( v ) { r[ k ] = v; commit(); };
@@ -2330,7 +2338,7 @@
 		var card = w( 'wf-card', [
 			w( 'wf-card__img wf-card__img--draw', [ wSofa( 'wf-f--card' ) ] ),
 			el( 'div', { 'class': 'wf-card__t', text: I.wf_sofa } ),
-			el( 'div', { 'class': 'wf-card__p', text: '₪1,890.00' } )
+			el( 'div', { 'class': 'wf-card__p', text: MONEY } )
 		] );
 
 		return w( 'wf-look', [ scene, w( 'wf-look__side', [ card ] ) ] );
@@ -2640,9 +2648,18 @@
 		var buy = [];
 
 		if ( 'yes' === String( val( 'prod_stock' ) ) ) {
+			// The same window the line under the two numbers promises, so
+			// the drawing and the promise cannot disagree.
+			var span = sendingDays();
+			var says = I.wf_stock;
+
+			if ( span ) {
+				says += ' · ' + ( span.one ? fmt( I.wf_eta_on, span.from ) : fmt( I.wf_eta, span.from, span.to ) );
+			}
+
 			buy.push( w( 'wf-pp__stock', [
 				el( 'span', { 'class': 'wf-pp__dot', 'aria-hidden': 'true' } ),
-				el( 'span', { text: I.wf_stock } )
+				el( 'span', { text: says } )
 			] ) );
 		}
 
@@ -2650,33 +2667,45 @@
 
 		if ( 'yes' === String( val( 'prod_qty' ) ) ) { row.appendChild( w( 'wf-pp__qty', null, '1' ) ); }
 
-		row.appendChild( w( 'wf-pp__btn', null, I.wf_atc ) );
+		// With the price on it the button carries the sum as well as the
+		// words, exactly as the shop writes it: "Add to cart · 1,890".
+		row.appendChild( w(
+			'wf-pp__btn',
+			null,
+			'yes' === String( val( 'prod_price_btn' ) ) ? I.wf_atc + ' · ' + MONEY : I.wf_atc
+		) );
 		buy.push( row );
 
 		// The promises under the button. Before a word is written they stand
 		// as the grey example, so nobody wonders where that row went.
-		var mine = ( val( 'prod_icons' ) || [] ).filter( function ( r ) { return r && ( r.icon || String( r.text || '' ).trim() ); } );
-		var hint = ( F.prod_icons && F.prod_icons.fields && F.prod_icons.fields.text.placeholder ) || '';
+		var hints = ( F.prod_icons && F.prod_icons.hints && F.prod_icons.hints.text ) || [];
+		var mine  = ( val( 'prod_icons' ) || [] ).filter( function ( r ) { return r && ( r.icon || String( r.text || '' ).trim() ); } );
 
 		if ( mine.length ) {
-			buy.push( w( 'wf-pp__ics wf-pp__ics--' + String( val( 'prod_icons_lay' ) || 'stack' ), mine.map( function ( r ) {
+			buy.push( w( 'wf-pp__ics wf-pp__ics--' + String( val( 'prod_icons_lay' ) || 'row' ), mine.map( function ( r, i ) {
 				var one  = w( 'wf-pp__ic' );
 				var art  = ( C.atc_icons || {} )[ r.icon || '' ];
 				var says = String( r.text || '' ).trim();
 
 				if ( art ) { one.innerHTML = art.svg; }
 
-				one.appendChild( el( 'span', { 'class': says ? '' : 'wf-pp__ic--hint', text: says || hint } ) );
+				one.appendChild( el( 'span', { 'class': says ? '' : 'wf-pp__ic--hint', text: says || hints[ i ] || hints[ 0 ] || '' } ) );
 
 				return one;
 			} ) ) );
 		}
 
+		// Where the theme puts the card: right under the promises, still
+		// inside the buying column.
+		if ( 'yes' === String( val( 'prod_contact' ) ) ) { buy.push( contactCard() ); }
+
 		var tabs = [];
 
 		if ( 'tab' === String( val( 'prod_short' ) ) ) { tabs.push( I.wf_tab_short ); }
 
-		if ( 'yes' === String( val( 'prod_ship_tab' ) ) ) { tabs.push( I.wf_tab_ship ); }
+		if ( 'yes' === String( val( 'prod_ship_tab' ) ) ) {
+			tabs.push( String( val( 'prod_ship_title' ) || '' ).trim() || I.wf_tab_ship );
+		}
 
 		( val( 'prod_tabs' ) || [] ).forEach( function ( t ) {
 			var name = String( ( t && t.title ) || '' ).trim();
@@ -2684,32 +2713,80 @@
 			if ( name ) { tabs.push( name ); }
 		} );
 
-		// The code sits at the far end of the name's line, where the shop
-		// really puts it.
 		var head = w( 'wf-pp__line', [ el( 'div', { 'class': 'wf-pp__h', text: I.wf_prod_name } ) ] );
 
+		// The code sits at the far end of the price's line, which is where
+		// a shop that shows one puts it.
+		var money = w( 'wf-pp__line', [ el( 'div', { 'class': 'wf-pp__price', text: MONEY } ) ] );
+
 		if ( 'yes' === String( val( 'prod_sku' ) ) ) {
-			head.appendChild( el( 'span', { 'class': 'wf-pp__sku', text: I.wf_sku } ) );
+			money.appendChild( el( 'span', { 'class': 'wf-pp__sku', text: I.wf_sku } ) );
 		}
 
 		var short = 'under' === String( val( 'prod_short' ) )
 			? [ el( 'p', { 'class': 'wf-pp__short', text: I.wf_short } ) ]
 			: [];
 
-		var words = w( 'wf-pp__d', [ head, w( 'wf-pp__price', null, '₪1,890.00' ) ]
-			.concat( short )
-			.concat( buy ) );
-
-		var mid = [ w( 'wf-pp' + ( 'gallery-end' === String( val( 'prod_side' ) ) ? ' wf-pp--end' : '' ), phone ? [ pics, words ] : [ pics, words ] ) ];
-
 		var all = 'tab' === String( val( 'prod_short' ) ) ? tabs.concat( [ I.wf_tab_about ] ) : [ I.wf_tab_about ].concat( tabs );
+		var where = String( val( 'prod_tabs_pos' ) || 'below' );
+		var strip = [
+			w( 'wf-pp__tabs', all.map( function ( t, i ) {
+				return w( 'wf-pp__tab' + ( i ? '' : ' is-on' ), null, t );
+			} ) ),
+			w( 'wf-pp__body', [ wLine( '100%' ), wLine( '92%' ), wLine( '70%' ) ] )
+		];
 
-		mid.push( w( 'wf-pp__tabs', all.map( function ( t, i ) {
-			return w( 'wf-pp__tab' + ( i ? '' : ' is-on' ), null, t );
-		} ) ) );
-		mid.push( w( 'wf-pp__body', [ wLine( '100%' ), wLine( '92%' ), wLine( '70%' ) ] ) );
+		// Beside the gallery they belong to the buying column; under the
+		// pictures they belong to the gallery; otherwise they run the whole
+		// width under both.
+		if ( 'side' === where && ! phone ) { buy = buy.concat( strip ); }
+
+		var words = w( 'wf-pp__d', [ head, money ].concat( short ).concat( buy ) );
+
+		if ( 'gallery' === where && ! phone ) { strip.forEach( function ( part ) { pics.appendChild( part ); } ); }
+
+		var mid = [ w( 'wf-pp' + ( 'gallery-end' === String( val( 'prod_side' ) ) ? ' wf-pp--end' : '' ) + ( 'below' === where || phone ? '' : ' wf-pp--inside' ), [ pics, words ] ) ];
+
+		if ( 'below' === where || phone ) { strip.forEach( function ( part ) { mid.push( part ); } ); }
 
 		return wPage( mid, {} );
+	}
+
+	/**
+	 * The person on the other end, drawn as the card the page will carry.
+	 * Nothing is filled in yet, so what shows is what they are about to
+	 * write — the same words that stand in the boxes as examples.
+	 */
+	function contactCard() {
+		var card = w( 'wf-pp__cc' );
+		var said = function ( id, fallback ) {
+			var v = String( val( id ) || '' ).trim();
+
+			return v || ( F[ id ] && F[ id ].placeholder ) || fallback || '';
+		};
+		var shot = val( 'contact_photo' );
+		var face = w( 'wf-pp__cc__f' );
+
+		if ( shot && shot.url ) {
+			face.classList.add( 'is-real' );
+			face.style.backgroundImage = 'url(' + shot.url + ')';
+		}
+
+		var who = w( 'wf-pp__cc__w', [
+			el( 'b', { text: said( 'contact_name' ) } ),
+			el( 'span', { text: said( 'contact_role' ) } ),
+			el( 'span', { 'class': 'wf-pp__cc__p', dir: 'ltr', text: said( 'contact_phone' ) } ),
+			w( 'wf-pp__cc__n', [
+				el( 'span', { 'class': 'wf-pp__dot', 'aria-hidden': 'true' } ),
+				el( 'span', { text: I.wf_now } )
+			] )
+		] );
+
+		card.appendChild( face );
+		card.appendChild( who );
+		card.appendChild( w( 'wf-pp__cc__b', null, 'phone' === String( val( 'contact_channel' ) ) ? I.wf_call : I.wf_whats ) );
+
+		return card;
 	}
 
 	/**
@@ -2722,13 +2799,63 @@
 
 		if ( ! box ) { return; }
 
-		var say = box.querySelector( '.oc-onb-f__say' ) || el( 'p', { 'class': 'oc-onb-f__help oc-onb-f__say' } );
-		var min = Math.max( 1, Number( val( 'prod_lead_min' ) ) || 1 );
-		var max = Math.max( min, Number( val( 'prod_lead_max' ) ) || min );
+		var say  = box.querySelector( '.oc-onb-f__say' ) || el( 'p', { 'class': 'oc-onb-f__help oc-onb-f__say' } );
+		var span = sendingDays();
 
-		say.textContent = min === max ? fmt( I.lead_one, max ) : fmt( I.lead_span, min, max );
+		say.textContent = ! span ? I.lead_nodays
+			: ( span.one ? fmt( I.lead_on, span.from ) : fmt( I.lead_between, span.from, span.to ) );
 
 		if ( ! say.parentNode ) { box.appendChild( say ); }
+	}
+
+	/**
+	 * The two dates an order placed today would land between — counted the
+	 * way the shop counts them. Nothing goes out the same day, so the walk
+	 * starts tomorrow and steps only over the days they said they send on,
+	 * collecting as many as the slowest number asks for. The window opens
+	 * on the quickest one of those and closes on the last.
+	 *
+	 * Holidays are the one thing it cannot know here; the shop itself drops
+	 * them, so a real window is never earlier than this one.
+	 *
+	 * @return {?{from: string, to: string, one: boolean}}
+	 */
+	function sendingDays() {
+		var go = ( val( 'prod_ship_days' ) || [] ).map( Number );
+
+		if ( ! go.length ) { return null; }
+
+		var min  = Math.max( 1, Number( val( 'prod_lead_min' ) ) || 1 );
+		var max  = Math.max( min, Number( val( 'prod_lead_max' ) ) || min );
+		var day  = new Date();
+		var land = [];
+
+		for ( var step = 1; step <= 120 && land.length < max; step++ ) {
+			var on = new Date( day.getFullYear(), day.getMonth(), day.getDate() + step );
+
+			if ( go.indexOf( on.getDay() ) !== -1 ) { land.push( on ); }
+		}
+
+		if ( ! land.length ) { return null; }
+
+		var first = land[ Math.min( min, land.length ) - 1 ];
+		var last  = land[ land.length - 1 ];
+
+		return {
+			from: shortDate( first ),
+			to:   shortDate( last ),
+			one:  first.getTime() === last.getTime()
+		};
+	}
+
+	/**
+	 * A date the short way the shop writes it — "2 Sep".
+	 *
+	 * @param {Date} d The day.
+	 * @return {string}
+	 */
+	function shortDate( d ) {
+		return d.getDate() + ' ' + ( ( I.months || [] )[ d.getMonth() ] || ( d.getMonth() + 1 ) );
 	}
 
 	/**

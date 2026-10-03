@@ -8120,7 +8120,7 @@ msgid "Have a question?"
 msgstr "יש לך שאלה?"
 
 msgid "Online now"
-msgstr "זמינים עכשיו"
+msgstr "זמין עכשיו"
 
 msgid "Call now"
 msgstr "חייג עכשיו"
@@ -12512,3 +12512,84 @@ msgstr "איפה יושב התיאור הקצר?"
 
 msgid "In short"
 msgstr "בקצרה"
+
+msgid "Buying reasons under the button"
+msgstr "מחזקי קנייה מתחת לכפתור"
+
+msgid "Side by side, in one row"
+msgstr "אחת ליד השנייה, בשורה אחת"
+
+msgid "The short promises that sit under the buy button. Three to begin with, up to four — write what is true of your shop."
+msgstr "ההבטחות הקצרות שעומדות מתחת לכפתור הקנייה. שלוש להתחלה, עד ארבע — כתבו מה שנכון לחנות שלכם."
+
+msgid "Free returns and exchanges"
+msgstr "החזרה והחלפה חינם"
+
+msgid "12 months of warranty"
+msgstr "12 חודשי אחריות"
+
+msgid "Delivery within 3 working days"
+msgstr "משלוח תוך 3 ימי עסקים"
+
+msgid "Under the heading and the price"
+msgstr "מתחת לכותרת ולמחיר"
+
+msgid "Tabs on the product page"
+msgstr "טאבים בדף מוצר"
+
+msgid "Where do they sit?"
+msgstr "איפה הם יושבים?"
+
+msgid "They open one at a time wherever they stand."
+msgstr "הם נפתחים אחד בכל פעם, בכל מקום שבו יעמדו."
+
+msgid "Below the whole buying area, across the page"
+msgstr "מתחת לכל אזור הקנייה, לרוחב העמוד"
+
+msgid "Under the buying reasons, in the buying column"
+msgstr "מתחת למחזקי הקנייה, בתוך עמודת הקנייה"
+
+msgid "Under the pictures"
+msgstr "מתחת לתמונות"
+
+msgid "A delivery and returns tab on every product?"
+msgstr "לשונית משלוחים והחזרות בכל מוצר?"
+
+msgid "What the tab is called"
+msgstr "איך הלשונית נקראת"
+
+msgid "Talking to a person"
+msgstr "דיבור עם נציג"
+
+msgid "Offer a way to reach someone from the product page?"
+msgstr "להוסיף אפשרות ליצירת קשר עם נציג?"
+
+msgid "Israel Israeli"
+msgstr "ישראל ישראלי"
+
+msgid "Sales adviser"
+msgstr "יועץ מכירות"
+
+msgid "Available from"
+msgstr "זמינים משעה"
+
+msgid "Between these hours the card says \"available now\". Outside them it says nothing of the kind."
+msgstr "בין השעות האלה הכרטיס אומר ״זמין עכשיו״. מחוצה להן הוא לא אומר דבר כזה."
+
+msgid "And until"
+msgstr "ועד שעה"
+
+msgid "Ordered today it will say: delivery between %1$s - %2$s."
+msgstr "בהזמנה היום ייכתב: המשלוח יסופק בין %1$s - %2$s."
+
+msgid "Ordered today it will say: delivery on %1$s."
+msgstr "בהזמנה היום ייכתב: המשלוח יסופק ב־%1$s."
+
+msgid "Pick at least one day you send orders out, and the dates appear here."
+msgstr "בחרו לפחות יום אחד שבו יוצאות ההזמנות, והתאריכים יופיעו כאן."
+
+msgid "Buying reason"
+msgstr "מחזק קנייה"
+
+msgid "Another buying reason"
+msgstr "מחזק קנייה נוסף"

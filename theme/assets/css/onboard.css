@@ -956,10 +956,26 @@ button.oc-onb-steps__i { cursor: pointer; }
 .wf-pp__ics { display: grid; gap: 5px; margin-top: 4px; }
 .wf-pp__ic { display: flex; align-items: center; gap: 6px; font-size: 10px; color: #6c7382; }
 .wf-pp__ic svg { inline-size: 15px; block-size: 15px; flex: 0 0 auto; }
+
+/* The person on the other end, as the page will carry them. */
+.wf-pp__cc { display: grid; grid-template-columns: 34px 1fr auto; gap: 8px; align-items: center; margin-top: 8px; padding: 8px; border-radius: 6px; box-shadow: 0 1px 6px rgba(21, 26, 33, .12); }
+.wf-pp__cc__f { inline-size: 34px; block-size: 34px; border-radius: 50%; background: #eef0f4; }
+.wf-pp__cc__f.is-real { background-size: cover; background-position: center; }
+.wf-pp__cc__w { display: grid; gap: 1px; font-size: 9px; color: #6c7382; min-inline-size: 0; }
+.wf-pp__cc__w b { font-size: 10px; color: #4a5160; }
+.wf-pp__cc__p { color: #8d93a1; }
+.wf-pp__cc__n { display: flex; align-items: center; gap: 4px; }
+.wf-pp__cc__b { background: var(--onb-primary); color: #fff; font-size: 9px; padding: 6px 10px; border-radius: 4px; white-space: nowrap; }
+
 .wf-pp__tabs { display: flex; gap: 14px; margin: 16px 12px 0; border-bottom: 1px solid #eef0f4; }
 .wf-pp__tab { font-size: 10px; color: #9aa0ad; padding-bottom: 7px; white-space: nowrap; }
 .wf-pp__tab.is-on { color: var(--onb-ink); border-bottom: 2px solid var(--onb-primary); }
 .wf-pp__body { display: grid; gap: 6px; padding: 10px 12px 0; }
+
+/* Tabs that sit inside one of the two columns rather than under both:
+   the page's own margins are already around them. */
+.wf-pp--inside .wf-pp__tabs { margin: 12px 0 0; gap: 10px; }
+.wf-pp--inside .wf-pp__body { padding: 8px 0 0; }
 
 .oc-onb-side.is-phone .wf-pp { grid-template-columns: 1fr; }
 .oc-onb-side.is-phone .wf-pp__g--thumbs-side,
