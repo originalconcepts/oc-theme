@@ -12506,3 +12506,6 @@ msgstr "איך היא נקראת"
 
 msgid "Where does the short description go?"
 msgstr "איפה יושב התיאור הקצר?"
+
+msgid "In short"
+msgstr "בקצרה"

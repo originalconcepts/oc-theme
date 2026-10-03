@@ -2668,11 +2668,15 @@
 
 		var tabs = [];
 
+		if ( 'tab' === String( val( 'prod_short' ) ) ) { tabs.push( I.wf_tab_short ); }
+
 		if ( 'yes' === String( val( 'prod_ship_tab' ) ) ) { tabs.push( I.wf_tab_ship ); }
 
-		var more = String( val( 'prod_tab2_title' ) || '' ).trim();
+		( val( 'prod_tabs' ) || [] ).forEach( function ( t ) {
+			var name = String( ( t && t.title ) || '' ).trim();
 
-		if ( more ) { tabs.push( more ); }
+			if ( name ) { tabs.push( name ); }
+		} );
 
 		// The code sits at the far end of the name's line, where the shop
 		// really puts it.
@@ -2692,9 +2696,11 @@
 
 		var mid = [ w( 'wf-pp' + ( 'gallery-end' === String( val( 'prod_side' ) ) ? ' wf-pp--end' : '' ), phone ? [ pics, words ] : [ pics, words ] ) ];
 
-		mid.push( w( 'wf-pp__tabs', [ w( 'wf-pp__tab is-on', null, I.wf_tab_about ) ].concat( tabs.map( function ( t ) {
-			return w( 'wf-pp__tab', null, t );
-		} ) ) ) );
+		var all = 'tab' === String( val( 'prod_short' ) ) ? tabs.concat( [ I.wf_tab_about ] ) : [ I.wf_tab_about ].concat( tabs );
+
+		mid.push( w( 'wf-pp__tabs', all.map( function ( t, i ) {
+			return w( 'wf-pp__tab' + ( i ? '' : ' is-on' ), null, t );
+		} ) ) );
 		mid.push( w( 'wf-pp__body', [ wLine( '100%' ), wLine( '92%' ), wLine( '70%' ) ] ) );
 
 		return wPage( mid, {} );

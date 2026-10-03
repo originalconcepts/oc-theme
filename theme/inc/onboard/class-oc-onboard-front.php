@@ -183,6 +183,7 @@ final class Front {
 				'lead_one'        => __( 'It will say: arrives in %1$s sending days.', 'oc-theme' ),
 				'wf_tab_about'    => __( 'About the product', 'oc-theme' ),
 				'wf_tab_ship'     => __( 'Delivery and returns', 'oc-theme' ),
+				'wf_tab_short'    => __( 'In short', 'oc-theme' ),
 				'wf_top'          => __( 'Free delivery over 400 ILS · 12 payments, no interest', 'oc-theme' ),
 				'wf_posts_h'      => __( 'From the magazine', 'oc-theme' ),
 				/* translators: %1$s: a stand-in number, so the sketch's article names differ. */

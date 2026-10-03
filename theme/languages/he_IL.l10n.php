@@ -1583,6 +1583,7 @@ return array(
 		"In demand! %d bought recently" => "ביקוש גבוה! %d רכשו לאחרונה",
 		"In one row" => "בשורה אחת",
 		"In place" => "במקום",
+		"In short" => "בקצרה",
 		"In stock" => "במלאי",
 		"In stock first" => "מה שבמלאי קודם",
 		"In stock only" => "הצג במלאי בלבד",
