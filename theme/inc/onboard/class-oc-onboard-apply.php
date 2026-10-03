@@ -1617,6 +1617,45 @@ final class Apply {
 	}
 
 	/**
+	 * The category the cart panel offers from, as a term id — the panel
+	 * stores a number, and the questionnaire only ever knew a name.
+	 */
+	private function apply_cart_cat(): void {
+		if ( 'category' !== (string) $this->v['cart_up_source'] ) {
+			return;
+		}
+
+		$want = $this->v['cart_up_cat'];
+		$name = is_array( $want ) ? (string) reset( $want ) : (string) $want;
+		$id   = $this->cat_id( $name );
+
+		if ( ! $id ) {
+			$this->row( 'cart_up_cat', __( 'Offering more in the cart', 'oc-theme' ), 'skipped', __( 'That category was not opened.', 'oc-theme' ) );
+			return;
+		}
+
+		$this->write_option_key( 'cart_up_cat', 'oc_cart', 'up_cat', $id );
+	}
+
+	/**
+	 * Which parts of an address a courier here cannot do without. Three
+	 * separate switches in the checkout, one list of ticks in the
+	 * questionnaire.
+	 */
+	private function apply_ck_req(): void {
+		$want = is_array( $this->v['ck_req'] ) ? $this->v['ck_req'] : array();
+		$keys = array(
+			'apt'   => 'apt_required',
+			'floor' => 'floor_required',
+			'entry' => 'entry_required',
+		);
+
+		foreach ( $keys as $tick => $key ) {
+			$this->write_option_key( 'ck_req', 'oc_checkout', $key, in_array( $tick, $want, true ) ? 1 : 0 );
+		}
+	}
+
+	/**
 	 * The face on the contact card. Everything else about it is a mod of
 	 * its own; a photograph is an attachment, so it comes through here.
 	 */

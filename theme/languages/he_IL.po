@@ -12593,3 +12593,117 @@ msgstr "מחזק קנייה"
 
 msgid "Another buying reason"
 msgstr "מחזק קנייה נוסף"
+
+msgid "2 items"
+msgstr "2 פריטים"
+
+msgid "%s more and the delivery is on us"
+msgstr "עוד %s והמשלוח עלינו"
+
+msgid "A new address"
+msgstr "כתובת חדשה"
+
+msgid "Place the order"
+msgstr "ביצוע הזמנה"
+
+msgid "The panel that slides out when something is added. Beside you it stands open, with whatever you put in it."
+msgstr "החלונית שנפתחת כשמוסיפים משהו. לידכם היא עומדת פתוחה, עם מה שהכנסתם אליה."
+
+msgid "The last page before the money. Everything here is already set to what works for most shops — change what is not true of yours."
+msgstr "העמוד האחרון לפני התשלום. הכל כאן כבר מכוון למה שעובד ברוב החנויות — שנו את מה שלא נכון אצלכם."
+
+msgid "The panel"
+msgstr "החלונית"
+
+msgid "Offering more in the panel"
+msgstr "הצעת מוצרים בחלונית"
+
+msgid "Offer more products inside the cart panel?"
+msgstr "להציע מוצרים נוספים בתוך חלונית הסל?"
+
+msgid "Something that goes with what they already took. Whatever is in the cart is never offered again."
+msgstr "משהו שהולך עם מה שכבר לקחו. מה שכבר בסל לעולם לא מוצע שוב."
+
+msgid "Where do they stand?"
+msgstr "איפה הם עומדים?"
+
+msgid "A strip beside the panel"
+msgstr "רצועת צד בתוך החלונית"
+
+msgid "A slider across"
+msgstr "סליידר לרוחב"
+
+msgid "Above the total, foldable"
+msgstr "מעל הסיכום, מתקפל"
+
+msgid "The heading above them"
+msgstr "הכותרת מעליהם"
+
+msgid "Which products are offered?"
+msgstr "אילו מוצרים מוצעים?"
+
+msgid "Whatever each product in the cart recommends"
+msgstr "מה שכל מוצר שבסל ממליץ עליו"
+
+msgid "One category, the same for everyone"
+msgstr "קטגוריה אחת, אותה אחת לכולם"
+
+msgid "Which category"
+msgstr "איזו קטגוריה"
+
+msgid "How many at most"
+msgstr "כמה לכל היותר"
+
+msgid "The foot of the panel"
+msgstr "תחתית החלונית"
+
+msgid "A coupon field in the panel?"
+msgstr "שדה קופון בחלונית?"
+
+msgid "The cart total on the checkout button?"
+msgstr "סכום הסל על כפתור המעבר לקופה?"
+
+msgid "A \"continue shopping\" button underneath?"
+msgstr "כפתור ״המשך בקניות״ מתחת?"
+
+msgid "Who it goes to"
+msgstr "למי זה הולך"
+
+msgid "Let a customer keep more than one address?"
+msgstr "לאפשר ללקוח לשמור יותר מכתובת אחת?"
+
+msgid "Home and work, say. A returning customer picks one instead of writing it again."
+msgstr "בית ועבודה, למשל. לקוח חוזר בוחר אחת במקום לכתוב אותה שוב."
+
+msgid "Must they give the recipient's phone as well?"
+msgstr "חובה למלא גם את הטלפון של המקבל?"
+
+msgid "The courier calls whoever opens the door, not whoever paid."
+msgstr "השליח מתקשר למי שפותח את הדלת, לא למי ששילם."
+
+msgid "The delivery address"
+msgstr "כתובת המשלוח"
+
+msgid "What must be filled in besides the street?"
+msgstr "מה חובה למלא מלבד הרחוב?"
+
+msgid "The street and the house number are always required. Tick whatever a courier of yours cannot do without."
+msgstr "הרחוב ומספר הבית תמיד חובה. סמנו את מה שהשליחים שלכם לא יכולים בלעדיו."
+
+msgid "Apartment number"
+msgstr "מספר דירה"
+
+msgid "The order beside the form"
+msgstr "ההזמנה לצד הטופס"
+
+msgid "Does the list start folded on a wide screen?"
+msgstr "הרשימה מתחילה מקופלת במסך רחב?"
+
+msgid "Folded, the form is what the eye lands on; the sum is in view either way."
+msgstr "מקופלת, העין נוחתת על הטופס; הסכום נראה כך או כך."
+
+msgid "The sum on the order button?"
+msgstr "הסכום על כפתור ביצוע ההזמנה?"
+
+msgid "Home address"
+msgstr "בית"

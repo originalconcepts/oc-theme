@@ -993,3 +993,72 @@ button.oc-onb-steps__i { cursor: pointer; }
 .wf-pp__ics--row { grid-auto-flow: column; grid-auto-columns: 1fr; gap: 8px; }
 .wf-pp__ics--row .wf-pp__ic { flex-direction: column; text-align: center; gap: 3px; font-size: 9px; }
 .wf-pp__ic--hint { color: #b2b7c2; }
+
+/* ------------------------------------------------- the cart panel, drawn */
+
+/* The drawer sits at the physical left whatever the writing direction,
+   because that is where the theme puts it. */
+.wf-cart__stage { position: relative; min-block-size: 330px; }
+.wf-cart__dim { position: absolute; inset: 0; background: rgba(21, 26, 33, .28); }
+.wf-cart { position: absolute; inset-block: 0; left: 0; inline-size: 300px; display: flex; background: #fff; box-shadow: 0 0 24px rgba(21, 26, 33, .18); }
+.wf-cart--wide { inline-size: 380px; }
+.wf-cart__panel { flex: 1; display: flex; flex-direction: column; min-inline-size: 0; }
+.wf-cart__head { display: flex; align-items: center; gap: 6px; padding: 10px 12px; border-bottom: 1px solid #eef0f4; font-size: 12px; color: #4a5160; }
+.wf-cart__n { font-size: 10px; color: #9aa0ad; }
+.wf-cart__x { margin-inline-start: auto; color: #9aa0ad; }
+.wf-cart__ship { display: grid; gap: 5px; padding: 8px 12px; font-size: 10px; color: #6c7382; background: #f7f8fa; }
+.wf-cart__track { block-size: 4px; border-radius: 3px; background: #e7e9ef; }
+.wf-cart__fill { inline-size: 62%; block-size: 100%; border-radius: 3px; background: var(--onb-primary); }
+.wf-cart__scroll { flex: 1; display: grid; gap: 8px; align-content: start; padding: 10px 12px; }
+.wf-cart__row { display: grid; grid-template-columns: 34px 1fr auto; gap: 8px; align-items: center; }
+.wf-cart__pic { inline-size: 34px; block-size: 42px; border-radius: 3px; }
+.wf-cart__w { display: grid; gap: 2px; font-size: 10px; color: #8d93a1; min-inline-size: 0; }
+.wf-cart__w b { font-size: 10px; color: #4a5160; }
+.wf-cart__qty { inline-size: 24px; text-align: center; font-size: 10px; color: #6c7382; border: 1px solid var(--onb-line); border-radius: 3px; padding: 3px 0; }
+.wf-cart__foot { display: grid; gap: 7px; padding: 10px 12px; border-top: 1px solid #eef0f4; }
+.wf-cart__coupon { display: grid; grid-template-columns: 1fr auto; gap: 6px; }
+.wf-cart__in { border: 1px solid var(--onb-line); border-radius: 4px; padding: 6px 8px; font-size: 10px; color: #b2b7c2; }
+.wf-cart__go { border: 1px solid var(--onb-line); border-radius: 4px; padding: 6px 10px; font-size: 10px; color: #6c7382; }
+.wf-cart__sum { display: flex; justify-content: space-between; font-size: 10px; color: #6c7382; }
+.wf-cart__sum--big { font-size: 11px; color: #4a5160; }
+.wf-cart__cont { text-align: center; font-size: 10px; color: #6c7382; text-decoration: underline; }
+
+/* The products the panel offers, in the four places they can stand. */
+.wf-up__h { font-size: 10px; color: #6c7382; margin-bottom: 5px; }
+.wf-up__list { display: grid; gap: 6px; }
+.wf-up__one { display: grid; gap: 3px; font-size: 9px; color: #8d93a1; text-align: center; }
+.wf-up__pic { aspect-ratio: 1 / 1; border-radius: 3px; }
+.wf-up--side { inline-size: 80px; flex: 0 0 80px; padding: 10px 8px; background: #f7f8fa; border-inline-start: 1px solid #eef0f4; }
+.wf-up--list .wf-up__list,
+.wf-up--collapse .wf-up__list,
+.wf-up--slider .wf-up__list { grid-auto-flow: column; grid-auto-columns: 1fr; }
+.wf-up--list,
+.wf-up--slider { padding-top: 8px; border-top: 1px dashed #eef0f4; }
+.wf-up--collapse { padding: 8px 12px; background: #f7f8fa; border-top: 1px solid #eef0f4; }
+
+/* ------------------------------------------------- the checkout, drawn */
+
+.wf-ck { display: grid; grid-template-columns: 1.3fr 1fr; gap: 14px; padding: 14px 12px; }
+.wf-ck > * { min-inline-size: 0; }
+.wf-ck__form { display: grid; gap: 8px; align-content: start; }
+.wf-ck__f { border: 1px solid var(--onb-line); border-radius: 4px; padding: 7px 8px; font-size: 10px; color: #b2b7c2; }
+.wf-ck__two { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.wf-ck__three { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.wf-ck__addr { display: flex; gap: 6px; flex-wrap: wrap; }
+.wf-ck__chip { border: 1px solid var(--onb-line); border-radius: 20px; padding: 4px 10px; font-size: 9px; color: #6c7382; }
+.wf-ck__chip.is-on { border-color: var(--onb-primary); color: var(--onb-primary); }
+.wf-ck__tick { display: flex; align-items: center; gap: 6px; font-size: 10px; color: #6c7382; }
+.wf-ck__box { inline-size: 11px; block-size: 11px; border: 1px solid var(--onb-line); border-radius: 3px; }
+.wf-ck__ship { display: grid; gap: 6px; font-size: 10px; color: #4a5160; margin-top: 4px; }
+.wf-ck__opt { border: 1px solid var(--onb-line); border-radius: 4px; padding: 7px 8px; font-size: 10px; color: #6c7382; }
+.wf-ck__opt.is-on { border-color: var(--onb-primary); }
+.wf-ck__side { display: grid; gap: 8px; align-content: start; padding: 10px; border-radius: 6px; background: #f7f8fa; }
+.wf-ck__sh { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #4a5160; }
+.wf-ck__n { font-size: 9px; color: #9aa0ad; }
+.wf-ck__show { margin-inline-start: auto; font-size: 9px; color: var(--onb-primary); }
+.wf-ck__row { display: grid; grid-template-columns: 30px 1fr; gap: 8px; align-items: center; }
+.wf-ck__has { font-size: 10px; color: var(--onb-primary); text-decoration: underline; }
+.wf-ck__sums { display: grid; gap: 4px; padding-top: 8px; border-top: 1px solid #e7e9ef; }
+
+.oc-onb-side.is-phone .wf-ck { grid-template-columns: 1fr; }
+.oc-onb-side.is-phone .wf-cart { inline-size: auto; inset-inline: 10px; }

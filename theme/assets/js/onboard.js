@@ -2604,6 +2604,8 @@
 		if ( 'category' === kind ) { return previewCategory(); }
 		if ( 'top' === kind ) { return previewTop(); }
 		if ( 'product' === kind ) { return previewProduct(); }
+		if ( 'cart' === kind ) { return previewCart(); }
+		if ( 'checkout' === kind ) { return previewCheckout(); }
 		if ( 0 === String( kind ).indexOf( 'band:' ) ) { return previewBands( String( kind ).slice( 5 ).split( ',' ) ); }
 		return previewHome( String( val( 'home_recipe' ) ) );
 	}
@@ -2787,6 +2789,175 @@
 		card.appendChild( w( 'wf-pp__cc__b', null, 'phone' === String( val( 'contact_channel' ) ) ? I.wf_call : I.wf_whats ) );
 
 		return card;
+	}
+
+	/**
+	 * The cart panel as it will slide out: whatever they put in its head,
+	 * its middle and its foot, with the products they chose to offer
+	 * standing where they chose to stand them.
+	 */
+	function previewCart() {
+		var yes   = function ( id ) { return 'yes' === String( val( id ) ); };
+		var more  = yes( 'cart_up' );
+		var style = String( val( 'cart_up_style' ) || 'side' );
+		var panel = w( 'wf-cart__panel' );
+
+		panel.appendChild( w( 'wf-cart__head', [
+			el( 'b', { text: I.wf_cart } ),
+			el( 'span', { 'class': 'wf-cart__n', text: I.wf_cart_n } ),
+			el( 'span', { 'class': 'wf-cart__x', 'aria-hidden': 'true', text: '×' } )
+		] ) );
+
+		if ( yes( 'cart_ship_bar' ) ) {
+			panel.appendChild( w( 'wf-cart__ship', [
+				el( 'span', { text: fmt( I.wf_cart_ship, '₪120' ) } ),
+				w( 'wf-cart__track', [ w( 'wf-cart__fill' ) ] )
+			] ) );
+		}
+
+		var scroll = w( 'wf-cart__scroll' );
+
+		for ( var i = 0; i < 2; i++ ) {
+			scroll.appendChild( w( 'wf-cart__row', [
+				wImg( 'wf-cart__pic' ),
+				w( 'wf-cart__w', [
+					el( 'b', { text: fmt( I.wf_product, i + 1 ) } ),
+					el( 'span', { text: MONEY } )
+				] ),
+				w( 'wf-cart__qty', null, '1' )
+			] ) );
+		}
+
+		if ( more && ( 'list' === style || 'slider' === style ) ) { scroll.appendChild( upBlock( style ) ); }
+
+		panel.appendChild( scroll );
+
+		if ( more && 'collapse' === style ) { panel.appendChild( upBlock( 'collapse' ) ); }
+
+		var foot = w( 'wf-cart__foot' );
+
+		if ( yes( 'cart_coupon' ) ) {
+			foot.appendChild( w( 'wf-cart__coupon', [
+				w( 'wf-cart__in', null, I.wf_coupon ),
+				w( 'wf-cart__go', null, I.wf_apply )
+			] ) );
+		}
+
+		foot.appendChild( w( 'wf-cart__sum', [ el( 'span', { text: I.wf_total } ), el( 'b', { text: MONEY } ) ] ) );
+		foot.appendChild( w( 'wf-pp__btn', null, yes( 'cart_btn_total' ) ? I.wf_to_checkout + ' · ' + MONEY : I.wf_to_checkout ) );
+
+		if ( yes( 'cart_continue' ) ) { foot.appendChild( w( 'wf-cart__cont', null, I.wf_keep_on ) ); }
+
+		panel.appendChild( foot );
+
+		var drawer = w( 'wf-cart' + ( more && 'side' === style ? ' wf-cart--wide' : '' ), [ panel ] );
+
+		if ( more && 'side' === style ) { drawer.appendChild( upBlock( 'side' ) ); }
+
+		return wPage( [ w( 'wf-cart__stage', [ w( 'wf-cart__dim' ), drawer ] ) ], {} );
+	}
+
+	/**
+	 * The products the panel offers, drawn the way the shop asked for them.
+	 *
+	 * @param {string} style side | list | slider | collapse.
+	 */
+	function upBlock( style ) {
+		var said = String( val( 'cart_up_title' ) || '' ).trim() || I.wf_upsell;
+		var box  = w( 'wf-up wf-up--' + style, [ el( 'div', { 'class': 'wf-up__h', text: said } ) ] );
+		var list = w( 'wf-up__list' );
+		var many = Math.max( 1, Math.min( 4, Number( val( 'cart_up_max' ) ) || 3 ) );
+
+		for ( var i = 0; i < Math.min( many, 'side' === style ? 3 : 3 ); i++ ) {
+			list.appendChild( w( 'wf-up__one', [ wImg( 'wf-up__pic' ), el( 'span', { text: MONEY } ) ] ) );
+		}
+
+		box.appendChild( list );
+
+		return box;
+	}
+
+	/**
+	 * The checkout: the form on one side, the order on the other. Every
+	 * answer either adds a line here or takes one away.
+	 */
+	function previewCheckout() {
+		var yes  = function ( id ) { return 'yes' === String( val( id ) ); };
+		var need = val( 'ck_req' ) || [];
+		var form = w( 'wf-ck__form' );
+		var line = function ( label, star ) {
+			return w( 'wf-ck__f', [ el( 'span', { text: label + ( star ? ' *' : '' ) } ) ] );
+		};
+
+		if ( yes( 'ck_multi' ) ) {
+			form.appendChild( w( 'wf-ck__addr', [
+				w( 'wf-ck__chip is-on', null, I.wf_ck_home ),
+				w( 'wf-ck__chip', null, I.wf_ck_work ),
+				w( 'wf-ck__chip', null, '+ ' + I.wf_ck_addr_new )
+			] ) );
+		}
+
+		form.appendChild( w( 'wf-ck__two', [ line( I.wf_ck_name, true ), line( I.wf_ck_phone, true ) ] ) );
+		form.appendChild( line( I.wf_ck_mail, true ) );
+
+		if ( yes( 'ck_other' ) ) {
+			form.appendChild( w( 'wf-ck__tick', [
+				el( 'span', { 'class': 'wf-ck__box', 'aria-hidden': 'true' } ),
+				el( 'span', { text: I.wf_ck_other } )
+			] ) );
+			form.appendChild( w( 'wf-ck__two', [
+				line( I.wf_ck_rec, false ),
+				line( I.wf_ck_rec_phone, yes( 'ck_phone2' ) )
+			] ) );
+		}
+
+		form.appendChild( w( 'wf-ck__two', [ line( I.wf_ck_street, true ), line( I.wf_ck_city, true ) ] ) );
+		form.appendChild( w( 'wf-ck__three', [
+			line( I.wf_ck_apt, need.indexOf( 'apt' ) !== -1 ),
+			line( I.wf_ck_floor, need.indexOf( 'floor' ) !== -1 ),
+			line( I.wf_ck_entry, need.indexOf( 'entry' ) !== -1 )
+		] ) );
+		form.appendChild( w( 'wf-ck__ship', [
+			el( 'b', { text: I.wf_ck_ship } ),
+			w( 'wf-ck__opt is-on', null, I.wf_ck_ship + ' · ₪0' )
+		] ) );
+
+		var side = w( 'wf-ck__side', [ w( 'wf-ck__sh', [
+			el( 'b', { text: I.wf_ck_sum } ),
+			el( 'span', { 'class': 'wf-ck__n', text: I.wf_cart_n } )
+		] ) ] );
+
+		// The list is there, or folded away behind one line, or not there
+		// at all — and the sum stands under it either way.
+		if ( yes( 'ck_summary' ) ) {
+			if ( yes( 'ck_fold' ) ) {
+				side.querySelector( '.wf-ck__sh' ).appendChild( el( 'span', { 'class': 'wf-ck__show', text: I.wf_ck_show + ' ⌄' } ) );
+			} else {
+				for ( var i = 0; i < 2; i++ ) {
+					side.appendChild( w( 'wf-ck__row', [
+						wImg( 'wf-cart__pic' ),
+						w( 'wf-cart__w', [ el( 'b', { text: fmt( I.wf_product, i + 1 ) } ), el( 'span', { text: MONEY } ) ] )
+					] ) );
+				}
+			}
+		}
+
+		var coupon = String( val( 'ck_coupon' ) || 'open' );
+
+		if ( 'open' === coupon ) {
+			side.appendChild( w( 'wf-cart__coupon', [ w( 'wf-cart__in', null, I.wf_coupon ), w( 'wf-cart__go', null, I.wf_apply ) ] ) );
+		} else if ( 'button' === coupon ) {
+			side.appendChild( w( 'wf-ck__has', null, I.wf_ck_has ) );
+		}
+
+		side.appendChild( w( 'wf-ck__sums', [
+			w( 'wf-cart__sum', [ el( 'span', { text: I.wf_subtotal } ), el( 'span', { text: MONEY } ) ] ),
+			w( 'wf-cart__sum', [ el( 'span', { text: I.wf_shipping } ), el( 'span', { text: '₪0' } ) ] ),
+			w( 'wf-cart__sum wf-cart__sum--big', [ el( 'span', { text: I.wf_total } ), el( 'b', { text: MONEY } ) ] )
+		] ) );
+		side.appendChild( w( 'wf-pp__btn', null, yes( 'ck_btn_total' ) ? I.wf_ck_pay + ' · ' + MONEY : I.wf_ck_pay ) );
+
+		return wPage( [ w( 'wf-ck', [ form, side ] ) ], {} );
 	}
 
 	/**

@@ -227,10 +227,20 @@ final class Schema {
 				'title'   => __( 'Cart and checkout', 'oc-theme' ),
 				'screens' => array(
 					array(
-						'id'     => '7a',
-						'title'  => __( 'The cart and the checkout', 'oc-theme' ),
-						'intro'  => __( 'The last stretch, where a visitor becomes a customer. Few questions on purpose — everything here is set to what works for most shops.', 'oc-theme' ),
-						'fields' => array( 'cart_side', 'cart_open', 'cart_ship_bar', 'ck_summary', 'ck_coupon', 'ck_other' ),
+						'id'      => '7a',
+						'title'   => __( 'The cart panel', 'oc-theme' ),
+						'intro'   => __( 'The panel that slides out when something is added. Beside you it stands open, with whatever you put in it.', 'oc-theme' ),
+						'intro_m' => __( 'On a phone the two do not fit side by side, so the two buttons above switch between the questions and the drawing.', 'oc-theme' ),
+						'preview' => 'cart',
+						'fields'  => array( 'cart_open', 'cart_ship_bar', 'cart_up', 'cart_up_style', 'cart_up_title', 'cart_up_source', 'cart_up_cat', 'cart_up_max', 'cart_continue', 'cart_coupon', 'cart_btn_total' ),
+					),
+					array(
+						'id'      => '7b',
+						'title'   => __( 'The checkout', 'oc-theme' ),
+						'intro'   => __( 'The last page before the money. Everything here is already set to what works for most shops — change what is not true of yours.', 'oc-theme' ),
+						'intro_m' => __( 'On a phone the two do not fit side by side, so the two buttons above switch between the questions and the drawing.', 'oc-theme' ),
+						'preview' => 'checkout',
+						'fields'  => array( 'ck_multi', 'ck_other', 'ck_phone2', 'ck_req', 'ck_summary', 'ck_fold', 'ck_coupon', 'ck_btn_total' ),
 					),
 				),
 			),
@@ -1449,20 +1459,13 @@ final class Schema {
 
 		/* ---- 7a: the cart and the checkout ---- */
 
-		$f['cart_side'] = array(
-			'type'    => 'choice',
-			'group'   => __( 'The cart panel', 'oc-theme' ),
-			'label'   => __( 'Which side does the cart slide out from?', 'oc-theme' ),
-			'options' => array(
-				'right' => __( 'The right', 'oc-theme' ),
-				'left'  => __( 'The left', 'oc-theme' ),
-			),
-			'default' => 'right',
-			'target'  => array( 'option', 'oc_cart', 'side' ),
-		);
+		/* ---- 7a: the cart panel ---- */
 
+		// Which side it slides out from is not asked: left is the theme's
+		// own default and the one nearly every shop keeps.
 		$f['cart_open'] = array(
 			'type'    => 'choice',
+			'group'   => __( 'The panel', 'oc-theme' ),
 			'label'   => __( 'Does it open the moment something is added?', 'oc-theme' ),
 			'help'    => __( 'It opens, shows what went in, and the shopper carries on.', 'oc-theme' ),
 			'options' => $yesno,
@@ -1472,6 +1475,7 @@ final class Schema {
 
 		$f['cart_ship_bar'] = array(
 			'type'    => 'choice',
+			'group'   => __( 'The panel', 'oc-theme' ),
 			'label'   => __( 'Show how far they are from free delivery?', 'oc-theme' ),
 			'help'    => __( 'A line that says how much more is needed. Only worth it if you offer free delivery over an amount.', 'oc-theme' ),
 			'options' => $yesno,
@@ -1479,34 +1483,191 @@ final class Schema {
 			'target'  => array( 'option', 'oc_cart', 'ship_bar' ),
 		);
 
+		$f['cart_up'] = array(
+			'type'    => 'choice',
+			'group'   => __( 'Offering more in the panel', 'oc-theme' ),
+			'label'   => __( 'Offer more products inside the cart panel?', 'oc-theme' ),
+			'help'    => __( 'Something that goes with what they already took. Whatever is in the cart is never offered again.', 'oc-theme' ),
+			'options' => $yesno,
+			'default' => 'no',
+			'target'  => array( 'option', 'oc_cart', 'up_show' ),
+		);
+
+		$f['cart_up_style'] = array(
+			'type'    => 'choice',
+			'group'   => __( 'Offering more in the panel', 'oc-theme' ),
+			'label'   => __( 'Where do they stand?', 'oc-theme' ),
+			'options' => array(
+				'side'     => __( 'A strip beside the panel', 'oc-theme' ),
+				'list'     => __( 'After the cart items', 'oc-theme' ),
+				'slider'   => __( 'A slider across', 'oc-theme' ),
+				'collapse' => __( 'Above the total, foldable', 'oc-theme' ),
+			),
+			'default' => 'side',
+			'quiet'   => true,
+			'when'    => array( 'cart_up', array( 'yes' ) ),
+			'target'  => array( 'option', 'oc_cart', 'up_style' ),
+		);
+
+		$f['cart_up_title'] = array(
+			'type'        => 'text',
+			'group'       => __( 'Offering more in the panel', 'oc-theme' ),
+			'label'       => __( 'The heading above them', 'oc-theme' ),
+			'placeholder' => __( 'You may also like', 'oc-theme' ),
+			'when'        => array( 'cart_up', array( 'yes' ) ),
+			'target'      => array( 'option', 'oc_cart', 'up_title' ),
+		);
+
+		$f['cart_up_source'] = array(
+			'type'    => 'choice',
+			'group'   => __( 'Offering more in the panel', 'oc-theme' ),
+			'label'   => __( 'Which products are offered?', 'oc-theme' ),
+			'options' => array(
+				'items'    => __( 'Whatever each product in the cart recommends', 'oc-theme' ),
+				'category' => __( 'One category, the same for everyone', 'oc-theme' ),
+			),
+			'default' => 'items',
+			'quiet'   => true,
+			'when'    => array( 'cart_up', array( 'yes' ) ),
+			'target'  => array( 'option', 'oc_cart', 'up_source' ),
+		);
+
+		$f['cart_up_cat'] = array(
+			'type'     => 'from_menu',
+			'group'    => __( 'Offering more in the panel', 'oc-theme' ),
+			'label'    => __( 'Which category', 'oc-theme' ),
+			'one'      => true,
+			'required' => true,
+			'when'     => array( 'cart_up_source', array( 'category' ) ),
+			'target'   => array( 'call', 'cart_cat' ),
+		);
+
+		$f['cart_up_max'] = array(
+			'type'    => 'stepper',
+			'group'   => __( 'Offering more in the panel', 'oc-theme' ),
+			'label'   => __( 'How many at most', 'oc-theme' ),
+			'min'     => 1,
+			'max'     => 12,
+			'default' => '5',
+			'when'    => array( 'cart_up', array( 'yes' ) ),
+			'target'  => array( 'option', 'oc_cart', 'up_max' ),
+		);
+
+		$f['cart_coupon'] = array(
+			'type'    => 'choice',
+			'group'   => __( 'The foot of the panel', 'oc-theme' ),
+			'label'   => __( 'A coupon field in the panel?', 'oc-theme' ),
+			'options' => $yesno,
+			'default' => 'yes',
+			'target'  => array( 'option', 'oc_cart', 'coupon' ),
+		);
+
+		$f['cart_btn_total'] = array(
+			'type'    => 'choice',
+			'group'   => __( 'The foot of the panel', 'oc-theme' ),
+			'label'   => __( 'The cart total on the checkout button?', 'oc-theme' ),
+			'options' => $yesno,
+			'default' => 'no',
+			'target'  => array( 'option', 'oc_cart', 'btn_total' ),
+		);
+
+		$f['cart_continue'] = array(
+			'type'    => 'choice',
+			'group'   => __( 'The foot of the panel', 'oc-theme' ),
+			'label'   => __( 'A "continue shopping" button underneath?', 'oc-theme' ),
+			'options' => $yesno,
+			'default' => 'no',
+			'target'  => array( 'option', 'oc_cart', 'continue' ),
+		);
+
+		/* ---- 7b: the checkout ---- */
+
+		$f['ck_multi'] = array(
+			'type'    => 'choice',
+			'group'   => __( 'Who it goes to', 'oc-theme' ),
+			'label'   => __( 'Let a customer keep more than one address?', 'oc-theme' ),
+			'help'    => __( 'Home and work, say. A returning customer picks one instead of writing it again.', 'oc-theme' ),
+			'options' => $yesno,
+			'default' => 'yes',
+			'target'  => array( 'option', 'oc_checkout', 'multi_address' ),
+		);
+
+		$f['ck_other'] = array(
+			'type'    => 'choice',
+			'group'   => __( 'Who it goes to', 'oc-theme' ),
+			'label'   => __( 'Offer "I am sending to someone else"?', 'oc-theme' ),
+			'help'    => __( 'A gift, or an order sent to the office. The buyer fills in a different address and name.', 'oc-theme' ),
+			'options' => $yesno,
+			'default' => 'yes',
+			'target'  => array( 'option', 'oc_checkout', 'send_other' ),
+		);
+
+		$f['ck_phone2'] = array(
+			'type'    => 'choice',
+			'group'   => __( 'Who it goes to', 'oc-theme' ),
+			'label'   => __( 'Must they give the recipient\'s phone as well?', 'oc-theme' ),
+			'help'    => __( 'The courier calls whoever opens the door, not whoever paid.', 'oc-theme' ),
+			'options' => $yesno,
+			'default' => 'no',
+			'when'    => array( 'ck_other', array( 'yes' ) ),
+			'target'  => array( 'option', 'oc_checkout', 'phone2_required' ),
+		);
+
+		$f['ck_req'] = array(
+			'type'    => 'checks',
+			'group'   => __( 'The delivery address', 'oc-theme' ),
+			'label'   => __( 'What must be filled in besides the street?', 'oc-theme' ),
+			'help'    => __( 'The street and the house number are always required. Tick whatever a courier of yours cannot do without.', 'oc-theme' ),
+			'options' => array(
+				'apt'   => __( 'Apartment number', 'oc-theme' ),
+				'floor' => __( 'Floor', 'oc-theme' ),
+				'entry' => __( 'Entry code', 'oc-theme' ),
+			),
+			'default' => array( 'apt', 'floor' ),
+			'target'  => array( 'call', 'ck_req' ),
+		);
+
 		$f['ck_summary'] = array(
 			'type'    => 'choice',
-			'group'   => __( 'The checkout', 'oc-theme' ),
+			'group'   => __( 'The order beside the form', 'oc-theme' ),
 			'label'   => __( 'Show the list of products beside the form?', 'oc-theme' ),
 			'options' => $yesno,
 			'default' => 'yes',
 			'target'  => array( 'option', 'oc_checkout', 'summary' ),
 		);
 
-		$f['ck_coupon'] = array(
+		$f['ck_fold'] = array(
 			'type'    => 'choice',
-			'label'   => __( 'The coupon field', 'oc-theme' ),
-			'options' => array(
-				'button' => __( '"Have a coupon?" opens it', 'oc-theme' ),
-				'open'   => __( 'Always open', 'oc-theme' ),
-				'hide'   => __( 'Not shown at all', 'oc-theme' ),
-			),
-			'default' => 'button',
-			'target'  => array( 'option', 'oc_checkout', 'coupon' ),
-		);
-
-		$f['ck_other'] = array(
-			'type'    => 'choice',
-			'label'   => __( 'Offer "I am sending to someone else"?', 'oc-theme' ),
-			'help'    => __( 'A gift, or an order sent to the office. The buyer fills in a different address and name.', 'oc-theme' ),
+			'group'   => __( 'The order beside the form', 'oc-theme' ),
+			'label'   => __( 'Does the list start folded on a wide screen?', 'oc-theme' ),
+			'help'    => __( 'Folded, the form is what the eye lands on; the sum is in view either way.', 'oc-theme' ),
 			'options' => $yesno,
 			'default' => 'yes',
-			'target'  => array( 'option', 'oc_checkout', 'send_other' ),
+			'when'    => array( 'ck_summary', array( 'yes' ) ),
+			'target'  => array( 'option', 'oc_checkout', 'summary_fold' ),
+		);
+
+		$f['ck_coupon'] = array(
+			'type'    => 'choice',
+			'group'   => __( 'The order beside the form', 'oc-theme' ),
+			'label'   => __( 'The coupon field', 'oc-theme' ),
+			'options' => array(
+				'open'   => __( 'Always open', 'oc-theme' ),
+				'button' => __( '"Have a coupon?" opens it', 'oc-theme' ),
+				'hide'   => __( 'Not shown at all', 'oc-theme' ),
+			),
+			'default' => 'open',
+			'quiet'   => true,
+			'target'  => array( 'option', 'oc_checkout', 'coupon_mode' ),
+		);
+
+		$f['ck_btn_total'] = array(
+			'type'    => 'choice',
+			'group'   => __( 'The order beside the form', 'oc-theme' ),
+			'label'   => __( 'The sum on the order button?', 'oc-theme' ),
+			'options' => $yesno,
+			'default' => 'yes',
+			'target'  => array( 'option', 'oc_checkout', 'btn_total' ),
 		);
 
 		/* ---- 5a: the product page ---- */
