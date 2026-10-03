@@ -188,7 +188,7 @@ final class Schema {
 						'title'   => __( 'The category page', 'oc-theme' ),
 						'intro'   => __( 'The page a customer lands on from the menu. Every answer here changes the sketch.', 'oc-theme' ),
 						'preview' => 'category',
-						'fields'  => array( 'cat_hero', 'cat_cols', 'cat_filters', 'card_sale', 'card_new', 'card_new_days', 'card_excerpt', 'cat_paging' ),
+						'fields'  => array( 'cat_hero', 'cat_cols', 'cat_oos_last', 'cat_filters', 'card_atc', 'card_sale', 'card_new', 'card_new_days', 'card_excerpt', 'cat_paging' ),
 					),
 				),
 			),
@@ -202,7 +202,7 @@ final class Schema {
 						'title'   => __( 'Brands', 'oc-theme' ),
 						'intro'   => __( 'Do you carry goods of makers with a name of their own? Say no and there is nothing more to answer here.', 'oc-theme' ),
 						'preview' => 'band:brands',
-						'fields'  => array( 'brands_has', 'brand_list', 'home_brands', 'brand_logo', 'brand_card', 'brand_product' ),
+						'fields'  => array( 'brands_has', 'brand_list', 'home_brands', 'brand_logo' ),
 					),
 				),
 			),
@@ -258,9 +258,8 @@ final class Schema {
 	public static function home_blocks(): array {
 		return array(
 			'banner'     => array(
-				'label' => __( 'Main banner', 'oc-theme' ),
-				'once'  => true,
-				'note'  => __( 'The big picture at the top. Its contents come on the next screen.', 'oc-theme' ),
+				'label' => __( 'A banner', 'oc-theme' ),
+				'note'  => __( 'A wide picture with a heading and a button. The first one on the page is the main banner, and the next screen asks what goes in it; another one is yours to fill in later.', 'oc-theme' ),
 			),
 			'content'    => array(
 				'label'    => __( 'A content area', 'oc-theme' ),
@@ -1357,6 +1356,30 @@ final class Schema {
 			'target'  => array( 'call', 'per_page' ),
 		);
 
+		$f['card_atc'] = array(
+			'type'    => 'choice',
+			'group'   => __( 'The product card', 'oc-theme' ),
+			'label'   => __( 'An add-to-cart button on the card?', 'oc-theme' ),
+			'help'    => __( 'A button on the card itself saves a step for a shop whose products have no sizes or colours to choose.', 'oc-theme' ),
+			'options' => array(
+				'always' => __( 'Yes, always showing', 'oc-theme' ),
+				'hover'  => __( 'Only when the mouse is on the card', 'oc-theme' ),
+				'none'   => __( 'No button — the card leads to the product', 'oc-theme' ),
+			),
+			'default' => 'always',
+			'target'  => array( 'mod', 'oc_card_atc' ),
+		);
+
+		$f['cat_oos_last'] = array(
+			'type'    => 'choice',
+			'group'   => __( 'The shelf of products', 'oc-theme' ),
+			'label'   => __( 'Send what is out of stock to the end?', 'oc-theme' ),
+			'help'    => __( 'What can be bought stands first, and what cannot waits at the back instead of taking the good places.', 'oc-theme' ),
+			'options' => $yesno,
+			'default' => 'yes',
+			'target'  => array( 'mod', 'oc_catalog_oos_last' ),
+		);
+
 		$f['cat_filters'] = array(
 			'type'    => 'choice',
 			'label'   => __( 'Where does the filter sit?', 'oc-theme' ),
@@ -1565,9 +1588,11 @@ final class Schema {
 			'target'  => array( 'mod', 'oc_brand_logo_pos' ),
 		);
 
+		// Not asked: a brand shop shows the name on the card and the logo on
+		// the product. Two questions nobody has an opinion about.
 		$f['brand_card'] = array(
 			'type'    => 'choice',
-			'label'   => __( 'Show the brand name on a product card?', 'oc-theme' ),
+			'label'   => '',
 			'options' => $yesno,
 			'default' => 'yes',
 			'when'    => array( 'brands_has', array( 'yes' ) ),
@@ -1576,13 +1601,13 @@ final class Schema {
 
 		$f['brand_product'] = array(
 			'type'    => 'choice',
-			'label'   => __( 'And on the product page itself?', 'oc-theme' ),
+			'label'   => '',
 			'options' => array(
 				'text'  => __( 'The name', 'oc-theme' ),
 				'image' => __( 'The logo', 'oc-theme' ),
 				'none'  => __( 'Neither', 'oc-theme' ),
 			),
-			'default' => 'text',
+			'default' => 'image',
 			'when'    => array( 'brands_has', array( 'yes' ) ),
 			'target'  => array( 'mod', 'oc_product_brand' ),
 		);

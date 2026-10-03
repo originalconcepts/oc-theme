@@ -1158,7 +1158,16 @@ final class Apply {
 		$title = trim( (string) ( $row['title'] ?? '' ) );
 
 		if ( 'banner' === $type ) {
-			return $this->hero_section();
+			// The first banner is the one the questionnaire asked about. A
+			// second one is a place they made for a picture they have not
+			// chosen yet, so it is laid out empty and waits in the editor.
+			return $nth > 1 ? array(
+				'type'   => 'hero',
+				'slides' => array( array( 'heading' => $title ) ),
+				'pos'    => 'cc',
+				'h'      => 420,
+				'hm'     => 320,
+			) : $this->hero_section();
 		}
 
 		if ( 'marquee' === $type ) {

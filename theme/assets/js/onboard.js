@@ -27,6 +27,7 @@
 	var foundIn = {};    // Fields whose address we found rather than asked for.
 	var at = -1; // -1 welcome, 0..n-1 screens, n summary, n+1 done.
 	var far = -1; // The furthest screen they have opened in this sitting.
+	var focus = ''; // What the drawing beside the questions is about.
 
 	var parts = C.schema.parts || {};
 
@@ -278,6 +279,15 @@
 	function set( id, v ) {
 		values[ id ] = v;
 		pending[ id ] = v;
+
+		// A field that was marked as missing stops being marked the moment
+		// it is answered — not on the next press of the button.
+		if ( ! isEmpty( v ) ) {
+			var box = root.querySelector( '[data-field="' + id + '"].is-missing' );
+
+			if ( box && ! missingIn( [ id ] ).length ) { box.classList.remove( 'is-missing' ); }
+		}
+
 		fixChoices();
 		queueSave();
 		refreshVisibility();
@@ -1840,19 +1850,19 @@
 				} );
 
 				if ( f.fold ) {
-					var mark = el( 'span', { 'class': 'oc-onb-rep__mark', 'aria-hidden': 'true' } );
+					var face = el( 'span', { 'class': 'oc-onb-rep__mark', 'aria-hidden': 'true' } );
 
 					if ( 'iconpick' === ( f.fields.icon || {} ).type ) {
 						var art = ( C.icons || {} )[ r.icon || '' ];
 
 						if ( r.img && r.img.url ) {
-							mark.appendChild( el( 'img', { src: r.img.url, alt: '' } ) );
+							face.appendChild( el( 'img', { src: r.img.url, alt: '' } ) );
 						} else if ( art ) {
-							mark.innerHTML = art.svg;
+							face.innerHTML = art.svg;
 						}
 					}
 
-					head.appendChild( mark );
+					head.appendChild( face );
 					head.addEventListener( 'click', function () {
 						commitAll();
 						open = shut ? ri : -1;
@@ -1862,24 +1872,52 @@
 
 				head.appendChild( name );
 
+				// Asking is done on the row itself. A dialog for one line of
+				// a list is a bigger interruption than the deed.
+				var ask = el( 'span', { 'class': 'oc-onb-rep__ask', hidden: 'hidden' }, [
+					el( 'span', { text: I.drop_sure } ),
+					el( 'button', { type: 'button', 'class': 'oc-onb-link oc-onb-rep__yes', text: I.yes, onclick: function ( e ) {
+						e.stopPropagation();
+						commitAll();
+						rows.splice( ri, 1 );
+						open = Math.min( open, rows.length - 1 );
+						commit();
+						paint();
+					} } ),
+					el( 'button', { type: 'button', 'class': 'oc-onb-link', text: I.no, onclick: function ( e ) {
+						e.stopPropagation();
+						ask.hidden = 'hidden';
+						tools.hidden = null;
+					} } )
+				] );
+
+				var tools = el( 'span', { 'class': 'oc-onb-rep__tools' } );
+
 				if ( ! f.fixed && rows.length > 1 ) {
-					head.appendChild( el( f.fold ? 'span' : 'button', {
-						type: f.fold ? null : 'button',
-						'class': 'oc-onb-link oc-onb-rep__drop',
-						text: I.remove,
-						role: f.fold ? 'button' : null,
-						tabindex: f.fold ? '0' : null,
-						onclick: function ( e ) {
-							e.stopPropagation();
-							commitAll();
-							rows.splice( ri, 1 );
-							open = Math.min( open, rows.length - 1 );
-							commit();
-							paint();
-						}
+					var bin = el( 'button', { type: 'button', 'class': 'oc-onb-row__b oc-onb-row__b--bin', title: I.remove, 'aria-label': I.remove } );
+
+					bin.innerHTML = '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7 3h6l.6 2H18v2H2V5h4.4L7 3Zm-2.3 6h10.6l-.8 9.2a1 1 0 0 1-1 .8H6.5a1 1 0 0 1-1-.8L4.7 9Z"/></svg>';
+					bin.addEventListener( 'click', function ( e ) {
+						e.stopPropagation();
+						ask.hidden = null;
+						tools.hidden = 'hidden';
+					} );
+
+					tools.appendChild( bin );
+				}
+
+				if ( f.fold ) {
+					// The sign that opens stands at the far end, away from
+					// the one that throws away.
+					tools.appendChild( el( 'span', {
+						'class': 'oc-onb-rep__v' + ( shut ? '' : ' is-open' ),
+						'aria-hidden': 'true',
+						text: '⌄'
 					} ) );
 				}
 
+				head.appendChild( ask );
+				head.appendChild( tools );
 				card.appendChild( head );
 
 				if ( shut ) {
@@ -2140,13 +2178,10 @@
 	 * The banner, as the customer is filling it in.
 	 */
 	function wBanner( tall ) {
-		// A film in the picture's place is still a picture here: what the
-		// sketch can show of it is its first frame, and a grey box where it
-		// cannot.
-		var pic   = val( 'home_banner' );
-		var reel  = 'video' === String( val( 'banner_media' ) ) ? val( 'banner_video' ) : null;
-		var shot  = reel && reel.url && 0 !== String( reel.type || '' ).indexOf( 'video/' ) ? reel : pic;
-		var hero  = wImg( 'wf-hero' + ( tall ? ' wf-hero--tall' : '' ), shot && shot.url ? shot.url : '' );
+		// The picture they uploaded is not drawn here. A sketch is about
+		// where things stand; a photograph in the middle of it pulls the
+		// eye away from the only question the screen is asking.
+		var hero  = wImg( 'wf-hero' + ( tall ? ' wf-hero--tall' : '' ) );
 		var title = String( val( 'banner_title' ) || '' ).trim() || 'NEW COLLECTION';
 		var under = String( val( 'banner_sub' ) || '' ).trim();
 		var cta   = String( val( 'banner_cta' ) || '' ).trim() || 'SHOP NOW';
@@ -2361,8 +2396,10 @@
 	 * @param {string} kind words | video | two | sticky.
 	 */
 	function wContent( kind, nth ) {
-		// What they wrote for this area, and the pictures they gave it.
-		var all   = val( 'home_content' ) || [];
+		// What they wrote for this area, and the pictures they gave it —
+		// but only while they are writing them. On the whole home page a
+		// band of real words among grey ones reads as a mistake.
+		var all   = 'band:content' === focus ? ( val( 'home_content' ) || [] ) : [];
 		var part  = partsOf( 'content' )[ ( nth || 1 ) - 1 ] || {};
 		var said  = all.filter( function ( r ) { return r && r.uid && r.uid === part.uid; } )[0] || ( part.uid ? {} : all[ ( nth || 1 ) - 1 ] ) || {};
 		var brow  = String( said.eyebrow || '' ).trim() || I.wf_eyebrow;
@@ -2556,7 +2593,9 @@
 	function paintPreview() {
 		var holder = root.querySelector( '[data-preview]' );
 
-		if ( ! holder ) { return; }
+		if ( ! holder ) { focus = ''; return; }
+
+		focus = holder.getAttribute( 'data-preview' );
 
 		holder.classList.toggle( 'is-phone', onPhone() );
 		holder.innerHTML = '';

@@ -486,12 +486,17 @@ button.oc-onb-dots__d:hover { background: var(--onb-ink-2); }
 .wf-chero__words { display: grid; gap: 6px; padding: 0 14px; }
 
 .wf-withside { display: grid; grid-template-columns: 150px 1fr; gap: 12px; margin-top: 14px; }
+.wf-withside .wf-shelf { margin-top: 0; }
 .wf-filters--side { display: grid; gap: 7px; padding: 10px 12px; background: #f7f8fa; border-radius: 4px; margin-inline-start: 12px; }
 /* The strip of filters needs air on both sides of it: as much above, where
    the page it follows ends, as below, where the products begin. */
 .wf-filters--top { display: flex; gap: 8px; padding: 8px 12px; margin: 14px 12px 10px; background: #f7f8fa; border-radius: 4px; }
 .wf-filters--top .wf-ln { height: 9px; border-radius: 4px; }
-.wf-shelf { display: grid; gap: 10px; }
+/* The shelf keeps the same air above it however the filters are set — or
+   whether there are any. */
+.wf-shelf { display: grid; gap: 10px; margin-top: 14px; }
+.wf-filters--top + .wf-shelf { margin-top: 0; }
+.wf-withside { margin-top: 0; }
 .wf-withside .wf-shelf { padding-inline-end: 12px; }
 .wf-withside .wf-grid { padding-inline-start: 0; }
 
@@ -908,4 +913,10 @@ button.oc-onb-steps__i { cursor: pointer; }
 .oc-onb-rep__mark { inline-size: 26px; block-size: 26px; display: grid; place-items: center; color: var(--onb-ink-2); flex: 0 0 auto; }
 .oc-onb-rep__mark svg, .oc-onb-rep__mark img { inline-size: 22px; block-size: 22px; object-fit: contain; }
 .oc-onb-rep__row--fold.is-shut { background: #fff; }
-.oc-onb-rep__drop { flex: 0 0 auto; }
+.oc-onb-rep__tools { display: flex; align-items: center; gap: 14px; flex: 0 0 auto; }
+.oc-onb-rep__v { font-size: 16px; line-height: 1; color: var(--onb-ink-2); transition: transform .15s ease; }
+.oc-onb-rep__v.is-open { transform: rotate(180deg); }
+
+/* Asking on the row itself, where the press happened. */
+.oc-onb-rep__ask { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--onb-ink-2); }
+.oc-onb-rep__yes { color: var(--onb-err); }

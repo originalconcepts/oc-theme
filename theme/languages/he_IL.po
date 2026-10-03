@@ -12294,3 +12294,36 @@ msgstr "אתם מחזיקים מוצרים של יצרנים בעלי שם מש�
 
 msgid "The first step is filling in this questionnaire. It is a series of questions, most of them multiple choice and a few open ones. It takes about twenty minutes."
 msgstr "השלב הראשון בתהליך הוא מילוי טופס השאלון. הטופס בנוי כמסדרת שאלות, רוב השאלות הן אמריקאיות ומעט שאלות פתוחות. זה לוקח בערך עשרים דקות."
+
+msgid "Really remove it?"
+msgstr "באמת להסיר?"
+
+msgid "A banner"
+msgstr "באנר"
+
+msgid "A button on the card itself saves a step for a shop whose products have no sizes or colours to choose."
+msgstr "כפתור על הכרטיס עצמו חוסך שלב בחנות שלמוצרים שלה אין מידות או צבעים לבחור."
+
+msgid "A wide picture with a heading and a button. The first one on the page is the main banner, and the next screen asks what goes in it; another one is yours to fill in later."
+msgstr "תמונה רחבה עם כותרת וכפתור. הראשון בעמוד הוא הבאנר הראשי, והמסך הבא שואל מה ייכנס בו; נוסף הוא שלכם למלא בהמשך."
+
+msgid "An add-to-cart button on the card?"
+msgstr "כפתור הוספה לסל על הכרטיס?"
+
+msgid "No button — the card leads to the product"
+msgstr "בלי כפתור — הכרטיס מוביל למוצר"
+
+msgid "Only when the mouse is on the card"
+msgstr "רק כשהעכבר על הכרטיס"
+
+msgid "Send what is out of stock to the end?"
+msgstr "להוריד מוצרים שאזלו לסוף הקטלוג?"
+
+msgid "The product card"
+msgstr "כרטיס המוצר"
+
+msgid "What can be bought stands first, and what cannot waits at the back instead of taking the good places."
+msgstr "מה שאפשר לקנות עומד ראשון, ומה שאי אפשר מחכה מאחור במקום לתפוס את המקומות הטובים."
+
+msgid "Yes, always showing"
+msgstr "כן, מוצג תמיד"

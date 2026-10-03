@@ -138,6 +138,7 @@ final class Front {
 				'done_again'      => __( 'You can reopen this link any time to change an answer.', 'oc-theme' ),
 				'submit_failed'   => __( 'Something went wrong. Nothing was lost — try again in a moment.', 'oc-theme' ),
 				'not_answered'    => __( 'Not answered', 'oc-theme' ),
+				'drop_sure'       => __( 'Really remove it?', 'oc-theme' ),
 				'yes'             => __( 'Yes', 'oc-theme' ),
 				'no'              => __( 'No', 'oc-theme' ),
 				'edit'            => __( 'Edit', 'oc-theme' ),
