@@ -978,6 +978,9 @@ button.oc-onb-steps__i { cursor: pointer; }
 .wf-pp--inside .wf-pp__body { padding: 8px 0 0; }
 
 .oc-onb-side.is-phone .wf-pp { grid-template-columns: 1fr; }
+/* On a phone the picture is always first, whichever side was chosen
+   for the wide screen — which is exactly what the shop itself does. */
+.oc-onb-side.is-phone .wf-pp--end .wf-pp__g { order: 0; }
 .oc-onb-side.is-phone .wf-pp__g--thumbs-side,
 .oc-onb-side.is-phone .wf-pp__g--stacked { grid-template-columns: 1fr; }
 .oc-onb-side.is-phone .wf-pp__g--thumbs-side .wf-pp__th { grid-template-columns: repeat(4, 1fr); }
