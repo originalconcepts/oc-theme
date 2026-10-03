@@ -3237,6 +3237,7 @@ final class Schema {
 					}
 
 					$seen[ mb_strtolower( $name ) ] = true;
+
 					$type = (string) ( is_scalar( $row['type'] ?? '' ) ? $row['type'] : '' );
 
 					$out[] = array(
