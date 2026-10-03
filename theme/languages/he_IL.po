@@ -12288,3 +12288,6 @@ msgstr "תמונה אחת עם כל הסצנה בתוכה. בחנות אופנה
 
 msgid "The photograph"
 msgstr "התמונה"
+
+msgid "Do you carry goods of makers with a name of their own? Say no and there is nothing more to answer here."
+msgstr "אתם מחזיקים מוצרים של יצרנים בעלי שם משלהם? אם לא — אין כאן מה למלא."

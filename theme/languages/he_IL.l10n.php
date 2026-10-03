@@ -1039,6 +1039,7 @@ return array(
 		"Do not show" => "לא להציג",
 		"Do not show the SKU on the product page." => "לא להציג את המק״ט בדף המוצר.",
 		"Do not use this category to decide what is similar (%d product in it).\x00Do not use this category to decide what is similar (%d products in it)." => "לא להשתמש בקטגוריה הזו כדי לקבוע מה דומה (מוצר אחד בתוכה).\x00לא להשתמש בקטגוריה הזו כדי לקבוע מה דומה (%d מוצרים בתוכה).",
+		"Do you carry goods of makers with a name of their own? Say no and there is nothing more to answer here." => "אתם מחזיקים מוצרים של יצרנים בעלי שם משלהם? אם לא — אין כאן מה למלא.",
 		"Do you deliver large items?" => "אתם מספקים פריטים גדולים?",
 		"Do you have a shop I can visit?" => "יש לכם חנות שאפשר לבקר בה?",
 		"Do you have a store or showroom open to the public?" => "יש לכם חנות או אולם תצוגה פתוחים לקהל?",

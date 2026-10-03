@@ -132,7 +132,7 @@ final class Schema {
 						'intro'   => __( 'The strip every page of the shop wears. Whatever you write here, the sketch beside you puts in its place.', 'oc-theme' ),
 						'intro_m' => __( 'On a phone the two do not fit side by side, so the two buttons above switch between the questions and the drawing.', 'oc-theme' ),
 						'preview' => 'top',
-						'fields'  => array( 'top_bar', 'top_bar_1', 'top_bar_2', 'top_bar_3', 'header_look', 'site_menu', 'brands_has', 'brand_list' ),
+						'fields'  => array( 'top_bar', 'top_bar_1', 'top_bar_2', 'top_bar_3', 'header_look', 'site_menu' ),
 					),
 					array(
 						'id'      => '3c',
@@ -145,8 +145,8 @@ final class Schema {
 						'id'      => '3d',
 						'title'   => __( 'The categories on the home page', 'oc-theme' ),
 						'intro'   => __( 'Out of the menu you just built, which aisles are worth a place of their own on the front page.', 'oc-theme' ),
-						'preview' => 'band:categories,brands',
-						'fields'  => array( 'home_cats', 'home_brands' ),
+						'preview' => 'band:categories',
+						'fields'  => array( 'home_cats' ),
 					),
 					array(
 						'id'      => '3e',
@@ -195,26 +195,27 @@ final class Schema {
 			array(
 				'n'       => 5,
 				'part'    => 2,
-				'title'   => __( 'The product page', 'oc-theme' ),
+				'title'   => __( 'Brands', 'oc-theme' ),
 				'screens' => array(
 					array(
-						'id'     => '5a',
-						'title'  => __( 'The product page', 'oc-theme' ),
-						'intro'  => __( 'Where the decision is made. The pictures on one side, everything the buyer needs on the other.', 'oc-theme' ),
-						'fields' => array( 'prod_side', 'prod_gallery', 'prod_qty', 'prod_sku', 'prod_ship_tab' ),
+						'id'      => '5a',
+						'title'   => __( 'Brands', 'oc-theme' ),
+						'intro'   => __( 'Do you carry goods of makers with a name of their own? Say no and there is nothing more to answer here.', 'oc-theme' ),
+						'preview' => 'band:brands',
+						'fields'  => array( 'brands_has', 'brand_list', 'home_brands', 'brand_logo', 'brand_card', 'brand_product' ),
 					),
 				),
 			),
 			array(
 				'n'       => 6,
 				'part'    => 2,
-				'title'   => __( 'Brands', 'oc-theme' ),
+				'title'   => __( 'The product page', 'oc-theme' ),
 				'screens' => array(
 					array(
 						'id'     => '6a',
-						'title'  => __( 'Brands', 'oc-theme' ),
-						'intro'  => __( 'Only worth filling in if you sell goods of brands with a name of their own.', 'oc-theme' ),
-						'fields' => array( 'brands_has', 'brand_logo', 'brand_card', 'brand_product' ),
+						'title'  => __( 'The product page', 'oc-theme' ),
+						'intro'  => __( 'Where the decision is made. The pictures on one side, everything the buyer needs on the other.', 'oc-theme' ),
+						'fields' => array( 'prod_side', 'prod_gallery', 'prod_qty', 'prod_sku', 'prod_ship_tab' ),
 					),
 				),
 			),
@@ -975,7 +976,6 @@ final class Schema {
 
 		$f['brands_has'] = array(
 			'type'    => 'choice',
-			'group'   => __( 'Brands', 'oc-theme' ),
 			'label'   => __( 'Do you sell goods of brands with a name of their own?', 'oc-theme' ),
 			'help'    => __( 'Not your own name — the makers whose products you stock.', 'oc-theme' ),
 			'options' => array(
@@ -989,7 +989,6 @@ final class Schema {
 
 		$f['brand_list'] = array(
 			'type'        => 'textarea',
-			'group'       => __( 'Brands', 'oc-theme' ),
 			'label'       => __( 'The brands you carry', 'oc-theme' ),
 			'help'        => __( 'One name per line. We open a page for each of them; the logos can be added later.', 'oc-theme' ),
 			'placeholder' => "IKEA\nHAY\nMuuto",
