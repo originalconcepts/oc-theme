@@ -92,7 +92,8 @@ final class Front {
 			'step'       => (string) $state['step'],
 			'far'        => (string) ( $state['far'] ?? '' ),
 			'schema'     => Schema::for_js(),
-			'values'     => Draft::values(),
+			'values'     => Draft::shown(),
+			'held'       => Draft::held(),
 			'days'       => $days,
 			'disclaimer' => Consent::text(),
 			'art'        => Art::all(),
@@ -187,6 +188,7 @@ final class Front {
 				'wf_eta'          => __( 'Delivery between %1$s - %2$s', 'oc-theme' ),
 				/* translators: %s: a short date like 2 Sep. */
 				'wf_eta_on'       => __( 'Delivery on %s', 'oc-theme' ),
+				'kept_secret'     => __( 'Already saved. The box stays empty on purpose — type here only to replace it.', 'oc-theme' ),
 				'wf_now'          => __( 'Online now', 'oc-theme' ),
 				'wf_rel_h'        => __( 'Similar products', 'oc-theme' ),
 				'wf_ty_thanks'    => __( 'Thank you, Dana', 'oc-theme' ),

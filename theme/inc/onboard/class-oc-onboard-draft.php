@@ -49,6 +49,45 @@ final class Draft {
 	}
 
 	/**
+	 * The same, with every key and password taken out: these go to the
+	 * browser, and a secret that was typed once has no business travelling
+	 * back down the wire on every return visit. The screen says the field is
+	 * already filled instead, and typing in it replaces what is kept.
+	 *
+	 * @return array<string,mixed>
+	 */
+	public static function shown(): array {
+		$out = self::values();
+
+		foreach ( self::held() as $id ) {
+			$out[ $id ] = '';
+		}
+
+		return $out;
+	}
+
+	/**
+	 * Which secrets are already filled in, for the screen to say so.
+	 *
+	 * @return array<int,string>
+	 */
+	public static function held(): array {
+		$out = array();
+
+		foreach ( Schema::fields() as $id => $f ) {
+			if ( 'secret' !== (string) $f['type'] ) {
+				continue;
+			}
+
+			if ( '' !== trim( (string) self::value( $id ) ) ) {
+				$out[] = (string) $id;
+			}
+		}
+
+		return $out;
+	}
+
+	/**
 	 * One answer, or the schema default when it was never given.
 	 *
 	 * @param string $id Field id.
@@ -92,7 +131,14 @@ final class Draft {
 				continue;
 			}
 
-			$value         = Schema::sanitize( $id, $raw );
+			$value = Schema::sanitize( $id, $raw );
+
+			// An empty secret is the screen saying nothing new was typed,
+			// not the customer asking for the stored one to be thrown away.
+			if ( 'secret' === (string) ( Schema::field( $id )['type'] ?? '' ) && '' === $value ) {
+				continue;
+			}
+
 			$all[ $id ]    = array(
 				'v' => $value,
 				't' => $now,

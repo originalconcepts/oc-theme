@@ -487,6 +487,12 @@
 			] ) );
 		}
 		if ( f.help ) { box.appendChild( el( 'p', { 'class': 'oc-onb-f__help', text: f.help } ) ); }
+
+		// A key already given is never sent back down to the screen, so the
+		// box stands empty; this is what says it is not lost.
+		if ( ( C.held || [] ).indexOf( id ) !== -1 ) {
+			box.appendChild( el( 'p', { 'class': 'oc-onb-f__help oc-onb-f__kept', text: I.kept_secret } ) );
+		}
 		if ( foundIn[ id ] ) { box.appendChild( el( 'p', { 'class': 'oc-onb-f__found', text: I.found_hint } ) ); }
 		box.appendChild( inner );
 		box.appendChild( el( 'p', { 'class': 'oc-onb-f__err', text: I.required } ) );

@@ -12941,3 +12941,6 @@ msgstr "מילה או שתיים, אם בא לכם"
 
 msgid "Join"
 msgstr "הצטרפות"
+
+msgid "Already saved. The box stays empty on purpose — type here only to replace it."
+msgstr "כבר נשמר. התיבה ריקה בכוונה — הקלידו כאן רק כדי להחליף."

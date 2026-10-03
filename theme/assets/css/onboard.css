@@ -1190,3 +1190,4 @@ button.oc-onb-steps__i { cursor: pointer; }
 .wf-ty__stars { display: flex; gap: 3px; color: var(--onb-secondary, #d9a441); font-size: 13px; }
 .wf-ty__field { inline-size: 100%; border: 1px solid var(--onb-line); border-radius: 4px; padding: 7px 8px; font-size: 10px; color: #b2b7c2; }
 .wf-ty__dot { inline-size: 22px; block-size: 22px; border-radius: 50%; background: #eef0f4; }
+.oc-onb-f__kept { color: var(--onb-ok); }

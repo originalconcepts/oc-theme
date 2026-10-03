@@ -409,6 +409,7 @@ return array(
 		"Already have an account?" => "כבר יש לך חשבון?",
 		"Already have an account? Quick sign-in" => "כבר יש לך חשבון? התחברות מהירה",
 		"Already in the table" => "כבר בטבלה",
+		"Already saved. The box stays empty on purpose — type here only to replace it." => "כבר נשמר. התיבה ריקה בכוונה — הקלידו כאן רק כדי להחליף.",
 		"Also answers to" => "מילים נרדפות",
 		"Also controls which fields the signup popup shows on the site." => "קובע גם אילו שדות יוצגו בחלון ההרשמה באתר.",
 		"Also search" => "לחפש גם ב",
