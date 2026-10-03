@@ -219,6 +219,14 @@ final class Schema {
 						'preview' => 'product',
 						'fields'  => array( 'prod_side', 'prod_gallery', 'prod_sku', 'prod_short', 'prod_stock', 'prod_ship_days', 'prod_lead_min', 'prod_lead_max', 'prod_qty', 'prod_price_btn', 'prod_icons_lay', 'prod_icons', 'prod_tabs_style', 'prod_tabs_pos', 'prod_ship_tab', 'prod_ship_title', 'prod_ship_text', 'prod_tabs', 'prod_contact', 'contact_name', 'contact_role', 'contact_photo', 'contact_phone', 'contact_from', 'contact_to' ),
 					),
+					array(
+						'id'      => '6b',
+						'title'   => __( 'More products on the product page', 'oc-theme' ),
+						'intro'   => __( 'What else the page offers after the product itself. Four things, each with its own job — the drawing shows where each lands.', 'oc-theme' ),
+						'intro_m' => __( 'On a phone the two do not fit side by side, so the two buttons above switch between the questions and the drawing.', 'oc-theme' ),
+						'preview' => 'linked',
+						'fields'  => array( 'rel_on', 'rel_scope', 'rel_layout', 'ups_on', 'xs_on', 'xs_place', 'xs_style_cart', 'xs_style_tabs', 'xs_style_sum', 'bt_on' ),
+					),
 				),
 			),
 			array(
@@ -1464,6 +1472,135 @@ final class Schema {
 		);
 
 		/* ---- 7a: the cart and the checkout ---- */
+
+		/* ---- 6b: the other products on the product page ---- */
+
+		$f['rel_on'] = array(
+			'type'    => 'choice',
+			'group'   => __( 'Similar products', 'oc-theme' ),
+			'label'   => __( 'Show a row of similar products?', 'oc-theme' ),
+			'help'    => __( 'The shop picks these itself — you choose nothing per product. A shopper who did not find it here finds the neighbour.', 'oc-theme' ),
+			'options' => $yesno,
+			'default' => 'yes',
+			'target'  => array( 'mod', 'oc_product_related' ),
+		);
+
+		$f['rel_scope'] = array(
+			'type'    => 'choice',
+			'group'   => __( 'Similar products', 'oc-theme' ),
+			'label'   => __( 'How does it decide what is similar?', 'oc-theme' ),
+			'options' => array(
+				'leaf'  => __( 'The category shown in the product\'s path', 'oc-theme' ),
+				'smart' => __( 'Truly similar — the category, the name, the price, the tags', 'oc-theme' ),
+				'all'   => __( 'Anything from any category it is in', 'oc-theme' ),
+			),
+			'default' => 'leaf',
+			'quiet'   => true,
+			'when'    => array( 'rel_on', array( 'yes' ) ),
+			'target'  => array( 'mod', 'oc_related_scope' ),
+		);
+
+		$f['rel_layout'] = array(
+			'type'    => 'choice',
+			'group'   => __( 'Similar products', 'oc-theme' ),
+			'label'   => __( 'How do they stand?', 'oc-theme' ),
+			'options' => array(
+				'grid'   => __( 'A grid', 'oc-theme' ),
+				'slider' => __( 'A slider', 'oc-theme' ),
+			),
+			'default' => 'grid',
+			'quiet'   => true,
+			'when'    => array( 'rel_on', array( 'yes' ) ),
+			'target'  => array( 'mod', 'oc_related_layout' ),
+		);
+
+		$f['ups_on'] = array(
+			'type'    => 'choice',
+			'group'   => __( 'Upgrades', 'oc-theme' ),
+			'label'   => __( 'Show upgrades?', 'oc-theme' ),
+			'help'    => __( 'The better version of the thing being looked at. You pick them per product, in the shop, under Linked products → Upsells. With none picked the row simply does not appear.', 'oc-theme' ),
+			'options' => $yesno,
+			'default' => 'yes',
+			'target'  => array( 'mod', 'oc_product_upsells' ),
+		);
+
+		$f['xs_on'] = array(
+			'type'    => 'choice',
+			'group'   => __( 'Goes with it', 'oc-theme' ),
+			'label'   => __( 'Offer products that go with this one?', 'oc-theme' ),
+			'help'    => __( 'The cushion with the sofa. You pick them per product, under Linked products → Cross-sells.', 'oc-theme' ),
+			'options' => $yesno,
+			'default' => 'yes',
+			'target'  => array( 'mod', 'oc_xsell_on' ),
+		);
+
+		$f['xs_place'] = array(
+			'type'    => 'choice',
+			'group'   => __( 'Goes with it', 'oc-theme' ),
+			'label'   => __( 'Where do they stand?', 'oc-theme' ),
+			'options' => array(
+				'cart'    => __( 'Beside the buy button — ticked, they go into the cart with it', 'oc-theme' ),
+				'tabs'    => __( 'After the tabs, each with a button of its own', 'oc-theme' ),
+				'summary' => __( 'Lower down the page, under the product itself', 'oc-theme' ),
+			),
+			'default' => 'cart',
+			'quiet'   => true,
+			'when'    => array( 'xs_on', array( 'yes' ) ),
+			'target'  => array( 'mod', 'oc_xsell_place' ),
+		);
+
+		$f['xs_style_cart'] = array(
+			'type'    => 'choice',
+			'group'   => __( 'Goes with it', 'oc-theme' ),
+			'label'   => __( 'In what shape?', 'oc-theme' ),
+			'options' => array(
+				'rows' => __( 'Rows with a tick box', 'oc-theme' ),
+				'grid' => __( 'Squares you can tick', 'oc-theme' ),
+			),
+			'default' => 'rows',
+			'quiet'   => true,
+			'when'    => array( array( 'xs_on', array( 'yes' ) ), array( 'xs_place', array( 'cart' ) ) ),
+			'target'  => array( 'mod', 'oc_xsell_style_cart' ),
+		);
+
+		$f['xs_style_tabs'] = array(
+			'type'    => 'choice',
+			'group'   => __( 'Goes with it', 'oc-theme' ),
+			'label'   => __( 'In what shape?', 'oc-theme' ),
+			'options' => array(
+				'wide' => __( 'One across the width, with arrows', 'oc-theme' ),
+				'grid' => __( 'Cards in a row', 'oc-theme' ),
+				'rows' => __( 'One under the other', 'oc-theme' ),
+			),
+			'default' => 'wide',
+			'quiet'   => true,
+			'when'    => array( array( 'xs_on', array( 'yes' ) ), array( 'xs_place', array( 'tabs' ) ) ),
+			'target'  => array( 'mod', 'oc_xsell_style_tabs' ),
+		);
+
+		$f['xs_style_sum'] = array(
+			'type'    => 'choice',
+			'group'   => __( 'Goes with it', 'oc-theme' ),
+			'label'   => __( 'In what shape?', 'oc-theme' ),
+			'options' => array(
+				'grid'   => __( 'A grid', 'oc-theme' ),
+				'slider' => __( 'A slider', 'oc-theme' ),
+			),
+			'default' => 'grid',
+			'quiet'   => true,
+			'when'    => array( array( 'xs_on', array( 'yes' ) ), array( 'xs_place', array( 'summary' ) ) ),
+			'target'  => array( 'mod', 'oc_xsell_style_sum' ),
+		);
+
+		$f['bt_on'] = array(
+			'type'    => 'choice',
+			'group'   => __( 'Bought together', 'oc-theme' ),
+			'label'   => __( 'Offer a bundle of this one with others?', 'oc-theme' ),
+			'help'    => __( 'This product and whatever you tie to it, as one add to the cart, with a discount if you want one. It only shows on a product you have built a bundle for.', 'oc-theme' ),
+			'options' => $yesno,
+			'default' => 'yes',
+			'target'  => array( 'mod', 'oc_bt_on' ),
+		);
 
 		/* ---- 7a: the cart panel ---- */
 

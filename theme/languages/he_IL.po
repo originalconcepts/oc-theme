@@ -12854,3 +12854,69 @@ msgstr "אקורדיון — כל כותרת נפתחת מתחתיה"
 
 msgid "Tabs — the headings in a row, one open underneath"
 msgstr "טאבים — הכותרות בשורה, אחת פתוחה מתחת"
+
+msgid "More products on the product page"
+msgstr "עוד מוצרים בעמוד המוצר"
+
+msgid "What else the page offers after the product itself. Four things, each with its own job — the drawing shows where each lands."
+msgstr "מה עוד העמוד מציע אחרי המוצר עצמו. ארבעה דברים, לכל אחד תפקיד משלו — הסקיצה מראה איפה כל אחד נוחת."
+
+msgid "Show a row of similar products?"
+msgstr "להציג שורת מוצרים דומים?"
+
+msgid "The shop picks these itself — you choose nothing per product. A shopper who did not find it here finds the neighbour."
+msgstr "החנות בוחרת אותם לבד — אתם לא בוחרים כלום לכל מוצר. מי שלא מצא כאן, מוצא את השכן."
+
+msgid "How does it decide what is similar?"
+msgstr "לפי מה היא מחליטה מה דומה?"
+
+msgid "The category shown in the product's path"
+msgstr "הקטגוריה שמופיעה בנתיב של המוצר"
+
+msgid "Truly similar — the category, the name, the price, the tags"
+msgstr "באמת דומים — הקטגוריה, השם, המחיר, התגיות"
+
+msgid "Anything from any category it is in"
+msgstr "כל דבר מכל קטגוריה שהוא נמצא בה"
+
+msgid "A grid"
+msgstr "גריד"
+
+msgid "A slider"
+msgstr "סליידר"
+
+msgid "Show upgrades?"
+msgstr "להציג שדרוגים?"
+
+msgid "The better version of the thing being looked at. You pick them per product, in the shop, under Linked products → Upsells. With none picked the row simply does not appear."
+msgstr "הגרסה הטובה יותר של מה שמסתכלים עליו. בוחרים אותם לכל מוצר, בחנות, תחת מוצרים מקושרים ← Upsells. אם לא בחרתם — השורה פשוט לא מופיעה."
+
+msgid "Goes with it"
+msgstr "הולך עם זה"
+
+msgid "Offer products that go with this one?"
+msgstr "להציע מוצרים שהולכים עם זה?"
+
+msgid "The cushion with the sofa. You pick them per product, under Linked products → Cross-sells."
+msgstr "הכרית עם הספה. בוחרים אותם לכל מוצר, תחת מוצרים מקושרים ← Cross-sells."
+
+msgid "Beside the buy button — ticked, they go into the cart with it"
+msgstr "ליד כפתור הקנייה — מה שמסומן נכנס לסל יחד איתו"
+
+msgid "After the tabs, each with a button of its own"
+msgstr "אחרי הטאבים, לכל אחד כפתור משלו"
+
+msgid "Lower down the page, under the product itself"
+msgstr "נמוך יותר בעמוד, מתחת למוצר עצמו"
+
+msgid "In what shape?"
+msgstr "באיזו צורה?"
+
+msgid "One across the width, with arrows"
+msgstr "אחד לרוחב, עם חצים"
+
+msgid "Offer a bundle of this one with others?"
+msgstr "להציע חבילה של המוצר הזה עם אחרים?"
+
+msgid "This product and whatever you tie to it, as one add to the cart, with a discount if you want one. It only shows on a product you have built a bundle for."
+msgstr "המוצר הזה ומה שתקשרו אליו, כהוספה אחת לסל, עם הנחה אם תרצו. מופיע רק על מוצר שבניתם לו חבילה."

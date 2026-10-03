@@ -1103,3 +1103,42 @@ button.oc-onb-steps__i { cursor: pointer; }
 .wf-pp__accone.is-on .wf-pp__acch { color: var(--onb-ink); }
 .wf-pp__accv { margin-inline-start: auto; }
 .wf-pp__accone .wf-pp__body { padding: 0 0 10px; }
+
+/* ------------------------------------- the other products on that page */
+
+.wf-lk { padding-top: 12px; margin-top: 12px; border-top: 1px solid #eef0f4; }
+.wf-lk .wf-h { margin-bottom: 8px; }
+.wf-lk__pic { aspect-ratio: 1 / 1; border-radius: 3px; }
+.wf-lk__w { display: grid; gap: 2px; font-size: 10px; color: #8d93a1; min-inline-size: 0; }
+.wf-lk__w b { font-size: 10px; color: #4a5160; }
+.wf-lk__btn { font-size: 9px; padding: 6px 12px; flex: 0 0 auto; }
+
+/* The bundle: this one plus the ones tied to it, and one button for the lot. */
+.wf-lk__bt { display: flex; align-items: center; gap: 8px; padding: 0 12px; flex-wrap: wrap; }
+.wf-lk__btone { display: grid; gap: 4px; justify-items: center; inline-size: 56px; font-size: 9px; color: #8d93a1; }
+.wf-lk__btone .wf-lk__pic { inline-size: 56px; }
+.wf-lk__plus { color: #b2b7c2; font-size: 13px; }
+
+/* One across the width, the way the after-the-tabs slider reads. */
+.wf-lk__wide { display: flex; align-items: center; gap: 10px; margin: 0 12px; padding: 8px; border: 1px solid var(--onb-line); border-radius: 5px; }
+.wf-lk__wide .wf-lk__pic { inline-size: 48px; flex: 0 0 48px; }
+.wf-lk__wide .wf-lk__w { flex: 1; }
+.wf-lk__arr { color: #9aa0ad; font-size: 14px; }
+
+.wf-lk__rows { display: grid; gap: 7px; padding: 0 12px; }
+.wf-lk__row { display: flex; align-items: center; gap: 9px; }
+.wf-lk__row .wf-lk__pic { inline-size: 38px; flex: 0 0 38px; }
+.wf-lk__row .wf-lk__w { flex: 1; }
+
+/* Beside the buy button, where a tick rides along with the product. */
+.wf-xs { margin-top: 8px; padding: 8px; border: 1px dashed var(--onb-line); border-radius: 5px; }
+.wf-xs__h { font-size: 10px; color: #6c7382; margin-bottom: 6px; }
+.wf-xs__list { display: grid; gap: 6px; }
+.wf-xs__one { display: grid; grid-template-columns: 12px 26px 1fr; gap: 7px; align-items: center; font-size: 10px; color: #8d93a1; }
+.wf-xs__one b { font-size: 10px; color: #4a5160; }
+.wf-xs__pic { inline-size: 26px; block-size: 32px; border-radius: 3px; }
+.wf-xs--grid .wf-xs__list { grid-auto-flow: column; grid-auto-columns: 1fr; }
+.wf-xs--grid .wf-xs__one { grid-template-columns: 1fr; justify-items: center; text-align: center; gap: 4px; }
+.wf-xs--grid .wf-xs__pic { inline-size: 100%; block-size: auto; aspect-ratio: 1 / 1; }
+.wf-xs--grid .wf-cart__line { flex-direction: column; align-items: center; gap: 1px; }
+.wf-xs--grid .wf-cart__price { margin-inline-start: 0; }

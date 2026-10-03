@@ -188,6 +188,10 @@ final class Front {
 				/* translators: %s: a short date like 2 Sep. */
 				'wf_eta_on'       => __( 'Delivery on %s', 'oc-theme' ),
 				'wf_now'          => __( 'Online now', 'oc-theme' ),
+				'wf_rel_h'        => __( 'Similar products', 'oc-theme' ),
+				'wf_ups_h'        => __( 'You may also like', 'oc-theme' ),
+				'wf_xs_h'         => __( 'Goes well with', 'oc-theme' ),
+				'wf_bt_h'         => __( 'Bought together', 'oc-theme' ),
 				'wf_cart'         => __( 'My cart', 'oc-theme' ),
 				'wf_cart_n'       => __( '2 items', 'oc-theme' ),
 				/* translators: %s: a sum of money. */

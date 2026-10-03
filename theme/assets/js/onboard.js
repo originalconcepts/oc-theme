@@ -2672,6 +2672,7 @@
 		if ( 'top' === kind ) { return previewTop(); }
 		if ( 'product' === kind ) { return previewProduct(); }
 		if ( 'cart' === kind ) { return previewCart(); }
+		if ( 'linked' === kind ) { return previewLinked(); }
 		if ( 'checkout' === kind ) { return previewCheckout(); }
 		if ( 0 === String( kind ).indexOf( 'band:' ) ) { return previewBands( String( kind ).slice( 5 ).split( ',' ) ); }
 		return previewHome( String( val( 'home_recipe' ) ) );
@@ -2876,6 +2877,143 @@
 		card.appendChild( w( 'wf-pp__cc__b', null, I.wf_whats ) );
 
 		return card;
+	}
+
+	/**
+	 * Everything the product page offers after the product itself, in the
+	 * order the page really builds it: the ticked ones beside the button,
+	 * then the bundle, then whatever goes with it, then the upgrades, then
+	 * the neighbours.
+	 */
+	function previewLinked() {
+		var yes = function ( id ) { return 'yes' === String( val( id ) ); };
+		var at  = String( val( 'xs_place' ) || 'cart' );
+		var mid = [];
+
+		// The top of the page, shortened: enough of it to see what sits
+		// beside the button and what does not.
+		var buy = [
+			w( 'wf-pp__line', [ el( 'div', { 'class': 'wf-pp__h', text: I.wf_prod_name } ) ] ),
+			w( 'wf-pp__line', [ el( 'div', { 'class': 'wf-pp__price', text: MONEY } ) ] )
+		];
+
+		if ( yes( 'xs_on' ) && 'cart' === at ) { buy.push( xsBlock( String( val( 'xs_style_cart' ) || 'rows' ) ) ); }
+
+		buy.push( w( 'wf-pp__buy', [ w( 'wf-pp__qty', null, '1' ), w( 'wf-pp__btn', null, I.wf_atc ) ] ) );
+
+		mid.push( w( 'wf-pp', [
+			w( 'wf-pp__g wf-pp__g--thumbs-side', [ wImg( 'wf-pp__big' ) ] ),
+			w( 'wf-pp__d', buy )
+		] ) );
+
+		if ( yes( 'bt_on' ) ) { mid.push( wLinked( I.wf_bt_h, 'bt' ) ); }
+
+		// The tabs are not this screen's business, but the page has them and
+		// two of the three places are named after them.
+		mid.push( w( 'wf-pp__tabs', [ w( 'wf-pp__tab is-on', null, I.wf_tab_about ), w( 'wf-pp__tab', null, I.wf_tab_ship ) ] ) );
+
+		if ( yes( 'xs_on' ) && 'tabs' === at ) { mid.push( wLinked( I.wf_xs_h, 'xs-' + String( val( 'xs_style_tabs' ) || 'wide' ) ) ); }
+
+		if ( yes( 'xs_on' ) && 'summary' === at ) { mid.push( wLinked( I.wf_xs_h, 'xs-' + String( val( 'xs_style_sum' ) || 'grid' ) ) ); }
+
+		if ( yes( 'ups_on' ) ) { mid.push( wLinked( I.wf_ups_h, 'grid' ) ); }
+
+		if ( yes( 'rel_on' ) ) { mid.push( wLinked( I.wf_rel_h, String( val( 'rel_layout' ) || 'grid' ) ) ); }
+
+		return wPage( mid, {} );
+	}
+
+	/**
+	 * One band of other products under the product: a heading and the shape
+	 * it was asked for.
+	 *
+	 * @param {string} title What it is called on the page.
+	 * @param {string} shape bt | grid | slider | xs-rows | xs-grid | xs-wide.
+	 */
+	function wLinked( title, shape ) {
+		var box  = w( 'wf-lk wf-lk--' + shape, [ wHeading( title ) ] );
+		var many = onPhone() ? 2 : 4;
+		var list;
+		var i;
+
+		if ( 'bt' === shape ) {
+			// The bundle: this product and the ones tied to it, each with a
+			// tick, and one button that takes the lot.
+			list = w( 'wf-lk__bt' );
+
+			for ( i = 0; i < 3; i++ ) {
+				list.appendChild( w( 'wf-lk__btone', [
+					el( 'span', { 'class': 'wf-ck__box', 'aria-hidden': 'true' } ),
+					wImg( 'wf-lk__pic' ),
+					el( 'span', { text: MONEY } )
+				] ) );
+
+				if ( i < 2 ) { list.appendChild( el( 'span', { 'class': 'wf-lk__plus', 'aria-hidden': 'true', text: '+' } ) ); }
+			}
+
+			list.appendChild( w( 'wf-pp__btn wf-lk__btn', null, I.wf_atc ) );
+			box.appendChild( list );
+
+			return box;
+		}
+
+		if ( 'xs-wide' === shape ) {
+			box.appendChild( w( 'wf-lk__wide', [
+				wImg( 'wf-lk__pic' ),
+				w( 'wf-lk__w', [ el( 'b', { text: fmt( I.wf_product, 1 ) } ), el( 'span', { text: MONEY } ) ] ),
+				w( 'wf-pp__btn wf-lk__btn', null, I.wf_atc ),
+				el( 'span', { 'class': 'wf-lk__arr', 'aria-hidden': 'true', text: '‹' } )
+			] ) );
+
+			return box;
+		}
+
+		if ( 'xs-rows' === shape ) {
+			list = w( 'wf-lk__rows' );
+
+			for ( i = 0; i < 2; i++ ) {
+				list.appendChild( w( 'wf-lk__row', [
+					wImg( 'wf-lk__pic' ),
+					w( 'wf-lk__w', [ el( 'b', { text: fmt( I.wf_product, i + 1 ) } ), el( 'span', { text: MONEY } ) ] ),
+					w( 'wf-pp__btn wf-lk__btn', null, I.wf_atc )
+				] ) );
+			}
+
+			box.appendChild( list );
+
+			return box;
+		}
+
+		box.appendChild( wRow( 'slider' === shape ? many + 1 : many, 1, false ) );
+
+		return box;
+	}
+
+	/**
+	 * What goes with the product, drawn beside the buy button: whatever is
+	 * ticked travels into the cart with the product itself.
+	 *
+	 * @param {string} shape rows | grid.
+	 */
+	function xsBlock( shape ) {
+		var box  = w( 'wf-xs wf-xs--' + shape, [ el( 'div', { 'class': 'wf-xs__h', text: I.wf_xs_h } ) ] );
+		var list = w( 'wf-xs__list' );
+		var i;
+
+		for ( i = 0; i < 2; i++ ) {
+			list.appendChild( w( 'wf-xs__one', [
+				el( 'span', { 'class': 'wf-ck__box', 'aria-hidden': 'true' } ),
+				wImg( 'wf-xs__pic' ),
+				w( 'wf-cart__line', [
+					el( 'b', { text: fmt( I.wf_product, i + 1 ) } ),
+					el( 'span', { 'class': 'wf-cart__price', text: MONEY } )
+				] )
+			] ) );
+		}
+
+		box.appendChild( list );
+
+		return box;
 	}
 
 	/**
