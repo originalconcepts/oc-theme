@@ -12705,5 +12705,3 @@ msgstr "מקופלת, העין נוחתת על הטופס; הסכום נראה �
 msgid "The sum on the order button?"
 msgstr "הסכום על כפתור ביצוע ההזמנה?"
 
-msgid "Home address"
-msgstr "בית"

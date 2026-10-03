@@ -1502,7 +1502,6 @@ return array(
 		"Hits" => "כניסות",
 		"Hold the Flashy tag back until the page has drawn" => "להחזיק את תגית Flashy עד שהעמוד יצויר",
 		"Home" => "עמוד הבית",
-		"Home address" => "בית",
 		"Home and work, say. A returning customer picks one instead of writing it again." => "בית ועבודה, למשל. לקוח חוזר בוחר אחת במקום לכתוב אותה שוב.",
 		"Home delivery" => "משלוח עד הבית",
 		"Home page" => "דף הבית",
