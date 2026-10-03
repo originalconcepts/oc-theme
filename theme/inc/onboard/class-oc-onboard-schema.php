@@ -1733,7 +1733,7 @@ final class Schema {
 			'label'  => __( 'Which branches can be collected from', 'oc-theme' ),
 			'help'   => __( 'All of them to begin with. A branch can be given its own wording.', 'oc-theme' ),
 			'of'     => 'branches',
-			'when'   => array( 'pickup_on', array( 'yes' ) ),
+			'when'   => array( array( 'pickup_on', array( 'yes' ) ), array( 'branches_mode', array( 'many' ) ) ),
 			'target' => array( 'call', 'shipping' ),
 		);
 
