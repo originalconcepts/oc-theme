@@ -1757,13 +1757,13 @@ final class Apply {
 	private function apply_payments(): void {
 		$gw   = (string) $this->v['pay_gw'];
 		$kept = array(
-			'gateway'      => $gw,
-			'other'        => trim( (string) $this->v['pay_other'] ),
-			'fill_later'   => 'later' === (string) $this->v['pay_when'] ? 1 : 0,
-			'instalments'  => 'yes' === (string) $this->v['pay_split'] ? max( 2, (int) $this->v['pay_max'] ) : 0,
-			'charge'       => (string) $this->v['pay_charge'],
-			'methods'      => is_array( $this->v['pay_more'] ) ? array_values( $this->v['pay_more'] ) : array(),
-			'cash_pickup'  => 'yes' === (string) $this->v['pay_cash_pickup'] ? 1 : 0,
+			'gateway'     => $gw,
+			'other'       => trim( (string) $this->v['pay_other'] ),
+			'fill_later'  => 'later' === (string) $this->v['pay_when'] ? 1 : 0,
+			'instalments' => 'yes' === (string) $this->v['pay_split'] ? max( 2, (int) $this->v['pay_max'] ) : 0,
+			'charge'      => (string) $this->v['pay_charge'],
+			'methods'     => is_array( $this->v['pay_more'] ) ? array_values( $this->v['pay_more'] ) : array(),
+			'cash_pickup' => 'yes' === (string) $this->v['pay_cash_pickup'] ? 1 : 0,
 		);
 
 		if ( 'cardcom' === $gw ) {
