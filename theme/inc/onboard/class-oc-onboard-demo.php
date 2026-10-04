@@ -72,9 +72,9 @@ final class Demo {
 		}
 
 		return array(
-			'made'  => count( $made ),
-			'vary'  => $vary ? count( $vary ) : 0,
-			'cats'  => count( $cats ),
+			'made' => count( $made ),
+			'vary' => $vary ? count( $vary ) : 0,
+			'cats' => count( $cats ),
 		);
 	}
 
@@ -86,12 +86,12 @@ final class Demo {
 	public static function remove(): array {
 		$ids  = get_posts(
 			array(
-				'post_type'      => 'product',
-				'post_status'    => 'any',
-				'numberposts'    => -1,
-				'fields'         => 'ids',
+				'post_type'   => 'product',
+				'post_status' => 'any',
+				'numberposts' => -1,
+				'fields'      => 'ids',
 				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- a one-off admin action on a dozen rows.
-				'meta_key'       => self::MARK,
+				'meta_key'    => self::MARK,
 			)
 		);
 		$gone = 0;
@@ -156,13 +156,13 @@ final class Demo {
 	/**
 	 * One product.
 	 *
-	 * @param int                                     $n     Which one.
-	 * @param string                                  $kind  simple | variable.
-	 * @param array<int,int>                          $cats  Category term ids.
-	 * @param array<string,array<int,string>>         $vary  Attribute taxonomy => values.
-	 * @param bool                                    $sale  On offer.
-	 * @param bool                                    $gone  Out of stock.
-	 * @param bool                                    $bare  Deliberately with no picture.
+	 * @param int                             $n    Which one.
+	 * @param string                          $kind simple | variable.
+	 * @param array<int,int>                  $cats Category term ids.
+	 * @param array<string,array<int,string>> $vary Attribute taxonomy to values.
+	 * @param bool                            $sale On offer.
+	 * @param bool                            $gone Out of stock.
+	 * @param bool                            $bare Deliberately with no picture.
 	 */
 	private static function one( int $n, string $kind, array $cats, array $vary, bool $sale, bool $gone, bool $bare ): int {
 		$name  = self::name( $n );
@@ -247,12 +247,12 @@ final class Demo {
 	/**
 	 * The variations of one variable product.
 	 *
-	 * @param int   $parent Product id.
-	 * @param int   $price  The base price.
-	 * @param bool  $sale   On offer.
+	 * @param int  $owner Product id.
+	 * @param int  $price The base price.
+	 * @param bool $sale  On offer.
 	 */
-	private static function variations( int $parent, int $price, bool $sale ): void {
-		$product = wc_get_product( $parent );
+	private static function variations( int $owner, int $price, bool $sale ): void {
+		$product = wc_get_product( $owner );
 
 		if ( ! $product ) {
 			return;
@@ -295,7 +295,7 @@ final class Demo {
 			$v    = new \WC_Product_Variation();
 			$pick = array_merge( $rest, array( $first => $term->slug ) );
 
-			$v->set_parent_id( $parent );
+			$v->set_parent_id( $owner );
 			$v->set_attributes( $pick );
 			$v->set_regular_price( (string) ( $price + ( $at * 20 ) ) );
 
@@ -317,7 +317,7 @@ final class Demo {
 			}
 		}
 
-		\WC_Product_Variable::sync( $parent );
+		\WC_Product_Variable::sync( $owner );
 	}
 
 	/* ------------------------------------------------- what it is made from */
@@ -459,6 +459,8 @@ final class Demo {
 	}
 
 	/**
+	 * The description, which says plainly what it is.
+	 *
 	 * @param string $name The product's name.
 	 */
 	private static function words( string $name ): string {
@@ -469,6 +471,9 @@ final class Demo {
 		);
 	}
 
+	/**
+	 * The one-liner under the title.
+	 */
 	private static function blurb(): string {
 		return __( 'A stand-in product, for testing the shop.', 'oc-theme' );
 	}

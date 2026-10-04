@@ -302,6 +302,7 @@ final class Admin {
 	 * @param string $action  admin-post action.
 	 * @param string $label   Button words.
 	 * @param bool   $confirm Ask first.
+	 * @param string $ask     What to ask, when the default does not fit.
 	 */
 	private static function action_button( string $action, string $label, bool $confirm = false, string $ask = '' ): void {
 		$ask = '' !== $ask ? $ask : __( 'Cancel the link? The customer will not be able to open it. The answers stay.', 'oc-theme' );
