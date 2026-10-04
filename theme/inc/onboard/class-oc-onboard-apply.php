@@ -1875,21 +1875,24 @@ final class Apply {
 			}
 		}
 
-		// A bank transfer without PayPlus is WooCommerce's own, and cash is
-		// always WooCommerce's own.
-		if ( 'payplus' !== $mine ) {
-			$this->gateway( 'bacs', array( 'enabled' => in_array( 'transfer', $more, true ) ? 'yes' : 'no' ) );
-		}
+		// A bank transfer is WooCommerce's own — unless PayPlus is here, in
+		// which case PayPlus's own carries it and WooCommerce's would stand
+		// beside it offering the same thing twice.
+		$this->gateway(
+			'bacs',
+			array( 'enabled' => in_array( 'transfer', $more, true ) && 'payplus' !== $mine ? 'yes' : 'no' )
+		);
 
-		$cash = array( 'enabled' => in_array( 'cash', $more, true ) ? 'yes' : 'no' );
-
-		// "Only when they come and collect" is exactly what WooCommerce's
-		// own restriction does.
-		if ( 'yes' === $cash['enabled'] && 'yes' === (string) $this->v['pay_cash_pickup'] ) {
-			$cash['enable_for_methods'] = array( 'local_pickup' );
-		}
-
-		$this->gateway( 'cod', $cash );
+		// Cash is always WooCommerce's own, and "only when they come and
+		// collect" is exactly what its own restriction does. Written either
+		// way, so a shop that changes its mind is not left with the old one.
+		$this->gateway(
+			'cod',
+			array(
+				'enabled'            => in_array( 'cash', $more, true ) ? 'yes' : 'no',
+				'enable_for_methods' => 'yes' === (string) $this->v['pay_cash_pickup'] ? array( 'local_pickup' ) : array(),
+			)
+		);
 
 		// Whatever is not theirs is taken off the shop.
 		foreach ( $plugs as $name => $file ) {
