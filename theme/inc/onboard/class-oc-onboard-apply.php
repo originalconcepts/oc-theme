@@ -1197,9 +1197,16 @@ final class Apply {
 
 		// The main nav, and nowhere else. It used to fill the header's side
 		// menu as well when that stood empty, which put the same
-		// departments on the screen twice.
+		// departments on the screen twice — so a site that was built then
+		// has them in both places, and this takes the second one back.
+		// Only when it is this very menu: another menu somebody put there
+		// on purpose is theirs.
 		$spots            = (array) get_theme_mod( 'nav_menu_locations', array() );
 		$spots['primary'] = (int) $menu->term_id;
+
+		if ( (int) ( $spots['secondary'] ?? 0 ) === (int) $menu->term_id ) {
+			unset( $spots['secondary'] );
+		}
 
 		set_theme_mod( 'nav_menu_locations', $spots );
 
