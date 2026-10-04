@@ -855,6 +855,19 @@
 			return Array.isArray( v ) ? v : [];
 		}
 
+		// Every part carries a mark, so the words written about it later can
+		// find it again when the page is rearranged. They are given here,
+		// where the arrangement is opened — not when the questionnaire
+		// loads, which would write an answer nobody had given and make the
+		// welcome screen offer to carry on from nothing.
+		( function () {
+			var mine = rows();
+
+			if ( ! mine.length || mine.every( function ( r ) { return r && r.uid; } ) ) { return; }
+
+			set( id, mine.map( function ( r ) { return merge( r, { uid: r.uid || stamp() } ); } ) );
+		}() );
+
 		function save( next ) {
 			set( id, next );
 			draw();
@@ -4210,19 +4223,6 @@
 
 	root.removeAttribute( 'data-loading' );
 	maybeDiscover();
-
-	// Give the parts of the page their marks the first time anyone opens
-	// the questionnaire, so the answers written about them later have
-	// something steady to hold on to.
-	( function () {
-		var rows = val( 'home_layout' );
-
-		if ( ! Array.isArray( rows ) || ! rows.length ) { return; }
-
-		if ( rows.every( function ( r ) { return r && r.uid; } ) ) { return; }
-
-		set( 'home_layout', rows.map( function ( r ) { return merge( r, { uid: r.uid || stamp() } ); } ) );
-	}() );
 
 	var asked_at = ( window.location.search.match( /[?&]at=([a-z0-9-]+)/i ) || [] )[1];
 	var jump     = -1;
