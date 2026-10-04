@@ -502,7 +502,21 @@ final class Demo {
 			. esc_html( $name )
 			. '</text></svg>';
 
+		// WordPress does not allow SVG uploads, and rightly: one can carry
+		// script. This one is ours, built here out of numbers a line ago,
+		// and the permission is given for the one call and taken straight
+		// back, so nothing else on the site gains it.
+		$allow = static function ( array $mimes ): array {
+			$mimes['svg'] = 'image/svg+xml';
+
+			return $mimes;
+		};
+
+		add_filter( 'upload_mimes', $allow, 99 );
+
 		$put = wp_upload_bits( 'oc-demo-' . ( $n + 1 ) . '-' . wp_rand( 1000, 9999 ) . '.svg', null, $svg );
+
+		remove_filter( 'upload_mimes', $allow, 99 );
 
 		if ( ! empty( $put['error'] ) || empty( $put['file'] ) ) {
 			return 0;
