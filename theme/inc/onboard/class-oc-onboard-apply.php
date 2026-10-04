@@ -1787,40 +1787,189 @@ final class Apply {
 	 * report, and never leave the shop.
 	 */
 	private function apply_payments(): void {
-		$gw   = (string) $this->v['pay_gw'];
+		$gw    = (string) $this->v['pay_gw'];
+		$now   = 'later' !== (string) $this->v['pay_when'];
+		$many  = 'yes' === (string) $this->v['pay_split'] ? max( 2, min( 12, (int) $this->v['pay_max'] ) ) : 0;
+		$held  = 'hold' === (string) $this->v['pay_charge'];
+		$more  = is_array( $this->v['pay_more'] ) ? $this->v['pay_more'] : array();
+		$plugs = array(
+			'cardcom' => 'woo-cardcom-payment-gateway/cardcom.php',
+			'payplus' => 'payplus-payment-gateway/payplus-payment-gateway.php',
+		);
+
+		// What was asked for, kept whatever happens next — the keys are
+		// taken out again below once the gateway itself holds them.
 		$kept = array(
 			'gateway'     => $gw,
 			'other'       => trim( (string) $this->v['pay_other'] ),
-			'fill_later'  => 'later' === (string) $this->v['pay_when'] ? 1 : 0,
-			'instalments' => 'yes' === (string) $this->v['pay_split'] ? max( 2, (int) $this->v['pay_max'] ) : 0,
+			'fill_later'  => $now ? 0 : 1,
+			'instalments' => $many,
 			'charge'      => (string) $this->v['pay_charge'],
-			'methods'     => is_array( $this->v['pay_more'] ) ? array_values( $this->v['pay_more'] ) : array(),
+			'methods'     => array_values( $more ),
 			'cash_pickup' => 'yes' === (string) $this->v['pay_cash_pickup'] ? 1 : 0,
 		);
 
-		if ( 'cardcom' === $gw ) {
-			$kept['cardcom'] = array(
-				'terminal' => trim( (string) $this->v['cc_terminal'] ),
-				'user'     => trim( (string) $this->v['cc_user'] ),
-				'pass'     => (string) $this->v['cc_pass'],
-			);
-		}
-
-		if ( 'payplus' === $gw ) {
-			$kept['payplus'] = array(
-				'api'    => (string) $this->v['pp_api'],
-				'secret' => (string) $this->v['pp_secret'],
-				'page'   => trim( (string) $this->v['pp_page'] ),
-			);
-		}
-
 		update_option( 'oc_onboard_pay', $kept, false );
 
-		$told = 'none' === $gw
-			? __( 'No clearing company yet — we send the PayPlus link.', 'oc-theme' )
-			: __( 'Kept on the site for whoever installs the gateway. Nothing of it is in this report or in any email.', 'oc-theme' );
+		if ( ! function_exists( 'activate_plugin' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		}
 
-		$this->row( 'pay_gw', __( 'Taking the money', 'oc-theme' ), 'check', $told );
+		// The one they chose is switched on; the other has no business on
+		// this shop at all, so it goes.
+		$mine = isset( $plugs[ $gw ] ) ? $gw : '';
+
+		if ( '' !== $mine ) {
+			$on = activate_plugin( $plugs[ $mine ] );
+
+			if ( is_wp_error( $on ) ) {
+				$this->row( 'pay_gw', $mine, 'failed', $on->get_error_message() );
+
+				$mine = '';
+			}
+		}
+
+		if ( 'cardcom' === $mine ) {
+			$this->gateway(
+				'cardcom',
+				array(
+					// Nothing is taken until the keys are in: a gateway that
+					// cannot clear must not stand at the checkout.
+					'enabled'        => $now ? 'yes' : 'no',
+					'terminalnumber' => trim( (string) $this->v['cc_terminal'] ),
+					'username'       => trim( (string) $this->v['cc_user'] ),
+					'apipass'        => (string) $this->v['cc_pass'],
+					// 1 = charge, 4 = a suspended deal, taken when approved.
+					'operation'      => $held ? '4' : '1',
+					'maxpayment'     => $many ? (string) $many : '1',
+				)
+			);
+		}
+
+		if ( 'payplus' === $mine ) {
+			$this->gateway(
+				'payplus-payment-gateway',
+				array(
+					'enabled'          => $now ? 'yes' : 'no',
+					'api_key'          => (string) $this->v['pp_api'],
+					'secret_key'       => (string) $this->v['pp_secret'],
+					'payment_page_id'  => trim( (string) $this->v['pp_page'] ),
+					'api_test_mode'    => 'no',
+					// 1 = charge, 2 = hold the sum on the card.
+					'transaction_type' => $held ? '2' : '1',
+				)
+			);
+
+			// PayPlus carries a gateway of its own for each of these, so a
+			// tick here really is the thing switched on.
+			$extra = array(
+				'bit'      => array( 'payplus-payment-gateway-bit' ),
+				'wallets'  => array( 'payplus-payment-gateway-applepay', 'payplus-payment-gateway-googlepay' ),
+				'transfer' => array( 'payplus-payment-gateway-wire-transfers' ),
+			);
+
+			foreach ( $extra as $tick => $ids ) {
+				foreach ( $ids as $id ) {
+					$this->gateway( $id, array( 'enabled' => in_array( $tick, $more, true ) && $now ? 'yes' : 'no' ) );
+				}
+			}
+		}
+
+		// A bank transfer without PayPlus is WooCommerce's own, and cash is
+		// always WooCommerce's own.
+		if ( 'payplus' !== $mine ) {
+			$this->gateway( 'bacs', array( 'enabled' => in_array( 'transfer', $more, true ) ? 'yes' : 'no' ) );
+		}
+
+		$cash = array( 'enabled' => in_array( 'cash', $more, true ) ? 'yes' : 'no' );
+
+		// "Only when they come and collect" is exactly what WooCommerce's
+		// own restriction does.
+		if ( 'yes' === $cash['enabled'] && 'yes' === (string) $this->v['pay_cash_pickup'] ) {
+			$cash['enable_for_methods'] = array( 'local_pickup' );
+		}
+
+		$this->gateway( 'cod', $cash );
+
+		// Whatever is not theirs is taken off the shop.
+		foreach ( $plugs as $name => $file ) {
+			if ( $name === $mine ) {
+				continue;
+			}
+
+			// Without a clearing company we still point them at PayPlus, so
+			// its plugin waits here rather than being fetched again later.
+			if ( 'payplus' === $name && 'none' === $gw ) {
+				continue;
+			}
+
+			$this->drop_plugin( $name, $file );
+		}
+
+		if ( $now && '' !== $mine ) {
+			// The gateway holds them now, so the questionnaire need not.
+			Draft::forget(
+				'cardcom' === $mine
+					? array( 'cc_pass', 'cc_terminal', 'cc_user' )
+					: array( 'pp_api', 'pp_secret', 'pp_page' )
+			);
+		}
+
+		$told = 'none' === $gw
+			? __( 'No clearing company yet — PayPlus is installed and waiting, and we send you the link.', 'oc-theme' )
+			: ( '' === $mine
+				? __( 'Kept on the site. Nothing of it is in this report or in any email.', 'oc-theme' )
+				: ( $now
+					? __( 'Switched on and set up. The keys went into the gateway and were taken out of the questionnaire.', 'oc-theme' )
+					: __( 'Installed and waiting for the details, switched off until they are in.', 'oc-theme' ) ) );
+
+		$this->row( 'pay_gw', __( 'Taking the money', 'oc-theme' ), 'applied', $told );
+	}
+
+	/**
+	 * One WooCommerce gateway's settings, merged over whatever is there.
+	 *
+	 * @param string              $id   The gateway id.
+	 * @param array<string,mixed> $sets What to put in it.
+	 */
+	private function gateway( string $id, array $sets ): void {
+		$name = 'woocommerce_' . $id . '_settings';
+		$all  = get_option( $name );
+		$all  = is_array( $all ) ? $all : array();
+
+		update_option( $name, array_merge( $all, $sets ) );
+	}
+
+	/**
+	 * A gateway plugin this shop will never use, taken off it. One of ours
+	 * by name only — nothing else is ever passed in here.
+	 *
+	 * @param string $name cardcom | payplus.
+	 * @param string $file The plugin file.
+	 */
+	private function drop_plugin( string $name, string $file ): void {
+		if ( ! file_exists( WP_PLUGIN_DIR . '/' . $file ) ) {
+			return;
+		}
+
+		if ( is_plugin_active( $file ) ) {
+			deactivate_plugins( $file, true );
+		}
+
+		if ( ! function_exists( 'request_filesystem_credentials' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/file.php';
+		}
+
+		WP_Filesystem();
+
+		$gone = delete_plugins( array( $file ) );
+
+		$this->row(
+			'pay_gw',
+			$name,
+			is_wp_error( $gone ) || ! $gone ? 'skipped' : 'applied',
+			is_wp_error( $gone ) ? $gone->get_error_message() : __( 'Not this shop\'s clearing company, so it is off the site.', 'oc-theme' )
+		);
 	}
 
 	/**

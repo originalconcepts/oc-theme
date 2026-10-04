@@ -13051,3 +13051,18 @@ msgstr "התכונה כבר קיימת."
 
 msgid "colour,color"
 msgstr "צבע,גוון"
+
+msgid "No clearing company yet — PayPlus is installed and waiting, and we send you the link."
+msgstr "עדיין אין חברת סליקה — פייפלוס מותקן וממתין, ואנחנו שולחים לכם את הקישור."
+
+msgid "Kept on the site. Nothing of it is in this report or in any email."
+msgstr "נשמר באתר. שום דבר מזה לא נמצא בדוח הזה ולא באף מייל."
+
+msgid "Switched on and set up. The keys went into the gateway and were taken out of the questionnaire."
+msgstr "הופעל והוגדר. המפתחות נכנסו לסולק והוצאו מהשאלון."
+
+msgid "Installed and waiting for the details, switched off until they are in."
+msgstr "מותקן וממתין לפרטים, כבוי עד שיוזנו."
+
+msgid "Not this shop's clearing company, so it is off the site."
+msgstr "לא חברת הסליקה של החנות הזו, אז הוא הוסר מהאתר."

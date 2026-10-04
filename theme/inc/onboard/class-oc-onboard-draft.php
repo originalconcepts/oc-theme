@@ -152,6 +152,24 @@ final class Draft {
 	}
 
 	/**
+	 * Take a few answers out of the draft altogether. Used for the keys and
+	 * passwords once the gateway itself holds them: writing an empty value
+	 * would not do it, because an empty secret is read as "nothing new was
+	 * typed" and ignored.
+	 *
+	 * @param array<int,string> $ids Field ids to forget.
+	 */
+	public static function forget( array $ids ): void {
+		$all = self::all();
+
+		foreach ( $ids as $id ) {
+			unset( $all[ (string) $id ] );
+		}
+
+		update_option( self::OPTION, $all, false );
+	}
+
+	/**
 	 * Start over.
 	 */
 	public static function clear(): void {
