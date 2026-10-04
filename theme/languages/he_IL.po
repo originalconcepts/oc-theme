@@ -13140,3 +13140,6 @@ msgid "%d thing was written with a general text — read it over and make it the
 msgid_plural "%d things were written with a general text — read them over and make them theirs."
 msgstr[0] "דבר אחד נכתב בטקסט כללי — לקרוא ולהפוך אותו לשלהם."
 msgstr[1] "%d דברים נכתבו בטקסט כללי — לקרוא ולהפוך אותם לשלהם."
+
+msgid "That category was not opened, so the button goes to the shop."
+msgstr "הקטגוריה הזו לא נפתחה, אז הכפתור מוביל לחנות."

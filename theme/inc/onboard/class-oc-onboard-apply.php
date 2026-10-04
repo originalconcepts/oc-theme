@@ -1397,8 +1397,18 @@ final class Apply {
 		$kind = (string) $this->v['banner_link'];
 
 		if ( 'cat' === $kind ) {
-			$id = $this->cat_id( (string) $this->v['banner_cat'] );
-			$to = $id ? get_term_link( $id, 'product_cat' ) : '';
+			// Picked from the menu, so it arrives as a list even when only
+			// one was wanted. Cast straight to a string and it reads
+			// "Array", finds no category, and quietly sends them to the shop
+			// — which is what it did.
+			$want = $this->v['banner_cat'];
+			$name = is_array( $want ) ? (string) reset( $want ) : (string) $want;
+			$id   = $this->cat_id( $name );
+			$to   = $id ? get_term_link( $id, 'product_cat' ) : '';
+
+			if ( ! $id ) {
+				$this->row( 'banner_cat', $name, 'skipped', __( 'That category was not opened, so the button goes to the shop.', 'oc-theme' ) );
+			}
 
 			return is_string( $to ) && '' !== $to ? $to : $shop;
 		}

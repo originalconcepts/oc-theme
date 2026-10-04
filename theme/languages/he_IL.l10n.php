@@ -3271,6 +3271,7 @@ return array(
 		"Thanks for the feedback!" => "תודה על הדירוג!",
 		"That address is not on this site." => "הכתובת הזו אינה באתר הזה.",
 		"That background reaches" => "הרקע הזה נמשך",
+		"That category was not opened, so the button goes to the shop." => "הקטגוריה הזו לא נפתחה, אז הכפתור מוביל לחנות.",
 		"That code was not right." => "הקוד שהוזן אינו נכון.",
 		"That does not look like a valid phone number." => "זה לא נראה כמו מספר טלפון תקין.",
 		"That does not look like an Israeli mobile number." => "זה לא נראה כמו מספר נייד ישראלי.",

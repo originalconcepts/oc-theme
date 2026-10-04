@@ -183,21 +183,44 @@ final class Admin {
 			<?php if ( $values ) : ?>
 				<div class="card">
 					<h2><?php esc_html_e( 'The answers so far', 'oc-theme' ); ?></h2>
-					<table class="widefat striped">
-						<tbody>
-						<?php foreach ( $fields as $id => $f ) : ?>
-							<?php
-							if ( ! array_key_exists( $id, $values ) || ! Schema::shown( $id, $values ) ) {
-								continue;
+					<?php foreach ( Schema::steps() as $step ) : ?>
+						<?php
+						// Read in the order they were asked, under the name of
+						// the step that asked them: going through forty
+						// answers in one run is a different job from going
+						// through the eight the product page took.
+						$mine = array();
+
+						foreach ( $step['screens'] as $screen ) {
+							foreach ( (array) $screen['fields'] as $id ) {
+								if ( ! isset( $fields[ $id ] ) || ! array_key_exists( $id, $values ) || ! Schema::shown( $id, $values ) ) {
+									continue;
+								}
+
+								if ( 'info' === (string) $fields[ $id ]['type'] ) {
+									continue;
+								}
+
+								$mine[ $id ] = $fields[ $id ];
 							}
-							?>
-							<tr>
-								<th scope="row" style="width:34%"><?php echo esc_html( (string) $f['label'] ); ?></th>
-								<td><?php echo wp_kses_post( self::show_value( $f, $values[ $id ] ) ); ?></td>
-							</tr>
-						<?php endforeach; ?>
-						</tbody>
-					</table>
+						}
+
+						if ( ! $mine ) {
+							continue;
+						}
+						?>
+						<h3 style="margin:18px 0 6px"><?php echo esc_html( sprintf( '%d. %s', (int) $step['n'], (string) $step['title'] ) ); ?></h3>
+						<table class="widefat striped">
+							<tbody>
+							<?php foreach ( $mine as $id => $f ) : ?>
+								<tr>
+									<th scope="row" style="width:34%"><?php echo esc_html( '' !== (string) $f['label'] ? (string) $f['label'] : (string) $f['group'] ); ?></th>
+									<td><?php echo wp_kses_post( self::show_value( $f, $values[ $id ] ) ); ?></td>
+								</tr>
+							<?php endforeach; ?>
+							</tbody>
+						</table>
+					<?php endforeach; ?>
 				</div>
 			<?php endif; ?>
 
