@@ -2140,6 +2140,45 @@
 			return said || ( f.row || '' ) + ' ' + ( ri + 1 );
 		}
 
+		/**
+		 * One arrow. Whatever is half-typed is written first, so a row that
+		 * moves takes its own words with it.
+		 *
+		 * @param {string}  glyph The sign.
+		 * @param {string}  label What it does.
+		 * @param {number}  from  Which row.
+		 * @param {number}  by    -1 up, 1 down.
+		 * @param {boolean} off   Whether it is spent.
+		 */
+		function step( glyph, label, from, by, off ) {
+			var b = el( 'button', { type: 'button', 'class': 'oc-onb-row__b', title: label, 'aria-label': label, text: glyph } );
+
+			if ( off ) { b.disabled = 'disabled'; }
+
+			b.addEventListener( 'click', function ( e ) {
+				e.stopPropagation();
+				commitAll();
+
+				var to = from + by;
+
+				if ( to < 0 || to >= rows.length ) { return; }
+
+				rows.splice( to, 0, rows.splice( from, 1 )[0] );
+
+				// The open one stays the open one wherever it lands.
+				if ( open === from ) {
+					open = to;
+				} else if ( open === to ) {
+					open = from;
+				}
+
+				commit();
+				paint();
+			} );
+
+			return b;
+		}
+
 		function paint() {
 			wrap.innerHTML = '';
 			rows.forEach( function ( r, ri ) {
@@ -2196,6 +2235,16 @@
 				] );
 
 				var tools = el( 'span', { 'class': 'oc-onb-rep__tools' } );
+
+				// The order is the shop's to choose, the same way it chooses
+				// the order of its departments and of the page's own parts.
+				// A list whose order is decided elsewhere — one that grows
+				// from the arrangement — is left alone: its rows belong to
+				// the parts they were written for.
+				if ( ! f.fixed && ! f.grow && rows.length > 1 ) {
+					tools.appendChild( step( '\u2191', I.row_up, ri, -1, 0 === ri ) );
+					tools.appendChild( step( '\u2193', I.row_down, ri, 1, ri === rows.length - 1 ) );
+				}
 
 				if ( ! f.fixed && rows.length > 1 ) {
 					var bin = el( 'button', { type: 'button', 'class': 'oc-onb-row__b oc-onb-row__b--bin', title: I.remove, 'aria-label': I.remove } );
