@@ -91,6 +91,25 @@ final class Apply {
 				$this->v[ $id ] = implode( ',', $this->v[ $id ] );
 			}
 
+			// An upload is kept whole -- id, name, url. A setting that holds
+			// a picture wants one of those: WordPress's own logo setting
+			// keeps the attachment, ours keep the address.
+			if ( 'id' === ( $f['as'] ?? '' ) || 'url' === ( $f['as'] ?? '' ) ) {
+				$up = is_array( $this->v[ $id ] ) ? $this->v[ $id ] : array();
+
+				$this->v[ $id ] = 'id' === $f['as']
+					? (int) ( $up['id'] ?? 0 )
+					: (string) ( $up['url'] ?? '' );
+
+				// Nothing uploaded: leave the setting alone rather than
+				// writing a zero over whatever is already there.
+				if ( empty( $this->v[ $id ] ) ) {
+					$this->row( $id, (string) $target[1], 'skipped', __( 'Nothing was uploaded.', 'oc-theme' ) );
+
+					continue;
+				}
+			}
+
 			try {
 				switch ( $kind ) {
 					case 'mod':
@@ -125,6 +144,7 @@ final class Apply {
 		}
 
 		$this->promised();
+		$this->wc_page_names();
 		$this->talk_pages();
 		$this->footer();
 
@@ -133,6 +153,56 @@ final class Apply {
 		self::flush_caches();
 
 		return $this->report;
+	}
+
+	/**
+	 * WooCommerce's own pages, in the language of the shop.
+	 *
+	 * WooCommerce names its four pages when it installs itself, in whatever
+	 * language the site was speaking at that moment. The base site was built
+	 * in English, so every clone inherits "My account", "Cart", "Checkout"
+	 * and "Shop" — and because WooCommerce builds the breadcrumb out of the
+	 * page title, a Hebrew shop was telling its customers "My account".
+	 *
+	 * Only the title is touched, and only while it is still the English one
+	 * WooCommerce shipped: a shop that has named its own pages keeps its
+	 * names. The slugs are left alone — they are addresses, and changing one
+	 * breaks every link already pointing at it.
+	 */
+	private function wc_page_names(): void {
+		$names = array(
+			'woocommerce_myaccount_page_id' => array( 'My account', __( 'My account', 'oc-theme' ) ),
+			'woocommerce_cart_page_id'      => array( 'Cart', __( 'Cart', 'oc-theme' ) ),
+			'woocommerce_checkout_page_id'  => array( 'Checkout', __( 'Checkout', 'oc-theme' ) ),
+			'woocommerce_shop_page_id'      => array( 'Shop', __( 'Shop', 'oc-theme' ) ),
+		);
+
+		foreach ( $names as $option => $pair ) {
+			list( $was, $should ) = $pair;
+
+			$id = (int) get_option( $option );
+
+			if ( $id <= 0 || $was === $should ) {
+				continue;
+			}
+
+			$now = (string) get_the_title( $id );
+
+			if ( 0 !== strcasecmp( $now, $was ) ) {
+				$this->row( 'wc_pages', $option, 'skipped', sprintf( /* translators: %s: the name the page already carries. */ __( 'Already named "%s".', 'oc-theme' ), $now ) );
+
+				continue;
+			}
+
+			wp_update_post(
+				array(
+					'ID'         => $id,
+					'post_title' => $should,
+				)
+			);
+
+			$this->row( 'wc_pages', $option, 'applied', $was . ' → ' . $should );
+		}
 	}
 
 	/**

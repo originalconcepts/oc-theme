@@ -13176,3 +13176,27 @@ msgstr "מספר הזמנה"
 
 msgid "What would you like to cancel, and why"
 msgstr "מה תרצו לבטל, ולמה"
+
+msgid "Shop"
+msgstr "החנות"
+
+msgid "Your logo"
+msgstr "הלוגו שלכם"
+
+msgid "The file itself, as large and as sharp as you have it — PNG with a see-through background, or SVG. Not a photograph of a sign, and not one with white corners around it."
+msgstr "הקובץ עצמו, בגודל ובאיכות הכי טובים שיש לכם — PNG עם רקע שקוף, או SVG. לא צילום של שלט, ולא קובץ עם פינות לבנות מסביב."
+
+msgid "A light version of the logo"
+msgstr "גרסה בהירה של הלוגו"
+
+msgid "Because the menu is standing on the picture, the logo stands on it too, and a dark logo on a dark photograph cannot be seen. Usually that is the same logo in white. Have not got one? Leave it — we make it for you, and the regular logo stands there until we do."
+msgstr "מכיוון שהתפריט עומד על התמונה, גם הלוגו עומד עליה, ולוגו כהה על תמונה כהה פשוט לא נראה. בדרך כלל זה אותו לוגו בלבן. אין לכם? אפשר לדלג — אנחנו נכין לכם, ועד אז הלוגו הרגיל עומד שם."
+
+msgid "Nothing was uploaded."
+msgstr "לא הועלה קובץ."
+
+msgid "Make the light version of their logo — they had none. The menu stands on their banner, so the regular logo is standing on the picture meanwhile. It goes in Customize, under the header."
+msgstr "להכין גרסה בהירה ללוגו שלהם — לא היתה להם. התפריט עומד על הבאנר, ולכן בינתיים הלוגו הרגיל עומד על התמונה. מעלים בהתאמה אישית, באזור ההדר."
+
+msgid "Already named \"%s\"."
+msgstr "כבר נקרא \"%s\"."

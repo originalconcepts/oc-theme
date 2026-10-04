@@ -132,14 +132,14 @@ final class Schema {
 						'intro'   => __( 'The strip every page of the shop wears. Whatever you write here, the sketch beside you puts in its place.', 'oc-theme' ),
 						'intro_m' => __( 'On a phone the two do not fit side by side, so the two buttons above switch between the questions and the drawing.', 'oc-theme' ),
 						'preview' => 'top',
-						'fields'  => array( 'top_bar', 'top_bar_1', 'top_bar_2', 'top_bar_3', 'header_look', 'site_menu' ),
+						'fields'  => array( 'top_bar', 'top_bar_1', 'top_bar_2', 'top_bar_3', 'site_logo', 'header_look', 'site_menu' ),
 					),
 					array(
 						'id'      => '3c',
 						'title'   => __( 'The main banner', 'oc-theme' ),
 						'intro'   => __( 'The big picture at the top of the home page: an offer, a launch, a new collection. First, where the menu stands over it.', 'oc-theme' ),
 						'preview' => 'banner',
-						'fields'  => array( 'home_header', 'banner_media', 'home_banner', 'banner_video', 'banner_title', 'banner_sub', 'banner_cta', 'banner_link', 'banner_cat' ),
+						'fields'  => array( 'home_header', 'logo_light', 'banner_media', 'home_banner', 'banner_video', 'banner_title', 'banner_sub', 'banner_cta', 'banner_link', 'banner_cat' ),
 					),
 					array(
 						'id'      => '3d',
@@ -978,6 +978,17 @@ final class Schema {
 			'target'      => array( 'mod', 'oc_topbar_msg3' ),
 		);
 
+		$f['site_logo'] = array(
+			'type'     => 'file',
+			'accept'   => 'image',
+			'group'    => __( 'The header itself', 'oc-theme' ),
+			'label'    => __( 'Your logo', 'oc-theme' ),
+			'help'     => __( 'The file itself, as large and as sharp as you have it — PNG with a see-through background, or SVG. Not a photograph of a sign, and not one with white corners around it.', 'oc-theme' ),
+			'required' => true,
+			'target'   => array( 'mod', 'custom_logo' ),
+			'as'       => 'id',
+		);
+
 		$f['header_look'] = array(
 			'type'    => 'pick',
 			'group'   => __( 'The header itself', 'oc-theme' ),
@@ -1182,6 +1193,20 @@ final class Schema {
 			),
 			'default' => 'home',
 			'target'  => array( 'mod', 'oc_header_transparent' ),
+		);
+
+		// Standing on a photograph, the menu writes itself in white. A logo
+		// is a file and cannot: a dark mark on a dark picture disappears.
+		// Not required -- plenty of shops have only the one version, and
+		// that is a job for us rather than a wall in front of the customer.
+		$f['logo_light'] = array(
+			'type'   => 'file',
+			'accept' => 'image',
+			'label'  => __( 'A light version of the logo', 'oc-theme' ),
+			'help'   => __( 'Because the menu is standing on the picture, the logo stands on it too, and a dark logo on a dark photograph cannot be seen. Usually that is the same logo in white. Have not got one? Leave it — we make it for you, and the regular logo stands there until we do.', 'oc-theme' ),
+			'when'   => array( 'home_header', array( 'home' ) ),
+			'target' => array( 'mod', 'oc_logo_transparent' ),
+			'as'     => 'url',
 		);
 
 		/* ---- 3d-3g: what the parts of the page say ---- */

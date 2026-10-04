@@ -232,6 +232,15 @@ final class Mail {
 			$out[] = __( 'The clearing company is set up and on. Put a real order through it before the site goes live.', 'oc-theme' );
 		}
 
+		// They asked for the menu to stand on the banner and had no light
+		// logo to give. The regular one is standing on the picture until
+		// one exists, which on a dark photograph is a logo nobody can see.
+		$light = (array) Draft::value( 'logo_light' );
+
+		if ( 'home' === (string) Draft::value( 'home_header' ) && empty( $light['id'] ) ) {
+			$out[] = __( 'Make the light version of their logo — they had none. The menu stands on their banner, so the regular logo is standing on the picture meanwhile. It goes in Customize, under the header.', 'oc-theme' );
+		}
+
 		$out[] = __( 'Go over what was built — the home page, the catalogue and the product page — and put the last touches to it.', 'oc-theme' );
 		$out[] = __( 'Get their products and load them.', 'oc-theme' );
 
