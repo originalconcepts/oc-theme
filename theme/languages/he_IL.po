@@ -13284,3 +13284,68 @@ msgstr "הוסר מהאתר הזה עכשיו כשהכתיבה הסתיימה."
 
 msgid "The last time the writer was asked it answered %1$d %2$s, %3$s ago. Nothing of the key or of the answers is kept here."
 msgstr "בפעם האחרונה שהכותב נשאל הוא ענה %1$d %2$s, לפני %3$s. שום דבר מהמפתח או מהתשובות לא נשמר כאן."
+
+msgid "Products to test with"
+msgstr "מוצרים לבדיקה"
+
+msgid "A dozen stand-in products, built from this shop's own departments and its own choices, so the card, the sale badge, the swatches, the filters and the checkout can all be seen working before the real catalogue arrives. Every one of them is marked, named \"Test product\", and priced as a stand-in. Take them away before the shop opens."
+msgstr "תריסר מוצרי דמה, שנבנים מהמחלקות של החנות הזו ומהבחירות שלה, כדי שאפשר יהיה לראות את הכרטיס, תווית המבצע, הסוואצ׳ים, הסינון והקופה עובדים לפני שהקטלוג האמיתי מגיע. כל אחד מהם מסומן, נקרא ״מוצר בדיקה״, ומתומחר כדמה. הסירו אותם לפני שהחנות נפתחת."
+
+msgid "%d test product is on the shop right now."
+msgid_plural "%d test products are on the shop right now."
+msgstr[0] "מוצר בדיקה אחד נמצא בחנות כרגע."
+msgstr[1] "%d מוצרי בדיקה נמצאים בחנות כרגע."
+
+msgid "Fill the shop with test products"
+msgstr "למלא את החנות במוצרי בדיקה"
+
+msgid "Take the test products away"
+msgstr "להסיר את מוצרי הבדיקה"
+
+msgid "Delete every test product and its pictures? Anything somebody has actually ordered is kept."
+msgstr "למחוק כל מוצר בדיקה ואת התמונות שלו? כל מה שמישהו באמת הזמין יישאר."
+
+msgid "The test products are on the shop. Go and look at a category, a product and the checkout."
+msgstr "מוצרי הבדיקה בחנות. לכו להסתכל על קטגוריה, על מוצר ועל הקופה."
+
+msgid "The test products are gone."
+msgstr "מוצרי הבדיקה הוסרו."
+
+msgid "The test products are gone, except the ones somebody had ordered — those are a record of a sale and were left."
+msgstr "מוצרי הבדיקה הוסרו, חוץ מאלה שמישהו הזמין — אלה תיעוד של מכירה ונשארו."
+
+msgid "WooCommerce is not here, so there is nothing to fill."
+msgstr "ווקומרס לא מותקן, אז אין מה למלא."
+
+msgid "Test product %d"
+msgstr "מוצר בדיקה %d"
+
+msgid "%s is here to try the shop with, not to sell. It stands in for a real product so the page, the pictures, the filters and the checkout can all be seen working before the real catalogue arrives. Delete it from the questionnaire screen when you are done."
+msgstr "%s נמצא כאן כדי לבדוק את החנות, לא כדי להימכר. הוא עומד במקום מוצר אמיתי כדי שאפשר יהיה לראות את העמוד, התמונות, הסינון והקופה עובדים לפני שהקטלוג האמיתי מגיע. מחקו אותו ממסך השאלון כשתסיימו."
+
+msgid "A stand-in product, for testing the shop."
+msgstr "מוצר דמה, לבדיקת החנות."
+
+msgid "WooCommerce is not here."
+msgstr "ווקומרס לא מותקן."
+
+msgid "Black"
+msgstr "שחור"
+
+msgid "White"
+msgstr "לבן"
+
+msgid "Beige"
+msgstr "בז׳"
+
+msgid "Navy"
+msgstr "כחול כהה"
+
+msgid "Option one"
+msgstr "אפשרות ראשונה"
+
+msgid "Option two"
+msgstr "אפשרות שנייה"
+
+msgid "Option three"
+msgstr "אפשרות שלישית"

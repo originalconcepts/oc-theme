@@ -36,6 +36,8 @@ final class Admin {
 		add_action( 'admin_post_oc_onboard_cancel', array( $this, 'cancel' ) );
 		add_action( 'admin_post_oc_onboard_reapply', array( $this, 'reapply' ) );
 		add_action( 'admin_post_oc_onboard_settings', array( $this, 'settings' ) );
+		add_action( 'admin_post_oc_onboard_demo_make', array( $this, 'demo_make' ) );
+		add_action( 'admin_post_oc_onboard_demo_drop', array( $this, 'demo_drop' ) );
 		add_action( 'wp_dashboard_setup', array( $this, 'tile' ), 12 );
 	}
 
@@ -107,6 +109,10 @@ final class Admin {
 				'settings' => __( 'Settings saved.', 'oc-theme' ),
 				'keygone'  => __( 'The AI key was deleted from this site.', 'oc-theme' ),
 				'curtain'  => __( 'Saved.', 'oc-theme' ),
+				'demomade' => __( 'The test products are on the shop. Go and look at a category, a product and the checkout.', 'oc-theme' ),
+				'demogone' => __( 'The test products are gone.', 'oc-theme' ),
+				'demokept' => __( 'The test products are gone, except the ones somebody had ordered — those are a record of a sale and were left.', 'oc-theme' ),
+				'demono'   => __( 'WooCommerce is not here, so there is nothing to fill.', 'oc-theme' ),
 			);
 			$key  = sanitize_key( wp_unslash( (string) $_GET['oc_done'] ) );
 
@@ -227,6 +233,36 @@ final class Admin {
 			<?php Curtain::card(); ?>
 
 			<div class="card">
+				<h2><?php esc_html_e( 'Products to test with', 'oc-theme' ); ?></h2>
+				<?php $standing = Demo::count(); ?>
+				<p class="description">
+					<?php esc_html_e( 'A dozen stand-in products, built from this shop\'s own departments and its own choices, so the card, the sale badge, the swatches, the filters and the checkout can all be seen working before the real catalogue arrives. Every one of them is marked, named "Test product", and priced as a stand-in. Take them away before the shop opens.', 'oc-theme' ); ?>
+				</p>
+				<?php if ( $standing ) : ?>
+					<p>
+						<strong>
+						<?php
+						printf(
+							/* translators: %d: how many test products are on the shop. */
+							esc_html( _n( '%d test product is on the shop right now.', '%d test products are on the shop right now.', $standing, 'oc-theme' ) ),
+							(int) $standing
+						);
+						?>
+						</strong>
+					</p>
+				<?php endif; ?>
+				<div style="display:flex;gap:10px;flex-wrap:wrap">
+					<?php
+					self::action_button( 'oc_onboard_demo_make', __( 'Fill the shop with test products', 'oc-theme' ) );
+
+					if ( $standing ) {
+						self::action_button( 'oc_onboard_demo_drop', __( 'Take the test products away', 'oc-theme' ), true, __( 'Delete every test product and its pictures? Anything somebody has actually ordered is kept.', 'oc-theme' ) );
+					}
+					?>
+				</div>
+			</div>
+
+			<div class="card">
 				<h2><?php esc_html_e( 'Keys', 'oc-theme' ); ?></h2>
 				<p class="description"><?php esc_html_e( 'Filled once on the base site and cloned with it. The AI key is deleted from a customer site when the apply finishes; delete it here too when the site is handed over.', 'oc-theme' ); ?></p>
 				<?php $s = Onboard::settings(); ?>
@@ -267,9 +303,10 @@ final class Admin {
 	 * @param string $label   Button words.
 	 * @param bool   $confirm Ask first.
 	 */
-	private static function action_button( string $action, string $label, bool $confirm = false ): void {
+	private static function action_button( string $action, string $label, bool $confirm = false, string $ask = '' ): void {
+		$ask = '' !== $ask ? $ask : __( 'Cancel the link? The customer will not be able to open it. The answers stay.', 'oc-theme' );
 		?>
-		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>"<?php echo $confirm ? ' onsubmit="return confirm(\'' . esc_js( __( 'Cancel the link? The customer will not be able to open it. The answers stay.', 'oc-theme' ) ) . '\')"' : ''; ?>>
+		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>"<?php echo $confirm ? ' onsubmit="return confirm(\'' . esc_js( $ask ) . '\')"' : ''; ?>>
 			<input type="hidden" name="action" value="<?php echo esc_attr( $action ); ?>" />
 			<?php wp_nonce_field( $action ); ?>
 			<button type="submit" class="button"><?php echo esc_html( $label ); ?></button>
@@ -480,6 +517,29 @@ final class Admin {
 		}
 
 		check_admin_referer( $action );
+	}
+
+	/**
+	 * Fill the shop with products to test it with.
+	 */
+	public function demo_make(): void {
+		$this->guard( 'oc_onboard_demo_make' );
+
+		$out = Demo::make();
+
+		$this->back( empty( $out['error'] ) ? 'demomade' : 'demono' );
+	}
+
+	/**
+	 * Take them away. One that has been ordered is a record of a sale and
+	 * stays, whatever it was made for.
+	 */
+	public function demo_drop(): void {
+		$this->guard( 'oc_onboard_demo_drop' );
+
+		$out = Demo::remove();
+
+		$this->back( empty( $out['kept'] ) ? 'demogone' : 'demokept' );
 	}
 
 	/**
