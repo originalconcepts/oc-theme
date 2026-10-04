@@ -1757,8 +1757,8 @@ final class Apply {
 		$press = trim( (string) $this->v['banner_cta'] );
 
 		return array(
-			'type'   => 'hero',
-			'slides' => array(
+			'type'     => 'hero',
+			'slides'   => array(
 				array(
 					'img'     => $shot ? (int) $shot['id'] : 0,
 					'vid'     => $film,
@@ -1768,7 +1768,7 @@ final class Apply {
 					'url'     => $this->banner_url(),
 				),
 			),
-			'pos'    => 'cc',
+			'pos'      => 'cc',
 			// Edge to edge, the way the banner stands on our own shop. The
 			// block's own default keeps it inside the content width, which
 			// leaves a margin either side and does not read as a banner.
@@ -2397,9 +2397,9 @@ final class Apply {
 	 * switched on means the keys are there — in the answers, or already in
 	 * the gateway from an earlier run.
 	 *
-	 * @param string             $id   Gateway id.
-	 * @param array<int,string>  $keys The settings it cannot work without.
-	 * @param array<int,string>  $said What the questionnaire holds for them.
+	 * @param string            $id   Gateway id.
+	 * @param array<int,string> $keys The settings it cannot work without.
+	 * @param array<int,string> $said What the questionnaire holds for them.
 	 */
 	private function can_clear( string $id, array $keys, array $said ): bool {
 		$missing = false;
