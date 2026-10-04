@@ -125,6 +125,7 @@ final class Apply {
 		}
 
 		$this->promised();
+		$this->talk_pages();
 		$this->footer();
 
 		update_option( self::LOG, $this->log, false );
@@ -132,6 +133,132 @@ final class Apply {
 		self::flush_caches();
 
 		return $this->report;
+	}
+
+	/**
+	 * The two pages a shop is required to have and never thinks to ask
+	 * for: somewhere to write to it, and somewhere to cancel an order.
+	 *
+	 * Both are composed from the contact block, so they come out as the
+	 * shop's own pages rather than as a plugin's form — the contact one
+	 * already knowing the address, the hours, the phone and the mail,
+	 * because the questionnaire asked for all four.
+	 */
+	private function talk_pages(): void {
+		if ( ! class_exists( '\OC\Blocks\Registry' ) ) {
+			return;
+		}
+
+		$c = Contact::settings();
+
+		// The address falls back to WooCommerce's store address when the
+		// shop left it empty, which is what the contact details do
+		// everywhere else on the site.
+		$place = trim( (string) ( $c['address'] ?? '' ) );
+
+		if ( '' === $place && method_exists( '\OC\Theme\Contact', 'address' ) ) {
+			$place = (string) Contact::address();
+		}
+
+		$this->compose(
+			'contact',
+			__( 'Contact us', 'oc-theme' ),
+			array(
+				array(
+					'type'     => 'contact',
+					'w'        => 'custom',
+					'wpx'      => 1200,
+					'heading'  => __( 'Contact us', 'oc-theme' ),
+					'fheading' => __( 'Have a question?', 'oc-theme' ),
+					'ftext'    => __( 'Write to us and we come back to you quickly.', 'oc-theme' ),
+					'layout'   => 'info',
+					'address'  => $place,
+					'hours'    => (string) ( $c['hours'] ?? '' ),
+					'tel'      => (string) ( $c['phone'] ?? '' ),
+					'mail'     => (string) ( $c['email'] ?? '' ),
+				),
+			)
+		);
+
+		// Cancelling is a right, so the form asks for the little it needs to
+		// find the order and nothing more.
+		$this->compose(
+			'cancel',
+			__( 'Cancelling an order', 'oc-theme' ),
+			array(
+				array(
+					'type'     => 'contact',
+					'w'        => 'custom',
+					'wpx'      => 1200,
+					'heading'  => __( 'Cancelling an order', 'oc-theme' ),
+					'text'     => __( 'You may cancel an order under the Consumer Protection Law. Fill this in and we take care of it; we come back to you with confirmation.', 'oc-theme' ),
+					'fheading' => __( 'Order cancellation form', 'oc-theme' ),
+					'layout'   => 'stack',
+					'fields'   => array(
+						array(
+							'kind'  => 'name',
+							'label' => __( 'Full name', 'oc-theme' ),
+							'req'   => 1,
+							'w'     => 'half',
+						),
+						array(
+							'kind'  => 'phone',
+							'label' => __( 'Phone', 'oc-theme' ),
+							'req'   => 1,
+							'w'     => 'half',
+						),
+						array(
+							'kind'  => 'email',
+							'label' => __( 'Email', 'oc-theme' ),
+							'req'   => 1,
+							'w'     => 'half',
+						),
+						array(
+							'kind'  => 'text',
+							'label' => __( 'Order number', 'oc-theme' ),
+							'req'   => 1,
+							'w'     => 'half',
+						),
+						array(
+							'kind'  => 'msg',
+							'label' => __( 'What would you like to cancel, and why', 'oc-theme' ),
+							'req'   => 0,
+						),
+					),
+				),
+			)
+		);
+	}
+
+	/**
+	 * A page of ours, composed of blocks and left alone once somebody has
+	 * edited it.
+	 *
+	 * @param string                        $slug  Page slug.
+	 * @param string                        $title Page title.
+	 * @param array<int,array<string,mixed>> $parts The blocks.
+	 */
+	private function compose( string $slug, string $title, array $parts ): void {
+		$id = $this->page( $slug, $title, '' );
+
+		if ( ! $id ) {
+			return;
+		}
+
+		$sections = \OC\Blocks\Registry::clean( $parts );
+		$lk       = 'compose:' . $slug;
+
+		if ( $this->changed_by_hand( $lk, wp_json_encode( (array) get_post_meta( $id, \OC\Blocks\Registry::META, true ) ) ) ) {
+			$this->row( $slug, $title, 'manual', __( 'Changed by hand since the last apply; left as it is.', 'oc-theme' ) );
+
+			return;
+		}
+
+		update_post_meta( $id, \OC\Blocks\Registry::META, $sections );
+		$this->remember( $lk, wp_json_encode( $sections ) );
+		update_option( 'oc_blocks_ver', (int) get_option( 'oc_blocks_ver', 0 ) + 1, false );
+
+		$this->row( $slug, $title, 'applied' );
 	}
 
 	/**
@@ -156,8 +283,10 @@ final class Apply {
 
 		foreach ( array(
 			'page:about'    => (int) ( $this->log['page:about'] ?? 0 ),
+			'page:contact'  => (int) ( $this->log['page:contact'] ?? 0 ),
 			'page:branches' => (int) ( $this->log['page:branches'] ?? 0 ),
 			'terms'         => (int) get_option( Legal\Terms::OPTION, 0 ),
+			'page:cancel'   => (int) ( $this->log['page:cancel'] ?? 0 ),
 			'a11y'          => (int) get_option( Legal\Accessibility::OPTION, 0 ),
 			'privacy'       => (int) get_option( 'wp_page_for_privacy_policy', 0 ),
 		) as $id ) {

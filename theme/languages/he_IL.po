@@ -13155,3 +13155,24 @@ msgstr "הפוטר"
 
 msgid "%1$d pages and %2$d departments in its columns."
 msgstr "%1$d עמודים ו‑%2$d מחלקות בעמודות שלו."
+
+msgid "Contact us"
+msgstr "צור קשר"
+
+msgid "Write to us and we come back to you quickly."
+msgstr "כתבו לנו ונחזור אליכם במהירות."
+
+msgid "Cancelling an order"
+msgstr "ביטול עסקה"
+
+msgid "You may cancel an order under the Consumer Protection Law. Fill this in and we take care of it; we come back to you with confirmation."
+msgstr "ניתן לבטל עסקה על פי חוק הגנת הצרכן. מלאו כאן ואנחנו נטפל בזה; נחזור אליכם עם אישור."
+
+msgid "Order cancellation form"
+msgstr "טופס ביטול עסקה"
+
+msgid "Order number"
+msgstr "מספר הזמנה"
+
+msgid "What would you like to cancel, and why"
+msgstr "מה תרצו לבטל, ולמה"
