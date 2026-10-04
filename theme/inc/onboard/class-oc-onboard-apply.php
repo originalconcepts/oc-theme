@@ -1662,8 +1662,14 @@ final class Apply {
 				),
 			),
 			'pos'    => 'cc',
-			'h'      => 560,
-			'hm'     => 440,
+			// Edge to edge, the way the banner stands on our own shop. The
+			// block's own default keeps it inside the content width, which
+			// leaves a margin either side and does not read as a banner.
+			'w'      => 'full',
+			'pt'     => '0',
+			'pb'     => 'm',
+			'h'      => 0,
+			'hm'     => 450,
 		);
 	}
 
