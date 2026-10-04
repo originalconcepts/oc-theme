@@ -1743,6 +1743,9 @@
 			show.appendChild( el( 'button', { type: 'button', 'class': 'oc-onb-link', text: I.remove, onclick: function () {
 				if ( o.sub ) { mine = null; o.onChange( null ); } else { set( id, null ); }
 				paint();
+				// The drawing shows their pictures, so it has to hear about
+				// one going as well as one arriving.
+				paintPreview();
 			} } ) );
 		}
 
@@ -1761,6 +1764,10 @@
 				note( I.saved, 'ok' );
 				paint();
 				refreshVisibility();
+
+				// A picture that arrived outside set() — the upload saved it
+				// on its own — still has to reach the drawing.
+				paintPreview();
 			} ).catch( function () { note( I.upload_failed, 'err' ); } );
 			inp.value = '';
 		} );
