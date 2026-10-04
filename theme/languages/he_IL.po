@@ -13200,3 +13200,12 @@ msgstr "להכין גרסה בהירה ללוגו שלהם — לא היתה ל�
 
 msgid "Already named \"%s\"."
 msgstr "כבר נקרא \"%s\"."
+
+msgid "Get their logo — they did not have it to hand. The site is wearing its name in text until it arrives. It goes in Customize, under the header."
+msgstr "להשיג מהם את הלוגו — לא היה להם בהישג יד. עד שיגיע, האתר לובש את השם שלו בטקסט. מעלים בהתאמה אישית, באזור ההדר."
+
+msgid "That logo needs a light version too — the menu stands on their banner, so the logo stands on the picture."
+msgstr "ללוגו הזה צריך גם גרסה בהירה — התפריט עומד על הבאנר שלהם, אז גם הלוגו עומד על התמונה."
+
+msgid "The file itself, as large and as sharp as you have it — PNG with a see-through background, or SVG. Not a photograph of a sign, and not one with white corners around it. Not to hand? Carry on without it and send it to us later."
+msgstr "הקובץ עצמו, בגודל ובאיכות הכי טובים שיש לכם — PNG עם רקע שקוף, או SVG. לא צילום של שלט, ולא קובץ עם פינות לבנות מסביב. אין בהישג יד? אפשר להמשיך בלעדיו ולשלוח לנו אחר כך."

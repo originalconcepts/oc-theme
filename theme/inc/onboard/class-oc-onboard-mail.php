@@ -232,13 +232,23 @@ final class Mail {
 			$out[] = __( 'The clearing company is set up and on. Put a real order through it before the site goes live.', 'oc-theme' );
 		}
 
+		// Plenty of shops do not have the logo to hand while they are
+		// answering, so it is asked for and not demanded. What is missing
+		// has to reach somebody, and that is this list.
+		$mark  = (array) Draft::value( 'site_logo' );
+		$light = (array) Draft::value( 'logo_light' );
+
+		if ( empty( $mark['id'] ) ) {
+			$out[] = __( 'Get their logo — they did not have it to hand. The site is wearing its name in text until it arrives. It goes in Customize, under the header.', 'oc-theme' );
+		}
+
 		// They asked for the menu to stand on the banner and had no light
 		// logo to give. The regular one is standing on the picture until
 		// one exists, which on a dark photograph is a logo nobody can see.
-		$light = (array) Draft::value( 'logo_light' );
-
 		if ( 'home' === (string) Draft::value( 'home_header' ) && empty( $light['id'] ) ) {
-			$out[] = __( 'Make the light version of their logo — they had none. The menu stands on their banner, so the regular logo is standing on the picture meanwhile. It goes in Customize, under the header.', 'oc-theme' );
+			$out[] = empty( $mark['id'] )
+				? __( 'That logo needs a light version too — the menu stands on their banner, so the logo stands on the picture.', 'oc-theme' )
+				: __( 'Make the light version of their logo — they had none. The menu stands on their banner, so the regular logo is standing on the picture meanwhile. It goes in Customize, under the header.', 'oc-theme' );
 		}
 
 		$out[] = __( 'Go over what was built — the home page, the catalogue and the product page — and put the last touches to it.', 'oc-theme' );

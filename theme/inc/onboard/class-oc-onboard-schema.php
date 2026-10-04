@@ -979,14 +979,13 @@ final class Schema {
 		);
 
 		$f['site_logo'] = array(
-			'type'     => 'file',
-			'accept'   => 'image',
-			'group'    => __( 'The header itself', 'oc-theme' ),
-			'label'    => __( 'Your logo', 'oc-theme' ),
-			'help'     => __( 'The file itself, as large and as sharp as you have it — PNG with a see-through background, or SVG. Not a photograph of a sign, and not one with white corners around it.', 'oc-theme' ),
-			'required' => true,
-			'target'   => array( 'mod', 'custom_logo' ),
-			'as'       => 'id',
+			'type'   => 'file',
+			'accept' => 'image',
+			'group'  => __( 'The header itself', 'oc-theme' ),
+			'label'  => __( 'Your logo', 'oc-theme' ),
+			'help'   => __( 'The file itself, as large and as sharp as you have it — PNG with a see-through background, or SVG. Not a photograph of a sign, and not one with white corners around it. Not to hand? Carry on without it and send it to us later.', 'oc-theme' ),
+			'target' => array( 'mod', 'custom_logo' ),
+			'as'     => 'id',
 		);
 
 		$f['header_look'] = array(

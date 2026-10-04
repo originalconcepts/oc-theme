@@ -976,6 +976,30 @@ final class Apply {
 		$img   = is_array( $image ) ? (int) $image['id'] : 0;
 		$id    = $this->page( 'about', __( 'About us', 'oc-theme' ), wpautop( esc_html( $text ) ), $img );
 
+		// The picture was going in as the page's featured image, which the
+		// page template never shows -- so a customer who uploaded one saw
+		// their words and no photograph. With a picture the page is composed
+		// of a media block, which puts the two side by side; without one the
+		// written page stands as it is.
+		if ( $id && $img && class_exists( '\OC\Blocks\Registry' ) ) {
+			$this->compose(
+				'about',
+				__( 'About us', 'oc-theme' ),
+				array(
+					array(
+						'type'    => 'media',
+						'preset'  => 'single',
+						'w'       => 'custom',
+						'wpx'     => 1200,
+						'heading' => __( 'About us', 'oc-theme' ),
+						'text'    => $text,
+						'img1'    => $img,
+						'side'    => 'start',
+					),
+				)
+			);
+		}
+
 		if ( 'write' === $mode ) {
 			$this->row( 'about_points', __( 'About page', 'oc-theme' ), 'check', __( 'The customer gave points, not a text: the page holds the points and needs writing.', 'oc-theme' ) );
 		} else {
@@ -1622,15 +1646,20 @@ final class Apply {
 		if ( 'icons' === $type ) {
 			$mine = $this->icon_items();
 
+			// Three or four promises side by side do not fit a phone, and
+			// stacked they push everything else off the first screen. One
+			// at a time, rotating, keeps them where they can be read.
 			if ( $mine ) {
 				return array(
 					'type'  => 'icons',
 					'items' => $mine,
+					'mlay'  => 'slider',
 				);
 			}
 
 			return array(
 				'type'  => 'icons',
+				'mlay'  => 'slider',
 				'items' => array(
 					array(
 						'icon'    => 'truck',
@@ -1743,11 +1772,18 @@ final class Apply {
 			// Edge to edge, the way the banner stands on our own shop. The
 			// block's own default keeps it inside the content width, which
 			// leaves a margin either side and does not read as a banner.
-			'w'      => 'full',
-			'pt'     => '0',
-			'pb'     => 'm',
-			'h'      => 0,
-			'hm'     => 450,
+			'w'        => 'full',
+			'pt'       => '0',
+			'pb'       => 'm',
+			// Natural height lets a tall photograph push the whole page down
+			// — on a laptop the banner filled the screen and nothing below it
+			// was ever seen. Held to a height a laptop screen has room for,
+			// with the picture covering it.
+			'h'        => 720,
+			'hm'       => 450,
+			// The picture drifts slower than the page. On the main banner
+			// this is how our own shop reads, so it is not a question.
+			'parallax' => '30',
 		);
 	}
 
@@ -2203,27 +2239,43 @@ final class Apply {
 		}
 
 		if ( 'cardcom' === $mine ) {
+			$able = $this->can_clear(
+				'cardcom',
+				array( 'terminalnumber', 'username', 'apipass' ),
+				array( $this->v['cc_terminal'], $this->v['cc_user'], $this->v['cc_pass'] )
+			);
+
 			$this->gateway(
 				'cardcom',
 				array(
 					// Nothing is taken until the keys are in: a gateway that
 					// cannot clear must not stand at the checkout.
-					'enabled'        => $now ? 'yes' : 'no',
+					'enabled'        => $now && $able ? 'yes' : 'no',
 					'terminalnumber' => trim( (string) $this->v['cc_terminal'] ),
 					'username'       => trim( (string) $this->v['cc_user'] ),
 					'apipass'        => (string) $this->v['cc_pass'],
 					// 1 = charge, 4 = a suspended deal, taken when approved.
 					'operation'      => $held ? '4' : '1',
 					'maxpayment'     => $many ? (string) $many : '1',
+					// Cardcom's own page opens in English unless it is told
+					// otherwise, which on a Hebrew shop is the one screen in
+					// the whole purchase that changes language.
+					'lang'           => $this->pay_lang(),
 				)
 			);
 		}
 
 		if ( 'payplus' === $mine ) {
+			$able = $this->can_clear(
+				'payplus-payment-gateway',
+				array( 'api_key', 'secret_key', 'payment_page_id' ),
+				array( $this->v['pp_api'], $this->v['pp_secret'], $this->v['pp_page'] )
+			);
+
 			$this->gateway(
 				'payplus-payment-gateway',
 				array(
-					'enabled'          => $now ? 'yes' : 'no',
+					'enabled'          => $now && $able ? 'yes' : 'no',
 					'api_key'          => (string) $this->v['pp_api'],
 					'secret_key'       => (string) $this->v['pp_secret'],
 					'payment_page_id'  => trim( (string) $this->v['pp_page'] ),
@@ -2313,7 +2365,67 @@ final class Apply {
 		$all  = get_option( $name );
 		$all  = is_array( $all ) ? $all : array();
 
+		// The keys are taken out of the questionnaire the moment the gateway
+		// holds them, so a second run reads nothing where the terminal and
+		// the password were. Writing that through blanked a working gateway
+		// and left it switched on with no keys at all. Nothing empty is ever
+		// written over something that is already there.
+		foreach ( $sets as $k => $v ) {
+			if ( ( '' === $v || null === $v ) && isset( $all[ $k ] ) && '' !== $all[ $k ] ) {
+				unset( $sets[ $k ] );
+			}
+		}
+
 		update_option( $name, array_merge( $all, $sets ) );
+	}
+
+	/**
+	 * The language the clearing page opens in: the shop's own.
+	 *
+	 * The gateway holds one setting for it, so on a shop running in two
+	 * languages this is the language it was built in. Following the shopper
+	 * instead would mean changing it per request, which is a thing for the
+	 * language plugin to do rather than for this one-time setup.
+	 */
+	private function pay_lang(): string {
+		return 0 === strpos( (string) get_locale(), 'he' ) ? 'he' : 'en';
+	}
+
+	/**
+	 * Is the gateway actually able to clear? A gateway standing at the
+	 * checkout without its keys takes the customer to a dead end, so being
+	 * switched on means the keys are there — in the answers, or already in
+	 * the gateway from an earlier run.
+	 *
+	 * @param string             $id   Gateway id.
+	 * @param array<int,string>  $keys The settings it cannot work without.
+	 * @param array<int,string>  $said What the questionnaire holds for them.
+	 */
+	private function can_clear( string $id, array $keys, array $said ): bool {
+		$missing = false;
+
+		foreach ( $said as $one ) {
+			if ( '' === trim( (string) $one ) ) {
+				$missing = true;
+			}
+		}
+
+		if ( ! $missing ) {
+			return true;
+		}
+
+		// The questionnaire is short of something. The gateway may still
+		// hold it from the run that put it there.
+		$all = get_option( 'woocommerce_' . $id . '_settings' );
+		$all = is_array( $all ) ? $all : array();
+
+		foreach ( $keys as $k ) {
+			if ( '' === trim( (string) ( $all[ $k ] ?? '' ) ) ) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	/**
