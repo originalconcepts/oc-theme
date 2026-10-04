@@ -161,7 +161,7 @@ final class Bulk_Category {
 		}
 		?>
 		<style>
-			#bulk-edit .oc-rmcat { margin: 8px 0 0; padding-block-start: 8px; border-block-start: 1px solid #dcdcde; }
+			#bulk-edit .oc-rmcat { margin: 8px 0 0; padding: 8px 10px; border: 1px solid #dcdcde; border-radius: 4px; background: #fff; }
 			#bulk-edit .oc-rmcat__sw { display: flex; align-items: center; gap: 6px; font-weight: 600; }
 			#bulk-edit .oc-rmcat__note { display: none; margin-block-start: 4px; color: #b32d2e; font-size: 12px; line-height: 1.5; }
 			#bulk-edit .oc-rmcat.is-on .oc-rmcat__sw { color: #b32d2e; }
@@ -171,35 +171,75 @@ final class Bulk_Category {
 		</style>
 		<script>
 		( function () {
-			var row = document.getElementById( 'bulk-edit' );
+			// The switch is rendered where the hook fires and belongs next to
+			// the list it reverses. It is shown either way: a box nobody can
+			// find is worse than a box in the wrong place.
+			function setup() {
+				var row = document.getElementById( 'bulk-edit' );
 
-			if ( ! row ) {
-				return;
-			}
-
-			var box = row.querySelector( '.oc-rmcat' );
-			var list = row.querySelector( '.cat-checklist.product_cat-checklist' );
-
-			if ( ! box || ! list ) {
-				return;
-			}
-
-			// The switch belongs with the list it reverses, not in a column
-			// of its own on the other side of the screen.
-			list.parentNode.insertBefore( box, list.nextSibling );
-			box.hidden = false;
-
-			var cb = box.querySelector( 'input[type="checkbox"]' );
-			var label = list.parentNode.querySelector( '.inline-edit-categories-label' );
-
-			cb.addEventListener( 'change', function () {
-				box.classList.toggle( 'is-on', cb.checked );
-				list.classList.toggle( 'is-removing', cb.checked );
-
-				if ( label ) {
-					label.classList.toggle( 'is-removing', cb.checked );
+				if ( ! row ) {
+					return;
 				}
-			} );
+
+				var box = row.querySelector( '.oc-rmcat' );
+
+				if ( ! box || box.dataset.ocReady ) {
+					return;
+				}
+
+				box.dataset.ocReady = '1';
+
+				// Anchor on the field itself, not on a class name: the ticked
+				// boxes are what the removal reads, so they cannot drift apart.
+				var one = row.querySelector( 'ul input[name="tax_input[product_cat][]"]' );
+				var list = one ? one.closest( 'ul' ) : null;
+				var label = null;
+
+				if ( list ) {
+					list.parentNode.insertBefore( box, list.nextSibling );
+
+					var before = list.previousElementSibling;
+
+					while ( before && ! label ) {
+						if ( before.classList && before.classList.contains( 'inline-edit-categories-label' ) ) {
+							label = before;
+						}
+
+						before = before.previousElementSibling;
+					}
+				}
+
+				box.hidden = false;
+
+				var cb = box.querySelector( 'input[type="checkbox"]' );
+
+				if ( ! cb ) {
+					return;
+				}
+
+				cb.addEventListener( 'change', function () {
+					box.classList.toggle( 'is-on', cb.checked );
+
+					if ( list ) {
+						list.classList.toggle( 'is-removing', cb.checked );
+					}
+
+					if ( label ) {
+						label.classList.toggle( 'is-removing', cb.checked );
+					}
+				} );
+			}
+
+			setup();
+			document.addEventListener( 'DOMContentLoaded', setup );
+
+			// Opening Bulk Edit moves the row into the table; if it was not in
+			// the document when this ran, it is now.
+			document.addEventListener( 'click', function ( e ) {
+				if ( e.target && ( 'doaction' === e.target.id || 'doaction2' === e.target.id ) ) {
+					setTimeout( setup, 80 );
+				}
+			}, true );
 		} )();
 		</script>
 		<?php
