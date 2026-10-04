@@ -13066,3 +13066,77 @@ msgstr "מותקן וממתין לפרטים, כבוי עד שיוזנו."
 
 msgid "Not this shop's clearing company, so it is off the site."
 msgstr "לא חברת הסליקה של החנות הזו, אז הוא הוסר מהאתר."
+
+msgid "Everything you answered is already written into your site — the pages, the home page, the catalogue, the product page, the cart and the checkout."
+msgstr "כל מה שעניתם כבר כתוב באתר שלכם — העמודים, עמוד הבית, הקטלוג, דף המוצר, הסל והקופה."
+
+msgid "What is left for you"
+msgstr "מה נשאר אצלכם"
+
+msgid "And what we do now"
+msgstr "ומה אנחנו עושים עכשיו"
+
+msgid "We go over everything that was built and put the last touches to it."
+msgstr "אנחנו עוברים על כל מה שנבנה ונותנים לזה את הנגיעות האחרונות."
+
+msgid "We load your products once you have them ready."
+msgstr "אנחנו מעלים את המוצרים שלכם ברגע שהם מוכנים."
+
+msgid "Then we go over the site with you before it goes live."
+msgstr "ואז עוברים איתכם על האתר לפני שהוא עולה לאוויר."
+
+msgid "Something to change? Write to us and we will do it — no need to fill anything in again."
+msgstr "משהו לשנות? כתבו לנו ואנחנו נעשה את זה — אין צורך למלא שום דבר מחדש."
+
+msgid "Open a clearing account so the shop can take card payments. We send you the link to PayPlus — leave your details there and they come back to you. Everything else is already built and waiting for it."
+msgstr "לפתוח חשבון סליקה כדי שהחנות תוכל לגבות בכרטיס. אנחנו שולחים לכם את הקישור לפייפלוס — תשאירו שם פרטים והם יחזרו אליכם. כל השאר כבר בנוי ומחכה לזה."
+
+msgid "Send us the details for %s and we connect it. It is not one of the two we install ourselves, so that part is by hand."
+msgstr "שלחו לנו את הפרטים של %s ואנחנו נחבר. זו לא אחת משתי חברות הסליקה שאנחנו מתקינים לבד, אז החלק הזה ידני."
+
+msgid "Tell us which clearing company you use and send us its details, and we connect it."
+msgstr "ספרו לנו באיזו חברת סליקה אתם משתמשים ושלחו לנו את הפרטים, ואנחנו נחבר."
+
+msgid "Fill in the Cardcom details — the terminal number, the API user and its password. The gateway is installed and waiting for them, and switched off until they are in."
+msgstr "להשלים את פרטי קארדקום — מספר המסוף, משתמש ה‑API והסיסמה שלו. הסולק מותקן ומחכה להם, וכבוי עד שיוזנו."
+
+msgid "Fill in the PayPlus details — the API key, the secret key and the payment-page id. The gateway is installed and waiting for them, and switched off until they are in."
+msgstr "להשלים את פרטי פייפלוס — מפתח ה‑API, המפתח הסודי ומזהה דף התשלום. הסולק מותקן ומחכה להם, וכבוי עד שיוזנו."
+
+msgid "Gather your products — the names, the prices and a picture of each. That is the one thing we cannot do without you."
+msgstr "לאסוף את המוצרים — השמות, המחירים ותמונה לכל אחד. זה הדבר היחיד שאנחנו לא יכולים לעשות בלעדיכם."
+
+msgid "Thank you! Everything you answered is already written into your site."
+msgstr "תודה! כל מה שעניתם כבר כתוב באתר שלכם."
+
+msgid "We go over everything that was built, load your products once you have them ready, and go over the site with you before it goes live."
+msgstr "אנחנו עוברים על כל מה שנבנה, מעלים את המוצרים ברגע שהם מוכנים, ועוברים איתכם על האתר לפני שהוא עולה לאוויר."
+
+msgid "Something errored — read the report before anything else."
+msgstr "משהו נכשל — קראו את הדוח לפני כל דבר אחר."
+
+msgid "Send them the PayPlus link so they can open an account. PayPlus is already installed on the site, switched off, waiting for the keys."
+msgstr "לשלוח להם את הקישור לפייפלוס כדי שיפתחו חשבון. פייפלוס כבר מותקן באתר, כבוי, מחכה למפתחות."
+
+msgid "They use a clearing company we do not install ourselves — get its details and connect it by hand. Both of our gateway plugins were taken off the site."
+msgstr "הם משתמשים בחברת סליקה שאנחנו לא מתקינים לבד — להשיג את הפרטים ולחבר ידנית. שני תוספי הסליקה שלנו הוסרו מהאתר."
+
+msgid "They left the clearing details for later. Chase them, put them in, and switch the gateway on."
+msgstr "הם השאירו את פרטי הסליקה להמשך. לרדוף אחריהם, להזין, ולהדליק את הסולק."
+
+msgid "The clearing company is set up and on. Put a real order through it before the site goes live."
+msgstr "חברת הסליקה מוגדרת ודלוקה. להעביר דרכה הזמנה אמיתית לפני שהאתר עולה לאוויר."
+
+msgid "Go over what was built — the home page, the catalogue and the product page — and put the last touches to it."
+msgstr "לעבור על מה שנבנה — עמוד הבית, הקטלוג ודף המוצר — ולתת את הנגיעות האחרונות."
+
+msgid "Get their products and load them."
+msgstr "להשיג את המוצרים שלהם ולהעלות אותם."
+
+msgid "Their own list is in the mail they received, so you both know what is waiting on whom."
+msgstr "הרשימה שלהם נמצאת במייל שהם קיבלו, כך ששניכם יודעים על מי מחכה מה."
+
+msgid "%d thing was written with a general text — read it over and make it theirs."
+msgid_plural "%d things were written with a general text — read them over and make them theirs."
+msgstr[0] "דבר אחד נכתב בטקסט כללי — לקרוא ולהפוך אותו לשלהם."
+msgstr[1] "%d דברים נכתבו בטקסט כללי — לקרוא ולהפוך אותם לשלהם."

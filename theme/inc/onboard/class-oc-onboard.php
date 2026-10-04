@@ -184,6 +184,49 @@ final class Onboard {
 	}
 
 	/**
+	 * What is still theirs to do, read from the answers they gave.
+	 *
+	 * The questionnaire lets a shop get to the end without the things it
+	 * does not have to hand — the clearing details above all. Saying so at
+	 * the end, in their own terms, is the difference between a list of
+	 * tasks and a vague sense that something is unfinished.
+	 *
+	 * @return array<int,string>
+	 */
+	public static function todo(): array {
+		$v    = static function ( string $id ) {
+			return Draft::value( $id );
+		};
+		$out  = array();
+		$gw   = (string) $v( 'pay_gw' );
+		$name = array(
+			'cardcom' => 'Cardcom',
+			'payplus' => 'PayPlus',
+		);
+
+		if ( 'none' === $gw ) {
+			$out[] = __( 'Open a clearing account so the shop can take card payments. We send you the link to PayPlus — leave your details there and they come back to you. Everything else is already built and waiting for it.', 'oc-theme' );
+		} elseif ( 'other' === $gw ) {
+			$told = trim( (string) $v( 'pay_other' ) );
+
+			$out[] = '' !== $told
+				/* translators: %s: the clearing company they named. */
+				? sprintf( __( 'Send us the details for %s and we connect it. It is not one of the two we install ourselves, so that part is by hand.', 'oc-theme' ), $told )
+				: __( 'Tell us which clearing company you use and send us its details, and we connect it.', 'oc-theme' );
+		} elseif ( isset( $name[ $gw ] ) && 'later' === (string) $v( 'pay_when' ) ) {
+			$out[] = 'cardcom' === $gw
+				? __( 'Fill in the Cardcom details — the terminal number, the API user and its password. The gateway is installed and waiting for them, and switched off until they are in.', 'oc-theme' )
+				: __( 'Fill in the PayPlus details — the API key, the secret key and the payment-page id. The gateway is installed and waiting for them, and switched off until they are in.', 'oc-theme' );
+		}
+
+		// A shop with nothing on its shelves is not a shop, and this is the
+		// one thing nobody else can do for them.
+		$out[] = __( 'Gather your products — the names, the prices and a picture of each. That is the one thing we cannot do without you.', 'oc-theme' );
+
+		return $out;
+	}
+
+	/**
 	 * The link for a token.
 	 *
 	 * @param string $token The raw token.

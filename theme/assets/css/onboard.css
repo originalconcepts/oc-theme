@@ -1226,3 +1226,5 @@ button.oc-onb-steps__i { cursor: pointer; }
 .wf-at__tr.is-alt { background: #f7f8fa; }
 .wf-at__th { color: #4a5160; font-weight: 700; }
 .wf-at__td { color: #b2b7c2; }
+/* What is theirs to do reads first, so it is the one that is marked. */
+.oc-onb-next--mine li { font-weight: 600; color: var(--onb-ink); }

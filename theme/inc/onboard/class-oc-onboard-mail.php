@@ -155,13 +155,22 @@ final class Mail {
 		$state = Onboard::state();
 		$to    = (string) $state['client']['email'];
 
+		$todo = Onboard::todo();
+		$mine = '';
+
+		foreach ( $todo as $one ) {
+			$mine .= '<li>' . esc_html( $one ) . '</li>';
+		}
+
 		if ( is_email( $to ) ) {
 			self::send(
 				$to,
 				__( 'We got it — your site is being built', 'oc-theme' ),
 				self::greeting( (string) $state['client']['name'] )
-				. '<p>' . esc_html__( 'Thank you! Everything you filled in is already on your site. Next we go through the home page, the category page and the product page together — that part opens at the same link, and we let you know when it is ready.', 'oc-theme' ) . '</p>'
-				. '<p class="small">' . esc_html__( 'You can reopen the questionnaire link any time to change an answer.', 'oc-theme' ) . '</p>'
+				. '<p>' . esc_html__( 'Thank you! Everything you answered is already written into your site.', 'oc-theme' ) . '</p>'
+				. ( '' === $mine ? '' : '<p><strong>' . esc_html__( 'What is left for you', 'oc-theme' ) . '</strong></p><ul>' . $mine . '</ul>' )
+				. '<p>' . esc_html__( 'We go over everything that was built, load your products once you have them ready, and go over the site with you before it goes live.', 'oc-theme' ) . '</p>'
+				. '<p class="small">' . esc_html__( 'Something to change? Write to us and we will do it — no need to fill anything in again.', 'oc-theme' ) . '</p>'
 			);
 		}
 
@@ -184,11 +193,59 @@ final class Mail {
 		}
 
 		$body = '<p>' . esc_html( sprintf( /* translators: 1: client, 2: site */ __( '%1$s finished the questionnaire on %2$s. The answers are applied.', 'oc-theme' ), (string) $state['client']['name'], home_url( '/' ) ) ) . '</p>'
+			. '<p><strong>' . esc_html__( 'What to do now', 'oc-theme' ) . '</strong></p><ul>' . self::my_turn( $sum, $todo ) . '</ul>'
 			. '<p>' . esc_html( sprintf( /* translators: 1..5 counts */ __( 'Applied %1$d · to check %2$d · left as is %3$d · skipped %4$d · errors %5$d', 'oc-theme' ), $sum['applied'], $sum['check'], $sum['manual'], $sum['skipped'], $sum['error'] ) ) . '</p>'
 			. ( $rows ? '<table cellpadding="6" style="border-collapse:collapse;font-size:14px"><tr><th>' . esc_html__( 'Field', 'oc-theme' ) . '</th><th>' . esc_html__( 'Target', 'oc-theme' ) . '</th><th>' . esc_html__( 'Result', 'oc-theme' ) . '</th><th>' . esc_html__( 'Note', 'oc-theme' ) . '</th></tr>' . $rows . '</table>' : '' )
 			. self::button( admin_url( 'admin.php?page=oc-onboard' ), __( 'The full report', 'oc-theme' ) );
 
 		self::send( Onboard::COPY_TO, sprintf( /* translators: %s: site host */ __( 'Questionnaire done: %s', 'oc-theme' ), self::host() ), $body, false );
+	}
+
+	/**
+	 * What is ours to do once a questionnaire lands, in the order it wants
+	 * doing. A report of counts says how it went; this says what to pick up.
+	 *
+	 * @param array<string,int> $sum  The report's counts.
+	 * @param array<int,string> $todo What is theirs to do, so we know what to chase.
+	 */
+	private static function my_turn( array $sum, array $todo ): string {
+		$out = array();
+		$pay = (array) get_option( 'oc_onboard_pay', array() );
+		$gw  = (string) ( $pay['gateway'] ?? '' );
+
+		if ( $sum['error'] ) {
+			$out[] = __( 'Something errored — read the report before anything else.', 'oc-theme' );
+		}
+
+		if ( $sum['check'] ) {
+			/* translators: %d: how many rows are marked to check. */
+			$out[] = sprintf( _n( '%d thing was written with a general text — read it over and make it theirs.', '%d things were written with a general text — read them over and make them theirs.', $sum['check'], 'oc-theme' ), $sum['check'] );
+		}
+
+		if ( 'none' === $gw ) {
+			$out[] = __( 'Send them the PayPlus link so they can open an account. PayPlus is already installed on the site, switched off, waiting for the keys.', 'oc-theme' );
+		} elseif ( 'other' === $gw ) {
+			$out[] = __( 'They use a clearing company we do not install ourselves — get its details and connect it by hand. Both of our gateway plugins were taken off the site.', 'oc-theme' );
+		} elseif ( ! empty( $pay['fill_later'] ) ) {
+			$out[] = __( 'They left the clearing details for later. Chase them, put them in, and switch the gateway on.', 'oc-theme' );
+		} else {
+			$out[] = __( 'The clearing company is set up and on. Put a real order through it before the site goes live.', 'oc-theme' );
+		}
+
+		$out[] = __( 'Go over what was built — the home page, the catalogue and the product page — and put the last touches to it.', 'oc-theme' );
+		$out[] = __( 'Get their products and load them.', 'oc-theme' );
+
+		if ( $todo ) {
+			$out[] = __( 'Their own list is in the mail they received, so you both know what is waiting on whom.', 'oc-theme' );
+		}
+
+		$html = '';
+
+		foreach ( $out as $one ) {
+			$html .= '<li>' . esc_html( $one ) . '</li>';
+		}
+
+		return $html;
 	}
 
 	/* ------------------------------------------------------------ pieces */

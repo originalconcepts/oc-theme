@@ -472,6 +472,7 @@ final class Rest {
 			array(
 				'ok'     => true,
 				'report' => self::report_summary( $report ),
+				'todo'   => Onboard::todo(),
 			)
 		);
 	}

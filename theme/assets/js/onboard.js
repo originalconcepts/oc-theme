@@ -4218,7 +4218,7 @@
 			submit.textContent = I.submitting;
 			var go_ = function () {
 				return api( '/submit', { body: '{}' } ).then( function ( r ) {
-					if ( r.ok ) { at = screens.length + 1; renderDone(); return; }
+					if ( r.ok ) { at = screens.length + 1; renderDone( r.data && r.data.todo ); return; }
 					if ( r.status === 422 && r.data.missing ) {
 						var id = r.data.missing[0];
 						screens.forEach( function ( s, i ) { if ( s.fields.indexOf( id ) !== -1 ) { go( i ); setTimeout( function () { mark( r.data.missing ); }, 300 ); } } );
@@ -4239,18 +4239,37 @@
 		window.scrollTo( { top: 0, behavior: 'smooth' } );
 	}
 
-	function renderDone() {
+	/**
+	 * The last screen. What is left for them comes first, because it is the
+	 * only part of this page they can act on; what we do next comes after.
+	 *
+	 * @param {Array} todo What the answers say is still theirs to do.
+	 */
+	function renderDone( todo ) {
 		root.innerHTML = '';
-		var next = el( 'ul', { 'class': 'oc-onb-next' } );
-		( I.done_next_items || [] ).forEach( function ( t ) { next.appendChild( el( 'li', { text: t } ) ); } );
-		root.appendChild( el( 'div', { 'class': 'oc-onb__card oc-onb__card--hello' }, [
-			el( 'div', { 'class': 'oc-onb-done__tick', 'aria-hidden': 'true', text: '✓' } ),
+
+		var kids = [
+			el( 'div', { 'class': 'oc-onb-done__tick', 'aria-hidden': 'true', text: '\u2713' } ),
 			el( 'h1', { text: I.done_title } ),
-			el( 'p', { text: I.done_text } ),
-			el( 'h2', { 'class': 'oc-onb-next__h', text: I.done_next_title } ),
-			next,
-			el( 'p', { 'class': 'oc-onb__small', text: I.done_again } )
-		] ) );
+			el( 'p', { text: I.done_text } )
+		];
+
+		if ( ( todo || [] ).length ) {
+			var mine = el( 'ul', { 'class': 'oc-onb-next oc-onb-next--mine' } );
+
+			todo.forEach( function ( t ) { mine.appendChild( el( 'li', { text: t } ) ); } );
+			kids.push( el( 'h2', { 'class': 'oc-onb-next__h', text: I.done_yours } ) );
+			kids.push( mine );
+		}
+
+		var next = el( 'ul', { 'class': 'oc-onb-next' } );
+
+		( I.done_next_items || [] ).forEach( function ( t ) { next.appendChild( el( 'li', { text: t } ) ); } );
+		kids.push( el( 'h2', { 'class': 'oc-onb-next__h', text: I.done_next_title } ) );
+		kids.push( next );
+		kids.push( el( 'p', { 'class': 'oc-onb__small', text: I.done_again } ) );
+
+		root.appendChild( el( 'div', { 'class': 'oc-onb__card oc-onb__card--hello' }, kids ) );
 		note( '', 'ok' );
 	}
 
