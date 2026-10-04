@@ -13143,3 +13143,15 @@ msgstr[1] "%d דברים נכתבו בטקסט כללי — לקרוא ולהפ�
 
 msgid "That category was not opened, so the button goes to the shop."
 msgstr "הקטגוריה הזו לא נפתחה, אז הכפתור מוביל לחנות."
+
+msgid "The shop"
+msgstr "החנות"
+
+msgid "Departments"
+msgstr "מחלקות"
+
+msgid "The footer"
+msgstr "הפוטר"
+
+msgid "%1$d pages and %2$d departments in its columns."
+msgstr "%1$d עמודים ו‑%2$d מחלקות בעמודות שלו."

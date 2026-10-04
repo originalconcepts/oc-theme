@@ -125,12 +125,148 @@ final class Apply {
 		}
 
 		$this->promised();
+		$this->footer();
 
 		update_option( self::LOG, $this->log, false );
 
 		self::flush_caches();
 
 		return $this->report;
+	}
+
+	/**
+	 * The foot of the site, built from what the questionnaire already
+	 * knows. Nobody is asked about it: a shop that has just told us its
+	 * pages, its departments and where to find it has said everything a
+	 * footer needs.
+	 *
+	 * The brand column takes the logo and the social links on its own, from
+	 * the settings written earlier. What is left is the two columns of
+	 * links, and the newsletter the theme already shows.
+	 */
+	private function footer(): void {
+		$this->write_mod( 'brand_name', 'oc_footer_preset', 'columns' );
+		$this->write_mod( 'brand_name', 'oc_footer_news', 1 );
+
+		$spots = (array) get_theme_mod( 'nav_menu_locations', array() );
+
+		// One: the pages they can read — about, the terms, the statement,
+		// the privacy policy, and the branches when there are any.
+		$pages = array();
+
+		foreach ( array(
+			'page:about'    => (int) ( $this->log['page:about'] ?? 0 ),
+			'page:branches' => (int) ( $this->log['page:branches'] ?? 0 ),
+			'terms'         => (int) get_option( Legal\Terms::OPTION, 0 ),
+			'a11y'          => (int) get_option( Legal\Accessibility::OPTION, 0 ),
+			'privacy'       => (int) get_option( 'wp_page_for_privacy_policy', 0 ),
+		) as $id ) {
+			if ( $id > 0 && 'page' === get_post_type( $id ) && 'publish' === get_post_status( $id ) ) {
+				$pages[] = $id;
+			}
+		}
+
+		if ( $pages ) {
+			$menu = $this->side_menu( 'footer:pages', __( 'The shop', 'oc-theme' ) );
+
+			if ( $menu ) {
+				$this->fill_menu( $menu, $pages, 'post_type', 'page' );
+
+				$spots['footer-col-1'] = $menu;
+
+				$this->write_mod( 'brand_name', 'oc_footer_col1_h', __( 'The shop', 'oc-theme' ) );
+			}
+		}
+
+		// Two: the departments they chose to put on the home page — the
+		// ones they already told us matter most.
+		$cats = $this->chosen_cats();
+
+		if ( $cats ) {
+			$menu = $this->side_menu( 'footer:cats', __( 'Departments', 'oc-theme' ) );
+
+			if ( $menu ) {
+				$this->fill_menu( $menu, array_slice( $cats, 0, 8 ), 'taxonomy', 'product_cat' );
+
+				$spots['footer-col-2'] = $menu;
+
+				$this->write_mod( 'brand_name', 'oc_footer_col2_h', __( 'Departments', 'oc-theme' ) );
+			}
+		}
+
+		set_theme_mod( 'nav_menu_locations', $spots );
+		$this->row( 'brand_name', __( 'The footer', 'oc-theme' ), 'applied', sprintf( /* translators: 1: pages, 2: departments. */ __( '%1$d pages and %2$d departments in its columns.', 'oc-theme' ), count( $pages ), count( $cats ) ) );
+	}
+
+	/**
+	 * A menu of ours by name, made once and found again after that.
+	 *
+	 * @param string $key   How the log remembers it.
+	 * @param string $title What it is called.
+	 * @return int Menu id, 0 when WordPress would not make it.
+	 */
+	private function side_menu( string $key, string $title ): int {
+		$was = (int) ( $this->log[ $key ] ?? 0 );
+
+		if ( $was && is_nav_menu( $was ) ) {
+			return $was;
+		}
+
+		$made = wp_create_nav_menu( $title );
+
+		if ( is_wp_error( $made ) ) {
+			// A menu of that name is already there: take it rather than
+			// stack a second one beside it.
+			$have = wp_get_nav_menu_object( $title );
+
+			if ( ! $have ) {
+				return 0;
+			}
+
+			$made = $have->term_id;
+		}
+
+		$this->remember( $key, (int) $made );
+
+		return (int) $made;
+	}
+
+	/**
+	 * Put things in a menu, in the order given, and only once.
+	 *
+	 * @param int            $menu   The menu.
+	 * @param array<int,int> $ids    Page or term ids.
+	 * @param string         $kind   post_type | taxonomy.
+	 * @param string         $object page | product_cat.
+	 */
+	private function fill_menu( int $menu, array $ids, string $kind, string $object ): void {
+		$have = array();
+
+		foreach ( (array) wp_get_nav_menu_items( $menu ) as $item ) {
+			$have[] = (int) $item->object_id;
+		}
+
+		$n = count( $have );
+
+		foreach ( $ids as $id ) {
+			if ( in_array( (int) $id, $have, true ) ) {
+				continue;
+			}
+
+			++$n;
+
+			wp_update_nav_menu_item(
+				$menu,
+				0,
+				array(
+					'menu-item-object-id' => (int) $id,
+					'menu-item-object'    => $object,
+					'menu-item-type'      => $kind,
+					'menu-item-status'    => 'publish',
+					'menu-item-position'  => $n,
+				)
+			);
+		}
 	}
 
 	/**
@@ -149,6 +285,11 @@ final class Apply {
 		// a phone down. Both were questions once; neither is now.
 		$this->write_option_key( 'cart_open', 'oc_cart', 'side', 'left' );
 		$this->write_mod( 'prod_side', 'oc_product_sticky_atc', 1 );
+
+		// The width every OC shop is built at. The theme's own default is
+		// narrower, which is why a finished site did not look like the one
+		// it was sold from.
+		$this->write_mod( 'brand_name', 'oc_content_width_px', 1742 );
 
 		// Similar products: shown, and picked the way that works — by what a
 		// product shares with this one, not by the loosest category it is in.
@@ -1054,9 +1195,11 @@ final class Apply {
 
 		$this->remember( 'menu:items', implode( ' | ', $named ) );
 
-		$spots              = (array) get_theme_mod( 'nav_menu_locations', array() );
-		$spots['primary']   = (int) $menu->term_id;
-		$spots['secondary'] = isset( $spots['secondary'] ) ? $spots['secondary'] : (int) $menu->term_id;
+		// The main nav, and nowhere else. It used to fill the header's side
+		// menu as well when that stood empty, which put the same
+		// departments on the screen twice.
+		$spots            = (array) get_theme_mod( 'nav_menu_locations', array() );
+		$spots['primary'] = (int) $menu->term_id;
 
 		set_theme_mod( 'nav_menu_locations', $spots );
 
