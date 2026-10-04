@@ -234,8 +234,8 @@ final class Apply {
 	 * A page of ours, composed of blocks and left alone once somebody has
 	 * edited it.
 	 *
-	 * @param string                        $slug  Page slug.
-	 * @param string                        $title Page title.
+	 * @param string                         $slug  Page slug.
+	 * @param string                         $title Page title.
 	 * @param array<int,array<string,mixed>> $parts The blocks.
 	 */
 	private function compose( string $slug, string $title, array $parts ): void {
