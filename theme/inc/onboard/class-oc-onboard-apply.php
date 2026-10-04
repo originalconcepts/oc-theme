@@ -234,12 +234,12 @@ final class Apply {
 	/**
 	 * Put things in a menu, in the order given, and only once.
 	 *
-	 * @param int            $menu   The menu.
-	 * @param array<int,int> $ids    Page or term ids.
-	 * @param string         $kind   post_type | taxonomy.
-	 * @param string         $object page | product_cat.
+	 * @param int            $menu The menu.
+	 * @param array<int,int> $ids  Page or term ids.
+	 * @param string         $kind post_type | taxonomy.
+	 * @param string         $what page | product_cat.
 	 */
-	private function fill_menu( int $menu, array $ids, string $kind, string $object ): void {
+	private function fill_menu( int $menu, array $ids, string $kind, string $what ): void {
 		$have = array();
 
 		foreach ( (array) wp_get_nav_menu_items( $menu ) as $item ) {
@@ -260,7 +260,7 @@ final class Apply {
 				0,
 				array(
 					'menu-item-object-id' => (int) $id,
-					'menu-item-object'    => $object,
+					'menu-item-object'    => $what,
 					'menu-item-type'      => $kind,
 					'menu-item-status'    => 'publish',
 					'menu-item-position'  => $n,
