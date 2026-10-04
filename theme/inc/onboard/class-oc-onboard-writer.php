@@ -75,13 +75,7 @@ final class Writer {
 		$lines = array();
 
 		foreach ( $ids as $one ) {
-			$v = Draft::value( $one );
-
-			if ( is_array( $v ) ) {
-				$v = implode( ', ', array_filter( array_map( 'strval', $v ), 'is_string' ) );
-			}
-
-			$v = trim( (string) $v );
+			$v = self::flat( Draft::value( $one ) );
 
 			if ( '' === $v ) {
 				continue;
@@ -93,6 +87,55 @@ final class Writer {
 		}
 
 		return implode( "\n", $lines );
+	}
+
+	/**
+	 * One line out of an answer, whatever shape it is in.
+	 *
+	 * The menu arrives as a tree of rows, each with a name and children of
+	 * its own, and casting that to a string gives "Array". Only the words
+	 * are wanted here, in the order they were given.
+	 *
+	 * @param mixed $v The stored answer.
+	 */
+	private static function flat( $v ): string {
+		if ( is_scalar( $v ) ) {
+			return trim( (string) $v );
+		}
+
+		if ( ! is_array( $v ) ) {
+			return '';
+		}
+
+		$words = array();
+
+		foreach ( $v as $key => $one ) {
+			// A row of a tree or a repeater: its name is the word, and
+			// whatever hangs under it follows.
+			if ( is_array( $one ) ) {
+				$deep = self::flat( $one );
+
+				if ( '' !== $deep ) {
+					$words[] = $deep;
+				}
+
+				continue;
+			}
+
+			if ( ! is_scalar( $one ) || '' === trim( (string) $one ) ) {
+				continue;
+			}
+
+			// Inside a row only the name is worth repeating; ids, uids and
+			// switches say nothing to a writer.
+			if ( is_string( $key ) && ! in_array( $key, array( 'name', 'title', 'text', 'label', 'heading' ), true ) ) {
+				continue;
+			}
+
+			$words[] = trim( (string) $one );
+		}
+
+		return implode( ', ', array_unique( array_filter( $words ) ) );
 	}
 
 	/**
