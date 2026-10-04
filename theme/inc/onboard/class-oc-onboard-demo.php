@@ -518,7 +518,9 @@ final class Demo {
 			(string) $put['file']
 		);
 
-		if ( is_wp_error( $id ) || ! $id ) {
+		// wp_insert_attachment() without the error flag answers 0, not an
+		// error object.
+		if ( ! $id ) {
 			return 0;
 		}
 
