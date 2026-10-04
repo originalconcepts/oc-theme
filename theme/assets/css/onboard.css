@@ -464,7 +464,7 @@ button.oc-onb-dots__d:hover { background: var(--onb-ink-2); }
 .wf-grid--cats .wf-cat__img { aspect-ratio: 1 / 1; border-radius: 50%; }
 .wf-cat__t { text-align: center; margin-top: 5px; color: #6c7382; }
 
-.wf-trust { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 20px 12px; margin-top: 14px; background: #f7f8fa; justify-items: center; text-align: center; }
+.wf-trust { display: grid; grid-template-columns: repeat(var(--wf-trust-n, 3), minmax(0, 1fr)); gap: 12px; padding: 20px 12px; margin-top: 14px; background: #f7f8fa; justify-items: center; text-align: center; }
 .wf-trust__i { display: grid; justify-items: center; gap: 4px; width: 100%; }
 .wf-trust__ic { color: #8d93a1; }
 .wf-trust__ic svg { width: 26px; height: 26px; display: block; }

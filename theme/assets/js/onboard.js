@@ -2669,13 +2669,19 @@
 				return r && ( String( r.heading || '' ).trim() || String( r.text || '' ).trim() );
 			} );
 
+			// However many there are, they share one row and divide the
+			// width between them — which is what the block itself does.
+			var band = function ( kids ) {
+				return el( 'div', { 'class': 'wf-trust', style: '--wf-trust-n:' + kids.length }, kids );
+			};
+
 			if ( mine.length ) {
-				return w( 'wf-trust', mine.map( function ( r ) {
+				return band( mine.map( function ( r ) {
 					return wTrust( String( r.icon || 'truck' ), String( r.heading || '' ).trim(), String( r.text || '' ).trim(), r.img && r.img.url ? r.img.url : '' );
 				} ) );
 			}
 
-			return w( 'wf-trust', [
+			return band( [
 				wTrust( 'truck', I.wf_trust1 ),
 				wTrust( 'returns', I.wf_trust2 ),
 				wTrust( 'shield', I.wf_trust3 )
