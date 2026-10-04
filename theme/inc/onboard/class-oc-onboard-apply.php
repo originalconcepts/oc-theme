@@ -144,6 +144,7 @@ final class Apply {
 		}
 
 		$this->promised();
+		$this->forget_key();
 		$this->wc_page_names();
 		$this->talk_pages();
 		$this->footer();
@@ -153,6 +154,27 @@ final class Apply {
 		self::flush_caches();
 
 		return $this->report;
+	}
+
+	/**
+	 * The writing is done, so the key that did it leaves the site.
+	 *
+	 * It is ours, it arrived here only because the site was cloned from
+	 * base, and a customer site has no further use for it. The settings
+	 * screen has always said this happens; now it does.
+	 */
+	private function forget_key(): void {
+		$s = Onboard::settings();
+
+		if ( '' === trim( (string) $s['claude_key'] ) ) {
+			return;
+		}
+
+		$s['claude_key'] = '';
+
+		update_option( Onboard::SETTINGS, $s );
+
+		$this->row( 'about_written', __( 'The writing key', 'oc-theme' ), 'applied', __( 'Taken off this site now the writing is done.', 'oc-theme' ) );
 	}
 
 	/**
@@ -966,7 +988,15 @@ final class Apply {
 			return;
 		}
 
-		$text = 'paste' === $mode ? (string) $this->v['about_text'] : (string) $this->v['about_points'];
+		if ( 'paste' === $mode ) {
+			$text = (string) $this->v['about_text'];
+		} else {
+			// They gave points and we turned them into prose while they
+			// watched. The prose is the page; the points are what it was
+			// made from, and stand in only if nothing was ever written.
+			$written = trim( (string) $this->v['about_written'] );
+			$text    = '' !== $written ? $written : (string) $this->v['about_points'];
+		}
 
 		if ( '' === trim( $text ) ) {
 			return;
@@ -1001,7 +1031,16 @@ final class Apply {
 		}
 
 		if ( 'write' === $mode ) {
-			$this->row( 'about_points', __( 'About page', 'oc-theme' ), 'check', __( 'The customer gave points, not a text: the page holds the points and needs writing.', 'oc-theme' ) );
+			$done = '' !== trim( (string) $this->v['about_written'] );
+
+			$this->row(
+				'about_points',
+				__( 'About page', 'oc-theme' ),
+				$done ? 'applied' : 'check',
+				$done
+					? __( 'Written from their points and kept as they approved it.', 'oc-theme' )
+					: __( 'The customer gave points and did not have it written: the page holds the points and needs writing.', 'oc-theme' )
+			);
 		} else {
 			$this->row( 'about_text', __( 'About page', 'oc-theme' ), $id ? 'applied' : 'error' );
 		}

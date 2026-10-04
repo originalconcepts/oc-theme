@@ -13209,3 +13209,78 @@ msgstr "ללוגו הזה צריך גם גרסה בהירה — התפריט ע�
 
 msgid "The file itself, as large and as sharp as you have it — PNG with a see-through background, or SVG. Not a photograph of a sign, and not one with white corners around it. Not to hand? Carry on without it and send it to us later."
 msgstr "הקובץ עצמו, בגודל ובאיכות הכי טובים שיש לכם — PNG עם רקע שקוף, או SVG. לא צילום של שלט, ולא קובץ עם פינות לבנות מסביב. אין בהישג יד? אפשר להמשיך בלעדיו ולשלוח לנו אחר כך."
+
+msgid "Write it for me"
+msgstr "תכתבו לי"
+
+msgid "Write it again"
+msgstr "לכתוב שוב"
+
+msgid "Writing…"
+msgstr "כותבים…"
+
+msgid "There it is. Change any word you like — it is yours now."
+msgstr "הנה. אפשר לשנות כל מילה — זה שלכם עכשיו."
+
+msgid "That did not work. Try again in a moment, or write it yourself and we will tidy it with you."
+msgstr "זה לא הצליח. נסו שוב בעוד רגע, או כתבו בעצמכם ונסדר את זה יחד."
+
+msgid "Want it different? Say how — shorter, warmer, less formal"
+msgstr "רוצים אחרת? כתבו איך — קצר יותר, חם יותר, פחות רשמי"
+
+msgid "This will replace what is in the box. Carry on?"
+msgstr "זה יחליף את מה שכתוב בתיבה. להמשיך?"
+
+msgid "And this is how it reads"
+msgstr "וכך זה נקרא"
+
+msgid "Press the button and we turn your points into the text for the page. Read it over — change a word, or ask for it again differently. Nothing is kept until you are happy with it."
+msgstr "לחצו על הכפתור ואנחנו הופכים את הנקודות שלכם לטקסט של העמוד. קראו אותו — שנו מילה, או בקשו שוב אחרת. שום דבר לא נשמר עד שתהיו מרוצים."
+
+msgid "the \"about us\" page"
+msgstr "עמוד ״אודות״"
+
+msgid "That question is not one we write."
+msgstr "זו לא שאלה שאנחנו כותבים."
+
+msgid "Writing is not switched on for this site."
+msgstr "הכתיבה לא מופעלת באתר הזה."
+
+msgid "Tell us a little about the shop first and we will have something to work from."
+msgstr "ספרו לנו קצת על החנות קודם, ויהיה לנו ממה לעבוד."
+
+msgid "We could not reach the writer just now. Try again in a moment."
+msgstr "לא הצלחנו להגיע לכותב כרגע. נסו שוב בעוד רגע."
+
+msgid "The writer could not do it this time. Write it yourself for now and we will tidy it with you."
+msgstr "הכותב לא הצליח הפעם. כתבו בעצמכם בינתיים ונסדר את זה יחד."
+
+msgid "Nothing came back. Try again in a moment."
+msgstr "לא חזר כלום. נסו שוב בעוד רגע."
+
+msgid "Write %1$s for this shop, in about %2$d words."
+msgstr "כתבו %1$s לחנות הזו, בערך %2$d מילים."
+
+msgid "What the owner told us, in their own words:"
+msgstr "מה שבעל העסק סיפר לנו, במילים שלו:"
+
+msgid "Write it in the same language they used. Write it as the shop speaking to a customer — warm, plain, and specific to this shop. Use only what they told you: invent no history, no numbers, no awards and no promises. No headings, no bullet points, no quotation marks around it, and nothing about being an assistant. Return the text and nothing else."
+msgstr "כתבו באותה שפה שבה הם כתבו. כתבו כאילו החנות מדברת אל לקוח — חם, פשוט, וספציפי לחנות הזו. השתמשו רק במה שהם סיפרו: אל תמציאו היסטוריה, מספרים, פרסים או הבטחות. בלי כותרות, בלי נקודות, בלי מרכאות מסביב, ובלי שום דבר על היותכם עוזר. החזירו את הטקסט ותו לא."
+
+msgid "They have read a first version and asked for this:"
+msgstr "הם קראו גרסה ראשונה וביקשו את זה:"
+
+msgid "Written from their points and kept as they approved it."
+msgstr "נכתב מהנקודות שלהם ונשמר כפי שאישרו."
+
+msgid "The customer gave points and did not have it written: the page holds the points and needs writing."
+msgstr "הלקוח נתן נקודות ולא ביקש שייכתב: העמוד מחזיק את הנקודות וצריך כתיבה."
+
+msgid "The writing key"
+msgstr "מפתח הכתיבה"
+
+msgid "Taken off this site now the writing is done."
+msgstr "הוסר מהאתר הזה עכשיו כשהכתיבה הסתיימה."
+
+msgid "The last time the writer was asked it answered %1$d %2$s, %3$s ago. Nothing of the key or of the answers is kept here."
+msgstr "בפעם האחרונה שהכותב נשאל הוא ענה %1$d %2$s, לפני %3$s. שום דבר מהמפתח או מהתשובות לא נשמר כאן."

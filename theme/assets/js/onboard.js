@@ -471,6 +471,73 @@
 
 	/* ------------------------------------------------------------ fields */
 
+	/**
+	 * "Write it for me", and once there are words, "again, differently".
+	 *
+	 * The text lands in the field and is saved like anything they typed,
+	 * so it is theirs to keep, change or clear. Nothing writes on its own
+	 * and nothing overwrites without being asked twice.
+	 *
+	 * @param {string}  id    Field id.
+	 * @param {Element} inner The textarea it writes into.
+	 */
+	function writeBar( id, inner ) {
+		var bar  = el( 'div', { 'class': 'oc-onb-ai' } );
+		var go   = el( 'button', { type: 'button', 'class': 'oc-onb-ai__go', text: I.ai_write } );
+		var tone = el( 'input', { type: 'text', 'class': 'oc-onb-in oc-onb-ai__tone', placeholder: I.ai_tone } );
+		var say  = el( 'p', { 'class': 'oc-onb-ai__say' } );
+		var busy = false;
+
+		var paint = function () {
+			var has = String( inner.value || '' ).trim() !== '';
+
+			go.textContent = busy ? I.ai_busy : ( has ? I.ai_again : I.ai_write );
+			go.disabled    = busy;
+			tone.hidden    = ! has;
+		};
+
+		go.addEventListener( 'click', function () {
+			if ( busy ) { return; }
+
+			// Asking again over words they may have edited themselves.
+			if ( String( inner.value || '' ).trim() !== '' && ! window.confirm( I.ai_replace ) ) { return; }
+
+			busy = true;
+			say.textContent = '';
+			paint();
+
+			api( '/write', { body: JSON.stringify( { field: id, tone: tone.value || '' } ) } )
+				.then( function ( r ) {
+					busy = false;
+
+					if ( r && r.text ) {
+						inner.value = r.text;
+						set( id, r.text );
+						tone.value = '';
+						say.textContent = I.ai_done;
+					} else {
+						say.textContent = ( r && r.error ) ? r.error : I.ai_failed;
+					}
+
+					paint();
+				} )
+				.catch( function () {
+					busy = false;
+					say.textContent = I.ai_failed;
+					paint();
+				} );
+		} );
+
+		inner.addEventListener( 'input', paint );
+
+		bar.appendChild( go );
+		bar.appendChild( tone );
+		bar.appendChild( say );
+		paint();
+
+		return bar;
+	}
+
 	function fieldBox( id, f, inner ) {
 		// A field that only appears because of the answer above it is drawn
 		// as part of that answer, not as a question of its own.
@@ -495,6 +562,9 @@
 		}
 		if ( foundIn[ id ] ) { box.appendChild( el( 'p', { 'class': 'oc-onb-f__found', text: I.found_hint } ) ); }
 		box.appendChild( inner );
+
+		// Some answers we can draft from what they have already told us.
+		if ( f.ai && C.canWrite ) { box.appendChild( writeBar( id, inner ) ); }
 		box.appendChild( el( 'p', { 'class': 'oc-onb-f__err', text: I.required } ) );
 		if ( ! shown( id ) ) { box.hidden = true; }
 		return box;

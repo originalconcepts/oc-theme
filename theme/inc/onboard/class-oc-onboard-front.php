@@ -94,6 +94,9 @@ final class Front {
 			'schema'     => Schema::for_js(),
 			'values'     => Draft::shown(),
 			'held'       => Draft::held(),
+			// No key on this site means no button, rather than a button
+			// that apologises every time it is pressed.
+			'canWrite'   => Writer::can(),
 			'days'       => $days,
 			'disclaimer' => Consent::text(),
 			'art'        => Art::all(),
@@ -321,6 +324,13 @@ final class Front {
 				'consent_upload'  => __( 'I will upload my own instead', 'oc-theme' ),
 				'found_pages'     => __( 'We found these pages on your current site and filled the addresses in. Have a look that they are the right ones.', 'oc-theme' ),
 				'found_hint'      => __( 'We found this address on your site. Change it if it is the wrong page.', 'oc-theme' ),
+				'ai_write'        => __( 'Write it for me', 'oc-theme' ),
+				'ai_again'        => __( 'Write it again', 'oc-theme' ),
+				'ai_busy'         => __( 'Writing…', 'oc-theme' ),
+				'ai_done'         => __( 'There it is. Change any word you like — it is yours now.', 'oc-theme' ),
+				'ai_failed'       => __( 'That did not work. Try again in a moment, or write it yourself and we will tidy it with you.', 'oc-theme' ),
+				'ai_tone'         => __( 'Want it different? Say how — shorter, warmer, less formal', 'oc-theme' ),
+				'ai_replace'      => __( 'This will replace what is in the box. Carry on?', 'oc-theme' ),
 				'link_stale'      => __( 'This link is no longer active. Open the newest link we sent you, and nothing you filled in will be lost.', 'oc-theme' ),
 				'branches_first'  => __( 'Add your branches on the previous screen and they will appear here.', 'oc-theme' ),
 				'branch_word'     => __( 'Branch', 'oc-theme' ),

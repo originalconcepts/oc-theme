@@ -86,6 +86,16 @@ final class Rest {
 
 		register_rest_route(
 			self::NS,
+			'/onboard/write',
+			array(
+				'methods'             => 'POST',
+				'permission_callback' => array( __CLASS__, 'permit_token' ),
+				'callback'            => array( $this, 'write' ),
+			)
+		);
+
+		register_rest_route(
+			self::NS,
 			'/onboard/submit',
 			array(
 				'methods'             => 'POST',
@@ -219,6 +229,34 @@ final class Rest {
 				'expires' => (int) Onboard::state()['expires'],
 			)
 		);
+	}
+
+	/**
+	 * Write one answer for them, from what they have already told us.
+	 *
+	 * The words are handed back and not saved: the customer reads them in
+	 * the field and decides. Saving is the ordinary draft call, the same as
+	 * if they had typed it.
+	 *
+	 * @param \WP_REST_Request $req Request.
+	 */
+	public function write( \WP_REST_Request $req ): \WP_REST_Response {
+		if ( ! self::rate_ok( 'write', 30 ) ) {
+			return self::answer( array( 'error' => 'slow' ), 429 );
+		}
+
+		$text = Writer::write(
+			sanitize_key( (string) $req->get_param( 'field' ) ),
+			sanitize_textarea_field( (string) $req->get_param( 'tone' ) )
+		);
+
+		Onboard::touch();
+
+		if ( is_wp_error( $text ) ) {
+			return self::answer( array( 'error' => $text->get_error_message() ), 200 );
+		}
+
+		return self::answer( array( 'text' => $text ) );
 	}
 
 	/**

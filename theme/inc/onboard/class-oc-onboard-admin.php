@@ -241,6 +241,20 @@ final class Admin {
 					<?php submit_button( __( 'Save keys', 'oc-theme' ), 'secondary', 'submit', false ); ?>
 				</form>
 				<p class="description" style="margin-top:14px"><?php echo esc_html( defined( 'OC_PROVISION_KEY' ) && OC_PROVISION_KEY ? __( 'The provisioning secret is set in wp-config.php.', 'oc-theme' ) : __( 'OC_PROVISION_KEY is not defined in wp-config.php: the invite route is closed until it is.', 'oc-theme' ) ); ?></p>
+				<?php $werr = (array) get_option( 'oc_onboard_write_error', array() ); ?>
+				<?php if ( ! empty( $werr['code'] ) ) : ?>
+					<p class="description" style="color:#b32d2e">
+						<?php
+						printf(
+							/* translators: 1: HTTP status, 2: the error as the writer named it, 3: how long ago. */
+							esc_html__( 'The last time the writer was asked it answered %1$d %2$s, %3$s ago. Nothing of the key or of the answers is kept here.', 'oc-theme' ),
+							(int) $werr['code'],
+							esc_html( (string) ( $werr['type'] ?? '' ) ),
+							esc_html( human_time_diff( (int) $werr['when'] ) )
+						);
+						?>
+					</p>
+				<?php endif; ?>
 			</div>
 		</div>
 		<?php

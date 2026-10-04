@@ -103,7 +103,7 @@ final class Schema {
 						'id'     => '2a',
 						'title'  => __( 'About us', 'oc-theme' ),
 						'intro'  => __( 'A few lines about who you are. This becomes the About page and the short text on the home page.', 'oc-theme' ),
-						'fields' => array( 'about_mode', 'about_url', 'about_text', 'about_points', 'about_image' ),
+						'fields' => array( 'about_mode', 'about_url', 'about_text', 'about_points', 'about_written', 'about_image' ),
 					),
 					array(
 						'id'     => '2b',
@@ -687,6 +687,22 @@ final class Schema {
 			'when'     => array( 'about_mode', array( 'write' ) ),
 			'required' => true,
 			'target'   => array( 'call', 'about' ),
+			// The points stay the answer; the writing happens on the About
+			// screen, into the field below, where they can read it.
+		);
+
+		$f['about_written'] = array(
+			'type'   => 'textarea',
+			'label'  => __( 'And this is how it reads', 'oc-theme' ),
+			'help'   => __( 'Press the button and we turn your points into the text for the page. Read it over — change a word, or ask for it again differently. Nothing is kept until you are happy with it.', 'oc-theme' ),
+			'rows'   => 10,
+			'when'   => array( 'about_mode', array( 'write' ) ),
+			'target' => array( 'call', 'about' ),
+			'ai'     => array(
+				'what'  => __( 'the "about us" page', 'oc-theme' ),
+				'from'  => array( 'brand_name', 'about_points', 'site_menu', 'top_bar_1' ),
+				'words' => 130,
+			),
 		);
 
 		$f['about_image'] = array(
@@ -2516,6 +2532,7 @@ final class Schema {
 					'show'         => '',
 					'suffix'       => '',
 					'blocks'       => array(),
+					'ai'           => array(),
 					'as'           => '',
 					'default'      => null,
 					'when'         => null,
@@ -3355,6 +3372,10 @@ final class Schema {
 			$row = $f;
 
 			unset( $row['target'] );
+
+			// The page only needs to know a field can be written. What to
+			// say to the writer is ours and stays on the server.
+			$row['ai'] = ! empty( $f['ai'] );
 
 			$row['default'] = self::default_of( $id );
 

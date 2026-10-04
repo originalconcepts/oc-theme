@@ -1228,3 +1228,48 @@ button.oc-onb-steps__i { cursor: pointer; }
 .wf-at__td { color: #b2b7c2; }
 /* What is theirs to do reads first, so it is the one that is marked. */
 .oc-onb-next--mine li { font-weight: 600; color: var(--onb-ink); }
+
+/* ---------- write it for me ---------- */
+
+/* Sits under the box it writes into, reading as a help to the field
+ * rather than as a question of its own. */
+.oc-onb-ai {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+	margin-block-start: 8px;
+}
+
+.oc-onb-ai__go {
+	flex: none;
+	border: 1px solid var(--onb-line);
+	background: var(--onb-card);
+	color: inherit;
+	font: inherit;
+	font-size: 14px;
+	padding: 7px 14px;
+	border-radius: 999px;
+	cursor: pointer;
+	transition: background-color .15s ease, border-color .15s ease;
+}
+
+.oc-onb-ai__go:hover:not(:disabled) { border-color: var(--onb-ink); }
+.oc-onb-ai__go:disabled { opacity: .6; cursor: default; }
+
+/* Only worth asking for a change once there is something to change. */
+.oc-onb-ai__tone {
+	flex: 1 1 220px;
+	min-inline-size: 0;
+	font-size: 14px;
+	padding-block: 7px;
+}
+
+.oc-onb-ai__tone[hidden] { display: none; }
+
+.oc-onb-ai__say {
+	flex: 1 0 100%;
+	margin: 0;
+	font-size: 13px;
+	opacity: .75;
+}
