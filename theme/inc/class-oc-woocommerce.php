@@ -931,7 +931,21 @@ final class WooCommerce {
 
 		$transparent = (string) get_theme_mod( 'oc_header_transparent', 'none' );
 		if ( 'all' === $transparent || ( 'home' === $transparent && is_front_page() ) ) {
-			$classes[] = 'oc-htrans';
+			// Out of the flow is only right over a full-width picture. A
+			// composed home page whose banner has no image renders no banner
+			// at all, and then the bar lies across whatever comes next --
+			// which is what the setting looked like it was doing wrong.
+			$front = (int) get_option( 'page_on_front' );
+			$sits  = 'home' !== $transparent
+				|| ! is_front_page()
+				|| $front <= 0
+				|| ! class_exists( '\\OC\\Blocks\\Registry' )
+				|| ! metadata_exists( 'post', $front, \OC\Blocks\Registry::META )
+				|| \OC\Blocks\Registry::opens_with_backdrop( $front );
+
+			if ( $sits ) {
+				$classes[] = 'oc-htrans';
+			}
 		}
 
 		if ( is_shop() || is_product_taxonomy() ) {

@@ -2292,6 +2292,53 @@ final class Registry {
 	}
 
 	/**
+	 * Does this page open with something a see-through header can sit on?
+	 *
+	 * A transparent header leaves the flow and lies over whatever comes
+	 * first. That only reads as a design when the first thing is a picture
+	 * running the full width; over a strip of text, or over the white
+	 * margin either side of a boxed section, it reads as a bug -- the words
+	 * underneath run straight through the bar. A hero with no picture
+	 * uploaded renders nothing at all, and then the bar lands on whatever
+	 * section follows it.
+	 *
+	 * @param int $page_id Page id.
+	 */
+	public static function opens_with_backdrop( int $page_id ): bool {
+		foreach ( self::sections( $page_id ) as $s ) {
+			if ( empty( $s['on'] ) ) {
+				continue;
+			}
+
+			// The first section that shows is the only one that counts:
+			// the bar sits on the top of the page, not further down.
+			if ( 'full' !== (string) ( $s['w'] ?? '' ) ) {
+				return false;
+			}
+
+			if ( absint( $s['bgimg'] ?? 0 ) > 0 || '' !== (string) ( $s['bgvid'] ?? '' ) ) {
+				return true;
+			}
+
+			if ( 'hero' !== (string) ( $s['type'] ?? '' ) ) {
+				return false;
+			}
+
+			// One slide with media is enough: the hero drops the slides
+			// whose picture has gone and draws the rest.
+			foreach ( (array) ( $s['slides'] ?? array() ) as $slide ) {
+				if ( absint( $slide['img'] ?? 0 ) > 0 || '' !== (string) ( $slide['vid'] ?? '' ) ) {
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		return false;
+	}
+
+	/**
 	 * Give every composed post its identities, a hundred per admin request
 	 * until none are left. A page read on the front end heals itself anyway;
 	 * this reaches the ones nobody has opened since the ids arrived.

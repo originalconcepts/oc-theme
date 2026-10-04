@@ -431,6 +431,14 @@ final class Apply {
 		if ( 'yes' === (string) $this->v['xs_on'] ) {
 			$this->write_mod( 'xs_on', 'oc_xsell_style_tabs', 'grid' );
 		}
+
+		// A bar standing on the banner needs its own ink. The banner darkens
+		// its picture and writes in white, and the header is reading off the
+		// same photograph -- left on the ordinary dark ink it is a navy menu
+		// over a dark picture, which is to say no menu at all.
+		if ( 'home' === (string) $this->v['home_header'] ) {
+			$this->write_mod( 'home_header', 'oc_header_tr_tx', '#ffffff' );
+		}
 	}
 
 	/* ------------------------------------------------------------ report */
