@@ -10292,3 +10292,15 @@ msgstr "טמפלט עמודים משפטיים"
 
 msgid "Each button writes a page from a general template built into the theme. The facts on the page (company, address, hours, coordinator, branches) are read live from this screen, so save first, and later edits here show on the page by themselves. Rewriting a page replaces what you edited on it. Before the page is written you confirm that it is a template and not legal advice."
 msgstr "כל כפתור כותב עמוד מטמפלט כללי המובנה בתבנית. הפרטים בעמוד (חברה, כתובת, שעות, רכז/ת, סניפים) נקראים חי מהמסך הזה — לכן קודם שומרים, ושינוי כאן בהמשך יופיע בעמוד מעצמו. כתיבה מחדש מחליפה מה שערכתם בעמוד. לפני שהעמוד נכתב אתם מאשרים שזהו טמפלט ולא ייעוץ משפטי."
+
+msgid "Remove from category"
+msgstr "הסר מקטגוריה"
+
+msgid "The categories you tick above will be taken off the selected products instead of added to them."
+msgstr "הקטגוריות שתסמנו למעלה יוסרו מהמוצרים שנבחרו, במקום להתווסף אליהם."
+
+msgid "%1$d categories removed from %2$d products."
+msgstr "%1$d קטגוריות הוסרו מ-%2$d מוצרים."
+
+msgid "Nothing to remove: none of the selected products was in those categories."
+msgstr "אין מה להסיר: אף אחד מהמוצרים שנבחרו לא היה בקטגוריות האלה."
