@@ -521,7 +521,8 @@ final class Demo {
 	/**
 	 * A name that cannot be mistaken for a real product.
 	 *
-	 * @param int $n Which one.
+	 * @param int  $n      Which one.
+	 * @param bool $varies Whether it comes in variations.
 	 */
 	private static function name( int $n, bool $varies = false ): string {
 		// Said in the name, so the products list tells which ones vary
