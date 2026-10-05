@@ -248,7 +248,13 @@ final class Onboard {
 			return Draft::value( $id );
 		};
 		$add = static function ( string $key, bool $must, string $label, string $why, string $fix ) use ( &$out ) {
-			$out[] = compact( 'key', 'must', 'label', 'why', 'fix' );
+			$out[] = array(
+				'key'   => $key,
+				'must'  => $must,
+				'label' => $label,
+				'why'   => $why,
+				'fix'   => $fix,
+			);
 		};
 
 		$page_ok = static function ( int $id ): bool {
@@ -329,7 +335,16 @@ final class Onboard {
 		$real = 0;
 		$demo = 0;
 
-		foreach ( get_posts( array( 'post_type' => 'product', 'post_status' => 'publish', 'numberposts' => -1, 'fields' => 'ids' ) ) as $pid ) {
+		$all = get_posts(
+			array(
+				'post_type'   => 'product',
+				'post_status' => 'publish',
+				'numberposts' => -1,
+				'fields'      => 'ids',
+			)
+		);
+
+		foreach ( $all as $pid ) {
 			if ( get_post_meta( (int) $pid, '_oc_demo', true ) ) {
 				++$demo;
 			} else {
@@ -398,7 +413,13 @@ final class Onboard {
 		}
 
 		$bare = 0;
-		$cats = get_terms( array( 'taxonomy' => 'product_cat', 'hide_empty' => false, 'fields' => 'ids' ) );
+		$cats = get_terms(
+			array(
+				'taxonomy'   => 'product_cat',
+				'hide_empty' => false,
+				'fields'     => 'ids',
+			)
+		);
 
 		foreach ( is_wp_error( $cats ) ? array() : $cats as $tid ) {
 			if ( (int) $tid !== (int) get_option( 'default_product_cat' ) && ! get_term_meta( (int) $tid, 'thumbnail_id', true ) ) {
