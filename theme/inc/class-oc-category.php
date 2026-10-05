@@ -432,12 +432,19 @@ class Category {
 	 *
 	 * @param string            $key    Meta key.
 	 * @param array<int,string> $values The values that show the row.
-	 * @param string            $global What Customize holds.
+	 * @param string            $all    What Customize holds.
 	 */
-	private function sub_when( string $key, array $values, string $global ): string {
-		return $key . ':' . implode( '|', $values ) . ( in_array( $global, $values, true ) ? '|' : '' );
+	private function sub_when( string $key, array $values, string $all ): string {
+		return $key . ':' . implode( '|', $values ) . ( in_array( $all, $values, true ) ? '|' : '' );
 	}
 
+	/**
+	 * What one category does with its sub-categories: its own answers where
+	 * it has given any, and Customize where it has not.
+	 *
+	 * @param int $term_id Category id.
+	 * @return array<string,mixed>
+	 */
 	private static function subs( int $term_id ): array {
 		$all = self::sub_defaults();
 
