@@ -13496,3 +13496,80 @@ msgstr "מיד מתחת לאזור ההוספה לסל"
 
 msgid "After the tabs"
 msgstr "אחרי הטאבים"
+
+msgid "None was uploaded; the site is wearing its name in text."
+msgstr "לא הועלה; האתר לובש את השם שלו בטקסט."
+
+msgid "They said they would upload their own and did not."
+msgstr "אמרו שיעלו משלהם ולא העלו."
+
+msgid "It was to be taken from their current site, and the page could not be read."
+msgstr "היה אמור להילקח מהאתר הנוכחי שלהם, והעמוד לא נקרא."
+
+msgid "The page is not on the site."
+msgstr "העמוד לא נמצא באתר."
+
+msgid "Delivery"
+msgstr "משלוחים"
+
+msgid "No delivery or collection is switched on, so nothing can be ordered."
+msgstr "שום משלוח או איסוף לא פעיל, אז אי אפשר להזמין כלום."
+
+msgid "They left the clearing details for later; the gateway is installed and off until they are in."
+msgstr "השאירו את פרטי הסליקה לאחר כך; השער מותקן וכבוי עד שיוזנו."
+
+msgid "They have no clearing company yet."
+msgstr "אין להם עדיין חברת סליקה."
+
+msgid "No way to pay is switched on."
+msgstr "שום אמצעי תשלום לא פעיל."
+
+msgid "Products"
+msgstr "מוצרים"
+
+msgid "Only test products are on the shop."
+msgstr "בחנות יש רק מוצרי בדיקה."
+
+msgid "There are no products yet."
+msgstr "עדיין אין מוצרים."
+
+msgid "The address"
+msgstr "הכתובת"
+
+msgid "The site is still at its temporary address; it was to open at %s."
+msgstr "האתר עדיין בכתובת הזמנית שלו; היה אמור להיפתח ב-%s."
+
+msgid "The site is still at its temporary address, and no domain was given."
+msgstr "האתר עדיין בכתובת הזמנית שלו, ולא ניתן דומיין."
+
+msgid "Not one was given; the footer and the thank-you page have nothing to link to."
+msgstr "לא ניתנה אף אחת; לפוטר ולדף התודה אין למה לקשר."
+
+msgid "No phone number; the contact page and the product card have nobody to call."
+msgstr "אין מספר טלפון; לדף צור קשר ולכרטיס בעמוד המוצר אין למי להתקשר."
+
+msgid "They gave points and the text was never written."
+msgstr "נתנו נקודות והטקסט מעולם לא נכתב."
+
+msgid "Category pictures"
+msgstr "תמונות קטגוריות"
+
+msgid "%d category has no main picture, so no banner and no tile."
+msgid_plural "%d categories have no main picture, so no banner and no tile."
+msgstr[0] "לקטגוריה אחת אין תמונה ראשית, אז אין באנר ואין אריח."
+msgstr[1] "ל-%d קטגוריות אין תמונה ראשית, אז אין באנר ואין אריח."
+
+msgid "Put it right"
+msgstr "לתקן"
+
+msgid "Cannot go live without"
+msgstr "אי אפשר לעלות בלי"
+
+msgid "Worth doing"
+msgstr "מומלץ"
+
+msgid "Everything is in place."
+msgstr "הכל במקום."
+
+msgid "The curtain is still down. Lifting it is the last step, once the list above is empty."
+msgstr "הווילון עדיין מורד. להרים אותו זה הצעד האחרון, אחרי שהרשימה למעלה ריקה."

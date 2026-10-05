@@ -229,6 +229,189 @@ final class Onboard {
 	}
 
 	/**
+	 * What still stands between this shop and going live.
+	 *
+	 * Read off the site itself, not off the answers: a logo uploaded by hand
+	 * in Customize after the questionnaire counts, and a page somebody
+	 * deleted since does not. Each gap says what is missing, why if we know,
+	 * and where to put it right. The ones a shop cannot open without come
+	 * first.
+	 *
+	 * @return array<int,array{key:string,must:bool,label:string,why:string,fix:string}>
+	 */
+	public static function gaps(): array {
+		$out = array();
+		$v   = static function ( string $id ) {
+			return Draft::value( $id );
+		};
+		$add = static function ( string $key, bool $must, string $label, string $why, string $fix ) use ( &$out ) {
+			$out[] = compact( 'key', 'must', 'label', 'why', 'fix' );
+		};
+
+		$page_ok = static function ( int $id ): bool {
+			return $id > 0
+				&& 'page' === get_post_type( $id )
+				&& 'publish' === get_post_status( $id )
+				&& ( '' !== trim( (string) get_post_field( 'post_content', $id ) ) || metadata_exists( 'post', $id, '_oc_sections' ) );
+		};
+
+		// --- the ones a shop cannot open without ---
+
+		if ( ! get_theme_mod( 'custom_logo' ) ) {
+			$add( 'logo', true, __( 'Logo', 'oc-theme' ), __( 'None was uploaded; the site is wearing its name in text.', 'oc-theme' ), admin_url( 'customize.php?autofocus[control]=custom_logo' ) );
+		}
+
+		$legal = array(
+			'terms'   => array( (int) get_option( Legal\Terms::OPTION, 0 ), (string) $v( 'terms_mode' ), $v( 'terms_file' ), __( 'Terms of sale', 'oc-theme' ) ),
+			'privacy' => array( (int) get_option( 'wp_page_for_privacy_policy', 0 ), (string) $v( 'privacy_mode' ), $v( 'privacy_file' ), __( 'Privacy policy', 'oc-theme' ) ),
+			'a11y'    => array( (int) get_option( Legal\Accessibility::OPTION, 0 ), (string) $v( 'a11y_mode' ), $v( 'a11y_file' ), __( 'Accessibility statement', 'oc-theme' ) ),
+		);
+
+		foreach ( $legal as $key => $one ) {
+			list( $id, $mode, $file, $label ) = $one;
+
+			if ( $page_ok( $id ) ) {
+				continue;
+			}
+
+			if ( 'upload' === $mode && empty( $file['id'] ) ) {
+				$why = __( 'They said they would upload their own and did not.', 'oc-theme' );
+			} elseif ( 'link' === $mode ) {
+				$why = __( 'It was to be taken from their current site, and the page could not be read.', 'oc-theme' );
+			} else {
+				$why = __( 'The page is not on the site.', 'oc-theme' );
+			}
+
+			$add( $key, true, $label, $why, $id > 0 ? get_edit_post_link( $id, 'raw' ) : admin_url( 'edit.php?post_type=page' ) );
+		}
+
+		$ship = false;
+
+		if ( class_exists( '\\WC_Shipping_Zones' ) ) {
+			$zones   = \WC_Shipping_Zones::get_zones();
+			$zones[] = array( 'zone_id' => 0 );
+
+			foreach ( $zones as $z ) {
+				foreach ( \WC_Shipping_Zones::get_zone( (int) $z['zone_id'] )->get_shipping_methods( true ) as $m ) {
+					$ship = true;
+				}
+			}
+		}
+
+		if ( ! $ship ) {
+			$add( 'shipping', true, __( 'Delivery', 'oc-theme' ), __( 'No delivery or collection is switched on, so nothing can be ordered.', 'oc-theme' ), admin_url( 'admin.php?page=wc-settings&tab=shipping' ) );
+		}
+
+		$pay = false;
+
+		if ( function_exists( 'WC' ) && WC()->payment_gateways() ) {
+			foreach ( WC()->payment_gateways()->payment_gateways() as $g ) {
+				if ( 'yes' === $g->enabled ) {
+					$pay = true;
+				}
+			}
+		}
+
+		if ( ! $pay ) {
+			$kept = (array) get_option( 'oc_onboard_pay', array() );
+			$why  = ! empty( $kept['fill_later'] )
+				? __( 'They left the clearing details for later; the gateway is installed and off until they are in.', 'oc-theme' )
+				: ( 'none' === (string) ( $kept['gateway'] ?? '' )
+					? __( 'They have no clearing company yet.', 'oc-theme' )
+					: __( 'No way to pay is switched on.', 'oc-theme' ) );
+
+			$add( 'payments', true, __( 'Taking the money', 'oc-theme' ), $why, admin_url( 'admin.php?page=wc-settings&tab=checkout' ) );
+		}
+
+		$real = 0;
+		$demo = 0;
+
+		foreach ( get_posts( array( 'post_type' => 'product', 'post_status' => 'publish', 'numberposts' => -1, 'fields' => 'ids' ) ) as $pid ) {
+			if ( get_post_meta( (int) $pid, '_oc_demo', true ) ) {
+				++$demo;
+			} else {
+				++$real;
+			}
+		}
+
+		if ( 0 === $real ) {
+			$add(
+				'products',
+				true,
+				__( 'Products', 'oc-theme' ),
+				$demo > 0 ? __( 'Only test products are on the shop.', 'oc-theme' ) : __( 'There are no products yet.', 'oc-theme' ),
+				admin_url( 'edit.php?post_type=product' )
+			);
+		}
+
+		$host = (string) wp_parse_url( home_url(), PHP_URL_HOST );
+
+		if ( '' !== $host && ( str_ends_with( $host, '.mywebsite.co.il' ) || str_ends_with( $host, '.proginter.dev' ) ) ) {
+			$want = trim( (string) self::state()['domain'] ?? '' );
+
+			$add(
+				'domain',
+				true,
+				__( 'The address', 'oc-theme' ),
+				'' !== $want
+					/* translators: %s: the domain they gave. */
+					? sprintf( __( 'The site is still at its temporary address; it was to open at %s.', 'oc-theme' ), $want )
+					: __( 'The site is still at its temporary address, and no domain was given.', 'oc-theme' ),
+				''
+			);
+		}
+
+		// --- worth doing, not a wall ---
+
+		$c = class_exists( '\\OC\\Theme\\Contact' ) ? (array) Contact::settings() : array();
+
+		$social = false;
+
+		foreach ( array_keys( Contact::networks() ) as $net ) {
+			if ( '' !== trim( (string) ( $c[ $net ] ?? '' ) ) ) {
+				$social = true;
+			}
+		}
+
+		if ( ! $social ) {
+			$add( 'social', false, __( 'Social profiles', 'oc-theme' ), __( 'Not one was given; the footer and the thank-you page have nothing to link to.', 'oc-theme' ), admin_url( 'admin.php?page=oc-contact' ) );
+		}
+
+		if ( '' === trim( (string) ( $c['phone'] ?? '' ) ) ) {
+			$add( 'phone', false, __( 'Phone', 'oc-theme' ), __( 'No phone number; the contact page and the product card have nobody to call.', 'oc-theme' ), admin_url( 'admin.php?page=oc-contact' ) );
+		}
+
+		$about = (int) ( self::state()['about_page'] ?? 0 );
+
+		if ( ! $page_ok( $about ) ) {
+			$mode = (string) $v( 'about_mode' );
+			$why  = 'link' === $mode
+				? __( 'It was to be taken from their current site, and the page could not be read.', 'oc-theme' )
+				: ( 'write' === $mode && '' === trim( (string) $v( 'about_written' ) )
+					? __( 'They gave points and the text was never written.', 'oc-theme' )
+					: __( 'The page is not on the site.', 'oc-theme' ) );
+
+			$add( 'about', false, __( 'About page', 'oc-theme' ), $why, $about > 0 ? get_edit_post_link( $about, 'raw' ) : admin_url( 'edit.php?post_type=page' ) );
+		}
+
+		$bare = 0;
+		$cats = get_terms( array( 'taxonomy' => 'product_cat', 'hide_empty' => false, 'fields' => 'ids' ) );
+
+		foreach ( is_wp_error( $cats ) ? array() : $cats as $tid ) {
+			if ( (int) $tid !== (int) get_option( 'default_product_cat' ) && ! get_term_meta( (int) $tid, 'thumbnail_id', true ) ) {
+				++$bare;
+			}
+		}
+
+		if ( $bare > 0 ) {
+			/* translators: %d: how many categories have no picture. */
+			$add( 'catpics', false, __( 'Category pictures', 'oc-theme' ), sprintf( _n( '%d category has no main picture, so no banner and no tile.', '%d categories have no main picture, so no banner and no tile.', $bare, 'oc-theme' ), $bare ), admin_url( 'edit-tags.php?taxonomy=product_cat&post_type=product' ) );
+		}
+
+		return $out;
+	}
+
+	/**
 	 * The link for a token.
 	 *
 	 * @param string $token The raw token.

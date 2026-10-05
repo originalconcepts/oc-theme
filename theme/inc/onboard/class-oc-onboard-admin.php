@@ -49,20 +49,23 @@ final class Admin {
 			return;
 		}
 
+		// Ours, not the shop's: the screen stays, the way to it from the
+		// menu does not. We reach it at /quiz/. A shop owner who finds the
+		// address can still open it -- hiding is not locking -- but it is
+		// no longer a thing the settings menu offers them.
+		//
+		// Registered under no parent at all, rather than registered and then
+		// taken off the menu: a page removed from its parent's list loses
+		// the hook name it was registered under, and WordPress answers
+		// "you are not allowed" to the very person it was made for.
 		add_submenu_page(
-			Tabs::MENU,
+			'',
 			__( 'Onboarding questionnaire', 'oc-theme' ),
 			__( 'Onboarding', 'oc-theme' ),
 			'manage_woocommerce',
 			self::PAGE,
 			array( $this, 'screen' )
 		);
-
-		// Ours, not the shop's: the screen stays, the way to it from the
-		// menu does not. We reach it at /quiz/. A shop owner who finds the
-		// address can still open it -- hiding is not locking -- but it is
-		// no longer a thing the settings menu offers them.
-		remove_submenu_page( Tabs::MENU, self::PAGE );
 	}
 
 	/**
@@ -587,12 +590,60 @@ final class Admin {
 		$sum   = Rest::report_summary( (array) $state['report'] );
 
 		echo '<p><b>' . esc_html( self::status_word( (string) $state['status'] ) ) . '</b> · ' . esc_html( (string) $state['client']['name'] ) . '</p>';
-		echo '<p>' . esc_html( sprintf( /* translators: 1: answered, 2: total */ __( 'Answered %1$d of %2$d', 'oc-theme' ), $prog['answered'], $prog['total'] ) ) . '</p>';
 
-		if ( 'applied' === $state['status'] && ( $sum['check'] || $sum['error'] ) ) {
+		if ( 'applied' !== $state['status'] ) {
+			echo '<p>' . esc_html( sprintf( /* translators: 1: answered, 2: total */ __( 'Answered %1$d of %2$d', 'oc-theme' ), $prog['answered'], $prog['total'] ) ) . '</p>';
+
+			return;
+		}
+
+		if ( $sum['check'] || $sum['error'] ) {
 			echo '<p>' . esc_html( sprintf( /* translators: 1: to check, 2: errors */ __( '%1$d rows to check, %2$d errors', 'oc-theme' ), $sum['check'], $sum['error'] ) ) . '</p>';
 		}
 
-		echo '<p><a class="button" href="' . esc_url( self::url() ) . '">' . esc_html__( 'Open', 'oc-theme' ) . '</a></p>';
+		// Once the answers are on the site, the tile has one job: to say
+		// what still stands between this shop and going live -- read off
+		// the site as it is now, not off the answers as they were.
+		$gaps = Onboard::gaps();
+		$must = array_filter( $gaps, static fn( $g ) => $g['must'] );
+		$nice = array_filter( $gaps, static fn( $g ) => ! $g['must'] );
+
+		$list = static function ( array $rows ): void {
+			echo '<ul style="margin:4px 0 10px;padding-inline-start:18px;list-style:disc">';
+
+			foreach ( $rows as $g ) {
+				echo '<li style="margin:0 0 6px"><b>' . esc_html( $g['label'] ) . '</b>';
+
+				if ( '' !== $g['why'] ) {
+					echo ' — <span style="color:#50575e">' . esc_html( $g['why'] ) . '</span>';
+				}
+
+				if ( '' !== $g['fix'] ) {
+					echo ' <a href="' . esc_url( $g['fix'] ) . '">' . esc_html__( 'Put it right', 'oc-theme' ) . '</a>';
+				}
+
+				echo '</li>';
+			}
+
+			echo '</ul>';
+		};
+
+		if ( $must ) {
+			echo '<p style="margin-bottom:2px"><b style="color:#b32d2e">' . esc_html__( 'Cannot go live without', 'oc-theme' ) . '</b></p>';
+			$list( $must );
+		}
+
+		if ( $nice ) {
+			echo '<p style="margin-bottom:2px"><b>' . esc_html__( 'Worth doing', 'oc-theme' ) . '</b></p>';
+			$list( $nice );
+		}
+
+		if ( ! $gaps ) {
+			echo '<p><b style="color:#1a7f37">' . esc_html__( 'Everything is in place.', 'oc-theme' ) . '</b></p>';
+		}
+
+		if ( Curtain::on() ) {
+			echo '<p class="description">' . esc_html__( 'The curtain is still down. Lifting it is the last step, once the list above is empty.', 'oc-theme' ) . '</p>';
+		}
 	}
 }
