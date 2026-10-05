@@ -98,6 +98,62 @@ class Category {
 			self::migrate_sub_align();
 			update_option( 'oc_subalign_v3', 1 );
 		}
+
+		if ( ! get_option( 'oc_mainpic_v1' ) ) {
+			self::migrate_main_picture();
+			update_option( 'oc_mainpic_v1', 1 );
+		}
+	}
+
+	/**
+	 * The banner used to be a picture of its own, beside WooCommerce's
+	 * thumbnail; now the thumbnail is the banner. Where a category had the
+	 * banner and no thumbnail, the banner becomes the thumbnail. Where it had
+	 * both and they were the same, the duplicate goes. Where they differed,
+	 * the banner stays as it was, and the screen shows it as the older
+	 * separate picture it is.
+	 *
+	 * And the other way round: a category that had a thumbnail and no
+	 * banner showed no banner, and must not grow one overnight. On a shop
+	 * whose categories show banners, such a category is written down as
+	 * "no banner", which is exactly what the page was showing.
+	 */
+	private static function migrate_main_picture(): void {
+		global $wpdb;
+
+		$shows = 'none' !== self::hero_defaults()['layout'];
+
+		// Every product category, straight from the taxonomy table: a meta
+		// query through get_terms() has come back empty on the live shops.
+		$ids = $wpdb->get_col( // phpcs:ignore WordPress.DB.DirectDatabaseQuery -- a one-time upgrade step.
+			"SELECT term_id FROM {$wpdb->term_taxonomy} WHERE taxonomy = 'product_cat'"
+		);
+
+		foreach ( is_array( $ids ) ? $ids : array() as $id ) {
+			$id     = (int) $id;
+			$banner = absint( get_term_meta( $id, '_oc_hero_img', true ) );
+			$main   = absint( get_term_meta( $id, 'thumbnail_id', true ) );
+
+			if ( $banner > 0 && 0 === $main ) {
+				update_term_meta( $id, 'thumbnail_id', (string) $banner );
+				delete_term_meta( $id, '_oc_hero_img' );
+
+				continue;
+			}
+
+			if ( $banner > 0 && $banner === $main ) {
+				delete_term_meta( $id, '_oc_hero_img' );
+
+				continue;
+			}
+
+			// A thumbnail, no banner, on a shop that shows banners: the page
+			// showed none, so it says so now. Only where the category has not
+			// already answered for itself.
+			if ( 0 === $banner && $main > 0 && $shows && '' === (string) get_term_meta( $id, '_oc_hero_layout', true ) ) {
+				update_term_meta( $id, '_oc_hero_layout', 'none' );
+			}
+		}
 	}
 
 	/**
@@ -191,11 +247,78 @@ class Category {
 	 */
 	public function display_type_script( $term = null ): void {
 		$current = $term instanceof \WP_Term ? (string) get_term_meta( $term->term_id, 'display_type', true ) : '';
+		$main    = $term instanceof \WP_Term ? self::main_picture( $term->term_id ) : 0;
+		$main_at = $main > 0 ? (string) wp_get_attachment_image_url( $main, 'large' ) : '';
 		?>
+		<style>
+		/* A lobby shows a page, so the banner, the card and the strip of
+		 * sub-categories have nothing to do here. Hidden harder than the
+		 * ordinary show-while rules, which would otherwise bring a row back. */
+		tr.oc-lobby-off { display: none !important; }
+		</style>
 		<script>
 		document.addEventListener( 'DOMContentLoaded', function () {
 			var sel = document.getElementById( 'display_type' );
 			if ( ! sel ) { return; }
+
+			// WooCommerce's thumbnail is the category's main picture: its
+			// banner at the top of the page, and its tile wherever the
+			// category is shown elsewhere. The field says so.
+			var mainIn = document.getElementById( 'product_cat_thumbnail_id' );
+			var mainTr = mainIn ? mainIn.closest( 'tr, .form-field' ) : null;
+			if ( mainTr ) {
+				var mainLb = mainTr.querySelector( 'th label, label' );
+				if ( mainLb ) { mainLb.textContent = <?php echo wp_json_encode( __( 'Main picture', 'oc-theme' ) ); ?>; }
+				var mainTd = mainTr.querySelector( 'td' ) || mainTr;
+				if ( ! mainTd.querySelector( '.oc-mainpic-hint' ) ) {
+					var hint = document.createElement( 'p' );
+					hint.className = 'description oc-mainpic-hint';
+					hint.style.clear = 'both';
+					hint.textContent = <?php echo wp_json_encode( __( 'The banner at the top of this category, and its tile wherever the category is shown elsewhere. Wide and sharp: 1920 pixels across is right for the banner.', 'oc-theme' ) ); ?>;
+					mainTd.appendChild( hint );
+				}
+				mainIn.setAttribute( 'data-url', <?php echo wp_json_encode( $main_at ); ?> );
+			}
+
+			// The phone's own main picture stands right under the main picture.
+			var mobIn = document.querySelector( '[name="_oc_hero_img_m"]' );
+			var mobTr = mobIn ? mobIn.closest( 'tr' ) : null;
+			if ( mainTr && mobTr && mainTr.parentNode === mobTr.parentNode ) {
+				mainTr.parentNode.insertBefore( mobTr, mainTr.nextSibling );
+			}
+
+			// WooCommerce's picker tells nobody when it has chosen. Its frame
+			// is reachable, so the choice is heard here too and the rows that
+			// wait on a picture learn of it.
+			var heard = function ( id, url ) {
+				if ( ! mainIn ) { return; }
+				mainIn.setAttribute( 'data-url', url || '' );
+				if ( window.jQuery ) { window.jQuery( document ).trigger( 'oc:img' ); }
+			};
+			if ( window.jQuery ) {
+				window.jQuery( document ).on( 'click', '.upload_image_button', function () {
+					var frame = window.wp && window.wp.media && window.wp.media.frames ? window.wp.media.frames.downloadable_file : null;
+					if ( ! frame || frame.__ocHeard ) { return; }
+					frame.__ocHeard = true;
+					frame.on( 'select', function () {
+						var a = frame.state().get( 'selection' ).first().toJSON();
+						heard( a.id, ( a.sizes && a.sizes.large ) ? a.sizes.large.url : a.url );
+					} );
+				} );
+				window.jQuery( document ).on( 'click', '.remove_image_button', function () {
+					heard( '', '' );
+				} );
+			}
+
+			// Which section each row belongs to, so a lobby can put whole
+			// sections away. Rows before the first heading belong to none.
+			var secOf = '';
+			var tbody = sel.closest( 'table.form-table' );
+			var rows  = tbody ? Array.prototype.slice.call( tbody.querySelectorAll( 'tbody > tr' ) ) : [];
+			rows.forEach( function ( tr ) {
+				if ( tr.hasAttribute( 'data-oc-sec' ) ) { secOf = tr.getAttribute( 'data-oc-sec' ); }
+				if ( secOf ) { tr.setAttribute( 'data-oc-sec-of', secOf ); }
+			} );
 
 			if ( ! sel.querySelector( 'option[value="lobby"]' ) ) {
 				var opt = document.createElement( 'option' );
@@ -252,6 +375,13 @@ class Category {
 				// that is not one.
 				if ( pageRow ) { pageRow.style.display = lobby ? '' : 'none'; }
 
+				// And a lobby shows a page: no banner, no card, no strip of
+				// sub-categories, and none of their settings either.
+				rows.forEach( function ( tr ) {
+					var of = tr.getAttribute( 'data-oc-sec-of' );
+					tr.classList.toggle( 'oc-lobby-off', lobby && ( 'hero' === of || 'card' === of || 'sub' === of ) );
+				} );
+
 				note.hidden = ! lobby;
 				note.style.color = chosen ? '' : '#b32d2e';
 				note.textContent = chosen
@@ -303,7 +433,9 @@ class Category {
 	 * @return int Attachment id, or 0.
 	 */
 	public static function card_image_id( int $term_id ): int {
-		foreach ( array( '_oc_card_img', '_oc_hero_img', '_oc_hero_img_m', 'thumbnail_id' ) as $key ) {
+		// Its own card picture, else whatever the banner shows, else the
+		// phone's banner -- a category with any picture at all has a tile.
+		foreach ( array( '_oc_card_img', '_oc_hero_img', 'thumbnail_id', '_oc_hero_img_m' ) as $key ) {
 			$id = absint( get_term_meta( $term_id, $key, true ) );
 
 			if ( $id > 0 ) {
@@ -350,9 +482,16 @@ class Category {
 		$lax    = $get( '_oc_hero_parallax' );
 		$balign = $get( '_oc_hero_balign' );
 
+		// The banner is the category's main picture -- the one WooCommerce
+		// keeps as its thumbnail -- so a shop moved over with pictures already
+		// on its categories has banners from the first day. A separate banner
+		// picture from before this change still wins where it was set, until
+		// it is taken off the category.
+		$legacy = absint( $get( '_oc_hero_img' ) );
+
 		return array(
 			'layout'   => 'none' === $layout ? '' : $layout,
-			'img'      => absint( $get( '_oc_hero_img' ) ),
+			'img'      => $legacy > 0 ? $legacy : self::main_picture( $term_id ),
 			'imgm'     => absint( $get( '_oc_hero_img_m' ) ),
 			'h'        => absint( $get( '_oc_hero_h' ) ) > 0 ? absint( $get( '_oc_hero_h' ) ) : $d['h'],
 			'hm'       => absint( $get( '_oc_hero_hm' ) ) > 0 ? absint( $get( '_oc_hero_hm' ) ) : $d['hm'],
@@ -501,6 +640,15 @@ class Category {
 			'align'    => $pick( 'oc_csub_align', array( 'auto', 'start', 'center' ), 'start' ),
 			'align_m'  => $pick( 'oc_csub_align_m', array( 'same', 'auto', 'start', 'center' ), 'same' ),
 		);
+	}
+
+	/**
+	 * The category's main picture: WooCommerce's own thumbnail.
+	 *
+	 * @param int $term_id Category id.
+	 */
+	public static function main_picture( int $term_id ): int {
+		return absint( get_term_meta( $term_id, 'thumbnail_id', true ) );
 	}
 
 	/**
@@ -1260,8 +1408,9 @@ class Category {
 		);
 		$auto    = __( 'automatic', 'oc-theme' );
 
-		// Nothing but the picture shows until there is a picture.
-		$has_img = '_oc_hero_img:*';
+		// Nothing but the picture shows until there is a picture -- and the
+		// picture is WooCommerce's own field, further up the screen.
+		$has_img = 'product_cat_thumbnail_id:*';
 		$on      = $has_img . ',' . $when( '_oc_hero_layout', array( 'full', 'split' ), $g['layout'] );
 		$full    = $has_img . ',' . $when( '_oc_hero_layout', array( 'full' ), $g['layout'] );
 		$split   = $has_img . ',' . $when( '_oc_hero_layout', array( 'split' ), $g['layout'] );
@@ -1273,15 +1422,25 @@ class Category {
 			$custom = $custom || '' !== $raw( $key );
 		}
 		?>
-		<tr class="form-field oc-cat-sec">
+		<tr class="form-field oc-cat-sec" data-oc-sec="hero">
 			<th scope="row" colspan="2" style="padding-block-end:0">
 				<h2 style="margin:22px 0 0;font-size:1.15em"><?php esc_html_e( 'Category banner', 'oc-theme' ); ?></h2>
-				<p class="description" style="font-weight:400"><?php esc_html_e( 'A picture at the top of this category, with its name and description. How it looks is set once for every category in Customize › Catalogue page › Category hero.', 'oc-theme' ); ?></p>
+				<p class="description" style="font-weight:400"><?php esc_html_e( 'The main picture, at the top of this category with its name and description. How it looks is set once for every category in Customize › Catalogue page › Category hero.', 'oc-theme' ); ?></p>
 			</th>
 		</tr>
 		<?php
-		$this->image_field( '_oc_hero_img', $h['img'], __( 'Banner picture', 'oc-theme' ), __( 'No picture, no banner.', 'oc-theme' ) );
-		$this->image_field( '_oc_hero_img_m', $h['imgm'], __( 'Banner picture on mobile (optional)', 'oc-theme' ), __( 'Leave empty to use the one above.', 'oc-theme' ), $has_img );
+		// A banner picture chosen before the main picture took that job, and
+		// different from it. Shown only while it is actually in the way, so
+		// it can be looked at and taken off; a category with one picture
+		// never sees this row.
+		$legacy = absint( $raw( '_oc_hero_img' ) );
+
+		if ( $legacy > 0 && $legacy !== self::main_picture( $term->term_id ) ) {
+			$this->image_field( '_oc_hero_img', $legacy, __( 'Separate banner picture (older)', 'oc-theme' ), __( 'This category still shows this as its banner instead of its main picture. Remove it and the main picture takes over.', 'oc-theme' ) );
+		}
+
+		// Stands beside the main picture on the screen; placed there by script.
+		$this->image_field( '_oc_hero_img_m', $h['imgm'], __( 'Main picture on mobile (optional)', 'oc-theme' ), __( 'Leave empty and the main picture serves the phone too.', 'oc-theme' ), $has_img );
 
 		$this->select_field( '_oc_hero_layout', $raw( '_oc_hero_layout' ), __( 'Layout', 'oc-theme' ), $first( $layouts, $g['layout'] ), '', $has_img );
 
@@ -1320,10 +1479,10 @@ class Category {
 			</td>
 		</tr>
 
-		<tr class="form-field oc-cat-sec">
+		<tr class="form-field oc-cat-sec" data-oc-sec="card">
 			<th scope="row" colspan="2" style="padding-block-end:0">
 				<h2 style="margin:22px 0 0;font-size:1.15em"><?php esc_html_e( 'Card image', 'oc-theme' ); ?></h2>
-				<p class="description" style="font-weight:400"><?php esc_html_e( 'One image for this category, used by the categories block, the sub-category strip and the blog. If empty, the hero image is used.', 'oc-theme' ); ?></p>
+				<p class="description" style="font-weight:400"><?php esc_html_e( 'One image for this category, used by the categories block, the sub-category strip and the blog. If empty, the main picture is used.', 'oc-theme' ); ?></p>
 			</th>
 		</tr>
 		<?php
@@ -1332,7 +1491,7 @@ class Category {
 		$this->focus_field( $term->term_id );
 		?>
 
-		<tr class="form-field oc-cat-sec">
+		<tr class="form-field oc-cat-sec" data-oc-sec="sub">
 			<th scope="row" colspan="2" style="padding-block-end:0">
 				<h2 style="margin:22px 0 0;font-size:1.15em"><?php esc_html_e( 'Sub-categories', 'oc-theme' ); ?></h2>
 				<p class="description" style="font-weight:400"><?php esc_html_e( 'Show this category’s sub-categories under the description (or over the hero image).', 'oc-theme' ); ?></p>
@@ -1675,7 +1834,7 @@ class Category {
 					return wide / ( h || ( 'd' === dev ? 420 : 340 ) );
 				};
 				var draw = function () {
-					var dUrl = url( '_oc_hero_img' );
+					var dUrl = url( '_oc_hero_img' ) || url( 'product_cat_thumbnail_id' );
 					var mUrl = url( '_oc_hero_img_m' ) || dUrl;
 					hf.classList.toggle( 'is-empty', '' === dUrl );
 					[ 'd', 'm' ].forEach( function ( dev ) {
@@ -1764,6 +1923,14 @@ class Category {
 
 		// Core verifies the term-edit nonce before this fires.
 		// phpcs:disable WordPress.Security.NonceVerification.Missing
+
+		// Quick Edit fires this hook too, with a form that carries none of
+		// these fields -- and a field that is not posted reads as "cleared".
+		// Renaming a category from the list must not wipe its banner, its
+		// card and its sub-categories. The full form always posts this one.
+		if ( ! isset( $_POST['_oc_desc_pos'] ) ) {
+			return;
+		}
 
 		$this->save_enum( $term_id, '_oc_desc_pos', array( 'top', 'bottom' ) );
 		$this->save_enum( $term_id, '_oc_hero_layout', array( 'none', 'full', 'split' ) );

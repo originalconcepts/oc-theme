@@ -63,6 +63,43 @@ final class Customizer {
 			'window.ocCustomizeDeps=' . wp_json_encode( (object) $this->deps ) . ';',
 			'before'
 		);
+
+		// A section about one page is easier to judge with that page in the
+		// preview. Opening the section takes the preview there; nothing is
+		// forced on a section whose page cannot be found.
+		$go = array();
+
+		if ( class_exists( '\\OC\\Theme\\Brands' ) ) {
+			$go['oc_brands'] = Brands::url();
+		}
+
+		$tax = class_exists( '\\OC\\Theme\\Search' ) ? Search::brand_taxonomy() : '';
+
+		if ( '' !== $tax && taxonomy_exists( $tax ) ) {
+			$one = get_terms(
+				array(
+					'taxonomy'   => $tax,
+					'hide_empty' => true,
+					'number'     => 1,
+					'orderby'    => 'count',
+					'order'      => 'DESC',
+				)
+			);
+
+			if ( ! is_wp_error( $one ) && $one ) {
+				$link = get_term_link( $one[0] );
+
+				if ( ! is_wp_error( $link ) ) {
+					$go['oc_brand_page'] = (string) $link;
+				}
+			}
+		}
+
+		wp_add_inline_script(
+			'oc-customize-controls',
+			'window.ocCustomizeGo=' . wp_json_encode( (object) $go ) . ';',
+			'before'
+		);
 	}
 
 	/**
@@ -2241,7 +2278,7 @@ final class Customizer {
 					'svg'   => self::wf( '0 0 80 100', self::rect( 3, 3, 74, 94, 'bd', 7 ) . self::rect( 9, 9, 62, 52, 'im', 3 ) . self::rect( 24, 68, 32, 3.4, 'ln' ) . self::rect( 18, 84, 44, 9, 'ac', 4 ) ),
 				),
 			),
-			'minimal-center',
+			'classic',
 			'150px'
 		);
 
@@ -3087,7 +3124,7 @@ final class Customizer {
 				'leaf'  => __( 'The category shown in its path', 'oc-theme' ),
 				'smart' => __( 'Truly similar: categories, name, price, tags and attributes', 'oc-theme' ),
 			),
-			'smart',
+			'leaf',
 			array(
 				'setting' => 'oc_product_related',
 				'values'  => array( '1' ),

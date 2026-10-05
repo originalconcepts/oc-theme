@@ -10,8 +10,22 @@
 	'use strict';
 
 	var deps = window.ocCustomizeDeps || {};
+	var go   = window.ocCustomizeGo || {};
 
 	api.bind( 'ready', function () {
+		// A section about one page takes the preview to that page when it
+		// opens, so what is being changed is what is being looked at.
+		Object.keys( go ).forEach( function ( sectionId ) {
+			api.section( sectionId, function ( section ) {
+				section.expanded.bind( function ( open ) {
+					if ( open && go[ sectionId ] && api.previewer.previewUrl.get() !== go[ sectionId ] ) {
+						api.previewer.previewUrl.set( go[ sectionId ] );
+					}
+				} );
+			} );
+		} );
+
+
 		Object.keys( deps ).forEach( function ( controlId ) {
 			// One rule, or several that must all hold.
 			var rules = deps[ controlId ].all || [ deps[ controlId ] ];

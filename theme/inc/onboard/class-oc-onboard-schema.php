@@ -1455,7 +1455,7 @@ final class Schema {
 				'hover'  => __( 'Only when the mouse is on the card', 'oc-theme' ),
 				'none'   => __( 'No button — the card leads to the product', 'oc-theme' ),
 			),
-			'default' => 'always',
+			'default' => 'hover',
 			'target'  => array( 'mod', 'oc_card_atc' ),
 		);
 

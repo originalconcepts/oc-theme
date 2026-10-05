@@ -13455,11 +13455,32 @@ msgstr "סליידר"
 msgid "Wrapped rows"
 msgstr "שורות נגללות"
 
-msgid "Brands"
-msgstr "מותגים"
-
 msgid "The page listing every brand, and the page of one brand on its own."
 msgstr "העמוד שמרכז את כל המותגים, והעמוד של מותג יחיד."
 
 msgid "A single brand’s page"
 msgstr "עמוד מותג"
+
+msgid "Main picture"
+msgstr "תמונה ראשית"
+
+msgid "The banner at the top of this category, and its tile wherever the category is shown elsewhere. Wide and sharp: 1920 pixels across is right for the banner."
+msgstr "הבאנר בראש הקטגוריה הזו, והאריח שלה בכל מקום שבו היא מוצגת. רחבה וחדה: 1920 פיקסלים לרוחב מתאים לבאנר."
+
+msgid "Main picture on mobile (optional)"
+msgstr "תמונה ראשית למובייל (רשות)"
+
+msgid "Leave empty and the main picture serves the phone too."
+msgstr "השאירו ריק והתמונה הראשית משרתת גם את הטלפון."
+
+msgid "Separate banner picture (older)"
+msgstr "תמונת באנר נפרדת (ישנה)"
+
+msgid "This category still shows this as its banner instead of its main picture. Remove it and the main picture takes over."
+msgstr "הקטגוריה הזו עדיין מציגה את זו כבאנר במקום את התמונה הראשית. הסירו אותה והתמונה הראשית תתפוס את מקומה."
+
+msgid "The main picture, at the top of this category with its name and description. How it looks is set once for every category in Customize › Catalogue page › Category hero."
+msgstr "התמונה הראשית, בראש הקטגוריה הזו עם השם והתיאור שלה. איך זה נראה נקבע פעם אחת לכל הקטגוריות בהתאמה אישית ← עמוד קטלוג ← באנר קטגוריה."
+
+msgid "One image for this category, used by the categories block, the sub-category strip and the blog. If empty, the main picture is used."
+msgstr "תמונה אחת לקטגוריה הזו, לבלוק הקטגוריות, לרצועת תתי הקטגוריות ולבלוג. אם ריקה, משתמשים בתמונה הראשית."
