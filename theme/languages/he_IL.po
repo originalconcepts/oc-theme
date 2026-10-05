@@ -10307,3 +10307,9 @@ msgstr "אין מה להסיר: אף אחד מהמוצרים שנבחרו לא �
 
 msgid "Pay with PayPal"
 msgstr "שלם באמצעות פייפאל"
+
+msgid "Updates and offers"
+msgstr "עדכונים ומבצעים"
+
+msgid "You can change this at any time; untick to stop receiving them."
+msgstr "אפשר לשנות את זה בכל עת; ביטול הסימון מפסיק את קבלתם."

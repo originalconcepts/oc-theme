@@ -11710,6 +11710,9 @@ body.oc-checkout { overflow-x: clip; }
 .oc-checkout .oc-co-consent { order: 3; }
 .oc-checkout #place_order { order: 4; margin-block-start: 8px; }
 .oc-checkout .oc-co-trust { order: 5; }
+/* the challenge, when Cloudflare asks for one, right above the button */
+.oc-checkout #payment .place-order .oc-guard-ts { order: 3; display: flex; justify-content: center; margin-block: 6px 0; }
+.oc-checkout #payment .place-order .oc-guard-ts:empty { display: none; }
 
 .oc-co-privacy {
 	margin: 10px 0;
@@ -11864,7 +11867,10 @@ body.oc-checkout { overflow-x: clip; }
    are left behind empty; they would still take their own margins. */
 .single-product .ppc-button-wrapper,
 .single-product .ppcp-messages,
-.single-product [id^="ppc-button-"] { display: none; }
+.single-product [id^="ppc-button-"],
+.oc-checkout .ppc-button-wrapper,
+.oc-checkout .ppcp-messages,
+.oc-checkout [id^="ppc-button-"] { display: none; }
 
 /* The checkout form is a grid and #order_review is display:contents, so every
    child of it is a grid item the theme gives an explicit order (table 2,
@@ -11952,6 +11958,12 @@ body.oc-checkout { overflow-x: clip; }
 .oc-co-consent label { display: flex; align-items: flex-start; gap: 8px; cursor: pointer; }
 
 .oc-checkout .woocommerce-terms-and-conditions-wrapper { font-size: .88rem; }
+
+/* consent on the account page */
+.oc-acct-consent { margin: 18px 0 6px; padding: 0; border: 0; }
+.oc-acct-consent legend { font-weight: 600; margin-block-end: 6px; }
+.oc-acct-consent label { display: flex; align-items: flex-start; gap: 8px; cursor: pointer; }
+.oc-acct-consent__note { margin: 6px 0 0; font-size: .85rem; color: var(--oc-ink-2, #777); }
 
 /* trust line under the button */
 .oc-co-trust {

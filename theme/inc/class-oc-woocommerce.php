@@ -183,6 +183,7 @@ final class WooCommerce {
 		// step with the account so a signed-in shopper meets the same details
 		// at checkout (the packed orderer card reads billing_*).
 		add_action( 'woocommerce_edit_account_form', array( $this, 'account_phone_field' ) );
+		add_action( 'woocommerce_edit_account_form', array( $this, 'account_consent_field' ), 20 );
 		add_action( 'woocommerce_save_account_details', array( $this, 'save_account_extras' ) );
 
 		// The orders list, reimagined: number over date, a product-thumbnail
@@ -2559,6 +2560,30 @@ final class WooCommerce {
 	}
 
 	/**
+	 * Marketing consent on the account-details form: the one place a shopper
+	 * is asked once at the checkout can later change their mind — the same
+	 * spot the mailing plugins put it, so it is where people look for it.
+	 */
+	public function account_consent_field(): void {
+		if ( ! class_exists( __NAMESPACE__ . '\\Checkout' ) || empty( Checkout::settings()['consent'] ) ) {
+			return;
+		}
+
+		$yes = 'yes' === get_user_meta( get_current_user_id(), 'oc_marketing_consent', true );
+		?>
+		<fieldset class="oc-acct-consent">
+			<legend><?php esc_html_e( 'Updates and offers', 'oc-theme' ); ?></legend>
+			<input type="hidden" name="oc_consent_form" value="1" />
+			<label class="woocommerce-form__label woocommerce-form__label-for-checkbox checkbox">
+				<input type="checkbox" class="woocommerce-form__input woocommerce-form__input-checkbox" name="account_marketing_consent" value="1" <?php checked( $yes ); ?> />
+				<span><?php echo esc_html( Checkout::consent_label() ); ?></span>
+			</label>
+			<p class="oc-acct-consent__note"><?php esc_html_e( 'You can change this at any time; untick to stop receiving them.', 'oc-theme' ); ?></p>
+		</fieldset>
+		<?php
+	}
+
+	/**
 	 * On account save: store the phone, and mirror the account name/email into
 	 * the billing meta so checkout greets the shopper with the same details.
 	 *
@@ -2570,6 +2595,20 @@ final class WooCommerce {
 		if ( isset( $_POST['account_phone'] ) ) {
 			// phpcs:ignore WordPress.Security.NonceVerification.Missing
 			update_user_meta( $user_id, 'billing_phone', sanitize_text_field( wp_unslash( $_POST['account_phone'] ) ) );
+		}
+
+		// Only when the form carried the consent box at all, and only on a
+		// real change — a save that touched nothing is not a decision.
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing
+		if ( ! empty( $_POST['oc_consent_form'] ) && class_exists( __NAMESPACE__ . '\\Checkout' ) ) {
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing
+			$now = ! empty( $_POST['account_marketing_consent'] );
+			$was = 'yes' === get_user_meta( $user_id, 'oc_marketing_consent', true );
+
+			if ( $now !== $was ) {
+				$u = get_userdata( (int) $user_id );
+				Checkout::record_consent( (int) $user_id, $now, 'account', $u ? (string) $u->user_email : '', (string) get_user_meta( $user_id, 'billing_phone', true ) );
+			}
 		}
 
 		$user = get_userdata( (int) $user_id );

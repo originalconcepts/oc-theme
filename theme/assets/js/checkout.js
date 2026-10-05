@@ -478,7 +478,7 @@
 			var pp = review ? review.querySelector( ':scope > .ppc-button-wrapper' ) : null;
 			var chosen = coForm.querySelector( 'input[name="payment_method"]:checked' );
 
-			if ( pp && chosen && 'ppcp-gateway' === chosen.value ) {
+			if ( pp && chosen && 'ppcp-gateway' === chosen.value && btn.offsetParent === null ) {
 				if ( trust.previousElementSibling !== pp ) {
 					pp.parentNode.insertBefore( trust, pp.nextSibling );
 				}
@@ -540,6 +540,10 @@
 				coTick = null;
 				coPaintButton();
 				coTrustLine();
+				// The Turnstile slot sits inside the fragment Woo just redrew.
+				if ( window.ocGuard ) {
+					window.ocGuard.render( coForm );
+				}
 				coSyncMethod();
 				coSumHead();
 				coTabOrder();

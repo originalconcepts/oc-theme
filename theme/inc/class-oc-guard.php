@@ -202,17 +202,29 @@ final class Guard {
 	 *
 	 * @param string $form Which form.
 	 */
-	public static function fields( string $form ): string {
+	public static function fields( string $form, bool $with_slot = true ): string {
 		$out = '<p class="oc-guard-hp" aria-hidden="true"><label><span>' . esc_html__( 'Leave this empty', 'oc-theme' ) . '</span>'
 			. '<input type="text" name="oc_hp" value="" tabindex="-1" autocomplete="off"></label></p>'
 			. '<input type="hidden" name="oc_t" value="' . esc_attr( self::sign( time(), $form, self::salt() ) ) . '">';
 
-		if ( self::turnstile_on( $form ) ) {
-			self::$need = true;
-			$out       .= '<div class="oc-guard-ts" data-action="' . esc_attr( $form ) . '"></div>';
+		return $with_slot ? $out . self::slot( $form ) : $out;
+	}
+
+	/**
+	 * The Turnstile container alone — for a form that wants the challenge
+	 * somewhere other than next to its hidden fields (the checkout puts it
+	 * right above the pay button). '' when the form has no Turnstile.
+	 *
+	 * @param string $form Which form.
+	 */
+	public static function slot( string $form ): string {
+		if ( ! self::turnstile_on( $form ) ) {
+			return '';
 		}
 
-		return $out;
+		self::$need = true;
+
+		return '<div class="oc-guard-ts" data-action="' . esc_attr( $form ) . '"></div>';
 	}
 
 	/**

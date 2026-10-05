@@ -60,8 +60,8 @@ final class Paypal {
 		add_filter( 'woocommerce_available_payment_gateways', array( $this, 'quieten' ) );
 
 		// Plugins load before themes, so a filter on the stored settings is
-		// already too late — the button is switched off where it is drawn.
-		add_action( 'wp_enqueue_scripts', array( $this, 'strip_product_button' ), 99 );
+		// already too late — the buttons are switched off where they are drawn.
+		add_action( 'wp_enqueue_scripts', array( $this, 'strip_buttons' ), 99 );
 
 		// With no language set, PayPal's SDK guesses from the browser and a
 		// Hebrew checkout gets an English button. The site's own language it is.
@@ -114,16 +114,23 @@ final class Paypal {
 	}
 
 	/**
-	 * The product page's buttons are drawn by the plugin's own script; with
-	 * the script gone the containers stay empty, and the stylesheet folds
-	 * them away so they leave no gap behind.
+	 * The plugin's buttons are drawn by its own script; with the script gone
+	 * the containers stay empty and the stylesheet folds them away.
+	 *
+	 * On the product page that removes the second buy button. At the
+	 * checkout it means PayPal is paid for with the shop's own "Place order"
+	 * button like every other method: the gateway, finding no PayPal order
+	 * in the session, creates one and sends the shopper to PayPal's page —
+	 * the plugin's own fallback for exactly this (process_payment →
+	 * PayPalOrderMissingException → redirect). One button, one look.
 	 */
-	public function strip_product_button(): void {
-		if ( ! self::on( 'hide_product_button' ) || ! function_exists( 'is_product' ) || ! is_product() ) {
-			return;
-		}
+	public function strip_buttons(): void {
+		$product  = function_exists( 'is_product' ) && is_product() && self::on( 'hide_product_button' );
+		$checkout = function_exists( 'is_checkout' ) && is_checkout() && self::on( 'native_button' );
 
-		wp_dequeue_script( 'ppcp-smart-button' );
+		if ( $product || $checkout ) {
+			wp_dequeue_script( 'ppcp-smart-button' );
+		}
 	}
 
 	/**
