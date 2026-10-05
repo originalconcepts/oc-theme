@@ -498,7 +498,7 @@ final class Admin {
 
 		// phpcs:disable WordPress.Security.NonceVerification.Missing -- verified in guard().
 		$s    = array(
-			'claude_key'   => sanitize_text_field( wp_unslash( $_POST['claude_key'] ?? '' ) ),
+			'claude_key' => sanitize_text_field( wp_unslash( $_POST['claude_key'] ?? '' ) ),
 		);
 		$gone = ! empty( $_POST['delete_claude'] );
 		// phpcs:enable WordPress.Security.NonceVerification.Missing
