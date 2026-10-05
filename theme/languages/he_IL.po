@@ -4032,9 +4032,6 @@ msgstr "בחירה מהירה נפתחת מצד"
 msgid "The panel a catalogue card opens for a product with options. On a phone it rises from the bottom."
 msgstr "הפאנל שכרטיס בקטלוג פותח למוצר עם וריאציות. במובייל הוא עולה מלמטה."
 
-msgid "SKU:"
-msgstr "מק״ט:"
-
 msgid "%s reviews"
 msgstr "%s חוות דעת"
 
@@ -4145,9 +4142,6 @@ msgstr "חדש קודם"
 
 msgid "Most hits first"
 msgstr "כניסות רבות קודם"
-
-msgid "Export CSV"
-msgstr "ייצוא CSV"
 
 msgid "%s rules"
 msgstr "%s כללים"
@@ -4854,15 +4848,6 @@ msgstr "הקוד אצלכם במייל."
 msgid "Login panel"
 msgstr "התחברות"
 
-msgid "Opens from"
-msgstr "נפתח מצד"
-
-msgid "Right"
-msgstr "ימין"
-
-msgid "Left"
-msgstr "שמאל"
-
 msgid "Panel width (px)"
 msgstr "רוחב הפאנל (px)"
 
@@ -4875,9 +4860,6 @@ msgstr "טקסט המועדון — שלב ההרשמה"
 msgid "Content alignment"
 msgstr "יישור התוכן"
 
-msgid "Centred"
-msgstr "ממורכז"
-
 msgid "Aligned to the start"
 msgstr "מיושר להתחלה"
 
@@ -4886,15 +4868,6 @@ msgstr "כפתורים ושדות"
 
 msgid "Like the rest of the theme"
 msgstr "כמו שאר התבנית"
-
-msgid "Sharp"
-msgstr "חד"
-
-msgid "Soft"
-msgstr "רך"
-
-msgid "Round"
-msgstr "עגול"
 
 msgid "Up to 11 characters — the carrier's rule; anything longer is refused."
 msgstr "עד 11 תווים — מגבלת המפעילים; ארוך יותר נדחה."
@@ -5213,10 +5186,6 @@ msgstr "שלח שוב"
 
 msgid "Resend available in %d s"
 msgstr "שליחה חוזרת בעוד %d שנ׳"
-
-msgctxt "address label"
-msgid "Home"
-msgstr "בית"
 
 msgctxt "address label"
 msgid "Work"
@@ -7123,23 +7092,8 @@ msgstr "הגדרות הפיד"
 msgid "Save and rebuild"
 msgstr "שמירה ובנייה מחדש"
 
-msgid "After a conversion, remove the picture it replaced and its old sizes — unless that name is written somewhere on the site, in which case it is always kept. Clearing is what gives up the way back."
-msgstr "אחרי המרה, להסיר את התמונה שהוחלפה ואת הגדלים הישנים שלה — אלא אם השם הזה כתוב במקום כלשהו באתר, ואז הוא תמיד נשמר. הניקוי הוא מה שמוותר על הדרך חזרה."
-
 msgid "Heavier than"
 msgstr "כבד מ־"
-
-msgid "Looking…"
-msgstr "מחפש…"
-
-msgid "Working…"
-msgstr "עובד…"
-
-msgid "%1$s → %2$s"
-msgstr "%1$s ← %2$s"
-
-msgid "Converting — %1$d of %2$d"
-msgstr "ממיר — %1$d מתוך %2$d"
 
 msgid "Convert all of these on the server"
 msgstr "המרת כל אלה על השרת"
@@ -7177,15 +7131,6 @@ msgstr "כל מה שבספרייה כבר WebP."
 msgid "Finds pictures and videos nothing points at any more. A file is treated as in use if it hangs off a post, if it is named in content or in a setting, or if its name appears anywhere on the site."
 msgstr "מוצא תמונות וסרטונים שאף אחד כבר לא מפנה אליהם. קובץ נחשב בשימוש אם הוא תלוי בפוסט, אם הוא נזכר בתוכן או בהגדרה, או אם שמו מופיע במקום כלשהו באתר."
 
-msgid "Nothing to clean — every file in the library is spoken for."
-msgstr "אין מה לנקות — לכל קובץ בספרייה יש מי שמשתמש בו."
-
-msgid "Deleting is permanent — the files leave the server."
-msgstr "המחיקה סופית — הקבצים עוזבים את השרת."
-
-msgid "Which pictures and films weigh the most, and which pages they sit on. A heavy file is not a mistake — it is simply what every visitor to that page downloads."
-msgstr "אילו תמונות וסרטונים שוקלים הכי הרבה, ובאילו עמודים הם יושבים. קובץ כבד אינו טעות — הוא פשוט מה שכל מבקר בעמוד הזה מוריד."
-
 msgid "The average file"
 msgstr "הקובץ הממוצע"
 
@@ -7197,21 +7142,6 @@ msgstr "השאירו את הכתובת ריקה כדי לחפש בכל הספר�
 
 msgid "The LCP is optional. Copy it from the speed report and the forecast can say what the saved weight is worth in points."
 msgstr "ה‑LCP הוא רשות. העתיקו אותו מדוח המהירות והתחזית תוכל לומר כמה שווה המשקל שנחסך בנקודות."
-
-msgid "Scanning…"
-msgstr "סורק…"
-
-msgid "Checking file names — %1$d of %2$d"
-msgstr "בודק שמות קבצים — %1$d מתוך %2$d"
-
-msgid "Deleting — %1$d of %2$d"
-msgstr "מוחק — %1$d מתוך %2$d"
-
-msgid "Shrinking — %1$d of %2$d"
-msgstr "מקטין — %1$d מתוך %2$d"
-
-msgid "Reading the page…"
-msgstr "קורא את העמוד…"
 
 msgid "If these became WebP"
 msgstr "אם אלה יהפכו ל‑WebP"
@@ -7581,10 +7511,6 @@ msgstr "חדות"
 
 msgid "The card’s own corners follow Global design › Corner rounding."
 msgstr "הפינות של הכרטיס עצמו נקבעות בעיצוב גלובלי › עיגול פינות."
-
-msgctxt "price of the cheapest variation"
-msgid "From"
-msgstr "החל מ־"
 
 msgid "Price of a product whose variations cost differently"
 msgstr "מחיר של מוצר עם וריאציות במחירים שונים"
@@ -8750,14 +8676,6 @@ msgid_plural "%1$d people are waiting for %2$s, and the stock is zero"
 msgstr[0] "אדם %1$d מחכה ל‑%2$s, והמלאי אפס"
 msgstr[1] "%1$d אנשים מחכים ל‑%2$s, והמלאי אפס"
 
-msgctxt "date range"
-msgid "From"
-msgstr "מתאריך"
-
-msgctxt "date range"
-msgid "To"
-msgstr "עד תאריך"
-
 msgid "This month"
 msgstr "החודש"
 
@@ -8784,10 +8702,6 @@ msgstr "הוזמן לאחרונה"
 
 msgid "Paid orders and orders in hand, including VAT; refunds are left out."
 msgstr "הזמנות ששולמו והזמנות בטיפול, כולל מע״מ; החזרים לא נספרים."
-
-msgctxt "product sales"
-msgid "All time"
-msgstr "מאז ומתמיד"
 
 msgid "Thank-you page ratings"
 msgstr "חוות דעת מדף התודה"
@@ -8874,14 +8788,6 @@ msgstr "לעמוד"
 
 msgid "Where they came from"
 msgstr "מאיפה הגיעו"
-
-msgctxt "column header"
-msgid "Conversion"
-msgstr "המרה"
-
-msgctxt "part of the visits"
-msgid "Share"
-msgstr "נתח"
 
 msgid "Leads"
 msgstr "לידים"
@@ -9225,9 +9131,6 @@ msgstr "לא נשמר דבר עבור עמוד שאיש לא ביקר בו, כך
 msgid "On a desktop"
 msgstr "בדסקטופ"
 
-msgid "On a phone"
-msgstr "במובייל"
-
 msgid "Same as the desktop"
 msgstr "כמו בדסקטופ"
 
@@ -9290,9 +9193,6 @@ msgstr "לאפשר בחירת הסניף הזה לאיסוף בקופה"
 
 msgid "A shopper who chooses collection picks the branch to collect from. Untick to leave this one out."
 msgstr "לקוח שבוחר איסוף עצמי בוחר מאיזה סניף לאסוף. הסירו את הסימון כדי להשמיט את הסניף הזה."
-
-msgid "Name at the checkout"
-msgstr "השם בקופה"
 
 msgid "Left empty, the branch's own name is used."
 msgstr "אם השדה ריק, יוצג שם הסניף עצמו."
@@ -9720,10 +9620,6 @@ msgstr "%s ביקורים ב‑30 הימים האחרונים. הכללים כא
 
 msgid "Shown while the last 30 days hold fewer than 100 visits and no rule has anything to report."
 msgstr "מוצג כל עוד ב‑30 הימים האחרונים יש פחות מ‑100 ביקורים ואף כלל לא מצא דבר."
-
-msgctxt "settings screen"
-msgid "Checkout"
-msgstr "קופה"
 
 msgid "How the checkout looks — the summary column, the coupon field, the button — is set in %s."
 msgstr "איך הקופה נראית — עמודת הסיכום, שדה הקופון, הכפתור — נקבע ב%s."
@@ -10287,7 +10183,6 @@ msgstr "טמפלט עמודים משפטיים"
 msgid "Each button writes a page from a general template built into the theme. The facts on the page (company, address, hours, coordinator, branches) are read live from this screen, so save first, and later edits here show on the page by themselves. Rewriting a page replaces what you edited on it. Before the page is written you confirm that it is a template and not legal advice."
 msgstr "כל כפתור כותב עמוד מטמפלט כללי המובנה בתבנית. הפרטים בעמוד (חברה, כתובת, שעות, רכז/ת, סניפים) נקראים חי מהמסך הזה — לכן קודם שומרים, ושינוי כאן בהמשך יופיע בעמוד מעצמו. כתיבה מחדש מחליפה מה שערכתם בעמוד. לפני שהעמוד נכתב אתם מאשרים שזהו טמפלט ולא ייעוץ משפטי."
 
-<<<<<<< HEAD
 # --- Onboarding questionnaire (2026-09-30) ---
 
 msgid "Invitation record"
@@ -11141,9 +11036,6 @@ msgstr "יאלה ממשיכים"
 msgid "The look of the site"
 msgstr "נראות האתר"
 
-msgid "Your details"
-msgstr "הפרטים שלכם"
-
 msgid "It is on my current site — take it from there"
 msgstr "זה נמצא באתר הקיים שלי — קחו משם"
 
@@ -11587,9 +11479,6 @@ msgstr "אודות החנות"
 msgid "Category name"
 msgstr "שם הקטגוריה"
 
-msgid "Filter"
-msgstr "סינון"
-
 msgid "Loading more…"
 msgstr "נטענים עוד מוצרים…"
 
@@ -11634,9 +11523,6 @@ msgstr "תמונה"
 
 msgid "A short film"
 msgstr "סרטון קצר"
-
-msgid "The picture"
-msgstr "התמונה"
 
 msgid "The widest, best one you have — 1920 pixels across or more. It can be changed later."
 msgstr "הרחבה והטובה ביותר שיש לכם, ברוחב 1920 פיקסלים ומעלה. אפשר להחליף בהמשך."
@@ -11692,17 +11578,11 @@ msgstr "תמונה לכל הרוחב"
 msgid "How many on a page?"
 msgstr "כמה מוצרים בעמוד?"
 
-msgid "products"
-msgstr "מוצרים"
-
 msgid "Where does the filter sit?"
 msgstr "איפה יושב הסינון?"
 
 msgid "Down the side"
 msgstr "בצד"
-
-msgid "Above the products"
-msgstr "מעל המוצרים"
 
 msgid "No filter"
 msgstr "בלי סינון"
@@ -11761,9 +11641,6 @@ msgstr "להציג את האזור"
 msgid "Another one like it"
 msgstr "עוד אחד כזה"
 
-msgid "Remove"
-msgstr "להסיר"
-
 msgid "The heading above it"
 msgstr "הכותרת מעליו"
 
@@ -11772,9 +11649,6 @@ msgstr "הטקסט שרץ"
 
 msgid "Add:"
 msgstr "להוסיף:"
-
-msgid "Settings"
-msgstr "הגדרות"
 
 msgid "The sketch"
 msgstr "סקיצה"
@@ -11893,12 +11767,6 @@ msgstr "חלונית הסל"
 msgid "Which side does the cart slide out from?"
 msgstr "מאיזה צד נפתחת חלונית הסל?"
 
-msgid "The right"
-msgstr "מימין"
-
-msgid "The left"
-msgstr "משמאל"
-
 msgid "Does it open the moment something is added?"
 msgstr "להיפתח ברגע שמוסיפים מוצר?"
 
@@ -11949,9 +11817,6 @@ msgstr "החדשים"
 
 msgid "Whatever is on offer"
 msgstr "מה שבמבצע"
-
-msgid "The best sellers"
-msgstr "הנמכרים ביותר"
 
 
 msgid "A button opens the menu, logo in the middle"
@@ -12951,16 +12816,8 @@ msgid "Colour"
 msgstr "צבע"
 
 msgctxt "product attribute"
-msgid "Size"
-msgstr "מידה"
-
-msgctxt "product attribute"
 msgid "Length"
 msgstr "אורך"
-
-msgctxt "product attribute"
-msgid "Width"
-msgstr "רוחב"
 
 msgctxt "product attribute"
 msgid "Flavour"
@@ -12975,16 +12832,8 @@ msgid "Measurements"
 msgstr "מידות"
 
 msgctxt "product attribute"
-msgid "Weight"
-msgstr "משקל"
-
-msgctxt "product attribute"
 msgid "Country of origin"
 msgstr "ארץ ייצור"
-
-msgctxt "product attribute"
-msgid "Warranty"
-msgstr "אחריות"
 
 msgctxt "product attribute"
 msgid "Care"
@@ -13333,9 +13182,6 @@ msgstr "ווקומרס לא מותקן."
 msgid "Black"
 msgstr "שחור"
 
-msgid "White"
-msgstr "לבן"
-
 msgid "Beige"
 msgstr "בז׳"
 
@@ -13356,9 +13202,6 @@ msgstr "המפתחות שלנו"
 
 msgid "They came here because the site was cloned from ours and have no further use on it, so they are off it now."
 msgstr "הם הגיעו לכאן כי האתר שוכפל משלנו ואין להם עוד שימוש בו, אז הם הוסרו ממנו."
-
-msgid "Postcode"
-msgstr "מיקוד"
 
 msgid "Not shown anywhere. The delivery companies work it out from the address, and a postcode makes them get it right."
 msgstr "לא מוצג בשום מקום. חברות המשלוחים מנחשות אותו מהכתובת, ומיקוד גורם להן לקלוע."
@@ -13408,17 +13251,11 @@ msgstr "איפה היא עומדת"
 msgid "Where it stands — on a phone"
 msgstr "איפה היא עומדת — בטלפון"
 
-msgid "Under the description"
-msgstr "מתחת לתיאור"
-
 msgid "Over the banner picture"
 msgstr "על תמונת הבאנר"
 
 msgid "The same as on a computer"
 msgstr "כמו במחשב"
-
-msgid "Alignment"
-msgstr "יישור"
 
 msgid "Alignment — on a phone"
 msgstr "יישור — בטלפון"
@@ -13426,17 +13263,11 @@ msgstr "יישור — בטלפון"
 msgid "As the page is aligned"
 msgstr "כמו שהעמוד מיושר"
 
-msgid "To the side"
-msgstr "לצד"
-
 msgid "Slide sideways when there are many"
 msgstr "להחליק הצידה כשיש הרבה"
 
 msgid "Slide sideways — on a phone"
 msgstr "להחליק הצידה — בטלפון"
-
-msgid "As in Customize — %s"
-msgstr "כמו בהתאמה אישית — %s"
 
 msgid "shown"
 msgstr "מוצגות"
@@ -13449,12 +13280,6 @@ msgstr "להציג אותן"
 
 msgid "Do not show them"
 msgstr "לא להציג אותן"
-
-msgid "Slider"
-msgstr "סליידר"
-
-msgid "Wrapped rows"
-msgstr "שורות נגללות"
 
 msgid "The page listing every brand, and the page of one brand on its own."
 msgstr "העמוד שמרכז את כל המותגים, והעמוד של מותג יחיד."
@@ -13495,9 +13320,6 @@ msgstr "איפה עומד הכרטיס?"
 msgid "Right under the add-to-cart area"
 msgstr "מיד מתחת לאזור ההוספה לסל"
 
-msgid "After the tabs"
-msgstr "אחרי הטאבים"
-
 msgid "None was uploaded; the site is wearing its name in text."
 msgstr "לא הועלה; האתר לובש את השם שלו בטקסט."
 
@@ -13509,9 +13331,6 @@ msgstr "היה אמור להילקח מהאתר הנוכחי שלהם, והעמ�
 
 msgid "The page is not on the site."
 msgstr "העמוד לא נמצא באתר."
-
-msgid "Delivery"
-msgstr "משלוחים"
 
 msgid "No delivery or collection is switched on, so nothing can be ordered."
 msgstr "שום משלוח או איסוף לא פעיל, אז אי אפשר להזמין כלום."
@@ -13525,17 +13344,11 @@ msgstr "אין להם עדיין חברת סליקה."
 msgid "No way to pay is switched on."
 msgstr "שום אמצעי תשלום לא פעיל."
 
-msgid "Products"
-msgstr "מוצרים"
-
 msgid "Only test products are on the shop."
 msgstr "בחנות יש רק מוצרי בדיקה."
 
 msgid "There are no products yet."
 msgstr "עדיין אין מוצרים."
-
-msgid "The address"
-msgstr "הכתובת"
 
 msgid "The site is still at its temporary address; it was to open at %s."
 msgstr "האתר עדיין בכתובת הזמנית שלו; היה אמור להיפתח ב-%s."
@@ -13580,7 +13393,6 @@ msgstr "העמוד מחזיק משהו משלהם."
 
 msgid "The theme's page, in place of the block one WooCommerce installs."
 msgstr "העמוד של התבנית, במקום עמוד הבלוקים שווקומרס מתקין."
-=======
 msgid "Remove from category"
 msgstr "הסר מקטגוריה"
 
@@ -13601,4 +13413,3 @@ msgstr "עדכונים ומבצעים"
 
 msgid "You can change this at any time; untick to stop receiving them."
 msgstr "אפשר לשנות את זה בכל עת; ביטול הסימון מפסיק את קבלתם."
->>>>>>> origin/main
