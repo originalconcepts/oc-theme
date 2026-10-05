@@ -165,7 +165,7 @@ final class Demo {
 	 * @param bool                            $bare Deliberately with no picture.
 	 */
 	private static function one( int $n, string $kind, array $cats, array $vary, bool $sale, bool $gone, bool $bare ): int {
-		$name  = self::name( $n );
+		$name  = self::name( $n, 'variable' === $kind );
 		$price = self::price( $n );
 
 		$product = 'variable' === $kind ? new \WC_Product_Variable() : new \WC_Product_Simple();
@@ -387,7 +387,8 @@ final class Demo {
 			}
 		}
 
-		$out = array();
+		$out    = array();
+		$colour = '';
 
 		foreach ( wc_get_attribute_taxonomies() as $a ) {
 			$tax = wc_attribute_taxonomy_name( $a->attribute_name );
@@ -405,12 +406,34 @@ final class Demo {
 
 			$out[ $tax ] = self::values( (string) $a->attribute_label, (string) $a->attribute_type, (string) ( $wants[ $tax ] ?? '' ) );
 
-			if ( count( $out ) >= 2 ) {
-				break;
+			if ( '' === $colour && self::is_colour( (string) $a->attribute_label, (string) $a->attribute_type, (string) ( $wants[ $tax ] ?? '' ) ) ) {
+				$colour = $tax;
 			}
 		}
 
-		return $out;
+		// Colour first, always: it is the axis that gets real variations,
+		// the swatches, and the picture swap -- the things worth looking at.
+		if ( '' !== $colour ) {
+			$out = array( $colour => $out[ $colour ] ) + $out;
+		}
+
+		return array_slice( $out, 0, 2, true );
+	}
+
+	/**
+	 * Is this attribute a colour, by any of the ways a shop might say so?
+	 *
+	 * @param string $label The attribute's name.
+	 * @param string $type  WooCommerce's own type.
+	 * @param string $shows How the questionnaire said it is picked.
+	 */
+	private static function is_colour( string $label, string $type, string $shows ): bool {
+		$label = mb_strtolower( $label );
+
+		return 'color' === $type
+			|| 'swatch' === $shows
+			|| false !== mb_strpos( $label, mb_strtolower( _x( 'Colour', 'product attribute', 'oc-theme' ) ) )
+			|| false !== mb_strpos( $label, 'color' );
 	}
 
 	/**
@@ -431,7 +454,7 @@ final class Demo {
 			return false !== mb_strpos( $label, mb_strtolower( $word ) );
 		};
 
-		if ( 'color' === $type || 'swatch' === $shows || $is( _x( 'Colour', 'product attribute', 'oc-theme' ) ) || $is( 'color' ) ) {
+		if ( self::is_colour( $label, $type, $shows ) ) {
 			return array( __( 'Black', 'oc-theme' ), __( 'White', 'oc-theme' ), __( 'Beige', 'oc-theme' ), __( 'Navy', 'oc-theme' ) );
 		}
 
@@ -500,7 +523,14 @@ final class Demo {
 	 *
 	 * @param int $n Which one.
 	 */
-	private static function name( int $n ): string {
+	private static function name( int $n, bool $varies = false ): string {
+		// Said in the name, so the products list tells which ones vary
+		// without opening them one by one.
+		if ( $varies ) {
+			/* translators: %d: the number of the test product. */
+			return sprintf( __( 'Test product %d — with variations', 'oc-theme' ), $n + 1 );
+		}
+
 		/* translators: %d: the number of the test product. */
 		return sprintf( __( 'Test product %d', 'oc-theme' ), $n + 1 );
 	}

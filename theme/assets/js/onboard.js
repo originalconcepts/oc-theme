@@ -3109,8 +3109,12 @@
 		}
 
 		// Where the theme puts the card: right under the promises, still
-		// inside the buying column.
-		if ( 'yes' === String( val( 'prod_contact' ) ) ) { buy.push( contactCard() ); }
+		// inside the buying column -- or after the tabs, wherever the tabs
+		// went, which is settled further down.
+		var askOn  = 'yes' === String( val( 'prod_contact' ) );
+		var after  = askOn && 'tabs' === String( val( 'contact_place' ) || 'atc' ) ? contactCard() : null;
+
+		if ( askOn && ! after ) { buy.push( contactCard() ); }
 
 		var tabs = [];
 
@@ -3169,17 +3173,27 @@
 		// Beside the gallery they belong to the buying column; under the
 		// pictures they belong to the gallery; otherwise they run the whole
 		// width under both.
-		if ( 'side' === where && ! phone ) { buy = buy.concat( strip ); }
+		if ( 'side' === where && ! phone ) {
+			buy = buy.concat( strip );
+			if ( after ) { buy.push( after ); }
+		}
 
 		var words = w( 'wf-pp__d', [ head, money ].concat( short ).concat( buy ) );
 
-		if ( 'gallery' === where && ! phone ) { strip.forEach( function ( part ) { pics.appendChild( part ); } ); }
+		if ( 'gallery' === where && ! phone ) {
+			strip.forEach( function ( part ) { pics.appendChild( part ); } );
+			if ( after ) { pics.appendChild( after ); }
+		}
 
 		var mid = [ w( 'wf-pp' + ( 'gallery-end' === String( val( 'prod_side' ) ) ? ' wf-pp--end' : '' ) + ( 'below' === where || phone ? '' : ' wf-pp--inside' ), [ pics, words ] ) ];
 
 		if ( 'below' === where || phone ) { strip.forEach( function ( part ) { mid.push( part ); } ); }
 
 		if ( more ) { linkedBands( mid, words, at, 'side' === where && ! phone ); }
+
+		// Tabs laid out below run the whole width, and the card follows
+		// them and whatever goes with the product -- as the page does.
+		if ( after && ( 'below' === where || phone ) ) { mid.push( after ); }
 
 		return wPage( mid, {} );
 	}

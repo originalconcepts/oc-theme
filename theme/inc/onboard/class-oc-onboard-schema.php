@@ -217,7 +217,7 @@ final class Schema {
 						'intro'   => __( 'Where the decision is made. The pictures on one side, everything the buyer needs on the other. Every answer here changes the drawing beside you.', 'oc-theme' ),
 						'intro_m' => __( 'On a phone the two do not fit side by side, so the two buttons above switch between the questions and the drawing.', 'oc-theme' ),
 						'preview' => 'product',
-						'fields'  => array( 'prod_side', 'prod_gallery', 'prod_sku', 'prod_short', 'prod_stock', 'prod_ship_days', 'prod_lead_min', 'prod_lead_max', 'prod_qty', 'prod_price_btn', 'prod_icons_lay', 'prod_icons', 'prod_tabs_style', 'prod_tabs_pos', 'prod_ship_tab', 'prod_ship_title', 'prod_ship_text', 'prod_tabs', 'prod_contact', 'contact_name', 'contact_role', 'contact_photo', 'contact_phone', 'contact_from', 'contact_to' ),
+						'fields'  => array( 'prod_side', 'prod_gallery', 'prod_sku', 'prod_short', 'prod_stock', 'prod_ship_days', 'prod_lead_min', 'prod_lead_max', 'prod_qty', 'prod_price_btn', 'prod_icons_lay', 'prod_icons', 'prod_tabs_style', 'prod_tabs_pos', 'prod_ship_tab', 'prod_ship_title', 'prod_ship_text', 'prod_tabs', 'prod_contact', 'contact_place', 'contact_name', 'contact_role', 'contact_photo', 'contact_phone', 'contact_from', 'contact_to' ),
 					),
 					array(
 						'id'      => '6b',
@@ -2421,6 +2421,18 @@ final class Schema {
 			'options' => $yesno,
 			'default' => 'no',
 			'target'  => array( 'mod', 'oc_contact_on' ),
+		);
+
+		$f['contact_place'] = array(
+			'type'    => 'choice',
+			'label'   => __( 'Where does the card stand?', 'oc-theme' ),
+			'options' => array(
+				'atc'  => __( 'Right under the add-to-cart area', 'oc-theme' ),
+				'tabs' => __( 'After the tabs', 'oc-theme' ),
+			),
+			'default' => 'atc',
+			'when'    => array( 'prod_contact', array( 'yes' ) ),
+			'target'  => array( 'mod', 'oc_contact_place' ),
 		);
 
 		$f['contact_name'] = array(

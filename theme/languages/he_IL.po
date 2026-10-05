@@ -13484,3 +13484,15 @@ msgstr "התמונה הראשית, בראש הקטגוריה הזו עם השם 
 
 msgid "One image for this category, used by the categories block, the sub-category strip and the blog. If empty, the main picture is used."
 msgstr "תמונה אחת לקטגוריה הזו, לבלוק הקטגוריות, לרצועת תתי הקטגוריות ולבלוג. אם ריקה, משתמשים בתמונה הראשית."
+
+msgid "Test product %d — with variations"
+msgstr "מוצר בדיקה %d — עם וריאציות"
+
+msgid "Where does the card stand?"
+msgstr "איפה עומד הכרטיס?"
+
+msgid "Right under the add-to-cart area"
+msgstr "מיד מתחת לאזור ההוספה לסל"
+
+msgid "After the tabs"
+msgstr "אחרי הטאבים"

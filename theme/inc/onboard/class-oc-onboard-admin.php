@@ -57,6 +57,12 @@ final class Admin {
 			self::PAGE,
 			array( $this, 'screen' )
 		);
+
+		// Ours, not the shop's: the screen stays, the way to it from the
+		// menu does not. We reach it at /quiz/. A shop owner who finds the
+		// address can still open it -- hiding is not locking -- but it is
+		// no longer a thing the settings menu offers them.
+		remove_submenu_page( Tabs::MENU, self::PAGE );
 	}
 
 	/**

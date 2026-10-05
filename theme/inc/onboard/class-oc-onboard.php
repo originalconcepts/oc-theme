@@ -30,6 +30,7 @@ final class Onboard {
 	const SETTINGS = 'oc_onboard_settings';
 	const TTL_DAYS = 90;
 	const QUERY    = 'oc_start';
+	const QUIZ     = 'oc_quiz';
 
 	/**
 	 * Where a copy of every mail goes and where the report lands.
@@ -42,6 +43,7 @@ final class Onboard {
 	public function register(): void {
 		add_action( 'init', array( $this, 'route' ) );
 		add_filter( 'query_vars', array( $this, 'vars' ) );
+		add_action( 'template_redirect', array( $this, 'quiz' ), 0 );
 		add_filter( 'redirect_canonical', array( $this, 'no_canonical' ), 10, 2 );
 
 		( new Rest() )->register();
@@ -310,10 +312,42 @@ final class Onboard {
 	public function route(): void {
 		add_rewrite_rule( '^start/([A-Za-z0-9_-]{20,64})/?$', 'index.php?' . self::QUERY . '=$matches[1]', 'top' );
 
-		if ( '2' !== (string) get_option( 'oc_onboard_rw' ) ) {
+		// /quiz/ is our own short way to the screen, now that the menu no
+		// longer shows it. Nobody else gets anything from it.
+		add_rewrite_rule( '^quiz/?$', 'index.php?' . self::QUIZ . '=1', 'top' );
+
+		if ( '3' !== (string) get_option( 'oc_onboard_rw' ) ) {
 			flush_rewrite_rules();
-			update_option( 'oc_onboard_rw', '2', false );
+			update_option( 'oc_onboard_rw', '3', false );
 		}
+	}
+
+	/**
+	 * /quiz/: straight to the screen for someone who may open it, the
+	 * login first for someone who is not signed in, and nothing at all for
+	 * anyone else.
+	 */
+	public function quiz(): void {
+		if ( '1' !== (string) get_query_var( self::QUIZ ) ) {
+			return;
+		}
+
+		nocache_headers();
+
+		if ( current_user_can( 'manage_woocommerce' ) ) {
+			wp_safe_redirect( Admin::url() );
+			exit;
+		}
+
+		if ( ! is_user_logged_in() ) {
+			wp_safe_redirect( wp_login_url( home_url( '/quiz/' ) ) );
+			exit;
+		}
+
+		global $wp_query;
+
+		$wp_query->set_404();
+		status_header( 404 );
 	}
 
 	/**
@@ -324,6 +358,7 @@ final class Onboard {
 	 */
 	public function vars( array $vars ): array {
 		$vars[] = self::QUERY;
+		$vars[] = self::QUIZ;
 
 		return $vars;
 	}
