@@ -11860,6 +11860,17 @@ body.oc-checkout { overflow-x: clip; }
 	flex: 1;
 }
 
+/* The checkout form is a grid and #order_review is display:contents, so every
+   child of it is a grid item the theme gives an explicit order (table 2,
+   heading 4, payment 5). The containers PayPal injects arrive with the
+   default order 0 and so landed above everything — on a phone the pay button
+   appeared at the top of the page. They belong after the payment block. */
+.oc-checkout #order_review > .ppc-button-wrapper,
+.oc-checkout #order_review > .ppcp-messages,
+.oc-checkout #order_review > [id^="ppc-button-"] { order: 6; }
+
+.oc-checkout #order_review > .ppc-button-wrapper { margin-block-start: 10px; }
+
 .oc-checkout #payment ul.payment_methods > li label img {
 	margin-inline-end: auto;
 	max-block-size: 22px;

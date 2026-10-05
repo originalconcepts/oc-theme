@@ -10304,3 +10304,6 @@ msgstr "%1$d קטגוריות הוסרו מ-%2$d מוצרים."
 
 msgid "Nothing to remove: none of the selected products was in those categories."
 msgstr "אין מה להסיר: אף אחד מהמוצרים שנבחרו לא היה בקטגוריות האלה."
+
+msgid "Pay with PayPal"
+msgstr "שלם באמצעות פייפאל"

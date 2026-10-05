@@ -1922,6 +1922,7 @@ return array(
 		"Pasted list" => "רשימה מודבקת",
 		"Pasting the key." => "הדבקת המפתח.",
 		"Pause between pieces (ms)" => "השהיה בין האלמנטים (אלפיות שנייה)",
+		"Pay with PayPal" => "שלם באמצעות פייפאל",
 		"Payment method" => "שיטת תשלום",
 		"Payments" => "תשלומים",
 		"Peek at the next image" => "הצצה לתמונה הבאה",
