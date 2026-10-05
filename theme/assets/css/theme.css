@@ -11860,6 +11860,12 @@ body.oc-checkout { overflow-x: clip; }
 	flex: 1;
 }
 
+/* With the plugin's button script gone from a product page, its containers
+   are left behind empty; they would still take their own margins. */
+.single-product .ppc-button-wrapper,
+.single-product .ppcp-messages,
+.single-product [id^="ppc-button-"] { display: none; }
+
 /* The checkout form is a grid and #order_review is display:contents, so every
    child of it is a grid item the theme gives an explicit order (table 2,
    heading 4, payment 5). The containers PayPal injects arrive with the

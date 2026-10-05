@@ -51,6 +51,50 @@ final class Paypal {
 		add_filter( 'woocommerce_gateway_title', array( $this, 'title' ), 10, 2 );
 		add_filter( 'woocommerce_gateway_description', array( $this, 'description' ), 10, 2 );
 		add_filter( 'woocommerce_gateway_icon', array( $this, 'icon' ), 10, 2 );
+
+		// The gateway prints its own description rather than asking for it
+		// through the filter, so the text is taken off the object itself.
+		add_filter( 'woocommerce_available_payment_gateways', array( $this, 'quieten' ) );
+
+		// Plugins load before themes, so a filter on the stored settings is
+		// already too late — the button is switched off where it is drawn.
+		add_action( 'wp_enqueue_scripts', array( $this, 'strip_product_button' ), 99 );
+	}
+
+	/**
+	 * Empty the description on the gateway object, for the rendering that
+	 * never passes through woocommerce_gateway_description.
+	 *
+	 * @param array<string,\WC_Payment_Gateway> $gateways Available gateways.
+	 * @return array<string,\WC_Payment_Gateway>
+	 */
+	public function quieten( $gateways ) {
+		if ( ! is_array( $gateways ) || empty( $gateways[ self::GATEWAY ] ) ) {
+			return $gateways;
+		}
+
+		if ( self::on( 'description' ) ) {
+			$gateways[ self::GATEWAY ]->description = '';
+		}
+
+		if ( self::on( 'title' ) ) {
+			$gateways[ self::GATEWAY ]->title = __( 'Pay with PayPal', 'oc-theme' );
+		}
+
+		return $gateways;
+	}
+
+	/**
+	 * The product page's buttons are drawn by the plugin's own script; with
+	 * the script gone the containers stay empty, and the stylesheet folds
+	 * them away so they leave no gap behind.
+	 */
+	public function strip_product_button(): void {
+		if ( ! self::on( 'hide_product_button' ) || ! function_exists( 'is_product' ) || ! is_product() ) {
+			return;
+		}
+
+		wp_dequeue_script( 'ppcp-smart-button' );
 	}
 
 	/**
