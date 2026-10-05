@@ -456,14 +456,35 @@
 		function coTrustLine() {
 			var btn = document.getElementById( 'place_order' );
 			var wrap = btn ? btn.closest( '.place-order' ) : null;
-			if ( ! wrap || wrap.querySelector( '.oc-co-trust' ) ) {
+			if ( ! wrap ) {
 				return;
 			}
-			var trust = document.createElement( 'div' );
-			trust.className = 'oc-co-trust';
-			trust.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><span></span>';
-			trust.querySelector( 'span' ).textContent = coL.coSecure || 'Secure encrypted payment';
-			wrap.appendChild( trust );
+
+			var review = document.getElementById( 'order_review' );
+			var trust = ( review || coForm ).querySelector( '.oc-co-trust' );
+
+			if ( ! trust ) {
+				trust = document.createElement( 'div' );
+				trust.className = 'oc-co-trust';
+				trust.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><span></span>';
+				trust.querySelector( 'span' ).textContent = coL.coSecure || 'Secure encrypted payment';
+			}
+
+			// PayPal draws its own pay button outside the place-order row — so
+			// Woo's refresh, which replaces that row, cannot take it — and
+			// hides ours. While it is the chosen method the line belongs under
+			// that button. The button itself is never moved: it is an iframe,
+			// and an iframe moved in the document reloads.
+			var pp = review ? review.querySelector( ':scope > .ppc-button-wrapper' ) : null;
+			var chosen = coForm.querySelector( 'input[name="payment_method"]:checked' );
+
+			if ( pp && chosen && 'ppcp-gateway' === chosen.value ) {
+				if ( trust.previousElementSibling !== pp ) {
+					pp.parentNode.insertBefore( trust, pp.nextSibling );
+				}
+			} else if ( trust.parentNode !== wrap ) {
+				wrap.appendChild( trust );
+			}
 		}
 
 		/* -- desktop: the shorter column pins while the longer scrolls --
@@ -530,6 +551,14 @@
 
 		coPaintButton();
 		coTrustLine();
+
+		// Choosing a method is not a mutation; the line has to be told.
+		coForm.addEventListener( 'change', function ( e ) {
+			if ( e.target && 'payment_method' === e.target.name ) {
+				setTimeout( coTrustLine, 0 );
+				setTimeout( coTrustLine, 400 );
+			}
+		} );
 
 		/* -- summary quantity steppers: the mini-cart's ajax + Woo refresh -- */
 		var coQtyTimer = null;

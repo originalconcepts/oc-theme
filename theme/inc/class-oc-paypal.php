@@ -62,6 +62,23 @@ final class Paypal {
 		// Plugins load before themes, so a filter on the stored settings is
 		// already too late — the button is switched off where it is drawn.
 		add_action( 'wp_enqueue_scripts', array( $this, 'strip_product_button' ), 99 );
+
+		// With no language set, PayPal's SDK guesses from the browser and a
+		// Hebrew checkout gets an English button. The site's own language it is.
+		add_filter( 'woocommerce_paypal_payments_smart_buttons_locale', array( $this, 'locale' ) );
+	}
+
+	/**
+	 * The SDK's locale, when the plugin's own setting leaves it open.
+	 *
+	 * @param string $locale What the plugin would send ('' = let PayPal guess).
+	 */
+	public function locale( $locale ) {
+		if ( '' !== (string) $locale || ! self::on( 'locale' ) ) {
+			return $locale;
+		}
+
+		return str_replace( '-', '_', (string) get_locale() );
 	}
 
 	/**

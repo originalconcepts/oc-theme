@@ -11964,6 +11964,17 @@ body.oc-checkout { overflow-x: clip; }
 	color: var(--oc-ink-2, #777);
 }
 
+/* …and under PayPal's button when that is the one showing: the script
+   moves the line out next to the plugin's wrapper (order 6 in the grid). */
+.oc-checkout #order_review > .oc-co-trust { order: 7; margin-block-start: 8px; }
+
+/* On a phone Woo's small-screen sheet gives the button a 1em bottom margin
+   on top of the line's own; 28px read as a line that belonged to nothing. */
+@media (max-width: 900px) {
+	.oc-checkout #payment .place-order #place_order { margin-block-end: 0; }
+	.oc-checkout .oc-co-trust { margin-block-start: 8px; }
+}
+
 
 /* ---------- checkout field widths on phones ----------
  * Last word in the file on purpose: the desktop width rules carry the same
