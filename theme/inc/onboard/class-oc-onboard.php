@@ -19,6 +19,9 @@ declare( strict_types = 1 );
 
 namespace OC\Theme\Onboard;
 
+use OC\Theme\Contact;
+use OC\Theme\Legal;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
