@@ -164,17 +164,24 @@ final class Apply {
 	 * screen has always said this happens; now it does.
 	 */
 	private function forget_key(): void {
-		$s = Onboard::settings();
+		$s    = Onboard::settings();
+		$ours = array( 'claude_key', 'monday_token' );
+		$had  = array();
 
-		if ( '' === trim( (string) $s['claude_key'] ) ) {
+		foreach ( $ours as $one ) {
+			if ( '' !== trim( (string) $s[ $one ] ) ) {
+				$had[]     = $one;
+				$s[ $one ] = '';
+			}
+		}
+
+		if ( ! $had ) {
 			return;
 		}
 
-		$s['claude_key'] = '';
-
 		update_option( Onboard::SETTINGS, $s );
 
-		$this->row( 'about_written', __( 'The writing key', 'oc-theme' ), 'applied', __( 'Taken off this site now the writing is done.', 'oc-theme' ) );
+		$this->row( 'about_written', __( 'Our own keys', 'oc-theme' ), 'applied', __( 'They came here because the site was cloned from ours and have no further use on it, so they are off it now.', 'oc-theme' ) );
 	}
 
 	/**
@@ -524,6 +531,10 @@ final class Apply {
 			$this->write_mod( 'xs_on', 'oc_xsell_style_tabs', 'grid' );
 		}
 
+		// Where the shekel stands. Never asked, because the answer is the
+		// same on every shop we build: before the number, with a space.
+		$this->write_plain( 'brand_name', 'woocommerce_currency_pos', 'left_space' );
+
 		// A bar standing on the banner needs its own ink. The banner darkens
 		// its picture and writes in white, and the header is reading off the
 		// same photograph -- left on the ordinary dark ink it is a navy menu
@@ -723,6 +734,11 @@ final class Apply {
 
 		$this->write_option_key( 'email_service', 'oc_contact', 'email', $email );
 		$this->write_plain( 'email_service', 'woocommerce_email_from_address', $email );
+
+		// "Running low" and "sold out" went to whoever WordPress was
+		// installed by -- which, on a site cloned from ours, is us. The shop
+		// is the one who has to reorder, so the shop is told.
+		$this->write_plain( 'email_service', 'woocommerce_stock_email_recipient', $email );
 	}
 
 	/**
@@ -739,19 +755,29 @@ final class Apply {
 			return;
 		}
 
-		$lk  = 'plain:woocommerce_new_order_settings.recipient';
-		$all = get_option( 'woocommerce_new_order_settings' );
-		$all = is_array( $all ) ? $all : array();
+		// A new order is not the only one somebody has to see. An order that
+		// failed is a sale that nearly happened and can often be saved by a
+		// phone call, and a cancelled one is money the shop was expecting.
+		// All three went to WordPress's own admin address until now.
+		foreach ( array( 'new_order', 'cancelled_order', 'failed_order' ) as $which ) {
+			$name = 'woocommerce_' . $which . '_settings';
+			$lk   = 'plain:' . $name . '.recipient';
+			$all  = get_option( $name );
+			$all  = is_array( $all ) ? $all : array();
 
-		if ( $this->changed_by_hand( $lk, $all['recipient'] ?? null ) ) {
-			$this->row( 'email_orders', 'woocommerce_new_order_settings → recipient', 'manual', __( 'Changed by hand since the last apply; left as it is.', 'oc-theme' ) );
-			return;
+			if ( $this->changed_by_hand( $lk, $all['recipient'] ?? null ) ) {
+				$this->row( 'email_orders', $name . ' → recipient', 'manual', __( 'Changed by hand since the last apply; left as it is.', 'oc-theme' ) );
+
+				continue;
+			}
+
+			$all['recipient'] = $email;
+
+			update_option( $name, $all );
+
+			$this->remember( $lk, $email );
+			$this->row( 'email_orders', $name . ' → recipient', 'applied' );
 		}
-
-		$all['recipient'] = $email;
-		update_option( 'woocommerce_new_order_settings', $all );
-		$this->remember( $lk, $email );
-		$this->row( 'email_orders', 'woocommerce_new_order_settings → recipient', 'applied' );
 	}
 
 	/**

@@ -13349,3 +13349,9 @@ msgstr "אפשרות שנייה"
 
 msgid "Option three"
 msgstr "אפשרות שלישית"
+
+msgid "Our own keys"
+msgstr "המפתחות שלנו"
+
+msgid "They came here because the site was cloned from ours and have no further use on it, so they are off it now."
+msgstr "הם הגיעו לכאן כי האתר שוכפל משלנו ואין להם עוד שימוש בו, אז הם הוסרו ממנו."
