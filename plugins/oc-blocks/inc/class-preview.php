@@ -113,6 +113,10 @@ final class Preview {
 		wp_print_scripts();
 		// A click on a section tells the composer to open its card — links,
 		// buttons and form fields keep doing their own job.
+		// Entrances belong to a visitor arriving at the page, not to an editor
+		// watching one line of text change. In the preview every section is
+		// already "in", so a re-render redraws the page instead of replaying it.
+		echo '<script>document.querySelectorAll(".ocb--in-fade,.ocb--in-rise,.ocb--in-stagger").forEach(function(s){s.classList.add("is-in");});</script>';
 		echo '<script>document.addEventListener("click",function(e){if(e.target.closest("a,button,input,textarea,select,label,form,iframe"))return;var s=e.target.closest("[data-ocb-n]");if(s&&window.parent!==window){window.parent.postMessage({ocbPick:Number(s.dataset.ocbN)},"*");}});</script>';
 		echo '</body></html>';
 		exit;

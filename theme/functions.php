@@ -13,7 +13,7 @@ declare( strict_types = 1 );
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'OC_THEME_VERSION', '0.3.285' );
+define( 'OC_THEME_VERSION', '0.3.295' );
 define( 'OC_THEME_DIR', get_template_directory() );
 define( 'OC_THEME_URI', get_template_directory_uri() );
 define( 'OC_THEME_REPO', 'originalconcepts/oc-theme' );
@@ -79,6 +79,9 @@ require_once OC_THEME_DIR . '/inc/class-oc-login.php';
 require_once OC_THEME_DIR . '/inc/class-oc-login-screen.php';
 require_once OC_THEME_DIR . '/inc/class-oc-holidays.php';
 require_once OC_THEME_DIR . '/inc/class-oc-woocommerce.php';
+require_once OC_THEME_DIR . '/inc/class-oc-bulk-category.php';
+require_once OC_THEME_DIR . '/inc/class-oc-paypal.php';
+require_once OC_THEME_DIR . '/inc/class-oc-flashy.php';
 require_once OC_THEME_DIR . '/inc/shipping/class-oc-shipping-quote.php';
 require_once OC_THEME_DIR . '/inc/shipping/class-oc-shipping-rules.php';
 require_once OC_THEME_DIR . '/inc/class-oc-shipping.php';
@@ -591,6 +594,9 @@ add_action( 'admin_notices', 'oc_dependency_notice' );
 ( new OC\Theme\Translatable() )->register();
 ( new OC\Theme\Product_Contact_Admin() )->register();
 ( new OC\Theme\Catalog() )->register();
+( new OC\Theme\Bulk_Category() )->register();
+( new OC\Theme\Paypal() )->register();
+( new OC\Theme\Flashy() )->register();
 ( new OC\Theme\Category() )->register();
 ( new OC\Theme\Order_Print() )->register();
 ( new OC\Theme\Media_Clean() )->register();

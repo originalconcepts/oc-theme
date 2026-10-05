@@ -252,6 +252,7 @@ body.ocbe-full .wrap { margin: 0; }
 }
 
 .ocbe-frame__wrap {
+	position: relative;
 	overflow: hidden;
 	border-radius: 10px;
 	box-shadow: 0 6px 30px rgb(0 0 0 / 10%);
@@ -261,11 +262,25 @@ body.ocbe-full .wrap { margin: 0; }
 
 .ocbe-frame__wrap.is-device { border: 1px solid #ddd; }
 
+/* Two frames share this box; only the live one is seen. The other keeps
+   its size and can be scrolled while it loads, which is what lets the swap
+   land on the same line the editor was looking at. */
 .ocbe-frame {
+	position: absolute;
+	inset-block-start: 0;
+	inset-inline-start: 0;
 	display: block;
 	border: 0;
 	transform-origin: top right;
 	background: #fff;
+	opacity: 0;
+	pointer-events: none;
+}
+
+.ocbe-frame.is-live {
+	opacity: 1;
+	pointer-events: auto;
+	z-index: 1;
 }
 
 html[dir="ltr"] .ocbe-frame { transform-origin: top left; }

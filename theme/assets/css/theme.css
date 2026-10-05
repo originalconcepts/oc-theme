@@ -11720,6 +11720,9 @@ body.oc-checkout { overflow-x: clip; }
 .oc-checkout .oc-co-consent { order: 3; }
 .oc-checkout #place_order { order: 4; margin-block-start: 8px; }
 .oc-checkout .oc-co-trust { order: 5; }
+/* the challenge, when Cloudflare asks for one, right above the button */
+.oc-checkout #payment .place-order .oc-guard-ts { order: 3; display: flex; justify-content: center; margin-block: 6px 0; }
+.oc-checkout #payment .place-order .oc-guard-ts:empty { display: none; }
 
 .oc-co-privacy {
 	margin: 10px 0;
@@ -11870,6 +11873,26 @@ body.oc-checkout { overflow-x: clip; }
 	flex: 1;
 }
 
+/* With the plugin's button script gone from a product page, its containers
+   are left behind empty; they would still take their own margins. */
+.single-product .ppc-button-wrapper,
+.single-product .ppcp-messages,
+.single-product [id^="ppc-button-"],
+.oc-checkout .ppc-button-wrapper,
+.oc-checkout .ppcp-messages,
+.oc-checkout [id^="ppc-button-"] { display: none; }
+
+/* The checkout form is a grid and #order_review is display:contents, so every
+   child of it is a grid item the theme gives an explicit order (table 2,
+   heading 4, payment 5). The containers PayPal injects arrive with the
+   default order 0 and so landed above everything — on a phone the pay button
+   appeared at the top of the page. They belong after the payment block. */
+.oc-checkout #order_review > .ppc-button-wrapper,
+.oc-checkout #order_review > .ppcp-messages,
+.oc-checkout #order_review > [id^="ppc-button-"] { order: 6; }
+
+.oc-checkout #order_review > .ppc-button-wrapper { margin-block-start: 10px; }
+
 .oc-checkout #payment ul.payment_methods > li label img {
 	margin-inline-end: auto;
 	max-block-size: 22px;
@@ -11946,6 +11969,12 @@ body.oc-checkout { overflow-x: clip; }
 
 .oc-checkout .woocommerce-terms-and-conditions-wrapper { font-size: .88rem; }
 
+/* consent on the account page */
+.oc-acct-consent { margin: 20px 0 6px; padding: 20px 0 0; border: 0; border-block-start: 1px solid var(--oc-line, #e5e2dd); max-inline-size: 520px; }
+.oc-acct-consent__title { margin: 0 0 10px; font-weight: 600; font-size: 1rem; color: var(--oc-ink, #111); }
+.oc-acct-consent label { display: flex; align-items: flex-start; gap: 8px; cursor: pointer; }
+.oc-acct-consent__note { margin: 6px 0 0; font-size: .85rem; color: var(--oc-ink-2, #777); }
+
 /* trust line under the button */
 .oc-co-trust {
 	display: flex;
@@ -11955,6 +11984,17 @@ body.oc-checkout { overflow-x: clip; }
 	margin-block-start: 12px;
 	font-size: .8rem;
 	color: var(--oc-ink-2, #777);
+}
+
+/* …and under PayPal's button when that is the one showing: the script
+   moves the line out next to the plugin's wrapper (order 6 in the grid). */
+.oc-checkout #order_review > .oc-co-trust { order: 7; margin-block-start: 8px; }
+
+/* On a phone Woo's small-screen sheet gives the button a 1em bottom margin
+   on top of the line's own; 28px read as a line that belonged to nothing. */
+@media (max-width: 900px) {
+	.oc-checkout #payment .place-order #place_order { margin-block-end: 0; }
+	.oc-checkout .oc-co-trust { margin-block-start: 8px; }
 }
 
 
@@ -14642,6 +14682,7 @@ html[dir="rtl"] .oc-bye { translate: 50% 0; }
 	padding-inline: 13px;
 	font: inherit;
 }
+.woocommerce-MyAccount-content form.edit-account > .form-row:not(.form-row-first):not(.form-row-last) { clear: both; float: none; inline-size: 100%; }
 .woocommerce-MyAccount-content form.edit-account .form-row span.required { color: var(--oc-sale, #b4453c); text-decoration: none; }
 .woocommerce-MyAccount-content form.edit-account > p em,
 .woocommerce-MyAccount-content form.edit-account > .woocommerce-form-row + em,

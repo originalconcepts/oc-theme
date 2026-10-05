@@ -191,16 +191,49 @@
 			'&draft=' + encodeURIComponent( draft ) + '&t=' + Date.now();
 	}
 
+	// Two frames, one shown. The new draft loads into the hidden one and
+	// only takes the stage once it has finished — so an edit redraws the
+	// page in place instead of blanking it, losing the scroll position and
+	// playing every entrance again. els.frame always means the visible one.
 	function reloadPreview( draft ) {
-		var frame = els.frame;
+		var next = els.frameB;
 		var keep = 0;
 
 		try {
-			keep = frame.contentWindow.scrollY || 0;
+			keep = els.frame.contentWindow.scrollY || 0;
 		} catch ( e ) {}
 
-		frame.dataset.keep = String( keep );
-		frame.src = previewUrl( draft );
+		next.dataset.keep = String( keep );
+		next.dataset.pending = '1';
+		next.src = previewUrl( draft );
+	}
+
+	// Both frames share this: put the scroll back, then — if this frame was
+	// the one loading a new draft — swap the roles.
+	function frameLoaded( frame ) {
+		var keep = Number( frame.dataset.keep || 0 );
+
+		if ( keep ) {
+			try {
+				frame.contentWindow.scrollTo( 0, keep );
+			} catch ( e ) {}
+		}
+
+		if ( '1' !== frame.dataset.pending ) {
+			return;
+		}
+
+		frame.dataset.pending = '';
+
+		var old = els.frame;
+
+		els.frame = frame;
+		els.frameB = old;
+
+		frame.classList.add( 'is-live' );
+		frame.removeAttribute( 'aria-hidden' );
+		old.classList.remove( 'is-live' );
+		old.setAttribute( 'aria-hidden', 'true' );
 	}
 
 	// A click on a section inside the preview answers back: open its card.
@@ -1401,9 +1434,16 @@
 
 		var scale = Math.min( 1, Math.max( 0.2, room / want ) );
 
-		frame.style.width = want + 'px';
-		frame.style.transform = 'scale(' + scale + ')';
-		frame.style.height = ( ( stage.clientHeight - 30 ) / scale ) + 'px';
+		[ frame, els.frameB ].forEach( function ( one ) {
+			if ( ! one ) {
+				return;
+			}
+
+			one.style.width = want + 'px';
+			one.style.transform = 'scale(' + scale + ')';
+			one.style.height = ( ( stage.clientHeight - 30 ) / scale ) + 'px';
+		} );
+
 		els.frameWrap.style.width = ( want * scale ) + 'px';
 		els.frameWrap.style.height = ( stage.clientHeight - 30 ) + 'px';
 		els.frameWrap.classList.toggle( 'is-device', 'desktop' !== state.device );
@@ -1423,18 +1463,15 @@
 		els.status = el( 'span', { 'class': 'ocbe__status' } );
 		els.rail = el( 'div', { 'class': 'ocbe-rail__list' } );
 		els.settings = el( 'div', { 'class': 'ocbe-side__pane' } );
-		els.frame = el( 'iframe', { 'class': 'ocbe-frame', title: 'preview' } );
-		els.frameWrap = el( 'div', { 'class': 'ocbe-frame__wrap' }, [ els.frame ] );
+		els.frame = el( 'iframe', { 'class': 'ocbe-frame is-live', title: 'preview' } );
+		els.frameB = el( 'iframe', { 'class': 'ocbe-frame', title: 'preview', 'aria-hidden': 'true' } );
+		els.frameWrap = el( 'div', { 'class': 'ocbe-frame__wrap' }, [ els.frame, els.frameB ] );
 		els.stage = el( 'div', { 'class': 'ocbe-stage' }, [ els.frameWrap ] );
 
-		els.frame.addEventListener( 'load', function () {
-			var keep = Number( els.frame.dataset.keep || 0 );
-
-			if ( keep ) {
-				try {
-					els.frame.contentWindow.scrollTo( 0, keep );
-				} catch ( e ) {}
-			}
+		[ els.frame, els.frameB ].forEach( function ( one ) {
+			one.addEventListener( 'load', function () {
+				frameLoaded( one );
+			} );
 		} );
 
 		var deviceIcons = {

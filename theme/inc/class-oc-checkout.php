@@ -105,6 +105,10 @@ final class Checkout {
 		add_action( 'woocommerce_review_order_before_submit', array( $this, 'privacy_note' ), 12 );
 
 		add_action( 'woocommerce_review_order_before_submit', array( $this, 'consent_checkbox' ), 15 );
+		// The challenge itself goes right above the pay button, where a
+		// shopper who is asked to tick it will look; the script redraws it
+		// after every refresh of the review fragment.
+		add_action( 'woocommerce_review_order_before_submit', array( $this, 'guard_slot' ), 17 );
 		add_filter( 'woocommerce_order_button_text', array( $this, 'button_text' ) );
 
 		add_action( 'woocommerce_after_checkout_validation', array( $this, 'validate' ), 10, 2 );
@@ -1031,7 +1035,14 @@ final class Checkout {
 	 * The spam guard's fields, inside the checkout form.
 	 */
 	public function guard_fields(): void {
-		echo Guard::fields( 'checkout' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
+		echo Guard::fields( 'checkout', false ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
+	}
+
+	/**
+	 * The Turnstile container, above the pay button.
+	 */
+	public function guard_slot(): void {
+		echo Guard::slot( 'checkout' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
 	}
 
 	/**
@@ -1411,9 +1422,13 @@ final class Checkout {
 			return;
 		}
 
-		$label = '' !== trim( (string) $s['consent_text'] )
-			? (string) $s['consent_text']
-			: __( 'I agree to receive updates and offers by email and SMS', 'oc-theme' );
+		// Asked once. A signed-in shopper who already said yes manages it
+		// from the account page instead of being asked on every order.
+		if ( is_user_logged_in() && 'yes' === get_user_meta( get_current_user_id(), 'oc_marketing_consent', true ) ) {
+			return;
+		}
+
+		$label = self::consent_label();
 		?>
 		<p class="form-row oc-co-consent">
 			<label class="woocommerce-form__label woocommerce-form__label-for-checkbox checkbox">
@@ -1422,6 +1437,48 @@ final class Checkout {
 			</label>
 		</p>
 		<?php
+	}
+
+	/**
+	 * The consent wording — the shop's own text, or the default.
+	 */
+	public static function consent_label(): string {
+		$s = self::settings();
+
+		return '' !== trim( (string) $s['consent_text'] )
+			? (string) $s['consent_text']
+			: __( 'I agree to receive updates and offers by email and SMS', 'oc-theme' );
+	}
+
+	/**
+	 * Record what a shopper decided about marketing, and tell whoever is
+	 * listening (a mailing integration, say).
+	 *
+	 * @param int            $user_id User id, 0 for a guest.
+	 * @param bool           $granted Yes or no.
+	 * @param string         $source  Where it was decided: checkout | account.
+	 * @param string         $email   The shopper's email.
+	 * @param string         $phone   The shopper's phone.
+	 * @param \WC_Order|null $order   The order, when there is one.
+	 */
+	public static function record_consent( int $user_id, bool $granted, string $source, string $email, string $phone, $order = null ): void {
+		if ( $user_id ) {
+			update_user_meta( $user_id, 'oc_marketing_consent', $granted ? 'yes' : 'no' );
+			update_user_meta( $user_id, 'oc_marketing_consent_at', time() );
+			update_user_meta( $user_id, 'oc_marketing_consent_src', $source );
+		}
+
+		/**
+		 * A shopper granted or withdrew marketing consent.
+		 *
+		 * @param int           $user_id 0 for a guest.
+		 * @param bool          $granted
+		 * @param string        $email
+		 * @param string        $phone
+		 * @param string        $source  checkout | account
+		 * @param \WC_Order|null $order
+		 */
+		do_action( 'oc_marketing_consent', $user_id, $granted, $email, $phone, $source, $order );
 	}
 
 	/**
@@ -1580,11 +1637,12 @@ final class Checkout {
 
 		if ( ! empty( $_POST['oc_marketing_consent'] ) ) {
 			$order->update_meta_data( '_oc_marketing_consent', 'yes' );
+			$order->update_meta_data( '_oc_marketing_consent_at', (string) time() );
 
-			$user_id = $order->get_customer_id();
-			if ( $user_id ) {
-				update_user_meta( $user_id, 'oc_marketing_consent', 'yes' );
-			}
+			self::record_consent( (int) $order->get_customer_id(), true, 'checkout', (string) $order->get_billing_email(), (string) $order->get_billing_phone(), $order );
+		} elseif ( $order->get_customer_id() && 'yes' === get_user_meta( $order->get_customer_id(), 'oc_marketing_consent', true ) ) {
+			// Not asked again — the standing yes is carried onto the order.
+			$order->update_meta_data( '_oc_marketing_consent', 'yes' );
 		}
 
 		// Keep the address book in step with what was ordered — only for a

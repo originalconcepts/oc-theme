@@ -1005,6 +1005,19 @@
    section's wrappers and left the corner clipped just the same. */
 .ocb-mq__room { padding-block: calc(56vw * sin(abs(var(--ocb-mq-angle, 0deg)))); }
 
+/* A ribbon crosses the whole screen or it reads as a mistake. The 112%
+   overshoot above is measured against the strip's own container, so in a
+   content-width section it is 6% of the column, not of the screen — the
+   slanted ends then stop short of both edges (19px shy at 1920, more as
+   the screen grows, which is what the demo showed). The section itself is
+   already full-bleed and clips its own overflow, so a tilted ribbon simply
+   takes the inner column's width cap off; a level strip keeps the column,
+   because a level strip that ends with the text does not look broken. */
+.ocb--marquee:has(.ocb-mq--tilt) .ocb__in {
+	max-inline-size: none;
+	padding-inline: 0;
+}
+
 @keyframes ocb-mq { to { transform: translateX(-50%); } }
 @keyframes ocb-mq-r { to { transform: translateX(50%); } }
 @keyframes ocb-mq-l-in { from { transform: translateX(50%); } to { transform: translateX(0); } }
