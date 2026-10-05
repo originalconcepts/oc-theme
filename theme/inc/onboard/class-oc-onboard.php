@@ -365,7 +365,7 @@ final class Onboard {
 		$host = (string) wp_parse_url( home_url(), PHP_URL_HOST );
 
 		if ( '' !== $host && ( str_ends_with( $host, '.mywebsite.co.il' ) || str_ends_with( $host, '.proginter.dev' ) ) ) {
-			$want = trim( (string) self::state()['domain'] ?? '' );
+			$want = trim( (string) ( self::state()['domain'] ?? '' ) );
 
 			$add(
 				'domain',
