@@ -207,9 +207,26 @@ class Category {
 
 			var row = function ( el ) { return el ? el.closest( 'table.form-table > tbody > tr, #addtag > .form-field' ) : null; };
 			var typeRow = row( sel );
-			var descRow = row( document.getElementById( 'description' ) || document.getElementById( 'tag-description' ) );
-			if ( typeRow && descRow && typeRow.parentNode === descRow.parentNode ) {
-				descRow.parentNode.insertBefore( typeRow, descRow.nextSibling );
+
+			// The editor stands where the plain textarea used to; either may
+			// be the description on this screen.
+			var descRow = row( document.getElementById( 'oc_term_description' ) )
+				|| row( document.getElementById( 'description' ) )
+				|| row( document.getElementById( 'tag-description' ) );
+
+			// Where the description goes belongs beside the description, not
+			// three rows below it behind the display type.
+			var posRow = row( document.getElementById( '_oc_desc_pos' ) );
+
+			var after = descRow;
+
+			if ( posRow && descRow && posRow.parentNode === descRow.parentNode ) {
+				descRow.parentNode.insertBefore( posRow, descRow.nextSibling );
+				after = posRow;
+			}
+
+			if ( typeRow && after && typeRow.parentNode === after.parentNode ) {
+				after.parentNode.insertBefore( typeRow, after.nextSibling );
 			}
 
 			var pageRow = row( document.getElementById( 'oc_lobby_page' ) );
@@ -230,6 +247,11 @@ class Category {
 				var page = document.getElementById( 'oc_lobby_page' );
 				var chosen = !! page && '0' !== page.value;
 				quiet.forEach( function ( r ) { r.style.display = lobby ? 'none' : ''; } );
+
+				// Which page a lobby shows is not a question for a category
+				// that is not one.
+				if ( pageRow ) { pageRow.style.display = lobby ? '' : 'none'; }
+
 				note.hidden = ! lobby;
 				note.style.color = chosen ? '' : '#b32d2e';
 				note.textContent = chosen
@@ -403,25 +425,74 @@ class Category {
 	 * @param int $term_id Term id.
 	 * @return array<string,mixed>
 	 */
+	/**
+	 * A "show while" string for a sub-category row, counting the empty
+	 * "as in Customize" answer as a match when Customize holds one of the
+	 * values the row wants.
+	 *
+	 * @param string            $key    Meta key.
+	 * @param array<int,string> $values The values that show the row.
+	 * @param string            $global What Customize holds.
+	 */
+	private function sub_when( string $key, array $values, string $global ): string {
+		return $key . ':' . implode( '|', $values ) . ( in_array( $global, $values, true ) ? '|' : '' );
+	}
+
 	private static function subs( int $term_id ): array {
-		$get = static function ( string $key, string $def = '' ) use ( $term_id ): string {
+		$all = self::sub_defaults();
+
+		// A category that has answered for itself wins; one that has not
+		// follows Customize, the way the banner already does.
+		$get = static function ( string $key, string $def ) use ( $term_id ): string {
 			$v = get_term_meta( $term_id, $key, true );
 
 			return '' !== (string) $v ? (string) $v : $def;
 		};
 
+		$own = (string) get_term_meta( $term_id, '_oc_sub_show', true );
+
 		return array(
-			'show'     => '1' === $get( '_oc_sub_show' ),
-			'style'    => $get( '_oc_sub_style', 'clean' ),      // clean | pill | card.
-			'pill'     => $get( '_oc_sub_pill', 'round' ),        // round | rect.
-			'shape'    => $get( '_oc_sub_shape', 'square' ),      // square | portrait | circle.
-			'corners'  => $get( '_oc_sub_corners', 'soft' ),      // sharp | soft.
-			'slider'   => '1' === $get( '_oc_sub_slider' ),
-			'slider_m' => $get( '_oc_sub_slider_m', 'same' ),    // same | yes | no — the phone's own answer.
-			'place'    => $get( '_oc_sub_place', 'out' ),         // out | in.
-			'place_m'  => $get( '_oc_sub_place_m', 'out' ),       // same | out | in — the phone's own answer.
-			'align'    => $get( '_oc_sub_align', 'start' ),       // auto | start | center.
-			'align_m'  => $get( '_oc_sub_align_m', 'same' ),     // same | auto | start | center.
+			// '' is "as in Customize"; '0' is a category that said no, and
+			// silence is not the same answer as no.
+			'show'     => '' === $own ? $all['show'] : '1' === $own,
+			'style'    => $get( '_oc_sub_style', $all['style'] ),      // clean | pill | card.
+			'pill'     => $get( '_oc_sub_pill', $all['pill'] ),        // round | rect.
+			'shape'    => $get( '_oc_sub_shape', $all['shape'] ),      // square | portrait | circle.
+			'corners'  => $get( '_oc_sub_corners', $all['corners'] ),  // sharp | soft.
+			'slider'   => '1' === $get( '_oc_sub_slider', $all['slider'] ? '1' : '0' ),  // '' follows Customize.
+			'slider_m' => $get( '_oc_sub_slider_m', $all['slider_m'] ), // same | yes | no — the phone's own answer.
+			'place'    => $get( '_oc_sub_place', $all['place'] ),      // out | in.
+			'place_m'  => $get( '_oc_sub_place_m', $all['place_m'] ),  // same | out | in — the phone's own answer.
+			'align'    => $get( '_oc_sub_align', $all['align'] ),      // auto | start | center.
+			'align_m'  => $get( '_oc_sub_align_m', $all['align_m'] ),  // same | auto | start | center.
+		);
+	}
+
+	/**
+	 * What every category does with its sub-categories unless it says
+	 * otherwise — set once, in Customize.
+	 *
+	 * @return array<string,mixed>
+	 */
+	public static function sub_defaults(): array {
+		$pick = static function ( string $key, array $allowed, string $def ): string {
+			$v = (string) get_theme_mod( $key, $def );
+
+			return in_array( $v, $allowed, true ) ? $v : $def;
+		};
+
+		return array(
+			'show'     => (bool) get_theme_mod( 'oc_csub_show', false ),
+			'style'    => $pick( 'oc_csub_style', array( 'clean', 'pill', 'card' ), 'clean' ),
+			'pill'     => $pick( 'oc_csub_pill', array( 'round', 'rect' ), 'round' ),
+			'shape'    => $pick( 'oc_csub_shape', array( 'square', 'portrait', 'circle' ), 'square' ),
+			'corners'  => $pick( 'oc_csub_corners', array( 'soft', 'sharp' ), 'soft' ),
+			'slider'   => (bool) get_theme_mod( 'oc_csub_slider', false ),
+			'slider_m' => $pick( 'oc_csub_slider_m', array( 'same', 'yes', 'no' ), 'same' ),
+			'place'    => $pick( 'oc_csub_place', array( 'out', 'in' ), 'out' ),
+			'place_m'  => $pick( 'oc_csub_place_m', array( 'same', 'out', 'in' ), 'out' ),
+			'align'    => $pick( 'oc_csub_align', array( 'auto', 'start', 'center' ), 'start' ),
+			'align_m'  => $pick( 'oc_csub_align_m', array( 'same', 'auto', 'start', 'center' ), 'same' ),
 		);
 	}
 
@@ -1261,13 +1332,51 @@ class Category {
 			</th>
 		</tr>
 		<?php
-		$this->toggle_field( '_oc_sub_show', $sub['show'], __( 'Show sub-categories', 'oc-theme' ), __( 'Display a strip of the child categories.', 'oc-theme' ) );
+		// Three answers, not two: a category that has said nothing follows
+		// Customize, and one that has said "no" must not be read as silence
+		// and turned back on by it.
+		$sub_g  = self::sub_defaults();
+		$sub_on = $raw( '_oc_sub_show' );
+		$sub_if = '_oc_sub_show:1' . ( $sub_g['show'] ? '|' : '' );
+
+		// A category that has not answered shows what Customize holds and
+		// stores nothing, so changing Customize still reaches it. Saving a
+		// category for some other reason must not quietly pin all of this
+		// to whatever it happens to look like today.
+		$sub_styles = array(
+			'clean' => __( 'Clean — underlined links', 'oc-theme' ),
+			'pill'  => __( 'Pills', 'oc-theme' ),
+			'card'  => __( 'Image cards', 'oc-theme' ),
+		);
+
+		$sub_opt = static function ( array $choices, string $now ) {
+			/* translators: %s: what Customize holds for every category. */
+			return array( '' => sprintf( __( 'As in Customize — %s', 'oc-theme' ), (string) ( $choices[ $now ] ?? '' ) ) ) + $choices;
+		};
+
+		$this->select_field(
+			'_oc_sub_show',
+			$sub_on,
+			__( 'Show sub-categories', 'oc-theme' ),
+			array(
+				/* translators: %s: what Customize holds for every category. */
+				''  => sprintf( __( 'As in Customize — %s', 'oc-theme' ), $sub_g['show'] ? __( 'shown', 'oc-theme' ) : __( 'not shown', 'oc-theme' ) ),
+				'1' => __( 'Show them', 'oc-theme' ),
+				'0' => __( 'Do not show them', 'oc-theme' ),
+			),
+			__( 'A strip of the child categories. How it looks is set once in Customize › Catalogue page › Sub-categories.', 'oc-theme' )
+		);
 
 		$this->visual_field(
 			'_oc_sub_style',
-			$sub['style'],
+			$raw( '_oc_sub_style' ),
 			__( 'Display', 'oc-theme' ),
 			array(
+				''      => array(
+					/* translators: %s: what Customize holds for every category. */
+					'label' => sprintf( __( 'As in Customize — %s', 'oc-theme' ), (string) ( $sub_styles[ $sub_g['style'] ] ?? '' ) ),
+					'svg'   => '<svg viewBox="0 0 48 32" width="48" height="32" fill="none" stroke="currentColor" aria-hidden="true"><rect x="2" y="2" width="44" height="28" rx="3" stroke-dasharray="3 3"/></svg>',
+				),
 				'clean' => array(
 					'label' => __( 'Clean — underlined links', 'oc-theme' ),
 					'svg'   => self::icon( 's-clean' ),
@@ -1282,90 +1391,115 @@ class Category {
 				),
 			),
 			'',
-			'_oc_sub_show:1'
+			$sub_if
 		);
 
 		$this->select_field(
 			'_oc_sub_pill',
-			$sub['pill'],
+			$raw( '_oc_sub_pill' ),
 			__( 'Pill shape', 'oc-theme' ),
-			array(
-				'round' => __( 'Rounded (ellipse)', 'oc-theme' ),
-				'rect'  => __( 'Rectangle', 'oc-theme' ),
+			$sub_opt(
+				array(
+					'round' => __( 'Rounded (ellipse)', 'oc-theme' ),
+					'rect'  => __( 'Rectangle', 'oc-theme' ),
+				),
+				$sub_g['pill']
 			),
 			'',
-			'_oc_sub_show:1,_oc_sub_style:pill'
+			$sub_if . ',' . $this->sub_when( '_oc_sub_style', array( 'pill' ), $sub_g['style'] )
 		);
 
 		$this->select_field(
 			'_oc_sub_shape',
-			$sub['shape'],
+			$raw( '_oc_sub_shape' ),
 			__( 'Image shape', 'oc-theme' ),
-			array(
-				'square'   => __( 'Square', 'oc-theme' ),
-				'portrait' => __( 'Portrait', 'oc-theme' ),
-				'circle'   => __( 'Circle', 'oc-theme' ),
+			$sub_opt(
+				array(
+					'square'   => __( 'Square', 'oc-theme' ),
+					'portrait' => __( 'Portrait', 'oc-theme' ),
+					'circle'   => __( 'Circle', 'oc-theme' ),
+				),
+				$sub_g['shape']
 			),
 			'',
-			'_oc_sub_show:1,_oc_sub_style:card'
+			$sub_if . ',' . $this->sub_when( '_oc_sub_style', array( 'card' ), $sub_g['style'] )
 		);
 
 		$this->select_field(
 			'_oc_sub_corners',
-			$sub['corners'],
+			$raw( '_oc_sub_corners' ),
 			__( 'Corners', 'oc-theme' ),
-			array(
-				'soft'  => __( 'Soft', 'oc-theme' ),
-				'sharp' => __( 'Sharp', 'oc-theme' ),
+			$sub_opt(
+				array(
+					'soft'  => __( 'Soft', 'oc-theme' ),
+					'sharp' => __( 'Sharp', 'oc-theme' ),
+				),
+				$sub_g['corners']
 			),
 			'',
-			'_oc_sub_show:1,_oc_sub_style:card'
+			$sub_if . ',' . $this->sub_when( '_oc_sub_style', array( 'card' ), $sub_g['style'] )
 		);
 
-		$this->toggle_field(
+		$this->select_field(
 			'_oc_sub_slider',
-			$sub['slider'],
+			$raw( '_oc_sub_slider' ),
 			__( 'Slider (desktop)', 'oc-theme' ),
+			$sub_opt(
+				array(
+					'1' => __( 'Slider', 'oc-theme' ),
+					'0' => __( 'Wrapped rows', 'oc-theme' ),
+				),
+				$sub_g['slider'] ? '1' : '0'
+			),
 			__( 'One row that scrolls sideways instead of wrapping — links, pills or cards alike. Drag on desktop, swipe on touch.', 'oc-theme' ),
-			'_oc_sub_show:1'
+			$sub_if
 		);
 
 		$this->select_field(
 			'_oc_sub_slider_m',
-			$sub['slider_m'],
+			$raw( '_oc_sub_slider_m' ),
 			__( 'Slider (mobile)', 'oc-theme' ),
-			array(
-				'same' => __( 'Same as desktop', 'oc-theme' ),
-				'yes'  => __( 'Slider', 'oc-theme' ),
-				'no'   => __( 'Wrapped rows', 'oc-theme' ),
+			$sub_opt(
+				array(
+					'same' => __( 'Same as desktop', 'oc-theme' ),
+					'yes'  => __( 'Slider', 'oc-theme' ),
+					'no'   => __( 'Wrapped rows', 'oc-theme' ),
+				),
+				$sub_g['slider_m']
 			),
 			__( 'A finger-swipe strip that runs to the screen edge — below the hero or with its text.', 'oc-theme' ),
-			'_oc_sub_show:1'
+			$sub_if
 		);
 
 		$this->select_field(
 			'_oc_sub_place',
-			$sub['place'],
+			$raw( '_oc_sub_place' ),
 			__( 'Placement (desktop)', 'oc-theme' ),
-			array(
-				'out' => __( 'Below the hero, above the products', 'oc-theme' ),
-				'in'  => __( 'With the text, under the description', 'oc-theme' ),
+			$sub_opt(
+				array(
+					'out' => __( 'Below the hero, above the products', 'oc-theme' ),
+					'in'  => __( 'With the text, under the description', 'oc-theme' ),
+				),
+				$sub_g['place']
 			),
 			__( 'Only with a hero; without one the strip sits above the products. With the text, they follow its alignment.', 'oc-theme' ),
-			'_oc_sub_show:1'
+			$sub_if
 		);
 
 		$this->select_field(
 			'_oc_sub_place_m',
-			$sub['place_m'],
+			$raw( '_oc_sub_place_m' ),
 			__( 'Placement (mobile)', 'oc-theme' ),
-			array(
-				'out'  => __( 'Below the hero, above the products', 'oc-theme' ),
-				'in'   => __( 'With the text, under the description', 'oc-theme' ),
-				'same' => __( 'Same as desktop', 'oc-theme' ),
+			$sub_opt(
+				array(
+					'out'  => __( 'Below the hero, above the products', 'oc-theme' ),
+					'in'   => __( 'With the text, under the description', 'oc-theme' ),
+					'same' => __( 'Same as desktop', 'oc-theme' ),
+				),
+				$sub_g['place_m']
 			),
 			__( 'A phone’s hero has little room; below it is usually the better place.', 'oc-theme' ),
-			'_oc_sub_show:1'
+			$sub_if
 		);
 
 		$aligns = array(
@@ -1376,20 +1510,20 @@ class Category {
 
 		$this->select_field(
 			'_oc_sub_align',
-			$sub['align'],
+			$raw( '_oc_sub_align' ),
 			__( 'Alignment (desktop)', 'oc-theme' ),
-			$aligns,
+			$sub_opt( $aligns, $sub_g['align'] ),
 			__( 'Where the row lines up — also inside the banner. “Follow the text” keeps it with the banner’s words, or with the page title when it stands above the products.', 'oc-theme' ),
-			'_oc_sub_show:1'
+			$sub_if
 		);
 
 		$this->select_field(
 			'_oc_sub_align_m',
-			$sub['align_m'],
+			$raw( '_oc_sub_align_m' ),
 			__( 'Alignment (mobile)', 'oc-theme' ),
-			array( 'same' => __( 'Same as desktop', 'oc-theme' ) ) + $aligns,
+			$sub_opt( array( 'same' => __( 'Same as desktop', 'oc-theme' ) ) + $aligns, $sub_g['align_m'] ),
 			'',
-			'_oc_sub_show:1'
+			$sub_if
 		);
 
 		$this->admin_script();
@@ -1651,12 +1785,12 @@ class Category {
 
 		$this->save_int( $term_id, '_oc_card_img' );
 
-		$this->save_bool( $term_id, '_oc_sub_show' );
+		$this->save_enum( $term_id, '_oc_sub_show', array( '1', '0' ) );
 		$this->save_enum( $term_id, '_oc_sub_style', array( 'clean', 'pill', 'card' ) );
 		$this->save_enum( $term_id, '_oc_sub_pill', array( 'round', 'rect' ) );
 		$this->save_enum( $term_id, '_oc_sub_shape', array( 'square', 'portrait', 'circle' ) );
 		$this->save_enum( $term_id, '_oc_sub_corners', array( 'sharp', 'soft' ) );
-		$this->save_bool( $term_id, '_oc_sub_slider' );
+		$this->save_enum( $term_id, '_oc_sub_slider', array( '1', '0' ) );
 		$this->save_enum( $term_id, '_oc_sub_slider_m', array( 'same', 'yes', 'no' ) );
 		$this->save_enum( $term_id, '_oc_sub_place', array( 'out', 'in' ) );
 		$this->save_enum( $term_id, '_oc_sub_place_m', array( 'out', 'in', 'same' ) );

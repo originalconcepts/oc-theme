@@ -13388,3 +13388,69 @@ msgstr "80 ס״מ"
 
 msgid "120 cm"
 msgstr "120 ס״מ"
+
+msgid "Shown on the category page. Bold, links and lists are kept."
+msgstr "מוצג בעמוד הקטגוריה. בולד, קישורים ורשימות נשמרים."
+
+msgid "The strip of child categories on a category page. Each category can still answer differently on itself."
+msgstr "רצועת תתי הקטגוריות בעמוד קטגוריה. כל קטגוריה עדיין יכולה לענות אחרת על עצמה."
+
+msgid "A strip of the child categories, under the description or over the banner."
+msgstr "רצועה של תתי הקטגוריות, מתחת לתיאור או על הבאנר."
+
+msgid "A strip of the child categories. How it looks is set once in Customize › Catalogue page › Sub-categories."
+msgstr "רצועה של תתי הקטגוריות. איך היא נראית נקבע פעם אחת בהתאמה אישית ← עמוד קטלוג ← תתי קטגוריות."
+
+msgid "Where it stands"
+msgstr "איפה היא עומדת"
+
+msgid "Where it stands — on a phone"
+msgstr "איפה היא עומדת — בטלפון"
+
+msgid "Under the description"
+msgstr "מתחת לתיאור"
+
+msgid "Over the banner picture"
+msgstr "על תמונת הבאנר"
+
+msgid "The same as on a computer"
+msgstr "כמו במחשב"
+
+msgid "Alignment"
+msgstr "יישור"
+
+msgid "Alignment — on a phone"
+msgstr "יישור — בטלפון"
+
+msgid "As the page is aligned"
+msgstr "כמו שהעמוד מיושר"
+
+msgid "To the side"
+msgstr "לצד"
+
+msgid "Slide sideways when there are many"
+msgstr "להחליק הצידה כשיש הרבה"
+
+msgid "Slide sideways — on a phone"
+msgstr "להחליק הצידה — בטלפון"
+
+msgid "As in Customize — %s"
+msgstr "כמו בהתאמה אישית — %s"
+
+msgid "shown"
+msgstr "מוצגות"
+
+msgid "not shown"
+msgstr "לא מוצגות"
+
+msgid "Show them"
+msgstr "להציג אותן"
+
+msgid "Do not show them"
+msgstr "לא להציג אותן"
+
+msgid "Slider"
+msgstr "סליידר"
+
+msgid "Wrapped rows"
+msgstr "שורות נגללות"

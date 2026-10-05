@@ -1620,6 +1620,164 @@ final class Customizer {
 			);
 		}
 
+		// The strip of child categories. It was only ever answerable on each
+		// category, one at a time, which for a shop with thirty of them is
+		// thirty identical answers. Set once here; a category that wants
+		// something else still says so on itself.
+		$sub = 'oc_catalog_subs';
+
+		$c->add_section(
+			$sub,
+			array(
+				'title'       => __( 'Sub-categories', 'oc-theme' ),
+				'description' => __( 'The strip of child categories on a category page. Each category can still answer differently on itself.', 'oc-theme' ),
+				'panel'       => 'oc_catalog_panel',
+				'priority'    => 14,
+			)
+		);
+
+		$subon = array(
+			'setting' => 'oc_csub_show',
+			'values'  => array( '1' ),
+		);
+
+		$this->toggle( $c, 'oc_csub_show', $sub, __( 'Show sub-categories', 'oc-theme' ), false, null, __( 'A strip of the child categories, under the description or over the banner.', 'oc-theme' ) );
+
+		$this->choice(
+			$c,
+			'oc_csub_style',
+			$sub,
+			__( 'Display', 'oc-theme' ),
+			array(
+				'clean' => __( 'Clean — underlined links', 'oc-theme' ),
+				'pill'  => __( 'Pills', 'oc-theme' ),
+				'card'  => __( 'Image cards', 'oc-theme' ),
+			),
+			'clean',
+			$subon
+		);
+
+		$this->choice(
+			$c,
+			'oc_csub_pill',
+			$sub,
+			__( 'Pill shape', 'oc-theme' ),
+			array(
+				'round' => __( 'Rounded (ellipse)', 'oc-theme' ),
+				'rect'  => __( 'Rectangle', 'oc-theme' ),
+			),
+			'round',
+			array(
+				'setting' => 'oc_csub_style',
+				'values'  => array( 'pill' ),
+			)
+		);
+
+		$this->choice(
+			$c,
+			'oc_csub_shape',
+			$sub,
+			__( 'Image shape', 'oc-theme' ),
+			array(
+				'square'   => __( 'Square', 'oc-theme' ),
+				'portrait' => __( 'Portrait', 'oc-theme' ),
+				'circle'   => __( 'Circle', 'oc-theme' ),
+			),
+			'square',
+			array(
+				'setting' => 'oc_csub_style',
+				'values'  => array( 'card' ),
+			)
+		);
+
+		$this->choice(
+			$c,
+			'oc_csub_corners',
+			$sub,
+			__( 'Corners', 'oc-theme' ),
+			array(
+				'soft'  => __( 'Soft', 'oc-theme' ),
+				'sharp' => __( 'Sharp', 'oc-theme' ),
+			),
+			'soft',
+			array(
+				'setting' => 'oc_csub_style',
+				'values'  => array( 'card' ),
+			)
+		);
+
+		$this->choice(
+			$c,
+			'oc_csub_place',
+			$sub,
+			__( 'Where it stands', 'oc-theme' ),
+			array(
+				'out' => __( 'Under the description', 'oc-theme' ),
+				'in'  => __( 'Over the banner picture', 'oc-theme' ),
+			),
+			'out',
+			$subon
+		);
+
+		$this->choice(
+			$c,
+			'oc_csub_place_m',
+			$sub,
+			__( 'Where it stands — on a phone', 'oc-theme' ),
+			array(
+				'same' => __( 'The same as on a computer', 'oc-theme' ),
+				'out'  => __( 'Under the description', 'oc-theme' ),
+				'in'   => __( 'Over the banner picture', 'oc-theme' ),
+			),
+			'out',
+			$subon
+		);
+
+		$this->choice(
+			$c,
+			'oc_csub_align',
+			$sub,
+			__( 'Alignment', 'oc-theme' ),
+			array(
+				'auto'   => __( 'As the page is aligned', 'oc-theme' ),
+				'start'  => __( 'To the side', 'oc-theme' ),
+				'center' => __( 'Centred', 'oc-theme' ),
+			),
+			'start',
+			$subon
+		);
+
+		$this->choice(
+			$c,
+			'oc_csub_align_m',
+			$sub,
+			__( 'Alignment — on a phone', 'oc-theme' ),
+			array(
+				'same'   => __( 'The same as on a computer', 'oc-theme' ),
+				'auto'   => __( 'As the page is aligned', 'oc-theme' ),
+				'start'  => __( 'To the side', 'oc-theme' ),
+				'center' => __( 'Centred', 'oc-theme' ),
+			),
+			'same',
+			$subon
+		);
+
+		$this->toggle( $c, 'oc_csub_slider', $sub, __( 'Slide sideways when there are many', 'oc-theme' ), false, $subon );
+
+		$this->choice(
+			$c,
+			'oc_csub_slider_m',
+			$sub,
+			__( 'Slide sideways — on a phone', 'oc-theme' ),
+			array(
+				'same' => __( 'The same as on a computer', 'oc-theme' ),
+				'yes'  => __( 'Yes', 'oc-theme' ),
+				'no'   => __( 'No', 'oc-theme' ),
+			),
+			'same',
+			$subon
+		);
+
 		// The category banner is part of the catalogue page, not a WooCommerce
 		// setting — it gets its own room in the theme's "Catalogue page" panel,
 		// beside the filters and the card, where the shop looks for it.

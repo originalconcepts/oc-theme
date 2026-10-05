@@ -2042,9 +2042,9 @@ final class Filters {
 					<option value="new" <?php selected( 'new', $smart['mode'] ); ?>><?php esc_html_e( 'New products (per the "New" label setting)', 'oc-theme' ); ?></option>
 					<option value="price" <?php selected( 'price', $smart['mode'] ); ?>><?php esc_html_e( 'Products up to a price', 'oc-theme' ); ?></option>
 				</select>
-				<input type="number" name="oc_smart_price" value="<?php echo esc_attr( $smart['price'] > 0 ? (string) $smart['price'] : '' ); ?>" placeholder="<?php esc_attr_e( 'Up to price', 'oc-theme' ); ?>" min="0" step="1" style="width:110px;" />
+				<input type="number" id="oc_smart_price" name="oc_smart_price" value="<?php echo esc_attr( $smart['price'] > 0 ? (string) $smart['price'] : '' ); ?>" placeholder="<?php esc_attr_e( 'Up to price', 'oc-theme' ); ?>" min="0" step="1" style="width:110px;" />
 				<p class="description"><?php esc_html_e( 'Products are matched live by the condition — nothing to assign or maintain, and they keep their real categories (so a "category" filter group works here).', 'oc-theme' ); ?></p>
-				<p style="margin-block-start:10px;">
+				<p id="oc_smart_cats_row" style="margin-block-start:10px;">
 					<label style="display:block;margin-block-end:4px;"><?php esc_html_e( 'Limit to these source categories (optional)', 'oc-theme' ); ?></label>
 					<select name="oc_smart_cats[]" multiple size="5" style="min-width:240px;">
 						<?php foreach ( $top_cats as $cat ) : ?>
@@ -2052,6 +2052,26 @@ final class Filters {
 						<?php endforeach; ?>
 					</select>
 				</p>
+				<script>
+				// An ordinary category assigns nothing automatically, so the
+				// price and the categories to draw from are not questions for
+				// it. They appear with the answer that needs them.
+				document.addEventListener( 'DOMContentLoaded', function () {
+					var mode  = document.querySelector( '[name="oc_smart"]' );
+					var cats  = document.getElementById( 'oc_smart_cats_row' );
+					var price = document.getElementById( 'oc_smart_price' );
+
+					if ( ! mode ) { return; }
+
+					var sync = function () {
+						if ( cats ) { cats.style.display = '' === mode.value ? 'none' : ''; }
+						if ( price ) { price.style.display = 'price' === mode.value ? '' : 'none'; }
+					};
+
+					mode.addEventListener( 'change', sync );
+					sync();
+				} );
+				</script>
 			</td>
 		</tr>
 		<tr class="form-field">
