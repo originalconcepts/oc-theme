@@ -9635,6 +9635,15 @@ window.ocA11y = ( function () {
 		}
 	}
 
+	// Fields other plugins add to the form (e.g. PayPlus's "name on invoice",
+	// printed by Woo as a plain form-row) are not half-width rows — give them
+	// the wide class so they clear the email + phone pair and span the form.
+	Array.prototype.forEach.call( form.querySelectorAll( ':scope > .form-row' ), function ( row ) {
+		if ( ! row.classList.contains( 'form-row-first' ) && ! row.classList.contains( 'form-row-last' ) ) {
+			row.classList.add( 'form-row-wide', 'woocommerce-form-row--wide' );
+		}
+	} );
+
 	var fs = form.querySelector( 'fieldset' );
 	if ( ! fs ) { return; }
 

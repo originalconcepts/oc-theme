@@ -11960,8 +11960,8 @@ body.oc-checkout { overflow-x: clip; }
 .oc-checkout .woocommerce-terms-and-conditions-wrapper { font-size: .88rem; }
 
 /* consent on the account page */
-.oc-acct-consent { margin: 18px 0 6px; padding: 0; border: 0; }
-.oc-acct-consent legend { font-weight: 600; margin-block-end: 6px; }
+.oc-acct-consent { margin: 20px 0 6px; padding: 20px 0 0; border: 0; border-block-start: 1px solid var(--oc-line, #e5e2dd); max-inline-size: 520px; }
+.oc-acct-consent__title { margin: 0 0 10px; font-weight: 600; font-size: 1rem; color: var(--oc-ink, #111); }
 .oc-acct-consent label { display: flex; align-items: flex-start; gap: 8px; cursor: pointer; }
 .oc-acct-consent__note { margin: 6px 0 0; font-size: .85rem; color: var(--oc-ink-2, #777); }
 
@@ -14672,6 +14672,7 @@ html[dir="rtl"] .oc-bye { translate: 50% 0; }
 	padding-inline: 13px;
 	font: inherit;
 }
+.woocommerce-MyAccount-content form.edit-account > .form-row:not(.form-row-first):not(.form-row-last) { clear: both; float: none; inline-size: 100%; }
 .woocommerce-MyAccount-content form.edit-account .form-row span.required { color: var(--oc-sale, #b4453c); text-decoration: none; }
 .woocommerce-MyAccount-content form.edit-account > p em,
 .woocommerce-MyAccount-content form.edit-account > .woocommerce-form-row + em,

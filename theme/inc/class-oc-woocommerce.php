@@ -2572,7 +2572,8 @@ final class WooCommerce {
 		$yes = 'yes' === get_user_meta( get_current_user_id(), 'oc_marketing_consent', true );
 		?>
 		<fieldset class="oc-acct-consent">
-			<legend><?php esc_html_e( 'Updates and offers', 'oc-theme' ); ?></legend>
+			<?php // A heading, not a <legend>: the account form hides fieldset legends (the password block has its own toggle). ?>
+			<p class="oc-acct-consent__title"><?php esc_html_e( 'Updates and offers', 'oc-theme' ); ?></p>
 			<input type="hidden" name="oc_consent_form" value="1" />
 			<label class="woocommerce-form__label woocommerce-form__label-for-checkbox checkbox">
 				<input type="checkbox" class="woocommerce-form__input woocommerce-form__input-checkbox" name="account_marketing_consent" value="1" <?php checked( $yes ); ?> />
