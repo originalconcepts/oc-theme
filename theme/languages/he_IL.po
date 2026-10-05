@@ -13454,3 +13454,12 @@ msgstr "סליידר"
 
 msgid "Wrapped rows"
 msgstr "שורות נגללות"
+
+msgid "Brands"
+msgstr "מותגים"
+
+msgid "The page listing every brand, and the page of one brand on its own."
+msgstr "העמוד שמרכז את כל המותגים, והעמוד של מותג יחיד."
+
+msgid "A single brand’s page"
+msgstr "עמוד מותג"

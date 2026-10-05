@@ -183,6 +183,12 @@ final class Customizer {
 		$rooms = array(
 			array( 'oc_header_panel', 'Header', 30, __( 'The strip above the header, the header itself, and the menu that drops out of it.', 'oc-theme' ) ),
 			array( 'oc_catalog_panel', __( 'Catalogue page', 'oc-theme' ), 60, __( 'The listing a shopper browses: the grid, the card, and everything drawn on it.', 'oc-theme' ) ),
+			// Two pages, not one, and neither of them is the catalogue: the
+			// list of every brand, and the page of a single brand. They used
+			// to sit apart -- one inside the catalogue, one loose at the top
+			// of the list -- under names close enough to be read as the same
+			// thing twice.
+			array( 'oc_brands_panel', __( 'Brands', 'oc-theme' ), 62, __( 'The page listing every brand, and the page of one brand on its own.', 'oc-theme' ) ),
 			array( 'oc_checkout_panel', __( 'Checkout area', 'oc-theme' ), 90, __( 'From the basket to the thank-you page.', 'oc-theme' ) ),
 			array( 'oc_panels_panel', __( 'Panels', 'oc-theme' ), 100, __( 'The drawers that slide in over the page.', 'oc-theme' ) ),
 		);
@@ -408,7 +414,8 @@ final class Customizer {
 			array(
 				'title'       => __( 'The brands page', 'oc-theme' ),
 				'description' => __( 'Every brand on one page, at /brands/. Brand archives breadcrumb through it.', 'oc-theme' ),
-				'priority'    => 80,
+				'panel'       => 'oc_brands_panel',
+				'priority'    => 10,
 			)
 		);
 
@@ -453,10 +460,10 @@ final class Customizer {
 		$c->add_section(
 			$sec,
 			array(
-				'title'       => __( 'Brand page', 'oc-theme' ),
+				'title'       => __( 'A single brand’s page', 'oc-theme' ),
 				'description' => __( 'The page of one brand: its products, with its logo, its description and, when it has one, its banner. The pictures are chosen on each brand.', 'oc-theme' ),
-				'panel'       => 'oc_catalog_panel',
-				'priority'    => 13,
+				'panel'       => 'oc_brands_panel',
+				'priority'    => 20,
 			)
 		);
 
@@ -2234,7 +2241,7 @@ final class Customizer {
 					'svg'   => self::wf( '0 0 80 100', self::rect( 3, 3, 74, 94, 'bd', 7 ) . self::rect( 9, 9, 62, 52, 'im', 3 ) . self::rect( 24, 68, 32, 3.4, 'ln' ) . self::rect( 18, 84, 44, 9, 'ac', 4 ) ),
 				),
 			),
-			'classic',
+			'minimal-center',
 			'150px'
 		);
 

@@ -905,7 +905,9 @@ final class WooCommerce {
 	public function body_class( array $classes ): array {
 		$classes[] = 'oc-cols-' . $this->columns();
 		$classes[] = 'oc-cols-m-' . max( 1, (int) get_theme_mod( 'oc_catalog_cols_mobile', 2 ) );
-		$classes[] = 'oc-card-' . sanitize_html_class( (string) get_theme_mod( 'oc_card_preset', 'classic' ) );
+		// Minimal centred is how an OC shop looks unless it says otherwise:
+		// no border around the card, the words under the picture and centred.
+		$classes[] = 'oc-card-' . sanitize_html_class( (string) get_theme_mod( 'oc_card_preset', 'minimal-center' ) );
 
 		if ( get_theme_mod( 'oc_card_img_edge', false ) ) {
 			$classes[] = 'oc-card-edge';
