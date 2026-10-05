@@ -146,6 +146,7 @@ final class Apply {
 		$this->promised();
 		$this->forget_key();
 		$this->wc_page_names();
+		$this->wc_page_content();
 		$this->talk_pages();
 		$this->footer();
 
@@ -182,6 +183,56 @@ final class Apply {
 		update_option( Onboard::SETTINGS, $s );
 
 		$this->row( 'about_written', __( 'Our own keys', 'oc-theme' ), 'applied', __( 'They came here because the site was cloned from ours and have no further use on it, so they are off it now.', 'oc-theme' ) );
+	}
+
+	/**
+	 * WooCommerce's checkout and cart, the theme's way.
+	 *
+	 * WooCommerce now installs its checkout and its cart as block pages,
+	 * and the theme has never drawn those: every checkout setting a shop
+	 * has -- the packed layout, the branch collection, the stock hold, the
+	 * coupon field -- hooks the classic checkout, and the cart page is the
+	 * theme's own. A shop built from a base that carried the block pages
+	 * had a checkout nobody had designed. The two pages are rewritten to
+	 * what our own shop holds, and only while they still hold WooCommerce's
+	 * stock block or nothing at all: a page somebody has written is theirs.
+	 */
+	private function wc_page_content(): void {
+		$want = array(
+			'woocommerce_checkout_page_id' => array( 'wp:woocommerce/checkout', '<!-- wp:shortcode -->[woocommerce_checkout]<!-- /wp:shortcode -->' ),
+			'woocommerce_cart_page_id'     => array( 'wp:woocommerce/cart', '<!-- wp:shortcode -->[oc_cart_page]<!-- /wp:shortcode -->' ),
+		);
+
+		foreach ( $want as $option => $pair ) {
+			list( $block, $ours ) = $pair;
+
+			$id = (int) get_option( $option );
+
+			if ( $id <= 0 ) {
+				continue;
+			}
+
+			$now = (string) get_post_field( 'post_content', $id );
+
+			if ( false !== strpos( $now, $ours ) ) {
+				continue;
+			}
+
+			if ( '' !== trim( $now ) && false === strpos( $now, $block ) ) {
+				$this->row( 'wc_pages', $option, 'skipped', __( 'The page holds something of their own.', 'oc-theme' ) );
+
+				continue;
+			}
+
+			wp_update_post(
+				array(
+					'ID'           => $id,
+					'post_content' => $ours,
+				)
+			);
+
+			$this->row( 'wc_pages', $option, 'applied', __( 'The theme\'s page, in place of the block one WooCommerce installs.', 'oc-theme' ) );
+		}
 	}
 
 	/**

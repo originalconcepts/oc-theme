@@ -13573,3 +13573,9 @@ msgstr "הכל במקום."
 
 msgid "The curtain is still down. Lifting it is the last step, once the list above is empty."
 msgstr "הווילון עדיין מורד. להרים אותו זה הצעד האחרון, אחרי שהרשימה למעלה ריקה."
+
+msgid "The page holds something of their own."
+msgstr "העמוד מחזיק משהו משלהם."
+
+msgid "The theme's page, in place of the block one WooCommerce installs."
+msgstr "העמוד של התבנית, במקום עמוד הבלוקים שווקומרס מתקין."
