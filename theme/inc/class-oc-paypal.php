@@ -52,13 +52,25 @@ final class Paypal {
 		add_filter( 'woocommerce_gateway_description', array( $this, 'description' ), 10, 2 );
 		add_filter( 'woocommerce_gateway_icon', array( $this, 'icon' ), 10, 2 );
 
-		// The gateway prints its own description rather than asking for it
-		// through the filter, so the text is taken off the object itself.
+		// The gateway reads its description straight from its own settings
+		// rather than from the property, and offers this filter for it.
+		add_filter( 'woocommerce_paypal_payments_gateway_description', array( $this, 'no_description' ) );
+
+		// Belt for the property, for anything that does read it.
 		add_filter( 'woocommerce_available_payment_gateways', array( $this, 'quieten' ) );
 
 		// Plugins load before themes, so a filter on the stored settings is
 		// already too late — the button is switched off where it is drawn.
 		add_action( 'wp_enqueue_scripts', array( $this, 'strip_product_button' ), 99 );
+	}
+
+	/**
+	 * Nothing under the row, through the plugin's own filter.
+	 *
+	 * @param string $description Gateway description.
+	 */
+	public function no_description( $description ) {
+		return self::on( 'description' ) ? '' : $description;
 	}
 
 	/**
