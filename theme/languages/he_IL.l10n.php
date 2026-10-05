@@ -1321,6 +1321,7 @@ return array(
 		"Fill the frame (crop)" => "ממלאת את המסגרת (חיתוך)",
 		"Fill the shop with test products" => "למלא את החנות במוצרי בדיקה",
 		"Filled" => "מלא",
+		"Filled once on the base site and cloned with it. The AI key is deleted from a customer site when the apply finishes." => "ממולא פעם אחת באתר ה-base ומשוכפל איתו. מפתח ה-AI נמחק מאתר הלקוח כשההחלה מסתיימת.",
 		"Filled once on the base site and cloned with it. The AI key is deleted from a customer site when the apply finishes; delete it here too when the site is handed over." => "ממולאים פעם אחת באתר ה-base ומשוכפלים איתו. מפתח ה-AI נמחק מאתר הלקוח כשההחלה מסתיימת; מחקו אותו גם כאן כשהאתר נמסר.",
 		"Fills the box (crops)" => "ממלאת את התיבה (חותכת)",
 		"Fills the frame" => "ממלאה את המסגרת",

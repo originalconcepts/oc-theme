@@ -166,7 +166,7 @@ final class Apply {
 	 */
 	private function forget_key(): void {
 		$s    = Onboard::settings();
-		$ours = array( 'claude_key', 'monday_token' );
+		$ours = array( 'claude_key' );
 		$had  = array();
 
 		foreach ( $ours as $one ) {

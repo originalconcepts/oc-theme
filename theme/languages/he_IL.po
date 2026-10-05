@@ -13601,3 +13601,6 @@ msgstr "עדכונים ומבצעים"
 msgid "You can change this at any time; untick to stop receiving them."
 msgstr "אפשר לשנות את זה בכל עת; ביטול הסימון מפסיק את קבלתם."
 
+
+msgid "Filled once on the base site and cloned with it. The AI key is deleted from a customer site when the apply finishes."
+msgstr "ממולא פעם אחת באתר ה-base ומשוכפל איתו. מפתח ה-AI נמחק מאתר הלקוח כשההחלה מסתיימת."

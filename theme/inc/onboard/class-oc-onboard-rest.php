@@ -214,8 +214,7 @@ final class Rest {
 				'email' => (string) $req->get_param( 'email' ),
 			),
 			array(
-				'item'  => (string) $req->get_param( 'monday_item' ),
-				'board' => (string) $req->get_param( 'monday_board' ),
+				'item' => (string) $req->get_param( 'monday_item' ),
 			)
 		);
 

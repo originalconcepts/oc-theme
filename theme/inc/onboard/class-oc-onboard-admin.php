@@ -273,14 +273,12 @@ final class Admin {
 
 			<div class="card">
 				<h2><?php esc_html_e( 'Keys', 'oc-theme' ); ?></h2>
-				<p class="description"><?php esc_html_e( 'Filled once on the base site and cloned with it. The AI key is deleted from a customer site when the apply finishes; delete it here too when the site is handed over.', 'oc-theme' ); ?></p>
+				<p class="description"><?php esc_html_e( 'Filled once on the base site and cloned with it. The AI key is deleted from a customer site when the apply finishes.', 'oc-theme' ); ?></p>
 				<?php $s = Onboard::settings(); ?>
 				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 					<input type="hidden" name="action" value="oc_onboard_settings" />
 					<?php wp_nonce_field( 'oc_onboard_settings' ); ?>
 					<table class="form-table" role="presentation">
-						<tr><th scope="row"><label for="oc-onb-monday"><?php esc_html_e( 'Monday API token', 'oc-theme' ); ?></label></th><td><input type="password" id="oc-onb-monday" name="monday_token" class="regular-text" dir="ltr" value="<?php echo esc_attr( $s['monday_token'] ); ?>" autocomplete="off" /></td></tr>
-						<tr><th scope="row"><label for="oc-onb-board"><?php esc_html_e( 'Monday board id', 'oc-theme' ); ?></label></th><td><input type="text" id="oc-onb-board" name="monday_board" class="regular-text" dir="ltr" value="<?php echo esc_attr( $s['monday_board'] ); ?>" /></td></tr>
 						<tr><th scope="row"><label for="oc-onb-claude"><?php esc_html_e( 'Claude API key', 'oc-theme' ); ?></label></th><td><input type="password" id="oc-onb-claude" name="claude_key" class="regular-text" dir="ltr" value="<?php echo esc_attr( $s['claude_key'] ); ?>" autocomplete="off" /> <?php echo $s['claude_key'] ? '<label style="margin-inline-start:12px"><input type="checkbox" name="delete_claude" value="1" /> ' . esc_html__( 'Delete the key', 'oc-theme' ) . '</label>' : ''; ?></td></tr>
 					</table>
 					<?php submit_button( __( 'Save keys', 'oc-theme' ), 'secondary', 'submit', false ); ?>
@@ -500,8 +498,6 @@ final class Admin {
 
 		// phpcs:disable WordPress.Security.NonceVerification.Missing -- verified in guard().
 		$s    = array(
-			'monday_token' => sanitize_text_field( wp_unslash( $_POST['monday_token'] ?? '' ) ),
-			'monday_board' => sanitize_text_field( wp_unslash( $_POST['monday_board'] ?? '' ) ),
 			'claude_key'   => sanitize_text_field( wp_unslash( $_POST['claude_key'] ?? '' ) ),
 		);
 		$gone = ! empty( $_POST['delete_claude'] );

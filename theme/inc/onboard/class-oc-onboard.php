@@ -82,9 +82,10 @@ final class Onboard {
 					'phone' => '',
 					'email' => '',
 				),
+				// The card this customer came from, so a later notice can name
+				// it. The item id alone is enough: it is unique across the account.
 				'monday'     => array(
-					'item'  => '',
-					'board' => '',
+					'item' => '',
 				),
 				'opened'     => 0,        // First time the link was opened.
 				'activity'   => 0,        // Last change to the draft.
@@ -134,9 +135,7 @@ final class Onboard {
 		return wp_parse_args(
 			is_array( $saved ) ? $saved : array(),
 			array(
-				'monday_token' => '',
-				'monday_board' => '',
-				'claude_key'   => '',
+				'claude_key' => '',
 			)
 		);
 	}
@@ -167,8 +166,7 @@ final class Onboard {
 			'email' => sanitize_email( $client['email'] ?? '' ),
 		);
 		$state['monday']     = array(
-			'item'  => sanitize_text_field( $monday['item'] ?? $state['monday']['item'] ),
-			'board' => sanitize_text_field( $monday['board'] ?? $state['monday']['board'] ),
+			'item' => sanitize_text_field( $monday['item'] ?? ( $state['monday']['item'] ?? '' ) ),
 		);
 		$state['reminders']  = array();
 		$state['opened']     = 0;
