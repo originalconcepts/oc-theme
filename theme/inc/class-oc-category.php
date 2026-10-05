@@ -2051,21 +2051,6 @@ class Category {
 	}
 
 	/**
-	 * Save a checkbox as '1', or delete when unchecked.
-	 *
-	 * @param int    $term_id Term id.
-	 * @param string $key     Meta key / POST key.
-	 */
-	private function save_bool( int $term_id, string $key ): void {
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- strict comparison against a literal.
-		if ( isset( $_POST[ $key ] ) && '1' === (string) wp_unslash( $_POST[ $key ] ) ) {
-			update_term_meta( $term_id, $key, '1' );
-		} else {
-			delete_term_meta( $term_id, $key );
-		}
-	}
-
-	/**
 	 * Save a CSS colour string, or delete when empty.
 	 *
 	 * @param int    $term_id Term id.
