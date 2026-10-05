@@ -370,11 +370,22 @@ final class Demo {
 			return array();
 		}
 
-		$known = array(
-			'swatch' => array( __( 'Black', 'oc-theme' ), __( 'White', 'oc-theme' ), __( 'Beige', 'oc-theme' ), __( 'Navy', 'oc-theme' ) ),
-			'size'   => array( 'S', 'M', 'L', 'XL' ),
-			'plain'  => array( __( 'Option one', 'oc-theme' ), __( 'Option two', 'oc-theme' ), __( 'Option three', 'oc-theme' ) ),
-		);
+		// Only the ones the shop said its products are CHOSEN by. The others
+		// it named are details for the table under the product -- a material,
+		// a country of origin, a warranty -- and a shop whose products come
+		// in red and blue does not want its demo varying by warranty, which
+		// is what this did.
+		$wants = array();
+
+		if ( 'yes' === (string) Draft::value( 'attr_vary' ) ) {
+			foreach ( (array) Draft::value( 'attr_list' ) as $row ) {
+				$name = trim( (string) ( $row['name'] ?? '' ) );
+
+				if ( '' !== $name ) {
+					$wants[ wc_attribute_taxonomy_name( wc_sanitize_taxonomy_name( $name ) ) ] = (string) ( $row['type'] ?? '' );
+				}
+			}
+		}
 
 		$out = array();
 
@@ -385,16 +396,14 @@ final class Demo {
 				continue;
 			}
 
-			$label = mb_strtolower( (string) $a->attribute_label );
-			$kind  = 'plain';
-
-			if ( 'color' === $a->attribute_type || false !== mb_strpos( $label, (string) mb_strtolower( _x( 'Colour', 'product attribute', 'oc-theme' ) ) ) ) {
-				$kind = 'swatch';
-			} elseif ( false !== mb_strpos( $label, (string) mb_strtolower( _x( 'Size', 'product attribute', 'oc-theme' ) ) ) ) {
-				$kind = 'size';
+			// No questionnaire on this site -- the buttons work on a shop
+			// nobody filled a questionnaire for too -- so fall back to every
+			// attribute there is.
+			if ( $wants && ! isset( $wants[ $tax ] ) ) {
+				continue;
 			}
 
-			$out[ $tax ] = $known[ $kind ];
+			$out[ $tax ] = self::values( (string) $a->attribute_label, (string) $a->attribute_type, (string) ( $wants[ $tax ] ?? '' ) );
 
 			if ( count( $out ) >= 2 ) {
 				break;
@@ -405,6 +414,39 @@ final class Demo {
 	}
 
 	/**
+	 * Stand-in values for one attribute, guessed from what it is called.
+	 *
+	 * The questionnaire asks for an attribute's name and how it is picked,
+	 * never for its values -- those are the shop's and arrive with the real
+	 * catalogue. These are obviously ours and easy to replace.
+	 *
+	 * @param string $label The attribute's name.
+	 * @param string $type  WooCommerce's own type.
+	 * @param string $shows How the questionnaire said it is picked.
+	 * @return array<int,string>
+	 */
+	private static function values( string $label, string $type, string $shows ): array {
+		$label = mb_strtolower( $label );
+		$is    = static function ( string $word ) use ( $label ): bool {
+			return false !== mb_strpos( $label, mb_strtolower( $word ) );
+		};
+
+		if ( 'color' === $type || 'swatch' === $shows || $is( _x( 'Colour', 'product attribute', 'oc-theme' ) ) || $is( 'color' ) ) {
+			return array( __( 'Black', 'oc-theme' ), __( 'White', 'oc-theme' ), __( 'Beige', 'oc-theme' ), __( 'Navy', 'oc-theme' ) );
+		}
+
+		if ( $is( _x( 'Size', 'product attribute', 'oc-theme' ) ) || $is( 'size' ) ) {
+			return array( 'S', 'M', 'L', 'XL' );
+		}
+
+		if ( $is( _x( 'Length', 'product attribute', 'oc-theme' ) ) || $is( _x( 'Width', 'product attribute', 'oc-theme' ) ) ) {
+			return array( '60 cm', '80 cm', '120 cm' );
+		}
+
+		return array( __( 'Option one', 'oc-theme' ), __( 'Option two', 'oc-theme' ), __( 'Option three', 'oc-theme' ) );
+	}
+
+	/**
 	 * Terms for one attribute, made if they are not there.
 	 *
 	 * @param string            $tax    Attribute taxonomy.
@@ -412,6 +454,15 @@ final class Demo {
 	 * @return array<int,int>
 	 */
 	private static function terms( string $tax, array $values ): array {
+		// A colour shown as a circle needs a colour to fill the circle with,
+		// or the swatches come out as four empty rings.
+		$paint = array(
+			__( 'Black', 'oc-theme' ) => '#1d1d1f',
+			__( 'White', 'oc-theme' ) => '#f4f4f6',
+			__( 'Beige', 'oc-theme' ) => '#d8c7ad',
+			__( 'Navy', 'oc-theme' )  => '#223a5e',
+		);
+
 		$ids = array();
 
 		foreach ( $values as $one ) {
@@ -424,12 +475,19 @@ final class Demo {
 					continue;
 				}
 
-				$ids[] = (int) $new['term_id'];
+				$id = (int) $new['term_id'];
 
-				continue;
+				// Ours, so ours to take away again.
+				update_term_meta( $id, self::MARK, '1' );
+			} else {
+				$id = (int) $term->term_id;
 			}
 
-			$ids[] = (int) $term->term_id;
+			if ( isset( $paint[ $one ] ) && '' === (string) get_term_meta( $id, 'oc_swatch_color', true ) ) {
+				update_term_meta( $id, 'oc_swatch_color', $paint[ $one ] );
+			}
+
+			$ids[] = $id;
 		}
 
 		return $ids;

@@ -498,6 +498,86 @@ final class Apply {
 	}
 
 	/**
+	 * The filter down the side of the catalogue.
+	 *
+	 * The questionnaire has always asked where it sits, and nothing ever
+	 * acted on the answer: the schema named a handler that was never
+	 * written, so the call fell through in silence. Filters ship switched
+	 * off, so every shop we built came out with none.
+	 *
+	 * Switching it on is not enough either. Price and "in stock" it finds
+	 * for itself; colour and size it offers only once it has been told
+	 * which attributes are worth narrowing by -- and the shop said which
+	 * those were when it said what its products vary by.
+	 */
+	private function apply_catalog_filters(): void {
+		if ( ! class_exists( '\OC\Theme\Filters' ) ) {
+			return;
+		}
+
+		$where = (string) $this->v['cat_filters'];
+		$all   = \OC\Theme\Filters::settings();
+
+		if ( 'off' === $where ) {
+			$all['enabled'] = 0;
+
+			update_option( 'oc_filters', $all );
+			$this->row( 'cat_filters', __( 'Catalogue filter', 'oc-theme' ), 'applied', __( 'Off, as asked.', 'oc-theme' ) );
+
+			return;
+		}
+
+		$all['enabled'] = 1;
+		$all['layout']  = 'topbar' === $where ? 'topbar' : 'sidebar';
+
+		// What a shop says its products are chosen by is exactly what a
+		// customer wants to narrow by.
+		if ( function_exists( 'wc_get_attribute_taxonomies' ) && empty( $all['groups'] ) ) {
+			$wants = array();
+
+			if ( 'yes' === (string) $this->v['attr_vary'] ) {
+				foreach ( (array) $this->v['attr_list'] as $row ) {
+					$name = trim( (string) ( $row['name'] ?? '' ) );
+
+					if ( '' !== $name ) {
+						$wants[ wc_sanitize_taxonomy_name( $name ) ] = true;
+					}
+				}
+			}
+
+			$groups = array();
+			$at     = 10;
+
+			foreach ( wc_get_attribute_taxonomies() as $one ) {
+				$groups[] = array(
+					'type'    => 'attribute',
+					'id'      => (int) $one->attribute_id,
+					// A detail for the table under the product is not a thing
+					// to shop by, so only what they vary by is switched on.
+					'on'      => isset( $wants[ $one->attribute_name ] ) ? 1 : 0,
+					'order'   => $at,
+					'title'   => '',
+					'display' => 'auto',
+					'open'    => 0,
+				);
+
+				$at += 10;
+			}
+
+			$all['groups'] = $groups;
+		}
+
+		update_option( 'oc_filters', $all );
+
+		$this->row(
+			'cat_filters',
+			__( 'Catalogue filter', 'oc-theme' ),
+			'applied',
+			'topbar' === $where ? __( 'On, above the products.', 'oc-theme' ) : __( 'On, down the side.', 'oc-theme' )
+		);
+	}
+
+	/**
 	 * The settings the questionnaire promises without asking about them.
 	 *
 	 * A question we took away does not take its answer with it: a site this
@@ -801,6 +881,14 @@ final class Apply {
 		$this->write_option_key( 'address_street', 'oc_contact', 'address', trim( $street . ( $city ? ', ' . $city : '' ), ', ' ) );
 		$this->write_plain( 'address_street', 'woocommerce_store_address', $street );
 		$this->write_plain( 'address_city', 'woocommerce_store_city', $city );
+
+		// Empty on every shop until now, because it was never asked for.
+		// The delivery companies price by it.
+		$zip = trim( (string) $this->v['address_zip'] );
+
+		if ( '' !== $zip ) {
+			$this->write_plain( 'address_zip', 'woocommerce_store_postcode', $zip );
+		}
 	}
 
 	/**

@@ -6594,7 +6594,8 @@ html:not([dir]) .oc-cartup__items--h.oc-fade-end {
  * controls, so the ink arrives with the background rather than after it. */
 .oc-htrans .oc-header.is-scrolled,
 .oc-htrans .oc-header:hover,
-.oc-htrans .oc-header:focus-within {
+.oc-htrans .oc-header:focus-within,
+.oc-search-open .oc-htrans .oc-header {
 	background: var(--oc-header-bg, var(--oc-surface));
 	border-block-end-color: var(--oc-line);
 	color: var(--oc-header-tx, var(--oc-ink));
@@ -6610,8 +6611,12 @@ html:not([dir]) .oc-cartup__items--h.oc-fade-end {
 	.oc-htrans.admin-bar .oc-header { inset-block-start: 0; }
 }
 
-/* Its own ink, for as long as it is actually see-through. */
+/* Its own ink, for as long as it is actually see-through. The search panel
+ * drops out of the header and fills the width below it; with the bar left
+ * transparent the two read as two separate things, one of them floating on
+ * the picture. Open, they are one block. */
 .oc-htrans .oc-header:not(.is-scrolled):not(:hover):not(:focus-within) { color: var(--oc-header-tr-tx, var(--oc-header-tx, inherit)); }
+.oc-search-open .oc-htrans .oc-header:not(.is-scrolled):not(:hover):not(:focus-within) { color: var(--oc-header-tx, var(--oc-ink)); }
 .oc-htrans .oc-header .oc-hicon,
 .oc-htrans .oc-header .oc-htext__link,
 .oc-htrans .oc-header .oc-nav a,
@@ -6643,6 +6648,11 @@ html:not([dir]) .oc-cartup__items--h.oc-fade-end {
 .oc-htrans .oc-header:not(.is-scrolled):not(:hover):not(:focus-within) .custom-logo-link .oc-logo-tr {
 	display: block;
 }
+
+/* The bar is solid while the search is open, so the light logo made for
+ * standing on a photograph has nothing to stand on. */
+.oc-search-open .oc-htrans .oc-header .custom-logo-link .custom-logo { display: block; }
+.oc-search-open .oc-htrans .oc-header .custom-logo-link .oc-logo-tr { display: none; }
 
 /* Sized exactly like the regular logo — on both devices. It used to read
  * only the desktop height, so on a phone it stood taller than the logo it

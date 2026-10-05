@@ -13355,3 +13355,36 @@ msgstr "המפתחות שלנו"
 
 msgid "They came here because the site was cloned from ours and have no further use on it, so they are off it now."
 msgstr "הם הגיעו לכאן כי האתר שוכפל משלנו ואין להם עוד שימוש בו, אז הם הוסרו ממנו."
+
+msgid "Postcode"
+msgstr "מיקוד"
+
+msgid "Not shown anywhere. The delivery companies work it out from the address, and a postcode makes them get it right."
+msgstr "לא מוצג בשום מקום. חברות המשלוחים מנחשות אותו מהכתובת, ומיקוד גורם להן לקלוע."
+
+msgid "Catalogue filter"
+msgstr "סינון בקטלוג"
+
+msgid "Off, as asked."
+msgstr "כבוי, כפי שביקשתם."
+
+msgid "On, above the products."
+msgstr "פעיל, מעל המוצרים."
+
+msgid "On, down the side."
+msgstr "פעיל, בצד."
+
+msgid "Only an administrator may upload an SVG."
+msgstr "רק מנהל מערכת יכול להעלות קובץ SVG."
+
+msgid "That does not look like an SVG."
+msgstr "זה לא נראה כמו קובץ SVG."
+
+msgid "60 cm"
+msgstr "60 ס״מ"
+
+msgid "80 cm"
+msgstr "80 ס״מ"
+
+msgid "120 cm"
+msgstr "120 ס״מ"

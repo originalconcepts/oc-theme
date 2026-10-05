@@ -84,7 +84,7 @@ final class Schema {
 						'id'     => '1a',
 						'title'  => __( 'The business', 'oc-theme' ),
 						'intro'  => __( 'These details appear on the site, in the emails customers receive and on the legal pages. Everything can be changed later.', 'oc-theme' ),
-						'fields' => array( 'existing_has', 'existing_url', 'brand_name', 'legal_name', 'company_id', 'domain', 'phone', 'whatsapp', 'email_service', 'email_orders', 'has_store', 'branches_mode', 'address_street', 'address_city', 'hours', 'branches', 'instagram', 'facebook', 'tiktok', 'youtube' ),
+						'fields' => array( 'existing_has', 'existing_url', 'brand_name', 'legal_name', 'company_id', 'domain', 'phone', 'whatsapp', 'email_service', 'email_orders', 'has_store', 'branches_mode', 'address_street', 'address_city', 'address_zip', 'hours', 'branches', 'instagram', 'facebook', 'tiktok', 'youtube' ),
 					),
 					array(
 						'id'     => '1b',
@@ -500,6 +500,19 @@ final class Schema {
 			),
 			'required' => true,
 			'target'   => array( 'call', 'address' ),
+		);
+
+		$f['address_zip'] = array(
+			'type'        => 'text',
+			'label'       => __( 'Postcode', 'oc-theme' ),
+			'help'        => __( 'Not shown anywhere. The delivery companies work it out from the address, and a postcode makes them get it right.', 'oc-theme' ),
+			'placeholder' => '7570000',
+			'dir'         => 'ltr',
+			'when'        => array(
+				array( 'has_store', array( 'yes' ) ),
+				array( 'branches_mode', array( 'one' ) ),
+			),
+			'target'      => array( 'call', 'address' ),
 		);
 
 		$f['hours'] = array(
@@ -1465,7 +1478,7 @@ final class Schema {
 				'off'     => __( 'No filter', 'oc-theme' ),
 			),
 			'default' => 'sidebar',
-			'target'  => array( 'call', 'filters' ),
+			'target'  => array( 'call', 'catalog_filters' ),
 		);
 
 		$f['cat_paging'] = array(
