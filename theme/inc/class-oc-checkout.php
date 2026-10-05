@@ -1454,11 +1454,11 @@ final class Checkout {
 	 * Record what a shopper decided about marketing, and tell whoever is
 	 * listening (a mailing integration, say).
 	 *
-	 * @param int           $user_id User id, 0 for a guest.
-	 * @param bool          $granted Yes or no.
-	 * @param string        $source  Where it was decided: checkout | account.
-	 * @param string        $email   The shopper's email.
-	 * @param string        $phone   The shopper's phone.
+	 * @param int            $user_id User id, 0 for a guest.
+	 * @param bool           $granted Yes or no.
+	 * @param string         $source  Where it was decided: checkout | account.
+	 * @param string         $email   The shopper's email.
+	 * @param string         $phone   The shopper's phone.
 	 * @param \WC_Order|null $order   The order, when there is one.
 	 */
 	public static function record_consent( int $user_id, bool $granted, string $source, string $email, string $phone, $order = null ): void {

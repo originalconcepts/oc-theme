@@ -200,7 +200,8 @@ final class Guard {
 	 * The fields a form prints: the honeypot, the signed timestamp, and
 	 * the Turnstile container when it is on for this form.
 	 *
-	 * @param string $form Which form.
+	 * @param string $form      Which form.
+	 * @param bool   $with_slot Print the Turnstile container here too.
 	 */
 	public static function fields( string $form, bool $with_slot = true ): string {
 		$out = '<p class="oc-guard-hp" aria-hidden="true"><label><span>' . esc_html__( 'Leave this empty', 'oc-theme' ) . '</span>'
