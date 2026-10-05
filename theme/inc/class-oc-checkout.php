@@ -1637,7 +1637,7 @@ final class Checkout {
 
 		if ( ! empty( $_POST['oc_marketing_consent'] ) ) {
 			$order->update_meta_data( '_oc_marketing_consent', 'yes' );
-			$order->update_meta_data( '_oc_marketing_consent_at', time() );
+			$order->update_meta_data( '_oc_marketing_consent_at', (string) time() );
 
 			self::record_consent( (int) $order->get_customer_id(), true, 'checkout', (string) $order->get_billing_email(), (string) $order->get_billing_phone(), $order );
 		} elseif ( $order->get_customer_id() && 'yes' === get_user_meta( $order->get_customer_id(), 'oc_marketing_consent', true ) ) {
