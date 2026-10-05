@@ -65,10 +65,10 @@ final class SVG_Upload {
 	 * text, so without this it is refused as "not matching its extension"
 	 * however the type is allowed above.
 	 *
-	 * @param array<string,mixed> $check    What WordPress decided.
-	 * @param string              $file     Path to the file.
-	 * @param string              $filename Its name.
-	 * @param array<string,string>|null $mimes Allowed types.
+	 * @param array<string,mixed>       $check    What WordPress decided.
+	 * @param string                    $file     Path to the file.
+	 * @param string                    $filename Its name.
+	 * @param array<string,string>|null $mimes    Allowed types.
 	 * @return array<string,mixed>
 	 */
 	public function name_it( $check, $file, $filename, $mimes ) {
