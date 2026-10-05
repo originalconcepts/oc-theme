@@ -171,75 +171,129 @@ final class Bulk_Category {
 		</style>
 		<script>
 		( function () {
-			// The switch is rendered where the hook fires and belongs next to
-			// the list it reverses. It is shown either way: a box nobody can
-			// find is worse than a box in the wrong place.
-			function setup() {
+			var moved = false;
+			var wired = false;
+
+			function box() {
+				var row = document.getElementById( 'bulk-edit' );
+
+				return row ? row.querySelector( '.oc-rmcat' ) : null;
+			}
+
+			// The list of category checkboxes inside the bulk row — the very
+			// boxes the removal reads, so the switch cannot drift away from
+			// what it reverses.
+			function list() {
 				var row = document.getElementById( 'bulk-edit' );
 
 				if ( ! row ) {
+					return null;
+				}
+
+				var one = row.querySelector( 'input[name="tax_input[product_cat][]"][type="checkbox"]' );
+				var ul = one ? one.closest( 'ul' ) : null;
+
+				return ul ? ul : row.querySelector( 'ul.product_cat-checklist, ul.cat-checklist' );
+			}
+
+			function wire( b, ul ) {
+				if ( wired ) {
 					return;
 				}
 
-				var box = row.querySelector( '.oc-rmcat' );
-
-				if ( ! box || box.dataset.ocReady ) {
-					return;
-				}
-
-				box.dataset.ocReady = '1';
-
-				// Anchor on the field itself, not on a class name: the ticked
-				// boxes are what the removal reads, so they cannot drift apart.
-				var one = row.querySelector( 'ul input[name="tax_input[product_cat][]"]' );
-				var list = one ? one.closest( 'ul' ) : null;
-				var label = null;
-
-				if ( list ) {
-					list.parentNode.insertBefore( box, list.nextSibling );
-
-					var before = list.previousElementSibling;
-
-					while ( before && ! label ) {
-						if ( before.classList && before.classList.contains( 'inline-edit-categories-label' ) ) {
-							label = before;
-						}
-
-						before = before.previousElementSibling;
-					}
-				}
-
-				box.hidden = false;
-
-				var cb = box.querySelector( 'input[type="checkbox"]' );
+				var cb = b.querySelector( 'input[type="checkbox"]' );
 
 				if ( ! cb ) {
 					return;
 				}
 
+				wired = true;
+
 				cb.addEventListener( 'change', function () {
-					box.classList.toggle( 'is-on', cb.checked );
+					b.classList.toggle( 'is-on', cb.checked );
 
-					if ( list ) {
-						list.classList.toggle( 'is-removing', cb.checked );
-					}
+					var target = ul || list();
 
-					if ( label ) {
-						label.classList.toggle( 'is-removing', cb.checked );
+					if ( target ) {
+						target.classList.toggle( 'is-removing', cb.checked );
+
+						var before = target.previousElementSibling;
+
+						while ( before ) {
+							if ( before.classList && before.classList.contains( 'inline-edit-categories-label' ) ) {
+								before.classList.toggle( 'is-removing', cb.checked );
+								break;
+							}
+
+							before = before.previousElementSibling;
+						}
 					}
 				} );
 			}
 
-			setup();
-			document.addEventListener( 'DOMContentLoaded', setup );
+			// Shown straight away so it is never lost, and moved as soon as
+			// the categories list is in the document — which, when Bulk Edit
+			// has not been opened yet, may be later than this first run.
+			function place() {
+				var b = box();
 
-			// Opening Bulk Edit moves the row into the table; if it was not in
-			// the document when this ran, it is now.
+				if ( ! b ) {
+					return false;
+				}
+
+				b.hidden = false;
+
+				if ( moved ) {
+					return true;
+				}
+
+				var ul = list();
+
+				if ( ! ul ) {
+					wire( b, null );
+
+					return false;
+				}
+
+				ul.parentNode.insertBefore( b, ul.nextSibling );
+				moved = true;
+				wire( b, ul );
+
+				return true;
+			}
+
+			function chase() {
+				if ( place() ) {
+					return;
+				}
+
+				[ 50, 150, 400, 900, 1800 ].forEach( function ( ms ) {
+					setTimeout( place, ms );
+				} );
+			}
+
+			chase();
+			document.addEventListener( 'DOMContentLoaded', chase );
+
+			// Opening Bulk Edit moves the row into the table: look again.
 			document.addEventListener( 'click', function ( e ) {
-				if ( e.target && ( 'doaction' === e.target.id || 'doaction2' === e.target.id ) ) {
-					setTimeout( setup, 80 );
+				var t = e.target;
+
+				if ( t && ( 'doaction' === t.id || 'doaction2' === t.id || ( t.closest && t.closest( '#bulk-edit' ) ) ) ) {
+					chase();
 				}
 			}, true );
+
+			// And if anything rebuilds the rows, the switch follows.
+			if ( window.MutationObserver ) {
+				var host = document.getElementById( 'the-list' ) || document.body;
+
+				new MutationObserver( function () {
+					if ( ! moved ) {
+						place();
+					}
+				} ).observe( host, { childList: true, subtree: true } );
+			}
 		} )();
 		</script>
 		<?php
