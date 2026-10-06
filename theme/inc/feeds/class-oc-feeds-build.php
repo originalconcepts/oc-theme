@@ -773,7 +773,7 @@ final class Build {
 		$tos     = $terms > 0 ? (string) get_permalink( $terms ) : '';
 		$privacy = (string) get_privacy_policy_url();
 		$returns = (int) $feed['returns'];
-		$country = function_exists( 'WC' ) && isset( WC()->countries ) ? strtoupper( (string) WC()->countries->get_base_country() ) : '';
+		$country = function_exists( 'wc_get_base_location' ) ? strtoupper( (string) ( wc_get_base_location()['country'] ?? '' ) ) : '';
 
 		// Woo's weight units against the file's.
 		$units  = array(
