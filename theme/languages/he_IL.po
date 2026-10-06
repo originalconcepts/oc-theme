@@ -13829,3 +13829,36 @@ msgstr "זאפ: ריק — מוצהר משלוח חינם. ChatGPT: ריק — �
 
 msgid "upload by SFTP — download the file"
 msgstr "העלאה ב‑SFTP — הורידו את הקובץ"
+
+msgid "The invitation, with the link"
+msgstr "ההזמנה, עם הקישור"
+
+msgid "Reminder, day one"
+msgstr "תזכורת, יום ראשון"
+
+msgid "Reminder, day three"
+msgstr "תזכורת, יום שלישי"
+
+msgid "No progress for four days (to the team)"
+msgstr "אין התקדמות ארבעה ימים (לצוות)"
+
+msgid "The questionnaire is done (to the team)"
+msgstr "השאלון הושלם (לצוות)"
+
+msgid "What is left for you, with the Drive folders"
+msgstr "מה נשאר לכם, עם תיקיות הדרייב"
+
+msgid "The Drive folders are late (to the team)"
+msgstr "תיקיות הדרייב מתעכבות (לצוות)"
+
+msgid "Mails sent"
+msgstr "מיילים שנשלחו"
+
+msgid "Nothing yet. The invitation is listed here once it goes out from this site; one sent from Monday is not."
+msgstr "עדיין כלום. ההזמנה תופיע כאן כשהיא יוצאת מהאתר הזה; הזמנה שנשלחה ממאנדיי לא."
+
+msgid "Mail"
+msgstr "מייל"
+
+msgid "The team is copied on every mail to the customer."
+msgstr "הצוות מכותב על כל מייל ללקוח."

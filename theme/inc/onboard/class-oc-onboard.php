@@ -109,6 +109,7 @@ final class Onboard {
 				'drive_why'   => '',       // What the last miss said.
 				'drive_alert' => 0,        // When the team was told it is late.
 				'mailed'      => 0,        // When the customer's done mail went.
+				'mails'       => array(),  // Every mail that went: {key, to, when}.
 			)
 		);
 	}

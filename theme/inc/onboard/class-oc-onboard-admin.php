@@ -181,6 +181,10 @@ final class Admin {
 					<?php self::drive_block(); ?>
 				<?php endif; ?>
 
+				<?php if ( 'none' !== $state['status'] ) : ?>
+					<?php self::mail_log( (array) ( $state['mails'] ?? array() ) ); ?>
+				<?php endif; ?>
+
 				<h2><?php echo esc_html( 'none' === $state['status'] || 'cancelled' === $state['status'] ? __( 'Create the link', 'oc-theme' ) : __( 'Issue a new link', 'oc-theme' ) ); ?></h2>
 				<p class="description"><?php esc_html_e( 'Usually Monday does this when the site is cloned. Do it here when it did not, or to replace the link. The answers already given stay.', 'oc-theme' ); ?></p>
 				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
@@ -557,6 +561,34 @@ final class Admin {
 				)
 			) ? 'drive' : 'driveno'
 		);
+	}
+
+	/**
+	 * Every mail that went out of this site about the questionnaire.
+	 *
+	 * @param array<int,array{key:string,to:string,when:int}> $mails The record.
+	 */
+	private static function mail_log( array $mails ): void {
+		$names = Mail::names();
+		$state = Onboard::state();
+
+		echo '<details style="margin:0 0 18px"><summary style="cursor:pointer"><b>' . esc_html__( 'Mails sent', 'oc-theme' ) . '</b> (' . count( $mails ) . ')</summary>';
+
+		if ( ! $mails ) {
+			echo '<p class="description">' . esc_html__( 'Nothing yet. The invitation is listed here once it goes out from this site; one sent from Monday is not.', 'oc-theme' ) . '</p></details>';
+
+			return;
+		}
+
+		echo '<table class="widefat striped" style="max-width:720px;margin-top:8px"><thead><tr><th>' . esc_html__( 'When', 'oc-theme' ) . '</th><th>' . esc_html__( 'Mail', 'oc-theme' ) . '</th><th>' . esc_html__( 'To', 'oc-theme' ) . '</th></tr></thead><tbody>';
+
+		foreach ( array_reverse( $mails ) as $m ) {
+			$to = 'team' === ( $m['to'] ?? '' ) ? Onboard::COPY_TO : (string) $state['client']['email'];
+
+			echo '<tr><td>' . esc_html( wp_date( 'd/m/Y H:i', (int) ( $m['when'] ?? 0 ) ) ) . '</td><td>' . esc_html( $names[ $m['key'] ?? '' ] ?? (string) ( $m['key'] ?? '' ) ) . '</td><td dir="ltr">' . esc_html( $to ) . '</td></tr>';
+		}
+
+		echo '</tbody></table><p class="description" style="margin-top:6px">' . esc_html__( 'The team is copied on every mail to the customer.', 'oc-theme' ) . '</p></details>';
 	}
 
 	/**

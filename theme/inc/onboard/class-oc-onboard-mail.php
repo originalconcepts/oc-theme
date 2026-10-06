@@ -95,7 +95,7 @@ final class Mail {
 			. self::button( $url, __( 'Open the questionnaire', 'oc-theme' ) )
 			. '<p class="small">' . esc_html__( 'The link is personal; please do not forward it.', 'oc-theme' ) . '</p>';
 
-		return self::send( $to, __( 'Let\'s set up your store', 'oc-theme' ), $body );
+		return self::note( 'invite', 'customer', self::send( $to, __( 'Let\'s set up your store', 'oc-theme' ), $body ) );
 	}
 
 	/**
@@ -128,7 +128,7 @@ final class Mail {
 			? __( 'Your store is waiting for a few answers', 'oc-theme' )
 			: __( 'A reminder: the questionnaire for your new store', 'oc-theme' );
 
-		return self::send( $to, $subject, $body );
+		return self::note( 'reminder' . $n, 'customer', self::send( $to, $subject, $body ) );
 	}
 
 	/**
@@ -143,7 +143,7 @@ final class Mail {
 			. '<p>' . esc_html( (string) $state['client']['phone'] ) . ' · ' . esc_html( (string) $state['client']['email'] ) . '</p>'
 			. self::button( admin_url( 'admin.php?page=oc-onboard' ), __( 'Open the onboarding screen', 'oc-theme' ) );
 
-		return self::send( Onboard::COPY_TO, sprintf( /* translators: %s: site host */ __( 'No progress: %s', 'oc-theme' ), self::host() ), $body, false );
+		return self::note( 'quiet', 'team', self::send( Onboard::COPY_TO, sprintf( /* translators: %s: site host */ __( 'No progress: %s', 'oc-theme' ), self::host() ), $body, false ) );
 	}
 
 	/**
@@ -152,7 +152,7 @@ final class Mail {
 	 * @param array<int,array<string,string>> $report Rows.
 	 */
 	public static function done_team( array $report ): void {
-		self::send( Onboard::COPY_TO, sprintf( /* translators: %s: site host */ __( 'Questionnaire done: %s', 'oc-theme' ), self::host() ), self::team_done_html( $report ), false );
+		self::note( 'report', 'team', self::send( Onboard::COPY_TO, sprintf( /* translators: %s: site host */ __( 'Questionnaire done: %s', 'oc-theme' ), self::host() ), self::team_done_html( $report ), false ) );
 	}
 
 	/**
@@ -166,7 +166,7 @@ final class Mail {
 			return false;
 		}
 
-		return self::send( $to, __( 'We got it — your site is being built', 'oc-theme' ), self::customer_done_html() );
+		return self::note( 'done', 'customer', self::send( $to, __( 'We got it — your site is being built', 'oc-theme' ), self::customer_done_html() ) );
 	}
 
 	/**
@@ -184,7 +184,45 @@ final class Mail {
 			. '<p>' . esc_html__( 'The customer has not received their list yet — it waits for the folders. Open the folders by hand and paste the link on the onboarding screen, and the mail goes out.', 'oc-theme' ) . '</p>'
 			. self::button( admin_url( 'admin.php?page=oc-onboard' ), __( 'Open the onboarding screen', 'oc-theme' ) );
 
-		return self::send( Onboard::COPY_TO, sprintf( /* translators: %s: site host */ __( 'Drive folders late: %s', 'oc-theme' ), self::host() ), $body, false );
+		return self::note( 'late', 'team', self::send( Onboard::COPY_TO, sprintf( /* translators: %s: site host */ __( 'Drive folders late: %s', 'oc-theme' ), self::host() ), $body, false ) );
+	}
+
+	/**
+	 * Remember that a mail went, so the screen can list them.
+	 *
+	 * @param string $key  invite | reminder1 | reminder2 | quiet | report | done | late.
+	 * @param string $to   customer | team.
+	 * @param bool   $sent What wp_mail said.
+	 */
+	private static function note( string $key, string $to, bool $sent ): bool {
+		if ( $sent ) {
+			$list   = (array) ( Onboard::state()['mails'] ?? array() );
+			$list[] = array(
+				'key'  => $key,
+				'to'   => $to,
+				'when' => time(),
+			);
+			Onboard::patch_state( array( 'mails' => $list ) );
+		}
+
+		return $sent;
+	}
+
+	/**
+	 * The words for the screen, by key.
+	 *
+	 * @return array<string,string>
+	 */
+	public static function names(): array {
+		return array(
+			'invite'    => __( 'The invitation, with the link', 'oc-theme' ),
+			'reminder1' => __( 'Reminder, day one', 'oc-theme' ),
+			'reminder2' => __( 'Reminder, day three', 'oc-theme' ),
+			'quiet'     => __( 'No progress for four days (to the team)', 'oc-theme' ),
+			'report'    => __( 'The questionnaire is done (to the team)', 'oc-theme' ),
+			'done'      => __( 'What is left for you, with the Drive folders', 'oc-theme' ),
+			'late'      => __( 'The Drive folders are late (to the team)', 'oc-theme' ),
+		);
 	}
 
 	/**
