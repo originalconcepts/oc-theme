@@ -57,6 +57,7 @@ final class Onboard {
 		( new Rest() )->register();
 		( new Front() )->register();
 		( new Mail() )->register();
+		( new Drive() )->register();
 		( new Curtain() )->register();
 
 		if ( is_admin() ) {
@@ -77,30 +78,37 @@ final class Onboard {
 		return wp_parse_args(
 			is_array( $saved ) ? $saved : array(),
 			array(
-				'status'     => 'none',   // none | draft | submitted | applied | cancelled.
-				'token_hash' => '',
-				'link'       => '',       // The link itself, for re-sends and reminders.
-				'created'    => 0,        // Unix, when the link was minted.
-				'expires'    => 0,
-				'client'     => array(
+				'status'      => 'none',   // none | draft | submitted | applied | cancelled.
+				'token_hash'  => '',
+				'link'        => '',       // The link itself, for re-sends and reminders.
+				'created'     => 0,        // Unix, when the link was minted.
+				'expires'     => 0,
+				'client'      => array(
 					'name'  => '',
 					'phone' => '',
 					'email' => '',
 				),
 				// The card this customer came from, so a later notice can name
 				// it. The item id alone is enough: it is unique across the account.
-				'monday'     => array(
+				'monday'      => array(
 					'item' => '',
 				),
-				'opened'     => 0,        // First time the link was opened.
-				'activity'   => 0,        // Last change to the draft.
-				'step'       => '',       // Last screen the customer was on.
-				'far'        => '',       // Furthest screen they ever opened.
-				'reminders'  => array(),  // r1 | r2 | g => unix.
-				'submitted'  => 0,
-				'applied'    => 0,
-				'report'     => array(),  // The apply report, one row per target.
-				'existing'   => '',       // The customer's current site, if any.
+				'opened'      => 0,        // First time the link was opened.
+				'activity'    => 0,        // Last change to the draft.
+				'step'        => '',       // Last screen the customer was on.
+				'far'         => '',       // Furthest screen they ever opened.
+				'reminders'   => array(),  // r1 | r2 | g => unix.
+				'submitted'   => 0,
+				'applied'     => 0,
+				'report'      => array(),  // The apply report, one row per target.
+				'existing'    => '',       // The customer's current site, if any.
+				'user'        => '',       // The customer's own login, once made.
+				'drive'       => array(),  // root | folders | doc | when, from Make.
+				'drive_fail'  => 0,        // Misses in a row asking for them.
+				'drive_try'   => 0,        // The last ask.
+				'drive_why'   => '',       // What the last miss said.
+				'drive_alert' => 0,        // When the team was told it is late.
+				'mailed'      => 0,        // When the customer's done mail went.
 			)
 		);
 	}
@@ -141,6 +149,9 @@ final class Onboard {
 			is_array( $saved ) ? $saved : array(),
 			array(
 				'claude_key' => '',
+				// Make's webhook: told when the answers are in, answers
+				// with the Drive folders.
+				'hook'       => '',
 			)
 		);
 	}
@@ -192,12 +203,83 @@ final class Onboard {
 	}
 
 	/**
-	 * What is theirs to do, in their words, from the same facts the tile
-	 * reads. Each item is a sentence, and some carry a link — the one
-	 * place to open a clearing account, say — so the page and the mail can
-	 * offer it as a button rather than as an address to copy.
+	 * The two things to start on today, for the last screen.
 	 *
-	 * @return array<int,array{text:string,url:string,link:string}>
+	 * The screen after "build my site" names only what needs no file and
+	 * no folder: the clearing account, because it takes days, and the
+	 * domain, because it is theirs to buy. Everything that wants a folder
+	 * to upload into waits for the mail, which goes out once the folders
+	 * exist. So this screen is complete the moment it is drawn and never
+	 * waits on anybody.
+	 *
+	 * @return array<int,array{key:string,title:string,text:string,links:array<int,array{url:string,label:string}>}>
+	 */
+	public static function next(): array {
+		$out  = array();
+		$gaps = array();
+
+		foreach ( self::gaps() as $g ) {
+			$gaps[ $g['key'] ] = $g;
+		}
+
+		if ( isset( $gaps['payments'] ) && 'no_company' === $gaps['payments']['cause'] ) {
+			$out[] = array(
+				'key'   => 'payplus',
+				'title' => __( 'Open a clearing account', 'oc-theme' ),
+				'text'  => __( 'So the shop can take credit cards. We work with PayPlus, an Israeli clearing company that is already connected to your site: open the link, leave your details, and they call you back. Worth starting today — it is the one thing with a waiting time, and the shop cannot open without it.', 'oc-theme' ),
+				'links' => array(
+					array(
+						'url'   => self::PAYPLUS,
+						'label' => __( 'Open an account at PayPlus', 'oc-theme' ),
+					),
+				),
+			);
+		}
+
+		$out[] = self::domain_step();
+
+		return $out;
+	}
+
+	/**
+	 * The domain, as a step: buy one, or tell us about the one you have.
+	 *
+	 * @return array{key:string,title:string,text:string,links:array<int,array{url:string,label:string}>}
+	 */
+	public static function domain_step(): array {
+		if ( 'yes' === (string) Draft::value( 'existing_has' ) ) {
+			return array(
+				'key'   => 'domain',
+				'title' => __( 'Your domain', 'oc-theme' ),
+				'text'  => __( 'The shop opens at the domain you already have. We will send you a short document to fill in with where it is registered and the login for it, so we can point it at the new site when the time comes.', 'oc-theme' ),
+				'links' => array(),
+			);
+		}
+
+		return array(
+			'key'   => 'domain',
+			'title' => __( 'Buy your domain', 'oc-theme' ),
+			'text'  => __( 'The address of the shop is yours to own. Register at LiveDNS, an Israeli registrar, then search for the name you want and buy it — it takes a few minutes. We will send you a short document to fill in with the login, so we can point the domain at the new site.', 'oc-theme' ),
+			'links' => array(
+				array(
+					'url'   => Drive::LIVEDNS_REGISTER,
+					'label' => __( 'Register at LiveDNS', 'oc-theme' ),
+				),
+				array(
+					'url'   => Drive::LIVEDNS_BUY,
+					'label' => __( 'Find and buy the domain', 'oc-theme' ),
+				),
+			),
+		);
+	}
+
+	/**
+	 * What is theirs to do, in their words, from the same facts the tile
+	 * reads. Each item is a sentence, some carry a link (the one place to
+	 * open a clearing account, say), and the ones that want a file name
+	 * the Drive folder it goes in, so the mail can offer "upload here".
+	 *
+	 * @return array<int,array{text:string,url:string,link:string,folder:string}>
 	 */
 	public static function todo(): array {
 		$out  = array();
@@ -207,11 +289,12 @@ final class Onboard {
 			$gaps[ $g['key'] ] = $g;
 		}
 
-		$say = static function ( string $text, string $url = '', string $link = '' ) use ( &$out ) {
+		$say = static function ( string $text, string $url = '', string $link = '', string $folder = '' ) use ( &$out ) {
 			$out[] = array(
-				'text' => $text,
-				'url'  => $url,
-				'link' => $link,
+				'text'   => $text,
+				'url'    => $url,
+				'link'   => $link,
+				'folder' => $folder,
 			);
 		};
 
@@ -235,12 +318,23 @@ final class Onboard {
 			}
 		}
 
+		// The domain, second: it is the other thing that takes real time.
+		$dom  = self::domain_step();
+		$doc  = Drive::links()['doc'];
+		$text = $dom['text'];
+
+		if ( '' !== $doc ) {
+			$text .= ' ' . __( 'The document is in your Drive folder.', 'oc-theme' );
+		}
+
+		$say( $text, '' !== $doc ? $doc : (string) ( $dom['links'][0]['url'] ?? '' ), '' !== $doc ? __( 'Domain details document', 'oc-theme' ) : (string) ( $dom['links'][0]['label'] ?? '' ) );
+
 		if ( isset( $gaps['logo'] ) ) {
-			$say( __( 'Send us your logo — the file itself, PNG with a see-through background or SVG, as large as you have it. Reply to this email with it.', 'oc-theme' ) );
+			$say( __( 'Upload your logo — the file itself, PNG with a see-through background or SVG, as large as you have it.', 'oc-theme' ), '', '', 'logo' );
 		}
 
 		if ( isset( $gaps['logolight'] ) ) {
-			$say( __( 'And a light version of the logo, if you have one: your menu stands on the banner picture, and a dark logo cannot be seen there. No light version? We make one.', 'oc-theme' ) );
+			$say( __( 'And a light version of the logo, if you have one: your menu stands on the banner picture, and a dark logo cannot be seen there. No light version? We make one.', 'oc-theme' ), '', '', 'logo' );
 		}
 
 		if ( isset( $gaps['catpics'] ) ) {
@@ -251,9 +345,12 @@ final class Onboard {
 			$say(
 				sprintf(
 					/* translators: %s: the category names. */
-					__( 'Send us one picture for each of these categories — it becomes the banner at the top of the category and its tile on the home page: %s', 'oc-theme' ),
+					__( 'Upload one picture for each of these categories — it becomes the banner at the top of the category and its tile on the home page: %s', 'oc-theme' ),
 					implode( ', ', $shown ) . ( $more > 0 ? sprintf( /* translators: %d: how many more. */ __( ' and %d more', 'oc-theme' ), $more ) : '' )
-				)
+				),
+				'',
+				'',
+				'catpics'
 			);
 		}
 
@@ -270,19 +367,15 @@ final class Onboard {
 
 			if ( 'no_file' === $gaps[ $key ]['cause'] ) {
 				/* translators: %s: which page. */
-				$say( sprintf( __( 'Send us %s — you said you had your own, and the file did not arrive.', 'oc-theme' ), $what ) );
+				$say( sprintf( __( 'Upload %s — you said you had your own, and the file did not arrive.', 'oc-theme' ), $what ), '', '', 'legal' );
 			} elseif ( 'link_failed' === $gaps[ $key ]['cause'] ) {
 				/* translators: %s: which page. */
-				$say( sprintf( __( 'Send us the text of %s — we could not read it from your current site.', 'oc-theme' ), $what ) );
+				$say( sprintf( __( 'Upload the text of %s — we could not read it from your current site.', 'oc-theme' ), $what ), '', '', 'legal' );
 			}
 		}
 
 		if ( isset( $gaps['about'] ) && 'link_failed' === ( $gaps['about']['cause'] ?? '' ) ) {
-			$say( __( 'Send us the text for the About page — we could not read it from your current site.', 'oc-theme' ) );
-		}
-
-		if ( isset( $gaps['domain'] ) && 'no_domain' === $gaps['domain']['cause'] ) {
-			$say( __( 'Tell us which domain the shop should open at, or that you would like us to register one for you.', 'oc-theme' ) );
+			$say( __( 'Upload the text for the About page — we could not read it from your current site.', 'oc-theme' ), '', '', 'about' );
 		}
 
 		if ( isset( $gaps['social'] ) ) {
@@ -291,7 +384,7 @@ final class Onboard {
 
 		// A shop with nothing on its shelves is not a shop, and this is the
 		// one thing nobody else can do for them.
-		$say( __( 'Gather your products — the names, the prices and a picture of each. That is the one thing we cannot do without you.', 'oc-theme' ) );
+		$say( __( 'Gather your products — the names, the prices and a picture of each — and put them in the products folder. There is a spreadsheet in it to fill in. That is the one thing we cannot do without you.', 'oc-theme' ), '', '', 'products' );
 
 		return $out;
 	}

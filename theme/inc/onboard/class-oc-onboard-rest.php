@@ -503,13 +503,20 @@ final class Rest {
 			)
 		);
 
-		Mail::done( $report );
+		// Their own way in, as a shop manager: made here, once, so a
+		// re-apply from the admin screen never mints a second password.
+		$user = Apply::customer_user();
+
+		// The team hears now. The customer hears once the folders exist:
+		// Drive asks Make for them and sends that mail itself.
+		Mail::done_team( $report );
+		Drive::request( $user );
 
 		return self::answer(
 			array(
 				'ok'     => true,
 				'report' => self::report_summary( $report ),
-				'todo'   => Onboard::todo(),
+				'next'   => Onboard::next(),
 			)
 		);
 	}

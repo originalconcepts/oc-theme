@@ -188,6 +188,7 @@ require_once OC_THEME_DIR . '/inc/onboard/class-oc-onboard-apply.php';
 require_once OC_THEME_DIR . '/inc/onboard/class-oc-onboard-rest.php';
 require_once OC_THEME_DIR . '/inc/onboard/class-oc-onboard-front.php';
 require_once OC_THEME_DIR . '/inc/onboard/class-oc-onboard-mail.php';
+require_once OC_THEME_DIR . '/inc/onboard/class-oc-onboard-drive.php';
 require_once OC_THEME_DIR . '/inc/onboard/class-oc-onboard-fetch.php';
 require_once OC_THEME_DIR . '/inc/onboard/class-oc-onboard-writer.php';
 require_once OC_THEME_DIR . '/inc/onboard/class-oc-onboard-demo.php';

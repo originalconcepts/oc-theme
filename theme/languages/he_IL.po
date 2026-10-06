@@ -13661,3 +13661,144 @@ msgstr "מההחלה"
 
 msgid "And always"
 msgstr "ותמיד"
+
+msgid "Open a clearing account"
+msgstr "פתיחת חשבון סליקה"
+
+msgid "So the shop can take credit cards. We work with PayPlus, an Israeli clearing company that is already connected to your site: open the link, leave your details, and they call you back. Worth starting today — it is the one thing with a waiting time, and the shop cannot open without it."
+msgstr "כדי שהחנות תוכל לקבל כרטיסי אשראי. אנחנו עובדים עם PayPlus, חברת סליקה ישראלית שכבר מחוברת לאתר שלכם: היכנסו לקישור, השאירו פרטים, והם חוזרים אליכם. כדאי להתחיל כבר היום — זה הדבר היחיד עם זמן המתנה, והחנות לא יכולה להיפתח בלעדיו."
+
+msgid "Your domain"
+msgstr "הדומיין שלכם"
+
+msgid "The shop opens at the domain you already have. We will send you a short document to fill in with where it is registered and the login for it, so we can point it at the new site when the time comes."
+msgstr "החנות תיפתח בדומיין שכבר יש לכם. נשלח לכם מסמך קצר למילוי — איפה הוא רשום ופרטי הכניסה — כדי שנוכל להפנות אותו לאתר החדש כשיגיע הזמן."
+
+msgid "Buy your domain"
+msgstr "רכישת הדומיין"
+
+msgid "The address of the shop is yours to own. Register at LiveDNS, an Israeli registrar, then search for the name you want and buy it — it takes a few minutes. We will send you a short document to fill in with the login, so we can point the domain at the new site."
+msgstr "כתובת החנות שייכת לכם. נרשמים ב-LiveDNS, רשם דומיינים ישראלי, מאתרים את השם שרוצים ורוכשים אותו — זה לוקח כמה דקות. נשלח לכם מסמך קצר למילוי פרטי הכניסה, כדי שנוכל להפנות את הדומיין לאתר החדש."
+
+msgid "Register at LiveDNS"
+msgstr "הרשמה ב-LiveDNS"
+
+msgid "Find and buy the domain"
+msgstr "איתור ורכישת הדומיין"
+
+msgid "Send us the details of your clearing company and we connect it. It is not one of the two we install ourselves, so that part is by hand."
+msgstr "שלחו לנו את פרטי חברת הסליקה שלכם ונחבר אותה. היא לא אחת משתי החברות שאנחנו מתקינים בעצמנו, אז החלק הזה ידני."
+
+msgid "The document is in your Drive folder."
+msgstr "המסמך נמצא בתיקיית הדרייב שלכם."
+
+msgid "Domain details document"
+msgstr "מסמך פרטי הדומיין"
+
+msgid "Upload your logo — the file itself, PNG with a see-through background or SVG, as large as you have it."
+msgstr "העלו את הלוגו שלכם — הקובץ עצמו, PNG עם רקע שקוף או SVG, בגודל הכי גדול שיש לכם."
+
+msgid "Upload one picture for each of these categories — it becomes the banner at the top of the category and its tile on the home page: %s"
+msgstr "העלו תמונה אחת לכל אחת מהקטגוריות האלה — היא הופכת לבאנר בראש הקטגוריה ולאריח שלה בדף הבית: %s"
+
+msgid "Upload %s — you said you had your own, and the file did not arrive."
+msgstr "העלו את %s — אמרתם שיש לכם משלכם, והקובץ לא הגיע."
+
+msgid "Upload the text of %s — we could not read it from your current site."
+msgstr "העלו את הטקסט של %s — לא הצלחנו לקרוא אותו מהאתר הנוכחי שלכם."
+
+msgid "Upload the text for the About page — we could not read it from your current site."
+msgstr "העלו את הטקסט לעמוד האודות — לא הצלחנו לקרוא אותו מהאתר הנוכחי שלכם."
+
+msgid "Gather your products — the names, the prices and a picture of each — and put them in the products folder. There is a spreadsheet in it to fill in. That is the one thing we cannot do without you."
+msgstr "אספו את המוצרים שלכם — השמות, המחירים ותמונה לכל אחד — והעלו לתיקיית המוצרים. יש בה גיליון למילוי. זה הדבר היחיד שאנחנו לא יכולים לעשות בלעדיכם."
+
+msgid "%1$s finished the questionnaire on %2$s two hours ago, and the Drive folders are still not open."
+msgstr "%1$s סיימו את השאלון ב-%2$s לפני שעתיים, ותיקיות הדרייב עדיין לא נפתחו."
+
+msgid "The site asked Make %1$d times; the last answer was: %2$s. It keeps trying every fifteen minutes."
+msgstr "האתר פנה ל-Make %1$d פעמים; התשובה האחרונה: %2$s. הוא ממשיך לנסות כל רבע שעה."
+
+msgid "The customer has not received their list yet — it waits for the folders. Open the folders by hand and paste the link on the onboarding screen, and the mail goes out."
+msgstr "הלקוח עדיין לא קיבל את הרשימה שלו — היא מחכה לתיקיות. פתחו את התיקיות ידנית והדביקו את הקישור במסך ההתנעה, והמייל יוצא."
+
+msgid "Drive folders late: %s"
+msgstr "תיקיות הדרייב מתעכבות: %s"
+
+msgid "Upload here"
+msgstr "העלו לכאן"
+
+msgid "All the folders sit in one shared Drive folder; anyone with the link can upload to it."
+msgstr "כל התיקיות נמצאות בתיקיית דרייב משותפת אחת; כל מי שיש לו את הקישור יכול להעלות אליה."
+
+msgid "Your Drive folder"
+msgstr "תיקיית הדרייב שלכם"
+
+msgid "The folders are in, and the customer has their list."
+msgstr "התיקיות התקבלו, והלקוח קיבל את הרשימה שלו."
+
+msgid "Still no folders. The site keeps asking every fifteen minutes."
+msgstr "עדיין אין תיקיות. האתר ממשיך לבקש כל רבע שעה."
+
+msgid "That is not a Drive link."
+msgstr "זה לא קישור לדרייב."
+
+msgid "Make webhook"
+msgstr "Webhook של Make"
+
+msgid "Told when the answers are in; answers with the Drive folders. Without it, the customer's list waits for a folder link pasted above."
+msgstr "מקבל הודעה כשהתשובות נכנסו, ועונה עם תיקיות הדרייב. בלעדיו, הרשימה של הלקוח מחכה לקישור תיקייה שמודבק למעלה."
+
+msgid "Drive folders"
+msgstr "תיקיות דרייב"
+
+msgid "open since %s ago"
+msgstr "פתוחות מלפני %s"
+
+msgid "Open the folder"
+msgstr "פתיחת התיקייה"
+
+msgid "The customer received their list %s ago."
+msgstr "הלקוח קיבל את הרשימה שלו לפני %s."
+
+msgid "The customer has no email on the invitation, so the list was not mailed."
+msgstr "אין מייל של הלקוח בהזמנה, אז הרשימה לא נשלחה."
+
+msgid "Waiting for the Drive folders"
+msgstr "ממתין לתיקיות הדרייב"
+
+msgid "the answers went in %1$s ago; asked Make %2$d times."
+msgstr "התשובות נכנסו לפני %1$s; פנינו ל-Make %2$d פעמים."
+
+msgid "The customer has not received their list yet: it goes out the moment the folders exist, with an \"upload here\" button on every line."
+msgstr "הלקוח עדיין לא קיבל את הרשימה שלו: היא יוצאת ברגע שהתיקיות קיימות, עם כפתור \"העלו לכאן\" בכל שורה."
+
+msgid "Ask Make again now"
+msgstr "לפנות ל-Make שוב עכשיו"
+
+msgid "Domain details document (optional)"
+msgstr "מסמך פרטי הדומיין (לא חובה)"
+
+msgid "Use this folder for everything"
+msgstr "להשתמש בתיקייה הזו לכל הדברים"
+
+msgid "the customer has had no list for %s."
+msgstr "הלקוח בלי רשימה כבר %s."
+
+msgid "Two things to start on today"
+msgstr "שני דברים להתחיל בהם היום"
+
+msgid "One thing to start on today"
+msgstr "דבר אחד להתחיל בו היום"
+
+msgid "Everything else — the files to upload, where to upload them, the document for the domain details — is on its way to you by email."
+msgstr "כל השאר — הקבצים להעלאה, לאן מעלים אותם, והמסמך לפרטי הדומיין — בדרך אליכם במייל."
+
+msgid "Every fifteen minutes"
+msgstr "כל רבע שעה"
+
+msgid "Offering more in the cart"
+msgstr "הצעות נוספות בסל"
+
+msgid "That category was not opened."
+msgstr "הקטגוריה הזו לא נפתחה."

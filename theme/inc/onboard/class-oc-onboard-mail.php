@@ -151,15 +151,40 @@ final class Mail {
 	 *
 	 * @param array<int,array<string,string>> $report Rows.
 	 */
-	public static function done( array $report ): void {
-		$state = Onboard::state();
-		$to    = (string) $state['client']['email'];
+	public static function done_team( array $report ): void {
+		self::send( Onboard::COPY_TO, sprintf( /* translators: %s: site host */ __( 'Questionnaire done: %s', 'oc-theme' ), self::host() ), self::team_done_html( $report ), false );
+	}
 
-		if ( is_email( $to ) ) {
-			self::send( $to, __( 'We got it — your site is being built', 'oc-theme' ), self::customer_done_html() );
+	/**
+	 * The customer's list, with somewhere to upload each thing. Sent by
+	 * Drive once the folders exist, never before.
+	 */
+	public static function done_customer(): bool {
+		$to = (string) Onboard::state()['client']['email'];
+
+		if ( ! is_email( $to ) ) {
+			return false;
 		}
 
-		self::send( Onboard::COPY_TO, sprintf( /* translators: %s: site host */ __( 'Questionnaire done: %s', 'oc-theme' ), self::host() ), self::team_done_html( $report ), false );
+		return self::send( $to, __( 'We got it — your site is being built', 'oc-theme' ), self::customer_done_html() );
+	}
+
+	/**
+	 * Two hours after the answers went in and still no folders: the team
+	 * hears, once, and knows where the button is.
+	 *
+	 * @param int    $tries How many times the site asked.
+	 * @param string $why   What the last miss said.
+	 */
+	public static function drive_late( int $tries, string $why ): bool {
+		$state = Onboard::state();
+
+		$body = '<p>' . esc_html( sprintf( /* translators: 1: client name, 2: site */ __( '%1$s finished the questionnaire on %2$s two hours ago, and the Drive folders are still not open.', 'oc-theme' ), (string) $state['client']['name'], home_url( '/' ) ) ) . '</p>'
+			. '<p>' . esc_html( sprintf( /* translators: 1: how many tries, 2: the last error */ __( 'The site asked Make %1$d times; the last answer was: %2$s. It keeps trying every fifteen minutes.', 'oc-theme' ), $tries, '' === $why ? '—' : $why ) ) . '</p>'
+			. '<p>' . esc_html__( 'The customer has not received their list yet — it waits for the folders. Open the folders by hand and paste the link on the onboarding screen, and the mail goes out.', 'oc-theme' ) . '</p>'
+			. self::button( admin_url( 'admin.php?page=oc-onboard' ), __( 'Open the onboarding screen', 'oc-theme' ) );
+
+		return self::send( Onboard::COPY_TO, sprintf( /* translators: %s: site host */ __( 'Drive folders late: %s', 'oc-theme' ), self::host() ), $body, false );
 	}
 
 	/**
@@ -170,14 +195,26 @@ final class Mail {
 		$mine  = '';
 
 		foreach ( Onboard::todo() as $one ) {
+			$url  = $one['url'];
+			$link = $one['link'];
+
+			// A thing that wants a file gets the folder it goes in.
+			if ( '' === $url && '' !== $one['folder'] ) {
+				$url  = Drive::folder( $one['folder'] );
+				$link = __( 'Upload here', 'oc-theme' );
+			}
+
 			$mine .= '<li style="margin:0 0 10px">' . esc_html( $one['text'] )
-				. ( '' === $one['url'] ? '' : ' <a href="' . esc_url( $one['url'] ) . '" style="font-weight:600">' . esc_html( $one['link'] ) . ' &rsaquo;</a>' )
+				. ( '' === $url ? '' : ' <a href="' . esc_url( $url ) . '" style="font-weight:600;white-space:nowrap">' . esc_html( $link ) . ' &rsaquo;</a>' )
 				. '</li>';
 		}
+
+		$root = Drive::links()['root'];
 
 		return self::greeting( (string) $state['client']['name'] )
 			. '<p>' . esc_html__( 'Thank you! Everything you answered is already written into your site.', 'oc-theme' ) . '</p>'
 			. ( '' === $mine ? '' : '<p><strong>' . esc_html__( 'What is left for you', 'oc-theme' ) . '</strong></p><ul>' . $mine . '</ul>' )
+			. ( '' === $root ? '' : '<p>' . esc_html__( 'All the folders sit in one shared Drive folder; anyone with the link can upload to it.', 'oc-theme' ) . ' <a href="' . esc_url( $root ) . '" style="font-weight:600">' . esc_html__( 'Your Drive folder', 'oc-theme' ) . ' &rsaquo;</a></p>' )
 			. '<p>' . esc_html__( 'We go over everything that was built, load your products once you have them ready, and go over the site with you before it goes live.', 'oc-theme' ) . '</p>'
 			. '<p class="small">' . esc_html__( 'Something to change? Write to us and we will do it — no need to fill anything in again.', 'oc-theme' ) . '</p>';
 	}

@@ -158,6 +158,73 @@ final class Apply {
 	}
 
 	/**
+	 * The customer's own login: a shop manager, named by their email.
+	 *
+	 * A shop manager and not an administrator — they run the shop, we run
+	 * the site. Made once; a second call finds the user and returns the
+	 * login with no password, so nothing is ever reset behind their back.
+	 *
+	 * @return array{login:string,pass:string} The password only when it was just made.
+	 */
+	public static function customer_user(): array {
+		$state = Onboard::state();
+		$email = (string) $state['client']['email'];
+		$name  = (string) $state['client']['name'];
+
+		if ( ! is_email( $email ) ) {
+			return array(
+				'login' => '',
+				'pass'  => '',
+			);
+		}
+
+		$found = get_user_by( 'email', $email );
+
+		if ( ! $found ) {
+			$found = get_user_by( 'login', $email );
+		}
+
+		if ( $found instanceof \WP_User ) {
+			if ( ! in_array( 'administrator', (array) $found->roles, true ) && ! in_array( 'shop_manager', (array) $found->roles, true ) ) {
+				$found->set_role( 'shop_manager' );
+			}
+
+			Onboard::patch_state( array( 'user' => $found->user_login ) );
+
+			return array(
+				'login' => $found->user_login,
+				'pass'  => '',
+			);
+		}
+
+		$pass = wp_generate_password( 14, false );
+		$id   = wp_insert_user(
+			array(
+				'user_login'   => $email,
+				'user_email'   => $email,
+				'user_pass'    => $pass,
+				'display_name' => '' !== $name ? $name : $email,
+				'first_name'   => $name,
+				'role'         => get_role( 'shop_manager' ) ? 'shop_manager' : 'editor',
+			)
+		);
+
+		if ( is_wp_error( $id ) ) {
+			return array(
+				'login' => '',
+				'pass'  => '',
+			);
+		}
+
+		Onboard::patch_state( array( 'user' => $email ) );
+
+		return array(
+			'login' => $email,
+			'pass'  => $pass,
+		);
+	}
+
+	/**
 	 * The writing is done, so the key that did it leaves the site.
 	 *
 	 * It is ours, it arrived here only because the site was cloned from

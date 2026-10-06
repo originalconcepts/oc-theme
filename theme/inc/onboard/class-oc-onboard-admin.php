@@ -36,6 +36,8 @@ final class Admin {
 		add_action( 'admin_post_oc_onboard_cancel', array( $this, 'cancel' ) );
 		add_action( 'admin_post_oc_onboard_reapply', array( $this, 'reapply' ) );
 		add_action( 'admin_post_oc_onboard_settings', array( $this, 'settings' ) );
+		add_action( 'admin_post_oc_onboard_drive_now', array( $this, 'drive_now' ) );
+		add_action( 'admin_post_oc_onboard_drive_set', array( $this, 'drive_set' ) );
 		add_action( 'admin_post_oc_onboard_demo_make', array( $this, 'demo_make' ) );
 		add_action( 'admin_post_oc_onboard_demo_drop', array( $this, 'demo_drop' ) );
 		add_action( 'wp_dashboard_setup', array( $this, 'tile' ), 12 );
@@ -116,6 +118,9 @@ final class Admin {
 				'cancel'   => __( 'The link is cancelled.', 'oc-theme' ),
 				'reapply'  => __( 'The answers were applied again.', 'oc-theme' ),
 				'settings' => __( 'Settings saved.', 'oc-theme' ),
+				'drive'    => __( 'The folders are in, and the customer has their list.', 'oc-theme' ),
+				'driveno'  => __( 'Still no folders. The site keeps asking every fifteen minutes.', 'oc-theme' ),
+				'drivebad' => __( 'That is not a Drive link.', 'oc-theme' ),
 				'keygone'  => __( 'The AI key was deleted from this site.', 'oc-theme' ),
 				'curtain'  => __( 'Saved.', 'oc-theme' ),
 				'demomade' => __( 'The test products are on the shop. Go and look at a category, a product and the checkout.', 'oc-theme' ),
@@ -170,6 +175,10 @@ final class Admin {
 						<?php endif; ?>
 						<?php self::action_button( 'oc_onboard_cancel', __( 'Cancel the link', 'oc-theme' ), true ); ?>
 					</p>
+				<?php endif; ?>
+
+				<?php if ( 'applied' === $state['status'] ) : ?>
+					<?php self::drive_block(); ?>
 				<?php endif; ?>
 
 				<h2><?php echo esc_html( 'none' === $state['status'] || 'cancelled' === $state['status'] ? __( 'Create the link', 'oc-theme' ) : __( 'Issue a new link', 'oc-theme' ) ); ?></h2>
@@ -279,6 +288,7 @@ final class Admin {
 					<input type="hidden" name="action" value="oc_onboard_settings" />
 					<?php wp_nonce_field( 'oc_onboard_settings' ); ?>
 					<table class="form-table" role="presentation">
+						<tr><th scope="row"><label for="oc-onb-hook"><?php esc_html_e( 'Make webhook', 'oc-theme' ); ?></label></th><td><input type="url" id="oc-onb-hook" name="hook" class="regular-text" dir="ltr" value="<?php echo esc_attr( $s['hook'] ); ?>" placeholder="https://hook.eu1.make.com/…" /><p class="description"><?php esc_html_e( 'Told when the answers are in; answers with the Drive folders. Without it, the customer\'s list waits for a folder link pasted above.', 'oc-theme' ); ?></p></td></tr>
 						<tr><th scope="row"><label for="oc-onb-claude"><?php esc_html_e( 'Claude API key', 'oc-theme' ); ?></label></th><td><input type="password" id="oc-onb-claude" name="claude_key" class="regular-text" dir="ltr" value="<?php echo esc_attr( $s['claude_key'] ); ?>" autocomplete="off" /> <?php echo $s['claude_key'] ? '<label style="margin-inline-start:12px"><input type="checkbox" name="delete_claude" value="1" /> ' . esc_html__( 'Delete the key', 'oc-theme' ) . '</label>' : ''; ?></td></tr>
 					</table>
 					<?php submit_button( __( 'Save keys', 'oc-theme' ), 'secondary', 'submit', false ); ?>
@@ -499,6 +509,7 @@ final class Admin {
 		// phpcs:disable WordPress.Security.NonceVerification.Missing -- verified in guard().
 		$s    = array(
 			'claude_key' => sanitize_text_field( wp_unslash( $_POST['claude_key'] ?? '' ) ),
+			'hook'       => esc_url_raw( wp_unslash( $_POST['hook'] ?? '' ) ),
 		);
 		$gone = ! empty( $_POST['delete_claude'] );
 		// phpcs:enable WordPress.Security.NonceVerification.Missing
@@ -510,6 +521,70 @@ final class Admin {
 		update_option( Onboard::SETTINGS, $s, false );
 
 		$this->back( $gone ? 'keygone' : 'settings' );
+	}
+
+	/**
+	 * Ask Make again, now.
+	 */
+	public function drive_now(): void {
+		$this->guard( 'oc_onboard_drive_now' );
+
+		$state = Onboard::state();
+
+		$this->back( Drive::request( array( 'login' => (string) ( $state['user'] ?? '' ) ) ) ? 'drive' : 'driveno' );
+	}
+
+	/**
+	 * The folder link, pasted by hand: counts as Make's answer.
+	 */
+	public function drive_set(): void {
+		$this->guard( 'oc_onboard_drive_set' );
+
+		// phpcs:disable WordPress.Security.NonceVerification.Missing -- verified in guard().
+		$root = esc_url_raw( wp_unslash( $_POST['root'] ?? '' ) );
+		$doc  = esc_url_raw( wp_unslash( $_POST['doc'] ?? '' ) );
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
+
+		if ( false === strpos( $root, 'drive.google.com' ) ) {
+			$this->back( 'drivebad' );
+		}
+
+		$this->back(
+			Drive::accept(
+				array(
+					'root' => $root,
+					'doc'  => $doc,
+				)
+			) ? 'drive' : 'driveno'
+		);
+	}
+
+	/**
+	 * Where the customer's list stands: sent, or waiting for the folders.
+	 */
+	private static function drive_block(): void {
+		$state = Onboard::state();
+		$links = Drive::links();
+		$ready = Drive::ready();
+		?>
+		<div class="oc-onb-drive" style="margin:14px 0 18px;padding:12px 14px;border:1px solid <?php echo $ready ? '#c3e6cb' : '#f0b429'; ?>;border-radius:6px;background:<?php echo $ready ? '#f1faf3' : '#fff8e6'; ?>">
+			<?php if ( $ready ) : ?>
+				<p style="margin:0 0 6px"><b><?php esc_html_e( 'Drive folders', 'oc-theme' ); ?></b> — <?php echo esc_html( sprintf( /* translators: %s: how long ago */ __( 'open since %s ago', 'oc-theme' ), human_time_diff( $links['when'] ) ) ); ?> · <a href="<?php echo esc_url( $links['root'] ); ?>" target="_blank" rel="noopener"><?php esc_html_e( 'Open the folder', 'oc-theme' ); ?></a></p>
+				<p style="margin:0" class="description"><?php echo esc_html( ! empty( $state['mailed'] ) ? sprintf( /* translators: %s: how long ago */ __( 'The customer received their list %s ago.', 'oc-theme' ), human_time_diff( (int) $state['mailed'] ) ) : __( 'The customer has no email on the invitation, so the list was not mailed.', 'oc-theme' ) ); ?></p>
+			<?php else : ?>
+				<p style="margin:0 0 6px"><b><?php esc_html_e( 'Waiting for the Drive folders', 'oc-theme' ); ?></b> — <?php echo esc_html( sprintf( /* translators: 1: how long, 2: how many tries */ __( 'the answers went in %1$s ago; asked Make %2$d times.', 'oc-theme' ), human_time_diff( (int) $state['applied'] ), (int) ( $state['drive_fail'] ?? 0 ) ) ); ?><?php echo '' !== (string) ( $state['drive_why'] ?? '' ) ? ' <span class="description">' . esc_html( (string) $state['drive_why'] ) . '</span>' : ''; ?></p>
+				<p style="margin:0 0 10px" class="description"><?php esc_html_e( 'The customer has not received their list yet: it goes out the moment the folders exist, with an "upload here" button on every line.', 'oc-theme' ); ?></p>
+				<p class="oc-onb-actions" style="margin:0 0 10px"><?php self::action_button( 'oc_onboard_drive_now', __( 'Ask Make again now', 'oc-theme' ) ); ?></p>
+				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+					<input type="hidden" name="action" value="oc_onboard_drive_set" />
+					<?php wp_nonce_field( 'oc_onboard_drive_set' ); ?>
+					<input type="url" name="root" class="regular-text" dir="ltr" placeholder="https://drive.google.com/drive/folders/…" required />
+					<input type="url" name="doc" class="regular-text" dir="ltr" placeholder="<?php esc_attr_e( 'Domain details document (optional)', 'oc-theme' ); ?>" />
+					<button type="submit" class="button"><?php esc_html_e( 'Use this folder for everything', 'oc-theme' ); ?></button>
+				</form>
+			<?php endif; ?>
+		</div>
+		<?php
 	}
 
 	/**
@@ -595,6 +670,10 @@ final class Admin {
 
 		if ( $sum['check'] || $sum['error'] ) {
 			echo '<p>' . esc_html( sprintf( /* translators: 1: to check, 2: errors */ __( '%1$d rows to check, %2$d errors', 'oc-theme' ), $sum['check'], $sum['error'] ) ) . '</p>';
+		}
+
+		if ( ! Drive::ready() ) {
+			echo '<p style="color:#b32d2e"><b>' . esc_html__( 'Waiting for the Drive folders', 'oc-theme' ) . '</b> — ' . esc_html( sprintf( /* translators: %s: how long */ __( 'the customer has had no list for %s.', 'oc-theme' ), human_time_diff( (int) $state['applied'] ) ) ) . ' <a href="' . esc_url( self::url() ) . '">' . esc_html__( 'Put it right', 'oc-theme' ) . '</a></p>';
 		}
 
 		// Once the answers are on the site, the tile has one job: to say

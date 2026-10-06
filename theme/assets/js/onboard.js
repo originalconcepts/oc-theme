@@ -4302,7 +4302,7 @@
 			submit.textContent = I.submitting;
 			var go_ = function () {
 				return api( '/submit', { body: '{}' } ).then( function ( r ) {
-					if ( r.ok ) { at = screens.length + 1; renderDone( r.data && r.data.todo ); return; }
+					if ( r.ok ) { at = screens.length + 1; renderDone( r.data && r.data.next ); return; }
 					if ( r.status === 422 && r.data.missing ) {
 						var id = r.data.missing[0];
 						screens.forEach( function ( s, i ) { if ( s.fields.indexOf( id ) !== -1 ) { go( i ); setTimeout( function () { mark( r.data.missing ); }, 300 ); } } );
@@ -4324,12 +4324,14 @@
 	}
 
 	/**
-	 * The last screen. What is left for them comes first, because it is the
-	 * only part of this page they can act on; what we do next comes after.
+	 * The last screen. Only what they can start on this minute -- the
+	 * clearing account, the domain -- each a small card with its buttons.
+	 * Everything that wants a file waits for the mail, so this screen is
+	 * whole the moment it is drawn and never waits on anybody.
 	 *
-	 * @param {Array} todo What the answers say is still theirs to do.
+	 * @param {Array} steps The one or two things to start on today.
 	 */
-	function renderDone( todo ) {
+	function renderDone( steps ) {
 		root.innerHTML = '';
 
 		var kids = [
@@ -4338,27 +4340,36 @@
 			el( 'p', { text: I.done_text } )
 		];
 
-		if ( ( todo || [] ).length ) {
-			var mine = el( 'ul', { 'class': 'oc-onb-next oc-onb-next--mine' } );
+		steps = steps || [];
 
-			todo.forEach( function ( t ) {
-				// A sentence, and sometimes a place to go -- the one link to
-				// open a clearing account, say -- offered as a link, not as
-				// an address to copy.
-				if ( 'string' === typeof t ) { mine.appendChild( el( 'li', { text: t } ) ); return; }
+		if ( steps.length ) {
+			kids.push( el( 'h2', { 'class': 'oc-onb-next__h', text: steps.length > 1 ? I.done_yours : I.done_yours_one } ) );
 
-				var li = el( 'li', { text: t.text || '' } );
+			var list = el( 'div', { 'class': 'oc-onb-steps' } );
 
-				if ( t.url ) {
-					li.appendChild( document.createTextNode( ' ' ) );
-					li.appendChild( el( 'a', { 'class': 'oc-onb-next__go', href: t.url, target: '_blank', rel: 'noopener', text: ( t.link || t.url ) + ' \u203a' } ) );
+			steps.forEach( function ( st, i ) {
+				var card = el( 'div', { 'class': 'oc-onb-step oc-onb-step--' + ( st.key || 'x' ) } );
+				card.appendChild( el( 'div', { 'class': 'oc-onb-step__n', text: String( i + 1 ) } ) );
+				var body = el( 'div', { 'class': 'oc-onb-step__body' } );
+				body.appendChild( el( 'h3', { text: st.title || '' } ) );
+				body.appendChild( el( 'p', { text: st.text || '' } ) );
+
+				if ( ( st.links || [] ).length ) {
+					var row = el( 'div', { 'class': 'oc-onb-step__links' } );
+					st.links.forEach( function ( l, j ) {
+						row.appendChild( el( 'a', { 'class': 'oc-onb-btn' + ( j ? ' oc-onb-btn--ghost' : '' ), href: l.url, target: '_blank', rel: 'noopener', text: l.label || l.url } ) );
+					} );
+					body.appendChild( row );
 				}
 
-				mine.appendChild( li );
+				card.appendChild( body );
+				list.appendChild( card );
 			} );
-			kids.push( el( 'h2', { 'class': 'oc-onb-next__h', text: I.done_yours } ) );
-			kids.push( mine );
+
+			kids.push( list );
 		}
+
+		kids.push( el( 'p', { 'class': 'oc-onb-done__mail', text: I.done_mail } ) );
 
 		var next = el( 'ul', { 'class': 'oc-onb-next' } );
 
@@ -4415,7 +4426,7 @@
 	} else if ( C.status === 'applied' ) {
 		// Reopened after the answers went in: the last screen, with what is
 		// still theirs to do -- not the summary, and not the questions.
-		renderDone( C.todo || [] );
+		renderDone( C.next || [] );
 	} else {
 		renderWelcome();
 	}

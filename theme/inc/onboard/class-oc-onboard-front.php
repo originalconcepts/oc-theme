@@ -98,8 +98,8 @@ final class Front {
 			// that apologises every time it is pressed.
 			'canWrite'   => Writer::can(),
 			// Once the answers are on the site, the link opens on the last
-			// screen -- what is still theirs to do -- not on the summary.
-			'todo'       => 'applied' === (string) $state['status'] ? Onboard::todo() : array(),
+			// screen -- the two things to start on -- not on the summary.
+			'next'       => 'applied' === (string) $state['status'] ? Onboard::next() : array(),
 			'days'       => $days,
 			'disclaimer' => Consent::text(),
 			'art'        => Art::all(),
@@ -137,7 +137,9 @@ final class Front {
 				'submitting'      => __( 'Setting things up…', 'oc-theme' ),
 				'done_title'      => __( 'Thank you!', 'oc-theme' ),
 				'done_text'       => __( 'Everything you answered is already written into your site — the pages, the home page, the catalogue, the product page, the cart and the checkout.', 'oc-theme' ),
-				'done_yours'      => __( 'What is left for you', 'oc-theme' ),
+				'done_yours'      => __( 'Two things to start on today', 'oc-theme' ),
+				'done_yours_one'  => __( 'One thing to start on today', 'oc-theme' ),
+				'done_mail'       => __( 'Everything else — the files to upload, where to upload them, the document for the domain details — is on its way to you by email.', 'oc-theme' ),
 				'done_next_title' => __( 'And what we do now', 'oc-theme' ),
 				'done_next_items' => array(
 					__( 'We go over everything that was built and put the last touches to it.', 'oc-theme' ),

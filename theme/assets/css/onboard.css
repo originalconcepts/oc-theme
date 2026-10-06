@@ -1276,3 +1276,14 @@ button.oc-onb-steps__i { cursor: pointer; }
 
 /* A step with somewhere to go: the link stands out from the sentence. */
 .oc-onb-next__go { font-weight: 600; color: var(--onb-primary); text-decoration: underline; white-space: nowrap; }
+
+/* The last screen: one card per thing to start on today. */
+.oc-onb-steps { display: grid; gap: 14px; margin: 0 auto; max-width: 52ch; text-align: start; }
+.oc-onb-step { display: grid; grid-template-columns: 36px minmax(0, 1fr); gap: 12px; padding: 16px 18px; border: 1px solid var(--onb-line); border-radius: 12px; background: var(--onb-bg); }
+.oc-onb-step__n { width: 36px; height: 36px; border-radius: 50%; background: var(--onb-primary); color: #fff; font-weight: 700; display: grid; place-items: center; font-size: 16px; }
+.oc-onb-step__body h3 { margin: 4px 0 6px; font-size: 17px; }
+.oc-onb-step__body p { margin: 0 0 12px; color: var(--onb-ink-2); font-size: 15px; line-height: 1.55; }
+.oc-onb-step__links { display: flex; flex-wrap: wrap; gap: 8px; }
+.oc-onb-step__links .oc-onb-btn { text-decoration: none; }
+.oc-onb-done__mail { max-width: 52ch; margin: 18px auto 0; color: var(--onb-ink-2); }
+@media (max-width: 480px) { .oc-onb-step { grid-template-columns: 30px minmax(0, 1fr); gap: 10px; padding: 14px; } .oc-onb-step__n { width: 30px; height: 30px; font-size: 14px; } }
