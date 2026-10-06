@@ -13802,3 +13802,30 @@ msgstr "הצעות נוספות בסל"
 
 msgid "That category was not opened."
 msgstr "הקטגוריה הזו לא נפתחה."
+
+msgid "ChatGPT (OpenAI)"
+msgstr "ChatGPT (OpenAI)"
+
+msgid "ChatGPT"
+msgstr "ChatGPT"
+
+msgid "OpenAI does not fetch a feed from an address: the file is uploaded to the SFTP folder OpenAI gives you when the shop is onboarded for ChatGPT shopping and ads. Download the file from the card and upload it there; the content follows OpenAI's product file spec exactly."
+msgstr "OpenAI לא מושכת פיד מכתובת: הקובץ מועלה לתיקיית ה‑SFTP ש‑OpenAI נותנת כשהחנות מצטרפת לקניות ולפרסום ב‑ChatGPT. הורידו את הקובץ מהכרטיס והעלו אותו לשם; התוכן עומד במפרט קובץ המוצרים של OpenAI במדויק."
+
+msgid "Seller name"
+msgstr "שם המוכר"
+
+msgid "What ChatGPT names as the seller. Left empty, the legal name from the shop details screen is used, else the site name."
+msgstr "השם ש‑ChatGPT מציג כמוכר. ריק — נלקח השם המשפטי ממסך פרטי החנות, ואם אין, שם האתר."
+
+msgid "Returns window, in days"
+msgstr "חלון החזרות, בימים"
+
+msgid "14 is the Consumer Protection Law default. 0 says nothing about returns. The terms page is given as the returns policy."
+msgstr "14 הוא ברירת המחדל לפי חוק הגנת הצרכן. 0 לא אומר דבר על החזרות. עמוד התקנון נמסר כמדיניות ההחזרות."
+
+msgid "Zap: left empty, free shipping is declared. ChatGPT: left empty, nothing is said about shipping."
+msgstr "זאפ: ריק — מוצהר משלוח חינם. ChatGPT: ריק — לא נאמר דבר על משלוח."
+
+msgid "upload by SFTP — download the file"
+msgstr "העלאה ב‑SFTP — הורידו את הקובץ"

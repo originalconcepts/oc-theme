@@ -190,6 +190,8 @@ final class Feeds {
 			'delivery'  => '',
 			'warranty'  => '',
 			'shipcost'  => '',
+			'seller'    => '',
+			'returns'   => 14,
 			'made'      => 0,
 			'items'     => 0,
 			'skipped'   => 0,
@@ -213,8 +215,15 @@ final class Feeds {
 		$out = self::defaults();
 
 		$out['name']      = sanitize_text_field( (string) ( $raw['name'] ?? '' ) );
-		$out['target']    = in_array( (string) ( $raw['target'] ?? '' ), array( 'meta', 'google', 'tiktok', 'zap' ), true ) ? (string) $raw['target'] : 'meta';
+		$out['target']    = in_array( (string) ( $raw['target'] ?? '' ), array( 'meta', 'google', 'tiktok', 'openai', 'zap' ), true ) ? (string) $raw['target'] : 'meta';
 		$out['format']    = in_array( (string) ( $raw['format'] ?? '' ), array( 'xml', 'csv' ), true ) ? (string) $raw['format'] : 'xml';
+
+		// OpenAI's product file is a delimited file; there is no XML shape
+		// to offer, so the choice is made here rather than asked.
+		if ( 'openai' === $out['target'] ) {
+			$out['format'] = 'csv';
+		}
+
 		$out['every']     = in_array( (string) ( $raw['every'] ?? '' ), array( 'hourly', 'four', 'daily' ), true ) ? (string) $raw['every'] : 'hourly';
 		$out['in_stock']  = empty( $raw['in_stock'] ) ? 0 : 1;
 		$out['variants']  = empty( $raw['variants'] ) ? 0 : 1;
@@ -233,6 +242,8 @@ final class Feeds {
 		$out['delivery']  = sanitize_text_field( (string) ( $raw['delivery'] ?? '' ) );
 		$out['warranty']  = sanitize_text_field( (string) ( $raw['warranty'] ?? '' ) );
 		$out['shipcost']  = sanitize_text_field( (string) ( $raw['shipcost'] ?? '' ) );
+		$out['seller']    = sanitize_text_field( (string) ( $raw['seller'] ?? '' ) );
+		$out['returns']   = isset( $raw['returns'] ) && '' !== (string) $raw['returns'] ? absint( $raw['returns'] ) : 14;
 		$out['error']     = sanitize_text_field( (string) ( $raw['error'] ?? '' ) );
 		$out['condition'] = in_array( (string) ( $raw['condition'] ?? '' ), array( 'new', 'refurbished', 'used' ), true ) ? (string) $raw['condition'] : 'new';
 		$out['desc']      = in_array( (string) ( $raw['desc'] ?? '' ), array( 'short', 'long' ), true ) ? (string) $raw['desc'] : 'short';

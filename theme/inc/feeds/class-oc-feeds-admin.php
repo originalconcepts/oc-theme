@@ -169,6 +169,7 @@ final class Admin {
 			'meta'   => __( 'Meta catalogue', 'oc-theme' ),
 			'google' => __( 'Google Merchant Center', 'oc-theme' ),
 			'tiktok' => __( 'TikTok catalogue', 'oc-theme' ),
+			'openai' => __( 'ChatGPT (OpenAI)', 'oc-theme' ),
 			'zap'    => __( 'Zap', 'oc-theme' ),
 		);
 
@@ -218,6 +219,7 @@ final class Admin {
 							<button type="button" class="ocfeed__who is-on" data-ocfeed-who="meta"><?php esc_html_e( 'Meta', 'oc-theme' ); ?></button>
 							<button type="button" class="ocfeed__who" data-ocfeed-who="google"><?php esc_html_e( 'Google', 'oc-theme' ); ?></button>
 							<button type="button" class="ocfeed__who" data-ocfeed-who="tiktok"><?php esc_html_e( 'TikTok', 'oc-theme' ); ?></button>
+							<button type="button" class="ocfeed__who" data-ocfeed-who="openai"><?php esc_html_e( 'ChatGPT', 'oc-theme' ); ?></button>
 							<button type="button" class="ocfeed__who" data-ocfeed-who="zap"><?php esc_html_e( 'Zap', 'oc-theme' ); ?></button>
 						</span>
 					</label>
@@ -226,6 +228,10 @@ final class Admin {
 						<span><?php esc_html_e( 'Name', 'oc-theme' ); ?></span>
 						<input type="text" id="ocfeed-name" class="regular-text">
 					</label>
+
+					<p class="ocfeed__note" data-ocfeed-only="openai">
+						<?php esc_html_e( 'OpenAI does not fetch a feed from an address: the file is uploaded to the SFTP folder OpenAI gives you when the shop is onboarded for ChatGPT shopping and ads. Download the file from the card and upload it there; the content follows OpenAI\'s product file spec exactly.', 'oc-theme' ); ?>
+					</p>
 
 					<details class="ocfeed__more">
 						<summary><?php esc_html_e( 'Settings', 'oc-theme' ); ?></summary>
@@ -279,6 +285,20 @@ final class Admin {
 							<input type="text" id="ocfeed-gcat" class="regular-text ltr" placeholder="<?php esc_attr_e( 'e.g. 604', 'oc-theme' ); ?>">
 						</label>
 
+						<label class="ocfeed__f" data-ocfeed-only="openai">
+							<span><?php esc_html_e( 'Seller name', 'oc-theme' ); ?>
+								<small><?php esc_html_e( 'What ChatGPT names as the seller. Left empty, the legal name from the shop details screen is used, else the site name.', 'oc-theme' ); ?></small>
+							</span>
+							<input type="text" id="ocfeed-seller" class="regular-text" placeholder="<?php echo esc_attr( wp_specialchars_decode( (string) get_bloginfo( 'name' ), ENT_QUOTES ) ); ?>">
+						</label>
+
+						<label class="ocfeed__f" data-ocfeed-only="openai">
+							<span><?php esc_html_e( 'Returns window, in days', 'oc-theme' ); ?>
+								<small><?php esc_html_e( '14 is the Consumer Protection Law default. 0 says nothing about returns. The terms page is given as the returns policy.', 'oc-theme' ); ?></small>
+							</span>
+							<input type="number" min="0" max="365" id="ocfeed-returns" class="small-text ltr" value="14">
+						</label>
+
 						<label class="ocfeed__f" data-ocfeed-only="zap">
 							<span><?php esc_html_e( 'Delivery time', 'oc-theme' ); ?></span>
 							<input type="text" id="ocfeed-delivery" class="regular-text" placeholder="<?php esc_attr_e( 'e.g. 3-5 working days', 'oc-theme' ); ?>">
@@ -291,14 +311,14 @@ final class Admin {
 							<input type="text" id="ocfeed-warranty" class="regular-text" placeholder="<?php esc_attr_e( 'e.g. one year, importer', 'oc-theme' ); ?>">
 						</label>
 
-						<label class="ocfeed__f" data-ocfeed-only="zap">
+						<label class="ocfeed__f" data-ocfeed-only="zap openai">
 							<span><?php esc_html_e( 'Shipping price', 'oc-theme' ); ?>
-								<small><?php esc_html_e( 'Left empty and free shipping is declared.', 'oc-theme' ); ?></small>
+								<small><?php esc_html_e( 'Zap: left empty, free shipping is declared. ChatGPT: left empty, nothing is said about shipping.', 'oc-theme' ); ?></small>
 							</span>
 							<input type="text" id="ocfeed-shipcost" class="regular-text ltr" placeholder="<?php esc_attr_e( 'e.g. 49', 'oc-theme' ); ?>">
 						</label>
 
-						<label class="ocfeed__f ocfeed__check" data-ocfeed-only="zap">
+						<label class="ocfeed__f ocfeed__check" data-ocfeed-only="zap openai">
 							<input type="checkbox" id="ocfeed-ship">
 							<span><?php esc_html_e( 'Work the shipping price out per product', 'oc-theme' ); ?></span>
 						</label>
@@ -389,6 +409,9 @@ final class Admin {
 					<?php if ( empty( $feed['variants'] ) ) : ?>
 						<span class="ocfeed__chip"><?php esc_html_e( 'no variations', 'oc-theme' ); ?></span>
 					<?php endif; ?>
+					<?php if ( 'openai' === $feed['target'] ) : ?>
+						<span class="ocfeed__chip"><?php esc_html_e( 'upload by SFTP — download the file', 'oc-theme' ); ?></span>
+					<?php endif; ?>
 				</div>
 
 				<div class="ocfeed__acts">
@@ -423,6 +446,8 @@ final class Admin {
 			'delivery' => (string) $feed['delivery'],
 			'warranty' => (string) $feed['warranty'],
 			'shipcost' => (string) $feed['shipcost'],
+			'seller'   => (string) $feed['seller'],
+			'returns'  => (int) $feed['returns'],
 			'in_stock' => (int) $feed['in_stock'],
 			'variants' => (int) $feed['variants'],
 			'ship'     => (int) $feed['ship'],
@@ -444,6 +469,8 @@ final class Admin {
 		.ocfeed__who-tag--meta { background: #e7f0fd; color: #0b5cd5; }
 		.ocfeed__who-tag--google { background: #e6f4ea; color: #137333; }
 		.ocfeed__who-tag--zap { background: #fdecea; color: #b3261e; }
+		.ocfeed__who-tag--openai { background: #e9e7fb; color: #4b3fb3; }
+		.ocfeed__note { margin: 0 0 14px; padding: 10px 12px; background: #f6f7f7; border-radius: 6px; color: #50575e; font-size: 12.5px; line-height: 1.5; }
 		.ocfeed__body b { display: block; font-size: 14px; }
 		.ocfeed__meta { font-size: 12px; color: #646970; }
 		.ocfeed__chip { display: inline-block; font-size: 11px; background: #f0f0f1; border-radius: 4px; padding: 1px 6px; margin-inline-start: 6px; color: #646970; }
@@ -543,6 +570,12 @@ final class Admin {
 					document.querySelectorAll( '[data-ocfeed-who]' ).forEach( function ( o ) {
 						o.classList.toggle( 'is-on', o === b );
 					} );
+					// A new ChatGPT feed starts with the full description: the
+					// model answers shoppers' questions from it, so the more
+					// it is told the better. An existing feed keeps its choice.
+					if ( 'openai' === who && ! editing ) {
+						document.getElementById( 'ocfeed-desc' ).value = 'long';
+					}
 					onlyFor();
 				} );
 			} );
@@ -557,6 +590,8 @@ final class Admin {
 				document.getElementById( 'ocfeed-delivery' ).value = feed.delivery || '';
 				document.getElementById( 'ocfeed-warranty' ).value = feed.warranty || '';
 				document.getElementById( 'ocfeed-shipcost' ).value = feed.shipcost || '';
+				document.getElementById( 'ocfeed-seller' ).value = feed.seller || '';
+				document.getElementById( 'ocfeed-returns' ).value = undefined === feed.returns ? 14 : feed.returns;
 				document.getElementById( 'ocfeed-instock' ).checked = !! Number( feed.in_stock );
 				document.getElementById( 'ocfeed-variants' ).checked = undefined === feed.variants ? true : !! Number( feed.variants );
 				document.getElementById( 'ocfeed-ship' ).checked = !! Number( feed.ship );
@@ -618,6 +653,8 @@ final class Admin {
 						delivery: document.getElementById( 'ocfeed-delivery' ).value,
 						warranty: document.getElementById( 'ocfeed-warranty' ).value,
 						shipcost: document.getElementById( 'ocfeed-shipcost' ).value,
+						seller: document.getElementById( 'ocfeed-seller' ).value,
+						returns: document.getElementById( 'ocfeed-returns' ).value,
 						in_stock: document.getElementById( 'ocfeed-instock' ).checked ? 1 : 0,
 						variants: document.getElementById( 'ocfeed-variants' ).checked ? 1 : 0,
 						ship: document.getElementById( 'ocfeed-ship' ).checked ? 1 : 0,

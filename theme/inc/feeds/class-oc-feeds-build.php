@@ -472,6 +472,52 @@ final class Build {
 	 * @return array<int,string>
 	 */
 	private static function columns( array $feed ): array {
+		// OpenAI's product file (developers.openai.com/commerce/specs/
+		// file-upload/products): its own names, required columns first,
+		// then the variant group, then everything a shopper asks ChatGPT
+		// about — pictures, price, returns, reviews. Booleans are the words
+		// true/false; objects and lists are JSON inside the cell.
+		if ( 'openai' === $feed['target'] ) {
+			return array(
+				'item_id',
+				'title',
+				'description',
+				'url',
+				'brand',
+				'image_url',
+				'price',
+				'availability',
+				'seller_name',
+				'is_eligible_search',
+				'is_eligible_checkout',
+				'is_ads_eligible',
+				'group_id',
+				'listing_has_variations',
+				'variant_dict',
+				'gtin',
+				'mpn',
+				'condition',
+				'product_category',
+				'color',
+				'size',
+				'weight',
+				'item_weight_unit',
+				'additional_image_urls',
+				'sale_price',
+				'shipping_price',
+				'seller_url',
+				'seller_privacy_policy',
+				'seller_tos',
+				'accepts_returns',
+				'return_deadline_in_days',
+				'return_policy',
+				'review_count',
+				'star_rating',
+				'target_countries',
+				'store_country',
+			);
+		}
+
 		// TikTok's template, in TikTok's order. Its nine required columns
 		// come first; sku_id is what it calls the id.
 		if ( 'tiktok' === $feed['target'] ) {
@@ -572,6 +618,10 @@ final class Build {
 	private static function row( array $it, array $feed ): string {
 		if ( 'zap' === $feed['target'] ) {
 			return self::zap_row( $it, $feed );
+		}
+
+		if ( 'openai' === $feed['target'] ) {
+			return self::openai_row( $it, $feed );
 		}
 
 		$google = 'google' === $feed['target'];
@@ -681,6 +731,122 @@ final class Build {
 		}
 
 		return $out . '</item>' . "\n";
+	}
+
+	/**
+	 * One item, as OpenAI's product file reads it.
+	 *
+	 * What the spec insists on and a WooCommerce shop does not naturally
+	 * have: a brand on every line (the shop's name stands in), a seller
+	 * name, a price that is strictly above the sale price, variants tied
+	 * by group_id with their options spelled out in variant_dict, and
+	 * optional fields left EMPTY when unknown — never "n/a" or "unknown".
+	 *
+	 * @param array<string,mixed> $it   Item fields.
+	 * @param array<string,mixed> $feed Feed.
+	 */
+	private static function openai_row( array $it, array $feed ): string {
+		$money = static function ( float $n ): string {
+			return number_format( $n, 2, '.', '' ) . ' ' . get_woocommerce_currency();
+		};
+		$json  = static function ( $value ): string {
+			return (string) wp_json_encode( $value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
+		};
+		$shop  = wp_specialchars_decode( (string) get_bloginfo( 'name' ), ENT_QUOTES );
+
+		$brand = '' !== $it['brand'] ? $it['brand'] : $shop;
+
+		// The seller: the feed's own answer, else the legal name from the
+		// shop details screen, else the site's name.
+		$seller = (string) $feed['seller'];
+
+		if ( '' === $seller && class_exists( '\OC\Theme\Contact' ) && method_exists( '\OC\Theme\Contact', 'get' ) ) {
+			$seller = (string) \OC\Theme\Contact::get( 'company' );
+		}
+
+		if ( '' === $seller ) {
+			$seller = $shop;
+		}
+
+		$variant = $it['id'] !== $it['group'];
+		$terms   = function_exists( 'wc_terms_and_conditions_page_id' ) ? (int) wc_terms_and_conditions_page_id() : 0;
+		$tos     = $terms > 0 ? (string) get_permalink( $terms ) : '';
+		$privacy = (string) get_privacy_policy_url();
+		$returns = (int) $feed['returns'];
+		$country = function_exists( 'WC' ) && isset( WC()->countries ) ? strtoupper( (string) WC()->countries->get_base_country() ) : '';
+
+		// Woo's weight units against the file's.
+		$units  = array(
+			'kg'  => 'kg',
+			'g'   => 'g',
+			'lbs' => 'lb',
+			'oz'  => 'oz',
+		);
+		$unit   = $units[ (string) get_option( 'woocommerce_weight_unit', 'kg' ) ] ?? '';
+		$weight = '' !== $it['weight'] && (float) $it['weight'] > 0 && '' !== $unit ? (string) (float) $it['weight'] : '';
+
+		// Extra pictures are one comma-joined cell; a comma inside an
+		// address has to be hidden from that join.
+		$more = array_map(
+			static function ( string $url ): string {
+				return str_replace( ',', '%2C', $url );
+			},
+			(array) $it['gallery']
+		);
+
+		// A shipping price the shop can state; left empty the file says
+		// nothing, which the spec reads as unknown rather than free.
+		$shipping = '' !== (string) $it['ship'] ? (string) $it['ship'] : (string) $feed['shipcost'];
+		$shipping = is_numeric( $shipping ) ? $money( (float) $shipping ) : '';
+
+		$values = array(
+			'item_id'                 => $it['sku'] !== '' ? $it['sku'] . '-' . $it['id'] : $it['id'],
+			'title'                   => $it['title'],
+			'description'             => $it['desc'],
+			'url'                     => $it['link'],
+			'brand'                   => $brand,
+			'image_url'               => $it['image'],
+			'price'                   => $money( (float) $it['price'] ),
+			'availability'            => self::availability( (bool) $it['stock'], ! empty( $it['later'] ), true ),
+			'seller_name'             => $seller,
+			// Searchable and advertisable; checkout inside ChatGPT needs an
+			// integration the shop sets up with OpenAI first, so it is off.
+			'is_eligible_search'      => 'true',
+			'is_eligible_checkout'    => 'false',
+			'is_ads_eligible'         => 'true',
+			'group_id'                => $variant ? $it['group'] : '',
+			'listing_has_variations'  => $variant ? 'true' : '',
+			'variant_dict'            => $variant && ! empty( $it['opts'] ) ? $json( $it['opts'] ) : '',
+			'gtin'                    => $it['gtin'],
+			'mpn'                     => $it['mpn'],
+			'condition'               => (string) $feed['condition'],
+			'product_category'        => $it['cats'][0] ?? '',
+			'color'                   => $it['colour'],
+			'size'                    => $it['size'],
+			'weight'                  => $weight,
+			'item_weight_unit'        => '' !== $weight ? $unit : '',
+			'additional_image_urls'   => implode( ',', $more ),
+			'sale_price'              => $it['sale'] > 0 && $it['sale'] < $it['price'] ? $money( (float) $it['sale'] ) : '',
+			'shipping_price'          => $shipping,
+			'seller_url'              => home_url( '/' ),
+			'seller_privacy_policy'   => $privacy,
+			'seller_tos'              => $tos,
+			'accepts_returns'         => $returns > 0 ? 'true' : '',
+			'return_deadline_in_days' => $returns > 0 ? (string) $returns : '',
+			'return_policy'           => $returns > 0 ? $tos : '',
+			'review_count'            => (int) $it['reviews'] > 0 ? (string) (int) $it['reviews'] : '',
+			'star_rating'             => (int) $it['reviews'] > 0 && (float) $it['rating'] > 0 ? number_format( (float) $it['rating'], 2, '.', '' ) : '',
+			'target_countries'        => '' !== $country ? $json( array( $country ) ) : '',
+			'store_country'           => $country,
+		);
+
+		$cells = array();
+
+		foreach ( self::columns( $feed ) as $column ) {
+			$cells[] = '"' . str_replace( '"', '""', (string) ( $values[ $column ] ?? '' ) ) . '"';
+		}
+
+		return implode( ',', $cells ) . "\n";
 	}
 
 	/**
@@ -1003,7 +1169,50 @@ final class Build {
 			'weight'    => (string) $item->get_weight(),
 			'ship'      => empty( $feed['ship'] ) ? '' : self::ship( $item ),
 			'says'      => self::says( $owner ),
+			'opts'      => self::options( $item, $owner ),
+			'reviews'   => (int) $owner->get_review_count(),
+			'rating'    => (float) $owner->get_average_rating(),
 		);
+	}
+
+	/**
+	 * A variation's choices, by the names a shopper reads: the attribute's
+	 * label and the term's name, not the slugs WooCommerce stores.
+	 *
+	 * @param \WC_Product $item  Item.
+	 * @param \WC_Product $owner Its product.
+	 * @return array<string,string>
+	 */
+	private static function options( \WC_Product $item, \WC_Product $owner ): array {
+		if ( ! $item instanceof \WC_Product_Variation ) {
+			return array();
+		}
+
+		$out = array();
+
+		foreach ( $item->get_variation_attributes() as $name => $slug ) {
+			$slug = (string) $slug;
+
+			if ( '' === $slug ) {
+				continue; // "Any …" — nothing was chosen for this line.
+			}
+
+			$tax   = str_replace( 'attribute_', '', (string) $name );
+			$label = wc_attribute_label( $tax, $owner );
+			$value = $slug;
+
+			if ( taxonomy_exists( $tax ) ) {
+				$term = get_term_by( 'slug', $slug, $tax );
+
+				if ( $term instanceof \WP_Term ) {
+					$value = $term->name;
+				}
+			}
+
+			$out[ '' !== $label ? $label : $tax ] = $value;
+		}
+
+		return $out;
 	}
 
 	/**
