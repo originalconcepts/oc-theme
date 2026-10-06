@@ -1273,3 +1273,6 @@ button.oc-onb-steps__i { cursor: pointer; }
 	font-size: 13px;
 	opacity: .75;
 }
+
+/* A step with somewhere to go: the link stands out from the sentence. */
+.oc-onb-next__go { font-weight: 600; color: var(--onb-primary); text-decoration: underline; white-space: nowrap; }

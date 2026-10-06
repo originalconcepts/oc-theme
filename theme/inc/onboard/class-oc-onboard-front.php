@@ -97,6 +97,9 @@ final class Front {
 			// No key on this site means no button, rather than a button
 			// that apologises every time it is pressed.
 			'canWrite'   => Writer::can(),
+			// Once the answers are on the site, the link opens on the last
+			// screen -- what is still theirs to do -- not on the summary.
+			'todo'       => 'applied' === (string) $state['status'] ? Onboard::todo() : array(),
 			'days'       => $days,
 			'disclaimer' => Consent::text(),
 			'art'        => Art::all(),

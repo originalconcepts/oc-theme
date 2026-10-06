@@ -13604,3 +13604,60 @@ msgstr "אפשר לשנות את זה בכל עת; ביטול הסימון מפ�
 
 msgid "Filled once on the base site and cloned with it. The AI key is deleted from a customer site when the apply finishes."
 msgstr "ממולא פעם אחת באתר ה-base ומשוכפל איתו. מפתח ה-AI נמחק מאתר הלקוח כשההחלה מסתיימת."
+
+msgid "They use a clearing company we do not install ourselves."
+msgstr "הם משתמשים בחברת סליקה שאנחנו לא מתקינים בעצמנו."
+
+msgid "The menu stands on the banner, so the logo stands on the picture; a dark one cannot be seen there."
+msgstr "התפריט עומד על הבאנר, אז גם הלוגו עומד על התמונה; לוגו כהה לא נראה שם."
+
+msgid "Open a clearing account, so the shop can take credit cards. We work with PayPlus, an Israeli clearing company that is already connected to your site: open the link, leave your details, and they call you back. Worth starting today — it is the one thing with a waiting time, and the shop cannot open without it."
+msgstr "לפתוח חשבון סליקה, כדי שהחנות תוכל לקבל כרטיסי אשראי. אנחנו עובדים עם PayPlus, חברת סליקה ישראלית שכבר מחוברת לאתר שלכם: היכנסו לקישור, השאירו פרטים, והם חוזרים אליכם. כדאי להתחיל כבר היום — זה הדבר היחיד עם זמן המתנה, והחנות לא יכולה להיפתח בלעדיו."
+
+msgid "Open an account at PayPlus"
+msgstr "פתיחת חשבון ב-PayPlus"
+
+msgid "Send us your clearing details — the terminal and the API keys from your clearing company. The gateway is installed and waiting for them, switched off until they are in."
+msgstr "שלחו לנו את פרטי הסליקה — מספר הטרמינל ומפתחות ה-API מחברת הסליקה שלכם. השער מותקן ומחכה להם, כבוי עד שיוזנו."
+
+msgid "Send us your logo — the file itself, PNG with a see-through background or SVG, as large as you have it. Reply to this email with it."
+msgstr "שלחו לנו את הלוגו — הקובץ עצמו, PNG עם רקע שקוף או SVG, בגודל הכי גדול שיש לכם. השיבו למייל הזה עם הקובץ."
+
+msgid "And a light version of the logo, if you have one: your menu stands on the banner picture, and a dark logo cannot be seen there. No light version? We make one."
+msgstr "וגם גרסה בהירה של הלוגו, אם יש לכם: התפריט שלכם עומד על תמונת הבאנר, ולוגו כהה לא נראה שם. אין גרסה בהירה? אנחנו נכין."
+
+msgid "Send us one picture for each of these categories — it becomes the banner at the top of the category and its tile on the home page: %s"
+msgstr "שלחו לנו תמונה אחת לכל אחת מהקטגוריות האלה — היא הופכת לבאנר בראש הקטגוריה ולאריח שלה בדף הבית: %s"
+
+msgid " and %d more"
+msgstr " ועוד %d"
+
+msgid "the terms of sale"
+msgstr "את התקנון"
+
+msgid "the privacy policy"
+msgstr "את מדיניות הפרטיות"
+
+msgid "the accessibility statement"
+msgstr "את הצהרת הנגישות"
+
+msgid "Send us %s — you said you had your own, and the file did not arrive."
+msgstr "שלחו לנו %s — אמרתם שיש לכם משלכם, והקובץ לא הגיע."
+
+msgid "Send us the text of %s — we could not read it from your current site."
+msgstr "שלחו לנו את הטקסט של %s — לא הצלחנו לקרוא אותו מהאתר הנוכחי שלכם."
+
+msgid "Send us the text for the About page — we could not read it from your current site."
+msgstr "שלחו לנו את הטקסט לעמוד האודות — לא הצלחנו לקרוא אותו מהאתר הנוכחי שלכם."
+
+msgid "Tell us which domain the shop should open at, or that you would like us to register one for you."
+msgstr "אמרו לנו באיזה דומיין החנות תיפתח, או שתרצו שנרשום אחד בשבילכם."
+
+msgid "Send us the links to your social profiles, so the footer and the thank-you page can point to them."
+msgstr "שלחו לנו את הקישורים לרשתות החברתיות שלכם, כדי שהפוטר ודף התודה יוכלו להפנות אליהם."
+
+msgid "From the apply"
+msgstr "מההחלה"
+
+msgid "And always"
+msgstr "ותמיד"

@@ -41,6 +41,11 @@ final class Onboard {
 	const COPY_TO = 'george@originalconcepts.co.il';
 
 	/**
+	 * Where a shop with no clearing company opens one: our PayPlus link.
+	 */
+	const PAYPLUS = 'https://aff.pays.plus/2ed72e6e-e9b2-420e-b3a2-50cf476309d2?ref=';
+
+	/**
 	 * Hook in.
 	 */
 	public function register(): void {
@@ -187,44 +192,100 @@ final class Onboard {
 	}
 
 	/**
-	 * What is still theirs to do, read from the answers they gave.
+	 * What is theirs to do, in their words, from the same facts the tile
+	 * reads. Each item is a sentence, and some carry a link — the one
+	 * place to open a clearing account, say — so the page and the mail can
+	 * offer it as a button rather than as an address to copy.
 	 *
-	 * The questionnaire lets a shop get to the end without the things it
-	 * does not have to hand — the clearing details above all. Saying so at
-	 * the end, in their own terms, is the difference between a list of
-	 * tasks and a vague sense that something is unfinished.
-	 *
-	 * @return array<int,string>
+	 * @return array<int,array{text:string,url:string,link:string}>
 	 */
 	public static function todo(): array {
-		$v    = static function ( string $id ) {
-			return Draft::value( $id );
-		};
 		$out  = array();
-		$gw   = (string) $v( 'pay_gw' );
-		$name = array(
-			'cardcom' => 'Cardcom',
-			'payplus' => 'PayPlus',
-		);
+		$gaps = array();
 
-		if ( 'none' === $gw ) {
-			$out[] = __( 'Open a clearing account so the shop can take card payments. We send you the link to PayPlus — leave your details there and they come back to you. Everything else is already built and waiting for it.', 'oc-theme' );
-		} elseif ( 'other' === $gw ) {
-			$told = trim( (string) $v( 'pay_other' ) );
+		foreach ( self::gaps() as $g ) {
+			$gaps[ $g['key'] ] = $g;
+		}
 
-			$out[] = '' !== $told
-				/* translators: %s: the clearing company they named. */
-				? sprintf( __( 'Send us the details for %s and we connect it. It is not one of the two we install ourselves, so that part is by hand.', 'oc-theme' ), $told )
-				: __( 'Tell us which clearing company you use and send us its details, and we connect it.', 'oc-theme' );
-		} elseif ( isset( $name[ $gw ] ) && 'later' === (string) $v( 'pay_when' ) ) {
-			$out[] = 'cardcom' === $gw
-				? __( 'Fill in the Cardcom details — the terminal number, the API user and its password. The gateway is installed and waiting for them, and switched off until they are in.', 'oc-theme' )
-				: __( 'Fill in the PayPlus details — the API key, the secret key and the payment-page id. The gateway is installed and waiting for them, and switched off until they are in.', 'oc-theme' );
+		$say = static function ( string $text, string $url = '', string $link = '' ) use ( &$out ) {
+			$out[] = array(
+				'text' => $text,
+				'url'  => $url,
+				'link' => $link,
+			);
+		};
+
+		// Money first: nothing else they do matters until the shop can be
+		// paid, and opening an account takes days, not minutes.
+		if ( isset( $gaps['payments'] ) ) {
+			switch ( $gaps['payments']['cause'] ) {
+				case 'no_company':
+					$say(
+						__( 'Open a clearing account, so the shop can take credit cards. We work with PayPlus, an Israeli clearing company that is already connected to your site: open the link, leave your details, and they call you back. Worth starting today — it is the one thing with a waiting time, and the shop cannot open without it.', 'oc-theme' ),
+						self::PAYPLUS,
+						__( 'Open an account at PayPlus', 'oc-theme' )
+					);
+					break;
+				case 'other_company':
+					$say( __( 'Send us the details of your clearing company and we connect it. It is not one of the two we install ourselves, so that part is by hand.', 'oc-theme' ) );
+					break;
+				case 'fill_later':
+					$say( __( 'Send us your clearing details — the terminal and the API keys from your clearing company. The gateway is installed and waiting for them, switched off until they are in.', 'oc-theme' ) );
+					break;
+			}
+		}
+
+		if ( isset( $gaps['logo'] ) ) {
+			$say( __( 'Send us your logo — the file itself, PNG with a see-through background or SVG, as large as you have it. Reply to this email with it.', 'oc-theme' ) );
+		}
+
+		if ( isset( $gaps['logolight'] ) ) {
+			$say( __( 'And a light version of the logo, if you have one: your menu stands on the banner picture, and a dark logo cannot be seen there. No light version? We make one.', 'oc-theme' ) );
+		}
+
+		if ( isset( $gaps['catpics'] ) ) {
+			$names = (array) $gaps['catpics']['items'];
+			$shown = array_slice( $names, 0, 8 );
+			$more  = count( $names ) - count( $shown );
+
+			$say(
+				sprintf(
+					/* translators: %s: the category names. */
+					__( 'Send us one picture for each of these categories — it becomes the banner at the top of the category and its tile on the home page: %s', 'oc-theme' ),
+					implode( ', ', $shown ) . ( $more > 0 ? sprintf( /* translators: %d: how many more. */ __( ' and %d more', 'oc-theme' ), $more ) : '' )
+				)
+			);
+		}
+
+		foreach ( array( 'terms' => __( 'the terms of sale', 'oc-theme' ), 'privacy' => __( 'the privacy policy', 'oc-theme' ), 'a11y' => __( 'the accessibility statement', 'oc-theme' ) ) as $key => $what ) {
+			if ( ! isset( $gaps[ $key ] ) ) {
+				continue;
+			}
+
+			if ( 'no_file' === $gaps[ $key ]['cause'] ) {
+				/* translators: %s: which page. */
+				$say( sprintf( __( 'Send us %s — you said you had your own, and the file did not arrive.', 'oc-theme' ), $what ) );
+			} elseif ( 'link_failed' === $gaps[ $key ]['cause'] ) {
+				/* translators: %s: which page. */
+				$say( sprintf( __( 'Send us the text of %s — we could not read it from your current site.', 'oc-theme' ), $what ) );
+			}
+		}
+
+		if ( isset( $gaps['about'] ) && 'link_failed' === ( $gaps['about']['cause'] ?? '' ) ) {
+			$say( __( 'Send us the text for the About page — we could not read it from your current site.', 'oc-theme' ) );
+		}
+
+		if ( isset( $gaps['domain'] ) && 'no_domain' === $gaps['domain']['cause'] ) {
+			$say( __( 'Tell us which domain the shop should open at, or that you would like us to register one for you.', 'oc-theme' ) );
+		}
+
+		if ( isset( $gaps['social'] ) ) {
+			$say( __( 'Send us the links to your social profiles, so the footer and the thank-you page can point to them.', 'oc-theme' ) );
 		}
 
 		// A shop with nothing on its shelves is not a shop, and this is the
 		// one thing nobody else can do for them.
-		$out[] = __( 'Gather your products — the names, the prices and a picture of each. That is the one thing we cannot do without you.', 'oc-theme' );
+		$say( __( 'Gather your products — the names, the prices and a picture of each. That is the one thing we cannot do without you.', 'oc-theme' ) );
 
 		return $out;
 	}
@@ -245,13 +306,17 @@ final class Onboard {
 		$v   = static function ( string $id ) {
 			return Draft::value( $id );
 		};
-		$add = static function ( string $key, bool $must, string $label, string $why, string $fix ) use ( &$out ) {
+		$add = static function ( string $key, bool $must, string $label, string $why, string $fix, string $cause = '', array $items = array() ) use ( &$out ) {
 			$out[] = array(
 				'key'   => $key,
 				'must'  => $must,
 				'label' => $label,
 				'why'   => $why,
 				'fix'   => $fix,
+				// A word for the code to branch on; 'why' is for people.
+				'cause' => $cause,
+				// Names, where a count alone would not say what to send.
+				'items' => $items,
 			);
 		};
 
@@ -282,14 +347,17 @@ final class Onboard {
 			}
 
 			if ( 'upload' === $mode && empty( $file['id'] ) ) {
-				$why = __( 'They said they would upload their own and did not.', 'oc-theme' );
+				$why   = __( 'They said they would upload their own and did not.', 'oc-theme' );
+				$cause = 'no_file';
 			} elseif ( 'link' === $mode ) {
-				$why = __( 'It was to be taken from their current site, and the page could not be read.', 'oc-theme' );
+				$why   = __( 'It was to be taken from their current site, and the page could not be read.', 'oc-theme' );
+				$cause = 'link_failed';
 			} else {
-				$why = __( 'The page is not on the site.', 'oc-theme' );
+				$why   = __( 'The page is not on the site.', 'oc-theme' );
+				$cause = 'missing';
 			}
 
-			$add( $key, true, $label, $why, $id > 0 ? get_edit_post_link( $id, 'raw' ) : admin_url( 'edit.php?post_type=page' ) );
+			$add( $key, true, $label, $why, $id > 0 ? get_edit_post_link( $id, 'raw' ) : admin_url( 'edit.php?post_type=page' ), $cause );
 		}
 
 		$ship = false;
@@ -320,14 +388,17 @@ final class Onboard {
 		}
 
 		if ( ! $pay ) {
-			$kept = (array) get_option( 'oc_onboard_pay', array() );
-			$why  = ! empty( $kept['fill_later'] )
-				? __( 'They left the clearing details for later; the gateway is installed and off until they are in.', 'oc-theme' )
-				: ( 'none' === (string) ( $kept['gateway'] ?? '' )
-					? __( 'They have no clearing company yet.', 'oc-theme' )
-					: __( 'No way to pay is switched on.', 'oc-theme' ) );
+			$kept  = (array) get_option( 'oc_onboard_pay', array() );
+			$gw    = (string) ( $kept['gateway'] ?? '' );
+			$cause = ! empty( $kept['fill_later'] ) ? 'fill_later' : ( 'none' === $gw ? 'no_company' : ( 'other' === $gw ? 'other_company' : 'off' ) );
+			$why   = array(
+				'fill_later'    => __( 'They left the clearing details for later; the gateway is installed and off until they are in.', 'oc-theme' ),
+				'no_company'    => __( 'They have no clearing company yet.', 'oc-theme' ),
+				'other_company' => __( 'They use a clearing company we do not install ourselves.', 'oc-theme' ),
+				'off'           => __( 'No way to pay is switched on.', 'oc-theme' ),
+			);
 
-			$add( 'payments', true, __( 'Taking the money', 'oc-theme' ), $why, admin_url( 'admin.php?page=wc-settings&tab=checkout' ) );
+			$add( 'payments', true, __( 'Taking the money', 'oc-theme' ), $why[ $cause ], admin_url( 'admin.php?page=wc-settings&tab=checkout' ), $cause );
 		}
 
 		$real = 0;
@@ -356,7 +427,8 @@ final class Onboard {
 				true,
 				__( 'Products', 'oc-theme' ),
 				$demo > 0 ? __( 'Only test products are on the shop.', 'oc-theme' ) : __( 'There are no products yet.', 'oc-theme' ),
-				admin_url( 'edit.php?post_type=product' )
+				admin_url( 'edit.php?post_type=product' ),
+				$demo > 0 ? 'demo_only' : 'none'
 			);
 		}
 
@@ -373,11 +445,18 @@ final class Onboard {
 					/* translators: %s: the domain they gave. */
 					? sprintf( __( 'The site is still at its temporary address; it was to open at %s.', 'oc-theme' ), $want )
 					: __( 'The site is still at its temporary address, and no domain was given.', 'oc-theme' ),
-				''
+				'',
+				'' !== $want ? 'ours' : 'no_domain'
 			);
 		}
 
 		// --- worth doing, not a wall ---
+
+		// The menu stands on the banner and the logo has no light version:
+		// a dark mark on a dark photograph.
+		if ( 'home' === (string) get_theme_mod( 'oc_header_transparent', 'none' ) && '' === (string) get_theme_mod( 'oc_logo_transparent', '' ) ) {
+			$add( 'logolight', false, __( 'A light version of the logo', 'oc-theme' ), __( 'The menu stands on the banner, so the logo stands on the picture; a dark one cannot be seen there.', 'oc-theme' ), admin_url( 'customize.php?autofocus[control]=oc_logo_transparent' ) );
+		}
 
 		$c = class_exists( '\\OC\\Theme\\Contact' ) ? (array) Contact::settings() : array();
 
@@ -410,24 +489,26 @@ final class Onboard {
 			$add( 'about', false, __( 'About page', 'oc-theme' ), $why, $about > 0 ? get_edit_post_link( $about, 'raw' ) : admin_url( 'edit.php?post_type=page' ) );
 		}
 
-		$bare = 0;
+		$bare = array();
 		$cats = get_terms(
 			array(
 				'taxonomy'   => 'product_cat',
 				'hide_empty' => false,
-				'fields'     => 'ids',
+				'orderby'    => 'name',
 			)
 		);
 
-		foreach ( is_wp_error( $cats ) ? array() : $cats as $tid ) {
-			if ( (int) $tid !== (int) get_option( 'default_product_cat' ) && ! get_term_meta( (int) $tid, 'thumbnail_id', true ) ) {
-				++$bare;
+		foreach ( is_wp_error( $cats ) ? array() : $cats as $cat ) {
+			if ( (int) $cat->term_id !== (int) get_option( 'default_product_cat' ) && ! get_term_meta( (int) $cat->term_id, 'thumbnail_id', true ) ) {
+				$bare[] = (string) $cat->name;
 			}
 		}
 
-		if ( $bare > 0 ) {
+		if ( $bare ) {
+			$n = count( $bare );
+
 			/* translators: %d: how many categories have no picture. */
-			$add( 'catpics', false, __( 'Category pictures', 'oc-theme' ), sprintf( _n( '%d category has no main picture, so no banner and no tile.', '%d categories have no main picture, so no banner and no tile.', $bare, 'oc-theme' ), $bare ), admin_url( 'edit-tags.php?taxonomy=product_cat&post_type=product' ) );
+			$add( 'catpics', false, __( 'Category pictures', 'oc-theme' ), sprintf( _n( '%d category has no main picture, so no banner and no tile.', '%d categories have no main picture, so no banner and no tile.', $n, 'oc-theme' ), $n ), admin_url( 'edit-tags.php?taxonomy=product_cat&post_type=product' ), '', $bare );
 		}
 
 		return $out;

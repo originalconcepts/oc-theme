@@ -4341,7 +4341,21 @@
 		if ( ( todo || [] ).length ) {
 			var mine = el( 'ul', { 'class': 'oc-onb-next oc-onb-next--mine' } );
 
-			todo.forEach( function ( t ) { mine.appendChild( el( 'li', { text: t } ) ); } );
+			todo.forEach( function ( t ) {
+				// A sentence, and sometimes a place to go -- the one link to
+				// open a clearing account, say -- offered as a link, not as
+				// an address to copy.
+				if ( 'string' === typeof t ) { mine.appendChild( el( 'li', { text: t } ) ); return; }
+
+				var li = el( 'li', { text: t.text || '' } );
+
+				if ( t.url ) {
+					li.appendChild( document.createTextNode( ' ' ) );
+					li.appendChild( el( 'a', { 'class': 'oc-onb-next__go', href: t.url, target: '_blank', rel: 'noopener', text: ( t.link || t.url ) + ' \u203a' } ) );
+				}
+
+				mine.appendChild( li );
+			} );
 			kids.push( el( 'h2', { 'class': 'oc-onb-next__h', text: I.done_yours } ) );
 			kids.push( mine );
 		}
@@ -4398,8 +4412,10 @@
 
 	if ( jump >= 0 ) {
 		go( jump );
-	} else if ( C.status === 'applied' && C.step === 'summary' ) {
-		go( screens.length );
+	} else if ( C.status === 'applied' ) {
+		// Reopened after the answers went in: the last screen, with what is
+		// still theirs to do -- not the summary, and not the questions.
+		renderDone( C.todo || [] );
 	} else {
 		renderWelcome();
 	}

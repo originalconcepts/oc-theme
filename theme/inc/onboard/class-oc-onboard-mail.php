@@ -155,25 +155,40 @@ final class Mail {
 		$state = Onboard::state();
 		$to    = (string) $state['client']['email'];
 
-		$todo = Onboard::todo();
-		$mine = '';
-
-		foreach ( $todo as $one ) {
-			$mine .= '<li>' . esc_html( $one ) . '</li>';
-		}
-
 		if ( is_email( $to ) ) {
-			self::send(
-				$to,
-				__( 'We got it — your site is being built', 'oc-theme' ),
-				self::greeting( (string) $state['client']['name'] )
-				. '<p>' . esc_html__( 'Thank you! Everything you answered is already written into your site.', 'oc-theme' ) . '</p>'
-				. ( '' === $mine ? '' : '<p><strong>' . esc_html__( 'What is left for you', 'oc-theme' ) . '</strong></p><ul>' . $mine . '</ul>' )
-				. '<p>' . esc_html__( 'We go over everything that was built, load your products once you have them ready, and go over the site with you before it goes live.', 'oc-theme' ) . '</p>'
-				. '<p class="small">' . esc_html__( 'Something to change? Write to us and we will do it — no need to fill anything in again.', 'oc-theme' ) . '</p>'
-			);
+			self::send( $to, __( 'We got it — your site is being built', 'oc-theme' ), self::customer_done_html() );
 		}
 
+		self::send( Onboard::COPY_TO, sprintf( /* translators: %s: site host */ __( 'Questionnaire done: %s', 'oc-theme' ), self::host() ), self::team_done_html( $report ), false );
+	}
+
+	/**
+	 * The customer's thank-you, with what is theirs to do.
+	 */
+	public static function customer_done_html(): string {
+		$state = Onboard::state();
+		$mine  = '';
+
+		foreach ( Onboard::todo() as $one ) {
+			$mine .= '<li style="margin:0 0 10px">' . esc_html( $one['text'] )
+				. ( '' === $one['url'] ? '' : ' <a href="' . esc_url( $one['url'] ) . '" style="font-weight:600">' . esc_html( $one['link'] ) . ' &rsaquo;</a>' )
+				. '</li>';
+		}
+
+		return self::greeting( (string) $state['client']['name'] )
+			. '<p>' . esc_html__( 'Thank you! Everything you answered is already written into your site.', 'oc-theme' ) . '</p>'
+			. ( '' === $mine ? '' : '<p><strong>' . esc_html__( 'What is left for you', 'oc-theme' ) . '</strong></p><ul>' . $mine . '</ul>' )
+			. '<p>' . esc_html__( 'We go over everything that was built, load your products once you have them ready, and go over the site with you before it goes live.', 'oc-theme' ) . '</p>'
+			. '<p class="small">' . esc_html__( 'Something to change? Write to us and we will do it — no need to fill anything in again.', 'oc-theme' ) . '</p>';
+	}
+
+	/**
+	 * The team's report: what to pick up, then how the apply went.
+	 *
+	 * @param array<int,array<string,string>> $report Rows.
+	 */
+	public static function team_done_html( array $report ): string {
+		$state = Onboard::state();
 		$sum   = Rest::report_summary( $report );
 		$rows  = '';
 		$words = array(
@@ -192,77 +207,77 @@ final class Mail {
 			$rows .= '<tr><td>' . esc_html( (string) $row['label'] ) . '</td><td>' . esc_html( (string) $row['target'] ) . '</td><td>' . esc_html( $words[ $row['result'] ] ?? (string) $row['result'] ) . '</td><td>' . esc_html( (string) $row['note'] ) . '</td></tr>';
 		}
 
-		$body = '<p>' . esc_html( sprintf( /* translators: 1: client, 2: site */ __( '%1$s finished the questionnaire on %2$s. The answers are applied.', 'oc-theme' ), (string) $state['client']['name'], home_url( '/' ) ) ) . '</p>'
-			. '<p><strong>' . esc_html__( 'What to do now', 'oc-theme' ) . '</strong></p><ul>' . self::my_turn( $sum, $todo ) . '</ul>'
+		return '<p>' . esc_html( sprintf( /* translators: 1: client, 2: site */ __( '%1$s finished the questionnaire on %2$s. The answers are applied.', 'oc-theme' ), (string) $state['client']['name'], home_url( '/' ) ) ) . '</p>'
+			. self::my_turn( $sum )
 			. '<p>' . esc_html( sprintf( /* translators: 1..5 counts */ __( 'Applied %1$d · to check %2$d · left as is %3$d · skipped %4$d · errors %5$d', 'oc-theme' ), $sum['applied'], $sum['check'], $sum['manual'], $sum['skipped'], $sum['error'] ) ) . '</p>'
 			. ( $rows ? '<table cellpadding="6" style="border-collapse:collapse;font-size:14px"><tr><th>' . esc_html__( 'Field', 'oc-theme' ) . '</th><th>' . esc_html__( 'Target', 'oc-theme' ) . '</th><th>' . esc_html__( 'Result', 'oc-theme' ) . '</th><th>' . esc_html__( 'Note', 'oc-theme' ) . '</th></tr>' . $rows . '</table>' : '' )
 			. self::button( admin_url( 'admin.php?page=oc-onboard' ), __( 'The full report', 'oc-theme' ) );
-
-		self::send( Onboard::COPY_TO, sprintf( /* translators: %s: site host */ __( 'Questionnaire done: %s', 'oc-theme' ), self::host() ), $body, false );
 	}
 
 	/**
-	 * What is ours to do once a questionnaire lands, in the order it wants
-	 * doing. A report of counts says how it went; this says what to pick up.
+	 * What is ours to do once a questionnaire lands: what the apply flagged,
+	 * then what still stands between the shop and going live — read off the
+	 * site, the same list the dashboard tile shows — and the standing work.
 	 *
-	 * @param array<string,int> $sum  The report's counts.
-	 * @param array<int,string> $todo What is theirs to do, so we know what to chase.
+	 * @param array<string,int> $sum The report's counts.
 	 */
-	private static function my_turn( array $sum, array $todo ): string {
-		$out = array();
-		$pay = (array) get_option( 'oc_onboard_pay', array() );
-		$gw  = (string) ( $pay['gateway'] ?? '' );
+	private static function my_turn( array $sum ): string {
+		$html = '';
+		$li   = static function ( string $text ): string {
+			return '<li style="margin:0 0 6px">' . $text . '</li>';
+		};
+
+		$first = '';
 
 		if ( $sum['error'] ) {
-			$out[] = __( 'Something errored — read the report before anything else.', 'oc-theme' );
+			$first .= $li( esc_html__( 'Something errored — read the report before anything else.', 'oc-theme' ) );
 		}
 
 		if ( $sum['check'] ) {
 			/* translators: %d: how many rows are marked to check. */
-			$out[] = sprintf( _n( '%d thing was written with a general text — read it over and make it theirs.', '%d things were written with a general text — read them over and make them theirs.', $sum['check'], 'oc-theme' ), $sum['check'] );
+			$first .= $li( esc_html( sprintf( _n( '%d thing was written with a general text — read it over and make it theirs.', '%d things were written with a general text — read them over and make them theirs.', $sum['check'], 'oc-theme' ), $sum['check'] ) ) );
 		}
 
-		if ( 'none' === $gw ) {
-			$out[] = __( 'Send them the PayPlus link so they can open an account. PayPlus is already installed on the site, switched off, waiting for the keys.', 'oc-theme' );
-		} elseif ( 'other' === $gw ) {
-			$out[] = __( 'They use a clearing company we do not install ourselves — get its details and connect it by hand. Both of our gateway plugins were taken off the site.', 'oc-theme' );
-		} elseif ( ! empty( $pay['fill_later'] ) ) {
-			$out[] = __( 'They left the clearing details for later. Chase them, put them in, and switch the gateway on.', 'oc-theme' );
-		} else {
-			$out[] = __( 'The clearing company is set up and on. Put a real order through it before the site goes live.', 'oc-theme' );
+		if ( '' !== $first ) {
+			$html .= '<p><strong>' . esc_html__( 'From the apply', 'oc-theme' ) . '</strong></p><ul>' . $first . '</ul>';
 		}
 
-		// Plenty of shops do not have the logo to hand while they are
-		// answering, so it is asked for and not demanded. What is missing
-		// has to reach somebody, and that is this list.
-		$mark  = (array) Draft::value( 'site_logo' );
-		$light = (array) Draft::value( 'logo_light' );
+		$gaps = Onboard::gaps();
+		$row  = static function ( array $g ) use ( $li ): string {
+			return $li(
+				'<strong>' . esc_html( $g['label'] ) . '</strong>'
+				. ( '' === $g['why'] ? '' : ' — ' . esc_html( $g['why'] ) )
+				. ( '' === $g['fix'] ? '' : ' <a href="' . esc_url( $g['fix'] ) . '">' . esc_html__( 'Put it right', 'oc-theme' ) . '</a>' )
+			);
+		};
 
-		if ( empty( $mark['id'] ) ) {
-			$out[] = __( 'Get their logo — they did not have it to hand. The site is wearing its name in text until it arrives. It goes in Customize, under the header.', 'oc-theme' );
+		$must = '';
+		$nice = '';
+
+		foreach ( $gaps as $g ) {
+			if ( $g['must'] ) {
+				$must .= $row( $g );
+			} else {
+				$nice .= $row( $g );
+			}
 		}
 
-		// They asked for the menu to stand on the banner and had no light
-		// logo to give. The regular one is standing on the picture until
-		// one exists, which on a dark photograph is a logo nobody can see.
-		if ( 'home' === (string) Draft::value( 'home_header' ) && empty( $light['id'] ) ) {
-			$out[] = empty( $mark['id'] )
-				? __( 'That logo needs a light version too — the menu stands on their banner, so the logo stands on the picture.', 'oc-theme' )
-				: __( 'Make the light version of their logo — they had none. The menu stands on their banner, so the regular logo is standing on the picture meanwhile. It goes in Customize, under the header.', 'oc-theme' );
+		if ( '' !== $must ) {
+			$html .= '<p><strong style="color:#b32d2e">' . esc_html__( 'Cannot go live without', 'oc-theme' ) . '</strong></p><ul>' . $must . '</ul>';
 		}
 
-		$out[] = __( 'Go over what was built — the home page, the catalogue and the product page — and put the last touches to it.', 'oc-theme' );
-		$out[] = __( 'Get their products and load them.', 'oc-theme' );
-
-		if ( $todo ) {
-			$out[] = __( 'Their own list is in the mail they received, so you both know what is waiting on whom.', 'oc-theme' );
+		if ( '' !== $nice ) {
+			$html .= '<p><strong>' . esc_html__( 'Worth doing', 'oc-theme' ) . '</strong></p><ul>' . $nice . '</ul>';
 		}
 
-		$html = '';
-
-		foreach ( $out as $one ) {
-			$html .= '<li>' . esc_html( $one ) . '</li>';
+		if ( ! $gaps ) {
+			$html .= '<p><strong style="color:#1a7f37">' . esc_html__( 'Everything is in place.', 'oc-theme' ) . '</strong></p>';
 		}
+
+		$html .= '<p><strong>' . esc_html__( 'And always', 'oc-theme' ) . '</strong></p><ul>'
+			. $li( esc_html__( 'Go over what was built — the home page, the catalogue and the product page — and put the last touches to it.', 'oc-theme' ) )
+			. $li( esc_html__( 'Their own list is in the mail they received, so you both know what is waiting on whom.', 'oc-theme' ) )
+			. '</ul>';
 
 		return $html;
 	}
