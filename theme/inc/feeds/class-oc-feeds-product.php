@@ -73,6 +73,7 @@ final class Product {
 			'meta'   => __( 'Meta', 'oc-theme' ),
 			'google' => __( 'Google', 'oc-theme' ),
 			'tiktok' => __( 'TikTok', 'oc-theme' ),
+			'openai' => __( 'ChatGPT', 'oc-theme' ),
 			'zap'    => __( 'Zap', 'oc-theme' ),
 		);
 
@@ -133,7 +134,7 @@ final class Product {
 			? array_map( 'sanitize_key', (array) wp_unslash( $_POST['oc_feed_show'] ) )
 			: array();
 
-		foreach ( array( 'meta', 'google', 'tiktok', 'zap' ) as $target ) {
+		foreach ( array( 'meta', 'google', 'tiktok', 'openai', 'zap' ) as $target ) {
 			$key = self::hide_key( $target );
 
 			// Only the exclusions are stored. A shop of thousands should not
