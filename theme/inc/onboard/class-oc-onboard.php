@@ -387,7 +387,10 @@ final class Onboard {
 
 		if ( function_exists( 'WC' ) && WC()->payment_gateways() ) {
 			foreach ( WC()->payment_gateways()->payment_gateways() as $g ) {
-				if ( 'yes' === $g->enabled ) {
+				// Cash at the door and a bank transfer are ways to be paid,
+				// not ways to take a card: a shop with only those cannot
+				// sell to a stranger on the internet.
+				if ( 'yes' === $g->enabled && ! in_array( (string) $g->id, array( 'cod', 'bacs', 'cheque' ), true ) ) {
 					$pay = true;
 				}
 			}
