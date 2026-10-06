@@ -428,7 +428,12 @@ final class Build {
 		$when = gmdate( 'D, d M Y H:i:s' ) . ' GMT';
 
 		if ( 'csv' === $feed['format'] ) {
-			return "\xEF\xBB\xBF" . implode( ',', self::columns( $feed ) ) . "\n";
+			// The byte-order mark is for Excel, which the ad networks' CSVs
+			// get opened in. OpenAI's importer matches the first column name
+			// byte for byte, so its file is plain UTF-8.
+			$bom = 'openai' === $feed['target'] ? '' : "\xEF\xBB\xBF";
+
+			return $bom . implode( ',', self::columns( $feed ) ) . "\n";
 		}
 
 		if ( 'zap' === $feed['target'] ) {
@@ -1197,9 +1202,12 @@ final class Build {
 				continue; // "Any …" — nothing was chosen for this line.
 			}
 
-			$tax   = str_replace( 'attribute_', '', (string) $name );
+			// A Hebrew attribute is registered under its plain name (pa_צבע)
+			// but the variation stores the key percent-encoded; decode it or
+			// no lookup below finds anything.
+			$tax   = rawurldecode( str_replace( 'attribute_', '', (string) $name ) );
 			$label = wc_attribute_label( $tax, $owner );
-			$value = $slug;
+			$value = rawurldecode( $slug );
 
 			if ( taxonomy_exists( $tax ) ) {
 				$term = get_term_by( 'slug', $slug, $tax );
@@ -1348,6 +1356,16 @@ final class Build {
 			$out[] = implode( ' > ', $path );
 		}
 
+		// Deepest first: "Living room > Tables > Coffee tables" says more
+		// than a marketing bucket like "New", and the first path is the
+		// one a network is given as the product's type.
+		usort(
+			$out,
+			static function ( string $a, string $b ): int {
+				return substr_count( $b, ' > ' ) <=> substr_count( $a, ' > ' );
+			}
+		);
+
 		return $out;
 	}
 
@@ -1365,7 +1383,21 @@ final class Build {
 					$value = $one->get_attribute( $slug );
 
 					if ( is_string( $value ) && '' !== trim( $value ) ) {
-						return trim( explode( ',', $value )[0] );
+						$value = trim( explode( ',', $value )[0] );
+
+						// A variation answers with the stored term slug — for a
+						// Hebrew taxonomy that is percent-encoded text, because
+						// WooCommerce sanitises the taxonomy name on its way to
+						// the lookup and misses it. Resolve the term here.
+						if ( $one instanceof \WC_Product_Variation && taxonomy_exists( $slug ) ) {
+							$term = get_term_by( 'slug', $value, $slug );
+
+							if ( $term instanceof \WP_Term ) {
+								return $term->name;
+							}
+						}
+
+						return rawurldecode( $value );
 					}
 				}
 			}
