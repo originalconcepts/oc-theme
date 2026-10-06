@@ -232,7 +232,14 @@ final class Drive {
 
 		$folders = array();
 
+		// Make answers with a list of {key, url} (its aggregator's shape);
+		// a person or a test may answer with a map. Both are welcome.
 		foreach ( (array) ( $data['folders'] ?? array() ) as $key => $url ) {
+			if ( is_array( $url ) ) {
+				$key = (string) ( $url['key'] ?? '' );
+				$url = $url['url'] ?? '';
+			}
+
 			$key = sanitize_key( (string) $key );
 			$url = $ok( $url );
 
