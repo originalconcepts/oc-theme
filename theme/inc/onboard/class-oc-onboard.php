@@ -257,7 +257,13 @@ final class Onboard {
 			);
 		}
 
-		foreach ( array( 'terms' => __( 'the terms of sale', 'oc-theme' ), 'privacy' => __( 'the privacy policy', 'oc-theme' ), 'a11y' => __( 'the accessibility statement', 'oc-theme' ) ) as $key => $what ) {
+		$legal = array(
+			'terms'   => __( 'the terms of sale', 'oc-theme' ),
+			'privacy' => __( 'the privacy policy', 'oc-theme' ),
+			'a11y'    => __( 'the accessibility statement', 'oc-theme' ),
+		);
+
+		foreach ( $legal as $key => $what ) {
 			if ( ! isset( $gaps[ $key ] ) ) {
 				continue;
 			}
