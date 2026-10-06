@@ -305,7 +305,7 @@ final class Onboard {
 	 * and where to put it right. The ones a shop cannot open without come
 	 * first.
 	 *
-	 * @return array<int,array{key:string,must:bool,label:string,why:string,fix:string}>
+	 * @return array<int,array{key:string,must:bool,label:string,why:string,fix:string,cause:string,items:array<int,string>}>
 	 */
 	public static function gaps(): array {
 		$out = array();
