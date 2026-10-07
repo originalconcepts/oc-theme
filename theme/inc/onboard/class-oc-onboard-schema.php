@@ -1193,10 +1193,10 @@ final class Schema {
 			'type'    => 'choice',
 			'label'   => __( 'Where does the button lead?', 'oc-theme' ),
 			'options' => array(
-				'shop' => __( 'To the shop, all the products', 'oc-theme' ),
 				'cat'  => __( 'To one of the departments', 'oc-theme' ),
+				'shop' => __( 'To the shop, all the products', 'oc-theme' ),
 			),
-			'default' => 'shop',
+			'default' => 'cat',
 			'target'  => array( 'call', 'home' ),
 		);
 
@@ -1215,10 +1215,10 @@ final class Schema {
 			'type'    => 'choice',
 			'label'   => __( 'Where does the menu stand over the banner?', 'oc-theme' ),
 			'options' => array(
-				'home' => __( 'On the picture', 'oc-theme' ),
 				'none' => __( 'Above the picture', 'oc-theme' ),
+				'home' => __( 'On the picture', 'oc-theme' ),
 			),
-			'default' => 'home',
+			'default' => 'none',
 			'target'  => array( 'mod', 'oc_header_transparent' ),
 		);
 
@@ -1348,7 +1348,7 @@ final class Schema {
 					'type'        => 'text',
 					'label'       => __( 'And a line explaining', 'oc-theme' ),
 					'placeholder' => __( 'Up to 7 working days, free over 400 ILS', 'oc-theme' ),
-					'required'    => true,
+					'required'    => false,
 				),
 			),
 			'default'  => array(
