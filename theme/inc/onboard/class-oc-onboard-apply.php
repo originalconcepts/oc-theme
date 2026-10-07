@@ -729,6 +729,10 @@ final class Apply {
 			$this->write_mod( 'xs_on', 'oc_xsell_style_tabs', 'grid' );
 		}
 
+		// On a phone there is no hover, so the card's button is always there
+		// -- unless they asked for no button at all.
+		$this->write_mod( 'card_atc', 'oc_card_atc_mobile', 'none' === (string) $this->v['card_atc'] ? 'none' : 'always' );
+
 		// Where the shekel stands. Never asked, because the answer is the
 		// same on every shop we build: before the number, with a space.
 		$this->write_plain( 'brand_name', 'woocommerce_currency_pos', 'left_space' );

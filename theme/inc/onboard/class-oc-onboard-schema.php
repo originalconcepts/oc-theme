@@ -188,7 +188,7 @@ final class Schema {
 						'title'   => __( 'The category page', 'oc-theme' ),
 						'intro'   => __( 'The page a customer lands on from the menu. Every answer here changes the sketch.', 'oc-theme' ),
 						'preview' => 'category',
-						'fields'  => array( 'cat_hero', 'cat_cols', 'cat_oos_last', 'cat_filters', 'card_atc', 'card_sale', 'card_new', 'card_new_days', 'card_excerpt', 'cat_paging' ),
+						'fields'  => array( 'cat_hero', 'cat_cols', 'cat_oos_last', 'cat_filters', 'card_atc_shape', 'card_atc', 'card_sale', 'card_new', 'card_new_days', 'card_excerpt', 'cat_paging' ),
 					),
 				),
 			),
@@ -1444,14 +1444,28 @@ final class Schema {
 			'target'  => array( 'call', 'per_page' ),
 		);
 
-		$f['card_atc'] = array(
+		$f['card_atc_shape'] = array(
 			'type'    => 'choice',
 			'group'   => __( 'The product card', 'oc-theme' ),
-			'label'   => __( 'An add-to-cart button on the card?', 'oc-theme' ),
+			'label'   => __( 'The add-to-cart button on the card', 'oc-theme' ),
 			'help'    => __( 'A button on the card itself saves a step for a shop whose products have no sizes or colours to choose.', 'oc-theme' ),
 			'options' => array(
-				'always' => __( 'Yes, always showing', 'oc-theme' ),
-				'hover'  => __( 'Only when the mouse is on the card', 'oc-theme' ),
+				'square' => __( 'A square icon in the corner of the picture', 'oc-theme' ),
+				'circle' => __( 'A round icon in the corner of the picture', 'oc-theme' ),
+				'wide'   => __( 'A wide bar with the words, along the bottom of the picture', 'oc-theme' ),
+				'under'  => __( 'A button under the price', 'oc-theme' ),
+			),
+			'default' => 'square',
+			'target'  => array( 'mod', 'oc_card_atc_shape' ),
+		);
+
+		$f['card_atc'] = array(
+			'type'    => 'choice',
+			'label'   => __( 'Fixed, or on hover?', 'oc-theme' ),
+			'help'    => __( 'On a phone there is no hover, so there it is always showing.', 'oc-theme' ),
+			'options' => array(
+				'hover'  => __( 'On hover — appears when the mouse is on the card', 'oc-theme' ),
+				'always' => __( 'Fixed — always showing', 'oc-theme' ),
 				'none'   => __( 'No button — the card leads to the product', 'oc-theme' ),
 			),
 			'default' => 'hover',

@@ -2586,6 +2586,21 @@
 			if ( flags.childNodes.length ) { art.appendChild( flags ); }
 		}
 
+		// The button on the card, the way they asked for it: an icon in the
+		// corner of the picture, a bar along its foot, or a button under the
+		// price. "On hover" is drawn on the first card only, as the card a
+		// mouse happens to be resting on.
+		var atc   = String( val( 'card_atc' ) || 'hover' );
+		var shape = String( val( 'card_atc_shape' ) || 'square' );
+		var drawn = 'always' === atc || ( 'hover' === atc && tags );
+		var faint = 'hover' === atc ? ' wf-card__atc--hover' : '';
+
+		if ( drawn && 'under' !== shape ) {
+			art.appendChild( 'wide' === shape
+				? el( 'div', { 'class': 'wf-card__atc wf-card__atc--wide' + faint, text: I.wf_atc } )
+				: el( 'div', { 'class': 'wf-card__atc wf-card__atc--' + shape + faint, 'aria-hidden': 'true', text: '+' } ) );
+		}
+
 		kids.push( art );
 		kids.push( el( 'div', { 'class': 'wf-card__t', text: fmt( I.wf_product, n ) } ) );
 
@@ -2595,13 +2610,8 @@
 
 		kids.push( el( 'div', { 'class': 'wf-card__p', text: '₪' + ( 80 + ( n * 35 ) ) + '.00' } ) );
 
-		// The button on the card, the way they asked for it: on every card,
-		// or -- "when the mouse is on the card" -- drawn on the first one
-		// only, as the card a mouse happens to be resting on.
-		var atc = String( val( 'card_atc' ) || 'hover' );
-
-		if ( 'always' === atc || ( 'hover' === atc && tags ) ) {
-			kids.push( el( 'div', { 'class': 'wf-card__atc' + ( 'hover' === atc ? ' wf-card__atc--hover' : '' ), text: I.wf_atc } ) );
+		if ( drawn && 'under' === shape ) {
+			kids.push( el( 'div', { 'class': 'wf-card__atc wf-card__atc--under' + faint, text: I.wf_atc } ) );
 		}
 
 		return w( 'wf-card', kids );

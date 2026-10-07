@@ -456,7 +456,13 @@ button.oc-onb-dots__d:hover { background: var(--onb-ink-2); }
 .wf-card__t { margin-top: 5px; color: #6c7382; }
 .wf-card__x { font-size: 10px; color: #a9aebb; }
 .wf-card__p { font-weight: 700; color: #5b6271; }
-.wf-card__atc { margin-top: 6px; background: var(--onb-primary); color: #fff; font-size: 10px; letter-spacing: .04em; text-align: center; padding: 5px 8px; border-radius: 3px; }
+.wf-card__img { position: relative; }
+.wf-card__atc { background: var(--onb-primary); color: #fff; font-size: 10px; letter-spacing: .04em; text-align: center; }
+.wf-card__atc--under { margin-top: 6px; padding: 5px 8px; border-radius: 3px; }
+.wf-card__atc--wide { position: absolute; inset-inline: 0; bottom: 0; padding: 5px 8px; border-radius: 0 0 3px 3px; }
+.wf-card__atc--square,
+.wf-card__atc--circle { position: absolute; right: 6px; bottom: 6px; width: 22px; height: 22px; line-height: 22px; font-size: 15px; font-weight: 700; border-radius: 4px; }
+.wf-card__atc--circle { border-radius: 50%; }
 .wf-card__atc--hover { opacity: .85; outline: 1px dashed rgba(1, 67, 165, .5); outline-offset: 2px; }
 /* The shop pins both labels to the physical left, one under the other.
    The sketch does the same, so nobody is surprised later. */

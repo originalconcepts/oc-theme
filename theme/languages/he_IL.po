@@ -13901,3 +13901,30 @@ msgstr "לחצו על הכפתור ואנחנו הופכים את הנקודות
 
 msgid "The text of the About page"
 msgstr "הטקסט של עמוד האודות"
+
+msgid "The add-to-cart button on the card"
+msgstr "כפתור הוספה לסל על הכרטיס"
+
+msgid "A square icon in the corner of the picture"
+msgstr "אייקון מרובע בפינת התמונה"
+
+msgid "A round icon in the corner of the picture"
+msgstr "אייקון עגול בפינת התמונה"
+
+msgid "A wide bar with the words, along the bottom of the picture"
+msgstr "פס רחב עם המילים, לאורך תחתית התמונה"
+
+msgid "A button under the price"
+msgstr "כפתור מתחת למחיר"
+
+msgid "Fixed, or on hover?"
+msgstr "קבוע או בריחוף?"
+
+msgid "On a phone there is no hover, so there it is always showing."
+msgstr "בטלפון אין ריחוף, אז שם הוא תמיד מוצג."
+
+msgid "On hover — appears when the mouse is on the card"
+msgstr "בריחוף — מופיע כשהעכבר על הכרטיס"
+
+msgid "Fixed — always showing"
+msgstr "קבוע — מוצג תמיד"
