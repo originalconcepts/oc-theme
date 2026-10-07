@@ -548,15 +548,18 @@
 
 			api( '/write', { body: JSON.stringify( { field: id, tone: tone.value || '' } ) } )
 				.then( function ( r ) {
+					// api() hands back { ok, status, data }; the words are in data.
+					var d = ( r && r.data ) || {};
+
 					busy = false;
 
-					if ( r && r.text ) {
-						state.versions.push( r.text );
+					if ( r && r.ok && d.text ) {
+						state.versions.push( d.text );
 						tone.value = '';
 						say.textContent = I.ai_done;
 						choose( state.versions.length - 1 );
 					} else {
-						say.textContent = ( r && r.error ) ? r.error : I.ai_failed;
+						say.textContent = d.error ? d.error : I.ai_failed;
 						paint();
 					}
 				} )
