@@ -818,7 +818,7 @@
 		var min  = f.min === undefined ? 1 : Number( f.min );
 		var max  = f.max === undefined ? 10 : Number( f.max );
 		var out  = el( 'div', { 'class': 'oc-onb-step' } );
-		var now  = el( 'span', { 'class': 'oc-onb-step__n' } );
+		var now  = el( 'span', { 'class': 'oc-onb-next-step__n' } );
 		var less = el( 'button', { type: 'button', 'class': 'oc-onb-step__b', 'aria-label': I.less, text: '−' } );
 		var more = el( 'button', { type: 'button', 'class': 'oc-onb-step__b', 'aria-label': I.more, text: '+' } );
 
@@ -4345,17 +4345,17 @@
 		if ( steps.length ) {
 			kids.push( el( 'h2', { 'class': 'oc-onb-next__h', text: steps.length > 1 ? I.done_yours : I.done_yours_one } ) );
 
-			var list = el( 'div', { 'class': 'oc-onb-steps' } );
+			var list = el( 'div', { 'class': 'oc-onb-next-steps' } );
 
 			steps.forEach( function ( st, i ) {
-				var card = el( 'div', { 'class': 'oc-onb-step oc-onb-step--' + ( st.key || 'x' ) } );
-				card.appendChild( el( 'div', { 'class': 'oc-onb-step__n', text: String( i + 1 ) } ) );
-				var body = el( 'div', { 'class': 'oc-onb-step__body' } );
+				var card = el( 'div', { 'class': 'oc-onb-next-step oc-onb-next-step--' + ( st.key || 'x' ) } );
+				card.appendChild( el( 'div', { 'class': 'oc-onb-next-step__n', text: String( i + 1 ) } ) );
+				var body = el( 'div', { 'class': 'oc-onb-next-step__body' } );
 				body.appendChild( el( 'h3', { text: st.title || '' } ) );
 				body.appendChild( el( 'p', { text: st.text || '' } ) );
 
 				if ( ( st.links || [] ).length ) {
-					var row = el( 'div', { 'class': 'oc-onb-step__links' } );
+					var row = el( 'div', { 'class': 'oc-onb-next-step__links' } );
 					st.links.forEach( function ( l, j ) {
 						row.appendChild( el( 'a', { 'class': 'oc-onb-btn' + ( j ? ' oc-onb-btn--ghost' : '' ), href: l.url, target: '_blank', rel: 'noopener', text: l.label || l.url } ) );
 					} );
