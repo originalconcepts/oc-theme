@@ -135,6 +135,8 @@ final class Front {
 				'summary_text'    => __( 'Here is everything you told us. Anything missing is marked; tap it to go back.', 'oc-theme' ),
 				'submit'          => __( 'I\'m done, build my site', 'oc-theme' ),
 				'submitting'      => __( 'Setting things up…', 'oc-theme' ),
+				'build_title'     => __( 'One moment — we are building your site', 'oc-theme' ),
+				'build_text'      => __( 'This takes up to a minute. Please keep this window open; when it is done you will see what comes next.', 'oc-theme' ),
 				'done_title'      => __( 'Thank you!', 'oc-theme' ),
 				'done_text'       => __( 'Everything you answered is already written into your site — the pages, the home page, the catalogue, the product page, the cart and the checkout.', 'oc-theme' ),
 				'done_yours'      => __( 'Two things to start on today', 'oc-theme' ),

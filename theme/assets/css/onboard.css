@@ -1307,3 +1307,12 @@ button.oc-onb-steps__i { cursor: pointer; }
 .oc-onb-ai__tab { border: 1px solid var(--onb-line); background: var(--onb-card); color: inherit; font: inherit; font-size: 13px; padding: 5px 12px; border-radius: 999px; cursor: pointer; }
 .oc-onb-ai__tab.is-on { background: var(--onb-primary); border-color: var(--onb-primary); color: #fff; font-weight: 600; }
 .oc-onb-ai__pick { font-size: 13px; color: var(--onb-ink-2); margin-inline-start: 4px; }
+
+/* The sheet over the page while the site is being built. */
+.oc-onb-veil { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 16px; background: rgba(27, 31, 42, .55); backdrop-filter: blur(2px); }
+.oc-onb-veil__card { background: var(--onb-card, #fff); border-radius: 16px; padding: 32px 28px; max-width: 420px; text-align: center; box-shadow: 0 20px 60px rgba(0, 0, 0, .25); }
+.oc-onb-veil__card h2 { margin: 14px 0 8px; font-size: 20px; }
+.oc-onb-veil__card p { margin: 0; color: var(--onb-ink-2); line-height: 1.55; }
+.oc-onb-veil__spin { width: 44px; height: 44px; margin: 0 auto; border-radius: 50%; border: 4px solid var(--onb-line); border-top-color: var(--onb-primary); animation: oc-onb-spin .9s linear infinite; }
+@keyframes oc-onb-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .oc-onb-veil__spin { animation: none; } }

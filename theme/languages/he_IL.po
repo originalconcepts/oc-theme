@@ -13928,3 +13928,9 @@ msgstr "בריחוף — מופיע כשהעכבר על הכרטיס"
 
 msgid "Fixed — always showing"
 msgstr "קבוע — מוצג תמיד"
+
+msgid "One moment — we are building your site"
+msgstr "עוד רגע — בונים את האתר שלכם"
+
+msgid "This takes up to a minute. Please keep this window open; when it is done you will see what comes next."
+msgstr "זה לוקח עד דקה. אל תסגרו את החלון; כשנסיים תראו כאן מה הלאה."

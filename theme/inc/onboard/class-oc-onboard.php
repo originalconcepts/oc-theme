@@ -493,7 +493,9 @@ final class Onboard {
 		if ( ! $pay ) {
 			$kept  = (array) get_option( 'oc_onboard_pay', array() );
 			$gw    = (string) ( $kept['gateway'] ?? '' );
-			$cause = ! empty( $kept['fill_later'] ) ? 'fill_later' : ( 'none' === $gw ? 'no_company' : ( 'other' === $gw ? 'other_company' : 'off' ) );
+			// No company at all comes first: "later" means nothing when there
+			// is nobody to get the keys from.
+			$cause = 'none' === $gw ? 'no_company' : ( 'other' === $gw ? 'other_company' : ( ! empty( $kept['fill_later'] ) ? 'fill_later' : 'off' ) );
 			$why   = array(
 				'fill_later'    => __( 'They left the clearing details for later; the gateway is installed and off until they are in.', 'oc-theme' ),
 				'no_company'    => __( 'They have no clearing company yet.', 'oc-theme' ),

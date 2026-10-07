@@ -4394,6 +4394,19 @@
 		submit.addEventListener( 'click', function () {
 			submit.disabled = true;
 			submit.textContent = I.submitting;
+
+			// A minute is a long time to stare at a greyed button. A sheet
+			// over the page says what is happening and asks them to stay.
+			var veil = el( 'div', { 'class': 'oc-onb-veil', role: 'status', 'aria-live': 'polite' }, [
+				el( 'div', { 'class': 'oc-onb-veil__card' }, [
+					el( 'div', { 'class': 'oc-onb-veil__spin', 'aria-hidden': 'true' } ),
+					el( 'h2', { text: I.build_title } ),
+					el( 'p', { text: I.build_text } )
+				] )
+			] );
+
+			document.body.appendChild( veil );
+
 			var go_ = function () {
 				return api( '/submit', { body: '{}' } ).then( function ( r ) {
 					if ( r.ok ) { at = screens.length + 1; renderDone( r.data && r.data.next ); return; }
@@ -4405,7 +4418,10 @@
 					throw new Error( 'submit' );
 				} );
 			};
-			( flush() || Promise.resolve() ).then( go_ ).catch( function () {
+			( flush() || Promise.resolve() ).then( go_ ).then( function () {
+				veil.remove();
+			} ).catch( function () {
+				veil.remove();
 				submit.disabled = false;
 				submit.textContent = I.submit;
 				note( I.submit_failed, 'err' );
