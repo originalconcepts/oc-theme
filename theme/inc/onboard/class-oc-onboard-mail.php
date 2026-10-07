@@ -25,6 +25,18 @@ final class Mail {
 	const CRON = 'oc_onboard_tick';
 
 	/**
+	 * The name on every mail, the address replies go to, and the pictures
+	 * the signature wears (the same files Monday's mails use).
+	 */
+	const FROM_NAME = 'Original Concepts';
+	const REPLY_TO  = 'george@originalconcepts.co.il';
+	const LOGO      = 'https://drive.google.com/thumbnail?export=download&id=1DRFqEt3a0l-kDo0mR66Zlt_xNaQaHe3i';
+	const PHOTO     = 'https://drive.google.com/thumbnail?export=download&id=1vf48ZJobbFRltM4FGS1D0U_v2Ko3a1px';
+	const SIGN_NAME = 'ג׳ורג׳ שופאני';
+	const SIGN_ROLE = 'בעלים ומנכ"ל';
+	const SIGN_TEL  = '0774-510511 | 0544-570027';
+
+	/**
 	 * Hook in.
 	 */
 	public function register(): void {
@@ -90,12 +102,14 @@ final class Mail {
 		$name = (string) $state['client']['name'];
 
 		$body = self::greeting( $name )
-			. '<p>' . esc_html__( 'We are starting on your new store. The first step is a short questionnaire about your business, your pages and how you would like things to look.', 'oc-theme' ) . '</p>'
-			. '<p>' . esc_html__( 'Everything is saved as you go, so you can stop and come back whenever you like, from your phone or your computer.', 'oc-theme' ) . '</p>'
-			. self::button( $url, __( 'Open the questionnaire', 'oc-theme' ) )
+			. '<p>' . esc_html__( 'My team and I welcome you to the Original Concepts family 👏. We have walked hundreds of businesses through opening a store that took their activity and their profits further, and we are glad to do the same for yours.', 'oc-theme' ) . '</p>'
+			. '<p>' . wp_kses( __( 'The first step is <strong>filling in the site questionnaire</strong>. It takes about a quarter of an hour, and everything is saved as you go — you can stop and come back from your phone or your computer.', 'oc-theme' ), array( 'strong' => array() ) ) . '</p>'
+			. self::button( $url, __( 'Click to start the questionnaire', 'oc-theme' ), '#ff7403' )
+			. '<p>' . esc_html__( 'Once the questionnaire is in, we send you a link to a Drive folder for your pictures and files.', 'oc-theme' ) . '</p>'
+			. '<p>' . esc_html__( 'Looking forward — the sooner the questionnaire is in, the sooner we start! 🚀', 'oc-theme' ) . '</p>'
 			. '<p class="small">' . esc_html__( 'The link is personal; please do not forward it.', 'oc-theme' ) . '</p>';
 
-		return self::note( 'invite', 'customer', self::send( $to, __( 'Let\'s set up your store', 'oc-theme' ), $body ) );
+		return self::note( 'invite', 'customer', self::send( $to, __( 'Here we go!!! 🚀', 'oc-theme' ), $body ) );
 	}
 
 	/**
@@ -368,7 +382,13 @@ final class Mail {
 	 * @param bool   $copy    Copy the team.
 	 */
 	private static function send( string $to, string $subject, string $body, bool $copy = true ): bool {
-		$headers = array( 'Content-Type: text/html; charset=UTF-8' );
+		// Our name on the envelope, replies to George; the address itself
+		// stays the site's, so the server's SPF and the DKIM key hold.
+		$headers = array(
+			'Content-Type: text/html; charset=UTF-8',
+			'From: ' . self::FROM_NAME . ' <' . self::from_address() . '>',
+			'Reply-To: ' . self::FROM_NAME . ' <' . self::REPLY_TO . '>',
+		);
 
 		if ( $copy && Onboard::COPY_TO !== $to ) {
 			$headers[] = 'Cc: ' . Onboard::COPY_TO;
@@ -379,11 +399,38 @@ final class Mail {
 		$al   = 'rtl' === $dir ? 'right' : 'left';
 		$html = '<!doctype html><html dir="' . $dir . '" lang="' . esc_attr( get_bloginfo( 'language' ) ) . '"><body dir="' . $dir . '" style="margin:0;padding:24px;background:#f5f5f5;font-family:Arial,Helvetica,sans-serif;color:#1d1d1f;direction:' . $dir . ';text-align:' . $al . '">'
 			. '<div dir="' . $dir . '" style="max-width:560px;margin:0 auto;background:#fff;border-radius:12px;padding:28px 28px 20px;line-height:1.6;font-size:16px;direction:' . $dir . ';text-align:' . $al . '">'
-			. '<p style="margin:0 0 18px;font-weight:700;font-size:18px">' . esc_html( (string) get_bloginfo( 'name' ) ) . '</p>'
+			. '<p style="margin:0 0 18px;text-align:center"><img src="' . esc_url( self::LOGO ) . '" alt="' . esc_attr( self::FROM_NAME ) . '" style="height:90px;max-width:100%"></p>'
+			. '<hr style="border:none;border-top:1px solid #d1d1d1;margin:0 0 18px">'
 			. $body
+			. ( $copy ? self::signature( $al ) : '' )
 			. '</div><style>.small{font-size:13px;color:#666}</style></body></html>';
 
 		return wp_mail( $to, $subject, $html, $headers );
+	}
+
+	/**
+	 * The address the mail leaves from: WordPress's own on this host, so
+	 * the server signs it. Only the name is ours.
+	 */
+	private static function from_address(): string {
+		$host = (string) wp_parse_url( home_url(), PHP_URL_HOST );
+		$host = 0 === strpos( $host, 'www.' ) ? substr( $host, 4 ) : $host;
+
+		return 'wordpress@' . $host;
+	}
+
+	/**
+	 * George, at the foot of every mail to a customer.
+	 *
+	 * @param string $al left | right.
+	 */
+	private static function signature( string $al ): string {
+		return '<p style="margin:18px 0 6px">' . esc_html__( 'Thank you,', 'oc-theme' ) . '</p>'
+			. '<table cellpadding="0" cellspacing="0" border="0" style="margin-top:4px"><tr>'
+			. '<td style="vertical-align:top;width:90px"><img src="' . esc_url( self::PHOTO ) . '" alt="" style="width:80px;height:80px;border-radius:50%"></td>'
+			. '<td style="vertical-align:top;padding-' . ( 'right' === $al ? 'right' : 'left' ) . ':14px;font-size:15px;line-height:1.5;text-align:' . $al . '">'
+			. '<strong style="font-size:17px">' . esc_html( self::SIGN_NAME ) . '</strong><br>' . esc_html( self::SIGN_ROLE ) . '<br><span dir="ltr">' . esc_html( self::SIGN_TEL ) . '</span>'
+			. '</td></tr></table>';
 	}
 
 	/**
@@ -392,7 +439,10 @@ final class Mail {
 	 * @param string $name Client name.
 	 */
 	private static function greeting( string $name ): string {
-		return '<p>' . esc_html( '' !== trim( $name ) ? sprintf( /* translators: %s: name */ __( 'Hi %s,', 'oc-theme' ), $name ) : __( 'Hi,', 'oc-theme' ) ) . '</p>';
+		// The first name only: a mail says "Hi Dana", not "Hi Dana Cohen".
+		$first = trim( (string) strtok( trim( $name ), ' ' ) );
+
+		return '<p>' . esc_html( '' !== $first ? sprintf( /* translators: %s: name */ __( 'Hi %s,', 'oc-theme' ), $first ) : __( 'Hi,', 'oc-theme' ) ) . '</p>';
 	}
 
 	/**
@@ -401,8 +451,8 @@ final class Mail {
 	 * @param string $url   Link.
 	 * @param string $label Words.
 	 */
-	private static function button( string $url, string $label ): string {
-		return '<p style="margin:22px 0"><a href="' . esc_url( $url ) . '" style="display:inline-block;background:#0143a5;color:#fff;text-decoration:none;padding:12px 22px;border-radius:8px;font-weight:600">' . esc_html( $label ) . '</a></p>';
+	private static function button( string $url, string $label, string $bg = '#0143a5' ): string {
+		return '<p style="margin:26px 0;text-align:center"><a href="' . esc_url( $url ) . '" style="display:inline-block;background:' . esc_attr( $bg ) . ';color:#fff;text-decoration:none;padding:13px 26px;border-radius:6px;font-weight:700;font-size:16px">' . esc_html( $label ) . '</a></p>';
 	}
 
 	/**

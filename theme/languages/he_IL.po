@@ -13862,3 +13862,24 @@ msgstr "מייל"
 
 msgid "The team is copied on every mail to the customer."
 msgstr "הצוות מכותב על כל מייל ללקוח."
+
+msgid "My team and I welcome you to the Original Concepts family 👏. We have walked hundreds of businesses through opening a store that took their activity and their profits further, and we are glad to do the same for yours."
+msgstr "אני והצוות שלי מברכים אתכם על הצטרפותכם למשפחת Original Concepts 👏. עד כה ליווינו מאות עסקים בהקמת חנות אשר הביאה למקסום פעילותם העסקית והגדלת רווחיהם, ואנו שמחים לבצע זאת גם לחברתכם."
+
+msgid "The first step is <strong>filling in the site questionnaire</strong>. It takes about a quarter of an hour, and everything is saved as you go — you can stop and come back from your phone or your computer."
+msgstr "השלב הראשון בתהליך הוא <strong>מילוי שאלון אתר</strong>. הוא לוקח בערך רבע שעה, והכל נשמר תוך כדי — אפשר לעצור ולחזור, מהטלפון או מהמחשב."
+
+msgid "Click to start the questionnaire"
+msgstr "קליק להתחלת השאלון"
+
+msgid "Once the questionnaire is in, we send you a link to a Drive folder for your pictures and files."
+msgstr "לאחר מילוי השאלון, נשלח לך קישור לתיקיית דרייב להעלאת החומרים הגרפיים."
+
+msgid "Looking forward — the sooner the questionnaire is in, the sooner we start! 🚀"
+msgstr "מצפים להתחיל — ככל שתמלא את השאלון מהר יותר, כך נתחיל מהר יותר! 🚀"
+
+msgid "Here we go!!! 🚀"
+msgstr "יוצאים לדרך!!! 🚀"
+
+msgid "Thank you,"
+msgstr "תודה,"
