@@ -2130,13 +2130,26 @@
 		return wrap;
 	}
 
-	function render_hours( id, f ) {
+	/**
+	 * Days and hours. On its own it reads and writes its field; inside a
+	 * repeater row it is handed the row's value and a way to give it back,
+	 * so a branch asks for its hours exactly as the single store does.
+	 *
+	 * @param {string}   id       Field id (or row-qualified id).
+	 * @param {Object}   f        The field.
+	 * @param {Array}    [value]  The rows, when not read from the draft.
+	 * @param {Function} [onChange] Where to put them, when not the draft.
+	 */
+	function render_hours( id, f, value, onChange ) {
 		var wrap = el( 'div', { 'class': 'oc-onb-hours' } );
-		var rows = ( val( id ) || [] ).map( function ( r ) { return { days: r.days.slice(), from: r.from, to: r.to }; } );
+		var had  = onChange ? value : val( id );
+		var rows = ( Array.isArray( had ) ? had : [] ).filter( function ( r ) { return r && Array.isArray( r.days ); } ).map( function ( r ) { return { days: r.days.slice(), from: r.from, to: r.to }; } );
 		if ( rows.length === 0 ) { rows.push( { days: [ 0, 1, 2, 3, 4 ], from: '09:00', to: '18:00' } ); }
 
 		function commit() {
-			set( id, rows.filter( function ( r ) { return r.days.length && r.from && r.to; } ) );
+			var kept = rows.filter( function ( r ) { return r.days.length && r.from && r.to; } );
+
+			if ( onChange ) { onChange( kept ); } else { set( id, kept ); }
 		}
 
 		function paint() {
@@ -2195,7 +2208,9 @@
 			rows = kept;
 		}
 
-		if ( rows.length === 0 && ! f.empty ) { rows.push( {} ); }
+		// A list that starts with one card, or with as many as the question
+		// says: "more than one branch" opens with two.
+		while ( rows.length < ( f.start || 1 ) && ! f.empty ) { rows.push( {} ); }
 
 		function commit() { set( id, rows ); }
 
@@ -2362,12 +2377,14 @@
 					if ( sf.twin && ! twinWanted( id, ri ) ) { return; }
 					var onChange = function ( v ) { r[ k ] = v; commit(); };
 					if ( sf.type === 'textarea' ) { inner = render_textarea( id + '.' + k, sf, r[ k ] || '', onChange ); }
+					else if ( sf.type === 'hours' ) { inner = render_hours( id + '.' + k, sf, r[ k ] || [], onChange ); }
 					else if ( sf.type === 'checks' ) { inner = render_checks( id + '.' + k, sf, r[ k ] || [], onChange ); }
 					else if ( sf.type === 'file' ) { inner = render_file( id, sf, { row: ri, sub: k, value: r[ k ] || null, onChange: function ( v, saved ) { r[ k ] = v; if ( saved ) { values[ id ] = rows; } else { commit(); } } } ); }
 					else if ( sf.type === 'iconpick' ) { inner = render_iconpick( r[ k ] || '', onChange, sf.from ); }
 					else { inner = inputFor( id + '.' + k, sf, r[ k ] || '', onChange ); }
 					var box = el( 'div', { 'class': 'oc-onb-f oc-onb-f--sub' }, [
 						el( 'div', { 'class': 'oc-onb-f__label' }, [ el( 'span', { text: sf.label } ), sf.required ? el( 'span', { 'class': 'oc-onb-f__req', text: ' *' } ) : null ] ),
+						sf.help ? el( 'p', { 'class': 'oc-onb-f__help', text: sf.help } ) : null,
 						inner
 					] );
 					card.appendChild( box );

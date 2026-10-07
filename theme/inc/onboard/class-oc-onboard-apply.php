@@ -1183,7 +1183,10 @@ final class Apply {
 			update_post_meta( $id, '_oc_br_address', (string) ( $row['address'] ?? '' ) );
 			update_post_meta( $id, '_oc_br_city', (string) ( $row['city'] ?? '' ) );
 			update_post_meta( $id, '_oc_br_phone', (string) ( $row['phone'] ?? '' ) );
-			update_post_meta( $id, '_oc_br_hours', (string) ( $row['hours'] ?? '' ) );
+			// The hours come as day rows now, as the single store's do; a
+			// draft from before holds them as a line of text.
+			$hours = $row['hours'] ?? '';
+			update_post_meta( $id, '_oc_br_hours', is_array( $hours ) ? self::hours_text( $hours ) : (string) $hours );
 			update_post_meta( $id, '_oc_br_access', $access );
 			update_post_meta( $id, '_oc_br_pickup', '1' );
 

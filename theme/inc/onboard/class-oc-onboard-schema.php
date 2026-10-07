@@ -571,6 +571,9 @@ final class Schema {
 			'required' => true,
 			'row'      => __( 'Branch', 'oc-theme' ),
 			'add'      => __( 'Add a branch', 'oc-theme' ),
+			// "More than one" means two to begin with; nobody should have to
+			// press a button to get the second card.
+			'start'    => 2,
 			'max'      => 20,
 			'fields'   => array(
 				'name'    => array(
@@ -593,9 +596,9 @@ final class Schema {
 					'label' => __( 'Phone', 'oc-theme' ),
 				),
 				'hours'   => array(
-					'type'        => 'textarea',
-					'label'       => __( 'Opening hours', 'oc-theme' ),
-					'placeholder' => __( 'Sunday–Thursday 9:00–19:00', 'oc-theme' ),
+					'type'  => 'hours',
+					'label' => __( 'Opening hours', 'oc-theme' ),
+					'help'  => __( 'Pick the days, then the hours. Add a line for days with different hours.', 'oc-theme' ),
 				),
 				'about'   => array(
 					'type'  => 'text',
