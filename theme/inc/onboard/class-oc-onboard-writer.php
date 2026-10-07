@@ -184,9 +184,14 @@ final class Writer {
 				),
 				'body'    => (string) wp_json_encode(
 					array(
-						'model'      => self::MODEL,
-						'max_tokens' => 1200,
-						'messages'   => array(
+						'model'         => self::MODEL,
+						// The model thinks before it writes and the thinking
+						// counts against this ceiling: 1200 left nothing for
+						// the words themselves. Low effort keeps the thinking
+						// short; 4000 leaves room either way.
+						'max_tokens'    => 4000,
+						'output_config' => array( 'effort' => 'low' ),
+						'messages'      => array(
 							array(
 								'role'    => 'user',
 								'content' => $prompt,

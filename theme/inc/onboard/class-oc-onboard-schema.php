@@ -705,7 +705,7 @@ final class Schema {
 		$f['about_written'] = array(
 			'type'   => 'textarea',
 			'label'  => __( 'And this is how it reads', 'oc-theme' ),
-			'help'   => __( 'Press the button and we turn your points into the text for the page. Read it over — change a word, or ask for it again differently. Nothing is kept until you are happy with it.', 'oc-theme' ),
+			'help'   => __( 'Press the button and we turn your points into the text for the page. Not quite it? Ask for another version — up to three — and pick the one you like. Every word stays yours to change.', 'oc-theme' ),
 			'rows'   => 10,
 			'when'   => array( 'about_mode', array( 'write' ) ),
 			'target' => array( 'call', 'about' ),

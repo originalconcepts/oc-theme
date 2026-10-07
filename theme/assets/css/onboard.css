@@ -1287,3 +1287,10 @@ button.oc-onb-steps__i { cursor: pointer; }
 .oc-onb-next-step__links .oc-onb-btn { text-decoration: none; }
 .oc-onb-done__mail { max-width: 52ch; margin: 18px auto 0; color: var(--onb-ink-2); }
 @media (max-width: 480px) { .oc-onb-next-step { grid-template-columns: 30px minmax(0, 1fr); gap: 10px; padding: 14px; } .oc-onb-next-step__n { width: 30px; height: 30px; font-size: 14px; } }
+
+/* The writer's versions, side by side above the box. */
+.oc-onb-ai__tabs { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 10px 0 6px; }
+.oc-onb-ai__tabs[hidden] { display: none; }
+.oc-onb-ai__tab { border: 1px solid var(--onb-line); background: var(--onb-card); color: inherit; font: inherit; font-size: 13px; padding: 5px 12px; border-radius: 999px; cursor: pointer; }
+.oc-onb-ai__tab.is-on { background: var(--onb-primary); border-color: var(--onb-primary); color: #fff; font-weight: 600; }
+.oc-onb-ai__pick { font-size: 13px; color: var(--onb-ink-2); margin-inline-start: 4px; }

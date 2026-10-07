@@ -13211,7 +13211,7 @@ msgid "The file itself, as large and as sharp as you have it — PNG with a see-
 msgstr "הקובץ עצמו, בגודל ובאיכות הכי טובים שיש לכם — PNG עם רקע שקוף, או SVG. לא צילום של שלט, ולא קובץ עם פינות לבנות מסביב. אין בהישג יד? אפשר להמשיך בלעדיו ולשלוח לנו אחר כך."
 
 msgid "Write it for me"
-msgstr "תכתבו לי"
+msgstr "כתבו לי"
 
 msgid "Write it again"
 msgstr "לכתוב שוב"
@@ -13883,3 +13883,18 @@ msgstr "יוצאים לדרך!!! 🚀"
 
 msgid "Thank you,"
 msgstr "תודה,"
+
+msgid "Write me another version (%1$d/%2$d)"
+msgstr "כתבו לי גרסה נוספת (%1$d/%2$d)"
+
+msgid "%1$d/%2$d — that is the most. Edit the version you like."
+msgstr "%1$d/%2$d — זה המקסימום. ערכו את הגרסה שאהבתם."
+
+msgid "Version %d"
+msgstr "גרסה %d"
+
+msgid "Pick the one you like; you can change any word of it."
+msgstr "בחרו את הגרסה שאהבתם; אפשר לשנות בה כל מילה."
+
+msgid "Press the button and we turn your points into the text for the page. Not quite it? Ask for another version — up to three — and pick the one you like. Every word stays yours to change."
+msgstr "לחצו על הכפתור ואנחנו הופכים את הנקודות שלכם לטקסט של העמוד. לא בדיוק? בקשו גרסה נוספת — עד שלוש — ובחרו את זו שאהבתם. כל מילה נשארת שלכם לשינוי."

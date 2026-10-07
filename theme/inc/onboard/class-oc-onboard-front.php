@@ -331,6 +331,13 @@ final class Front {
 				'found_hint'      => __( 'We found this address on your site. Change it if it is the wrong page.', 'oc-theme' ),
 				'ai_write'        => __( 'Write it for me', 'oc-theme' ),
 				'ai_again'        => __( 'Write it again', 'oc-theme' ),
+				/* translators: 1: which try this is, 2: how many there are. */
+				'ai_more'         => __( 'Write me another version (%1$d/%2$d)', 'oc-theme' ),
+				/* translators: 1: tries used, 2: how many there are. */
+				'ai_max'          => __( '%1$d/%2$d — that is the most. Edit the version you like.', 'oc-theme' ),
+				/* translators: %d: version number. */
+				'ai_version'      => __( 'Version %d', 'oc-theme' ),
+				'ai_pick'         => __( 'Pick the one you like; you can change any word of it.', 'oc-theme' ),
 				'ai_busy'         => __( 'Writing…', 'oc-theme' ),
 				'ai_done'         => __( 'There it is. Change any word you like — it is yours now.', 'oc-theme' ),
 				'ai_failed'       => __( 'That did not work. Try again in a moment, or write it yourself and we will tidy it with you.', 'oc-theme' ),

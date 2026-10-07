@@ -472,35 +472,75 @@
 	/* ------------------------------------------------------------ fields */
 
 	/**
-	 * "Write it for me", and once there are words, "again, differently".
+	 * "Write it for me": each press writes one more version, up to three,
+	 * and the versions stand side by side as tabs so the customer can
+	 * compare and pick. The chosen one is the answer, and it stays
+	 * editable — every word of it is theirs.
 	 *
-	 * The text lands in the field and is saved like anything they typed,
-	 * so it is theirs to keep, change or clear. Nothing writes on its own
-	 * and nothing overwrites without being asked twice.
+	 * The versions live in this browser session; the chosen text is what
+	 * the draft keeps.
 	 *
 	 * @param {string}  id    Field id.
-	 * @param {Element} inner The textarea it writes into.
+	 * @param {Element} inner The textarea the chosen version lives in.
 	 */
 	function writeBar( id, inner ) {
-		var bar  = el( 'div', { 'class': 'oc-onb-ai' } );
-		var go   = el( 'button', { type: 'button', 'class': 'oc-onb-ai__go', text: I.ai_write } );
-		var tone = el( 'input', { type: 'text', 'class': 'oc-onb-in oc-onb-ai__tone', placeholder: I.ai_tone } );
-		var say  = el( 'p', { 'class': 'oc-onb-ai__say' } );
-		var busy = false;
+		var MAX   = 3;
+		var key   = 'oc-onb-ai:' + ( C.token || '' ) + ':' + id;
+		var bar   = el( 'div', { 'class': 'oc-onb-ai' } );
+		var go    = el( 'button', { type: 'button', 'class': 'oc-onb-ai__go', text: I.ai_write } );
+		var tone  = el( 'input', { type: 'text', 'class': 'oc-onb-in oc-onb-ai__tone', placeholder: I.ai_tone } );
+		var say   = el( 'p', { 'class': 'oc-onb-ai__say' } );
+		var tabs  = el( 'div', { 'class': 'oc-onb-ai__tabs', role: 'tablist' } );
+		var busy  = false;
+		var state = { versions: [], cur: -1 };
 
-		var paint = function () {
-			var has = String( inner.value || '' ).trim() !== '';
+		try { state = JSON.parse( window.sessionStorage.getItem( key ) || '' ) || state; } catch ( e ) { /* no storage, no harm */ }
+		if ( ! Array.isArray( state.versions ) ) { state.versions = []; }
 
-			go.textContent = busy ? I.ai_busy : ( has ? I.ai_again : I.ai_write );
-			go.disabled    = busy;
-			tone.hidden    = ! has;
-		};
+		// Words already in the box from before (a reload, an earlier visit)
+		// are a version too, so nothing they had disappears.
+		var had = String( inner.value || '' ).trim();
+
+		if ( had && state.versions.indexOf( had ) === -1 ) {
+			state.versions.push( had );
+			state.cur = state.versions.length - 1;
+		}
+
+		function keep() {
+			try { window.sessionStorage.setItem( key, JSON.stringify( state ) ); } catch ( e ) { /* ignore */ }
+		}
+
+		function choose( i ) {
+			state.cur   = i;
+			inner.value = state.versions[ i ] || '';
+			set( id, inner.value );
+			keep();
+			paint();
+		}
+
+		function paint() {
+			var n = state.versions.length;
+
+			go.textContent = busy ? I.ai_busy : ( 0 === n ? I.ai_write : ( n < MAX ? fmt( I.ai_more, n + 1, MAX ) : fmt( I.ai_max, MAX, MAX ) ) );
+			go.disabled    = busy || n >= MAX;
+			tone.hidden    = 0 === n || n >= MAX;
+			inner.hidden   = 0 === n;
+
+			tabs.innerHTML = '';
+			tabs.hidden    = n < 1;
+
+			state.versions.forEach( function ( v, i ) {
+				var t = el( 'button', { type: 'button', role: 'tab', 'class': 'oc-onb-ai__tab' + ( i === state.cur ? ' is-on' : '' ), 'aria-selected': i === state.cur ? 'true' : 'false', text: fmt( I.ai_version, i + 1 ) } );
+
+				t.addEventListener( 'click', function () { choose( i ); } );
+				tabs.appendChild( t );
+			} );
+
+			if ( n > 1 ) { tabs.appendChild( el( 'span', { 'class': 'oc-onb-ai__pick', text: I.ai_pick } ) ); }
+		}
 
 		go.addEventListener( 'click', function () {
-			if ( busy ) { return; }
-
-			// Asking again over words they may have edited themselves.
-			if ( String( inner.value || '' ).trim() !== '' && ! window.confirm( I.ai_replace ) ) { return; }
+			if ( busy || state.versions.length >= MAX ) { return; }
 
 			busy = true;
 			say.textContent = '';
@@ -511,15 +551,14 @@
 					busy = false;
 
 					if ( r && r.text ) {
-						inner.value = r.text;
-						set( id, r.text );
+						state.versions.push( r.text );
 						tone.value = '';
 						say.textContent = I.ai_done;
+						choose( state.versions.length - 1 );
 					} else {
 						say.textContent = ( r && r.error ) ? r.error : I.ai_failed;
+						paint();
 					}
-
-					paint();
 				} )
 				.catch( function () {
 					busy = false;
@@ -528,14 +567,28 @@
 				} );
 		} );
 
-		inner.addEventListener( 'input', paint );
+		// Edits to the chosen version are kept as that version.
+		inner.addEventListener( 'input', function () {
+			if ( state.cur >= 0 ) {
+				state.versions[ state.cur ] = inner.value;
+				keep();
+			}
+		} );
 
 		bar.appendChild( go );
 		bar.appendChild( tone );
 		bar.appendChild( say );
+
+		// The button comes before the words it writes, and the tabs sit
+		// between the button and the box they switch.
+		if ( inner.parentNode ) {
+			inner.parentNode.insertBefore( bar, inner );
+			inner.parentNode.insertBefore( tabs, inner );
+		}
+
 		paint();
 
-		return bar;
+		return null;
 	}
 
 	function fieldBox( id, f, inner ) {
@@ -564,7 +617,7 @@
 		box.appendChild( inner );
 
 		// Some answers we can draft from what they have already told us.
-		if ( f.ai && C.canWrite ) { box.appendChild( writeBar( id, inner ) ); }
+		if ( f.ai && C.canWrite ) { writeBar( id, inner ); }
 		box.appendChild( el( 'p', { 'class': 'oc-onb-f__err', text: I.required } ) );
 		if ( ! shown( id ) ) { box.hidden = true; }
 		return box;
