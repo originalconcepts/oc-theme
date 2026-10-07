@@ -1993,7 +1993,12 @@ final class Schema {
 			'group'       => __( 'Collection in person', 'oc-theme' ),
 			'label'       => __( 'What to call it at the checkout', 'oc-theme' ),
 			'placeholder' => __( 'Collection from Allenby 1, Tel Aviv — by arrangement only', 'oc-theme' ),
-			'when'        => array( 'pickup_on', array( 'yes' ) ),
+			// With several branches each one names itself at the checkout,
+			// so this one line is only for the shop with a single address.
+			'when'        => array(
+				array( 'pickup_on', array( 'yes' ) ),
+				array( 'branches_mode', array( 'one' ) ),
+			),
 			'target'      => array( 'call', 'shipping' ),
 		);
 
