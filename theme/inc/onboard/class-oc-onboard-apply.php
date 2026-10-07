@@ -996,6 +996,24 @@ final class Apply {
 		$street = trim( (string) $this->v['address_street'] );
 		$city   = trim( (string) $this->v['address_city'] );
 
+		// A chain fills the branches instead of the one address, and
+		// the street field keeps whatever was typed before the switch.
+		// WooCommerce still wants one store address — the first branch
+		// is the head office until someone says otherwise.
+		if ( 'many' === (string) $this->v['branches_mode'] ) {
+			$first  = (array) ( array_values( (array) $this->v['branches'] )[0] ?? array() );
+			$street = trim( (string) ( $first['address'] ?? '' ) );
+			$city   = trim( (string) ( $first['city'] ?? '' ) );
+
+			if ( '' === $street && '' === $city ) {
+				return;
+			}
+
+			$this->write_plain( 'branches', 'woocommerce_store_address', $street );
+			$this->write_plain( 'branches', 'woocommerce_store_city', $city );
+			return;
+		}
+
 		if ( '' === $street && '' === $city ) {
 			return;
 		}
