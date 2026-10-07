@@ -1158,15 +1158,6 @@ final class Apply {
 				);
 			}
 
-			if ( ! is_wp_error( $id ) && '' !== trim( (string) ( $row['about'] ?? '' ) ) ) {
-				wp_update_post(
-					array(
-						'ID'           => (int) $id,
-						'post_content' => wpautop( esc_html( (string) $row['about'] ) ),
-					)
-				);
-			}
-
 			if ( is_wp_error( $id ) || (int) $id < 1 ) {
 				continue;
 			}

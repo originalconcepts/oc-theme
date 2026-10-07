@@ -600,11 +600,6 @@ final class Schema {
 					'label' => __( 'Opening hours', 'oc-theme' ),
 					'help'  => __( 'Pick the days, then the hours. Add a line for days with different hours.', 'oc-theme' ),
 				),
-				'about'   => array(
-					'type'  => 'text',
-					'label' => __( 'A line about this branch', 'oc-theme' ),
-					'help'  => __( 'Optional. For example: parking in the building, or the branch with the workshop.', 'oc-theme' ),
-				),
 				'image'   => array(
 					'type'   => 'file',
 					'accept' => 'image',
