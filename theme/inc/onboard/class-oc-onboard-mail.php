@@ -450,6 +450,7 @@ final class Mail {
 	 *
 	 * @param string $url   Link.
 	 * @param string $label Words.
+	 * @param string $bg    Its colour.
 	 */
 	private static function button( string $url, string $label, string $bg = '#0143a5' ): string {
 		return '<p style="margin:26px 0;text-align:center"><a href="' . esc_url( $url ) . '" style="display:inline-block;background:' . esc_attr( $bg ) . ';color:#fff;text-decoration:none;padding:13px 26px;border-radius:6px;font-weight:700;font-size:16px">' . esc_html( $label ) . '</a></p>';
