@@ -3767,6 +3767,7 @@ return array(
 		"The test products are gone." => "מוצרי הבדיקה הוסרו.",
 		"The test products are on the shop. Go and look at a category, a product and the checkout." => "מוצרי הבדיקה בחנות. לכו להסתכל על קטגוריה, על מוצר ועל הקופה.",
 		"The test report was sent." => "דוח הבדיקה נשלח.",
+		"The text of the About page" => "הטקסט של עמוד האודות",
 		"The thank-you page" => "דף התודה",
 		"The theme prices delivery" => "התבנית מתמחרת את המשלוח",
 		"The theme's page, in place of the block one WooCommerce installs." => "העמוד של התבנית, במקום עמוד הבלוקים שווקומרס מתקין.",

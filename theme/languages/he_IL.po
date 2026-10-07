@@ -13898,3 +13898,6 @@ msgstr "בחרו את הגרסה שאהבתם; אפשר לשנות בה כל מ�
 
 msgid "Press the button and we turn your points into the text for the page. Not quite it? Ask for another version — up to three — and pick the one you like. Every word stays yours to change."
 msgstr "לחצו על הכפתור ואנחנו הופכים את הנקודות שלכם לטקסט של העמוד. לא בדיוק? בקשו גרסה נוספת — עד שלוש — ובחרו את זו שאהבתם. כל מילה נשארת שלכם לשינוי."
+
+msgid "The text of the About page"
+msgstr "הטקסט של עמוד האודות"

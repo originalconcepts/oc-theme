@@ -597,7 +597,7 @@
 		var dep = f.when ? ' is-dep' : '';
 		var box = el( 'div', { 'class': 'oc-onb-f oc-onb-f--' + f.type + dep, 'data-field': id } );
 
-		if ( 'consent' !== f.type && '' !== String( f.label || '' ) ) {
+		if ( 'consent' !== f.type && ! f.quiet && '' !== String( f.label || '' ) ) {
 			box.appendChild( el( 'div', { 'class': 'oc-onb-f__label' }, [
 				el( 'span', { text: f.label } ),
 				f.required ? el( 'span', { 'class': 'oc-onb-f__req', text: ' *', 'aria-label': I.required } ) : null,
@@ -606,7 +606,7 @@
 				f.min && ( 'from_menu' === f.type || 'from_brands' === f.type ) ? el( 'span', { 'class': 'oc-onb-f__req oc-onb-f__min', text: fmt( I.pick_at_least, floorOf( f ) ) } ) : null
 			] ) );
 		}
-		if ( f.help ) { box.appendChild( el( 'p', { 'class': 'oc-onb-f__help', text: f.help } ) ); }
+		if ( f.help && ! f.quiet ) { box.appendChild( el( 'p', { 'class': 'oc-onb-f__help', text: f.help } ) ); }
 
 		// A key already given is never sent back down to the screen, so the
 		// box stands empty; this is what says it is not lost.

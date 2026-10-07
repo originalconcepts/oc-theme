@@ -1237,24 +1237,26 @@ button.oc-onb-steps__i { cursor: pointer; }
 	display: flex;
 	flex-wrap: wrap;
 	align-items: center;
-	gap: 8px;
-	margin-block-start: 8px;
+	gap: 10px;
+	margin-block: 4px 8px;
 }
 
 .oc-onb-ai__go {
 	flex: none;
-	border: 1px solid var(--onb-line);
-	background: var(--onb-card);
-	color: inherit;
+	border: 0;
+	background: var(--onb-primary);
+	color: #fff;
 	font: inherit;
-	font-size: 14px;
-	padding: 7px 14px;
-	border-radius: 999px;
+	font-size: 16px;
+	font-weight: 700;
+	padding: 12px 24px;
+	border-radius: 10px;
 	cursor: pointer;
-	transition: background-color .15s ease, border-color .15s ease;
+	box-shadow: 0 2px 8px rgba(1, 67, 165, .25);
+	transition: filter .15s ease;
 }
 
-.oc-onb-ai__go:hover:not(:disabled) { border-color: var(--onb-ink); }
+.oc-onb-ai__go:hover:not(:disabled) { filter: brightness(1.1); }
 .oc-onb-ai__go:disabled { opacity: .6; cursor: default; }
 
 /* Only worth asking for a change once there is something to change. */
