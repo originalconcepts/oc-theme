@@ -1765,7 +1765,7 @@ final class Schema {
 			'label'   => __( 'Offer more products inside the cart panel?', 'oc-theme' ),
 			'help'    => __( 'Something that goes with what they already took. Whatever is in the cart is never offered again.', 'oc-theme' ),
 			'options' => $yesno,
-			'default' => 'no',
+			'default' => 'yes',
 			'target'  => array( 'option', 'oc_cart', 'up_show' ),
 		);
 
@@ -1884,7 +1884,7 @@ final class Schema {
 			'label'   => __( 'Must they give the recipient\'s phone as well?', 'oc-theme' ),
 			'help'    => __( 'The courier calls whoever opens the door, not whoever paid.', 'oc-theme' ),
 			'options' => $yesno,
-			'default' => 'no',
+			'default' => 'yes',
 			'when'    => array( 'ck_other', array( 'yes' ) ),
 			'target'  => array( 'option', 'oc_checkout', 'phone2_required' ),
 		);
