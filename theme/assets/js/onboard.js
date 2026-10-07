@@ -2685,7 +2685,9 @@
 		var top  = wTop();
 		var bar  = wBar( opts.over );
 		var foot = w( 'wf-foot', [ wLine( '60px' ), wLine( '40px' ), wLine( '52px' ) ] );
-		var head = opts.over ? w( 'wf-head wf-head--over', [ bar ] ) : bar;
+		// On the picture the bar starts at the very top — unless a top strip
+		// is drawn above it, in which case it stands just under that strip.
+		var head = opts.over ? w( 'wf-head wf-head--over' + ( top ? ' wf-head--under-top' : '' ), [ bar ] ) : bar;
 
 		return w( 'wf' + ( opts.over ? ' wf--over' : '' ), [ top, head ].concat( kids ).concat( [ foot ] ).filter( Boolean ) );
 	}

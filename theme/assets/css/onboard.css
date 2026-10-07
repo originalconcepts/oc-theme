@@ -422,8 +422,10 @@ button.oc-onb-dots__d:hover { background: var(--onb-ink-2); }
 .wf-bar__nav { display: flex; gap: 10px; }
 .wf-bar__icons { display: flex; gap: 6px; }
 .wf-bar--over { position: absolute; inset-inline: 0; top: 0; z-index: 2; background: transparent; border-bottom: 0; }
-.wf-bar--over .wf-bar__logo { color: #fff; }
-.wf-bar--over .wf-ln { background: rgba(255, 255, 255, .75); }
+/* The sketch draws no photograph, so the bar on the picture is drawn dark
+   to be seen; on the site itself it is light on the picture. */
+.wf-bar--over .wf-bar__logo { color: #5b6271; }
+.wf-bar--over .wf-ln { background: #b9bfca; }
 .wf--over { position: relative; }
 .wf--over .wf-hero { padding-top: 34px; }
 
@@ -612,7 +614,8 @@ button.oc-onb-dots__d:hover { background: var(--onb-ink-2); }
 /* ------------------------------------------------- more of the sketch */
 
 .wf-top { background: #2b2f3a; color: #fff; text-align: center; font-size: 10px; padding: 5px; letter-spacing: .03em; }
-.wf-head--over { position: absolute; inset-inline: 0; top: 24px; z-index: 2; }
+.wf-head--over { position: absolute; inset-inline: 0; top: 0; z-index: 2; }
+.wf-head--under-top { top: 24px; }
 .wf--over .wf-hero { padding-top: 0; }
 
 /* The running line, built the way the real one is: an inline track of
@@ -835,7 +838,7 @@ button.oc-onb-steps__i { cursor: pointer; }
 /* The header, standing the way they asked it to. Each arrangement has to
    look unlike the others at a glance, or the question is unanswerable. */
 .wf-bar__i { font-size: 10px; color: #6c7382; white-space: nowrap; }
-.wf-bar--over .wf-bar__i { color: rgba(255, 255, 255, .85); }
+.wf-bar--over .wf-bar__i { color: #5b6271; }
 
 /* Beside the logo: the words hug it and the icons are pushed away. */
 .wf-bar--classic .wf-bar__nav { margin-inline-end: auto; }
