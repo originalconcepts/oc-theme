@@ -456,6 +456,8 @@ button.oc-onb-dots__d:hover { background: var(--onb-ink-2); }
 .wf-card__t { margin-top: 5px; color: #6c7382; }
 .wf-card__x { font-size: 10px; color: #a9aebb; }
 .wf-card__p { font-weight: 700; color: #5b6271; }
+.wf-card__atc { margin-top: 6px; background: var(--onb-primary); color: #fff; font-size: 10px; letter-spacing: .04em; text-align: center; padding: 5px 8px; border-radius: 3px; }
+.wf-card__atc--hover { opacity: .85; outline: 1px dashed rgba(1, 67, 165, .5); outline-offset: 2px; }
 /* The shop pins both labels to the physical left, one under the other.
    The sketch does the same, so nobody is surprised later. */
 .wf-tags { position: absolute; top: 5px; left: 5px; display: grid; gap: 3px; justify-items: start; } /* guard-ok: the side the theme itself pins them to */

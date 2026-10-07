@@ -168,6 +168,7 @@ final class Front {
 				/* translators: %1$s: a stand-in number, so the sketch's product names differ. */
 				'wf_product'      => __( 'Product %1$s', 'oc-theme' ),
 				'wf_excerpt'      => __( 'A short line about the product', 'oc-theme' ),
+				'wf_atc'          => __( 'Add to cart', 'oc-theme' ),
 				'wf_sale'         => __( 'SALE', 'oc-theme' ),
 				'wf_new'          => __( 'NEW', 'oc-theme' ),
 				'wf_marquee'      => __( 'Free delivery over a certain amount · New every week', 'oc-theme' ),

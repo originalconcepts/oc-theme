@@ -1529,7 +1529,7 @@ final class Schema {
 			'label'   => __( 'A line of description under the name?', 'oc-theme' ),
 			'help'    => __( 'Helpful when the name alone does not say what it is.', 'oc-theme' ),
 			'options' => $yesno,
-			'default' => 'no',
+			'default' => 'yes',
 			'target'  => array( 'mod', 'oc_card_excerpt' ),
 		);
 
