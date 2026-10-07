@@ -1590,8 +1590,13 @@ final class Schema {
 			'group'   => __( 'Details of the product', 'oc-theme' ),
 			'label'   => __( 'Does your product have details worth listing?', 'oc-theme' ),
 			'help'    => __( 'Not something to choose — something the product has. A television has a screen size and a resolution; a sofa has a fabric and a depth. They stand in a table under the product, in the "More information" tab.', 'oc-theme' ),
-			'options' => $yesno,
+			'options' => array(
+				'no'  => __( 'No', 'oc-theme' ),
+				'yes' => __( 'Yes', 'oc-theme' ),
+			),
 			'default' => 'no',
+			// "No" is the usual answer, not our suggestion: no chip on it.
+			'nopick'  => true,
 			'target'  => array( 'call', 'attrs' ),
 		);
 

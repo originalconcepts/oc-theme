@@ -726,7 +726,7 @@
 			lab.appendChild( inp );
 			lab.appendChild( el( 'span', { 'class': 'oc-onb-choice__t', text: f.options[ k ] } ) );
 
-			if ( on && ! answered && ! f.quiet ) {
+			if ( on && ! answered && ! f.quiet && ! f.nopick ) {
 				lab.appendChild( el( 'span', { 'class': 'oc-onb-choice__tag', text: I.suggested } ) );
 			}
 
