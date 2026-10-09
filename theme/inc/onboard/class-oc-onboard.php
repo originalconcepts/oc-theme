@@ -36,9 +36,11 @@ final class Onboard {
 	const QUIZ     = 'oc_quiz';
 
 	/**
-	 * Where a copy of every mail goes and where the report lands.
+	 * Where a copy of every mail goes and where the report lands: George
+	 * and the project-manager box. One string, comma-separated, because
+	 * wp_mail() and a Cc header both take that as it is.
 	 */
-	const COPY_TO = 'george@originalconcepts.co.il';
+	const COPY_TO = 'george@originalconcepts.co.il, pm@originalconcepts.co.il';
 
 	/**
 	 * Where a shop with no clearing company opens one: our PayPlus link.
