@@ -429,14 +429,14 @@ final class Mail {
 
 		// To the customer: our name on the envelope, replies to George; the
 		// address itself stays the site's, so the server's SPF and the DKIM
-		// key hold. To the team: the site's own host as the name and no
-		// Reply-To. Google Workspace quarantines mail from an outside domain
+		// key hold. To the team: the shop's name (or the host) as the name and
+		// no Reply-To. Google Workspace quarantines mail from an outside domain
 		// that wears our organisation's name, so a Cc on the customer's mail,
 		// or a team mail signed "Original Concepts", never reaches the team.
 		$headers = $team
 			? array(
 				'Content-Type: text/html; charset=UTF-8',
-				'From: ' . self::host() . ' <' . self::from_address() . '>',
+				'From: ' . self::team_sender() . ' <' . self::from_address() . '>',
 			)
 			: array(
 				'Content-Type: text/html; charset=UTF-8',
@@ -467,7 +467,7 @@ final class Mail {
 				$html,
 				array(
 					'Content-Type: text/html; charset=UTF-8',
-					'From: ' . self::host() . ' <' . self::from_address() . '>',
+					'From: ' . self::team_sender() . ' <' . self::from_address() . '>',
 				)
 			);
 		}
@@ -601,7 +601,19 @@ final class Mail {
 	}
 
 	/**
-	 * The site's host, for subjects.
+	 * Who the team's mails come from.
+	 */
+	private static function team_sender(): string {
+		// The shop's name, so the team's inbox can be searched by it; the
+		// host while the site still wears the base's name. Never ours: see send().
+		$name = Onboard::has_own_name() ? wp_specialchars_decode( (string) get_option( 'blogname' ), ENT_QUOTES ) : self::host();
+
+		// A display name may not carry what would break the header.
+		return trim( str_replace( array( '"', '<', '>', "\r", "\n" ), '', $name ) );
+	}
+
+	/**
+	 * The site's host, for subjects and as a fallback sender name.
 	 */
 	private static function host(): string {
 		return (string) wp_parse_url( home_url( '/' ), PHP_URL_HOST );
