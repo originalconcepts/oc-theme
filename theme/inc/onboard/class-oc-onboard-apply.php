@@ -30,6 +30,18 @@ final class Apply {
 	const LOG = 'oc_onboard_log';
 
 	/**
+	 * Post meta on a favicon this engine drew: the logo it was drawn from.
+	 * A site icon without it was chosen by a person and is never replaced.
+	 */
+	const ICON_FROM = '_oc_icon_from_logo';
+
+	/**
+	 * The favicon's side, and the logo's longest side inside it.
+	 */
+	const ICON_SIZE = 512;
+	const ICON_BOX  = 448;
+
+	/**
 	 * The report being built: one row per target.
 	 *
 	 * @var array<int,array<string,string>>
@@ -144,6 +156,7 @@ final class Apply {
 		}
 
 		$this->promised();
+		$this->site_icon();
 		$this->forget_key();
 		$this->wc_page_names();
 		$this->wc_page_content();
@@ -744,6 +757,240 @@ final class Apply {
 		if ( 'home' === (string) $this->v['home_header'] ) {
 			$this->write_mod( 'home_header', 'oc_header_tr_tx', '#ffffff' );
 		}
+	}
+
+	/**
+	 * The favicon, drawn from the logo.
+	 *
+	 * The questionnaire takes the logo and nothing else, so a shop opened
+	 * with WordPress's grey W in the browser tab. Here the logo is fitted
+	 * into a 512-pixel square on a see-through ground and set as the site
+	 * icon — WordPress cuts the smaller sizes from it.
+	 *
+	 * Only while the icon is ours to draw: none at all, or one this engine
+	 * drew from an earlier logo (marked with ICON_FROM). An icon somebody
+	 * chose by hand is theirs, the same rule every other target keeps. A
+	 * second run over the same logo draws nothing new.
+	 */
+	private function site_icon(): void {
+		$logo = (int) get_theme_mod( 'custom_logo', 0 );
+		$file = $logo > 0 ? (string) get_attached_file( $logo ) : '';
+
+		// No logo, no favicon: the gaps list already asks for the logo.
+		if ( '' === $file || ! file_exists( $file ) ) {
+			return;
+		}
+
+		$what = __( 'Favicon', 'oc-theme' );
+		$icon = (int) get_option( 'site_icon', 0 );
+		$from = $icon > 0 ? (int) get_post_meta( $icon, self::ICON_FROM, true ) : 0;
+
+		if ( $icon > 0 && ( 0 === $from || $this->changed_by_hand( 'icon:site_icon', $icon ) ) ) {
+			$this->row( 'site_logo', $what, 'manual', __( 'The site already has a favicon somebody chose; left as it is.', 'oc-theme' ) );
+
+			return;
+		}
+
+		if ( $from === $logo && file_exists( (string) get_attached_file( $icon ) ) ) {
+			$this->remember( 'icon:site_icon', $icon );
+			$this->row( 'site_logo', $what, 'applied', __( 'Already drawn from this logo.', 'oc-theme' ) );
+
+			return;
+		}
+
+		if ( 'image/svg+xml' === get_post_mime_type( $logo ) || preg_match( '/\.svgz?$/i', $file ) ) {
+			$this->row( 'site_logo', $what, 'manual', __( 'The logo is an SVG, which cannot be drawn into a favicon here. Add one by hand: Customize → Site Identity → Site Icon.', 'oc-theme' ) );
+
+			return;
+		}
+
+		$made = self::draw_icon( $logo, $file );
+
+		if ( is_wp_error( $made ) ) {
+			$this->row( 'site_logo', $what, 'manual', $made->get_error_message() . ' ' . __( 'Add one by hand: Customize → Site Identity → Site Icon.', 'oc-theme' ) );
+
+			return;
+		}
+
+		update_option( 'site_icon', $made );
+		$this->remember( 'icon:site_icon', $made );
+
+		// The one drawn from the old logo has nothing left to do.
+		if ( $icon > 0 && $from > 0 ) {
+			wp_delete_attachment( $icon, true );
+		}
+
+		$this->row( 'site_logo', $what, 'applied', __( 'Drawn from the logo: 512×512, on a see-through ground.', 'oc-theme' ) );
+	}
+
+	/**
+	 * Fit a logo into a transparent square and keep it as an attachment.
+	 *
+	 * @param int    $logo The logo's attachment id.
+	 * @param string $file Its file.
+	 * @return int|\WP_Error The new attachment id.
+	 */
+	private static function draw_icon( int $logo, string $file ) {
+		if ( ! function_exists( 'imagecreatetruecolor' ) ) {
+			return new \WP_Error( 'oc_icon_gd', __( 'The server has no image library to draw a favicon with.', 'oc-theme' ) );
+		}
+
+		$src = self::gd_image( $file );
+
+		if ( ! $src ) {
+			return new \WP_Error( 'oc_icon_read', __( 'The logo file could not be read as a picture.', 'oc-theme' ) );
+		}
+
+		imagepalettetotruecolor( $src );
+		imagesavealpha( $src, true );
+
+		// Empty see-through margins around the mark would only shrink it.
+		$cut = imagecropauto( $src, IMG_CROP_TRANSPARENT );
+
+		if ( $cut ) {
+			$src = $cut;
+		}
+
+		$w     = imagesx( $src );
+		$h     = imagesy( $src );
+		$scale = min( self::ICON_BOX / $w, self::ICON_BOX / $h );
+		$nw    = max( 1, (int) round( $w * $scale ) );
+		$nh    = max( 1, (int) round( $h * $scale ) );
+		$dst   = imagecreatetruecolor( self::ICON_SIZE, self::ICON_SIZE );
+
+		if ( ! $dst ) {
+			return new \WP_Error( 'oc_icon_gd', __( 'The server has no image library to draw a favicon with.', 'oc-theme' ) );
+		}
+
+		// Copy the alpha as it is, onto a ground that is all alpha.
+		imagealphablending( $dst, false );
+		imagesavealpha( $dst, true );
+		imagefill( $dst, 0, 0, (int) imagecolorallocatealpha( $dst, 0, 0, 0, 127 ) );
+		imagecopyresampled( $dst, $src, (int) floor( ( self::ICON_SIZE - $nw ) / 2 ), (int) floor( ( self::ICON_SIZE - $nh ) / 2 ), 0, 0, $nw, $nh, $w, $h );
+
+		$up = wp_upload_dir();
+
+		if ( ! empty( $up['error'] ) ) {
+			return new \WP_Error( 'oc_icon_dir', (string) $up['error'] );
+		}
+
+		$name = wp_unique_filename( $up['path'], 'site-icon-' . $logo . '.png' );
+		$path = trailingslashit( $up['path'] ) . $name;
+
+		if ( ! imagepng( $dst, $path, 9 ) ) {
+			return new \WP_Error( 'oc_icon_write', __( 'The favicon could not be written to the uploads folder.', 'oc-theme' ) );
+		}
+
+		$id = wp_insert_attachment(
+			array(
+				'post_mime_type' => 'image/png',
+				'post_title'     => __( 'Site icon', 'oc-theme' ),
+				'post_status'    => 'inherit',
+				'guid'           => trailingslashit( $up['url'] ) . $name,
+			),
+			$path,
+			0,
+			true
+		);
+
+		if ( is_wp_error( $id ) ) {
+			wp_delete_file( $path );
+
+			return $id;
+		}
+
+		require_once ABSPATH . 'wp-admin/includes/image.php';
+		require_once ABSPATH . 'wp-admin/includes/class-wp-site-icon.php';
+
+		// The sizes WordPress itself cuts for a site icon (32, 180, 192,
+		// 270), the way its own cropper asks for them.
+		$cutter = $GLOBALS['wp_site_icon'] ?? null;
+
+		if ( $cutter instanceof \WP_Site_Icon ) {
+			add_filter( 'intermediate_image_sizes_advanced', array( $cutter, 'additional_sizes' ) );
+		}
+
+		wp_update_attachment_metadata( $id, wp_generate_attachment_metadata( $id, $path ) );
+
+		if ( $cutter instanceof \WP_Site_Icon ) {
+			remove_filter( 'intermediate_image_sizes_advanced', array( $cutter, 'additional_sizes' ) );
+		}
+
+		// Kept out of the media library, as WordPress keeps its own icons.
+		update_post_meta( $id, '_wp_attachment_context', 'site-icon' );
+		update_post_meta( $id, self::ICON_FROM, $logo );
+
+		return (int) $id;
+	}
+
+	/**
+	 * A picture file as a GD image: straight from the bytes, or through
+	 * WordPress's editor for a format this GD cannot read (WebP or AVIF on
+	 * an older build, where Imagick can).
+	 *
+	 * @param string $file The file.
+	 * @return \GdImage|false
+	 */
+	private static function gd_image( string $file ) {
+		$raw = file_get_contents( $file ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- a file in uploads.
+		$img = is_string( $raw ) && '' !== $raw && self::gd_reads( $raw ) ? imagecreatefromstring( $raw ) : false;
+
+		if ( $img ) {
+			return $img;
+		}
+
+		$editor = wp_get_image_editor( $file );
+
+		if ( is_wp_error( $editor ) ) {
+			return false;
+		}
+
+		$editor->resize( self::ICON_SIZE * 2, self::ICON_SIZE * 2, false );
+
+		// wp_tempnam() lives in the admin's file tools; the apply runs from
+		// the questionnaire's REST route, where they are not loaded.
+		require_once ABSPATH . 'wp-admin/includes/file.php';
+
+		$tmp   = wp_tempnam( 'oc-icon.png' );
+		$saved = $editor->save( $tmp, 'image/png' );
+
+		if ( is_wp_error( $saved ) || empty( $saved['path'] ) ) {
+			wp_delete_file( $tmp );
+
+			return false;
+		}
+
+		$img = imagecreatefrompng( (string) $saved['path'] );
+
+		wp_delete_file( (string) $saved['path'] );
+
+		if ( $saved['path'] !== $tmp ) {
+			wp_delete_file( $tmp );
+		}
+
+		return $img;
+	}
+
+	/**
+	 * Can this GD read these bytes? Asked first, because a format it does
+	 * not know makes imagecreatefromstring() shout a warning, not fail.
+	 *
+	 * @param string $raw The file's bytes.
+	 */
+	private static function gd_reads( string $raw ): bool {
+		$info = getimagesizefromstring( $raw );
+		$type = is_array( $info ) ? (int) $info[2] : 0;
+		$map  = array(
+			IMAGETYPE_PNG  => IMG_PNG,
+			IMAGETYPE_JPEG => IMG_JPG,
+			IMAGETYPE_GIF  => IMG_GIF,
+		);
+
+		if ( defined( 'IMAGETYPE_WEBP' ) && defined( 'IMG_WEBP' ) ) {
+			$map[ IMAGETYPE_WEBP ] = IMG_WEBP;
+		}
+
+		return isset( $map[ $type ] ) && ( imagetypes() & $map[ $type ] );
 	}
 
 	/* ------------------------------------------------------------ report */

@@ -146,16 +146,43 @@ final class Mail {
 	}
 
 	/**
-	 * Day four: the customer went quiet.
+	 * Day four: the customer went quiet, and the team gets everything it
+	 * needs to pick up the phone — who, how far they got, their own link,
+	 * and what to do with it.
 	 */
 	public static function nudge_team(): bool {
 		$state = Onboard::state();
 		$prog  = Draft::progress();
+		$link  = self::link_for_mail();
+		$name  = (string) $state['client']['name'];
+		$pct   = $prog['total'] > 0 ? (int) round( 100 * $prog['answered'] / $prog['total'] ) : 0;
+		$seen  = (int) $state['activity'];
 
-		$body = '<p>' . esc_html( sprintf( /* translators: 1: client name, 2: site */ __( '%1$s has not progressed with the questionnaire on %2$s for four days.', 'oc-theme' ), (string) $state['client']['name'], home_url( '/' ) ) ) . '</p>'
-			. '<p>' . esc_html( sprintf( /* translators: 1: answered, 2: total */ __( 'Answered: %1$d of %2$d.', 'oc-theme' ), $prog['answered'], $prog['total'] ) ) . '</p>'
-			. '<p>' . esc_html( (string) $state['client']['phone'] ) . ' · ' . esc_html( (string) $state['client']['email'] ) . '</p>'
-			. self::button( admin_url( 'admin.php?page=oc-onboard' ), __( 'Open the onboarding screen', 'oc-theme' ) );
+		$steps = array(
+			esc_html__( 'Call the customer today. Four days of quiet usually means a question they are stuck on, or the mail went to spam.', 'oc-theme' ),
+			esc_html__( 'Offer to fill it in together, on the call: open their link on your computer and go through the screens with them. Everything is saved as you go.', 'oc-theme' ),
+			esc_html__( 'Rather do it on their own? Send them the link on WhatsApp — the button below opens a chat with the message ready.', 'oc-theme' ),
+			esc_html__( 'Or send the invitation mail again from the onboarding screen.', 'oc-theme' ),
+		);
+
+		$wa = self::whatsapp(
+			(string) $state['client']['phone'],
+			sprintf(
+				/* translators: 1: the customer's first name, 2: the questionnaire link. */
+				__( 'Hi %1$s, here is your personal link to the questionnaire for your new store: %2$s — everything is saved as you go.', 'oc-theme' ),
+				self::first_name( $name ),
+				$link
+			)
+		);
+
+		$body = '<p>' . esc_html( sprintf( /* translators: 1: client name, 2: site */ __( '%1$s has not progressed with the questionnaire on %2$s for four days.', 'oc-theme' ), $name, home_url( '/' ) ) ) . '</p>'
+			. self::client_block()
+			. '<p>' . esc_html( sprintf( /* translators: 1: answered, 2: total, 3: percent */ __( 'Answered: %1$d of %2$d (%3$d%%).', 'oc-theme' ), $prog['answered'], $prog['total'], $pct ) )
+			. ' ' . esc_html( $seen ? sprintf( /* translators: %s: how long ago */ __( 'Last activity %s ago.', 'oc-theme' ), human_time_diff( $seen ) ) : __( 'The link was never opened.', 'oc-theme' ) ) . '</p>'
+			. ( '' !== $link ? '<p>' . esc_html__( 'Their personal questionnaire link (the same one as in Monday\'s "Questionnaire link" column):', 'oc-theme' ) . '<br><a href="' . esc_url( $link ) . '" dir="ltr" style="word-break:break-all">' . esc_html( $link ) . '</a></p>' : '' )
+			. self::what_now( $steps )
+			. ( '' !== $wa && '' !== $link ? self::button( $wa, __( 'Send the link on WhatsApp', 'oc-theme' ), '#25d366' ) : '' )
+			. self::button( add_query_arg( 'oc_ask', 'resend', Admin::url() ), __( 'Send the invitation again', 'oc-theme' ) );
 
 		return self::note( 'quiet', 'team', self::send( Onboard::COPY_TO, sprintf( /* translators: %s: site host */ __( 'No progress: %s', 'oc-theme' ), self::host() ), $body, false ) );
 	}
@@ -195,8 +222,16 @@ final class Mail {
 
 		$body = '<p>' . esc_html( sprintf( /* translators: 1: client name, 2: site */ __( '%1$s finished the questionnaire on %2$s two hours ago, and the Drive folders are still not open.', 'oc-theme' ), (string) $state['client']['name'], home_url( '/' ) ) ) . '</p>'
 			. '<p>' . esc_html( sprintf( /* translators: 1: how many tries, 2: the last error */ __( 'The site asked Make %1$d times; the last answer was: %2$s. It keeps trying every fifteen minutes.', 'oc-theme' ), $tries, '' === $why ? '—' : $why ) ) . '</p>'
-			. '<p>' . esc_html__( 'The customer has not received their list yet — it waits for the folders. Open the folders by hand and paste the link on the onboarding screen, and the mail goes out.', 'oc-theme' ) . '</p>'
-			. self::button( admin_url( 'admin.php?page=oc-onboard' ), __( 'Open the onboarding screen', 'oc-theme' ) );
+			. '<p>' . esc_html__( 'The customer has not received their list yet — it waits for the folders.', 'oc-theme' ) . '</p>'
+			. self::client_block()
+			. self::what_now(
+				array(
+					esc_html__( 'On the onboarding screen press "Ask Make again now". If Make answers, the customer\'s mail goes out by itself.', 'oc-theme' ),
+					esc_html__( 'Still nothing? Open the Make scenario\'s history and look for the error.', 'oc-theme' ),
+					esc_html__( 'Or open the folders in Drive by hand and paste the link on the onboarding screen — the customer\'s mail goes out the moment it is saved.', 'oc-theme' ),
+				)
+			)
+			. self::button( Admin::url(), __( 'Open the onboarding screen', 'oc-theme' ) );
 
 		return self::note( 'late', 'team', self::send( Onboard::COPY_TO, sprintf( /* translators: %s: site host */ __( 'Drive folders late: %s', 'oc-theme' ), self::host() ), $body, false ) );
 	}
@@ -300,7 +335,15 @@ final class Mail {
 			. self::my_turn( $sum )
 			. '<p>' . esc_html( sprintf( /* translators: 1..5 counts */ __( 'Applied %1$d · to check %2$d · left as is %3$d · skipped %4$d · errors %5$d', 'oc-theme' ), $sum['applied'], $sum['check'], $sum['manual'], $sum['skipped'], $sum['error'] ) ) . '</p>'
 			. ( $rows ? '<table cellpadding="6" style="border-collapse:collapse;font-size:14px"><tr><th>' . esc_html__( 'Field', 'oc-theme' ) . '</th><th>' . esc_html__( 'Target', 'oc-theme' ) . '</th><th>' . esc_html__( 'Result', 'oc-theme' ) . '</th><th>' . esc_html__( 'Note', 'oc-theme' ) . '</th></tr>' . $rows . '</table>' : '' )
-			. self::button( admin_url( 'admin.php?page=oc-onboard' ), __( 'The full report', 'oc-theme' ) );
+			. self::client_block()
+			. self::what_now(
+				array(
+					esc_html__( 'Open the full report and go over every row marked "Check" or "Error".', 'oc-theme' ),
+					esc_html__( 'Call the customer: thank them, and go over what is left for them — the clearing account and the domain first, they take days.', 'oc-theme' ),
+					esc_html__( 'Their list goes out with the Drive folders. If the folders are not open within two hours, a mail says so.', 'oc-theme' ),
+				)
+			)
+			. self::button( Admin::url(), __( 'The full report', 'oc-theme' ) );
 	}
 
 	/**
@@ -434,13 +477,90 @@ final class Mail {
 	}
 
 	/**
+	 * Who the customer is, for a mail to the team: name, a phone that dials
+	 * when tapped, an email that opens a new mail.
+	 */
+	private static function client_block(): string {
+		$c     = (array) Onboard::state()['client'];
+		$name  = (string) ( $c['name'] ?? '' );
+		$phone = (string) ( $c['phone'] ?? '' );
+		$email = (string) ( $c['email'] ?? '' );
+		$dial  = preg_replace( '/[^0-9+]/', '', $phone );
+		$lines = array();
+
+		if ( '' !== $name ) {
+			$lines[] = '<strong>' . esc_html( $name ) . '</strong>';
+		}
+
+		if ( '' !== $phone ) {
+			$lines[] = esc_html__( 'Phone:', 'oc-theme' ) . ' <a href="' . esc_url( 'tel:' . $dial, array( 'tel' ) ) . '" dir="ltr">' . esc_html( $phone ) . '</a>';
+		}
+
+		if ( '' !== $email ) {
+			$lines[] = esc_html__( 'Email:', 'oc-theme' ) . ' <a href="' . esc_url( 'mailto:' . $email, array( 'mailto' ) ) . '" dir="ltr">' . esc_html( $email ) . '</a>';
+		}
+
+		if ( ! $lines ) {
+			return '';
+		}
+
+		return '<p style="margin:16px 0;padding:12px 14px;background:#f5f7fb;border-radius:8px"><span class="small">' . esc_html__( 'The customer', 'oc-theme' ) . '</span><br>' . implode( '<br>', $lines ) . '</p>';
+	}
+
+	/**
+	 * The closing block of a team mail: what to do now, in order.
+	 *
+	 * @param array<int,string> $steps Each step, already escaped.
+	 */
+	private static function what_now( array $steps ): string {
+		$li = '';
+
+		foreach ( $steps as $step ) {
+			$li .= '<li style="margin:0 0 8px">' . $step . '</li>';
+		}
+
+		return '<p style="margin:22px 0 6px"><strong>' . esc_html_x( 'What to do now', 'team mail heading', 'oc-theme' ) . '</strong></p><ol style="margin:0;padding:0 22px">' . $li . '</ol>';
+	}
+
+	/**
+	 * A WhatsApp chat with the customer, the message already typed. An
+	 * Israeli number written the local way (05x…) becomes 9725x….
+	 *
+	 * @param string $phone The number as the customer gave it.
+	 * @param string $text  The message.
+	 */
+	private static function whatsapp( string $phone, string $text ): string {
+		$digits = (string) preg_replace( '/\D/', '', $phone );
+
+		if ( 0 === strpos( $digits, '00' ) ) {
+			$digits = substr( $digits, 2 );
+		} elseif ( 0 === strpos( $digits, '0' ) ) {
+			$digits = '972' . substr( $digits, 1 );
+		}
+
+		if ( strlen( $digits ) < 9 ) {
+			return '';
+		}
+
+		return 'https://wa.me/' . $digits . '?text=' . rawurlencode( $text );
+	}
+
+	/**
+	 * The first name: a mail says "Hi Dana", not "Hi Dana Cohen".
+	 *
+	 * @param string $name The whole name.
+	 */
+	private static function first_name( string $name ): string {
+		return trim( (string) strtok( trim( $name ), ' ' ) );
+	}
+
+	/**
 	 * Hello, by name.
 	 *
 	 * @param string $name Client name.
 	 */
 	private static function greeting( string $name ): string {
-		// The first name only: a mail says "Hi Dana", not "Hi Dana Cohen".
-		$first = trim( (string) strtok( trim( $name ), ' ' ) );
+		$first = self::first_name( $name );
 
 		return '<p>' . esc_html( '' !== $first ? sprintf( /* translators: %s: name */ __( 'Hi %s,', 'oc-theme' ), $first ) : __( 'Hi,', 'oc-theme' ) ) . '</p>';
 	}

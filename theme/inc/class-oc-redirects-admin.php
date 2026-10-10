@@ -22,6 +22,12 @@ defined( 'ABSPATH' ) || exit;
 final class Redirects_Admin {
 
 	/**
+	 * Rows on one page of the mapping review. Two fields a row keeps a page
+	 * far under PHP's max_input_vars default of 1,000.
+	 */
+	const MAP_PAGE = 200;
+
+	/**
 	 * Hook in.
 	 */
 	public function register(): void {
@@ -462,12 +468,25 @@ final class Redirects_Admin {
 	/**
 	 * The mapper's approval screen: filter by confidence, fix, approve.
 	 *
+	 * One page of MAP_PAGE rows at a time. The form carries only the rows
+	 * on the page, so a file of any length stays far under PHP's
+	 * max_input_vars (1,000 by default — two fields a row cut a 2,000-row
+	 * file in half without a word). Every press — moving between pages,
+	 * changing the filter, approving — first keeps the page's ticks and
+	 * edited targets in the parked mapping, so nothing done on one page is
+	 * lost on the next, and the approvals act on the whole mapping.
+	 *
 	 * @param string              $token   Preview token.
 	 * @param array<string,mixed> $preview Proposals.
 	 */
 	private function map_review( string $token, array $preview ): void {
+		global $wpdb;
+
 		$rows   = (array) ( $preview['rows'] ?? array() );
 		$filter = isset( $_GET['confidence'] ) ? sanitize_key( wp_unslash( $_GET['confidence'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$paged  = isset( $_GET['paged'] ) ? absint( $_GET['paged'] ) : 1; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+		list( $keys, $paged, $pages, $found ) = self::map_slice( $rows, $filter, $paged );
 
 		$counts = array(
 			'certain'  => 0,
@@ -475,6 +494,7 @@ final class Redirects_Admin {
 			'medium'   => 0,
 			'fallback' => 0,
 		);
+		$picked = 0;
 
 		foreach ( $rows as $row ) {
 			$key = (string) ( $row['confidence'] ?? 'fallback' );
@@ -482,6 +502,23 @@ final class Redirects_Admin {
 			if ( isset( $counts[ $key ] ) ) {
 				++$counts[ $key ];
 			}
+
+			if ( empty( $row['off'] ) ) {
+				++$picked;
+			}
+		}
+
+		// Which of this page's addresses already have a rule (an earlier
+		// approval, or a hand-made one that will be left alone).
+		$have = array();
+		$srcs = array();
+
+		foreach ( $keys as $at ) {
+			$srcs[] = (string) $rows[ $at ]['source'];
+		}
+
+		if ( $srcs ) {
+			$have = array_flip( (array) $wpdb->get_col( $wpdb->prepare( 'SELECT source FROM ' . Redirects::table() . ' WHERE source IN (' . implode( ',', array_fill( 0, count( $srcs ), '%s' ) ) . ')', $srcs ) ) ); // phpcs:ignore WordPress.DB -- prepared; table name from $wpdb->prefix, one placeholder per source.
 		}
 
 		$labels = array(
@@ -508,33 +545,41 @@ final class Redirects_Admin {
 			echo esc_html( sprintf( __( 'Auto mapping · %s addresses', 'oc-theme' ), number_format_i18n( count( $rows ) ) ) );
 			?>
 		</h2>
-		<p>
-			<?php foreach ( $counts as $key => $count ) : ?>
-				<a class="button<?php echo $filter === $key ? ' button-primary' : ''; ?>" href="
-				<?php
-				echo esc_url(
-					self::url(
-						array(
-							'tab'        => 'map',
-							'preview'    => $token,
-							'confidence' => $filter === $key ? '' : $key,
-						)
-					)
-				);
-				?>
-				">
-					<?php echo esc_html( $labels[ $key ] . ' · ' . number_format_i18n( $count ) ); ?>
-				</a>
-			<?php endforeach; ?>
-		</p>
 		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 			<?php wp_nonce_field( 'ocrd' ); ?>
 			<input type="hidden" name="action" value="ocrd_confirm_map">
 			<input type="hidden" name="token" value="<?php echo esc_attr( $token ); ?>">
+			<input type="hidden" name="confidence" value="<?php echo esc_attr( $filter ); ?>">
+			<input type="hidden" name="paged" value="<?php echo esc_attr( (string) $paged ); ?>">
+			<?php // Enter in a target field presses the first button of the form: let that be a plain save, not a filter. ?>
+			<button type="submit" name="scope" value="save" tabindex="-1" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden"></button>
+			<p>
+				<?php foreach ( $counts as $key => $count ) : ?>
+					<button type="submit" class="button<?php echo $filter === $key ? ' button-primary' : ''; ?>" name="filter" value="<?php echo esc_attr( $filter === $key ? 'all' : $key ); ?>">
+						<?php echo esc_html( $labels[ $key ] . ' · ' . number_format_i18n( $count ) ); ?>
+					</button>
+				<?php endforeach; ?>
+			</p>
+			<p class="description">
+				<?php
+				echo esc_html(
+					sprintf(
+						/* translators: 1: rows checked, 2: all rows. */
+						__( '%1$s of %2$s rows are checked, across all pages. Ticks and edited targets are kept when you move between pages.', 'oc-theme' ),
+						number_format_i18n( $picked ),
+						number_format_i18n( count( $rows ) )
+					)
+				);
+				?>
+				<button type="submit" class="button-link" name="scope" value="all_on"><?php esc_html_e( 'Check every row', 'oc-theme' ); ?></button>
+				·
+				<button type="submit" class="button-link" name="scope" value="all_off"><?php esc_html_e( 'Uncheck every row', 'oc-theme' ); ?></button>
+			</p>
+			<?php $this->map_pager( $paged, $pages, $found ); ?>
 			<table class="widefat striped ocrd-table">
 				<thead>
 					<tr>
-						<td class="check-column"><input type="checkbox" onclick="document.querySelectorAll('.ocrd-cb').forEach(c=>c.checked=this.checked)"></td>
+						<td class="check-column"><input type="checkbox" title="<?php esc_attr_e( 'This page', 'oc-theme' ); ?>" onclick="document.querySelectorAll('.ocrd-cb').forEach(c=>c.checked=this.checked)"></td>
 						<th><?php esc_html_e( 'Old address', 'oc-theme' ); ?></th>
 						<th><?php esc_html_e( 'Proposed target (editable)', 'oc-theme' ); ?></th>
 						<th><?php esc_html_e( 'How', 'oc-theme' ); ?></th>
@@ -542,17 +587,14 @@ final class Redirects_Admin {
 					</tr>
 				</thead>
 				<tbody>
-					<?php foreach ( $rows as $at => $row ) : ?>
+					<?php foreach ( $keys as $at ) : ?>
 						<?php
+						$row        = $rows[ $at ];
 						$confidence = (string) ( $row['confidence'] ?? 'fallback' );
-
-						if ( '' !== $filter && $filter !== $confidence ) {
-							continue;
-						}
 						?>
 						<tr>
-							<th class="check-column"><input class="ocrd-cb" type="checkbox" name="pick[]" value="<?php echo esc_attr( (string) $at ); ?>" checked></th>
-							<td class="ltr"><code><?php echo esc_html( (string) $row['source'] ); ?></code></td>
+							<th class="check-column"><input class="ocrd-cb" type="checkbox" name="pick[]" value="<?php echo esc_attr( (string) $at ); ?>"<?php checked( empty( $row['off'] ) ); ?>></th>
+							<td class="ltr"><code><?php echo esc_html( (string) $row['source'] ); ?></code><?php echo isset( $have[ (string) $row['source'] ] ) ? ' <span class="description">· ' . esc_html__( 'already has a rule', 'oc-theme' ) . '</span>' : ''; ?></td>
 							<td><input type="text" class="regular-text ltr ocrd-map-target" name="target[<?php echo esc_attr( (string) $at ); ?>]" list="ocrd-found" value="<?php echo esc_attr( (string) $row['target'] ); ?>"></td>
 							<td><?php echo esc_html( $rules[ (string) ( $row['rule'] ?? 'none' ) ] ?? '' ); ?></td>
 							<td><span class="ocrd-conf ocrd-conf--<?php echo esc_attr( $confidence ); ?>"><?php echo esc_html( $labels[ $confidence ] ?? $confidence ); ?></span></td>
@@ -560,20 +602,83 @@ final class Redirects_Admin {
 					<?php endforeach; ?>
 				</tbody>
 			</table>
+			<?php $this->map_pager( $paged, $pages, $found ); ?>
 			<datalist id="ocrd-found"></datalist>
 			<p>
-				<label><?php esc_html_e( 'Apply one target to all checked rows:', 'oc-theme' ); ?>
+				<label><?php esc_html_e( 'Apply one target to the checked rows on this page:', 'oc-theme' ); ?>
 					<input type="text" name="bulk_target" class="regular-text ltr" list="ocrd-found">
 				</label>
+				<button class="button" name="scope" value="save"><?php esc_html_e( 'Save this page', 'oc-theme' ); ?></button>
 			</p>
 			<p>
-				<button class="button button-primary" name="scope" value="picked"><?php esc_html_e( 'Approve the checked rows', 'oc-theme' ); ?></button>
-				<button class="button" name="scope" value="certain"><?php esc_html_e( 'Approve every certain row', 'oc-theme' ); ?></button>
+				<button class="button button-primary" name="scope" value="picked">
+					<?php
+					/* translators: %s: how many rows are checked. */
+					echo esc_html( sprintf( __( 'Approve the checked rows (%s, all pages)', 'oc-theme' ), number_format_i18n( $picked ) ) );
+					?>
+				</button>
+				<button class="button" name="scope" value="certain">
+					<?php
+					/* translators: %s: how many rows are certain. */
+					echo esc_html( sprintf( __( 'Approve every certain row (%s)', 'oc-theme' ), number_format_i18n( $counts['certain'] ) ) );
+					?>
+				</button>
 				<a class="button" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=ocrd_export&map=' . rawurlencode( $token ) ), 'ocrd' ) ); ?>"><?php esc_html_e( 'Export mapping CSV', 'oc-theme' ); ?></a>
 				<a class="button" href="<?php echo esc_url( self::url( array( 'tab' => 'map' ) ) ); ?>"><?php esc_html_e( 'Cancel', 'oc-theme' ); ?></a>
 			</p>
 		</form>
 		<?php
+	}
+
+	/**
+	 * Page buttons for the mapping. Buttons, not links: a move keeps the
+	 * page's choices first.
+	 *
+	 * @param int $paged This page.
+	 * @param int $pages How many.
+	 * @param int $found Rows under the filter.
+	 */
+	private function map_pager( int $paged, int $pages, int $found ): void {
+		if ( $pages < 2 ) {
+			return;
+		}
+
+		echo '<p class="ocrd-pages">';
+		/* translators: 1: first row, 2: last row, 3: all rows. */
+		echo '<span class="description">' . esc_html( sprintf( __( 'Rows %1$s–%2$s of %3$s', 'oc-theme' ), number_format_i18n( ( $paged - 1 ) * self::MAP_PAGE + 1 ), number_format_i18n( min( $found, $paged * self::MAP_PAGE ) ), number_format_i18n( $found ) ) ) . '</span> ';
+
+		for ( $n = 1; $n <= $pages; $n++ ) {
+			if ( $n === $paged ) {
+				echo '<strong>' . esc_html( number_format_i18n( $n ) ) . '</strong>';
+			} else {
+				echo '<button type="submit" class="button-link" name="go" value="' . esc_attr( (string) $n ) . '">' . esc_html( number_format_i18n( $n ) ) . '</button>';
+			}
+		}
+
+		echo '</p>';
+	}
+
+	/**
+	 * The row keys one page of the mapping shows, under a filter.
+	 *
+	 * @param array<int,array<string,mixed>> $rows   All rows.
+	 * @param string                         $filter A confidence, or '' for all.
+	 * @param int                            $paged  The page asked for.
+	 * @return array{0:array<int,int>,1:int,2:int,3:int} Keys, the page, pages, rows under the filter.
+	 */
+	private static function map_slice( array $rows, string $filter, int $paged ): array {
+		$keys = array();
+
+		foreach ( $rows as $at => $row ) {
+			if ( '' === $filter || $filter === (string) ( $row['confidence'] ?? 'fallback' ) ) {
+				$keys[] = (int) $at;
+			}
+		}
+
+		$pages = max( 1, (int) ceil( count( $keys ) / self::MAP_PAGE ) );
+		$paged = min( max( 1, $paged ), $pages );
+
+		return array( array_slice( $keys, ( $paged - 1 ) * self::MAP_PAGE, self::MAP_PAGE ), $paged, $pages, count( $keys ) );
 	}
 
 	/**
@@ -1261,6 +1366,9 @@ final class Redirects_Admin {
 		$update = ! empty( $_POST['update_existing'] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- guard() ran check_admin_referer().
 		$made   = 0;
 
+		// One cache rebuild at the end, not one per row.
+		Redirects::hold();
+
 		foreach ( array( 'new', 'existing', 'problem' ) as $group ) {
 			if ( 'existing' === $group && ! $update ) {
 				continue;
@@ -1288,6 +1396,8 @@ final class Redirects_Admin {
 				}
 			}
 		}
+
+		Redirects::release();
 
 		$this->seal_batch( $batch, $made );
 		delete_transient( 'ocrd_preview_' . $token );
@@ -1353,26 +1463,65 @@ final class Redirects_Admin {
 	}
 
 	/**
-	 * Approve mode C.
+	 * The review form of mode C: keep the page's choices, then move, or
+	 * approve.
+	 *
+	 * The page's ticks and targets go into the parked mapping first, every
+	 * time. A move (page, filter, save) ends there. "Approve every certain
+	 * row" reads the mapping itself and needs nothing from the form, and
+	 * "Approve the checked rows" takes every row still checked on every
+	 * page. Each approval is one batch, so the Batches tab undoes it whole.
 	 */
 	public function handle_confirm_map(): void {
 		$this->guard();
 
 		global $wpdb;
 
-		$token   = sanitize_key( (string) wp_unslash( $_POST['token'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- guard() ran check_admin_referer().
+		// phpcs:disable WordPress.Security.NonceVerification.Missing -- guard() ran check_admin_referer().
+		$token   = sanitize_key( (string) wp_unslash( $_POST['token'] ?? '' ) );
 		$preview = get_transient( 'ocrd_map_' . $token );
 
 		if ( ! is_array( $preview ) ) {
 			$this->back( __( 'The mapping expired — upload again.', 'oc-theme' ), array( 'tab' => 'map' ) );
 		}
 
-		$scope   = sanitize_key( (string) wp_unslash( $_POST['scope'] ?? 'picked' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- guard() ran check_admin_referer().
-		$picks   = array_flip( array_map( 'absint', (array) ( $_POST['pick'] ?? array() ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput -- guard() ran check_admin_referer(); absint() bounds every pick.
-		$targets = (array) ( $_POST['target'] ?? array() ); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput -- guard() ran check_admin_referer(); each target is unslashed and normalized at use.
-		$bulk    = Redirects::normalize( (string) wp_unslash( $_POST['bulk_target'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput -- guard() ran check_admin_referer(); normalized.
-		$batch   = $this->new_batch( (string) $preview['file'] );
-		$made    = 0;
+		$scope  = sanitize_key( (string) wp_unslash( $_POST['scope'] ?? 'save' ) );
+		$filter = sanitize_key( (string) wp_unslash( $_POST['confidence'] ?? '' ) );
+		$paged  = absint( $_POST['paged'] ?? 1 );
+		$go     = isset( $_POST['go'] ) ? absint( $_POST['go'] ) : 0;
+		$now    = isset( $_POST['filter'] ) ? sanitize_key( (string) wp_unslash( $_POST['filter'] ) ) : null;
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
+
+		$preview = $this->keep_page( $preview, $filter, $paged );
+
+		if ( 'all_on' === $scope || 'all_off' === $scope ) {
+			foreach ( array_keys( (array) $preview['rows'] ) as $at ) {
+				if ( 'all_off' === $scope ) {
+					$preview['rows'][ $at ]['off'] = 1;
+				} else {
+					unset( $preview['rows'][ $at ]['off'] );
+				}
+			}
+		}
+
+		set_transient( 'ocrd_map_' . $token, $preview, HOUR_IN_SECONDS * 6 );
+
+		if ( $go || null !== $now || ! in_array( $scope, array( 'picked', 'certain' ), true ) ) {
+			$filter = null === $now ? $filter : ( 'all' === $now ? '' : $now );
+
+			$this->back(
+				__( 'Saved.', 'oc-theme' ),
+				array(
+					'tab'        => 'map',
+					'preview'    => $token,
+					'confidence' => $filter,
+					'paged'      => (string) ( $go ? $go : ( null === $now ? $paged : 1 ) ),
+				)
+			);
+		}
+
+		$batch = $this->new_batch( (string) $preview['file'] );
+		$made  = 0;
 
 		// Manual rows stand; only robot fallbacks may be improved on a re-run.
 		$standing = array();
@@ -1381,14 +1530,17 @@ final class Redirects_Admin {
 			$standing[ (string) $row['source'] ] = array( (string) $row['origin'], (string) $row['confidence'] );
 		}
 
-		foreach ( (array) $preview['rows'] as $at => $row ) {
+		// One cache rebuild at the end, not one per row.
+		Redirects::hold();
+
+		foreach ( (array) $preview['rows'] as $row ) {
 			$confidence = (string) $row['confidence'];
 
 			if ( 'certain' === $scope && 'certain' !== $confidence ) {
 				continue;
 			}
 
-			if ( 'picked' === $scope && ! isset( $picks[ $at ] ) ) {
+			if ( 'picked' === $scope && ! empty( $row['off'] ) ) {
 				continue;
 			}
 
@@ -1403,13 +1555,8 @@ final class Redirects_Admin {
 				}
 			}
 
-			$target = isset( $targets[ $at ] ) ? Redirects::normalize( (string) wp_unslash( $targets[ $at ] ) ) : (string) $row['target'];
-
-			if ( 'picked' === $scope && '' !== $bulk && isset( $picks[ $at ] ) && '' !== (string) wp_unslash( $_POST['bulk_target'] ?? '' ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput -- guard() ran check_admin_referer(); an emptiness check only.
-				$target = $bulk;
-			}
-
-			$saved = Redirects::save(
+			$target = (string) $row['target'];
+			$saved  = Redirects::save(
 				array(
 					'source'     => $source,
 					'target'     => '' === $target ? '/' : $target,
@@ -1425,10 +1572,72 @@ final class Redirects_Admin {
 			}
 		}
 
+		Redirects::release();
+
 		$this->seal_batch( $batch, $made );
 
 		/* translators: %s: how many rules. */
-		$this->back( sprintf( __( 'Imported %s rules.', 'oc-theme' ), number_format_i18n( $made ) ) );
+		$said = sprintf( __( 'Imported %s rules.', 'oc-theme' ), number_format_i18n( $made ) );
+
+		// The certain ones are usually the first step, not the last: back to
+		// the review for the rest.
+		if ( 'certain' === $scope ) {
+			$this->back(
+				$said,
+				array(
+					'tab'     => 'map',
+					'preview' => $token,
+				)
+			);
+		}
+
+		$this->back( $said );
+	}
+
+	/**
+	 * The page's ticks and edited targets, into the parked mapping.
+	 *
+	 * Only the rows the page showed are touched: a row with no tick posted
+	 * was unticked on the page; a row on another page keeps what it had.
+	 *
+	 * @param array<string,mixed> $preview The mapping.
+	 * @param string              $filter  The filter the page was drawn under.
+	 * @param int                 $paged   The page.
+	 * @return array<string,mixed>
+	 */
+	private function keep_page( array $preview, string $filter, int $paged ): array {
+		// phpcs:disable WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput -- guard() ran check_admin_referer(); absint() bounds every pick, each target is unslashed and normalized.
+		$picks   = array_flip( array_map( 'absint', (array) ( $_POST['pick'] ?? array() ) ) );
+		$targets = (array) ( $_POST['target'] ?? array() );
+		$bulk    = Redirects::normalize( (string) wp_unslash( $_POST['bulk_target'] ?? '' ) );
+		$asked   = '' !== trim( (string) wp_unslash( $_POST['bulk_target'] ?? '' ) );
+		// phpcs:enable WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput
+
+		// A form that carried no rows at all (an old tab, a lost post) says
+		// nothing about the ticks; leave them.
+		if ( ! $targets ) {
+			return $preview;
+		}
+
+		list( $keys ) = self::map_slice( (array) $preview['rows'], $filter, $paged );
+
+		foreach ( $keys as $at ) {
+			if ( isset( $picks[ $at ] ) ) {
+				unset( $preview['rows'][ $at ]['off'] );
+			} else {
+				$preview['rows'][ $at ]['off'] = 1;
+			}
+
+			if ( isset( $targets[ $at ] ) ) {
+				$preview['rows'][ $at ]['target'] = Redirects::normalize( (string) wp_unslash( $targets[ $at ] ) );
+			}
+
+			if ( $asked && isset( $picks[ $at ] ) ) {
+				$preview['rows'][ $at ]['target'] = $bulk;
+			}
+		}
+
+		return $preview;
 	}
 
 	/*

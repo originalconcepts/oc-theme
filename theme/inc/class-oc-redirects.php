@@ -42,6 +42,13 @@ final class Redirects {
 	const DICTIONARY = 'ocrd_dictionary';
 
 	/**
+	 * While true, save() leaves the rules cache for release() to rebuild.
+	 *
+	 * @var bool
+	 */
+	private static $held = false;
+
+	/**
 	 * Hook in.
 	 */
 	public function register(): void {
@@ -530,15 +537,44 @@ final class Redirects {
 
 			unset( $data['created_at'], $data['created_by'] );
 			$wpdb->update( self::table(), $data, array( 'id' => (int) $existing['id'] ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
-			self::rebuild_cache();
+			self::touched();
 
 			return (int) $existing['id'];
 		}
 
 		$wpdb->insert( self::table(), $data ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
-		self::rebuild_cache();
+		self::touched();
 
 		return (int) $wpdb->insert_id;
+	}
+
+	/**
+	 * Hold the cache while many rules are saved in a row.
+	 *
+	 * Every save rebuilds the cache of every rule, so approving a mapping
+	 * of two thousand addresses rebuilt it two thousand times — a request
+	 * that grows with the square of the file and ends in a timeout. Held,
+	 * the saves only write their rows, and release() rebuilds once.
+	 */
+	public static function hold(): void {
+		self::$held = true;
+	}
+
+	/**
+	 * Let go, and rebuild the cache once for everything saved meanwhile.
+	 */
+	public static function release(): void {
+		self::$held = false;
+		self::rebuild_cache();
+	}
+
+	/**
+	 * A rule changed: rebuild now, unless a batch is holding the cache.
+	 */
+	private static function touched(): void {
+		if ( ! self::$held ) {
+			self::rebuild_cache();
+		}
 	}
 
 	/**

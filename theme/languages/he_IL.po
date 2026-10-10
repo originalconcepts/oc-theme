@@ -13934,3 +13934,130 @@ msgstr "עוד רגע — בונים את האתר שלכם"
 
 msgid "This takes up to a minute. Please keep this window open; when it is done you will see what comes next."
 msgstr "זה לוקח עד דקה. אל תסגרו את החלון; כשנסיים תראו כאן מה הלאה."
+
+msgid "Or open the folders in Drive by hand and paste the link on the onboarding screen — the customer's mail goes out the moment it is saved."
+msgstr "או לפתוח את התיקיות בדרייב ידנית ולהדביק את הקישור במסך ההתנעה — המייל ללקוח יוצא ברגע שהוא נשמר."
+
+msgid "Still nothing? Open the Make scenario's history and look for the error."
+msgstr "עדיין כלום? לפתוח את היסטוריית התרחיש ב-Make ולחפש את השגיאה."
+
+msgid "%1$s of %2$s rows are checked, across all pages. Ticks and edited targets are kept when you move between pages."
+msgstr "%1$s מתוך %2$s שורות מסומנות, בכל העמודים. הסימונים והיעדים שנערכו נשמרים במעבר בין עמודים."
+
+msgid "Add one by hand: Customize → Site Identity → Site Icon."
+msgstr "להוסיף ידנית: התאמה אישית ← זהות האתר ← סמל האתר."
+
+msgid "Already drawn from this logo."
+msgstr "כבר נוצר מהלוגו הזה."
+
+msgid "Answered: %1$d of %2$d (%3$d%%)."
+msgstr "ענו: %1$d מתוך %2$d (%3$d%%)."
+
+msgid "Apply one target to the checked rows on this page:"
+msgstr "יעד אחד לכל השורות המסומנות בעמוד הזה:"
+
+msgid "Approve every certain row (%s)"
+msgstr "אישור כל השורות הוודאיות (%s)"
+
+msgid "Approve the checked rows (%s, all pages)"
+msgstr "אישור השורות המסומנות (%s, בכל העמודים)"
+
+msgid "Call the customer today. Four days of quiet usually means a question they are stuck on, or the mail went to spam."
+msgstr "להתקשר ללקוח היום. ארבעה ימים של שקט הם בדרך כלל שאלה שנתקעו בה, או מייל שנפל לספאם."
+
+msgid "Call the customer: thank them, and go over what is left for them — the clearing account and the domain first, they take days."
+msgstr "להתקשר ללקוח: להודות, ולעבור איתו על מה שנשאר אצלו — קודם חשבון הסליקה והדומיין, הם לוקחים ימים."
+
+msgid "Check every row"
+msgstr "לסמן את כל השורות"
+
+msgid "Drawn from the logo: 512×512, on a see-through ground."
+msgstr "נוצר מהלוגו: 512×512, על רקע שקוף."
+
+msgid "Favicon"
+msgstr "פאביקון"
+
+msgid "Hi %1$s, here is your personal link to the questionnaire for your new store: %2$s — everything is saved as you go."
+msgstr "היי %1$s, זה הקישור האישי שלך לשאלון של החנות החדשה: %2$s — הכול נשמר תוך כדי."
+
+msgid "Last activity %s ago."
+msgstr "פעילות אחרונה לפני %s."
+
+msgid "Offer to fill it in together, on the call: open their link on your computer and go through the screens with them. Everything is saved as you go."
+msgstr "להציע למלא יחד, בשיחה: לפתוח את הקישור שלו אצלך במחשב ולעבור איתו על המסכים. הכול נשמר תוך כדי."
+
+msgid "On the onboarding screen press \"Ask Make again now\". If Make answers, the customer's mail goes out by itself."
+msgstr "במסך ההתנעה ללחוץ \"לפנות ל-Make שוב עכשיו\". אם Make עונה, המייל ללקוח יוצא לבד."
+
+msgid "Open the full report and go over every row marked \"Check\" or \"Error\"."
+msgstr "לפתוח את הדוח המלא ולעבור על כל שורה שמסומנת \"לבדיקה\" או \"שגיאה\"."
+
+msgid "Or send the invitation mail again from the onboarding screen."
+msgstr "או לשלוח שוב את מייל ההזמנה ממסך ההתנעה."
+
+msgid "Rather do it on their own? Send them the link on WhatsApp — the button below opens a chat with the message ready."
+msgstr "מעדיף לבד? לשלוח לו את הקישור בוואטסאפ — הכפתור למטה פותח שיחה עם ההודעה מוכנה."
+
+msgid "Rows %1$s–%2$s of %3$s"
+msgstr "שורות %1$s–%2$s מתוך %3$s"
+
+msgid "Save this page"
+msgstr "שמירת העמוד"
+
+msgid "Send the invitation again"
+msgstr "לשלוח שוב את ההזמנה"
+
+msgid "Send the link on WhatsApp"
+msgstr "לשלוח את הקישור בוואטסאפ"
+
+msgid "Send the questionnaire link to %1$s again, at %2$s?"
+msgstr "לשלוח שוב את הקישור לשאלון ל%1$s, לכתובת %2$s?"
+
+msgid "Site icon"
+msgstr "סמל האתר"
+
+msgid "The customer has not received their list yet — it waits for the folders."
+msgstr "הלקוח עוד לא קיבל את הרשימה שלו — היא מחכה לתיקיות."
+
+msgid "The customer"
+msgstr "הלקוח"
+
+msgid "The favicon could not be written to the uploads folder."
+msgstr "לא ניתן היה לכתוב את הפאביקון לתיקיית ההעלאות."
+
+msgid "The link was never opened."
+msgstr "הקישור לא נפתח אף פעם."
+
+msgid "The logo file could not be read as a picture."
+msgstr "קובץ הלוגו לא נקרא כתמונה."
+
+msgid "The logo is an SVG, which cannot be drawn into a favicon here. Add one by hand: Customize → Site Identity → Site Icon."
+msgstr "הלוגו הוא SVG, ואי אפשר ליצור ממנו פאביקון כאן. להוסיף ידנית: התאמה אישית ← זהות האתר ← סמל האתר."
+
+msgid "The server has no image library to draw a favicon with."
+msgstr "בשרת אין ספריית תמונות ליצירת פאביקון."
+
+msgid "The site already has a favicon somebody chose; left as it is."
+msgstr "לאתר כבר יש פאביקון שמישהו בחר; נשאר כמו שהוא."
+
+msgid "Their list goes out with the Drive folders. If the folders are not open within two hours, a mail says so."
+msgstr "הרשימה שלו יוצאת עם תיקיות הדרייב. אם התיקיות לא נפתחו תוך שעתיים, יגיע על זה מייל."
+
+msgid "Their personal questionnaire link (the same one as in Monday's \"Questionnaire link\" column):"
+msgstr "הקישור האישי שלו לשאלון (אותו קישור שבעמודה \"קישור שאלון\" במאנדיי):"
+
+msgid "There is no customer email on the invitation, so the mail cannot go. Copy the link below and send it on WhatsApp instead."
+msgstr "אין מייל של הלקוח בהזמנה, אז אי אפשר לשלוח מייל. להעתיק את הקישור למטה ולשלוח אותו בוואטסאפ."
+
+msgid "This page"
+msgstr "העמוד הזה"
+
+msgid "Uncheck every row"
+msgstr "לבטל את סימון כל השורות"
+
+msgid "already has a rule"
+msgstr "כבר יש לה כלל"
+
+msgctxt "team mail heading"
+msgid "What to do now"
+msgstr "מה עושים עכשיו"

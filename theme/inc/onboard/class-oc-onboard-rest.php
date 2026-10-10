@@ -512,6 +512,9 @@ final class Rest {
 		Mail::done_team( $report );
 		Drive::request( $user );
 
+		// Monday's card hears the answers are in, off the customer's time.
+		Status::soon();
+
 		return self::answer(
 			array(
 				'ok'     => true,

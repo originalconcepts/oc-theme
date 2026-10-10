@@ -60,6 +60,7 @@ final class Onboard {
 		( new Front() )->register();
 		( new Mail() )->register();
 		( new Drive() )->register();
+		( new Status() )->register();
 		( new Curtain() )->register();
 
 		if ( is_admin() ) {

@@ -134,10 +134,30 @@ final class Admin {
 				echo '<div class="notice notice-success"><p>' . esc_html( $msgs[ $key ] ) . '</p></div>';
 			}
 		}
+		// Arrived from the team's day-four mail: the re-send waits at the top,
+		// one press away. Asked, not done — a link in a mail never sends.
+		$ask = isset( $_GET['oc_ask'] ) && 'resend' === sanitize_key( wp_unslash( (string) $_GET['oc_ask'] ) ) && 'draft' === $state['status'] && $state['link'];
 		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 		?>
 		<div class="wrap oc-onb-admin">
 			<h1><?php esc_html_e( 'Onboarding questionnaire', 'oc-theme' ); ?></h1>
+			<?php if ( $ask ) : ?>
+				<div class="notice notice-warning" style="padding:12px 14px">
+					<p style="margin:0 0 10px">
+						<?php
+						echo esc_html(
+							is_email( (string) $state['client']['email'] )
+								/* translators: 1: client name, 2: their email. */
+								? sprintf( __( 'Send the questionnaire link to %1$s again, at %2$s?', 'oc-theme' ), (string) $state['client']['name'], (string) $state['client']['email'] )
+								: __( 'There is no customer email on the invitation, so the mail cannot go. Copy the link below and send it on WhatsApp instead.', 'oc-theme' )
+						);
+						?>
+					</p>
+					<?php if ( is_email( (string) $state['client']['email'] ) ) : ?>
+						<?php self::action_button( 'oc_onboard_resend', __( 'Send the invitation again', 'oc-theme' ) ); ?>
+					<?php endif; ?>
+				</div>
+			<?php endif; ?>
 			<p><?php esc_html_e( 'The customer fills the questionnaire on this site, at a personal link. When they finish, the answers are written into the settings and the pages, and a report lands here and in your mail.', 'oc-theme' ); ?></p>
 
 			<style>
