@@ -903,18 +903,17 @@ final class Apply {
 		require_once ABSPATH . 'wp-admin/includes/class-wp-site-icon.php';
 
 		// The sizes WordPress itself cuts for a site icon (32, 180, 192,
-		// 270), the way its own cropper asks for them.
+		// 270), the way its own cropper asks for them. The admin keeps one
+		// of these in a global; the questionnaire's REST route has none.
 		$cutter = $GLOBALS['wp_site_icon'] ?? null;
 
-		if ( $cutter instanceof \WP_Site_Icon ) {
-			add_filter( 'intermediate_image_sizes_advanced', array( $cutter, 'additional_sizes' ) );
+		if ( ! $cutter instanceof \WP_Site_Icon ) {
+			$cutter = new \WP_Site_Icon();
 		}
 
+		add_filter( 'intermediate_image_sizes_advanced', array( $cutter, 'additional_sizes' ) );
 		wp_update_attachment_metadata( $id, wp_generate_attachment_metadata( $id, $path ) );
-
-		if ( $cutter instanceof \WP_Site_Icon ) {
-			remove_filter( 'intermediate_image_sizes_advanced', array( $cutter, 'additional_sizes' ) );
-		}
+		remove_filter( 'intermediate_image_sizes_advanced', array( $cutter, 'additional_sizes' ) );
 
 		// Kept out of the media library, as WordPress keeps its own icons.
 		update_post_meta( $id, '_wp_attachment_context', 'site-icon' );
