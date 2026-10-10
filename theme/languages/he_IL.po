@@ -14061,3 +14061,7 @@ msgstr "כבר יש לה כלל"
 msgctxt "team mail heading"
 msgid "What to do now"
 msgstr "מה עושים עכשיו"
+
+#. translators: 1: recipient, 2: subject
+msgid "Copy (to %1$s): %2$s"
+msgstr "העתק (נשלח ל־%1$s): %2$s"

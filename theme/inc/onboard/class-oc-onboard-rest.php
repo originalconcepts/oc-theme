@@ -209,9 +209,10 @@ final class Rest {
 	public function invite( \WP_REST_Request $req ): \WP_REST_Response {
 		$url = Onboard::invite(
 			array(
-				'name'  => (string) $req->get_param( 'name' ),
-				'phone' => (string) $req->get_param( 'phone' ),
-				'email' => (string) $req->get_param( 'email' ),
+				'name'     => (string) $req->get_param( 'name' ),
+				'phone'    => (string) $req->get_param( 'phone' ),
+				'email'    => (string) $req->get_param( 'email' ),
+				'business' => (string) $req->get_param( 'business' ),
 			),
 			array(
 				'item' => (string) $req->get_param( 'monday_item' ),

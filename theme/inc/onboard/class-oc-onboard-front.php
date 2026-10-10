@@ -106,7 +106,9 @@ final class Front {
 			'icons'      => Art::icons(),
 			'atc_icons'  => Art::atc_icons(),
 			'site'       => array(
-				'name' => (string) get_bloginfo( 'name' ),
+				// Empty while the site still wears the base's name, so the
+				// preview says "your shop" and never "OC Base".
+				'name' => Onboard::has_own_name() ? (string) get_bloginfo( 'name' ) : '',
 				'home' => home_url( '/' ),
 			),
 			'i18n'       => array(
@@ -376,7 +378,7 @@ final class Front {
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<meta name="robots" content="noindex, nofollow">
-	<title><?php echo esc_html( sprintf( /* translators: %s: site name */ __( 'Setting up %s', 'oc-theme' ), (string) get_bloginfo( 'name' ) ) ); ?></title>
+	<title><?php echo esc_html( sprintf( /* translators: %s: site name */ __( 'Setting up %s', 'oc-theme' ), Onboard::shop_name() ) ); ?></title>
 	<link rel="stylesheet" href="<?php echo esc_url( $fonts ); ?>"><?php // phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedStylesheet -- a page of its own, outside wp_head. ?>
 	<link rel="stylesheet" href="<?php echo esc_url( OC_THEME_URI . $css . '?v=' . self::stamp( $css ) ); ?>"><?php // phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedStylesheet -- same. ?>
 	<style>:root{--onb-primary:#0143a5;--onb-cta:#0143a5}</style>

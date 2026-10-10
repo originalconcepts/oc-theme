@@ -1008,6 +1008,7 @@ return array(
 		"Copied" => "הועתק ✓",
 		"Copies titles, descriptions, robots and social fields — posts and taxonomies — onto our keys. Nothing is deleted from Yoast; run it again whenever, and going back stays possible." => "מעתיק כותרות, תיאורים, רובוטים ושדות שיתוף — פוסטים וטקסונומיות — אל המפתחות שלנו. שום דבר לא נמחק מ-Yoast; אפשר להריץ שוב מתי שרוצים, ואפשר לחזור אחורה.",
 		"Copy" => "העתקה",
+		"Copy (to %1\$s): %2\$s" => "העתק (נשלח ל־%1\$s): %2\$s",
 		"Copy link" => "העתקת קישור",
 		"Copy the Client ID and the Client Secret into the fields above, tick \"Show the Google button\", and Save." => "מעתיקים את ה-Client ID וה-Client Secret לשדות למעלה, מדליקים \"הצג את כפתור גוגל\" ושומרים.",
 		"Copy the address" => "העתקת הכתובת",

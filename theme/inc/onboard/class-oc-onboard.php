@@ -43,6 +43,12 @@ final class Onboard {
 	const COPY_TO = 'george@originalconcepts.co.il, pm@originalconcepts.co.il';
 
 	/**
+	 * The name base.mywebsite.co.il wears, which every clone inherits until
+	 * the questionnaire writes the customer's own. Never shown to them.
+	 */
+	const BASE_NAME = 'OC Base';
+
+	/**
 	 * Where a shop with no clearing company opens one: our PayPlus link.
 	 */
 	const PAYPLUS = 'https://aff.pays.plus/2ed72e6e-e9b2-420e-b3a2-50cf476309d2?ref=';
@@ -166,7 +172,7 @@ final class Onboard {
 	 * Mint an invitation. A new token replaces the old one; the answers
 	 * already given stay, so a re-issued link picks up where it stopped.
 	 *
-	 * @param array<string,string> $client name | phone | email.
+	 * @param array<string,string> $client name | phone | email | business (the shop's name, optional).
 	 * @param array<string,string> $monday item | board.
 	 * @return string The full link.
 	 */
@@ -203,7 +209,32 @@ final class Onboard {
 
 		self::save_state( $state );
 
+		// The shop's name from Monday, so the link, the tab and the preview
+		// carry it from the first click. Only over the inherited base name:
+		// a name the customer already gave is theirs.
+		$business = sanitize_text_field( $client['business'] ?? '' );
+		if ( '' !== $business && ! self::has_own_name() ) {
+			update_option( 'blogname', $business );
+		}
+
 		return self::url( $token );
+	}
+
+	/**
+	 * Whether the site already wears a name of its own, not the base's.
+	 */
+	public static function has_own_name(): bool {
+		$name = trim( (string) get_option( 'blogname' ) );
+
+		return '' !== $name && self::BASE_NAME !== $name;
+	}
+
+	/**
+	 * The shop's name as the customer should see it: its own, or "your shop"
+	 * while it still wears the base's.
+	 */
+	public static function shop_name(): string {
+		return self::has_own_name() ? (string) get_bloginfo( 'name' ) : __( 'Your shop', 'oc-theme' );
 	}
 
 	/**
