@@ -41,6 +41,16 @@ final class Menu {
 		add_action( 'wp_update_nav_menu', array( 'OC\\Theme\\Menu_Panel', 'flush' ) );
 		add_action( 'customize_save_after', array( 'OC\\Theme\\Menu_Panel', 'flush' ) );
 
+		// Deleting a category takes its menu item with it — WordPress does
+		// that itself, on delete_term, by deleting the item post — but it
+		// never saves the menu, so the hook above does not fire and the
+		// panel kept showing a category that no longer exists until someone
+		// opened the menu and saved it. Renaming a category, or moving it,
+		// changes the words and the address the panel prints as well.
+		add_action( 'deleted_post', array( $this, 'item_gone' ), 10, 2 );
+		add_action( 'delete_term', array( 'OC\\Theme\\Menu_Panel', 'flush' ) );
+		add_action( 'edited_term', array( 'OC\\Theme\\Menu_Panel', 'flush' ) );
+
 		if ( ! is_admin() ) {
 			return;
 		}
@@ -49,6 +59,22 @@ final class Menu {
 		add_action( 'wp_update_nav_menu_item', array( $this, 'save_item' ), 10, 2 );
 		add_action( 'admin_init', array( 'OC\\Theme\\Menu_Panel', 'name_the_blocks' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_assets' ) );
+	}
+
+	/**
+	 * A menu item deleted on its own, without the menu being saved — the
+	 * way WordPress removes the item of a category, page or post that was
+	 * deleted.
+	 *
+	 * @param int           $post_id Post id.
+	 * @param \WP_Post|null $post    The post, when WordPress passes it.
+	 */
+	public function item_gone( $post_id, $post = null ): void {
+		$type = $post instanceof \WP_Post ? $post->post_type : get_post_type( (int) $post_id );
+
+		if ( 'nav_menu_item' === $type ) {
+			Menu_Panel::flush();
+		}
 	}
 
 	/**
