@@ -37,6 +37,14 @@ final class Mail {
 	const SIGN_TEL  = '0774-510511 | 0544-570027';
 
 	/**
+	 * The name on mail to the team. Not FROM_NAME itself: Google Workspace
+	 * drops mail from an outside domain that wears exactly our organisation's
+	 * name (measured: "Original Concepts" never arrived, this one lands at
+	 * once in the inbox).
+	 */
+	const TEAM_FROM_NAME = 'Original Concepts · מערכת';
+
+	/**
 	 * Hook in.
 	 */
 	public function register(): void {
@@ -427,12 +435,12 @@ final class Mail {
 	private static function send( string $to, string $subject, string $body, bool $copy = true ): bool {
 		$team = Onboard::COPY_TO === $to;
 
-		// Our name on the envelope, both to the customer and to the team; the
-		// address itself stays the site's, so the server's SPF and the DKIM
-		// key hold. Only the customer's mail asks for replies to George.
+		// Our name on the envelope (the team's variant of it for the team);
+		// the address itself stays the site's, so the server's SPF and the
+		// DKIM key hold. Only the customer's mail asks for replies to George.
 		$headers = array(
 			'Content-Type: text/html; charset=UTF-8',
-			'From: ' . self::FROM_NAME . ' <' . self::from_address() . '>',
+			'From: ' . ( $team ? self::TEAM_FROM_NAME : self::FROM_NAME ) . ' <' . self::from_address() . '>',
 		);
 
 		if ( ! $team ) {
@@ -462,7 +470,7 @@ final class Mail {
 				$html,
 				array(
 					'Content-Type: text/html; charset=UTF-8',
-					'From: ' . self::FROM_NAME . ' <' . self::from_address() . '>',
+					'From: ' . self::TEAM_FROM_NAME . ' <' . self::from_address() . '>',
 				)
 			);
 		}
