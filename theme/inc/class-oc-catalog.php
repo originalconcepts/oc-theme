@@ -159,6 +159,7 @@ final class Catalog {
 		add_action( 'quick_edit_custom_box', array( $this, 'quick_edit' ), 10, 2 );
 		add_action( 'bulk_edit_custom_box', array( $this, 'quick_edit' ), 10, 2 );
 		add_action( 'admin_footer-edit.php', array( $this, 'list_script' ) );
+		add_action( 'admin_head-edit.php', array( $this, 'list_style' ) );
 		add_action( 'save_post_product', array( $this, 'quick_save' ) );
 		add_action( 'woocommerce_product_bulk_edit_save', array( $this, 'bulk_save' ) );
 	}
@@ -603,6 +604,27 @@ final class Catalog {
 			</div>
 		</fieldset>
 		<?php
+	}
+
+	/**
+	 * A width for the Display column on the products list.
+	 */
+	public function list_style(): void {
+		$screen = get_current_screen();
+
+		if ( ! $screen || 'edit-product' !== $screen->id ) {
+			return;
+		}
+
+		// The products table is `table-layout: fixed` and WooCommerce gives
+		// its own columns widths; a column with none gets whatever is left,
+		// which on a laptop is a sliver — and the label then broke after
+		// every letter, each row standing ten lines tall. A width of its own,
+		// and words that wrap only between words.
+		echo '<style id="oc-tile-col">'
+			. '.wp-list-table .column-oc_tile{width:9.5em}'
+			. '.wp-list-table td.column-oc_tile{word-break:normal;overflow-wrap:normal;line-height:1.4}'
+			. '</style>' . "\n";
 	}
 
 	/**
