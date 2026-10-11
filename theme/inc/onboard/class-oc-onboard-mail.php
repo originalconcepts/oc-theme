@@ -427,22 +427,17 @@ final class Mail {
 	private static function send( string $to, string $subject, string $body, bool $copy = true ): bool {
 		$team = Onboard::COPY_TO === $to;
 
-		// To the customer: our name on the envelope, replies to George; the
+		// Our name on the envelope, both to the customer and to the team; the
 		// address itself stays the site's, so the server's SPF and the DKIM
-		// key hold. To the team: the shop's name (or the host) as the name and
-		// no Reply-To. Google Workspace quarantines mail from an outside domain
-		// that wears our organisation's name, so a Cc on the customer's mail,
-		// or a team mail signed "Original Concepts", never reaches the team.
-		$headers = $team
-			? array(
-				'Content-Type: text/html; charset=UTF-8',
-				'From: ' . self::team_sender() . ' <' . self::from_address() . '>',
-			)
-			: array(
-				'Content-Type: text/html; charset=UTF-8',
-				'From: ' . self::FROM_NAME . ' <' . self::from_address() . '>',
-				'Reply-To: ' . self::FROM_NAME . ' <' . self::REPLY_TO . '>',
-			);
+		// key hold. Only the customer's mail asks for replies to George.
+		$headers = array(
+			'Content-Type: text/html; charset=UTF-8',
+			'From: ' . self::FROM_NAME . ' <' . self::from_address() . '>',
+		);
+
+		if ( ! $team ) {
+			$headers[] = 'Reply-To: ' . self::FROM_NAME . ' <' . self::REPLY_TO . '>';
+		}
 
 		// Mail clients ignore dir on <html>; the direction rides the body and the card as inline style.
 		$dir  = is_rtl() || 0 === strpos( get_locale(), 'he' ) ? 'rtl' : 'ltr';
@@ -457,8 +452,8 @@ final class Mail {
 
 		$sent = wp_mail( $to, $subject, $html, $headers );
 
-		// The team's copy goes as a mail of its own, under the team's
-		// headers, so it lands even where the customer's would be stopped.
+		// The team's copy goes as a mail of its own, not as a Cc: the subject
+		// names who it went to, and a Cc dropped on the way loses it silently.
 		if ( $copy && ! $team ) {
 			wp_mail(
 				Onboard::COPY_TO,
@@ -467,7 +462,7 @@ final class Mail {
 				$html,
 				array(
 					'Content-Type: text/html; charset=UTF-8',
-					'From: ' . self::team_sender() . ' <' . self::from_address() . '>',
+					'From: ' . self::FROM_NAME . ' <' . self::from_address() . '>',
 				)
 			);
 		}
@@ -601,19 +596,7 @@ final class Mail {
 	}
 
 	/**
-	 * Who the team's mails come from.
-	 */
-	private static function team_sender(): string {
-		// The shop's name, so the team's inbox can be searched by it; the
-		// host while the site still wears the base's name. Never ours: see send().
-		$name = Onboard::has_own_name() ? wp_specialchars_decode( (string) get_option( 'blogname' ), ENT_QUOTES ) : self::host();
-
-		// A display name may not carry what would break the header.
-		return trim( str_replace( array( '"', '<', '>', "\r", "\n" ), '', $name ) );
-	}
-
-	/**
-	 * The site's host, for subjects and as a fallback sender name.
+	 * The site's host, for subjects.
 	 */
 	private static function host(): string {
 		return (string) wp_parse_url( home_url( '/' ), PHP_URL_HOST );
