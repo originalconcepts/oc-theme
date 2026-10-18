@@ -139,7 +139,7 @@ final class Emails {
 		// told and change a word of it — not face three blank fields and have
 		// to guess what belongs in them.
 		if ( isset( $words['subject_pickup'] ) ) {
-			$field = array(
+			$field  = array(
 				'oc_subject_pickup' => array(
 					'title'       => __( 'Subject — collection', 'oc-theme' ),
 					'type'        => 'text',
