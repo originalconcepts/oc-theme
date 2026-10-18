@@ -504,11 +504,21 @@ final class Emails {
 			$out = $mod ? wp_date( $fmt, $mod->getTimestamp() ) : '';
 		}
 
-		$stops = array(
-			array( __( 'Received', 'oc-theme' ), $when ),
-			array( $pickup ? __( 'Ready', 'oc-theme' ) : __( 'On its way', 'oc-theme' ), $done > 1 ? $out : '' ),
-			array( $pickup ? __( 'Collected', 'oc-theme' ) : __( 'With you', 'oc-theme' ), $due ),
-		);
+		// A collection has two stops, not three. Nobody marks an order as
+		// collected, so a third "Collected" circle would stay open forever —
+		// the bar would promise a step the shop never takes.
+		$stops = $pickup
+			? array(
+				array( __( 'Received', 'oc-theme' ), $when ),
+				array( __( 'Ready for collection', 'oc-theme' ), $done > 1 ? $out : '' ),
+			)
+			: array(
+				array( __( 'Received', 'oc-theme' ), $when ),
+				array( __( 'On its way', 'oc-theme' ), $done > 1 ? $out : '' ),
+				array( __( 'With you', 'oc-theme' ), $due ),
+			);
+		$last  = count( $stops ) - 1;
+		$share = 2 === count( $stops ) ? '50%' : '33.33%';
 
 		// One outer box for every circle, filled or empty. A border is drawn
 		// OUTSIDE the box in email, so a 38px circle with a 2px border is
@@ -538,7 +548,7 @@ final class Emails {
 			// The half-rule leading INTO this stop is lit once this stop has
 			// been reached; the one leading out of it, once the next has.
 			$before = $i > 0 ? ( $i < $done ? $p['cta'] : $grey ) : 'transparent';
-			$after  = $i < 2 ? ( $i + 1 < $done ? $p['cta'] : $grey ) : 'transparent';
+			$after  = $i < $last ? ( $i + 1 < $done ? $p['cta'] : $grey ) : 'transparent';
 
 			$rule = static function ( string $colour ) use ( $size ): string {
 				return '<td valign="middle" height="' . $size . '" style="height:' . $size . 'px;padding:0;font-size:0;line-height:0;">'
@@ -546,7 +556,7 @@ final class Emails {
 					. '</td>';
 			};
 
-			$cells .= '<td width="33.33%" valign="top" style="padding:0;">'
+			$cells .= '<td width="' . $share . '" valign="top" style="padding:0;">'
 				. '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>'
 				. $rule( $before )
 				. '<td width="' . $size . '" height="' . $size . '" valign="middle" align="center" style="width:' . $size . 'px;height:' . $size . 'px;padding:0;">' . $circle . '</td>'
@@ -995,11 +1005,16 @@ final class Emails {
 			// Gmail — the circles drew, and not one of them was clickable.
 			$cells .= '<td style="padding:0 5px;">'
 				. '<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>'
-				. '<td align="center" valign="middle" width="40" height="40" style="width:40px;height:40px;line-height:40px;'
+				// Centred by the box, not by the text: the email's RTL cells
+				// carry text-align:right from the inliner, which pushed an
+				// inline icon 11px off the middle of its circle. A 20px block
+				// with auto margins and 10px of padding on every side sits in
+				// the centre of a 40px circle whatever the text direction.
+				. '<td align="center" valign="middle" width="40" height="40" style="width:40px;height:40px;padding:0;text-align:center;'
 				. 'border-radius:20px;background:' . esc_attr( $p['panel'] ) . ';">'
-				. '<a href="' . $href . '" style="text-decoration:none;border:0;">'
-				. '<img src="' . esc_url( self::icon_url( (string) $net ) ) . '" width="19" height="19"'
-				. ' alt="' . esc_attr( ucfirst( (string) $net ) ) . '" style="display:inline-block;border:0;width:19px;height:19px;vertical-align:middle;" />'
+				. '<a href="' . $href . '" style="display:block;width:20px;height:20px;padding:10px;text-decoration:none;border:0;">'
+				. '<img src="' . esc_url( self::icon_url( (string) $net ) ) . '" width="20" height="20"'
+				. ' alt="' . esc_attr( ucfirst( (string) $net ) ) . '" style="display:block;margin:0 auto;border:0;width:20px;height:20px;" />'
 				. '</a>'
 				. '</td></tr></table></td>';
 		}
@@ -1013,6 +1028,26 @@ final class Emails {
 			. esc_html__( 'Follow us', 'oc-theme' ) . '</div>'
 			. '<table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center"><tr>' . $cells . '</tr></table>'
 			. '</div>';
+	}
+
+	/**
+	 * Every amount reads left to right, whatever the email's direction.
+	 *
+	 * WooCommerce isolates a price with <bdi>, which takes its direction
+	 * from the first strong character — and a price has none, so in a
+	 * right-to-left email the shekel sign was thrown to the far side of the
+	 * number ("1 ₪" where the shop is set to "₪ 1"). Gmail also drops <bdi>
+	 * outright. An explicit dir="ltr" on the amount is understood by every
+	 * client, and keeps the symbol where the shop's currency setting put it.
+	 *
+	 * @param string $html Email markup.
+	 */
+	public static function ltr_money( string $html ): string {
+		return str_replace(
+			'<span class="woocommerce-Price-amount',
+			'<span dir="ltr" style="direction:ltr;unicode-bidi:embed;white-space:nowrap;" class="woocommerce-Price-amount',
+			$html
+		);
 	}
 
 	/* ---------------------------------------------------------------- body */
@@ -1132,7 +1167,7 @@ final class Emails {
 		$out .= self::social();
 		$out .= '</div>';
 
-		return self::open() . $out . self::close();
+		return self::ltr_money( self::open() . $out . self::close() );
 	}
 
 	/**
@@ -1215,9 +1250,11 @@ final class Emails {
 		$out .= self::social();
 		$out .= '</div>';
 
-		return self::open() . $out . self::close(
-			/* translators: %s: the shop name. */
-			sprintf( __( 'You are receiving this email because you asked %s to tell you when this came back.', 'oc-theme' ), wp_specialchars_decode( (string) get_bloginfo( 'name' ), ENT_QUOTES ) )
+		return self::ltr_money(
+			self::open() . $out . self::close(
+				/* translators: %s: the shop name. */
+				sprintf( __( 'You are receiving this email because you asked %s to tell you when this came back.', 'oc-theme' ), wp_specialchars_decode( (string) get_bloginfo( 'name' ), ENT_QUOTES ) )
+			)
 		);
 	}
 
