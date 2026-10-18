@@ -14065,3 +14065,13 @@ msgstr "מה עושים עכשיו"
 #. translators: 1: recipient, 2: subject
 msgid "Copy (to %1$s): %2$s"
 msgstr "העתק (נשלח ל־%1$s): %2$s"
+
+msgid "Subject — collection"
+msgstr "נושא — איסוף"
+
+#, php-format
+msgid "Used instead of the subject above when the order is being collected. Available placeholders: %s"
+msgstr "בשימוש במקום הנושא שלמעלה כשההזמנה נאספת. ממלאי מקום זמינים: %s"
+
+msgid "Your {site_title} order is ready for collection!"
+msgstr "ההזמנה שלך מ-{site_title} מוכנה לאיסוף!"

@@ -81,7 +81,38 @@ final class Emails {
 					return $this->fields( $fields, $id );
 				}
 			);
+
+			if ( isset( self::wording( $id )['subject_pickup'] ) ) {
+				add_filter( 'woocommerce_email_subject_' . $id, array( $this, 'subject' ), 10, 3 );
+			}
 		}
+	}
+
+	/**
+	 * The subject line for an order being collected.
+	 *
+	 * WooCommerce has one subject per email. The completed email's is about
+	 * a parcel on its way — "your order is on its way" — which is simply
+	 * wrong for an order waiting at the branch, and it is the first line the
+	 * customer reads.
+	 *
+	 * @param string $subject The subject WooCommerce made.
+	 * @param mixed  $order   The order.
+	 * @param mixed  $email   The WC_Email being sent.
+	 */
+	public function subject( $subject, $order = null, $email = null ) {
+		if ( ! $order instanceof \WC_Order || ! self::is_pickup( $order ) || ! is_object( $email ) || empty( $email->id ) ) {
+			return $subject;
+		}
+
+		$words = self::wording( (string) $email->id );
+		$own   = self::opt( $email, 'oc_subject_pickup', (string) ( $words['subject_pickup'] ?? '' ) );
+
+		if ( '' === $own ) {
+			return $subject;
+		}
+
+		return method_exists( $email, 'format_string' ) ? $email->format_string( $own ) : $own;
 	}
 
 	/* ------------------------------------------------------------ settings */
@@ -107,6 +138,23 @@ final class Emails {
 		// A shop opening this screen should see what its customers are being
 		// told and change a word of it — not face three blank fields and have
 		// to guess what belongs in them.
+		if ( isset( $words['subject_pickup'] ) ) {
+			$field = array(
+				'oc_subject_pickup' => array(
+					'title'       => __( 'Subject — collection', 'oc-theme' ),
+					'type'        => 'text',
+					/* translators: %s: the placeholders the field accepts. */
+					'description' => sprintf( __( 'Used instead of the subject above when the order is being collected. Available placeholders: %s', 'oc-theme' ), '{site_title}, {order_number}, {order_date}' ),
+					'desc_tip'    => true,
+					'default'     => $words['subject_pickup'],
+				),
+			);
+			$at     = array_search( 'subject', array_keys( $fields ), true );
+			$fields = false === $at
+				? array_merge( $fields, $field )
+				: array_slice( $fields, 0, (int) $at + 1, true ) + $field + array_slice( $fields, (int) $at + 1, null, true );
+		}
+
 		if ( isset( $words['heading_pickup'] ) ) {
 			$fields['oc_heading_pickup'] = array(
 				'title'       => __( 'Heading — collection', 'oc-theme' ),
@@ -217,6 +265,7 @@ final class Emails {
 
 		if ( 'customer_completed_order' === $id ) {
 			return array(
+				'subject_pickup' => __( 'Your {site_title} order is ready for collection!', 'oc-theme' ),
 				'heading'        => __( 'Your order is on its way', 'oc-theme' ),
 				'heading_pickup' => __( 'Your order is ready for you', 'oc-theme' ),
 				'intro'          => __( "It is packed, it has left us, and it is on its way to you.\nIt should reach you between [from] and [to].\nEverything you ordered is listed below, and we are here if anything needs looking at.", 'oc-theme' ),
