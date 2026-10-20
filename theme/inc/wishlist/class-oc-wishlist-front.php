@@ -193,7 +193,9 @@ final class Front {
 				'logged'     => is_user_logged_in() ? 1 : 0,
 				'page'       => Wishlist::page_url(),
 				'main'       => __( 'My favourites', 'oc-theme' ),
+				/* translators: %s: the list's name. */
 				'added'      => __( 'Added to: %s', 'oc-theme' ),
+				/* translators: %s: the list's name. */
 				'removed'    => __( 'Removed from: %s', 'oc-theme' ),
 				'change'     => __( 'Change', 'oc-theme' ),
 				'undo'       => __( 'Undo', 'oc-theme' ),

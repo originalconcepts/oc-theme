@@ -26,9 +26,12 @@ namespace OC\Theme\Wishlist;
 
 defined( 'ABSPATH' ) || exit;
 
+// Every query in this file reads or writes the feature's own tables, which
+// have no WordPress API and no object-cache layer of their own.
+// phpcs:disable WordPress.DB.DirectDatabaseQuery
+
 /**
  * Storage and settings.
- */
 final class Wishlist {
 
 	/**
@@ -397,7 +400,7 @@ final class Wishlist {
 	 *
 	 * @param string $owner Owner.
 	 * @param string $name  Name; the main list carries none and is named in the language of whoever reads it.
-	 * @param bool   $main  Is this the main list?
+	 * @param bool   $main  Whether this is the main list.
 	 * @return int List id, or 0.
 	 */
 	public static function create_list( string $owner, string $name, bool $main = false ): int {
@@ -495,10 +498,10 @@ final class Wishlist {
 	/**
 	 * What a list is called, to whoever is reading.
 	 *
-	 * @param object $list List row.
+	 * @param object $row List row.
 	 */
-	public static function name_of( object $list ): string {
-		return (int) $list->is_main || '' === (string) $list->name ? __( 'My favourites', 'oc-theme' ) : (string) $list->name;
+	public static function name_of( object $row ): string {
+		return (int) $row->is_main || '' === (string) $row->name ? __( 'My favourites', 'oc-theme' ) : (string) $row->name;
 	}
 
 	/* --------------------------------------------------------------- items */
@@ -799,3 +802,4 @@ final class Wishlist {
 		return hash_hmac( 'sha256', $raw, wp_salt( 'auth' ) );
 	}
 }
+// phpcs:enable WordPress.DB.DirectDatabaseQuery
