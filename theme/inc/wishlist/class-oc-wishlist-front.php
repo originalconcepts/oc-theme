@@ -171,7 +171,7 @@ final class Front {
 	 */
 	public function assets(): void {
 		$min = function_exists( 'oc_asset_min' ) ? oc_asset_min( '/assets/js/wishlist.js' ) : '/assets/js/wishlist.js';
-		$ver = function_exists( 'oc_asset_version' ) ? oc_asset_version() : OC_THEME_VERSION;
+		$ver = function_exists( 'oc_asset_version' ) ? oc_asset_version( $min ) : OC_THEME_VERSION;
 
 		wp_enqueue_script(
 			'oc-wishlist',
@@ -545,7 +545,7 @@ final class Front {
 		ob_start();
 
 		wc_set_loop_prop( 'name', 'oc-wishlist' );
-		wc_set_loop_prop( 'columns', 4 );
+		wc_set_loop_prop( 'columns', '4' );
 
 		woocommerce_product_loop_start();
 

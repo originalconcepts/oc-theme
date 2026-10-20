@@ -21,6 +21,10 @@ define( 'OC_STATS_FILE', __FILE__ );
 define( 'OC_STATS_DIR', __DIR__ );
 define( 'OC_STATS_URL', 'https://example.invalid/' );
 
+// WordPress defines these in wp_cookie_constants(); the stubs do not.
+define( 'COOKIEPATH', '/' );
+define( 'COOKIE_DOMAIN', '' );
+
 /*
  * Optional third-party plugins the theme talks to when they are present.
  * Every call in the theme sits behind a function_exists() guard; these
