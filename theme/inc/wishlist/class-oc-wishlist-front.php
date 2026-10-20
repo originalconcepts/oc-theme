@@ -228,7 +228,7 @@ final class Front {
 				'unshare'    => __( 'Stop sharing', 'oc-theme' ),
 				'moveTo'     => __( 'Move to another list', 'oc-theme' ),
 				'move'       => __( 'Move to a list', 'oc-theme' ),
-				'removeIt'   => __( 'Remove', 'oc-theme' ),
+				'removeIt'   => __( 'Remove from this list', 'oc-theme' ),
 				/* translators: %s: list name. */
 				'movedTo'    => __( 'Moved to: %s', 'oc-theme' ),
 				'noOther'    => __( 'No other list yet. Name one and the product moves there.', 'oc-theme' ),

@@ -14509,3 +14509,6 @@ msgstr "אייקון בלבד"
 
 msgid "Icon and text"
 msgstr "אייקון וטקסט"
+
+msgid "Remove from this list"
+msgstr "הסרה"

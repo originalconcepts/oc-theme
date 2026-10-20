@@ -2908,6 +2908,7 @@ return array(
 		"Remove all items from the cart" => "מחיקת כל המוצרים מהסל",
 		"Remove every rule from this batch?" => "להסיר את כל הכללים מהאצווה הזו?",
 		"Remove from category" => "הסר מקטגוריה",
+		"Remove from this list" => "הסרה",
 		"Remove from your searches" => "הסרה מהחיפושים שלך",
 		"Remove me from the list" => "הסירו אותי מהרשימה",
 		"Remove the files these %d replaced? Any name still written somewhere on the site is kept." => "למחוק את הקבצים ש‑%d אלה החליפו? כל שם שעדיין כתוב במקום כלשהו באתר יישמר.",
