@@ -378,13 +378,24 @@ final class Cart {
 			}
 			$html .= '</div>';
 
-			// The removal question covers the row until answered.
-			$html .= '<div class="oc-mcart__confirm" data-oc-confirm hidden>';
-			/* translators: %s: product name. */
-			$html .= '<span class="oc-mcart__confirm-q">' . esc_html( sprintf( __( 'Remove %s?', 'oc-theme' ), wp_strip_all_tags( (string) $name ) ) ) . '</span>';
+			// The removal question covers the row until answered. With the
+			// wishlist on it offers a third way out: keep the product for
+			// later instead of losing it.
+			$keep = class_exists( '\\OC\\Theme\\Wishlist\\Wishlist' ) && \OC\Theme\Wishlist\Wishlist::on();
+
+			$html .= '<div class="oc-mcart__confirm' . ( $keep ? ' oc-mcart__confirm--wl' : '' ) . '" data-oc-confirm hidden>';
+			$html .= $keep
+				? '<span class="oc-mcart__confirm-q">' . esc_html__( 'Delete?', 'oc-theme' ) . '</span>'
+				/* translators: %s: product name. */
+				: '<span class="oc-mcart__confirm-q">' . esc_html( sprintf( __( 'Remove %s?', 'oc-theme' ), wp_strip_all_tags( (string) $name ) ) ) . '</span>';
 			$html .= '<span class="oc-mcart__confirm-btns">';
-			$html .= '<button type="button" class="oc-mcart__yes" data-oc-confirm-yes data-key="' . esc_attr( $key ) . '">' . esc_html__( 'Yes', 'oc-theme' ) . '</button>';
-			$html .= '<button type="button" class="oc-mcart__no" data-oc-confirm-no>' . esc_html__( 'No', 'oc-theme' ) . '</button>';
+
+			if ( $keep ) {
+				$html .= '<button type="button" class="oc-mcart__move" data-oc-confirm-move data-key="' . esc_attr( $key ) . '" data-pid="' . absint( $item['product_id'] ?? 0 ) . '" data-vid="' . absint( $item['variation_id'] ?? 0 ) . '">' . esc_html__( 'Move to favourites', 'oc-theme' ) . '</button>';
+			}
+
+			$html .= '<button type="button" class="oc-mcart__yes" data-oc-confirm-yes data-key="' . esc_attr( $key ) . '">' . esc_html( $keep ? __( 'Delete', 'oc-theme' ) : __( 'Yes', 'oc-theme' ) ) . '</button>';
+			$html .= '<button type="button" class="oc-mcart__no" data-oc-confirm-no>' . esc_html( $keep ? __( 'Cancel', 'oc-theme' ) : __( 'No', 'oc-theme' ) ) . '</button>';
 			$html .= '</span>';
 			$html .= '</div>';
 

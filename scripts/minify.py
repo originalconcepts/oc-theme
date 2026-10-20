@@ -21,6 +21,7 @@ for src, minifier in (
     (root / "js" / "marketing.js", rjsmin.jsmin),
     (root / "js" / "privacy.js", rjsmin.jsmin),
     (root / "js" / "onboard.js", rjsmin.jsmin),
+    (root / "js" / "wishlist.js", rjsmin.jsmin),
     (root / "css" / "onboard.css", rcssmin.cssmin),
     (root / "css" / "theme.css", rcssmin.cssmin),
     (blocks / "blocks.js", rjsmin.jsmin),

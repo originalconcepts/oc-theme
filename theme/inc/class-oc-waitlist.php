@@ -358,6 +358,16 @@ final class Waitlist {
 			}
 
 			if ( $sent ) {
+				/**
+				 * A back-in-stock notice went out. The wishlist report uses
+				 * it to set notices sent against purchases made.
+				 *
+				 * @param int         $product_id Product holding the list.
+				 * @param array       $entry      The signup.
+				 * @param \WC_Product $target     What came back.
+				 */
+				do_action( 'oc_waitlist_sent', $product_id, $entry, $target );
+
 				unset( $list[ $key ] );
 				$changed = true;
 			}

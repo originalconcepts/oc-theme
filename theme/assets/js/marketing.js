@@ -145,12 +145,12 @@
 
 	/* ---------- translating one event into every dialect ---------- */
 
-	var FB = { PageView: 'PageView', ViewContent: 'ViewContent', Search: 'Search', AddToCart: 'AddToCart', InitiateCheckout: 'InitiateCheckout', AddPaymentInfo: 'AddPaymentInfo', Purchase: 'Purchase', Lead: 'Lead', CompleteRegistration: 'CompleteRegistration', Subscribe: 'Subscribe', Contact: 'Contact' };
-	var TT = { ViewContent: 'ViewContent', Search: 'Search', AddToCart: 'AddToCart', InitiateCheckout: 'InitiateCheckout', AddPaymentInfo: 'AddPaymentInfo', PlaceOrder: 'PlaceAnOrder', Purchase: 'CompletePayment', CompleteRegistration: 'CompleteRegistration', Subscribe: 'Subscribe', Contact: 'Contact', Lead: 'SubmitForm' };
+	var FB = { PageView: 'PageView', ViewContent: 'ViewContent', Search: 'Search', AddToCart: 'AddToCart', InitiateCheckout: 'InitiateCheckout', AddPaymentInfo: 'AddPaymentInfo', Purchase: 'Purchase', Lead: 'Lead', CompleteRegistration: 'CompleteRegistration', Subscribe: 'Subscribe', Contact: 'Contact', AddToWishlist: 'AddToWishlist' };
+	var TT = { ViewContent: 'ViewContent', Search: 'Search', AddToCart: 'AddToCart', InitiateCheckout: 'InitiateCheckout', AddPaymentInfo: 'AddPaymentInfo', PlaceOrder: 'PlaceAnOrder', Purchase: 'CompletePayment', CompleteRegistration: 'CompleteRegistration', Subscribe: 'Subscribe', Contact: 'Contact', Lead: 'SubmitForm', AddToWishlist: 'AddToWishlist' };
 	// ChatGPT ads: the standard events it will optimise towards; anything
 	// else goes as a custom event under our own name.
 	var OA = { ViewContent: 'contents_viewed', AddToCart: 'items_added', InitiateCheckout: 'checkout_started', Purchase: 'order_created', CompleteRegistration: 'registration_completed', Lead: 'lead_created', Subscribe: 'lead_created' };
-	var GA = { ViewContent: 'view_item', ViewCategory: 'view_item_list', Search: 'search', AddToCart: 'add_to_cart', RemoveFromCart: 'remove_from_cart', InitiateCheckout: 'begin_checkout', AddPaymentInfo: 'add_payment_info', Purchase: 'purchase', Lead: 'generate_lead', CompleteRegistration: 'sign_up', Login: 'login', Subscribe: 'subscribe', Contact: 'contact', SelectItem: 'select_item', ScrollDepth: 'scroll_depth', VideoStart: 'video_start', VideoComplete: 'video_complete' };
+	var GA = { ViewContent: 'view_item', ViewCategory: 'view_item_list', Search: 'search', AddToCart: 'add_to_cart', RemoveFromCart: 'remove_from_cart', InitiateCheckout: 'begin_checkout', AddPaymentInfo: 'add_payment_info', Purchase: 'purchase', Lead: 'generate_lead', CompleteRegistration: 'sign_up', Login: 'login', Subscribe: 'subscribe', Contact: 'contact', SelectItem: 'select_item', AddToWishlist: 'add_to_wishlist', ScrollDepth: 'scroll_depth', VideoStart: 'video_start', VideoComplete: 'video_complete' };
 
 	function items( d ) { return ( d && d.items ) || []; }
 
@@ -321,6 +321,16 @@
 
 	document.body.addEventListener( 'oc-added-to-cart', function ( e ) { addedToCart( e.detail && e.detail.id, e.detail && e.detail.qty ); } );
 	document.addEventListener( 'oc:added', function ( e ) { addedToCart( e.detail && e.detail.productId, 1 ); } );
+	document.addEventListener( 'oc:wishlist', function ( e ) {
+		var pid = e.detail && e.detail.productId;
+		if ( ! pid ) { return; }
+		product( pid ).then( function ( item ) {
+			var wid = uid( 'wl' );
+			var d = { currency: cfg.currency, value: item.price, items: [ item ], content_name: item.name, content_category: item.category };
+			send( 'AddToWishlist', d, wid );
+			mirror( 'addtowishlist', d, wid );
+		} );
+	} );
 	document.addEventListener( 'oc:search', function ( e ) {
 		if ( ! cfg.events.search || ! e.detail || ! e.detail.term ) { return; }
 		var sid = uid( 'srch' );

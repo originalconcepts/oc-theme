@@ -143,6 +143,9 @@ require_once OC_THEME_DIR . '/inc/class-oc-addresses.php';
 require_once OC_THEME_DIR . '/inc/class-oc-checkout.php';
 require_once OC_THEME_DIR . '/inc/class-oc-checkout-hold.php';
 require_once OC_THEME_DIR . '/inc/class-oc-checkout-admin.php';
+require_once OC_THEME_DIR . '/inc/wishlist/class-oc-wishlist.php';
+require_once OC_THEME_DIR . '/inc/wishlist/class-oc-wishlist-front.php';
+require_once OC_THEME_DIR . '/inc/wishlist/class-oc-wishlist-admin.php';
 require_once OC_THEME_DIR . '/inc/class-oc-announce.php';
 require_once OC_THEME_DIR . '/inc/class-oc-contact.php';
 require_once OC_THEME_DIR . '/inc/class-oc-thankyou.php';
@@ -368,6 +371,12 @@ function oc_header_icons_render(): void {
 			'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c1.8-3.4 4.6-5 8-5s6.2 1.6 8 5"/></svg>'
 		);
 	}
+
+	/**
+	 * Icons that belong between the account and the cart — the wishlist's
+	 * heart, when that feature is on.
+	 */
+	do_action( 'oc_header_icons_before_cart' );
 
 	if ( class_exists( 'WooCommerce' ) && get_theme_mod( 'oc_header_cart', true ) ) {
 		// The cart is missing on any request that renders the theme before
@@ -616,6 +625,9 @@ add_action( 'admin_notices', 'oc_dependency_notice' );
 ( new OC\Theme\Checkout() )->register();
 ( new OC\Theme\Checkout_Hold() )->register();
 ( new OC\Theme\Checkout_Admin() )->register();
+( new OC\Theme\Wishlist\Wishlist() )->register();
+( new OC\Theme\Wishlist\Front() )->register();
+( new OC\Theme\Wishlist\Admin() )->register();
 ( new OC\Theme\Announce() )->register();
 ( new OC\Theme\Contact() )->register();
 ( new OC\Theme\Legal\Terms() )->register();

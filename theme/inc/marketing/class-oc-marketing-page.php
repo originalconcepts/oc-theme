@@ -86,6 +86,7 @@ final class Page {
 		$ok   = array(
 			'addtocart'      => 'AddToCart',
 			'addpaymentinfo' => 'AddPaymentInfo',
+			'addtowishlist'  => 'AddToWishlist',
 			'search'         => 'Search',
 			'subscribe'      => 'Subscribe',
 			'lead'           => 'Lead',

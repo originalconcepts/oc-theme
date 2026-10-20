@@ -42,6 +42,7 @@ final class Payload {
 		'CompleteRegistration' => 'CompleteRegistration',
 		'Subscribe'            => 'Subscribe',
 		'Contact'              => 'Contact',
+		'AddToWishlist'        => 'AddToWishlist',
 	);
 
 	/**
@@ -60,6 +61,7 @@ final class Payload {
 		'Subscribe'            => 'Subscribe',
 		'Contact'              => 'Contact',
 		'Lead'                 => 'SubmitForm',
+		'AddToWishlist'        => 'AddToWishlist',
 	);
 
 	/**
@@ -107,6 +109,7 @@ final class Payload {
 		'Login'                => 'login',
 		'Subscribe'            => 'subscribe',
 		'Contact'              => 'contact',
+		'AddToWishlist'        => 'add_to_wishlist',
 	);
 
 	/**

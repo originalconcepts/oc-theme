@@ -14126,3 +14126,333 @@ msgstr "התשלום על ההזמנה של %s לא עבר. ההזמנה ממת�
 #, php-format
 msgid "This is the copy %s sends to the shop when a payment fails."
 msgstr "זה העותק ש-%s שולח לחנות כשתשלום נכשל."
+
+
+msgid "Wishlist"
+msgstr "מועדפים"
+
+
+msgid "Data"
+msgstr "נתונים"
+
+
+msgid "Customers can save products to lists"
+msgstr "לקוחות יכולים לשמור מוצרים לרשימות"
+
+
+msgid "A guest saves to one list on their device and is invited to sign in to keep it and to create more lists; a signed-in customer keeps every list on every device. Removing a product from the cart also offers to move it to the favourites."
+msgstr "גולש שלא התחבר שומר לרשימה אחת במכשיר שלו, ומוזמן להתחבר כדי לשמור אותה לתמיד וליצור רשימות נוספות. לקוח מחובר שומר את כל הרשימות בכל מכשיר. בהסרת מוצר מהסל מוצעת גם האפשרות להעביר אותו למועדפים."
+
+
+msgid "The lists page:"
+msgstr "עמוד הרשימות:"
+
+
+msgid "Show the heart on desktop"
+msgstr "הצגת הלב בדסקטופ"
+
+
+msgid "Show the heart on mobile"
+msgstr "הצגת הלב במובייל"
+
+
+msgid "Show how many products are saved"
+msgstr "הצגת מספר המוצרים השמורים"
+
+
+msgid "On the catalogue picture"
+msgstr "על תמונת המוצר בקטלוג"
+
+
+msgid "Not shown"
+msgstr "לא מוצג"
+
+
+msgid "Always"
+msgstr "קבוע"
+
+
+msgid "Corner"
+msgstr "פינה"
+
+
+msgid "Top right"
+msgstr "ימין למעלה"
+
+
+msgid "Top left"
+msgstr "שמאל למעלה"
+
+
+msgid "A label already in that corner moves down to make room."
+msgstr "תווית שכבר נמצאת באותה פינה יורדת מטה כדי לפנות מקום."
+
+
+msgid "On the product page"
+msgstr "בעמוד המוצר"
+
+
+msgid "On the picture, top right"
+msgstr "על התמונה, ימין למעלה"
+
+
+msgid "On the picture, top left"
+msgstr "על התמונה, שמאל למעלה"
+
+
+msgid "Beside the button it takes the same corners as the shop's buttons."
+msgstr "ליד הכפתור הלב מקבל את אותן פינות של כפתורי החנות."
+
+
+msgid "Nothing to show yet: switch the wishlist on in Settings."
+msgstr "עדיין אין מה להציג: יש להפעיל את המועדפים בלשונית ההגדרות."
+
+
+msgid "Products saved now"
+msgstr "מוצרים שמורים עכשיו"
+
+#, php-format
+msgid "%s different products"
+msgstr "%s מוצרים שונים"
+
+
+msgid "People saving"
+msgstr "אנשים ששומרים"
+
+#, php-format
+msgid "%s of them signed in"
+msgstr "%s מהם מחוברים"
+
+
+msgid "Saved in the last 30 days"
+msgstr "נשמרו ב-30 הימים האחרונים"
+
+#, php-format
+msgid "%s lists customers made"
+msgstr "%s רשימות שלקוחות יצרו"
+
+
+msgid "Saved, then bought"
+msgstr "נשמר ואז נקנה"
+
+#, php-format
+msgid "%1$s of %2$s saves in 90 days"
+msgstr "%1$s מתוך %2$s שמירות ב-90 יום"
+
+
+msgid "Back-in-stock notice, then bought"
+msgstr "הודעת חזרה למלאי ואז קנייה"
+
+#, php-format
+msgid "%1$s purchases from %2$s notices in 90 days"
+msgstr "%1$s קניות מתוך %2$s הודעות ב-90 יום"
+
+
+msgid "Where products are saved from"
+msgstr "מאיפה שומרים מוצרים"
+
+
+msgid "Last 30 days."
+msgstr "30 הימים האחרונים."
+
+
+msgid "Moved from the cart"
+msgstr "הועבר מהסל"
+
+
+msgid "The lists window"
+msgstr "חלון הרשימות"
+
+
+msgid "The lists page"
+msgstr "עמוד הרשימות"
+
+
+msgid "Other"
+msgstr "אחר"
+
+
+msgid "Categories saved from most"
+msgstr "הקטגוריות שהכי שומרים מהן"
+
+
+msgid "What is in the lists now."
+msgstr "מה שנמצא ברשימות עכשיו."
+
+
+msgid "Products saved most"
+msgstr "המוצרים שהכי נשמרים"
+
+
+msgid "In lists now"
+msgstr "ברשימות עכשיו"
+
+
+msgid "Saved, ever"
+msgstr "נשמר בסך הכול"
+
+
+msgid "Bought after saving"
+msgstr "נקנה אחרי שמירה"
+
+
+msgid "Waiting for back-in-stock"
+msgstr "ממתינים לחזרה למלאי"
+
+
+msgid "Nothing has been saved yet."
+msgstr "עדיין לא נשמר אף מוצר."
+
+
+msgid "A product that is saved a lot and sold out is worth restocking first; one with many waiting for back-in-stock is a ready audience for that notice."
+msgstr "מוצר שנשמר הרבה ואזל מהמלאי כדאי לחדש ראשון. מוצר שרבים ממתינים לחזרתו הוא קהל מוכן להודעת החזרה למלאי."
+
+
+msgid "Back-in-stock notices against purchases"
+msgstr "הודעות חזרה למלאי מול קניות"
+
+
+msgid "Notices sent in the last 90 days, and how many of those people bought the product within 30 days of the notice."
+msgstr "הודעות שנשלחו ב-90 הימים האחרונים, וכמה מהאנשים שקיבלו אותן קנו את המוצר תוך 30 יום מההודעה."
+
+
+msgid "Notices sent"
+msgstr "הודעות שנשלחו"
+
+
+msgid "Bought"
+msgstr "נקנו"
+
+
+msgid "No notices have been sent since this report began."
+msgstr "לא נשלחו הודעות מאז שהדוח התחיל."
+
+
+msgid "Nothing yet."
+msgstr "עדיין אין נתונים."
+
+
+msgid "Save to my favourites"
+msgstr "שמירה למועדפים"
+
+
+msgid "My lists"
+msgstr "הרשימות שלי"
+
+
+msgid "My favourites"
+msgstr "המועדפים שלי"
+
+#, php-format
+msgid "Added to: %s"
+msgstr "נוסף לרשימה: %s"
+
+#, php-format
+msgid "Removed from: %s"
+msgstr "הוסר מהרשימה: %s"
+
+
+msgid "Undo"
+msgstr "ביטול"
+
+
+msgid "Saved on this device. Sign in to keep it and to create lists."
+msgstr "נשמר במכשיר הזה. כדי לשמור לתמיד וליצור רשימות, יש להתחבר."
+
+
+msgid "Save to a list"
+msgstr "שמירה לרשימה"
+
+
+msgid "New list"
+msgstr "רשימה חדשה"
+
+
+msgid "List name"
+msgstr "שם הרשימה"
+
+
+msgid "Create"
+msgstr "יצירה"
+
+
+msgid "Sign in to create more lists and to keep them on every device."
+msgstr "התחברות מאפשרת ליצור רשימות נוספות ולשמור אותן בכל מכשיר."
+
+
+msgid "1 product"
+msgstr "מוצר אחד"
+
+#, php-format
+msgid "%d products"
+msgstr "%d מוצרים"
+
+
+msgid "Empty"
+msgstr "ריקה"
+
+
+msgid "Link copied"
+msgstr "הקישור הועתק"
+
+
+msgid "Delete this list and the products in it?"
+msgstr "למחוק את הרשימה ואת המוצרים שבה?"
+
+
+msgid "That did not work. Please try again."
+msgstr "זה לא הצליח. כדאי לנסות שוב."
+
+
+msgid "This list is full."
+msgstr "הרשימה מלאה."
+
+
+msgid "Stop sharing"
+msgstr "הפסקת שיתוף"
+
+
+msgid "Rename"
+msgstr "שינוי שם"
+
+
+msgid "Delete list"
+msgstr "מחיקת רשימה"
+
+
+msgid "This list is no longer shared"
+msgstr "הרשימה הזו כבר לא משותפת"
+
+#, php-format
+msgid "Shared with you by %s"
+msgstr "%s שיתף/ה איתך את הרשימה"
+
+
+msgid "A list shared with you"
+msgstr "רשימה ששותפה איתך"
+
+
+msgid "Nothing saved yet"
+msgstr "עדיין לא נשמר כלום"
+
+
+msgid "This list is empty"
+msgstr "הרשימה ריקה"
+
+
+msgid "Tap the heart on any product to save it here."
+msgstr "לחיצה על הלב בכל מוצר שומרת אותו כאן."
+
+
+msgid "Delete?"
+msgstr "למחוק?"
+
+
+msgid "Move to favourites"
+msgstr "העבר למועדפים"
+
+msgid "Share the list"
+msgstr "שיתוף הרשימה"
+
+msgid "Beside the cart button"
+msgstr "ליד כפתור הוספה לסל"

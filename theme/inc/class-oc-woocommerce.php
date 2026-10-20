@@ -1467,6 +1467,14 @@ final class WooCommerce {
 		$this->card_atc_icon();
 		$this->card_flags();
 
+		/**
+		 * Anything else that sits on the card's picture — the wishlist's
+		 * heart, when that feature is on.
+		 *
+		 * @param \WC_Product $product The card's product.
+		 */
+		do_action( 'oc_card_media_overlay', $product );
+
 		// Sold out: the notify bar takes the bottom edge; demand strips only
 		// make sense for products one can actually buy.
 		if ( ! $product->is_in_stock() ) {
