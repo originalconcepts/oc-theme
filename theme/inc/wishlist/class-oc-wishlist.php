@@ -323,7 +323,7 @@ final class Wishlist {
 				$key,
 				array(
 					'expires'  => time() + YEAR_IN_SECONDS,
-					'path'     => COOKIEPATH ? COOKIEPATH : '/',
+					'path'     => rtrim( (string) COOKIEPATH, '/' ) . '/',
 					'domain'   => COOKIE_DOMAIN,
 					'secure'   => is_ssl(),
 					'httponly' => true,
@@ -670,7 +670,7 @@ final class Wishlist {
 		unset( $_COOKIE[ self::COOKIE ] );
 
 		if ( ! headers_sent() ) {
-			setcookie( self::COOKIE, '', time() - HOUR_IN_SECONDS, COOKIEPATH ? COOKIEPATH : '/', COOKIE_DOMAIN, is_ssl(), true );
+			setcookie( self::COOKIE, '', time() - HOUR_IN_SECONDS, rtrim( (string) COOKIEPATH, '/' ) . '/', COOKIE_DOMAIN, is_ssl(), true );
 		}
 	}
 
