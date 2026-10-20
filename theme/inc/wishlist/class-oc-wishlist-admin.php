@@ -451,8 +451,9 @@ final class Admin {
 	private static function saved_now( int $product ): int {
 		global $wpdb;
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared -- the feature's own table, its name built by the class.
-		return (int) $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM ' . Wishlist::table( 'items' ) . ' WHERE product_id = %d AND removed IS NULL', $product ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- table name is ours.
+		$table = Wishlist::table( 'items' );
+
+		return (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$table} WHERE product_id = %d AND removed IS NULL", $product ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- the feature's own table, its name built by the class.
 	}
 
 	/**
