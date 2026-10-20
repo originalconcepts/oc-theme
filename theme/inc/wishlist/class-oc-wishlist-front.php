@@ -219,6 +219,10 @@ final class Front {
 				'full'       => __( 'This list is full.', 'oc-theme' ),
 				'share'      => __( 'Share the list', 'oc-theme' ),
 				'unshare'    => __( 'Stop sharing', 'oc-theme' ),
+				'sharedNote' => __( 'This list is shared. Anyone with the link can see it.', 'oc-theme' ),
+				'shareLink'  => __( 'Link to the list', 'oc-theme' ),
+				'copy'       => __( 'Copy link', 'oc-theme' ),
+				'shareVia'   => __( 'More ways to share', 'oc-theme' ),
 				'rename'     => __( 'Rename', 'oc-theme' ),
 				'deleteList' => __( 'Delete list', 'oc-theme' ),
 			)
@@ -547,6 +551,8 @@ final class Front {
 		wc_set_loop_prop( 'name', 'oc-wishlist' );
 		wc_set_loop_prop( 'columns', '4' );
 
+		// The theme's card grid hangs off a .woocommerce ancestor, which a plain page lacks.
+		echo '<div class="woocommerce">';
 		woocommerce_product_loop_start();
 
 		while ( $query->have_posts() ) {
@@ -556,6 +562,7 @@ final class Front {
 		}
 
 		woocommerce_product_loop_end();
+		echo '</div>';
 		wp_reset_postdata();
 		wc_reset_loop();
 

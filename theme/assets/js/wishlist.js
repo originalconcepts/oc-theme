@@ -140,10 +140,18 @@
 
 		document.body.appendChild( t );
 		requestAnimationFrame( function () { t.classList.add( 'is-in' ); } );
-		toastTimer = setTimeout( function () {
-			t.classList.remove( 'is-in' );
-			setTimeout( function () { t.remove(); }, 300 );
-		}, 5000 );
+		// Long enough to reach "Change"; held while the pointer or focus is on it.
+		function later( ms ) {
+			clearTimeout( toastTimer );
+			toastTimer = setTimeout( function () {
+				t.classList.remove( 'is-in' );
+				setTimeout( function () { t.remove(); }, 300 );
+			}, ms );
+		}
+		t.addEventListener( 'mouseenter', function () { clearTimeout( toastTimer ); } );
+		t.addEventListener( 'mouseleave', function () { later( 2500 ); } );
+		t.addEventListener( 'focusin', function () { clearTimeout( toastTimer ); } );
+		later( action ? 7000 : 4000 );
 	}
 
 	function fmt( s, v ) { return String( s ).replace( '%s', v ); }
@@ -394,6 +402,65 @@
 		return n;
 	}
 
+	/* The link of a shared list, always in view while the list is shared:
+	   copy, WhatsApp, the device's own share sheet, or stop sharing. */
+	function shareBox( list ) {
+		var box = el( 'div', 'oc-wlp__share' );
+		box.appendChild( el( 'p', 'oc-wlp__share-t', cfg.sharedNote ) );
+
+		var row = el( 'div', 'oc-wlp__share-row' );
+		var input = el( 'input', 'oc-wlp__share-url' );
+		input.type = 'text';
+		input.readOnly = true;
+		input.dir = 'ltr';
+		input.value = list.share;
+		input.setAttribute( 'aria-label', cfg.shareLink );
+		input.addEventListener( 'focus', function () { input.select(); } );
+		row.appendChild( input );
+
+		var copy = el( 'button', 'oc-wlp__tool oc-wlp__tool--main', cfg.copy );
+		copy.type = 'button';
+		copy.addEventListener( 'click', function () {
+			function done() { toast( cfg.copied, '' ); }
+			function manual() { input.focus(); input.select(); try { if ( document.execCommand( 'copy' ) ) { done(); } } catch ( er ) {} }
+			if ( navigator.clipboard && window.isSecureContext ) {
+				navigator.clipboard.writeText( list.share ).then( done, manual );
+			} else {
+				manual();
+			}
+		} );
+		row.appendChild( copy );
+		box.appendChild( row );
+
+		var more = el( 'div', 'oc-wlp__share-more' );
+		var wa = el( 'a', 'oc-wlp__tool', 'WhatsApp' );
+		wa.href = 'https://wa.me/?text=' + encodeURIComponent( list.name + ' ' + list.share );
+		wa.target = '_blank';
+		wa.rel = 'noopener';
+		more.appendChild( wa );
+
+		if ( navigator.share ) {
+			var nat = el( 'button', 'oc-wlp__tool', cfg.shareVia );
+			nat.type = 'button';
+			nat.addEventListener( 'click', function () {
+				navigator.share( { title: list.name, url: list.share } ).catch( function () {} );
+			} );
+			more.appendChild( nat );
+		}
+
+		var stop = el( 'button', 'oc-wlp__tool oc-wlp__tool--del', cfg.unshare || 'Stop sharing' );
+		stop.type = 'button';
+		stop.addEventListener( 'click', function () {
+			stop.disabled = true;
+			call( 'unshare', { l: list.id } ).then( function ( d ) { take( d ); loadPage( list.id ); } )
+				.catch( function () { stop.disabled = false; toast( cfg.failed, '' ); } );
+		} );
+		more.appendChild( stop );
+		box.appendChild( more );
+
+		return box;
+	}
+
 	function renderOwn( data ) {
 		open = data.list;
 		page.textContent = '';
@@ -450,30 +517,21 @@
 			if ( state.logged ) {
 				var tools = el( 'div', 'oc-wlp__tools' );
 
-				var share = el( 'button', 'oc-wlp__tool', cfg.share || 'Share' );
-				share.type = 'button';
-				share.addEventListener( 'click', function () {
-					call( 'share', { l: current.id } ).then( function ( d ) {
-						take( d );
-						var url = d.url || '';
-						if ( navigator.share ) {
-							navigator.share( { title: current.name, url: url } ).catch( function () {} );
-						} else if ( navigator.clipboard ) {
-							navigator.clipboard.writeText( url ).then( function () { toast( cfg.copied, url ); } );
-						} else {
-							window.prompt( current.name, url );
-						}
-					} ).catch( function () { toast( cfg.failed, '' ); } );
-				} );
-				tools.appendChild( share );
-
-				if ( current.share ) {
-					var stop = el( 'button', 'oc-wlp__tool', cfg.unshare || 'Stop sharing' );
-					stop.type = 'button';
-					stop.addEventListener( 'click', function () {
-						call( 'unshare', { l: current.id } ).then( function ( d ) { take( d ); loadPage( current.id ); } );
+				if ( ! current.share ) {
+					var share = el( 'button', 'oc-wlp__tool', cfg.share || 'Share' );
+					share.type = 'button';
+					share.addEventListener( 'click', function () {
+						share.disabled = true;
+						call( 'share', { l: current.id } ).then( function ( d ) {
+							take( d );
+							loadPage( current.id );
+							// A phone offers its own sheet straight away; the link box below covers the rest.
+							if ( d.url && navigator.share && window.matchMedia( '(pointer: coarse)' ).matches ) {
+								navigator.share( { title: current.name, url: d.url } ).catch( function () {} );
+							}
+						} ).catch( function () { share.disabled = false; toast( cfg.failed, '' ); } );
 					} );
-					tools.appendChild( stop );
+					tools.appendChild( share );
 				}
 
 				if ( ! current.main ) {
@@ -510,6 +568,10 @@
 			}
 
 			main.appendChild( head );
+
+			if ( state.logged && current.share ) {
+				main.appendChild( shareBox( current ) );
+			}
 		}
 
 		var grid = el( 'div', 'oc-wlp__grid' );
@@ -526,10 +588,15 @@
 		page.textContent = '';
 		var main = el( 'section', 'oc-wlp__main oc-wlp__main--shared' );
 		if ( data.title ) {
-			var head = el( 'div', 'oc-wlp__head' );
-			head.appendChild( el( 'p', 'oc-wlp__by', data.by || '' ) );
-			head.appendChild( el( 'h2', 'oc-wlp__title', data.title ) );
-			main.appendChild( head );
+			// A visitor sees the list's own name as the page heading, not "My lists".
+			var h1 = document.querySelector( '.oc-page-title' );
+			if ( h1 ) {
+				h1.textContent = data.title;
+				document.title = data.title + ( document.title.indexOf( ' - ' ) > -1 ? document.title.slice( document.title.indexOf( ' - ' ) ) : '' );
+			} else {
+				main.appendChild( el( 'h2', 'oc-wlp__title', data.title ) );
+			}
+			main.appendChild( el( 'p', 'oc-wlp__by oc-wlp__by--shared', data.by || '' ) );
 		}
 		var grid = el( 'div', 'oc-wlp__grid' );
 		grid.innerHTML = data.html;

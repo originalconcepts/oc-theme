@@ -176,6 +176,8 @@ final class Wishlist {
 				'post_title'   => __( 'My lists', 'oc-theme' ),
 				'post_name'    => 'wishlist',
 				'post_content' => '[oc_wishlist]',
+				// Personal and shared lists are no search result: out of the index and the sitemap.
+				'meta_input'   => array( '_ocseo_noindex' => '1' ),
 			)
 		);
 

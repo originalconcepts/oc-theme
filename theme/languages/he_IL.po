@@ -14456,3 +14456,12 @@ msgstr "שיתוף הרשימה"
 
 msgid "Beside the cart button"
 msgstr "ליד כפתור הוספה לסל"
+
+msgid "This list is shared. Anyone with the link can see it."
+msgstr "הרשימה משותפת – כל מי שיש לו את הקישור יכול לצפות בה."
+
+msgid "Link to the list"
+msgstr "קישור לרשימה"
+
+msgid "More ways to share"
+msgstr "שיתוף בדרך אחרת"

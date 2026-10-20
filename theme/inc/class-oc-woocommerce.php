@@ -1354,6 +1354,8 @@ final class WooCommerce {
 				'<a class="oc-card-media__link woocommerce-LoopProduct-link" href="%s" aria-hidden="true" tabindex="-1"></a>',
 				esc_url( self::card_link( $product ) )
 			);
+			/** This action is documented further down, in card_media(). */
+			do_action( 'oc_card_media_overlay', $product );
 			echo '</div>';
 			return;
 		}

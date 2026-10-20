@@ -16461,6 +16461,12 @@ body.oc-card-h-custom .woocommerce ul.products li.product .oc-card-media__item {
 
 .oc-wl-heart--product:hover { background: var(--oc-line, #e6e4df); }
 
+/* The button keeps 60% of the row so it never shrinks beside the quantity;
+   with the heart there too that floor pushed the heart onto a line of its
+   own on a phone. The button still takes all the room that is left. */
+body.oc-wl-pp-button.woocommerce div.product form.cart .single_add_to_cart_button,
+body.oc-wl-pp-button div.product form.cart .single_add_to_cart_button { min-inline-size: 0; }
+
 .woocommerce div.product form.cart:not(.variations_form) {
 	flex-wrap: wrap;
 }
@@ -16499,6 +16505,7 @@ body.oc-card-h-custom .woocommerce ul.products li.product .oc-card-media__item {
 .oc-wltoast {
 	max-inline-size: min(380px, calc(100vw - 32px));
 	pointer-events: auto;
+	z-index: 10060; /* above the cart drawer (10010): "moved to favourites" is said from inside it */
 }
 
 .oc-wltoast .oc-toast__txt strong { color: var(--oc-ink); font-size: .86rem; }
@@ -16526,7 +16533,7 @@ body.oc-card-h-custom .woocommerce ul.products li.product .oc-card-media__item {
 .oc-wl-pop {
 	position: fixed;
 	inset: 0;
-	z-index: 1000;
+	z-index: 10070;
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -16817,6 +16824,7 @@ body.oc-card-h-custom .woocommerce ul.products li.product .oc-card-media__item {
 .oc-wlp__title { margin: 0; font-size: clamp(1.3rem, 2.2vw, 1.7rem); }
 .oc-wlp__count { color: var(--oc-ink-2, #6b6b6b); font-size: .92rem; }
 .oc-wlp__by { flex-basis: 100%; margin: 0; color: var(--oc-ink-2, #6b6b6b); font-size: .9rem; }
+.oc-wlp__by--shared { margin: -8px 0 24px; text-align: center; }
 
 .oc-wlp__tools {
 	display: flex;
@@ -16837,7 +16845,44 @@ body.oc-card-h-custom .woocommerce ul.products li.product .oc-card-media__item {
 }
 
 .oc-wlp__tool:hover { border-color: var(--oc-ink); }
+.oc-wlp__tool:disabled { opacity: .55; cursor: default; }
 .oc-wlp__tool--del { color: var(--oc-sale, #b4453c); }
+a.oc-wlp__tool { display: inline-flex; align-items: center; text-decoration: none; }
+
+.oc-wlp__tool--main {
+	border-color: var(--oc-primary);
+	background: var(--oc-primary);
+	color: #fff;
+	white-space: nowrap;
+}
+
+.oc-wlp__tool--main:hover { border-color: var(--oc-primary); opacity: .9; }
+
+.oc-wlp__share {
+	display: grid;
+	gap: 10px;
+	margin-block: -8px 22px;
+	padding: 14px;
+	border-radius: var(--oc-radius, 8px);
+	background: var(--oc-surface-2, #f6f6f4);
+}
+
+.oc-wlp__share-t { margin: 0; font-size: .9rem; color: var(--oc-ink-2, #6b6b6b); }
+.oc-wlp__share-row { display: flex; gap: 8px; }
+
+.oc-wlp__share-url {
+	flex: 1;
+	min-inline-size: 0;
+	padding: 8px 12px;
+	border: 1.5px solid var(--oc-line, #e0ded9);
+	border-radius: var(--oc-cta-r, 8px);
+	background: var(--oc-surface, #fff);
+	font: inherit;
+	font-size: .86rem;
+	text-align: left; /* guard-ok: a URL reads left to right */
+}
+
+.oc-wlp__share-more { display: flex; flex-wrap: wrap; gap: 8px; }
 
 .oc-wlp__empty {
 	display: flex;
