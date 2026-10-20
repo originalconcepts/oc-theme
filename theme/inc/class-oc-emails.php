@@ -1253,8 +1253,14 @@ final class Emails {
 			$fmt = _x( 'F j, Y', 'the date an order was placed', 'oc-theme' );
 		}
 
+		// The time the same way: WordPress's English default "g:i a" writes
+		// "6:24 pm" into a Hebrew email. A shop that chose its own format
+		// keeps it.
+		$clock = trim( (string) get_option( 'time_format' ) );
+		$clock = ( '' === $clock || 'g:i a' === $clock ) ? 'H:i' : $clock;
+
 		$made = $order->get_date_created();
-		$day  = $made ? wc_format_datetime( $made, $fmt ) . ' · ' . wc_format_datetime( $made, (string) get_option( 'time_format', 'H:i' ) ) : '';
+		$day  = $made ? wc_format_datetime( $made, $fmt ) . ' · ' . wc_format_datetime( $made, $clock ) : '';
 
 		$count = (int) $order->get_item_count();
 		$facts = array_filter(
