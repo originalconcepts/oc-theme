@@ -32,6 +32,7 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * Storage and settings.
+ */
 final class Wishlist {
 
 	/**
