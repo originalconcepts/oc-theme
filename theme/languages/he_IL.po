@@ -14075,3 +14075,30 @@ msgstr "בשימוש במקום הנושא שלמעלה כשההזמנה נאס�
 
 msgid "Your {site_title} order is ready for collection!"
 msgstr "ההזמנה שלך מ-{site_title} מוכנה לאיסוף!"
+
+#, php-format
+msgid "New order #%s"
+msgstr "הזמנה חדשה #%s"
+
+#, php-format
+msgid "%s placed an order. Everything you need to handle it is below."
+msgstr "%s ביצע/ה הזמנה. כל מה שצריך כדי לטפל בה מופיע למטה."
+
+msgid "Order total"
+msgstr "סך ההזמנה"
+
+#, php-format
+msgid "%d item"
+msgid_plural "%d items"
+msgstr[0] "פריט אחד"
+msgstr[1] "%d פריטים"
+
+msgid "Note from the customer"
+msgstr "הערה מהלקוח"
+
+msgid "Open the order"
+msgstr "לפתיחת ההזמנה"
+
+#, php-format
+msgid "This is the copy %s sends to the shop when an order is placed."
+msgstr "זה העותק ש-%s שולח לחנות כשמתקבלת הזמנה."

@@ -1220,6 +1220,101 @@ final class Emails {
 	}
 
 	/**
+	 * The shop's own copy of a new order.
+	 *
+	 * The same shell as the customer's emails, so the shop reads its orders
+	 * the way its customers read them — but written for the person who has
+	 * to act: the total and how it was paid at the top, the customer's note
+	 * where it cannot be missed, and the button opens the order in the
+	 * admin rather than the customer's account page. No contact block and no
+	 * social row; the shop does not need to be told how to reach itself.
+	 *
+	 * @param \WC_Order $order Order.
+	 * @param mixed     $email The WC_Email being sent.
+	 */
+	public static function admin( $order, $email ): string {
+		$p           = self::palette();
+		self::$align = 'center';
+
+		$head = is_object( $email ) && method_exists( $email, 'get_heading' ) ? trim( (string) $email->get_heading() ) : '';
+
+		if ( '' === $head ) {
+			/* translators: %s: the order number. */
+			$head = sprintf( __( 'New order #%s', 'oc-theme' ), $order->get_order_number() );
+		}
+
+		$name = trim( $order->get_formatted_billing_full_name() );
+		$name = '' !== $name ? $name : (string) $order->get_billing_email();
+
+		$fmt = trim( (string) get_option( 'date_format' ) );
+
+		if ( '' === $fmt || 'F j, Y' === $fmt ) {
+			/* translators: PHP date format for the date an order was placed. See https://www.php.net/date */
+			$fmt = _x( 'F j, Y', 'the date an order was placed', 'oc-theme' );
+		}
+
+		$made = $order->get_date_created();
+		$day  = $made ? wc_format_datetime( $made, $fmt ) . ' · ' . wc_format_datetime( $made, (string) get_option( 'time_format', 'H:i' ) ) : '';
+
+		$count = (int) $order->get_item_count();
+		$facts = array_filter(
+			array(
+				/* translators: %d: number of items in the order. */
+				sprintf( _n( '%d item', '%d items', $count, 'oc-theme' ), $count ),
+				(string) $order->get_payment_method_title(),
+				self::is_pickup( $order ) ? __( 'Collection', 'oc-theme' ) : (string) $order->get_shipping_method(),
+			)
+		);
+
+		$out  = '<div class="oc-pad" style="' . self::type() . 'padding:34px 32px 30px;">';
+		$out .= '<h1 class="oc-h1" style="margin:0 0 8px;font-size:27px;line-height:1.3;font-weight:700;text-align:center;color:' . esc_attr( $p['ink'] ) . ';">'
+			. esc_html( $head ) . '</h1>';
+		$out .= '<p style="margin:0 0 6px;font-size:16px;line-height:1.6;text-align:center;color:' . esc_attr( $p['soft'] ) . ';">'
+			/* translators: %s: the customer's name. */
+			. esc_html( sprintf( __( '%s placed an order. Everything you need to handle it is below.', 'oc-theme' ), $name ) ) . '</p>';
+
+		// The amount first: it is the first thing a shop wants to know.
+		$out .= '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:22px 0 0;background:' . esc_attr( $p['panel'] ) . ';border-radius:14px;">'
+			. '<tr><td align="center" style="padding:20px 16px;text-align:center;">'
+			. '<div style="font-size:13px;font-weight:700;letter-spacing:.05em;color:' . esc_attr( $p['soft'] ) . ';">' . esc_html__( 'Order total', 'oc-theme' ) . '</div>'
+			. '<div style="margin:4px 0 0;font-size:30px;line-height:1.2;font-weight:700;color:' . esc_attr( $p['ink'] ) . ';">'
+			. wp_kses_post( wc_price( (float) $order->get_total(), array( 'currency' => $order->get_currency() ) ) ) . '</div>'
+			. '<div style="margin:6px 0 0;font-size:14px;line-height:1.5;color:' . esc_attr( $p['soft'] ) . ';">' . esc_html( implode( ' · ', $facts ) ) . '</div>'
+			. '</td></tr></table>';
+
+		$note = trim( (string) $order->get_customer_note() );
+
+		if ( '' !== $note ) {
+			$out .= '<div style="margin:16px 0 0;padding:14px 16px;border-radius:12px;background:#fff8e6;border:1px solid #f2dfa7;">'
+				. '<div style="font-size:13px;font-weight:700;color:#8a6d1d;">' . esc_html__( 'Note from the customer', 'oc-theme' ) . '</div>'
+				. '<div style="margin:4px 0 0;font-size:15.5px;line-height:1.6;color:' . esc_attr( $p['ink'] ) . ';">' . nl2br( esc_html( $note ) ) . '</div>'
+				. '</div>';
+		}
+
+		$out .= self::cta( (string) $order->get_edit_order_url(), __( 'Open the order', 'oc-theme' ) );
+		$out .= '<div style="margin:26px 0 0;padding:16px 0 0;border-top:1px solid ' . esc_attr( $p['line'] ) . ';">'
+			. '<div style="font-size:14.5px;font-weight:700;color:' . esc_attr( $p['ink'] ) . ';">'
+			/* translators: %s: the order number. */
+			. esc_html( sprintf( __( 'Order %s', 'oc-theme' ), '#' . $order->get_order_number() ) ) . '</div>'
+			. ( '' !== $day
+				? '<div style="margin:3px 0 0;font-size:13.5px;line-height:1.5;color:' . esc_attr( $p['soft'] ) . ';">'
+					/* translators: %s: the date the order was placed. */
+					. esc_html( sprintf( __( 'Placed on %s', 'oc-theme' ), $day ) ) . '</div>'
+				: '' )
+			. '</div>';
+		$out .= self::parties( $order );
+		$out .= self::items( $order );
+		$out .= '</div>';
+
+		return self::ltr_money(
+			self::open() . $out . self::close(
+				/* translators: %s: the shop name. */
+				sprintf( __( 'This is the copy %s sends to the shop when an order is placed.', 'oc-theme' ), wp_specialchars_decode( (string) get_bloginfo( 'name' ), ENT_QUOTES ) )
+			)
+		);
+	}
+
+	/**
 	 * "It is back" — the email a shopper who asked to be told gets.
 	 *
 	 * The same shell as the order emails on purpose: a shop that sends one
