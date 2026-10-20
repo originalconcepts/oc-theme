@@ -97,6 +97,8 @@ final class Wishlist {
 			'card_mobile'    => 'always',
 			'card_side'      => 'left',
 			'product_place'  => 'button',
+			'page_layout'    => 'side',
+			'tools_style'    => 'text',
 			'page'           => 0,
 		);
 	}
@@ -122,6 +124,8 @@ final class Wishlist {
 			'card_mobile'   => array( 'none', 'always' ),
 			'card_side'     => array( 'left', 'right' ),
 			'product_place' => array( 'none', 'button', 'image-right', 'image-left' ),
+			'page_layout'   => array( 'side', 'top' ),
+			'tools_style'   => array( 'text', 'icon', 'both' ),
 		);
 
 		foreach ( $pick as $key => $allowed ) {
@@ -630,6 +634,58 @@ final class Wishlist {
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery -- the feature's own table.
 		$wpdb->query( $wpdb->prepare( 'UPDATE ' . self::table( 'items' ) . ' SET removed = %s WHERE owner = %s AND product_id = %d AND removed IS NULL', $now, $owner, $product ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- table name is ours.
+	}
+
+	/**
+	 * Move a product from one of a customer's lists to another.
+	 *
+	 * The rows themselves change lists, so a move is not counted as a new
+	 * save. A size already waiting in the other list is simply dropped here.
+	 *
+	 * @param string $owner   Owner (a signed-in customer).
+	 * @param int    $product Product.
+	 * @param int    $from    The list it is in.
+	 * @param int    $to      The list it goes to.
+	 */
+	public static function move( string $owner, int $product, int $from, int $to ): bool {
+		if ( '' === $owner || 'u' !== $owner[0] || $from === $to || ! self::ready() || ! self::list_of( $from, $owner ) || ! self::list_of( $to, $owner ) ) {
+			return false;
+		}
+
+		global $wpdb;
+
+		$table = self::table( 'items' );
+		$now   = current_time( 'mysql', true );
+
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- table name is ours.
+		$rows = $wpdb->get_results( $wpdb->prepare( 'SELECT id, variation_id FROM ' . $table . ' WHERE owner = %s AND list_id = %d AND product_id = %d AND removed IS NULL', $owner, $from, $product ) );
+
+		if ( ! $rows ) {
+			return false;
+		}
+
+		$room = self::MAX_ITEMS - count( self::items( $to ) );
+
+		foreach ( $rows as $row ) {
+			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- table name is ours.
+			$twin = (int) $wpdb->get_var( $wpdb->prepare( 'SELECT id FROM ' . $table . ' WHERE list_id = %d AND product_id = %d AND variation_id = %d AND removed IS NULL LIMIT 1', $to, $product, (int) $row->variation_id ) );
+
+			if ( $twin ) {
+				$wpdb->update( $table, array( 'removed' => $now ), array( 'id' => (int) $row->id ) );
+				continue;
+			}
+
+			if ( $room < 1 ) {
+				return false;
+			}
+
+			$wpdb->update( $table, array( 'list_id' => $to ), array( 'id' => (int) $row->id ) );
+			--$room;
+		}
+
+		$wpdb->update( self::table( 'lists' ), array( 'updated' => $now ), array( 'id' => $to ) );
+
+		return true;
 	}
 
 	/* ------------------------------------------------------------ handover */

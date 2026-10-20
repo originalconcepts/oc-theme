@@ -132,6 +132,8 @@ a { color: inherit; }
 
 .oc-htext .oc-cart-count {
 	position: static;
+	display: inline;
+	block-size: auto;
 	padding: 0;
 	background: none;
 	color: inherit;
@@ -168,18 +170,28 @@ a { color: inherit; }
 .oc-nav2__list a:hover { color: var(--oc-primary); }
 @media (max-width: 900px) { .oc-nav2 { display: none; } }
 
-.oc-cart-count {
+/* The header's count badges — cart and favourites share one size, the
+   number centred both ways (a line-height alone sat it off-centre in
+   fonts with tall Hebrew metrics). */
+.oc-cart-count,
+.oc-wl-count {
 	position: absolute;
 	inset-block-start: -2px;
 	inset-inline-end: -4px;
+	box-sizing: border-box;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
 	min-inline-size: 17px;
-	padding: 1px 5px;
+	block-size: 17px;
+	padding: 0 5px;
 	border-radius: 10px;
 	background: var(--oc-primary);
 	color: #fff;
 	font-size: 10.5px;
-	font-weight: 700;
-	line-height: 1.35;
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+	line-height: 1;
 	text-align: center;
 }
 
@@ -16474,21 +16486,6 @@ body.oc-wl-pp-button div.product form.cart .single_add_to_cart_button { min-inli
 /* --- header --- */
 .oc-wl-link { position: relative; }
 
-.oc-wl-count {
-	position: absolute;
-	inset-block-start: -2px;
-	inset-inline-end: -4px;
-	min-inline-size: 17px;
-	padding: 1px 5px;
-	border-radius: 10px;
-	background: var(--oc-primary);
-	color: #fff;
-	font-size: 10.5px;
-	font-weight: 600;
-	line-height: 15px;
-	text-align: center;
-}
-
 .oc-wl-count[hidden] { display: none; }
 
 @media (min-width: 901px) {
@@ -16694,6 +16691,12 @@ body.oc-wl-pp-button div.product form.cart .single_add_to_cart_button { min-inli
 
 .oc-wlp__rename [data-cancel] { background: var(--oc-surface, #fff); color: var(--oc-ink); border-color: var(--oc-line, #ddd); }
 
+.oc-wl-pop__foot--solo { border-block-start: 0; padding-block-start: 4px; }
+.oc-wl-pop__new--stack { flex-direction: column; align-items: stretch; }
+.oc-wl-pop__new--stack .oc-wl-pop__lab { margin: 0; }
+.oc-wl-pop__go { display: grid; place-items: center; color: var(--oc-ink-2, #888); }
+.oc-wl-pop__none { margin: 0; padding: 4px 20px 12px; font-size: .9rem; color: var(--oc-ink-2, #6b6b6b); }
+
 .oc-wl-pop__guest { margin: 0 0 12px; font-size: .9rem; line-height: 1.5; color: var(--oc-ink-2, #555); }
 .oc-wl-pop__login { inline-size: 100%; }
 
@@ -16735,6 +16738,16 @@ body.oc-wl-pp-button div.product form.cart .single_add_to_cart_button { min-inli
 	font-size: .75rem;
 	font-weight: 600;
 	color: var(--oc-ink-2, #555);
+}
+
+.oc-wl-thumbs__ph {
+	display: grid;
+	place-items: center;
+	inline-size: 40px;
+	block-size: 48px;
+	border-radius: 7px;
+	background: var(--oc-surface-2, #f2f2f0);
+	color: color-mix(in srgb, var(--oc-primary) 45%, transparent);
 }
 
 .oc-wl-thumbs:empty {
@@ -16803,6 +16816,50 @@ body.oc-wl-pp-button div.product form.cart .single_add_to_cart_button { min-inli
 
 .oc-wlp__new { margin-block-start: 6px; }
 
+/* "+ New list" — the last card of the row; the column has its inline form instead. */
+.oc-wlp__add { display: none; border-style: dashed; color: var(--oc-ink-2, #6b6b6b); }
+.oc-wlp__add:hover { color: var(--oc-ink); }
+
+.oc-wlp__add-ic {
+	display: grid;
+	place-items: center;
+	inline-size: 40px;
+	block-size: 48px;
+	border-radius: 7px;
+	background: var(--oc-surface-2, #f2f2f0);
+	color: var(--oc-primary);
+}
+
+.oc-wlp__add .oc-wlp__list-txt b { color: var(--oc-ink); }
+
+/* Move / remove under each card of one's own list. */
+.oc-wlp__acts {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	margin-block-start: 10px;
+}
+
+.oc-wlp__act {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	padding: 6px 10px;
+	border: 1px solid var(--oc-line, #e0ded9);
+	border-radius: var(--oc-cta-r, 8px);
+	background: var(--oc-surface, #fff);
+	font: inherit;
+	font-size: .8rem;
+	color: var(--oc-ink-2, #555);
+	cursor: pointer;
+}
+
+.oc-wlp__act:hover { border-color: var(--oc-ink); color: var(--oc-ink); }
+.oc-wlp__act:disabled { opacity: .55; cursor: progress; }
+
+.oc-title-center .oc-wlp__acts,
+.oc-card-minimal-center .oc-wlp__acts { justify-content: center; }
+
 .oc-wlp__guest {
 	margin-block-start: 6px;
 	padding: 14px;
@@ -16845,6 +16902,9 @@ body.oc-wl-pp-button div.product form.cart .single_add_to_cart_button { min-inli
 }
 
 .oc-wlp__tool:hover { border-color: var(--oc-ink); }
+.oc-wlp__tool--both,
+.oc-wlp__tool--icon { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.oc-wlp__tool--icon { inline-size: 38px; block-size: 38px; padding: 0; }
 .oc-wlp__tool:disabled { opacity: .55; cursor: default; }
 .oc-wlp__tool--del { color: var(--oc-sale, #b4453c); }
 a.oc-wlp__tool { display: inline-flex; align-items: center; text-decoration: none; }
@@ -16897,6 +16957,30 @@ a.oc-wlp__tool { display: inline-flex; align-items: center; text-decoration: non
 .oc-wlp__empty-h { margin: 0; font-size: 1.15rem; font-weight: 700; }
 .oc-wlp__empty-t { margin: 0 0 14px; color: var(--oc-ink-2, #6b6b6b); }
 
+/* "Row above the products" (Settings → Wishlist) — the phone's layout on desktop too. */
+.oc-wl-pl-top .oc-wlp__wrap { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+
+.oc-wl-pl-top .oc-wlp__lists {
+	position: static;
+	flex-direction: row;
+	gap: 10px;
+	margin-inline: calc(-1 * var(--oc-gutter, 16px));
+	padding-inline: var(--oc-gutter, 16px);
+	padding-block-end: 4px;
+	overflow-x: auto;
+	scroll-snap-type: x proximity;
+	scrollbar-width: none;
+}
+
+.oc-wl-pl-top .oc-wlp__lists::-webkit-scrollbar { display: none; }
+
+.oc-wl-pl-top .oc-wlp__list { flex: none; min-inline-size: 210px; scroll-snap-align: start; }
+.oc-wl-pl-top .oc-wlp__add { display: grid; min-inline-size: 170px; }
+.oc-wl-pl-top .oc-wlp__new,
+.oc-wl-pl-top .oc-wlp__guest { display: none; }
+
+.oc-wl-pl-top .oc-wlp__head { margin-block-end: 16px; }
+
 @media (max-width: 900px) {
 	.oc-wlp__wrap { grid-template-columns: minmax(0, 1fr); gap: 20px; }
 
@@ -16915,8 +16999,9 @@ a.oc-wlp__tool { display: inline-flex; align-items: center; text-decoration: non
 	.oc-wlp__lists::-webkit-scrollbar { display: none; }
 
 	.oc-wlp__list { flex: none; min-inline-size: 210px; scroll-snap-align: start; }
+	.oc-wlp__add { display: grid; min-inline-size: 170px; }
 	.oc-wlp__new,
-	.oc-wlp__guest { flex: none; inline-size: 260px; margin: 0; }
+	.oc-wlp__guest { display: none; }
 
 	.oc-wlp__head { margin-block-end: 16px; }
 	.oc-wlp__tools { margin-inline-start: 0; flex-basis: 100%; }

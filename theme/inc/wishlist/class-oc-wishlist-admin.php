@@ -64,7 +64,7 @@ final class Admin {
 			$set[ $key ] = empty( $in[ $key ] ) ? 0 : 1;
 		}
 
-		foreach ( array( 'card_desktop', 'card_mobile', 'card_side', 'product_place' ) as $key ) {
+		foreach ( array( 'card_desktop', 'card_mobile', 'card_side', 'product_place', 'page_layout', 'tools_style' ) as $key ) {
 			if ( isset( $in[ $key ] ) ) {
 				$set[ $key ] = (string) $in[ $key ];
 			}
@@ -227,6 +227,32 @@ final class Admin {
 				);
 				?>
 				<p class="description"><?php esc_html_e( 'Beside the button it takes the same corners as the shop\'s buttons.', 'oc-theme' ); ?></p>
+			</div>
+
+			<div class="ocwl-card">
+				<h2><?php esc_html_e( 'The lists page', 'oc-theme' ); ?></h2>
+				<p class="ocwl-h"><?php esc_html_e( 'Where the lists sit on desktop', 'oc-theme' ); ?></p>
+				<?php
+				$radio(
+					'page_layout',
+					array(
+						'side' => __( 'In a column beside the products', 'oc-theme' ),
+						'top'  => __( 'In a row above the products, the last one "+ New list"', 'oc-theme' ),
+					)
+				);
+				?>
+				<p class="description"><?php esc_html_e( 'On a phone the lists always sit in a row above the products.', 'oc-theme' ); ?></p>
+				<p class="ocwl-h"><?php esc_html_e( 'The list buttons: share, rename, delete', 'oc-theme' ); ?></p>
+				<?php
+				$radio(
+					'tools_style',
+					array(
+						'text' => __( 'Text only', 'oc-theme' ),
+						'icon' => __( 'Icon only', 'oc-theme' ),
+						'both' => __( 'Icon and text', 'oc-theme' ),
+					)
+				);
+				?>
 			</div>
 
 			<?php submit_button(); ?>

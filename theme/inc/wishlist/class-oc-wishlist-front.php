@@ -157,6 +157,7 @@ final class Front {
 		$classes[] = 'oc-wl-cm-' . $set['card_mobile'];
 		$classes[] = 'oc-wl-side-' . $set['card_side'];
 		$classes[] = 'oc-wl-pp-' . $set['product_place'];
+		$classes[] = 'oc-wl-pl-' . $set['page_layout'];
 
 		if ( empty( $set['header_desktop'] ) ) {
 			$classes[] = 'oc-wl-hd-off';
@@ -196,6 +197,7 @@ final class Front {
 				'ajax'       => \WC_AJAX::get_endpoint( 'oc_wl' ),
 				't'          => self::token(),
 				'logged'     => is_user_logged_in() ? 1 : 0,
+				'tools'      => Wishlist::settings()['tools_style'],
 				'page'       => Wishlist::page_url(),
 				'main'       => __( 'My favourites', 'oc-theme' ),
 				/* translators: %s: the list's name. */
@@ -224,6 +226,12 @@ final class Front {
 				'full'       => __( 'This list is full.', 'oc-theme' ),
 				'share'      => __( 'Share the list', 'oc-theme' ),
 				'unshare'    => __( 'Stop sharing', 'oc-theme' ),
+				'moveTo'     => __( 'Move to another list', 'oc-theme' ),
+				'move'       => __( 'Move to a list', 'oc-theme' ),
+				'removeIt'   => __( 'Remove', 'oc-theme' ),
+				/* translators: %s: list name. */
+				'movedTo'    => __( 'Moved to: %s', 'oc-theme' ),
+				'noOther'    => __( 'No other list yet. Name one and the product moves there.', 'oc-theme' ),
 				'sharedNote' => __( 'This list is shared. Anyone with the link can see it.', 'oc-theme' ),
 				'shareLink'  => __( 'Link to the list', 'oc-theme' ),
 				'copy'       => __( 'Copy link', 'oc-theme' ),
@@ -300,6 +308,7 @@ final class Front {
 		$source  = isset( $_POST['s'] ) ? sanitize_key( wp_unslash( $_POST['s'] ) ) : '';
 		$name    = isset( $_POST['n'] ) ? sanitize_text_field( wp_unslash( $_POST['n'] ) ) : '';
 		$share   = isset( $_POST['share'] ) ? sanitize_key( wp_unslash( $_POST['share'] ) ) : '';
+		$to      = isset( $_POST['to'] ) ? absint( $_POST['to'] ) : 0;
 		// phpcs:enable
 
 		$logged = is_user_logged_in();
@@ -337,6 +346,18 @@ final class Front {
 				}
 
 				$extra['list'] = $new;
+				break;
+
+			case 'move':
+				if ( ! $logged ) {
+					wp_send_json_error( array( 'code' => 'login' ) );
+				}
+
+				if ( ! Wishlist::move( Wishlist::owner(), $product, $list, $to ) ) {
+					wp_send_json_error( array( 'code' => 'failed' ) );
+				}
+
+				$extra['list'] = $to;
 				break;
 
 			case 'rename':
@@ -505,11 +526,19 @@ final class Front {
 		$who  = (int) $row->user_id ? get_userdata( (int) $row->user_id ) : false;
 		$name = $who ? trim( (string) $who->first_name ) : '';
 
+		// "My favourites" is the owner's word; a friend reads whose they are.
+		if ( (int) $row->is_main ) {
+			/* translators: %s: the first name of the person who shared the list. */
+			$title = '' !== $name ? sprintf( __( '%s\'s favourites', 'oc-theme' ), $name ) : __( 'A favourites list', 'oc-theme' );
+		} else {
+			$title = Wishlist::name_of( $row );
+		}
+
 		return array(
 			'html'   => self::grid( Wishlist::items( (int) $row->id ) ),
 			'list'   => (int) $row->id,
 			'shared' => 1,
-			'title'  => Wishlist::name_of( $row ),
+			'title'  => $title,
 			/* translators: %s: the first name of the person who shared the list. */
 			'by'     => '' !== $name ? sprintf( __( 'Shared with you by %s', 'oc-theme' ), $name ) : __( 'A list shared with you', 'oc-theme' ),
 		);

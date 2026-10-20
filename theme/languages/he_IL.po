@@ -14465,3 +14465,47 @@ msgstr "קישור לרשימה"
 
 msgid "More ways to share"
 msgstr "שיתוף בדרך אחרת"
+
+msgid "Move to a list"
+msgstr "העברה"
+
+msgid "Move to another list"
+msgstr "העברה לרשימה אחרת"
+
+#, php-format
+msgid "Moved to: %s"
+msgstr "הועבר לרשימה: %s"
+
+msgid "No other list yet. Name one and the product moves there."
+msgstr "אין עדיין רשימה אחרת. תנו לה שם והמוצר יעבור אליה."
+
+#, php-format
+msgid "%s's favourites"
+msgstr "המועדפים של %s"
+
+msgid "A favourites list"
+msgstr "רשימת מועדפים"
+
+msgid "Where the lists sit on desktop"
+msgstr "מיקום הרשימות במחשב"
+
+msgid "In a column beside the products"
+msgstr "בעמודה לצד המוצרים"
+
+msgid "In a row above the products, the last one \"+ New list\""
+msgstr "בשורה מעל המוצרים, והאחרונה \"+ רשימה חדשה\""
+
+msgid "On a phone the lists always sit in a row above the products."
+msgstr "במובייל הרשימות תמיד מוצגות בשורה מעל המוצרים."
+
+msgid "The list buttons: share, rename, delete"
+msgstr "כפתורי הרשימה: שיתוף, שינוי שם, מחיקה"
+
+msgid "Text only"
+msgstr "טקסט בלבד"
+
+msgid "Icon only"
+msgstr "אייקון בלבד"
+
+msgid "Icon and text"
+msgstr "אייקון וטקסט"

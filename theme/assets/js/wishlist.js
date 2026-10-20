@@ -247,6 +247,172 @@
 
 	var pop;
 
+	var HEART = '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M12 20.3s-7.6-4.6-9.2-9.4C1.7 7.4 3.9 4 7.4 4c2 0 3.6 1.1 4.6 2.6C13 5.1 14.6 4 16.6 4c3.5 0 5.7 3.4 4.6 6.9-1.6 4.8-9.2 9.4-9.2 9.4z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>';
+
+	var ICONS = {
+		share: '<path d="M12 3v12"/><path d="M7.5 7.5 12 3l4.5 4.5"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/>',
+		rename: '<path d="M4 20h4L19.3 8.7a2.1 2.1 0 0 0-3-3L5 17v3z"/><path d="m14.5 7.5 3 3"/>',
+		trash: '<path d="M4 7h16"/><path d="M10 11v6M14 11v6"/><path d="M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12"/><path d="M9 7V4h6v3"/>',
+		move: '<path d="M4 8h13"/><path d="m13 4 4 4-4 4"/><path d="M20 16H7"/><path d="m11 12-4 4 4 4"/>',
+		plus: '<path d="M12 5v14M5 12h14"/>'
+	};
+
+	function icon( name, size ) {
+		return '<svg viewBox="0 0 24 24" width="' + ( size || 18 ) + '" height="' + ( size || 18 ) + '" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' + ICONS[ name ] + '</svg>';
+	}
+
+	/* A popup shell: centred on a large screen, a sheet from the bottom on a
+	   phone. Returns the panel to fill; showPop() puts it on the page. */
+	function makePop( title ) {
+		closePop();
+		pop = document.createElement( 'div' );
+		pop.className = 'oc-wl-pop';
+		pop.innerHTML = '<div class="oc-wl-pop__scrim" data-oc-wl-x></div><div class="oc-wl-pop__panel" role="dialog" aria-modal="true"><div class="oc-wl-pop__head"><h2 class="oc-wl-pop__title"></h2><button type="button" class="oc-wl-pop__x" data-oc-wl-x>&times;</button></div></div>';
+		pop.querySelector( '.oc-wl-pop__title' ).textContent = title;
+		pop.querySelector( '.oc-wl-pop__x' ).setAttribute( 'aria-label', cfg.close );
+		pop.querySelector( '[role=dialog]' ).setAttribute( 'aria-label', title );
+		pop.addEventListener( 'click', function ( ev ) {
+			if ( ev.target.closest( '[data-oc-wl-x]' ) ) { closePop(); }
+		} );
+		return pop.querySelector( '.oc-wl-pop__panel' );
+	}
+
+	function showPop( focus ) {
+		document.body.appendChild( pop );
+		document.documentElement.classList.add( 'oc-wl-pop-open' );
+		( focus || pop.querySelector( '.oc-wl-pop__x' ) ).focus();
+	}
+
+	/* A guest's answer wherever lists would be made: sign in first. */
+	function guestFoot( foot ) {
+		var note = document.createElement( 'p' );
+		note.className = 'oc-wl-pop__guest';
+		note.textContent = cfg.guestPop;
+		var go = document.createElement( 'button' );
+		go.type = 'button';
+		go.className = 'oc-wl-pop__login';
+		go.setAttribute( 'data-oc-auth', '1' );
+		go.textContent = cfg.signIn;
+		go.addEventListener( 'click', closePop );
+		foot.appendChild( note );
+		foot.appendChild( go );
+	}
+
+	/* "+ New list": the name, a field, Create. */
+	function newListSheet( after ) {
+		var panel = makePop( cfg.newList );
+		var foot = document.createElement( 'div' );
+		foot.className = 'oc-wl-pop__foot oc-wl-pop__foot--solo';
+		panel.appendChild( foot );
+
+		if ( ! state.logged ) {
+			guestFoot( foot );
+			showPop();
+			return;
+		}
+
+		var form = document.createElement( 'form' );
+		form.className = 'oc-wl-pop__new oc-wl-pop__new--stack';
+		form.innerHTML = '<label class="oc-wl-pop__lab"></label><input type="text" maxlength="60" required><button type="submit"></button>';
+		var input = form.querySelector( 'input' );
+		input.id = 'oc-wl-new-name';
+		form.querySelector( 'label' ).setAttribute( 'for', input.id );
+		form.querySelector( 'label' ).textContent = cfg.listName;
+		form.querySelector( 'button' ).textContent = cfg.create;
+		form.addEventListener( 'submit', function ( ev ) {
+			ev.preventDefault();
+			var name = input.value.trim();
+			if ( ! name ) { return; }
+			var btn = form.querySelector( 'button' );
+			btn.disabled = true;
+			call( 'create', { n: name } )
+				.then( function ( d ) { take( d ); closePop(); if ( after ) { after( d.list ); } } )
+				.catch( function ( er ) { btn.disabled = false; toast( 'full' === er.message ? cfg.full : cfg.failed, '' ); } );
+		} );
+		foot.appendChild( form );
+		showPop( input );
+	}
+
+	/* Move one product out of the open list into another (or a new one). */
+	function moveSheet( pid, from ) {
+		var panel = makePop( cfg.moveTo );
+		var ul = document.createElement( 'ul' );
+		ul.className = 'oc-wl-pop__lists';
+		panel.appendChild( ul );
+
+		function done( to ) {
+			var into = listById( to );
+			closePop();
+			toast( fmt( cfg.movedTo, into ? into.name : '' ), '' );
+			loadPage( from );
+		}
+
+		var others = state.lists.filter( function ( l ) { return l.id !== from; } );
+		others.forEach( function ( list ) {
+			var li = document.createElement( 'li' );
+			var b = document.createElement( 'button' );
+			b.type = 'button';
+			b.className = 'oc-wl-pop__row';
+			var txt = document.createElement( 'span' );
+			txt.className = 'oc-wl-pop__txt';
+			var n = document.createElement( 'b' );
+			n.textContent = list.name;
+			var c = document.createElement( 'small' );
+			c.textContent = countText( list.count );
+			txt.appendChild( n );
+			txt.appendChild( c );
+			var go = document.createElement( 'span' );
+			go.className = 'oc-wl-pop__go';
+			go.innerHTML = icon( 'move', 18 );
+			b.appendChild( thumbs( list ) );
+			b.appendChild( txt );
+			b.appendChild( go );
+			b.addEventListener( 'click', function () {
+				b.disabled = true;
+				call( 'move', { p: pid, l: from, to: list.id } )
+					.then( function ( d ) { take( d ); done( list.id ); } )
+					.catch( function () { b.disabled = false; toast( cfg.failed, '' ); } );
+			} );
+			li.appendChild( b );
+			ul.appendChild( li );
+		} );
+
+		if ( ! others.length ) {
+			var none = document.createElement( 'p' );
+			none.className = 'oc-wl-pop__none';
+			none.textContent = cfg.noOther;
+			panel.appendChild( none );
+		}
+
+		var foot = document.createElement( 'div' );
+		foot.className = 'oc-wl-pop__foot';
+		var form = document.createElement( 'form' );
+		form.className = 'oc-wl-pop__new';
+		form.innerHTML = '<input type="text" maxlength="60" required><button type="submit"></button>';
+		var input = form.querySelector( 'input' );
+		input.placeholder = cfg.listName;
+		input.setAttribute( 'aria-label', cfg.listName );
+		form.querySelector( 'button' ).textContent = cfg.create;
+		form.addEventListener( 'submit', function ( ev ) {
+			ev.preventDefault();
+			var name = input.value.trim();
+			if ( ! name ) { return; }
+			var btn = form.querySelector( 'button' );
+			btn.disabled = true;
+			call( 'create', { n: name } )
+				.then( function ( d ) { return call( 'move', { p: pid, l: from, to: d.list } ).then( function ( m ) { take( m ); done( d.list ); } ); } )
+				.catch( function ( er ) { btn.disabled = false; toast( 'full' === er.message ? cfg.full : cfg.failed, '' ); } );
+		} );
+		var lab = document.createElement( 'p' );
+		lab.className = 'oc-wl-pop__lab';
+		lab.textContent = cfg.newList;
+		foot.appendChild( lab );
+		foot.appendChild( form );
+		panel.appendChild( foot );
+
+		showPop();
+	}
+
 	function thumbs( list ) {
 		var box = document.createElement( 'span' );
 		box.className = 'oc-wl-thumbs';
@@ -260,6 +426,13 @@
 			s.appendChild( i );
 			box.appendChild( s );
 		} );
+		if ( ! ( list.thumb || [] ).length ) {
+			// Nothing in it yet: a quiet heart instead of an empty grey box.
+			var ph = document.createElement( 'span' );
+			ph.className = 'oc-wl-thumbs__ph';
+			ph.innerHTML = HEART;
+			box.appendChild( ph );
+		}
 		var more = ( list.count || 0 ) - ( list.thumb || [] ).length;
 		if ( more > 0 ) {
 			var m = document.createElement( 'span' );
@@ -283,14 +456,8 @@
 	}
 
 	function openPop( pid ) {
-		closePop();
-
-		pop = document.createElement( 'div' );
-		pop.className = 'oc-wl-pop';
-		pop.innerHTML = '<div class="oc-wl-pop__scrim" data-oc-wl-x></div><div class="oc-wl-pop__panel" role="dialog" aria-modal="true"><div class="oc-wl-pop__head"><h2 class="oc-wl-pop__title"></h2><button type="button" class="oc-wl-pop__x" data-oc-wl-x>&times;</button></div><ul class="oc-wl-pop__lists"></ul><div class="oc-wl-pop__foot"></div></div>';
-		pop.querySelector( '.oc-wl-pop__title' ).textContent = cfg.popTitle;
-		pop.querySelector( '.oc-wl-pop__x' ).setAttribute( 'aria-label', cfg.close );
-		pop.querySelector( '[role=dialog]' ).setAttribute( 'aria-label', cfg.popTitle );
+		var panel = makePop( cfg.popTitle );
+		panel.insertAdjacentHTML( 'beforeend', '<ul class="oc-wl-pop__lists"></ul><div class="oc-wl-pop__foot"></div>' );
 
 		var ul = pop.querySelector( '.oc-wl-pop__lists' );
 
@@ -360,26 +527,10 @@
 			foot.appendChild( lab );
 			foot.appendChild( form );
 		} else {
-			var note = document.createElement( 'p' );
-			note.className = 'oc-wl-pop__guest';
-			note.textContent = cfg.guestPop;
-			var go = document.createElement( 'button' );
-			go.type = 'button';
-			go.className = 'oc-wl-pop__login';
-			go.setAttribute( 'data-oc-auth', '1' );
-			go.textContent = cfg.signIn;
-			go.addEventListener( 'click', closePop );
-			foot.appendChild( note );
-			foot.appendChild( go );
+			guestFoot( foot );
 		}
 
-		pop.addEventListener( 'click', function ( ev ) {
-			if ( ev.target.closest( '[data-oc-wl-x]' ) ) { closePop(); }
-		} );
-
-		document.body.appendChild( pop );
-		document.documentElement.classList.add( 'oc-wl-pop-open' );
-		pop.querySelector( '.oc-wl-pop__x' ).focus();
+		showPop();
 	}
 
 	document.addEventListener( 'keydown', function ( e ) {
@@ -461,6 +612,47 @@
 		return box;
 	}
 
+	/* Share / rename / delete, as text, icon or both (Settings → Wishlist). */
+	function tool( label, ic, extra ) {
+		var style = cfg.tools || 'text';
+		var b = el( 'button', 'oc-wlp__tool oc-wlp__tool--' + style + ( extra ? ' ' + extra : '' ) );
+		b.type = 'button';
+		if ( 'text' !== style ) { b.insertAdjacentHTML( 'beforeend', icon( ic, 18 ) ); }
+		if ( 'icon' !== style ) {
+			b.appendChild( el( 'span', '', label ) );
+		} else {
+			b.setAttribute( 'aria-label', label );
+			b.title = label;
+		}
+		return b;
+	}
+
+	/* Under every card on one's own list: move it elsewhere, or take it out. */
+	function cardActions( grid, listId ) {
+		grid.querySelectorAll( 'li.product' ).forEach( function ( li ) {
+			var heart = li.querySelector( '[data-oc-wl]' );
+			var pid = heart ? parseInt( heart.getAttribute( 'data-oc-wl' ), 10 ) : 0;
+			if ( ! pid ) { return; }
+			var bar = el( 'div', 'oc-wlp__acts' );
+			if ( state.logged ) {
+				var mv = el( 'button', 'oc-wlp__act' );
+				mv.type = 'button';
+				mv.innerHTML = icon( 'move', 16 );
+				mv.appendChild( el( 'span', '', cfg.move ) );
+				mv.setAttribute( 'aria-label', cfg.moveTo );
+				mv.addEventListener( 'click', function () { moveSheet( pid, listId ); } );
+				bar.appendChild( mv );
+			}
+			var rm = el( 'button', 'oc-wlp__act' );
+			rm.type = 'button';
+			rm.innerHTML = icon( 'trash', 16 );
+			rm.appendChild( el( 'span', '', cfg.removeIt ) );
+			rm.addEventListener( 'click', function () { rm.disabled = true; remove( pid, listId ); } );
+			bar.appendChild( rm );
+			li.appendChild( bar );
+		} );
+	}
+
 	function renderOwn( data ) {
 		open = data.list;
 		page.textContent = '';
@@ -481,6 +673,18 @@
 			a.addEventListener( 'click', function () { loadPage( list.id ); } );
 			side.appendChild( a );
 		} );
+
+		// The last card of the row (phone, or the "row above" layout): opens
+		// a small panel with the name field. The column layout keeps its
+		// inline form below the lists.
+		var add = el( 'button', 'oc-wlp__list oc-wlp__add' );
+		add.type = 'button';
+		add.innerHTML = '<span class="oc-wlp__add-ic">' + icon( 'plus', 20 ) + '</span>';
+		var addTxt = el( 'span', 'oc-wlp__list-txt' );
+		addTxt.appendChild( el( 'b', '', cfg.newList ) );
+		add.appendChild( addTxt );
+		add.addEventListener( 'click', function () { newListSheet( function ( id ) { loadPage( id ); } ); } );
+		side.appendChild( add );
 
 		if ( state.logged ) {
 			var nf = el( 'form', 'oc-wlp__new' );
@@ -518,8 +722,7 @@
 				var tools = el( 'div', 'oc-wlp__tools' );
 
 				if ( ! current.share ) {
-					var share = el( 'button', 'oc-wlp__tool', cfg.share || 'Share' );
-					share.type = 'button';
+					var share = tool( cfg.share, 'share' );
 					share.addEventListener( 'click', function () {
 						share.disabled = true;
 						call( 'share', { l: current.id } ).then( function ( d ) {
@@ -535,8 +738,7 @@
 				}
 
 				if ( ! current.main ) {
-					var ren = el( 'button', 'oc-wlp__tool', cfg.rename || 'Rename' );
-					ren.type = 'button';
+					var ren = tool( cfg.rename, 'rename' );
 					ren.addEventListener( 'click', function () {
 						var f = el( 'form', 'oc-wlp__rename' );
 						f.innerHTML = '<input type="text" maxlength="60" required><button type="submit"></button><button type="button" data-cancel></button>';
@@ -555,8 +757,7 @@
 					} );
 					tools.appendChild( ren );
 
-					var del = el( 'button', 'oc-wlp__tool oc-wlp__tool--del', cfg.deleteList || 'Delete list' );
-					del.type = 'button';
+					var del = tool( cfg.deleteList, 'trash', 'oc-wlp__tool--del' );
 					del.addEventListener( 'click', function () {
 						if ( ! window.confirm( cfg.confirmDl ) ) { return; }
 						call( 'delete', { l: current.id } ).then( function ( d ) { take( d ); loadPage( 0 ); } );
@@ -576,6 +777,7 @@
 
 		var grid = el( 'div', 'oc-wlp__grid' );
 		grid.innerHTML = data.html;
+		if ( current ) { cardActions( grid, current.id ); }
 		main.appendChild( grid );
 
 		wrap.appendChild( side );
