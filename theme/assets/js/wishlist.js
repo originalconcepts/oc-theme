@@ -649,7 +649,9 @@
 			rm.appendChild( el( 'span', '', cfg.removeIt ) );
 			rm.addEventListener( 'click', function () { rm.disabled = true; remove( pid, listId ); } );
 			bar.appendChild( rm );
-			li.appendChild( bar );
+			// Inside the text block, under the price: the card is a subgrid and
+			// a loose child of it would be auto-placed into the row under the picture.
+			( li.querySelector( '.oc-card-text' ) || li ).appendChild( bar );
 		} );
 	}
 

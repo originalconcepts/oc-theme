@@ -16964,8 +16964,8 @@ a.oc-wlp__tool { display: inline-flex; align-items: center; text-decoration: non
 	position: static;
 	flex-direction: row;
 	gap: 10px;
-	margin-inline: calc(-1 * var(--oc-gutter, 16px));
-	padding-inline: var(--oc-gutter, 16px);
+	margin-inline: calc(-1 * var(--oc-gap, 16px));
+	padding-inline: var(--oc-gap, 16px);
 	padding-block-end: 4px;
 	overflow-x: auto;
 	scroll-snap-type: x proximity;
@@ -16988,8 +16988,8 @@ a.oc-wlp__tool { display: inline-flex; align-items: center; text-decoration: non
 		position: static;
 		flex-direction: row;
 		gap: 10px;
-		margin-inline: calc(-1 * var(--oc-gutter, 16px));
-		padding-inline: var(--oc-gutter, 16px);
+		margin-inline: calc(-1 * var(--oc-gap, 16px));
+		padding-inline: var(--oc-gap, 16px);
 		padding-block-end: 4px;
 		overflow-x: auto;
 		scroll-snap-type: x proximity;
