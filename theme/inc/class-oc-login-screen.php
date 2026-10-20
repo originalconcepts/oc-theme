@@ -696,6 +696,15 @@ final class Login_Screen {
 					pwd.hidden = false;
 					opener.hidden = true;
 
+					// WordPress 7's user-profile.js disables a password field
+					// that is hidden when the page becomes ready — and this
+					// block is hidden then, by design. Only its own "generate
+					// password" button would enable it again, and the login
+					// screen has none: the field could not be clicked.
+					pwd.querySelectorAll( 'input:disabled, button:disabled' ).forEach( function ( el ) {
+						el.disabled = false;
+					} );
+
 					var first = pwd.querySelector( 'input:not([type="hidden"])' );
 
 					if ( first ) {
