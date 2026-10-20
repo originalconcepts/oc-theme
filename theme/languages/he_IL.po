@@ -14102,3 +14102,27 @@ msgstr "לפתיחת ההזמנה"
 #, php-format
 msgid "This is the copy %s sends to the shop when an order is placed."
 msgstr "זה העותק ש-%s שולח לחנות כשמתקבלת הזמנה."
+
+#, php-format
+msgid "Order #%s was cancelled"
+msgstr "הזמנה #%s בוטלה"
+
+#, php-format
+msgid "The order from %s was cancelled. The details are below, in case anything needs undoing."
+msgstr "ההזמנה של %s בוטלה. הפרטים למטה, למקרה שצריך לבטל משהו בעקבותיה."
+
+#, php-format
+msgid "This is the copy %s sends to the shop when an order is cancelled."
+msgstr "זה העותק ש-%s שולח לחנות כשהזמנה מבוטלת."
+
+#, php-format
+msgid "Order #%s failed"
+msgstr "הזמנה #%s נכשלה"
+
+#, php-format
+msgid "Payment for the order from %s did not go through. It is waiting for payment or for you."
+msgstr "התשלום על ההזמנה של %s לא עבר. ההזמנה ממתינה לתשלום או לטיפול שלך."
+
+#, php-format
+msgid "This is the copy %s sends to the shop when a payment fails."
+msgstr "זה העותק ש-%s שולח לחנות כשתשלום נכשל."

@@ -1229,22 +1229,48 @@ final class Emails {
 	 * admin rather than the customer's account page. No contact block and no
 	 * social row; the shop does not need to be told how to reach itself.
 	 *
+	 * The same email serves the three notices WooCommerce sends the shop —
+	 * a new order, a cancelled one and a failed one — with the opening line
+	 * and the closing reason fitted to each.
+	 *
 	 * @param \WC_Order $order Order.
 	 * @param mixed     $email The WC_Email being sent.
+	 * @param string    $kind  'new', 'cancelled' or 'failed'.
 	 */
-	public static function admin( $order, $email ): string {
+	public static function admin( $order, $email, string $kind = 'new' ): string {
 		$p           = self::palette();
 		self::$align = 'center';
 
-		$head = is_object( $email ) && method_exists( $email, 'get_heading' ) ? trim( (string) $email->get_heading() ) : '';
-
-		if ( '' === $head ) {
-			/* translators: %s: the order number. */
-			$head = sprintf( __( 'New order #%s', 'oc-theme' ), $order->get_order_number() );
-		}
-
 		$name = trim( $order->get_formatted_billing_full_name() );
 		$name = '' !== $name ? $name : (string) $order->get_billing_email();
+		$shop = wp_specialchars_decode( (string) get_bloginfo( 'name' ), ENT_QUOTES );
+		$num  = $order->get_order_number();
+
+		if ( 'cancelled' === $kind ) {
+			/* translators: %s: the order number. */
+			$fallback = sprintf( __( 'Order #%s was cancelled', 'oc-theme' ), $num );
+			/* translators: %s: the customer's name. */
+			$lead = sprintf( __( 'The order from %s was cancelled. The details are below, in case anything needs undoing.', 'oc-theme' ), $name );
+			/* translators: %s: the shop name. */
+			$why = sprintf( __( 'This is the copy %s sends to the shop when an order is cancelled.', 'oc-theme' ), $shop );
+		} elseif ( 'failed' === $kind ) {
+			/* translators: %s: the order number. */
+			$fallback = sprintf( __( 'Order #%s failed', 'oc-theme' ), $num );
+			/* translators: %s: the customer's name. */
+			$lead = sprintf( __( 'Payment for the order from %s did not go through. It is waiting for payment or for you.', 'oc-theme' ), $name );
+			/* translators: %s: the shop name. */
+			$why = sprintf( __( 'This is the copy %s sends to the shop when a payment fails.', 'oc-theme' ), $shop );
+		} else {
+			/* translators: %s: the order number. */
+			$fallback = sprintf( __( 'New order #%s', 'oc-theme' ), $num );
+			/* translators: %s: the customer's name. */
+			$lead = sprintf( __( '%s placed an order. Everything you need to handle it is below.', 'oc-theme' ), $name );
+			/* translators: %s: the shop name. */
+			$why = sprintf( __( 'This is the copy %s sends to the shop when an order is placed.', 'oc-theme' ), $shop );
+		}
+
+		$head = is_object( $email ) && method_exists( $email, 'get_heading' ) ? trim( (string) $email->get_heading() ) : '';
+		$head = '' !== $head ? $head : $fallback;
 
 		$fmt = trim( (string) get_option( 'date_format' ) );
 
@@ -1276,8 +1302,7 @@ final class Emails {
 		$out .= '<h1 class="oc-h1" style="margin:0 0 8px;font-size:27px;line-height:1.3;font-weight:700;text-align:center;color:' . esc_attr( $p['ink'] ) . ';">'
 			. esc_html( $head ) . '</h1>';
 		$out .= '<p style="margin:0 0 6px;font-size:16px;line-height:1.6;text-align:center;color:' . esc_attr( $p['soft'] ) . ';">'
-			/* translators: %s: the customer's name. */
-			. esc_html( sprintf( __( '%s placed an order. Everything you need to handle it is below.', 'oc-theme' ), $name ) ) . '</p>';
+			. esc_html( $lead ) . '</p>';
 
 		// The amount first: it is the first thing a shop wants to know.
 		$out .= '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:22px 0 0;background:' . esc_attr( $p['panel'] ) . ';border-radius:14px;">'
@@ -1312,12 +1337,7 @@ final class Emails {
 		$out .= self::items( $order );
 		$out .= '</div>';
 
-		return self::ltr_money(
-			self::open() . $out . self::close(
-				/* translators: %s: the shop name. */
-				sprintf( __( 'This is the copy %s sends to the shop when an order is placed.', 'oc-theme' ), wp_specialchars_decode( (string) get_bloginfo( 'name' ), ENT_QUOTES ) )
-			)
-		);
+		return self::ltr_money( self::open() . $out . self::close( $why ) );
 	}
 
 	/**
