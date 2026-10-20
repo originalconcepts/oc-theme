@@ -38,6 +38,11 @@ final class Front {
 			return;
 		}
 
+		// WooCommerce's front-end endpoint: the cards it returns are priced
+		// as the shop prices them. Promotion plugins step aside whenever
+		// is_admin() is true, which admin-ajax always is. The admin-ajax
+		// pair stays for pages cached before the switch.
+		add_action( 'wc_ajax_oc_wl', array( $this, 'ajax' ) );
 		add_action( 'wp_ajax_oc_wl', array( $this, 'ajax' ) );
 		add_action( 'wp_ajax_nopriv_oc_wl', array( $this, 'ajax' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'assets' ), 20 );
@@ -188,7 +193,7 @@ final class Front {
 			'oc-wishlist',
 			'ocWl',
 			array(
-				'ajax'       => admin_url( 'admin-ajax.php' ),
+				'ajax'       => \WC_AJAX::get_endpoint( 'oc_wl' ),
 				't'          => self::token(),
 				'logged'     => is_user_logged_in() ? 1 : 0,
 				'page'       => Wishlist::page_url(),
