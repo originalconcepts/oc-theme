@@ -16716,7 +16716,8 @@ body.oc-wl-pp-button div.product form.cart .single_add_to_cart_button { min-inli
 }
 
 .oc-wl-pop__add .oc-wl-pop__new { padding: 6px 8px 10px; }
-.oc-wl-pop__add .oc-wl-pop__new[hidden] { display: none; }
+.oc-wl-pop__add .oc-wl-pop__new[hidden],
+.oc-wl-pop__add .oc-wl-pop__row[hidden] { display: none; }
 
 /* Below the divider: the one button that applies the choice. */
 .oc-wl-pop__foot--ok { display: grid; gap: 12px; }
