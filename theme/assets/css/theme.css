@@ -947,9 +947,20 @@ html.oc-search-open { overflow: hidden; }
 /* Desktop header presets — scoped so they never leak into the mobile
  * layouts (the centred preset's open menu was showing on phones). */
 @media (min-width: 901px) {
-	/* menu-center preset: the nav floats to the middle of the bar */
-	.oc-header--menu-center .oc-nav { margin-inline: auto; }
-	.oc-header--menu-center .oc-header__end { margin-inline-start: 0; }
+	/* menu-center preset: the nav sits in the middle of the BAR, not of the
+	   space left between logo and icons. With auto margins in a flex row it
+	   drifted toward the narrower side whenever the two sides differed (a
+	   wishlist heart and a language switch made the icons twice the logo's
+	   width: 66px off at 1440). Three columns, the outer two equal, keep it
+	   centred however many icons there are. */
+	.oc-header--menu-center .oc-header__inner {
+		display: grid;
+		grid-template-columns: 1fr auto 1fr;
+		align-items: center;
+	}
+	.oc-header--menu-center .oc-header__start { grid-column: 1; justify-self: start; }
+	.oc-header--menu-center .oc-nav { grid-column: 2; margin-inline: 0; justify-self: center; }
+	.oc-header--menu-center .oc-header__end { grid-column: 3; justify-self: end; margin-inline-start: 0; }
 
 	/* centred: logo on top row (icons stay beside it), menu on its own row */
 	/* minmax: a tall logo grows the row instead of being clipped; the block
