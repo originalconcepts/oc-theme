@@ -29,6 +29,13 @@ final class Updater {
 	private const API = 'https://api.github.com/repos/originalconcepts/oc-theme/releases/latest';
 
 	/**
+	 * The same answer from the website, for when the API refuses: GitHub
+	 * allows 60 anonymous API calls an hour per address, and on shared
+	 * hosting every site on the server spends from that one allowance.
+	 */
+	private const WEB = 'https://github.com/originalconcepts/oc-theme/releases';
+
+	/**
 	 * Cache of the last answer.
 	 */
 	private const CACHE = 'oc_blocks_release';
@@ -96,9 +103,50 @@ final class Updater {
 			}
 		}
 
+		if ( ! $out ) {
+			$out = self::from_web();
+		}
+
 		set_site_transient( self::CACHE, $out, $out ? 6 * HOUR_IN_SECONDS : HOUR_IN_SECONDS );
 
 		return $out;
+	}
+
+	/**
+	 * The newest release read off the website instead of the API: the
+	 * "latest" page redirects to the release's tag, and the zip is only
+	 * offered once it is really there (a release is published a minute
+	 * before its files are uploaded).
+	 *
+	 * @return array<string,string>
+	 */
+	private static function from_web(): array {
+		$args = array(
+			'timeout'     => 10,
+			'redirection' => 0,
+			'headers'     => array( 'User-Agent' => 'oc-blocks/' . OC_BLOCKS_VERSION ),
+		);
+
+		$res = wp_remote_head( self::WEB . '/latest', $args );
+
+		if ( is_wp_error( $res ) || ! preg_match( '#/releases/tag/v?([0-9][0-9.]*)$#', (string) wp_remote_retrieve_header( $res, 'location' ), $m ) ) {
+			return array();
+		}
+
+		$package = self::WEB . '/download/v' . $m[1] . '/oc-blocks.zip';
+		$zip     = wp_remote_head( $package, $args );
+		$code    = is_wp_error( $zip ) ? 0 : (int) wp_remote_retrieve_response_code( $zip );
+
+		if ( $code < 200 || $code >= 400 ) {
+			return array();
+		}
+
+		return array(
+			'version' => $m[1],
+			'package' => $package,
+			'url'     => self::WEB . '/tag/v' . $m[1],
+			'notes'   => '',
+		);
 	}
 
 	/**

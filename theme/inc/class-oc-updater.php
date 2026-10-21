@@ -27,6 +27,7 @@ final class Updater {
 	private const TRANSIENT = 'oc_release_';
 	private const TTL       = 6 * HOUR_IN_SECONDS;
 	private const API       = 'https://api.github.com/repos/%s/releases/latest';
+	private const WEB       = 'https://github.com/%s/releases';
 
 	/**
 	 * Theme directory name, e.g. "oc-theme".
@@ -243,6 +244,16 @@ final class Updater {
 		);
 
 		if ( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) {
+			// GitHub allows 60 anonymous API calls an hour per address, and on
+			// shared hosting every site on the server spends from that one
+			// allowance — so a public repository is asked again on its website.
+			$release = $this->from_web();
+
+			if ( null !== $release ) {
+				set_site_transient( $this->cache_key(), $release, self::TTL );
+				return $release;
+			}
+
 			// Cache the failure briefly so a broken token does not hammer the API.
 			set_site_transient( $this->cache_key(), 'none', 15 * MINUTE_IN_SECONDS );
 			return null;
@@ -274,6 +285,48 @@ final class Updater {
 		set_site_transient( $this->cache_key(), $release, self::TTL );
 
 		return $release;
+	}
+
+	/**
+	 * The latest release read off the website instead of the API: the
+	 * "latest" page redirects to the release's tag, and the zip is offered
+	 * only once it is really there (a release is published a minute before
+	 * its files are uploaded). Public repositories only — a private one
+	 * answers through the API with its token or not at all.
+	 *
+	 * @return array{version:string,package:string,url:string}|null
+	 */
+	private function from_web(): ?array {
+		if ( defined( 'OC_UPDATE_TOKEN' ) && is_string( OC_UPDATE_TOKEN ) && '' !== OC_UPDATE_TOKEN ) {
+			return null;
+		}
+
+		$base = sprintf( self::WEB, $this->repo );
+		$args = array(
+			'timeout'     => 8,
+			'redirection' => 0,
+			'headers'     => array( 'User-Agent' => 'oc-theme/' . $this->version ),
+		);
+
+		$res = wp_remote_head( $base . '/latest', $args );
+
+		if ( is_wp_error( $res ) || ! preg_match( '#/releases/tag/v?([0-9][0-9.]*)$#', (string) wp_remote_retrieve_header( $res, 'location' ), $m ) ) {
+			return null;
+		}
+
+		$package = $base . '/download/v' . $m[1] . '/' . $this->slug . '.zip';
+		$zip     = wp_remote_head( $package, $args );
+		$code    = is_wp_error( $zip ) ? 0 : (int) wp_remote_retrieve_response_code( $zip );
+
+		if ( $code < 200 || $code >= 400 ) {
+			return null;
+		}
+
+		return array(
+			'version' => $m[1],
+			'package' => $package,
+			'url'     => $base . '/tag/v' . $m[1],
+		);
 	}
 
 	/**
