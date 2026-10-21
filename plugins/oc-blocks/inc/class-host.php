@@ -111,6 +111,7 @@ final class Host {
 		add_filter( 'template_include', array( $this, 'template' ), 99 );
 		add_action( 'admin_menu', array( $this, 'menu' ) );
 		add_action( 'admin_post_oc_blocks_host_save', array( $this, 'save' ) );
+		add_action( 'admin_post_oc_blocks_template', array( $this, 'switch_template' ) );
 	}
 
 	/* ------------------------------------------------------------- front */
@@ -125,21 +126,101 @@ final class Host {
 	}
 
 	/**
+	 * The classes the stylesheet reads — none under the OC theme. The
+	 * composer's preview frame asks for them too: it is a document of its
+	 * own, and without them a host theme's product grid rules would reach
+	 * the sections there the way they never do on the page.
+	 *
+	 * @return array<int,string>
+	 */
+	public static function classes(): array {
+		if ( self::is_oc() ) {
+			return array();
+		}
+
+		$out = array( 'ocb-host-other' );
+
+		if ( self::full_template() ) {
+			$out[] = 'ocb-full';
+		} elseif ( 'contained' === self::settings()['width'] ) {
+			$out[] = 'ocb-contained';
+		}
+
+		return $out;
+	}
+
+	/**
 	 * Classes the stylesheet reads.
 	 *
 	 * @param array<int,string> $classes Body classes.
 	 * @return array<int,string>
 	 */
 	public function body_class( array $classes ): array {
-		$classes[] = 'ocb-host-other';
+		return array_merge( $classes, self::classes() );
+	}
 
-		if ( self::full_template() ) {
-			$classes[] = 'ocb-full';
-		} elseif ( 'contained' === self::settings()['width'] ) {
-			$classes[] = 'ocb-contained';
+	/**
+	 * Does the template this page is drawn with leave its content out?
+	 *
+	 * Some themes give the home page a template of their own that prints
+	 * the theme's sliders and product boxes and never the page's content —
+	 * there the sections are saved, shown in the preview, and missing from
+	 * the page. Read from the template file itself: a file that neither
+	 * prints the content nor hands off to another file (a template part,
+	 * an include) cannot be showing it. Block themes are left alone; their
+	 * templates are blocks, not files to read.
+	 *
+	 * @param int $page_id Page.
+	 */
+	public static function hides_content( int $page_id ): bool {
+		if ( self::is_oc() || $page_id < 1 || wp_is_block_theme() ) {
+			return false;
 		}
 
-		return $classes;
+		$slug = (string) get_page_template_slug( $page_id );
+
+		if ( self::TEMPLATE === $slug ) {
+			return false;
+		}
+
+		$file = '';
+
+		if ( (int) get_option( 'page_on_front' ) === $page_id && 'page' === get_option( 'show_on_front' ) ) {
+			$file = (string) locate_template( 'front-page.php' );
+		}
+
+		if ( '' === $file && '' !== $slug && 'default' !== $slug ) {
+			$file = (string) locate_template( $slug );
+		}
+
+		if ( '' === $file ) {
+			return ! self::shows_content( (string) locate_template( array( 'page.php', 'singular.php', 'index.php' ) ) );
+		}
+
+		return ! self::shows_content( $file );
+	}
+
+	/**
+	 * Does the theme's plain page template print the content? (The way
+	 * back offered when a page's own template does not.)
+	 */
+	public static function standard_shows_content(): bool {
+		return self::shows_content( (string) locate_template( array( 'page.php', 'singular.php', 'index.php' ) ) );
+	}
+
+	/**
+	 * Does a template file print the content, or might it (it hands off)?
+	 *
+	 * @param string $file Template file.
+	 */
+	private static function shows_content( string $file ): bool {
+		if ( '' === $file || ! is_readable( $file ) ) {
+			return true;
+		}
+
+		$src = (string) file_get_contents( $file ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- a local theme file, read to look at, not to run.
+
+		return (bool) preg_match( '/the_content|get_template_part|woocommerce_content|locate_template|load_template|\b(?:include|require)(?:_once)?\b/', $src );
 	}
 
 	/**
@@ -246,6 +327,61 @@ final class Host {
 			)
 		);
 		exit;
+	}
+
+	/**
+	 * The composer's "this template leaves the content out" notice, one
+	 * click from a template that shows it.
+	 */
+	public function switch_template(): void {
+		$page_id = isset( $_GET['page_id'] ) ? absint( $_GET['page_id'] ) : 0;
+		$to      = isset( $_GET['to'] ) ? sanitize_key( wp_unslash( $_GET['to'] ) ) : '';
+
+		if ( ! $page_id || ! current_user_can( 'edit_post', $page_id ) ) {
+			wp_die( esc_html__( 'Not allowed.', 'oc-blocks' ) );
+		}
+
+		check_admin_referer( 'oc_blocks_template_' . $page_id );
+
+		update_post_meta( $page_id, '_wp_page_template', 'full' === $to ? self::TEMPLATE : 'default' );
+
+		wp_safe_redirect( Editor::url( $page_id ) );
+		exit;
+	}
+
+	/**
+	 * What the composer needs to warn about a template that leaves the
+	 * content out — empty when there is nothing to warn about.
+	 *
+	 * @param int $page_id Page.
+	 * @return array<string,string>
+	 */
+	public static function notice( int $page_id ): array {
+		if ( ! self::hides_content( $page_id ) ) {
+			return array();
+		}
+
+		$go = static function ( string $to ) use ( $page_id ): string {
+			return wp_nonce_url(
+				add_query_arg(
+					array(
+						'action'  => 'oc_blocks_template',
+						'page_id' => $page_id,
+						'to'      => $to,
+					),
+					admin_url( 'admin-post.php' )
+				),
+				'oc_blocks_template_' . $page_id
+			);
+		};
+
+		return array(
+			'text' => __( 'The template this page uses does not show the page content — the sections below will not appear on the site. Choose a template that shows them:', 'oc-blocks' ),
+			'std'  => self::standard_shows_content() ? $go( 'default' ) : '',
+			'stdT' => __( 'The theme\'s standard page', 'oc-blocks' ),
+			'full' => $go( 'full' ),
+			'fullT' => __( 'OC Blocks — full width', 'oc-blocks' ),
+		);
 	}
 
 	/**

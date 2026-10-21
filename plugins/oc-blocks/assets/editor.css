@@ -23,6 +23,36 @@ body.ocbe-full .wrap { margin: 0; }
 	font-size: 13px;
 }
 
+/* ---------- the page's template leaves the content out ---------- */
+
+.ocbe-note {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px 12px;
+	padding: 10px 16px;
+	background: #fcf3e3;
+	border-block-end: 1px solid #f0d9a8;
+	color: #5c3d00;
+	font-size: 13px;
+	line-height: 1.5;
+	flex: 0 0 auto;
+}
+
+.ocbe-note span { flex: 1 1 320px; }
+
+.ocbe-note__btn {
+	padding: 6px 14px;
+	border-radius: 6px;
+	background: #1c1c1c;
+	color: #fff;
+	text-decoration: none;
+	font-weight: 600;
+	white-space: nowrap;
+}
+
+.ocbe-note__btn:hover, .ocbe-note__btn:focus { color: #fff; opacity: .85; }
+
 /* ---------- top bar ---------- */
 
 .ocbe-top {

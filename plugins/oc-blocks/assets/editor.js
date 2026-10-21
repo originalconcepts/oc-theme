@@ -1523,6 +1523,18 @@
 		] );
 
 		root.appendChild( header );
+
+		// The page's template leaves its content out (another theme's own
+		// home-page template): say so, with the way to one that shows it.
+		var hn = D.hostNote || {};
+		if ( hn.text ) {
+			root.appendChild( el( 'div', { 'class': 'ocbe-note', role: 'alert' }, [
+				el( 'span', { text: hn.text } ),
+				hn.std ? el( 'a', { 'class': 'ocbe-note__btn', href: hn.std, text: hn.stdT } ) : null,
+				el( 'a', { 'class': 'ocbe-note__btn', href: hn.full, text: hn.fullT } )
+			] ) );
+		}
+
 		root.appendChild( el( 'div', { 'class': 'ocbe-body' }, [
 			el( 'aside', { 'class': 'ocbe-rail' }, [
 				el( 'h2', { 'class': 'ocbe-rail__title', text: T.sections } ),

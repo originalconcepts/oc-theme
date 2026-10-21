@@ -513,6 +513,8 @@ return array(
 		"The shops themselves — addresses, hours and a map." => "החנויות עצמן — כתובות, שעות פתיחה ומפה.",
 		"The slide breathes out into this before the next one arrives. Empty is near-black." => "השקף דוהה אל הצבע הזה לפני שהבא נכנס. ריק = כמעט שחור.",
 		"The story" => "הסיפור",
+		"The template this page uses does not show the page content — the sections below will not appear on the site. Choose a template that shows them:" => "התבנית שהעמוד הזה משתמש בה לא מציגה את תוכן העמוד — הסקשנים כאן לא יופיעו באתר. בחרו תבנית שמציגה אותם:",
+		"The theme's standard page" => "העמוד הרגיל של התבנית",
 		"The top" => "החלק העליון",
 		"The words" => "הטקסט",
 		"Theme button" => "כפתור התבנית",

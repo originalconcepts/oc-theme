@@ -1870,3 +1870,9 @@ msgstr "עיגול פינות של תמונות ותיבות (px)"
 
 msgid "Corner of buttons (px)"
 msgstr "עיגול פינות של כפתורים (px)"
+
+msgid "The template this page uses does not show the page content — the sections below will not appear on the site. Choose a template that shows them:"
+msgstr "התבנית שהעמוד הזה משתמש בה לא מציגה את תוכן העמוד — הסקשנים כאן לא יופיעו באתר. בחרו תבנית שמציגה אותם:"
+
+msgid "The theme's standard page"
+msgstr "העמוד הרגיל של התבנית"

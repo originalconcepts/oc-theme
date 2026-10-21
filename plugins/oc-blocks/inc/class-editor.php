@@ -173,6 +173,7 @@ final class Editor {
 				'sections' => $sections,
 				'thumbs'   => $page_id ? self::thumbs( $sections ) : array(),
 				'names'    => $page_id ? self::names( $sections ) : array(),
+				'hostNote' => $page_id ? Host::notice( $page_id ) : array(),
 				'i18n'     => array(
 					'save'         => __( 'Save', 'oc-blocks' ),
 					'saved'        => __( 'Saved', 'oc-blocks' ),

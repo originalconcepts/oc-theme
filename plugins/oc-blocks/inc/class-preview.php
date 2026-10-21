@@ -79,6 +79,11 @@ final class Preview {
 		wp_enqueue_style( 'oc-blocks', OC_BLOCKS_URI . $css, array(), (string) filemtime( OC_BLOCKS_DIR . $css ) );
 		wp_enqueue_script( 'oc-blocks', OC_BLOCKS_URI . $js, array(), (string) filemtime( OC_BLOCKS_DIR . $js ), array( 'in_footer' => true ) );
 
+		// On another theme, the colours chosen in Settings → OC Blocks.
+		if ( ! Host::is_oc() ) {
+			( new Host() )->tokens();
+		}
+
 		if ( function_exists( 'oc_asset_min' ) && defined( 'OC_THEME_URI' ) ) {
 			$css = oc_asset_min( '/assets/css/theme.css' );
 			wp_enqueue_style( 'oc-theme', OC_THEME_URI . $css, array(), oc_asset_version( $css ) );
@@ -108,7 +113,7 @@ final class Preview {
 		echo $fonts; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
 		wp_print_styles();
 		echo '<style>:root{' . $tokens . '}body{margin:0;background:var(--oc-bg-user,var(--oc-surface,#fff));color:var(--oc-ink,#1c1c1c);font-family:var(--oc-font-body,system-ui,sans-serif);line-height:1.55}</style>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- CSS custom properties from the theme's own generator.
-		echo '</head><body class="oc-compose-preview">';
+		echo '</head><body class="' . esc_attr( implode( ' ', array_merge( array( 'oc-compose-preview' ), Host::classes() ) ) ) . '">';
 		echo $body; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
 		wp_print_scripts();
 		// A click on a section tells the composer to open its card — links,
