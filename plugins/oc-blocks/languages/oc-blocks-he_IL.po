@@ -1837,3 +1837,36 @@ msgstr "תמונה קטנה ומרובעת. היא תעמוד במקום האי�
 
 msgid "Or a drawing of your own"
 msgstr "או אייקון משלכם"
+
+msgid "OC Blocks — full width"
+msgstr "OC Blocks — רוחב מלא"
+
+msgid "Page width"
+msgstr "רוחב העמוד"
+
+msgid "Inside the theme's content area (safe with any theme, sidebars included)"
+msgstr "בתוך אזור התוכן של התבנית (בטוח בכל תבנית, גם עם סרגלי צד)"
+
+msgid "Edge to edge of the screen (for themes with one centred content column)"
+msgstr "מקצה לקצה של המסך (לתבניות עם עמודת תוכן אחת ממורכזת)"
+
+msgid "For a page that should run edge to edge with no title, choose the \"OC Blocks — full width\" template on that page: the theme's header and footer stay, the page title and sidebars go."
+msgstr "לעמוד שצריך לרוץ מקצה לקצה בלי כותרת, בחרו בו את התבנית \"OC Blocks — רוחב מלא\": הכותרת העליונה והפוטר של התבנית נשארים, כותרת העמוד וסרגלי הצד יורדים."
+
+msgid "Colours and corners"
+msgstr "צבעים ופינות"
+
+msgid "Left empty, each one keeps the sections' neutral default."
+msgstr "שדה ריק משאיר את ברירת המחדל הניטרלית של הסקשנים."
+
+msgid "Brand colour (buttons, accents)"
+msgstr "צבע המותג (כפתורים והדגשות)"
+
+msgid "Section background"
+msgstr "רקע הסקשנים"
+
+msgid "Corner of pictures and boxes (px)"
+msgstr "עיגול פינות של תמונות ותיבות (px)"
+
+msgid "Corner of buttons (px)"
+msgstr "עיגול פינות של כפתורים (px)"

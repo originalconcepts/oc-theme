@@ -35,6 +35,46 @@
 
 .oc-composed .oc-content { margin: 0; }
 
+/* ---------- on a theme that is not OC's (class Host) ----------
+ *
+ * ocb-contained: the sections stay inside the theme's content column. The
+ * edge-to-edge breakout above measures 50vw from the middle of that column,
+ * and a column with a sidebar beside it is not in the middle of the screen —
+ * the sections ran under the sidebar and off the far edge.
+ * ocb-full: the plugin's full-width template; the column is the whole page,
+ * so no breakout is needed (100vw would add the scrollbar's width). */
+.ocb-contained .oc-compose,
+.ocb-full .oc-compose {
+	inline-size: auto;
+	margin-inline: 0;
+}
+
+.ocb-contained .oc-compose .ocb-shelf--slider,
+.ocb-contained .ocb-brands--m-peek,
+.ocb-contained .ocb-look:not(.is-open):not(.is-closing) .ocb-look__pic { margin-inline: 0; }
+
+.ocb-full .ocb-canvas { display: block; inline-size: 100%; }
+
+/* The OC theme's cards are subgrids spanning five rows, and the slider
+ * lays its grid out for them. Another theme's cards are one box each: five
+ * rows would stack five cards per column. One row it is. */
+.ocb-host-other .oc-compose .ocb-shelf--slider ul.products {
+	grid-template-rows: none;
+	grid-auto-rows: auto;
+	align-items: start;
+}
+
+.ocb-host-other .oc-compose .ocb-shelf ul.products li.product {
+	float: none;
+	clear: none;
+	grid-row: auto;
+	inline-size: auto;
+	min-inline-size: 0;
+}
+
+.ocb-host-other .oc-compose .ocb-shelf ul.products::before,
+.ocb-host-other .oc-compose .ocb-shelf ul.products::after { content: none; }
+
 /* clip, not hidden: hidden makes the section a scroll container and
  * position:sticky inside it (the scrolly pin) sticks to nothing. */
 .ocb { position: relative; overflow: hidden; overflow: clip; }

@@ -2,7 +2,7 @@
 /**
  * Plugin Name: OC Blocks
  * Plugin URI:  https://github.com/originalconcepts/oc-theme
- * Description: Page composer for the OC theme — hero sliders, products, categories, banners and the rest, edited in a full-screen composer with a live 1:1 preview.
+ * Description: Page builder for WooCommerce shops — hero sliders, products, categories, banners and the rest, edited in a full-screen composer with a live 1:1 preview. Built into the OC theme; works on any other theme too.
  * Version:     0.3.318
  * Requires at least: 6.5
  * Requires PHP: 8.1
@@ -50,6 +50,8 @@ require_once OC_BLOCKS_DIR . 'inc/class-preview.php';
 require_once OC_BLOCKS_DIR . 'inc/class-newsletter.php';
 require_once OC_BLOCKS_DIR . 'inc/class-leads.php';
 require_once OC_BLOCKS_DIR . 'inc/class-branches.php';
+require_once OC_BLOCKS_DIR . 'inc/class-host.php';
+require_once OC_BLOCKS_DIR . 'inc/class-updater.php';
 
 add_action(
 	'init',
@@ -64,3 +66,14 @@ add_action(
 ( new OC\Blocks\Newsletter() )->register();
 ( new OC\Blocks\Leads() )->register();
 ( new OC\Blocks\Branches() )->register();
+
+// On a theme that is not OC's: width, colours, the full-width template,
+// and an update channel of its own. Both stay silent under the OC theme.
+add_action(
+	'after_setup_theme',
+	static function (): void {
+		( new OC\Blocks\Host() )->register();
+		( new OC\Blocks\Updater() )->register();
+	},
+	20
+);
