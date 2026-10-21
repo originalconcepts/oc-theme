@@ -505,80 +505,152 @@
 		document.documentElement.classList.remove( 'oc-wl-pop-open' );
 	}
 
+	/* The lists window: tick the lists the product belongs in, then confirm.
+	   Nothing is saved until "Confirm" — a customer choosing expects to
+	   approve the choice, and changing one's mind costs no requests. */
 	function openPop( pid ) {
 		var panel = makePop( cfg.popTitle );
-		panel.insertAdjacentHTML( 'beforeend', '<ul class="oc-wl-pop__lists"></ul><div class="oc-wl-pop__foot"></div>' );
+		panel.insertAdjacentHTML( 'beforeend', '<ul class="oc-wl-pop__lists"></ul><div class="oc-wl-pop__foot oc-wl-pop__foot--ok"></div>' );
 
 		var ul = pop.querySelector( '.oc-wl-pop__lists' );
+		var had = ( state.has[ pid ] || [] ).slice();
+		var picked = had.slice();
+		var order = []; // lists ticked in this window, in the order they were ticked
+
+		function row( list ) {
+			var li = document.createElement( 'li' );
+			var b = document.createElement( 'button' );
+			var on = picked.indexOf( list.id ) > -1;
+			b.type = 'button';
+			b.className = 'oc-wl-pop__row' + ( on ? ' is-in' : '' );
+			b.setAttribute( 'aria-pressed', on ? 'true' : 'false' );
+
+			var txt = document.createElement( 'span' );
+			txt.className = 'oc-wl-pop__txt';
+			var n = document.createElement( 'b' );
+			n.textContent = list.name;
+			var c = document.createElement( 'small' );
+			c.textContent = countText( list.count );
+			txt.appendChild( n );
+			txt.appendChild( c );
+
+			var tick = document.createElement( 'span' );
+			tick.className = 'oc-wl-pop__tick';
+			tick.setAttribute( 'aria-hidden', 'true' );
+
+			b.appendChild( thumbs( list ) );
+			b.appendChild( txt );
+			b.appendChild( tick );
+
+			b.addEventListener( 'click', function () {
+				var at = picked.indexOf( list.id );
+				if ( at > -1 ) {
+					picked.splice( at, 1 );
+				} else {
+					picked.push( list.id );
+					order = order.filter( function ( id ) { return id !== list.id; } ).concat( [ list.id ] );
+				}
+				var now = picked.indexOf( list.id ) > -1;
+				b.classList.toggle( 'is-in', now );
+				b.setAttribute( 'aria-pressed', now ? 'true' : 'false' );
+			} );
+
+			li.appendChild( b );
+			return li;
+		}
 
 		function rows() {
 			ul.textContent = '';
-			var mine = state.has[ pid ] || [];
-			state.lists.forEach( function ( list ) {
-				var li = document.createElement( 'li' );
-				var b = document.createElement( 'button' );
-				b.type = 'button';
-				b.className = 'oc-wl-pop__row' + ( mine.indexOf( list.id ) > -1 ? ' is-in' : '' );
-				b.setAttribute( 'aria-pressed', mine.indexOf( list.id ) > -1 ? 'true' : 'false' );
+			state.lists.forEach( function ( list ) { ul.appendChild( row( list ) ); } );
+			if ( state.logged ) { ul.appendChild( adder() ); }
+		}
 
-				var txt = document.createElement( 'span' );
-				txt.className = 'oc-wl-pop__txt';
-				var n = document.createElement( 'b' );
-				n.textContent = list.name;
-				var c = document.createElement( 'small' );
-				c.textContent = countText( list.count );
-				txt.appendChild( n );
-				txt.appendChild( c );
+		// "+ New list" under the last list; opens a name field in its place.
+		function adder() {
+			var li = document.createElement( 'li' );
+			li.className = 'oc-wl-pop__add';
+			var open = document.createElement( 'button' );
+			open.type = 'button';
+			open.className = 'oc-wl-pop__row oc-wl-pop__row--add';
+			open.innerHTML = '<span class="oc-wl-pop__plus">' + icon( 'plus', 18 ) + '</span>';
+			open.appendChild( el( 'span', 'oc-wl-pop__txt', cfg.newList ) );
+			open.setAttribute( 'aria-expanded', 'false' );
 
-				var tick = document.createElement( 'span' );
-				tick.className = 'oc-wl-pop__tick';
-				tick.setAttribute( 'aria-hidden', 'true' );
+			var form = document.createElement( 'form' );
+			form.className = 'oc-wl-pop__new';
+			form.hidden = true;
+			form.innerHTML = '<input type="text" maxlength="60" required><button type="submit"></button>';
+			var input = form.querySelector( 'input' );
+			input.placeholder = cfg.listName;
+			input.setAttribute( 'aria-label', cfg.listName );
+			form.querySelector( 'button' ).textContent = cfg.create;
 
-				b.appendChild( thumbs( list ) );
-				b.appendChild( txt );
-				b.appendChild( tick );
-
-				b.addEventListener( 'click', function () {
-					var inIt = ( state.has[ pid ] || [] ).indexOf( list.id ) > -1;
-					b.disabled = true;
-					( inIt ? call( 'remove', { p: pid, l: list.id } ) : call( 'add', { p: pid, l: list.id, s: 'popup' } ) )
-						.then( function ( d ) { take( d ); if ( ! inIt ) { track( pid ); } rows(); refreshPage(); } )
-						.catch( function () { b.disabled = false; toast( cfg.failed, '' ); } );
-				} );
-
-				li.appendChild( b );
-				ul.appendChild( li );
+			open.addEventListener( 'click', function () {
+				open.hidden = true;
+				open.setAttribute( 'aria-expanded', 'true' );
+				form.hidden = false;
+				input.focus();
 			} );
+
+			form.addEventListener( 'submit', function ( ev ) {
+				ev.preventDefault();
+				var name = input.value.trim();
+				if ( ! name ) { return; }
+				var btn = form.querySelector( 'button' );
+				btn.disabled = true;
+				// The list is made now; the product joins it on Confirm, ticked.
+				call( 'create', { n: name } )
+					.then( function ( d ) {
+						take( d );
+						picked.push( d.list );
+						order.push( d.list );
+						rows();
+						refreshPage();
+					} )
+					.catch( function ( er ) { btn.disabled = false; toast( 'full' === er.message ? cfg.full : cfg.failed, '' ); } );
+			} );
+
+			li.appendChild( open );
+			li.appendChild( form );
+			return li;
 		}
 
 		rows();
 
 		var foot = pop.querySelector( '.oc-wl-pop__foot' );
 
-		if ( state.logged ) {
-			var form = document.createElement( 'form' );
-			form.className = 'oc-wl-pop__new';
-			form.innerHTML = '<input type="text" maxlength="60" required><button type="submit"></button>';
-			var input = form.querySelector( 'input' );
-			input.placeholder = cfg.listName;
-			input.setAttribute( 'aria-label', cfg.listName );
-			form.querySelector( 'button' ).textContent = cfg.create;
-			form.addEventListener( 'submit', function ( ev ) {
-				ev.preventDefault();
-				var name = input.value.trim();
-				if ( ! name ) { return; }
-				call( 'create', { n: name, p: pid } )
-					.then( function ( d ) { take( d ); input.value = ''; rows(); track( pid ); refreshPage(); } )
-					.catch( function ( er ) { toast( 'full' === er.message ? cfg.full : cfg.failed, '' ); } );
-			} );
-			var lab = document.createElement( 'p' );
-			lab.className = 'oc-wl-pop__lab';
-			lab.textContent = cfg.newList;
-			foot.appendChild( lab );
-			foot.appendChild( form );
-		} else {
+		if ( ! state.logged ) {
 			guestFoot( foot );
 		}
+
+		var ok = document.createElement( 'button' );
+		ok.type = 'button';
+		ok.className = 'oc-wl-pop__login oc-wl-pop__ok';
+		ok.textContent = cfg.confirm;
+		foot.appendChild( ok );
+
+		ok.addEventListener( 'click', function () {
+			var gone = had.filter( function ( id ) { return picked.indexOf( id ) < 0; } );
+			// Added in the order they were ticked, so the last one ticked is
+			// where the next heart saves (the server remembers the last add).
+			var fresh = order.filter( function ( id ) { return picked.indexOf( id ) > -1 && had.indexOf( id ) < 0; } );
+			picked.forEach( function ( id ) { if ( had.indexOf( id ) < 0 && fresh.indexOf( id ) < 0 ) { fresh.push( id ); } } );
+
+			if ( ! gone.length && ! fresh.length ) { closePop(); return; }
+
+			ok.disabled = true;
+			var chain = Promise.resolve();
+			gone.forEach( function ( id ) { chain = chain.then( function () { return call( 'remove', { p: pid, l: id } ).then( take ); } ); } );
+			fresh.forEach( function ( id ) { chain = chain.then( function () { return call( 'add', { p: pid, l: id, s: 'popup' } ).then( take ); } ); } );
+
+			chain.then( function () {
+				if ( fresh.length ) { track( pid ); }
+				closePop();
+				var names = ( state.has[ pid ] || [] ).map( function ( id ) { var l = listById( id ); return l ? l.name : ''; } ).filter( Boolean );
+				toast( names.length ? fmt( cfg.savedIn, names.join( ', ' ) ) : cfg.removedAll, '' );
+				refreshPage();
+			} ).catch( function () { ok.disabled = false; toast( cfg.failed, '' ); } );
+		} );
 
 		showPop();
 	}
@@ -618,6 +690,15 @@
 
 	/* The link of a shared list, always in view while the list is shared:
 	   copy, WhatsApp, the device's own share sheet, or stop sharing. */
+	function shareSheet( list ) {
+		var panel = makePop( cfg.share );
+		var foot = document.createElement( 'div' );
+		foot.className = 'oc-wl-pop__foot oc-wl-pop__foot--solo';
+		foot.appendChild( shareBox( list ) );
+		panel.appendChild( foot );
+		showPop( panel.querySelector( '.oc-wlp__tool--main' ) );
+	}
+
 	function shareBox( list ) {
 		var box = el( 'div', 'oc-wlp__share' );
 		box.appendChild( el( 'p', 'oc-wlp__share-t', cfg.sharedNote ) );
@@ -666,7 +747,7 @@
 		stop.type = 'button';
 		stop.addEventListener( 'click', function () {
 			stop.disabled = true;
-			call( 'unshare', { l: list.id } ).then( function ( d ) { take( d ); loadPage( list.id ); } )
+			call( 'unshare', { l: list.id } ).then( function ( d ) { take( d ); closePop(); loadPage( list.id ); } )
 				.catch( function () { stop.disabled = false; toast( cfg.failed, '' ); } );
 		} );
 		more.appendChild( stop );
@@ -782,21 +863,21 @@
 			if ( state.logged ) {
 				var tools = el( 'div', 'oc-wlp__tools' );
 
-				if ( ! current.share ) {
-					var share = tool( cfg.share, 'share' );
-					share.addEventListener( 'click', function () {
-						share.disabled = true;
-						call( 'share', { l: current.id } ).then( function ( d ) {
-							take( d );
-							loadPage( current.id );
-							// A phone offers its own sheet straight away; the link box below covers the rest.
-							if ( d.url && navigator.share && window.matchMedia( '(pointer: coarse)' ).matches ) {
-								navigator.share( { title: current.name, url: d.url } ).catch( function () {} );
-							}
-						} ).catch( function () { share.disabled = false; toast( cfg.failed, '' ); } );
-					} );
-					tools.appendChild( share );
-				}
+				// One button. A shared list says so on the button (a green dot
+				// and "Shared"); the link and its tools open in a window.
+				var share = tool( current.share ? cfg.shareOn : cfg.share, 'share', current.share ? 'is-active' : '' );
+				share.setAttribute( 'aria-haspopup', 'dialog' );
+				share.addEventListener( 'click', function () {
+					if ( current.share ) { shareSheet( current ); return; }
+					share.disabled = true;
+					call( 'share', { l: current.id } ).then( function ( d ) {
+						take( d );
+						loadPage( current.id );
+						var now = listById( current.id );
+						if ( now && now.share ) { shareSheet( now ); }
+					} ).catch( function () { share.disabled = false; toast( cfg.failed, '' ); } );
+				} );
+				tools.appendChild( share );
 
 				if ( ! current.main ) {
 					var ren = tool( cfg.rename, 'rename' );
@@ -831,9 +912,6 @@
 
 			main.appendChild( head );
 
-			if ( state.logged && current.share ) {
-				main.appendChild( shareBox( current ) );
-			}
 		}
 
 		var grid = el( 'div', 'oc-wlp__grid' );

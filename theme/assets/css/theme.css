@@ -16681,33 +16681,50 @@ body.oc-wl-pp-button div.product form.cart .single_add_to_cart_button { min-inli
 .oc-wl-pop__txt b { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .oc-wl-pop__txt small { font-size: .8rem; color: var(--oc-ink-2, #6b6b6b); }
 
+/* The tick: a drawn check, centred by the box itself rather than nudged
+   with offsets (the rotated border-corner sat a pixel or two off). */
 .oc-wl-pop__tick {
-	position: relative;
+	box-sizing: border-box;
+	display: grid;
+	place-items: center;
 	inline-size: 24px;
 	block-size: 24px;
 	border: 1.8px solid var(--oc-line, #cfcfcf);
 	border-radius: 50%;
+	background: transparent center / 14px 14px no-repeat;
 	transition: background-color .15s ease, border-color .15s ease;
 }
 
 .oc-wl-pop__row.is-in .oc-wl-pop__tick {
 	border-color: var(--oc-primary);
-	background: var(--oc-primary);
+	background-color: var(--oc-primary);
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E");
 }
 
-.oc-wl-pop__row.is-in .oc-wl-pop__tick::after {
-	content: "";
-	position: absolute;
-	inset-inline-start: 7px;
-	top: 3px;
-	inline-size: 6px;
-	block-size: 11px;
-	border: solid #fff;
-	border-width: 0 2px 2px 0;
-	transform: rotate(45deg);
+/* "+ New list" under the last list, and the field it opens. */
+.oc-wl-pop__row--add { grid-template-columns: auto 1fr; color: var(--oc-ink-2, #6b6b6b); }
+.oc-wl-pop__row--add .oc-wl-pop__txt { font-weight: 600; color: var(--oc-ink); }
+
+.oc-wl-pop__plus {
+	display: grid;
+	place-items: center;
+	inline-size: 40px;
+	block-size: 48px;
+	border: 1.5px dashed var(--oc-line, #d8d6d1);
+	border-radius: 7px;
+	color: var(--oc-primary);
 }
 
-[dir="rtl"] .oc-wl-pop__row.is-in .oc-wl-pop__tick::after { transform: rotate(45deg); }
+.oc-wl-pop__add .oc-wl-pop__new { padding: 6px 8px 10px; }
+.oc-wl-pop__add .oc-wl-pop__new[hidden] { display: none; }
+
+/* Below the divider: the one button that applies the choice. */
+.oc-wl-pop__foot--ok { display: grid; gap: 12px; }
+.oc-wl-pop__ok { inline-size: 100%; }
+.oc-wl-pop__ok:disabled { opacity: .6; cursor: progress; }
+
+/* Share, in its window: no panel inside a panel. */
+.oc-wl-pop .oc-wlp__share { margin: 0; padding: 0; background: none; }
 
 .oc-wl-pop__foot {
 	padding: 12px 20px 20px;
@@ -16995,6 +17012,32 @@ body.oc-wl-pp-button div.product form.cart .single_add_to_cart_button { min-inli
 .oc-wlp__tool--icon { inline-size: 38px; block-size: 38px; padding: 0; }
 .oc-wlp__tool:disabled { opacity: .55; cursor: default; }
 .oc-wlp__tool--del { color: var(--oc-sale, #b4453c); }
+
+/* A list that is shared says so on its share button: a green dot. */
+.oc-wlp__tool.is-active {
+	position: relative;
+	border-color: var(--oc-success, #2f7d4f);
+	color: var(--oc-success, #2f7d4f);
+}
+
+.oc-wlp__tool.is-active::before {
+	content: "";
+	inline-size: 7px;
+	block-size: 7px;
+	margin-inline-end: 6px;
+	border-radius: 50%;
+	background: currentColor;
+	box-shadow: 0 0 0 3px color-mix(in srgb, currentColor 18%, transparent);
+}
+
+.oc-wlp__tool--icon.is-active::before {
+	position: absolute;
+	inset-block-start: 3px;
+	inset-inline-end: 3px;
+	margin: 0;
+}
+
+.oc-wlp__tool--text.is-active { display: inline-flex; align-items: center; }
 a.oc-wlp__tool { display: inline-flex; align-items: center; text-decoration: none; }
 
 .oc-wlp__tool--main {

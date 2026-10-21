@@ -14524,3 +14524,16 @@ msgstr "הסרה מהמועדפים"
 
 msgid "Saved in a few lists — choose"
 msgstr "שמור בכמה רשימות – לבחירה"
+
+msgid "Shared"
+msgstr "שיתוף פעיל"
+
+msgid "Confirm"
+msgstr "אישור"
+
+#, php-format
+msgid "Saved in: %s"
+msgstr "נשמר ב: %s"
+
+msgid "Removed from your favourites"
+msgstr "הוסר מהמועדפים"

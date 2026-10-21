@@ -240,6 +240,11 @@ final class Front {
 				'full'       => __( 'This list is full.', 'oc-theme' ),
 				'share'      => __( 'Share the list', 'oc-theme' ),
 				'unshare'    => __( 'Stop sharing', 'oc-theme' ),
+				'shareOn'    => __( 'Shared', 'oc-theme' ),
+				'confirm'    => __( 'Confirm', 'oc-theme' ),
+				/* translators: %s: the names of the lists, comma separated. */
+				'savedIn'    => __( 'Saved in: %s', 'oc-theme' ),
+				'removedAll' => __( 'Removed from your favourites', 'oc-theme' ),
 				'moveTo'     => __( 'Move to another list', 'oc-theme' ),
 				'tipAdd'     => __( 'Add to favourites', 'oc-theme' ),
 				'tipRemove'  => __( 'Remove from favourites', 'oc-theme' ),
