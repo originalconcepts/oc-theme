@@ -23,6 +23,12 @@ defined( 'ABSPATH' ) || exit;
 final class Front {
 
 	/**
+	 * User meta: the list a customer last chose in the lists window — where
+	 * the next heart saves to, until they choose another.
+	 */
+	private const LAST = '_oc_wl_last';
+
+	/**
 	 * Hook in.
 	 */
 	public function register(): void {
@@ -198,6 +204,7 @@ final class Front {
 				't'          => self::token(),
 				'logged'     => is_user_logged_in() ? 1 : 0,
 				'tools'      => Wishlist::settings()['tools_style'],
+				'lang'       => determine_locale(),
 				'page'       => Wishlist::page_url(),
 				'main'       => __( 'My favourites', 'oc-theme' ),
 				/* translators: %s: the list's name. */
@@ -206,7 +213,7 @@ final class Front {
 				'removed'    => __( 'Removed from: %s', 'oc-theme' ),
 				'change'     => __( 'Change', 'oc-theme' ),
 				'undo'       => __( 'Undo', 'oc-theme' ),
-				'guest'      => __( 'Saved on this device. Sign in to keep it and to create lists.', 'oc-theme' ),
+				'guest'      => __( 'Sign in to keep it and to create lists.', 'oc-theme' ),
 				'signIn'     => __( 'Sign in', 'oc-theme' ),
 				'popTitle'   => __( 'Save to a list', 'oc-theme' ),
 				'newList'    => __( 'New list', 'oc-theme' ),
@@ -227,8 +234,9 @@ final class Front {
 				'share'      => __( 'Share the list', 'oc-theme' ),
 				'unshare'    => __( 'Stop sharing', 'oc-theme' ),
 				'moveTo'     => __( 'Move to another list', 'oc-theme' ),
-				'move'       => __( 'Move to a list', 'oc-theme' ),
-				'removeIt'   => __( 'Remove from this list', 'oc-theme' ),
+				'rmTitle'    => __( 'Remove this product from the list?', 'oc-theme' ),
+				'rmText'     => __( 'Tapping a filled heart takes the product out of the list. You can always save it again.', 'oc-theme' ),
+				'rmYes'      => __( 'Yes, remove it', 'oc-theme' ),
 				/* translators: %s: list name. */
 				'movedTo'    => __( 'Moved to: %s', 'oc-theme' ),
 				'noOther'    => __( 'No other list yet. Name one and the product moves there.', 'oc-theme' ),
@@ -317,10 +325,20 @@ final class Front {
 		switch ( $op ) {
 			case 'add':
 				$owner = Wishlist::owner( true );
-				$into  = Wishlist::add( $owner, $list, $product, $vary, $source );
+
+				// A heart says no list: it goes where the customer last chose
+				// one, until they choose another (add() falls back to the
+				// main list when that one is gone).
+				$chosen = 0 === $list && $logged ? (int) get_user_meta( get_current_user_id(), self::LAST, true ) : $list;
+				$into   = Wishlist::add( $owner, $chosen, $product, $vary, $source );
 
 				if ( ! $into ) {
 					wp_send_json_error( array( 'code' => 'full' ) );
+				}
+
+				// Choosing a list in the lists window is the choice.
+				if ( $logged && $list && 'popup' === $source ) {
+					update_user_meta( get_current_user_id(), self::LAST, $into );
 				}
 
 				$extra['list'] = $into;
@@ -343,6 +361,7 @@ final class Front {
 
 				if ( $product ) {
 					Wishlist::add( Wishlist::owner(), $new, $product, $vary, 'popup' );
+					update_user_meta( get_current_user_id(), self::LAST, $new );
 				}
 
 				$extra['list'] = $new;

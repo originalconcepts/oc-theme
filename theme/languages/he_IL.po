@@ -14356,8 +14356,6 @@ msgid "Undo"
 msgstr "ביטול"
 
 
-msgid "Saved on this device. Sign in to keep it and to create lists."
-msgstr "נשמר במכשיר הזה. כדי לשמור לתמיד וליצור רשימות, יש להתחבר."
 
 
 msgid "Save to a list"
@@ -14466,8 +14464,6 @@ msgstr "קישור לרשימה"
 msgid "More ways to share"
 msgstr "שיתוף בדרך אחרת"
 
-msgid "Move to a list"
-msgstr "העברה"
 
 msgid "Move to another list"
 msgstr "העברה לרשימה אחרת"
@@ -14510,5 +14506,14 @@ msgstr "אייקון בלבד"
 msgid "Icon and text"
 msgstr "אייקון וטקסט"
 
-msgid "Remove from this list"
-msgstr "הסרה"
+msgid "Sign in to keep it and to create lists."
+msgstr "כדי לשמור לתמיד וליצור רשימות, יש להתחבר."
+
+msgid "Remove this product from the list?"
+msgstr "להסיר את המוצר מהרשימה?"
+
+msgid "Tapping a filled heart takes the product out of the list. You can always save it again."
+msgstr "לחיצה על לב מלא מסירה את המוצר מהרשימה. תמיד אפשר לשמור אותו שוב."
+
+msgid "Yes, remove it"
+msgstr "כן, להסיר"

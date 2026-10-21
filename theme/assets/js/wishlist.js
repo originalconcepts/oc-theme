@@ -14,7 +14,7 @@
 	if ( ! cfg ) { return; }
 
 	var state = { logged: cfg.logged, lists: [], has: {}, count: 0 };
-	var KEY = 'ocWlState:' + cfg.logged;
+	var KEY = 'ocWlState:' + cfg.logged + ':' + ( cfg.lang || '' );
 
 	/* ---------------------------------------------------------- request */
 
@@ -237,11 +237,52 @@
 		if ( ! inLists.length ) {
 			add( btn, pid, 0, src );
 		} else if ( inLists.length === 1 ) {
-			remove( pid, inLists[ 0 ] );
+			firstRemoval( function () { remove( pid, inLists[ 0 ] ); } );
 		} else {
 			openPop( pid );
 		}
 	}, true );
+
+	/* The first time a filled heart is tapped, ask — so a slip of the finger
+	   does not make a product vanish unexplained. After one yes, never again
+	   on this device. */
+	var RM = 'ocWlRmSeen';
+	var rmSeen = false;
+
+	function firstRemoval( go ) {
+		try { rmSeen = rmSeen || '1' === localStorage.getItem( RM ); } catch ( er ) {}
+		if ( rmSeen ) { go(); return; }
+
+		var panel = makePop( cfg.rmTitle );
+		var foot = document.createElement( 'div' );
+		foot.className = 'oc-wl-pop__foot oc-wl-pop__foot--solo';
+		var p = document.createElement( 'p' );
+		p.className = 'oc-wl-pop__note';
+		p.textContent = cfg.rmText;
+		var row = document.createElement( 'div' );
+		row.className = 'oc-wl-pop__btns';
+		var yes = document.createElement( 'button' );
+		yes.type = 'button';
+		yes.className = 'oc-wl-pop__login';
+		yes.textContent = cfg.rmYes;
+		var no = document.createElement( 'button' );
+		no.type = 'button';
+		no.className = 'oc-wl-pop__login oc-wl-pop__login--ghost';
+		no.textContent = cfg.cancel;
+		no.setAttribute( 'data-oc-wl-x', '' );
+		yes.addEventListener( 'click', function () {
+			rmSeen = true;
+			try { localStorage.setItem( RM, '1' ); } catch ( er ) {}
+			closePop();
+			go();
+		} );
+		row.appendChild( yes );
+		row.appendChild( no );
+		foot.appendChild( p );
+		foot.appendChild( row );
+		panel.appendChild( foot );
+		showPop( yes );
+	}
 
 	/* ------------------------------------------------- the lists window */
 
@@ -627,31 +668,27 @@
 		return b;
 	}
 
-	/* Under every card on one's own list: move it elsewhere, or take it out. */
-	function cardActions( grid, listId ) {
+	/* On one's own list, under each card's heart: move it to another list.
+	   Taking it out is the heart itself. */
+	function cardMoves( grid, listId ) {
+		if ( ! state.logged ) { return; }
+		grid.classList.add( 'oc-wlp__grid--move' );
 		grid.querySelectorAll( 'li.product' ).forEach( function ( li ) {
-			var heart = li.querySelector( '[data-oc-wl]' );
+			var heart = li.querySelector( '.oc-wl-heart--card[data-oc-wl]' );
 			var pid = heart ? parseInt( heart.getAttribute( 'data-oc-wl' ), 10 ) : 0;
 			if ( ! pid ) { return; }
-			var bar = el( 'div', 'oc-wlp__acts' );
-			if ( state.logged ) {
-				var mv = el( 'button', 'oc-wlp__act' );
-				mv.type = 'button';
-				mv.innerHTML = icon( 'move', 16 );
-				mv.appendChild( el( 'span', '', cfg.move ) );
-				mv.setAttribute( 'aria-label', cfg.moveTo );
-				mv.addEventListener( 'click', function () { moveSheet( pid, listId ); } );
-				bar.appendChild( mv );
-			}
-			var rm = el( 'button', 'oc-wlp__act' );
-			rm.type = 'button';
-			rm.innerHTML = icon( 'trash', 16 );
-			rm.appendChild( el( 'span', '', cfg.removeIt ) );
-			rm.addEventListener( 'click', function () { rm.disabled = true; remove( pid, listId ); } );
-			bar.appendChild( rm );
-			// Inside the text block, under the price: the card is a subgrid and
-			// a loose child of it would be auto-placed into the row under the picture.
-			( li.querySelector( '.oc-card-text' ) || li ).appendChild( bar );
+			var mv = document.createElement( 'button' );
+			mv.type = 'button';
+			mv.className = 'oc-wl-move';
+			mv.innerHTML = icon( 'move', 17 );
+			mv.setAttribute( 'aria-label', cfg.moveTo );
+			mv.title = cfg.moveTo;
+			mv.addEventListener( 'click', function ( ev ) {
+				ev.preventDefault();
+				ev.stopPropagation();
+				moveSheet( pid, listId );
+			} );
+			heart.insertAdjacentElement( 'afterend', mv );
 		} );
 	}
 
@@ -779,7 +816,7 @@
 
 		var grid = el( 'div', 'oc-wlp__grid' );
 		grid.innerHTML = data.html;
-		if ( current ) { cardActions( grid, current.id ); }
+		if ( current ) { cardMoves( grid, current.id ); }
 		main.appendChild( grid );
 
 		wrap.appendChild( side );
