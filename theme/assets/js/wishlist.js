@@ -13,7 +13,8 @@
 	var cfg = window.ocWl;
 	if ( ! cfg ) { return; }
 
-	var state = { logged: cfg.logged, lists: [], has: {}, count: 0 };
+	// wp_localize_script() hands values over as strings, and "0" is true.
+	var state = { logged: '1' === String( cfg.logged ) ? 1 : 0, lists: [], has: {}, count: 0 };
 	var KEY = 'ocWlState:' + cfg.logged + ':' + ( cfg.lang || '' );
 
 	/* ---------------------------------------------------------- request */
