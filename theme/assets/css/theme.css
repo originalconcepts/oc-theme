@@ -16400,6 +16400,76 @@ body.oc-card-h-custom .woocommerce ul.products li.product .oc-card-media__item {
 	outline-offset: 2px;
 }
 
+/* --- the words on hover and on keyboard focus ---
+   The same words are the button's accessible name, so the bubble itself is
+   decoration for sighted users: it shows on a real hover (not a tap), on
+   keyboard focus, sits beside the disc pointing into the picture, can be
+   hovered without vanishing, and Esc hides it (WCAG 1.4.13). */
+.oc-wl-heart[data-tip],
+.oc-wl-move[data-tip] { overflow: visible; }
+
+.oc-wl-heart[data-tip]::after,
+.oc-wl-move[data-tip]::after {
+	content: attr(data-tip);
+	position: absolute;
+	top: 50%;
+	z-index: 8;
+	padding: 5px 9px;
+	border-radius: 6px;
+	background: var(--oc-ink, #1a1a1a);
+	color: #fff;
+	font-size: 12px;
+	font-weight: 500;
+	line-height: 1.3;
+	white-space: nowrap;
+	pointer-events: none;
+	opacity: 0;
+	visibility: hidden;
+	transform: translateY(-50%);
+	transition: opacity .15s ease .15s, visibility 0s linear .3s;
+}
+
+/* Into the picture: right of a heart in the left corner, left of one in the right. */
+.oc-wl-side-left .oc-wl-heart--card::after,
+.oc-wl-side-left .oc-wl-move::after,
+.oc-wl-heart--img-left::after { left: calc(100% + 8px); }
+
+.oc-wl-side-right .oc-wl-heart--card::after,
+.oc-wl-side-right .oc-wl-move::after,
+.oc-wl-heart--img-right::after { right: calc(100% + 8px); }
+
+/* Beside the cart button: above it, centred. */
+.oc-wl-heart--product::after {
+	top: auto;
+	bottom: calc(100% + 8px);
+	left: 50%;
+	transform: translateX(-50%);
+}
+
+@media (hover: hover) {
+	.oc-wl-heart[data-tip]:hover::after,
+	.oc-wl-move[data-tip]:hover::after {
+		opacity: 1;
+		visibility: visible;
+		transition-delay: .25s, 0s;
+	}
+}
+
+.oc-wl-heart[data-tip]:focus-visible::after,
+.oc-wl-move[data-tip]:focus-visible::after {
+	opacity: 1;
+	visibility: visible;
+	transition-delay: 0s, 0s;
+}
+
+.oc-wl-heart.is-tip-off::after,
+.oc-wl-move.is-tip-off::after { opacity: 0 !important; visibility: hidden !important; }
+
+@media (prefers-reduced-motion: reduce) {
+	.oc-wl-heart[data-tip]::after,
+	.oc-wl-move[data-tip]::after { transition: none; }
+}
+
 /* --- on the catalogue picture --- */
 .oc-wl-heart--card,
 .oc-wl-heart--image {

@@ -65,9 +65,17 @@
 
 	function paint() {
 		document.querySelectorAll( '[data-oc-wl]' ).forEach( function ( b ) {
-			var on = !! ( state.has[ b.getAttribute( 'data-oc-wl' ) ] || [] ).length;
-			b.classList.toggle( 'is-on', on );
-			b.setAttribute( 'aria-pressed', on ? 'true' : 'false' );
+			var n = ( state.has[ b.getAttribute( 'data-oc-wl' ) ] || [] ).length;
+			var tip = ! n ? cfg.tipAdd : ( 1 === n ? cfg.tipRemove : cfg.tipLists );
+			var name = b.getAttribute( 'data-oc-wl-name' );
+			b.classList.toggle( 'is-on', !! n );
+			// Only when it changed: the observer below repaints on every DOM
+			// change, and rewriting a focused button's name makes some
+			// screen readers announce it again.
+			if ( b.getAttribute( 'data-tip' ) !== tip ) {
+				b.setAttribute( 'data-tip', tip );
+				b.setAttribute( 'aria-label', name ? tip + ': ' + name : tip );
+			}
 		} );
 		document.querySelectorAll( '[data-oc-wl-count]' ).forEach( function ( c ) {
 			c.textContent = String( state.count );
@@ -575,7 +583,20 @@
 	}
 
 	document.addEventListener( 'keydown', function ( e ) {
-		if ( 'Escape' === e.key && pop ) { closePop(); }
+		if ( 'Escape' !== e.key ) { return; }
+		if ( pop ) { closePop(); return; }
+		// A tooltip under the pointer or on the focused heart goes quiet
+		// until the pointer leaves or the focus moves on.
+		document.querySelectorAll( '[data-tip]:hover, [data-tip]:focus-visible' ).forEach( function ( t ) {
+			t.classList.add( 'is-tip-off' );
+		} );
+	} );
+
+	[ 'mouseout', 'focusout' ].forEach( function ( ev ) {
+		document.addEventListener( ev, function ( e ) {
+			var t = e.target.closest && e.target.closest( '.is-tip-off' );
+			if ( t && ( ! e.relatedTarget || ! t.contains( e.relatedTarget ) ) ) { t.classList.remove( 'is-tip-off' ); }
+		} );
 	} );
 
 	/* ---------------------------------------------------- the lists page */
@@ -682,7 +703,7 @@
 			mv.className = 'oc-wl-move';
 			mv.innerHTML = icon( 'move', 17 );
 			mv.setAttribute( 'aria-label', cfg.moveTo );
-			mv.title = cfg.moveTo;
+			mv.setAttribute( 'data-tip', cfg.moveTo );
 			mv.addEventListener( 'click', function ( ev ) {
 				ev.preventDefault();
 				ev.stopPropagation();

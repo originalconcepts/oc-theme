@@ -14332,8 +14332,6 @@ msgid "Nothing yet."
 msgstr "עדיין אין נתונים."
 
 
-msgid "Save to my favourites"
-msgstr "שמירה למועדפים"
 
 
 msgid "My lists"
@@ -14517,3 +14515,12 @@ msgstr "לחיצה על לב מלא מסירה את המוצר מהרשימה. �
 
 msgid "Yes, remove it"
 msgstr "כן, להסיר"
+
+msgid "Add to favourites"
+msgstr "הוספה למועדפים"
+
+msgid "Remove from favourites"
+msgstr "הסרה מהמועדפים"
+
+msgid "Saved in a few lists — choose"
+msgstr "שמור בכמה רשימות – לבחירה"

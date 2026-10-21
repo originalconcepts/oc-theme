@@ -80,8 +80,15 @@ final class Front {
 	 * @param string $where   card | product | image.
 	 */
 	private static function heart( int $product, string $where ): string {
+		$name = wp_strip_all_tags( get_the_title( $product ) );
+		$tip  = __( 'Add to favourites', 'oc-theme' );
+
+		// The name says what tapping does, and which product: a page of
+		// hearts all called "Add to favourites" is a page of identical
+		// buttons to a screen reader. The words change with the state, so
+		// there is no aria-pressed — a toggle keeps one name, this one does not.
 		return '<button type="button" class="oc-wl-heart oc-wl-heart--' . esc_attr( $where ) . '" data-oc-wl="' . $product . '" data-oc-wl-src="' . esc_attr( 'image' === $where ? 'product' : $where ) . '"'
-			. ' aria-pressed="false" aria-label="' . esc_attr__( 'Save to my favourites', 'oc-theme' ) . '">'
+			. ' data-oc-wl-name="' . esc_attr( $name ) . '" data-tip="' . esc_attr( $tip ) . '" aria-label="' . esc_attr( $tip . ': ' . $name ) . '">'
 			. self::icon( 'product' === $where ? 22 : 20 ) . '</button>';
 	}
 
@@ -234,6 +241,9 @@ final class Front {
 				'share'      => __( 'Share the list', 'oc-theme' ),
 				'unshare'    => __( 'Stop sharing', 'oc-theme' ),
 				'moveTo'     => __( 'Move to another list', 'oc-theme' ),
+				'tipAdd'     => __( 'Add to favourites', 'oc-theme' ),
+				'tipRemove'  => __( 'Remove from favourites', 'oc-theme' ),
+				'tipLists'   => __( 'Saved in a few lists — choose', 'oc-theme' ),
 				'rmTitle'    => __( 'Remove this product from the list?', 'oc-theme' ),
 				'rmText'     => __( 'Tapping a filled heart takes the product out of the list. You can always save it again.', 'oc-theme' ),
 				'rmYes'      => __( 'Yes, remove it', 'oc-theme' ),
