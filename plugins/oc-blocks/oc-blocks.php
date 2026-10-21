@@ -1,14 +1,16 @@
 <?php
 /**
- * Plugin Name: OC Blocks
- * Plugin URI:  https://github.com/originalconcepts/oc-theme
- * Description: Page builder for WooCommerce shops — hero sliders, products, categories, banners and the rest, edited in a full-screen composer with a live 1:1 preview. Built into the OC theme; works on any other theme too.
- * Version:     0.3.321
+ * Plugin Name:       OC Blocks
+ * Plugin URI:        https://ocpluginz.com
+ * Description:       Page builder for WooCommerce shops — hero sliders, products, categories, banners and the rest, edited in a full-screen composer with a live 1:1 preview. Works with any theme.
+ * Version:           0.3.321
  * Requires at least: 6.5
- * Requires PHP: 8.1
- * Author:      Original Concepts
- * License:     GPL-2.0-or-later
- * Text Domain: oc-blocks
+ * Requires PHP:      8.1
+ * Author:            OC Pluginz
+ * Author URI:        https://ocpluginz.com
+ * License:           GPL-2.0-or-later
+ * Text Domain:       oc-blocks
+ * Domain Path:       /languages
  *
  * Pages live in a plugin, not the theme, so a client can switch or rebuild a
  * theme without losing every page they have built.

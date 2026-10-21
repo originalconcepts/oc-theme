@@ -201,7 +201,7 @@ final class Updater {
 			'name'          => 'OC Blocks',
 			'slug'          => 'oc-blocks',
 			'version'       => $rel['version'],
-			'author'        => 'Original Concepts',
+			'author'        => 'OC Pluginz',
 			'homepage'      => $rel['url'],
 			'download_link' => $rel['package'],
 			'requires_php'  => '8.1',
