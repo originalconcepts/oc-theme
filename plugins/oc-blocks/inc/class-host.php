@@ -376,10 +376,10 @@ final class Host {
 		};
 
 		return array(
-			'text' => __( 'The template this page uses does not show the page content — the sections below will not appear on the site. Choose a template that shows them:', 'oc-blocks' ),
-			'std'  => self::standard_shows_content() ? $go( 'default' ) : '',
-			'stdT' => __( 'The theme\'s standard page', 'oc-blocks' ),
-			'full' => $go( 'full' ),
+			'text'  => __( 'The template this page uses does not show the page content — the sections below will not appear on the site. Choose a template that shows them:', 'oc-blocks' ),
+			'std'   => self::standard_shows_content() ? $go( 'default' ) : '',
+			'stdT'  => __( 'The theme\'s standard page', 'oc-blocks' ),
+			'full'  => $go( 'full' ),
 			'fullT' => __( 'OC Blocks — full width', 'oc-blocks' ),
 		);
 	}
