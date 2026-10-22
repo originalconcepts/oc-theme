@@ -187,8 +187,13 @@
 	function previewUrl( draft ) {
 		var glue = D.preview.indexOf( '?' ) > -1 ? '&' : '?';
 
+		// On another theme the sections sit in the theme's content column:
+		// the preview is drawn at the screen width it was measured on, with
+		// the sections at the column's width — what the site really shows.
+		var col = D.col && D.col.w ? '&col=' + encodeURIComponent( D.col.w ) : '';
+
 		return D.preview + glue + 'oc_compose_preview=1&nonce=' + encodeURIComponent( D.nonce ) +
-			'&draft=' + encodeURIComponent( draft ) + '&t=' + Date.now();
+			'&draft=' + encodeURIComponent( draft ) + col + '&t=' + Date.now();
 	}
 
 	// Two frames, one shown. The new draft loads into the hidden one and
@@ -943,6 +948,7 @@
 				body.append( 'action', 'oc_blocks_search' );
 				body.append( 'nonce', D.nonce );
 				body.append( 'kind', 'posts' === field.type ? 'posts' : 'product' );
+				body.append( 'ptype', section.ptype || 'post' );
 				body.append( 'q', q );
 
 				fetch( D.ajax, { method: 'POST', credentials: 'same-origin', body: body } )
@@ -1422,7 +1428,7 @@
 	function fitPreview() {
 		var stage = els.stage;
 		var frame = els.frame;
-		var want = DEVICES[ state.device ];
+		var want = 'desktop' === state.device && D.col && D.col.vw ? D.col.vw : DEVICES[ state.device ];
 		var room = stage.clientWidth - 36;
 
 		// A hidden or still-collapsing pane measures zero; try again when

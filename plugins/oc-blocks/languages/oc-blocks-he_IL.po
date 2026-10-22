@@ -1891,3 +1891,18 @@ msgstr "פריסת העמוד"
 
 msgid "There are unsaved changes — they will be lost. Change the layout anyway?"
 msgstr "יש שינויים שלא נשמרו — הם יאבדו. להחליף את הפריסה בכל זאת?"
+
+msgid "What to show"
+msgstr "מה להציג"
+
+msgid "Blog posts"
+msgstr "פוסטים בבלוג"
+
+msgid "It leads to (optional)"
+msgstr "לאן הוא מוביל (לא חובה)"
+
+msgid "Left empty: the blog page, or the archive of what is shown."
+msgstr "ריק: עמוד הבלוג, או עמוד הארכיון של מה שמוצג."
+
+msgid "See them all"
+msgstr "לכל הרשימה"

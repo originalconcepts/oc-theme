@@ -113,6 +113,15 @@ final class Preview {
 		echo $fonts; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
 		wp_print_styles();
 		echo '<style>:root{' . $tokens . '}body{margin:0;background:var(--oc-bg-user,var(--oc-surface,#fff));color:var(--oc-ink,#1c1c1c);font-family:var(--oc-font-body,system-ui,sans-serif);line-height:1.55}</style>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- CSS custom properties from the theme's own generator.
+
+		// Another theme's content column, as measured on the site: the
+		// sections are drawn at its width (on a desktop-wide frame, so the
+		// desktop rules still apply), the rest of the frame stays grey.
+		$col = isset( $_GET['col'] ) ? absint( $_GET['col'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- checked above.
+
+		if ( $col >= 200 && ! Host::is_oc() ) {
+			echo '<style>@media (min-width:783px){body.ocb-host-other{background:#ececec}body.ocb-host-other .oc-compose{max-inline-size:' . (int) $col . 'px;margin-inline:auto;background:var(--oc-surface,#fff);min-block-size:100vh}}</style>';
+		}
 		echo '</head><body class="' . esc_attr( implode( ' ', array_merge( array( 'oc-compose-preview' ), Host::classes() ) ) ) . '">';
 		echo $body; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
 		wp_print_scripts();

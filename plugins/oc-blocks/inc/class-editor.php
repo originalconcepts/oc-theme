@@ -174,6 +174,7 @@ final class Editor {
 				'thumbs'   => $page_id ? self::thumbs( $sections ) : array(),
 				'names'    => $page_id ? self::names( $sections ) : array(),
 				'hostNote' => $page_id ? Host::notice( $page_id ) : array(),
+				'col'      => $page_id ? Host::col( $page_id ) : array(),
 				'i18n'     => array(
 					'save'         => __( 'Save', 'oc-blocks' ),
 					'saved'        => __( 'Saved', 'oc-blocks' ),
@@ -473,12 +474,14 @@ final class Editor {
 			wp_send_json_error( array(), 403 );
 		}
 
-		$kind = isset( $_POST['kind'] ) ? sanitize_key( $_POST['kind'] ) : 'product';
-		$term = isset( $_POST['q'] ) ? sanitize_text_field( wp_unslash( $_POST['q'] ) ) : '';
+		$kind  = isset( $_POST['kind'] ) ? sanitize_key( $_POST['kind'] ) : 'product';
+		$term  = isset( $_POST['q'] ) ? sanitize_text_field( wp_unslash( $_POST['q'] ) ) : '';
+		$ptype = isset( $_POST['ptype'] ) ? sanitize_key( $_POST['ptype'] ) : 'post';
+		$ptype = isset( Registry::post_types()[ $ptype ] ) ? $ptype : 'post';
 
 		$query = new \WP_Query(
 			array(
-				'post_type'      => 'posts' === $kind ? 'post' : 'product',
+				'post_type'      => 'posts' === $kind ? $ptype : 'product',
 				'post_status'    => 'publish',
 				's'              => $term,
 				'posts_per_page' => 10,

@@ -1160,6 +1160,12 @@ final class Registry {
 						'type'  => 'text',
 						'label' => __( 'Heading', 'oc-blocks' ),
 					),
+					'ptype'   => array(
+						'type'    => 'seg',
+						'label'   => __( 'What to show', 'oc-blocks' ),
+						'choices' => self::post_types(),
+						'def'     => 'post',
+					),
 					'mode'    => array(
 						'type'    => 'seg',
 						'label'   => __( 'Which posts', 'oc-blocks' ),
@@ -1235,6 +1241,13 @@ final class Registry {
 					'alltext' => array(
 						'type'  => 'text',
 						'label' => __( 'Its words', 'oc-blocks' ),
+						'when'  => array( 'all' => array( '1' ) ),
+						'group' => 'design',
+					),
+					'allurl'  => array(
+						'type'  => 'url',
+						'label' => __( 'It leads to (optional)', 'oc-blocks' ),
+						'hint'  => __( 'Left empty: the blog page, or the archive of what is shown.', 'oc-blocks' ),
 						'when'  => array( 'all' => array( '1' ) ),
 						'group' => 'design',
 					),
@@ -2025,6 +2038,30 @@ final class Registry {
 		 * @param array<string,array<string,mixed>> $types Types.
 		 */
 		return (array) apply_filters( 'oc_blocks_types', $types );
+	}
+
+	/**
+	 * What a posts section can show: blog posts, and any other public
+	 * kind of post the site has written (a theme's recipes, say).
+	 *
+	 * @return array<string,string>
+	 */
+	public static function post_types(): array {
+		$out = array( 'post' => __( 'Blog posts', 'oc-blocks' ) );
+
+		foreach ( get_post_types( array( 'public' => true ), 'objects' ) as $type ) {
+			if ( in_array( $type->name, array( 'post', 'page', 'attachment', 'product' ), true ) ) {
+				continue;
+			}
+
+			$count = wp_count_posts( $type->name );
+
+			if ( isset( $count->publish ) && (int) $count->publish > 0 ) {
+				$out[ $type->name ] = (string) $type->labels->name;
+			}
+		}
+
+		return $out;
 	}
 
 	/**

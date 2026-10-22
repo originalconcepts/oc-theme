@@ -55,6 +55,24 @@
 
 .ocb-full .ocb-canvas { display: block; inline-size: 100%; }
 
+/* Deliz: the cards come wrapped in its own products box (Host::deliz_cards)
+   so they carry its look; its box lays them out as a wrapping flex row at a
+   13px gap, which the shelf's grid / one-row slider takes back here. */
+.ocb-hostcards { --oc-grid-gap: 13px; }
+
+.ocb-host-other .oc-compose .ocb-shelf .ocb-hostcards .ed-mp__products ul.products {
+	display: grid;
+	gap: var(--ocb-shelf-gap);
+}
+
+.ocb-host-other .oc-compose .ocb-shelf--slider .ocb-hostcards .ed-mp__products ul.products {
+	row-gap: 0;
+	column-gap: var(--ocb-shelf-gap);
+	/* room for the card's shadow inside the scrolling strip */
+	padding-block: 14px 6px;
+	margin-block: -14px -6px;
+}
+
 /* A composed page on another theme: the theme's own page title is not drawn
    (still read by screen readers and search engines). */
 .ocb-host-other.ocb-no-title.oc-composed :is(h1.entry-title, h1.page-title, .entry-header > h1) {
@@ -682,6 +700,13 @@
 @media (prefers-reduced-motion: reduce) { .oc-shelf-load.is-in { animation: none; } }
 .ocb-shelf--gap-small { --ocb-shelf-gap: 12px; }
 .ocb-shelf--gap-tight { --ocb-shelf-gap: 2px; }
+
+/* On another theme the section's own gap choice reaches a products shelf
+ * too (the catalogue-echo rule above sets the gap on the list itself, so
+ * the choice on the shelf never did). Kept off the OC theme for now: live
+ * sliders there were set to "small" without it taking effect. */
+.ocb-host-other .ocb-shelf--gap-small ul.products { --ocb-shelf-gap: 12px; }
+.ocb-host-other .ocb-shelf--gap-tight ul.products { --ocb-shelf-gap: 2px; }
 
 /* .oc-compose in every selector: the theme's own `.woocommerce ul.products`
  * rules weigh the same and load later, so the shelf needs the extra class

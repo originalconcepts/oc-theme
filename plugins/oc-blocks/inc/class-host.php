@@ -45,6 +45,12 @@ final class Host {
 	public const PAGE = 'oc-blocks-settings';
 
 	/**
+	 * The theme's content column, measured on the site, per page template:
+	 * array( template => array( 'w' => column px, 'vw' => screen px ) ).
+	 */
+	public const COLS = 'oc_blocks_cols';
+
+	/**
 	 * Is the OC theme carrying the composer?
 	 */
 	public static function is_oc(): bool {
@@ -117,6 +123,141 @@ final class Host {
 		add_action( 'admin_menu', array( $this, 'menu' ) );
 		add_action( 'admin_post_oc_blocks_host_save', array( $this, 'save' ) );
 		add_action( 'admin_post_oc_blocks_template', array( $this, 'switch_template' ) );
+		add_action( 'wp_footer', array( $this, 'measure' ), 99 );
+		add_action( 'wp_ajax_oc_blocks_col', array( $this, 'save_col' ) );
+
+		if ( self::is_deliz() ) {
+			add_filter( 'oc_blocks_product_cards', array( $this, 'deliz_cards' ) );
+		}
+	}
+
+	/* ------------------------------------------------------- host themes */
+
+	/**
+	 * Is the host Deliz (OC's restaurant theme)?
+	 */
+	public static function is_deliz(): bool {
+		return 0 === strpos( (string) get_template(), 'deliz' );
+	}
+
+	/**
+	 * Deliz draws its product cards (white, a soft shadow, centred words)
+	 * only inside its own products box. Its brands page reaches the same
+	 * look with the box's classes and data-ed-no-menu-products, which
+	 * tells its script this is not the box a category loads into — the
+	 * same here, so a products section shows Deliz's cards exactly.
+	 *
+	 * @param string $cards The products loop.
+	 */
+	public function deliz_cards( $cards ): string {
+		return '<div class="ed-mp-products-wrap ocb-hostcards"><div class="ed-mp__products" data-ed-no-menu-products="1">' . (string) $cards . '</div></div>';
+	}
+
+	/* -------------------------------------------------- the column width */
+
+	/**
+	 * The key a page's measurement is kept under: its template.
+	 *
+	 * @param int $page_id Page.
+	 */
+	private static function col_key( int $page_id ): string {
+		$slug = (string) get_page_template_slug( $page_id );
+
+		return sanitize_key( '' === $slug ? 'default' : $slug );
+	}
+
+	/**
+	 * The column a page's sections stand in, as last measured on the site
+	 * (empty until an editor has opened a page on that template).
+	 *
+	 * @param int $page_id Page.
+	 * @return array<string,int>
+	 */
+	public static function col( int $page_id ): array {
+		if ( self::is_oc() || $page_id < 1 ) {
+			return array();
+		}
+
+		$all = get_option( self::COLS, array() );
+		$one = is_array( $all ) ? ( $all[ self::col_key( $page_id ) ] ?? null ) : null;
+
+		return is_array( $one ) && ! empty( $one['w'] ) ? array( 'w' => (int) $one['w'], 'vw' => (int) $one['vw'] ) : array();
+	}
+
+	/**
+	 * On a composed page an editor is looking at, at desktop width: measure
+	 * the column the sections stand in, for the composer's preview. Only
+	 * for editors — a visitor's browser never sends anything.
+	 */
+	public function measure(): void {
+		$id = (int) get_queried_object_id();
+
+		if ( ! is_page() || $id < 1 || ! Render::is_composed( $id ) || ! current_user_can( 'edit_post', $id ) ) {
+			return;
+		}
+
+		$was = self::col( $id );
+		$cfg = array(
+			'ajax'  => admin_url( 'admin-ajax.php' ),
+			'nonce' => wp_create_nonce( 'oc_blocks_col' ),
+			'page'  => $id,
+			'w'     => (int) ( $was['w'] ?? 0 ),
+			'vw'    => (int) ( $was['vw'] ?? 0 ),
+		);
+		?>
+		<script>
+		( function ( cfg ) {
+			window.addEventListener( 'load', function () {
+				var box = document.querySelector( '.oc-compose' );
+				var vw = window.innerWidth;
+				var w = box ? Math.round( box.getBoundingClientRect().width ) : 0;
+
+				if ( vw < 1100 || w < 200 || ( Math.abs( w - cfg.w ) < 4 && vw === cfg.vw ) ) {
+					return;
+				}
+
+				var body = new FormData();
+				body.append( 'action', 'oc_blocks_col' );
+				body.append( 'nonce', cfg.nonce );
+				body.append( 'page', cfg.page );
+				body.append( 'w', w );
+				body.append( 'vw', vw );
+				fetch( cfg.ajax, { method: 'POST', body: body, credentials: 'same-origin' } ).catch( function () {} );
+			} );
+		}( <?php echo wp_json_encode( $cfg ); ?> ) );
+		</script>
+		<?php
+	}
+
+	/**
+	 * Keep a measurement.
+	 */
+	public function save_col(): void {
+		check_ajax_referer( 'oc_blocks_col', 'nonce' );
+
+		$id = isset( $_POST['page'] ) ? absint( $_POST['page'] ) : 0;
+
+		if ( ! $id || ! current_user_can( 'edit_post', $id ) ) {
+			wp_send_json_error( array(), 403 );
+		}
+
+		$w  = isset( $_POST['w'] ) ? absint( $_POST['w'] ) : 0;
+		$vw = isset( $_POST['vw'] ) ? absint( $_POST['vw'] ) : 0;
+
+		if ( $w < 200 || $vw < 1100 || $w > $vw ) {
+			wp_send_json_error( array(), 400 );
+		}
+
+		$all = get_option( self::COLS, array() );
+		$all = is_array( $all ) ? $all : array();
+
+		$all[ self::col_key( $id ) ] = array(
+			'w'  => min( 4000, $w ),
+			'vw' => min( 4000, $vw ),
+		);
+
+		update_option( self::COLS, $all, false );
+		wp_send_json_success();
 	}
 
 	/* ------------------------------------------------------------- front */

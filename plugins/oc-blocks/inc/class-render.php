@@ -1015,6 +1015,16 @@ final class Render {
 		$hcls = 'center' === $halign ? ' ocb__title--center' : ( 'start' === $halign ? ' ocb__title--start' : '' );
 		$head = '' === $htext ? '' : '<h2 class="ocb__title' . $hcls . '">' . esc_html( $htext ) . '</h2>';
 
+		/**
+		 * A products shelf's cards, before they are placed. A host theme that
+		 * styles its cards only inside a container of its own wraps them in
+		 * that container here (see Host::deliz_cards()).
+		 *
+		 * @param string $cards  The cards (the products loop).
+		 * @param string $layout 'slider' or 'grid'.
+		 */
+		$cards = (string) apply_filters( 'oc_blocks_product_cards', $cards, $layout );
+
 		return $head
 			. '<div class="ocb-shelf ocb-shelf--' . esc_attr( $layout ) . ' ocb-shelf--gap-' . esc_attr( $gap ) . ' ocb-shelf--m' . esc_attr( $mcols ) . '" style="--ocb-cols:' . $cols . '"'
 			. ( 'slider' === $layout ? ' data-ocb-shelf' : '' ) . '>'
@@ -1443,8 +1453,10 @@ final class Render {
 	 * @return string
 	 */
 	private static function posts( array $s ): string {
+		$type = (string) ( $s['ptype'] ?? 'post' );
+		$type = isset( Registry::post_types()[ $type ] ) ? $type : 'post';
 		$args = array(
-			'post_type'      => 'post',
+			'post_type'      => $type,
 			'post_status'    => 'publish',
 			'posts_per_page' => absint( $s['count'] ),
 			'no_found_rows'  => true,
@@ -1470,9 +1482,17 @@ final class Render {
 		$more = '';
 
 		if ( ! empty( $s['all'] ) ) {
-			$blog = absint( get_option( 'page_for_posts' ) );
-			$url  = $blog > 0 ? (string) get_permalink( $blog ) : home_url( '/' );
-			$text = '' !== trim( (string) $s['alltext'] ) ? (string) $s['alltext'] : __( 'To the blog', 'oc-blocks' );
+			$url = trim( (string) ( $s['allurl'] ?? '' ) );
+
+			if ( '' === $url && 'post' === $type ) {
+				$blog = absint( get_option( 'page_for_posts' ) );
+				$url  = $blog > 0 ? (string) get_permalink( $blog ) : '';
+			} elseif ( '' === $url ) {
+				$url = (string) get_post_type_archive_link( $type );
+			}
+
+			$url  = '' !== $url ? $url : home_url( '/' );
+			$text = '' !== trim( (string) $s['alltext'] ) ? (string) $s['alltext'] : ( 'post' === $type ? __( 'To the blog', 'oc-blocks' ) : __( 'See them all', 'oc-blocks' ) );
 
 			$more = '<p class="ocb__more"><a class="ocb-btn ocb-btn--theme" href="' . esc_url( $url ) . '">' . esc_html( $text ) . '</a></p>';
 		}
