@@ -1906,3 +1906,18 @@ msgstr "ריק: עמוד הבלוג, או עמוד הארכיון של מה שמ
 
 msgid "See them all"
 msgstr "לכל הרשימה"
+
+msgid "Picture shape"
+msgstr "צורת התמונה"
+
+msgid "Natural: the shape of the first picture, nothing cut off."
+msgstr "טבעית: בצורה של התמונה הראשונה, בלי שום חיתוך."
+
+msgid "Tall"
+msgstr "גבוהה"
+
+msgid "Square"
+msgstr "ריבועית"
+
+msgid "Natural"
+msgstr "טבעית"

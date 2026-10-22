@@ -1861,6 +1861,7 @@ final class Render {
 		$frames = '';
 		$steps  = '';
 		$at     = 0;
+		$ratio  = '';
 
 		foreach ( (array) $s['steps'] as $step ) {
 			$media = '';
@@ -1868,10 +1869,16 @@ final class Render {
 			if ( '' !== $step['vid'] ) {
 				$media = '<video src="' . esc_url( (string) $step['vid'] ) . '" autoplay muted loop playsinline preload="metadata"></video>';
 			} elseif ( $step['img'] > 0 ) {
-				$url = (string) wp_get_attachment_image_url( (int) $step['img'], 'full' );
+				$meta = wp_get_attachment_image_src( (int) $step['img'], 'full' );
+				$url  = is_array( $meta ) ? (string) $meta[0] : '';
 
 				if ( '' !== $url ) {
 					$media = '<img src="' . esc_url( $url ) . '" alt="" loading="lazy" decoding="async">';
+
+					// "Natural" takes the first picture's own proportions.
+					if ( '' === $ratio && ! empty( $meta[1] ) && ! empty( $meta[2] ) ) {
+						$ratio = absint( $meta[1] ) . '/' . absint( $meta[2] );
+					}
 				}
 			}
 
@@ -1933,7 +1940,11 @@ final class Render {
 			$dots = '<div class="ocb-sc__dots" data-ocb-dots>' . $dots . '</div>';
 		}
 
-		return '<div class="ocb-sc ocb-sc--' . esc_attr( (string) $s['side'] ) . '" data-ocb-sc>'
+		$shape = (string) ( $s['shape'] ?? 'tall' );
+		$shape = 'natural' === $shape && '' === $ratio ? 'tall' : $shape;
+
+		return '<div class="ocb-sc ocb-sc--' . esc_attr( (string) $s['side'] ) . ' ocb-sc--shape-' . esc_attr( $shape ) . '"'
+			. ( 'natural' === $shape ? ' style="--ocb-sc-ar:' . esc_attr( $ratio ) . '"' : '' ) . ' data-ocb-sc>'
 			. '<div class="ocb-sc__pin"><div class="ocb-sc__stage">' . $frames . $dots . '</div>'
 			. '<div class="ocb-sc__mtexts">' . ( $mtexts ?? '' ) . '</div></div>'
 			. '<div class="ocb-sc__flow">' . $steps . '</div>'

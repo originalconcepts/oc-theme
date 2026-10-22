@@ -1368,6 +1368,18 @@ final class Registry {
 						'def'     => 'start',
 						'group'   => 'design',
 					),
+					'shape' => array(
+						'type'    => 'seg',
+						'label'   => __( 'Picture shape', 'oc-blocks' ),
+						'hint'    => __( 'Natural: the shape of the first picture, nothing cut off.', 'oc-blocks' ),
+						'choices' => array(
+							'tall'    => __( 'Tall', 'oc-blocks' ),
+							'square'  => __( 'Square', 'oc-blocks' ),
+							'natural' => __( 'Natural', 'oc-blocks' ),
+						),
+						'def'     => 'tall',
+						'group'   => 'design',
+					),
 				),
 			),
 
