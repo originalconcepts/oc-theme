@@ -181,7 +181,14 @@ final class Host {
 		$all = get_option( self::COLS, array() );
 		$one = is_array( $all ) ? ( $all[ self::col_key( $page_id ) ] ?? null ) : null;
 
-		return is_array( $one ) && ! empty( $one['w'] ) ? array( 'w' => (int) $one['w'], 'vw' => (int) $one['vw'] ) : array();
+		if ( ! is_array( $one ) || empty( $one['w'] ) ) {
+			return array();
+		}
+
+		return array(
+			'w'  => (int) $one['w'],
+			'vw' => (int) ( $one['vw'] ?? 0 ),
+		);
 	}
 
 	/**
