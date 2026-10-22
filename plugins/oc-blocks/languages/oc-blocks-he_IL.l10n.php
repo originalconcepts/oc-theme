@@ -464,7 +464,7 @@ return array(
 		"Space inside the tile" => "ריווח בתוך התיבה",
 		"Sparkle" => "נצנוץ",
 		"Speed (seconds per round)" => "מהירות (שניות לסיבוב)",
-		"Square" => "ריבועית",
+		"Square" => "ריבוע",
 		"Squares" => "ריבועים",
 		"Stands still" => "עומדת במקום",
 		"Star" => "כוכב",

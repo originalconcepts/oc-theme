@@ -1916,8 +1916,5 @@ msgstr "טבעית: בצורה של התמונה הראשונה, בלי שום �
 msgid "Tall"
 msgstr "גבוהה"
 
-msgid "Square"
-msgstr "ריבועית"
-
 msgid "Natural"
 msgstr "טבעית"
