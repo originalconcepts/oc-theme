@@ -59,6 +59,7 @@ final class Host {
 	public static function defaults(): array {
 		return array(
 			'width'   => 'contained',
+			'title'   => 'hide',
 			'primary' => '',
 			'ink'     => '',
 			'surface' => '',
@@ -79,6 +80,10 @@ final class Host {
 
 		if ( isset( $raw['width'] ) && in_array( (string) $raw['width'], array( 'contained', 'full' ), true ) ) {
 			$out['width'] = (string) $raw['width'];
+		}
+
+		if ( isset( $raw['title'] ) && in_array( (string) $raw['title'], array( 'hide', 'show' ), true ) ) {
+			$out['title'] = (string) $raw['title'];
 		}
 
 		foreach ( array( 'primary', 'ink', 'surface' ) as $key ) {
@@ -144,6 +149,13 @@ final class Host {
 			$out[] = 'ocb-full';
 		} elseif ( 'contained' === self::settings()['width'] ) {
 			$out[] = 'ocb-contained';
+		}
+
+		// A page built with the composer opens with its own sections — the
+		// theme's page title above them ("Home") is noise. Kept in the page
+		// for screen readers and search engines, only not drawn.
+		if ( 'hide' === self::settings()['title'] ) {
+			$out[] = 'ocb-no-title';
 		}
 
 		return $out;
@@ -361,24 +373,25 @@ final class Host {
 			return array();
 		}
 
+		// A raw URL, not wp_nonce_url(): that one is escaped for HTML
+		// (&amp;), and handed to the script as an href it reached the server
+		// as "amp;page_id" — no page, so "Not allowed".
 		$go = static function ( string $to ) use ( $page_id ): string {
-			return wp_nonce_url(
-				add_query_arg(
-					array(
-						'action'  => 'oc_blocks_template',
-						'page_id' => $page_id,
-						'to'      => $to,
-					),
-					admin_url( 'admin-post.php' )
+			return add_query_arg(
+				array(
+					'action'   => 'oc_blocks_template',
+					'page_id'  => $page_id,
+					'to'       => $to,
+					'_wpnonce' => wp_create_nonce( 'oc_blocks_template_' . $page_id ),
 				),
-				'oc_blocks_template_' . $page_id
+				admin_url( 'admin-post.php' )
 			);
 		};
 
 		return array(
 			'text'  => __( 'The template this page uses does not show the page content — the sections below will not appear on the site. Choose a template that shows them:', 'oc-blocks' ),
 			'std'   => self::standard_shows_content() ? $go( 'default' ) : '',
-			'stdT'  => __( 'The theme\'s standard page', 'oc-blocks' ),
+			'stdT'  => __( 'The theme\'s standard page (with its menus and cart)', 'oc-blocks' ),
 			'full'  => $go( 'full' ),
 			'fullT' => __( 'OC Blocks — full width', 'oc-blocks' ),
 		);
@@ -409,6 +422,12 @@ final class Host {
 					<label><input type="radio" name="ocb[width]" value="full" <?php checked( 'full', $s['width'] ); ?>> <?php esc_html_e( 'Edge to edge of the screen (for themes with one centred content column)', 'oc-blocks' ); ?></label>
 				</p>
 				<p class="description"><?php esc_html_e( 'For a page that should run edge to edge with no title, choose the "OC Blocks — full width" template on that page: the theme\'s header and footer stay, the page title and sidebars go.', 'oc-blocks' ); ?></p>
+
+				<h2><?php esc_html_e( 'Page title', 'oc-blocks' ); ?></h2>
+				<p>
+					<label><input type="radio" name="ocb[title]" value="hide" <?php checked( 'hide', $s['title'] ); ?>> <?php esc_html_e( 'Hide the theme\'s page title on pages built with OC Blocks', 'oc-blocks' ); ?></label><br>
+					<label><input type="radio" name="ocb[title]" value="show" <?php checked( 'show', $s['title'] ); ?>> <?php esc_html_e( 'Show it', 'oc-blocks' ); ?></label>
+				</p>
 
 				<h2><?php esc_html_e( 'Colours and corners', 'oc-blocks' ); ?></h2>
 				<p class="description"><?php esc_html_e( 'Left empty, each one keeps the sections\' neutral default.', 'oc-blocks' ); ?></p>
