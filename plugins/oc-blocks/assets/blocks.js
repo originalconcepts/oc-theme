@@ -1022,10 +1022,21 @@
 		// A square or natural picture is shorter than the screen-high
 		// chapters made for the tall one: each chapter takes the picture's
 		// own height, so its words sit beside the picture, not far below.
-		if ( stage && ! sc.classList.contains( 'ocb-sc--shape-tall' ) && 'ResizeObserver' in window ) {
-			new ResizeObserver( function () {
+		if ( stage && ! sc.classList.contains( 'ocb-sc--shape-tall' ) ) {
+			var fit = function () {
 				sc.style.setProperty( '--ocb-sc-stage-h', stage.offsetHeight + 'px' );
-			} ).observe( stage );
+			};
+
+			// Now (the stage has its shape before any picture arrives), and
+			// again whenever it changes size; a tab drawn in the background
+			// delivers no resize callbacks, so the first one cannot wait.
+			fit();
+
+			if ( 'ResizeObserver' in window ) {
+				new ResizeObserver( fit ).observe( stage );
+			} else {
+				window.addEventListener( 'resize', fit );
+			}
 		}
 
 		if ( frames.length < 2 ) {
