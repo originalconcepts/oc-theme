@@ -2088,6 +2088,11 @@ html.oc-look-lock body { overflow: hidden; }
 @media (min-width: 783px) {
 	.ocb-sc--shape-square .ocb-sc__stage { block-size: auto; aspect-ratio: 1; max-block-size: min(80vh, 760px); }
 	.ocb-sc--shape-natural .ocb-sc__stage { block-size: auto; aspect-ratio: var(--ocb-sc-ar, 4/5); max-block-size: min(84vh, 900px); }
+
+	/* …and each chapter is as tall as that picture (measured by the script),
+	   so the words sit beside it instead of half a screen below. */
+	.ocb-sc--shape-square .ocb-sc__step,
+	.ocb-sc--shape-natural .ocb-sc__step { min-block-size: var(--ocb-sc-stage-h, 60vh); }
 }
 
 .ocb-sc__frame {

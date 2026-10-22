@@ -1017,6 +1017,16 @@
 	document.querySelectorAll( '[data-ocb-sc]' ).forEach( function ( sc ) {
 		var frames = sc.querySelectorAll( '[data-ocb-frame]' );
 		var steps = sc.querySelectorAll( '[data-ocb-step]' );
+		var stage = sc.querySelector( '.ocb-sc__stage' );
+
+		// A square or natural picture is shorter than the screen-high
+		// chapters made for the tall one: each chapter takes the picture's
+		// own height, so its words sit beside the picture, not far below.
+		if ( stage && ! sc.classList.contains( 'ocb-sc--shape-tall' ) && 'ResizeObserver' in window ) {
+			new ResizeObserver( function () {
+				sc.style.setProperty( '--ocb-sc-stage-h', stage.offsetHeight + 'px' );
+			} ).observe( stage );
+		}
 
 		if ( frames.length < 2 ) {
 			return;
