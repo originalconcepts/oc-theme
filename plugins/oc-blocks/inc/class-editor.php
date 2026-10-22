@@ -203,6 +203,7 @@ final class Editor {
 					'search'       => __( 'Type to search…', 'oc-blocks' ),
 					'view'         => __( 'View page', 'oc-blocks' ),
 					'unsaved'      => __( 'There are unsaved changes.', 'oc-blocks' ),
+					'leave'        => __( 'There are unsaved changes — they will be lost. Change the layout anyway?', 'oc-blocks' ),
 					'media'        => __( 'Choose a picture', 'oc-blocks' ),
 					'noimg'        => __( 'Choose the picture first, then drop spots on it.', 'oc-blocks' ),
 					'addspot'      => __( '+ Add a product', 'oc-blocks' ),

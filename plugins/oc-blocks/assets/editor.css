@@ -23,6 +23,31 @@ body.ocbe-full .wrap { margin: 0; }
 	font-size: 13px;
 }
 
+/* ---------- page layout (another theme) ---------- */
+
+.ocbe-layout {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	color: #50575e;
+	font-size: 12px;
+	white-space: nowrap;
+}
+
+.ocbe-layout select {
+	max-inline-size: 290px;
+	min-block-size: 32px;
+	padding-block: 0;
+	font-size: 13px;
+	border-color: #dcdcde;
+	border-radius: 6px;
+}
+
+@media (max-width: 1100px) {
+	.ocbe-layout span { display: none; }
+	.ocbe-layout select { max-inline-size: 190px; }
+}
+
 /* ---------- the page's template leaves the content out ---------- */
 
 .ocbe-note {

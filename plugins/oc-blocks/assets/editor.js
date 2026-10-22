@@ -1507,6 +1507,38 @@
 			}
 		} );
 
+		// On another theme: which layout the page has, switchable at any
+		// time (the warning below only appears while it shows nothing).
+		var hn = D.hostNote || {};
+		var layout = null;
+		if ( hn.full ) {
+			var opts = [];
+			if ( 'other' === hn.now ) {
+				opts.push( el( 'option', { value: '', selected: 'selected', text: hn.otherT } ) );
+			}
+			if ( hn.std ) {
+				opts.push( el( 'option', { value: hn.std, selected: 'std' === hn.now ? 'selected' : null, text: hn.stdT } ) );
+			}
+			opts.push( el( 'option', { value: hn.full, selected: 'full' === hn.now ? 'selected' : null, text: hn.fullT } ) );
+			layout = el( 'label', { 'class': 'ocbe-layout' }, [
+				el( 'span', { text: hn.label } ),
+				el( 'select', {
+					onchange: function () {
+						var to = this.value;
+						if ( ! to ) {
+							return;
+						}
+						if ( state.dirty && ! window.confirm( T.leave ) ) {
+							this.selectedIndex = Array.prototype.findIndex.call( this.options, function ( o ) { return o.defaultSelected; } );
+							return;
+						}
+						state.dirty = false;
+						window.location.href = to;
+					}
+				}, opts )
+			] );
+		}
+
 		var header = el( 'header', { 'class': 'ocbe-top' }, [
 			el( 'a', {
 				'class': 'ocbe-top__back',
@@ -1514,6 +1546,7 @@
 				html: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 5l7 7-7 7"/></svg>'
 			} ),
 			el( 'span', { 'class': 'ocbe-top__title', text: D.title } ),
+			layout,
 			el( 'span', { 'class': 'ocbe-dev' }, els.deviceBtns.concat( [ zenBtn ] ) ),
 			el( 'span', { 'class': 'ocbe-top__end' }, [
 				els.status,
@@ -1526,7 +1559,6 @@
 
 		// The page's template leaves its content out (another theme's own
 		// home-page template): say so, with the way to one that shows it.
-		var hn = D.hostNote || {};
 		if ( hn.text ) {
 			root.appendChild( el( 'div', { 'class': 'ocbe-note', role: 'alert' }, [
 				el( 'span', { text: hn.text } ),

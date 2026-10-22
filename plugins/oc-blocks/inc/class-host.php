@@ -362,14 +362,15 @@ final class Host {
 	}
 
 	/**
-	 * What the composer needs to warn about a template that leaves the
-	 * content out — empty when there is nothing to warn about.
+	 * The page's layout for the composer: which one it has, the way to the
+	 * others, and — when its template leaves the content out — the warning.
+	 * Empty under the OC theme, which has one layout of its own.
 	 *
 	 * @param int $page_id Page.
 	 * @return array<string,string>
 	 */
 	public static function notice( int $page_id ): array {
-		if ( ! self::hides_content( $page_id ) ) {
+		if ( self::is_oc() || $page_id < 1 ) {
 			return array();
 		}
 
@@ -388,12 +389,31 @@ final class Host {
 			);
 		};
 
+		$slug = (string) get_page_template_slug( $page_id );
+		$now  = 'other';
+
+		if ( self::TEMPLATE === $slug ) {
+			$now = 'full';
+		} elseif ( '' === $slug || 'default' === $slug ) {
+			$now = 'std';
+		}
+
+		$other = '';
+
+		if ( 'other' === $now ) {
+			$names = wp_get_theme()->get_page_templates( get_post( $page_id ) );
+			$other = (string) ( $names[ $slug ] ?? $slug );
+		}
+
 		return array(
-			'text'  => __( 'The template this page uses does not show the page content — the sections below will not appear on the site. Choose a template that shows them:', 'oc-blocks' ),
-			'std'   => self::standard_shows_content() ? $go( 'default' ) : '',
-			'stdT'  => __( 'The theme\'s standard page (with its menus and cart)', 'oc-blocks' ),
-			'full'  => $go( 'full' ),
-			'fullT' => __( 'OC Blocks — full width', 'oc-blocks' ),
+			'text'   => self::hides_content( $page_id ) ? __( 'The template this page uses does not show the page content — the sections below will not appear on the site. Choose a template that shows them:', 'oc-blocks' ) : '',
+			'label'  => __( 'Page layout', 'oc-blocks' ),
+			'now'    => $now,
+			'std'    => self::standard_shows_content() ? $go( 'default' ) : '',
+			'stdT'   => __( 'The theme\'s standard page (with its menus and cart)', 'oc-blocks' ),
+			'full'   => $go( 'full' ),
+			'fullT'  => __( 'OC Blocks — full width', 'oc-blocks' ),
+			'otherT' => $other,
 		);
 	}
 

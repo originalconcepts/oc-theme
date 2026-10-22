@@ -1885,3 +1885,9 @@ msgstr "להסתיר את כותרת העמוד של התבנית בעמודים
 
 msgid "Show it"
 msgstr "להציג אותה"
+
+msgid "Page layout"
+msgstr "פריסת העמוד"
+
+msgid "There are unsaved changes — they will be lost. Change the layout anyway?"
+msgstr "יש שינויים שלא נשמרו — הם יאבדו. להחליף את הפריסה בכל זאת?"
