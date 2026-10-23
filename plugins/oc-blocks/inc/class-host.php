@@ -295,13 +295,20 @@ final class Host {
 			return;
 		}
 
-		echo '<div class="ocb-dz-backdrop" data-ocb-dz-cart></div>';
+		$count = function_exists( 'WC' ) && WC()->cart ? (int) WC()->cart->get_cart_contents_count() : 0;
+		?>
+		<div class="ocb-dz-backdrop" data-ocb-dz-cart></div>
+		<button type="button" class="ocb-dz-cartfab" data-ocb-dz-cart aria-expanded="false" aria-controls="ed-float-cart" aria-label="<?php esc_attr_e( 'My cart', 'oc-blocks' ); ?>">
+			<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9h18l-1.7 9.2a2 2 0 0 1-2 1.8H6.7a2 2 0 0 1-2-1.8L3 9zM8 9l3-5M16 9l-3-5"/></svg>
+			<span class="ocb-dz-cartbtn__n"<?php echo $count > 0 ? '' : ' hidden'; ?>><?php echo esc_html( (string) $count ); ?></span>
+		</button>
+		<?php
 
 		wp_print_inline_script_tag(
 			'( function () {' .
 			'function set( open ) {' .
 			'document.body.classList.toggle( "basket-open", open );' .
-			'document.querySelectorAll( ".ocb-dz-cartbtn" ).forEach( function ( b ) { b.setAttribute( "aria-expanded", open ? "true" : "false" ); } );' .
+			'document.querySelectorAll( ".ocb-dz-cartbtn, .ocb-dz-cartfab" ).forEach( function ( b ) { b.setAttribute( "aria-expanded", open ? "true" : "false" ); } );' .
 			'}' .
 			'document.addEventListener( "click", function ( e ) {' .
 			'if ( e.target.closest( "[data-ocb-dz-cart]" ) ) { e.preventDefault(); set( ! document.body.classList.contains( "basket-open" ) ); }' .
@@ -309,6 +316,10 @@ final class Host {
 			'document.addEventListener( "keydown", function ( e ) {' .
 			'if ( "Escape" === e.key && document.body.classList.contains( "basket-open" ) ) { set( false ); }' .
 			'} );' .
+			'var hd = document.querySelector( ".site-header" );' .
+			'function float() { document.body.classList.toggle( "ocb-cart-float", !! hd && hd.getBoundingClientRect().bottom < 0 ); }' .
+			'window.addEventListener( "scroll", float, { passive: true } );' .
+			'float();' .
 			'}() );'
 		);
 	}

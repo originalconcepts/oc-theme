@@ -4,6 +4,7 @@
    screen only — a phone keeps Deliz's own basket bar and drawer. */
 
 .ocb-dz-cartbtn,
+.ocb-dz-cartfab,
 .ocb-dz-backdrop { display: none; }
 
 @media (min-width: 992px) {
@@ -46,6 +47,48 @@
 
 	.ocb-dz-cartbtn__n[hidden] { display: none; }
 
+	/* With the cart gone from the side, the header spans the whole row: the
+	   buttons stand at its left end (Deliz keeps the cart column's width free). */
+	body.ocb-cart-closed .site-header .container-header-inner { width: 100%; }
+
+	/* Scrolled past the header, the cart is the one thing that stays: a
+	   round icon, top left. */
+	body.ocb-cart-closed .ocb-dz-cartfab {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		position: fixed;
+		inset-block-start: calc(20px + var(--wp-admin--admin-bar--height, 0px));
+		inset-inline-start: auto;
+		inset-inline-end: auto;
+		left: 20px;
+		inline-size: 56px;
+		block-size: 56px;
+		padding: 0;
+		border: 0;
+		border-radius: var(--radius, 10px);
+		background: var(--floating-cart-bg, var(--color-primary, #1c1c1c));
+		color: var(--floating-cart-text-color, var(--main-text-color, #fff));
+		box-shadow: 0 6px 22px rgb(0 0 0 / 22%);
+		cursor: pointer;
+		z-index: 99999;
+		opacity: 0;
+		visibility: hidden;
+		transform: translateY(-12px);
+		transition: opacity .25s, transform .25s, visibility .25s;
+	}
+
+	body.ocb-cart-closed.ocb-cart-float .ocb-dz-cartfab { opacity: 1; visibility: visible; transform: none; }
+
+	.ocb-dz-cartfab .ocb-dz-cartbtn__n {
+		position: absolute;
+		inset-block-start: -6px;
+		left: -6px;
+		background: #fff;
+		color: #1c1c1c;
+		box-shadow: 0 1px 6px rgb(0 0 0 / 25%);
+	}
+
 	/* The cart panel leaves the page's flow and slides in from the left. */
 	body.ocb-cart-closed .main-content .left-column {
 		position: fixed;
@@ -81,10 +124,19 @@
 	body.ocb-cart-closed.basket-open .ocb-dz-backdrop { opacity: 1; visibility: visible; }
 }
 
-/* The newsletter form in the footer takes the same corner as the rest. */
-.footer-top .news-form input[type="email"],
-.footer-top .news-form input[type="text"],
-.footer-top .news-form .wpcf7-form-control:not([type="submit"]),
-.footer-top .news-form .wpcf7-submit {
+/* The newsletter form in the footer: the field and its button read as one
+   piece. The frame takes the button's colour, and the button sits flush
+   against the frame (it covers the frame's end, square where it meets the
+   field), all with the theme's corner radius. */
+.footer-top .news-form input[type="email"] {
 	border-radius: var(--radius, 10px);
+	border-color: var(--color-primary, var(--main-site-text-color, #000));
+}
+
+.footer-top .news-form .item.sub { top: 0; left: 0; }
+
+.footer-top .news-form .item.sub input.wpcf7-submit {
+	height: 50px;
+	line-height: 48px;
+	border-radius: var(--radius, 10px) 0 0 var(--radius, 10px);
 }
