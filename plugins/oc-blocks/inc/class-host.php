@@ -262,6 +262,27 @@ final class Host {
 			)
 		);
 
+		// ACF leaves a field out of its save when the screen's own field groups
+		// do not hold it, so the value is stored from the request here (ACF has
+		// checked the nonce before it fires this action).
+		add_action(
+			'acf/save_post',
+			static function ( $post_id ): void {
+				if ( 'options' !== $post_id || ! current_user_can( 'manage_options' ) ) {
+					return;
+				}
+
+				// phpcs:ignore WordPress.Security.NonceVerification.Missing -- ACF verifies the nonce before acf/save_post.
+				$mode = isset( $_POST['acf']['field_ocb_cart_mode'] ) ? sanitize_key( wp_unslash( $_POST['acf']['field_ocb_cart_mode'] ) ) : '';
+
+				if ( in_array( $mode, array( 'open_all', 'open_home', 'closed' ), true ) ) {
+					update_option( 'options_ocb_cart_mode', $mode );
+					update_option( '_options_ocb_cart_mode', 'field_ocb_cart_mode' );
+				}
+			},
+			20
+		);
+
 		add_filter(
 			'acf/load_fields',
 			static function ( $fields, $parent ) use ( $field ) {
