@@ -1078,15 +1078,18 @@
 			} );
 		}
 
-		// Wide screens: the words are lit by where they stand against the
-		// picture, read off the scroll position itself. A chapter level with
-		// the picture is at full strength; as its centre leaves the picture's
-		// band it fades and lifts away, and the next one fades in as it
-		// rises into the band — and the picture turns at the midpoint between
-		// the two, when the one has gone and the other has not yet arrived.
-		// So the words track the wheel exactly, and the turn of the picture
-		// and the change of the words are one movement, whatever the shape
-		// and height of the picture.
+		// Wide screens: the words are lit by how far the scroll has carried
+		// the story from one chapter to the next, read off the scroll
+		// position itself. Between two chapters the road is one movement in
+		// three beats — the first third the words that were level with the
+		// picture hold, then they lift and fade out; at the halfway mark the
+		// picture turns; and the next words fade in from below to arrive
+		// level with it. No moment with two chapters lit, none with none —
+		// whatever the shape and height of the picture, and however long
+		// the road the stylesheet lays between chapters.
+		var HOLD = 0.32;
+		var TURN = 0.5;
+
 		function paint() {
 			ticking = false;
 
@@ -1096,29 +1099,56 @@
 
 			var box = stage.getBoundingClientRect();
 			var centre = box.top + box.height / 2;
-			var half = box.height / 2;
-			var fade = Math.max( 70, Math.min( 150, box.height * 0.35 ) );
-			var best = 0;
-			var bestD = Infinity;
+			var mids = chapters.map( function ( ch ) {
+				var b = ch.getBoundingClientRect();
+
+				return b.top + b.height / 2;
+			} );
+			var last = mids.length - 1;
+			var from = 0;
+
+			// The two chapters the picture stands between (before the first
+			// and after the last, it stands with that one alone).
+			while ( from < last && mids[ from + 1 ] <= centre ) {
+				from++;
+			}
+
+			var t = 0;
+
+			if ( centre < mids[ 0 ] ) {
+				t = 0;
+			} else if ( from >= last ) {
+				t = 0;
+			} else {
+				t = ( centre - mids[ from ] ) / Math.max( 1, mids[ from + 1 ] - mids[ from ] );
+			}
+
+			var lit = t < TURN || from >= last ? from : from + 1;
+			var lift = still.matches ? 0 : 26;
 
 			chapters.forEach( function ( ch, i ) {
-				var b = ch.getBoundingClientRect();
-				var d = b.top + b.height / 2 - centre;
-				var ad = Math.abs( d );
-				var op = 1 - Math.min( 1, Math.max( 0, ( ad - half ) / fade ) );
+				var op = 0;
+				var dy = 0;
+
+				if ( i === from && from < last ) {
+					// Going: holds, then fades and lifts away before the turn.
+					op = t <= HOLD ? 1 : Math.max( 0, 1 - ( t - HOLD ) / ( TURN - HOLD ) );
+					dy = -lift * ( 1 - op );
+				} else if ( i === from ) {
+					op = 1;
+				} else if ( i === from + 1 ) {
+					// Coming: rises in after the turn, level by the last third.
+					op = t <= TURN ? 0 : Math.min( 1, ( t - TURN ) / ( 1 - TURN - HOLD ) );
+					dy = lift * ( 1 - op );
+				}
 
 				ch.style.opacity = op.toFixed( 3 );
-				ch.style.translate = still.matches ? '' : '0 ' + ( ( d < 0 ? -1 : 1 ) * ( 1 - op ) * 26 ).toFixed( 1 ) + 'px';
-
-				if ( ad < bestD ) {
-					bestD = ad;
-					best = i;
-				}
+				ch.style.translate = lift ? '0 ' + dy.toFixed( 1 ) + 'px' : '';
 			} );
 
-			if ( best !== on ) {
-				on = best;
-				light( best );
+			if ( lit !== on ) {
+				on = lit;
+				light( lit );
 			}
 		}
 

@@ -2099,7 +2099,7 @@ html.oc-look-lock body { overflow: hidden; }
 	.ocb-sc__flow {
 		display: flex;
 		flex-direction: column;
-		row-gap: max(240px, calc(64vh - var(--ocb-sc-stage-h, 640px)));
+		row-gap: max(200px, calc(56vh - var(--ocb-sc-stage-h, 640px)));
 	}
 }
 
