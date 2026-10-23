@@ -2069,10 +2069,12 @@ html.oc-look-lock body { overflow: hidden; }
 
 .ocb-sc--end .ocb-sc__pin { order: 2; }
 
-/* The picture holds its place while the words walk past. */
+/* The picture holds its place while the words walk past — centred in the
+ * view (or just under a header taller than that leaves room for), so the
+ * words beside it are level with it, not above or below. */
 .ocb-sc__pin {
 	position: sticky;
-	inset-block-start: calc(var(--oc-header-h, 72px) + 30px);
+	inset-block-start: max(calc(var(--oc-header-h, 72px) + 30px), calc((100vh - var(--ocb-sc-stage-h, 640px)) / 2));
 }
 
 .ocb-sc__stage {
@@ -2089,10 +2091,16 @@ html.oc-look-lock body { overflow: hidden; }
 	.ocb-sc--shape-square .ocb-sc__stage { block-size: auto; aspect-ratio: 1; max-block-size: min(80vh, 760px); }
 	.ocb-sc--shape-natural .ocb-sc__stage { block-size: auto; aspect-ratio: var(--ocb-sc-ar, 4/5); max-block-size: min(84vh, 900px); }
 
-	/* …and each chapter is as tall as that picture (measured by the script),
-	   so the words sit beside it instead of half a screen below. */
-	.ocb-sc--shape-square .ocb-sc__step,
-	.ocb-sc--shape-natural .ocb-sc__step { min-block-size: var(--ocb-sc-stage-h, 60vh); }
+	/* The chapters: each as tall as the picture (the script measures it),
+	 * its words centred, so the first is level with the picture when the
+	 * section arrives and the last is level with it as the section leaves —
+	 * and a stretch of road between them long enough for the one to fade
+	 * out, the picture to turn and the next to fade in, never two at once. */
+	.ocb-sc__flow {
+		display: flex;
+		flex-direction: column;
+		row-gap: max(240px, calc(64vh - var(--ocb-sc-stage-h, 640px)));
+	}
 }
 
 .ocb-sc__frame {
@@ -2164,14 +2172,16 @@ html.oc-look-lock body { overflow: hidden; }
 	display: block;
 }
 
-/* Each chapter earns its own stretch of road — near a full screen, so the
- * picture stays pinned long enough for the swap to be felt. */
 .ocb-sc__step {
-	min-block-size: 92vh;
+	min-block-size: var(--ocb-sc-stage-h, 640px);
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
 }
+
+/* The words are lit by the script from where they stand against the
+ * picture; before it runs they simply show. */
+.ocb-sc__chapter { will-change: opacity, translate; }
 
 /* Set in the same grammar as every other heading the page carries — the
  * display face, the same tracking as a section title, balanced over its
@@ -2191,35 +2201,6 @@ html.oc-look-lock body { overflow: hidden; }
 }
 
 .ocb-sc__words { line-height: 1.8; opacity: .85; max-inline-size: 480px; }
-
-/* A chapter arrives and leaves with the scroll rather than sitting at full
- * strength until it is gone: it rises into place as it enters, and lifts
- * and fades as it approaches the top edge, while the next one is already
- * coming up underneath. Driven by the scroll position itself, so the words
- * track the wheel exactly instead of animating on a timer of their own.
- * Browsers without scroll-driven animations keep the plain, readable
- * version — nothing is hidden that they cannot bring back. */
-@supports (animation-timeline: view()) {
-	@media (prefers-reduced-motion: no-preference) and (min-width: 783px) {
-		.ocb-sc__chapter {
-			animation: ocb-sc-pass linear both;
-			animation-timeline: view();
-			animation-range: cover 0% cover 100%;
-		}
-	}
-}
-
-/* One animation for the whole pass, not two. Two animations on the same
- * property both carry fill: both, so the one declared last pins the
- * property to its own start value for the whole time its range has not
- * begun — the arrival was being held at full strength by the departure and
- * never showed at all. One pass, four stops, nothing to fight over. */
-@keyframes ocb-sc-pass {
-	0% { opacity: 0; translate: 0 26px; }
-	24% { opacity: 1; translate: 0 0; }
-	68% { opacity: 1; translate: 0 0; }
-	100% { opacity: 0; translate: 0 -26px; }
-}
 
 /* The crossfading chapter words live inside the pin; desktop reads the
  * flow instead. */

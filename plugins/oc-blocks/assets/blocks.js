@@ -1018,58 +1018,133 @@
 		var frames = sc.querySelectorAll( '[data-ocb-frame]' );
 		var steps = sc.querySelectorAll( '[data-ocb-step]' );
 		var stage = sc.querySelector( '.ocb-sc__stage' );
+		var pin = sc.querySelector( '.ocb-sc__pin' );
+		var wide = window.matchMedia( '(min-width: 783px)' );
+		var still = window.matchMedia( '(prefers-reduced-motion: reduce)' );
 
-		// A square or natural picture is shorter than the screen-high
-		// chapters made for the tall one: each chapter takes the picture's
-		// own height, so its words sit beside the picture, not far below.
-		if ( stage && ! sc.classList.contains( 'ocb-sc--shape-tall' ) ) {
-			var fit = function () {
-				sc.style.setProperty( '--ocb-sc-stage-h', stage.offsetHeight + 'px' );
-			};
+		if ( ! stage ) {
+			return;
+		}
 
-			// Now (the stage has its shape before any picture arrives), and
-			// again whenever it changes size; a tab drawn in the background
-			// delivers no resize callbacks, so the first one cannot wait.
-			fit();
+		// Everything on a wide screen is measured from the picture: the
+		// pin centres it in the view, each chapter is as tall as it, and
+		// the road between chapters is set from it. The height is written
+		// on the section as a variable the stylesheet reads — now (the
+		// stage has its shape before any picture arrives) and again on
+		// every change; a tab drawn in the background delivers no resize
+		// callbacks, so the first measure cannot wait for one.
+		var fit = function () {
+			sc.style.setProperty( '--ocb-sc-stage-h', stage.offsetHeight + 'px' );
+		};
 
-			if ( 'ResizeObserver' in window ) {
-				new ResizeObserver( fit ).observe( stage );
-			} else {
-				window.addEventListener( 'resize', fit );
-			}
+		fit();
+
+		if ( 'ResizeObserver' in window ) {
+			new ResizeObserver( function () {
+				fit();
+				ask();
+			} ).observe( stage );
+		} else {
+			window.addEventListener( 'resize', fit );
 		}
 
 		if ( frames.length < 2 ) {
 			return;
 		}
 
-		// A chapter takes the stage when it crosses the middle of the view.
-		var mid = new IntersectionObserver( function ( entries ) {
-			entries.forEach( function ( entry ) {
-				if ( ! entry.isIntersecting ) {
-					return;
+		var chapters = [].map.call( steps, function ( step ) {
+			return step.querySelector( '.ocb-sc__chapter' ) || step;
+		} );
+		var on = -1;
+		var ticking = false;
+
+		function light( at ) {
+			frames.forEach( function ( fr, i ) {
+				fr.classList.toggle( 'is-on', i === at );
+			} );
+			// On a phone every chapter sits in the same grid cell, so the
+			// direction it travels has to come from somewhere: behind the
+			// current one leaves upwards, ahead of it waits below.
+			sc.querySelectorAll( '[data-ocb-mstep]' ).forEach( function ( mt ) {
+				var i = Number( mt.dataset.ocbMstep );
+
+				mt.classList.toggle( 'is-on', i === at );
+				mt.classList.toggle( 'is-past', i < at );
+			} );
+			// The dots fill up to where you have read, so going back down
+			// the page empties them again.
+			sc.querySelectorAll( '[data-ocb-dot]' ).forEach( function ( dot ) {
+				dot.classList.toggle( 'is-filled', Number( dot.dataset.ocbDot ) <= at );
+			} );
+		}
+
+		// Wide screens: the words are lit by where they stand against the
+		// picture, read off the scroll position itself. A chapter level with
+		// the picture is at full strength; as its centre leaves the picture's
+		// band it fades and lifts away, and the next one fades in as it
+		// rises into the band — and the picture turns at the midpoint between
+		// the two, when the one has gone and the other has not yet arrived.
+		// So the words track the wheel exactly, and the turn of the picture
+		// and the change of the words are one movement, whatever the shape
+		// and height of the picture.
+		function paint() {
+			ticking = false;
+
+			if ( ! wide.matches ) {
+				return;
+			}
+
+			var box = stage.getBoundingClientRect();
+			var centre = box.top + box.height / 2;
+			var half = box.height / 2;
+			var fade = Math.max( 70, Math.min( 150, box.height * 0.35 ) );
+			var best = 0;
+			var bestD = Infinity;
+
+			chapters.forEach( function ( ch, i ) {
+				var b = ch.getBoundingClientRect();
+				var d = b.top + b.height / 2 - centre;
+				var ad = Math.abs( d );
+				var op = 1 - Math.min( 1, Math.max( 0, ( ad - half ) / fade ) );
+
+				ch.style.opacity = op.toFixed( 3 );
+				ch.style.translate = still.matches ? '' : '0 ' + ( ( d < 0 ? -1 : 1 ) * ( 1 - op ) * 26 ).toFixed( 1 ) + 'px';
+
+				if ( ad < bestD ) {
+					bestD = ad;
+					best = i;
 				}
+			} );
 
-				var at = Number( entry.target.dataset.ocbStep );
+			if ( best !== on ) {
+				on = best;
+				light( best );
+			}
+		}
 
-				frames.forEach( function ( fr, i ) {
-					fr.classList.toggle( 'is-on', i === at );
-				} );
-				// On a phone every chapter sits in the same grid cell, so the
-				// direction it travels has to come from somewhere: behind the
-				// current one leaves upwards, ahead of it waits below.
-				sc.querySelectorAll( '[data-ocb-mstep]' ).forEach( function ( mt ) {
-					var i = Number( mt.dataset.ocbMstep );
+		function ask() {
+			if ( ! ticking ) {
+				ticking = true;
+				window.requestAnimationFrame( paint );
+			}
+		}
 
-					mt.classList.toggle( 'is-on', i === at );
-					mt.classList.toggle( 'is-past', i < at );
-				} );
+		window.addEventListener( 'scroll', ask, { passive: true } );
+		window.addEventListener( 'resize', ask );
+		paint();
 
-				// The dots fill up to where you have read, so going back down
-				// the page empties them again.
-				sc.querySelectorAll( '[data-ocb-dot]' ).forEach( function ( dot ) {
-					dot.classList.toggle( 'is-filled', Number( dot.dataset.ocbDot ) <= at );
-				} );
+		// Phones: the chapters scroll invisibly under the pinned stage, so a
+		// chapter takes the stage when it crosses the middle of the view.
+		var mid = new IntersectionObserver( function ( entries ) {
+			if ( wide.matches ) {
+				return;
+			}
+
+			entries.forEach( function ( entry ) {
+				if ( entry.isIntersecting ) {
+					on = Number( entry.target.dataset.ocbStep );
+					light( on );
+				}
 			} );
 		}, { rootMargin: '-46% 0px -46% 0px', threshold: 0 } );
 
@@ -1077,21 +1152,32 @@
 			mid.observe( step );
 		} );
 
-		// Pressing a dot walks to that chapter. The step is the thing with a
-		// place on the page — the picture never moves — so that is what the
-		// page scrolls to, landing it where the observer hands it the stage.
+		// Pressing a dot walks to that chapter: the page scrolls until the
+		// chapter's words are level with the pinned picture.
 		sc.querySelectorAll( '[data-ocb-dot]' ).forEach( function ( dot ) {
 			dot.addEventListener( 'click', function () {
-				var step = steps[ Number( dot.dataset.ocbDot ) ];
+				var ch = chapters[ Number( dot.dataset.ocbDot ) ];
 
-				if ( ! step ) {
+				if ( ! ch ) {
 					return;
 				}
 
-				var box = step.getBoundingClientRect();
-				var middle = box.top + window.scrollY - ( window.innerHeight - box.height ) / 2;
+				var b = ch.getBoundingClientRect();
+				var top;
 
-				window.scrollTo( { top: Math.max( 0, middle ), behavior: 'smooth' } );
+				if ( wide.matches ) {
+					var pinTop = parseFloat( window.getComputedStyle( pin ).top );
+
+					if ( isNaN( pinTop ) ) {
+						pinTop = ( window.innerHeight - stage.offsetHeight ) / 2;
+					}
+
+					top = b.top + window.scrollY + b.height / 2 - ( pinTop + stage.offsetHeight / 2 );
+				} else {
+					top = b.top + window.scrollY - ( window.innerHeight - b.height ) / 2;
+				}
+
+				window.scrollTo( { top: Math.max( 0, top ), behavior: 'smooth' } );
 			} );
 		} );
 	} );
