@@ -1438,7 +1438,14 @@
 			return;
 		}
 
-		var scale = Math.min( 1, Math.max( 0.2, room / want ) );
+		// On another theme the sections stand in the theme's content column,
+		// drawn centred in a frame as wide as the editor's screen (so every
+		// width-based rule holds). The column is what the editor edits: it
+		// is scaled to fill the stage and the frame's margins are clipped
+		// away — otherwise the page read as a narrow strip in a wide grey.
+		var col = 'desktop' === state.device && D.col && D.col.w && D.col.w < want ? D.col.w : want;
+		var scale = Math.min( 1, Math.max( 0.2, room / col ) );
+		var shift = ( want - col ) / 2 * scale;
 
 		[ frame, els.frameB ].forEach( function ( one ) {
 			if ( ! one ) {
@@ -1448,9 +1455,10 @@
 			one.style.width = want + 'px';
 			one.style.transform = 'scale(' + scale + ')';
 			one.style.height = ( ( stage.clientHeight - 30 ) / scale ) + 'px';
+			one.style.insetInlineStart = ( -shift ) + 'px';
 		} );
 
-		els.frameWrap.style.width = ( want * scale ) + 'px';
+		els.frameWrap.style.width = ( col * scale ) + 'px';
 		els.frameWrap.style.height = ( stage.clientHeight - 30 ) + 'px';
 		els.frameWrap.classList.toggle( 'is-device', 'desktop' !== state.device );
 	}
@@ -1524,6 +1532,9 @@
 			}
 			if ( hn.std ) {
 				opts.push( el( 'option', { value: hn.std, selected: 'std' === hn.now ? 'selected' : null, text: hn.stdT } ) );
+			}
+			if ( hn.cats ) {
+				opts.push( el( 'option', { value: hn.cats, selected: 'cats' === hn.now ? 'selected' : null, text: hn.catsT } ) );
 			}
 			opts.push( el( 'option', { value: hn.full, selected: 'full' === hn.now ? 'selected' : null, text: hn.fullT } ) );
 			layout = el( 'label', { 'class': 'ocbe-layout' }, [

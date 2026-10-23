@@ -45,6 +45,12 @@ final class Host {
 	public const PAGE = 'oc-blocks-settings';
 
 	/**
+	 * Deliz only: the page template that keeps the category menu and gives
+	 * the order panel's room to the page (the panel opens as a drawer).
+	 */
+	public const TEMPLATE_CATS = 'oc-blocks-deliz-cats.php';
+
+	/**
 	 * The theme's content column, measured on the site, per page template:
 	 * array( template => array( 'w' => column px, 'vw' => screen px ) ).
 	 */
@@ -128,7 +134,34 @@ final class Host {
 
 		if ( self::is_deliz() ) {
 			add_filter( 'oc_blocks_product_cards', array( $this, 'deliz_cards' ) );
+			add_filter( 'woocommerce_add_to_cart_fragments', array( $this, 'deliz_count_fragment' ) );
 		}
+	}
+
+	/**
+	 * The count on the cart button of the categories-only layout follows
+	 * the cart the way Deliz's own panel does: through WooCommerce's
+	 * fragments, on every add, remove and change of quantity.
+	 *
+	 * @param array<string,string> $fragments Fragments.
+	 * @return array<string,string>
+	 */
+	public function deliz_count_fragment( $fragments ): array {
+		$fragments = (array) $fragments;
+		$count     = function_exists( 'WC' ) && WC()->cart ? (int) WC()->cart->get_cart_contents_count() : 0;
+
+		$fragments['.ocb-dz-cartbtn__n'] = '<span class="ocb-dz-cartbtn__n"' . ( $count > 0 ? '' : ' hidden' ) . '>' . esc_html( (string) $count ) . '</span>';
+
+		return $fragments;
+	}
+
+	/**
+	 * Does the current page use the Deliz categories-only template?
+	 */
+	private static function cats_template(): bool {
+		$id = (int) get_queried_object_id();
+
+		return self::is_deliz() && $id > 0 && is_singular() && self::TEMPLATE_CATS === get_page_template_slug( $id );
 	}
 
 	/* ------------------------------------------------------- host themes */
@@ -295,6 +328,9 @@ final class Host {
 
 		if ( self::full_template() ) {
 			$out[] = 'ocb-full';
+		} elseif ( self::cats_template() ) {
+			$out[] = 'ocb-contained';
+			$out[] = 'ocb-deliz-cats-page';
 		} elseif ( 'contained' === self::settings()['width'] ) {
 			$out[] = 'ocb-contained';
 		}
@@ -339,7 +375,7 @@ final class Host {
 
 		$slug = (string) get_page_template_slug( $page_id );
 
-		if ( self::TEMPLATE === $slug ) {
+		if ( self::TEMPLATE === $slug || self::TEMPLATE_CATS === $slug ) {
 			return false;
 		}
 
@@ -431,6 +467,10 @@ final class Host {
 		$templates                   = (array) $templates;
 		$templates[ self::TEMPLATE ] = __( 'OC Blocks — full width', 'oc-blocks' );
 
+		if ( self::is_deliz() ) {
+			$templates[ self::TEMPLATE_CATS ] = __( 'OC Blocks — categories only (no cart)', 'oc-blocks' );
+		}
+
 		return $templates;
 	}
 
@@ -442,6 +482,10 @@ final class Host {
 	public function template( $template ): string {
 		if ( self::full_template() ) {
 			return OC_BLOCKS_DIR . 'templates/full-width.php';
+		}
+
+		if ( self::cats_template() ) {
+			return OC_BLOCKS_DIR . 'templates/deliz-categories.php';
 		}
 
 		return (string) $template;
@@ -503,7 +547,12 @@ final class Host {
 
 		check_admin_referer( 'oc_blocks_template_' . $page_id );
 
-		update_post_meta( $page_id, '_wp_page_template', 'full' === $to ? self::TEMPLATE : 'default' );
+		$keys = array(
+			'full' => self::TEMPLATE,
+			'cats' => self::TEMPLATE_CATS,
+		);
+
+		update_post_meta( $page_id, '_wp_page_template', $keys[ $to ] ?? 'default' );
 
 		wp_safe_redirect( Editor::url( $page_id ) );
 		exit;
@@ -542,6 +591,8 @@ final class Host {
 
 		if ( self::TEMPLATE === $slug ) {
 			$now = 'full';
+		} elseif ( self::is_deliz() && self::TEMPLATE_CATS === $slug ) {
+			$now = 'cats';
 		} elseif ( '' === $slug || 'default' === $slug ) {
 			$now = 'std';
 		}
@@ -561,6 +612,8 @@ final class Host {
 			'stdT'   => __( 'The theme\'s standard page (with its menus and cart)', 'oc-blocks' ),
 			'full'   => $go( 'full' ),
 			'fullT'  => __( 'OC Blocks — full width', 'oc-blocks' ),
+			'cats'   => self::is_deliz() ? $go( 'cats' ) : '',
+			'catsT'  => __( 'Categories only (no cart)', 'oc-blocks' ),
 			'otherT' => $other,
 		);
 	}

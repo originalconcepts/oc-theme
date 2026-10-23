@@ -1918,3 +1918,12 @@ msgstr "גבוהה"
 
 msgid "Natural"
 msgstr "טבעית"
+
+msgid "OC Blocks — categories only (no cart)"
+msgstr "OC Blocks — קטגוריות בלבד (בלי הסל)"
+
+msgid "Categories only (no cart)"
+msgstr "קטגוריות בלבד (בלי הסל)"
+
+msgid "My cart"
+msgstr "הסל שלי"
