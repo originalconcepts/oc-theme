@@ -285,8 +285,8 @@ final class Host {
 
 		add_filter(
 			'acf/load_fields',
-			static function ( $fields, $parent ) use ( $field ) {
-				if ( ! is_array( $fields ) || ! isset( $parent['key'] ) || self::DELIZ_DESKTOP_GROUP !== $parent['key'] || ! is_admin() ) {
+			static function ( $fields, $group ) use ( $field ) {
+				if ( ! is_array( $fields ) || ! isset( $group['key'] ) || self::DELIZ_DESKTOP_GROUP !== $group['key'] || ! is_admin() ) {
 					return $fields;
 				}
 
