@@ -45,10 +45,17 @@ final class Host {
 	public const PAGE = 'oc-blocks-settings';
 
 	/**
-	 * Deliz only: the page template that keeps the category menu and gives
-	 * the order panel's room to the page (the panel opens as a drawer).
+	 * The template of the first categories-only layout (0.3.329). Pages
+	 * that already chose it keep working: it reads as the standard page
+	 * with the cart closed. It is no longer offered.
 	 */
-	public const TEMPLATE_CATS = 'oc-blocks-deliz-cats.php';
+	public const TEMPLATE_LEGACY = 'oc-blocks-deliz-cats.php';
+
+	/**
+	 * Deliz: a page's own choice of cart display ('open' | 'closed';
+	 * empty follows the site setting).
+	 */
+	public const CART_META = '_ocb_cart';
 
 	/**
 	 * The theme's content column, measured on the site, per page template:
@@ -135,6 +142,10 @@ final class Host {
 		if ( self::is_deliz() ) {
 			add_filter( 'oc_blocks_product_cards', array( $this, 'deliz_cards' ) );
 			add_filter( 'woocommerce_add_to_cart_fragments', array( $this, 'deliz_count_fragment' ) );
+			add_action( 'acf/init', array( $this, 'deliz_settings' ) );
+			add_action( 'oc_header_icons', array( $this, 'deliz_header_cart' ) );
+			add_action( 'wp_enqueue_scripts', array( $this, 'deliz_assets' ), 30 );
+			add_action( 'wp_footer', array( $this, 'deliz_footer' ), 5 );
 		}
 	}
 
@@ -156,12 +167,150 @@ final class Host {
 	}
 
 	/**
-	 * Does the current page use the Deliz categories-only template?
+	 * The site's cart display on a wide screen: 'open_all' (categories and
+	 * cart on the sides everywhere — how Deliz shows a page by itself),
+	 * 'open_home' (the same, but the home page runs wide with the cart
+	 * behind a button in the header) or 'closed' (the cart behind that
+	 * button everywhere). Set under הגדרות אתר, in the cart and checkout
+	 * area.
 	 */
-	private static function cats_template(): bool {
+	public static function cart_mode(): string {
+		$mode = function_exists( 'get_field' ) ? (string) get_field( 'ocb_cart_mode', 'option' ) : '';
+
+		return in_array( $mode, array( 'open_home', 'closed' ), true ) ? $mode : 'open_all';
+	}
+
+	/**
+	 * Is the cart closed (a drawer opened from the header) on this page?
+	 * A page's own choice wins over the site's.
+	 */
+	public static function cart_closed(): bool {
+		if ( ! self::is_deliz() ) {
+			return false;
+		}
+
 		$id = (int) get_queried_object_id();
 
-		return self::is_deliz() && $id > 0 && is_singular() && self::TEMPLATE_CATS === get_page_template_slug( $id );
+		if ( $id > 0 && is_singular() ) {
+			if ( self::TEMPLATE_LEGACY === get_page_template_slug( $id ) ) {
+				return true;
+			}
+
+			$own = (string) get_post_meta( $id, self::CART_META, true );
+
+			if ( 'closed' === $own ) {
+				return true;
+			}
+
+			if ( 'open' === $own ) {
+				return false;
+			}
+		}
+
+		$mode = self::cart_mode();
+
+		if ( 'closed' === $mode ) {
+			return true;
+		}
+
+		// Deliz serves its category views from the home page, so the home
+		// page here is the shop's front: the wide layout covers both.
+		return 'open_home' === $mode && is_front_page();
+	}
+
+	/**
+	 * The settings box under הגדרות אתר, right after "הגדרות קופה".
+	 */
+	public function deliz_settings(): void {
+		if ( ! function_exists( 'acf_add_local_field_group' ) ) {
+			return;
+		}
+
+		acf_add_local_field_group(
+			array(
+				'key'        => 'group_ocb_deliz_cart',
+				'title'      => __( 'Cart display (desktop)', 'oc-blocks' ),
+				'menu_order' => 16,
+				'location'   => array(
+					array(
+						array(
+							'param'    => 'options_page',
+							'operator' => '==',
+							'value'    => 'site-settings',
+						),
+					),
+				),
+				'fields'     => array(
+					array(
+						'key'           => 'field_ocb_cart_mode',
+						'label'         => __( 'How the cart is shown on a wide screen', 'oc-blocks' ),
+						'name'          => 'ocb_cart_mode',
+						'type'          => 'radio',
+						'layout'        => 'vertical',
+						'default_value' => 'open_all',
+						'instructions'  => __( 'Does not touch phones. A single page can choose differently: in the OC Blocks composer, "Page layout".', 'oc-blocks' ),
+						'choices'       => array(
+							'open_all'  => __( 'Categories and cart on the sides, on every page — the home page too', 'oc-blocks' ),
+							'open_home' => __( 'Categories and cart on the sides — but the home page runs full width, with a cart button in the header', 'oc-blocks' ),
+							'closed'    => __( 'Cart closed on every page: a button in the header opens it', 'oc-blocks' ),
+						),
+					),
+				),
+			)
+		);
+	}
+
+	/**
+	 * The cart button in Deliz's header, through the theme's own icons hook:
+	 * the first thing in the header's left box, so it stands to the left of
+	 * the sign-in button. Shown on a wide screen where the cart is closed.
+	 */
+	public function deliz_header_cart(): void {
+		$count = function_exists( 'WC' ) && WC()->cart ? (int) WC()->cart->get_cart_contents_count() : 0;
+		?>
+		<button type="button" class="ocb-dz-cartbtn" data-ocb-dz-cart aria-expanded="false" aria-controls="ed-float-cart">
+			<span><?php esc_html_e( 'My cart', 'oc-blocks' ); ?></span>
+			<span class="ocb-dz-cartbtn__n"<?php echo $count > 0 ? '' : ' hidden'; ?>><?php echo esc_html( (string) $count ); ?></span>
+		</button>
+		<?php
+	}
+
+	/**
+	 * The header button's and the drawer's stylesheet (and the corner of
+	 * the newsletter field), on every page of a Deliz site.
+	 */
+	public function deliz_assets(): void {
+		$css = oc_blocks_asset( 'assets/deliz.css' );
+
+		wp_enqueue_style( 'oc-blocks-deliz', OC_BLOCKS_URI . $css, array(), (string) filemtime( OC_BLOCKS_DIR . $css ) );
+	}
+
+	/**
+	 * Where the cart is a drawer: the dimmed backdrop, and the little script
+	 * that opens and closes it. Deliz's own drawer toggles the same body
+	 * class on a phone; here it is the header button that does.
+	 */
+	public function deliz_footer(): void {
+		if ( ! self::cart_closed() ) {
+			return;
+		}
+
+		echo '<div class="ocb-dz-backdrop" data-ocb-dz-cart></div>';
+
+		wp_print_inline_script_tag(
+			'( function () {' .
+			'function set( open ) {' .
+			'document.body.classList.toggle( "basket-open", open );' .
+			'document.querySelectorAll( ".ocb-dz-cartbtn" ).forEach( function ( b ) { b.setAttribute( "aria-expanded", open ? "true" : "false" ); } );' .
+			'}' .
+			'document.addEventListener( "click", function ( e ) {' .
+			'if ( e.target.closest( "[data-ocb-dz-cart]" ) ) { e.preventDefault(); set( ! document.body.classList.contains( "basket-open" ) ); }' .
+			'} );' .
+			'document.addEventListener( "keydown", function ( e ) {' .
+			'if ( "Escape" === e.key && document.body.classList.contains( "basket-open" ) ) { set( false ); }' .
+			'} );' .
+			'}() );'
+		);
 	}
 
 	/* ------------------------------------------------------- host themes */
@@ -328,11 +477,12 @@ final class Host {
 
 		if ( self::full_template() ) {
 			$out[] = 'ocb-full';
-		} elseif ( self::cats_template() ) {
-			$out[] = 'ocb-contained';
-			$out[] = 'ocb-deliz-cats-page';
 		} elseif ( 'contained' === self::settings()['width'] ) {
 			$out[] = 'ocb-contained';
+		}
+
+		if ( self::cart_closed() ) {
+			$out[] = 'ocb-cart-closed';
 		}
 
 		// A page built with the composer opens with its own sections — the
@@ -375,7 +525,7 @@ final class Host {
 
 		$slug = (string) get_page_template_slug( $page_id );
 
-		if ( self::TEMPLATE === $slug || self::TEMPLATE_CATS === $slug ) {
+		if ( self::TEMPLATE === $slug || self::TEMPLATE_LEGACY === $slug ) {
 			return false;
 		}
 
@@ -467,10 +617,6 @@ final class Host {
 		$templates                   = (array) $templates;
 		$templates[ self::TEMPLATE ] = __( 'OC Blocks — full width', 'oc-blocks' );
 
-		if ( self::is_deliz() ) {
-			$templates[ self::TEMPLATE_CATS ] = __( 'OC Blocks — categories only (no cart)', 'oc-blocks' );
-		}
-
 		return $templates;
 	}
 
@@ -484,8 +630,12 @@ final class Host {
 			return OC_BLOCKS_DIR . 'templates/full-width.php';
 		}
 
-		if ( self::cats_template() ) {
-			return OC_BLOCKS_DIR . 'templates/deliz-categories.php';
+		$id = (int) get_queried_object_id();
+
+		if ( $id > 0 && is_singular() && self::TEMPLATE_LEGACY === get_page_template_slug( $id ) ) {
+			$std = (string) locate_template( array( 'page.php' ) );
+
+			return '' !== $std ? $std : (string) $template;
 		}
 
 		return (string) $template;
@@ -547,12 +697,14 @@ final class Host {
 
 		check_admin_referer( 'oc_blocks_template_' . $page_id );
 
-		$keys = array(
-			'full' => self::TEMPLATE,
-			'cats' => self::TEMPLATE_CATS,
-		);
+		update_post_meta( $page_id, '_wp_page_template', 'full' === $to ? self::TEMPLATE : 'default' );
 
-		update_post_meta( $page_id, '_wp_page_template', $keys[ $to ] ?? 'default' );
+		// Deliz: the page's own choice of cart display.
+		if ( 'open' === $to || 'closed' === $to ) {
+			update_post_meta( $page_id, self::CART_META, $to );
+		} elseif ( 'auto' === $to ) {
+			delete_post_meta( $page_id, self::CART_META );
+		}
 
 		wp_safe_redirect( Editor::url( $page_id ) );
 		exit;
@@ -588,13 +740,59 @@ final class Host {
 
 		$slug = (string) get_page_template_slug( $page_id );
 		$now  = 'other';
+		$opts = array();
 
 		if ( self::TEMPLATE === $slug ) {
 			$now = 'full';
-		} elseif ( self::is_deliz() && self::TEMPLATE_CATS === $slug ) {
-			$now = 'cats';
+		} elseif ( self::is_deliz() && self::TEMPLATE_LEGACY === $slug ) {
+			$now = 'closed';
 		} elseif ( '' === $slug || 'default' === $slug ) {
 			$now = 'std';
+		}
+
+		if ( self::is_deliz() ) {
+			if ( 'std' === $now || 'closed' === $now || 'open' === $now ) {
+				$own = (string) get_post_meta( $page_id, self::CART_META, true );
+				$now = in_array( $own, array( 'open', 'closed' ), true ) ? $own : ( 'closed' === $now ? 'closed' : 'auto' );
+			}
+
+			if ( self::standard_shows_content() ) {
+				$opts[] = array(
+					'key'   => 'auto',
+					'url'   => $go( 'auto' ),
+					'label' => __( 'Standard page — the cart as the site setting says', 'oc-blocks' ),
+				);
+				$opts[] = array(
+					'key'   => 'open',
+					'url'   => $go( 'open' ),
+					'label' => __( 'Standard page — categories and cart on the sides', 'oc-blocks' ),
+				);
+				$opts[] = array(
+					'key'   => 'closed',
+					'url'   => $go( 'closed' ),
+					'label' => __( 'Standard page — cart closed (a button in the header)', 'oc-blocks' ),
+				);
+			}
+
+			$opts[] = array(
+				'key'   => 'full',
+				'url'   => $go( 'full' ),
+				'label' => __( 'OC Blocks — full width', 'oc-blocks' ),
+			);
+		} else {
+			if ( self::standard_shows_content() ) {
+				$opts[] = array(
+					'key'   => 'std',
+					'url'   => $go( 'default' ),
+					'label' => __( 'The theme\'s standard page (with its menus and cart)', 'oc-blocks' ),
+				);
+			}
+
+			$opts[] = array(
+				'key'   => 'full',
+				'url'   => $go( 'full' ),
+				'label' => __( 'OC Blocks — full width', 'oc-blocks' ),
+			);
 		}
 
 		$other = '';
@@ -608,12 +806,7 @@ final class Host {
 			'text'   => self::hides_content( $page_id ) ? __( 'The template this page uses does not show the page content — the sections below will not appear on the site. Choose a template that shows them:', 'oc-blocks' ) : '',
 			'label'  => __( 'Page layout', 'oc-blocks' ),
 			'now'    => $now,
-			'std'    => self::standard_shows_content() ? $go( 'default' ) : '',
-			'stdT'   => __( 'The theme\'s standard page (with its menus and cart)', 'oc-blocks' ),
-			'full'   => $go( 'full' ),
-			'fullT'  => __( 'OC Blocks — full width', 'oc-blocks' ),
-			'cats'   => self::is_deliz() ? $go( 'cats' ) : '',
-			'catsT'  => __( 'Categories only (no cart)', 'oc-blocks' ),
+			'opts'   => $opts,
 			'otherT' => $other,
 		);
 	}

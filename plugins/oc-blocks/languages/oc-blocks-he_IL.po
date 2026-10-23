@@ -1919,11 +1919,32 @@ msgstr "גבוהה"
 msgid "Natural"
 msgstr "טבעית"
 
-msgid "OC Blocks — categories only (no cart)"
-msgstr "OC Blocks — קטגוריות בלבד (בלי הסל)"
-
-msgid "Categories only (no cart)"
-msgstr "קטגוריות בלבד (בלי הסל)"
-
 msgid "My cart"
 msgstr "הסל שלי"
+
+msgid "Cart display (desktop)"
+msgstr "תצוגת הסל (דסקטופ)"
+
+msgid "How the cart is shown on a wide screen"
+msgstr "איך הסל מוצג במסך רחב"
+
+msgid "Does not touch phones. A single page can choose differently: in the OC Blocks composer, \"Page layout\"."
+msgstr "לא משפיע על מובייל. עמוד בודד יכול לבחור אחרת: במרכיב OC Blocks, \"פריסת העמוד\"."
+
+msgid "Categories and cart on the sides, on every page — the home page too"
+msgstr "קטגוריות וסל בצדדים, בכל עמוד — גם בעמוד הבית"
+
+msgid "Categories and cart on the sides — but the home page runs full width, with a cart button in the header"
+msgstr "קטגוריות וסל בצדדים — אבל עמוד הבית לכל הרוחב, עם כפתור סל בהדר"
+
+msgid "Cart closed on every page: a button in the header opens it"
+msgstr "הסל סגור בכל עמוד: כפתור בהדר פותח אותו"
+
+msgid "Standard page — the cart as the site setting says"
+msgstr "עמוד רגיל — הסל לפי הגדרת האתר"
+
+msgid "Standard page — categories and cart on the sides"
+msgstr "עמוד רגיל — קטגוריות וסל בצדדים"
+
+msgid "Standard page — cart closed (a button in the header)"
+msgstr "עמוד רגיל — הסל סגור (כפתור בהדר)"

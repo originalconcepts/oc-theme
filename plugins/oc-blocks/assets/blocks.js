@@ -1012,31 +1012,6 @@
 		show( 0 );
 	} );
 
-	/* ---------- Deliz, categories only: the order panel as a drawer ---------- */
-
-	// The button (and the backdrop) toggle the class Deliz's own basket bar
-	// toggles on a phone, so the panel opens the way the theme already
-	// knows; Escape closes it.
-	function dzCart( open ) {
-		document.body.classList.toggle( 'basket-open', open );
-		document.querySelectorAll( '.ocb-dz-cartbtn' ).forEach( function ( b ) {
-			b.setAttribute( 'aria-expanded', open ? 'true' : 'false' );
-		} );
-	}
-
-	document.addEventListener( 'click', function ( e ) {
-		if ( e.target.closest( '[data-ocb-dz-cart]' ) ) {
-			e.preventDefault();
-			dzCart( ! document.body.classList.contains( 'basket-open' ) );
-		}
-	} );
-
-	document.addEventListener( 'keydown', function ( e ) {
-		if ( 'Escape' === e.key && document.querySelector( '.ocb-dz-cartbtn' ) && document.body.classList.contains( 'basket-open' ) ) {
-			dzCart( false );
-		}
-	} );
-
 	/* ---------- the scrolling story ---------- */
 
 	document.querySelectorAll( '[data-ocb-sc]' ).forEach( function ( sc ) {

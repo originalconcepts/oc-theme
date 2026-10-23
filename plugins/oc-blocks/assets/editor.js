@@ -1525,18 +1525,24 @@
 		// time (the warning below only appears while it shows nothing).
 		var hn = D.hostNote || {};
 		var layout = null;
-		if ( hn.full ) {
+		var hopts = hn.opts || [];
+		var hfull = null;
+		var hstd = null;
+		hopts.forEach( function ( o ) {
+			if ( 'full' === o.key ) {
+				hfull = o;
+			} else if ( ! hstd ) {
+				hstd = o;
+			}
+		} );
+		if ( hfull ) {
 			var opts = [];
 			if ( 'other' === hn.now ) {
 				opts.push( el( 'option', { value: '', selected: 'selected', text: hn.otherT } ) );
 			}
-			if ( hn.std ) {
-				opts.push( el( 'option', { value: hn.std, selected: 'std' === hn.now ? 'selected' : null, text: hn.stdT } ) );
-			}
-			if ( hn.cats ) {
-				opts.push( el( 'option', { value: hn.cats, selected: 'cats' === hn.now ? 'selected' : null, text: hn.catsT } ) );
-			}
-			opts.push( el( 'option', { value: hn.full, selected: 'full' === hn.now ? 'selected' : null, text: hn.fullT } ) );
+			hopts.forEach( function ( o ) {
+				opts.push( el( 'option', { value: o.url, selected: o.key === hn.now ? 'selected' : null, text: o.label } ) );
+			} );
 			layout = el( 'label', { 'class': 'ocbe-layout' }, [
 				el( 'span', { text: hn.label } ),
 				el( 'select', {
@@ -1579,8 +1585,8 @@
 		if ( hn.text ) {
 			root.appendChild( el( 'div', { 'class': 'ocbe-note', role: 'alert' }, [
 				el( 'span', { text: hn.text } ),
-				hn.std ? el( 'a', { 'class': 'ocbe-note__btn', href: hn.std, text: hn.stdT } ) : null,
-				el( 'a', { 'class': 'ocbe-note__btn', href: hn.full, text: hn.fullT } )
+				hstd ? el( 'a', { 'class': 'ocbe-note__btn', href: hstd.url, text: hstd.label } ) : null,
+				hfull ? el( 'a', { 'class': 'ocbe-note__btn', href: hfull.url, text: hfull.label } ) : null
 			] ) );
 		}
 
