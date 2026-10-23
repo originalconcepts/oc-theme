@@ -1934,8 +1934,8 @@ msgstr "לא משפיע על מובייל. עמוד בודד יכול לבחור
 msgid "Categories and cart on the sides, on every page — the home page too"
 msgstr "קטגוריות וסל בצדדים, בכל עמוד — גם בעמוד הבית"
 
-msgid "Categories and cart on the sides — but the home page runs full width, with a cart button in the header"
-msgstr "קטגוריות וסל בצדדים — אבל עמוד הבית לכל הרוחב, עם כפתור סל בהדר"
+msgid "Categories and cart on the sides — but the home page itself runs full width, with a cart button in the header (the cart opens beside the categories)"
+msgstr "קטגוריות וסל בצדדים — אבל עמוד הבית עצמו לכל הרוחב, עם כפתור סל בהדר (בבחירת קטגוריה הסל נפתח לצד הקטגוריות)"
 
 msgid "Cart closed on every page: a button in the header opens it"
 msgstr "הסל סגור בכל עמוד: כפתור בהדר פותח אותו"

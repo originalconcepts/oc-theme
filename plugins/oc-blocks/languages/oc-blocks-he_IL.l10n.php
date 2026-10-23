@@ -97,7 +97,7 @@ return array(
 		"Cart display" => "תצוגת הסל",
 		"Cart display (desktop)" => "תצוגת הסל (דסקטופ)",
 		"Categories" => "קטגוריות",
-		"Categories and cart on the sides — but the home page runs full width, with a cart button in the header" => "קטגוריות וסל בצדדים — אבל עמוד הבית לכל הרוחב, עם כפתור סל בהדר",
+		"Categories and cart on the sides — but the home page itself runs full width, with a cart button in the header (the cart opens beside the categories)" => "קטגוריות וסל בצדדים — אבל עמוד הבית עצמו לכל הרוחב, עם כפתור סל בהדר (בבחירת קטגוריה הסל נפתח לצד הקטגוריות)",
 		"Categories and cart on the sides, on every page — the home page too" => "קטגוריות וסל בצדדים, בכל עמוד — גם בעמוד הבית",
 		"Centre" => "מרכז",
 		"Centre, reading side" => "מרכז, צד הקריאה",

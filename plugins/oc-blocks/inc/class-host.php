@@ -188,41 +188,66 @@ final class Host {
 	}
 
 	/**
-	 * Is the cart closed (a drawer opened from the header) on this page?
-	 * A page's own choice wins over the site's.
+	 * Is the cart closed (a drawer opened from the header) on this page as it
+	 * first loads?
 	 */
 	public static function cart_closed(): bool {
+		$views = self::cart_views();
+
+		return self::in_shop_view() ? $views['shop'] : $views['page'];
+	}
+
+	/**
+	 * Deliz serves a category address (/cat/…) from the front page, and a
+	 * click in its category menu switches the same page over to the products:
+	 * that is the shop view, as against the page's own content.
+	 */
+	public static function in_shop_view(): bool {
+		return is_front_page() && '' !== (string) get_query_var( 'mp_cat', '' );
+	}
+
+	/**
+	 * Whether the cart is closed in each of the two views a Deliz page can
+	 * show. A page's own choice speaks for the page's own content only; the
+	 * shop view (the front page showing a category) follows the site: the
+	 * home page may run wide while the shop beside it keeps the cart open.
+	 *
+	 * @return array{page:bool,shop:bool}
+	 */
+	public static function cart_views(): array {
 		if ( ! self::is_deliz() ) {
-			return false;
+			return array(
+				'page' => false,
+				'shop' => false,
+			);
 		}
 
-		$id = (int) get_queried_object_id();
+		$mode = self::cart_mode();
+		$page = 'closed' === $mode || ( 'open_home' === $mode && is_front_page() );
+		$shop = 'closed' === $mode;
+		$id   = (int) get_queried_object_id();
 
 		if ( $id > 0 && is_singular() ) {
 			if ( self::TEMPLATE_LEGACY === get_page_template_slug( $id ) ) {
-				return true;
+				return array(
+					'page' => true,
+					'shop' => true,
+				);
 			}
 
 			$own = (string) get_post_meta( $id, self::CART_META, true );
 
 			if ( 'closed' === $own ) {
-				return true;
-			}
-
-			if ( 'open' === $own ) {
-				return false;
+				$page = true;
+			} elseif ( 'open' === $own ) {
+				$page = false;
 			}
 		}
 
-		$mode = self::cart_mode();
-
-		if ( 'closed' === $mode ) {
-			return true;
-		}
-
-		// Deliz serves its category views from the home page, so the home
-		// page here is the shop's front: the wide layout covers both.
-		return 'open_home' === $mode && is_front_page();
+		return array(
+			'page' => $page,
+			'shop' => is_front_page() ? $shop : $page,
+		);
 	}
 
 	/**
@@ -243,7 +268,7 @@ final class Host {
 			'instructions'  => __( 'Does not touch phones. A single page can choose differently: in the OC Blocks composer, "Page layout".', 'oc-blocks' ),
 			'choices'       => array(
 				'open_all'  => __( 'Categories and cart on the sides, on every page — the home page too', 'oc-blocks' ),
-				'open_home' => __( 'Categories and cart on the sides — but the home page runs full width, with a cart button in the header', 'oc-blocks' ),
+				'open_home' => __( 'Categories and cart on the sides — but the home page itself runs full width, with a cart button in the header (the cart opens beside the categories)', 'oc-blocks' ),
 				'closed'    => __( 'Cart closed on every page: a button in the header opens it', 'oc-blocks' ),
 			),
 		);
@@ -356,7 +381,9 @@ final class Host {
 	 * class on a phone; here it is the header button that does.
 	 */
 	public function deliz_footer(): void {
-		if ( ! self::cart_closed() ) {
+		$views = self::cart_views();
+
+		if ( ! $views['page'] && ! $views['shop'] ) {
 			return;
 		}
 
@@ -382,6 +409,17 @@ final class Host {
 			'if ( "Escape" === e.key && document.body.classList.contains( "basket-open" ) ) { set( false ); }' .
 			'} );' .
 			'var hd = document.querySelector( ".site-header" );' .
+			// The home page and the shop view it turns into can differ: follow the
+			// layer Deliz shows.
+			( $views['page'] !== $views['shop']
+				? 'var wrap = document.querySelector( ".ed-page-products-wrap" );' .
+					'function view() {' .
+					'var closed = wrap.hidden ? ' . wp_json_encode( $views['page'] ) . ' : ' . wp_json_encode( $views['shop'] ) . ';' .
+					'document.body.classList.toggle( "ocb-cart-closed", closed );' .
+					'if ( ! closed ) { set( false ); }' .
+					'}' .
+					'if ( wrap ) { new MutationObserver( view ).observe( wrap, { attributes: true, attributeFilter: [ "hidden" ] } ); view(); }'
+				: '' ) .
 			'function float() { document.body.classList.toggle( "ocb-cart-float", !! hd && hd.getBoundingClientRect().bottom < 0 ); }' .
 			'window.addEventListener( "scroll", float, { passive: true } );' .
 			'float();' .
