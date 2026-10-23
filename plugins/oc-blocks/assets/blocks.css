@@ -701,12 +701,11 @@
 .ocb-shelf--gap-small { --ocb-shelf-gap: 12px; }
 .ocb-shelf--gap-tight { --ocb-shelf-gap: 2px; }
 
-/* On another theme the section's own gap choice reaches a products shelf
- * too (the catalogue-echo rule above sets the gap on the list itself, so
- * the choice on the shelf never did). Kept off the OC theme for now: live
- * sliders there were set to "small" without it taking effect. */
-.ocb-host-other .ocb-shelf--gap-small ul.products { --ocb-shelf-gap: 12px; }
-.ocb-host-other .ocb-shelf--gap-tight ul.products { --ocb-shelf-gap: 2px; }
+/* The section's own gap choice reaches a products shelf too: the
+ * catalogue-echo rule above sets the gap on the list itself, so the choice
+ * on the shelf never took effect (on the OC theme as well, until 0.3.332). */
+.ocb-shelf--gap-small ul.products { --ocb-shelf-gap: 12px; }
+.ocb-shelf--gap-tight ul.products { --ocb-shelf-gap: 2px; }
 
 /* .oc-compose in every selector: the theme's own `.woocommerce ul.products`
  * rules weigh the same and load later, so the shelf needs the extra class

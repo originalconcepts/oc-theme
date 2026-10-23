@@ -94,6 +94,7 @@ return array(
 		"By the logo" => "לפי הלוגו",
 		"CRM webhook" => "Webhook ל־CRM",
 		"Cart closed on every page: a button in the header opens it" => "הסל סגור בכל עמוד: כפתור בהדר פותח אותו",
+		"Cart display" => "תצוגת הסל",
 		"Cart display (desktop)" => "תצוגת הסל (דסקטופ)",
 		"Categories" => "קטגוריות",
 		"Categories and cart on the sides — but the home page runs full width, with a cart button in the header" => "קטגוריות וסל בצדדים — אבל עמוד הבית לכל הרוחב, עם כפתור סל בהדר",

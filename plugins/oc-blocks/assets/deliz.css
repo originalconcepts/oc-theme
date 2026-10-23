@@ -140,3 +140,11 @@
 	line-height: 48px;
 	border-radius: var(--radius, 10px) 0 0 var(--radius, 10px);
 }
+
+/* "Rebuy" in the header stays on one line, whatever room the header has
+   (with the cart open at the side the left box is narrow and the label
+   wrapped). A phone shows its own icon-only version. */
+@media (min-width: 600px) {
+	.site-header .header-rebuy { flex: none; }
+	.site-header .header-rebuy a { white-space: nowrap; }
+}

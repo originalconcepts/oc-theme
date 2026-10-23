@@ -58,6 +58,13 @@ final class Host {
 	public const CART_META = '_ocb_cart';
 
 	/**
+	 * Deliz's "desktop settings" field group (where the cart display field is
+	 * drawn) and the hidden group that registers the field for saving.
+	 */
+	public const DELIZ_DESKTOP_GROUP = 'group_site_settings_desktop';
+	public const SETTINGS_GROUP      = 'group_ocb_deliz_cart';
+
+	/**
 	 * The theme's content column, measured on the site, per page template:
 	 * array( template => array( 'w' => column px, 'vw' => screen px ) ).
 	 */
@@ -226,37 +233,67 @@ final class Host {
 			return;
 		}
 
+		$field = array(
+			'key'           => 'field_ocb_cart_mode',
+			'label'         => __( 'How the cart is shown on a wide screen', 'oc-blocks' ),
+			'name'          => 'ocb_cart_mode',
+			'type'          => 'radio',
+			'layout'        => 'vertical',
+			'default_value' => 'open_all',
+			'instructions'  => __( 'Does not touch phones. A single page can choose differently: in the OC Blocks composer, "Page layout".', 'oc-blocks' ),
+			'choices'       => array(
+				'open_all'  => __( 'Categories and cart on the sides, on every page — the home page too', 'oc-blocks' ),
+				'open_home' => __( 'Categories and cart on the sides — but the home page runs full width, with a cart button in the header', 'oc-blocks' ),
+				'closed'    => __( 'Cart closed on every page: a button in the header opens it', 'oc-blocks' ),
+			),
+		);
+
+		// The field is registered in a group that is never shown, so that ACF
+		// can find it by key when the page is saved; where it is drawn is
+		// decided below. A field added to a stored group by a local
+		// registration would hide the group's own fields, so it is added to the
+		// list the screen draws instead.
 		acf_add_local_field_group(
 			array(
-				'key'        => 'group_ocb_deliz_cart',
-				'title'      => __( 'Cart display (desktop)', 'oc-blocks' ),
-				'menu_order' => 16,
-				'location'   => array(
-					array(
-						array(
-							'param'    => 'options_page',
-							'operator' => '==',
-							'value'    => 'site-settings',
-						),
-					),
-				),
-				'fields'     => array(
-					array(
-						'key'           => 'field_ocb_cart_mode',
-						'label'         => __( 'How the cart is shown on a wide screen', 'oc-blocks' ),
-						'name'          => 'ocb_cart_mode',
-						'type'          => 'radio',
-						'layout'        => 'vertical',
-						'default_value' => 'open_all',
-						'instructions'  => __( 'Does not touch phones. A single page can choose differently: in the OC Blocks composer, "Page layout".', 'oc-blocks' ),
-						'choices'       => array(
-							'open_all'  => __( 'Categories and cart on the sides, on every page — the home page too', 'oc-blocks' ),
-							'open_home' => __( 'Categories and cart on the sides — but the home page runs full width, with a cart button in the header', 'oc-blocks' ),
-							'closed'    => __( 'Cart closed on every page: a button in the header opens it', 'oc-blocks' ),
-						),
-					),
-				),
+				'key'      => self::SETTINGS_GROUP,
+				'title'    => __( 'Cart display (desktop)', 'oc-blocks' ),
+				'location' => array(),
+				'fields'   => array( array_merge( $field, array( 'parent' => self::SETTINGS_GROUP ) ) ),
 			)
+		);
+
+		add_filter(
+			'acf/load_fields',
+			static function ( $fields, $parent ) use ( $field ) {
+				if ( ! is_array( $fields ) || ! isset( $parent['key'] ) || self::DELIZ_DESKTOP_GROUP !== $parent['key'] || ! is_admin() ) {
+					return $fields;
+				}
+
+				$out   = array();
+				$added = false;
+
+				foreach ( $fields as $f ) {
+					$out[] = $f;
+
+					// After the main header's last field (the logo position), where the
+					// cart button lives.
+					if ( ! $added && isset( $f['key'] ) && 'field_logo_position' === $f['key'] ) {
+						$out[] = array(
+							'key'    => 'field_ocb_cart_head',
+							'label'  => __( 'Cart display', 'oc-blocks' ),
+							'name'   => '',
+							'type'   => 'message',
+							'parent' => self::DELIZ_DESKTOP_GROUP,
+						);
+						$out[] = array_merge( $field, array( 'parent' => self::DELIZ_DESKTOP_GROUP ) );
+						$added = true;
+					}
+				}
+
+				return $out;
+			},
+			10,
+			2
 		);
 	}
 

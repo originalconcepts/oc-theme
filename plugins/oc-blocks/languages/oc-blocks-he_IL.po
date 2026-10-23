@@ -1948,3 +1948,6 @@ msgstr "עמוד רגיל — קטגוריות וסל בצדדים"
 
 msgid "Standard page — cart closed (a button in the header)"
 msgstr "עמוד רגיל — הסל סגור (כפתור בהדר)"
+
+msgid "Cart display"
+msgstr "תצוגת הסל"
