@@ -1123,6 +1123,13 @@
 		}
 
 		function ask() {
+			// A hidden document gets no animation frames: paint at once, so a
+			// page scrolled by a script in the background is right when shown.
+			if ( document.hidden ) {
+				paint();
+				return;
+			}
+
 			if ( ! ticking ) {
 				ticking = true;
 				window.requestAnimationFrame( paint );
