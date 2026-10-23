@@ -262,8 +262,8 @@ final class Host {
 			)
 		);
 
-		// ACF leaves a field out of its save when the screen's own field groups
-		// do not hold it, so the value is stored from the request here (ACF has
+		// The value is stored from the request as well: the drawn field is not one
+		// of the stored group's own, and ACF is not relied on to save it (it has
 		// checked the nonce before it fires this action).
 		add_action(
 			'acf/save_post',
@@ -304,9 +304,16 @@ final class Host {
 							'label'  => __( 'Cart display', 'oc-blocks' ),
 							'name'   => '',
 							'type'   => 'message',
+							'prefix' => 'acf',
 							'parent' => self::DELIZ_DESKTOP_GROUP,
 						);
-						$out[] = array_merge( $field, array( 'parent' => self::DELIZ_DESKTOP_GROUP ) );
+						$out[] = array_merge(
+							$field,
+							array(
+								'prefix' => 'acf',
+								'parent' => self::DELIZ_DESKTOP_GROUP,
+							)
+						);
 						$added = true;
 					}
 				}
