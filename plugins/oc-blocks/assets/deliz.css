@@ -7,13 +7,14 @@
 .ocb-dz-backdrop { display: none; }
 
 @media (min-width: 992px) {
-	/* The button: the header's left box, left of the sign-in button. */
+	/* The button: first in the header's left box (a row-reverse flex, so the
+	   leftmost), beside the sign-in box and as tall as it. */
 	body.ocb-cart-closed .ocb-dz-cartbtn {
-		order: 99;
+		order: -1;
 		display: inline-flex;
 		align-items: center;
 		gap: 10px;
-		block-size: 46px;
+		block-size: 48px;
 		padding-inline: 20px;
 		border: 0;
 		border-radius: var(--radius, 10px);
