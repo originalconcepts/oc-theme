@@ -751,7 +751,7 @@ final class Host {
 		}
 
 		if ( self::is_deliz() ) {
-			if ( 'std' === $now || 'closed' === $now || 'open' === $now ) {
+			if ( 'std' === $now || 'closed' === $now ) {
 				$own = (string) get_post_meta( $page_id, self::CART_META, true );
 				$now = in_array( $own, array( 'open', 'closed' ), true ) ? $own : ( 'closed' === $now ? 'closed' : 'auto' );
 			}
