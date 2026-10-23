@@ -531,6 +531,16 @@ final class Registry {
 						'label' => __( 'Button text colour', 'oc-blocks' ),
 						'group' => 'design',
 					),
+					'corners'  => array(
+						'type'    => 'seg',
+						'label'   => __( 'Corners', 'oc-blocks' ),
+						'choices' => array(
+							'sharp' => __( 'Sharp', 'oc-blocks' ),
+							'soft'  => __( 'Softened', 'oc-blocks' ),
+						),
+						'def'     => 'sharp',
+						'group'   => 'design',
+					),
 					'fadebg'   => array(
 						'type'  => 'color',
 						'label' => __( 'The colour between slides (fade)', 'oc-blocks' ),

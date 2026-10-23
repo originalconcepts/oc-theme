@@ -321,6 +321,10 @@
 .ocb-hero--one .ocb-hero__strip,
 .ocb-hero--fade .ocb-hero__strip { overflow: hidden; }
 
+/* Softened corners: the frame is cut with the same radius as the category
+   pictures. The clip-path also reaches the fixed (parallax) picture inside. */
+.ocb-hero--c-soft .ocb-hero__strip { border-radius: 14px; clip-path: inset(0 round 14px); }
+
 .ocb-hero__slide {
 	position: relative;
 	flex: 0 0 100%;

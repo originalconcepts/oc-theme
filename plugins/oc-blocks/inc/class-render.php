@@ -717,7 +717,7 @@ final class Render {
 		// absent value means the old behaviour: the video covers the area.
 		$vcontain = isset( $s['vcover'] ) && ! $s['vcover'];
 
-		$html = '<div class="ocb-hero ocb-hero--' . esc_attr( (string) $s['effect'] ) . ' ocb-hero--pos-' . esc_attr( (string) $s['pos'] ) . ' ocb-hero--' . esc_attr( (string) $s['tone'] ) . ( $one ? ' ocb-hero--one' : '' ) . ( $vcontain ? ' ocb-hero--vcontain' : '' ) . ( 0 === absint( $s['h'] ) ? ' ocb-hero--hauto' : '' ) . ( 0 === absint( $s['hm'] ) ? ' ocb-hero--hmauto' : '' ) . '"'
+		$html = '<div class="ocb-hero ocb-hero--' . esc_attr( (string) $s['effect'] ) . ' ocb-hero--pos-' . esc_attr( (string) $s['pos'] ) . ' ocb-hero--' . esc_attr( (string) $s['tone'] ) . ( $one ? ' ocb-hero--one' : '' ) . ( $vcontain ? ' ocb-hero--vcontain' : '' ) . ( 0 === absint( $s['h'] ) ? ' ocb-hero--hauto' : '' ) . ( 0 === absint( $s['hm'] ) ? ' ocb-hero--hmauto' : '' ) . ( 'soft' === (string) ( $s['corners'] ?? '' ) ? ' ocb-hero--c-soft' : '' ) . '"'
 			. ' style="' . esc_attr( $style ) . '"'
 			. ( $one || empty( $s['auto'] ) ? '' : ' data-ocb-auto="' . absint( $s['auto'] ) . '"' ) . '>'
 			. '<div class="ocb-hero__strip">' . implode( '', $slides ) . '</div>'
