@@ -88,7 +88,8 @@ body.page .site-content.ocb-deliz-cats .main-content .right-column { display: bl
 	.ocb-deliz-cats .main-content .left-column {
 		position: fixed;
 		inset: 0 auto 0 0;
-		inline-size: min(440px, 100%);
+		box-sizing: border-box;
+		inline-size: min(480px, 100%);
 		min-inline-size: 0;
 		block-size: 100%;
 		margin: 0;
