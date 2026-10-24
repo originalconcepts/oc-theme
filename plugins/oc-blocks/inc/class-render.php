@@ -1712,7 +1712,7 @@ final class Render {
 
 				$cards .= '<div class="ocb-look__card' . ( 0 === $at ? ' is-on' : '' ) . '" data-ocb-card="' . $at . '" data-ocb-scene="' . $sc . '">'
 					. '<div class="ocb-look__cmedia">'
-					. ( '' === $img ? '' : '<a class="ocb-look__cimg" href="' . esc_url( (string) $product->get_permalink() ) . '"><img src="' . esc_url( $img ) . '" alt="" loading="lazy" decoding="async"></a>' )
+					. ( '' === $img ? '' : '<a class="ocb-look__cimg" href="' . esc_url( (string) $product->get_permalink() ) . '" aria-label="' . esc_attr( (string) $product->get_name() ) . '"><img src="' . esc_url( $img ) . '" alt="" loading="lazy" decoding="async"></a>' )
 					. $add
 					. '</div>'
 					. ( $sw_above ? $swatches : '' )
@@ -1744,11 +1744,26 @@ final class Render {
 
 			$canvas_style = ( '' !== $ard ? '--ocb-ard:' . $ard . ';' : '' ) . ( '' !== $arm ? '--ocb-arm:' . $arm . ';' : '' );
 
+			// The picture with its srcset and own size; every scene after the first waits to be needed.
+			$dsk_tag = (string) wp_get_attachment_image(
+				absint( $scene['img'] ),
+				'full',
+				false,
+				array(
+					'alt'      => '',
+					'decoding' => 'async',
+					'sizes'    => '100vw',
+					'loading'  => 0 === $sc ? 'eager' : 'lazy',
+				)
+			);
+
+			$mob_set = '' !== $mob ? (string) wp_get_attachment_image_srcset( absint( $scene['imgm'] ), 'large' ) : '';
+
 			$pics .= '<div class="ocb-look__scene' . ( 0 === $sc ? ' is-on' : '' ) . '" data-ocb-lscene="' . $sc . '">'
 				. '<div class="ocb-look__canvas"' . ( '' !== $canvas_style ? ' style="' . esc_attr( $canvas_style ) . '"' : '' ) . '>'
 				. '<picture>'
-				. ( '' === $mob ? '' : '<source media="(max-width: 782px)" srcset="' . esc_url( $mob ) . '">' )
-				. '<img src="' . esc_url( $dsk ) . '" alt="" decoding="async">'
+				. ( '' === $mob ? '' : '<source media="(max-width: 782px)" srcset="' . esc_attr( '' !== $mob_set ? $mob_set : $mob ) . '" sizes="100vw">' )
+				. ( '' !== $dsk_tag ? $dsk_tag : '<img src="' . esc_url( $dsk ) . '" alt="" decoding="async">' )
 				. '</picture>'
 				. $spots
 				. '</div>'
@@ -1796,11 +1811,20 @@ final class Render {
 	 */
 	private static function media( array $s ): string {
 		$img = static function ( int $id, string $css_class ): string {
-			$url = $id > 0 ? (string) wp_get_attachment_image_url( $id, 'full' ) : '';
+			// wp_get_attachment_image: srcset, sizes and the picture's own width/height.
+			$tag = $id > 0 ? (string) wp_get_attachment_image(
+				$id,
+				'large',
+				false,
+				array(
+					'alt'      => '',
+					'loading'  => 'lazy',
+					'decoding' => 'async',
+					'sizes'    => '(max-width: 782px) 100vw, 50vw',
+				)
+			) : '';
 
-			return '' === $url
-				? ''
-				: '<figure class="' . esc_attr( $css_class ) . '"><img src="' . esc_url( $url ) . '" alt="" loading="lazy" decoding="async"></figure>';
+			return '' === $tag ? '' : '<figure class="' . esc_attr( $css_class ) . '">' . $tag . '</figure>';
 		};
 
 		$preset = (string) $s['preset'];
@@ -1873,7 +1897,21 @@ final class Render {
 				$url  = is_array( $meta ) ? (string) $meta[0] : '';
 
 				if ( '' !== $url ) {
-					$media = '<img src="' . esc_url( $url ) . '" alt="" loading="lazy" decoding="async">';
+					$media = (string) wp_get_attachment_image(
+						(int) $step['img'],
+						'large',
+						false,
+						array(
+							'alt'      => '',
+							'loading'  => 'lazy',
+							'decoding' => 'async',
+							'sizes'    => '(max-width: 782px) 100vw, 50vw',
+						)
+					);
+
+					if ( '' === $media ) {
+						$media = '<img src="' . esc_url( $url ) . '" alt="" loading="lazy" decoding="async">';
+					}
 
 					// "Natural" takes the first picture's own proportions.
 					if ( '' === $ratio && ! empty( $meta[1] ) && ! empty( $meta[2] ) ) {
