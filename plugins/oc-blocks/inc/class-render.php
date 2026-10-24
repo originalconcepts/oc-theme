@@ -1653,6 +1653,18 @@ final class Render {
 
 				$any = true;
 				$img = $product->get_image_id() ? (string) wp_get_attachment_image_url( (int) $product->get_image_id(), 'large' ) : '';
+				// The card's picture with its srcset and own size — it is shown at most 320px wide.
+				$img_tag = $product->get_image_id() ? (string) wp_get_attachment_image(
+					(int) $product->get_image_id(),
+					'large',
+					false,
+					array(
+						'alt'      => '',
+						'loading'  => 'lazy',
+						'decoding' => 'async',
+						'sizes'    => '(max-width: 782px) 80vw, 320px',
+					)
+				) : '';
 
 				$spots .= sprintf(
 					'<button type="button" class="ocb-look__spot%s" style="--x:%d%%;--y:%d%%" data-ocb-spot="%d" aria-label="%s"><i></i></button>',
@@ -1712,7 +1724,7 @@ final class Render {
 
 				$cards .= '<div class="ocb-look__card' . ( 0 === $at ? ' is-on' : '' ) . '" data-ocb-card="' . $at . '" data-ocb-scene="' . $sc . '">'
 					. '<div class="ocb-look__cmedia">'
-					. ( '' === $img ? '' : '<a class="ocb-look__cimg" href="' . esc_url( (string) $product->get_permalink() ) . '" aria-label="' . esc_attr( (string) $product->get_name() ) . '"><img src="' . esc_url( $img ) . '" alt="" loading="lazy" decoding="async"></a>' )
+					. ( '' === $img ? '' : '<a class="ocb-look__cimg" href="' . esc_url( (string) $product->get_permalink() ) . '" aria-label="' . esc_attr( (string) $product->get_name() ) . '">' . ( '' !== $img_tag ? $img_tag : '<img src="' . esc_url( $img ) . '" alt="" loading="lazy" decoding="async">' ) . '</a>' )
 					. $add
 					. '</div>'
 					. ( $sw_above ? $swatches : '' )
@@ -1753,7 +1765,7 @@ final class Render {
 					'alt'      => '',
 					'decoding' => 'async',
 					'sizes'    => '100vw',
-					'loading'  => 0 === $sc ? 'eager' : 'lazy',
+					'loading'  => 0 === $sc && self::$first_section ? 'eager' : 'lazy',
 				)
 			);
 

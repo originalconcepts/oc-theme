@@ -28,6 +28,7 @@ for src, minifier in (
     (blocks / "blocks.css", rcssmin.cssmin),
     (blocks / "editor.js", rjsmin.jsmin),
     (blocks / "editor.css", rcssmin.cssmin),
+    (blocks / "deliz.css", rcssmin.cssmin),
 ):
     out = src.with_suffix(".min" + src.suffix)
     minified = minifier(src.read_text())

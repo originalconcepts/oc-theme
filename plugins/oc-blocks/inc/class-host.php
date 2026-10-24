@@ -367,12 +367,15 @@ final class Host {
 
 	/**
 	 * The header button's and the drawer's stylesheet (and the corner of
-	 * the newsletter field), on every page of a Deliz site.
+	 * the newsletter field), on every page of a Deliz site. A few KB, so it
+	 * goes into the page itself rather than a request that blocks the paint.
 	 */
 	public function deliz_assets(): void {
-		$css = oc_blocks_asset( 'assets/deliz.css' );
+		$css = (string) file_get_contents( OC_BLOCKS_DIR . oc_blocks_asset( 'assets/deliz.css' ) ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
 
-		wp_enqueue_style( 'oc-blocks-deliz', OC_BLOCKS_URI . $css, array(), (string) filemtime( OC_BLOCKS_DIR . $css ) );
+		wp_register_style( 'oc-blocks-deliz', false, array(), OC_BLOCKS_VERSION );
+		wp_enqueue_style( 'oc-blocks-deliz' );
+		wp_add_inline_style( 'oc-blocks-deliz', $css );
 	}
 
 	/**
