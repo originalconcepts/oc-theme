@@ -790,6 +790,17 @@
 .ocb-cats .ocb-arr--next,
 .ocb-brands .ocb-arr--next { right: -20px; }
 
+/* A full-width section has no padding of its own and clips what leaves it,
+ * so arrows hung half outside the strip were cut in two: here they sit
+ * inside the edge instead. */
+.ocb--w-full .ocb-shelf .ocb-arr--prev,
+.ocb--w-full .ocb-cats .ocb-arr--prev,
+.ocb--w-full .ocb-brands .ocb-arr--prev { left: 8px; }
+
+.ocb--w-full .ocb-shelf .ocb-arr--next,
+.ocb--w-full .ocb-cats .ocb-arr--next,
+.ocb--w-full .ocb-brands .ocb-arr--next { right: 8px; }
+
 /* A row of tiles is all picture: its middle is the middle of the row, and
    no measuring is needed to find it. */
 .ocb-brands .ocb-arr { inset-block-start: 50%; }
