@@ -2740,19 +2740,45 @@ final class Render {
 	}
 
 	/**
+	 * Section types whose rules all sit in the first half of the stylesheet.
+	 * Anything else (or a type this list has not heard of) asks for the second.
+	 */
+	private const CORE_TYPES = array( 'hero', 'content', 'products', 'categories', 'marquee', 'brands', 'posts', 'story', 'reviews', 'countdown' );
+
+	/**
+	 * Does a composed page hold a section that needs the stylesheet's second half?
+	 *
+	 * @param int $page Page id.
+	 */
+	private static function sections_need_more( int $page ): bool {
+		foreach ( Registry::sections( $page ) as $section ) {
+			if ( ! empty( $section['on'] ) && ! in_array( (string) ( $section['type'] ?? '' ), self::CORE_TYPES, true ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * The blocks' stylesheet and script, on the views that render sections:
 	 * composed pages, branch pages, and dressed category listings.
 	 */
 	public function assets(): void {
 		$need = false;
+		$more = false;
+		$page = 0;
 
 		if ( is_page() && self::is_composed( (int) get_queried_object_id() ) ) {
 			$need = true;
+			$page = (int) get_queried_object_id();
 		}
 
-		// A branch's own page dresses itself from the same stylesheet.
+		// A branch's own page dresses itself from the same stylesheet — the
+		// second half of it.
 		if ( ! $need && is_singular( Branches::CPT ) ) {
 			$need = true;
+			$more = true;
 		}
 
 		if ( ! $need && function_exists( 'is_product_category' ) && is_product_category() ) {
@@ -2761,6 +2787,10 @@ final class Render {
 				absint( get_term_meta( $term->term_id, 'oc_lobby_page', true ) ) > 0
 				|| '1' === (string) get_term_meta( $term->term_id, '_oc_ps_show', true )
 			);
+
+			if ( $need && $term instanceof \WP_Term ) {
+				$page = absint( get_term_meta( $term->term_id, 'oc_lobby_page', true ) );
+			}
 		}
 
 		// The theme's catalogue-layout slider blocks also need these assets;
@@ -2771,9 +2801,30 @@ final class Render {
 			return;
 		}
 
-		$css = oc_blocks_asset( 'assets/blocks.css' );
-		$js  = oc_blocks_asset( 'assets/blocks.js' );
-		wp_enqueue_style( 'oc-blocks', OC_BLOCKS_URI . $css, array(), (string) filemtime( OC_BLOCKS_DIR . $css ) );
+		if ( $page > 0 ) {
+			$more = self::sections_need_more( $page );
+		}
+
+		$js = oc_blocks_asset( 'assets/blocks.js' );
+
+		// The stylesheet comes in two halves (scripts/minify.py); a build that
+		// is missing or older than blocks.css (give or take the seconds an unzip
+		// takes) falls back to the whole file.
+		$src   = OC_BLOCKS_DIR . 'assets/blocks.css';
+		$core  = OC_BLOCKS_DIR . 'assets/blocks.core.min.css';
+		$later = OC_BLOCKS_DIR . 'assets/blocks.more.min.css';
+
+		if ( file_exists( $core ) && file_exists( $later ) && filemtime( $core ) + 10 >= filemtime( $src ) && filemtime( $later ) + 10 >= filemtime( $src ) ) {
+			wp_enqueue_style( 'oc-blocks', OC_BLOCKS_URI . 'assets/blocks.core.min.css', array(), (string) filemtime( $core ) );
+
+			if ( $more ) {
+				wp_enqueue_style( 'oc-blocks-more', OC_BLOCKS_URI . 'assets/blocks.more.min.css', array( 'oc-blocks' ), (string) filemtime( $later ) );
+			}
+		} else {
+			$css = oc_blocks_asset( 'assets/blocks.css' );
+			wp_enqueue_style( 'oc-blocks', OC_BLOCKS_URI . $css, array(), (string) filemtime( OC_BLOCKS_DIR . $css ) );
+		}
+
 		wp_enqueue_script(
 			'oc-blocks',
 			OC_BLOCKS_URI . $js,

@@ -1377,6 +1377,81 @@
 .ocb--ink { color: var(--ocb-ink); }
 .ocb--ink .ocb-news__mail { color: inherit; border-color: currentColor; }
 
+/* Pieces the sections above rely on but that were written beside the later
+ * blocks: the countdown (also the banner's), the editorial eyebrow (also the
+ * text block's), the reviews arrows and the centring class. */
+/* ---------- countdown ---------- */
+
+.ocb-cd { text-align: center; }
+
+.ocb-cd__cells {
+	display: inline-flex;
+	gap: clamp(18px, 4vw, 44px);
+}
+
+.ocb-cd__cell { display: grid; gap: 6px; min-inline-size: 2.4em; }
+
+.ocb-cd__n {
+	font-size: clamp(2em, 5vw, 3.4em);
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+	line-height: 1;
+}
+
+.ocb-cd--s .ocb-cd__n { font-size: clamp(1.4em, 3.4vw, 2.2em); }
+.ocb-cd--l .ocb-cd__n { font-size: clamp(2.6em, 7vw, 4.8em); }
+
+.ocb-cd__cell i { font-style: normal; font-size: .82em; opacity: .6; }
+
+.ocb-cd__done { margin: 0; font-size: 1.2em; font-weight: 600; }
+
+/* The eyebrow over a heading. */
+.ocb-ed__eyebrow {
+	display: block;
+	font-size: .8em;
+	letter-spacing: .22em;
+	text-transform: uppercase;
+	opacity: .55;
+	margin-block-end: 14px;
+}
+
+/* The reviews slider's arrows wear the same quiet circles as every
+ * other shelf on the page. */
+.ocb--reviews .ocr-arrow {
+	inline-size: 40px;
+	block-size: 40px;
+	border: 0;
+	border-radius: 50%;
+	background: rgb(255 255 255 / 92%);
+	color: var(--oc-ink, #1c1c1c);
+	box-shadow: 0 2px 12px rgb(0 0 0 / 12%);
+	display: grid;
+	place-items: center;
+	transition: opacity .15s ease, transform .15s ease;
+}
+
+.ocb--reviews .ocr-arrow:hover { transform: translateY(-50%) scale(1.06); }
+
+.ocb--reviews .ocr-arrow svg { width: 18px; height: 18px; }
+
+/* Centred stories and reviews, when asked. */
+.ocb-alignc { text-align: center; }
+
+.ocb-alignc .ocr-widget,
+.ocb-alignc > * { margin-inline: auto; }
+
+/* Inside the reviews block, the card ends where the product line ends. */
+.ocb--reviews .ocr-wcard > :last-child { margin-block-end: 0; }
+.ocb--reviews .ocr-wcard__product { padding-block-end: 0; margin-block-end: 0; }
+
+/* @split-more
+ * Everything from here on belongs to the sections that need it (shop the
+ * look, picture & words, the scrolling story, questions, featured-in,
+ * newsletter, branches, contact, icons). Pages without them are served the
+ * first half only: scripts/minify.py writes both files, Render::assets()
+ * decides which to send. A rule that a section above this line needs must
+ * stay above it. */
+
 /* ---------- shop the look ---------- */
 
 .ocb-look {
@@ -2036,14 +2111,6 @@ html.oc-look-lock body { overflow: hidden; }
 .ocb-ed--canvas .ocb-ed__media { margin-block-end: 6%; }
 
 /* The words. */
-.ocb-ed__eyebrow {
-	display: block;
-	font-size: .8em;
-	letter-spacing: .22em;
-	text-transform: uppercase;
-	opacity: .55;
-	margin-block-end: 14px;
-}
 
 .ocb-ed__h {
 	margin: 0 0 18px;
@@ -2406,31 +2473,6 @@ html.oc-look-lock body { overflow: hidden; }
 	.ocb-news { flex-direction: column; }
 }
 
-/* ---------- countdown ---------- */
-
-.ocb-cd { text-align: center; }
-
-.ocb-cd__cells {
-	display: inline-flex;
-	gap: clamp(18px, 4vw, 44px);
-}
-
-.ocb-cd__cell { display: grid; gap: 6px; min-inline-size: 2.4em; }
-
-.ocb-cd__n {
-	font-size: clamp(2em, 5vw, 3.4em);
-	font-weight: 700;
-	font-variant-numeric: tabular-nums;
-	line-height: 1;
-}
-
-.ocb-cd--s .ocb-cd__n { font-size: clamp(1.4em, 3.4vw, 2.2em); }
-.ocb-cd--l .ocb-cd__n { font-size: clamp(2.6em, 7vw, 4.8em); }
-
-.ocb-cd__cell i { font-style: normal; font-size: .82em; opacity: .6; }
-
-.ocb-cd__done { margin: 0; font-size: 1.2em; font-weight: 600; }
-
 /* ---------- branches ---------- */
 
 .ocb-br--map {
@@ -2751,34 +2793,6 @@ html.oc-look-lock body { overflow: hidden; }
 
 
 
-/* The reviews slider's arrows wear the same quiet circles as every
- * other shelf on the page. */
-.ocb--reviews .ocr-arrow {
-	inline-size: 40px;
-	block-size: 40px;
-	border: 0;
-	border-radius: 50%;
-	background: rgb(255 255 255 / 92%);
-	color: var(--oc-ink, #1c1c1c);
-	box-shadow: 0 2px 12px rgb(0 0 0 / 12%);
-	display: grid;
-	place-items: center;
-	transition: opacity .15s ease, transform .15s ease;
-}
-
-.ocb--reviews .ocr-arrow:hover { transform: translateY(-50%) scale(1.06); }
-
-.ocb--reviews .ocr-arrow svg { width: 18px; height: 18px; }
-
-/* Centred stories and reviews, when asked. */
-.ocb-alignc { text-align: center; }
-
-.ocb-alignc .ocr-widget,
-.ocb-alignc > * { margin-inline: auto; }
-
-/* Inside the reviews block, the card ends where the product line ends. */
-.ocb--reviews .ocr-wcard > :last-child { margin-block-end: 0; }
-.ocb--reviews .ocr-wcard__product { padding-block-end: 0; margin-block-end: 0; }
 
 /* ---------- a branch's own page ---------- */
 

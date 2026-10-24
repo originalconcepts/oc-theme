@@ -33,3 +33,14 @@ for src, minifier in (
     minified = minifier(src.read_text())
     out.write_text(minified)
     print(f"{out.name}: {src.stat().st_size // 1024}KB -> {len(minified) // 1024}KB")
+
+# OC Blocks' stylesheet in two halves. Pages whose sections need only the
+# first half (banner, text, shelves, posts, reviews...) are not sent the other
+# (shop the look, scrolling story, forms...). The marker sits in blocks.css.
+full = (blocks / "blocks.css").read_text()
+marker = "/* @split-more"
+cut = full.index(marker)
+for name, part in (("blocks.core.min.css", full[:cut]), ("blocks.more.min.css", full[cut:])):
+    minified = rcssmin.cssmin(part)
+    (blocks / name).write_text(minified)
+    print(f"{name}: {len(minified) // 1024}KB")
