@@ -34,13 +34,22 @@ for src, minifier in (
     out.write_text(minified)
     print(f"{out.name}: {src.stat().st_size // 1024}KB -> {len(minified) // 1024}KB")
 
-# OC Blocks' stylesheet in two halves. Pages whose sections need only the
-# first half (banner, text, shelves, posts, reviews...) are not sent the other
-# (shop the look, scrolling story, forms...). The marker sits in blocks.css.
-full = (blocks / "blocks.css").read_text()
-marker = "/* @split-more"
-cut = full.index(marker)
-for name, part in (("blocks.core.min.css", full[:cut]), ("blocks.more.min.css", full[cut:])):
+# OC Blocks' stylesheet in pieces: the first half every composed page needs,
+# and one file per chunk (shop the look, picture & words, ...) for the pages
+# whose sections need it. A line of the form "/* @chunk name */" in blocks.css
+# opens a chunk; the same name may open it again further down.
+import re
+import sys
+
+sys.path.insert(0, str(repo / "scripts"))
+from blocks_chunks import split_blocks_css  # noqa: E402
+
+core, chunks = split_blocks_css((blocks / "blocks.css").read_text())
+
+for stale in blocks.glob("blocks.*.min.css"):
+    stale.unlink()
+
+for name, part in [("core", core)] + sorted(chunks.items()):
     minified = rcssmin.cssmin(part)
-    (blocks / name).write_text(minified)
-    print(f"{name}: {len(minified) // 1024}KB")
+    (blocks / f"blocks.{name}.min.css").write_text(minified)
+    print(f"blocks.{name}.min.css: {len(minified) / 1024:.1f}KB")

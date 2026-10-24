@@ -21,6 +21,9 @@ jobs:
       - name: Run forbidden-pattern guards
         run: bash tools/forbidden.sh
 
+      - name: OC Blocks stylesheet chunks match the markup
+        run: python3 scripts/check-blocks-css.py
+
   php:
     name: PHP ${{ matrix.php }}
     runs-on: ubuntu-latest

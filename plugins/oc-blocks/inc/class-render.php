@@ -2740,24 +2740,53 @@ final class Render {
 	}
 
 	/**
-	 * Section types whose rules all sit in the first half of the stylesheet.
-	 * Anything else (or a type this list has not heard of) asks for the second.
+	 * Section types whose rules all sit in the stylesheet's first half.
 	 */
 	private const CORE_TYPES = array( 'hero', 'content', 'products', 'categories', 'marquee', 'brands', 'posts', 'story', 'reviews', 'countdown' );
 
 	/**
-	 * Does a composed page hold a section that needs the stylesheet's second half?
+	 * The stylesheet chunks (assets/blocks.<name>.min.css) a section type needs
+	 * beyond the first half. A type in neither list is sent every chunk.
+	 * scripts/check-blocks-css.py checks this against the markup.
+	 */
+	private const TYPE_CHUNKS = array(
+		'look'     => array( 'look' ),
+		'media'    => array( 'ed' ),
+		'scrolly'  => array( 'sc' ),
+		'faq'      => array( 'info' ),
+		'logos'    => array( 'info' ),
+		'news'     => array( 'info', 'forms' ),
+		'branches' => array( 'branches' ),
+		'contact'  => array( 'contact', 'forms' ),
+		'icons'    => array( 'icons' ),
+	);
+
+	private const ALL_CHUNKS = array( 'look', 'ed', 'sc', 'info', 'branches', 'contact', 'forms', 'icons' );
+
+	/**
+	 * The chunks a composed page's sections ask for.
 	 *
 	 * @param int $page Page id.
+	 * @return string[]
 	 */
-	private static function sections_need_more( int $page ): bool {
+	private static function chunks_for( int $page ): array {
+		$out = array();
+
 		foreach ( Registry::sections( $page ) as $section ) {
-			if ( ! empty( $section['on'] ) && ! in_array( (string) ( $section['type'] ?? '' ), self::CORE_TYPES, true ) ) {
-				return true;
+			if ( empty( $section['on'] ) ) {
+				continue;
+			}
+
+			$type = (string) ( $section['type'] ?? '' );
+
+			if ( isset( self::TYPE_CHUNKS[ $type ] ) ) {
+				$out = array_merge( $out, self::TYPE_CHUNKS[ $type ] );
+			} elseif ( ! in_array( $type, self::CORE_TYPES, true ) ) {
+				return self::ALL_CHUNKS;
 			}
 		}
 
-		return false;
+		return array_values( array_unique( $out ) );
 	}
 
 	/**
@@ -2765,9 +2794,9 @@ final class Render {
 	 * composed pages, branch pages, and dressed category listings.
 	 */
 	public function assets(): void {
-		$need = false;
-		$more = false;
-		$page = 0;
+		$need   = false;
+		$chunks = array();
+		$page   = 0;
 
 		if ( is_page() && self::is_composed( (int) get_queried_object_id() ) ) {
 			$need = true;
@@ -2775,10 +2804,10 @@ final class Render {
 		}
 
 		// A branch's own page dresses itself from the same stylesheet — the
-		// second half of it.
+		// branches chunk of it.
 		if ( ! $need && is_singular( Branches::CPT ) ) {
-			$need = true;
-			$more = true;
+			$need   = true;
+			$chunks = array( 'branches' );
 		}
 
 		if ( ! $need && function_exists( 'is_product_category' ) && is_product_category() ) {
@@ -2802,29 +2831,40 @@ final class Render {
 		}
 
 		if ( $page > 0 ) {
-			$more = self::sections_need_more( $page );
+			$chunks = self::chunks_for( $page );
 		}
 
-		$js = oc_blocks_asset( 'assets/blocks.js' );
-
-		// The stylesheet comes in two halves (scripts/minify.py); a build that
-		// is missing or older than blocks.css (give or take the seconds an unzip
-		// takes) falls back to the whole file.
+		// The stylesheet comes in pieces (scripts/minify.py): a first half and a
+		// chunk per later block. A build that is missing a piece, or older than
+		// blocks.css (give or take the seconds an unzip takes), falls back to the
+		// whole file.
 		$src   = OC_BLOCKS_DIR . 'assets/blocks.css';
-		$core  = OC_BLOCKS_DIR . 'assets/blocks.core.min.css';
-		$later = OC_BLOCKS_DIR . 'assets/blocks.more.min.css';
+		$parts = array_merge( array( 'core' ), self::ALL_CHUNKS );
+		$ok    = true;
 
-		if ( file_exists( $core ) && file_exists( $later ) && filemtime( $core ) + 10 >= filemtime( $src ) && filemtime( $later ) + 10 >= filemtime( $src ) ) {
+		foreach ( $parts as $name ) {
+			$file = OC_BLOCKS_DIR . 'assets/blocks.' . $name . '.min.css';
+
+			if ( ! file_exists( $file ) || filemtime( $file ) + 10 < filemtime( $src ) ) {
+				$ok = false;
+				break;
+			}
+		}
+
+		if ( $ok ) {
+			$core = OC_BLOCKS_DIR . 'assets/blocks.core.min.css';
 			wp_enqueue_style( 'oc-blocks', OC_BLOCKS_URI . 'assets/blocks.core.min.css', array(), (string) filemtime( $core ) );
 
-			if ( $more ) {
-				wp_enqueue_style( 'oc-blocks-more', OC_BLOCKS_URI . 'assets/blocks.more.min.css', array( 'oc-blocks' ), (string) filemtime( $later ) );
+			foreach ( $chunks as $name ) {
+				$file = OC_BLOCKS_DIR . 'assets/blocks.' . $name . '.min.css';
+				wp_enqueue_style( 'oc-blocks-' . $name, OC_BLOCKS_URI . 'assets/blocks.' . $name . '.min.css', array( 'oc-blocks' ), (string) filemtime( $file ) );
 			}
 		} else {
 			$css = oc_blocks_asset( 'assets/blocks.css' );
 			wp_enqueue_style( 'oc-blocks', OC_BLOCKS_URI . $css, array(), (string) filemtime( OC_BLOCKS_DIR . $css ) );
 		}
 
+		$js = oc_blocks_asset( 'assets/blocks.js' );
 		wp_enqueue_script(
 			'oc-blocks',
 			OC_BLOCKS_URI . $js,

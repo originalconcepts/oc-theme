@@ -1444,13 +1444,21 @@
 .ocb--reviews .ocr-wcard > :last-child { margin-block-end: 0; }
 .ocb--reviews .ocr-wcard__product { padding-block-end: 0; margin-block-end: 0; }
 
-/* @split-more
- * Everything from here on belongs to the sections that need it (shop the
- * look, picture & words, the scrolling story, questions, featured-in,
- * newsletter, branches, contact, icons). Pages without them are served the
- * first half only: scripts/minify.py writes both files, Render::assets()
- * decides which to send. A rule that a section above this line needs must
- * stay above it. */
+/* The entrance several later sections borrow (look, newsletter, forms). */
+@keyframes ocb-look-in {
+	from { opacity: 0; transform: translateY(12px); }
+}
+
+/* @chunk
+ * Below this line the stylesheet is cut into chunks, one file each
+ * (scripts/minify.py writes assets/blocks.<name>.min.css). A page is sent the
+ * first half above plus the chunks its sections need: Render::TYPE_CHUNKS says
+ * which, scripts/check-blocks-css.py keeps that list honest. A rule that a
+ * section outside a chunk needs must stay above this line.
+ * Markers: a comment that starts with the word chunk and a name opens a chunk
+ * (the same name may open it again further down). */
+
+/* @chunk look */
 
 /* ---------- shop the look ---------- */
 
@@ -1590,10 +1598,6 @@
 
 .ocb-look__card { display: none; animation: ocb-look-in .45s cubic-bezier(.22, .61, .36, 1); }
 .ocb-look__card.is-on { display: block; }
-
-@keyframes ocb-look-in {
-	from { opacity: 0; transform: translateY(12px); }
-}
 
 .ocb-look__cimg { display: block; max-inline-size: 320px; margin-inline: auto; }
 
@@ -2039,6 +2043,8 @@ html.oc-look-lock body { overflow: hidden; }
 	.ocb-look__arrs { display: none; }
 }
 
+/* @chunk ed */
+
 /* ---------- picture & words: the editorial split ---------- */
 
 .ocb-ed {
@@ -2138,6 +2144,8 @@ html.oc-look-lock body { overflow: hidden; }
 
 	.ocb-ed__text { max-inline-size: none; }
 }
+
+/* @chunk sc */
 
 /* ---------- the scrolling story ---------- */
 
@@ -2339,6 +2347,8 @@ html.oc-look-lock body { overflow: hidden; }
 	.ocb-sc__step:last-child { min-block-size: 62vh; }
 }
 
+/* @chunk info */
+
 /* ---------- questions & answers ---------- */
 
 .ocb-faq { max-inline-size: 760px; margin-inline: auto; }
@@ -2453,14 +2463,6 @@ html.oc-look-lock body { overflow: hidden; }
 .ocb-news__go { flex: 0 0 auto; cursor: pointer; border: 0; font: inherit; }
 
 /* The trap: a field only a robot can reach. */
-.ocb-news__trap {
-	position: absolute;
-	inline-size: 1px;
-	block-size: 1px;
-	margin: -1px;
-	overflow: hidden;
-	clip-path: inset(50%);
-}
 
 .ocb-news.is-done .ocb-news__mail,
 .ocb-news.is-done .ocb-news__go { display: none; }
@@ -2472,6 +2474,8 @@ html.oc-look-lock body { overflow: hidden; }
 @media (max-width: 560px) {
 	.ocb-news { flex-direction: column; }
 }
+
+/* @chunk branches */
 
 /* ---------- branches ---------- */
 
@@ -2620,6 +2624,8 @@ html.oc-look-lock body { overflow: hidden; }
 	block-size: min(64vh, 520px);
 	border: 0;
 }
+
+/* @chunk contact */
 
 /* ---------- contact / leads form ---------- */
 
@@ -2783,6 +2789,8 @@ html.oc-look-lock body { overflow: hidden; }
 	.ocb-lead__f--half { grid-column: 1 / -1; }
 }
 
+/* @chunk branches */
+
 @media (max-width: 782px) {
 	.ocb-br--map { grid-template-columns: 1fr; }
 
@@ -2793,6 +2801,8 @@ html.oc-look-lock body { overflow: hidden; }
 
 
 
+
+/* @chunk branches */
 
 /* ---------- a branch's own page ---------- */
 
@@ -2956,6 +2966,8 @@ html.oc-look-lock body { overflow: hidden; }
 }
 
 
+/* @chunk icons */
+
 /* ---------- icon columns ---------- */
 
 .ocb-ico {
@@ -3069,6 +3081,18 @@ html.oc-look-lock body { overflow: hidden; }
 	@keyframes ocb-ico-out {
 		to { opacity: 0; transform: translateY(-40px); }
 	}
+}
+
+/* @chunk forms */
+
+/* The contact form and the newsletter share these (and the honeypot). */
+.ocb-news__trap {
+	position: absolute;
+	inline-size: 1px;
+	block-size: 1px;
+	margin: -1px;
+	overflow: hidden;
+	clip-path: inset(50%);
 }
 
 .ocb-lead__fail { margin: 10px 0 0; font-size: .9rem; color: #b4453c; }
