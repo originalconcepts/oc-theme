@@ -17213,10 +17213,7 @@ a.oc-wlp__tool { display: inline-flex; align-items: center; text-decoration: non
 	color: #fff;
 }
 
-/* The bubble's tail and thick ring put its weight low and to the left: measured,
- * the centre of the ink sits .74 of 24 below and .19 left of the middle. Moved
- * back by that much, so it reads as centred and not just as boxed-in-centre. */
-.oc-fl--wa svg { display: block; flex: none; inline-size: 32px; block-size: 32px; translate: .25px -1px; }
+.oc-fl--wa svg { display: block; flex: none; inline-size: 34px; block-size: 34px; }
 .oc-fl--wa:hover { filter: brightness(1.06); }
 
 /* The rectangle: words, then the icon, left to right whatever the page's
@@ -17237,7 +17234,7 @@ a.oc-wlp__tool { display: inline-flex; align-items: center; text-decoration: non
 	white-space: nowrap;
 }
 
-.oc-fl--pill svg { inline-size: 28px; block-size: 28px; translate: .22px -.86px; }
+.oc-fl--pill svg { inline-size: 28px; block-size: 28px; }
 
 /* A bar of the product page sits along the bottom edge: everything floating
  * stands on top of it while it shows. */

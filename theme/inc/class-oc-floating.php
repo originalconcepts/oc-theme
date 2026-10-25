@@ -140,7 +140,8 @@ final class Floating {
 		return '<a class="oc-fl oc-fl--wa' . ( $pill ? ' oc-fl--pill' : '' ) . ' oc-fl--' . esc_attr( self::side( $s['wa_float_side'], 'right' ) ) . '" data-oc-wa data-base="' . esc_url( $base ) . '" data-text="' . esc_attr( $text ) . '"' . ( $url ? ' data-url="1"' : '' )
 			. ' href="' . esc_url( $base . '?text=' . rawurlencode( $text ) ) . '" target="_blank" rel="noopener" style="' . esc_attr( self::vars( self::px( $s['wa_float_bd'], 24 ), self::px( $s['wa_float_bm'], 16 ) ) ) . '" aria-label="' . esc_attr( $name ) . '">'
 			. ( $pill ? '<span class="oc-fl__t" dir="auto">' . esc_html( $label ) . '</span>' : '' )
-			. Contact::icon( 'whatsapp' )
+			// Cropped to the bubble itself (the icon's own square has a margin), so it is centred by its edges and fills the button.
+			. str_replace( 'viewBox="0 0 24 24"', 'viewBox="3 3 18 18"', Contact::icon( 'whatsapp' ) )
 			. '</a>';
 	}
 
@@ -195,7 +196,18 @@ final class Floating {
 		// so the three floating things on a page can be set not to meet.
 		echo '<style id="oc-a11y-widget">.userway_buttons_wrapper{top:auto!important;' . esc_html( $other ) . ':auto!important;' . esc_html( $side ) . ':20px!important;bottom:calc(' . (int) $desk . 'px + var(--oc-fl-lift,0px))!important}'
 			. '@media(max-width:900px){.userway_buttons_wrapper{' . esc_html( $side ) . ':14px!important;bottom:calc(' . (int) $mob . 'px + var(--oc-fl-lift,0px))!important}}</style>' . "\n";
-		echo '<script data-account="' . esc_attr( $account ) . '"' . ( '' !== $color ? ' data-color="' . esc_attr( $color ) . '"' : '' ) . ' src="https://cdn.userway.org/widget.js" defer></script>' . "\n";
+		// Some 150KB of script and an uncached call to the vendor's server: loaded on the visitor's
+		// first touch, key or scroll — or after four seconds, whichever is first — instead of in the
+		// page's own load. A visitor who needs the widget is using the page, so it is there for them.
+		$config = array( 'account' => $account );
+
+		if ( '' !== $color ) {
+			$config['color'] = $color;
+		}
+
+		echo '<script id="oc-a11y-loader">(function(){var d=document,l=0,go=function(){if(l)return;l=1;window._userway_config=' . wp_json_encode( $config ) . ';var s=d.createElement("script");s.src="https://cdn.userway.org/widget.js";s.async=true;d.body.appendChild(s)};'
+			. '["pointerdown","keydown","scroll","touchstart","mousemove"].forEach(function(e){addEventListener(e,go,{once:true,passive:true})});'
+			. 'addEventListener("load",function(){setTimeout(go,4000)})})()</script>' . "\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- constant script; the config is JSON-encoded from a sanitised id and colour.
 	}
 
 	/**
