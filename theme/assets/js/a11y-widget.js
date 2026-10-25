@@ -117,6 +117,78 @@
 		}
 	}
 
+	/* ---------- high contrast ----------
+	 * What had a background of its own keeps one (black); the rest goes
+	 * see-through. Measured with the switch off — under it every
+	 * background reads as none — and switched back on in the same moment,
+	 * so nothing paints in between. */
+
+	var bgWatch = null;
+	var bgTimer = 0;
+	var bgQueue = [];
+
+	function markBg( list ) {
+		var on = html.classList.contains( 'oc-a11y-contrast' );
+
+		html.classList.remove( 'oc-a11y-contrast' );
+
+		[].forEach.call( list, function ( el ) {
+			if ( 1 !== el.nodeType || el.closest( '[data-oc-a11yw]' ) ) {
+				return;
+			}
+
+			var cs = getComputedStyle( el );
+			var has = 'none' !== cs.backgroundImage || ! /^(transparent|rgba\(0, 0, 0, 0\))$/.test( cs.backgroundColor );
+
+			if ( has ) {
+				el.setAttribute( 'data-oc-a11y-bg', '' );
+			} else {
+				el.removeAttribute( 'data-oc-a11y-bg' );
+			}
+		} );
+
+		if ( on ) {
+			html.classList.add( 'oc-a11y-contrast' );
+		}
+	}
+
+	function contrast( on ) {
+		if ( bgWatch ) {
+			bgWatch.disconnect();
+			bgWatch = null;
+		}
+
+		if ( ! on ) {
+			return;
+		}
+
+		markBg( document.body.querySelectorAll( '*' ) );
+
+		// A drawer's contents, the next page of the catalogue: measured in
+		// batches as they arrive.
+		if ( window.MutationObserver ) {
+			bgWatch = new MutationObserver( function ( list ) {
+				list.forEach( function ( m ) {
+					[].forEach.call( m.addedNodes, function ( n ) {
+						if ( 1 === n.nodeType ) {
+							bgQueue.push( n );
+							[].push.apply( bgQueue, n.querySelectorAll( '*' ) );
+						}
+					} );
+				} );
+
+				clearTimeout( bgTimer );
+				bgTimer = setTimeout( function () {
+					var batch = bgQueue;
+
+					bgQueue = [];
+					markBg( batch );
+				}, 150 );
+			} );
+			bgWatch.observe( document.body, { childList: true, subtree: true } );
+		}
+	}
+
 	/* ---------- stop the movement ---------- */
 
 	var pressed = [];
@@ -234,6 +306,11 @@
 
 			st[ f ] = ! st[ f ];
 			save();
+
+			if ( 'contrast' === f ) {
+				contrast( st[ f ] );
+			}
+
 			paint();
 
 			if ( 'still' === f ) {
@@ -267,6 +344,10 @@
 		if ( had.still ) {
 			still( false );
 		}
+
+		if ( had.contrast ) {
+			contrast( false );
+		}
 	} );
 
 	paint();
@@ -275,6 +356,10 @@
 	// buttons are written by deferred scripts, which have all run by the
 	// time the document is ready.
 	function restore() {
+		if ( st.contrast ) {
+			contrast( true );
+		}
+
 		if ( st.size ) {
 			size( st.size );
 		}

@@ -170,10 +170,17 @@
 
 /* ---------- what the adjustments do ---------- */
 
-/* High contrast: white words on black, yellow links; pictures stay. */
-html.oc-a11y-contrast body,
+/* High contrast: white words on black, yellow links; pictures stay.
+ * Painting every element black would turn the page's invisible layers —
+ * a closed drawer, an overlay waiting its turn — into black sheets over
+ * everything. So everything is made see-through on a black page, and only
+ * what really had a background of its own (the script marks it with
+ * data-oc-a11y-bg, measured before the switch) is painted black. */
+html.oc-a11y-contrast,
+html.oc-a11y-contrast body { background: #000 !important; color: #fff !important; }
+
 html.oc-a11y-contrast body *:not(img):not(video):not(picture):not(svg):not(svg *):not(iframe):not(canvas) {
-	background-color: #000 !important;
+	background-color: transparent !important;
 	background-image: none !important;
 	color: #fff !important;
 	border-color: #fff !important;
@@ -181,8 +188,10 @@ html.oc-a11y-contrast body *:not(img):not(video):not(picture):not(svg):not(svg *
 	text-shadow: none !important;
 }
 
+html.oc-a11y-contrast body [data-oc-a11y-bg]:not(img):not(video):not(picture):not(svg):not(iframe) { background-color: #000 !important; }
 html.oc-a11y-contrast body a,
 html.oc-a11y-contrast body a *:not(svg):not(svg *) { color: #ffeb3b !important; }
+html.oc-a11y-contrast .oc-a11yw__panel { background-color: #000 !important; outline: 2px solid #fff; }
 html.oc-a11y-contrast .oc-a11yw__opt[aria-pressed="true"] { outline: 3px solid #ffeb3b !important; outline-offset: -3px; }
 html.oc-a11y-contrast ::placeholder { color: #ccc !important; }
 

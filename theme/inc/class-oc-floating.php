@@ -298,9 +298,9 @@ final class Floating {
 				<div class="oc-a11yw__body">
 					<div class="oc-a11yw__size" role="group" aria-labelledby="oc-a11yw-size">
 						<span class="oc-a11yw__size-l" id="oc-a11yw-size"><?php esc_html_e( 'Text size', 'oc-theme' ); ?></span>
-						<button type="button" data-a11y-size="-1" aria-label="<?php esc_attr_e( 'Smaller text', 'oc-theme' ); ?>">A&minus;</button>
+						<button type="button" dir="ltr" data-a11y-size="-1" aria-label="<?php esc_attr_e( 'Smaller text', 'oc-theme' ); ?>">A&minus;</button>
 						<output data-a11y-out aria-live="polite">100%</output>
-						<button type="button" data-a11y-size="1" aria-label="<?php esc_attr_e( 'Larger text', 'oc-theme' ); ?>">A+</button>
+						<button type="button" dir="ltr" data-a11y-size="1" aria-label="<?php esc_attr_e( 'Larger text', 'oc-theme' ); ?>">A+</button>
 					</div>
 					<div class="oc-a11yw__grid">
 						<?php foreach ( $opts as $key => $opt ) : ?>
