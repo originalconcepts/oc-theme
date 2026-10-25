@@ -63,6 +63,13 @@ final class Floating {
 	}
 
 	/**
+	 * The words on the rectangular button when the shop wrote none.
+	 */
+	public static function default_label(): string {
+		return __( 'Need help?', 'oc-theme' );
+	}
+
+	/**
 	 * Everything the front end adds, once, at the end of the page.
 	 */
 	public function footer(): void {
@@ -125,8 +132,14 @@ final class Floating {
 		$base = 'https://wa.me/' . $digits;
 		$url  = ! empty( $s['wa_float_url'] );
 
-		return '<a class="oc-fl oc-fl--wa oc-fl--' . esc_attr( self::side( $s['wa_float_side'], 'right' ) ) . '" data-oc-wa data-base="' . esc_url( $base ) . '" data-text="' . esc_attr( $text ) . '"' . ( $url ? ' data-url="1"' : '' )
-			. ' href="' . esc_url( $base . '?text=' . rawurlencode( $text ) ) . '" target="_blank" rel="noopener" style="' . esc_attr( self::vars( self::px( $s['wa_float_bd'], 24 ), self::px( $s['wa_float_bm'], 16 ) ) ) . '" aria-label="' . esc_attr__( 'Chat with us on WhatsApp', 'oc-theme' ) . '">'
+		$pill  = 'pill' === $s['wa_float_shape'];
+		$label = trim( (string) $s['wa_float_label'] );
+		$label = '' !== $label ? $label : self::default_label();
+		$name  = $pill ? $label . ' — ' . __( 'WhatsApp', 'oc-theme' ) : __( 'Chat with us on WhatsApp', 'oc-theme' );
+
+		return '<a class="oc-fl oc-fl--wa' . ( $pill ? ' oc-fl--pill' : '' ) . ' oc-fl--' . esc_attr( self::side( $s['wa_float_side'], 'right' ) ) . '" data-oc-wa data-base="' . esc_url( $base ) . '" data-text="' . esc_attr( $text ) . '"' . ( $url ? ' data-url="1"' : '' )
+			. ' href="' . esc_url( $base . '?text=' . rawurlencode( $text ) ) . '" target="_blank" rel="noopener" style="' . esc_attr( self::vars( self::px( $s['wa_float_bd'], 24 ), self::px( $s['wa_float_bm'], 16 ) ) ) . '" aria-label="' . esc_attr( $name ) . '">'
+			. ( $pill ? '<span class="oc-fl__t" dir="auto">' . esc_html( $label ) . '</span>' : '' )
 			. Contact::icon( 'whatsapp' )
 			. '</a>';
 	}
@@ -194,6 +207,8 @@ final class Floating {
 		return array(
 			'wa_float'        => 0,
 			'wa_float_text'   => '',
+			'wa_float_shape'  => 'round',
+			'wa_float_label'  => '',
 			'wa_float_url'    => 1,
 			'wa_float_side'   => 'right',
 			'wa_float_bd'     => 24,
@@ -227,6 +242,8 @@ final class Floating {
 		return array(
 			'wa_float'        => empty( $_POST['wa_float'] ) ? 0 : 1,
 			'wa_float_text'   => mb_substr( sanitize_textarea_field( $post( 'wa_float_text' ) ), 0, 300 ),
+			'wa_float_shape'  => 'pill' === $post( 'wa_float_shape' ) ? 'pill' : 'round',
+			'wa_float_label'  => mb_substr( sanitize_text_field( $post( 'wa_float_label' ) ), 0, 40 ),
 			'wa_float_url'    => empty( $_POST['wa_float_url'] ) ? 0 : 1,
 			'wa_float_side'   => self::side( $post( 'wa_float_side' ), 'right' ),
 			'wa_float_bd'     => self::px( $post( 'wa_float_bd' ), 24 ),
@@ -291,6 +308,21 @@ final class Floating {
 					<?php if ( '' === Contact::wa_digits( Contact::whatsapp() ) ) : ?>
 						<p class="description" style="color:#b32d2e"><?php esc_html_e( 'Fill in the WhatsApp number above first — without it the button does not appear.', 'oc-theme' ); ?></p>
 					<?php endif; ?>
+				</td>
+			</tr>
+			<tr>
+				<th scope="row"><?php esc_html_e( 'Shape', 'oc-theme' ); ?></th>
+				<td>
+					<label><input type="radio" name="wa_float_shape" value="round" <?php checked( 'pill' !== $s['wa_float_shape'] ); ?> onchange="document.getElementById('oc-wa-label-row').hidden=true" /> <?php esc_html_e( 'Round — the icon alone', 'oc-theme' ); ?></label>
+					&nbsp;
+					<label><input type="radio" name="wa_float_shape" value="pill" <?php checked( 'pill' === $s['wa_float_shape'] ); ?> onchange="document.getElementById('oc-wa-label-row').hidden=false" /> <?php esc_html_e( 'Rectangle — words beside the icon', 'oc-theme' ); ?></label>
+				</td>
+			</tr>
+			<tr id="oc-wa-label-row" <?php echo 'pill' === $s['wa_float_shape'] ? '' : 'hidden'; ?>>
+				<th scope="row"><label for="oc-wa-label"><?php esc_html_e( 'Words on the button', 'oc-theme' ); ?></label></th>
+				<td>
+					<input type="text" id="oc-wa-label" name="wa_float_label" maxlength="40" value="<?php echo esc_attr( (string) $s['wa_float_label'] ); ?>" placeholder="<?php echo esc_attr( self::default_label() ); ?>" class="regular-text" />
+					<p class="description"><?php esc_html_e( 'Shown to the left of the icon. Empty = the sentence shown in grey.', 'oc-theme' ); ?></p>
 				</td>
 			</tr>
 			<tr>

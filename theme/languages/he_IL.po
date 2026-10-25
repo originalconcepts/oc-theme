@@ -14636,3 +14636,18 @@ msgstr "מרחק מהתחתית — טלפון (px)"
 
 msgid "Raise it when another floating button — WhatsApp, the accessibility widget — sits in the same corner."
 msgstr "מעלים אותו כשכפתור צף אחר — וואטסאפ, רכיב הנגישות — יושב באותה פינה."
+
+msgid "Need help?"
+msgstr "צריכים עזרה?"
+
+msgid "Round — the icon alone"
+msgstr "עגול — האייקון לבד"
+
+msgid "Rectangle — words beside the icon"
+msgstr "מלבן — טקסט ליד האייקון"
+
+msgid "Words on the button"
+msgstr "הטקסט על הכפתור"
+
+msgid "Shown to the left of the icon. Empty = the sentence shown in grey."
+msgstr "מוצג משמאל לאייקון. ריק = המשפט שמופיע באפור."
