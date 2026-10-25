@@ -214,11 +214,15 @@ html.oc-a11y-font body *:not(svg):not(svg *) {
 	letter-spacing: .01em !important;
 }
 
-/* Nothing moves: animations hold where they are, transitions are instant. */
+/* Nothing moves. An animation is not frozen where it stands — one that
+ * brings words in from nothing would hold them invisible — it finishes at
+ * once, in its final state, and runs no more. */
 html.oc-a11y-still *,
 html.oc-a11y-still *::before,
 html.oc-a11y-still *::after {
-	animation-play-state: paused !important;
+	animation-delay: 0s !important;
+	animation-duration: .001ms !important;
+	animation-iteration-count: 1 !important;
 	transition: none !important;
 	scroll-behavior: auto !important;
 }
