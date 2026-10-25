@@ -261,11 +261,22 @@ final class Redirects {
 	 * Find the rule for a path: exact first, then the longest wildcard.
 	 *
 	 * @param string $path Normalised path.
+	 * @param bool   $wild Whether wildcards may answer too.
 	 * @return array{t:string,y:int,i:int}|null
 	 */
-	public static function match( string $path ) {
-		$rules = self::rules();
+	public static function match( string $path, bool $wild = true ) {
+		return self::pick( self::rules(), $path, $wild );
+	}
 
+	/**
+	 * The lookup itself, on a rulebook handed in, free of WordPress.
+	 *
+	 * @param array{exact:array<string,array{t:string,y:int,i:int}>,wild:array<int,array{s:string,t:string,y:int,i:int}>} $rules The rulebook.
+	 * @param string                                                                                                      $path  Normalised path.
+	 * @param bool                                                                                                        $wild  Whether wildcards may answer too.
+	 * @return array{t:string,y:int,i:int}|null
+	 */
+	public static function pick( array $rules, string $path, bool $wild = true ) {
 		if ( isset( $rules['exact'][ $path ] ) ) {
 			return $rules['exact'][ $path ];
 		}
@@ -278,6 +289,10 @@ final class Redirects {
 			return $rules['exact'][ $bare ];
 		}
 
+		if ( ! $wild ) {
+			return null;
+		}
+
 		foreach ( $rules['wild'] as $rule ) {
 			if ( 0 === strpos( $bare . '/', rtrim( $rule['s'], '/' ) . '/' ) ) {
 				return $rule;
@@ -288,19 +303,29 @@ final class Redirects {
 	}
 
 	/**
-	 * A redirect wins over a 404, never over a living page.
+	 * A redirect wins over a 404, never over a living page. An attachment
+	 * that is only forwarded to its file is no living page.
 	 */
 	public function route(): void {
-		if ( is_admin() || ! is_404() ) {
+		if ( is_admin() ) {
+			return;
+		}
+
+		$shadow = ! is_404() && self::attachment_shadow();
+
+		if ( ! is_404() && ! $shadow ) {
 			return;
 		}
 
 		$request = isset( $_SERVER['REQUEST_URI'] ) ? (string) wp_unslash( $_SERVER['REQUEST_URI'] ) : '/'; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
 		$path    = self::normalize( $request );
-		$rule    = self::match( $path );
+		$rule    = self::match( $path, ! $shadow );
 
 		if ( null === $rule ) {
-			$this->log_404( $path, isset( $_SERVER['HTTP_REFERER'] ) ? (string) wp_unslash( $_SERVER['HTTP_REFERER'] ) : '' ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+			if ( ! $shadow ) {
+				$this->log_404( $path, isset( $_SERVER['HTTP_REFERER'] ) ? (string) wp_unslash( $_SERVER['HTTP_REFERER'] ) : '' ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+			}
+
 			return;
 		}
 
@@ -331,24 +356,57 @@ final class Redirects {
 	}
 
 	/**
+	 * Whether this request is an attachment standing on an address that
+	 * is not really a page.
+	 *
+	 * An image uploaded while a page was open belongs to it, so a logo
+	 * uploaded to the brands page answers at /brands/<name>/ — the very
+	 * address an old site's brand archive had. With attachment pages off
+	 * (the default since WordPress 6.4) WordPress only forwards such an
+	 * address to the file, so an exact rule for it may speak first.
+	 * Wildcards never do: a net is for 404s alone.
+	 */
+	private static function attachment_shadow(): bool {
+		return is_attachment() && ! get_option( 'wp_attachment_pages_enabled' );
+	}
+
+	/**
 	 * A chain of rules shortens to its final stop.
 	 *
 	 * @param string $target First target.
 	 */
 	public static function resolve_chain( string $target ): string {
+		return self::follow( self::rules(), $target, array( self::class, 'normalize' ), array( self::class, 'is_live' ) );
+	}
+
+	/**
+	 * The chain walk itself, free of WordPress.
+	 *
+	 * Only exact rules are followed. A wildcard is a net for addresses that
+	 * answer 404, and a target is an address somebody chose: following the
+	 * net from it sent every live category under /product-category/* to the
+	 * net's own target. A hop also stops on an address that lives again — a
+	 * rule left behind for it no longer speaks for it.
+	 *
+	 * @param array{exact:array<string,array{t:string,y:int,i:int}>,wild:array<int,array{s:string,t:string,y:int,i:int}>} $rules     The rulebook.
+	 * @param string                                                                                                      $target    First target.
+	 * @param callable(string):string                                                                                     $normalize URL to comparable path.
+	 * @param callable(string):bool                                                                                       $live      Whether a path is a living page.
+	 */
+	public static function follow( array $rules, string $target, callable $normalize, callable $live ): string {
 		$seen = array();
 
 		for ( $hop = 0; $hop < 5; $hop++ ) {
-			$path = self::normalize( $target );
+			$path = (string) $normalize( $target );
 
 			if ( isset( $seen[ $path ] ) ) {
 				break; // A circle: stop where we stand.
 			}
 
 			$seen[ $path ] = true;
-			$next          = self::match( $path );
+			$next          = self::pick( $rules, $path, false );
 
-			if ( null === $next || 410 === $next['y'] ) {
+			if ( null === $next || 410 === $next['y'] || $live( $path ) ) {
 				break;
 			}
 
@@ -356,6 +414,47 @@ final class Redirects {
 		}
 
 		return $target;
+	}
+
+	/**
+	 * Whether a path answers with a page of its own: a post, page or
+	 * product, or a category, tag or brand archive.
+	 *
+	 * Only asked while a chain is walked, at most five times a redirect.
+	 *
+	 * @param string $path Normalised path.
+	 */
+	public static function is_live( string $path ): bool {
+		$path = (string) strtok( $path, '?' );
+
+		if ( '' === $path || '/' === $path ) {
+			return true;
+		}
+
+		$post_id = url_to_postid( home_url( user_trailingslashit( $path ) ) );
+
+		if ( $post_id > 0 ) {
+			// An attachment with its page off is only a door to the file.
+			return 'attachment' !== get_post_type( $post_id ) || (bool) get_option( 'wp_attachment_pages_enabled' );
+		}
+
+		$slug = basename( $path );
+
+		foreach ( array_filter( array( 'product_cat', 'product_tag', 'category', Search::brand_taxonomy() ) ) as $taxonomy ) {
+			$term = get_term_by( 'slug', $slug, $taxonomy );
+
+			if ( ! $term instanceof \WP_Term ) {
+				continue;
+			}
+
+			$link = get_term_link( $term );
+
+			if ( ! is_wp_error( $link ) && self::normalize( (string) $link ) === $path ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**

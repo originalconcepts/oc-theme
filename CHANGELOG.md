@@ -103,3 +103,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/); versioning is
   reports it (`oc_site_language`, `oc_order_language`). Items are named in
   the shop's own language on every page (`oc_source_reading` around the
   read), so a report groups one product under one name.
+- Redirects: a chain is walked through exact rules only, and stops on an
+  address that lives again. A wildcard net (`/product-category/*`) used to
+  answer for every target under it, so each rule pointing at a live
+  category, product or tag landed on the net's own target instead.
+- Redirects: an exact rule now speaks for an address an attachment has taken
+  while attachment pages are off — a logo uploaded to the brands page answers
+  at `/brands/<name>/`, where an old site's brand archive stood, and was
+  forwarded to the image file. Wildcards still answer 404s alone.
