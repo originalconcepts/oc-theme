@@ -14537,3 +14537,102 @@ msgstr "נשמר ב: %s"
 
 msgid "Removed from your favourites"
 msgstr "הוסר מהמועדפים"
+
+msgid "Hi, I need help"
+msgstr "היי, אני צריך עזרה"
+
+msgid "Back to top"
+msgstr "חזרה למעלה"
+
+msgid "Chat with us on WhatsApp"
+msgstr "שיחה איתנו בוואטסאפ"
+
+msgid "Side of the screen"
+msgstr "צד במסך"
+
+msgid "Distance from the bottom"
+msgstr "מרחק מהתחתית"
+
+msgid "Computer"
+msgstr "מחשב"
+
+msgid "Raise one of the floating buttons when it sits on top of another — the back-to-top arrow, the WhatsApp button and the accessibility widget each have their own height."
+msgstr "מעלים כפתור צף כשהוא יושב על כפתור אחר — לחץ החזרה למעלה, לכפתור הוואטסאפ ולרכיב הנגישות יש לכל אחד גובה משלו."
+
+msgid "Floating WhatsApp button"
+msgstr "כפתור וואטסאפ צף"
+
+msgid "A round WhatsApp button over every page. It opens a chat with the WhatsApp number above, with the first message already written."
+msgstr "כפתור וואטסאפ עגול מעל כל עמוד. הוא פותח שיחה עם מספר הוואטסאפ שלמעלה, כשההודעה הראשונה כבר כתובה."
+
+msgid "Show the button"
+msgstr "הצגת הכפתור"
+
+msgid "Show a floating WhatsApp button"
+msgstr "להציג כפתור וואטסאפ צף"
+
+msgid "Fill in the WhatsApp number above first — without it the button does not appear."
+msgstr "קודם ממלאים את מספר הוואטסאפ שלמעלה — בלעדיו הכפתור לא מופיע."
+
+msgid "First message"
+msgstr "הודעה ראשונה"
+
+msgid "What the visitor finds written when WhatsApp opens. They can change it before sending. Empty = the sentence shown in grey."
+msgstr "מה שהמבקר מוצא כתוב כשהוואטסאפ נפתח. אפשר לשנות אותו לפני השליחה. ריק = המשפט שמופיע באפור."
+
+msgid "Add the address of the page the visitor is on to the message"
+msgstr "להוסיף להודעה את הכתובת של העמוד שבו נמצא המבקר"
+
+msgid "So you know which product or page the question is about."
+msgstr "כדי שיהיה ברור על איזה מוצר או עמוד השאלה."
+
+msgid "Accessibility widget"
+msgstr "רכיב נגישות"
+
+msgid "Show the widget"
+msgstr "הצגת הרכיב"
+
+msgid "Show the accessibility widget"
+msgstr "להציג את רכיב הנגישות"
+
+msgid "The UserWay button that lets a visitor enlarge text, raise contrast, stop animation and more. It is an adjustment on top of the site, not a replacement for the accessibility statement below."
+msgstr "כפתור UserWay שמאפשר למבקר להגדיל טקסט, להעלות ניגודיות, לעצור אנימציות ועוד. זו התאמה שמונחת מעל האתר, לא תחליף להצהרת הנגישות שלמטה."
+
+msgid "UserWay account"
+msgstr "חשבון UserWay"
+
+msgid "The account number from the UserWay script. Empty = the studio's account."
+msgstr "מספר החשבון מתוך הסקריפט של UserWay. ריק = החשבון של הסטודיו."
+
+msgid "Button colour"
+msgstr "צבע הכפתור"
+
+msgid "The widget's own colour"
+msgstr "הצבע של הרכיב עצמו"
+
+msgid "A different widget"
+msgstr "רכיב אחר"
+
+msgid "Use a different accessibility widget — paste its code"
+msgstr "להשתמש ברכיב נגישות אחר — מדביקים את הקוד שלו"
+
+msgid "Usually the code the customer's accessibility provider sent. It is added at the end of every page, and replaces the widget above while this box is ticked."
+msgstr "בדרך כלל הקוד ששלחה ספקית הנגישות של הלקוח. הוא מתווסף בסוף כל עמוד, ומחליף את הרכיב שלמעלה כל עוד התיבה מסומנת."
+
+msgid "Only an administrator can change this code."
+msgstr "רק מנהל האתר יכול לשנות את הקוד הזה."
+
+msgid "An arrow that appears after a screen of scrolling and takes the visitor back to the top of the page."
+msgstr "חץ שמופיע אחרי גלילה של מסך ומחזיר את המבקר לראש העמוד."
+
+msgid "Show the arrow"
+msgstr "להציג את החץ"
+
+msgid "Distance from the bottom — computer (px)"
+msgstr "מרחק מהתחתית — מחשב (px)"
+
+msgid "Distance from the bottom — phone (px)"
+msgstr "מרחק מהתחתית — טלפון (px)"
+
+msgid "Raise it when another floating button — WhatsApp, the accessibility widget — sits in the same corner."
+msgstr "מעלים אותו כשכפתור צף אחר — וואטסאפ, רכיב הנגישות — יושב באותה פינה."

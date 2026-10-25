@@ -48,7 +48,7 @@ final class Contact {
 
 		return wp_parse_args(
 			is_array( $saved ) ? $saved : array(),
-			array(
+			Floating::defaults() + array(
 				'phone'         => '',
 				'email'         => '',
 				'whatsapp'      => '',   // Number for a direct chat.
@@ -625,6 +625,8 @@ final class Contact {
 					</tr>
 				</table>
 
+				<?php Floating::whatsapp_section( $s ); ?>
+
 				<?php if ( class_exists( '\\OC\\Blocks\\Branches' ) ) : ?>
 					<h2><?php esc_html_e( 'Branches', 'oc-theme' ); ?></h2>
 					<table class="form-table" role="presentation">
@@ -693,6 +695,8 @@ final class Contact {
 						</td>
 					</tr>
 				</table>
+
+				<?php Floating::accessibility_section( $s ); ?>
 
 				<h2><?php esc_html_e( 'Social profiles', 'oc-theme' ); ?></h2>
 				<table class="form-table" role="presentation">
@@ -811,6 +815,8 @@ final class Contact {
 			$s[ $net ] = esc_url_raw( wp_unslash( $_POST[ $net ] ?? '' ) );
 		}
 		// phpcs:enable WordPress.Security.NonceVerification.Missing
+
+		$s = array_merge( $s, Floating::from_post( $before ) );
 
 		update_option( 'oc_contact', $s );
 

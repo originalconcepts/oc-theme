@@ -13,7 +13,7 @@ declare( strict_types = 1 );
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'OC_THEME_VERSION', '0.3.339' );
+define( 'OC_THEME_VERSION', '0.3.340' );
 define( 'OC_THEME_DIR', get_template_directory() );
 define( 'OC_THEME_URI', get_template_directory_uri() );
 define( 'OC_THEME_REPO', 'originalconcepts/oc-theme' );
@@ -147,6 +147,7 @@ require_once OC_THEME_DIR . '/inc/wishlist/class-oc-wishlist.php';
 require_once OC_THEME_DIR . '/inc/wishlist/class-oc-wishlist-front.php';
 require_once OC_THEME_DIR . '/inc/wishlist/class-oc-wishlist-admin.php';
 require_once OC_THEME_DIR . '/inc/class-oc-announce.php';
+require_once OC_THEME_DIR . '/inc/class-oc-floating.php';
 require_once OC_THEME_DIR . '/inc/class-oc-contact.php';
 require_once OC_THEME_DIR . '/inc/class-oc-thankyou.php';
 require_once OC_THEME_DIR . '/inc/class-oc-performance.php';
@@ -630,6 +631,7 @@ add_action( 'admin_notices', 'oc_dependency_notice' );
 ( new OC\Theme\Wishlist\Admin() )->register();
 ( new OC\Theme\Announce() )->register();
 ( new OC\Theme\Contact() )->register();
+( new OC\Theme\Floating() )->register();
 ( new OC\Theme\Legal\Terms() )->register();
 ( new OC\Theme\Legal\Accessibility() )->register();
 ( new OC\Theme\Thankyou() )->register();

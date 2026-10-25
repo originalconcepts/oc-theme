@@ -1642,6 +1642,50 @@ final class Customizer {
 	}
 
 	/**
+	 * The arrow that takes a visitor back to the top of a long page. Where it
+	 * stands and how high it floats are the shop's to say, since a page
+	 * often has another floating button already in that corner.
+	 *
+	 * @param \WP_Customize_Manager $c Customizer manager.
+	 */
+	private function totop_section( \WP_Customize_Manager $c ): void {
+		$id = 'oc_totop';
+
+		$c->add_section(
+			$id,
+			array(
+				'title'       => __( 'Back to top', 'oc-theme' ),
+				'description' => __( 'An arrow that appears after a screen of scrolling and takes the visitor back to the top of the page.', 'oc-theme' ),
+				'panel'       => 'oc_catalog_panel',
+				'priority'    => 16,
+			)
+		);
+
+		$on = array(
+			'setting' => 'oc_totop_on',
+			'values'  => array( '1' ),
+		);
+
+		$this->toggle( $c, 'oc_totop_on', $id, __( 'Show the arrow', 'oc-theme' ), false );
+
+		$this->choice(
+			$c,
+			'oc_totop_side',
+			$id,
+			__( 'Side of the screen', 'oc-theme' ),
+			array(
+				'right' => __( 'Right', 'oc-theme' ),
+				'left'  => __( 'Left', 'oc-theme' ),
+			),
+			'left',
+			$on
+		);
+
+		$this->number( $c, 'oc_totop_bd', $id, __( 'Distance from the bottom — computer (px)', 'oc-theme' ), 24, 0, 400, $on );
+		$this->number( $c, 'oc_totop_bm', $id, __( 'Distance from the bottom — phone (px)', 'oc-theme' ), 16, 0, 400, $on, __( 'Raise it when another floating button — WhatsApp, the accessibility widget — sits in the same corner.', 'oc-theme' ) );
+	}
+
+	/**
 	 * Catalogue: grid, ordering, page header.
 	 *
 	 * @param \WP_Customize_Manager $c     Customizer manager.
@@ -1679,6 +1723,8 @@ final class Customizer {
 				'priority'    => 14,
 			)
 		);
+
+		$this->totop_section( $c );
 
 		$subon = array(
 			'setting' => 'oc_csub_show',

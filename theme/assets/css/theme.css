@@ -17167,3 +17167,65 @@ a.oc-wlp__tool { display: inline-flex; align-items: center; text-decoration: non
 }
 
 .oc-mcart__move:disabled { opacity: .6; cursor: progress; }
+
+/* ---------- floating tools: back to top, WhatsApp ---------- */
+
+/* Left and right here are the screen's, not the reading direction's: the shop
+ * says "left" and means the left edge in Hebrew and English alike. */
+.oc-fl {
+	position: fixed;
+	z-index: 58;
+	inset-block-end: calc(var(--oc-fl-b, 24px) + var(--oc-fl-lift, 0px));
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	inline-size: 48px;
+	block-size: 48px;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	box-shadow: 0 4px 16px rgb(0 0 0 / 22%);
+	cursor: pointer;
+	text-decoration: none;
+	transition: opacity .2s ease, transform .2s ease, visibility .2s;
+}
+
+.oc-fl--left { left: 20px; }
+.oc-fl--right { right: 20px; }
+
+.oc-fl:focus-visible { outline: 3px solid var(--oc-primary); outline-offset: 3px; }
+
+.oc-fl--top {
+	background: var(--oc-ink, #111);
+	color: var(--oc-surface, #fff);
+	opacity: 0;
+	visibility: hidden;
+	transform: translateY(10px);
+}
+
+.oc-fl--top.is-on { opacity: 1; visibility: visible; transform: none; }
+.oc-fl--top:hover { transform: translateY(-2px); }
+
+.oc-fl--wa {
+	inline-size: 56px;
+	block-size: 56px;
+	background: #25d366;
+	color: #fff;
+}
+
+.oc-fl--wa svg { inline-size: 32px; block-size: 32px; }
+.oc-fl--wa:hover { filter: brightness(1.06); }
+
+/* A bar of the product page sits along the bottom edge: everything floating
+ * stands on top of it while it shows. */
+body:has(.oc-sticky-atc.is-visible) { --oc-fl-lift: 76px; }
+
+@media (max-width: 900px) {
+	.oc-fl { inset-block-end: calc(var(--oc-fl-bm, 16px) + var(--oc-fl-lift, 0px)); }
+	.oc-fl--left { left: 14px; }
+	.oc-fl--right { right: 14px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.oc-fl { transition: none; }
+}
