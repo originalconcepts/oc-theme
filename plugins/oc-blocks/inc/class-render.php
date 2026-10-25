@@ -2887,7 +2887,19 @@ final class Render {
 				'in_footer' => true,
 			)
 		);
-		wp_localize_script( 'oc-blocks', 'OCB', array( 'ajax' => admin_url( 'admin-ajax.php' ) ) );
+		wp_localize_script(
+			'oc-blocks',
+			'OCB',
+			array(
+				'ajax'  => admin_url( 'admin-ajax.php' ),
+				'pause' => array(
+					'mp' => __( 'Stop the movement', 'oc-blocks' ),
+					'mg' => __( 'Resume the movement', 'oc-blocks' ),
+					'vp' => __( 'Pause the video', 'oc-blocks' ),
+					'vg' => __( 'Play the video', 'oc-blocks' ),
+				),
+			)
+		);
 	}
 
 	/**

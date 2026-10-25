@@ -14651,3 +14651,15 @@ msgstr "הטקסט על הכפתור"
 
 msgid "Shown to the left of the icon. Empty = the sentence shown in grey."
 msgstr "מוצג משמאל לאייקון. ריק = המשפט שמופיע באפור."
+
+msgid "Stop the movement"
+msgstr "עצירת התנועה"
+
+msgid "Resume the movement"
+msgstr "הפעלת התנועה"
+
+msgid "Pause the video"
+msgstr "עצירת הווידאו"
+
+msgid "Play the video"
+msgstr "הפעלת הווידאו"

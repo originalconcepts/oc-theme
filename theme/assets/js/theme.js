@@ -193,6 +193,179 @@ window.ocA11y = ( function () {
 	}
 }() );
 
+window.ocPauseL = window.ocPauseL || ( window.ocL10n || {} ).pause;
+
+/* ---------- pause and play: anything that moves by itself ----------
+ * Whatever moves, turns or plays on its own for more than a few seconds
+ * gets a small button that stops it and starts it again (WCAG 2.2.2,
+ * "Pause, Stop, Hide"). The theme and OC Blocks each carry this same kit,
+ * since OC Blocks also runs under other themes; whichever loads first
+ * defines it and the other uses that one. */
+window.ocPause = window.ocPause || ( function () {
+	var ICON = '<svg class="ocpp__p" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg>'
+		+ '<svg class="ocpp__g" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.2v13.6L18.6 12z"/></svg>';
+	var watching = false;
+
+	function words() {
+		var l = window.ocPauseL || {};
+
+		return {
+			mp: l.mp || 'Stop the movement',
+			mg: l.mg || 'Resume the movement',
+			vp: l.vp || 'Pause the video',
+			vg: l.vg || 'Play the video'
+		};
+	}
+
+	function say( btn, paused ) {
+		var w = words();
+		var video = 'video' === btn.getAttribute( 'data-ocpp' );
+
+		btn.classList.toggle( 'is-paused', paused );
+		btn.setAttribute( 'aria-label', paused ? ( video ? w.vg : w.mg ) : ( video ? w.vp : w.mp ) );
+	}
+
+	// A button that calls back with true when it pauses, false when it plays.
+	function button( kind, cls, onToggle ) {
+		var btn = document.createElement( 'button' );
+
+		btn.type = 'button';
+		btn.className = 'ocpp' + ( cls ? ' ' + cls : '' );
+		btn.setAttribute( 'data-ocpp', kind );
+		btn.innerHTML = ICON;
+		say( btn, false );
+		btn.addEventListener( 'click', function ( e ) {
+			// It often sits on a picture that opens, zooms or links.
+			e.preventDefault();
+			e.stopPropagation();
+
+			var paused = ! btn.classList.contains( 'is-paused' );
+
+			say( btn, paused );
+			onToggle( paused );
+		} );
+
+		return btn;
+	}
+
+	// A paused video stays paused whatever else asks it to play — a slider
+	// turning to it, a card scrolling back into view — until its button
+	// plays it again.
+	function hold( v ) {
+		if ( ! v.ocppHeld ) {
+			v.ocppHeld = 1;
+			v.play = function () {
+				return Promise.resolve();
+			};
+		}
+
+		HTMLMediaElement.prototype.pause.call( v );
+	}
+
+	function release( v ) {
+		if ( v.ocppHeld ) {
+			v.ocppHeld = 0;
+			delete v.play;
+		}
+
+		var p = v.play();
+
+		if ( p && p.catch ) {
+			p.catch( function () {} );
+		}
+	}
+
+	// A muted loop that plays by itself. One with its own controls, or one
+	// a slider already answers for, is left alone.
+	function video( v ) {
+		if ( v.getAttribute( 'data-ocpp-on' ) || v.controls ) {
+			return;
+		}
+
+		var hero = v.closest( '.ocb-hero' );
+
+		if ( hero && ! hero.classList.contains( 'ocb-hero--one' ) ) {
+			return;
+		}
+
+		v.setAttribute( 'data-ocpp-on', '1' );
+
+		var host = hero || v.parentElement;
+		var bg = v.closest( '.ocb__bg' );
+		var link = host.closest( 'a' );
+
+		// A background video lies under the section's words; the button
+		// belongs to the section. Never inside a link — a button there is
+		// not allowed, and the click would follow the link.
+		if ( bg && bg.parentElement ) {
+			host = bg.parentElement;
+		} else if ( link && link.parentElement ) {
+			host = link.parentElement;
+		}
+
+		// Nor inside a part of the page hidden from screen readers (a card's
+		// picture strip): it would be a tab stop nobody can name.
+		var mute = host.closest( '[aria-hidden="true"]' );
+
+		if ( mute && mute.parentElement ) {
+			host = mute.parentElement;
+		}
+
+		if ( 'static' === getComputedStyle( host ).position ) {
+			host.style.position = 'relative';
+		}
+
+		host.appendChild( button( 'video', 'ocpp--corner' + ( 'LI' === host.tagName ? ' ocpp--top' : '' ), function ( paused ) {
+			if ( paused ) {
+				hold( v );
+			} else {
+				release( v );
+			}
+		} ) );
+	}
+
+	function scan( root ) {
+		( root || document ).querySelectorAll( 'video[autoplay], video[loop][muted], video[data-oc-vsrc]' ).forEach( video );
+	}
+
+	// Videos written in later — a gallery slide, a page of the catalogue
+	// fetched by infinite scroll — get theirs as they arrive.
+	function watch() {
+		if ( watching || ! window.MutationObserver ) {
+			return;
+		}
+
+		watching = true;
+
+		new MutationObserver( function ( list ) {
+			list.forEach( function ( m ) {
+				[].forEach.call( m.addedNodes, function ( n ) {
+					if ( 1 !== n.nodeType ) {
+						return;
+					}
+
+					if ( 'VIDEO' === n.tagName ) {
+						if ( n.autoplay || ( n.loop && n.muted ) || n.hasAttribute( 'data-oc-vsrc' ) ) {
+							video( n );
+						}
+					} else if ( n.querySelector && n.querySelector( 'video' ) ) {
+						scan( n );
+					}
+				} );
+			} );
+		} ).observe( document.body, { childList: true, subtree: true } );
+	}
+
+	return {
+		button: button,
+		hold: hold,
+		release: release,
+		scan: scan,
+		watch: watch
+	};
+}() );
+
+
 /* ---------- statistics beacon ----------
  * One small hit per page, product view, add to cart and checkout start,
  * to the shop's own counter. A random session id lives 30 quiet minutes
@@ -1083,9 +1256,11 @@ window.ocA11y = ( function () {
 			} );
 		}
 
+		var tbHeld = false;
+
 		function tbAuto() {
 			clearInterval( tbTimer );
-			if ( tbMsgs.length > 1 ) {
+			if ( tbMsgs.length > 1 && ! tbHeld ) {
 				tbTimer = setInterval( function () {
 					tbShow( tbIdx + 1 );
 				}, 5000 );
@@ -1099,6 +1274,17 @@ window.ocA11y = ( function () {
 					tbAuto();
 				} );
 			} );
+
+			// The messages turn by themselves, so they can be stopped.
+			var tbNext = topbar.querySelector( '.oc-topbar__nav--next' );
+
+			if ( tbNext ) {
+				tbNext.parentNode.insertBefore( window.ocPause.button( 'motion', 'ocpp--inline', function ( paused ) {
+					tbHeld = paused;
+					tbAuto();
+				} ), tbNext.nextSibling );
+			}
+
 			tbAuto();
 		}
 	}
@@ -10523,11 +10709,18 @@ window.__ocMoneyInto = function ( el, words, money ) {
 		wrap.dataset.ocTurning = '1';
 
 		var at = 0;
+		var held = false;
+
+		// The line turns by itself, so it can be stopped; the badge beside
+		// it does not move and needs nothing.
+		wrap.parentNode.insertBefore( window.ocPause.button( 'motion', 'ocpp--inline', function ( paused ) {
+			held = paused;
+		} ), wrap.nextSibling );
 
 		setInterval( function () {
 			// Nothing turns while the tab is in the background: coming back
 			// to a half-finished transition looks like a fault.
-			if ( document.hidden ) { return; }
+			if ( document.hidden || held ) { return; }
 
 			// A line replaced under us (a variation was picked) takes its
 			// own interval; this one has nothing left to turn.
@@ -10745,3 +10938,8 @@ window.__ocMoneyInto = function ( el, words, money ) {
 
 	apply( isVariable ? chosen() : null );
 }() );
+
+/* Every muted loop on the page — the gallery, the catalogue cards, a video
+ * section — gets its pause button, and so does any that arrives later. */
+window.ocPause.scan( document );
+window.ocPause.watch();

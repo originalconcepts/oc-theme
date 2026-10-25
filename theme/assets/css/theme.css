@@ -17249,3 +17249,37 @@ body:has(.oc-sticky-atc.is-visible) { --oc-fl-lift: 76px; }
 @media (prefers-reduced-motion: reduce) {
 	.oc-fl { transition: none; }
 }
+
+/* ---------- pause and play: anything that moves by itself ----------
+ * The same rules in the theme and in OC Blocks, which each carry the kit. */
+.ocpp {
+	display: inline-grid;
+	place-items: center;
+	flex: none;
+	inline-size: 28px;
+	block-size: 28px;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	background: rgb(0 0 0 / 50%);
+	color: #fff;
+	cursor: pointer;
+	line-height: 0;
+}
+
+.ocpp:hover { background: rgb(0 0 0 / 70%); }
+.ocpp:focus-visible { outline: 2px solid #fff; outline-offset: 2px; box-shadow: 0 0 0 4px rgb(0 0 0 / 55%); }
+.ocpp svg { display: block; inline-size: 12px; block-size: 12px; fill: currentColor; }
+.ocpp .ocpp__g,
+.ocpp.is-paused .ocpp__p { display: none; }
+.ocpp.is-paused .ocpp__g { display: block; }
+
+/* On a picture or a video: in its corner, over whatever else is there. */
+.ocpp--corner { position: absolute; z-index: 4; inset-block-end: 10px; inset-inline-end: 10px; }
+.ocpp--top { inset-block: 10px auto; }
+
+/* In a line of words (the top bar, the stock line): the words' own colour. */
+.ocpp--inline { inline-size: 24px; block-size: 24px; background: none; color: inherit; opacity: .75; }
+.ocpp--inline:hover { background: none; opacity: 1; }
+.ocpp--inline:focus-visible { box-shadow: none; outline-color: currentColor; }
+.ocpp--inline svg { inline-size: 11px; block-size: 11px; }

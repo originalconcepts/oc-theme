@@ -1951,3 +1951,15 @@ msgstr "עמוד רגיל — הסל סגור (כפתור בהדר)"
 
 msgid "Cart display"
 msgstr "תצוגת הסל"
+
+msgid "Stop the movement"
+msgstr "עצירת התנועה"
+
+msgid "Resume the movement"
+msgstr "הפעלת התנועה"
+
+msgid "Pause the video"
+msgstr "עצירת הווידאו"
+
+msgid "Play the video"
+msgstr "הפעלת הווידאו"

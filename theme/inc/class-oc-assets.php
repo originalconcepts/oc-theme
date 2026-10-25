@@ -220,6 +220,12 @@ final class Assets {
 				'authMailed'           => __( 'The code is in your inbox.', 'oc-theme' ),
 				'authPhone'            => __( 'Enter phone number', 'oc-theme' ),
 				'byeMsg'               => __( 'You have signed out — see you soon', 'oc-theme' ),
+				'pause'                => array(
+					'mp' => __( 'Stop the movement', 'oc-theme' ),
+					'mg' => __( 'Resume the movement', 'oc-theme' ),
+					'vp' => __( 'Pause the video', 'oc-theme' ),
+					'vg' => __( 'Play the video', 'oc-theme' ),
+				),
 				'byeAsk'               => __( 'Sign out of the account?', 'oc-theme' ),
 				'byeYes'               => __( 'Sign out', 'oc-theme' ),
 				'byeNo'                => __( 'Stay signed in', 'oc-theme' ),
