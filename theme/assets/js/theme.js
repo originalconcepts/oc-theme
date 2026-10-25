@@ -275,10 +275,11 @@ window.ocPause = window.ocPause || ( function () {
 		}
 	}
 
-	// A muted loop that plays by itself. One with its own controls, or one
-	// a slider already answers for, is left alone.
+	// A muted loop that plays by itself. One with its own controls, one a
+	// slider already answers for, or a product-page video (the gallery and
+	// its lightbox carry the theme's own pause chip) is left alone.
 	function video( v ) {
-		if ( v.getAttribute( 'data-ocpp-on' ) || v.controls ) {
+		if ( v.getAttribute( 'data-ocpp-on' ) || v.controls || v.closest( '.oc-vslide, .oc-voverlay' ) ) {
 			return;
 		}
 
@@ -7046,7 +7047,8 @@ window.ocPause = window.ocPause || ( function () {
 				var pauseChip = document.createElement( 'button' );
 				pauseChip.type = 'button';
 				pauseChip.className = 'oc-vchip oc-vpause';
-				pauseChip.setAttribute( 'aria-label', 'pause' );
+				var chipWords = ( window.ocL10n || {} ).pause || {};
+				pauseChip.setAttribute( 'aria-label', chipWords.vp || 'Pause the video' );
 				pauseChip.innerHTML = ocPauseIcons;
 				pauseChip.addEventListener( 'click', function ( event ) {
 					event.stopPropagation();
@@ -7061,12 +7063,14 @@ window.ocPause = window.ocPause || ( function () {
 
 				vid.addEventListener( 'play', function () {
 					pauseChip.classList.remove( 'is-paused' );
+					pauseChip.setAttribute( 'aria-label', chipWords.vp || 'Pause the video' );
 					// The chip only joins once the video has started — until
 					// then the big play badge is the affordance.
 					pauseChip.classList.add( 'is-revealed' );
 				} );
 				vid.addEventListener( 'pause', function () {
 					pauseChip.classList.add( 'is-paused' );
+					pauseChip.setAttribute( 'aria-label', chipWords.vg || 'Play the video' );
 				} );
 				pauseChip.classList.toggle( 'is-paused', vid.paused );
 				pauseChip.classList.toggle( 'is-revealed', ! vid.paused );

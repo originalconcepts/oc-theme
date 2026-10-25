@@ -29,6 +29,13 @@ final class Floating {
 	const UW_ACCOUNT = 'T1PAnIqMjH';
 
 	/**
+	 * WhatsApp's own glyph, traced from the official round icon, on a 100×100
+	 * square that IS that icon's green circle — so drawn over the whole
+	 * button it has the official ring, handset and margins.
+	 */
+	const WA_GLYPH = 'M23 78.3C23.5 78.2 24.5 77.9 25.2 77.7C25.8 77.6 27.6 77.1 29.1 76.7C30.6 76.3 32.9 75.7 34.1 75.4L36.5 74.8L38 75.5C42.3 77.6 47.9 78.6 52.6 78.1C58.7 77.5 63.8 75.4 68.3 71.7C69.5 70.7 71.5 68.7 72.4 67.4C73.3 66.3 74.3 64.8 74.3 64.7C74.3 64.7 74.5 64.4 74.8 64C76 62.2 77.5 58.2 78.2 55.1C78.5 53.5 78.5 52.7 78.5 49.6C78.5 45.2 78.3 43.9 77 40C75.8 36.8 73.4 32.9 70.8 30.1C69.7 28.9 67.2 26.9 65.6 25.8C61.1 22.8 55.7 21.2 50.2 21.2C39 21.2 29 27.6 24.2 37.8C20.6 45.6 20.7 55.1 24.7 62.6C25 63.3 25.3 63.9 25.3 64C25.3 64.2 25.1 65 24.8 66C24.6 66.9 24.3 67.9 24.3 68.1C24.2 68.3 24 69.2 23.8 70.1C22.1 75.9 21.5 78.2 21.6 78.4C21.7 78.7 21.9 78.7 23 78.3ZM46.4 73.3C46.1 73.3 45.4 73.2 44.9 73C43 72.6 40.5 71.7 38.3 70.5L37 69.8L35 70.4C33.9 70.7 32 71.1 30.8 71.5C29.7 71.8 28.6 72 28.4 72C28 72 28.1 71.7 28.6 69.7C28.8 69.1 29.1 67.8 29.4 67C29.6 66.2 29.9 65.2 30 64.7C30.3 63.6 30.3 62.9 30 62.6C29.6 62.3 28.1 59.1 27.5 57.3C26.7 55.1 26.5 53.5 26.4 50.4C26.3 48.3 26.3 47.2 26.5 45.9C27.3 40.9 30 35.8 33.7 32.4C34.6 31.5 34.8 31.3 36.4 30.2C37.1 29.7 39.2 28.4 39.6 28.2C39.8 28.2 40.5 27.9 41.3 27.6C45.9 25.6 51.9 25.3 57 26.8C58.3 27.2 61.1 28.4 61.5 28.7C61.6 28.8 62.1 29.1 62.4 29.2C62.8 29.4 63.6 30 64.2 30.5C67.8 33.1 70.6 36.6 72 40C72.2 40.6 72.5 41.2 72.5 41.4C72.6 41.5 72.9 42.2 73 42.9C74.2 47 74.3 51.3 73.4 55.1C71.8 61.8 67.4 67.5 61.2 70.9C59.5 71.8 56.9 72.7 54.2 73.3C53 73.5 47.5 73.6 46.4 73.3ZM59.5 64C60.8 63.7 62.4 62.8 63.2 61.9C63.9 61.2 64.4 60.2 64.6 59C64.6 58.6 64.7 58.3 64.7 58.2C64.9 57.9 64.4 57.2 63.5 56.7C61.2 55.3 58.1 53.8 57.7 53.8C57.3 53.8 57 54.1 55.8 55.4C55 56.3 54.2 57.1 54 57.2C53.3 57.6 52.4 57.3 50.4 56.1C47.6 54.4 44.8 51.5 43 48.5C42.4 47.4 42.5 47 43.7 45.6C44.2 45 44.8 44.3 45 44C45.3 43.4 45.3 43.4 43.9 39.6C43.6 38.9 43.3 38 43.2 37.7C43 37 42.3 36.2 41.7 35.9C40.5 35.4 38.8 35.8 37.7 36.9C35.4 39.3 34.7 42.5 35.9 45.9C36.5 47.8 37 48.7 38.1 50.5C38.6 51.2 39.2 52.1 39.4 52.4C39.9 53.2 42.3 56.1 43.5 57.3C45.3 59 47.6 60.6 49.8 61.7C54.7 64.1 57.3 64.7 59.5 64Z';
+
+	/**
 	 * Hook in.
 	 */
 	public function register(): void {
@@ -185,8 +192,8 @@ final class Floating {
 		return '<a class="oc-fl oc-fl--wa' . ( $pill ? ' oc-fl--pill' : '' ) . ' oc-fl--' . esc_attr( self::side( $s['wa_float_side'], 'right' ) ) . '" data-oc-wa data-base="' . esc_url( $base ) . '" data-text="' . esc_attr( $text ) . '"' . ( $url ? ' data-url="1"' : '' )
 			. ' href="' . esc_url( $base . '?text=' . rawurlencode( $text ) ) . '" target="_blank" rel="noopener" style="' . esc_attr( self::vars( self::px( $s['wa_float_bd'], 24 ), self::px( $s['wa_float_bm'], 16 ) ) ) . '" aria-label="' . esc_attr( $name ) . '">'
 			. ( $pill ? '<span class="oc-fl__t" dir="auto">' . esc_html( $label ) . '</span>' : '' )
-			// Cropped to the bubble itself (the icon's own square has a margin), so it is centred by its edges and fills the button.
-			. str_replace( 'viewBox="0 0 24 24"', 'viewBox="3 3 18 18"', Contact::icon( 'whatsapp' ) )
+			// The round button is the icon's circle, so the glyph covers it whole; beside words it is cropped to its edges.
+			. '<svg viewBox="' . ( $pill ? '20 20 60 60' : '0 0 100 100' ) . '" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="' . self::WA_GLYPH . '"/></svg>'
 			. '</a>';
 	}
 

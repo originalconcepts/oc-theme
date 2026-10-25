@@ -17213,7 +17213,7 @@ a.oc-wlp__tool { display: inline-flex; align-items: center; text-decoration: non
 	color: #fff;
 }
 
-.oc-fl--wa svg { display: block; flex: none; inline-size: 29px; block-size: 29px; }
+.oc-fl--wa svg { display: block; flex: none; inline-size: 100%; block-size: 100%; }
 .oc-fl--wa:hover { filter: brightness(1.06); }
 
 /* The rectangle: words, then the icon, left to right whatever the page's
@@ -17234,7 +17234,7 @@ a.oc-wlp__tool { display: inline-flex; align-items: center; text-decoration: non
 	white-space: nowrap;
 }
 
-.oc-fl--pill svg { inline-size: 24px; block-size: 24px; }
+.oc-fl--pill svg { inline-size: 26px; block-size: 26px; }
 
 /* A bar of the product page sits along the bottom edge: everything floating
  * stands on top of it while it shows. */

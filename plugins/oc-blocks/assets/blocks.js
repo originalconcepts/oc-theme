@@ -92,10 +92,11 @@
 			}
 		}
 
-		// A muted loop that plays by itself. One with its own controls, or one
-		// a slider already answers for, is left alone.
+		// A muted loop that plays by itself. One with its own controls, one a
+		// slider already answers for, or a product-page video (the gallery and
+		// its lightbox carry the theme's own pause chip) is left alone.
 		function video( v ) {
-			if ( v.getAttribute( 'data-ocpp-on' ) || v.controls ) {
+			if ( v.getAttribute( 'data-ocpp-on' ) || v.controls || v.closest( '.oc-vslide, .oc-voverlay' ) ) {
 				return;
 			}
 
