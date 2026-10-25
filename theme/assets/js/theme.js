@@ -6987,17 +6987,12 @@ window.ocPause = window.ocPause || ( function () {
 					: '<img class="oc-vposter" src="' + ( ocVideo.thumb || ocVideoFallbackThumb ) + '" alt="" />';
 			};
 
-			// The video chips: pause/play at the bottom-RIGHT, and — when the
-			// file carries audio — a speaker at the bottom-LEFT. White
-			// circles, matching the lightbox buttons. Same chips on the
-			// product page and inside the lightbox.
+			// The video's speaker chip (when the file carries audio): a white
+			// circle in the bottom-right corner, on the product page and in the
+			// lightbox. Pause and play is the site's own small button.
 			var ocSoundIcons =
 				'<svg class="off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 9.5l5 5M21.5 9.5l-5 5"/></svg>' +
 				'<svg class="on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>';
-
-			var ocPauseIcons =
-				'<svg class="pp-pause" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M9 6v12M15 6v12"/></svg>' +
-				'<svg class="pp-play" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><path d="M8.5 5.5l10 6.5-10 6.5z"/></svg>';
 
 			var ocVideoHasAudio = function ( vid ) {
 				if ( vid.mozHasAudio ||
@@ -7040,39 +7035,37 @@ window.ocPause = window.ocPause || ( function () {
 			};
 
 			ocAttachVideoChips = function ( host, vid ) {
-				if ( ! host || host.querySelector( '.oc-vpause' ) ) {
+				if ( ! host || host.querySelector( '.oc-vpp' ) ) {
 					return;
 				}
 
-				var pauseChip = document.createElement( 'button' );
-				pauseChip.type = 'button';
-				pauseChip.className = 'oc-vchip oc-vpause';
+				// Pause and play: the same small dark button every other video
+				// on the site wears (the catalogue cards, the blocks), from the
+				// page's pause kit. It follows the video both ways — the
+				// gallery and the lightbox also play and pause it themselves.
 				var chipWords = ( window.ocL10n || {} ).pause || {};
-				pauseChip.setAttribute( 'aria-label', chipWords.vp || 'Pause the video' );
-				pauseChip.innerHTML = ocPauseIcons;
-				pauseChip.addEventListener( 'click', function ( event ) {
-					event.stopPropagation();
-					event.preventDefault();
-					if ( vid.paused ) {
-						vid.play().catch( function () {} );
-					} else {
+				var pauseChip = window.ocPause.button( 'video', 'ocpp--corner oc-vpp', function ( paused ) {
+					if ( paused ) {
 						vid.pause();
+					} else {
+						vid.play().catch( function () {} );
 					}
 				} );
+				var syncChip = function () {
+					pauseChip.classList.toggle( 'is-paused', vid.paused );
+					pauseChip.setAttribute( 'aria-label', vid.paused ? ( chipWords.vg || 'Play the video' ) : ( chipWords.vp || 'Pause the video' ) );
+				};
+
 				host.appendChild( pauseChip );
 
 				vid.addEventListener( 'play', function () {
-					pauseChip.classList.remove( 'is-paused' );
-					pauseChip.setAttribute( 'aria-label', chipWords.vp || 'Pause the video' );
-					// The chip only joins once the video has started — until
+					syncChip();
+					// The button only joins once the video has started — until
 					// then the big play badge is the affordance.
 					pauseChip.classList.add( 'is-revealed' );
 				} );
-				vid.addEventListener( 'pause', function () {
-					pauseChip.classList.add( 'is-paused' );
-					pauseChip.setAttribute( 'aria-label', chipWords.vg || 'Play the video' );
-				} );
-				pauseChip.classList.toggle( 'is-paused', vid.paused );
+				vid.addEventListener( 'pause', syncChip );
+				syncChip();
 				pauseChip.classList.toggle( 'is-revealed', ! vid.paused );
 
 				// The speaker joins only when the file actually has audio.
@@ -7093,8 +7086,6 @@ window.ocPause = window.ocPause || ( function () {
 						vid.muted = ! vid.muted;
 					} );
 					host.appendChild( chip );
-					// With a speaker present, pause slides one spot left.
-					host.classList.add( 'oc-has-sound' );
 
 					vid.addEventListener( 'volumechange', function () {
 						chip.classList.toggle( 'is-on', ! vid.muted );
@@ -7143,7 +7134,7 @@ window.ocPause = window.ocPause || ( function () {
 					vid.muted = true;
 				} );
 				// Back to the resting look: big play badge, no pause chip.
-				document.querySelectorAll( '.oc-vslide .oc-vpause' ).forEach( function ( chip ) {
+				document.querySelectorAll( '.oc-vslide .oc-vpp' ).forEach( function ( chip ) {
 					chip.classList.remove( 'is-revealed' );
 				} );
 				var manual = galleryWrap.querySelector( '.oc-vslide--manual.is-playing' );
@@ -7207,7 +7198,7 @@ window.ocPause = window.ocPause || ( function () {
 				var vid = playing.querySelector( 'video' );
 				if ( vid ) {
 					// The big play badge is back — the chip steps aside.
-					var chip = playing.querySelector( '.oc-vpause' );
+					var chip = playing.querySelector( '.oc-vpp' );
 					if ( chip ) {
 						chip.classList.remove( 'is-revealed' );
 					}

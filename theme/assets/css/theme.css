@@ -7581,9 +7581,9 @@ body:not(.oc-no-lightbox) .oc-vslide.is-playing {
 	border-left-width: 9px;
 }
 
-/* Video chips — white circles like the lightbox buttons: pause/play at the
- * bottom-RIGHT, the speaker (when the file has audio) at the bottom-LEFT.
- * Same chips on the product page and inside the lightbox. */
+/* The video's speaker chip — a white circle like the lightbox buttons,
+ * bottom-right, when the file has audio. Same on the product page and
+ * inside the lightbox. */
 .oc-vchip {
 	position: absolute;
 	bottom: 10px;
@@ -7612,27 +7612,17 @@ body:not(.oc-no-lightbox) .oc-vslide.is-playing {
 	block-size: 17px;
 }
 
-/* Sound holds the corner and pause sits to its left; with no audio track
- * the pause takes the corner itself. Pause only shows up once the video
- * has started (the big play badge covers the frozen state). */
 .oc-vsound { right: 10px; }
 
-.oc-vpause {
-	right: 10px;
-	display: none;
-}
-
-.oc-has-sound .oc-vpause { right: 54px; }
-
-.oc-vpause.is-revealed { display: grid; }
+/* Pause and play is the site's small dark button, in the other bottom
+ * corner from the speaker; it shows once the video has started. */
+.ocpp.oc-vpp { inset-inline: auto; left: 10px; right: auto; }
+.ocpp.oc-vpp:not(.is-revealed) { display: none; }
 
 .oc-vsound .on { display: none; }
 .oc-vsound.is-on .on { display: block; }
 .oc-vsound.is-on .off { display: none; }
 
-.oc-vpause .pp-play { display: none; }
-.oc-vpause.is-paused .pp-play { display: block; }
-.oc-vpause.is-paused .pp-pause { display: none; }
 
 /* The lightbox video's chip host. */
 .oc-vwrap {
