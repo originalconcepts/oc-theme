@@ -24,6 +24,8 @@ for src, minifier in (
     (root / "js" / "wishlist.js", rjsmin.jsmin),
     (root / "css" / "onboard.css", rcssmin.cssmin),
     (root / "css" / "theme.css", rcssmin.cssmin),
+    (root / "css" / "a11y-widget.css", rcssmin.cssmin),
+    (root / "js" / "a11y-widget.js", rjsmin.jsmin),
     (blocks / "blocks.js", rjsmin.jsmin),
     (blocks / "blocks.css", rcssmin.cssmin),
     (blocks / "editor.js", rjsmin.jsmin),

@@ -32,7 +32,52 @@ final class Floating {
 	 * Hook in.
 	 */
 	public function register(): void {
+		add_action( 'wp_head', array( $this, 'head' ), 2 );
 		add_action( 'wp_footer', array( $this, 'footer' ), 30 );
+	}
+
+	/**
+	 * Which accessibility widget the page carries: theme, userway, code — or
+	 * '' for none. Sites saved before the choice existed had one checkbox for
+	 * UserWay and another for an embed code; they keep what they had.
+	 *
+	 * @param array<string,mixed> $s Saved settings.
+	 */
+	public static function widget_kind( array $s ): string {
+		$kind = (string) ( $s['a11y_kind'] ?? '' );
+
+		if ( in_array( $kind, array( 'theme', 'userway', 'code' ), true ) ) {
+			return ! empty( $s['a11y_widget'] ) ? $kind : '';
+		}
+
+		if ( ! empty( $s['a11y_other'] ) ) {
+			return 'code';
+		}
+
+		return ! empty( $s['a11y_widget'] ) ? 'userway' : '';
+	}
+
+	/**
+	 * A file of the theme, minified when the minified copy is current.
+	 *
+	 * @param string $relative Path under the theme.
+	 */
+	private static function inline( string $relative ): string {
+		return (string) file_get_contents( OC_THEME_DIR . oc_asset_min( $relative ) ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+	}
+
+	/**
+	 * The theme widget's stylesheet, and the choices a returning visitor
+	 * made, in force before the first paint — a page that drew in colour
+	 * and then went grey would flash.
+	 */
+	public function head(): void {
+		if ( is_customize_preview() || is_feed() || is_embed() || 'theme' !== self::widget_kind( Contact::settings() ) ) {
+			return;
+		}
+
+		echo '<style id="oc-a11yw-css">' . self::inline( '/assets/css/a11y-widget.css' ) . '</style>' . "\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- the theme's own stylesheet.
+		echo '<script>try{var s=JSON.parse(localStorage.getItem("ocA11y")||"{}"),c=document.documentElement.classList;["contrast","mono","links","font","still","cursor"].forEach(function(k){if(s[k])c.add("oc-a11y-"+k)})}catch(e){}</script>' . "\n";
 	}
 
 	/**
@@ -168,9 +213,10 @@ final class Floating {
 			return;
 		}
 
-		$s = Contact::settings();
+		$s    = Contact::settings();
+		$kind = self::widget_kind( $s );
 
-		if ( ! empty( $s['a11y_other'] ) ) {
+		if ( 'code' === $kind ) {
 			$code = trim( (string) $s['a11y_code'] );
 
 			if ( '' !== $code ) {
@@ -180,7 +226,13 @@ final class Floating {
 			return;
 		}
 
-		if ( empty( $s['a11y_widget'] ) ) {
+		if ( 'theme' === $kind ) {
+			$this->theme_widget( $s );
+
+			return;
+		}
+
+		if ( 'userway' !== $kind ) {
 			return;
 		}
 
@@ -211,6 +263,64 @@ final class Floating {
 	}
 
 	/**
+	 * The theme's own widget: the button, and the panel it opens. What each
+	 * choice does is in a11y-widget.css; the script is a11y-widget.js.
+	 *
+	 * @param array<string,mixed> $s Saved settings.
+	 */
+	private function theme_widget( array $s ): void {
+		$side  = self::side( $s['a11y_side'], 'left' );
+		$color = (string) sanitize_hex_color( (string) $s['a11y_uw_color'] );
+		$vars  = self::vars( self::px( $s['a11y_bd'], 24 ), self::px( $s['a11y_bm'], 16 ) ) . ( '' !== $color ? ';--oc-a11y-c:' . $color : '' );
+		$page  = Legal\Accessibility::page_id();
+		$page  = $page ? $page : Legal\Accessibility::foreign_id();
+		$icon  = static function ( string $d ): string {
+			return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' . $d . '</svg>';
+		};
+		$opts  = array(
+			'contrast' => array( __( 'High contrast', 'oc-theme' ), '<circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/>' ),
+			'mono'     => array( __( 'Grey tones', 'oc-theme' ), '<path d="M12 3.5c3 4 5.5 6.8 5.5 10a5.5 5.5 0 0 1-11 0c0-3.2 2.5-6 5.5-10z"/><path d="M12 9v10"/>' ),
+			'links'    => array( __( 'Highlight links', 'oc-theme' ), '<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>' ),
+			'font'     => array( __( 'Readable font', 'oc-theme' ), '<path d="M4 19 9.5 5h1L16 19M6.2 14h7.6"/><path d="M17 19v-6.5M20 19v-6.5"/>' ),
+			'still'    => array( __( 'Stop the movement', 'oc-theme' ), '<rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/>' ),
+			'cursor'   => array( __( 'Large cursor', 'oc-theme' ), '<path d="M5 3.5 18 12.6l-5.7 1 3.5 6.5-2.6 1.4-3.4-6.6L5 19z"/>' ),
+		);
+		?>
+		<div class="oc-a11yw" data-oc-a11yw style="<?php echo esc_attr( $vars ); ?>">
+			<button type="button" class="oc-fl oc-fl--a11y oc-fl--<?php echo esc_attr( $side ); ?>" aria-expanded="false" aria-controls="oc-a11yw-panel" aria-label="<?php esc_attr_e( 'Accessibility menu', 'oc-theme' ); ?>">
+				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="4.6" r="1.9" fill="currentColor" stroke="none"/><path d="M4.5 8.6c2.5.8 5 1.2 7.5 1.2s5-.4 7.5-1.2M12 9.8v4.6M12 14.4l-3.2 5.8M12 14.4l3.2 5.8"/></svg>
+			</button>
+			<div class="oc-a11yw__panel oc-a11yw__panel--<?php echo esc_attr( $side ); ?>" id="oc-a11yw-panel" role="dialog" aria-labelledby="oc-a11yw-title" hidden>
+				<div class="oc-a11yw__head">
+					<h2 class="oc-a11yw__title" id="oc-a11yw-title"><?php esc_html_e( 'Accessibility', 'oc-theme' ); ?></h2>
+					<button type="button" class="oc-a11yw__x" aria-label="<?php esc_attr_e( 'Close', 'oc-theme' ); ?>"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+				</div>
+				<div class="oc-a11yw__body">
+					<div class="oc-a11yw__size" role="group" aria-labelledby="oc-a11yw-size">
+						<span class="oc-a11yw__size-l" id="oc-a11yw-size"><?php esc_html_e( 'Text size', 'oc-theme' ); ?></span>
+						<button type="button" data-a11y-size="-1" aria-label="<?php esc_attr_e( 'Smaller text', 'oc-theme' ); ?>">A&minus;</button>
+						<output data-a11y-out aria-live="polite">100%</output>
+						<button type="button" data-a11y-size="1" aria-label="<?php esc_attr_e( 'Larger text', 'oc-theme' ); ?>">A+</button>
+					</div>
+					<div class="oc-a11yw__grid">
+						<?php foreach ( $opts as $key => $opt ) : ?>
+							<button type="button" class="oc-a11yw__opt" data-a11y="<?php echo esc_attr( $key ); ?>" aria-pressed="false"><?php echo $icon( $opt[1] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- constant markup. ?><span><?php echo esc_html( $opt[0] ); ?></span></button>
+						<?php endforeach; ?>
+					</div>
+					<div class="oc-a11yw__foot">
+						<button type="button" class="oc-a11yw__reset" data-a11y-reset><?php esc_html_e( 'Reset', 'oc-theme' ); ?></button>
+						<?php if ( $page ) : ?>
+							<a href="<?php echo esc_url( (string) get_permalink( $page ) ); ?>"><?php esc_html_e( 'Accessibility statement', 'oc-theme' ); ?></a>
+						<?php endif; ?>
+					</div>
+				</div>
+			</div>
+		</div>
+		<?php
+		echo '<script id="oc-a11yw-js">' . self::inline( '/assets/js/a11y-widget.js' ) . '</script>' . "\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- the theme's own script.
+	}
+
+	/**
 	 * The defaults the Store details screen adds to its option.
 	 *
 	 * @return array<string,mixed>
@@ -226,6 +336,7 @@ final class Floating {
 			'wa_float_bd'     => 24,
 			'wa_float_bm'     => 16,
 			'a11y_widget'     => 0,
+			'a11y_kind'       => '',
 			'a11y_uw_account' => self::UW_ACCOUNT,
 			'a11y_uw_color'   => '',
 			'a11y_side'       => 'left',
@@ -266,7 +377,8 @@ final class Floating {
 			'a11y_side'       => self::side( $post( 'a11y_side' ), 'left' ),
 			'a11y_bd'         => self::px( $post( 'a11y_bd' ), 24 ),
 			'a11y_bm'         => self::px( $post( 'a11y_bm' ), 16 ),
-			'a11y_other'      => empty( $_POST['a11y_other'] ) ? 0 : 1,
+			'a11y_kind'       => in_array( $post( 'a11y_kind' ), array( 'theme', 'userway', 'code' ), true ) ? $post( 'a11y_kind' ) : 'theme',
+			'a11y_other'      => 'code' === $post( 'a11y_kind' ) ? 1 : 0,
 			// An embed code is script: only someone WordPress already trusts with that may change it.
 			'a11y_code'       => current_user_can( 'unfiltered_html' ) ? trim( $post( 'a11y_code' ) ) : (string) ( $before['a11y_code'] ?? '' ),
 		);
@@ -362,47 +474,59 @@ final class Floating {
 	 * @param array<string,mixed> $s Saved settings.
 	 */
 	public static function accessibility_section( array $s ): void {
-		$can = current_user_can( 'unfiltered_html' );
+		$can  = current_user_can( 'unfiltered_html' );
+		$kind = self::widget_kind( $s );
+		$kind = '' !== $kind ? $kind : ( in_array( (string) ( $s['a11y_kind'] ?? '' ), array( 'theme', 'userway', 'code' ), true ) ? (string) $s['a11y_kind'] : 'theme' );
+		$show = static function ( string $which ) use ( $kind ): string {
+			return $which === $kind ? '' : ' hidden';
+		};
+		$pick = "var k=this.value;document.querySelectorAll('[data-oc-a11y-for]').forEach(function(r){r.hidden=r.getAttribute('data-oc-a11y-for').split(' ').indexOf(k)<0})";
 		?>
 		<h3><?php esc_html_e( 'Accessibility widget', 'oc-theme' ); ?></h3>
+		<p class="description"><?php esc_html_e( 'A button that lets a visitor enlarge text, raise contrast, stop animation and more. It is an adjustment on top of the site, not a replacement for the site being accessible, nor for the accessibility statement.', 'oc-theme' ); ?></p>
 		<table class="form-table" role="presentation">
 			<tr>
 				<th scope="row"><?php esc_html_e( 'Show the widget', 'oc-theme' ); ?></th>
-				<td>
-					<label><input type="checkbox" name="a11y_widget" value="1" <?php checked( ! empty( $s['a11y_widget'] ) ); ?> /> <?php esc_html_e( 'Show the accessibility widget', 'oc-theme' ); ?></label>
-					<p class="description"><?php esc_html_e( 'The UserWay button that lets a visitor enlarge text, raise contrast, stop animation and more. It is an adjustment on top of the site, not a replacement for the accessibility statement below.', 'oc-theme' ); ?></p>
-				</td>
+				<td><label><input type="checkbox" name="a11y_widget" value="1" <?php checked( '' !== self::widget_kind( $s ) ); ?> /> <?php esc_html_e( 'Show an accessibility widget', 'oc-theme' ); ?></label></td>
 			</tr>
 			<tr>
+				<th scope="row"><?php esc_html_e( 'Which widget', 'oc-theme' ); ?></th>
+				<td>
+					<fieldset>
+						<label><input type="radio" name="a11y_kind" value="theme" <?php checked( 'theme', $kind ); ?> onchange="<?php echo esc_attr( $pick ); ?>" /> <?php esc_html_e( 'The theme\'s widget — text size, contrast, grey tones, links, readable font, stop the movement, large cursor', 'oc-theme' ); ?></label><br />
+						<label><input type="radio" name="a11y_kind" value="userway" <?php checked( 'userway', $kind ); ?> onchange="<?php echo esc_attr( $pick ); ?>" /> <?php esc_html_e( 'UserWay', 'oc-theme' ); ?></label><br />
+						<label><input type="radio" name="a11y_kind" value="code" <?php checked( 'code', $kind ); ?> onchange="<?php echo esc_attr( $pick ); ?>" /> <?php esc_html_e( 'Another widget — paste its code', 'oc-theme' ); ?></label>
+					</fieldset>
+					<p class="description"><?php esc_html_e( 'The theme\'s widget loads nothing from outside the site and is drawn in the site\'s own colours. UserWay loads its script from UserWay when the visitor first touches the page.', 'oc-theme' ); ?></p>
+				</td>
+			</tr>
+			<tr data-oc-a11y-for="userway"<?php echo $show( 'userway' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- a constant attribute. ?>>
 				<th scope="row"><label for="oc-uw-account"><?php esc_html_e( 'UserWay account', 'oc-theme' ); ?></label></th>
 				<td>
 					<input type="text" id="oc-uw-account" name="a11y_uw_account" dir="ltr" value="<?php echo esc_attr( (string) $s['a11y_uw_account'] ); ?>" placeholder="<?php echo esc_attr( self::UW_ACCOUNT ); ?>" class="regular-text" />
 					<p class="description"><?php esc_html_e( 'The account number from the UserWay script. Empty = the studio\'s account.', 'oc-theme' ); ?></p>
 				</td>
 			</tr>
-			<tr>
+			<tr data-oc-a11y-for="code"<?php echo $show( 'code' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- a constant attribute. ?>>
+				<th scope="row"><?php esc_html_e( 'The widget\'s code', 'oc-theme' ); ?></th>
+				<td>
+					<textarea name="a11y_code" rows="5" dir="ltr" class="large-text code" placeholder="&lt;script src=&quot;https://…&quot;&gt;&lt;/script&gt;" <?php disabled( ! $can ); ?>><?php echo esc_textarea( (string) $s['a11y_code'] ); ?></textarea>
+					<p class="description">
+						<?php esc_html_e( 'Usually the code the customer\'s accessibility provider sent. It is added at the end of every page. Its place and colour are set by its provider, not by the settings below.', 'oc-theme' ); ?>
+						<?php if ( ! $can ) : ?>
+							<strong><?php esc_html_e( 'Only an administrator can change this code.', 'oc-theme' ); ?></strong>
+						<?php endif; ?>
+					</p>
+				</td>
+			</tr>
+			<tr data-oc-a11y-for="theme userway"<?php echo 'code' === $kind ? ' hidden' : ''; ?>>
 				<th scope="row"><label for="oc-uw-color"><?php esc_html_e( 'Button colour', 'oc-theme' ); ?></label></th>
 				<td>
 					<input type="color" id="oc-uw-color" name="a11y_uw_color" value="<?php echo esc_attr( '' !== (string) $s['a11y_uw_color'] ? (string) $s['a11y_uw_color'] : '#000000' ); ?>" <?php disabled( '' === (string) $s['a11y_uw_color'] ); ?> />
-					<label style="margin-inline-start:12px"><input type="checkbox" onchange="document.getElementById('oc-uw-color').disabled=this.checked" <?php checked( '' === (string) $s['a11y_uw_color'] ); ?> /> <?php esc_html_e( 'The widget\'s own colour', 'oc-theme' ); ?></label>
+					<label style="margin-inline-start:12px"><input type="checkbox" onchange="document.getElementById('oc-uw-color').disabled=this.checked" <?php checked( '' === (string) $s['a11y_uw_color'] ); ?> /> <?php esc_html_e( 'The default colour — the site\'s main colour for the theme\'s widget, UserWay\'s own for UserWay', 'oc-theme' ); ?></label>
 				</td>
 			</tr>
 			<?php self::placement_rows( 'a11y', self::side( $s['a11y_side'], 'left' ), self::px( $s['a11y_bd'], 24 ), self::px( $s['a11y_bm'], 16 ) ); ?>
-			<tr>
-				<th scope="row"><?php esc_html_e( 'A different widget', 'oc-theme' ); ?></th>
-				<td>
-					<label><input type="checkbox" name="a11y_other" value="1" <?php checked( ! empty( $s['a11y_other'] ) ); ?> onchange="document.getElementById('oc-a11y-code-row').hidden=!this.checked" /> <?php esc_html_e( 'Use a different accessibility widget — paste its code', 'oc-theme' ); ?></label>
-					<div id="oc-a11y-code-row" <?php echo empty( $s['a11y_other'] ) ? 'hidden' : ''; ?> style="margin-top:8px">
-						<textarea name="a11y_code" rows="5" dir="ltr" class="large-text code" placeholder="&lt;script src=&quot;https://…&quot;&gt;&lt;/script&gt;" <?php disabled( ! $can ); ?>><?php echo esc_textarea( (string) $s['a11y_code'] ); ?></textarea>
-						<p class="description">
-							<?php esc_html_e( 'Usually the code the customer\'s accessibility provider sent. It is added at the end of every page, and replaces the widget above while this box is ticked.', 'oc-theme' ); ?>
-							<?php if ( ! $can ) : ?>
-								<strong><?php esc_html_e( 'Only an administrator can change this code.', 'oc-theme' ); ?></strong>
-							<?php endif; ?>
-						</p>
-					</div>
-				</td>
-			</tr>
 		</table>
 		<?php
 	}

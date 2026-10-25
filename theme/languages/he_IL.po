@@ -14663,3 +14663,60 @@ msgstr "עצירת הווידאו"
 
 msgid "Play the video"
 msgstr "הפעלת הווידאו"
+
+msgid "High contrast"
+msgstr "ניגודיות גבוהה"
+
+msgid "Grey tones"
+msgstr "גווני אפור"
+
+msgid "Highlight links"
+msgstr "הדגשת קישורים"
+
+msgid "Readable font"
+msgstr "גופן קריא"
+
+msgid "Large cursor"
+msgstr "סמן גדול"
+
+msgid "Accessibility menu"
+msgstr "תפריט נגישות"
+
+msgid "Text size"
+msgstr "גודל טקסט"
+
+msgid "Smaller text"
+msgstr "הקטנת טקסט"
+
+msgid "Larger text"
+msgstr "הגדלת טקסט"
+
+msgid "Which widget"
+msgstr "איזה רכיב"
+
+msgid "The theme's widget — text size, contrast, grey tones, links, readable font, stop the movement, large cursor"
+msgstr "הרכיב של התבנית — גודל טקסט, ניגודיות, גווני אפור, קישורים, גופן קריא, עצירת תנועה, סמן גדול"
+
+msgid "UserWay"
+msgstr "UserWay"
+
+msgid "Another widget — paste its code"
+msgstr "רכיב אחר — מדביקים את הקוד שלו"
+
+msgid "The theme's widget loads nothing from outside the site and is drawn in the site's own colours. UserWay loads its script from UserWay when the visitor first touches the page."
+msgstr "הרכיב של התבנית לא טוען דבר מחוץ לאתר ומעוצב בצבעים של האתר. UserWay טוען את הסקריפט שלו מ-UserWay כשהמבקר נוגע בדף בפעם הראשונה."
+
+msgid "The widget's code"
+msgstr "הקוד של הרכיב"
+
+msgid "Usually the code the customer's accessibility provider sent. It is added at the end of every page. Its place and colour are set by its provider, not by the settings below."
+msgstr "בדרך כלל הקוד ששלחה ספקית הנגישות של הלקוח. הוא מתווסף בסוף כל עמוד. המיקום והצבע שלו נקבעים אצל הספקית, לא בהגדרות שלמטה."
+
+msgid "The default colour — the site's main colour for the theme's widget, UserWay's own for UserWay"
+msgstr "צבע ברירת המחדל — הצבע הראשי של האתר ברכיב של התבנית, הצבע של UserWay ב-UserWay"
+
+msgid "Show an accessibility widget"
+msgstr "להציג רכיב נגישות"
+
+msgid "A button that lets a visitor enlarge text, raise contrast, stop animation and more. It is an adjustment on top of the site, not a replacement for the site being accessible, nor for the accessibility statement."
+msgstr "כפתור שמאפשר למבקר להגדיל טקסט, להעלות ניגודיות, לעצור אנימציות ועוד. זו התאמה שמונחת מעל האתר — היא לא מחליפה את הנגישות של האתר עצמו, וגם לא את הצהרת הנגישות."
