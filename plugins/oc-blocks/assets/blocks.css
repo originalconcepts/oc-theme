@@ -281,6 +281,9 @@
 
 .ocb-dots__dot.is-on { background: #fff; transform: scale(1.25); }
 
+/* The pause button in the row of dots: centred on them, a little apart. */
+.ocb-dots .ocb-dots__pp { align-self: center; margin-block: -10px; margin-inline-start: 4px; inline-size: 26px; block-size: 26px; }
+
 /* A dot is 8px because that is what it should look like; a finger needs 24.
  * The button keeps its size and grows an invisible tap area around itself,
  * and the row opens up enough that two targets never overlap. */
@@ -1483,9 +1486,7 @@
 .ocpp--inline:focus-visible { box-shadow: none; outline-color: currentColor; }
 .ocpp--inline svg { inline-size: 11px; block-size: 11px; }
 
-/* The marquee's button sits mid-height at its end; a stopped strip holds still. */
-.ocb-mq { position: relative; }
-.ocb-mq .ocb-mq__pp { inset-block: 50% auto; transform: translateY(-50%); }
+/* A stopped strip holds still. */
 .ocb-mq.is-paused .ocb-mq__track { animation-play-state: paused; }
 
 /* @chunk

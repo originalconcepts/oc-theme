@@ -292,11 +292,11 @@ window.ocPause = window.ocPause || ( function () {
 
 		var host = hero || v.parentElement;
 		var bg = v.closest( '.ocb__bg' );
-		var link = host.closest( 'a' );
+		var link = host.closest( 'a, button' );
 
 		// A background video lies under the section's words; the button
-		// belongs to the section. Never inside a link — a button there is
-		// not allowed, and the click would follow the link.
+		// belongs to the section. Never inside a link or a button — a button
+		// there is not allowed, and the click would go to the other one.
 		if ( bg && bg.parentElement ) {
 			host = bg.parentElement;
 		} else if ( link && link.parentElement ) {

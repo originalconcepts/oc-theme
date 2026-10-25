@@ -109,11 +109,11 @@
 
 			var host = hero || v.parentElement;
 			var bg = v.closest( '.ocb__bg' );
-			var link = host.closest( 'a' );
+			var link = host.closest( 'a, button' );
 
 			// A background video lies under the section's words; the button
-			// belongs to the section. Never inside a link — a button there is
-			// not allowed, and the click would follow the link.
+			// belongs to the section. Never inside a link or a button — a button
+			// there is not allowed, and the click would go to the other one.
 			if ( bg && bg.parentElement ) {
 				host = bg.parentElement;
 			} else if ( link && link.parentElement ) {
@@ -248,8 +248,11 @@
 				return;
 			}
 
-			if ( dots.children.length !== count() ) {
-				dots.innerHTML = '';
+			// The row may also hold the pause button, which outlives a repaint.
+			if ( dots.querySelectorAll( '.ocb-dots__dot' ).length !== count() ) {
+				dots.querySelectorAll( '.ocb-dots__dot' ).forEach( function ( old ) {
+					old.remove();
+				} );
 
 				for ( var i = 0; i < count(); i++ ) {
 					( function ( n ) {
@@ -260,7 +263,7 @@
 						d.addEventListener( 'click', function () {
 							go( n );
 						} );
-						dots.appendChild( d );
+						dots.insertBefore( d, dots.querySelector( '.ocpp' ) );
 					}( i ) );
 				}
 			}
@@ -475,7 +478,11 @@
 		// A banner that turns by itself, or plays a video, can be stopped:
 		// one button for the turning and every video in it.
 		if ( ( Number( hero.dataset.ocbAuto || 0 ) && ! reduced ) || hero.querySelector( 'video' ) ) {
-			hero.appendChild( window.ocPause.button( 'motion', 'ocpp--corner', function ( paused ) {
+			var heroDots = hero.querySelector( '[data-ocb-dots]' );
+
+			// Beside the dots when there are dots — a corner of the banner
+			// is where floating buttons stand.
+			( heroDots || hero ).appendChild( window.ocPause.button( 'motion', heroDots ? 'ocb-dots__pp' : 'ocpp--corner', function ( paused ) {
 				held = paused;
 				arm();
 				hero.querySelectorAll( 'video' ).forEach( paused ? window.ocPause.hold : window.ocPause.release );
@@ -678,8 +685,10 @@
 			return;
 		}
 
-		// The strip never stops by itself, so it can be stopped.
-		mq.appendChild( window.ocPause.button( 'motion', 'ocpp--corner ocb-mq__pp', function ( paused ) {
+		// The strip never stops by itself, so it can be stopped. The button
+		// lives in the section: a tilted strip is wider than the screen, and
+		// its own corner is off it.
+		( mq.closest( '.ocb' ) || mq ).appendChild( window.ocPause.button( 'motion', 'ocpp--corner', function ( paused ) {
 			mq.classList.toggle( 'is-paused', paused );
 		} ) );
 	} );
