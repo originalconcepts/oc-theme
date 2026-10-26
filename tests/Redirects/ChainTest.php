@@ -118,6 +118,7 @@ final class ChainTest extends TestCase {
 
 		$this->assertSame( '/product/new', Redirects::pick( $book, '/product/old', false )['t'] );
 		$this->assertSame( '/product/new', Redirects::pick( $book, '/product/old?colour=red', false )['t'], 'the bare path still answers' );
+		$this->assertSame( '/product/new', Redirects::pick( $book, '/product/old?attribute_pa_size=60', false )['t'], 'a variation address is answered by its product' );
 		$this->assertSame( '/shop', Redirects::pick( $book, '/product/unknown' )['t'] );
 		$this->assertNull( Redirects::pick( $book, '/product/unknown', false ) );
 		$this->assertNull( Redirects::pick( $book, '/productive' ), 'a net covers its folder, not a longer word' );

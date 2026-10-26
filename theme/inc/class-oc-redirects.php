@@ -24,7 +24,7 @@ final class Redirects {
 	/**
 	 * Schema version, bumped when the tables change.
 	 */
-	const DB_VERSION = '1';
+	const DB_VERSION = '2';
 
 	/**
 	 * Cache option holding every active rule.
@@ -133,6 +133,20 @@ final class Redirects {
 				UNIQUE KEY path_key (path_key)
 			) $charset"
 		);
+
+		// Version 2: a product variation going to the trash used to leave a
+		// rule of its own — its permalink is the parent's address with
+		// ?attribute_…, its fallback came out as the home page, and an exact
+		// match with the query beat the parent's rule to its category. The
+		// parent's rule already covers every variation address, so those
+		// rules go.
+		if ( (int) get_option( 'ocrd_db_version', 0 ) < 2 ) {
+			$wpdb->query( 'DELETE FROM ' . self::table() . " WHERE origin = 'auto' AND object_type = 'product_variation'" ); // phpcs:ignore WordPress.DB -- table name from $wpdb->prefix, no input.
+			update_option( 'ocrd_db_version', self::DB_VERSION );
+			self::rebuild_cache();
+
+			return;
+		}
 
 		update_option( 'ocrd_db_version', self::DB_VERSION );
 	}
@@ -778,6 +792,13 @@ final class Redirects {
 		$post = get_post( $post_id );
 
 		if ( ! $post instanceof \WP_Post || 'publish' !== $post->post_status ) {
+			return;
+		}
+
+		// A variation's address is its product's with ?attribute_… — the
+		// product's own rule answers it (pick() falls back to the bare path),
+		// and a rule of the variation's would send it to the home page.
+		if ( 'product_variation' === $post->post_type ) {
 			return;
 		}
 
