@@ -24,7 +24,7 @@ final class Redirects {
 	/**
 	 * Schema version, bumped when the tables change.
 	 */
-	const DB_VERSION = '2';
+	const DB_VERSION = '3';
 
 	/**
 	 * Cache option holding every active rule.
@@ -134,14 +134,15 @@ final class Redirects {
 			) $charset"
 		);
 
-		// Version 2: a product variation going to the trash used to leave a
-		// rule of its own — its permalink is the parent's address with
-		// ?attribute_…, its fallback came out as the home page, and an exact
-		// match with the query beat the parent's rule to its category. The
-		// parent's rule already covers every variation address, so those
-		// rules go.
-		if ( (int) get_option( 'ocrd_db_version', 0 ) < 2 ) {
-			$wpdb->query( 'DELETE FROM ' . self::table() . " WHERE origin = 'auto' AND object_type = 'product_variation'" ); // phpcs:ignore WordPress.DB -- table name from $wpdb->prefix, no input.
+		// Versions 2 and 3: content nobody can visit used to leave a rule when
+		// it went to the trash. A product variation — its permalink is the
+		// parent's address with ?attribute_…, its fallback came out as the
+		// home page, and that exact match beat the parent's rule to its
+		// category. A Customizer changeset — trashed by WordPress itself on
+		// every publish, leaving a /{uuid} → home rule each time. Those rules
+		// go; the parent product's rule covers the variation addresses.
+		if ( (int) get_option( 'ocrd_db_version', 0 ) < 3 ) {
+			$wpdb->query( 'DELETE FROM ' . self::table() . " WHERE origin = 'auto' AND object_type IN ( 'product_variation', 'customize_changeset' )" ); // phpcs:ignore WordPress.DB -- table name from $wpdb->prefix, no input.
 			update_option( 'ocrd_db_version', self::DB_VERSION );
 			self::rebuild_cache();
 
@@ -795,10 +796,12 @@ final class Redirects {
 			return;
 		}
 
-		// A variation's address is its product's with ?attribute_… — the
+		// Only what a visitor can open has an address worth forwarding. A
+		// variation's address is its product's with ?attribute_… — the
 		// product's own rule answers it (pick() falls back to the bare path),
-		// and a rule of the variation's would send it to the home page.
-		if ( 'product_variation' === $post->post_type ) {
+		// and a rule of its own would send it to the home page. A Customizer
+		// changeset is trashed by WordPress on every publish.
+		if ( 'product_variation' === $post->post_type || ! is_post_type_viewable( $post->post_type ) ) {
 			return;
 		}
 
