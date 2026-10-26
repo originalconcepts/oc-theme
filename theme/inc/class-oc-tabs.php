@@ -37,7 +37,11 @@ final class Tabs {
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_assets' ) );
 
 		add_filter( 'woocommerce_product_tabs', array( $this, 'tabs' ), 40 );
-		add_action( 'init', array( $this, 'placement' ) );
+		// On 'wp', not 'init': the Customizer applies a setting it is
+		// previewing only from wp_loaded on, so at init the saved value
+		// answered — turning "short description as a tab" off in the preview
+		// still took it out of the summary, and it showed nowhere.
+		add_action( 'wp', array( $this, 'placement' ) );
 
 		// Per-product tabs, managed straight from the product edit screen.
 		add_filter( 'woocommerce_product_data_tabs', array( $this, 'product_data_tab' ) );
