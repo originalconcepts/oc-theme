@@ -81,8 +81,8 @@ for name, part in [("core", core)] + sorted(chunks.items()):
 # times — git rewrites only the files that changed, so an unchanged piece
 # keeps an old date beside a fresh source and would read as stale.
 version = re.search(r"^\s*\*?\s*Version:\s*([0-9.]+)", (repo / "theme" / "style.css").read_text(), re.M).group(1)
-(css_dir / "theme.pieces.php").write_text(
-    "<?php\n// Written by scripts/minify.py — the stylesheet pieces and what they were cut from.\nreturn array(\n"
+(css_dir / "theme-pieces.php").write_text(
+    "<?php\n/**\n * Written by scripts/minify.py: the stylesheet pieces and what they were cut from.\n *\n * @package OC_Theme\n */\n\nreturn array(\n"
     f"\t'version' => '{version}',\n"
     f"\t'size'    => {(css_dir / 'theme.css').stat().st_size},\n"
     "\t'chunks'  => array( " + ", ".join(f"'{n}'" for n in sorted(chunks)) + " ),\n);\n"

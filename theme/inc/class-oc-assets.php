@@ -191,7 +191,7 @@ final class Assets {
 	 */
 	private function css_pieces(): ?array {
 		$dir   = OC_THEME_DIR . '/assets/css/';
-		$stamp = file_exists( $dir . 'theme.pieces.php' ) ? include $dir . 'theme.pieces.php' : null;
+		$stamp = file_exists( $dir . 'theme-pieces.php' ) ? include $dir . 'theme-pieces.php' : null;
 
 		// The stamp says which theme.css the pieces came from: the version
 		// they were built for and the size of the file — not file times,
