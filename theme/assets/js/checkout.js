@@ -395,6 +395,28 @@
 			}
 		} );
 
+		/* -- Woo redraws the payment fragment on every refresh (address,
+		 * delivery method) and carries only its own terms box across; our
+		 * boxes in it came back unticked, so the shopper ticked twice. -- */
+		var coTicks = {};
+		var coTickSel = 'input[type="checkbox"][name="oc_privacy_consent"], input[type="checkbox"][name="oc_marketing_consent"]';
+
+		document.addEventListener( 'change', function ( e ) {
+			if ( e.target.matches( coTickSel ) ) {
+				coTicks[ e.target.name ] = e.target.checked;
+			}
+		} );
+
+		if ( window.jQuery ) {
+			window.jQuery( document.body ).on( 'updated_checkout', function () {
+				coForm.querySelectorAll( coTickSel ).forEach( function ( box ) {
+					if ( box.name in coTicks ) {
+						box.checked = coTicks[ box.name ];
+					}
+				} );
+			} );
+		}
+
 		/* -- place order: validate visible fields first, glide to the bad one -- */
 		document.addEventListener( 'click', function ( e ) {
 			var btn = e.target.closest( '#place_order' );
