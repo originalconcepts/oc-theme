@@ -1842,6 +1842,7 @@ return array(
 		"Invite customers to follow the store" => "הזמנת לקוחות לעקוב אחרי החנות",
 		"Invite the buyer to your WhatsApp group?" => "להזמין את הקונה לקבוצת הוואטסאפ שלכם?",
 		"Invite to join the group" => "הזמנה להצטרף לקבוצה",
+		"Invoice in a business name" => "חשבונית על שם עסק",
 		"Is the card charged at once, or held?" => "הכרטיס מחויב מיד, או נתפס?",
 		"Israel" => "ישראל",
 		"Israel Israeli" => "ישראל ישראלי",

@@ -11272,6 +11272,35 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 
 .oc-co-recipient { margin-block-start: 16px; }
 
+/* ---------- invoice in a business name ---------- */
+
+.oc-checkout .oc-co-invrow .oc-co-toggle {
+	display: flex;
+	align-items: center;
+	justify-content: flex-start;
+	inline-size: fit-content;
+	gap: 9px;
+	margin: 0;
+	cursor: pointer;
+	font-size: .95rem;
+}
+
+.oc-checkout .oc-co-invoice:not(.is-on) { display: none; }
+
+/* PayPlus lays its six card logos out at a size where the last one drops
+ * to a second line on a phone. One row, each logo giving way a little. */
+.payplus-checkout-image-container { flex-wrap: nowrap !important; gap: 6px; }
+
+.payplus-checkout-image-container img {
+	flex: 0 1 auto;
+	min-inline-size: 0;
+	inline-size: auto !important;
+	block-size: auto !important;
+	max-block-size: 35px;
+	margin: 0 !important;
+	object-fit: contain;
+}
+
 .oc-co-recipient__intro {
 	margin: 0 0 12px;
 	font-weight: 600;

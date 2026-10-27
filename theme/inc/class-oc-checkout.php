@@ -71,6 +71,8 @@ final class Checkout {
 		add_filter( 'woocommerce_get_country_locale', array( $this, 'country_locale' ), 20 );
 		add_filter( 'woocommerce_checkout_get_value', array( $this, 'pin_country' ), 20, 2 );
 		add_filter( 'woocommerce_form_field_oc_co_shipping', array( $this, 'shipping_section' ) );
+		add_filter( 'woocommerce_checkout_fields', array( $this, 'invoice_name' ), 99 );
+		add_filter( 'woocommerce_form_field_oc_co_invoice', array( $this, 'invoice_toggle' ) );
 		add_filter( 'woocommerce_update_order_review_fragments', array( $this, 'rates_fragment' ) );
 		add_action( 'woocommerce_checkout_update_order_review', array( $this, 'branch_seen' ) );
 		add_filter( 'woocommerce_cart_shipping_method_full_label', array( $this, 'free_label' ), 10, 2 );
@@ -663,6 +665,53 @@ final class Checkout {
 		$locale['IL']['postcode']['hidden']   = true;
 
 		return $locale;
+	}
+
+	/**
+	 * A payment plugin's "name for the invoice" field (PayPlus adds
+	 * billing_customer_invoice_name) sits under the phone, behind an
+	 * "Invoice in a business name" switch: most shoppers never need it.
+	 * Late, so the plugin has added its field whatever its own priority.
+	 *
+	 * @param array $fields Woo's checkout fields.
+	 * @return array
+	 */
+	public function invoice_name( array $fields ): array {
+		$key = 'billing_customer_invoice_name';
+
+		if ( empty( $fields['billing'][ $key ] ) ) {
+			return $fields;
+		}
+
+		$b =& $fields['billing'];
+
+		$b['oc_co_invoice'] = array(
+			'type'     => 'oc_co_invoice',
+			'label'    => '',
+			'required' => false,
+			'priority' => 41,
+		);
+
+		$b[ $key ]['priority'] = 42;
+		$b[ $key ]['class']    = array_merge( array_diff( (array) ( $b[ $key ]['class'] ?? array() ), array( 'form-row-first', 'form-row-last' ) ), array( 'form-row-wide', 'oc-co-invoice' ) );
+
+		return $fields;
+	}
+
+	/**
+	 * The switch over the invoice name. On when the shopper already has
+	 * one (a returning customer, a form coming back from the cart); off,
+	 * the name field is hidden and disabled, so it is not sent at all.
+	 *
+	 * @return string
+	 */
+	public function invoice_toggle(): string {
+		$on = '' !== trim( (string) WC()->checkout()->get_value( 'billing_customer_invoice_name' ) );
+
+		return '<p class="form-row form-row-wide oc-co-invrow" data-priority="41"><label class="oc-co-toggle">'
+			. '<input type="checkbox" id="oc_invoice_business" data-oc-co-invoice value="1"' . checked( $on, true, false ) . ' />'
+			. '<span>' . esc_html__( 'Invoice in a business name', 'oc-theme' ) . '</span>'
+			. '</label></p>';
 	}
 
 	/**

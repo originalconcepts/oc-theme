@@ -14720,3 +14720,6 @@ msgstr "להציג רכיב נגישות"
 
 msgid "A button that lets a visitor enlarge text, raise contrast, stop animation and more. It is an adjustment on top of the site, not a replacement for the site being accessible, nor for the accessibility statement."
 msgstr "כפתור שמאפשר למבקר להגדיל טקסט, להעלות ניגודיות, לעצור אנימציות ועוד. זו התאמה שמונחת מעל האתר — היא לא מחליפה את הנגישות של האתר עצמו, וגם לא את הצהרת הנגישות."
+
+msgid "Invoice in a business name"
+msgstr "חשבונית על שם עסק"

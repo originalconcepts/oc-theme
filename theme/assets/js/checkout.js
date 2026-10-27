@@ -88,8 +88,34 @@
 					block.hidden = ! e.target.checked;
 				}
 			}
+			if ( e.target.hasAttribute( 'data-oc-co-invoice' ) ) {
+				coSyncInvoice( true );
+			}
 		} );
 
+		/* -- "Invoice in a business name": off, the invoice name is hidden
+		 * and disabled, so it is not sent; on, it opens under the switch. -- */
+		function coSyncInvoice( focus ) {
+			var sw = coForm.querySelector( '[data-oc-co-invoice]' );
+			var row = coForm.querySelector( '.oc-co-invoice' );
+			var input = row && row.querySelector( 'input' );
+
+			if ( ! sw || ! row ) {
+				return;
+			}
+
+			row.classList.toggle( 'is-on', sw.checked );
+
+			if ( input ) {
+				input.disabled = ! sw.checked;
+
+				if ( focus && sw.checked ) {
+					input.focus();
+				}
+			}
+		}
+
+		coSyncInvoice( false );
 		coSyncMethod();
 
 		/* -- live field validation: green when good, red when left bad -- */
