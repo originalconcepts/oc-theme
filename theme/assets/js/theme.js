@@ -1108,7 +1108,9 @@ window.ocPause = window.ocPause || ( function () {
 
 			// The language switcher's links ride the top bar and lose their
 			// first tap the same way the rows did; they get the same answer.
-			drwTap = event.target.closest( '.oc-drw__a, .oc-drw__title, .oc-drw__all, .oc-drw__more, .oc-lang a' );
+			// So does the close button and the scrim around the panel: their
+			// first tap went missing too, and the drawer stayed open.
+			drwTap = event.target.closest( '.oc-drw__a, .oc-drw__title, .oc-drw__all, .oc-drw__more, .oc-lang a, [data-oc-drw-close]' );
 			drwTapX = event.clientX;
 			drwTapY = event.clientY;
 			drwTapMoved = false;
@@ -1126,6 +1128,14 @@ window.ocPause = window.ocPause || ( function () {
 			drwTap = null;
 
 			if ( ! link || drwTapMoved || 'mouse' === event.pointerType ) {
+				return;
+			}
+
+			// Closing happens on the touch. The click that may follow finds
+			// the drawer already closing, and closing twice changes nothing.
+			if ( link.hasAttribute( 'data-oc-drw-close' ) ) {
+				event.preventDefault();
+				drwSet( false );
 				return;
 			}
 
