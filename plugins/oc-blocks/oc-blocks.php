@@ -3,7 +3,7 @@
  * Plugin Name:       OC Blocks
  * Plugin URI:        https://ocpluginz.com
  * Description:       Page builder for WooCommerce shops — hero sliders, products, categories, banners and the rest, edited in a full-screen composer with a live 1:1 preview. Works with any theme.
- * Version:           0.3.382
+ * Version:           0.3.383
  * Requires at least: 6.5
  * Requires PHP:      8.1
  * Author:            OC Pluginz
@@ -22,7 +22,7 @@ declare( strict_types = 1 );
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'OC_BLOCKS_VERSION', '0.3.382' );
+define( 'OC_BLOCKS_VERSION', '0.3.383' );
 define( 'OC_BLOCKS_DIR', plugin_dir_path( __FILE__ ) );
 define( 'OC_BLOCKS_URI', plugin_dir_url( __FILE__ ) );
 

@@ -184,7 +184,7 @@
 		var body = JSON.stringify( { _t: cfg.token, id: s.id, p: s.preferences ? 1 : 0, a: s.analytics ? 1 : 0, m: s.marketing ? 1 : 0, mode: mode, region: region, pv: s.pv, lang: cfg.lang || '' } );
 
 		try {
-			fetch( cfg.rest, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: body, keepalive: true, credentials: 'omit' } ).catch( function () {} );
+			fetch( cfg.rest, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: body, keepalive: true, credentials: 'same-origin' } ).catch( function () {} );
 		} catch ( e ) {}
 	}
 
@@ -378,7 +378,7 @@
 
 		var timer = setTimeout( guess, 2500 );
 
-		fetch( cfg.rest + '/region?_t=' + encodeURIComponent( cfg.token ), { credentials: 'omit', cache: 'no-store' } )
+		fetch( cfg.rest + '/region?_t=' + encodeURIComponent( cfg.token ), { credentials: 'same-origin', cache: 'no-store' } )
 			.then( function ( r ) { if ( ! r.ok ) { throw new Error( 'no' ); } return r.json(); } )
 			.then( function ( d ) { clearTimeout( timer ); settle( ( d && d.country ) || '', ( d && d.mode ) || 'optout' ); } )
 			.catch( function () { clearTimeout( timer ); guess(); } );

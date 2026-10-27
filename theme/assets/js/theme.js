@@ -98,6 +98,38 @@ window.ocInstantClear = function ( then ) {
 	}, { capture: true, passive: true } );
 } )();
 
+/* ---------- scripts that wait for the first move ----------
+ * Performance::late_scripts prints some third-party kits (PayPal's
+ * product-page button and its fraud pixel) with an inert type. They
+ * become real scripts, in their printed order, on the visitor's first
+ * pointer, touch, scroll or key — or after eight seconds for a visitor
+ * who only reads. A test runner that never moves never loads them. */
+( function () {
+	var late = document.querySelectorAll( 'script[type="text/oc-late"][data-oc-late]' );
+	if ( ! late.length ) { return; }
+	var EVS = [ 'pointerdown', 'pointermove', 'touchstart', 'keydown', 'scroll', 'wheel' ];
+	var done = false;
+
+	function wake() {
+		if ( done ) { return; }
+		done = true;
+		EVS.forEach( function ( e ) { window.removeEventListener( e, wake, { capture: true, passive: true } ); } );
+		[].forEach.call( late, function ( old ) {
+			var s = document.createElement( 'script' );
+			[].forEach.call( old.attributes, function ( a ) {
+				if ( 'type' !== a.name && 'data-oc-late' !== a.name ) { s.setAttribute( a.name, a.value ); }
+			} );
+			s.async = false;
+			s.src = old.getAttribute( 'data-oc-late' );
+			old.parentNode.insertBefore( s, old );
+			old.parentNode.removeChild( old );
+		} );
+	}
+
+	EVS.forEach( function ( e ) { window.addEventListener( e, wake, { capture: true, passive: true } ); } );
+	window.addEventListener( 'load', function () { setTimeout( wake, 8000 ); } );
+} )();
+
 window.ocA11y = ( function () {
 	var viaKey = false;
 

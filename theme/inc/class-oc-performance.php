@@ -72,6 +72,87 @@ final class Performance {
 		// Styles for things that float in a corner and are never part of
 		// the first screen's layout load without holding the first paint.
 		add_filter( 'style_loader_tag', array( $this, 'late_styles' ), 10, 2 );
+
+		// Third-party kits that only matter once the visitor moves wait for
+		// that move (theme.js hands them over): PayPal's product-page
+		// button pulls its SDK, a fraud pixel and a handful of cookies from
+		// three paypal.com hosts the moment the page opens.
+		add_filter( 'script_loader_tag', array( $this, 'late_scripts' ), 10, 3 );
+	}
+
+	/**
+	 * Script handles that wait for the visitor's first move on a product
+	 * page. The script tag is printed with its address in data-oc-late and
+	 * an inert type; theme.js turns them back into real scripts, in order,
+	 * on the first pointer, touch, scroll or key — or after eight seconds,
+	 * for a visitor who only reads.
+	 *
+	 * @return string[]
+	 */
+	public static function late_script_handles(): array {
+		if ( ! function_exists( 'is_product' ) || ! is_product() ) {
+			return array();
+		}
+
+		/**
+		 * Script handles that load on the visitor's first move.
+		 *
+		 * @param string[] $handles Handles.
+		 */
+		return (array) apply_filters( 'oc_late_script_handles', array( 'wc-ppcp-sdk-v6-boot', 'ppcp-fraudnet', 'ppcp-smart-button' ) );
+	}
+
+	/**
+	 * Plugin scripts that may run after the page is parsed.
+	 *
+	 * @return string[]
+	 */
+	public static function defer_script_handles(): array {
+		/**
+		 * Script handles given the defer attribute.
+		 *
+		 * @param string[] $handles Handles.
+		 */
+		return (array) apply_filters( 'oc_defer_script_handles', array( 'ocai' ) );
+	}
+
+	/**
+	 * Rewrite a late script's tag so the browser keeps it but does not run it.
+	 *
+	 * @param string $tag    The script tag.
+	 * @param string $handle Script handle.
+	 * @param string $src    Script address.
+	 */
+	public function late_scripts( $tag, $handle, $src ): string {
+		$tag = (string) $tag;
+
+		if ( is_admin() || '' === (string) $src ) {
+			return $tag;
+		}
+
+		// A plugin script printed plain at the end of the page still stops
+		// the parser while it downloads and runs — HiiAI's 35 KB cost the
+		// first paint half a second on a phone line. Deferred, it runs
+		// once the page is parsed, where its chat button lives anyway.
+		if ( in_array( (string) $handle, self::defer_script_handles(), true ) && ! preg_match( '/\s(?:defer|async)\b/i', $tag ) ) {
+			return (string) preg_replace( '/<script\b/i', '<script defer', $tag, 1 );
+		}
+
+		if ( ! in_array( (string) $handle, self::late_script_handles(), true ) ) {
+			return $tag;
+		}
+
+		// Only the tag that carries the address; WordPress prints the
+		// inline "before/after/extra" pieces as their own tags.
+		return (string) preg_replace_callback(
+			'/<script\b([^>]*)\ssrc=([\'"])([^\'"]+)\2([^>]*)><\/script>/i',
+			static function ( array $m ): string {
+				$attrs = $m[1] . $m[4];
+				$attrs = (string) preg_replace( '/\s(?:type|defer|async)(?:=[\'"][^\'"]*[\'"])?/i', '', $attrs );
+				return '<script type="text/oc-late"' . $attrs . ' data-oc-late="' . esc_attr( $m[3] ) . '"></script>';
+			},
+			$tag
+		);
 	}
 
 	/**
