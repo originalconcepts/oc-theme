@@ -257,6 +257,11 @@
 					el.setAttribute( 'src', el.dataset.ocbSrc );
 					el.removeAttribute( 'data-ocb-src' );
 				}
+
+				// Once handed over, fetched for real: a lazy picture in a
+				// strip waits for the browser's own idea of "near", which
+				// a hidden tab never reaches, and the turn would show blank.
+				el.removeAttribute( 'loading' );
 			} );
 		}
 

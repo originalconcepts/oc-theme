@@ -48,12 +48,13 @@ final class Critical {
 	const MAX_BYTES = 260000;
 
 	/**
-	 * Parts of the page nobody sees until they act: the drawers, the
-	 * modals, the mega menu, the login and cart panels. Their rules stay
-	 * out of the extract and arrive with the late sheets a moment later —
-	 * on the home page they were a third of what the page carried inline.
+	 * Tried and withdrawn (0.3.369): leaving the drawers', modals' and
+	 * mega menu's rules out of the extract. Their closed state IS a rule —
+	 * without it the mega-menu panels stood open in the header until the
+	 * late sheet arrived, a layout shift of 0.82 on the desktop scan. A
+	 * part hidden by the `hidden` attribute could go; one hidden by CSS
+	 * cannot, and telling them apart is not worth 8KB.
 	 */
-	const LATER_RE = '/\\.(oc-drw|oc-drawer|oc-auth|oc-cartup|oc-mcart|oc-vp|oc-vmodal|oc-voverlay|oc-nmodal|oc-searchbox|oc-legal|oc-delacc|oc-mega|oc-mb|oc-wltoast)(?![A-Za-z0-9])/';
 
 	/**
 	 * The script that hands lazy pictures their addresses: the first screen's
@@ -63,7 +64,7 @@ final class Critical {
 	 * page out, and on a phone line those pictures shared the bandwidth
 	 * with the largest paint.
 	 */
-	const LAZY_JS = '(function(){var io,on=false;function show(el){var p=el.parentNode;if(p&&"PICTURE"===p.tagName){[].forEach.call(p.querySelectorAll("source"),function(s){if(s.dataset.ocSrcset){s.setAttribute("srcset",s.dataset.ocSrcset);s.removeAttribute("data-oc-srcset")}})}if(el.dataset.ocSrcset){el.setAttribute("srcset",el.dataset.ocSrcset);el.removeAttribute("data-oc-srcset")}if(el.dataset.ocSrc){el.setAttribute("src",el.dataset.ocSrc);el.removeAttribute("data-oc-src")}}function all(){return document.querySelectorAll("img[data-oc-src],img[data-oc-srcset]")}function later(){if(on){return}on=true;var els=all();if(!("IntersectionObserver" in window)){[].forEach.call(els,show);return}io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){io.unobserve(e.target);show(e.target)}})},{rootMargin:"1200px 600px"});[].forEach.call(els,function(el){io.observe(el)})}window.ocLazy={now:function(){var h=innerHeight*1.1;[].forEach.call(all(),function(el){var r=el.getBoundingClientRect();if(r.top<h&&r.bottom>-100&&(r.width||r.height)){show(el)}});if("complete"===document.readyState){later()}else{addEventListener("load",later);setTimeout(later,4000)}},show:show,later:later}})();';
+	const LAZY_JS = '(function(){var io,on=false;function show(el){var p=el.parentNode;if(p&&"PICTURE"===p.tagName){[].forEach.call(p.querySelectorAll("source"),function(s){if(s.dataset.ocSrcset){s.setAttribute("srcset",s.dataset.ocSrcset);s.removeAttribute("data-oc-srcset")}})}if(el.dataset.ocSrcset){el.setAttribute("srcset",el.dataset.ocSrcset);el.removeAttribute("data-oc-srcset")}if(el.dataset.ocSrc){el.setAttribute("src",el.dataset.ocSrc);el.removeAttribute("data-oc-src")}el.removeAttribute("loading")}function all(){return document.querySelectorAll("img[data-oc-src],img[data-oc-srcset]")}function later(){if(on){return}on=true;var els=all();if(!("IntersectionObserver" in window)){[].forEach.call(els,show);return}io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){io.unobserve(e.target);show(e.target)}})},{rootMargin:"1200px 600px"});[].forEach.call(els,function(el){io.observe(el)})}window.ocLazy={now:function(){var h=innerHeight*1.1;[].forEach.call(all(),function(el){var r=el.getBoundingClientRect();if(r.top<h&&r.bottom>-100&&(r.width||r.height)){show(el)}});if("complete"===document.readyState){later()}else{addEventListener("load",later);setTimeout(later,4000)}},show:show,later:later}})();';
 
 	/**
 	 * Classes a script adds the moment the page runs, before the full
@@ -715,10 +716,6 @@ final class Critical {
 				if ( ! $n ) {
 					break;
 				}
-			}
-
-			if ( preg_match( self::LATER_RE, $bare ) ) {
-				continue;
 			}
 
 			$ok = true;
