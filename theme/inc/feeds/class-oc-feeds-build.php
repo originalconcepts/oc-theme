@@ -1555,7 +1555,13 @@ final class Build {
 	 */
 	private static function availability( bool $stock, bool $later, bool $google ): string {
 		if ( $later ) {
-			return $google ? 'backorder' : 'available for order';
+			// Google accepts "backorder" only with the date the thing
+			// returns (g:availability_date), and the shop keeps no such
+			// date; without it the line is refused. Out of stock is the
+			// honest word for Google — the shop still sells it, and the
+			// moment stock arrives the next build says in_stock. Meta and
+			// TikTok take "available for order" as it is.
+			return $google ? 'out_of_stock' : 'available for order';
 		}
 
 		if ( $google ) {
