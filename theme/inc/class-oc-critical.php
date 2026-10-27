@@ -64,7 +64,7 @@ final class Critical {
 	 * page out, and on a phone line those pictures shared the bandwidth
 	 * with the largest paint.
 	 */
-	const LAZY_JS = '(function(){var io,on=false;function show(el){var p=el.parentNode;if(p&&"PICTURE"===p.tagName){[].forEach.call(p.querySelectorAll("source"),function(s){if(s.dataset.ocSrcset){s.setAttribute("srcset",s.dataset.ocSrcset);s.removeAttribute("data-oc-srcset")}})}if(el.dataset.ocSrcset){el.setAttribute("srcset",el.dataset.ocSrcset);el.removeAttribute("data-oc-srcset")}if(el.dataset.ocSrc){el.setAttribute("src",el.dataset.ocSrc);el.removeAttribute("data-oc-src")}el.removeAttribute("loading")}function all(){return document.querySelectorAll("img[data-oc-src],img[data-oc-srcset]")}function later(){if(on){return}on=true;var els=all();if(!("IntersectionObserver" in window)){[].forEach.call(els,show);return}io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){io.unobserve(e.target);show(e.target)}})},{rootMargin:"1200px 600px"});[].forEach.call(els,function(el){io.observe(el)})}window.ocLazy={now:function(){var h=innerHeight*1.1;[].forEach.call(all(),function(el){var r=el.getBoundingClientRect();if(r.top<h&&r.bottom>-100&&(r.width||r.height)){show(el)}});if("complete"===document.readyState){later()}else{addEventListener("load",later);setTimeout(later,4000)}},show:show,later:later}})();';
+	const LAZY_JS = '(function(){var io,on=false;function show(el){var p=el.parentNode;if(p&&"PICTURE"===p.tagName){[].forEach.call(p.querySelectorAll("source"),function(s){if(s.dataset.ocSrcset){s.setAttribute("srcset",s.dataset.ocSrcset);s.removeAttribute("data-oc-srcset")}})}if(el.dataset.ocSrcset){el.setAttribute("srcset",el.dataset.ocSrcset);el.removeAttribute("data-oc-srcset")}if(el.dataset.ocSrc){el.setAttribute("src",el.dataset.ocSrc);el.removeAttribute("data-oc-src")}el.removeAttribute("loading")}function all(){return document.querySelectorAll("img[data-oc-src],img[data-oc-srcset]")}function scan(){[].forEach.call(all(),function(el){if(el.ocL){return}el.ocL=1;if(io){io.observe(el)}else{show(el)}})}function later(){if(on){return}on=true;if("IntersectionObserver" in window){io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){io.unobserve(e.target);show(e.target)}})},{rootMargin:"1200px 600px"})}scan();if("MutationObserver" in window){new MutationObserver(scan).observe(document.body,{childList:true,subtree:true})}}window.ocLazy={now:function(){var h=innerHeight*1.1;[].forEach.call(all(),function(el){var r=el.getBoundingClientRect();if(r.top<h&&r.bottom>-100&&(r.width||r.height)){show(el)}});if("complete"===document.readyState){later()}else{addEventListener("load",later);setTimeout(later,4000)}},show:show,later:later,scan:scan}})();';
 
 	/**
 	 * Classes a script adds the moment the page runs, before the full
@@ -262,6 +262,16 @@ final class Critical {
 		}
 
 		if ( 'GET' !== sanitize_text_field( wp_unslash( (string) ( $_SERVER['REQUEST_METHOD'] ?? 'GET' ) ) ) || is_customize_preview() ) {
+			return;
+		}
+
+		// A page fetched by a script (the catalogue's next page, a drawer)
+		// is parsed for its parts, not shown: no extract, no deferred
+		// pictures. A page cache may still hand such a fetch the rewritten
+		// copy, which is why the script also watches for added pictures.
+		$mode = sanitize_text_field( wp_unslash( (string) ( $_SERVER['HTTP_SEC_FETCH_MODE'] ?? '' ) ) );
+
+		if ( ( '' !== $mode && 'navigate' !== $mode ) || isset( $_SERVER['HTTP_X_REQUESTED_WITH'] ) ) {
 			return;
 		}
 
