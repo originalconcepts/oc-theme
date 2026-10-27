@@ -48,6 +48,24 @@ final class Critical {
 	const MAX_BYTES = 260000;
 
 	/**
+	 * Parts of the page nobody sees until they act: the drawers, the
+	 * modals, the mega menu, the login and cart panels. Their rules stay
+	 * out of the extract and arrive with the late sheets a moment later —
+	 * on the home page they were a third of what the page carried inline.
+	 */
+	const LATER_RE = '/\\.(oc-drw|oc-drawer|oc-auth|oc-cartup|oc-mcart|oc-vp|oc-vmodal|oc-voverlay|oc-nmodal|oc-searchbox|oc-legal|oc-delacc|oc-mega|oc-mb|oc-wltoast)(?![A-Za-z0-9])/';
+
+	/**
+	 * The script that hands lazy pictures their addresses: the first screen's
+	 * at once (before any deferred script runs), the rest once the page has
+	 * loaded, each as it nears the viewport. A browser's own lazy loading
+	 * fetches everything within three screens the moment it has laid the
+	 * page out, and on a phone line those pictures shared the bandwidth
+	 * with the largest paint.
+	 */
+	const LAZY_JS = '(function(){var io,on=false;function show(el){var p=el.parentNode;if(p&&"PICTURE"===p.tagName){[].forEach.call(p.querySelectorAll("source"),function(s){if(s.dataset.ocSrcset){s.setAttribute("srcset",s.dataset.ocSrcset);s.removeAttribute("data-oc-srcset")}})}if(el.dataset.ocSrcset){el.setAttribute("srcset",el.dataset.ocSrcset);el.removeAttribute("data-oc-srcset")}if(el.dataset.ocSrc){el.setAttribute("src",el.dataset.ocSrc);el.removeAttribute("data-oc-src")}}function all(){return document.querySelectorAll("img[data-oc-src],img[data-oc-srcset]")}function later(){if(on){return}on=true;var els=all();if(!("IntersectionObserver" in window)){[].forEach.call(els,show);return}io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){io.unobserve(e.target);show(e.target)}})},{rootMargin:"1200px 600px"});[].forEach.call(els,function(el){io.observe(el)})}window.ocLazy={now:function(){var h=innerHeight*1.1;[].forEach.call(all(),function(el){var r=el.getBoundingClientRect();if(r.top<h&&r.bottom>-100&&(r.width||r.height)){show(el)}});if("complete"===document.readyState){later()}else{addEventListener("load",later);setTimeout(later,4000)}},show:show,later:later}})();';
+
+	/**
 	 * Classes a script adds the moment the page runs, before the full
 	 * stylesheet can be counted on: their rules ride along.
 	 */
@@ -378,8 +396,10 @@ final class Critical {
 			return '';
 		}
 
+		// The pictures below the first screen wait for the page to load.
+		$out = substr( $html, 0, $body_at ) . self::lazy( substr( $html, $body_at ) );
+
 		// Rewrite from the end so the offsets stay true.
-		$out = $html;
 
 		for ( $i = count( $links ) - 1; $i >= 0; $i-- ) {
 			$l    = $links[ $i ];
@@ -387,13 +407,62 @@ final class Critical {
 
 			if ( 0 === $i ) {
 				$late = '<meta name="oc-critical" content="' . esc_attr( $type . ':' . substr( $key, -12 ) . ':' . self::token() ) . '">' . "\n"
-					. '<style id="oc-critical">' . $css . '</style>' . "\n" . $late;
+					. '<style id="oc-critical">' . $css . '</style>' . "\n"
+					. '<script id="oc-lazy">' . self::LAZY_JS . '</script>' . "\n" . $late;
 			}
 
 			$out = substr_replace( $out, $late, $l['at'], strlen( $l['tag'] ) );
 		}
 
 		return $out;
+	}
+
+	/**
+	 * Lazy pictures hand their addresses to data attributes; the script in
+	 * the head gives them back (LAZY_JS). The page's first picture, a hero
+	 * slide, anything already deferred and anything without loading=lazy
+	 * is left alone. The call at the end of the body runs before the
+	 * deferred scripts, so the first screen's pictures have their src by
+	 * the time theme.js looks.
+	 *
+	 * @param string $body The markup from <body on.
+	 */
+	private static function lazy( string $body ): string {
+		$swap = static function ( string $tag ): string {
+			return (string) preg_replace( '/\s(src|srcset)=/i', ' data-oc-$1=', $tag );
+		};
+
+		$skip = static function ( string $tag ): bool {
+			return ! preg_match( '/\bloading=([\'"])lazy\1/i', $tag )
+				|| preg_match( '/\bfetchpriority=([\'"])high\1/i', $tag )
+				|| false !== strpos( $tag, 'data-oc-src' )
+				|| false !== strpos( $tag, 'data-ocb-src' )
+				|| ! preg_match( '/\ssrc=/i', $tag );
+		};
+
+		$body = (string) preg_replace_callback(
+			'#<picture\b[^>]*>.*?</picture>#is',
+			static function ( array $m ) use ( $swap, $skip ): string {
+				if ( ! preg_match( '#<img\b[^>]*>#i', $m[0], $img ) || $skip( $img[0] ) ) {
+					return $m[0];
+				}
+
+				return $swap( $m[0] );
+			},
+			$body
+		);
+
+		$body = (string) preg_replace_callback(
+			'#<img\b[^>]*>#i',
+			static function ( array $m ) use ( $swap, $skip ): string {
+				return $skip( $m[0] ) ? $m[0] : $swap( $m[0] );
+			},
+			$body
+		);
+
+		$end = strrpos( $body, '</body>' );
+
+		return false === $end ? $body : substr_replace( $body, '<script>window.ocLazy&&ocLazy.now()</script>', $end, 0 );
 	}
 
 	/**
@@ -646,6 +715,10 @@ final class Critical {
 				if ( ! $n ) {
 					break;
 				}
+			}
+
+			if ( preg_match( self::LATER_RE, $bare ) ) {
+				continue;
 			}
 
 			$ok = true;
