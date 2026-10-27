@@ -8,11 +8,13 @@
  * the rules the first screen needs, and the stylesheets themselves load
  * without blocking and take over when they arrive.
  *
- * Which rules: the page's own output is read back (output buffer), the
- * markup of the header and the start of the main column is scanned for
- * class names and ids, and every rule whose selector asks for nothing
- * that is not there is kept. Rules for states a script sets at once
- * (is-current, is-ready, ...) are kept too. The result is cached per
+ * Which rules: the page's own output is read back (output buffer), its
+ * markup is scanned for class names and ids, and every rule whose
+ * selector asks for nothing that is not there is kept — the whole page's
+ * names, not a guess at the first screen, since a two-column layout puts
+ * what the eye sees first late in the markup. Rules for states a script
+ * sets at once (is-current, is-ready, ...) and for the pieces a script
+ * builds (the pause buttons) are kept too. The result is cached per
  * distinct set of names, so the parsing runs once per kind of page.
  *
  * Safety: anything odd — no head, a stylesheet that cannot be read, an
@@ -41,22 +43,15 @@ final class Critical {
 	const SKIP = array( 'admin-bar', 'dashicons', 'ocai' );
 
 	/**
-	 * How much of the main column counts as the first screen, in bytes of
-	 * markup: a banner, or the first rows of cards, or a product's gallery
-	 * and summary.
-	 */
-	const MAIN_BYTES = 24000;
-
-	/**
 	 * An extract bigger than this is not worth inlining on every page.
 	 */
-	const MAX_BYTES = 160000;
+	const MAX_BYTES = 200000;
 
 	/**
 	 * Classes a script adds the moment the page runs, before the full
 	 * stylesheet can be counted on: their rules ride along.
 	 */
-	const STATES = array( 'is-current', 'is-ready', 'is-on', 'is-active', 'is-open', 'is-in', 'is-done', 'is-settled', 'is-scrolled', 'is-visible', 'is-live', 'is-revealed', 'is-out', 'is-past', 'is-fading', 'is-paused', 'is-playing', 'is-loaded', 'is-empty', 'is-afloat', 'is-stuck', 'is-solid', 'oc-ready', 'oc-fonts', 'oc-scrolled', 'oc-signed', 'oc-col-stick', 'oc-acc-init', 'oc-clamped', 'ocb--still', 'ocb--in', 'in-scene', 'has-nav', 'loading', 'loaded' );
+	const STATES = array( 'ocpp', 'ocpp--corner', 'ocpp--inline', 'ocpp--top', 'ocpp__g', 'ocpp__p', 'is-current', 'is-ready', 'is-on', 'is-active', 'is-open', 'is-in', 'is-done', 'is-settled', 'is-scrolled', 'is-visible', 'is-live', 'is-revealed', 'is-out', 'is-past', 'is-fading', 'is-paused', 'is-playing', 'is-loaded', 'is-empty', 'is-afloat', 'is-stuck', 'is-solid', 'oc-ready', 'oc-fonts', 'oc-scrolled', 'oc-signed', 'oc-col-stick', 'oc-acc-init', 'oc-clamped', 'ocb--still', 'ocb--in', 'in-scene', 'has-nav', 'loading', 'loaded' );
 
 	/**
 	 * Hook in.
@@ -162,11 +157,10 @@ final class Critical {
 			return '';
 		}
 
-		// What the first screen is made of: the header and the start of
-		// the main column.
-		$main_at = strpos( $html, '<main', $body_at );
-		$cut     = false === $main_at ? $body_at + self::MAIN_BYTES : $main_at + self::MAIN_BYTES;
-		$tokens  = self::tokens( substr( $html, $body_at, max( 0, $cut - $body_at ) ) );
+		// The whole page's names, not a guess at the first screen: a two
+		// column layout (the checkout, a filtered catalogue) puts what the
+		// eye sees first late in the markup, and a byte limit cut it off.
+		$tokens = self::tokens( substr( $html, $body_at ) );
 
 		if ( count( $tokens ) < 10 ) {
 			return '';
