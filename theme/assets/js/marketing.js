@@ -85,10 +85,15 @@
 		if ( held ) { onRelease.push( fn ); } else { fn(); }
 	}
 
+	// A scroll event does not bubble, so on the window it means the page
+	// itself moved; captured, it would also be every slider that advances
+	// on its own — the home page's hero let the pixels go at once.
+	function holdOpts( e ) { return { passive: true, capture: 'scroll' !== e }; }
+
 	function release() {
 		if ( ! held ) { return; }
 		held = false;
-		HOLD_EVS.forEach( function ( e ) { window.removeEventListener( e, release, { passive: true, capture: true } ); } );
+		HOLD_EVS.forEach( function ( e ) { window.removeEventListener( e, release, holdOpts( e ) ); } );
 		var fns = onRelease;
 		onRelease = [];
 		fns.forEach( function ( fn ) { fn(); } );
@@ -96,7 +101,7 @@
 
 	function armHold() {
 		if ( ! held ) { return; }
-		HOLD_EVS.forEach( function ( e ) { window.addEventListener( e, release, { passive: true, capture: true } ); } );
+		HOLD_EVS.forEach( function ( e ) { window.addEventListener( e, release, holdOpts( e ) ); } );
 		var wait = Math.max( 1000, parseInt( cfg.wait, 10 ) || 7000 );
 		function arm() { setTimeout( release, wait ); }
 		if ( 'complete' === document.readyState ) { arm(); } else { window.addEventListener( 'load', arm, { once: true } ); }

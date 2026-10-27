@@ -156,7 +156,7 @@ final class Third_Party {
 				went = true;
 
 				evs.forEach( function ( e ) {
-					window.removeEventListener( e, go, { passive: true, capture: true } );
+					window.removeEventListener( e, go, opts( e ) );
 				} );
 
 				var s = document.createElement( 'script' );
@@ -165,9 +165,15 @@ final class Third_Party {
 				document.head.appendChild( s );
 			}
 
+			// A scroll event does not bubble, so on the window it means the
+			// page itself moved; captured, it would also be every slider
+			// that advances on its own — the home page's hero let the tag
+			// go the moment it turned.
+			function opts( e ) { return { passive: true, capture: 'scroll' !== e }; }
+
 			// Anyone who touches the page is here on purpose: load at once.
 			evs.forEach( function ( e ) {
-				window.addEventListener( e, go, { passive: true, capture: true } );
+				window.addEventListener( e, go, opts( e ) );
 			} );
 
 			// And for the visitor who only reads: a plain timer from the
