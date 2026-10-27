@@ -14723,3 +14723,12 @@ msgstr "כפתור שמאפשר למבקר להגדיל טקסט, להעלות �
 
 msgid "Invoice in a business name"
 msgstr "חשבונית על שם עסק"
+
+msgid "To payment"
+msgstr "לתשלום"
+
+msgid "Button label when paying now (card, wallets, PayPal)"
+msgstr "טקסט הכפתור בתשלום מיידי (אשראי, ארנקים דיגיטליים, פייפאל)"
+
+msgid "Pay-now button"
+msgstr "כפתור תשלום מיידי"

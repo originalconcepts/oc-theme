@@ -205,6 +205,7 @@ final class Translatable {
 	private static function checkout(): array {
 		return array(
 			'btn_text'     => __( 'Place-order button', 'oc-theme' ),
+			'btn_pay_text' => __( 'Pay-now button', 'oc-theme' ),
 			'consent_text' => __( 'Marketing consent line', 'oc-theme' ),
 			'help_text'    => __( 'Help line in the header', 'oc-theme' ),
 		);

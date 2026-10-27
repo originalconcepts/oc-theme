@@ -47,6 +47,7 @@ final class Checkout {
 				'phone_max'       => 10,      // 0 = no maximum.
 				'btn_total'       => 1,       // Total on the place-order button.
 				'btn_text'        => '',      // Override for the button label.
+				'btn_pay_text'    => '',      // Label when the method takes payment now ('' = "To payment").
 				'notes'           => 1,       // Order notes field.
 				'consent'         => 1,       // Marketing-consent checkbox.
 				'consent_text'    => '',      // Override for its label.
@@ -112,6 +113,7 @@ final class Checkout {
 		// after every refresh of the review fragment.
 		add_action( 'woocommerce_review_order_before_submit', array( $this, 'guard_slot' ), 17 );
 		add_filter( 'woocommerce_order_button_text', array( $this, 'button_text' ) );
+		add_filter( 'woocommerce_available_payment_gateways', array( $this, 'gateway_button_text' ), 100 );
 
 		add_action( 'woocommerce_after_checkout_validation', array( $this, 'validate' ), 10, 2 );
 
@@ -1540,6 +1542,41 @@ final class Checkout {
 		$s = self::settings();
 
 		return '' !== trim( (string) $s['btn_text'] ) ? (string) $s['btn_text'] : (string) $text;
+	}
+
+	/**
+	 * One wording per kind of method, whatever the gateway calls its own
+	 * button ("Proceed to PayPal", in English, on a Hebrew shop): a method
+	 * that takes the money now says "To payment", one paid later — on
+	 * delivery, by transfer — keeps the place-order label. An empty text
+	 * is how Woo's script falls back to that label when the method is
+	 * chosen.
+	 *
+	 * @param mixed $gateways Available gateways, keyed by id.
+	 * @return mixed
+	 */
+	public function gateway_button_text( $gateways ) {
+		if ( ! is_array( $gateways ) ) {
+			return $gateways;
+		}
+
+		$s   = self::settings();
+		$pay = '' !== trim( (string) $s['btn_pay_text'] ) ? (string) $s['btn_pay_text'] : __( 'To payment', 'oc-theme' );
+
+		/**
+		 * Gateways whose order is paid later and so keep the place-order label.
+		 *
+		 * @param string[] $ids Gateway ids.
+		 */
+		$later = (array) apply_filters( 'oc_checkout_offline_gateways', array( 'cod', 'bacs', 'cheque' ) );
+
+		foreach ( $gateways as $id => $gateway ) {
+			if ( is_object( $gateway ) && property_exists( $gateway, 'order_button_text' ) ) {
+				$gateway->order_button_text = in_array( (string) $id, $later, true ) ? '' : $pay;
+			}
+		}
+
+		return $gateways;
 	}
 
 	/* --------------------------------------------------------- validation */

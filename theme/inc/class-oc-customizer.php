@@ -4281,6 +4281,7 @@ final class Customizer {
 		);
 		$this->opt_toggle( $c, $o, 'btn_total', 'oc_checkout', __( 'Show the total on the place-order button', 'oc-theme' ), true );
 		$this->opt_text( $c, $o, 'btn_text', 'oc_checkout', __( 'Place-order button label', 'oc-theme' ) );
+		$this->opt_text( $c, $o, 'btn_pay_text', 'oc_checkout', __( 'Button label when paying now (card, wallets, PayPal)', 'oc-theme' ) );
 		$this->opt_text( $c, $o, 'help_text', 'oc_checkout', __( 'Help line in the header', 'oc-theme' ) );
 	}
 

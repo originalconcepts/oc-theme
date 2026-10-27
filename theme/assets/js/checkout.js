@@ -466,16 +466,22 @@
 			}
 
 			if ( ! btn.dataset.ocBase ) {
-				btn.dataset.ocBase = btn.textContent.trim();
+				btn.dataset.ocBase = btn.getAttribute( 'data-value' ) || btn.textContent.trim();
 			}
+
+			// The words follow the chosen method, as Woo's own script does
+			// — never the words the button happened to carry first, or the
+			// first method's label sticks through every later choice.
+			var chosen = coForm.querySelector( 'input[name="payment_method"]:checked' );
+			var base = ( chosen && chosen.getAttribute( 'data-order_button_text' ) ) || btn.dataset.ocBase;
 
 			var review = document.getElementById( 'order_review' );
 			var amount = review ? review.querySelector( 'tr.order-total .woocommerce-Price-amount' ) : null;
 			var money = amount ? amount.textContent.trim() : '';
-			var label = btn.dataset.ocBase + ( money ? ' · ' + money : '' );
+			var label = base + ( money ? ' · ' + money : '' );
 
 			if ( btn.textContent.trim() !== label ) {
-				coMoney( btn, btn.dataset.ocBase, money );
+				coMoney( btn, base, money );
 			}
 		}
 
@@ -585,6 +591,7 @@
 		// Choosing a method is not a mutation; the line has to be told.
 		coForm.addEventListener( 'change', function ( e ) {
 			if ( e.target && 'payment_method' === e.target.name ) {
+				setTimeout( coPaintButton, 0 );
 				setTimeout( coTrustLine, 0 );
 				setTimeout( coTrustLine, 400 );
 			}
