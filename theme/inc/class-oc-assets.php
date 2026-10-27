@@ -189,8 +189,11 @@ final class Assets {
 	 * @return array{core:string,chunks:array<string,string>}|null
 	 */
 	private function css_pieces(): ?array {
+		// A git checkout writes the files one after another, so a piece can
+		// read a second older than the source it was cut from: a short grace,
+		// as OC Blocks' pieces have.
 		$source = OC_THEME_DIR . '/assets/css/theme.css';
-		$since  = file_exists( $source ) ? (int) filemtime( $source ) : 0;
+		$since  = file_exists( $source ) ? (int) filemtime( $source ) - 10 : 0;
 		$fresh  = static function ( string $rel ) use ( $since ): bool {
 			$path = OC_THEME_DIR . $rel;
 
