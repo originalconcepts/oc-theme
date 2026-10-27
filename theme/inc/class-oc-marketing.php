@@ -71,6 +71,8 @@ final class Marketing {
 				'gtm'       => $s['gtm']['id'],
 				'tiktok'    => $s['tiktok']['pixel'],
 				'openai'    => $s['openai']['pixel'],
+				'hold'      => empty( $s['thirdparty']['pixels'] ) ? 0 : 1,
+				'wait'      => (int) $s['thirdparty']['wait'],
 				'events'    => $s['events'],
 				'currency'  => get_woocommerce_currency(),
 				'lang'      => Events::language(),

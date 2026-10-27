@@ -150,18 +150,100 @@ final class Assets {
 	}
 
 	/**
+	 * Which pieces of the stylesheet this request needs, besides the core.
+	 *
+	 * @return string[] Chunk names.
+	 */
+	public static function css_chunks(): array {
+		$woo  = class_exists( 'WooCommerce' );
+		$want = array();
+
+		if ( $woo && ( is_checkout() || is_account_page() ) ) {
+			$want[] = 'checkout';
+		}
+
+		if ( $woo && ( is_shop() || is_product_taxonomy() ) ) {
+			$want[] = 'filters';
+		}
+
+		if ( class_exists( 'OC\\Theme\\Wishlist' ) && Wishlist::on() ) {
+			$want[] = 'wishlist';
+		}
+
+		if ( is_singular( 'post' ) || is_home() || is_search() || ( is_archive() && ! ( $woo && is_woocommerce() ) ) ) {
+			$want[] = 'blog';
+		}
+
+		/**
+		 * The stylesheet pieces a page loads besides the core.
+		 *
+		 * @param string[] $want Chunk names (checkout, filters, wishlist, blog).
+		 */
+		return array_values( array_unique( (array) apply_filters( 'oc_theme_css_chunks', $want ) ) );
+	}
+
+	/**
+	 * The core and the wanted chunks as theme-relative paths, or null when
+	 * any of them is missing or older than theme.css.
+	 *
+	 * @return array{core:string,chunks:array<string,string>}|null
+	 */
+	private function css_pieces(): ?array {
+		$source = OC_THEME_DIR . '/assets/css/theme.css';
+		$since  = file_exists( $source ) ? (int) filemtime( $source ) : 0;
+		$fresh  = static function ( string $rel ) use ( $since ): bool {
+			$path = OC_THEME_DIR . $rel;
+
+			return file_exists( $path ) && (int) filemtime( $path ) >= $since;
+		};
+
+		$core = '/assets/css/theme.core.min.css';
+
+		if ( ! $fresh( $core ) ) {
+			return null;
+		}
+
+		$chunks = array();
+
+		foreach ( self::css_chunks() as $name ) {
+			$rel = '/assets/css/theme.' . sanitize_key( $name ) . '.min.css';
+
+			if ( ! $fresh( $rel ) ) {
+				return null;
+			}
+
+			$chunks[ $name ] = $rel;
+		}
+
+		return array(
+			'core'   => $core,
+			'chunks' => $chunks,
+		);
+	}
+
+	/**
 	 * Enqueue the front-end bundle.
 	 */
 	public function front_end(): void {
-		$css = oc_asset_min( '/assets/css/theme.css' );
-		$js  = oc_asset_min( '/assets/js/theme.js' );
+		$js = oc_asset_min( '/assets/js/theme.js' );
 
-		wp_enqueue_style(
-			'oc-theme',
-			OC_THEME_URI . $css,
-			array(),
-			oc_asset_version( $css )
-		);
+		// The stylesheet in pieces: the core, then the pieces this kind of
+		// page needs (scripts/theme_chunks.py cuts them). Every piece must
+		// be there and at least as new as theme.css, or the one whole file
+		// goes out instead — slower, never missing a rule.
+		$pieces = $this->css_pieces();
+
+		if ( null === $pieces ) {
+			$css = oc_asset_min( '/assets/css/theme.css' );
+
+			wp_enqueue_style( 'oc-theme', OC_THEME_URI . $css, array(), oc_asset_version( $css ) );
+		} else {
+			wp_enqueue_style( 'oc-theme', OC_THEME_URI . $pieces['core'], array(), oc_asset_version( $pieces['core'] ) );
+
+			foreach ( $pieces['chunks'] as $name => $rel ) {
+				wp_enqueue_style( 'oc-theme-' . $name, OC_THEME_URI . $rel, array( 'oc-theme' ), oc_asset_version( $rel ) );
+			}
+		}
 
 		// After the enqueue — the font-face inlines onto this handle.
 		$this->fonts();

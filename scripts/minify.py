@@ -56,3 +56,22 @@ for name, part in [("core", core)] + sorted(chunks.items()):
     minified = rcssmin.cssmin(part)
     (blocks / f"blocks.{name}.min.css").write_text(minified)
     print(f"blocks.{name}.min.css: {len(minified) / 1024:.1f}KB")
+
+# The theme's stylesheet in pieces too: the core every page loads, and one
+# file per kind of page (checkout + account, catalogue filters, blog,
+# wishlist) that only those pages load. Cut per rule by selector — see
+# theme_chunks.py; the enqueue falls back to theme.min.css when a piece is
+# missing or older than theme.css.
+from theme_chunks import split_theme_css  # noqa: E402
+
+css_dir = root / "css"
+core, chunks = split_theme_css((css_dir / "theme.css").read_text())
+
+for stale in css_dir.glob("theme.*.min.css"):
+    if stale.name != "theme.min.css":
+        stale.unlink()
+
+for name, part in [("core", core)] + sorted(chunks.items()):
+    minified = rcssmin.cssmin(part)
+    (css_dir / f"theme.{name}.min.css").write_text(minified)
+    print(f"theme.{name}.min.css: {len(minified) / 1024:.1f}KB")

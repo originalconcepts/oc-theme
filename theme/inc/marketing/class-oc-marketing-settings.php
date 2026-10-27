@@ -102,6 +102,7 @@ final class Settings {
 			'enabled'    => ! empty( $raw['enabled'] ),
 			'thirdparty' => array(
 				'flashy' => ! empty( $third['flashy'] ),
+				'pixels' => ! empty( $third['pixels'] ),
 				// Long enough to clear the window a speed test watches,
 				// short enough that a visitor who reads and leaves is still
 				// counted. Every real visit lasts longer than this.

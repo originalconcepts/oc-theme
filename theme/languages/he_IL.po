@@ -14732,3 +14732,9 @@ msgstr "טקסט הכפתור בתשלום מיידי (אשראי, ארנקים 
 
 msgid "Pay-now button"
 msgstr "כפתור תשלום מיידי"
+
+msgid "Hold the Meta, TikTok and ChatGPT pixels back the same way"
+msgstr "לעכב באותו אופן גם את הפיקסלים של Meta, TikTok ו-ChatGPT"
+
+msgid "Their libraries are the heaviest scripts a page loads. With this on they are fetched on the first touch or after the wait; every event raised before that is queued and sent the moment they arrive, and the server-side events still go out at once."
+msgstr "הספריות שלהם הן הסקריפטים הכבדים ביותר שהעמוד טוען. כשזה דולק הן נטענות בנגיעה הראשונה או אחרי זמן ההמתנה; כל אירוע שקורה לפני כן נשמר בתור ונשלח ברגע שהן מגיעות, והאירועים מצד השרת יוצאים מיד כרגיל."

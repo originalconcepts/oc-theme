@@ -70,6 +70,38 @@
 
 	var did = { google: false, fb: false, tiktok: false, openai: false };
 
+	// Held back, when the shop asks (Settings → Marketing): the pixels'
+	// libraries are fetched only once the visitor touches the page, or a
+	// while after it has finished — the way the Flashy tag is. Their stubs
+	// go in at once, so every call made meanwhile queues and is replayed
+	// when the library arrives. The one thing lost is the page view of a
+	// visitor who leaves inside the wait without touching anything, and
+	// the server sends that one itself where the Conversions API is on.
+	var held = !! cfg.hold;
+	var onRelease = [];
+	var HOLD_EVS = [ 'pointerdown', 'keydown', 'touchstart', 'wheel', 'scroll' ];
+
+	function whenReleased( fn ) {
+		if ( held ) { onRelease.push( fn ); } else { fn(); }
+	}
+
+	function release() {
+		if ( ! held ) { return; }
+		held = false;
+		HOLD_EVS.forEach( function ( e ) { window.removeEventListener( e, release, { passive: true, capture: true } ); } );
+		var fns = onRelease;
+		onRelease = [];
+		fns.forEach( function ( fn ) { fn(); } );
+	}
+
+	function armHold() {
+		if ( ! held ) { return; }
+		HOLD_EVS.forEach( function ( e ) { window.addEventListener( e, release, { passive: true, capture: true } ); } );
+		var wait = Math.max( 1000, parseInt( cfg.wait, 10 ) || 7000 );
+		function arm() { setTimeout( release, wait ); }
+		if ( 'complete' === document.readyState ) { arm(); } else { window.addEventListener( 'load', arm, { once: true } ); }
+	}
+
 	// Google's tags may load ahead of consent only when the site chose
 	// Advanced Consent Mode (they start in a denied state and store
 	// nothing); otherwise they wait for statistics or marketing consent.
@@ -105,9 +137,17 @@
 
 		if ( cfg.fb && 'granted' === consent && ! did.fb ) {
 			did.fb = true;
-			/* eslint-disable */
-			!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
-			/* eslint-enable */
+			// Meta's own snippet, in two halves: the queue now, the library
+			// when the hold (if any) lets go.
+			if ( ! window.fbq ) {
+				var fq = window.fbq = function () { fq.callMethod ? fq.callMethod.apply( fq, arguments ) : fq.queue.push( arguments ); };
+				if ( ! window._fbq ) { window._fbq = fq; }
+				fq.push = fq;
+				fq.loaded = true;
+				fq.version = '2.0';
+				fq.queue = [];
+			}
+			whenReleased( function () { script( 'https://connect.facebook.net/en_US/fbevents.js' ); } );
 			var match = {};
 			[ 'em', 'ph', 'fn', 'ln', 'ct', 'zp', 'country', 'external_id' ].forEach( function ( k ) { if ( adv[ k ] ) { match[ k ] = adv[ k ]; } } );
 			window.fbq( 'init', cfg.fb, match );
@@ -117,8 +157,11 @@
 		if ( cfg.tiktok && 'granted' === consent && ! did.tiktok ) {
 			did.tiktok = true;
 			/* eslint-disable */
-			!function(w,d,t){w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie","holdConsent","revokeConsent","grantConsent"],ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);ttq.instance=function(t){for(var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e},ttq.load=function(e,n){var r="https://analytics.tiktok.com/i18n/pixel/events.js";ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=r,ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._o=ttq._o||{},ttq._o[e]=n||{};n=document.createElement("script");n.type="text/javascript",n.async=!0,n.src=r+"?sdkid="+e+"&lib="+t;e=document.getElementsByTagName("script")[0];e.parentNode.insertBefore(n,e)};ttq.load(cfg.tiktok);ttq.page();}(window,document,'ttq');
+			!function(w,d,t){w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie","holdConsent","revokeConsent","grantConsent"],ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);ttq.instance=function(t){for(var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e},ttq.load=function(e,n){var r="https://analytics.tiktok.com/i18n/pixel/events.js";ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=r,ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._o=ttq._o||{},ttq._o[e]=n||{};n=document.createElement("script");n.type="text/javascript",n.async=!0,n.src=r+"?sdkid="+e+"&lib="+t;e=document.getElementsByTagName("script")[0];e.parentNode.insertBefore(n,e)};}(window,document,'ttq');
 			/* eslint-enable */
+			// Its load() is what fetches the library; everything called
+			// before it queues on the array the snippet made.
+			whenReleased( function () { window.ttq.load( cfg.tiktok ); window.ttq.page(); } );
 			if ( adv.em || adv.ph || adv.external_id ) {
 				window.ttq.identify( { email: adv.em || undefined, phone_number: adv.ph || undefined, external_id: adv.external_id || undefined } );
 			}
@@ -132,8 +175,9 @@
 			// Consent is told to it before init, so a "no" is never a
 			// ping that then has to be taken back.
 			/* eslint-disable */
-			!function(w,d,s,u){if(w.oaiq)return;var q=function(){q.q.push(arguments)};q.q=[];w.oaiq=q;var js=d.createElement(s);js.async=true;js.src=u;var f=d.getElementsByTagName(s)[0];f.parentNode.insertBefore(js,f)}(window,document,'script','https://bzrcdn.openai.com/sdk/oaiq.min.js');
+			!function(w){if(w.oaiq)return;var q=function(){q.q.push(arguments)};q.q=[];w.oaiq=q;}(window);
 			/* eslint-enable */
+			whenReleased( function () { script( 'https://bzrcdn.openai.com/sdk/oaiq.min.js' ); } );
 			window.oaiq( 'consent', true );
 			window.oaiq( 'init', { pixelId: cfg.openai } );
 			window.oaiq( 'measure', 'page_viewed', { type: 'contents' }, { event_id: cfg.pageId } );
@@ -427,6 +471,7 @@
 	function start() {
 		started = true;
 		consent = allows( 'marketing' ) ? 'granted' : 'denied';
+		armHold();
 		load();
 	}
 

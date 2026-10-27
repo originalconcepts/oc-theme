@@ -93,6 +93,8 @@ final class Marketing_Admin {
 				<label class="ocmkt-check"><input type="checkbox" name="thirdparty[flashy]" value="1" <?php checked( $s['thirdparty']['flashy'] ); ?> /><span><?php esc_html_e( 'Hold the Flashy tag back until the page has drawn', 'oc-theme' ); ?></span></label>
 				<p class="description"><?php esc_html_e( 'Flashy fetches its library while the page is still painting, and running it is the heaviest thing on the phone at that moment. With this on, the tag is fetched once the page has finished and the visitor is idle — or the instant they touch anything. Nothing is dropped: the events queue up and are sent as soon as it arrives.', 'oc-theme' ); ?></p>
 				<p class="description"><?php esc_html_e( 'The cost is a visitor who opens the page and leaves before the wait is out without touching it — their page view is never sent.', 'oc-theme' ); ?></p>
+				<label class="ocmkt-check"><input type="checkbox" name="thirdparty[pixels]" value="1" <?php checked( $s['thirdparty']['pixels'] ); ?> /><span><?php esc_html_e( 'Hold the Meta, TikTok and ChatGPT pixels back the same way', 'oc-theme' ); ?></span></label>
+				<p class="description"><?php esc_html_e( 'Their libraries are the heaviest scripts a page loads. With this on they are fetched on the first touch or after the wait; every event raised before that is queued and sent the moment they arrive, and the server-side events still go out at once.', 'oc-theme' ); ?></p>
 				<div class="ocmkt-grid">
 					<?php $field( 'thirdparty[wait]', (string) $s['thirdparty']['wait'], __( 'Wait before loading it anyway (milliseconds)', 'oc-theme' ), __( 'Counted from the moment the page finishes. Any touch, scroll or key loads it at once and this never runs. Below about 6000 the tag lands back inside the window a speed test measures and the whole thing buys nothing.', 'oc-theme' ), '7000' ); ?>
 				</div>
@@ -227,6 +229,7 @@ final class Marketing_Admin {
 			'openai'     => array_map( 'sanitize_text_field', array_map( 'wp_unslash', (array) ( $_POST['openai'] ?? array() ) ) ),
 			'thirdparty' => array(
 				'flashy' => ! empty( $_POST['thirdparty']['flashy'] ),
+				'pixels' => ! empty( $_POST['thirdparty']['pixels'] ),
 				'wait'   => (int) ( $_POST['thirdparty']['wait'] ?? 7000 ),
 			),
 			'events'     => array(
