@@ -7638,7 +7638,7 @@ body:not(.oc-no-lightbox) .oc-vslide.is-playing {
 /* The floating video card stands in the same corner, 16px in and 104px
  * wide; the chip under it had 6px of clear space. The chip climbs to the
  * top of the picture (the zoom trigger up there is hidden). */
-.oc-has-vfab .ocpp.oc-vpp { inset-block-end: auto; top: 10px; }
+.oc-has-vfab > .ocpp--corner { inset-block-end: auto; inset-block-start: 10px; }
 .ocpp.oc-vpp:not(.is-revealed) { display: none; }
 
 .oc-vsound .on { display: none; }
@@ -14403,8 +14403,8 @@ html[dir="rtl"] .oc-bye { translate: 50% 0; }
 .woocommerce-MyAccount-content .form-row,
 .woocommerce-account:not(.logged-in) .woocommerce form .form-row { position: relative; }
 
-.woocommerce-MyAccount-content .form-row > label,
-.woocommerce-account:not(.logged-in) .woocommerce form .form-row > label {
+.woocommerce-MyAccount-content .form-row > label:not(.woocommerce-form__label-for-checkbox),
+.woocommerce-account:not(.logged-in) .woocommerce form .form-row > label:not(.woocommerce-form__label-for-checkbox) {
 	position: absolute;
 	inset-block-start: 15px;
 	inset-inline-start: 13px;
@@ -14422,12 +14422,31 @@ html[dir="rtl"] .oc-bye { translate: 50% 0; }
 	margin: 0;
 }
 
-.woocommerce-MyAccount-content .form-row:focus-within > label,
-.woocommerce-MyAccount-content .form-row.is-filled > label,
-.woocommerce-account:not(.logged-in) .woocommerce form .form-row:focus-within > label,
-.woocommerce-account:not(.logged-in) .woocommerce form .form-row.is-filled > label {
+.woocommerce-MyAccount-content .form-row:focus-within > label:not(.woocommerce-form__label-for-checkbox),
+.woocommerce-MyAccount-content .form-row.is-filled > label:not(.woocommerce-form__label-for-checkbox),
+.woocommerce-account:not(.logged-in) .woocommerce form .form-row:focus-within > label:not(.woocommerce-form__label-for-checkbox),
+.woocommerce-account:not(.logged-in) .woocommerce form .form-row.is-filled > label:not(.woocommerce-form__label-for-checkbox) {
 	inset-block-start: 5px;
 	font-size: .66rem;
+}
+
+/* "Remember me" is a checkbox label in the submit row: the floating rule
+ * above used to pin it over the button (off the canvas, and axe read its
+ * text against the button's green). It stands in the flow instead. */
+.woocommerce-account:not(.logged-in) .woocommerce form .form-row > label.woocommerce-form__label-for-checkbox {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	margin: 0 0 12px;
+	font-size: .88rem;
+	color: var(--oc-ink-2, #666);
+}
+
+/* Woo draws the eye at 22px; a touch target wants 24. */
+.woocommerce form .password-input .show-password-input {
+	inline-size: 26px;
+	block-size: 26px;
+	padding: 0;
 }
 
 .woocommerce-MyAccount-content .form-row .input-text,

@@ -474,8 +474,13 @@ final class Assets {
 		$tokens = apply_filters(
 			'oc_design_tokens',
 			array(
-				'--oc-font-body'          => '' !== $body ? '"' . $body . '", system-ui, sans-serif' : 'system-ui, sans-serif',
-				'--oc-font-display'       => '' !== $display ? '"' . $display . '", system-ui, sans-serif' : 'inherit',
+				// "<Family> Fallback" is the metrics-matched system face the
+				// family's CSS declares (scripts/fontfallback.py): the lines
+				// drawn before the web font arrives are the lines it draws,
+				// so the swap moves nothing. A family without one (an
+				// uploaded typeface) just falls through to system-ui.
+				'--oc-font-body'          => '' !== $body ? '"' . $body . '", "' . $body . ' Fallback", system-ui, sans-serif' : 'system-ui, sans-serif',
+				'--oc-font-display'       => '' !== $display ? '"' . $display . '", "' . $display . ' Fallback", system-ui, sans-serif' : 'inherit',
 				'--oc-radius'             => get_theme_mod( 'oc_radius', '8px' ),
 				'--oc-density'            => get_theme_mod( 'oc_density', '1' ),
 				'--oc-content-width'      => absint( get_theme_mod( 'oc_content_width_px', 1280 ) ) . 'px',

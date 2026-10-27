@@ -2798,7 +2798,7 @@ html.oc-look-lock body { overflow: hidden; }
 
 .ocb-lead__item { display: flex; gap: 14px; align-items: flex-start; line-height: 1.6; }
 
-.ocb-lead__item b { display: block; font-size: .82em; font-weight: 600; opacity: .6; margin-block-end: 2px; }
+.ocb-lead__item b { display: block; font-size: .82em; font-weight: 600; opacity: .68; margin-block-end: 2px; } /* .6 read 4.45:1 on the tinted panel */
 
 .ocb-lead__item a { color: inherit; text-decoration: none; }
 .ocb-lead__item a:hover { text-decoration: underline; }
