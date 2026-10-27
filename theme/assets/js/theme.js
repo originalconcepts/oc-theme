@@ -10965,7 +10965,7 @@ window.ocPause.watch();
 		var names = {};
 		document.querySelectorAll( '[class]' ).forEach( function ( el ) {
 			var list = typeof el.className === 'string' ? el.className : ( el.getAttribute( 'class' ) || '' );
-			list.split( /\s+/ ).forEach( function ( c ) { if ( c && ! /\d{2,}/.test( c ) ) { names[ c ] = 1; } } );
+			list.split( /\s+/ ).forEach( function ( c ) { if ( c && ! /\d{3,}/.test( c ) ) { names[ c ] = 1; } } );
 		} );
 		try { sessionStorage.setItem( mark, '1' ); } catch ( e ) {}
 		var root = ( document.documentElement.getAttribute( 'data-oc-rest' ) || '/wp-json/' );

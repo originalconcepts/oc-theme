@@ -105,7 +105,7 @@ final class Critical {
 		foreach ( $names as $n ) {
 			$n = (string) $n;
 
-			if ( strlen( $n ) > 80 || ! preg_match( '/^[A-Za-z_][\w-]*$/', $n ) || preg_match( '/\d{2,}/', $n ) ) {
+			if ( strlen( $n ) > 80 || ! preg_match( '/^[A-Za-z_][\w-]*$/', $n ) || preg_match( '/\d{3,}/', $n ) ) {
 				continue;
 			}
 
@@ -425,13 +425,13 @@ final class Critical {
 	private static function tokens( string $markup ): array {
 		$set = array();
 
-		// A name with a number in it (post-34114, menu-item-77) is one no
-		// rule targets — and one that would make every product its own
-		// cache entry.
+		// A name with a long number in it (post-34114, wp-image-9031) is
+		// one no rule targets — and one that would make every product its
+		// own cache entry. Two digits (oc-ratio-60-40) are a real name.
 		if ( preg_match_all( '#\bclass=([\'"])([^\'"]*)\1#', $markup, $m ) ) {
 			foreach ( $m[2] as $list ) {
 				foreach ( preg_split( '/\s+/', $list ) as $c ) {
-					if ( '' !== $c && ! preg_match( '/\d{2,}/', $c ) ) {
+					if ( '' !== $c && ! preg_match( '/\d{3,}/', $c ) ) {
 						$set[ '.' . $c ] = true;
 					}
 				}
@@ -440,7 +440,7 @@ final class Critical {
 
 		if ( preg_match_all( '#\bid=([\'"])([^\'"\s]+)\1#', $markup, $m ) ) {
 			foreach ( $m[2] as $id ) {
-				if ( ! preg_match( '/\d{2,}/', $id ) ) {
+				if ( ! preg_match( '/\d{3,}/', $id ) ) {
 					$set[ '#' . $id ] = true;
 				}
 			}
