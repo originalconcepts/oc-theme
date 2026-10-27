@@ -954,7 +954,13 @@ final class Menu_Panel {
 			// picks the 150px candidate for a 210px box on a Retina screen.
 			// The file chosen here is big enough on its own.
 			$image_id = (int) $product->get_image_id();
-			$src      = $image_id > 0 ? wp_get_attachment_image_url( $image_id, $size ) : '';
+			$file     = $image_id > 0 ? wp_get_attachment_image_src( $image_id, $size ) : false;
+			$src      = is_array( $file ) ? (string) $file[0] : '';
+			// The file's own size, so the page knows the picture's shape
+			// before it arrives; the stylesheet still sets the box.
+			$dims = is_array( $file ) && ! empty( $file[1] ) && ! empty( $file[2] )
+				? ' width="' . (int) $file[1] . '" height="' . (int) $file[2] . '"'
+				: '';
 
 			if ( ! is_string( $src ) || '' === $src ) {
 				$src = function_exists( 'wc_placeholder_img_src' ) ? (string) wc_placeholder_img_src( $size ) : '';
@@ -964,7 +970,7 @@ final class Menu_Panel {
 				'class' => '',
 				'style' => '',
 			);
-			$image = '<img src="' . esc_url( $src ) . '" alt="' . esc_attr( $product->get_name() ) . '" loading="lazy" decoding="async"'
+			$image = '<img src="' . esc_url( $src ) . '"' . $dims . ' alt="' . esc_attr( $product->get_name() ) . '" loading="lazy" decoding="async"'
 				. ( '' !== $fit['class'] ? ' class="' . esc_attr( $fit['class'] ) . '"' : '' )
 				. ( '' !== $fit['style'] ? ' style="' . esc_attr( $fit['style'] ) . '"' : '' ) . '>';
 
@@ -1278,16 +1284,18 @@ final class Menu_Panel {
 		// can run past 700px on a Retina screen, where "large" (1024px)
 		// went soft. WordPress's 1536 and 2048 sizes cover that, and each
 		// falls back to the original when the upload was smaller.
-		$src = wp_get_attachment_image_url(
+		$file = wp_get_attachment_image_src(
 			$id,
 			in_array( (string) ( $block['w'] ?? 'normal' ), array( 'wide', 'double', 'auto' ), true ) ? '2048x2048' : '1536x1536'
 		);
+		$src  = is_array( $file ) ? (string) $file[0] : '';
 
-		if ( ! is_string( $src ) || '' === $src ) {
+		if ( '' === $src ) {
 			return '';
 		}
 
-		$img = '<img class="oc-mb__img" src="' . esc_url( $src ) . '" alt="" loading="lazy" decoding="async">';
+		$dims = ! empty( $file[1] ) && ! empty( $file[2] ) ? ' width="' . (int) $file[1] . '" height="' . (int) $file[2] . '"' : '';
+		$img  = '<img class="oc-mb__img" src="' . esc_url( $src ) . '"' . $dims . ' alt="" loading="lazy" decoding="async">';
 
 		$words = '';
 

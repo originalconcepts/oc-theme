@@ -1754,6 +1754,7 @@ html.oc-menu-open .oc-menu-dim::after {
 .oc-mb__prod-img img {
 	display: block;
 	inline-size: 100%;
+	block-size: auto; /* the height attribute must not beat the ratio */
 	/* The shape the shop chose for its product cards, filled and framed the
 	 * same way — down to the focal point. A product in the menu is the same
 	 * product the catalogue is showing, and two settings for one picture is
