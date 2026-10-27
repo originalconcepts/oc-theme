@@ -107,7 +107,10 @@ window.ocInstantClear = function ( then ) {
 ( function () {
 	var late = document.querySelectorAll( 'script[type="text/oc-late"][data-oc-late]' );
 	if ( ! late.length ) { return; }
-	var EVS = [ 'pointerdown', 'pointermove', 'touchstart', 'keydown', 'scroll', 'wheel' ];
+	// Not 'scroll': the page scrolls itself (restoring a position, settling
+	// a hash) and that fires the event with nobody moving — on a phone a
+	// visitor's scroll begins with a touch anyway, on a desk with a wheel.
+	var EVS = [ 'pointerdown', 'pointermove', 'touchstart', 'keydown', 'wheel' ];
 	var done = false;
 
 	function wake() {
