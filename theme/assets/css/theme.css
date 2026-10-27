@@ -17276,12 +17276,13 @@ body:has(.oc-sticky-atc.is-visible) { --oc-fl-lift: 76px; }
 /* The HiiAI chat button (OC AI Shop Assistant) floats at 999,999, over
  * everything the theme opens. While one of the theme's own layers is up —
  * the product lightbox, the cart drawer, the search, the login panel, the
- * menu — it goes under it, down to the layer of the theme's own floating
- * buttons (the phone search is only 200); over the bottom bar it stands on
- * top, like them. Moved with translate, which leaves the
+ * menu, the cookie notice (whose buttons it covered) — it goes under it,
+ * down to the layer of the theme's own floating buttons (the phone search
+ * is only 200); over the bottom bar it stands on top, like them. Moved with translate, which leaves the
  * plugin's own position and transforms alone. */
 html:is(.oc-cart-lock, .oc-search-open, .oc-drw-open, .oc-menu-open, .oc-wl-pop-open) #ocai-fab,
-html:has(.oc-voverlay.is-open, .oc-auth.is-open, .oc-nmodal:not([hidden])) #ocai-fab { z-index: 50 !important; }
+html:has(.oc-voverlay.is-open, .oc-auth.is-open, .oc-nmodal:not([hidden])) #ocai-fab,
+html:has(.oc-privacy:not([hidden]) :is(.oc-privacy__banner, .oc-privacy__panel):not([hidden])) #ocai-fab { z-index: 50 !important; }
 
 body:has(.oc-sticky-atc.is-visible) #ocai-fab { translate: 0 calc(-1 * var(--oc-fl-lift)); }
 

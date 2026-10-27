@@ -63,6 +63,44 @@ final class Performance {
 		// visitor cannot pay. Print time: after every enqueue path ran.
 		add_action( 'wp_print_styles', array( $this, 'gateway_assets_checkout_only' ), 999 );
 		add_action( 'wp_print_scripts', array( $this, 'gateway_assets_checkout_only' ), 999 );
+
+		// Styles for things that float in a corner and are never part of
+		// the first screen's layout load without holding the first paint.
+		add_filter( 'style_loader_tag', array( $this, 'late_styles' ), 10, 2 );
+	}
+
+	/**
+	 * Handles whose stylesheet may arrive after the first paint: the HiiAI
+	 * chat button (OC AI Shop Assistant) sits fixed in a corner and its
+	 * markup is printed at the very end of the page, so nothing on the
+	 * first screen waits for, or moves with, its 10 KB.
+	 *
+	 * @return string[]
+	 */
+	public static function late_handles(): array {
+		/**
+		 * Stylesheet handles loaded without blocking the first paint.
+		 *
+		 * @param string[] $handles Handles.
+		 */
+		return (array) apply_filters( 'oc_late_style_handles', array( 'ocai' ) );
+	}
+
+	/**
+	 * The print-media swap: the browser fetches a print stylesheet without
+	 * blocking, and the onload turns it on for the screen.
+	 *
+	 * @param string $tag    The link tag.
+	 * @param string $handle Style handle.
+	 */
+	public function late_styles( $tag, $handle ): string {
+		$tag = (string) $tag;
+
+		if ( is_admin() || ! in_array( (string) $handle, self::late_handles(), true ) || false === strpos( $tag, "media='all'" ) ) {
+			return $tag;
+		}
+
+		return str_replace( "media='all'", "media='print' onload=\"this.media='all'\"", $tag ) . '<noscript>' . $tag . '</noscript>';
 	}
 
 	/**
