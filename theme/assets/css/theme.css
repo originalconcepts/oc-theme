@@ -2725,6 +2725,10 @@ html[dir="ltr"] .oc-progress i { --oc-start: left; }
  * the script agrees. Only while loading; afterwards the block decides. */
 body.oc-cart-empty .wp-block-woocommerce-cart.is-loading .wp-block-woocommerce-filled-cart-block { display: none !important; }
 body.oc-cart-empty .wp-block-woocommerce-cart.is-loading .wp-block-woocommerce-empty-cart-block { display: block !important; }
+/* …and the block keeps the empty part's height through the script's own
+ * skeleton moment (it swaps the server markup for a short placeholder
+ * before the empty part comes back), so the footer never moves. */
+body.oc-cart-empty .wp-block-woocommerce-cart { min-block-size: 640px; }
 
 /* =====================================================================
    The brands page — /brands/

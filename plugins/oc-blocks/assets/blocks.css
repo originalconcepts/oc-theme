@@ -2688,7 +2688,7 @@ html.oc-look-lock body { overflow: hidden; }
 .ocb-lead__f--half { grid-column: auto; }
 
 .ocb-lead__f > span { font-size: .88em; font-weight: 600; opacity: .75; }
-.ocb-lead__f > span small { font-weight: 400; font-size: .9em; opacity: .8; } /* .7 read under 4.5:1 on the tinted panel */
+.ocb-lead__f > span small { font-weight: 400; font-size: .9em; } /* no opacity of its own: it multiplies with the label's .75 and read 4.45:1 */
 
 .ocb-lead__f input,
 .ocb-lead__f select,
