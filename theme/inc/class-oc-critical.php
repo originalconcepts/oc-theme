@@ -429,8 +429,25 @@ final class Critical {
 	 * @param string $body The markup from <body on.
 	 */
 	private static function lazy( string $body ): string {
+		// An img without a src has no proportions — the browser maps the
+		// width/height attributes to an aspect ratio only while it shows a
+		// picture — so a blank SVG of the same size stands in: no request,
+		// the same box, nothing moves when the real one arrives. A picture
+		// without the two attributes is left to load on its own.
 		$swap = static function ( string $tag ): string {
-			return (string) preg_replace( '/\s(src|srcset)=/i', ' data-oc-$1=', $tag );
+			$tag = (string) preg_replace( '/\ssrcset=/i', ' data-oc-srcset=', $tag );
+
+			return (string) preg_replace_callback(
+				'/<img\b[^>]*>/i',
+				static function ( array $m ): string {
+					preg_match( '/\bwidth=([\'"])(\d+)\1/i', $m[0], $w );
+					preg_match( '/\bheight=([\'"])(\d+)\1/i', $m[0], $h );
+					$blank = 'data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27' . $w[2] . '%27 height=%27' . $h[2] . '%27%3E%3C/svg%3E';
+
+					return (string) preg_replace( '/\ssrc=([\'"])/i', ' src="' . $blank . '" data-oc-src=$1', $m[0], 1 );
+				},
+				$tag
+			);
 		};
 
 		$skip = static function ( string $tag ): bool {
@@ -438,7 +455,9 @@ final class Critical {
 				|| preg_match( '/\bfetchpriority=([\'"])high\1/i', $tag )
 				|| false !== strpos( $tag, 'data-oc-src' )
 				|| false !== strpos( $tag, 'data-ocb-src' )
-				|| ! preg_match( '/\ssrc=/i', $tag );
+				|| ! preg_match( '/\ssrc=/i', $tag )
+				|| ! preg_match( '/\bwidth=([\'"])\d+\1/i', $tag )
+				|| ! preg_match( '/\bheight=([\'"])\d+\1/i', $tag );
 		};
 
 		$body = (string) preg_replace_callback(
