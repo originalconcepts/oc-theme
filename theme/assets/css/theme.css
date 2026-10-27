@@ -3762,6 +3762,18 @@ html.oc-drw-open { overflow: hidden; }
 .oc-subcats--shape-circle .oc-subcats__pic { border-radius: 50%; }
 .oc-subcats__name { font-size: .92rem; text-align: center; color: inherit; }
 
+/* A card has a fixed width, so its name wraps — the sliders' nowrap is for
+ * links and pills, and on a card it ran a long name into the next one. */
+.oc-subcats__card .oc-subcats__name {
+	white-space: normal;
+	overflow-wrap: break-word;
+	line-height: 1.3;
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 3;
+	overflow: hidden;
+}
+
 /* The strip as a free-scroll slider — links, pills or cards — with each
  * screen deciding for itself: -d rules on desktop (mouse drag), -m on a
  * phone (finger swipe). No snapping. */
