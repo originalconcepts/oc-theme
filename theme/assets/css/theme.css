@@ -7635,6 +7635,10 @@ body:not(.oc-no-lightbox) .oc-vslide.is-playing {
 /* Pause and play is the site's small dark button, in the other bottom
  * corner from the speaker; it shows once the video has started. */
 .ocpp.oc-vpp { inset-inline: auto; left: 10px; right: auto; }
+/* The floating video card stands in the same corner, 16px in and 104px
+ * wide; the chip under it had 6px of clear space. The chip climbs to the
+ * top of the picture (the zoom trigger up there is hidden). */
+.oc-has-vfab .ocpp.oc-vpp { inset-block-end: auto; top: 10px; }
 .ocpp.oc-vpp:not(.is-revealed) { display: none; }
 
 .oc-vsound .on { display: none; }
@@ -15634,7 +15638,8 @@ p.no-comments {
 	font-weight: 600;
 	letter-spacing: .04em;
 	text-transform: uppercase;
-	opacity: .55;
+	/* .55 read as 3.9:1 on white at 11px; 4.5:1 needs this. */
+	opacity: .75;
 }
 
 .oc-bt__sum {

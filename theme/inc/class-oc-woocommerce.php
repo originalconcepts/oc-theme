@@ -829,7 +829,7 @@ final class WooCommerce {
 
 		if ( $hidden > 0 ) {
 			printf(
-				'<button type="button" class="oc-pmeta__more" aria-label="%s">+%d</button>',
+				'<button type="button" class="oc-pmeta__more" aria-label="+%2$d %1$s">+%2$d</button>',
 				esc_attr__( 'Show all', 'oc-theme' ),
 				(int) $hidden
 			);

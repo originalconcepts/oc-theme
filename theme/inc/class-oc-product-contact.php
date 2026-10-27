@@ -408,7 +408,8 @@ final class Product_Contact {
 		);
 
 		if ( '' !== $title ) {
-			echo '<h3 class="oc-pcon__title">' . esc_html( $title ) . '</h3>';
+			// An h2: the product's name is the h1 and nothing stands between.
+			echo '<h2 class="oc-pcon__title">' . esc_html( $title ) . '</h2>';
 		}
 
 		echo '<div class="oc-pcon__card">';
