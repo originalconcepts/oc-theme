@@ -4751,11 +4751,24 @@ li.product:has(:focus-visible) .oc-card-atc,
 
 	.woocommerce.oc-gallery-thumbs-side div.product div.images .woocommerce-product-gallery__image.is-active,
 	.woocommerce.oc-gallery-thumbs-under div.product div.images .woocommerce-product-gallery__image.is-active {
-		animation: oc-gal-in .5s cubic-bezier(.2, .7, .2, 1);
 		display: block;
 		width: 100%;
 	}
+
+	/* The entry animation plays on a switch the shopper makes, never on
+	 * the first paint: the main picture is the page's LCP, and a picture
+	 * that fades in from nothing is painted late. */
+	.woocommerce.oc-gallery-thumbs-side div.product div.images .oc-gal-live .woocommerce-product-gallery__image.is-active,
+	.woocommerce.oc-gallery-thumbs-under div.product div.images .oc-gal-live .woocommerce-product-gallery__image.is-active {
+		animation: oc-gal-in .5s cubic-bezier(.2, .7, .2, 1);
+	}
 }
+
+/* WooCommerce hides the gallery inline (opacity: 0) until its own script
+ * has run, so an unslidered gallery never flashes. This gallery needs no
+ * script to look right — the first slide is active from the server — and
+ * the main picture, the page's LCP, paints with the first frame. */
+.woocommerce div.product div.images.woocommerce-product-gallery { opacity: 1 !important; }
 
 .woocommerce.oc-gallery-thumbs-side div.product div.images .woocommerce-product-gallery__image,
 .woocommerce.oc-gallery-thumbs-under div.product div.images .woocommerce-product-gallery__image {

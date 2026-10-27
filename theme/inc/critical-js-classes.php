@@ -125,6 +125,7 @@ return array(
 	'oc-flt__clear',
 	'oc-flt__swatch',
 	'oc-flt__x',
+	'oc-gal-live',
 	'oc-gallery-stacked',
 	'oc-gallery-thumbs-side',
 	'oc-gallery-thumbs-under',

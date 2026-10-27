@@ -266,6 +266,7 @@ final class WooCommerce {
 		// gallery image is a real single-product image.
 		add_filter( 'woocommerce_gallery_image_size', array( $this, 'gallery_image_size' ) );
 		add_filter( 'woocommerce_single_product_image_thumbnail_html', array( '\\OC\\Theme\\Variations', 'strip_thumb_data' ) );
+		add_filter( 'woocommerce_single_product_image_thumbnail_html', array( $this, 'gallery_first_active' ), 11 );
 
 		// Sale mark on the product page lives inside the price line, so the
 		// flex row can stretch it to exactly the sale price's height.
@@ -533,6 +534,24 @@ final class WooCommerce {
 	 */
 	public function gallery_image_size(): string {
 		return 'woocommerce_single';
+	}
+
+	/**
+	 * The main picture is the active slide from the server. The thumbs
+	 * presets show only the active slide, and until theme.js marked one the
+	 * page's LCP sat hidden for as long as the scripts took — most of a
+	 * second on the product page. WooCommerce gives the main picture, and
+	 * only it, fetchpriority="high".
+	 *
+	 * @param string $html One gallery slide.
+	 * @return string
+	 */
+	public function gallery_first_active( string $html ): string {
+		if ( false === strpos( $html, 'fetchpriority="high"' ) ) {
+			return $html;
+		}
+
+		return (string) preg_replace( '/class="woocommerce-product-gallery__image(?=[\s"])/', 'class="woocommerce-product-gallery__image is-active', $html, 1 );
 	}
 
 	/**

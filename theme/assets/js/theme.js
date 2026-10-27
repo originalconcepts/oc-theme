@@ -4939,6 +4939,27 @@ window.ocPause = window.ocPause || ( function () {
 	 * how many are visible and arrows page the rest. Stacked preset: rail
 	 * scrolls to the image (asceno-style) and tracks the one in view. */
 
+	/* ---------- recently viewed ----------
+	 * The browser writes the WooCommerce recently-viewed cookie, not the
+	 * response: a Set-Cookie header on every product page kept the page
+	 * out of the server's page cache, and every shopper (and Google) paid
+	 * the full PHP second. The ids feed the "viewed" shelves, which fetch
+	 * their products after load, so the cookie is read on a later request. */
+	( function () {
+		var m = /\bpostid-(\d+)\b/.exec( document.body.className );
+		if ( ! m || ! document.body.classList.contains( 'single-product' ) ) {
+			return;
+		}
+		var id = m[ 1 ];
+		var raw = ( document.cookie.match( /(?:^|;\s*)woocommerce_recently_viewed=([^;]*)/ ) || [ '', '' ] )[ 1 ];
+		var ids = decodeURIComponent( raw ).split( '|' ).filter( function ( v ) {
+			return /^\d+$/.test( v ) && v !== id;
+		} );
+		ids.push( id );
+		document.cookie = 'woocommerce_recently_viewed=' + ids.slice( -15 ).join( '|' ) +
+			'; path=/; SameSite=Lax' + ( 'https:' === location.protocol ? '; Secure' : '' );
+	} )();
+
 	var galleryWrap = document.querySelector( '.woocommerce-product-gallery__wrapper' );
 	var galleryBody = document.body;
 	var railChevrons = {
@@ -4998,6 +5019,9 @@ window.ocPause = window.ocPause || ( function () {
 			return;
 		}
 
+		// The first slide is active from the server and paints with the
+		// page; only a switch the shopper makes earns the entry animation.
+		galleryWrap.classList.add( 'oc-gal-live' );
 		gSlides.forEach( function ( other ) {
 			other.classList.remove( 'is-active' );
 		} );
@@ -5091,8 +5115,10 @@ window.ocPause = window.ocPause || ( function () {
 		gSlides.forEach( function ( slide, i ) {
 			// A video slide shows a frozen first frame in the rail (a muted
 			// metadata-only video element); embeds fall back to their poster.
+			// A slide the critical pass deferred still holds a blank
+			// placeholder as src; its real picture waits in data-oc-src.
 			var src = slide.querySelector( 'img' );
-			var thumbSrc = slide.dataset.thumb || ( src && ( src.currentSrc || src.src ) );
+			var thumbSrc = slide.dataset.thumb || ( src && ( src.dataset.ocSrc || src.currentSrc || src.src ) );
 
 			if ( ! thumbSrc && ! slide.dataset.vsrc ) {
 				return;

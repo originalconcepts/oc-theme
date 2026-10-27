@@ -60,9 +60,6 @@ class Category {
 		add_action( 'pre_get_posts', array( $this, 'lobby_query' ), 99 );
 		add_action( 'product_cat_add_form_fields', array( $this, 'display_type_script' ), 99 );
 		add_action( 'product_cat_edit_form_fields', array( $this, 'display_type_script' ), 99 );
-
-		// Track product views for the "recently viewed" slider source.
-		add_action( 'template_redirect', array( $this, 'track_view' ), 20 );
 	}
 
 	/**
@@ -396,30 +393,6 @@ class Category {
 		} );
 		</script>
 		<?php
-	}
-
-	/**
-	 * Remember a viewed product in the WooCommerce recently-viewed cookie.
-	 */
-	public function track_view(): void {
-		if ( ! function_exists( 'is_product' ) || ! is_product() || ! function_exists( 'wc_setcookie' ) ) {
-			return;
-		}
-
-		$id = (int) get_queried_object_id();
-
-		if ( $id <= 0 || headers_sent() ) {
-			return;
-		}
-
-		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash -- ids are absint-ed.
-		$raw      = isset( $_COOKIE['woocommerce_recently_viewed'] ) ? (string) $_COOKIE['woocommerce_recently_viewed'] : '';
-		$viewed   = array_filter( array_map( 'absint', explode( '|', $raw ) ) );
-		$viewed   = array_values( array_diff( $viewed, array( $id ) ) );
-		$viewed[] = $id;
-		$viewed   = array_slice( $viewed, -15 );
-
-		wc_setcookie( 'woocommerce_recently_viewed', implode( '|', $viewed ) );
 	}
 
 	/* ---------------------------------------------------------- reading helpers */
