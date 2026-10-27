@@ -9535,7 +9535,9 @@ li.oc-flt-none p {
 
 body.oc-sort-open .oc-sortsheet { transform: none; }
 
-.oc-sortsheet__overlay { z-index: 1000; }
+/* Both classes, so this stays after the filters' own overlay rule now that
+ * the filters' rules travel in a file of their own. */
+.oc-flt__overlay.oc-sortsheet__overlay { z-index: 1000; }
 body.oc-sort-open .oc-sortsheet__overlay[hidden] { display: block; }
 
 .oc-sortsheet__head {

@@ -166,7 +166,7 @@ final class Assets {
 			$want[] = 'filters';
 		}
 
-		if ( class_exists( 'OC\\Theme\\Wishlist' ) && Wishlist::on() ) {
+		if ( class_exists( '\\OC\\Theme\\Wishlist\\Wishlist' ) && \OC\Theme\Wishlist\Wishlist::on() ) {
 			$want[] = 'wishlist';
 		}
 
