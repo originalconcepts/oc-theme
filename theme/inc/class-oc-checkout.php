@@ -1928,6 +1928,14 @@ final class Checkout {
 	 * @return array
 	 */
 	public function body_class( array $classes ): array {
+		// The Cart block's server markup is the filled cart's skeleton; its
+		// script swaps in the taller "your cart is empty" part a moment
+		// later and the footer jumps. The server knows the cart is empty —
+		// say so, and the stylesheet shows the right part from the start.
+		if ( is_cart() && function_exists( 'WC' ) && WC()->cart && WC()->cart->is_empty() ) {
+			$classes[] = 'oc-cart-empty';
+		}
+
 		if ( is_checkout() && ! is_wc_endpoint_url( 'order-received' ) ) {
 			$classes[] = 'oc-checkout';
 

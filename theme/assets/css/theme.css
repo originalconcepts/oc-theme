@@ -2719,6 +2719,13 @@ html[dir="ltr"] .oc-progress i { --oc-start: left; }
  * says a person must act (the callbacks in theme.js). */
 .oc-guard-ts:not(.is-interactive) { block-size: 0; margin-block: 0; overflow: hidden; }
 
+/* The Cart block before its script runs: the server has said the cart is
+ * empty (body.oc-cart-empty), so the empty-cart part stands from the
+ * first paint and the filled cart's skeleton never shows — no jump when
+ * the script agrees. Only while loading; afterwards the block decides. */
+body.oc-cart-empty .wp-block-woocommerce-cart.is-loading .wp-block-woocommerce-filled-cart-block { display: none !important; }
+body.oc-cart-empty .wp-block-woocommerce-cart.is-loading .wp-block-woocommerce-empty-cart-block { display: block !important; }
+
 /* =====================================================================
    The brands page — /brands/
    ===================================================================== */
