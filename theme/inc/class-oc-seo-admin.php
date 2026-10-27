@@ -116,6 +116,7 @@ final class Seo_Admin {
 			'social'   => __( 'Social', 'oc-theme' ),
 			'alt'      => __( 'Automatic ALT', 'oc-theme' ),
 			'links'    => __( 'Internal links', 'oc-theme' ),
+			'ai'       => __( 'AI agents', 'oc-theme' ),
 			'tools'    => __( 'Import and tools', 'oc-theme' ),
 		);
 
@@ -162,6 +163,9 @@ final class Seo_Admin {
 				break;
 			case 'links':
 				$this->links_tab( $settings );
+				break;
+			case 'ai':
+				$this->ai_tab( $settings );
 				break;
 			default:
 				$this->general_tab( $settings );
@@ -505,6 +509,41 @@ final class Seo_Admin {
 	}
 
 	/**
+	 * AI agents: the llms.txt file.
+	 *
+	 * @param array<string,mixed> $settings Current settings.
+	 */
+	private function ai_tab( array $settings ): void {
+		$url = home_url( '/llms.txt' );
+		?>
+		<table class="form-table">
+			<tr>
+				<th><?php esc_html_e( 'llms.txt', 'oc-theme' ); ?></th>
+				<td>
+					<label><input type="checkbox" name="llms_on" value="1" <?php checked( ! empty( $settings['llms_on'] ) ); ?>> <?php esc_html_e( 'Describe the shop to AI agents at /llms.txt', 'oc-theme' ); ?></label>
+					<p class="description"><?php esc_html_e( 'A Markdown file shopping agents and AI browsers read: what the shop sells, the categories and brands, how to add to the cart, where the policies and the product data are. Visitors never load it, so it costs the pages nothing.', 'oc-theme' ); ?>
+					<a href="<?php echo esc_url( $url ); ?>" target="_blank" rel="noopener"><?php echo esc_html( $url ); ?></a></p>
+				</td>
+			</tr>
+			<tr>
+				<th><label for="ocseo-llms-about"><?php esc_html_e( 'The shop in one paragraph', 'oc-theme' ); ?></label></th>
+				<td>
+					<textarea id="ocseo-llms-about" name="llms_about" rows="3" class="large-text" placeholder="<?php echo esc_attr( (string) ( $settings['home_desc'] ? $settings['home_desc'] : get_bloginfo( 'description' ) ) ); ?>"><?php echo esc_textarea( (string) $settings['llms_about'] ); ?></textarea>
+					<p class="description"><?php esc_html_e( 'Empty: the front page description from the General tab, or the site tagline.', 'oc-theme' ); ?></p>
+				</td>
+			</tr>
+			<tr>
+				<th><label for="ocseo-llms-notes"><?php esc_html_e( 'Notes for agents', 'oc-theme' ); ?></label></th>
+				<td>
+					<textarea id="ocseo-llms-notes" name="llms_notes" rows="5" class="large-text" placeholder="<?php esc_attr_e( 'Delivery across Israel within 3 business days. Returns within 14 days. Ask about trade prices for contractors.', 'oc-theme' ); ?>"><?php echo esc_textarea( (string) $settings['llms_notes'] ); ?></textarea>
+					<p class="description"><?php esc_html_e( 'Anything an agent should know before it shops here: delivery, returns, minimum orders, who you sell to.', 'oc-theme' ); ?></p>
+				</td>
+			</tr>
+		</table>
+		<?php
+	}
+
+	/**
 	 * Tools: the import keys, and the one-time Yoast migration.
 	 */
 	private function tools_tab(): void {
@@ -631,6 +670,13 @@ final class Seo_Admin {
 
 			// The phrase list is built from these choices, so it has to go.
 			Seo_Links::forget();
+		}
+
+		if ( 'ai' === $tab ) {
+			$settings['llms_on']    = empty( $_POST['llms_on'] ) ? 0 : 1;
+			$settings['llms_about'] = sanitize_textarea_field( (string) wp_unslash( $_POST['llms_about'] ?? '' ) );
+			$settings['llms_notes'] = sanitize_textarea_field( (string) wp_unslash( $_POST['llms_notes'] ?? '' ) );
+			Llms::forget();
 		}
 
 		update_option( Seo::SETTINGS, $settings, false );

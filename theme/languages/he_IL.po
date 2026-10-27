@@ -14744,3 +14744,92 @@ msgstr "לעכב גם את התגים של Google (Analytics, Ads, Tag Manager)"
 
 msgid "The same wait for Google. The cost is the same too: a visitor who leaves inside the wait without touching the page is not counted in Analytics."
 msgstr "אותה המתנה גם ל-Google. המחיר זהה: מבקר שיוצא בתוך זמן ההמתנה בלי לגעת בעמוד לא נספר ב-Analytics."
+
+msgid "AI agents"
+msgstr "סוכני AI"
+
+msgid "Describe the shop to AI agents at /llms.txt"
+msgstr "לתאר את החנות לסוכני AI בכתובת ‎/llms.txt"
+
+msgid "A Markdown file shopping agents and AI browsers read: what the shop sells, the categories and brands, how to add to the cart, where the policies and the product data are. Visitors never load it, so it costs the pages nothing."
+msgstr "קובץ Markdown שסוכני קנייה ודפדפני AI קוראים: מה החנות מוכרת, הקטגוריות והמותגים, איך מוסיפים לסל, איפה התקנון ונתוני המוצרים. גולשים לעולם לא טוענים אותו, ולכן הוא לא עולה לעמודים כלום."
+
+msgid "The shop in one paragraph"
+msgstr "החנות בפסקה אחת"
+
+msgid "Empty: the front page description from the General tab, or the site tagline."
+msgstr "ריק: תיאור דף הבית מהלשונית \"כללי\", או התיאור הקצר של האתר."
+
+msgid "Notes for agents"
+msgstr "הערות לסוכנים"
+
+msgid "Delivery across Israel within 3 business days. Returns within 14 days. Ask about trade prices for contractors."
+msgstr "משלוח לכל הארץ תוך 3 ימי עסקים. החזרות תוך 14 יום. לקבלנים יש מחירון סוחר, שאלו אותנו."
+
+msgid "Anything an agent should know before it shops here: delivery, returns, minimum orders, who you sell to."
+msgstr "כל מה שסוכן צריך לדעת לפני שהוא קונה כאן: משלוחים, החזרות, מינימום הזמנה, למי מוכרים."
+
+msgid "Operated by %s."
+msgstr "מופעל על ידי %s."
+
+msgid "Address: %s."
+msgstr "כתובת: %s."
+
+msgid "Phone: %s."
+msgstr "טלפון: %s."
+
+msgid "Email: %s."
+msgstr "דוא\"ל: %s."
+
+msgid "Hours: %s."
+msgstr "שעות פעילות: %s."
+
+msgid "Prices are in %s and include VAT."
+msgstr "המחירים ב-%s וכוללים מע\"מ."
+
+msgid "The site is in %s."
+msgstr "שפת האתר: %s."
+
+msgid "Payment: %s."
+msgstr "תשלום: %s."
+
+msgid "Buying"
+msgstr "קנייה"
+
+msgid "To add a product to the cart, open its page with `?add-to-cart=ID` (the product id from the Store API below), or use the Store API cart endpoints."
+msgstr "כדי להוסיף מוצר לסל, פותחים את עמוד המוצר עם ‎`?add-to-cart=ID`‎ (מזהה המוצר מה-Store API למטה), או משתמשים בנקודות הקצה של הסל ב-Store API."
+
+msgid "Terms, shipping and returns"
+msgstr "תקנון, משלוחים והחזרות"
+
+msgid "Policies"
+msgstr "מדיניות"
+
+msgid "Product data"
+msgstr "נתוני מוצרים"
+
+msgid "Products (JSON, read-only Store API)"
+msgstr "מוצרים (JSON, ‏Store API לקריאה בלבד)"
+
+msgid "Public; supports search, category, per_page and page parameters. Each product carries its id, prices, stock and permalink."
+msgstr "ציבורי; תומך בפרמטרים search, category, per_page ו-page. כל מוצר נושא מזהה, מחירים, מלאי וקישור קבוע."
+
+msgid "Categories (JSON)"
+msgstr "קטגוריות (JSON)"
+
+msgid "Product feed for %s"
+msgstr "פיד מוצרים ל-%s"
+
+msgid "Sitemap"
+msgstr "מפת אתר"
+
+msgid "Articles and guides."
+msgstr "מאמרים ומדריכים."
+
+msgid "Instant navigation — the next page is prepared while the finger is on its way, and pages change with a short fade"
+msgstr "ניווט מיידי — העמוד הבא מוכן בזמן שהאצבע בדרך, והעמודים מתחלפים בדהייה קצרה"
+
+msgid "%d product"
+msgid_plural "%d products"
+msgstr[0] "מוצר אחד"
+msgstr[1] "%d מוצרים"
