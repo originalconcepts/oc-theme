@@ -12,6 +12,19 @@
  * pull focus — Safari spends the first tap settling it, and the visitor
  * presses twice. Every drawer and sheet in this file asks the same two
  * questions, so they are answered once, here. */
+/* ---------- shown, not merely rendered ----------
+ * With instant navigation the browser renders the next page before the
+ * click (speculation rules). Everything that counts a visit — statistics,
+ * heat map, pixels, recently viewed — waits here, so a page nobody opened
+ * is not a visit. Outside a prerender this runs at once. */
+window.ocWhenShown = function ( fn ) {
+	if ( document.prerendering ) {
+		document.addEventListener( 'prerenderingchange', function () { fn(); }, { once: true } );
+	} else {
+		fn();
+	}
+};
+
 window.ocA11y = ( function () {
 	var viaKey = false;
 
@@ -462,11 +475,13 @@ window.ocPause = window.ocPause || ( function () {
 		q.forEach( post );
 	} );
 
-	hit( 'view', S.p || S.c || 0 );
-	if ( S.p ) { hit( 'product', S.p ); }
-	if ( S.c ) { hit( 'cat', S.c ); }
-	if ( S.b ) { hit( 'brand', S.b ); }
-	if ( S.co ) { hit( 'checkout', 0 ); }
+	window.ocWhenShown( function () {
+		hit( 'view', S.p || S.c || 0 );
+		if ( S.p ) { hit( 'product', S.p ); }
+		if ( S.c ) { hit( 'cat', S.c ); }
+		if ( S.b ) { hit( 'brand', S.b ); }
+		if ( S.co ) { hit( 'checkout', 0 ); }
+	} );
 
 	// Adding to the cart is counted on the server (Track::added), whatever
 	// put it there; the page script no longer reports it.
@@ -477,7 +492,7 @@ window.ocPause = window.ocPause || ( function () {
  * they linger. Nothing leaves the browser while the visitor is reading:
  * marks are counted in memory and sent once, as the page goes away. A
  * page that is not watched costs one property read and stops here. */
-( function () {
+window.ocWhenShown( function () {
 	var L = window.ocL10n || {};
 	var H = L.heat;
 
@@ -796,7 +811,7 @@ window.ocPause = window.ocPause || ( function () {
 	setInterval( flush, 20000 );
 	addEventListener( 'pagehide', flush );
 	addEventListener( 'visibilitychange', function () { if ( document.hidden ) { flush(); } } );
-}() );
+} );
 ( function () {
 	'use strict';
 
@@ -4945,7 +4960,7 @@ window.ocPause = window.ocPause || ( function () {
 	 * out of the server's page cache, and every shopper (and Google) paid
 	 * the full PHP second. The ids feed the "viewed" shelves, which fetch
 	 * their products after load, so the cookie is read on a later request. */
-	( function () {
+	window.ocWhenShown( function () {
 		var m = /\bpostid-(\d+)\b/.exec( document.body.className );
 		if ( ! m || ! document.body.classList.contains( 'single-product' ) ) {
 			return;
@@ -4958,7 +4973,7 @@ window.ocPause = window.ocPause || ( function () {
 		ids.push( id );
 		document.cookie = 'woocommerce_recently_viewed=' + ids.slice( -15 ).join( '|' ) +
 			'; path=/; SameSite=Lax' + ( 'https:' === location.protocol ? '; Secure' : '' );
-	} )();
+	} );
 
 	var galleryWrap = document.querySelector( '.woocommerce-product-gallery__wrapper' );
 	var galleryBody = document.body;
@@ -11014,7 +11029,7 @@ window.ocPause.watch();
  * carries; the names the scripts build (a slider's dots, an open state)
  * are reported back once per kind of page, so the next page of the kind
  * inlines their rules too. */
-( function () {
+window.ocWhenShown( function () {
 	var meta = document.querySelector( 'meta[name="oc-critical"]' );
 	if ( ! meta || ! window.fetch ) { return; }
 	var tag = meta.getAttribute( 'content' ) || '';
@@ -11041,4 +11056,4 @@ window.ocPause.watch();
 	}
 
 	window.addEventListener( 'load', function () { setTimeout( report, 4000 ); } );
-}() );
+} );

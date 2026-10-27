@@ -486,11 +486,23 @@
 		load();
 	}
 
-	if ( 'complete' === document.readyState ) {
-		setTimeout( start, 0 );
-	} else {
-		window.addEventListener( 'load', function () {
-			( window.requestIdleCallback || function ( f ) { setTimeout( f, 60 ); } )( start );
-		} );
+	// A page rendered ahead of the click (speculation rules) is not a
+	// visit until it is shown: the pixels wait for that moment.
+	function whenShown( fn ) {
+		if ( document.prerendering ) {
+			document.addEventListener( 'prerenderingchange', function () { fn(); }, { once: true } );
+		} else {
+			fn();
+		}
 	}
+
+	whenShown( function () {
+		if ( 'complete' === document.readyState ) {
+			setTimeout( start, 0 );
+		} else {
+			window.addEventListener( 'load', function () {
+				( window.requestIdleCallback || function ( f ) { setTimeout( f, 60 ); } )( start );
+			} );
+		}
+	} );
 }() );

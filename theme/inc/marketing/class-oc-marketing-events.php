@@ -120,6 +120,51 @@ final class Events {
 	}
 
 	/**
+	 * Server jobs waiting for the response to be out of the door.
+	 *
+	 * @var array<int,array<string,mixed>>
+	 */
+	private static $after = array();
+
+	/**
+	 * Is this request a browser's speculative fetch (prefetch / prerender)
+	 * rather than a visit? Chrome marks them with Sec-Purpose, older
+	 * engines with Purpose; the theme's own warm-up sends X-OC-Prefetch.
+	 *
+	 * @return bool
+	 */
+	public static function speculative(): bool {
+		$purpose = (string) ( $_SERVER['HTTP_SEC_PURPOSE'] ?? $_SERVER['HTTP_PURPOSE'] ?? '' ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- compared, not used.
+
+		return false !== stripos( $purpose, 'prefetch' ) || false !== stripos( $purpose, 'prerender' ) || ! empty( $_SERVER['HTTP_X_OC_PREFETCH'] );
+	}
+
+	/**
+	 * Send the page's server events once the visitor has the page. Under
+	 * PHP-FPM the response is flushed first and the networks are then
+	 * waited for (so the log holds their real answers); anywhere else the
+	 * posts stay fire-and-forget, as before.
+	 */
+	public static function after(): void {
+		$jobs        = self::$after;
+		self::$after = array();
+
+		if ( ! $jobs ) {
+			return;
+		}
+
+		$flushed = false;
+
+		if ( function_exists( 'fastcgi_finish_request' ) ) {
+			$flushed = (bool) fastcgi_finish_request();
+		}
+
+		foreach ( $jobs as $job ) {
+			Dispatch::send( $job, $flushed );
+		}
+	}
+
+	/**
 	 * The queue, for the footer.
 	 *
 	 * @return array<int,array<string,mixed>>
@@ -162,11 +207,26 @@ final class Events {
 		);
 
 		// Money and identity must not be lost: they queue in the scheduler
-		// and are retried. Everything else — a product seen, a search — is
-		// sent on the spot without waiting for an answer; a lost one costs
-		// nothing and a scheduler row per page view would.
+		// and are retried. Everything else — a product seen, a search — goes
+		// out after the page has been handed to the visitor (see after()):
+		// even a "do not wait" post to graph.facebook.com costs the TLS
+		// handshake, ~300ms, and it sat inside every product page's time to
+		// first byte. A lost one costs nothing and a scheduler row per page
+		// view would.
 		if ( ! in_array( $name, array( 'Purchase', 'CompleteRegistration', 'Subscribe', 'Lead', 'Contact' ), true ) ) {
-			Dispatch::send( $job, false );
+			// A browser warming the page ahead of a click (speculation
+			// rules, our own prefetch) has no visitor on it yet; the real
+			// visit, if it comes, is reported by the browser's pixel.
+			if ( self::speculative() ) {
+				return;
+			}
+
+			self::$after[] = $job;
+
+			if ( 1 === count( self::$after ) ) {
+				add_action( 'shutdown', array( __CLASS__, 'after' ), 20 );
+			}
+
 			return;
 		}
 

@@ -2170,6 +2170,8 @@ final class Customizer {
 			'numbers'
 		);
 
+		$this->toggle( $c, 'oc_instant_nav', $section, __( 'Instant navigation — the next page is prepared while the finger is on its way, and pages change with a short fade', 'oc-theme' ), true );
+
 		$this->choice(
 			$c,
 			'oc_paging_shape',

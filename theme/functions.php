@@ -13,7 +13,7 @@ declare( strict_types = 1 );
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'OC_THEME_VERSION', '0.3.379' );
+define( 'OC_THEME_VERSION', '0.3.380' );
 define( 'OC_THEME_DIR', get_template_directory() );
 define( 'OC_THEME_URI', get_template_directory_uri() );
 define( 'OC_THEME_REPO', 'originalconcepts/oc-theme' );
@@ -152,6 +152,7 @@ require_once OC_THEME_DIR . '/inc/class-oc-contact.php';
 require_once OC_THEME_DIR . '/inc/class-oc-thankyou.php';
 require_once OC_THEME_DIR . '/inc/class-oc-performance.php';
 require_once OC_THEME_DIR . '/inc/class-oc-critical.php';
+require_once OC_THEME_DIR . '/inc/class-oc-instant.php';
 require_once OC_THEME_DIR . '/inc/class-oc-search-index.php';
 require_once OC_THEME_DIR . '/inc/class-oc-search.php';
 require_once OC_THEME_DIR . '/inc/class-oc-cache.php';
@@ -583,6 +584,7 @@ add_action( 'admin_notices', 'oc_dependency_notice' );
 
 ( new OC\Theme\Assets() )->register();
 ( new OC\Theme\Critical() )->register();
+( new OC\Theme\Instant() )->register();
 ( new OC\Theme\WooCommerce() )->register();
 ( new OC\Theme\Shipping() )->register();
 ( new OC\Theme\Shipping_Admin() )->register();
