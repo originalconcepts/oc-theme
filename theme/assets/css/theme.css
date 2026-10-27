@@ -5320,7 +5320,9 @@ body.oc-tabs-tabs.woocommerce div.product .woocommerce-tabs ul.tabs li.active a,
 	margin-inline-end: 4px;
 }
 
-.oc-sticky-atc__buy del { color: var(--oc-ink-2); margin-inline-end: 6px; }
+/* The old price takes the button's own text colour, softened: the page's
+ * grey ink was dark on a coloured button. */
+.oc-sticky-atc__buy del { color: inherit; opacity: .75; margin-inline-end: 6px; }
 .oc-sticky-atc__buy ins { text-decoration: none; }
 
 /* Both add buttons show a spinner while the ajax add is in flight. */
