@@ -57,7 +57,8 @@ final class Performance {
 		// page, which the first paint does not wait for, and every
 		// dependent follows it there, mid-page enqueues included, so the
 		// order holds.
-		add_action( 'wp_enqueue_scripts', array( $this, 'jquery_last' ), 0 );
+		add_action( 'wp_enqueue_scripts', array( $this, 'jquery_last' ), PHP_INT_MAX );
+		add_action( 'wp_print_scripts', array( $this, 'jquery_last' ), 0 );
 
 		// Woo's origin tracker (sourcebuster.js + inline config).
 		add_filter( 'wc_order_attribution_allow_tracking', '__return_false' );
@@ -125,8 +126,34 @@ final class Performance {
 			return;
 		}
 
-		foreach ( array( 'jquery', 'jquery-core', 'jquery-migrate' ) as $handle ) {
-			wp_script_add_data( $handle, 'group', 1 );
+		// Core places a dependency no later than its earliest dependent, so
+		// jQuery only moves if everything that needs it moves with it: the
+		// whole registry is walked, and whatever leads back to jQuery goes
+		// to the footer. Run again right before the head prints, for a
+		// script enqueued after the enqueue hook.
+		$scripts = wp_scripts();
+		$memo    = array();
+		$needs   = static function ( string $handle ) use ( $scripts, &$memo, &$needs ): bool {
+			if ( isset( $memo[ $handle ] ) ) {
+				return $memo[ $handle ];
+			}
+			$memo[ $handle ] = false; // Guards a cycle.
+			if ( in_array( $handle, array( 'jquery', 'jquery-core', 'jquery-migrate' ), true ) ) {
+				return $memo[ $handle ] = true;
+			}
+			$dep = $scripts->registered[ $handle ] ?? null;
+			foreach ( (array) ( $dep ? $dep->deps : array() ) as $d ) {
+				if ( $needs( (string) $d ) ) {
+					return $memo[ $handle ] = true;
+				}
+			}
+			return false;
+		};
+
+		foreach ( array_keys( $scripts->registered ) as $handle ) {
+			if ( $needs( (string) $handle ) ) {
+				$scripts->add_data( (string) $handle, 'group', 1 );
+			}
 		}
 	}
 

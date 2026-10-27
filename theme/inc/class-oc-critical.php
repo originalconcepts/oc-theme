@@ -35,10 +35,10 @@ defined( 'ABSPATH' ) || exit;
 final class Critical {
 
 	/**
-	 * Stylesheet handles (link ids without the "-css") the extract is cut
-	 * from and that then load without blocking. Prefix match.
+	 * Stylesheets left alone: WordPress's own admin chrome, and one that
+	 * already loads late on its own.
 	 */
-	const HANDLES = array( 'oc-theme', 'oc-blocks', 'woocommerce-layout', 'woocommerce-smallscreen', 'woocommerce-general' );
+	const SKIP = array( 'admin-bar', 'dashicons', 'ocai' );
 
 	/**
 	 * How much of the main column counts as the first screen, in bytes of
@@ -145,7 +145,7 @@ final class Critical {
 			$path = self::local_path( html_entity_decode( $href[2], ENT_QUOTES ) );
 
 			if ( '' === $path ) {
-				return '';
+				continue;
 			}
 
 			$media = preg_match( '#\bmedia=([\'"])([^\'"]+)\1#', $tag, $md ) ? $md[2] : 'all';
@@ -220,18 +220,20 @@ final class Critical {
 	}
 
 	/**
-	 * Is this stylesheet one of ours to cut and defer?
+	 * Is this stylesheet one to cut and defer? Every sheet served from this
+	 * site is, bar the few in SKIP; a sheet from elsewhere (a font service)
+	 * cannot be read and stays as it is.
 	 *
 	 * @param string $handle The link id without "-css".
 	 */
 	private static function wanted( string $handle ): bool {
-		foreach ( self::HANDLES as $h ) {
+		foreach ( self::SKIP as $h ) {
 			if ( 0 === strpos( $handle, $h ) ) {
-				return true;
+				return false;
 			}
 		}
 
-		return false;
+		return true;
 	}
 
 	/**
