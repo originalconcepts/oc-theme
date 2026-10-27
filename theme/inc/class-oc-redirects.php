@@ -366,7 +366,15 @@ final class Redirects {
 			return; // A rule pointing at itself is a rule ignored.
 		}
 
-		wp_safe_redirect( $target, 302 === $rule['y'] ? 302 : 301 );
+		// A host WordPress does not trust lands a visitor on the home page,
+		// never on wp-admin.
+		add_filter(
+			'wp_safe_redirect_fallback',
+			static function () {
+				return home_url( '/' );
+			}
+		);
+		wp_safe_redirect( $target, 302 === $rule['y'] ? 302 : 301, 'OC Redirects' );
 		exit;
 	}
 
@@ -485,6 +493,18 @@ final class Redirects {
 		}
 
 		if ( preg_match( '#^https?://#i', $target ) ) {
+			// Our own site under its other name (www or not, http or not —
+			// a domain change leaves these behind) goes to the current
+			// address; wp_safe_redirect() would send it to wp-admin.
+			$host = strtolower( (string) wp_parse_url( $target, PHP_URL_HOST ) );
+			$home = strtolower( (string) wp_parse_url( home_url(), PHP_URL_HOST ) );
+
+			if ( '' !== $host && $host !== $home && preg_replace( '#^www\.#', '', $host ) === preg_replace( '#^www\.#', '', $home ) ) {
+				$rest = (string) preg_replace( '#^https?://[^/?\#]+#i', '', $target );
+
+				return home_url( '' === $rest ? '/' : $rest );
+			}
+
 			return $target;
 		}
 
