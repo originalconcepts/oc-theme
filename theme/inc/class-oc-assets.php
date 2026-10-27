@@ -304,6 +304,7 @@ final class Assets {
 				'guard'                => Guard::for_script(),
 				'stats'                => class_exists( 'WooCommerce' ) ? Stats\Track::for_script() : array(),
 				'heat'                 => class_exists( 'WooCommerce' ) ? Stats\Heat::for_script() : array(),
+				'sw'                   => Instant::on() ? Instant::worker_url() : '',
 				/* translators: %d: seconds. */
 				'authResend'           => __( 'Resend in another %ds', 'oc-theme' ),
 				'authMailed'           => __( 'The code is in your inbox.', 'oc-theme' ),

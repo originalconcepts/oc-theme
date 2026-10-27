@@ -25,6 +25,79 @@ window.ocWhenShown = function ( fn ) {
 	}
 };
 
+/* ---------- instant navigation: the worker ----------
+ * Chromium renders the next page ahead of the click by itself (speculation
+ * rules, printed by the server). Safari and Firefox have no such thing,
+ * so a worker keeps pages: a touch or a hover asks it to fetch the page
+ * the finger is heading for, and the navigation that follows is answered
+ * from the shelf without a trip to the server. A signed-in visitor gets
+ * no worker — their pages are their own. */
+window.ocInstantClear = function ( then ) {
+	var done = false;
+	function go() { if ( ! done ) { done = true; if ( then ) { then(); } } }
+	try {
+		if ( navigator.serviceWorker && navigator.serviceWorker.controller ) {
+			navigator.serviceWorker.controller.postMessage( { type: 'oc-clear' } );
+		}
+		if ( window.caches ) {
+			caches.keys().then( function ( keys ) {
+				return Promise.all( keys.filter( function ( k ) { return 0 === k.indexOf( 'oc-pages-' ); } ).map( function ( k ) { return caches.delete( k ); } ) );
+			} ).then( go, go );
+			setTimeout( go, 400 );
+			return;
+		}
+	} catch ( e ) {}
+	go();
+};
+
+( function () {
+	var sw = ( window.ocL10n || {} ).sw;
+	if ( ! ( 'serviceWorker' in navigator ) || ! window.fetch || 'https:' !== location.protocol ) { return; }
+
+	if ( ! sw || document.body.classList.contains( 'logged-in' ) ) {
+		// Off, or signed in: no worker, and whatever a guest session left
+		// behind goes.
+		navigator.serviceWorker.getRegistrations().then( function ( regs ) {
+			regs.forEach( function ( r ) { if ( r.scope === location.origin + '/' ) { r.unregister(); } } );
+		} ).catch( function () {} );
+		window.ocInstantClear();
+		return;
+	}
+
+	window.addEventListener( 'load', function () {
+		( window.requestIdleCallback || function ( f ) { setTimeout( f, 300 ); } )( function () {
+			navigator.serviceWorker.register( sw, { scope: '/' } ).catch( function () {} );
+		} );
+	} );
+
+	// Where the browser has no speculation rules, the page asks the worker.
+	if ( HTMLScriptElement.supports && HTMLScriptElement.supports( 'speculationrules' ) ) { return; }
+
+	var asked = {};
+	var timer = 0;
+
+	function want( a ) {
+		if ( ! a || ! a.href || asked[ a.href ] || a.target || a.hasAttribute( 'download' ) || /\bnofollow\b/.test( a.rel || '' ) ) { return; }
+		if ( a.origin !== location.origin || /^(#|javascript:|mailto:|tel:)/.test( a.getAttribute( 'href' ) || '' ) ) { return; }
+		if ( a.closest( '.no-prefetch, .no-prerender, form' ) ) { return; }
+		var c = navigator.serviceWorker.controller;
+		if ( ! c ) { return; }
+		asked[ a.href ] = 1;
+		c.postMessage( { type: 'oc-prefetch', url: a.href } );
+	}
+
+	document.addEventListener( 'touchstart', function ( e ) {
+		want( e.target && e.target.closest && e.target.closest( 'a[href]' ) );
+	}, { capture: true, passive: true } );
+
+	document.addEventListener( 'mouseover', function ( e ) {
+		var a = e.target && e.target.closest && e.target.closest( 'a[href]' );
+		if ( ! a ) { return; }
+		clearTimeout( timer );
+		timer = setTimeout( function () { want( a ); }, 90 );
+	}, { capture: true, passive: true } );
+} )();
+
 window.ocA11y = ( function () {
 	var viaKey = false;
 
@@ -9589,7 +9662,7 @@ window.ocWhenShown( function () {
 				done();
 				boxes.forEach( function ( b ) { b.disabled = false; } );
 
-				if ( out && out.success ) { window.location.reload(); return; }
+				if ( out && out.success ) { window.ocInstantClear( function () { window.location.reload(); } ); return; }
 
 				say( form, out && out.data ? out.data.msg : '' );
 				boxes.forEach( function ( b ) { b.value = ''; } );
@@ -9626,7 +9699,7 @@ window.ocWhenShown( function () {
 			} ).then( function ( out ) {
 				done();
 
-				if ( out && out.success ) { window.location.reload(); return; }
+				if ( out && out.success ) { window.ocInstantClear( function () { window.location.reload(); } ); return; }
 
 				say( form, out && out.data ? out.data.msg : '' );
 			} );
@@ -9660,7 +9733,7 @@ window.ocWhenShown( function () {
 						return;
 					}
 
-					window.location.reload();
+					window.ocInstantClear( function () { window.location.reload(); } );
 					return;
 				}
 

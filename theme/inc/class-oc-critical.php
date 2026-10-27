@@ -271,7 +271,12 @@ final class Critical {
 		// copy, which is why the script also watches for added pictures.
 		$mode = sanitize_text_field( wp_unslash( (string) ( $_SERVER['HTTP_SEC_FETCH_MODE'] ?? '' ) ) );
 
-		if ( ( '' !== $mode && 'navigate' !== $mode ) || isset( $_SERVER['HTTP_X_REQUESTED_WITH'] ) ) {
+		// The instant-navigation worker fetches a page to show it later,
+		// exactly as a navigation would: it marks itself and gets the
+		// full treatment.
+		$prefetch = isset( $_SERVER['HTTP_X_OC_PREFETCH'] );
+
+		if ( ! $prefetch && ( ( '' !== $mode && 'navigate' !== $mode ) || isset( $_SERVER['HTTP_X_REQUESTED_WITH'] ) ) ) {
 			return;
 		}
 
