@@ -87,3 +87,26 @@ version = re.search(r"^\s*\*?\s*Version:\s*([0-9.]+)", (repo / "theme" / "style.
     f"\t'size'    => {(css_dir / 'theme.css').stat().st_size},\n"
     "\t'chunks'  => array( " + ", ".join(f"'{n}'" for n in sorted(chunks)) + " ),\n);\n"
 )
+
+# The class names the scripts build or switch on (a slider's dots, the
+# checkout's folded summary, a drawer's open state): the page's markup does
+# not carry them, so the critical-CSS cut reads this list beside it.
+JS_SOURCES = [root / "js" / n for n in ("theme.js", "checkout.js", "wishlist.js", "privacy.js", "marketing.js", "a11y-widget.js")] + [blocks / "blocks.js"]
+names = set()
+for src in JS_SOURCES:
+    if not src.exists():
+        continue
+    js = src.read_text()
+    for m in re.finditer(r"""class(?:Name)?\s*[=:]\s*['"]([^'"]+)['"]""", js):
+        names.update(m.group(1).split())
+    for m in re.finditer(r"""class=\\?['"]([^'"\\]+)\\?['"]""", js):
+        names.update(m.group(1).split())
+    for m in re.finditer(r"""classList\.(?:add|toggle|remove|replace)\(([^)]*)\)""", js):
+        names.update(re.findall(r"""['"]([A-Za-z_][\w-]*)['"]""", m.group(1)))
+    names.update(re.findall(r"""['"]((?:is|has)-[a-z0-9-]+|ocb?-[a-z0-9_-]+|ocpp[a-z0-9_-]*)['"]""", js))
+names = sorted(n for n in names if re.fullmatch(r"[A-Za-z_][\w-]*", n) and not re.search(r"\d{2,}", n))
+(repo / "theme" / "inc" / "critical-js-classes.php").write_text(
+    "<?php\n/**\n * Written by scripts/minify.py: the class names the scripts build or switch on.\n *\n * @package OC_Theme\n */\n\nreturn array(\n"
+    + "".join(f"\t'{n}',\n" for n in names) + ");\n"
+)
+print(f"critical-js-classes.php: {len(names)} names")

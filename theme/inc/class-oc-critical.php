@@ -300,6 +300,16 @@ final class Critical {
 			$set[ '.' . $c ] = true;
 		}
 
+		// And every name the scripts build or switch on (scripts/minify.py
+		// writes the list): a slider's dots, the folded checkout summary,
+		// an open drawer — markup the page does not carry yet.
+		$built = OC_THEME_DIR . '/inc/critical-js-classes.php';
+		$list  = file_exists( $built ) ? include $built : array();
+
+		foreach ( (array) $list as $c ) {
+			$set[ '.' . (string) $c ] = true;
+		}
+
 		return $set;
 	}
 
