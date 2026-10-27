@@ -184,42 +184,46 @@ final class Assets {
 
 	/**
 	 * The core and the wanted chunks as theme-relative paths, or null when
-	 * any of them is missing or older than theme.css.
+	 * the pieces were not cut from this theme.css (scripts/minify.py was
+	 * skipped) or one of them is missing.
 	 *
 	 * @return array{core:string,chunks:array<string,string>}|null
 	 */
 	private function css_pieces(): ?array {
-		// A git checkout writes the files one after another, so a piece can
-		// read a second older than the source it was cut from: a short grace,
-		// as OC Blocks' pieces have.
-		$source = OC_THEME_DIR . '/assets/css/theme.css';
-		$since  = file_exists( $source ) ? (int) filemtime( $source ) - 10 : 0;
-		$fresh  = static function ( string $rel ) use ( $since ): bool {
-			$path = OC_THEME_DIR . $rel;
+		$dir   = OC_THEME_DIR . '/assets/css/';
+		$stamp = file_exists( $dir . 'theme.pieces.php' ) ? include $dir . 'theme.pieces.php' : null;
 
-			return file_exists( $path ) && (int) filemtime( $path ) >= $since;
-		};
-
-		$core = '/assets/css/theme.core.min.css';
-
-		if ( ! $fresh( $core ) ) {
+		// The stamp says which theme.css the pieces came from: the version
+		// they were built for and the size of the file — not file times,
+		// which a git checkout hands out per changed file, so an unchanged
+		// piece keeps an old date beside a fresh source.
+		if ( ! is_array( $stamp )
+			|| (string) ( $stamp['version'] ?? '' ) !== OC_THEME_VERSION
+			|| ! file_exists( $dir . 'theme.css' )
+			|| (int) ( $stamp['size'] ?? -1 ) !== (int) filesize( $dir . 'theme.css' )
+			|| ! file_exists( $dir . 'theme.core.min.css' ) ) {
 			return null;
 		}
 
 		$chunks = array();
 
 		foreach ( self::css_chunks() as $name ) {
-			$rel = '/assets/css/theme.' . sanitize_key( $name ) . '.min.css';
+			$name = sanitize_key( $name );
 
-			if ( ! $fresh( $rel ) ) {
+			// A chunk the cut found nothing for has no file, and needs none.
+			if ( ! in_array( $name, (array) ( $stamp['chunks'] ?? array() ), true ) ) {
+				continue;
+			}
+
+			if ( ! file_exists( $dir . 'theme.' . $name . '.min.css' ) ) {
 				return null;
 			}
 
-			$chunks[ $name ] = $rel;
+			$chunks[ $name ] = '/assets/css/theme.' . $name . '.min.css';
 		}
 
 		return array(
-			'core'   => $core,
+			'core'   => '/assets/css/theme.core.min.css',
 			'chunks' => $chunks,
 		);
 	}

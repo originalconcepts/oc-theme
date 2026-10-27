@@ -75,3 +75,15 @@ for name, part in [("core", core)] + sorted(chunks.items()):
     minified = rcssmin.cssmin(part)
     (css_dir / f"theme.{name}.min.css").write_text(minified)
     print(f"theme.{name}.min.css: {len(minified) / 1024:.1f}KB")
+
+# The stamp the enqueue checks the pieces against: the theme version they
+# were cut for and the size of the theme.css they were cut from. Not file
+# times — git rewrites only the files that changed, so an unchanged piece
+# keeps an old date beside a fresh source and would read as stale.
+version = re.search(r"^\s*\*?\s*Version:\s*([0-9.]+)", (repo / "theme" / "style.css").read_text(), re.M).group(1)
+(css_dir / "theme.pieces.php").write_text(
+    "<?php\n// Written by scripts/minify.py — the stylesheet pieces and what they were cut from.\nreturn array(\n"
+    f"\t'version' => '{version}',\n"
+    f"\t'size'    => {(css_dir / 'theme.css').stat().st_size},\n"
+    "\t'chunks'  => array( " + ", ".join(f"'{n}'" for n in sorted(chunks)) + " ),\n);\n"
+)
