@@ -106,7 +106,16 @@ window.ocA11y = ( function () {
 					appearance: 'interaction-only',
 					theme: 'light',
 					language: document.documentElement.lang || 'auto',
-					'refresh-expired': 'auto'
+					'refresh-expired': 'auto',
+					// The slot keeps no height while the widget works unseen —
+					// its frame used to stand 65px tall for a moment and push
+					// the footer about — and opens only when a person must act.
+					'before-interactive-callback': function () {
+						el.classList.add( 'is-interactive' );
+					},
+					'after-interactive-callback': function () {
+						el.classList.remove( 'is-interactive' );
+					}
 				} );
 			} catch ( e ) {
 				el.removeAttribute( 'data-widget' );

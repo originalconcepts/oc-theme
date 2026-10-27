@@ -32,6 +32,7 @@ return array(
 	'is-filled',
 	'is-first',
 	'is-in',
+	'is-interactive',
 	'is-leave',
 	'is-live',
 	'is-loading',

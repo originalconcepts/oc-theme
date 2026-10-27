@@ -2713,6 +2713,11 @@ html[dir="ltr"] .oc-progress i { --oc-start: left; }
 /* Turnstile's container: empty until a challenge is needed */
 .oc-guard-ts:empty { display: none; }
 .oc-guard-ts { margin-block: 8px; }
+/* Turnstile verifies unseen (interaction-only), but its frame still takes
+ * 300×65 for a moment on a slow line — a layout shift on every page whose
+ * form is in the first screen. The slot is clipped flat until the widget
+ * says a person must act (the callbacks in theme.js). */
+.oc-guard-ts:not(.is-interactive) { block-size: 0; margin-block: 0; overflow: hidden; }
 
 /* =====================================================================
    The brands page — /brands/
