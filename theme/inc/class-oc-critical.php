@@ -696,6 +696,6 @@ final class Critical {
 
 		$out[] = trim( $cur );
 
-		return array_values( array_filter( $out, 'strlen' ) );
+		return array_values( array_filter( $out, static fn ( string $s ): bool => '' !== $s ) );
 	}
 }
