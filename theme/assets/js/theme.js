@@ -10948,3 +10948,35 @@ window.__ocMoneyInto = function ( el, words, money ) {
  * section — gets its pause button, and so does any that arrives later. */
 window.ocPause.scan( document );
 window.ocPause.watch();
+
+/* The first screen's CSS is inlined from the names the page's markup
+ * carries; the names the scripts build (a slider's dots, an open state)
+ * are reported back once per kind of page, so the next page of the kind
+ * inlines their rules too. */
+( function () {
+	var meta = document.querySelector( 'meta[name="oc-critical"]' );
+	if ( ! meta || ! window.fetch ) { return; }
+	var tag = meta.getAttribute( 'content' ) || '';
+	var type = tag.split( ':' )[ 0 ];
+	var mark = 'oc-crit-' + tag;
+	try { if ( sessionStorage.getItem( mark ) ) { return; } } catch ( e ) {}
+
+	function report() {
+		var names = {};
+		document.querySelectorAll( '[class]' ).forEach( function ( el ) {
+			var list = typeof el.className === 'string' ? el.className : ( el.getAttribute( 'class' ) || '' );
+			list.split( /\s+/ ).forEach( function ( c ) { if ( c && ! /\d{2,}/.test( c ) ) { names[ c ] = 1; } } );
+		} );
+		try { sessionStorage.setItem( mark, '1' ); } catch ( e ) {}
+		var root = ( document.documentElement.getAttribute( 'data-oc-rest' ) || '/wp-json/' );
+		fetch( root.replace( /\/$/, '' ) + '/oc/v1/critical-learn', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			credentials: 'same-origin',
+			keepalive: true,
+			body: JSON.stringify( { type: type, names: Object.keys( names ) } )
+		} ).catch( function () {} );
+	}
+
+	window.addEventListener( 'load', function () { setTimeout( report, 4000 ); } );
+}() );

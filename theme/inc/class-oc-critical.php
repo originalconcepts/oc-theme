@@ -45,7 +45,7 @@ final class Critical {
 	/**
 	 * An extract bigger than this is not worth inlining on every page.
 	 */
-	const MAX_BYTES = 200000;
+	const MAX_BYTES = 260000;
 
 	/**
 	 * Classes a script adds the moment the page runs, before the full
@@ -58,6 +58,147 @@ final class Critical {
 	 */
 	public function register(): void {
 		add_action( 'template_redirect', array( $this, 'start' ), 1 );
+		add_action( 'rest_api_init', array( $this, 'rest' ) );
+	}
+
+	/**
+	 * The route the page reports back on: the class names its scripts
+	 * ended up building, so the next page of the kind inlines their rules.
+	 */
+	public function rest(): void {
+		register_rest_route(
+			'oc/v1',
+			'/critical-learn',
+			array(
+				'methods'             => 'POST',
+				'permission_callback' => '__return_true',
+				'callback'            => array( $this, 'learn' ),
+				'args'                => array(
+					'type'  => array( 'type' => 'string', 'required' => true ),
+					'names' => array( 'type' => 'array', 'required' => true ),
+				),
+			)
+		);
+	}
+
+	/**
+	 * Remember, per kind of page, the names the scripts added. Only names
+	 * a stylesheet of ours actually styles are kept, so a stray request
+	 * can at most ask for rules that exist anyway.
+	 *
+	 * @param \WP_REST_Request $req The request.
+	 */
+	public function learn( \WP_REST_Request $req ): \WP_REST_Response {
+		$type  = sanitize_key( (string) $req->get_param( 'type' ) );
+		$names = (array) $req->get_param( 'names' );
+
+		if ( '' === $type || ! $names || count( $names ) > 1500 ) {
+			return new \WP_REST_Response( array( 'added' => 0 ), 200 );
+		}
+
+		$known = self::styled_names();
+		$all   = get_option( 'oc_critical_learned', array() );
+		$all   = is_array( $all ) ? $all : array();
+		$have  = array_fill_keys( (array) ( $all[ $type ] ?? array() ), true );
+		$added = 0;
+
+		foreach ( $names as $n ) {
+			$n = (string) $n;
+
+			if ( strlen( $n ) > 80 || ! preg_match( '/^[A-Za-z_][\w-]*$/', $n ) || preg_match( '/\d{2,}/', $n ) ) {
+				continue;
+			}
+
+			if ( isset( $have[ $n ] ) || ! isset( $known[ $n ] ) ) {
+				continue;
+			}
+
+			$have[ $n ] = true;
+			$added++;
+		}
+
+		if ( $added && count( $have ) <= 3000 ) {
+			$all[ $type ] = array_keys( $have );
+			update_option( 'oc_critical_learned', $all, false );
+		}
+
+		return new \WP_REST_Response( array( 'added' => $added ), 200 );
+	}
+
+	/**
+	 * Every class name any of the theme's stylesheets mentions, as keys.
+	 * Cached against the files' dates.
+	 *
+	 * @return array<string,true>
+	 */
+	private static function styled_names(): array {
+		$files = array_merge(
+			glob( OC_THEME_DIR . '/assets/css/theme*.min.css' ) ?: array(),
+			glob( WP_PLUGIN_DIR . '/oc-blocks/assets/blocks*.min.css' ) ?: array()
+		);
+		$stamp = '';
+
+		foreach ( $files as $f ) {
+			$stamp .= $f . ':' . (int) filemtime( $f ) . ';';
+		}
+
+		$key = 'oc_crit_names_' . md5( $stamp );
+		$set = get_transient( $key );
+
+		if ( is_array( $set ) ) {
+			return $set;
+		}
+
+		$set = array();
+
+		foreach ( $files as $f ) {
+			if ( preg_match_all( '/\.([A-Za-z_][\w-]*)/', (string) file_get_contents( $f ), $m ) ) {
+				foreach ( $m[1] as $n ) {
+					$set[ $n ] = true;
+				}
+			}
+		}
+
+		set_transient( $key, $set, 7 * DAY_IN_SECONDS );
+
+		return $set;
+	}
+
+	/**
+	 * What kind of page this is, for the learned names.
+	 */
+	public static function type(): string {
+		if ( is_front_page() ) {
+			return 'front';
+		}
+		if ( class_exists( 'WooCommerce' ) ) {
+			if ( is_product() ) {
+				return 'product';
+			}
+			if ( is_checkout() ) {
+				return 'checkout';
+			}
+			if ( is_cart() ) {
+				return 'cart';
+			}
+			if ( is_account_page() ) {
+				return 'account';
+			}
+			if ( is_shop() || is_product_taxonomy() ) {
+				return 'catalogue';
+			}
+		}
+		if ( is_singular( 'post' ) ) {
+			return 'post';
+		}
+		if ( is_home() || is_archive() || is_search() ) {
+			return 'blog';
+		}
+		if ( is_page() ) {
+			return 'page';
+		}
+
+		return 'other';
 	}
 
 	/**
@@ -160,10 +301,18 @@ final class Critical {
 		// The whole page's names, not a guess at the first screen: a two
 		// column layout (the checkout, a filtered catalogue) puts what the
 		// eye sees first late in the markup, and a byte limit cut it off.
+		$type   = self::type();
 		$tokens = self::tokens( substr( $html, $body_at ) );
 
 		if ( count( $tokens ) < 10 ) {
 			return '';
+		}
+
+		// What earlier pages of this kind reported their scripts built.
+		$learned = get_option( 'oc_critical_learned', array() );
+
+		foreach ( (array) ( is_array( $learned ) ? ( $learned[ $type ] ?? array() ) : array() ) as $c ) {
+			$tokens[ '.' . (string) $c ] = true;
 		}
 
 		$stamp = OC_THEME_VERSION;
@@ -204,7 +353,8 @@ final class Critical {
 			$late = self::late( $l['tag'], $l['media'] );
 
 			if ( 0 === $i ) {
-				$late = '<style id="oc-critical">' . $css . '</style>' . "\n" . $late;
+				$late = '<meta name="oc-critical" content="' . esc_attr( $type . ':' . substr( $key, -12 ) ) . '">' . "\n"
+					. '<style id="oc-critical">' . $css . '</style>' . "\n" . $late;
 			}
 
 			$out = substr_replace( $out, $late, $l['at'], strlen( $l['tag'] ) );

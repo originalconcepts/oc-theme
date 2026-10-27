@@ -89,6 +89,8 @@ return array(
 	'oc-colors__item--term',
 	'oc-confetti',
 	'oc-copack',
+	'oc-crit-',
+	'oc-critical',
 	'oc-dd',
 	'oc-dd-2',
 	'oc-dd__opt',
