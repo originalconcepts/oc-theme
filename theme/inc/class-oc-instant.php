@@ -87,6 +87,20 @@ final class Instant {
 			$paths = array();
 		}
 
+		// Core keeps every address with a query string out of a prerender,
+		// on the chance that it acts. In this shop a query string is a
+		// colour (the catalogue card's ?attribute_…), a sort or a filter —
+		// pages, and the ones people click most. The addresses that do act
+		// are named below instead.
+		$paths = array_values(
+			array_filter(
+				$paths,
+				static function ( $path ): bool {
+					return '/*\\?(.+)' !== (string) $path;
+				}
+			)
+		);
+
 		return array_values( array_unique( array_merge( $paths, self::excluded_paths() ) ) );
 	}
 
@@ -109,8 +123,20 @@ final class Instant {
 			'/*\\?*wc-ajax=*',
 			'/*\\?*s=*',
 			'/*\\?*oc_pay=*',
+			'/*\\?*oc_auth=*',
 			'/*\\?*key=*',
 			'/*\\?*_wpnonce=*',
+			'/*\\?*action=*',
+			'/*\\?*wc-api=*',
+			'/*\\?*logout*',
+			'/*\\?*unsub*',
+			'/*\\?*preview=*',
+			'/*\\?*customize_*',
+			'/*\\?*oc_addr*',
+			'/*\\?*oc_consent=*',
+			'/*\\?*oc_privacy_req=*',
+			'/*\\?*oc_ask=*',
+			'/*\\?*oc_feed=*',
 		);
 
 		if ( function_exists( 'wc_get_page_id' ) ) {
