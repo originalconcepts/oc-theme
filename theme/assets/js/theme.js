@@ -10958,6 +10958,7 @@ window.ocPause.watch();
 	if ( ! meta || ! window.fetch ) { return; }
 	var tag = meta.getAttribute( 'content' ) || '';
 	var type = tag.split( ':' )[ 0 ];
+	var token = tag.split( ':' )[ 2 ] || '';
 	var mark = 'oc-crit-' + tag;
 	try { if ( sessionStorage.getItem( mark ) ) { return; } } catch ( e ) {}
 
@@ -10974,7 +10975,7 @@ window.ocPause.watch();
 			headers: { 'Content-Type': 'application/json' },
 			credentials: 'same-origin',
 			keepalive: true,
-			body: JSON.stringify( { type: type, names: Object.keys( names ) } )
+			body: JSON.stringify( { type: type, names: Object.keys( names ), _t: token } )
 		} ).catch( function () {} );
 	}
 

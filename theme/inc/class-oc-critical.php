@@ -71,14 +71,47 @@ final class Critical {
 			'/critical-learn',
 			array(
 				'methods'             => 'POST',
-				'permission_callback' => '__return_true',
+				'permission_callback' => array( __CLASS__, 'permit' ),
 				'callback'            => array( $this, 'learn' ),
 				'args'                => array(
-					'type'  => array( 'type' => 'string', 'required' => true ),
-					'names' => array( 'type' => 'array', 'required' => true ),
+					'type'  => array(
+						'type'     => 'string',
+						'required' => true,
+					),
+					'names' => array(
+						'type'     => 'array',
+						'required' => true,
+					),
+					'_t'    => array(
+						'type'     => 'string',
+						'required' => true,
+					),
 				),
 			)
 		);
+	}
+
+	/**
+	 * A day token, so only a page this site served can teach it: the page
+	 * prints it in the oc-critical meta and the report carries it back.
+	 *
+	 * @param int $shift Days back.
+	 */
+	public static function token( int $shift = 0 ): string {
+		$day = gmdate( 'Y-m-d', time() - $shift * DAY_IN_SECONDS );
+
+		return substr( hash_hmac( 'sha256', 'oc_critical|' . $day, wp_salt( 'nonce' ) ), 0, 20 );
+	}
+
+	/**
+	 * Today's or yesterday's token.
+	 *
+	 * @param \WP_REST_Request $req Request.
+	 */
+	public static function permit( \WP_REST_Request $req ): bool {
+		$t = (string) $req->get_param( '_t' );
+
+		return '' !== $t && ( hash_equals( self::token(), $t ) || hash_equals( self::token( 1 ), $t ) );
 	}
 
 	/**
@@ -114,7 +147,7 @@ final class Critical {
 			}
 
 			$have[ $n ] = true;
-			$added++;
+			++$added;
 		}
 
 		if ( $added && count( $have ) <= 3000 ) {
@@ -133,8 +166,8 @@ final class Critical {
 	 */
 	private static function styled_names(): array {
 		$files = array_merge(
-			glob( OC_THEME_DIR . '/assets/css/theme*.min.css' ) ?: array(),
-			glob( WP_PLUGIN_DIR . '/oc-blocks/assets/blocks*.min.css' ) ?: array()
+			(array) glob( OC_THEME_DIR . '/assets/css/theme*.min.css' ),
+			(array) glob( WP_PLUGIN_DIR . '/oc-blocks/assets/blocks*.min.css' )
 		);
 		$stamp = '';
 
@@ -152,7 +185,7 @@ final class Critical {
 		$set = array();
 
 		foreach ( $files as $f ) {
-			if ( preg_match_all( '/\.([A-Za-z_][\w-]*)/', (string) file_get_contents( $f ), $m ) ) {
+			if ( preg_match_all( '/\.([A-Za-z_][\w-]*)/', (string) file_get_contents( $f ), $m ) ) { // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- a file of ours on disk.
 				foreach ( $m[1] as $n ) {
 					$set[ $n ] = true;
 				}
@@ -209,7 +242,7 @@ final class Critical {
 			return;
 		}
 
-		if ( 'GET' !== ( $_SERVER['REQUEST_METHOD'] ?? 'GET' ) || is_customize_preview() ) {
+		if ( 'GET' !== sanitize_text_field( wp_unslash( (string) ( $_SERVER['REQUEST_METHOD'] ?? 'GET' ) ) ) || is_customize_preview() ) {
 			return;
 		}
 
@@ -330,7 +363,7 @@ final class Critical {
 			$css = '';
 
 			foreach ( $links as $l ) {
-				$part = self::extract( (string) file_get_contents( $l['path'] ), $tokens );
+				$part = self::extract( (string) file_get_contents( $l['path'] ), $tokens ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- a stylesheet of this site on disk.
 
 				if ( '' !== $part ) {
 					$css .= 'all' === $l['media'] ? $part : '@media ' . $l['media'] . '{' . $part . '}';
@@ -353,7 +386,7 @@ final class Critical {
 			$late = self::late( $l['tag'], $l['media'] );
 
 			if ( 0 === $i ) {
-				$late = '<meta name="oc-critical" content="' . esc_attr( $type . ':' . substr( $key, -12 ) ) . '">' . "\n"
+				$late = '<meta name="oc-critical" content="' . esc_attr( $type . ':' . substr( $key, -12 ) . ':' . self::token() ) . '">' . "\n"
 					. '<style id="oc-critical">' . $css . '</style>' . "\n" . $late;
 			}
 
@@ -512,7 +545,7 @@ final class Critical {
 					$nodes[] = array( 'raw', $stmt, null );
 				}
 				$start = $i + 1;
-				$i++;
+				++$i;
 				continue;
 			}
 
@@ -532,11 +565,11 @@ final class Critical {
 						continue;
 					}
 					if ( '{' === $d ) {
-						$depth++;
+						++$depth;
 					} elseif ( '}' === $d ) {
-						$depth--;
+						--$depth;
 					}
-					$j++;
+					++$j;
 				}
 
 				$body = substr( $text, $i + 1, max( 0, $j - 1 - ( $i + 1 ) ) );
@@ -557,7 +590,7 @@ final class Critical {
 				continue;
 			}
 
-			$i++;
+			++$i;
 		}
 
 		return $nodes;
@@ -649,9 +682,9 @@ final class Critical {
 		for ( $i = 0; $i < $n; $i++ ) {
 			$c = $prelude[ $i ];
 			if ( '(' === $c ) {
-				$depth++;
+				++$depth;
 			} elseif ( ')' === $c ) {
-				$depth--;
+				--$depth;
 			}
 			if ( ',' === $c && 0 === $depth ) {
 				$out[] = trim( $cur );

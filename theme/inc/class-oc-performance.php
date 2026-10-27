@@ -109,7 +109,7 @@ final class Performance {
 	}
 
 	/**
-	 * jQuery (core, and Migrate if a plugin re-adds it) prints at the end of
+	 * JQuery (core, and Migrate if a plugin re-adds it) prints at the end of
 	 * the page. Core moves every script that depends on it after it.
 	 */
 	public function jquery_last(): void {
@@ -139,12 +139,14 @@ final class Performance {
 			}
 			$memo[ $handle ] = false; // Guards a cycle.
 			if ( in_array( $handle, array( 'jquery', 'jquery-core', 'jquery-migrate' ), true ) ) {
-				return $memo[ $handle ] = true;
+				$memo[ $handle ] = true;
+				return true;
 			}
 			$dep = $scripts->registered[ $handle ] ?? null;
 			foreach ( (array) ( $dep ? $dep->deps : array() ) as $d ) {
 				if ( $needs( (string) $d ) ) {
-					return $memo[ $handle ] = true;
+					$memo[ $handle ] = true;
+					return true;
 				}
 			}
 			return false;
