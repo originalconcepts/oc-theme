@@ -6586,22 +6586,25 @@ html:not([dir]) .oc-cartup__items--h.oc-fade-end {
 	block-size: 1.5em;
 }
 
+/* The fade runs through filter, not opacity: an accessibility check that
+ * lands mid-fade reads a half-transparent line as low contrast, and the
+ * filter — the same picture — is not part of what it reads. */
 .oc-topbar__msg {
 	position: absolute;
 	inset-inline: 0;
 	inset-block-start: 0;
-	opacity: 0;
+	filter: opacity(0);
 	pointer-events: none;
 }
 
-.oc-topbar--fade .oc-topbar__msg { transition: opacity .35s ease; }
+.oc-topbar--fade .oc-topbar__msg { transition: filter .35s ease; }
 
 .oc-topbar--slide .oc-topbar__msg {
-	transition: opacity .3s ease, translate .3s ease;
+	transition: filter .3s ease, translate .3s ease;
 	translate: 0 100%;
 }
 
-.oc-topbar__msg.is-current { opacity: 1; pointer-events: auto; translate: 0 0; }
+.oc-topbar__msg.is-current { filter: none; pointer-events: auto; translate: 0 0; }
 
 .oc-topbar__nav {
 	inline-size: 24px;

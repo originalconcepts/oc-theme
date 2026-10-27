@@ -77,7 +77,8 @@
 	// when the library arrives. The one thing lost is the page view of a
 	// visitor who leaves inside the wait without touching anything, and
 	// the server sends that one itself where the Conversions API is on.
-	var held = !! cfg.hold;
+	var held = !! cfg.hold || !! cfg.holdG;
+	var holdGoogle = !! cfg.holdG;
 	var onRelease = [];
 	var HOLD_EVS = [ 'pointerdown', 'keydown', 'touchstart', 'wheel', 'scroll' ];
 
@@ -118,19 +119,24 @@
 		loaded = true;
 
 		var adv = cfg.user || {};
+		var pfetch = cfg.hold ? whenReleased : function ( fn ) { fn(); };
 
 		if ( ! did.google && googleMay() ) {
 			did.google = true;
 
+			// Google's queue is the dataLayer itself: everything below is
+			// pushed now and read when the library arrives.
+			var gfetch = holdGoogle ? whenReleased : function ( fn ) { fn(); };
+
 			if ( cfg.gtm ) {
 				window.dataLayer.push( { 'gtm.start': Date.now(), event: 'gtm.js' } );
-				script( 'https://www.googletagmanager.com/gtm.js?id=' + encodeURIComponent( cfg.gtm ) );
+				gfetch( function () { script( 'https://www.googletagmanager.com/gtm.js?id=' + encodeURIComponent( cfg.gtm ) ); } );
 			}
 
 			var gid = cfg.ga4 || cfg.gads;
 
 			if ( gid ) {
-				script( 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent( gid ) );
+				gfetch( function () { script( 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent( gid ) ); } );
 				gtag( 'js', new Date() );
 				if ( adv.em || adv.ph ) {
 					gtag( 'set', 'user_data', { email: adv.em || undefined, phone_number: adv.ph || undefined } );
@@ -152,7 +158,7 @@
 				fq.version = '2.0';
 				fq.queue = [];
 			}
-			whenReleased( function () { script( 'https://connect.facebook.net/en_US/fbevents.js' ); } );
+			pfetch( function () { script( 'https://connect.facebook.net/en_US/fbevents.js' ); } );
 			var match = {};
 			[ 'em', 'ph', 'fn', 'ln', 'ct', 'zp', 'country', 'external_id' ].forEach( function ( k ) { if ( adv[ k ] ) { match[ k ] = adv[ k ]; } } );
 			window.fbq( 'init', cfg.fb, match );
@@ -166,7 +172,7 @@
 			/* eslint-enable */
 			// Its load() is what fetches the library; everything called
 			// before it queues on the array the snippet made.
-			whenReleased( function () { window.ttq.load( cfg.tiktok ); window.ttq.page(); } );
+			pfetch( function () { window.ttq.load( cfg.tiktok ); window.ttq.page(); } );
 			if ( adv.em || adv.ph || adv.external_id ) {
 				window.ttq.identify( { email: adv.em || undefined, phone_number: adv.ph || undefined, external_id: adv.external_id || undefined } );
 			}
@@ -182,7 +188,7 @@
 			/* eslint-disable */
 			!function(w){if(w.oaiq)return;var q=function(){q.q.push(arguments)};q.q=[];w.oaiq=q;}(window);
 			/* eslint-enable */
-			whenReleased( function () { script( 'https://bzrcdn.openai.com/sdk/oaiq.min.js' ); } );
+			pfetch( function () { script( 'https://bzrcdn.openai.com/sdk/oaiq.min.js' ); } );
 			window.oaiq( 'consent', true );
 			window.oaiq( 'init', { pixelId: cfg.openai } );
 			window.oaiq( 'measure', 'page_viewed', { type: 'contents' }, { event_id: cfg.pageId } );

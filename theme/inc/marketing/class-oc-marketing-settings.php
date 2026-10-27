@@ -103,6 +103,7 @@ final class Settings {
 			'thirdparty' => array(
 				'flashy' => ! empty( $third['flashy'] ),
 				'pixels' => ! empty( $third['pixels'] ),
+				'google' => ! empty( $third['google'] ),
 				// Long enough to clear the window a speed test watches,
 				// short enough that a visitor who reads and leaves is still
 				// counted. Every real visit lasts longer than this.

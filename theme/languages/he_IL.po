@@ -14738,3 +14738,9 @@ msgstr "לעכב באותו אופן גם את הפיקסלים של Meta, TikTo
 
 msgid "Their libraries are the heaviest scripts a page loads. With this on they are fetched on the first touch or after the wait; every event raised before that is queued and sent the moment they arrive, and the server-side events still go out at once."
 msgstr "הספריות שלהם הן הסקריפטים הכבדים ביותר שהעמוד טוען. כשזה דולק הן נטענות בנגיעה הראשונה או אחרי זמן ההמתנה; כל אירוע שקורה לפני כן נשמר בתור ונשלח ברגע שהן מגיעות, והאירועים מצד השרת יוצאים מיד כרגיל."
+
+msgid "Hold the Google tags (Analytics, Ads, Tag Manager) back too"
+msgstr "לעכב גם את התגים של Google (Analytics, Ads, Tag Manager)"
+
+msgid "The same wait for Google. The cost is the same too: a visitor who leaves inside the wait without touching the page is not counted in Analytics."
+msgstr "אותה המתנה גם ל-Google. המחיר זהה: מבקר שיוצא בתוך זמן ההמתנה בלי לגעת בעמוד לא נספר ב-Analytics."

@@ -48,12 +48,16 @@ final class Performance {
 		);
 		add_action( 'wp_print_styles', array( $this, 'drop_block_css' ), 999 );
 
-		// jQuery stays blocking, deliberately. Deferring it looked safe —
-		// core downgrades the strategy when a REGISTERED dependent cannot
-		// defer — but a script enqueued mid-page (Woo's variation template
-		// enqueues wp-util while the content renders) arrives after the
-		// header already printed jQuery deferred, executes first, and dies
-		// with "jQuery is not defined". Correct beats fast.
+		// jQuery is never deferred: core downgrades the strategy when a
+		// REGISTERED dependent cannot defer, but a script enqueued mid-page
+		// (Woo's variation template enqueues wp-util while the content
+		// renders) arrives after the header already printed jQuery deferred,
+		// executes first, and dies with "jQuery is not defined". It goes to
+		// the footer instead — a plain blocking script at the end of the
+		// page, which the first paint does not wait for, and every
+		// dependent follows it there, mid-page enqueues included, so the
+		// order holds.
+		add_action( 'wp_enqueue_scripts', array( $this, 'jquery_last' ), 0 );
 
 		// Woo's origin tracker (sourcebuster.js + inline config).
 		add_filter( 'wc_order_attribution_allow_tracking', '__return_false' );
@@ -101,6 +105,29 @@ final class Performance {
 		}
 
 		return str_replace( "media='all'", "media='print' onload=\"this.media='all'\"", $tag ) . '<noscript>' . $tag . '</noscript>';
+	}
+
+	/**
+	 * jQuery (core, and Migrate if a plugin re-adds it) prints at the end of
+	 * the page. Core moves every script that depends on it after it.
+	 */
+	public function jquery_last(): void {
+		if ( is_admin() ) {
+			return;
+		}
+
+		/**
+		 * Whether jQuery prints at the end of the page instead of the head.
+		 *
+		 * @param bool $late Default true.
+		 */
+		if ( ! apply_filters( 'oc_jquery_in_footer', true ) ) {
+			return;
+		}
+
+		foreach ( array( 'jquery', 'jquery-core', 'jquery-migrate' ) as $handle ) {
+			wp_script_add_data( $handle, 'group', 1 );
+		}
 	}
 
 	/**

@@ -95,6 +95,8 @@ final class Marketing_Admin {
 				<p class="description"><?php esc_html_e( 'The cost is a visitor who opens the page and leaves before the wait is out without touching it — their page view is never sent.', 'oc-theme' ); ?></p>
 				<label class="ocmkt-check"><input type="checkbox" name="thirdparty[pixels]" value="1" <?php checked( $s['thirdparty']['pixels'] ); ?> /><span><?php esc_html_e( 'Hold the Meta, TikTok and ChatGPT pixels back the same way', 'oc-theme' ); ?></span></label>
 				<p class="description"><?php esc_html_e( 'Their libraries are the heaviest scripts a page loads. With this on they are fetched on the first touch or after the wait; every event raised before that is queued and sent the moment they arrive, and the server-side events still go out at once.', 'oc-theme' ); ?></p>
+				<label class="ocmkt-check"><input type="checkbox" name="thirdparty[google]" value="1" <?php checked( $s['thirdparty']['google'] ); ?> /><span><?php esc_html_e( 'Hold the Google tags (Analytics, Ads, Tag Manager) back too', 'oc-theme' ); ?></span></label>
+				<p class="description"><?php esc_html_e( 'The same wait for Google. The cost is the same too: a visitor who leaves inside the wait without touching the page is not counted in Analytics.', 'oc-theme' ); ?></p>
 				<div class="ocmkt-grid">
 					<?php $field( 'thirdparty[wait]', (string) $s['thirdparty']['wait'], __( 'Wait before loading it anyway (milliseconds)', 'oc-theme' ), __( 'Counted from the moment the page finishes. Any touch, scroll or key loads it at once and this never runs. Below about 6000 the tag lands back inside the window a speed test measures and the whole thing buys nothing.', 'oc-theme' ), '7000' ); ?>
 				</div>
@@ -230,6 +232,7 @@ final class Marketing_Admin {
 			'thirdparty' => array(
 				'flashy' => ! empty( $_POST['thirdparty']['flashy'] ),
 				'pixels' => ! empty( $_POST['thirdparty']['pixels'] ),
+				'google' => ! empty( $_POST['thirdparty']['google'] ),
 				'wait'   => (int) ( $_POST['thirdparty']['wait'] ?? 7000 ),
 			),
 			'events'     => array(
