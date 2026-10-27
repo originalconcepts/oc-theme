@@ -400,17 +400,20 @@ final class Critical {
 	}
 
 	/**
-	 * The link tag, loading late: fetched at once as a preload, applied on
-	 * arrival; a plain copy for a browser without scripts.
+	 * The link tag, loading late: asked for as a print stylesheet, which a
+	 * browser fetches at its lowest priority and never waits for, and
+	 * switched to the screen on arrival. Not a preload — that fetches at
+	 * high priority and took the bandwidth the banner picture needed, and
+	 * the largest paint came later, not sooner. A plain copy for a browser
+	 * without scripts.
 	 *
 	 * @param string $tag   The original link tag.
 	 * @param string $media Its media.
 	 */
 	private static function late( string $tag, string $media ): string {
-		$pre = (string) preg_replace( '#\brel=([\'"])stylesheet\1#i', 'rel="preload" as="style"', $tag );
-		$pre = (string) preg_replace( '#\bmedia=([\'"])[^\'"]*\1#i', '', $pre );
+		$pre = (string) preg_replace( '#\bmedia=([\'"])[^\'"]*\1#i', '', $tag );
 		$pre = (string) preg_replace( '#\bid=([\'"])([^\'"]+)\1#', 'id="$2-late"', $pre );
-		$pre = (string) preg_replace( '#\s*/?>$#', ' onload="this.onload=null;this.rel=\'stylesheet\';this.media=' . esc_attr( wp_json_encode( $media ) ) . '">', $pre );
+		$pre = (string) preg_replace( '#\s*/?>$#', ' media="print" fetchpriority="low" onload="this.onload=null;this.media=' . esc_attr( wp_json_encode( $media ) ) . '">', $pre );
 
 		return $pre . '<noscript>' . $tag . '</noscript>';
 	}
