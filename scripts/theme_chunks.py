@@ -131,9 +131,24 @@ def selectors(prelude):
     return [s for s in out if s]
 
 
+PARENS = re.compile(r"\([^()]*\)")
+
+
+def bare(selector):
+    """The selector without what stands inside parentheses: a chunk class
+    named only inside :is(), :where(), :not() or :has() does not make the
+    rule that page's — ":is(ul.products, .oc-ty__item) img" styles the
+    catalogue too."""
+    while "(" in selector:
+        selector, n = PARENS.subn("", selector)
+        if not n:
+            break
+    return selector
+
+
 def route(prelude):
     """The chunk a rule belongs to, or "core"."""
-    sels = selectors(prelude)
+    sels = [bare(s) for s in selectors(prelude)]
     for name, pattern in CHUNKS.items():
         if all(pattern.search(s) for s in sels):
             return name
