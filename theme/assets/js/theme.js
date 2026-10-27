@@ -1556,6 +1556,32 @@ window.ocPause = window.ocPause || ( function () {
 			// What an arriving grid item needs wired: card galleries, videos,
 			// and a block's deferred shelf, filled the way the page's own are.
 			function wireItem( node ) {
+				// A page the server's cache still holds from before 0.3.372
+				// arrives with its pictures deferred (data-oc-src) and a
+				// lazy script that does not watch for added cards: hand
+				// them their addresses here, whatever the page's own script
+				// knows how to do.
+				node.querySelectorAll( 'img[data-oc-src], img[data-oc-srcset]' ).forEach( function ( img ) {
+					if ( window.ocLazy && 'function' === typeof window.ocLazy.show ) {
+						window.ocLazy.show( img );
+						return;
+					}
+					var pic = img.parentNode;
+					if ( pic && 'PICTURE' === pic.tagName ) {
+						pic.querySelectorAll( 'source[data-oc-srcset]' ).forEach( function ( src ) {
+							src.setAttribute( 'srcset', src.dataset.ocSrcset );
+							src.removeAttribute( 'data-oc-srcset' );
+						} );
+					}
+					if ( img.dataset.ocSrcset ) {
+						img.setAttribute( 'srcset', img.dataset.ocSrcset );
+						img.removeAttribute( 'data-oc-srcset' );
+					}
+					if ( img.dataset.ocSrc ) {
+						img.setAttribute( 'src', img.dataset.ocSrc );
+						img.removeAttribute( 'data-oc-src' );
+					}
+				} );
 				node.querySelectorAll( '.oc-card-media--gallery' ).forEach( bindCardGallery );
 				ocLazyVideos( node );
 				if ( window.OCB && 'function' === typeof window.OCB.fill ) {
