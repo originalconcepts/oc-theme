@@ -25,6 +25,40 @@ window.ocWhenShown = function ( fn ) {
 	}
 };
 
+/* ---------- the visitor's first move ----------
+ * Anything that talks to PHP before the visitor has done anything waits
+ * here: on a page Google's test runner fetched past the DDoS layer, the
+ * page itself carries no pass, so the first such request is answered
+ * 503 (the shim re-verifies and retries, but the 503 stays in the
+ * console — Best Practices 96). A pointer, touch, wheel or key releases
+ * everything at once; a visitor who only reads gets it after `wait` ms
+ * past load (0 = only on a move). */
+window.ocFirstMove = ( function () {
+	var EVS = [ 'pointerdown', 'pointermove', 'touchstart', 'keydown', 'wheel' ];
+	var moved = false;
+	var queue = [];
+
+	function release() {
+		if ( moved ) { return; }
+		moved = true;
+		EVS.forEach( function ( e ) { window.removeEventListener( e, release, { capture: true, passive: true } ); } );
+		var fns = queue;
+		queue = [];
+		fns.forEach( function ( fn ) { try { fn(); } catch ( e ) {} } );
+	}
+
+	EVS.forEach( function ( e ) { window.addEventListener( e, release, { capture: true, passive: true } ); } );
+
+	return function ( fn, wait ) {
+		if ( moved ) { fn(); return; }
+		queue.push( fn );
+		if ( wait ) {
+			var arm = function () { setTimeout( release, wait ); };
+			if ( 'complete' === document.readyState ) { arm(); } else { window.addEventListener( 'load', arm, { once: true } ); }
+		}
+	};
+} )();
+
 /* ---------- instant navigation: the worker ----------
  * Chromium renders the next page ahead of the click by itself (speculation
  * rules, printed by the server). Safari and Firefox have no such thing,
@@ -98,40 +132,6 @@ window.ocInstantClear = function ( then ) {
 		clearTimeout( timer );
 		timer = setTimeout( function () { want( a ); }, 90 );
 	}, { capture: true, passive: true } );
-} )();
-
-/* ---------- the visitor's first move ----------
- * Anything that talks to PHP before the visitor has done anything waits
- * here: on a page Google's test runner fetched past the DDoS layer, the
- * page itself carries no pass, so the first such request is answered
- * 503 (the shim re-verifies and retries, but the 503 stays in the
- * console — Best Practices 96). A pointer, touch, wheel or key releases
- * everything at once; a visitor who only reads gets it after `wait` ms
- * past load (0 = only on a move). */
-window.ocFirstMove = ( function () {
-	var EVS = [ 'pointerdown', 'pointermove', 'touchstart', 'keydown', 'wheel' ];
-	var moved = false;
-	var queue = [];
-
-	function release() {
-		if ( moved ) { return; }
-		moved = true;
-		EVS.forEach( function ( e ) { window.removeEventListener( e, release, { capture: true, passive: true } ); } );
-		var fns = queue;
-		queue = [];
-		fns.forEach( function ( fn ) { try { fn(); } catch ( e ) {} } );
-	}
-
-	EVS.forEach( function ( e ) { window.addEventListener( e, release, { capture: true, passive: true } ); } );
-
-	return function ( fn, wait ) {
-		if ( moved ) { fn(); return; }
-		queue.push( fn );
-		if ( wait ) {
-			var arm = function () { setTimeout( release, wait ); };
-			if ( 'complete' === document.readyState ) { arm(); } else { window.addEventListener( 'load', arm, { once: true } ); }
-		}
-	};
 } )();
 
 /* ---------- scripts that wait for the first move ----------
