@@ -12,6 +12,7 @@ is a second origin to connect to before any text can paint, and it tells
 Google who is reading the shop.
 """
 
+import hashlib
 import io
 import os
 import re
@@ -64,14 +65,41 @@ def main(argv):
         print('no hebrew or latin faces came back for %r — check the name' % family)
         return 1
 
+    # A variable family comes back as the SAME file for every weight asked
+    # for: one @font-face with a weight range, or the page fetches the
+    # identical bytes three times under three names (it did, for months).
     out = []
+    by_subset = {}
 
     for weight, subset, name, rng in sorted(faces):
-        out.append(
-            "/* %s */\n@font-face {\n  font-family: '%s';\n  font-style: normal;\n"
-            "  font-weight: %d;\n  font-display: swap;\n  src: url(%s) format('woff2');\n"
-            "  unicode-range: %s;\n}" % (subset, family, weight, name, rng)
-        )
+        by_subset.setdefault(subset, []).append((weight, name, rng))
+
+    for subset, lst in by_subset.items():
+        sums = {
+            hashlib.md5(io.open(os.path.join(DEST, n), 'rb').read()).hexdigest()
+            for _, n, _ in lst
+        }
+
+        if len(lst) > 1 and len(sums) == 1:
+            weight, name, rng = lst[0]
+            out.append(
+                "/* %s — one variable file, the weights are instances of it */\n@font-face {\n"
+                "  font-family: '%s';\n  font-style: normal;\n  font-weight: %d %d;\n"
+                "  font-display: swap;\n  src: url(%s) format('woff2');\n  unicode-range: %s;\n}"
+                % (subset, family, weight, lst[-1][0], name, rng)
+            )
+
+            for _, extra, _ in lst[1:]:
+                os.remove(os.path.join(DEST, extra))
+
+            continue
+
+        for weight, name, rng in lst:
+            out.append(
+                "/* %s */\n@font-face {\n  font-family: '%s';\n  font-style: normal;\n"
+                "  font-weight: %d;\n  font-display: swap;\n  src: url(%s) format('woff2');\n"
+                "  unicode-range: %s;\n}" % (subset, family, weight, name, rng)
+            )
 
     io.open(os.path.join(DEST, slug + '.css'), 'w', encoding='utf-8').write('\n'.join(out) + '\n')
     print('%s -> %s.css (%d faces)' % (family, slug, len(faces)))

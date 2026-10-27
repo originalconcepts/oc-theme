@@ -234,6 +234,41 @@
 			return real;
 		}
 
+		// The pictures of the slides after the first arrive only once the
+		// page has loaded, so they never share the line with the first one
+		// — unless the strip is asked to turn before that, when they are
+		// handed over at once. The srcset goes first: an img given a src
+		// and then a srcset may fetch twice.
+		var woken = false;
+
+		function wake() {
+			if ( woken ) {
+				return;
+			}
+
+			woken = true;
+			hero.querySelectorAll( '[data-ocb-srcset], [data-ocb-src]' ).forEach( function ( el ) {
+				if ( el.dataset.ocbSrcset ) {
+					el.setAttribute( 'srcset', el.dataset.ocbSrcset );
+					el.removeAttribute( 'data-ocb-srcset' );
+				}
+
+				if ( el.dataset.ocbSrc ) {
+					el.setAttribute( 'src', el.dataset.ocbSrc );
+					el.removeAttribute( 'data-ocb-src' );
+				}
+			} );
+		}
+
+		if ( 'complete' === document.readyState ) {
+			wake();
+		} else {
+			window.addEventListener( 'load', wake );
+		}
+
+		strip.addEventListener( 'touchstart', wake, { passive: true } );
+		strip.addEventListener( 'pointerdown', wake, { passive: true } );
+
 		// The words live outside the strip; the active slide lights its set,
 		// and re-adding the class replays the little entrance.
 		function paintSets() {
@@ -304,6 +339,8 @@
 			if ( target === at ) {
 				return;
 			}
+
+			wake();
 
 			// Walking off either end rides through the quiet copy waiting
 			// there, so the loop always continues in the direction of travel.

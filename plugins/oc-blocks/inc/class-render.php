@@ -555,15 +555,24 @@ final class Render {
 					? ' onload="this.closest(\'.ocb-hero__media\').classList.add(\'is-ready\')" onerror="this.closest(\'.ocb-hero__media\').classList.add(\'is-ready\')"'
 					: '';
 
+				// Slides after the first stand a screen's width to the side,
+				// which a browser counts as "nearly visible": lazy or not,
+				// their pictures were fetched alongside the first one and on
+				// a phone line took half its bandwidth during the largest
+				// paint. So they carry their addresses in data attributes and
+				// the script hands them over once the page has loaded (or
+				// the moment the strip is asked to turn).
+				$later = count( $slides ) > 0;
+				$src_a = $later ? 'data-ocb-src' : 'src';
+				$set_a = $later ? 'data-ocb-srcset' : 'srcset';
+
 				$media = '<picture>'
-					. ( '' === $mob ? '' : '<source media="(max-width: 782px)" srcset="' . esc_attr( '' !== $mob_set ? $mob_set : esc_url( $mob ) ) . '"' . ( '' === $mob_set ? '' : ' sizes="100vw"' ) . '>' )
-					. '<img src="' . esc_url( $dsk ) . '"'
-					. ( '' === $set ? '' : ' srcset="' . esc_attr( $set ) . '" sizes="100vw"' )
+					. ( '' === $mob ? '' : '<source media="(max-width: 782px)" ' . $set_a . '="' . esc_attr( '' !== $mob_set ? $mob_set : esc_url( $mob ) ) . '"' . ( '' === $mob_set ? '' : ' sizes="100vw"' ) . '>' )
+					. '<img ' . $src_a . '="' . esc_url( $dsk ) . '"'
+					. ( '' === $set ? '' : ' ' . $set_a . '="' . esc_attr( $set ) . '" sizes="100vw"' )
 					. $dims
 					. ( $lcp ? ' fetchpriority="high"' : '' )
-					// Slides after the first are out of sight until the
-					// strip moves; they need not race the first one.
-					. ( count( $slides ) > 0 ? ' loading="lazy" fetchpriority="low"' : '' )
+					. ( $later ? ' loading="lazy" fetchpriority="low"' : '' )
 					. $arrive
 					. ' decoding="async" alt="' . esc_attr( (string) $slide['heading'] ) . '">'
 					. '</picture>';
