@@ -64,11 +64,13 @@ window.ocInstantClear = function ( then ) {
 		return;
 	}
 
-	window.addEventListener( 'load', function () {
+	// The worker's own script is a PHP request: it registers on the first
+	// move (or ten seconds into a visit), never on a page nobody touched.
+	window.ocFirstMove( function () {
 		( window.requestIdleCallback || function ( f ) { setTimeout( f, 300 ); } )( function () {
 			navigator.serviceWorker.register( sw, { scope: '/' } ).catch( function () {} );
 		} );
-	} );
+	}, 10000 );
 
 	// Where the browser has no speculation rules, the page asks the worker.
 	if ( HTMLScriptElement.supports && HTMLScriptElement.supports( 'speculationrules' ) ) { return; }
@@ -98,6 +100,40 @@ window.ocInstantClear = function ( then ) {
 	}, { capture: true, passive: true } );
 } )();
 
+/* ---------- the visitor's first move ----------
+ * Anything that talks to PHP before the visitor has done anything waits
+ * here: on a page Google's test runner fetched past the DDoS layer, the
+ * page itself carries no pass, so the first such request is answered
+ * 503 (the shim re-verifies and retries, but the 503 stays in the
+ * console — Best Practices 96). A pointer, touch, wheel or key releases
+ * everything at once; a visitor who only reads gets it after `wait` ms
+ * past load (0 = only on a move). */
+window.ocFirstMove = ( function () {
+	var EVS = [ 'pointerdown', 'pointermove', 'touchstart', 'keydown', 'wheel' ];
+	var moved = false;
+	var queue = [];
+
+	function release() {
+		if ( moved ) { return; }
+		moved = true;
+		EVS.forEach( function ( e ) { window.removeEventListener( e, release, { capture: true, passive: true } ); } );
+		var fns = queue;
+		queue = [];
+		fns.forEach( function ( fn ) { try { fn(); } catch ( e ) {} } );
+	}
+
+	EVS.forEach( function ( e ) { window.addEventListener( e, release, { capture: true, passive: true } ); } );
+
+	return function ( fn, wait ) {
+		if ( moved ) { fn(); return; }
+		queue.push( fn );
+		if ( wait ) {
+			var arm = function () { setTimeout( release, wait ); };
+			if ( 'complete' === document.readyState ) { arm(); } else { window.addEventListener( 'load', arm, { once: true } ); }
+		}
+	};
+} )();
+
 /* ---------- scripts that wait for the first move ----------
  * Performance::late_scripts prints some third-party kits (PayPal's
  * product-page button and its fraud pixel) with an inert type. They
@@ -107,16 +143,8 @@ window.ocInstantClear = function ( then ) {
 ( function () {
 	var late = document.querySelectorAll( 'script[type="text/oc-late"][data-oc-late]' );
 	if ( ! late.length ) { return; }
-	// Not 'scroll': the page scrolls itself (restoring a position, settling
-	// a hash) and that fires the event with nobody moving — on a phone a
-	// visitor's scroll begins with a touch anyway, on a desk with a wheel.
-	var EVS = [ 'pointerdown', 'pointermove', 'touchstart', 'keydown', 'wheel' ];
-	var done = false;
 
-	function wake() {
-		if ( done ) { return; }
-		done = true;
-		EVS.forEach( function ( e ) { window.removeEventListener( e, wake, { capture: true, passive: true } ); } );
+	window.ocFirstMove( function () {
 		[].forEach.call( late, function ( old ) {
 			var s = document.createElement( 'script' );
 			[].forEach.call( old.attributes, function ( a ) {
@@ -127,10 +155,7 @@ window.ocInstantClear = function ( then ) {
 			old.parentNode.insertBefore( s, old );
 			old.parentNode.removeChild( old );
 		} );
-	}
-
-	EVS.forEach( function ( e ) { window.addEventListener( e, wake, { capture: true, passive: true } ); } );
-	window.addEventListener( 'load', function () { setTimeout( wake, 8000 ); } );
+	}, 8000 );
 } )();
 
 window.ocA11y = ( function () {
@@ -11154,14 +11179,16 @@ window.ocWhenShown( function () {
 		} );
 		try { sessionStorage.setItem( mark, '1' ); } catch ( e ) {}
 		var root = ( document.documentElement.getAttribute( 'data-oc-rest' ) || '/wp-json/' );
-		fetch( root.replace( /\/$/, '' ) + '/oc/v1/critical-learn', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			credentials: 'same-origin',
-			keepalive: true,
-			body: JSON.stringify( { type: type, names: Object.keys( names ), _t: token } )
-		} ).catch( function () {} );
+		var url = root.replace( /\/$/, '' ) + '/oc/v1/critical-learn';
+		var body = JSON.stringify( { type: type, names: Object.keys( names ), _t: token } );
+		// A beacon: fire and forget, and a refusal never reaches the console.
+		try {
+			if ( navigator.sendBeacon && navigator.sendBeacon( url, new Blob( [ body ], { type: 'application/json' } ) ) ) { return; }
+		} catch ( e ) {}
+		fetch( url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin', keepalive: true, body: body } ).catch( function () {} );
 	}
 
-	window.addEventListener( 'load', function () { setTimeout( report, 4000 ); } );
+	window.addEventListener( 'load', function () {
+		setTimeout( function () { window.ocFirstMove( report, 6000 ); }, 2000 );
+	} );
 } );

@@ -90,8 +90,15 @@ final class Performance {
 	 * @return string[]
 	 */
 	public static function late_script_handles(): array {
-		if ( ! function_exists( 'is_product' ) || ! is_product() ) {
-			return array();
+		// HiiAI's chat button asks PHP for a nonce the moment it runs; on a
+		// page nobody has touched that request is the DDoS layer's first
+		// 503. The button appears on the first move instead.
+		$handles = array( 'ocai' );
+
+		if ( function_exists( 'is_product' ) && is_product() ) {
+			$handles[] = 'wc-ppcp-sdk-v6-boot';
+			$handles[] = 'ppcp-fraudnet';
+			$handles[] = 'ppcp-smart-button';
 		}
 
 		/**
@@ -99,7 +106,7 @@ final class Performance {
 		 *
 		 * @param string[] $handles Handles.
 		 */
-		return (array) apply_filters( 'oc_late_script_handles', array( 'wc-ppcp-sdk-v6-boot', 'ppcp-fraudnet', 'ppcp-smart-button' ) );
+		return (array) apply_filters( 'oc_late_script_handles', $handles );
 	}
 
 	/**
@@ -130,15 +137,15 @@ final class Performance {
 			return $tag;
 		}
 
-		// A plugin script printed plain at the end of the page still stops
-		// the parser while it downloads and runs — HiiAI's 35 KB cost the
-		// first paint half a second on a phone line. Deferred, it runs
-		// once the page is parsed, where its chat button lives anyway.
-		if ( in_array( (string) $handle, self::defer_script_handles(), true ) && ! preg_match( '/\s(?:defer|async)\b/i', $tag ) ) {
-			return (string) preg_replace( '/<script\b/i', '<script defer', $tag, 1 );
-		}
-
 		if ( ! in_array( (string) $handle, self::late_script_handles(), true ) ) {
+			// A plugin script printed plain at the end of the page still
+			// stops the parser while it downloads and runs — HiiAI's 35 KB
+			// cost the first paint half a second on a phone line. Deferred,
+			// it runs once the page is parsed.
+			if ( in_array( (string) $handle, self::defer_script_handles(), true ) && ! preg_match( '/\s(?:defer|async)\b/i', $tag ) ) {
+				return (string) preg_replace( '/<script\b/i', '<script defer', $tag, 1 );
+			}
+
 			return $tag;
 		}
 

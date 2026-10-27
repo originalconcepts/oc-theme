@@ -376,12 +376,30 @@
 			settle( '', /^Europe\//.test( tz ) ? 'optin' : 'optout' );
 		}
 
-		var timer = setTimeout( guess, 2500 );
+		// The clock answers at once and the page goes on; the server's word
+		// (the real country, remembered for a month) is asked for on the
+		// visitor's first move — a PHP request before any move is answered
+		// 503 on a page Google's test runner fetched past the DDoS layer,
+		// and that 503 sat in the console on every first visit.
+		guess();
 
-		fetch( cfg.rest + '/region?_t=' + encodeURIComponent( cfg.token ), { credentials: 'same-origin', cache: 'no-store' } )
-			.then( function ( r ) { if ( ! r.ok ) { throw new Error( 'no' ); } return r.json(); } )
-			.then( function ( d ) { clearTimeout( timer ); settle( ( d && d.country ) || '', ( d && d.mode ) || 'optout' ); } )
-			.catch( function () { clearTimeout( timer ); guess(); } );
+		function confirm() {
+			fetch( cfg.rest + '/region?_t=' + encodeURIComponent( cfg.token ), { credentials: 'same-origin', cache: 'no-store' } )
+				.then( function ( r ) { if ( ! r.ok ) { throw new Error( 'no' ); } return r.json(); } )
+				.then( function ( d ) {
+					var country = ( d && d.country ) || '';
+					if ( country ) { region = country; writeCookie( 'oc_region', country, 30 ); }
+				} )
+				.catch( function () {} );
+		}
+
+		if ( window.ocFirstMove ) {
+			window.ocFirstMove( confirm, 10000 );
+		} else {
+			var evs = [ 'pointerdown', 'pointermove', 'touchstart', 'keydown', 'wheel' ];
+			var once = function () { evs.forEach( function ( e ) { window.removeEventListener( e, once, true ); } ); confirm(); };
+			evs.forEach( function ( e ) { window.addEventListener( e, once, { capture: true, passive: true } ); } );
+		}
 	}
 
 	// A stored choice needs no region; only a first visit does.
