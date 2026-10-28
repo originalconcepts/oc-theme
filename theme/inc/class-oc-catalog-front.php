@@ -49,7 +49,14 @@ final class Catalog_Front {
 	 * @param \WC_Product $product The card's product.
 	 */
 	public function pictures( $product ): void {
-		if ( ! $product instanceof \WC_Product || ! self::wanted() ) {
+		// The catalogue's next page arrives through the filter request, not a
+		// page view, so it is not "the shop" to WordPress. It says it is
+		// being arranged with the same flag (see theme.js), and the same
+		// capability decides.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- a read-only view of your own catalogue, gated on the capability.
+		$ajax = wp_doing_ajax() && isset( $_GET['oc_sort'] ) && current_user_can( self::cap() );
+
+		if ( ! $product instanceof \WC_Product || ( ! $ajax && ! self::wanted() ) ) {
 			return;
 		}
 

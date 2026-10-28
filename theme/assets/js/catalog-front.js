@@ -514,11 +514,24 @@
 		return;
 	}
 
-	Array.prototype.forEach.call( wrap.querySelectorAll( 'li.product' ), function ( el ) {
-		if ( idOf( el ) ) {
+	function dress( el ) {
+		if ( el.nodeType === 1 && el.matches( 'li.product' ) && idOf( el ) && ! el.querySelector( ':scope > .octile' ) ) {
 			strip( el );
 		}
-	} );
+	}
+
+	Array.prototype.forEach.call( wrap.querySelectorAll( 'li.product' ), dress );
+
+	// The catalogue's next page (the filter request, or the next page
+	// fetched whole) adds its cards to this same list, after this ran.
+	// Each one gets the same strip and picture pager as the first page's.
+	if ( 'MutationObserver' in window ) {
+		new MutationObserver( function ( list ) {
+			list.forEach( function ( m ) {
+				Array.prototype.forEach.call( m.addedNodes, dress );
+			} );
+		} ).observe( wrap, { childList: true } );
+	}
 
 	wrap.classList.add( 'octile-on' );
 

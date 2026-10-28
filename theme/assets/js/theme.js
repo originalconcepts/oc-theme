@@ -3319,6 +3319,12 @@ window.ocWhenShown( function () {
 			if ( ob ) {
 				params.set( 'orderby', ob );
 			}
+			// While the shop is being arranged, the next page's cards carry
+			// what the arranging controls need (each product's pictures).
+			// The server only answers this for someone allowed to arrange.
+			if ( document.body.classList.contains( 'ocsort-on' ) || document.documentElement.classList.contains( 'ocphone-frame' ) ) {
+				params.set( 'oc_sort', '1' );
+			}
 
 			fetch( ( L.ajaxUrl || '/wp-admin/admin-ajax.php' ) + '?' + params.toString() )
 				.then( function ( r ) {
