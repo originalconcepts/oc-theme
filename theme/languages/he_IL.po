@@ -14848,3 +14848,176 @@ msgstr "חזרה לתמונה הראשית של המוצר עצמו"
 
 msgid "That picture does not belong to this product."
 msgstr "התמונה הזו לא שייכת למוצר הזה."
+
+msgid "Speed"
+msgstr "מהירות"
+
+msgid "Front page banner"
+msgstr "באנר עמוד הבית"
+
+msgid "The front page does not open on a banner, or the composer is not in use."
+msgstr "עמוד הבית לא נפתח בבאנר, או שהקומפוזר לא בשימוש."
+
+msgid "The banner is the largest thing on the first screen; on a phone line every 100 KB here is about half a second."
+msgstr "הבאנר הוא הדבר הגדול ביותר במסך הראשון; בקו של טלפון כל 100KB כאן הם כחצי שנייה."
+
+msgid "Re-encode the banner pictures"
+msgstr "קודד מחדש את תמונות הבאנר"
+
+msgid "WebP, capped at 1983 px on a desktop and 1024 px on a phone. The originals are copied to wp-content/upgrade first."
+msgstr "WebP, עד 1983 פיקסל בדסקטופ ו-1024 בטלפון. המקוריות מועתקות קודם ל-wp-content/upgrade."
+
+msgid "not WebP"
+msgstr "לא WebP"
+
+msgid "%1$d px wide (%2$d is enough)"
+msgstr "רוחב %1$d פיקסל (%2$d מספיק)"
+
+msgid "%1$s (%2$s would do)"
+msgstr "%1$s (%2$s היה מספיק)"
+
+msgid "%1$s: %2$s."
+msgstr "%1$s: %2$s."
+
+msgid "Pictures as WebP"
+msgstr "תמונות ב-WebP"
+
+msgid "Every picture in the library is WebP."
+msgstr "כל התמונות בספרייה הן WebP."
+
+msgid "%s pictures are still JPEG or PNG. WebP is the same picture at about a quarter of the weight; the conversion keeps the original beside it."
+msgstr "%s תמונות עדיין JPEG או PNG. ‏WebP זו אותה תמונה בכרבע מהמשקל; ההמרה שומרת את המקור לצידה."
+
+msgid "New uploads"
+msgstr "העלאות חדשות"
+
+msgid "Every picture uploaded from now on is written as WebP."
+msgstr "כל תמונה שתועלה מעכשיו נכתבת כ-WebP."
+
+msgid "Pictures uploaded from now on stay JPEG or PNG, so the library slowly fills with heavy files again."
+msgstr "תמונות שיועלו מעכשיו נשארות JPEG או PNG, והספרייה מתמלאת שוב לאט בקבצים כבדים."
+
+msgid "Convert on upload"
+msgstr "המר בהעלאה"
+
+msgid "Pixels held back"
+msgstr "פיקסלים מעוכבים"
+
+msgid "Marketing is off, so there is nothing to hold back."
+msgstr "השיווק כבוי, אז אין מה לעכב."
+
+msgid "Meta / TikTok / ChatGPT"
+msgstr "מטא / טיקטוק / ChatGPT"
+
+msgid "Flashy"
+msgstr "Flashy"
+
+msgid "Every pixel waits for the first touch; events queue and replay, nothing is lost."
+msgstr "כל פיקסל מחכה לנגיעה הראשונה; האירועים נשמרים בתור ומשודרים, שום דבר לא הולך לאיבוד."
+
+msgid "Loading with the page: %s. Each one fetches its library from another host before the first paint and costs 3–8 points on a phone."
+msgstr "נטענים עם העמוד: %s. כל אחד מביא את הספרייה שלו משרת אחר לפני הציור הראשון ועולה 3–8 נקודות בטלפון."
+
+msgid "Hold them back"
+msgstr "עכב אותם"
+
+msgid "Instant navigation"
+msgstr "ניווט מיידי"
+
+msgid "Pages are prepared as the visitor hovers or touches, so the next click is instant."
+msgstr "העמודים מוכנים מראש כשהגולש מרחף או נוגע, כך שהלחיצה הבאה מיידית."
+
+msgid "Switched off in the Customizer."
+msgstr "כבוי בהתאמה האישית."
+
+msgid "Switch on"
+msgstr "הדלק"
+
+msgid "First-screen CSS"
+msgstr "CSS של המסך הראשון"
+
+msgid "Switched off by a filter in a plugin or a child theme. Every page waits for the stylesheets before it paints."
+msgstr "כבוי על ידי פילטר בתוסף או בתבנית בת. כל עמוד מחכה לגיליונות הסגנון לפני שהוא מצייר."
+
+msgid "Inlined on every page, and every kind of page has taught it what its scripts build."
+msgstr "מוטמע בכל עמוד, וכל סוג עמוד כבר לימד אותו מה הסקריפטים שלו בונים."
+
+msgid "Inlined on every page. Not yet taught by: %s — open one of each in a browser once and it learns."
+msgstr "מוטמע בכל עמוד. עדיין לא למד מ: %s. פותחים אחד מכל סוג בדפדפן פעם אחת והוא לומד."
+
+msgid "Object cache"
+msgstr "קאש אובייקטים"
+
+msgid "Redis (or another persistent cache) answers the database questions a page asks."
+msgstr "Redis (או קאש קבוע אחר) עונה על שאילתות מסד הנתונים של העמוד."
+
+msgid "No persistent object cache. Every uncached page runs its queries from scratch. On Proginter: Manage Website → Redis → activate, then WordPress → Object Cache → enable."
+msgstr "אין קאש אובייקטים קבוע. כל עמוד שאינו בקאש מריץ את השאילתות מאפס. ב-Proginter: ניהול אתר ← Redis ← הפעלה, ואז WordPress ← Object Cache ← הפעלה."
+
+msgid "Page cache"
+msgstr "קאש עמודים"
+
+msgid "Proginter's page cache is in place and the theme clears a page from it the moment it changes."
+msgstr "קאש העמודים של Proginter פעיל, והתבנית מנקה ממנו עמוד ברגע שהוא משתנה."
+
+msgid "No Proginter page cache seen. A page not served from a cache costs a visitor about a second before anything shows. If the site is elsewhere, use the host's cache, not a plugin."
+msgstr "לא נמצא קאש עמודים של Proginter. עמוד שלא מוגש מקאש עולה לגולש כשנייה לפני שמשהו מוצג. אם האתר מאוחסן במקום אחר, משתמשים בקאש של האחסון, לא בתוסף."
+
+msgid "Plugins"
+msgstr "תוספים"
+
+msgid "No cache or image plugin is doubling what the theme and the host already do."
+msgstr "אין תוסף קאש או תמונות שמכפיל את מה שהתבנית והאחסון כבר עושים."
+
+msgid "Cache / optimiser plugins: %s. They minify what is already minified, cache behind the host's cache and break the first-screen CSS. Deactivate them."
+msgstr "תוספי קאש/אופטימיזציה: %s. הם מכווצים מה שכבר מכווץ, שומרים קאש מאחורי הקאש של האחסון ושוברים את ה-CSS של המסך הראשון. לכבות אותם."
+
+msgid "Image plugins: %s. The theme already converts to WebP; two converters fight over the same files."
+msgstr "תוספי תמונות: %s. התבנית כבר ממירה ל-WebP; שני ממירים רבים על אותם קבצים."
+
+msgid "Open plugins"
+msgstr "פתח תוספים"
+
+msgid "What the theme does for speed arrives with every update. This is the part that belongs to this site: its pictures, its settings, its host. Green needs nothing; a button fixes what the theme can fix; the rest says where it is done."
+msgstr "מה שהתבנית עושה למהירות מגיע עם כל עדכון. כאן החלק ששייך לאתר הזה: התמונות שלו, ההגדרות שלו, האחסון שלו. ירוק לא צריך כלום; כפתור מתקן מה שהתבנית יכולה; השאר אומר איפה עושים את זה."
+
+msgid "fine"
+msgstr "תקין"
+
+msgid "worth doing"
+msgstr "כדאי לטפל"
+
+msgid "costing points"
+msgstr "עולה נקודות"
+
+msgid "Measure with Google PageSpeed"
+msgstr "מדוד עם Google PageSpeed"
+
+msgid "Measure the address with www if the site uses it: a redirect costs 0.8 s on a phone and up to 10 points. The first run after a cache clear measures a cold page; trust the second."
+msgstr "מודדים את הכתובת עם www אם האתר משתמש בה: הפניה עולה 0.8 שנייה בטלפון ועד 10 נקודות. הריצה הראשונה אחרי ניקוי קאש מודדת עמוד קר; סומכים על השנייה."
+
+msgid "Not seen from here: the DDoS protection level and the cache warm-up rate. Both are in the Proginter panel."
+msgstr "לא נראים מכאן: רמת הגנת ה-DDoS וקצב חימום הקאש. שניהם בפאנל של Proginter."
+
+msgid "The pixels now wait for the first touch."
+msgstr "הפיקסלים מחכים מעכשיו לנגיעה הראשונה."
+
+msgid "Instant navigation is on."
+msgstr "הניווט המיידי דולק."
+
+msgid "Pictures uploaded from now on are written as WebP."
+msgstr "תמונות שיועלו מעכשיו נכתבות כ-WebP."
+
+msgid "%1$d banner pictures re-encoded. The originals are in %2$s."
+msgstr "%1$d תמונות באנר קודדו מחדש. המקוריות ב-%2$s."
+
+msgid "file missing"
+msgstr "הקובץ חסר"
+
+msgid "could not copy the original aside"
+msgstr "לא הצלחתי להעתיק את המקור הצידה"
+
+msgid "%d picture, WebP, the right size and weight."
+msgid_plural "%d pictures, WebP, the right size and weight."
+msgstr[0] "תמונה אחת, WebP, בגודל ובמשקל הנכונים."
+msgstr[1] "%d תמונות, WebP, בגודל ובמשקל הנכונים."
