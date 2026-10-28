@@ -14833,3 +14833,18 @@ msgid "%d product"
 msgid_plural "%d products"
 msgstr[0] "מוצר אחד"
 msgstr[1] "%d מוצרים"
+
+msgid "Which picture leads the card"
+msgstr "איזו תמונה מובילה את הכרטיס"
+
+msgid "Previous picture"
+msgstr "התמונה הקודמת"
+
+msgid "Next picture"
+msgstr "התמונה הבאה"
+
+msgid "Back to the product's own main image"
+msgstr "חזרה לתמונה הראשית של המוצר עצמו"
+
+msgid "That picture does not belong to this product."
+msgstr "התמונה הזו לא שייכת למוצר הזה."

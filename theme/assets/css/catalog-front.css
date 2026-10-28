@@ -53,6 +53,34 @@ li.product:focus-within .octile { opacity: 1; }
  * display of its own, and a plain [hidden] loses to it. */
 .octile [hidden] { display: none !important; }
 
+/* Which picture leads the card: a small pill at the top of the picture,
+ * centred so it meets neither the badges in one corner nor the heart in the
+ * other. Two arrows and a counter; the counter lights up when the card is
+ * showing something other than the product's own main image. */
+.octile--pic {
+	inset-block-end: auto;
+	/* Below the badge row (a sale flag is about 24px tall), which it would
+	 * otherwise meet on a narrow card. */
+	inset-block-start: 38px;
+	inset-inline: 0;
+	margin-inline: auto;
+	inline-size: fit-content;
+	padding: 3px;
+}
+
+.octile__pic-at {
+	min-inline-size: 40px;
+	font-variant-numeric: tabular-nums;
+	direction: ltr;
+}
+
+.octile--pic.is-set .octile__pic-at { background: #fff; color: #1d2327; }
+
+/* The arrows are drawn for left-to-right; a right-to-left shop reads them the
+ * other way, exactly as the theme's own gallery arrows do. */
+[dir="rtl"] .octile__pic-prev svg,
+[dir="rtl"] .octile__pic-next svg { transform: scaleX(-1); }
+
 /* A card is the frame the strip hangs in. */
 .ocsort__list li.product { position: relative; }
 
@@ -76,6 +104,12 @@ li.product:focus-within .octile { opacity: 1; }
 	.octile__gap { flex-basis: 100%; block-size: 0; }
 	.octile svg { inline-size: 16px; block-size: 16px; }
 	.octile__at { min-inline-size: 34px; }
+
+	.octile--pic {
+		inset-block-end: auto;
+		inset-inline: 0;
+		flex-wrap: nowrap;
+	}
 }
 
 /* The phone preview: this page, in a frame the width of a phone, because a

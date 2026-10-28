@@ -36,6 +36,64 @@ final class Catalog_Front {
 
 		add_action( 'wp_enqueue_scripts', array( $this, 'assets' ), 11 );
 		add_action( 'rest_api_init', array( $this, 'rest' ) );
+
+		// Which of the product's pictures leads its card, chosen on the card.
+		add_action( 'oc_card_media_overlay', array( $this, 'pictures' ) );
+	}
+
+	/**
+	 * The product's pictures, on its card, for the arranging script to page
+	 * through. A shopper's page never carries this: the first check is the
+	 * query flag, and it is false for everyone who did not ask to arrange.
+	 *
+	 * @param \WC_Product $product The card's product.
+	 */
+	public function pictures( $product ): void {
+		if ( ! $product instanceof \WC_Product || ! self::wanted() ) {
+			return;
+		}
+
+		$main = (int) $product->get_image_id();
+		$ids  = array_merge( array( $main ), array_map( 'intval', $product->get_gallery_image_ids() ) );
+		$ids  = array_values( array_unique( array_filter( $ids ) ) );
+
+		if ( count( $ids ) < 2 ) {
+			return;
+		}
+
+		$pics = array();
+
+		foreach ( $ids as $id ) {
+			$src = (string) wp_get_attachment_image_url( $id, 'large' );
+
+			if ( '' === $src ) {
+				continue;
+			}
+
+			$srcset = wp_get_attachment_image_srcset( $id, 'large' );
+
+			$pics[] = array(
+				'id'     => $id,
+				'src'    => $src,
+				'srcset' => is_string( $srcset ) ? $srcset : '',
+			);
+		}
+
+		if ( count( $pics ) < 2 ) {
+			return;
+		}
+
+		printf(
+			'<script type="application/json" class="octile__pics">%s</script>',
+			wp_json_encode( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- JSON with < > & encoded.
+				array(
+					'main' => $main,
+					'now'  => Catalog::tile( $product->get_id() )['image'],
+					'pics' => $pics,
+				),
+				JSON_HEX_TAG | JSON_HEX_AMP
+			)
+		);
 	}
 
 	/**
@@ -98,6 +156,10 @@ final class Catalog_Front {
 						'same'   => __( 'Same as the desktop', 'oc-theme' ),
 						'phone'  => __( 'Phone view', 'oc-theme' ),
 						'leaveP' => __( 'Back to the desktop view', 'oc-theme' ),
+						'pic'    => __( 'Which picture leads the card', 'oc-theme' ),
+						'prevP'  => __( 'Previous picture', 'oc-theme' ),
+						'nextP'  => __( 'Next picture', 'oc-theme' ),
+						'mainP'  => __( 'Back to the product\'s own main image', 'oc-theme' ),
 						'saved'  => __( 'Saved', 'oc-theme' ),
 						'failed' => __( 'Could not save. Nothing was changed.', 'oc-theme' ),
 					),
@@ -175,6 +237,25 @@ final class Catalog_Front {
 			}
 		}
 
+		// Which picture leads the card: one of the product's own, or 0 for
+		// its main image — the same meta the product's Catalogue display
+		// tab writes, so the two never disagree.
+		if ( null !== $req->get_param( 'image' ) ) {
+			$image   = absint( $req->get_param( 'image' ) );
+			$product = wc_get_product( $id );
+			$own     = $product ? array_merge( array( (int) $product->get_image_id() ), array_map( 'intval', $product->get_gallery_image_ids() ) ) : array();
+
+			if ( $image && ! in_array( $image, $own, true ) ) {
+				return new \WP_Error( 'oc_tile_no_image', __( 'That picture does not belong to this product.', 'oc-theme' ), array( 'status' => 400 ) );
+			}
+
+			if ( ! $image || ( $product && $image === (int) $product->get_image_id() ) ) {
+				delete_post_meta( $id, '_oc_tile_image' );
+			} else {
+				update_post_meta( $id, '_oc_tile_image', $image );
+			}
+		}
+
 		if ( null !== $req->get_param( 'focus' ) ) {
 			$focus = max( 0, min( 100, absint( $req->get_param( 'focus' ) ) ) );
 
@@ -193,6 +274,7 @@ final class Catalog_Front {
 			array(
 				'size'   => $tile['size'],
 				'size_m' => $tile['size_m'],
+				'image'  => $tile['image'],
 				'focus'  => $tile['focus'],
 				'fit'    => $tile['fit'],
 			)

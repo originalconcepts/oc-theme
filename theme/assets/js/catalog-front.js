@@ -330,6 +330,158 @@
 
 		el.appendChild( box );
 		mark( el );
+		pictures( el );
+	}
+
+	/* ---------- which picture leads the card ----------
+	 *
+	 * The main image a shop owner chose for the product page is not always
+	 * the one that looks best beside its neighbours. The card carries the
+	 * product's pictures (a JSON block the server prints only in arranging
+	 * mode); two arrows page through them, the one showing is kept as the
+	 * product's catalogue image — the same field as on its edit screen — and
+	 * the counter puts the product's own main image back. */
+
+	function lead( el ) {
+		return el.querySelector( '.oc-card-media__item:not(.oc-card-media__item--video) img' );
+	}
+
+	function srcOf( img ) {
+		return img.getAttribute( 'data-oc-src' ) || img.getAttribute( 'src' ) || '';
+	}
+
+	function put( img, src, srcset ) {
+		var p = img.parentNode;
+
+		// A <picture> would make the browser ignore the src below.
+		if ( p && 'PICTURE' === p.tagName ) {
+			Array.prototype.forEach.call( p.querySelectorAll( 'source' ), function ( s ) {
+				s.remove();
+			} );
+		}
+
+		img.removeAttribute( 'data-oc-src' );
+		img.removeAttribute( 'data-oc-srcset' );
+		img.removeAttribute( 'loading' );
+
+		if ( srcset ) {
+			img.setAttribute( 'srcset', srcset );
+		} else {
+			img.removeAttribute( 'srcset' );
+		}
+
+		img.setAttribute( 'src', src );
+	}
+
+	function swap( el, pic ) {
+		var img = lead( el );
+
+		if ( ! img ) {
+			return;
+		}
+
+		var wasSrc = srcOf( img );
+		var wasSet = img.getAttribute( 'data-oc-srcset' ) || img.getAttribute( 'srcset' ) || '';
+
+		// Another slide already showing the chosen picture takes the old
+		// lead, so a gallery card keeps its whole set.
+		Array.prototype.forEach.call( el.querySelectorAll( '.oc-card-media__item img' ), function ( o ) {
+			if ( o !== img && srcOf( o ) === pic.src ) {
+				put( o, wasSrc, wasSet );
+			}
+		} );
+
+		put( img, pic.src, pic.srcset );
+
+		var strip = el.querySelector( '.oc-card-media__strip' );
+
+		if ( strip ) {
+			strip.scrollTo( 0, 0 );
+		}
+	}
+
+	function pictures( el ) {
+		var node = el.querySelector( 'script.octile__pics' );
+
+		if ( ! node ) {
+			return;
+		}
+
+		var data;
+
+		try {
+			data = JSON.parse( node.textContent );
+		} catch ( err ) {
+			return;
+		}
+
+		if ( ! data || ! data.pics || data.pics.length < 2 ) {
+			return;
+		}
+
+		var list = data.pics;
+		var at = 0;
+
+		list.forEach( function ( p, i ) {
+			if ( p.id === data.now ) {
+				at = i;
+			}
+		} );
+
+		var box = document.createElement( 'div' );
+
+		box.className = 'octile octile--pic';
+		box.setAttribute( 'data-oc-keep', '' );
+		box.setAttribute( 'role', 'group' );
+		box.setAttribute( 'aria-label', T.pic || '' );
+		box.innerHTML =
+			'<button type="button" class="octile__pic-prev" title="' + T.prevP + '" aria-label="' + T.prevP + '">' + icon( 'M15.4 7.4 14 6l-6 6 6 6 1.4-1.4L10.8 12z' ) + '</button>' +
+			'<button type="button" class="octile__pic-at" title="' + T.mainP + '" aria-label="' + T.mainP + '"></button>' +
+			'<button type="button" class="octile__pic-next" title="' + T.nextP + '" aria-label="' + T.nextP + '">' + icon( 'M8.6 7.4 10 6l6 6-6 6-1.4-1.4 4.6-4.6z' ) + '</button>';
+
+		var out = box.querySelector( '.octile__pic-at' );
+
+		function show() {
+			out.textContent = ( at + 1 ) + '/' + list.length;
+			box.classList.toggle( 'is-set', list[ at ].id !== data.main );
+		}
+
+		function go( to ) {
+			at = ( to + list.length ) % list.length;
+			swap( el, list[ at ] );
+			show();
+			keep( el, { image: list[ at ].id === data.main ? 0 : list[ at ].id } );
+		}
+
+		box.addEventListener( 'click', function ( e ) {
+			var b = e.target.closest( 'button' );
+
+			if ( ! b ) {
+				return;
+			}
+
+			e.preventDefault();
+			e.stopPropagation();
+
+			if ( b.classList.contains( 'octile__pic-prev' ) ) {
+				go( at - 1 );
+			} else if ( b.classList.contains( 'octile__pic-next' ) ) {
+				go( at + 1 );
+			} else {
+				var main = 0;
+
+				list.forEach( function ( p, i ) {
+					if ( p.id === data.main ) {
+						main = i;
+					}
+				} );
+
+				go( main );
+			}
+		} );
+
+		el.appendChild( box );
+		show();
 	}
 
 	function deviceSwitch() {
