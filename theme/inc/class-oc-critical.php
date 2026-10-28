@@ -265,20 +265,16 @@ final class Critical {
 			return;
 		}
 
-		// A page fetched by a script (the catalogue's next page, a drawer)
-		// is parsed for its parts, not shown: no extract, no deferred
-		// pictures. A page cache may still hand such a fetch the rewritten
-		// copy, which is why the script also watches for added pictures.
-		$mode = sanitize_text_field( wp_unslash( (string) ( $_SERVER['HTTP_SEC_FETCH_MODE'] ?? '' ) ) );
-
-		// The instant-navigation worker fetches a page to show it later,
-		// exactly as a navigation would: it marks itself and gets the
-		// full treatment.
-		$prefetch = isset( $_SERVER['HTTP_X_OC_PREFETCH'] );
-
-		if ( ! $prefetch && ( ( '' !== $mode && 'navigate' !== $mode ) || isset( $_SERVER['HTTP_X_REQUESTED_WITH'] ) ) ) {
-			return;
-		}
+		// Every GET of a page is rewritten, whoever asks: a script fetching
+		// the catalogue's next page, a warm-up crawler, a prefetch. The
+		// rewrite used to be skipped for non-navigation fetches (Sec-Fetch-
+		// Mode, X-Requested-With) to spare them the inline extract — but
+		// the host's page cache keeps whichever copy arrives first, and a
+		// copy made for such a fetch was then served to every visitor,
+		// with every stylesheet blocking (mg4 front page, 28/10: Google
+		// measured it at 99 on a desktop and 79 on a phone). The scripts
+		// that fetch pages for their parts already cope with the rewritten
+		// copy (the lazy-picture scan watches for added pictures).
 
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- a read-only switch, no state changes.
 		if ( isset( $_GET['oc_critical'] ) && '0' === $_GET['oc_critical'] ) {
