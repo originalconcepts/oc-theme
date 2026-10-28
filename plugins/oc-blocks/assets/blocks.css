@@ -154,31 +154,46 @@
 
 /* ---------- entrances ---------- */
 
-.ocb--in-fade,
-.ocb--in-rise { opacity: 0; transition: opacity .7s ease, transform .7s cubic-bezier(.22, .61, .36, 1); }
-.ocb--in-rise { transform: translateY(26px); }
+/* The hidden starting state waits for the script (html.ocb-anim): a
+ * section already on the first screen is marked in-view in the same
+ * tick, so it paints whole with the page and never fades. Only what
+ * arrives by scrolling steps in. Before this, the brand strip under the
+ * home banner started at opacity 0 and the Speed Index on a desktop
+ * waited 0.7s for it — the one point between 99 and 100. */
+html.ocb-anim .ocb--in-fade,
+html.ocb-anim .ocb--in-rise { opacity: 0; transition: opacity .7s ease, transform .7s cubic-bezier(.22, .61, .36, 1); }
+html.ocb-anim .ocb--in-rise { transform: translateY(26px); }
 
-.ocb--in-fade.is-in,
-.ocb--in-rise.is-in { opacity: 1; transform: none; }
+html.ocb-anim .ocb--in-fade.is-in,
+html.ocb-anim .ocb--in-rise.is-in { opacity: 1; transform: none; }
 
-.ocb--in-stagger .ocb-cat,
-.ocb--in-stagger .ocb-brand,
-.ocb--in-stagger .ocb-post,
-.ocb--in-stagger li.product,
-.ocb--in-stagger .ocb-ico__one,
-.ocb--in-stagger .ocb-words > * {
+html.ocb-anim .ocb--in-stagger .ocb-cat,
+html.ocb-anim .ocb--in-stagger .ocb-brand,
+html.ocb-anim .ocb--in-stagger .ocb-post,
+html.ocb-anim .ocb--in-stagger li.product,
+html.ocb-anim .ocb--in-stagger .ocb-ico__one,
+html.ocb-anim .ocb--in-stagger .ocb-words > * {
 	opacity: 0;
 	transform: translateY(16px);
 	transition: opacity .6s ease, transform .6s cubic-bezier(.22, .61, .36, 1);
 	transition-delay: calc(var(--ocb-i, 0) * 70ms);
 }
 
-.ocb--in-stagger.is-in .ocb-cat,
-.ocb--in-stagger.is-in .ocb-brand,
-.ocb--in-stagger.is-in .ocb-post,
-.ocb--in-stagger.is-in li.product,
-.ocb--in-stagger.is-in .ocb-ico__one,
-.ocb--in-stagger.is-in .ocb-words > * {
+/* Already on screen when the script ran: whole at once, no transition. */
+.ocb--in-now,
+.ocb--in-now .ocb-cat,
+.ocb--in-now .ocb-brand,
+.ocb--in-now .ocb-post,
+.ocb--in-now li.product,
+.ocb--in-now .ocb-ico__one,
+.ocb--in-now .ocb-words > * { transition: none !important; }
+
+html.ocb-anim .ocb--in-stagger.is-in .ocb-cat,
+html.ocb-anim .ocb--in-stagger.is-in .ocb-brand,
+html.ocb-anim .ocb--in-stagger.is-in .ocb-post,
+html.ocb-anim .ocb--in-stagger.is-in li.product,
+html.ocb-anim .ocb--in-stagger.is-in .ocb-ico__one,
+html.ocb-anim .ocb--in-stagger.is-in .ocb-words > * {
 	opacity: 1;
 	transform: none;
 }
@@ -384,7 +399,9 @@
 	position: absolute;
 	inset: 0;
 	background: var(--ocb-bg, var(--oc-bg, #fff));
-	transition: opacity .6s ease;
+	/* Short: the picture is already there, and every tenth of a second
+	 * the cover lingers is a tenth the Speed Index waits. */
+	transition: opacity .3s ease;
 	pointer-events: none;
 }
 .ocb-hero__media--first.is-ready::after { opacity: 0; }

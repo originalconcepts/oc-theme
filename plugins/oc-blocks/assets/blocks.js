@@ -195,9 +195,23 @@
 		} );
 	}, { rootMargin: '0px 0px -8% 0px' } );
 
+	// A section already on the screen when this runs is shown whole at
+	// once (is-in + no transition) — the page painted with it and must not
+	// take it away to fade it back. Only then does the stylesheet's hidden
+	// starting state switch on (html.ocb-anim), in the same tick, so nothing
+	// visible ever blinks; sections below step in as they arrive.
+	var fold = window.innerHeight || document.documentElement.clientHeight || 0;
+
 	document.querySelectorAll( '.ocb--in-fade, .ocb--in-rise, .ocb--in-stagger' ).forEach( function ( el ) {
 		if ( reduced ) {
 			el.classList.add( 'is-in' );
+			return;
+		}
+
+		var box = el.getBoundingClientRect();
+
+		if ( box.top < fold && box.bottom > 0 ) {
+			el.classList.add( 'is-in', 'ocb--in-now' );
 			return;
 		}
 
@@ -213,6 +227,10 @@
 
 		seen.observe( el );
 	} );
+
+	if ( ! reduced ) {
+		document.documentElement.classList.add( 'ocb-anim' );
+	}
 
 	/* ---------- the hero ---------- */
 
