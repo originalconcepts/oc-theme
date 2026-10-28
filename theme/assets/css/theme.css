@@ -16028,6 +16028,11 @@ p.no-comments {
 .oc-privacy--bar .oc-privacy__words { flex: 1 1 420px; }
 
 @keyframes oc-privacy-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+
+/* Shown with the first paint (the inline check after the markup): already
+ * there, so it does not slide in. An attribute, not a class, so the rule
+ * survives into the inlined first-screen CSS. */
+.oc-privacy[data-oc-early] .oc-privacy__banner { animation: none; }
 @media (prefers-reduced-motion: reduce) { .oc-privacy__banner { animation: none; } }
 
 .oc-privacy__title { margin: 0 0 4px; font-weight: 700; font-size: 1.02rem; }

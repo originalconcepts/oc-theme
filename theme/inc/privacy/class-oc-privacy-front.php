@@ -214,6 +214,19 @@ final class Front {
 			<?php endif; ?>
 		</div>
 		<?php
+		// The banner shows with the page, not after it. privacy.js is
+		// deferred, so a visitor who has not answered yet saw the page
+		// paint, then the banner slide in afterwards. That was a visible
+		// change on the first screen after the first paint, and Speed Index
+		// waits for the last one. This reads the same cookie the script
+		// does, before the browser paints. If there is no answer for the
+		// current policy, it un-hides the banner the way showBanner() does.
+		// The script then finds it already open. The data attribute (not a
+		// class) keeps the "no entrance animation" rule in the inlined
+		// first-screen CSS, which keeps rules by the classes in the markup.
+		?>
+		<script>(function(){var s=document.currentScript,r=s&&s.previousElementSibling;if(!r||!r.hasAttribute('data-oc-privacy')){return}var m=document.cookie.match(/(?:^|; )oc_consent=([^;]*)/),ok=false;if(m){try{var v=decodeURIComponent(m[1]);if('granted'===v||'denied'===v){ok=true}else{var d=JSON.parse(v),c=JSON.parse(r.getAttribute('data-oc-privacy')||'{}');ok=!!(d&&d.v&&d.pv===c.pv)}}catch(e){}}if(ok){return}var b=r.querySelector('[data-oc-privacy-banner]');r.setAttribute('data-oc-early','');r.hidden=false;if(b){b.hidden=false}r.classList.add('is-asking')})();</script>
+		<?php
 	}
 
 	/**
