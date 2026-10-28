@@ -265,6 +265,13 @@ final class WooCommerce {
 		// rendered them pixelated and killed zoom on them (QA round 4). Every
 		// gallery image is a real single-product image.
 		add_filter( 'woocommerce_gallery_image_size', array( $this, 'gallery_image_size' ) );
+
+		// A gallery that repeats the main image, as the same attachment or
+		// the same file uploaded twice (mg4's migration: 376 products),
+		// showed it twice in a row on the card and the product page. This
+		// is only the shop's view. The edit screen reads the gallery in the
+		// "edit" context and keeps every id.
+		add_filter( 'woocommerce_product_get_gallery_image_ids', array( $this, 'gallery_without_repeats' ), 10, 2 );
 		add_filter( 'woocommerce_single_product_image_thumbnail_html', array( '\\OC\\Theme\\Variations', 'strip_thumb_data' ) );
 		add_filter( 'woocommerce_single_product_image_thumbnail_html', array( $this, 'gallery_first_active' ), 11 );
 
@@ -534,6 +541,131 @@ final class WooCommerce {
 	 */
 	public function gallery_image_size(): string {
 		return 'woocommerce_single';
+	}
+
+	/**
+	 * The gallery without the main image and without a second copy of any
+	 * picture already in it.
+	 *
+	 * A picture is "the same" when it is the same attachment, or when its
+	 * original file is byte for byte the same file: the copies a re-import
+	 * makes, the same file uploaded twice under name and name-1 (529 on
+	 * mg4). The byte count, which the attachment metadata already holds,
+	 * decides who is worth comparing. Only files of equal size are read,
+	 * and their checksum is kept on the attachment. Equal size alone is not
+	 * enough: seven different pictures on mg4 share their size with
+	 * another.
+	 *
+	 * @param int[]       $ids     Gallery attachment ids.
+	 * @param \WC_Product $product Product.
+	 * @return int[]
+	 */
+	public function gallery_without_repeats( $ids, $product ): array {
+		$ids = array_values( array_filter( array_map( 'intval', (array) $ids ) ) );
+
+		if ( ! $ids || ! $product instanceof \WC_Product ) {
+			return $ids;
+		}
+
+		$main = (int) $product->get_image_id();
+		$kept = $main ? array( $main ) : array();
+
+		update_meta_cache( 'post', array_merge( $kept, $ids ) );
+
+		$out = array();
+
+		foreach ( $ids as $id ) {
+			$repeat = false;
+
+			foreach ( $kept as $k ) {
+				if ( self::same_picture( $k, $id ) ) {
+					$repeat = true;
+					break;
+				}
+			}
+
+			if ( $repeat ) {
+				continue;
+			}
+
+			$kept[] = $id;
+			$out[]  = $id;
+		}
+
+		return $out;
+	}
+
+	/**
+	 * Whether two attachments are the same picture: the same id, or two
+	 * original files of the same size with the same checksum.
+	 *
+	 * @param int $a Attachment id.
+	 * @param int $b Attachment id.
+	 */
+	private static function same_picture( int $a, int $b ): bool {
+		if ( $a === $b ) {
+			return true;
+		}
+
+		$sa = self::picture_bytes( $a );
+
+		if ( $sa < 1 || self::picture_bytes( $b ) !== $sa ) {
+			return false;
+		}
+
+		$ha = self::picture_sum( $a, $sa );
+
+		return '' !== $ha && self::picture_sum( $b, $sa ) === $ha;
+	}
+
+	/**
+	 * The byte count of an attachment's original file, from its metadata,
+	 * or from the disk when the metadata does not say. 0 when unknown.
+	 *
+	 * @param int $id Attachment id.
+	 */
+	private static function picture_bytes( int $id ): int {
+		static $memo = array();
+
+		if ( isset( $memo[ $id ] ) ) {
+			return $memo[ $id ];
+		}
+
+		$meta = wp_get_attachment_metadata( $id );
+		$size = is_array( $meta ) ? (int) ( $meta['filesize'] ?? 0 ) : 0;
+
+		if ( $size < 1 ) {
+			$path = get_attached_file( $id );
+			$size = ( $path && file_exists( $path ) ) ? (int) filesize( $path ) : 0;
+		}
+
+		$memo[ $id ] = $size;
+
+		return $size;
+	}
+
+	/**
+	 * The checksum of an attachment's original file, kept on the attachment
+	 * with the size it was taken at (so a replaced file is summed again).
+	 *
+	 * @param int $id   Attachment id.
+	 * @param int $size Its byte count.
+	 */
+	private static function picture_sum( int $id, int $size ): string {
+		$kept = (string) get_post_meta( $id, '_oc_md5', true );
+
+		if ( '' !== $kept && 0 === strpos( $kept, $size . ':' ) ) {
+			return substr( $kept, strlen( $size . ':' ) );
+		}
+
+		$path = get_attached_file( $id );
+		$sum  = ( $path && file_exists( $path ) ) ? (string) md5_file( $path ) : '';
+
+		if ( '' !== $sum ) {
+			update_post_meta( $id, '_oc_md5', $size . ':' . $sum );
+		}
+
+		return $sum;
 	}
 
 	/**
