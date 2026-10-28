@@ -2646,8 +2646,9 @@ window.ocWhenShown( function () {
 		// Endless by finger (and trackpad) too. Before a swipe can meet an
 		// end, the picture from the far end is moved round to that side with
 		// the view held still, so there is always a next picture both ways.
-		// It happens the moment a finger lands or a wheel turns, and again
-		// once a swipe settles — never mid-swipe. Two pictures cannot stand
+		// It happens when the card comes into view, when a wheel turns, and
+		// again once a swipe settles. It never happens while a finger is on
+		// the strip (see touchstart below). Two pictures cannot stand
 		// on both sides of one, so a pair is doubled first.
 		var ringBusy   = false;
 		var arrowBusy  = false;
@@ -2708,10 +2709,44 @@ window.ocWhenShown( function () {
 			}
 		}
 
+		// Not on touchstart. Safari on an iPhone ignores a scroll set on a
+		// strip while a finger is on it, but still applies the reordering. The
+		// view was left standing on the picture just moved round from the far
+		// end, and the swipe carried it back onto the main picture: "the next
+		// picture is the same one". The ring is made ready before any finger
+		// lands instead: when the card comes into view, after every swipe
+		// settles, and after a colour swap rebuilds the slides.
 		strip.addEventListener( 'touchstart', function () {
 			touching = true;
-			prepareRing();
 		}, { passive: true } );
+
+		function readyRing() {
+			if ( ! touching ) {
+				prepareRing();
+			}
+		}
+
+		if ( 'IntersectionObserver' in window ) {
+			new IntersectionObserver( function ( entries ) {
+				entries.forEach( function ( entry ) {
+					if ( entry.isIntersecting ) {
+						readyRing();
+					}
+				} );
+			}, { rootMargin: '200px 0px' } ).observe( media );
+		} else {
+			readyRing();
+		}
+
+		// A colour swap writes new slides into the strip; the ring's own moves
+		// happen while ringBusy is set, and the arrows' while arrowBusy is.
+		if ( 'MutationObserver' in window ) {
+			new MutationObserver( function () {
+				if ( ! ringBusy && ! arrowBusy ) {
+					requestAnimationFrame( readyRing );
+				}
+			} ).observe( strip, { childList: true } );
+		}
 
 		[ 'touchend', 'touchcancel' ].forEach( function ( evt ) {
 			strip.addEventListener( evt, function () {
