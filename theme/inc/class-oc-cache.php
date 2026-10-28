@@ -51,12 +51,14 @@ final class Cache {
 		foreach ( $urls as $url ) {
 			if ( $has ) {
 				call_user_func( $host, (string) wp_parse_url( $url, PHP_URL_PATH ) );
+			} else {
+				// What the rest of the world listens for. A host that mirrors
+				// WP Rocket or W3 Total Cache — most of them do — hears this.
+				// Proginter listens to both its own call and w3tc's, so with
+				// the direct call in place these would purge every URL twice.
+				do_action( 'w3tc_flush_url', $url );
+				do_action( 'rocket_clean_files', array( $url ) );
 			}
-
-			// What the rest of the world listens for. A host that mirrors
-			// WP Rocket or W3 Total Cache — most of them do — hears this.
-			do_action( 'w3tc_flush_url', $url );
-			do_action( 'rocket_clean_files', array( $url ) );
 
 			/**
 			 * A page of the shop is no longer what it was.

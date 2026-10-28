@@ -161,6 +161,10 @@ function guest(text) {
 
 function store(url, res) {
 	if (!res || res.status !== 200 || res.redirected || (res.type !== 'basic' && res.type !== 'default')) { return Promise.resolve(false); }
+	// The host's DDoS layer answers a visitor it wants to re-check with its
+	// own page, marked by this header — sometimes as a 200. Shelving it
+	// would hand the next click a "checking your browser" screen.
+	if (res.headers.get('proginter-validator')) { return Promise.resolve(false); }
 	var ct = res.headers.get('content-type') || '';
 	if (ct.indexOf('text/html') < 0) { return Promise.resolve(false); }
 	return res.clone().text().then(function (text) {

@@ -368,17 +368,24 @@ final class Critical {
 		// The whole page's names, not a guess at the first screen: a two
 		// column layout (the checkout, a filtered catalogue) puts what the
 		// eye sees first late in the markup, and a byte limit cut it off.
-		$type   = self::type();
-		$tokens = self::tokens( substr( $html, $body_at ) );
+		$type = self::type();
+
+		// What earlier pages of this kind reported their scripts built.
+		$learned = get_option( 'oc_critical_learned', array() );
+		$learned = (array) ( is_array( $learned ) ? ( $learned[ $type ] ?? array() ) : array() );
+
+		// Until a page type has reported, the scripts' whole vocabulary
+		// stands in for what they will build. Once it has, that list goes:
+		// it names every modal, toast and drawer any script could ever
+		// open, and on a product page that was 50KB of rules for things
+		// not on it. The late sheets are there long before a click.
+		$tokens = self::tokens( substr( $html, $body_at ), empty( $learned ) );
 
 		if ( count( $tokens ) < 10 ) {
 			return '';
 		}
 
-		// What earlier pages of this kind reported their scripts built.
-		$learned = get_option( 'oc_critical_learned', array() );
-
-		foreach ( (array) ( is_array( $learned ) ? ( $learned[ $type ] ?? array() ) : array() ) as $c ) {
+		foreach ( $learned as $c ) {
 			$tokens[ '.' . (string) $c ] = true;
 		}
 
@@ -559,10 +566,11 @@ final class Critical {
 	 * Every class name and id in a stretch of markup, plus the states a
 	 * script sets at once; keys for a cheap lookup.
 	 *
-	 * @param string $markup HTML.
+	 * @param string $markup   HTML.
+	 * @param bool   $literals Whether the scripts' own class list joins in.
 	 * @return array<string,true>
 	 */
-	private static function tokens( string $markup ): array {
+	private static function tokens( string $markup, bool $literals = true ): array {
 		$set = array();
 
 		// A name with a long number in it (post-34114, wp-image-9031) is
@@ -594,7 +602,7 @@ final class Critical {
 		// writes the list): a slider's dots, the folded checkout summary,
 		// an open drawer — markup the page does not carry yet.
 		$built = OC_THEME_DIR . '/inc/critical-js-classes.php';
-		$list  = file_exists( $built ) ? include $built : array();
+		$list  = $literals && file_exists( $built ) ? include $built : array();
 
 		foreach ( (array) $list as $c ) {
 			$set[ '.' . (string) $c ] = true;

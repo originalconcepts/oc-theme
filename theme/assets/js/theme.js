@@ -566,13 +566,19 @@ window.ocPause = window.ocPause || ( function () {
 	function post( d ) {
 		var body = JSON.stringify( d );
 
+		// A keepalive fetch survives the page like a beacon does, and it can
+		// say it wants JSON: the host's DDoS layer spends a returning
+		// visitor's grace requests on anything that does not.
 		try {
-			if ( navigator.sendBeacon && navigator.sendBeacon( S.url, new Blob( [ body ], { type: 'application/json' } ) ) ) {
-				return;
-			}
+			fetch( S.url, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: body, keepalive: true, credentials: 'same-origin' } ).catch( function () {} );
+			return;
 		} catch ( e ) {}
 
-		fetch( S.url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: body, keepalive: true, credentials: 'same-origin' } ).catch( function () {} );
+		try {
+			if ( navigator.sendBeacon ) {
+				navigator.sendBeacon( S.url, new Blob( [ body ], { type: 'application/json' } ) );
+			}
+		} catch ( e ) {}
 	}
 
 	function hit( type, obj ) {
@@ -643,16 +649,18 @@ window.ocWhenShown( function () {
 	var KEEP = 'ocHeat';
 
 	function post( body ) {
-		try {
-			var blob = new Blob( [ JSON.stringify( body ) ], { type: 'application/json' } );
+		var text = JSON.stringify( body );
 
-			if ( navigator.sendBeacon && navigator.sendBeacon( H.url, blob ) ) {
-				return;
-			}
+		// Keepalive fetch first, asking for JSON (see the stats sender).
+		try {
+			fetch( H.url, { method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: text, credentials: 'same-origin' } ).catch( function () {} );
+			return;
 		} catch ( e ) {}
 
 		try {
-			fetch( H.url, { method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify( body ) } );
+			if ( navigator.sendBeacon ) {
+				navigator.sendBeacon( H.url, new Blob( [ text ], { type: 'application/json' } ) );
+			}
 		} catch ( e ) {}
 	}
 
@@ -11181,11 +11189,15 @@ window.ocWhenShown( function () {
 		var root = ( document.documentElement.getAttribute( 'data-oc-rest' ) || '/wp-json/' );
 		var url = root.replace( /\/$/, '' ) + '/oc/v1/critical-learn';
 		var body = JSON.stringify( { type: type, names: Object.keys( names ), _t: token } );
-		// A beacon: fire and forget, and a refusal never reaches the console.
+		// Fire and forget, asking for JSON (see the stats sender); a refusal
+		// never reaches the console.
 		try {
-			if ( navigator.sendBeacon && navigator.sendBeacon( url, new Blob( [ body ], { type: 'application/json' } ) ) ) { return; }
+			fetch( url, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, credentials: 'same-origin', keepalive: true, body: body } ).catch( function () {} );
+			return;
 		} catch ( e ) {}
-		fetch( url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin', keepalive: true, body: body } ).catch( function () {} );
+		try {
+			if ( navigator.sendBeacon ) { navigator.sendBeacon( url, new Blob( [ body ], { type: 'application/json' } ) ); }
+		} catch ( e ) {}
 	}
 
 	window.addEventListener( 'load', function () {

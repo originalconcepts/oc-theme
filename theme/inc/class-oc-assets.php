@@ -193,12 +193,13 @@ final class Assets {
 		$dir   = OC_THEME_DIR . '/assets/css/';
 		$stamp = file_exists( $dir . 'theme-pieces.php' ) ? include $dir . 'theme-pieces.php' : null;
 
-		// The stamp says which theme.css the pieces came from: the version
-		// they were built for and the size of the file — not file times,
-		// which a git checkout hands out per changed file, so an unchanged
-		// piece keeps an old date beside a fresh source.
+		// The stamp says which theme.css the pieces came from: the size of
+		// the file — not file times, which a git checkout hands out per
+		// changed file, so an unchanged piece keeps an old date beside a
+		// fresh source. Not the version either: a release that touches no
+		// stylesheet bumps the version without a rebuild, and 0.3.388–389
+		// shipped the whole theme.min.css to every page because of it.
 		if ( ! is_array( $stamp )
-			|| (string) ( $stamp['version'] ?? '' ) !== OC_THEME_VERSION
 			|| ! file_exists( $dir . 'theme.css' )
 			|| (int) ( $stamp['size'] ?? -1 ) !== (int) filesize( $dir . 'theme.css' )
 			|| ! file_exists( $dir . 'theme.core.min.css' ) ) {
