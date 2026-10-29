@@ -459,16 +459,17 @@ final class Order_Admin {
 					// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- the phone preview loads the same page inside a frame.
 					'frame' => isset( $_GET['oc_frame'] ) ? 1 : 0,
 					'i18n'  => array(
-						'title'  => __( 'Arranging', 'oc-theme' ),
-						'help'   => __( 'Drag a product to where it should be. Click one, then another, to move several together. Everything you change is kept as you go — there is nothing to save.', 'oc-theme' ),
-						'done'   => __( 'Finish', 'oc-theme' ),
-						'saved'  => __( 'Saved', 'oc-theme' ),
-						'saving' => __( 'Saving…', 'oc-theme' ),
-						'failed' => __( 'Could not save. Nothing was changed.', 'oc-theme' ),
+						'title'    => __( 'Arranging', 'oc-theme' ),
+						'help'     => __( 'Drag a product to where it should be. Click one, then another, to move several together. Everything you change is kept as you go — there is nothing to save.', 'oc-theme' ),
+						'done'     => __( 'Finish', 'oc-theme' ),
+						'saved'    => __( 'Saved', 'oc-theme' ),
+						'saving'   => __( 'Saving…', 'oc-theme' ),
+						'failed'   => __( 'Could not save. Nothing was changed.', 'oc-theme' ),
 						/* translators: %d: how many were chosen */
-						'picked' => __( '%d chosen', 'oc-theme' ),
-						'keeps'  => __( 'Sold out · stays here', 'oc-theme' ),
-						'drops'  => __( 'Sold out · drops to the end', 'oc-theme' ),
+						'picked'   => __( '%d chosen', 'oc-theme' ),
+						'keeps'    => __( 'Sold out · stays here', 'oc-theme' ),
+						'filtered' => __( 'Not saved: a filtered list is only part of the category. Clear the filters and reload the page to arrange.', 'oc-theme' ),
+						'drops'    => __( 'Sold out · drops to the end', 'oc-theme' ),
 					),
 				)
 			) . ';',

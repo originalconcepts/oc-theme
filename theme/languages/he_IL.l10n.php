@@ -2350,6 +2350,7 @@ return array(
 		"Not opened yet" => "עדיין לא נפתח",
 		"Not registered yet?" => "עדיין לא רשומים?",
 		"Not relevant" => "לא רלוונטי",
+		"Not saved: a filtered list is only part of the category. Clear the filters and reload the page to arrange." => "לא נשמר: רשימה מסוננת היא רק חלק מהקטגוריה. נקו את הסינון וטענו את העמוד מחדש כדי לסדר.",
 		"Not seen from here: the DDoS protection level and the cache warm-up rate. Both are in the Proginter panel." => "לא נראים מכאן: רמת הגנת ה-DDoS וקצב חימום הקאש. שניהם בפאנל של Proginter.",
 		"Not shown" => "לא מוצג",
 		"Not shown anywhere. The delivery companies work it out from the address, and a postcode makes them get it right." => "לא מוצג בשום מקום. חברות המשלוחים מנחשות אותו מהכתובת, ומיקוד גורם להן לקלוע.",

@@ -1245,7 +1245,11 @@ final class WooCommerce {
 	 * @return array<string,string>
 	 */
 	public function oos_last( array $clauses, \WP_Query $query ): array {
-		if ( is_admin() || 'product_query' !== $query->get( 'wc_query' ) || ! get_theme_mod( 'oc_catalog_oos_last', false ) ) {
+		// The filter request (oc_catalog) is the same catalogue, so it sinks
+		// too; it runs through admin-ajax, where is_admin() is true.
+		$catalogue = $query->get( 'oc_catalog' ) || ( ! is_admin() && 'product_query' === $query->get( 'wc_query' ) );
+
+		if ( ! $catalogue || ! get_theme_mod( 'oc_catalog_oos_last', false ) ) {
 			return $clauses;
 		}
 

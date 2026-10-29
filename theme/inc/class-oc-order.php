@@ -69,6 +69,12 @@ final class Order {
 	const SHOP_PIN = 'oc_oos_pin_shop';
 
 	/**
+	 * Query var for a query that is not the page's own (the filter
+	 * request): the list to order it by, as a category id or SHOP.
+	 */
+	const QUERY_VAR = 'oc_order_list';
+
+	/**
 	 * Hook in.
 	 */
 	public function register(): void {
@@ -77,6 +83,9 @@ final class Order {
 		}
 
 		add_action( 'pre_get_posts', array( $this, 'watch' ), 20 );
+		// After "sold-out products drop to the end" (20), so the pins and the
+		// saved places come first, exactly as on the page itself.
+		add_filter( 'posts_clauses', array( $this, 'asked' ), 25, 2 );
 		add_action( 'admin_init', array( __CLASS__, 'seed_pins' ) );
 		add_action( 'before_delete_post', array( $this, 'forget_product' ) );
 		add_action( 'delete_product_cat', array( $this, 'forget_term' ) );
@@ -492,21 +501,59 @@ final class Order {
 
 		remove_filter( 'posts_clauses', array( $this, 'clauses' ), 20 );
 
+		return self::order_by( (array) $clauses, $this->list );
+	}
+
+	/**
+	 * The list a filtered catalogue is ordered by: the category's own (or
+	 * the shop's), when it has one.
+	 *
+	 * @param int $term_id Category, or SHOP.
+	 * @return int|null
+	 */
+	public static function list_for( int $term_id ) {
+		return self::has( $term_id ) ? $term_id : null;
+	}
+
+	/**
+	 * A query that asked for a list by name (QUERY_VAR) gets the same
+	 * ordering as the page: the filter request, which is not the main query.
+	 *
+	 * @param array     $clauses Clauses.
+	 * @param \WP_Query $q       Query.
+	 * @return array
+	 */
+	public function asked( $clauses, $q ) {
+		if ( ! $q instanceof \WP_Query || $q->is_main_query() || ! isset( $q->query_vars[ self::QUERY_VAR ] ) || ! is_int( $q->query_vars[ self::QUERY_VAR ] ) ) {
+			return $clauses;
+		}
+
+		return self::order_by( (array) $clauses, $q->query_vars[ self::QUERY_VAR ] );
+	}
+
+	/**
+	 * Order the clauses by a list.
+	 *
+	 * @param array $clauses Clauses.
+	 * @param int   $list    Category, or SHOP.
+	 * @return array
+	 */
+	private static function order_by( array $clauses, int $list ): array {
 		global $wpdb;
 
 		$t   = self::table();
 		$was = trim( (string) ( $clauses['orderby'] ?? '' ) );
 
-		$clauses['join'] .= $wpdb->prepare( " LEFT JOIN {$t} AS ocord ON ocord.product_id = {$wpdb->posts}.ID AND ocord.term_id = %d", $this->list ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- own table.
+		$clauses['join'] = (string) ( $clauses['join'] ?? '' ) . $wpdb->prepare( " LEFT JOIN {$t} AS ocord ON ocord.product_id = {$wpdb->posts}.ID AND ocord.term_id = %d", $list ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- own table.
 
 		// With "sold-out products drop to the end" on, a sold-out product
 		// drops even from a place it was given, unless it was put there on
 		// purpose while sold out (repin). Before, any saved place won, and
 		// a product that sold out after the category was arranged stayed
 		// where it was.
-		$sink = self::sink_sql( $this->list, "{$wpdb->posts}.ID", 'oc_stock_lookup.stock_status' );
+		$sink = self::sink_sql( $list, "{$wpdb->posts}.ID", 'oc_stock_lookup.stock_status' );
 
-		if ( '' !== $sink && false === strpos( (string) $clauses['join'], 'oc_stock_lookup' ) ) {
+		if ( '' !== $sink && false === strpos( $clauses['join'], 'oc_stock_lookup' ) ) {
 			$clauses['join'] .= " LEFT JOIN {$wpdb->wc_product_meta_lookup} oc_stock_lookup ON {$wpdb->posts}.ID = oc_stock_lookup.product_id ";
 		}
 

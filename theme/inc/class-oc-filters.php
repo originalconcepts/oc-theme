@@ -1920,6 +1920,21 @@ final class Filters {
 			self::$sale_render = true;
 		}
 
+		// The same order as the page the shopper is on: sold-out products
+		// at the end when the shop says so, and the category's own manual
+		// order unless the shopper chose an ordering. A brand or tag page
+		// has no order of its own (the page itself does not use the shop's).
+		$args['oc_catalog'] = true;
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- public read-only endpoint.
+		if ( '' === $orderby && null === $this->scope && empty( $_GET['s'] ) ) {
+			$list = Order::list_for( $category );
+
+			if ( null !== $list ) {
+				$args[ Order::QUERY_VAR ] = $list;
+			}
+		}
+
 		$query = new \WP_Query( $args );
 
 		ob_start();

@@ -15027,3 +15027,6 @@ msgstr "אזל · נשאר במקום"
 
 msgid "Sold out · drops to the end"
 msgstr "אזל · יורד לסוף"
+
+msgid "Not saved: a filtered list is only part of the category. Clear the filters and reload the page to arrange."
+msgstr "לא נשמר: רשימה מסוננת היא רק חלק מהקטגוריה. נקו את הסינון וטענו את העמוד מחדש כדי לסדר."

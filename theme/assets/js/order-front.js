@@ -122,6 +122,13 @@
 	function commit() {
 		marks();
 
+		// A filtered list is only part of the category, and its positions
+		// are not the page's: saving it would push the rest out of place.
+		if ( document.documentElement.dataset.ocFlt ) {
+			say( T.filtered || T.failed, 'bad' );
+			return;
+		}
+
 		var ids = Array.prototype.map.call( items(), idOf ).filter( Boolean );
 
 		if ( ! ids.length ) {
