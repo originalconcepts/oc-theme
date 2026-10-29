@@ -102,9 +102,9 @@ final class Order_Printed {
 	public static function mark( \WC_Order $order ): void {
 		$times = (int) $order->get_meta( self::TIMES ) + 1;
 
-		$order->update_meta_data( self::AT, time() );
-		$order->update_meta_data( self::BY, get_current_user_id() );
-		$order->update_meta_data( self::TIMES, $times );
+		$order->update_meta_data( self::AT, (string) time() );
+		$order->update_meta_data( self::BY, (string) get_current_user_id() );
+		$order->update_meta_data( self::TIMES, (string) $times );
 
 		$note = __( 'Printed.', 'oc-theme' );
 
