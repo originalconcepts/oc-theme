@@ -535,23 +535,23 @@ final class Order {
 	 * Order the clauses by a list.
 	 *
 	 * @param array $clauses Clauses.
-	 * @param int   $list    Category, or SHOP.
+	 * @param int   $term_id Category, or SHOP.
 	 * @return array
 	 */
-	private static function order_by( array $clauses, int $list ): array {
+	private static function order_by( array $clauses, int $term_id ): array {
 		global $wpdb;
 
 		$t   = self::table();
 		$was = trim( (string) ( $clauses['orderby'] ?? '' ) );
 
-		$clauses['join'] = (string) ( $clauses['join'] ?? '' ) . $wpdb->prepare( " LEFT JOIN {$t} AS ocord ON ocord.product_id = {$wpdb->posts}.ID AND ocord.term_id = %d", $list ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- own table.
+		$clauses['join'] = (string) ( $clauses['join'] ?? '' ) . $wpdb->prepare( " LEFT JOIN {$t} AS ocord ON ocord.product_id = {$wpdb->posts}.ID AND ocord.term_id = %d", $term_id ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- own table.
 
 		// With "sold-out products drop to the end" on, a sold-out product
 		// drops even from a place it was given, unless it was put there on
 		// purpose while sold out (repin). Before, any saved place won, and
 		// a product that sold out after the category was arranged stayed
 		// where it was.
-		$sink = self::sink_sql( $list, "{$wpdb->posts}.ID", 'oc_stock_lookup.stock_status' );
+		$sink = self::sink_sql( $term_id, "{$wpdb->posts}.ID", 'oc_stock_lookup.stock_status' );
 
 		if ( '' !== $sink && false === strpos( $clauses['join'], 'oc_stock_lookup' ) ) {
 			$clauses['join'] .= " LEFT JOIN {$wpdb->wc_product_meta_lookup} oc_stock_lookup ON {$wpdb->posts}.ID = oc_stock_lookup.product_id ";
