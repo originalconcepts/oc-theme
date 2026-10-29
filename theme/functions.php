@@ -13,7 +13,7 @@ declare( strict_types = 1 );
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'OC_THEME_VERSION', '0.3.399' );
+define( 'OC_THEME_VERSION', '0.3.400' );
 define( 'OC_THEME_DIR', get_template_directory() );
 define( 'OC_THEME_URI', get_template_directory_uri() );
 define( 'OC_THEME_REPO', 'originalconcepts/oc-theme' );
@@ -124,6 +124,7 @@ require_once OC_THEME_DIR . '/inc/class-oc-translatable.php';
 require_once OC_THEME_DIR . '/inc/class-oc-catalog.php';
 require_once OC_THEME_DIR . '/inc/class-oc-category.php';
 require_once OC_THEME_DIR . '/inc/class-oc-order-print.php';
+require_once OC_THEME_DIR . '/inc/class-oc-order-printed.php';
 require_once OC_THEME_DIR . '/inc/class-oc-hardening.php';
 require_once OC_THEME_DIR . '/inc/class-oc-media-clean.php';
 require_once OC_THEME_DIR . '/inc/class-oc-dashboard.php';
@@ -617,6 +618,7 @@ add_action( 'admin_notices', 'oc_dependency_notice' );
 ( new OC\Theme\Flashy() )->register();
 ( new OC\Theme\Category() )->register();
 ( new OC\Theme\Order_Print() )->register();
+( new OC\Theme\Order_Printed() )->register();
 ( new OC\Theme\Media_Clean() )->register();
 ( new OC\Theme\Dashboard() )->register();
 ( new OC\Theme\Webp_Run() )->register();

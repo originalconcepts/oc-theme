@@ -15030,3 +15030,43 @@ msgstr "אזל · יורד לסוף"
 
 msgid "Not saved: a filtered list is only part of the category. Clear the filters and reload the page to arrange."
 msgstr "לא נשמר: רשימה מסוננת היא רק חלק מהקטגוריה. נקו את הסינון וטענו את העמוד מחדש כדי לסדר."
+
+msgid "Printed"
+msgstr "הודפס"
+
+msgid "Printed."
+msgstr "הודפס."
+
+msgid "Not printed"
+msgstr "לא הודפס"
+
+msgid "Not printed yet"
+msgstr "עדיין לא הודפס"
+
+msgid "Printed and not printed"
+msgstr "הודפס ולא הודפס"
+
+msgid "Printed again (%d times in all)."
+msgstr "הודפס שוב (%d פעמים בסך הכול)."
+
+msgid "Marked as not printed."
+msgstr "סומן כלא הודפס."
+
+msgid "Mark as not printed"
+msgstr "סמן כלא הודפס"
+
+msgid "Printed on %1$s by %2$s"
+msgstr "הודפס ב-%1$s על ידי %2$s"
+
+msgid "Printed on %s"
+msgstr "הודפס ב-%s"
+
+msgid "%d time"
+msgid_plural "%d times"
+msgstr[0] "פעם אחת"
+msgstr[1] "%d פעמים"
+
+msgid "%d order marked as not printed."
+msgid_plural "%d orders marked as not printed."
+msgstr[0] "הזמנה אחת סומנה כלא הודפסה."
+msgstr[1] "%d הזמנות סומנו כלא הודפסו."

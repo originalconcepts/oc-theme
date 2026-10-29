@@ -191,6 +191,13 @@ class Order_Print {
 			}
 		}
 
+		// Sent to print: the browser does not say whether its dialog was
+		// cancelled, so opening the sheet is what counts (and it can be
+		// taken off again from the list or the order).
+		foreach ( $orders as $order ) {
+			Order_Printed::mark( $order );
+		}
+
 		$this->document( $orders );
 		exit;
 	}
