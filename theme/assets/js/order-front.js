@@ -81,11 +81,47 @@
 		}
 	}
 
+	/* ---------- sold out: stays, or drops ----------
+	 *
+	 * With "sold-out products drop to the end" on, a sold-out product keeps
+	 * the place it was dragged to only when it stands before a product in
+	 * stock: the server reads the saved order the same way. Every sold-out
+	 * card says which of the two it is, and says it again after each move. */
+
+	function marks() {
+		if ( ! C.sinks ) {
+			return;
+		}
+
+		var list = Array.prototype.slice.call( items() );
+		var lastIn = -1;
+
+		list.forEach( function ( el, i ) {
+			if ( ! el.classList.contains( 'outofstock' ) ) {
+				lastIn = i;
+			}
+		} );
+
+		list.forEach( function ( el, i ) {
+			if ( ! el.classList.contains( 'outofstock' ) ) {
+				el.removeAttribute( 'data-ocsort-oos' );
+				return;
+			}
+
+			var keeps = i < lastIn;
+
+			el.setAttribute( 'data-ocsort-oos', keeps ? 'keeps' : 'drops' );
+			el.setAttribute( 'data-ocsort-oos-say', keeps ? ( T.keeps || '' ) : ( T.drops || '' ) );
+		} );
+	}
+
 	/* ---------- saving ---------- */
 
 	var pending = null;
 
 	function commit() {
+		marks();
+
 		var ids = Array.prototype.map.call( items(), idOf ).filter( Boolean );
 
 		if ( ! ids.length ) {
@@ -305,4 +341,12 @@
 	}
 
 	wrap.classList.add( 'ocsort__list' );
+	marks();
+
+	// The catalogue's next page joins the same list while arranging.
+	if ( 'MutationObserver' in window ) {
+		new MutationObserver( function () {
+			marks();
+		} ).observe( wrap, { childList: true } );
+	}
 }() );

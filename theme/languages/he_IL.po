@@ -15021,3 +15021,9 @@ msgid "%d picture, WebP, the right size and weight."
 msgid_plural "%d pictures, WebP, the right size and weight."
 msgstr[0] "תמונה אחת, WebP, בגודל ובמשקל הנכונים."
 msgstr[1] "%d תמונות, WebP, בגודל ובמשקל הנכונים."
+
+msgid "Sold out · stays here"
+msgstr "אזל · נשאר במקום"
+
+msgid "Sold out · drops to the end"
+msgstr "אזל · יורד לסוף"

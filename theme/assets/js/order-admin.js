@@ -196,8 +196,35 @@
 	}
 
 	function renumber() {
-		Array.prototype.forEach.call( cards(), function ( el, i ) {
+		var list = Array.prototype.slice.call( cards() );
+		var lastIn = -1;
+
+		list.forEach( function ( el, i ) {
 			el.querySelector( '.ocord__n' ).textContent = String( i + 1 );
+
+			if ( ! el.classList.contains( 'is-out' ) ) {
+				lastIn = i;
+			}
+		} );
+
+		// With "sold-out products drop to the end" on, a sold-out product
+		// keeps its place only when it stands before one in stock; the
+		// server reads the saved order the same way.
+		if ( ! C.sinks ) {
+			return;
+		}
+
+		list.forEach( function ( el, i ) {
+			var em = el.querySelector( '.ocord__meta em' );
+
+			if ( ! em ) {
+				return;
+			}
+
+			var keeps = i < lastIn;
+
+			em.textContent = keeps ? ( T.keeps || '' ) : ( T.drops || '' );
+			el.classList.toggle( 'is-keeps', keeps );
 		} );
 	}
 

@@ -3456,6 +3456,8 @@ return array(
 		"Soft shadow" => "צל עדין",
 		"Softened" => "מעוגלות קלות",
 		"Sold out" => "אזל מהמלאי",
+		"Sold out · drops to the end" => "אזל · יורד לסוף",
+		"Sold out · stays here" => "אזל · נשאר במקום",
 		"Sold-out products drop to the end" => "מוצרים שאזלו מהמלאי יורדים לסוף הקטלוג",
 		"Solid oak, woven fabric, and a frame meant to outlast the fashion." => "עץ אלון מלא, בד ארוג, ומסגרת שנבנתה כדי להחזיק מעמד הרבה אחרי האופנה.",
 		"Some items in the cart are out of stock — remove them to check out." => "חלק מהמוצרים בסל אזלו מהמלאי — יש להסיר אותם כדי להמשיך לתשלום.",

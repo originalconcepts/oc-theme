@@ -73,6 +73,26 @@ body.ocsort-on { padding-block-end: 64px; }
 	place-items: center;
 }
 
+/* A sold-out card says whether it keeps this place or drops to the end
+ * (only with "sold-out products drop to the end" on). A thin bar across
+ * the top edge, clear of the badges, the picture pager and the size strip. */
+.ocsort__list li.product[data-ocsort-oos]::after {
+	content: attr(data-ocsort-oos-say);
+	position: absolute;
+	inset-block-start: 0;
+	inset-inline: 0;
+	z-index: 5;
+	padding: 3px 8px;
+	border-radius: 6px 6px 0 0;
+	font: 600 11.5px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+	text-align: center;
+	color: #fff;
+	pointer-events: none;
+}
+
+.ocsort__list li.product[data-ocsort-oos="keeps"]::after { background: #00a32a; }
+.ocsort__list li.product[data-ocsort-oos="drops"]::after { background: #50575e; }
+
 .ocsort__ghost {
 	position: fixed;
 	z-index: 100001;

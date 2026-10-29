@@ -191,3 +191,8 @@ body.ocord-dragging .ocord__card { cursor: grabbing; }
 	.ocord__pick input { inline-size: 100%; }
 	.ocord__grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
 }
+
+/* A sold-out product that keeps its place (placed among the ones in stock
+ * on purpose) says so in green; one that drops to the end stays red. */
+.ocord__card.is-out.is-keeps { background: #f3faf4; }
+.ocord__card.is-keeps .ocord__meta em { color: #00a32a; }

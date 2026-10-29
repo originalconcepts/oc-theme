@@ -156,6 +156,7 @@ final class Order_Admin {
 					'nonce' => wp_create_nonce( 'wp_rest' ),
 					'terms' => $this->terms(),
 					'per'   => self::PER,
+					'sinks' => Order::sinks() ? 1 : 0,
 					'i18n'  => array(
 						'shop'     => __( 'The whole shop', 'oc-theme' ),
 						'saved'    => __( 'Saved', 'oc-theme' ),
@@ -170,6 +171,8 @@ final class Order_Admin {
 						'ownOrder' => __( 'This category has an order of its own.', 'oc-theme' ),
 						'noOrder'  => __( 'This category has no order of its own yet — drag a product and it will have one.', 'oc-theme' ),
 						'nostock'  => __( 'Out of stock', 'oc-theme' ),
+						'keeps'    => __( 'Sold out · stays here', 'oc-theme' ),
+						'drops'    => __( 'Sold out · drops to the end', 'oc-theme' ),
 						/* translators: %d: how many products were chosen */
 						'picked'   => __( '%d chosen. Drag one of them and they all move, in the order you chose them.', 'oc-theme' ),
 						'nocat'    => __( 'No category by that name.', 'oc-theme' ),
@@ -452,6 +455,7 @@ final class Order_Admin {
 					'nonce' => wp_create_nonce( 'wp_rest' ),
 					'term'  => $where['term'],
 					'from'  => $where['from'],
+					'sinks' => Order::sinks() ? 1 : 0,
 					// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- the phone preview loads the same page inside a frame.
 					'frame' => isset( $_GET['oc_frame'] ) ? 1 : 0,
 					'i18n'  => array(
@@ -463,6 +467,8 @@ final class Order_Admin {
 						'failed' => __( 'Could not save. Nothing was changed.', 'oc-theme' ),
 						/* translators: %d: how many were chosen */
 						'picked' => __( '%d chosen', 'oc-theme' ),
+						'keeps'  => __( 'Sold out · stays here', 'oc-theme' ),
+						'drops'  => __( 'Sold out · drops to the end', 'oc-theme' ),
 					),
 				)
 			) . ';',
@@ -496,6 +502,10 @@ final class Order_Admin {
 		$join  .= " LEFT JOIN {$t} o ON o.product_id = p.ID AND o.term_id = %d";
 		$args[] = $term;
 
+		if ( false !== strpos( $order, 'ocsl.' ) ) {
+			$join .= " LEFT JOIN {$wpdb->wc_product_meta_lookup} ocsl ON ocsl.product_id = p.ID";
+		}
+
 		$where = " WHERE p.post_type = 'product' AND p.post_status = 'publish'";
 
 		return array( $join . $where . ( '' === $order ? '' : ' ORDER BY ' . $order ) . ( '' === $limit ? '' : ' LIMIT ' . $limit ), $args );
@@ -512,7 +522,12 @@ final class Order_Admin {
 	private static function ids( int $term, int $offset, int $limit ): array {
 		global $wpdb;
 
-		list( $tail, $args ) = self::sql( $term, 'o.pos IS NULL ASC, o.pos ASC, p.menu_order ASC, p.post_title ASC', '%d OFFSET %d' );
+		// The same order the catalogue shows: with "sold-out products drop to
+		// the end" on, sold-out products stand at the end here too, except
+		// the ones placed among the others on purpose.
+		$sink = Order::sink_sql( $term, 'p.ID', 'ocsl.stock_status' );
+
+		list( $tail, $args ) = self::sql( $term, ( '' === $sink ? '' : $sink . ', ' ) . 'o.pos IS NULL ASC, o.pos ASC, p.menu_order ASC, p.post_title ASC', '%d OFFSET %d' );
 
 		$args[] = $limit;
 		$args[] = $offset;
