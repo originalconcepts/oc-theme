@@ -458,6 +458,11 @@ final class Editor {
 
 		update_option( 'oc_blocks_ver', (int) get_option( 'oc_blocks_ver', 0 ) + 1, false );
 
+		// Only the page's meta changed, which no page cache hears of: a
+		// visitor would go on being handed the page as it was (on this
+		// host, for a week).
+		Render::forget_page( $page_id );
+
 		/**
 		 * The sections of a composed page were saved. A translation plugin
 		 * listens, to translate what is new on the page.
@@ -640,6 +645,9 @@ final class Editor {
 
 		// The tiles are cached markup; a new picture is a new generation.
 		update_option( 'oc_blocks_ver', (int) get_option( 'oc_blocks_ver', 0 ) + 1, false );
+
+		// The front page is where category tiles most often stand.
+		Render::forget_urls( array( home_url( '/' ) ) );
 
 		$now = Render::cat_image_id( $term );
 

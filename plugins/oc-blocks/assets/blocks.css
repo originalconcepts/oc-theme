@@ -233,15 +233,15 @@ html.ocb-anim .ocb--in-stagger.is-in .ocb-words > * {
 .ocb-btn--theme {
 	padding: 10px 28px;
 	background: var(--oc-cta, var(--oc-primary, #2f4e7a));
-	color: #fff;
+	color: var(--oc-cta-tx, #fff);
 	border: 1.5px solid var(--oc-cta, var(--oc-primary, #2f4e7a));
 	border-radius: var(--oc-cta-r, 8px);
 }
 
-.ocb-btn--theme:hover { filter: brightness(1.08); color: #fff; }
+.ocb-btn--theme:hover { filter: brightness(1.08); color: var(--oc-cta-tx, #fff); }
 
 .oc-btn-outline .ocb-btn--theme { background: transparent; color: var(--oc-cta, var(--oc-primary, #2f4e7a)); }
-.oc-btn-outline .ocb-btn--theme:hover { background: var(--oc-cta, var(--oc-primary, #2f4e7a)); color: #fff; filter: none; }
+.oc-btn-outline .ocb-btn--theme:hover { background: var(--oc-cta, var(--oc-primary, #2f4e7a)); color: var(--oc-cta-tx, #fff); filter: none; }
 
 .ocb-btn--minimal {
 	padding: 2px 0;
@@ -770,6 +770,13 @@ html.ocb-anim .ocb--in-stagger.is-in .ocb-words > * {
 
 @media (max-width: 782px) {
 	.ocb-hero__slide { block-size: var(--ocb-hero-hm, 440px); }
+
+	/* A phone is narrow and a banner on it is short: the words come down
+	 * to a size that fits it (or to the size chosen for phones). */
+	.ocb-hero .ocb-hero__words h2 { font-size: var(--ocb-hero-hsm, 22px); line-height: 1.2; letter-spacing: .01em; }
+	.ocb-hero .ocb-hero__words p { margin-block-start: 4px; font-size: max(13px, calc(var(--ocb-hero-hsm, 22px) * .68)); }
+	.ocb-hero .ocb-hero__ctas { margin-block-start: 12px; }
+	.ocb-hero .ocb-hero__cta { padding: 8px 20px; font-size: .92em; }
 }
 
 /* ---------- the banner as a deck of slides ----------
@@ -835,7 +842,20 @@ html.ocb-anim .ocb--in-stagger.is-in .ocb-words > * {
 }
 
 @media (max-width: 782px) {
-	.ocb-hero--m-peek { --ocb-deck-gap: 10px; --ocb-deck-w: 86%; }
+	/* The gap matches the page's margin, so the slide before the one in
+	 * front ends exactly at the screen's edge — no sliver of it shows. */
+	.ocb-hero--m-peek { --ocb-deck-gap: clamp(16px, 3vw, 32px); --ocb-deck-w: 88%; }
+
+	/* Peeking on a phone, the strip runs out to the screen's edges: the
+	 * slide in front keeps the page's margin, the next one is cut by the
+	 * edge of the screen itself — not by the margin. */
+	.ocb--w-content .ocb-hero--m-peek .ocb-hero__strip,
+	.ocb--w-custom .ocb-hero--m-peek .ocb-hero__strip {
+		--ocb-gut: clamp(16px, 3vw, 32px);
+		margin-inline: calc(-1 * var(--ocb-gut));
+		padding-inline: var(--ocb-gut);
+		scroll-padding-inline: var(--ocb-gut);
+	}
 }
 
 /* ---------- words at the bottom, on phones ----------
@@ -1940,7 +1960,7 @@ body.oc-card-h-custom .ocb-look__cimg img {
 	text-decoration: none;
 	transition: background-color .15s ease, color .15s ease;
 }
-.ocb-look__cmedia .ocb-look__cadd:hover { background: var(--oc-cta, var(--oc-primary, #03104c)); color: #fff; }
+.ocb-look__cmedia .ocb-look__cadd:hover { background: var(--oc-cta, var(--oc-primary, #03104c)); color: var(--oc-cta-tx, #fff); }
 .ocb-look__cmedia .ocb-look__cadd--oos { background: #111; color: #fff; }
 .ocb-look__cmedia .ocb-look__cadd--oos:hover { background: #111; color: #fff; }
 /* the catalogue's shape setting: square wears the site's corner */
@@ -2287,7 +2307,7 @@ html.oc-look-lock body { overflow: hidden; }
 		border: 0;
 		border-radius: 50%;
 		background: var(--oc-cta, var(--oc-primary, #03104c));
-		color: #fff;
+		color: var(--oc-cta-tx, #fff);
 		box-shadow: none;
 		text-decoration: none;
 		opacity: 1;
@@ -3211,7 +3231,7 @@ html.oc-look-lock body { overflow: hidden; }
 	flex: 0 0 auto;
 }
 
-.ocb-brs__acc.is-yes i { background: var(--oc-cta, var(--oc-primary, #2f4e7a)); color: #fff; }
+.ocb-brs__acc.is-yes i { background: var(--oc-cta, var(--oc-primary, #2f4e7a)); color: var(--oc-cta-tx, #fff); }
 
 .ocb-brs__others {
 	display: grid;

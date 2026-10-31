@@ -359,7 +359,12 @@
 				return ( er.left + er.width / 2 ) - ( sr.left + sr.width / 2 );
 			}
 
-			return 'rtl' === getComputedStyle( strip ).direction ? er.right - sr.right : er.left - sr.left;
+			// The strip may keep a margin at its start (a phone's peeking
+			// deck runs out to the screen's edges): a slide rests inside it.
+			var cs = getComputedStyle( strip );
+			var pad = parseFloat( cs.scrollPaddingInlineStart ) || 0;
+
+			return 'rtl' === cs.direction ? er.right - ( sr.right - pad ) : er.left - ( sr.left + pad );
 		}
 
 		// The slot resting nearest its place, and how far off it is.

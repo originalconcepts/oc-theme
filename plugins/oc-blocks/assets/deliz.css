@@ -1,3 +1,28 @@
+/* The theme's own button look, handed to every OC Blocks button: the colour
+   from Deliz's "primary colour", its text colour, and the corner radius its
+   "Corner radius" setting gives buttons. The OC theme sets these same names
+   itself; Deliz has its own, so they are bridged here. */
+body.ocb-host-other {
+	--oc-cta: var(--color-primary, #1c1c1c);
+	--oc-cta-tx: var(--main-text-color, #fff);
+	--oc-cta-r: var(--radius, 10px);
+	--oc-primary: var(--color-primary, #1c1c1c);
+}
+
+/* A banner's buttons wear the theme's colour too, unless the banner chose
+   its own (an inline colour, which outranks this). */
+body.ocb-host-other .ocb-hero__cta:not(.ocb-hero__cta--ghost) {
+	background: var(--oc-cta);
+	color: var(--oc-cta-tx);
+}
+
+/* Deliz's buttons darken under the cursor rather than brighten. */
+body.ocb-host-other .ocb-btn--theme:hover,
+body.ocb-host-other .ocb-hero__cta:not(.ocb-hero__cta--ghost):hover {
+	filter: none;
+	opacity: .88;
+}
+
 /* OC Blocks on the Deliz theme: the cart button in the header, the cart as
    a drawer where the site (or the page) closes it, and the corner radius
    the theme's "Corner radius" setting gives its buttons and fields. A wide

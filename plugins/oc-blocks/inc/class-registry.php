@@ -538,7 +538,6 @@ final class Registry {
 						'def'   => 0,
 						'min'   => 0,
 						'max'   => 40,
-						'when'  => array( 'mtext' => array( 'bottom' ) ),
 						'group' => 'design',
 					),
 					'effect'   => array(

@@ -793,7 +793,7 @@ final class Render {
 			. ( '' === $ratio ? '' : '--ocb-hero-ratio:' . $ratio . ';' )
 			. ( '' === $ratiom ? '' : '--ocb-hero-ratio-m:' . $ratiom . ';' )
 			. ( '' === (string) ( $s['fadebg'] ?? '' ) ? '' : '--ocb-hero-fadebg:' . $s['fadebg'] . ';' )
-			. ( $mb && absint( $s['hsm'] ?? 0 ) > 0 ? '--ocb-hero-hsm:' . absint( $s['hsm'] ) . 'px;' : '' )
+			. ( absint( $s['hsm'] ?? 0 ) > 0 ? '--ocb-hero-hsm:' . absint( $s['hsm'] ) . 'px;' : '' )
 			. ( '' === (string) ( $s['txtc'] ?? '' ) ? '' : '--ocb-hero-txt:' . $s['txtc'] . ';' )
 			. ( '' === (string) ( $s['ctac'] ?? '' ) ? '' : '--ocb-hero-ctabg:' . $s['ctac'] . ';' )
 			. ( '' === (string) ( $s['ctat'] ?? '' ) ? '' : '--ocb-hero-ctaink:' . $s['ctat'] . ';' );
@@ -1411,6 +1411,46 @@ final class Render {
 			. '<div class="ocb-cats__row">' . $items . '</div>'
 			. ( 'slider' === $s['layout'] ? self::shelf_arrows() : '' )
 			. '</div>';
+	}
+
+	/**
+	 * Tell the page cache that a composed page changed. Saving its sections
+	 * only touches the page's meta, which no page cache hears of — and a
+	 * host's cache can hold a page for a week. The host's own optimiser is
+	 * asked first (Proginter); elsewhere, the actions the well-known cache
+	 * plugins fire, which most hosts mirror. The same courtesy the OC theme
+	 * pays its catalogue (OC\Theme\Cache).
+	 *
+	 * @param int $page_id The page.
+	 */
+	public static function forget_page( int $page_id ): void {
+		$urls = array( (string) get_permalink( $page_id ) );
+
+		if ( (int) get_option( 'page_on_front' ) === $page_id ) {
+			$urls[] = home_url( '/' );
+		}
+
+		clean_post_cache( $page_id );
+		self::forget_urls( $urls );
+	}
+
+	/**
+	 * Forget these addresses in whatever page cache is listening.
+	 *
+	 * @param string[] $urls Absolute URLs.
+	 */
+	public static function forget_urls( array $urls ): void {
+		$host = array( '\Proginter_Optimizer_MU', 'purge_uri' );
+
+		foreach ( array_values( array_unique( array_filter( $urls ) ) ) as $url ) {
+			if ( is_callable( $host ) ) {
+				$path = (string) wp_parse_url( $url, PHP_URL_PATH );
+				call_user_func( $host, '' === $path ? '/' : $path );
+			} else {
+				do_action( 'w3tc_flush_url', $url );
+				do_action( 'rocket_clean_files', array( $url ) );
+			}
+		}
 	}
 
 	/**
