@@ -1763,9 +1763,6 @@ msgstr "שקופית %d"
 msgid "Video poster (a still shown until the film plays)"
 msgstr "תמונת פתיחה לסרטון (תמונה קבועה שמוצגת עד שהסרטון מתחיל)"
 
-msgid "Dots on phones"
-msgstr "נקודות בטלפון"
-
 msgid "On the picture"
 msgstr "על התמונה"
 
@@ -1963,3 +1960,69 @@ msgstr "עצירת הווידאו"
 
 msgid "Play the video"
 msgstr "הפעלת הווידאו"
+
+msgid "A product from the shop (optional)"
+msgstr "מוצר מהחנות (לא חובה)"
+
+msgid "Its picture, name, short description and link fill the slide — every one of them can still be changed below."
+msgstr "התמונה, השם, התיאור הקצר והקישור של המוצר ממלאים את השקופית, ואפשר לשנות כל אחד מהם בשדות שלמטה."
+
+msgid "Fill covers the whole banner and trims what does not fit; whole shows all of the picture, with room around it where the proportions differ. A height of 0 fits the banner to the picture exactly."
+msgstr "\"ממלאת את הבאנר\" מכסה את כל הבאנר וחותכת את מה שלא נכנס. \"מוצגת בשלמותה\" מראה את כל התמונה, עם שוליים במקום שבו הפרופורציות שונות. גובה 0 מתאים את הבאנר בדיוק לתמונה."
+
+msgid "Fills the banner"
+msgstr "ממלאת את הבאנר"
+
+msgid "The room around the picture"
+msgstr "צבע השוליים סביב התמונה"
+
+msgid "Empty is the page colour."
+msgstr "ריק = צבע העמוד."
+
+msgid "Dots — desktop"
+msgstr "נקודות — מחשב"
+
+msgid "Dots — phones"
+msgstr "נקודות — טלפון"
+
+msgid "Tick the categories, then drag them (or use the arrows) into the order they should stand. A picture chosen here is saved on the category itself."
+msgstr "מסמנים את הקטגוריות, ואז גוררים אותן (או משתמשים בחיצים) לסדר הרצוי. תמונה שבוחרים כאן נשמרת בקטגוריה עצמה."
+
+msgid "Category"
+msgstr "קטגוריה"
+
+msgid "Product"
+msgstr "מוצר"
+
+msgid "Page"
+msgstr "עמוד"
+
+msgid "Find a category…"
+msgstr "חיפוש קטגוריה…"
+
+msgid "Its name on this block (optional)"
+msgstr "שם לתצוגה בבלוק (לא חובה)"
+
+msgid "Add a picture to this category"
+msgstr "הוספת תמונה לקטגוריה"
+
+msgid "Change the category picture"
+msgstr "החלפת תמונת הקטגוריה"
+
+msgid "Move up"
+msgstr "הזזה למעלה"
+
+msgid "Move down"
+msgstr "הזזה למטה"
+
+msgid "Type a category, product or page name — or paste an address"
+msgstr "הקלידו שם של קטגוריה, מוצר או עמוד, או הדביקו כתובת"
+
+msgid "Nothing found."
+msgstr "לא נמצאו תוצאות."
+
+msgid "Type to choose another product…"
+msgstr "הקלידו כדי לבחור מוצר אחר…"
+
+msgid "Buy now"
+msgstr "לקנייה"

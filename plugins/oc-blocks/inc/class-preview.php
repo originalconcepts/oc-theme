@@ -28,6 +28,14 @@ final class Preview {
 	}
 
 	/**
+	 * Is this request the composer's preview frame? Read by the asset
+	 * loader, which runs inside it.
+	 */
+	public static function is_preview(): bool {
+		return isset( $_GET['oc_compose_preview'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- a flag only; maybe_render() checks the nonce.
+	}
+
+	/**
 	 * Draw the draft and stop.
 	 */
 	public function maybe_render(): void {
@@ -122,8 +130,26 @@ final class Preview {
 		if ( $col >= 200 && ! Host::is_oc() ) {
 			echo '<style>@media (min-width:783px){body.ocb-host-other{background:#ececec}body.ocb-host-other .oc-compose{max-inline-size:' . (int) $col . 'px;margin-inline:auto;background:var(--oc-surface,#fff);min-block-size:100vh}}</style>';
 		}
-		echo '</head><body class="' . esc_attr( implode( ' ', array_merge( array( 'oc-compose-preview' ), Host::classes() ) ) ) . '">';
-		echo $body; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
+		// Another theme dresses its cards from its own body classes (Deliz:
+		// square pictures, cards per row) and inside its own content column
+		// (Deliz scopes the card's white ground, shadow and corners to
+		// .center-column): the preview carries both, or the products there
+		// looked nothing like the products on the site.
+		$classes = array_merge( array( 'oc-compose-preview' ), Host::classes() );
+		$open    = '';
+		$close   = '';
+
+		if ( ! Host::is_oc() ) {
+			$classes = array_merge( $classes, get_body_class() );
+		}
+
+		if ( Host::is_deliz() ) {
+			$open  = '<div class="center-column"><div class="center-column-inner"><div class="ed-page-static"><div class="entry-content">';
+			$close = '</div></div></div></div>';
+		}
+
+		echo '</head><body class="' . esc_attr( implode( ' ', array_unique( $classes ) ) ) . '">';
+		echo $open . $body . $close; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
 		wp_print_scripts();
 		// A click on a section tells the composer to open its card — links,
 		// buttons and form fields keep doing their own job.

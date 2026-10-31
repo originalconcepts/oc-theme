@@ -71,6 +71,7 @@ final class Render {
 		// show (e.g. a new card image), so they must turn the cache too.
 		add_action( 'edited_product_cat', array( $this, 'flush' ) );
 		add_action( 'edited_category', array( $this, 'flush' ) );
+		add_action( 'wp_update_nav_menu', array( $this, 'flush' ) );
 
 		// So does a picture changing underneath a page that already names it.
 		// Converting the library to WebP rewrites every address a block had
@@ -511,8 +512,13 @@ final class Render {
 	private static function hero( array $s ): string {
 		$slides = array();
 		$sets   = array();
+		$rows   = self::hero_rows( (array) $s['slides'] );
 
-		foreach ( (array) $s['slides'] as $slide ) {
+		// Shows whole: the picture is never trimmed, so it cannot drift
+		// either — the drift needs a picture taller than its frame.
+		$whole = 'contain' === (string) ( $s['fit'] ?? 'cover' );
+
+		foreach ( $rows as $slide ) {
 			$media  = '';
 			$arrive = '';
 
@@ -628,7 +634,7 @@ final class Render {
 			// over it: a fixed layer, clipped to its own slide. Not in fade
 			// mode — browsers refuse to paint a fixed layer inside a parent
 			// whose opacity is animating, and the slide went blank.
-			$lax   = Registry::snap( (int) $s['parallax'], array( 0, 30, 100 ) );
+			$lax   = $whole ? 0 : Registry::snap( (int) $s['parallax'], array( 0, 30, 100 ) );
 			$fixed = 100 === $lax && 'fade' !== (string) $s['effect'];
 
 			// A linked slide is a link with only a picture in it: it needs
@@ -644,8 +650,9 @@ final class Render {
 				$name = sprintf( __( 'Slide %d', 'oc-blocks' ), $at + 1 );
 			}
 
+			$pop   = '' !== $slide['url'] && '' === $slide['cta'] ? self::popup_product( (string) $slide['url'], (int) ( $slide['__pid'] ?? 0 ) ) : 0;
 			$open  = '' !== $slide['url'] && '' === $slide['cta']
-				? '<a class="ocb-hero__slide' . ( $fixed ? ' ocb-hero__slide--fixedbg' : '' ) . ( 0 === $at ? ' is-on' : '' ) . '" href="' . esc_url( (string) $slide['url'] ) . '" aria-label="' . esc_attr( $name ) . '">'
+				? '<a class="ocb-hero__slide' . ( $fixed ? ' ocb-hero__slide--fixedbg' : '' ) . ( 0 === $at ? ' is-on' : '' ) . ( $pop > 0 ? ' product' : '' ) . '" href="' . esc_url( (string) $slide['url'] ) . '" aria-label="' . esc_attr( $name ) . '"' . ( $pop > 0 ? ' data-product-id="' . $pop . '"' : '' ) . '>'
 				: '<div class="ocb-hero__slide' . ( $fixed ? ' ocb-hero__slide--fixedbg' : '' ) . ( 0 === $at ? ' is-on' : '' ) . '">';
 			$close = '' !== $slide['url'] && '' === $slide['cta'] ? '</a>' : '</div>';
 
@@ -679,7 +686,7 @@ final class Render {
 		$ratio  = '';
 		$ratiom = '';
 
-		foreach ( (array) $s['slides'] as $slide ) {
+		foreach ( $rows as $slide ) {
 			// A video slide has proportions too. The slide keeps a URL, not
 			// an id, so it is looked up in the library; a film hosted
 			// elsewhere leaves this empty and the script measures it once
@@ -718,6 +725,7 @@ final class Render {
 			. ( '' === $ratio ? '' : '--ocb-hero-ratio:' . $ratio . ';' )
 			. ( '' === $ratiom ? '' : '--ocb-hero-ratio-m:' . $ratiom . ';' )
 			. ( '' === (string) ( $s['fadebg'] ?? '' ) ? '' : '--ocb-hero-fadebg:' . $s['fadebg'] . ';' )
+			. ( $whole && '' !== (string) ( $s['fitbg'] ?? '' ) ? '--ocb-hero-fitbg:' . $s['fitbg'] . ';' : '' )
 			. ( '' === (string) ( $s['txtc'] ?? '' ) ? '' : '--ocb-hero-txt:' . $s['txtc'] . ';' )
 			. ( '' === (string) ( $s['ctac'] ?? '' ) ? '' : '--ocb-hero-ctabg:' . $s['ctac'] . ';' )
 			. ( '' === (string) ( $s['ctat'] ?? '' ) ? '' : '--ocb-hero-ctaink:' . $s['ctat'] . ';' );
@@ -726,7 +734,7 @@ final class Render {
 		// absent value means the old behaviour: the video covers the area.
 		$vcontain = isset( $s['vcover'] ) && ! $s['vcover'];
 
-		$html = '<div class="ocb-hero ocb-hero--' . esc_attr( (string) $s['effect'] ) . ' ocb-hero--pos-' . esc_attr( (string) $s['pos'] ) . ' ocb-hero--' . esc_attr( (string) $s['tone'] ) . ( $one ? ' ocb-hero--one' : '' ) . ( $vcontain ? ' ocb-hero--vcontain' : '' ) . ( 0 === absint( $s['h'] ) ? ' ocb-hero--hauto' : '' ) . ( 0 === absint( $s['hm'] ) ? ' ocb-hero--hmauto' : '' ) . ( 'soft' === (string) ( $s['corners'] ?? '' ) ? ' ocb-hero--c-soft' : '' ) . '"'
+		$html = '<div class="ocb-hero ocb-hero--' . esc_attr( (string) $s['effect'] ) . ' ocb-hero--pos-' . esc_attr( (string) $s['pos'] ) . ' ocb-hero--' . esc_attr( (string) $s['tone'] ) . ( $one ? ' ocb-hero--one' : '' ) . ( $vcontain ? ' ocb-hero--vcontain' : '' ) . ( 0 === absint( $s['h'] ) ? ' ocb-hero--hauto' : '' ) . ( 0 === absint( $s['hm'] ) ? ' ocb-hero--hmauto' : '' ) . ( 'soft' === (string) ( $s['corners'] ?? '' ) ? ' ocb-hero--c-soft' : '' ) . ( $whole ? ' ocb-hero--fit-contain' : '' ) . '"'
 			. ' style="' . esc_attr( $style ) . '"'
 			. ( $one || empty( $s['auto'] ) ? '' : ' data-ocb-auto="' . absint( $s['auto'] ) . '"' ) . '>'
 			. '<div class="ocb-hero__strip">' . implode( '', $slides ) . '</div>'
@@ -739,7 +747,7 @@ final class Render {
 
 		if ( ! $one && ! empty( $s['dots'] ) ) {
 			/* translators: %d: slide number. */
-			$html .= '<div class="ocb-dots' . ( 'below' === (string) ( $s['dotsm'] ?? 'on' ) ? ' ocb-dots--below-m' : '' ) . '" data-ocb-dots data-ocb-dot-label="' . esc_attr( __( 'Slide %d', 'oc-blocks' ) ) . '"></div>';
+			$html .= '<div class="ocb-dots' . ( 'below' === (string) ( $s['dotsd'] ?? 'on' ) ? ' ocb-dots--below-d' : '' ) . ( 'below' === (string) ( $s['dotsm'] ?? 'on' ) ? ' ocb-dots--below-m' : '' ) . '" data-ocb-dots data-ocb-dot-label="' . esc_attr( __( 'Slide %d', 'oc-blocks' ) ) . '"></div>';
 		}
 
 		$html .= '</div>';
@@ -750,7 +758,7 @@ final class Render {
 		// picture stood at its plain size for a moment, then grew a fifth.
 		// A line run right here, while the page is still being parsed,
 		// draws the first frame the way the script will keep it.
-		$drift = Registry::snap( (int) $s['parallax'], array( 0, 30, 100 ) );
+		$drift = $whole ? 0 : Registry::snap( (int) $s['parallax'], array( 0, 30, 100 ) );
 
 		if ( $drift > 0 && ( 100 !== $drift || 'fade' === (string) $s['effect'] ) ) {
 			$html .= '<script>(function(h){if(!h||matchMedia("(prefers-reduced-motion: reduce)").matches){return;}h.querySelectorAll("[data-ocb-parallax]").forEach(function(m){if("fixed"===getComputedStyle(m).position){return;}var b=m.parentElement.getBoundingClientRect();if(b.height<4){return;}var f=(parseInt(m.dataset.ocbParallax,10)||30)/100,H=Math.round(b.height+f*(innerHeight-b.height)),y=(-f*b.top).toFixed(1),mv=m.firstElementChild||m;mv.__ocbH=H;mv.style.blockSize=H+"px";mv.__ocbY=y;mv.style.transform="translate3d(0,"+y+"px,0)";});})(document.currentScript.previousElementSibling);</script>';
@@ -770,12 +778,91 @@ final class Render {
 	private static function hero_ctas( array $slide ): string {
 		$one = '' === $slide['cta'] || '' === $slide['url']
 			? ''
-			: '<a class="ocb-hero__cta" href="' . esc_url( (string) $slide['url'] ) . '">' . esc_html( (string) $slide['cta'] ) . '</a>';
+			: self::hero_cta( (string) $slide['url'], (string) $slide['cta'], 'ocb-hero__cta', (int) ( $slide['__pid'] ?? 0 ) );
 		$two = '' === trim( (string) ( $slide['cta2'] ?? '' ) ) || '' === (string) ( $slide['url2'] ?? '' )
 			? ''
-			: '<a class="ocb-hero__cta ocb-hero__cta--ghost" href="' . esc_url( (string) $slide['url2'] ) . '">' . esc_html( (string) $slide['cta2'] ) . '</a>';
+			: self::hero_cta( (string) $slide['url2'], (string) $slide['cta2'], 'ocb-hero__cta ocb-hero__cta--ghost', 0 );
 
 		return '' === $one . $two ? '' : '<div class="ocb-hero__ctas">' . $one . $two . '</div>';
+	}
+
+	/**
+	 * One call on a slide. A call that leads to a product, on a theme
+	 * that opens products in a window of its own (Deliz), wears the
+	 * marks that theme looks for, so the click opens that window over
+	 * the page instead of leaving it.
+	 *
+	 * @param string $url     Where it leads.
+	 * @param string $words   What it says.
+	 * @param string $classes Its classes.
+	 * @param int    $hint    The slide's own product, if it has one.
+	 */
+	private static function hero_cta( string $url, string $words, string $classes, int $hint ): string {
+		$pop = self::popup_product( $url, $hint );
+
+		return '<a class="' . $classes . ( $pop > 0 ? ' product' : '' ) . '" href="' . esc_url( $url ) . '"' . ( $pop > 0 ? ' data-product-id="' . $pop . '"' : '' ) . '>' . esc_html( $words ) . '</a>';
+	}
+
+	/**
+	 * The slides, with a chosen product standing in for whatever the slide
+	 * left empty: its picture when there is none, its address when the
+	 * slide leads nowhere. The words are the composer's to fill (it copies
+	 * them in when the product is picked), so a heading cleared on purpose
+	 * stays cleared.
+	 *
+	 * @param array<int,array<string,mixed>> $slides Slides as stored.
+	 * @return array<int,array<string,mixed>>
+	 */
+	private static function hero_rows( array $slides ): array {
+		foreach ( $slides as $i => $slide ) {
+			$pid = absint( $slide['product'] ?? 0 );
+
+			if ( $pid < 1 || 'product' !== get_post_type( $pid ) || 'publish' !== get_post_status( $pid ) ) {
+				continue;
+			}
+
+			if ( absint( $slide['img'] ?? 0 ) < 1 && '' === (string) ( $slide['vid'] ?? '' ) ) {
+				$slides[ $i ]['img'] = (int) get_post_thumbnail_id( $pid );
+			}
+
+			if ( '' === (string) ( $slide['url'] ?? '' ) ) {
+				$slides[ $i ]['url'] = (string) get_permalink( $pid );
+			}
+
+			$slides[ $i ]['__pid'] = $pid;
+		}
+
+		return $slides;
+	}
+
+	/**
+	 * The product a link opens in the theme's product window — Deliz only;
+	 * everywhere else a product link is simply a link. The slide's own
+	 * product counts while the link still leads to it; any other address
+	 * is read for a /product/{slug}/ (Deliz's /cat/…/product/… included).
+	 *
+	 * @param string $url  The address.
+	 * @param int    $hint The slide's product.
+	 */
+	private static function popup_product( string $url, int $hint ): int {
+		if ( '' === $url || ! Host::is_deliz() ) {
+			return 0;
+		}
+
+		if ( $hint > 0 && untrailingslashit( $url ) === untrailingslashit( (string) get_permalink( $hint ) ) ) {
+			return $hint;
+		}
+
+		$path = (string) wp_parse_url( $url, PHP_URL_PATH );
+		$host = (string) wp_parse_url( $url, PHP_URL_HOST );
+
+		if ( ( '' !== $host && (string) wp_parse_url( home_url(), PHP_URL_HOST ) !== $host ) || ! preg_match( '#/product/([^/]+)#', $path, $m ) ) {
+			return 0;
+		}
+
+		$post = get_page_by_path( sanitize_title( rawurldecode( $m[1] ) ), OBJECT, 'product' );
+
+		return $post instanceof \WP_Post && 'publish' === $post->post_status ? (int) $post->ID : 0;
 	}
 
 	/**
@@ -1175,11 +1262,7 @@ final class Render {
 			$label = trim( (string) ( $names[ $id ] ?? '' ) );
 			$label = '' !== $label ? $label : $term->name;
 
-			// Prefer the theme's shared card image (with its hero/thumbnail
-			// fallback chain); fall back to the WooCommerce category image.
-			$thumb = class_exists( '\OC\Theme\Category' )
-				? \OC\Theme\Category::card_image_id( $id )
-				: absint( get_term_meta( $id, 'thumbnail_id', true ) );
+			$thumb = self::cat_image_id( $id );
 			$img   = $thumb > 0 ? wp_get_attachment_image(
 				$thumb,
 				'large',
@@ -1228,6 +1311,38 @@ final class Render {
 			. '<div class="ocb-cats__row">' . $items . '</div>'
 			. ( 'slider' === $s['layout'] ? self::shelf_arrows() : '' )
 			. '</div>';
+	}
+
+	/**
+	 * The picture a category wears on a tile. The OC theme has a shared card
+	 * image with its own fallbacks (card, then the banner, then the
+	 * WooCommerce image); elsewhere it is the WooCommerce category image —
+	 * the one Deliz calls the category's main picture — and on Deliz, failing
+	 * that, the picture its categories menu shows beside the category.
+	 *
+	 * @param int $term_id Category.
+	 */
+	public static function cat_image_id( int $term_id ): int {
+		if ( class_exists( '\OC\Theme\Category' ) ) {
+			return \OC\Theme\Category::card_image_id( $term_id );
+		}
+
+		$id = absint( get_term_meta( $term_id, 'thumbnail_id', true ) );
+
+		if ( $id < 1 && Host::is_deliz() ) {
+			$id = Host::deliz_cat_icon( $term_id );
+		}
+
+		return $id;
+	}
+
+	/**
+	 * The term meta a picture chosen in the composer is saved under: the
+	 * OC theme's card image (which its category screen edits), or the
+	 * WooCommerce category image everywhere else (Deliz's main picture).
+	 */
+	public static function cat_image_key(): string {
+		return class_exists( '\OC\Theme\Category' ) ? '_oc_card_img' : 'thumbnail_id';
 	}
 
 	/**
@@ -2845,7 +2960,7 @@ final class Render {
 
 		// The theme's catalogue-layout slider blocks also need these assets;
 		// the theme answers this filter when one is on the current listing.
-		$need = (bool) apply_filters( 'oc_blocks_need_assets', $need );
+		$need = (bool) apply_filters( 'oc_blocks_need_assets', $need ) || Preview::is_preview();
 
 		if ( ! $need ) {
 			return;
@@ -2853,6 +2968,14 @@ final class Render {
 
 		if ( $page > 0 ) {
 			$chunks = self::chunks_for( $page );
+		}
+
+		// The composer's preview draws whatever the editor holds, and a block
+		// dragged in a moment ago is not among the saved page's sections:
+		// without its piece of the stylesheet an icon row drew its icons the
+		// size of the frame. The preview asks for every piece.
+		if ( Preview::is_preview() ) {
+			$chunks = self::ALL_CHUNKS;
 		}
 
 		// The stylesheet comes in pieces (scripts/minify.py): a first half and a

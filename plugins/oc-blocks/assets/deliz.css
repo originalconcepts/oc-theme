@@ -148,3 +148,21 @@
 	.site-header .header-rebuy { flex: none; }
 	.site-header .header-rebuy a { white-space: nowrap; }
 }
+
+/* Full width on a Deliz page: the content column ends where the page's own
+   side padding begins (15px; 10px on a phone, none on a phone's home page),
+   so a full-width section stopped short of the screen's left edge — the
+   categories stand on the right, and with the cart a drawer nothing stands
+   on the left. The section takes that padding back on the side that is
+   free. With the cart open at the side (a wide screen without
+   .ocb-cart-closed) the column already ends at the cart. The products
+   view that replaces the page's sections keeps its padding: only the
+   composed sections move. */
+@media (min-width: 600px) {
+	body.ocb-contained.ocb-cart-closed:not(.oc-compose-preview) .oc-compose > .ocb--w-full { margin-left: -15px; } /* guard-ok: Deliz keeps its cart drawer on the physical left in both languages */
+}
+
+/* A phone has no categories column: full width is edge to edge. */
+@media (max-width: 599px) {
+	body.ocb-contained:not(.home):not(.oc-compose-preview) .oc-compose > .ocb--w-full { margin-inline: -10px; }
+}

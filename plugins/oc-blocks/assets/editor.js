@@ -111,6 +111,7 @@
 			case 'brands':
 				return [];
 			case 'category':
+			case 'product':
 				return 0;
 			case 'labels':
 				return {};
@@ -520,6 +521,10 @@
 				return slidesField( section, key, field );
 			case 'spots':
 				return spotsField( section, key, field );
+			case 'url':
+				return urlField( section, key, field );
+			case 'product':
+				return productField( section, key, field );
 			default:
 				return textField( section, key, field );
 		}
@@ -531,6 +536,20 @@
 		return el( 'label', { 'class': 'ocbe-f' + ( wide ? ' ocbe-f--wide' : '' ) + ( field.half ? ' ocbe-f--half' : '' ) }, rows.concat( kids, [
 			field.hint ? el( 'small', { 'class': 'ocbe-f__hint', text: field.hint } ) : null
 		] ) );
+	}
+
+	// A field holding several controls of its own (a list with buttons, a
+	// search with results) is a block, not a <label>: a click on its plain
+	// text would otherwise be passed by the label to its first button.
+	function blockWrap( field, kids ) {
+		var box = labelWrap( field, kids, true );
+		var div = el( 'div', { 'class': box.className } );
+
+		while ( box.firstChild ) {
+			div.appendChild( box.firstChild );
+		}
+
+		return div;
 	}
 
 	function textField( section, key, field ) {
@@ -846,64 +865,449 @@
 		return labelWrap( field, [ list, count ], true );
 	}
 
+	/* Categories: the chosen ones stand first, as a list that is the order
+	   they show in — dragged (or nudged with the arrows) into place, each
+	   with its picture, which can be changed right here and is saved on the
+	   category itself. Under it, the whole tree to tick from, with a filter
+	   for a shop with many. */
 	function catsField( section, key, field ) {
+		var chosen = el( 'div', { 'class': 'ocbe-order' } );
 		var list = el( 'div', { 'class': 'ocbe-checks' } );
-		var picked = ( section[ key ] || [] ).map( Number );
+		var filter = el( 'input', { type: 'search', 'class': 'ocbe-checks__filter', placeholder: T.filterCats } );
+		var byId = {};
+		var boxes = {};
+		var dragAt = null;
 
-		treeWalk( 0, 0, function ( cat, depth ) {
-			// A ticked category may wear its own display name on the block.
-			var rename = el( 'input', {
-				type: 'text',
-				'class': 'ocbe-checks__rename',
-				placeholder: cat.label,
-				value: ( section.names && section.names[ cat.id ] ) || '',
-				hidden: picked.indexOf( cat.id ) > -1 ? null : 'hidden',
-				onclick: function ( e ) { e.preventDefault(); },
-				oninput: function () {
-					section.names = section.names || {};
+		state.cats.forEach( function ( cat ) {
+			byId[ cat.id ] = cat;
+		} );
 
-					if ( rename.value.trim() ) {
-						section.names[ cat.id ] = rename.value;
-					} else {
-						delete section.names[ cat.id ];
-					}
+		function ids() {
+			return ( section[ key ] || [] ).map( Number ).filter( function ( id ) {
+				return !! byId[ id ];
+			} );
+		}
 
-					touch();
-				}
+		function put( next ) {
+			section[ key ] = next;
+			touch();
+			paintChosen();
+		}
+
+		function changePic( cat ) {
+			var frame = wp.media( { title: T.media, multiple: false, library: { type: 'image' } } );
+
+			frame.on( 'open', function () {
+				frame.content.mode( 'browse' );
 			} );
 
+			frame.on( 'select', function () {
+				var pick = frame.state().get( 'selection' ).first().toJSON();
+				var body = new FormData();
+
+				body.append( 'action', 'oc_blocks_cat_image' );
+				body.append( 'nonce', D.nonce );
+				body.append( 'term', cat.id );
+				body.append( 'pic', pick.id );
+
+				cat.img = ( pick.sizes && pick.sizes.thumbnail ? pick.sizes.thumbnail.url : pick.url );
+				paintChosen();
+
+				fetch( D.ajax, { method: 'POST', credentials: 'same-origin', body: body } )
+					.then( function ( r ) { return r.json(); } )
+					.then( function ( r ) {
+						if ( r && r.success ) {
+							cat.img = r.data.img;
+							// The preview draws the tile from the category,
+							// which now carries the new picture.
+							schedulePreview();
+						} else {
+							setStatus( T.failed, 'bad' );
+						}
+						paintChosen();
+					} );
+			} );
+			frame.open();
+		}
+
+		function paintChosen() {
+			var now = ids();
+
+			chosen.innerHTML = '';
+			chosen.hidden = ! now.length;
+
+			now.forEach( function ( id, at ) {
+				var cat = byId[ id ];
+				var rename = el( 'input', {
+					type: 'text',
+					'class': 'ocbe-checks__rename',
+					placeholder: cat.label,
+					'aria-label': T.rename,
+					value: ( section.names && section.names[ id ] ) || '',
+					oninput: function () {
+						section.names = section.names || {};
+
+						if ( rename.value.trim() ) {
+							section.names[ id ] = rename.value;
+						} else {
+							delete section.names[ id ];
+						}
+
+						touch();
+					}
+				} );
+
+				var pic = el( 'button', {
+					type: 'button',
+					'class': 'ocbe-order__pic' + ( cat.img ? ' has-pic' : '' ),
+					title: cat.img ? T.catPicChange : T.catPicAdd,
+					'aria-label': cat.img ? T.catPicChange : T.catPicAdd,
+					onclick: function () {
+						changePic( cat );
+					}
+				} );
+
+				if ( cat.img ) {
+					pic.style.backgroundImage = 'url(' + cat.img + ')';
+				} else {
+					pic.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg>';
+				}
+
+				var row = el( 'div', {
+					'class': 'ocbe-order__row',
+					draggable: 'true',
+					ondragstart: function ( e ) {
+						dragAt = at;
+						row.classList.add( 'is-drag' );
+						e.dataTransfer.effectAllowed = 'move';
+						e.dataTransfer.setData( 'text/plain', String( id ) );
+					},
+					ondragend: function () {
+						dragAt = null;
+						row.classList.remove( 'is-drag' );
+					},
+					ondragover: function ( e ) {
+						if ( null === dragAt ) {
+							return;
+						}
+						e.preventDefault();
+						row.classList.add( 'is-over' );
+					},
+					ondragleave: function () {
+						row.classList.remove( 'is-over' );
+					},
+					ondrop: function ( e ) {
+						e.preventDefault();
+						row.classList.remove( 'is-over' );
+
+						if ( null === dragAt || dragAt === at ) {
+							return;
+						}
+
+						var next = ids();
+
+						next.splice( at, 0, next.splice( dragAt, 1 )[ 0 ] );
+						dragAt = null;
+						put( next );
+					}
+				}, [
+					el( 'span', { 'class': 'ocbe-order__grip', 'aria-hidden': 'true', html: '&#8942;&#8942;' } ),
+					el( 'span', { 'class': 'ocbe-order__n', text: String( at + 1 ) } ),
+					pic,
+					el( 'span', { 'class': 'ocbe-order__name', text: cat.label } ),
+					rename,
+					el( 'span', { 'class': 'ocbe-order__tools' }, [
+						el( 'button', {
+							type: 'button', html: '&uarr;', 'aria-label': T.up, disabled: at ? null : 'disabled',
+							onclick: function () {
+								var next = ids();
+
+								next.splice( at - 1, 0, next.splice( at, 1 )[ 0 ] );
+								put( next );
+							}
+						} ),
+						el( 'button', {
+							type: 'button', html: '&darr;', 'aria-label': T.down, disabled: at < now.length - 1 ? null : 'disabled',
+							onclick: function () {
+								var next = ids();
+
+								next.splice( at + 1, 0, next.splice( at, 1 )[ 0 ] );
+								put( next );
+							}
+						} ),
+						el( 'button', {
+							type: 'button', html: '&times;', 'aria-label': T.remove,
+							onclick: function () {
+								var next = ids();
+
+								next.splice( at, 1 );
+
+								if ( section.names ) {
+									delete section.names[ id ];
+								}
+
+								if ( boxes[ id ] ) {
+									boxes[ id ].checked = false;
+								}
+
+								put( next );
+							}
+						} )
+					] )
+				] );
+
+				chosen.appendChild( row );
+			} );
+		}
+
+		treeWalk( 0, 0, function ( cat, depth ) {
 			var input = el( 'input', {
 				type: 'checkbox',
-				checked: picked.indexOf( cat.id ) > -1 ? 'checked' : null,
+				checked: ids().indexOf( cat.id ) > -1 ? 'checked' : null,
 				onchange: function () {
-					var now = ( section[ key ] || [] ).map( Number );
-					var at = now.indexOf( cat.id );
+					var next = ids();
+					var at = next.indexOf( cat.id );
 
 					if ( at > -1 ) {
-						now.splice( at, 1 );
-						rename.hidden = true;
+						next.splice( at, 1 );
 
 						if ( section.names ) {
 							delete section.names[ cat.id ];
 						}
 					} else {
-						now.push( cat.id );
-						rename.hidden = false;
+						next.push( cat.id );
 					}
 
-					section[ key ] = now;
-					touch();
+					put( next );
 				}
 			} );
 
-			list.appendChild( el( 'label', { 'class': 'ocbe-checks__row', style: 'padding-inline-start:' + ( depth * 14 ) + 'px' }, [
+			boxes[ cat.id ] = input;
+
+			list.appendChild( el( 'label', { 'class': 'ocbe-checks__row', 'data-name': cat.label.toLowerCase(), style: 'padding-inline-start:' + ( depth * 14 ) + 'px' }, [
 				input,
-				el( 'span', { text: cat.label } ),
-				rename
+				cat.img ? el( 'img', { 'class': 'ocbe-checks__pic', src: cat.img, alt: '' } ) : el( 'span', { 'class': 'ocbe-checks__pic' } ),
+				el( 'span', { text: cat.label } )
 			] ) );
 		} );
 
-		return labelWrap( field, [ list ], true );
+		filter.addEventListener( 'input', function () {
+			var q = filter.value.trim().toLowerCase();
+
+			list.querySelectorAll( '.ocbe-checks__row' ).forEach( function ( row ) {
+				row.hidden = !! q && row.getAttribute( 'data-name' ).indexOf( q ) < 0;
+			} );
+		} );
+
+		paintChosen();
+
+		return blockWrap( field, [ chosen, state.cats.length > 8 ? filter : null, list ] );
+	}
+
+	/* An address: typed or pasted as it is, or found by name — a category,
+	   a product or a page — so nobody has to copy one from the site. */
+	function urlField( section, key, field ) {
+		var input = el( 'input', {
+			type: 'text',
+			dir: 'auto',
+			value: section[ key ] || '',
+			placeholder: T.linkFind,
+			autocomplete: 'off'
+		} );
+		var drop = el( 'div', { 'class': 'ocbe-picks__drop', hidden: 'hidden' } );
+		var said = el( 'small', { 'class': 'ocbe-f__hint ocbe-link__said', hidden: 'hidden' } );
+		var timer = null;
+		var asked = 0;
+
+		function isAddress( v ) {
+			return /^(https?:|\/|#|mailto:|tel:|www\.)/i.test( v );
+		}
+
+		input.addEventListener( 'input', function () {
+			var q = input.value.trim();
+
+			said.hidden = true;
+			clearTimeout( timer );
+
+			// An address is kept as typed; words are a search.
+			if ( '' === q || isAddress( q ) ) {
+				drop.hidden = true;
+				section[ key ] = q;
+				touch();
+				return;
+			}
+
+			if ( q.length < 2 ) {
+				drop.hidden = true;
+				return;
+			}
+
+			timer = setTimeout( function () {
+				var body = new FormData();
+				var mine = ++asked;
+
+				body.append( 'action', 'oc_blocks_search' );
+				body.append( 'nonce', D.nonce );
+				body.append( 'kind', 'link' );
+				body.append( 'q', q );
+
+				fetch( D.ajax, { method: 'POST', credentials: 'same-origin', body: body } )
+					.then( function ( r ) { return r.json(); } )
+					.then( function ( r ) {
+						if ( mine !== asked ) {
+							return;
+						}
+
+						drop.innerHTML = '';
+
+						if ( ! r || ! r.success || ! r.data.hits.length ) {
+							drop.appendChild( el( 'p', { 'class': 'ocbe-picks__none', text: T.noHits } ) );
+							drop.hidden = false;
+							return;
+						}
+
+						r.data.hits.forEach( function ( hit ) {
+							drop.appendChild( el( 'button', {
+								type: 'button',
+								'class': 'ocbe-picks__hit',
+								onclick: function () {
+									section[ key ] = hit.url;
+									input.value = hit.url;
+									drop.hidden = true;
+									said.textContent = hit.kind + ': ' + hit.label;
+									said.hidden = false;
+									touch();
+								}
+							}, [
+								hit.img ? el( 'img', { src: hit.img, alt: '' } ) : el( 'span', { 'class': 'ocbe-picks__noimg' } ),
+								el( 'span', { text: hit.label } ),
+								el( 'em', { 'class': 'ocbe-picks__kind', text: hit.kind } )
+							] ) );
+						} );
+
+						drop.hidden = false;
+					} );
+			}, 250 );
+		} );
+
+		// Leaving the field with words in it that were never turned into an
+		// address puts back what it held.
+		input.addEventListener( 'blur', function () {
+			setTimeout( function () {
+				var q = input.value.trim();
+
+				if ( '' !== q && ! isAddress( q ) && drop.hidden ) {
+					input.value = section[ key ] || '';
+				}
+			}, 200 );
+		} );
+
+		return blockWrap( field, [ el( 'div', { 'class': 'ocbe-picks' }, [ input, drop, said ] ) ] );
+	}
+
+	/* One product, picked by name. On a slide it fills in what the slide
+	   shows — the picture, the name, the short description, the button and
+	   where it leads — all of it still the editor's to change after. */
+	function productField( section, key, field ) {
+		var id = Number( section[ key ] || 0 );
+		var wrap = el( 'div', { 'class': 'ocbe-picks' } );
+
+		if ( id ) {
+			wrap.appendChild( el( 'div', { 'class': 'ocbe-chips' }, [
+				el( 'span', { 'class': 'ocbe-chip' }, [
+					el( 'span', { text: state.names[ id ] || ( '#' + id ) } ),
+					el( 'button', {
+						type: 'button',
+						html: '&times;',
+						'aria-label': T.remove,
+						onclick: function () {
+							section[ key ] = 0;
+							touch();
+							paintSettings();
+						}
+					} )
+				] )
+			] ) );
+		}
+
+		var box = el( 'input', { type: 'text', placeholder: id ? T.productSwap : T.search, autocomplete: 'off' } );
+		var drop = el( 'div', { 'class': 'ocbe-picks__drop', hidden: 'hidden' } );
+		var timer = null;
+
+		box.addEventListener( 'input', function () {
+			clearTimeout( timer );
+			timer = setTimeout( function () {
+				var q = box.value.trim();
+
+				if ( q.length < 2 ) {
+					drop.hidden = true;
+					return;
+				}
+
+				var body = new FormData();
+
+				body.append( 'action', 'oc_blocks_search' );
+				body.append( 'nonce', D.nonce );
+				body.append( 'kind', 'product' );
+				body.append( 'q', q );
+
+				fetch( D.ajax, { method: 'POST', credentials: 'same-origin', body: body } )
+					.then( function ( r ) { return r.json(); } )
+					.then( function ( r ) {
+						drop.innerHTML = '';
+
+						if ( ! r || ! r.success || ! r.data.hits.length ) {
+							drop.appendChild( el( 'p', { 'class': 'ocbe-picks__none', text: T.noHits } ) );
+							drop.hidden = false;
+							return;
+						}
+
+						r.data.hits.forEach( function ( hit ) {
+							drop.appendChild( el( 'button', {
+								type: 'button',
+								'class': 'ocbe-picks__hit',
+								onclick: function () {
+									section[ key ] = hit.id;
+									state.names[ hit.id ] = hit.label;
+
+									// Fill the slide from the product. A slide
+									// row has these keys; anything else that
+									// uses the field just keeps the id.
+									if ( 'heading' in section ) {
+										section.heading = hit.label;
+									}
+									if ( 'text' in section ) {
+										section.text = hit.text || '';
+									}
+									if ( 'url' in section ) {
+										section.url = hit.url;
+									}
+									if ( 'cta' in section && ! section.cta ) {
+										section.cta = T.buy;
+									}
+									if ( 'img' in section && hit.pic ) {
+										section.img = hit.pic;
+										state.thumbs[ hit.pic ] = hit.picUrl;
+									}
+
+									touch();
+									paintSettings();
+								}
+							}, [
+								hit.img ? el( 'img', { src: hit.img, alt: '' } ) : el( 'span', { 'class': 'ocbe-picks__noimg' } ),
+								el( 'span', { text: hit.label } )
+							] ) );
+						} );
+
+						drop.hidden = false;
+					} );
+			}, 250 );
+		} );
+
+		wrap.appendChild( box );
+		wrap.appendChild( drop );
+
+		return blockWrap( field, [ wrap ] );
 	}
 
 	function picksField( section, key, field ) {
@@ -994,7 +1398,7 @@
 		wrap.appendChild( box );
 		wrap.appendChild( drop );
 
-		return labelWrap( field, [ wrap ], true );
+		return blockWrap( field, [ wrap ] );
 	}
 
 	// What a repeater row calls itself in its folded bar: its heading, or

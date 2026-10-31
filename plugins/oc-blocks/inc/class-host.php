@@ -440,6 +440,46 @@ final class Host {
 	}
 
 	/**
+	 * The picture Deliz's categories menu shows beside a category (an ACF
+	 * image on the menu item, "menu_item_icon"), for a category that has no
+	 * picture of its own. A shop builds that menu first and seldom fills in
+	 * the category's own image, so without this a categories section on a
+	 * Deliz site stood as a row of grey circles beside a menu full of
+	 * pictures. Read once per request.
+	 *
+	 * @param int $term_id Category.
+	 */
+	public static function deliz_cat_icon( int $term_id ): int {
+		static $map = null;
+
+		if ( null === $map ) {
+			$map  = array();
+			$menu = wp_get_nav_menu_object( (string) apply_filters( 'ed_default_menu_name', 'תפריט קטגוריות' ) );
+			$rows = $menu ? wp_get_nav_menu_items( $menu->term_id ) : array();
+
+			foreach ( is_array( $rows ) ? $rows : array() as $row ) {
+				$item = (int) $row->ID;
+				$term = absint( get_post_meta( $item, '_menu_item_object_id', true ) );
+
+				if ( 'product_cat' !== (string) get_post_meta( $item, '_menu_item_object', true ) || isset( $map[ $term ] ) ) {
+					continue;
+				}
+
+				// ACF keeps an image as its attachment id; an address is
+				// what an older field setup left behind.
+				$raw = get_post_meta( $item, 'menu_item_icon', true );
+				$id  = is_numeric( $raw ) ? absint( $raw ) : ( is_string( $raw ) && '' !== $raw ? attachment_url_to_postid( $raw ) : 0 );
+
+				if ( $id > 0 ) {
+					$map[ $term ] = $id;
+				}
+			}
+		}
+
+		return (int) ( $map[ $term_id ] ?? 0 );
+	}
+
+	/**
 	 * Deliz draws its product cards (white, a soft shadow, centred words)
 	 * only inside its own products box. Its brands page reaches the same
 	 * look with the box's classes and data-ed-no-menu-products, which

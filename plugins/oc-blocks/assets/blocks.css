@@ -68,10 +68,24 @@
 .ocb-host-other .oc-compose .ocb-shelf--slider .ocb-hostcards .ed-mp__products ul.products {
 	row-gap: 0;
 	column-gap: var(--ocb-shelf-gap);
-	/* room for the card's shadow inside the scrolling strip */
-	padding-block: 14px 6px;
-	margin-block: -14px -6px;
+	/* Room for the card's shadow inside the scrolling strip — Deliz's is
+	   soft and wide (48px blur), and a strip clips whatever paints past
+	   its edges: the shadow stood cut straight along the top, the bottom
+	   and both ends. The room is taken back with negative margins, so the
+	   cards keep their place and only the shadow gains space. At the ends
+	   the strip's own edge is the section's when the section runs full
+	   width, so there the room is kept inside: the cards stand 24px in. */
+	padding: 28px 24px 34px;
+	margin-block: -28px -34px;
+	margin-inline: -24px;
+	scroll-padding-inline: 24px;
 }
+
+.ocb-host-other .oc-compose .ocb--w-full .ocb-shelf--slider .ocb-hostcards .ed-mp__products ul.products { margin-inline: 0; }
+
+/* The card's own bottom margin was the only room under it; the strip's
+   padding gives that now, and the shelf keeps its height. */
+.ocb-host-other .oc-compose .ocb-shelf--slider .ocb-hostcards .ed-mp__products ul.products li { margin-block-end: 0; }
 
 /* A composed page on another theme: the theme's own page title is not drawn
    (still read by screen readers and search engines). */
@@ -310,8 +324,19 @@ html.ocb-anim .ocb--in-stagger.is-in .ocb-words > * {
 	inset: -8px;
 }
 
-/* On a phone the dots may stand under the banner instead of on it: a
- * row of their own, in the page's ink rather than white. */
+/* The dots may stand under the banner instead of on it — set apart for
+ * the desktop and the phone: a row of their own, in the page's ink
+ * rather than white. */
+@media (min-width: 783px) {
+	.ocb-dots--below-d {
+		position: static;
+		inset: auto;
+		padding-block: 14px 2px;
+	}
+	.ocb-dots--below-d .ocb-dots__dot { background: color-mix(in srgb, var(--oc-ink, #111) 28%, transparent); }
+	.ocb-dots--below-d .ocb-dots__dot.is-on { background: var(--oc-ink, #111); }
+}
+
 @media (max-width: 782px) {
 	.ocb-dots--below-m {
 		position: static;
@@ -428,6 +453,13 @@ html.ocb-anim .ocb--in-stagger.is-in .ocb-words > * {
 }
 
 .ocb-hero__media picture img { block-size: 100%; }
+
+/* Shows whole: nothing of the picture is trimmed; where its shape and the
+ * banner's differ, the page colour (or the chosen one) fills the room. */
+.ocb-hero--fit-contain .ocb-hero__slide { background: var(--ocb-hero-fitbg, var(--ocb-bg, transparent)); }
+
+.ocb-hero--fit-contain .ocb-hero__media img,
+.ocb-hero--fit-contain .ocb-hero__media video { object-fit: contain; }
 
 /* Toggle off: the whole video frame shows, letterboxed on black where the
  * proportions differ from the strip's. */

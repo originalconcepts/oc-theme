@@ -366,6 +366,11 @@ final class Registry {
 						'type'  => 'slides',
 						'label' => __( 'Slides', 'oc-blocks' ),
 						'sub'   => array(
+							'product' => array(
+								'type'  => 'product',
+								'label' => __( 'A product from the shop (optional)', 'oc-blocks' ),
+								'hint'  => __( 'Its picture, name, short description and link fill the slide — every one of them can still be changed below.', 'oc-blocks' ),
+							),
 							'img'     => array(
 								'type'  => 'image',
 								'label' => __( 'Picture — desktop', 'oc-blocks' ),
@@ -454,6 +459,24 @@ final class Registry {
 						'max'   => 900,
 						'group' => 'design',
 					),
+					'fit'      => array(
+						'type'    => 'seg',
+						'label'   => __( 'The picture', 'oc-blocks' ),
+						'hint'    => __( 'Fill covers the whole banner and trims what does not fit; whole shows all of the picture, with room around it where the proportions differ. A height of 0 fits the banner to the picture exactly.', 'oc-blocks' ),
+						'choices' => array(
+							'cover'   => __( 'Fills the banner', 'oc-blocks' ),
+							'contain' => __( 'Shows whole', 'oc-blocks' ),
+						),
+						'def'     => 'cover',
+						'group'   => 'design',
+					),
+					'fitbg'    => array(
+						'type'  => 'color',
+						'label' => __( 'The room around the picture', 'oc-blocks' ),
+						'hint'  => __( 'Empty is the page colour.', 'oc-blocks' ),
+						'when'  => array( 'fit' => array( 'contain' ) ),
+						'group' => 'design',
+					),
 					'effect'   => array(
 						'type'    => 'seg',
 						'label'   => __( 'Slide change', 'oc-blocks' ),
@@ -491,9 +514,9 @@ final class Registry {
 						'def'   => 1,
 						'group' => 'design',
 					),
-					'dotsm'    => array(
+					'dotsd'    => array(
 						'type'    => 'seg',
-						'label'   => __( 'Dots on phones', 'oc-blocks' ),
+						'label'   => __( 'Dots — desktop', 'oc-blocks' ),
 						'choices' => array(
 							'on'    => __( 'On the picture', 'oc-blocks' ),
 							'below' => __( 'Under it', 'oc-blocks' ),
@@ -501,6 +524,19 @@ final class Registry {
 						'def'     => 'on',
 						'when'    => array( 'dots' => array( '1', 1, true ) ),
 						'group'   => 'design',
+						'half'    => true,
+					),
+					'dotsm'    => array(
+						'type'    => 'seg',
+						'label'   => __( 'Dots — phones', 'oc-blocks' ),
+						'choices' => array(
+							'on'    => __( 'On the picture', 'oc-blocks' ),
+							'below' => __( 'Under it', 'oc-blocks' ),
+						),
+						'def'     => 'on',
+						'when'    => array( 'dots' => array( '1', 1, true ) ),
+						'group'   => 'design',
+						'half'    => true,
 					),
 					'parallax' => array(
 						'type'    => 'seg',
@@ -717,7 +753,7 @@ final class Registry {
 					'cats'    => array(
 						'type'  => 'cats',
 						'label' => __( 'Which categories', 'oc-blocks' ),
-						'hint'  => __( 'Tick in the order they should stand.', 'oc-blocks' ),
+						'hint'  => __( 'Tick the categories, then drag them (or use the arrows) into the order they should stand. A picture chosen here is saved on the category itself.', 'oc-blocks' ),
 					),
 					'shape'   => array(
 						'type'    => 'seg',
@@ -2187,6 +2223,7 @@ final class Registry {
 				return null === $color ? '' : $color;
 
 			case 'category':
+			case 'product':
 				return absint( is_scalar( $value ) ? $value : 0 );
 
 			case 'products':

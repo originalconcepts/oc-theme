@@ -39,6 +39,7 @@ final class Editor {
 		add_action( 'wp_ajax_oc_blocks_save', array( $this, 'ajax_save' ) );
 		add_action( 'wp_ajax_oc_blocks_draft', array( $this, 'ajax_draft' ) );
 		add_action( 'wp_ajax_oc_blocks_search', array( $this, 'ajax_search' ) );
+		add_action( 'wp_ajax_oc_blocks_cat_image', array( $this, 'ajax_cat_image' ) );
 	}
 
 	/**
@@ -211,6 +212,16 @@ final class Editor {
 					'focus'        => __( 'Hide the side panels', 'oc-blocks' ),
 					'spothint'     => __( 'You can also click the picture to place a spot exactly where you want it.', 'oc-blocks' ),
 					'video'        => __( 'Choose a video', 'oc-blocks' ),
+					'filterCats'   => __( 'Find a category…', 'oc-blocks' ),
+					'rename'       => __( 'Its name on this block (optional)', 'oc-blocks' ),
+					'catPicAdd'    => __( 'Add a picture to this category', 'oc-blocks' ),
+					'catPicChange' => __( 'Change the category picture', 'oc-blocks' ),
+					'up'           => __( 'Move up', 'oc-blocks' ),
+					'down'         => __( 'Move down', 'oc-blocks' ),
+					'linkFind'     => __( 'Type a category, product or page name — or paste an address', 'oc-blocks' ),
+					'noHits'       => __( 'Nothing found.', 'oc-blocks' ),
+					'productSwap'  => __( 'Type to choose another product…', 'oc-blocks' ),
+					'buy'          => __( 'Buy now', 'oc-blocks' ),
 				),
 			)
 		);
@@ -328,6 +339,15 @@ final class Editor {
 				}
 			}
 
+			// A slide built on a product names it in its picker.
+			foreach ( (array) ( $section['slides'] ?? array() ) as $slide ) {
+				$pid = absint( is_array( $slide ) ? ( $slide['product'] ?? 0 ) : 0 );
+
+				if ( $pid > 0 && '' !== get_the_title( $pid ) ) {
+					$out[ $pid ] = get_the_title( $pid );
+				}
+			}
+
 			foreach ( array( 'picks' ) as $key ) {
 				foreach ( (array) ( $section[ $key ] ?? array() ) as $id ) {
 					$title = get_the_title( absint( $id ) );
@@ -359,10 +379,14 @@ final class Editor {
 
 		if ( is_array( $cats ) ) {
 			foreach ( $cats as $cat ) {
+				// The picture the tile shows today, so the chosen list can
+				// show it and offer to change it.
+				$pic    = Render::cat_image_id( (int) $cat->term_id );
 				$tree[] = array(
 					'id'     => (int) $cat->term_id,
 					'label'  => $cat->name,
 					'parent' => (int) $cat->parent,
+					'img'    => $pic > 0 ? (string) wp_get_attachment_image_url( $pic, 'thumbnail' ) : '',
 				);
 			}
 		}
@@ -479,6 +503,10 @@ final class Editor {
 		$ptype = isset( $_POST['ptype'] ) ? sanitize_key( $_POST['ptype'] ) : 'post';
 		$ptype = isset( Registry::post_types()[ $ptype ] ) ? $ptype : 'post';
 
+		if ( 'link' === $kind ) {
+			wp_send_json_success( array( 'hits' => self::link_hits( $term ) ) );
+		}
+
 		$query = new \WP_Query(
 			array(
 				'post_type'      => 'posts' === $kind ? $ptype : 'product',
@@ -492,13 +520,128 @@ final class Editor {
 		$hits = array();
 
 		foreach ( $query->posts as $post ) {
-			$hits[] = array(
+			$hit = array(
 				'id'    => (int) $post->ID,
 				'label' => get_the_title( $post ),
 				'img'   => (string) get_the_post_thumbnail_url( $post, 'thumbnail' ),
 			);
+
+			// What a slide built on this product copies in: its picture,
+			// its short description and its address.
+			if ( 'product' === $kind ) {
+				$pic = (int) get_post_thumbnail_id( $post );
+
+				$hit['pic']    = $pic;
+				$hit['picUrl'] = $pic > 0 ? (string) wp_get_attachment_image_url( $pic, 'large' ) : '';
+				$hit['text']   = trim( wp_strip_all_tags( (string) $post->post_excerpt ) );
+				$hit['url']    = (string) get_permalink( $post );
+			}
+
+			$hits[] = $hit;
 		}
 
 		wp_send_json_success( array( 'hits' => $hits ) );
+	}
+
+	/**
+	 * Places a link may lead to, for the address fields: categories first
+	 * (a banner most often opens an aisle), then products, then pages.
+	 *
+	 * @param string $term What was typed.
+	 * @return array<int,array{label:string,url:string,kind:string,img:string}>
+	 */
+	private static function link_hits( string $term ): array {
+		$hits = array();
+
+		if ( '' === $term ) {
+			return $hits;
+		}
+
+		$cats = get_terms(
+			array(
+				'taxonomy'   => 'product_cat',
+				'hide_empty' => false,
+				'name__like' => $term,
+				'number'     => 6,
+			)
+		);
+
+		foreach ( is_array( $cats ) ? $cats : array() as $cat ) {
+			$url = get_term_link( $cat );
+			$pic = Render::cat_image_id( (int) $cat->term_id );
+
+			if ( ! is_wp_error( $url ) ) {
+				$hits[] = array(
+					'label' => $cat->name,
+					'url'   => (string) $url,
+					'kind'  => __( 'Category', 'oc-blocks' ),
+					'img'   => $pic > 0 ? (string) wp_get_attachment_image_url( $pic, 'thumbnail' ) : '',
+				);
+			}
+		}
+
+		foreach ( array(
+			'product' => __( 'Product', 'oc-blocks' ),
+			'page'    => __( 'Page', 'oc-blocks' ),
+		) as $type => $label ) {
+			if ( ! post_type_exists( $type ) ) {
+				continue;
+			}
+
+			$query = new \WP_Query(
+				array(
+					'post_type'      => $type,
+					'post_status'    => 'publish',
+					's'              => $term,
+					'posts_per_page' => 'product' === $type ? 8 : 4,
+					'no_found_rows'  => true,
+				)
+			);
+
+			foreach ( $query->posts as $post ) {
+				$hits[] = array(
+					'label' => get_the_title( $post ),
+					'url'   => (string) get_permalink( $post ),
+					'kind'  => $label,
+					'img'   => (string) get_the_post_thumbnail_url( $post, 'thumbnail' ),
+				);
+			}
+		}
+
+		return $hits;
+	}
+
+	/**
+	 * A picture chosen for a category in the composer is the category's own:
+	 * saved on the category (the OC theme's card image, or the WooCommerce
+	 * category image — Deliz's main picture), so its edit screen shows it too
+	 * and every place that shows the category shows the same picture.
+	 */
+	public function ajax_cat_image(): void {
+		check_ajax_referer( 'oc_blocks', 'nonce' );
+
+		$term = isset( $_POST['term'] ) ? absint( $_POST['term'] ) : 0;
+		$pic  = isset( $_POST['pic'] ) ? absint( $_POST['pic'] ) : 0;
+
+		if ( ! $term || ! get_term( $term, 'product_cat' ) instanceof \WP_Term || ! current_user_can( 'edit_term', $term ) ) {
+			wp_send_json_error( array(), 403 );
+		}
+
+		if ( $pic > 0 && ! wp_attachment_is_image( $pic ) ) {
+			wp_send_json_error( array(), 400 );
+		}
+
+		if ( $pic > 0 ) {
+			update_term_meta( $term, Render::cat_image_key(), $pic );
+		} else {
+			delete_term_meta( $term, Render::cat_image_key() );
+		}
+
+		// The tiles are cached markup; a new picture is a new generation.
+		update_option( 'oc_blocks_ver', (int) get_option( 'oc_blocks_ver', 0 ) + 1, false );
+
+		$now = Render::cat_image_id( $term );
+
+		wp_send_json_success( array( 'img' => $now > 0 ? (string) wp_get_attachment_image_url( $now, 'thumbnail' ) : '' ) );
 	}
 }
