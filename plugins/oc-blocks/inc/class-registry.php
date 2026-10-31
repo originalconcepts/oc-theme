@@ -389,7 +389,7 @@ final class Registry {
 							),
 							'fit'     => array(
 								'type'    => 'seg',
-								'label'   => __( 'How the picture sits', 'oc-blocks' ),
+								'label'   => __( 'How the picture sits — desktop', 'oc-blocks' ),
 								'hint'    => __( 'Fills: covers the whole banner, trimming what does not fit. Edge to edge: always the full width, only the top or bottom give way. Whole: nothing trimmed, with room around it.', 'oc-blocks' ),
 								'choices' => array(
 									'cover'   => __( 'Fills', 'oc-blocks' ),
@@ -404,11 +404,27 @@ final class Registry {
 								'def'   => 50,
 								'when'  => array( 'fit' => array( 'cover', 'width' ) ),
 							),
+							'fitm'    => array(
+								'type'    => 'seg',
+								'label'   => __( 'How the picture sits — phones', 'oc-blocks' ),
+								'choices' => array(
+									'same'    => __( 'As on the desktop', 'oc-blocks' ),
+									'cover'   => __( 'Fills', 'oc-blocks' ),
+									'width'   => __( 'Edge to edge', 'oc-blocks' ),
+									'contain' => __( 'Whole', 'oc-blocks' ),
+								),
+								'def'     => 'same',
+							),
+							'fym'     => array(
+								'type'  => 'range',
+								'label' => __( 'Which part shows on phones — top (0) to bottom (100)', 'oc-blocks' ),
+								'def'   => 50,
+								'when'  => array( 'fitm' => array( 'cover', 'width' ) ),
+							),
 							'fbg'     => array(
 								'type'  => 'color',
 								'label' => __( 'The room around the picture', 'oc-blocks' ),
-								'hint'  => __( 'Where the picture does not reach. Empty is the page colour.', 'oc-blocks' ),
-								'when'  => array( 'fit' => array( 'width', 'contain' ) ),
+								'hint'  => __( 'Where the picture does not reach (edge to edge, or whole). Empty is the page colour.', 'oc-blocks' ),
 							),
 							'heading' => array(
 								'type'  => 'text',
@@ -507,13 +523,23 @@ final class Registry {
 					'mtext'    => array(
 						'type'    => 'seg',
 						'label'   => __( 'Words on phones', 'oc-blocks' ),
-						'hint'    => __( 'At the bottom: the words sit low and to the side, small and calm, over a dark fade that keeps them readable.', 'oc-blocks' ),
+						'hint'    => __( 'At the bottom: the words sit low and to the side, small, over a dark fade that keeps them readable. The buttons step aside — a tap anywhere on the slide leads where the first button would.', 'oc-blocks' ),
 						'choices' => array(
 							'over'   => __( 'As on the desktop', 'oc-blocks' ),
 							'bottom' => __( 'At the bottom, on a dark fade', 'oc-blocks' ),
 						),
 						'def'     => 'over',
 						'group'   => 'design',
+					),
+					'hsm'      => array(
+						'type'  => 'number',
+						'label' => __( 'Heading size on phones (px, 0 — automatic)', 'oc-blocks' ),
+						'hint'  => __( 'The line under it follows, a little smaller.', 'oc-blocks' ),
+						'def'   => 0,
+						'min'   => 0,
+						'max'   => 40,
+						'when'  => array( 'mtext' => array( 'bottom' ) ),
+						'group' => 'design',
 					),
 					'effect'   => array(
 						'type'    => 'seg',

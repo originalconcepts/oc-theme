@@ -19,6 +19,7 @@ return array(
 	'is-afloat',
 	'is-asking',
 	'is-bad',
+	'is-built',
 	'is-busy',
 	'is-capped',
 	'is-closing',

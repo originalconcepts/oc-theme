@@ -529,6 +529,8 @@ final class Render {
 		$laym = 'peek' === (string) ( $s['laym'] ?? 'one' ) ? 'peek' : 'one';
 		$deck = count( $rows ) > 1 && ( 'one' !== $layd || 'one' !== $laym );
 
+		$mb = 'bottom' === (string) ( $s['mtext'] ?? 'over' );
+
 		// Neighbours in view leave no room for a crossfade.
 		if ( $deck ) {
 			$s['effect'] = 'slide';
@@ -548,8 +550,16 @@ final class Render {
 			$fit = '' !== $fit ? $fit : ( 'contain' === (string) ( $s['fit'] ?? '' ) ? 'contain' : 'cover' );
 			$fit = in_array( $fit, array( 'cover', 'width', 'contain' ), true ) ? $fit : 'cover';
 			$fy  = isset( $slide['fy'] ) && '' !== (string) $slide['fy'] ? max( 0, min( 100, (int) $slide['fy'] ) ) : 50;
+
+			// Phones may sit the picture otherwise — a wide desktop picture
+			// in a narrow, taller frame. "As on the desktop" follows it.
+			$fitm = (string) ( $slide['fitm'] ?? 'same' );
+			$same = ! in_array( $fitm, array( 'cover', 'width', 'contain' ), true );
+			$fitm = $same ? $fit : $fitm;
+			$fym  = $same ? $fy : ( isset( $slide['fym'] ) && '' !== (string) $slide['fym'] ? max( 0, min( 100, (int) $slide['fym'] ) ) : 50 );
+
 			$fbg = (string) ( $slide['fbg'] ?? '' );
-			$fbg = '' !== $fbg ? $fbg : ( 'cover' !== $fit ? (string) ( $s['fitbg'] ?? '' ) : '' );
+			$fbg = '' !== $fbg ? $fbg : ( 'cover' !== $fit || 'cover' !== $fitm ? (string) ( $s['fitbg'] ?? '' ) : '' );
 
 			if ( '' !== $slide['vid'] ) {
 				// A poster is the banner's first paint: without one the
@@ -670,7 +680,7 @@ final class Render {
 			// whose opacity is animating, and the slide went blank.
 			// Only a picture that fills the banner can drift: the drift
 			// needs a picture larger than its frame, and enlarges it.
-			$lax   = 'cover' !== $fit || $deck ? 0 : Registry::snap( (int) $s['parallax'], array( 0, 30, 100 ) );
+			$lax   = 'cover' !== $fit || 'cover' !== $fitm || $deck ? 0 : Registry::snap( (int) $s['parallax'], array( 0, 30, 100 ) );
 			$fixed = 100 === $lax && 'fade' !== (string) $s['effect'];
 
 			// A linked slide is a link with only a picture in it: it needs
@@ -691,17 +701,31 @@ final class Render {
 			$whole_link = '' !== $slide['url'] && '' === $slide['cta'] && ( ! $deck || '' === trim( (string) ( $slide['cta2'] ?? '' ) ) );
 
 			$pop   = $whole_link ? self::popup_product( (string) $slide['url'], (int) ( $slide['__pid'] ?? 0 ) ) : 0;
-			$cls   = 'ocb-hero__slide' . ( 'cover' !== $fit ? ' ocb-hero__slide--' . $fit : '' ) . ( $fixed ? ' ocb-hero__slide--fixedbg' : '' ) . ( 0 === $at ? ' is-on' : '' );
-			$look  = ( 50 !== $fy && 'contain' !== $fit ? '--ocb-fy:' . $fy . '%;' : '' ) . ( '' !== $fbg && 'cover' !== $fit ? '--ocb-hero-fitbg:' . $fbg . ';' : '' );
+			$cls   = 'ocb-hero__slide' . ( 'cover' !== $fit ? ' ocb-hero__slide--d-' . $fit : '' ) . ( 'cover' !== $fitm ? ' ocb-hero__slide--m-' . $fitm : '' ) . ( $fixed ? ' ocb-hero__slide--fixedbg' : '' ) . ( 0 === $at ? ' is-on' : '' );
+			$look  = ( 50 !== $fy ? '--ocb-fy:' . $fy . '%;' : '' ) . ( 50 !== $fym ? '--ocb-fym:' . $fym . '%;' : '' ) . ( '' !== $fbg && ( 'cover' !== $fit || 'cover' !== $fitm ) ? '--ocb-hero-fitbg:' . $fbg . ';' : '' );
 			$look  = '' === $look ? '' : ' style="' . esc_attr( $look ) . '"';
 			$open  = $whole_link
 				? '<a class="' . $cls . ( $pop > 0 ? ' product' : '' ) . '"' . $look . ' href="' . esc_url( (string) $slide['url'] ) . '" aria-label="' . esc_attr( $name ) . '"' . ( $pop > 0 ? ' data-product-id="' . $pop . '"' : '' ) . '>'
 				: '<div class="' . $cls . '"' . $look . '>';
 			$close = $whole_link ? '</a>' : '</div>';
 
+			// Words at the bottom on a phone go without buttons: the whole
+			// slide answers a tap and leads where the first button would.
+			$tap = '';
+
+			if ( $mb && ! $whole_link ) {
+				$tap_url = '' !== $slide['cta'] && '' !== $slide['url'] ? (string) $slide['url'] : ( '' !== trim( (string) ( $slide['cta2'] ?? '' ) ) ? (string) ( $slide['url2'] ?? '' ) : '' );
+
+				if ( '' !== $tap_url ) {
+					$tap_pop = self::popup_product( $tap_url, $tap_url === (string) $slide['url'] ? (int) ( $slide['__pid'] ?? 0 ) : 0 );
+					$tap     = '<a class="ocb-hero__tap' . ( $tap_pop > 0 ? ' product' : '' ) . '" href="' . esc_url( $tap_url ) . '" aria-hidden="true" tabindex="-1"' . ( $tap_pop > 0 ? ' data-product-id="' . $tap_pop . '"' : '' ) . '></a>';
+				}
+			}
+
 			$slides[] = $open
 				. '<div class="ocb-hero__media' . ( $fixed ? ' ocb-hero__media--fixed' : '' ) . ( '' !== $arrive ? ' ocb-hero__media--first' : '' ) . '"' . ( 0 === $lax || $fixed ? '' : ' data-ocb-parallax="' . $lax . '"' ) . '>' . $media . '</div>'
 				. ( $s['shade'] > 0 ? '<div class="ocb-hero__shade" style="opacity:' . ( absint( $s['shade'] ) / 100 ) . '"></div>' : '' )
+				. $tap
 				. ( $deck ? $words : '' )
 				. $close;
 		}
@@ -769,6 +793,7 @@ final class Render {
 			. ( '' === $ratio ? '' : '--ocb-hero-ratio:' . $ratio . ';' )
 			. ( '' === $ratiom ? '' : '--ocb-hero-ratio-m:' . $ratiom . ';' )
 			. ( '' === (string) ( $s['fadebg'] ?? '' ) ? '' : '--ocb-hero-fadebg:' . $s['fadebg'] . ';' )
+			. ( $mb && absint( $s['hsm'] ?? 0 ) > 0 ? '--ocb-hero-hsm:' . absint( $s['hsm'] ) . 'px;' : '' )
 			. ( '' === (string) ( $s['txtc'] ?? '' ) ? '' : '--ocb-hero-txt:' . $s['txtc'] . ';' )
 			. ( '' === (string) ( $s['ctac'] ?? '' ) ? '' : '--ocb-hero-ctabg:' . $s['ctac'] . ';' )
 			. ( '' === (string) ( $s['ctat'] ?? '' ) ? '' : '--ocb-hero-ctaink:' . $s['ctat'] . ';' );
@@ -779,7 +804,7 @@ final class Render {
 
 		$html = '<div class="ocb-hero ocb-hero--' . esc_attr( (string) $s['effect'] ) . ' ocb-hero--pos-' . esc_attr( (string) $s['pos'] ) . ' ocb-hero--' . esc_attr( (string) $s['tone'] ) . ( $one ? ' ocb-hero--one' : '' ) . ( $vcontain ? ' ocb-hero--vcontain' : '' ) . ( 0 === absint( $s['h'] ) ? ' ocb-hero--hauto' : '' ) . ( 0 === absint( $s['hm'] ) ? ' ocb-hero--hmauto' : '' ) . ( 'soft' === (string) ( $s['corners'] ?? '' ) ? ' ocb-hero--c-soft' : '' )
 			. ( $deck ? ' ocb-hero--deck ocb-hero--d-' . $layd . ' ocb-hero--m-' . $laym : '' )
-			. ( 'bottom' === (string) ( $s['mtext'] ?? 'over' ) ? ' ocb-hero--mb' : '' ) . '"'
+			. ( $mb ? ' ocb-hero--mb' : '' ) . '"'
 			. ' style="' . esc_attr( $style ) . '"'
 			. ( $one || empty( $s['auto'] ) ? '' : ' data-ocb-auto="' . absint( $s['auto'] ) . '"' ) . '>'
 			. '<div class="ocb-hero__strip">' . implode( '', $slides ) . '</div>'

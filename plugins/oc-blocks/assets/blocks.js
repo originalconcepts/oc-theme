@@ -247,6 +247,10 @@
 		var deck = hero.classList.contains( 'ocb-hero--deck' );
 		var sets = hero.querySelectorAll( '[data-ocb-set]' );
 		var real = slides.length;
+		var own = [].slice.call( slides );
+		// Quiet copies at each end: one is enough when a slide fills the
+		// banner; a deck shows its neighbours, so it keeps two.
+		var lead = deck ? 2 : 1;
 		var at = 0;
 		var timer = null;
 
@@ -306,7 +310,7 @@
 			// rest); the quiet copies light with the slide they copy.
 			if ( deck && ! fade ) {
 				[].forEach.call( strip.children, function ( sl, i ) {
-					sl.classList.toggle( 'is-on', ( i - 1 + real ) % real === at );
+					sl.classList.toggle( 'is-on', mod( i - lead ) === at );
 				} );
 			}
 		}
@@ -373,6 +377,11 @@
 			return best;
 		}
 
+		// A slot's real slide, whichever copy it is.
+		function mod( n ) {
+			return ( ( n % real ) + real ) % real;
+		}
+
 		function park( slot, smooth ) {
 			var sl = strip.children[ slot ];
 
@@ -392,7 +401,7 @@
 				// On a wrap the strip heads for the quiet copy in the SAME
 				// direction of travel; the settle watcher jumps to the real
 				// slide only once it has truly landed there.
-				park( wrapForward ? real + 1 : ( wrapBack ? 0 : at + 1 ), true );
+				park( wrapForward ? real + lead : ( wrapBack ? lead - 1 : at + lead ), true );
 			}
 
 			paintDots();
@@ -477,30 +486,42 @@
 			// A finger's own scroll keeps the dots honest.
 			var tick = false;
 
-			// A quiet copy of the last slide stands before the first, and a
-			// copy of the first stands after the last: a swipe off either
-			// end continues in its own direction, and the strip snaps to
-			// the real slide unseen. Every real slide therefore lives one
-			// slot further in.
-			var head = slides[ real - 1 ].cloneNode( true );
-			var tail = slides[ 0 ].cloneNode( true );
+			// Quiet copies of the last slides stand before the first, and of
+			// the first slides after the last: a swipe off either end
+			// continues in its own direction, and the strip snaps to the
+			// real slide unseen. Every real slide therefore lives `lead`
+			// slots further in.
+			var heads = [];
+			var tails = [];
 
-			head.setAttribute( 'aria-hidden', 'true' );
-			tail.setAttribute( 'aria-hidden', 'true' );
-			// A hidden copy must not be a tab stop either.
-			[ head, tail ].forEach( function ( ghost ) {
+			for ( var k = 0; k < lead; k++ ) {
+				heads.push( own[ mod( k - lead ) ].cloneNode( true ) );
+				tails.push( own[ mod( k ) ].cloneNode( true ) );
+			}
+
+			heads.concat( tails ).forEach( function ( ghost ) {
+				ghost.setAttribute( 'aria-hidden', 'true' );
+				// A hidden copy must not be a tab stop either.
 				[].concat( ghost.matches( 'a,button' ) ? [ ghost ] : [], [].slice.call( ghost.querySelectorAll( 'a,button,[tabindex]' ) ) ).forEach( function ( el ) {
 					el.setAttribute( 'tabindex', '-1' );
 				} );
 			} );
-			strip.insertBefore( head, strip.firstChild );
-			strip.appendChild( tail );
+			heads.forEach( function ( ghost ) {
+				strip.insertBefore( ghost, own[ 0 ] );
+			} );
+			tails.forEach( function ( ghost ) {
+				strip.appendChild( ghost );
+			} );
 
 			// The opening position is set by hand — browsers disagree about
-			// where a right-to-left strip wakes up.
+			// where a right-to-left strip wakes up. (The slide shown may
+			// already be another one: the composer asks for the one being
+			// edited.)
 			( function start() {
 				if ( strip.clientWidth > 0 ) {
-					park( 1, false );
+					park( at + lead, false );
+					hero.classList.add( 'is-built' );
+					paintSets();
 				} else {
 					setTimeout( start, 200 );
 				}
@@ -513,8 +534,7 @@
 				tick = true;
 					requestAnimationFrame( function () {
 						tick = false;
-						var idx = nearest().i;
-						var shown = ( idx - 1 + real ) % real;
+						var shown = mod( nearest().i - lead );
 
 						if ( shown !== at ) {
 							at = shown;
@@ -533,8 +553,8 @@
 
 			function snapHome() {
 				var near = nearest();
-				var onTail = near.i >= real + 1;
-				var onHead = 0 === near.i;
+				var onTail = near.i >= real + lead;
+				var onHead = near.i < lead;
 
 				if ( ! onTail && ! onHead ) {
 					return;
@@ -550,8 +570,8 @@
 					return;
 				}
 
-				park( onTail ? 1 : real, false );
-				at = onTail ? 0 : real - 1;
+				park( near.i + ( onTail ? -real : real ), false );
+				at = mod( near.i - lead );
 				paintDots();
 				paintSets();
 				clearTimeout( settle );
@@ -604,6 +624,24 @@
 			clearInterval( timer );
 		} );
 		hero.addEventListener( 'mouseleave', arm );
+
+		// The composer shows the slide being edited, and holds it there.
+		hero.__ocbShow = function ( n ) {
+			held = true;
+			arm();
+			at = mod( n );
+
+			if ( fade ) {
+				[].forEach.call( slides, function ( sl, i ) {
+					sl.classList.toggle( 'is-on', i === at );
+				} );
+			} else if ( hero.classList.contains( 'is-built' ) ) {
+				park( at + lead, false );
+			}
+
+			paintDots();
+			paintSets();
+		};
 	} );
 
 	/* ---------- shelf sliders: products, categories, brands ---------- */
@@ -717,6 +755,15 @@
 	// Expose so a shelf injected after load (recently-viewed) can be wired up.
 	window.OCB = window.OCB || {};
 	window.OCB.initShelf = initShelf;
+
+	// The composer's preview: show slide `at` of the banner in section `n`.
+	window.OCB.heroShow = function ( n, at ) {
+		var hero = document.querySelector( '[data-ocb-n="' + n + '"] .ocb-hero' );
+
+		if ( hero && hero.__ocbShow ) {
+			hero.__ocbShow( at );
+		}
+	};
 
 	/* ---------- a row that runs by itself (categories) ----------
 	 * The row stays a real scrolling row — a finger can still take it — and

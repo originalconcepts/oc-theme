@@ -216,6 +216,24 @@
 
 	// Both frames share this: put the scroll back, then — if this frame was
 	// the one loading a new draft — swap the roles.
+	// The slide being edited stays in view in the preview, held still —
+	// a redrawn banner would otherwise start over at its first slide.
+	function showSlide( frame ) {
+		var on = state.slideOn;
+
+		if ( ! on ) {
+			return;
+		}
+
+		try {
+			var w = ( frame || els.frame ).contentWindow;
+
+			if ( w.OCB && w.OCB.heroShow ) {
+				w.OCB.heroShow( state.sections.indexOf( on.section ), on.at );
+			}
+		} catch ( e ) {}
+	}
+
 	function frameLoaded( frame ) {
 		var keep = Number( frame.dataset.keep || 0 );
 
@@ -230,6 +248,7 @@
 		}
 
 		frame.dataset.pending = '';
+		showSlide( frame );
 
 		var old = els.frame;
 
@@ -1474,6 +1493,25 @@
 
 			var body = el( 'div', { 'class': 'ocbe-slide__body', hidden: slide.__open ? null : 'hidden' } );
 
+			// Working inside a slide brings it to the front of the preview.
+			// Only the banner's slides: other lists of rows are not slides.
+			var edit = function () {
+				if ( 'hero' !== section.type ) {
+					return;
+				}
+
+				var was = state.slideOn;
+
+				state.slideOn = { section: section, at: at };
+
+				if ( ! was || was.section !== section || was.at !== at ) {
+					showSlide();
+				}
+			};
+
+			body.addEventListener( 'focusin', edit );
+			body.addEventListener( 'pointerdown', edit );
+
 			Object.keys( field.sub ).forEach( function ( subKey ) {
 				if ( ! shown( slide, field.sub[ subKey ], field.sub ) ) {
 					return;
@@ -1488,6 +1526,10 @@
 				onclick: function () {
 					slide.__open = body.hidden;
 					body.hidden = ! body.hidden;
+
+					if ( slide.__open ) {
+						edit();
+					}
 				}
 			}, [
 				el( 'span', { text: ( field.row || T.slide ) + ' ' + ( at + 1 ) + ( rowName( slide, field ) ? ' — ' + rowName( slide, field ).slice( 0, 18 ) : '' ) } )

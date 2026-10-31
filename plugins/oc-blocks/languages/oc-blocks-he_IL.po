@@ -2035,8 +2035,6 @@ msgstr "תנועה אוטומטית, כמו הפס הרץ"
 msgid "Wherever the categories stand as a slider. The cursor over them, or a finger on them, stops them; five seconds after the last touch they move on."
 msgstr "פועל כשהקטגוריות מוצגות כסליידר. כשהעכבר עליהן או כשנוגעים בהן הן נעצרות, וחמש שניות אחרי הנגיעה האחרונה הן ממשיכות לנוע."
 
-msgid "How the picture sits"
-msgstr "איך התמונה מוצגת"
 
 msgid "Fills: covers the whole banner, trimming what does not fit. Edge to edge: always the full width, only the top or bottom give way. Whole: nothing trimmed, with room around it."
 msgstr "ממלאת: מכסה את כל הבאנר, ומה שלא נכנס נחתך. מקצה לקצה: תמיד ברוחב המלא, ונחתך רק מלמעלה או מלמטה. בשלמותה: שום דבר לא נחתך, ומסביב נשאר רווח."
@@ -2053,8 +2051,6 @@ msgstr "בשלמותה"
 msgid "Which part shows — top (0) to bottom (100)"
 msgstr "איזה חלק רואים: למעלה (0) עד למטה (100)"
 
-msgid "Where the picture does not reach. Empty is the page colour."
-msgstr "הצבע במקומות שהתמונה לא מגיעה אליהם. ריק: צבע העמוד."
 
 msgid "Slides stand — desktop"
 msgstr "תצוגת השקופיות — מחשב"
@@ -2077,11 +2073,30 @@ msgstr "תצוגת השקופיות — טלפון"
 msgid "Words on phones"
 msgstr "הטקסט בטלפון"
 
-msgid "At the bottom: the words sit low and to the side, small and calm, over a dark fade that keeps them readable."
-msgstr "למטה: הטקסט קטן ונקי, בתחתית ובצד, על שכבה כהה שעולה מהתחתית כדי שיהיה קריא."
 
 msgid "As on the desktop"
 msgstr "כמו במחשב"
 
 msgid "At the bottom, on a dark fade"
 msgstr "למטה, על שכבה כהה"
+
+msgid "How the picture sits — desktop"
+msgstr "איך התמונה מוצגת — מחשב"
+
+msgid "How the picture sits — phones"
+msgstr "איך התמונה מוצגת — טלפון"
+
+msgid "Which part shows on phones — top (0) to bottom (100)"
+msgstr "איזה חלק רואים בטלפון: למעלה (0) עד למטה (100)"
+
+msgid "Where the picture does not reach (edge to edge, or whole). Empty is the page colour."
+msgstr "הצבע במקומות שהתמונה לא מגיעה אליהם (במצב מקצה לקצה או בשלמותה). ריק: צבע העמוד."
+
+msgid "At the bottom: the words sit low and to the side, small, over a dark fade that keeps them readable. The buttons step aside — a tap anywhere on the slide leads where the first button would."
+msgstr "למטה: טקסט קטן בתחתית ובצד, על שכבה כהה שעולה מהתחתית כדי שיהיה קריא. הכפתורים לא מוצגים, ולחיצה בכל מקום על השקופית מובילה לקישור של הכפתור הראשון."
+
+msgid "Heading size on phones (px, 0 — automatic)"
+msgstr "גודל הכותרת בטלפון (פיקסלים, 0 — אוטומטי)"
+
+msgid "The line under it follows, a little smaller."
+msgstr "השורה שמתחתיה מותאמת אליה, קצת יותר קטנה."

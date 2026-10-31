@@ -459,33 +459,55 @@ html.ocb-anim .ocb--in-stagger.is-in .ocb-words > * {
 
 .ocb-hero__media picture img { block-size: 100%; }
 
-/* How a slide's picture meets the banner, chosen per slide.
+/* How a slide's picture meets the banner, chosen per slide — and apart
+ * for the desktop (--d-) and the phone (--m-).
  * Fills (the default): covers the banner; the chosen height of the
  * picture is the part that shows. */
 .ocb-hero__media img { object-position: 50% var(--ocb-fy, 50%); }
 
 /* Edge to edge: always the banner's full width at the picture's own
  * proportions — never a side trimmed. Taller than the banner, the chosen
- * part shows; shorter, the room above and below takes the chosen colour. */
-.ocb-hero__slide--width,
-.ocb-hero__slide--contain,
+ * part shows; shorter, the room above and below takes the chosen colour.
+ * Whole: nothing of the picture is trimmed. */
 .ocb-hero--fit-contain .ocb-hero__slide { background: var(--ocb-hero-fitbg, var(--ocb-bg, transparent)); }
-
-.ocb-hero__slide--width .ocb-hero__media picture { position: relative; }
-
-.ocb-hero__slide--width .ocb-hero__media img {
-	position: absolute;
-	inset-inline: 0;
-	inset-block-start: var(--ocb-fy, 50%);
-	block-size: auto;
-	transform: translateY(calc(-1 * var(--ocb-fy, 50%)));
-}
-
-/* Whole: nothing of the picture is trimmed; where its shape and the
- * banner's differ, the page colour (or the chosen one) fills the room. */
-.ocb-hero__slide--contain .ocb-hero__media img,
 .ocb-hero--fit-contain .ocb-hero__media img,
 .ocb-hero--fit-contain .ocb-hero__media video { object-fit: contain; }
+
+@media (min-width: 783px) {
+	.ocb-hero__slide--d-width,
+	.ocb-hero__slide--d-contain { background: var(--ocb-hero-fitbg, var(--ocb-bg, transparent)); }
+
+	.ocb-hero__slide--d-width .ocb-hero__media picture { position: relative; }
+
+	.ocb-hero__slide--d-width .ocb-hero__media img {
+		position: absolute;
+		inset-inline: 0;
+		inset-block-start: var(--ocb-fy, 50%);
+		block-size: auto;
+		transform: translateY(calc(-1 * var(--ocb-fy, 50%)));
+	}
+
+	.ocb-hero__slide--d-contain .ocb-hero__media img { object-fit: contain; }
+}
+
+@media (max-width: 782px) {
+	.ocb-hero__media img { object-position: 50% var(--ocb-fym, 50%); }
+
+	.ocb-hero__slide--m-width,
+	.ocb-hero__slide--m-contain { background: var(--ocb-hero-fitbg, var(--ocb-bg, transparent)); }
+
+	.ocb-hero__slide--m-width .ocb-hero__media picture { position: relative; }
+
+	.ocb-hero__slide--m-width .ocb-hero__media img {
+		position: absolute;
+		inset-inline: 0;
+		inset-block-start: var(--ocb-fym, 50%);
+		block-size: auto;
+		transform: translateY(calc(-1 * var(--ocb-fym, 50%)));
+	}
+
+	.ocb-hero__slide--m-contain .ocb-hero__media img { object-fit: contain; }
+}
 
 /* Toggle off: the whole video frame shows, letterboxed on black where the
  * proportions differ from the strip's. */
@@ -754,19 +776,31 @@ html.ocb-anim .ocb--in-stagger.is-in .ocb-words > * {
  * Peeking: each slide a little narrower than the banner, the next one
  * showing at the far side. Centred (desktop): one in the middle, its
  * neighbours dimmed on either side. The words travel inside each slide.
- * The empty room at both ends lets the first and last slides (and the
- * quiet copies past them) reach their resting place. */
+ * Two quiet copies stand at each end of the strip (the script adds them),
+ * so whatever peeks in past the last slide is always a slide — never an
+ * empty white edge. */
 .ocb-hero--deck { --ocb-deck-gap: 0px; --ocb-deck-w: 100%; }
 
 .ocb-hero--deck .ocb-hero__strip { gap: var(--ocb-deck-gap); }
 
 .ocb-hero--deck:not(.ocb-hero--one) .ocb-hero__slide { flex-basis: var(--ocb-deck-w); }
 
-/* With the gap beside it, the room is the banner's width less a slide's.
- * A peeking deck needs it only at the far end; a centred one at both. */
-.ocb-hero--deck:not(.ocb-hero--one) .ocb-hero__strip::after {
-	content: "";
-	flex: 0 0 var(--ocb-deck-room, 0px);
+/* The words show on the slide in front only. They step in as their slide
+ * arrives — the slides at the sides hold still, without words. */
+.ocb-hero--deck .ocb-hero__words { opacity: 0; transition: opacity .3s ease; }
+.ocb-hero--deck .ocb-hero__slide.is-on .ocb-hero__words { opacity: 1; }
+.ocb-hero--deck .ocb-hero__set.is-on .ocb-hero__words > * { animation: none; }
+
+.ocb-hero--deck .ocb-hero__slide.is-on .ocb-hero__set.is-on .ocb-hero__words > * {
+	animation: ocb-hero-in 1.05s cubic-bezier(.22, .61, .36, 1) backwards;
+	animation-delay: .2s;
+}
+
+.ocb-hero--deck .ocb-hero__slide.is-on .ocb-hero__set.is-on .ocb-hero__words > :nth-child(2) { animation-delay: .38s; }
+.ocb-hero--deck .ocb-hero__slide.is-on .ocb-hero__set.is-on .ocb-hero__words > :nth-child(3) { animation-delay: .52s; }
+
+@media (prefers-reduced-motion: reduce) {
+	.ocb-hero--deck .ocb-hero__slide.is-on .ocb-hero__set.is-on .ocb-hero__words > * { animation: none; }
 }
 
 /* Each slide wears the corners; the strip no longer clips them as one. */
@@ -785,10 +819,12 @@ html.ocb-anim .ocb--in-stagger.is-in .ocb-words > * {
 }
 
 @media (min-width: 783px) {
-	.ocb-hero--d-peek { --ocb-deck-gap: 16px; --ocb-deck-w: 84%; --ocb-deck-room: calc(16% - 16px); }
+	.ocb-hero--d-peek { --ocb-deck-gap: 16px; --ocb-deck-w: 84%; }
 
-	.ocb-hero--d-center { --ocb-deck-gap: 16px; --ocb-deck-w: 70%; --ocb-deck-room: calc(15% - 16px); }
-	.ocb-hero--d-center:not(.ocb-hero--one) .ocb-hero__strip::before { content: ""; flex: 0 0 var(--ocb-deck-room); }
+	/* Until the script has laid the copies, room before the first slide
+	 * holds it in the middle, so the page opens the way it will stay. */
+	.ocb-hero--d-center { --ocb-deck-gap: 16px; --ocb-deck-w: 70%; }
+	.ocb-hero--d-center:not(.ocb-hero--one):not(.is-built) .ocb-hero__strip::before { content: ""; flex: 0 0 calc(15% - 16px); }
 	.ocb-hero--d-center .ocb-hero__slide { scroll-snap-align: center; cursor: pointer; }
 	.ocb-hero--d-center .ocb-hero__slide.is-on { cursor: auto; }
 	.ocb-hero--d-center .ocb-hero__slide:not(.is-on)::before { opacity: .5; }
@@ -799,12 +835,16 @@ html.ocb-anim .ocb--in-stagger.is-in .ocb-words > * {
 }
 
 @media (max-width: 782px) {
-	.ocb-hero--m-peek { --ocb-deck-gap: 10px; --ocb-deck-w: 86%; --ocb-deck-room: calc(14% - 10px); }
+	.ocb-hero--m-peek { --ocb-deck-gap: 10px; --ocb-deck-w: 86%; }
 }
 
 /* ---------- words at the bottom, on phones ----------
  * The way the delivery apps do it: the words low and to the side, small
- * and calm, white over a dark fade that rises from the bottom edge. */
+ * and calm, white over a dark fade that rises from the bottom edge. No
+ * buttons: the whole slide answers a tap (.ocb-hero__tap) and leads where
+ * the first button would. A long line under the heading stops at two. */
+.ocb-hero__tap { display: none; }
+
 @media (max-width: 782px) {
 	.ocb-hero--mb .ocb-hero__shade { display: none; }
 
@@ -813,37 +853,46 @@ html.ocb-anim .ocb--in-stagger.is-in .ocb-words > * {
 		position: absolute;
 		inset: 0;
 		z-index: 1;
-		background: linear-gradient(to top, rgb(0 0 0 / 72%), rgb(0 0 0 / 38%) 34%, transparent 64%);
+		background: linear-gradient(to top, rgb(0 0 0 / 70%), rgb(0 0 0 / 34%) 38%, transparent 70%);
 		pointer-events: none;
 	}
+
+	.ocb-hero--mb .ocb-hero__tap { display: block; position: absolute; inset: 0; z-index: 2; }
 
 	.ocb-hero--mb .ocb-hero__words,
 	.ocb-hero.ocb-hero--mb[style] .ocb-hero__words {
 		justify-content: flex-end;
 		align-items: flex-start;
-		gap: 2px;
-		padding: 18px 20px;
+		gap: 0;
+		padding: 10px 14px 12px;
 		color: #fff;
 		text-align: start;
-		text-shadow: 0 1px 12px rgb(0 0 0 / 25%);
+		text-shadow: 0 1px 10px rgb(0 0 0 / 25%);
+		pointer-events: none;
 	}
 
 	/* Dots on the picture keep their own line under the words. */
-	.ocb-hero--mb:has(.ocb-dots:not(.ocb-dots--below-m)) .ocb-hero__words { padding-block-end: 38px; }
+	.ocb-hero--mb:has(.ocb-dots:not(.ocb-dots--below-m)) .ocb-hero__words { padding-block-end: 30px; }
 
-	.ocb-hero--mb .ocb-hero__words h2 { font-size: 1.5em; line-height: 1.15; letter-spacing: 0; }
-	.ocb-hero--mb .ocb-hero__words p { margin: 2px 0 0; font-size: .95em; line-height: 1.35; opacity: .9; }
-
-	.ocb-hero--mb .ocb-hero__ctas { justify-content: flex-start; gap: 8px; margin-block-start: 10px; }
-
-	.ocb-hero--mb .ocb-hero__cta {
-		padding: 6px 16px;
-		font-size: .88em;
-		box-shadow: none;
+	.ocb-hero.ocb-hero--mb .ocb-hero__words h2 {
+		font-size: var(--ocb-hero-hsm, 18px);
+		line-height: 1.2;
+		letter-spacing: 0;
 	}
 
-	.ocb-hero--mb .ocb-hero__cta--ghost { border-width: 1px; }
+	.ocb-hero.ocb-hero--mb .ocb-hero__words p {
+		display: -webkit-box;
+		margin: 2px 0 0;
+		overflow: hidden;
+		font-size: max(12px, calc(var(--ocb-hero-hsm, 18px) * .74));
+		line-height: 1.35;
+		opacity: .9;
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: 2;
+	}
 
+	.ocb-hero--mb .ocb-hero__ctas,
+	.ocb-hero--mb .ocb-hero__words > .ocb-hero__cta,
 	.ocb-hero--mb .ocb-hero__cd--side { display: none; }
 }
 
