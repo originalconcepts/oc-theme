@@ -29,6 +29,11 @@ final class Render {
 	const PICKS = array( 'new', 'sales', 'viewed', 'sale', 'manual' );
 
 	/**
+	 * The cookie that remembers the products a visitor viewed.
+	 */
+	const VIEWED = 'ocb_viewed';
+
+	/**
 	 * True while rendering the page's first visible section — its hero
 	 * image is the likely LCP and deserves fetchpriority over lazy.
 	 *
@@ -58,6 +63,7 @@ final class Render {
 		// after load so the page itself stays cacheable.
 		add_action( 'wp_ajax_oc_shelf', array( $this, 'ajax_shelf' ) );
 		add_action( 'wp_ajax_nopriv_oc_shelf', array( $this, 'ajax_shelf' ) );
+		add_action( 'wp_footer', array( $this, 'viewed_tracker' ), 99 );
 
 		// A category may nominate a composed page as its lobby, shown above
 		// the products: "the women's front page" is just another page.
@@ -514,13 +520,36 @@ final class Render {
 		$sets   = array();
 		$rows   = self::hero_rows( (array) $s['slides'] );
 
-		// Shows whole: the picture is never trimmed, so it cannot drift
-		// either — the drift needs a picture taller than its frame.
-		$whole = 'contain' === (string) ( $s['fit'] ?? 'cover' );
+		// How the slides stand: one at a time (the classic banner), one
+		// with the next peeking in from the side, or — on a desktop — one
+		// in the middle with its neighbours dimmed on either side. Any
+		// layout but the classic one carries each slide's words inside
+		// the slide itself, since they travel with it.
+		$layd = in_array( (string) ( $s['layd'] ?? 'one' ), array( 'peek', 'center' ), true ) ? (string) $s['layd'] : 'one';
+		$laym = 'peek' === (string) ( $s['laym'] ?? 'one' ) ? 'peek' : 'one';
+		$deck = count( $rows ) > 1 && ( 'one' !== $layd || 'one' !== $laym );
+
+		// Neighbours in view leave no room for a crossfade.
+		if ( $deck ) {
+			$s['effect'] = 'slide';
+		}
 
 		foreach ( $rows as $slide ) {
 			$media  = '';
 			$arrive = '';
+
+			// How this slide's picture meets the banner — set per slide,
+			// since every picture has its own shape. Fills: covers the
+			// banner and trims what does not fit. Edge to edge: always the
+			// full width, never a side trimmed; only top or bottom give way.
+			// Whole: nothing trimmed at all. A banner saved before the
+			// choice moved to the slide keeps its old banner-wide one.
+			$fit = (string) ( $slide['fit'] ?? '' );
+			$fit = '' !== $fit ? $fit : ( 'contain' === (string) ( $s['fit'] ?? '' ) ? 'contain' : 'cover' );
+			$fit = in_array( $fit, array( 'cover', 'width', 'contain' ), true ) ? $fit : 'cover';
+			$fy  = isset( $slide['fy'] ) && '' !== (string) $slide['fy'] ? max( 0, min( 100, (int) $slide['fy'] ) ) : 50;
+			$fbg = (string) ( $slide['fbg'] ?? '' );
+			$fbg = '' !== $fbg ? $fbg : ( 'cover' !== $fit ? (string) ( $s['fitbg'] ?? '' ) : '' );
 
 			if ( '' !== $slide['vid'] ) {
 				// A poster is the banner's first paint: without one the
@@ -628,13 +657,20 @@ final class Render {
 					. '</div>';
 			}
 
+			// Travelling with its slide, the set is always lit.
+			if ( $deck && '' !== $words ) {
+				$words = str_replace( array( ' is-on" data-ocb-set="' . $at . '"', '" data-ocb-set="' . $at . '"' ), array( ' is-on"', ' is-on"' ), $words );
+			}
+
 			$sets[] = $words;
 
 			// At full strength the picture stands still and the page glides
 			// over it: a fixed layer, clipped to its own slide. Not in fade
 			// mode — browsers refuse to paint a fixed layer inside a parent
 			// whose opacity is animating, and the slide went blank.
-			$lax   = $whole ? 0 : Registry::snap( (int) $s['parallax'], array( 0, 30, 100 ) );
+			// Only a picture that fills the banner can drift: the drift
+			// needs a picture larger than its frame, and enlarges it.
+			$lax   = 'cover' !== $fit || $deck ? 0 : Registry::snap( (int) $s['parallax'], array( 0, 30, 100 ) );
 			$fixed = 100 === $lax && 'fade' !== (string) $s['effect'];
 
 			// A linked slide is a link with only a picture in it: it needs
@@ -650,15 +686,23 @@ final class Render {
 				$name = sprintf( __( 'Slide %d', 'oc-blocks' ), $at + 1 );
 			}
 
-			$pop   = '' !== $slide['url'] && '' === $slide['cta'] ? self::popup_product( (string) $slide['url'], (int) ( $slide['__pid'] ?? 0 ) ) : 0;
-			$open  = '' !== $slide['url'] && '' === $slide['cta']
-				? '<a class="ocb-hero__slide' . ( $fixed ? ' ocb-hero__slide--fixedbg' : '' ) . ( 0 === $at ? ' is-on' : '' ) . ( $pop > 0 ? ' product' : '' ) . '" href="' . esc_url( (string) $slide['url'] ) . '" aria-label="' . esc_attr( $name ) . '"' . ( $pop > 0 ? ' data-product-id="' . $pop . '"' : '' ) . '>'
-				: '<div class="ocb-hero__slide' . ( $fixed ? ' ocb-hero__slide--fixedbg' : '' ) . ( 0 === $at ? ' is-on' : '' ) . '">';
-			$close = '' !== $slide['url'] && '' === $slide['cta'] ? '</a>' : '</div>';
+			// The whole slide is the link when it has no button of its own
+			// (a slide carrying its words must not nest one link in another).
+			$whole_link = '' !== $slide['url'] && '' === $slide['cta'] && ( ! $deck || '' === trim( (string) ( $slide['cta2'] ?? '' ) ) );
+
+			$pop   = $whole_link ? self::popup_product( (string) $slide['url'], (int) ( $slide['__pid'] ?? 0 ) ) : 0;
+			$cls   = 'ocb-hero__slide' . ( 'cover' !== $fit ? ' ocb-hero__slide--' . $fit : '' ) . ( $fixed ? ' ocb-hero__slide--fixedbg' : '' ) . ( 0 === $at ? ' is-on' : '' );
+			$look  = ( 50 !== $fy && 'contain' !== $fit ? '--ocb-fy:' . $fy . '%;' : '' ) . ( '' !== $fbg && 'cover' !== $fit ? '--ocb-hero-fitbg:' . $fbg . ';' : '' );
+			$look  = '' === $look ? '' : ' style="' . esc_attr( $look ) . '"';
+			$open  = $whole_link
+				? '<a class="' . $cls . ( $pop > 0 ? ' product' : '' ) . '"' . $look . ' href="' . esc_url( (string) $slide['url'] ) . '" aria-label="' . esc_attr( $name ) . '"' . ( $pop > 0 ? ' data-product-id="' . $pop . '"' : '' ) . '>'
+				: '<div class="' . $cls . '"' . $look . '>';
+			$close = $whole_link ? '</a>' : '</div>';
 
 			$slides[] = $open
 				. '<div class="ocb-hero__media' . ( $fixed ? ' ocb-hero__media--fixed' : '' ) . ( '' !== $arrive ? ' ocb-hero__media--first' : '' ) . '"' . ( 0 === $lax || $fixed ? '' : ' data-ocb-parallax="' . $lax . '"' ) . '>' . $media . '</div>'
 				. ( $s['shade'] > 0 ? '<div class="ocb-hero__shade" style="opacity:' . ( absint( $s['shade'] ) / 100 ) . '"></div>' : '' )
+				. ( $deck ? $words : '' )
 				. $close;
 		}
 
@@ -725,7 +769,6 @@ final class Render {
 			. ( '' === $ratio ? '' : '--ocb-hero-ratio:' . $ratio . ';' )
 			. ( '' === $ratiom ? '' : '--ocb-hero-ratio-m:' . $ratiom . ';' )
 			. ( '' === (string) ( $s['fadebg'] ?? '' ) ? '' : '--ocb-hero-fadebg:' . $s['fadebg'] . ';' )
-			. ( $whole && '' !== (string) ( $s['fitbg'] ?? '' ) ? '--ocb-hero-fitbg:' . $s['fitbg'] . ';' : '' )
 			. ( '' === (string) ( $s['txtc'] ?? '' ) ? '' : '--ocb-hero-txt:' . $s['txtc'] . ';' )
 			. ( '' === (string) ( $s['ctac'] ?? '' ) ? '' : '--ocb-hero-ctabg:' . $s['ctac'] . ';' )
 			. ( '' === (string) ( $s['ctat'] ?? '' ) ? '' : '--ocb-hero-ctaink:' . $s['ctat'] . ';' );
@@ -734,11 +777,13 @@ final class Render {
 		// absent value means the old behaviour: the video covers the area.
 		$vcontain = isset( $s['vcover'] ) && ! $s['vcover'];
 
-		$html = '<div class="ocb-hero ocb-hero--' . esc_attr( (string) $s['effect'] ) . ' ocb-hero--pos-' . esc_attr( (string) $s['pos'] ) . ' ocb-hero--' . esc_attr( (string) $s['tone'] ) . ( $one ? ' ocb-hero--one' : '' ) . ( $vcontain ? ' ocb-hero--vcontain' : '' ) . ( 0 === absint( $s['h'] ) ? ' ocb-hero--hauto' : '' ) . ( 0 === absint( $s['hm'] ) ? ' ocb-hero--hmauto' : '' ) . ( 'soft' === (string) ( $s['corners'] ?? '' ) ? ' ocb-hero--c-soft' : '' ) . ( $whole ? ' ocb-hero--fit-contain' : '' ) . '"'
+		$html = '<div class="ocb-hero ocb-hero--' . esc_attr( (string) $s['effect'] ) . ' ocb-hero--pos-' . esc_attr( (string) $s['pos'] ) . ' ocb-hero--' . esc_attr( (string) $s['tone'] ) . ( $one ? ' ocb-hero--one' : '' ) . ( $vcontain ? ' ocb-hero--vcontain' : '' ) . ( 0 === absint( $s['h'] ) ? ' ocb-hero--hauto' : '' ) . ( 0 === absint( $s['hm'] ) ? ' ocb-hero--hmauto' : '' ) . ( 'soft' === (string) ( $s['corners'] ?? '' ) ? ' ocb-hero--c-soft' : '' )
+			. ( $deck ? ' ocb-hero--deck ocb-hero--d-' . $layd . ' ocb-hero--m-' . $laym : '' )
+			. ( 'bottom' === (string) ( $s['mtext'] ?? 'over' ) ? ' ocb-hero--mb' : '' ) . '"'
 			. ' style="' . esc_attr( $style ) . '"'
 			. ( $one || empty( $s['auto'] ) ? '' : ' data-ocb-auto="' . absint( $s['auto'] ) . '"' ) . '>'
 			. '<div class="ocb-hero__strip">' . implode( '', $slides ) . '</div>'
-			. '<div class="ocb-hero__sets">' . implode( '', $sets ) . '</div>';
+			. ( $deck ? '' : '<div class="ocb-hero__sets">' . implode( '', $sets ) . '</div>' );
 
 		if ( ! $one && ! empty( $s['arrows'] ) ) {
 			$html .= '<button type="button" class="ocb-arr ocb-arr--prev" data-ocb-go="-1" aria-label="' . esc_attr__( 'Previous', 'oc-blocks' ) . '"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5l-7 7 7 7"/></svg></button>'
@@ -758,7 +803,7 @@ final class Render {
 		// picture stood at its plain size for a moment, then grew a fifth.
 		// A line run right here, while the page is still being parsed,
 		// draws the first frame the way the script will keep it.
-		$drift = $whole ? 0 : Registry::snap( (int) $s['parallax'], array( 0, 30, 100 ) );
+		$drift = $deck ? 0 : Registry::snap( (int) $s['parallax'], array( 0, 30, 100 ) );
 
 		if ( $drift > 0 && ( 100 !== $drift || 'fade' === (string) $s['effect'] ) ) {
 			$html .= '<script>(function(h){if(!h||matchMedia("(prefers-reduced-motion: reduce)").matches){return;}h.querySelectorAll("[data-ocb-parallax]").forEach(function(m){if("fixed"===getComputedStyle(m).position){return;}var b=m.parentElement.getBoundingClientRect();if(b.height<4){return;}var f=(parseInt(m.dataset.ocbParallax,10)||30)/100,H=Math.round(b.height+f*(innerHeight-b.height)),y=(-f*b.top).toFixed(1),mv=m.firstElementChild||m;mv.__ocbH=H;mv.style.blockSize=H+"px";mv.__ocbY=y;mv.style.transform="translate3d(0,"+y+"px,0)";});})(document.currentScript.previousElementSibling);</script>';
@@ -1137,15 +1182,20 @@ final class Render {
 	 * @return int[]
 	 */
 	private static function recently_viewed_ids( int $limit, int $exclude = 0 ): array {
-		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash -- ids are absint-ed below.
-		$raw = isset( $_COOKIE['woocommerce_recently_viewed'] ) ? (string) $_COOKIE['woocommerce_recently_viewed'] : '';
+		$ids = array();
 
-		if ( '' === $raw ) {
-			return array();
+		// Our own list first (it also hears of products opened in a window
+		// over the page, which never load a product page), then
+		// WooCommerce's. Both are pipe-separated ids, newest last.
+		foreach ( array( self::VIEWED, 'woocommerce_recently_viewed' ) as $name ) {
+			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash -- ids are absint-ed below.
+			$raw = isset( $_COOKIE[ $name ] ) ? (string) $_COOKIE[ $name ] : '';
+
+			if ( '' !== $raw ) {
+				$ids = array_merge( $ids, array_reverse( array_filter( array_map( 'absint', explode( '|', $raw ) ) ) ) );
+			}
 		}
 
-		// WooCommerce stores pipe-separated ids, newest last.
-		$ids = array_reverse( array_filter( array_map( 'absint', explode( '|', $raw ) ) ) );
 		$ids = array_values( array_unique( $ids ) );
 
 		if ( $exclude > 0 ) {
@@ -1153,6 +1203,23 @@ final class Render {
 		}
 
 		return array_slice( $ids, 0, max( 1, $limit ) );
+	}
+
+	/**
+	 * Remembers the products this visitor looks at, for the "products they
+	 * viewed" shelves. WooCommerce keeps such a list only while its own
+	 * widget is on the page, and never hears of a product opened in a
+	 * window over the page (Deliz opens every product that way), so a few
+	 * lines in the footer keep our own: the product page itself, and any
+	 * product window that is open a moment after a click. In the browser,
+	 * so a cached page still counts.
+	 */
+	public function viewed_tracker(): void {
+		if ( ! class_exists( 'WooCommerce' ) || is_admin() || Preview::is_preview() ) {
+			return;
+		}
+
+		echo '<script>(function(){var K="' . esc_js( self::VIEWED ) . '";function add(id){id=String(id||"");if(!/^\\d+$/.test(id)){return;}var m=document.cookie.match(new RegExp("(?:^|;\\\\s*)"+K+"=([^;]*)")),l=(m?decodeURIComponent(m[1]).split("|"):[]).filter(function(v){return/^\\d+$/.test(v)&&v!==id;});l.push(id);document.cookie=K+"="+l.slice(-15).join("|")+";path=/;max-age=2592000;SameSite=Lax"+("https:"===location.protocol?";Secure":"");}var b=document.body,p=b.className.match(/(?:^|\\s)postid-(\\d+)/);if(p&&b.classList.contains("single-product")){add(p[1]);}function look(){var w=document.querySelector(".ed-product-popup [data-product-id]");if(w&&w.getClientRects().length){add(w.getAttribute("data-product-id"));}}document.addEventListener("click",function(){setTimeout(look,900);setTimeout(look,2400);},true);setTimeout(look,2500);})();</script>' . "\n";
 	}
 
 	/**
@@ -1182,7 +1249,13 @@ final class Render {
 			'exclude' => absint( $o['exclude'] ?? 0 ),
 		);
 
-		return '<div class="oc-shelf-load" data-oc-shelf="' . esc_attr( (string) wp_json_encode( $cfg ) ) . '"></div>';
+		// A shelf of what this visitor viewed stays out of sight until it
+		// has something to show: a new visitor never sees an empty band.
+		// The composer's preview says what will stand there instead.
+		$viewed = 'viewed' === $cfg['mode'] || ( 'cat' === $cfg['mode'] && 'viewed' === $cfg['pick'] );
+		$empty  = $viewed && Preview::is_preview() ? ' data-oc-empty="' . esc_attr__( 'The products this visitor viewed will show here. A visitor who has not viewed any sees nothing, and the band takes no room.', 'oc-blocks' ) . '"' : '';
+
+		return '<div class="oc-shelf-load' . ( $viewed ? ' oc-shelf-load--viewed' : '' ) . '" data-oc-shelf="' . esc_attr( (string) wp_json_encode( $cfg ) ) . '"' . $empty . '></div>';
 	}
 
 	/**
@@ -1302,12 +1375,14 @@ final class Render {
 			. ' ocb-cats--hv-' . esc_attr( (string) $s['hover'] )
 			. ( 'circle' === $s['shape'] ? '' : ' ocb-cats--c-' . esc_attr( (string) $s['corners'] ) )
 			// The toggle arrived after pages were saved: absent means the shadow stays.
-			. ( isset( $s['wshadow'] ) && ! $s['wshadow'] ? ' ocb-cats--noshadow' : '' );
+			. ( isset( $s['wshadow'] ) && ! $s['wshadow'] ? ' ocb-cats--noshadow' : '' )
+			. ( empty( $s['run'] ) ? '' : ' ocb-cats--run' );
 
 		return self::heading( $s )
 			. '<div class="' . $classes . '" style="--ocb-cols:' . absint( $s['cols'] ) . ( absint( $s['wsize'] ?? 0 ) > 0 ? ';--ocb-cat-fs:' . absint( $s['wsize'] ) . 'px' : '' ) . ( absint( $s['wsizem'] ?? 0 ) > 0 ? ';--ocb-cat-fs-m:' . absint( $s['wsizem'] ) . 'px' : '' )
 				. ( 'custom' === (string) $s['shape'] ? ';--ocb-cat-h:' . max( 80, absint( $s['h'] ?? 320 ) ) . 'px;--ocb-cat-hm:' . max( 60, absint( $s['hm'] ?? 220 ) ) . 'px' : '' ) . '"'
-			. ( 'slider' === $s['layout'] ? ' data-ocb-shelf' : '' ) . '>'
+			. ( 'slider' === $s['layout'] ? ' data-ocb-shelf' : '' )
+			. ( empty( $s['run'] ) ? '' : ' data-ocb-run="' . max( 6, absint( $s['rspeed'] ?? 30 ) ) . '" data-ocb-run-dir="' . ( 'ltr' === (string) ( $s['rdir'] ?? 'rtl' ) ? 'ltr' : 'rtl' ) . '"' ) . '>'
 			. '<div class="ocb-cats__row">' . $items . '</div>'
 			. ( 'slider' === $s['layout'] ? self::shelf_arrows() : '' )
 			. '</div>';

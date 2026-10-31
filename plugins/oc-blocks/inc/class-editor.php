@@ -214,6 +214,7 @@ final class Editor {
 					'video'        => __( 'Choose a video', 'oc-blocks' ),
 					'filterCats'   => __( 'Find a category…', 'oc-blocks' ),
 					'rename'       => __( 'Its name on this block (optional)', 'oc-blocks' ),
+					'renameBtn'    => __( 'Change the name shown on this block', 'oc-blocks' ),
 					'catPicAdd'    => __( 'Add a picture to this category', 'oc-blocks' ),
 					'catPicChange' => __( 'Change the category picture', 'oc-blocks' ),
 					'up'           => __( 'Move up', 'oc-blocks' ),

@@ -938,12 +938,26 @@
 
 			now.forEach( function ( id, at ) {
 				var cat = byId[ id ];
+				var own = function () {
+					return ( section.names && section.names[ id ] ) || '';
+				};
+				var name = el( 'span', { 'class': 'ocbe-order__name', title: cat.label } );
+				var paintName = function () {
+					name.innerHTML = '';
+					name.appendChild( document.createTextNode( own() || cat.label ) );
+
+					// A renamed door still says which aisle it opens.
+					if ( own() ) {
+						name.appendChild( el( 'small', { text: cat.label } ) );
+					}
+				};
 				var rename = el( 'input', {
 					type: 'text',
 					'class': 'ocbe-checks__rename',
 					placeholder: cat.label,
 					'aria-label': T.rename,
-					value: ( section.names && section.names[ id ] ) || '',
+					hidden: 'hidden',
+					value: own(),
 					oninput: function () {
 						section.names = section.names || {};
 
@@ -953,9 +967,21 @@
 							delete section.names[ id ];
 						}
 
+						paintName();
 						touch();
+					},
+					onkeydown: function ( e ) {
+						if ( 'Enter' === e.key || 'Escape' === e.key ) {
+							e.preventDefault();
+							rename.hidden = true;
+						}
+					},
+					onblur: function () {
+						rename.hidden = true;
 					}
 				} );
+
+				paintName();
 
 				var pic = el( 'button', {
 					type: 'button',
@@ -1014,9 +1040,26 @@
 					el( 'span', { 'class': 'ocbe-order__grip', 'aria-hidden': 'true', html: '&#8942;&#8942;' } ),
 					el( 'span', { 'class': 'ocbe-order__n', text: String( at + 1 ) } ),
 					pic,
-					el( 'span', { 'class': 'ocbe-order__name', text: cat.label } ),
-					rename,
+					name,
 					el( 'span', { 'class': 'ocbe-order__tools' }, [
+						el( 'button', {
+							type: 'button',
+							'aria-label': T.renameBtn,
+							title: T.renameBtn,
+							html: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg>',
+							// Pressing it must not first blur (and so close) the field.
+							onmousedown: function ( e ) {
+								e.preventDefault();
+							},
+							onclick: function () {
+								rename.hidden = ! rename.hidden;
+
+								if ( ! rename.hidden ) {
+									rename.focus();
+									rename.select();
+								}
+							}
+						} ),
 						el( 'button', {
 							type: 'button', html: '&uarr;', 'aria-label': T.up, disabled: at ? null : 'disabled',
 							onclick: function () {
@@ -1053,7 +1096,8 @@
 								put( next );
 							}
 						} )
-					] )
+					] ),
+					rename
 				] );
 
 				chosen.appendChild( row );

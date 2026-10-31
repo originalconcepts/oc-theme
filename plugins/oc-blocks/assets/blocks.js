@@ -243,6 +243,8 @@
 		}
 
 		var fade = hero.classList.contains( 'ocb-hero--fade' );
+		// A deck: slides narrower than the banner, their neighbours in view.
+		var deck = hero.classList.contains( 'ocb-hero--deck' );
 		var sets = hero.querySelectorAll( '[data-ocb-set]' );
 		var real = slides.length;
 		var at = 0;
@@ -283,7 +285,8 @@
 			} );
 		}
 
-		if ( 'complete' === document.readyState ) {
+		// In a deck the neighbours are on screen from the start.
+		if ( 'complete' === document.readyState || deck ) {
 			wake();
 		} else {
 			window.addEventListener( 'load', wake );
@@ -298,6 +301,14 @@
 			sets.forEach( function ( set ) {
 				set.classList.toggle( 'is-on', Number( set.dataset.ocbSet ) === at );
 			} );
+
+			// A deck lights the slide in front (the centred layout dims the
+			// rest); the quiet copies light with the slide they copy.
+			if ( deck && ! fade ) {
+				[].forEach.call( strip.children, function ( sl, i ) {
+					sl.classList.toggle( 'is-on', ( i - 1 + real ) % real === at );
+				} );
+			}
 		}
 
 		function paintDots() {
@@ -332,10 +343,42 @@
 			} );
 		}
 
-		function park( slot, smooth ) {
-			var rtl = getComputedStyle( strip ).direction === 'rtl';
+		// Where a slide rests: its start edge on the strip's start edge, or
+		// — when it is set to snap to the centre — its middle on the middle.
+		// Measured, not counted in banner widths: a deck's slides are
+		// narrower than the strip.
+		function gapTo( sl ) {
+			var sr = strip.getBoundingClientRect();
+			var er = sl.getBoundingClientRect();
 
-			strip.scrollTo( { left: ( rtl ? -1 : 1 ) * slot * strip.clientWidth, behavior: smooth ? 'smooth' : 'auto' } );
+			if ( 'center' === getComputedStyle( sl ).scrollSnapAlign.split( ' ' ).pop() ) {
+				return ( er.left + er.width / 2 ) - ( sr.left + sr.width / 2 );
+			}
+
+			return 'rtl' === getComputedStyle( strip ).direction ? er.right - sr.right : er.left - sr.left;
+		}
+
+		// The slot resting nearest its place, and how far off it is.
+		function nearest() {
+			var best = { i: 0, d: Infinity };
+
+			[].forEach.call( strip.children, function ( sl, i ) {
+				var d = Math.abs( gapTo( sl ) );
+
+				if ( d < best.d ) {
+					best = { i: i, d: d };
+				}
+			} );
+
+			return best;
+		}
+
+		function park( slot, smooth ) {
+			var sl = strip.children[ slot ];
+
+			if ( sl ) {
+				strip.scrollTo( { left: strip.scrollLeft + gapTo( sl ), behavior: smooth ? 'smooth' : 'auto' } );
+			}
 		}
 
 		function turn( wrapForward, wrapBack ) {
@@ -372,7 +415,7 @@
 
 			// The words take their leave first — down and away — and only
 			// then does the banner itself turn.
-			var leaving = hero.querySelector( '.ocb-hero__set.is-on' );
+			var leaving = deck ? null : hero.querySelector( '.ocb-hero__set.is-on' );
 
 			at = target;
 
@@ -470,7 +513,7 @@
 				tick = true;
 					requestAnimationFrame( function () {
 						tick = false;
-						var idx = Math.round( Math.abs( strip.scrollLeft ) / Math.max( 1, strip.clientWidth ) );
+						var idx = nearest().i;
 						var shown = ( idx - 1 + real ) % real;
 
 						if ( shown !== at ) {
@@ -489,11 +532,9 @@
 			}, { passive: true } );
 
 			function snapHome() {
-				var pos = Math.abs( strip.scrollLeft );
-				var width = Math.max( 1, strip.clientWidth );
-				var idx = Math.round( pos / width );
-				var onTail = idx >= real + 1;
-				var onHead = 0 === idx;
+				var near = nearest();
+				var onTail = near.i >= real + 1;
+				var onHead = 0 === near.i;
 
 				if ( ! onTail && ! onHead ) {
 					return;
@@ -503,9 +544,7 @@
 				// mid-flight leaves it stranded between slides. Browsers
 				// mid-momentum also quietly drop the jump, so ask again
 				// until it truly lands.
-				var slot = onTail ? real + 1 : 0;
-
-				if ( Math.abs( pos - slot * width ) > 4 ) {
+				if ( near.d > 4 ) {
 					clearTimeout( settle );
 					settle = setTimeout( snapHome, 90 );
 					return;
@@ -529,6 +568,17 @@
 
 			if ( arr ) {
 				go( at + Number( arr.dataset.ocbGo ) );
+				arm();
+
+				return;
+			}
+
+			// A dimmed neighbour is brought over, not followed.
+			var sl = deck && ! fade ? e.target.closest( '.ocb-hero__slide' ) : null;
+
+			if ( sl && ! sl.classList.contains( 'is-on' ) && sl.parentNode === strip ) {
+				e.preventDefault();
+				go( at + [].indexOf.call( strip.children, sl ) - nearest().i );
 				arm();
 			}
 		} );
@@ -668,6 +718,206 @@
 	window.OCB = window.OCB || {};
 	window.OCB.initShelf = initShelf;
 
+	/* ---------- a row that runs by itself (categories) ----------
+	 * The row stays a real scrolling row — a finger can still take it — and
+	 * the script walks it along, frame by frame, over copies of itself so
+	 * the loop never ends. The cursor over it stops it until it leaves; a
+	 * finger, a wheel or an arrow stops it until five quiet seconds have
+	 * passed. Only while the row is a slider: a grid stands still. */
+	function runRow( shelf ) {
+		var row = shelf.querySelector( '.ocb-cats__row' );
+		var secs = Number( shelf.getAttribute( 'data-ocb-run' ) ) || 30;
+		// Right to left: what is on the row walks towards the left edge,
+		// which is the scroll position growing in either direction.
+		var v = 'ltr' === shelf.getAttribute( 'data-ocb-run-dir' ) ? -1 : 1;
+		var own = row ? [].slice.call( row.children ) : [];
+		var on = false;
+		var seen = false;
+		var hover = false;
+		var held = false;
+		var quiet = 0;
+		var frame = 0;
+		var last = 0;
+		var pos = 0;
+		var gain = 0;
+		var span = 0;
+		var rtl = false;
+		var idle = null;
+
+		if ( ! row || own.length < 2 || reduced ) {
+			return;
+		}
+
+		function slider() {
+			var cs = getComputedStyle( row );
+
+			return 'flex' === cs.display && /auto|scroll/.test( cs.overflowX );
+		}
+
+		function unclone() {
+			row.querySelectorAll( '[data-ocb-copy]' ).forEach( function ( c ) {
+				c.remove();
+			} );
+		}
+
+		// Copies until the row can scroll at least one whole round.
+		function clone() {
+			unclone();
+
+			var guard = 0;
+
+			do {
+				own.forEach( function ( item ) {
+					var copy = item.cloneNode( true );
+
+					copy.setAttribute( 'data-ocb-copy', '' );
+					copy.setAttribute( 'aria-hidden', 'true' );
+					copy.setAttribute( 'tabindex', '-1' );
+					row.appendChild( copy );
+				} );
+				span = Math.abs( row.querySelector( '[data-ocb-copy]' ).getBoundingClientRect().left - own[ 0 ].getBoundingClientRect().left );
+				guard++;
+			} while ( row.scrollWidth - row.clientWidth < span + 2 && guard < 8 );
+		}
+
+		function step( now ) {
+			frame = 0;
+
+			if ( ! on || ! seen || held ) {
+				return;
+			}
+
+			var dt = last ? Math.min( 64, now - last ) : 0;
+			var max = row.scrollWidth - row.clientWidth;
+			// Right to left, the scroll position runs from 0 down to -max.
+			var lo = rtl ? -max : 0;
+			var hi = lo + max;
+
+			last = now;
+
+			if ( ! hover && now >= quiet && span > 0 ) {
+				// Starting again, it gathers speed instead of jerking off.
+				gain = Math.min( 1, gain + dt / 700 );
+				pos += v * gain * ( span / secs ) * ( dt / 1000 );
+
+				if ( pos > hi - 1 ) {
+					pos -= span;
+				} else if ( pos < lo + 1 ) {
+					pos += span;
+				}
+
+				row.scrollLeft = pos;
+			} else {
+				gain = 0;
+				pos = row.scrollLeft;
+			}
+
+			frame = requestAnimationFrame( step );
+		}
+
+		function go() {
+			if ( ! frame && on && seen && ! held ) {
+				last = 0;
+				pos = row.scrollLeft;
+				frame = requestAnimationFrame( step );
+			}
+		}
+
+		// A hand on the row: stand still until it has let go for 5s.
+		function touched() {
+			quiet = performance.now() + 5000;
+			gain = 0;
+			pos = row.scrollLeft;
+			clearTimeout( idle );
+			idle = setTimeout( go, 5050 );
+		}
+
+		function settle() {
+			var now = slider();
+
+			if ( now === on ) {
+				return;
+			}
+
+			on = now;
+
+			if ( on ) {
+				rtl = 'rtl' === getComputedStyle( row ).direction;
+				// At the row's start edge there is no room to walk one way;
+				// the first step simply wraps a round further in, unseen.
+				clone();
+				go();
+			} else {
+				cancelAnimationFrame( frame );
+				frame = 0;
+				unclone();
+			}
+		}
+
+		row.addEventListener( 'pointerenter', function ( e ) {
+			if ( 'mouse' === e.pointerType ) {
+				hover = true;
+			}
+		} );
+		row.addEventListener( 'pointerleave', function ( e ) {
+			if ( 'mouse' === e.pointerType ) {
+				hover = false;
+				gain = 0;
+				pos = row.scrollLeft;
+			}
+		} );
+		[ 'touchstart', 'wheel', 'keydown' ].forEach( function ( t ) {
+			row.addEventListener( t, touched, { passive: true } );
+		} );
+		row.addEventListener( 'pointerdown', function ( e ) {
+			if ( 'mouse' !== e.pointerType ) {
+				touched();
+			}
+		} );
+		// A finger's own scroll keeps it waiting; the script's own does not
+		// count, as it only runs while nobody is touching.
+		row.addEventListener( 'scroll', function () {
+			if ( performance.now() < quiet ) {
+				touched();
+			}
+		}, { passive: true } );
+		shelf.addEventListener( 'click', function ( e ) {
+			if ( e.target.closest( '[data-ocb-go]' ) ) {
+				touched();
+			}
+		} );
+
+		// Off screen it rests.
+		if ( 'IntersectionObserver' in window ) {
+			new IntersectionObserver( function ( list ) {
+				seen = list[ 0 ].isIntersecting;
+				go();
+			} ).observe( row );
+		} else {
+			seen = true;
+		}
+
+		var resized = null;
+
+		window.addEventListener( 'resize', function () {
+			clearTimeout( resized );
+			resized = setTimeout( settle, 200 );
+		} );
+
+		settle();
+
+		// It moves by itself, so it can be stopped (WCAG 2.2.2).
+		shelf.appendChild( window.ocPause.button( 'motion', 'ocpp--clean ocb-cats__pp', function ( paused ) {
+			held = paused;
+
+			if ( ! paused ) {
+				go();
+			}
+		} ) );
+	}
+
+	document.querySelectorAll( '[data-ocb-run]' ).forEach( runRow );
+
 	/* ---------- deferred shelves: filled in after load (cache-safe) ---------- */
 
 	function fillShelf( box ) {
@@ -685,6 +935,33 @@
 			return;
 		}
 
+		// Nothing to show: the band leaves the page and takes its room with
+		// it. In the composer's preview it says what will stand there.
+		function none() {
+			var note = box.getAttribute( 'data-oc-empty' );
+
+			if ( note ) {
+				box.className = 'oc-shelf-empty';
+				box.removeAttribute( 'data-oc-shelf' );
+				box.textContent = note;
+
+				return;
+			}
+
+			var band = box.closest( 'li.oc-block--slider' ) || box.closest( '.ocb' );
+
+			( band || box ).remove();
+		}
+
+		// A visitor who has viewed nothing needs no trip to the server.
+		var viewed = 'viewed' === cfg.mode || ( 'cat' === cfg.mode && 'viewed' === cfg.pick );
+
+		if ( viewed && ! /(?:^|;\s*)(?:ocb_viewed|woocommerce_recently_viewed)=[^;]*\d/.test( document.cookie ) ) {
+			none();
+
+			return;
+		}
+
 		var body = new FormData();
 		body.append( 'action', 'oc_shelf' );
 		Object.keys( cfg ).forEach( function ( k ) {
@@ -699,10 +976,7 @@
 			} )
 			.then( function ( html ) {
 				if ( ! html || ! html.trim() ) {
-					// nothing to show (e.g. no viewed products): drop the row.
-					if ( box.closest( 'li.oc-block--slider' ) ) {
-						box.closest( 'li.oc-block--slider' ).remove();
-					}
+					none();
 					return;
 				}
 
@@ -749,7 +1023,8 @@
 		// The strip never stops by itself, so it can be stopped. The button
 		// lives in the section: a tilted strip is wider than the screen, and
 		// its own corner is off it.
-		( mq.closest( '.ocb' ) || mq ).appendChild( window.ocPause.button( 'motion', 'ocpp--corner', function ( paused ) {
+		// It stands under the strip, not on it, so it goes without a disc.
+		( mq.closest( '.ocb' ) || mq ).appendChild( window.ocPause.button( 'motion', 'ocpp--corner ocpp--clean ocb-mq__pp', function ( paused ) {
 			mq.classList.toggle( 'is-paused', paused );
 		} ) );
 	} );

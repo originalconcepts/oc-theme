@@ -582,6 +582,7 @@ html[dir="ltr"] .ocbe-switch input:checked + i::after { transform: translateX(16
 
 .ocbe-order__row {
 	display: flex;
+	flex-wrap: wrap;
 	align-items: center;
 	gap: 8px;
 	padding: 6px 8px;
@@ -616,15 +617,20 @@ html[dir="ltr"] .ocbe-switch input:checked + i::after { transform: translateX(16
 .ocbe-order__pic.has-pic { border-style: solid; border-color: #e5e5e5; }
 .ocbe-order__pic:hover { border-color: #1c1c1c; color: #1c1c1c; }
 
-.ocbe-order__name { flex: 1 1 auto; min-inline-size: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
+.ocbe-order__name { flex: 1 1 0; min-inline-size: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; font-weight: 500; line-height: 1.3; }
+.ocbe-order__name small { display: block; overflow: hidden; text-overflow: ellipsis; color: #8c8f94; font-size: 11px; font-weight: 400; }
 
-.ocbe-order__row .ocbe-checks__rename { margin-inline-start: 0; inline-size: 34%; min-inline-size: 80px; }
+/* The rename field opens on a line of its own under the row. */
+.ocbe-order__row .ocbe-checks__rename { flex: 1 0 100%; margin: 2px 0 0; inline-size: auto; }
+.ocbe-order__row .ocbe-checks__rename[hidden] { display: none; }
 
 .ocbe-order__tools { display: inline-flex; gap: 2px; }
 
 .ocbe-order__tools button {
-	inline-size: 22px;
-	block-size: 22px;
+	display: inline-grid;
+	place-items: center;
+	inline-size: 24px;
+	block-size: 24px;
 	padding: 0;
 	border: 0;
 	border-radius: 6px;

@@ -1967,8 +1967,6 @@ msgstr "מוצר מהחנות (לא חובה)"
 msgid "Its picture, name, short description and link fill the slide — every one of them can still be changed below."
 msgstr "התמונה, השם, התיאור הקצר והקישור של המוצר ממלאים את השקופית, ואפשר לשנות כל אחד מהם בשדות שלמטה."
 
-msgid "Fill covers the whole banner and trims what does not fit; whole shows all of the picture, with room around it where the proportions differ. A height of 0 fits the banner to the picture exactly."
-msgstr "\"ממלאת את הבאנר\" מכסה את כל הבאנר וחותכת את מה שלא נכנס. \"מוצגת בשלמותה\" מראה את כל התמונה, עם שוליים במקום שבו הפרופורציות שונות. גובה 0 מתאים את הבאנר בדיוק לתמונה."
 
 msgid "Fills the banner"
 msgstr "ממלאת את הבאנר"
@@ -1976,8 +1974,6 @@ msgstr "ממלאת את הבאנר"
 msgid "The room around the picture"
 msgstr "צבע השוליים סביב התמונה"
 
-msgid "Empty is the page colour."
-msgstr "ריק = צבע העמוד."
 
 msgid "Dots — desktop"
 msgstr "נקודות — מחשב"
@@ -2026,3 +2022,66 @@ msgstr "הקלידו כדי לבחור מוצר אחר…"
 
 msgid "Buy now"
 msgstr "לקנייה"
+
+msgid "Change the name shown on this block"
+msgstr "שינוי השם שמוצג בבלוק הזה"
+
+msgid "The products this visitor viewed will show here. A visitor who has not viewed any sees nothing, and the band takes no room."
+msgstr "כאן יופיעו המוצרים שהגולש צפה בהם. גולש שעוד לא צפה במוצרים לא יראה כאן כלום, והאזור לא יתפוס מקום בעמוד."
+
+msgid "Move by themselves, like the running line"
+msgstr "תנועה אוטומטית, כמו הפס הרץ"
+
+msgid "Wherever the categories stand as a slider. The cursor over them, or a finger on them, stops them; five seconds after the last touch they move on."
+msgstr "פועל כשהקטגוריות מוצגות כסליידר. כשהעכבר עליהן או כשנוגעים בהן הן נעצרות, וחמש שניות אחרי הנגיעה האחרונה הן ממשיכות לנוע."
+
+msgid "How the picture sits"
+msgstr "איך התמונה מוצגת"
+
+msgid "Fills: covers the whole banner, trimming what does not fit. Edge to edge: always the full width, only the top or bottom give way. Whole: nothing trimmed, with room around it."
+msgstr "ממלאת: מכסה את כל הבאנר, ומה שלא נכנס נחתך. מקצה לקצה: תמיד ברוחב המלא, ונחתך רק מלמעלה או מלמטה. בשלמותה: שום דבר לא נחתך, ומסביב נשאר רווח."
+
+msgid "Fills"
+msgstr "ממלאת"
+
+msgid "Edge to edge"
+msgstr "מקצה לקצה"
+
+msgid "Whole"
+msgstr "בשלמותה"
+
+msgid "Which part shows — top (0) to bottom (100)"
+msgstr "איזה חלק רואים: למעלה (0) עד למטה (100)"
+
+msgid "Where the picture does not reach. Empty is the page colour."
+msgstr "הצבע במקומות שהתמונה לא מגיעה אליהם. ריק: צבע העמוד."
+
+msgid "Slides stand — desktop"
+msgstr "תצוגת השקופיות — מחשב"
+
+msgid "Peeking: the next slide shows in part beside the current one. Centred: one in the middle, its neighbours dimmed on either side — a click on one brings it over."
+msgstr "הבאה מציצה: חלק מהשקופית הבאה נראה בצד. במרכז: שקופית אחת באמצע, והשכנות משני הצדדים מוצגות חלקית ומוחשכות. לחיצה על שכנה מביאה אותה למרכז."
+
+msgid "One at a time"
+msgstr "אחת בכל פעם"
+
+msgid "Next one peeking"
+msgstr "הבאה מציצה"
+
+msgid "Centred, neighbours dimmed"
+msgstr "במרכז, השכנות מוחשכות"
+
+msgid "Slides stand — phones"
+msgstr "תצוגת השקופיות — טלפון"
+
+msgid "Words on phones"
+msgstr "הטקסט בטלפון"
+
+msgid "At the bottom: the words sit low and to the side, small and calm, over a dark fade that keeps them readable."
+msgstr "למטה: הטקסט קטן ונקי, בתחתית ובצד, על שכבה כהה שעולה מהתחתית כדי שיהיה קריא."
+
+msgid "As on the desktop"
+msgstr "כמו במחשב"
+
+msgid "At the bottom, on a dark fade"
+msgstr "למטה, על שכבה כהה"
