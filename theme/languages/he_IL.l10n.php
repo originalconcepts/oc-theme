@@ -2238,6 +2238,7 @@ return array(
 		"Never link these" => "לעולם אל תקשר את אלה",
 		"Never offer these beside the results" => "לא להציע את אלה לצד התוצאות",
 		"Never show these words" => "לעולם לא להציג את המילים האלה",
+		"Never where it would cost a sale or its source: a visitor arriving from an ad, a search, a mail or another site gets Google's tags at once, so the click and the source are kept, and the thank-you page loads every tag at once. The hold covers moving about inside the shop and direct visits — which is also what a speed test measures." => "לא במקום שזה יעלה מכירה או את המקור שלה: מבקר שמגיע ממודעה, מחיפוש, ממייל או מאתר אחר מקבל את התגים של Google מיד, כך שהקליק והמקור נשמרים, ובעמוד התודה כל התגים נטענים מיד. ההשהיה חלה על מעבר בין עמודים בתוך החנות ועל כניסות ישירות — שזה גם מה שבדיקת מהירות מודדת.",
 		"New" => "חדש",
 		"New customers" => "לקוחות חדשים",
 		"New feed" => "פיד חדש",

@@ -27,6 +27,7 @@ final class Page {
 	const META_CLIENT  = '_oc_mkt_client';
 	const META_CONSENT = '_oc_mkt_consent';
 	const META_GA4     = '_oc_mkt_ga4_fallback';
+	const META_GA4_OK  = '_oc_mkt_ga4_ok';
 
 	/**
 	 * Hooks.
@@ -93,6 +94,10 @@ final class Page {
 			'contact'        => 'Contact',
 		);
 
+		if ( 'ga4ok' === $name ) {
+			return self::ga4_heard( $id );
+		}
+
 		if ( ! Settings::live() || ! isset( $ok[ $name ] ) || '' === $id ) {
 			return new \WP_REST_Response( array( 'ok' => false ), 400 );
 		}
@@ -130,6 +135,27 @@ final class Page {
 		}
 
 		Events::server( $ok[ $name ], $clean, $id, $user, Events::client(), (string) $req->get_header( 'referer' ) );
+
+		return new \WP_REST_Response( array( 'ok' => true ), 200 );
+	}
+
+	/**
+	 * The thank-you page's browser says GA4 took the purchase, so the
+	 * server's fallback stays quiet. Only for an order whose thank-you page
+	 * was drawn, and only once.
+	 *
+	 * @param string $id Event id, order_<id>.
+	 * @return \WP_REST_Response
+	 */
+	private static function ga4_heard( string $id ): \WP_REST_Response {
+		$order = preg_match( '/^order_(\d+)$/', $id, $m ) ? wc_get_order( (int) $m[1] ) : false;
+
+		if ( ! $order instanceof \WC_Order || '' === (string) $order->get_meta( self::META_TY ) || '' !== (string) $order->get_meta( self::META_GA4_OK ) ) {
+			return new \WP_REST_Response( array( 'ok' => false ), 400 );
+		}
+
+		$order->update_meta_data( self::META_GA4_OK, (string) time() );
+		$order->save();
 
 		return new \WP_REST_Response( array( 'ok' => true ), 200 );
 	}
@@ -304,15 +330,18 @@ final class Page {
 	}
 
 	/**
-	 * Twenty minutes on: if the browser never reported the purchase to
-	 * GA4, the server does, with the browser's own client id.
+	 * Twenty minutes on: if the browser never confirmed GA4 took the
+	 * purchase, the server reports it, with the browser's own client id.
 	 *
 	 * @param int $order_id Order.
 	 */
 	public function ga4_fallback( $order_id ): void {
 		$order = wc_get_order( $order_id );
 
-		if ( ! $order instanceof \WC_Order || '' !== (string) $order->get_meta( self::META_TY ) || '' !== (string) $order->get_meta( self::META_GA4 ) ) {
+		// A drawn thank-you page is not enough: with the tags held, the
+		// shopper may close it before GA4 has loaded. Only the browser's
+		// own word that GA4 took the purchase keeps this quiet.
+		if ( ! $order instanceof \WC_Order || '' !== (string) $order->get_meta( self::META_GA4_OK ) || '' !== (string) $order->get_meta( self::META_GA4 ) ) {
 			return;
 		}
 

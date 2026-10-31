@@ -40,6 +40,15 @@
 		document.cookie = '_fbc=fb.1.' + Date.now() + '.' + decodeURIComponent( fbclid[ 1 ] ) + ';path=/;max-age=' + ( 90 * 86400 ) + ';SameSite=Lax' + ( 'https:' === location.protocol ? ';Secure' : '' ) + ';domain=' + location.hostname.replace( /^www\./, '' );
 	}
 
+	// Google's, the same way: the cookie its own linker would have written,
+	// which the Ads tag reads on any later page — a visitor who clicks on
+	// before the tag has arrived still brings the ad click to the purchase.
+	// Only with marketing consent; Consent Mode would not write it either.
+	var gclid = location.search.match( /[?&](gclid|gbraid)=([^&]+)/ );
+	if ( gclid && allows( 'marketing' ) ) {
+		document.cookie = ( 'gclid' === gclid[ 1 ] ? '_gcl_aw' : '_gcl_gb' ) + '=GCL.' + Math.floor( Date.now() / 1000 ) + '.' + decodeURIComponent( gclid[ 2 ] ) + ';path=/;max-age=' + ( 90 * 86400 ) + ';SameSite=Lax' + ( 'https:' === location.protocol ? ';Secure' : '' ) + ';domain=' + location.hostname.replace( /^www\./, '' );
+	}
+
 	function setCookie( name, value, days ) {
 		document.cookie = name + '=' + encodeURIComponent( value ) + ';path=/;max-age=' + ( days * 86400 ) + ';SameSite=Lax' + ( 'https:' === location.protocol ? ';Secure' : '' );
 	}
@@ -77,8 +86,25 @@
 	// when the library arrives. The one thing lost is the page view of a
 	// visitor who leaves inside the wait without touching anything, and
 	// the server sends that one itself where the Conversions API is on.
-	var held = !! cfg.hold || !! cfg.holdG;
-	var holdGoogle = !! cfg.holdG;
+	//
+	// Not everywhere, though. A visit that arrives from somewhere — an ad,
+	// a search, a mail — carries its source on this page only: Google's
+	// tags must read it before the visitor clicks on, or the session
+	// counts as direct and the ad click is lost. So on arrival they load
+	// at once, and on the thank-you page everything does, since its
+	// purchase must not wait for a touch. Moving about inside the shop,
+	// or coming in directly, keeps the hold.
+	var thanks = !! cfg.page && 'thankyou' === cfg.page.type;
+	var arrived = thanks || /[?&](gclid|gbraid|wbraid|gad_source|fbclid|ttclid|msclkid|utm_[a-z]+)=/i.test( location.search ) || ( function () {
+		try {
+			return !! document.referrer && new URL( document.referrer ).hostname.replace( /^www\./, '' ) !== location.hostname.replace( /^www\./, '' );
+		} catch ( e ) {
+			return false;
+		}
+	}() );
+	var holdPixels = !! cfg.hold && ! thanks;
+	var holdGoogle = !! cfg.holdG && ! arrived;
+	var held = holdPixels || holdGoogle;
 	var onRelease = [];
 	var HOLD_EVS = [ 'pointerdown', 'keydown', 'touchstart', 'wheel', 'scroll' ];
 
@@ -119,7 +145,7 @@
 		loaded = true;
 
 		var adv = cfg.user || {};
-		var pfetch = cfg.hold ? whenReleased : function ( fn ) { fn(); };
+		var pfetch = holdPixels ? whenReleased : function ( fn ) { fn(); };
 
 		if ( ! did.google && googleMay() ) {
 			did.google = true;
@@ -314,7 +340,11 @@
 		}
 
 		if ( cfg.ga4 && GA[ n ] ) {
-			gtag( 'event', GA[ n ], Object.assign( gaParams( n, d ), { send_to: cfg.ga4 } ) );
+			var gp = Object.assign( gaParams( n, d ), { send_to: cfg.ga4 } );
+			// The server reports a purchase GA4 never heard about, twenty
+			// minutes on; this tells it GA4 did.
+			if ( 'Purchase' === n ) { gp.event_callback = function () { mirror( 'ga4ok', {}, id ); }; }
+			gtag( 'event', GA[ n ], gp );
 		}
 
 		if ( cfg.gads && 'Purchase' === n && cfg.gadsLabel ) {
@@ -496,8 +526,10 @@
 		}
 	}
 
+	// An arrival does not wait for the page to finish: its source has to
+	// be read before the visitor can click away.
 	whenShown( function () {
-		if ( 'complete' === document.readyState ) {
+		if ( 'complete' === document.readyState || arrived ) {
 			setTimeout( start, 0 );
 		} else {
 			window.addEventListener( 'load', function () {
