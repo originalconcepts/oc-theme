@@ -2310,6 +2310,12 @@
 							slot.hidden = true;
 						} );
 						thanks.hidden = false;
+
+						// Only a lead really taken carries an id; the marketing
+						// layer counts it as one with the server.
+						if ( data.data && data.data.event_id ) {
+							document.dispatchEvent( new CustomEvent( 'oc:lead', { detail: { eventId: data.data.event_id } } ) );
+						}
 					}
 				} )
 				.catch( function () {

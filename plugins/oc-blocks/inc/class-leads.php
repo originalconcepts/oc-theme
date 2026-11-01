@@ -285,6 +285,21 @@ final class Leads {
 		if ( $lead_id > 0 ) {
 			$this->mail( (int) $lead_id, $section, $name, $phone, $email, $msg, $extra, $page );
 			$this->forward( (int) $lead_id, $name, $phone, $email, $msg, $extra, $page );
+
+			// A marketing layer hears about it, with an id the page's own
+			// script shares, so the browser and the server count one lead.
+			$event_id = 'lead_' . substr( str_replace( '-', '', wp_generate_uuid4() ), 0, 20 );
+
+			/**
+			 * A lead was taken.
+			 *
+			 * @param int                  $lead_id  The lead.
+			 * @param string               $event_id Event id the page shares.
+			 * @param array<string,string> $user     What the sender typed.
+			 */
+			do_action( 'oc_blocks_lead', (int) $lead_id, $event_id, array_filter( array( 'em' => $email, 'ph' => $phone ) ) );
+
+			wp_send_json_success( array( 'event_id' => $event_id ) );
 		}
 
 		wp_send_json_success();

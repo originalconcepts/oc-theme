@@ -92,17 +92,20 @@
 	// tags must read it before the visitor clicks on, or the session
 	// counts as direct and the ad click is lost. So on arrival they load
 	// at once, and on the thank-you page everything does, since its
-	// purchase must not wait for a touch. Moving about inside the shop,
-	// or coming in directly, keeps the hold.
+	// purchase must not wait for a touch. The same goes for the pixels:
+	// Meta reads the ad's click on the landing page too. Moving about
+	// inside the shop, or coming in directly, keeps the hold. Tag
+	// Assistant's gtm_debug and Google's cross-domain _gl count as
+	// arriving — a check with either must see the tags at once.
 	var thanks = !! cfg.page && 'thankyou' === cfg.page.type;
-	var arrived = thanks || /[?&](gclid|gbraid|wbraid|gad_source|fbclid|ttclid|msclkid|utm_[a-z]+)=/i.test( location.search ) || ( function () {
+	var arrived = thanks || /[?&](gclid|gbraid|wbraid|gad_source|fbclid|ttclid|msclkid|utm_[a-z]+|gtm_debug|_gl)=/i.test( location.search ) || ( function () {
 		try {
 			return !! document.referrer && new URL( document.referrer ).hostname.replace( /^www\./, '' ) !== location.hostname.replace( /^www\./, '' );
 		} catch ( e ) {
 			return false;
 		}
 	}() );
-	var holdPixels = !! cfg.hold && ! thanks;
+	var holdPixels = !! cfg.hold && ! arrived;
 	var holdGoogle = !! cfg.holdG && ! arrived;
 	var held = holdPixels || holdGoogle;
 	var onRelease = [];
@@ -238,6 +241,29 @@
 
 	function items( d ) { return ( d && d.items ) || []; }
 
+	// Google's user_data from what a buyer typed: e-mail lower-cased, the
+	// phone in E.164 (an Israeli 05x number becomes +9725x).
+	function userData( u ) {
+		var out = {};
+		var em = String( u.em || '' ).trim().toLowerCase();
+		var ph = String( u.ph || '' ).replace( /[^\d+]/g, '' );
+		if ( em ) { out.email = em; }
+		if ( ph ) {
+			if ( '+' !== ph.charAt( 0 ) ) {
+				ph = /^0\d{8,9}$/.test( ph ) ? '+972' + ph.slice( 1 ) : ( /^972\d{8,9}$/.test( ph ) ? '+' + ph : '' );
+			}
+			if ( ph ) { out.phone_number = ph; }
+		}
+		var addr = {};
+		if ( u.fn ) { addr.first_name = String( u.fn ).trim().toLowerCase(); }
+		if ( u.ln ) { addr.last_name = String( u.ln ).trim().toLowerCase(); }
+		if ( u.ct ) { addr.city = String( u.ct ).trim().toLowerCase(); }
+		if ( u.zp ) { addr.postal_code = String( u.zp ).replace( /\s+/g, '' ); }
+		if ( u.country ) { addr.country = String( u.country ).toUpperCase(); }
+		if ( addr.first_name || addr.last_name ) { out.address = addr; }
+		return ( out.email || out.phone_number ) ? out : null;
+	}
+
 	// Money for ChatGPT ads is an integer in the smallest unit: 42.50 → 4250.
 	// The few currencies with no smaller unit are whole.
 	function minor( v, cur ) {
@@ -326,7 +352,11 @@
 
 		if ( ! loaded ) { pending.push( { n: n, d: d, id: id } ); return; }
 
-		window.dataLayer.push( Object.assign( { event: 'oc_' + n, oc_event_id: id }, d ) );
+		// The buyer's details ride with the purchase for the networks'
+		// matching, never into the dataLayer, where any tag could read them.
+		var pub = Object.assign( {}, d );
+		delete pub.user;
+		window.dataLayer.push( Object.assign( { event: 'oc_' + n, oc_event_id: id }, pub ) );
 
 		// The same event in the shape Google Tag Manager's own ecommerce
 		// tags read: the standard name, everything under `ecommerce`, and
@@ -353,6 +383,14 @@
 			window.oaiq( 'measure', oaName || 'custom', oaParams( d, oaKind ), oaName ? { event_id: id } : { event_id: id, custom_event_name: n.replace( /(?!^)[A-Z]/g, '_$&' ).toLowerCase() } );
 		}
 
+		// Enhanced conversions: a guest's purchase carries what they typed
+		// at the checkout (a signed-in shopper's was set when the tags
+		// loaded). Google hashes it in the browser before it leaves.
+		if ( 'Purchase' === n && d.user && ( cfg.ga4 || cfg.gads ) ) {
+			var ud = userData( d.user );
+			if ( ud ) { gtag( 'set', 'user_data', ud ); }
+		}
+
 		if ( cfg.ga4 && GA[ n ] ) {
 			var gp = Object.assign( gaParams( n, d ), { send_to: cfg.ga4 } );
 			// The server reports a purchase GA4 never heard about, twenty
@@ -363,6 +401,10 @@
 
 		if ( cfg.gads && 'Purchase' === n && cfg.gadsLabel ) {
 			gtag( 'event', 'conversion', { send_to: cfg.gads + '/' + cfg.gadsLabel, value: Number( d.value || 0 ), currency: d.currency, transaction_id: d.order_id } );
+		}
+
+		if ( cfg.gads && 'Lead' === n && cfg.gadsLead ) {
+			gtag( 'event', 'conversion', { send_to: cfg.gads + '/' + cfg.gadsLead } );
 		}
 
 		if ( cfg.gads && ( 'ViewContent' === n || 'AddToCart' === n || 'Purchase' === n ) ) {
@@ -435,6 +477,9 @@
 		var sid = uid( 'srch' );
 		send( 'Search', { search: e.detail.term }, sid );
 		mirror( 'search', { search: e.detail.term }, sid );
+	} );
+	document.addEventListener( 'oc:lead', function ( e ) {
+		send( 'Lead', {}, ( e.detail && e.detail.eventId ) || uid( 'lead' ) );
 	} );
 	document.addEventListener( 'oc:newsletter', function ( e ) {
 		send( 'Subscribe', {}, ( e.detail && e.detail.eventId ) || uid( 'sub' ) );

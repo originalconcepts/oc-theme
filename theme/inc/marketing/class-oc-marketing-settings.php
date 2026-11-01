@@ -122,6 +122,7 @@ final class Settings {
 			'gads'       => array(
 				'id'    => strtoupper( $str( $gads['id'] ?? '' ) ),
 				'label' => $str( $gads['label'] ?? '' ),
+				'lead'  => $str( $gads['lead'] ?? '' ),
 			),
 			'gtm'        => array(
 				'id' => strtoupper( $str( $gtm['id'] ?? '' ) ),

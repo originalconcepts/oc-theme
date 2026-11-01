@@ -736,7 +736,9 @@ final class Seo {
 			$robots['follow']  = true;
 			unset( $robots['index'], $robots['nofollow'] );
 		} else {
-			$robots['max-image-preview:large'] = true;
+			// Core's own key: under any other spelling it prints a second
+			// "max-image-preview:large" beside core's.
+			$robots['max-image-preview'] = 'large';
 		}
 
 		if ( '1' === self::field( self::subject(), '_ocseo_nofollow' ) ) {
@@ -825,11 +827,15 @@ final class Seo {
 
 		$line = 'Sitemap: ' . home_url( '/sitemap.xml' );
 
-		if ( false !== strpos( (string) $output, $line ) ) {
-			return (string) $output;
+		// Core lists wp-sitemap.xml, the same sitemap under its own name:
+		// one address, ours, not two that look like two sitemaps.
+		$output = (string) preg_replace( '#^Sitemap:\s*\S*/wp-sitemap\.xml\s*$\n?#mi', '', (string) $output );
+
+		if ( false !== strpos( $output, $line ) ) {
+			return $output;
 		}
 
-		return rtrim( (string) $output ) . "\n\n" . $line . "\n";
+		return rtrim( $output ) . "\n\n" . $line . "\n";
 	}
 
 	/**

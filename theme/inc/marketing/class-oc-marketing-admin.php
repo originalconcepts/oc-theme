@@ -119,6 +119,7 @@ final class Marketing_Admin {
 					<?php $field( 'ga4[secret]', $s['ga4']['secret'], __( 'GA4 API secret (optional)', 'oc-theme' ), __( 'Admin → Data streams → the stream → Measurement Protocol API secrets. Lets the server report a purchase the browser never did.', 'oc-theme' ) ); ?>
 					<?php $field( 'gads[id]', $s['gads']['id'], __( 'Google Ads conversion ID', 'oc-theme' ), '', 'AW-123456789' ); ?>
 					<?php $field( 'gads[label]', $s['gads']['label'], __( 'Purchase conversion label', 'oc-theme' ), __( 'From the conversion action’s tag setup: the part after the slash.', 'oc-theme' ), 'AbCdEfGhIj' ); ?>
+					<?php $field( 'gads[lead]', $s['gads']['lead'], __( 'Lead conversion label', 'oc-theme' ), __( 'Counted when a contact form on the site is sent. Leave empty for no lead conversion.', 'oc-theme' ), 'AbCdEfGhIj' ); ?>
 					<?php $field( 'gtm[id]', $s['gtm']['id'], __( 'Tag Manager container (optional)', 'oc-theme' ), __( 'Every event is also pushed to the dataLayer as oc_<event>, for any extra tag.', 'oc-theme' ), 'GTM-XXXXXXX' ); ?>
 				</div>
 			</div>

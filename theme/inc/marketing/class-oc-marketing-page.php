@@ -41,6 +41,7 @@ final class Page {
 		add_action( 'user_register', array( $this, 'registered' ) );
 		add_action( 'set_auth_cookie', array( $this, 'logged_in' ), 10, 4 );
 		add_action( 'oc_newsletter_subscribed', array( $this, 'subscribed' ), 10, 2 );
+		add_action( 'oc_blocks_lead', array( $this, 'lead' ), 10, 3 );
 		add_action( Events::HOOK, array( Dispatch::class, 'send' ) );
 		add_action( 'oc_marketing_ga4_fallback', array( $this, 'ga4_fallback' ) );
 		add_action( 'rest_api_init', array( $this, 'rest' ) );
@@ -445,6 +446,24 @@ final class Page {
 		}
 
 		Events::server( 'Subscribe', array(), (string) $id, array( 'em' => (string) $email ) );
+	}
+
+	/**
+	 * A contact form sent (OC Blocks): the server tells Meta and TikTok
+	 * with the id the page shares, so the browser and the server count one.
+	 *
+	 * @param int                  $lead_id Lead.
+	 * @param string               $id      Event id.
+	 * @param array<string,string> $user    What the sender typed: em, ph.
+	 */
+	public function lead( $lead_id, $id = '', $user = array() ): void {
+		unset( $lead_id );
+
+		if ( ! Settings::live() ) {
+			return;
+		}
+
+		Events::server( 'Lead', array(), (string) $id, array_map( 'strval', (array) $user ) );
 	}
 
 	/**

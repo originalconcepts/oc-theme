@@ -15073,3 +15073,9 @@ msgid "%d order marked as not printed."
 msgid_plural "%d orders marked as not printed."
 msgstr[0] "הזמנה אחת סומנה כלא הודפסה."
 msgstr[1] "%d הזמנות סומנו כלא הודפסו."
+
+msgid "Lead conversion label"
+msgstr "תווית המרה של ליד"
+
+msgid "Counted when a contact form on the site is sent. Leave empty for no lead conversion."
+msgstr "נספרת כשנשלח טופס יצירת קשר באתר. השאירו ריק אם אין המרת ליד."

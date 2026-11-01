@@ -69,6 +69,7 @@ final class Marketing {
 				'ga4'       => $s['ga4']['id'],
 				'gads'      => $s['gads']['id'],
 				'gadsLabel' => $s['gads']['label'],
+				'gadsLead'  => $s['gads']['lead'],
 				'gtm'       => $s['gtm']['id'],
 				'tiktok'    => $s['tiktok']['pixel'],
 				'openai'    => $s['openai']['pixel'],
