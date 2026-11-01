@@ -464,7 +464,7 @@ final class Registry {
 							'fbg'     => array(
 								'type'  => 'color',
 								'label' => __( 'The room around the picture', 'oc-blocks' ),
-								'hint'  => __( 'Where the picture does not reach (edge to edge, or whole). Empty is the page colour.', 'oc-blocks' ),
+								'hint'  => __( 'Where the picture does not reach (edge to edge, or whole). Empty: the same picture, enlarged and blurred.', 'oc-blocks' ),
 							),
 							'heading' => array(
 								'type'  => 'text',
@@ -616,6 +616,18 @@ final class Registry {
 						'label' => __( 'Dots', 'oc-blocks' ),
 						'def'   => 1,
 						'group' => 'design',
+					),
+					'dotst'    => array(
+						'type'    => 'seg',
+						'label'   => __( 'Dots style', 'oc-blocks' ),
+						'hint'    => __( 'Filling lines: the line of the slide on show fills up while it waits, and the next one starts when it is full.', 'oc-blocks' ),
+						'choices' => array(
+							'dot'  => __( 'Dots', 'oc-blocks' ),
+							'line' => __( 'Filling lines', 'oc-blocks' ),
+						),
+						'def'     => 'dot',
+						'when'    => array( 'dots' => array( '1', 1, true ) ),
+						'group'   => 'design',
 					),
 					'dotsd'    => array(
 						'type'    => 'seg',

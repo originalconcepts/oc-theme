@@ -182,9 +182,15 @@ body.ocb-host-other .ocb-hero__cta:not(.ocb-hero__cta--ghost):hover {
    free. With the cart open at the side (a wide screen without
    .ocb-cart-closed) the column already ends at the cart. The products
    view that replaces the page's sections keeps its padding: only the
-   composed sections move. */
+   composed sections move. On a screen wider than Deliz's page (1800px and
+   its padding) the page stands centred with room on both sides: the
+   column's real distance from the edge is measured (--ocb-free-l, set by
+   blocks.js), the padding alone until it is. */
 @media (min-width: 600px) {
-	body.ocb-contained.ocb-cart-closed:not(.oc-compose-preview) .oc-compose > .ocb--w-full { margin-left: -15px; } /* guard-ok: Deliz keeps its cart drawer on the physical left in both languages */
+	body.ocb-contained.ocb-cart-closed:not(.oc-compose-preview) .oc-compose > .ocb--w-full { margin-left: calc(-1 * var(--ocb-free-l, 15px)); } /* guard-ok: Deliz keeps its cart drawer on the physical left in both languages */
+	/* The running line's pause button keeps the line of the other sections'
+	   content edge, measured from the column rather than the screen. */
+	body.ocb-contained.ocb-cart-closed:not(.oc-compose-preview) .oc-compose > .ocb--w-full .ocb-mq__pp { margin-left: calc(var(--ocb-free-l, 15px) + max(0px, (100% - var(--ocb-free-l, 15px) - var(--oc-content-width, 1280px) - 2 * clamp(16px, 3vw, 32px)) / 2) + clamp(16px, 3vw, 32px)); } /* guard-ok: the free side above */
 }
 
 /* A phone has no categories column: full width is edge to edge. */

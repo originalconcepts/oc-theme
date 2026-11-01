@@ -75,10 +75,22 @@
 	   cards keep their place and only the shadow gains space. At the ends
 	   the strip's own edge is the section's when the section runs full
 	   width, so there the room is kept inside: the cards stand 24px in. */
-	padding: 28px 24px 34px;
-	margin-block: -28px -34px;
+	padding: 44px 24px 52px;
+	margin-block: -44px -52px;
 	margin-inline: -24px;
 	scroll-padding-inline: 24px;
+}
+
+/* On a desktop that room at the ends showed the next card's edge (12px of
+   it, past the gap): the row is meant to show whole cards. The ends fade
+   out instead — clear over the gap's width, full again by the first card —
+   so the shadow softens into the edge and no neighbour peeks in. A phone
+   keeps its peek: there the next card showing is the hint to swipe. */
+@media (min-width: 783px) {
+	.ocb-host-other .oc-compose .ocb-shelf--slider .ocb-hostcards .ed-mp__products ul.products {
+		-webkit-mask-image: linear-gradient(to right, transparent 0 calc(24px - var(--ocb-shelf-gap)), #000 24px calc(100% - 24px), transparent calc(100% - 24px + var(--ocb-shelf-gap)));
+		mask-image: linear-gradient(to right, transparent 0 calc(24px - var(--ocb-shelf-gap)), #000 24px calc(100% - 24px), transparent calc(100% - 24px + var(--ocb-shelf-gap)));
+	}
 }
 
 .ocb-host-other .oc-compose .ocb--w-full .ocb-shelf--slider .ocb-hostcards .ed-mp__products ul.products { margin-inline: 0; }
@@ -245,7 +257,10 @@ html.ocb-anim .ocb--in-stagger.is-in .ocb-words > * {
 	letter-spacing: .02em;
 }
 
-.ocb__more { margin: clamp(18px, 3vw, 30px) 0 0; text-align: center; }
+/* Raised over the product strip above it, whose room for the cards' shadow
+ * reaches down this far (the strip stands positioned, so it would cover
+ * the link and take its clicks). */
+.ocb__more { position: relative; margin: clamp(18px, 3vw, 30px) 0 0; text-align: center; }
 
 .ocb-btn {
 	display: inline-block;
@@ -312,6 +327,8 @@ html.ocb-anim .ocb--in-stagger.is-in .ocb-words > * {
 }
 
 .ocb-dots {
+	--ocb-dot: rgb(255 255 255 / 45%);
+	--ocb-dot-on: #fff;
 	position: absolute;
 	inset-inline: 0;
 	inset-block-end: 14px;
@@ -327,15 +344,22 @@ html.ocb-anim .ocb--in-stagger.is-in .ocb-words > * {
 	padding: 0;
 	border: 0;
 	border-radius: 50%;
-	background: rgb(255 255 255 / 45%);
+	background: var(--ocb-dot);
 	cursor: pointer;
 	transition: background .15s ease, transform .15s ease;
 }
 
-.ocb-dots__dot.is-on { background: #fff; transform: scale(1.25); }
+.ocb-dots__dot.is-on { background: var(--ocb-dot-on); transform: scale(1.25); }
 
-/* The pause button in the row of dots: centred on them, a little apart. */
-.ocb-dots .ocb-dots__pp { align-self: center; margin-block: -10px; margin-inline-start: 4px; inline-size: 26px; block-size: 26px; }
+/* The pause button of a banner with dots stands where every pause button
+ * stands: at the end of the row, not among the dots. On the picture that
+ * is its lower corner, as a dark disc; under it, the quiet disc the strips
+ * have (.ocpp--clean). Centred on the dots either way. */
+.ocb-dots .ocb-dots__pp {
+	position: absolute;
+	inset-inline-end: 12px;
+	inset-block-start: calc(var(--ocb-dot-h, 8px) / 2 - 14px);
+}
 
 /* A dot is 8px because that is what it should look like; a finger needs 24.
  * The button keeps its size and grows an invisible tap area around itself,
@@ -348,32 +372,69 @@ html.ocb-anim .ocb--in-stagger.is-in .ocb-words > * {
 	inset: -8px;
 }
 
+/* Filling lines instead of dots: a short line for each slide, and the
+ * slide on show fills its own while it waits — full, the next one starts.
+ * The lines before it stay full, so the row also reads as how far along
+ * the round is; a new round empties them all. Without turning by itself
+ * the banner simply shows its own line full. */
+.ocb-dots--line { --ocb-dot-h: 3px; gap: 6px; }
+
+.ocb-dots--line .ocb-dots__dot,
+.ocb-dots--line .ocb-dots__dot.is-on {
+	inline-size: clamp(22px, 4vw, 36px);
+	block-size: 3px;
+	border-radius: 3px;
+	background: var(--ocb-dot);
+	transform: none;
+}
+
+.ocb-dots--line .ocb-dots__dot::before {
+	content: "";
+	position: absolute;
+	inset-block: 0;
+	inset-inline-start: 0;
+	inline-size: 0;
+	border-radius: inherit;
+	background: var(--ocb-dot-on);
+}
+
+.ocb-dots--line .ocb-dots__dot.is-done::before,
+.ocb-dots--line .ocb-dots__dot.is-on::before { inline-size: 100%; }
+.ocb-dots--line.ocb-dots--run .ocb-dots__dot.is-on::before { inline-size: 0; }
+.ocb-dots--line.ocb-dots--run .ocb-dots__dot.is-run::before { animation: ocb-dots-fill var(--ocb-dur, 5s) linear forwards; }
+.ocb-dots--line.is-held .ocb-dots__dot.is-run::before { animation-play-state: paused; }
+
+/* A finger-sized target around a thin line. */
+.ocb-dots--line .ocb-dots__dot::after { inset: -10px -3px; }
+
+@keyframes ocb-dots-fill {
+	from { inline-size: 0; }
+	to { inline-size: 100%; }
+}
+
 /* The dots may stand under the banner instead of on it — set apart for
  * the desktop and the phone: a row of their own, in the page's ink
  * rather than white. */
 @media (min-width: 783px) {
 	.ocb-dots--below-d {
-		position: static;
+		--ocb-dot: color-mix(in srgb, var(--oc-ink, #111) 28%, transparent);
+		--ocb-dot-on: var(--oc-ink, #111);
+		position: relative;
 		inset: auto;
 		padding-block: 14px 2px;
 	}
-	.ocb-dots--below-d .ocb-dots__dot { background: color-mix(in srgb, var(--oc-ink, #111) 28%, transparent); }
-	.ocb-dots--below-d .ocb-dots__dot.is-on { background: var(--oc-ink, #111); }
-	.ocb-dots--below-d .ocpp { background: none; color: var(--oc-ink, #111); opacity: .6; }
-	.ocb-dots--below-d .ocpp:hover { opacity: 1; }
-	.ocb-dots--below-d .ocpp:focus-visible { box-shadow: none; outline-color: currentColor; }
+	.ocb-dots--below-d .ocb-dots__pp { inset-inline-end: 0; inset-block-start: calc(14px + var(--ocb-dot-h, 8px) / 2 - 14px); }
 }
 
 @media (max-width: 782px) {
 	.ocb-dots--below-m {
-		position: static;
+		--ocb-dot: color-mix(in srgb, var(--oc-ink, #111) 28%, transparent);
+		--ocb-dot-on: var(--oc-ink, #111);
+		position: relative;
 		inset: auto;
 		padding-block: 12px 2px;
 	}
-	.ocb-dots--below-m .ocb-dots__dot { background: color-mix(in srgb, var(--oc-ink, #111) 28%, transparent); }
-	.ocb-dots--below-m .ocb-dots__dot.is-on { background: var(--oc-ink, #111); }
-	.ocb-dots--below-m .ocpp { background: none; color: var(--oc-ink, #111); opacity: .6; }
-	.ocb-dots--below-m .ocpp:focus-visible { box-shadow: none; outline-color: currentColor; }
+	.ocb-dots--below-m .ocb-dots__pp { inset-inline-end: 0; inset-block-start: calc(12px + var(--ocb-dot-h, 8px) / 2 - 14px); }
 }
 
 /* ---------- hero ---------- */
@@ -497,9 +558,22 @@ html.ocb-anim .ocb--in-stagger.is-in .ocb-words > * {
 .ocb-hero--fit-contain .ocb-hero__media img,
 .ocb-hero--fit-contain .ocb-hero__media video { object-fit: contain; }
 
+/* The room around such a picture, when no colour was chosen for it: the
+ * same picture, enlarged and blurred, behind the sharp one. */
+.ocb-hero__blur {
+	display: none;
+	position: absolute;
+	inset: -24px;
+	background: var(--ocb-blur) center / cover no-repeat;
+	filter: blur(18px);
+}
+
 @media (min-width: 783px) {
 	.ocb-hero__slide--d-width,
 	.ocb-hero__slide--d-contain { background: var(--ocb-hero-fitbg, var(--ocb-bg, transparent)); }
+
+	.ocb-hero__slide--d-width .ocb-hero__blur,
+	.ocb-hero__slide--d-contain .ocb-hero__blur { display: block; }
 
 	.ocb-hero__slide--d-width .ocb-hero__media picture { position: relative; }
 
@@ -519,6 +593,11 @@ html.ocb-anim .ocb--in-stagger.is-in .ocb-words > * {
 
 	.ocb-hero__slide--m-width,
 	.ocb-hero__slide--m-contain { background: var(--ocb-hero-fitbg, var(--ocb-bg, transparent)); }
+
+	.ocb-hero__blur { background-image: var(--ocb-blur-m, var(--ocb-blur)); }
+
+	.ocb-hero__slide--m-width .ocb-hero__blur,
+	.ocb-hero__slide--m-contain .ocb-hero__blur { display: block; }
 
 	.ocb-hero__slide--m-width .ocb-hero__media picture { position: relative; }
 
@@ -1196,7 +1275,7 @@ li.oc-block--slider:has(.oc-shelf-load--viewed[data-oc-shelf]) { display: none; 
 .ocb-cats--run .ocb-cat { scroll-snap-align: none; }
 
 /* Its pause button stands under the row, at the end. */
-.ocb-cats__pp { position: absolute; inset-block-start: 100%; inset-inline-end: -4px; z-index: 2; }
+.ocb-cats__pp { position: absolute; inset-block-start: calc(100% + 6px); inset-inline-end: 0; z-index: 2; }
 
 .ocb-cat { display: block; text-decoration: none; color: inherit; text-align: center; }
 
@@ -1791,6 +1870,7 @@ li.oc-block--slider:has(.oc-shelf-load--viewed[data-oc-shelf]) { display: none; 
 }
 
 .ocpp:hover { background: rgb(0 0 0 / 70%); }
+.ocpp[hidden] { display: none; }
 .ocpp:focus-visible { outline: 2px solid #fff; outline-offset: 2px; box-shadow: 0 0 0 4px rgb(0 0 0 / 55%); }
 .ocpp svg { display: block; inline-size: 12px; block-size: 12px; fill: currentColor; }
 .ocpp .ocpp__g,
@@ -1807,17 +1887,28 @@ li.oc-block--slider:has(.oc-shelf-load--viewed[data-oc-shelf]) { display: none; 
 .ocpp--inline:focus-visible { box-shadow: none; outline-color: currentColor; }
 .ocpp--inline svg { inline-size: 11px; block-size: 11px; }
 
-/* Beside the thing that moves rather than on it (under a banner, under a
- * strip): no disc, only the mark, in the page's ink. The button keeps a
- * full finger-sized target. */
-.ocpp--clean { inline-size: 32px; block-size: 32px; background: none; color: var(--oc-ink, #1c1c1c); opacity: .6; transition: opacity .15s ease; }
-.ocpp--clean:hover { background: none; opacity: 1; }
-.ocpp--clean:focus-visible { box-shadow: none; outline-color: currentColor; }
-.ocpp--clean svg { inline-size: 13px; block-size: 13px; }
+/* Beside the thing that moves rather than on it — under a banner, a
+ * running line, a row of categories: one and the same button everywhere,
+ * a quiet disc in the page's ink at the end of the thing it stops, just
+ * under it. Hovered, the disc darkens a step. */
+.ocpp--clean {
+	inline-size: 28px;
+	block-size: 28px;
+	background: color-mix(in srgb, var(--oc-ink, #1c1c1c) 8%, transparent);
+	color: var(--oc-ink, #1c1c1c);
+	transition: background-color .15s ease;
+}
 
-/* The running line's pause button: a row of its own under the strip, at
- * its end, clear of the words. */
-.ocb-mq__pp { display: grid; margin-block: 4px 0; margin-inline: auto 8px; }
+.ocpp--clean:hover { background: color-mix(in srgb, var(--oc-ink, #1c1c1c) 16%, transparent); }
+.ocpp--clean:focus-visible { box-shadow: none; outline-color: currentColor; }
+.ocpp--clean svg { inline-size: 11px; block-size: 11px; }
+
+/* The running line's: a row of its own under the strip, at its end. A
+ * full-width strip ends at the screen's edge; its button stands in line
+ * with the other sections' content edge instead, so that every pause
+ * button down the page keeps one line. */
+.ocb-mq__pp { display: grid; margin-block: 6px 0; margin-inline: auto 0; }
+.ocb--w-full .ocb-mq__pp { margin-inline-end: calc(max(0px, (100% - var(--oc-content-width, 1280px) - 2 * clamp(16px, 3vw, 32px)) / 2) + clamp(16px, 3vw, 32px)); }
 
 /* A stopped strip holds still. */
 .ocb-mq.is-paused .ocb-mq__track { animation-play-state: paused; }

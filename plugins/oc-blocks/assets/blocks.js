@@ -342,9 +342,47 @@
 				}
 			}
 
-			[].forEach.call( dots.children, function ( d, i ) {
+			dots.querySelectorAll( '.ocb-dots__dot' ).forEach( function ( d, i ) {
 				d.classList.toggle( 'is-on', i === at );
+				// The lines before the one on show stay full.
+				d.classList.toggle( 'is-done', i < at );
 			} );
+		}
+
+		// The line of the slide on show fills while the banner waits to
+		// turn: started afresh with every new wait, held where it is while
+		// the wait is held.
+		function fill( secs ) {
+			var dots = hero.querySelector( '.ocb-dots--line' );
+
+			if ( ! dots ) {
+				return;
+			}
+
+			// The wait belongs to the slide already chosen, even while the
+			// banner is still turning to it.
+			paintDots();
+
+			var on = dots.querySelectorAll( '.ocb-dots__dot' )[ at ];
+
+			dots.classList.add( 'ocb-dots--run' );
+			dots.style.setProperty( '--ocb-dur', secs + 's' );
+			dots.querySelectorAll( '.is-run' ).forEach( function ( d ) {
+				d.classList.remove( 'is-run' );
+			} );
+
+			if ( on ) {
+				void on.offsetWidth;
+				on.classList.add( 'is-run' );
+			}
+		}
+
+		function holdFill( on ) {
+			var dots = hero.querySelector( '.ocb-dots--line' );
+
+			if ( dots ) {
+				dots.classList.toggle( 'is-held', on );
+			}
 		}
 
 		// Where a slide rests: its start edge on the strip's start edge, or
@@ -447,19 +485,52 @@
 		}
 
 		var held = false;
+		// What is left of the wait, kept while it is held (a hand over the
+		// banner, the page put away, the pause button) so that it resumes
+		// where it stood — as its filling line does.
+		var left = 0;
+		var since = 0;
 
-		function arm() {
+		function stop() {
+			if ( timer ) {
+				left -= Date.now() - since;
+			}
+
+			clearTimeout( timer );
+			timer = null;
+			holdFill( true );
+		}
+
+		// A fresh wait for the slide on show; `keep` resumes the one held.
+		function arm( keep ) {
 			var secs = Number( hero.dataset.ocbAuto || 0 );
 
-			clearInterval( timer );
+			clearTimeout( timer );
+			timer = null;
 
-			if ( ! secs || reduced || held ) {
+			if ( ! secs || reduced ) {
 				return;
 			}
 
-			timer = setInterval( function () {
+			if ( true !== keep || left <= 0 ) {
+				left = secs * 1000;
+				fill( secs );
+			}
+
+			if ( held ) {
+				holdFill( true );
+
+				return;
+			}
+
+			holdFill( false );
+			since = Date.now();
+			timer = setTimeout( function () {
+				timer = null;
+				left = 0;
 				go( at + 1 );
-			}, secs * 1000 );
+				arm();
+			}, left );
 		}
 
 		if ( fade ) {
@@ -616,19 +687,26 @@
 		if ( ( Number( hero.dataset.ocbAuto || 0 ) && ! reduced ) || hero.querySelector( 'video' ) ) {
 			var heroDots = hero.querySelector( '[data-ocb-dots]' );
 
-			// Beside the dots when there are dots — a corner of the banner
-			// is where floating buttons stand.
-			( heroDots || hero ).appendChild( window.ocPause.button( 'motion', heroDots ? 'ocb-dots__pp' : 'ocpp--corner', function ( paused ) {
+			// At the end of the row of dots when there are dots (the stylesheet
+			// sets it on the picture's corner or under it, as the dots stand);
+			// otherwise in the banner's corner.
+			( heroDots || hero ).appendChild( window.ocPause.button( 'motion', heroDots ? 'ocb-dots__pp ocpp--clean' : 'ocpp--corner', function ( paused ) {
 				held = paused;
-				arm();
+
+				if ( paused ) {
+					stop();
+				} else {
+					arm( true );
+				}
+
 				hero.querySelectorAll( 'video' ).forEach( paused ? window.ocPause.hold : window.ocPause.release );
 			} ) );
 		}
 
-		hero.addEventListener( 'mouseenter', function () {
-			clearInterval( timer );
+		hero.addEventListener( 'mouseenter', stop );
+		hero.addEventListener( 'mouseleave', function () {
+			arm( true );
 		} );
-		hero.addEventListener( 'mouseleave', arm );
 
 		// A page put away (another tab, the phone's browser in the
 		// background) freezes the smooth scroll midway while the timer
@@ -645,10 +723,10 @@
 
 		document.addEventListener( 'visibilitychange', function () {
 			if ( document.hidden ) {
-				clearInterval( timer );
+				stop();
 			} else {
 				rest();
-				arm();
+				arm( true );
 			}
 		} );
 
@@ -837,6 +915,7 @@
 		var span = 0;
 		var rtl = false;
 		var idle = null;
+		var btn = null;
 
 		if ( ! row || own.length < 2 || reduced ) {
 			return;
@@ -917,13 +996,13 @@
 			}
 		}
 
-		// A hand on the row: stand still until it has let go for 5s.
+		// A hand on the row: stand still until it has let go for 2s.
 		function touched() {
-			quiet = performance.now() + 5000;
+			quiet = performance.now() + 2000;
 			gain = 0;
 			pos = row.scrollLeft;
 			clearTimeout( idle );
-			idle = setTimeout( go, 5050 );
+			idle = setTimeout( go, 2050 );
 		}
 
 		function settle() {
@@ -934,6 +1013,8 @@
 			}
 
 			on = now;
+			// Laid out as a grid (a phone's rows) nothing moves: no button.
+			btn.hidden = ! on;
 
 			if ( on ) {
 				rtl = 'rtl' === getComputedStyle( row ).direction;
@@ -998,16 +1079,18 @@
 			resized = setTimeout( settle, 200 );
 		} );
 
-		settle();
-
 		// It moves by itself, so it can be stopped (WCAG 2.2.2).
-		shelf.appendChild( window.ocPause.button( 'motion', 'ocpp--clean ocb-cats__pp', function ( paused ) {
+		btn = window.ocPause.button( 'motion', 'ocpp--clean ocb-cats__pp', function ( paused ) {
 			held = paused;
 
 			if ( ! paused ) {
 				go();
 			}
-		} ) );
+		} );
+		btn.hidden = true;
+		shelf.appendChild( btn );
+
+		settle();
 	}
 
 	document.querySelectorAll( '[data-ocb-run]' ).forEach( runRow );
@@ -2431,6 +2514,29 @@
 			}, { once: true } );
 		}
 	} );
+	/* ---------- full width on a page centred in a box of its own ----------
+	 * Deliz stops growing its page at a set width and centres it: on a wide
+	 * screen there is room left over on both sides, and a full-width
+	 * section that took back only the page's own padding stopped well short
+	 * of the screen's edge. The stylesheet reaches as far as the column's
+	 * real distance from that edge, measured here (only where the cart is a
+	 * drawer and the edge is free — see deliz.css). */
+	( function () {
+		var body = document.body;
+		var compose = document.querySelector( '.oc-compose' );
+
+		if ( ! compose || ! body.classList.contains( 'ocb-contained' ) || ! compose.querySelector( ':scope > .ocb--w-full' ) ) {
+			return;
+		}
+
+		function measure() {
+			body.style.setProperty( '--ocb-free-l', Math.max( 0, Math.round( compose.getBoundingClientRect().left ) ) + 'px' );
+		}
+
+		measure();
+		window.addEventListener( 'resize', measure );
+	}() );
+
 	/* ---------- every muted loop gets its pause button ---------- */
 
 	window.ocPause.scan( document );

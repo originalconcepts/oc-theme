@@ -749,7 +749,25 @@ final class Render {
 				}
 			}
 
+			// Edge to edge and whole leave room around a picture of another
+			// shape than the banner's. Unless a colour was chosen for it,
+			// that room shows the same picture, enlarged and blurred: the
+			// page's own colour there read as the picture standing cut at
+			// the top, and the words' dark fade over it as a grey band.
+			// A small copy is plenty for a blur.
+			$blur = '';
+
+			if ( '' === $fbg && '' === $slide['vid'] && $slide['img'] > 0 && ( 'cover' !== $fit || 'cover' !== $fitm ) ) {
+				$blur_d = (string) wp_get_attachment_image_url( (int) $slide['img'], 'medium' );
+				$blur_m = $slide['imgm'] > 0 ? (string) wp_get_attachment_image_url( (int) $slide['imgm'], 'medium' ) : $blur_d;
+
+				if ( '' !== $blur_d ) {
+					$blur = '<span class="ocb-hero__blur" aria-hidden="true" style="' . esc_attr( '--ocb-blur:url("' . esc_url( $blur_d ) . '");--ocb-blur-m:url("' . esc_url( '' !== $blur_m ? $blur_m : $blur_d ) . '")' ) . '"></span>';
+				}
+			}
+
 			$slides[] = $open
+				. $blur
 				. '<div class="ocb-hero__media' . ( $fixed ? ' ocb-hero__media--fixed' : '' ) . ( '' !== $arrive ? ' ocb-hero__media--first' : '' ) . '"' . ( 0 === $lax || $fixed ? '' : ' data-ocb-parallax="' . $lax . '"' ) . '>' . $media . '</div>'
 				. ( $s['shade'] > 0 ? '<div class="ocb-hero__shade" style="opacity:' . ( absint( $s['shade'] ) / 100 ) . '"></div>' : '' )
 				. $tap
@@ -844,7 +862,7 @@ final class Render {
 
 		if ( ! $one && ! empty( $s['dots'] ) ) {
 			/* translators: %d: slide number. */
-			$html .= '<div class="ocb-dots' . ( 'below' === (string) ( $s['dotsd'] ?? 'on' ) ? ' ocb-dots--below-d' : '' ) . ( 'below' === (string) ( $s['dotsm'] ?? 'on' ) ? ' ocb-dots--below-m' : '' ) . '" data-ocb-dots data-ocb-dot-label="' . esc_attr( __( 'Slide %d', 'oc-blocks' ) ) . '"></div>';
+			$html .= '<div class="ocb-dots' . ( 'line' === (string) ( $s['dotst'] ?? 'dot' ) ? ' ocb-dots--line' : '' ) . ( 'below' === (string) ( $s['dotsd'] ?? 'on' ) ? ' ocb-dots--below-d' : '' ) . ( 'below' === (string) ( $s['dotsm'] ?? 'on' ) ? ' ocb-dots--below-m' : '' ) . '" data-ocb-dots data-ocb-dot-label="' . esc_attr( __( 'Slide %d', 'oc-blocks' ) ) . '"></div>';
 		}
 
 		$html .= '</div>';

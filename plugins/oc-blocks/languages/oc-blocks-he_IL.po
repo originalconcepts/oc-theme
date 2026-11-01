@@ -2089,8 +2089,8 @@ msgstr "איך התמונה מוצגת — טלפון"
 msgid "Which part shows on phones — top (0) to bottom (100)"
 msgstr "איזה חלק רואים בטלפון: למעלה (0) עד למטה (100)"
 
-msgid "Where the picture does not reach (edge to edge, or whole). Empty is the page colour."
-msgstr "הצבע במקומות שהתמונה לא מגיעה אליהם (במצב מקצה לקצה או בשלמותה). ריק: צבע העמוד."
+msgid "Where the picture does not reach (edge to edge, or whole). Empty: the same picture, enlarged and blurred."
+msgstr "הצבע במקומות שהתמונה לא מגיעה אליהם (במצב מקצה לקצה או בשלמותה). ריק: אותה תמונה, מוגדלת ומטושטשת."
 
 msgid "At the bottom: the words sit low and to the side, small, over a dark fade that keeps them readable. The buttons step aside — a tap anywhere on the slide leads where the first button would."
 msgstr "למטה: טקסט קטן בתחתית ובצד, על שכבה כהה שעולה מהתחתית כדי שיהיה קריא. הכפתורים לא מוצגים, ולחיצה בכל מקום על השקופית מובילה לקישור של הכפתור הראשון."
@@ -2118,3 +2118,12 @@ msgstr "חזרה לפריסה של המחשב"
 
 msgid "Until changed here, the phone follows the desktop."
 msgstr "כל עוד לא שונה כאן, הטלפון מציג כמו במחשב."
+
+msgid "Dots style"
+msgstr "סגנון הנקודות"
+
+msgid "Filling lines: the line of the slide on show fills up while it waits, and the next one starts when it is full."
+msgstr "קווים מתמלאים: הקו של השקופית המוצגת מתמלא בזמן ההמתנה, וכשהוא מלא מתחיל להתמלא הקו הבא."
+
+msgid "Filling lines"
+msgstr "קווים מתמלאים"
