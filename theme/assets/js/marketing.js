@@ -545,7 +545,15 @@
 		} );
 	}
 
+	// A page the server cache kept from before this element existed has
+	// none; the fragment needs one to replace.
 	var cartHolder = document.getElementById( 'oc-mkt-cart' );
+	if ( ! cartHolder && document.body ) {
+		cartHolder = document.createElement( 'script' );
+		cartHolder.type = 'application/json';
+		cartHolder.id = 'oc-mkt-cart';
+		document.body.appendChild( cartHolder );
+	}
 	if ( cartHolder && cartHolder.parentNode && 'MutationObserver' in window ) {
 		new MutationObserver( cartChange ).observe( cartHolder.parentNode, { childList: true } );
 	}
