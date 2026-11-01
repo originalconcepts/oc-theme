@@ -34,7 +34,7 @@ final class Marketing {
 		}
 
 		( new Page() )->register();
-		( new Cart() )->register();
+		( new Marketing\Cart() )->register();
 
 		add_action( 'wp_enqueue_scripts', array( $this, 'assets' ), 30 );
 		add_action( 'wp_footer', array( $this, 'footer' ), 40 );
