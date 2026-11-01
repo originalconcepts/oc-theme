@@ -290,9 +290,13 @@ final class Host {
 			}
 		}
 
+		// The shop view always follows the site. Any Deliz page carries it —
+		// a category chosen from the menu on "About" opens in place, in the
+		// same page — so a page that closed its own cart closed it for every
+		// category opened from there too.
 		return array(
 			'page' => $page,
-			'shop' => is_front_page() ? $shop : $page,
+			'shop' => $shop,
 		);
 	}
 
