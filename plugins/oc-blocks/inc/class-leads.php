@@ -297,7 +297,12 @@ final class Leads {
 			 * @param string               $event_id Event id the page shares.
 			 * @param array<string,string> $user     What the sender typed.
 			 */
-			do_action( 'oc_blocks_lead', (int) $lead_id, $event_id, array_filter( array( 'em' => $email, 'ph' => $phone ) ) );
+			$who = array(
+				'em' => $email,
+				'ph' => $phone,
+			);
+
+			do_action( 'oc_blocks_lead', (int) $lead_id, $event_id, array_filter( $who ) );
 
 			wp_send_json_success( array( 'event_id' => $event_id ) );
 		}
