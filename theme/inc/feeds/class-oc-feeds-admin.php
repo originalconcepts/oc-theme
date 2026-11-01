@@ -259,6 +259,13 @@ final class Admin {
 							</span>
 						</label>
 
+						<label class="ocfeed__f ocfeed__check">
+							<input type="checkbox" id="ocfeed-utm" checked>
+							<span><?php esc_html_e( 'Tag the product links with UTM', 'oc-theme' ); ?>
+								<small><?php esc_html_e( 'Adds utm_source, utm_medium=cpc and utm_campaign=catalog to every link. Turn it off for Google: its ads are tagged by the click id, and with UTM the free listings count as paid traffic in Analytics.', 'oc-theme' ); ?></small>
+							</span>
+						</label>
+
 						<label class="ocfeed__f" data-ocfeed-only="meta google tiktok">
 							<span><?php esc_html_e( 'Format', 'oc-theme' ); ?></span>
 							<select id="ocfeed-format">
@@ -451,6 +458,7 @@ final class Admin {
 			'in_stock' => (int) $feed['in_stock'],
 			'variants' => (int) $feed['variants'],
 			'ship'     => (int) $feed['ship'],
+			'utm'      => (int) $feed['utm'],
 			'cats'     => array_map( 'strval', (array) $feed['cats'] ),
 		);
 	}
@@ -595,6 +603,7 @@ final class Admin {
 				document.getElementById( 'ocfeed-instock' ).checked = !! Number( feed.in_stock );
 				document.getElementById( 'ocfeed-variants' ).checked = undefined === feed.variants ? true : !! Number( feed.variants );
 				document.getElementById( 'ocfeed-ship' ).checked = !! Number( feed.ship );
+				document.getElementById( 'ocfeed-utm' ).checked = undefined === feed.utm ? true : !! Number( feed.utm );
 
 				var want = ( feed.cats || [] ).map( String );
 				[].slice.call( document.getElementById( 'ocfeed-cats' ).options ).forEach( function ( o ) {
@@ -658,6 +667,7 @@ final class Admin {
 						in_stock: document.getElementById( 'ocfeed-instock' ).checked ? 1 : 0,
 						variants: document.getElementById( 'ocfeed-variants' ).checked ? 1 : 0,
 						ship: document.getElementById( 'ocfeed-ship' ).checked ? 1 : 0,
+						utm: document.getElementById( 'ocfeed-utm' ).checked ? 1 : 0,
 						cats: chosen( 'ocfeed-cats' )
 					}
 				} ).then( function ( r ) {

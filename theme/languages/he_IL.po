@@ -15079,3 +15079,9 @@ msgstr "תווית המרה של ליד"
 
 msgid "Counted when a contact form on the site is sent. Leave empty for no lead conversion."
 msgstr "נספרת כשנשלח טופס יצירת קשר באתר. השאירו ריק אם אין המרת ליד."
+
+msgid "Tag the product links with UTM"
+msgstr "תיוג קישורי המוצרים ב-UTM"
+
+msgid "Adds utm_source, utm_medium=cpc and utm_campaign=catalog to every link. Turn it off for Google: its ads are tagged by the click id, and with UTM the free listings count as paid traffic in Analytics."
+msgstr "מוסיף לכל קישור utm_source,‏ utm_medium=cpc ו-utm_campaign=catalog. בפיד של Google כדאי לכבות: המודעות שלו מזוהות לפי מזהה הקליק, ועם UTM גם המודעות החינמיות נספרות ב-Analytics כתנועה ממומנת."
