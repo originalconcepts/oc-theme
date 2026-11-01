@@ -1637,6 +1637,36 @@ li.oc-block--slider:has(.oc-shelf-load--viewed[data-oc-shelf]) { display: none; 
 
 .ocb-posts--slider::-webkit-scrollbar { display: none; }
 
+/* The theme's own recipe cards as a slider (Deliz): its grid becomes a
+ * scrolling row of the very same cards, as many in view as its grid
+ * shows in a row, the theme's own gap between them. A phone shows one
+ * and the edge of the next. */
+.ocb-posts-theme--slider { position: relative; }
+
+.ocb-posts-theme--slider .deliz-recipes-grid {
+	--ocb-tcols: 3;
+	display: flex;
+	gap: var(--rcp-gap, 20px);
+	overflow-x: auto;
+	overflow-y: hidden;
+	scroll-snap-type: x mandatory;
+	scrollbar-width: none;
+}
+
+.ocb-posts-theme--slider .deliz-recipes-grid::-webkit-scrollbar { display: none; }
+.ocb-posts-theme--slider .deliz-recipes-grid--2 { --ocb-tcols: 2; }
+.ocb-posts-theme--slider .deliz-recipes-grid--4 { --ocb-tcols: 4; }
+
+.ocb-posts-theme--slider .deliz-recipes-grid > * {
+	flex: 0 0 calc((100% - (var(--ocb-tcols) - 1) * var(--rcp-gap, 20px)) / var(--ocb-tcols));
+	min-inline-size: 0;
+	scroll-snap-align: start;
+}
+
+@media (max-width: 782px) {
+	.ocb-posts-theme--slider .deliz-recipes-grid > * { flex-basis: 80%; }
+}
+
 .ocb-posts--slider .ocb-post {
 	flex: 0 0 calc((100% - (var(--ocb-cols, 3) - 1) * 26px) / var(--ocb-cols, 3));
 	scroll-snap-align: start;

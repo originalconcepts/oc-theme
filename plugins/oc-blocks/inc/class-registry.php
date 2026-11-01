@@ -1400,7 +1400,6 @@ final class Registry {
 						),
 						'def'     => 'grid',
 						'dev'     => 'd',
-						'when'    => array( 'style' => array( 'ocb' ) ),
 						'group'   => 'design',
 					),
 					'corners' => array(

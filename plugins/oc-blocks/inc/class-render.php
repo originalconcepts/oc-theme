@@ -1794,8 +1794,17 @@ final class Render {
 			$more = '<p class="ocb__more"><a class="ocb-btn ocb-btn--theme" href="' . esc_url( $url ) . '">' . esc_html( $text ) . '</a></p>';
 		}
 
+		// The theme's cards stand in its own grid, or — as a slider — in a
+		// scrolling row of the same cards, with the shelf's arrows.
 		if ( '' !== $theme ) {
-			return self::heading( $s ) . '<div class="ocb-posts-theme">' . $theme . '</div>' . $more;
+			$row = 'slider' === (string) ( $s['layout'] ?? 'grid' );
+
+			return self::heading( $s )
+				. '<div class="ocb-posts-theme' . ( $row ? ' ocb-posts-theme--slider" data-ocb-shelf' : '"' ) . '>'
+				. $theme
+				. ( $row ? self::shelf_arrows() : '' )
+				. '</div>'
+				. $more;
 		}
 
 		$slider = 'slider' === (string) ( $s['layout'] ?? 'grid' );

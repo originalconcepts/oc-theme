@@ -630,6 +630,48 @@
 		} );
 		hero.addEventListener( 'mouseleave', arm );
 
+		// A page put away (another tab, the phone's browser in the
+		// background) freezes the smooth scroll midway while the timer
+		// keeps turning: back in front, the strip stood between two slides,
+		// half of one and an empty edge. It rests while hidden, and on the
+		// way back — or after the screen changed size, or the page came back
+		// from the browser's memory — it is set exactly on its slide again.
+		function rest() {
+			if ( ! fade && hero.classList.contains( 'is-built' ) ) {
+				park( at + lead, false );
+				paintSets();
+			}
+		}
+
+		document.addEventListener( 'visibilitychange', function () {
+			if ( document.hidden ) {
+				clearInterval( timer );
+			} else {
+				rest();
+				arm();
+			}
+		} );
+
+		window.addEventListener( 'pageshow', function () {
+			rest();
+			arm();
+		} );
+
+		// Only a change of width: a phone's address bar showing and hiding
+		// as the page scrolls is a resize too, and must not jerk a swipe.
+		var resting = null;
+		var wide = window.innerWidth;
+
+		window.addEventListener( 'resize', function () {
+			if ( window.innerWidth === wide ) {
+				return;
+			}
+
+			wide = window.innerWidth;
+			clearTimeout( resting );
+			resting = setTimeout( rest, 150 );
+		} );
+
 		// The composer shows the slide being edited, and holds it there.
 		hero.__ocbShow = function ( n ) {
 			held = true;
@@ -652,7 +694,7 @@
 	/* ---------- shelf sliders: products, categories, brands ---------- */
 
 	function initShelf( shelf ) {
-		var row = shelf.querySelector( '.ocb-cats__row, .ocb-brands__row, .ocb-posts--slider, ul.products' );
+		var row = shelf.querySelector( '.ocb-cats__row, .ocb-brands__row, .ocb-posts--slider, ul.products, .deliz-recipes-grid' );
 
 		if ( ! row ) {
 			return;

@@ -153,7 +153,53 @@ final class Host {
 			add_action( 'oc_header_icons', array( $this, 'deliz_header_cart' ) );
 			add_action( 'wp_enqueue_scripts', array( $this, 'deliz_assets' ), 30 );
 			add_action( 'wp_footer', array( $this, 'deliz_footer' ), 5 );
+			add_filter( 'deliz_critical_extract_js_classes', array( $this, 'deliz_js_classes' ) );
 		}
+	}
+
+	/**
+	 * Deliz paints its first frame from the rules its page's own classes
+	 * need, and fetches the full stylesheets (ours too) only after load.
+	 * What our script builds once the page is there — the banner's dots and
+	 * pause button, the quiet copies, the states it lights — has no class in
+	 * the page yet, so until the late file arrived the dots stood as plain
+	 * grey theme buttons. These are named for the first frame.
+	 *
+	 * @param mixed $classes The theme's list.
+	 * @return string[]
+	 */
+	public function deliz_js_classes( $classes ): array {
+		return array_merge(
+			(array) $classes,
+			array(
+				'ocb-dots__dot',
+				'ocb-dots__pp',
+				'ocpp',
+				'ocpp__p',
+				'ocpp__g',
+				'ocpp--corner',
+				'ocpp--clean',
+				'ocpp--inline',
+				'ocpp--top',
+				'ocb-cats__pp',
+				'ocb-mq__pp',
+				'ocb-ico__dots',
+				'is-on',
+				'is-built',
+				'is-live',
+				'is-leave',
+				'is-paused',
+				'is-ready',
+				'is-in',
+				'is-off',
+				'is-open',
+				'is-closing',
+				'ocb--in-now',
+				'ocb--still',
+				'ocb-anim',
+				'oc-shelf-empty',
+			)
+		);
 	}
 
 	/**
