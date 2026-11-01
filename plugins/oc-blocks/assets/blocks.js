@@ -253,6 +253,10 @@
 		var lead = deck ? 2 : 1;
 		var at = 0;
 		var timer = null;
+		// The slide a turn of the script's own is heading for. On its way
+		// the strip passes the slide it leaves, and that must not count as
+		// a stop: the dots (and a filling line) stepped back and forth.
+		var aim = null;
 
 		function count() {
 			return real;
@@ -298,6 +302,13 @@
 
 		strip.addEventListener( 'touchstart', wake, { passive: true } );
 		strip.addEventListener( 'pointerdown', wake, { passive: true } );
+
+		// A hand on the strip takes over from any turn under way.
+		[ 'touchstart', 'pointerdown', 'wheel' ].forEach( function ( t ) {
+			strip.addEventListener( t, function () {
+				aim = null;
+			}, { passive: true } );
+		} );
 
 		// The words live outside the strip; the active slide lights its set,
 		// and re-adding the class replays the little entrance.
@@ -470,6 +481,7 @@
 			var leaving = deck ? null : hero.querySelector( '.ocb-hero__set.is-on' );
 
 			at = target;
+			aim = fade ? null : target;
 
 			if ( leaving && ! instant ) {
 				leaving.classList.add( 'is-leave' );
@@ -612,7 +624,11 @@
 						tick = false;
 						var shown = mod( nearest().i - lead );
 
-						if ( shown !== at ) {
+						if ( null !== aim ) {
+							if ( shown === aim ) {
+								aim = null;
+							}
+						} else if ( shown !== at ) {
 							at = shown;
 							paintDots();
 							paintSets();

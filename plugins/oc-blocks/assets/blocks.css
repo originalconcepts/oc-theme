@@ -81,16 +81,20 @@
 	scroll-padding-inline: 24px;
 }
 
+/* Cards in one row stand as tall as the tallest — one carrying a price per
+   100g or an average weight is a line longer — as on the theme's own
+   category page, where its row of cards stretches the same way. */
+.ocb-host-other .oc-compose .ocb-shelf--slider .ocb-hostcards .ed-mp__products ul.products { align-items: stretch; }
+
 /* On a desktop that room at the ends showed the next card's edge (12px of
-   it, past the gap): the row is meant to show whole cards. The ends fade
-   out instead — clear over the gap's width, full again by the first card —
-   so the shadow softens into the edge and no neighbour peeks in. A phone
-   keeps its peek: there the next card showing is the hint to swipe. */
+   it, past the gap): the row is meant to show whole cards. The strip is cut
+   where the next card would begin — a gap's width out from the first and
+   last card, where their soft shadow has all but faded — so the cards stay
+   exactly as they are, nothing faded, and the room above and below still
+   holds their shadow. A phone keeps its peek: there the next card showing
+   is the hint to swipe. */
 @media (min-width: 783px) {
-	.ocb-host-other .oc-compose .ocb-shelf--slider .ocb-hostcards .ed-mp__products ul.products {
-		-webkit-mask-image: linear-gradient(to right, transparent 0 calc(24px - var(--ocb-shelf-gap)), #000 24px calc(100% - 24px), transparent calc(100% - 24px + var(--ocb-shelf-gap)));
-		mask-image: linear-gradient(to right, transparent 0 calc(24px - var(--ocb-shelf-gap)), #000 24px calc(100% - 24px), transparent calc(100% - 24px + var(--ocb-shelf-gap)));
-	}
+	.ocb-host-other .oc-compose .ocb-shelf--slider .ocb-hostcards .ed-mp__products ul.products { clip-path: inset(0 max(0px, 24px - var(--ocb-shelf-gap))); }
 }
 
 .ocb-host-other .oc-compose .ocb--w-full .ocb-shelf--slider .ocb-hostcards .ed-mp__products ul.products { margin-inline: 0; }
@@ -119,7 +123,6 @@
 .ocb-host-other .oc-compose .ocb-shelf--slider ul.products {
 	grid-template-rows: none;
 	grid-auto-rows: auto;
-	align-items: start;
 }
 
 .ocb-host-other .oc-compose .ocb-shelf ul.products li.product {
@@ -406,6 +409,18 @@ html.ocb-anim .ocb--in-stagger.is-in .ocb-words > * {
 
 /* A finger-sized target around a thin line. */
 .ocb-dots--line .ocb-dots__dot::after { inset: -10px -3px; }
+
+/* A desktop has the room for longer, firmer lines. */
+@media (min-width: 783px) {
+	.ocb-dots--line { --ocb-dot-h: 4px; gap: 8px; }
+
+	.ocb-dots--line .ocb-dots__dot,
+	.ocb-dots--line .ocb-dots__dot.is-on {
+		inline-size: 56px;
+		block-size: 4px;
+		border-radius: 4px;
+	}
+}
 
 @keyframes ocb-dots-fill {
 	from { inline-size: 0; }

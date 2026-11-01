@@ -26,7 +26,7 @@ final class Render {
 	 *
 	 * @var string[]
 	 */
-	const PICKS = array( 'new', 'sales', 'viewed', 'sale', 'manual' );
+	const PICKS = array( 'new', 'order', 'sales', 'viewed', 'sale', 'manual' );
 
 	/**
 	 * The cookie that remembers the products a visitor viewed.
@@ -1020,6 +1020,9 @@ final class Render {
 				'heading' => (string) ( $s['heading'] ?? '' ),
 				'mode'    => (string) $s['mode'],
 				'cat'     => absint( $s['cat'] ?? 0 ),
+				// A category's products stand in the order the shop set for
+				// them (the manager's drag-and-drop, the category page's own).
+				'pick'    => 'order',
 				'picks'   => (array) ( $s['picks'] ?? array() ),
 				'count'   => absint( $s['count'] ),
 				'layout'  => (string) $s['layout'],
@@ -1059,7 +1062,8 @@ final class Render {
 		// request via $o['defer'] (the catalogue-layout slider defers so it
 		// never runs a nested product query mid-loop). The ajax call resolves
 		// it for real.
-		// Within a category, which of its products: newest (the default),
+		// Within a category, which of its products: newest (the default), in
+		// the shop's own order (the Products block),
 		// best sellers, the ones this visitor viewed, on sale, or hand-picked.
 		$pick = (string) ( $o['pick'] ?? 'new' );
 		$pick = in_array( $pick, self::PICKS, true ) ? $pick : 'new';
@@ -1123,6 +1127,14 @@ final class Render {
 				$args['category'] = array( $cat->slug );
 
 				switch ( $pick ) {
+					case 'order':
+						// The shop's own order of its products — WooCommerce's
+						// default sorting on a category page: the order set by
+						// hand, then by name.
+						$args['orderby'] = 'menu_order title';
+						$args['order']   = 'ASC';
+						break;
+
 					case 'sales':
 						$args['orderby'] = 'popularity';
 						break;
