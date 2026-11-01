@@ -265,7 +265,7 @@ final class Editor {
 				'label' => (string) ( $field['label'] ?? '' ),
 			);
 
-			foreach ( array( 'choices', 'def', 'min', 'max', 'when', 'hint', 'group', 'dev', 'half', 'row', 'add' ) as $carry ) {
+			foreach ( array( 'choices', 'def', 'min', 'max', 'when', 'hint', 'group', 'dev', 'of', 'half', 'row', 'add' ) as $carry ) {
 				if ( isset( $field[ $carry ] ) ) {
 					$row[ $carry ] = $field[ $carry ];
 				}

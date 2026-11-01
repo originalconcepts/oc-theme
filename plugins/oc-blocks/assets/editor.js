@@ -1877,8 +1877,10 @@
 
 		// The section's layout has a phone tab of its own: the same width
 		// and spacing, each showing the desktop value until it is changed.
+		// A phone field names the desktop one it follows (`of`); without it
+		// (an older definition) the tab is left out rather than broken.
 		var phoneKeys = Object.keys( D.shell ).filter( function ( key ) {
-			return 'm' === D.shell[ key ].dev;
+			return 'm' === D.shell[ key ].dev && D.shell[ D.shell[ key ].of ];
 		} );
 
 		if ( phoneKeys.length ) {

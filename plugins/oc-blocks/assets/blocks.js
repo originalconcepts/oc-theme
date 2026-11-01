@@ -1117,8 +1117,12 @@
 		// The strip never stops by itself, so it can be stopped. The button
 		// lives in the section: a tilted strip is wider than the screen, and
 		// its own corner is off it.
-		// It stands under the strip, not on it, so it goes without a disc.
-		( mq.closest( '.ocb' ) || mq ).appendChild( window.ocPause.button( 'motion', 'ocpp--corner ocpp--clean ocb-mq__pp', function ( paused ) {
+		// It stands in a row of its own under the strip, at its end — on the
+		// strip it covered the words (a short band on a phone has no corner
+		// to spare) — and so goes without a disc.
+		var room = mq.closest( '.ocb__in' ) || mq.parentNode;
+
+		room.appendChild( window.ocPause.button( 'motion', 'ocpp--clean ocb-mq__pp', function ( paused ) {
 			mq.classList.toggle( 'is-paused', paused );
 		} ) );
 	} );

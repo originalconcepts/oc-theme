@@ -1815,6 +1815,10 @@ li.oc-block--slider:has(.oc-shelf-load--viewed[data-oc-shelf]) { display: none; 
 .ocpp--clean:focus-visible { box-shadow: none; outline-color: currentColor; }
 .ocpp--clean svg { inline-size: 13px; block-size: 13px; }
 
+/* The running line's pause button: a row of its own under the strip, at
+ * its end, clear of the words. */
+.ocb-mq__pp { display: grid; margin-block: 4px 0; margin-inline: auto 8px; }
+
 /* A stopped strip holds still. */
 .ocb-mq.is-paused .ocb-mq__track { animation-play-state: paused; }
 
