@@ -155,6 +155,7 @@ return array(
 	'oc-load-more--flt',
 	'oc-look-lock',
 	'oc-menu-open',
+	'oc-mkt-cart',
 	'oc-mobile-menu',
 	'oc-nav--w-menu',
 	'oc-nmodal',

@@ -231,7 +231,10 @@
 	// ChatGPT ads: the standard events it will optimise towards; anything
 	// else goes as a custom event under our own name.
 	var OA = { ViewContent: 'contents_viewed', AddToCart: 'items_added', InitiateCheckout: 'checkout_started', Purchase: 'order_created', CompleteRegistration: 'registration_completed', Lead: 'lead_created', Subscribe: 'lead_created' };
-	var GA = { ViewContent: 'view_item', ViewCategory: 'view_item_list', Search: 'search', AddToCart: 'add_to_cart', RemoveFromCart: 'remove_from_cart', InitiateCheckout: 'begin_checkout', AddPaymentInfo: 'add_payment_info', Purchase: 'purchase', Lead: 'generate_lead', CompleteRegistration: 'sign_up', Login: 'login', Subscribe: 'subscribe', Contact: 'contact', SelectItem: 'select_item', AddToWishlist: 'add_to_wishlist', ScrollDepth: 'scroll_depth', VideoStart: 'video_start', VideoComplete: 'video_complete' };
+	var GA = { ViewContent: 'view_item', ViewCategory: 'view_item_list', Search: 'search', AddToCart: 'add_to_cart', RemoveFromCart: 'remove_from_cart', ViewCart: 'view_cart', InitiateCheckout: 'begin_checkout', AddPaymentInfo: 'add_payment_info', Purchase: 'purchase', Lead: 'generate_lead', CompleteRegistration: 'sign_up', Login: 'login', Subscribe: 'subscribe', Contact: 'contact', SelectItem: 'select_item', AddToWishlist: 'add_to_wishlist', ScrollDepth: 'scroll_depth', VideoStart: 'video_start', VideoComplete: 'video_complete' };
+
+	// The ecommerce events, pushed a second time in Google's standard shape.
+	var STD = { ViewContent: 1, ViewCategory: 1, AddToCart: 1, RemoveFromCart: 1, ViewCart: 1, InitiateCheckout: 1, AddPaymentInfo: 1, Purchase: 1, AddToWishlist: 1 };
 
 	function items( d ) { return ( d && d.items ) || []; }
 
@@ -304,6 +307,7 @@
 		if ( 'undefined' !== typeof d.shipping ) { p.shipping = Number( d.shipping ); }
 		if ( 'undefined' !== typeof d.tax ) { p.tax = Number( d.tax ); }
 		if ( d.search ) { p.search_term = d.search; }
+		if ( d.payment_type ) { p.payment_type = d.payment_type; }
 		if ( 'ViewCategory' === n && d.content_category ) { p.item_list_name = d.content_category; }
 		if ( 'ScrollDepth' === n ) { p.percent_scrolled = d.percent; }
 		if ( 'VideoStart' === n || 'VideoComplete' === n ) { p.video_url = d.src; }
@@ -323,6 +327,16 @@
 		if ( ! loaded ) { pending.push( { n: n, d: d, id: id } ); return; }
 
 		window.dataLayer.push( Object.assign( { event: 'oc_' + n, oc_event_id: id }, d ) );
+
+		// The same event in the shape Google Tag Manager's own ecommerce
+		// tags read: the standard name, everything under `ecommerce`, and
+		// the previous one cleared first so no item carries over.
+		if ( STD[ n ] ) {
+			var ec = gaParams( n, d );
+			delete ec.site_language;
+			window.dataLayer.push( { ecommerce: null } );
+			window.dataLayer.push( { event: GA[ n ], oc_event_id: id, ecommerce: ec } );
+		}
 
 		if ( window.fbq && cfg.fb && 'granted' === consent && 'PageView' !== n ) {
 			var fbName = FB[ n ];
@@ -500,6 +514,42 @@
 			send( 'VideoComplete', { src: v.currentSrc || v.src }, uid( 'vid' ) );
 		}, true );
 	}
+
+	// The side cart's steppers, "empty the cart", the checkout's steppers
+	// and the bought-together button change the cart through our own ajax.
+	// The server lists what changed in a fragment that replaces the
+	// footer's empty #oc-mkt-cart (Marketing\Cart). A fragment replayed
+	// from the session cache on a later page carries an id already seen.
+	function cartSeen( cid ) {
+		var list = [];
+		try { list = JSON.parse( sessionStorage.getItem( 'ocMktCart' ) || '[]' ); } catch ( e ) {}
+		if ( list.indexOf( cid ) > -1 ) { return true; }
+		list.push( cid );
+		try { sessionStorage.setItem( 'ocMktCart', JSON.stringify( list.slice( -20 ) ) ); } catch ( e ) {}
+		return false;
+	}
+
+	function cartChange() {
+		var el = document.getElementById( 'oc-mkt-cart' );
+		var c = null;
+		try { c = el && el.textContent ? JSON.parse( el.textContent ) : null; } catch ( e ) {}
+		if ( ! c || ! c.id || cartSeen( c.id ) ) { return; }
+		[ [ 'AddToCart', c.added ], [ 'RemoveFromCart', c.removed ] ].forEach( function ( pair ) {
+			var list = pair[ 1 ] || [];
+			if ( ! list.length ) { return; }
+			var value = list.reduce( function ( a, i ) { return a + Number( i.price || 0 ) * ( i.qty || 1 ); }, 0 );
+			var d = { currency: c.currency || cfg.currency, value: Math.round( value * 100 ) / 100, items: list };
+			var eid = uid( 'AddToCart' === pair[ 0 ] ? 'atc' : 'rfc' );
+			send( pair[ 0 ], d, eid );
+			if ( 'AddToCart' === pair[ 0 ] ) { mirror( 'addtocart', d, eid ); }
+		} );
+	}
+
+	var cartHolder = document.getElementById( 'oc-mkt-cart' );
+	if ( cartHolder && cartHolder.parentNode && 'MutationObserver' in window ) {
+		new MutationObserver( cartChange ).observe( cartHolder.parentNode, { childList: true } );
+	}
+	cartChange();
 
 	// TikTok's click id rides the URL once; keep it for the server.
 	var m = location.search.match( /[?&]ttclid=([^&]+)/ );

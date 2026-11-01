@@ -92,6 +92,7 @@ require_once OC_THEME_DIR . '/inc/marketing/class-oc-marketing-payload.php';
 require_once OC_THEME_DIR . '/inc/marketing/class-oc-marketing-events.php';
 require_once OC_THEME_DIR . '/inc/marketing/class-oc-marketing-dispatch.php';
 require_once OC_THEME_DIR . '/inc/marketing/class-oc-marketing-page.php';
+require_once OC_THEME_DIR . '/inc/marketing/class-oc-marketing-cart.php';
 require_once OC_THEME_DIR . '/inc/marketing/class-oc-marketing-admin.php';
 require_once OC_THEME_DIR . '/inc/marketing/class-oc-marketing-thirdparty.php';
 require_once OC_THEME_DIR . '/inc/class-oc-marketing.php';

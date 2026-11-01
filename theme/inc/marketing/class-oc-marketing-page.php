@@ -264,6 +264,11 @@ final class Page {
 			return;
 		}
 
+		if ( function_exists( 'is_cart' ) && is_cart() && WC()->cart && ! WC()->cart->is_empty() ) {
+			Events::queue( 'ViewCart', self::cart_data() );
+			return;
+		}
+
 		if ( function_exists( 'is_checkout' ) && is_checkout() && ! is_order_received_page() && WC()->cart && ! WC()->cart->is_empty() ) {
 			self::both( 'InitiateCheckout', self::cart_data() );
 			return;
