@@ -433,6 +433,76 @@ final class Host {
 	/* ------------------------------------------------------- host themes */
 
 	/**
+	 * The kinds of post whose cards the host theme draws itself — Deliz's
+	 * recipes, with their own card and grid. A posts section may hand its
+	 * cards to the theme, so a recipe on the front page looks exactly like
+	 * one on the recipes page.
+	 *
+	 * @return string[]
+	 */
+	public static function theme_card_types(): array {
+		if ( self::is_deliz() && post_type_exists( 'deliz_recipe' ) && '' !== locate_template( 'template-parts/recipe/card.php' ) ) {
+			return array( 'deliz_recipe' );
+		}
+
+		return array();
+	}
+
+	/**
+	 * The theme's own cards for these posts, in the theme's own grid (its
+	 * cards-per-row and card style settings). Empty when the theme has no
+	 * cards of its own for this kind.
+	 *
+	 * @param string     $type  Post type.
+	 * @param \WP_Post[] $posts The posts.
+	 */
+	public static function theme_cards( string $type, array $posts ): string {
+		if ( ! in_array( $type, self::theme_card_types(), true ) || empty( $posts ) ) {
+			return '';
+		}
+
+		$per   = function_exists( 'deliz_recipes_per_row' ) ? (string) deliz_recipes_per_row() : '3';
+		$style = function_exists( 'deliz_recipes_card_style' ) ? (string) deliz_recipes_card_style() : 'classic';
+
+		self::theme_card_assets();
+
+		ob_start();
+
+		foreach ( $posts as $one ) {
+			$GLOBALS['post'] = $one; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- the theme's card template reads the loop's post.
+			setup_postdata( $one );
+			get_template_part( 'template-parts/recipe/card' );
+		}
+
+		wp_reset_postdata();
+
+		return '<div class="deliz-recipes-grid deliz-recipes-grid--' . esc_attr( $per ) . ' deliz-recipes-grid--' . esc_attr( $style ) . '">' . (string) ob_get_clean() . '</div>';
+	}
+
+	/**
+	 * The stylesheet the theme's recipe cards wear. Deliz loads it only on
+	 * its recipe pages; a composed page with recipe cards asks for it too.
+	 */
+	public static function theme_card_assets(): void {
+		if ( ! self::is_deliz() || wp_style_is( 'deliz-recipes', 'enqueued' ) ) {
+			return;
+		}
+
+		$rel = function_exists( 'deliz_asset_min' ) ? (string) deliz_asset_min( 'assets/css/recipes.css' ) : 'assets/css/recipes.css';
+
+		if ( ! file_exists( get_template_directory() . '/' . $rel ) ) {
+			return;
+		}
+
+		wp_enqueue_style(
+			'deliz-recipes',
+			get_template_directory_uri() . '/' . $rel,
+			array(),
+			(string) filemtime( get_template_directory() . '/' . $rel )
+		);
+	}
+
+	/**
 	 * Is the host Deliz (OC's restaurant theme)?
 	 */
 	public static function is_deliz(): bool {

@@ -2100,3 +2100,21 @@ msgstr "גודל הכותרת בטלפון (פיקסלים, 0 — אוטומטי
 
 msgid "The line under it follows, a little smaller."
 msgstr "השורה שמתחתיה מותאמת אליה, קצת יותר קטנה."
+
+msgid "Card design"
+msgstr "עיצוב הכרטיסים"
+
+msgid "The theme's own: the cards and the grid its own page of these uses, exactly as they look there."
+msgstr "של התבנית: אותם כרטיסים ואותה רשת כמו בעמוד של התבנית (למשל עמוד המתכונים), בדיוק כמו שהם נראים שם."
+
+msgid "The theme's own (default)"
+msgstr "של התבנית (ברירת מחדל)"
+
+msgid "OC Blocks cards"
+msgstr "כרטיסי OC Blocks"
+
+msgid "Back to the desktop layout"
+msgstr "חזרה לפריסה של המחשב"
+
+msgid "Until changed here, the phone follows the desktop."
+msgstr "כל עוד לא שונה כאן, הטלפון מציג כמו במחשב."

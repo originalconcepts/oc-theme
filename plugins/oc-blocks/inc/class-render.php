@@ -369,6 +369,33 @@ final class Render {
 			$style .= '--ocb-w:' . absint( $s['wpx'] ) . 'px;';
 		}
 
+		// A phone may lay the section out otherwise: its own width and
+		// spacing, each following the desktop until it is set.
+		$shell = Registry::shell();
+		$wm    = (string) ( $s['wm'] ?? '' );
+		$wm    = isset( $shell['wm']['choices'][ $wm ] ) ? $wm : '';
+		$wpxm  = absint( $s['wpxm'] ?? 0 );
+
+		if ( '' === $wm && $wpxm > 0 && 'custom' === $s['w'] ) {
+			$wm = 'custom';
+		}
+
+		if ( '' !== $wm && ( $wm !== $s['w'] || 'custom' === $wm ) ) {
+			$classes[] = 'ocb--mw-' . $wm;
+
+			if ( 'custom' === $wm ) {
+				$style .= '--ocb-wm:' . ( $wpxm > 0 ? $wpxm : absint( $s['wpx'] ) ) . 'px;';
+			}
+		}
+
+		foreach ( array( 'pt', 'pb' ) as $side ) {
+			$own = (string) ( $s[ $side . 'm' ] ?? '' );
+
+			if ( '' !== $own && isset( $shell[ $side ]['choices'][ $own ] ) && $own !== (string) $s[ $side ] ) {
+				$classes[] = 'ocb--m' . $side . '-' . sanitize_html_class( $own );
+			}
+		}
+
 		// The section's own text colour, set beside its background.
 		if ( '' !== (string) ( $s['ink'] ?? '' ) ) {
 			$style    .= '--ocb-ink:' . $s['ink'] . ';';
@@ -1737,10 +1764,16 @@ final class Render {
 			return '';
 		}
 
+		// The theme's own cards, where the section asks for them and the
+		// theme has some for this kind (Deliz's recipes).
+		$theme = 'theme' === (string) ( $s['style'] ?? 'ocb' ) ? Host::theme_cards( $type, $query->posts ) : '';
+
 		$cards = '';
 
-		foreach ( $query->posts as $post ) {
-			$cards .= self::post_card( $post, ! empty( $s['date'] ), ! empty( $s['excerpt'] ) );
+		if ( '' === $theme ) {
+			foreach ( $query->posts as $post ) {
+				$cards .= self::post_card( $post, ! empty( $s['date'] ), ! empty( $s['excerpt'] ) );
+			}
 		}
 
 		$more = '';
@@ -1759,6 +1792,10 @@ final class Render {
 			$text = '' !== trim( (string) $s['alltext'] ) ? (string) $s['alltext'] : ( 'post' === $type ? __( 'To the blog', 'oc-blocks' ) : __( 'See them all', 'oc-blocks' ) );
 
 			$more = '<p class="ocb__more"><a class="ocb-btn ocb-btn--theme" href="' . esc_url( $url ) . '">' . esc_html( $text ) . '</a></p>';
+		}
+
+		if ( '' !== $theme ) {
+			return self::heading( $s ) . '<div class="ocb-posts-theme">' . $theme . '</div>' . $more;
 		}
 
 		$slider = 'slider' === (string) ( $s['layout'] ?? 'grid' );
@@ -3215,6 +3252,17 @@ final class Render {
 			if ( class_exists( '\\OCS\\Surfaces\\SurfaceManager' ) ) {
 				foreach ( (array) \OCS\Surfaces\SurfaceManager::ids() as $id ) {
 					\OCS\Display\Injector::need( (string) $id );
+				}
+			}
+		}
+
+		// A posts section drawn with the theme's own cards needs the theme's
+		// stylesheet for them in the head — the markup may come from cache.
+		if ( isset( $types['posts'] ) ) {
+			foreach ( Registry::sections( $page ) as $s ) {
+				if ( ! empty( $s['on'] ) && 'posts' === ( $s['type'] ?? '' ) && 'theme' === ( $s['style'] ?? '' ) ) {
+					Host::theme_card_assets();
+					break;
 				}
 			}
 		}

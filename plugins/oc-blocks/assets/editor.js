@@ -1790,13 +1790,18 @@
 
 	/* ---------- the settings panel ---------- */
 
-	function group( title, open ) {
+	// A group may remember being open (by a key in state) across repaints.
+	function group( title, open, remember ) {
 		var body = el( 'div', { 'class': 'ocbe-group__body' } );
 		var head = el( 'button', {
 			type: 'button',
 			'class': 'ocbe-group__head',
 			onclick: function () {
 				box.classList.toggle( 'is-open' );
+
+				if ( remember ) {
+					state[ remember ] = box.classList.contains( 'is-open' );
+				}
 			}
 		}, [
 			el( 'span', { text: title } ),
@@ -1824,7 +1829,7 @@
 
 		var content = group( T.content, true );
 		var design = group( T.design, true );
-		var shell = group( T.shellttl, false );
+		var shell = group( T.shellttl, !! state.shellOpen, 'shellOpen' );
 
 		// Blocks with mobile-only settings get a little device tab: one set
 		// of controls at a time instead of everything stacked.
@@ -1870,13 +1875,78 @@
 			}
 		} );
 
-		Object.keys( D.shell ).forEach( function ( key ) {
-			if ( 'on' === key || ! shown( section, D.shell[ key ], D.shell ) ) {
-				return;
-			}
-
-			shell.body.appendChild( fieldRow( section, key, D.shell[ key ], D.shell ) );
+		// The section's layout has a phone tab of its own: the same width
+		// and spacing, each showing the desktop value until it is changed.
+		var phoneKeys = Object.keys( D.shell ).filter( function ( key ) {
+			return 'm' === D.shell[ key ].dev;
 		} );
+
+		if ( phoneKeys.length ) {
+			state.shellTab = state.shellTab || 'd';
+
+			var shellSeg = el( 'div', { 'class': 'ocbe-seg ocbe-devtab' } );
+
+			[ [ 'd', T.devD ], [ 'm', T.devM ] ].forEach( function ( pair ) {
+				shellSeg.appendChild( el( 'button', {
+					type: 'button',
+					'class': state.shellTab === pair[ 0 ] ? 'is-on' : '',
+					text: pair[ 1 ],
+					onclick: function () {
+						state.shellTab = pair[ 0 ];
+						paintSettings();
+					}
+				} ) );
+			} );
+
+			shell.body.appendChild( shellSeg );
+		}
+
+		if ( phoneKeys.length && 'm' === state.shellTab ) {
+			var phone = {};
+			var own = false;
+
+			phoneKeys.forEach( function ( key ) {
+				var base = D.shell[ key ].of;
+
+				// Empty (or 0) is "as on the desktop": shown as the desktop
+				// value, stored only once it is changed.
+				if ( '' === section[ key ] || 0 === Number( section[ key ] ) && 'number' === D.shell[ key ].type ) {
+					delete section[ key ];
+				}
+
+				own = own || undefined !== section[ key ];
+				phone[ key ] = Object.assign( {}, D.shell[ key ], {
+					def: undefined !== section[ base ] ? section[ base ] : D.shell[ base ].def
+				} );
+			} );
+
+			phoneKeys.forEach( function ( key ) {
+				if ( shown( section, phone[ key ], phone ) ) {
+					shell.body.appendChild( fieldRow( section, key, phone[ key ], phone ) );
+				}
+			} );
+
+			shell.body.appendChild( own ? el( 'button', {
+				type: 'button',
+				'class': 'ocbe-link ocbe-shell__same',
+				text: T.sameDesk,
+				onclick: function () {
+					phoneKeys.forEach( function ( key ) {
+						delete section[ key ];
+					} );
+					touch();
+					paintSettings();
+				}
+			} ) : el( 'p', { 'class': 'ocbe-f__hint', text: T.phoneFollows } ) );
+		} else {
+			Object.keys( D.shell ).forEach( function ( key ) {
+				if ( 'on' === key || 'm' === D.shell[ key ].dev || ! shown( section, D.shell[ key ], D.shell ) ) {
+					return;
+				}
+
+				shell.body.appendChild( fieldRow( section, key, D.shell[ key ], D.shell ) );
+			} );
+		}
 
 		if ( content.body.children.length ) {
 			pane.appendChild( content.box );

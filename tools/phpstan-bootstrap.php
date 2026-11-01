@@ -50,3 +50,35 @@ if ( ! function_exists( 'flashy_log' ) ) {
 		unset( $message );
 	}
 }
+
+/*
+ * The Deliz theme, which OC Blocks also runs under. Its recipe cards are
+ * borrowed when a posts section asks for the theme's own design; every call
+ * sits behind a function_exists() guard.
+ */
+if ( ! function_exists( 'deliz_recipes_per_row' ) ) {
+	/**
+	 * Recipe cards per row, as the theme's settings say.
+	 */
+	function deliz_recipes_per_row(): string {
+		return '3';
+	}
+}
+if ( ! function_exists( 'deliz_recipes_card_style' ) ) {
+	/**
+	 * The recipe card style the theme's settings choose.
+	 */
+	function deliz_recipes_card_style(): string {
+		return 'classic';
+	}
+}
+if ( ! function_exists( 'deliz_asset_min' ) ) {
+	/**
+	 * The minified twin of a theme asset, when there is one.
+	 *
+	 * @param string $rel Path inside the theme.
+	 */
+	function deliz_asset_min( string $rel ): string {
+		return $rel;
+	}
+}

@@ -141,6 +141,30 @@
 .ocb--pb-m { padding-block-end: clamp(28px, 4vw, 54px); }
 .ocb--pb-l { padding-block-end: clamp(48px, 7vw, 96px); }
 
+/* A section may stand otherwise on a phone — its own width and spacing,
+ * each following the desktop until it is set (ocb--mw-*, --mpt-*, --mpb-*). */
+@media (max-width: 782px) {
+	.ocb--mw-content .ocb__in { max-inline-size: var(--oc-content-width, 1280px); padding-inline: clamp(16px, 3vw, 32px); }
+	.ocb--mw-custom .ocb__in { max-inline-size: var(--ocb-wm, var(--ocb-w, 900px)); padding-inline: clamp(16px, 3vw, 32px); }
+	.ocb--mw-full .ocb__in { max-inline-size: none; padding-inline: 0; }
+
+	.ocb--mpt-0 { padding-block-start: 0; }
+	.ocb--mpt-s { padding-block-start: clamp(14px, 2vw, 26px); }
+	.ocb--mpt-m { padding-block-start: clamp(28px, 4vw, 54px); }
+	.ocb--mpt-l { padding-block-start: clamp(48px, 7vw, 96px); }
+
+	.ocb--mpb-0 { padding-block-end: 0; }
+	.ocb--mpb-s { padding-block-end: clamp(14px, 2vw, 26px); }
+	.ocb--mpb-m { padding-block-end: clamp(28px, 4vw, 54px); }
+	.ocb--mpb-l { padding-block-end: clamp(48px, 7vw, 96px); }
+
+	/* Another theme's product strip keeps its cards in from a section's
+	 * edge exactly as the section's phone width says. */
+	.ocb-host-other .oc-compose .ocb--mw-full .ocb-shelf--slider .ocb-hostcards .ed-mp__products ul.products { margin-inline: 0; }
+	.ocb-host-other .oc-compose .ocb--mw-content .ocb-shelf--slider .ocb-hostcards .ed-mp__products ul.products,
+	.ocb-host-other .oc-compose .ocb--mw-custom .ocb-shelf--slider .ocb-hostcards .ed-mp__products ul.products { margin-inline: -24px; }
+}
+
 .ocb--bg { background: var(--ocb-bg); }
 
 .ocb__bg {
@@ -849,8 +873,10 @@ html.ocb-anim .ocb--in-stagger.is-in .ocb-words > * {
 	/* Peeking on a phone, the strip runs out to the screen's edges: the
 	 * slide in front keeps the page's margin, the next one is cut by the
 	 * edge of the screen itself — not by the margin. */
-	.ocb--w-content .ocb-hero--m-peek .ocb-hero__strip,
-	.ocb--w-custom .ocb-hero--m-peek .ocb-hero__strip {
+	.ocb--w-content:not(.ocb--mw-full) .ocb-hero--m-peek .ocb-hero__strip,
+	.ocb--w-custom:not(.ocb--mw-full) .ocb-hero--m-peek .ocb-hero__strip,
+	.ocb--mw-content .ocb-hero--m-peek .ocb-hero__strip,
+	.ocb--mw-custom .ocb-hero--m-peek .ocb-hero__strip {
 		--ocb-gut: clamp(16px, 3vw, 32px);
 		margin-inline: calc(-1 * var(--ocb-gut));
 		padding-inline: var(--ocb-gut);

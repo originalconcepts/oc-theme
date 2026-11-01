@@ -189,5 +189,6 @@ body.ocb-host-other .ocb-hero__cta:not(.ocb-hero__cta--ghost):hover {
 
 /* A phone has no categories column: full width is edge to edge. */
 @media (max-width: 599px) {
-	body.ocb-contained:not(.home):not(.oc-compose-preview) .oc-compose > .ocb--w-full { margin-inline: -10px; }
+	body.ocb-contained:not(.home):not(.oc-compose-preview) .oc-compose > .ocb--w-full:not(.ocb--mw-content):not(.ocb--mw-custom),
+	body.ocb-contained:not(.home):not(.oc-compose-preview) .oc-compose > .ocb--mw-full { margin-inline: -10px; }
 }

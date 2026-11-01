@@ -175,6 +175,46 @@ final class Registry {
 				'choices' => self::spaces(),
 				'def'     => 'm',
 			),
+			// The same layout, on a phone. Empty follows the desktop value
+			// (`of`); the composer shows these under its phone tab.
+			'wm'      => array(
+				'type'    => 'seg',
+				'label'   => __( 'Width', 'oc-blocks' ),
+				'choices' => array(
+					'full'    => __( 'Edge to edge', 'oc-blocks' ),
+					'content' => __( 'Content width', 'oc-blocks' ),
+					'custom'  => __( 'Custom', 'oc-blocks' ),
+				),
+				'def'     => '',
+				'dev'     => 'm',
+				'of'      => 'w',
+			),
+			'wpxm'    => array(
+				'type'  => 'number',
+				'label' => __( 'Custom width (px)', 'oc-blocks' ),
+				'def'   => 0,
+				'min'   => 0,
+				'max'   => 2400,
+				'when'  => array( 'wm' => array( 'custom' ) ),
+				'dev'   => 'm',
+				'of'    => 'wpx',
+			),
+			'ptm'     => array(
+				'type'    => 'seg',
+				'label'   => __( 'Space above', 'oc-blocks' ),
+				'choices' => self::spaces(),
+				'def'     => '',
+				'dev'     => 'm',
+				'of'      => 'pt',
+			),
+			'pbm'     => array(
+				'type'    => 'seg',
+				'label'   => __( 'Space below', 'oc-blocks' ),
+				'choices' => self::spaces(),
+				'def'     => '',
+				'dev'     => 'm',
+				'of'      => 'pb',
+			),
 			'enter'   => array(
 				'type'    => 'seg',
 				'label'   => __( 'Entrance', 'oc-blocks' ),
@@ -1325,16 +1365,30 @@ final class Registry {
 						'min'   => 1,
 						'max'   => 9,
 					),
+					'style'   => array(
+						'type'    => 'seg',
+						'label'   => __( 'Card design', 'oc-blocks' ),
+						'hint'    => __( "The theme's own: the cards and the grid its own page of these uses, exactly as they look there.", 'oc-blocks' ),
+						'choices' => array(
+							'theme' => __( "The theme's own (default)", 'oc-blocks' ),
+							'ocb'   => __( 'OC Blocks cards', 'oc-blocks' ),
+						),
+						'def'     => 'ocb',
+						'when'    => array( 'ptype' => Host::theme_card_types() ),
+						'group'   => 'design',
+					),
 					'date'    => array(
 						'type'  => 'toggle',
 						'label' => __( 'Publish date', 'oc-blocks' ),
 						'def'   => 1,
+						'when'  => array( 'style' => array( 'ocb' ) ),
 						'group' => 'design',
 					),
 					'excerpt' => array(
 						'type'  => 'toggle',
 						'label' => __( 'Short description', 'oc-blocks' ),
 						'def'   => 1,
+						'when'  => array( 'style' => array( 'ocb' ) ),
 						'group' => 'design',
 					),
 					'layout'  => array(
@@ -1346,6 +1400,7 @@ final class Registry {
 						),
 						'def'     => 'grid',
 						'dev'     => 'd',
+						'when'    => array( 'style' => array( 'ocb' ) ),
 						'group'   => 'design',
 					),
 					'corners' => array(
@@ -1356,6 +1411,7 @@ final class Registry {
 							'sharp' => __( 'Sharp', 'oc-blocks' ),
 						),
 						'def'     => 'soft',
+						'when'    => array( 'style' => array( 'ocb' ) ),
 						'group'   => 'design',
 					),
 					'mlay'    => array(
@@ -1368,6 +1424,7 @@ final class Registry {
 						),
 						'def'     => '1',
 						'dev'     => 'm',
+						'when'    => array( 'style' => array( 'ocb' ) ),
 						'group'   => 'design',
 					),
 					'all'     => array(

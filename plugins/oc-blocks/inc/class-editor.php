@@ -215,6 +215,8 @@ final class Editor {
 					'filterCats'   => __( 'Find a category…', 'oc-blocks' ),
 					'rename'       => __( 'Its name on this block (optional)', 'oc-blocks' ),
 					'renameBtn'    => __( 'Change the name shown on this block', 'oc-blocks' ),
+					'sameDesk'     => __( 'Back to the desktop layout', 'oc-blocks' ),
+					'phoneFollows' => __( 'Until changed here, the phone follows the desktop.', 'oc-blocks' ),
 					'catPicAdd'    => __( 'Add a picture to this category', 'oc-blocks' ),
 					'catPicChange' => __( 'Change the category picture', 'oc-blocks' ),
 					'up'           => __( 'Move up', 'oc-blocks' ),
