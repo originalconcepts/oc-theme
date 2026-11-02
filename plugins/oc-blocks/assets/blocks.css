@@ -87,14 +87,27 @@
 .ocb-host-other .oc-compose .ocb-shelf--slider .ocb-hostcards .ed-mp__products ul.products { align-items: stretch; }
 
 /* On a desktop that room at the ends showed the next card's edge (12px of
-   it, past the gap): the row is meant to show whole cards. The strip is cut
-   where the next card would begin — a gap's width out from the first and
-   last card, where their soft shadow has all but faded — so the cards stay
-   exactly as they are, nothing faded, and the room above and below still
-   holds their shadow. A phone keeps its peek: there the next card showing
-   is the hint to swipe. */
+   it, past the gap): the row is meant to show whole cards. A card standing
+   mostly outside the row steps out of sight (blocks.js marks it .is-away)
+   and comes back as it scrolls in. The cards themselves stand clear of the
+   ends; what reaches into that room is their soft shadow, and the row's
+   own edge cut it off in a straight grey line against the page. The room
+   fades out towards the edge instead, so the shadow melts into the page
+   at the sides as it does above and below. A phone keeps its peek: there
+   the next card showing is the hint to swipe. */
 @media (min-width: 783px) {
-	.ocb-host-other .oc-compose .ocb-shelf--slider .ocb-hostcards .ed-mp__products ul.products { clip-path: inset(0 max(0px, 24px - var(--ocb-shelf-gap))); }
+	.ocb-host-other .oc-compose .ocb-shelf--slider .ocb-hostcards .ed-mp__products ul.products {
+		-webkit-mask-image: linear-gradient(to right, transparent, #000 24px, #000 calc(100% - 24px), transparent);
+		mask-image: linear-gradient(to right, transparent, #000 24px, #000 calc(100% - 24px), transparent);
+	}
+
+	.ocb-host-other .oc-compose .ocb-shelf--slider .ocb-hostcards .ed-mp__products ul.products > li { transition: opacity .25s ease; }
+
+	.ocb-host-other .oc-compose .ocb-shelf--slider .ocb-hostcards .ed-mp__products ul.products > li.is-away {
+		opacity: 0;
+		visibility: hidden;
+		transition: opacity .25s ease, visibility 0s .25s;
+	}
 }
 
 .ocb-host-other .oc-compose .ocb--w-full .ocb-shelf--slider .ocb-hostcards .ed-mp__products ul.products { margin-inline: 0; }
@@ -373,58 +386,6 @@ html.ocb-anim .ocb--in-stagger.is-in .ocb-words > * {
 	content: "";
 	position: absolute;
 	inset: -8px;
-}
-
-/* Filling lines instead of dots: a short line for each slide, and the
- * slide on show fills its own while it waits — full, the next one starts.
- * The lines before it stay full, so the row also reads as how far along
- * the round is; a new round empties them all. Without turning by itself
- * the banner simply shows its own line full. */
-.ocb-dots--line { --ocb-dot-h: 3px; gap: 6px; }
-
-.ocb-dots--line .ocb-dots__dot,
-.ocb-dots--line .ocb-dots__dot.is-on {
-	inline-size: clamp(22px, 4vw, 36px);
-	block-size: 3px;
-	border-radius: 3px;
-	background: var(--ocb-dot);
-	transform: none;
-}
-
-.ocb-dots--line .ocb-dots__dot::before {
-	content: "";
-	position: absolute;
-	inset-block: 0;
-	inset-inline-start: 0;
-	inline-size: 0;
-	border-radius: inherit;
-	background: var(--ocb-dot-on);
-}
-
-.ocb-dots--line .ocb-dots__dot.is-done::before,
-.ocb-dots--line .ocb-dots__dot.is-on::before { inline-size: 100%; }
-.ocb-dots--line.ocb-dots--run .ocb-dots__dot.is-on::before { inline-size: 0; }
-.ocb-dots--line.ocb-dots--run .ocb-dots__dot.is-run::before { animation: ocb-dots-fill var(--ocb-dur, 5s) linear forwards; }
-.ocb-dots--line.is-held .ocb-dots__dot.is-run::before { animation-play-state: paused; }
-
-/* A finger-sized target around a thin line. */
-.ocb-dots--line .ocb-dots__dot::after { inset: -10px -3px; }
-
-/* A desktop has the room for longer, firmer lines. */
-@media (min-width: 783px) {
-	.ocb-dots--line { --ocb-dot-h: 4px; gap: 8px; }
-
-	.ocb-dots--line .ocb-dots__dot,
-	.ocb-dots--line .ocb-dots__dot.is-on {
-		inline-size: 56px;
-		block-size: 4px;
-		border-radius: 4px;
-	}
-}
-
-@keyframes ocb-dots-fill {
-	from { inline-size: 0; }
-	to { inline-size: 100%; }
 }
 
 /* The dots may stand under the banner instead of on it — set apart for

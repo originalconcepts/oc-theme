@@ -2119,11 +2119,5 @@ msgstr "חזרה לפריסה של המחשב"
 msgid "Until changed here, the phone follows the desktop."
 msgstr "כל עוד לא שונה כאן, הטלפון מציג כמו במחשב."
 
-msgid "Dots style"
-msgstr "סגנון הנקודות"
 
-msgid "Filling lines: the line of the slide on show fills up while it waits, and the next one starts when it is full."
-msgstr "קווים מתמלאים: הקו של השקופית המוצגת מתמלא בזמן ההמתנה, וכשהוא מלא מתחיל להתמלא הקו הבא."
 
-msgid "Filling lines"
-msgstr "קווים מתמלאים"

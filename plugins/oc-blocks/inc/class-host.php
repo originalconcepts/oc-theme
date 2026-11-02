@@ -174,10 +174,6 @@ final class Host {
 			array(
 				'ocb-dots__dot',
 				'ocb-dots__pp',
-				'ocb-dots--run',
-				'is-run',
-				'is-done',
-				'is-held',
 				'ocpp',
 				'ocpp__p',
 				'ocpp__g',

@@ -617,18 +617,6 @@ final class Registry {
 						'def'   => 1,
 						'group' => 'design',
 					),
-					'dotst'    => array(
-						'type'    => 'seg',
-						'label'   => __( 'Dots style', 'oc-blocks' ),
-						'hint'    => __( 'Filling lines: the line of the slide on show fills up while it waits, and the next one starts when it is full.', 'oc-blocks' ),
-						'choices' => array(
-							'dot'  => __( 'Dots', 'oc-blocks' ),
-							'line' => __( 'Filling lines', 'oc-blocks' ),
-						),
-						'def'     => 'dot',
-						'when'    => array( 'dots' => array( '1', 1, true ) ),
-						'group'   => 'design',
-					),
 					'dotsd'    => array(
 						'type'    => 'seg',
 						'label'   => __( 'Dots — desktop', 'oc-blocks' ),

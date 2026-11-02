@@ -252,7 +252,6 @@
 		// banner; a deck shows its neighbours, so it keeps two.
 		var lead = deck ? 2 : 1;
 		var at = 0;
-		var timer = null;
 		// The slide a turn of the script's own is heading for. On its way
 		// the strip passes the slide it leaves, and that must not count as
 		// a stop: the dots (and a filling line) stepped back and forth.
@@ -355,45 +354,8 @@
 
 			dots.querySelectorAll( '.ocb-dots__dot' ).forEach( function ( d, i ) {
 				d.classList.toggle( 'is-on', i === at );
-				// The lines before the one on show stay full.
-				d.classList.toggle( 'is-done', i < at );
+				d.setAttribute( 'aria-current', i === at ? 'true' : 'false' );
 			} );
-		}
-
-		// The line of the slide on show fills while the banner waits to
-		// turn: started afresh with every new wait, held where it is while
-		// the wait is held.
-		function fill( secs ) {
-			var dots = hero.querySelector( '.ocb-dots--line' );
-
-			if ( ! dots ) {
-				return;
-			}
-
-			// The wait belongs to the slide already chosen, even while the
-			// banner is still turning to it.
-			paintDots();
-
-			var on = dots.querySelectorAll( '.ocb-dots__dot' )[ at ];
-
-			dots.classList.add( 'ocb-dots--run' );
-			dots.style.setProperty( '--ocb-dur', secs + 's' );
-			dots.querySelectorAll( '.is-run' ).forEach( function ( d ) {
-				d.classList.remove( 'is-run' );
-			} );
-
-			if ( on ) {
-				void on.offsetWidth;
-				on.classList.add( 'is-run' );
-			}
-		}
-
-		function holdFill( on ) {
-			var dots = hero.querySelector( '.ocb-dots--line' );
-
-			if ( dots ) {
-				dots.classList.toggle( 'is-held', on );
-			}
 		}
 
 		// Where a slide rests: its start edge on the strip's start edge, or
@@ -483,6 +445,12 @@
 			at = target;
 			aim = fade ? null : target;
 
+			// The dots answer at once and the new slide's wait starts now —
+			// the banner itself follows a moment later, once the words have
+			// taken their leave.
+			paintDots();
+			arm();
+
 			if ( leaving && ! instant ) {
 				leaving.classList.add( 'is-leave' );
 				setTimeout( function () {
@@ -496,53 +464,47 @@
 			}
 		}
 
+		// The wait of the slide on show. It stands still while held — the
+		// pause button, a mouse over the banner, the page put away — and
+		// goes on from where it stood.
+		var dur = Number( hero.dataset.ocbAuto || 0 ) * 1000;
+		var auto = dur > 0 && ! reduced;
 		var held = false;
-		// What is left of the wait, kept while it is held (a hand over the
-		// banner, the page put away, the pause button) so that it resumes
-		// where it stood — as its filling line does.
-		var left = 0;
+		var over = false;
+		var spent = 0;
 		var since = 0;
+		var timer = null;
+
+		function still() {
+			return ! auto || held || over || document.hidden;
+		}
 
 		function stop() {
 			if ( timer ) {
-				left -= Date.now() - since;
+				spent += performance.now() - since;
 			}
 
 			clearTimeout( timer );
 			timer = null;
-			holdFill( true );
 		}
 
-		// A fresh wait for the slide on show; `keep` resumes the one held.
+		// A fresh wait for the slide on show; `keep` goes on with the one
+		// that was held.
 		function arm( keep ) {
-			var secs = Number( hero.dataset.ocbAuto || 0 );
+			stop();
 
-			clearTimeout( timer );
-			timer = null;
-
-			if ( ! secs || reduced ) {
-				return;
+			if ( true !== keep ) {
+				spent = 0;
 			}
 
-			if ( true !== keep || left <= 0 ) {
-				left = secs * 1000;
-				fill( secs );
+			if ( ! still() ) {
+				since = performance.now();
+				// Over: the next slide, whose own wait go() starts afresh.
+				timer = setTimeout( function () {
+					timer = null;
+					go( at + 1 );
+				}, Math.max( 0, dur - spent ) );
 			}
-
-			if ( held ) {
-				holdFill( true );
-
-				return;
-			}
-
-			holdFill( false );
-			since = Date.now();
-			timer = setTimeout( function () {
-				timer = null;
-				left = 0;
-				go( at + 1 );
-				arm();
-			}, left );
 		}
 
 		if ( fade ) {
@@ -567,7 +529,6 @@
 
 				if ( Math.abs( fdx ) > 45 ) {
 					go( at + ( fdx < 0 ? 1 : -1 ) );
-					arm();
 				}
 			} );
 		} else {
@@ -680,7 +641,6 @@
 
 			if ( arr ) {
 				go( at + Number( arr.dataset.ocbGo ) );
-				arm();
 
 				return;
 			}
@@ -691,7 +651,6 @@
 			if ( sl && ! sl.classList.contains( 'is-on' ) && sl.parentNode === strip ) {
 				e.preventDefault();
 				go( at + [].indexOf.call( strip.children, sl ) - nearest().i );
-				arm();
 			}
 		} );
 
@@ -700,7 +659,7 @@
 
 		// A banner that turns by itself, or plays a video, can be stopped:
 		// one button for the turning and every video in it.
-		if ( ( Number( hero.dataset.ocbAuto || 0 ) && ! reduced ) || hero.querySelector( 'video' ) ) {
+		if ( auto || hero.querySelector( 'video' ) ) {
 			var heroDots = hero.querySelector( '[data-ocb-dots]' );
 
 			// At the end of the row of dots when there are dots (the stylesheet
@@ -719,9 +678,19 @@
 			} ) );
 		}
 
-		hero.addEventListener( 'mouseenter', stop );
-		hero.addEventListener( 'mouseleave', function () {
-			arm( true );
+		// A mouse only: a finger's tap fires the same events and never
+		// leaves, which held the banner for good.
+		hero.addEventListener( 'pointerenter', function ( e ) {
+			if ( 'mouse' === e.pointerType ) {
+				over = true;
+				stop();
+			}
+		} );
+		hero.addEventListener( 'pointerleave', function ( e ) {
+			if ( 'mouse' === e.pointerType ) {
+				over = false;
+				arm( true );
+			}
 		} );
 
 		// A page put away (another tab, the phone's browser in the
@@ -748,7 +717,7 @@
 
 		window.addEventListener( 'pageshow', function () {
 			rest();
-			arm();
+			arm( true );
 		} );
 
 		// Only a change of width: a phone's address bar showing and hiding
@@ -830,6 +799,22 @@
 			// In RTL the browser counts scrollLeft in negatives.
 			row.scrollTo( { left: rtl ? -to : to, behavior: 'smooth' } );
 		} );
+
+		// The theme's cards keep room for their shadow inside the row, and
+		// in that room the next card showed a sliver of itself. A card
+		// mostly outside the row is marked away (the stylesheet hides it on
+		// a desktop) and comes back as it scrolls in.
+		if ( shelf.querySelector( '.ocb-hostcards' ) && 'IntersectionObserver' in window ) {
+			var away = new IntersectionObserver( function ( list ) {
+				list.forEach( function ( en ) {
+					en.target.classList.toggle( 'is-away', en.intersectionRatio < 0.5 );
+				} );
+			}, { root: row, threshold: [ 0, 0.5, 1 ] } );
+
+			[].forEach.call( row.children, function ( card ) {
+				away.observe( card );
+			} );
+		}
 
 		// Arrows grey out at the ends.
 		function truth() {
