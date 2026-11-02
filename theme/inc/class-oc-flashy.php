@@ -44,6 +44,30 @@ final class Flashy {
 		add_filter( 'option_flashy_subscribe', array( $this, 'subscribe_key' ) );
 		add_filter( 'default_option_flashy_subscribe', array( $this, 'subscribe_key' ) );
 		add_action( 'oc_marketing_consent', array( $this, 'sync' ), 10, 5 );
+		add_filter( 'woocommerce_add_to_cart_fragments', array( $this, 'cart_cookie' ), 5 );
+	}
+
+	/**
+	 * Flashy hears of a cart change from a cookie (flashy_cart) its plugin
+	 * writes at the very end of the request, on `shutdown`, which its script
+	 * then turns into UpdateCart: the add to cart and the abandoned cart.
+	 * Our cart answers — the side cart and its steppers, the product page's
+	 * add, the bought-together button — carry fragments big enough to flush
+	 * the output long before `shutdown`, so the header can no longer be sent
+	 * and Flashy never heard of an add. The fragments are put together
+	 * before a byte goes out, so the cookie is written here, with the cart
+	 * as it now stands. Without the plugin this does nothing.
+	 *
+	 * @param mixed $fragments Fragments.
+	 * @return mixed
+	 */
+	public function cart_cookie( $fragments ) {
+		if ( wp_doing_ajax() && ! headers_sent() && function_exists( 'flashy_cart_updated' ) && function_exists( 'flashy_set_cart_cookie' ) && function_exists( 'WC' ) && WC()->cart ) {
+			flashy_cart_updated();
+			flashy_set_cart_cookie();
+		}
+
+		return $fragments;
 	}
 
 	/**
