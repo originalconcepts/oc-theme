@@ -1413,6 +1413,7 @@ li.oc-block--slider:has(.oc-shelf-load--viewed[data-oc-shelf]) { display: none; 
 
 .ocb-mq__track {
 	display: inline-flex;
+	inline-size: max-content;
 	/* One space between repeats — enough that the words never touch, not the
 	 * wide hole a big gap opened mid-strip. (The logo strip keeps its own
 	 * roomier spacing further down.) */
@@ -1421,6 +1422,14 @@ li.oc-block--slider:has(.oc-shelf-load--viewed[data-oc-shelf]) { display: none; 
 	animation: ocb-mq var(--ocb-mq-speed, 20s) linear infinite;
 	will-change: transform;
 }
+
+/* Every pass of the words keeps its full length. A picture among them —
+ * WordPress turns an emoji into a small image, and a theme caps images at
+ * max-width:100% — counts as nothing wide when the strip is sized, so each
+ * pass came out short by its pictures and its end ran over the start of the
+ * next. The passes may not shrink, and a picture keeps its own width. */
+.ocb-mq__track > * { flex: none; }
+.ocb-mq__track img { max-inline-size: none; }
 
 /* Which way the words go is the block's choice; which way the track
  * overflows is the page's. An inline-flex track starts at the page's start
