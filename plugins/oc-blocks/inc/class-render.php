@@ -93,6 +93,51 @@ final class Render {
 		// changed the product page at once and left the home page's slider
 		// saying it the old way for a day.
 		add_action( 'updated_option', array( $this, 'flush_setting' ), 10, 1 );
+
+		// And a product changing under a shelf: back in stock, a new price,
+		// a new picture. WooCommerce writes a stock change straight to the
+		// product's data, without the save a page cache or this cache hears
+		// of — a product put back in stock went on wearing its "out of
+		// stock" label in the home page's slider.
+		add_action( 'woocommerce_update_product', array( $this, 'product_changed' ) );
+		add_action( 'woocommerce_product_set_stock_status', array( $this, 'product_changed' ) );
+		add_action( 'woocommerce_variation_set_stock_status', array( $this, 'product_changed' ) );
+	}
+
+	/**
+	 * A product changed: turn the cache, and once the request is done ask
+	 * the page cache to forget every composed page. Once per request,
+	 * however many products an import or a bulk edit touches.
+	 */
+	public function product_changed(): void {
+		static $done = false;
+
+		if ( $done ) {
+			return;
+		}
+
+		$done = true;
+		$this->flush();
+		add_action( 'shutdown', array( __CLASS__, 'forget_composed' ) );
+	}
+
+	/**
+	 * Ask the page cache to forget every page that has sections.
+	 */
+	public static function forget_composed(): void {
+		$ids = get_posts(
+			array(
+				'post_type'   => 'any',
+				'post_status' => 'publish',
+				'numberposts' => 100,
+				'fields'      => 'ids',
+				'meta_key'    => Registry::META, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- a bounded lookup after a product change.
+			)
+		);
+
+		foreach ( array_map( 'intval', $ids ) as $id ) {
+			self::forget_page( $id );
+		}
 	}
 
 	/**
