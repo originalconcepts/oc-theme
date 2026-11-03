@@ -1794,6 +1794,17 @@ li.oc-block--slider:has(.oc-shelf-load--viewed[data-oc-shelf]) { display: none; 
 	.ocb-posts--mslider .ocb-post { flex: 0 0 74%; scroll-snap-align: start; }
 }
 
+/* Edge to edge on a phone, a strip of cards still starts at the page's
+ * margin: what runs to the screen's edge is the far side, where the next
+ * card peeks in. Without this the first card stood glued to the edge it
+ * starts from. */
+@media (max-width: 782px) {
+	:is(.ocb--mw-full, .ocb--w-full:not(.ocb--mw-content):not(.ocb--mw-custom)) :is(.ocb-posts-theme--slider .deliz-recipes-grid, .ocb-posts--mslider, .ocb-cats--mslider .ocb-cats__row) {
+		padding-inline: clamp(16px, 3vw, 32px);
+		scroll-padding-inline: clamp(16px, 3vw, 32px);
+	}
+}
+
 .ocb--ink { color: var(--ocb-ink); }
 .ocb--ink .ocb-news__mail { color: inherit; border-color: currentColor; }
 
