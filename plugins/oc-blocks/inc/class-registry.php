@@ -672,13 +672,26 @@ final class Registry {
 					),
 					'corners'  => array(
 						'type'    => 'seg',
-						'label'   => __( 'Corners', 'oc-blocks' ),
+						'label'   => __( 'Corners — desktop', 'oc-blocks' ),
 						'choices' => array(
 							'sharp' => __( 'Sharp', 'oc-blocks' ),
 							'soft'  => __( 'Softened', 'oc-blocks' ),
 						),
 						'def'     => 'sharp',
 						'group'   => 'design',
+						'half'    => true,
+					),
+					'cornersm' => array(
+						'type'    => 'seg',
+						'label'   => __( 'Corners — phones', 'oc-blocks' ),
+						'choices' => array(
+							'same'  => __( 'As on the desktop', 'oc-blocks' ),
+							'sharp' => __( 'Sharp', 'oc-blocks' ),
+							'soft'  => __( 'Softened', 'oc-blocks' ),
+						),
+						'def'     => 'same',
+						'group'   => 'design',
+						'half'    => true,
 					),
 					'fadebg'   => array(
 						'type'  => 'color',

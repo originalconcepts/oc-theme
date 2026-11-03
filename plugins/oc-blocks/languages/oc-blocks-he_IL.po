@@ -2121,3 +2121,9 @@ msgstr "כל עוד לא שונה כאן, הטלפון מציג כמו במחש�
 
 
 
+
+msgid "Corners — desktop"
+msgstr "פינות — מחשב"
+
+msgid "Corners — phones"
+msgstr "פינות — טלפון"

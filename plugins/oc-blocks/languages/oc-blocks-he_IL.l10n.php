@@ -140,6 +140,8 @@ return array(
 		"Corner of buttons (px)" => "עיגול פינות של כפתורים (px)",
 		"Corner of pictures and boxes (px)" => "עיגול פינות של תמונות ותיבות (px)",
 		"Corners" => "פינות",
+		"Corners — desktop" => "פינות — מחשב",
+		"Corners — phones" => "פינות — טלפון",
 		"Could not save" => "השמירה נכשלה",
 		"Countdown" => "ספירה לאחור",
 		"Countdown sits" => "הספירה יושבת",

@@ -892,7 +892,14 @@ final class Render {
 		// absent value means the old behaviour: the video covers the area.
 		$vcontain = isset( $s['vcover'] ) && ! $s['vcover'];
 
-		$html = '<div class="ocb-hero ocb-hero--' . esc_attr( (string) $s['effect'] ) . ' ocb-hero--pos-' . esc_attr( (string) $s['pos'] ) . ' ocb-hero--' . esc_attr( (string) $s['tone'] ) . ( $one ? ' ocb-hero--one' : '' ) . ( $vcontain ? ' ocb-hero--vcontain' : '' ) . ( 0 === absint( $s['h'] ) ? ' ocb-hero--hauto' : '' ) . ( 0 === absint( $s['hm'] ) ? ' ocb-hero--hmauto' : '' ) . ( 'soft' === (string) ( $s['corners'] ?? '' ) ? ' ocb-hero--c-soft' : '' )
+		// Corners, apart for the desktop and the phone; a phone left on "as
+		// on the desktop" follows it.
+		$corner_d = 'soft' === (string) ( $s['corners'] ?? '' ) ? 'soft' : 'sharp';
+		$corner_m = (string) ( $s['cornersm'] ?? 'same' );
+		$corner_m = in_array( $corner_m, array( 'sharp', 'soft' ), true ) ? $corner_m : $corner_d;
+		$corners  = ( 'soft' === $corner_d ? ' ocb-hero--c-soft' : '' ) . ( 'soft' === $corner_m ? ' ocb-hero--cm-soft' : '' );
+
+		$html = '<div class="ocb-hero ocb-hero--' . esc_attr( (string) $s['effect'] ) . ' ocb-hero--pos-' . esc_attr( (string) $s['pos'] ) . ' ocb-hero--' . esc_attr( (string) $s['tone'] ) . ( $one ? ' ocb-hero--one' : '' ) . ( $vcontain ? ' ocb-hero--vcontain' : '' ) . ( 0 === absint( $s['h'] ) ? ' ocb-hero--hauto' : '' ) . ( 0 === absint( $s['hm'] ) ? ' ocb-hero--hmauto' : '' ) . $corners
 			. ( $deck ? ' ocb-hero--deck ocb-hero--d-' . $layd . ' ocb-hero--m-' . $laym : '' )
 			. ( $mb ? ' ocb-hero--mb' : '' ) . '"'
 			. ' style="' . esc_attr( $style ) . '"'
@@ -921,7 +928,7 @@ final class Render {
 		$drift = $deck ? 0 : Registry::snap( (int) $s['parallax'], array( 0, 30, 100 ) );
 
 		if ( $drift > 0 && ( 100 !== $drift || 'fade' === (string) $s['effect'] ) ) {
-			$html .= '<script>(function(h){if(!h||matchMedia("(prefers-reduced-motion: reduce)").matches){return;}h.querySelectorAll("[data-ocb-parallax]").forEach(function(m){if("fixed"===getComputedStyle(m).position){return;}var b=m.parentElement.getBoundingClientRect();if(b.height<4){return;}var f=(parseInt(m.dataset.ocbParallax,10)||30)/100,H=Math.round(b.height+f*(innerHeight-b.height)),y=(-f*b.top).toFixed(1),mv=m.firstElementChild||m;mv.__ocbH=H;mv.style.blockSize=H+"px";mv.__ocbY=y;mv.style.transform="translate3d(0,"+y+"px,0)";});})(document.currentScript.previousElementSibling);</script>';
+			$html .= '<script>(function(h){if(!h||matchMedia("(prefers-reduced-motion: reduce)").matches){return;}h.querySelectorAll("[data-ocb-parallax]").forEach(function(m){if("fixed"===getComputedStyle(m).position){return;}var b=m.parentElement.getBoundingClientRect();if(b.height<4){return;}var f=(parseInt(m.dataset.ocbParallax,10)||30)/100,F=b.height+f*(innerHeight-b.height),H=Math.round(Math.min(F,b.height*1.25)),y=(H<F?(b.height-H)*(b.top+b.height)/(innerHeight+b.height):-f*b.top).toFixed(1),mv=m.firstElementChild||m;mv.__ocbH=H;mv.style.blockSize=H+"px";mv.__ocbY=y;mv.style.transform="translate3d(0,"+y+"px,0)";});})(document.currentScript.previousElementSibling);</script>';
 		}
 
 		return $html;

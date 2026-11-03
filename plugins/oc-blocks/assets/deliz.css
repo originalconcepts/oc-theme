@@ -193,6 +193,11 @@ body.ocb-host-other .ocb-hero__cta:not(.ocb-hero__cta--ghost):hover {
 	body.ocb-contained.ocb-cart-closed:not(.oc-compose-preview) .oc-compose > .ocb--w-full .ocb-mq__pp { margin-left: calc(var(--ocb-free-l, 15px) + max(0px, (100% - var(--ocb-free-l, 15px) - var(--oc-content-width, 1280px) - 2 * clamp(16px, 3vw, 32px)) / 2) + clamp(16px, 3vw, 32px)); } /* guard-ok: the free side above */
 }
 
+/* The same line for a full-width banner's pause button under its dots. */
+@media (min-width: 783px) {
+	body.ocb-contained.ocb-cart-closed:not(.oc-compose-preview) .oc-compose > .ocb--w-full .ocb-dots--below-d .ocb-dots__pp { left: calc(var(--ocb-free-l, 15px) + max(0px, (100% - var(--ocb-free-l, 15px) - var(--oc-content-width, 1280px) - 2 * clamp(16px, 3vw, 32px)) / 2) + clamp(16px, 3vw, 32px)); } /* guard-ok: the free side above */
+}
+
 /* A phone has no categories column: full width is edge to edge. */
 @media (max-width: 599px) {
 	body.ocb-contained:not(.home):not(.oc-compose-preview) .oc-compose > .ocb--w-full:not(.ocb--mw-content):not(.ocb--mw-custom),

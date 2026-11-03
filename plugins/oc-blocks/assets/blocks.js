@@ -2433,9 +2433,15 @@
 				// proportionally. Instead of zooming for headroom, the
 				// picture is given extra height that blends toward the
 				// viewport's own, which covers every position exactly.
+				// The extra height is capped at a quarter of the banner's:
+				// a short banner on a tall phone screen was given a picture
+				// twice its height, and showed a zoomed-in corner of it.
+				// Capped, the drift spreads that smaller room over the
+				// banner's whole way across the screen instead.
 				var f = ( parseInt( media.dataset.ocbParallax, 10 ) || 30 ) / 100;
-				var H = Math.round( box.height + f * ( window.innerHeight - box.height ) );
-				var y = ( -f * box.top ).toFixed( 1 );
+				var full = box.height + f * ( window.innerHeight - box.height );
+				var H = Math.round( Math.min( full, box.height * 1.25 ) );
+				var y = ( H < full ? ( box.height - H ) * ( box.top + box.height ) / ( window.innerHeight + box.height ) : -f * box.top ).toFixed( 1 );
 				var moving = media.firstElementChild || media;
 
 				if ( moving.__ocbH !== H ) {

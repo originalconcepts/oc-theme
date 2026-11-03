@@ -400,6 +400,18 @@ html.ocb-anim .ocb--in-stagger.is-in .ocb-words > * {
 		padding-block: 14px 2px;
 	}
 	.ocb-dots--below-d .ocb-dots__pp { inset-inline-end: 0; inset-block-start: calc(14px + var(--ocb-dot-h, 8px) / 2 - 14px); }
+
+	/* The row of dots is part of the banner's box. The words that lie
+	 * over the picture (one slide at a time) and the arrows took the
+	 * whole box for theirs: the words sank under the picture and were
+	 * cut there, the arrows sat low. Both keep to the picture. */
+	.ocb-hero:has(> .ocb-dots--below-d) > .ocb-hero__sets { inset-block-end: 24px; }
+	.ocb-hero:has(> .ocb-dots--below-d) > .ocb-arr { inset-block-start: calc(50% - 12px); }
+
+	/* A banner running the full width ends at the screen's edge; its
+	 * pause button stays on the line of the other sections' content edge
+	 * (as the running line's does). */
+	.ocb--w-full .ocb-dots--below-d .ocb-dots__pp { inset-inline-end: calc(max(0px, (100% - var(--oc-content-width, 1280px) - 2 * clamp(16px, 3vw, 32px)) / 2) + clamp(16px, 3vw, 32px)); }
 }
 
 @media (max-width: 782px) {
@@ -411,6 +423,12 @@ html.ocb-anim .ocb--in-stagger.is-in .ocb-words > * {
 		padding-block: 12px 2px;
 	}
 	.ocb-dots--below-m .ocb-dots__pp { inset-inline-end: 0; inset-block-start: calc(12px + var(--ocb-dot-h, 8px) / 2 - 14px); }
+
+	.ocb-hero:has(> .ocb-dots--below-m) > .ocb-hero__sets { inset-block-end: 22px; }
+
+	/* Edge to edge on a phone: the pause button keeps the page's margin. */
+	.ocb--w-full:not(.ocb--mw-content):not(.ocb--mw-custom) .ocb-dots--below-m .ocb-dots__pp,
+	.ocb--mw-full .ocb-dots--below-m .ocb-dots__pp { inset-inline-end: clamp(16px, 3vw, 32px); }
 }
 
 /* ---------- hero ---------- */
@@ -431,8 +449,15 @@ html.ocb-anim .ocb--in-stagger.is-in .ocb-words > * {
 .ocb-hero--fade .ocb-hero__strip { overflow: hidden; }
 
 /* Softened corners: the frame is cut with the same radius as the category
-   pictures. The clip-path also reaches the fixed (parallax) picture inside. */
-.ocb-hero--c-soft .ocb-hero__strip { border-radius: 14px; clip-path: inset(0 round 14px); }
+   pictures. The clip-path also reaches the fixed (parallax) picture inside.
+   Chosen apart for the desktop (c-soft) and the phone (cm-soft). */
+@media (min-width: 783px) {
+	.ocb-hero--c-soft .ocb-hero__strip { border-radius: 14px; clip-path: inset(0 round 14px); }
+}
+
+@media (max-width: 782px) {
+	.ocb-hero--cm-soft .ocb-hero__strip { border-radius: 14px; clip-path: inset(0 round 14px); }
+}
 
 .ocb-hero__slide {
 	position: relative;
@@ -890,8 +915,15 @@ html.ocb-anim .ocb--in-stagger.is-in .ocb-words > * {
 }
 
 /* Each slide wears the corners; the strip no longer clips them as one. */
-.ocb-hero--deck.ocb-hero--c-soft .ocb-hero__strip { border-radius: 0; clip-path: none; }
-.ocb-hero--deck.ocb-hero--c-soft .ocb-hero__slide { border-radius: 14px; }
+@media (min-width: 783px) {
+	.ocb-hero--deck.ocb-hero--c-soft .ocb-hero__strip { border-radius: 0; clip-path: none; }
+	.ocb-hero--deck.ocb-hero--c-soft .ocb-hero__slide { border-radius: 14px; }
+}
+
+@media (max-width: 782px) {
+	.ocb-hero--deck.ocb-hero--cm-soft .ocb-hero__strip { border-radius: 0; clip-path: none; }
+	.ocb-hero--deck.ocb-hero--cm-soft .ocb-hero__slide { border-radius: 14px; }
+}
 
 .ocb-hero--deck .ocb-hero__slide::before {
 	content: "";
