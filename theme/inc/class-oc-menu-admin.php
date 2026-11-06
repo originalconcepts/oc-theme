@@ -43,6 +43,59 @@ final class Menu_Admin {
 		add_action( 'admin_enqueue_scripts', array( $this, 'assets' ) );
 		add_action( 'wp_nav_menu_item_custom_fields', array( $this, 'item_link' ), 5 );
 		add_action( 'admin_footer-nav-menus.php', array( $this, 'modal' ) );
+		add_filter( 'get_terms_args', array( $this, 'whole_tree' ), 10, 2 );
+	}
+
+	/**
+	 * The whole category tree, nested, in the Menus screen's category boxes.
+	 *
+	 * WordPress fills those boxes 50 terms at a time, sorted by name, so a
+	 * sub-category whose parent sits on another page comes out as a top-level
+	 * item and the list reads flat. A store with a hundred categories cannot
+	 * tell its sub-categories apart there. Every term goes on one page instead;
+	 * the page links are hidden in assets().
+	 *
+	 * @param array<string,mixed> $args       get_terms() arguments.
+	 * @param array<int,string>   $taxonomies Taxonomies queried.
+	 * @return array<string,mixed>
+	 */
+	public function whole_tree( array $args, array $taxonomies ): array {
+		$screen = (string) ( $GLOBALS['pagenow'] ?? '' );
+
+		// A box switched on in Screen Options arrives over admin-ajax.
+		$in_box = ( 'nav-menus.php' === $screen || doing_action( 'wp_ajax_menu-get-metabox' ) )
+			&& 1 === count( $taxonomies )
+			&& is_taxonomy_hierarchical( (string) reset( $taxonomies ) )
+			&& ! empty( $args['hierarchical'] )
+			&& 50 === (int) ( $args['number'] ?? 0 );
+
+		if ( $in_box ) {
+			$args['number'] = 0;
+			$args['offset'] = 0;
+		}
+
+		return $args;
+	}
+
+	/**
+	 * Styles for the boxes where whole_tree() lists everything: no page
+	 * links, since there is no other page, and room to scroll a long tree.
+	 *
+	 * @return string
+	 */
+	private static function tree_css(): string {
+		$css = '';
+
+		foreach ( get_taxonomies( array( 'show_in_nav_menus' => true ) ) as $taxonomy ) {
+			if ( ! is_taxonomy_hierarchical( $taxonomy ) ) {
+				continue;
+			}
+
+			$id   = sanitize_html_class( $taxonomy );
+			$css .= '#taxonomy-' . $id . ' .add-menu-item-pagelinks{display:none}#tabs-panel-' . $id . '-all{max-height:420px}';
+		}
+
+		return $css;
 	}
 
 	/**
@@ -425,6 +478,8 @@ final class Menu_Admin {
 			array(),
 			oc_asset_version( '/assets/css/menu-panel.css' )
 		);
+
+		wp_add_inline_style( 'oc-menu-panel', self::tree_css() );
 
 		wp_enqueue_script(
 			'oc-menu-panel',
