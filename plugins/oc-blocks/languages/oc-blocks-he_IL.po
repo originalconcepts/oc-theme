@@ -2127,3 +2127,6 @@ msgstr "פינות — מחשב"
 
 msgid "Corners — phones"
 msgstr "פינות — טלפון"
+
+msgid "Please confirm the privacy policy to sign up."
+msgstr "יש לאשר את מדיניות הפרטיות כדי להירשם."

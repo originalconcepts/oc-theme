@@ -422,6 +422,7 @@ return array(
 		"Placement id (from OC Story)" => "מזהה פלייסמנט (מתוך OC Story)",
 		"Plain" => "פשוט",
 		"Play the video" => "הפעלת הווידאו",
+		"Please confirm the privacy policy to sign up." => "יש לאשר את מדיניות הפרטיות כדי להירשם.",
 		"Please enter a valid email address." => "נא להזין כתובת אימייל תקינה.",
 		"Please enter a valid phone number (10 digits)." => "נא להזין מספר טלפון תקין (10 ספרות).",
 		"Please enter a valid phone number (at least 9 digits)." => "נא להזין מספר טלפון תקין (9–10 ספרות).",

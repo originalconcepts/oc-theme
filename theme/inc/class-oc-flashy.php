@@ -14,6 +14,8 @@
  *    a standing "yes" on the account subscribes a returning customer too.
  *  - A change made on the account page is sent to Flashy straight away; the
  *    plugin has nothing for that case.
+ *  - A newsletter sign-up (the footer form, the newsletter block) is
+ *    subscribed to the list chosen in the Customizer, Footer → Newsletter.
  *
  * Nothing here runs unless the Flashy plugin is active, and nothing is
  * changed in its stored settings — the overrides live in filters only.
@@ -36,6 +38,12 @@ final class Flashy {
 	public const FIELD = 'oc_marketing_consent';
 
 	/**
+	 * The theme mod naming the list newsletter sign-ups join: '' for the
+	 * list chosen in Flashy's own settings, 'off' for none, else a list id.
+	 */
+	public const LIST_MOD = 'oc_newsletter_flashy_list';
+
+	/**
 	 * Hook in. The filters are cheap and harmless without the plugin; the
 	 * API call checks for it.
 	 */
@@ -44,6 +52,7 @@ final class Flashy {
 		add_filter( 'option_flashy_subscribe', array( $this, 'subscribe_key' ) );
 		add_filter( 'default_option_flashy_subscribe', array( $this, 'subscribe_key' ) );
 		add_action( 'oc_marketing_consent', array( $this, 'sync' ), 10, 5 );
+		add_action( 'oc_newsletter_subscribed', array( $this, 'newsletter' ), 10, 1 );
 		add_filter( 'woocommerce_add_to_cart_fragments', array( $this, 'cart_cookie' ), 5 );
 	}
 
@@ -107,14 +116,79 @@ final class Flashy {
 	}
 
 	/**
+	 * Is Flashy installed and connected?
+	 */
+	public static function connected(): bool {
+		return function_exists( 'flashy' )
+			&& '' !== (string) get_option( 'flashy_key', '' )
+			&& is_object( flashy() )
+			&& isset( flashy()->api, flashy()->api->contacts );
+	}
+
+	/**
 	 * Is Flashy installed, connected, and pointed at a list?
 	 */
 	public static function ready(): bool {
-		return function_exists( 'flashy' )
-			&& '' !== (string) get_option( 'flashy_key', '' )
-			&& '' !== (string) get_option( 'flashy_list_id', '' )
-			&& is_object( flashy() )
-			&& isset( flashy()->api, flashy()->api->contacts );
+		return '' !== (string) get_option( 'flashy_list_id', '' ) && self::connected();
+	}
+
+	/**
+	 * The account's lists, id => name, for the Customizer. Asked of Flashy
+	 * at most every ten minutes, and only from the admin. Empty when Flashy
+	 * is not connected or does not answer.
+	 *
+	 * @return array<int,string>
+	 */
+	public static function lists(): array {
+		if ( ! self::connected() || ! method_exists( flashy(), 'lists' ) ) {
+			return array();
+		}
+
+		$cached = get_transient( 'oc_flashy_lists' );
+
+		if ( is_array( $cached ) ) {
+			return $cached;
+		}
+
+		$lists = array();
+
+		try {
+			foreach ( (array) flashy()->lists() as $id => $name ) {
+				if ( (int) $id > 0 ) {
+					$lists[ (int) $id ] = (string) $name;
+				}
+			}
+		} catch ( \Throwable $e ) {
+			$lists = array();
+		}
+
+		set_transient( 'oc_flashy_lists', $lists, $lists ? 10 * MINUTE_IN_SECONDS : MINUTE_IN_SECONDS );
+
+		return $lists;
+	}
+
+	/**
+	 * Put a newsletter sign-up on the chosen Flashy list. The form already
+	 * collected the consent; the address is on the site's own list either way.
+	 *
+	 * @param string $email Email.
+	 */
+	public function newsletter( $email ): void {
+		$choice = (string) get_theme_mod( self::LIST_MOD, '' );
+		$list   = '' === $choice ? (string) get_option( 'flashy_list_id', '' ) : $choice;
+
+		if ( 'off' === $choice || ! ctype_digit( $list ) || ! is_email( (string) $email ) || ! self::connected() ) {
+			return;
+		}
+
+		try {
+			flashy()->api->contacts->subscribe( array( 'email' => (string) $email ), (int) $list, 'email' );
+		} catch ( \Throwable $e ) {
+			// The visitor is signed up on the site either way; Flashy can be caught up from the CSV.
+			if ( function_exists( 'flashy_log' ) ) {
+				flashy_log( 'oc-theme newsletter subscribe failed: ' . $e->getMessage() );
+			}
+		}
 	}
 
 	/**

@@ -15085,3 +15085,24 @@ msgstr "תיוג קישורי המוצרים ב-UTM"
 
 msgid "Adds utm_source, utm_medium=cpc and utm_campaign=catalog to every link. Turn it off for Google: its ads are tagged by the click id, and with UTM the free listings count as paid traffic in Analytics."
 msgstr "מוסיף לכל קישור utm_source,‏ utm_medium=cpc ו-utm_campaign=catalog. בפיד של Google כדאי לכבות: המודעות שלו מזוהות לפי מזהה הקליק, ועם UTM גם המודעות החינמיות נספרות ב-Analytics כתנועה ממומנת."
+
+msgid "Flashy's default list (%s)"
+msgstr "רשימת ברירת המחדל ב-Flashy (%s)"
+
+msgid "Flashy's default list"
+msgstr "רשימת ברירת המחדל ב-Flashy"
+
+msgid "Do not send to Flashy"
+msgstr "לא לשלוח ל-Flashy"
+
+msgid "List #%s"
+msgstr "רשימה מס׳ %s"
+
+msgid "Flashy list for newsletter sign-ups"
+msgstr "רשימת Flashy לנרשמים לניוזלטר"
+
+msgid "Applies to every newsletter form on the site."
+msgstr "חל על כל טפסי ההרשמה לניוזלטר באתר."
+
+msgid "I agree to the site's %s"
+msgstr "אני מאשר/ת את %s של האתר"

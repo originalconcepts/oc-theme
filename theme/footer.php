@@ -196,10 +196,27 @@ $oc_bottom = static function () use ( $oc_credit ) {
 						<p class="oc-footer__news-text"><?php echo esc_html( $oc_nt ); ?></p>
 					<?php endif; ?>
 					<form class="oc-footer__news-form" method="post" action="<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>" data-oc-subscribe>
+						<?php
+						// The signed timestamp the sign-up endpoint checks; without it every sign-up was refused as stale.
+						echo OC\Theme\Guard::fields( 'newsletter', false ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Guard builds it from escaped parts.
+						?>
 						<input type="hidden" name="action" value="oc_blocks_subscribe">
+						<input type="hidden" name="consent_q" value="1">
 						<input class="oc-footer__news-trap" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
 						<input class="oc-footer__news-mail" type="email" name="email" required placeholder="<?php esc_attr_e( 'Your email', 'oc-theme' ); ?>" aria-label="<?php esc_attr_e( 'Email', 'oc-theme' ); ?>">
 						<button class="oc-footer__news-go" type="submit"><?php esc_html_e( 'Subscribe', 'oc-theme' ); ?></button>
+						<label class="oc-footer__news-consent">
+							<input type="checkbox" name="consent" value="1" required>
+							<span>
+								<?php
+								$oc_pp = get_privacy_policy_url();
+								$oc_pl = '' !== $oc_pp ? '<a href="' . esc_url( $oc_pp ) . '" target="_blank" rel="noopener">' . esc_html__( 'privacy policy', 'oc-theme' ) . '</a>' : esc_html__( 'privacy policy', 'oc-theme' );
+								/* translators: %s: "privacy policy", linked to the policy page. */
+								echo wp_kses_post( sprintf( __( 'I agree to the site\'s %s', 'oc-theme' ), $oc_pl ) );
+								?>
+							</span>
+						</label>
+						<?php echo OC\Theme\Guard::slot( 'newsletter' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- an empty div with an escaped attribute. ?>
 						<p class="oc-footer__news-thanks" role="status" hidden><?php esc_html_e( 'Thank you — you are on the list.', 'oc-theme' ); ?></p>
 					</form>
 				</div>

@@ -10208,6 +10208,8 @@ window.ocWhenShown( function () {
 				var t = form.querySelector( '.oc-footer__news-thanks' );
 				if ( t ) { t.hidden = false; }
 				if ( mail ) { mail.value = ''; }
+				var ok = form.querySelector( '.oc-footer__news-consent input' );
+				if ( ok ) { ok.checked = false; }
 			} else if ( out && out.data && out.data.msg ) {
 				window.alert( out.data.msg );
 			}

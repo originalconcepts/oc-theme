@@ -50,6 +50,9 @@ final class Newsletter {
 		// phpcs:disable WordPress.Security.NonceVerification.Missing -- see above.
 		$trap  = isset( $_POST['website'] ) ? trim( (string) wp_unslash( $_POST['website'] ) ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- honeypot; only ever compared to the empty string.
 		$email = isset( $_POST['email'] ) ? sanitize_email( wp_unslash( $_POST['email'] ) ) : '';
+		// A form that asks for consent (the theme's footer) must come back with it ticked.
+		$asked  = ! empty( $_POST['consent_q'] );
+		$agreed = ! empty( $_POST['consent'] );
 		// phpcs:enable
 
 		// A human never sees the trap field. A bot that filled it hears
@@ -60,6 +63,10 @@ final class Newsletter {
 
 		if ( ! is_email( $email ) ) {
 			wp_send_json_error( array( 'msg' => __( 'That does not look like an email address.', 'oc-blocks' ) ) );
+		}
+
+		if ( $asked && ! $agreed ) {
+			wp_send_json_error( array( 'msg' => __( 'Please confirm the privacy policy to sign up.', 'oc-blocks' ) ) );
 		}
 
 		// The theme's guard, when the theme is there: signed timestamp,

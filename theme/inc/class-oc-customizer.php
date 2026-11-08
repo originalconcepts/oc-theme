@@ -1406,6 +1406,28 @@ final class Customizer {
 		$this->text( $c, 'oc_footer_news_h', 'oc_footer', __( 'Heading', 'oc-theme' ) );
 		$this->text( $c, 'oc_footer_news_t', 'oc_footer', __( 'Text', 'oc-theme' ) );
 
+		// Which Flashy list the sign-ups join — every newsletter form on the
+		// site, the footer's and the newsletter block's alike.
+		if ( function_exists( 'flashy' ) ) {
+			$lists   = Flashy::lists();
+			$default = $lists[ (int) get_option( 'flashy_list_id', 0 ) ] ?? '';
+			$current = (string) get_theme_mod( Flashy::LIST_MOD, '' );
+			$choices = array(
+				/* translators: %s: the list's name in Flashy. */
+				''    => '' !== $default ? sprintf( __( 'Flashy\'s default list (%s)', 'oc-theme' ), $default ) : __( 'Flashy\'s default list', 'oc-theme' ),
+				'off' => __( 'Do not send to Flashy', 'oc-theme' ),
+			);
+			foreach ( $lists as $id => $name ) {
+				$choices[ (string) $id ] = $name;
+			}
+			// A list Flashy did not answer for just now stays chosen rather than being wiped on save.
+			if ( ctype_digit( $current ) && ! isset( $choices[ $current ] ) ) {
+				/* translators: %s: list id. */
+				$choices[ $current ] = sprintf( __( 'List #%s', 'oc-theme' ), $current );
+			}
+			$this->select( $c, Flashy::LIST_MOD, 'oc_footer', __( 'Flashy list for newsletter sign-ups', 'oc-theme' ), $choices, '', null, __( 'Applies to every newsletter form on the site.', 'oc-theme' ) );
+		}
+
 		// Colours & bottom bar. Social icons come from Settings → Store details.
 		$this->heading( $c, 'oc_h_ft_bottom', 'oc_footer', __( 'Colours & bottom bar', 'oc-theme' ) );
 		$this->color( $c, 'oc_footer_bg', 'oc_footer', __( 'Background', 'oc-theme' ) );
