@@ -117,12 +117,17 @@ final class Flashy {
 
 	/**
 	 * Is Flashy installed and connected?
+	 *
+	 * The client hands out its services (contacts, lists…) through __get
+	 * with no __isset, so isset( flashy()->api->contacts ) is always false;
+	 * the client object itself is what tells.
 	 */
 	public static function connected(): bool {
 		return function_exists( 'flashy' )
 			&& '' !== (string) get_option( 'flashy_key', '' )
 			&& is_object( flashy() )
-			&& isset( flashy()->api, flashy()->api->contacts );
+			&& isset( flashy()->api )
+			&& is_object( flashy()->api );
 	}
 
 	/**
