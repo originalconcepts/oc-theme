@@ -6240,7 +6240,9 @@ body.oc-swatch-square-cat .oc-mcart__attr-swatch { border-radius: 4px; }
 	color: var(--oc-ink);
 }
 
-.oc-topup .oc-shipbar { padding-inline: 0; border-radius: 10px; padding-inline: 14px; }
+.oc-topup .oc-shipbar { border-radius: 10px; padding-inline: 14px; }
+
+.oc-topup .oc-shipbar__go { display: none; }
 
 .oc-topup__loading, .oc-topup__empty { display: block; padding: 24px 0; text-align: center; color: var(--oc-ink); }
 
