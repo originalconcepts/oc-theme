@@ -15,6 +15,8 @@ declare( strict_types = 1 );
 
 namespace OC\Theme\Offers;
 
+defined( 'ABSPATH' ) || defined( 'OC_TESTS' ) || exit;
+
 /**
  * Rule shape, matching and arithmetic.
  */

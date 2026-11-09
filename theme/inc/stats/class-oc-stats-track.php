@@ -19,7 +19,7 @@ declare( strict_types = 1 );
 
 namespace OC\Theme\Stats;
 
-defined( 'ABSPATH' ) || exit;
+defined( 'ABSPATH' ) || defined( 'OC_TESTS' ) || exit;
 
 /**
  * The beacon, the tables and the order attribution.
