@@ -129,6 +129,8 @@ final class Rules {
 			'enabled'             => ! empty( $raw['enabled'] ),
 			'base'                => max( 0.0, (float) ( $raw['base'] ?? 0 ) ),
 			'free_over'           => max( 0.0, (float) ( $raw['free_over'] ?? 0 ) ),
+			'cheap_over'          => max( 0.0, (float) ( $raw['cheap_over'] ?? 0 ) ),
+			'cheap_price'         => max( 0.0, (float) ( $raw['cheap_price'] ?? 0 ) ),
 			'free_ignore_coupons' => ! empty( $raw['free_ignore_coupons'] ),
 			'mode'                => 'sum' === ( $raw['mode'] ?? 'max' ) ? 'sum' : 'max',
 			'label'               => trim( (string) ( $raw['label'] ?? '' ) ),

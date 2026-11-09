@@ -46,7 +46,7 @@ final class Quote {
 	 * @phpstan-param array<int,array{subtotal:float,group:string,qty:int}> $lines
 	 * @phpstan-param array{country?:string,postcode?:string,city?:string} $dest
 	 * @phpstan-param array<string,mixed> $rules
-	 * @phpstan-return array{cost:float,free:bool,region:string,groups:string[],eligible:float,threshold:float,missing:float,reasons:array<int,array{code:string,args:array<string,mixed>}>}
+	 * @phpstan-return array{cost:float,free:bool,region:string,groups:string[],eligible:float,threshold:float,missing:float,cheap:bool,cheap_over:float,cheap_price:float,reasons:array<int,array{code:string,args:array<string,mixed>}>}
 	 */
 	public static function calculate( array $lines, array $dest, array $rules ): array {
 		$region  = self::region_for( $dest, $rules );
@@ -107,6 +107,25 @@ final class Quote {
 			);
 		}
 
+		// A station on the way: from this sum delivery costs less, until
+		// the free line is reached. It only exists where free delivery
+		// can be reached at all, and below that line.
+		$cheap_over  = (float) ( $rules['cheap_over'] ?? 0 );
+		$cheap_price = (float) ( $rules['cheap_price'] ?? 0 );
+		$has_station = $threshold > 0 && $cheap_over > 0 && $cheap_over < $threshold;
+		$cheap       = $has_station && ! $free && $has_eligible && $eligible >= $cheap_over;
+
+		if ( $cheap ) {
+			$base      = $cheap_price;
+			$reasons[] = array(
+				'code' => 'cheap_over',
+				'args' => array(
+					'over'  => $cheap_over,
+					'price' => $cheap_price,
+				),
+			);
+		}
+
 		// The groups that stand outside free delivery are priced on their
 		// own terms — once per group, not per unit.
 		$prices = array();
@@ -135,9 +154,12 @@ final class Quote {
 			'region'    => null !== $region ? (string) $region['name'] : '',
 			'groups'    => array_keys( $present ),
 			'eligible'  => round( $eligible, 2 ),
-			'threshold' => $threshold,
-			'missing'   => round( $missing, 2 ),
-			'reasons'   => $reasons,
+			'threshold'   => $threshold,
+			'missing'     => round( $missing, 2 ),
+			'cheap'       => $cheap,
+			'cheap_over'  => $has_station ? $cheap_over : 0.0,
+			'cheap_price' => $has_station ? $cheap_price : 0.0,
+			'reasons'     => $reasons,
 		);
 	}
 

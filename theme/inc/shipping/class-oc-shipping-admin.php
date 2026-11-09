@@ -139,6 +139,15 @@ final class Shipping_Admin {
 						<small><?php esc_html_e( '0 = never free.', 'oc-theme' ); ?></small>
 					</label>
 					<label>
+						<span><?php esc_html_e( 'Cheaper delivery over', 'oc-theme' ); ?> (<?php echo esc_html( $sym ); ?>)</span>
+						<input type="number" step="0.01" min="0" name="cheap_over" value="<?php echo esc_attr( (string) $rules['cheap_over'] ); ?>" />
+						<small><?php esc_html_e( 'A station on the way to free delivery. 0 = none.', 'oc-theme' ); ?></small>
+					</label>
+					<label>
+						<span><?php esc_html_e( 'Delivery price from that sum', 'oc-theme' ); ?> (<?php echo esc_html( $sym ); ?>)</span>
+						<input type="number" step="0.01" min="0" name="cheap_price" value="<?php echo esc_attr( (string) $rules['cheap_price'] ); ?>" />
+					</label>
+					<label>
 						<span><?php esc_html_e( 'Name at the checkout', 'oc-theme' ); ?></span>
 						<input type="text" name="label" value="<?php echo esc_attr( (string) $rules['label'] ); ?>" placeholder="<?php esc_attr_e( 'Home delivery', 'oc-theme' ); ?>" />
 					</label>
@@ -367,6 +376,8 @@ final class Shipping_Admin {
 			'enabled'             => ! empty( $_POST['enabled'] ),
 			'base'                => (float) ( $_POST['base'] ?? 0 ),
 			'free_over'           => (float) ( $_POST['free_over'] ?? 0 ),
+			'cheap_over'          => (float) ( $_POST['cheap_over'] ?? 0 ),
+			'cheap_price'         => (float) ( $_POST['cheap_price'] ?? 0 ),
 			'free_ignore_coupons' => ! empty( $_POST['free_ignore_coupons'] ),
 			'mode'                => sanitize_key( (string) wp_unslash( $_POST['mode'] ?? 'max' ) ),
 			'label'               => sanitize_text_field( (string) wp_unslash( $_POST['label'] ?? '' ) ),

@@ -89,7 +89,7 @@ final class Shipping {
 	 * says what it would do to the delivery charge before it is taken.
 	 *
 	 * @param array<int,array{subtotal:float,group:string,qty:int}> $extra Calculator lines to count as if they were in the cart.
-	 * @return array{goal:float,have:float,free:bool,cost:float}
+	 * @return array{goal:float,have:float,free:bool,cost:float,cheap_over:float,cheap_price:float}
 	 */
 	public static function cart_progress( array $extra = array() ): array {
 		$rules = Rules::get();
@@ -97,20 +97,24 @@ final class Shipping {
 
 		if ( ! $cart ) {
 			return array(
-				'goal' => 0.0,
-				'have' => 0.0,
-				'free' => false,
-				'cost' => 0.0,
+				'goal'        => 0.0,
+				'have'        => 0.0,
+				'free'        => false,
+				'cost'        => 0.0,
+				'cheap_over'  => 0.0,
+				'cheap_price' => 0.0,
 			);
 		}
 
 		$quote = Quote::calculate( array_merge( self::lines_from_package( array( 'contents' => $cart->get_cart() ), $rules ), $extra ), self::customer_destination(), $rules );
 
 		return array(
-			'goal' => (float) $quote['threshold'],
-			'have' => (float) $quote['eligible'],
-			'free' => (bool) $quote['free'],
-			'cost' => (float) $quote['cost'],
+			'goal'        => (float) $quote['threshold'],
+			'have'        => (float) $quote['eligible'],
+			'free'        => (bool) $quote['free'],
+			'cost'        => (float) $quote['cost'],
+			'cheap_over'  => (float) $quote['cheap_over'],
+			'cheap_price' => (float) $quote['cheap_price'],
 		);
 	}
 
@@ -219,6 +223,11 @@ final class Shipping {
 				case 'free_over':
 					/* translators: %s: the sum from which delivery is free. */
 					$parts[] = sprintf( __( 'Free over %s', 'oc-theme' ), wp_strip_all_tags( wc_price( (float) $a['threshold'] ) ) );
+					break;
+
+				case 'cheap_over':
+					/* translators: 1: the sum from which delivery costs less. 2: that price. */
+					$parts[] = sprintf( __( 'Over %1$s: delivery %2$s', 'oc-theme' ), wp_strip_all_tags( wc_price( (float) $a['over'] ) ), wp_strip_all_tags( wc_price( (float) $a['price'] ) ) );
 					break;
 
 				case 'group':

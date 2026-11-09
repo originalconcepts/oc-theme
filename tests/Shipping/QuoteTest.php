@@ -172,4 +172,32 @@ final class QuoteTest extends TestCase {
 		$this->assertFalse( $rules['groups']['electric']['in_free'] );
 		$this->assertSame( array(), $rules['regions'] );
 	}
+
+	public function test_a_station_on_the_way_prices_delivery_lower_until_the_free_line(): void {
+		$rules                = $this->mg4();
+		$rules['cheap_over']  = 250.0;
+		$rules['cheap_price'] = 19.0;
+
+		$below = Quote::calculate( array( $this->line( 200 ) ), array(), $rules );
+		$at    = Quote::calculate( array( $this->line( 300 ) ), array(), $rules );
+		$over  = Quote::calculate( array( $this->line( 450 ) ), array(), $rules );
+		$eilat = Quote::calculate( array( $this->line( 300 ) ), array( 'city' => 'אילת' ), $rules );
+
+		$this->assertSame( 39.0, $below['cost'] );
+		$this->assertFalse( $below['cheap'] );
+		$this->assertSame( 250.0, $below['cheap_over'] );
+
+		$this->assertSame( 19.0, $at['cost'] );
+		$this->assertTrue( $at['cheap'] );
+		$this->assertFalse( $at['free'] );
+
+		$this->assertTrue( $over['free'] );
+		$this->assertFalse( $over['cheap'] );
+
+		$this->assertSame( 69.0, $eilat['cost'], 'no free line, so no station either' );
+		$this->assertSame( 0.0, $eilat['cheap_over'] );
+
+		$rules['cheap_over'] = 500.0;
+		$this->assertSame( 0.0, Quote::calculate( array( $this->line( 300 ) ), array(), $rules )['cheap_over'], 'a station past the free line is no station' );
+	}
 }

@@ -15756,3 +15756,45 @@ msgstr "מוצר להציע לצידם"
 
 msgid "Nothing picked by hand. Today the automatic offers answer."
 msgstr "אין בחירה ידנית. היום עונות ההצעות האוטומטיות."
+
+msgid "%1$s more and delivery drops to %2$s"
+msgstr "עוד %1$s והמשלוח יורד ל-%2$s"
+
+msgid "Delivery is down to %1$s. %2$s more and it is free"
+msgstr "המשלוח ירד ל-%1$s. עוד %2$s והוא חינם"
+
+msgid "A station on the way"
+msgstr "תחנה בדרך"
+
+msgid "Sum"
+msgstr "סכום"
+
+msgid "delivery price from there"
+msgstr "מחיר המשלוח משם"
+
+msgid "A second stop on the bar before free delivery. Empty = taken from the theme's shipping rules when they set one. The price here is only what the bar says; the shipping rules decide what is charged."
+msgstr "תחנה שנייה על הפס לפני המשלוח החינם. ריק = נלקח מכללי המשלוח של התבנית כשהם מגדירים תחנה. המחיר כאן הוא רק מה שהפס אומר; כללי המשלוח קובעים מה נגבה."
+
+msgid "Bar colour (empty = the brand colour)"
+msgstr "צבע הפס (ריק = צבע המותג)"
+
+msgid "Bar background (empty = a tint of the bar colour)"
+msgstr "רקע הפס (ריק = גוון בהיר של צבע הפס)"
+
+msgid "Quiet bar: a thin line, no coloured band"
+msgstr "פס שקט: קו דק, בלי רצועה צבעונית"
+
+msgid "Adding it drops delivery to %1$s, with %2$s left for free shipping"
+msgstr "ההוספה מורידה את המשלוח ל-%1$s, ונשארים %2$s למשלוח חינם"
+
+msgid "Cheaper delivery over"
+msgstr "משלוח מוזל מעל"
+
+msgid "A station on the way to free delivery. 0 = none."
+msgstr "תחנה בדרך למשלוח חינם. 0 = אין."
+
+msgid "Delivery price from that sum"
+msgstr "מחיר המשלוח מהסכום הזה"
+
+msgid "Over %1$s: delivery %2$s"
+msgstr "מעל %1$s: משלוח %2$s"
