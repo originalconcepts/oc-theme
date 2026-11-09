@@ -15750,3 +15750,9 @@ msgstr "הוספת מוצר: %s"
 
 msgid "Nothing to change."
 msgstr "אין מה לשנות."
+
+msgid "Product to offer beside them"
+msgstr "מוצר להציע לצידם"
+
+msgid "Nothing picked by hand. Today the automatic offers answer."
+msgstr "אין בחירה ידנית. היום עונות ההצעות האוטומטיות."

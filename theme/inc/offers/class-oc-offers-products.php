@@ -428,7 +428,11 @@ final class Products_Admin {
 				<?php
 				self::listbox( $product, 'xsell', $xsell, __( 'Goes with it: the offer in the cart, and "goes well with" on the product page', 'oc-theme' ), self::source_of( $product, 'cart' ), true );
 				self::listbox( $product, 'upsell', $upsell, __( 'Upgrades: the better version, on the product page', 'oc-theme' ), self::source_of( $product, 'upsell' ), false );
-				self::listbox( $product, 'bt', $bt, __( 'Bought together: a bundle on the product page', 'oc-theme' ), array( 'src' => '', 'label' => '' ), false );
+				$none = array(
+					'src'   => '',
+					'label' => '',
+				);
+				self::listbox( $product, 'bt', $bt, __( 'Bought together: a bundle on the product page', 'oc-theme' ), $none, false );
 				?>
 
 				<div class="oc-of__box">
@@ -479,6 +483,12 @@ final class Products_Admin {
 	 */
 	private static function listbox( \WC_Product $product, string $kind, array $ids, string $title, array $source, bool $lead ): void {
 		$id = $product->get_id();
+
+		$bundle_note = sprintf(
+			/* translators: %s: link to the product's edit screen. */
+			esc_html__( 'The bundle\'s discount and title are set on %s.', 'oc-theme' ),
+			'<a href="' . esc_url( (string) get_edit_post_link( $id ) ) . '">' . esc_html__( 'the product itself', 'oc-theme' ) . '</a>'
+		);
 		?>
 		<div class="oc-of__box<?php echo $lead ? ' is-lead' : ''; ?>" data-oc-of-list="<?php echo esc_attr( $kind ); ?>" data-product="<?php echo absint( $id ); ?>">
 			<div class="oc-of__boxh"><strong><?php echo esc_html( $title ); ?></strong><span class="oc-of__saved" data-oc-of-saved aria-live="polite"></span></div>
@@ -506,13 +516,7 @@ final class Products_Admin {
 				<div class="oc-of__pickmenu" hidden></div>
 			</span>
 			<?php if ( 'bt' === $kind ) : ?>
-				<span class="oc-of__muted"><?php
-				printf(
-					/* translators: %s: link to the product's edit screen. */
-					esc_html__( 'The bundle\'s discount and title are set on %s.', 'oc-theme' ),
-					'<a href="' . esc_url( (string) get_edit_post_link( $id ) ) . '">' . esc_html__( 'the product itself', 'oc-theme' ) . '</a>'
-				);
-				?></span>
+				<span class="oc-of__muted"><?php echo $bundle_note; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built escaped. ?></span>
 			<?php endif; ?>
 		</div>
 		<?php
