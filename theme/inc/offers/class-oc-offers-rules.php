@@ -94,13 +94,13 @@ final class Rules {
 	/**
 	 * A list of positive whole numbers, each once, in the order given.
 	 *
-	 * @param mixed $list Anything.
+	 * @param mixed $values Anything.
 	 * @return int[]
 	 */
-	public static function ids( $list ): array {
+	public static function ids( $values ): array {
 		$out = array();
 
-		foreach ( (array) $list as $id ) {
+		foreach ( (array) $values as $id ) {
 			$id = is_scalar( $id ) ? (int) $id : 0;
 
 			if ( $id > 0 && ! in_array( $id, $out, true ) ) {
@@ -130,8 +130,8 @@ final class Rules {
 	 * its brands. A rule that names nothing covers every product; one that
 	 * names several things covers a product that fits any of them.
 	 *
-	 * @param array<string,mixed>                          $rule    A clean rule.
-	 * @param array{id:int,cats:int[],brands:int[]}        $product The product's facts.
+	 * @param array<string,mixed>                   $rule    A clean rule.
+	 * @param array{id:int,cats:int[],brands:int[]} $product The product's facts.
 	 */
 	public static function matches( array $rule, array $product ): bool {
 		$when = $rule['when'];
@@ -190,16 +190,16 @@ final class Rules {
 	 * the rule leaves out — each once, in the order they came.
 	 *
 	 * @param int[] $candidates Product ids, best first.
-	 * @param int   $self       The product the offer stands beside.
+	 * @param int   $beside     The product the offer stands beside.
 	 * @param int[] $in_cart    Product and variation ids in the cart.
 	 * @param int[] $exclude    Products the rule leaves out.
 	 * @return int[]
 	 */
-	public static function offerable( array $candidates, int $self, array $in_cart, array $exclude = array() ): array {
+	public static function offerable( array $candidates, int $beside, array $in_cart, array $exclude = array() ): array {
 		$out = array();
 
 		foreach ( self::ids( $candidates ) as $id ) {
-			if ( $id === $self || in_array( $id, $in_cart, true ) || in_array( $id, $exclude, true ) ) {
+			if ( $id === $beside || in_array( $id, $in_cart, true ) || in_array( $id, $exclude, true ) ) {
 				continue;
 			}
 

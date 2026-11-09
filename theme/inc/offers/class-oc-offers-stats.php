@@ -123,12 +123,14 @@ final class Stats {
 		$orders  = max( 0, (int) ( $add['orders'] ?? 0 ) );
 		$revenue = max( 0.0, (float) ( $add['revenue'] ?? 0 ) );
 
+		$table = self::table();
+
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- own counters table, name from $wpdb->prefix.
 		$wpdb->query(
 			$wpdb->prepare(
-				'INSERT INTO ' . self::table() . ' (day, src, place, for_id, offer_id, seen, added, orders, revenue)
+				"INSERT INTO {$table} (day, src, place, for_id, offer_id, seen, added, orders, revenue)
 				VALUES (%s, %s, %s, %d, %d, %d, %d, %d, %f)
-				ON DUPLICATE KEY UPDATE seen = seen + VALUES(seen), added = added + VALUES(added), orders = orders + VALUES(orders), revenue = revenue + VALUES(revenue)',
+				ON DUPLICATE KEY UPDATE seen = seen + VALUES(seen), added = added + VALUES(added), orders = orders + VALUES(orders), revenue = revenue + VALUES(revenue)",
 				wp_date( 'Y-m-d' ),
 				$src,
 				$place,
@@ -157,12 +159,13 @@ final class Stats {
 		global $wpdb;
 
 		$since = wp_date( 'Y-m-d', time() - ( max( 1, $days ) - 1 ) * DAY_IN_SECONDS );
+		$table = self::table();
 
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- own counters table, read on one admin screen.
 		$rows = $wpdb->get_results(
 			$wpdb->prepare(
-				'SELECT src, SUM(seen) AS seen, SUM(added) AS added, SUM(orders) AS orders, SUM(revenue) AS revenue
-				FROM ' . self::table() . ' WHERE day >= %s GROUP BY src',
+				"SELECT src, SUM(seen) AS seen, SUM(added) AS added, SUM(orders) AS orders, SUM(revenue) AS revenue
+				FROM {$table} WHERE day >= %s GROUP BY src",
 				$since
 			),
 			ARRAY_A
