@@ -154,13 +154,13 @@ final class Rules {
 	/**
 	 * The quantity picked when the page opens: one of the tiers, or 1.
 	 *
-	 * @param int                                         $default What was asked for.
-	 * @param array<int,array{qty:int,pct:int,label:string}> $tiers   Clean tiers.
+	 * @param int                                            $asked What was asked for.
+	 * @param array<int,array{qty:int,pct:int,label:string}> $tiers Clean tiers.
 	 */
-	public static function clean_default( int $default, array $tiers ): int {
+	public static function clean_default( int $asked, array $tiers ): int {
 		foreach ( $tiers as $tier ) {
-			if ( $tier['qty'] === $default ) {
-				return $default;
+			if ( $tier['qty'] === $asked ) {
+				return $asked;
 			}
 		}
 
@@ -172,7 +172,7 @@ final class Rules {
 	 * null below the first.
 	 *
 	 * @param array<int,array{qty:int,pct:int,label:string}> $tiers Clean tiers, climbing.
-	 * @param int                                         $qty   Units in the line.
+	 * @param int                                            $qty   Units in the line.
 	 * @return array{qty:int,pct:int,label:string}|null
 	 */
 	public static function tier_for( array $tiers, int $qty ): ?array {

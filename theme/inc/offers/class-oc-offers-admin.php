@@ -436,8 +436,7 @@ final class Admin {
 			$html .= ' <span class="oc-of__muted">' . esc_html__( 'tiers', 'oc-theme' ) . '</span> ';
 
 			foreach ( $rule['tiers'] as $tier ) {
-				/* translators: 1: quantity. 2: percent off. */
-				$html .= '<span class="oc-of__chip">' . esc_html( sprintf( __( '%1$d units, %2$d%%', 'oc-theme' ), $tier['qty'], $tier['pct'] ) ) . '</span>';
+				$html .= '<span class="oc-of__chip">' . esc_html( self::tier_text( $tier ) ) . '</span>';
 			}
 
 			if ( ! $rule['tiers'] ) {
@@ -460,6 +459,16 @@ final class Admin {
 		}
 
 		return $html;
+	}
+
+	/**
+	 * A tier in words: "4 units, 10%".
+	 *
+	 * @param array{qty:int,pct:int,label:string} $tier The tier.
+	 */
+	public static function tier_text( array $tier ): string {
+		/* translators: 1: quantity. 2: percent off. */
+		return sprintf( __( '%1$d units, %2$d%%', 'oc-theme' ), $tier['qty'], $tier['pct'] );
 	}
 
 	/**

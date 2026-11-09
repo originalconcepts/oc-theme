@@ -59,12 +59,12 @@ final class Tiers_Admin {
 	 *
 	 * @param string                                         $prefix     Field name prefix (tier for the product, rt for a rule, bt for the bulk bar).
 	 * @param array<int,array{qty:int,pct:int,label:string}> $tiers      Rows.
-	 * @param int                                            $default    Quantity the page opens on, 1 for none.
+	 * @param int                                            $opening    Quantity the page opens on, 1 for none.
 	 * @param float                                          $price      Unit price, or 0 when it varies (no price columns then).
 	 * @param bool                                           $with_label Whether to show the label and default columns.
 	 * @return string Escaped markup.
 	 */
-	public static function table( string $prefix, array $tiers, int $default, float $price, bool $with_label = true ): string {
+	public static function table( string $prefix, array $tiers, int $opening, float $price, bool $with_label = true ): string {
 		$labels = array(
 			''        => __( 'No label', 'oc-theme' ),
 			'popular' => __( 'Most popular', 'oc-theme' ),
@@ -108,17 +108,22 @@ final class Tiers_Admin {
 
 		if ( $with_label ) {
 			$html .= '<td><span class="oc-tt__muted">' . esc_html__( 'none', 'oc-theme' ) . '</span></td>';
-			$html .= '<td><input type="radio" name="' . esc_attr( $prefix ) . '_default" value="1" ' . checked( 1, $default, false ) . ' aria-label="' . esc_attr__( 'One unit selected on opening', 'oc-theme' ) . '" /></td>';
+			$html .= '<td><input type="radio" name="' . esc_attr( $prefix ) . '_default" value="1" ' . checked( 1, $opening, false ) . ' aria-label="' . esc_attr__( 'One unit selected on opening', 'oc-theme' ) . '" /></td>';
 		}
 
 		$html .= '<td></td></tr>';
 
 		foreach ( $tiers as $tier ) {
-			$html .= self::row( $prefix, $tier, $default, $price, $with_label, $labels );
+			$html .= self::row( $prefix, $tier, $opening, $price, $with_label, $labels );
 		}
 
 		$html .= '</tbody></table>';
-		$html .= '<template data-oc-tt-row>' . self::row( $prefix, array( 'qty' => 0, 'pct' => 0, 'label' => '' ), 0, $price, $with_label, $labels ) . '</template>';
+		$blank = array(
+			'qty'   => 0,
+			'pct'   => 0,
+			'label' => '',
+		);
+		$html .= '<template data-oc-tt-row>' . self::row( $prefix, $blank, 0, $price, $with_label, $labels ) . '</template>';
 		$html .= '<p class="oc-tt__foot"><button type="button" class="button" data-oc-tt-add>' . esc_html__( 'Add a tier', 'oc-theme' ) . '</button>';
 
 		if ( $price > 0 ) {
@@ -133,14 +138,14 @@ final class Tiers_Admin {
 	/**
 	 * One editable row.
 	 *
-	 * @param string                                $prefix     Field prefix.
-	 * @param array{qty:int,pct:int,label:string}   $tier       The tier (qty 0 = the template row).
-	 * @param int                                   $default    Opening quantity.
-	 * @param float                                 $price      Unit price or 0.
-	 * @param bool                                  $with_label Label and default columns.
-	 * @param array<string,string>                  $labels     Label names.
+	 * @param string                              $prefix     Field prefix.
+	 * @param array{qty:int,pct:int,label:string} $tier       The tier (qty 0 = the template row).
+	 * @param int                                 $opening    Opening quantity.
+	 * @param float                               $price      Unit price or 0.
+	 * @param bool                                $with_label Label and default columns.
+	 * @param array<string,string>                $labels     Label names.
 	 */
-	private static function row( string $prefix, array $tier, int $default, float $price, bool $with_label, array $labels ): string {
+	private static function row( string $prefix, array $tier, int $opening, float $price, bool $with_label, array $labels ): string {
 		$qty  = $tier['qty'] > 0 ? (string) $tier['qty'] : '';
 		$pct  = $tier['qty'] > 0 ? (string) $tier['pct'] : '';
 		$unit = $tier['qty'] > 0 && $price > 0 ? wc_format_localized_price( (string) Rules::unit_at( $price, $tier['pct'], wc_get_price_decimals() ) ) : '';
@@ -166,7 +171,7 @@ final class Tiers_Admin {
 			}
 
 			$html .= '</select></td>';
-			$html .= '<td><input type="radio" name="' . esc_attr( $prefix ) . '_default" value="' . esc_attr( $qty ) . '" ' . checked( $tier['qty'] > 0 && $tier['qty'] === $default, true, false ) . ' data-oc-tt-default aria-label="' . esc_attr__( 'Selected on opening', 'oc-theme' ) . '" /></td>';
+			$html .= '<td><input type="radio" name="' . esc_attr( $prefix ) . '_default" value="' . esc_attr( $qty ) . '" ' . checked( $tier['qty'] > 0 && $tier['qty'] === $opening, true, false ) . ' data-oc-tt-default aria-label="' . esc_attr__( 'Selected on opening', 'oc-theme' ) . '" /></td>';
 		}
 
 		$html .= '<td><button type="button" class="oc-tt__x" data-oc-tt-remove aria-label="' . esc_attr__( 'Remove this tier', 'oc-theme' ) . '">&times;</button></td>';

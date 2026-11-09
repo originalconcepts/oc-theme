@@ -511,10 +511,7 @@ final class Products_Admin {
 					<?php if ( $tiers ) : ?>
 						<div class="oc-of__chips">
 							<?php foreach ( $tiers['tiers'] as $tier ) : ?>
-								<span class="oc-of__chip"><?php
-								/* translators: 1: quantity. 2: percent off. */
-								echo esc_html( sprintf( __( '%1$d units, %2$d%%', 'oc-theme' ), $tier['qty'], $tier['pct'] ) );
-								?></span>
+								<span class="oc-of__chip"><?php echo esc_html( Admin::tier_text( $tier ) ); ?></span>
 							<?php endforeach; ?>
 						</div>
 						<span class="oc-of__muted"><?php echo 'manual' === $tiers['src'] ? esc_html__( 'Set on the product itself.', 'oc-theme' ) : esc_html__( 'From a rule; the product can be given tiers of its own.', 'oc-theme' ); ?></span>
