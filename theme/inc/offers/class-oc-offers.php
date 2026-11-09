@@ -675,7 +675,7 @@ final class Offers {
 		}
 
 		if ( $found ) {
-			$order->update_meta_data( self::COUNTED, 1 );
+			$order->update_meta_data( self::COUNTED, '1' );
 			$order->save();
 		}
 	}

@@ -235,7 +235,7 @@ final class Admin {
 						<div><?php echo self::sentence( $rule ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built escaped. ?></div>
 						<div class="row-actions" style="position:static;">
 							<span><a href="<?php echo esc_url( self::url( array( 'rule' => $uid ) ) ); ?>"><?php esc_html_e( 'Edit', 'oc-theme' ); ?></a> | </span>
-							<?php if ( $at > 0 ) : ?>
+							<?php if ( 0 !== $at ) : ?>
 								<span><a href="<?php echo esc_url( self::act_url( 'up', $uid ) ); ?>"><?php esc_html_e( 'Move up', 'oc-theme' ); ?></a> | </span>
 							<?php endif; ?>
 							<?php if ( $at < $last ) : ?>
