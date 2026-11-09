@@ -5083,6 +5083,88 @@ window.ocWhenShown( function () {
 				openVarPicker( opener.dataset.ocUpVar, opener.dataset.name || '', cardImg ? cardImg.currentSrc || cardImg.src : '' );
 			}
 		} );
+
+		/* -- the cart's offer: one tap adds it, at the offer's price -- */
+
+		document.addEventListener( 'click', function ( event ) {
+			var offerAdd = event.target.closest( '[data-oc-offer-add]' );
+			if ( ! offerAdd || offerAdd.classList.contains( 'loading' ) ) {
+				return;
+			}
+			offerAdd.classList.add( 'loading' );
+			offerAdd.setAttribute( 'aria-busy', 'true' );
+			var data = new FormData();
+			data.append( 'product_id', offerAdd.dataset.ocOfferAdd );
+			fetch( offerAdd.dataset.url, {
+				method: 'POST',
+				credentials: 'same-origin',
+				body: data
+			} )
+				.then( function ( r ) { return r.json(); } )
+				.then( function ( out ) {
+					if ( out && out.fragments ) {
+						Object.keys( out.fragments ).forEach( function ( selector ) {
+							document.querySelectorAll( selector ).forEach( function ( el ) {
+								var box = document.createElement( 'div' );
+								box.innerHTML = out.fragments[ selector ];
+								if ( box.firstElementChild ) {
+									el.replaceWith( box.firstElementChild );
+								}
+							} );
+						} );
+						// The button that was pressed went with the old card;
+						// a keyboard must not be left standing nowhere.
+						if ( ! document.activeElement || document.activeElement === document.body ) {
+							var next = cartRoot.querySelector( '[data-oc-offer-add]' ) || cartRoot.querySelector( '.oc-drawer__checkout' );
+							if ( next ) {
+								next.focus( { preventScroll: true } );
+							}
+						}
+					}
+				} )
+				.catch( function () {} )
+				.then( function () {
+					offerAdd.classList.remove( 'loading' );
+					offerAdd.removeAttribute( 'aria-busy' );
+				} );
+		} );
+
+		// "Seen" is counted when the card really is on screen — the panel
+		// open, the card scrolled into view — once per offer per page.
+		if ( window.IntersectionObserver && window.MutationObserver ) {
+			var offerSent = {};
+			var offerEye = new IntersectionObserver( function ( entries ) {
+				entries.forEach( function ( entry ) {
+					var raw = entry.isIntersecting ? entry.target.getAttribute( 'data-seen' ) : '';
+					if ( ! raw || offerSent[ raw ] ) {
+						return;
+					}
+					offerSent[ raw ] = true;
+					var seen;
+					try {
+						seen = JSON.parse( raw );
+					} catch ( e ) {
+						return;
+					}
+					fetch( seen.u, {
+						method: 'POST',
+						credentials: 'same-origin',
+						keepalive: true,
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify( { _t: seen.t, s: seen.s, f: seen.f, o: seen.o, p: seen.p } )
+					} ).catch( function () {} );
+				} );
+			}, { threshold: 0.5 } );
+			var offerWatch = function () {
+				var card = cartRoot.querySelector( '.oc-offer[data-seen]' );
+				if ( card && ! card.ocWatched ) {
+					card.ocWatched = true;
+					offerEye.observe( card );
+				}
+			};
+			new MutationObserver( offerWatch ).observe( cartRoot, { childList: true, subtree: true } );
+			offerWatch();
+		}
 	}
 
 	/* ---------- product tabs → accordion ---------- */

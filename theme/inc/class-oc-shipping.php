@@ -85,9 +85,13 @@ final class Shipping {
 	/**
 	 * The cart as a parcel: what free delivery needs and what it has.
 	 *
+	 * Extra lines answer "and if this were added?" — an offer in the cart
+	 * says what it would do to the delivery charge before it is taken.
+	 *
+	 * @param array<int,array{subtotal:float,group:string,qty:int}> $extra Calculator lines to count as if they were in the cart.
 	 * @return array{goal:float,have:float,free:bool,cost:float}
 	 */
-	public static function cart_progress(): array {
+	public static function cart_progress( array $extra = array() ): array {
 		$rules = Rules::get();
 		$cart  = function_exists( 'WC' ) && WC()->cart ? WC()->cart : null;
 
@@ -100,7 +104,7 @@ final class Shipping {
 			);
 		}
 
-		$quote = Quote::calculate( self::lines_from_package( array( 'contents' => $cart->get_cart() ), $rules ), self::customer_destination(), $rules );
+		$quote = Quote::calculate( array_merge( self::lines_from_package( array( 'contents' => $cart->get_cart() ), $rules ), $extra ), self::customer_destination(), $rules );
 
 		return array(
 			'goal' => (float) $quote['threshold'],

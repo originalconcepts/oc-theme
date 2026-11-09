@@ -85,6 +85,7 @@ final class Cart {
 				'up_max'       => 5,
 				'up_style'     => 'side',    // side | list | slider | collapse.
 				'up_bg'        => '',
+				'offer_c'      => '',        // The offer card's colour; empty = the brand colour.
 				'coupon'       => 0,
 				'btn_total'    => 0,
 				'btn_text'     => '',
@@ -127,6 +128,7 @@ final class Cart {
 					<div class="oc-drawer__scroll">
 						<div data-oc-mcart><?php echo $this->items_html(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
 						<?php echo $this->promo_msgs_html(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+						<?php echo Offers\Card::html(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built escaped. ?>
 						<?php if ( $s['up_show'] && in_array( (string) $s['up_style'], array( 'list', 'slider' ), true ) ) : ?>
 							<?php echo $this->upsells_html(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 						<?php endif; ?>
@@ -183,6 +185,7 @@ final class Cart {
 		$html .= $this->ship_bar_html();
 		$html .= '<div data-oc-mcart>' . $this->items_html() . '</div>';
 		$html .= $this->promo_msgs_html();
+		$html .= Offers\Card::html();
 
 		if ( $s['up_show'] ) {
 			// The side strip belongs to the drawer — the page gets the
@@ -483,33 +486,15 @@ final class Cart {
 	 * free-shipping minimum unless overridden in the settings.
 	 */
 	private function ship_bar_html(): string {
-		$s = self::settings();
+		$s   = self::settings();
+		$gap = self::ship_gap();
 
-		if ( empty( $s['ship_bar'] ) || WC()->cart->is_empty() ) {
+		if ( $gap['goal'] <= 0 ) {
 			return '<div data-oc-ship-bar hidden></div>';
 		}
 
-		$goal = (float) $s['ship_goal'];
-
-		if ( Shipping::enabled() ) {
-			// The theme prices delivery: the bar counts only what earns
-			// free delivery, and stops at the line the rules draw.
-			$progress = Shipping::cart_progress();
-
-			$goal = $progress['goal'];
-
-			$subtotal = $progress['have'];
-		} else {
-			if ( $goal <= 0 ) {
-				$goal = $this->free_shipping_minimum();
-			}
-
-			$subtotal = (float) WC()->cart->get_displayed_subtotal();
-		}
-
-		if ( $goal <= 0 ) {
-			return '<div data-oc-ship-bar hidden></div>';
-		}
+		$goal     = $gap['goal'];
+		$subtotal = $gap['have'];
 
 		$left    = max( 0.0, $goal - $subtotal );
 		$percent = min( 100, (int) round( $subtotal / $goal * 100 ) );
@@ -530,9 +515,59 @@ final class Cart {
 	}
 
 	/**
+	 * Where the cart stands against free delivery: the sum that earns it
+	 * and the sum the cart has toward it. A goal of zero means there is
+	 * nothing to show — the bar is off, the cart is empty, or no line was
+	 * ever drawn.
+	 *
+	 * The goal comes from the theme's own delivery rules when it prices
+	 * delivery, otherwise from the shipping zones' free-shipping minimum
+	 * unless the settings override it.
+	 *
+	 * @return array{goal:float,have:float}
+	 */
+	public static function ship_gap(): array {
+		$s    = self::settings();
+		$none = array(
+			'goal' => 0.0,
+			'have' => 0.0,
+		);
+
+		if ( empty( $s['ship_bar'] ) || ! WC()->cart || WC()->cart->is_empty() ) {
+			return $none;
+		}
+
+		$goal = (float) $s['ship_goal'];
+
+		if ( Shipping::enabled() ) {
+			// The theme prices delivery: the bar counts only what earns
+			// free delivery, and stops at the line the rules draw.
+			$progress = Shipping::cart_progress();
+
+			$goal = $progress['goal'];
+			$have = $progress['have'];
+		} else {
+			if ( $goal <= 0 ) {
+				$goal = self::free_shipping_minimum();
+			}
+
+			$have = (float) WC()->cart->get_displayed_subtotal();
+		}
+
+		if ( $goal <= 0 ) {
+			return $none;
+		}
+
+		return array(
+			'goal' => (float) $goal,
+			'have' => (float) $have,
+		);
+	}
+
+	/**
 	 * The first free-shipping minimum found across the shipping zones.
 	 */
-	private function free_shipping_minimum(): float {
+	private static function free_shipping_minimum(): float {
 		foreach ( \WC_Shipping_Zones::get_zones() as $zone ) {
 			foreach ( $zone['shipping_methods'] as $method ) {
 				if ( 'free_shipping' === $method->id && 'yes' === $method->enabled && (float) $method->min_amount > 0 ) {
@@ -557,7 +592,7 @@ final class Cart {
 	 *
 	 * @param string $html Price markup from wc_price().
 	 */
-	private static function plain_price( string $html ): string {
+	public static function plain_price( string $html ): string {
 		$text = trim( html_entity_decode( wp_strip_all_tags( $html ), ENT_QUOTES, 'UTF-8' ) );
 
 		return "\u{2068}" . $text . "\u{2069}";

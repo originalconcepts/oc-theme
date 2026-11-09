@@ -4698,6 +4698,9 @@ final class Customizer {
 		);
 		$this->opt_color( $c, $o, 'up_bg', 'oc_cart_cfg', __( 'Upsell background', 'oc-theme' ) );
 
+		$this->heading( $c, 'oc_h_ct_offer', 'oc_cart_cfg', __( 'Offer card', 'oc-theme' ) );
+		$this->opt_color( $c, $o, 'offer_c', 'oc_cart_cfg', __( 'Offer card colour (empty = the brand colour)', 'oc-theme' ) );
+
 		$this->heading( $c, 'oc_h_ct_foot', 'oc_cart_cfg', __( 'Panel footer', 'oc-theme' ) );
 		$this->opt_toggle( $c, $o, 'btn_total', 'oc_cart_cfg', __( 'Show the total on the button', 'oc-theme' ), false );
 		$this->opt_toggle( $c, $o, 'continue', 'oc_cart_cfg', __( 'Show a "Continue shopping" button beneath', 'oc-theme' ), false );

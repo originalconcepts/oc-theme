@@ -15106,3 +15106,253 @@ msgstr "חל על כל טפסי ההרשמה לניוזלטר באתר."
 
 msgid "I agree to the site's %s"
 msgstr "אני מאשר/ת את %s של האתר"
+
+msgid "Offer discount — %s"
+msgstr "הנחת הצעה: %s"
+
+msgid "Offer discount"
+msgstr "הנחת הצעה"
+
+msgid "An offer for your cart"
+msgstr "הצעה לסל שלכם"
+
+msgid "Goes with what you chose"
+msgstr "מתאים למה שבחרתם"
+
+msgid "%d%% off when added now"
+msgstr "%d%% הנחה בהוספה עכשיו"
+
+msgid "Add to cart for %s"
+msgstr "הוספה לסל ב-%s"
+
+msgid "Adding it gets you free shipping"
+msgstr "ההוספה מזכה אתכם במשלוח חינם"
+
+msgid "After adding it, only %s left for free shipping"
+msgstr "אחרי ההוספה נשארים רק %s למשלוח חינם"
+
+msgid "Offer card"
+msgstr "כרטיס ההצעה"
+
+msgid "Offer card colour (empty = the brand colour)"
+msgstr "צבע כרטיס ההצעה (ריק = צבע המותג)"
+
+msgid "Add a rule"
+msgstr "כלל חדש"
+
+msgid "What to offer a shopper beside what they already chose. One rule covers a whole category, so nothing has to be set product by product."
+msgstr "מה להציע ללקוח לצד מה שכבר בחר. כלל אחד מכסה קטגוריה שלמה, כך שלא צריך להגדיר מוצר מוצר."
+
+msgid "Show offers in the shop"
+msgstr "הצג הצעות בחנות"
+
+msgid "One offer in the cart panel and on the cart page, chosen by what is in the cart."
+msgstr "הצעה אחת בסל הצד ובעמוד הסל, שנבחרת לפי מה שבסל."
+
+msgid "Automatic offers"
+msgstr "הצעות אוטומטיות"
+
+msgid "A product with no rule and nothing picked by hand still gets an offer: first what was really bought together with it, then the products most like it."
+msgstr "מוצר שאין לו כלל או הגדרה ידנית מקבל הצעה לבד: קודם מה שנקנה איתו בפועל, ואחר כך המוצרים הדומים לו ביותר."
+
+msgid "Discount on automatic and hand-picked offers"
+msgstr "הנחה על הצעות אוטומטיות וידניות"
+
+msgid "0 = no discount. A rule sets its own discount."
+msgstr "0 = בלי הנחה. לכל כלל יש הנחה משלו."
+
+msgid "Who answers first: a product picked by hand on the product (its \"goes with\" list), then a rule, then the automatic offers."
+msgstr "סדר העדיפות: מוצר שנבחר ידנית בעריכת המוצר (רשימת \"מוצרים משלימים\"), אחריו כלל, אחריו ההצעות האוטומטיות."
+
+msgid "All"
+msgstr "הכול"
+
+msgid "Rule"
+msgstr "כלל"
+
+msgctxt "offers column"
+msgid "Seen"
+msgstr "נצפו"
+
+msgctxt "offers column"
+msgid "Added"
+msgstr "נוספו לסל"
+
+msgctxt "offers column"
+msgid "Sold"
+msgstr "נמכרו"
+
+msgid "(no name)"
+msgstr "(בלי שם)"
+
+msgid "Delete this rule?"
+msgstr "למחוק את הכלל?"
+
+msgid "Switch off"
+msgstr "כבה"
+
+msgid "No rules in this view."
+msgstr "אין כללים בתצוגה הזו."
+
+msgid "No rules yet. Until there is one, the automatic offers answer for every product."
+msgstr "עדיין אין כללים. עד שיהיה כלל, ההצעות האוטומטיות עונות לכל המוצרים."
+
+msgid "Picked by hand on the product"
+msgstr "נבחר ידנית בעריכת המוצר"
+
+msgid "The numbers are for the last 30 days. Rules are asked from the top: the first one that fits a product answers for it."
+msgstr "המספרים הם של 30 הימים האחרונים. הכללים נבדקים מלמעלה: הכלל הראשון שמתאים למוצר הוא שקובע."
+
+msgid "Check a product"
+msgstr "בדיקה על מוצר"
+
+msgid "What a shopper with this product in the cart would be offered, and who decided it."
+msgstr "מה יוצע ללקוח שהמוצר הזה בסל שלו, ומי קבע את זה."
+
+msgid "When the shopper has"
+msgstr "כשבסל יש"
+
+msgid "any product"
+msgstr "כל מוצר"
+
+msgid "offer"
+msgstr "מציעים"
+
+msgid "same brand only"
+msgstr "רק מאותו מותג"
+
+msgid "more from the same brand"
+msgstr "עוד מאותו מותג"
+
+msgid "nothing yet"
+msgstr "עדיין כלום"
+
+msgid "Product: %s"
+msgstr "מוצר: %s"
+
+msgid "Brand: %s"
+msgstr "מותג: %s"
+
+msgid "Category: %s"
+msgstr "קטגוריה: %s"
+
+msgid "Nothing would be offered beside this product."
+msgstr "לא תוצע שום הצעה ליד המוצר הזה."
+
+msgid "Only products that can be added with one tap are offered: in stock, visible and with nothing to choose."
+msgstr "מוצעים רק מוצרים שאפשר להוסיף בלחיצה אחת: במלאי, גלויים ובלי אפשרויות לבחירה."
+
+msgid "The rule \"%s\""
+msgstr "הכלל \"%s\""
+
+msgid "Decided by:"
+msgstr "מי קבע:"
+
+msgid "(shown first)"
+msgstr "(מוצג ראשון)"
+
+msgid "Offers are switched off, so shoppers do not see this yet."
+msgstr "ההצעות כבויות, ולכן הלקוחות עדיין לא רואים את זה."
+
+msgid "Best sellers first"
+msgstr "הנמכרים ביותר קודם"
+
+msgid "Cheapest first"
+msgstr "הזולים קודם"
+
+msgid "Most expensive first"
+msgstr "היקרים קודם"
+
+msgid "Discount %d%%"
+msgstr "הנחה %d%%"
+
+msgid "New rule"
+msgstr "כלל חדש"
+
+msgid "Edit rule"
+msgstr "עריכת כלל"
+
+msgid "All rules"
+msgstr "כל הכללים"
+
+msgid "Rule name"
+msgstr "שם הכלל"
+
+msgid "Bathroom: more from the same brand"
+msgstr "אמבטיה: עוד מאותו מותג"
+
+msgid "Type a category, a brand or a product"
+msgstr "הקלידו קטגוריה, מותג או מוצר"
+
+msgid "Type a category or a product"
+msgstr "הקלידו קטגוריה או מוצר"
+
+msgid "A category covers everything under it. Left empty, the rule covers every product."
+msgstr "קטגוריה כוללת את כל מה שמתחתיה. שדה ריק = הכלל חל על כל המוצרים."
+
+msgid "Offer them"
+msgstr "מציעים לו"
+
+msgid "Only from the same brand"
+msgstr "רק מאותו מותג"
+
+msgid "as the product the shopper has"
+msgstr "של המוצר שבסל"
+
+msgid "Ticked with nothing typed above: everything else from that brand."
+msgstr "מסומן בלי שהוקלד דבר למעלה: כל שאר המוצרים של אותו מותג."
+
+msgid "Where it shows"
+msgstr "איפה מציגים"
+
+msgid "In the cart panel and on the cart page."
+msgstr "בסל הצד ובעמוד הסל."
+
+msgid "More options"
+msgstr "אפשרויות נוספות"
+
+msgid "Discount for adding the offer"
+msgstr "הנחה למי שמוסיף את ההצעה"
+
+msgid "0 = no discount. The discount holds while the product it was offered beside stays in the cart."
+msgstr "0 = בלי הנחה. ההנחה בתוקף כל עוד המוצר שלצידו הוצעה ההצעה נשאר בסל."
+
+msgid "Which product first"
+msgstr "איזה מוצר קודם"
+
+msgid "Products named one by one always come first, in the order they were typed."
+msgstr "מוצרים שהוקלדו אחד אחד תמיד ראשונים, לפי סדר ההקלדה."
+
+msgid "Never offer"
+msgstr "לא להציע אף פעם"
+
+msgid "Save rule"
+msgstr "שמור כלל"
+
+msgid "Delete rule"
+msgstr "מחק כלל"
+
+msgctxt "settings screen"
+msgid "Offers"
+msgstr "הצעות"
+
+msgctxt "rules filter"
+msgid "Active"
+msgstr "פעילים"
+
+msgctxt "rules filter"
+msgid "Inactive"
+msgstr "לא פעילים"
+
+msgctxt "rule status"
+msgid "Active"
+msgstr "פעיל"
+
+msgctxt "rule status"
+msgid "Inactive"
+msgstr "לא פעיל"
+
+msgid "%d product left out"
+msgid_plural "%d products left out"
+msgstr[0] "מוצר אחד מוחרג"
+msgstr[1] "%d מוצרים מוחרגים"
