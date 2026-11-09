@@ -52,8 +52,10 @@ final class Products_Admin {
 		$keep = array( 'tab' => 'products' );
 
 		foreach ( array( 's', 'cat', 'brand', 'src', 'paged' ) as $key ) {
-			if ( isset( $_GET[ $key ] ) && '' !== (string) $_GET[ $key ] ) {
-				$keep[ $key ] = sanitize_text_field( wp_unslash( (string) $_GET[ $key ] ) );
+			$value = isset( $_GET[ $key ] ) ? sanitize_text_field( (string) wp_unslash( $_GET[ $key ] ) ) : '';
+
+			if ( '' !== $value ) {
+				$keep[ $key ] = $value;
 			}
 		}
 		// phpcs:enable WordPress.Security.NonceVerification.Recommended
@@ -213,6 +215,9 @@ final class Products_Admin {
 			)
 		);
 
+		/* translators: %s: number of products. */
+		$count_text = sprintf( _n( '%s product', '%s products', $total, 'oc-theme' ), number_format_i18n( $total ) );
+
 		Admin::head( 'products' );
 		?>
 		<form method="get" action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" class="oc-of__filters">
@@ -299,10 +304,7 @@ final class Products_Admin {
 						<em>&hellip;</em>
 					<?php endif; ?>
 				<?php endfor; ?>
-				<span class="oc-of__muted" style="background:none;border:0;color:#5a6068;font-weight:400;"><?php
-				/* translators: %s: number of products. */
-				echo esc_html( sprintf( _n( '%s product', '%s products', $total, 'oc-theme' ), number_format_i18n( $total ) ) );
-				?></span>
+				<span class="oc-of__muted" style="background:none;border:0;color:#5a6068;font-weight:400;"><?php echo esc_html( $count_text ); ?></span>
 			</nav>
 		<?php endif; ?>
 
@@ -326,6 +328,11 @@ final class Products_Admin {
 		$img    = $product->get_image_id() ? wp_get_attachment_image_url( (int) $product->get_image_id(), 'woocommerce_gallery_thumbnail' ) : '';
 		$added  = (int) ( $t['added'] ?? 0 );
 		$rev    = (float) ( $t['revenue'] ?? 0 );
+
+		/* translators: %d: number of products. */
+		$xsell_count = sprintf( _n( '%d product', '%d products', count( $xsell ), 'oc-theme' ), count( $xsell ) );
+		/* translators: %d: number of products. */
+		$bt_count = sprintf( _n( '%d product', '%d products', count( $bt ), 'oc-theme' ), count( $bt ) );
 		?>
 		<tr id="oc-of-row-<?php echo absint( $id ); ?>" class="<?php echo $open ? 'is-open' : ''; ?>">
 			<td><input type="checkbox" value="<?php echo absint( $id ); ?>" data-oc-of-pick-row aria-label="<?php echo esc_attr( sprintf( /* translators: %s: product name. */ __( 'Select %s', 'oc-theme' ), $product->get_name() ) ); ?>" /></td>
@@ -345,10 +352,7 @@ final class Products_Admin {
 			<td class="oc-of__cell">
 				<?php if ( $xsell ) : ?>
 					<span class="oc-of__tag oc-of__tag--manual"><?php esc_html_e( 'Picked by hand', 'oc-theme' ); ?></span>
-					<?php
-					/* translators: %d: number of products. */
-					echo esc_html( sprintf( _n( '%d product', '%d products', count( $xsell ), 'oc-theme' ), count( $xsell ) ) );
-					?>
+					<?php echo esc_html( $xsell_count ); ?>
 				<?php elseif ( 'rule' === $source['src'] ) : ?>
 					<span class="oc-of__tag oc-of__tag--rule"><?php esc_html_e( 'Rule', 'oc-theme' ); ?></span><?php echo esc_html( $source['label'] ); ?>
 				<?php elseif ( 'auto' === $source['src'] ) : ?>
@@ -360,10 +364,7 @@ final class Products_Admin {
 			<td class="oc-of__cell">
 				<?php if ( $bt ) : ?>
 					<span class="oc-of__tag oc-of__tag--manual"><?php esc_html_e( 'Picked by hand', 'oc-theme' ); ?></span>
-					<?php
-					/* translators: %d: number of products. */
-					echo esc_html( sprintf( _n( '%d product', '%d products', count( $bt ), 'oc-theme' ), count( $bt ) ) );
-					?>
+					<?php echo esc_html( $bt_count ); ?>
 				<?php else : ?>
 					<span class="oc-of__none"><?php esc_html_e( 'None', 'oc-theme' ); ?></span>
 				<?php endif; ?>
@@ -390,10 +391,10 @@ final class Products_Admin {
 	/**
 	 * The open panel: the four kinds of offer, each editable in place.
 	 *
-	 * @param \WC_Product                      $product The product.
-	 * @param int[]                            $xsell   Cross-sell ids.
-	 * @param int[]                            $bt      Bought-together ids.
-	 * @param array{src:string,label:string}   $source  Who answers in the cart.
+	 * @param \WC_Product                    $product The product.
+	 * @param int[]                          $xsell   Cross-sell ids.
+	 * @param int[]                          $bt      Bought-together ids.
+	 * @param array{src:string,label:string} $source  Who answers in the cart.
 	 */
 	private static function detail( \WC_Product $product, array $xsell, array $bt, array $source ): void {
 		$id = $product->get_id();
@@ -417,7 +418,14 @@ final class Products_Admin {
 						<div class="oc-of__chips">
 							<?php foreach ( $xsell as $pid ) : ?>
 								<?php if ( get_post( $pid ) ) : ?>
-									<span class="oc-of__chip oc-of__chip--x"><?php echo esc_html( get_the_title( $pid ) ); ?> <a href="<?php echo esc_url( self::act_url( 'remove', 'xsell', array( 'product' => $id, 'target' => $pid ) ) ); ?>" aria-label="<?php echo esc_attr( sprintf( /* translators: %s: product name. */ __( 'Remove %s', 'oc-theme' ), get_the_title( $pid ) ) ); ?>">&times;</a></span>
+									<span class="oc-of__chip oc-of__chip--x"><?php echo esc_html( get_the_title( $pid ) ); ?> <a href="<?php echo esc_url( self::act_url(
+										'remove',
+										'xsell',
+										array(
+											'product' => $id,
+											'target'  => $pid,
+										)
+									) ); ?>" aria-label="<?php echo esc_attr( sprintf( /* translators: %s: product name. */ __( 'Remove %s', 'oc-theme' ), get_the_title( $pid ) ) ); ?>">&times;</a></span>
 								<?php endif; ?>
 							<?php endforeach; ?>
 						</div>
@@ -457,7 +465,14 @@ final class Products_Admin {
 						<div class="oc-of__chips">
 							<?php foreach ( $bt as $pid ) : ?>
 								<?php if ( get_post( $pid ) ) : ?>
-									<span class="oc-of__chip oc-of__chip--x"><?php echo esc_html( get_the_title( $pid ) ); ?> <a href="<?php echo esc_url( self::act_url( 'remove', 'bt', array( 'product' => $id, 'target' => $pid ) ) ); ?>" aria-label="<?php echo esc_attr( sprintf( /* translators: %s: product name. */ __( 'Remove %s', 'oc-theme' ), get_the_title( $pid ) ) ); ?>">&times;</a></span>
+									<span class="oc-of__chip oc-of__chip--x"><?php echo esc_html( get_the_title( $pid ) ); ?> <a href="<?php echo esc_url( self::act_url(
+										'remove',
+										'bt',
+										array(
+											'product' => $id,
+											'target'  => $pid,
+										)
+									) ); ?>" aria-label="<?php echo esc_attr( sprintf( /* translators: %s: product name. */ __( 'Remove %s', 'oc-theme' ), get_the_title( $pid ) ) ); ?>">&times;</a></span>
 								<?php endif; ?>
 							<?php endforeach; ?>
 						</div>
@@ -502,7 +517,7 @@ final class Products_Admin {
 	 * Add to or remove from a product's lists, one or many at a time.
 	 */
 	public function link(): void {
-		if ( ! current_user_can( 'edit_products' ) ) {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
 			wp_die();
 		}
 
@@ -510,10 +525,11 @@ final class Products_Admin {
 
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended, WordPress.Security.NonceVerification.Missing -- verified just above; GET for the links, POST for the forms.
 		$what    = isset( $_REQUEST['what'] ) ? sanitize_key( (string) wp_unslash( $_REQUEST['what'] ) ) : '';
-		$kind    = isset( $_REQUEST['kind'] ) && 'bt' === $_REQUEST['kind'] ? 'bt' : 'xsell';
+		$kind    = isset( $_REQUEST['kind'] ) && 'bt' === sanitize_key( (string) wp_unslash( $_REQUEST['kind'] ) ) ? 'bt' : 'xsell';
 		$product = isset( $_REQUEST['product'] ) ? absint( $_REQUEST['product'] ) : 0;
 		$target  = isset( $_REQUEST['target'] ) ? absint( $_REQUEST['target'] ) : 0;
-		$ids     = isset( $_REQUEST['ids'] ) ? array_filter( array_map( 'absint', explode( ',', (string) wp_unslash( $_REQUEST['ids'] ) ) ) ) : array();
+		$raw_ids = isset( $_REQUEST['ids'] ) ? sanitize_text_field( (string) wp_unslash( $_REQUEST['ids'] ) ) : '';
+		$ids     = array_filter( array_map( 'absint', explode( ',', $raw_ids ) ) );
 		$back    = isset( $_REQUEST['back'] ) ? esc_url_raw( rawurldecode( (string) wp_unslash( $_REQUEST['back'] ) ) ) : '';
 		// phpcs:enable WordPress.Security.NonceVerification.Recommended, WordPress.Security.NonceVerification.Missing
 

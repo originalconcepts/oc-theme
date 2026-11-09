@@ -359,6 +359,9 @@ final class Admin {
 	 */
 	private function rule_card( string $uid, array $rule, array $t, bool $can_up, bool $can_down ): void {
 		$edit = self::url( array( 'rule' => $uid ) ) . '#oc-of-editor';
+
+		/* translators: %d: percent. */
+		$pct_text = sprintf( __( 'Discount %d%%', 'oc-theme' ), $rule['pct'] );
 		?>
 		<article class="oc-of__rule<?php echo $rule['on'] ? '' : ' is-off'; ?>" data-oc-of-on="<?php echo $rule['on'] ? '1' : '0'; ?>">
 			<div class="oc-of__rulemain">
@@ -372,10 +375,7 @@ final class Admin {
 				<div class="oc-of__tags">
 					<span class="oc-of__tag oc-of__tag--line"><?php esc_html_e( 'Cart panel and cart page', 'oc-theme' ); ?></span>
 					<?php if ( $rule['pct'] > 0 ) : ?>
-						<span class="oc-of__tag oc-of__tag--good"><?php
-						/* translators: %d: percent. */
-						echo esc_html( sprintf( __( 'Discount %d%%', 'oc-theme' ), $rule['pct'] ) );
-						?></span>
+						<span class="oc-of__tag oc-of__tag--good"><?php echo esc_html( $pct_text ); ?></span>
 					<?php endif; ?>
 				</div>
 			</div>
@@ -655,19 +655,23 @@ final class Admin {
 				<p class="oc-of__suggempty"><?php esc_html_e( 'Nothing new right now. Suggestions appear once two products keep landing in the same order and are not yet offered beside each other.', 'oc-theme' ); ?></p>
 			<?php endif; ?>
 
-			<?php foreach ( $list as $pair ) : ?>
+			<?php
+			foreach ( $list as $pair ) :
+				/* translators: 1: product bought first. 2: product to offer beside it. */
+				$title = sprintf( __( '%1$s: offer %2$s', 'oc-theme' ), get_the_title( $pair['a'] ), get_the_title( $pair['b'] ) );
+				/* translators: %d: number of orders. */
+				$why = sprintf( _n( 'Bought together in %d paid order, and not offered beside each other today.', 'Bought together in %d paid orders, and not offered beside each other today.', $pair['n'], 'oc-theme' ), $pair['n'] );
+				$ab  = array(
+					'a' => $pair['a'],
+					'b' => $pair['b'],
+				);
+				?>
 				<div class="oc-of__suggitem">
-					<strong><?php
-					/* translators: 1: product bought first. 2: product to offer beside it. */
-					echo esc_html( sprintf( __( '%1$s: offer %2$s', 'oc-theme' ), get_the_title( $pair['a'] ), get_the_title( $pair['b'] ) ) );
-					?></strong>
-					<span><?php
-					/* translators: %d: number of orders. */
-					echo esc_html( sprintf( _n( 'Bought together in %d paid order, and not offered beside each other today.', 'Bought together in %d paid orders, and not offered beside each other today.', $pair['n'], 'oc-theme' ), $pair['n'] ) );
-					?></span>
+					<strong><?php echo esc_html( $title ); ?></strong>
+					<span><?php echo esc_html( $why ); ?></span>
 					<div class="oc-of__suggacts">
-						<a class="oc-of__btn oc-of__btn--primary" href="<?php echo esc_url( self::act_url( 'accept', '', array( 'a' => $pair['a'], 'b' => $pair['b'] ) ) ); ?>"><?php esc_html_e( 'Approve', 'oc-theme' ); ?></a>
-						<a class="oc-of__btn" href="<?php echo esc_url( self::act_url( 'skip', '', array( 'a' => $pair['a'], 'b' => $pair['b'] ) ) ); ?>"><?php esc_html_e( 'Skip', 'oc-theme' ); ?></a>
+						<a class="oc-of__btn oc-of__btn--primary" href="<?php echo esc_url( self::act_url( 'accept', '', $ab ) ); ?>"><?php esc_html_e( 'Approve', 'oc-theme' ); ?></a>
+						<a class="oc-of__btn" href="<?php echo esc_url( self::act_url( 'skip', '', $ab ) ); ?>"><?php esc_html_e( 'Skip', 'oc-theme' ); ?></a>
 					</div>
 				</div>
 			<?php endforeach; ?>
