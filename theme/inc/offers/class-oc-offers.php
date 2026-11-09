@@ -465,9 +465,10 @@ final class Offers {
 			return self::$memo[ $memo ];
 		}
 
-		$in_cart = array();
-		$plain   = array();
-		$offered = array();
+		$in_cart  = array();
+		$plain    = array();
+		$offered  = array();
+		$partners = array();
 
 		foreach ( $contents as $item ) {
 			$id        = (int) $item['product_id'];
@@ -477,12 +478,21 @@ final class Offers {
 				$in_cart[] = (int) $item['variation_id'];
 			}
 
-			if ( empty( $item[ self::TAG ] ) ) {
+			$tag = self::tag( $item[ self::TAG ] ?? null );
+
+			if ( ! $tag ) {
 				$plain[] = $id;
 			} else {
-				$offered[] = $id;
+				$offered[]  = $id;
+				$partners[] = $tag['for'];
 			}
 		}
+
+		// A line added from an offer never offers back the product it was
+		// offered beside. Take that product out and it would otherwise come
+		// straight back as an offer of its own — and adding it would bring
+		// the first discount back too, two discounts for one pair.
+		$skip = array_merge( $in_cart, $partners );
 
 		$out  = array();
 		$seen = array();
@@ -490,7 +500,7 @@ final class Offers {
 		foreach ( array_unique( array_merge( array_reverse( $plain ), array_reverse( $offered ) ) ) as $for ) {
 			// Looking a product up costs a query or two; a long list of
 			// candidates is cut off as soon as enough of them can be added.
-			foreach ( self::for_product( (int) $for, 'cart', $in_cart ) as $offer ) {
+			foreach ( self::for_product( (int) $for, 'cart', $skip ) as $offer ) {
 				if ( isset( $seen[ $offer['id'] ] ) ) {
 					continue;
 				}

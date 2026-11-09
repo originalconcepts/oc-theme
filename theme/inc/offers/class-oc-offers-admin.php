@@ -840,7 +840,9 @@ final class Admin {
 
 		if ( false !== strpos( $kinds, 'p' ) ) {
 			$store = \WC_Data_Store::load( 'product' );
-			$ids   = method_exists( $store, 'search_products' ) ? (array) $store->search_products( $term, '', false, false, 10 ) : array();
+			// WC_Data_Store hands the call on to the real store through
+			// __call, so method_exists() says no to a method that is there.
+			$ids = is_callable( array( $store, 'search_products' ) ) ? (array) $store->search_products( $term, '', false, false, 10 ) : array();
 
 			foreach ( $ids as $id ) {
 				$id = (int) $id;
