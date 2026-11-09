@@ -255,13 +255,21 @@ final class Suggest {
 		// phpcs:enable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
 		$by_cat = array();
+		$shop   = (int) wp_count_posts( 'product' )->publish;
 
 		foreach ( (array) $rows as $row ) {
 			$cat = (int) $row['cat'];
 
 			// Only the deepest categories: a hub like "Hardware" says
-			// nothing about how its screws are bought.
+			// nothing about how its screws are bought. Nor does a label
+			// like "New" or "Sale" that holds a third of the shop.
 			if ( get_term_children( $cat, 'product_cat' ) ) {
+				continue;
+			}
+
+			$term = get_term( $cat, 'product_cat' );
+
+			if ( ! $term instanceof \WP_Term || ( $shop > 0 && $term->count > $shop * 0.3 ) ) {
 				continue;
 			}
 
