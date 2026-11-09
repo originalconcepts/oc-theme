@@ -96,8 +96,16 @@ final class Track {
 	 * @param string $url A URL or a bare host.
 	 */
 	public static function host( string $url ): string {
-		$url  = trim( $url );
-		$host = false !== strpos( $url, '://' ) ? (string) wp_parse_url( $url, PHP_URL_HOST ) : $url;
+		$url = trim( $url );
+
+		if ( false !== strpos( $url, '://' ) ) {
+			// The tests run without WordPress; for a full URL with a scheme
+			// the two functions answer alike.
+			$host = function_exists( 'wp_parse_url' ) ? wp_parse_url( $url, PHP_URL_HOST ) : parse_url( $url, PHP_URL_HOST ); // phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url -- only when WordPress is not loaded.
+		} else {
+			$host = $url;
+		}
+
 		$host = strtolower( (string) $host );
 
 		return preg_replace( '/^www\./', '', $host ) ?? $host;
