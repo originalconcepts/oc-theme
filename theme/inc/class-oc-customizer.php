@@ -4667,6 +4667,9 @@ final class Customizer {
 
 		$this->heading( $c, 'oc_h_ct_ship', 'oc_cart_cfg', __( 'Free shipping', 'oc-theme' ) );
 		$this->opt_toggle( $c, $o, 'ship_bar', 'oc_cart_cfg', __( 'Show progress toward free shipping', 'oc-theme' ), true );
+		$this->opt_color( $c, $o, 'ship_fill', 'oc_cart_cfg', __( 'Bar colour (empty = the brand colour)', 'oc-theme' ) );
+		$this->opt_color( $c, $o, 'ship_bg', 'oc_cart_cfg', __( 'Bar background (empty = a tint of the bar colour)', 'oc-theme' ) );
+		$this->opt_toggle( $c, $o, 'ship_quiet', 'oc_cart_cfg', __( 'Quiet bar: a thin line, no coloured band', 'oc-theme' ), false );
 
 		$this->heading( $c, 'oc_h_ct_up', 'oc_cart_cfg', __( 'Upsells', 'oc-theme' ) );
 		$this->opt_preset(

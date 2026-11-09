@@ -179,19 +179,32 @@ final class Card {
 				return '';
 			}
 
-			$left = $with['goal'] - $with['have'];
+			$after = $with['have'];
+			$left  = $with['goal'] - $after;
 
 			// A product that does not count toward free delivery moves
 			// nothing; saying so would only be noise.
-			if ( $with['have'] <= $gap['have'] ) {
+			if ( $after <= $gap['have'] ) {
 				return '';
 			}
 		} else {
-			$left = $gap['goal'] - $gap['have'] - $price;
+			$after = $gap['have'] + $price;
+			$left  = $gap['goal'] - $after;
 		}
 
 		if ( $left <= 0 ) {
 			return esc_html__( 'Adding it gets you free shipping', 'oc-theme' );
+		}
+
+		$mid = $gap['mid'];
+
+		if ( $mid['at'] > 0 && $gap['have'] < $mid['at'] && $after >= $mid['at'] ) {
+			return sprintf(
+				/* translators: 1: the lower delivery price. 2: the sum still missing for free shipping. */
+				esc_html__( 'Adding it drops delivery to %1$s, with %2$s left for free shipping', 'oc-theme' ),
+				'<strong>' . esc_html( Cart::plain_price( wc_price( $mid['price'] ) ) ) . '</strong>',
+				'<strong>' . esc_html( Cart::plain_price( wc_price( $left ) ) ) . '</strong>'
+			);
 		}
 
 		/* translators: %s: the sum still missing for free shipping. */

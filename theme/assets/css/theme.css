@@ -5813,6 +5813,92 @@ body.oc-swatch-square-cat .oc-mcart__attr-swatch { border-radius: 4px; }
 .oc-shipbar.is-done .oc-shipbar__fill { background: var(--oc-success, #2f7d4f); }
 .oc-shipbar.is-done .oc-shipbar__text { color: var(--oc-success, #2f7d4f); font-weight: 500; }
 
+/* -- the richer bar: the brand colour (or the one set in the Customizer)
+ * on a tinted band, a thicker track, and the stations on the way -- */
+.oc-shipbar--rich {
+	--oc-ship-fill: var(--oc-ship-fill-user, var(--oc-primary));
+	padding-block: 12px 12px;
+	background: var(--oc-ship-bg-user, color-mix(in srgb, var(--oc-ship-fill) 9%, var(--oc-surface, #fff)));
+	border-block-end: 0;
+	font-size: .92rem;
+}
+
+.oc-shipbar--rich .oc-shipbar__text { margin-block-end: 10px; }
+
+.oc-shipbar--rich .oc-shipbar__track {
+	position: relative;
+	block-size: 8px;
+	overflow: visible;
+	background: color-mix(in srgb, var(--oc-ship-fill) 22%, transparent);
+}
+
+.oc-shipbar--rich .oc-shipbar__fill { background: var(--oc-ship-fill); }
+
+.oc-shipbar--rich.is-done .oc-shipbar__fill { background: var(--oc-success, #2f7d4f); }
+
+.oc-shipbar__dot {
+	position: absolute;
+	inset-block-start: 50%;
+	inset-inline-start: 0;
+	inline-size: 16px;
+	block-size: 16px;
+	box-sizing: border-box;
+	margin-inline-start: -8px;
+	border-radius: 50%;
+	translate: 0 -50%;
+	background: var(--oc-surface, #fff);
+	border: 3px solid color-mix(in srgb, var(--oc-ship-fill, var(--oc-ink)) 55%, transparent);
+	z-index: 1;
+}
+
+.oc-shipbar__dot--end { inset-inline-start: 100%; }
+
+.oc-shipbar__dot.is-hit {
+	background: var(--oc-ship-fill, var(--oc-ink));
+	border-color: var(--oc-surface, #fff);
+}
+
+.oc-shipbar.is-done .oc-shipbar__dot.is-hit { background: var(--oc-success, #2f7d4f); }
+
+.oc-shipbar__marks {
+	position: relative;
+	display: block;
+	block-size: 34px;
+	margin-block-start: 8px;
+	font-size: .76rem;
+	line-height: 1.3;
+	color: color-mix(in srgb, var(--oc-ink) 72%, transparent);
+}
+
+.oc-shipbar__mark {
+	position: absolute;
+	inset-block-start: 0;
+	inset-inline-start: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	text-align: center;
+	white-space: nowrap;
+	font-style: normal;
+	translate: -50% 0;
+}
+
+[dir="rtl"] .oc-shipbar__mark { translate: 50% 0; }
+
+.oc-shipbar__mark strong {
+	color: var(--oc-ink);
+	font-weight: 600;
+}
+
+.oc-shipbar__mark--end,
+[dir="rtl"] .oc-shipbar__mark--end {
+	inset-inline-start: auto;
+	inset-inline-end: 0;
+	align-items: flex-end;
+	text-align: end;
+	translate: 0 0;
+}
+
 /* ---------- in-panel upsells ---------- */
 [data-oc-cart-up][hidden] { display: none; }
 

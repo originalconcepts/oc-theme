@@ -149,11 +149,11 @@ final class Quote {
 		$cost = self::combine( $prices, (string) $rules['mode'] );
 
 		return array(
-			'cost'      => round( max( 0.0, $cost ), 2 ),
-			'free'      => $free && 0.0 === round( $cost, 2 ),
-			'region'    => null !== $region ? (string) $region['name'] : '',
-			'groups'    => array_keys( $present ),
-			'eligible'  => round( $eligible, 2 ),
+			'cost'        => round( max( 0.0, $cost ), 2 ),
+			'free'        => $free && 0.0 === round( $cost, 2 ),
+			'region'      => null !== $region ? (string) $region['name'] : '',
+			'groups'      => array_keys( $present ),
+			'eligible'    => round( $eligible, 2 ),
 			'threshold'   => $threshold,
 			'missing'     => round( $missing, 2 ),
 			'cheap'       => $cheap,

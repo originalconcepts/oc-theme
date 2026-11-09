@@ -78,6 +78,11 @@ final class Cart {
 				'ship_goal'    => '',        // empty = auto from shipping zones.
 				'ship_text'    => '',
 				'ship_done'    => '',
+				'ship_mid'     => '',        // A station on the way; empty = from the shipping rules.
+				'ship_mid_price' => '',
+				'ship_fill'    => '',        // Bar colours; empty = the brand colour.
+				'ship_bg'      => '',
+				'ship_quiet'   => 0,         // The plain bar: no coloured band.
 				'up_show'      => 0,
 				'up_title'     => '',
 				'up_source'    => 'items',   // items | category.
@@ -493,51 +498,120 @@ final class Cart {
 			return '<div data-oc-ship-bar hidden></div>';
 		}
 
-		$goal     = $gap['goal'];
-		$subtotal = $gap['have'];
+		$goal = $gap['goal'];
+		$have = $gap['have'];
+		$mid  = $gap['mid'];
 
-		$left    = max( 0.0, $goal - $subtotal );
-		$percent = min( 100, (int) round( $subtotal / $goal * 100 ) );
+		$left    = max( 0.0, $goal - $have );
+		$percent = min( 100, (int) round( $have / $goal * 100 ) );
+		$done    = $left <= 0;
 
-		if ( $left > 0 ) {
+		if ( $done ) {
+			$text = esc_html( '' !== (string) $s['ship_done'] ? (string) $s['ship_done'] : __( 'You earned free shipping!', 'oc-theme' ) );
+		} elseif ( $mid['at'] > 0 && $have < $mid['at'] ) {
+			// Before the station: what it takes to reach it.
+			$text = sprintf(
+				/* translators: 1: the sum still missing. 2: the lower delivery price. */
+				esc_html__( '%1$s more and delivery drops to %2$s', 'oc-theme' ),
+				'<strong>' . esc_html( self::plain_price( wc_price( $mid['at'] - $have ) ) ) . '</strong>',
+				'<strong>' . esc_html( self::plain_price( wc_price( $mid['price'] ) ) ) . '</strong>'
+			);
+		} elseif ( $mid['at'] > 0 ) {
+			// Past the station: say so, and point at the free line.
+			$text = sprintf(
+				/* translators: 1: the lower delivery price already reached. 2: the sum still missing for free delivery. */
+				esc_html__( 'Delivery is down to %1$s. %2$s more and it is free', 'oc-theme' ),
+				'<strong>' . esc_html( self::plain_price( wc_price( $mid['price'] ) ) ) . '</strong>',
+				'<strong>' . esc_html( self::plain_price( wc_price( $left ) ) ) . '</strong>'
+			);
+		} else {
 			$template = '' !== (string) $s['ship_text'] ? (string) $s['ship_text'] : __( '[sum] left for free shipping', 'oc-theme' );
 			// The remaining amount carries the line — bold it.
 			$sum  = self::plain_price( wc_price( $left ) );
 			$text = str_replace( '[sum]', '<strong>' . esc_html( $sum ) . '</strong>', esc_html( $template ) );
-		} else {
-			$text = esc_html( '' !== (string) $s['ship_done'] ? (string) $s['ship_done'] : __( 'You earned free shipping!', 'oc-theme' ) );
 		}
 
-		return '<div class="oc-shipbar' . ( 0.0 === $left ? ' is-done' : '' ) . '" data-oc-ship-bar>'
-			. '<span class="oc-shipbar__text">' . $text . '</span>'
-			. '<span class="oc-shipbar__track"><i class="oc-shipbar__fill" style="inline-size:' . absint( $percent ) . '%"></i></span>'
-			. '</div>';
+		$classes = array( 'oc-shipbar' );
+
+		if ( $done ) {
+			$classes[] = 'is-done';
+		}
+
+		if ( empty( $s['ship_quiet'] ) ) {
+			$classes[] = 'oc-shipbar--rich';
+		}
+
+		if ( $mid['at'] > 0 ) {
+			$classes[] = 'oc-shipbar--stations';
+		}
+
+		$vars = '';
+
+		if ( '' !== (string) $s['ship_fill'] ) {
+			$vars .= '--oc-ship-fill-user:' . $s['ship_fill'] . ';';
+		}
+
+		if ( '' !== (string) $s['ship_bg'] ) {
+			$vars .= '--oc-ship-bg-user:' . $s['ship_bg'] . ';';
+		}
+
+		$at = $mid['at'] > 0 ? min( 99, max( 1, (int) round( $mid['at'] / $goal * 100 ) ) ) : 0;
+
+		$html  = '<div class="' . esc_attr( implode( ' ', $classes ) ) . '" data-oc-ship-bar' . ( '' !== $vars ? ' style="' . esc_attr( $vars ) . '"' : '' ) . '>';
+		$html .= '<span class="oc-shipbar__text">' . $text . '</span>';
+		$html .= '<span class="oc-shipbar__track"><i class="oc-shipbar__fill" style="inline-size:' . absint( $percent ) . '%"></i>';
+
+		if ( $at > 0 ) {
+			$html .= '<b class="oc-shipbar__dot' . ( $have >= $mid['at'] ? ' is-hit' : '' ) . '" style="inset-inline-start:' . absint( $at ) . '%" aria-hidden="true"></b>';
+			$html .= '<b class="oc-shipbar__dot oc-shipbar__dot--end' . ( $done ? ' is-hit' : '' ) . '" aria-hidden="true"></b>';
+		}
+
+		$html .= '</span>';
+
+		if ( $at > 0 ) {
+			$html .= '<span class="oc-shipbar__marks" aria-hidden="true">';
+			$html .= '<em class="oc-shipbar__mark" style="inset-inline-start:' . absint( $at ) . '%"><strong>' . esc_html( self::plain_price( wc_price( $mid['at'] ) ) ) . '</strong>' . esc_html( $mid['label'] ) . '</em>';
+			$html .= '<em class="oc-shipbar__mark oc-shipbar__mark--end"><strong>' . esc_html( self::plain_price( wc_price( $goal ) ) ) . '</strong>' . esc_html__( 'Free shipping', 'oc-theme' ) . '</em>';
+			$html .= '</span>';
+		}
+
+		$html .= '</div>';
+
+		return $html;
 	}
 
 	/**
-	 * Where the cart stands against free delivery: the sum that earns it
-	 * and the sum the cart has toward it. A goal of zero means there is
-	 * nothing to show — the bar is off, the cart is empty, or no line was
-	 * ever drawn.
+	 * Where the cart stands against free delivery: the sum that earns it,
+	 * the sum the cart has toward it, and the station on the way if the
+	 * shop set one. A goal of zero means there is nothing to show — the
+	 * bar is off, the cart is empty, or no line was ever drawn.
 	 *
 	 * The goal comes from the theme's own delivery rules when it prices
 	 * delivery, otherwise from the shipping zones' free-shipping minimum
-	 * unless the settings override it.
+	 * unless the settings override it. The station comes from the same
+	 * rules, or from the cart settings on a shop that ships the Woo way.
 	 *
-	 * @return array{goal:float,have:float}
+	 * @return array{goal:float,have:float,mid:array{at:float,price:float,label:string}}
 	 */
 	public static function ship_gap(): array {
 		$s    = self::settings();
 		$none = array(
 			'goal' => 0.0,
 			'have' => 0.0,
+			'mid'  => array(
+				'at'    => 0.0,
+				'price' => 0.0,
+				'label' => '',
+			),
 		);
 
 		if ( empty( $s['ship_bar'] ) || ! WC()->cart || WC()->cart->is_empty() ) {
 			return $none;
 		}
 
-		$goal = (float) $s['ship_goal'];
+		$goal   = (float) $s['ship_goal'];
+		$mid_at = (float) $s['ship_mid'];
+		$mid_pr = (float) $s['ship_mid_price'];
 
 		if ( Shipping::enabled() ) {
 			// The theme prices delivery: the bar counts only what earns
@@ -546,6 +620,11 @@ final class Cart {
 
 			$goal = $progress['goal'];
 			$have = $progress['have'];
+
+			if ( $mid_at <= 0 && $progress['cheap_over'] > 0 ) {
+				$mid_at = $progress['cheap_over'];
+				$mid_pr = $progress['cheap_price'];
+			}
 		} else {
 			if ( $goal <= 0 ) {
 				$goal = self::free_shipping_minimum();
@@ -558,9 +637,20 @@ final class Cart {
 			return $none;
 		}
 
+		if ( $mid_at <= 0 || $mid_at >= $goal ) {
+			$mid_at = 0.0;
+			$mid_pr = 0.0;
+		}
+
 		return array(
 			'goal' => (float) $goal,
 			'have' => (float) $have,
+			'mid'  => array(
+				'at'    => $mid_at,
+				'price' => $mid_pr,
+				/* translators: %s: the delivery price from the station on. */
+				'label' => $mid_at > 0 ? sprintf( __( 'Delivery %s', 'oc-theme' ), self::plain_price( wc_price( $mid_pr ) ) ) : '',
+			),
 		);
 	}
 
@@ -1469,6 +1559,8 @@ final class Cart {
 						<td>
 							<p style="margin:0;"><label><?php esc_html_e( 'Threshold override', 'oc-theme' ); ?> <input type="number" name="ship_goal" value="<?php echo esc_attr( (string) $s['ship_goal'] ); ?>" min="0" style="width:110px;" placeholder="<?php esc_attr_e( 'Auto', 'oc-theme' ); ?>" /></label></p>
 							<p class="description"><?php esc_html_e( 'Empty = taken automatically from the free-shipping minimum in the shipping zones.', 'oc-theme' ); ?></p>
+							<p style="margin:10px 0 0;"><label><?php esc_html_e( 'A station on the way', 'oc-theme' ); ?> <input type="number" name="ship_mid" value="<?php echo esc_attr( (string) $s['ship_mid'] ); ?>" min="0" style="width:110px;" placeholder="<?php esc_attr_e( 'Sum', 'oc-theme' ); ?>" /></label> <label><?php esc_html_e( 'delivery price from there', 'oc-theme' ); ?> <input type="number" name="ship_mid_price" value="<?php echo esc_attr( (string) $s['ship_mid_price'] ); ?>" min="0" step="0.01" style="width:110px;" /></label></p>
+							<p class="description"><?php esc_html_e( 'A second stop on the bar before free delivery. Empty = taken from the theme\'s shipping rules when they set one. The price here is only what the bar says; the shipping rules decide what is charged.', 'oc-theme' ); ?></p>
 							<p style="margin:10px 0 0;"><input type="text" name="ship_text" value="<?php echo esc_attr( (string) $s['ship_text'] ); ?>" placeholder="<?php esc_attr_e( '[sum] left for free shipping', 'oc-theme' ); ?>" class="regular-text" /></p>
 							<p style="margin:6px 0 0;"><input type="text" name="ship_done" value="<?php echo esc_attr( (string) $s['ship_done'] ); ?>" placeholder="<?php esc_attr_e( 'You earned free shipping!', 'oc-theme' ); ?>" class="regular-text" /></p>
 						</td>
@@ -1537,6 +1629,8 @@ final class Cart {
 					'title'      => sanitize_text_field( wp_unslash( (string) ( $_POST['title'] ?? '' ) ) ),
 					'empty_text' => sanitize_text_field( wp_unslash( (string) ( $_POST['empty_text'] ?? '' ) ) ),
 					'ship_goal'  => '' === trim( (string) ( $_POST['ship_goal'] ?? '' ) ) ? '' : (string) max( 0, (int) $_POST['ship_goal'] ), // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- cast to int.
+					'ship_mid'   => '' === trim( (string) ( $_POST['ship_mid'] ?? '' ) ) ? '' : (string) max( 0, (int) $_POST['ship_mid'] ), // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- cast to int.
+					'ship_mid_price' => '' === trim( (string) ( $_POST['ship_mid_price'] ?? '' ) ) ? '' : (string) max( 0.0, (float) $_POST['ship_mid_price'] ), // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- cast to float.
 					'ship_text'  => sanitize_text_field( wp_unslash( (string) ( $_POST['ship_text'] ?? '' ) ) ),
 					'ship_done'  => sanitize_text_field( wp_unslash( (string) ( $_POST['ship_done'] ?? '' ) ) ),
 					'up_show'    => empty( $_POST['up_show'] ) ? 0 : 1,
