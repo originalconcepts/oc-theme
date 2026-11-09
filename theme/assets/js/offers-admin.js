@@ -15,7 +15,7 @@
 	}
 
 	function search( term, exclude ) {
-		var url = ajaxurl + '?action=oc_offers_search&kinds=p&term=' + encodeURIComponent( term ) + '&_wpnonce=' + encodeURIComponent( cfg.nonce || '' );
+		var url = ajaxurl + ( ajaxurl.indexOf( '?' ) > -1 ? '&' : '?' ) + 'action=oc_offers_search&kinds=p&term=' + encodeURIComponent( term ) + '&_wpnonce=' + encodeURIComponent( cfg.nonce || '' );
 		return fetch( url, { credentials: 'same-origin' } )
 			.then( function ( r ) { return r.json(); } )
 			.then( function ( out ) {
