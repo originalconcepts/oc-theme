@@ -134,6 +134,7 @@ final class Cart {
 						<div data-oc-mcart><?php echo $this->items_html(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
 						<?php echo $this->promo_msgs_html(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 						<?php echo Offers\Card::html(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built escaped. ?>
+						<?php echo Offers\Offers::on() ? Offers\Topup::shell() : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built escaped. ?>
 						<?php if ( $s['up_show'] && in_array( (string) $s['up_style'], array( 'list', 'slider' ), true ) ) : ?>
 							<?php echo $this->upsells_html(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 						<?php endif; ?>
@@ -191,6 +192,7 @@ final class Cart {
 		$html .= '<div data-oc-mcart>' . $this->items_html() . '</div>';
 		$html .= $this->promo_msgs_html();
 		$html .= Offers\Card::html();
+		$html .= Offers\Offers::on() ? Offers\Topup::shell() : '';
 
 		if ( $s['up_show'] ) {
 			// The side strip belongs to the drawer — the page gets the
@@ -558,7 +560,13 @@ final class Cart {
 		$at = $mid['at'] > 0 ? min( 99, max( 1, (int) round( $mid['at'] / $goal * 100 ) ) ) : 0;
 
 		$html  = '<div class="' . esc_attr( implode( ' ', $classes ) ) . '" data-oc-ship-bar' . ( '' !== $vars ? ' style="' . esc_attr( $vars ) . '"' : '' ) . '>';
-		$html .= '<span class="oc-shipbar__text">' . $text . '</span>';
+		$html .= '<span class="oc-shipbar__text">' . $text;
+
+		if ( ! $done && Offers\Topup::available() ) {
+			$html .= ' ' . Offers\Topup::link_html();
+		}
+
+		$html .= '</span>';
 		$html .= '<span class="oc-shipbar__track"><i class="oc-shipbar__fill" style="inline-size:' . absint( $percent ) . '%"></i>';
 
 		if ( $at > 0 ) {
@@ -578,6 +586,13 @@ final class Cart {
 		$html .= '</div>';
 
 		return $html;
+	}
+
+	/**
+	 * The bar for whoever draws it elsewhere (the top-up sheet).
+	 */
+	public static function ship_bar_markup(): string {
+		return ( new self() )->ship_bar_html();
 	}
 
 	/**

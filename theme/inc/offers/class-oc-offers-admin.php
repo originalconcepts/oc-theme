@@ -476,10 +476,11 @@ final class Admin {
 	 */
 	public static function places(): array {
 		return array(
-			'cart'    => __( 'Cart panel and cart page', 'oc-theme' ),
-			'xsell'   => __( 'Product page: goes with it', 'oc-theme' ),
-			'upsell'  => __( 'Product page: upgrades', 'oc-theme' ),
-			'similar' => __( 'Product page: similar', 'oc-theme' ),
+			'cart'     => __( 'Cart panel and cart page', 'oc-theme' ),
+			'checkout' => __( 'Checkout: one tick before paying', 'oc-theme' ),
+			'xsell'    => __( 'Product page: goes with it', 'oc-theme' ),
+			'upsell'   => __( 'Product page: upgrades', 'oc-theme' ),
+			'similar'  => __( 'Product page: similar', 'oc-theme' ),
 		);
 	}
 
@@ -1008,7 +1009,7 @@ final class Admin {
 					'when'  => array( 'products' => array( $a ) ),
 					'offer' => array( 'products' => array( $b ) ),
 					'pct'   => $s['pct'],
-					'where' => array( 'cart', 'xsell' ),
+					'where' => array( 'cart', 'checkout', 'xsell' ),
 				)
 			);
 			Suggest::dismiss( $a, $b );

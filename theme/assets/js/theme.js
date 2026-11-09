@@ -5167,6 +5167,125 @@ window.ocWhenShown( function () {
 		}
 	}
 
+	/* ---------- free-shipping top-up sheet ---------- */
+
+	( function () {
+		var sheet = null;
+		var opener = null;
+
+		function fill() {
+			var body = sheet.querySelector( '[data-oc-topup-body]' );
+			body.innerHTML = '<span class="oc-topup__loading">…</span>';
+			fetch( sheet.getAttribute( 'data-url' ), { credentials: 'same-origin' } )
+				.then( function ( r ) { return r.json(); } )
+				.then( function ( out ) {
+					if ( out && out.success ) {
+						body.innerHTML = out.data.html;
+					}
+				} )
+				.catch( function () {} );
+		}
+
+		function open( link ) {
+			sheet = document.querySelector( '[data-oc-topup-sheet]' );
+			if ( ! sheet ) {
+				return;
+			}
+			// Out of the sliding panel: a fixed sheet inside a transformed
+			// parent is fixed to the parent, not the screen.
+			if ( sheet.parentNode !== document.body ) {
+				document.body.appendChild( sheet );
+			}
+			opener = link;
+			sheet.hidden = false;
+			document.documentElement.classList.add( 'oc-topup-open' );
+			fill();
+			var title = sheet.querySelector( '.oc-topup__title' );
+			if ( title ) {
+				title.setAttribute( 'tabindex', '-1' );
+				title.focus();
+			}
+		}
+
+		function close() {
+			if ( ! sheet || sheet.hidden ) {
+				return;
+			}
+			sheet.hidden = true;
+			document.documentElement.classList.remove( 'oc-topup-open' );
+			if ( opener && opener.focus ) {
+				opener.focus();
+			}
+		}
+
+		document.addEventListener( 'click', function ( event ) {
+			var link = event.target.closest( '[data-oc-topup]' );
+			if ( link ) {
+				event.preventDefault();
+				open( link );
+				return;
+			}
+			if ( ! sheet || sheet.hidden ) {
+				return;
+			}
+			if ( event.target.closest( '[data-oc-topup-close]' ) || event.target === sheet ) {
+				close();
+				return;
+			}
+			var chip = event.target.closest( '[data-oc-topup-chip]' );
+			if ( chip ) {
+				var want = chip.getAttribute( 'data-oc-topup-chip' );
+				sheet.querySelectorAll( '[data-oc-topup-chip]' ).forEach( function ( c ) {
+					var on = c === chip;
+					c.classList.toggle( 'is-on', on );
+					c.setAttribute( 'aria-pressed', on ? 'true' : 'false' );
+				} );
+				sheet.querySelectorAll( '[data-oc-topup-item]' ).forEach( function ( item ) {
+					var kinds = ( item.getAttribute( 'data-kinds' ) || '' ).split( ' ' );
+					item.hidden = want !== 'all' && kinds.indexOf( want ) === -1;
+				} );
+				return;
+			}
+			var add = event.target.closest( '[data-oc-topup-add]' );
+			if ( add ) {
+				add.classList.add( 'loading' );
+				var data = new FormData();
+				data.append( 'action', 'oc_cart_add' );
+				data.append( 'product_id', add.getAttribute( 'data-oc-topup-add' ) );
+				data.append( 'quantity', '1' );
+				fetch( ( window.ocL10n || {} ).ajaxUrl || '/wp-admin/admin-ajax.php', {
+					method: 'POST',
+					credentials: 'same-origin',
+					body: data
+				} )
+					.then( function ( r ) { return r.json(); } )
+					.then( function ( out ) {
+						if ( out && out.fragments ) {
+							Object.keys( out.fragments ).forEach( function ( selector ) {
+								document.querySelectorAll( selector ).forEach( function ( el ) {
+									var box = document.createElement( 'div' );
+									box.innerHTML = out.fragments[ selector ];
+									if ( box.firstElementChild ) {
+										el.replaceWith( box.firstElementChild );
+									}
+								} );
+							} );
+						}
+						fill();
+					} )
+					.catch( function () {
+						add.classList.remove( 'loading' );
+					} );
+			}
+		} );
+
+		document.addEventListener( 'keydown', function ( event ) {
+			if ( event.key === 'Escape' ) {
+				close();
+			}
+		} );
+	}() );
+
 	/* ---------- quantity tiers → the quantity box ---------- */
 
 	( function () {

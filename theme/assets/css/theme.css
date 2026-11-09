@@ -6130,6 +6130,253 @@ body.oc-swatch-square-cat .oc-mcart__attr-swatch { border-radius: 4px; }
 
 .oc-cartpage__main .oc-offer { max-inline-size: 520px; }
 
+/* -- the checkout offer: one tick in the order review -- */
+.oc-offer-co-row > td { padding: 0 0 12px !important; border: 0 !important; }
+
+.oc-offer--co { margin-block-start: 0; gap: 10px; }
+
+.oc-offer--co.is-busy { opacity: .6; pointer-events: none; }
+
+.oc-offer__cotitle {
+	font-weight: 700;
+	color: var(--oc-offer-c);
+}
+
+.oc-offer__tick {
+	display: flex;
+	align-items: flex-start;
+	gap: 12px;
+	cursor: pointer;
+}
+
+.oc-offer__tick input {
+	inline-size: 22px;
+	block-size: 22px;
+	margin: 2px 0 0;
+	flex: none;
+	accent-color: var(--oc-offer-c);
+}
+
+.oc-offer__tickbody {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	min-inline-size: 0;
+	flex: 1;
+}
+
+.oc-offer__tickbody .oc-offer__hint { text-align: start; margin: 0; }
+
+.oc-offer__comedia {
+	flex: none;
+	inline-size: 56px;
+	block-size: 56px;
+	border-radius: 10px;
+	overflow: hidden;
+	background: var(--oc-surface, #fff);
+}
+
+.oc-offer .oc-offer__comedia img { inline-size: 100%; block-size: 100%; object-fit: contain; display: block; }
+
+.oc-offer--co.is-taken { background: color-mix(in srgb, var(--oc-success, #2f7d4f) 9%, var(--oc-surface, #fff)); border-color: color-mix(in srgb, var(--oc-success, #2f7d4f) 45%, transparent); }
+
+/* -- the free-shipping top-up sheet -- */
+.oc-shipbar__go {
+	display: inline-block;
+	margin-inline-start: 8px;
+	color: var(--oc-ship-fill, var(--oc-ink));
+	font-weight: 600;
+	text-decoration: underline;
+	text-underline-offset: 3px;
+}
+
+.oc-topup {
+	position: fixed;
+	inset: 0;
+	z-index: 10120;
+	display: grid;
+	place-items: end center;
+	background: rgb(0 0 0 / 45%);
+}
+
+.oc-topup[hidden] { display: none; }
+
+.oc-topup__card {
+	inline-size: 100%;
+	max-inline-size: 560px;
+	max-block-size: 92dvh;
+	overflow: auto;
+	background: var(--oc-surface, #fff);
+	border-radius: 18px 18px 0 0;
+	padding: 14px 16px 18px;
+	box-shadow: 0 -12px 40px rgb(0 0 0 / 20%);
+}
+
+@media (min-width: 700px) {
+	.oc-topup { place-items: center; padding: 18px; }
+	.oc-topup__card { border-radius: 16px; max-block-size: 88vh; }
+}
+
+.oc-topup__head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	margin-block-end: 6px;
+}
+
+.oc-topup__title { margin: 0; font-size: 1.15rem; font-weight: 700; }
+
+.oc-topup__title:focus { outline: none; }
+
+.oc-topup__close {
+	inline-size: 44px;
+	block-size: 44px;
+	border: 0;
+	background: none;
+	font-size: 26px;
+	line-height: 1;
+	cursor: pointer;
+	color: var(--oc-ink);
+}
+
+.oc-topup .oc-shipbar { padding-inline: 0; border-radius: 10px; padding-inline: 14px; }
+
+.oc-topup__loading, .oc-topup__empty { display: block; padding: 24px 0; text-align: center; color: var(--oc-ink); }
+
+.oc-topup__chips {
+	display: flex;
+	gap: 8px;
+	overflow-x: auto;
+	padding: 12px 0;
+	scrollbar-width: none;
+}
+
+.oc-topup__chips::-webkit-scrollbar { display: none; }
+
+.oc-topup__chip {
+	flex: none;
+	min-block-size: 40px;
+	padding: 0 14px;
+	border-radius: 999px;
+	border: 1px solid var(--oc-line);
+	background: var(--oc-surface, #fff);
+	color: var(--oc-ink);
+	font: inherit;
+	cursor: pointer;
+}
+
+.oc-topup__chip.is-on {
+	background: var(--oc-ink);
+	border-color: var(--oc-ink);
+	color: var(--oc-surface, #fff);
+	font-weight: 600;
+}
+
+.oc-topup__grid {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 16px 12px;
+}
+
+@media (min-width: 700px) {
+	.oc-topup__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+.oc-topup__item { display: flex; flex-direction: column; gap: 6px; min-inline-size: 0; }
+
+.oc-topup__item[hidden] { display: none; }
+
+.oc-topup__media {
+	display: block;
+	aspect-ratio: 1;
+	border-radius: 12px;
+	overflow: hidden;
+	background: color-mix(in srgb, var(--oc-ink) 5%, var(--oc-surface, #fff));
+}
+
+.oc-topup .oc-topup__media img { inline-size: 100%; block-size: 100%; object-fit: contain; display: block; }
+
+.oc-topup__tag {
+	align-self: flex-start;
+	padding: 1px 8px;
+	border-radius: 6px;
+	background: color-mix(in srgb, var(--oc-ink) 7%, var(--oc-surface, #fff));
+	font-size: .74rem;
+	font-weight: 600;
+}
+
+.oc-topup__tag--match {
+	background: color-mix(in srgb, var(--oc-success, #2f7d4f) 12%, var(--oc-surface, #fff));
+	color: var(--oc-success, #2f7d4f);
+}
+
+.oc-topup__name {
+	color: inherit;
+	font-weight: 500;
+	line-height: 1.3;
+	text-decoration: none;
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+	min-block-size: 2.6em;
+}
+
+.oc-topup__price { font-weight: 700; }
+
+.oc-topup__add {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-block-size: 42px;
+	border-radius: 999px;
+	border: 1.5px solid var(--oc-ink);
+	background: var(--oc-surface, #fff);
+	color: var(--oc-ink);
+	font: inherit;
+	font-weight: 600;
+	text-decoration: none;
+	cursor: pointer;
+}
+
+.oc-topup__add.loading { opacity: .5; pointer-events: none; }
+
+@media (hover: hover) {
+	.oc-topup__add:hover { background: var(--oc-ink); color: var(--oc-surface, #fff); }
+}
+
+.oc-topup__foot {
+	position: sticky;
+	inset-block-end: -18px;
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	margin: 16px -16px -18px;
+	padding: 12px 16px 18px;
+	background: var(--oc-surface, #fff);
+	border-block-start: 1px solid var(--oc-line);
+}
+
+.oc-topup__sum { display: flex; flex-direction: column; }
+
+.oc-topup__sum small { font-size: .8rem; color: color-mix(in srgb, var(--oc-ink) 70%, transparent); }
+
+.oc-topup__checkout {
+	flex: 1;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-block-size: var(--oc-cta-h, 48px);
+	border-radius: var(--oc-cta-r, 8px);
+	background: var(--oc-cta, var(--oc-ink));
+	color: var(--oc-cta-tx, #fff);
+	font-weight: 600;
+	text-decoration: none;
+}
+
+html.oc-topup-open { overflow: hidden; }
+
 /* -- quantity tiers on the product page: cards beside the quantity box -- */
 .oc-tiers {
 	display: flex;

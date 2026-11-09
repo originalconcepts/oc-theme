@@ -244,7 +244,7 @@ final class Offers {
 		$ids = Rules::offerable( array_map( 'intval', (array) $own ), $product_id, $in_cart );
 
 		if ( $ids ) {
-			return self::tagged( $ids, 'manual', 'cart' === $place ? $s['pct'] : 0 );
+			return self::tagged( $ids, 'manual', in_array( $place, array( 'cart', 'checkout' ), true ) ? $s['pct'] : 0 );
 		}
 
 		// 2. A rule.
@@ -263,7 +263,7 @@ final class Offers {
 		// 3. By itself — in the cart only. The product page's similar row
 		// is WooCommerce's own, and its other rows stay empty rather than
 		// guessed.
-		if ( $s['auto'] && 'cart' === $place ) {
+		if ( $s['auto'] && in_array( $place, array( 'cart', 'checkout' ), true ) ) {
 			$ids = array_merge( self::bought_with( $product_id ), Product_Linked::rank_similar( $product_id, 8 ) );
 			$ids = Rules::offerable( array_map( 'intval', $ids ), $product_id, $in_cart );
 
@@ -580,10 +580,11 @@ final class Offers {
 	 * The offers for the cart as it stands: the newest line speaks first,
 	 * and lines that were themselves added from an offer speak last.
 	 *
-	 * @param int $limit How many at most.
+	 * @param int    $limit How many at most.
+	 * @param string $place cart | checkout.
 	 * @return array<int,array{product:\WC_Product,for:int,src:string,pct:int}>
 	 */
-	public static function cart_offers( int $limit = 1 ): array {
+	public static function cart_offers( int $limit = 1, string $place = 'cart' ): array {
 		$cart = function_exists( 'WC' ) && WC()->cart ? WC()->cart : null;
 
 		if ( ! $cart || ! self::on() || $cart->is_empty() ) {
@@ -591,7 +592,7 @@ final class Offers {
 		}
 
 		$contents = $cart->get_cart();
-		$memo     = md5( implode( ',', array_keys( $contents ) ) ) . ':' . $limit;
+		$memo     = md5( implode( ',', array_keys( $contents ) ) ) . ':' . $limit . ':' . $place;
 
 		if ( isset( self::$memo[ $memo ] ) ) {
 			return self::$memo[ $memo ];
@@ -632,7 +633,7 @@ final class Offers {
 		foreach ( array_unique( array_merge( array_reverse( $plain ), array_reverse( $offered ) ) ) as $for ) {
 			// Looking a product up costs a query or two; a long list of
 			// candidates is cut off as soon as enough of them can be added.
-			foreach ( self::for_product( (int) $for, 'cart', $skip ) as $offer ) {
+			foreach ( self::for_product( (int) $for, $place, $skip ) as $offer ) {
 				if ( isset( $seen[ $offer['id'] ] ) ) {
 					continue;
 				}

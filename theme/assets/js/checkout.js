@@ -1491,3 +1491,36 @@
 
 
 }() );
+
+/* ---------- the checkout offer: one tick adds it, unticking takes it out ---------- */
+
+( function () {
+	document.addEventListener( 'change', function ( event ) {
+		var box = event.target.closest( '[data-oc-offer-co]' );
+		if ( ! box ) {
+			return;
+		}
+		var card = box.closest( '.oc-offer--co' );
+		if ( card ) {
+			card.classList.add( 'is-busy' );
+		}
+		box.disabled = true;
+		var data = new FormData();
+		var url;
+		if ( box.checked ) {
+			data.append( 'product_id', box.getAttribute( 'data-add' ) );
+			data.append( 'place', 'checkout' );
+			url = box.getAttribute( 'data-url-add' );
+		} else {
+			data.append( 'key', box.getAttribute( 'data-key' ) );
+			url = box.getAttribute( 'data-url-remove' );
+		}
+		fetch( url, { method: 'POST', credentials: 'same-origin', body: data } )
+			.catch( function () {} )
+			.then( function () {
+				if ( window.jQuery ) {
+					window.jQuery( document.body ).trigger( 'update_checkout' );
+				}
+			} );
+	} );
+}() );

@@ -36,6 +36,8 @@ final class Card {
 
 		add_filter( 'woocommerce_add_to_cart_fragments', array( $this, 'fragments' ) );
 		add_action( 'wc_ajax_oc_offer_add', array( $this, 'ajax_add' ) );
+		add_action( 'wc_ajax_oc_offer_remove', array( $this, 'ajax_remove' ) );
+		add_action( 'woocommerce_review_order_before_order_total', array( $this, 'checkout_row' ) );
 	}
 
 	/**
@@ -211,6 +213,120 @@ final class Card {
 		return sprintf( esc_html__( 'After adding it, only %s left for free shipping', 'oc-theme' ), '<strong>' . esc_html( Cart::plain_price( wc_price( $left ) ) ) . '</strong>' );
 	}
 
+	/* ---------------------------------------------------------- checkout */
+
+	/**
+	 * The row in the order review that carries the checkout offer.
+	 */
+	public function checkout_row(): void {
+		$html = self::checkout_html();
+
+		if ( '' !== $html ) {
+			echo '<tr class="oc-offer-co-row"><td colspan="2">' . $html . '</td></tr>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built escaped.
+		}
+	}
+
+	/**
+	 * One tick before paying: the best offer for the cart, or the offer
+	 * already taken, ticked, so it can be taken back out.
+	 */
+	public static function checkout_html(): string {
+		if ( ! Offers::on() || ! function_exists( 'WC' ) || ! WC()->cart || WC()->cart->is_empty() ) {
+			return '';
+		}
+
+		$decimals = wc_get_price_decimals();
+		$color    = (string) ( Cart::settings()['offer_c'] ?? '' );
+		$style    = '' !== $color ? ' style="--oc-offer-c:' . esc_attr( $color ) . '"' : '';
+		$add_url  = esc_url( \WC_AJAX::get_endpoint( 'oc_offer_add' ) );
+		$rm_url   = esc_url( \WC_AJAX::get_endpoint( 'oc_offer_remove' ) );
+
+		// An offer already in the cart: shown ticked, so one tap takes it out.
+		foreach ( WC()->cart->get_cart() as $key => $item ) {
+			$tag = Offers::tag( $item[ Offers::TAG ] ?? null );
+
+			if ( ! $tag || ! $item['data'] instanceof \WC_Product ) {
+				continue;
+			}
+
+			$html  = '<div class="oc-offer oc-offer--co is-taken"' . $style . '>';
+			$html .= '<label class="oc-offer__tick">';
+			$html .= '<input type="checkbox" checked data-oc-offer-co data-key="' . esc_attr( (string) $key ) . '" data-url-remove="' . $rm_url . '" />';
+			$html .= '<span class="oc-offer__tickbody">';
+			/* translators: %s: product name. */
+			$html .= '<strong>' . esc_html( sprintf( __( 'Added to your order: %s', 'oc-theme' ), $item['data']->get_name() ) ) . '</strong>';
+			$html .= '<span class="oc-offer__hint">' . esc_html__( 'Untick to take it out again.', 'oc-theme' ) . '</span>';
+			$html .= '</span></label></div>';
+
+			return $html;
+		}
+
+		$offers = Offers::cart_offers( 1, 'checkout' );
+
+		if ( ! $offers ) {
+			return '';
+		}
+
+		$offer   = $offers[0];
+		$product = $offer['product'];
+		$was     = (float) wc_get_price_to_display( $product );
+		$now     = $was - Rules::off( $was, $offer['pct'], $decimals );
+		$deal    = $offer['pct'] > 0 && $now < $was;
+
+		$html  = '<div class="oc-offer oc-offer--co"' . $style . '>';
+		$html .= '<span class="oc-offer__cotitle">' . esc_html__( 'A moment before you pay', 'oc-theme' ) . '</span>';
+		$html .= '<label class="oc-offer__tick">';
+		$html .= '<input type="checkbox" data-oc-offer-co data-add="' . absint( $product->get_id() ) . '" data-url-add="' . $add_url . '" />';
+		$html .= '<span class="oc-offer__tickbody">';
+
+		if ( $deal ) {
+			/* translators: 1: product name. 2: percent off. */
+			$html .= '<strong>' . esc_html( sprintf( __( 'Add %1$s at %2$d%% off', 'oc-theme' ), $product->get_name(), $offer['pct'] ) ) . '</strong>';
+			$html .= '<span class="oc-offer__price"><ins>' . wc_price( $now ) . '</ins> <del>' . wc_price( $was ) . '</del></span>';
+		} else {
+			/* translators: %s: product name. */
+			$html .= '<strong>' . esc_html( sprintf( __( 'Add %s', 'oc-theme' ), $product->get_name() ) ) . '</strong>';
+			$html .= '<span class="oc-offer__price"><ins>' . wc_price( $was ) . '</ins></span>';
+		}
+
+		$hint = self::hint( $product, $was );
+
+		if ( '' !== $hint ) {
+			$html .= '<span class="oc-offer__hint">' . $hint . '</span>';
+		}
+
+		$html .= '</span>';
+		$html .= '<span class="oc-offer__comedia" aria-hidden="true">' . $product->get_image( 'woocommerce_gallery_thumbnail' ) . '</span>';
+		$html .= '</label></div>';
+
+		return $html;
+	}
+
+	/**
+	 * Take an offer line out again, from the checkout's tick.
+	 */
+	public function ajax_remove(): void {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- same public surface as WooCommerce's own cart ajax.
+		$key = isset( $_POST['key'] ) ? sanitize_text_field( wp_unslash( (string) $_POST['key'] ) ) : '';
+
+		if ( '' === $key || ! WC()->cart ) {
+			wp_send_json_error();
+		}
+
+		$item = WC()->cart->get_cart_item( $key );
+
+		// Only a line that came from an offer leaves this way; the rest of
+		// the cart is not this button's to touch.
+		if ( ! $item || ! Offers::tag( $item[ Offers::TAG ] ?? null ) ) {
+			wp_send_json_error();
+		}
+
+		WC()->cart->remove_cart_item( $key );
+		WC()->cart->calculate_totals();
+
+		wp_send_json_success();
+	}
+
 	/**
 	 * Add the offered product, marked as an offer.
 	 *
@@ -219,8 +335,10 @@ final class Card {
 	 * itself — a price cannot be asked for, only earned.
 	 */
 	public function ajax_add(): void {
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- same public surface as WooCommerce's own add to cart.
-		$id = isset( $_POST['product_id'] ) ? absint( $_POST['product_id'] ) : 0;
+		// phpcs:disable WordPress.Security.NonceVerification.Missing -- same public surface as WooCommerce's own add to cart.
+		$id    = isset( $_POST['product_id'] ) ? absint( $_POST['product_id'] ) : 0;
+		$place = isset( $_POST['place'] ) && 'checkout' === $_POST['place'] ? 'checkout' : 'cart';
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
 
 		if ( ! $id || ! Offers::on() || ! WC()->cart ) {
 			wp_send_json_error();
@@ -228,7 +346,7 @@ final class Card {
 
 		$match = null;
 
-		foreach ( Offers::cart_offers( 12 ) as $offer ) {
+		foreach ( Offers::cart_offers( 12, $place ) as $offer ) {
 			if ( $offer['product']->get_id() === $id ) {
 				$match = $offer;
 				break;
@@ -270,7 +388,7 @@ final class Card {
 		wc_clear_notices();
 
 		if ( ! current_user_can( 'edit_posts' ) ) {
-			Stats::bump( $match['src'], 'cart', $match['for'], $id, array( 'added' => 1 ) );
+			Stats::bump( $match['src'], $place, $match['for'], $id, array( 'added' => 1 ) );
 		}
 
 		WC()->cart->calculate_totals();

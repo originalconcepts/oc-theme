@@ -230,6 +230,8 @@ return array(
 	'oc-toast',
 	'oc-toast__txt',
 	'oc-topbar__nav--next',
+	'oc-topup-open',
+	'oc-topup__loading',
 	'oc-tr-dd',
 	'oc-tr-need',
 	'oc-var',

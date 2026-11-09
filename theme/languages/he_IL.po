@@ -15798,3 +15798,57 @@ msgstr "מחיר המשלוח מהסכום הזה"
 
 msgid "Over %1$s: delivery %2$s"
 msgstr "מעל %1$s: משלוח %2$s"
+
+msgid "Top it up"
+msgstr "השלימו עכשיו"
+
+msgid "Top up for free shipping"
+msgstr "השלימו למשלוח חינם"
+
+msgid "There is no free-shipping line to reach."
+msgstr "אין קו משלוח חינם להגיע אליו."
+
+msgid "You already earned free shipping."
+msgstr "כבר הגעתם למשלוח חינם."
+
+msgid "Nothing to suggest right now."
+msgstr "אין כרגע מה להציע."
+
+msgid "Narrow down"
+msgstr "צמצום"
+
+msgid "Covers it in one"
+msgstr "משלים במוצר אחד"
+
+msgid "You viewed"
+msgstr "צפיתם בהם"
+
+msgid "Goes with your cart"
+msgstr "מתאים למה שבסל"
+
+msgid "You viewed it"
+msgstr "צפיתם בו"
+
+msgid "Sells a lot"
+msgstr "נמכר הרבה"
+
+msgid "in your cart"
+msgstr "בסל שלכם"
+
+msgid "Checkout: one tick before paying"
+msgstr "קופה: סימון אחד לפני התשלום"
+
+msgid "Added to your order: %s"
+msgstr "נוסף להזמנה: %s"
+
+msgid "Untick to take it out again."
+msgstr "הסירו את הסימון כדי להוציא אותו."
+
+msgid "A moment before you pay"
+msgstr "רגע לפני התשלום"
+
+msgid "Add %1$s at %2$d%% off"
+msgstr "להוסיף את %1$s ב-%2$d%% הנחה"
+
+msgid "Add %s"
+msgstr "להוסיף את %s"
