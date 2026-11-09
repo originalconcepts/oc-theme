@@ -26,7 +26,7 @@ final class Rules {
 	 * Where an offer can be shown. Only the places the theme really draws
 	 * are listed; a rule cannot be saved for a place that does not exist.
 	 */
-	const PLACES = array( 'cart' );
+	const PLACES = array( 'cart', 'xsell', 'upsell', 'similar' );
 
 	/**
 	 * How a rule's products are put in order.

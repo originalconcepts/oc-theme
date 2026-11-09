@@ -3,11 +3,12 @@
  * Offers: the "by product" tab.
  *
  * Every product in one table, and beside each one every kind of offer it
- * carries — what goes with it (the cart offer), what is bought together
- * with it (the bundle), what is like it, and its quantity tiers — each
- * marked with where it came from: picked by hand, a rule, or automatic.
- * A row opens in place to add or remove a product without leaving the
- * screen, and ticked rows take a bulk action.
+ * carries — what goes with it, its upgrades, what is bought together with
+ * it, what is like it, and its quantity tiers — each marked with where it
+ * came from: picked by hand, a rule, or automatic. A row opens in place
+ * without a round trip; inside it every list is an open field: type a
+ * name, pick the product by its picture, and it is saved at once. Ticked
+ * rows take a bulk action.
  *
  * @package OC_Theme
  */
@@ -32,6 +33,11 @@ final class Products_Admin {
 	const PER_PAGE = 20;
 
 	/**
+	 * The lists a product carries by hand, with their names.
+	 */
+	const KINDS = array( 'xsell', 'upsell', 'bt' );
+
+	/**
 	 * Hook in.
 	 */
 	public function register(): void {
@@ -40,6 +46,7 @@ final class Products_Admin {
 		}
 
 		add_action( 'admin_post_oc_offers_link', array( $this, 'link' ) );
+		add_action( 'wp_ajax_oc_offers_link', array( $this, 'ajax_link' ) );
 	}
 
 	/**
@@ -64,47 +71,42 @@ final class Products_Admin {
 	}
 
 	/**
-	 * A link that changes one product's lists.
+	 * A product's hand-written list of one kind, raw.
 	 *
-	 * @param string               $what add | remove | bulk_add | bulk_clear.
-	 * @param string               $kind xsell | bt.
-	 * @param array<string,scalar> $more Ids.
+	 * @param \WC_Product $product The product.
+	 * @param string      $kind    xsell | upsell | bt.
+	 * @return int[]
 	 */
-	private static function act_url( string $what, string $kind, array $more ): string {
-		return wp_nonce_url(
-			add_query_arg(
-				array_merge(
-					array(
-						'action' => 'oc_offers_link',
-						'what'   => $what,
-						'kind'   => $kind,
-						'back'   => self::url(),
-					),
-					$more
-				),
-				admin_url( 'admin-post.php' )
-			),
-			'oc_offers_link'
-		);
+	public static function own( \WC_Product $product, string $kind ): array {
+		if ( 'bt' === $kind ) {
+			return Bought_Together::ids( $product->get_id() );
+		}
+
+		$ids = 'upsell' === $kind ? $product->get_upsell_ids( 'edit' ) : $product->get_cross_sell_ids( 'edit' );
+
+		return array_values( array_filter( array_map( 'intval', (array) $ids ) ) );
 	}
 
 	/**
-	 * Who answers for a product in the cart, without fetching the products.
+	 * Who answers for a product in a place, without fetching the products.
 	 *
 	 * @param \WC_Product $product The product.
+	 * @param string      $place   cart | xsell | upsell | similar.
 	 * @return array{src:string,label:string}
 	 */
-	public static function source_of( \WC_Product $product ): array {
+	public static function source_of( \WC_Product $product, string $place = 'cart' ): array {
 		$s = Offers::settings();
 
-		if ( $product->get_cross_sell_ids() ) {
+		$own = 'similar' === $place ? array() : self::own( $product, 'upsell' === $place ? 'upsell' : 'xsell' );
+
+		if ( $own ) {
 			return array(
 				'src'   => 'manual',
 				'label' => __( 'Picked by hand', 'oc-theme' ),
 			);
 		}
 
-		$uid = Rules::pick( $s['rules'], Offers::facts( $product->get_id() ), 'cart' );
+		$uid = Rules::pick( $s['rules'], Offers::facts( $product->get_id() ), $place );
 
 		if ( null !== $uid ) {
 			return array(
@@ -113,7 +115,7 @@ final class Products_Admin {
 			);
 		}
 
-		if ( $s['auto'] ) {
+		if ( ( 'cart' === $place && $s['auto'] ) || 'similar' === $place ) {
 			return array(
 				'src'   => 'auto',
 				'label' => __( 'Automatic', 'oc-theme' ),
@@ -252,14 +254,22 @@ final class Products_Admin {
 
 		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="oc-of__bulk" data-oc-of-bulk hidden>
 			<input type="hidden" name="action" value="oc_offers_link" />
-			<input type="hidden" name="kind" value="xsell" />
 			<input type="hidden" name="back" value="<?php echo esc_attr( self::url() ); ?>" />
 			<input type="hidden" name="ids" value="" data-oc-of-ids />
+			<input type="hidden" name="target" value="" data-oc-of-bulk-target />
 			<?php wp_nonce_field( 'oc_offers_link' ); ?>
 			<strong><span data-oc-of-count>0</span> <?php esc_html_e( 'products selected', 'oc-theme' ); ?></strong>
-			<select class="wc-product-search" name="target" style="width:260px;" data-placeholder="<?php esc_attr_e( 'Product to offer beside them…', 'oc-theme' ); ?>" data-action="woocommerce_json_search_products" data-allow_clear="true"></select>
-			<button class="oc-of__btn oc-of__btn--primary" name="what" value="bulk_add"><?php esc_html_e( 'Offer it beside all of them', 'oc-theme' ); ?></button>
-			<button class="oc-of__btn" name="what" value="bulk_clear" data-oc-of-confirm><?php esc_html_e( 'Remove their hand-picked offers', 'oc-theme' ); ?></button>
+			<span class="oc-of__pick oc-of__pick--bulk" data-oc-of-pick data-mode="bulk">
+				<input type="text" placeholder="<?php esc_attr_e( 'Product to offer beside them…', 'oc-theme' ); ?>" aria-label="<?php esc_attr_e( 'Product to offer beside them', 'oc-theme' ); ?>" autocomplete="off" />
+				<div class="oc-of__pickmenu" hidden></div>
+			</span>
+			<select name="kind" aria-label="<?php esc_attr_e( 'As what', 'oc-theme' ); ?>">
+				<option value="xsell"><?php esc_html_e( 'Goes with it', 'oc-theme' ); ?></option>
+				<option value="upsell"><?php esc_html_e( 'Upgrade', 'oc-theme' ); ?></option>
+				<option value="bt"><?php esc_html_e( 'Bought together', 'oc-theme' ); ?></option>
+			</select>
+			<button class="oc-of__btn oc-of__btn--primary" name="what" value="bulk_add" data-oc-of-bulk-add disabled><?php esc_html_e( 'Add beside all of them', 'oc-theme' ); ?></button>
+			<button class="oc-of__btn" name="what" value="bulk_clear" data-oc-of-confirm><?php esc_html_e( 'Clear that list on all of them', 'oc-theme' ); ?></button>
 			<details class="oc-of__bulktiers">
 				<summary class="oc-of__btn"><?php esc_html_e( 'Set quantity tiers', 'oc-theme' ); ?></summary>
 				<div class="oc-of__bulktiers-body">
@@ -275,7 +285,8 @@ final class Products_Admin {
 				<tr>
 					<th scope="col" style="width:40px;"><input type="checkbox" data-oc-of-pick-all aria-label="<?php esc_attr_e( 'Select all', 'oc-theme' ); ?>" /></th>
 					<th scope="col"><?php esc_html_e( 'Product', 'oc-theme' ); ?></th>
-					<th scope="col"><?php echo esc_html( _x( 'Goes with it', 'offers column', 'oc-theme' ) ); ?><small><?php esc_html_e( 'cart panel and cart page', 'oc-theme' ); ?></small></th>
+					<th scope="col"><?php echo esc_html( _x( 'Goes with it', 'offers column', 'oc-theme' ) ); ?><small><?php esc_html_e( 'cart and product page', 'oc-theme' ); ?></small></th>
+					<th scope="col"><?php esc_html_e( 'Upgrades', 'oc-theme' ); ?><small><?php esc_html_e( 'product page', 'oc-theme' ); ?></small></th>
 					<th scope="col"><?php esc_html_e( 'Bought together', 'oc-theme' ); ?><small><?php esc_html_e( 'bundle on the product page', 'oc-theme' ); ?></small></th>
 					<th scope="col"><?php esc_html_e( 'Similar', 'oc-theme' ); ?><small><?php esc_html_e( 'foot of the product page', 'oc-theme' ); ?></small></th>
 					<th scope="col"><?php esc_html_e( 'Quantity tiers', 'oc-theme' ); ?><small><?php esc_html_e( 'product page', 'oc-theme' ); ?></small></th>
@@ -286,7 +297,7 @@ final class Products_Admin {
 			<tbody>
 			<?php
 			if ( ! $ids ) {
-				echo '<tr><td colspan="8" class="oc-of__muted">' . esc_html__( 'No products match.', 'oc-theme' ) . '</td></tr>';
+				echo '<tr><td colspan="9" class="oc-of__muted">' . esc_html__( 'No products match.', 'oc-theme' ) . '</td></tr>';
 			}
 
 			foreach ( $ids as $id ) {
@@ -317,34 +328,59 @@ final class Products_Admin {
 			</nav>
 		<?php endif; ?>
 
-		<p class="oc-of__muted" style="margin-top:12px;"><?php esc_html_e( 'A product picked by hand wins over a rule, and a rule over the automatic offers. Remove the hand-picked products and the product falls back to its rule.', 'oc-theme' ); ?></p>
+		<p class="oc-of__muted" style="margin-top:12px;"><?php esc_html_e( 'A list picked by hand wins over a rule, and a rule over the automatic offers. Empty the list and the product falls back to its rule. Every change here is saved at once.', 'oc-theme' ); ?></p>
 		<?php
 	}
 
 	/**
-	 * One product row, and its open panel when asked.
+	 * One cell: what answers for a place, in a tag and a word.
+	 *
+	 * @param \WC_Product $product The product.
+	 * @param string      $place   cart | upsell | similar.
+	 * @param int[]       $own     The hand-written list for the place.
+	 * @return string Escaped markup.
+	 */
+	public static function cell( \WC_Product $product, string $place, array $own ): string {
+		$source = self::source_of( $product, $place );
+
+		if ( $own ) {
+			/* translators: %d: number of products. */
+			return '<span class="oc-of__tag oc-of__tag--manual">' . esc_html__( 'Picked by hand', 'oc-theme' ) . '</span>' . esc_html( sprintf( _n( '%d product', '%d products', count( $own ), 'oc-theme' ), count( $own ) ) );
+		}
+
+		if ( 'rule' === $source['src'] ) {
+			return '<span class="oc-of__tag oc-of__tag--rule">' . esc_html__( 'Rule', 'oc-theme' ) . '</span>' . esc_html( $source['label'] );
+		}
+
+		if ( 'auto' === $source['src'] ) {
+			return '<span class="oc-of__tag oc-of__tag--auto">' . esc_html__( 'Automatic', 'oc-theme' ) . '</span>';
+		}
+
+		return '<span class="oc-of__none">' . esc_html__( 'None', 'oc-theme' ) . '</span>';
+	}
+
+	/**
+	 * One product row, with its panel folded beneath it.
 	 *
 	 * @param \WC_Product         $product The product.
 	 * @param array<string,mixed> $t       Its totals.
-	 * @param bool                $open    Whether the panel is open.
+	 * @param bool                $open    Whether the panel starts open.
 	 */
 	private static function row( \WC_Product $product, array $t, bool $open ): void {
 		$id     = $product->get_id();
 		$tiers  = Tiers::for_product( $id );
-		$xsell  = array_map( 'intval', $product->get_cross_sell_ids() );
-		$bt     = Bought_Together::ids( $id );
-		$source = self::source_of( $product );
+		$xsell  = self::own( $product, 'xsell' );
+		$upsell = self::own( $product, 'upsell' );
+		$bt     = self::own( $product, 'bt' );
 		$cats   = wp_get_post_terms( $id, 'product_cat', array( 'fields' => 'names' ) );
 		$img    = $product->get_image_id() ? wp_get_attachment_image_url( (int) $product->get_image_id(), 'woocommerce_gallery_thumbnail' ) : '';
 		$added  = (int) ( $t['added'] ?? 0 );
 		$rev    = (float) ( $t['revenue'] ?? 0 );
 
 		/* translators: %d: number of products. */
-		$xsell_count = sprintf( _n( '%d product', '%d products', count( $xsell ), 'oc-theme' ), count( $xsell ) );
-		/* translators: %d: number of products. */
 		$bt_count = sprintf( _n( '%d product', '%d products', count( $bt ), 'oc-theme' ), count( $bt ) );
 		?>
-		<tr id="oc-of-row-<?php echo absint( $id ); ?>" class="<?php echo $open ? 'is-open' : ''; ?>">
+		<tr id="oc-of-row-<?php echo absint( $id ); ?>" class="oc-of__prow<?php echo $open ? ' is-open' : ''; ?>" data-oc-of-row="<?php echo absint( $id ); ?>">
 			<td><input type="checkbox" value="<?php echo absint( $id ); ?>" data-oc-of-pick-row aria-label="<?php echo esc_attr( sprintf( /* translators: %s: product name. */ __( 'Select %s', 'oc-theme' ), $product->get_name() ) ); ?>" /></td>
 			<td>
 				<div class="oc-of__prod">
@@ -359,27 +395,16 @@ final class Products_Admin {
 					</div>
 				</div>
 			</td>
-			<td class="oc-of__cell">
-				<?php if ( $xsell ) : ?>
-					<span class="oc-of__tag oc-of__tag--manual"><?php esc_html_e( 'Picked by hand', 'oc-theme' ); ?></span>
-					<?php echo esc_html( $xsell_count ); ?>
-				<?php elseif ( 'rule' === $source['src'] ) : ?>
-					<span class="oc-of__tag oc-of__tag--rule"><?php esc_html_e( 'Rule', 'oc-theme' ); ?></span><?php echo esc_html( $source['label'] ); ?>
-				<?php elseif ( 'auto' === $source['src'] ) : ?>
-					<span class="oc-of__tag oc-of__tag--auto"><?php esc_html_e( 'Automatic', 'oc-theme' ); ?></span>
-				<?php else : ?>
-					<span class="oc-of__none"><?php esc_html_e( 'None', 'oc-theme' ); ?></span>
-				<?php endif; ?>
-			</td>
-			<td class="oc-of__cell">
+			<td class="oc-of__cell" data-oc-of-cell="xsell"><?php echo self::cell( $product, 'cart', $xsell ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built escaped. ?></td>
+			<td class="oc-of__cell" data-oc-of-cell="upsell"><?php echo self::cell( $product, 'upsell', $upsell ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built escaped. ?></td>
+			<td class="oc-of__cell" data-oc-of-cell="bt">
 				<?php if ( $bt ) : ?>
-					<span class="oc-of__tag oc-of__tag--manual"><?php esc_html_e( 'Picked by hand', 'oc-theme' ); ?></span>
-					<?php echo esc_html( $bt_count ); ?>
+					<span class="oc-of__tag oc-of__tag--manual"><?php esc_html_e( 'Picked by hand', 'oc-theme' ); ?></span><?php echo esc_html( $bt_count ); ?>
 				<?php else : ?>
 					<span class="oc-of__none"><?php esc_html_e( 'None', 'oc-theme' ); ?></span>
 				<?php endif; ?>
 			</td>
-			<td class="oc-of__cell"><span class="oc-of__tag oc-of__tag--auto"><?php esc_html_e( 'Automatic', 'oc-theme' ); ?></span></td>
+			<td class="oc-of__cell"><?php echo self::cell( $product, 'similar', array() ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built escaped. ?></td>
 			<td class="oc-of__cell">
 				<?php if ( $tiers ) : ?>
 					<span class="oc-of__tag <?php echo 'manual' === $tiers['src'] ? 'oc-of__tag--manual' : 'oc-of__tag--rule'; ?>"><?php echo 'manual' === $tiers['src'] ? esc_html__( 'Picked by hand', 'oc-theme' ) : esc_html__( 'Rule', 'oc-theme' ); ?></span><?php echo esc_html( implode( ', ', array_map( 'strval', array_column( $tiers['tiers'], 'qty' ) ) ) ); ?>
@@ -395,115 +420,30 @@ final class Products_Admin {
 				<?php endif; ?>
 			</td>
 			<td>
-				<a class="oc-of__openbtn" href="<?php echo esc_url( $open ? self::url() . '#oc-of-row-' . $id : self::url( array( 'open' => $id ) ) . '#oc-of-row-' . $id ); ?>" aria-expanded="<?php echo $open ? 'true' : 'false'; ?>" aria-label="<?php echo esc_attr( sprintf( /* translators: %s: product name. */ __( 'Open %s', 'oc-theme' ), $product->get_name() ) ); ?>"><?php echo $open ? '&#9650;' : '&#9660;'; ?></a>
+				<button type="button" class="oc-of__openbtn" data-oc-of-open="<?php echo absint( $id ); ?>" aria-expanded="<?php echo $open ? 'true' : 'false'; ?>" aria-controls="oc-of-panel-<?php echo absint( $id ); ?>" aria-label="<?php echo esc_attr( sprintf( /* translators: %s: product name. */ __( 'Open %s', 'oc-theme' ), $product->get_name() ) ); ?>"><span aria-hidden="true">&#9660;</span></button>
 			</td>
 		</tr>
-		<?php
-		if ( $open ) {
-			self::detail( $product, $xsell, $bt, $source, $tiers );
-		}
-	}
-
-	/**
-	 * The open panel: the four kinds of offer, each editable in place.
-	 *
-	 * @param \WC_Product                    $product The product.
-	 * @param int[]                          $xsell   Cross-sell ids.
-	 * @param int[]                          $bt      Bought-together ids.
-	 * @param array{src:string,label:string} $source  Who answers in the cart.
-	 * @param array<string,mixed>|null       $tiers   The product's tiers, if any.
-	 */
-	private static function detail( \WC_Product $product, array $xsell, array $bt, array $source, ?array $tiers ): void {
-		$id = $product->get_id();
-
-		$bundle_note = sprintf(
-			/* translators: %s: link to the product's edit screen. */
-			esc_html__( 'The bundle\'s discount and title are set on %s.', 'oc-theme' ),
-			'<a href="' . esc_url( (string) get_edit_post_link( $id ) ) . '">' . esc_html__( 'the product itself', 'oc-theme' ) . '</a>'
-		);
-
-		$now = array();
-
-		if ( ! $xsell ) {
-			foreach ( array_slice( Offers::for_product( $id, 'cart' ), 0, 3 ) as $offer ) {
-				if ( Offers::addable( $offer['id'] ) ) {
-					$now[] = get_the_title( $offer['id'] );
-				}
-			}
-		}
-		?>
-		<tr class="is-open"><td colspan="8" class="oc-of__detail">
+		<tr id="oc-of-panel-<?php echo absint( $id ); ?>" class="oc-of__detailrow" <?php echo $open ? '' : 'hidden'; ?>><td colspan="9" class="oc-of__detail">
 			<div class="oc-of__detailgrid">
-
-				<div class="oc-of__box is-lead">
-					<div class="oc-of__boxh"><strong><?php esc_html_e( 'Goes with it, in the cart panel and on the cart page', 'oc-theme' ); ?></strong></div>
-					<?php if ( $xsell ) : ?>
-						<div class="oc-of__chips">
-							<?php foreach ( $xsell as $pid ) : ?>
-								<?php if ( get_post( $pid ) ) : ?>
-									<?php echo self::chip( 'xsell', $id, (int) $pid ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built escaped. ?>
-								<?php endif; ?>
-							<?php endforeach; ?>
-						</div>
-					<?php else : ?>
-						<span class="oc-of__muted">
-							<?php
-							if ( 'rule' === $source['src'] ) {
-								/* translators: %s: rule name. */
-								echo esc_html( sprintf( __( 'Nothing picked by hand. Today the rule "%s" answers', 'oc-theme' ), $source['label'] ) );
-							} elseif ( 'auto' === $source['src'] ) {
-								esc_html_e( 'Nothing picked by hand. Today the automatic offers answer', 'oc-theme' );
-							} else {
-								esc_html_e( 'Nothing picked by hand, and no rule or automatic offer answers.', 'oc-theme' );
-							}
-
-							if ( $now ) {
-								echo ': ' . esc_html( implode( ', ', $now ) );
-							}
-							?>
-						</span>
-					<?php endif; ?>
-					<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="oc-of__addrow">
-						<input type="hidden" name="action" value="oc_offers_link" />
-						<input type="hidden" name="what" value="add" />
-						<input type="hidden" name="kind" value="xsell" />
-						<input type="hidden" name="product" value="<?php echo absint( $id ); ?>" />
-						<input type="hidden" name="back" value="<?php echo esc_attr( self::url( array( 'open' => $id ) ) . '#oc-of-row-' . $id ); ?>" />
-						<?php wp_nonce_field( 'oc_offers_link' ); ?>
-						<select class="wc-product-search" name="target" data-placeholder="<?php esc_attr_e( 'Add a product to offer…', 'oc-theme' ); ?>" data-action="woocommerce_json_search_products" data-exclude="<?php echo absint( $id ); ?>"></select>
-						<button class="oc-of__btn oc-of__btn--primary"><?php esc_html_e( 'Add', 'oc-theme' ); ?></button>
-					</form>
-				</div>
-
-				<div class="oc-of__box">
-					<div class="oc-of__boxh"><strong><?php esc_html_e( 'Bought together, a bundle on the product page', 'oc-theme' ); ?></strong></div>
-					<?php if ( $bt ) : ?>
-						<div class="oc-of__chips">
-							<?php foreach ( $bt as $pid ) : ?>
-								<?php if ( get_post( $pid ) ) : ?>
-									<?php echo self::chip( 'bt', $id, (int) $pid ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built escaped. ?>
-								<?php endif; ?>
-							<?php endforeach; ?>
-						</div>
-					<?php else : ?>
-						<span class="oc-of__muted"><?php esc_html_e( 'No bundle on this product.', 'oc-theme' ); ?></span>
-					<?php endif; ?>
-					<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="oc-of__addrow">
-						<input type="hidden" name="action" value="oc_offers_link" />
-						<input type="hidden" name="what" value="add" />
-						<input type="hidden" name="kind" value="bt" />
-						<input type="hidden" name="product" value="<?php echo absint( $id ); ?>" />
-						<input type="hidden" name="back" value="<?php echo esc_attr( self::url( array( 'open' => $id ) ) . '#oc-of-row-' . $id ); ?>" />
-						<?php wp_nonce_field( 'oc_offers_link' ); ?>
-						<select class="wc-product-search" name="target" data-placeholder="<?php esc_attr_e( 'Add a product to the bundle…', 'oc-theme' ); ?>" data-action="woocommerce_json_search_products" data-exclude="<?php echo absint( $id ); ?>"></select>
-						<button class="oc-of__btn"><?php esc_html_e( 'Add', 'oc-theme' ); ?></button>
-					</form>
-					<span class="oc-of__muted"><?php echo $bundle_note; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built escaped. ?></span>
-				</div>
+				<?php
+				self::listbox( $product, 'xsell', $xsell, __( 'Goes with it: the offer in the cart, and "goes well with" on the product page', 'oc-theme' ), self::source_of( $product, 'cart' ), true );
+				self::listbox( $product, 'upsell', $upsell, __( 'Upgrades: the better version, on the product page', 'oc-theme' ), self::source_of( $product, 'upsell' ), false );
+				self::listbox( $product, 'bt', $bt, __( 'Bought together: a bundle on the product page', 'oc-theme' ), array( 'src' => '', 'label' => '' ), false );
+				?>
 
 				<div class="oc-of__box">
 					<div class="oc-of__boxh"><strong><?php esc_html_e( 'Similar, at the foot of the product page', 'oc-theme' ); ?></strong></div>
-					<span class="oc-of__muted"><?php esc_html_e( 'Automatic: products from the same category, the closest first. Set shop-wide in Customize → Product page.', 'oc-theme' ); ?></span>
+					<?php $sim = self::source_of( $product, 'similar' ); ?>
+					<span class="oc-of__muted">
+						<?php
+						if ( 'rule' === $sim['src'] ) {
+							/* translators: %s: rule name. */
+							echo esc_html( sprintf( __( 'From the rule "%s".', 'oc-theme' ), $sim['label'] ) );
+						} else {
+							esc_html_e( 'Automatic: products from the same category, the closest first. A rule can choose them instead.', 'oc-theme' );
+						}
+						?>
+					</span>
 				</div>
 
 				<div class="oc-of__box">
@@ -522,38 +462,175 @@ final class Products_Admin {
 					<?php endif; ?>
 					<a href="<?php echo esc_url( (string) get_edit_post_link( $id ) ); ?>" class="oc-of__btn"><?php esc_html_e( 'Set tiers on the product', 'oc-theme' ); ?></a>
 				</div>
-
 			</div>
 		</td></tr>
 		<?php
 	}
 
 	/**
-	 * One product in a list, with its remove control.
+	 * One list's box: chips, and an open field that saves as you pick.
 	 *
-	 * @param string $kind xsell | bt.
-	 * @param int    $id   The product whose list it is.
-	 * @param int    $pid  The listed product.
-	 * @return string Escaped markup.
+	 * @param \WC_Product                    $product The product.
+	 * @param string                         $kind    xsell | upsell | bt.
+	 * @param int[]                          $ids     The list.
+	 * @param string                         $title   Box title.
+	 * @param array{src:string,label:string} $source  Who answers when the list is empty.
+	 * @param bool                           $lead    Whether this is the lead box.
 	 */
-	private static function chip( string $kind, int $id, int $pid ): string {
-		$href = self::act_url(
-			'remove',
-			$kind,
-			array(
-				'product' => $id,
-				'target'  => $pid,
-			)
-		);
-
-		/* translators: %s: product name. */
-		$label = sprintf( __( 'Remove %s', 'oc-theme' ), get_the_title( $pid ) );
-
-		return '<span class="oc-of__chip oc-of__chip--x">' . esc_html( get_the_title( $pid ) ) . ' <a href="' . esc_url( $href ) . '" aria-label="' . esc_attr( $label ) . '">&times;</a></span>';
+	private static function listbox( \WC_Product $product, string $kind, array $ids, string $title, array $source, bool $lead ): void {
+		$id = $product->get_id();
+		?>
+		<div class="oc-of__box<?php echo $lead ? ' is-lead' : ''; ?>" data-oc-of-list="<?php echo esc_attr( $kind ); ?>" data-product="<?php echo absint( $id ); ?>">
+			<div class="oc-of__boxh"><strong><?php echo esc_html( $title ); ?></strong><span class="oc-of__saved" data-oc-of-saved aria-live="polite"></span></div>
+			<div class="oc-of__chips" data-oc-of-chips>
+				<?php foreach ( $ids as $pid ) : ?>
+					<?php echo self::chip( $pid ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built escaped. ?>
+				<?php endforeach; ?>
+			</div>
+			<span class="oc-of__muted" data-oc-of-fallback <?php echo $ids ? 'hidden' : ''; ?>>
+				<?php
+				if ( 'rule' === $source['src'] ) {
+					/* translators: %s: rule name. */
+					echo esc_html( sprintf( __( 'Nothing picked by hand. Today the rule "%s" answers.', 'oc-theme' ), $source['label'] ) );
+				} elseif ( 'auto' === $source['src'] ) {
+					esc_html_e( 'Nothing picked by hand. Today the automatic offers answer.', 'oc-theme' );
+				} elseif ( 'bt' === $kind ) {
+					esc_html_e( 'No bundle on this product.', 'oc-theme' );
+				} else {
+					esc_html_e( 'Nothing picked by hand, and no rule answers.', 'oc-theme' );
+				}
+				?>
+			</span>
+			<span class="oc-of__pick" data-oc-of-pick data-mode="list">
+				<input type="text" placeholder="<?php esc_attr_e( 'Type a product name to add it…', 'oc-theme' ); ?>" aria-label="<?php echo esc_attr( sprintf( /* translators: %s: list name. */ __( 'Add a product: %s', 'oc-theme' ), $title ) ); ?>" autocomplete="off" />
+				<div class="oc-of__pickmenu" hidden></div>
+			</span>
+			<?php if ( 'bt' === $kind ) : ?>
+				<span class="oc-of__muted"><?php
+				printf(
+					/* translators: %s: link to the product's edit screen. */
+					esc_html__( 'The bundle\'s discount and title are set on %s.', 'oc-theme' ),
+					'<a href="' . esc_url( (string) get_edit_post_link( $id ) ) . '">' . esc_html__( 'the product itself', 'oc-theme' ) . '</a>'
+				);
+				?></span>
+			<?php endif; ?>
+		</div>
+		<?php
 	}
 
 	/**
-	 * Add to or remove from a product's lists, one or many at a time.
+	 * One product in a list: picture, name, remove.
+	 *
+	 * @param int $pid The listed product.
+	 * @return string Escaped markup.
+	 */
+	public static function chip( int $pid ): string {
+		$product = wc_get_product( $pid );
+
+		if ( ! $product instanceof \WC_Product ) {
+			return '';
+		}
+
+		$img = $product->get_image_id() ? (string) wp_get_attachment_image_url( (int) $product->get_image_id(), 'woocommerce_gallery_thumbnail' ) : '';
+
+		/* translators: %s: product name. */
+		$label = sprintf( __( 'Remove %s', 'oc-theme' ), $product->get_name() );
+
+		return '<span class="oc-of__chip oc-of__chip--x" data-oc-of-chip="' . absint( $pid ) . '">'
+			. ( '' !== $img ? '<img src="' . esc_url( $img ) . '" alt="" />' : '' )
+			. esc_html( $product->get_name() )
+			. ' <button type="button" data-oc-of-unlink="' . absint( $pid ) . '" aria-label="' . esc_attr( $label ) . '">&times;</button></span>';
+	}
+
+	/**
+	 * Change one product's list.
+	 *
+	 * @param int        $product_id Product id.
+	 * @param string     $kind       xsell | upsell | bt.
+	 * @param int[]      $add        Ids to add.
+	 * @param int[]|null $remove     Ids to remove; null empties the list.
+	 * @return int[] The list after the change.
+	 */
+	public static function change( int $product_id, string $kind, array $add, ?array $remove ): array {
+		$product = wc_get_product( $product_id );
+
+		if ( ! $product instanceof \WC_Product || ! in_array( $kind, self::KINDS, true ) ) {
+			return array();
+		}
+
+		$current = self::own( $product, $kind );
+		$list    = null === $remove ? array() : array_values( array_diff( $current, $remove ) );
+
+		foreach ( $add as $id ) {
+			$id = (int) $id;
+
+			if ( $id !== $product_id && 'product' === get_post_type( $id ) && ! in_array( $id, $list, true ) ) {
+				$list[] = $id;
+			}
+		}
+
+		if ( 'bt' === $kind ) {
+			update_post_meta( $product_id, '_oc_bt_ids', $list );
+		} elseif ( 'upsell' === $kind ) {
+			$product->set_upsell_ids( $list );
+			$product->save();
+		} else {
+			$product->set_cross_sell_ids( $list );
+			$product->save();
+		}
+
+		return $list;
+	}
+
+	/**
+	 * The open field's save: add or remove one product, answer with the
+	 * chip and the row's cell.
+	 */
+	public function ajax_link(): void {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			wp_send_json_error();
+		}
+
+		check_ajax_referer( 'oc_offers_link' );
+
+		$what    = isset( $_POST['what'] ) ? sanitize_key( (string) wp_unslash( $_POST['what'] ) ) : '';
+		$kind    = isset( $_POST['kind'] ) ? sanitize_key( (string) wp_unslash( $_POST['kind'] ) ) : '';
+		$product = isset( $_POST['product'] ) ? absint( $_POST['product'] ) : 0;
+		$target  = isset( $_POST['target'] ) ? absint( $_POST['target'] ) : 0;
+
+		if ( ! $product || ! $target || ! in_array( $kind, self::KINDS, true ) || ! in_array( $what, array( 'add', 'remove' ), true ) ) {
+			wp_send_json_error( array( 'message' => __( 'Nothing to change.', 'oc-theme' ) ) );
+		}
+
+		$list = 'add' === $what ? self::change( $product, $kind, array( $target ), array() ) : self::change( $product, $kind, array(), array( $target ) );
+		$obj  = wc_get_product( $product );
+
+		Offers::forget();
+
+		$cell = '';
+
+		if ( $obj instanceof \WC_Product ) {
+			if ( 'bt' === $kind ) {
+				$cell = $list
+					/* translators: %d: number of products. */
+					? '<span class="oc-of__tag oc-of__tag--manual">' . esc_html__( 'Picked by hand', 'oc-theme' ) . '</span>' . esc_html( sprintf( _n( '%d product', '%d products', count( $list ), 'oc-theme' ), count( $list ) ) )
+					: '<span class="oc-of__none">' . esc_html__( 'None', 'oc-theme' ) . '</span>';
+			} else {
+				$cell = self::cell( $obj, 'upsell' === $kind ? 'upsell' : 'cart', $list );
+			}
+		}
+
+		wp_send_json_success(
+			array(
+				'chip'  => 'add' === $what && in_array( $target, $list, true ) ? self::chip( $target ) : '',
+				'count' => count( $list ),
+				'cell'  => $cell,
+			)
+		);
+	}
+
+	/**
+	 * The bulk form: add to, clear, or give tiers to many products.
 	 */
 	public function link(): void {
 		if ( ! current_user_can( 'manage_woocommerce' ) ) {
@@ -562,25 +639,22 @@ final class Products_Admin {
 
 		check_admin_referer( 'oc_offers_link' );
 
-		// phpcs:disable WordPress.Security.NonceVerification.Recommended, WordPress.Security.NonceVerification.Missing -- verified just above; GET for the links, POST for the forms.
-		$what    = isset( $_REQUEST['what'] ) ? sanitize_key( (string) wp_unslash( $_REQUEST['what'] ) ) : '';
-		$kind    = isset( $_REQUEST['kind'] ) && 'bt' === sanitize_key( (string) wp_unslash( $_REQUEST['kind'] ) ) ? 'bt' : 'xsell';
-		$product = isset( $_REQUEST['product'] ) ? absint( $_REQUEST['product'] ) : 0;
-		$target  = isset( $_REQUEST['target'] ) ? absint( $_REQUEST['target'] ) : 0;
-		$raw_ids = isset( $_REQUEST['ids'] ) ? sanitize_text_field( (string) wp_unslash( $_REQUEST['ids'] ) ) : '';
+		// phpcs:disable WordPress.Security.NonceVerification.Missing -- verified just above.
+		$what    = isset( $_POST['what'] ) ? sanitize_key( (string) wp_unslash( $_POST['what'] ) ) : '';
+		$kind    = isset( $_POST['kind'] ) ? sanitize_key( (string) wp_unslash( $_POST['kind'] ) ) : 'xsell';
+		$target  = isset( $_POST['target'] ) ? absint( $_POST['target'] ) : 0;
+		$raw_ids = isset( $_POST['ids'] ) ? sanitize_text_field( (string) wp_unslash( $_POST['ids'] ) ) : '';
 		$ids     = array_filter( array_map( 'absint', explode( ',', $raw_ids ) ) );
-		$back    = isset( $_REQUEST['back'] ) ? esc_url_raw( wp_unslash( $_REQUEST['back'] ) ) : '';
-		// phpcs:enable WordPress.Security.NonceVerification.Recommended, WordPress.Security.NonceVerification.Missing
+		$back    = isset( $_POST['back'] ) ? esc_url_raw( wp_unslash( $_POST['back'] ) ) : '';
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
 
-		if ( 'add' === $what && $product && $target && $target !== $product ) {
-			self::change( $product, $kind, array( $target ), array() );
-		} elseif ( 'remove' === $what && $product && $target ) {
-			self::change( $product, $kind, array(), array( $target ) );
-		} elseif ( 'bulk_add' === $what && $target ) {
+		if ( ! in_array( $kind, self::KINDS, true ) ) {
+			$kind = 'xsell';
+		}
+
+		if ( 'bulk_add' === $what && $target ) {
 			foreach ( $ids as $id ) {
-				if ( $id !== $target ) {
-					self::change( $id, $kind, array( $target ), array() );
-				}
+				self::change( $id, $kind, array( $target ), array() );
 			}
 		} elseif ( 'bulk_clear' === $what ) {
 			foreach ( $ids as $id ) {
@@ -606,37 +680,5 @@ final class Products_Admin {
 
 		wp_safe_redirect( '' !== $back && false !== strpos( $back, 'page=' . Admin::PAGE ) ? $back : self::url() );
 		exit;
-	}
-
-	/**
-	 * Change one product's list.
-	 *
-	 * @param int        $product_id Product id.
-	 * @param string     $kind       xsell | bt.
-	 * @param int[]      $add        Ids to add.
-	 * @param int[]|null $remove     Ids to remove; null empties the list.
-	 */
-	private static function change( int $product_id, string $kind, array $add, ?array $remove ): void {
-		$product = wc_get_product( $product_id );
-
-		if ( ! $product instanceof \WC_Product ) {
-			return;
-		}
-
-		$current = 'bt' === $kind ? Bought_Together::ids( $product_id ) : array_map( 'intval', $product->get_cross_sell_ids() );
-		$list    = null === $remove ? array() : array_values( array_diff( $current, $remove ) );
-
-		foreach ( $add as $id ) {
-			if ( get_post( $id ) && ! in_array( $id, $list, true ) ) {
-				$list[] = $id;
-			}
-		}
-
-		if ( 'bt' === $kind ) {
-			update_post_meta( $product_id, '_oc_bt_ids', $list );
-		} else {
-			$product->set_cross_sell_ids( $list );
-			$product->save();
-		}
 	}
 }

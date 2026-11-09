@@ -84,7 +84,11 @@ final class Admin {
 			'ocOffersAdmin',
 			array(
 				'nonce'  => wp_create_nonce( 'oc_offers_search' ),
+				'link'   => wp_create_nonce( 'oc_offers_link' ),
 				'delete' => __( 'Delete this rule?', 'oc-theme' ),
+				'saved'  => __( 'Saved', 'oc-theme' ),
+				'none'   => __( 'No product found', 'oc-theme' ),
+				'remove' => __( 'Remove', 'oc-theme' ),
 			)
 		);
 	}
@@ -377,7 +381,11 @@ final class Admin {
 						<span class="oc-of__tag oc-of__tag--rule"><?php esc_html_e( 'Quantity tiers', 'oc-theme' ); ?></span>
 						<span class="oc-of__tag oc-of__tag--line"><?php esc_html_e( 'Product page and cart', 'oc-theme' ); ?></span>
 					<?php else : ?>
-						<span class="oc-of__tag oc-of__tag--line"><?php esc_html_e( 'Cart panel and cart page', 'oc-theme' ); ?></span>
+						<?php foreach ( self::places() as $key => $label ) : ?>
+							<?php if ( in_array( $key, $rule['where'], true ) ) : ?>
+								<span class="oc-of__tag oc-of__tag--line"><?php echo esc_html( $label ); ?></span>
+							<?php endif; ?>
+						<?php endforeach; ?>
 						<?php if ( $rule['pct'] > 0 ) : ?>
 							<span class="oc-of__tag oc-of__tag--good"><?php echo esc_html( $pct_text ); ?></span>
 						<?php endif; ?>
@@ -459,6 +467,20 @@ final class Admin {
 		}
 
 		return $html;
+	}
+
+	/**
+	 * The places an offer rule can show, with their names.
+	 *
+	 * @return array<string,string>
+	 */
+	public static function places(): array {
+		return array(
+			'cart'    => __( 'Cart panel and cart page', 'oc-theme' ),
+			'xsell'   => __( 'Product page: goes with it', 'oc-theme' ),
+			'upsell'  => __( 'Product page: upgrades', 'oc-theme' ),
+			'similar' => __( 'Product page: similar', 'oc-theme' ),
+		);
 	}
 
 	/**
@@ -623,10 +645,14 @@ final class Admin {
 				</div>
 
 				<div class="oc-of__line">
-					<span class="oc-of__lab"><?php esc_html_e( 'Where it shows', 'oc-theme' ); ?></span>
-					<div class="oc-of__places">
-						<span class="oc-of__place is-on"><?php esc_html_e( 'Cart panel', 'oc-theme' ); ?></span>
-						<span class="oc-of__place is-on"><?php esc_html_e( 'Cart page', 'oc-theme' ); ?></span>
+					<span class="oc-of__lab" id="oc-of-where"><?php esc_html_e( 'Where it shows', 'oc-theme' ); ?></span>
+					<div>
+						<div class="oc-of__places" role="group" aria-labelledby="oc-of-where">
+							<?php foreach ( self::places() as $key => $label ) : ?>
+								<label class="oc-of__place<?php echo in_array( $key, $rule['where'], true ) ? ' is-on' : ''; ?>"><input type="checkbox" name="where[]" value="<?php echo esc_attr( $key ); ?>" <?php checked( in_array( $key, $rule['where'], true ) ); ?> data-oc-of-place /> <?php echo esc_html( $label ); ?></label>
+							<?php endforeach; ?>
+						</div>
+						<span class="oc-of__muted"><?php esc_html_e( 'On the product page a rule fills a list the product left empty; a product with its own list keeps it.', 'oc-theme' ); ?></span>
 					</div>
 				</div>
 
@@ -911,7 +937,7 @@ final class Admin {
 				),
 				'same_brand' => empty( $_POST['same_brand'] ) ? 0 : 1,
 				'exclude'    => isset( $_POST['exclude'] ) ? array_map( 'absint', (array) wp_unslash( $_POST['exclude'] ) ) : array(),
-				'where'      => array( 'cart' ),
+				'where'      => isset( $_POST['where'] ) ? array_map( 'sanitize_key', (array) wp_unslash( $_POST['where'] ) ) : array(),
 				'pct'        => isset( $_POST['pct'] ) ? (int) $_POST['pct'] : 0,
 				'order'      => isset( $_POST['order'] ) ? sanitize_key( (string) wp_unslash( $_POST['order'] ) ) : 'best',
 			)
@@ -982,7 +1008,7 @@ final class Admin {
 					'when'  => array( 'products' => array( $a ) ),
 					'offer' => array( 'products' => array( $b ) ),
 					'pct'   => $s['pct'],
-					'where' => array( 'cart' ),
+					'where' => array( 'cart', 'xsell' ),
 				)
 			);
 			Suggest::dismiss( $a, $b );
@@ -1078,9 +1104,16 @@ final class Admin {
 				$id = (int) $id;
 
 				if ( $id > 0 && 'product' === get_post_type( $id ) ) {
+					$product = wc_get_product( $id );
+					$thumb   = $product instanceof \WC_Product && $product->get_image_id() ? (string) wp_get_attachment_image_url( (int) $product->get_image_id(), 'woocommerce_gallery_thumbnail' ) : '';
+
 					$out[] = array(
-						'id'   => 'p:' . $id,
-						'text' => self::label( 'p', $id ),
+						'id'    => 'p:' . $id,
+						'pid'   => $id,
+						'text'  => self::label( 'p', $id ),
+						'name'  => get_the_title( $id ),
+						'img'   => $thumb,
+						'price' => $product instanceof \WC_Product ? html_entity_decode( wp_strip_all_tags( $product->get_price_html() ), ENT_QUOTES, 'UTF-8' ) : '',
 					);
 				}
 			}

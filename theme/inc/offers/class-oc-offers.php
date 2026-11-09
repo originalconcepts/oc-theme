@@ -89,6 +89,13 @@ final class Offers {
 		}
 
 		add_action( 'woocommerce_cart_calculate_fees', array( $this, 'apply_discount' ), 20 );
+
+		// The product page's own lists: a product that names nothing takes
+		// what its rule says. Read with the 'edit' context anywhere the raw
+		// list is wanted, or these filters answer back.
+		add_filter( 'woocommerce_product_get_cross_sell_ids', array( $this, 'page_cross_sells' ), 10, 2 );
+		add_filter( 'woocommerce_product_get_upsell_ids', array( $this, 'page_upsells' ), 10, 2 );
+		add_filter( 'woocommerce_related_products', array( $this, 'page_similar' ), 30, 3 );
 		add_action( 'woocommerce_checkout_create_order_line_item', array( $this, 'order_item' ), 10, 3 );
 		add_filter( 'woocommerce_hidden_order_itemmeta', array( $this, 'hide_meta' ) );
 		add_action( 'woocommerce_order_status_processing', array( $this, 'count_order' ) );
@@ -167,6 +174,15 @@ final class Offers {
 		self::$memo     = array();
 	}
 
+	/**
+	 * Forget what was worked out in this request — after a product's lists
+	 * changed under it.
+	 */
+	public static function forget(): void {
+		self::$memo = array();
+		Tiers::forget();
+	}
+
 	/* ------------------------------------------------------------ layers */
 
 	/**
@@ -215,11 +231,20 @@ final class Offers {
 			return array();
 		}
 
-		// 1. By hand.
-		$ids = Rules::offerable( array_map( 'intval', $product->get_cross_sell_ids() ), $product_id, $in_cart );
+		// 1. By hand: the product's own list for the place. Similar products
+		// have no hand-written list; the page works them out.
+		if ( 'upsell' === $place ) {
+			$own = $product->get_upsell_ids( 'edit' );
+		} elseif ( 'similar' === $place ) {
+			$own = array();
+		} else {
+			$own = $product->get_cross_sell_ids( 'edit' );
+		}
+
+		$ids = Rules::offerable( array_map( 'intval', (array) $own ), $product_id, $in_cart );
 
 		if ( $ids ) {
-			return self::tagged( $ids, 'manual', $s['pct'] );
+			return self::tagged( $ids, 'manual', 'cart' === $place ? $s['pct'] : 0 );
 		}
 
 		// 2. A rule.
@@ -235,8 +260,10 @@ final class Offers {
 			}
 		}
 
-		// 3. By itself.
-		if ( $s['auto'] ) {
+		// 3. By itself — in the cart only. The product page's similar row
+		// is WooCommerce's own, and its other rows stay empty rather than
+		// guessed.
+		if ( $s['auto'] && 'cart' === $place ) {
 			$ids = array_merge( self::bought_with( $product_id ), Product_Linked::rank_similar( $product_id, 8 ) );
 			$ids = Rules::offerable( array_map( 'intval', $ids ), $product_id, $in_cart );
 
@@ -420,6 +447,111 @@ final class Offers {
 		set_transient( $key, $ids, DAY_IN_SECONDS );
 
 		return $ids;
+	}
+
+	/* ------------------------------------------------------ product page */
+
+	/**
+	 * Whether a product-page list may be answered by a rule right now:
+	 * offers on, a shop page (not the admin, not a REST or cron run), and
+	 * not already inside this very lookup.
+	 */
+	private static function page_answers(): bool {
+		if ( ! self::on() || is_admin() || wp_doing_cron() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ) {
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * A rule's products for a place on the product page, as ids.
+	 *
+	 * @param int    $product_id The product.
+	 * @param string $place      xsell | upsell | similar.
+	 * @return int[]
+	 */
+	private static function page_list( int $product_id, string $place ): array {
+		static $inside = false;
+
+		if ( $inside ) {
+			return array();
+		}
+
+		$inside = true;
+
+		$s     = self::settings();
+		$facts = self::facts( $product_id );
+		$uid   = Rules::pick( $s['rules'], $facts, $place );
+		$ids   = array();
+
+		if ( null !== $uid ) {
+			$rule = $s['rules'][ $uid ];
+			$ids  = array_slice( Rules::offerable( self::rule_products( $rule, $facts ), $product_id, array(), $rule['exclude'] ), 0, (int) $rule['count'] );
+		}
+
+		$inside = false;
+
+		return $ids;
+	}
+
+	/**
+	 * Cross-sells: the product's own list, or its rule's.
+	 *
+	 * @param mixed       $ids     What the product holds.
+	 * @param \WC_Product $product The product.
+	 * @return mixed
+	 */
+	public function page_cross_sells( $ids, $product ) {
+		if ( ! empty( $ids ) || ! $product instanceof \WC_Product || ! self::page_answers() ) {
+			return $ids;
+		}
+
+		$found = self::page_list( $product->get_id(), 'xsell' );
+
+		return $found ? $found : $ids;
+	}
+
+	/**
+	 * Upsells: the product's own list, or its rule's.
+	 *
+	 * @param mixed       $ids     What the product holds.
+	 * @param \WC_Product $product The product.
+	 * @return mixed
+	 */
+	public function page_upsells( $ids, $product ) {
+		if ( ! empty( $ids ) || ! $product instanceof \WC_Product || ! self::page_answers() ) {
+			return $ids;
+		}
+
+		$found = self::page_list( $product->get_id(), 'upsell' );
+
+		return $found ? $found : $ids;
+	}
+
+	/**
+	 * Similar products: a rule's pick replaces WooCommerce's when one
+	 * covers the product.
+	 *
+	 * @param mixed               $related    WooCommerce's (or the theme's) pick.
+	 * @param int                 $product_id The product.
+	 * @param array<string,mixed> $args       limit, excluded_ids.
+	 * @return mixed
+	 */
+	public function page_similar( $related, $product_id, $args ) {
+		if ( ! self::page_answers() ) {
+			return $related;
+		}
+
+		$found = self::page_list( (int) $product_id, 'similar' );
+
+		if ( ! $found ) {
+			return $related;
+		}
+
+		$limit = max( 1, (int) ( ( (array) $args )['limit'] ?? 4 ) );
+
+		return array_slice( $found, 0, $limit );
 	}
 
 	/* -------------------------------------------------------------- cart */

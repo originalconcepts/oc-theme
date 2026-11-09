@@ -15687,3 +15687,66 @@ msgid "%1$d paid order took more than one unit from %2$s; these are the quantiti
 msgid_plural "%1$d paid orders took more than one unit from %2$s; these are the quantities they took."
 msgstr[0] "הזמנה משולמת אחת לקחה יותר מיחידה אחת מ%2$s; אלה הכמויות שנלקחו."
 msgstr[1] "%1$d הזמנות משולמות לקחו יותר מיחידה אחת מ%2$s; אלה הכמויות שנלקחו."
+
+msgid "Product page: goes with it"
+msgstr "דף מוצר: משלימים (נלווים)"
+
+msgid "Product page: upgrades"
+msgstr "דף מוצר: משודרגים"
+
+msgid "Product page: similar"
+msgstr "דף מוצר: דומים"
+
+msgid "On the product page a rule fills a list the product left empty; a product with its own list keeps it."
+msgstr "בדף המוצר כלל ממלא רשימה שהמוצר השאיר ריקה; מוצר עם רשימה משלו שומר עליה."
+
+msgid "No product found"
+msgstr "לא נמצא מוצר"
+
+msgid "As what"
+msgstr "בתור מה"
+
+msgid "Upgrade"
+msgstr "משודרג"
+
+msgid "Add beside all of them"
+msgstr "הוסף לצד כולם"
+
+msgid "Clear that list on all of them"
+msgstr "רוקן את הרשימה הזו אצל כולם"
+
+msgid "cart and product page"
+msgstr "סל ודף מוצר"
+
+msgid "A list picked by hand wins over a rule, and a rule over the automatic offers. Empty the list and the product falls back to its rule. Every change here is saved at once."
+msgstr "רשימה ידנית גוברת על כלל, וכלל גובר על האוטומטי. מרוקנים את הרשימה והמוצר חוזר לכלל שלו. כל שינוי כאן נשמר מיד."
+
+msgid "Goes with it: the offer in the cart, and \"goes well with\" on the product page"
+msgstr "משלימים: ההצעה בסל, ו\"הולך טוב עם\" בדף המוצר"
+
+msgid "Upgrades: the better version, on the product page"
+msgstr "משודרגים: הגרסה המשופרת, בדף המוצר"
+
+msgid "Bought together: a bundle on the product page"
+msgstr "נקנים יחד: חבילה בדף המוצר"
+
+msgid "From the rule \"%s\"."
+msgstr "מהכלל \"%s\"."
+
+msgid "Automatic: products from the same category, the closest first. A rule can choose them instead."
+msgstr "אוטומטי: מוצרים מאותה קטגוריה, הקרובים ביותר קודם. כלל יכול לבחור אותם במקום."
+
+msgid "Nothing picked by hand. Today the rule \"%s\" answers."
+msgstr "אין בחירה ידנית. היום עונה הכלל \"%s\"."
+
+msgid "Nothing picked by hand, and no rule answers."
+msgstr "אין בחירה ידנית, ואין כלל שעונה."
+
+msgid "Type a product name to add it…"
+msgstr "הקלידו שם מוצר כדי להוסיף…"
+
+msgid "Add a product: %s"
+msgstr "הוספת מוצר: %s"
+
+msgid "Nothing to change."
+msgstr "אין מה לשנות."
