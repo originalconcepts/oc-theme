@@ -14,7 +14,7 @@ declare( strict_types = 1 );
 
 namespace OC\Theme;
 
-defined( 'ABSPATH' ) || exit;
+defined( 'ABSPATH' ) || defined( 'OC_TESTS' ) || exit;
 
 /**
  * Redirects: engine and data.
