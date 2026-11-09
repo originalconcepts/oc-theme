@@ -146,6 +146,7 @@ final class Products_Admin {
 			'post_status'    => 'publish',
 			'posts_per_page' => self::PER_PAGE,
 			'paged'          => $paged,
+			'fields'         => 'ids',
 			'orderby'        => 'title',
 			'order'          => 'ASC',
 			's'              => $search,
