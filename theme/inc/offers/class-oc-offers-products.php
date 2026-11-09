@@ -78,7 +78,7 @@ final class Products_Admin {
 						'action' => 'oc_offers_link',
 						'what'   => $what,
 						'kind'   => $kind,
-						'back'   => rawurlencode( self::url() ),
+						'back'   => self::url(),
 					),
 					$more
 				),
@@ -399,6 +399,12 @@ final class Products_Admin {
 	private static function detail( \WC_Product $product, array $xsell, array $bt, array $source ): void {
 		$id = $product->get_id();
 
+		$bundle_note = sprintf(
+			/* translators: %s: link to the product's edit screen. */
+			esc_html__( 'The bundle\'s discount and title are set on %s.', 'oc-theme' ),
+			'<a href="' . esc_url( (string) get_edit_post_link( $id ) ) . '">' . esc_html__( 'the product itself', 'oc-theme' ) . '</a>'
+		);
+
 		$now = array();
 
 		if ( ! $xsell ) {
@@ -418,14 +424,7 @@ final class Products_Admin {
 						<div class="oc-of__chips">
 							<?php foreach ( $xsell as $pid ) : ?>
 								<?php if ( get_post( $pid ) ) : ?>
-									<span class="oc-of__chip oc-of__chip--x"><?php echo esc_html( get_the_title( $pid ) ); ?> <a href="<?php echo esc_url( self::act_url(
-										'remove',
-										'xsell',
-										array(
-											'product' => $id,
-											'target'  => $pid,
-										)
-									) ); ?>" aria-label="<?php echo esc_attr( sprintf( /* translators: %s: product name. */ __( 'Remove %s', 'oc-theme' ), get_the_title( $pid ) ) ); ?>">&times;</a></span>
+									<?php echo self::chip( 'xsell', $id, (int) $pid ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built escaped. ?>
 								<?php endif; ?>
 							<?php endforeach; ?>
 						</div>
@@ -465,14 +464,7 @@ final class Products_Admin {
 						<div class="oc-of__chips">
 							<?php foreach ( $bt as $pid ) : ?>
 								<?php if ( get_post( $pid ) ) : ?>
-									<span class="oc-of__chip oc-of__chip--x"><?php echo esc_html( get_the_title( $pid ) ); ?> <a href="<?php echo esc_url( self::act_url(
-										'remove',
-										'bt',
-										array(
-											'product' => $id,
-											'target'  => $pid,
-										)
-									) ); ?>" aria-label="<?php echo esc_attr( sprintf( /* translators: %s: product name. */ __( 'Remove %s', 'oc-theme' ), get_the_title( $pid ) ) ); ?>">&times;</a></span>
+									<?php echo self::chip( 'bt', $id, (int) $pid ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built escaped. ?>
 								<?php endif; ?>
 							<?php endforeach; ?>
 						</div>
@@ -489,13 +481,7 @@ final class Products_Admin {
 						<select class="wc-product-search" name="target" data-placeholder="<?php esc_attr_e( 'Add a product to the bundle…', 'oc-theme' ); ?>" data-action="woocommerce_json_search_products" data-exclude="<?php echo absint( $id ); ?>"></select>
 						<button class="oc-of__btn"><?php esc_html_e( 'Add', 'oc-theme' ); ?></button>
 					</form>
-					<span class="oc-of__muted"><?php
-					printf(
-						/* translators: %s: link to the product's edit screen. */
-						esc_html__( 'The bundle\'s discount and title are set on %s.', 'oc-theme' ),
-						'<a href="' . esc_url( (string) get_edit_post_link( $id ) ) . '">' . esc_html__( 'the product itself', 'oc-theme' ) . '</a>'
-					);
-					?></span>
+					<span class="oc-of__muted"><?php echo $bundle_note; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built escaped. ?></span>
 				</div>
 
 				<div class="oc-of__box">
@@ -511,6 +497,30 @@ final class Products_Admin {
 			</div>
 		</td></tr>
 		<?php
+	}
+
+	/**
+	 * One product in a list, with its remove control.
+	 *
+	 * @param string $kind xsell | bt.
+	 * @param int    $id   The product whose list it is.
+	 * @param int    $pid  The listed product.
+	 * @return string Escaped markup.
+	 */
+	private static function chip( string $kind, int $id, int $pid ): string {
+		$href = self::act_url(
+			'remove',
+			$kind,
+			array(
+				'product' => $id,
+				'target'  => $pid,
+			)
+		);
+
+		/* translators: %s: product name. */
+		$label = sprintf( __( 'Remove %s', 'oc-theme' ), get_the_title( $pid ) );
+
+		return '<span class="oc-of__chip oc-of__chip--x">' . esc_html( get_the_title( $pid ) ) . ' <a href="' . esc_url( $href ) . '" aria-label="' . esc_attr( $label ) . '">&times;</a></span>';
 	}
 
 	/**
@@ -530,7 +540,7 @@ final class Products_Admin {
 		$target  = isset( $_REQUEST['target'] ) ? absint( $_REQUEST['target'] ) : 0;
 		$raw_ids = isset( $_REQUEST['ids'] ) ? sanitize_text_field( (string) wp_unslash( $_REQUEST['ids'] ) ) : '';
 		$ids     = array_filter( array_map( 'absint', explode( ',', $raw_ids ) ) );
-		$back    = isset( $_REQUEST['back'] ) ? esc_url_raw( rawurldecode( (string) wp_unslash( $_REQUEST['back'] ) ) ) : '';
+		$back    = isset( $_REQUEST['back'] ) ? esc_url_raw( wp_unslash( $_REQUEST['back'] ) ) : '';
 		// phpcs:enable WordPress.Security.NonceVerification.Recommended, WordPress.Security.NonceVerification.Missing
 
 		if ( 'add' === $what && $product && $target && $target !== $product ) {
