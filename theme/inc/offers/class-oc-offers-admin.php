@@ -1,13 +1,13 @@
 <?php
 /**
- * Offers: the screen under Theme settings.
+ * Offers: the screen under Theme settings — the rules.
  *
- * Two views in one page. The list: the master switches, the shop's rules
- * in the order they are asked (the first that fits a product answers),
- * what each brought in over the last thirty days, and a box that says what
- * a shopper would be offered beside any product. The editor: one rule in
- * three lines — when the shopper has THIS, offer THAT, and the few options
- * most rules never touch folded away below.
+ * Drawn to the approved sketch rather than to the admin's stock tables:
+ * two switches up top, the rules as cards in the order they are asked
+ * (the first that fits a product answers), each with what it did in the
+ * last thirty days, the editor opening in place as one of the cards, and
+ * beside them the rules the shop's own orders suggest. A second tab, "by
+ * product", lives in Products_Admin.
  *
  * @package OC_Theme
  */
@@ -62,7 +62,8 @@ final class Admin {
 	}
 
 	/**
-	 * The search fields need WooCommerce's select kit.
+	 * The screen's own look, plus WooCommerce's select kit for the typed
+	 * fields.
 	 *
 	 * @param string $hook Screen hook.
 	 */
@@ -71,8 +72,21 @@ final class Admin {
 			return;
 		}
 
+		$dir = get_template_directory_uri() . '/assets';
+		$ver = defined( 'OC_THEME_VERSION' ) ? OC_THEME_VERSION : '1';
+
 		wp_enqueue_script( 'wc-enhanced-select' );
 		wp_enqueue_style( 'woocommerce_admin_styles' );
+		wp_enqueue_style( 'oc-offers-admin', $dir . '/css/offers-admin.css', array(), $ver );
+		wp_enqueue_script( 'oc-offers-admin', $dir . '/js/offers-admin.js', array( 'jquery', 'wc-enhanced-select' ), $ver, true );
+		wp_localize_script(
+			'oc-offers-admin',
+			'ocOffersAdmin',
+			array(
+				'nonce'  => wp_create_nonce( 'oc_offers_search' ),
+				'delete' => __( 'Delete this rule?', 'oc-theme' ),
+			)
+		);
 	}
 
 	/**
@@ -85,18 +99,22 @@ final class Admin {
 	}
 
 	/**
-	 * A link that does one thing to one rule.
+	 * A link that does one thing: to a rule, to a switch, to a suggestion.
 	 *
-	 * @param string $what Action: toggle, up, down, delete.
-	 * @param string $uid  Rule name.
+	 * @param string               $what Action name.
+	 * @param string               $uid  Rule name, or '' for the shop-wide switches.
+	 * @param array<string,scalar> $more Extra arguments.
 	 */
-	private static function act_url( string $what, string $uid ): string {
+	public static function act_url( string $what, string $uid = '', array $more = array() ): string {
 		return wp_nonce_url(
 			add_query_arg(
-				array(
-					'action' => 'oc_offers_act',
-					'what'   => $what,
-					'rule'   => $uid,
+				array_merge(
+					array(
+						'action' => 'oc_offers_act',
+						'what'   => $what,
+						'rule'   => $uid,
+					),
+					$more
 				),
 				admin_url( 'admin-post.php' )
 			),
@@ -104,10 +122,50 @@ final class Admin {
 		);
 	}
 
+	/**
+	 * A switch drawn as one: a link that flips the thing it names.
+	 *
+	 * @param bool   $on    Current state.
+	 * @param string $href  Where flipping goes.
+	 * @param string $label Accessible name.
+	 * @return string Escaped markup.
+	 */
+	public static function switch_html( bool $on, string $href, string $label ): string {
+		return '<a class="oc-of__switch" role="switch" aria-checked="' . ( $on ? 'true' : 'false' ) . '" aria-label="' . esc_attr( $label ) . '" href="' . esc_url( $href ) . '"><span class="oc-of__knob"></span></a>';
+	}
+
+	/**
+	 * The tabs at the top of both screens.
+	 *
+	 * @param string $current rules | products.
+	 * @return string Escaped markup.
+	 */
+	public static function tabs_html( string $current ): string {
+		$html  = '<nav class="oc-of__tabs" aria-label="' . esc_attr__( 'Offer screens', 'oc-theme' ) . '">';
+		$html .= '<a href="' . esc_url( self::url() ) . '"' . ( 'rules' === $current ? ' aria-current="page"' : '' ) . '>' . esc_html__( 'Rules', 'oc-theme' ) . '</a>';
+		$html .= '<a href="' . esc_url( self::url( array( 'tab' => 'products' ) ) ) . '"' . ( 'products' === $current ? ' aria-current="page"' : '' ) . '>' . esc_html__( 'By product', 'oc-theme' ) . '</a>';
+		$html .= '</nav>';
+
+		return $html;
+	}
+
+	/**
+	 * The page header both tabs share.
+	 *
+	 * @param string $current rules | products.
+	 */
+	public static function head( string $current ): void {
+		echo '<header class="oc-of__head">';
+		echo '<div><h1>' . esc_html( _x( 'Offers', 'settings screen', 'oc-theme' ) ) . '</h1>';
+		echo '<p>' . esc_html__( 'What to offer a shopper beside what they already chose, and where. One rule covers a whole category.', 'oc-theme' ) . '</p></div>';
+		echo self::tabs_html( $current ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built escaped.
+		echo '</header>';
+	}
+
 	/* -------------------------------------------------------------- views */
 
 	/**
-	 * The screen: the editor when a rule is named, the list otherwise.
+	 * The screen.
 	 */
 	public function screen(): void {
 		if ( ! current_user_can( 'manage_woocommerce' ) ) {
@@ -115,52 +173,46 @@ final class Admin {
 		}
 
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- reading which view to draw.
+		$tab  = isset( $_GET['tab'] ) ? sanitize_key( (string) wp_unslash( $_GET['tab'] ) ) : '';
 		$rule = isset( $_GET['rule'] ) ? sanitize_key( (string) wp_unslash( $_GET['rule'] ) ) : '';
-
-		if ( isset( $_GET['oc_saved'] ) ) {
-			echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Settings saved.', 'oc-theme' ) . '</p></div>';
-		}
+		$done = isset( $_GET['oc_done'] ) ? sanitize_key( (string) wp_unslash( $_GET['oc_done'] ) ) : '';
 		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
-		echo '<div class="wrap oc-offers">';
-		echo '<style>
-			.oc-offers .oc-of-card{background:#fff;border:1px solid #dcdcde;border-radius:8px;padding:16px 20px;margin-block:16px;max-inline-size:1100px}
-			.oc-offers .oc-of-card h2{margin-block-start:0}
-			.oc-offers .oc-of-line{display:grid;grid-template-columns:170px minmax(0,1fr);gap:8px 16px;align-items:start;margin-block:14px}
-			.oc-offers .oc-of-line>label,.oc-offers .oc-of-line>span.oc-of-lab{font-weight:600;padding-block-start:6px}
-			.oc-offers .oc-of-line .select2-container{inline-size:100%!important;max-inline-size:640px}
-			.oc-offers .oc-of-chip{display:inline-block;background:#f0f0f1;border-radius:999px;padding:1px 10px;margin:2px 0 2px 4px}
-			.oc-offers .oc-of-off td{color:#787c82}
-			.oc-offers .oc-of-off .oc-of-chip{background:#f6f7f7}
-			.oc-offers .oc-of-num{white-space:nowrap}
-			.oc-offers details.oc-of-more{margin-block:16px;border-block-start:1px solid #dcdcde;padding-block-start:12px}
-			.oc-offers details.oc-of-more>summary{cursor:pointer;font-weight:600}
-			.oc-offers details.oc-of-more>summary span{font-weight:400;color:#646970;margin-inline-start:8px}
-			.oc-offers .oc-of-foot{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-block-start:18px}
-			.oc-offers .oc-of-del{color:#b32d2e;margin-inline-start:auto}
-			@media (max-width:782px){.oc-offers .oc-of-line{grid-template-columns:1fr}}
-		</style>';
+		echo '<div class="wrap oc-of" dir="' . ( is_rtl() ? 'rtl' : 'ltr' ) . '">';
 
-		if ( '' !== $rule ) {
-			$this->editor( $rule );
+		if ( '' !== $done ) {
+			$notes = array(
+				'saved'    => __( 'Saved.', 'oc-theme' ),
+				'rule'     => __( 'The rule was saved.', 'oc-theme' ),
+				'deleted'  => __( 'The rule was deleted.', 'oc-theme' ),
+				'accepted' => __( 'The rule was added from the suggestion. Open it to adjust the discount or the wording.', 'oc-theme' ),
+			);
+
+			if ( isset( $notes[ $done ] ) ) {
+				echo '<div class="oc-of__notice" role="status">' . esc_html( $notes[ $done ] ) . '</div>';
+			}
+		}
+
+		if ( 'products' === $tab ) {
+			Products_Admin::render();
 		} else {
-			$this->overview();
+			$this->rules_view( $rule );
 		}
 
 		echo '</div>';
 	}
 
 	/**
-	 * The list view.
+	 * The rules tab.
+	 *
+	 * @param string $open Rule being edited, "new", or ''.
 	 */
-	private function overview(): void {
+	private function rules_view( string $open ): void {
 		$s      = Offers::settings();
 		$totals = Stats::totals( 30 );
 
-		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- a filter and a read-only lookup.
-		$show  = isset( $_GET['show'] ) ? sanitize_key( (string) wp_unslash( $_GET['show'] ) ) : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- a read-only lookup.
 		$check = isset( $_GET['check'] ) ? absint( $_GET['check'] ) : 0;
-		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 		$active = 0;
 
@@ -169,146 +221,179 @@ final class Admin {
 		}
 
 		$all = count( $s['rules'] );
+
+		self::head( 'rules' );
 		?>
-		<h1 class="wp-heading-inline"><?php echo esc_html( _x( 'Offers', 'settings screen', 'oc-theme' ) ); ?></h1>
-		<a href="<?php echo esc_url( self::url( array( 'rule' => 'new' ) ) ); ?>" class="page-title-action"><?php esc_html_e( 'Add a rule', 'oc-theme' ); ?></a>
-		<hr class="wp-header-end" />
-		<p class="description"><?php esc_html_e( 'What to offer a shopper beside what they already chose. One rule covers a whole category, so nothing has to be set product by product.', 'oc-theme' ); ?></p>
 
-		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="oc-of-card">
-			<input type="hidden" name="action" value="oc_offers_save" />
-			<?php wp_nonce_field( 'oc_offers_save' ); ?>
+		<section class="oc-of__card oc-of__top">
+			<div class="oc-of__toprow">
+				<?php echo self::switch_html( (bool) $s['on'], self::act_url( 'master' ), __( 'Offers in the shop', 'oc-theme' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+				<div class="oc-of__topt">
+					<strong><?php echo $s['on'] ? esc_html__( 'Offers are live in the shop', 'oc-theme' ) : esc_html__( 'Offers are switched off', 'oc-theme' ); ?></strong>
+					<span><?php esc_html_e( 'One offer in the cart panel and on the cart page, chosen by what is in the cart.', 'oc-theme' ); ?></span>
+				</div>
+			</div>
+			<div class="oc-of__toprow">
+				<?php echo self::switch_html( (bool) $s['auto'], self::act_url( 'auto' ), __( 'Automatic offers', 'oc-theme' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+				<div class="oc-of__topt">
+					<strong><?php esc_html_e( 'Automatic offers', 'oc-theme' ); ?></strong>
+					<span><?php esc_html_e( 'A product with no rule and nothing picked by hand still gets an offer: first what was really bought together with it, then the products most like it.', 'oc-theme' ); ?></span>
+				</div>
+				<span class="oc-of__pill"><?php esc_html_e( 'Who answers first: picked by hand, then a rule, then automatic', 'oc-theme' ); ?></span>
+			</div>
+			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="oc-of__toprow oc-of__pctform">
+				<input type="hidden" name="action" value="oc_offers_save" />
+				<?php wp_nonce_field( 'oc_offers_save' ); ?>
+				<label for="oc-of-gpct"><?php esc_html_e( 'Discount on automatic and hand-picked offers', 'oc-theme' ); ?></label>
+				<span class="oc-of__num"><input type="number" id="oc-of-gpct" name="pct" value="<?php echo esc_attr( (string) $s['pct'] ); ?>" min="0" max="<?php echo esc_attr( (string) Rules::MAX_PERCENT ); ?>" /><span>%</span></span>
+				<button class="oc-of__btn oc-of__btn--quiet"><?php esc_html_e( 'Save', 'oc-theme' ); ?></button>
+				<span class="oc-of__muted"><?php esc_html_e( '0 = no discount. A rule sets its own.', 'oc-theme' ); ?></span>
+			</form>
+		</section>
 
-			<p><label><input type="checkbox" name="on" value="1" <?php checked( 1, $s['on'] ); ?> /> <strong><?php esc_html_e( 'Show offers in the shop', 'oc-theme' ); ?></strong></label><br />
-			<span class="description"><?php esc_html_e( 'One offer in the cart panel and on the cart page, chosen by what is in the cart.', 'oc-theme' ); ?></span></p>
+		<div class="oc-of__cols">
+			<section class="oc-of__rules">
+				<div class="oc-of__rulehead">
+					<div class="oc-of__rulehead-l">
+						<h2><?php esc_html_e( 'Your rules', 'oc-theme' ); ?></h2>
+						<div class="oc-of__seg" role="group" aria-label="<?php esc_attr_e( 'Filter the rules', 'oc-theme' ); ?>">
+							<button type="button" aria-pressed="true" data-oc-of-filter="all"><?php esc_html_e( 'All', 'oc-theme' ); ?> <b><?php echo absint( $all ); ?></b></button>
+							<button type="button" aria-pressed="false" data-oc-of-filter="on"><?php echo esc_html( _x( 'Active', 'rules filter', 'oc-theme' ) ); ?> <b><?php echo absint( $active ); ?></b></button>
+							<button type="button" aria-pressed="false" data-oc-of-filter="off"><?php echo esc_html( _x( 'Inactive', 'rules filter', 'oc-theme' ) ); ?> <b><?php echo absint( $all - $active ); ?></b></button>
+						</div>
+					</div>
+					<a class="oc-of__btn oc-of__btn--primary" href="<?php echo esc_url( self::url( array( 'rule' => 'new' ) ) ); ?>#oc-of-editor"><span aria-hidden="true">+</span> <?php esc_html_e( 'New rule', 'oc-theme' ); ?></a>
+				</div>
 
-			<p><label><input type="checkbox" name="auto" value="1" <?php checked( 1, $s['auto'] ); ?> /> <strong><?php esc_html_e( 'Automatic offers', 'oc-theme' ); ?></strong></label><br />
-			<span class="description"><?php esc_html_e( 'A product with no rule and nothing picked by hand still gets an offer: first what was really bought together with it, then the products most like it.', 'oc-theme' ); ?></span></p>
-
-			<p><label><?php esc_html_e( 'Discount on automatic and hand-picked offers', 'oc-theme' ); ?>
-			<input type="number" name="pct" value="<?php echo esc_attr( (string) $s['pct'] ); ?>" min="0" max="<?php echo esc_attr( (string) Rules::MAX_PERCENT ); ?>" style="width:70px;" /> %</label><br />
-			<span class="description"><?php esc_html_e( '0 = no discount. A rule sets its own discount.', 'oc-theme' ); ?></span></p>
-
-			<p class="description"><?php esc_html_e( 'Who answers first: a product picked by hand on the product (its "goes with" list), then a rule, then the automatic offers.', 'oc-theme' ); ?></p>
-
-			<p style="margin-block-end:0;"><button class="button button-primary"><?php esc_html_e( 'Save settings', 'oc-theme' ); ?></button></p>
-		</form>
-
-		<h2><?php esc_html_e( 'Rules', 'oc-theme' ); ?></h2>
-		<ul class="subsubsub" style="float:none;margin-block-end:8px;">
-			<li><a href="<?php echo esc_url( self::url() ); ?>" <?php echo '' === $show ? 'class="current" aria-current="page"' : ''; ?>><?php esc_html_e( 'All', 'oc-theme' ); ?> <span class="count">(<?php echo absint( $all ); ?>)</span></a> |</li>
-			<li><a href="<?php echo esc_url( self::url( array( 'show' => 'on' ) ) ); ?>" <?php echo 'on' === $show ? 'class="current" aria-current="page"' : ''; ?>><?php echo esc_html( _x( 'Active', 'rules filter', 'oc-theme' ) ); ?> <span class="count">(<?php echo absint( $active ); ?>)</span></a> |</li>
-			<li><a href="<?php echo esc_url( self::url( array( 'show' => 'off' ) ) ); ?>" <?php echo 'off' === $show ? 'class="current" aria-current="page"' : ''; ?>><?php echo esc_html( _x( 'Inactive', 'rules filter', 'oc-theme' ) ); ?> <span class="count">(<?php echo absint( $all - $active ); ?>)</span></a></li>
-		</ul>
-
-		<table class="wp-list-table widefat striped" style="max-inline-size:1100px;">
-			<thead>
-				<tr>
-					<th scope="col"><?php esc_html_e( 'Rule', 'oc-theme' ); ?></th>
-					<th scope="col" class="oc-of-num"><?php esc_html_e( 'Discount', 'oc-theme' ); ?></th>
-					<th scope="col" class="oc-of-num"><?php echo esc_html( _x( 'Seen', 'offers column', 'oc-theme' ) ); ?></th>
-					<th scope="col" class="oc-of-num"><?php echo esc_html( _x( 'Added', 'offers column', 'oc-theme' ) ); ?></th>
-					<th scope="col" class="oc-of-num"><?php echo esc_html( _x( 'Sold', 'offers column', 'oc-theme' ) ); ?></th>
-					<th scope="col"><?php esc_html_e( 'Status', 'oc-theme' ); ?></th>
-				</tr>
-			</thead>
-			<tbody>
-			<?php
-			$shown = 0;
-			$place = 0;
-			$last  = $all - 1;
-
-			foreach ( $s['rules'] as $uid => $rule ) {
-				$at = $place++;
-
-				if ( ( 'on' === $show && ! $rule['on'] ) || ( 'off' === $show && $rule['on'] ) ) {
-					continue;
+				<?php
+				if ( 'new' === $open ) {
+					$this->editor( 'new', Rules::clean( array( 'on' => 1 ) ), $totals );
 				}
 
-				++$shown;
+				$place = 0;
+				$last  = $all - 1;
 
-				$t = $totals[ 'r:' . $uid ] ?? array();
+				foreach ( $s['rules'] as $uid => $rule ) {
+					$at = $place++;
+
+					if ( $uid === $open ) {
+						$this->editor( $uid, $rule, $totals );
+						continue;
+					}
+
+					$this->rule_card( $uid, $rule, $totals[ 'r:' . $uid ] ?? array(), 0 !== $at, $at < $last );
+				}
+
+				if ( ! $all && 'new' !== $open ) {
+					echo '<div class="oc-of__empty"><strong>' . esc_html__( 'No rules yet.', 'oc-theme' ) . '</strong> ' . esc_html__( 'Until there is one, the automatic offers answer for every product. Start with one of the suggestions beside, or write a rule of your own.', 'oc-theme' ) . '</div>';
+				}
 				?>
-				<tr class="<?php echo $rule['on'] ? '' : 'oc-of-off'; ?>">
-					<td>
-						<strong><a href="<?php echo esc_url( self::url( array( 'rule' => $uid ) ) ); ?>"><?php echo esc_html( '' !== $rule['name'] ? $rule['name'] : __( '(no name)', 'oc-theme' ) ); ?></a></strong>
-						<div><?php echo self::sentence( $rule ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built escaped. ?></div>
-						<div class="row-actions" style="position:static;">
-							<span><a href="<?php echo esc_url( self::url( array( 'rule' => $uid ) ) ); ?>"><?php esc_html_e( 'Edit', 'oc-theme' ); ?></a> | </span>
-							<?php if ( 0 !== $at ) : ?>
-								<span><a href="<?php echo esc_url( self::act_url( 'up', $uid ) ); ?>"><?php esc_html_e( 'Move up', 'oc-theme' ); ?></a> | </span>
-							<?php endif; ?>
-							<?php if ( $at < $last ) : ?>
-								<span><a href="<?php echo esc_url( self::act_url( 'down', $uid ) ); ?>"><?php esc_html_e( 'Move down', 'oc-theme' ); ?></a> | </span>
-							<?php endif; ?>
-							<span class="delete"><a href="<?php echo esc_url( self::act_url( 'delete', $uid ) ); ?>" onclick="return confirm( this.dataset.ask );" data-ask="<?php esc_attr_e( 'Delete this rule?', 'oc-theme' ); ?>"><?php esc_html_e( 'Delete', 'oc-theme' ); ?></a></span>
-						</div>
-					</td>
-					<td class="oc-of-num"><?php echo $rule['pct'] > 0 ? esc_html( $rule['pct'] . '%' ) : '&ndash;'; ?></td>
-					<?php self::stat_cells( $t ); ?>
-					<td>
-						<?php echo $rule['on'] ? esc_html( _x( 'Active', 'rule status', 'oc-theme' ) ) : esc_html( _x( 'Inactive', 'rule status', 'oc-theme' ) ); ?><br />
-						<a href="<?php echo esc_url( self::act_url( 'toggle', $uid ) ); ?>"><?php echo $rule['on'] ? esc_html__( 'Switch off', 'oc-theme' ) : esc_html__( 'Switch on', 'oc-theme' ); ?></a>
-					</td>
-				</tr>
+
+				<div class="oc-of__layers">
+					<div class="oc-of__layer">
+						<span class="oc-of__tag oc-of__tag--manual"><?php esc_html_e( 'Picked by hand', 'oc-theme' ); ?></span>
+						<span class="oc-of__muted"><?php esc_html_e( 'The "goes with" list on each product', 'oc-theme' ); ?></span>
+						<?php self::stats_html( $totals['manual'] ?? array() ); ?>
+					</div>
+					<div class="oc-of__layer<?php echo $s['auto'] ? '' : ' is-off'; ?>">
+						<span class="oc-of__tag oc-of__tag--auto"><?php esc_html_e( 'Automatic', 'oc-theme' ); ?></span>
+						<span class="oc-of__muted"><?php echo $s['auto'] ? esc_html__( 'Bought together, then most alike', 'oc-theme' ) : esc_html__( 'Switched off', 'oc-theme' ); ?></span>
+						<?php self::stats_html( $totals['auto'] ?? array() ); ?>
+					</div>
+				</div>
+				<p class="oc-of__muted"><?php esc_html_e( 'The numbers are for the last 30 days. Rules are asked from the top: the first one that fits a product answers for it.', 'oc-theme' ); ?></p>
+			</section>
+
+			<aside class="oc-of__side">
+				<?php $this->suggestions(); ?>
+			</aside>
+		</div>
+
+		<section class="oc-of__card" id="oc-of-check">
+			<form method="get" action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>">
+				<input type="hidden" name="page" value="<?php echo esc_attr( self::PAGE ); ?>" />
+				<h2><?php esc_html_e( 'Check a product', 'oc-theme' ); ?></h2>
+				<p class="oc-of__muted"><?php esc_html_e( 'What a shopper with this product in the cart would be offered, and who decided it.', 'oc-theme' ); ?></p>
+				<div class="oc-of__checkrow">
+					<select class="wc-product-search" name="check" style="width:360px;" data-placeholder="<?php esc_attr_e( 'Search for a product…', 'oc-theme' ); ?>" data-action="woocommerce_json_search_products" data-allow_clear="true">
+						<?php if ( $check && get_post( $check ) ) : ?>
+							<option value="<?php echo absint( $check ); ?>" selected="selected"><?php echo esc_html( get_the_title( $check ) ); ?></option>
+						<?php endif; ?>
+					</select>
+					<button class="oc-of__btn"><?php esc_html_e( 'Check', 'oc-theme' ); ?></button>
+				</div>
 				<?php
-			}
-
-			if ( ! $shown ) {
-				echo '<tr><td colspan="6">' . esc_html( $all ? __( 'No rules in this view.', 'oc-theme' ) : __( 'No rules yet. Until there is one, the automatic offers answer for every product.', 'oc-theme' ) ) . '</td></tr>';
-			}
-			?>
-			</tbody>
-			<tfoot>
-				<tr>
-					<td><strong><?php esc_html_e( 'Picked by hand on the product', 'oc-theme' ); ?></strong></td>
-					<td class="oc-of-num"><?php echo $s['pct'] > 0 ? esc_html( $s['pct'] . '%' ) : '&ndash;'; ?></td>
-					<?php self::stat_cells( $totals['manual'] ?? array() ); ?>
-					<td></td>
-				</tr>
-				<tr>
-					<td><strong><?php esc_html_e( 'Automatic offers', 'oc-theme' ); ?></strong></td>
-					<td class="oc-of-num"><?php echo $s['pct'] > 0 ? esc_html( $s['pct'] . '%' ) : '&ndash;'; ?></td>
-					<?php self::stat_cells( $totals['auto'] ?? array() ); ?>
-					<td><?php echo $s['auto'] ? esc_html( _x( 'Active', 'rule status', 'oc-theme' ) ) : esc_html( _x( 'Inactive', 'rule status', 'oc-theme' ) ); ?></td>
-				</tr>
-			</tfoot>
-		</table>
-		<p class="description"><?php esc_html_e( 'The numbers are for the last 30 days. Rules are asked from the top: the first one that fits a product answers for it.', 'oc-theme' ); ?></p>
-
-		<form method="get" action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" class="oc-of-card">
-			<input type="hidden" name="page" value="<?php echo esc_attr( self::PAGE ); ?>" />
-			<h2><?php esc_html_e( 'Check a product', 'oc-theme' ); ?></h2>
-			<p class="description"><?php esc_html_e( 'What a shopper with this product in the cart would be offered, and who decided it.', 'oc-theme' ); ?></p>
-			<p>
-				<select class="wc-product-search" name="check" style="width:360px;" data-placeholder="<?php esc_attr_e( 'Search for a product…', 'oc-theme' ); ?>" data-action="woocommerce_json_search_products" data-allow_clear="true">
-					<?php if ( $check && get_post( $check ) ) : ?>
-						<option value="<?php echo absint( $check ); ?>" selected="selected"><?php echo esc_html( get_the_title( $check ) ); ?></option>
-					<?php endif; ?>
-				</select>
-				<button class="button"><?php esc_html_e( 'Check', 'oc-theme' ); ?></button>
-			</p>
-			<?php
-			if ( $check ) {
-				self::check_result( $check );
-			}
-			?>
-		</form>
+				if ( $check ) {
+					self::check_result( $check );
+				}
+				?>
+			</form>
+		</section>
 		<?php
 	}
 
 	/**
-	 * Three number cells: seen, added, sold.
+	 * Three small numbers: seen, added, sold.
 	 *
 	 * @param array<string,mixed> $t One source's totals.
 	 */
-	private static function stat_cells( array $t ): void {
+	public static function stats_html( array $t ): void {
 		$orders  = (int) ( $t['orders'] ?? 0 );
 		$revenue = (float) ( $t['revenue'] ?? 0 );
 
-		echo '<td class="oc-of-num">' . esc_html( number_format_i18n( (int) ( $t['seen'] ?? 0 ) ) ) . '</td>';
-		echo '<td class="oc-of-num">' . esc_html( number_format_i18n( (int) ( $t['added'] ?? 0 ) ) ) . '</td>';
-		echo '<td class="oc-of-num">' . ( $orders ? wp_kses_post( wc_price( $revenue ) ) . ' <span class="description">(' . esc_html( number_format_i18n( $orders ) ) . ')</span>' : '&ndash;' ) . '</td>';
+		echo '<div class="oc-of__stats">';
+		echo '<span>' . esc_html( _x( 'Seen', 'offers column', 'oc-theme' ) ) . ' <strong>' . esc_html( number_format_i18n( (int) ( $t['seen'] ?? 0 ) ) ) . '</strong></span>';
+		echo '<span>' . esc_html( _x( 'Added', 'offers column', 'oc-theme' ) ) . ' <strong>' . esc_html( number_format_i18n( (int) ( $t['added'] ?? 0 ) ) ) . '</strong></span>';
+		echo '<span>' . esc_html__( 'Revenue', 'oc-theme' ) . ' <strong class="oc-of__good">' . ( $orders ? wp_kses_post( wc_price( $revenue ) ) : '&ndash;' ) . '</strong></span>';
+		echo '</div>';
+	}
+
+	/**
+	 * One rule, closed.
+	 *
+	 * @param string              $uid      Rule name.
+	 * @param array<string,mixed> $rule     Clean rule.
+	 * @param array<string,mixed> $t        Its totals.
+	 * @param bool                $can_up   Not the first.
+	 * @param bool                $can_down Not the last.
+	 */
+	private function rule_card( string $uid, array $rule, array $t, bool $can_up, bool $can_down ): void {
+		$edit = self::url( array( 'rule' => $uid ) ) . '#oc-of-editor';
+		?>
+		<article class="oc-of__rule<?php echo $rule['on'] ? '' : ' is-off'; ?>" data-oc-of-on="<?php echo $rule['on'] ? '1' : '0'; ?>">
+			<div class="oc-of__rulemain">
+				<div class="oc-of__rulename">
+					<a href="<?php echo esc_url( $edit ); ?>"><?php echo esc_html( '' !== $rule['name'] ? $rule['name'] : __( '(no name)', 'oc-theme' ) ); ?></a>
+					<?php if ( ! $rule['on'] ) : ?>
+						<span class="oc-of__tag"><?php echo esc_html( _x( 'Inactive', 'rule status', 'oc-theme' ) ); ?></span>
+					<?php endif; ?>
+				</div>
+				<div class="oc-of__sentence"><?php echo self::sentence( $rule ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built escaped. ?></div>
+				<div class="oc-of__tags">
+					<span class="oc-of__tag oc-of__tag--line"><?php esc_html_e( 'Cart panel and cart page', 'oc-theme' ); ?></span>
+					<?php if ( $rule['pct'] > 0 ) : ?>
+						<span class="oc-of__tag oc-of__tag--good"><?php
+						/* translators: %d: percent. */
+						echo esc_html( sprintf( __( 'Discount %d%%', 'oc-theme' ), $rule['pct'] ) );
+						?></span>
+					<?php endif; ?>
+				</div>
+			</div>
+			<?php self::stats_html( $t ); ?>
+			<div class="oc-of__ruleacts">
+				<a class="oc-of__btn" href="<?php echo esc_url( $edit ); ?>"><?php esc_html_e( 'Edit', 'oc-theme' ); ?></a>
+				<?php echo self::switch_html( (bool) $rule['on'], self::act_url( 'toggle', $uid ), sprintf( /* translators: %s: rule name. */ __( 'Rule active: %s', 'oc-theme' ), $rule['name'] ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+				<span class="oc-of__order">
+					<?php if ( $can_up ) : ?>
+						<a href="<?php echo esc_url( self::act_url( 'up', $uid ) ); ?>" aria-label="<?php esc_attr_e( 'Move up', 'oc-theme' ); ?>" title="<?php esc_attr_e( 'Move up', 'oc-theme' ); ?>">&uarr;</a>
+					<?php endif; ?>
+					<?php if ( $can_down ) : ?>
+						<a href="<?php echo esc_url( self::act_url( 'down', $uid ) ); ?>" aria-label="<?php esc_attr_e( 'Move down', 'oc-theme' ); ?>" title="<?php esc_attr_e( 'Move down', 'oc-theme' ); ?>">&darr;</a>
+					<?php endif; ?>
+				</span>
+			</div>
+		</article>
+		<?php
 	}
 
 	/**
@@ -317,7 +402,7 @@ final class Admin {
 	 * @param array<string,mixed> $rule A clean rule.
 	 * @return string Escaped markup.
 	 */
-	private static function sentence( array $rule ): string {
+	public static function sentence( array $rule ): string {
 		$when  = array_merge(
 			self::names( 'c', $rule['when']['cats'] ),
 			self::names( 'b', $rule['when']['brands'] ),
@@ -328,39 +413,39 @@ final class Admin {
 			self::names( 'p', $rule['offer']['products'] )
 		);
 
-		$html = esc_html__( 'When the shopper has', 'oc-theme' ) . ' ';
+		$html = '<span class="oc-of__muted">' . esc_html__( 'When the cart holds', 'oc-theme' ) . '</span> ';
 
 		if ( $when ) {
 			foreach ( $when as $name ) {
-				$html .= '<span class="oc-of-chip">' . esc_html( $name ) . '</span>';
+				$html .= '<span class="oc-of__chip">' . esc_html( $name ) . '</span>';
 			}
 		} else {
-			$html .= '<span class="oc-of-chip">' . esc_html__( 'any product', 'oc-theme' ) . '</span>';
+			$html .= '<span class="oc-of__chip">' . esc_html__( 'any product', 'oc-theme' ) . '</span>';
 		}
 
-		$html .= ' ' . esc_html__( 'offer', 'oc-theme' ) . ' ';
+		$html .= ' <span class="oc-of__muted">' . esc_html__( 'offer', 'oc-theme' ) . '</span> ';
 
 		foreach ( $offer as $name ) {
-			$html .= '<span class="oc-of-chip">' . esc_html( $name ) . '</span>';
+			$html .= '<span class="oc-of__chip">' . esc_html( $name ) . '</span>';
 		}
 
 		if ( $rule['same_brand'] ) {
-			$html .= '<span class="oc-of-chip">' . esc_html( $offer ? __( 'same brand only', 'oc-theme' ) : __( 'more from the same brand', 'oc-theme' ) ) . '</span>';
+			$html .= '<span class="oc-of__chip">' . esc_html( $offer ? __( 'same brand only', 'oc-theme' ) : __( 'more from the same brand', 'oc-theme' ) ) . '</span>';
 		} elseif ( ! $offer ) {
-			$html .= '<span class="oc-of-chip">' . esc_html__( 'nothing yet', 'oc-theme' ) . '</span>';
+			$html .= '<span class="oc-of__chip">' . esc_html__( 'nothing yet', 'oc-theme' ) . '</span>';
 		}
 
 		return $html;
 	}
 
 	/**
-	 * Names for a list of ids, labelled by kind.
+	 * Labels for a list of ids, by kind.
 	 *
 	 * @param string $kind c = category, b = brand, p = product.
 	 * @param int[]  $ids  Ids.
 	 * @return array<string,string> Token => label.
 	 */
-	private static function names( string $kind, array $ids ): array {
+	public static function names( string $kind, array $ids ): array {
 		$out = array();
 
 		foreach ( $ids as $id ) {
@@ -380,7 +465,7 @@ final class Admin {
 	 * @param string $kind c, b or p.
 	 * @param int    $id   Id.
 	 */
-	private static function label( string $kind, int $id ): string {
+	public static function label( string $kind, int $id ): string {
 		if ( 'p' === $kind ) {
 			$title = get_post( $id ) ? get_the_title( $id ) : '';
 
@@ -408,6 +493,191 @@ final class Admin {
 	}
 
 	/**
+	 * The editor, as a card among the rules.
+	 *
+	 * @param string              $uid    Rule name, or "new".
+	 * @param array<string,mixed> $rule   Clean rule.
+	 * @param array<string,array> $totals All totals.
+	 */
+	private function editor( string $uid, array $rule, array $totals ): void {
+		$new     = 'new' === $uid;
+		$has_tax = '' !== Search::brand_taxonomy();
+
+		$when  = array_merge(
+			self::names( 'c', $rule['when']['cats'] ),
+			self::names( 'b', $rule['when']['brands'] ),
+			self::names( 'p', $rule['when']['products'] )
+		);
+		$offer = array_merge(
+			self::names( 'c', $rule['offer']['cats'] ),
+			self::names( 'p', $rule['offer']['products'] )
+		);
+
+		$orders = array(
+			'best'  => __( 'Best sellers first', 'oc-theme' ),
+			'new'   => __( 'Newest first', 'oc-theme' ),
+			'cheap' => __( 'Cheapest first', 'oc-theme' ),
+			'dear'  => __( 'Most expensive first', 'oc-theme' ),
+		);
+
+		$more = array();
+
+		/* translators: %d: percent. */
+		$more[] = $rule['pct'] > 0 ? sprintf( __( 'Discount %d%%', 'oc-theme' ), $rule['pct'] ) : __( 'No discount', 'oc-theme' );
+		$more[] = $orders[ $rule['order'] ];
+
+		if ( $rule['exclude'] ) {
+			/* translators: %d: number of products. */
+			$more[] = sprintf( _n( '%d product left out', '%d products left out', count( $rule['exclude'] ), 'oc-theme' ), count( $rule['exclude'] ) );
+		}
+		?>
+		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="oc-of__rule oc-of__editor" id="oc-of-editor" data-oc-of-on="<?php echo $rule['on'] ? '1' : '0'; ?>">
+			<input type="hidden" name="action" value="oc_offers_rule" />
+			<input type="hidden" name="rule" value="<?php echo esc_attr( $uid ); ?>" />
+			<?php wp_nonce_field( 'oc_offers_rule' ); ?>
+
+			<div class="oc-of__edhead">
+				<label class="oc-of__edname">
+					<span class="screen-reader-text"><?php esc_html_e( 'Rule name', 'oc-theme' ); ?></span>
+					<input type="text" name="name" value="<?php echo esc_attr( $rule['name'] ); ?>" placeholder="<?php esc_attr_e( 'Name the rule, e.g. Bathroom: more from the same brand', 'oc-theme' ); ?>" />
+				</label>
+				<?php
+				if ( ! $new ) {
+					self::stats_html( $totals[ 'r:' . $uid ] ?? array() );
+				}
+				?>
+				<label class="oc-of__edon">
+					<input type="checkbox" name="on" value="1" <?php checked( 1, $rule['on'] ); ?> />
+					<span class="oc-of__fakeswitch" aria-hidden="true"><span class="oc-of__knob"></span></span>
+					<span><?php echo esc_html( _x( 'Active', 'rule status', 'oc-theme' ) ); ?></span>
+				</label>
+			</div>
+
+			<div class="oc-of__edbody">
+				<div class="oc-of__line">
+					<label for="oc-of-when"><?php esc_html_e( 'When the cart holds', 'oc-theme' ); ?></label>
+					<div>
+						<select id="oc-of-when" name="when[]" multiple="multiple" class="oc-of-pick" data-kinds="<?php echo $has_tax ? 'cbp' : 'cp'; ?>" data-placeholder="<?php echo esc_attr( $has_tax ? __( 'Type a category, a brand or a product', 'oc-theme' ) : __( 'Type a category or a product', 'oc-theme' ) ); ?>">
+							<?php foreach ( $when as $token => $label ) : ?>
+								<option value="<?php echo esc_attr( $token ); ?>" selected="selected"><?php echo esc_html( $label ); ?></option>
+							<?php endforeach; ?>
+						</select>
+						<span class="oc-of__muted"><?php esc_html_e( 'A category covers everything under it. Left empty, the rule covers every product.', 'oc-theme' ); ?></span>
+					</div>
+				</div>
+
+				<div class="oc-of__line">
+					<label for="oc-of-offer"><?php esc_html_e( 'Offer them', 'oc-theme' ); ?></label>
+					<div>
+						<select id="oc-of-offer" name="offer[]" multiple="multiple" class="oc-of-pick" data-kinds="cp" data-placeholder="<?php esc_attr_e( 'Type a category or a product', 'oc-theme' ); ?>">
+							<?php foreach ( $offer as $token => $label ) : ?>
+								<option value="<?php echo esc_attr( $token ); ?>" selected="selected"><?php echo esc_html( $label ); ?></option>
+							<?php endforeach; ?>
+						</select>
+						<?php if ( $has_tax ) : ?>
+							<label class="oc-of__check"><input type="checkbox" name="same_brand" value="1" <?php checked( 1, $rule['same_brand'] ); ?> /> <span><strong><?php esc_html_e( 'Only from the same brand', 'oc-theme' ); ?></strong> <?php esc_html_e( 'as the product the shopper has', 'oc-theme' ); ?></span></label>
+						<?php endif; ?>
+					</div>
+				</div>
+
+				<div class="oc-of__line">
+					<span class="oc-of__lab"><?php esc_html_e( 'Where it shows', 'oc-theme' ); ?></span>
+					<div class="oc-of__places">
+						<span class="oc-of__place is-on"><?php esc_html_e( 'Cart panel', 'oc-theme' ); ?></span>
+						<span class="oc-of__place is-on"><?php esc_html_e( 'Cart page', 'oc-theme' ); ?></span>
+					</div>
+				</div>
+
+				<details class="oc-of__more"<?php echo $rule['pct'] > 0 || $rule['exclude'] ? ' open' : ''; ?>>
+					<summary><?php esc_html_e( 'More options', 'oc-theme' ); ?> <span><?php echo esc_html( implode( ' · ', $more ) ); ?></span></summary>
+
+					<div class="oc-of__line">
+						<label for="oc-of-pct"><?php esc_html_e( 'Discount for adding the offer', 'oc-theme' ); ?></label>
+						<div>
+							<span class="oc-of__num"><input type="number" id="oc-of-pct" name="pct" value="<?php echo esc_attr( (string) $rule['pct'] ); ?>" min="0" max="<?php echo esc_attr( (string) Rules::MAX_PERCENT ); ?>" /><span>%</span></span>
+							<span class="oc-of__muted"><?php esc_html_e( '0 = no discount. The discount holds while the product it was offered beside stays in the cart.', 'oc-theme' ); ?></span>
+						</div>
+					</div>
+
+					<div class="oc-of__line">
+						<label for="oc-of-order"><?php esc_html_e( 'Which product first', 'oc-theme' ); ?></label>
+						<div>
+							<select id="oc-of-order" name="order">
+								<?php foreach ( $orders as $key => $label ) : ?>
+									<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $key, $rule['order'] ); ?>><?php echo esc_html( $label ); ?></option>
+								<?php endforeach; ?>
+							</select>
+							<span class="oc-of__muted"><?php esc_html_e( 'Products named one by one always come first, in the order they were typed.', 'oc-theme' ); ?></span>
+						</div>
+					</div>
+
+					<div class="oc-of__line">
+						<label for="oc-of-exclude"><?php esc_html_e( 'Never offer', 'oc-theme' ); ?></label>
+						<div>
+							<select id="oc-of-exclude" name="exclude[]" multiple="multiple" class="wc-product-search" data-placeholder="<?php esc_attr_e( 'Search for a product…', 'oc-theme' ); ?>" data-action="woocommerce_json_search_products">
+								<?php foreach ( $rule['exclude'] as $id ) : ?>
+									<?php if ( get_post( $id ) ) : ?>
+										<option value="<?php echo absint( $id ); ?>" selected="selected"><?php echo esc_html( get_the_title( $id ) ); ?></option>
+									<?php endif; ?>
+								<?php endforeach; ?>
+							</select>
+						</div>
+					</div>
+				</details>
+			</div>
+
+			<div class="oc-of__edfoot">
+				<button class="oc-of__btn oc-of__btn--primary"><?php esc_html_e( 'Save rule', 'oc-theme' ); ?></button>
+				<a class="oc-of__btn" href="<?php echo esc_url( self::url() ); ?>"><?php esc_html_e( 'Cancel', 'oc-theme' ); ?></a>
+				<a class="oc-of__btn oc-of__btn--quiet" href="#oc-of-check"><?php esc_html_e( 'Check on a product', 'oc-theme' ); ?></a>
+				<?php if ( ! $new ) : ?>
+					<a class="oc-of__del" href="<?php echo esc_url( self::act_url( 'delete', $uid ) ); ?>" data-oc-of-confirm><?php esc_html_e( 'Delete rule', 'oc-theme' ); ?></a>
+				<?php endif; ?>
+			</div>
+		</form>
+		<?php
+	}
+
+	/**
+	 * The side panel: rules the orders suggest.
+	 */
+	private function suggestions(): void {
+		$list = Suggest::listing( 4 );
+		?>
+		<div class="oc-of__card oc-of__sugg">
+			<div class="oc-of__suggh">
+				<svg aria-hidden="true" width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M10 2l1.9 5.1L17 9l-5.1 1.9L10 16l-1.9-5.1L3 9l5.1-1.9z"></path></svg>
+				<h2><?php esc_html_e( 'Rules worth adding', 'oc-theme' ); ?></h2>
+			</div>
+			<p class="oc-of__muted"><?php esc_html_e( 'Read off the shop\'s paid orders. Nothing is added without your approval.', 'oc-theme' ); ?></p>
+
+			<?php if ( ! $list ) : ?>
+				<p class="oc-of__suggempty"><?php esc_html_e( 'Nothing new right now. Suggestions appear once two products keep landing in the same order and are not yet offered beside each other.', 'oc-theme' ); ?></p>
+			<?php endif; ?>
+
+			<?php foreach ( $list as $pair ) : ?>
+				<div class="oc-of__suggitem">
+					<strong><?php
+					/* translators: 1: product bought first. 2: product to offer beside it. */
+					echo esc_html( sprintf( __( '%1$s: offer %2$s', 'oc-theme' ), get_the_title( $pair['a'] ), get_the_title( $pair['b'] ) ) );
+					?></strong>
+					<span><?php
+					/* translators: %d: number of orders. */
+					echo esc_html( sprintf( _n( 'Bought together in %d paid order, and not offered beside each other today.', 'Bought together in %d paid orders, and not offered beside each other today.', $pair['n'], 'oc-theme' ), $pair['n'] ) );
+					?></span>
+					<div class="oc-of__suggacts">
+						<a class="oc-of__btn oc-of__btn--primary" href="<?php echo esc_url( self::act_url( 'accept', '', array( 'a' => $pair['a'], 'b' => $pair['b'] ) ) ); ?>"><?php esc_html_e( 'Approve', 'oc-theme' ); ?></a>
+						<a class="oc-of__btn" href="<?php echo esc_url( self::act_url( 'skip', '', array( 'a' => $pair['a'], 'b' => $pair['b'] ) ) ); ?>"><?php esc_html_e( 'Skip', 'oc-theme' ); ?></a>
+					</div>
+				</div>
+			<?php endforeach; ?>
+
+			<a class="oc-of__btn oc-of__btn--dashed" href="<?php echo esc_url( self::act_url( 'rescan' ) ); ?>"><?php esc_html_e( 'Look for more suggestions', 'oc-theme' ); ?></a>
+		</div>
+		<?php
+	}
+
+	/**
 	 * What a shopper would be offered beside one product.
 	 *
 	 * @param int $product_id Product id.
@@ -429,8 +699,10 @@ final class Admin {
 			}
 		}
 
+		echo '<div class="oc-of__checkout">';
+
 		if ( ! $rows ) {
-			echo '<p><strong>' . esc_html__( 'Nothing would be offered beside this product.', 'oc-theme' ) . '</strong> ' . esc_html__( 'Only products that can be added with one tap are offered: in stock, visible and with nothing to choose.', 'oc-theme' ) . '</p>';
+			echo '<p><strong>' . esc_html__( 'Nothing would be offered beside this product.', 'oc-theme' ) . '</strong> ' . esc_html__( 'Only products that can be added with one tap are offered: in stock, visible and with nothing to choose.', 'oc-theme' ) . '</p></div>';
 
 			return;
 		}
@@ -461,7 +733,7 @@ final class Admin {
 			}
 
 			if ( 0 === $i ) {
-				echo ' <span class="description">' . esc_html__( '(shown first)', 'oc-theme' ) . '</span>';
+				echo ' <span class="oc-of__muted">' . esc_html__( '(shown first)', 'oc-theme' ) . '</span>';
 			}
 
 			echo '</li>';
@@ -470,186 +742,16 @@ final class Admin {
 		echo '</ol>';
 
 		if ( ! $s['on'] ) {
-			echo '<p class="description">' . esc_html__( 'Offers are switched off, so shoppers do not see this yet.', 'oc-theme' ) . '</p>';
-		}
-	}
-
-	/**
-	 * The editor for one rule.
-	 *
-	 * @param string $uid Rule name, or "new".
-	 */
-	private function editor( string $uid ): void {
-		$s    = Offers::settings();
-		$new  = ! isset( $s['rules'][ $uid ] );
-		$rule = $new ? Rules::clean( array( 'on' => 1 ) ) : $s['rules'][ $uid ];
-		$uid  = $new ? 'new' : $uid;
-
-		$nonce   = wp_create_nonce( 'oc_offers_search' );
-		$has_tax = '' !== Search::brand_taxonomy();
-
-		$when  = array_merge(
-			self::names( 'c', $rule['when']['cats'] ),
-			self::names( 'b', $rule['when']['brands'] ),
-			self::names( 'p', $rule['when']['products'] )
-		);
-		$offer = array_merge(
-			self::names( 'c', $rule['offer']['cats'] ),
-			self::names( 'p', $rule['offer']['products'] )
-		);
-
-		$orders = array(
-			'best'  => __( 'Best sellers first', 'oc-theme' ),
-			'new'   => __( 'Newest first', 'oc-theme' ),
-			'cheap' => __( 'Cheapest first', 'oc-theme' ),
-			'dear'  => __( 'Most expensive first', 'oc-theme' ),
-		);
-
-		$more = array();
-
-		if ( $rule['pct'] > 0 ) {
-			/* translators: %d: percent. */
-			$more[] = sprintf( __( 'Discount %d%%', 'oc-theme' ), $rule['pct'] );
+			echo '<p class="oc-of__muted">' . esc_html__( 'Offers are switched off, so shoppers do not see this yet.', 'oc-theme' ) . '</p>';
 		}
 
-		$more[] = $orders[ $rule['order'] ];
-
-		if ( $rule['exclude'] ) {
-			/* translators: %d: number of products. */
-			$more[] = sprintf( _n( '%d product left out', '%d products left out', count( $rule['exclude'] ), 'oc-theme' ), count( $rule['exclude'] ) );
-		}
-		?>
-		<h1><?php echo esc_html( $new ? __( 'New rule', 'oc-theme' ) : __( 'Edit rule', 'oc-theme' ) ); ?></h1>
-		<p><a href="<?php echo esc_url( self::url() ); ?>">&larr; <?php esc_html_e( 'All rules', 'oc-theme' ); ?></a></p>
-
-		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="oc-of-card">
-			<input type="hidden" name="action" value="oc_offers_rule" />
-			<input type="hidden" name="rule" value="<?php echo esc_attr( $uid ); ?>" />
-			<?php wp_nonce_field( 'oc_offers_rule' ); ?>
-
-			<div class="oc-of-line">
-				<label for="oc-of-name"><?php esc_html_e( 'Rule name', 'oc-theme' ); ?></label>
-				<div>
-					<input type="text" id="oc-of-name" name="name" value="<?php echo esc_attr( $rule['name'] ); ?>" class="regular-text" placeholder="<?php esc_attr_e( 'Bathroom: more from the same brand', 'oc-theme' ); ?>" />
-					<label style="margin-inline-start:14px;"><input type="checkbox" name="on" value="1" <?php checked( 1, $rule['on'] ); ?> /> <?php echo esc_html( _x( 'Active', 'rule status', 'oc-theme' ) ); ?></label>
-				</div>
-			</div>
-
-			<div class="oc-of-line">
-				<label for="oc-of-when"><?php esc_html_e( 'When the shopper has', 'oc-theme' ); ?></label>
-				<div>
-					<select id="oc-of-when" name="when[]" multiple="multiple" class="oc-of-pick" data-kinds="<?php echo $has_tax ? 'cbp' : 'cp'; ?>" data-nonce="<?php echo esc_attr( $nonce ); ?>" data-placeholder="<?php echo esc_attr( $has_tax ? __( 'Type a category, a brand or a product', 'oc-theme' ) : __( 'Type a category or a product', 'oc-theme' ) ); ?>">
-						<?php foreach ( $when as $token => $label ) : ?>
-							<option value="<?php echo esc_attr( $token ); ?>" selected="selected"><?php echo esc_html( $label ); ?></option>
-						<?php endforeach; ?>
-					</select>
-					<p class="description"><?php esc_html_e( 'A category covers everything under it. Left empty, the rule covers every product.', 'oc-theme' ); ?></p>
-				</div>
-			</div>
-
-			<div class="oc-of-line">
-				<label for="oc-of-offer"><?php esc_html_e( 'Offer them', 'oc-theme' ); ?></label>
-				<div>
-					<select id="oc-of-offer" name="offer[]" multiple="multiple" class="oc-of-pick" data-kinds="cp" data-nonce="<?php echo esc_attr( $nonce ); ?>" data-placeholder="<?php esc_attr_e( 'Type a category or a product', 'oc-theme' ); ?>">
-						<?php foreach ( $offer as $token => $label ) : ?>
-							<option value="<?php echo esc_attr( $token ); ?>" selected="selected"><?php echo esc_html( $label ); ?></option>
-						<?php endforeach; ?>
-					</select>
-					<?php if ( $has_tax ) : ?>
-						<p><label><input type="checkbox" name="same_brand" value="1" <?php checked( 1, $rule['same_brand'] ); ?> /> <strong><?php esc_html_e( 'Only from the same brand', 'oc-theme' ); ?></strong> <?php esc_html_e( 'as the product the shopper has', 'oc-theme' ); ?></label></p>
-						<p class="description"><?php esc_html_e( 'Ticked with nothing typed above: everything else from that brand.', 'oc-theme' ); ?></p>
-					<?php endif; ?>
-				</div>
-			</div>
-
-			<div class="oc-of-line">
-				<span class="oc-of-lab"><?php esc_html_e( 'Where it shows', 'oc-theme' ); ?></span>
-				<div style="padding-block-start:6px;"><?php esc_html_e( 'In the cart panel and on the cart page.', 'oc-theme' ); ?></div>
-			</div>
-
-			<details class="oc-of-more">
-				<summary><?php esc_html_e( 'More options', 'oc-theme' ); ?> <span><?php echo esc_html( implode( ' · ', $more ) ); ?></span></summary>
-
-				<div class="oc-of-line">
-					<label for="oc-of-pct"><?php esc_html_e( 'Discount for adding the offer', 'oc-theme' ); ?></label>
-					<div>
-						<input type="number" id="oc-of-pct" name="pct" value="<?php echo esc_attr( (string) $rule['pct'] ); ?>" min="0" max="<?php echo esc_attr( (string) Rules::MAX_PERCENT ); ?>" style="width:70px;" /> %
-						<p class="description"><?php esc_html_e( '0 = no discount. The discount holds while the product it was offered beside stays in the cart.', 'oc-theme' ); ?></p>
-					</div>
-				</div>
-
-				<div class="oc-of-line">
-					<label for="oc-of-order"><?php esc_html_e( 'Which product first', 'oc-theme' ); ?></label>
-					<div>
-						<select id="oc-of-order" name="order">
-							<?php foreach ( $orders as $key => $label ) : ?>
-								<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $key, $rule['order'] ); ?>><?php echo esc_html( $label ); ?></option>
-							<?php endforeach; ?>
-						</select>
-						<p class="description"><?php esc_html_e( 'Products named one by one always come first, in the order they were typed.', 'oc-theme' ); ?></p>
-					</div>
-				</div>
-
-				<div class="oc-of-line">
-					<label for="oc-of-exclude"><?php esc_html_e( 'Never offer', 'oc-theme' ); ?></label>
-					<div>
-						<select id="oc-of-exclude" name="exclude[]" multiple="multiple" class="wc-product-search" style="width:100%;max-width:640px;" data-placeholder="<?php esc_attr_e( 'Search for a product…', 'oc-theme' ); ?>" data-action="woocommerce_json_search_products">
-							<?php foreach ( $rule['exclude'] as $id ) : ?>
-								<?php if ( get_post( $id ) ) : ?>
-									<option value="<?php echo absint( $id ); ?>" selected="selected"><?php echo esc_html( get_the_title( $id ) ); ?></option>
-								<?php endif; ?>
-							<?php endforeach; ?>
-						</select>
-					</div>
-				</div>
-			</details>
-
-			<div class="oc-of-foot">
-				<button class="button button-primary"><?php esc_html_e( 'Save rule', 'oc-theme' ); ?></button>
-				<a class="button" href="<?php echo esc_url( self::url() ); ?>"><?php esc_html_e( 'Cancel', 'oc-theme' ); ?></a>
-				<?php if ( ! $new ) : ?>
-					<a class="oc-of-del" href="<?php echo esc_url( self::act_url( 'delete', $uid ) ); ?>" onclick="return confirm( this.dataset.ask );" data-ask="<?php esc_attr_e( 'Delete this rule?', 'oc-theme' ); ?>"><?php esc_html_e( 'Delete rule', 'oc-theme' ); ?></a>
-				<?php endif; ?>
-			</div>
-		</form>
-
-		<script>
-		jQuery( function ( $ ) {
-			$( '.oc-of-pick' ).each( function () {
-				var $el = $( this );
-
-				$el.selectWoo( {
-					minimumInputLength: 2,
-					placeholder: $el.data( 'placeholder' ),
-					width: '100%',
-					ajax: {
-						url: window.ajaxurl,
-						dataType: 'json',
-						delay: 250,
-						data: function ( params ) {
-							return {
-								action: 'oc_offers_search',
-								term: params.term,
-								kinds: $el.data( 'kinds' ),
-								_wpnonce: $el.data( 'nonce' )
-							};
-						},
-						processResults: function ( out ) {
-							return { results: out && out.success ? out.data : [] };
-						},
-						cache: true
-					}
-				} );
-			} );
-		} );
-		</script>
-		<?php
+		echo '</div>';
 	}
 
 	/* ------------------------------------------------------------ actions */
 
 	/**
-	 * Save the master switches.
+	 * Save the shop-wide discount.
 	 */
 	public function save_settings(): void {
 		if ( ! current_user_can( 'manage_woocommerce' ) ) {
@@ -658,19 +760,13 @@ final class Admin {
 
 		check_admin_referer( 'oc_offers_save' );
 
-		$s = Offers::settings();
-
-		$s['on']   = empty( $_POST['on'] ) ? 0 : 1;
-		$s['auto'] = empty( $_POST['auto'] ) ? 0 : 1;
-		$s['pct']  = isset( $_POST['pct'] ) ? (int) $_POST['pct'] : 0;
+		$s        = Offers::settings();
+		$s['pct'] = isset( $_POST['pct'] ) ? (int) $_POST['pct'] : 0;
 
 		Offers::save( $s );
-
-		// The counters' table, in case this is the first time offers are
-		// switched on and no admin page ran the installer yet.
 		Stats::install();
 
-		wp_safe_redirect( self::url( array( 'oc_saved' => 1 ) ) );
+		wp_safe_redirect( self::url( array( 'oc_done' => 'saved' ) ) );
 		exit;
 	}
 
@@ -741,13 +837,14 @@ final class Admin {
 		);
 
 		Offers::save( $s );
+		Stats::install();
 
-		wp_safe_redirect( self::url( array( 'oc_saved' => 1 ) ) );
+		wp_safe_redirect( self::url( array( 'oc_done' => 'rule' ) ) );
 		exit;
 	}
 
 	/**
-	 * Switch a rule on or off, move it, or delete it.
+	 * One click: a switch, a rule's place, a deletion, a suggestion.
 	 */
 	public function act(): void {
 		if ( ! current_user_can( 'manage_woocommerce' ) ) {
@@ -757,17 +854,43 @@ final class Admin {
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- the nonce is bound to the rule's name, so the name is read first and verified on the next line.
 		$uid  = isset( $_GET['rule'] ) ? sanitize_key( (string) wp_unslash( $_GET['rule'] ) ) : '';
 		$what = isset( $_GET['what'] ) ? sanitize_key( (string) wp_unslash( $_GET['what'] ) ) : '';
+		$a    = isset( $_GET['a'] ) ? absint( $_GET['a'] ) : 0;
+		$b    = isset( $_GET['b'] ) ? absint( $_GET['b'] ) : 0;
 		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 		check_admin_referer( 'oc_offers_act_' . $uid );
 
-		$s = Offers::settings();
+		$s    = Offers::settings();
+		$done = 'saved';
 
-		if ( isset( $s['rules'][ $uid ] ) ) {
+		if ( 'master' === $what ) {
+			$s['on'] = $s['on'] ? 0 : 1;
+		} elseif ( 'auto' === $what ) {
+			$s['auto'] = $s['auto'] ? 0 : 1;
+		} elseif ( 'rescan' === $what ) {
+			Suggest::rescan();
+		} elseif ( 'skip' === $what && $a && $b ) {
+			Suggest::dismiss( $a, $b );
+		} elseif ( 'accept' === $what && $a && $b && get_post( $a ) && get_post( $b ) ) {
+			$s['rules'][ Tabs::mint() ] = Rules::clean(
+				array(
+					/* translators: 1: product bought first. 2: product to offer beside it. */
+					'name'  => sprintf( __( '%1$s: offer %2$s', 'oc-theme' ), get_the_title( $a ), get_the_title( $b ) ),
+					'on'    => 1,
+					'when'  => array( 'products' => array( $a ) ),
+					'offer' => array( 'products' => array( $b ) ),
+					'pct'   => $s['pct'],
+					'where' => array( 'cart' ),
+				)
+			);
+			Suggest::dismiss( $a, $b );
+			$done = 'accepted';
+		} elseif ( isset( $s['rules'][ $uid ] ) ) {
 			if ( 'toggle' === $what ) {
 				$s['rules'][ $uid ]['on'] = $s['rules'][ $uid ]['on'] ? 0 : 1;
 			} elseif ( 'delete' === $what ) {
 				unset( $s['rules'][ $uid ] );
+				$done = 'deleted';
 			} elseif ( 'up' === $what || 'down' === $what ) {
 				$keys = array_keys( $s['rules'] );
 				$at   = (int) array_search( $uid, $keys, true );
@@ -786,11 +909,12 @@ final class Admin {
 					$s['rules'] = $moved;
 				}
 			}
-
-			Offers::save( $s );
 		}
 
-		wp_safe_redirect( self::url( array( 'oc_saved' => 1 ) ) );
+		Offers::save( $s );
+		Stats::install();
+
+		wp_safe_redirect( self::url( array( 'oc_done' => $done ) ) );
 		exit;
 	}
 
@@ -812,7 +936,11 @@ final class Admin {
 			wp_send_json_success( $out );
 		}
 
-		$taxes = array( 'c' => 'product_cat' );
+		$taxes = array();
+
+		if ( false !== strpos( $kinds, 'c' ) ) {
+			$taxes['c'] = 'product_cat';
+		}
 
 		if ( false !== strpos( $kinds, 'b' ) && '' !== Search::brand_taxonomy() ) {
 			$taxes['b'] = Search::brand_taxonomy();

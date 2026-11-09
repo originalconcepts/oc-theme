@@ -15356,3 +15356,224 @@ msgid "%d product left out"
 msgid_plural "%d products left out"
 msgstr[0] "מוצר אחד מוחרג"
 msgstr[1] "%d מוצרים מוחרגים"
+
+msgid "Offer screens"
+msgstr "מסכי ההצעות"
+
+msgid "By product"
+msgstr "לפי מוצר"
+
+msgid "What to offer a shopper beside what they already chose, and where. One rule covers a whole category."
+msgstr "מה להציע ללקוח לצד מה שכבר בחר, ואיפה. כלל אחד מכסה קטגוריה שלמה."
+
+msgid "The rule was saved."
+msgstr "הכלל נשמר."
+
+msgid "The rule was deleted."
+msgstr "הכלל נמחק."
+
+msgid "The rule was added from the suggestion. Open it to adjust the discount or the wording."
+msgstr "הכלל נוסף מההצעה. אפשר לפתוח אותו כדי לכוון את ההנחה או את הניסוח."
+
+msgid "Offers in the shop"
+msgstr "הצעות בחנות"
+
+msgid "Offers are live in the shop"
+msgstr "ההצעות פעילות בחנות"
+
+msgid "Offers are switched off"
+msgstr "ההצעות כבויות"
+
+msgid "Who answers first: picked by hand, then a rule, then automatic"
+msgstr "סדר העדיפות: ידני, אחריו כלל, אחריו אוטומטי"
+
+msgid "0 = no discount. A rule sets its own."
+msgstr "0 = בלי הנחה. לכל כלל הנחה משלו."
+
+msgid "Your rules"
+msgstr "הכללים שלכם"
+
+msgid "Filter the rules"
+msgstr "סינון הכללים"
+
+msgid "No rules yet."
+msgstr "עדיין אין כללים."
+
+msgid "Until there is one, the automatic offers answer for every product. Start with one of the suggestions beside, or write a rule of your own."
+msgstr "עד שיהיה כלל, ההצעות האוטומטיות עונות לכל המוצרים. אפשר להתחיל מאחת ההצעות שבצד, או לכתוב כלל משלכם."
+
+msgid "Picked by hand"
+msgstr "ידני"
+
+msgid "The \"goes with\" list on each product"
+msgstr "רשימת \"מוצרים משלימים\" בכל מוצר"
+
+msgid "Bought together, then most alike"
+msgstr "מה שנקנה יחד, ואחריו הדומים ביותר"
+
+msgid "Cart panel and cart page"
+msgstr "סל צד ועמוד הסל"
+
+msgid "Rule active: %s"
+msgstr "הכלל פעיל: %s"
+
+msgid "When the cart holds"
+msgstr "כשבסל יש"
+
+msgid "Name the rule, e.g. Bathroom: more from the same brand"
+msgstr "שם לכלל, למשל: אמבטיה: עוד מאותו מותג"
+
+msgid "Cart panel"
+msgstr "סל צד"
+
+msgid "Cart page"
+msgstr "עמוד הסל"
+
+msgid "Check on a product"
+msgstr "בדוק על מוצר"
+
+msgid "Rules worth adding"
+msgstr "כללים שכדאי להוסיף"
+
+msgid "Read off the shop's paid orders. Nothing is added without your approval."
+msgstr "מחושב מההזמנות המשולמות של החנות. שום דבר לא נכנס בלי אישור."
+
+msgid "Nothing new right now. Suggestions appear once two products keep landing in the same order and are not yet offered beside each other."
+msgstr "אין כרגע הצעות חדשות. הצעה מופיעה כששני מוצרים חוזרים ומגיעים לאותה הזמנה ועדיין לא מוצעים זה לצד זה."
+
+msgid "%1$s: offer %2$s"
+msgstr "%1$s: להציע את %2$s"
+
+msgid "Approve"
+msgstr "אשר"
+
+msgid "Skip"
+msgstr "דלג"
+
+msgid "Look for more suggestions"
+msgstr "חפש לי עוד הצעות"
+
+msgid "Search by name or SKU"
+msgstr "חיפוש לפי שם או מק״ט"
+
+msgid "All categories"
+msgstr "כל הקטגוריות"
+
+msgid "Offer source"
+msgstr "מקור ההצעות"
+
+msgid "Offers: all"
+msgstr "הצעות: הכול"
+
+msgid "Rule or automatic only"
+msgstr "רק כלל או אוטומטי"
+
+msgid "products selected"
+msgstr "מוצרים נבחרו"
+
+msgid "Product to offer beside them…"
+msgstr "מוצר להציע לצידם…"
+
+msgid "Offer it beside all of them"
+msgstr "הצע אותו לצד כולם"
+
+msgid "Remove their hand-picked offers"
+msgstr "הסר את ההצעות הידניות שלהם"
+
+msgid "cart panel and cart page"
+msgstr "סל צד ועמוד הסל"
+
+msgid "bundle on the product page"
+msgstr "חבילה בדף המוצר"
+
+msgid "Similar"
+msgstr "דומים"
+
+msgid "foot of the product page"
+msgstr "תחתית דף המוצר"
+
+msgid "Quantity tiers"
+msgstr "מדרגות כמות"
+
+msgid "product page"
+msgstr "דף המוצר"
+
+msgid "Performance"
+msgstr "ביצועים"
+
+msgid "No products match."
+msgstr "אין מוצרים שמתאימים לסינון."
+
+msgid "A product picked by hand wins over a rule, and a rule over the automatic offers. Remove the hand-picked products and the product falls back to its rule."
+msgstr "הצעה ידנית גוברת על כלל, וכלל גובר על האוטומטי. מי שמסיר את המוצרים הידניים מחזיר את המוצר לכלל שלו."
+
+msgid "Select %s"
+msgstr "בחירת %s"
+
+msgid "Not set"
+msgstr "לא הוגדרו"
+
+msgid "Not added yet"
+msgstr "עוד לא נוסף"
+
+msgid "Goes with it, in the cart panel and on the cart page"
+msgstr "משלימים, בסל הצד ובעמוד הסל"
+
+msgid "Remove %s"
+msgstr "הסרת %s"
+
+msgid "Nothing picked by hand. Today the rule \"%s\" answers"
+msgstr "אין בחירה ידנית. היום עונה הכלל \"%s\""
+
+msgid "Nothing picked by hand. Today the automatic offers answer"
+msgstr "אין בחירה ידנית. היום עונות ההצעות האוטומטיות"
+
+msgid "Nothing picked by hand, and no rule or automatic offer answers."
+msgstr "אין בחירה ידנית, ואין כלל או הצעה אוטומטית שעונים."
+
+msgid "Add a product to offer…"
+msgstr "הוספת מוצר להצעה…"
+
+msgid "Bought together, a bundle on the product page"
+msgstr "נקנים יחד, חבילה בדף המוצר"
+
+msgid "No bundle on this product."
+msgstr "אין חבילה במוצר הזה."
+
+msgid "Add a product to the bundle…"
+msgstr "הוספת מוצר לחבילה…"
+
+msgid "The bundle's discount and title are set on %s."
+msgstr "ההנחה והכותרת של החבילה נקבעות ב%s."
+
+msgid "the product itself"
+msgstr "עריכת המוצר עצמו"
+
+msgid "Similar, at the foot of the product page"
+msgstr "דומים, בתחתית דף המוצר"
+
+msgid "Automatic: products from the same category, the closest first. Set shop-wide in Customize → Product page."
+msgstr "אוטומטי: מוצרים מאותה קטגוריה, הקרובים ביותר קודם. נקבע לכל החנות בהתאמה אישית ← דף מוצר."
+
+msgid "Quantity tiers, on the product page"
+msgstr "מדרגות כמות, בדף המוצר"
+
+msgid "Not set for this product."
+msgstr "לא הוגדרו למוצר הזה."
+
+msgctxt "offers column"
+msgid "added"
+msgstr "נוספו"
+
+msgctxt "offers column"
+msgid "Goes with it"
+msgstr "משלימים"
+
+msgctxt "offers filter"
+msgid "All brands"
+msgstr "כל המותגים"
+
+msgid "Bought together in %d paid order, and not offered beside each other today."
+msgid_plural "Bought together in %d paid orders, and not offered beside each other today."
+msgstr[0] "נקנו יחד בהזמנה משולמת אחת, והיום לא מוצעים זה לצד זה."
+msgstr[1] "נקנו יחד ב-%d הזמנות משולמות, והיום לא מוצעים זה לצד זה."

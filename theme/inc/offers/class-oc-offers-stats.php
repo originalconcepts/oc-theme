@@ -186,6 +186,51 @@ final class Stats {
 		return $out;
 	}
 
+	/**
+	 * The last days' totals for a set of products the offers stood beside.
+	 *
+	 * @param int[] $ids  Product ids.
+	 * @param int   $days How many days back, today included.
+	 * @return array<int,array{seen:int,added:int,orders:int,revenue:float}>
+	 */
+	public static function by_products( array $ids, int $days = 30 ): array {
+		$ids = array_values( array_filter( array_map( 'intval', $ids ) ) );
+
+		if ( ! $ids || self::DB_VERSION !== (string) get_option( 'oc_offers_db' ) ) {
+			return array();
+		}
+
+		global $wpdb;
+
+		$since = wp_date( 'Y-m-d', time() - ( max( 1, $days ) - 1 ) * DAY_IN_SECONDS );
+		$table = self::table();
+		$marks = implode( ',', array_fill( 0, count( $ids ), '%d' ) );
+
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- own counters table; the placeholders are built from the count of ids.
+		$rows = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT for_id, SUM(seen) AS seen, SUM(added) AS added, SUM(orders) AS orders, SUM(revenue) AS revenue
+				FROM {$table} WHERE day >= %s AND for_id IN ({$marks}) GROUP BY for_id",
+				array_merge( array( $since ), $ids )
+			),
+			ARRAY_A
+		);
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
+
+		$out = array();
+
+		foreach ( (array) $rows as $row ) {
+			$out[ (int) $row['for_id'] ] = array(
+				'seen'    => (int) $row['seen'],
+				'added'   => (int) $row['added'],
+				'orders'  => (int) $row['orders'],
+				'revenue' => (float) $row['revenue'],
+			);
+		}
+
+		return $out;
+	}
+
 	/* -------------------------------------------------------------- seen */
 
 	/**
