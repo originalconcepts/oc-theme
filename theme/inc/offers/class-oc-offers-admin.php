@@ -373,13 +373,22 @@ final class Admin {
 				</div>
 				<div class="oc-of__sentence"><?php echo self::sentence( $rule ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built escaped. ?></div>
 				<div class="oc-of__tags">
-					<span class="oc-of__tag oc-of__tag--line"><?php esc_html_e( 'Cart panel and cart page', 'oc-theme' ); ?></span>
-					<?php if ( $rule['pct'] > 0 ) : ?>
-						<span class="oc-of__tag oc-of__tag--good"><?php echo esc_html( $pct_text ); ?></span>
+					<?php if ( 'tiers' === $rule['kind'] ) : ?>
+						<span class="oc-of__tag oc-of__tag--rule"><?php esc_html_e( 'Quantity tiers', 'oc-theme' ); ?></span>
+						<span class="oc-of__tag oc-of__tag--line"><?php esc_html_e( 'Product page and cart', 'oc-theme' ); ?></span>
+					<?php else : ?>
+						<span class="oc-of__tag oc-of__tag--line"><?php esc_html_e( 'Cart panel and cart page', 'oc-theme' ); ?></span>
+						<?php if ( $rule['pct'] > 0 ) : ?>
+							<span class="oc-of__tag oc-of__tag--good"><?php echo esc_html( $pct_text ); ?></span>
+						<?php endif; ?>
 					<?php endif; ?>
 				</div>
 			</div>
-			<?php self::stats_html( $t ); ?>
+			<?php
+			if ( 'tiers' !== $rule['kind'] ) {
+				self::stats_html( $t );
+			}
+			?>
 			<div class="oc-of__ruleacts">
 				<a class="oc-of__btn" href="<?php echo esc_url( $edit ); ?>"><?php esc_html_e( 'Edit', 'oc-theme' ); ?></a>
 				<?php echo self::switch_html( (bool) $rule['on'], self::act_url( 'toggle', $uid ), sprintf( /* translators: %s: rule name. */ __( 'Rule active: %s', 'oc-theme' ), $rule['name'] ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
@@ -413,7 +422,7 @@ final class Admin {
 			self::names( 'p', $rule['offer']['products'] )
 		);
 
-		$html = '<span class="oc-of__muted">' . esc_html__( 'When the cart holds', 'oc-theme' ) . '</span> ';
+		$html = '<span class="oc-of__muted">' . esc_html( 'tiers' === $rule['kind'] ? __( 'For products in', 'oc-theme' ) : __( 'When the cart holds', 'oc-theme' ) ) . '</span> ';
 
 		if ( $when ) {
 			foreach ( $when as $name ) {
@@ -421,6 +430,21 @@ final class Admin {
 			}
 		} else {
 			$html .= '<span class="oc-of__chip">' . esc_html__( 'any product', 'oc-theme' ) . '</span>';
+		}
+
+		if ( 'tiers' === $rule['kind'] ) {
+			$html .= ' <span class="oc-of__muted">' . esc_html__( 'tiers', 'oc-theme' ) . '</span> ';
+
+			foreach ( $rule['tiers'] as $tier ) {
+				/* translators: 1: quantity. 2: percent off. */
+				$html .= '<span class="oc-of__chip">' . esc_html( sprintf( __( '%1$d units, %2$d%%', 'oc-theme' ), $tier['qty'], $tier['pct'] ) ) . '</span>';
+			}
+
+			if ( ! $rule['tiers'] ) {
+				$html .= '<span class="oc-of__chip">' . esc_html__( 'nothing yet', 'oc-theme' ) . '</span>';
+			}
+
+			return $html;
 		}
 
 		$html .= ' <span class="oc-of__muted">' . esc_html__( 'offer', 'oc-theme' ) . '</span> ';
@@ -555,7 +579,15 @@ final class Admin {
 
 			<div class="oc-of__edbody">
 				<div class="oc-of__line">
-					<label for="oc-of-when"><?php esc_html_e( 'When the cart holds', 'oc-theme' ); ?></label>
+					<span class="oc-of__lab"><?php esc_html_e( 'What the rule does', 'oc-theme' ); ?></span>
+					<div class="oc-of__kinds" role="radiogroup">
+						<label class="oc-of__kind<?php echo 'offer' === $rule['kind'] ? ' is-on' : ''; ?>"><input type="radio" name="kind" value="offer" <?php checked( 'offer', $rule['kind'] ); ?> data-oc-of-kind /> <span><strong><?php esc_html_e( 'Offers products', 'oc-theme' ); ?></strong><small><?php esc_html_e( 'one product beside what is in the cart', 'oc-theme' ); ?></small></span></label>
+						<label class="oc-of__kind<?php echo 'tiers' === $rule['kind'] ? ' is-on' : ''; ?>"><input type="radio" name="kind" value="tiers" <?php checked( 'tiers', $rule['kind'] ); ?> data-oc-of-kind /> <span><strong><?php esc_html_e( 'Quantity tiers', 'oc-theme' ); ?></strong><small><?php esc_html_e( 'two for less, four for even less', 'oc-theme' ); ?></small></span></label>
+					</div>
+				</div>
+
+				<div class="oc-of__line">
+					<label for="oc-of-when" data-oc-of-when-label data-offer="<?php esc_attr_e( 'When the cart holds', 'oc-theme' ); ?>" data-tiers="<?php esc_attr_e( 'For products in', 'oc-theme' ); ?>"><?php echo esc_html( 'tiers' === $rule['kind'] ? __( 'For products in', 'oc-theme' ) : __( 'When the cart holds', 'oc-theme' ) ); ?></label>
 					<div>
 						<select id="oc-of-when" name="when[]" multiple="multiple" class="oc-of-pick" data-kinds="<?php echo $has_tax ? 'cbp' : 'cp'; ?>" data-placeholder="<?php echo esc_attr( $has_tax ? __( 'Type a category, a brand or a product', 'oc-theme' ) : __( 'Type a category or a product', 'oc-theme' ) ); ?>">
 							<?php foreach ( $when as $token => $label ) : ?>
@@ -566,6 +598,7 @@ final class Admin {
 					</div>
 				</div>
 
+				<div data-oc-of-only="offer"<?php echo 'offer' === $rule['kind'] ? '' : ' hidden'; ?>>
 				<div class="oc-of__line">
 					<label for="oc-of-offer"><?php esc_html_e( 'Offer them', 'oc-theme' ); ?></label>
 					<div>
@@ -588,7 +621,19 @@ final class Admin {
 					</div>
 				</div>
 
-				<details class="oc-of__more"<?php echo $rule['pct'] > 0 || $rule['exclude'] ? ' open' : ''; ?>>
+				</div>
+
+				<div data-oc-of-only="tiers"<?php echo 'tiers' === $rule['kind'] ? '' : ' hidden'; ?>>
+				<div class="oc-of__line">
+					<span class="oc-of__lab"><?php esc_html_e( 'The tiers', 'oc-theme' ); ?></span>
+					<div>
+						<?php echo Tiers_Admin::table( 'rt', $rule['tiers'], (int) $rule['default'], 0.0 ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built escaped. ?>
+						<span class="oc-of__muted"><?php esc_html_e( 'The percent comes off each product\'s own price. A product with tiers of its own keeps them.', 'oc-theme' ); ?></span>
+					</div>
+				</div>
+				</div>
+
+				<details class="oc-of__more" data-oc-of-only="offer"<?php echo 'offer' === $rule['kind'] ? '' : ' hidden'; ?><?php echo $rule['pct'] > 0 || $rule['exclude'] ? ' open' : ''; ?>>
 					<summary><?php esc_html_e( 'More options', 'oc-theme' ); ?> <span><?php echo esc_html( implode( ' · ', $more ) ); ?></span></summary>
 
 					<div class="oc-of__line">
@@ -626,6 +671,7 @@ final class Admin {
 				</details>
 			</div>
 
+			<?php echo Tiers_Admin::style() . Tiers_Admin::script(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static. ?>
 			<div class="oc-of__edfoot">
 				<button class="oc-of__btn oc-of__btn--primary"><?php esc_html_e( 'Save rule', 'oc-theme' ); ?></button>
 				<a class="oc-of__btn" href="<?php echo esc_url( self::url() ); ?>"><?php esc_html_e( 'Cancel', 'oc-theme' ); ?></a>
@@ -651,7 +697,7 @@ final class Admin {
 			</div>
 			<p class="oc-of__muted"><?php esc_html_e( 'Read off the shop\'s paid orders. Nothing is added without your approval.', 'oc-theme' ); ?></p>
 
-			<?php if ( ! $list ) : ?>
+			<?php if ( ! $list && ! Suggest::tier_listing( 1 ) ) : ?>
 				<p class="oc-of__suggempty"><?php esc_html_e( 'Nothing new right now. Suggestions appear once two products keep landing in the same order and are not yet offered beside each other.', 'oc-theme' ); ?></p>
 			<?php endif; ?>
 
@@ -672,6 +718,24 @@ final class Admin {
 					<div class="oc-of__suggacts">
 						<a class="oc-of__btn oc-of__btn--primary" href="<?php echo esc_url( self::act_url( 'accept', '', $ab ) ); ?>"><?php esc_html_e( 'Approve', 'oc-theme' ); ?></a>
 						<a class="oc-of__btn" href="<?php echo esc_url( self::act_url( 'skip', '', $ab ) ); ?>"><?php esc_html_e( 'Skip', 'oc-theme' ); ?></a>
+					</div>
+				</div>
+			<?php endforeach; ?>
+
+			<?php
+			foreach ( Suggest::tier_listing( 3 ) as $item ) :
+				$qtys = array_column( $item['tiers'], 'qty' );
+				/* translators: 1: category name. 2: the quantities, e.g. "4 and 8". */
+				$title = sprintf( __( '%1$s: tiers of %2$s', 'oc-theme' ), $item['name'], implode( ', ', array_map( 'strval', $qtys ) ) );
+				/* translators: 1: number of orders. 2: category name. */
+				$why = sprintf( _n( '%1$d paid order took more than one unit from %2$s; these are the quantities it took.', '%1$d paid orders took more than one unit from %2$s; these are the quantities they took.', $item['n'], 'oc-theme' ), $item['n'], $item['name'] );
+				?>
+				<div class="oc-of__suggitem">
+					<strong><?php echo esc_html( $title ); ?></strong>
+					<span><?php echo esc_html( $why ); ?></span>
+					<div class="oc-of__suggacts">
+						<a class="oc-of__btn oc-of__btn--primary" href="<?php echo esc_url( self::act_url( 'accept_tiers', '', array( 'a' => $item['cat'] ) ) ); ?>"><?php esc_html_e( 'Approve', 'oc-theme' ); ?></a>
+						<a class="oc-of__btn" href="<?php echo esc_url( self::act_url( 'skip_tiers', '', array( 'a' => $item['cat'] ) ) ); ?>"><?php esc_html_e( 'Skip', 'oc-theme' ); ?></a>
 					</div>
 				</div>
 			<?php endforeach; ?>
@@ -818,11 +882,15 @@ final class Admin {
 
 		$when  = self::tokens( 'when' );
 		$offer = self::tokens( 'offer' );
+		$tiers = Tiers_Admin::posted( 'rt' );
 
 		$s['rules'][ $uid ] = Rules::clean(
 			array(
 				'name'       => isset( $_POST['name'] ) ? sanitize_text_field( wp_unslash( (string) $_POST['name'] ) ) : '',
 				'on'         => empty( $_POST['on'] ) ? 0 : 1,
+				'kind'       => isset( $_POST['kind'] ) ? sanitize_key( (string) wp_unslash( $_POST['kind'] ) ) : 'offer',
+				'tiers'      => $tiers['tiers'],
+				'default'    => $tiers['default'],
 				'when'       => array(
 					'cats'     => $when['c'],
 					'brands'   => $when['b'],
@@ -875,6 +943,27 @@ final class Admin {
 			Suggest::rescan();
 		} elseif ( 'skip' === $what && $a && $b ) {
 			Suggest::dismiss( $a, $b );
+		} elseif ( 'accept_tiers' === $what && $a ) {
+			$term = get_term( $a, 'product_cat' );
+
+			if ( $term instanceof \WP_Term ) {
+				$sugg = Suggest::tiers_for_category( $a );
+
+				$s['rules'][ Tabs::mint() ] = Rules::clean(
+					array(
+						/* translators: %s: category name. */
+						'name'  => sprintf( __( '%s: quantity tiers', 'oc-theme' ), $term->name ),
+						'on'    => 1,
+						'kind'  => 'tiers',
+						'when'  => array( 'cats' => array( $a ) ),
+						'tiers' => $sugg,
+					)
+				);
+				Suggest::dismiss_tiers( $a );
+				$done = 'accepted';
+			}
+		} elseif ( 'skip_tiers' === $what && $a ) {
+			Suggest::dismiss_tiers( $a );
 		} elseif ( 'accept' === $what && $a && $b && get_post( $a ) && get_post( $b ) ) {
 			$s['rules'][ Tabs::mint() ] = Rules::clean(
 				array(

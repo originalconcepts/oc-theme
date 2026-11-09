@@ -5167,6 +5167,56 @@ window.ocWhenShown( function () {
 		}
 	}
 
+	/* ---------- quantity tiers → the quantity box ---------- */
+
+	( function () {
+		var tiers = document.querySelector( '[data-oc-tiers]' );
+		if ( ! tiers ) {
+			return;
+		}
+		var form = tiers.closest( 'form.cart' );
+		var qty = form ? form.querySelector( 'input.qty, input[name="quantity"]' ) : null;
+		if ( ! qty ) {
+			return;
+		}
+		var opts = Array.prototype.slice.call( tiers.querySelectorAll( '.oc-tiers__opt' ) );
+
+		function mark( n ) {
+			opts.forEach( function ( opt ) {
+				var input = opt.querySelector( 'input' );
+				var on = parseInt( input.value, 10 ) === n;
+				opt.classList.toggle( 'is-on', on );
+				input.checked = on;
+			} );
+		}
+
+		// The page opens on the tier the shop chose.
+		var start = parseInt( tiers.getAttribute( 'data-default' ), 10 ) || 1;
+		if ( start > 1 && parseInt( qty.value, 10 ) <= 1 ) {
+			qty.value = start;
+			qty.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+		}
+		mark( parseInt( qty.value, 10 ) || 1 );
+
+		tiers.addEventListener( 'change', function ( event ) {
+			var input = event.target.closest( 'input[name="oc_tier"]' );
+			if ( ! input ) {
+				return;
+			}
+			qty.value = input.value;
+			mark( parseInt( input.value, 10 ) );
+			qty.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+		} );
+
+		// Typed or stepped quantity: the matching card lights, or none.
+		qty.addEventListener( 'change', function () {
+			mark( parseInt( qty.value, 10 ) || 0 );
+		} );
+		qty.addEventListener( 'input', function () {
+			mark( parseInt( qty.value, 10 ) || 0 );
+		} );
+	}() );
+
 	/* ---------- product tabs → accordion ---------- */
 
 	if ( document.body.classList.contains( 'oc-tabs-accordion' ) ) {

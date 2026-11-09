@@ -6044,6 +6044,114 @@ body.oc-swatch-square-cat .oc-mcart__attr-swatch { border-radius: 4px; }
 
 .oc-cartpage__main .oc-offer { max-inline-size: 520px; }
 
+/* -- quantity tiers on the product page: cards beside the quantity box -- */
+.oc-tiers {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	margin: 0 0 16px;
+	padding: 0;
+	border: 0;
+	min-inline-size: 0;
+	inline-size: 100%;
+}
+
+.oc-tiers__title {
+	padding: 0;
+	margin-block-end: 2px;
+	font-weight: 700;
+	font-size: 1rem;
+}
+
+.oc-tiers__opt {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	min-block-size: 58px;
+	padding: 8px 14px;
+	border: 2px solid var(--oc-line);
+	border-radius: 12px;
+	background: var(--oc-surface, #fff);
+	cursor: pointer;
+	transition: border-color .15s ease, background .15s ease;
+}
+
+.oc-tiers__opt input {
+	position: absolute;
+	opacity: 0;
+	inline-size: 1px;
+	block-size: 1px;
+	pointer-events: none;
+}
+
+.oc-tiers__opt.is-on {
+	border-color: var(--oc-ink);
+	background: color-mix(in srgb, var(--oc-ink) 4%, var(--oc-surface, #fff));
+}
+
+.oc-tiers__opt:has(input:focus-visible) {
+	outline: 2px solid var(--oc-cta, var(--oc-ink));
+	outline-offset: 2px;
+}
+
+.oc-tiers__l,
+.oc-tiers__r {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	min-inline-size: 0;
+}
+
+.oc-tiers__r {
+	align-items: flex-end;
+	text-align: end;
+	flex: none;
+}
+
+.oc-tiers__q {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+.oc-tiers__l strong,
+.oc-tiers__r strong { font-weight: 700; }
+
+.oc-tiers__r strong { font-size: 1.05rem; }
+
+.oc-tiers__l small,
+.oc-tiers__r small {
+	font-size: .82rem;
+	color: color-mix(in srgb, var(--oc-ink) 70%, transparent);
+}
+
+.oc-tiers__r small {
+	color: var(--oc-success, #2f7d4f);
+	font-weight: 600;
+}
+
+.oc-tiers__badge {
+	padding: 1px 8px;
+	border-radius: 999px;
+	background: var(--oc-ink);
+	color: var(--oc-surface, #fff);
+	font-size: .75rem;
+	font-style: normal;
+	font-weight: 600;
+	white-space: nowrap;
+}
+
+.oc-tiers__badge--best { background: var(--oc-success, #2f7d4f); }
+
+.oc-tiers__note {
+	margin: 2px 0 0;
+	font-size: .82rem;
+	color: color-mix(in srgb, var(--oc-ink) 70%, transparent);
+}
+
 /* after the cart items */
 .oc-cartup--list { margin-block-start: 20px; }
 .oc-cartup--list .oc-cartup__items {

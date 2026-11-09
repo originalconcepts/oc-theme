@@ -40,10 +40,26 @@ final class Rules {
 	const MAX_PERCENT = 90;
 
 	/**
+	 * What a rule does: offer products, or price quantities in steps.
+	 */
+	const KINDS = array( 'offer', 'tiers' );
+
+	/**
+	 * The little labels a quantity tier may carry.
+	 */
+	const TIER_LABELS = array( '', 'popular', 'best' );
+
+	/**
+	 * How many tiers a product may have. More than that is a price list,
+	 * not an offer.
+	 */
+	const MAX_TIERS = 6;
+
+	/**
 	 * A rule in its one true shape, whatever came in.
 	 *
 	 * @param array<string,mixed> $raw Rule as posted or as stored.
-	 * @return array{name:string,on:int,when:array{cats:int[],brands:int[],products:int[]},offer:array{cats:int[],products:int[]},same_brand:int,exclude:int[],where:string[],pct:int,count:int,order:string}
+	 * @return array{name:string,on:int,kind:string,when:array{cats:int[],brands:int[],products:int[]},offer:array{cats:int[],products:int[]},same_brand:int,exclude:int[],where:string[],pct:int,count:int,order:string,tiers:array<int,array{qty:int,pct:int,label:string}>,default:int}
 	 */
 	public static function clean( array $raw ): array {
 		$when  = isset( $raw['when'] ) && is_array( $raw['when'] ) ? $raw['when'] : array();
@@ -71,10 +87,13 @@ final class Rules {
 		}
 
 		$order = isset( $raw['order'] ) && is_string( $raw['order'] ) && in_array( $raw['order'], self::ORDERS, true ) ? $raw['order'] : 'best';
+		$kind  = isset( $raw['kind'] ) && is_string( $raw['kind'] ) && in_array( $raw['kind'], self::KINDS, true ) ? $raw['kind'] : 'offer';
+		$tiers = self::clean_tiers( isset( $raw['tiers'] ) && is_array( $raw['tiers'] ) ? $raw['tiers'] : array() );
 
 		return array(
 			'name'       => $name,
 			'on'         => empty( $raw['on'] ) ? 0 : 1,
+			'kind'       => $kind,
 			'when'       => array(
 				'cats'     => self::ids( $when['cats'] ?? array() ),
 				'brands'   => self::ids( $when['brands'] ?? array() ),
@@ -90,7 +109,114 @@ final class Rules {
 			'pct'        => min( self::MAX_PERCENT, max( 0, (int) ( $raw['pct'] ?? 0 ) ) ),
 			'count'      => min( 12, max( 1, (int) ( $raw['count'] ?? 4 ) ) ),
 			'order'      => $order,
+			'tiers'      => $tiers,
+			'default'    => self::clean_default( (int) ( $raw['default'] ?? 0 ), $tiers ),
 		);
+	}
+
+	/**
+	 * Quantity tiers in their one true shape: whole quantities of two or
+	 * more, each once, climbing, with a percent off and an optional label.
+	 * The single unit is never a tier — it is the price itself.
+	 *
+	 * @param array<int,mixed> $raw Tiers as posted or as stored.
+	 * @return array<int,array{qty:int,pct:int,label:string}>
+	 */
+	public static function clean_tiers( array $raw ): array {
+		$by_qty = array();
+
+		foreach ( $raw as $tier ) {
+			if ( ! is_array( $tier ) ) {
+				continue;
+			}
+
+			$qty = (int) ( $tier['qty'] ?? 0 );
+			$pct = min( self::MAX_PERCENT, max( 0, (int) ( $tier['pct'] ?? 0 ) ) );
+
+			if ( $qty < 2 || $qty > 9999 ) {
+				continue;
+			}
+
+			$label = isset( $tier['label'] ) && is_string( $tier['label'] ) && in_array( $tier['label'], self::TIER_LABELS, true ) ? $tier['label'] : '';
+
+			$by_qty[ $qty ] = array(
+				'qty'   => $qty,
+				'pct'   => $pct,
+				'label' => $label,
+			);
+		}
+
+		ksort( $by_qty );
+
+		return array_slice( array_values( $by_qty ), 0, self::MAX_TIERS );
+	}
+
+	/**
+	 * The quantity picked when the page opens: one of the tiers, or 1.
+	 *
+	 * @param int                                         $default What was asked for.
+	 * @param array<int,array{qty:int,pct:int,label:string}> $tiers   Clean tiers.
+	 */
+	public static function clean_default( int $default, array $tiers ): int {
+		foreach ( $tiers as $tier ) {
+			if ( $tier['qty'] === $default ) {
+				return $default;
+			}
+		}
+
+		return 1;
+	}
+
+	/**
+	 * The tier a quantity has reached: the highest one at or below it, or
+	 * null below the first.
+	 *
+	 * @param array<int,array{qty:int,pct:int,label:string}> $tiers Clean tiers, climbing.
+	 * @param int                                         $qty   Units in the line.
+	 * @return array{qty:int,pct:int,label:string}|null
+	 */
+	public static function tier_for( array $tiers, int $qty ): ?array {
+		$hit = null;
+
+		foreach ( $tiers as $tier ) {
+			if ( $tier['qty'] <= $qty ) {
+				$hit = $tier;
+			}
+		}
+
+		return $hit;
+	}
+
+	/**
+	 * The unit price at a tier.
+	 *
+	 * @param float $price    The unit price.
+	 * @param int   $percent  The tier's percent.
+	 * @param int   $decimals Decimals of the shop's currency.
+	 */
+	public static function unit_at( float $price, int $percent, int $decimals = 2 ): float {
+		return round( $price - self::off( $price, $percent, $decimals ), $decimals );
+	}
+
+	/**
+	 * The tiers rule that answers for a product: the first one, in the
+	 * shop's order, that is switched on, has tiers and covers the product.
+	 *
+	 * @param array<string,array<string,mixed>>     $rules   Clean rules, keyed by their names.
+	 * @param array{id:int,cats:int[],brands:int[]} $product The product's facts.
+	 */
+	public static function pick_tiers( array $rules, array $product ): ?string {
+		foreach ( $rules as $uid => $rule ) {
+			if ( empty( $rule['on'] ) || 'tiers' !== ( $rule['kind'] ?? 'offer' ) || empty( $rule['tiers'] ) ) {
+				continue;
+			}
+
+			if ( self::matches( $rule, $product ) ) {
+				return (string) $uid;
+			}
+		}
+
+		return null;
 	}
 
 	/**
@@ -164,7 +290,7 @@ final class Rules {
 	 */
 	public static function pick( array $rules, array $product, string $place ): ?string {
 		foreach ( $rules as $uid => $rule ) {
-			if ( empty( $rule['on'] ) || ! in_array( $place, $rule['where'], true ) ) {
+			if ( empty( $rule['on'] ) || 'offer' !== ( $rule['kind'] ?? 'offer' ) || ! in_array( $place, $rule['where'], true ) ) {
 				continue;
 			}
 

@@ -193,4 +193,73 @@ final class RulesTest extends TestCase {
 		$this->assertFalse( Rules::is_source( "auto' OR 1=1" ) );
 		$this->assertFalse( Rules::is_source( '' ) );
 	}
+
+	public function test_tiers_climb_drop_the_single_unit_and_the_repeats(): void {
+		$tiers = Rules::clean_tiers(
+			array(
+				array( 'qty' => 4, 'pct' => 10, 'label' => 'popular' ),
+				array( 'qty' => 1, 'pct' => 50 ),
+				array( 'qty' => '2', 'pct' => '5', 'label' => 'nope' ),
+				array( 'qty' => 4, 'pct' => 12 ),
+				array( 'qty' => 8, 'pct' => 150, 'label' => 'best' ),
+				'junk',
+			)
+		);
+
+		$this->assertSame( array( 2, 4, 8 ), array_column( $tiers, 'qty' ) );
+		$this->assertSame( array( 5, 12, Rules::MAX_PERCENT ), array_column( $tiers, 'pct' ) );
+		$this->assertSame( array( '', '', 'best' ), array_column( $tiers, 'label' ) );
+	}
+
+	public function test_the_tier_a_quantity_reaches(): void {
+		$tiers = Rules::clean_tiers(
+			array(
+				array( 'qty' => 2, 'pct' => 5 ),
+				array( 'qty' => 4, 'pct' => 10 ),
+			)
+		);
+
+		$this->assertNull( Rules::tier_for( $tiers, 1 ) );
+		$this->assertSame( 5, Rules::tier_for( $tiers, 2 )['pct'] );
+		$this->assertSame( 5, Rules::tier_for( $tiers, 3 )['pct'] );
+		$this->assertSame( 10, Rules::tier_for( $tiers, 4 )['pct'] );
+		$this->assertSame( 10, Rules::tier_for( $tiers, 40 )['pct'] );
+		$this->assertSame( 10.8, Rules::unit_at( 12.0, 10 ) );
+		$this->assertSame( 12.0, Rules::unit_at( 12.0, 0 ) );
+	}
+
+	public function test_the_opening_quantity_must_be_a_tier(): void {
+		$tiers = Rules::clean_tiers( array( array( 'qty' => 4, 'pct' => 10 ) ) );
+
+		$this->assertSame( 4, Rules::clean_default( 4, $tiers ) );
+		$this->assertSame( 1, Rules::clean_default( 3, $tiers ) );
+		$this->assertSame( 1, Rules::clean_default( 4, array() ) );
+	}
+
+	public function test_a_tiers_rule_answers_for_tiers_and_never_for_offers(): void {
+		$rules = array(
+			'legs' => Rules::clean(
+				array(
+					'on'    => 1,
+					'kind'  => 'tiers',
+					'when'  => array( 'cats' => array( self::HANDLES ) ),
+					'tiers' => array( array( 'qty' => 4, 'pct' => 10 ) ),
+				)
+			),
+			'all'  => Rules::clean(
+				array(
+					'on'    => 1,
+					'offer' => array( 'products' => array( 900 ) ),
+				)
+			),
+		);
+
+		$this->assertSame( 'legs', Rules::pick_tiers( $rules, $this->knob() ) );
+		$this->assertNull( Rules::pick_tiers( $rules, $this->dispenser() ) );
+		$this->assertSame( 'all', Rules::pick( $rules, $this->knob(), 'cart' ), 'the tiers rule does not offer products' );
+	}
+
+	public function test_an_unknown_kind_reads_as_an_offer_rule(): void {
+		$this->assertSame( 'offer', Rules::clean( array( 'kind' => 'magic' ) )['kind'] );
+	}
 }

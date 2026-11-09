@@ -15577,3 +15577,113 @@ msgid "Bought together in %d paid order, and not offered beside each other today
 msgid_plural "Bought together in %d paid orders, and not offered beside each other today."
 msgstr[0] "נקנו יחד בהזמנה משולמת אחת, והיום לא מוצעים זה לצד זה."
 msgstr[1] "נקנו יחד ב-%d הזמנות משולמות, והיום לא מוצעים זה לצד זה."
+
+msgid "Most popular"
+msgstr "הכי נפוץ"
+
+msgid "Best value"
+msgstr "הכי משתלם"
+
+msgid "How many? More units, lower price"
+msgstr "כמה צריך? יותר יחידות, מחיר נמוך יותר"
+
+msgid "One unit"
+msgstr "יחידה אחת"
+
+msgid "Any other quantity works too; the cart prices it by the tier it reaches."
+msgstr "אפשר גם כל כמות אחרת. הסל מתמחר אותה לפי המדרגה שהגיעה אליה."
+
+msgid "No label"
+msgstr "בלי תווית"
+
+msgid "Price per unit"
+msgstr "מחיר ליחידה"
+
+msgid "Selected on opening"
+msgstr "מסומן בפתיחה"
+
+msgid "none"
+msgstr "בלי"
+
+msgid "One unit selected on opening"
+msgstr "יחידה אחת מסומנת בפתיחה"
+
+msgid "Add a tier"
+msgstr "הוסף מדרגה"
+
+msgid "Type a price per unit or a percent; the other follows."
+msgstr "מקלידים מחיר ליחידה או אחוז, והשני מתעדכן לבד."
+
+msgid "Remove this tier"
+msgstr "הסר את המדרגה"
+
+msgid "This product has tiers of its own"
+msgstr "למוצר הזה מדרגות משלו"
+
+msgid "Unticked, it takes the tiers of the rule \"%s\"."
+msgstr "כשלא מסומן, המוצר מקבל את המדרגות של הכלל \"%s\"."
+
+msgid "Unticked, it has no tiers: no rule under Theme settings → Offers covers it."
+msgstr "כשלא מסומן, אין למוצר מדרגות: אף כלל בהגדרות תבנית ← הצעות לא חל עליו."
+
+msgid "Tiers show on the product page as cards beside the quantity, and the cart prices every quantity by the tier it reaches. Simple products only."
+msgstr "המדרגות מוצגות בדף המוצר ככרטיסים ליד הכמות, והסל מתמחר כל כמות לפי המדרגה שהגיעה אליה. למוצרים פשוטים בלבד."
+
+msgid "Product page and cart"
+msgstr "דף מוצר וסל"
+
+msgid "For products in"
+msgstr "למוצרים ב"
+
+msgid "tiers"
+msgstr "מדרגות"
+
+msgid "%1$d units, %2$d%%"
+msgstr "%1$d יחידות, %2$d%%"
+
+msgid "What the rule does"
+msgstr "מה הכלל עושה"
+
+msgid "Offers products"
+msgstr "מציע מוצרים"
+
+msgid "one product beside what is in the cart"
+msgstr "מוצר אחד לצד מה שבסל"
+
+msgid "two for less, four for even less"
+msgstr "שניים בפחות, ארבעה בעוד פחות"
+
+msgid "The tiers"
+msgstr "המדרגות"
+
+msgid "The percent comes off each product's own price. A product with tiers of its own keeps them."
+msgstr "האחוז יורד מהמחיר של כל מוצר. מוצר עם מדרגות משלו שומר עליהן."
+
+msgid "%s: quantity tiers"
+msgstr "%s: מדרגות כמות"
+
+msgid "%1$s: tiers of %2$s"
+msgstr "%1$s: מדרגות של %2$s"
+
+msgid "Set on the product itself."
+msgstr "נקבעו במוצר עצמו."
+
+msgid "From a rule; the product can be given tiers of its own."
+msgstr "מכלל; אפשר לתת למוצר מדרגות משלו."
+
+msgid "Tiers need a product with one price: simple, in stock."
+msgstr "מדרגות צריכות מוצר עם מחיר אחד: פשוט, במלאי."
+
+msgid "Set tiers on the product"
+msgstr "קבע מדרגות במוצר"
+
+msgid "Set quantity tiers"
+msgstr "קבע מדרגות כמות"
+
+msgid "Give these tiers to all of them"
+msgstr "תן את המדרגות האלה לכולם"
+
+msgid "%1$d paid order took more than one unit from %2$s; these are the quantities it took."
+msgid_plural "%1$d paid orders took more than one unit from %2$s; these are the quantities they took."
+msgstr[0] "הזמנה משולמת אחת לקחה יותר מיחידה אחת מ%2$s; אלה הכמויות שנלקחו."
+msgstr[1] "%1$d הזמנות משולמות לקחו יותר מיחידה אחת מ%2$s; אלה הכמויות שנלקחו."

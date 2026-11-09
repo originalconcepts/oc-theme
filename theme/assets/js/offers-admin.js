@@ -48,6 +48,23 @@
 		} );
 	} );
 
+	// What the rule does: the sections follow the choice.
+	document.querySelectorAll( '[data-oc-of-kind]' ).forEach( function ( radio ) {
+		radio.addEventListener( 'change', function () {
+			var kind = radio.value;
+			document.querySelectorAll( '[data-oc-of-only]' ).forEach( function ( box ) {
+				box.hidden = box.getAttribute( 'data-oc-of-only' ) !== kind;
+			} );
+			document.querySelectorAll( '.oc-of__kind' ).forEach( function ( card ) {
+				card.classList.toggle( 'is-on', card.contains( radio ) );
+			} );
+			var lab = document.querySelector( '[data-oc-of-when-label]' );
+			if ( lab ) {
+				lab.textContent = lab.getAttribute( 'data-' + kind ) || lab.textContent;
+			}
+		} );
+	} );
+
 	// A deletion asks once.
 	document.querySelectorAll( '[data-oc-of-confirm]' ).forEach( function ( a ) {
 		a.addEventListener( 'click', function ( e ) {

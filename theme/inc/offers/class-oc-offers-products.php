@@ -260,7 +260,15 @@ final class Products_Admin {
 			<select class="wc-product-search" name="target" style="width:260px;" data-placeholder="<?php esc_attr_e( 'Product to offer beside them…', 'oc-theme' ); ?>" data-action="woocommerce_json_search_products" data-allow_clear="true"></select>
 			<button class="oc-of__btn oc-of__btn--primary" name="what" value="bulk_add"><?php esc_html_e( 'Offer it beside all of them', 'oc-theme' ); ?></button>
 			<button class="oc-of__btn" name="what" value="bulk_clear" data-oc-of-confirm><?php esc_html_e( 'Remove their hand-picked offers', 'oc-theme' ); ?></button>
+			<details class="oc-of__bulktiers">
+				<summary class="oc-of__btn"><?php esc_html_e( 'Set quantity tiers', 'oc-theme' ); ?></summary>
+				<div class="oc-of__bulktiers-body">
+					<?php echo Tiers_Admin::table( 'bt', array(), 1, 0.0, false ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built escaped. ?>
+					<button class="oc-of__btn oc-of__btn--primary" name="what" value="bulk_tiers"><?php esc_html_e( 'Give these tiers to all of them', 'oc-theme' ); ?></button>
+				</div>
+			</details>
 		</form>
+		<?php echo Tiers_Admin::style() . Tiers_Admin::script(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static. ?>
 
 		<table class="oc-of__table">
 			<thead>
@@ -322,6 +330,7 @@ final class Products_Admin {
 	 */
 	private static function row( \WC_Product $product, array $t, bool $open ): void {
 		$id     = $product->get_id();
+		$tiers  = Tiers::for_product( $id );
 		$xsell  = array_map( 'intval', $product->get_cross_sell_ids() );
 		$bt     = Bought_Together::ids( $id );
 		$source = self::source_of( $product );
@@ -371,7 +380,13 @@ final class Products_Admin {
 				<?php endif; ?>
 			</td>
 			<td class="oc-of__cell"><span class="oc-of__tag oc-of__tag--auto"><?php esc_html_e( 'Automatic', 'oc-theme' ); ?></span></td>
-			<td class="oc-of__cell"><span class="oc-of__none"><?php esc_html_e( 'Not set', 'oc-theme' ); ?></span></td>
+			<td class="oc-of__cell">
+				<?php if ( $tiers ) : ?>
+					<span class="oc-of__tag <?php echo 'manual' === $tiers['src'] ? 'oc-of__tag--manual' : 'oc-of__tag--rule'; ?>"><?php echo 'manual' === $tiers['src'] ? esc_html__( 'Picked by hand', 'oc-theme' ) : esc_html__( 'Rule', 'oc-theme' ); ?></span><?php echo esc_html( implode( ', ', array_map( 'strval', array_column( $tiers['tiers'], 'qty' ) ) ) ); ?>
+				<?php else : ?>
+					<span class="oc-of__none"><?php esc_html_e( 'Not set', 'oc-theme' ); ?></span>
+				<?php endif; ?>
+			</td>
 			<td class="oc-of__cell">
 				<?php if ( $added ) : ?>
 					<strong><?php echo esc_html( number_format_i18n( $added ) ); ?></strong> <?php echo esc_html( _x( 'added', 'offers column', 'oc-theme' ) ); ?><br /><strong class="oc-of__good"><?php echo wp_kses_post( wc_price( $rev ) ); ?></strong>
@@ -385,7 +400,7 @@ final class Products_Admin {
 		</tr>
 		<?php
 		if ( $open ) {
-			self::detail( $product, $xsell, $bt, $source );
+			self::detail( $product, $xsell, $bt, $source, $tiers );
 		}
 	}
 
@@ -396,8 +411,9 @@ final class Products_Admin {
 	 * @param int[]                          $xsell   Cross-sell ids.
 	 * @param int[]                          $bt      Bought-together ids.
 	 * @param array{src:string,label:string} $source  Who answers in the cart.
+	 * @param array<string,mixed>|null       $tiers   The product's tiers, if any.
 	 */
-	private static function detail( \WC_Product $product, array $xsell, array $bt, array $source ): void {
+	private static function detail( \WC_Product $product, array $xsell, array $bt, array $source, ?array $tiers ): void {
 		$id = $product->get_id();
 
 		$bundle_note = sprintf(
@@ -492,7 +508,22 @@ final class Products_Admin {
 
 				<div class="oc-of__box">
 					<div class="oc-of__boxh"><strong><?php esc_html_e( 'Quantity tiers, on the product page', 'oc-theme' ); ?></strong></div>
-					<span class="oc-of__muted"><?php esc_html_e( 'Not set for this product.', 'oc-theme' ); ?></span>
+					<?php if ( $tiers ) : ?>
+						<div class="oc-of__chips">
+							<?php foreach ( $tiers['tiers'] as $tier ) : ?>
+								<span class="oc-of__chip"><?php
+								/* translators: 1: quantity. 2: percent off. */
+								echo esc_html( sprintf( __( '%1$d units, %2$d%%', 'oc-theme' ), $tier['qty'], $tier['pct'] ) );
+								?></span>
+							<?php endforeach; ?>
+						</div>
+						<span class="oc-of__muted"><?php echo 'manual' === $tiers['src'] ? esc_html__( 'Set on the product itself.', 'oc-theme' ) : esc_html__( 'From a rule; the product can be given tiers of its own.', 'oc-theme' ); ?></span>
+					<?php elseif ( ! Tiers::fits( $product ) ) : ?>
+						<span class="oc-of__muted"><?php esc_html_e( 'Tiers need a product with one price: simple, in stock.', 'oc-theme' ); ?></span>
+					<?php else : ?>
+						<span class="oc-of__muted"><?php esc_html_e( 'Not set for this product.', 'oc-theme' ); ?></span>
+					<?php endif; ?>
+					<a href="<?php echo esc_url( (string) get_edit_post_link( $id ) ); ?>" class="oc-of__btn"><?php esc_html_e( 'Set tiers on the product', 'oc-theme' ); ?></a>
 				</div>
 
 			</div>
@@ -557,6 +588,22 @@ final class Products_Admin {
 		} elseif ( 'bulk_clear' === $what ) {
 			foreach ( $ids as $id ) {
 				self::change( $id, $kind, array(), null );
+			}
+		} elseif ( 'bulk_tiers' === $what ) {
+			$posted = Tiers_Admin::posted( 'bt' );
+
+			foreach ( $ids as $id ) {
+				if ( 'product' === get_post_type( $id ) ) {
+					update_post_meta(
+						$id,
+						Tiers::META,
+						array(
+							'own'     => 1,
+							'tiers'   => $posted['tiers'],
+							'default' => $posted['default'],
+						)
+					);
+				}
 			}
 		}
 

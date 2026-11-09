@@ -178,3 +178,16 @@
 .oc-of__pages{display:flex;gap:6px;align-items:center;margin-top:12px}
 .oc-of__pages a,.oc-of__pages span{min-width:36px;height:36px;display:inline-flex;align-items:center;justify-content:center;border-radius:8px;border:1px solid #c3c8cf;background:var(--surface);color:var(--ink);padding:0 8px}
 .oc-of__pages span{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:600}
+
+/* kinds + bulk tiers */
+.oc-of__kinds{display:flex;flex-wrap:wrap;gap:10px}
+.oc-of__kind{display:flex;align-items:flex-start;gap:10px;flex:1 1 240px;padding:12px 14px;border:1.5px solid #c3c8cf;border-radius:10px;cursor:pointer;background:var(--surface)}
+.oc-of__kind input{margin:4px 0 0;accent-color:var(--acc)}
+.oc-of__kind span{display:flex;flex-direction:column}
+.oc-of__kind small{color:var(--ink2)}
+.oc-of__kind.is-on{border-color:var(--acc);background:var(--acc-soft)}
+.oc-of__bulktiers{position:relative}
+.oc-of__bulktiers>summary{list-style:none;display:inline-flex}
+.oc-of__bulktiers>summary::-webkit-details-marker{display:none}
+.oc-of__bulktiers-body{position:absolute;inset-inline-start:0;top:calc(100% + 8px);z-index:20;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:14px;box-shadow:0 8px 24px rgba(0,0,0,.12);display:flex;flex-direction:column;gap:10px;align-items:flex-start}
+.oc-of__bulktiers-body .oc-of__btn{color:#fff;border-color:var(--acc)}
