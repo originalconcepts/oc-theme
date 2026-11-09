@@ -79,7 +79,7 @@ final class Cart {
 				'ship_text'    => '',
 				'ship_done'    => '',
 				'ship_mid'     => '',        // A station on the way; empty = from the shipping rules.
-				'ship_mid_price' => '',
+				'ship_midpr'   => '',
 				'ship_fill'    => '',        // Bar colours; empty = the brand colour.
 				'ship_bg'      => '',
 				'ship_quiet'   => 0,         // The plain bar: no coloured band.
@@ -611,7 +611,7 @@ final class Cart {
 
 		$goal   = (float) $s['ship_goal'];
 		$mid_at = (float) $s['ship_mid'];
-		$mid_pr = (float) $s['ship_mid_price'];
+		$mid_pr = (float) $s['ship_midpr'];
 
 		if ( Shipping::enabled() ) {
 			// The theme prices delivery: the bar counts only what earns
@@ -1559,7 +1559,7 @@ final class Cart {
 						<td>
 							<p style="margin:0;"><label><?php esc_html_e( 'Threshold override', 'oc-theme' ); ?> <input type="number" name="ship_goal" value="<?php echo esc_attr( (string) $s['ship_goal'] ); ?>" min="0" style="width:110px;" placeholder="<?php esc_attr_e( 'Auto', 'oc-theme' ); ?>" /></label></p>
 							<p class="description"><?php esc_html_e( 'Empty = taken automatically from the free-shipping minimum in the shipping zones.', 'oc-theme' ); ?></p>
-							<p style="margin:10px 0 0;"><label><?php esc_html_e( 'A station on the way', 'oc-theme' ); ?> <input type="number" name="ship_mid" value="<?php echo esc_attr( (string) $s['ship_mid'] ); ?>" min="0" style="width:110px;" placeholder="<?php esc_attr_e( 'Sum', 'oc-theme' ); ?>" /></label> <label><?php esc_html_e( 'delivery price from there', 'oc-theme' ); ?> <input type="number" name="ship_mid_price" value="<?php echo esc_attr( (string) $s['ship_mid_price'] ); ?>" min="0" step="0.01" style="width:110px;" /></label></p>
+							<p style="margin:10px 0 0;"><label><?php esc_html_e( 'A station on the way', 'oc-theme' ); ?> <input type="number" name="ship_mid" value="<?php echo esc_attr( (string) $s['ship_mid'] ); ?>" min="0" style="width:110px;" placeholder="<?php esc_attr_e( 'Sum', 'oc-theme' ); ?>" /></label> <label><?php esc_html_e( 'delivery price from there', 'oc-theme' ); ?> <input type="number" name="ship_midpr" value="<?php echo esc_attr( (string) $s['ship_midpr'] ); ?>" min="0" step="0.01" style="width:110px;" /></label></p>
 							<p class="description"><?php esc_html_e( 'A second stop on the bar before free delivery. Empty = taken from the theme\'s shipping rules when they set one. The price here is only what the bar says; the shipping rules decide what is charged.', 'oc-theme' ); ?></p>
 							<p style="margin:10px 0 0;"><input type="text" name="ship_text" value="<?php echo esc_attr( (string) $s['ship_text'] ); ?>" placeholder="<?php esc_attr_e( '[sum] left for free shipping', 'oc-theme' ); ?>" class="regular-text" /></p>
 							<p style="margin:6px 0 0;"><input type="text" name="ship_done" value="<?php echo esc_attr( (string) $s['ship_done'] ); ?>" placeholder="<?php esc_attr_e( 'You earned free shipping!', 'oc-theme' ); ?>" class="regular-text" /></p>
@@ -1630,7 +1630,7 @@ final class Cart {
 					'empty_text' => sanitize_text_field( wp_unslash( (string) ( $_POST['empty_text'] ?? '' ) ) ),
 					'ship_goal'  => '' === trim( (string) ( $_POST['ship_goal'] ?? '' ) ) ? '' : (string) max( 0, (int) $_POST['ship_goal'] ), // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- cast to int.
 					'ship_mid'   => '' === trim( (string) ( $_POST['ship_mid'] ?? '' ) ) ? '' : (string) max( 0, (int) $_POST['ship_mid'] ), // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- cast to int.
-					'ship_mid_price' => '' === trim( (string) ( $_POST['ship_mid_price'] ?? '' ) ) ? '' : (string) max( 0.0, (float) $_POST['ship_mid_price'] ), // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- cast to float.
+					'ship_midpr' => '' === trim( (string) ( $_POST['ship_midpr'] ?? '' ) ) ? '' : (string) max( 0.0, (float) $_POST['ship_midpr'] ), // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- cast to float.
 					'ship_text'  => sanitize_text_field( wp_unslash( (string) ( $_POST['ship_text'] ?? '' ) ) ),
 					'ship_done'  => sanitize_text_field( wp_unslash( (string) ( $_POST['ship_done'] ?? '' ) ) ),
 					'up_show'    => empty( $_POST['up_show'] ) ? 0 : 1,
