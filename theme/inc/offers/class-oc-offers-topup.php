@@ -200,7 +200,7 @@ final class Topup {
 		$seen = array();
 		$out  = array();
 
-		$take = static function ( int $id, string $tag ) use ( &$seen, &$out, $in_cart, $left ): void {
+		$take = static function ( int $id, string $tag ) use ( &$seen, &$out, $in_cart ): void {
 			if ( isset( $seen[ $id ] ) || in_array( $id, $in_cart, true ) || count( $out ) >= self::LIMIT ) {
 				return;
 			}
