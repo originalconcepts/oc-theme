@@ -111,29 +111,67 @@ final class Topup {
 		}
 
 		// Price bands around the gap, the way a marketplace filters: under
-		// what is missing, just over it (covers it in one), well over it.
-		// Only the bands with something in them get a chip.
-		$step  = self::step( $left );
-		$bands = array(
+		// what is missing (two cheap ones add up), just over it (covers it
+		// in one), well over it. The "just over" band is as wide as it has
+		// to be to hold something — a quarter of the gap, or two, or three
+		// — and when nothing stands beyond it, or nothing stands in it, a
+		// single "over the gap" chip says so. Only bands with something in
+		// them get a chip.
+		$step   = self::step( $left );
+		$prices = array_map( static fn ( array $i ): float => $i['price'], $items );
+		$bands  = array(
 			'under' => array(
 				0.0,
 				$left,
 				/* translators: %s: a sum. */
 				sprintf( __( 'Up to %s', 'oc-theme' ), Cart::plain_price( wc_price( $left ) ) ),
 			),
-			'near'  => array(
+		);
+
+		$upper = 0.0;
+
+		foreach ( array( 1, 2, 3 ) as $k ) {
+			$try = $left + $k * $step;
+
+			foreach ( $prices as $price ) {
+				if ( $price >= $left && $price < $try ) {
+					$upper = $try;
+					break 2;
+				}
+			}
+		}
+
+		$beyond = false;
+
+		foreach ( $prices as $price ) {
+			if ( $upper > 0 && $price >= $upper ) {
+				$beyond = true;
+				break;
+			}
+		}
+
+		if ( $upper > 0 && $beyond ) {
+			$bands['near'] = array(
 				$left,
-				$left + $step,
+				$upper,
 				/* translators: 1: a sum. 2: a higher sum. */
-				sprintf( _x( '%1$s to %2$s', 'price band', 'oc-theme' ), Cart::plain_price( wc_price( $left ) ), Cart::plain_price( wc_price( $left + $step ) ) ),
-			),
-			'over'  => array(
-				$left + $step,
+				sprintf( _x( '%1$s to %2$s', 'price band', 'oc-theme' ), Cart::plain_price( wc_price( $left ) ), Cart::plain_price( wc_price( $upper ) ) ),
+			);
+			$bands['over'] = array(
+				$upper,
 				INF,
 				/* translators: %s: a sum. */
-				sprintf( __( 'Over %s', 'oc-theme' ), Cart::plain_price( wc_price( $left + $step ) ) ),
-			),
-		);
+				sprintf( __( 'Over %s', 'oc-theme' ), Cart::plain_price( wc_price( $upper ) ) ),
+			);
+		} else {
+			$bands['over'] = array(
+				$left,
+				INF,
+				/* translators: %s: a sum. */
+				sprintf( __( 'Over %s', 'oc-theme' ), Cart::plain_price( wc_price( $left ) ) ),
+			);
+		}
+
 		$count = array_fill_keys( array_keys( $bands ), 0 );
 
 		foreach ( $items as $i => $item ) {
@@ -250,9 +288,17 @@ final class Topup {
 		$seen = array();
 		$out  = array();
 
-		$take = static function ( int $id, string $tag ) use ( &$seen, &$out, $in_cart ): void {
+		// Viewed before: the ids the browser noted, newest first. A product
+		// the shopper looked at is tagged as such whatever shelf brings it.
+		$viewed = self::viewed();
+
+		$take = static function ( int $id, string $tag ) use ( &$seen, &$out, $in_cart, $viewed ): void {
 			if ( isset( $seen[ $id ] ) || in_array( $id, $in_cart, true ) || count( $out ) >= self::LIMIT ) {
 				return;
+			}
+
+			if ( in_array( $id, $viewed, true ) ) {
+				$tag = 'seen';
 			}
 
 			$seen[ $id ] = true;
@@ -294,9 +340,7 @@ final class Topup {
 			$take( $id, 'match' );
 		}
 
-		// 2. Viewed before: the ids the browser noted, newest first.
-		$viewed = self::viewed();
-
+		// 2. Viewed before.
 		foreach ( array_slice( $viewed, 0, $share ) as $id ) {
 			$take( $id, 'seen' );
 		}
