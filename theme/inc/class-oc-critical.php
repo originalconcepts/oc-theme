@@ -69,6 +69,17 @@ final class Critical {
 	const LAZY_JS = '(function(){var io,on=false;function show(el){var p=el.parentNode;if(p&&"PICTURE"===p.tagName){[].forEach.call(p.querySelectorAll("source"),function(s){if(s.dataset.ocSrcset){s.setAttribute("srcset",s.dataset.ocSrcset);s.removeAttribute("data-oc-srcset")}})}if(el.dataset.ocSrcset){el.setAttribute("srcset",el.dataset.ocSrcset);el.removeAttribute("data-oc-srcset")}if(el.dataset.ocSrc){el.setAttribute("src",el.dataset.ocSrc);el.removeAttribute("data-oc-src")}el.removeAttribute("loading")}function all(){return document.querySelectorAll("img[data-oc-src],img[data-oc-srcset]")}function scan(){[].forEach.call(all(),function(el){if(el.ocL){return}el.ocL=1;if(io){io.observe(el)}else{show(el)}})}function later(){if(on){return}on=true;if("IntersectionObserver" in window){io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){io.unobserve(e.target);show(e.target)}})},{rootMargin:"1200px 600px"})}scan();if("MutationObserver" in window){new MutationObserver(scan).observe(document.body,{childList:true,subtree:true})}}window.ocLazy={now:function(){var h=innerHeight*1.1,w=innerWidth*1.1;[].forEach.call(all(),function(el){var r=el.getBoundingClientRect();if(r.top<h&&r.bottom>-100&&r.left<w&&r.right>-100&&(r.width||r.height)){show(el)}});if("complete"===document.readyState){later()}else{addEventListener("load",later);setTimeout(later,4000)}},show:show,later:later,scan:scan}})();';
 
 	/**
+	 * The late stylesheets switch to the screen together, once every one
+	 * of them has arrived (or failed). Switched one by one as they landed,
+	 * a small early sheet (WooCommerce's layout) overrode the inlined
+	 * theme rules for the second or so until the theme's own piece came:
+	 * the checkout's billing column shrank to 48% and then widened. N is
+	 * how many there are; after a long wait the ones that are there go
+	 * on and any straggler goes on alone. __N__ is filled in per page.
+	 */
+	const LATE_JS = '(function(){var w=[],go=false,t=null;function flip(){go=true;w.forEach(function(x){x.l.media=x.m});w=[]}window.ocLateCss=function(l,m){if(go){l.media=m;return}w.push({l:l,m:m});if(w.length>=__N__){flip()}else if(!t){t=setTimeout(flip,6000)}}})();';
+
+	/**
 	 * Classes a script adds the moment the page runs, before the full
 	 * stylesheet can be counted on: their rules ride along.
 	 */
@@ -429,7 +440,7 @@ final class Critical {
 			if ( 0 === $i ) {
 				$late = '<meta name="oc-critical" content="' . esc_attr( $type . ':' . substr( $key, -12 ) . ':' . self::token() ) . '">' . "\n"
 					. '<style id="oc-critical">' . $css . '</style>' . "\n"
-					. '<script id="oc-lazy">' . self::LAZY_JS . '</script>' . "\n" . $late;
+					. '<script id="oc-lazy">' . self::LAZY_JS . str_replace( '__N__', (string) count( $links ), self::LATE_JS ) . '</script>' . "\n" . $late;
 			}
 
 			$out = substr_replace( $out, $late, $l['at'], strlen( $l['tag'] ) );
@@ -555,7 +566,8 @@ final class Critical {
 	private static function late( string $tag, string $media ): string {
 		$pre = (string) preg_replace( '#\bmedia=([\'"])[^\'"]*\1#i', '', $tag );
 		$pre = (string) preg_replace( '#\bid=([\'"])([^\'"]+)\1#', 'id="$2-late"', $pre );
-		$pre = (string) preg_replace( '#\s*/?>$#', ' media="print" fetchpriority="low" onload="this.onload=null;this.media=' . esc_attr( wp_json_encode( $media ) ) . '">', $pre );
+		$m   = esc_attr( wp_json_encode( $media ) );
+		$pre = (string) preg_replace( '#\s*/?>$#', ' media="print" fetchpriority="low" onload="this.onload=null;ocLateCss(this,' . $m . ')" onerror="this.onerror=null;ocLateCss(this,' . $m . ')">', $pre );
 
 		return $pre . '<noscript>' . $tag . '</noscript>';
 	}
