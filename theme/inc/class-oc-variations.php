@@ -224,6 +224,10 @@ final class Variations {
 		// variation — the same default the catalogue card shows.
 		add_filter( 'woocommerce_product_get_default_attributes', array( $this, 'first_variation_default' ), 10, 2 );
 
+		// An address that names the attribute in Hebrew (the product feed's
+		// links, and most shared ones) still opens on that variation.
+		add_action( 'template_redirect', array( $this, 'readable_keys' ), 0 );
+
 		// A colour with its own gallery lends its first picture to the
 		// variation data, so Woo's own image update agrees with the gallery
 		// instead of putting the product's main photo back over it.
@@ -255,6 +259,45 @@ final class Variations {
 		$d = $this->default_term( $product );
 
 		return null === $d ? $link : add_query_arg( 'attribute_' . rawurlencode( $d['key'] ), $d['value'], (string) $link );
+	}
+
+	/**
+	 * A variation asked for under its readable key opens on that variation.
+	 *
+	 * Woo, and opening_gallery() here, read the choice from attribute_<key>,
+	 * where the key is the attribute's sanitized name, so a Hebrew one is
+	 * percent-encoded: attribute_pa_%d7%a6%d7%91%d7%a2. An address that
+	 * spells the key in Hebrew (?attribute_pa_צבע=גרפיט, which is how the
+	 * product feed and most shared links write it) matched no field, and the
+	 * page opened on the default variation at the default price. Merchant
+	 * Center read that price and turned the advertised variation down as a
+	 * price mismatch, and the shopper who clicked the advert saw another
+	 * size and colour.
+	 *
+	 * The readable key is copied to the field Woo reads. A field already in
+	 * the address wins. The value is copied as it came: every reader unslashes
+	 * and cleans it, and matches it through sanitize_title() either way.
+	 */
+	public function readable_keys(): void {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput -- a choice in the address, copied for the readers that clean it.
+		foreach ( array_keys( $_GET ) as $name ) {
+			$name  = (string) $name;
+			$value = $_GET[ $name ];
+
+			if ( 0 !== strpos( $name, 'attribute_' ) || ! is_string( $value ) ) {
+				continue;
+			}
+
+			$field = 'attribute_' . sanitize_title( substr( $name, strlen( 'attribute_' ) ) );
+
+			if ( $field === $name || isset( $_GET[ $field ] ) ) {
+				continue;
+			}
+
+			$_GET[ $field ]     = $value;
+			$_REQUEST[ $field ] = $value;
+		}
+		// phpcs:enable
 	}
 
 	/**
