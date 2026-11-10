@@ -332,13 +332,13 @@ final class Card {
 	 * details and its options, with "add" at the foot.
 	 *
 	 * @param \WC_Product $product The product.
-	 * @param string      $class   The wrapper's class.
+	 * @param string      $wrap    The button's class.
 	 */
-	private static function co_picture( \WC_Product $product, string $class ): string {
+	private static function co_picture( \WC_Product $product, string $wrap ): string {
 		/* translators: %s: product name. */
 		$label = sprintf( __( 'Details of %s', 'oc-theme' ), $product->get_name() );
 
-		return '<button type="button" class="' . esc_attr( $class ) . '" data-oc-offer-view="' . absint( $product->get_id() ) . '" aria-label="' . esc_attr( $label ) . '">' . $product->get_image( 'woocommerce_thumbnail' ) . '</button>';
+		return '<button type="button" class="' . esc_attr( $wrap ) . '" data-oc-offer-view="' . absint( $product->get_id() ) . '" aria-label="' . esc_attr( $label ) . '">' . $product->get_image( 'woocommerce_thumbnail' ) . '</button>';
 	}
 
 	/**

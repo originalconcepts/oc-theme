@@ -212,7 +212,7 @@ final class Topup {
 	/**
 	 * Which band a price falls in.
 	 *
-	 * @param float                            $price The price.
+	 * @param float                                         $price The price.
 	 * @param array<string,array{0:float,1:float,2:string}> $bands The bands: key => [from, to, label].
 	 */
 	private static function band( float $price, array $bands ): string {
