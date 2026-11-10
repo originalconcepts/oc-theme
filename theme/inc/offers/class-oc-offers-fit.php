@@ -144,7 +144,11 @@ final class Fit {
 		uasort(
 			$scored,
 			static function ( array $a, array $b ): int {
-				return $b[0] <=> $a[0] ?: $b[1] <=> $a[1];
+				if ( $a[0] !== $b[0] ) {
+					return $b[0] <=> $a[0];
+				}
+
+				return $b[1] <=> $a[1];
 			}
 		);
 
@@ -262,7 +266,7 @@ final class Fit {
 	 * @return string[]
 	 */
 	public static function colours( array $tokens ): array {
-		return self::families( $tokens, self::lexicon( self::COLOURS ) );
+		return self::named_in( $tokens, self::lexicon( self::COLOURS ) );
 	}
 
 	/**
@@ -272,7 +276,7 @@ final class Fit {
 	 * @return string[]
 	 */
 	public static function materials( array $tokens ): array {
-		return self::families( $tokens, self::lexicon( self::MATERIALS ) );
+		return self::named_in( $tokens, self::lexicon( self::MATERIALS ) );
 	}
 
 	/**
@@ -297,7 +301,7 @@ final class Fit {
 	}
 
 	/**
-	 * word => family, built once from a family => words table.
+	 * The word => family map, built once from a family => words table.
 	 *
 	 * @param array<string,string> $table family => words.
 	 * @return array<string,string>
@@ -329,11 +333,11 @@ final class Fit {
 	 * @param array<string,string> $lexicon word => family.
 	 * @return string[]
 	 */
-	private static function families( array $tokens, array $lexicon ): array {
+	private static function named_in( array $tokens, array $lexicon ): array {
 		$out = array();
 
 		foreach ( $tokens as $word ) {
-			$family = self::family( $word, $lexicon );
+			$family = self::kind_of( $word, $lexicon );
 
 			if ( '' !== $family ) {
 				$out[ $family ] = true;
@@ -349,7 +353,7 @@ final class Fit {
 	 * @param string               $word    Lower-case word.
 	 * @param array<string,string> $lexicon word => family.
 	 */
-	private static function family( string $word, array $lexicon ): string {
+	private static function kind_of( string $word, array $lexicon ): string {
 		$tries = array( $word );
 
 		// One Hebrew prefix letter.
@@ -433,7 +437,7 @@ final class Fit {
 		$words = array();
 
 		foreach ( $tokens as $word ) {
-			if ( '' === self::family( $word, self::lexicon( self::COLOURS ) ) && '' === self::family( $word, self::lexicon( self::MATERIALS ) ) && ! in_array( $word, self::STOP, true ) && ! is_numeric( $word ) ) {
+			if ( '' === self::kind_of( $word, self::lexicon( self::COLOURS ) ) && '' === self::kind_of( $word, self::lexicon( self::MATERIALS ) ) && ! in_array( $word, self::STOP, true ) && ! is_numeric( $word ) ) {
 				$words[] = $word;
 			}
 		}

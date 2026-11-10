@@ -313,7 +313,7 @@ final class Topup {
 		$raw = (string) wp_unslash( $_COOKIE['woocommerce_recently_viewed'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- digits only are kept below.
 		$ids = array();
 
-		foreach ( preg_split( '/[|,\s]+/', $raw ) ?: array() as $piece ) {
+		foreach ( (array) preg_split( '/[|,\s]+/', $raw ) as $piece ) {
 			if ( ctype_digit( $piece ) && (int) $piece > 0 ) {
 				$ids[] = (int) $piece;
 			}
