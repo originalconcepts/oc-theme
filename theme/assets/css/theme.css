@@ -6505,30 +6505,54 @@ body.oc-swatch-square-cat .oc-mcart__attr-swatch { border-radius: 4px; }
 	-webkit-line-clamp: 2;
 	-webkit-box-orient: vertical;
 	overflow: hidden;
-	min-block-size: 2.6em;
 }
 
-.oc-topup__price { font-weight: 700; }
+/* price and button sit at the card's foot: a one-line name keeps them
+ * close, a two-line neighbour stretches the row, not the gap */
+.oc-topup__price { margin-block-start: auto; font-weight: 700; }
 
+/* the theme's own button: its corners, its CTA colour as an outline, and
+ * on hover the fill the shop chose (a sweep, or a plain fill) */
 .oc-topup__add {
+	position: relative;
+	z-index: 0;
+	overflow: hidden;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	min-block-size: 42px;
-	border-radius: 999px;
-	border: 1.5px solid var(--oc-ink);
+	border-radius: var(--oc-cta-r, 8px);
+	border: 1.5px solid var(--oc-cta, var(--oc-ink));
 	background: var(--oc-surface, #fff);
-	color: var(--oc-ink);
+	color: var(--oc-cta, var(--oc-ink));
 	font: inherit;
 	font-weight: 600;
 	text-decoration: none;
 	cursor: pointer;
+	transition: color .35s ease;
 }
+
+.oc-topup__add::before {
+	content: "";
+	position: absolute;
+	inset: -1px;
+	z-index: -1;
+	background: var(--oc-cta, var(--oc-ink));
+	transform: translateX(-102%);
+	transition: transform .35s ease;
+}
+
+.oc-cta-hover-sweep-rtl .oc-topup__add::before { transform: translateX(102%); }
+
+.oc-cta-hover-none .oc-topup__add::before,
+.oc-cta-hover-invert .oc-topup__add::before { transition: none; }
 
 .oc-topup__add.loading { opacity: .5; pointer-events: none; }
 
 @media (hover: hover) {
-	.oc-topup__add:hover { background: var(--oc-ink); color: var(--oc-surface, #fff); }
+	.oc-topup__add:hover { color: var(--oc-cta-tx, #fff); }
+
+	.oc-topup__add:hover::before { transform: translateX(0); }
 }
 
 .oc-topup__foot {
@@ -6550,8 +6574,10 @@ body.oc-swatch-square-cat .oc-mcart__attr-swatch { border-radius: 4px; }
 .oc-topup__checkout {
 	flex: 1;
 	/* the CTA sweep's ::before is clipped here, as .woocommerce clips it
-	 * elsewhere — the sheet hangs off the body, outside that wrapper */
+	 * elsewhere — the sheet hangs off the body, outside that wrapper;
+	 * z-index 0 keeps the sweep above the button's own background */
 	position: relative;
+	z-index: 0;
 	overflow: hidden;
 	display: flex;
 	align-items: center;
@@ -6563,6 +6589,12 @@ body.oc-swatch-square-cat .oc-mcart__attr-swatch { border-radius: 4px; }
 	font-weight: 600;
 	text-decoration: none;
 }
+
+/* the hover the shop chose, outside .woocommerce */
+.oc-cta-hover-sweep-ltr .oc-topup__checkout:hover,
+.oc-cta-hover-sweep-rtl .oc-topup__checkout:hover { color: var(--oc-cta); transition: color .35s ease; }
+
+.oc-cta-hover-invert .oc-topup__checkout:hover { background: var(--oc-surface, #fff); color: var(--oc-cta); box-shadow: inset 0 0 0 1.5px var(--oc-cta); }
 
 html.oc-topup-open { overflow: hidden; }
 
@@ -9190,6 +9222,14 @@ body.oc-no-qty.single-product div.product form.cart .woocommerce-variation-add-t
 	block-size: var(--oc-cta-h, 48px);
 	border-radius: var(--oc-cta-r, 8px);
 }
+
+/* OC Reviews on the catalogue card: the stars go above the title, and the
+ * invisible placeholder the plugin prints on every unrated card (to keep
+ * rows level) goes away — it read as a hole between title and price. The
+ * plugin pins its rules with :not(#ocr-iso), hence the !important. */
+.woocommerce ul.products li.product .oc-card-text > .ocr-rating-row { order: -1; margin-block: 8px 0; }
+
+.woocommerce ul.products li.product .oc-card-text > .ocr-rating-row--placeholder { display: none !important; }
 
 /* Our stock line replaces Woo's availability text — no double stock talk. */
 .oc-stockline-on.single-product div.product p.stock { display: none; }
