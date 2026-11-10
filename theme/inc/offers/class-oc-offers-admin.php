@@ -672,10 +672,9 @@ final class Admin {
 					<div>
 						<div class="oc-of__places" role="group" aria-labelledby="oc-of-where">
 							<?php foreach ( self::places() as $key => $label ) : ?>
-								<?php if ( in_array( $key, Rules::PAGE_PLACES, true ) ) : ?>
-									<?php continue; ?>
-								<?php endif; ?>
+								<?php if ( ! in_array( $key, Rules::PAGE_PLACES, true ) ) : ?>
 								<label class="oc-of__place<?php echo in_array( $key, $rule['where'], true ) ? ' is-on' : ''; ?>"><input type="checkbox" name="where[]" value="<?php echo esc_attr( $key ); ?>" <?php checked( in_array( $key, $rule['where'], true ) ); ?> data-oc-of-place /> <?php echo esc_html( $label ); ?></label>
+								<?php endif; ?>
 							<?php endforeach; ?>
 						</div>
 						<span class="oc-of__sub" id="oc-of-where-page"><?php esc_html_e( 'And on the product page, as one of its lists:', 'oc-theme' ); ?></span>
