@@ -75,9 +75,11 @@ final class Critical {
 	 * theme rules for the second or so until the theme's own piece came:
 	 * the checkout's billing column shrank to 48% and then widened. N is
 	 * how many there are; after a long wait the ones that are there go
-	 * on and any straggler goes on alone. __N__ is filled in per page.
+	 * on — but never before the theme's own sheets are in, since those
+	 * are the ones a stray early sheet would be seen beating — and any
+	 * straggler goes on alone. __N__ is filled in per page.
 	 */
-	const LATE_JS = '(function(){var w=[],go=false,t=null;function flip(){go=true;w.forEach(function(x){x.l.media=x.m});w=[]}window.ocLateCss=function(l,m){if(go){l.media=m;return}w.push({l:l,m:m});if(w.length>=__N__){flip()}else if(!t){t=setTimeout(flip,6000)}}})();';
+	const LATE_JS = '(function(){var w=[],go=false,late=false;function flip(){go=true;w.forEach(function(x){x.l.media=x.m});w=[]}function mine(){return [].every.call(document.querySelectorAll(\'link[rel=stylesheet][id^="oc-theme"]\'),function(l){return l.ocIn})}window.ocLateCss=function(l,m){l.ocIn=1;if(go){l.media=m;return}w.push({l:l,m:m});if(w.length>=__N__||(late&&mine())){flip()}};setTimeout(function(){late=true;if(mine()){flip()}},6000)})();';
 
 	/**
 	 * Classes a script adds the moment the page runs, before the full
