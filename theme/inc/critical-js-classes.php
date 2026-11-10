@@ -260,6 +260,7 @@ return array(
 	'oc-voverlay__media',
 	'oc-voverlay__nav--next',
 	'oc-voverlay__nav--prev',
+	'oc-vp--over',
 	'oc-vp-name',
 	'oc-vp__add',
 	'oc-vp__add--notify',

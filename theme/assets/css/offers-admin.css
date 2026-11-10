@@ -32,6 +32,8 @@
 .oc-of__pill{padding:4px 12px;border-radius:999px;background:#eef2f7;color:#3d434a;font-size:13px;white-space:nowrap}
 .oc-of__pctform{padding-top:12px;border-top:1px solid var(--line)}
 .oc-of__pctform label{font-weight:600}
+.oc-of__pctform select{min-height:34px;border:1px solid var(--line);border-radius:6px;padding:0 8px;font:inherit}
+.oc-of__break{flex-basis:100%;height:0}
 .oc-of__num{display:inline-flex;align-items:center;gap:6px}
 .oc-of__num input{width:72px!important;min-height:40px;text-align:center;border:1px solid #c3c8cf;border-radius:8px;font:inherit}
 

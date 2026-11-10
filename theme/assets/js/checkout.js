@@ -1495,9 +1495,38 @@
 /* ---------- the checkout offer: one tick adds it, unticking takes it out ---------- */
 
 ( function () {
+	function refresh() {
+		if ( window.jQuery ) {
+			window.jQuery( document.body ).trigger( 'update_checkout' );
+		}
+	}
+
+	/* The quick pick, over the page, as an offer: it adds at the offer's
+	 * price, and the checkout is read again once it does. */
+	function pick( id, url, cancel ) {
+		if ( ! window.__ocQuickPick ) {
+			return;
+		}
+		window.__ocQuickPick( id, '', {
+			over: true,
+			offer: { url: url, place: 'checkout' },
+			done: refresh,
+			cancel: cancel || null
+		} );
+	}
+
 	document.addEventListener( 'change', function ( event ) {
 		var box = event.target.closest( '[data-oc-offer-co]' );
 		if ( ! box ) {
+			return;
+		}
+		// A product with options: the tick opens the quick pick and lands
+		// for real only when the pick adds; closed without adding, it
+		// comes off again.
+		if ( box.checked && box.hasAttribute( 'data-pick' ) ) {
+			pick( box.getAttribute( 'data-add' ), box.getAttribute( 'data-url-add' ), function () {
+				box.checked = false;
+			} );
 			return;
 		}
 		var card = box.closest( '.oc-offer--co' );
@@ -1517,10 +1546,17 @@
 		}
 		fetch( url, { method: 'POST', credentials: 'same-origin', body: data } )
 			.catch( function () {} )
-			.then( function () {
-				if ( window.jQuery ) {
-					window.jQuery( document.body ).trigger( 'update_checkout' );
-				}
-			} );
+			.then( refresh );
+	} );
+
+	// The picture opens the product's details — and its options, when it
+	// has them — with "add" at the foot.
+	document.addEventListener( 'click', function ( event ) {
+		var view = event.target.closest( '[data-oc-offer-view]' );
+		if ( ! view ) {
+			return;
+		}
+		var card = view.closest( '.oc-offer--co' );
+		pick( view.getAttribute( 'data-oc-offer-view' ), card ? card.getAttribute( 'data-url-view' ) : '' );
 	} );
 }() );

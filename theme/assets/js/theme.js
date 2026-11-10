@@ -5129,6 +5129,21 @@ window.ocWhenShown( function () {
 				} );
 		} );
 
+		// An offered product with options: the quick pick chooses the
+		// option and adds it at the offer's price; the fragments it brings
+		// back redraw the card.
+		document.addEventListener( 'click', function ( event ) {
+			var pick = event.target.closest( '[data-oc-offer-pick]' );
+			if ( ! pick || ! window.__ocQuickPick ) {
+				return;
+			}
+			window.__ocQuickPick( pick.dataset.ocOfferPick, '', {
+				over: true,
+				offer: { url: pick.dataset.url, place: 'cart' },
+				done: function () {}
+			} );
+		} );
+
 		// "Seen" is counted when the card really is on screen — the panel
 		// open, the card scrolled into view — once per offer per page.
 		if ( window.IntersectionObserver && window.MutationObserver ) {
@@ -5268,6 +5283,15 @@ window.ocWhenShown( function () {
 					var kinds = ( item.getAttribute( 'data-kinds' ) || '' ).split( ' ' );
 					item.hidden = want !== 'all' && kinds.indexOf( want ) === -1;
 				} );
+				return;
+			}
+			// Options to choose: the quick pick, above the sheet; once it
+			// adds, the sheet is read again for the cart as it is now.
+			var pick = event.target.closest( '[data-oc-topup-pick]' );
+			if ( pick ) {
+				if ( window.__ocQuickPick ) {
+					window.__ocQuickPick( pick.getAttribute( 'data-oc-topup-pick' ), '', { over: true, done: fill } );
+				}
 				return;
 			}
 			var add = event.target.closest( '[data-oc-topup-add]' );
@@ -8873,6 +8897,10 @@ window.ocWhenShown( function () {
 		var st = null;
 		var vpWant = '';
 		var vpLast = null;
+		/* How this opening was asked for: over a drawer or a sheet; as an
+		 * offer (added through the offer's endpoint, at its price); what
+		 * to do once added, or when closed without adding. */
+		var vpOpts = {};
 
 		function vpAttr( s ) {
 			return String( s ).replace( /&/g, '&amp;' ).replace( /"/g, '&quot;' );
@@ -9096,6 +9124,14 @@ window.ocWhenShown( function () {
 				window.ocA11y.leave( vpLast );
 				vpLast = null;
 			}
+
+			// Closed without adding: whoever opened it (a checkout tick,
+			// say) takes its mark back.
+			if ( st && st.cancel && ! st.added ) {
+				var cancel = st.cancel;
+				st.cancel = null;
+				cancel();
+			}
 		}
 
 		/* ----- the gallery ----- */
@@ -9297,7 +9333,7 @@ window.ocWhenShown( function () {
 
 		function vpRender( d, productId ) {
 			vp.classList.remove( 'is-loading' );
-			st = { id: productId, sel: {}, groups: d.groups, vars: d.vars, price: d.price, img: d.img, imgs: d.imgs || [], simple: !! d.simple, buy: !! d.buy, qty: !! d.qty, notifyVar: 0 };
+			st = { id: productId, sel: {}, groups: d.groups, vars: d.vars, price: d.price, img: d.img, imgs: d.imgs || [], simple: !! d.simple, buy: !! d.buy, qty: !! d.qty, notifyVar: 0, offer: vpOpts.offer || null, done: vpOpts.done || null, cancel: vpOpts.cancel || null, added: false };
 
 			vp.querySelector( '.oc-vp__name' ).textContent = d.name;
 			vp.querySelector( '.oc-vp__name' ).href = d.url;
@@ -9470,7 +9506,17 @@ window.ocWhenShown( function () {
 			btn.classList.add( 'is-busy' );
 
 			var data = new FormData();
-			data.append( 'action', 'oc_cart_add' );
+			var url = L.ajaxUrl || '/wp-admin/admin-ajax.php';
+
+			// An offer goes through the offer's own door, which works out
+			// the discount from the cart itself.
+			if ( st.offer ) {
+				url = st.offer.url;
+				data.append( 'place', st.offer.place || 'cart' );
+			} else {
+				data.append( 'action', 'oc_cart_add' );
+			}
+
 			data.append( 'product_id', st.id );
 			data.append( 'quantity', vp.querySelector( '.oc-vp__qty input' ).value || '1' );
 
@@ -9481,12 +9527,14 @@ window.ocWhenShown( function () {
 				} );
 			}
 
-			fetch( L.ajaxUrl || '/wp-admin/admin-ajax.php', { method: 'POST', credentials: 'same-origin', body: data } )
+			fetch( url, { method: 'POST', credentials: 'same-origin', body: data } )
 				.then( function ( r ) { return r.json(); } )
 				.then( function ( out ) {
 					btn.classList.remove( 'is-busy' );
 
 					if ( out && out.fragments ) {
+						st.added = true;
+
 						Object.keys( out.fragments ).forEach( function ( selector ) {
 							document.querySelectorAll( selector ).forEach( function ( el ) {
 								var box = document.createElement( 'div' );
@@ -9509,7 +9557,11 @@ window.ocWhenShown( function () {
 							btn.classList.remove( 'oc-added' );
 							vpClose();
 
-							if ( window.__ocOpenDrawer ) {
+							// Opened from a sheet or a checkout card: that
+							// caller shows the result; no drawer, no toast.
+							if ( st.done ) {
+								st.done();
+							} else if ( window.__ocOpenDrawer ) {
 								window.__ocOpenDrawer();
 							} else if ( window.__ocCartToast ) {
 								window.__ocCartToast( vp.querySelector( '.oc-vp__name' ).textContent, st.img || '' );
@@ -9566,10 +9618,14 @@ window.ocWhenShown( function () {
 				} );
 		}
 
-		function vpOpen( productId, preSlug ) {
+		function vpOpen( productId, preSlug, opts ) {
 			if ( ! vp ) {
 				vpBuild();
 			}
+
+			vpOpts = opts || {};
+			// Over the cart drawer or the top-up sheet: above them.
+			vp.classList.toggle( 'oc-vp--over', !! vpOpts.over );
 
 			// A colour already chosen outside (a card swatch) arrives marked —
 			// the panel's own vpWant machinery picks it up during the build.

@@ -15126,7 +15126,7 @@ msgid "Add to cart for %s"
 msgstr "הוספה לסל ב-%s"
 
 msgid "Adding it gets you free shipping"
-msgstr "ההוספה מזכה אתכם במשלוח חינם"
+msgstr "וקבלו משלוח חינם!"
 
 msgid "After adding it, only %s left for free shipping"
 msgstr "אחרי ההוספה נשארים רק %s למשלוח חינם"
@@ -15824,16 +15824,16 @@ msgid "You viewed"
 msgstr "צפיתם בהם"
 
 msgid "Goes with your cart"
-msgstr "מתאים למה שבסל"
+msgstr "מתאים למה שבחרת"
 
 msgid "You viewed it"
-msgstr "צפיתם בו"
+msgstr "צפית בו"
 
 msgid "Sells a lot"
 msgstr "נמכר הרבה"
 
 msgid "in your cart"
-msgstr "בסל שלכם"
+msgstr "בסל שלך"
 
 msgid "Checkout: one tick before paying"
 msgstr "קופה: סימון אחד לפני התשלום"
@@ -15882,3 +15882,34 @@ msgstr "לפתוח אותה לבד כשהלקוח לוחץ ״מעבר לקופה
 
 msgid "Once per cart state: a shopper who closes it and taps \"checkout\" again goes straight through. Needs the offers switched on."
 msgstr "פעם אחת לכל מצב של הסל: מי שסוגר אותה ולוחץ שוב ״מעבר לקופה״ עובר ישר לקופה. דורש שההצעות יהיו פעילות."
+
+msgid "At the checkout"
+msgstr "בקופה"
+
+msgid "One product, with its details"
+msgstr "מוצר אחד, עם הפרטים שלו"
+
+msgid "Up to %d products, in a strip"
+msgstr "עד %d מוצרים, ברצועה"
+
+msgid "A strip shows picture, name and price, a tick on each; a product with options opens the quick pick."
+msgstr "ברצועה: תמונה, שם ומחיר וסימון על כל מוצר; מוצר עם אפשרויות פותח את חלון הבחירה המהירה."
+
+msgid "Details of %s"
+msgstr "פרטי %s"
+
+msgid "Added to your order"
+msgstr "נוסף להזמנה"
+
+msgctxt "price band"
+msgid "%1$s to %2$s"
+msgstr "%1$s–%2$s"
+
+msgid "Over %s"
+msgstr "מעל %s"
+
+msgid "Like what you chose"
+msgstr "דומה למה שבחרת"
+
+msgid "%d%% off"
+msgstr "%d%% הנחה"

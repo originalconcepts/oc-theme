@@ -26,3 +26,4 @@ require_once __DIR__ . '/../theme/inc/class-oc-redirects.php';
 require_once __DIR__ . '/../theme/inc/stats/class-oc-stats-track.php';
 require_once __DIR__ . '/../theme/inc/offers/class-oc-offers-rules.php';
 require_once __DIR__ . '/../theme/inc/offers/class-oc-offers-fit.php';
+require_once __DIR__ . '/../theme/inc/offers/class-oc-offers-topup.php';

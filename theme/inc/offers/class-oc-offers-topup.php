@@ -4,9 +4,10 @@
  *
  * The bar says what is missing; this sheet shows what would cover it. It
  * opens from the bar, carries the bar itself as its title, lets the
- * shopper narrow the grid (one product that covers it / under the gap /
- * seen before), and adds with one tap. Everything in it is fetched when it
- * opens, so it always speaks of the cart as it is.
+ * shopper narrow the grid by price band around the gap (under it, just
+ * over it, well over it), and adds with one tap — or through the quick
+ * pick when there are options to choose. Everything in it is fetched when
+ * it opens, so it always speaks of the cart as it is.
  *
  * @package OC_Theme
  */
@@ -16,8 +17,9 @@ declare( strict_types = 1 );
 namespace OC\Theme\Offers;
 
 use OC\Theme\Cart;
+use OC\Theme\Product_Linked;
 
-defined( 'ABSPATH' ) || exit;
+defined( 'ABSPATH' ) || defined( 'OC_TESTS' ) || exit;
 
 /**
  * The sheet.
@@ -27,7 +29,7 @@ final class Topup {
 	/**
 	 * How many products the grid holds at most.
 	 */
-	const LIMIT = 12;
+	const LIMIT = 16;
 
 	/**
 	 * Hook in.
@@ -108,30 +110,44 @@ final class Topup {
 			return $html . '<p class="oc-topup__empty">' . esc_html__( 'Nothing to suggest right now.', 'oc-theme' ) . '</p>';
 		}
 
-		$has_over  = false;
-		$has_under = false;
-		$has_seen  = false;
+		// Price bands around the gap, the way a marketplace filters: under
+		// what is missing, just over it (covers it in one), well over it.
+		// Only the bands with something in them get a chip.
+		$step  = self::step( $left );
+		$bands = array(
+			'under' => array(
+				0.0,
+				$left,
+				/* translators: %s: a sum. */
+				sprintf( __( 'Up to %s', 'oc-theme' ), Cart::plain_price( wc_price( $left ) ) ),
+			),
+			'near'  => array(
+				$left,
+				$left + $step,
+				/* translators: 1: a sum. 2: a higher sum. */
+				sprintf( _x( '%1$s to %2$s', 'price band', 'oc-theme' ), Cart::plain_price( wc_price( $left ) ), Cart::plain_price( wc_price( $left + $step ) ) ),
+			),
+			'over'  => array(
+				$left + $step,
+				INF,
+				/* translators: %s: a sum. */
+				sprintf( __( 'Over %s', 'oc-theme' ), Cart::plain_price( wc_price( $left + $step ) ) ),
+			),
+		);
+		$count = array_fill_keys( array_keys( $bands ), 0 );
 
-		foreach ( $items as $item ) {
-			$has_over  = $has_over || $item['price'] >= $left;
-			$has_under = $has_under || $item['price'] < $left;
-			$has_seen  = $has_seen || 'seen' === $item['tag'];
+		foreach ( $items as $i => $item ) {
+			$items[ $i ]['band'] = self::band( $item['price'], $bands );
+			++$count[ $items[ $i ]['band'] ];
 		}
 
 		$html .= '<div class="oc-topup__chips" role="group" aria-label="' . esc_attr__( 'Narrow down', 'oc-theme' ) . '">';
 		$html .= '<button type="button" class="oc-topup__chip is-on" data-oc-topup-chip="all" aria-pressed="true">' . esc_html__( 'All', 'oc-theme' ) . '</button>';
 
-		if ( $has_over ) {
-			$html .= '<button type="button" class="oc-topup__chip" data-oc-topup-chip="over" aria-pressed="false">' . esc_html__( 'Covers it in one', 'oc-theme' ) . '</button>';
-		}
-
-		if ( $has_under ) {
-			/* translators: %s: the sum still missing. */
-			$html .= '<button type="button" class="oc-topup__chip" data-oc-topup-chip="under" aria-pressed="false">' . esc_html( sprintf( __( 'Up to %s', 'oc-theme' ), Cart::plain_price( wc_price( $left ) ) ) ) . '</button>';
-		}
-
-		if ( $has_seen ) {
-			$html .= '<button type="button" class="oc-topup__chip" data-oc-topup-chip="seen" aria-pressed="false">' . esc_html__( 'You viewed', 'oc-theme' ) . '</button>';
+		foreach ( $bands as $key => $band ) {
+			if ( $count[ $key ] > 0 ) {
+				$html .= '<button type="button" class="oc-topup__chip" data-oc-topup-chip="' . esc_attr( $key ) . '" aria-pressed="false">' . esc_html( $band[2] ) . '</button>';
+			}
 		}
 
 		$html .= '</div>';
@@ -139,6 +155,7 @@ final class Topup {
 		$tags = array(
 			'match'   => __( 'Goes with your cart', 'oc-theme' ),
 			'seen'    => __( 'You viewed it', 'oc-theme' ),
+			'alike'   => __( 'Like what you chose', 'oc-theme' ),
 			'popular' => __( 'Sells a lot', 'oc-theme' ),
 		);
 
@@ -150,19 +167,18 @@ final class Topup {
 			$product = $item['product'];
 			$id      = $product->get_id();
 			$link    = get_permalink( $id );
-			$kinds   = ( $item['price'] >= $left ? 'over ' : 'under ' ) . ( 'seen' === $item['tag'] ? 'seen' : '' );
 
-			$html .= '<article class="oc-topup__item" data-oc-topup-item data-kinds="' . esc_attr( trim( $kinds ) ) . '">';
+			$html .= '<article class="oc-topup__item" data-oc-topup-item data-kinds="' . esc_attr( $item['band'] ) . '">';
 			$html .= '<a class="oc-topup__media" href="' . esc_url( (string) $link ) . '" tabindex="-1" aria-hidden="true">' . $product->get_image( 'woocommerce_thumbnail' ) . '</a>';
 			$html .= '<span class="oc-topup__tag oc-topup__tag--' . esc_attr( $item['tag'] ) . '">' . esc_html( $tags[ $item['tag'] ] ) . '</span>';
 			$html .= '<a class="oc-topup__name" href="' . esc_url( (string) $link ) . '">' . esc_html( $product->get_name() ) . '</a>';
 			$html .= '<span class="oc-topup__price">' . $product->get_price_html() . '</span>';
 
-			if ( $product->is_type( 'simple' ) ) {
-				$html .= '<button type="button" class="oc-topup__add" data-oc-topup-add="' . absint( $id ) . '">' . esc_html__( 'Add to cart', 'oc-theme' ) . '</button>';
-			} else {
-				$html .= '<a class="oc-topup__add oc-topup__add--view" href="' . esc_url( (string) $link ) . '">' . esc_html__( 'Choose options', 'oc-theme' ) . '</a>';
-			}
+			// The product page's own button word on both: a simple product
+			// is added where it stands, one with options opens the quick
+			// pick — the same panel the catalogue's cards open.
+			$act   = $product->is_type( 'simple' ) ? 'data-oc-topup-add' : 'data-oc-topup-pick';
+			$html .= '<button type="button" class="oc-topup__add" ' . $act . '="' . absint( $id ) . '">' . esc_html( $product->single_add_to_cart_text() ) . '</button>';
 
 			$html .= '</article>';
 		}
@@ -180,9 +196,41 @@ final class Topup {
 	}
 
 	/**
-	 * What to show: what goes with the cart, what the shopper viewed, and
-	 * what sells in the cart's categories — each product once, nothing
-	 * already in the cart, nothing unbuyable.
+	 * How wide the "just over" band is: about a quarter of the gap,
+	 * rounded up to a round number — 200 missing gives 200–250, 120 gives
+	 * 120–150, 37 gives 37–47.
+	 *
+	 * @param float $left The sum still missing.
+	 */
+	public static function step( float $left ): float {
+		$raw = max( 1.0, $left / 4 );
+		$mag = 10 ** floor( log10( $raw ) );
+
+		return (float) ( ceil( $raw / $mag ) * $mag );
+	}
+
+	/**
+	 * Which band a price falls in.
+	 *
+	 * @param float                            $price The price.
+	 * @param array<string,array{0:float,1:float,2:string}> $bands The bands: key => [from, to, label].
+	 */
+	private static function band( float $price, array $bands ): string {
+		foreach ( $bands as $key => $band ) {
+			if ( $price >= $band[0] && $price < $band[1] ) {
+				return $key;
+			}
+		}
+
+		return (string) array_key_last( $bands );
+	}
+
+	/**
+	 * What to show: what goes with the cart (the cart's and the checkout's
+	 * offers — hand-picked, rules, automatic), what the shopper viewed,
+	 * what is like what they chose, and what sells in the cart's
+	 * categories — each product once, nothing already in the cart, nothing
+	 * unbuyable.
 	 *
 	 * @param float $left The sum still missing.
 	 * @return array<int,array{product:\WC_Product,price:float,tag:string}>
@@ -227,16 +275,23 @@ final class Topup {
 			);
 		};
 
-		// Each shelf gets its share, so every chip has something behind it:
-		// what goes with the cart, what the shopper viewed, what covers
-		// the gap in one, what fits under it — then the shelves fill up.
+		// Each shelf gets its share, so no one source floods the grid: what
+		// goes with the cart, what the shopper viewed, what is like what
+		// they chose, what sells there — then the shelves fill up.
 		$share = (int) ceil( self::LIMIT / 4 );
 
-		// 1. Goes with what is in the cart.
-		$matches = Offers::cart_offers( 8 );
+		// 1. Goes with what is in the cart: the cart's offers and the ones
+		// the shop set for the checkout, each product once.
+		$matches = array();
 
-		foreach ( array_slice( $matches, 0, $share ) as $offer ) {
-			$take( $offer['product']->get_id(), 'match' );
+		foreach ( array_merge( Offers::cart_offers( 8 ), Offers::cart_offers( 8, 'checkout' ) ) as $offer ) {
+			$matches[ $offer['product']->get_id() ] = true;
+		}
+
+		$matches = array_keys( $matches );
+
+		foreach ( array_slice( $matches, 0, $share ) as $id ) {
+			$take( $id, 'match' );
 		}
 
 		// 2. Viewed before: the ids the browser noted, newest first.
@@ -246,16 +301,24 @@ final class Topup {
 			$take( $id, 'seen' );
 		}
 
-		// 3. Sells in the cart's categories and covers the gap in one.
+		// 3. Like what is in the cart: the newest line's nearest products
+		// first, then the other lines', taken in turns.
+		$alike = self::alike();
+
+		foreach ( array_slice( $alike, 0, $share ) as $id ) {
+			$take( $id, 'alike' );
+		}
+
+		// 4. Sells in the cart's categories and covers the gap in one,
+		// then what fits under it, the closest first.
 		foreach ( self::selling( $cats, $left, 'over', 12 ) as $id ) {
-			if ( count( $out ) >= 3 * $share ) {
+			if ( count( $out ) >= 4 * $share ) {
 				break;
 			}
 
 			$take( $id, 'popular' );
 		}
 
-		// 4. Sells there and fits under the gap, the closest first.
 		foreach ( self::selling( $cats, $left, 'under', 12 ) as $id ) {
 			if ( count( $out ) >= self::LIMIT ) {
 				break;
@@ -264,14 +327,17 @@ final class Topup {
 			$take( $id, 'popular' );
 		}
 
-		// 5. Whatever room is left: the rest of the matches and the
-		// viewed, then anything that sells there.
-		foreach ( array_slice( $matches, $share ) as $offer ) {
-			$take( $offer['product']->get_id(), 'match' );
+		// 5. Whatever room is left: the rest of each shelf.
+		foreach ( array_slice( $matches, $share ) as $id ) {
+			$take( $id, 'match' );
 		}
 
 		foreach ( array_slice( $viewed, $share ) as $id ) {
 			$take( $id, 'seen' );
+		}
+
+		foreach ( array_slice( $alike, $share ) as $id ) {
+			$take( $id, 'alike' );
 		}
 
 		foreach ( self::selling( $cats, $left, 'any', 24 ) as $id ) {
@@ -296,6 +362,37 @@ final class Topup {
 		);
 
 		return $out;
+	}
+
+	/**
+	 * Products like the ones in the cart: each line's nearest few, the
+	 * newest line first, taken in turns so one line does not crowd out
+	 * the rest.
+	 *
+	 * @return int[]
+	 */
+	private static function alike(): array {
+		$lists = array();
+
+		foreach ( array_reverse( WC()->cart->get_cart() ) as $item ) {
+			$lists[] = Product_Linked::rank_similar( (int) $item['product_id'], 6 );
+
+			if ( count( $lists ) >= 4 ) {
+				break;
+			}
+		}
+
+		$out = array();
+
+		for ( $i = 0; $i < 6; $i++ ) {
+			foreach ( $lists as $list ) {
+				if ( isset( $list[ $i ] ) ) {
+					$out[] = (int) $list[ $i ];
+				}
+			}
+		}
+
+		return array_values( array_unique( $out ) );
 	}
 
 	/**

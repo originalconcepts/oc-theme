@@ -250,8 +250,18 @@ final class Admin {
 				<?php wp_nonce_field( 'oc_offers_save' ); ?>
 				<label for="oc-of-gpct"><?php esc_html_e( 'Discount on automatic and hand-picked offers', 'oc-theme' ); ?></label>
 				<span class="oc-of__num"><input type="number" id="oc-of-gpct" name="pct" value="<?php echo esc_attr( (string) $s['pct'] ); ?>" min="0" max="<?php echo esc_attr( (string) Rules::MAX_PERCENT ); ?>" /><span>%</span></span>
-				<button class="oc-of__btn oc-of__btn--quiet"><?php esc_html_e( 'Save', 'oc-theme' ); ?></button>
 				<span class="oc-of__muted"><?php esc_html_e( '0 = no discount. A rule sets its own.', 'oc-theme' ); ?></span>
+				<span class="oc-of__break"></span>
+				<label for="oc-of-comax"><?php esc_html_e( 'At the checkout', 'oc-theme' ); ?></label>
+				<select name="co_max" id="oc-of-comax">
+					<option value="1" <?php selected( 1, $s['co_max'] ); ?>><?php esc_html_e( 'One product, with its details', 'oc-theme' ); ?></option>
+					<?php for ( $n = 2; $n <= Offers::CO_MAX; $n++ ) : ?>
+						<?php /* translators: %d: how many products. */ ?>
+						<option value="<?php echo absint( $n ); ?>" <?php selected( $n, $s['co_max'] ); ?>><?php echo esc_html( sprintf( __( 'Up to %d products, in a strip', 'oc-theme' ), $n ) ); ?></option>
+					<?php endfor; ?>
+				</select>
+				<span class="oc-of__muted"><?php esc_html_e( 'A strip shows picture, name and price, a tick on each; a product with options opens the quick pick.', 'oc-theme' ); ?></span>
+				<button class="oc-of__btn oc-of__btn--quiet"><?php esc_html_e( 'Save', 'oc-theme' ); ?></button>
 			</form>
 		</section>
 
@@ -894,8 +904,9 @@ final class Admin {
 
 		check_admin_referer( 'oc_offers_save' );
 
-		$s        = Offers::settings();
-		$s['pct'] = isset( $_POST['pct'] ) ? (int) $_POST['pct'] : 0;
+		$s           = Offers::settings();
+		$s['pct']    = isset( $_POST['pct'] ) ? (int) $_POST['pct'] : 0;
+		$s['co_max'] = isset( $_POST['co_max'] ) ? (int) $_POST['co_max'] : 1;
 
 		Offers::save( $s );
 		Stats::install();

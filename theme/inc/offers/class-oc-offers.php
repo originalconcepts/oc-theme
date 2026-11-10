@@ -60,6 +60,11 @@ final class Offers {
 	const COUNTED = '_oc_offer_counted';
 
 	/**
+	 * The most products the checkout strip shows.
+	 */
+	const CO_MAX = 6;
+
+	/**
 	 * How many orders must hold two products together before "bought
 	 * together" is believed. One order is a coincidence.
 	 */
@@ -108,7 +113,7 @@ final class Offers {
 	 * Settings with defaults. The module ships switched off; once on, the
 	 * automatic layer is on with it.
 	 *
-	 * @return array{on:int,auto:int,pct:int,ver:int,rules:array<string,array<string,mixed>>}
+	 * @return array{on:int,auto:int,pct:int,co_max:int,ver:int,rules:array<string,array<string,mixed>>}
 	 */
 	public static function settings(): array {
 		if ( null !== self::$settings ) {
@@ -125,12 +130,15 @@ final class Offers {
 			}
 		}
 
+		// co_max: how many products the checkout offers at once — one card,
+		// or a strip of up to six.
 		self::$settings = array(
-			'on'    => empty( $saved['on'] ) ? 0 : 1,
-			'auto'  => isset( $saved['auto'] ) && ! $saved['auto'] ? 0 : 1,
-			'pct'   => min( Rules::MAX_PERCENT, max( 0, (int) ( $saved['pct'] ?? 0 ) ) ),
-			'ver'   => max( 1, (int) ( $saved['ver'] ?? 1 ) ),
-			'rules' => $rules,
+			'on'     => empty( $saved['on'] ) ? 0 : 1,
+			'auto'   => isset( $saved['auto'] ) && ! $saved['auto'] ? 0 : 1,
+			'pct'    => min( Rules::MAX_PERCENT, max( 0, (int) ( $saved['pct'] ?? 0 ) ) ),
+			'co_max' => min( self::CO_MAX, max( 1, (int) ( $saved['co_max'] ?? 1 ) ) ),
+			'ver'    => max( 1, (int) ( $saved['ver'] ?? 1 ) ),
+			'rules'  => $rules,
 		);
 
 		return self::$settings;
@@ -162,11 +170,12 @@ final class Offers {
 		update_option(
 			self::OPTION,
 			array(
-				'on'    => empty( $settings['on'] ) ? 0 : 1,
-				'auto'  => empty( $settings['auto'] ) ? 0 : 1,
-				'pct'   => min( Rules::MAX_PERCENT, max( 0, (int) ( $settings['pct'] ?? 0 ) ) ),
-				'ver'   => self::settings()['ver'] + 1,
-				'rules' => $rules,
+				'on'     => empty( $settings['on'] ) ? 0 : 1,
+				'auto'   => empty( $settings['auto'] ) ? 0 : 1,
+				'pct'    => min( Rules::MAX_PERCENT, max( 0, (int) ( $settings['pct'] ?? 0 ) ) ),
+				'co_max' => min( self::CO_MAX, max( 1, (int) ( $settings['co_max'] ?? 1 ) ) ),
+				'ver'    => self::settings()['ver'] + 1,
+				'rules'  => $rules,
 			)
 		);
 
@@ -567,15 +576,17 @@ final class Offers {
 	/* -------------------------------------------------------------- cart */
 
 	/**
-	 * A product that can be added with one tap: there, visible, in stock,
-	 * priced, and with nothing to choose first.
+	 * A product that can be offered: there, visible, in stock, priced —
+	 * simple (one tap adds it) or variable (its card opens the quick pick).
 	 *
 	 * @param int $id Product id.
 	 */
 	public static function addable( int $id ): ?\WC_Product {
 		$product = wc_get_product( $id );
 
-		if ( ! $product instanceof \WC_Product || ! $product->is_type( 'simple' ) ) {
+		// A product with options is offered too: its card opens the quick
+		// pick, where the option is chosen, instead of adding blind.
+		if ( ! $product instanceof \WC_Product || ! $product->is_type( array( 'simple', 'variable' ) ) ) {
 			return null;
 		}
 
