@@ -1487,6 +1487,11 @@ final class Build {
 	 * the single-encoded address that does select the variation, which is
 	 * the whole point of advertising it.
 	 *
+	 * That decode also turns the key into Hebrew (attribute_pa_צבע), while
+	 * Woo looks for the encoded attribute_pa_%d7%a6… field. The product page
+	 * accepts the readable key (Variations::readable_keys()), so the link stays
+	 * readable and items already in Merchant Center keep their address.
+	 *
 	 * @param \WC_Product         $item  Variation, or the product.
 	 * @param \WC_Product         $owner Its product.
 	 * @param array<string,mixed> $feed  Feed.
