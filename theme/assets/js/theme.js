@@ -5328,7 +5328,9 @@ window.ocWhenShown( function () {
 		} );
 
 		document.addEventListener( 'keydown', function ( event ) {
-			if ( event.key === 'Escape' ) {
+			// Escape closes the quick pick when that is open over the sheet,
+			// and the sheet only on the next press.
+			if ( event.key === 'Escape' && ! document.querySelector( '.oc-vp.is-open' ) ) {
 				close();
 			}
 		} );

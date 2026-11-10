@@ -6547,6 +6547,10 @@ body.oc-swatch-square-cat .oc-mcart__attr-swatch { border-radius: 4px; }
 
 .oc-topup__checkout {
 	flex: 1;
+	/* the CTA sweep's ::before is clipped here, as .woocommerce clips it
+	 * elsewhere — the sheet hangs off the body, outside that wrapper */
+	position: relative;
+	overflow: hidden;
 	display: flex;
 	align-items: center;
 	justify-content: center;
