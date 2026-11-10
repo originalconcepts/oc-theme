@@ -15117,7 +15117,7 @@ msgid "An offer for your cart"
 msgstr "הצעה לסל שלכם"
 
 msgid "Goes with what you chose"
-msgstr "מתאים למה שבחרתם"
+msgstr "מתאים למה שבחרת"
 
 msgid "%d%% off when added now"
 msgstr "%d%% הנחה בהוספה עכשיו"

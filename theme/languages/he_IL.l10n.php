@@ -1693,7 +1693,7 @@ return array(
 		"Goes with it" => "הולך עם זה",
 		"Goes with it, in the cart panel and on the cart page" => "משלימים, בסל הצד ובעמוד הסל",
 		"Goes with it: the offer in the cart, and \"goes well with\" on the product page" => "משלימים: ההצעה בסל, ו\"הולך טוב עם\" בדף המוצר",
-		"Goes with what you chose" => "מתאים למה שבחרתם",
+		"Goes with what you chose" => "מתאים למה שבחרת",
 		"Goes with your cart" => "מתאים למה שבסל",
 		"Goes-with alignment" => "יישור מוצרים משתלבים",
 		"Goes-with background" => "רקע אזור מוצרים משתלבים",

@@ -6130,10 +6130,19 @@ body.oc-swatch-square-cat .oc-mcart__attr-swatch { border-radius: 4px; }
 
 .oc-cartpage__main .oc-offer { max-inline-size: 520px; }
 
-/* -- the checkout offer: one tick in the order review -- */
-.oc-offer-co-row > td { padding: 0 0 12px !important; border: 0 !important; }
+/* -- the checkout offer: one tick above the payment methods -- */
+.oc-offer-co-slot:empty { display: none; }
 
-.oc-offer--co { margin-block-start: 0; gap: 10px; }
+.oc-offer-co-slot { margin-block: 4px 18px; }
+
+.oc-offer--co { margin-block-start: 0; gap: 10px; text-align: start; }
+
+/* the checkout's own label and table rules must not reach in */
+.oc-checkout .oc-offer--co label.oc-offer__tick { display: flex; margin: 0; padding: 0; font-weight: 400; }
+
+.oc-offer--co strong { display: block; font-weight: 600; line-height: 1.35; }
+
+.oc-offer--co .oc-offer__price { justify-content: flex-start; margin: 2px 0 0; }
 
 .oc-offer--co.is-busy { opacity: .6; pointer-events: none; }
 
@@ -6147,6 +6156,7 @@ body.oc-swatch-square-cat .oc-mcart__attr-swatch { border-radius: 4px; }
 	align-items: flex-start;
 	gap: 12px;
 	cursor: pointer;
+	min-block-size: 44px;
 }
 
 .oc-offer__tick input {

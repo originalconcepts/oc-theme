@@ -37,7 +37,10 @@ final class Card {
 		add_filter( 'woocommerce_add_to_cart_fragments', array( $this, 'fragments' ) );
 		add_action( 'wc_ajax_oc_offer_add', array( $this, 'ajax_add' ) );
 		add_action( 'wc_ajax_oc_offer_remove', array( $this, 'ajax_remove' ) );
-		add_action( 'woocommerce_review_order_before_order_total', array( $this, 'checkout_row' ) );
+		// Above the payment methods, outside the order review: the review
+		// folds on the desktop, and a tick nobody sees is no offer.
+		add_action( 'woocommerce_review_order_before_payment', array( $this, 'checkout_slot' ), 5 );
+		add_filter( 'woocommerce_update_order_review_fragments', array( $this, 'checkout_fragment' ) );
 	}
 
 	/**
@@ -216,14 +219,31 @@ final class Card {
 	/* ---------------------------------------------------------- checkout */
 
 	/**
-	 * The row in the order review that carries the checkout offer.
+	 * The checkout offer, above the payment methods.
 	 */
-	public function checkout_row(): void {
-		$html = self::checkout_html();
+	public function checkout_slot(): void {
+		echo self::checkout_slot_html(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built escaped.
+	}
 
-		if ( '' !== $html ) {
-			echo '<tr class="oc-offer-co-row"><td colspan="2">' . $html . '</td></tr>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built escaped.
-		}
+	/**
+	 * The slot is refreshed with every order-review update, so a tick (or
+	 * an untick) shows its result without a reload.
+	 *
+	 * @param array<string,string> $fragments Fragment map.
+	 * @return array<string,string>
+	 */
+	public function checkout_fragment( array $fragments ): array {
+		$fragments['[data-oc-offer-co-slot]'] = self::checkout_slot_html();
+
+		return $fragments;
+	}
+
+	/**
+	 * The slot, empty or holding the offer; printed even when empty so a
+	 * later update has somewhere to land.
+	 */
+	private static function checkout_slot_html(): string {
+		return '<div class="oc-offer-co-slot" data-oc-offer-co-slot>' . self::checkout_html() . '</div>';
 	}
 
 	/**
@@ -282,11 +302,11 @@ final class Card {
 		if ( $deal ) {
 			/* translators: 1: product name. 2: percent off. */
 			$html .= '<strong>' . esc_html( sprintf( __( 'Add %1$s at %2$d%% off', 'oc-theme' ), $product->get_name(), $offer['pct'] ) ) . '</strong>';
-			$html .= '<span class="oc-offer__price"><ins>' . wc_price( $now ) . '</ins> <del>' . wc_price( $was ) . '</del></span>';
+			$price = '<span class="oc-offer__price"><ins>' . wc_price( $now ) . '</ins> <del>' . wc_price( $was ) . '</del></span>';
 		} else {
 			/* translators: %s: product name. */
 			$html .= '<strong>' . esc_html( sprintf( __( 'Add %s', 'oc-theme' ), $product->get_name() ) ) . '</strong>';
-			$html .= '<span class="oc-offer__price"><ins>' . wc_price( $was ) . '</ins></span>';
+			$price = '<span class="oc-offer__price"><ins>' . wc_price( $was ) . '</ins></span>';
 		}
 
 		$hint = self::hint( $product, $was );
@@ -295,7 +315,7 @@ final class Card {
 			$html .= '<span class="oc-offer__hint">' . $hint . '</span>';
 		}
 
-		$html .= '</span>';
+		$html .= $price . '</span>';
 		$html .= '<span class="oc-offer__comedia" aria-hidden="true">' . $product->get_image( 'woocommerce_gallery_thumbnail' ) . '</span>';
 		$html .= '</label></div>';
 
