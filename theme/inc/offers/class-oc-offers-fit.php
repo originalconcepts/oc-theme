@@ -20,9 +20,9 @@ namespace OC\Theme\Offers;
 defined( 'ABSPATH' ) || defined( 'OC_TESTS' ) || exit;
 
 /**
- * Match: per-product relevance over a rule's pool.
+ * Fit: per-product relevance over a rule's pool.
  */
-final class Match {
+final class Fit {
 
 	/**
 	 * Colour families: family => its words, Hebrew and English, lower case.

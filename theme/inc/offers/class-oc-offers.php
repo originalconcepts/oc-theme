@@ -256,7 +256,7 @@ final class Offers {
 			$named = 0;
 			$pool  = self::rule_products( $rule, $facts, $named );
 			$ids   = Rules::offerable( $pool, $product_id, $in_cart, $rule['exclude'] );
-			$ids   = Match::rank( $product_id, $ids, count( array_intersect( $ids, array_slice( $pool, 0, $named ) ) ), $place );
+			$ids   = Fit::rank( $product_id, $ids, count( array_intersect( $ids, array_slice( $pool, 0, $named ) ) ), $place );
 
 			if ( $ids ) {
 				return self::tagged( $ids, 'r:' . $uid, (int) $rule['pct'] );
@@ -496,7 +496,7 @@ final class Offers {
 			$named = 0;
 			$pool  = self::rule_products( $rule, $facts, $named );
 			$ids   = Rules::offerable( $pool, $product_id, array(), $rule['exclude'] );
-			$ids   = Match::rank( $product_id, $ids, count( array_intersect( $ids, array_slice( $pool, 0, $named ) ) ), $place );
+			$ids   = Fit::rank( $product_id, $ids, count( array_intersect( $ids, array_slice( $pool, 0, $named ) ) ), $place );
 			$ids   = array_slice( $ids, 0, (int) $rule['count'] );
 		}
 

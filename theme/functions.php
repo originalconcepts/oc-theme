@@ -149,7 +149,7 @@ require_once OC_THEME_DIR . '/inc/wishlist/class-oc-wishlist.php';
 require_once OC_THEME_DIR . '/inc/wishlist/class-oc-wishlist-front.php';
 require_once OC_THEME_DIR . '/inc/wishlist/class-oc-wishlist-admin.php';
 require_once OC_THEME_DIR . '/inc/offers/class-oc-offers-rules.php';
-require_once OC_THEME_DIR . '/inc/offers/class-oc-offers-match.php';
+require_once OC_THEME_DIR . '/inc/offers/class-oc-offers-fit.php';
 require_once OC_THEME_DIR . '/inc/offers/class-oc-offers.php';
 require_once OC_THEME_DIR . '/inc/offers/class-oc-offers-stats.php';
 require_once OC_THEME_DIR . '/inc/offers/class-oc-offers-card.php';
