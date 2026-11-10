@@ -29,6 +29,12 @@ final class Rules {
 	const PLACES = array( 'cart', 'checkout', 'xsell', 'upsell', 'similar' );
 
 	/**
+	 * The product-page lists. A rule fills at most one of them: a product
+	 * does not need the same products as "goes with it" and as "similar".
+	 */
+	const PAGE_PLACES = array( 'xsell', 'upsell', 'similar' );
+
+	/**
 	 * How a rule's products are put in order.
 	 */
 	const ORDERS = array( 'best', 'new', 'cheap', 'dear' );
@@ -74,10 +80,23 @@ final class Rules {
 
 		$where = array();
 
+		$page = '';
+
 		foreach ( (array) ( $raw['where'] ?? array() ) as $place ) {
-			if ( is_string( $place ) && in_array( $place, self::PLACES, true ) && ! in_array( $place, $where, true ) ) {
-				$where[] = $place;
+			if ( ! is_string( $place ) || ! in_array( $place, self::PLACES, true ) || in_array( $place, $where, true ) ) {
+				continue;
 			}
+
+			// One product-page list per rule: the first named wins.
+			if ( in_array( $place, self::PAGE_PLACES, true ) ) {
+				if ( '' !== $page ) {
+					continue;
+				}
+
+				$page = $place;
+			}
+
+			$where[] = $place;
 		}
 
 		// A rule shown nowhere is a rule switched off by accident; the cart

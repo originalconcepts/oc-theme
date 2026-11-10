@@ -83,6 +83,7 @@ final class Cart {
 				'ship_fill'    => '',        // Bar colours; empty = the brand colour.
 				'ship_bg'      => '',
 				'ship_quiet'   => 0,         // The plain bar: no coloured band.
+				'topup_auto'   => 0,         // The top-up sheet opens by itself on "checkout" while short of free delivery.
 				'up_show'      => 0,
 				'up_title'     => '',
 				'up_source'    => 'items',   // items | category.
@@ -855,7 +856,7 @@ final class Cart {
 
 		// checkout-button: the class the global CTA hover effects target, so
 		// the button follows the design settings like every other CTA.
-		$html .= '<a class="oc-drawer__checkout checkout-button' . ( $oos ? ' is-disabled' : '' ) . '" href="' . esc_url( wc_get_checkout_url() ) . '"' . ( $oos ? ' aria-disabled="true" tabindex="-1"' : '' ) . '><span>' . esc_html( $label ) . '</span></a>';
+		$html .= '<a class="oc-drawer__checkout checkout-button' . ( $oos ? ' is-disabled' : '' ) . '" href="' . esc_url( wc_get_checkout_url() ) . '"' . ( $oos ? ' aria-disabled="true" tabindex="-1"' : ' data-oc-checkout' ) . '><span>' . esc_html( $label ) . '</span></a>';
 
 		if ( ! empty( $s['continue'] ) ) {
 			$html .= '<button type="button" class="oc-drawer__continue" data-oc-drawer-close>' . esc_html__( 'Continue shopping', 'oc-theme' ) . '</button>';
@@ -1580,6 +1581,13 @@ final class Cart {
 							<p style="margin:6px 0 0;"><input type="text" name="ship_done" value="<?php echo esc_attr( (string) $s['ship_done'] ); ?>" placeholder="<?php esc_attr_e( 'You earned free shipping!', 'oc-theme' ); ?>" class="regular-text" /></p>
 						</td>
 					</tr>
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Top-up sheet', 'oc-theme' ); ?></th>
+						<td>
+							<label><input type="checkbox" name="topup_auto" value="1" <?php checked( 1, (int) $s['topup_auto'] ); ?> /> <?php esc_html_e( 'Open it by itself when the shopper taps "checkout" while still short of free delivery', 'oc-theme' ); ?></label>
+							<p class="description"><?php esc_html_e( 'Once per cart state: a shopper who closes it and taps "checkout" again goes straight through. Needs the offers switched on.', 'oc-theme' ); ?></p>
+						</td>
+					</tr>
 				</table>
 
 				<h2><?php esc_html_e( 'Upsells in the panel', 'oc-theme' ); ?></h2>
@@ -1648,6 +1656,7 @@ final class Cart {
 					'ship_midpr' => '' === trim( (string) ( $_POST['ship_midpr'] ?? '' ) ) ? '' : (string) max( 0.0, (float) $_POST['ship_midpr'] ), // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- cast to float.
 					'ship_text'  => sanitize_text_field( wp_unslash( (string) ( $_POST['ship_text'] ?? '' ) ) ),
 					'ship_done'  => sanitize_text_field( wp_unslash( (string) ( $_POST['ship_done'] ?? '' ) ) ),
+					'topup_auto' => empty( $_POST['topup_auto'] ) ? 0 : 1,
 					'up_show'    => empty( $_POST['up_show'] ) ? 0 : 1,
 					'up_title'   => sanitize_text_field( wp_unslash( (string) ( $_POST['up_title'] ?? '' ) ) ),
 					'up_source'  => 'category' === ( $_POST['up_source'] ?? '' ) ? 'category' : 'items', // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- strict comparison stores a literal.

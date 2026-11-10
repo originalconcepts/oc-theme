@@ -5218,11 +5218,35 @@ window.ocWhenShown( function () {
 			}
 		}
 
+		// "Checkout" while still short of free delivery: the sheet opens
+		// instead, once per cart state — a second tap goes through.
+		function autoOpen( link ) {
+			var box = document.querySelector( '[data-oc-topup-sheet]' );
+			var bar = document.querySelector( '[data-oc-ship-bar]' );
+			if ( ! box || '1' !== box.getAttribute( 'data-auto' ) || ! bar || bar.classList.contains( 'is-done' ) ) {
+				return false;
+			}
+			var state = ( bar.querySelector( '.oc-shipbar__text' ) || bar ).textContent.replace( /\s+/g, ' ' ).trim();
+			try {
+				if ( sessionStorage.getItem( 'ocTopupAuto' ) === state ) {
+					return false;
+				}
+				sessionStorage.setItem( 'ocTopupAuto', state );
+			} catch ( e ) {}
+			open( link );
+			return true;
+		}
+
 		document.addEventListener( 'click', function ( event ) {
 			var link = event.target.closest( '[data-oc-topup]' );
 			if ( link ) {
 				event.preventDefault();
 				open( link );
+				return;
+			}
+			var go = event.target.closest( '[data-oc-checkout]' );
+			if ( go && ! ( sheet && ! sheet.hidden ) && autoOpen( go ) ) {
+				event.preventDefault();
 				return;
 			}
 			if ( ! sheet || sheet.hidden ) {

@@ -485,6 +485,20 @@ final class Admin {
 	}
 
 	/**
+	 * The product-page lists a rule may fill, with "none" first.
+	 *
+	 * @return array<string,string>
+	 */
+	public static function page_places(): array {
+		return array(
+			''        => __( 'Not on the product page', 'oc-theme' ),
+			'xsell'   => _x( 'Goes with it', 'product-page list', 'oc-theme' ),
+			'upsell'  => _x( 'Upgrades', 'product-page list', 'oc-theme' ),
+			'similar' => _x( 'Similar', 'product-page list', 'oc-theme' ),
+		);
+	}
+
+	/**
 	 * A tier in words: "4 units, 10%".
 	 *
 	 * @param array{qty:int,pct:int,label:string} $tier The tier.
@@ -576,6 +590,14 @@ final class Admin {
 			'dear'  => __( 'Most expensive first', 'oc-theme' ),
 		);
 
+		$page = '';
+
+		foreach ( $rule['where'] as $place ) {
+			if ( in_array( $place, Rules::PAGE_PLACES, true ) ) {
+				$page = $place;
+			}
+		}
+
 		$more = array();
 
 		/* translators: %d: percent. */
@@ -650,10 +672,19 @@ final class Admin {
 					<div>
 						<div class="oc-of__places" role="group" aria-labelledby="oc-of-where">
 							<?php foreach ( self::places() as $key => $label ) : ?>
+								<?php if ( in_array( $key, Rules::PAGE_PLACES, true ) ) : ?>
+									<?php continue; ?>
+								<?php endif; ?>
 								<label class="oc-of__place<?php echo in_array( $key, $rule['where'], true ) ? ' is-on' : ''; ?>"><input type="checkbox" name="where[]" value="<?php echo esc_attr( $key ); ?>" <?php checked( in_array( $key, $rule['where'], true ) ); ?> data-oc-of-place /> <?php echo esc_html( $label ); ?></label>
 							<?php endforeach; ?>
 						</div>
-						<span class="oc-of__muted"><?php esc_html_e( 'On the product page a rule fills a list the product left empty; a product with its own list keeps it.', 'oc-theme' ); ?></span>
+						<span class="oc-of__sub" id="oc-of-where-page"><?php esc_html_e( 'And on the product page, as one of its lists:', 'oc-theme' ); ?></span>
+						<div class="oc-of__places" role="radiogroup" aria-labelledby="oc-of-where-page">
+							<?php foreach ( self::page_places() as $key => $label ) : ?>
+								<label class="oc-of__place<?php echo $key === $page ? ' is-on' : ''; ?>"><input type="radio" name="where_page" value="<?php echo esc_attr( $key ); ?>" <?php checked( $key, $page ); ?> data-oc-of-place /> <?php echo esc_html( $label ); ?></label>
+							<?php endforeach; ?>
+						</div>
+						<span class="oc-of__muted"><?php esc_html_e( 'One list per rule: a product does not need the same products as "goes with it" and as "similar". A rule fills a list the product left empty; a product with its own list keeps it. Each product gets the rule\'s products ordered for it — by colour, material, brand, price and what sells together — so two neighbours do not show the same list.', 'oc-theme' ); ?></span>
 					</div>
 				</div>
 
@@ -938,7 +969,10 @@ final class Admin {
 				),
 				'same_brand' => empty( $_POST['same_brand'] ) ? 0 : 1,
 				'exclude'    => isset( $_POST['exclude'] ) ? array_map( 'absint', (array) wp_unslash( $_POST['exclude'] ) ) : array(),
-				'where'      => isset( $_POST['where'] ) ? array_map( 'sanitize_key', (array) wp_unslash( $_POST['where'] ) ) : array(),
+				'where'      => array_merge(
+					isset( $_POST['where'] ) ? array_map( 'sanitize_key', (array) wp_unslash( $_POST['where'] ) ) : array(),
+					array( isset( $_POST['where_page'] ) ? sanitize_key( (string) wp_unslash( $_POST['where_page'] ) ) : '' )
+				),
 				'pct'        => isset( $_POST['pct'] ) ? (int) $_POST['pct'] : 0,
 				'order'      => isset( $_POST['order'] ) ? sanitize_key( (string) wp_unslash( $_POST['order'] ) ) : 'best',
 			)

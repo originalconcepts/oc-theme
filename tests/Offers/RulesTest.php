@@ -262,4 +262,14 @@ final class RulesTest extends TestCase {
 	public function test_an_unknown_kind_reads_as_an_offer_rule(): void {
 		$this->assertSame( 'offer', Rules::clean( array( 'kind' => 'magic' ) )['kind'] );
 	}
+
+	public function test_a_rule_fills_one_product_page_list_at_most(): void {
+		$rule = Rules::clean( array( 'where' => array( 'cart', 'xsell', 'similar', 'checkout', 'upsell' ) ) );
+
+		$this->assertSame( array( 'cart', 'xsell', 'checkout' ), $rule['where'], 'the first product-page list named wins' );
+
+		$rule = Rules::clean( array( 'where' => array( 'similar' ) ) );
+
+		$this->assertSame( array( 'similar' ), $rule['where'] );
+	}
 }

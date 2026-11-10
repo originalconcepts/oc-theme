@@ -252,8 +252,11 @@ final class Offers {
 		$uid   = Rules::pick( $s['rules'], $facts, $place );
 
 		if ( null !== $uid ) {
-			$rule = $s['rules'][ $uid ];
-			$ids  = Rules::offerable( self::rule_products( $rule, $facts ), $product_id, $in_cart, $rule['exclude'] );
+			$rule  = $s['rules'][ $uid ];
+			$named = 0;
+			$pool  = self::rule_products( $rule, $facts, $named );
+			$ids   = Rules::offerable( $pool, $product_id, $in_cart, $rule['exclude'] );
+			$ids   = Match::rank( $product_id, $ids, count( array_intersect( $ids, array_slice( $pool, 0, $named ) ) ), $place );
 
 			if ( $ids ) {
 				return self::tagged( $ids, 'r:' . $uid, (int) $rule['pct'] );
@@ -304,9 +307,10 @@ final class Offers {
 	 *
 	 * @param array<string,mixed>                   $rule  A clean rule.
 	 * @param array{id:int,cats:int[],brands:int[]} $facts The product's facts.
+	 * @param int                                   $named Out: how many of the ids were named one by one.
 	 * @return int[]
 	 */
-	public static function rule_products( array $rule, array $facts ): array {
+	public static function rule_products( array $rule, array $facts, int &$named = 0 ): array {
 		$tax    = Search::brand_taxonomy();
 		$brands = ! empty( $rule['same_brand'] ) && '' !== $tax ? $facts['brands'] : array();
 
@@ -316,16 +320,18 @@ final class Offers {
 			return array();
 		}
 
-		$named = array();
+		$named_ids = array();
 
 		foreach ( $rule['offer']['products'] as $id ) {
 			if ( ! $brands || has_term( $brands, $tax, $id ) ) {
-				$named[] = (int) $id;
+				$named_ids[] = (int) $id;
 			}
 		}
 
+		$named = count( $named_ids );
+
 		if ( ! $rule['offer']['cats'] && ! $brands ) {
-			return $named;
+			return $named_ids;
 		}
 
 		$key  = 'oc_offq_' . md5( (string) wp_json_encode( array( self::settings()['ver'], $rule['offer']['cats'], $brands, $rule['order'] ) ) );
@@ -337,7 +343,7 @@ final class Offers {
 			set_transient( $key, $more, 30 * MINUTE_IN_SECONDS );
 		}
 
-		return array_merge( $named, array_map( 'intval', $more ) );
+		return array_merge( $named_ids, array_map( 'intval', $more ) );
 	}
 
 	/**
@@ -486,8 +492,12 @@ final class Offers {
 		$ids   = array();
 
 		if ( null !== $uid ) {
-			$rule = $s['rules'][ $uid ];
-			$ids  = array_slice( Rules::offerable( self::rule_products( $rule, $facts ), $product_id, array(), $rule['exclude'] ), 0, (int) $rule['count'] );
+			$rule  = $s['rules'][ $uid ];
+			$named = 0;
+			$pool  = self::rule_products( $rule, $facts, $named );
+			$ids   = Rules::offerable( $pool, $product_id, array(), $rule['exclude'] );
+			$ids   = Match::rank( $product_id, $ids, count( array_intersect( $ids, array_slice( $pool, 0, $named ) ) ), $place );
+			$ids   = array_slice( $ids, 0, (int) $rule['count'] );
 		}
 
 		$inside = false;

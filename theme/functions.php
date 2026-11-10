@@ -13,7 +13,7 @@ declare( strict_types = 1 );
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'OC_THEME_VERSION', '0.3.434' );
+define( 'OC_THEME_VERSION', '0.3.435' );
 define( 'OC_THEME_DIR', get_template_directory() );
 define( 'OC_THEME_URI', get_template_directory_uri() );
 define( 'OC_THEME_REPO', 'originalconcepts/oc-theme' );
@@ -149,6 +149,7 @@ require_once OC_THEME_DIR . '/inc/wishlist/class-oc-wishlist.php';
 require_once OC_THEME_DIR . '/inc/wishlist/class-oc-wishlist-front.php';
 require_once OC_THEME_DIR . '/inc/wishlist/class-oc-wishlist-admin.php';
 require_once OC_THEME_DIR . '/inc/offers/class-oc-offers-rules.php';
+require_once OC_THEME_DIR . '/inc/offers/class-oc-offers-match.php';
 require_once OC_THEME_DIR . '/inc/offers/class-oc-offers.php';
 require_once OC_THEME_DIR . '/inc/offers/class-oc-offers-stats.php';
 require_once OC_THEME_DIR . '/inc/offers/class-oc-offers-card.php';

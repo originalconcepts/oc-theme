@@ -6240,7 +6240,8 @@ body.oc-swatch-square-cat .oc-mcart__attr-swatch { border-radius: 4px; }
 	color: var(--oc-ink);
 }
 
-.oc-topup .oc-shipbar { border-radius: 10px; padding-inline: 14px; }
+/* the band runs edge to edge under the title, as drawn */
+.oc-topup .oc-shipbar { border-radius: 0; margin-inline: -16px; padding-inline: 16px; }
 
 .oc-topup .oc-shipbar__go { display: none; }
 

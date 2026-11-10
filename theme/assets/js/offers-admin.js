@@ -285,7 +285,11 @@
 	// The places: the pill follows its box.
 	document.querySelectorAll( '[data-oc-of-place]' ).forEach( function ( box ) {
 		box.addEventListener( 'change', function () {
-			box.closest( '.oc-of__place' ).classList.toggle( 'is-on', box.checked );
+			// A radio's siblings go off without a change event of their own.
+			var group = 'radio' === box.type ? document.querySelectorAll( '[data-oc-of-place][name="' + box.name + '"]' ) : [ box ];
+			group.forEach( function ( other ) {
+				other.closest( '.oc-of__place' ).classList.toggle( 'is-on', other.checked );
+			} );
 		} );
 	} );
 

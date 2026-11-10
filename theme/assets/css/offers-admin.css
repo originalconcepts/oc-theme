@@ -106,6 +106,7 @@
 .oc-of__check{display:flex;align-items:center;gap:10px;min-height:40px;cursor:pointer}
 .oc-of__check input{width:18px;height:18px;margin:0;accent-color:var(--acc)}
 .oc-of__places{display:flex;flex-wrap:wrap;gap:8px;padding-top:2px}
+.oc-of__sub{display:block;margin:12px 0 2px;font-weight:600;color:#3d434a}
 .oc-of__place{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 14px;border-radius:999px;border:1.5px solid #c3c8cf;color:#3d434a;cursor:pointer;background:var(--surface)}
 .oc-of__place input{position:absolute;opacity:0;width:1px;height:1px}
 .oc-of__place.is-on{border-color:var(--acc);background:var(--acc-soft);color:var(--acc-ink);font-weight:600}

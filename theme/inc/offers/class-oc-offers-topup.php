@@ -64,7 +64,9 @@ final class Topup {
 	 * The empty sheet, printed once with the panel; the page fills it.
 	 */
 	public static function shell(): string {
-		return '<div class="oc-topup" data-oc-topup-sheet data-url="' . esc_url( \WC_AJAX::get_endpoint( 'oc_topup' ) ) . '" hidden role="dialog" aria-modal="true" aria-labelledby="oc-topup-title">'
+		$auto = empty( Cart::settings()['topup_auto'] ) ? '0' : '1';
+
+		return '<div class="oc-topup" data-oc-topup-sheet data-auto="' . $auto . '" data-url="' . esc_url( \WC_AJAX::get_endpoint( 'oc_topup' ) ) . '" hidden role="dialog" aria-modal="true" aria-labelledby="oc-topup-title">'
 			. '<div class="oc-topup__card">'
 			. '<div class="oc-topup__head"><h3 class="oc-topup__title" id="oc-topup-title">' . esc_html__( 'Top up for free shipping', 'oc-theme' ) . '</h3>'
 			. '<button type="button" class="oc-topup__close" data-oc-topup-close aria-label="' . esc_attr__( 'Close', 'oc-theme' ) . '">&times;</button></div>'
@@ -225,45 +227,55 @@ final class Topup {
 			);
 		};
 
+		// Each shelf gets its share, so every chip has something behind it:
+		// what goes with the cart, what the shopper viewed, what covers
+		// the gap in one, what fits under it — then the shelves fill up.
+		$share = (int) ceil( self::LIMIT / 4 );
+
 		// 1. Goes with what is in the cart.
-		foreach ( Offers::cart_offers( 8 ) as $offer ) {
+		$matches = Offers::cart_offers( 8 );
+
+		foreach ( array_slice( $matches, 0, $share ) as $offer ) {
 			$take( $offer['product']->get_id(), 'match' );
 		}
 
-		// 2. Viewed before, if WooCommerce kept a note of it.
-		$viewed = isset( $_COOKIE['woocommerce_recently_viewed'] ) ? wp_parse_id_list( (string) wp_unslash( $_COOKIE['woocommerce_recently_viewed'] ) ) : array(); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- a cookie WooCommerce sets.
+		// 2. Viewed before: the ids the browser noted, newest first.
+		$viewed = self::viewed();
 
-		foreach ( array_slice( array_reverse( $viewed ), 0, 6 ) as $id ) {
-			$take( (int) $id, 'seen' );
+		foreach ( array_slice( $viewed, 0, $share ) as $id ) {
+			$take( $id, 'seen' );
 		}
 
-		// 3. What sells in the cart's categories, roughly sized to the gap.
-		if ( $cats && count( $out ) < self::LIMIT ) {
-			$ids = get_posts(
-				array(
-					'post_type'              => 'product',
-					'post_status'            => 'publish',
-					'posts_per_page'         => 24,
-					'fields'                 => 'ids',
-					'no_found_rows'          => true,
-					'update_post_meta_cache' => false,
-					'update_post_term_cache' => false,
-					'meta_key'               => 'total_sales', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- ordering only.
-					'orderby'                => 'meta_value_num',
-					'order'                  => 'DESC',
-					'tax_query'              => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query -- the cart's own categories.
-						array(
-							'taxonomy' => 'product_cat',
-							'field'    => 'term_id',
-							'terms'    => array_keys( $cats ),
-						),
-					),
-				)
-			);
-
-			foreach ( $ids as $id ) {
-				$take( (int) $id, 'popular' );
+		// 3. Sells in the cart's categories and covers the gap in one.
+		foreach ( self::selling( $cats, $left, 'over', 12 ) as $id ) {
+			if ( count( $out ) >= 3 * $share ) {
+				break;
 			}
+
+			$take( $id, 'popular' );
+		}
+
+		// 4. Sells there and fits under the gap, the closest first.
+		foreach ( self::selling( $cats, $left, 'under', 12 ) as $id ) {
+			if ( count( $out ) >= self::LIMIT ) {
+				break;
+			}
+
+			$take( $id, 'popular' );
+		}
+
+		// 5. Whatever room is left: the rest of the matches and the
+		// viewed, then anything that sells there.
+		foreach ( array_slice( $matches, $share ) as $offer ) {
+			$take( $offer['product']->get_id(), 'match' );
+		}
+
+		foreach ( array_slice( $viewed, $share ) as $id ) {
+			$take( $id, 'seen' );
+		}
+
+		foreach ( self::selling( $cats, $left, 'any', 24 ) as $id ) {
+			$take( $id, 'popular' );
 		}
 
 		// The ones that cover the gap in one go first, cheapest of them
@@ -284,5 +296,92 @@ final class Topup {
 		);
 
 		return $out;
+	}
+
+	/**
+	 * The products the shopper viewed, newest first, from the note the
+	 * browser keeps (WooCommerce's recently-viewed cookie, written by the
+	 * page so the response stays cacheable). The ids are "|"-separated.
+	 *
+	 * @return int[]
+	 */
+	private static function viewed(): array {
+		if ( ! isset( $_COOKIE['woocommerce_recently_viewed'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- a cookie, read only.
+			return array();
+		}
+
+		$raw = (string) wp_unslash( $_COOKIE['woocommerce_recently_viewed'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- digits only are kept below.
+		$ids = array();
+
+		foreach ( preg_split( '/[|,\s]+/', $raw ) ?: array() as $piece ) {
+			if ( ctype_digit( $piece ) && (int) $piece > 0 ) {
+				$ids[] = (int) $piece;
+			}
+		}
+
+		return array_values( array_unique( array_reverse( $ids ) ) );
+	}
+
+	/**
+	 * What sells in the given categories, priced against the gap: "over"
+	 * covers it in one (best sellers first), "under" fits beneath it (the
+	 * closest first), "any" is the plain best-seller list.
+	 *
+	 * @param array<int,bool> $cats  Category ids as keys.
+	 * @param float           $left  The sum still missing.
+	 * @param string          $how   over | under | any.
+	 * @param int             $limit How many at most.
+	 * @return int[]
+	 */
+	private static function selling( array $cats, float $left, string $how, int $limit ): array {
+		$args = array(
+			'post_type'              => 'product',
+			'post_status'            => 'publish',
+			'posts_per_page'         => $limit,
+			'fields'                 => 'ids',
+			'no_found_rows'          => true,
+			'update_post_meta_cache' => false,
+			'update_post_term_cache' => false,
+		);
+
+		if ( $cats ) {
+			$args['tax_query'] = array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query -- the cart's own categories, a dozen ids.
+				array(
+					'taxonomy' => 'product_cat',
+					'field'    => 'term_id',
+					'terms'    => array_keys( $cats ),
+				),
+			);
+		}
+
+		if ( 'under' === $how ) {
+			$args['meta_query'] = array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- a price band, a dozen rows.
+				array(
+					'key'     => '_price',
+					'value'   => array( 0.01, $left ),
+					'compare' => 'BETWEEN',
+					'type'    => 'DECIMAL(12,2)',
+				),
+			);
+			$args['orderby']    = array( 'meta_value_num' => 'DESC' );
+			$args['meta_key']   = '_price'; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- ordering only.
+		} else {
+			if ( 'over' === $how ) {
+				$args['meta_query'] = array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- a price floor.
+					array(
+						'key'     => '_price',
+						'value'   => $left,
+						'compare' => '>=',
+						'type'    => 'DECIMAL(12,2)',
+					),
+				);
+			}
+
+			$args['meta_key'] = 'total_sales'; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- ordering only.
+			$args['orderby']  = 'meta_value_num';
+			$args['order']    = 'DESC';
+		}
+
+		return array_map( 'intval', (array) get_posts( $args ) );
 	}
 }

@@ -15852,3 +15852,33 @@ msgstr "להוסיף את %1$s ב-%2$d%% הנחה"
 
 msgid "Add %s"
 msgstr "להוסיף את %s"
+
+msgid "And on the product page, as one of its lists:"
+msgstr "ובדף המוצר, כאחת מהרשימות שלו:"
+
+msgid "One list per rule: a product does not need the same products as \"goes with it\" and as \"similar\". A rule fills a list the product left empty; a product with its own list keeps it. Each product gets the rule's products ordered for it — by colour, material, brand, price and what sells together — so two neighbours do not show the same list."
+msgstr "רשימה אחת לכל כלל: מוצר לא צריך את אותם מוצרים גם כ״נלווים״ וגם כ״דומים״. הכלל ממלא רשימה שהמוצר השאיר ריקה; מוצר עם רשימה משלו שומר עליה. כל מוצר מקבל את מוצרי הכלל מסודרים בשבילו — לפי צבע, חומר, מותג, מחיר ומה שנמכר יחד — כך ששני שכנים לא מציגים את אותה רשימה."
+
+msgid "Not on the product page"
+msgstr "לא בדף המוצר"
+
+msgctxt "product-page list"
+msgid "Goes with it"
+msgstr "נלווים"
+
+msgctxt "product-page list"
+msgid "Upgrades"
+msgstr "משודרגים"
+
+msgctxt "product-page list"
+msgid "Similar"
+msgstr "דומים"
+
+msgid "Top-up sheet"
+msgstr "חלונית ההשלמה"
+
+msgid "Open it by itself when the shopper taps \"checkout\" while still short of free delivery"
+msgstr "לפתוח אותה לבד כשהלקוח לוחץ ״מעבר לקופה״ ועדיין חסר לו למשלוח חינם"
+
+msgid "Once per cart state: a shopper who closes it and taps \"checkout\" again goes straight through. Needs the offers switched on."
+msgstr "פעם אחת לכל מצב של הסל: מי שסוגר אותה ולוחץ שוב ״מעבר לקופה״ עובר ישר לקופה. דורש שההצעות יהיו פעילות."
