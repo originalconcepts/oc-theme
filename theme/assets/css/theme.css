@@ -6062,15 +6062,15 @@ body.oc-swatch-square-cat .oc-mcart__attr-swatch { border-radius: 4px; }
 
 /* The promotion engine drapes its label over every picture on catalogue
    pages, the drawer's included; the cards say it above the name instead. */
-.oc-offer__media .promeng-banner,
-.oc-offer__comedia .promeng-banner,
-.oc-offer__coimg .promeng-banner,
-.oc-topup__media .promeng-banner { display: none; }
+.oc-offer .oc-offer__media .promeng-banner,
+.oc-offer .oc-offer__comedia .promeng-banner,
+.oc-offer .oc-offer__coimg .promeng-banner,
+.oc-topup .oc-topup__media .promeng-banner { display: none; }
 
-.oc-offer__media .promeng-thumb,
-.oc-offer__comedia .promeng-thumb,
-.oc-offer__coimg .promeng-thumb,
-.oc-topup__media .promeng-thumb { display: block; inline-size: 100%; block-size: 100%; line-height: 0; }
+.oc-offer .oc-offer__media .promeng-thumb,
+.oc-offer .oc-offer__comedia .promeng-thumb,
+.oc-offer .oc-offer__coimg .promeng-thumb,
+.oc-topup .oc-topup__media .promeng-thumb { display: block; inline-size: 100%; block-size: 100%; line-height: 0; }
 
 .oc-offer__promo {
 	align-self: flex-start;
