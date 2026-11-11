@@ -270,7 +270,7 @@ final class Topup {
 
 	/**
 	 * A price rounded up to a round number — half a magnitude: 1,170
-	 * gives 1,500, 2,400 gives 2,500, 90 gives 100.
+	 * gives 1,500, 2,400 gives 2,500, 90 stays 90.
 	 *
 	 * @param float $price The price.
 	 */
