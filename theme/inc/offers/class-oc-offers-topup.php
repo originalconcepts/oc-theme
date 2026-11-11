@@ -226,6 +226,7 @@ final class Topup {
 			$html .= '<article class="oc-topup__item" data-oc-topup-item data-kinds="' . esc_attr( $item['band'] ?? 'all' ) . '">';
 			$html .= '<a class="oc-topup__media" href="' . esc_url( (string) $link ) . '" tabindex="-1" aria-hidden="true">' . $product->get_image( 'woocommerce_thumbnail' ) . '</a>';
 			$html .= '<span class="oc-topup__tag oc-topup__tag--' . esc_attr( $item['tag'] ) . '">' . esc_html( $tags[ $item['tag'] ] ) . '</span>';
+			$html .= Card::promo_html( $product );
 			$html .= '<a class="oc-topup__name" href="' . esc_url( (string) $link ) . '">' . esc_html( $product->get_name() ) . '</a>';
 			$html .= '<span class="oc-topup__price">' . $product->get_price_html() . '</span>';
 

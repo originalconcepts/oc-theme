@@ -18,6 +18,7 @@ namespace OC\Theme\Offers;
 
 use OC\Theme\Cart;
 use OC\Theme\Shipping;
+use OC\Theme\WooCommerce;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -115,6 +116,7 @@ final class Card {
 		$html .= '<div class="oc-offer__row">';
 		$html .= '<a class="oc-offer__media" href="' . esc_url( (string) $link ) . '" tabindex="-1" aria-hidden="true">' . $product->get_image( 'woocommerce_thumbnail' ) . '</a>';
 		$html .= '<div class="oc-offer__info">';
+		$html .= self::promo_html( $product );
 		$html .= '<a class="oc-offer__name" href="' . esc_url( (string) $link ) . '">' . esc_html( $product->get_name() ) . '</a>';
 		$html .= '<span class="oc-offer__price">';
 
@@ -383,6 +385,7 @@ final class Card {
 		$html .= '<label class="oc-offer__tick">';
 		$html .= '<input type="checkbox" data-oc-offer-co data-add="' . absint( $product->get_id() ) . '" data-url-add="' . $add_url . '"' . $pick . ' />';
 		$html .= '<span class="oc-offer__tickbody">';
+		$html .= self::promo_html( $product );
 
 		if ( $deal ) {
 			/* translators: 1: product name. 2: percent off. */
@@ -401,6 +404,24 @@ final class Card {
 		$html .= '</div>';
 
 		return $html;
+	}
+
+	/**
+	 * The promotion a product runs — "the second at 20% off" — as a small
+	 * line above its name, in the catalogue's sale colours. The engine
+	 * drapes the same words over the picture on catalogue pages; the
+	 * cards hide that and say it here, where it reads.
+	 *
+	 * @param \WC_Product $product The product.
+	 */
+	public static function promo_html( \WC_Product $product ): string {
+		$label = (string) apply_filters( 'promeng_product_label', '', $product->get_id() );
+
+		if ( '' === $label ) {
+			return '';
+		}
+
+		return '<span class="oc-offer__promo" style="' . esc_attr( WooCommerce::flag_colors( 'oc_sale_badge_bg', 'oc_sale_badge_tx' ) ) . '">' . esc_html( $label ) . '</span>';
 	}
 
 	/**
@@ -449,6 +470,7 @@ final class Card {
 				}
 
 				$card .= '</span>';
+				$card .= self::promo_html( $product );
 				$card .= '<span class="oc-offer__coname">' . esc_html( $product->get_name() ) . '</span>';
 				$card .= $deal
 					? '<span class="oc-offer__price"><ins>' . wc_price( $now ) . '</ins> <del>' . wc_price( $was ) . '</del></span>'

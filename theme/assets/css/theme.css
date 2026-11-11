@@ -6060,6 +6060,33 @@ body.oc-swatch-square-cat .oc-mcart__attr-swatch { border-radius: 4px; }
 	object-fit: contain;
 }
 
+/* The promotion engine drapes its label over every picture on catalogue
+   pages, the drawer's included; the cards say it above the name instead. */
+.oc-offer__media .promeng-banner,
+.oc-offer__comedia .promeng-banner,
+.oc-offer__coimg .promeng-banner,
+.oc-topup__media .promeng-banner { display: none; }
+
+.oc-offer__media .promeng-thumb,
+.oc-offer__comedia .promeng-thumb,
+.oc-offer__coimg .promeng-thumb,
+.oc-topup__media .promeng-thumb { display: block; inline-size: 100%; block-size: 100%; line-height: 0; }
+
+.oc-offer__promo {
+	align-self: flex-start;
+	max-inline-size: 100%;
+	overflow: hidden;
+	padding: 1px 8px;
+	border-radius: 999px;
+	background: var(--flag-bg, var(--oc-sale, #b4453c));
+	color: var(--flag-tx, #fff);
+	font-size: .7rem;
+	font-weight: 600;
+	line-height: 1.5;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
 .oc-offer__info {
 	display: flex;
 	flex-direction: column;
