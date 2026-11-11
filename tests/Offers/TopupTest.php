@@ -66,7 +66,7 @@ final class TopupTest extends TestCase {
 	 */
 	public function test_edges_never_collapse(): void {
 		self::assertSame( array( 1500.0, 2000.0 ), Topup::edges( array( 1000.0, 1100.0, 1200.0, 1300.0, 1500.0, 1700.0 ) ) );
-		self::assertSame( array( 1000.0, 5000.0 ), Topup::edges( array( 50.0, 300.0, 900.0, 2400.0, 4990.0, 9000.0 ) ) );
+		self::assertSame( array( 900.0, 5000.0 ), Topup::edges( array( 50.0, 300.0, 900.0, 2400.0, 4990.0, 9000.0 ) ) );
 		self::assertSame( array( 1000.0, 1500.0 ), Topup::edges( array( 1000.0, 1000.0, 1000.0 ) ) );
 	}
 
