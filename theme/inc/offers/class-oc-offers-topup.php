@@ -100,14 +100,18 @@ final class Topup {
 
 		$html = Cart::ship_bar_markup();
 
-		if ( $left <= 0 ) {
-			return $html . '<p class="oc-topup__empty">' . esc_html__( 'You already earned free shipping.', 'oc-theme' ) . '</p>';
+		// The line reached — most often by the add just made in this very
+		// sheet: the bar fills and says so, the grid stays for anything
+		// else, and the footer carries the new sum to the checkout.
+		$done  = $left <= 0;
+		$items = self::pool( $left, $done );
+
+		if ( ! $items && ! $done ) {
+			return $html . '<p class="oc-topup__empty">' . esc_html__( 'Nothing to suggest right now.', 'oc-theme' ) . '</p>';
 		}
 
-		$items = self::pool( $left );
-
-		if ( ! $items ) {
-			return $html . '<p class="oc-topup__empty">' . esc_html__( 'Nothing to suggest right now.', 'oc-theme' ) . '</p>';
+		if ( $done ) {
+			return $html . ( $items ? self::grid( $items ) : '' ) . self::foot();
 		}
 
 		// Price bands around the gap, the way a marketplace filters: under
@@ -190,6 +194,19 @@ final class Topup {
 
 		$html .= '</div>';
 
+		$html .= self::grid( $items );
+		$html .= self::foot();
+
+		return $html;
+	}
+
+	/**
+	 * The product grid: picture, why it is here, name, price, the product
+	 * page's own button word.
+	 *
+	 * @param array<int,array{product:\WC_Product,price:float,tag:string,band?:string}> $items The pool.
+	 */
+	private static function grid( array $items ): string {
 		$tags = array(
 			'match'   => __( 'Goes with your cart', 'oc-theme' ),
 			'seen'    => __( 'You viewed it', 'oc-theme' ),
@@ -199,14 +216,14 @@ final class Topup {
 
 		Cart::$in_upsells = true;
 
-		$html .= '<div class="oc-topup__grid">';
+		$html = '<div class="oc-topup__grid">';
 
 		foreach ( $items as $item ) {
 			$product = $item['product'];
 			$id      = $product->get_id();
 			$link    = get_permalink( $id );
 
-			$html .= '<article class="oc-topup__item" data-oc-topup-item data-kinds="' . esc_attr( $item['band'] ) . '">';
+			$html .= '<article class="oc-topup__item" data-oc-topup-item data-kinds="' . esc_attr( $item['band'] ?? 'all' ) . '">';
 			$html .= '<a class="oc-topup__media" href="' . esc_url( (string) $link ) . '" tabindex="-1" aria-hidden="true">' . $product->get_image( 'woocommerce_thumbnail' ) . '</a>';
 			$html .= '<span class="oc-topup__tag oc-topup__tag--' . esc_attr( $item['tag'] ) . '">' . esc_html( $tags[ $item['tag'] ] ) . '</span>';
 			$html .= '<a class="oc-topup__name" href="' . esc_url( (string) $link ) . '">' . esc_html( $product->get_name() ) . '</a>';
@@ -225,7 +242,14 @@ final class Topup {
 
 		Cart::$in_upsells = false;
 
-		$html .= '<div class="oc-topup__foot">';
+		return $html;
+	}
+
+	/**
+	 * The footer: the cart's sum and the way to the checkout.
+	 */
+	private static function foot(): string {
+		$html  = '<div class="oc-topup__foot">';
 		$html .= '<span class="oc-topup__sum"><strong>' . wp_kses_post( wc_price( (float) WC()->cart->get_displayed_subtotal() ) ) . '</strong><small>' . esc_html__( 'in your cart', 'oc-theme' ) . '</small></span>';
 		$html .= '<a class="oc-topup__checkout checkout-button" href="' . esc_url( wc_get_checkout_url() ) . '">' . esc_html__( 'Continue to checkout', 'oc-theme' ) . '</a>';
 		$html .= '</div>';
@@ -271,9 +295,12 @@ final class Topup {
 	 * unbuyable.
 	 *
 	 * @param float $left The sum still missing.
+	 * @param bool  $done Whether the line is already reached: the shelves
+	 *                    keep their own order then, there is no gap to
+	 *                    sort around.
 	 * @return array<int,array{product:\WC_Product,price:float,tag:string}>
 	 */
-	private static function pool( float $left ): array {
+	private static function pool( float $left, bool $done = false ): array {
 		$in_cart = array();
 		$cats    = array();
 
@@ -386,6 +413,10 @@ final class Topup {
 
 		foreach ( self::selling( $cats, $left, 'any', 24 ) as $id ) {
 			$take( $id, 'popular' );
+		}
+
+		if ( $done ) {
+			return $out;
 		}
 
 		// The ones that cover the gap in one go first, cheapest of them

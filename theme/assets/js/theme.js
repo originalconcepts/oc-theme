@@ -4706,6 +4706,9 @@ window.ocWhenShown( function () {
 			}, 2100 );
 		}
 
+		// The top-up sheet celebrates its own bar the same way.
+		window.ocConfetti = confettiBurst;
+
 		var drawerTickQueued = false;
 
 		function watchDrawer() {
@@ -5188,14 +5191,22 @@ window.ocWhenShown( function () {
 		var sheet = null;
 		var opener = null;
 
-		function fill() {
+		// Read the sheet again for the cart as it is now. After an add,
+		// reaching the free-shipping line is noticed on the sheet's own
+		// bar: it fills, says so, and gets the cart's confetti.
+		function fill( added ) {
 			var body = sheet.querySelector( '[data-oc-topup-body]' );
+			var wasDone = ! ! body.querySelector( '.oc-shipbar.is-done' );
 			body.innerHTML = '<span class="oc-topup__loading">…</span>';
 			fetch( sheet.getAttribute( 'data-url' ), { credentials: 'same-origin' } )
 				.then( function ( r ) { return r.json(); } )
 				.then( function ( out ) {
 					if ( out && out.success ) {
 						body.innerHTML = out.data.html;
+						var bar = body.querySelector( '.oc-shipbar.is-done' );
+						if ( added && bar && ! wasDone && window.ocConfetti ) {
+							window.ocConfetti( bar );
+						}
 					}
 				} )
 				.catch( function () {} );
@@ -5290,7 +5301,7 @@ window.ocWhenShown( function () {
 			var pick = event.target.closest( '[data-oc-topup-pick]' );
 			if ( pick ) {
 				if ( window.__ocQuickPick ) {
-					window.__ocQuickPick( pick.getAttribute( 'data-oc-topup-pick' ), '', { over: true, done: fill } );
+					window.__ocQuickPick( pick.getAttribute( 'data-oc-topup-pick' ), '', { over: true, done: function () { fill( true ); } } );
 				}
 				return;
 			}
@@ -5319,7 +5330,7 @@ window.ocWhenShown( function () {
 								} );
 							} );
 						}
-						fill();
+						fill( true );
 					} )
 					.catch( function () {
 						add.classList.remove( 'loading' );

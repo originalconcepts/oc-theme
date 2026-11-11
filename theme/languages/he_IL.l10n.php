@@ -4894,7 +4894,6 @@ return array(
 		"Yesterday" => "אתמול",
 		"Yoast SEO is active, so the theme's own SEO engine stepped aside — two engines would print two title tags. Deactivate Yoast (after migrating in Settings ← SEO ← Tools) to switch over." => "Yoast SEO פעיל, ולכן מנוע ה-SEO של התבנית זז הצידה — שני מנועים ידפיסו שני תגי title. כבו את Yoast (אחרי מיגרציה בהגדרות ← SEO ← ייבוא וכלים) כדי לעבור.",
 		"Yom Kippur" => "יום כיפור",
-		"You already earned free shipping." => "כבר הגעתם למשלוח חינם.",
 		"You already have items in your cart" => "כבר יש לך מוצרים בסל",
 		"You are already signed up for one of the options" => "נרשמת כבר לאחת מהאפשרויות",
 		"You are on the list — we will email you the moment it is back." => "נרשמת! נשלח לך מייל ברגע שהמוצר יחזור למלאי.",

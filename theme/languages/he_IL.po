@@ -15808,9 +15808,6 @@ msgstr "השלימו למשלוח חינם"
 msgid "There is no free-shipping line to reach."
 msgstr "אין קו משלוח חינם להגיע אליו."
 
-msgid "You already earned free shipping."
-msgstr "כבר הגעתם למשלוח חינם."
-
 msgid "Nothing to suggest right now."
 msgstr "אין כרגע מה להציע."
 
