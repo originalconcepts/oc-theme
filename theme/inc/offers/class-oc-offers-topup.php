@@ -166,8 +166,8 @@ final class Topup {
 	 * @return array<string,array{0:float,1:float,2:string}>
 	 */
 	private static function around( float $left, array $prices ): array {
-		$step   = self::step( $left );
-		$bands  = array(
+		$step  = self::step( $left );
+		$bands = array(
 			'under' => array(
 				0.0,
 				$left,
