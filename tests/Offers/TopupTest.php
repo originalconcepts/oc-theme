@@ -61,6 +61,15 @@ final class TopupTest extends TestCase {
 		self::assertSame( $want, Topup::nice( $price ) );
 	}
 
+	/**
+	 * The tier edges: never the same number twice.
+	 */
+	public function test_edges_never_collapse(): void {
+		self::assertSame( array( 1500.0, 2000.0 ), Topup::edges( array( 1000.0, 1100.0, 1200.0, 1300.0, 1500.0, 1700.0 ) ) );
+		self::assertSame( array( 1000.0, 5000.0 ), Topup::edges( array( 50.0, 300.0, 900.0, 2400.0, 4990.0, 9000.0 ) ) );
+		self::assertSame( array( 1000.0, 1500.0 ), Topup::edges( array( 1000.0, 1000.0, 1000.0 ) ) );
+	}
+
 	public function test_step_is_never_below_one(): void {
 		self::assertGreaterThanOrEqual( 1.0, Topup::step( 0.0 ) );
 		self::assertGreaterThanOrEqual( 1.0, Topup::step( 0.4 ) );

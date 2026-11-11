@@ -231,12 +231,8 @@ final class Topup {
 	 * @param float[] $prices The grid's prices.
 	 * @return array<string,array{0:float,1:float,2:string}>
 	 */
-	public static function tiers( array $prices ): array {
-		sort( $prices );
-
-		$n    = count( $prices );
-		$low  = self::nice( $prices[ (int) floor( $n / 3 ) ] );
-		$high = self::nice( $prices[ (int) floor( 2 * $n / 3 ) ] );
+	private static function tiers( array $prices ): array {
+		list( $low, $high ) = self::edges( $prices );
 
 		$bands = array(
 			'under' => array(
@@ -247,16 +243,12 @@ final class Topup {
 			),
 		);
 
-		if ( $high > $low ) {
-			$bands['near'] = array(
-				$low,
-				$high,
-				/* translators: 1: a sum. 2: a higher sum. */
-				sprintf( _x( '%1$s to %2$s', 'price band', 'oc-theme' ), Cart::plain_price( wc_price( $low ) ), Cart::plain_price( wc_price( $high ) ) ),
-			);
-		} else {
-			$high = $low;
-		}
+		$bands['near'] = array(
+			$low,
+			$high,
+			/* translators: 1: a sum. 2: a higher sum. */
+			sprintf( _x( '%1$s to %2$s', 'price band', 'oc-theme' ), Cart::plain_price( wc_price( $low ) ), Cart::plain_price( wc_price( $high ) ) ),
+		);
 
 		$bands['over'] = array(
 			$high,
@@ -266,6 +258,29 @@ final class Topup {
 		);
 
 		return $bands;
+	}
+
+	/**
+	 * The two edges the tiers cut at: the cheaper third's top and the
+	 * dearer third's bottom, each rounded up. Both thirds rounding to
+	 * the same number — a grid of 1,000 to 1,500 — would leave a chip of
+	 * nothing, so the upper edge then sits a step above the lower one.
+	 *
+	 * @param float[] $prices The grid's prices.
+	 * @return array{0:float,1:float}
+	 */
+	public static function edges( array $prices ): array {
+		sort( $prices );
+
+		$n    = count( $prices );
+		$low  = self::nice( $prices[ (int) floor( $n / 3 ) ] );
+		$high = self::nice( $prices[ (int) floor( 2 * $n / 3 ) ] );
+
+		if ( $high <= $low ) {
+			$high = self::nice( $low + self::step( $low ) );
+		}
+
+		return array( $low, $high );
 	}
 
 	/**
