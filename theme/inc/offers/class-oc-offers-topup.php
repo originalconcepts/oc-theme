@@ -46,13 +46,22 @@ final class Topup {
 	 * Whether the bar may offer the sheet: offers on, a gap to close.
 	 */
 	public static function available(): bool {
-		if ( ! Offers::on() ) {
+		if ( ! self::on() ) {
 			return false;
 		}
 
 		$gap = Cart::ship_gap();
 
 		return $gap['goal'] > 0 && $gap['have'] < $gap['goal'];
+	}
+
+	/**
+	 * Whether the shop wants the sheet at all: the offers on, and the
+	 * cart screen's own switch (הגדרות תבנית ← סל ← חלונית ההשלמה) not
+	 * turned off.
+	 */
+	public static function on(): bool {
+		return Offers::on() && ! empty( Cart::settings()['topup_on'] );
 	}
 
 	/**
@@ -66,6 +75,10 @@ final class Topup {
 	 * The empty sheet, printed once with the panel; the page fills it.
 	 */
 	public static function shell(): string {
+		if ( ! self::on() ) {
+			return '';
+		}
+
 		$auto = empty( Cart::settings()['topup_auto'] ) ? '0' : '1';
 
 		return '<div class="oc-topup" data-oc-topup-sheet data-auto="' . $auto . '" data-url="' . esc_url( \WC_AJAX::get_endpoint( 'oc_topup' ) ) . '" hidden role="dialog" aria-modal="true" aria-labelledby="oc-topup-title">'
@@ -106,23 +119,54 @@ final class Topup {
 		$done  = $left <= 0;
 		$items = self::pool( $left, $done );
 
-		if ( ! $items && ! $done ) {
-			return $html . '<p class="oc-topup__empty">' . esc_html__( 'Nothing to suggest right now.', 'oc-theme' ) . '</p>';
+		if ( ! $items ) {
+			return $html . ( $done ? self::foot() : '<p class="oc-topup__empty">' . esc_html__( 'Nothing to suggest right now.', 'oc-theme' ) . '</p>' );
 		}
 
-		if ( $done ) {
-			return $html . ( $items ? self::grid( $items ) : '' ) . self::foot();
-		}
-
-		// Price bands around the gap, the way a marketplace filters: under
-		// what is missing (two cheap ones add up), just over it (covers it
-		// in one), well over it. The "just over" band is as wide as it has
-		// to be to hold something — a quarter of the gap, or two, or three
-		// — and when nothing stands beyond it, or nothing stands in it, a
-		// single "over the gap" chip says so. Only bands with something in
-		// them get a chip.
-		$step   = self::step( $left );
 		$prices = array_map( static fn ( array $i ): float => $i['price'], $items );
+
+		// With no gap left to band around, the chips cut the grid by its
+		// own prices instead, so the sheet keeps its shape.
+		$bands = $done ? self::tiers( $prices ) : self::around( $left, $prices );
+		$count = array_fill_keys( array_keys( $bands ), 0 );
+
+		foreach ( $items as $i => $item ) {
+			$items[ $i ]['band'] = self::band( $item['price'], $bands );
+			++$count[ $items[ $i ]['band'] ];
+		}
+
+		$html .= '<div class="oc-topup__chips" role="group" aria-label="' . esc_attr__( 'Narrow down', 'oc-theme' ) . '">';
+		$html .= '<button type="button" class="oc-topup__chip is-on" data-oc-topup-chip="all" aria-pressed="true">' . esc_html__( 'All', 'oc-theme' ) . '</button>';
+
+		foreach ( $bands as $key => $band ) {
+			if ( $count[ $key ] > 0 ) {
+				$html .= '<button type="button" class="oc-topup__chip" data-oc-topup-chip="' . esc_attr( $key ) . '" aria-pressed="false">' . esc_html( $band[2] ) . '</button>';
+			}
+		}
+
+		$html .= '</div>';
+
+		$html .= self::grid( $items );
+		$html .= self::foot();
+
+		return $html;
+	}
+
+	/**
+	 * Price bands around the gap, the way a marketplace filters: under
+	 * what is missing (two cheap ones add up), just over it (covers it
+	 * in one), well over it. The "just over" band is as wide as it has
+	 * to be to hold something — a quarter of the gap, or two, or three
+	 * — and when nothing stands beyond it, or nothing stands in it, a
+	 * single "over the gap" chip says so. Only bands with something in
+	 * them get a chip.
+	 *
+	 * @param float   $left   The sum still missing.
+	 * @param float[] $prices The grid's prices.
+	 * @return array<string,array{0:float,1:float,2:string}>
+	 */
+	private static function around( float $left, array $prices ): array {
+		$step   = self::step( $left );
 		$bands  = array(
 			'under' => array(
 				0.0,
@@ -176,29 +220,70 @@ final class Topup {
 			);
 		}
 
-		$count = array_fill_keys( array_keys( $bands ), 0 );
-
-		foreach ( $items as $i => $item ) {
-			$items[ $i ]['band'] = self::band( $item['price'], $bands );
-			++$count[ $items[ $i ]['band'] ];
-		}
-
-		$html .= '<div class="oc-topup__chips" role="group" aria-label="' . esc_attr__( 'Narrow down', 'oc-theme' ) . '">';
-		$html .= '<button type="button" class="oc-topup__chip is-on" data-oc-topup-chip="all" aria-pressed="true">' . esc_html__( 'All', 'oc-theme' ) . '</button>';
-
-		foreach ( $bands as $key => $band ) {
-			if ( $count[ $key ] > 0 ) {
-				$html .= '<button type="button" class="oc-topup__chip" data-oc-topup-chip="' . esc_attr( $key ) . '" aria-pressed="false">' . esc_html( $band[2] ) . '</button>';
-			}
-		}
-
-		$html .= '</div>';
-
-		$html .= self::grid( $items );
-		$html .= self::foot();
-
-		return $html;
+		return $bands;
 	}
+
+	/**
+	 * Price bands by the grid's own prices, for when there is no gap:
+	 * the cheaper third, the middle, the dearer third, each edge rounded
+	 * up to a round number.
+	 *
+	 * @param float[] $prices The grid's prices.
+	 * @return array<string,array{0:float,1:float,2:string}>
+	 */
+	public static function tiers( array $prices ): array {
+		sort( $prices );
+
+		$n    = count( $prices );
+		$low  = self::nice( $prices[ (int) floor( $n / 3 ) ] );
+		$high = self::nice( $prices[ (int) floor( 2 * $n / 3 ) ] );
+
+		$bands = array(
+			'under' => array(
+				0.0,
+				$low,
+				/* translators: %s: a sum. */
+				sprintf( __( 'Up to %s', 'oc-theme' ), Cart::plain_price( wc_price( $low ) ) ),
+			),
+		);
+
+		if ( $high > $low ) {
+			$bands['near'] = array(
+				$low,
+				$high,
+				/* translators: 1: a sum. 2: a higher sum. */
+				sprintf( _x( '%1$s to %2$s', 'price band', 'oc-theme' ), Cart::plain_price( wc_price( $low ) ), Cart::plain_price( wc_price( $high ) ) ),
+			);
+		} else {
+			$high = $low;
+		}
+
+		$bands['over'] = array(
+			$high,
+			INF,
+			/* translators: %s: a sum. */
+			sprintf( __( 'Over %s', 'oc-theme' ), Cart::plain_price( wc_price( $high ) ) ),
+		);
+
+		return $bands;
+	}
+
+	/**
+	 * A price rounded up to a round number — half a magnitude: 1,170
+	 * gives 1,500, 2,400 gives 2,500, 90 gives 100.
+	 *
+	 * @param float $price The price.
+	 */
+	public static function nice( float $price ): float {
+		if ( $price < 10 ) {
+			return (float) ceil( $price );
+		}
+
+		$unit = ( 10 ** floor( log10( $price ) ) ) / 2;
+
+		return (float) ( ceil( $price / $unit ) * $unit );
+	}
+
 
 	/**
 	 * The product grid: picture, why it is here, name, price, the product

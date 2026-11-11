@@ -38,6 +38,29 @@ final class TopupTest extends TestCase {
 		self::assertSame( $want, Topup::step( $left ) );
 	}
 
+	/**
+	 * A price rounded up to half a magnitude.
+	 *
+	 * @return array<string,array{float,float}>
+	 */
+	public static function nices(): array {
+		return array(
+			'1170' => array( 1170.0, 1500.0 ),
+			'2400' => array( 2400.0, 2500.0 ),
+			'1000' => array( 1000.0, 1000.0 ),
+			'90'   => array( 90.0, 100.0 ),
+			'4990' => array( 4990.0, 5000.0 ),
+			'7'    => array( 6.4, 7.0 ),
+		);
+	}
+
+	/**
+	 * @dataProvider nices
+	 */
+	public function test_nice( float $price, float $want ): void {
+		self::assertSame( $want, Topup::nice( $price ) );
+	}
+
 	public function test_step_is_never_below_one(): void {
 		self::assertGreaterThanOrEqual( 1.0, Topup::step( 0.0 ) );
 		self::assertGreaterThanOrEqual( 1.0, Topup::step( 0.4 ) );

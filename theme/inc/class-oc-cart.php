@@ -83,6 +83,7 @@ final class Cart {
 				'ship_fill'    => '',        // Bar colours; empty = the brand colour.
 				'ship_bg'      => '',
 				'ship_quiet'   => 0,         // The plain bar: no coloured band.
+				'topup_on'     => 1,         // The top-up sheet at all: the bar's link and the auto-open.
 				'topup_auto'   => 0,         // The top-up sheet opens by itself on "checkout" while short of free delivery.
 				'up_show'      => 0,
 				'up_title'     => '',
@@ -1584,8 +1585,10 @@ final class Cart {
 					<tr>
 						<th scope="row"><?php esc_html_e( 'Top-up sheet', 'oc-theme' ); ?></th>
 						<td>
-							<label><input type="checkbox" name="topup_auto" value="1" <?php checked( 1, (int) $s['topup_auto'] ); ?> /> <?php esc_html_e( 'Open it by itself when the shopper taps "checkout" while still short of free delivery', 'oc-theme' ); ?></label>
-							<p class="description"><?php esc_html_e( 'Once per cart state: a shopper who closes it and taps "checkout" again goes straight through. Needs the offers switched on.', 'oc-theme' ); ?></p>
+							<label><input type="checkbox" name="topup_on" value="1" <?php checked( 1, (int) $s['topup_on'] ); ?> /> <?php esc_html_e( 'Offer the sheet: a "top it up" link on the free-shipping bar opens a grid of products that close the gap', 'oc-theme' ); ?></label>
+							<p class="description"><?php esc_html_e( 'Off = no link and no sheet, whatever the next option says. Needs the offers switched on.', 'oc-theme' ); ?></p>
+							<p style="margin:10px 0 0;"><label><input type="checkbox" name="topup_auto" value="1" <?php checked( 1, (int) $s['topup_auto'] ); ?> /> <?php esc_html_e( 'Open it by itself when the shopper taps "checkout" while still short of free delivery', 'oc-theme' ); ?></label></p>
+							<p class="description"><?php esc_html_e( 'Once per cart state: a shopper who closes it and taps "checkout" again goes straight through.', 'oc-theme' ); ?></p>
 						</td>
 					</tr>
 				</table>
@@ -1656,6 +1659,7 @@ final class Cart {
 					'ship_midpr' => '' === trim( (string) ( $_POST['ship_midpr'] ?? '' ) ) ? '' : (string) max( 0.0, (float) $_POST['ship_midpr'] ), // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- cast to float.
 					'ship_text'  => sanitize_text_field( wp_unslash( (string) ( $_POST['ship_text'] ?? '' ) ) ),
 					'ship_done'  => sanitize_text_field( wp_unslash( (string) ( $_POST['ship_done'] ?? '' ) ) ),
+					'topup_on'   => empty( $_POST['topup_on'] ) ? 0 : 1,
 					'topup_auto' => empty( $_POST['topup_auto'] ) ? 0 : 1,
 					'up_show'    => empty( $_POST['up_show'] ) ? 0 : 1,
 					'up_title'   => sanitize_text_field( wp_unslash( (string) ( $_POST['up_title'] ?? '' ) ) ),

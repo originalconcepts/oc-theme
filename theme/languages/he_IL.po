@@ -15877,8 +15877,8 @@ msgstr "חלונית ההשלמה"
 msgid "Open it by itself when the shopper taps \"checkout\" while still short of free delivery"
 msgstr "לפתוח אותה לבד כשהלקוח לוחץ ״מעבר לקופה״ ועדיין חסר לו למשלוח חינם"
 
-msgid "Once per cart state: a shopper who closes it and taps \"checkout\" again goes straight through. Needs the offers switched on."
-msgstr "פעם אחת לכל מצב של הסל: מי שסוגר אותה ולוחץ שוב ״מעבר לקופה״ עובר ישר לקופה. דורש שההצעות יהיו פעילות."
+msgid "Once per cart state: a shopper who closes it and taps \"checkout\" again goes straight through."
+msgstr "פעם אחת לכל מצב של הסל: מי שסוגר אותה ולוחץ שוב ״מעבר לקופה״ עובר ישר לקופה."
 
 msgid "At the checkout"
 msgstr "בקופה"
@@ -15910,3 +15910,9 @@ msgstr "דומה למה שבחרת"
 
 msgid "%d%% off"
 msgstr "%d%% הנחה"
+
+msgid "Offer the sheet: a \"top it up\" link on the free-shipping bar opens a grid of products that close the gap"
+msgstr "להציע את החלונית: קישור \"השלימו עכשיו\" בפס המשלוח פותח רשת מוצרים שסוגרים את הפער"
+
+msgid "Off = no link and no sheet, whatever the next option says. Needs the offers switched on."
+msgstr "כבוי = בלי קישור ובלי חלונית, בלי קשר לאפשרות הבאה. דורש שההצעות יהיו פעילות."
