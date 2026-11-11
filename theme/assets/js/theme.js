@@ -5194,9 +5194,16 @@ window.ocWhenShown( function () {
 		// Read the sheet again for the cart as it is now. After an add,
 		// reaching the free-shipping line is noticed on the sheet's own
 		// bar: it fills, says so, and gets the cart's confetti.
-		function fill( added ) {
+		function reached() {
+			return ! ! sheet.querySelector( '[data-oc-topup-body] .oc-shipbar.is-done' );
+		}
+
+		// wasDone is read BEFORE the add: the cart fragments that follow
+		// an add replace every [data-oc-ship-bar], the sheet's own bar
+		// included, so by the time the sheet is read again it already
+		// says "reached".
+		function fill( added, wasDone ) {
 			var body = sheet.querySelector( '[data-oc-topup-body]' );
-			var wasDone = ! ! body.querySelector( '.oc-shipbar.is-done' );
 			body.innerHTML = '<span class="oc-topup__loading">…</span>';
 			fetch( sheet.getAttribute( 'data-url' ), { credentials: 'same-origin' } )
 				.then( function ( r ) { return r.json(); } )
@@ -5301,12 +5308,14 @@ window.ocWhenShown( function () {
 			var pick = event.target.closest( '[data-oc-topup-pick]' );
 			if ( pick ) {
 				if ( window.__ocQuickPick ) {
-					window.__ocQuickPick( pick.getAttribute( 'data-oc-topup-pick' ), '', { over: true, done: function () { fill( true ); } } );
+					var wasPick = reached();
+					window.__ocQuickPick( pick.getAttribute( 'data-oc-topup-pick' ), '', { over: true, done: function () { fill( true, wasPick ); } } );
 				}
 				return;
 			}
 			var add = event.target.closest( '[data-oc-topup-add]' );
 			if ( add ) {
+				var wasAdd = reached();
 				add.classList.add( 'loading' );
 				var data = new FormData();
 				data.append( 'action', 'oc_cart_add' );
@@ -5330,7 +5339,7 @@ window.ocWhenShown( function () {
 								} );
 							} );
 						}
-						fill( true );
+						fill( true, wasAdd );
 					} )
 					.catch( function () {
 						add.classList.remove( 'loading' );
