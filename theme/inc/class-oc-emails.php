@@ -841,6 +841,10 @@ final class Emails {
 			$product = $item instanceof \WC_Order_Item_Product ? $item->get_product() : null;
 			$pic     = '';
 
+			// The picture and the name open the product page — a variation's
+			// own link carries its attributes, so the page opens on it.
+			$url = $product && $product->is_visible() ? (string) $product->get_permalink() : '';
+
 			if ( $product ) {
 				$id = (int) $product->get_image_id();
 
@@ -856,6 +860,8 @@ final class Emails {
 
 			if ( '' === $pic ) {
 				$pic = '<div style="width:72px;height:72px;border-radius:10px;background:' . esc_attr( $p['panel'] ) . ';"></div>';
+			} elseif ( '' !== $url ) {
+				$pic = '<a href="' . esc_url( $url ) . '" style="display:block;text-decoration:none;">' . $pic . '</a>';
 			}
 
 			// A variation's own name carries its attributes — "BALL TABLE -
@@ -892,7 +898,10 @@ final class Emails {
 				. '<td width="72" valign="top" style="width:72px;padding:16px 0;">' . $pic . '</td>'
 				. '<td valign="top" style="padding:16px 18px;">'
 				. '<div style="font-size:15.5px;font-weight:600;line-height:1.45;color:' . esc_attr( $p['ink'] ) . ';">'
-				. esc_html( $title ) . '</div>'
+				. ( '' !== $url
+					? '<a href="' . esc_url( $url ) . '" style="color:' . esc_attr( $p['ink'] ) . ';text-decoration:none;">' . esc_html( $title ) . '</a>'
+					: esc_html( $title ) )
+				. '</div>'
 				. ( $bits
 					? '<div style="margin:5px 0 0;font-size:13.5px;line-height:1.7;">' . implode( '<br />', $bits ) . '</div>'
 					: '' )
