@@ -33,6 +33,21 @@ final class Paypal {
 	const LOGO = '/woocommerce-paypal-payments/modules/ppcp-wc-gateway/assets/images/paypal.svg';
 
 	/**
+	 * The scripts that draw PayPal's own buttons, one per generation of the
+	 * plugin: the v5 smart button, and the SDK v6 boot that PayPal Payments
+	 * 4.2 switched eligible shops to. Each also hides "Place order" while
+	 * PayPal is the chosen method, so missing one leaves the checkout with
+	 * no pay button at all — its own is drawn into a container the
+	 * stylesheet folds away.
+	 */
+	const BUTTON_SCRIPTS = array( 'ppcp-smart-button', 'wc-ppcp-sdk-v6-boot' );
+
+	/**
+	 * The v6 buttons' stylesheet, useless once their script is gone.
+	 */
+	const BUTTON_STYLES = array( 'wc-ppcp-sdk-v6-gateway' );
+
+	/**
 	 * Hook in.
 	 */
 	public function register(): void {
@@ -128,8 +143,21 @@ final class Paypal {
 		$product  = function_exists( 'is_product' ) && is_product() && self::on( 'hide_product_button' );
 		$checkout = function_exists( 'is_checkout' ) && is_checkout() && self::on( 'native_button' );
 
-		if ( $product || $checkout ) {
-			wp_dequeue_script( 'ppcp-smart-button' );
+		if ( ! $product && ! $checkout ) {
+			return;
+		}
+
+		/**
+		 * Script handles that draw PayPal's own buttons.
+		 *
+		 * @param string[] $handles Handles.
+		 */
+		foreach ( (array) apply_filters( 'oc_paypal_button_scripts', self::BUTTON_SCRIPTS ) as $handle ) {
+			wp_dequeue_script( (string) $handle );
+		}
+
+		foreach ( self::BUTTON_STYLES as $handle ) {
+			wp_dequeue_style( $handle );
 		}
 	}
 
