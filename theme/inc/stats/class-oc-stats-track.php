@@ -71,6 +71,7 @@ final class Track {
 
 		add_action( 'rest_api_init', array( $this, 'rest' ) );
 		add_action( 'admin_init', array( __CLASS__, 'install' ) );
+		add_action( 'admin_init', array( __CLASS__, 'woo_origin_backfill' ), 20 );
 
 		// The session, channel and device travel onto the order at creation.
 		add_action( 'woocommerce_checkout_order_created', array( $this, 'attribute' ) );
@@ -532,10 +533,113 @@ final class Track {
 		$src = isset( $_COOKIE[ self::SRC ] ) ? sanitize_text_field( wp_unslash( $_COOKIE[ self::SRC ] ) ) : '';
 		$ua  = isset( $_SERVER['HTTP_USER_AGENT'] ) ? (string) wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- reduced to one letter.
 
+		$channel = in_array( $src, self::CHANNELS, true ) ? $src : 'direct';
+		$device  = self::device( $ua );
+
 		$order->update_meta_data( self::META_SID, preg_match( '/^[a-f0-9]{24}$/', $sid ) ? $sid : '' );
-		$order->update_meta_data( self::META_CH, in_array( $src, self::CHANNELS, true ) ? $src : 'direct' );
-		$order->update_meta_data( self::META_DEV, self::device( $ua ) );
+		$order->update_meta_data( self::META_CH, $channel );
+		$order->update_meta_data( self::META_DEV, $device );
+		self::to_woo( $order, $channel, $device );
 		$order->save();
+	}
+
+	/**
+	 * A channel's name, as the statistics screen shows it.
+	 *
+	 * @param string $channel One of CHANNELS.
+	 */
+	public static function label( string $channel ): string {
+		switch ( $channel ) {
+			case 'organic':
+				return __( 'Organic search', 'oc-theme' );
+			case 'paid_search':
+				return __( 'Google Ads', 'oc-theme' );
+			case 'social':
+				return __( 'Social', 'oc-theme' );
+			case 'paid_social':
+				return __( 'Paid social', 'oc-theme' );
+			case 'email':
+				return __( 'Email & SMS', 'oc-theme' );
+			case 'referral':
+				return __( 'Referrals', 'oc-theme' );
+			default:
+				return __( 'Direct', 'oc-theme' );
+		}
+	}
+
+	/**
+	 * The channel in WooCommerce's own order-attribution fields, so the
+	 * order screen's "Order attribution" box and the orders list's Origin
+	 * column show it. The theme switches Woo's tracker off (Performance), and
+	 * without these every order read "Unknown". An order Woo did attribute
+	 * itself — a site that turned its tracker back on, an order made in the
+	 * admin — keeps Woo's answer. The caller saves.
+	 *
+	 * @param \WC_Order $order   The order.
+	 * @param string    $channel One of CHANNELS.
+	 * @param string    $device  m, t or d.
+	 */
+	private static function to_woo( \WC_Order $order, string $channel, string $device ): void {
+		if ( '' !== (string) $order->get_meta( '_wc_order_attribution_source_type' ) ) {
+			return;
+		}
+
+		if ( 'direct' === $channel ) {
+			$order->update_meta_data( '_wc_order_attribution_source_type', 'typein' );
+		} else {
+			$order->update_meta_data( '_wc_order_attribution_source_type', 'utm' );
+			$order->update_meta_data( '_wc_order_attribution_utm_source', self::label( $channel ) );
+		}
+
+		$devices = array(
+			'm' => 'Mobile',
+			't' => 'Tablet',
+			'd' => 'Desktop',
+		);
+
+		if ( isset( $devices[ $device ] ) ) {
+			$order->update_meta_data( '_wc_order_attribution_device_type', $devices[ $device ] );
+		}
+	}
+
+	/**
+	 * Orders placed before to_woo() existed get the same fields, from the
+	 * channel already stored on them: a hundred per admin page load until
+	 * none is left, then never again.
+	 */
+	public static function woo_origin_backfill(): void {
+		if ( 'done' === get_option( 'oc_stats_woo_origin', '' ) || ! function_exists( 'wc_get_orders' ) ) {
+			return;
+		}
+
+		$orders = wc_get_orders(
+			array(
+				'limit'      => 100,
+				'type'       => 'shop_order',
+				'status'     => 'any',
+				'meta_query' => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- once per site, a hundred at a time.
+					array(
+						'key'     => self::META_CH,
+						'compare' => 'EXISTS',
+					),
+					array(
+						'key'     => '_wc_order_attribution_source_type',
+						'compare' => 'NOT EXISTS',
+					),
+				),
+			)
+		);
+
+		foreach ( (array) $orders as $order ) {
+			if ( $order instanceof \WC_Order ) {
+				self::to_woo( $order, (string) $order->get_meta( self::META_CH ), (string) $order->get_meta( self::META_DEV ) );
+				$order->save();
+			}
+		}
+
+		if ( count( (array) $orders ) < 100 ) {
+			update_option( 'oc_stats_woo_origin', 'done', false );
+		}
 	}
 
 	/**
