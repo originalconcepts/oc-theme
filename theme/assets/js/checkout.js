@@ -507,6 +507,68 @@
 			}
 		}
 
+		/* -- pay button safety net --
+		 * PayPal's scripts hide the place-order button while PayPal is the
+		 * chosen method and draw their own in its place. The theme strips
+		 * those scripts and folds their containers away, so PayPal is paid
+		 * through ours — but a plugin update that renames its script (4.2's
+		 * SDK v6 did) slips past the strip, hides ours, and draws into a
+		 * container nobody sees: a checkout with no way to pay. Whatever the
+		 * plugin does next, ours comes back whenever a PayPal method is
+		 * chosen and no PayPal button is actually on screen. Capped, so a
+		 * script that insists on hiding it cannot ping-pong forever. */
+		var coGuardRuns = 0;
+
+		function coHidden( el ) {
+			var cs = window.getComputedStyle( el );
+			return el.hidden || 'none' === cs.display || 'hidden' === cs.visibility;
+		}
+
+		function coPayGuard() {
+			var btn = document.getElementById( 'place_order' );
+			var chosen = coForm.querySelector( 'input[name="payment_method"]:checked' );
+
+			if ( ! btn || ! chosen || 0 !== chosen.value.indexOf( 'ppcp-' ) || coGuardRuns >= 20 ) {
+				return;
+			}
+
+			if ( ! coHidden( btn ) ) {
+				return;
+			}
+
+			// A PayPal button someone chose to show (oc_paypal_native_button
+			// off) is a way to pay; leave the plugin to it.
+			var own = coForm.querySelectorAll( '.ppc-button-wrapper, [id^="ppc-button"]' );
+			for ( var i = 0; i < own.length; i++ ) {
+				if ( own[ i ].offsetHeight > 0 && ! coHidden( own[ i ] ) ) {
+					return;
+				}
+			}
+
+			coGuardRuns++;
+			btn.hidden = false;
+			btn.style.removeProperty( 'display' );
+			btn.style.removeProperty( 'visibility' );
+
+			if ( coHidden( btn ) ) {
+				btn.style.setProperty( 'display', 'block', 'important' );
+				btn.style.setProperty( 'visibility', 'visible', 'important' );
+			}
+
+			btn.setAttribute( 'data-oc-restored', String( coGuardRuns ) );
+			coTrustLine();
+		}
+
+		// Hiding the button is an attribute change, not a redraw.
+		new MutationObserver( function ( list ) {
+			for ( var i = 0; i < list.length; i++ ) {
+				if ( 'place_order' === list[ i ].target.id ) {
+					setTimeout( coPayGuard, 0 );
+					return;
+				}
+			}
+		} ).observe( coForm, { attributes: true, attributeFilter: [ 'style', 'class', 'hidden' ], subtree: true } );
+
 		function coTrustLine() {
 			var btn = document.getElementById( 'place_order' );
 			var wrap = btn ? btn.closest( '.place-order' ) : null;
@@ -593,6 +655,7 @@
 			coTick = setTimeout( function () {
 				coTick = null;
 				coPaintButton();
+				coPayGuard();
 				coTrustLine();
 				// The Turnstile slot sits inside the fragment Woo just redrew.
 				if ( window.ocGuard ) {
@@ -609,6 +672,7 @@
 
 		coPaintButton();
 		coTrustLine();
+		setTimeout( coPayGuard, 1500 );
 
 		// Choosing a method is not a mutation; the line has to be told.
 		coForm.addEventListener( 'change', function ( e ) {
@@ -616,6 +680,9 @@
 				setTimeout( coPaintButton, 0 );
 				setTimeout( coTrustLine, 0 );
 				setTimeout( coTrustLine, 400 );
+				// PayPal's SDK loads late; check again once it has had time.
+				setTimeout( coPayGuard, 400 );
+				setTimeout( coPayGuard, 1500 );
 			}
 		} );
 
