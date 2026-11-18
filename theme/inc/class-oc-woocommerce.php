@@ -2211,8 +2211,10 @@ final class WooCommerce {
 		// one built by a cron run would otherwise hand https pages http logos.
 		$scheme = (string) wp_parse_url( home_url(), PHP_URL_SCHEME );
 
-		if ( class_exists( 'WC_PayPlus_Statics' ) && method_exists( 'WC_PayPlus_Statics', 'getCardsLogos' ) ) {
-			foreach ( (array) call_user_func( array( 'WC_PayPlus_Statics', 'getCardsLogos' ) ) as $brand => $url ) {
+		$cards = array( 'WC_PayPlus_Statics', 'getCardsLogos' );
+
+		if ( is_callable( $cards ) ) {
+			foreach ( (array) call_user_func( $cards ) as $brand => $url ) {
 				$icons[ set_url_scheme( (string) $url, $scheme ) ] = ucfirst( (string) $brand );
 			}
 		}
