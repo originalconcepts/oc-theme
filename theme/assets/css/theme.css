@@ -9319,6 +9319,14 @@ body.oc-no-qty.single-product div.product form.cart .woocommerce-variation-add-t
 	inset: auto;
 }
 
+/* A promotion's own label (Black Friday...) wears its own colours, which
+ * the sale badge's fixed colour rules (several, at Woo's specificity)
+ * would otherwise paint over. */
+.onsale.oc-flag--promo {
+	background: var(--flag-bg, var(--oc-sale, #b4453c)) !important;
+	color: var(--flag-tx, #fff) !important;
+}
+
 /* The old badge margins outrank the generic child alignment — pin the
  * sale badge to its column's physical edge at the same weight. */
 .woocommerce ul.products li.product .oc-flags--left .onsale,
