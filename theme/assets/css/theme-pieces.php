@@ -6,7 +6,7 @@
  */
 
 return array(
-	'version' => '0.3.455',
+	'version' => '0.3.456',
 	'size'    => 558680,
 	'chunks'  => array( 'blog', 'checkout', 'filters', 'wishlist' ),
 );
