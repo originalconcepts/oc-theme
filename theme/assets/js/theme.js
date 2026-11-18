@@ -1013,8 +1013,9 @@ window.ocWhenShown( function () {
 	/* A panel's row is a grid with a track per menu column, each as wide as
 	 * its longest link: it cannot shrink, so on a narrower screen the last
 	 * columns ran off the panel's edge. A row that does not fit first lets
-	 * the panel's additions (products, pictures) step aside, so the links
-	 * keep the room; if it still does not fit, its columns wrap onto a second
+	 * the panel's additions (products, pictures) step aside and closes its
+	 * columns up, so the links keep the room; if it still does not fit, its
+	 * columns wrap onto a second
 	 * line, and the panel scrolls inside the room left under the bar. A row
 	 * with no menu columns is left alone: hiding its additions would empty
 	 * it. Measured on the closed panel (laid out, only hidden), so it holds

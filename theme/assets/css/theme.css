@@ -1435,12 +1435,13 @@ html.oc-menu-open .oc-menu-dim::after {
 .oc-nav--w-full .oc-mega__row { max-inline-size: var(--oc-content-width, 1280px); margin-inline: auto; }
 
 /* A row too wide for the screen (theme.js measures it): the additions step
- * aside first; if that is not enough, the menu columns wrap onto a second
- * line and the panel scrolls within the room under the bar. */
-.oc-nav .oc-mega__row--lean > .oc-mb:not(.oc-mb--col):not(.oc-mb--gap) { display: none; }
-.oc-nav .oc-mega__row--wrap { display: flex; flex-wrap: wrap; align-items: flex-start; row-gap: 22px; column-gap: var(--oc-mega-gap, 28px); }
-.oc-nav .oc-mega__row--wrap > .oc-mb--col { flex: 0 0 auto; }
-.oc-nav .oc-mega__row--wrap > .oc-mb--gap { display: none; }
+ * aside and the columns close up into a plain row, without the empty tracks
+ * and with the gaps narrowed; if that is not enough, the columns wrap onto a
+ * second line and the panel scrolls within the room under the bar. */
+.oc-nav .oc-mega__row--lean { display: flex; align-items: flex-start; column-gap: min(var(--oc-mega-gap, 28px), 32px); }
+.oc-nav .oc-mega__row--lean > .oc-mb--col { flex: 0 0 auto; }
+.oc-nav .oc-mega__row--lean > .oc-mb:not(.oc-mb--col) { display: none; }
+.oc-nav .oc-mega__row--wrap { flex-wrap: wrap; row-gap: 22px; }
 .oc-nav .oc-mega:has(> .oc-mega__row--wrap) { max-block-size: var(--oc-mega-room, calc(100vh - 180px)); overflow-y: auto; overscroll-behavior: contain; }
 
 /* Piece by piece: a short, quiet drift in from the reading side. Half the
