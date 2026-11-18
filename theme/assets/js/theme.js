@@ -1059,6 +1059,16 @@ window.ocWhenShown( function () {
 		if ( document.fonts && document.fonts.ready ) {
 			document.fonts.ready.then( ocMegaWrap );
 		}
+
+		// The stylesheet that hides the additions loads after the first
+		// paint; measured before it, a row that only needed its additions
+		// put aside was wrapped as well.
+		if ( 'complete' !== document.readyState ) {
+			window.addEventListener( 'load', ocMegaWrap );
+		}
+
+		ocNav.addEventListener( 'pointerenter', ocMegaWrap, { once: true } );
+		ocNav.addEventListener( 'focusin', ocMegaWrap, { once: true } );
 	}
 
 	if ( ocNav && window.matchMedia( '(hover: hover)' ).matches ) {
