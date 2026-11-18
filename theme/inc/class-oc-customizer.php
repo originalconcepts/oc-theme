@@ -2617,6 +2617,10 @@ final class Customizer {
 		$this->color( $c, 'oc_sale_badge_bg', 'oc_labels', __( 'Sale badge background', 'oc-theme' ) );
 		$this->color( $c, 'oc_sale_badge_tx', 'oc_labels', __( 'Sale badge text colour', 'oc-theme' ) );
 
+		$this->heading( $c, 'oc_h_lbl_promo', 'oc_labels', __( 'Promotion label', 'oc-theme' ) );
+		$this->color( $c, 'oc_label_promo_bg', 'oc_labels', __( 'Promotion label background', 'oc-theme' ), __( 'The label a promotion from the Promotions plugin puts on its products (Black Friday...), beside the discount badge. Empty = the sale badge colours.', 'oc-theme' ) );
+		$this->color( $c, 'oc_label_promo_tx', 'oc_labels', __( 'Promotion label text colour', 'oc-theme' ) );
+
 		$this->heading( $c, 'oc_h_lbl_stock', 'oc_labels', __( 'Stock labels', 'oc-theme' ) );
 
 		$this->toggle( $c, 'oc_label_stock', 'oc_labels', __( 'Show stock labels', 'oc-theme' ), false );

@@ -702,10 +702,21 @@ final class WooCommerce {
 			return (string) $price;
 		}
 
+		if ( ! $product instanceof \WC_Product ) {
+			return (string) $price;
+		}
+
+		$promo_label = (string) apply_filters( 'promeng_product_label', '', $product->get_id() );
+		$promo_html  = '' === $promo_label ? '' : sprintf(
+			' <span class="oc-price-badge oc-price-badge--promo" style="%s">%s</span>',
+			esc_attr( self::promo_colors() ),
+			esc_html( $promo_label )
+		);
+
 		$mode = (string) get_theme_mod( 'oc_card_sale_badge', 'percent' );
 
-		if ( 'none' === $mode || ! $product instanceof \WC_Product || ! $product->is_on_sale() ) {
-			return (string) $price;
+		if ( 'none' === $mode || ( ! $product->is_on_sale() && self::promo_factor( $product ) >= 1 ) ) {
+			return (string) $price . $promo_html;
 		}
 
 		$text = __( 'Sale!', 'oc-theme' );
@@ -720,11 +731,11 @@ final class WooCommerce {
 				: null;
 
 			if ( null !== $cheapest ) {
-				$discount = array( self::percent_off( $cheapest['regular'], $cheapest['price'] ), false );
+				$discount = array( self::percent_off( $cheapest['regular'], $cheapest['price'] * self::promo_factor( $product ) ), false );
 			}
 
 			if ( 0 === $discount[0] ) {
-				return (string) $price;
+				return (string) $price . $promo_html;
 			}
 
 			$text = $this->discount_label( $discount );
@@ -735,11 +746,12 @@ final class WooCommerce {
 		$plain = 'plain' === get_theme_mod( 'oc_sale_badge_style', 'badge' );
 
 		return sprintf(
-			'%s <span class="oc-price-badge%s" style="%s">%s</span>',
+			'%s <span class="oc-price-badge%s" style="%s">%s</span>%s',
 			$price,
 			$plain ? ' oc-price-badge--plain' : '',
 			esc_attr( self::flag_colors( 'oc_sale_badge_bg', 'oc_sale_badge_tx' ) ),
-			esc_html( $text )
+			esc_html( $text ),
+			$promo_html
 		);
 	}
 
@@ -1677,20 +1689,25 @@ final class WooCommerce {
 
 		$sale_side = Assets::side( 'right' === get_theme_mod( 'oc_label_sale_pos', 'left' ) ? 'right' : 'left' );
 
-		if ( $product->is_on_sale() ) {
+		// The discount badge counts a promotion's price too: a product the
+		// Promotions plugin takes 10% off carries "-10%" like one on sale, and
+		// one on sale as well carries the two discounts together.
+		if ( $product->is_on_sale() || self::promo_factor( $product ) < 1 ) {
 			// phpcs:ignore WordPress.WP.I18n.TextDomainMismatch -- Woo's own badge string; reuse its translation.
 			$sides[ $sale_side ] .= apply_filters( 'woocommerce_sale_flash', '<span class="onsale">' . esc_html__( 'Sale!', 'woocommerce' ) . '</span>', $product->get_id() ? get_post( $product->get_id() ) : null, $product );
-		} else {
-			// Promotion King promotions live outside WooCommerce sale prices;
-			// their label rides the same badge slot, in the sale colours.
-			$promo_label = (string) apply_filters( 'promeng_product_label', '', $product->get_id() );
-			if ( '' !== $promo_label ) {
-				$sides[ $sale_side ] .= sprintf(
-					'<span class="onsale" style="%s">%s</span>',
-					esc_attr( self::flag_colors( 'oc_label_sale_bg', 'oc_label_sale_tx' ) ),
-					esc_html( $promo_label )
-				);
-			}
+		}
+
+		// The promotion's own label (Black Friday...) is a label of its own,
+		// under the discount badge rather than in its place, in the
+		// promotion-label colours.
+		$promo_label = (string) apply_filters( 'promeng_product_label', '', $product->get_id() );
+
+		if ( '' !== $promo_label ) {
+			$sides[ $sale_side ] .= sprintf(
+				'<span class="onsale oc-flag--promo" style="%s">%s</span>',
+				esc_attr( self::promo_colors() ),
+				esc_html( $promo_label )
+			);
 		}
 
 		if ( get_theme_mod( 'oc_label_stock', false ) ) {
@@ -1838,6 +1855,56 @@ final class WooCommerce {
 		$tx = (string) get_theme_mod( $tx_key, '' );
 
 		return ( '' !== $bg ? '--flag-bg:' . $bg . ';' : '' ) . ( '' !== $tx ? '--flag-tx:' . $tx . ';' : '' );
+	}
+
+	/**
+	 * The promotion label's colours: its own settings, else the sale badge's.
+	 */
+	public static function promo_colors(): string {
+		$bg = (string) get_theme_mod( 'oc_label_promo_bg', '' );
+		$tx = (string) get_theme_mod( 'oc_label_promo_tx', '' );
+		$bg = '' !== $bg ? $bg : (string) get_theme_mod( 'oc_sale_badge_bg', '' );
+		$tx = '' !== $tx ? $tx : (string) get_theme_mod( 'oc_sale_badge_tx', '' );
+
+		return ( '' !== $bg ? '--flag-bg:' . $bg . ';' : '' ) . ( '' !== $tx ? '--flag-tx:' . $tx . ';' : '' );
+	}
+
+	/**
+	 * What is left of a product's price after the promotion the Promotions
+	 * plugin shows on it in the catalogue: 0.9 for 10% off, 1 for none. Read
+	 * from the plugin's own catalogue price, so the badge and the crossed-out
+	 * price never disagree. A variable product is measured on its parent,
+	 * which is how the promotions are written.
+	 *
+	 * @param \WC_Product $product Product.
+	 */
+	public static function promo_factor( \WC_Product $product ): float {
+		static $seen = array();
+
+		$id = (int) $product->get_id();
+
+		if ( isset( $seen[ $id ] ) ) {
+			return $seen[ $id ];
+		}
+
+		$factor = 1.0;
+
+		if ( class_exists( '\\PromoEngine\\Plugin' ) && method_exists( '\\PromoEngine\\Plugin', 'instance' ) ) {
+			$catalog = \PromoEngine\Plugin::instance()->catalog ?? null;
+			$base    = (float) wc_get_price_to_display( $product );
+
+			if ( is_object( $catalog ) && method_exists( $catalog, 'catalog_price' ) && $base > 0 ) {
+				$new = $catalog->catalog_price( $product );
+
+				if ( null !== $new && (float) $new < $base ) {
+					$factor = max( 0.0, (float) $new / $base );
+				}
+			}
+		}
+
+		$seen[ $id ] = $factor;
+
+		return $factor;
 	}
 
 	/**
@@ -2183,23 +2250,32 @@ final class WooCommerce {
 
 		$out = '';
 
-		foreach ( $icons as $src => $alt ) {
-			$out .= '<img src="' . esc_url( $src ) . '" alt="' . esc_attr( $alt ) . '" height="24" loading="lazy" decoding="async">';
+		foreach ( $icons as $icon ) {
+			$img = '<img src="' . esc_url( $icon['src'] ) . '" alt="' . esc_attr( $icon['alt'] ) . '" loading="lazy" decoding="async"';
+
+			// Card logos come framed; a wallet's bare mark gets the same frame.
+			$out .= $icon['framed']
+				? '<span class="oc-pay-icons__item">' . $img . ' width="40" height="25"></span>'
+				: '<span class="oc-pay-icons__item oc-pay-icons__item--bare' . ( $icon['band'] ? ' oc-pay-icons__item--band' : '' ) . '">' . $img . '></span>';
 		}
 
 		echo '<div class="oc-pay-icons">' . $out . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
 	}
 
 	/**
-	 * Logo address => name, from the enabled gateways. PayPlus keeps its card
-	 * brands apart from the gateway (its own icon is the PayPlus logo), so
-	 * those come from its list of the cards the shop accepts. Kept for six
-	 * hours; any saved payment setting clears it.
+	 * The logos, wallets first, then the cards, American Express and Diners
+	 * last: each an address, a name, whether the picture carries its own
+	 * card frame, and whether it is a square with a band of text across its
+	 * middle (PayPlus's wallet logos). PayPlus keeps its card brands apart
+	 * from the gateway (its own icon is the PayPlus logo), so those come from
+	 * its list of the cards the shop accepts; every other enabled gateway
+	 * gives its own icon. Kept for six hours; any saved payment setting
+	 * clears it.
 	 *
-	 * @return array<string,string>
+	 * @return array<string,array{src:string,alt:string,framed:bool,band:bool}>
 	 */
 	private static function pay_icon_list(): array {
-		$cached = get_transient( 'oc_pay_icons' );
+		$cached = get_transient( 'oc_pay_icons_v2' );
 
 		if ( is_array( $cached ) ) {
 			return $cached;
@@ -2210,12 +2286,16 @@ final class WooCommerce {
 		// The site's own scheme, not the request's: the list is cached, and
 		// one built by a cron run would otherwise hand https pages http logos.
 		$scheme = (string) wp_parse_url( home_url(), PHP_URL_SCHEME );
-
-		$cards = array( 'WC_PayPlus_Statics', 'getCardsLogos' );
+		$cards  = array( 'WC_PayPlus_Statics', 'getCardsLogos' );
 
 		if ( is_callable( $cards ) ) {
 			foreach ( (array) call_user_func( $cards ) as $brand => $url ) {
-				$icons[ set_url_scheme( (string) $url, $scheme ) ] = ucfirst( (string) $brand );
+				$icons[ sanitize_key( (string) $brand ) ] = array(
+					'src'    => set_url_scheme( (string) $url, $scheme ),
+					'alt'    => ucfirst( (string) $brand ),
+					'framed' => true,
+					'band'   => false,
+				);
 			}
 		}
 
@@ -2228,20 +2308,37 @@ final class WooCommerce {
 				if ( preg_match_all( '/<img[^>]+src=["\']([^"\']+)["\'][^>]*>/i', (string) $gateway->get_icon(), $found, PREG_SET_ORDER ) ) {
 					foreach ( $found as $img ) {
 						$alt = preg_match( '/alt=["\']([^"\']*)["\']/i', $img[0], $a ) ? $a[1] : (string) $gateway->get_title();
-						$icons[ set_url_scheme( html_entity_decode( $img[1] ), $scheme ) ] = trim( (string) preg_replace( '/^PayPlus\s*-\s*/i', '', $alt ) );
+						$alt = trim( (string) preg_replace( '/^PayPlus\s*-\s*/i', '', $alt ) );
+						$src = set_url_scheme( html_entity_decode( $img[1] ), $scheme );
+
+						$icons[ sanitize_key( str_replace( ' ', '', $alt ) ) ] = array(
+							'src'    => $src,
+							'alt'    => $alt,
+							'framed' => false,
+							'band'   => false !== strpos( $src, 'payplus-payment-gateway' ),
+						);
 					}
 				}
 			}
 		}
 
+		$order = array_flip( array( 'applepay', 'googlepay', 'paypal', 'bit', 'visa', 'mastercard', 'isracard', 'max', 'maestro', 'discover', 'jcb', 'amex', 'diners' ) );
+
+		uksort(
+			$icons,
+			static function ( $a, $b ) use ( $order ): int {
+				return ( $order[ $a ] ?? 50 ) <=> ( $order[ $b ] ?? 50 );
+			}
+		);
+
 		/**
 		 * The payment logos shown under the add-to-cart button.
 		 *
-		 * @param array<string,string> $icons Logo address => name.
+		 * @param array<string,array{src:string,alt:string,framed:bool,band:bool}> $icons Key => logo.
 		 */
 		$icons = (array) apply_filters( 'oc_payment_icons', $icons );
 
-		set_transient( 'oc_pay_icons', $icons, 6 * HOUR_IN_SECONDS );
+		set_transient( 'oc_pay_icons_v2', $icons, 6 * HOUR_IN_SECONDS );
 
 		return $icons;
 	}
@@ -2255,7 +2352,7 @@ final class WooCommerce {
 		$option = (string) $option;
 
 		if ( 0 === strpos( $option, 'woocommerce_' ) && '_settings' === substr( $option, -9 ) ) {
-			delete_transient( 'oc_pay_icons' );
+			delete_transient( 'oc_pay_icons_v2' );
 		}
 	}
 
@@ -2650,15 +2747,17 @@ final class WooCommerce {
 	 * @return array{0:int,1:bool} Percent (0 when none), and whether it is an "up to".
 	 */
 	private function discount_percent( \WC_Product $product ): array {
+		$factor = self::promo_factor( $product );
+
 		if ( ! $product instanceof \WC_Product_Variable ) {
-			return array( self::percent_off( (float) $product->get_regular_price(), (float) $product->get_price() ), false );
+			return array( self::percent_off( (float) $product->get_regular_price(), (float) $product->get_price() * $factor ), false );
 		}
 
 		$prices = $product->get_variation_prices();
 		$seen   = array();
 
 		foreach ( (array) $prices['regular_price'] as $id => $regular ) {
-			$seen[] = self::percent_off( (float) $regular, (float) ( $prices['price'][ $id ] ?? 0 ) );
+			$seen[] = self::percent_off( (float) $regular, (float) ( $prices['price'][ $id ] ?? 0 ) * $factor );
 		}
 
 		if ( empty( $seen ) ) {

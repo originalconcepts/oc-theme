@@ -15934,3 +15934,15 @@ msgstr "בגודל המקורי, בלי הגדלה"
 
 msgid "A picture smaller than the gallery frame is enlarged to fill it, and enlarging a small picture blurs it. The second option shows it at its own size, sharp, in the middle of the frame. Pictures as large as the frame or larger look the same either way."
 msgstr "תמונה קטנה ממסגרת הגלריה מוגדלת כדי למלא אותה, והגדלה של תמונה קטנה מטשטשת אותה. באפשרות השנייה היא מוצגת בגודל שלה, חדה, במרכז המסגרת. תמונות בגודל המסגרת ומעלה ייראו אותו דבר בשתי האפשרויות."
+
+msgid "Promotion label"
+msgstr "תווית מבצע"
+
+msgid "Promotion label background"
+msgstr "רקע תווית המבצע"
+
+msgid "The label a promotion from the Promotions plugin puts on its products (Black Friday...), beside the discount badge. Empty = the sale badge colours."
+msgstr "התווית שמבצע מתוסף המבצעים שם על המוצרים שלו (למשל Black Friday), לצד תווית ההנחה. ריק = הצבעים של תווית המבצע הרגילה."
+
+msgid "Promotion label text colour"
+msgstr "צבע הטקסט של תווית המבצע"
