@@ -1010,6 +1010,57 @@ window.ocWhenShown( function () {
 		ocNav.addEventListener( 'pointerenter', ocWarm );
 	}
 
+	/* A panel's row is a grid with a track per menu column, each as wide as
+	 * its longest link: it cannot shrink, so on a narrower screen the last
+	 * columns ran off the panel's edge. A row that does not fit first lets
+	 * the panel's additions (products, pictures) step aside, so the links
+	 * keep the room; if it still does not fit, its columns wrap onto a second
+	 * line, and the panel scrolls inside the room left under the bar. A row
+	 * with no menu columns is left alone: hiding its additions would empty
+	 * it. Measured on the closed panel (laid out, only hidden), so it holds
+	 * for tapping as well as hovering. */
+	function ocMegaWrap() {
+		if ( ! ocNav ) {
+			return;
+		}
+
+		ocNav.style.setProperty( '--oc-mega-room', Math.max( 240, window.innerHeight - ocNav.getBoundingClientRect().bottom - 16 ) + 'px' );
+
+		Array.prototype.forEach.call( ocNav.querySelectorAll( '.oc-mega__row' ), function ( row ) {
+			row.classList.remove( 'oc-mega__row--lean', 'oc-mega__row--wrap' );
+
+			if ( ! row.querySelector( '.oc-mb--col' ) ) {
+				return;
+			}
+
+			function over() {
+				return row.clientWidth > 0 && row.scrollWidth > row.clientWidth + 1;
+			}
+
+			if ( over() ) {
+				row.classList.add( 'oc-mega__row--lean' );
+
+				if ( over() ) {
+					row.classList.add( 'oc-mega__row--wrap' );
+				}
+			}
+		} );
+	}
+
+	if ( ocNav && ocNav.querySelector( '.oc-mega__row' ) ) {
+		var megaWrapTimer = null;
+
+		ocMegaWrap();
+		window.addEventListener( 'resize', function () {
+			clearTimeout( megaWrapTimer );
+			megaWrapTimer = setTimeout( ocMegaWrap, 150 );
+		} );
+
+		if ( document.fonts && document.fonts.ready ) {
+			document.fonts.ready.then( ocMegaWrap );
+		}
+	}
+
 	if ( ocNav && window.matchMedia( '(hover: hover)' ).matches ) {
 		var navOpen = null;
 		var navTimer = null;

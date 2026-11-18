@@ -1434,6 +1434,15 @@ html.oc-menu-open .oc-menu-dim::after {
 .oc-nav--w-content .oc-mega__row,
 .oc-nav--w-full .oc-mega__row { max-inline-size: var(--oc-content-width, 1280px); margin-inline: auto; }
 
+/* A row too wide for the screen (theme.js measures it): the additions step
+ * aside first; if that is not enough, the menu columns wrap onto a second
+ * line and the panel scrolls within the room under the bar. */
+.oc-nav .oc-mega__row--lean > .oc-mb:not(.oc-mb--col):not(.oc-mb--gap) { display: none; }
+.oc-nav .oc-mega__row--wrap { display: flex; flex-wrap: wrap; align-items: flex-start; row-gap: 22px; column-gap: var(--oc-mega-gap, 28px); }
+.oc-nav .oc-mega__row--wrap > .oc-mb--col { flex: 0 0 auto; }
+.oc-nav .oc-mega__row--wrap > .oc-mb--gap { display: none; }
+.oc-nav .oc-mega:has(> .oc-mega__row--wrap) { max-block-size: var(--oc-mega-room, calc(100vh - 180px)); overflow-y: auto; overscroll-behavior: contain; }
+
 /* Piece by piece: a short, quiet drift in from the reading side. Half the
  * drawer's distance and half again as long, because a panel on a desktop is
  * read at arm's length — the movement should be felt more than seen. */

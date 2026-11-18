@@ -155,6 +155,8 @@ return array(
 	'oc-load-more',
 	'oc-load-more--flt',
 	'oc-look-lock',
+	'oc-mega__row--lean',
+	'oc-mega__row--wrap',
 	'oc-menu-open',
 	'oc-mkt-cart',
 	'oc-mobile-menu',
