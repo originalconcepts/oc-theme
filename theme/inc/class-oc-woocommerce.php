@@ -304,7 +304,9 @@ final class WooCommerce {
 		add_action( 'woocommerce_before_add_to_cart_button', array( $this, 'stock_line' ) );
 		add_filter( 'woocommerce_available_variation', array( $this, 'variation_stock_line' ), 10, 3 );
 		add_action( 'woocommerce_after_add_to_cart_form', array( $this, 'oos_watch' ), 5 );
+		add_action( 'woocommerce_after_add_to_cart_form', array( $this, 'pay_icons' ), 5 );
 		add_action( 'woocommerce_after_add_to_cart_form', array( $this, 'atc_icons' ) );
+		add_action( 'updated_option', array( __CLASS__, 'pay_icons_flush' ) );
 
 		// Sold-out products show a proper block instead of a bare summary:
 		// a disabled sold-out button and a back-in-stock signup.
@@ -1069,6 +1071,10 @@ final class WooCommerce {
 
 		if ( get_theme_mod( 'oc_product_price_swap', false ) ) {
 			$classes[] = 'oc-price-swap';
+		}
+
+		if ( 'natural' === get_theme_mod( 'oc_gallery_upscale', 'stretch' ) ) {
+			$classes[] = 'oc-gal-natural';
 		}
 		$classes[] = 'oc-atc-' . sanitize_html_class( (string) get_theme_mod( 'oc_card_atc', 'always' ) );
 		$classes[] = 'oc-btn-' . sanitize_html_class( (string) get_theme_mod( 'oc_button_style', 'filled' ) );
@@ -2157,6 +2163,98 @@ final class WooCommerce {
 			esc_attr( $tone ),
 			esc_html( $status )
 		);
+	}
+
+	/**
+	 * The payment methods' logos under the add-to-cart button: the same
+	 * card and wallet logos the payment gateways show at the checkout, so
+	 * the page never promises a method the checkout does not take.
+	 */
+	public function pay_icons(): void {
+		if ( ! get_theme_mod( 'oc_pay_icons', false ) ) {
+			return;
+		}
+
+		$icons = self::pay_icon_list();
+
+		if ( empty( $icons ) ) {
+			return;
+		}
+
+		$out = '';
+
+		foreach ( $icons as $src => $alt ) {
+			$out .= '<img src="' . esc_url( $src ) . '" alt="' . esc_attr( $alt ) . '" height="24" loading="lazy" decoding="async">';
+		}
+
+		echo '<div class="oc-pay-icons">' . $out . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
+	}
+
+	/**
+	 * Logo address => name, from the enabled gateways. PayPlus keeps its card
+	 * brands apart from the gateway (its own icon is the PayPlus logo), so
+	 * those come from its list of the cards the shop accepts. Kept for six
+	 * hours; any saved payment setting clears it.
+	 *
+	 * @return array<string,string>
+	 */
+	private static function pay_icon_list(): array {
+		$cached = get_transient( 'oc_pay_icons' );
+
+		if ( is_array( $cached ) ) {
+			return $cached;
+		}
+
+		$icons = array();
+
+		// The site's own scheme, not the request's: the list is cached, and
+		// one built by a cron run would otherwise hand https pages http logos.
+		$scheme = (string) wp_parse_url( home_url(), PHP_URL_SCHEME );
+
+		if ( class_exists( 'WC_PayPlus_Statics' ) && method_exists( 'WC_PayPlus_Statics', 'getCardsLogos' ) ) {
+			foreach ( (array) call_user_func( array( 'WC_PayPlus_Statics', 'getCardsLogos' ) ) as $brand => $url ) {
+				$icons[ set_url_scheme( (string) $url, $scheme ) ] = ucfirst( (string) $brand );
+			}
+		}
+
+		if ( function_exists( 'WC' ) && WC()->payment_gateways() ) {
+			foreach ( WC()->payment_gateways()->payment_gateways() as $id => $gateway ) {
+				if ( 'yes' !== $gateway->enabled || 'payplus-payment-gateway' === $id ) {
+					continue;
+				}
+
+				if ( preg_match_all( '/<img[^>]+src=["\']([^"\']+)["\'][^>]*>/i', (string) $gateway->get_icon(), $found, PREG_SET_ORDER ) ) {
+					foreach ( $found as $img ) {
+						$alt = preg_match( '/alt=["\']([^"\']*)["\']/i', $img[0], $a ) ? $a[1] : (string) $gateway->get_title();
+						$icons[ set_url_scheme( html_entity_decode( $img[1] ), $scheme ) ] = trim( (string) preg_replace( '/^PayPlus\s*-\s*/i', '', $alt ) );
+					}
+				}
+			}
+		}
+
+		/**
+		 * The payment logos shown under the add-to-cart button.
+		 *
+		 * @param array<string,string> $icons Logo address => name.
+		 */
+		$icons = (array) apply_filters( 'oc_payment_icons', $icons );
+
+		set_transient( 'oc_pay_icons', $icons, 6 * HOUR_IN_SECONDS );
+
+		return $icons;
+	}
+
+	/**
+	 * A payment gateway's settings were saved: read the logos again.
+	 *
+	 * @param string $option Option name.
+	 */
+	public static function pay_icons_flush( $option ): void {
+		$option = (string) $option;
+
+		if ( 0 === strpos( $option, 'woocommerce_' ) && '_settings' === substr( $option, -9 ) ) {
+			delete_transient( 'oc_pay_icons' );
+		}
 	}
 
 	/**

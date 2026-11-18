@@ -2904,6 +2904,20 @@ final class Customizer {
 			__( 'Every frame — catalogue card, gallery at a uniform height, thumbnail rail, search, cart — decides once per picture, on the server. Smart looks at the picture\'s edges: a product on a plain ground (white, grey, transparent) is shown whole with the frame painted in that same ground, so nothing looks padded; a room or a model fills the frame and is cropped, which a scene survives and a product does not.', 'oc-theme' )
 		);
 
+		$this->choice(
+			$c,
+			'oc_gallery_upscale',
+			'oc_product',
+			__( 'Small pictures in the product gallery', 'oc-theme' ),
+			array(
+				'stretch' => __( 'Stretch to the frame', 'oc-theme' ),
+				'natural' => __( 'Never larger than the picture itself', 'oc-theme' ),
+			),
+			'stretch',
+			null,
+			__( 'A picture smaller than the gallery frame is enlarged to fill it, and enlarging a small picture blurs it. The second option shows it at its own size, sharp, in the middle of the frame. Pictures as large as the frame or larger look the same either way.', 'oc-theme' )
+		);
+
 		$this->heading( $c, 'oc_h_prod_text', 'oc_product', __( 'Text', 'oc-theme' ) );
 
 		$this->number( $c, 'oc_product_title_fs', 'oc_product', __( 'Title size — desktop (px, 0 = theme default)', 'oc-theme' ), 0, 0, 72 );
@@ -3095,6 +3109,8 @@ final class Customizer {
 			),
 			'soft'
 		);
+
+		$this->toggle( $c, 'oc_pay_icons', 'oc_product', __( 'Payment method icons under the add-to-cart button', 'oc-theme' ), false, null, __( 'The card and wallet logos the payment methods show at the checkout.', 'oc-theme' ) );
 
 		$this->choice(
 			$c,

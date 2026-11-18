@@ -15916,3 +15916,21 @@ msgstr "להציע את החלונית: קישור \"השלימו עכשיו\" �
 
 msgid "Off = no link and no sheet, whatever the next option says. Needs the offers switched on."
 msgstr "כבוי = בלי קישור ובלי חלונית, בלי קשר לאפשרות הבאה. דורש שההצעות יהיו פעילות."
+
+msgid "Payment method icons under the add-to-cart button"
+msgstr "אייקוני אמצעי תשלום מתחת לכפתור ההוספה לסל"
+
+msgid "The card and wallet logos the payment methods show at the checkout."
+msgstr "הלוגואים של כרטיסי האשראי והארנקים הדיגיטליים, כפי שהם מוצגים בקופה."
+
+msgid "Small pictures in the product gallery"
+msgstr "תמונות קטנות בגלריית המוצר"
+
+msgid "Stretch to the frame"
+msgstr "מתיחה לגודל המסגרת"
+
+msgid "Never larger than the picture itself"
+msgstr "בגודל המקורי, בלי הגדלה"
+
+msgid "A picture smaller than the gallery frame is enlarged to fill it, and enlarging a small picture blurs it. The second option shows it at its own size, sharp, in the middle of the frame. Pictures as large as the frame or larger look the same either way."
+msgstr "תמונה קטנה ממסגרת הגלריה מוגדלת כדי למלא אותה, והגדלה של תמונה קטנה מטשטשת אותה. באפשרות השנייה היא מוצגת בגודל שלה, חדה, במרכז המסגרת. תמונות בגודל המסגרת ומעלה ייראו אותו דבר בשתי האפשרויות."

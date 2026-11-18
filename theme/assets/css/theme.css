@@ -8804,6 +8804,11 @@ body:not(.oc-no-lightbox) .oc-vslide.is-playing {
 	background-color: var(--oc-fit-bg, var(--oc-surface, #fff));
 }
 
+/* Product gallery, "never larger than the picture itself": scale-down is
+ * contain for a picture bigger than its frame and its own size for a
+ * smaller one, which then stays sharp instead of being blown up. */
+body.oc-gal-natural .woocommerce-product-gallery__image img.oc-fit--contain { object-fit: scale-down !important; }
+
 /* A product may overrule the verdict for its own card. Said on the card
  * itself while arranging the catalogue, because the verdict is about the
  * picture and the exception is about this product: a packshot on white
@@ -9137,6 +9142,10 @@ body.oc-no-qty.single-product div.product form.cart .woocommerce-variation-add-t
 .oc-stockline__status--orange i { background: #e08a00; }
 
 /* ---------- icon rows under the button ---------- */
+
+/* Payment logos under the add-to-cart button — the gateways' own images. */
+.oc-pay-icons { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-block: 12px 4px; }
+.oc-pay-icons img { display: block; block-size: 24px; inline-size: auto; max-inline-size: 56px; object-fit: contain; padding: 3px 5px; border: 1px solid var(--oc-line, #e5e5e5); border-radius: 4px; background: #fff; box-sizing: content-box; }
 
 .oc-atc-icons {
 	display: flex;
