@@ -87,6 +87,7 @@ final class Cart {
 				'topup_auto'   => 0,         // The top-up sheet opens by itself on "checkout" while short of free delivery.
 				'topup_max'    => '',        // ...only while the gap is at most this; empty = whatever the gap.
 				'pre_on'       => 0,         // The offers sheet before payment: on "checkout" when there is no gap.
+				'pre_title'    => '',        // Its title; empty = "A moment before you pay".
 				'up_show'      => 0,
 				'up_title'     => '',
 				'up_source'    => 'items',   // items | category.
@@ -1599,7 +1600,8 @@ final class Cart {
 						<th scope="row"><?php esc_html_e( 'Offers before payment', 'oc-theme' ); ?></th>
 						<td>
 							<label><input type="checkbox" name="pre_on" value="1" <?php checked( 1, (int) $s['pre_on'] ); ?> /> <?php esc_html_e( 'When the shopper taps "checkout" and the free-shipping sheet does not open, offer a sheet of products first: one tap adds (a tick, then it leaves the grid), and "Continue to payment" goes on', 'oc-theme' ); ?></label>
-							<p class="description"><?php esc_html_e( 'The products are the offers for the cart, what the shopper viewed, what is like what they chose and what sells in those categories. Once per cart state. Needs the offers switched on.', 'oc-theme' ); ?></p>
+							<p style="margin:10px 0 0;"><input type="text" name="pre_title" value="<?php echo esc_attr( (string) $s['pre_title'] ); ?>" placeholder="<?php esc_attr_e( 'A moment before you pay', 'oc-theme' ); ?>" class="regular-text" /></p>
+							<p class="description"><?php esc_html_e( 'The sheet\'s title. The products: the cart\'s offers from the Offers screen (rules and hand-picked lists for the cart and the checkout), what the shopper viewed, what is like what they chose, and what sells in the cart\'s categories. Once per cart state. Needs the offers switched on.', 'oc-theme' ); ?></p>
 						</td>
 					</tr>
 				</table>
@@ -1674,6 +1676,7 @@ final class Cart {
 					'topup_auto' => empty( $_POST['topup_auto'] ) ? 0 : 1,
 					'topup_max'  => '' === trim( (string) ( $_POST['topup_max'] ?? '' ) ) ? '' : (string) max( 0, (int) $_POST['topup_max'] ), // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- cast to int.
 					'pre_on'     => empty( $_POST['pre_on'] ) ? 0 : 1,
+					'pre_title'  => sanitize_text_field( wp_unslash( (string) ( $_POST['pre_title'] ?? '' ) ) ),
 					'up_show'    => empty( $_POST['up_show'] ) ? 0 : 1,
 					'up_title'   => sanitize_text_field( wp_unslash( (string) ( $_POST['up_title'] ?? '' ) ) ),
 					'up_source'  => 'category' === ( $_POST['up_source'] ?? '' ) ? 'category' : 'items', // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- strict comparison stores a literal.

@@ -95,9 +95,10 @@ final class Topup {
 		$auto = self::on() && ! empty( $s['topup_auto'] ) ? '1' : '0';
 		$max  = (string) max( 0, (float) $s['topup_max'] );
 		$pre  = self::pre_on() ? '1' : '0';
+		$pt   = '' !== trim( (string) $s['pre_title'] ) ? (string) $s['pre_title'] : __( 'A moment before you pay', 'oc-theme' );
 
 		return '<div class="oc-topup" data-oc-topup-sheet data-auto="' . $auto . '" data-max="' . esc_attr( $max ) . '" data-pre="' . $pre . '"'
-			. ' data-title-gap="' . esc_attr__( 'Top up for free shipping', 'oc-theme' ) . '" data-title-pre="' . esc_attr__( 'A moment before you pay', 'oc-theme' ) . '"'
+			. ' data-title-gap="' . esc_attr__( 'Top up for free shipping', 'oc-theme' ) . '" data-title-pre="' . esc_attr( $pt ) . '"'
 			. ' data-url="' . esc_url( \WC_AJAX::get_endpoint( 'oc_topup' ) ) . '" hidden role="dialog" aria-modal="true" aria-labelledby="oc-topup-title">'
 			. '<div class="oc-topup__card">'
 			. '<div class="oc-topup__head"><h3 class="oc-topup__title" id="oc-topup-title">' . esc_html__( 'Top up for free shipping', 'oc-theme' ) . '</h3>'
