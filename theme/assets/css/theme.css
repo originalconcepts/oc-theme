@@ -6577,6 +6577,11 @@ body.oc-swatch-square-cat .oc-mcart__attr-swatch { border-radius: 4px; }
 
 .oc-topup__price .oc-price-from { font-weight: 500; font-size: .86em; }
 
+/* A "From" price in a sheet card is one line: the cheapest variation
+ * after the promotion, without the crossed-out price that would wrap it. */
+.oc-topup__price .oc-price-from ~ del,
+.oc-topup__price .oc-price-from ~ .promeng-was { display: none; }
+
 /* the theme's own button: its corners, its CTA colour as an outline, and
  * on hover the fill the shop chose (a sweep, or a plain fill) */
 .oc-topup__add {
