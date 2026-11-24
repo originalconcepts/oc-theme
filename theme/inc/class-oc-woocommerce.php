@@ -277,7 +277,7 @@ final class WooCommerce {
 
 		// Sale mark on the product page lives inside the price line, so the
 		// flex row can stretch it to exactly the sale price's height.
-		add_filter( 'woocommerce_get_price_html', array( $this, 'price_badge_html' ), 20, 2 );
+		add_filter( 'woocommerce_get_price_html', array( $this, 'price_badge_html' ), 22, 2 );
 
 		// SKU rides the price line's far end; a per-product checkbox next to
 		// the SKU field can hide it.
@@ -288,6 +288,7 @@ final class WooCommerce {
 		// product page. On the product page the top price can follow the
 		// chosen variation, and the button can carry what it will cost.
 		add_filter( 'woocommerce_variable_price_html', array( $this, 'price_from_html' ), 10, 2 );
+		add_filter( 'woocommerce_get_price_html', array( $this, 'price_from_after_promo' ), 21, 2 );
 		add_filter( 'woocommerce_get_price_html', array( $this, 'price_swap_wrap' ), 25, 2 );
 		add_action( 'woocommerce_after_add_to_cart_button', array( $this, 'atc_price_data' ) );
 		add_action( 'woocommerce_product_options_sku', array( $this, 'sku_toggle_field' ) );
@@ -857,6 +858,44 @@ final class WooCommerce {
 			: wc_price( $cheapest['price'] );
 
 		return '<span class="oc-price-from">' . esc_html_x( 'From', 'price of the cheapest variation', 'oc-theme' ) . '</span> ' . $amount . $product->get_price_suffix();
+	}
+
+	/**
+	 * "From ₪X" again, after the Promotions plugin has had its say.
+	 *
+	 * The plugin rewrites a variable product's price at priority 20 into
+	 * its own "was range / now range", which throws away the "From" the
+	 * theme built and runs two ranges together — two lines on a card or
+	 * in the offers sheet. When the shop asked for "From", this puts it
+	 * back: the cheapest variation, its old price crossed out, its promoted
+	 * price beside it.
+	 *
+	 * @param string $price   Price HTML.
+	 * @param mixed  $product Product.
+	 */
+	public function price_from_after_promo( $price, $product ): string {
+		if ( ! $product instanceof \WC_Product_Variable || false === strpos( (string) $price, 'promeng-' ) ) {
+			return (string) $price;
+		}
+
+		$mod = $this->is_page_product( $product ) ? 'oc_product_price_range' : 'oc_card_price_range';
+
+		if ( 'from' !== get_theme_mod( $mod, 'range' ) ) {
+			return (string) $price;
+		}
+
+		$cheapest = $this->cheapest_variation( $product );
+		$factor   = self::promo_factor( $product );
+
+		if ( null === $cheapest || $factor >= 1 ) {
+			return (string) $price;
+		}
+
+		$was = max( $cheapest['regular'], $cheapest['price'] );
+		$now = $cheapest['price'] * $factor;
+
+		return '<span class="oc-price-from">' . esc_html_x( 'From', 'price of the cheapest variation', 'oc-theme' ) . '</span> '
+			. wc_format_sale_price( wc_price( $was ), wc_price( $now ) ) . $product->get_price_suffix();
 	}
 
 	/**

@@ -6570,7 +6570,12 @@ body.oc-swatch-square-cat .oc-mcart__attr-swatch { border-radius: 4px; }
 
 /* price and button sit at the card's foot: a one-line name keeps them
  * close, a two-line neighbour stretches the row, not the gap */
-.oc-topup__price { margin-block-start: auto; font-weight: 700; }
+.oc-topup__price { margin-block-start: auto; font-weight: 700; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 6px; }
+
+.oc-topup__price del,
+.oc-topup__price .promeng-was { font-weight: 400; font-size: .86em; opacity: .7; }
+
+.oc-topup__price .oc-price-from { font-weight: 500; font-size: .86em; }
 
 /* the theme's own button: its corners, its CTA colour as an outline, and
  * on hover the fill the shop chose (a sweep, or a plain fill) */
