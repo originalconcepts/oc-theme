@@ -88,6 +88,7 @@ final class Cart {
 				'topup_max'    => '',        // ...only while the gap is at most this; empty = whatever the gap.
 				'pre_on'       => 0,         // The offers sheet before payment: on "checkout" when there is no gap.
 				'pre_title'    => '',        // Its title; empty = "A moment before you pay".
+				'topup_src'    => array( 'match', 'seen', 'alike', 'popular' ), // What the sheets show; drop a source here.
 				'up_show'      => 0,
 				'up_title'     => '',
 				'up_source'    => 'items',   // items | category.
@@ -1597,6 +1598,24 @@ final class Cart {
 						</td>
 					</tr>
 					<tr>
+						<th scope="row"><?php esc_html_e( 'What the sheets show', 'oc-theme' ); ?></th>
+						<td>
+							<?php
+							$src_kept   = Offers\Topup::sources();
+							$src_labels = array(
+								'match'   => __( 'Goes with the cart: the offers (rules, hand-picked lists, bought together), and the upsells and cross-sells written on the products', 'oc-theme' ),
+								'seen'    => __( 'Products the shopper viewed', 'oc-theme' ),
+								'alike'   => __( 'Look-alikes: more from the same categories as the cart', 'oc-theme' ),
+								'popular' => __( 'Best sellers of the cart\'s categories', 'oc-theme' ),
+							);
+							foreach ( $src_labels as $src_key => $src_label ) :
+								?>
+								<p style="margin:0 0 6px;"><label><input type="checkbox" name="topup_src[]" value="<?php echo esc_attr( $src_key ); ?>" <?php checked( in_array( $src_key, $src_kept, true ) ); ?> /> <?php echo esc_html( $src_label ); ?></label></p>
+							<?php endforeach; ?>
+							<p class="description"><?php esc_html_e( 'Both sheets — top up for free shipping and offers before payment. All on by default; a shop whose buyers never want a second of the same thing drops the look-alikes.', 'oc-theme' ); ?></p>
+						</td>
+					</tr>
+					<tr>
 						<th scope="row"><?php esc_html_e( 'Offers before payment', 'oc-theme' ); ?></th>
 						<td>
 							<label><input type="checkbox" name="pre_on" value="1" <?php checked( 1, (int) $s['pre_on'] ); ?> /> <?php esc_html_e( 'When the shopper taps "checkout" and the free-shipping sheet does not open, offer a sheet of products first: one tap adds (a tick, then it leaves the grid), and "Continue to payment" goes on', 'oc-theme' ); ?></label>
@@ -1677,6 +1696,7 @@ final class Cart {
 					'topup_max'  => '' === trim( (string) ( $_POST['topup_max'] ?? '' ) ) ? '' : (string) max( 0, (int) $_POST['topup_max'] ), // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- cast to int.
 					'pre_on'     => empty( $_POST['pre_on'] ) ? 0 : 1,
 					'pre_title'  => sanitize_text_field( wp_unslash( (string) ( $_POST['pre_title'] ?? '' ) ) ),
+					'topup_src'  => array_values( array_intersect( Offers\Topup::SOURCES, array_map( 'sanitize_key', (array) ( $_POST['topup_src'] ?? array() ) ) ) ), // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- each key sanitized and matched against the list.
 					'up_show'    => empty( $_POST['up_show'] ) ? 0 : 1,
 					'up_title'   => sanitize_text_field( wp_unslash( (string) ( $_POST['up_title'] ?? '' ) ) ),
 					'up_source'  => 'category' === ( $_POST['up_source'] ?? '' ) ? 'category' : 'items', // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- strict comparison stores a literal.

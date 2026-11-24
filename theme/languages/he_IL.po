@@ -15971,3 +15971,21 @@ msgstr "משלימים לפני דומים"
 
 msgid "Automatic offers put what was bought together first, then the best sellers of the categories bought together with the product's, and only then more of its own category. Off = more of the same category first, for a shop where \"another one of these\" is the right sale."
 msgstr "הצעות אוטומטיות מציגות קודם מה שנקנה יחד, אחר כך את הנמכרים של הקטגוריות שנקנות יחד עם הקטגוריה של המוצר, ורק בסוף עוד מאותה קטגוריה. כבוי = קודם עוד מאותה קטגוריה, לחנות שבה ״עוד אחד כזה״ הוא המכירה הנכונה."
+
+msgid "What the sheets show"
+msgstr "מה החלוניות מציגות"
+
+msgid "Goes with the cart: the offers (rules, hand-picked lists, bought together), and the upsells and cross-sells written on the products"
+msgstr "מתאים לסל: ההצעות (כללים, רשימות ידניות, נקנו יחד), והמוצרים המשלימים וה-cross-sell שהוגדרו על המוצרים"
+
+msgid "Products the shopper viewed"
+msgstr "מוצרים שהלקוח צפה בהם"
+
+msgid "Look-alikes: more from the same categories as the cart"
+msgstr "דומים: עוד מאותן קטגוריות כמו הסל"
+
+msgid "Best sellers of the cart's categories"
+msgstr "הנמכרים ביותר בקטגוריות של הסל"
+
+msgid "Both sheets — top up for free shipping and offers before payment. All on by default; a shop whose buyers never want a second of the same thing drops the look-alikes."
+msgstr "שתי החלוניות — השלמה למשלוח חינם והצעות לפני התשלום. הכול דלוק כברירת מחדל; חנות שהקונים בה לא רוצים עוד אחד מאותו הדבר מורידה את הדומים."

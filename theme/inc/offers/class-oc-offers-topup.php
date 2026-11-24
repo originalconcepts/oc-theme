@@ -32,6 +32,26 @@ final class Topup {
 	const LIMIT = 16;
 
 	/**
+	 * Where the grid's products come from, each with its tag. The cart
+	 * screen lets a shop drop a source — a shop whose buyers never want a
+	 * second of the same thing drops the look-alikes.
+	 *
+	 * @var string[]
+	 */
+	const SOURCES = array( 'match', 'seen', 'alike', 'popular' );
+
+	/**
+	 * The sources the shop kept, in the SOURCES vocabulary.
+	 *
+	 * @return string[]
+	 */
+	public static function sources(): array {
+		$kept = Cart::settings()['topup_src'];
+
+		return is_array( $kept ) ? array_values( array_intersect( self::SOURCES, array_map( 'strval', $kept ) ) ) : self::SOURCES;
+	}
+
+	/**
 	 * Hook in.
 	 */
 	public function register(): void {
@@ -477,13 +497,21 @@ final class Topup {
 		// the shopper looked at is tagged as such whatever shelf brings it.
 		$viewed = self::viewed();
 
-		$take = static function ( int $id, string $tag ) use ( &$seen, &$out, $in_cart, $viewed ): void {
+		$src = self::sources();
+
+		$take = static function ( int $id, string $tag ) use ( &$seen, &$out, $in_cart, $viewed, $src ): void {
 			if ( isset( $seen[ $id ] ) || in_array( $id, $in_cart, true ) || count( $out ) >= self::LIMIT ) {
 				return;
 			}
 
-			if ( in_array( $id, $viewed, true ) ) {
+			if ( in_array( $id, $viewed, true ) && in_array( 'seen', $src, true ) ) {
 				$tag = 'seen';
+			}
+
+			// A source the shop dropped: the product stays out whichever
+			// shelf brought it.
+			if ( ! in_array( $tag, $src, true ) ) {
+				return;
 			}
 
 			$seen[ $id ] = true;
