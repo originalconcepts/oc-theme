@@ -5252,10 +5252,30 @@ window.ocWhenShown( function () {
 	( function () {
 		var sheet = null;
 		var opener = null;
+		// 'gap': top up for free shipping (bar, bands around the gap);
+		// 'pre': the offers before payment (no bar, bands by price).
+		var mode = 'gap';
+
+		function url() {
+			var u = sheet.getAttribute( 'data-url' );
+			return 'pre' === mode ? u + ( u.indexOf( '?' ) > -1 ? '&' : '?' ) + 'mode=pre' : u;
+		}
 
 		// Read the sheet again for the cart as it is now. After an add,
 		// reaching the free-shipping line is noticed on the sheet's own
 		// bar: it fills, says so, and gets the cart's confetti.
+		// Added: a tick on the card for a moment, then the sheet is read
+		// again for the cart as it is now — the product has left the grid.
+		function added( button, wasDone ) {
+			var item = button.closest( '[data-oc-topup-item]' );
+			if ( item ) {
+				item.classList.add( 'is-added' );
+			}
+			setTimeout( function () {
+				fill( true, wasDone );
+			}, 900 );
+		}
+
 		function reached() {
 			return ! ! sheet.querySelector( '[data-oc-topup-body] .oc-shipbar.is-done' );
 		}
@@ -5264,24 +5284,49 @@ window.ocWhenShown( function () {
 		// an add replace every [data-oc-ship-bar], the sheet's own bar
 		// included, so by the time the sheet is read again it already
 		// says "reached".
-		function fill( added, wasDone ) {
+		// onEmpty: what to do when the server has nothing to show (the
+		// offers sheet with nothing to offer) — the page goes on instead.
+		function fill( added, wasDone, onEmpty, onShown ) {
 			var body = sheet.querySelector( '[data-oc-topup-body]' );
-			body.innerHTML = '<span class="oc-topup__loading">…</span>';
-			fetch( sheet.getAttribute( 'data-url' ), { credentials: 'same-origin' } )
+			// A sheet already showing keeps its grid until the new one is
+			// in — no flash of "…" between an add and the refreshed grid.
+			if ( ! body.querySelector( '.oc-topup__grid, .oc-shipbar' ) ) {
+				body.innerHTML = '<span class="oc-topup__loading">…</span>';
+			}
+			fetch( url(), { credentials: 'same-origin' } )
 				.then( function ( r ) { return r.json(); } )
 				.then( function ( out ) {
-					if ( out && out.success ) {
-						body.innerHTML = out.data.html;
-						var bar = body.querySelector( '.oc-shipbar.is-done' );
-						if ( added && bar && ! wasDone && window.ocConfetti ) {
-							window.ocConfetti( bar );
-						}
+					if ( ! out || ! out.success ) {
+						if ( onEmpty ) { onEmpty(); }
+						return;
+					}
+					if ( ! out.data.html && onEmpty ) {
+						onEmpty();
+						return;
+					}
+					body.innerHTML = out.data.html;
+					if ( onShown ) { onShown(); }
+					var bar = body.querySelector( '.oc-shipbar.is-done' );
+					if ( added && bar && ! wasDone && window.ocConfetti ) {
+						window.ocConfetti( bar );
 					}
 				} )
-				.catch( function () {} );
+				.catch( function () {
+					if ( onEmpty ) { onEmpty(); }
+				} );
 		}
 
-		function open( link ) {
+		function show() {
+			sheet.hidden = false;
+			document.documentElement.classList.add( 'oc-topup-open' );
+			var title = sheet.querySelector( '.oc-topup__title' );
+			if ( title ) {
+				title.setAttribute( 'tabindex', '-1' );
+				title.focus();
+			}
+		}
+
+		function open( link, want ) {
 			sheet = document.querySelector( '[data-oc-topup-sheet]' );
 			if ( ! sheet ) {
 				return;
@@ -5292,14 +5337,24 @@ window.ocWhenShown( function () {
 				document.body.appendChild( sheet );
 			}
 			opener = link;
-			sheet.hidden = false;
-			document.documentElement.classList.add( 'oc-topup-open' );
-			fill();
+			mode = want || 'gap';
+			sheet.setAttribute( 'data-mode', mode );
 			var title = sheet.querySelector( '.oc-topup__title' );
 			if ( title ) {
-				title.setAttribute( 'tabindex', '-1' );
-				title.focus();
+				title.textContent = sheet.getAttribute( 'pre' === mode ? 'data-title-pre' : 'data-title-gap' ) || title.textContent;
 			}
+			var body = sheet.querySelector( '[data-oc-topup-body]' );
+			body.innerHTML = '';
+			if ( 'pre' === mode ) {
+				// Shown only once there is something to offer; with nothing,
+				// or no answer, straight on to the checkout.
+				fill( false, false, function () {
+					window.location.href = link.href;
+				}, show );
+				return;
+			}
+			show();
+			fill();
 		}
 
 		function close() {
@@ -5313,22 +5368,34 @@ window.ocWhenShown( function () {
 			}
 		}
 
-		// "Checkout" while still short of free delivery: the sheet opens
-		// instead, once per cart state — a second tap goes through.
+		// "Checkout": while still short of free delivery (and, with a cap
+		// set, close enough to it) the top-up sheet opens instead; with no
+		// gap, the offers sheet when the shop wants one. Once per cart
+		// state either way — a second tap goes through.
 		function autoOpen( link ) {
 			var box = document.querySelector( '[data-oc-topup-sheet]' );
-			var bar = document.querySelector( '[data-oc-ship-bar]' );
-			if ( ! box || '1' !== box.getAttribute( 'data-auto' ) || ! bar || bar.classList.contains( 'is-done' ) ) {
+			if ( ! box ) {
 				return false;
 			}
-			var state = ( bar.querySelector( '.oc-shipbar__text' ) || bar ).textContent.replace( /\s+/g, ' ' ).trim();
+			var bar = document.querySelector( '[data-oc-ship-bar]' );
+			var left = bar ? parseFloat( bar.getAttribute( 'data-left' ) || '0' ) || 0 : 0;
+			var max = parseFloat( box.getAttribute( 'data-max' ) || '0' ) || 0;
+			var gap = '1' === box.getAttribute( 'data-auto' ) && bar && ! bar.classList.contains( 'is-done' ) && left > 0 && ( ! max || left <= max );
+			var pre = ! gap && '1' === box.getAttribute( 'data-pre' );
+			if ( ! gap && ! pre ) {
+				return false;
+			}
+			var want = gap ? 'gap' : 'pre';
+			var state = want + ':' + ( gap
+				? ( bar.querySelector( '.oc-shipbar__text' ) || bar ).textContent
+				: ( link.textContent || '' ) ).replace( /\s+/g, ' ' ).trim();
 			try {
 				if ( sessionStorage.getItem( 'ocTopupAuto' ) === state ) {
 					return false;
 				}
 				sessionStorage.setItem( 'ocTopupAuto', state );
 			} catch ( e ) {}
-			open( link );
+			open( link, want );
 			return true;
 		}
 
@@ -5371,7 +5438,7 @@ window.ocWhenShown( function () {
 			if ( pick ) {
 				if ( window.__ocQuickPick ) {
 					var wasPick = reached();
-					window.__ocQuickPick( pick.getAttribute( 'data-oc-topup-pick' ), '', { over: true, done: function () { fill( true, wasPick ); } } );
+					window.__ocQuickPick( pick.getAttribute( 'data-oc-topup-pick' ), '', { over: true, done: function () { added( pick, wasPick ); } } );
 				}
 				return;
 			}
@@ -5401,7 +5468,7 @@ window.ocWhenShown( function () {
 								} );
 							} );
 						}
-						fill( true, wasAdd );
+						added( add, wasAdd );
 					} )
 					.catch( function () {
 						add.classList.remove( 'loading' );

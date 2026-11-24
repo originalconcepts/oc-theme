@@ -16,6 +16,7 @@ return array(
 	'in-scene',
 	'is-active',
 	'is-add-addr',
+	'is-added',
 	'is-afloat',
 	'is-asking',
 	'is-away',

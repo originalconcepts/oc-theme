@@ -15877,8 +15877,6 @@ msgstr "חלונית ההשלמה"
 msgid "Open it by itself when the shopper taps \"checkout\" while still short of free delivery"
 msgstr "לפתוח אותה לבד כשהלקוח לוחץ ״מעבר לקופה״ ועדיין חסר לו למשלוח חינם"
 
-msgid "Once per cart state: a shopper who closes it and taps \"checkout\" again goes straight through."
-msgstr "פעם אחת לכל מצב של הסל: מי שסוגר אותה ולוחץ שוב ״מעבר לקופה״ עובר ישר לקופה."
 
 msgid "At the checkout"
 msgstr "בקופה"
@@ -15946,3 +15944,24 @@ msgstr "התווית שמבצע מתוסף המבצעים שם על המוצרי
 
 msgid "Promotion label text colour"
 msgstr "צבע הטקסט של תווית המבצע"
+
+msgid "Continue to payment"
+msgstr "המשך לתשלום"
+
+msgid "Only while the gap is at most"
+msgstr "רק כשחסרים עד"
+
+msgid "Any gap"
+msgstr "כל פער"
+
+msgid "Once per cart state: a shopper who closes it and taps \"checkout\" again goes straight through. With a sum here, a cart further than that from free delivery goes straight to the checkout too."
+msgstr "פעם אחת לכל מצב של הסל: מי שסוגר אותה ולוחץ שוב ״מעבר לקופה״ עובר ישר לקופה. עם סכום כאן, סל שרחוק ממשלוח חינם יותר מזה עובר ישר לקופה גם כן."
+
+msgid "Offers before payment"
+msgstr "הצעות לפני התשלום"
+
+msgid "When the shopper taps \"checkout\" and the free-shipping sheet does not open, offer a sheet of products first: one tap adds (a tick, then it leaves the grid), and \"Continue to payment\" goes on"
+msgstr "כשלוחצים ״מעבר לקופה״ וחלונית המשלוח לא נפתחת, להציג קודם חלונית מוצרים: לחיצה אחת מוסיפה (וי, ואז המוצר יוצא מהרשת), ו״המשך לתשלום״ ממשיך הלאה"
+
+msgid "The products are the offers for the cart, what the shopper viewed, what is like what they chose and what sells in those categories. Once per cart state. Needs the offers switched on."
+msgstr "המוצרים הם ההצעות לסל, מה שהלקוח צפה בו, מה שדומה למה שבחר ומה שנמכר בקטגוריות האלה. פעם אחת לכל מצב של הסל. דורש שההצעות יהיו פעילות."

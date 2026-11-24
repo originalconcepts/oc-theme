@@ -65,6 +65,14 @@ final class Topup {
 	}
 
 	/**
+	 * Whether the shop wants the offers sheet before payment: the one that
+	 * opens on "checkout" when there is no free-shipping gap to close.
+	 */
+	public static function pre_on(): bool {
+		return Offers::on() && ! empty( Cart::settings()['pre_on'] );
+	}
+
+	/**
 	 * The link the bar carries.
 	 */
 	public static function link_html(): string {
@@ -75,13 +83,22 @@ final class Topup {
 	 * The empty sheet, printed once with the panel; the page fills it.
 	 */
 	public static function shell(): string {
-		if ( ! self::on() ) {
+		$s = Cart::settings();
+
+		if ( ! self::on() && ! self::pre_on() ) {
 			return '';
 		}
 
-		$auto = empty( Cart::settings()['topup_auto'] ) ? '0' : '1';
+		// data-auto: the free-shipping sheet opens by itself on "checkout";
+		// data-max: only while the gap is at most this (empty = always);
+		// data-pre: the offers sheet opens instead when there is no gap.
+		$auto = self::on() && ! empty( $s['topup_auto'] ) ? '1' : '0';
+		$max  = (string) max( 0, (float) $s['topup_max'] );
+		$pre  = self::pre_on() ? '1' : '0';
 
-		return '<div class="oc-topup" data-oc-topup-sheet data-auto="' . $auto . '" data-url="' . esc_url( \WC_AJAX::get_endpoint( 'oc_topup' ) ) . '" hidden role="dialog" aria-modal="true" aria-labelledby="oc-topup-title">'
+		return '<div class="oc-topup" data-oc-topup-sheet data-auto="' . $auto . '" data-max="' . esc_attr( $max ) . '" data-pre="' . $pre . '"'
+			. ' data-title-gap="' . esc_attr__( 'Top up for free shipping', 'oc-theme' ) . '" data-title-pre="' . esc_attr__( 'A moment before you pay', 'oc-theme' ) . '"'
+			. ' data-url="' . esc_url( \WC_AJAX::get_endpoint( 'oc_topup' ) ) . '" hidden role="dialog" aria-modal="true" aria-labelledby="oc-topup-title">'
 			. '<div class="oc-topup__card">'
 			. '<div class="oc-topup__head"><h3 class="oc-topup__title" id="oc-topup-title">' . esc_html__( 'Top up for free shipping', 'oc-theme' ) . '</h3>'
 			. '<button type="button" class="oc-topup__close" data-oc-topup-close aria-label="' . esc_attr__( 'Close', 'oc-theme' ) . '">&times;</button></div>'
@@ -97,7 +114,28 @@ final class Topup {
 			wp_send_json_error();
 		}
 
-		wp_send_json_success( array( 'html' => self::html() ) );
+		$mode = isset( $_GET['mode'] ) ? sanitize_key( wp_unslash( (string) $_GET['mode'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- a read of the shopper's own cart.
+
+		wp_send_json_success( array( 'html' => 'pre' === $mode ? self::pre_html() : self::html() ) );
+	}
+
+	/**
+	 * The offers sheet before payment: no bar, the grid of what goes with
+	 * the cart, chips by its own prices, and "continue to payment". Empty
+	 * when there is nothing to offer — the page then goes straight on.
+	 */
+	public static function pre_html(): string {
+		if ( ! self::pre_on() ) {
+			return '';
+		}
+
+		$items = self::pool( 0.0, true );
+
+		if ( ! $items ) {
+			return '';
+		}
+
+		return self::chips_and_grid( $items, self::tiers( array_map( static fn ( array $i ): float => $i['price'], $items ) ) ) . self::foot( __( 'Continue to payment', 'oc-theme' ) );
 	}
 
 	/**
@@ -128,6 +166,18 @@ final class Topup {
 		// With no gap left to band around, the chips cut the grid by its
 		// own prices instead, so the sheet keeps its shape.
 		$bands = $done ? self::tiers( $prices ) : self::around( $left, $prices );
+
+		return $html . self::chips_and_grid( $items, $bands ) . self::foot();
+	}
+
+	/**
+	 * The chips and the grid under them.
+	 *
+	 * @param array<int,array{product:\WC_Product,price:float,tag:string,band?:string}> $items The pool.
+	 * @param array<string,array{0:float,1:float,2:string}>                              $bands The bands: key => [from, to, label].
+	 */
+	private static function chips_and_grid( array $items, array $bands ): string {
+		$html  = '';
 		$count = array_fill_keys( array_keys( $bands ), 0 );
 
 		foreach ( $items as $i => $item ) {
@@ -145,9 +195,7 @@ final class Topup {
 		}
 
 		$html .= '</div>';
-
 		$html .= self::grid( $items );
-		$html .= self::foot();
 
 		return $html;
 	}
@@ -348,11 +396,13 @@ final class Topup {
 
 	/**
 	 * The footer: the cart's sum and the way to the checkout.
+	 *
+	 * @param string $label The button's words; empty = "Continue to checkout".
 	 */
-	private static function foot(): string {
+	private static function foot( string $label = '' ): string {
 		$html  = '<div class="oc-topup__foot">';
 		$html .= '<span class="oc-topup__sum"><strong>' . wp_kses_post( wc_price( (float) WC()->cart->get_displayed_subtotal() ) ) . '</strong><small>' . esc_html__( 'in your cart', 'oc-theme' ) . '</small></span>';
-		$html .= '<a class="oc-topup__checkout checkout-button" href="' . esc_url( wc_get_checkout_url() ) . '">' . esc_html__( 'Continue to checkout', 'oc-theme' ) . '</a>';
+		$html .= '<a class="oc-topup__checkout checkout-button" href="' . esc_url( wc_get_checkout_url() ) . '">' . esc_html( '' !== $label ? $label : __( 'Continue to checkout', 'oc-theme' ) ) . '</a>';
 		$html .= '</div>';
 
 		return $html;

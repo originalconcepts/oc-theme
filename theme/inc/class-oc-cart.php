@@ -85,6 +85,8 @@ final class Cart {
 				'ship_quiet'   => 0,         // The plain bar: no coloured band.
 				'topup_on'     => 1,         // The top-up sheet at all: the bar's link and the auto-open.
 				'topup_auto'   => 0,         // The top-up sheet opens by itself on "checkout" while short of free delivery.
+				'topup_max'    => '',        // ...only while the gap is at most this; empty = whatever the gap.
+				'pre_on'       => 0,         // The offers sheet before payment: on "checkout" when there is no gap.
 				'up_show'      => 0,
 				'up_title'     => '',
 				'up_source'    => 'items',   // items | category.
@@ -561,7 +563,7 @@ final class Cart {
 
 		$at = $mid['at'] > 0 ? min( 99, max( 1, (int) round( $mid['at'] / $goal * 100 ) ) ) : 0;
 
-		$html  = '<div class="' . esc_attr( implode( ' ', $classes ) ) . '" data-oc-ship-bar' . ( '' !== $vars ? ' style="' . esc_attr( $vars ) . '"' : '' ) . '>';
+		$html  = '<div class="' . esc_attr( implode( ' ', $classes ) ) . '" data-oc-ship-bar data-left="' . esc_attr( (string) max( 0.0, round( $left, 2 ) ) ) . '"' . ( '' !== $vars ? ' style="' . esc_attr( $vars ) . '"' : '' ) . '>';
 		$html .= '<span class="oc-shipbar__text">' . $text;
 
 		if ( ! $done && Offers\Topup::available() ) {
@@ -1003,7 +1005,8 @@ final class Cart {
 
 			// A small flag on the image: the promotion label when one runs,
 			// otherwise the sale percent — same colours as the catalogue.
-			$flag = (string) apply_filters( 'promeng_product_label', '', $product->get_id() );
+			$flag  = (string) apply_filters( 'promeng_product_label', '', $product->get_id() );
+			$promo = '' !== $flag;
 			if ( '' === $flag && $product->is_on_sale() ) {
 				$regular_f = (float) $product->get_regular_price();
 				$price_f   = (float) $product->get_price();
@@ -1015,7 +1018,7 @@ final class Cart {
 			$html .= '<div class="oc-cartup__item">';
 			$html .= '<a class="oc-cartup__media" href="' . esc_url( $link ) . '">' . $product->get_image( 'woocommerce_thumbnail' );
 			if ( '' !== $flag ) {
-				$html .= '<span class="oc-cartup__flag" style="' . esc_attr( WooCommerce::flag_colors( 'oc_sale_badge_bg', 'oc_sale_badge_tx' ) ) . '">' . esc_html( $flag ) . '</span>';
+				$html .= '<span class="oc-cartup__flag" style="' . esc_attr( $promo ? WooCommerce::promo_colors() : WooCommerce::flag_colors( 'oc_sale_badge_bg', 'oc_sale_badge_tx' ) ) . '">' . esc_html( $flag ) . '</span>';
 			}
 			$html .= '</a>';
 			$html .= '<div class="oc-cartup__info">';
@@ -1588,7 +1591,15 @@ final class Cart {
 							<label><input type="checkbox" name="topup_on" value="1" <?php checked( 1, (int) $s['topup_on'] ); ?> /> <?php esc_html_e( 'Offer the sheet: a "top it up" link on the free-shipping bar opens a grid of products that close the gap', 'oc-theme' ); ?></label>
 							<p class="description"><?php esc_html_e( 'Off = no link and no sheet, whatever the next option says. Needs the offers switched on.', 'oc-theme' ); ?></p>
 							<p style="margin:10px 0 0;"><label><input type="checkbox" name="topup_auto" value="1" <?php checked( 1, (int) $s['topup_auto'] ); ?> /> <?php esc_html_e( 'Open it by itself when the shopper taps "checkout" while still short of free delivery', 'oc-theme' ); ?></label></p>
-							<p class="description"><?php esc_html_e( 'Once per cart state: a shopper who closes it and taps "checkout" again goes straight through.', 'oc-theme' ); ?></p>
+							<p style="margin:6px 0 0 24px;"><label><?php esc_html_e( 'Only while the gap is at most', 'oc-theme' ); ?> <input type="number" name="topup_max" value="<?php echo esc_attr( (string) $s['topup_max'] ); ?>" min="0" style="width:110px;" placeholder="<?php esc_attr_e( 'Any gap', 'oc-theme' ); ?>" /> <?php echo esc_html( get_woocommerce_currency_symbol() ); ?></label></p>
+							<p class="description"><?php esc_html_e( 'Once per cart state: a shopper who closes it and taps "checkout" again goes straight through. With a sum here, a cart further than that from free delivery goes straight to the checkout too.', 'oc-theme' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Offers before payment', 'oc-theme' ); ?></th>
+						<td>
+							<label><input type="checkbox" name="pre_on" value="1" <?php checked( 1, (int) $s['pre_on'] ); ?> /> <?php esc_html_e( 'When the shopper taps "checkout" and the free-shipping sheet does not open, offer a sheet of products first: one tap adds (a tick, then it leaves the grid), and "Continue to payment" goes on', 'oc-theme' ); ?></label>
+							<p class="description"><?php esc_html_e( 'The products are the offers for the cart, what the shopper viewed, what is like what they chose and what sells in those categories. Once per cart state. Needs the offers switched on.', 'oc-theme' ); ?></p>
 						</td>
 					</tr>
 				</table>
@@ -1661,6 +1672,8 @@ final class Cart {
 					'ship_done'  => sanitize_text_field( wp_unslash( (string) ( $_POST['ship_done'] ?? '' ) ) ),
 					'topup_on'   => empty( $_POST['topup_on'] ) ? 0 : 1,
 					'topup_auto' => empty( $_POST['topup_auto'] ) ? 0 : 1,
+					'topup_max'  => '' === trim( (string) ( $_POST['topup_max'] ?? '' ) ) ? '' : (string) max( 0, (int) $_POST['topup_max'] ), // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- cast to int.
+					'pre_on'     => empty( $_POST['pre_on'] ) ? 0 : 1,
 					'up_show'    => empty( $_POST['up_show'] ) ? 0 : 1,
 					'up_title'   => sanitize_text_field( wp_unslash( (string) ( $_POST['up_title'] ?? '' ) ) ),
 					'up_source'  => 'category' === ( $_POST['up_source'] ?? '' ) ? 'category' : 'items', // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- strict comparison stores a literal.

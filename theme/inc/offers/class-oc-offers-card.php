@@ -408,7 +408,7 @@ final class Card {
 
 	/**
 	 * The promotion a product runs — "the second at 20% off" — as a small
-	 * line above its name, in the catalogue's sale colours. The engine
+	 * line above its name, in the catalogue's promotion-label colours. The engine
 	 * drapes the same words over the picture on catalogue pages; the
 	 * cards hide that and say it here, where it reads.
 	 *
@@ -421,7 +421,7 @@ final class Card {
 			return '';
 		}
 
-		return '<span class="oc-offer__promo" style="' . esc_attr( WooCommerce::flag_colors( 'oc_sale_badge_bg', 'oc_sale_badge_tx' ) ) . '">' . esc_html( $label ) . '</span>';
+		return '<span class="oc-offer__promo" style="' . esc_attr( WooCommerce::promo_colors() ) . '">' . esc_html( $label ) . '</span>';
 	}
 
 	/**

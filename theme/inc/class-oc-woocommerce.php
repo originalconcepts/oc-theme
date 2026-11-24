@@ -328,10 +328,24 @@ final class WooCommerce {
 			20
 		);
 
-		// Every add feeds the "added to cart recently" strip counter.
+		// Every add by a shopper feeds the "added to cart recently" strip
+		// counter. A crawler following the cards' ?add-to-cart= links is
+		// not a shopper: those arrive as plain GETs, often with a bot's own
+		// user agent, and used to count by the hundreds on products nobody
+		// bought.
 		add_action(
 			'woocommerce_add_to_cart',
 			static function ( $cart_item_key, $product_id ): void {
+				$ua = strtolower( (string) ( $_SERVER['HTTP_USER_AGENT'] ?? '' ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- compared against a pattern only.
+
+				if ( 'POST' !== strtoupper( (string) ( $_SERVER['REQUEST_METHOD'] ?? '' ) ) && ! wp_doing_ajax() ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- compared against a literal.
+					return;
+				}
+
+				if ( '' === $ua || preg_match( '/bot|crawl|spider|slurp|facebookexternalhit|preview|headless|lighthouse|pingdom|gtmetrix|curl|python/', $ua ) ) {
+					return;
+				}
+
 				update_post_meta( $product_id, '_oc_atc_count', absint( get_post_meta( $product_id, '_oc_atc_count', true ) ) + 1 );
 			},
 			10,
