@@ -6610,21 +6610,25 @@ body.oc-swatch-square-cat .oc-mcart__attr-swatch { border-radius: 4px; }
 	min-block-size: 42px;
 	border-radius: var(--oc-cta-r, 8px);
 	border: 1.5px solid var(--oc-cta, var(--oc-ink));
-	background: var(--oc-surface, #fff);
-	color: var(--oc-cta, var(--oc-ink));
+	background: var(--oc-cta, var(--oc-ink));
+	color: var(--oc-cta-tx, #fff);
 	font: inherit;
+	font-size: .9rem;
 	font-weight: 600;
-	text-decoration: none;
 	cursor: pointer;
-	transition: color .35s ease;
+	transition: color .35s ease, background-color .2s ease;
 }
 
+/* The theme's own CTA hover, as on "checkout": the surface sweeps in
+ * under the words (or fills at once), the words take the CTA colour, and
+ * the frame stays — the sweep covers the padding box only, never the
+ * border. */
 .oc-topup__add::before {
 	content: "";
 	position: absolute;
-	inset: -1px;
+	inset: 0;
 	z-index: -1;
-	background: var(--oc-cta, var(--oc-ink));
+	background: var(--oc-surface, #fff);
 	transform: translateX(-102%);
 	transition: transform .35s ease;
 }
@@ -6632,14 +6636,18 @@ body.oc-swatch-square-cat .oc-mcart__attr-swatch { border-radius: 4px; }
 .oc-cta-hover-sweep-rtl .oc-topup__add::before { transform: translateX(102%); }
 
 .oc-cta-hover-none .oc-topup__add::before,
-.oc-cta-hover-invert .oc-topup__add::before { transition: none; }
+.oc-cta-hover-invert .oc-topup__add::before { display: none; }
 
 .oc-topup__add.loading { opacity: .5; pointer-events: none; }
 
 @media (hover: hover) {
-	.oc-topup__add:hover { color: var(--oc-cta-tx, #fff); }
+	.oc-topup__add:hover { color: var(--oc-cta, var(--oc-ink)); }
 
 	.oc-topup__add:hover::before { transform: translateX(0); }
+
+	.oc-cta-hover-invert .oc-topup__add:hover { background: var(--oc-surface, #fff); }
+
+	.oc-cta-hover-none .oc-topup__add:hover { color: var(--oc-cta-tx, #fff); }
 }
 
 .oc-topup__foot {
