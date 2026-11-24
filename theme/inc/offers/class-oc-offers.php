@@ -113,7 +113,7 @@ final class Offers {
 	 * Settings with defaults. The module ships switched off; once on, the
 	 * automatic layer is on with it.
 	 *
-	 * @return array{on:int,auto:int,pct:int,co_max:int,ver:int,rules:array<string,array<string,mixed>>}
+	 * @return array{on:int,auto:int,pct:int,co_max:int,comp:int,ver:int,rules:array<string,array<string,mixed>>}
 	 */
 	public static function settings(): array {
 		if ( null !== self::$settings ) {
