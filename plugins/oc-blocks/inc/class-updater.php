@@ -50,7 +50,49 @@ final class Updater {
 
 		add_filter( 'pre_set_site_transient_update_plugins', array( $this, 'inject' ) );
 		add_filter( 'plugins_api', array( $this, 'info' ), 10, 3 );
+		add_filter( 'upgrader_source_selection', array( $this, 'keep_folder' ), 10, 4 );
 		add_action( 'upgrader_process_complete', array( $this, 'forget' ), 10, 0 );
+	}
+
+	/**
+	 * Keep the plugin in the folder it lives in now.
+	 *
+	 * The release zip unpacks to oc-blocks/. A site that installed the
+	 * plugin from a GitHub zip has it in oc-blocks-main/, and WordPress
+	 * would put the update in oc-blocks/, delete oc-blocks-main/ and keep
+	 * the plugin registered under the old path — switched off, its home
+	 * page gone (pepe.deliz.co.il, 24/11). So the unpacked folder is
+	 * renamed to the installed one before WordPress copies it in: an
+	 * update never changes the plugin's path.
+	 *
+	 * @param string|\WP_Error $source        Unpacked folder.
+	 * @param string           $remote_source Its parent.
+	 * @param \WP_Upgrader     $upgrader      The upgrader.
+	 * @param array            $args          Hook extra.
+	 * @return string|\WP_Error
+	 */
+	public function keep_folder( $source, $remote_source, $upgrader, $args = array() ) {
+		global $wp_filesystem;
+
+		if ( is_wp_error( $source ) || ( $args['plugin'] ?? '' ) !== self::basename() ) {
+			return $source;
+		}
+
+		$desired = trailingslashit( $remote_source ) . dirname( self::basename() );
+
+		if ( untrailingslashit( $source ) === $desired || ! $wp_filesystem instanceof \WP_Filesystem_Base ) {
+			return $source;
+		}
+
+		if ( $wp_filesystem->exists( $desired ) ) {
+			$wp_filesystem->delete( $desired, true );
+		}
+
+		if ( ! $wp_filesystem->move( $source, $desired ) ) {
+			return new \WP_Error( 'oc_blocks_rename_failed', __( 'Could not prepare the downloaded folder.', 'oc-blocks' ) );
+		}
+
+		return trailingslashit( $desired );
 	}
 
 	/**
