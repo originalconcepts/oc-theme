@@ -174,7 +174,7 @@ final class Topup {
 	 * The chips and the grid under them.
 	 *
 	 * @param array<int,array{product:\WC_Product,price:float,tag:string,band?:string}> $items The pool.
-	 * @param array<string,array{0:float,1:float,2:string}>                              $bands The bands: key => [from, to, label].
+	 * @param array<string,array{0:float,1:float,2:string}>                             $bands The bands: key => [from, to, label].
 	 */
 	private static function chips_and_grid( array $items, array $bands ): string {
 		$html  = '';
