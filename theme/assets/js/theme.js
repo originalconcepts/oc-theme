@@ -5255,10 +5255,66 @@ window.ocWhenShown( function () {
 		// 'gap': top up for free shipping (bar, bands around the gap);
 		// 'pre': the offers before payment (no bar, bands by price).
 		var mode = 'gap';
+		// The sheet read ahead of time: when the panel opens, or the pointer
+		// nears the link or the checkout button, so a tap shows it at once.
+		var cache = { key: '', html: '', pending: '' };
+
+		function urlFor( box, want ) {
+			var u = box.getAttribute( 'data-url' );
+			return 'pre' === want ? u + ( u.indexOf( '?' ) > -1 ? '&' : '?' ) + 'mode=pre' : u;
+		}
 
 		function url() {
-			var u = sheet.getAttribute( 'data-url' );
-			return 'pre' === mode ? u + ( u.indexOf( '?' ) > -1 ? '&' : '?' ) + 'mode=pre' : u;
+			return urlFor( sheet, mode );
+		}
+
+		function skeleton() {
+			var out = '<div class="oc-topup__skel" aria-hidden="true">';
+			for ( var i = 0; i < 8; i++ ) {
+				out += '<i></i>';
+			}
+			return out + '</div>';
+		}
+
+		// Which sheet "checkout" would open right now, if any.
+		function which() {
+			var box = document.querySelector( '[data-oc-topup-sheet]' );
+			if ( ! box ) {
+				return '';
+			}
+			if ( document.querySelector( '[data-oc-topup]' ) ) {
+				return 'gap';
+			}
+			return '1' === box.getAttribute( 'data-pre' ) ? 'pre' : '';
+		}
+
+		function stateKey( want ) {
+			var bar = document.querySelector( '[data-oc-ship-bar]' );
+			var go = document.querySelector( '[data-oc-checkout]' );
+			return want + ':' + ( ( bar ? bar.textContent : '' ) + '|' + ( go ? go.textContent : '' ) ).replace( /\s+/g, ' ' ).trim();
+		}
+
+		function prefetch() {
+			var want = which();
+			var box = document.querySelector( '[data-oc-topup-sheet]' );
+			if ( ! want || ! box ) {
+				return;
+			}
+			var key = stateKey( want );
+			if ( cache.key === key || cache.pending === key ) {
+				return;
+			}
+			cache.pending = key;
+			fetch( urlFor( box, want ), { credentials: 'same-origin' } )
+				.then( function ( r ) { return r.json(); } )
+				.then( function ( out ) {
+					if ( out && out.success && cache.pending === key ) {
+						cache = { key: key, html: out.data.html || '', pending: '' };
+					}
+				} )
+				.catch( function () {
+					if ( cache.pending === key ) { cache.pending = ''; }
+				} );
 		}
 
 		// Read the sheet again for the cart as it is now. After an add,
@@ -5291,7 +5347,7 @@ window.ocWhenShown( function () {
 			// A sheet already showing keeps its grid until the new one is
 			// in — no flash of "…" between an add and the refreshed grid.
 			if ( ! body.querySelector( '.oc-topup__grid, .oc-shipbar' ) ) {
-				body.innerHTML = '<span class="oc-topup__loading">…</span>';
+				body.innerHTML = skeleton();
 			}
 			fetch( url(), { credentials: 'same-origin' } )
 				.then( function ( r ) { return r.json(); } )
@@ -5345,6 +5401,18 @@ window.ocWhenShown( function () {
 			}
 			var body = sheet.querySelector( '[data-oc-topup-body]' );
 			body.innerHTML = '';
+			// Read ahead for this very cart state: shown at once, then read
+			// again quietly in case anything moved.
+			if ( cache.key === stateKey( mode ) ) {
+				if ( 'pre' === mode && ! cache.html ) {
+					window.location.href = link.href;
+					return;
+				}
+				body.innerHTML = cache.html;
+				show();
+				fill();
+				return;
+			}
 			if ( 'pre' === mode ) {
 				// Shown only once there is something to offer; with nothing,
 				// or no answer, straight on to the checkout.
@@ -5356,6 +5424,32 @@ window.ocWhenShown( function () {
 			show();
 			fill();
 		}
+
+		// Read ahead: the cart panel opening, the pointer reaching the link
+		// or the checkout button, the cart page settling.
+		( function () {
+			var drawer = document.querySelector( '[data-oc-cart-drawer]' );
+			if ( drawer ) {
+				new MutationObserver( function () {
+					if ( drawer.classList.contains( 'is-open' ) ) {
+						setTimeout( prefetch, 350 );
+					}
+				} ).observe( drawer, { attributes: true, attributeFilter: [ 'class' ] } );
+			}
+			if ( document.querySelector( '.oc-cartpage' ) ) {
+				setTimeout( prefetch, 1200 );
+			}
+			document.addEventListener( 'mouseover', function ( event ) {
+				if ( event.target.closest( '[data-oc-topup], [data-oc-checkout]' ) ) {
+					prefetch();
+				}
+			} );
+			document.addEventListener( 'touchstart', function ( event ) {
+				if ( event.target.closest( '[data-oc-topup], [data-oc-checkout]' ) ) {
+					prefetch();
+				}
+			}, { passive: true } );
+		}() );
 
 		function close() {
 			if ( ! sheet || sheet.hidden ) {

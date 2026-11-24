@@ -534,8 +534,13 @@ final class Topup {
 
 		$matches = array_keys( $matches );
 
+		// A look-alike that reached the offers by itself (nothing bought
+		// with the product, no rule) says so, rather than "goes with".
+		$alike = self::alike();
+		$why   = static fn ( int $id ): string => in_array( $id, $alike, true ) ? 'alike' : 'match';
+
 		foreach ( array_slice( $matches, 0, $share ) as $id ) {
-			$take( $id, 'match' );
+			$take( $id, $why( $id ) );
 		}
 
 		// 2. Viewed before.
@@ -545,7 +550,6 @@ final class Topup {
 
 		// 3. Like what is in the cart: the newest line's nearest products
 		// first, then the other lines', taken in turns.
-		$alike = self::alike();
 
 		foreach ( array_slice( $alike, 0, $share ) as $id ) {
 			$take( $id, 'alike' );
@@ -571,7 +575,7 @@ final class Topup {
 
 		// 5. Whatever room is left: the rest of each shelf.
 		foreach ( array_slice( $matches, $share ) as $id ) {
-			$take( $id, 'match' );
+			$take( $id, $why( $id ) );
 		}
 
 		foreach ( array_slice( $viewed, $share ) as $id ) {

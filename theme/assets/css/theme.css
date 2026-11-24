@@ -5662,9 +5662,9 @@ body.oc-swatch-square-cat .oc-mcart__attr-swatch { border-radius: 4px; }
 	text-align: end;
 }
 
-.oc-mcart__line { font-size: .92rem; color: var(--oc-ink); white-space: nowrap; }
-.oc-mcart__line del { color: var(--oc-ink-2); font-size: .85em; }
-.oc-mcart__line ins { text-decoration: none; color: var(--oc-sale, #b4453c); }
+.oc-mcart__line { font-size: .92rem; font-weight: 700; color: var(--oc-ink); white-space: nowrap; }
+.oc-mcart__line del { color: var(--oc-ink-2); font-size: .85em; font-weight: 400; }
+.oc-mcart__line ins { text-decoration: none; color: var(--oc-sale, #b4453c); font-weight: 700; }
 
 .oc-mcart__each { font-size: .74rem; color: var(--oc-ink-2); white-space: nowrap; }
 
@@ -6581,6 +6581,17 @@ body.oc-swatch-square-cat .oc-mcart__attr-swatch { border-radius: 4px; }
 .oc-topup__price .promeng-was { font-weight: 400; font-size: .86em; opacity: .7; }
 
 .oc-topup__price .oc-price-from { font-weight: 500; font-size: .86em; }
+
+.oc-topup__price ins { text-decoration: none; }
+
+/* While the sheet is being read: grey cards in the grid's own shape. */
+.oc-topup__skel { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 12px; padding-block-start: 12px; }
+
+.oc-topup__skel i { display: block; aspect-ratio: 1 / 1.45; border-radius: 12px; background: color-mix(in srgb, var(--oc-ink) 6%, var(--oc-surface, #fff)); animation: oc-topup-pulse 1.1s ease-in-out infinite alternate; }
+
+@media (min-width: 700px) { .oc-topup__skel { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+
+@keyframes oc-topup-pulse { from { opacity: .55; } to { opacity: 1; } }
 
 /* A "From" price in a sheet card is one line: the cheapest variation
  * after the promotion, without the crossed-out price that would wrap it. */
@@ -11289,8 +11300,8 @@ body.oc-flt-sidebar .woocommerce-result-count { display: none; }
 
 /* Promotion King's before/after price bits inside the cart lines follow
  * the theme's tones, not the plugin's inline grays */
-.oc-mcart__line .promeng-was { font-size: .85em; }
-.oc-mcart__line .promeng-now { font-weight: 500; }
+.oc-mcart__line .promeng-was { font-size: .85em; font-weight: 400 !important; }
+.oc-mcart__line .promeng-now { font-weight: 700 !important; }
 
 /* ==================== full cart page ====================
  * The drawer's components, laid out as a page: items on one side, a

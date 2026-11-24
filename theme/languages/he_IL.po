@@ -15965,3 +15965,9 @@ msgstr "כשלוחצים ״מעבר לקופה״ וחלונית המשלוח ל�
 
 msgid "The sheet's title. The products: the cart's offers from the Offers screen (rules and hand-picked lists for the cart and the checkout), what the shopper viewed, what is like what they chose, and what sells in the cart's categories. Once per cart state. Needs the offers switched on."
 msgstr "כותרת החלונית. המוצרים: ההצעות לסל ממסך ההצעות (כללים ורשימות ידניות לסל ולקופה), מה שהלקוח צפה בו, מה שדומה למה שבחר, ומה שנמכר בקטגוריות של הסל. פעם אחת לכל מצב של הסל. דורש שההצעות יהיו פעילות."
+
+msgid "Complements before look-alikes"
+msgstr "משלימים לפני דומים"
+
+msgid "Automatic offers put what was bought together first, then the best sellers of the categories bought together with the product's, and only then more of its own category. Off = more of the same category first, for a shop where \"another one of these\" is the right sale."
+msgstr "הצעות אוטומטיות מציגות קודם מה שנקנה יחד, אחר כך את הנמכרים של הקטגוריות שנקנות יחד עם הקטגוריה של המוצר, ורק בסוף עוד מאותה קטגוריה. כבוי = קודם עוד מאותה קטגוריה, לחנות שבה ״עוד אחד כזה״ הוא המכירה הנכונה."

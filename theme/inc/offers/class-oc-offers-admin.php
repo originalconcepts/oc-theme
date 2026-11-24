@@ -261,6 +261,9 @@ final class Admin {
 					<?php endfor; ?>
 				</select>
 				<span class="oc-of__muted"><?php esc_html_e( 'A strip shows picture, name and price, a tick on each; a product with options opens the quick pick.', 'oc-theme' ); ?></span>
+				<span class="oc-of__break"></span>
+				<label for="oc-of-comp"><input type="checkbox" name="comp" id="oc-of-comp" value="1" <?php checked( 1, $s['comp'] ); ?> /> <?php esc_html_e( 'Complements before look-alikes', 'oc-theme' ); ?></label>
+				<span class="oc-of__muted"><?php esc_html_e( 'Automatic offers put what was bought together first, then the best sellers of the categories bought together with the product\'s, and only then more of its own category. Off = more of the same category first, for a shop where "another one of these" is the right sale.', 'oc-theme' ); ?></span>
 				<button class="oc-of__btn oc-of__btn--quiet"><?php esc_html_e( 'Save', 'oc-theme' ); ?></button>
 			</form>
 		</section>
@@ -907,6 +910,7 @@ final class Admin {
 		$s           = Offers::settings();
 		$s['pct']    = isset( $_POST['pct'] ) ? (int) $_POST['pct'] : 0;
 		$s['co_max'] = isset( $_POST['co_max'] ) ? (int) $_POST['co_max'] : 1;
+		$s['comp']   = empty( $_POST['comp'] ) ? 0 : 1;
 
 		Offers::save( $s );
 		Stats::install();

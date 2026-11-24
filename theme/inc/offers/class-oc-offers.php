@@ -131,12 +131,14 @@ final class Offers {
 		}
 
 		// co_max: how many products the checkout offers at once — one card,
-		// or a strip of up to six.
+		// or a strip of up to six. comp: automatic offers put complements
+		// (bought together, companion categories) before look-alikes.
 		self::$settings = array(
 			'on'     => empty( $saved['on'] ) ? 0 : 1,
 			'auto'   => isset( $saved['auto'] ) && ! $saved['auto'] ? 0 : 1,
 			'pct'    => min( Rules::MAX_PERCENT, max( 0, (int) ( $saved['pct'] ?? 0 ) ) ),
 			'co_max' => min( self::CO_MAX, max( 1, (int) ( $saved['co_max'] ?? 1 ) ) ),
+			'comp'   => isset( $saved['comp'] ) && ! $saved['comp'] ? 0 : 1,
 			'ver'    => max( 1, (int) ( $saved['ver'] ?? 1 ) ),
 			'rules'  => $rules,
 		);
@@ -174,6 +176,7 @@ final class Offers {
 				'auto'   => empty( $settings['auto'] ) ? 0 : 1,
 				'pct'    => min( Rules::MAX_PERCENT, max( 0, (int) ( $settings['pct'] ?? 0 ) ) ),
 				'co_max' => min( self::CO_MAX, max( 1, (int) ( $settings['co_max'] ?? 1 ) ) ),
+				'comp'   => empty( $settings['comp'] ) ? 0 : 1,
 				'ver'    => self::settings()['ver'] + 1,
 				'rules'  => $rules,
 			)
@@ -275,8 +278,19 @@ final class Offers {
 		// 3. By itself — in the cart only. The product page's similar row
 		// is WooCommerce's own, and its other rows stay empty rather than
 		// guessed.
+		// What was really bought with it comes first either way. With
+		// "complements first" the best sellers of the categories its buyers
+		// also shop come next — a coffee table's buyers bought rugs and
+		// lamps — and more of its own category only last; a shop where
+		// "another one of these" is the sale (sweets) turns that off.
 		if ( $s['auto'] && in_array( $place, array( 'cart', 'checkout' ), true ) ) {
-			$ids = array_merge( self::bought_with( $product_id ), Product_Linked::rank_similar( $product_id, 8 ) );
+			$ids = self::bought_with( $product_id );
+
+			if ( $s['comp'] ) {
+				$ids = array_merge( $ids, self::companions( $product_id ) );
+			}
+
+			$ids = array_merge( $ids, Product_Linked::rank_similar( $product_id, 8 ) );
 			$ids = Rules::offerable( array_map( 'intval', $ids ), $product_id, $in_cart );
 
 			if ( $ids ) {
@@ -460,6 +474,127 @@ final class Offers {
 		$ids = array_map( 'intval', (array) $ids );
 
 		set_transient( $key, $ids, DAY_IN_SECONDS );
+
+		return $ids;
+	}
+
+	/**
+	 * Products from the categories shoppers buy together with this
+	 * product's categories: the best sellers of each, taken in turns.
+	 *
+	 * @param int $product_id Product id.
+	 * @param int $limit      How many at most.
+	 * @return int[]
+	 */
+	public static function companions( int $product_id, int $limit = 8 ): array {
+		$out = array();
+
+		foreach ( wc_get_product_term_ids( $product_id, 'product_cat' ) as $cat ) {
+			foreach ( self::category_companions( (int) $cat ) as $id ) {
+				$out[ $id ] = true;
+
+				if ( count( $out ) >= $limit ) {
+					break 2;
+				}
+			}
+		}
+
+		return array_map( 'intval', array_keys( $out ) );
+	}
+
+	/**
+	 * The categories bought in the same paid orders as a category's
+	 * products, the pairing seen most often first — minus the category's
+	 * own family (its parents and its sub-categories) — and the best
+	 * sellers of the top three, interleaved. From WooCommerce's own lookup
+	 * tables, cached six hours per category.
+	 *
+	 * @param int $cat Category term id.
+	 * @return int[]
+	 */
+	private static function category_companions( int $cat ): array {
+		$key = 'oc_offcc_' . $cat;
+		$ids = get_transient( $key );
+
+		if ( is_array( $ids ) ) {
+			return array_map( 'intval', $ids );
+		}
+
+		$term = get_term( $cat, 'product_cat' );
+
+		if ( ! $term instanceof \WP_Term ) {
+			set_transient( $key, array(), 6 * HOUR_IN_SECONDS );
+
+			return array();
+		}
+
+		global $wpdb;
+
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- WooCommerce's own lookup tables, names from $wpdb->prefix; cached for six hours just below.
+		$others = $wpdb->get_col(
+			$wpdb->prepare(
+				"SELECT tt2.term_id
+				FROM {$wpdb->prefix}wc_order_product_lookup a
+				JOIN {$wpdb->term_relationships} tr ON tr.object_id = a.product_id AND tr.term_taxonomy_id = %d
+				JOIN {$wpdb->prefix}wc_order_stats s ON s.order_id = a.order_id AND s.status IN ('wc-processing','wc-completed')
+				JOIN {$wpdb->prefix}wc_order_product_lookup b ON b.order_id = a.order_id AND b.product_id <> a.product_id
+				JOIN {$wpdb->term_relationships} tr2 ON tr2.object_id = b.product_id
+				JOIN {$wpdb->term_taxonomy} tt2 ON tt2.term_taxonomy_id = tr2.term_taxonomy_id AND tt2.taxonomy = 'product_cat' AND tt2.term_id <> %d
+				GROUP BY tt2.term_id
+				HAVING COUNT(DISTINCT b.order_id) >= %d
+				ORDER BY COUNT(DISTINCT b.order_id) DESC
+				LIMIT 6",
+				(int) $term->term_taxonomy_id,
+				$cat,
+				self::CO_MIN
+			)
+		);
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+
+		$family = array_map( 'intval', array_merge( get_ancestors( $cat, 'product_cat' ), (array) get_term_children( $cat, 'product_cat' ) ) );
+		$lists  = array();
+
+		foreach ( array_slice( array_values( array_diff( array_map( 'intval', (array) $others ), $family ) ), 0, 3 ) as $other ) {
+			$lists[] = array_map(
+				'intval',
+				(array) get_posts(
+					array(
+						'post_type'              => 'product',
+						'post_status'            => 'publish',
+						'posts_per_page'         => 4,
+						'fields'                 => 'ids',
+						'no_found_rows'          => true,
+						'update_post_meta_cache' => false,
+						'update_post_term_cache' => false,
+						'tax_query'              => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query -- one category, four ids, cached.
+							array(
+								'taxonomy'         => 'product_cat',
+								'field'            => 'term_id',
+								'terms'            => $other,
+								'include_children' => false,
+							),
+						),
+						'meta_key'               => 'total_sales', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- ordering only.
+						'orderby'                => 'meta_value_num',
+						'order'                  => 'DESC',
+					)
+				)
+			);
+		}
+
+		$ids = array();
+
+		for ( $i = 0; $i < 4; $i++ ) {
+			foreach ( $lists as $list ) {
+				if ( isset( $list[ $i ] ) ) {
+					$ids[] = $list[ $i ];
+				}
+			}
+		}
+
+		$ids = array_values( array_unique( $ids ) );
+
+		set_transient( $key, $ids, 6 * HOUR_IN_SECONDS );
 
 		return $ids;
 	}
