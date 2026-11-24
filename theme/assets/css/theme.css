@@ -5668,6 +5668,11 @@ body.oc-swatch-square-cat .oc-mcart__attr-swatch { border-radius: 4px; }
 
 .oc-mcart__each { font-size: .74rem; color: var(--oc-ink-2); white-space: nowrap; }
 
+/* The per-unit line stays quiet on a sale: the line total above it already
+ * carries the red; the unit price reads in the regular colour. */
+.oc-mcart__each ins,
+.oc-mcart__each .promeng-now { color: inherit !important; font-weight: inherit !important; }
+
 .oc-mcart__oos {
 	font-size: .78rem;
 	color: var(--oc-sale, #b4453c);

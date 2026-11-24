@@ -204,34 +204,40 @@ final class Topup {
 	/**
 	 * Price bands around the gap, the way a marketplace filters: under
 	 * what is missing (two cheap ones add up), just over it (covers it
-	 * in one), well over it. The "just over" band is as wide as it has
-	 * to be to hold something — a quarter of the gap, or two, or three
-	 * — and when nothing stands beyond it, or nothing stands in it, a
-	 * single "over the gap" chip says so. Only bands with something in
-	 * them get a chip.
+	 * in one), well over it. The chips speak in whole shekels — a gap of
+	 * 85.38 reads "up to 86" — and the "just over" band's far edge is a
+	 * round number a step or two above the gap (86 → 150, 200 → 250):
+	 * as wide as it has to be to hold something. When nothing stands
+	 * beyond it, or nothing stands in it, a single "over the gap" chip
+	 * says so. Only bands with something in them get a chip.
 	 *
 	 * @param float   $left   The sum still missing.
 	 * @param float[] $prices The grid's prices.
 	 * @return array<string,array{0:float,1:float,2:string}>
 	 */
 	private static function around( float $left, array $prices ): array {
-		$step  = self::step( $left );
+		$lo    = (float) ceil( $left );
+		$step  = self::step( $lo );
 		$bands = array(
 			'under' => array(
 				0.0,
-				$left,
+				$lo,
 				/* translators: %s: a sum. */
-				sprintf( __( 'Up to %s', 'oc-theme' ), Cart::plain_price( wc_price( $left ) ) ),
+				sprintf( __( 'Up to %s', 'oc-theme' ), Cart::plain_price( wc_price( $lo ) ) ),
 			),
 		);
 
 		$upper = 0.0;
 
 		foreach ( array( 1, 2, 3 ) as $k ) {
-			$try = $left + $k * $step;
+			$try = self::nice( $lo + $k * $step );
+
+			if ( $try <= $lo ) {
+				continue;
+			}
 
 			foreach ( $prices as $price ) {
-				if ( $price >= $left && $price < $try ) {
+				if ( $price >= $lo && $price < $try ) {
 					$upper = $try;
 					break 2;
 				}
@@ -249,10 +255,10 @@ final class Topup {
 
 		if ( $upper > 0 && $beyond ) {
 			$bands['near'] = array(
-				$left,
+				$lo,
 				$upper,
 				/* translators: 1: a sum. 2: a higher sum. */
-				sprintf( _x( '%1$s to %2$s', 'price band', 'oc-theme' ), Cart::plain_price( wc_price( $left ) ), Cart::plain_price( wc_price( $upper ) ) ),
+				sprintf( _x( '%1$s to %2$s', 'price band', 'oc-theme' ), Cart::plain_price( wc_price( $lo ) ), Cart::plain_price( wc_price( $upper ) ) ),
 			);
 			$bands['over'] = array(
 				$upper,
@@ -262,10 +268,10 @@ final class Topup {
 			);
 		} else {
 			$bands['over'] = array(
-				$left,
+				$lo,
 				INF,
 				/* translators: %s: a sum. */
-				sprintf( __( 'Over %s', 'oc-theme' ), Cart::plain_price( wc_price( $left ) ) ),
+				sprintf( __( 'Over %s', 'oc-theme' ), Cart::plain_price( wc_price( $lo ) ) ),
 			);
 		}
 
@@ -506,11 +512,24 @@ final class Topup {
 		$share = (int) ceil( self::LIMIT / 4 );
 
 		// 1. Goes with what is in the cart: the cart's offers and the ones
-		// the shop set for the checkout, each product once.
+		// the shop set for the checkout, then the upsells and cross-sells
+		// written on the cart's products in WooCommerce — each product once.
 		$matches = array();
 
 		foreach ( array_merge( Offers::cart_offers( 8 ), Offers::cart_offers( 8, 'checkout' ) ) as $offer ) {
 			$matches[ $offer['product']->get_id() ] = true;
+		}
+
+		foreach ( WC()->cart->get_cart() as $item ) {
+			$line = wc_get_product( (int) $item['product_id'] );
+
+			if ( ! $line instanceof \WC_Product ) {
+				continue;
+			}
+
+			foreach ( array_merge( $line->get_upsell_ids(), $line->get_cross_sell_ids() ) as $id ) {
+				$matches[ (int) $id ] = true;
+			}
 		}
 
 		$matches = array_keys( $matches );
