@@ -156,7 +156,7 @@ final class Topup {
 			return '';
 		}
 
-		return self::chips_and_grid( $items, self::tiers( array_map( static fn ( array $i ): float => $i['price'], $items ) ) ) . self::foot( __( 'Continue to payment', 'oc-theme' ) );
+		return self::chips_and_grid( $items, self::tiers( array_map( static fn ( array $i ): float => $i['price'], $items ) ), 'pre' ) . self::foot( __( 'Continue to payment', 'oc-theme' ) );
 	}
 
 	/**
@@ -196,8 +196,9 @@ final class Topup {
 	 *
 	 * @param array<int,array{product:\WC_Product,price:float,tag:string,band?:string}> $items The pool.
 	 * @param array<string,array{0:float,1:float,2:string}>                             $bands The bands: key => [from, to, label].
+	 * @param string                                                                    $place Which sheet: topup | pre.
 	 */
-	private static function chips_and_grid( array $items, array $bands ): string {
+	private static function chips_and_grid( array $items, array $bands, string $place = 'topup' ): string {
 		$html  = '';
 		$count = array_fill_keys( array_keys( $bands ), 0 );
 
@@ -216,7 +217,7 @@ final class Topup {
 		}
 
 		$html .= '</div>';
-		$html .= self::grid( $items );
+		$html .= self::grid( $items, $place );
 
 		return $html;
 	}
@@ -380,8 +381,9 @@ final class Topup {
 	 * page's own button word.
 	 *
 	 * @param array<int,array{product:\WC_Product,price:float,tag:string,band?:string}> $items The pool.
+	 * @param string                                                                    $place Which sheet: topup | pre.
 	 */
-	private static function grid( array $items ): string {
+	private static function grid( array $items, string $place = 'topup' ): string {
 		$tags = array(
 			'match'   => __( 'Goes with your cart', 'oc-theme' ),
 			'seen'    => __( 'You viewed it', 'oc-theme' ),
@@ -389,16 +391,34 @@ final class Topup {
 			'popular' => __( 'Sells a lot', 'oc-theme' ),
 		);
 
+		// What the shopper will have seen, for the counters: the shelf that
+		// brought the product, the cart's first line it stood beside, the
+		// sheet. Not for the shop's own people.
+		$first = 0;
+
+		foreach ( WC()->cart->get_cart() as $line ) {
+			$first = (int) $line['product_id'];
+			break;
+		}
+
+		$seen = static function ( string $tag, int $id ) use ( $first, $place ): string {
+			if ( $first <= 0 || current_user_can( 'edit_posts' ) ) {
+				return '';
+			}
+
+			return ' data-oc-topup-seen="' . esc_attr( (string) wp_json_encode( array( 's' => 'sheet:' . $tag, 'f' => $first, 'o' => $id, 'p' => $place ) ) ) . '"';
+		};
+
 		Cart::$in_upsells = true;
 
-		$html = '<div class="oc-topup__grid">';
+		$html = '<div class="oc-topup__grid"' . ( $first > 0 && ! current_user_can( 'edit_posts' ) ? ' data-oc-topup-beacon="' . esc_attr( (string) wp_json_encode( array( 'u' => rest_url( 'oc/v1/offer-seen' ), 't' => Stats::token() ) ) ) . '"' : '' ) . '>';
 
 		foreach ( $items as $item ) {
 			$product = $item['product'];
 			$id      = $product->get_id();
 			$link    = get_permalink( $id );
 
-			$html .= '<article class="oc-topup__item" data-oc-topup-item data-kinds="' . esc_attr( $item['band'] ?? 'all' ) . '">';
+			$html .= '<article class="oc-topup__item" data-oc-topup-item data-kinds="' . esc_attr( $item['band'] ?? 'all' ) . '"' . $seen( $item['tag'], $id ) . '>';
 			$html .= '<a class="oc-topup__media" href="' . esc_url( (string) $link ) . '" tabindex="-1" aria-hidden="true">' . $product->get_image( 'woocommerce_thumbnail' ) . '</a>';
 			$html .= '<span class="oc-topup__tag oc-topup__tag--' . esc_attr( $item['tag'] ) . '">' . esc_html( $tags[ $item['tag'] ] ) . '</span>';
 			$html .= Card::promo_html( $product );

@@ -15989,3 +15989,9 @@ msgstr "הנמכרים ביותר בקטגוריות של הסל"
 
 msgid "Both sheets — top up for free shipping and offers before payment. All on by default; a shop whose buyers never want a second of the same thing drops the look-alikes."
 msgstr "שתי החלוניות — השלמה למשלוח חינם והצעות לפני התשלום. הכול דלוק כברירת מחדל; חנות שהקונים בה לא רוצים עוד אחד מאותו הדבר מורידה את הדומים."
+
+msgid "The sheets"
+msgstr "החלוניות"
+
+msgid "Top up for free shipping, and offers before payment: cards shown, cards added"
+msgstr "השלמה למשלוח חינם והצעות לפני התשלום: כרטיסים שהוצגו, כרטיסים שנוספו"

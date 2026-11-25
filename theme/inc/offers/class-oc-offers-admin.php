@@ -317,6 +317,26 @@ final class Admin {
 						<span class="oc-of__muted"><?php echo $s['auto'] ? esc_html__( 'Bought together, then most alike', 'oc-theme' ) : esc_html__( 'Switched off', 'oc-theme' ); ?></span>
 						<?php self::stats_html( $totals['auto'] ?? array() ); ?>
 					</div>
+					<div class="oc-of__layer">
+						<span class="oc-of__tag oc-of__tag--auto"><?php esc_html_e( 'The sheets', 'oc-theme' ); ?></span>
+						<span class="oc-of__muted"><?php esc_html_e( 'Top up for free shipping, and offers before payment: cards shown, cards added', 'oc-theme' ); ?></span>
+						<?php
+						$sheets = array(
+							'seen'    => 0,
+							'added'   => 0,
+							'orders'  => 0,
+							'revenue' => 0.0,
+						);
+						foreach ( $totals as $src_key => $row ) {
+							if ( 0 === strpos( (string) $src_key, 'sheet:' ) ) {
+								foreach ( $sheets as $k => $v ) {
+									$sheets[ $k ] += $row[ $k ];
+								}
+							}
+						}
+						self::stats_html( $sheets['seen'] > 0 ? $sheets : array() );
+						?>
+					</div>
 				</div>
 				<p class="oc-of__muted"><?php esc_html_e( 'The numbers are for the last 30 days. Rules are asked from the top: the first one that fits a product answers for it.', 'oc-theme' ); ?></p>
 			</section>

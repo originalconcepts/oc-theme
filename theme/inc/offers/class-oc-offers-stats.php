@@ -43,6 +43,13 @@ final class Stats {
 	const COUNTERS = array( 'seen', 'added', 'orders', 'revenue' );
 
 	/**
+	 * The two sheets, as places of their own.
+	 *
+	 * @var string[]
+	 */
+	const SHEETS = array( 'topup', 'pre' );
+
+	/**
 	 * Hook in.
 	 */
 	public function register(): void {
@@ -105,7 +112,13 @@ final class Stats {
 	 * @param array<string,float> $add      Counter => amount to add.
 	 */
 	public static function bump( string $src, string $place, int $for_id, int $offer_id, array $add ): void {
-		if ( ! Rules::is_source( $src ) || ! in_array( $place, Rules::PLACES, true ) || $for_id <= 0 || $offer_id <= 0 ) {
+		// The sheets count too: their source is the shelf that brought the
+		// product (sheet:match, sheet:seen, sheet:alike, sheet:popular) and
+		// their place is the sheet (topup, pre).
+		$ok_src   = Rules::is_source( $src ) || 1 === preg_match( '/^sheet:(match|seen|alike|popular)$/', $src );
+		$ok_place = in_array( $place, Rules::PLACES, true ) || in_array( $place, self::SHEETS, true );
+
+		if ( ! $ok_src || ! $ok_place || $for_id <= 0 || $offer_id <= 0 ) {
 			return;
 		}
 
@@ -278,12 +291,26 @@ final class Stats {
 			return $res;
 		}
 
+		// One sighting, one add, or a sheet's worth of sightings at once.
+		$what  = $req->get_param( 'a' ) ? array( 'added' => 1 ) : array( 'seen' => 1 );
+		$items = $req->get_param( 'items' );
+
+		if ( is_array( $items ) ) {
+			foreach ( array_slice( $items, 0, 32 ) as $item ) {
+				if ( is_array( $item ) ) {
+					self::bump( (string) ( $item['s'] ?? '' ), (string) ( $item['p'] ?? '' ), absint( $item['f'] ?? 0 ), absint( $item['o'] ?? 0 ), $what );
+				}
+			}
+
+			return $res;
+		}
+
 		self::bump(
 			(string) $req->get_param( 's' ),
 			(string) $req->get_param( 'p' ),
 			absint( $req->get_param( 'f' ) ),
 			absint( $req->get_param( 'o' ) ),
-			array( 'seen' => 1 )
+			$what
 		);
 
 		return $res;

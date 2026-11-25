@@ -5268,6 +5268,63 @@ window.ocWhenShown( function () {
 			return urlFor( sheet, mode );
 		}
 
+		// The counters: every card the shopper was shown, once per opening
+		// of the sheet, and every add — in one request each.
+		var told = {};
+
+		function beacon( items, added ) {
+			var grid = sheet && sheet.querySelector( '[data-oc-topup-grid], .oc-topup__grid' );
+			var raw = grid ? grid.getAttribute( 'data-oc-topup-beacon' ) : '';
+			if ( ! raw || ! items.length ) {
+				return;
+			}
+			var to;
+			try {
+				to = JSON.parse( raw );
+			} catch ( e ) {
+				return;
+			}
+			var body = { _t: to.t, items: items };
+			if ( added ) {
+				body.a = 1;
+			}
+			fetch( to.u, {
+				method: 'POST',
+				credentials: 'same-origin',
+				keepalive: true,
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify( body )
+			} ).catch( function () {} );
+		}
+
+		function item( el ) {
+			var raw = el ? el.getAttribute( 'data-oc-topup-seen' ) : '';
+			if ( ! raw ) {
+				return null;
+			}
+			try {
+				return JSON.parse( raw );
+			} catch ( e ) {
+				return null;
+			}
+		}
+
+		function tellSeen() {
+			if ( ! sheet || sheet.hidden ) {
+				return;
+			}
+			var items = [];
+			sheet.querySelectorAll( '[data-oc-topup-item]' ).forEach( function ( el ) {
+				var it = item( el );
+				var key = it ? mode + ':' + it.o : '';
+				if ( it && ! told[ key ] ) {
+					told[ key ] = true;
+					items.push( it );
+				}
+			} );
+			beacon( items, false );
+		}
+
 		function skeleton() {
 			var out = '<div class="oc-topup__skel" aria-hidden="true">';
 			for ( var i = 0; i < 8; i++ ) {
@@ -5323,9 +5380,13 @@ window.ocWhenShown( function () {
 		// Added: a tick on the card for a moment, then the sheet is read
 		// again for the cart as it is now — the product has left the grid.
 		function added( button, wasDone ) {
-			var item = button.closest( '[data-oc-topup-item]' );
-			if ( item ) {
-				item.classList.add( 'is-added' );
+			var card = button.closest( '[data-oc-topup-item]' );
+			if ( card ) {
+				card.classList.add( 'is-added' );
+				var it = item( card );
+				if ( it ) {
+					beacon( [ it ], true );
+				}
 			}
 			setTimeout( function () {
 				fill( true, wasDone );
@@ -5362,6 +5423,7 @@ window.ocWhenShown( function () {
 					}
 					body.innerHTML = out.data.html;
 					if ( onShown ) { onShown(); }
+					tellSeen();
 					var bar = body.querySelector( '.oc-shipbar.is-done' );
 					if ( added && bar && ! wasDone && window.ocConfetti ) {
 						window.ocConfetti( bar );
@@ -5394,6 +5456,7 @@ window.ocWhenShown( function () {
 			}
 			opener = link;
 			mode = want || 'gap';
+			told = {};
 			sheet.setAttribute( 'data-mode', mode );
 			var title = sheet.querySelector( '.oc-topup__title' );
 			if ( title ) {
@@ -5410,6 +5473,7 @@ window.ocWhenShown( function () {
 				}
 				body.innerHTML = cache.html;
 				show();
+				tellSeen();
 				fill();
 				return;
 			}
