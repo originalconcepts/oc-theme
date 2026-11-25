@@ -406,12 +406,24 @@ final class Topup {
 				return '';
 			}
 
-			return ' data-oc-topup-seen="' . esc_attr( (string) wp_json_encode( array( 's' => 'sheet:' . $tag, 'f' => $first, 'o' => $id, 'p' => $place ) ) ) . '"';
+			$seen_of = array(
+				's' => 'sheet:' . $tag,
+				'f' => $first,
+				'o' => $id,
+				'p' => $place,
+			);
+
+			return ' data-oc-topup-seen="' . esc_attr( (string) wp_json_encode( $seen_of ) ) . '"';
 		};
 
 		Cart::$in_upsells = true;
 
-		$html = '<div class="oc-topup__grid"' . ( $first > 0 && ! current_user_can( 'edit_posts' ) ? ' data-oc-topup-beacon="' . esc_attr( (string) wp_json_encode( array( 'u' => rest_url( 'oc/v1/offer-seen' ), 't' => Stats::token() ) ) ) . '"' : '' ) . '>';
+		$beacon = array(
+			'u' => rest_url( 'oc/v1/offer-seen' ),
+			't' => Stats::token(),
+		);
+
+		$html = '<div class="oc-topup__grid"' . ( $first > 0 && ! current_user_can( 'edit_posts' ) ? ' data-oc-topup-beacon="' . esc_attr( (string) wp_json_encode( $beacon ) ) . '"' : '' ) . '>';
 
 		foreach ( $items as $item ) {
 			$product = $item['product'];
